@@ -70,6 +70,8 @@
   "customStart": "自訂起始",
   "pasvEnd": "PASV 結束埠",
   "pasvEndHint": "需 ≥ 起始埠；防火牆需放行此範圍",
+  "openPortsAlertTitle": "請自行開埠",
+  "openPortsAlert": "套用 FTPS 唔會代你開防火牆。請喺主機防火牆同雲安全組放行 TCP {{ports}}。登入成功但 LIST 逾時，多半係 PASV 範圍被擋。",
   "customEnd": "自訂結束",
   "pasvPublicIp": "PASV 公網 IP",
   "pasvPublicIpHint": "NAT／雲主機可填公網 IP；本機可留空",

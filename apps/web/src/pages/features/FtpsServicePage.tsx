@@ -203,6 +203,20 @@ export function FtpsServicePage() {
       <SoftwareVersionBar softwareId="vsftpd" />
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error && !result ? <Alert variant="error">{error}</Alert> : null}
+      <Alert variant="info">
+        <strong>{t('ftp.openPortsAlertTitle')}</strong>{' '}
+        {t('ftp.openPortsAlert', {
+          ports: [
+            String(settings.listenPort),
+            settings.pasvMin === settings.pasvMax
+              ? String(settings.pasvMin)
+              : `${settings.pasvMin}:${settings.pasvMax}`,
+            settings.listenPort !== 990 ? '990' : null,
+          ]
+            .filter(Boolean)
+            .join(', '),
+        })}
+      </Alert>
       <PageTabs tabs={tabs} active={tab} onChange={setTab} variant="scroll">
         {tab === 'lifecycle' ? (
           <Card>

@@ -146,6 +146,8 @@ describe('multi-version runtimes', () => {
     expect(unit).toContain('MemoryMax=512M');
     expect(unit).toContain('CPUQuota=50%');
     expect(unit).toContain('LimitNOFILE=65535');
+    expect(unit).toContain('StartLimitBurst=5');
+    expect(unit).toContain('StartLimitIntervalSec=120');
 
     const py = renderProcessUnit({
       projectName: 'py',

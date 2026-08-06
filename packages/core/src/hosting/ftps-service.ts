@@ -371,6 +371,35 @@ export function pamUserDbBasePath(userDbPath: string): string {
   return String(userDbPath).replace(/\.db$/i, '');
 }
 
+/**
+ * Ports the operator must open (host firewall + cloud security group).
+ * Apply never mutates UFW — only reminds. LIST timeout after login = PASV blocked.
+ */
+export function ftpsFirewallPortSpecs(settings: Pick<FtpsSettings, 'listenPort' | 'pasvMin' | 'pasvMax'>): string[] {
+  const listen = clampPort(settings.listenPort, 21);
+  const min = clampPort(settings.pasvMin, 30000);
+  const max = clampPort(settings.pasvMax, 30100);
+  const lo = Math.min(min, max);
+  const hi = Math.max(min, max);
+  const specs = [String(listen)];
+  if (lo === hi) specs.push(String(lo));
+  else specs.push(`${lo}:${hi}`);
+  // Implicit FTPS (990) often used alongside explicit 21
+  if (listen !== 990) specs.push('990');
+  return [...new Set(specs)];
+}
+
+/** Reminder notes only — does not open ports. */
+export function ftpsFirewallReminderNotes(
+  settings: Pick<FtpsSettings, 'listenPort' | 'pasvMin' | 'pasvMax'>,
+): string[] {
+  const ports = ftpsFirewallPortSpecs(settings).join(', ');
+  return [
+    tl('notes.ftp.openPortsReminder', { ports }),
+    tl('notes.ftp.openPortsPasvHint'),
+  ];
+}
+
 export function buildPamSnippet(dataDir: string): string {
   const db = pamUserDbBasePath(ftpsPaths(dataDir).userDb);
   return [
@@ -703,6 +732,14 @@ export async function applyFtpsService(input: {
       status: 'ok',
       detail: chownNotes.slice(0, 3).join('；') || tl('notes.auto.n0010') });
 
+    // Prompt operator to open ports — never auto-mutate UFW from FTPS apply
+    notes.push(...ftpsFirewallReminderNotes(settings));
+    steps.push({
+      name: tl('notes.ftp.openPortsStep'),
+      status: 'ok',
+      detail: ftpsFirewallPortSpecs(settings).join(', '),
+    });
+
     const en = await input.host.runCommand(['systemctl', 'enable', '--now', 'vsftpd'], {
       timeoutMs: 60_000 });
     commandResults.push({
@@ -763,6 +800,7 @@ export async function applyFtpsService(input: {
 
   // applySystem false: config only
   notes.push(tl('notes.auto.n0734'));
+  notes.push(...ftpsFirewallReminderNotes(settings));
   return {
     ok: true,
     executed: false,

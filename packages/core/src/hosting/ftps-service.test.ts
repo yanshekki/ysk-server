@@ -23,6 +23,8 @@ import {
   hashFtpPassword,
   isCryptPasswordHash,
   pamUserDbBasePath,
+  ftpsFirewallPortSpecs,
+  ftpsFirewallReminderNotes,
   listFtpDomainOptions,
   listFtpHomeOptions,
   loadFtpsSettings,
@@ -125,6 +127,26 @@ describe('ftps-service pure helpers', () => {
     expect(pamUserDbBasePath('/data/ftps/virtual_users.DB')).toBe('/data/ftps/virtual_users');
     expect(pamUserDbBasePath('/data/ftps/virtual_users')).toBe('/data/ftps/virtual_users');
     expect(pamUserDbBasePath('/tmp/foo.db.db')).toBe('/tmp/foo.db');
+  });
+
+  it('ftpsFirewallPortSpecs covers listen + full PASV + 990', () => {
+    expect(ftpsFirewallPortSpecs({ listenPort: 21, pasvMin: 30000, pasvMax: 30100 })).toEqual([
+      '21',
+      '30000:30100',
+      '990',
+    ]);
+    expect(ftpsFirewallPortSpecs({ listenPort: 990, pasvMin: 31000, pasvMax: 31010 })).toEqual([
+      '990',
+      '31000:31010',
+    ]);
+  });
+
+  it('ftpsFirewallReminderNotes prompts to open ports without opening them', () => {
+    const notes = ftpsFirewallReminderNotes({ listenPort: 21, pasvMin: 30000, pasvMax: 30100 });
+    expect(notes.length).toBeGreaterThanOrEqual(1);
+    expect(notes.join(' ')).toMatch(/30000:30100|21/);
+    // must be advisory only
+    expect(notes.join(' ').toLowerCase()).not.toMatch(/opened ufw|rule added/);
   });
 
   it('resolveCertPaths prefers explicit paths then managed certs', () => {

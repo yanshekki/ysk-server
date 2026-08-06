@@ -2756,7 +2756,7 @@ describe('project-ops floor80 edges', () => {
     expect(resolveProjectDocRoot({ home_dir: '/h', doc_root: undefined } as never)).toContain(
       'app/public',
     );
-    expect(resolveNodeBinary().length).toBeGreaterThan(0);
+    expect(resolveNodeBinary().path.length).toBeGreaterThan(0);
     expect(isPidAlive(999_999_999)).toBe(false);
 
     const dir = tmp('ysk-po-f80-');

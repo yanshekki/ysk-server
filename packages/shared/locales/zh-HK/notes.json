@@ -55,7 +55,10 @@
   "ftp": {
     "startVsftpd": "啟動 vsftpd",
     "writeVsftpd": "寫入 vsftpd 設定",
-    "vsftpdStarted": "vsftpd 已啟動"
+    "vsftpdStarted": "vsftpd 已啟動",
+    "openPortsStep": "防火牆埠（需手動）",
+    "openPortsReminder": "請喺主機防火牆同雲安全組放行 TCP：{{ports}}。套用 FTPS 唔會代你開埠。",
+    "openPortsPasvHint": "若登入成功但列目錄 LIST 逾時，多半係 PASV 資料埠被擋——要開齊 PASV 範圍，唔係淨開 21。"
   },
   "files": {
     "needSrcDst": "請指定來源與目標路徑",

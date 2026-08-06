@@ -50,13 +50,20 @@ const PROFILE_DEFS = [
 /** YSK service ports for open-port chips (SSOT from @ysk/shared). */
 const SERVICE_PORT_CHIPS = listFirewallPortChips();
 
+/**
+ * Expand "21,30000:30100" into port numbers for legacy planFirewall(extraTcpPorts).
+ * Cap at 200 ports (matches firewallAllowPort range limit) so FTPS PASV 30000–30100
+ * is fully covered — previously capped at 40 and dropped most PASV ports.
+ */
 export function parsePorts(extraPorts: string): number[] {
   const out: number[] = [];
+  const maxPorts = 200;
   for (const part of extraPorts.split(/[,\s]+/).filter(Boolean)) {
+    if (out.length >= maxPorts) break;
     if (part.includes(':')) {
       const [a, b] = part.split(':').map(Number);
       if (Number.isFinite(a) && Number.isFinite(b)) {
-        for (let p = Math.min(a, b); p <= Math.max(a, b) && out.length < 40; p++)
+        for (let p = Math.min(a, b); p <= Math.max(a, b) && out.length < maxPorts; p++)
           out.push(p);
       }
     } else {
@@ -64,7 +71,7 @@ export function parsePorts(extraPorts: string): number[] {
       if (Number.isInteger(n) && n > 0 && n < 65536) out.push(n);
     }
   }
-  return [...new Set(out)].slice(0, 40);
+  return [...new Set(out)].slice(0, maxPorts);
 }
 
 /** Badge tone for a UFW rule action string. */

@@ -20,6 +20,7 @@ import {
   firewallActionTone,
   firewallActiveTone,
   parsePortInput,
+  parsePortInputNumber,
   isValidDenyIp,
   mapFirewallRules,
 } from './features/FirewallPage';
@@ -103,10 +104,11 @@ describe('Firewall pure helpers', () => {
     expect(parsePorts('21 30000:30002')).toEqual([21, 30000, 30001, 30002]);
     expect(parsePorts('0,99999,bad')).toEqual([]);
     expect(parsePorts('')).toEqual([]);
-    // dedupe + cap
+    // dedupe + cap (200 for full FTPS PASV range)
     const many = parsePorts('1:50');
-    expect(many.length).toBeLessThanOrEqual(40);
+    expect(many.length).toBe(50);
     expect(parsePorts('80,80,80')).toEqual([80]);
+    expect(parsePorts('30000:30100').length).toBe(101);
   });
 
   it('action/active tones and port/ip validators', () => {
@@ -120,9 +122,10 @@ describe('Firewall pure helpers', () => {
     expect(firewallActiveTone(false, true)).toBe('warn');
     expect(firewallActiveTone(false, false)).toBe('danger');
 
-    expect(parsePortInput('8080')).toBe(8080);
-    expect(parsePortInput(' 22 ')).toBe(22);
-    expect(parsePortInput('0')).toBeNull();
+    expect(parsePortInput('8080')).toBe('8080');
+    expect(parsePortInputNumber('8080')).toBe(8080);
+    expect(parsePortInputNumber(' 22 ')).toBe(22);
+    expect(parsePortInputNumber('0')).toBeNull();
     expect(parsePortInput('x')).toBeNull();
     expect(parsePortInput('70000')).toBeNull();
 

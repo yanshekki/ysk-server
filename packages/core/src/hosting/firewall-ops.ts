@@ -324,10 +324,12 @@ export const FIREWALL_PROFILES = {
     label: 'Web + FTPS',
     short: tl('notes.auto.n0609'),
     allowSmtp: false,
-    extraTcpPorts: [21, ...range(30000, 30100)] } } as const;
+    // Full PASV band (was capped at 40 ports → 30098+ blocked, LIST timeout)
+    extraTcpPorts: [21, 990, ...range(30000, 30100)] } } as const;
 
 function range(a: number, b: number): number[] {
   const out: number[] = [];
-  for (let p = a; p <= b && out.length < 40; p++) out.push(p);
+  // Match firewallAllowPort max span (200) so 30000–30100 is complete
+  for (let p = a; p <= b && out.length < 200; p++) out.push(p);
   return out;
 }

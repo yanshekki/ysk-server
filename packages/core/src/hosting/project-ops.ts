@@ -30,10 +30,12 @@ import {
 import { syncNginxConfigs, writeManagedNginxConf } from './nginx-sync.js';
 import {
   defaultProcessCommands,
+  defaultRuntimeVersion,
   detectBunEntry,
   detectJavaEntry,
   isProcessRuntime,
   renderProcessUnit,
+  selectNodeRuntime,
   selectPhpRuntime,
 } from './runtime.js';
 import { gitSync } from './git-deploy.js';
@@ -189,13 +191,46 @@ export class ProjectOpsService {
       notes.push(tl('notes.auto.t0171', { v0: (row.linux_user) }));
     }
     const entry = opts.entry ?? 'server.js';
-    const nodeBinary = resolveNodeBinary();
-    notes.push(tl('notes.auto.t0172', { v0: (nodeBinary) }));
-
     const port = opts.port ?? row.port ?? (await findFreePort(3100, 3999));
     notes.push(tl('notes.auto.t0173', { v0: (port) }));
 
-    const nodeVer = opts.nodeVersion ?? row.runtime_version ?? '20';
+    const nodeVer = opts.nodeVersion ?? row.runtime_version ?? defaultRuntimeVersion('node');
+    // Never use panel process.execPath under /root (→ systemd 203/EXEC for ysks_* users)
+    const nodeResolved = resolveNodeBinary(nodeVer, this.host);
+    const nodeBinary = nodeResolved.path;
+    notes.push(tl('notes.auto.t0172', { v0: (nodeBinary) }));
+    notes.push(...nodeResolved.notes);
+    const isolatedDeploy =
+      this.host.executeEnabled() && this.host.isRoot() && Boolean(row.os_provisioned);
+    if (isolatedDeploy && !nodeBinaryExists(nodeBinary, this.host)) {
+      notes.push(
+        `Node binary missing for isolated deploy: ${nodeBinary} — install Node ${nodeVer} toolchain (panel 執行環境) then redeploy. Refusing to write a unit that would 203/EXEC.`,
+      );
+      this.projects.updateRuntimeState(projectId, {
+        process_status: 'failed',
+        status: 'failed',
+        last_health: {
+          ok: false,
+          error: `node binary missing: ${nodeBinary}`,
+          at: new Date().toISOString(),
+        },
+        last_deploy_at: new Date().toISOString(),
+        last_deploy_notes: clipDeployNotes(notes),
+      });
+      return {
+        ok: false,
+        projectId,
+        port,
+        processStatus: 'failed',
+        listening: false,
+        notes,
+        written,
+        degraded: true,
+        deployMode: 'none',
+        requiresRoot: false,
+        requiresExecute: false,
+      };
+    }
     const tuningEnv = tuningToEnv(loadRuntimeTuning(this.dataDir, 'node', nodeVer));
     if (Object.keys(tuningEnv).length) {
       notes.push(tl('notes.auto.t0174', { v0: (Object.keys(tuningEnv).join(', ')) }));
@@ -278,22 +313,31 @@ export class ProjectOpsService {
         `systemd: cp exit=${r1.exitCode}, daemon-reload=${r2.exitCode}, enable=${r3.exitCode}`,
       );
       if (r1.exitCode === 0 && r3.exitCode === 0) {
-        deployMode = 'systemd';
-        degraded = false;
-        const mainPid = await this.host.runCommand([
-          'systemctl',
-          'show',
-          '-p',
-          'MainPID',
-          '--value',
-          unitName,
-        ]);
-        const n = Number(mainPid.stdout.trim());
-        if (Number.isFinite(n) && n > 0) {
-          pid = n;
+        const health = await assertSystemdUnitHealthy(this.host, unitName);
+        notes.push(...health.notes);
+        if (health.ok && health.mainPid) {
+          deployMode = 'systemd';
+          degraded = false;
+          pid = health.mainPid;
           writeFileSync(pidfile, `${pid}\n`, 'utf8');
+          notes.push(tl('notes.auto.t0176', { v0: (unitName) }));
+        } else {
+          notes.push(tl('notes.auto.n0443'));
+          if (!isProjectUserExecutableNodePath(nodeBinary)) {
+            notes.push(
+              `Node binary rejected for project user: ${nodeBinary} — use ${selectNodeRuntime(nodeVer).binaryPath}`,
+            );
+          } else if (!nodeBinaryExists(nodeBinary, this.host)) {
+            notes.push(
+              `Node binary missing: ${nodeBinary} — install toolchain (Node ${nodeVer}) then redeploy`,
+            );
+          }
+          // Stop crash loops when unit is broken
+          await this.host.runCommand(['systemctl', 'stop', unitName], { timeoutMs: 15_000 });
+          await this.host.runCommand(['systemctl', 'reset-failed', unitName], {
+            timeoutMs: 10_000,
+          });
         }
-        notes.push(tl('notes.auto.t0176', { v0: (unitName) }));
       } else {
         notes.push(tl('notes.auto.n0443'));
       }
@@ -1939,19 +1983,38 @@ export class ProjectOpsService {
     notes.push(tl('notes.auto.t0209', { v0: (unitManaged) }));
 
     let unitActive = false;
+    const processUnitName = `ysk-project-${row.linux_user}.service`;
+    const pidfile = join(row.home_dir, 'app.pid');
+    let pid: number | undefined;
     if (this.host.executeEnabled() && this.host.isRoot() && row.os_provisioned) {
-      const systemUnit = `/etc/systemd/system/ysk-project-${row.linux_user}.service`;
+      const systemUnit = `/etc/systemd/system/${processUnitName}`;
       try {
         writeFileSync(systemUnit, unitBody, 'utf8');
         written.push(systemUnit);
         await this.host.runCommand(['systemctl', 'daemon-reload'], { timeoutMs: 15_000 });
         const en = await this.host.runCommand(
-          ['systemctl', 'enable', '--now', `ysk-project-${row.linux_user}.service`],
+          ['systemctl', 'enable', '--now', processUnitName],
           { timeoutMs: 30_000 },
         );
         if (en.exitCode === 0) {
-          notes.push(tl('notes.auto.t0210', { v0: (row.linux_user) }));
-          unitActive = true;
+          const health = await assertSystemdUnitHealthy(this.host, processUnitName);
+          notes.push(...health.notes);
+          if (health.ok) {
+            notes.push(tl('notes.auto.t0210', { v0: (row.linux_user) }));
+            unitActive = true;
+            if (health.mainPid) {
+              pid = health.mainPid;
+              writeFileSync(pidfile, `${pid}\n`, 'utf8');
+            }
+          } else {
+            notes.push(tl('notes.auto.t0211', { v0: health.detail || 'unit not healthy' }));
+            await this.host.runCommand(['systemctl', 'stop', processUnitName], {
+              timeoutMs: 15_000,
+            });
+            await this.host.runCommand(['systemctl', 'reset-failed', processUnitName], {
+              timeoutMs: 10_000,
+            });
+          }
         } else notes.push(tl('notes.auto.t0211', { v0: (en.stderr || en.stdout) }));
       } catch (e) {
         notes.push(tl('notes.auto.t0212', { v0: (e instanceof Error ? e.message : String(e)) }));
@@ -1959,12 +2022,9 @@ export class ProjectOpsService {
     } else {
       notes.push(tl('notes.auto.n0949'));
     }
-
-    const pidfile = join(row.home_dir, 'app.pid');
-    let pid: number | undefined;
     if (!unitActive) {
       const active = await this.host.runCommand(
-        ['systemctl', 'is-active', `ysk-project-${row.linux_user}.service`],
+        ['systemctl', 'is-active', processUnitName],
         { timeoutMs: 5_000 },
       );
       unitActive = active.stdout.trim() === 'active';
@@ -2082,10 +2142,153 @@ export class ProjectOpsService {
   }
 }
 
-export function resolveNodeBinary(): string {
-  // Prefer current process binary so deploy works without custom node install
-  if (process.execPath && existsSync(process.execPath)) return process.execPath;
-  return 'node';
+/**
+ * Whether systemd unit is actually running after enable --now.
+ * enable exit 0 alone is insufficient (203/EXEC dies immediately).
+ */
+export async function assertSystemdUnitHealthy(
+  host: HostExecutor,
+  unitName: string,
+): Promise<{
+  ok: boolean;
+  active: string;
+  result: string;
+  mainPid?: number;
+  notes: string[];
+  detail: string;
+}> {
+  const notes: string[] = [];
+  const act = await host.runCommand(['systemctl', 'is-active', unitName], { timeoutMs: 5_000 });
+  const active = (act.stdout || '').trim();
+  const mainPidR = await host.runCommand(
+    ['systemctl', 'show', '-p', 'MainPID', '--value', unitName],
+    { timeoutMs: 5_000 },
+  );
+  const resultR = await host.runCommand(
+    ['systemctl', 'show', '-p', 'Result', '--value', unitName],
+    { timeoutMs: 5_000 },
+  );
+  const unitResult = (resultR.stdout || '').trim();
+  const n = Number((mainPidR.stdout || '').trim());
+  const mainPid = Number.isFinite(n) && n > 0 ? n : undefined;
+  const detail = `is-active=${active || '?'}, Result=${unitResult || '?'}, MainPID=${mainPid ?? 0}`;
+  notes.push(`systemd: ${detail}`);
+  // Type=simple: active + MainPID>0 is the real success signal
+  const ok = active === 'active' && mainPid != null;
+  if (!ok) {
+    notes.push(
+      `systemd unit not healthy (${detail}). journalctl -u ${unitName} — 203/EXEC often means binary not executable by project user`,
+    );
+  }
+  return { ok, active, result: unitResult, mainPid, notes, detail };
+}
+
+function nodeBinaryExists(
+  path: string,
+  host?: Pick<HostExecutor, 'pathExists'>,
+): boolean {
+  if (!path || path === 'node') return true; // PATH name — cannot prove here
+  if (host?.pathExists?.(path)) return true;
+  try {
+    return existsSync(path);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * True if a project linux user (ysks_*) can exec this path.
+ * Panel often runs as root from /root/.hermes/node — that must never go into systemd ExecStart.
+ */
+export function isProjectUserExecutableNodePath(bin: string): boolean {
+  const p = String(bin || '').trim();
+  if (!p) return false;
+  if (p === 'node') return true; // resolved via unit PATH / Environment
+  if (!p.startsWith('/')) return true;
+  if (p.startsWith('/root/')) return false;
+  if (p.includes('/.hermes/')) return false;
+  // Private nvm/fnm under a home dir is not shared with project users
+  if (/\/\.(nvm|fnm|local\/share\/fnm|volta)\//.test(p)) return false;
+  return true;
+}
+
+export type ResolveNodeBinaryResult = { path: string; notes: string[] };
+
+/**
+ * Resolve Node binary for project deploy (systemd User=ysks_*).
+ * Prefer /usr/local/ysk/node/<major>/bin/node (toolchain install layout).
+ * Never put panel process.execPath under /root into systemd (203/EXEC).
+ *
+ * Degraded deploys (no root / no execute) may use panel nvm/hermes path because
+ * the process runs as the panel user, not ysks_*.
+ */
+export function resolveNodeBinary(
+  version?: string,
+  host?: Pick<HostExecutor, 'pathExists' | 'isRoot' | 'executeEnabled'>,
+): ResolveNodeBinaryResult {
+  const notes: string[] = [];
+  const plan = selectNodeRuntime(version || defaultRuntimeVersion('node'));
+  const major = plan.version;
+  const planned = plan.binaryPath;
+  // Root+execute → unit runs as project user; private panel Node is forbidden
+  const isolatedTarget = Boolean(host?.executeEnabled() && host?.isRoot());
+
+  const candidates: string[] = [
+    planned,
+    `/usr/local/ysk/node/${major}/bin/node`,
+    `/usr/bin/node${major}`,
+    '/usr/local/bin/node',
+    '/usr/bin/node',
+  ];
+
+  const exists = (p: string): boolean => {
+    if (host?.pathExists?.(p)) return true;
+    try {
+      return existsSync(p);
+    } catch {
+      return false;
+    }
+  };
+
+  for (const c of candidates) {
+    if (!isProjectUserExecutableNodePath(c)) continue;
+    if (exists(c)) {
+      if (c !== planned) {
+        notes.push(`Node binary: using ${c} (planned ${planned} not found)`);
+      }
+      return { path: c, notes };
+    }
+  }
+
+  if (process.execPath && exists(process.execPath)) {
+    if (isProjectUserExecutableNodePath(process.execPath)) {
+      notes.push(`Node binary: fallback to panel execPath ${process.execPath}`);
+      return { path: process.execPath, notes };
+    }
+    if (!isolatedTarget) {
+      // Dev / non-root panel: same-user pidfile can use nvm/hermes path
+      notes.push(
+        `Node binary: degraded deploy using panel ${process.execPath} (not for systemd User=ysks_*)`,
+      );
+      return { path: process.execPath, notes };
+    }
+    notes.push(
+      `Skipped panel Node at ${process.execPath} (not executable by project user; would cause systemd 203/EXEC)`,
+    );
+  }
+
+  notes.push(
+    `Node ${major} binary not found on host — unit will use ${planned}; install toolchain then redeploy`,
+  );
+  return { path: planned, notes };
+}
+
+/** String path helper for callers that only need the path. */
+export function resolveNodeBinaryPath(
+  version?: string,
+  host?: Pick<HostExecutor, 'pathExists' | 'isRoot' | 'executeEnabled'>,
+): string {
+  return resolveNodeBinary(version, host).path;
 }
 
 function clipDeployNotes(notes: string[]): string[] {

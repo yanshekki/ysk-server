@@ -14,6 +14,8 @@ import {
   detectPythonEntry,
   resolveCargoPackageName,
   resolveNodeBinary,
+  isProjectUserExecutableNodePath,
+  assertSystemdUnitHealthy,
 } from './project-ops.js';
 
 describe('ProjectOpsService real deploy', () => {
@@ -300,9 +302,75 @@ describe('ProjectOpsService helpers and honesty paths', () => {
     expect(resolveCargoPackageName(dir)).toBe('hello-rs');
   });
 
-  it('resolveNodeBinary returns process.execPath or node', () => {
-    const bin = resolveNodeBinary();
-    expect(bin === process.execPath || bin === 'node').toBe(true);
+  it('assertSystemdUnitHealthy requires active + MainPID', async () => {
+    const host = {
+      runCommand: async (argv: string[]) => {
+        const j = argv.join(' ');
+        if (j.includes('is-active')) {
+          return { stdout: 'active\n', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        if (j.includes('MainPID')) {
+          return { stdout: '4242\n', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        if (j.includes('Result')) {
+          return { stdout: 'success\n', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+      },
+    };
+    const ok = await assertSystemdUnitHealthy(host as never, 'ysk-project-x.service');
+    expect(ok.ok).toBe(true);
+    expect(ok.mainPid).toBe(4242);
+
+    const hostFail = {
+      runCommand: async (argv: string[]) => {
+        const j = argv.join(' ');
+        if (j.includes('is-active')) {
+          return { stdout: 'failed\n', stderr: '', exitCode: 3, argv, dryRun: false };
+        }
+        if (j.includes('MainPID')) {
+          return { stdout: '0\n', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        if (j.includes('Result')) {
+          return { stdout: 'exit-code\n', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+      },
+    };
+    const bad = await assertSystemdUnitHealthy(hostFail as never, 'ysk-project-x.service');
+    expect(bad.ok).toBe(false);
+    expect(bad.notes.join(' ')).toMatch(/not healthy|203/);
+  });
+
+  it('resolveNodeBinary prefers ysk node path and rejects /root panel binaries', () => {
+    expect(isProjectUserExecutableNodePath('/root/.hermes/node/bin/node')).toBe(false);
+    expect(isProjectUserExecutableNodePath('/usr/local/ysk/node/26/bin/node')).toBe(true);
+    expect(isProjectUserExecutableNodePath('/usr/bin/node')).toBe(true);
+
+    // Isolated (root+execute): never use /root/.hermes even if that is process.execPath
+    const isolated = resolveNodeBinary('26', {
+      pathExists: () => false,
+      isRoot: () => true,
+      executeEnabled: () => true,
+    });
+    expect(isolated.path).toBe('/usr/local/ysk/node/26/bin/node');
+    expect(isolated.path.startsWith('/root/')).toBe(false);
+    expect(isolated.notes.some((n) => /203\/EXEC|Skipped panel|not found/i.test(n))).toBe(true);
+
+    const found = resolveNodeBinary('20', {
+      pathExists: (p: string) => p === '/usr/local/ysk/node/20/bin/node',
+      isRoot: () => true,
+      executeEnabled: () => true,
+    });
+    expect(found.path).toBe('/usr/local/ysk/node/20/bin/node');
+
+    // Degraded: may use panel binary when ysk path missing
+    const degraded = resolveNodeBinary('20', {
+      pathExists: () => false,
+      isRoot: () => false,
+      executeEnabled: () => false,
+    });
+    expect(degraded.path.length).toBeGreaterThan(0);
   });
 
   it('isPidAlive true for self and false for dead pid', () => {

@@ -4200,7 +4200,10 @@
     "ftp": {
       "startVsftpd": "Start vsftpd",
       "writeVsftpd": "Write vsftpd config",
-      "vsftpdStarted": "vsftpd started"
+      "vsftpdStarted": "vsftpd started",
+      "openPortsStep": "Firewall ports (manual)",
+      "openPortsReminder": "Open TCP ports on host firewall and cloud security group: {{ports}}. FTPS apply does not open ports for you.",
+      "openPortsPasvHint": "If login works but directory LIST times out, the PASV data range is blocked — open the full PASV range, not only port 21."
     },
     "files": {
       "needSrcDst": "Specify source and destination paths",

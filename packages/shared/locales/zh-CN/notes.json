@@ -55,7 +55,10 @@
   "ftp": {
     "startVsftpd": "启动 vsftpd",
     "writeVsftpd": "写入 vsftpd 配置",
-    "vsftpdStarted": "vsftpd 已启动"
+    "vsftpdStarted": "vsftpd 已启动",
+    "openPortsStep": "防火墙端口（需手动）",
+    "openPortsReminder": "请在主机防火墙和云安全组放行 TCP：{{ports}}。套用 FTPS 不会代你开端口。",
+    "openPortsPasvHint": "若登录成功但列目录 LIST 超时，多半是 PASV 数据端口被挡——要开齐 PASV 范围，不是只开 21。"
   },
   "files": {
     "needSrcDst": "请指定来源与目标路径",

@@ -112,7 +112,14 @@ describe('Firewall parsePorts', () => {
     expect(parsePorts('80 443 bad 0 99999')).toEqual([80, 443]);
     expect(parsePorts('5:3')).toEqual([3, 4, 5]);
     const wide = parsePorts('1:100');
-    expect(wide.length).toBeLessThanOrEqual(40);
+    expect(wide.length).toBe(100);
+    // FTPS PASV band must fit (was capped at 40 → LIST timeout on high ports)
+    const pasv = parsePorts('21,30000:30100');
+    expect(pasv).toContain(21);
+    expect(pasv).toContain(30000);
+    expect(pasv).toContain(30100);
+    expect(pasv.length).toBe(102);
+    expect(parsePorts('1:300').length).toBeLessThanOrEqual(200);
   });
 });
 

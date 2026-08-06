@@ -445,6 +445,9 @@ ${envLines}
 ExecStart=${opts.execStart}
 Restart=on-failure
 RestartSec=5
+# Cap crash loops (wrong binary / 203/EXEC) — avoid hundreds of restarts
+StartLimitIntervalSec=120
+StartLimitBurst=5
 ${hardenLines}${limitBlock}
 [Install]
 WantedBy=multi-user.target

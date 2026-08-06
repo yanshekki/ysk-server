@@ -70,6 +70,8 @@
   "customStart": "Custom start",
   "pasvEnd": "PASV end port",
   "pasvEndHint": "Must be ≥ start; firewall must allow the range",
+  "openPortsAlertTitle": "Open these ports yourself",
+  "openPortsAlert": "FTPS does not open the firewall for you. Allow TCP {{ports}} on the host firewall and cloud security group. Login OK but LIST timeout usually means the PASV range is blocked.",
   "customEnd": "Custom end",
   "pasvPublicIp": "PASV public IP",
   "pasvPublicIpHint": "NAT/cloud: set public IP; local can leave empty",
