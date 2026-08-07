@@ -1146,8 +1146,8 @@ export function NetworkPage() {
                         onChange={(e) => setRealIpProvider(e.target.value)}
                       >
                         {(realIp?.catalog ?? [
-                          { id: 'none', label: 'None' },
-                          { id: 'cloudflare', label: 'Cloudflare' },
+                          { id: 'none', label: 'None', clientIpHeader: '' },
+                          { id: 'cloudflare', label: 'Cloudflare', clientIpHeader: 'CF-Connecting-IP' },
                         ]).map((p) => (
                           <option key={p.id} value={p.id}>
                             {p.label}
