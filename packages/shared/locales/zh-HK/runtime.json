@@ -79,7 +79,7 @@
   "installExtOnly": "安裝選定擴充（PHP {{version}} 已有）",
   "pluginAlreadyOnHost": "主機已有",
   "installAddonsOnly": "安裝選定插件／擴充（{{version}} 已有）",
-  "remoteNewerHint": "已裝 {{current}} · 上游最新 {{remote}}（安裝目標以版本清單為準）",
+  "remoteNewerHint": "已裝 {{current}} · 上游最新 {{remote}}{{source}}",
   "installedPhp": "已安裝 PHP {{version}}",
   "nextSteps": "下一步",
   "suggestedFlow": "建議流程",
@@ -453,5 +453,6 @@
     "noProjectsDesc": "面板未有 node/bun 專案，或未建 OS 用戶。",
     "pm2OnlyDesc": "只顯示 panel 用戶用 PM2 啟動的程序。systemd 部署見上方專案表。"
   },
-  "recordedInstalled": "記錄已裝 {{v}}"
+  "recordedInstalled": "記錄已裝 {{v}}",
+  "remoteSourceSuffix": "（{{source}}）"
 }

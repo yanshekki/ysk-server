@@ -8263,7 +8263,7 @@
     "installExtOnly": "Install selected extensions (PHP {{version}} present)",
     "pluginAlreadyOnHost": "already on host",
     "installAddonsOnly": "Install selected add-ons ({{version}} present)",
-    "remoteNewerHint": "Installed {{current}} · upstream latest {{remote}} (install targets follow the version lis",
+    "remoteNewerHint": "Installed {{current}} · upstream latest {{remote}}{{source}}",
     "installedPhp": "Installed PHP {{version}}",
     "nextSteps": "Next",
     "suggestedFlow": "Suggested flow",
@@ -8649,7 +8649,8 @@
       "noProjectsDesc": "No node/bun projects in the panel, or OS user not provisioned.",
       "pm2OnlyDesc": "Only apps started with PM2 under the panel user. systemd deploys appear above."
     },
-    "recordedInstalled": "Recorded {{v}}"
+    "recordedInstalled": "Recorded {{v}}",
+    "remoteSourceSuffix": " ({{source}})"
   },
   "security": {
     "title": "Security & Approvals",
@@ -9647,8 +9648,8 @@
   "uiInline": {
     "s27d9daa5": "已預填 runtime {{v0}} {{v1}}，可建立專案",
     "sb8eaefa3": "已預填 runtime {{v0}}，可建立專案",
-    "s7d540128": " · {{v0}})}",
-    "s814bcc7c": " · {{v0}})}",
+    "s7d540128": " · {{v0}}",
+    "s814bcc7c": " · {{v0}}",
     "s3f7c3eae": "建議Update",
     "s92e48065": "Skip",
     "sdff0f697": "Watch",
@@ -9677,7 +9678,7 @@
     "sac96ec39": "控制面曾記錄Install {{v0}}，但主機探測未見 binary。不算Installed——請「重新探測」或重新Install。",
     "sf7f7807b": "Default",
     "sc9530028": "載入Latest版本中，或手動輸入",
-    "s9602769e": "探測Installed {{v0}} · UpstreamLatest {{v1}}${versionStatus.source ? ",
+    "s9602769e": "Installed {{v0}} · upstream latest {{v1}}",
     "sb8b5a353": "Go／Rust 可同時保留多個版本：先「Install」缺少的版本，再「切換為Default」決定 PATH 用邊個。",
     "sac155c20": "Removable non-core extensions (apt remove; keeps FPM/CLI)",
     "s23379974": "勾選擴充後按「Install選定擴充」。此版本已在主機上，無需再裝 runtime。",
@@ -9693,8 +9694,8 @@
     "sa1d77833": "Failed",
     "s75dddf52": "Stopped",
     "s4e7f6152": "Update中 {{v0}}/{{v1}}：{{v2}}",
-    "s72cac69e": "{{v0}}: {{v1}})}",
-    "sd1c15b6d": "{{v0}}: {{v1}})}",
+    "s72cac69e": "{{v0}}: {{v1}}",
+    "sd1c15b6d": "{{v0}}: {{v1}}",
     "s7a90f74c": "已Update：{{v0}}",
     "s0aa24093": "{{v0}} Update完成",
     "s5d92ffc3": "部分成功：{{v0}}；Failed：{{v1}}",
@@ -9815,7 +9816,7 @@
     "s9dc5c003": "Basic",
     "s04a32a1e": "SSL 相關按鈕已鎖定：請先到",
     "s564d50b7": "為網域申請／上載證書後再Publish + SSL。",
-    "sbb6c72f1": " ({{v0}})})",
+    "sbb6c72f1": " ({{v0}})",
     "sd9b695a5": "請先填寫網域，才能Publish Nginx / SSL。",
     "scb85cfff": "請先為網域建立 SSL 證書",
     "s18c1af46": "儲存並Publish + SSL",

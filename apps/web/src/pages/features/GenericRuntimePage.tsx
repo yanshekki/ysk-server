@@ -617,14 +617,18 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                   <FormHint>
                     {t('runtime.remoteNewerHint', {
                       remote: versionStatus.latestVersion,
-                      // Probed installs only — never softwareVersions.currentVersion as "已裝"
+                      // Probed installs only — never softwareVersions.currentVersion as "installed"
                       current:
                         installState.installedVersions.join(', ') ||
                         (probeData.hostRaw ? probeData.hostRaw : '—'),
                       panel:
                         installState.installedVersions.join(', ') ||
                         (probeData.hostRaw ? probeData.hostRaw : '—'),
-                      defaultValue: t('uiInline.s9602769e', { v0: installState.installedVersions.join(', ') || '—', v1: versionStatus.latestVersion })（${versionStatus.source}）` : ''}`,
+                      source: versionStatus.source
+                        ? t('runtime.remoteSourceSuffix', {
+                            source: versionStatus.source,
+                          })
+                        : '',
                     })}
                   </FormHint>
                 ) : versionStatus?.notes?.length ? (

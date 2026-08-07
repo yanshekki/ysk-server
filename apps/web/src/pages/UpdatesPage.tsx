@@ -67,10 +67,10 @@ export function adviceLabel(
   const out = tr(key, { defaultValue: '' });
   if (out && out !== key) return out;
   // fallbacks if locale missing
-  if (a === 'update') return tr('updates.advice.update', { defaultValue: t('uiInline.s3f7c3eae') });
-  if (a === 'skip') return tr('updates.advice.skip', { defaultValue: t('uiInline.s92e48065') });
-  if (a === 'watch') return tr('updates.advice.watch', { defaultValue: t('uiInline.sdff0f697') });
-  if (a === 'urgent') return tr('updates.advice.urgent', { defaultValue: t('uiInline.s012f2d7e') });
+  if (a === 'update') return tr('updates.advice.update', { defaultValue: tr('uiInline.s3f7c3eae') });
+  if (a === 'skip') return tr('updates.advice.skip', { defaultValue: tr('uiInline.s92e48065') });
+  if (a === 'watch') return tr('updates.advice.watch', { defaultValue: tr('uiInline.sdff0f697') });
+  if (a === 'urgent') return tr('updates.advice.urgent', { defaultValue: tr('uiInline.s012f2d7e') });
   return advice ?? '—';
 }
 

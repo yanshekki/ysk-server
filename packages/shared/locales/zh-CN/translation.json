@@ -8263,7 +8263,7 @@
     "installExtOnly": "安装选定扩展（PHP {{version}} 已有）",
     "pluginAlreadyOnHost": "主机已有",
     "installAddonsOnly": "安装选定插件／扩展（{{version}} 已有）",
-    "remoteNewerHint": "已装 {{current}} · 上游最新 {{remote}}（安装目标以版本清单为准）",
+    "remoteNewerHint": "已装 {{current}} · 上游最新 {{remote}}{{source}}",
     "installedPhp": "已安装 PHP {{version}}",
     "nextSteps": "下一步",
     "suggestedFlow": "建议流程",
@@ -8649,7 +8649,8 @@
       "noProjectsDesc": "面板没有 node/bun 项目，或未建 OS 用户。",
       "pm2OnlyDesc": "仅显示 panel 用户用 PM2 启动的进程。systemd 部署见上方项目表。"
     },
-    "recordedInstalled": "记录已装 {{v}}"
+    "recordedInstalled": "记录已装 {{v}}",
+    "remoteSourceSuffix": "（{{source}}）"
   },
   "security": {
     "title": "安全与审批",
@@ -9647,8 +9648,8 @@
   "uiInline": {
     "s27d9daa5": "已預填 runtime {{v0}} {{v1}}，可建立專案",
     "sb8eaefa3": "已預填 runtime {{v0}}，可建立專案",
-    "s7d540128": " · {{v0}})}",
-    "s814bcc7c": " · {{v0}})}",
+    "s7d540128": " · {{v0}}",
+    "s814bcc7c": " · {{v0}}",
     "s3f7c3eae": "建議更新",
     "s92e48065": "略過",
     "sdff0f697": "觀察",
@@ -9677,7 +9678,7 @@
     "sac96ec39": "控制面曾記錄安裝 {{v0}}，但主機探測未見 binary。不算已裝——請「重新探測」或重新安裝。",
     "sf7f7807b": "預設",
     "sc9530028": "載入最新版本中，或手動輸入",
-    "s9602769e": "探測已裝 {{v0}} · 上游最新 {{v1}}${versionStatus.source ? ",
+    "s9602769e": "已装 {{v0}} · 上游最新 {{v1}}",
     "sb8b5a353": "Go／Rust 可同時保留多個版本：先「安裝」缺少的版本，再「切換為預設」決定 PATH 用邊個。",
     "sac155c20": "可卸載非核心擴充（apt remove；不會卸 FPM/CLI）",
     "s23379974": "勾選擴充後按「安裝選定擴充」。此版本已在主機上，無需再裝 runtime。",
@@ -9693,8 +9694,8 @@
     "sa1d77833": "失敗",
     "s75dddf52": "已停止",
     "s4e7f6152": "更新中 {{v0}}/{{v1}}：{{v2}}",
-    "s72cac69e": "{{v0}}: {{v1}})}",
-    "sd1c15b6d": "{{v0}}: {{v1}})}",
+    "s72cac69e": "{{v0}}: {{v1}}",
+    "sd1c15b6d": "{{v0}}: {{v1}}",
     "s7a90f74c": "已更新：{{v0}}",
     "s0aa24093": "{{v0}} 更新完成",
     "s5d92ffc3": "部分成功：{{v0}}；失敗：{{v1}}",
@@ -9815,7 +9816,7 @@
     "s9dc5c003": "基本",
     "s04a32a1e": "SSL 相關按鈕已鎖定：請先到",
     "s564d50b7": "為網域申請／上載證書後再發佈 + SSL。",
-    "sbb6c72f1": " ({{v0}})})",
+    "sbb6c72f1": " ({{v0}})",
     "sd9b695a5": "請先填寫網域，才能發佈 Nginx / SSL。",
     "scb85cfff": "請先為網域建立 SSL 證書",
     "s18c1af46": "儲存並發佈 + SSL",

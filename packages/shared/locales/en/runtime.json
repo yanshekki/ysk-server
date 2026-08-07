@@ -67,7 +67,7 @@
   "installExtOnly": "Install selected extensions (PHP {{version}} present)",
   "pluginAlreadyOnHost": "already on host",
   "installAddonsOnly": "Install selected add-ons ({{version}} present)",
-  "remoteNewerHint": "Installed {{current}} · upstream latest {{remote}} (install targets follow the version lis",
+  "remoteNewerHint": "Installed {{current}} · upstream latest {{remote}}{{source}}",
   "installedPhp": "Installed PHP {{version}}",
   "nextSteps": "Next",
   "suggestedFlow": "Suggested flow",
@@ -453,5 +453,6 @@
     "noProjectsDesc": "No node/bun projects in the panel, or OS user not provisioned.",
     "pm2OnlyDesc": "Only apps started with PM2 under the panel user. systemd deploys appear above."
   },
-  "recordedInstalled": "Recorded {{v}}"
+  "recordedInstalled": "Recorded {{v}}",
+  "remoteSourceSuffix": " ({{source}})"
 }
