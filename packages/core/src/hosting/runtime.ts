@@ -464,6 +464,35 @@ WantedBy=multi-user.target
 }
 
 /**
+ * Shell env + cargo build for project isolation.
+ * Uses YSK managed CARGO_HOME/RUSTUP_HOME and RUSTUP_TOOLCHAIN so cargo never
+ * requires a per-user `rustup default` (project users have empty ~/.rustup).
+ */
+export function rustCargoBuildShell(version?: string): string {
+  const raw = (version ?? 'stable').trim() || 'stable';
+  // rustup channel or X.Y / X.Y.Z
+  const toolchain =
+    raw === 'stable' || raw === 'beta' || raw === 'nightly' || /^\d+\.\d+(\.\d+)?$/.test(raw)
+      ? raw
+      : 'stable';
+  // Safe for single-quoted bash -lc fragment (toolchain is validated shape above)
+  const tc = toolchain.replace(/[^a-zA-Z0-9._+-]/g, '') || 'stable';
+  return [
+    'export CARGO_HOME="${CARGO_HOME:-/usr/local/ysk/rust/cargo}"',
+    'export RUSTUP_HOME="${RUSTUP_HOME:-/usr/local/ysk/rust/rustup}"',
+    'export PATH="/usr/local/ysk/rust/cargo/bin:/usr/local/ysk/rust/bin:$HOME/.cargo/bin:$PATH"',
+    `export RUSTUP_TOOLCHAIN="${tc}"`,
+    // Prefer managed cargo; fall back to PATH
+    'CARGO_BIN="$(command -v cargo 2>/dev/null || true)"',
+    '[ -z "$CARGO_BIN" ] && [ -x /usr/local/ysk/rust/cargo/bin/cargo ] && CARGO_BIN=/usr/local/ysk/rust/cargo/bin/cargo',
+    '[ -z "$CARGO_BIN" ] && [ -x /usr/local/ysk/rust/bin/cargo ] && CARGO_BIN=/usr/local/ysk/rust/bin/cargo',
+    'if [ -z "$CARGO_BIN" ]; then echo "cargo not found — install Rust runtime in panel (Runtimes → Rust)" >&2; exit 127; fi',
+    // Explicit +toolchain so rustup never asks for default (create/goLive must not fail here)
+    `"$CARGO_BIN" "+${tc}" build --release`,
+  ].join(' && ');
+}
+
+/**
  * Default ExecStart / build hints per process runtime.
  */
 export function defaultProcessCommands(
@@ -521,8 +550,10 @@ export function defaultProcessCommands(
   if (runtime === 'rust') {
     const bin = opts.cargoName ?? 'app';
     const entry = opts.entry ?? `./target/release/${bin}`;
+    // Managed rustup + explicit toolchain — never depend on per-user `rustup default`
+    // (project users have empty $HOME/.rustup → "could not choose a version of cargo").
     return {
-      build: 'cargo build --release',
+      build: rustCargoBuildShell(opts.version),
       execStart: entry,
       entry,
     };

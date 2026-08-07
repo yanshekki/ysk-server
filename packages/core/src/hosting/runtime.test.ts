@@ -189,6 +189,17 @@ describe('multi-version runtimes', () => {
     expect(defaultProcessCommands('rust', { cargoName: 'ysk_app' }).entry).toContain(
       'target/release/ysk_app',
     );
+    const rustBuild = defaultProcessCommands('rust', {
+      cargoName: 'ysk_app',
+      version: '1.97.1',
+    }).build!;
+    expect(rustBuild).toContain('RUSTUP_TOOLCHAIN="1.97.1"');
+    // cargo +1.97.1 — never rely on per-user rustup default
+    expect(rustBuild).toContain('"+1.97.1" build --release');
+    expect(rustBuild).toContain('/usr/local/ysk/rust/cargo');
+    expect(defaultProcessCommands('rust', { version: 'stable' }).build).toContain(
+      'RUSTUP_TOOLCHAIN="stable"',
+    );
     expect(defaultProcessCommands('python', {}).entry).toBe('main:app');
     expect(defaultProcessCommands('python', {}).execStart).toContain('uvicorn');
     expect(defaultProcessCommands('python', { entry: 'app.py' }).execStart).toContain('python');
