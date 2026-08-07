@@ -1098,34 +1098,40 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               size="sm"
               loading={busy}
               onClick={() => {
-                void run(async () => {
-                  const r = await api.requestRaw<{
-                    ok: boolean;
-                    notes?: string[];
-                    blocked?: boolean;
-                    blockMessage?: string;
-                    urlHint?: string;
-                    apply_status?: string;
-                  }>('/api/v1/db/adminer/apply', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                      domain: adminerDomain.trim() || `adminer.${engine}.local`,
-                      download: adminerDownload,
-                      applySystem: false,
-                    }),
-                  });
-                  setAdminerOpen(false);
-                  return {
-                    ok: r.ok,
-                    blocked: r.blocked,
-                    blockMessage: r.blockMessage,
-                    notes: [
-                      ...(r.notes ?? []),
-                      r.apply_status ? `apply_status=${r.apply_status}` : '',
-                      r.urlHint ? t('db.importEntry', { url: r.urlHint }) : '',
-                    ].filter(Boolean),
-                  } as OpsResultLike;
-                }, t('db.adminerWritten'));
+                void (async () => {
+                  try {
+                    await run(async () => {
+                      const r = await api.requestRaw<{
+                        ok: boolean;
+                        notes?: string[];
+                        blocked?: boolean;
+                        blockMessage?: string;
+                        urlHint?: string;
+                        apply_status?: string;
+                      }>('/api/v1/db/adminer/apply', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                          domain: adminerDomain.trim() || `adminer.${engine}.local`,
+                          download: adminerDownload,
+                          applySystem: false,
+                        }),
+                      });
+                      return {
+                        ok: r.ok,
+                        blocked: r.blocked,
+                        blockMessage: r.blockMessage,
+                        notes: [
+                          ...(r.notes ?? []),
+                          r.apply_status ? `apply_status=${r.apply_status}` : '',
+                          r.urlHint ? t('db.importEntry', { url: r.urlHint }) : '',
+                        ].filter(Boolean),
+                      } as OpsResultLike;
+                    }, t('db.adminerWritten'));
+                  } finally {
+                    // Always dismiss — API errors/blocked must not leave the modal stuck open
+                    setAdminerOpen(false);
+                  }
+                })();
               }}
             >
               {t('db.writeOnly')}
@@ -1135,34 +1141,39 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               size="sm"
               loading={busy}
               onClick={() => {
-                void run(async () => {
-                  const r = await api.requestRaw<{
-                    ok: boolean;
-                    notes?: string[];
-                    blocked?: boolean;
-                    blockMessage?: string;
-                    urlHint?: string;
-                    apply_status?: string;
-                  }>('/api/v1/db/adminer/apply', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                      domain: adminerDomain.trim() || `adminer.${engine}.local`,
-                      download: adminerDownload,
-                      applySystem: true,
-                    }),
-                  });
-                  setAdminerOpen(false);
-                  return {
-                    ok: r.ok,
-                    blocked: r.blocked,
-                    blockMessage: r.blockMessage,
-                    notes: [
-                      ...(r.notes ?? []),
-                      r.apply_status ? `apply_status=${r.apply_status}` : '',
-                      r.urlHint ? t('db.importEntry', { url: r.urlHint }) : '',
-                    ].filter(Boolean),
-                  } as OpsResultLike;
-                }, t('db.adminerApplied'));
+                void (async () => {
+                  try {
+                    await run(async () => {
+                      const r = await api.requestRaw<{
+                        ok: boolean;
+                        notes?: string[];
+                        blocked?: boolean;
+                        blockMessage?: string;
+                        urlHint?: string;
+                        apply_status?: string;
+                      }>('/api/v1/db/adminer/apply', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                          domain: adminerDomain.trim() || `adminer.${engine}.local`,
+                          download: adminerDownload,
+                          applySystem: true,
+                        }),
+                      });
+                      return {
+                        ok: r.ok,
+                        blocked: r.blocked,
+                        blockMessage: r.blockMessage,
+                        notes: [
+                          ...(r.notes ?? []),
+                          r.apply_status ? `apply_status=${r.apply_status}` : '',
+                          r.urlHint ? t('db.importEntry', { url: r.urlHint }) : '',
+                        ].filter(Boolean),
+                      } as OpsResultLike;
+                    }, t('db.adminerApplied'));
+                  } finally {
+                    setAdminerOpen(false);
+                  }
+                })();
               }}
             >
               {t('firewall.applyToSystem')}
