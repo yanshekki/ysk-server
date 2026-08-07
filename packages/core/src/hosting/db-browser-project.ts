@@ -3,7 +3,7 @@
  * Used from MySQL/MariaDB “Adminer entry” — real project lifecycle + goLive.
  */
 
-import { existsSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { ErrorCodes, YskError, type ProjectDto, tl } from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
@@ -107,7 +107,10 @@ export async function installDbBrowserIntoProject(input: {
         entryFile: 'index.php',
       };
     }
-    notes.push(tl('notes.auto.t0355', { v0: marker }));
+    // Repair cookie/HTTP config without re-download (fixes "Failed to set session cookie")
+    const repaired = ensurePhpMyAdminRuntimeFiles(docRoot);
+    written.push(...repaired.written);
+    notes.push(tl('notes.auto.t0355', { v0: marker }), ...repaired.notes);
     return { ok: true, notes, written, entryFile: 'index.php' };
   }
   if (!input.host.executeEnabled()) {
@@ -120,6 +123,7 @@ export async function installDbBrowserIntoProject(input: {
   }
   const tmp = join(input.homeDir, 'tmp', 'pma.tgz');
   mkdirSync(join(input.homeDir, 'tmp'), { recursive: true });
+  const pmaTmp = join(docRoot, 'tmp');
   const script = [
     `set -e`,
     `curl -fsSL ${JSON.stringify(PHPMYADMIN_URL)} -o ${JSON.stringify(tmp)}`,
@@ -132,19 +136,8 @@ export async function installDbBrowserIntoProject(input: {
     `shopt -s dotglob`,
     `cp -a "$INNER"/* ${JSON.stringify(docRoot)}/`,
     `rm -rf ${JSON.stringify(join(docRoot, '.pma-extract'))} ${JSON.stringify(tmp)}`,
-    // Minimal config so setup is not forced (connect with DB credentials in UI)
-    `if [ ! -f ${JSON.stringify(join(docRoot, 'config.inc.php'))} ]; then`,
-    `  cat > ${JSON.stringify(join(docRoot, 'config.inc.php'))} <<'EOF'`,
-    `<?php`,
-    `$cfg['blowfish_secret'] = '${randomBlowfish()}';`,
-    `$i = 0;`,
-    `$i++;`,
-    `$cfg['Servers'][$i]['auth_type'] = 'cookie';`,
-    `$cfg['Servers'][$i]['host'] = '127.0.0.1';`,
-    `$cfg['UploadDir'] = '';`,
-    `$cfg['SaveDir'] = '';`,
-    `EOF`,
-    `fi`,
+    `mkdir -p ${JSON.stringify(pmaTmp)}`,
+    `chmod 777 ${JSON.stringify(pmaTmp)}`,
   ].join('\n');
   const r = await input.host.runCommand(['bash', '-c', script], { timeoutMs: 180_000 });
   if (r.exitCode !== 0 || !existsSync(marker)) {
@@ -153,15 +146,83 @@ export async function installDbBrowserIntoProject(input: {
     );
     return { ok: false, notes, written, entryFile: 'index.php' };
   }
-  written.push(docRoot);
-  notes.push(`phpMyAdmin installed under ${docRoot}`);
+  const runtime = ensurePhpMyAdminRuntimeFiles(docRoot);
+  written.push(docRoot, ...runtime.written);
+  notes.push(`phpMyAdmin installed under ${docRoot}`, ...runtime.notes);
   return { ok: true, notes, written, entryFile: 'index.php' };
+}
+
+/** Write/refresh config.inc.php, tmp/, .user.ini for cookie login over HTTP. */
+export function ensurePhpMyAdminRuntimeFiles(docRoot: string): {
+  written: string[];
+  notes: string[];
+} {
+  const written: string[] = [];
+  const notes: string[] = [];
+  const pmaTmp = join(docRoot, 'tmp');
+  const configPath = join(docRoot, 'config.inc.php');
+  const userIniPath = join(docRoot, '.user.ini');
+  mkdirSync(pmaTmp, { recursive: true });
+  try {
+    // world-writable so www-data can session even if owner is panel user
+    chmodSync(pmaTmp, 0o777);
+  } catch {
+    /* best-effort */
+  }
+  writeFileSync(configPath, buildPhpMyAdminConfigInc(randomBlowfish()), 'utf8');
+  writeFileSync(
+    userIniPath,
+    [
+      '; YSK-managed: phpMyAdmin cookie login over HTTP needs non-secure sessions',
+      'session.cookie_secure = 0',
+      'session.cookie_samesite = "Lax"',
+      'session.cookie_httponly = 1',
+      '',
+    ].join('\n'),
+    'utf8',
+  );
+  written.push(configPath, userIniPath, pmaTmp);
+  notes.push(
+    'phpMyAdmin config.inc.php + tmp/ + .user.ini written (cookie auth; HTTP-safe until SSL)',
+  );
+  return { written, notes };
+}
+
+/**
+ * Managed phpMyAdmin config — cookie auth to local MySQL/MariaDB.
+ * HTTP-safe: ForceSSL off, writable TempDir (session cookies fail without it).
+ */
+export function buildPhpMyAdminConfigInc(blowfishSecret: string): string {
+  const secret = String(blowfishSecret || randomBlowfish()).replace(/'/g, '');
+  return `<?php
+/**
+ * YSK-managed phpMyAdmin config (cookie auth → 127.0.0.1).
+ * Do not use the web installer. Log in with MySQL/MariaDB user + password.
+ */
+$cfg['blowfish_secret'] = '${secret}';
+$i = 0;
+$i++;
+$cfg['Servers'][$i]['auth_type'] = 'cookie';
+$cfg['Servers'][$i]['host'] = '127.0.0.1';
+$cfg['Servers'][$i]['compress'] = false;
+$cfg['Servers'][$i]['AllowNoPassword'] = false;
+$cfg['UploadDir'] = '';
+$cfg['SaveDir'] = '';
+/* Session / cookies fail with "Failed to set session cookie" if TempDir is missing */
+$cfg['TempDir'] = __DIR__ . '/tmp';
+/* Panel domains often start on HTTP; enable SSL on the project when ready */
+$cfg['ForceSSL'] = false;
+$cfg['CheckConfigurationPermissions'] = false;
+$cfg['LoginCookieValidity'] = 1440;
+$cfg['LoginCookieStore'] = 0;
+$cfg['LoginCookieDeleteAll'] = true;
+`;
 }
 
 function randomBlowfish(): string {
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let s = '';
-  for (let i = 0; i < 32; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  for (let i = 0; i < 32; i++) s += chars[Math.floor(Math.random() * chars.length)]!;
   return s;
 }
 
