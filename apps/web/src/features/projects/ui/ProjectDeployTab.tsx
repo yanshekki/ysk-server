@@ -2,7 +2,6 @@
  * Deploy tab — runtime-aware cards (Deploy · Git · Env).
  */
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../../shared/lib/i18n';
 import type { ProjectDto } from '@ysk/shared';
@@ -14,12 +13,10 @@ import {
   CheckboxField,
   Field,
   FormActions,
-  FormHint,
   FormLayout,
   InstallStreamPanel,
   PresetChips,
   SegRadio,
-  buttonClassName,
 } from '../../../shared/components/ui';
 import type { InstallStreamLine } from '../../../shared/components/ui';
 import { formatRuntimeName, getProjectUiProfile } from '../model/runtime-ui';
@@ -30,7 +27,6 @@ import {
   loadDeployPrefs,
   normalizeProcessManager,
   runtimeInstallKind,
-  runtimePagePath,
   runtimeVersionChoices,
   saveDeployPrefs,
   type ProcessManager,
@@ -57,37 +53,28 @@ export interface ProjectDeployTabProps {
   /** After process runtime version PATCH */
   onRuntimeVersionSaved?: (v: string) => void;
   onOpsMessage?: (msg: string) => void;
-  /** Show first-run checklist after create */
-  showFreshChecklist?: boolean;
-  onDismissChecklist?: () => void;
 }
 
+/** @deprecated kept for unit tests / tooling */
 export function processDeployHint(runtime: string): string {
-  if (runtime === 'python') {
-    return i18n.t('projects.deployPyHint');
-  }
-  if (runtime === 'go') {
-    return i18n.t('projects.deployGoHint');
-  }
-  if (runtime === 'rust') {
-    return i18n.t('projects.deployRustHint');
-  }
-  if (runtime === 'node') {
-    return i18n.t('projects.deployNodeHint');
-  }
+  if (runtime === 'python') return i18n.t('projects.deployPyHint');
+  if (runtime === 'go') return i18n.t('projects.deployGoHint');
+  if (runtime === 'rust') return i18n.t('projects.deployRustHint');
+  if (runtime === 'node') return i18n.t('projects.deployNodeHint');
   if (runtime === 'java' || runtime === 'kotlin') {
     return i18n.t('projects.deployJvmHint', {
-      defaultValue:
-        'Needs JDK on host. Deploy runs Maven/Gradle when present, then java -jar. Set entry to the fat jar path.',
+      defaultValue: 'JDK + jar entry',
     });
   }
   if (runtime === 'bun') {
-    return i18n.t('projects.deployBunHint', {
-      defaultValue:
-        'Needs Bun on host. Runs bun install when package.json exists, then bun entry (or bun run start).',
-    });
+    return i18n.t('projects.deployBunHint', { defaultValue: 'Bun entry' });
   }
   return i18n.t('projects.deployDefaultHint');
+}
+
+/** @deprecated UI no longer shows checklist; kept for unit tests */
+export function checklistItems(runtime: string): string[] {
+  return [runtime, 'deploy'];
 }
 
 export function defaultEntryHint(runtime: string): string {
@@ -113,57 +100,6 @@ export function envPlaceholder(runtime: string, deployIsPhp: boolean): string {
   return 'NODE_ENV=production\n# KEY=value';
 }
 
-export function checklistItems(runtime: string): string[] {
-  const osFirst = i18n.t('projects.deployOsStep');
-  if (runtime === 'python') {
-    return [
-      osFirst,
-      i18n.t('projects.deployPyReady'),
-      i18n.t('projects.deployPipNet'),
-      i18n.t('projects.deployCheckPort'),
-      i18n.t('projects.deployPublishProxy'),
-    ];
-  }
-  if (runtime === 'go' || runtime === 'rust' || runtime === 'java' || runtime === 'kotlin') {
-    const label =
-      runtime === 'go'
-        ? 'Go'
-        : runtime === 'rust'
-          ? 'Rust'
-          : runtime === 'java'
-            ? 'Java'
-            : 'Kotlin';
-    return [
-      osFirst,
-      i18n.t('projects.deployToolchainReady', { runtime: label }),
-      i18n.t('projects.deployFirstBuild'),
-      i18n.t('projects.deployNeedBinary'),
-      i18n.t('projects.deployPublishProxy'),
-    ];
-  }
-  if (runtime === 'bun') {
-    return [
-      osFirst,
-      i18n.t('projects.deployToolchainReady', { runtime: 'Bun' }),
-      i18n.t('projects.deployConfirmCode'),
-      i18n.t('projects.deployCheckPort'),
-      i18n.t('projects.deployPublishProxy'),
-    ];
-  }
-  if (runtime === 'php') {
-    return [osFirst, i18n.t('projects.deployPhpFpmOk'), i18n.t('projects.deployPhpPool'), i18n.t('projects.deployNginxSsl')];
-  }
-  if (runtime === 'static') {
-    return [osFirst, i18n.t('projects.deployPublicContent'), i18n.t('projects.deployNetPublish')];
-  }
-  return [
-    osFirst,
-    i18n.t('projects.deployConfirmToolchain'),
-    i18n.t('projects.deployConfirmCode'),
-    i18n.t('projects.deployPressDeploy'),
-  ];
-}
-
 export function ProjectDeployTab({
   project,
   busy,
@@ -177,8 +113,6 @@ export function ProjectDeployTab({
   onPhpVersionChange,
   onRuntimeVersionSaved,
   onOpsMessage,
-  showFreshChecklist,
-  onDismissChecklist,
 }: ProjectDeployTabProps) {
   const { t } = useTranslation();
   const ui = getProjectUiProfile(project.runtime);
@@ -230,9 +164,6 @@ export function ProjectDeployTab({
   const supportsPm2Choice =
     project.runtime === 'node' || project.runtime === 'bun';
   const rtKind = runtimeInstallKind(project.runtime);
-  const rtPath = runtimePagePath(project.runtime);
-
-  const steps = useMemo(() => checklistItems(project.runtime), [project.runtime]);
 
   useEffect(() => {
     const p = loadDeployPrefs(project.id);
@@ -391,69 +322,13 @@ export function ProjectDeployTab({
 
   return (
     <div className="tab-panel">
-      {showFreshChecklist ? (
-        <Card>
-          <CardSection
-            title={t('projects.deployChecklistTitle')}
-            description={t('projects.deployChecklistDesc', { runtime: runtimeLabel })}
-          >
-            <ol className="u-mt-0 u-pl-5 u-mb-0">
-              {steps.map((s) => (
-                <li key={s} className="u-mb-2">
-                  {s}
-                </li>
-              ))}
-            </ol>
-            <FormHint>
-              {t('projects.toolchainNote')}
-            </FormHint>
-            <FormActions>
-              <Button
-                variant="primary"
-                size="md"
-                loading={anyBusy}
-                onClick={() => {
-                  persist();
-                  void installToolchainThenDeploy();
-                }}
-              >
-                {t('projects.installToolchainDeploy')}
-              </Button>
-              <Button
-                variant="secondary"
-                size="md"
-                loading={anyBusy}
-                onClick={() => {
-                  persist();
-                  onDeploy(deployOpts());
-                }}
-              >
-                {t('projects.deployOnly')}
-              </Button>
-              {rtPath ? (
-                <Link to={rtPath} className={buttonClassName({ variant: 'ghost', size: 'md' })}>
-                  {t('projects.openRuntime', { runtime: runtimeLabel })}
-                </Link>
-              ) : null}
-              <Button variant="ghost" size="md" onClick={onDismissChecklist}>
-                {t('projects.later')}
-              </Button>
-            </FormActions>
-            <InstallStreamPanel lines={installLog} busy={chainBusy} />
-          </CardSection>
-        </Card>
-      ) : null}
-
       {ui.showDeploy ? (
         <Card>
           <CardSection
             title={
-              ui.deployIsPhp ? t('projects.sectionPhpDeploy') : t('projects.deploySectionTitle', { runtime: runtimeLabel })
-            }
-            description={
               ui.deployIsPhp
-                ? t('projects.sectionPhpDeployDesc')
-                : t('projects.deploySectionDesc', { runtime: runtimeLabel })
+                ? t('projects.sectionPhpDeploy')
+                : t('projects.deploySectionTitle', { runtime: runtimeLabel })
             }
           >
             <FormLayout columns={2}>
@@ -496,11 +371,6 @@ export function ProjectDeployTab({
                 <Field
                   label={t('projects.deployRuntimeVersion', { runtime: runtimeLabel })}
                   htmlFor="rt-ver"
-                  hint={
-                    rtPath
-                      ? t('projects.deployRuntimeVersionHint')
-                      : t('projects.deployRuntimeVersionCreateHint')
-                  }
                   flush
                 >
                   {versionChoices.length <= 8 ? (
@@ -609,7 +479,6 @@ export function ProjectDeployTab({
                 <CheckboxField
                   id="skip-build"
                   label={t('projects.deploySkipBuild')}
-                  description={t('projects.deploySkipBuildHint')}
                   checked={skipBuild}
                   onChange={(v) => {
                     setSkipBuild(v);
@@ -622,7 +491,6 @@ export function ProjectDeployTab({
                 />
               </div>
             ) : null}
-            <FormHint>{processDeployHint(project.runtime)}</FormHint>
             {project.lastDeployAt || (project.lastDeployNotes && project.lastDeployNotes.length) ? (
               <div
                 className="u-mt-3 u-mb-2 u-callout"
@@ -673,11 +541,6 @@ export function ProjectDeployTab({
                   {t('projects.installToolchainDeployShort')}
                 </Button>
               ) : null}
-              {rtPath ? (
-                <Link to={rtPath} className={buttonClassName({ variant: 'ghost', size: 'md' })}>
-                  {t('projects.runtimeEnv', { runtime: runtimeLabel })}
-                </Link>
-              ) : null}
               {ui.deployIsPhp ? (
                 <Button
                   variant="secondary"
@@ -702,33 +565,31 @@ export function ProjectDeployTab({
                 </Button>
               ) : null}
             </FormActions>
-            <p className="muted u-text-sm u-mt-3 u-mb-0">
-              {ui.deployIsPhp
-                ? t('projects.deployFpmNote')
-                : t('projects.deployBuildNote')}
-            </p>
+            {chainBusy || installLog.length ? (
+              <InstallStreamPanel lines={installLog} busy={chainBusy} />
+            ) : null}
           </CardSection>
         </Card>
       ) : (
         <Card>
-          <CardSection
-            title={t('projects.sectionStaticDeploy')}
-            description={t('projects.sectionStaticDeployDesc')}
-          >
-            <p className="muted">{t('projects.staticDeployHint')}</p>
-            <p className="muted u-text-sm u-mt-2">
-              {t('projects.staticNginxHint')}
-            </p>
+          <CardSection title={t('projects.sectionStaticDeploy')}>
+            <FormActions>
+              <Button
+                variant="primary"
+                size="md"
+                loading={anyBusy}
+                onClick={() => onDeploy()}
+              >
+                {t('projects.deploy')}
+              </Button>
+            </FormActions>
           </CardSection>
         </Card>
       )}
 
       {ui.deployIsPhp ? (
         <Card>
-          <CardSection
-            title={t('projects.deployPhpIniTitle')}
-            description={t('projects.deployPhpIniDesc')}
-          >
+          <CardSection title={t('projects.deployPhpIniTitle')}>
             <FormLayout columns={2}>
               <Field label="memory_limit" htmlFor="pini-mem" flush hint={t('projects.deployPhpIniExample')}>
                 <PresetChips
@@ -789,10 +650,6 @@ export function ProjectDeployTab({
                 />
               </Field>
             </FormLayout>
-            <FormHint>
-              {t('projects.fullIniLink')}{' '}
-              <Link to="/runtimes/php?tab=ini">{t('projects.phpIniLink')}</Link>。
-            </FormHint>
             <FormActions>
               <Button
                 variant="primary"
@@ -861,7 +718,7 @@ export function ProjectDeployTab({
 
       {ui.showGit ? (
         <Card>
-          <CardSection title={t('projects.sectionGit')} description={t('projects.sectionGitDesc')}>
+          <CardSection title={t('projects.sectionGit')}>
             <FormLayout>
               <Field
                 label={t('projects.gitUrl')}
@@ -890,23 +747,15 @@ export function ProjectDeployTab({
                 {t('projects.gitDeploy')}
               </Button>
             </FormActions>
-            <FormHint>
-              {t('projects.scaffoldNote')}
-            </FormHint>
           </CardSection>
         </Card>
       ) : null}
 
       {ui.showEnv ? (
         <Card>
-          <CardSection title={t('projects.sectionEnv')} description={t('projects.sectionEnvDesc')}>
+          <CardSection title={t('projects.sectionEnv')}>
             <FormLayout>
-              <Field
-                label={t('projects.envFile')}
-                htmlFor="penv"
-                hint={t('projects.deployEnvHint')}
-                flush
-              >
+              <Field label={t('projects.envFile')} htmlFor="penv" flush>
                 <textarea
                   id="penv"
                   rows={8}

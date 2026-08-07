@@ -134,6 +134,8 @@ export interface ProjectDto {
   /** Control-plane lifecycle: active | running | stopped | suspended | unhealthy | failed | … */
   status?: string;
   port?: number;
+  /** User-requested fixed process port for deploy */
+  preferredPort?: number;
   pid?: number;
   processStatus?: string;
   nginxConfigPath?: string;

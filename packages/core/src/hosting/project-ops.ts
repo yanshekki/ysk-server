@@ -117,6 +117,53 @@ export function resolveProjectDocRoot(row: ProjectRow): string {
   return join(row.home_dir, rel);
 }
 
+/** Relative doc_root for nginx publish (static/php). */
+export function resolveProjectDocRootRel(row: ProjectRow): string {
+  return coerceProjectDocRootRel(row.doc_root ?? 'app/public');
+}
+
+/**
+ * Pick process port: explicit opts → preferred_port → existing → free range.
+ * Preferred port busy by another process → validation error (honest).
+ */
+export async function resolveProcessPort(opts: {
+  requested?: number;
+  preferred?: number;
+  current?: number;
+  from: number;
+  to: number;
+}): Promise<number> {
+  const pick = opts.requested ?? opts.preferred ?? opts.current;
+  if (pick != null && Number.isFinite(pick) && pick > 0 && pick < 65536) {
+    const port = Math.floor(pick);
+    // Allow reuse of our current port (still listening from previous process until stop)
+    if (opts.current === port) return port;
+    const busy = await isPortListening(port);
+    if (busy) {
+      throw new YskError(ErrorCodes.VALIDATION, `Port ${port} is already in use`, {
+        httpStatus: 409,
+        details: { port },
+      });
+    }
+    return port;
+  }
+  return findFreePort(opts.from, opts.to);
+}
+
+/** PHP edge mode from last deploy (publish must not overwrite php -S with dead FPM). */
+export function resolvePhpEdgeMode(
+  row: ProjectRow,
+): 'php_fpm' | 'php_proxy' {
+  const mode = String((row.last_health as { deployMode?: string } | undefined)?.deployMode ?? '');
+  if (mode === 'php_builtin' || mode === 'php_proxy') return 'php_proxy';
+  if (mode === 'php_fpm') return 'php_fpm';
+  // Prefer FPM when no process port (production path)
+  if (row.port && row.process_status && row.process_status !== 'stopped') {
+    return 'php_proxy';
+  }
+  return 'php_fpm';
+}
+
 /**
  * Project ops result — extends shared OpsResultDto (single honesty contract).
  */
@@ -194,7 +241,13 @@ export class ProjectOpsService {
       notes.push(tl('notes.auto.t0171', { v0: (row.linux_user) }));
     }
     const entry = opts.entry ?? 'server.js';
-    const port = opts.port ?? row.port ?? (await findFreePort(3100, 3999));
+    const port = await resolveProcessPort({
+      requested: opts.port,
+      preferred: row.preferred_port,
+      current: row.port,
+      from: 3100,
+      to: 3999,
+    });
     notes.push(tl('notes.auto.t0173', { v0: (port) }));
 
     const nodeVer = opts.nodeVersion ?? row.runtime_version ?? defaultRuntimeVersion('node');
@@ -505,6 +558,7 @@ export class ProjectOpsService {
     const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
     written.push(nginxPath);
     notes.push(tl('notes.auto.t0180', { v0: (nginxPath) }));
+    const live = await this.syncNginxLive(notes, written);
 
     const statusLabel =
       processStatus === 'running'
@@ -529,7 +583,10 @@ export class ProjectOpsService {
         at: new Date().toISOString(),
         url,
         deployMode,
-        degraded },
+        degraded,
+        nginxStatus: live.nginxStatus,
+        nginxReloaded: live.nginxReloaded,
+      },
       last_deploy_at: new Date().toISOString(),
       deploy_entry: entry,
       last_deploy_notes: clipDeployNotes(notes) });
@@ -538,7 +595,7 @@ export class ProjectOpsService {
       actor: opts.actor,
       action: 'project.deploy_node',
       resource: projectId,
-      detail: { port, pid, health, listening, nginxPath, deployMode, degraded },
+      detail: { port, pid, health, listening, nginxPath, deployMode, degraded, ...live },
       ok: health.ok && listening });
 
     return {
@@ -561,6 +618,8 @@ export class ProjectOpsService {
       written,
       degraded,
       deployMode,
+      nginxReloaded: live.nginxReloaded,
+      nginxStatus: live.nginxStatus,
       systemdUnit: deployMode === 'systemd' ? unitName : undefined,
       pm2App: deployMode === 'pm2' ? pm2App : undefined,
       requiresRoot: !this.host.isRoot(),
@@ -846,7 +905,6 @@ export class ProjectOpsService {
     if (row.status === 'suspended') {
       return this.publishSuspendedNginx(projectId, opts.actor);
     }
-    const port = row.port ?? 3000;
     const primary = row.domain ?? `${row.linux_user}.local`;
     const serverName = buildServerNameList(primary, row.domain_aliases);
     const wantSsl = opts.ssl ?? false;
@@ -875,8 +933,13 @@ export class ProjectOpsService {
       authBasicRealm: row.http_auth_user ? 'Restricted' : undefined,
       bindIp: row.bind_ip };
 
+    const notes: string[] = [...auth.notes];
+    const written: string[] = [];
     let conf: string;
     let kind = 'proxy';
+    let port = row.port;
+    const docRoot = resolveProjectDocRoot(row);
+
     if (row.runtime === 'static') {
       kind = 'static';
       const docRoot = resolveProjectDocRoot(row);
@@ -885,6 +948,29 @@ export class ProjectOpsService {
         docRoot,
         ...commonSsl });
     } else if (row.runtime === 'php') {
+      const edge = resolvePhpEdgeMode(row);
+      if (edge === 'php_proxy') {
+        if (!port) {
+          return {
+            ok: false,
+            projectId,
+            processStatus: (row.process_status as OpsProcessStatus) ?? 'stopped',
+            listening: false,
+            notes: [
+              ...notes,
+              'PHP proxy mode needs a process port — deploy first (or use FPM production path)',
+            ],
+            written,
+            degraded: true,
+            nginxStatus: 'needs_deploy',
+          };
+        }
+        kind = 'php-proxy';
+        conf = renderNginxProxy({
+          serverName,
+          upstream: `http://127.0.0.1:${port}`,
+          ...commonSsl });
+      } else {
       // Nginx → Apache backend → PHP-FPM (never direct fastcgi from nginx)
       kind = 'php-apache';
       const docRoot = resolveProjectDocRoot(row);
@@ -896,75 +982,69 @@ export class ProjectOpsService {
         fpmSocket,
         apacheUpstream: apacheBackendUpstream(),
         ...commonSsl });
+
+      }
     } else {
+      // Process runtimes: require a real port — never invent 3000/3100
+      if (!port) {
+        return {
+          ok: false,
+          projectId,
+          processStatus: (row.process_status as OpsProcessStatus) ?? 'stopped',
+          listening: false,
+          notes: [
+            ...notes,
+            'No process port — deploy the app before publishing nginx proxy',
+          ],
+          written,
+          degraded: true,
+          nginxStatus: 'needs_deploy',
+        };
+      }
+      kind = 'proxy';
       conf = renderNginxProxy({
         serverName,
         upstream: `http://127.0.0.1:${port}`,
         ...commonSsl });
     }
+
     const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
-    const systemDir =
-      opts.systemConfDir ??
-      (this.host.executeEnabled() && this.host.isRoot() ? '/etc/nginx/conf.d' : undefined);
-    const sync = await syncNginxConfigs({
-      dataDir: this.dataDir,
-      systemConfDir: systemDir,
-      host: this.host });
-    const notes = [
-      tl('notes.email.wroteNginx', { nginxPath }),
-      tl('notes.auto.t0186', { v0: (kind) }),
-      ...sync.notes,
-      ...auth.notes,
-    ];
+    written.push(nginxPath);
+    notes.push(tl('notes.email.wroteNginx', { nginxPath }));
+    notes.push(tl('notes.auto.t0186', { v0: kind }));
     if (serverName.includes(' ')) notes.push(`server_name：${serverName}`);
     if (wantSsl && forceHttps) notes.push(tl('notes.auto.n0829'));
     if (wantSsl && hsts) notes.push(tl('notes.auto.n0745'));
-    if (row.site_redirect_url) notes.push(tl('notes.auto.t0187', { v0: (row.site_redirect_url) }));
+    if (row.site_redirect_url) notes.push(tl('notes.auto.t0187', { v0: row.site_redirect_url }));
     if (wantSsl && managed.exists) {
-      notes.push(tl('notes.auto.t0188', { v0: (managed.fullchain) }));
+      notes.push(tl('notes.auto.t0188', { v0: managed.fullchain }));
     } else if (wantSsl) {
-      notes.push(
-        tl('notes.auto.t0189', { v0: (primary) }),
-      );
+      notes.push(tl('notes.auto.t0189', { v0: primary }));
     }
-    let nginxReloaded = false;
-    let nginxStatus = 'managed_only';
-    const wantReload = opts.reload ?? Boolean(systemDir && this.host.executeEnabled());
 
-    if (wantReload && this.host.executeEnabled()) {
-      const t = await this.host.runCommand(['nginx', '-t'], { timeoutMs: 10_000 });
-      notes.push(
-        t.exitCode === 0
-          ? tl('notes.nginx.configOk')
-          : tl('notes.tpl.nginxConfigFailed', { detail: (t.stderr || t.stdout).trim() }),
-      );
-      if (t.exitCode === 0) {
-        const r = await this.host.runCommand(['systemctl', 'reload', 'nginx'], { timeoutMs: 15_000 });
-        nginxReloaded = r.exitCode === 0;
-        nginxStatus = nginxReloaded ? 'reloaded' : `reload_failed:${r.stderr}`;
-        notes.push(nginxReloaded ? tl('notes.nginx.reloaded') : tl('notes.auto.t0190', { v0: (r.stderr) }));
-      } else {
-        nginxStatus = 'nginx_t_failed';
-      }
-    } else if (wantReload) {
-      notes.push(tl('ops.blocked.nginxReload'));
-      nginxStatus = 'requires_execute';
-    }
+    const wantReload =
+      opts.reload ??
+      Boolean(this.host.executeEnabled() && this.host.isRoot());
+    const live = await this.syncNginxLive(notes, written, {
+      systemConfDir: opts.systemConfDir,
+      reload: wantReload,
+    });
 
     this.projects.updateRuntimeState(projectId, {
       nginx_config_path: nginxPath,
       last_health: {
         ...(row.last_health ?? {}),
-        nginxStatus,
-        nginxReloaded,
+        nginxStatus: live.nginxStatus,
+        nginxReloaded: live.nginxReloaded,
+        edgeKind: kind,
         at: new Date().toISOString() } });
     this.projects.updateNginxPath(projectId, nginxPath);
-    // Honest ok: if reload requested but blocked/failed → not full success
-    const reloadWanted = wantReload;
-    const reloadBlocked = reloadWanted && nginxStatus === 'requires_execute';
+
+    const reloadBlocked = wantReload && live.nginxStatus === 'requires_execute';
     const reloadFailed =
-      reloadWanted &&
-      (nginxStatus === 'nginx_t_failed' || nginxStatus.startsWith('reload_failed'));
+      wantReload &&
+      (live.nginxStatus === 'nginx_t_failed' ||
+        live.nginxStatus.startsWith('reload_failed'));
     const ok = !reloadBlocked && !reloadFailed;
 
     this.audit?.append({
@@ -975,8 +1055,8 @@ export class ProjectOpsService {
         nginxPath,
         port,
         kind,
-        nginxReloaded,
-        nginxStatus,
+        nginxReloaded: live.nginxReloaded,
+        nginxStatus: live.nginxStatus,
         serverName,
         forceHttps,
         hsts,
@@ -995,16 +1075,170 @@ export class ProjectOpsService {
           ? tl('notes.auto.n1227')
           : reloadFailed
             ? tl('notes.auto.n1218')
-            : nginxReloaded
+            : live.nginxReloaded
               ? tl('notes.auto.n0001')
               : tl('notes.auto.n0007'),
       ],
-      written: [nginxPath, ...sync.copied],
-      nginxReloaded,
-      nginxStatus,
+      written,
+      nginxReloaded: live.nginxReloaded,
+      nginxStatus: live.nginxStatus,
       requiresExecute: !this.host.executeEnabled(),
       requiresRoot: !this.host.isRoot(),
-      degraded: !nginxReloaded };
+      degraded: !live.nginxReloaded };
+  }
+
+  /**
+   * Sync managed conf.d → system and optionally nginx -t + reload.
+   */
+  private async syncNginxLive(
+    notes: string[],
+    written: string[],
+    opts?: { systemConfDir?: string; reload?: boolean },
+  ): Promise<{ nginxReloaded: boolean; nginxStatus: string }> {
+    const systemDir =
+      opts?.systemConfDir ??
+      (this.host.executeEnabled() && this.host.isRoot() ? '/etc/nginx/conf.d' : undefined);
+    const sync = await syncNginxConfigs({
+      dataDir: this.dataDir,
+      systemConfDir: systemDir,
+      host: this.host,
+    });
+    notes.push(...sync.notes);
+    written.push(...sync.copied);
+
+    let nginxReloaded = false;
+    let nginxStatus = systemDir ? 'synced' : 'managed_only';
+    const wantReload =
+      opts?.reload ?? Boolean(systemDir && this.host.executeEnabled() && this.host.isRoot());
+
+    if (wantReload && this.host.executeEnabled()) {
+      const t = await this.host.runCommand(['nginx', '-t'], { timeoutMs: 10_000 });
+      notes.push(
+        t.exitCode === 0
+          ? tl('notes.nginx.configOk')
+          : tl('notes.tpl.nginxConfigFailed', { detail: (t.stderr || t.stdout).trim() }),
+      );
+      if (t.exitCode === 0) {
+        const r = await this.host.runCommand(['systemctl', 'reload', 'nginx'], {
+          timeoutMs: 15_000,
+        });
+        nginxReloaded = r.exitCode === 0;
+        nginxStatus = nginxReloaded ? 'reloaded' : `reload_failed:${r.stderr}`;
+        notes.push(
+          nginxReloaded
+            ? tl('notes.nginx.reloaded')
+            : tl('notes.auto.t0190', { v0: r.stderr }),
+        );
+      } else {
+        nginxStatus = 'nginx_t_failed';
+      }
+    } else if (wantReload) {
+      notes.push(tl('ops.blocked.nginxReload'));
+      nginxStatus = 'requires_execute';
+    }
+    return { nginxReloaded, nginxStatus };
+  }
+
+  /**
+   * After create+template (or explicit goLive): deploy by runtime then publish nginx.
+   * Does not rollback project row on failure — returns honest notes.
+   */
+  async goLive(
+    projectId: string,
+    opts: { actor: string; port?: number },
+  ): Promise<{
+    ok: boolean;
+    deploy?: OpsApplyResult;
+    publish?: OpsApplyResult;
+    notes: string[];
+  }> {
+    const row = this.require(projectId);
+    const notes: string[] = [];
+    let deploy: OpsApplyResult | undefined;
+    let publish: OpsApplyResult | undefined;
+
+    const persistNotes = (ok: boolean) => {
+      this.projects.updateRuntimeState(projectId, {
+        last_deploy_notes: clipDeployNotes(notes),
+        last_deploy_at: new Date().toISOString(),
+        last_health: {
+          ...(this.require(projectId).last_health ?? {}),
+          goLiveOk: ok,
+          goLiveAt: new Date().toISOString(),
+          at: new Date().toISOString(),
+        },
+      });
+      this.audit?.append({
+        actor: opts.actor,
+        action: 'project.go_live',
+        resource: projectId,
+        detail: {
+          ok,
+          deployOk: deploy?.ok,
+          publishOk: publish?.ok,
+          notes: clipDeployNotes(notes),
+        },
+        ok,
+      });
+    };
+
+    try {
+      if (row.runtime === 'php') {
+        deploy = await this.deployPhp(projectId, {
+          actor: opts.actor,
+          port: opts.port ?? row.preferred_port,
+        });
+      } else if (row.runtime === 'static') {
+        deploy = await this.deployStatic(projectId, {
+          actor: opts.actor,
+          reload: false,
+        });
+      } else if (isProcessRuntime(row.runtime) && row.runtime !== 'node') {
+        deploy = await this.deployProcess(projectId, {
+          actor: opts.actor,
+          port: opts.port ?? row.preferred_port,
+        });
+      } else {
+        deploy = await this.deployNode(projectId, {
+          actor: opts.actor,
+          port: opts.port ?? row.preferred_port,
+        });
+      }
+      notes.push(...(deploy.notes ?? []));
+      if (!deploy.ok) {
+        notes.push('goLive: deploy incomplete');
+        persistNotes(false);
+        return { ok: false, deploy, notes };
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      notes.push(`goLive deploy failed: ${msg}`);
+      persistNotes(false);
+      return { ok: false, notes };
+    }
+
+    // deploy* already wrote conf; publish re-renders with SSL flags + ensures system sync
+    try {
+      publish = await this.publishNginx(projectId, {
+        actor: opts.actor,
+        reload: true,
+      });
+      notes.push(...(publish.notes ?? []));
+      if (!publish.ok) {
+        notes.push('goLive: publish incomplete');
+        persistNotes(false);
+        return { ok: false, deploy, publish, notes };
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      notes.push(`goLive publish failed: ${msg}`);
+      persistNotes(false);
+      return { ok: false, deploy, notes };
+    }
+
+    const ok = true;
+    persistNotes(ok);
+    return { ok, deploy, publish, notes };
   }
 
   /**
@@ -1353,7 +1587,19 @@ export class ProjectOpsService {
     } else if (row.runtime === 'php') {
       notes.push(tl('notes.auto.n0148'));
     }
-    const port = opts.port ?? row.port ?? (await findFreePort(8100, 8999));
+    let port: number;
+    try {
+      port = await resolveProcessPort({
+        requested: opts.port,
+        preferred: row.preferred_port,
+        current: row.port,
+        from: 8100,
+        to: 8999,
+      });
+    } catch {
+      // FPM path may not need a port; only allocate when falling back to php -S
+      port = opts.port ?? row.port ?? (await findFreePort(8100, 8999));
+    }
     const docRoot = resolveProjectDocRoot(row);
     mkdirSync(docRoot, { recursive: true });
     const domain = row.domain ?? `${row.linux_user}.local`;
@@ -1587,12 +1833,17 @@ export class ProjectOpsService {
 
     // Proxy nginx for degraded path (local health via php -S)
     const conf = renderNginxProxy({
-      serverName: domain,
+      serverName: buildServerNameList(domain, row.domain_aliases),
       upstream: `http://127.0.0.1:${port}`,
       ssl: false,
-      ...this.nginxRealIpOpts(row) });
+      ...this.nginxRealIpOpts(row),
+      forceHttps: Boolean(row.force_https),
+      hsts: Boolean(row.hsts),
+      bindIp: row.bind_ip,
+    });
     const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
     written.push(nginxPath);
+    const live = await this.syncNginxLive(notes, written);
 
     this.projects.updateRuntimeState(projectId, {
       port,
@@ -1610,7 +1861,10 @@ export class ProjectOpsService {
         at: new Date().toISOString(),
         url,
         deployMode: 'php_builtin',
-        degraded: true },
+        degraded: true,
+        nginxStatus: live.nginxStatus,
+        nginxReloaded: live.nginxReloaded,
+      },
       last_deploy_at: new Date().toISOString() });
 
     this.audit?.append({
@@ -1962,7 +2216,13 @@ export class ProjectOpsService {
     mkdirSync(appDir, { recursive: true });
     mkdirSync(join(row.home_dir, 'logs'), { recursive: true });
 
-    const port = opts.port ?? row.port ?? (await findFreePort(3200, 3999));
+    const port = await resolveProcessPort({
+      requested: opts.port,
+      preferred: row.preferred_port,
+      current: row.port,
+      from: 3200,
+      to: 3999,
+    });
     const cargoName = resolveCargoPackageName(appDir);
     // entry: request → saved deploy_entry → auto-detect per runtime
     let entry = opts.entry?.trim() || row.deploy_entry?.trim() || undefined;
@@ -2164,6 +2424,7 @@ export class ProjectOpsService {
     const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
     written.push(nginxPath);
     notes.push(tl('notes.auto.t0217', { v0: (nginxPath) }));
+    const live = await this.syncNginxLive(notes, written);
 
     this.projects.updateRuntimeState(projectId, {
       port,
@@ -2175,7 +2436,10 @@ export class ProjectOpsService {
         ok: health.ok,
         status: health.status,
         ms: health.ms,
-        at: new Date().toISOString() },
+        at: new Date().toISOString(),
+        nginxStatus: live.nginxStatus,
+        nginxReloaded: live.nginxReloaded,
+      },
       last_deploy_at: new Date().toISOString(),
       nginx_config_path: nginxPath,
       deploy_entry: cmds.entry,
@@ -2185,7 +2449,7 @@ export class ProjectOpsService {
       actor: opts.actor,
       action: 'project.deploy_process',
       resource: projectId,
-      detail: { runtime: row.runtime, port, processStatus, entry: cmds.entry },
+      detail: { runtime: row.runtime, port, processStatus, entry: cmds.entry, ...live },
       ok: processStatus === 'running' });
 
     return {
@@ -2200,6 +2464,8 @@ export class ProjectOpsService {
       notes,
       written,
       deployMode: unitActive ? 'systemd' : 'pidfile',
+      nginxReloaded: live.nginxReloaded,
+      nginxStatus: live.nginxStatus,
       requiresRoot: !this.host.isRoot(),
       requiresExecute: !this.host.executeEnabled() };
   }

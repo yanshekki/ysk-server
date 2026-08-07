@@ -162,6 +162,9 @@ export async function handleProjectsRoutes(
           env?: 'staging' | 'production';
           templateId?: string;
           forceTemplate?: boolean;
+          /** Deploy + publish nginx after create (default true when templateId set) */
+          goLive?: boolean;
+          preferredPort?: number;
           /** Also create managed DNS zone for domain */
           createDnsZone?: boolean;
           /** Also register email domain */
@@ -187,10 +190,33 @@ export async function handleProjectsRoutes(
           actorUserId: user.id,
           templateId: data.templateId,
           forceTemplate: data.forceTemplate,
+          preferredPort: data.preferredPort,
         });
-        const extras: { dnsZoneId?: string; emailDomainId?: string; notes: string[] } = {
+        const extras: {
+          dnsZoneId?: string;
+          emailDomainId?: string;
+          notes: string[];
+          goLive?: { ok: boolean; notes: string[] };
+        } = {
           notes: [],
         };
+        // Template (or explicit goLive) → deploy + nginx in one shot
+        const wantGoLive =
+          data.goLive === true || (data.goLive !== false && Boolean(data.templateId));
+        if (wantGoLive) {
+          try {
+            const live = await ctx.projectOps.goLive(created.project.id, {
+              actor: user.username,
+              port: data.preferredPort,
+            });
+            extras.goLive = { ok: live.ok, notes: live.notes };
+            extras.notes.push(...live.notes.slice(0, 12));
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : String(e);
+            extras.goLive = { ok: false, notes: [msg] };
+            extras.notes.push(`goLive: ${msg}`);
+          }
+        }
         const domain = (data.domain ?? '').trim().toLowerCase();
         const serverIp = (data.serverIp ?? '127.0.0.1').trim();
         const serverIpv6 = data.serverIpv6?.trim() || undefined;
@@ -242,7 +268,11 @@ export async function handleProjectsRoutes(
             );
           }
         }
-        sendJson(res, 201, { ...created, extras });
+        // Refresh project after optional goLive so port/nginx_status are current
+        const project = wantGoLive
+          ? ctx.projects.get(created.project.id)
+          : created.project;
+        sendJson(res, 201, { ...created, project, extras });
         return true;
       }
       if (method === 'GET' && url.pathname === '/api/v1/templates') {

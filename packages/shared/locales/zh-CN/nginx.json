@@ -3,6 +3,7 @@
   "statSites": "站点",
   "statSslFlag": "SSL 标记",
   "purgeOk": "已 purge",
+  "projectSitesHint": "此页只管理独立站点资源。项目的 Nginx 请到 Projects → 项目 → 网络。",
   "purgeCache": "清除 Cache + Reload",
   "notInstalled": "Nginx 尚未安装",
   "listTitle": "站点列表 ({{count}})",

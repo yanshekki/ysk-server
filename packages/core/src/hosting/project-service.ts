@@ -98,6 +98,8 @@ export class ProjectService {
     /** Optional one-click template */
     templateId?: string;
     forceTemplate?: boolean;
+    /** Preferred process listen port (optional) */
+    preferredPort?: number;
   }): Promise<{
     project: ProjectDto;
     osProvision: { attempted: boolean; ok: boolean; detail: string };
@@ -199,44 +201,43 @@ export class ProjectService {
 
     // PHP/static hello uses app/public; default doc_root so Apache/Nginx match scaffold
     const defaultDocRoot =
-      runtime === 'php' || runtime === 'static' || (scaffold?.docRoot && /public/.test(scaffold.docRoot))
+      runtime === 'php' ||
+      runtime === 'static' ||
+      (scaffold?.docRoot && /public/.test(String(scaffold.docRoot)))
         ? 'app/public'
         : undefined;
 
+    const preferredPort =
+      typeof input.preferredPort === 'number' &&
+      Number.isFinite(input.preferredPort) &&
+      input.preferredPort > 0 &&
+      input.preferredPort < 65536
+        ? Math.floor(input.preferredPort)
+        : undefined;
+
     const aliases = normalizeAliases(input.domainAliases, input.domain);
-    // Optional nginx config in dataDir — MUST match runtime (PHP never points at fake :3100)
+    // Optional nginx for PHP/static only — never write process proxy to fake :3100
     let nginxPath: string | undefined;
-    if (input.domain) {
+    if (input.domain && (runtime === 'php' || runtime === 'static')) {
       const confDir = join(this.dataDir, 'nginx', 'conf.d');
       mkdirSync(confDir, { recursive: true });
       const serverName = buildServerNameList(input.domain, aliases);
       const docRootAbs = join(homeDir, defaultDocRoot || 'app/public');
-      let conf: string;
-      if (runtime === 'php') {
-        // Nginx → Apache:8080 → FPM (deploy enables Apache/FPM; conf must not use Node port)
-        conf = renderNginxPhpFpm({
-          serverName,
-          docRoot: docRootAbs,
-          apacheUpstream: apacheBackendUpstream(),
-          ssl: false,
-          cloudflareRealIp: true,
-        });
-      } else if (runtime === 'static') {
-        conf = renderNginxStatic({
-          serverName,
-          docRoot: docRootAbs,
-          ssl: false,
-          cloudflareRealIp: true,
-        });
-      } else {
-        // Process runtimes: provisional upstream until deploy assigns real port
-        conf = renderNginxProxy({
-          serverName,
-          upstream: `http://127.0.0.1:3100`,
-          ssl: false,
-          cloudflareRealIp: true,
-        });
-      }
+      const conf =
+        runtime === 'php'
+          ? renderNginxPhpFpm({
+              serverName,
+              docRoot: docRootAbs,
+              apacheUpstream: apacheBackendUpstream(),
+              ssl: false,
+              cloudflareRealIp: true,
+            })
+          : renderNginxStatic({
+              serverName,
+              docRoot: docRootAbs,
+              ssl: false,
+              cloudflareRealIp: true,
+            });
       nginxPath = join(confDir, `${plan.project.linuxUser}.conf`);
       writeFileSync(nginxPath, conf, 'utf8');
     }
@@ -274,10 +275,10 @@ export class ProjectService {
       runtime_version: runtimeVersion,
       env: input.env ?? 'production',
       status: osProvision.ok ? 'active' : 'active_pending_os',
-      nginx_config_path: nginxPath,
       os_provisioned: osProvision.ok,
       force_https: false,
       hsts: false,
+      preferred_port: preferredPort,
       doc_root: defaultDocRoot,
       owner_user_id: input.actorUserId,
       created_at: now,
@@ -925,6 +926,7 @@ export class ProjectService {
       bindIp?: string | null;
       /** inherit | none | cloudflare | … */
       realIpProvider?: string | null;
+      preferredPort?: number | null;
     },
     actor: string,
   ): ProjectDto {
@@ -999,6 +1001,16 @@ export class ProjectService {
           : patch.realIpProvider !== undefined
             ? normalizeProjectRealIpProvider(patch.realIpProvider)
             : row.real_ip_provider,
+      preferred_port:
+        patch.preferredPort === null
+          ? undefined
+          : patch.preferredPort !== undefined
+            ? (() => {
+                const n = Number(patch.preferredPort);
+                if (!Number.isFinite(n) || n <= 0 || n >= 65536) return row.preferred_port;
+                return Math.floor(n);
+              })()
+            : row.preferred_port,
     });
     this.audit?.append({
       actor,
@@ -1048,6 +1060,7 @@ function toDto(row: ProjectRow): ProjectDto {
     env: row.env,
     status: row.status,
     port: row.port,
+    preferredPort: row.preferred_port,
     pid: row.pid,
     processStatus: row.process_status,
     nginxConfigPath: row.nginx_config_path,

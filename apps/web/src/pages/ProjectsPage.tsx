@@ -200,15 +200,21 @@ export function ProjectsPage() {
             setBusy(true);
             try {
               const r = await projectsApi.create(input);
+              const liveNote =
+                r.extras?.goLive != null
+                  ? r.extras.goLive.ok
+                    ? ` · ${t('projects.goLiveOk', { defaultValue: '已部署並發佈' })}`
+                    : ` · ${t('projects.goLivePartial', { defaultValue: '已建立；部署/發佈未完成' })}`
+                  : '';
               const extra = r.extras?.notes?.length
-                ? ` · ${r.extras.notes.join('；')}`
+                ? ` · ${r.extras.notes.slice(0, 3).join('；')}`
                 : '';
-              setMsg(`${t('projects.created', { name: r.project.name })}${extra}`);
+              setMsg(`${t('projects.created', { name: r.project.name })}${liveNote}${extra}`);
               setCreateOpen(false);
               setHintRuntime(null);
               setHintVersion(null);
               await list.refresh();
-              navigate(`/projects/${r.project.id}?tab=deploy&fresh=1`);
+              navigate(`/projects/${r.project.id}`);
             } catch (e) {
               list.setError(e instanceof Error ? e.message : t('common.createFailed'));
             } finally {

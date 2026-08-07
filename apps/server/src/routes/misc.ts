@@ -720,6 +720,14 @@ export async function handleMiscRoutes(
           reload?: boolean;
         };
         const proj = ctx.projects.get(id);
+        const processRuntimes = new Set([
+          'python',
+          'go',
+          'rust',
+          'java',
+          'kotlin',
+          'bun',
+        ]);
         const result =
           proj.runtime === 'php'
             ? await ctx.projectOps.deployPhp(id, {
@@ -732,9 +740,7 @@ export async function handleMiscRoutes(
                   actor: user.username,
                   ssl: data.ssl,
                   reload: data.reload })
-              : proj.runtime === 'python' ||
-                  proj.runtime === 'go' ||
-                  proj.runtime === 'rust'
+              : processRuntimes.has(proj.runtime)
                 ? await ctx.projectOps.deployProcess(id, {
                     actor: user.username,
                     port: data.port,
@@ -900,6 +906,7 @@ export async function handleMiscRoutes(
           docRoot?: string | null;
           bindIp?: string | null;
           realIpProvider?: string | null;
+          preferredPort?: number | null;
           publish?: boolean;
           ssl?: boolean;
         };
@@ -915,7 +922,9 @@ export async function handleMiscRoutes(
             httpAuthPass: data.httpAuthPass,
             docRoot: data.docRoot,
             bindIp: data.bindIp,
-            realIpProvider: data.realIpProvider },
+            realIpProvider: data.realIpProvider,
+            preferredPort: data.preferredPort,
+          },
           user.username,
         );
         if (data.publish) {
@@ -928,6 +937,28 @@ export async function handleMiscRoutes(
           return true;
         }
         sendJson(res, 200, { project });
+        return true;
+      }
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/nginx-conf$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const proj = ctx.projects.get(id);
+        const path = proj.nginxConfigPath;
+        if (!path) {
+          sendJson(res, 200, { content: '', path: null });
+          return true;
+        }
+        try {
+          const { readFileSync, existsSync } = await import('node:fs');
+          const content = existsSync(path) ? readFileSync(path, 'utf8') : '';
+          sendJson(res, 200, { content, path });
+        } catch (e) {
+          sendJson(res, 200, {
+            content: '',
+            path,
+            error: e instanceof Error ? e.message : String(e),
+          });
+        }
         return true;
       }
       if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+$/)) {

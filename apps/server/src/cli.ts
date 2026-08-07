@@ -2571,7 +2571,10 @@ async function mainInner(
                 })
               : proj.runtime === 'python' ||
                   proj.runtime === 'go' ||
-                  proj.runtime === 'rust'
+                  proj.runtime === 'rust' ||
+                  proj.runtime === 'java' ||
+                  proj.runtime === 'kotlin' ||
+                  proj.runtime === 'bun'
                 ? await ctx.projectOps.deployProcess(id, {
                     actor: 'cli',
                     entry,

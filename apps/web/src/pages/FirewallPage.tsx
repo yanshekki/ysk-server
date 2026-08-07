@@ -51,32 +51,9 @@ const PROFILE_DEFS = [
 const SERVICE_PORT_CHIPS = listFirewallPortChips();
 
 /**
- * Parse "21,30000:30100" into UFW port specs (ranges kept whole — one rule per range).
- * Prefer this over parsePorts for apply so PASV is `ufw allow 30000:30100/tcp`.
- */
-export function parsePortSpecs(extraPorts: string): string[] {
-  const out: string[] = [];
-  for (const part of extraPorts.split(/[,\s]+/).filter(Boolean)) {
-    if (out.length >= maxPorts) break;
-    if (part.includes(':')) {
-      const [a, b] = part.split(':').map(Number);
-      if (!Number.isFinite(a) || !Number.isFinite(b)) continue;
-      if (a < 1 || a > 65535 || b < 1 || b > 65535) continue;
-      const lo = Math.min(a, b);
-      const hi = Math.max(a, b);
-      if (hi - lo > 200) continue;
-      out.push(lo === hi ? String(lo) : `${lo}:${hi}`);
-    } else {
-      const n = Number(part);
-      if (Number.isInteger(n) && n > 0 && n < 65536) out.push(String(n));
-    }
-  }
-  return [...new Set(out)].slice(0, 40);
-}
-
-/**
- * Expand "21,30000:30100" into port numbers (legacy / tests).
- * Cap at 200 ports. Prefer parsePortSpecs for firewall apply.
+ * Expand "21,30000:30100" into port numbers for legacy planFirewall(extraTcpPorts).
+ * Cap at 200 ports (matches firewallAllowPort range limit) so FTPS PASV 30000–30100
+ * is fully covered — previously capped at 40 and dropped most PASV ports.
  */
 export function parsePorts(extraPorts: string): number[] {
   const out: number[] = [];
@@ -275,7 +252,7 @@ export function FirewallPage() {
       const r = (await systemApi.firewallApply({
         allowSmtp: p.allowSmtp,
         apply: true,
-        extraPortSpecs: parsePortSpecs(p.extra),
+        extraTcpPorts: parsePorts(p.extra),
       })) as OpsResultLike;
       await refresh();
       return r;
@@ -709,7 +686,7 @@ export function FirewallPage() {
                       const r = (await systemApi.firewallApply({
                         allowSmtp,
                         apply: true,
-                        extraPortSpecs: parsePortSpecs(extraPorts),
+                        extraTcpPorts: parsePorts(extraPorts),
                       })) as OpsResultLike;
                       await refresh();
                       return r;

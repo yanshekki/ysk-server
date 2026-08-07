@@ -7,7 +7,6 @@ import {
   CardSection,
   Field,
   FormActions,
-  FormHint,
   FormLayout,
 } from '../../../shared/components/ui';
 import { getProjectUiProfile } from '../model/runtime-ui';
@@ -53,7 +52,9 @@ export function ProjectAdvancedTab({
       });
       onOpsMessage?.(
         r.ok
-          ? t('projects.advFtpCreated', { user: String((r.account as { username?: string })?.username ?? '') })
+          ? t('projects.advFtpCreated', {
+              user: String((r.account as { username?: string })?.username ?? ''),
+            })
           : (r.notes ?? []).join('；') || t('common.createFailed'),
       );
       if (r.ok) setFtpPass('');
@@ -67,15 +68,10 @@ export function ProjectAdvancedTab({
   return (
     <div className="tab-panel">
       <Card>
-        <CardSection
-          title={t('projects.sectionAdvanced', { defaultValue: t('projects.advMaintTitle') })}
-          description={t('projects.sectionAdvancedDesc', {
-            defaultValue: t('projects.advMaintDesc'),
-          })}
-        >
+        <CardSection title={t('projects.advMaintTitle')}>
           <FormActions>
             <Button variant="secondary" size="md" loading={busy} onClick={onBackup}>
-              {t('projects.backup', { defaultValue: t('projects.advBackupProject') })}
+              {t('projects.backup')}
             </Button>
             {ui.showWordpress ? (
               <Button variant="secondary" size="md" loading={busy} onClick={onWordpress}>
@@ -92,26 +88,13 @@ export function ProjectAdvancedTab({
               </Button>
             )}
           </FormActions>
-          <FormHint>
-            {suspended
-              ? t('projects.advSuspendedHint')
-              : t('projects.advSuspendHint')}
-          </FormHint>
         </CardSection>
       </Card>
 
       <Card>
-        <CardSection
-          title={t('projects.advFtpTitle')}
-          description={t('projects.advFtpDesc')}
-        >
+        <CardSection title={t('projects.advFtpTitle')}>
           <FormLayout columns={2}>
-            <Field
-              label={t('common.username')}
-              htmlFor="ftp-user"
-              hint={t('projects.advFtpUserHint')}
-              flush
-            >
+            <Field label={t('common.username')} htmlFor="ftp-user" flush>
               <input
                 id="ftp-user"
                 value={ftpUser}
@@ -120,13 +103,7 @@ export function ProjectAdvancedTab({
                 autoComplete="off"
               />
             </Field>
-            <Field
-              label={t('common.password')}
-              htmlFor="ftp-pass"
-              hint={t('projects.advFtpPassHint')}
-              required
-              flush
-            >
+            <Field label={t('common.password')} htmlFor="ftp-pass" required flush>
               <input
                 id="ftp-pass"
                 type="password"
@@ -146,39 +123,21 @@ export function ProjectAdvancedTab({
             >
               {t('ftp.createAccount')}
             </Button>
-            <Button
-              variant="secondary"
-              size="md"
-              onClick={() => {
-                window.location.href = '/ftp/service';
-              }}
-            >
-              {t('projects.goFtpsApply')}
-            </Button>
           </FormActions>
         </CardSection>
       </Card>
 
       <Card>
         <div className="danger-zone">
-          <h3 className="danger-zone__title">
-            {t('projects.dangerZone', { defaultValue: t('projects.advDangerTitle') })}
-          </h3>
-          <p className="danger-zone__desc">
-            {t('projects.dangerZoneDesc', {
-              defaultValue: t('projects.advDangerDesc'),
-            })}
-          </p>
+          <h3 className="danger-zone__title">{t('projects.advDangerTitle')}</h3>
           {onDelete ? (
             <FormActions>
               <Button variant="danger" size="md" loading={busy} onClick={onDelete}>
-                {t('projects.delete', { defaultValue: t('projects.advDelete') })}
+                {t('projects.delete')}
               </Button>
             </FormActions>
           ) : (
-            <p className="muted u-text-sm">
-              {t('rbac.cap.projectsDelete', { defaultValue: 'projects.delete required' })}
-            </p>
+            <p className="muted u-text-sm">projects.delete</p>
           )}
         </div>
       </Card>

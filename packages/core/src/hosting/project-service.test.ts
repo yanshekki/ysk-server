@@ -30,12 +30,11 @@ describe('ProjectService real lifecycle', () => {
     const list = svc.list();
     expect(list).toHaveLength(1);
     expect(list[0].name).toBe('Demo Site');
-    // nginx conf written (node → provisional proxy)
+    // domain stored; nginx conf only after deploy/publish (no placeholder :3100)
     expect(created.project.domain).toBe('demo.local');
     const nginx = join(dir, 'nginx', 'conf.d', `${created.project.linuxUser}.conf`);
-    expect(existsSync(nginx)).toBe(true);
-    expect(readFileSync(nginx, 'utf8')).toContain('demo.local');
-    expect(readFileSync(nginx, 'utf8')).toContain('proxy_pass');
+    expect(existsSync(nginx)).toBe(false);
+    expect(created.project.nginxConfigPath).toBeFalsy();
 
     await svc.delete(created.project.id, 'admin');
     expect(svc.list()).toHaveLength(0);

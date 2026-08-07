@@ -105,6 +105,8 @@ export interface StoreProject {
   os_provisioned: boolean;
   /** Listen port for app process (Node/PHP-FPM proxy target) */
   port?: number;
+  /** User-requested fixed process port (deploy prefers this when free) */
+  preferred_port?: number;
   /** Running process pid when managed by control plane */
   pid?: number;
   pidfile?: string;

@@ -13,6 +13,8 @@ export const projectsApi = {
     runtime?: string;
     runtimeVersion?: string;
     templateId?: string;
+    goLive?: boolean;
+    preferredPort?: number;
     createDnsZone?: boolean;
     createMailDomain?: boolean;
     serverIp?: string;
@@ -239,10 +241,15 @@ export const projectsApi = {
       docRoot?: string | null;
       bindIp?: string | null;
       realIpProvider?: string | null;
+      preferredPort?: number | null;
       publish?: boolean;
       ssl?: boolean;
     },
   ) => api.updateProjectNetwork(id, body),
+  nginxConf: (id: string) =>
+    api.requestRaw<{ content?: string; conf?: string; path?: string | null }>(
+      `/api/v1/projects/${id}/nginx-conf`,
+    ),
   purgeCache: (id: string) =>
     api.requestRaw<{ ok: boolean; notes?: string[]; blocked?: boolean }>(
       `/api/v1/projects/${id}/purge-cache`,

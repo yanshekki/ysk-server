@@ -1,9 +1,8 @@
 /**
- * Compact SSH card on project resources — points to full SSH workspace.
+ * Compact SSH card — create/install identity only (no redirect fluff).
  */
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import type { ProjectDto } from '@ysk/shared';
 import {
   Badge,
@@ -11,11 +10,9 @@ import {
   Card,
   CardSection,
   FormActions,
-  FormHint,
   FormLayout,
   Field,
-
-  buttonClassName,} from '../../../shared/components/ui';
+} from '../../../shared/components/ui';
 import { sshApi } from '../../security/ssh';
 import { shortFingerprint, statusLabel, statusTone } from '../../security/ssh/labels';
 
@@ -61,10 +58,7 @@ export function ProjectSshCard(props: {
 
   return (
     <Card>
-      <CardSection
-        title="SSH"
-        description={t('projects.sshCardDesc')}
-      >
+      <CardSection title="SSH">
         <FormLayout columns={2}>
           <Field label={t('projects.sshLoginKeys')} htmlFor="p-ssh-login" flush>
             <input id="p-ssh-login" value={t('projects.sshKeyCount', { count: loginN })} readOnly disabled />
@@ -83,15 +77,13 @@ export function ProjectSshCard(props: {
           </Field>
         </FormLayout>
         {identity ? (
-          <FormHint>
+          <p className="muted u-text-sm">
             <Badge tone={statusTone(identity.status)}>{statusLabel(identity.status, t)}</Badge>{' '}
             <code className="inline u-break-all">
               {shortFingerprint(identity.fingerprintSha256)}
             </code>
-          </FormHint>
-        ) : (
-          <FormHint>{t('projects.sshOutboundHint')}</FormHint>
-        )}
+          </p>
+        ) : null}
         <FormActions>
           {!identity ? (
             <Button
@@ -145,15 +137,6 @@ export function ProjectSshCard(props: {
               {t('projects.sshWriteHome')}
             </Button>
           )}
-          <Link
-            to="/security?tab=ssh&ssh=outbound"
-            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-          >
-            {t('projects.sshOpenWorkspace')}
-          </Link>
-          <Link to="/security?tab=ssh&ssh=login" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-            {t('projects.sshManageLoginKeys')}
-          </Link>
         </FormActions>
       </CardSection>
     </Card>

@@ -24,6 +24,35 @@ export interface ProjectDisplayStatus {
 }
 
 /**
+ * Whether overview should show retry deploy / publish actions.
+ */
+export function projectNeedsLiveRetry(project: ProjectDto): boolean {
+  const st = (project.status ?? '').toLowerCase();
+  const ps = (project.processStatus ?? '').toLowerCase();
+  if (st === 'suspended') return false;
+  if (ps === 'failed' || st === 'failed' || ps === 'unhealthy' || st === 'unhealthy') {
+    return true;
+  }
+  const lh = (project.lastHealth ?? {}) as {
+    goLiveOk?: boolean;
+    nginxStatus?: string;
+  };
+  if (lh.goLiveOk === false) return true;
+  if (lh.nginxStatus === 'needs_deploy') return true;
+  if (lh.nginxStatus === 'nginx_t_failed' || String(lh.nginxStatus ?? '').startsWith('reload_failed')) {
+    return true;
+  }
+  // Domain set but never successfully published
+  if (project.domain?.trim() && !project.nginxConfigPath) return true;
+  // Notes from failed goLive / deploy
+  const notes = project.lastDeployNotes ?? [];
+  if (notes.some((n) => /goLive|failed|incomplete|needs_deploy/i.test(n))) {
+    return true;
+  }
+  return false;
+}
+
+/**
  * Single display model for project status — never show raw codes as primary label.
  */
 export function deriveProjectStatus(project: ProjectDto): ProjectDisplayStatus {

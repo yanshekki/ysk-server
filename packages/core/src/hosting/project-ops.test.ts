@@ -127,6 +127,47 @@ describe('ProjectOpsService real deploy', () => {
     expect(row.last_backup_path).toBe(bak.archivePath);
   });
 
+  it('goLive static publishes nginx without inventing process port', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-golive-'));
+    dirs.push(dir);
+    const store = new JsonStore(join(dir, 'ysk.json'));
+    const repo = new ProjectRepository(store);
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const projects = new ProjectService(repo, host, dir);
+    const ops = new ProjectOpsService(repo, host, dir);
+    const { project } = await projects.create({
+      name: 'GoLiveStatic',
+      domain: 'golive.local',
+      runtime: 'static',
+      templateId: 'static-site',
+      actor: 'test',
+    });
+    const live = await ops.goLive(project.id, { actor: 'test' });
+    expect(live.notes.length).toBeGreaterThan(0);
+    const row = repo.findById(project.id)!;
+    expect(row.last_deploy_notes?.length).toBeGreaterThan(0);
+    expect(row.last_health && 'goLiveOk' in (row.last_health as object)).toBe(true);
+  });
+
+  it('publishNginx without port refuses process proxy (no fake 3000)', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-ngx-noport-'));
+    dirs.push(dir);
+    const store = new JsonStore(join(dir, 'ysk.json'));
+    const repo = new ProjectRepository(store);
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const projects = new ProjectService(repo, host, dir);
+    const ops = new ProjectOpsService(repo, host, dir);
+    const { project } = await projects.create({
+      name: 'NoPort',
+      domain: 'noport.local',
+      runtime: 'node',
+      actor: 'test',
+    });
+    const pub = await ops.publishNginx(project.id, { actor: 'test' });
+    expect(pub.ok).toBe(false);
+    expect(pub.nginxStatus).toBe('needs_deploy');
+  });
+
   it('publishNginx writes conf with project port', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-ngx-'));
     dirs.push(dir);
@@ -167,6 +208,7 @@ describe('ProjectOpsService real deploy', () => {
       runtime: 'node',
       actor: 'test',
     });
+    repo.updateRuntimeState(project.id, { port: 3456 });
     const sus = await ops.suspend(project.id, 'test');
     expect(sus.ok).toBe(true);
     expect(repo.findById(project.id)?.status).toBe('suspended');
@@ -177,6 +219,7 @@ describe('ProjectOpsService real deploy', () => {
     expect(repo.findById(project.id)?.status).toBe('stopped');
     const conf2 = readFileSync(uns.nginxPath!, 'utf8');
     expect(conf2).not.toContain('return 503');
+    expect(conf2).toContain('proxy_pass http://127.0.0.1:3456');
   });
 
   it('deployPhp degraded path listens with php -S when php available', async () => {
@@ -372,6 +415,13 @@ describe('ProjectOpsService helpers and honesty paths', () => {
       executeEnabled: () => false,
     });
     expect(degraded.path.length).toBeGreaterThan(0);
+  });
+
+  it('resolveNodeBinary returns a path or node', () => {
+    const resolved = resolveNodeBinary();
+    const bin = typeof resolved === 'string' ? resolved : resolved.path;
+    expect(typeof bin).toBe('string');
+    expect(bin.length).toBeGreaterThan(0);
   });
 
   it('isPidAlive true for self and false for dead pid', () => {

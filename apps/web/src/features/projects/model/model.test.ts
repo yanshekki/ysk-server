@@ -4,6 +4,7 @@ import {
   buildProjectChecklist,
   deriveProjectStatus,
   formatHealthFacts,
+  projectNeedsLiveRetry,
   summarizeProjects,
 } from './status';
 import {
@@ -44,6 +45,32 @@ describe('project model/status', () => {
     expect(deriveProjectStatus({ ...base, processStatus: 'running' }).bucket).toBe('running');
     expect(deriveProjectStatus({ ...base, processStatus: 'stopped' }).bucket).toBe('stopped');
     expect(deriveProjectStatus({ ...base, status: 'weird' }).bucket).toBeTruthy();
+  });
+
+  it('projectNeedsLiveRetry detects incomplete go-live', () => {
+    expect(projectNeedsLiveRetry({ ...base, processStatus: 'running', nginxConfigPath: '/x' } as ProjectDto)).toBe(
+      false,
+    );
+    expect(projectNeedsLiveRetry({ ...base, processStatus: 'failed' } as ProjectDto)).toBe(true);
+    expect(
+      projectNeedsLiveRetry({
+        ...base,
+        domain: 'a.example',
+        nginxConfigPath: undefined,
+      } as ProjectDto),
+    ).toBe(true);
+    expect(
+      projectNeedsLiveRetry({
+        ...base,
+        lastHealth: { goLiveOk: false },
+      } as ProjectDto),
+    ).toBe(true);
+    expect(
+      projectNeedsLiveRetry({
+        ...base,
+        lastDeployNotes: ['goLive deploy failed: boom'],
+      } as ProjectDto),
+    ).toBe(true);
   });
 
   it('summarizeProjects counts buckets', () => {

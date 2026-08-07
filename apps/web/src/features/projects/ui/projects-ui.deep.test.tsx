@@ -671,11 +671,8 @@ describe('ProjectAdvancedTab + Overview + Deploy variants', () => {
     unmount();
   });
 
-  it('overview loads usage/stats and triggers quick actions + copy', async () => {
+  it('overview loads usage/stats and copy paths (no publish shortcuts)', async () => {
     const user = userEvent.setup();
-    const onNginx = vi.fn();
-    const onSsl = vi.fn();
-    const onBackup = vi.fn();
     const writeText = vi.fn(async () => undefined);
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
@@ -686,19 +683,7 @@ describe('ProjectAdvancedTab + Overview + Deploy variants', () => {
     render(
       <MemoryRouter>
         <Routes>
-          <Route
-            path="*"
-            element={
-              <ProjectOverviewTab
-                project={project}
-                busy={false}
-                onPublishNginx={onNginx}
-                onPublishSsl={onSsl}
-                onBackup={onBackup}
-                onHealth={vi.fn()}
-              />
-            }
-          />
+          <Route path="*" element={<ProjectOverviewTab project={project} busy={false} />} />
         </Routes>
       </MemoryRouter>,
     );
@@ -708,15 +693,16 @@ describe('ProjectAdvancedTab + Overview + Deploy variants', () => {
     });
 
     for (const b of screen
-      .queryAllByRole('button', { name: /nginx|ssl|backup|copy|files|發布|发布|備份|複製|文件/i })
-      .slice(0, 8)) {
+      .queryAllByRole('button', { name: /copy|複製|复制/i })
+      .slice(0, 4)) {
       try {
         if (!(b as HTMLButtonElement).disabled) await user.click(b);
       } catch {
-        /* navigation */
+        /* ignore */
       }
     }
-    expect(onNginx.mock.calls.length + onSsl.mock.calls.length + onBackup.mock.calls.length).toBeGreaterThan(0);
+    // Facts still render domain / home
+    expect(document.body.textContent).toMatch(/demo|home|ysk/i);
   });
 
   it('deploy tab: entry, skipBuild (python), toolchain, version, history', async () => {

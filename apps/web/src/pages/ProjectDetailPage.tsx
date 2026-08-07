@@ -2,7 +2,7 @@
  * Project detail — single chrome (FeaturePageLayout) + KPI status + tabs.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { ProjectDto } from '@ysk/shared';
 import {
@@ -21,16 +21,16 @@ import { envToText, formatRuntimeLabel } from '../features/projects/model/ops';
 import { getProjectUiProfile } from '../features/projects/model/runtime-ui';
 import { deriveProjectStatus } from '../features/projects/model/status';
 import {
-  PageGuide,
   ActionBar,
   Alert,
   Button,
   ConfirmDialog,
   FeaturePageLayout,
   LoadingBlock,
+  Modal,
   OpsResultPanel,
+  PageGuide,
   PageTabs,
-  buttonClassName,
 } from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { useCapabilities } from '../shared/hooks/useCapabilities';
@@ -48,12 +48,11 @@ export function projectTabIds(
 ): string[] {
   if (!ui) return ['overview'];
   const ids = ['overview'];
-  if (ui.showDeployTab) ids.push('deploy');
+  // `app` is the deploy surface; keep `deploy` alias for deep links via resolveActiveTab
+  if (ui.showDeployTab) ids.push('app');
   ids.push('network');
-  if (ui.showResourcesTab) ids.push('resources');
-  if (ui.showLogsTab) ids.push('logs');
-  ids.push('advanced');
-  ids.push('about');
+  if (ui.showResourcesTab) ids.push('isolation');
+  ids.push('more');
   return ids;
 }
 
@@ -61,7 +60,16 @@ export function resolveActiveTab(
   tabs: Array<{ id: string }>,
   tab: string,
 ): string {
-  return tabs.some((x) => x.id === tab) ? tab : 'overview';
+  // Legacy deep links
+  const alias: Record<string, string> = {
+    deploy: 'app',
+    resources: 'isolation',
+    logs: 'more',
+    advanced: 'more',
+    about: 'overview',
+  };
+  const id = alias[tab] ?? tab;
+  return tabs.some((x) => x.id === id) ? id : 'overview';
 }
 
 /** Format the log viewer header line (`# file · notes`). */
@@ -148,10 +156,7 @@ export function ProjectDetailPage() {
   const { t } = useTranslation();
   const { can } = useCapabilities();
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [freshChecklist, setFreshChecklist] = useState(
-    () => searchParams.get('fresh') === '1',
-  );
+  const [searchParams] = useSearchParams();
   const [project, setProject] = useState<ProjectDto | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -181,6 +186,7 @@ export function ProjectDetailPage() {
     }>
   >([]);
   const [confirm, setConfirm] = useState<ConfirmKind>(null);
+  const [guideOpen, setGuideOpen] = useState(false);
   const [phpVersion, setPhpVersion] = useState('8.2');
 
   const refreshProject = useCallback(async () => {
@@ -291,29 +297,14 @@ export function ProjectDetailPage() {
   const ui = project ? getProjectUiProfile(project.runtime) : null;
   const tabIds = useMemo(() => projectTabIds(ui), [ui]);
 
+  const rawTab = searchParams.get('tab');
   const defaultTab =
-    searchParams.get('tab') === 'deploy' && (tabIds as readonly string[]).includes('deploy')
-      ? 'deploy'
+    rawTab === 'deploy' || rawTab === 'app'
+      ? (tabIds as readonly string[]).includes('app')
+        ? 'app'
+        : 'overview'
       : 'overview';
   const [tab, setTab] = usePageTab(tabIds as string[], defaultTab);
-
-  useEffect(() => {
-    if (searchParams.get('fresh') === '1') {
-      setFreshChecklist(true);
-      // Prefer deploy tab for new projects
-      if ((tabIds as readonly string[]).includes('deploy')) {
-        setTab('deploy');
-      }
-      // Drop query so refresh doesn't re-show forever (state keeps checklist until dismiss)
-      const next = new URLSearchParams(searchParams);
-      next.delete('fresh');
-      if (next.get('tab') === 'deploy') {
-        /* keep tab= in URL optional */
-      }
-      setSearchParams(next, { replace: true });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
 
   if (loading) return <LoadingBlock label={t('common.loading')} />;
   if (loadError || !project || !ui) {
@@ -333,12 +324,19 @@ export function ProjectDetailPage() {
 
   const tabs = [
     { id: 'overview', label: t('projects.tabOverview') },
-    ...(ui.showDeployTab ? [{ id: 'deploy', label: t('projects.tabDeploy') }] : []),
+    ...(ui.showDeployTab
+      ? [{ id: 'app', label: t('projects.tabApp', { defaultValue: t('projects.tabDeploy') }) }]
+      : []),
     { id: 'network', label: t('projects.tabNetwork') },
-    ...(ui.showResourcesTab ? [{ id: 'resources', label: t('projects.tabResources') }] : []),
-    ...(ui.showLogsTab ? [{ id: 'logs', label: t('projects.tabLogs') }] : []),
-    { id: 'advanced', label: t('projects.tabAdvanced') },
-    { id: 'about', label: t('common.about') },
+    ...(ui.showResourcesTab
+      ? [
+          {
+            id: 'isolation',
+            label: t('projects.tabIsolation', { defaultValue: t('projects.tabResources') }),
+          },
+        ]
+      : []),
+    { id: 'more', label: t('projects.tabMore', { defaultValue: t('projects.tabAdvanced') }) },
   ];
   const activeTab = resolveActiveTab(tabs, tab);
   const display = deriveProjectStatus(project);
@@ -377,7 +375,17 @@ export function ProjectDetailPage() {
           },
           {
             label: 'Nginx',
-            value: project.nginxConfigPath ? t('projects.status.published') : t('projects.nginxValueNone'),
+            value: (() => {
+              const lh = (project.lastHealth ?? {}) as {
+                nginxReloaded?: boolean;
+                nginxStatus?: string;
+              };
+              if (!project.nginxConfigPath) return t('projects.nginxValueNone');
+              if (lh.nginxReloaded || lh.nginxStatus === 'reloaded') {
+                return t('projects.nginxLive', { defaultValue: '已載入' });
+              }
+              return t('projects.nginxWritten', { defaultValue: '已寫入' });
+            })(),
             tone: project.nginxConfigPath ? 'ok' : 'neutral',
           },
           {
@@ -388,28 +396,8 @@ export function ProjectDetailPage() {
         ],
         note: statusHint ? <span>{statusHint}</span> : undefined,
       }}
-      actions={<ActionBar>
-          <Link
-            to={`/files?root=project:${project.id}`}
-            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-          >
-            {t('common.files')}
-          </Link>
-          <Link
-            to={`/ssl?domain=${encodeURIComponent(project.domain || '')}&action=le`}
-            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-          >
-            SSL
-          </Link>
-          <Link
-            to={`/cdn?fromProject=${encodeURIComponent(project.id)}`}
-            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-          >
-            {t('projects.enableCdn')}
-          </Link>
-          <Link to="/logs" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-            {t('projects.tabLogs')}
-          </Link>
+      actions={
+        <ActionBar>
           <ProjectDetailHeader
             project={project}
             busy={busy}
@@ -422,6 +410,14 @@ export function ProjectDetailPage() {
             onHealth={bindRun(run, 'health', project.id)}
             onRefresh={bindVoid(refreshProject)}
           />
+          <Button
+            variant="ghost"
+            size="md"
+            onClick={() => setGuideOpen(true)}
+            title={t('common.about', { defaultValue: '說明' })}
+          >
+            ?
+          </Button>
         </ActionBar>
       }
     >
@@ -430,13 +426,15 @@ export function ProjectDetailPage() {
           <ProjectOverviewTab
             project={project}
             busy={busy}
-            onPublishNginx={bindRun(run, 'publish-nginx', project.id)}
-            onPublishSsl={bindRun(run, 'publish-nginx-ssl', project.id)}
-            onBackup={bindRun(run, 'backup', project.id)}
-            onHealth={bindRun(run, 'health', project.id)}
+            onRetryDeploy={() =>
+              void run(ui.deployIsPhp ? 'deploy-php' : 'deploy', project.id, {
+                phpVersion,
+              }).catch(() => undefined)
+            }
+            onRetryPublish={bindRun(run, 'publish-nginx', project.id)}
           />
         ) : null}
-        {activeTab === 'deploy' ? (
+        {activeTab === 'app' ? (
           <ProjectDeployTab
             project={project}
             busy={busy}
@@ -466,8 +464,6 @@ export function ProjectDetailPage() {
               void refreshProject();
             }}
             onOpsMessage={(m) => setMsg(m)}
-            showFreshChecklist={freshChecklist}
-            onDismissChecklist={bindSet(setFreshChecklist, false)}
           />
         ) : null}
         {activeTab === 'network' ? (
@@ -484,7 +480,7 @@ export function ProjectDetailPage() {
             />
           </div>
         ) : null}
-        {activeTab === 'resources' ? (
+        {activeTab === 'isolation' ? (
           <div className="tab-panel">
             <ProjectResourcesTab
               busy={busy}
@@ -530,8 +526,8 @@ export function ProjectDetailPage() {
             />
           </div>
         ) : null}
-        {activeTab === 'logs' ? (
-          <div className="tab-panel">
+        {activeTab === 'more' ? (
+          <div className="tab-panel stack">
             <ProjectLogsTab
               busy={busy}
               logTail={logTail}
@@ -565,10 +561,6 @@ export function ProjectDetailPage() {
                 }
               }}
             />
-          </div>
-        ) : null}
-        {activeTab === 'advanced' ? (
-          <div className="tab-panel">
             <ProjectAdvancedTab
               project={project}
               busy={busy}
@@ -581,11 +573,18 @@ export function ProjectDetailPage() {
             />
           </div>
         ) : null}
-      
-        {activeTab === 'about' ? <PageGuide guideId="projectDetail" /> : null}
       </PageTabs>
 
       <OpsResultPanel title={t('projects.opsResult')} result={opsLog} message={msg} busy={busy} />
+
+      <Modal
+        open={guideOpen}
+        onClose={() => setGuideOpen(false)}
+        title={t('common.about', { defaultValue: '說明' })}
+        size="lg"
+      >
+        <PageGuide guideId="projectDetail" />
+      </Modal>
 
       <ConfirmDialog
         open={confirm === 'stop'}

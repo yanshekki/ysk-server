@@ -3,6 +3,7 @@
   "statSites": "Sites",
   "statSslFlag": "SSL flag",
   "purgeOk": "Purged",
+  "projectSitesHint": "This page lists standalone nginx sites only. Project sites: Projects → project → Network.",
   "purgeCache": "Purge cache + reload",
   "notInstalled": "Nginx is not installed",
   "listTitle": "Sites ({{count}})",

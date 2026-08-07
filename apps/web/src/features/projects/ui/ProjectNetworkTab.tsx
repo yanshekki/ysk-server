@@ -1,5 +1,5 @@
 /**
- * Project network tab — human-friendly form kit (domains · HTTPS · advanced).
+ * Project network / edge — domains, HTTPS, port, single publish strip.
  */
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -12,13 +12,11 @@ import {
   CheckboxField,
   Field,
   FormActions,
-  FormHint,
   FormLayout,
   PresetChips,
-  buttonClassName,
 } from '../../../shared/components/ui';
 import { projectsApi } from '../api';
-import { bindToggle, bindInput, bindCall1, bindCall2 } from '../../../pages/bind-handlers';
+import { bindInput, bindCall1, bindCall2 } from '../../../pages/bind-handlers';
 
 export interface ProjectNetworkTabProps {
   project: ProjectDto;
@@ -27,6 +25,45 @@ export interface ProjectNetworkTabProps {
   onPublishSsl: () => void;
   onSaved?: () => void | Promise<void>;
   onOpsResult?: (result: OpsApplyResultDto | null, message?: string) => void;
+}
+
+function edgeStatus(project: ProjectDto, t: (k: string, o?: Record<string, string>) => string): string {
+  const lh = (project.lastHealth ?? {}) as {
+    nginxStatus?: string;
+    nginxReloaded?: boolean;
+    edgeKind?: string;
+    deployMode?: string;
+  };
+  if (!project.nginxConfigPath) {
+    return t('projects.nginxValueNone', { defaultValue: '未發佈' });
+  }
+  if (lh.nginxReloaded || lh.nginxStatus === 'reloaded') {
+    return t('projects.nginxLive', { defaultValue: '已載入' });
+  }
+  if (lh.nginxStatus === 'managed_only' || lh.nginxStatus === 'synced') {
+    return t('projects.nginxWritten', { defaultValue: '已寫入（未 reload）' });
+  }
+  if (lh.nginxStatus === 'needs_deploy') {
+    return t('projects.nginxNeedsDeploy', { defaultValue: '需先部署' });
+  }
+  if (lh.nginxStatus?.startsWith('reload_failed') || lh.nginxStatus === 'nginx_t_failed') {
+    return t('projects.nginxFailed', { defaultValue: '發佈失敗' });
+  }
+  return project.nginxConfigPath ? t('projects.status.published') : t('projects.nginxValueNone');
+}
+
+function upstreamLabel(project: ProjectDto): string {
+  const rt = project.runtime;
+  const lh = (project.lastHealth ?? {}) as { deployMode?: string; edgeKind?: string };
+  if (rt === 'static') return `root ${project.homeDir}/${project.docRoot || 'app/public'}`;
+  if (rt === 'php') {
+    if (lh.deployMode === 'php_builtin' || lh.edgeKind === 'php-proxy') {
+      return project.port != null ? `proxy 127.0.0.1:${project.port}` : 'php proxy (no port)';
+    }
+    const ver = project.runtimeVersion || '8.2';
+    return `fpm unix:/run/php/php${ver}-fpm-${project.linuxUser}.sock`;
+  }
+  return project.port != null ? `proxy 127.0.0.1:${project.port}` : '—';
 }
 
 export function ProjectNetworkTab({
@@ -47,13 +84,14 @@ export function ProjectNetworkTab({
   const [authPass, setAuthPass] = useState('');
   const [docRoot, setDocRoot] = useState(project.docRoot ?? '');
   const [bindIp, setBindIp] = useState(project.bindIp ?? '');
+  const [preferredPort, setPreferredPort] = useState(
+    project.preferredPort != null ? String(project.preferredPort) : '',
+  );
   const [realIpProvider, setRealIpProvider] = useState(
     project.realIpProvider ?? 'inherit',
   );
   const [saving, setSaving] = useState(false);
-  const [advancedOpen, setAdvancedOpen] = useState(
-    () => Boolean(project.docRoot || project.bindIp || project.realIpProvider),
-  );
+  const [confPreview, setConfPreview] = useState<string | null>(null);
 
   useEffect(() => {
     setDomain(project.domain ?? '');
@@ -64,8 +102,8 @@ export function ProjectNetworkTab({
     setAuthUser(project.httpAuthUser ?? '');
     setDocRoot(project.docRoot ?? '');
     setBindIp(project.bindIp ?? '');
+    setPreferredPort(project.preferredPort != null ? String(project.preferredPort) : '');
     setRealIpProvider(project.realIpProvider ?? 'inherit');
-    if (project.docRoot || project.bindIp || project.realIpProvider) setAdvancedOpen(true);
   }, [
     project.id,
     project.domain,
@@ -76,6 +114,7 @@ export function ProjectNetworkTab({
     project.httpAuthUser,
     project.docRoot,
     project.bindIp,
+    project.preferredPort,
     project.realIpProvider,
   ]);
 
@@ -86,9 +125,18 @@ export function ProjectNetworkTab({
       .filter(Boolean);
   }
 
+  function preferredPortPayload(): number | null | undefined {
+    const raw = preferredPort.trim();
+    if (!raw) return null;
+    const n = Number(raw);
+    if (!Number.isFinite(n) || n <= 0 || n >= 65536) return undefined;
+    return Math.floor(n);
+  }
+
   async function saveNetwork(publish: boolean, ssl?: boolean) {
     setSaving(true);
     try {
+      const portVal = preferredPortPayload();
       const res = await projectsApi.updateNetwork(project.id, {
         domain: domain.trim() || undefined,
         domainAliases: parseAliases(),
@@ -99,6 +147,7 @@ export function ProjectNetworkTab({
         httpAuthPass: authPass || null,
         docRoot: docRoot.trim() || null,
         bindIp: bindIp.trim() || null,
+        preferredPort: portVal === undefined ? undefined : portVal,
         realIpProvider:
           realIpProvider === 'inherit' ? null : realIpProvider || null,
         publish,
@@ -120,29 +169,45 @@ export function ProjectNetworkTab({
   const localBusy = busy || saving;
   const suspended = project.status === 'suspended';
   const hasDomain = Boolean(domain.trim());
+  const showPort =
+    project.runtime !== 'static' &&
+    !(project.runtime === 'php' && !project.port);
 
   return (
-    <div className="tab-panel">
-      {suspended ? (
-        <Alert variant="info">
-          {t('projects.netSuspended')}
-        </Alert>
-      ) : null}
+    <div className="tab-panel stack">
+      {suspended ? <Alert variant="info">{t('projects.netSuspended')}</Alert> : null}
 
-      {/* 1. Domain */}
       <Card>
-        <CardSection
-          title={t('common.domain')}
-          description={t('projects.netDomainDesc')}
-        >
+        <CardSection title={t('projects.netEdgeStatus', { defaultValue: '站點狀態' })}>
+          <FormLayout columns={2}>
+            <Field label="Nginx" htmlFor="net-st" flush>
+              <code id="net-st" className="inline">
+                {edgeStatus(project, t)}
+              </code>
+            </Field>
+            <Field label={t('projects.netUpstream', { defaultValue: '上游' })} htmlFor="net-up" flush>
+              <code id="net-up" className="inline">
+                {upstreamLabel(project)}
+              </code>
+            </Field>
+            <Field label={t('common.domain')} htmlFor="net-dom-ro" flush>
+              <code id="net-dom-ro" className="inline">
+                {project.domain || '—'}
+              </code>
+            </Field>
+            <Field label={t('projects.nginxManageFile', { defaultValue: 'Conf' })} htmlFor="net-path" flush>
+              <code id="net-path" className="inline">
+                {project.nginxConfigPath || '—'}
+              </code>
+            </Field>
+          </FormLayout>
+        </CardSection>
+      </Card>
+
+      <Card>
+        <CardSection title={t('common.domain')}>
           <FormLayout>
-            <Field
-              label={t('projects.netPrimaryDomain')}
-              htmlFor="net-domain"
-              required
-              hint={t('projects.netPrimaryHint')}
-              flush
-            >
+            <Field label={t('projects.netPrimaryDomain')} htmlFor="net-domain" required flush>
               <input
                 id="net-domain"
                 value={domain}
@@ -152,61 +217,26 @@ export function ProjectNetworkTab({
                 autoComplete="off"
               />
             </Field>
-            <Field
-              label={t('projects.ovAliases')}
-              htmlFor="net-aliases"
-              hint={t('projects.netAliasesHint')}
-              flush
-              fullWidth
-            >
+            <Field label={t('projects.ovAliases')} htmlFor="net-aliases" flush fullWidth>
               <textarea
                 id="net-aliases"
-                rows={3}
+                rows={2}
                 value={aliasesText}
                 onChange={bindInput(setAliasesText)}
-                placeholder={'www.example.com'}
+                placeholder="www.example.com"
                 disabled={suspended}
               />
             </Field>
           </FormLayout>
-          <FormActions>
-            <Button
-              variant="secondary"
-              size="md"
-              loading={localBusy}
-              disabled={suspended}
-              onClick={bindCall1(saveNetwork, false)}
-            >
-              {t('projects.saveOnly')}
-            </Button>
-            <Button
-              variant="primary"
-              size="md"
-              loading={localBusy}
-              disabled={suspended || !hasDomain}
-              title={!hasDomain ? t('projects.netNeedPrimary') : undefined}
-              onClick={bindCall2(saveNetwork, true, false)}
-            >
-              {t('projects.savePublishNginx')}
-            </Button>
-          </FormActions>
-          {!hasDomain ? (
-            <p className="muted u-text-sm u-mt-3 u-mb-0">{t('projects.needDomainToPublish')}</p>
-          ) : null}
         </CardSection>
       </Card>
 
-      {/* 2. HTTPS + whole-site redirect */}
       <Card>
-        <CardSection
-          title={t('projects.netHttpsTitle')}
-          description={t('projects.netHttpsDesc')}
-        >
+        <CardSection title="HTTPS">
           <div className="form-switches">
             <CheckboxField
               id="net-https"
               label={t('projects.netForceHttps')}
-              description={t('projects.netForceHttpsDesc')}
               checked={forceHttps}
               onChange={setForceHttps}
               disabled={suspended}
@@ -214,20 +244,13 @@ export function ProjectNetworkTab({
             <CheckboxField
               id="net-hsts"
               label={t('projects.netHsts')}
-              description={t('projects.netHstsDesc')}
               checked={hsts}
               onChange={setHsts}
               disabled={suspended || !forceHttps}
             />
           </div>
           <FormLayout>
-            <Field
-              label={t('projects.netRedirectUrl')}
-              htmlFor="net-redir"
-              hint={t('projects.netRedirectHint')}
-              flush
-              fullWidth
-            >
+            <Field label={t('projects.netRedirectUrl')} htmlFor="net-redir" flush fullWidth>
               <input
                 id="net-redir"
                 value={redirectUrl}
@@ -237,6 +260,141 @@ export function ProjectNetworkTab({
               />
             </Field>
           </FormLayout>
+        </CardSection>
+      </Card>
+
+      <Card>
+        <CardSection title={t('projects.netBasicAuthTitle')}>
+          <FormLayout columns={2}>
+            <Field label={t('common.username')} htmlFor="net-au" flush>
+              <input
+                id="net-au"
+                value={authUser}
+                onChange={bindInput(setAuthUser)}
+                disabled={suspended}
+                autoComplete="username"
+              />
+            </Field>
+            <Field label={t('common.password')} htmlFor="net-ap" flush>
+              <input
+                id="net-ap"
+                type="password"
+                value={authPass}
+                onChange={bindInput(setAuthPass)}
+                disabled={suspended}
+                autoComplete="new-password"
+              />
+            </Field>
+          </FormLayout>
+        </CardSection>
+      </Card>
+
+      {(project.runtime === 'static' || project.runtime === 'php') && (
+        <Card>
+          <CardSection title={t('projects.netDocrootTitle')}>
+            <FormLayout>
+              <Field label={t('projects.ovDocroot')} htmlFor="net-doc" flush>
+                <div className="u-mb-2">
+                  <PresetChips
+                    options={[
+                      { value: 'app/public', label: 'app/public' },
+                      { value: 'app', label: 'app' },
+                      { value: 'public', label: 'public' },
+                      { value: 'dist', label: 'dist' },
+                    ]}
+                    value={docRoot || 'app/public'}
+                    onChange={setDocRoot}
+                    allowCustom
+                    disabled={suspended || localBusy}
+                  />
+                </div>
+                <input
+                  id="net-doc"
+                  value={docRoot}
+                  onChange={bindInput(setDocRoot)}
+                  placeholder="app/public"
+                  disabled={suspended}
+                  spellCheck={false}
+                />
+              </Field>
+            </FormLayout>
+          </CardSection>
+        </Card>
+      )}
+
+      {showPort ? (
+        <Card>
+          <CardSection title={t('projects.netPortTitle', { defaultValue: '進程埠' })}>
+            <FormLayout columns={2}>
+              <Field
+                label={t('projects.createPreferredPort', { defaultValue: '固定埠' })}
+                htmlFor="net-pref-port"
+                hint={t('projects.preferredPortRedeployHint', {
+                  defaultValue: '儲存後需重新部署才會改進程埠',
+                })}
+                flush
+              >
+                <input
+                  id="net-pref-port"
+                  inputMode="numeric"
+                  value={preferredPort}
+                  onChange={bindInput(setPreferredPort)}
+                  placeholder="auto"
+                  disabled={suspended}
+                />
+              </Field>
+              <Field label={t('projects.netCurrentPort', { defaultValue: '目前埠' })} htmlFor="net-cur-port" flush>
+                <code id="net-cur-port" className="inline">
+                  {project.port != null ? String(project.port) : '—'}
+                </code>
+              </Field>
+              <Field label="bind_ip" htmlFor="net-bind" flush>
+                <input
+                  id="net-bind"
+                  value={bindIp}
+                  onChange={bindInput(setBindIp)}
+                  placeholder="0.0.0.0 / empty"
+                  disabled={suspended}
+                />
+              </Field>
+              <Field label={t('projects.netRealIp', { defaultValue: 'Real IP' })} htmlFor="net-realip" flush>
+                <select
+                  id="net-realip"
+                  value={realIpProvider}
+                  onChange={bindInput(setRealIpProvider)}
+                  disabled={suspended}
+                >
+                  <option value="inherit">inherit</option>
+                  <option value="none">none</option>
+                  <option value="cloudflare">cloudflare</option>
+                  <option value="fastly">fastly</option>
+                  <option value="bunny">bunny</option>
+                  <option value="cloudfront">cloudfront</option>
+                </select>
+              </Field>
+            </FormLayout>
+          </CardSection>
+        </Card>
+      ) : (
+        <Card>
+          <CardSection title="bind_ip">
+            <FormLayout>
+              <Field label="bind_ip" htmlFor="net-bind-only" flush>
+                <input
+                  id="net-bind-only"
+                  value={bindIp}
+                  onChange={bindInput(setBindIp)}
+                  placeholder="empty = all"
+                  disabled={suspended}
+                />
+              </Field>
+            </FormLayout>
+          </CardSection>
+        </Card>
+      )}
+
+      <Card>
+        <CardSection title={t('projects.netPublishTitle', { defaultValue: '發佈' })}>
           <FormActions>
             <Button
               variant="secondary"
@@ -252,78 +410,39 @@ export function ProjectNetworkTab({
               size="md"
               loading={localBusy}
               disabled={suspended || !hasDomain}
-              onClick={bindCall2(saveNetwork, true, forceHttps)}
-            >
-              {t('projects.savePublish')}
-            </Button>
-          </FormActions>
-        </CardSection>
-      </Card>
-
-      {/* 3. HTTP Basic Auth */}
-      <Card>
-        <CardSection
-          title={t('projects.netBasicAuthTitle')}
-          description={t('projects.netBasicAuthDesc')}
-        >
-          <FormLayout columns={2}>
-            <Field label={t('common.username')} htmlFor="net-au" flush hint={t('projects.netAuthUserHint')}>
-              <input
-                id="net-au"
-                value={authUser}
-                onChange={bindInput(setAuthUser)}
-                disabled={suspended}
-                autoComplete="username"
-                placeholder="admin"
-              />
-            </Field>
-            <Field label={t('common.password')} htmlFor="net-ap" flush hint={t('projects.netAuthPassHint')}>
-              <input
-                id="net-ap"
-                type="password"
-                value={authPass}
-                onChange={bindInput(setAuthPass)}
-                disabled={suspended}
-                autoComplete="new-password"
-                placeholder={authUser ? t('projects.netAuthPassSet') : '—'}
-              />
-            </Field>
-          </FormLayout>
-          <FormActions>
-            <Button
-              variant="secondary"
-              size="md"
-              loading={localBusy}
-              disabled={suspended}
-              onClick={bindCall1(saveNetwork, false)}
-            >
-              {t('projects.saveAuth')}
-            </Button>
-            <Button
-              variant="primary"
-              size="md"
-              loading={localBusy}
-              disabled={suspended || !hasDomain}
               onClick={bindCall2(saveNetwork, true, false)}
             >
               {t('projects.savePublishNginx')}
             </Button>
-          </FormActions>
-        </CardSection>
-      </Card>
-
-      {/* 4. Cache */}
-      <Card>
-        <CardSection
-          title={t('projects.netCacheTitle')}
-          description={t('projects.netCacheNote')}
-        >
-          <FormHint>
-            {t('projects.cacheZoneNote')}
-          </FormHint>
-          <FormActions>
             <Button
               variant="secondary"
+              size="md"
+              loading={localBusy}
+              disabled={suspended || !hasDomain}
+              onClick={bindCall2(saveNetwork, true, true)}
+            >
+              {t('projects.savePublishSsl', { defaultValue: '儲存並發佈 + SSL' })}
+            </Button>
+            <Button
+              variant="ghost"
+              size="md"
+              loading={localBusy}
+              disabled={suspended || !hasDomain}
+              onClick={onPublish}
+            >
+              {t('projects.publishNginx')}
+            </Button>
+            <Button
+              variant="ghost"
+              size="md"
+              loading={localBusy}
+              disabled={suspended || !hasDomain}
+              onClick={onPublishSsl}
+            >
+              {t('projects.publishNginxSsl', { defaultValue: '發佈 + SSL' })}
+            </Button>
+            <Button
+              variant="ghost"
               size="md"
               loading={localBusy}
               disabled={suspended}
@@ -353,191 +472,41 @@ export function ProjectNetworkTab({
         </CardSection>
       </Card>
 
-      {/* 5. Document root (first-class) + publish */}
-      <Card>
-        <CardSection
-          title={t('projects.netDocrootTitle')}
-          description={t('projects.netDocrootDesc')}
-        >
-          <FormLayout columns={1}>
-            <Field
-              label={t('projects.ovDocroot')}
-              htmlFor="net-doc"
-              flush
-              hint={t('projects.netDocrootFull', { path: `${project.homeDir}/${(docRoot.trim() || 'app/public').replace(/^\//, '')}` })}
-            >
-              <div className="u-mb-2">
-                <PresetChips
-                  options={[
-                    { value: 'app/public', label: 'app/public' },
-                    { value: 'app', label: 'app' },
-                    { value: 'public', label: 'public' },
-                    { value: 'web', label: 'web' },
-                    { value: 'www', label: 'www' },
-                    { value: 'dist', label: 'dist' },
-                  ]}
-                  value={docRoot || 'app/public'}
-                  onChange={setDocRoot}
-                  allowCustom
-                  customPlaceholder={t('projects.netDocrootCustom')}
-                  disabled={suspended || localBusy}
-                />
-              </div>
-              <input
-                id="net-doc"
-                value={docRoot}
-                onChange={bindInput(setDocRoot)}
-                placeholder="app/public"
-                disabled={suspended}
-                spellCheck={false}
-              />
-            </Field>
-          </FormLayout>
-        </CardSection>
-      </Card>
-
-      {/* 5b. Real IP / CDN per site */}
-      <Card>
-        <CardSection
-          title={t('projects.netRealIpTitle', { defaultValue: 'Real IP / CDN' })}
-          description={t('projects.netRealIpDesc', {
-            defaultValue:
-              'Restore visitor IP behind CDN. Inherit system default or override for this site. Re-publish Nginx after change.',
-          })}
-        >
-          <FormLayout>
-            <Field
-              label={t('projects.netRealIpProvider', { defaultValue: 'Provider' })}
-              htmlFor="net-rip"
-              flush
-              hint={t('projects.netRealIpHint', {
-                defaultValue: 'System default is set under Network → Real IP / CDN',
-              })}
-            >
-              <select
-                id="net-rip"
-                className="input"
-                value={realIpProvider}
-                onChange={(e) => setRealIpProvider(e.target.value)}
-                disabled={suspended}
+      {project.nginxConfigPath ? (
+        <Card>
+          <CardSection title={t('projects.netConfPreview', { defaultValue: 'Conf' })}>
+            <FormActions>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setConfPreview((p) => (p != null ? null : ''));
+                  if (confPreview != null) return;
+                  void projectsApi
+                    .nginxConf?.(project.id)
+                    .then((r) => setConfPreview(r.content ?? r.conf ?? ''))
+                    .catch(() =>
+                      setConfPreview(
+                        project.nginxConfigPath
+                          ? `# ${project.nginxConfigPath}\n# preview API unavailable — open file on host`
+                          : '',
+                      ),
+                    );
+                }}
               >
-                <option value="inherit">
-                  {t('projects.netRealIpInherit', { defaultValue: 'Inherit system default' })}
-                </option>
-                <option value="none">none (direct)</option>
-                <option value="cloudflare">Cloudflare</option>
-                <option value="fastly">Fastly</option>
-                <option value="bunny">Bunny CDN</option>
-                <option value="cloudfront">AWS CloudFront</option>
-                <option value="azure_frontdoor">Azure Front Door</option>
-                <option value="gcore">Gcore</option>
-                <option value="custom">Custom CIDRs</option>
-              </select>
-            </Field>
-          </FormLayout>
-          <FormActions>
-            <Button
-              variant="secondary"
-              size="md"
-              loading={localBusy}
-              disabled={suspended}
-              onClick={bindCall1(saveNetwork, false)}
-            >
-              {t('common.save')}
-            </Button>
-            <Button
-              variant="primary"
-              size="md"
-              loading={localBusy}
-              disabled={suspended || !hasDomain}
-              onClick={bindCall2(saveNetwork, true, forceHttps)}
-            >
-              {t('projects.savePublish')}
-            </Button>
-          </FormActions>
-        </CardSection>
-      </Card>
-
-      <Card>
-        <CardSection title={t('projects.netAdvancedTitle')} description={t('projects.netAdvancedDesc')}>
-          <FormHint>
-            {t('projects.nginxManageFile')}{' '}
-            {project.nginxConfigPath ? (
-              <code className="inline">{project.nginxConfigPath}</code>
-            ) : (
-              <span className="muted">{t('projects.nginxNone')}</span>
-            )}
-            {' · '}
-            {t('projects.publishRuntimeNote')}
-          </FormHint>
-
-          <button
-            type="button"
-            className={`${buttonClassName({ variant: 'ghost', size: 'sm' })} u-mb-4`}
-            onClick={bindToggle(setAdvancedOpen)}
-          >
-            {advancedOpen ? t('projects.netCollapseBind') : t('projects.netExpandBind')}
-          </button>
-
-          {advancedOpen ? (
-            <FormLayout columns={2}>
-              <Field label={t('projects.netBindIp')} htmlFor="net-ip" hint={t('projects.netBindHint')} flush>
-                <input
-                  id="net-ip"
-                  value={bindIp}
-                  onChange={bindInput(setBindIp)}
-                  placeholder={t('projects.netBindPh')}
-                  disabled={suspended}
-                  spellCheck={false}
-                />
-              </Field>
-            </FormLayout>
-          ) : null}
-
-          <FormActions>
-            <Button
-              variant="primary"
-              size="md"
-              loading={localBusy}
-              disabled={suspended || !hasDomain}
-              title={!hasDomain ? t('projects.netNeedDomainSave') : undefined}
-              onClick={bindCall2(saveNetwork, true, false)}
-            >
-              {t('projects.ovPublishNginx')}
-            </Button>
-            <Button
-              variant="secondary"
-              size="md"
-              loading={localBusy}
-              disabled={suspended || !hasDomain}
-              onClick={bindCall2(saveNetwork, true, true)}
-            >
-              {t('projects.ovPublishSsl')}
-            </Button>
-            <Button
-              variant="ghost"
-              size="md"
-              loading={localBusy}
-              disabled={suspended}
-              onClick={onPublish}
-            >
-              {t('projects.publishStored')}
-            </Button>
-            <Button
-              variant="ghost"
-              size="md"
-              loading={localBusy}
-              disabled={suspended || !hasDomain}
-              onClick={onPublishSsl}
-            >
-              {t('projects.publishStoredSsl')}
-            </Button>
-          </FormActions>
-          <p className="muted u-text-sm u-mt-3 u-mb-0">
-            {t('projects.publishNote')}
-          </p>
-        </CardSection>
-      </Card>
+                {confPreview != null
+                  ? t('common.hide', { defaultValue: '隱藏' })
+                  : t('common.show', { defaultValue: '顯示' })}
+              </Button>
+            </FormActions>
+            {confPreview != null ? (
+              <pre className="code-block u-mt-2" style={{ maxHeight: 320, overflow: 'auto' }}>
+                {confPreview || '—'}
+              </pre>
+            ) : null}
+          </CardSection>
+        </Card>
+      ) : null}
     </div>
   );
 }

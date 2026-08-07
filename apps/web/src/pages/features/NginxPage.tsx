@@ -1,6 +1,5 @@
 import { FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import {
   WithPageGuide,
   DataTable,
@@ -19,7 +18,6 @@ import {
   FormHint,
   CheckboxField,
   SegRadio,
-  buttonClassName,
 } from '../../shared/components/ui';
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
@@ -155,15 +153,18 @@ export function NginxPage() {
             {t('nginx.purgeCache')}
           </Button>
 
-          <Link to="/ssl" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-            SSL
-          </Link>
         </ActionBar>
       }
     >
       <WithPageGuide guideId="nginx">
         <SoftwareInstallBanner feature="nginx" title={t('nginx.notInstalled')} />
         <SoftwareVersionBar softwareId="nginx" />
+        <Alert variant="info">
+          {t('nginx.projectSitesHint', {
+            defaultValue:
+              '此頁只管理獨立站點資源。專案的 Nginx 請到 Projects → 專案 → 網絡。',
+          })}
+        </Alert>
         {error ? <Alert variant="error">{error}</Alert> : null}
         {purgeMsg ? <Alert variant="info">{purgeMsg}</Alert> : null}
         <DataTable

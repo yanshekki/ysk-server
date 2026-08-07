@@ -2,7 +2,6 @@
  * Project logs — list/search by filename + content keyword; extra scan dirs.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { bindInput } from '../../../pages/bind-handlers';
 import {
@@ -11,13 +10,11 @@ import {
   CardHeader,
   Field,
   FormActions,
-  FormHint,
   FormLayout,
   LogViewer,
   PresetChips,
   Badge,
-
-  buttonClassName,} from '../../../shared/components/ui';
+} from '../../../shared/components/ui';
 
 export interface ProjectLogFile {
   name: string;
@@ -55,7 +52,6 @@ export interface ProjectLogsTabProps {
   onSaveExtraDirs?: (dirs: string[]) => void | Promise<void>;
   /** Auto-scan logs directory once when tab mounts (default true) */
   autoLoad?: boolean;
-  /** Project id for deep-link to Log Center */
   projectId?: string;
 }
 
@@ -99,22 +95,6 @@ export function ProjectLogsTab({
     onLoad();
   }, [autoLoad, onLoad]);
 
-  const logCenterHref =
-    projectId && selectedFile
-      ? `/logs?tab=explore&project=${encodeURIComponent(projectId)}&source=${encodeURIComponent(`project:${projectId}:${selectedFile}`)}`
-      : projectId
-        ? `/logs?tab=explore&project=${encodeURIComponent(projectId)}`
-        : '/logs?tab=explore&projectsOnly=1';
-
-  /** B20: deep links for common nginx site logs */
-  const nginxAccessHref = projectId
-    ? `/logs?tab=explore&project=${encodeURIComponent(projectId)}&q=${encodeURIComponent('access.log')}`
-    : '/logs?tab=explore&q=access.log';
-  const nginxErrorHref = projectId
-    ? `/logs?tab=explore&project=${encodeURIComponent(projectId)}&q=${encodeURIComponent('error.log')}`
-    : '/logs?tab=explore&q=error.log';
-  const journalNginxHref = '/logs?unit=nginx';
-
   const filteredByLocalName = useMemo(() => {
     // Server already filters by name when scanning; keep client filter for snappy UI
     const q = nameQ.trim().toLowerCase();
@@ -132,21 +112,10 @@ export function ProjectLogsTab({
   return (
     <div className="tab-panel stack">
       <Card>
-        <CardHeader
-          title={t('projects.sectionLogs', { defaultValue: t('projects.sectionLogs') })}
-          description={t('projects.sectionLogsDesc', {
-            defaultValue:
-              t('projects.logsSectionDesc'),
-          })}
-        />
+        <CardHeader title={t('projects.sectionLogs')} />
 
         <FormLayout columns={2}>
-          <Field
-            label={t('projects.logsNameSearch')}
-            htmlFor="plog-name"
-            hint={t('projects.logsNameSearchHint')}
-            flush
-          >
+          <Field label={t('projects.logsNameSearch')} htmlFor="plog-name" flush>
             <input
               id="plog-name"
               value={nameQ}
@@ -158,12 +127,7 @@ export function ProjectLogsTab({
               }}
             />
           </Field>
-          <Field
-            label={t('projects.logsContentKw')}
-            htmlFor="plog-grep"
-            hint={t('projects.logsContentKwHint')}
-            flush
-          >
+          <Field label={t('projects.logsContentKw')} htmlFor="plog-grep" flush>
             <input
               id="plog-grep"
               value={grepQ}
@@ -178,12 +142,7 @@ export function ProjectLogsTab({
         </FormLayout>
 
         <FormActions>
-          <Button
-            variant="primary"
-            size="sm"
-            loading={busy}
-            onClick={runScan}
-          >
+          <Button variant="primary" size="sm" loading={busy} onClick={runScan}>
             {grepQ.trim() ? t('common.search') : t('projects.logsRescan')}
           </Button>
           {selectedFile ? (
@@ -191,9 +150,7 @@ export function ProjectLogsTab({
               variant="secondary"
               size="sm"
               loading={busy}
-              onClick={() =>
-                onRefreshFile?.({ grep: grepQ.trim() || undefined })
-              }
+              onClick={() => onRefreshFile?.({ grep: grepQ.trim() || undefined })}
             >
               {t('projects.logsRefreshFile')}
             </Button>
@@ -228,35 +185,6 @@ export function ProjectLogsTab({
               {t('projects.logsDownloadTail')}
             </Button>
           ) : null}
-          <Link
-            to={logCenterHref}
-            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-          >
-            {t('system.scLogs')}
-          </Link>
-          <Link
-            to={nginxAccessHref}
-            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-            onClick={() => setNameQ('access.log')}
-          >
-            {t('projects.logsDeepAccess')}
-          </Link>
-          <Link
-            to={nginxErrorHref}
-            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-            onClick={() => setNameQ('error.log')}
-          >
-            {t('projects.logsDeepError')}
-          </Link>
-          <Link
-            to={journalNginxHref}
-            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-          >
-            {t('projects.logsDeepNginxUnit')}
-          </Link>
-        </FormActions>
-
-        <div className="u-flex u-flex-wrap u-gap-2 u-mt-2">
           <Button
             variant="ghost"
             size="sm"
@@ -279,17 +207,15 @@ export function ProjectLogsTab({
           >
             {t('projects.logsPresetError')}
           </Button>
-        </div>
+        </FormActions>
 
         {searchNotes.length ? (
-          <FormHint>{searchNotes.join(' · ')}</FormHint>
+          <p className="muted u-text-sm u-mt-2">{searchNotes.join(' · ')}</p>
         ) : null}
 
         {hits.length > 0 ? (
           <div className="u-mt-3">
-            <FormHint>
-              {t('projects.hitsFiles', { count: hits.length })}
-            </FormHint>
+            <p className="muted u-text-sm">{t('projects.hitsFiles', { count: hits.length })}</p>
             <div className="chip-row u-mt-2">
               {hits.map((h) => (
                 <button
@@ -314,11 +240,10 @@ export function ProjectLogsTab({
 
         {filteredByLocalName.length > 0 ? (
           <div className="u-mt-4">
-            <FormHint>
+            <p className="muted u-text-sm">
               {t('projects.logFilesCount', { count: filteredByLocalName.length })}
               {nameQ.trim() ? t('projects.logsNameFilter', { q: nameQ.trim() }) : ''}
-              ：
-            </FormHint>
+            </p>
             <div className="chip-row">
               {filteredByLocalName.map((f) => (
                 <button
@@ -341,11 +266,9 @@ export function ProjectLogsTab({
             </div>
           </div>
         ) : (
-          <FormHint>
-            {busy
-              ? t('projects.logsScanning')
-              : t('projects.logsNoneYet')}
-          </FormHint>
+          <p className="muted u-text-sm u-mt-2">
+            {busy ? t('projects.logsScanning') : t('projects.logsNoneYet')}
+          </p>
         )}
 
         <div className="u-mt-4">
@@ -360,10 +283,7 @@ export function ProjectLogsTab({
 
       {related.length > 0 ? (
         <Card>
-          <CardHeader
-            title={t('projects.logsRelated')}
-            description={t('projects.logsRelatedDesc')}
-          />
+          <CardHeader title={t('projects.logsRelated')} />
           <ul className="plog-related">
             {related.map((r) => (
               <li key={r.id} className="plog-related__item">
@@ -375,24 +295,11 @@ export function ProjectLogsTab({
               </li>
             ))}
           </ul>
-          {projectId ? (
-            <FormActions>
-              <Link
-                to={`/logs?tab=explore&project=${encodeURIComponent(projectId)}`}
-                className={buttonClassName({ variant: 'secondary', size: 'sm' })}
-              >
-                {t('projects.logsOpenInCenter')}
-              </Link>
-            </FormActions>
-          ) : null}
         </Card>
       ) : null}
 
       <Card>
-        <CardHeader
-          title={t('projects.logsExtraDirs')}
-          description={t('projects.logsExtraDirsDesc')}
-        />
+        <CardHeader title={t('projects.logsExtraDirs')} />
         <div className="u-mb-3">
           <PresetChips
             options={[
@@ -471,9 +378,6 @@ export function ProjectLogsTab({
             {t('projects.logsSaveScan')}
           </Button>
         </FormActions>
-        <FormHint>
-          {t('projects.defaultScanNote')}
-        </FormHint>
       </Card>
     </div>
   );

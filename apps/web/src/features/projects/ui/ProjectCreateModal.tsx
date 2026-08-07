@@ -2,11 +2,9 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActionBar,
-  Badge,
   Button,
   CheckboxField,
   Field,
-  FormHint,
   FormLayout,
   Modal,
   SegRadio,
@@ -82,6 +80,8 @@ export interface ProjectCreateModalProps {
     runtime: ProjectRuntime;
     runtimeVersion?: string;
     templateId?: string;
+    goLive?: boolean;
+    preferredPort?: number;
     createDnsZone?: boolean;
     createMailDomain?: boolean;
     serverIp?: string;
@@ -106,6 +106,8 @@ export function ProjectCreateModal({
     defaultRuntimeInstallVersion('node'),
   );
   const [templateId, setTemplateId] = useState(() => helloTemplateId('node'));
+  const [goLive, setGoLive] = useState(true);
+  const [preferredPort, setPreferredPort] = useState('');
   const [createDns, setCreateDns] = useState(false);
   const [createMail, setCreateMail] = useState(false);
   const [serverIp, setServerIp] = useState('');
@@ -167,6 +169,8 @@ export function ProjectCreateModal({
       setRuntimeVersion(defaultRuntimeInstallVersion('node'));
       setVersionChoices(runtimeVersionChoices('node'));
       setTemplateId(helloTemplateId('node'));
+      setGoLive(true);
+      setPreferredPort('');
       setCreateDns(false);
       setCreateMail(false);
       setServerIp('');
@@ -212,6 +216,7 @@ export function ProjectCreateModal({
       .split(/[\n,]+/)
       .map((s) => s.trim())
       .filter(Boolean);
+    const portNum = preferredPort.trim() ? Number(preferredPort.trim()) : undefined;
     await onSubmit({
       name,
       domain: domain || undefined,
@@ -222,6 +227,12 @@ export function ProjectCreateModal({
           ? runtimeVersion
           : undefined,
       templateId: templateId || undefined,
+      // Template defaults to goLive; without template honour checkbox
+      goLive: templateId ? goLive !== false : goLive,
+      preferredPort:
+        portNum != null && Number.isFinite(portNum) && portNum > 0 && portNum < 65536
+          ? Math.floor(portNum)
+          : undefined,
       createDnsZone: Boolean(domain && createDns),
       createMailDomain: Boolean(domain && createMail),
       serverIp: createDns || createMail ? serverIp : undefined,
@@ -260,7 +271,6 @@ export function ProjectCreateModal({
       open={open}
       onClose={onClose}
       title={t('projects.create')}
-      description={t('projects.createHint')}
       size="lg"
       footer={
         <ActionBar size="md" align="end">
@@ -425,42 +435,40 @@ export function ProjectCreateModal({
           ) : null}
         </FormLayout>
 
-        {selectedTpl ? (
-          <div className="project-create-form__tpl">
-            <ActionBar size="sm" className="u-mb-2">
-              <strong>{selectedTpl.name}</strong>
-              <Badge tone="info">
-                {formatRuntimeName(selectedTpl.runtime, t)}
-              </Badge>
-            </ActionBar>
-            <p className="muted u-text-sm u-mb-0">{selectedTpl.description}</p>
-            <p className="muted u-text-sm u-mt-2 u-mb-0">
-              {t('projects.createTemplateNote')}
-            </p>
-          </div>
-        ) : (
-          <FormHint>
-            {t('projects.createRuntimeNow')}
-            <strong>{formatRuntimeName(runtime, t)}</strong>
-            {t('projects.createTemplateFooter')}
-          </FormHint>
-        )}
-
-        {/* ④ 草稿資源 — 永遠顯示（唔再因未填域名而消失） */}
-        <div className="project-create-form__extras">
-          <p className="project-create-form__extras-title">
-            {t('projects.createDraftResources')}
-          </p>
-          {!hasDomain ? (
-            <FormHint>
-              {t('projects.createNeedDomainFirst')}
-            </FormHint>
+        <FormLayout>
+          <CheckboxField
+            id="pc-golive"
+            label={t('projects.createGoLive', {
+              defaultValue: '建立後立即部署並發佈 Nginx',
+            })}
+            checked={goLive}
+            onChange={setGoLive}
+            disabled={busy}
+          />
+          {runtime !== 'static' && runtime !== 'php' ? (
+            <Field
+              label={t('projects.createPreferredPort', { defaultValue: '固定埠（可選）' })}
+              htmlFor="pport"
+              flush
+            >
+              <input
+                id="pport"
+                inputMode="numeric"
+                value={preferredPort}
+                onChange={bindInput(setPreferredPort)}
+                placeholder="auto"
+                disabled={busy}
+              />
+            </Field>
           ) : null}
+        </FormLayout>
+
+        {/* ④ 草稿資源 */}
+        <div className="project-create-form__extras">
           <div className="form-switches">
             <CheckboxField
               id="pc-dns"
               label={t('projects.createDnsZone')}
-              description={t('projects.createDnsZoneDesc')}
               checked={createDns && hasDomain}
               onChange={(v) => setCreateDns(v)}
               disabled={!hasDomain || busy}
@@ -468,7 +476,6 @@ export function ProjectCreateModal({
             <CheckboxField
               id="pc-mail"
               label={t('projects.createMailDomain')}
-              description={t('projects.createMailDomainDesc')}
               checked={createMail && hasDomain}
               onChange={(v) => setCreateMail(v)}
               disabled={!hasDomain || busy}

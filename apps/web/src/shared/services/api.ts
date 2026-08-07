@@ -399,6 +399,8 @@ export const api = {
     runtime?: string;
     runtimeVersion?: string;
     templateId?: string;
+    goLive?: boolean;
+    preferredPort?: number;
     createDnsZone?: boolean;
     createMailDomain?: boolean;
     serverIp?: string;
@@ -407,7 +409,12 @@ export const api = {
     project: ProjectDto;
     osProvision: unknown;
     scaffold?: unknown;
-    extras?: { dnsZoneId?: string; emailDomainId?: string; notes: string[] };
+    extras?: {
+      dnsZoneId?: string;
+      emailDomainId?: string;
+      notes: string[];
+      goLive?: { ok: boolean; notes: string[] };
+    };
   }> {
     return request('/api/v1/projects', { method: 'POST', body: JSON.stringify(body) });
   },
@@ -528,6 +535,7 @@ export const api = {
       docRoot?: string | null;
       bindIp?: string | null;
       realIpProvider?: string | null;
+      preferredPort?: number | null;
       publish?: boolean;
       ssl?: boolean;
     },

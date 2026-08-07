@@ -10,7 +10,6 @@ import {
   ConfirmDialog,
   Field,
   FormActions,
-  FormHint,
   FormLayout,
   PresetChips,
   SegRadio,
@@ -179,10 +178,7 @@ export function ProjectResourcesTab({
       <ProjectSshCard project={project} onMessage={onOpsMessage} />
 
       <Card>
-        <CardSection
-          title={t('projects.resOsTitle')}
-          description={t('projects.resOsDesc')}
-        >
+        <CardSection title={t('projects.resOsTitle')}>
           <FormLayout columns={2}>
             <Field label={t('security.ssh.linuxUser')} htmlFor="lu" flush>
               <input id="lu" value={project.linuxUser || '—'} readOnly disabled />
@@ -261,12 +257,8 @@ export function ProjectResourcesTab({
             </Field>
           </FormLayout>
           {live?.notes?.length ? (
-            <FormHint>{live.notes.slice(0, 3).join('；')}</FormHint>
-          ) : (
-            <FormHint>
-              {t('projects.resOsHint')}
-            </FormHint>
-          )}
+            <p className="muted u-text-sm">{live.notes.slice(0, 2).join('；')}</p>
+          ) : null}
           <FormActions>
             {onProvisionOs && !project.osProvisioned ? (
               <Button variant="primary" size="md" loading={anyBusy} onClick={onProvisionOs}>
@@ -296,13 +288,11 @@ export function ProjectResourcesTab({
       <Card>
         <CardSection
           title={t('projects.sectionQuota', { defaultValue: t('projects.sectionQuota') })}
-          description={t('projects.resQuotaDesc')}
         >
           <FormLayout>
             <Field
               label={t('projects.quotaMb', { defaultValue: t('publicFiles.quotaMiB') })}
               htmlFor="qmb"
-              hint={t('projects.resQuotaHint')}
               flush
             >
               <PresetChips
@@ -330,12 +320,7 @@ export function ProjectResourcesTab({
       </Card>
 
       <Card>
-        <CardSection
-          title={t('projects.resLimitsTitle')}
-          description={
-            isPm2 ? t('projects.resLimitsDescPm2') : t('projects.resLimitsDescSystemd')
-          }
-        >
+        <CardSection title={t('projects.resLimitsTitle')}>
           <div className="action-bar u-gap-2 u-mb-3">
             <Badge tone={isPm2 ? 'info' : 'ok'}>
               {isPm2
@@ -344,12 +329,7 @@ export function ProjectResourcesTab({
             </Badge>
           </div>
           <FormLayout columns={2}>
-            <Field
-              label={t('projects.resMemMax')}
-              htmlFor="mem"
-              hint={isPm2 ? t('projects.resMemHintPm2') : t('projects.resMemHintSystemd')}
-              flush
-            >
+            <Field label={t('projects.resMemMax')} htmlFor="mem" flush>
               <PresetChips
                 options={[
                   { value: '256M', label: '256M' },
@@ -364,16 +344,7 @@ export function ProjectResourcesTab({
                 customPlaceholder={t('common.custom')}
               />
             </Field>
-            <Field
-              label={t('projects.cpuQuota')}
-              htmlFor="cpuq"
-              hint={
-                isPm2
-                  ? t('projects.resFieldSystemdOnly')
-                  : t('projects.resCpuHint')
-              }
-              flush
-            >
+            <Field label={t('projects.cpuQuota')} htmlFor="cpuq" flush>
               <PresetChips
                 options={[
                   { value: '25', label: '25%' },
@@ -453,14 +424,10 @@ export function ProjectResourcesTab({
             <CheckboxField
               id="alock"
               label={t('projects.resLockAccount')}
-              description={t('projects.resLockDesc')}
               checked={locked}
               onChange={setLocked}
             />
           </div>
-          <FormHint>
-            {isPm2 ? t('projects.resLimitsHintPm2') : t('projects.resLimitsHintSystemd')}
-          </FormHint>
           <FormActions>
             <Button
               variant="primary"

@@ -338,9 +338,9 @@ describe('Project Agents Dashboard misc helpers', () => {
       showLogsTab: true,
     });
     expect(ids.length).toBeGreaterThan(2);
-    expect(ids).toContain('deploy');
+    expect(ids).toContain('app');
     const tabs = ids.map((id) => ({ id }));
-    expect(resolveActiveTab(tabs, 'deploy')).toBe('deploy');
+    expect(resolveActiveTab(tabs, 'deploy')).toBe('app');
     expect(resolveActiveTab(tabs, 'nope')).toBe('overview');
     expect(formatLogTailHeader('/var/log/a.log', ['n1', 'n2'])).toContain('a.log');
     expect(formatLogTailHeader('/x', 'solo')).toContain('solo');

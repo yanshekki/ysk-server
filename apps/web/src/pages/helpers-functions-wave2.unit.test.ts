@@ -169,27 +169,20 @@ describe('ProjectDetailPage wave2 helpers', () => {
         showResourcesTab: true,
         showLogsTab: true,
       }),
-    ).toEqual([
-      'overview',
-      'deploy',
-      'network',
-      'resources',
-      'logs',
-      'advanced',
-      'about',
-    ]);
+    ).toEqual(['overview', 'app', 'network', 'isolation', 'more']);
     expect(
       projectTabIds({
         showDeployTab: false,
         showResourcesTab: false,
         showLogsTab: false,
       }),
-    ).toEqual(['overview', 'network', 'advanced', 'about']);
+    ).toEqual(['overview', 'network', 'more']);
   });
 
   it('resolveActiveTab', () => {
-    const tabs = [{ id: 'overview' }, { id: 'deploy' }];
-    expect(resolveActiveTab(tabs, 'deploy')).toBe('deploy');
+    const tabs = [{ id: 'overview' }, { id: 'app' }];
+    expect(resolveActiveTab(tabs, 'deploy')).toBe('app');
+    expect(resolveActiveTab(tabs, 'app')).toBe('app');
     expect(resolveActiveTab(tabs, 'missing')).toBe('overview');
   });
 
