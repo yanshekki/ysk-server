@@ -56,6 +56,7 @@ const SERVICE_PORT_CHIPS = listFirewallPortChips();
  */
 export function parsePortSpecs(extraPorts: string): string[] {
   const out: string[] = [];
+  const maxPorts = 40;
   for (const part of extraPorts.split(/[,\s]+/).filter(Boolean)) {
     if (out.length >= maxPorts) break;
     if (part.includes(':')) {

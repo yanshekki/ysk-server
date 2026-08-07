@@ -938,7 +938,6 @@ export class ProjectOpsService {
     let conf: string;
     let kind = 'proxy';
     let port = row.port;
-    const docRoot = resolveProjectDocRoot(row);
 
     if (row.runtime === 'static') {
       kind = 'static';

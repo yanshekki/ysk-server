@@ -17,7 +17,6 @@ import { webGroupProvisionCommands } from './project-web-group.js';
 import {
   buildServerNameList,
   renderNginxPhpFpm,
-  renderNginxProxy,
   renderNginxStatic,
 } from './nginx-ssl.js';
 import type { ProjectRepository, ProjectRow } from '../repositories/project-repo.js';

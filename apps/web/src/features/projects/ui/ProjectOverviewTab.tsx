@@ -95,7 +95,7 @@ export function ProjectOverviewTab({
   return (
     <div className="stack">
       {needRetry ? (
-        <Alert variant="warning">
+        <Alert variant="warn">
           <strong>
             {t('projects.retryLiveTitle', { defaultValue: '上線未完成' })}
           </strong>
