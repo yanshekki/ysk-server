@@ -467,6 +467,10 @@ WantedBy=multi-user.target
  * Shell env + cargo build for project isolation.
  * Uses YSK managed CARGO_HOME/RUSTUP_HOME and RUSTUP_TOOLCHAIN so cargo never
  * requires a per-user `rustup default` (project users have empty ~/.rustup).
+ *
+ * IMPORTANT: must NOT join discovery steps with bare `&&` after a successful
+ * `command -v cargo` — that makes `[ -z "$CARGO_BIN" ]` fail and aborts the
+ * whole chain with empty stderr (create/goLive looked "broken" with no message).
  */
 export function rustCargoBuildShell(version?: string): string {
   const raw = (version ?? 'stable').trim() || 'stable';
@@ -475,21 +479,35 @@ export function rustCargoBuildShell(version?: string): string {
     raw === 'stable' || raw === 'beta' || raw === 'nightly' || /^\d+\.\d+(\.\d+)?$/.test(raw)
       ? raw
       : 'stable';
-  // Safe for single-quoted bash -lc fragment (toolchain is validated shape above)
+  // Safe for bash -lc (shape-validated)
   const tc = toolchain.replace(/[^a-zA-Z0-9._+-]/g, '') || 'stable';
+  // Prefer managed cargo first (readable by all project users), then PATH.
+  // Use `;` / if-fi — never short-circuit the final build on a failed test.
   return [
     'export CARGO_HOME="${CARGO_HOME:-/usr/local/ysk/rust/cargo}"',
     'export RUSTUP_HOME="${RUSTUP_HOME:-/usr/local/ysk/rust/rustup}"',
     'export PATH="/usr/local/ysk/rust/cargo/bin:/usr/local/ysk/rust/bin:$HOME/.cargo/bin:$PATH"',
     `export RUSTUP_TOOLCHAIN="${tc}"`,
-    // Prefer managed cargo; fall back to PATH
-    'CARGO_BIN="$(command -v cargo 2>/dev/null || true)"',
-    '[ -z "$CARGO_BIN" ] && [ -x /usr/local/ysk/rust/cargo/bin/cargo ] && CARGO_BIN=/usr/local/ysk/rust/cargo/bin/cargo',
-    '[ -z "$CARGO_BIN" ] && [ -x /usr/local/ysk/rust/bin/cargo ] && CARGO_BIN=/usr/local/ysk/rust/bin/cargo',
+    'CARGO_BIN=""',
+    'if [ -x /usr/local/ysk/rust/cargo/bin/cargo ]; then CARGO_BIN=/usr/local/ysk/rust/cargo/bin/cargo',
+    'elif [ -x /usr/local/ysk/rust/bin/cargo ]; then CARGO_BIN=/usr/local/ysk/rust/bin/cargo',
+    'elif command -v cargo >/dev/null 2>&1; then CARGO_BIN="$(command -v cargo)"',
+    'fi',
     'if [ -z "$CARGO_BIN" ]; then echo "cargo not found — install Rust runtime in panel (Runtimes → Rust)" >&2; exit 127; fi',
-    // Explicit +toolchain so rustup never asks for default (create/goLive must not fail here)
+    'echo "ysk rust build: cargo=$CARGO_BIN toolchain=' + tc + '" >&2',
+    // Explicit +toolchain so rustup never needs `rustup default`.
+    // If pin missing (panel shows rustc patch), fall back to +stable once.
+    `set +e`,
     `"$CARGO_BIN" "+${tc}" build --release`,
-  ].join(' && ');
+    `_ysk_ec=$?`,
+    `if [ "$_ysk_ec" -ne 0 ] && [ "${tc}" != "stable" ]; then`,
+    `  echo "ysk rust: toolchain ${tc} exit=$_ysk_ec, retry +stable" >&2`,
+    `  export RUSTUP_TOOLCHAIN=stable`,
+    `  "$CARGO_BIN" +stable build --release`,
+    `  _ysk_ec=$?`,
+    `fi`,
+    `exit $_ysk_ec`,
+  ].join('; ');
 }
 
 /**

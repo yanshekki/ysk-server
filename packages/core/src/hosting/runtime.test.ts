@@ -197,6 +197,9 @@ describe('multi-version runtimes', () => {
     // cargo +1.97.1 — never rely on per-user rustup default
     expect(rustBuild).toContain('"+1.97.1" build --release');
     expect(rustBuild).toContain('/usr/local/ysk/rust/cargo');
+    // Discovery must not abort build when cargo is already on PATH (no bare && after set)
+    expect(rustBuild).toMatch(/if \[ -x \/usr\/local\/ysk\/rust\/cargo\/bin\/cargo \]/);
+    expect(rustBuild).not.toMatch(/CARGO_BIN="\$\(command -v cargo[^)]*\)"\s*&&\s*\[ -z/);
     expect(defaultProcessCommands('rust', { version: 'stable' }).build).toContain(
       'RUSTUP_TOOLCHAIN="stable"',
     );

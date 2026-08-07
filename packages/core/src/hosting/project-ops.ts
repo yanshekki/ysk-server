@@ -2253,11 +2253,16 @@ export class ProjectOpsService {
         cwd: appDir,
         notes });
       if (build.exitCode !== 0) {
-        notes.push(tl('notes.auto.t0207', { v0: ((build.stderr || build.stdout || '').slice(0, 400)) }));
+        const detail =
+          (build.stderr || build.stdout || '').trim().slice(0, 600) ||
+          `(no stdout/stderr; exit=${build.exitCode})`;
+        notes.push(tl('notes.auto.t0207', { v0: detail }));
         this.projects.updateRuntimeState(projectId, {
           process_status: 'failed',
           status: 'failed',
-          port });
+          port,
+          last_deploy_notes: clipDeployNotes(notes),
+        });
         return {
           ok: false,
           projectId,
