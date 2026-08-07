@@ -311,7 +311,8 @@ export function selectJavaRuntime(version: string): RuntimeSelection {
 
 export function selectKotlinRuntime(version: string): RuntimeSelection {
   const v = (version ?? '').replace(/^v/i, '').trim();
-  assertVersionShape('kotlin', version, /^\d+\.\d+(\.\d+)?$/.test(v));
+  // Allow stable (2.4.10) and prerelease tags from GitHub (2.4.20-Beta2, 2.4.10-RC)
+  assertVersionShape('kotlin', version, /^\d+\.\d+(\.\d+)?(-[\w.]+)?$/.test(v));
   return {
     kind: 'kotlin',
     version: v,

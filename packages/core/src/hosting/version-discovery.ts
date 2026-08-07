@@ -482,7 +482,10 @@ export function getCachedRuntimeVersionPins(dataDir: string, kind: RuntimeKind):
     const cache = readCache(dataDir);
     const row = cache.byId[kind];
     if (!row?.candidates?.length) return [];
-    return row.candidates.map((c) => c.version).filter(Boolean);
+    // Prefer stable pins for probe (skip -Beta/-RC/-M so select* never throws mid-probe)
+    const all = row.candidates.map((c) => c.version).filter(Boolean);
+    const stable = all.filter((v) => !/-(beta|rc|alpha|m\d|snapshot)/i.test(v));
+    return stable.length ? stable : all;
   } catch {
     return [];
   }

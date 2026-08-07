@@ -347,7 +347,20 @@ async function probeBinaryVersions(
 ): Promise<RuntimeProbeItem[]> {
   const out: RuntimeProbeItem[] = [];
   for (const v of versions) {
-    const plan = select(v);
+    let plan: { binaryPath: string; version: string };
+    try {
+      plan = select(v);
+    } catch {
+      // Invalid pin (e.g. discovery prerelease shape) must not abort whole probeRuntimes
+      out.push({
+        kind,
+        version: v,
+        binaryPath: '',
+        available: false,
+        notes: [`skip invalid ${kind} pin: ${v}`],
+      });
+      continue;
+    }
     let available = false;
     let resolvedPath: string | undefined;
     let versionOutput: string | undefined;
@@ -359,7 +372,7 @@ async function probeBinaryVersions(
       itemNotes.push(tl('notes.auto.n1302'));
     }
 
-    if (!available && host.pathExists(plan.binaryPath)) {
+    if (!available && plan.binaryPath && host.pathExists(plan.binaryPath)) {
       const ver = await host.runCommand(versionCmd(plan.binaryPath), { timeoutMs: 8_000 });
       if (ver.exitCode === 0 && match(ver.stdout + ver.stderr, v)) {
         available = true;
@@ -402,7 +415,7 @@ async function probeBinaryVersions(
       }
     }
 
-    if (!available) itemNotes.push(tl('notes.auto.t0395', { v0: (plan.binaryPath) }));
+    if (!available) itemNotes.push(tl('notes.auto.t0395', { v0: plan.binaryPath || v }));
     out.push({
       kind,
       version: v,
