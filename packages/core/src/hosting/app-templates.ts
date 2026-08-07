@@ -1,13 +1,28 @@
 /**
- * One-click application templates (Spec §4.10).
- * Scaffolds real files under project home; optional deploy after.
+ * One Hello World demo template per hosting runtime.
+ * Framework starters (WP / FastAPI / Axum…) are out of the create-project dropdown.
+ * Legacy template ids remain accepted as aliases for CLI / old clients.
  */
 
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { ErrorCodes, YskError, tl, type HostingRuntime } from '@ysk/shared';
+import { defaultRuntimeVersion } from './runtime.js';
 
+/** Canonical template ids (one per runtime). */
 export type AppTemplateId =
+  | 'node-hello'
+  | 'bun-hello'
+  | 'php-hello'
+  | 'python-hello'
+  | 'go-hello'
+  | 'rust-hello'
+  | 'java-hello'
+  | 'kotlin-hello'
+  | 'static-hello';
+
+/** @deprecated Legacy ids still scaffold via alias map. */
+export type LegacyAppTemplateId =
   | 'node-starter'
   | 'static-site'
   | 'wordpress-php'
@@ -26,75 +41,116 @@ export interface AppTemplateMeta {
   runtimeVersion: string;
 }
 
+const HELLO = 'Hello World!';
+
+/** Old id → canonical hello id (compat). */
+const TEMPLATE_ALIASES: Record<string, AppTemplateId> = {
+  'node-starter': 'node-hello',
+  'static-site': 'static-hello',
+  'wordpress-php': 'php-hello',
+  'python-fastapi': 'python-hello',
+  'python-flask': 'python-hello',
+  'python-django': 'python-hello',
+  'go-http': 'go-hello',
+  'rust-http': 'rust-hello',
+  'rust-axum': 'rust-hello',
+};
+
 export const APP_TEMPLATES: AppTemplateMeta[] = [
   {
-    id: 'node-starter',
-    name: tl('notes.auto.n0143'),
-    description: tl('notes.auto.n0940'),
+    id: 'node-hello',
+    name: 'Hello World!',
+    description: 'Minimal Node HTTP demo',
     runtime: 'node',
-    runtimeVersion: '20' },
+    runtimeVersion: defaultRuntimeVersion('node') || '20',
+  },
   {
-    id: 'static-site',
-    name: tl('notes.auto.n1590'),
-    description: tl('notes.auto.n0307'),
-    runtime: 'static',
-    runtimeVersion: '1' },
+    id: 'bun-hello',
+    name: 'Hello World!',
+    description: 'Minimal Bun HTTP demo',
+    runtime: 'bun',
+    runtimeVersion: defaultRuntimeVersion('bun') || 'latest',
+  },
   {
-    id: 'wordpress-php',
-    name: tl('notes.auto.n0209'),
-    description: tl('notes.auto.n0145'),
+    id: 'php-hello',
+    name: 'Hello World!',
+    description: 'Minimal PHP demo',
     runtime: 'php',
-    runtimeVersion: '8.2' },
+    runtimeVersion: defaultRuntimeVersion('php') || '8.2',
+  },
   {
-    id: 'python-fastapi',
-    name: 'Python FastAPI',
-    description: tl('notes.auto.n0105'),
+    id: 'python-hello',
+    name: 'Hello World!',
+    description: 'Minimal Python stdlib HTTP demo',
     runtime: 'python',
-    runtimeVersion: '3.12' },
+    runtimeVersion: defaultRuntimeVersion('python') || '3.12',
+  },
   {
-    id: 'python-flask',
-    name: 'Python Flask',
-    description: tl('notes.auto.n0106'),
-    runtime: 'python',
-    runtimeVersion: '3.12' },
-  {
-    id: 'python-django',
-    name: tl('notes.auto.n0163'),
-    description: tl('notes.auto.n0325'),
-    runtime: 'python',
-    runtimeVersion: '3.12' },
-  {
-    id: 'go-http',
-    name: 'Go HTTP',
-    description: tl('notes.auto.n1012'),
+    id: 'go-hello',
+    name: 'Hello World!',
+    description: 'Minimal Go net/http demo',
     runtime: 'go',
-    runtimeVersion: '1.22' },
+    runtimeVersion: defaultRuntimeVersion('go') || '1.22',
+  },
   {
-    id: 'rust-http',
-    name: 'Rust HTTP',
-    description: tl('notes.auto.n1011'),
+    id: 'rust-hello',
+    name: 'Hello World!',
+    description: 'Minimal Rust TCP HTTP demo',
     runtime: 'rust',
-    runtimeVersion: 'stable' },
+    runtimeVersion: defaultRuntimeVersion('rust') || 'stable',
+  },
   {
-    id: 'rust-axum',
-    name: 'Rust Axum',
-    description: tl('notes.auto.n0078'),
-    runtime: 'rust',
-    runtimeVersion: 'stable' },
+    id: 'java-hello',
+    name: 'Hello World!',
+    description: 'Minimal Java HTTP demo',
+    runtime: 'java',
+    runtimeVersion: defaultRuntimeVersion('java') || '21',
+  },
+  {
+    id: 'kotlin-hello',
+    name: 'Hello World!',
+    description: 'Minimal Kotlin HTTP demo',
+    runtime: 'kotlin',
+    runtimeVersion: defaultRuntimeVersion('kotlin') || '2.1.0',
+  },
+  {
+    id: 'static-hello',
+    name: 'Hello World!',
+    description: 'Minimal static HTML demo',
+    runtime: 'static',
+    runtimeVersion: '1',
+  },
 ];
+
+export function resolveAppTemplateId(id: string): AppTemplateId {
+  const raw = String(id || '').trim();
+  if (TEMPLATE_ALIASES[raw]) return TEMPLATE_ALIASES[raw];
+  if (APP_TEMPLATES.some((t) => t.id === raw)) return raw as AppTemplateId;
+  throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0131', { v0: id }), {
+    httpStatus: 400,
+    details: {
+      known: [
+        ...APP_TEMPLATES.map((t) => t.id),
+        ...Object.keys(TEMPLATE_ALIASES),
+      ],
+    },
+  });
+}
 
 export function listAppTemplates(): AppTemplateMeta[] {
   return APP_TEMPLATES.map((t) => ({ ...t }));
 }
 
 export function getAppTemplate(id: string): AppTemplateMeta {
-  const t = APP_TEMPLATES.find((x) => x.id === id);
+  const canonical = resolveAppTemplateId(id);
+  const t = APP_TEMPLATES.find((x) => x.id === canonical);
   if (!t) {
-    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0131', { v0: (id) }), {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0131', { v0: id }), {
       httpStatus: 400,
-      details: { known: APP_TEMPLATES.map((x) => x.id) } });
+      details: { known: APP_TEMPLATES.map((x) => x.id) },
+    });
   }
-  return t;
+  return { ...t };
 }
 
 export interface ScaffoldResult {
@@ -107,7 +163,7 @@ export interface ScaffoldResult {
 }
 
 /**
- * Write template files into project home (app/ or app/public).
+ * Write Hello World demo into project home (app/ or app/public).
  * Does not overwrite non-empty custom trees unless force.
  */
 export function scaffoldAppTemplate(input: {
@@ -118,36 +174,50 @@ export function scaffoldAppTemplate(input: {
   force?: boolean;
 }): ScaffoldResult {
   const meta = getAppTemplate(input.templateId);
-  const notes: string[] = [tl('notes.auto.t0132', { v0: (meta.id), v1: (meta.name) })];
+  const notes: string[] = [
+    tl('notes.auto.t0132', { v0: meta.id, v1: meta.name }),
+  ];
+  if (TEMPLATE_ALIASES[input.templateId] && TEMPLATE_ALIASES[input.templateId] !== input.templateId) {
+    notes.push(`legacy template id ${input.templateId} → ${meta.id}`);
+  }
   const written: string[] = [];
   const appDir = join(input.homeDir, 'app');
   mkdirSync(appDir, { recursive: true });
 
   let result: ScaffoldResult;
-  if (meta.id === 'node-starter') {
-    result = scaffoldNode(input, meta, appDir, notes, written);
-  } else if (meta.id === 'static-site') {
-    result = scaffoldStatic(input, meta, appDir, notes, written);
-  } else if (meta.id === 'wordpress-php') {
-    result = scaffoldWordpress(input, meta, appDir, notes, written);
-  } else if (meta.id === 'python-fastapi') {
-    result = scaffoldPythonFastapi(input, meta, appDir, notes, written);
-  } else if (meta.id === 'python-flask') {
-    result = scaffoldPythonFlask(input, meta, appDir, notes, written);
-  } else if (meta.id === 'python-django') {
-    result = scaffoldPythonDjango(input, meta, appDir, notes, written);
-  } else if (meta.id === 'go-http') {
-    result = scaffoldGoHttp(input, meta, appDir, notes, written);
-  } else if (meta.id === 'rust-axum') {
-    result = scaffoldRustAxum(input, meta, appDir, notes, written);
-  } else {
-    // rust-http
-    result = scaffoldRustHttp(input, meta, appDir, notes, written);
+  switch (meta.id) {
+    case 'node-hello':
+      result = scaffoldNodeHello(input, meta, appDir, notes, written);
+      break;
+    case 'bun-hello':
+      result = scaffoldBunHello(input, meta, appDir, notes, written);
+      break;
+    case 'php-hello':
+      result = scaffoldPhpHello(input, meta, appDir, notes, written);
+      break;
+    case 'python-hello':
+      result = scaffoldPythonHello(input, meta, appDir, notes, written);
+      break;
+    case 'go-hello':
+      result = scaffoldGoHello(input, meta, appDir, notes, written);
+      break;
+    case 'rust-hello':
+      result = scaffoldRustHello(input, meta, appDir, notes, written);
+      break;
+    case 'java-hello':
+      result = scaffoldJavaHello(input, meta, appDir, notes, written);
+      break;
+    case 'kotlin-hello':
+      result = scaffoldKotlinHello(input, meta, appDir, notes, written);
+      break;
+    case 'static-hello':
+    default:
+      result = scaffoldStaticHello(input, meta, appDir, notes, written);
+      break;
   }
   return attachScaffoldMarker(appDir, result);
 }
 
-/** Marker so git clone can safely replace YSK placeholder skeleton without data-loss refuse. */
 export const YSK_SCAFFOLD_MARKER = '.ysk-scaffold';
 
 function attachScaffoldMarker(appDir: string, result: ScaffoldResult): ScaffoldResult {
@@ -159,144 +229,136 @@ function attachScaffoldMarker(appDir: string, result: ScaffoldResult): ScaffoldR
       `${result.templateId}\n# YSK scaffold marker — safe to wipe on git clone\n`,
       'utf8',
     );
-    if (!result.written.includes(marker)) {
-      result.written.push(marker);
-    }
+    if (!result.written.includes(marker)) result.written.push(marker);
   } catch {
     /* non-fatal */
   }
   return result;
 }
 
-function scaffoldNode(
-  input: {
-    projectName: string;
-    force?: boolean;
-  },
+function writeIfNeeded(
+  path: string,
+  content: string,
+  force: boolean | undefined,
+  written: string[],
+  notes: string[],
+  skipNote?: string,
+): void {
+  if (existsSync(path) && !force) {
+    if (skipNote) notes.push(skipNote);
+    return;
+  }
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, content, 'utf8');
+  written.push(path);
+}
+
+function scaffoldNodeHello(
+  input: { projectName: string; force?: boolean },
   meta: AppTemplateMeta,
   appDir: string,
   notes: string[],
   written: string[],
 ): ScaffoldResult {
   const entry = 'server.js';
-  const entryPath = join(appDir, entry);
-  if (existsSync(entryPath) && !input.force) {
-    notes.push(tl('notes.auto.t0133', { v0: (entry) }));
-  } else {
-    writeFileSync(
-      entryPath,
-      `// YSK node-starter — ${input.projectName}
+  writeIfNeeded(
+    join(appDir, entry),
+    `// YSK ${meta.id} — ${input.projectName}
 const http = require('http');
-const fs = require('fs');
-const path = require('path');
 const port = Number(process.env.PORT || 3000);
 const host = process.env.HOST || '127.0.0.1';
-const publicDir = path.join(__dirname, 'public');
-
 const server = http.createServer((req, res) => {
   const url = req.url || '/';
-  if (url === '/health' || url === '/') {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.end('ok ' + port + ' ' + url);
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  if (url === '/health') {
+    res.end('ok');
     return;
   }
-  const file = path.join(publicDir, url === '/' ? 'index.html' : url.replace(/^\\//, ''));
-  if (file.startsWith(publicDir) && fs.existsSync(file) && fs.statSync(file).isFile()) {
-    res.statusCode = 200;
-    res.end(fs.readFileSync(file));
-    return;
-  }
-  res.statusCode = 404;
-  res.end(tl('notes.notFound'));
+  res.end(${JSON.stringify(HELLO)});
 });
 server.listen(port, host, () => {
-  process.stdout.write('ysk node-starter on ' + host + ':' + port + '\\n');
+  process.stdout.write('ysk hello on ' + host + ':' + port + '\\n');
 });
 `,
-      'utf8',
-    );
-    written.push(entryPath);
-  }
-  const pub = join(appDir, 'public');
-  mkdirSync(pub, { recursive: true });
-  const idx = join(pub, 'index.html');
-  if (!existsSync(idx) || input.force) {
-    writeFileSync(
-      idx,
-      `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(input.projectName)}</title></head>
-<body><h1>${escapeHtml(input.projectName)}</h1><p>YSK Node starter template</p></body></html>\n`,
-      'utf8',
-    );
-    written.push(idx);
-  }
-  const pkg = join(appDir, 'package.json');
-  if (!existsSync(pkg) || input.force) {
-    writeFileSync(
-      pkg,
-      JSON.stringify(
-        {
-          name: slug(input.projectName),
-          version: '1.0.0',
-          private: true,
-          main: 'server.js',
-          scripts: { start: 'node server.js' } },
-        null,
-        2,
-      ) + '\n',
-      'utf8',
-    );
-    written.push(pkg);
-  }
-  notes.push(tl('notes.auto.n1504'));
+    input.force,
+    written,
+    notes,
+    tl('notes.auto.t0133', { v0: entry }),
+  );
+  writeIfNeeded(
+    join(appDir, 'package.json'),
+    JSON.stringify(
+      {
+        name: slug(input.projectName),
+        version: '1.0.0',
+        private: true,
+        main: entry,
+        scripts: { start: 'node server.js' },
+      },
+      null,
+      2,
+    ) + '\n',
+    input.force,
+    written,
+    notes,
+  );
+  notes.push('Node Hello World demo (server.js)');
   return { ok: true, templateId: meta.id, written, notes, entry };
 }
 
-function scaffoldStatic(
-  input: { projectName: string },
+function scaffoldBunHello(
+  input: { projectName: string; force?: boolean },
   meta: AppTemplateMeta,
   appDir: string,
   notes: string[],
   written: string[],
 ): ScaffoldResult {
-  const pub = join(appDir, 'public');
-  mkdirSync(join(pub, 'assets'), { recursive: true });
-  const idx = join(pub, 'index.html');
-  writeFileSync(
-    idx,
-    `<!doctype html>
-<html lang="zh-Hant">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>${escapeHtml(input.projectName)}</title>
-  <link rel="stylesheet" href="/assets/site.css" />
-</head>
-<body>
-  <main>
-    <h1>${escapeHtml(input.projectName)}</h1>
-    <p>Static site skeleton generated by YSK Server.</p>
-  </main>
-</body>
-</html>
+  const entry = 'server.js';
+  writeIfNeeded(
+    join(appDir, entry),
+    `// YSK ${meta.id} — ${input.projectName}
+const port = Number(process.env.PORT || 3000);
+const host = process.env.HOST || '127.0.0.1';
+Bun.serve({
+  hostname: host,
+  port,
+  fetch(req) {
+    const url = new URL(req.url);
+    if (url.pathname === '/health') return new Response('ok');
+    return new Response(${JSON.stringify(HELLO)});
+  },
+});
+console.log('ysk hello on ' + host + ':' + port);
 `,
-    'utf8',
+    input.force,
+    written,
+    notes,
+    tl('notes.auto.t0133', { v0: entry }),
   );
-  const css = join(pub, 'assets', 'site.css');
-  writeFileSync(
-    css,
-    `body{font-family:system-ui,sans-serif;margin:2rem;background:#0b1220;color:#e8eefc}
-main{max-width:40rem}h1{color:#3b82f6}
-`,
-    'utf8',
+  writeIfNeeded(
+    join(appDir, 'package.json'),
+    JSON.stringify(
+      {
+        name: slug(input.projectName),
+        version: '1.0.0',
+        private: true,
+        module: entry,
+        scripts: { start: 'bun run server.js' },
+      },
+      null,
+      2,
+    ) + '\n',
+    input.force,
+    written,
+    notes,
   );
-  written.push(idx, css);
-  notes.push(tl('notes.auto.n0513'));
-  return { ok: true, templateId: meta.id, written, notes, docRoot: pub };
+  notes.push('Bun Hello World demo (server.js)');
+  return { ok: true, templateId: meta.id, written, notes, entry };
 }
 
-function scaffoldWordpress(
-  input: { projectName: string; domain?: string },
+function scaffoldPhpHello(
+  input: { projectName: string; force?: boolean },
   meta: AppTemplateMeta,
   appDir: string,
   notes: string[],
@@ -304,102 +366,27 @@ function scaffoldWordpress(
 ): ScaffoldResult {
   const docRoot = join(appDir, 'public');
   mkdirSync(docRoot, { recursive: true });
-  const indexPhp = join(docRoot, 'index.php');
-  writeFileSync(
-    indexPhp,
+  writeIfNeeded(
+    join(docRoot, 'index.php'),
     `<?php
-// YSK WordPress skeleton — overwrite after full WordPress download
+// YSK ${meta.id} — ${escapePhp(input.projectName)}
 header('Content-Type: text/plain; charset=utf-8');
-http_response_code(200);
-echo "ysk-php-ok\\n";
-echo "WordPress placeholder — download full core to replace this file\\n";
-echo "Download: curl -sL https://wordpress.org/latest.tar.gz | tar xz -C " . __DIR__ . " --strip-components=1\\n";
+$path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+if ($path === '/health') {
+  echo "ok";
+  exit;
+}
+echo ${JSON.stringify(HELLO)};
 `,
-    'utf8',
+    input.force,
+    written,
+    notes,
   );
-  written.push(indexPhp);
-  const wpConfig = join(docRoot, 'wp-config-sample-ysk.php');
-  writeFileSync(
-    wpConfig,
-    `<?php
-/**
- * YSK 範例 — WordPress 解壓後複製為 wp-config.php
- */
-define('DB_NAME', getenv('WP_DB_NAME') ?: 'wordpress');
-define('DB_USER', getenv('WP_DB_USER') ?: 'wpuser');
-define('DB_PASSWORD', getenv('WP_DB_PASSWORD') ?: 'change-me');
-define('DB_HOST', getenv('WP_DB_HOST') ?: '127.0.0.1');
-define('DB_CHARSET', 'utf8mb4');
-\$table_prefix = 'wp_';
-if (!defined('ABSPATH')) define('ABSPATH', __DIR__ . '/');
-// require_once ABSPATH . 'wp-settings.php';
-`,
-    'utf8',
-  );
-  written.push(wpConfig);
-  const planPath = join(appDir, 'WORDPRESS_INSTALL.txt');
-  writeFileSync(
-    planPath,
-    [
-      tl('notes.auto.t0134', { v0: (input.projectName) }),
-      input.domain ? tl('notes.auto.t0135', { v0: (input.domain) }) : '',
-      tl('notes.auto.n0064'),
-      tl('notes.auto.n0066'),
-      tl('notes.auto.n0067'),
-      tl('notes.auto.n0068'),
-      '',
-    ]
-      .filter(Boolean)
-      .join('\n'),
-    'utf8',
-  );
-  written.push(planPath);
-  notes.push(tl('notes.auto.n0948'));
+  notes.push('PHP Hello World demo (public/index.php)');
   return { ok: true, templateId: meta.id, written, notes, docRoot };
 }
 
-function scaffoldPythonFastapi(
-  input: { projectName: string; force?: boolean },
-  meta: AppTemplateMeta,
-  appDir: string,
-  notes: string[],
-  written: string[],
-): ScaffoldResult {
-  const entry = 'main.py';
-  const mainPath = join(appDir, entry);
-  if (!existsSync(mainPath) || input.force) {
-    writeFileSync(
-      mainPath,
-      `# YSK python-fastapi — ${input.projectName}
-# Deploy creates venv and runs pip install -r requirements.txt
-from fastapi import FastAPI
-
-app = FastAPI(title=${JSON.stringify(input.projectName)})
-
-@app.get("/")
-@app.get("/health")
-def health():
-    return {"ok": True, "app": ${JSON.stringify(input.projectName)}}
-`,
-      'utf8',
-    );
-    written.push(mainPath);
-  } else {
-    notes.push(tl('notes.auto.n0324'));
-  }
-  const req = join(appDir, 'requirements.txt');
-  if (!existsSync(req) || input.force) {
-    writeFileSync(req, 'fastapi>=0.110.0\nuvicorn[standard]>=0.27.0\n', 'utf8');
-    written.push(req);
-  }
-  notes.push(
-    tl('notes.auto.n1501'),
-    tl('notes.auto.n1551'),
-  );
-  return { ok: true, templateId: meta.id, written, notes, entry: 'main:app' };
-}
-
-function scaffoldPythonFlask(
+function scaffoldPythonHello(
   input: { projectName: string; force?: boolean },
   meta: AppTemplateMeta,
   appDir: string,
@@ -407,184 +394,44 @@ function scaffoldPythonFlask(
   written: string[],
 ): ScaffoldResult {
   const entry = 'app.py';
-  const appPath = join(appDir, entry);
-  if (!existsSync(appPath) || input.force) {
-    writeFileSync(
-      appPath,
-      `# YSK python-flask — ${input.projectName}
+  writeIfNeeded(
+    join(appDir, entry),
+    `# YSK ${meta.id} — ${input.projectName}
+# stdlib only — no pip packages required
+from http.server import BaseHTTPRequestHandler, HTTPServer
 import os
-from flask import Flask
 
-app = Flask(__name__)
+HELLO = ${JSON.stringify(HELLO)}
 
-@app.get("/")
-@app.get("/health")
-def health():
-    return {"ok": True, "app": ${JSON.stringify(input.projectName)}}
+class Handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        body = b"ok" if self.path.startswith("/health") else HELLO.encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "text/plain; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, fmt, *args):
+        return
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", "3000"))
     host = os.environ.get("HOST", "127.0.0.1")
-    app.run(host=host, port=port)
+    print(f"ysk hello on {host}:{port}")
+    HTTPServer((host, port), Handler).serve_forever()
 `,
-      'utf8',
-    );
-    written.push(appPath);
-  } else {
-    notes.push(tl('notes.auto.n0220'));
-  }
-  const req = join(appDir, 'requirements.txt');
-  if (!existsSync(req) || input.force) {
-    writeFileSync(req, 'flask>=3.0.0\n', 'utf8');
-    written.push(req);
-  }
-  notes.push(
-    tl('notes.auto.n1502'),
-    tl('notes.auto.n1550'),
-  );
-  return { ok: true, templateId: meta.id, written, notes, entry: 'app.py' };
-}
-
-function scaffoldPythonDjango(
-  input: { projectName: string; force?: boolean },
-  meta: AppTemplateMeta,
-  appDir: string,
-  notes: string[],
-  written: string[],
-): ScaffoldResult {
-  const proj = slug(input.projectName).replace(/-/g, '_') || 'ysk_site';
-  const manage = join(appDir, 'manage.py');
-  if (!existsSync(manage) || input.force) {
-    writeFileSync(
-      manage,
-      `#!/usr/bin/env python3
-# YSK python-django skeleton — ${input.projectName}
-import os
-import sys
-
-def main():
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "${proj}.settings")
-    from django.core.management import execute_from_command_line
-    execute_from_command_line(sys.argv)
-
-if __name__ == "__main__":
-    main()
-`,
-      'utf8',
-    );
-    written.push(manage);
-  }
-  const pkgDir = join(appDir, proj);
-  mkdirSync(pkgDir, { recursive: true });
-  const initPy = join(pkgDir, '__init__.py');
-  if (!existsSync(initPy) || input.force) {
-    writeFileSync(initPy, '', 'utf8');
-    written.push(initPy);
-  }
-  const settings = join(pkgDir, 'settings.py');
-  if (!existsSync(settings) || input.force) {
-    writeFileSync(
-      settings,
-      `# YSK Django settings skeleton — ${input.projectName}
-from pathlib import Path
-BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = "ysk-dev-change-me"
-DEBUG = True
-ALLOWED_HOSTS = ["*"]
-INSTALLED_APPS = [
-    "django.contrib.contenttypes",
-    "django.contrib.staticfiles",
-]
-MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware",
-    "django.middleware.common.CommonMiddleware",
-]
-ROOT_URLCONF = "${proj}.urls"
-WSGI_APPLICATION = "${proj}.wsgi.application"
-DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}}
-LANGUAGE_CODE = "zh-hant"
-TIME_ZONE = "Asia/Hong_Kong"
-USE_I18N = True
-USE_TZ = True
-STATIC_URL = "static/"
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-`,
-      'utf8',
-    );
-    written.push(settings);
-  }
-  const urls = join(pkgDir, 'urls.py');
-  if (!existsSync(urls) || input.force) {
-    writeFileSync(
-      urls,
-      `from django.http import JsonResponse
-from django.urls import path
-
-def health(_request):
-    return JsonResponse({"ok": True, "app": ${JSON.stringify(input.projectName)}})
-
-urlpatterns = [
-    path("", health),
-    path("health", health),
-]
-`,
-      'utf8',
-    );
-    written.push(urls);
-  }
-  const wsgi = join(pkgDir, 'wsgi.py');
-  if (!existsSync(wsgi) || input.force) {
-    writeFileSync(
-      wsgi,
-      `import os
-from django.core.wsgi import get_wsgi_application
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "${proj}.settings")
-application = get_wsgi_application()
-`,
-      'utf8',
-    );
-    written.push(wsgi);
-  }
-  const req = join(appDir, 'requirements.txt');
-  if (!existsSync(req) || input.force) {
-    writeFileSync(req, 'django>=5.0\ngunicorn>=22.0\n', 'utf8');
-    written.push(req);
-  }
-  notes.push(
-    tl('notes.auto.n0100'),
-    tl('notes.auto.t0136', { v0: (proj) }),
-    tl('notes.auto.n1032'),
-  );
-  // Optional stdlib fallback launcher if gunicorn missing (still useful for debug)
-  const launcher = join(appDir, 'app.py');
-  if (!existsSync(launcher) || input.force) {
-    writeFileSync(
-      launcher,
-      `# Fallback launcher (prefer gunicorn ${proj}.wsgi:application) — ${input.projectName}
-import os
-from wsgiref.simple_server import make_server
-from ${proj}.wsgi import application
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", "3000"))
-    host = os.environ.get("HOST", "127.0.0.1")
-    with make_server(host, port, application) as httpd:
-        print(f"ysk django on {host}:{port}")
-        httpd.serve_forever()
-`,
-      'utf8',
-    );
-    written.push(launcher);
-  }
-  return {
-    ok: true,
-    templateId: meta.id,
+    input.force,
     written,
     notes,
-    entry: `${proj}.wsgi:application` };
+    tl('notes.auto.t0133', { v0: entry }),
+  );
+  writeIfNeeded(join(appDir, 'requirements.txt'), '# no deps — stdlib Hello World\n', input.force, written, notes);
+  notes.push('Python Hello World demo (app.py, stdlib)');
+  return { ok: true, templateId: meta.id, written, notes, entry };
 }
 
-function scaffoldGoHttp(
+function scaffoldGoHello(
   input: { projectName: string; force?: boolean },
   meta: AppTemplateMeta,
   appDir: string,
@@ -592,11 +439,9 @@ function scaffoldGoHttp(
   written: string[],
 ): ScaffoldResult {
   const modName = slug(input.projectName) || 'ysk-app';
-  const mainPath = join(appDir, 'main.go');
-  if (!existsSync(mainPath) || input.force) {
-    writeFileSync(
-      mainPath,
-      `// YSK go-http — ${input.projectName}
+  writeIfNeeded(
+    join(appDir, 'main.go'),
+    `// YSK ${meta.id} — ${input.projectName}
 package main
 
 import (
@@ -613,33 +458,35 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		fmt.Fprintf(w, "ok %s %s\\n", port, r.URL.Path)
+		fmt.Fprint(w, ${JSON.stringify(HELLO)})
 	})
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("ok"))
 	})
 	addr := "127.0.0.1:" + port
-	fmt.Println("ysk go-http on", addr)
+	fmt.Println("ysk hello on", addr)
 	if err := http.ListenAndServe(addr, mux); err != nil {
 		panic(err)
 	}
 }
 `,
-      'utf8',
-    );
-    written.push(mainPath);
-  }
-  const mod = join(appDir, 'go.mod');
-  if (!existsSync(mod) || input.force) {
-    writeFileSync(mod, `module ${modName}\n\ngo 1.22\n`, 'utf8');
-    written.push(mod);
-  }
-  notes.push(tl('notes.auto.n1500'));
+    input.force,
+    written,
+    notes,
+  );
+  writeIfNeeded(
+    join(appDir, 'go.mod'),
+    `module ${modName}\n\ngo 1.22\n`,
+    input.force,
+    written,
+    notes,
+  );
+  notes.push('Go Hello World demo (main.go)');
   return { ok: true, templateId: meta.id, written, notes, entry: './app' };
 }
 
-function scaffoldRustHttp(
+function scaffoldRustHello(
   input: { projectName: string; force?: boolean },
   meta: AppTemplateMeta,
   appDir: string,
@@ -647,168 +494,202 @@ function scaffoldRustHttp(
   written: string[],
 ): ScaffoldResult {
   const crate = slug(input.projectName).replace(/-/g, '_') || 'ysk_app';
-  const src = join(appDir, 'src');
-  mkdirSync(src, { recursive: true });
-  const mainRs = join(src, 'main.rs');
-  if (!existsSync(mainRs) || input.force) {
-    writeFileSync(
-      mainRs,
-      `// YSK rust-http — ${input.projectName}
+  mkdirSync(join(appDir, 'src'), { recursive: true });
+  writeIfNeeded(
+    join(appDir, 'Cargo.toml'),
+    `[package]
+name = "${crate}"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+`,
+    input.force,
+    written,
+    notes,
+  );
+  writeIfNeeded(
+    join(appDir, 'src', 'main.rs'),
+    `// YSK ${meta.id} — ${input.projectName}
+// std only
 use std::env;
-use std::io::prelude::*;
+use std::io::{Read, Write};
 use std::net::TcpListener;
 
 fn main() {
     let port = env::var("PORT").unwrap_or_else(|_| "3000".into());
-    let addr = format!("127.0.0.1:{}", port);
+    let host = env::var("HOST").unwrap_or_else(|_| "127.0.0.1".into());
+    let addr = format!("{}:{}", host, port);
     let listener = TcpListener::bind(&addr).expect("bind");
-    eprintln!("ysk rust-http on {}", addr);
+    eprintln!("ysk hello on {}", addr);
     for stream in listener.incoming() {
-        if let Ok(mut stream) = stream {
-            let mut buf = [0; 1024];
-            let _ = stream.read(&mut buf);
-            let body = "ok";
-            let response = format!(
-                "HTTP/1.1 200 OK\\r\\nContent-Length: {}\\r\\nContent-Type: text/plain; charset=utf-8\\r\\nConnection: close\\r\\n\\r\\n{}",
+        if let Ok(mut s) = stream {
+            let mut buf = [0u8; 1024];
+            let _ = s.read(&mut buf);
+            let req = String::from_utf8_lossy(&buf);
+            let body = if req.contains(" /health") {
+                "ok"
+            } else {
+                ${JSON.stringify(HELLO)}
+            };
+            let resp = format!(
+                "HTTP/1.1 200 OK\\r\\nContent-Type: text/plain; charset=utf-8\\r\\nContent-Length: {}\\r\\nConnection: close\\r\\n\\r\\n{}",
                 body.len(),
                 body
             );
-            let _ = stream.write_all(response.as_bytes());
+            let _ = s.write_all(resp.as_bytes());
         }
     }
 }
 `,
-      'utf8',
-    );
-    written.push(mainRs);
-  }
-  const cargo = join(appDir, 'Cargo.toml');
-  if (!existsSync(cargo) || input.force) {
-    writeFileSync(
-      cargo,
-      `[package]
-name = "${crate}"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-`,
-      'utf8',
-    );
-    written.push(cargo);
-  }
-  notes.push(
-    tl('notes.auto.t0137', { v0: (crate) }),
-    tl('notes.auto.n1549'),
-  );
-  return {
-    ok: true,
-    templateId: meta.id,
+    input.force,
     written,
     notes,
-    entry: `./target/release/${crate}` };
+  );
+  notes.push('Rust Hello World demo (src/main.rs, std only)');
+  return { ok: true, templateId: meta.id, written, notes, entry: './app' };
 }
 
-function scaffoldRustAxum(
+function scaffoldJavaHello(
   input: { projectName: string; force?: boolean },
   meta: AppTemplateMeta,
   appDir: string,
   notes: string[],
   written: string[],
 ): ScaffoldResult {
-  const crate = slug(input.projectName).replace(/-/g, '_') || 'ysk_app';
-  const src = join(appDir, 'src');
-  mkdirSync(src, { recursive: true });
-  const mainRs = join(src, 'main.rs');
-  if (!existsSync(mainRs) || input.force) {
-    writeFileSync(
-      mainRs,
-      `// YSK rust-axum — ${input.projectName}
-// cargo build 需外網下載 crates
-use axum::{routing::get, Json, Router};
-use serde_json::{json, Value};
-use std::env;
-use std::net::SocketAddr;
+  const entry = 'HelloServer.java';
+  writeIfNeeded(
+    join(appDir, entry),
+    `// YSK ${meta.id} — ${input.projectName}
+import com.sun.net.httpserver.HttpServer;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 
-async fn health() -> Json<Value> {
-    Json(json!({ "ok": true, "app": ${JSON.stringify(input.projectName)} }))
-}
-
-#[tokio::main]
-async fn main() {
-    let port: u16 = env::var("PORT")
-        .ok()
-        .and_then(|s| s.parse().ok())
-        .unwrap_or(3000);
-    let app = Router::new()
-        .route("/", get(health))
-        .route("/health", get(health));
-    let addr = SocketAddr::from(([127, 0, 0, 1], port));
-    eprintln!("ysk rust-axum on {}", addr);
-    let listener = tokio::net::TcpListener::bind(addr).await.expect("bind");
-    axum::serve(listener, app).await.expect("serve");
+public class HelloServer {
+  public static void main(String[] args) throws IOException {
+    int port = Integer.parseInt(System.getenv().getOrDefault("PORT", "3000"));
+    String host = System.getenv().getOrDefault("HOST", "127.0.0.1");
+    HttpServer server = HttpServer.create(new InetSocketAddress(host, port), 0);
+    server.createContext("/", ex -> {
+      String path = ex.getRequestURI().getPath();
+      byte[] body = ("/health".equals(path) ? "ok" : ${JSON.stringify(HELLO)})
+          .getBytes(StandardCharsets.UTF_8);
+      ex.getResponseHeaders().add("Content-Type", "text/plain; charset=utf-8");
+      ex.sendResponseHeaders(200, body.length);
+      try (OutputStream os = ex.getResponseBody()) { os.write(body); }
+    });
+    server.start();
+    System.out.println("ysk hello on " + host + ":" + port);
+  }
 }
 `,
-      'utf8',
-    );
-    written.push(mainRs);
-  }
-  const cargo = join(appDir, 'Cargo.toml');
-  if (!existsSync(cargo) || input.force) {
-    writeFileSync(
-      cargo,
-      `[package]
-name = "${crate}"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-axum = "0.7"
-tokio = { version = "1", features = ["full"] }
-serde_json = "1"
-`,
-      'utf8',
-    );
-    written.push(cargo);
-  }
-  notes.push(
-    tl('notes.auto.t0138'),
-    tl('notes.auto.t0139', { v0: (crate) }),
-    tl('notes.auto.n1606'),
-  );
-  return {
-    ok: true,
-    templateId: meta.id,
+    input.force,
     written,
     notes,
-    entry: `./target/release/${crate}` };
+  );
+  notes.push('Java Hello World demo (HelloServer.java)');
+  return { ok: true, templateId: meta.id, written, notes, entry };
+}
+
+function scaffoldKotlinHello(
+  input: { projectName: string; force?: boolean },
+  meta: AppTemplateMeta,
+  appDir: string,
+  notes: string[],
+  written: string[],
+): ScaffoldResult {
+  const entry = 'HelloServer.kt';
+  writeIfNeeded(
+    join(appDir, entry),
+    `// YSK ${meta.id} — ${input.projectName}
+import com.sun.net.httpserver.HttpServer
+import java.net.InetSocketAddress
+
+fun main() {
+    val port = System.getenv("PORT")?.toIntOrNull() ?: 3000
+    val host = System.getenv("HOST") ?: "127.0.0.1"
+    val server = HttpServer.create(InetSocketAddress(host, port), 0)
+    server.createContext("/") { ex ->
+        val path = ex.requestURI.path
+        val body = (if (path == "/health") "ok" else ${JSON.stringify(HELLO)})
+            .toByteArray(Charsets.UTF_8)
+        ex.responseHeaders.add("Content-Type", "text/plain; charset=utf-8")
+        ex.sendResponseHeaders(200, body.size.toLong())
+        ex.responseBody.use { it.write(body) }
+    }
+    server.start()
+    println("ysk hello on $host:$port")
+}
+`,
+    input.force,
+    written,
+    notes,
+  );
+  notes.push('Kotlin Hello World demo (HelloServer.kt)');
+  return { ok: true, templateId: meta.id, written, notes, entry };
+}
+
+function scaffoldStaticHello(
+  input: { projectName: string; force?: boolean },
+  meta: AppTemplateMeta,
+  appDir: string,
+  notes: string[],
+  written: string[],
+): ScaffoldResult {
+  const pub = join(appDir, 'public');
+  mkdirSync(pub, { recursive: true });
+  writeIfNeeded(
+    join(pub, 'index.html'),
+    `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${escapeHtml(input.projectName)}</title>
+</head>
+<body>
+  <h1>${HELLO}</h1>
+  <p>${escapeHtml(input.projectName)}</p>
+</body>
+</html>
+`,
+    input.force,
+    written,
+    notes,
+  );
+  notes.push('Static Hello World demo (public/index.html)');
+  return { ok: true, templateId: meta.id, written, notes, docRoot: pub };
 }
 
 function slug(name: string): string {
-  return (
-    name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '')
-      .slice(0, 48) || 'app'
-  );
+  return String(name || 'app')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 48) || 'app';
 }
 
 function escapeHtml(s: string): string {
-  return s
+  return String(s)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
 
-/** Read package.json name if present (for tests) */
-export function readAppPackageName(homeDir: string): string | null {
-  const p = join(homeDir, 'app', 'package.json');
-  if (!existsSync(p)) return null;
+function escapePhp(s: string): string {
+  return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+/** Read package.json name if present (tests / deploy hints). */
+export function readAppPackageName(homeDir: string): string | undefined {
   try {
-    return (JSON.parse(readFileSync(p, 'utf8')) as { name?: string }).name ?? null;
+    const raw = readFileSync(join(homeDir, 'app', 'package.json'), 'utf8');
+    const j = JSON.parse(raw) as { name?: string };
+    return j.name;
   } catch {
-    return null;
+    return undefined;
   }
 }

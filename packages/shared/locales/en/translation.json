@@ -4012,7 +4012,8 @@
       "routes": "Routes",
       "dns": "DNS",
       "advanced": "Advanced",
-      "about": "About"
+      "about": "About",
+      "realip": "Real IP / CDN"
     },
     "ifaceSummary": "{{count}} interface(s) · {{up}} UP",
     "noIfaces": "No interfaces",
@@ -4103,7 +4104,11 @@
     "loadRaw": "Load raw output",
     "confirmDown": "Confirm Down",
     "defaultRouteDownWarn": "This interface is the default route egress; down may cut panel access.",
-    "deleteDefaultMayDrop": " — deleting default may drop connectivity."
+    "deleteDefaultMayDrop": " — deleting default may drop connectivity.",
+    "realip": {
+      "title": "CDN / Real client IP",
+      "desc": "Restore visitor IP behind CDN. Only trusts edge CIDRs — never blind X-Forwarded-For."
+    }
   },
   "nginx": {
     "pillSites": "{{count}} site(s)",
@@ -7123,7 +7128,7 @@
     "createAliases": "Aliases",
     "createAliasesHint": "Comma or newline separated",
     "createTemplate": "Template",
-    "createTemplateHint": "Picking a template sets a matching runtime",
+    "createTemplateHint": "One Hello World! demo per runtime; picking a template sets that runtime",
     "createTemplateNote": "Templates only write a skeleton; deploy to build/start.",
     "createRuntimeNow": "Current runtime: ",
     "createTemplateFooter": ". Optional template to start faster, or leave empty.",

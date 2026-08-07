@@ -681,6 +681,8 @@ export class ProjectService {
       httpAuthPass?: string | null;
       docRoot?: string | null;
       bindIp?: string | null;
+      /** inherit | none | cloudflare | … */
+      realIpProvider?: string | null;
     },
     actor: string,
   ): ProjectDto {
@@ -748,7 +750,15 @@ export class ProjectService {
           ? undefined
           : patch.bindIp !== undefined
             ? patch.bindIp.trim() || undefined
-            : row.bind_ip });    this.audit?.append({
+            : row.bind_ip,
+      real_ip_provider:
+        patch.realIpProvider === null
+          ? undefined
+          : patch.realIpProvider !== undefined
+            ? normalizeProjectRealIpProvider(patch.realIpProvider)
+            : row.real_ip_provider,
+    });
+    this.audit?.append({
       actor,
       action: 'project.update_network',
       resource: id,
@@ -756,6 +766,29 @@ export class ProjectService {
       ok: true });
     return this.get(id);
   }
+}
+
+const REAL_IP_IDS = new Set([
+  'none',
+  'cloudflare',
+  'fastly',
+  'bunny',
+  'cloudfront',
+  'azure_frontdoor',
+  'gcore',
+  'custom',
+  'inherit',
+]);
+
+function normalizeProjectRealIpProvider(raw: string): string | undefined {
+  const v = raw.trim().toLowerCase();
+  if (!v || v === 'inherit') return undefined;
+  if (!REAL_IP_IDS.has(v)) {
+    throw new YskError(ErrorCodes.VALIDATION, `Invalid realIpProvider: ${raw}`, {
+      httpStatus: 400,
+    });
+  }
+  return v;
 }
 
 function toDto(row: ProjectRow): ProjectDto {
@@ -782,6 +815,7 @@ function toDto(row: ProjectRow): ProjectDto {
     httpAuthUser: row.http_auth_user,
     docRoot: row.doc_root,
     bindIp: row.bind_ip,
+    realIpProvider: row.real_ip_provider,
     lastHealth: row.last_health,
     lastDeployAt: row.last_deploy_at,
     osProvisioned: row.os_provisioned,

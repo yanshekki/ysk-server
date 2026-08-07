@@ -4012,7 +4012,8 @@
       "routes": "路由",
       "dns": "DNS",
       "advanced": "高级",
-      "about": "说明"
+      "about": "说明",
+      "realip": "Real IP / CDN"
     },
     "ifaceSummary": "{{count}} 个接口 · {{up}} 個 UP",
     "noIfaces": "没有接口",
@@ -4103,7 +4104,11 @@
     "loadRaw": "加载 raw 输出",
     "confirmDown": "确认 Down",
     "defaultRouteDownWarn": "此接口是默认路由出口，down 后可能无法连上管理面板。",
-    "deleteDefaultMayDrop": " — 删除 default 可能断线。"
+    "deleteDefaultMayDrop": " — 删除 default 可能断线。",
+    "realip": {
+      "title": "CDN / 真实客户端 IP",
+      "desc": "在 CDN 后还原访客 IP。只信任 edge CIDR，不盲信 X-Forwarded-For。"
+    }
   },
   "nginx": {
     "pillSites": "{{count}} 站点",
@@ -7123,7 +7128,7 @@
     "createAliases": "别名",
     "createAliasesHint": "逗号或換行分隔",
     "createTemplate": "範本",
-    "createTemplateHint": "选範本会自动带入对应执行环境",
+    "createTemplateHint": "每个执行环境只有一个 Hello World! demo；选范本会带入对应 runtime",
     "createTemplateNote": "範本只写入项目目录骨架；需再「部署」才会 build／启动。",
     "createRuntimeNow": "目前执行环境：",
     "createTemplateFooter": "。可选範本加速起步，或不选直接空白项目。",

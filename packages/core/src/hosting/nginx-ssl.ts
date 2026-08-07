@@ -3,27 +3,28 @@
  */
 
 import type { NginxProxyConfig, SslCertPlan } from '@ysk/shared';
-import { ErrorCodes, YskError, tl} from '@ysk/shared';
+import { ErrorCodes, YskError, tl } from '@ysk/shared';
+import {
+  renderNginxRealIpBlock,
+  type RealIpHostConfig,
+  type RealIpProviderId,
+} from './real-ip/index.js';
 
-const CLOUDFLARE_REAL_IP = `
-# Cloudflare real IP
-set_real_ip_from 173.245.48.0/20;
-set_real_ip_from 103.21.244.0/22;
-set_real_ip_from 103.22.200.0/22;
-set_real_ip_from 103.31.4.0/22;
-set_real_ip_from 141.101.64.0/18;
-set_real_ip_from 108.162.192.0/18;
-set_real_ip_from 190.93.240.0/20;
-set_real_ip_from 188.114.96.0/20;
-set_real_ip_from 197.234.240.0/22;
-set_real_ip_from 198.41.128.0/17;
-set_real_ip_from 162.158.0.0/15;
-set_real_ip_from 104.16.0.0/13;
-set_real_ip_from 104.24.0.0/14;
-set_real_ip_from 172.64.0.0/13;
-set_real_ip_from 131.0.72.0/22;
-real_ip_header CF-Connecting-IP;
-`.trim();
+/** Options for multi-CDN real client IP (see hosting/real-ip). */
+export type NginxRealIpOpts = {
+  /** @deprecated use realIpProvider; true → cloudflare when host default is none */
+  cloudflareRealIp?: boolean;
+  realIpProvider?: RealIpProviderId | 'inherit';
+  realIpHost?: RealIpHostConfig;
+};
+
+function realIpSnippet(opts: NginxRealIpOpts): string {
+  return renderNginxRealIpBlock({
+    provider: opts.realIpProvider,
+    host: opts.realIpHost,
+    cloudflareRealIp: opts.cloudflareRealIp,
+  });
+}
 
 /** Build space-separated server_name from primary + aliases. */
 export function buildServerNameList(primary?: string, aliases?: string[]): string {
@@ -102,7 +103,11 @@ export function renderNginxProxy(config: NginxProxyConfig): string {
       httpStatus: 400,
     });
   }
-  const realIp = config.cloudflareRealIp ? CLOUDFLARE_REAL_IP : '';
+  const realIp = realIpSnippet({
+    cloudflareRealIp: config.cloudflareRealIp,
+    realIpProvider: (config as NginxProxyConfig & NginxRealIpOpts).realIpProvider,
+    realIpHost: (config as NginxProxyConfig & NginxRealIpOpts).realIpHost,
+  });
   const force = Boolean(config.ssl && config.forceHttps);
   const sslBlock = sslLines({
     ssl: config.ssl,
@@ -213,22 +218,24 @@ function siteRedirectOnly(opts: {
 `;
 }
 
-export function renderNginxStatic(opts: {
-  serverName: string;
-  docRoot: string;
-  ssl?: boolean;
-  cloudflareRealIp?: boolean;
-  sslCertificate?: string;
-  sslCertificateKey?: string;
-  forceHttps?: boolean;
-  hsts?: boolean;
-  siteRedirectUrl?: string;
-  authBasicUserFile?: string;
-  authBasicRealm?: string;
-  bindIp?: string;
-  /** Static asset cache max-age (default 7d) */
-  staticCache?: boolean;
-}): string {
+export function renderNginxStatic(
+  opts: {
+    serverName: string;
+    docRoot: string;
+    ssl?: boolean;
+    cloudflareRealIp?: boolean;
+    sslCertificate?: string;
+    sslCertificateKey?: string;
+    forceHttps?: boolean;
+    hsts?: boolean;
+    siteRedirectUrl?: string;
+    authBasicUserFile?: string;
+    authBasicRealm?: string;
+    bindIp?: string;
+    /** Static asset cache max-age (default 7d) */
+    staticCache?: boolean;
+  } & NginxRealIpOpts,
+): string {
   if (!opts.serverName || !opts.docRoot) {
     throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1389'), {
       httpStatus: 400,
@@ -245,7 +252,7 @@ export function renderNginxStatic(opts: {
       bindIp: opts.bindIp,
     });
   }
-  const realIp = opts.cloudflareRealIp ? CLOUDFLARE_REAL_IP : '';
+  const realIp = realIpSnippet(opts);
   const force = Boolean(opts.ssl && opts.forceHttps);
   const sslBlock = sslLines({
     ssl: opts.ssl,
@@ -290,89 +297,58 @@ export function renderNginxStatic(opts: {
 }
 
 /**
- * Render Nginx server block for PHP-FPM (unix socket) + static docroot.
+ * Render Nginx server block for PHP projects.
+ * Topology (required): Internet → Nginx → Apache backend → PHP-FPM.
+ * Does NOT fastcgi directly to FPM — Apache owns DocumentRoot + .php handler.
  */
-export function renderNginxPhpFpm(opts: {
-  serverName: string;
-  docRoot: string;
-  /** e.g. /run/php/php8.2-fpm-ysk_demo.sock */
-  fpmSocket: string;
-  ssl?: boolean;
-  cloudflareRealIp?: boolean;
-  sslCertificate?: string;
-  sslCertificateKey?: string;
-  forceHttps?: boolean;
-  hsts?: boolean;
-  siteRedirectUrl?: string;
-  authBasicUserFile?: string;
-  authBasicRealm?: string;
-  bindIp?: string;
-}): string {
-  if (!opts.serverName || !opts.docRoot || !opts.fpmSocket) {
+export function renderNginxPhpFpm(
+  opts: {
+    serverName: string;
+    /** Docroot is served by Apache; kept for API/compat (optional notes). */
+    docRoot?: string;
+    /** @deprecated Nginx no longer fastcgi to FPM; Apache uses the pool sock. */
+    fpmSocket?: string;
+    /** e.g. http://127.0.0.1:8080 — default from YSK_APACHE_BACKEND_* */
+    apacheUpstream?: string;
+    ssl?: boolean;
+    cloudflareRealIp?: boolean;
+    sslCertificate?: string;
+    sslCertificateKey?: string;
+    forceHttps?: boolean;
+    hsts?: boolean;
+    siteRedirectUrl?: string;
+    authBasicUserFile?: string;
+    authBasicRealm?: string;
+    bindIp?: string;
+  } & NginxRealIpOpts,
+): string {
+  if (!opts.serverName) {
     throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1390'), {
       httpStatus: 400,
     });
   }
-  if (opts.siteRedirectUrl?.trim()) {
-    return siteRedirectOnly({
-      serverName: opts.serverName,
-      siteRedirectUrl: opts.siteRedirectUrl.trim(),
-      ssl: opts.ssl,
-      sslCertificate: opts.sslCertificate,
-      sslCertificateKey: opts.sslCertificateKey,
-      hsts: opts.hsts,
-      bindIp: opts.bindIp,
-    });
-  }
-  const realIp = opts.cloudflareRealIp ? CLOUDFLARE_REAL_IP : '';
-  const force = Boolean(opts.ssl && opts.forceHttps);
-  const sslBlock = sslLines({
-    ssl: opts.ssl,
+  const upstream =
+    (opts.apacheUpstream || '').trim() ||
+    // lazy import-free default matching runtime.apacheBackendUpstream()
+    `http://${process.env.YSK_APACHE_BACKEND_BIND || '127.0.0.1'}:${process.env.YSK_APACHE_BACKEND_PORT || '8080'}`;
+
+  // Reuse proxy renderer — PHP front is reverse-proxy to Apache
+  return renderNginxProxy({
+    serverName: opts.serverName,
+    upstream,
+    ssl: Boolean(opts.ssl),
+    cloudflareRealIp: Boolean(opts.cloudflareRealIp),
     sslCertificate: opts.sslCertificate,
     sslCertificateKey: opts.sslCertificateKey,
-    serverName: opts.serverName,
+    forceHttps: opts.forceHttps,
     hsts: opts.hsts,
-  });
-  const auth = authBasicBlock(opts);
-
-  const body = (listen: string) => `server {
-  ${listen}
-  server_name ${opts.serverName};
-  root ${opts.docRoot};
-  index index.php index.html;
-  ${sslBlock}
-  ${realIp}
-  ${auth}
-
-  location / {
-    try_files $uri $uri/ /index.php?$query_string;
-  }
-
-  location ~ \\.php$ {
-    include snippets/fastcgi-php.conf;
-    fastcgi_pass unix:${opts.fpmSocket};
-    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-    include fastcgi_params;
-  }
-
-  location ~ /\\. {
-    deny all;
-  }
-
-  location ~* \\.(css|js|jpg|jpeg|png|gif|ico|svg|woff2?)$ {
-    expires 7d;
-    add_header Cache-Control "public";
-    try_files $uri =404;
-  }
-}
-`;
-
-  if (force) {
-    const sslListen = nginxListenLines({ ssl: true, bindIp: opts.bindIp }).split('\n')[0];
-    return `${httpRedirectBlock(opts.serverName, opts.bindIp)}${body(sslListen)}`;
-  }
-  const listen = nginxListenLines({ ssl: opts.ssl, bindIp: opts.bindIp });
-  return body(listen);
+    siteRedirectUrl: opts.siteRedirectUrl,
+    authBasicUserFile: opts.authBasicUserFile,
+    authBasicRealm: opts.authBasicRealm,
+    bindIp: opts.bindIp,
+    realIpProvider: opts.realIpProvider,
+    realIpHost: opts.realIpHost,
+  } as NginxProxyConfig & NginxRealIpOpts);
 }
 
 /**

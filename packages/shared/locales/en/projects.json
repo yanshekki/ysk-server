@@ -179,7 +179,7 @@
   "createAliases": "Aliases",
   "createAliasesHint": "Comma or newline separated",
   "createTemplate": "Template",
-  "createTemplateHint": "Picking a template sets a matching runtime",
+  "createTemplateHint": "One Hello World! demo per runtime; picking a template sets that runtime",
   "createTemplateNote": "Templates only write a skeleton; deploy to build/start.",
   "createRuntimeNow": "Current runtime: ",
   "createTemplateFooter": ". Optional template to start faster, or leave empty.",

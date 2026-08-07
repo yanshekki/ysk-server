@@ -39,6 +39,7 @@ export * from './postgres-provision.js';
 export * from './pm2-apply.js';
 export * from './pm2-status.js';
 export * from './process-fleet.js';
+export * from './real-ip/index.js';
 export * from './dns-zone.js';
 export * from './dns-health.js';
 export * from './powerdns-apply.js';

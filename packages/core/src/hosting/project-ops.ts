@@ -29,6 +29,7 @@ import {
   renderNginxSuspended } from './nginx-ssl.js';
 import { syncNginxConfigs, writeManagedNginxConf } from './nginx-sync.js';
 import {
+  apacheBackendUpstream,
   defaultProcessCommands,
   defaultRuntimeVersion,
   detectBunEntry,
@@ -51,6 +52,7 @@ import {
 import { loadRuntimeTuning, tuningToEnv, type TuningKind } from './runtime-tuning.js';
 import { assertQuotaMb, assertWithinQuota, checkProjectQuota } from './quota.js';
 import { applyPm2Start, applyPm2Stop, writePm2Ecosystem } from './pm2-apply.js';
+import { loadRealIpConfig, type RealIpProviderId } from './real-ip/index.js';
 import {
   assertOsIsolationForDeploy,
   canRunAsProjectUser,
@@ -496,7 +498,7 @@ export class ProjectOpsService {
       serverName,
       upstream: `http://127.0.0.1:${port}`,
       ssl: false,
-      cloudflareRealIp: true,
+      ...this.nginxRealIpOpts(row),
       forceHttps: false,
       hsts: false });
     const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
@@ -658,7 +660,7 @@ export class ProjectOpsService {
       serverName,
       docRoot,
       ssl: wantSsl && managed.exists,
-      cloudflareRealIp: true,
+      ...this.nginxRealIpOpts(row),
       sslCertificate: wantSsl && managed.exists ? managed.fullchain : undefined,
       sslCertificateKey: wantSsl && managed.exists ? managed.privkey : undefined,
       forceHttps: wantSsl && Boolean(row.force_https),
@@ -859,9 +861,10 @@ export class ProjectOpsService {
     const authBasicUserFile = auth.path;
     const sslCert = wantSsl && managed.exists ? managed.fullchain : undefined;
     const sslKey = wantSsl && managed.exists ? managed.privkey : undefined;
+    const realIpOpts = this.nginxRealIpOpts(row);
     const commonSsl = {
       ssl: wantSsl,
-      cloudflareRealIp: true as const,
+      ...realIpOpts,
       sslCertificate: sslCert,
       sslCertificateKey: sslKey,
       forceHttps: wantSsl && forceHttps,
@@ -875,22 +878,22 @@ export class ProjectOpsService {
     let kind = 'proxy';
     if (row.runtime === 'static') {
       kind = 'static';
-      const rel = (row.doc_root || 'app').replace(/^\//, '');
-      const docRoot = join(row.home_dir, rel);
+      const docRoot = resolveProjectDocRoot(row);
       conf = renderNginxStatic({
         serverName,
         docRoot,
         ...commonSsl });
     } else if (row.runtime === 'php') {
-      kind = 'php-fpm';
+      // Nginx → Apache backend → PHP-FPM (never direct fastcgi from nginx)
+      kind = 'php-apache';
+      const docRoot = resolveProjectDocRoot(row);
       const phpVer = selectPhpRuntime(row.runtime_version || '8.2').version;
-      const rel = (row.doc_root || 'app').replace(/^\//, '');
-      const docRoot = join(row.home_dir, rel);
       const fpmSocket = `/run/php/php${phpVer}-fpm-${row.linux_user}.sock`;
       conf = renderNginxPhpFpm({
         serverName,
         docRoot,
         fpmSocket,
+        apacheUpstream: apacheBackendUpstream(),
         ...commonSsl });
     } else {
       conf = renderNginxProxy({
@@ -1308,8 +1311,8 @@ export class ProjectOpsService {
 
   /**
    * PHP deploy dual-mode:
-   * - production: PHP-FPM pool + nginx fastcgi when preferFpm/enableFpm + root + YSK_EXECUTE
-   * - degraded: `php -S` built-in server (verifiable without root)
+   * - production: Nginx → Apache backend → PHP-FPM (root + YSK_EXECUTE)
+   * - degraded: `php -S` + nginx proxy (verifiable without root)
    */
   async deployPhp(
     projectId: string,
@@ -1318,9 +1321,9 @@ export class ProjectOpsService {
       port?: number;
       phpVersion?: string;
       enableApache?: boolean;
-      /** Prefer PHP-FPM + nginx (default true when root+EXECUTE) */
+      /** Prefer production Apache+FPM path (default true when root+EXECUTE) */
       preferFpm?: boolean;
-      /** Force php -S even if FPM available */
+      /** Force php -S even if FPM/Apache available */
       forceBuiltin?: boolean;
       healthTimeoutMs?: number;
     },
@@ -1353,6 +1356,9 @@ export class ProjectOpsService {
     const docRoot = resolveProjectDocRoot(row);
     mkdirSync(docRoot, { recursive: true });
     const domain = row.domain ?? `${row.linux_user}.local`;
+    const aliases = (row.domain_aliases || [])
+      .map((a) => String(a).trim())
+      .filter(Boolean);
 
     const phpVersion = opts.phpVersion ?? row.runtime_version ?? '8.2';
     const phpRt = selectPhpRuntime(phpVersion);
@@ -1360,26 +1366,14 @@ export class ProjectOpsService {
       this.projects.updateMeta(projectId, { runtime_version: phpRt.version });
       notes.push(tl('notes.auto.t0195', { v0: (phpRt.version) }));
     }
+    // Production = Nginx → Apache → FPM (default on when root+EXECUTE)
     const canProd =
       this.host.executeEnabled() &&
       this.host.isRoot() &&
       opts.forceBuiltin !== true &&
-      (opts.preferFpm === true ||
-        opts.enableApache === true ||
-        (opts.preferFpm !== false && opts.enableApache !== false));
+      opts.preferFpm !== false;
 
-    const apply = await applyPhpHosting({
-      dataDir: this.dataDir,
-      domain,
-      docRoot,
-      phpVersion,
-      poolName: row.linux_user,
-      host: this.host,
-      enableSite: Boolean(canProd && opts.enableApache) });
-    await chownProjectHome(this.host, row, notes);
-    written.push(...apply.written);
-    notes.push(...apply.notes);
-
+    // FPM first so Apache SetHandler sock exists when site reloads
     const mergedIni = mergePhpIni(
       loadPhpIniSettings(this.dataDir, phpVersion),
       loadProjectPhpIni(this.dataDir, projectId, phpVersion),
@@ -1399,10 +1393,24 @@ export class ProjectOpsService {
     written.push(...fpm.written);
     notes.push(...fpm.notes);
 
+    // Apache vhost always enabled on production path (Nginx must proxy via Apache)
+    const apply = await applyPhpHosting({
+      dataDir: this.dataDir,
+      domain,
+      serverAliases: aliases,
+      docRoot,
+      phpVersion,
+      poolName: row.linux_user,
+      host: this.host,
+      enableSite: canProd || opts.enableApache === true });
+    await chownProjectHome(this.host, row, notes);
+    written.push(...apply.written);
+    notes.push(...apply.notes);
+
     await this.stopProcess(row, notes);
 
-    // —— Production path: FPM enabled → nginx fastcgi, no php -S ——
-    if (fpm.enabled) {
+    // —— Production: FPM + Apache site → Nginx proxy_pass Apache ——
+    if (fpm.enabled && apply.siteEnabled) {
       const fpmSocket =
         `/run/php/php${phpRt.version}-fpm-${row.linux_user}.sock`;
       const authPhp = await this.writeProjectHtpasswd(row);
@@ -1410,8 +1418,9 @@ export class ProjectOpsService {
         serverName: buildServerNameList(domain, row.domain_aliases),
         docRoot,
         fpmSocket,
+        apacheUpstream: apply.apacheUpstream,
         ssl: false,
-        cloudflareRealIp: true,
+        ...this.nginxRealIpOpts(row),
         forceHttps: Boolean(row.force_https),
         hsts: Boolean(row.hsts),
         siteRedirectUrl: row.site_redirect_url,
@@ -1422,7 +1431,7 @@ export class ProjectOpsService {
       const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
       written.push(nginxPath);
       notes.push(tl('notes.auto.t0197', { v0: (nginxPath) }));
-      notes.push(`fastcgi_pass unix:${fpmSocket}`);
+      notes.push(`nginx proxy_pass ${apply.apacheUpstream} → Apache → FPM ${fpmSocket}`);
 
       // best-effort system sync + nginx -t + reload
       let nginxReloaded = false;
@@ -1456,9 +1465,10 @@ export class ProjectOpsService {
         last_health: {
           ok: true,
           at: new Date().toISOString(),
-          deployMode: 'php_fpm',
+          deployMode: 'php_apache_fpm',
           degraded: false,
           fpmSocket,
+          apacheUpstream: apply.apacheUpstream,
           nginxReloaded },
         last_deploy_at: new Date().toISOString() });
 
@@ -1466,7 +1476,13 @@ export class ProjectOpsService {
         actor: opts.actor,
         action: 'project.deploy_php',
         resource: projectId,
-        detail: { deployMode: 'php_fpm', fpmSocket, nginxPath, nginxReloaded },
+        detail: {
+          deployMode: 'php_apache_fpm',
+          fpmSocket,
+          apacheUpstream: apply.apacheUpstream,
+          nginxPath,
+          nginxReloaded,
+        },
         ok: true });
 
       return {
@@ -1477,7 +1493,7 @@ export class ProjectOpsService {
         nginxPath,
         notes: [
           ...notes,
-          'Production PHP-FPM path — verify via public hostname after nginx reload',
+          'Production: Nginx → Apache → PHP-FPM — verify via public hostname after reload',
         ],
         written,
         degraded: false,
@@ -1485,9 +1501,9 @@ export class ProjectOpsService {
         nginxReloaded };
     }
 
-    if (canProd && !fpm.enabled) {
+    if (canProd && (!fpm.enabled || !apply.siteEnabled)) {
       notes.push(
-        'PHP-FPM enable requested but not active — falling back to php -S (degraded)',
+        `Production path incomplete (fpm=${fpm.enabled} apacheSite=${apply.siteEnabled}) — falling back to php -S (degraded)`,
       );
     } else {
       notes.push(
@@ -1565,7 +1581,7 @@ export class ProjectOpsService {
       serverName: domain,
       upstream: `http://127.0.0.1:${port}`,
       ssl: false,
-      cloudflareRealIp: true });
+      ...this.nginxRealIpOpts(row) });
     const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);
     written.push(nginxPath);
 
@@ -1844,6 +1860,19 @@ export class ProjectOpsService {
     return row;
   }
 
+  /** Multi-CDN real client IP opts for nginx renderers. */
+  private nginxRealIpOpts(row: ProjectRow): {
+    cloudflareRealIp: true;
+    realIpProvider: RealIpProviderId | 'inherit';
+    realIpHost: ReturnType<typeof loadRealIpConfig>;
+  } {
+    return {
+      cloudflareRealIp: true,
+      realIpProvider: (row.real_ip_provider || 'inherit') as RealIpProviderId | 'inherit',
+      realIpHost: loadRealIpConfig(this.dataDir),
+    };
+  }
+
   private async stopProcess(row: ProjectRow, notes: string[]): Promise<void> {
     const pidfile = row.pidfile ?? join(row.home_dir, 'app.pid');
     let pid = row.pid;
@@ -2118,7 +2147,7 @@ export class ProjectOpsService {
       serverName,
       upstream: `http://127.0.0.1:${port}`,
       ssl: false,
-      cloudflareRealIp: true,
+      ...this.nginxRealIpOpts(row),
       forceHttps: false,
       hsts: false,
       siteRedirectUrl: row.site_redirect_url,

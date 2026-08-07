@@ -180,6 +180,8 @@ describe('multi-version runtimes', () => {
     });
     expect(vhost).toContain('ServerName app.example.com');
     expect(vhost).toContain('php8.2-fpm');
+    expect(vhost).toMatch(/VirtualHost 127\.0\.0\.1:8080/);
+    expect(vhost).not.toMatch(/VirtualHost \*:80/);
   });
 
   it('default process commands', () => {

@@ -612,27 +612,65 @@ export function detectBunEntry(appDir: string): string | undefined {
   return undefined;
 }
 
+/** Apache backend bind for PHP (Nginx owns public :80/:443). */
+export function apacheBackendBind(): string {
+  const b = (process.env.YSK_APACHE_BACKEND_BIND || '127.0.0.1').trim();
+  return b || '127.0.0.1';
+}
+
+/** Apache backend port (default 8080). */
+export function apacheBackendPort(): number {
+  const n = Number(process.env.YSK_APACHE_BACKEND_PORT || 8080);
+  return Number.isFinite(n) && n > 0 && n < 65536 ? Math.floor(n) : 8080;
+}
+
+/** Upstream URL Nginx uses to reach Apache PHP backend. */
+export function apacheBackendUpstream(): string {
+  return `http://${apacheBackendBind()}:${apacheBackendPort()}`;
+}
+
 /**
- * Render Apache VirtualHost + PHP-FPM pool fragment.
+ * Render Apache VirtualHost for PHP via PHP-FPM (proxy_fcgi).
+ * Listens on backend bind:port only — not public :80 (Nginx terminates public HTTP/S).
  */
 export function renderPhpVhost(opts: {
   domain: string;
+  /** Extra ServerAlias names (space-separated or array) */
+  serverAliases?: string | string[];
   docRoot: string;
   phpVersion: string;
   poolName: string;
+  /** Override backend listen (default YSK_APACHE_BACKEND_*) */
+  bind?: string;
+  port?: number;
 }): string {
-  return `<VirtualHost *:80>
+  const bind = opts.bind ?? apacheBackendBind();
+  const port = opts.port ?? apacheBackendPort();
+  const aliasesRaw = Array.isArray(opts.serverAliases)
+    ? opts.serverAliases.join(' ')
+    : opts.serverAliases || '';
+  const aliases = aliasesRaw
+    .split(/\s+/)
+    .map((s) => s.trim())
+    .filter((s) => s && s !== opts.domain);
+  const aliasLine = aliases.length ? `  ServerAlias ${aliases.join(' ')}\n` : '';
+  const sock = `/run/php/php${opts.phpVersion}-fpm-${opts.poolName}.sock`;
+  return `# YSK PHP site — Apache backend (Nginx proxies here; FPM handles .php)
+<VirtualHost ${bind}:${port}>
   ServerName ${opts.domain}
-  DocumentRoot ${opts.docRoot}
+${aliasLine}  DocumentRoot ${opts.docRoot}
   <Directory ${opts.docRoot}>
+    Options FollowSymLinks
     AllowOverride All
     Require all granted
   </Directory>
   <FilesMatch \\.php$>
-    SetHandler "proxy:unix:/run/php/php${opts.phpVersion}-fpm-${opts.poolName}.sock|fcgi://localhost"
+    SetHandler "proxy:unix:${sock}|fcgi://localhost"
   </FilesMatch>
-  ErrorLog \${APACHE_LOG_DIR}/${opts.poolName}-error.log
-  CustomLog \${APACHE_LOG_DIR}/${opts.poolName}-access.log combined
+  # Trust X-Forwarded-* from local Nginx
+  SetEnvIf X-Forwarded-Proto https HTTPS=on
+  ErrorLog \${APACHE_LOG_DIR}/ysk-${opts.poolName}-error.log
+  CustomLog \${APACHE_LOG_DIR}/ysk-${opts.poolName}-access.log combined
 </VirtualHost>
 `;
 }

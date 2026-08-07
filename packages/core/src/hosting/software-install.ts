@@ -511,9 +511,8 @@ export async function installSoftware(input: {
 }
 
 /**
- * Topology: Nginx public :80/:443; Apache PHP backend on 127.0.0.1:8080.
- * When starting Nginx, rebind Apache off public ports (do not stop Apache).
- * When installing Apache, apply the same backend listen so it never steals :80.
+ * Topology: Nginx public :80/:443 → proxy → Apache PHP backend (127.0.0.1:8080) → PHP-FPM.
+ * When starting Nginx/Apache, rebind Apache off public ports (do not stop Apache).
  */
 async function freeHttpPortForSpec(
   host: HostExecutor,
@@ -528,8 +527,8 @@ async function freeHttpPortForSpec(
   const port = process.env.YSK_APACHE_BACKEND_PORT || '8080';
   notes.push(
     id === 'nginx'
-      ? `Rebinding Apache to ${bind}:${port} so Nginx can own public :80/:443 (Apache stays as PHP backend)`
-      : `Configuring Apache as Nginx backend on ${bind}:${port}`,
+      ? `Rebinding Apache to ${bind}:${port} so Nginx owns :80/:443 and proxies PHP to Apache→FPM`
+      : `Configuring Apache as Nginx PHP backend on ${bind}:${port}`,
   );
 
   const script = `
@@ -539,21 +538,36 @@ PORT=${JSON.stringify(port)}
 if [ ! -d /etc/apache2 ]; then exit 0; fi
 cp -a /etc/apache2/ports.conf /etc/apache2/ports.conf.ysk-bak 2>/dev/null || true
 cat > /etc/apache2/ports.conf <<EOF
-# Managed by YSK — Apache PHP backend; Nginx owns public :80/:443
+# Managed by YSK — Apache PHP backend; Nginx owns public :80/:443 and reverse-proxies here
 Listen \${BIND}:\${PORT}
 EOF
-if [ -f /etc/apache2/sites-available/000-default.conf ]; then
-  cp -a /etc/apache2/sites-available/000-default.conf /etc/apache2/sites-available/000-default.conf.ysk-bak 2>/dev/null || true
-  sed -i "s/<VirtualHost \\*:80>/<VirtualHost \${BIND}:\${PORT}>/g" /etc/apache2/sites-available/000-default.conf || true
+# Disable stock public sites; rewrite leftover *:80 / [::]:80 VirtualHosts in available/
+if [ -x /usr/sbin/a2dissite ]; then
+  a2dissite 000-default 2>/dev/null || true
+  a2dissite default-ssl 2>/dev/null || true
 fi
-if [ -x /usr/sbin/a2dissite ]; then /usr/sbin/a2dissite default-ssl 2>/dev/null || true; fi
+if [ -d /etc/apache2/sites-available ]; then
+  for f in /etc/apache2/sites-available/*.conf; do
+    [ -f "\$f" ] || continue
+    case "\$f" in *ysk-*) continue ;; esac
+    sed -i \\
+      -e "s/<VirtualHost \\*:80>/<VirtualHost \${BIND}:\${PORT}>/g" \\
+      -e "s/<VirtualHost \\*:443>/<VirtualHost \${BIND}:\${PORT}>/g" \\
+      -e "s/<VirtualHost \\[::\\]:80>/<VirtualHost \${BIND}:\${PORT}>/g" \\
+      "\$f" 2>/dev/null || true
+  done
+fi
+a2enmod proxy 2>/dev/null || true
+a2enmod proxy_fcgi 2>/dev/null || true
+a2enmod setenvif 2>/dev/null || true
+a2enmod rewrite 2>/dev/null || true
 if [ -x /usr/sbin/apache2ctl ]; then /usr/sbin/apache2ctl configtest; fi
 systemctl restart apache2 2>/dev/null || systemctl start apache2 2>/dev/null || true
 `.trim();
 
   const r = await host.runCommand(['bash', '-c', script], { timeoutMs: 60_000 });
   steps.push({
-    name: 'apache backend rebind (127.0.0.1:8080)',
+    name: `apache backend rebind (${bind}:${port})`,
     status: r.exitCode === 0 ? 'ok' : 'failed',
     detail: r.exitCode === 0 ? `Listen ${bind}:${port}` : (r.stderr || r.stdout).slice(0, 400),
   });

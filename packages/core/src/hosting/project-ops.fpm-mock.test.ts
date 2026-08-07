@@ -28,7 +28,12 @@ vi.mock('./system-apply.js', async (importOriginal) => {
       ok: true,
       written: ['/tmp/ysk-php-hosting'],
       notes: ['mocked php hosting'],
-      executed: false,
+      executed: true,
+      siteEnabled: true,
+      apacheUpstream: 'http://127.0.0.1:8080',
+      vhostPath: '/tmp/ysk-apache-vhost.conf',
+      commands: [],
+      commandResults: [],
     })),
   };
 });
@@ -62,7 +67,7 @@ describe('ProjectOpsService FPM production mock', () => {
     dirs.length = 0;
   });
 
-  it('deployPhp with preferFpm + root takes php_fpm path when pool enabled', async () => {
+  it('deployPhp with preferFpm + root takes Nginx→Apache→FPM path when enabled', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-fpm-'));
     dirs.push(dir);
     const store = new JsonStore(join(dir, 'ysk.json'));
@@ -107,8 +112,15 @@ describe('ProjectOpsService FPM production mock', () => {
     });
     expect(r.ok).toBe(true);
     expect(r.degraded).toBe(false);
-    expect(r.notes.some((n) => /fpm|fastcgi|Production PHP/i.test(n))).toBe(true);
+    expect(
+      r.notes.some((n) => /Apache|proxy_pass|php_apache|Nginx → Apache/i.test(n)),
+    ).toBe(true);
     expect(r.nginxPath && existsSync(r.nginxPath)).toBe(true);
+    if (r.nginxPath) {
+      const body = (await import('node:fs')).readFileSync(r.nginxPath, 'utf8');
+      expect(body).toContain('proxy_pass http://127.0.0.1:8080');
+      expect(body).not.toContain('fastcgi_pass');
+    }
   });
 
   it('deployStatic with root+execute uses mocked nginx sync reload', async () => {

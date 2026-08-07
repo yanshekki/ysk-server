@@ -61,6 +61,7 @@ export class ProjectRepository {
         | 'http_auth_pass'
         | 'doc_root'
         | 'bind_ip'
+        | 'real_ip_provider'
         | 'status'
         | 'home_dir'
         | 'linux_user'
@@ -83,6 +84,7 @@ export class ProjectRepository {
     if ('http_auth_pass' in patch) p.http_auth_pass = patch.http_auth_pass;
     if ('doc_root' in patch) p.doc_root = patch.doc_root;
     if ('bind_ip' in patch) p.bind_ip = patch.bind_ip;
+    if ('real_ip_provider' in patch) p.real_ip_provider = patch.real_ip_provider;
     if (patch.status !== undefined) p.status = patch.status;
     if (patch.home_dir !== undefined) p.home_dir = patch.home_dir;
     if (patch.linux_user !== undefined) p.linux_user = patch.linux_user;

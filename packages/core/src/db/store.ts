@@ -123,6 +123,11 @@ export interface StoreProject {
   doc_root?: string;
   /** Optional bind IP for nginx listen (empty = all) */
   bind_ip?: string;
+  /**
+   * Real client IP provider override for this site.
+   * undefined / omit = inherit host default; 'none' = force off.
+   */
+  real_ip_provider?: string;
   last_health?: Record<string, unknown>;
   last_deploy_at?: string;
   /** Git remote for deploy */

@@ -39,9 +39,10 @@ import {
   type NetInterface,
   type NetRoute,
   type NetworkSnapshot,
+  type RealIpStatusDto,
 } from '../../features/network/api';
 
-const TABS = ['ifaces', 'routes', 'dns', 'advanced', 'about'] as const;
+const TABS = ['ifaces', 'routes', 'dns', 'realip', 'advanced', 'about'] as const;
 
 export function formatBytes(n?: number): string {
   if (n == null || !Number.isFinite(n)) return '—';
@@ -188,6 +189,26 @@ export function NetworkPage() {
   const [dnsTestOut, setDnsTestOut] = useState<string[] | null>(null);
   const [dnsPreset, setDnsPreset] = useState('');
 
+  const [realIp, setRealIp] = useState<RealIpStatusDto | null>(null);
+  const [realIpProvider, setRealIpProvider] = useState('none');
+  const [realIpMode, setRealIpMode] = useState<'single_provider' | 'xff_merged'>(
+    'single_provider',
+  );
+  const [realIpCustomCidrs, setRealIpCustomCidrs] = useState('');
+  const [realIpMsg, setRealIpMsg] = useState<string | null>(null);
+
+  const loadRealIp = useCallback(async () => {
+    try {
+      const s = await networkApi.realIpStatus();
+      setRealIp(s);
+      setRealIpProvider(s.config.defaultProvider || 'none');
+      setRealIpMode(s.config.trustMode || 'single_provider');
+      setRealIpCustomCidrs((s.config.customCidrs || []).join('\n'));
+    } catch (e) {
+      setRealIpMsg(e instanceof Error ? e.message : t('common.loadFailed'));
+    }
+  }, [t]);
+
   const syncDnsForm = useCallback((s: NetworkSnapshot) => {
     const stub = new Set(['127.0.0.53', '127.0.0.1', '::1']);
     const raw =
@@ -225,6 +246,10 @@ export function NetworkPage() {
   useEffect(() => {
     void refresh(false);
   }, [refresh]);
+
+  useEffect(() => {
+    if (tab === 'realip') void loadRealIp();
+  }, [tab, loadRealIp]);
 
   const upCount = useMemo(
     () => snap?.interfaces.filter(isUp).length ?? 0,
@@ -361,10 +386,13 @@ export function NetworkPage() {
                 label: t('network.tabs.dns'),
                 badge: snap.dns.nameservers.length || undefined,
               },
+              {
+                id: 'realip',
+                label: t('network.tabs.realip', { defaultValue: 'Real IP / CDN' }),
+              },
               { id: 'advanced', label: t('network.tabs.advanced') },
-            
-          { id: 'about', label: t('network.tabs.about') },
-        ]}
+              { id: 'about', label: t('network.tabs.about') },
+            ]}
             active={tab}
             onChange={setTab}
             variant="scroll"
@@ -1088,9 +1116,193 @@ export function NetworkPage() {
                 ) : null}
               </div>
             ) : null}
-          
-        {tab === 'about' ? <PageGuide guideId="network" /> : null}
-      </PageTabs>
+
+            {tab === 'realip' ? (
+              <div className="tab-panel">
+                <Card>
+                  <CardHeader
+                    title={t('network.realip.title', {
+                      defaultValue: 'CDN / Real client IP',
+                    })}
+                    description={t('network.realip.desc', {
+                      defaultValue:
+                        'Restore visitor IP behind CDN. Only trusts edge CIDRs — never blind X-Forwarded-For.',
+                    })}
+                  />
+                  {realIpMsg ? <Alert variant="info">{realIpMsg}</Alert> : null}
+                  <FormLayout>
+                    <Field
+                      label={t('network.realip.provider', { defaultValue: 'Default provider' })}
+                      htmlFor="rip-prov"
+                      hint={t('network.realip.providerHint', {
+                        defaultValue: 'none = direct origin; pick CDN when origin is behind edge',
+                      })}
+                      flush
+                    >
+                      <select
+                        id="rip-prov"
+                        className="input"
+                        value={realIpProvider}
+                        onChange={(e) => setRealIpProvider(e.target.value)}
+                      >
+                        {(realIp?.catalog ?? [
+                          { id: 'none', label: 'None' },
+                          { id: 'cloudflare', label: 'Cloudflare' },
+                        ]).map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.label}
+                            {p.clientIpHeader ? ` (${p.clientIpHeader})` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+                    <Field
+                      label={t('network.realip.mode', { defaultValue: 'Trust mode' })}
+                      htmlFor="rip-mode"
+                      flush
+                    >
+                      <select
+                        id="rip-mode"
+                        className="input"
+                        value={realIpMode}
+                        onChange={(e) =>
+                          setRealIpMode(e.target.value as 'single_provider' | 'xff_merged')
+                        }
+                      >
+                        <option value="single_provider">
+                          {t('network.realip.modeSingle', {
+                            defaultValue: 'Single provider header (recommended)',
+                          })}
+                        </option>
+                        <option value="xff_merged">
+                          {t('network.realip.modeXff', {
+                            defaultValue: 'X-Forwarded-For + merged CDN CIDRs',
+                          })}
+                        </option>
+                      </select>
+                    </Field>
+                    <Field
+                      label={t('network.realip.customCidrs', {
+                        defaultValue: 'Extra trusted CIDRs',
+                      })}
+                      htmlFor="rip-cidr"
+                      hint={t('network.realip.customCidrsHint', {
+                        defaultValue: 'One per line. Never use 0.0.0.0/0.',
+                      })}
+                      flush
+                    >
+                      <textarea
+                        id="rip-cidr"
+                        className="input"
+                        rows={4}
+                        value={realIpCustomCidrs}
+                        onChange={(e) => setRealIpCustomCidrs(e.target.value)}
+                        placeholder="203.0.113.0/24"
+                      />
+                    </Field>
+                  </FormLayout>
+                  <DescriptionList
+                    columns={2}
+                    items={[
+                      {
+                        label: t('network.realip.lastRefresh', {
+                          defaultValue: 'Last CIDR refresh',
+                        }),
+                        value: realIp?.config.lastRefreshAt || '—',
+                      },
+                      {
+                        label: t('network.realip.active', { defaultValue: 'Active default' }),
+                        value: realIp?.config.defaultProvider || '—',
+                      },
+                    ]}
+                  />
+                  <FormHint>
+                    {t('network.realip.republishHint', {
+                      defaultValue:
+                        'After save, re-publish project Nginx configs so sites pick up real_ip. PHP also uses Apache RemoteIP behind local Nginx.',
+                    })}
+                  </FormHint>
+                  <FormActions>
+                    <Button
+                      variant="primary"
+                      size="md"
+                      loading={busy}
+                      onClick={() => {
+                        void (async () => {
+                          setBusy(true);
+                          setRealIpMsg(null);
+                          try {
+                            const r = await networkApi.patchRealIp({
+                              defaultProvider: realIpProvider,
+                              trustMode: realIpMode,
+                              customCidrs: realIpCustomCidrs
+                                .split(/[\n,]+/)
+                                .map((s) => s.trim())
+                                .filter(Boolean),
+                              enableApacheRemoteIp: true,
+                            });
+                            setRealIpMsg(
+                              r.notes?.join('；') ||
+                                t('common.savedOk', { defaultValue: 'Saved' }),
+                            );
+                            await loadRealIp();
+                          } catch (e) {
+                            setRealIpMsg(
+                              e instanceof Error ? e.message : t('common.saveFailed'),
+                            );
+                          } finally {
+                            setBusy(false);
+                          }
+                        })();
+                      }}
+                    >
+                      {t('common.save')}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      loading={busy}
+                      onClick={() => {
+                        void (async () => {
+                          setBusy(true);
+                          setRealIpMsg(null);
+                          try {
+                            const r = await networkApi.refreshRealIp();
+                            setRealIpMsg(
+                              r.notes?.join('；') ||
+                                t('network.realip.refreshOk', {
+                                  defaultValue: 'CIDR lists refreshed',
+                                }),
+                            );
+                            await loadRealIp();
+                          } catch (e) {
+                            setRealIpMsg(
+                              e instanceof Error ? e.message : t('common.applyFailed'),
+                            );
+                          } finally {
+                            setBusy(false);
+                          }
+                        })();
+                      }}
+                    >
+                      {t('network.realip.refresh', {
+                        defaultValue: 'Refresh CDN IP lists',
+                      })}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="md"
+                      onClick={() => void loadRealIp()}
+                    >
+                      {t('common.refresh')}
+                    </Button>
+                  </FormActions>
+                </Card>
+              </div>
+            ) : null}
+
+            {tab === 'about' ? <PageGuide guideId="network" /> : null}
+          </PageTabs>
         </div>
       ) : null}
 

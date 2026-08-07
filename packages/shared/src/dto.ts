@@ -148,6 +148,11 @@ export interface ProjectDto {
   docRoot?: string;
   /** Nginx listen bind IP */
   bindIp?: string;
+  /**
+   * CDN/proxy real client IP provider for this project.
+   * undefined = inherit system default; 'none' | 'cloudflare' | 'fastly' | …
+   */
+  realIpProvider?: string;
   lastHealth?: Record<string, unknown>;
   lastDeployAt?: string;
   osProvisioned?: boolean;
@@ -236,7 +241,16 @@ export interface NginxProxyConfig {
   serverName: string;
   upstream: string;
   ssl: boolean;
+  /**
+   * @deprecated Prefer realIpProvider / host real-ip config.
+   * true still enables Cloudflare real_ip when host default is none.
+   */
   cloudflareRealIp: boolean;
+  /**
+   * Multi-CDN real client IP provider id (none|cloudflare|fastly|…).
+   * When set, overrides cloudflareRealIp.
+   */
+  realIpProvider?: string;
   /** Optional paths for uploaded / managed certs (defaults to Let's Encrypt layout) */
   sslCertificate?: string;
   sslCertificateKey?: string;

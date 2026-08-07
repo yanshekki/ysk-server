@@ -226,6 +226,62 @@ export async function handleMiscRoutes(
         sendJson(res, 200, { items: globalSearch(ctx.db, q) });
         return true;
       }
+      // —— Multi-CDN real client IP ——
+      if (method === 'GET' && url.pathname === '/api/v1/system/real-ip') {
+        ctx.auth.authenticate(getBearer(req));
+        const {
+          loadRealIpConfig,
+          listRealIpProviders,
+          realIpProviderSummary,
+        } = await import('@ysk/core');
+        const config = loadRealIpConfig(ctx.dataDir);
+        sendJson(res, 200, {
+          config,
+          providers: realIpProviderSummary(),
+          catalog: listRealIpProviders().map((p) => ({
+            id: p.id,
+            label: p.label,
+            clientIpHeader: p.clientIpHeader,
+            hasSources: Boolean(p.cidrSources?.ipv4 || p.cidrSources?.ipv6),
+            snapshotCount: p.snapshotIpv4.length + p.snapshotIpv6.length,
+          })),
+        });
+        return true;
+      }
+      if (method === 'PATCH' && url.pathname === '/api/v1/system/real-ip') {
+        ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const body = JSON.parse(raw || '{}') as Record<string, unknown>;
+        const { patchRealIpConfig, applyRealIpArtifacts } = await import('@ysk/core');
+        const config = patchRealIpConfig(ctx.dataDir, {
+          defaultProvider: body.defaultProvider as never,
+          trustMode: body.trustMode as never,
+          enabledProviders: body.enabledProviders as never,
+          customCidrs: body.customCidrs as never,
+          customHeader: body.customHeader as never,
+        });
+        const art = await applyRealIpArtifacts({
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          enableApacheRemoteIp: Boolean(body.enableApacheRemoteIp),
+        });
+        sendJson(res, 200, { ok: true, config, notes: art.notes, written: art.written });
+        return true;
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/system/real-ip/refresh') {
+        ctx.auth.authenticate(getBearer(req));
+        const { refreshRealIpCidrs, applyRealIpArtifacts } = await import('@ysk/core');
+        const r = await refreshRealIpCidrs({ dataDir: ctx.dataDir, host: ctx.host });
+        const art = await applyRealIpArtifacts({ dataDir: ctx.dataDir });
+        sendJson(res, 200, {
+          ok: r.ok,
+          config: r.config,
+          updated: r.updated,
+          notes: [...r.notes, ...art.notes],
+        });
+        return true;
+      }
+
       if (method === 'GET' && url.pathname === '/api/v1/system/ips') {
         ctx.auth.authenticate(getBearer(req));
         const r = await ctx.host.runCommand(
@@ -843,6 +899,7 @@ export async function handleMiscRoutes(
           httpAuthPass?: string | null;
           docRoot?: string | null;
           bindIp?: string | null;
+          realIpProvider?: string | null;
           publish?: boolean;
           ssl?: boolean;
         };
@@ -857,7 +914,8 @@ export async function handleMiscRoutes(
             httpAuthUser: data.httpAuthUser,
             httpAuthPass: data.httpAuthPass,
             docRoot: data.docRoot,
-            bindIp: data.bindIp },
+            bindIp: data.bindIp,
+            realIpProvider: data.realIpProvider },
           user.username,
         );
         if (data.publish) {

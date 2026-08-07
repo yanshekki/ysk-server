@@ -4021,7 +4021,8 @@
       "routes": "路由",
       "dns": "DNS",
       "advanced": "進階",
-      "about": "說明"
+      "about": "說明",
+      "realip": "Real IP / CDN"
     },
     "ifaceSummary": "{{count}} 個介面 · {{up}} 個 UP",
     "noIfaces": "沒有介面",
@@ -4112,7 +4113,11 @@
     "loadRaw": "載入 raw 輸出",
     "confirmDown": "確認 Down",
     "defaultRouteDownWarn": "此介面是預設路由出口，down 後可能無法連上管理面板。",
-    "deleteDefaultMayDrop": "— 刪除 預設 可能斷線。"
+    "deleteDefaultMayDrop": "— 刪除 預設 可能斷線。",
+    "realip": {
+      "title": "CDN / 真實客戶端 IP",
+      "desc": "喺 CDN 後面還原來訪 IP。只信任 edge CIDR，唔盲信 X-Forwarded-For。"
+    }
   },
   "nginx": {
     "pillSites": "{{count}} 站點",
@@ -7132,7 +7137,7 @@
     "createAliases": "別名",
     "createAliasesHint": "逗號或換行分隔",
     "createTemplate": "範本",
-    "createTemplateHint": "選範本會自動帶入對應執行環境",
+    "createTemplateHint": "每個執行環境只有一個 Hello World! demo；選範本會帶入對應 runtime",
     "createTemplateNote": "範本只寫入專案目錄骨架；需再「部署」才會 建置／啟動。",
     "createRuntimeNow": "目前執行環境：",
     "createTemplateFooter": "。可選範本加速起步，或不選直接空白專案。",

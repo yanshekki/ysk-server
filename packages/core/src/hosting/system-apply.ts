@@ -7,7 +7,13 @@ import { join } from 'node:path';
 import type { HostExecutor } from '../host/executor.js';
 import { planEmailStackInstall } from '../email/dns-records.js';
 import { planLetsEncrypt, renderNginxProxy } from './nginx-ssl.js';
-import { renderPhpVhost, selectPhpRuntime } from './runtime.js';
+import {
+  apacheBackendBind,
+  apacheBackendPort,
+  apacheBackendUpstream,
+  renderPhpVhost,
+  selectPhpRuntime,
+} from './runtime.js';
 import { planFirewall } from './extras.js';
 import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import { HostSoftwareProbe, shellEnsureAptPackage } from './software-probe/index.js';
@@ -375,56 +381,133 @@ export async function applyLetsEncrypt(input: {
 }
 
 /**
- * Write PHP vhost under dataDir; optional copy to Apache sites-available.
+ * Write Apache PHP vhost (backend bind only) + optional enable.
+ * Topology: Nginx → Apache (127.0.0.1:8080) → PHP-FPM sock.
  */
 export async function applyPhpHosting(input: {
   dataDir: string;
   domain: string;
+  /** Optional ServerAlias list */
+  serverAliases?: string[];
   docRoot: string;
   phpVersion: string;
   poolName: string;
   host: HostExecutor;
   enableSite?: boolean;
-}): Promise<ApplyResult> {
+}): Promise<
+  ApplyResult & {
+    siteEnabled: boolean;
+    apacheUpstream: string;
+    vhostPath: string;
+  }
+> {
   const rt = selectPhpRuntime(input.phpVersion);
+  const bind = apacheBackendBind();
+  const port = apacheBackendPort();
+  const apacheUpstream = apacheBackendUpstream();
   const dir = join(input.dataDir, 'apache', 'sites');
   mkdirSync(dir, { recursive: true });
   mkdirSync(input.docRoot, { recursive: true });
   const conf = renderPhpVhost({
     domain: input.domain,
+    serverAliases: input.serverAliases,
     docRoot: input.docRoot,
     phpVersion: rt.version,
-    poolName: input.poolName });
-  const path = join(dir, `${input.poolName}.conf`);
+    poolName: input.poolName,
+    bind,
+    port,
+  });
+  const path = join(dir, `ysk-${input.poolName}.conf`);
   writeFileSync(path, conf, 'utf8');
   const index = join(input.docRoot, 'index.php');
   if (!existsSync(index)) {
     writeFileSync(index, '<?php echo "YSK PHP OK\\n";\n', 'utf8');
   }
-  const notes = [`PHP ${rt.version} vhost at ${path}`, `binary ${rt.binaryPath}`];
+  const notes = [
+    `PHP ${rt.version} Apache vhost at ${path}`,
+    `Apache backend ${bind}:${port} (Nginx proxies; FPM sock)`,
+    `binary ${rt.binaryPath}`,
+  ];
   const commands: string[][] = [];
   if (input.enableSite) {
-    commands.push(['cp', path, `/etc/apache2/sites-available/${input.poolName}.conf`]);
-    commands.push(['a2ensite', input.poolName]);
+    // Ensure Apache listens only on backend (not public :80)
+    commands.push([
+      'bash',
+      '-c',
+      [
+        'set -e',
+        'if [ ! -d /etc/apache2 ]; then exit 0; fi',
+        `cp -a /etc/apache2/ports.conf /etc/apache2/ports.conf.ysk-bak 2>/dev/null || true`,
+        `cat > /etc/apache2/ports.conf <<'EOF'`,
+        `# Managed by YSK — Apache PHP backend; Nginx owns public :80/:443`,
+        `Listen ${bind}:${port}`,
+        `EOF`,
+        // Disable default public sites if present
+        'a2dissite 000-default 2>/dev/null || true',
+        'a2dissite default-ssl 2>/dev/null || true',
+        // Modules for FPM via proxy_fcgi
+        'a2enmod proxy 2>/dev/null || true',
+        'a2enmod proxy_fcgi 2>/dev/null || true',
+        'a2enmod setenvif 2>/dev/null || true',
+        'a2enmod rewrite 2>/dev/null || true',
+      ].join('\n'),
+    ]);
+    const siteName = `ysk-${input.poolName}`;
+    commands.push(['cp', path, `/etc/apache2/sites-available/${siteName}.conf`]);
+    commands.push(['a2ensite', siteName]);
+    commands.push(['apache2ctl', 'configtest']);
     commands.push(['systemctl', 'reload', 'apache2']);
   }
   const execute = Boolean(input.enableSite && input.host.executeEnabled() && input.host.isRoot());
   if (input.enableSite && !execute) notes.push(tl('notes.auto.n1150'));
   const commandResults = await runAll(input.host, commands, execute);
-  const ranOk = commandResults.every((c) => c.exitCode === 0);
+  const ranOk = commandResults.length === 0 || commandResults.every((c) => c.exitCode === 0);
   let phpActive: string | undefined;
+  let apacheActive: string | undefined;
   if (execute) {
     const st = await input.host.runCommand(['systemctl', 'is-active', `php${rt.version}-fpm`], {
-      timeoutMs: 5_000 });
+      timeoutMs: 5_000,
+    });
     phpActive = (st.stdout || st.stderr || '').trim();
     notes.push(`php-fpm is-active: ${phpActive}`);
+    const ap = await input.host.runCommand(['systemctl', 'is-active', 'apache2'], {
+      timeoutMs: 5_000,
+    });
+    apacheActive = (ap.stdout || ap.stderr || '').trim();
+    notes.push(`apache2 is-active: ${apacheActive}`);
   }
+  const siteEnabled = Boolean(execute && ranOk && apacheActive === 'active');
+  if (input.enableSite && execute && !siteEnabled) {
+    notes.push('Apache site enable incomplete — Nginx→Apache path may fail');
+  }
+
+  // RemoteIP so PHP sees real client after Nginx real_ip restore
+  if (execute) {
+    try {
+      const { applyRealIpArtifacts } = await import('./real-ip/index.js');
+      const rip = await applyRealIpArtifacts({
+        dataDir: input.dataDir,
+        host: input.host,
+        enableApacheRemoteIp: true,
+      });
+      notes.push(...rip.notes);
+    } catch (e) {
+      notes.push(
+        `real-ip/RemoteIP apply skipped: ${e instanceof Error ? e.message : String(e)}`,
+      );
+    }
+  }
+
   return {
-    ok: execute ? ranOk : true,
+    ok: execute ? ranOk && siteEnabled : true,
     written: [path, index],
     commands: commands.map((c) => c.join(' ')),
     commandResults,
-    notes: phpActive ? [...notes, `php_fpm=${phpActive}`] : notes };
+    notes: phpActive ? [...notes, `php_fpm=${phpActive}`] : notes,
+    siteEnabled,
+    apacheUpstream,
+    vhostPath: path,
+  };
 }
 
 /**

@@ -105,7 +105,7 @@ describe('managed-resources apply honesty', () => {
     expect(s.ok).toBe(true);
     expect(p.ok).toBe(true);
     expect(readFileSync(String(s.site?.confPath), 'utf8')).toContain('static.example.com');
-    expect(readFileSync(String(p.site?.confPath), 'utf8')).toMatch(/php|fastcgi/i);
+    expect(readFileSync(String(p.site?.confPath), 'utf8')).toMatch(/proxy_pass|8080/i);
   });
 
   it('revokeManagedNginxSite removes conf file and row', async () => {

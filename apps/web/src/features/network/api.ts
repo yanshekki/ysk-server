@@ -40,7 +40,57 @@ async function opsPost(
   };
 }
 
+export type RealIpConfigDto = {
+  defaultProvider: string;
+  trustMode: 'single_provider' | 'xff_merged';
+  enabledProviders: string[];
+  customCidrs: string[];
+  customHeader?: string;
+  lastRefreshAt?: string;
+};
+
+export type RealIpCatalogItem = {
+  id: string;
+  label: string;
+  clientIpHeader: string;
+  hasSources?: boolean;
+  snapshotCount?: number;
+};
+
+export type RealIpStatusDto = {
+  config: RealIpConfigDto;
+  providers: Array<{
+    id: string;
+    label: string;
+    clientIpHeader: string;
+    snapshotCount: number;
+  }>;
+  catalog: RealIpCatalogItem[];
+};
+
 export const networkApi = {
+  realIpStatus: () => api.requestRaw<RealIpStatusDto>('/api/v1/system/real-ip'),
+  patchRealIp: (body: Partial<RealIpConfigDto> & { enableApacheRemoteIp?: boolean }) =>
+    api.requestRaw<{
+      ok: boolean;
+      config: RealIpConfigDto;
+      notes?: string[];
+      written?: string[];
+    }>('/api/v1/system/real-ip', {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+  refreshRealIp: () =>
+    api.requestRaw<{
+      ok: boolean;
+      config: RealIpConfigDto;
+      updated?: string[];
+      notes?: string[];
+    }>('/api/v1/system/real-ip/refresh', {
+      method: 'POST',
+      body: '{}',
+    }),
+
   snapshot: (opts?: { raw?: boolean }) =>
     api.requestRaw<NetworkSnapshot>(
       `/api/v1/network${opts?.raw ? '?raw=1' : ''}`,

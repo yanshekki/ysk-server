@@ -115,8 +115,10 @@ describe('nginx-ssl depth', () => {
       serverName: 'p2.com',
       docRoot: '/www',
       fpmSocket: '/run/php.sock',
+      apacheUpstream: 'http://127.0.0.1:8080',
     });
-    expect(plain).toContain('fastcgi_pass');
+    expect(plain).toContain('proxy_pass http://127.0.0.1:8080');
+    expect(plain).not.toContain('fastcgi_pass');
   });
 
   it('renderNginxSuspended and planLetsEncrypt variants', () => {

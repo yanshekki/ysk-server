@@ -7,65 +7,97 @@ import {
   scaffoldAppTemplate,
   readAppPackageName,
   getAppTemplate,
+  resolveAppTemplateId,
 } from './app-templates.js';
 import { YskError } from '@ysk/shared';
 
 describe('app templates', () => {
-  it('lists known templates', () => {
+  it('lists exactly one Hello World template per runtime', () => {
     const list = listAppTemplates();
-    expect(list.some((t) => t.id === 'node-starter')).toBe(true);
-    expect(list.some((t) => t.id === 'python-fastapi')).toBe(true);
-    expect(list.some((t) => t.id === 'python-flask')).toBe(true);
-    expect(list.some((t) => t.id === 'python-django')).toBe(true);
-    expect(list.some((t) => t.id === 'rust-axum')).toBe(true);
-    expect(list.some((t) => t.id === 'go-http')).toBe(true);
-    expect(list.some((t) => t.id === 'rust-http')).toBe(true);
+    expect(list).toHaveLength(9);
+    const runtimes = list.map((t) => t.runtime);
+    expect(new Set(runtimes).size).toBe(9);
+    expect(list.every((t) => t.name === 'Hello World!')).toBe(true);
+    expect(list.some((t) => t.id === 'node-hello')).toBe(true);
+    expect(list.some((t) => t.id === 'php-hello')).toBe(true);
+    // Framework templates no longer listed
+    expect(list.some((t) => t.id.includes('wordpress'))).toBe(false);
+    expect(list.some((t) => t.id.includes('fastapi'))).toBe(false);
     expect(() => getAppTemplate('nope')).toThrow(YskError);
   });
 
-  it('scaffolds node-starter with package.json', () => {
+  it('resolves legacy ids to hello templates', () => {
+    expect(resolveAppTemplateId('node-starter')).toBe('node-hello');
+    expect(resolveAppTemplateId('python-fastapi')).toBe('python-hello');
+    expect(resolveAppTemplateId('wordpress-php')).toBe('php-hello');
+    expect(resolveAppTemplateId('rust-axum')).toBe('rust-hello');
+    expect(getAppTemplate('go-http').id).toBe('go-hello');
+  });
+
+  it('scaffolds node-hello with Hello World', () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-tpl-'));
     try {
       const r = scaffoldAppTemplate({
-        templateId: 'node-starter',
+        templateId: 'node-hello',
         homeDir: dir,
         projectName: 'Demo App',
       });
       expect(r.ok).toBe(true);
       expect(existsSync(join(dir, 'app', 'server.js'))).toBe(true);
       expect(existsSync(join(dir, 'app', '.ysk-scaffold'))).toBe(true);
-      expect(readFileSync(join(dir, 'app', '.ysk-scaffold'), 'utf8')).toMatch(/node-starter/);
+      const body = readFileSync(join(dir, 'app', 'server.js'), 'utf8');
+      expect(body).toContain('Hello World!');
       expect(readAppPackageName(dir)).toBe('demo-app');
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
   });
 
-  it('scaffolds static and wordpress skeletons', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'ysk-tpl2-'));
+  it('scaffolds legacy node-starter alias', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-tpl-legacy-'));
     try {
-      const s = scaffoldAppTemplate({
-        templateId: 'static-site',
+      const r = scaffoldAppTemplate({
+        templateId: 'node-starter',
         homeDir: dir,
-        projectName: 'Site',
+        projectName: 'Legacy',
       });
-      expect(s.docRoot).toContain('public');
-      expect(existsSync(join(dir, 'app', 'public', 'index.html'))).toBe(true);
-
-      const w = scaffoldAppTemplate({
-        templateId: 'wordpress-php',
-        homeDir: join(dir, 'wp'),
-        projectName: 'WP',
-        force: true,
-      });
-      expect(existsSync(join(dir, 'wp', 'app', 'public', 'index.php'))).toBe(true);
-      expect(w.notes.join(' ')).toMatch(/WordPress/i);
+      expect(r.ok).toBe(true);
+      expect(r.templateId).toBe('node-hello');
+      expect(readFileSync(join(dir, 'app', 'server.js'), 'utf8')).toContain('Hello World!');
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
   });
 
-  it('force re-scaffold covers exists branches for all templates', () => {
+  it('scaffolds static and php hello', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-tpl2-'));
+    try {
+      const s = scaffoldAppTemplate({
+        templateId: 'static-hello',
+        homeDir: dir,
+        projectName: 'Site',
+      });
+      expect(s.docRoot).toContain('public');
+      expect(readFileSync(join(dir, 'app', 'public', 'index.html'), 'utf8')).toContain(
+        'Hello World!',
+      );
+
+      const p = scaffoldAppTemplate({
+        templateId: 'php-hello',
+        homeDir: join(dir, 'php'),
+        projectName: 'Php',
+        force: true,
+      });
+      expect(existsSync(join(dir, 'php', 'app', 'public', 'index.php'))).toBe(true);
+      expect(
+        readFileSync(join(dir, 'php', 'app', 'public', 'index.php'), 'utf8'),
+      ).toContain('Hello World!');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('force re-scaffold covers all listed templates', () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-tpl-force-'));
     try {
       const ids = listAppTemplates().map((t) => t.id);
@@ -97,60 +129,37 @@ describe('app templates', () => {
     }
   });
 
-  it('scaffolds python go rust process apps', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'ysk-tpl3-'));
+  it('scaffolds process language hellos', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-tpl-proc-'));
     try {
-      const py = scaffoldAppTemplate({
-        templateId: 'python-fastapi',
-        homeDir: join(dir, 'py'),
-        projectName: 'Py API',
-      });
-      expect(py.entry).toBe('main:app');
-      expect(existsSync(join(dir, 'py', 'app', 'main.py'))).toBe(true);
-      expect(existsSync(join(dir, 'py', 'app', 'requirements.txt'))).toBe(true);
-
-      const flask = scaffoldAppTemplate({
-        templateId: 'python-flask',
-        homeDir: join(dir, 'flask'),
-        projectName: 'Flask App',
-      });
-      expect(flask.entry).toBe('app.py');
-      expect(existsSync(join(dir, 'flask', 'app', 'app.py'))).toBe(true);
-
-      const dj = scaffoldAppTemplate({
-        templateId: 'python-django',
-        homeDir: join(dir, 'dj'),
-        projectName: 'Dj Site',
-      });
-      expect(dj.entry).toMatch(/\.wsgi:application$/);
-      expect(existsSync(join(dir, 'dj', 'app', 'manage.py'))).toBe(true);
-
-      const ax = scaffoldAppTemplate({
-        templateId: 'rust-axum',
-        homeDir: join(dir, 'ax'),
-        projectName: 'Axum API',
-      });
-      expect(ax.entry).toMatch(/target\/release/);
-      expect(existsSync(join(dir, 'ax', 'app', 'Cargo.toml'))).toBe(true);
-      expect(readFileSync(join(dir, 'ax', 'app', 'Cargo.toml'), 'utf8')).toMatch(/axum/);
-
-      const go = scaffoldAppTemplate({
-        templateId: 'go-http',
-        homeDir: join(dir, 'go'),
-        projectName: 'Go API',
-      });
-      expect(go.entry).toBe('./app');
-      expect(existsSync(join(dir, 'go', 'app', 'main.go'))).toBe(true);
-      expect(existsSync(join(dir, 'go', 'app', 'go.mod'))).toBe(true);
-
-      const rs = scaffoldAppTemplate({
-        templateId: 'rust-http',
-        homeDir: join(dir, 'rs'),
-        projectName: 'Rust API',
-      });
-      expect(rs.entry).toMatch(/target\/release/);
-      expect(existsSync(join(dir, 'rs', 'app', 'Cargo.toml'))).toBe(true);
-      expect(existsSync(join(dir, 'rs', 'app', 'src', 'main.rs'))).toBe(true);
+      for (const id of [
+        'python-hello',
+        'go-hello',
+        'rust-hello',
+        'java-hello',
+        'kotlin-hello',
+        'bun-hello',
+      ] as const) {
+        const home = join(dir, id);
+        const r = scaffoldAppTemplate({
+          templateId: id,
+          homeDir: home,
+          projectName: id,
+        });
+        expect(r.ok).toBe(true);
+        // at least one written file contains Hello World
+        const joined = r.written
+          .filter((p) => !p.endsWith('.ysk-scaffold'))
+          .map((p) => {
+            try {
+              return readFileSync(p, 'utf8');
+            } catch {
+              return '';
+            }
+          })
+          .join('\n');
+        expect(joined).toContain('Hello World!');
+      }
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

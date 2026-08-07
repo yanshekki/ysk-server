@@ -48,16 +48,18 @@ describe('nginx + ssl', () => {
     expect(plan.commands[0]).toContain('app.example.com');
   });
 
-  it('renders PHP-FPM fastcgi server block', () => {
+  it('renders PHP as Nginx proxy to Apache backend (not direct fastcgi)', () => {
     const conf = renderNginxPhpFpm({
       serverName: 'php.example.com',
       docRoot: '/var/www/php',
       fpmSocket: '/run/php/php8.2-fpm-demo.sock',
+      apacheUpstream: 'http://127.0.0.1:8080',
       cloudflareRealIp: true,
     });
-    expect(conf).toContain('fastcgi_pass unix:/run/php/php8.2-fpm-demo.sock');
-    expect(conf).toContain('root /var/www/php');
-    expect(conf).toContain('try_files');
+    expect(conf).toContain('proxy_pass http://127.0.0.1:8080');
+    expect(conf).toContain('proxy_set_header Host $host');
+    expect(conf).not.toContain('fastcgi_pass');
+    expect(conf).not.toContain('root /var/www/php');
   });
 
   it('renders static site server block', () => {
@@ -119,10 +121,12 @@ describe('nginx + ssl', () => {
       serverName: 'php.example.com',
       docRoot: '/home/p/app',
       fpmSocket: '/run/php/php8.2-fpm-x.sock',
+      apacheUpstream: 'http://127.0.0.1:8080',
       authBasicUserFile: '/data/ht/x',
     });
     expect(php).toContain('auth_basic_user_file /data/ht/x');
-    expect(php).toContain('expires 7d');
+    expect(php).toContain('proxy_pass');
+    expect(php).not.toContain('fastcgi_pass');
 
     const st = renderNginxStatic({
       serverName: 's.example.com',

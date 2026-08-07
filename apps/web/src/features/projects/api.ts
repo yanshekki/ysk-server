@@ -237,6 +237,7 @@ export const projectsApi = {
       httpAuthPass?: string | null;
       docRoot?: string | null;
       bindIp?: string | null;
+      realIpProvider?: string | null;
       publish?: boolean;
       ssl?: boolean;
     },

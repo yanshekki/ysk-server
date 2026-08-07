@@ -47,9 +47,12 @@ export function ProjectNetworkTab({
   const [authPass, setAuthPass] = useState('');
   const [docRoot, setDocRoot] = useState(project.docRoot ?? '');
   const [bindIp, setBindIp] = useState(project.bindIp ?? '');
+  const [realIpProvider, setRealIpProvider] = useState(
+    project.realIpProvider ?? 'inherit',
+  );
   const [saving, setSaving] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(
-    () => Boolean(project.docRoot || project.bindIp),
+    () => Boolean(project.docRoot || project.bindIp || project.realIpProvider),
   );
 
   useEffect(() => {
@@ -61,7 +64,8 @@ export function ProjectNetworkTab({
     setAuthUser(project.httpAuthUser ?? '');
     setDocRoot(project.docRoot ?? '');
     setBindIp(project.bindIp ?? '');
-    if (project.docRoot || project.bindIp) setAdvancedOpen(true);
+    setRealIpProvider(project.realIpProvider ?? 'inherit');
+    if (project.docRoot || project.bindIp || project.realIpProvider) setAdvancedOpen(true);
   }, [
     project.id,
     project.domain,
@@ -72,6 +76,7 @@ export function ProjectNetworkTab({
     project.httpAuthUser,
     project.docRoot,
     project.bindIp,
+    project.realIpProvider,
   ]);
 
   function parseAliases(): string[] {
@@ -94,6 +99,8 @@ export function ProjectNetworkTab({
         httpAuthPass: authPass || null,
         docRoot: docRoot.trim() || null,
         bindIp: bindIp.trim() || null,
+        realIpProvider:
+          realIpProvider === 'inherit' ? null : realIpProvider || null,
         publish,
         ssl,
       });
@@ -386,6 +393,68 @@ export function ProjectNetworkTab({
               />
             </Field>
           </FormLayout>
+        </CardSection>
+      </Card>
+
+      {/* 5b. Real IP / CDN per site */}
+      <Card>
+        <CardSection
+          title={t('projects.netRealIpTitle', { defaultValue: 'Real IP / CDN' })}
+          description={t('projects.netRealIpDesc', {
+            defaultValue:
+              'Restore visitor IP behind CDN. Inherit system default or override for this site. Re-publish Nginx after change.',
+          })}
+        >
+          <FormLayout>
+            <Field
+              label={t('projects.netRealIpProvider', { defaultValue: 'Provider' })}
+              htmlFor="net-rip"
+              flush
+              hint={t('projects.netRealIpHint', {
+                defaultValue: 'System default is set under Network → Real IP / CDN',
+              })}
+            >
+              <select
+                id="net-rip"
+                className="input"
+                value={realIpProvider}
+                onChange={(e) => setRealIpProvider(e.target.value)}
+                disabled={suspended}
+              >
+                <option value="inherit">
+                  {t('projects.netRealIpInherit', { defaultValue: 'Inherit system default' })}
+                </option>
+                <option value="none">none (direct)</option>
+                <option value="cloudflare">Cloudflare</option>
+                <option value="fastly">Fastly</option>
+                <option value="bunny">Bunny CDN</option>
+                <option value="cloudfront">AWS CloudFront</option>
+                <option value="azure_frontdoor">Azure Front Door</option>
+                <option value="gcore">Gcore</option>
+                <option value="custom">Custom CIDRs</option>
+              </select>
+            </Field>
+          </FormLayout>
+          <FormActions>
+            <Button
+              variant="secondary"
+              size="md"
+              loading={localBusy}
+              disabled={suspended}
+              onClick={bindCall1(saveNetwork, false)}
+            >
+              {t('common.save')}
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              loading={localBusy}
+              disabled={suspended || !hasDomain}
+              onClick={bindCall2(saveNetwork, true, forceHttps)}
+            >
+              {t('projects.savePublish')}
+            </Button>
+          </FormActions>
         </CardSection>
       </Card>
 
