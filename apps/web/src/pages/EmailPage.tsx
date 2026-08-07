@@ -1,7 +1,7 @@
 /**
- * Email control plane — SOC-style hub:
- * domains · queue · software stack · ops notes.
+ * Email control plane: domains · queue · software · about (guide only).
  * Create only in domains ListPanel toolbar (table top-right).
+ * Software version bars live only on the software tab — never page chrome.
  */
 import { FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -32,7 +32,7 @@ import { usePageTab } from '../shared/hooks/usePageTab';
 import { useServerList } from '../shared/hooks/useServerList';
 import { bindCall1, bindCloseIfIdle, bindFilter, bindFormSubmit, bindInput, bindInputContext, bindRefreshCatch, bindSeq, bindSet, bindVoid } from './bind-handlers';
 
-const TABS = ['domains', 'queue', 'stack', 'ops', 'about'] as const;
+const TABS = ['domains', 'queue', 'stack', 'about'] as const;
 
 export function applyLabel(status: string | undefined, t: (k: string) => string): { text: string; tone: 'ok' | 'info' | 'neutral' | 'warn' } {
   const s = (status ?? 'draft').toLowerCase();
@@ -241,9 +241,6 @@ export function EmailPage() {
         </ActionBar>
       }
     >
-      <SoftwareInstallBanner feature="email" title={t('email.softwareNeeded')} />
-      <SoftwareVersionBar softwareId="postfix" />
-      <SoftwareVersionBar softwareId="dovecot" />
       {list.error ? <Alert variant="error">{list.error}</Alert> : null}
 
       <PageTabs
@@ -259,8 +256,6 @@ export function EmailPage() {
             badge: queueItems.length || undefined,
           },
           { id: 'stack', label: t('email.tabStack') },
-          { id: 'ops', label: t('email.tabOps') },
-        
           { id: 'about', label: t('common.about') },
         ]}
         active={tab}
@@ -441,87 +436,14 @@ export function EmailPage() {
         ) : null}
 
         {tab === 'stack' ? (
-          <div className="tab-panel mail-panel">
-            <div className="mail-ops-grid">
-              <div className="mail-card">
-                <div className="mail-card__head">
-                  <h3 className="mail-card__title">{t('email.mtaTitle')}</h3>
-                </div>
-                <p className="muted u-text-sm">
-                  {t('email.mtaBody')}
-                </p>
-                <ul className="mail-stack-list">
-                  <li>
-                    <strong>Postfix</strong>
-                    <span className="muted">{t('email.mtaSmtp')}</span>
-                  </li>
-                  <li>
-                    <strong>Dovecot</strong>
-                    <span className="muted">{t('email.mtaImap')}</span>
-                  </li>
-                  <li>
-                    <strong>OpenDKIM</strong>
-                    <span className="muted">{t('email.mtaDkim')}</span>
-                  </li>
-                </ul>
-                <FormHint>
-                  {t('email.mtaMissingHint')}
-                </FormHint>
-              </div>
-
-              <div className="mail-card">
-                <div className="mail-card__head">
-                  <h3 className="mail-card__title">{t('email.pathTitle')}</h3>
-                </div>
-                <ol className="mail-steps">
-                  <li>{t('email.path1')}</li>
-                  <li>{t('email.path2')}</li>
-                  <li>{t('email.path3')}</li>
-                  <li>{t('email.path4')}</li>
-                </ol>
-                <FormActions>
-                  <Button
-                    variant="secondary"
-                    size="md"
-                    onClick={bindSet(setTab, 'domains')}
-                  >
-                    {t('email.viewDomainList')}
-                  </Button>
-                </FormActions>
-              </div>
-            </div>
+          <div className="tab-panel mail-panel stack">
+            <SoftwareInstallBanner feature="email" title={t('email.softwareNeeded')} />
+            <SoftwareVersionBar softwareId="postfix" />
+            <SoftwareVersionBar softwareId="dovecot" />
+            <SoftwareVersionBar softwareId="opendkim" />
           </div>
         ) : null}
 
-        {tab === 'ops' ? (
-          <div className="tab-panel mail-panel">
-            <div className="mail-ops-grid">
-              <div className="mail-card">
-                <div className="mail-card__head">
-                  <h3 className="mail-card__title">{t('email.opsPanelTitle')}</h3>
-                </div>
-                <ul className="mail-bullets">
-                  <li>{t('email.opsThisPage')}</li>
-                  <li>{t('email.opsDetail')}</li>
-                  <li>{t('email.opsHost')}</li>
-                  <li>{t('email.opsRegistrar')}</li>
-                </ul>
-              </div>
-              <div className="mail-card mail-card--muted">
-                <div className="mail-card__head">
-                  <h3 className="mail-card__title">{t('email.statusTitle')}</h3>
-                </div>
-                <ul className="mail-bullets">
-                  <li>{t('email.statusDraft')}</li>
-                  <li>{t('email.statusWritten')}</li>
-                  <li>{t('email.statusApplied')}</li>
-                  <li>{t('email.statusReputation')}</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        ) : null}
-      
         {tab === 'about' ? <PageGuide guideId="email" /> : null}
       </PageTabs>
 
