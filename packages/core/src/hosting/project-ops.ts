@@ -42,7 +42,7 @@ import {
 import { gitSync } from './git-deploy.js';
 import { backupProject } from './backup-cron.js';
 import { applyPhpHosting } from './system-apply.js';
-import { resolveManagedCertPaths } from './ssl-certs.js';
+import { resolveBestCertPaths } from './ssl-certs.js';
 import { applyPhpFpmPool } from './php-fpm.js';
 import {
   loadPhpIniSettings,
@@ -714,17 +714,32 @@ export class ProjectOpsService {
     const primary = row.domain ?? `${row.linux_user}.local`;
     const serverName = buildServerNameList(primary, row.domain_aliases);
     const wantSsl = Boolean(opts.ssl);
-    const managed = resolveManagedCertPaths(this.dataDir, primary);
+    const cert = resolveBestCertPaths(this.dataDir, primary);
+    if (wantSsl && !cert.exists) {
+      return {
+        ok: false,
+        projectId: row.id,
+        processStatus: (row.process_status as OpsProcessStatus) ?? 'stopped',
+        listening: false,
+        notes: [
+          `SSL 未就緒：網域 ${primary} 尚無可用證書。`,
+          '請先到「SSL 證書」申請／上載，再發佈 + SSL。',
+        ],
+        written: [],
+        degraded: true,
+        nginxStatus: 'ssl_cert_missing',
+      };
+    }
     const auth = await this.writeProjectHtpasswd(row);
     const conf = renderNginxStatic({
       serverName,
       docRoot,
-      ssl: wantSsl && managed.exists,
+      ssl: wantSsl && cert.exists,
       ...this.nginxRealIpOpts(row),
-      sslCertificate: wantSsl && managed.exists ? managed.fullchain : undefined,
-      sslCertificateKey: wantSsl && managed.exists ? managed.privkey : undefined,
-      forceHttps: wantSsl && Boolean(row.force_https),
-      hsts: wantSsl && Boolean(row.hsts),
+      sslCertificate: wantSsl && cert.exists ? cert.fullchain : undefined,
+      sslCertificateKey: wantSsl && cert.exists ? cert.privkey : undefined,
+      forceHttps: wantSsl && cert.exists && Boolean(row.force_https),
+      hsts: wantSsl && cert.exists && Boolean(row.hsts),
       siteRedirectUrl: row.site_redirect_url,
       authBasicUserFile: auth.path,
       authBasicRealm: row.http_auth_user ? 'Restricted' : undefined,
@@ -915,19 +930,37 @@ export class ProjectOpsService {
         force_https: forceHttps,
         hsts });
     }
-    const managed = resolveManagedCertPaths(this.dataDir, primary);
+    // Prefer dataDir certs, then /etc/letsencrypt/live, then store paths.
+    // Never emit listen 443 / ssl_certificate when files are missing (breaks nginx -t).
+    const cert = resolveBestCertPaths(this.dataDir, primary);
+    if (wantSsl && !cert.exists) {
+      return {
+        ok: false,
+        projectId,
+        processStatus: (row.process_status as OpsProcessStatus) ?? 'stopped',
+        listening: false,
+        notes: [
+          `SSL 未就緒：網域 ${primary} 尚無可用證書（面板 SSL 申請／上載，或 Let's Encrypt live 路徑）。`,
+          '請先到「SSL 證書」為該域名簽發或上載 fullchain+privkey，再按「發佈 + SSL」。',
+          '已拒絕寫入 SSL nginx conf，避免 nginx -t 因缺檔失敗。',
+        ],
+        written: [],
+        degraded: true,
+        nginxStatus: 'ssl_cert_missing',
+      };
+    }
     const auth = await this.writeProjectHtpasswd(row);
     const authBasicUserFile = auth.path;
-    const sslCert = wantSsl && managed.exists ? managed.fullchain : undefined;
-    const sslKey = wantSsl && managed.exists ? managed.privkey : undefined;
+    const sslCert = wantSsl && cert.exists ? cert.fullchain : undefined;
+    const sslKey = wantSsl && cert.exists ? cert.privkey : undefined;
     const realIpOpts = this.nginxRealIpOpts(row);
     const commonSsl = {
-      ssl: wantSsl,
+      ssl: Boolean(wantSsl && cert.exists),
       ...realIpOpts,
       sslCertificate: sslCert,
       sslCertificateKey: sslKey,
-      forceHttps: wantSsl && forceHttps,
-      hsts: wantSsl && hsts,
+      forceHttps: wantSsl && cert.exists && forceHttps,
+      hsts: wantSsl && cert.exists && hsts,
       siteRedirectUrl: row.site_redirect_url,
       authBasicUserFile,
       authBasicRealm: row.http_auth_user ? 'Restricted' : undefined,
@@ -1015,8 +1048,8 @@ export class ProjectOpsService {
     if (wantSsl && forceHttps) notes.push(tl('notes.auto.n0829'));
     if (wantSsl && hsts) notes.push(tl('notes.auto.n0745'));
     if (row.site_redirect_url) notes.push(tl('notes.auto.t0187', { v0: row.site_redirect_url }));
-    if (wantSsl && managed.exists) {
-      notes.push(tl('notes.auto.t0188', { v0: managed.fullchain }));
+    if (wantSsl && cert.exists) {
+      notes.push(tl('notes.auto.t0188', { v0: cert.fullchain }));
     } else if (wantSsl) {
       notes.push(tl('notes.auto.t0189', { v0: primary }));
     }

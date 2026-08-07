@@ -530,5 +530,8 @@
   "deletePermanent": "Delete permanently",
   "deleteRemoveFiles": "Delete disk home and Linux user",
   "deleteTypeName": "Type the project name to confirm",
-  "deletedOk": "Project deleted"
+  "deletedOk": "Project deleted",
+  "sslRequiredFirst": "No SSL certificate for this domain yet. Create or upload one under SSL Certificates before Publish + SSL.",
+  "sslGateHint": "SSL actions locked — go to",
+  "sslGateHint2": "to issue/upload a cert for this domain first."
 }

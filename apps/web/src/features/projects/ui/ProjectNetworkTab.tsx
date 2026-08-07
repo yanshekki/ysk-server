@@ -1,8 +1,9 @@
 /**
  * Project network / edge — domains, HTTPS, port, single publish strip.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import type { ProjectDto, OpsApplyResultDto } from '@ysk/shared';
 import {
   Alert,
@@ -12,11 +13,20 @@ import {
   CheckboxField,
   Field,
   FormActions,
+  FormHint,
   FormLayout,
   PresetChips,
 } from '../../../shared/components/ui';
 import { projectsApi } from '../api';
+import { sslApi } from '../../ssl/api';
 import { bindInput, bindCall1, bindCall2 } from '../../../pages/bind-handlers';
+
+function parseAliasesSafe(text: string): string[] {
+  return text
+    .split(/[\n,]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
 
 export interface ProjectNetworkTabProps {
   project: ProjectDto;
@@ -92,6 +102,8 @@ export function ProjectNetworkTab({
   );
   const [saving, setSaving] = useState(false);
   const [confPreview, setConfPreview] = useState<string | null>(null);
+  /** Domain has fullchain+privkey on disk (managed / LE / store) */
+  const [sslReady, setSslReady] = useState<boolean | null>(null);
 
   useEffect(() => {
     setDomain(project.domain ?? '');
@@ -118,6 +130,48 @@ export function ProjectNetworkTab({
     project.realIpProvider,
   ]);
 
+  // Refresh cert readiness when domain (or aliases) change
+  const domainKey = useMemo(
+    () =>
+      [domain.trim().toLowerCase(), ...parseAliasesSafe(aliasesText)]
+        .filter(Boolean)
+        .join('|'),
+    [domain, aliasesText],
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    const primary = domain.trim().toLowerCase();
+    if (!primary) {
+      setSslReady(false);
+      return;
+    }
+    setSslReady(null);
+    void (async () => {
+      try {
+        const res = await sslApi.list();
+        const items = res.items ?? [];
+        const names = new Set(
+          [primary, ...parseAliasesSafe(aliasesText).map((a) => a.toLowerCase())].filter(Boolean),
+        );
+        const hit = items.some(
+          (c) =>
+            names.has(String(c.domain || '').toLowerCase()) &&
+            (c.files_exist === true ||
+              String(c.status || '').toLowerCase() === 'issued' ||
+              String(c.status || '').toLowerCase() === 'ready'),
+        );
+        if (!cancelled) setSslReady(hit);
+      } catch {
+        // If list fails, leave null → buttons stay gated (safer than enabling blind SSL)
+        if (!cancelled) setSslReady(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [domainKey, aliasesText]);
+
   function parseAliases(): string[] {
     return aliasesText
       .split(/[\n,]+/)
@@ -134,6 +188,16 @@ export function ProjectNetworkTab({
   }
 
   async function saveNetwork(publish: boolean, ssl?: boolean) {
+    if (ssl && !sslReady) {
+      onOpsResult?.(
+        null,
+        t('projects.sslRequiredFirst', {
+          defaultValue:
+            '尚未有此網域的 SSL 證書。請先到「SSL 證書」申請／上載，再按發佈 + SSL。',
+        }),
+      );
+      return;
+    }
     setSaving(true);
     try {
       const portVal = preferredPortPayload();
@@ -169,6 +233,7 @@ export function ProjectNetworkTab({
   const localBusy = busy || saving;
   const suspended = project.status === 'suspended';
   const hasDomain = Boolean(domain.trim());
+  const canSsl = hasDomain && sslReady === true;
   const showPort =
     project.runtime !== 'static' &&
     !(project.runtime === 'php' && !project.port);
@@ -414,11 +479,33 @@ export function ProjectNetworkTab({
             >
               {t('projects.savePublishNginx')}
             </Button>
+            {!canSsl && hasDomain ? (
+              <FormHint>
+                {t('projects.sslGateHint', {
+                  defaultValue:
+                    'SSL 相關按鈕已鎖定：請先到',
+                })}{' '}
+                <Link to="/ssl">{t('nav.ssl', { defaultValue: 'SSL 證書' })}</Link>{' '}
+                {t('projects.sslGateHint2', {
+                  defaultValue: '為網域申請／上載證書後再發佈 + SSL。',
+                })}
+                {sslReady === null
+                  ? ` (${t('common.loading', { defaultValue: '檢查中…' })})`
+                  : ''}
+              </FormHint>
+            ) : null}
             <Button
               variant="secondary"
               size="md"
               loading={localBusy}
-              disabled={suspended || !hasDomain}
+              disabled={suspended || !canSsl}
+              title={
+                !canSsl
+                  ? t('projects.sslRequiredFirst', {
+                      defaultValue: '請先為網域建立 SSL 證書',
+                    })
+                  : undefined
+              }
               onClick={bindCall2(saveNetwork, true, true)}
             >
               {t('projects.savePublishSsl', { defaultValue: '儲存並發佈 + SSL' })}
@@ -436,8 +523,27 @@ export function ProjectNetworkTab({
               variant="ghost"
               size="md"
               loading={localBusy}
-              disabled={suspended || !hasDomain}
-              onClick={onPublishSsl}
+              disabled={suspended || !canSsl}
+              title={
+                !canSsl
+                  ? t('projects.sslRequiredFirst', {
+                      defaultValue: '請先為網域建立 SSL 證書',
+                    })
+                  : undefined
+              }
+              onClick={() => {
+                if (!canSsl) {
+                  onOpsResult?.(
+                    null,
+                    t('projects.sslRequiredFirst', {
+                      defaultValue:
+                        '尚未有此網域的 SSL 證書。請先到「SSL 證書」申請／上載，再按發佈 + SSL。',
+                    }),
+                  );
+                  return;
+                }
+                onPublishSsl();
+              }}
             >
               {t('projects.publishNginxSsl', { defaultValue: '發佈 + SSL' })}
             </Button>

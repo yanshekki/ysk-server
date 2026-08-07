@@ -530,5 +530,8 @@
   "deletePermanent": "永久删除",
   "deleteRemoveFiles": "删除磁盘 home 与 Linux 用户",
   "deleteTypeName": "输入项目名称以确认",
-  "deletedOk": "项目已删除"
+  "deletedOk": "项目已删除",
+  "sslRequiredFirst": "此域名尚无 SSL 证书。请先到「SSL 证书」申请/上传，再点发布 + SSL。",
+  "sslGateHint": "SSL 相关按钮已锁定：请先到",
+  "sslGateHint2": "为域名申请/上传证书后再发布 + SSL。"
 }
