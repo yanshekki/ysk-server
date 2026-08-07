@@ -9,14 +9,31 @@ describe('page guide catalog', () => {
     expect(hk.length).toBeGreaterThan(0);
   });
 
-  it('resolves a known guide with features', () => {
+  it('resolves a known guide with slim canDo/notes', () => {
     const ids = listPageGuideIds('en');
     const id = ids[0];
     const doc = getPageGuide(id, 'en');
     expect(doc).not.toBeNull();
     expect(doc!.id).toBeTruthy();
     expect(doc!.title.length).toBeGreaterThan(0);
-    expect(Array.isArray(doc!.features)).toBe(true);
+    expect(doc!.summary.length).toBeGreaterThan(0);
+    expect(Array.isArray(doc!.canDo)).toBe(true);
+    expect(doc!.canDo.length).toBeGreaterThan(0);
+    expect(doc!.canDo.length).toBeLessThanOrEqual(5);
+    expect(Array.isArray(doc!.notes)).toBe(true);
+  });
+
+  it('normalizes legacy features into canDo', async () => {
+    const { normalizePageGuideDoc } = await import('./catalog');
+    const doc = normalizePageGuideDoc({
+      id: 'x',
+      title: 'T',
+      summary: 'S',
+      features: [{ name: 'A', purpose: 'does A' }],
+      caveats: ['watch out'],
+    });
+    expect(doc.canDo.some((c) => c.includes('does A'))).toBe(true);
+    expect(doc.notes).toContain('watch out');
   });
 
   it('returns null for missing id', () => {

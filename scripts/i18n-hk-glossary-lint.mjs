@@ -14,6 +14,7 @@ const zhHkDir = join(root, 'packages/shared/locales/zh-HK');
 
 /** term → preferred (for message only) */
 const FORBIDDEN = [
+  // TW / Mainland false friends
   { term: '軟體', prefer: '軟件' },
   { term: '網路', prefer: '網絡' },
   { term: '設置', prefer: '設定' },
@@ -31,6 +32,23 @@ const FORBIDDEN = [
   { term: '反饋', prefer: '回饋' },
   { term: '使用者名稱', prefer: '用戶名' },
   { term: '文件夾', prefer: '資料夾' },
+  // Spoken Cantonese (must use written Chinese)
+  { term: '唔', prefer: '不／沒有（書面語）' },
+  { term: '嚟', prefer: '來' },
+  { term: '咗', prefer: '了／已' },
+  { term: '哋', prefer: '們' },
+  { term: '吓', prefer: '一下（或刪）' },
+  { term: '啦', prefer: '（口語語氣，刪）' },
+  { term: '嘛', prefer: '（口語語氣，刪）' },
+  { term: '咋', prefer: '（口語語氣，刪）' },
+  { term: '喺', prefer: '在' },
+  { term: '攞', prefer: '取／取得' },
+  { term: '睇', prefer: '看' },
+  { term: '搞掂', prefer: '完成' },
+  { term: '冇', prefer: '沒有' },
+  { term: '係咪', prefer: '是否' },
+  { term: '做乜', prefer: '為何／做什麼' },
+  { term: '起唔到', prefer: '未能啟動' },
 ];
 
 /** Full value allowlist (rare proper nouns / quotes) */

@@ -1,11 +1,6 @@
 {
-  "missing": "No help document for this page yet.",
-  "kicker": "Feature guide",
-  "audience": "Audience: {{audience}}",
-  "featuresTitle": "What you can do here",
-  "howLabel": "How",
-  "useCasesTitle": "Typical use cases",
-  "workflowTitle": "Suggested workflow",
-  "caveatsTitle": "Notes and limits",
+  "missing": "No help for this page yet.",
+  "canDoTitle": "What you can do",
+  "notesTitle": "Notes",
   "relatedTitle": "Related"
 }

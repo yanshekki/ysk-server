@@ -2057,7 +2057,14 @@
     "features": [],
     "useCases": [],
     "workflow": [],
-    "caveats": []
+    "caveats": [],
+    "canDo": [
+      "Install or switch OpenJDK",
+      "Check that Java is available"
+    ],
+    "notes": [
+      "Projects use the host JDK for builds"
+    ]
   },
   "kotlin": {
     "id": "kotlin",
@@ -2073,7 +2080,14 @@
     "features": [],
     "useCases": [],
     "workflow": [],
-    "caveats": []
+    "caveats": [],
+    "canDo": [
+      "Install the Kotlin compiler",
+      "Confirm a JDK is present"
+    ],
+    "notes": [
+      "Kotlin requires a local JDK"
+    ]
   },
   "bun": {
     "id": "bun",
@@ -2089,6 +2103,13 @@
     "features": [],
     "useCases": [],
     "workflow": [],
-    "caveats": []
+    "caveats": [],
+    "canDo": [
+      "Install or update Bun",
+      "Check the Bun version"
+    ],
+    "notes": [
+      "Used when a project runtime is Bun"
+    ]
   }
 }

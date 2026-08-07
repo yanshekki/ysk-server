@@ -387,6 +387,8 @@ describe('UI primitives smoke', () => {
             id: 'test',
             title: 'Guide Title',
             summary: 'Summary text',
+            canDo: ['Do F1'],
+            notes: ['c1'],
             features: [{ name: 'F1', purpose: 'does things' }],
             useCases: ['uc1'],
             workflow: ['w1'],

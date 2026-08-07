@@ -34,7 +34,11 @@ Web：`t()`（react-i18next）。後端：`tl()`／`t(locale, key)`。CLI：`--l
 | `i18n:check-keys` | 三語 key 集合一致 |
 | `i18n:check-ui` | Web 源碼禁止硬編碼中文 |
 | `i18n:check-api` | core／server 禁止硬編碼操作員中文 |
-| `i18n:check-glossary` | zh-HK 禁用詞（如 軟體→軟件） |
+| `i18n:check-glossary` | zh-HK 禁用詞（台／陸用詞 + 粵語口語） |
+| `i18n:check-drift` | namespace 與 translation.json 必須一致 |
+| `i18n:check-guides` | 說明 tab 三語 id／結構對齊 |
+
+文案原則見 [copy-i18n-standard-ZH.md](./copy-i18n-standard-ZH.md)。
 
 ## 請求語言
 

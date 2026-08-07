@@ -1,11 +1,6 @@
 {
-  "missing": "暫無此頁說明文件。",
-  "kicker": "功能說明",
-  "audience": "適用對象：{{audience}}",
-  "featuresTitle": "本頁能做什麼",
-  "howLabel": "用法",
-  "useCasesTitle": "典型應用",
-  "workflowTitle": "建議流程",
-  "caveatsTitle": "注意與邊界",
+  "missing": "暫無此頁說明。",
+  "canDoTitle": "你可做什麼",
+  "notesTitle": "注意",
   "relatedTitle": "相關功能"
 }

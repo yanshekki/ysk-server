@@ -2086,7 +2086,14 @@
     "features": [],
     "useCases": [],
     "workflow": [],
-    "caveats": []
+    "caveats": [],
+    "canDo": [
+      "安裝或切換 OpenJDK 版本",
+      "查看目前 Java 是否可用"
+    ],
+    "notes": [
+      "專案部署時使用主機已安裝的 JDK"
+    ]
   },
   "kotlin": {
     "id": "kotlin",
@@ -2102,7 +2109,14 @@
     "features": [],
     "useCases": [],
     "workflow": [],
-    "caveats": []
+    "caveats": [],
+    "canDo": [
+      "安裝 Kotlin 編譯器",
+      "確認 JDK 已就緒"
+    ],
+    "notes": [
+      "Kotlin 需要本機已安裝 JDK"
+    ]
   },
   "bun": {
     "id": "bun",
@@ -2118,6 +2132,13 @@
     "features": [],
     "useCases": [],
     "workflow": [],
-    "caveats": []
+    "caveats": [],
+    "canDo": [
+      "安裝或更新 Bun",
+      "查看 Bun 版本"
+    ],
+    "notes": [
+      "專案 runtime 選 Bun 時使用此環境"
+    ]
   }
 }

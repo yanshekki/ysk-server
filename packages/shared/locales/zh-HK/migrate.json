@@ -50,7 +50,7 @@
   "failed": "失敗",
   "detail": "詳細說明",
   "jobsTitle": "遷移工作（{{count}})",
-  "jobsDesc": "狀態落在 dataDir/migrate/；密碼從不寫入 job 檔。按右上角「重新整理」更新。",
+  "jobsDesc": "狀態落在 dataDir/migrate/；密碼從不寫入入 job 檔。按右上角「重新整理」更新。",
   "phase": "階段",
   "target": "目標",
   "updated": "更新",
@@ -75,7 +75,7 @@
   "allowOverwrite": "允許覆寫目標既有 YSK 資料",
   "allowOverwriteDesc": "· 目標已有 ysk.json 時需勾選",
   "dryRunOnly": "僅 預覽試行",
-  "dryRunOnlyDesc": "· 只做盤點 + 預檢，不 同步複製、不寫目標",
+  "dryRunOnlyDesc": "· 只做盤點 + 預檢，不 同步複製、不寫入目標",
   "executeNote": "本機需 系統變更權限已開啟 且以 管理員 執行 介面。遷移完成後請改 DNS A/AAAA，並檢查雲防火牆與郵件 PTR。",
   "dnsCutover": "DNS cutover（需人工）",
   "dnsCutoverDesc": "將下列主機名的 A / AAAA 指到新機公網 IP；並確認 80/443/25/587 等防火牆與郵件 rDNS。"
