@@ -533,5 +533,9 @@
   "deletedOk": "项目已删除",
   "sslRequiredFirst": "此域名尚无 SSL 证书。请先到「SSL 证书」申请/上传，再点发布 + SSL。",
   "sslGateHint": "SSL 相关按钮已锁定：请先到",
-  "sslGateHint2": "为域名申请/上传证书后再发布 + SSL。"
+  "sslGateHint2": "为域名申请/上传证书后再发布 + SSL。",
+  "netPublishPrimary": "基本",
+  "netPublishSsl": "HTTPS / SSL",
+  "netPublishMaint": "维护",
+  "sslNeedDomain": "请先填写域名，才能发布 Nginx / SSL。"
 }

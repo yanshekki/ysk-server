@@ -533,5 +533,9 @@
   "deletedOk": "Project deleted",
   "sslRequiredFirst": "No SSL certificate for this domain yet. Create or upload one under SSL Certificates before Publish + SSL.",
   "sslGateHint": "SSL actions locked — go to",
-  "sslGateHint2": "to issue/upload a cert for this domain first."
+  "sslGateHint2": "to issue/upload a cert for this domain first.",
+  "netPublishPrimary": "Basic",
+  "netPublishSsl": "HTTPS / SSL",
+  "netPublishMaint": "Maintenance",
+  "sslNeedDomain": "Set a domain before publishing Nginx / SSL."
 }

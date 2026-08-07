@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import type { ProjectDto, OpsApplyResultDto } from '@ysk/shared';
 import {
+  ActionBar,
   Alert,
   Button,
   Card,
@@ -460,121 +461,157 @@ export function ProjectNetworkTab({
 
       <Card>
         <CardSection title={t('projects.netPublishTitle', { defaultValue: '發佈' })}>
-          <FormActions>
-            <Button
-              variant="secondary"
-              size="md"
-              loading={localBusy}
-              disabled={suspended}
-              onClick={bindCall1(saveNetwork, false)}
-            >
-              {t('common.save')}
-            </Button>
-            <Button
-              variant="primary"
-              size="md"
-              loading={localBusy}
-              disabled={suspended || !hasDomain}
-              onClick={bindCall2(saveNetwork, true, false)}
-            >
-              {t('projects.savePublishNginx')}
-            </Button>
-            {!canSsl && hasDomain ? (
-              <FormHint>
-                {t('projects.sslGateHint', {
-                  defaultValue:
-                    'SSL 相關按鈕已鎖定：請先到',
-                })}{' '}
-                <Link to="/ssl">{t('nav.ssl', { defaultValue: 'SSL 證書' })}</Link>{' '}
-                {t('projects.sslGateHint2', {
-                  defaultValue: '為網域申請／上載證書後再發佈 + SSL。',
-                })}
-                {sslReady === null
-                  ? ` (${t('common.loading', { defaultValue: '檢查中…' })})`
-                  : ''}
-              </FormHint>
-            ) : null}
-            <Button
-              variant="secondary"
-              size="md"
-              loading={localBusy}
-              disabled={suspended || !canSsl}
-              title={
-                !canSsl
-                  ? t('projects.sslRequiredFirst', {
-                      defaultValue: '請先為網域建立 SSL 證書',
-                    })
-                  : undefined
-              }
-              onClick={bindCall2(saveNetwork, true, true)}
-            >
-              {t('projects.savePublishSsl', { defaultValue: '儲存並發佈 + SSL' })}
-            </Button>
-            <Button
-              variant="ghost"
-              size="md"
-              loading={localBusy}
-              disabled={suspended || !hasDomain}
-              onClick={onPublish}
-            >
-              {t('projects.publishNginx')}
-            </Button>
-            <Button
-              variant="ghost"
-              size="md"
-              loading={localBusy}
-              disabled={suspended || !canSsl}
-              title={
-                !canSsl
-                  ? t('projects.sslRequiredFirst', {
-                      defaultValue: '請先為網域建立 SSL 證書',
-                    })
-                  : undefined
-              }
-              onClick={() => {
-                if (!canSsl) {
-                  onOpsResult?.(
-                    null,
-                    t('projects.sslRequiredFirst', {
-                      defaultValue:
-                        '尚未有此網域的 SSL 證書。請先到「SSL 證書」申請／上載，再按發佈 + SSL。',
-                    }),
-                  );
-                  return;
-                }
-                onPublishSsl();
-              }}
-            >
-              {t('projects.publishNginxSsl', { defaultValue: '發佈 + SSL' })}
-            </Button>
-            <Button
-              variant="ghost"
-              size="md"
-              loading={localBusy}
-              disabled={suspended}
-              onClick={() => {
-                setSaving(true);
-                void projectsApi
-                  .purgeCache(project.id)
-                  .then((r) => {
-                    onOpsResult?.(
-                      {
-                        ok: r.ok,
-                        notes: r.notes ?? [],
-                        projectId: project.id,
-                        processStatus: 'stopped',
-                        listening: false,
-                      } as OpsApplyResultDto,
-                      r.ok ? t('projects.netPurgeOk') : r.notes?.join('；') ?? t('projects.netPurgeFailed'),
-                    );
-                  })
-                  .catch((e: Error) => onOpsResult?.(null, e.message))
-                  .finally(() => setSaving(false));
-              }}
-            >
-              {t('projects.purgeNginxCache')}
-            </Button>
-          </FormActions>
+          <div className="stack" style={{ gap: '0.85rem' }}>
+            {/* Primary: save meta + edge without SSL */}
+            <div>
+              <div className="u-text-muted u-text-sm u-mb-1">
+                {t('projects.netPublishPrimary', { defaultValue: '基本' })}
+              </div>
+              <ActionBar size="md" wrap aria-label={t('projects.netPublishPrimary', { defaultValue: '基本' })}>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  loading={localBusy}
+                  disabled={suspended}
+                  onClick={bindCall1(saveNetwork, false)}
+                >
+                  {t('common.save')}
+                </Button>
+                <Button
+                  variant="primary"
+                  size="md"
+                  loading={localBusy}
+                  disabled={suspended || !hasDomain}
+                  onClick={bindCall2(saveNetwork, true, false)}
+                >
+                  {t('projects.savePublishNginx')}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="md"
+                  loading={localBusy}
+                  disabled={suspended || !hasDomain}
+                  onClick={onPublish}
+                >
+                  {t('projects.publishNginx')}
+                </Button>
+              </ActionBar>
+            </div>
+
+            {/* SSL row — gated until cert exists */}
+            <div>
+              <div className="u-text-muted u-text-sm u-mb-1">
+                {t('projects.netPublishSsl', { defaultValue: 'HTTPS / SSL' })}
+              </div>
+              {!canSsl && hasDomain ? (
+                <Alert variant="warn" className="u-mb-2">
+                  {t('projects.sslGateHint', {
+                    defaultValue: 'SSL 相關按鈕已鎖定：請先到',
+                  })}{' '}
+                  <Link to="/ssl">{t('nav.ssl', { defaultValue: 'SSL 證書' })}</Link>{' '}
+                  {t('projects.sslGateHint2', {
+                    defaultValue: '為網域申請／上載證書後再發佈 + SSL。',
+                  })}
+                  {sslReady === null
+                    ? ` (${t('common.loading', { defaultValue: '檢查中…' })})`
+                    : ''}
+                </Alert>
+              ) : null}
+              {!hasDomain ? (
+                <div className="u-mb-2">
+                  <FormHint>
+                    {t('projects.sslNeedDomain', {
+                      defaultValue: '請先填寫網域，才能發佈 Nginx / SSL。',
+                    })}
+                  </FormHint>
+                </div>
+              ) : null}
+              <ActionBar size="md" wrap aria-label={t('projects.netPublishSsl', { defaultValue: 'HTTPS / SSL' })}>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  loading={localBusy}
+                  disabled={suspended || !canSsl}
+                  title={
+                    !canSsl
+                      ? t('projects.sslRequiredFirst', {
+                          defaultValue: '請先為網域建立 SSL 證書',
+                        })
+                      : undefined
+                  }
+                  onClick={bindCall2(saveNetwork, true, true)}
+                >
+                  {t('projects.savePublishSsl', { defaultValue: '儲存並發佈 + SSL' })}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="md"
+                  loading={localBusy}
+                  disabled={suspended || !canSsl}
+                  title={
+                    !canSsl
+                      ? t('projects.sslRequiredFirst', {
+                          defaultValue: '請先為網域建立 SSL 證書',
+                        })
+                      : undefined
+                  }
+                  onClick={() => {
+                    if (!canSsl) {
+                      onOpsResult?.(
+                        null,
+                        t('projects.sslRequiredFirst', {
+                          defaultValue:
+                            '尚未有此網域的 SSL 證書。請先到「SSL 證書」申請／上載，再按發佈 + SSL。',
+                        }),
+                      );
+                      return;
+                    }
+                    onPublishSsl();
+                  }}
+                >
+                  {t('projects.publishNginxSsl', { defaultValue: '發佈 Nginx + SSL' })}
+                </Button>
+              </ActionBar>
+            </div>
+
+            {/* Maintenance */}
+            <div>
+              <div className="u-text-muted u-text-sm u-mb-1">
+                {t('projects.netPublishMaint', { defaultValue: '維護' })}
+              </div>
+              <ActionBar size="md" wrap aria-label={t('projects.netPublishMaint', { defaultValue: '維護' })}>
+                <Button
+                  variant="ghost"
+                  size="md"
+                  loading={localBusy}
+                  disabled={suspended}
+                  onClick={() => {
+                    setSaving(true);
+                    void projectsApi
+                      .purgeCache(project.id)
+                      .then((r) => {
+                        onOpsResult?.(
+                          {
+                            ok: r.ok,
+                            notes: r.notes ?? [],
+                            projectId: project.id,
+                            processStatus: 'stopped',
+                            listening: false,
+                          } as OpsApplyResultDto,
+                          r.ok
+                            ? t('projects.netPurgeOk')
+                            : r.notes?.join('；') ?? t('projects.netPurgeFailed'),
+                        );
+                      })
+                      .catch((e: Error) => onOpsResult?.(null, e.message))
+                      .finally(() => setSaving(false));
+                  }}
+                >
+                  {t('projects.purgeNginxCache')}
+                </Button>
+              </ActionBar>
+            </div>
+          </div>
         </CardSection>
       </Card>
 

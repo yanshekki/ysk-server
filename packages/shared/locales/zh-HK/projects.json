@@ -533,5 +533,9 @@
   "deletedOk": "專案已刪除",
   "sslRequiredFirst": "尚未有此網域的 SSL 證書。請先到「SSL 證書」申請／上載，再按發佈 + SSL。",
   "sslGateHint": "SSL 相關按鈕已鎖定：請先到",
-  "sslGateHint2": "為網域申請／上載證書後再發佈 + SSL。"
+  "sslGateHint2": "為網域申請／上載證書後再發佈 + SSL。",
+  "netPublishPrimary": "基本",
+  "netPublishSsl": "HTTPS / SSL",
+  "netPublishMaint": "維護",
+  "sslNeedDomain": "請先填寫網域，才能發佈 Nginx / SSL。"
 }
