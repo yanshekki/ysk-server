@@ -24,7 +24,43 @@ export async function handleDbRoutes(
           domain?: string;
           download?: boolean;
           applySystem?: boolean;
+          /** When set, create a PHP project (Adminer / phpMyAdmin) instead of global dataDir site */
+          asProject?: boolean;
+          projectName?: string;
+          tool?: 'adminer' | 'phpmyadmin';
+          engine?: 'mysql' | 'mariadb';
         };
+        // New path: create real project for DB browser
+        if (data.asProject === true || data.projectName || data.tool === 'phpmyadmin') {
+          const { createDbBrowserProject, normalizeDbBrowserTool, defaultDbBrowserProjectName } =
+            await import('@ysk/core');
+          const tool = normalizeDbBrowserTool(data.tool);
+          const name =
+            (data.projectName ?? '').trim() ||
+            defaultDbBrowserProjectName(tool, data.engine);
+          const r = await createDbBrowserProject({
+            projects: ctx.projects,
+            projectOps: ctx.projectOps,
+            host: ctx.host,
+            actor: user.username,
+            actorUserId: user.id,
+            name,
+            domain: (data.domain ?? `${tool}.local`).trim(),
+            tool,
+            download: data.download !== false,
+            engine: data.engine,
+          });
+          ctx.audit.append({
+            actor: user.username,
+            action: 'db.browser.project_create',
+            resource: r.projectId,
+            detail: { tool, name, domain: data.domain, ok: r.ok },
+            ok: r.ok,
+          });
+          sendOpsResult(res, r);
+          return true;
+        }
+        // Legacy: managed dataDir adminer + nginx only
         const { applyAdminer } = await import('@ysk/core');
         const r = await applyAdminer({
           dataDir: ctx.dataDir,

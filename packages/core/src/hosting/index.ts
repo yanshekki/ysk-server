@@ -72,6 +72,7 @@ export * from './wordpress-setup.js';
 export * from './runtime-tools.js';
 export * from './temp-db-user.js';
 export * from './adminer.js';
+export * from './db-browser-project.js';
 export * from './rebuild.js';
 export * from './backup-restic.js';
 export * from './dns-cluster.js';

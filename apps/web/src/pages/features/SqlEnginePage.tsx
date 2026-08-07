@@ -67,6 +67,22 @@ export function defaultAdminerDomain(engine: DbEngineKind): string {
   return `adminer.${engine}.local`;
 }
 
+export function defaultDbBrowserName(
+  tool: 'adminer' | 'phpmyadmin',
+  engine: DbEngineKind,
+): string {
+  return tool === 'phpmyadmin' ? `phpmyadmin-${engine}` : `adminer-${engine}`;
+}
+
+export function defaultDbBrowserDomain(
+  tool: 'adminer' | 'phpmyadmin',
+  engine: DbEngineKind,
+): string {
+  return tool === 'phpmyadmin'
+    ? `phpmyadmin.${engine}.local`
+    : `adminer.${engine}.local`;
+}
+
 export function buildDbNameById(
   items: Array<{ id: string; name?: unknown }>,
 ): Map<string, string> {
@@ -116,8 +132,11 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
   const [remotePass, setRemotePass] = useState('');
   const [lastTempPassword, setLastTempPassword] = useState<string | null>(null);
   const [adminerOpen, setAdminerOpen] = useState(false);
-  const [adminerDomain, setAdminerDomain] = useState(`adminer.${engine}.local`);
+  const [browserTool, setBrowserTool] = useState<'adminer' | 'phpmyadmin'>('adminer');
+  const [browserName, setBrowserName] = useState(() => defaultDbBrowserName('adminer', engine));
+  const [adminerDomain, setAdminerDomain] = useState(() => defaultDbBrowserDomain('adminer', engine));
   const [adminerDownload, setAdminerDownload] = useState(true);
+  const [nameClash, setNameClash] = useState<string | null>(null);
   const [importConfirm, setImportConfirm] = useState<{
     dbName: string;
     dumpName: string;
@@ -355,8 +374,12 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             size="sm"
             loading={busy}
             onClick={() => {
-              setAdminerDomain(defaultAdminerDomain(engine));
+              const tool = 'adminer' as const;
+              setBrowserTool(tool);
+              setBrowserName(defaultDbBrowserName(tool, engine));
+              setAdminerDomain(defaultDbBrowserDomain(tool, engine));
               setAdminerDownload(true);
+              setNameClash(null);
               setAdminerOpen(true);
             }}
           >
@@ -1080,8 +1103,9 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
       <Modal
         open={adminerOpen}
         onClose={bindCloseIfIdle(busy, bindSet(setAdminerOpen, false))}
-        title={t('db.adminerTitle')}
-        description={t('db.adminerDesc')}
+        title={t('db.browserProjectTitle', {
+          defaultValue: '建立資料庫管理專案',
+        })}
         size="md"
         footer={
           <FormActions align="end">
@@ -1094,97 +1118,142 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               {t('common.cancel')}
             </Button>
             <Button
-              variant="secondary"
-              size="sm"
-              loading={busy}
-              onClick={() => {
-                void (async () => {
-                  try {
-                    await run(async () => {
-                      const r = await api.requestRaw<{
-                        ok: boolean;
-                        notes?: string[];
-                        blocked?: boolean;
-                        blockMessage?: string;
-                        urlHint?: string;
-                        apply_status?: string;
-                      }>('/api/v1/db/adminer/apply', {
-                        method: 'POST',
-                        body: JSON.stringify({
-                          domain: adminerDomain.trim() || `adminer.${engine}.local`,
-                          download: adminerDownload,
-                          applySystem: false,
-                        }),
-                      });
-                      return {
-                        ok: r.ok,
-                        blocked: r.blocked,
-                        blockMessage: r.blockMessage,
-                        notes: [
-                          ...(r.notes ?? []),
-                          r.apply_status ? `apply_status=${r.apply_status}` : '',
-                          r.urlHint ? t('db.importEntry', { url: r.urlHint }) : '',
-                        ].filter(Boolean),
-                      } as OpsResultLike;
-                    }, t('db.adminerWritten'));
-                  } finally {
-                    // Always dismiss — API errors/blocked must not leave the modal stuck open
-                    setAdminerOpen(false);
-                  }
-                })();
-              }}
-            >
-              {t('db.writeOnly')}
-            </Button>
-            <Button
               variant="primary"
               size="sm"
               loading={busy}
+              disabled={Boolean(nameClash) || !browserName.trim() || !adminerDomain.trim()}
               onClick={() => {
                 void (async () => {
                   try {
-                    await run(async () => {
-                      const r = await api.requestRaw<{
+                    const r = await run(async () => {
+                      // Pre-check name against live project list
+                      const list = await api.listProjects();
+                      const want = browserName.trim().toLowerCase();
+                      const hit = (list.items ?? []).find(
+                        (p) => String(p.name ?? '').trim().toLowerCase() === want,
+                      );
+                      if (hit) {
+                        setNameClash(hit.name);
+                        return {
+                          ok: false,
+                          notes: [
+                            t('db.browserNameTaken', {
+                              defaultValue: '專案名稱已存在：{{name}}',
+                              name: hit.name,
+                            }),
+                          ],
+                        } as OpsResultLike;
+                      }
+                      const res = await api.requestRaw<{
                         ok: boolean;
                         notes?: string[];
                         blocked?: boolean;
                         blockMessage?: string;
                         urlHint?: string;
                         apply_status?: string;
+                        projectId?: string;
+                        project?: { id?: string };
                       }>('/api/v1/db/adminer/apply', {
                         method: 'POST',
                         body: JSON.stringify({
-                          domain: adminerDomain.trim() || `adminer.${engine}.local`,
+                          asProject: true,
+                          tool: browserTool,
+                          projectName: browserName.trim(),
+                          domain:
+                            adminerDomain.trim() ||
+                            defaultDbBrowserDomain(browserTool, engine),
                           download: adminerDownload,
-                          applySystem: true,
+                          engine,
                         }),
                       });
                       return {
-                        ok: r.ok,
-                        blocked: r.blocked,
-                        blockMessage: r.blockMessage,
+                        ok: res.ok,
+                        blocked: res.blocked,
+                        blockMessage: res.blockMessage,
                         notes: [
-                          ...(r.notes ?? []),
-                          r.apply_status ? `apply_status=${r.apply_status}` : '',
-                          r.urlHint ? t('db.importEntry', { url: r.urlHint }) : '',
+                          ...(res.notes ?? []),
+                          res.apply_status ? `apply_status=${res.apply_status}` : '',
+                          res.urlHint
+                            ? t('db.importEntry', { url: res.urlHint })
+                            : '',
+                          res.projectId || res.project?.id
+                            ? `projectId=${res.projectId ?? res.project?.id}`
+                            : '',
                         ].filter(Boolean),
+                        url: res.urlHint,
                       } as OpsResultLike;
-                    }, t('db.adminerApplied'));
+                    }, t('db.browserProjectCreated', { defaultValue: '資料庫管理專案已建立' }));
+                    // Navigate to project when we got an id in notes
+                    const idNote = (r as OpsResultLike | null)?.notes?.find((n) =>
+                      n.startsWith('projectId='),
+                    );
+                    if (idNote) {
+                      const id = idNote.slice('projectId='.length);
+                      if (id) window.location.assign(`/projects/${id}`);
+                    }
                   } finally {
                     setAdminerOpen(false);
                   }
                 })();
               }}
             >
-              {t('firewall.applyToSystem')}
+              {t('db.createBrowserProject', { defaultValue: '建立專案並部署' })}
             </Button>
           </FormActions>
         }
       >
-        <FormHint>
-          {t('db.adminerRiskFull')}
-        </FormHint>
         <FormLayout columns={1}>
+          <Field
+            label={t('db.browserTool', { defaultValue: '工具' })}
+            htmlFor="browser-tool"
+            required
+            flush
+          >
+            <SegRadio
+              name="browser-tool"
+              aria-label={t('db.browserTool', { defaultValue: '工具' })}
+              value={browserTool}
+              onChange={(v) => {
+                const tool = v === 'phpmyadmin' ? 'phpmyadmin' : 'adminer';
+                setBrowserTool(tool);
+                setBrowserName(defaultDbBrowserName(tool, engine));
+                setAdminerDomain(defaultDbBrowserDomain(tool, engine));
+                setNameClash(null);
+              }}
+              options={[
+                { value: 'adminer', label: 'Adminer' },
+                { value: 'phpmyadmin', label: 'phpMyAdmin' },
+              ]}
+            />
+          </Field>
+          <Field
+            label={t('projects.createName', { defaultValue: '專案名稱' })}
+            htmlFor="browser-name"
+            required
+            flush
+            hint={
+              nameClash
+                ? t('db.browserNameTaken', {
+                    defaultValue: '專案名稱已存在：{{name}}',
+                    name: nameClash,
+                  })
+                : t('db.browserNameHint', {
+                    defaultValue: '會建立一個 PHP 專案；名稱不可重複',
+                  })
+            }
+          >
+            <input
+              id="browser-name"
+              value={browserName}
+              onChange={(e) => {
+                setBrowserName(e.target.value);
+                setNameClash(null);
+              }}
+              placeholder={defaultDbBrowserName(browserTool, engine)}
+              spellCheck={false}
+              autoComplete="off"
+            />
+          </Field>
           <Field
             label={t('db.vhostName')}
             htmlFor="adminer-domain"
@@ -1196,21 +1265,23 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               id="adminer-domain"
               value={adminerDomain}
               onChange={bindInput(setAdminerDomain)}
-              placeholder={`adminer.${engine}.local`}
+              placeholder={defaultDbBrowserDomain(browserTool, engine)}
               spellCheck={false}
             />
           </Field>
           <CheckboxField
             id="adminer-dl"
-            label={t('db.downloadAdminer')}
-            description={t('db.downloadAdminerDesc')}
+            label={
+              browserTool === 'phpmyadmin'
+                ? t('db.downloadPhpMyAdmin', {
+                    defaultValue: '下載 phpMyAdmin（需要系統變更權限及外網）',
+                  })
+                : t('db.downloadAdminer')
+            }
             checked={adminerDownload}
             onChange={setAdminerDownload}
             disabled={busy}
           />
-          <FormHint>
-            {t('db.adminerWriteHintFull')}
-          </FormHint>
         </FormLayout>
       </Modal>
     </FeaturePageLayout>

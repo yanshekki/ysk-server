@@ -108,6 +108,35 @@ export class ProjectService {
     if (!input.name?.trim()) {
       throw new YskError(ErrorCodes.VALIDATION, tl('notes.needProjectName'), { httpStatus: 400 });
     }
+    const nameNorm = input.name.trim();
+    // Reject duplicate project names (case-insensitive) before OS provision
+    const nameClash = this.projects.list().find(
+      (p) => p.name.trim().toLowerCase() === nameNorm.toLowerCase(),
+    );
+    if (nameClash) {
+      throw new YskError(
+        ErrorCodes.VALIDATION,
+        `專案名稱已存在：${nameNorm}`,
+        { httpStatus: 409, details: { otherProjectId: nameClash.id, name: nameNorm } },
+      );
+    }
+    const domainNorm = input.domain?.trim().toLowerCase();
+    if (domainNorm) {
+      const domainClash = this.projects.list().find((p) => {
+        if ((p.domain ?? '').toLowerCase() === domainNorm) return true;
+        return (p.domain_aliases ?? []).some((a) => a.toLowerCase() === domainNorm);
+      });
+      if (domainClash) {
+        throw new YskError(
+          ErrorCodes.VALIDATION,
+          tl('notes.project.domainInUse', {
+            domain: domainNorm,
+            other: domainClash.name || domainClash.id,
+          }),
+          { httpStatus: 409, details: { otherProjectId: domainClash.id } },
+        );
+      }
+    }
     let runtime = input.runtime;
     let runtimeVersion = input.runtimeVersion;
     if (input.templateId) {
