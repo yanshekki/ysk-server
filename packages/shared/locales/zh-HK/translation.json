@@ -7460,7 +7460,12 @@
     "resMemHintPm2": "寫入 ecosystem max_memory_restart（到額重啟，非 cgroup 硬殺）；例如 512M 或 1G",
     "resFieldSystemdOnly": "僅 systemd cgroup 有效；仍會存 DB，改回 systemd 部署後生效",
     "resLimitsHintSystemd": "「儲存並套用」會寫 DB，並嘗試 usermod / setquota / systemctl set-property（unit 需 active）。無權限時只寫控制面。",
-    "resLimitsHintPm2": "「儲存並套用」會寫 DB + 更新 ecosystem max_memory_restart，並在 PM2 app online 時 reload。CPU／TasksMax／NOFILE 不寫入 ecosystem。磁碟配額與帳號鎖定仍套用 OS。"
+    "resLimitsHintPm2": "「儲存並套用」會寫 DB + 更新 ecosystem max_memory_restart，並在 PM2 app online 時 reload。CPU／TasksMax／NOFILE 不寫入 ecosystem。磁碟配額與帳號鎖定仍套用 OS。",
+    "deleteDialogTitle": "永久刪除專案",
+    "deletePermanent": "永久刪除",
+    "deleteRemoveFiles": "刪除磁碟 home 與 Linux 用戶",
+    "deleteTypeName": "輸入專案名稱以確認",
+    "deletedOk": "專案已刪除"
   },
   "protection": {
     "levels": {

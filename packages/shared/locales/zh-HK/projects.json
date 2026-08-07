@@ -502,5 +502,10 @@
   "deployProcessManagerSystemd": "systemd（推薦）",
   "deployProcessManagerPm2": "PM2",
   "deploySystemdHint": "生產預設：unit ysk-project-*.service、開機自啟、cgroup 限額跟專案資源。",
-  "deployPm2Hint": "用 pm2 start ecosystem（需已裝 PM2 plugin）。進程見「執行環境 → 進程」PM2 表。部署前會停舊 runner，避免搶埠。"
+  "deployPm2Hint": "用 pm2 start ecosystem（需已裝 PM2 plugin）。進程見「執行環境 → 進程」PM2 表。部署前會停舊 runner，避免搶埠。",
+  "deleteDialogTitle": "永久刪除專案",
+  "deletePermanent": "永久刪除",
+  "deleteRemoveFiles": "刪除磁碟 home 與 Linux 用戶",
+  "deleteTypeName": "輸入專案名稱以確認",
+  "deletedOk": "專案已刪除"
 }

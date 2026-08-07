@@ -939,8 +939,25 @@ export async function handleMiscRoutes(
       if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[4];
-        await ctx.projects.delete(id, user.username);
-        sendJson(res, 200, { ok: true });
+        let body: { confirmName?: string; removeFiles?: boolean } = {};
+        try {
+          const raw = await readBody(req);
+          if (raw?.trim()) body = JSON.parse(raw) as typeof body;
+        } catch {
+          body = {};
+        }
+        // Also accept query params for simple clients
+        if (url.searchParams.has('confirmName')) {
+          body.confirmName = url.searchParams.get('confirmName') || undefined;
+        }
+        if (url.searchParams.has('removeFiles')) {
+          body.removeFiles = url.searchParams.get('removeFiles') !== '0';
+        }
+        const result = await ctx.projects.delete(id, user.username, {
+          confirmName: body.confirmName,
+          removeFiles: body.removeFiles !== false,
+        });
+        sendJson(res, 200, result);
         return true;
       }
       if (method === 'GET' && url.pathname.match(/^\/api\/v1\/agents\/runtimes\/[^/]+$/)) {

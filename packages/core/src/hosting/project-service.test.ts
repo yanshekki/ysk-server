@@ -186,6 +186,31 @@ describe('ProjectService network meta and honesty paths', () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
+  it('delete requires confirmName match unless skipConfirm', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-del-confirm-'));
+    const db = openDatabase(join(dir, 'db.json'));
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const svc = new ProjectService(new ProjectRepository(db), host, dir);
+    const created = await svc.create({
+      name: 'ToDelete',
+      domain: 'del.local',
+      runtime: 'static',
+      actor: 'a',
+    });
+    await expect(
+      svc.delete(created.project.id, 'a', { confirmName: 'wrong', removeFiles: false }),
+    ).rejects.toThrow();
+    const r = await svc.delete(created.project.id, 'a', {
+      confirmName: 'ToDelete',
+      removeFiles: false,
+    });
+    expect(r.ok).toBe(true);
+    expect(r.notes.some((n) => /deleted|removeFiles/i.test(n))).toBe(true);
+    expect(svc.list()).toHaveLength(0);
+    closeDatabase(db);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
   it('delete removeFiles=false keeps home; applyTemplate unknown throws path covered via static', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-del-'));
     const db = openDatabase(join(dir, 'db.json'));

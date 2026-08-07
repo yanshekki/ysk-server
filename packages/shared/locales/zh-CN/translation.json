@@ -7451,7 +7451,12 @@
     "resMemHintPm2": "写入 ecosystem max_memory_restart（到额重启，非 cgroup 硬杀）；例如 512M 或 1G",
     "resFieldSystemdOnly": "仅 systemd cgroup 有效；仍会存 DB，改回 systemd 部署后生效",
     "resLimitsHintSystemd": "「保存并应用」会写 DB，并尝试 usermod / setquota / systemctl set-property（unit 需 active）。无权限时只写控制面。",
-    "resLimitsHintPm2": "「保存并应用」会写 DB + 更新 ecosystem max_memory_restart，并在 PM2 app online 时 reload。CPU／TasksMax／NOFILE 不写入 ecosystem。磁盘配额与账号锁定仍套用 OS。"
+    "resLimitsHintPm2": "「保存并应用」会写 DB + 更新 ecosystem max_memory_restart，并在 PM2 app online 时 reload。CPU／TasksMax／NOFILE 不写入 ecosystem。磁盘配额与账号锁定仍套用 OS。",
+    "deleteDialogTitle": "永久删除项目",
+    "deletePermanent": "永久删除",
+    "deleteRemoveFiles": "删除磁盘 home 与 Linux 用户",
+    "deleteTypeName": "输入项目名称以确认",
+    "deletedOk": "项目已删除"
   },
   "protection": {
     "levels": {

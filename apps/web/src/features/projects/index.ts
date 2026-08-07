@@ -14,6 +14,7 @@ export {
   ProjectResourcesTab,
   ProjectLogsTab,
   ProjectAdvancedTab,
+  ProjectDeleteDialog,
   ProjectChecklist,
   ProjectNextStep,
   HealthSummary,

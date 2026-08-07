@@ -51,11 +51,11 @@ export function useProjects() {
   );
 
   const remove = useCallback(
-    async (id: string) => {
+    async (id: string, opts: { confirmName: string; removeFiles?: boolean }) => {
       setBusy(true);
       setError(null);
       try {
-        await projectsApi.remove(id);
+        await projectsApi.remove(id, opts);
         await refresh();
       } catch (e) {
         setError(e instanceof Error ? e.message : 'delete failed');

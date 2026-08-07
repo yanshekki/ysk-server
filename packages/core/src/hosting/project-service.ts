@@ -3,7 +3,7 @@
  */
 
 import { randomUUID } from 'node:crypto';
-import { existsSync, rmSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, rmSync, writeFileSync, mkdirSync, readFileSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ProjectDto } from '@ysk/shared';
 import { ErrorCodes, YskError, tl} from '@ysk/shared';
@@ -19,9 +19,27 @@ import type { ProjectRepository, ProjectRow } from '../repositories/project-repo
 import type { HostExecutor } from '../host/executor.js';
 import type { AuditRepository } from '../repositories/audit-repo.js';
 import { getAppTemplate, scaffoldAppTemplate, type AppTemplateId } from './app-templates.js';
-import { normalizeRuntimeVersion } from './runtime.js';
+import { normalizeRuntimeVersion, selectPhpRuntime } from './runtime.js';
 import { normalizeExtraLogDirs } from './project-logs.js';
 import { normalizeProjectDocRoot } from './project-ops.js';
+import { applyPm2Stop } from './pm2-apply.js';
+
+export type DeleteProjectResult = {
+  ok: boolean;
+  projectId: string;
+  removedFiles: boolean;
+  notes: string[];
+  warnings: string[];
+};
+
+export type DeleteProjectOptions = {
+  /** Must equal project.name (trim). Required for API safety. */
+  confirmName?: string;
+  /** Delete OS home + linux user when safe (default true). */
+  removeFiles?: boolean;
+  /** Skip name check (CLI --yes with care; tests). */
+  skipConfirm?: boolean;
+};
 
 export class ProjectService {
   constructor(
@@ -551,63 +569,211 @@ export class ProjectService {
     return { project: this.get(id), scaffold };
   }
 
-  async delete(id: string, actor: string, removeFiles = true): Promise<void> {
+  /**
+   * Destroy project: stop runners → tear web/PHP → OS user/home → DB.
+   * Returns honest notes; ok=true when control-plane row removed.
+   */
+  async delete(
+    id: string,
+    actor: string,
+    removeFilesOrOpts: boolean | DeleteProjectOptions = true,
+  ): Promise<DeleteProjectResult> {
+    // Legacy: delete(id, actor, boolean) skips name confirm (tests/CLI internal)
+    const opts: DeleteProjectOptions =
+      typeof removeFilesOrOpts === 'boolean'
+        ? { removeFiles: removeFilesOrOpts, skipConfirm: true }
+        : (removeFilesOrOpts ?? {});
+    const removeFiles = opts.removeFiles !== false;
+    const notes: string[] = [];
+    const warnings: string[] = [];
+
     const row = this.projects.findById(id);
     if (!row) {
-      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.project.notFound', { id }), { httpStatus: 404 });
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.project.notFound', { id }), {
+        httpStatus: 404,
+      });
     }
-    // Best-effort stop managed process before removing files
+
+    if (!opts.skipConfirm) {
+      const want = (opts.confirmName ?? '').trim();
+      if (!want || want !== row.name.trim()) {
+        throw new YskError(
+          ErrorCodes.VALIDATION,
+          tl('notes.project.deleteNameMismatch', {
+            defaultValue: 'confirmName must match project name exactly',
+          }),
+          { httpStatus: 400, details: { expected: row.name } },
+        );
+      }
+    }
+
+    const canSys = this.host.executeEnabled() && this.host.isRoot();
+    const unit = `ysk-project-${row.linux_user}.service`;
+    const nginxFile = `${row.linux_user}.conf`;
+
+    // —— 1. Stop runners ——
+    try {
+      const pm2 = await applyPm2Stop({ host: this.host, linuxUser: row.linux_user });
+      notes.push(...pm2.notes);
+    } catch (e) {
+      notes.push(`pm2 stop: ${e instanceof Error ? e.message : String(e)}`);
+    }
+
     const pid = row.pid;
     if (pid) {
       try {
         process.kill(pid, 'SIGTERM');
+        notes.push(`SIGTERM pid=${pid}`);
       } catch {
-        /* already dead */
+        notes.push(`pid ${pid} already dead`);
       }
     }
-    const unit = `ysk-project-${row.linux_user}.service`;
-    if (this.host.executeEnabled() && this.host.isRoot()) {
+    const pidfile = row.pidfile ?? join(row.home_dir, 'app.pid');
+    if (existsSync(pidfile)) {
+      try {
+        const n = Number(readFileSync(pidfile, 'utf8').trim());
+        if (Number.isFinite(n) && n > 0 && n !== pid) {
+          try {
+            process.kill(n, 'SIGTERM');
+            notes.push(`SIGTERM pidfile pid=${n}`);
+          } catch {
+            /* */
+          }
+        }
+        unlinkSync(pidfile);
+      } catch {
+        /* */
+      }
+    }
+
+    if (canSys) {
       await this.host
         .runCommand(['systemctl', 'disable', '--now', unit], { timeoutMs: 15_000 })
-        .catch(() => undefined);
-      // Remove system unit if present
+        .then((r) => notes.push(`systemctl disable --now ${unit} exit=${r.exitCode}`))
+        .catch(() => notes.push(`systemctl disable ${unit} failed`));
       await this.host
         .runCommand(['bash', '-c', `rm -f /etc/systemd/system/${unit}`], { timeoutMs: 5_000 })
         .catch(() => undefined);
       await this.host
         .runCommand(['systemctl', 'daemon-reload'], { timeoutMs: 15_000 })
         .catch(() => undefined);
+    } else {
+      notes.push('systemd unit cleanup skipped (need root + YSK_EXECUTE)');
     }
 
-    const deleteNotes: string[] = [];
+    // —— 2. Web: nginx / PHP-FPM / Apache ——
+    const managedNginx = join(this.dataDir, 'nginx', 'conf.d', nginxFile);
+    for (const p of [row.nginx_config_path, managedNginx].filter(Boolean) as string[]) {
+      if (existsSync(p)) {
+        try {
+          rmSync(p, { force: true });
+          notes.push(`removed nginx conf ${p}`);
+        } catch (e) {
+          warnings.push(`nginx conf ${p}: ${e instanceof Error ? e.message : String(e)}`);
+        }
+      }
+    }
+    if (canSys) {
+      const sysNginx = `/etc/nginx/conf.d/${nginxFile}`;
+      await this.host
+        .runCommand(['bash', '-c', `rm -f ${JSON.stringify(sysNginx)}`], { timeoutMs: 5_000 })
+        .then((r) => {
+          if (r.exitCode === 0) notes.push(`removed ${sysNginx}`);
+        })
+        .catch(() => undefined);
+      const nt = await this.host.runCommand(['nginx', '-t'], { timeoutMs: 10_000 });
+      if (nt.exitCode === 0) {
+        const rel = await this.host.runCommand(['systemctl', 'reload', 'nginx'], {
+          timeoutMs: 15_000,
+        });
+        notes.push(`nginx reload exit=${rel.exitCode}`);
+      } else {
+        warnings.push(`nginx -t failed after conf remove: ${(nt.stderr || nt.stdout).slice(0, 120)}`);
+      }
+    }
+
+    if (row.runtime === 'php') {
+      const ver = selectPhpRuntime(row.runtime_version || '8.2').version;
+      const poolLocal = join(this.dataDir, 'php', ver, 'pool.d', `${row.linux_user}.conf`);
+      if (existsSync(poolLocal)) {
+        try {
+          rmSync(poolLocal, { force: true });
+          notes.push(`removed FPM pool artifact ${poolLocal}`);
+        } catch {
+          /* */
+        }
+      }
+      const apacheLocal = join(this.dataDir, 'apache', 'sites', `ysk-${row.linux_user}.conf`);
+      if (existsSync(apacheLocal)) {
+        try {
+          rmSync(apacheLocal, { force: true });
+          notes.push(`removed Apache vhost artifact ${apacheLocal}`);
+        } catch {
+          /* */
+        }
+      }
+      if (canSys) {
+        const site = `ysk-${row.linux_user}`;
+        await this.host
+          .runCommand(
+            [
+              'bash',
+              '-c',
+              [
+                `rm -f /etc/php/${ver}/fpm/pool.d/ysk-${row.linux_user}.conf 2>/dev/null || true`,
+                `systemctl reload php${ver}-fpm 2>/dev/null || true`,
+                `a2dissite ${site} 2>/dev/null || true`,
+                `rm -f /etc/apache2/sites-available/${site}.conf 2>/dev/null || true`,
+                `systemctl reload apache2 2>/dev/null || true`,
+              ].join('; '),
+            ],
+            { timeoutMs: 30_000 },
+          )
+          .then((r) => notes.push(`php/apache teardown exit=${r.exitCode}`))
+          .catch((e) =>
+            warnings.push(`php/apache teardown: ${e instanceof Error ? e.message : String(e)}`),
+          );
+      }
+    }
+
+    // —— 3. Shared resources: do not auto-delete ——
+    if (row.domain) {
+      warnings.push(
+        `DNS zone / mail for ${row.domain} left in place if shared (not auto-deleted)`,
+      );
+    }
+
+    // —— 4. OS user + home ——
     if (removeFiles && row.home_dir && existsSync(row.home_dir)) {
       const safe = isSafeProjectHomePath(row.home_dir, {
         projectId: id,
         dataDir: this.dataDir,
-        linuxUser: row.linux_user });
+        linuxUser: row.linux_user,
+      });
       if (!safe) {
-        deleteNotes.push(tl('notes.auto.t0291', { v0: (row.home_dir) }));
-      } else if (this.host.executeEnabled() && this.host.isRoot()) {
-        // Prefer userdel -r when home is passwd home; else rm after userdel
+        warnings.push(tl('notes.auto.t0291', { v0: row.home_dir }));
+      } else if (canSys) {
         const ud = await this.host.runCommand(
-          ['bash', '-c', `userdel -r ${row.linux_user} 2>&1 || userdel ${row.linux_user} 2>&1 || true`],
+          [
+            'bash',
+            '-c',
+            `userdel -r ${row.linux_user} 2>&1 || userdel ${row.linux_user} 2>&1 || true`,
+          ],
           { timeoutMs: 30_000 },
         );
-        deleteNotes.push(`userdel: ${(ud.stdout || ud.stderr || '').slice(0, 200)}`);
+        notes.push(`userdel: ${(ud.stdout || ud.stderr || '').slice(0, 200)}`);
         if (existsSync(row.home_dir)) {
           await this.host.deletePath(row.home_dir).catch(() => {
             rmSync(row.home_dir, { recursive: true, force: true });
           });
-          deleteNotes.push(`removed home ${row.home_dir}`);
+          notes.push(`removed home ${row.home_dir}`);
         }
         await this.host
-          .runCommand(
-            ['bash', '-c', `groupdel ${row.linux_group} 2>/dev/null || true`],
-            { timeoutMs: 5_000 },
-          )
+          .runCommand(['bash', '-c', `groupdel ${row.linux_group} 2>/dev/null || true`], {
+            timeoutMs: 5_000,
+          })
           .catch(() => undefined);
       } else {
-        // Control-plane shadow / dataDir only
         const underData =
           row.home_dir.startsWith(join(this.dataDir, 'projects')) ||
           row.home_dir.startsWith(join(this.dataDir, 'homes'));
@@ -617,32 +783,48 @@ export class ProjectService {
           } else {
             rmSync(row.home_dir, { recursive: true, force: true });
           }
-          deleteNotes.push(`removed control-plane home ${row.home_dir}`);
+          notes.push(`removed control-plane home ${row.home_dir}`);
         } else {
-          deleteNotes.push(
-            tl('notes.auto.t0292', { v0: (row.home_dir), v1: (row.linux_user) }),
+          warnings.push(
+            tl('notes.auto.t0292', { v0: row.home_dir, v1: row.linux_user }),
           );
         }
       }
+    } else if (!removeFiles) {
+      notes.push('removeFiles=false — home and linux user kept');
     }
 
-    // Also remove shadow if DB pointed at canonical but shadow left behind
     const shadow = join(this.dataDir, 'homes', `ysk-server-${id}`);
     if (removeFiles && existsSync(shadow) && shadow !== row.home_dir) {
       rmSync(shadow, { recursive: true, force: true });
-      deleteNotes.push(`removed shadow ${shadow}`);
+      notes.push(`removed shadow ${shadow}`);
     }
 
-    if (row.nginx_config_path && existsSync(row.nginx_config_path)) {
-      rmSync(row.nginx_config_path, { force: true });
-    }
+    // —— 5. DB ——
     this.projects.delete(id);
+    notes.push('control-plane project row deleted');
+
     this.audit?.append({
       actor,
       action: 'project.delete',
       resource: id,
-      detail: { home_dir: row.home_dir, linux_user: row.linux_user, notes: deleteNotes },
-      ok: true });
+      detail: {
+        home_dir: row.home_dir,
+        linux_user: row.linux_user,
+        removeFiles,
+        notes,
+        warnings,
+      },
+      ok: true,
+    });
+
+    return {
+      ok: true,
+      projectId: id,
+      removedFiles: removeFiles,
+      notes,
+      warnings,
+    };
   }
 
   /**

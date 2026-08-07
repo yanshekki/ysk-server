@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import type { ProjectDto } from '@ysk/shared';
 import {
   ProjectAdvancedTab,
+  ProjectDeleteDialog,
   ProjectDeployTab,
   ProjectDetailHeader,
   ProjectLogsTab,
@@ -284,20 +285,6 @@ export function ProjectDetailPage() {
     if (confirm === 'stop') {
       setConfirm(null);
       await run('stop', project.id).catch(() => undefined);
-      return;
-    }
-    if (confirm === 'delete') {
-      setConfirm(null);
-      setBusy(true);
-      setError(null);
-      try {
-        await projectsApi.remove(project.id);
-        navigate('/projects', { replace: true });
-      } catch (e) {
-        setError(e instanceof Error ? e.message : t('common.deleteFailed'));
-      } finally {
-        setBusy(false);
-      }
     }
   }
 
@@ -611,16 +598,24 @@ export function ProjectDetailPage() {
         danger
         busy={busy}
       />
-      <ConfirmDialog
+      <ProjectDeleteDialog
+        project={project}
         open={confirm === 'delete'}
-        onClose={bindSet(setConfirm, null)}
-        onConfirm={onConfirmAction}
-        title={t('projects.confirmDeleteTitle')}
-        description={t('projects.confirmDeleteDesc', { name: project.name })}
-        confirmLabel={t('projects.delete')}
-        cancelLabel={t('common.cancel')}
-        danger
         busy={busy}
+        onClose={bindSet(setConfirm, null)}
+        onDeleted={(r) => {
+          setConfirm(null);
+          const parts = [
+            ...(r.notes ?? []).slice(0, 4),
+            ...(r.warnings ?? []).slice(0, 2),
+          ];
+          setMsg(
+            parts.length
+              ? parts.join('；')
+              : t('projects.deletedOk', { defaultValue: '專案已刪除' }),
+          );
+          navigate('/projects', { replace: true });
+        }}
       />
     </FeaturePageLayout>
   );

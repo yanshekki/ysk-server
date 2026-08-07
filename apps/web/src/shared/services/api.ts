@@ -454,8 +454,20 @@ export const api = {
       body: JSON.stringify(body),
     });
   },
-  deleteProject(id: string): Promise<{ ok: boolean }> {
-    return request(`/api/v1/projects/${id}`, { method: 'DELETE' });
+  deleteProject(
+    id: string,
+    body?: { confirmName: string; removeFiles?: boolean },
+  ): Promise<{
+    ok: boolean;
+    projectId?: string;
+    removedFiles?: boolean;
+    notes?: string[];
+    warnings?: string[];
+  }> {
+    return request(`/api/v1/projects/${id}`, {
+      method: 'DELETE',
+      body: JSON.stringify(body ?? {}),
+    });
   },
   getProject(id: string): Promise<{ project: ProjectDto }> {
     return request(`/api/v1/projects/${id}`);

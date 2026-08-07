@@ -9,6 +9,7 @@ export { ProjectNetworkTab } from './ProjectNetworkTab';
 export { ProjectResourcesTab } from './ProjectResourcesTab';
 export { ProjectLogsTab } from './ProjectLogsTab';
 export { ProjectAdvancedTab } from './ProjectAdvancedTab';
+export { ProjectDeleteDialog } from './ProjectDeleteDialog';
 export { ProjectChecklist } from './ProjectChecklist';
 export { ProjectNextStep } from './ProjectNextStep';
 export { HealthSummary } from './HealthSummary';

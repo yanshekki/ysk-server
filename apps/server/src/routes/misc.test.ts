@@ -626,8 +626,11 @@ describe('misc routes deep coverage', () => {
         expect(b.apply_status).not.toBe('applied');
       }
 
-      // delete project path
-      const del = await apiJson(ts, 'DELETE', `/api/v1/projects/${id}`);
+      // delete project path (must type name)
+      const del = await apiJson(ts, 'DELETE', `/api/v1/projects/${id}`, {
+        confirmName: 'MiscOsUser',
+        removeFiles: true,
+      });
       expect(del.status).toBeLessThan(500);
     },
     60_000,

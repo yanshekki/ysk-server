@@ -502,5 +502,10 @@
   "deployProcessManagerSystemd": "systemd (recommended)",
   "deployProcessManagerPm2": "PM2",
   "deploySystemdHint": "Production default: unit ysk-project-*.service, boot start, cgroup limits from project resources.",
-  "deployPm2Hint": "Starts via pm2 (ecosystem.config.cjs). Requires PM2 plugin. Appears under Runtimes → Processes (PM2 list). Stops the old runner first."
+  "deployPm2Hint": "Starts via pm2 (ecosystem.config.cjs). Requires PM2 plugin. Appears under Runtimes → Processes (PM2 list). Stops the old runner first.",
+  "deleteDialogTitle": "Permanently delete project",
+  "deletePermanent": "Delete permanently",
+  "deleteRemoveFiles": "Delete disk home and Linux user",
+  "deleteTypeName": "Type the project name to confirm",
+  "deletedOk": "Project deleted"
 }

@@ -7451,7 +7451,12 @@
     "resMemHintPm2": "Writes ecosystem max_memory_restart (restart threshold, not cgroup kill); e.g. 512M or 1G",
     "resFieldSystemdOnly": "systemd cgroup only; still saved to DB for when you switch back to systemd",
     "resLimitsHintSystemd": "Save & apply writes DB and tries usermod / setquota / systemctl set-property (unit must be active). Control-plane only without privileges.",
-    "resLimitsHintPm2": "Save & apply writes DB, updates ecosystem max_memory_restart, and reloads the PM2 app when online. CPU / TasksMax / NOFILE are not written to ecosystem. Disk quota and account lock still apply at OS level."
+    "resLimitsHintPm2": "Save & apply writes DB, updates ecosystem max_memory_restart, and reloads the PM2 app when online. CPU / TasksMax / NOFILE are not written to ecosystem. Disk quota and account lock still apply at OS level.",
+    "deleteDialogTitle": "Permanently delete project",
+    "deletePermanent": "Delete permanently",
+    "deleteRemoveFiles": "Delete disk home and Linux user",
+    "deleteTypeName": "Type the project name to confirm",
+    "deletedOk": "Project deleted"
   },
   "protection": {
     "levels": {

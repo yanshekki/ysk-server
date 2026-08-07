@@ -23,7 +23,8 @@ export const projectsApi = {
     api.applyTemplate(id, body),
   wordpressDownload: (id: string, force?: boolean) =>
     api.wordpressDownload(id, { force }),
-  remove: (id: string) => api.deleteProject(id),
+  remove: (id: string, body?: { confirmName: string; removeFiles?: boolean }) =>
+    api.deleteProject(id, body),
   deploy: (
     id: string,
     body?: {
