@@ -439,6 +439,86 @@ async function listDirVersions(
   }
 }
 
+export type YskNodeDiscovery = {
+  major: string;
+  path: string;
+  versionOutput: string;
+};
+
+/**
+ * Discover Node installs under /usr/local/ysk/node/<major>/bin/node.
+ * Does not use softwareVersions DB — binary must exist and respond to -v.
+ */
+export async function discoverYskNodeMajors(
+  host: HostExecutor,
+): Promise<YskNodeDiscovery[]> {
+  const found: YskNodeDiscovery[] = [];
+  const seen = new Set<string>();
+
+  const tryPath = async (major: string, path: string): Promise<void> => {
+    if (!major || seen.has(major)) return;
+    // Prefer pathExists, but still try -v when exists (or when exists is flaky)
+    if (!host.pathExists(path)) {
+      // Last chance: bash -x test (read-only)
+      const chk = await host.runCommand(
+        ['bash', '-c', `[ -x ${JSON.stringify(path)} ] && echo yes || echo no`],
+        { timeoutMs: 5_000 },
+      );
+      if ((chk.stdout || '').trim() !== 'yes') return;
+    }
+    const ver = await host.runCommand([path, '-v'], { timeoutMs: 8_000 });
+    if (ver.exitCode !== 0) return;
+    const versionOutput = (ver.stdout || ver.stderr || '').trim().split('\n')[0];
+    if (!versionOutput) return;
+    // Sanity: major should appear in output (v26.x.x)
+    if (!new RegExp(`v?${major}\\b`).test(versionOutput)) {
+      // still accept if binary lives under that major dir (custom build)
+    }
+    seen.add(major);
+    found.push({ major, path, versionOutput });
+  };
+
+  const majors = await listDirVersions(host, '/usr/local/ysk/node', /^\d+$/);
+  for (const major of majors) {
+    await tryPath(major, `/usr/local/ysk/node/${major}/bin/node`);
+  }
+
+  if (found.length === 0) {
+    // Glob fallback when ls listing failed but dirs exist
+    try {
+      const r = await host.runCommand(
+        [
+          'bash',
+          '-c',
+          `for d in /usr/local/ysk/node/*/bin/node; do
+  [ -x "$d" ] || continue
+  v=$("$d" -v 2>/dev/null | head -1)
+  maj=$(printf '%s' "$d" | sed -n 's|.*/ysk/node/\\([0-9][0-9]*\\)/bin/node$|\\1|p')
+  [ -n "$maj" ] && [ -n "$v" ] && printf '%s\\n' "$maj|$d|$v"
+done`,
+        ],
+        { timeoutMs: 15_000 },
+      );
+      for (const line of (r.stdout || '').split('\n')) {
+        const t = line.trim();
+        if (!t) continue;
+        const [major, path, ...rest] = t.split('|');
+        const versionOutput = rest.join('|');
+        if (major && path && versionOutput && !seen.has(major)) {
+          seen.add(major);
+          found.push({ major, path, versionOutput });
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  // Highest major first (useful for host default)
+  found.sort((a, b) => Number(b.major) - Number(a.major));
+  return found;
+}
+
 /**
  * Discover multi-version binaries already on the host (e.g. python3.14, php8.3).
  * Expands probe pins so post-install refresh lists the new version.
@@ -516,9 +596,12 @@ export async function probeRuntimes(
   }
 
   /** Prefer PATH node; fall back to newest ysk node major install */
-  async function hostNodeDefault(): Promise<string | undefined> {
+  async function hostNodeDefault(
+    ysk: YskNodeDiscovery[],
+  ): Promise<string | undefined> {
     const fromPath = await hostDefault('node', ['node', '-v']);
     if (fromPath) return fromPath;
+    if (ysk[0]?.versionOutput) return ysk[0].versionOutput;
     try {
       const r = await host.runCommand(
         [
@@ -535,7 +618,8 @@ export async function probeRuntimes(
     }
   }
 
-  let hostNode = await hostNodeDefault();
+  const yskNodes = await discoverYskNodeMajors(host);
+  let hostNode = await hostNodeDefault(yskNodes);
   const hostPhp = await hostDefault('php', ['php', '-v']);
   const hostPython = await hostDefault('python3', ['python3', '--version']);
   const hostGo = await hostDefault('go', ['go', 'version']);
@@ -550,6 +634,7 @@ export async function probeRuntimes(
     ...new Set([
       ...supported.node,
       ...cachePins('node'),
+      ...yskNodes.map((n) => n.major),
       ...(await listDirVersions(host, '/usr/local/ysk/node', /^\d+$/)),
       ...(await listHostVersionedBins(host, 'node')),
       extractPin('node', hostNode),
@@ -610,7 +695,7 @@ export async function probeRuntimes(
     ].filter(Boolean) as string[]),
   ];
 
-  const node = await probeBinaryVersions(
+  let node = await probeBinaryVersions(
     host,
     'node',
     nodePins,
@@ -619,6 +704,30 @@ export async function probeRuntimes(
     (out, v) => new RegExp(`v?${v}\\b`).test(out),
     hostNode,
   );
+
+  // Force-merge YSK disk discoveries — never leave "recorded only" as the only signal
+  for (const y of yskNodes) {
+    const hit = node.find((n) => n.version === y.major);
+    if (hit) {
+      if (!hit.available) {
+        hit.available = true;
+        hit.resolvedPath = y.path;
+        hit.versionOutput = y.versionOutput;
+        hit.notes = hit.notes.filter((n) => !/not found|未|missing/i.test(n));
+        hit.notes.push(`ysk node binary: ${y.path}`);
+      }
+    } else {
+      node.push({
+        kind: 'node',
+        version: y.major,
+        binaryPath: y.path,
+        available: true,
+        resolvedPath: y.path,
+        versionOutput: y.versionOutput,
+        notes: [`ysk node binary: ${y.path}`],
+      });
+    }
+  }
 
   const php = await probeBinaryVersions(
     host,
@@ -679,9 +788,13 @@ export async function probeRuntimes(
     hostBun,
   );
 
-  // If PATH node missing but a pin resolved, surface first available as host default
+  // If PATH node missing but a pin resolved, surface highest available as host default
   if (!hostNode) {
-    const hit = node.find((n) => n.available && n.versionOutput);
+    const hit =
+      yskNodes[0] ||
+      [...node]
+        .filter((n) => n.available && n.versionOutput)
+        .sort((a, b) => Number(b.version) - Number(a.version))[0];
     if (hit?.versionOutput) hostNode = hit.versionOutput;
   }
 

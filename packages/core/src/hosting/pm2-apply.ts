@@ -4,7 +4,7 @@ import { tl } from '@ysk/shared';
  * Never fakes success: without YSK_EXECUTE, only writes ecosystem config.
  */
 
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { HostExecutor } from '../host/executor.js';
 import { resolveBin } from './software-probe/index.js';
@@ -31,6 +31,22 @@ export function pm2AppName(linuxUser: string): string {
 }
 
 /**
+ * Normalize panel memory_max → PM2 max_memory_restart (e.g. 512M, 1G).
+ * Rejects injection; falls back to 512M.
+ */
+export function normalizePm2MaxMemoryRestart(raw?: string | null): string {
+  const s = (raw ?? '').trim();
+  if (!s) return '512M';
+  // systemd-style: 512M, 1G, 256K, or plain bytes digits
+  if (/^\d+(\.\d+)?[KMG]?$/i.test(s) && s.length <= 16) {
+    const unit = s.match(/[KMG]$/i)?.[0];
+    if (unit) return s.slice(0, -1) + unit.toUpperCase();
+    return s;
+  }
+  return '512M';
+}
+
+/**
  * Write ecosystem.config.cjs under project home (always safe).
  */
 export function writePm2Ecosystem(input: {
@@ -41,6 +57,8 @@ export function writePm2Ecosystem(input: {
   port: number;
   nodeBinary: string;
   instances?: number | 'max';
+  /** Maps from project memory_max; PM2 restart threshold (not cgroup hard cap). */
+  maxMemoryRestart?: string;
   /** Extra env from panel runtime tuning */
   env?: Record<string, string>;
 }): Pm2EcosystemResult {
@@ -49,6 +67,7 @@ export function writePm2Ecosystem(input: {
   mkdirSync(join(input.homeDir, 'logs'), { recursive: true });
   const ecosystemPath = join(input.homeDir, 'ecosystem.config.cjs');
   const instances = input.instances ?? 1;
+  const maxMem = normalizePm2MaxMemoryRestart(input.maxMemoryRestart);
   const envObj: Record<string, string> = {
     NODE_ENV: 'production',
     PORT: String(input.port),
@@ -66,7 +85,7 @@ module.exports = {
       instances: ${JSON.stringify(instances)},
       exec_mode: 'fork',
       autorestart: true,
-      max_memory_restart: '512M',
+      max_memory_restart: ${JSON.stringify(maxMem)},
       env: ${JSON.stringify(envObj, null, 8).replace(/\n/g, '\n      ')},
       out_file: ${JSON.stringify(join(input.homeDir, 'logs', 'pm2-out.log'))},
       error_file: ${JSON.stringify(join(input.homeDir, 'logs', 'pm2-err.log'))},
@@ -78,7 +97,117 @@ module.exports = {
   writeFileSync(ecosystemPath, content, 'utf8');
   notes.push(`PM2 ecosystem written: ${ecosystemPath}`);
   notes.push(`App name: ${appName}`);
+  notes.push(`max_memory_restart: ${maxMem}`);
   return { ecosystemPath, appName, notes };
+}
+
+/**
+ * Patch only max_memory_restart in an existing YSK-generated ecosystem,
+ * then optionally pm2 reload when the app is listed.
+ * Does not require entry/port (limits page has no deploy context).
+ */
+export async function syncPm2EcosystemMemory(input: {
+  host: HostExecutor;
+  homeDir: string;
+  linuxUser: string;
+  memoryMax?: string | null;
+}): Promise<{
+  ok: boolean;
+  written: boolean;
+  reloaded: boolean;
+  notes: string[];
+  ecosystemPath?: string;
+}> {
+  const notes: string[] = [];
+  const ecosystemPath = join(input.homeDir, 'ecosystem.config.cjs');
+  if (!existsSync(ecosystemPath)) {
+    notes.push('PM2 ecosystem absent — skip memory sync (deploy with PM2 first)');
+    return { ok: true, written: false, reloaded: false, notes };
+  }
+
+  const maxMem = normalizePm2MaxMemoryRestart(input.memoryMax);
+  let body: string;
+  try {
+    body = readFileSync(ecosystemPath, 'utf8');
+  } catch (e) {
+    notes.push(`read ecosystem failed: ${e instanceof Error ? e.message : String(e)}`);
+    return { ok: false, written: false, reloaded: false, notes, ecosystemPath };
+  }
+
+  const re = /max_memory_restart\s*:\s*['"][^'"]*['"]/;
+  if (!re.test(body)) {
+    notes.push(
+      'ecosystem has no max_memory_restart line — skip patch (redeploy to regenerate)',
+    );
+    return { ok: false, written: false, reloaded: false, notes, ecosystemPath };
+  }
+
+  const next = body.replace(re, `max_memory_restart: ${JSON.stringify(maxMem)}`);
+  if (next === body) {
+    notes.push(`PM2 ecosystem max_memory_restart already ${maxMem}`);
+  } else {
+    try {
+      writeFileSync(ecosystemPath, next, 'utf8');
+      notes.push(`PM2 ecosystem max_memory_restart → ${maxMem}`);
+    } catch (e) {
+      notes.push(`write ecosystem failed: ${e instanceof Error ? e.message : String(e)}`);
+      return { ok: false, written: false, reloaded: false, notes, ecosystemPath };
+    }
+  }
+
+  const written = true;
+  if (!input.host.executeEnabled()) {
+    notes.push('PM2 reload skipped (YSK_EXECUTE off) — ecosystem file updated only');
+    return { ok: true, written, reloaded: false, notes, ecosystemPath };
+  }
+
+  const probe = await probePm2(input.host);
+  if (!probe.available) {
+    notes.push('pm2 not on PATH — ecosystem updated; start/reload manually after install');
+    return { ok: true, written, reloaded: false, notes, ecosystemPath };
+  }
+
+  const appName = pm2AppName(input.linuxUser);
+  let appListed = false;
+  try {
+    const jlist = await input.host.runCommand(['pm2', 'jlist'], { timeoutMs: 15_000 });
+    if (jlist.exitCode === 0 && jlist.stdout.trim()) {
+      const { parsePm2Jlist } = await import('./pm2-status.js');
+      const apps = parsePm2Jlist(jlist.stdout);
+      appListed = apps.some((a) => a.name === appName);
+    }
+  } catch {
+    notes.push('pm2 jlist parse failed while checking app');
+  }
+
+  if (!appListed) {
+    notes.push(
+      `PM2 app ${appName} not running — ecosystem updated; redeploy or pm2 start to apply memory`,
+    );
+    return { ok: true, written, reloaded: false, notes, ecosystemPath };
+  }
+
+  const reload = await input.host.runCommand(['pm2', 'reload', appName], {
+    timeoutMs: 60_000,
+  });
+  if (reload.exitCode === 0) {
+    notes.push(`pm2 reload ${appName} ok (max_memory_restart=${maxMem})`);
+    return { ok: true, written, reloaded: true, notes, ecosystemPath };
+  }
+
+  // reload can fail for fork mode in some pm2 versions — try restart
+  const restart = await input.host.runCommand(['pm2', 'restart', appName], {
+    timeoutMs: 60_000,
+  });
+  if (restart.exitCode === 0) {
+    notes.push(`pm2 restart ${appName} ok (max_memory_restart=${maxMem})`);
+    return { ok: true, written, reloaded: true, notes, ecosystemPath };
+  }
+
+  notes.push(
+    `pm2 reload/restart ${appName} failed: ${(reload.stderr || restart.stderr || '').slice(0, 160)}`,
+  );
+  return { ok: false, written, reloaded: false, notes, ecosystemPath };
 }
 
 /**
@@ -102,6 +231,7 @@ export async function applyPm2Start(input: {
   nodeBinary: string;
   /** When false, only write ecosystem */
   execute?: boolean;
+  maxMemoryRestart?: string;
   env?: Record<string, string>;
 }): Promise<Pm2StartResult> {
   const eco = writePm2Ecosystem({
@@ -111,6 +241,7 @@ export async function applyPm2Start(input: {
     entry: input.entry,
     port: input.port,
     nodeBinary: input.nodeBinary,
+    maxMemoryRestart: input.maxMemoryRestart,
     env: input.env,
   });
   const notes = [...eco.notes];
@@ -340,4 +471,316 @@ export async function applyPm2Stop(input: {
   notes.push(`pm2 delete ${appName} exit=${r.exitCode}`);
   // exit 1 when 找不到 is fine
   return { ok: true, notes, requiresExecute: false };
+}
+
+export type Pm2StartupProbe = {
+  pm2Available: boolean;
+  path?: string;
+  /** systemd unit that resurrects pm2 dump (e.g. pm2-root) */
+  unit?: string;
+  unitActive?: string;
+  unitEnabled?: string;
+  dumpExists?: boolean;
+  dumpPath?: string;
+  readyForBoot: boolean;
+  suggestedCommands: string[];
+  notes: string[];
+};
+
+/**
+ * Probe whether PM2 is set up to survive reboot (systemd resurrect unit + dump).
+ * Read-mostly; does not install startup itself.
+ */
+export async function probePm2Startup(host: HostExecutor): Promise<Pm2StartupProbe> {
+  const notes: string[] = [];
+  const suggestedCommands: string[] = [];
+  const probe = await probePm2(host);
+  if (!probe.available) {
+    notes.push('pm2 not on PATH — install Node companion tool first');
+    return {
+      pm2Available: false,
+      readyForBoot: false,
+      suggestedCommands: [],
+      notes,
+    };
+  }
+
+  // Common dump locations (root panel default)
+  const dumpCandidates = [
+    '/root/.pm2/dump.pm2',
+    `${process.env.HOME || '/root'}/.pm2/dump.pm2`,
+  ];
+  let dumpPath: string | undefined;
+  let dumpExists = false;
+  for (const p of dumpCandidates) {
+    const chk = await host.runCommand(
+      ['bash', '-c', `test -f ${JSON.stringify(p)} && echo yes || echo no`],
+      { timeoutMs: 5_000 },
+    );
+    if ((chk.stdout || '').trim() === 'yes') {
+      dumpExists = true;
+      dumpPath = p;
+      break;
+    }
+  }
+  if (!dumpExists) {
+    notes.push('pm2 dump not found — run pm2 save after apps are online');
+    suggestedCommands.push('pm2 save');
+  } else {
+    notes.push(`pm2 dump: ${dumpPath}`);
+  }
+
+  // Detect pm2-*.service units
+  const list = await host.runCommand(
+    [
+      'bash',
+      '-c',
+      "systemctl list-unit-files 'pm2-*.service' --no-legend 2>/dev/null | awk '{print $1}' | head -5",
+    ],
+    { timeoutMs: 8_000 },
+  );
+  const units = (list.stdout || '')
+    .split('\n')
+    .map((s) => s.trim())
+    .filter((s) => s.endsWith('.service'));
+  let unit = units[0];
+  if (!unit) {
+    // fallback known names
+    for (const u of ['pm2-root.service', 'pm2.service']) {
+      const c = await host.runCommand(['systemctl', 'cat', u], { timeoutMs: 5_000 });
+      if (c.exitCode === 0) {
+        unit = u;
+        break;
+      }
+    }
+  }
+
+  let unitActive: string | undefined;
+  let unitEnabled: string | undefined;
+  if (unit) {
+    const act = await host.runCommand(['systemctl', 'is-active', unit], { timeoutMs: 5_000 });
+    unitActive = (act.stdout || '').trim() || 'unknown';
+    const en = await host.runCommand(['systemctl', 'is-enabled', unit], { timeoutMs: 5_000 });
+    unitEnabled = (en.stdout || '').trim() || 'unknown';
+    notes.push(`startup unit ${unit}: active=${unitActive} enabled=${unitEnabled}`);
+  } else {
+    notes.push('no pm2-*.service found — install startup so apps resurrect after reboot');
+    suggestedCommands.push('pm2 startup systemd -u root --hp /root');
+    suggestedCommands.push('pm2 save');
+  }
+
+  const readyForBoot =
+    Boolean(unit) &&
+    (unitEnabled === 'enabled' || unitEnabled === 'static' || unitEnabled === 'alias') &&
+    dumpExists;
+
+  if (readyForBoot) {
+    notes.push('PM2 boot survival looks configured (unit enabled + dump present)');
+  } else if (unit && !dumpExists) {
+    suggestedCommands.push('pm2 save');
+  }
+
+  return {
+    pm2Available: true,
+    path: probe.path,
+    unit,
+    unitActive,
+    unitEnabled,
+    dumpExists,
+    dumpPath,
+    readyForBoot,
+    suggestedCommands: [...new Set(suggestedCommands)],
+    notes,
+  };
+}
+
+/**
+ * Run `pm2 save` so current process list is dumped for resurrect.
+ */
+export async function applyPm2Save(host: HostExecutor): Promise<{
+  ok: boolean;
+  notes: string[];
+  requiresExecute: boolean;
+}> {
+  const notes: string[] = [];
+  if (!host.executeEnabled()) {
+    notes.push('pm2 save requires YSK_EXECUTE');
+    return { ok: false, notes, requiresExecute: true };
+  }
+  const probe = await probePm2(host);
+  if (!probe.available) {
+    notes.push('pm2 not on PATH');
+    return { ok: false, notes, requiresExecute: false };
+  }
+  const r = await host.runCommand(['pm2', 'save'], { timeoutMs: 30_000 });
+  notes.push(`pm2 save exit=${r.exitCode}`);
+  if (r.exitCode !== 0) {
+    notes.push((r.stderr || r.stdout || '').trim().slice(0, 200));
+  }
+  return { ok: r.exitCode === 0, notes, requiresExecute: false };
+}
+
+/**
+ * Best-effort install of pm2 systemd startup for root panel user.
+ * Honest: may still need manual review of generated unit.
+ */
+export async function applyPm2StartupInstall(host: HostExecutor): Promise<{
+  ok: boolean;
+  notes: string[];
+  requiresExecute: boolean;
+  requiresRoot: boolean;
+  command?: string;
+}> {
+  const notes: string[] = [];
+  if (!host.executeEnabled()) {
+    notes.push('pm2 startup requires YSK_EXECUTE');
+    return { ok: false, notes, requiresExecute: true, requiresRoot: !host.isRoot() };
+  }
+  if (!host.isRoot()) {
+    notes.push('pm2 startup install requires root (panel default)');
+    return { ok: false, notes, requiresExecute: false, requiresRoot: true };
+  }
+  const probe = await probePm2(host);
+  if (!probe.available) {
+    notes.push('pm2 not on PATH');
+    return { ok: false, notes, requiresExecute: false, requiresRoot: false };
+  }
+
+  const cmd = 'pm2 startup systemd -u root --hp /root';
+  notes.push(`running: ${cmd}`);
+  const r = await host.runCommand(
+    ['pm2', 'startup', 'systemd', '-u', 'root', '--hp', '/root'],
+    { timeoutMs: 60_000 },
+  );
+  notes.push(`pm2 startup exit=${r.exitCode}`);
+  const out = `${r.stdout || ''}\n${r.stderr || ''}`.trim().slice(0, 800);
+  if (out) notes.push(out);
+
+  // Always try save after startup so dump exists
+  const save = await applyPm2Save(host);
+  notes.push(...save.notes);
+
+  const again = await probePm2Startup(host);
+  notes.push(...again.notes);
+  return {
+    ok: r.exitCode === 0 && again.readyForBoot,
+    notes,
+    requiresExecute: false,
+    requiresRoot: false,
+    command: cmd,
+  };
+}
+
+export type Pm2AppAction = 'restart' | 'reload' | 'stop' | 'delete';
+
+const PM2_APP_NAME_RE = /^[a-zA-Z0-9._@-]{1,128}$/;
+
+/**
+ * Live PM2 app control from Processes tab.
+ * Never fakes success without YSK_EXECUTE.
+ */
+export async function applyPm2AppAction(input: {
+  host: HostExecutor;
+  /** Exact pm2 process name */
+  appName: string;
+  action: Pm2AppAction;
+}): Promise<{
+  ok: boolean;
+  notes: string[];
+  requiresExecute: boolean;
+  pm2Available: boolean;
+  action: Pm2AppAction;
+  appName: string;
+}> {
+  const notes: string[] = [];
+  const appName = (input.appName || '').trim();
+  if (!PM2_APP_NAME_RE.test(appName)) {
+    notes.push('invalid pm2 app name');
+    return {
+      ok: false,
+      notes,
+      requiresExecute: false,
+      pm2Available: true,
+      action: input.action,
+      appName,
+    };
+  }
+
+  if (!input.host.executeEnabled()) {
+    notes.push(`pm2 ${input.action} ${appName}: requires YSK_EXECUTE`);
+    return {
+      ok: false,
+      notes,
+      requiresExecute: true,
+      pm2Available: true,
+      action: input.action,
+      appName,
+    };
+  }
+
+  const probe = await probePm2(input.host);
+  if (!probe.available) {
+    notes.push('pm2 not on PATH');
+    return {
+      ok: false,
+      notes,
+      requiresExecute: false,
+      pm2Available: false,
+      action: input.action,
+      appName,
+    };
+  }
+
+  const argv = ['pm2', input.action, appName];
+  const r = await input.host.runCommand(argv, { timeoutMs: 60_000 });
+  notes.push(`pm2 ${input.action} ${appName} exit=${r.exitCode}`);
+  if (r.exitCode !== 0) {
+    const err = (r.stderr || r.stdout || '').trim().slice(0, 200);
+    if (err) notes.push(err);
+    // reload may fail on some fork apps — try restart once
+    if (input.action === 'reload') {
+      const r2 = await input.host.runCommand(['pm2', 'restart', appName], { timeoutMs: 60_000 });
+      notes.push(`pm2 restart ${appName} (fallback) exit=${r2.exitCode}`);
+      if (r2.exitCode === 0) {
+        return {
+          ok: true,
+          notes,
+          requiresExecute: false,
+          pm2Available: true,
+          action: input.action,
+          appName,
+        };
+      }
+    }
+    return {
+      ok: false,
+      notes,
+      requiresExecute: false,
+      pm2Available: true,
+      action: input.action,
+      appName,
+    };
+  }
+
+  if (input.action === 'restart' || input.action === 'reload') {
+    const live = await waitPm2AppOnline(input.host, appName, 8_000);
+    notes.push(...live.notes);
+    return {
+      ok: live.ok,
+      notes,
+      requiresExecute: false,
+      pm2Available: true,
+      action: input.action,
+      appName,
+    };
+  }
+
+  return {
+    ok: true,
+    notes,
+    requiresExecute: false,
+    pm2Available: true,
+    action: input.action,
+    appName,
+  };
 }

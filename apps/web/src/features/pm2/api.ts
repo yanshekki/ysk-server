@@ -65,12 +65,70 @@ function apiBase(): string {
   return '';
 }
 
+export type Pm2AppAction = 'restart' | 'reload' | 'stop' | 'delete';
+export type SystemdProjectAction = 'restart' | 'stop';
+
+export type Pm2ActionResult = {
+  ok: boolean;
+  notes: string[];
+  requiresExecute?: boolean;
+  pm2Available?: boolean;
+  action: Pm2AppAction;
+  appName: string;
+};
+
+export type SystemdActionResult = {
+  ok: boolean;
+  notes: string[];
+  requiresExecute?: boolean;
+  requiresRoot?: boolean;
+  unit: string;
+  projectId: string;
+  action: SystemdProjectAction;
+};
+
+export type Pm2StartupProbe = {
+  pm2Available: boolean;
+  path?: string;
+  unit?: string;
+  unitActive?: string;
+  unitEnabled?: string;
+  dumpExists?: boolean;
+  dumpPath?: string;
+  readyForBoot: boolean;
+  suggestedCommands: string[];
+  notes: string[];
+};
+
 export const pm2Api = {
   status: () => api.requestRaw<Pm2Snapshot>('/api/v1/hosting/pm2/status'),
   fleet: (runtimes = 'node,bun') =>
     api.requestRaw<ProcessFleetSnapshot>(
       `/api/v1/hosting/process-fleet?runtimes=${encodeURIComponent(runtimes)}`,
     ),
+
+  startupStatus: () => api.requestRaw<Pm2StartupProbe>('/api/v1/hosting/pm2/startup'),
+
+  startupAction: (action: 'install' | 'save') =>
+    api.requestRaw<{ ok: boolean; notes: string[]; requiresExecute?: boolean }>(
+      '/api/v1/hosting/pm2/startup',
+      {
+        method: 'POST',
+        body: JSON.stringify({ action }),
+      },
+    ),
+
+  pm2Action: (name: string, action: Pm2AppAction) =>
+    api.requestRaw<Pm2ActionResult>('/api/v1/hosting/pm2/action', {
+      method: 'POST',
+      body: JSON.stringify({ name, action }),
+    }),
+
+  systemdAction: (projectId: string, action: SystemdProjectAction) =>
+    api.requestRaw<SystemdActionResult>('/api/v1/hosting/process-fleet/systemd-action', {
+      method: 'POST',
+      body: JSON.stringify({ projectId, action }),
+    }),
 
   openFleetStream: (opts: {
     interval?: number;

@@ -16,6 +16,11 @@ import {
   SegRadio,
 } from '../../../shared/components/ui';
 import { projectsApi } from '../api';
+import {
+  loadDeployPrefs,
+  normalizeProcessManager,
+  type ProcessManager,
+} from '../model/deploy-prefs';
 import { ProjectSshCard } from './ProjectSshCard';
 import { bindCloseIfIdle, bindSet, bindVoid } from '../../../pages/bind-handlers';
 
@@ -61,6 +66,11 @@ export function ProjectResourcesTab({
   const [locked, setLocked] = useState(Boolean(project.accountLocked));
   const [localBusy, setLocalBusy] = useState(false);
   const [migrateConfirm, setMigrateConfirm] = useState(false);
+  /** Deploy tab preference: systemd (default) vs PM2 — drives limits copy / mapping hints. */
+  const [processManager, setProcessManager] = useState<ProcessManager>(() =>
+    normalizeProcessManager(loadDeployPrefs(project.id).processManager),
+  );
+  const isPm2 = processManager === 'pm2';
   const [live, setLive] = useState<{
     userExists?: boolean;
     uid?: number;
@@ -72,6 +82,10 @@ export function ProjectResourcesTab({
     notes?: string[];
   } | null>(null);
   const anyBusy = Boolean(busy || localBusy);
+
+  useEffect(() => {
+    setProcessManager(normalizeProcessManager(loadDeployPrefs(project.id).processManager));
+  }, [project.id]);
 
   useEffect(() => {
     setTasksMax(project.tasksMax != null ? String(project.tasksMax) : '512');
@@ -318,10 +332,24 @@ export function ProjectResourcesTab({
       <Card>
         <CardSection
           title={t('projects.resLimitsTitle')}
-          description={t('projects.resLimitsDesc')}
+          description={
+            isPm2 ? t('projects.resLimitsDescPm2') : t('projects.resLimitsDescSystemd')
+          }
         >
+          <div className="action-bar u-gap-2 u-mb-3">
+            <Badge tone={isPm2 ? 'info' : 'ok'}>
+              {isPm2
+                ? t('projects.resRunnerPm2')
+                : t('projects.resRunnerSystemd')}
+            </Badge>
+          </div>
           <FormLayout columns={2}>
-            <Field label={t('projects.resMemMax')} htmlFor="mem" hint={t('projects.resMemHint')} flush>
+            <Field
+              label={t('projects.resMemMax')}
+              htmlFor="mem"
+              hint={isPm2 ? t('projects.resMemHintPm2') : t('projects.resMemHintSystemd')}
+              flush
+            >
               <PresetChips
                 options={[
                   { value: '256M', label: '256M' },
@@ -336,7 +364,16 @@ export function ProjectResourcesTab({
                 customPlaceholder={t('common.custom')}
               />
             </Field>
-            <Field label={t('projects.cpuQuota')} htmlFor="cpuq" hint={t('projects.resCpuHint')} flush>
+            <Field
+              label={t('projects.cpuQuota')}
+              htmlFor="cpuq"
+              hint={
+                isPm2
+                  ? t('projects.resFieldSystemdOnly')
+                  : t('projects.resCpuHint')
+              }
+              flush
+            >
               <PresetChips
                 options={[
                   { value: '25', label: '25%' },
@@ -351,7 +388,16 @@ export function ProjectResourcesTab({
                 customPlaceholder={t('projects.resCustomPct')}
               />
             </Field>
-            <Field label="TasksMax" htmlFor="tmax" hint={t('projects.resTasksHint')} flush>
+            <Field
+              label="TasksMax"
+              htmlFor="tmax"
+              hint={
+                isPm2
+                  ? t('projects.resFieldSystemdOnly')
+                  : t('projects.resTasksHint')
+              }
+              flush
+            >
               <PresetChips
                 options={[
                   { value: '128', label: '128' },
@@ -366,7 +412,16 @@ export function ProjectResourcesTab({
                 customPlaceholder={t('common.custom')}
               />
             </Field>
-            <Field label="LimitNOFILE" htmlFor="nofile" hint={t('projects.resNofileHint')} flush>
+            <Field
+              label="LimitNOFILE"
+              htmlFor="nofile"
+              hint={
+                isPm2
+                  ? t('projects.resFieldSystemdOnly')
+                  : t('projects.resNofileHint')
+              }
+              flush
+            >
               <PresetChips
                 options={[
                   { value: '1024', label: '1024' },
@@ -404,7 +459,7 @@ export function ProjectResourcesTab({
             />
           </div>
           <FormHint>
-            {t('projects.resLimitsHint')}
+            {isPm2 ? t('projects.resLimitsHintPm2') : t('projects.resLimitsHintSystemd')}
           </FormHint>
           <FormActions>
             <Button

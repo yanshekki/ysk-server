@@ -1,11 +1,50 @@
 import { describe, expect, it } from 'vitest';
-import { mkdtempSync, existsSync, rmSync } from 'node:fs';
+import { mkdtempSync, existsSync, mkdirSync, rmSync, writeFileSync, chmodSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { LocalHostExecutor } from '../host/executor.js';
-import { planOrInstallRuntime, probeRuntimes } from './runtime-probe.js';
+import type { HostExecutor } from '../host/executor.js';
+import {
+  discoverYskNodeMajors,
+  planOrInstallRuntime,
+  probeRuntimes,
+} from './runtime-probe.js';
 
 describe('runtime-probe', () => {
+  it('discoverYskNodeMajors finds versioned binary under ysk tree', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'ysk-node-disc-'));
+    const major = '26';
+    // Simulate layout without writing under real /usr/local — mock host paths
+    const fakePath = `/usr/local/ysk/node/${major}/bin/node`;
+    const host = {
+      pathExists: (p: string) => p === fakePath,
+      executeEnabled: () => false,
+      isRoot: () => false,
+      runCommand: async (argv: string[]) => {
+        const j = argv.join(' ');
+        if (j.includes('ls -1') && j.includes('/usr/local/ysk/node')) {
+          return { stdout: `${major}\n`, stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        if (argv[0] === fakePath && argv[1] === '-v') {
+          return { stdout: 'v26.1.0\n', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        if (argv[0] === 'bash') {
+          return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        return { stdout: '', stderr: '', exitCode: 1, argv, dryRun: false };
+      },
+    } as unknown as HostExecutor;
+
+    const found = await discoverYskNodeMajors(host);
+    expect(found.some((f) => f.major === '26' && f.versionOutput.includes('26'))).toBe(true);
+
+    const report = await probeRuntimes(host);
+    const n26 = report.node.find((n) => n.version === '26');
+    expect(n26?.available).toBe(true);
+    expect(report.hostNode).toMatch(/26/);
+    rmSync(root, { recursive: true, force: true });
+  });
+
   it('probes host for installed runtime pins (discovery SSOT for install list)', async () => {
     const host = new LocalHostExecutor({ executeEnabled: false });
     const r = await probeRuntimes(host);

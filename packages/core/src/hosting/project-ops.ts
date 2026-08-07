@@ -311,6 +311,7 @@ export class ProjectOpsService {
       entry,
       port,
       nodeBinary,
+      maxMemoryRestart: memoryMax ?? row.memory_max ?? undefined,
       env: tuningEnv });
     written.push(eco.ecosystemPath);
     notes.push(...eco.notes);
@@ -377,6 +378,7 @@ export class ProjectOpsService {
         port,
         nodeBinary,
         execute: true,
+        maxMemoryRestart: memoryMax ?? row.memory_max ?? undefined,
         env: tuningEnv });
       notes.push(...pm2.notes);
       if (pm2.ok) {

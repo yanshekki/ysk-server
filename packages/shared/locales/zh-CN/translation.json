@@ -7437,7 +7437,16 @@
     "deployProcessManagerSystemd": "systemd（推荐）",
     "deployProcessManagerPm2": "PM2",
     "deploySystemdHint": "生产默认：unit ysk-project-*.service、开机自启、cgroup 限额跟项目资源。",
-    "deployPm2Hint": "用 pm2 start ecosystem（需已装 PM2 plugin）。进程见「运行环境 → 进程」PM2 表。部署前会停旧 runner，避免抢端口。"
+    "deployPm2Hint": "用 pm2 start ecosystem（需已装 PM2 plugin）。进程见「运行环境 → 进程」PM2 表。部署前会停旧 runner，避免抢端口。",
+    "resLimitsDescSystemd": "systemd cgroup：MemoryMax / CPUQuota / TasksMax / NOFILE + shell／锁定",
+    "resLimitsDescPm2": "PM2：内存 → ecosystem max_memory_restart（到额重启）；CPU／行程／nofile 仅 systemd；shell／锁定／磁盘仍 OS",
+    "resRunnerSystemd": "进程管理：systemd",
+    "resRunnerPm2": "进程管理：PM2",
+    "resMemHintSystemd": "systemd MemoryMax（cgroup 硬顶，例如 512M 或 1G）",
+    "resMemHintPm2": "写入 ecosystem max_memory_restart（到额重启，非 cgroup 硬杀）；例如 512M 或 1G",
+    "resFieldSystemdOnly": "仅 systemd cgroup 有效；仍会存 DB，改回 systemd 部署后生效",
+    "resLimitsHintSystemd": "「保存并应用」会写 DB，并尝试 usermod / setquota / systemctl set-property（unit 需 active）。无权限时只写控制面。",
+    "resLimitsHintPm2": "「保存并应用」会写 DB + 更新 ecosystem max_memory_restart，并在 PM2 app online 时 reload。CPU／TasksMax／NOFILE 不写入 ecosystem。磁盘配额与账号锁定仍套用 OS。"
   },
   "protection": {
     "levels": {
@@ -8539,9 +8548,34 @@
       "projectsCount": "YSK 项目数",
       "noProjects": "没有项目",
       "noProjectsDesc": "面板没有 node/bun 项目，或未建 OS 用户。",
-      "pm2OnlyDesc": "仅显示 panel 用户用 PM2 启动的进程。systemd 部署见上方项目表。"
+      "pm2OnlyDesc": "仅显示 panel 用户用 PM2 启动的进程。systemd 部署见上方项目表。",
+      "actRestart": "重启",
+      "actReload": "Reload",
+      "actStop": "停止",
+      "actionOk": "{{action}} {{name}} 完成。{{notes}}",
+      "actionFail": "{{action}} {{name}} 未成功。{{notes}}",
+      "systemdActionsHint": "systemd 项目：重启／停止对应 ysk-project-*.service（需 root + YSK_EXECUTE）。PM2 部署项目请用下方 PM2 表。",
+      "pm2ActionsHint": "PM2：restart／reload／stop 需 YSK_EXECUTE 且主机已装 pm2。开机自启见 startup 说明。",
+      "startupTitle": "PM2 开机自启",
+      "startupDesc": "重启后要自动拉起 app：systemd unit + pm2 save dump。不代做危险操作而不告知。",
+      "startupReady": "开机就绪",
+      "startupReadyYes": "已配置",
+      "startupReadyNo": "未完整",
+      "startupUnit": "systemd unit",
+      "startupDump": "pm2 dump",
+      "startupInstall": "安装 startup + save",
+      "startupSave": "仅 pm2 save",
+      "startupHint": "默认为 root 面板：pm2 startup systemd -u root --hp /root。需 YSK_EXECUTE + root。装完请确认 unit enabled 且 dump 存在。",
+      "startupOk": "Startup 操作完成。{{notes}}",
+      "startupFail": "Startup 未完成。{{notes}}"
     },
-    "recordedInstalled": "记录已装 {{v}}"
+    "recordedInstalled": "记录已装 {{v}}",
+    "nodePathUnsafeTitle": "Node 路径不适合项目 isolation",
+    "nodePathUnsafe": "探测到 {{path}}（/root 或私有 toolchain）。systemd 部署会拒绝这些路径。请用面板安装 Node 到 /usr/local/ysk/node/<major>。",
+    "nodePathYskMissingTitle": "未见 YSK 管理的 Node",
+    "nodePathYskMissing": "建议路径 /usr/local/ysk/node/{{version}}/bin/node。用上方安装，避免依赖 /root/.hermes 或 nvm。",
+    "nodePathOk": "Node 路径可用于项目部署",
+    "recordedButProbeEmpty": "控制面曾记录安装 {{v}}，但主机探测未见 binary。不算已装——请「重新探测」或重新安装。"
   },
   "security": {
     "title": "安全与审批",

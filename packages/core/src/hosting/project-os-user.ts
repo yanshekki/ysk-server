@@ -7,6 +7,7 @@ import { tl } from '@ysk/shared';
 import { existsSync, statSync } from 'node:fs';
 import type { HostExecutor } from '../host/executor.js';
 import type { ProjectRow } from '../repositories/project-repo.js';
+import { syncPm2EcosystemMemory } from './pm2-apply.js';
 import { projectHomeDir } from './project.js';
 import { shellQuote } from './project-user-run.js';
 import { checkProjectQuota } from './quota.js';
@@ -135,6 +136,14 @@ export async function applyOsUserLimits(input: {
   if (!can) {
     blocked = true;
     notes.push(tl('notes.auto.n1530'));
+    // Still patch ecosystem file when present (no root needed for home write on panel host)
+    const pm2Sync = await syncPm2EcosystemMemory({
+      host: input.host,
+      homeDir: input.row.home_dir,
+      linuxUser: input.row.linux_user,
+      memoryMax: input.row.memory_max,
+    });
+    notes.push(...pm2Sync.notes);
     const live = await probeOsUser(input.host, input.row);
     const quota = await checkProjectQuota({
       host: input.host,
@@ -144,7 +153,7 @@ export async function applyOsUserLimits(input: {
     });
     return {
       ok: false,
-      written,
+      written: written || pm2Sync.written,
       applied: false,
       blocked,
       notes: [...notes, ...live.notes, ...quota.notes],
@@ -231,6 +240,17 @@ export async function applyOsUserLimits(input: {
   // Hard disk quota via setquota when available
   const quotaResult = await applySetquota(input.host, row, notes);
   if (quotaResult) applied = applied || quotaResult;
+
+  // PM2: map memory_max → ecosystem max_memory_restart (+ reload if app online)
+  const pm2Sync = await syncPm2EcosystemMemory({
+    host: input.host,
+    homeDir: row.home_dir,
+    linuxUser: row.linux_user,
+    memoryMax: row.memory_max,
+  });
+  notes.push(...pm2Sync.notes);
+  if (pm2Sync.written) written = true;
+  if (pm2Sync.reloaded) applied = true;
 
   const live = await probeOsUser(input.host, row);
   const quota = await checkProjectQuota({

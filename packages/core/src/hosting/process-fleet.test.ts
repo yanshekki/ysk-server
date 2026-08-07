@@ -1,9 +1,65 @@
 import { describe, expect, it } from 'vitest';
-import { collectProjectProcessRows } from './process-fleet.js';
+import {
+  applySystemdProjectAction,
+  collectProjectProcessRows,
+} from './process-fleet.js';
 import type { HostExecutor } from '../host/executor.js';
 import type { JsonStore } from '../db/store.js';
 
 describe('process-fleet', () => {
+  it('applySystemdProjectAction restarts known unit', async () => {
+    const db = {
+      snapshot: {
+        projects: [{ id: 'p1', name: 'n', runtime: 'node', linux_user: 'ysks_demo' }],
+      },
+    } as unknown as JsonStore;
+    const calls: string[] = [];
+    const host = {
+      executeEnabled: () => true,
+      isRoot: () => true,
+      runCommand: async (argv: string[]) => {
+        calls.push(argv.join(' '));
+        if (argv[0] === 'systemctl' && argv[1] === 'restart') {
+          return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        if (argv.includes('is-active')) {
+          return { stdout: 'active\n', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+      },
+    } as unknown as HostExecutor;
+    const r = await applySystemdProjectAction({
+      host,
+      db,
+      projectId: 'p1',
+      action: 'restart',
+    });
+    expect(r.ok).toBe(true);
+    expect(r.unit).toContain('ysks_demo');
+    expect(calls.some((c) => c.includes('restart'))).toBe(true);
+  });
+
+  it('applySystemdProjectAction blocks without execute', async () => {
+    const db = {
+      snapshot: {
+        projects: [{ id: 'p1', linux_user: 'ysks_demo' }],
+      },
+    } as unknown as JsonStore;
+    const host = {
+      executeEnabled: () => false,
+      isRoot: () => true,
+      runCommand: async () => ({ stdout: '', stderr: '', exitCode: 0 }),
+    } as unknown as HostExecutor;
+    const r = await applySystemdProjectAction({
+      host,
+      db,
+      projectId: 'p1',
+      action: 'stop',
+    });
+    expect(r.ok).toBe(false);
+    expect(r.requiresExecute).toBe(true);
+  });
+
   it('lists node projects with systemctl status', async () => {
     const db = {
       snapshot: {

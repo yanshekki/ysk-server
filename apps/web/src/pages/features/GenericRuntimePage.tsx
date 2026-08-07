@@ -331,39 +331,56 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
     };
   }, [probe, kind, versionStatus?.candidates]);
 
+  /** Host path unsafe for project systemd user (mirrors core isProjectUserExecutablePath). */
+  const nodePathSafety = useMemo(() => {
+    if (kind !== 'node' && kind !== 'bun') return null;
+    const path = (probeData.hostRaw || '').trim();
+    const unsafe =
+      Boolean(path) &&
+      (path.startsWith('/root/') ||
+        path.includes('/.hermes/') ||
+        /\/\.(nvm|fnm|volta)\//.test(path) ||
+        path.includes('/.local/share/fnm/'));
+    const yskLike = /\/usr\/local\/ysk\/(node|bun)\//.test(path);
+    // Only real probe counts as installed — never softwareVersions record
+    const hasAvailable = probeData.available.length > 0;
+    if (unsafe) {
+      return { tone: 'warn' as const, kind: 'unsafe' as const, path };
+    }
+    if (!hasAvailable && !yskLike) {
+      return { tone: 'info' as const, kind: 'yskMissing' as const, path: path || '—' };
+    }
+    if (yskLike || (hasAvailable && path && !unsafe)) {
+      return { tone: 'ok' as const, kind: 'ok' as const, path };
+    }
+    return null;
+  }, [kind, probeData.hostRaw, probeData.available.length]);
+
   const multiVersion = kind === 'go' || kind === 'rust';
+  /** Control-plane pin only — never treat as "installed" without probe. */
+  const recordedPin =
+    versionStatus?.currentVersion != null
+      ? String(versionStatus.currentVersion).replace(/^v/i, '')
+      : '';
+  const recordedButProbeEmpty =
+    Boolean(recordedPin) && probeData.available.length === 0;
+
   const installState = useMemo(() => {
-    // softwareVersions.currentVersion / latest recorded install — treat as installed
-    // when probe matrix is empty (common when Node lives under /usr/local/ysk but PATH is bare)
-    const recorded = [
-      versionStatus?.currentVersion,
-      // If UI already says 已裝 N in version status notes path
-    ]
-      .map((v) => (v != null ? String(v).replace(/^v/i, '').split('.')[0] : ''))
-      .filter(Boolean);
-    const availableVersions = [
-      ...new Set([...probeData.available, ...recorded]),
-    ];
-    // Prefer host version string; fall back to recorded pin for lineage match
-    const hostDefault =
-      probeData.hostRaw ||
-      (versionStatus?.currentVersion
-        ? `v${String(versionStatus.currentVersion).replace(/^v/i, '')}`
-        : null);
+    // Installed = host probe only (same as PHP/Go). softwareVersions is not proof.
     return resolveRuntimeInstallState({
       selectedVersion: version,
       supportedVersions: probeData.supported,
-      availableVersions,
+      availableVersions: probeData.available,
       probeItems: probeData.items.map((i) => ({
         version: i.version != null ? String(i.version) : undefined,
         available: Boolean(i.available),
         active: Boolean(i.active),
         versionOutput: i.versionOutput != null ? String(i.versionOutput) : undefined,
       })),
-      hostDefault,
+      hostDefault: probeData.hostRaw || null,
       multiVersion,
     });
-  }, [version, probeData, multiVersion, versionStatus?.currentVersion]);
+  }, [version, probeData, multiVersion]);
 
   const parseExtraEnv = (): Record<string, string> => {
     const out: Record<string, string> = {};
@@ -392,17 +409,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
               tone: 'ok' as const,
             };
           }
-          // softwareVersions may know install while matrix probe is empty — don't only say "not detected"
-          const recorded = versionStatus?.currentVersion;
-          if (recorded) {
-            return {
-              label: t('runtime.recordedInstalled', {
-                v: recorded,
-                defaultValue: `記錄已裝 ${recorded}`,
-              }),
-              tone: 'warn' as const,
-            };
-          }
+          // Never show "recorded installed" as ready — probe empty = not detected
           return { label: t('runtime.notDetected'), tone: 'warn' as const };
         })(),
         items: [
@@ -413,9 +420,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
           },
           {
             label: t('common.available'),
-            value:
-              probeData.available.length ||
-              (versionStatus?.currentVersion ? `≈${versionStatus.currentVersion}` : 0),
+            value: probeData.available.length,
           },
           { label: t('common.target'), value: version },
           { label: t('runtime.tune'), value: tuningLoaded ? t('runtime.loadedShort') : '—' },
@@ -447,6 +452,26 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
     >
       <SoftwareInstallBanner feature={kind} title={meta.bannerTitle} />
       {error ? <Alert variant="error">{error}</Alert> : null}
+      {nodePathSafety?.kind === 'unsafe' ? (
+        <Alert variant="warn">
+          <strong>{t('runtime.nodePathUnsafeTitle')}</strong>{' '}
+          {t('runtime.nodePathUnsafe', { path: nodePathSafety.path })}
+        </Alert>
+      ) : null}
+      {nodePathSafety?.kind === 'yskMissing' ? (
+        <Alert variant="info">
+          <strong>{t('runtime.nodePathYskMissingTitle')}</strong>{' '}
+          {t('runtime.nodePathYskMissing', { version: version || '…' })}
+        </Alert>
+      ) : null}
+      {recordedButProbeEmpty ? (
+        <Alert variant="warn">
+          {t('runtime.recordedButProbeEmpty', {
+            v: recordedPin,
+            defaultValue: `控制面曾記錄安裝 ${recordedPin}，但主機探測未見 binary。不算已裝——請「重新探測」或重新安裝。`,
+          })}
+        </Alert>
+      ) : null}
       <PageTabs
         tabs={[
           { id: 'overview', label: t('runtime.tabOverviewInstall') },
@@ -592,10 +617,14 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                   <FormHint>
                     {t('runtime.remoteNewerHint', {
                       remote: versionStatus.latestVersion,
-                      current: versionStatus.currentVersion || '—',
-                      // legacy alias — old locales used {{panel}} for current install
-                      panel: versionStatus.currentVersion || '—',
-                      defaultValue: `已裝 ${versionStatus.currentVersion || '—'} · 上游最新 ${versionStatus.latestVersion}${versionStatus.source ? `（${versionStatus.source}）` : ''}`,
+                      // Probed installs only — never softwareVersions.currentVersion as "已裝"
+                      current:
+                        installState.installedVersions.join(', ') ||
+                        (probeData.hostRaw ? probeData.hostRaw : '—'),
+                      panel:
+                        installState.installedVersions.join(', ') ||
+                        (probeData.hostRaw ? probeData.hostRaw : '—'),
+                      defaultValue: `探測已裝 ${installState.installedVersions.join(', ') || '—'} · 上游最新 ${versionStatus.latestVersion}${versionStatus.source ? `（${versionStatus.source}）` : ''}`,
                     })}
                   </FormHint>
                 ) : versionStatus?.notes?.length ? (

@@ -112,6 +112,130 @@ export async function collectProjectProcessRows(
   return rows;
 }
 
+export type SystemdProjectAction = 'restart' | 'stop';
+
+/**
+ * Restart/stop a YSK project systemd unit (Processes tab).
+ * Only allows units that match a known project linux_user.
+ */
+export async function applySystemdProjectAction(input: {
+  host: HostExecutor;
+  db: JsonStore;
+  projectId: string;
+  action: SystemdProjectAction;
+}): Promise<{
+  ok: boolean;
+  notes: string[];
+  requiresExecute: boolean;
+  requiresRoot: boolean;
+  unit: string;
+  projectId: string;
+  action: SystemdProjectAction;
+}> {
+  const notes: string[] = [];
+  const projects = (input.db.snapshot.projects ?? []) as unknown as Array<
+    Record<string, unknown>
+  >;
+  const p = projects.find((x) => String(x.id ?? '') === input.projectId);
+  if (!p) {
+    notes.push(`project not found: ${input.projectId}`);
+    return {
+      ok: false,
+      notes,
+      requiresExecute: false,
+      requiresRoot: false,
+      unit: '',
+      projectId: input.projectId,
+      action: input.action,
+    };
+  }
+  const linuxUser = String(p.linux_user ?? p.linuxUser ?? '').trim();
+  if (!linuxUser || !/^[a-z_][a-z0-9_-]{0,31}$/i.test(linuxUser)) {
+    notes.push('invalid or missing linux_user for project');
+    return {
+      ok: false,
+      notes,
+      requiresExecute: false,
+      requiresRoot: false,
+      unit: '',
+      projectId: input.projectId,
+      action: input.action,
+    };
+  }
+  const unit = unitName(linuxUser);
+  if (!input.host.executeEnabled()) {
+    notes.push(`systemctl ${input.action} ${unit}: requires YSK_EXECUTE`);
+    return {
+      ok: false,
+      notes,
+      requiresExecute: true,
+      requiresRoot: !input.host.isRoot(),
+      unit,
+      projectId: input.projectId,
+      action: input.action,
+    };
+  }
+  if (!input.host.isRoot()) {
+    notes.push(`systemctl ${input.action} ${unit}: requires root`);
+    return {
+      ok: false,
+      notes,
+      requiresExecute: false,
+      requiresRoot: true,
+      unit,
+      projectId: input.projectId,
+      action: input.action,
+    };
+  }
+
+  const argv =
+    input.action === 'restart'
+      ? (['systemctl', 'restart', unit] as string[])
+      : (['systemctl', 'stop', unit] as string[]);
+  const r = await input.host.runCommand(argv, { timeoutMs: 60_000 });
+  notes.push(`${argv.join(' ')} exit=${r.exitCode}`);
+  if (r.exitCode !== 0) {
+    const err = (r.stderr || r.stdout || '').trim().slice(0, 200);
+    if (err) notes.push(err);
+    return {
+      ok: false,
+      notes,
+      requiresExecute: false,
+      requiresRoot: false,
+      unit,
+      projectId: input.projectId,
+      action: input.action,
+    };
+  }
+
+  if (input.action === 'restart') {
+    const act = await input.host.runCommand(['systemctl', 'is-active', unit], {
+      timeoutMs: 5_000,
+    });
+    const state = (act.stdout || '').trim();
+    notes.push(`is-active ${unit}: ${state || '?'}`);
+    return {
+      ok: state === 'active',
+      notes,
+      requiresExecute: false,
+      requiresRoot: false,
+      unit,
+      projectId: input.projectId,
+      action: input.action,
+    };
+  }
+
+  return {
+    ok: true,
+    notes,
+    requiresExecute: false,
+    requiresRoot: false,
+    unit,
+    projectId: input.projectId,
+    action: input.action,
+  };
+}
+
 export async function collectProcessFleet(
   host: HostExecutor,
   db: JsonStore,

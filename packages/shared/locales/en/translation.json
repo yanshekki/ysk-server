@@ -7437,7 +7437,16 @@
     "deployProcessManagerSystemd": "systemd (recommended)",
     "deployProcessManagerPm2": "PM2",
     "deploySystemdHint": "Production default: unit ysk-project-*.service, boot start, cgroup limits from project resources.",
-    "deployPm2Hint": "Starts via pm2 (ecosystem.config.cjs). Requires PM2 plugin. Appears under Runtimes → Processes (PM2 list). Stops the old runner first."
+    "deployPm2Hint": "Starts via pm2 (ecosystem.config.cjs). Requires PM2 plugin. Appears under Runtimes → Processes (PM2 list). Stops the old runner first.",
+    "resLimitsDescSystemd": "systemd cgroup: MemoryMax / CPUQuota / TasksMax / NOFILE + shell / lock",
+    "resLimitsDescPm2": "PM2: memory → ecosystem max_memory_restart (restart on exceed); CPU / tasks / nofile are systemd-only; shell / lock / disk remain OS",
+    "resRunnerSystemd": "Process manager: systemd",
+    "resRunnerPm2": "Process manager: PM2",
+    "resMemHintSystemd": "systemd MemoryMax (cgroup hard cap, e.g. 512M or 1G)",
+    "resMemHintPm2": "Writes ecosystem max_memory_restart (restart threshold, not cgroup kill); e.g. 512M or 1G",
+    "resFieldSystemdOnly": "systemd cgroup only; still saved to DB for when you switch back to systemd",
+    "resLimitsHintSystemd": "Save & apply writes DB and tries usermod / setquota / systemctl set-property (unit must be active). Control-plane only without privileges.",
+    "resLimitsHintPm2": "Save & apply writes DB, updates ecosystem max_memory_restart, and reloads the PM2 app when online. CPU / TasksMax / NOFILE are not written to ecosystem. Disk quota and account lock still apply at OS level."
   },
   "protection": {
     "levels": {
@@ -8539,9 +8548,34 @@
       "projectsCount": "YSK projects",
       "noProjects": "No projects",
       "noProjectsDesc": "No node/bun projects in the panel, or OS user not provisioned.",
-      "pm2OnlyDesc": "Only apps started with PM2 under the panel user. systemd deploys appear above."
+      "pm2OnlyDesc": "Only apps started with PM2 under the panel user. systemd deploys appear above.",
+      "actRestart": "Restart",
+      "actReload": "Reload",
+      "actStop": "Stop",
+      "actionOk": "{{action}} {{name}} ok. {{notes}}",
+      "actionFail": "{{action}} {{name}} failed. {{notes}}",
+      "systemdActionsHint": "systemd projects: restart/stop the ysk-project-*.service (needs root + YSK_EXECUTE). For PM2 deploys use the PM2 table below.",
+      "pm2ActionsHint": "PM2: restart/reload/stop need YSK_EXECUTE and pm2 on PATH. See startup guidance for boot survival.",
+      "startupTitle": "PM2 boot survival",
+      "startupDesc": "Survive reboot via systemd resurrect unit + pm2 save dump. No silent dangerous ops.",
+      "startupReady": "Boot ready",
+      "startupReadyYes": "Configured",
+      "startupReadyNo": "Incomplete",
+      "startupUnit": "systemd unit",
+      "startupDump": "pm2 dump",
+      "startupInstall": "Install startup + save",
+      "startupSave": "pm2 save only",
+      "startupHint": "Root panel default: pm2 startup systemd -u root --hp /root. Needs YSK_EXECUTE + root. Verify unit enabled and dump exists.",
+      "startupOk": "Startup action ok. {{notes}}",
+      "startupFail": "Startup action incomplete. {{notes}}"
     },
-    "recordedInstalled": "Recorded {{v}}"
+    "recordedInstalled": "Recorded {{v}}",
+    "nodePathUnsafeTitle": "Node path unsuitable for project isolation",
+    "nodePathUnsafe": "Detected {{path}} (/root or private toolchain). systemd deploys reject these. Install Node via the panel to /usr/local/ysk/node/<major>.",
+    "nodePathYskMissingTitle": "No YSK-managed Node found",
+    "nodePathYskMissing": "Preferred path /usr/local/ysk/node/{{version}}/bin/node. Install above; avoid /root/.hermes or nvm.",
+    "nodePathOk": "Node path OK for project deploys",
+    "recordedButProbeEmpty": "Control plane recorded install {{v}}, but host probe found no binary. Not installed — re-probe or reinstall."
   },
   "security": {
     "title": "Security & Approvals",

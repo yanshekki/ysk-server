@@ -66,6 +66,69 @@ export async function handleHostingRoutes(
         sendJson(res, 200, snap);
         return true;
       }
+      if (method === 'GET' && url.pathname === '/api/v1/hosting/pm2/startup') {
+        ctx.auth.authenticate(getBearer(req));
+        const { probePm2Startup } = await import('@ysk/core');
+        sendJson(res, 200, await probePm2Startup(ctx.host));
+        return true;
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/hosting/pm2/startup') {
+        ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const body = JSON.parse(raw || '{}') as { action?: string };
+        const action = body.action || 'install';
+        if (action === 'save') {
+          const { applyPm2Save } = await import('@ysk/core');
+          sendJson(res, 200, await applyPm2Save(ctx.host));
+          return true;
+        }
+        if (action === 'install') {
+          const { applyPm2StartupInstall } = await import('@ysk/core');
+          sendJson(res, 200, await applyPm2StartupInstall(ctx.host));
+          return true;
+        }
+        sendJson(res, 400, {
+          error: { code: 'VALIDATION', message: 'action must be install|save' },
+        });
+        return true;
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/hosting/pm2/action') {
+        ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const body = JSON.parse(raw || '{}') as {
+          action?: string;
+          name?: string;
+          appName?: string;
+        };
+        const action = body.action;
+        const name = String(body.name || body.appName || '').trim();
+        if (
+          action !== 'restart' &&
+          action !== 'reload' &&
+          action !== 'stop' &&
+          action !== 'delete'
+        ) {
+          sendJson(res, 400, {
+            error: { code: 'VALIDATION', message: 'action must be restart|reload|stop|delete' },
+          });
+          return true;
+        }
+        if (!name) {
+          sendJson(res, 400, {
+            error: { code: 'VALIDATION', message: 'name required' },
+          });
+          return true;
+        }
+        const { applyPm2AppAction } = await import('@ysk/core');
+        const result = await applyPm2AppAction({
+          host: ctx.host,
+          appName: name,
+          action,
+        });
+        // Always 200 with ok flag — Processes tab needs notes on blocked/fail
+        sendJson(res, 200, result);
+        return true;
+      }
       if (method === 'GET' && url.pathname === '/api/v1/hosting/process-fleet') {
         ctx.auth.authenticate(getBearer(req));
         const { collectProcessFleet } = await import('@ysk/core');
@@ -75,6 +138,37 @@ export async function handleHostingRoutes(
           .filter(Boolean);
         const fleet = await collectProcessFleet(ctx.host, ctx.db, { runtimes });
         sendJson(res, 200, fleet);
+        return true;
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/hosting/process-fleet/systemd-action') {
+        ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const body = JSON.parse(raw || '{}') as {
+          action?: string;
+          projectId?: string;
+        };
+        const action = body.action;
+        const projectId = String(body.projectId || '').trim();
+        if (action !== 'restart' && action !== 'stop') {
+          sendJson(res, 400, {
+            error: { code: 'VALIDATION', message: 'action must be restart|stop' },
+          });
+          return true;
+        }
+        if (!projectId) {
+          sendJson(res, 400, {
+            error: { code: 'VALIDATION', message: 'projectId required' },
+          });
+          return true;
+        }
+        const { applySystemdProjectAction } = await import('@ysk/core');
+        const result = await applySystemdProjectAction({
+          host: ctx.host,
+          db: ctx.db,
+          projectId,
+          action,
+        });
+        sendJson(res, 200, result);
         return true;
       }
       if (

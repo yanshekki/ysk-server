@@ -20,6 +20,7 @@ import {
 import {
   pm2Api,
   type Pm2AppRow,
+  type Pm2StartupProbe,
   type ProcessFleetSnapshot,
   type ProjectProcessRow,
 } from '../pm2/api';
@@ -82,6 +83,9 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
   const [q, setQ] = useState('');
   const [rawApp, setRawApp] = useState<Pm2AppRow | null>(null);
   const [tickLog, setTickLog] = useState<string[]>([]);
+  const [actionMsg, setActionMsg] = useState<string | null>(null);
+  const [busyKey, setBusyKey] = useState<string | null>(null);
+  const [startup, setStartup] = useState<Pm2StartupProbe | null>(null);
   const acRef = useRef<AbortController | null>(null);
 
   const applyFleet = useCallback((s: ProcessFleetSnapshot) => {
@@ -96,14 +100,23 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
     );
   }, []);
 
+  const refreshStartup = useCallback(async () => {
+    try {
+      setStartup(await pm2Api.startupStatus());
+    } catch {
+      setStartup(null);
+    }
+  }, []);
+
   const refreshOnce = useCallback(async () => {
     try {
       const s = await pm2Api.fleet(runtimes);
       applyFleet(s);
+      await refreshStartup();
     } catch (e) {
       setErr(e instanceof Error ? e.message : t('common.loadFailed'));
     }
-  }, [applyFleet, runtimes, t]);
+  }, [applyFleet, refreshStartup, runtimes, t]);
 
   useEffect(() => {
     if (!live) {
@@ -133,6 +146,75 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
     [snap?.apps, yskOnly, q],
   );
 
+  const runStartup = useCallback(
+    async (action: 'install' | 'save') => {
+      const key = `startup:${action}`;
+      setBusyKey(key);
+      setActionMsg(null);
+      try {
+        const r = await pm2Api.startupAction(action);
+        setActionMsg(
+          r.ok
+            ? t('runtime.pm2.startupOk', { notes: r.notes?.join('；') || '' })
+            : t('runtime.pm2.startupFail', { notes: r.notes?.join('；') || '' }),
+        );
+        await refreshStartup();
+        await refreshOnce();
+      } catch (e) {
+        setActionMsg(e instanceof Error ? e.message : t('common.applyFailed'));
+      } finally {
+        setBusyKey(null);
+      }
+    },
+    [refreshOnce, refreshStartup, t],
+  );
+
+  const runPm2Action = useCallback(
+    async (name: string, action: 'restart' | 'reload' | 'stop') => {
+      const key = `pm2:${action}:${name}`;
+      setBusyKey(key);
+      setActionMsg(null);
+      try {
+        const r = await pm2Api.pm2Action(name, action);
+        const notes = r.notes?.join('；') || '';
+        setActionMsg(
+          r.ok
+            ? t('runtime.pm2.actionOk', { action, name, notes })
+            : t('runtime.pm2.actionFail', { action, name, notes }),
+        );
+        await refreshOnce();
+      } catch (e) {
+        setActionMsg(e instanceof Error ? e.message : t('common.applyFailed'));
+      } finally {
+        setBusyKey(null);
+      }
+    },
+    [refreshOnce, t],
+  );
+
+  const runSystemdAction = useCallback(
+    async (projectId: string, name: string, action: 'restart' | 'stop') => {
+      const key = `sd:${action}:${projectId}`;
+      setBusyKey(key);
+      setActionMsg(null);
+      try {
+        const r = await pm2Api.systemdAction(projectId, action);
+        const notes = r.notes?.join('；') || '';
+        setActionMsg(
+          r.ok
+            ? t('runtime.pm2.actionOk', { action, name, notes })
+            : t('runtime.pm2.actionFail', { action, name, notes }),
+        );
+        await refreshOnce();
+      } catch (e) {
+        setActionMsg(e instanceof Error ? e.message : t('common.applyFailed'));
+      } finally {
+        setBusyKey(null);
+      }
+    },
+    [refreshOnce, t],
+  );
+
   return (
     <div className="u-stack u-gap-4">
       <Card>
@@ -157,6 +239,11 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
         />
         <CardSection>
           {err ? <Alert variant="error">{err}</Alert> : null}
+          {actionMsg ? (
+            <Alert variant="info" className="u-mb-2">
+              {actionMsg}
+            </Alert>
+          ) : null}
           {snap ? (
             <DescriptionList
               columns={2}
@@ -197,6 +284,92 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
               ))}
             </ul>
           ) : null}
+        </CardSection>
+      </Card>
+
+      {/* PM2 boot survival */}
+      <Card>
+        <CardSection
+          title={t('runtime.pm2.startupTitle')}
+          description={t('runtime.pm2.startupDesc')}
+        >
+          {startup ? (
+            <>
+              <DescriptionList
+                columns={2}
+                items={[
+                  {
+                    label: t('runtime.pm2.startupReady'),
+                    value: (
+                      <Badge tone={startup.readyForBoot ? 'ok' : 'warn'}>
+                        {startup.readyForBoot
+                          ? t('runtime.pm2.startupReadyYes')
+                          : t('runtime.pm2.startupReadyNo')}
+                      </Badge>
+                    ),
+                  },
+                  {
+                    label: t('runtime.pm2.startupUnit'),
+                    value: startup.unit
+                      ? `${startup.unit} · ${startup.unitActive ?? '?'} / ${startup.unitEnabled ?? '?'}`
+                      : '—',
+                  },
+                  {
+                    label: t('runtime.pm2.startupDump'),
+                    value: startup.dumpExists
+                      ? startup.dumpPath || t('common.yes')
+                      : t('common.no'),
+                  },
+                ]}
+              />
+              {startup.suggestedCommands.length > 0 ? (
+                <pre className="code-block u-text-sm u-mt-2">
+                  {startup.suggestedCommands.join('\n')}
+                </pre>
+              ) : null}
+              {startup.notes.length > 0 ? (
+                <ul className="muted u-text-sm u-mt-2">
+                  {startup.notes.slice(0, 6).map((n) => (
+                    <li key={n}>{n}</li>
+                  ))}
+                </ul>
+              ) : null}
+              <div className="u-flex u-flex-wrap u-gap-2 u-mt-3">
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  loading={busyKey === 'startup:install'}
+                  disabled={busyKey != null || !startup.pm2Available}
+                  onClick={() => void runStartup('install')}
+                >
+                  {t('runtime.pm2.startupInstall')}
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  loading={busyKey === 'startup:save'}
+                  disabled={busyKey != null || !startup.pm2Available}
+                  onClick={() => void runStartup('save')}
+                >
+                  {t('runtime.pm2.startupSave')}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={busyKey != null}
+                  onClick={() => void refreshStartup()}
+                >
+                  {t('common.refresh')}
+                </Button>
+              </div>
+              <p className="muted u-text-sm u-mt-2">{t('runtime.pm2.startupHint')}</p>
+            </>
+          ) : (
+            <p className="muted u-text-sm">{t('common.loading')}</p>
+          )}
         </CardSection>
       </Card>
 
@@ -260,8 +433,33 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
                 },
               ]}
               rows={projects}
+              rowActions={(r) => (
+                <div className="u-flex u-flex-wrap u-gap-1">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    loading={busyKey === `sd:restart:${r.projectId}`}
+                    disabled={busyKey != null}
+                    onClick={() => void runSystemdAction(r.projectId, r.name, 'restart')}
+                  >
+                    {t('runtime.pm2.actRestart')}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    loading={busyKey === `sd:stop:${r.projectId}`}
+                    disabled={busyKey != null}
+                    onClick={() => void runSystemdAction(r.projectId, r.name, 'stop')}
+                  >
+                    {t('runtime.pm2.actStop')}
+                  </Button>
+                </div>
+              )}
             />
           )}
+          <p className="muted u-text-sm u-mt-2">{t('runtime.pm2.systemdActionsHint')}</p>
         </CardSection>
       </Card>
 
@@ -364,12 +562,45 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
               ]}
               rows={rows}
               rowActions={(a) => (
-                <Button type="button" variant="ghost" size="sm" onClick={() => setRawApp(a)}>
-                  JSON
-                </Button>
+                <div className="u-flex u-flex-wrap u-gap-1">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    loading={busyKey === `pm2:restart:${a.name}`}
+                    disabled={busyKey != null}
+                    onClick={() => void runPm2Action(a.name, 'restart')}
+                  >
+                    {t('runtime.pm2.actRestart')}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    loading={busyKey === `pm2:reload:${a.name}`}
+                    disabled={busyKey != null}
+                    onClick={() => void runPm2Action(a.name, 'reload')}
+                  >
+                    {t('runtime.pm2.actReload')}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    loading={busyKey === `pm2:stop:${a.name}`}
+                    disabled={busyKey != null}
+                    onClick={() => void runPm2Action(a.name, 'stop')}
+                  >
+                    {t('runtime.pm2.actStop')}
+                  </Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setRawApp(a)}>
+                    JSON
+                  </Button>
+                </div>
               )}
             />
           )}
+          <p className="muted u-text-sm u-mt-2">{t('runtime.pm2.pm2ActionsHint')}</p>
           {snap && !snap.available ? (
             <Alert variant="info" className="u-mt-3">
               {t('runtime.pm2.notInstalled')}{' '}

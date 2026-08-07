@@ -227,6 +227,7 @@ export function FtpsServicePage() {
       <Alert variant="info">
         <strong>{t('ftp.openPortsAlertTitle')}</strong>{' '}
         {t('ftp.openPortsAlert', { ports: openPorts.join(', ') })}
+        <p className="u-text-sm u-mt-2 u-mb-0">{t('ftp.openPortsCloudSg')}</p>
         <div className="u-flex u-flex-wrap u-gap-2 u-mt-2">
           <Button
             type="button"

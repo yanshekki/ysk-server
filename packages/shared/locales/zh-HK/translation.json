@@ -3384,7 +3384,16 @@
     "applyRestart": "套用並重啟",
     "afterInstall": "安裝後即可使用 FTPS 帳戶登入。需系統管理員權限才能完成安裝。",
     "saveSettings": "儲存設定",
-    "saveApplyHint": "儲存只更新面板設定；「套用並重啟」才寫入 vsftpd.設定檔 並重載服務。"
+    "saveApplyHint": "儲存只更新面板設定；「套用並重啟」才寫入 vsftpd.設定檔 並重載服務。",
+    "openPortsAlertTitle": "請自行開埠",
+    "openPortsAlert": "套用 FTPS 唔會代你開防火牆。請喺主機防火牆同雲安全組放行 TCP {{ports}}。登入成功但 LIST 逾時，多半係 PASV 範圍被擋。",
+    "copyUfwCommands": "複製 ufw 指令",
+    "ufwCopied": "已複製 ufw 指令到剪貼簿",
+    "openFirewallPage": "打開防火牆頁",
+    "firewallPresetHint": "防火牆頁可選「FTPS+PASV」preset 後自行套用（仍係你確認先開）。",
+    "pasvPublicIpNeededTitle": "建議填 PASV 公網 IP",
+    "pasvPublicIpNeeded": "雲主機／NAT 若留空，客戶端可能連錯內網 IP。請喺「網絡」填公網 IP（例如 84.x.x.x）。",
+    "openPortsCloudSg": "雲安全組（AWS SG / GCP firewall / 阿里雲等）亦要開齊同一組 TCP——淨開主機 UFW 唔夠。"
   },
   "geo": {
     "continents": {
@@ -7437,7 +7446,16 @@
     "deployProcessManagerSystemd": "systemd（推薦）",
     "deployProcessManagerPm2": "PM2",
     "deploySystemdHint": "生產預設：unit ysk-project-*.service、開機自啟、cgroup 限額跟專案資源。",
-    "deployPm2Hint": "用 pm2 start ecosystem（需已裝 PM2 plugin）。進程見「執行環境 → 進程」PM2 表。部署前會停舊 runner，避免搶埠。"
+    "deployPm2Hint": "用 pm2 start ecosystem（需已裝 PM2 plugin）。進程見「執行環境 → 進程」PM2 表。部署前會停舊 runner，避免搶埠。",
+    "resLimitsDescSystemd": "systemd cgroup：MemoryMax / CPUQuota / TasksMax / NOFILE + shell／鎖定",
+    "resLimitsDescPm2": "PM2：記憶體 → ecosystem max_memory_restart（到額重啟）；CPU／行程／nofile 僅 systemd；shell／鎖定／磁碟仍 OS",
+    "resRunnerSystemd": "進程管理：systemd",
+    "resRunnerPm2": "進程管理：PM2",
+    "resMemHintSystemd": "systemd MemoryMax（cgroup 硬頂，例如 512M 或 1G）",
+    "resMemHintPm2": "寫入 ecosystem max_memory_restart（到額重啟，非 cgroup 硬殺）；例如 512M 或 1G",
+    "resFieldSystemdOnly": "僅 systemd cgroup 有效；仍會存 DB，改回 systemd 部署後生效",
+    "resLimitsHintSystemd": "「儲存並套用」會寫 DB，並嘗試 usermod / setquota / systemctl set-property（unit 需 active）。無權限時只寫控制面。",
+    "resLimitsHintPm2": "「儲存並套用」會寫 DB + 更新 ecosystem max_memory_restart，並在 PM2 app online 時 reload。CPU／TasksMax／NOFILE 不寫入 ecosystem。磁碟配額與帳號鎖定仍套用 OS。"
   },
   "protection": {
     "levels": {
@@ -8539,9 +8557,34 @@
       "projectsCount": "YSK 專案數",
       "noProjects": "沒有專案",
       "noProjectsDesc": "面板未有 node/bun 專案，或未建 OS 用戶。",
-      "pm2OnlyDesc": "只顯示 panel 用戶用 PM2 啟動嘅程序。systemd 部署見上方專案表。"
+      "pm2OnlyDesc": "只顯示 panel 用戶用 PM2 啟動嘅程序。systemd 部署見上方專案表。",
+      "actRestart": "重啟",
+      "actReload": "Reload",
+      "actStop": "停止",
+      "actionOk": "{{action}} {{name}} 完成。{{notes}}",
+      "actionFail": "{{action}} {{name}} 未成功。{{notes}}",
+      "systemdActionsHint": "systemd 專案：重啟／停止對應 ysk-project-*.service（需 root + YSK_EXECUTE）。PM2 部署專案請用下方 PM2 表。",
+      "pm2ActionsHint": "PM2：restart／reload／stop 需 YSK_EXECUTE 且主機已裝 pm2。開機自啟請見 startup 說明。",
+      "startupTitle": "PM2 開機自啟",
+      "startupDesc": "重啟後要自動拉起 app：systemd unit + pm2 save dump。唔代做危險操作而不告知。",
+      "startupReady": "開機就緒",
+      "startupReadyYes": "已配置",
+      "startupReadyNo": "未完整",
+      "startupUnit": "systemd unit",
+      "startupDump": "pm2 dump",
+      "startupInstall": "安裝 startup + save",
+      "startupSave": "僅 pm2 save",
+      "startupHint": "預設為 root 面板：pm2 startup systemd -u root --hp /root。需 YSK_EXECUTE + root。裝完請確認 unit enabled 且 dump 存在。",
+      "startupOk": "Startup 操作完成。{{notes}}",
+      "startupFail": "Startup 未完成。{{notes}}"
     },
-    "recordedInstalled": "記錄已裝 {{v}}"
+    "recordedInstalled": "記錄已裝 {{v}}",
+    "nodePathUnsafeTitle": "Node 路徑唔適合專案 isolation",
+    "nodePathUnsafe": "探測到 {{path}}（/root 或私有 toolchain）。systemd 部署會拒絕呢啲路徑。請用面板安裝 Node 到 /usr/local/ysk/node/<major>。",
+    "nodePathYskMissingTitle": "未見 YSK 管理嘅 Node",
+    "nodePathYskMissing": "建議路徑 /usr/local/ysk/node/{{version}}/bin/node。用上方安裝，避免依賴 /root/.hermes 或 nvm。",
+    "nodePathOk": "Node 路徑可用於專案部署",
+    "recordedButProbeEmpty": "控制面曾記錄安裝 {{v}}，但主機探測未見 binary。不算已裝——請「重新探測」或重新安裝。"
   },
   "security": {
     "title": "帳號安全",
