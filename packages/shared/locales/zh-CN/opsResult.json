@@ -3,8 +3,21 @@
   "status": "状态",
   "port": "端口",
   "url": "网址",
+  "pid": "PID",
   "blocked": "无法执行",
   "success": "成功",
   "failed": "失败",
-  "retry": "重试"
+  "retry": "重试",
+  "showDetails": "详细（{{count}}）",
+  "hideDetails": "隐藏详细",
+  "stepBuildOk": "构建完成",
+  "stepHealthOk": "健康检查通过",
+  "stepProcessStarted": "进程已启动",
+  "stepSystemdFallback": "systemd 未就绪 — 已用进程方式启动",
+  "stepNginxWritten": "已写入 Nginx 配置",
+  "stepConfigsSynced": "配置已同步至系统",
+  "stepStoppedOld": "已停止旧进程",
+  "stepTuningApplied": "已应用运行时调校",
+  "stepUnitWritten": "已写入 systemd 服务",
+  "stepSystemdStartFailed": "systemd 启动失败 — 已降级为进程启动"
 }

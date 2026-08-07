@@ -342,6 +342,21 @@
   font-weight: 700;
 }
 
+.ops-result__headline {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--text-main);
+  line-height: 1.45;
+}
+
+.ops-result__headline--warn {
+  color: var(--warn, #b45309);
+}
+
+.ops-result__facts {
+  margin-bottom: var(--space-3);
+}
+
 .ops-result__notes {
   margin: 0;
   padding-left: 1.15rem;
@@ -349,12 +364,64 @@
   color: var(--text-main);
 }
 
+.ops-result__notes--summary {
+  margin-bottom: var(--space-2);
+}
+
 .ops-result__notes li {
   margin-bottom: 0.35rem;
+  line-height: 1.4;
 }
 
 .ops-result__notes li:last-child {
   margin-bottom: 0;
+}
+
+.ops-result__notes--tech {
+  margin-top: var(--space-2);
+  padding: var(--space-3);
+  padding-left: 1.25rem;
+  background: var(--bg-muted, rgba(0, 0, 0, 0.03));
+  border-radius: var(--radius-sm);
+  max-height: 14rem;
+  overflow: auto;
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--text-muted, #64748b);
+}
+
+.ops-result__tech-line {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: inherit;
+  word-break: break-word;
+  white-space: pre-wrap;
+  background: none;
+  padding: 0;
+}
+
+.ops-result__tech {
+  margin-top: var(--space-2);
+}
+
+.ops-result__toggle-btn {
+  appearance: none;
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--accent, #2563eb);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.ops-result__toggle-btn:hover {
+  opacity: 0.85;
+}
+
+.ops-result__actions {
+  margin-top: var(--space-3);
 }
 
 .ops-result__toggle {

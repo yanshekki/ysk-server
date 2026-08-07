@@ -3,8 +3,21 @@
   "status": "Status",
   "port": "Port",
   "url": "URL",
+  "pid": "PID",
   "blocked": "Cannot run",
   "success": "Success",
   "failed": "Failed",
-  "retry": "Retry"
+  "retry": "Retry",
+  "showDetails": "Details ({{count}})",
+  "hideDetails": "Hide details",
+  "stepBuildOk": "Build completed",
+  "stepHealthOk": "Health check passed",
+  "stepProcessStarted": "Process started",
+  "stepSystemdFallback": "Systemd unit not ready — process started via pidfile",
+  "stepNginxWritten": "Nginx config written",
+  "stepConfigsSynced": "Configs synced to system",
+  "stepStoppedOld": "Stopped previous process",
+  "stepTuningApplied": "Runtime tuning applied",
+  "stepUnitWritten": "Service unit written",
+  "stepSystemdStartFailed": "Systemd start failed — using process fallback"
 }

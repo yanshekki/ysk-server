@@ -1,14 +1,17 @@
+import { useMemo, useState } from 'react';
 import type { OpsResultDto } from '@ysk/shared';
 import { useTranslation } from 'react-i18next';
 import { ActionBar } from './ActionBar';
 import { Badge } from './Badge';
 import { buttonClassName } from './Button';
 import { StructuredFacts, type FactItem } from './StructuredFacts';
-import { humanizeOperatorMessage, sanitizeOperatorNotes } from '../../lib/operator-messages';
+import {
+  humanizeOperatorMessage,
+  presentOpsNotes,
+} from '../../lib/operator-messages';
 
 /**
  * Panel input — shared OpsResultDto plus optional UI-only process facts.
- * Canonical honesty fields live in @ysk/shared OpsResultDto.
  */
 export type OpsResultLike = Partial<OpsResultDto> & {
   ok: boolean;
@@ -31,10 +34,12 @@ export interface OpsResultPanelProps {
   facts?: FactItem[];
   onRetry?: () => void;
   busy?: boolean;
+  /** Start with technical details open (default false) */
+  defaultShowTechnical?: boolean;
 }
 
 /**
- * Operator result panel — human notes only, never shell homework or raw JSON.
+ * Operator result — headline + facts + short summary; raw/tech notes collapsed.
  */
 export function OpsResultPanel({
   title,
@@ -43,9 +48,10 @@ export function OpsResultPanel({
   facts = [],
   onRetry,
   busy,
+  defaultShowTechnical = false,
 }: OpsResultPanelProps) {
   const { t } = useTranslation();
-  if (!result && !message && facts.length === 0) return null;
+  const [showTech, setShowTech] = useState(defaultShowTechnical);
 
   const blocked = Boolean(result?.blocked || result?.requiresExecute || result?.requiresRoot);
   const ok =
@@ -57,10 +63,24 @@ export function OpsResultPanel({
   const blockMessage = result?.blockMessage
     ? humanizeOperatorMessage(result.blockMessage)
     : undefined;
-  const notes = sanitizeOperatorNotes([
-    ...(result?.blockMessage ? [result.blockMessage] : []),
-    ...(result?.notes ?? []),
-  ]).filter((n) => n !== message && n !== blockMessage);
+
+  const presented = useMemo(
+    () =>
+      presentOpsNotes([
+        ...(result?.blockMessage && !blockMessage ? [result.blockMessage] : []),
+        ...(result?.notes ?? []),
+      ]),
+    [result?.blockMessage, result?.notes, blockMessage],
+  );
+
+  const summary = presented.summary.filter(
+    (n) => n !== message && n !== blockMessage,
+  );
+  const technical = presented.technical.filter(
+    (n) => n !== message && n !== blockMessage && !summary.includes(n),
+  );
+
+  if (!result && !message && facts.length === 0) return null;
 
   const autoFacts: FactItem[] = [...facts];
   if (result?.processStatus) {
@@ -68,6 +88,9 @@ export function OpsResultPanel({
   }
   if (result?.port != null) {
     autoFacts.push({ label: t('opsResult.port'), value: String(result.port) });
+  }
+  if (result?.pid != null) {
+    autoFacts.push({ label: t('opsResult.pid', { defaultValue: 'PID' }), value: String(result.pid) });
   }
   if (result?.url) {
     autoFacts.push({
@@ -79,6 +102,15 @@ export function OpsResultPanel({
       ),
     });
   }
+
+  const hasBody =
+    Boolean(message) ||
+    Boolean(blockMessage) ||
+    autoFacts.length > 0 ||
+    summary.length > 0 ||
+    technical.length > 0;
+
+  if (!hasBody && !result) return null;
 
   return (
     <div className="ops-result" role="status">
@@ -92,24 +124,55 @@ export function OpsResultPanel({
           </Badge>
         )}
       </div>
-      {message ? <p className="meta-block">{message}</p> : null}
+
+      {message ? <p className="ops-result__headline">{message}</p> : null}
       {blockMessage && blockMessage !== message ? (
-        <p className="meta-block">{blockMessage}</p>
+        <p className="ops-result__headline ops-result__headline--warn">{blockMessage}</p>
       ) : null}
+
       {autoFacts.length > 0 ? (
-        <div className="u-mt-3">
+        <div className="ops-result__facts">
           <StructuredFacts items={autoFacts} />
         </div>
       ) : null}
-      {notes.length > 0 ? (
-        <ul className="ops-result__notes">
-          {notes.map((n, i) => (
-            <li key={`${i}-${n.slice(0, 24)}`}>{n}</li>
+
+      {summary.length > 0 ? (
+        <ul className="ops-result__notes ops-result__notes--summary">
+          {summary.map((n, i) => (
+            <li key={`s-${i}-${n.slice(0, 20)}`}>{n}</li>
           ))}
         </ul>
       ) : null}
+
+      {technical.length > 0 ? (
+        <div className="ops-result__tech">
+          <button
+            type="button"
+            className="ops-result__toggle-btn"
+            aria-expanded={showTech}
+            onClick={() => setShowTech((v) => !v)}
+          >
+            {showTech
+              ? t('opsResult.hideDetails', { defaultValue: 'Hide details' })
+              : t('opsResult.showDetails', {
+                  defaultValue: 'Details ({{count}})',
+                  count: technical.length,
+                })}
+          </button>
+          {showTech ? (
+            <ul className="ops-result__notes ops-result__notes--tech">
+              {technical.map((n, i) => (
+                <li key={`t-${i}-${n.slice(0, 20)}`}>
+                  <code className="ops-result__tech-line">{n}</code>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
+
       {blocked && onRetry ? (
-        <ActionBar className="u-mt-3">
+        <ActionBar className="ops-result__actions">
           <button
             type="button"
             className={buttonClassName({ variant: 'primary', size: 'sm' })}

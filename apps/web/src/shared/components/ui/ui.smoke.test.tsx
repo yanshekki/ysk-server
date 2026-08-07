@@ -435,6 +435,29 @@ describe('UI primitives smoke', () => {
     expect(screen.getByText('Done')).toBeInTheDocument();
   });
 
+  it('OpsResultPanel: collapses technical notes behind Details toggle', () => {
+    render(
+      <OpsResultPanel
+        result={{
+          ok: true,
+          processStatus: 'running',
+          port: 3201,
+          notes: [
+            '建置完成',
+            '健康檢查通過（4ms）',
+            'systemd: is-active=inactive, MainPID=0 journalctl -u foo',
+            'export CARGO_HOME=/usr/local/ysk/rust/cargo cargo build --release',
+          ],
+        }}
+      />,
+    );
+    expect(screen.getByText(/^Success$/)).toBeInTheDocument();
+    // Primary human lines visible
+    expect(screen.getByText(/建置完成|Build completed/i)).toBeInTheDocument();
+    // Raw cargo export not dumped as open list item
+    expect(screen.queryByText(/export CARGO_HOME=\/usr\/local/i)).not.toBeInTheDocument();
+  });
+
   it('OpsResultPanel null when empty', () => {
     const { container } = render(<OpsResultPanel result={null} />);
     expect(container).toBeEmptyDOMElement();

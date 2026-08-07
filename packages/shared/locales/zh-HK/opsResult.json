@@ -3,8 +3,21 @@
   "status": "狀態",
   "port": "埠",
   "url": "網址",
+  "pid": "PID",
   "blocked": "無法執行",
   "success": "成功",
   "failed": "失敗",
-  "retry": "再試"
+  "retry": "再試",
+  "showDetails": "詳細（{{count}}）",
+  "hideDetails": "隱藏詳細",
+  "stepBuildOk": "建置完成",
+  "stepHealthOk": "健康檢查通過",
+  "stepProcessStarted": "進程已啟動",
+  "stepSystemdFallback": "systemd 未就緒 — 已用進程方式啟動",
+  "stepNginxWritten": "已寫入 Nginx 設定",
+  "stepConfigsSynced": "設定已同步至系統",
+  "stepStoppedOld": "已停止舊進程",
+  "stepTuningApplied": "已套用執行時調校",
+  "stepUnitWritten": "已寫入 systemd 服務",
+  "stepSystemdStartFailed": "systemd 啟動失敗 — 已降級為進程啟動"
 }

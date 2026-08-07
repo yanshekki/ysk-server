@@ -1,41 +1,85 @@
 /**
- * Strip shell-homework / internal env slogans from operator-facing text.
- * Panel executes everything — never ask the user to run CLI.
- * Display strings go through i18n (L4).
+ * Strip shell-homework / internal slogans from operator-facing text.
+ * Panel executes everything — never dump raw bash / unit paths as the main UI.
  */
 
 import i18n from './i18n';
 
+/** Shell / env / internal homework — never show as primary operator copy */
 const SHELL_OR_ENV =
-  /YSK_EXECUTE|certbot\s|systemctl\s|apt-get\s|apt\sinstall|sudo\s|useradd\s|nginx\s-t|named-checkzone|pdnsutil|mysql\s-e|psql\s|redis-cli|setenv|export\s+YSK|run this|copy (the )?sql|自行執行|請執行|到 terminal|到 shell|SSH|Install plan has|plan only|Plan only|NOT provisioned|bash install|install-roundcube|WORDPRESS_INSTALL|form:true|download:true|run with --apply/i;
+  /YSK_EXECUTE|certbot\s|systemctl\s|apt-get\s|apt\sinstall|sudo\s|useradd\s|nginx\s-t|named-checkzone|pdnsutil|mysql\s-e|psql\s|redis-cli|setenv|export\s+|run this|copy (the )?sql|自行執行|請執行|到 terminal|到 shell|Install plan has|plan only|Plan only|NOT provisioned|bash install|install-roundcube|WORDPRESS_INSTALL|form:true|download:true|run with --apply|CARGO_HOME|RUSTUP_HOME|RUSTUP_TOOLCHAIN|CARGO_BIN|runuser\s|journalctl|daemon-reload|MainPID|is-active=|StartLimit|WantedBy=|ExecStart=|\[Unit\]|\[Service\]/i;
 
-/** True if note looks like CLI homework or internal flags */
-export function isOperatorNoise(text: string): boolean {
-  const t = text.trim();
-  if (!t) return true;
-  if (SHELL_OR_ENV.test(t)) return true;
-  if (t.includes('\n') && /--\w+/.test(t) && t.split('\n').length <= 6) return true;
-  if (/^(CREATE |GRANT |ALTER |DROP )/i.test(t)) return true;
-  return false;
-}
+/** Long technical blobs (build scripts, conf include instructions) */
+const TECH_BLOB =
+  /export\s+PATH=|target\/release|\/var\/lib\/ysk-server\/|\/etc\/nginx\/|\/etc\/systemd\/|include\s+\/var\/lib|Managed configs live|Include them from nginx|ysk rust build:|toolchain \d|retry \+stable|SIGTERM|chown\s|groupadd|usermod|chmod\s|pidfile|fastcgi_pass|unix:\/run\/php/i;
 
 function tr(key: string, params?: Record<string, string | number>): string {
   return i18n.t(key, params);
 }
 
-/** Detect permission / execute / root blocks across locales + codes (L3/L4). */
+/** True if note looks like CLI homework, shell dump, or internal noise */
+export function isOperatorNoise(text: string): boolean {
+  const t = text.trim();
+  if (!t) return true;
+  if (SHELL_OR_ENV.test(t)) return true;
+  if (t.length > 220 && TECH_BLOB.test(t)) return true;
+  if (/^export\s+/i.test(t)) return true;
+  if (/^建置\s*[：:]\s*export/i.test(t) || /^build\s*[：:]\s*export/i.test(t)) return true;
+  if (/Managed configs live|Include them from nginx/i.test(t)) return true;
+  if (/^#\s/.test(t) && t.includes('/')) return true;
+  if (t.includes('\n') && /--\w+/.test(t) && t.split('\n').length <= 6) return true;
+  if (/^(CREATE |GRANT |ALTER |DROP )/i.test(t)) return true;
+  // Pure path dump
+  if (/^\/[\w./-]+$/.test(t) && t.length > 24) return true;
+  return false;
+}
+
+/** Detect permission / execute / root blocks across locales + codes */
 export function looksLikeBlockedMessage(text: string): boolean {
   return /YSK_NEED_EXECUTE|YSK_NEED_ROOT|YSK_EXECUTE|requiresExecute|requiresRoot|executeEnabled|Host execute|need root|requires? root|permission denied|權限|权限|系統變更|系统变更|管理員|管理员|無法在管理面板|无法在管理面板|沙箱|sandbox/i.test(
     text,
   );
 }
 
-/** Map known English/internal phrases to short localized panel messages */
+/**
+ * Classify note importance for progressive disclosure.
+ * - primary: short human summary (always shown, capped)
+ * - technical: paths / unit health / diagnostics (collapsed by default)
+ * - drop: pure noise
+ */
+export type OpsNoteKind = 'primary' | 'technical' | 'drop';
+
+export function classifyOpsNote(text: string): OpsNoteKind {
+  const raw = text.trim();
+  if (!raw) return 'drop';
+  if (isOperatorNoise(raw)) return 'drop';
+  // Explicit technical diagnostics
+  if (
+    /systemd|unit|MainPID|is-active|203\/EXEC|pidfile|journalctl|conf\.d|已寫入系統服務|已写入系统服务|已複製\d+|已复制\d+|Managed configs|Include them|ysk-web group|chown|擁有者|拥有者|隔離模式|隔离模式|以專案用戶|以项目用户|已送 SIGTERM|已套用面板|已套用.*調校|已套用.*调校/i.test(
+      raw,
+    )
+  ) {
+    // Keep short human status as primary even if it mentions systemd lightly
+    if (
+      /健康檢查|健康检查|health\s*ok|已重載|已重载|reloaded|建置完成|构建完成|build\s*(ok|done|complete)|進程已啟動|进程已启动|deployed|Certificate|DNS|失敗|失败|failed|error/i.test(
+        raw,
+      ) &&
+      raw.length < 100
+    ) {
+      return 'primary';
+    }
+    return 'technical';
+  }
+  if (raw.length > 160) return 'technical';
+  if (/^\/[\w./-]+/.test(raw) && raw.includes('/ysk')) return 'technical';
+  return 'primary';
+}
+
+/** Map known phrases to short localized panel messages */
 export function humanizeOperatorNote(text: string): string | null {
   const raw = text.trim();
   if (!raw) return null;
 
-  // Already an i18n key (backend honesty keys)
   if (/^(ops|errors|notes|common)\.[a-zA-Z0-9_.]+$/.test(raw)) {
     const out = tr(raw);
     if (out !== raw) return out;
@@ -101,17 +145,70 @@ export function humanizeOperatorNote(text: string): string | null {
     return tr('common.writtenOnly');
   }
 
-  // —— Nginx ——
-  if (/nginx -t OK|設定檢查通過|配置检查通过/i.test(raw)) {
+  // —— Deploy / process (short labels) ——
+  if (/^建置完成|^构建完成|build\s*(complete|ok|done)|編譯完成|编译完成/i.test(raw)) {
+    return tr('opsResult.stepBuildOk', { defaultValue: raw.slice(0, 40) });
+  }
+  if (/健康檢查通過|健康检查通过|Health OK|health\s*ok|HTTP\s*2\d\d/i.test(raw) && raw.length < 80) {
+    return tr('opsResult.stepHealthOk', { defaultValue: raw.replace(/（.*）|\(.*\)/g, '').trim() });
+  }
+  if (/進程已啟動|进程已启动|pid=\d+|pid\s+\d+/i.test(raw) && raw.length < 120) {
+    return tr('opsResult.stepProcessStarted', {
+      defaultValue: 'Process started',
+    });
+  }
+  if (/systemd unit 唔健康|unit not healthy|203\/EXEC|is-active=inactive/i.test(raw)) {
+    return tr('opsResult.stepSystemdFallback', {
+      defaultValue: 'Systemd unit not ready — process started via pidfile',
+    });
+  }
+  if (/已重載 Nginx|已重载 Nginx|nginx reloaded|nginx reload/i.test(raw)) {
+    return tr('notes.nginx.reloaded');
+  }
+  if (/nginx -t OK|設定檢查通過|配置检查通过|Nginx設定檢查通過|Nginx设定检查通过/i.test(raw)) {
     return tr('notes.nginx.configOk');
   }
   if (/nginx -t failed|設定檢查失敗|配置检查失败/i.test(raw)) {
     return tr('notes.tpl.nginxConfigFailed', { detail: '' });
   }
-  if (
-    /reload nginx|nginx reloaded|nginx reload|已重載 Nginx|已重载 Nginx/i.test(raw)
-  ) {
-    return tr('notes.nginx.reloaded');
+  if (/已寫入 Nginx|已写入 Nginx|nginx conf|反代|proxy conf/i.test(raw) && raw.length < 160) {
+    return tr('opsResult.stepNginxWritten', { defaultValue: 'Nginx config written' });
+  }
+  if (/已複製\s*\d+|已复制\s*\d+|copied\s+\d+/i.test(raw)) {
+    return tr('opsResult.stepConfigsSynced', { defaultValue: 'Configs synced to system' });
+  }
+  if (/^運行時\s*[：:]|^运行时\s*[：:]|runtime\s*[：:]/i.test(raw) && raw.length < 100) {
+    // Drop — facts strip already shows port/status
+    return null;
+  }
+  if (/^隔離模式|^隔离模式|isolation mode/i.test(raw)) {
+    return null;
+  }
+  if (/^以專案用戶|^以项目用户|runuser/i.test(raw) && raw.length < 80) {
+    return null;
+  }
+  if (/^建置\s*[：:]|^构建\s*[：:]|^build\s*[：:]/i.test(raw) && /export |CARGO_|cargo /i.test(raw)) {
+    return null; // raw shell build line
+  }
+  if (/已送 SIGTERM|SIGTERM/i.test(raw)) {
+    return tr('opsResult.stepStoppedOld', { defaultValue: 'Stopped previous process' });
+  }
+  if (/已變更擁有者|已变更拥有者|chown/i.test(raw)) {
+    return null; // technical
+  }
+  if (/ysk-web group/i.test(raw)) {
+    return null;
+  }
+  if (/已套用面板.*調校|已套用面板.*调校|runtime tuning/i.test(raw)) {
+    return tr('opsResult.stepTuningApplied', { defaultValue: 'Runtime tuning applied' });
+  }
+  if (/已寫入系統服務|已写入系统服务|systemd.*unit|ysk-project-.*\.service/i.test(raw)) {
+    return tr('opsResult.stepUnitWritten', { defaultValue: 'Service unit written' });
+  }
+  if (/系統控制啟動失敗|系统控制启动失败|enable --now failed/i.test(raw)) {
+    return tr('opsResult.stepSystemdStartFailed', {
+      defaultValue: 'Systemd start failed — using process fallback',
+    });
   }
 
   // —— Generic ——
@@ -125,7 +222,6 @@ export function humanizeOperatorNote(text: string): string | null {
     return tr('common.opFailed');
   }
 
-  // Install failure notes — keep localized prefix; do not drop as shell noise
   if (/安裝失敗|安装失败|Install failed/i.test(raw)) {
     const cleaned = raw.replace(/\s+/g, ' ').trim().slice(0, 280);
     return cleaned || tr('notes.failed');
@@ -135,7 +231,11 @@ export function humanizeOperatorNote(text: string): string | null {
     return null;
   }
 
-  // Backend already localized via Accept-Language — pass through
+  // Soft-trim very long free text
+  if (raw.length > 200) {
+    return raw.slice(0, 180).trim() + '…';
+  }
+
   return raw;
 }
 
@@ -149,8 +249,46 @@ export function sanitizeOperatorNotes(notes: string[] | undefined | null): strin
   return out;
 }
 
+export type PresentedOpsNotes = {
+  /** Short bullets always visible (max ~6) */
+  summary: string[];
+  /** Diagnostics / paths — collapsed by default */
+  technical: string[];
+};
+
+/**
+ * Split ops notes for progressive disclosure UI.
+ */
+export function presentOpsNotes(notes: string[] | undefined | null): PresentedOpsNotes {
+  if (!notes?.length) return { summary: [], technical: [] };
+  const summary: string[] = [];
+  const technical: string[] = [];
+  const seen = new Set<string>();
+
+  for (const raw of notes) {
+    const kind = classifyOpsNote(String(raw));
+    if (kind === 'drop') continue;
+    const h = humanizeOperatorNote(String(raw));
+    if (!h || seen.has(h)) continue;
+    seen.add(h);
+    if (kind === 'technical') {
+      technical.push(h.length > 240 ? h.slice(0, 220) + '…' : h);
+    } else {
+      summary.push(h);
+    }
+  }
+
+  // Cap primary list; overflow → technical
+  const MAX_SUMMARY = 6;
+  if (summary.length > MAX_SUMMARY) {
+    technical.unshift(...summary.splice(MAX_SUMMARY));
+  }
+
+  return { summary, technical };
+}
+
 /** Humanize a single error / block message for display */
 export function humanizeOperatorMessage(text: string | null | undefined): string {
   if (!text?.trim()) return i18n.t('common.opFailed');
-  return humanizeOperatorNote(text) ?? text.trim();
+  return humanizeOperatorNote(text) ?? text.trim().slice(0, 200);
 }
