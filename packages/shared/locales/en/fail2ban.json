@@ -23,7 +23,7 @@
   "manualBanTitle": "Manual ban (temporary)",
   "ipPlaceholder": "IPv4 or IPv6",
   "banipOk": "banip done",
-  "manualBanHint": "Temporary block; auto-unbans after bantime. Permanent deny → UFW. Whitelist tab for ignoreip.",
+  "manualBanHint": "Temporary block;",
   "currentBans": "Currently banned",
   "bannedTableTitle": "Banned IPs (live fail2ban-client)",
   "bannedTableDesc": "Needs client access; unban needs YSK_EXECUTE",
@@ -35,12 +35,12 @@
   "emptyBansTitle": "No banned IPs",
   "emptyBansDesc": "Or no permission to read fail2ban-client",
   "ignoreipTitle": "ignoreip whitelist",
-  "ignoreipDesc": "IPs never banned (panel file + optional live fail2ban-client). Add your office/home IP.",
+  "ignoreipDesc": "IPs never banned (panel file + optional live fail2ban-client)",
   "addIp": "Add IP",
   "addWhitelist": "Add to whitelist",
   "applyPolicyIgnoreip": "Apply policy (incl. ignoreip)",
   "applyIgnoreipOk": "Wrote ignoreip into jail.local and applied",
-  "ignoreipHint": "Without YSK_EXECUTE only panel file is written (apply_status=written); Apply rebuilds jail.local ignoreip= and reloads.",
+  "ignoreipHint": "Without YSK_EXECUTE only panel file is written (apply_status=written);",
   "whitelistTitle": "Whitelist ({{count}})",
   "whitelistRemoved": "Removed from whitelist",
   "remove": "Remove",
@@ -71,5 +71,5 @@
   "systemdTitle": "systemd control",
   "enableAndStart": "Enable and start",
   "serviceHint": "For attack response use",
-  "serviceHintSuffix": "(calls this page’s jails + Nginx rate limits; does not build a second UFW stack)."
+  "serviceHintSuffix": "(calls this page’s jails + Nginx rate limits;"
 }

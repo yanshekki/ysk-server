@@ -1104,7 +1104,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         open={adminerOpen}
         onClose={bindCloseIfIdle(busy, bindSet(setAdminerOpen, false))}
         title={t('db.browserProjectTitle', {
-          defaultValue: '建立資料庫管理專案',
+          defaultValue: t('uiInline.s777e90e0'),
         })}
         size="md"
         footer={
@@ -1138,7 +1138,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                           ok: false,
                           notes: [
                             t('db.browserNameTaken', {
-                              defaultValue: '專案名稱已存在：{{name}}',
+                              defaultValue: t('uiInline.sd8bc8ab3'),
                               name: hit.name,
                             }),
                           ],
@@ -1182,7 +1182,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                         ].filter(Boolean),
                         url: res.urlHint,
                       } as OpsResultLike;
-                    }, t('db.browserProjectCreated', { defaultValue: '資料庫管理專案已建立' }));
+                    }, t('db.browserProjectCreated', { defaultValue: t('uiInline.s09877be5') }));
                     // Navigate to project when we got an id in notes
                     const idNote = (r as OpsResultLike | null)?.notes?.find((n) =>
                       n.startsWith('projectId='),
@@ -1197,21 +1197,21 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                 })();
               }}
             >
-              {t('db.createBrowserProject', { defaultValue: '建立專案並部署' })}
+              {t('db.createBrowserProject', { defaultValue: t('uiInline.sd95910ce') })}
             </Button>
           </FormActions>
         }
       >
         <FormLayout columns={1}>
           <Field
-            label={t('db.browserTool', { defaultValue: '工具' })}
+            label={t('db.browserTool', { defaultValue: t('uiInline.sa72ef18d') })}
             htmlFor="browser-tool"
             required
             flush
           >
             <SegRadio
               name="browser-tool"
-              aria-label={t('db.browserTool', { defaultValue: '工具' })}
+              aria-label={t('db.browserTool', { defaultValue: t('uiInline.sa72ef18d') })}
               value={browserTool}
               onChange={(v) => {
                 const tool = v === 'phpmyadmin' ? 'phpmyadmin' : 'adminer';
@@ -1227,18 +1227,18 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             />
           </Field>
           <Field
-            label={t('projects.createName', { defaultValue: '專案名稱' })}
+            label={t('projects.createName', { defaultValue: t('uiInline.s4b2bec80') })}
             htmlFor="browser-name"
             required
             flush
             hint={
               nameClash
                 ? t('db.browserNameTaken', {
-                    defaultValue: '專案名稱已存在：{{name}}',
+                    defaultValue: t('uiInline.sd8bc8ab3'),
                     name: nameClash,
                   })
                 : t('db.browserNameHint', {
-                    defaultValue: '會建立一個 PHP 專案；名稱不可重複',
+                    defaultValue: t('uiInline.sd00c0d39'),
                   })
             }
           >
@@ -1274,7 +1274,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             label={
               browserTool === 'phpmyadmin'
                 ? t('db.downloadPhpMyAdmin', {
-                    defaultValue: '下載 phpMyAdmin（需要系統變更權限及外網）',
+                    defaultValue: t('uiInline.sd7c669ac'),
                   })
                 : t('db.downloadAdminer')
             }

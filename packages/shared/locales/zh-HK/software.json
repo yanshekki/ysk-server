@@ -44,5 +44,9 @@
     "useInProjectTitle": "到專案頁，可將此 runtime 用於應用",
     "update": "更新",
     "updateTitle": "前往安裝／切換至 {{v}}"
+  },
+  "apply": {
+    "blockedShort": "被阻擋",
+    "failedShort": "失敗"
   }
 }

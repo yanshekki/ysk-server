@@ -40,23 +40,23 @@ export function InstallStreamPanel({
         <h4 className="install-stream-panel__title">
           {title ??
             t('runtime.installLogTitle', {
-              defaultValue: '安裝日誌（即時）',
+              defaultValue: t('uiInline.s296817b1'),
             })}
         </h4>
         {busy ? (
           <span className="install-stream-panel__badge">
-            {t('runtime.installLogStreaming', { defaultValue: '串流中…' })}
+            {t('runtime.installLogStreaming', { defaultValue: t('uiInline.s3568a3da') })}
           </span>
         ) : (
           <span className="install-stream-panel__badge install-stream-panel__badge--done">
-            {t('runtime.installLogDone', { defaultValue: '已結束' })}
+            {t('runtime.installLogDone', { defaultValue: t('uiInline.s28256229') })}
           </span>
         )}
       </header>
       <pre className="install-stream-panel__log" ref={boxRef} tabIndex={0}>
         {lines.length === 0 && busy ? (
           <span className="install-stream-panel__muted">
-            {t('runtime.installLogWaiting', { defaultValue: '等待 server 輸出…' })}
+            {t('runtime.installLogWaiting', { defaultValue: t('uiInline.s3971290f') })}
           </span>
         ) : null}
         {lines.map((row, i) => (

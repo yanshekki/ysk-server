@@ -1,8 +1,17 @@
 {
   "profiles": {
-    "web": { "label": "Web host", "short": "SSH · 80 · 443" },
-    "mail": { "label": "Web + mail", "short": "Also 25/465/587/993" },
-    "ftps": { "label": "Web + FTPS", "short": "21 + PASV 30000–30100" }
+    "web": {
+      "label": "Web host",
+      "short": "SSH · 80 · 443"
+    },
+    "mail": {
+      "label": "Web + mail",
+      "short": "Also 25/465/587/993"
+    },
+    "ftps": {
+      "label": "Web + FTPS",
+      "short": "21 + PASV 30000–30100"
+    }
   },
   "appliedProfile": "Applied profile: {{label}}",
   "backToProtection": "Protection",
@@ -21,7 +30,7 @@
   "toolHintPrefix": "Underlying tools:",
   "toolHintBody": "UFW = ports / permanent rules · for attack response and auto-ban use",
   "toolHintFail2ban": "fail2ban = temporary log-based bans",
-  "executeOffHint": "System changes off — status is readable; changing rules needs root + YSK_EXECUTE=1",
+  "executeOffHint": "System changes off — status is readable;",
   "tabs": {
     "rules": "Rules",
     "ports": "Open ports",
@@ -45,7 +54,7 @@
   "protoBothLabel": "TCP+UDP",
   "port": "Port",
   "portHint": "Pick a common port, or custom below",
-  "portHintYsk": "All YSK service ports (Panel, Web, SSH, mail, FTP, DNS, DB, Redis); custom allowed",
+  "portHintYsk": "All YSK service ports (Panel, Web, SSH, mail, FTP, DNS, DB, Redis);",
   "privatePortWarn": "{{service}} should usually stay private; public allow is risky. Prefer a source IP/CIDR.",
   "privatePortWarnWithFrom": "{{service}} will only allow the given source; double-check the IP/CIDR.",
   "allowFrom": "Source IP/CIDR (optional)",
@@ -55,7 +64,7 @@
   "allowedPort": "Allowed {{proto}}/{{port}}",
   "allowedPortFrom": "Allowed {{proto}}/{{port}} from {{from}}",
   "allowThisPort": "Allow this port",
-  "allowPortHint": "Keep 22/80/443 for a web host; restrict DB/Redis/Panel with a source IP — do not allow the world.",
+  "allowPortHint": "Keep 22/80/443 for a web host;",
   "denyTitle": "Permanent deny IP",
   "denySub": "UFW DENY · different from temporary fail2ban bans",
   "denyPlaceholder": "IPv4 or IPv6 to deny",

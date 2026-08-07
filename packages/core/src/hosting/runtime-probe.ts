@@ -1494,7 +1494,9 @@ export async function planOrInstallRuntime(input: {
           .split(/\s+/)
           .filter(Boolean);
         notes.unshift(
-          `部分 PHP 套件安裝失敗：${failedPackages.join(', ')}（核心 CLI 可能仍可用）`,
+          tl('notes.ops.phpPackagesPartialFail', {
+            list: failedPackages.join(', '),
+          }),
         );
       }
       // exit 3 = runtime ok-ish but plugins failed; other non-zero = hard fail
@@ -1507,7 +1509,7 @@ export async function planOrInstallRuntime(input: {
           tl('notes.runtime.pluginsFailed', { list: pluginFailed.join(', ') }),
         );
       } else if (r.exitCode === 130) {
-        notes.unshift('安裝已中止（客戶端斷線或取消）');
+        notes.unshift(tl('notes.ops.installAborted'));
       } else {
         const detail = summarizeInstallLog(r.stderr || '', r.stdout || '') || String(r.exitCode);
         const failNote = tl('notes.auto.t0411', { v0: detail });

@@ -67,10 +67,10 @@ export function adviceLabel(
   const out = tr(key, { defaultValue: '' });
   if (out && out !== key) return out;
   // fallbacks if locale missing
-  if (a === 'update') return tr('updates.advice.update', { defaultValue: '建議更新' });
-  if (a === 'skip') return tr('updates.advice.skip', { defaultValue: '略過' });
-  if (a === 'watch') return tr('updates.advice.watch', { defaultValue: '觀察' });
-  if (a === 'urgent') return tr('updates.advice.urgent', { defaultValue: '緊急更新' });
+  if (a === 'update') return tr('updates.advice.update', { defaultValue: t('uiInline.s3f7c3eae') });
+  if (a === 'skip') return tr('updates.advice.skip', { defaultValue: t('uiInline.s92e48065') });
+  if (a === 'watch') return tr('updates.advice.watch', { defaultValue: t('uiInline.sdff0f697') });
+  if (a === 'urgent') return tr('updates.advice.urgent', { defaultValue: t('uiInline.s012f2d7e') });
   return advice ?? '—';
 }
 
@@ -306,7 +306,7 @@ export function UpdatesPage() {
     // lightweight: set batch progress message
     setBatchProgress(
       t('updates.batchNoneUpgradable', {
-        defaultValue: '目前篩選結果沒有可升級套件',
+        defaultValue: t('uiInline.s20455064'),
       }),
     );
   }
@@ -314,7 +314,7 @@ export function UpdatesPage() {
   function openBatchConfirm() {
     if (!selectedUpgradable.length) {
       setBatchProgress(
-        t('updates.batchEmpty', { defaultValue: '請先勾選可升級套件' }),
+        t('updates.batchEmpty', { defaultValue: t('uiInline.s9b34f8c3') }),
       );
       return;
     }
@@ -333,7 +333,7 @@ export function UpdatesPage() {
         n: 0,
         total: rows.length,
         pkg: rows[0]?.packageName ?? '',
-        defaultValue: `批量更新 0/${rows.length}：準備中…`,
+        defaultValue: t('uiInline.s8e3824cb', { v0: rows.length }),
       }),
     );
     try {
@@ -348,7 +348,7 @@ export function UpdatesPage() {
               n,
               total,
               pkg,
-              defaultValue: `批量更新 ${n}/${total}：${pkg}`,
+              defaultValue: t('uiInline.sc2570ff7', { v0: n, v1: total, v2: pkg }),
             }),
           );
         },
@@ -358,7 +358,7 @@ export function UpdatesPage() {
         t('updates.batchDone', {
           ok: result.ok.length,
           fail: result.fail.length,
-          defaultValue: `批量完成：成功 ${result.ok.length}，失敗 ${result.fail.length}`,
+          defaultValue: t('uiInline.s0bd0c471', { v0: result.ok.length, v1: result.fail.length }),
         }) +
           (result.fail.length
             ? ' · ' +
@@ -376,7 +376,7 @@ export function UpdatesPage() {
           (result.ok.length
             ? ' · ' +
               t('updates.batchRescanned', {
-                defaultValue: '已重新掃描主機套件狀態',
+                defaultValue: t('uiInline.s2980553a'),
               })
             : ''),
       );
@@ -505,12 +505,12 @@ export function UpdatesPage() {
                             batchAbort.abort();
                             setBatchProgress(
                               t('updates.batchCancelling', {
-                                defaultValue: '正在取消…（目前套件完成後停止）',
+                                defaultValue: t('uiInline.s303ee0f7'),
                               }),
                             );
                           }}
                         >
-                          {t('updates.batchCancel', { defaultValue: '取消批量' })}
+                          {t('updates.batchCancel', { defaultValue: t('uiInline.s21858fe5') })}
                         </Button>
                       ) : (
                         <Button
@@ -521,7 +521,7 @@ export function UpdatesPage() {
                             if (!busy) setApplyLog([]);
                           }}
                         >
-                          {t('common.dismiss', { defaultValue: '關閉' })}
+                          {t('common.dismiss', { defaultValue: t('uiInline.sddc05404') })}
                         </Button>
                       )}
                     </div>
@@ -531,7 +531,7 @@ export function UpdatesPage() {
                   lines={applyLog}
                   busy={Boolean(busy && batchProgress)}
                   title={t('updates.applyLogTitle', {
-                    defaultValue: '套件更新日誌（即時）',
+                    defaultValue: t('uiInline.saf251c2a'),
                   })}
                 />
               </div>
@@ -555,7 +555,7 @@ export function UpdatesPage() {
                       onClick={selectAllUpgradableInFilter}
                     >
                       {t('updates.selectAllUpgradable', {
-                        defaultValue: '全選可升級',
+                        defaultValue: t('uiInline.s5929623c'),
                       })}
                     </Button>
                     <Button
@@ -565,7 +565,7 @@ export function UpdatesPage() {
                       onClick={() => setSelectedKeys(new Set())}
                     >
                       {t('updates.clearSelection', {
-                        defaultValue: '清除選擇',
+                        defaultValue: t('uiInline.s18b08919'),
                       })}
                     </Button>
                     <Button
@@ -580,7 +580,7 @@ export function UpdatesPage() {
                           ? t('rbac.cap.updatesApply')
                           : selectedUpgradable.length === 0
                             ? t('updates.batchEmpty', {
-                                defaultValue: '請先勾選可升級套件',
+                                defaultValue: t('uiInline.s9b34f8c3'),
                               })
                             : undefined
                       }
@@ -588,7 +588,7 @@ export function UpdatesPage() {
                     >
                       {t('updates.updateSelected', {
                         n: selectedUpgradable.length,
-                        defaultValue: `更新已選 (${selectedUpgradable.length})`,
+                        defaultValue: t('uiInline.se2b088fc', { v0: selectedUpgradable.length }),
                       })}
                     </Button>
                   </ActionBar>
@@ -1045,18 +1045,18 @@ export function UpdatesPage() {
           if (!busy) setBatchConfirmOpen(false);
         }}
         title={t('updates.batchConfirmTitle', {
-          defaultValue: '確認批量更新套件？',
+          defaultValue: t('uiInline.sb2848bc7'),
         })}
         description={
           t('updates.batchConfirmBody', {
             n: selectedUpgradable.length,
-            defaultValue: `將依序升級 ${selectedUpgradable.length} 個套件。需 root 且已開啟 EXECUTE。`,
+            defaultValue: t('uiInline.sc1910cf2', { v0: selectedUpgradable.length }),
           }) +
           (selectedHasHighRisk
             ? '\n\n' +
               t('updates.batchConfirmHighRisk', {
                 defaultValue:
-                  '所選包含高風險／需審批套件；確認即表示已審閱並同意套用。',
+                  t('uiInline.sc13bb38c'),
               })
             : '') +
           '\n\n' +
@@ -1073,7 +1073,7 @@ export function UpdatesPage() {
         }
         confirmLabel={t('updates.updateSelected', {
           n: selectedUpgradable.length,
-          defaultValue: `更新已選 (${selectedUpgradable.length})`,
+          defaultValue: t('uiInline.se2b088fc', { v0: selectedUpgradable.length }),
         })}
         cancelLabel={t('common.cancel')}
         danger={selectedHasHighRisk}

@@ -46,19 +46,19 @@ function edgeStatus(project: ProjectDto, t: (k: string, o?: Record<string, strin
     deployMode?: string;
   };
   if (!project.nginxConfigPath) {
-    return t('projects.nginxValueNone', { defaultValue: '未發佈' });
+    return t('projects.nginxValueNone', { defaultValue: t('uiInline.s5ac95c29') });
   }
   if (lh.nginxReloaded || lh.nginxStatus === 'reloaded') {
-    return t('projects.nginxLive', { defaultValue: '已載入' });
+    return t('projects.nginxLive', { defaultValue: t('uiInline.sea4ba90a') });
   }
   if (lh.nginxStatus === 'managed_only' || lh.nginxStatus === 'synced') {
-    return t('projects.nginxWritten', { defaultValue: '已寫入（未 reload）' });
+    return t('projects.nginxWritten', { defaultValue: t('uiInline.sc8f34a0d') });
   }
   if (lh.nginxStatus === 'needs_deploy') {
-    return t('projects.nginxNeedsDeploy', { defaultValue: '需先部署' });
+    return t('projects.nginxNeedsDeploy', { defaultValue: t('uiInline.s07fb5671') });
   }
   if (lh.nginxStatus?.startsWith('reload_failed') || lh.nginxStatus === 'nginx_t_failed') {
-    return t('projects.nginxFailed', { defaultValue: '發佈失敗' });
+    return t('projects.nginxFailed', { defaultValue: t('uiInline.sa5f994e3') });
   }
   return project.nginxConfigPath ? t('projects.status.published') : t('projects.nginxValueNone');
 }
@@ -194,7 +194,7 @@ export function ProjectNetworkTab({
         null,
         t('projects.sslRequiredFirst', {
           defaultValue:
-            '尚未有此網域的 SSL 證書。請先到「SSL 證書」申請／上載，再按發佈 + SSL。',
+            t('uiInline.s32dd17d9'),
         }),
       );
       return;
@@ -244,14 +244,14 @@ export function ProjectNetworkTab({
       {suspended ? <Alert variant="info">{t('projects.netSuspended')}</Alert> : null}
 
       <Card>
-        <CardSection title={t('projects.netEdgeStatus', { defaultValue: '站點狀態' })}>
+        <CardSection title={t('projects.netEdgeStatus', { defaultValue: t('uiInline.s5516cb5b') })}>
           <FormLayout columns={2}>
             <Field label="Nginx" htmlFor="net-st" flush>
               <code id="net-st" className="inline">
                 {edgeStatus(project, t)}
               </code>
             </Field>
-            <Field label={t('projects.netUpstream', { defaultValue: '上游' })} htmlFor="net-up" flush>
+            <Field label={t('projects.netUpstream', { defaultValue: t('uiInline.sed38f4ea') })} htmlFor="net-up" flush>
               <code id="net-up" className="inline">
                 {upstreamLabel(project)}
               </code>
@@ -390,13 +390,13 @@ export function ProjectNetworkTab({
 
       {showPort ? (
         <Card>
-          <CardSection title={t('projects.netPortTitle', { defaultValue: '進程埠' })}>
+          <CardSection title={t('projects.netPortTitle', { defaultValue: t('uiInline.sadb6ef47') })}>
             <FormLayout columns={2}>
               <Field
-                label={t('projects.createPreferredPort', { defaultValue: '固定埠' })}
+                label={t('projects.createPreferredPort', { defaultValue: t('uiInline.se7a422dd') })}
                 htmlFor="net-pref-port"
                 hint={t('projects.preferredPortRedeployHint', {
-                  defaultValue: '儲存後需重新部署才會改進程埠',
+                  defaultValue: t('uiInline.s2eff57b7'),
                 })}
                 flush
               >
@@ -409,7 +409,7 @@ export function ProjectNetworkTab({
                   disabled={suspended}
                 />
               </Field>
-              <Field label={t('projects.netCurrentPort', { defaultValue: '目前埠' })} htmlFor="net-cur-port" flush>
+              <Field label={t('projects.netCurrentPort', { defaultValue: t('uiInline.s110671e6') })} htmlFor="net-cur-port" flush>
                 <code id="net-cur-port" className="inline">
                   {project.port != null ? String(project.port) : '—'}
                 </code>
@@ -460,14 +460,14 @@ export function ProjectNetworkTab({
       )}
 
       <Card>
-        <CardSection title={t('projects.netPublishTitle', { defaultValue: '發佈' })}>
+        <CardSection title={t('projects.netPublishTitle', { defaultValue: t('uiInline.s549ea65e') })}>
           <div className="stack" style={{ gap: '0.85rem' }}>
             {/* Primary: save meta + edge without SSL */}
             <div>
               <div className="u-text-muted u-text-sm u-mb-1">
-                {t('projects.netPublishPrimary', { defaultValue: '基本' })}
+                {t('projects.netPublishPrimary', { defaultValue: t('uiInline.s9dc5c003') })}
               </div>
-              <ActionBar size="md" wrap aria-label={t('projects.netPublishPrimary', { defaultValue: '基本' })}>
+              <ActionBar size="md" wrap aria-label={t('projects.netPublishPrimary', { defaultValue: t('uiInline.s9dc5c003') })}>
                 <Button
                   variant="secondary"
                   size="md"
@@ -506,14 +506,14 @@ export function ProjectNetworkTab({
               {!canSsl && hasDomain ? (
                 <Alert variant="warn" className="u-mb-2">
                   {t('projects.sslGateHint', {
-                    defaultValue: 'SSL 相關按鈕已鎖定：請先到',
+                    defaultValue: t('uiInline.s04a32a1e'),
                   })}{' '}
-                  <Link to="/ssl">{t('nav.ssl', { defaultValue: 'SSL 證書' })}</Link>{' '}
+                  <Link to="/ssl">{t('nav.ssl')}</Link>{' '}
                   {t('projects.sslGateHint2', {
-                    defaultValue: '為網域申請／上載證書後再發佈 + SSL。',
+                    defaultValue: t('uiInline.s564d50b7'),
                   })}
                   {sslReady === null
-                    ? ` (${t('common.loading', { defaultValue: '檢查中…' })})`
+                    ? ` (${t('common.checking')})`
                     : ''}
                 </Alert>
               ) : null}
@@ -521,7 +521,7 @@ export function ProjectNetworkTab({
                 <div className="u-mb-2">
                   <FormHint>
                     {t('projects.sslNeedDomain', {
-                      defaultValue: '請先填寫網域，才能發佈 Nginx / SSL。',
+                      defaultValue: t('uiInline.sd9b695a5'),
                     })}
                   </FormHint>
                 </div>
@@ -535,13 +535,13 @@ export function ProjectNetworkTab({
                   title={
                     !canSsl
                       ? t('projects.sslRequiredFirst', {
-                          defaultValue: '請先為網域建立 SSL 證書',
+                          defaultValue: t('uiInline.scb85cfff'),
                         })
                       : undefined
                   }
                   onClick={bindCall2(saveNetwork, true, true)}
                 >
-                  {t('projects.savePublishSsl', { defaultValue: '儲存並發佈 + SSL' })}
+                  {t('projects.savePublishSsl', { defaultValue: t('uiInline.s18c1af46') })}
                 </Button>
                 <Button
                   variant="ghost"
@@ -551,7 +551,7 @@ export function ProjectNetworkTab({
                   title={
                     !canSsl
                       ? t('projects.sslRequiredFirst', {
-                          defaultValue: '請先為網域建立 SSL 證書',
+                          defaultValue: t('uiInline.scb85cfff'),
                         })
                       : undefined
                   }
@@ -561,7 +561,7 @@ export function ProjectNetworkTab({
                         null,
                         t('projects.sslRequiredFirst', {
                           defaultValue:
-                            '尚未有此網域的 SSL 證書。請先到「SSL 證書」申請／上載，再按發佈 + SSL。',
+                            t('uiInline.s32dd17d9'),
                         }),
                       );
                       return;
@@ -569,7 +569,7 @@ export function ProjectNetworkTab({
                     onPublishSsl();
                   }}
                 >
-                  {t('projects.publishNginxSsl', { defaultValue: '發佈 Nginx + SSL' })}
+                  {t('projects.publishNginxSsl', { defaultValue: t('uiInline.s6a284cb0') })}
                 </Button>
               </ActionBar>
             </div>
@@ -577,9 +577,9 @@ export function ProjectNetworkTab({
             {/* Maintenance */}
             <div>
               <div className="u-text-muted u-text-sm u-mb-1">
-                {t('projects.netPublishMaint', { defaultValue: '維護' })}
+                {t('projects.netPublishMaint', { defaultValue: t('uiInline.s85483ffb') })}
               </div>
-              <ActionBar size="md" wrap aria-label={t('projects.netPublishMaint', { defaultValue: '維護' })}>
+              <ActionBar size="md" wrap aria-label={t('projects.netPublishMaint', { defaultValue: t('uiInline.s85483ffb') })}>
                 <Button
                   variant="ghost"
                   size="md"
@@ -638,8 +638,8 @@ export function ProjectNetworkTab({
                 }}
               >
                 {confPreview != null
-                  ? t('common.hide', { defaultValue: '隱藏' })
-                  : t('common.show', { defaultValue: '顯示' })}
+                  ? t('common.hide', { defaultValue: t('uiInline.s6993c6ba') })
+                  : t('common.show', { defaultValue: t('uiInline.s15671929') })}
               </Button>
             </FormActions>
             {confPreview != null ? (

@@ -147,20 +147,18 @@ export function humanizeOperatorNote(text: string): string | null {
 
   // —— Deploy / process (short labels) ——
   if (/^建置完成|^构建完成|build\s*(complete|ok|done)|編譯完成|编译完成/i.test(raw)) {
-    return tr('opsResult.stepBuildOk', { defaultValue: raw.slice(0, 40) });
+    return tr('opsResult.stepBuildOk');
   }
   if (/健康檢查通過|健康检查通过|Health OK|health\s*ok|HTTP\s*2\d\d/i.test(raw) && raw.length < 80) {
-    return tr('opsResult.stepHealthOk', { defaultValue: raw.replace(/（.*）|\(.*\)/g, '').trim() });
+    return tr('opsResult.stepHealthOk');
   }
   if (/進程已啟動|进程已启动|pid=\d+|pid\s+\d+/i.test(raw) && raw.length < 120) {
-    return tr('opsResult.stepProcessStarted', {
-      defaultValue: 'Process started',
-    });
+    return tr('opsResult.stepProcessStarted');
   }
-  if (/systemd unit 唔健康|unit not healthy|203\/EXEC|is-active=inactive/i.test(raw)) {
-    return tr('opsResult.stepSystemdFallback', {
-      defaultValue: 'Systemd unit not ready — process started via pidfile',
-    });
+  if (
+    /systemd unit (唔健康|不健康)|unit not healthy|203\/EXEC|is-active=inactive/i.test(raw)
+  ) {
+    return tr('opsResult.stepSystemdFallback');
   }
   if (/已重載 Nginx|已重载 Nginx|nginx reloaded|nginx reload/i.test(raw)) {
     return tr('notes.nginx.reloaded');
@@ -172,10 +170,10 @@ export function humanizeOperatorNote(text: string): string | null {
     return tr('notes.tpl.nginxConfigFailed', { detail: '' });
   }
   if (/已寫入 Nginx|已写入 Nginx|nginx conf|反代|proxy conf/i.test(raw) && raw.length < 160) {
-    return tr('opsResult.stepNginxWritten', { defaultValue: 'Nginx config written' });
+    return tr('opsResult.stepNginxWritten');
   }
   if (/已複製\s*\d+|已复制\s*\d+|copied\s+\d+/i.test(raw)) {
-    return tr('opsResult.stepConfigsSynced', { defaultValue: 'Configs synced to system' });
+    return tr('opsResult.stepConfigsSynced');
   }
   if (/^運行時\s*[：:]|^运行时\s*[：:]|runtime\s*[：:]/i.test(raw) && raw.length < 100) {
     // Drop — facts strip already shows port/status
@@ -191,7 +189,7 @@ export function humanizeOperatorNote(text: string): string | null {
     return null; // raw shell build line
   }
   if (/已送 SIGTERM|SIGTERM/i.test(raw)) {
-    return tr('opsResult.stepStoppedOld', { defaultValue: 'Stopped previous process' });
+    return tr('opsResult.stepStoppedOld');
   }
   if (/已變更擁有者|已变更拥有者|chown/i.test(raw)) {
     return null; // technical
@@ -200,15 +198,13 @@ export function humanizeOperatorNote(text: string): string | null {
     return null;
   }
   if (/已套用面板.*調校|已套用面板.*调校|runtime tuning/i.test(raw)) {
-    return tr('opsResult.stepTuningApplied', { defaultValue: 'Runtime tuning applied' });
+    return tr('opsResult.stepTuningApplied');
   }
   if (/已寫入系統服務|已写入系统服务|systemd.*unit|ysk-project-.*\.service/i.test(raw)) {
-    return tr('opsResult.stepUnitWritten', { defaultValue: 'Service unit written' });
+    return tr('opsResult.stepUnitWritten');
   }
   if (/系統控制啟動失敗|系统控制启动失败|enable --now failed/i.test(raw)) {
-    return tr('opsResult.stepSystemdStartFailed', {
-      defaultValue: 'Systemd start failed — using process fallback',
-    });
+    return tr('opsResult.stepSystemdStartFailed');
   }
 
   // —— Generic ——

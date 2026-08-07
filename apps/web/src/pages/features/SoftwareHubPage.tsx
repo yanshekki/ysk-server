@@ -385,34 +385,34 @@ export function SoftwareHubPage() {
       if (def.runtimeKind) {
         if (runtimeInstalled) {
           status = 'ok';
-          statusLabel = t('software.status.installed', { defaultValue: '已安裝' });
+          statusLabel = t('software.status.installed', { defaultValue: t('uiInline.s7aa09150') });
         } else {
           status = 'warn';
-          statusLabel = t('software.status.notInstalled', { defaultValue: '未安裝' });
+          statusLabel = t('software.status.notInstalled', { defaultValue: t('uiInline.sbcbdbc49') });
         }
       } else if (mx) {
         if (mx.active === 'active' || mx.active === 'tool') {
           status = 'ok';
-          statusLabel = t('software.status.running', { defaultValue: '運行中' });
+          statusLabel = t('software.status.running', { defaultValue: t('uiInline.sae7738d0') });
         } else if (mx.installed === false || mx.active === 'not-found') {
           status = 'danger';
-          statusLabel = t('software.status.missing', { defaultValue: '未偵測' });
+          statusLabel = t('software.status.missing', { defaultValue: t('uiInline.sf3af7c5e') });
         } else if (mx.active === 'inactive' || mx.active === 'failed') {
           status = mx.active === 'failed' ? 'danger' : 'warn';
           statusLabel =
             mx.active === 'failed'
-              ? t('software.status.failed', { defaultValue: '失敗' })
-              : t('software.status.stopped', { defaultValue: '已停止' });
+              ? t('software.status.failed', { defaultValue: t('uiInline.sa1d77833') })
+              : t('software.status.stopped', { defaultValue: t('uiInline.s75dddf52') });
         } else if (mx.installed) {
           status = 'ok';
-          statusLabel = t('software.status.installed', { defaultValue: '已安裝' });
+          statusLabel = t('software.status.installed', { defaultValue: t('uiInline.s7aa09150') });
         }
       } else if (primaryApt?.installed) {
         status = 'ok';
-        statusLabel = t('software.status.installed', { defaultValue: '已安裝' });
+        statusLabel = t('software.status.installed', { defaultValue: t('uiInline.s7aa09150') });
       } else if (aptChecked && !aptInstalled) {
         status = 'warn';
-        statusLabel = t('software.status.notInstalled', { defaultValue: '未安裝' });
+        statusLabel = t('software.status.notInstalled', { defaultValue: t('uiInline.sbcbdbc49') });
       }
 
       const runtimeUpdate = Boolean(
@@ -550,7 +550,7 @@ export function SoftwareHubPage() {
             n: i + 1,
             total: pkgs.length,
             pkg: p.packageName,
-            defaultValue: `更新中 ${i + 1}/${pkgs.length}：${p.packageName}`,
+            defaultValue: t('uiInline.s4e7f6152', { v0: i + 1, v1: pkgs.length, v2: p.packageName }),
           }),
           detail: t('software.apply.progressDetail', {
             from: p.currentVersion || '—',
@@ -567,13 +567,13 @@ export function SoftwareHubPage() {
           });
           if (r.blocked) {
             failList.push(
-              `${p.packageName}: ${r.blockMessage || t('software.apply.blocked', { defaultValue: '被阻擋' })}`,
+              `${p.packageName}: ${r.blockMessage || t('software.apply.blockedShort')}`,
             );
           } else if (r.ok && r.applied) {
             okList.push(p.packageName);
           } else {
             failList.push(
-              `${p.packageName}: ${(r.notes ?? []).slice(0, 1).join(' ') || t('software.apply.failed', { defaultValue: '失敗' })}`,
+              `${p.packageName}: ${(r.notes ?? []).slice(0, 1).join(' ') || t('software.apply.failedShort')}`,
             );
           }
         } catch (e) {
@@ -586,14 +586,14 @@ export function SoftwareHubPage() {
         toast.ok(
           t('software.apply.okMulti', {
             list: okList.join(', '),
-            defaultValue: `已更新：${okList.join(', ')}`,
+            defaultValue: t('uiInline.s7a90f74c', { v0: okList.join(', ') }),
           }),
         );
         setInstallFeedback({
           tone: 'ok',
           title: t('software.apply.okMultiTitle', {
             label,
-            defaultValue: `${label} 更新完成`,
+            defaultValue: t('uiInline.s0aa24093', { v0: label }),
           }),
           detail: okList.join(', '),
         });
@@ -602,25 +602,25 @@ export function SoftwareHubPage() {
       } else if (okList.length && failList.length) {
         toast.error(
           t('software.apply.partial', {
-            defaultValue: `部分成功：${okList.join(', ')}；失敗：${failList.join(' · ')}`,
+            defaultValue: t('uiInline.s5d92ffc3', { v0: okList.join(', '), v1: failList.join(' · ') }),
           }),
         );
         setInstallFeedback({
           tone: 'error',
           title: t('software.apply.partialTitle', {
-            defaultValue: '部分套件更新失敗',
+            defaultValue: t('uiInline.sa15a291f'),
           }),
           detail: `OK: ${okList.join(', ')} · FAIL: ${failList.join(' · ')}`,
         });
         setApplyTarget(null);
         void refresh();
       } else {
-        toast.error(failList.join(' · ') || t('software.apply.failed', { defaultValue: '更新未完成' }));
+        toast.error(failList.join(' · ') || t('software.apply.failed', { defaultValue: t('uiInline.sbb823c06') }));
         setInstallFeedback({
           tone: 'error',
           title: t('software.apply.failedTitle', {
             label,
-            defaultValue: `${label} 更新失敗`,
+            defaultValue: t('uiInline.s68db1348', { v0: label }),
           }),
           detail: failList.join(' · '),
         });
@@ -640,10 +640,10 @@ export function SoftwareHubPage() {
       tone: 'info',
       title: t('software.install.progress', {
         list: ids.join(', '),
-        defaultValue: `正在安裝：${ids.join(', ')}…`,
+        defaultValue: t('uiInline.s84a4e7c6', { v0: ids.join(', ') }),
       }),
       detail: t('software.install.progressHint', {
-        defaultValue: '需 root + EXECUTE；可能需要一兩分鐘。',
+        defaultValue: t('uiInline.s2ca8a4f5'),
       }),
     });
     try {
@@ -661,14 +661,14 @@ export function SoftwareHubPage() {
         const msg =
           r.blockMessage ||
           t('software.apply.blocked', {
-            defaultValue: '安裝被阻擋（需 root+EXECUTE）',
+            defaultValue: t('uiInline.sd9419dc9'),
           });
         toast.error(msg);
         setInstallFeedback({
           tone: 'error',
           title: t('software.install.blockedTitle', {
             label,
-            defaultValue: `${label} 未能安裝`,
+            defaultValue: t('uiInline.s3ec3d449', { v0: label }),
           }),
           detail: [msg, ...notes].filter(Boolean).join(' · '),
         });
@@ -676,14 +676,14 @@ export function SoftwareHubPage() {
         toast.ok(
           t('software.install.ok', {
             list: ids.join(', '),
-            defaultValue: `已提交安裝：${ids.join(', ')}`,
+            defaultValue: t('uiInline.sbb8dfdeb', { v0: ids.join(', ') }),
           }),
         );
         setInstallFeedback({
           tone: 'ok',
           title: t('software.install.okTitle', {
             label,
-            defaultValue: `${label} 安裝完成／已提交`,
+            defaultValue: t('uiInline.s18bb4b62', { v0: label }),
           }),
           detail: notes.slice(0, 4).join(' · ') || ids.join(', '),
         });
@@ -692,13 +692,13 @@ export function SoftwareHubPage() {
       } else {
         const msg =
           notes.slice(0, 2).join(' · ') ||
-          t('software.apply.failed', { defaultValue: '安裝未完成' });
+          t('software.apply.failed', { defaultValue: t('uiInline.se9a47def') });
         toast.error(msg);
         setInstallFeedback({
           tone: 'error',
           title: t('software.install.failedTitle', {
             label,
-            defaultValue: `${label} 安裝失敗`,
+            defaultValue: t('uiInline.sdc0528a2', { v0: label }),
           }),
           detail: msg,
         });
@@ -710,7 +710,7 @@ export function SoftwareHubPage() {
         tone: 'error',
         title: t('software.install.failedTitle', {
           label,
-          defaultValue: `${label} 安裝失敗`,
+          defaultValue: t('uiInline.sdc0528a2', { v0: label }),
         }),
         detail: msg,
       });
@@ -725,7 +725,7 @@ export function SoftwareHubPage() {
       const ver = String(version || '').trim();
       if (!ver) {
         toast.error(
-          t('software.version.noTarget', { defaultValue: '未有可選版本' }),
+          t('software.version.noTarget', { defaultValue: t('uiInline.s69e60fb5') }),
         );
         return;
       }
@@ -736,10 +736,10 @@ export function SoftwareHubPage() {
         title: t('software.runtime.installing', {
           kind,
           v: ver,
-          defaultValue: `正在安裝／更新 ${kind} ${ver}…（可能需要一兩分鐘）`,
+          defaultValue: t('uiInline.s3f50fa6e', { v0: kind, v1: ver }),
         }),
         detail: t('software.runtime.installingHint', {
-          defaultValue: '下方會即時顯示 server 輸出，請勿關閉頁面。',
+          defaultValue: t('uiInline.s1f5eef17'),
         }),
       });
       try {
@@ -765,7 +765,7 @@ export function SoftwareHubPage() {
           const msg =
             r.blockMessage ||
             t('software.apply.blocked', {
-              defaultValue: '更新被阻擋（需 root 且 YSK_EXECUTE=1）',
+              defaultValue: t('uiInline.s2bf6b642'),
             });
           toast.error(msg);
           setInstallFeedback({
@@ -773,7 +773,7 @@ export function SoftwareHubPage() {
             title: t('software.runtime.blockedTitle', {
               kind,
               v: ver,
-              defaultValue: `${kind} ${ver} 未能安裝`,
+              defaultValue: t('uiInline.s9b4a58e8', { v0: kind, v1: ver }),
             }),
             detail: [msg, detail].filter(Boolean).join(' · '),
           });
@@ -786,7 +786,7 @@ export function SoftwareHubPage() {
             t('software.runtime.installed', {
               kind,
               v: ver,
-              defaultValue: `已安裝／更新 ${kind} ${ver}`,
+              defaultValue: t('uiInline.s6dc82720', { v0: kind, v1: ver }),
             }),
           );
           setInstallFeedback({
@@ -794,12 +794,12 @@ export function SoftwareHubPage() {
             title: t('software.runtime.installed', {
               kind,
               v: ver,
-              defaultValue: `已安裝／更新 ${kind} ${ver}`,
+              defaultValue: t('uiInline.s6dc82720', { v0: kind, v1: ver }),
             }),
             detail:
               detail ||
               t('software.runtime.installedDetail', {
-                defaultValue: '狀態已重新整理。若仍顯示有新版本，可再檢查或到執行環境頁確認。',
+                defaultValue: t('uiInline.s94a1f025'),
               }),
           });
           // Soft refresh — discovery failure must not wipe cards
@@ -809,14 +809,14 @@ export function SoftwareHubPage() {
 
         const failMsg =
           detail ||
-          t('software.apply.failed', { defaultValue: '更新未完成' });
+          t('software.apply.failed', { defaultValue: t('uiInline.sbb823c06') });
         toast.error(failMsg);
         setInstallFeedback({
           tone: 'error',
           title: t('software.runtime.failedTitle', {
             kind,
             v: ver,
-            defaultValue: `${kind} ${ver} 安裝失敗`,
+            defaultValue: t('uiInline.s73cae5a0', { v0: kind, v1: ver }),
           }),
           detail: failMsg,
         });
@@ -828,7 +828,7 @@ export function SoftwareHubPage() {
           title: t('software.runtime.failedTitle', {
             kind,
             v: ver,
-            defaultValue: `${kind} ${ver} 安裝失敗`,
+            defaultValue: t('uiInline.s73cae5a0', { v0: kind, v1: ver }),
           }),
           detail: msg,
         });
@@ -849,16 +849,16 @@ export function SoftwareHubPage() {
     label: t(x.labelKey, {
       defaultValue:
         x.id === 'overview'
-          ? '總覽'
+          ? t('uiInline.se1050a28')
           : x.id === 'runtimes'
-            ? '執行環境'
+            ? t('uiInline.s8c29cb38')
             : x.id === 'databases'
-              ? '資料庫'
+              ? t('uiInline.s583f0654')
               : x.id === 'edge'
-                ? '域名與邊緣'
+                ? t('uiInline.s4344c486')
                 : x.id === 'mail-files'
-                  ? '郵件與檔案'
-                  : '主機服務',
+                  ? t('uiInline.sed2550e1')
+                  : t('uiInline.scb435db5'),
     }),
     badge: (() => {
       if (x.id === 'overview') return summary.updates > 0 ? summary.updates : undefined;
@@ -869,14 +869,14 @@ export function SoftwareHubPage() {
 
   return (
     <FeaturePageLayout
-      title={t('software.title', { defaultValue: '軟件中心' })}
+      title={t('software.title', { defaultValue: t('uiInline.s97bbc1b7') })}
       subtitle={t('software.desc', {
         defaultValue:
-          '全部可管理軟件一覽：安裝狀態、服務健康、新版本提示；可進入管理頁或用於專案。',
+          t('uiInline.s60a23151'),
       })}
       actions={
         <Button variant="secondary" size="sm" loading={loading} onClick={() => void refresh()}>
-          {t('common.refresh', { defaultValue: '重新整理' })}
+          {t('common.refresh', { defaultValue: t('uiInline.s5387b55b') })}
         </Button>
       }
     >
@@ -918,7 +918,7 @@ export function SoftwareHubPage() {
                     if (!installingKind) setInstallLog([]);
                   }}
                 >
-                  {t('common.dismiss', { defaultValue: '關閉' })}
+                  {t('common.dismiss', { defaultValue: t('uiInline.sddc05404') })}
                 </Button>
               </div>
             </Alert>
@@ -934,7 +934,7 @@ export function SoftwareHubPage() {
                     <div className="software-hub__stat">
                       <span className="software-hub__stat-value">{summary.total}</span>
                       <span className="software-hub__stat-label">
-                        {t('software.stat.catalog', { defaultValue: '目錄項目' })}
+                        {t('software.stat.catalog', { defaultValue: t('uiInline.s0b582c70') })}
                       </span>
                     </div>
                     <div className="software-hub__stat software-hub__stat--ok">
@@ -943,7 +943,7 @@ export function SoftwareHubPage() {
                       </span>
                       <span className="software-hub__stat-label">
                         {t('software.stat.runtimesInstalled', {
-                          defaultValue: '執行環境已裝',
+                          defaultValue: t('uiInline.s4be2a3a4'),
                         })}
                       </span>
                     </div>
@@ -952,7 +952,7 @@ export function SoftwareHubPage() {
                     >
                       <span className="software-hub__stat-value">{summary.updates}</span>
                       <span className="software-hub__stat-label">
-                        {t('software.stat.updates', { defaultValue: '有新版本／可擴充' })}
+                        {t('software.stat.updates', { defaultValue: t('uiInline.s259e6f0e') })}
                       </span>
                     </div>
                     <div
@@ -960,7 +960,7 @@ export function SoftwareHubPage() {
                     >
                       <span className="software-hub__stat-value">{summary.serviceBad}</span>
                       <span className="software-hub__stat-label">
-                        {t('software.stat.attention', { defaultValue: '需關注' })}
+                        {t('software.stat.attention', { defaultValue: t('uiInline.s13b3f970') })}
                       </span>
                     </div>
                   </div>
@@ -969,24 +969,24 @@ export function SoftwareHubPage() {
                     <Card className="u-mb-3">
                       <CardSection
                         title={t('software.aptSummaryTitle', {
-                          defaultValue: '系統倉庫可升級',
+                          defaultValue: t('uiInline.sdd33adf9'),
                         })}
                         description={t('software.aptSummaryDesc', {
                           defaultValue:
-                            '目錄軟件與主機套件清單分開統計；實際套用可在更新中心或卡片一鍵確認。',
+                            t('uiInline.sdfaaf946'),
                         })}
                       >
                         <div className="software-card__actions">
                           <Badge tone="warn">
                             {t('software.aptSummary.catalog', {
                               n: summary.catalogAptUpgradable,
-                              defaultValue: `目錄軟件 ${summary.catalogAptUpgradable}`,
+                              defaultValue: t('uiInline.s78f03e20', { v0: summary.catalogAptUpgradable }),
                             })}
                           </Badge>
                           <Badge tone={summary.hostUpgradable ? 'warn' : 'neutral'}>
                             {t('software.aptSummary.host', {
                               n: summary.hostUpgradable,
-                              defaultValue: `主機套件 ${summary.hostUpgradable}`,
+                              defaultValue: t('uiInline.sbf368054', { v0: summary.hostUpgradable }),
                             })}
                           </Badge>
                           <Link
@@ -994,7 +994,7 @@ export function SoftwareHubPage() {
                             className={buttonClassName({ variant: 'primary', size: 'sm' })}
                           >
                             {t('software.aptSummary.openUpdates', {
-                              defaultValue: '開啟更新中心',
+                              defaultValue: t('uiInline.s235a7426'),
                             })}
                           </Link>
                         </div>
@@ -1004,19 +1004,19 @@ export function SoftwareHubPage() {
 
                   <Card className="u-mb-3">
                     <CardSection
-                      title={t('software.quickTitle', { defaultValue: '快捷' })}
+                      title={t('software.quickTitle', { defaultValue: t('uiInline.s14249f75') })}
                       description={t('software.quickDesc', {
-                        defaultValue: '常用分區與主機服務入口',
+                        defaultValue: t('uiInline.saff76d0a'),
                       })}
                     >
                       <div className="software-card__actions">
                         {(
                           [
-                            ['runtimes', '執行環境'],
-                            ['databases', '資料庫'],
-                            ['edge', '域名與邊緣'],
-                            ['mail-files', '郵件與檔案'],
-                            ['host', '主機服務'],
+                            ['runtimes', t('uiInline.s8c29cb38')],
+                            ['databases', t('uiInline.s583f0654')],
+                            ['edge', t('uiInline.s4344c486')],
+                            ['mail-files', t('uiInline.sed2550e1')],
+                            ['host', t('uiInline.scb435db5')],
                           ] as const
                         ).map(([id, label]) => (
                           <Button
@@ -1056,11 +1056,11 @@ export function SoftwareHubPage() {
                     <Card className="u-mb-3">
                       <CardSection
                         title={t('software.updatesTitle', {
-                          defaultValue: '可更新／可安裝版本',
+                          defaultValue: t('uiInline.s24f12f4f'),
                         })}
                         description={t('software.updatesDesc', {
                           defaultValue:
-                            '執行環境：上游／面板新版本；服務：系統倉庫可升級。可一鍵套用套件或前往更新中心。',
+                            t('uiInline.s43a9fd7a'),
                         })}
                       >
                         <div className="software-hub__grid">
@@ -1093,7 +1093,7 @@ export function SoftwareHubPage() {
                   ) : null}
 
                   <div className="software-hub__section-head">
-                    <h3>{t('software.allSoftware', { defaultValue: '全部軟件' })}</h3>
+                    <h3>{t('software.allSoftware', { defaultValue: t('uiInline.sc45743bd') })}</h3>
                   </div>
                 </>
               ) : null}
@@ -1133,7 +1133,7 @@ export function SoftwareHubPage() {
       <ConfirmDialog
         open={Boolean(applyTarget)}
         title={t('software.apply.confirmTitle', {
-          defaultValue: '確認套用系統套件更新？',
+          defaultValue: t('uiInline.s00338fde'),
         })}
         description={
           applyTarget
@@ -1154,8 +1154,8 @@ export function SoftwareHubPage() {
               })
             : ''
         }
-        confirmLabel={t('software.apply.confirm', { defaultValue: '確認更新' })}
-        cancelLabel={t('common.cancel', { defaultValue: '取消' })}
+        confirmLabel={t('software.apply.confirm', { defaultValue: t('uiInline.s0e05f4b7') })}
+        cancelLabel={t('common.cancel', { defaultValue: t('uiInline.s4d0b4688') })}
         busy={applyBusy}
         danger
         onConfirm={() => void confirmApplyPackages()}
@@ -1170,19 +1170,19 @@ export function SoftwareHubPage() {
       <ConfirmDialog
         open={Boolean(installTarget)}
         title={t('software.install.confirmTitle', {
-          defaultValue: '確認安裝軟件？',
+          defaultValue: t('uiInline.s92b8bf67'),
         })}
         description={
           installTarget
             ? t('software.install.confirmBody', {
                 label: installTarget.cardLabel,
                 list: installTarget.ids.join(', '),
-                defaultValue: `將安裝 ${installTarget.cardLabel}：${installTarget.ids.join(', ')}。需 root 且 YSK_EXECUTE=1。`,
+                defaultValue: t('uiInline.s9af27043', { v0: installTarget.cardLabel, v1: installTarget.ids.join(', ') }),
               })
             : ''
         }
-        confirmLabel={t('software.install.confirm', { defaultValue: '確認安裝' })}
-        cancelLabel={t('common.cancel', { defaultValue: '取消' })}
+        confirmLabel={t('software.install.confirm', { defaultValue: t('uiInline.s28263d85') })}
+        cancelLabel={t('common.cancel', { defaultValue: t('uiInline.s4d0b4688') })}
         busy={applyBusy}
         onConfirm={() => void confirmInstallMissing()}
         onClose={() => {
@@ -1332,7 +1332,7 @@ function SoftwareCard({
     metaParts.push(
       t('software.meta.installed', {
         list: installedLabels.join(', '),
-        defaultValue: `已裝：${installedLabels.join(', ')}`,
+        defaultValue: t('uiInline.s2e37cbfa', { v0: installedLabels.join(', ') }),
       }),
     );
   }
@@ -1340,7 +1340,7 @@ function SoftwareCard({
     metaParts.push(
       t('software.meta.default', {
         v: activeVersion,
-        defaultValue: `預設 ${activeVersion}`,
+        defaultValue: t('uiInline.s7d52bb0c', { v0: activeVersion }),
       }),
     );
   }
@@ -1349,7 +1349,7 @@ function SoftwareCard({
     metaParts.push(
       t('software.meta.remote', {
         v: latest.remoteLatest,
-        defaultValue: `上游約 ${latest.remoteLatest}`,
+        defaultValue: t('uiInline.s9f898b85', { v0: latest.remoteLatest }),
       }),
     );
   }
@@ -1370,27 +1370,27 @@ function SoftwareCard({
       t('software.meta.aptUpgrade', {
         from: aptCurrent,
         to: aptCandidate,
-        defaultValue: `系統倉庫 ${aptCurrent} → ${aptCandidate}`,
+        defaultValue: t('uiInline.s93dde991', { v0: aptCurrent, v1: aptCandidate }),
       }),
     );
   } else if (aptCurrent && aptUpToDate) {
     metaParts.push(
       t('software.meta.aptCurrentLatest', {
         v: aptCurrent,
-        defaultValue: `已裝 ${aptCurrent} · 已是倉庫最新`,
+        defaultValue: t('uiInline.s9071dcb7', { v0: aptCurrent }),
       }),
     );
   } else if (aptCurrent && !def.runtimeKind) {
     metaParts.push(
       t('software.meta.aptVersion', {
         v: aptCurrent,
-        defaultValue: `版本 ${aptCurrent}`,
+        defaultValue: t('uiInline.s0b09f444', { v0: aptCurrent }),
       }),
     );
   } else if (aptChecked && !aptCurrent && !def.runtimeKind) {
     metaParts.push(
       t('software.meta.aptNotInstalled', {
-        defaultValue: '系統未安裝此套件（可到管理頁安裝）',
+        defaultValue: t('uiInline.sf6cc774f'),
       }),
     );
   }
@@ -1398,7 +1398,7 @@ function SoftwareCard({
     metaParts.push(
       t('software.meta.hostUpgradable', {
         n: hostUpdatesHint,
-        defaultValue: `主機約 ${hostUpdatesHint} 個套件可升級`,
+        defaultValue: t('uiInline.s42f9c88b', { v0: hostUpdatesHint }),
       }),
     );
   }
@@ -1406,10 +1406,10 @@ function SoftwareCard({
     metaParts.push(
       def.softwareIds?.length || def.runtimeKind
         ? t('software.meta.checking', {
-            defaultValue: '正在檢查版本…或開啟管理頁設定',
+            defaultValue: t('uiInline.sb72e8ebc'),
           })
         : t('software.meta.openManage', {
-            defaultValue: '面板功能頁（非 OS 套件，無系統版本更新）',
+            defaultValue: t('uiInline.sabac942e'),
           }),
     );
   }
@@ -1427,11 +1427,11 @@ function SoftwareCard({
           <Badge tone={status}>{statusLabel}</Badge>
           {hasUpdate ? (
             <Badge tone="warn">
-              {t('software.badge.update', { defaultValue: '有新版本' })}
+              {t('software.badge.update', { defaultValue: t('uiInline.sbd26894e') })}
             </Badge>
           ) : aptUpToDate ? (
             <Badge tone="ok">
-              {t('software.badge.upToDate', { defaultValue: '已是最新' })}
+              {t('software.badge.upToDate', { defaultValue: t('uiInline.s5985ee9a') })}
             </Badge>
           ) : null}
         </div>
@@ -1443,7 +1443,7 @@ function SoftwareCard({
             className="input input--sm"
             value={picked}
             onChange={(e) => setPicked(e.target.value)}
-            aria-label={t('software.version.pick', { defaultValue: '選擇版本' })}
+            aria-label={t('software.version.pick', { defaultValue: t('uiInline.s090e6a43') })}
           >
             {candidates.map((c) => (
               <option key={c.version} value={c.version}>
@@ -1461,7 +1461,7 @@ function SoftwareCard({
             disabled={installBusy || !String(picked || updateTarget || candidates[0]?.version || '').trim()}
             title={t('software.action.installVersion', {
               v: picked || updateTarget,
-              defaultValue: `安裝／更新到 ${picked || updateTarget}`,
+              defaultValue: t('uiInline.s8253535d', { v0: picked || updateTarget }),
             })}
             onClick={() => {
               if (!def.runtimeKind) return;
@@ -1475,8 +1475,8 @@ function SoftwareCard({
             }}
           >
             {installBusy
-              ? t('software.runtime.installingShort', { defaultValue: '安裝中…' })
-              : t('software.action.update', { defaultValue: '更新' })}
+              ? t('software.runtime.installingShort', { defaultValue: t('uiInline.s1723f1d7') })
+              : t('software.action.update', { defaultValue: t('uiInline.sd9db02d0') })}
           </button>
         ) : showAptUpdate ? (
           <button
@@ -1485,18 +1485,18 @@ function SoftwareCard({
             disabled={installBusy}
             title={t('software.action.applyAptTitle', {
               pkg: aptPackagesToUpdate.map((p) => p.packageName).join(', '),
-              defaultValue: `確認後更新 ${aptPackagesToUpdate.map((p) => p.packageName).join(', ')}`,
+              defaultValue: t('uiInline.sba60558e', { v0: aptPackagesToUpdate.map((p) => p.packageName).join(', ') }),
             })}
             onClick={() => onRequestAptApply?.(aptPackagesToUpdate, cardLabel)}
           >
             {installBusy
-              ? t('software.runtime.installingShort', { defaultValue: '安裝中…' })
+              ? t('software.runtime.installingShort', { defaultValue: t('uiInline.s1723f1d7') })
               : aptPackagesToUpdate.length > 1
                 ? t('software.action.updateN', {
                     n: aptPackagesToUpdate.length,
-                    defaultValue: `更新 ${aptPackagesToUpdate.length} 項`,
+                    defaultValue: t('uiInline.s706de938', { v0: aptPackagesToUpdate.length }),
                   })
-                : t('software.action.update', { defaultValue: '更新' })}
+                : t('software.action.update', { defaultValue: t('uiInline.sd9db02d0') })}
           </button>
         ) : showAptInstall ? (
           <button
@@ -1505,13 +1505,13 @@ function SoftwareCard({
             disabled={installBusy}
             title={t('software.action.installTitle', {
               list: aptMissingIds.join(', '),
-              defaultValue: `安裝 ${aptMissingIds.join(', ')}`,
+              defaultValue: t('uiInline.s0f9ddc70', { v0: aptMissingIds.join(', ') }),
             })}
             onClick={() => onRequestInstall?.(aptMissingIds, cardLabel)}
           >
             {installBusy
-              ? t('software.runtime.installingShort', { defaultValue: '安裝中…' })
-              : t('software.action.install', { defaultValue: '安裝' })}
+              ? t('software.runtime.installingShort', { defaultValue: t('uiInline.s1723f1d7') })
+              : t('software.action.install', { defaultValue: t('uiInline.sef864639') })}
           </button>
         ) : updateHref ? (
           <Link
@@ -1521,17 +1521,17 @@ function SoftwareCard({
               updateTarget
                 ? t('software.action.updateTitle', {
                     v: updateTarget,
-                    defaultValue: `前往安裝／切換至 ${updateTarget}`,
+                    defaultValue: t('uiInline.s59f613d5', { v0: updateTarget }),
                   })
                 : aptPackage
                   ? t('software.action.updateAptTitle', {
                       pkg: aptPackage,
-                      defaultValue: `前往更新中心處理 ${aptPackage}`,
+                      defaultValue: t('uiInline.s78b1688f', { v0: aptPackage }),
                     })
                   : undefined
             }
           >
-            {t('software.action.update', { defaultValue: '更新' })}
+            {t('software.action.update', { defaultValue: t('uiInline.sd9db02d0') })}
           </Link>
         ) : null}
         <Link
@@ -1541,7 +1541,7 @@ function SoftwareCard({
             size: 'sm',
           })}
         >
-          {t('software.action.manage', { defaultValue: '管理' })}
+          {t('software.action.manage', { defaultValue: t('uiInline.s4989b5cf') })}
         </Link>
         {def.serviceTo ? (
           <Link
@@ -1549,7 +1549,7 @@ function SoftwareCard({
             className={buttonClassName({ variant: 'secondary', size: 'sm' })}
           >
             {t(`nav.${def.serviceNavKey ?? 'services'}`, {
-              defaultValue: '服務',
+              defaultValue: t('uiInline.s72203f17'),
             })}
           </Link>
         ) : null}
@@ -1558,10 +1558,10 @@ function SoftwareCard({
             to={projectHref}
             className={buttonClassName({ variant: 'ghost', size: 'sm' })}
             title={t('software.action.useInProjectTitle', {
-              defaultValue: '到專案頁，可將此 runtime 用於應用',
+              defaultValue: t('uiInline.s75817a35'),
             })}
           >
-            {t('software.action.useInProject', { defaultValue: '用到專案' })}
+            {t('software.action.useInProject', { defaultValue: t('uiInline.s6d449473') })}
           </Link>
         ) : null}
       </div>

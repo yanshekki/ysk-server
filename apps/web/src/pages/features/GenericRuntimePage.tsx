@@ -468,7 +468,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
         <Alert variant="warn">
           {t('runtime.recordedButProbeEmpty', {
             v: recordedPin,
-            defaultValue: `控制面曾記錄安裝 ${recordedPin}，但主機探測未見 binary。不算已裝——請「重新探測」或重新安裝。`,
+            defaultValue: t('uiInline.sac96ec39', { v0: recordedPin }),
           })}
         </Alert>
       ) : null}
@@ -528,7 +528,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                         </Badge>
                         {i.available && i.active ? (
                           <Badge tone="ok">
-                            {t('runtime.activeDefault', { defaultValue: '預設' })}
+                            {t('runtime.activeDefault', { defaultValue: t('uiInline.sf7f7807b') })}
                           </Badge>
                         ) : null}
                         {i.resolvedPath ? (
@@ -578,7 +578,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                             value={version}
                             onChange={bindInput(setVersion)}
                             placeholder={t('runtime.versionPlaceholder', {
-                              defaultValue: '載入最新版本中，或手動輸入',
+                              defaultValue: t('uiInline.sc9530028'),
                             })}
                           />
                         );
@@ -624,7 +624,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                       panel:
                         installState.installedVersions.join(', ') ||
                         (probeData.hostRaw ? probeData.hostRaw : '—'),
-                      defaultValue: `探測已裝 ${installState.installedVersions.join(', ') || '—'} · 上游最新 ${versionStatus.latestVersion}${versionStatus.source ? `（${versionStatus.source}）` : ''}`,
+                      defaultValue: t('uiInline.s9602769e', { v0: installState.installedVersions.join(', ') || '—', v1: versionStatus.latestVersion })（${versionStatus.source}）` : ''}`,
                     })}
                   </FormHint>
                 ) : versionStatus?.notes?.length ? (
@@ -667,7 +667,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                         <FormHint>
                           {t('runtime.multiVersionHint', {
                             defaultValue:
-                              'Go／Rust 可同時保留多個版本：先「安裝」缺少的版本，再「切換為預設」決定 PATH 用邊個。',
+                              t('uiInline.sb8b5a353'),
                           })}
                         </FormHint>
                       ) : installState.newerAvailable.length === 0 ? (

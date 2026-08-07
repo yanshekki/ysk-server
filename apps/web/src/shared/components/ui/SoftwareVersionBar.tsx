@@ -94,7 +94,7 @@ export function SoftwareVersionBar({
         const ver = selected || st.latestVersion;
         if (!ver) {
           toast.error(
-            t('software.version.noTarget', { defaultValue: '未有可選版本' }),
+            t('software.version.noTarget', { defaultValue: t('uiInline.s69e60fb5') }),
           );
           return;
         }
@@ -103,7 +103,7 @@ export function SoftwareVersionBar({
         } else {
           toast.error(
             t('software.version.needRuntimePage', {
-              defaultValue: '請在執行環境頁安裝此版本',
+              defaultValue: t('uiInline.sb4e3bb0b'),
             }),
           );
         }
@@ -114,7 +114,7 @@ export function SoftwareVersionBar({
         if (!cand || cand === cur) {
           toast.error(
             t('software.version.noAptCandidate', {
-              defaultValue: '無可用倉庫候選版本',
+              defaultValue: t('uiInline.sae926193'),
             }),
           );
           return;
@@ -129,14 +129,14 @@ export function SoftwareVersionBar({
           toast.error(
             r.blockMessage ||
               t('software.apply.blocked', {
-                defaultValue: '更新被阻擋（需 root+EXECUTE）',
+                defaultValue: t('uiInline.s52573ef8'),
               }),
           );
         } else if (r.ok && r.applied) {
           toast.ok(
             t('software.apply.ok', {
               pkg,
-              defaultValue: `已套用 ${pkg} 更新`,
+              defaultValue: t('uiInline.s872d2fe0', { v0: pkg }),
             }),
           );
           setConfirmOpen(false);
@@ -144,7 +144,7 @@ export function SoftwareVersionBar({
         } else {
           toast.error(
             (r.notes ?? []).slice(0, 2).join(' · ') ||
-              t('software.apply.failed', { defaultValue: '更新未完成' }),
+              t('software.apply.failed', { defaultValue: t('uiInline.sbb823c06') }),
           );
         }
       }
@@ -158,7 +158,7 @@ export function SoftwareVersionBar({
   if (loading && !st) {
     return (
       <div className={`software-version-bar muted ${className ?? ''}`.trim()}>
-        {t('software.version.loading', { defaultValue: '檢查版本…' })}
+        {t('software.version.loading', { defaultValue: t('uiInline.s6a93c0ec') })}
       </div>
     );
   }
@@ -174,20 +174,20 @@ export function SoftwareVersionBar({
     <div className={`software-version-bar ${className ?? ''}`.trim()}>
       <div className="software-version-bar__row">
         <span className="software-version-bar__label">
-          {t('software.version.installed', { defaultValue: '已裝' })}
+          {t('software.version.installed', { defaultValue: t('uiInline.s378e49b6') })}
         </span>
-        <strong>{st.currentVersion || (st.installed ? '—' : t('software.status.notInstalled', { defaultValue: '未安裝' }))}</strong>
+        <strong>{st.currentVersion || (st.installed ? '—' : t('software.status.notInstalled', { defaultValue: t('uiInline.sbcbdbc49') }))}</strong>
         <span className="software-version-bar__label">
-          {t('software.version.latest', { defaultValue: '最新' })}
+          {t('software.version.latest', { defaultValue: t('uiInline.s7e805a12') })}
         </span>
         <strong>{st.latestVersion || '—'}</strong>
         {st.upgradable ? (
           <Badge tone="warn">
-            {t('software.badge.update', { defaultValue: '有新版本' })}
+            {t('software.badge.update', { defaultValue: t('uiInline.sbd26894e') })}
           </Badge>
         ) : st.installed && st.latestVersion ? (
           <Badge tone="ok">
-            {t('software.version.upToDate', { defaultValue: '已是最新／倉庫最新' })}
+            {t('software.version.upToDate', { defaultValue: t('uiInline.s74b39712') })}
           </Badge>
         ) : null}
         {st.source ? (
@@ -202,7 +202,7 @@ export function SoftwareVersionBar({
             className="input input--sm"
             value={selected}
             onChange={(e) => setSelected(e.target.value)}
-            aria-label={t('software.version.pick', { defaultValue: '選擇版本' })}
+            aria-label={t('software.version.pick', { defaultValue: t('uiInline.s090e6a43') })}
           >
             {st.candidates.map((c) => (
               <option key={c.version} value={c.version}>
@@ -217,7 +217,7 @@ export function SoftwareVersionBar({
           loading={loading}
           onClick={() => void load(true)}
         >
-          {t('software.version.refresh', { defaultValue: '重新檢查最新' })}
+          {t('software.version.refresh', { defaultValue: t('uiInline.s03a87d5d') })}
         </Button>
         {showUpdate && st.updateKind === 'apt' ? (
           <Button
@@ -225,7 +225,7 @@ export function SoftwareVersionBar({
             size="sm"
             onClick={() => setConfirmOpen(true)}
           >
-            {t('software.action.update', { defaultValue: '更新' })}
+            {t('software.action.update', { defaultValue: t('uiInline.sd9db02d0') })}
           </Button>
         ) : null}
         {st.updateKind === 'runtime' && (st.latestVersion || selected) ? (
@@ -238,11 +238,11 @@ export function SoftwareVersionBar({
             {st.installed && st.upgradable
               ? t('software.action.updateTo', {
                   v: selected || st.latestVersion,
-                  defaultValue: `更新到 ${selected || st.latestVersion}`,
+                  defaultValue: t('uiInline.s53c07a48', { v0: selected || st.latestVersion }),
                 })
               : t('software.action.installVersion', {
                   v: selected || st.latestVersion,
-                  defaultValue: `安裝 ${selected || st.latestVersion}`,
+                  defaultValue: t('uiInline.s425e8381', { v0: selected || st.latestVersion }),
                 })}
           </Button>
         ) : null}
@@ -253,17 +253,17 @@ export function SoftwareVersionBar({
         onClose={() => !busy && setConfirmOpen(false)}
         onConfirm={() => void applyUpdate()}
         title={t('software.apply.confirmTitle', {
-          defaultValue: '確認套用系統套件更新？',
+          defaultValue: t('uiInline.s00338fde'),
         })}
         description={t('software.apply.confirmBody', {
           pkg: st.packageName || softwareId,
           from: st.currentVersion || '—',
           to: selected || st.latestVersion || '—',
-          defaultValue: `將升級 ${st.packageName || softwareId}：${st.currentVersion || '—'} → ${selected || st.latestVersion || '—'}。需 root 且已開啟 EXECUTE。`,
+          defaultValue: t('uiInline.s5bd1242f', { v0: st.packageName || softwareId, v1: st.currentVersion || '—', v2: selected || st.latestVersion || '—' }),
         })}
         busy={busy}
         danger
-        confirmLabel={t('software.apply.confirm', { defaultValue: '確認更新' })}
+        confirmLabel={t('software.apply.confirm', { defaultValue: t('uiInline.s0e05f4b7') })}
       />
     </div>
   );

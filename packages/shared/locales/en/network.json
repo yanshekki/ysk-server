@@ -6,7 +6,7 @@
   "statGateway": "Gateway",
   "pageActions": "Page actions",
   "loadingSnap": "Loading network snapshot…",
-  "mutateHint": "Changes are live by default (ip addr / link / route) and may reset on reboot. Use Protection for firewall.",
+  "mutateHint": "Changes are live by default (ip addr / link / route) and may reset on reboot",
   "cannotMutate": "Cannot change network now (needs YSK_EXECUTE and root). View only; submit honestly reports blocked.",
   "tabs": {
     "ifaces": "Interfaces",
@@ -96,7 +96,7 @@
   "addIp": "Add IP",
   "reset": "Reset",
   "ephemeralOnly": "Live only",
-  "saveRouteHint": "Save writes NM connection + connection up; default uses ipv4.gateway, others +ipv4.routes. Needs EXECUTE + root.",
+  "saveRouteHint": "Save writes NM connection + connection up;",
   "deleteShort": "Del",
   "resetForm": "Reset form",
   "applyDnsNotes": "Apply runs nmcli connection modify + up; brief disconnect is normal. Stub 127.0.0.53 is not written (local resolved).",

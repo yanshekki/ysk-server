@@ -2683,5 +2683,32 @@
     "preserveHostLines": "已保留主機 crontab 中 {{count}} 行非 YSK 工作（不會整份覆蓋）。",
     "noHostLinesOrEmpty": "主機 crontab 無額外非 YSK 行（或空白）。",
     "installReplacesYskOnly": "安裝只更新帶 YSK 標記的工作；其他主機工作已合併保留。"
+  },
+  "dbBrowser": {
+    "pmaInstalled": "已安裝 phpMyAdmin → {{path}}",
+    "pmaConfigWritten": "已寫入 phpMyAdmin 設定與暫存目錄（Cookie 登入；上 HTTPS 更穩）",
+    "pmaExtractFailed": "phpMyAdmin 下載或解壓失敗：{{detail}}",
+    "projectCreated": "已建立專案 {{id}}（{{name}}）"
+  },
+  "firewallAllow": {
+    "already": "{{port}}/{{proto}}{{from}}：規則已存在",
+    "partial": "部分成功：{{ok}} 成功、{{fail}} 失敗",
+    "fromLabel": "（來源 {{from}}）"
+  },
+  "goLive": {
+    "deployIncomplete": "上線：部署未完成",
+    "deployFailed": "上線部署失敗：{{detail}}",
+    "publishIncomplete": "上線：發佈 Nginx 未完成",
+    "publishFailed": "上線發佈失敗：{{detail}}"
+  },
+  "ops": {
+    "projectNameExists": "專案名稱已存在：{{name}}",
+    "sslNotReady": "SSL 未就緒：網域 {{domain}} 尚無可用證書。",
+    "sslNotReadyDetail": "SSL 未就緒：網域 {{domain}} 尚無可用證書（面板申請／上載或 Let’s Encrypt live 路徑）。",
+    "sslGoToPage": "請先到「SSL 憑證」申請或上載，再發佈 + SSL。",
+    "sslRejectWrite": "已拒絕寫入 SSL nginx conf，避免 nginx -t 因缺檔失敗。",
+    "installAborted": "安裝已中止（客戶端斷線或取消）",
+    "phpPackagesPartialFail": "部分 PHP 套件安裝失敗：{{list}}（核心 CLI 可能仍可用）",
+    "pdnsBindConflict": "PowerDNS 無法綁定 0.0.0.0:53（埠被佔用），多與 systemd-resolved 衝突。請改綁公網 IP（面板：修復 PowerDNS）。"
   }
 }

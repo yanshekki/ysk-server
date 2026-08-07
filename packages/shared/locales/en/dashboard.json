@@ -6,7 +6,7 @@
   "audit": "Recent audit",
   "needLogin": "Sign in to view audit events",
   "features": "Features",
-  "featuresHint": "Badges: Ready = software installed; Not installed = one-click install needed; Needs permission = system changes off.",
+  "featuresHint": "Badges: Ready = software installed;",
   "badge": {
     "panel": "Panel",
     "notInstalled": "Not installed",
@@ -98,7 +98,7 @@
   "withMailDesc": "Needs domain; install software & DNS on mail detail page",
   "withDb": "Also draft MySQL database",
   "withDbDesc": "Control-plane registration; apply on SQL engine page",
-  "wizardHint": "Quick create does not go live automatically. Confirm and apply DNS, mail, DB, and SSL on each feature page.",
+  "wizardHint": "Quick create does not go live automatically",
   "wizardSubmit": "Create",
   "wizardOk": "Created",
   "wizardPartial": "Partially failed",

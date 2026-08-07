@@ -70,7 +70,7 @@
   "cron": "Cron expression",
   "saveSchedule": "Save schedule",
   "policyTitle": "Update policy",
-  "policyBody": "High-risk and CVE packages require approval before apply. Panel self-update is separate from system apt upgrades.",
+  "policyBody": "High-risk and CVE packages require approval before apply",
   "applyPkg": "Apply package upgrade",
   "applyPkgConfirm": "Upgrade {{name}}?",
   "applyPkgDesc": "Runs apt upgrade for this package on the host. Needs root + YSK_EXECUTE.",

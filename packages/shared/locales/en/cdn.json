@@ -69,7 +69,7 @@
   "sshHostHint": "Empty = use IPv4; 127.0.0.1 = local apply",
   "sshHostPlaceholder": "Leave empty for public IPv4",
   "sshUser": "SSH user",
-  "fleetHint": "Fleet only (no SSH): fan-out queues for agent; queued ≠ reloaded. SSH preferred when set.",
+  "fleetHint": "Fleet only (no SSH): fan-out queues for agent;",
   "fleetPlaceholder": "Agents page session UUID",
   "editSite": "Edit CDN site",
   "addSite": "Add CDN site",
@@ -110,6 +110,6 @@
   "autoMatch": "(auto match)",
   "none": "(none)",
   "writeRegionDns": "Write region subdomain A/AAAA (e.g. hkg)",
-  "workflowHint": "Flow: write conf → apply edges → probe+DNS → SSL. Project one-click: /cdn?fromProject=PROJECT_ID",
+  "workflowHint": "Flow: write conf → apply edges → probe+DNS → SSL",
   "healthLoopAll": "Health loop all sites"
 }

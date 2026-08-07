@@ -114,5 +114,6 @@
   "updatedOk": "已更新",
   "deletedOk": "已刪除",
   "applyDone": "套用完成",
-  "applyIncomplete": "套用未完成"
+  "applyIncomplete": "套用未完成",
+  "checking": "檢查中…"
 }

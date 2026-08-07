@@ -114,5 +114,6 @@
   "updatedOk": "Updated",
   "deletedOk": "Deleted",
   "applyDone": "Apply completed",
-  "applyIncomplete": "Apply incomplete"
+  "applyIncomplete": "Apply incomplete",
+  "checking": "Checking…"
 }

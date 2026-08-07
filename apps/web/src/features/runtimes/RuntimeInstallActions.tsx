@@ -39,7 +39,7 @@ export function RuntimeInstallActions({
       ? t('runtime.installedVersionBtn', { version })
       : t('runtime.installedNotActive', {
           version,
-          defaultValue: `${version} 已安裝（非預設）`,
+          defaultValue: t('uiInline.s8072fa0d', { v0: version }),
         })
     : installLabel;
 
@@ -50,7 +50,7 @@ export function RuntimeInstallActions({
           {t('runtime.switchDefaultHint', {
             version,
             defaultValue:
-              '此版本已安裝但不是目前預設。可「切換為預設」而無需重裝；亦可安裝其他版本並存。',
+              t('uiInline.s2bf2b4c4'),
           })}
         </FormHint>
       ) : installState.selectedInstalled ? (
@@ -79,7 +79,7 @@ export function RuntimeInstallActions({
           <Button variant="secondary" size="md" loading={busy} onClick={onSwitch}>
             {t('runtime.switchDefaultBtn', {
               version,
-              defaultValue: `切換為預設 ${version}`,
+              defaultValue: t('uiInline.s42f3d613', { v0: version }),
             })}
           </Button>
         ) : null}

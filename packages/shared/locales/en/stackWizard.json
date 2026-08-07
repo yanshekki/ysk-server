@@ -11,7 +11,7 @@
   "componentsTitle": "Components to install",
   "dryRun": "Dry-run preview",
   "installNow": "Install now",
-  "uninstallHint": "Select bundles to remove. If none selected, removes all tracked components. Data is kept by default.",
+  "uninstallHint": "Select bundles to remove",
   "dataPolicy": "Data policy",
   "keepData": "Keep data",
   "purgeData": "Purge data",

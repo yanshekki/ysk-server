@@ -50,8 +50,8 @@ export function ProjectsPage() {
         runtime: rt,
         version: ver ?? '—',
         defaultValue: ver
-          ? `已預填 runtime ${rt} ${ver}，可建立專案`
-          : `已預填 runtime ${rt}，可建立專案`,
+          ? t('uiInline.s27d9daa5', { v0: rt, v1: ver })
+          : t('uiInline.sb8eaefa3', { v0: rt }),
       }),
     );
     const next = new URLSearchParams(searchParams);
@@ -203,8 +203,8 @@ export function ProjectsPage() {
               const liveNote =
                 r.extras?.goLive != null
                   ? r.extras.goLive.ok
-                    ? ` · ${t('projects.goLiveOk', { defaultValue: '已部署並發佈' })}`
-                    : ` · ${t('projects.goLivePartial', { defaultValue: '已建立；部署/發佈未完成' })}`
+                    ? ` · ${t('projects.goLiveOk')}`
+                    : ` · ${t('projects.goLivePartial')}`
                   : '';
               const extra = r.extras?.notes?.length
                 ? ` · ${r.extras.notes.slice(0, 3).join('；')}`

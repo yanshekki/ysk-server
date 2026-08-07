@@ -533,7 +533,7 @@ export function PhpRuntimePage() {
                       htmlFor="php-ext-installed"
                       flush
                       hint={t('runtime.phpExtUninstallHint', {
-                        defaultValue: '可卸載非核心擴充（apt remove；唔會卸 FPM/CLI）',
+                        defaultValue: t('uiInline.sac155c20'),
                       })}
                     >
                       <ul className="runtime-plugins__list" id="php-ext-installed">
@@ -675,11 +675,11 @@ export function PhpRuntimePage() {
                   {phpInstallState.selectedInstalled
                     ? t('runtime.phpExtInstallNoteInstalled', {
                         defaultValue:
-                          '勾選擴充後按「安裝選定擴充」。此版本已在主機上，無需再裝 runtime。',
+                          t('uiInline.s23379974'),
                       })
                     : t('runtime.phpExtInstallNoteFirst', {
                         version,
-                        defaultValue: `尚未安裝 PHP ${version}：勾選擴充後按下方「安裝 PHP ${version}」一併裝核心+擴充（只有一個安裝按鈕）。`,
+                        defaultValue: t('uiInline.s7b6d4414', { v0: version, v1: version }),
                       })}
                 </FormHint>
                 {/* Runtime install only when pin not on host (or user picks a newer pin). */}
@@ -691,7 +691,7 @@ export function PhpRuntimePage() {
                     installLabel={t('runtime.installPhpWithExt', {
                       version,
                       n: extSelected.filter((id) => selectableExtIds.includes(id)).length,
-                      defaultValue: `安裝 PHP ${version}（含選定擴充）`,
+                      defaultValue: t('uiInline.s2e9a1b03', { v0: version }),
                     })}
                     onSelectNewer={setVersion}
                     extraHints={<FormHint>{t('runtime.phpExtHint')}</FormHint>}
@@ -738,18 +738,18 @@ export function PhpRuntimePage() {
                 <InstallStreamPanel lines={installLog} busy={busy} />
                 {extOps ? (
                   <div className="u-mt-3">
-                    <OpsResultPanel title={t('runtime.phpExtOpsTitle', { defaultValue: '擴充操作結果' })} result={extOps} />
+                    <OpsResultPanel title={t('runtime.phpExtOpsTitle', { defaultValue: t('uiInline.s62b73dd7') })} result={extOps} />
                   </div>
                 ) : null}
                 <ConfirmDialog
                   open={Boolean(confirmExtUninstall)}
-                  title={t('runtime.phpExtUninstallConfirmTitle', { defaultValue: '卸載 PHP 擴充？' })}
+                  title={t('runtime.phpExtUninstallConfirmTitle', { defaultValue: t('uiInline.se23513e5') })}
                   description={
                     confirmExtUninstall
                       ? t('runtime.phpExtUninstallConfirm', {
                           name: confirmExtUninstall.label,
                           pkg: confirmExtUninstall.package,
-                          defaultValue: `將 apt remove「${confirmExtUninstall.package}」。核心 FPM/CLI 唔會卸載。`,
+                          defaultValue: t('uiInline.sf8c8ff4b', { v0: confirmExtUninstall.package }),
                         })
                       : ''
                   }

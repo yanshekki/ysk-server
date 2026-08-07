@@ -430,7 +430,7 @@ export function ProjectCreateModal({
             <FormHint>
               {t('projects.createTemplateMissing', {
                 runtime: formatRuntimeName(runtime, t),
-                defaultValue: `未載入 ${formatRuntimeName(runtime, t)} 範本；請重新整理或選「— 無 —」空白專案。`,
+                defaultValue: t('uiInline.s99cc48c1', { v0: formatRuntimeName(runtime, t) }),
               })}
             </FormHint>
           ) : null}
@@ -440,7 +440,7 @@ export function ProjectCreateModal({
           <CheckboxField
             id="pc-golive"
             label={t('projects.createGoLive', {
-              defaultValue: '建立後立即部署並發佈 Nginx',
+              defaultValue: t('uiInline.sa87ceeff'),
             })}
             checked={goLive}
             onChange={setGoLive}
@@ -448,7 +448,7 @@ export function ProjectCreateModal({
           />
           {runtime !== 'static' && runtime !== 'php' ? (
             <Field
-              label={t('projects.createPreferredPort', { defaultValue: '固定埠（可選）' })}
+              label={t('projects.createPreferredPort', { defaultValue: t('uiInline.s38a63bcb') })}
               htmlFor="pport"
               flush
             >

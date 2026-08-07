@@ -96,7 +96,7 @@
   "addIp": "加 IP",
   "reset": "重置",
   "ephemeralOnly": "仅即时",
-  "saveRouteHint": "保存会写入 NM 连接并 connection up；default 用 ipv4.gateway，其他用 +ipv4.routes。需 EXECUTE + root。",
+  "saveRouteHint": "保存会写入 NM 连接并 connection up；",
   "deleteShort": "删",
   "resetForm": "重置表单",
   "applyDnsNotes": "套用后会 nmcli connection modify + up；短暂断线属正常。stub 127.0.0.53 不会写入（本机 resolved 内部用）。",

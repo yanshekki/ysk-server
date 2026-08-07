@@ -73,17 +73,21 @@ describe('humanizeOperatorNote', () => {
     const exec = humanizeOperatorNote('YSK_NEED_EXECUTE required');
     expect(exec).toBeTruthy();
     expect(exec).not.toMatch(/YSK_NEED_EXECUTE/);
-    expect(exec!.toLowerCase()).toMatch(/execute|host|panel|off|enable/);
+    // zh-HK or en localization of block
+    expect(exec!.toLowerCase()).toMatch(
+      /execute|host|panel|off|enable|系統變更|执行|權限|权限|開啟|开启|blocked|封鎖|封锁/i,
+    );
 
     const root = humanizeOperatorNote('need root privileges');
     expect(root).toBeTruthy();
-    expect(root!.toLowerCase()).toMatch(/root/);
+    expect(root!.toLowerCase()).toMatch(/root|管理員|管理员|root/);
   });
 
   it('maps written ≠ applied honesty', () => {
     const n = humanizeOperatorNote('written ≠ applied on host');
     expect(n).toBeTruthy();
-    expect(n).toMatch(/written|panel|host|applied/i);
+    // common.writtenOnly — zh-HK or en
+    expect(n).toMatch(/written|panel|host|applied|已寫入|已写入|未套用|未应用|管理/i);
   });
 
   it('maps bare success/failed tokens', () => {

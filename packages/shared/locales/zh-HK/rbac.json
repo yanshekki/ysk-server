@@ -81,7 +81,7 @@
     "securityApiKeysAdmin": "介面 金鑰管理"
   },
   "aboutRoles": "角色說明（出廠預設）",
-  "aboutRolesBody": "管理員：全部能力。Operator：日常運維（至 write-high）。Viewer：唯讀。代理：低危寫入（有 scope 限制）。可在「權限」分頁加減，並一鍵還原。",
+  "aboutRolesBody": "角色決定預設權限；用戶可再覆寫個別能力。",
   "aboutQuota": "配額說明",
   "aboutQuotaBody": "方案配額目前以面板／主機總量為主閘，並非完整多租戶硬隔離。用量列若顯示 主機 totals，即代表全機統計。",
   "dangerPolicyTitle": "授予破壞性／特權能力？",

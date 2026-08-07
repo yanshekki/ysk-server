@@ -302,13 +302,22 @@ export async function firewallAllowPort(
       : (['ufw', 'allow', target] as string[]);
     const r = await host.runCommand(argv, { timeoutMs: 12_000 });
     const combined = `${r.stdout || ''}\n${r.stderr || ''}`;
-    const fromSuffix = fromNorm ? ` from ${fromNorm}` : '';
+    const fromLabel = fromNorm
+      ? tl('notes.firewallAllow.fromLabel', { from: fromNorm })
+      : '';
     if (r.exitCode === 0) {
       okCount += 1;
       if (/skipping|existing|already/i.test(combined)) {
-        notes.push(`${label}/${p}${fromSuffix}: already allowed (idempotent)`);
+        notes.push(
+          tl('notes.firewallAllow.already', {
+            port: label,
+            proto: p,
+            from: fromLabel,
+          }),
+        );
       } else {
-        notes.push(`${tl('notes.auto.t0168', { v0: label, v1: p })}${fromSuffix}`);
+        const base = tl('notes.auto.t0168', { v0: label, v1: p });
+        notes.push(fromLabel ? `${base}${fromLabel}` : base);
       }
     } else {
       failCount += 1;
@@ -316,7 +325,9 @@ export async function firewallAllowPort(
     }
   }
   if (okCount > 0 && failCount > 0) {
-    notes.unshift(`partial: ${okCount} ok, ${failCount} failed (some rules may be open)`);
+    notes.unshift(
+      tl('notes.firewallAllow.partial', { ok: okCount, fail: failCount }),
+    );
   }
   return { ok: failCount === 0 && okCount > 0, notes };
 }

@@ -114,5 +114,6 @@
   "updatedOk": "已更新",
   "deletedOk": "已删除",
   "applyDone": "应用完成",
-  "applyIncomplete": "应用未完成"
+  "applyIncomplete": "应用未完成",
+  "checking": "检查中…"
 }

@@ -97,7 +97,7 @@ export function ProjectOverviewTab({
       {needRetry ? (
         <Alert variant="warn">
           <strong>
-            {t('projects.retryLiveTitle', { defaultValue: '上線未完成' })}
+            {t('projects.retryLiveTitle', { defaultValue: t('uiInline.sdcdc5029') })}
           </strong>
           {notes.length ? (
             <ul className="u-mb-2 u-mt-2 u-pl-5">
@@ -110,7 +110,7 @@ export function ProjectOverviewTab({
           ) : (
             <p className="u-mb-2 u-mt-1 u-text-sm">
               {t('projects.retryLiveBody', {
-                defaultValue: '部署或 Nginx 發佈未成功，可重試。',
+                defaultValue: t('uiInline.s55cc91e0'),
               })}
             </p>
           )}
@@ -122,7 +122,7 @@ export function ProjectOverviewTab({
                 loading={busy}
                 onClick={onRetryDeploy}
               >
-                {t('projects.retryDeploy', { defaultValue: '重試部署' })}
+                {t('projects.retryDeploy', { defaultValue: t('uiInline.s303f6113') })}
               </Button>
             ) : null}
             {onRetryPublish ? (
@@ -133,7 +133,7 @@ export function ProjectOverviewTab({
                 disabled={!project.domain?.trim() && project.runtime !== 'static'}
                 onClick={onRetryPublish}
               >
-                {t('projects.retryPublish', { defaultValue: '重試發佈 Nginx' })}
+                {t('projects.retryPublish', { defaultValue: t('uiInline.s3265f9ed') })}
               </Button>
             ) : null}
           </FormActions>

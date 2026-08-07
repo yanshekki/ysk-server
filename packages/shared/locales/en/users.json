@@ -69,7 +69,7 @@
   "lastSeen": "Last seen",
   "neverSeen": "Never",
   "hostUsage": "Host usage",
-  "hostUsageHint": "Machine-wide (host) totals, not hard per-user isolation. Package limits are for comparison only.",
+  "hostUsageHint": "Machine-wide (host) totals, not hard per-user isolation",
   "hostTotalsBadge": "host totals",
   "opsChecklist": "Ops checklist",
   "opsCheck1": "Give Admin only to people who need privilege; use Operator day-to-day.",
@@ -110,12 +110,12 @@
     "agent": "Automation agent: low-risk writes with scope limits."
   },
   "securityTitle": "Two-factor auth (this user)",
-  "securityPerUserHint": "TOTP/Passkey is per user. Admins can clear this user's 2FA but cannot hold or share their secret.",
+  "securityPerUserHint": "TOTP/Passkey is per user",
   "securityStatusOn": "2FA enabled",
   "securityStatusOff": "2FA not set",
   "securitySessions": "Active sessions",
   "securityClearTotp": "Force-clear this user's 2FA",
-  "securityClearTotpHint": "Requires step-up. After clear, this user can sign in with password until they re-enroll 2FA.",
+  "securityClearTotpHint": "Requires step-up",
   "securityClearConfirm": "Type the username to confirm clearing 2FA",
   "securityClearOk": "Cleared 2FA for {{name}}",
   "securitySelfNote": "To set up your own 2FA, open Security → My security."

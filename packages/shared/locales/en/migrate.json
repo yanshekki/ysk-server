@@ -29,7 +29,7 @@
   "projectHome": "Projects / home",
   "needSoftware": "Software to install",
   "noInventory": "No inventory yet",
-  "noInventoryHint": "Use Refresh (top right) to scan host state and jobs. API must load migrate routes.",
+  "noInventoryHint": "Use Refresh (top right) to scan host state and jobs",
   "targetHost": "Target host",
   "targetHostDesc": "Root SSH only; password is for this request only and is not stored",
   "sshTarget": "SSH target",
@@ -50,7 +50,7 @@
   "failed": "Failed",
   "detail": "Details",
   "jobsTitle": "Migration jobs ({{count}})",
-  "jobsDesc": "State under dataDir/migrate/; passwords never written to job files. Refresh (top right) to update.",
+  "jobsDesc": "State under dataDir/migrate/;",
   "phase": "Phase",
   "target": "Target",
   "updated": "Updated",
@@ -58,7 +58,7 @@
   "noJobs": "No migration jobs yet",
   "noJobsHint": "Jobs appear after a dry-run or full migration in the wizard.",
   "confirmTitle": "Confirm full-host migration",
-  "confirmDesc": "Will rsync and bootstrap {{target}}. Source enters maintenance; may take tens of minutes. Password used only this once.",
+  "confirmDesc": "Will rsync and bootstrap {{target}}",
   "confirmStart": "Confirm start",
   "cancel": "Cancel",
   "success": "Success",
@@ -78,5 +78,5 @@
   "dryRunOnlyDesc": "· Inventory + precheck only; no rsync or target writes",
   "executeNote": "Host needs YSK_EXECUTE=1 and root API. After migrate, update DNS A/AAAA and check cloud firewall + mail PTR.",
   "dnsCutover": "DNS cutover (manual)",
-  "dnsCutoverDesc": "Point A/AAAA for these names to the new public IP; confirm firewall 80/443/25/587 and mail rDNS."
+  "dnsCutoverDesc": "Point A/AAAA for these names to the new public IP;"
 }

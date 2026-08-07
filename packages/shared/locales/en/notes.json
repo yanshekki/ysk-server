@@ -58,7 +58,7 @@
     "vsftpdStarted": "vsftpd started",
     "openPortsStep": "Firewall ports (manual)",
     "openPortsReminder": "Open TCP ports on host firewall and cloud security group: {{ports}}. FTPS apply does not open ports for you.",
-    "openPortsPasvHint": "If login works but directory LIST times out, the PASV data range is blocked — open the full PASV range, not only port 21."
+    "openPortsPasvHint": "If login works but directory LIST times out, the PASV data range is blocked — open the ful"
   },
   "deploy": {
     "nodeMissingIsolated": "Node binary missing for isolated deploy: {{path}} — install Node {{version}} toolchain then redeploy. Refusing to write a unit that would 203/EXEC.",
@@ -103,7 +103,7 @@
     "healResyncPartial": "Listener healed but zone re-sync incomplete — click Write & load zone / powerdns load",
     "installAfterLoad": "After install, apply DNS zones (writes named.conf + rediscover) or POST powerdns/load",
     "bindFileNotEnough": "BIND backend: zone files alone do not answer dig until named.conf includes them",
-    "zeroDomainsHint": "PowerDNS list-zones: 0 — zone files on disk are not loaded (named.conf / rediscover)",
+    "zeroDomainsHint": "PowerDNS list-zones: 0 — zone files on disk are not loaded (named",
     "localAFailed": "local A probe failed for www/ftp/@ under {{zone}}",
     "publicNsCloudflare": "public NS is a third-party DNS/CDN (e.g. Cloudflare) — public dig will NOT use this host zone",
     "publicNsOther": "public NS is not this host — worldwide checks ignore local PowerDNS until registrar NS change",
@@ -112,7 +112,7 @@
     "applyDigOk": "PowerDNS BIND: list-zones + dig OK",
     "applyDigFail": "Zone registered in conf but dig still empty/REFUSED — not marking applied",
     "applySyncIncomplete": "PowerDNS bind sync incomplete — zone file on disk only (not applied). Fix EXECUTE/root or pdns logs.",
-    "writeOnlyHint": "Zone file written only — PowerDNS will not answer until load/apply registers named.conf"
+    "writeOnlyHint": "Zone file written only — PowerDNS will not answer until load/apply registers named"
   },
   "db": {
     "needExecuteCreate": "Host execute is off; cannot create database from the panel",
@@ -2683,5 +2683,32 @@
     "preserveHostLines": "Preserved {{count}} non-YSK host crontab line(s) (not a full wipe).",
     "noHostLinesOrEmpty": "No extra non-YSK host crontab lines (or empty).",
     "installReplacesYskOnly": "Install updates YSK-marked jobs only; other host jobs were merged and kept."
+  },
+  "dbBrowser": {
+    "pmaInstalled": "phpMyAdmin installed at {{path}}",
+    "pmaConfigWritten": "phpMyAdmin config and tmp written (cookie auth; HTTPS recommended)",
+    "pmaExtractFailed": "phpMyAdmin download/extract failed: {{detail}}",
+    "projectCreated": "Project created {{id}} ({{name}})"
+  },
+  "firewallAllow": {
+    "already": "{{port}}/{{proto}}{{from}}: already allowed",
+    "partial": "Partial: {{ok}} ok, {{fail}} failed",
+    "fromLabel": " from {{from}}"
+  },
+  "goLive": {
+    "deployIncomplete": "goLive: deploy incomplete",
+    "deployFailed": "goLive deploy failed: {{detail}}",
+    "publishIncomplete": "goLive: publish incomplete",
+    "publishFailed": "goLive publish failed: {{detail}}"
+  },
+  "ops": {
+    "projectNameExists": "Project name already exists: {{name}}",
+    "sslNotReady": "SSL not ready: no certificate for {{domain}}.",
+    "sslNotReadyDetail": "SSL not ready: no certificate for {{domain}} (panel SSL or Let’s Encrypt live path).",
+    "sslGoToPage": "Issue or upload a certificate on SSL, then publish + SSL.",
+    "sslRejectWrite": "Refused to write SSL nginx conf to avoid nginx -t failure.",
+    "installAborted": "Install aborted (client disconnected or cancelled)",
+    "phpPackagesPartialFail": "Some PHP packages failed: {{list}} (core CLI may still work)",
+    "pdnsBindConflict": "PowerDNS cannot bind 0.0.0.0:53 (in use); often conflicts with systemd-resolved. Bind the public IP (panel: Fix PowerDNS)."
   }
 }

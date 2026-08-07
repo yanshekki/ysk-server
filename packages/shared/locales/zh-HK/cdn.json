@@ -69,7 +69,7 @@
   "sshHostHint": "可空＝用 IPv4；127.0.0.1＝本機 local 套用",
   "sshHostPlaceholder": "留空用 public IPv4",
   "sshUser": "遠端登入 用戶",
-  "fleetHint": "僅填 機群、無 遠端登入 時：fan-out 會入佇列給 代理（ysk-server 代理 loop），已排隊 ≠ 已 重新載入。有 遠端登入 則優先同步 遠端登入。",
+  "fleetHint": "僅填 機群、無 遠端登入 時：fan-out 會入佇列給 代理（ysk-server 代理 loop），已排隊 ≠ 已 重新載入",
   "fleetPlaceholder": "Agents 頁面 工作階段 UUID",
   "editSite": "編輯 CDN 站點",
   "addSite": "新增 CDN 站點",

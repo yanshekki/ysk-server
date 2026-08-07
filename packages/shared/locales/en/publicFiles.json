@@ -15,7 +15,7 @@
   "quotaMiB": "Quota (MiB)",
   "quotaHint": "Optional; caps public directory size",
   "unlimited": "Unlimited",
-  "applyHint": "Apply only writes config; DNS, SSL, and firewall must be ready for public access.",
+  "applyHint": "Apply only writes config;",
   "appliedOk": "Public files site applied",
   "applyReload": "Apply and reload Nginx"
 }

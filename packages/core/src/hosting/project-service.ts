@@ -116,7 +116,7 @@ export class ProjectService {
     if (nameClash) {
       throw new YskError(
         ErrorCodes.VALIDATION,
-        `專案名稱已存在：${nameNorm}`,
+        tl('notes.ops.projectNameExists', { name: nameNorm }),
         { httpStatus: 409, details: { otherProjectId: nameClash.id, name: nameNorm } },
       );
     }

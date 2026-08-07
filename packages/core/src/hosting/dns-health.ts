@@ -265,9 +265,7 @@ export async function probeDnsServiceHealth(input: {
       );
       const j = (jr.stdout || '').trim();
       if (/Address already in use|Unable to bind/i.test(j)) {
-        notes.push(
-          'PowerDNS cannot bind 0.0.0.0:53 (EADDRINUSE) — usually conflicts with systemd-resolved on 127.0.0.53:53. Fix: bind public IP only (panel: 修復 PowerDNS) or set local-address=<public-ip>.',
-        );
+        notes.push(tl('notes.ops.pdnsBindConflict'));
         if (j) notes.push(j.slice(0, 280));
       }
       const failed = await input.host.runCommand(

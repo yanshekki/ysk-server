@@ -162,7 +162,7 @@ export function NginxPage() {
         <Alert variant="info">
           {t('nginx.projectSitesHint', {
             defaultValue:
-              '此頁只管理獨立站點資源。專案的 Nginx 請到 Projects → 專案 → 網絡。',
+              t('uiInline.s090aa1a7'),
           })}
         </Alert>
         {error ? <Alert variant="error">{error}</Alert> : null}

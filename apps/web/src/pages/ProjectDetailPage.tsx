@@ -382,9 +382,9 @@ export function ProjectDetailPage() {
               };
               if (!project.nginxConfigPath) return t('projects.nginxValueNone');
               if (lh.nginxReloaded || lh.nginxStatus === 'reloaded') {
-                return t('projects.nginxLive', { defaultValue: '已載入' });
+                return t('projects.nginxLive', { defaultValue: t('uiInline.sea4ba90a') });
               }
-              return t('projects.nginxWritten', { defaultValue: '已寫入' });
+              return t('projects.nginxWritten', { defaultValue: t('uiInline.sdd78429a') });
             })(),
             tone: project.nginxConfigPath ? 'ok' : 'neutral',
           },
@@ -414,7 +414,7 @@ export function ProjectDetailPage() {
             variant="ghost"
             size="md"
             onClick={() => setGuideOpen(true)}
-            title={t('common.about', { defaultValue: '說明' })}
+            title={t('common.about', { defaultValue: t('uiInline.s9b6c1b03') })}
           >
             ?
           </Button>
@@ -580,7 +580,7 @@ export function ProjectDetailPage() {
       <Modal
         open={guideOpen}
         onClose={() => setGuideOpen(false)}
-        title={t('common.about', { defaultValue: '說明' })}
+        title={t('common.about', { defaultValue: t('uiInline.s9b6c1b03') })}
         size="lg"
       >
         <PageGuide guideId="projectDetail" />
@@ -611,7 +611,7 @@ export function ProjectDetailPage() {
           setMsg(
             parts.length
               ? parts.join('；')
-              : t('projects.deletedOk', { defaultValue: '專案已刪除' }),
+              : t('projects.deletedOk', { defaultValue: t('uiInline.s858f4eca') }),
           );
           navigate('/projects', { replace: true });
         }}

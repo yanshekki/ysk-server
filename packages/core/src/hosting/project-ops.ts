@@ -722,8 +722,8 @@ export class ProjectOpsService {
         processStatus: (row.process_status as OpsProcessStatus) ?? 'stopped',
         listening: false,
         notes: [
-          `SSL 未就緒：網域 ${primary} 尚無可用證書。`,
-          '請先到「SSL 證書」申請／上載，再發佈 + SSL。',
+          tl('notes.ops.sslNotReady', { domain: primary }),
+          tl('notes.ops.sslGoToPage'),
         ],
         written: [],
         degraded: true,
@@ -940,9 +940,9 @@ export class ProjectOpsService {
         processStatus: (row.process_status as OpsProcessStatus) ?? 'stopped',
         listening: false,
         notes: [
-          `SSL 未就緒：網域 ${primary} 尚無可用證書（面板 SSL 申請／上載，或 Let's Encrypt live 路徑）。`,
-          '請先到「SSL 證書」為該域名簽發或上載 fullchain+privkey，再按「發佈 + SSL」。',
-          '已拒絕寫入 SSL nginx conf，避免 nginx -t 因缺檔失敗。',
+          tl('notes.ops.sslNotReadyDetail', { domain: primary }),
+          tl('notes.ops.sslGoToPage'),
+          tl('notes.ops.sslRejectWrite'),
         ],
         written: [],
         degraded: true,
@@ -1238,13 +1238,13 @@ export class ProjectOpsService {
       }
       notes.push(...(deploy.notes ?? []));
       if (!deploy.ok) {
-        notes.push('goLive: deploy incomplete');
+        notes.push(tl('notes.goLive.deployIncomplete'));
         persistNotes(false);
         return { ok: false, deploy, notes };
       }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      notes.push(`goLive deploy failed: ${msg}`);
+      notes.push(tl('notes.goLive.deployFailed', { detail: msg }));
       persistNotes(false);
       return { ok: false, notes };
     }
@@ -1257,13 +1257,13 @@ export class ProjectOpsService {
       });
       notes.push(...(publish.notes ?? []));
       if (!publish.ok) {
-        notes.push('goLive: publish incomplete');
+        notes.push(tl('notes.goLive.publishIncomplete'));
         persistNotes(false);
         return { ok: false, deploy, publish, notes };
       }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      notes.push(`goLive publish failed: ${msg}`);
+      notes.push(tl('notes.goLive.publishFailed', { detail: msg }));
       persistNotes(false);
       return { ok: false, deploy, notes };
     }

@@ -74,11 +74,11 @@ export function ProjectDeleteDialog({
       open={open}
       onClose={() => !busy && onClose()}
       title={t('projects.deleteDialogTitle', {
-        defaultValue: '永久刪除專案',
+        defaultValue: t('uiInline.s56f99a6b'),
       })}
       description={t('projects.deleteDialogDesc', {
         name: project.name,
-        defaultValue: `將銷毀「${project.name}」。此操作無法還原。`,
+        defaultValue: t('uiInline.sa0f2f5c6', { v0: project.name }),
       })}
       size="md"
       footer={
@@ -93,7 +93,7 @@ export function ProjectDeleteDialog({
             disabled={!nameOk}
             onClick={() => void submit()}
           >
-            {t('projects.deletePermanent', { defaultValue: '永久刪除' })}
+            {t('projects.deletePermanent', { defaultValue: t('uiInline.sa6710b42') })}
           </Button>
         </>
       }
@@ -103,26 +103,26 @@ export function ProjectDeleteDialog({
           <ul className="u-text-sm u-mb-0" style={{ paddingLeft: '1.2rem' }}>
             <li>
               {t('projects.deleteWillStop', {
-                defaultValue: '停止 systemd / PM2 / 本機進程',
+                defaultValue: t('uiInline.s06569331'),
               })}
             </li>
             <li>
               {t('projects.deleteWillWeb', {
-                defaultValue: '移除 Nginx conf、PHP-FPM pool、Apache vhost（如有）',
+                defaultValue: t('uiInline.sd20a5b0c'),
               })}
             </li>
             <li>
               {removeFiles
                 ? t('projects.deleteWillOs', {
-                    defaultValue: '刪除 Linux 用戶與 home 目錄（安全路徑）',
+                    defaultValue: t('uiInline.s4ff53acc'),
                   })
                 : t('projects.deleteKeepOs', {
-                    defaultValue: '保留 home 與 Linux 用戶（僅面板移除）',
+                    defaultValue: t('uiInline.s50dda2df'),
                   })}
             </li>
             <li>
               {t('projects.deleteWillDb', {
-                defaultValue: '從控制面資料庫移除專案',
+                defaultValue: t('uiInline.sa7f90a4a'),
               })}
             </li>
           </ul>
@@ -130,7 +130,7 @@ export function ProjectDeleteDialog({
 
         <dl className="u-text-sm" style={{ margin: 0 }}>
           <div>
-            <dt className="muted">{t('projects.name', { defaultValue: '名稱' })}</dt>
+            <dt className="muted">{t('projects.name', { defaultValue: t('uiInline.se0d24557') })}</dt>
             <dd>
               <code>{project.name}</code>
             </dd>
@@ -163,10 +163,10 @@ export function ProjectDeleteDialog({
         <CheckboxField
           id="del-files"
           label={t('projects.deleteRemoveFiles', {
-            defaultValue: '刪除磁碟 home 與 Linux 用戶',
+            defaultValue: t('uiInline.s9a9e4e32'),
           })}
           description={t('projects.deleteRemoveFilesDesc', {
-            defaultValue: '取消勾選則只從面板移除，檔案與系統用戶保留',
+            defaultValue: t('uiInline.s1cf2a97b'),
           })}
           checked={removeFiles}
           onChange={setRemoveFiles}
@@ -175,12 +175,12 @@ export function ProjectDeleteDialog({
 
         <Field
           label={t('projects.deleteTypeName', {
-            defaultValue: '輸入專案名稱以確認',
+            defaultValue: t('uiInline.s51af87fd'),
           })}
           htmlFor="del-name"
           hint={t('projects.deleteTypeNameHint', {
             name: project.name,
-            defaultValue: `請輸入「${project.name}」`,
+            defaultValue: t('uiInline.s8b04d62f', { v0: project.name }),
           })}
           flush
         >
@@ -199,7 +199,7 @@ export function ProjectDeleteDialog({
         {error ? <Alert variant="error">{error}</Alert> : null}
         <FormHint>
           {t('projects.deleteDnsWarn', {
-            defaultValue: '共享 DNS zone / 郵箱 domain 不會自動刪除。',
+            defaultValue: t('uiInline.s49d55c8f'),
           })}
         </FormHint>
       </div>

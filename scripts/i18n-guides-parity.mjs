@@ -43,15 +43,18 @@ for (const code of LOCALES) {
     if (!String(doc.title || '').trim()) failures.push(`${code}.${id}: empty title`);
     if (!String(doc.summary || '').trim()) failures.push(`${code}.${id}: empty summary`);
     const hasCanDo = Array.isArray(doc.canDo) && doc.canDo.length > 0;
-    const hasFeatures = Array.isArray(doc.features) && doc.features.length > 0;
-    if (!hasCanDo && !hasFeatures) {
-      failures.push(`${code}.${id}: need canDo[] or legacy features[]`);
+    if (!hasCanDo) {
+      failures.push(`${code}.${id}: need native canDo[] (1–5 items)`);
     }
     if (Array.isArray(doc.canDo) && doc.canDo.length > 5) {
       failures.push(`${code}.${id}: canDo length ${doc.canDo.length} > 5`);
     }
     if (Array.isArray(doc.notes) && doc.notes.length > 4) {
       failures.push(`${code}.${id}: notes length ${doc.notes.length} > 4`);
+    }
+    // Prefer slim shape: fail if only legacy content remains without canDo (already covered)
+    if (doc.features && !hasCanDo) {
+      failures.push(`${code}.${id}: legacy features without canDo`);
     }
   }
 }

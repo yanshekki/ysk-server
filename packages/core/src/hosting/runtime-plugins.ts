@@ -821,7 +821,7 @@ export async function installRuntimePlugins(input: {
       return { ok: true, kind: input.kind, notes, pluginIds: built.ids };
     }
     if (r.exitCode === 130) {
-      notes.unshift('安裝已中止（客戶端斷線或取消）');
+      notes.unshift(tl('notes.ops.installAborted'));
     }
     if (pluginFailed.length) {
       notes.unshift(tl('notes.runtime.pluginsFailed', { list: pluginFailed.join(', ') }));

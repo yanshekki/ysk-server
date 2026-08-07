@@ -40,7 +40,7 @@
   "addWhitelist": "加入白名单",
   "applyPolicyIgnoreip": "套用策略（含 ignoreip）",
   "applyIgnoreipOk": "已把 ignoreip 写入 jail.local 并套用",
-  "ignoreipHint": "无 YSK_EXECUTE 时只写管理文件（apply_status=written）；「套用策略」会重建 jail.local 的 ignoreip= 行并 reload。",
+  "ignoreipHint": "无 YSK_EXECUTE 时只写管理文件（apply_status=written）；",
   "whitelistTitle": "白名单 ({{count}})",
   "whitelistRemoved": "已移除白名单",
   "remove": "移除",

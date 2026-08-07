@@ -142,13 +142,15 @@ export async function installDbBrowserIntoProject(input: {
   const r = await input.host.runCommand(['bash', '-c', script], { timeoutMs: 180_000 });
   if (r.exitCode !== 0 || !existsSync(marker)) {
     notes.push(
-      `phpMyAdmin download/extract failed: ${(r.stderr || r.stdout || '').slice(0, 300)}`,
+      tl('notes.dbBrowser.pmaExtractFailed', {
+        detail: (r.stderr || r.stdout || '').slice(0, 300),
+      }),
     );
     return { ok: false, notes, written, entryFile: 'index.php' };
   }
   const runtime = ensurePhpMyAdminRuntimeFiles(docRoot);
   written.push(docRoot, ...runtime.written);
-  notes.push(`phpMyAdmin installed under ${docRoot}`, ...runtime.notes);
+  notes.push(tl('notes.dbBrowser.pmaInstalled', { path: docRoot }), ...runtime.notes);
   return { ok: true, notes, written, entryFile: 'index.php' };
 }
 
@@ -182,9 +184,7 @@ export function ensurePhpMyAdminRuntimeFiles(docRoot: string): {
     'utf8',
   );
   written.push(configPath, userIniPath, pmaTmp);
-  notes.push(
-    'phpMyAdmin config.inc.php + tmp/ + .user.ini written (cookie auth; HTTP-safe until SSL)',
-  );
+  notes.push(tl('notes.dbBrowser.pmaConfigWritten'));
   return { written, notes };
 }
 
@@ -276,7 +276,7 @@ export async function createDbBrowserProject(input: {
     return {
       ok: false,
       notes: [
-        `專案名稱已存在：${name}`,
+        tl('notes.ops.projectNameExists', { name }),
         `existingProjectId=${existing.id}`,
       ],
       written,
@@ -300,7 +300,9 @@ export async function createDbBrowserProject(input: {
     const msg = e instanceof Error ? e.message : String(e);
     return { ok: false, notes: [msg], written, apply_status: 'failed' };
   }
-  notes.push(`project created: ${created.project.id} (${name})`);
+  notes.push(
+    tl('notes.dbBrowser.projectCreated', { id: created.project.id, name }),
+  );
   if (created.scaffold?.notes?.length) notes.push(...created.scaffold.notes.slice(0, 4));
 
   const row = input.projects.get(created.project.id);

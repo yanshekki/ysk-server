@@ -69,7 +69,7 @@
   "sshHostHint": "可空＝用 IPv4；127.0.0.1＝本机 local apply",
   "sshHostPlaceholder": "留空用 public IPv4",
   "sshUser": "SSH 用户",
-  "fleetHint": "仅填 fleet、无 SSH 时：fan-out 会入队列给 agent（ysk-server agent loop），queued ≠ 已 reload。有 SSH 则优先同步 SSH。",
+  "fleetHint": "仅填 fleet、无 SSH 时：fan-out 会入队列给 agent（ysk-server agent loop），queued ≠ 已 r",
   "fleetPlaceholder": "Agents 页面 session UUID",
   "editSite": "編輯 CDN 站点",
   "addSite": "新增 CDN 站点",

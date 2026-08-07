@@ -140,11 +140,11 @@ export function AppShell() {
                           item.to === '/software'
                             ? t('software.navBadgeTitle', {
                                 n: badgeN,
-                                defaultValue: `目錄軟件系統倉庫可升級：${badgeN}`,
+                                defaultValue: t('uiInline.s239f6551', { v0: badgeN }),
                               })
                             : t('updates.navBadgeTitle', {
                                 n: badgeN,
-                                defaultValue: `主機可升級套件：${badgeN}`,
+                                defaultValue: t('uiInline.sa00380bd', { v0: badgeN }),
                               })
                         }
                       >

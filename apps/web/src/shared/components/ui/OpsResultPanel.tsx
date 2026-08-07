@@ -90,7 +90,7 @@ export function OpsResultPanel({
     autoFacts.push({ label: t('opsResult.port'), value: String(result.port) });
   }
   if (result?.pid != null) {
-    autoFacts.push({ label: t('opsResult.pid', { defaultValue: 'PID' }), value: String(result.pid) });
+    autoFacts.push({ label: t('opsResult.pid'), value: String(result.pid) });
   }
   if (result?.url) {
     autoFacts.push({
@@ -153,11 +153,8 @@ export function OpsResultPanel({
             onClick={() => setShowTech((v) => !v)}
           >
             {showTech
-              ? t('opsResult.hideDetails', { defaultValue: 'Hide details' })
-              : t('opsResult.showDetails', {
-                  defaultValue: 'Details ({{count}})',
-                  count: technical.length,
-                })}
+              ? t('opsResult.hideDetails')
+              : t('opsResult.showDetails', { count: technical.length })}
           </button>
           {showTech ? (
             <ul className="ops-result__notes ops-result__notes--tech">

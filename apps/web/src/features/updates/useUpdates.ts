@@ -273,7 +273,7 @@ export function useUpdates() {
               const msg = t('updates.batchDone', {
                 ok: ok.length,
                 fail: fail.length,
-                defaultValue: `批量完成：成功 ${ok.length}，失敗 ${fail.length}`,
+                defaultValue: t('uiInline.s9e5d3a97', { v0: ok.length, v1: fail.length }),
               });
               if (fail.length) toast.error(msg);
               else toast.ok(msg);
@@ -289,14 +289,14 @@ export function useUpdates() {
             fail.push({
               pkg: rows[i]!.packageName,
               message: t('updates.batchCancelled', {
-                defaultValue: '已取消（其餘未執行）',
+                defaultValue: t('uiInline.s1f0a4bf9'),
               }),
             });
             for (let j = i + 1; j < rows.length; j++) {
               fail.push({
                 pkg: rows[j]!.packageName,
                 message: t('updates.batchCancelled', {
-                  defaultValue: '已取消（其餘未執行）',
+                  defaultValue: t('uiInline.s1f0a4bf9'),
                 }),
               });
             }
@@ -360,7 +360,7 @@ export function useUpdates() {
               t('updates.batchDone', {
                 ok: ok.length,
                 fail: 0,
-                defaultValue: `批量完成：成功 ${ok.length}，失敗 0`,
+                defaultValue: t('uiInline.s7193f51b', { v0: ok.length }),
               }),
             );
           } else if (ok.length || fail.length) {
@@ -368,7 +368,7 @@ export function useUpdates() {
               t('updates.batchDone', {
                 ok: ok.length,
                 fail: fail.length,
-                defaultValue: `批量完成：成功 ${ok.length}，失敗 ${fail.length}`,
+                defaultValue: t('uiInline.s9e5d3a97', { v0: ok.length, v1: fail.length }),
               }),
             );
           }

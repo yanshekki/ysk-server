@@ -264,7 +264,7 @@ export function RuntimePluginsField({
           r,
           ids.length === 1
             ? t('runtime.pluginUninstalled', { name: label })
-            : t('runtime.pluginBatchUninstalled', { n: ids.length, defaultValue: `已卸載 ${ids.length} 個工具` }),
+            : t('runtime.pluginBatchUninstalled', { n: ids.length, defaultValue: t('uiInline.sd93b8620', { v0: ids.length }) }),
           t('runtime.pluginUninstallFailed', { name: label }),
         );
         setUninstallSelected([]);
@@ -353,7 +353,7 @@ export function RuntimePluginsField({
                 >
                   {t('runtime.pluginBatchUninstall', {
                     n: uninstallSelected.length,
-                    defaultValue: `卸載選定 (${uninstallSelected.length})`,
+                    defaultValue: t('uiInline.sd0ef129c', { v0: uninstallSelected.length }),
                   })}
                 </Button>
               </FormActions>
@@ -365,7 +365,7 @@ export function RuntimePluginsField({
       {opsResult ? (
         <div className="u-mt-2 u-mb-2" id={`rt-plugins-ops-${kind}`}>
           <OpsResultPanel
-            title={t('runtime.pluginsOpsTitle', { defaultValue: '工具操作結果' })}
+            title={t('runtime.pluginsOpsTitle', { defaultValue: t('uiInline.se6d47d0b') })}
             result={opsResult}
           />
         </div>
@@ -409,13 +409,13 @@ export function RuntimePluginsField({
               >
                 {t('runtime.pluginsInstallSelected', {
                   n: selectedForInstall.length,
-                  defaultValue: `安裝選定工具 (${selectedForInstall.length})`,
+                  defaultValue: t('uiInline.se6436711', { v0: selectedForInstall.length }),
                 })}
               </Button>
             ) : (
               <FormHint>
                 {t('runtime.pluginsBundleWithRuntime', {
-                  defaultValue: '選定工具會隨下方「安裝 runtime」一併安裝（只有一個安裝按鈕）。',
+                  defaultValue: t('uiInline.s1a27a3c4'),
                 })}
               </FormHint>
             )}
@@ -480,7 +480,7 @@ export function RuntimePluginsField({
         title={t('runtime.pluginUninstallConfirmTitle')}
         description={t('runtime.pluginBatchUninstallConfirm', {
           n: uninstallSelected.length,
-          defaultValue: `將卸載 ${uninstallSelected.length} 個已選工具。`,
+          defaultValue: t('uiInline.s32add03e', { v0: uninstallSelected.length }),
         })}
         confirmLabel={t('runtime.pluginUninstall')}
         cancelLabel={t('common.cancel')}
@@ -489,7 +489,7 @@ export function RuntimePluginsField({
         onConfirm={() => {
           void runUninstallIds(
             uninstallSelected,
-            t('runtime.pluginBatchLabel', { defaultValue: '選定工具' }),
+            t('runtime.pluginBatchLabel', { defaultValue: t('uiInline.s3bca33b2') }),
           );
         }}
         onClose={() => {

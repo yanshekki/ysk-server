@@ -95,7 +95,7 @@
   "hostYsk": "Host YSK",
   "lastInstall": "Last install",
   "installToSystem": "Install to system crontab",
-  "installHint": "Install merges host crontab: keeps non-YSK lines and updates panel-managed jobs only. Needs YSK_EXECUTE.",
+  "installHint": "Install merges host crontab: keeps non-YSK lines and updates panel-managed jobs only",
   "hostPreview": "Host crontab preview",
   "cannotRead": "Cannot read or not installed (needs privileges)",
   "addJobTitle": "Add job",
