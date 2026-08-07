@@ -586,19 +586,71 @@ export function defaultProcessCommands(
     };
   }
   if (runtime === 'java' || runtime === 'kotlin') {
-    // JVM apps: prefer fat jar; build via Maven wrapper / Gradle when present
+    // JVM apps: single-file hello (HelloServer.java/.kt), fat jar, or Maven/Gradle
     const entry = opts.entry ?? 'app.jar';
+    const entryBase = entry.replace(/^\.\//, '');
+    const ver = (opts.version ?? '').replace(/^jdk-?/i, '').split('.')[0] || '21';
+    const javaHome = `/usr/lib/jvm/java-${ver}-openjdk-amd64`;
+    const javaBin = `[ -x ${javaHome}/bin/java ] && echo ${javaHome}/bin/java || command -v java`;
+    const javacBin = `[ -x ${javaHome}/bin/javac ] && echo ${javaHome}/bin/javac || command -v javac`;
+
+    // Plain Java source (YSK hello template)
+    if (entryBase.endsWith('.java')) {
+      const cls = entryBase.replace(/\.java$/i, '').replace(/^.*\//, '');
+      const build =
+        `JAVA_BIN=$(${javaBin}); JAVAC_BIN=$(${javacBin}); ` +
+        `if [ -z "$JAVAC_BIN" ]; then echo "javac not found — install Java ${ver} runtime" >&2; exit 127; fi; ` +
+        `echo "ysk java build: javac=$JAVAC_BIN class=${cls}" >&2; ` +
+        `"$JAVAC_BIN" -encoding UTF-8 ${entryBase}`;
+      return {
+        build,
+        execStart: `/bin/bash -lc 'JAVA_BIN=$(${javaBin}); export SERVER_PORT="\${PORT:-3000}"; exec "$JAVA_BIN" -cp . ${cls}'`,
+        entry: entryBase,
+      };
+    }
+
+    // Kotlin single-file hello
+    if (entryBase.endsWith('.kt')) {
+      const jarOut = 'hello-server.jar';
+      const build =
+        `KOTLINC=$(command -v kotlinc || true); ` +
+        `if [ -z "$KOTLINC" ] && [ -x /usr/local/ysk/kotlin/bin/kotlinc ]; then KOTLINC=/usr/local/ysk/kotlin/bin/kotlinc; fi; ` +
+        `if [ -z "$KOTLINC" ]; then echo "kotlinc not found — install Kotlin runtime" >&2; exit 127; fi; ` +
+        `echo "ysk kotlin build: kotlinc=$KOTLINC entry=${entryBase}" >&2; ` +
+        `"$KOTLINC" ${entryBase} -include-runtime -d ${jarOut}`;
+      return {
+        build,
+        execStart: `/bin/bash -lc 'JAVA_BIN=$(${javaBin}); export SERVER_PORT="\${PORT:-3000}"; exec "$JAVA_BIN" -jar ./${jarOut}'`,
+        entry: `./${jarOut}`,
+      };
+    }
+
+    // Prefer fat jar; build via Maven wrapper / Gradle when present
     const build =
       'if [ -x ./mvnw ]; then ./mvnw -q -DskipTests package; ' +
       'elif [ -x ./gradlew ]; then ./gradlew -q bootJar || ./gradlew -q jar; ' +
       'elif [ -f pom.xml ]; then mvn -q -DskipTests package; ' +
       'elif [ -f build.gradle ] || [ -f build.gradle.kts ]; then gradle -q bootJar || gradle -q jar; ' +
-      'else echo "no Maven/Gradle build — using existing jar"; fi';
+      'elif [ -f HelloServer.java ]; then ' +
+      `JAVA_BIN=$(${javaBin}); JAVAC_BIN=$(${javacBin}); ` +
+      '"$JAVAC_BIN" -encoding UTF-8 HelloServer.java; ' +
+      'elif [ -f HelloServer.kt ]; then ' +
+      'KOTLINC=$(command -v kotlinc || true); ' +
+      '[ -z "$KOTLINC" ] && [ -x /usr/local/ysk/kotlin/bin/kotlinc ] && KOTLINC=/usr/local/ysk/kotlin/bin/kotlinc; ' +
+      '"$KOTLINC" HelloServer.kt -include-runtime -d hello-server.jar; ' +
+      'else echo "no Maven/Gradle/HelloServer — expecting existing jar" >&2; fi';
     const jar = entry.startsWith('./') || entry.startsWith('/') ? entry : `./${entry}`;
+    // If still on default app.jar but HelloServer was compiled, run class instead
+    const execStart =
+      `/bin/bash -lc '` +
+      `JAVA_BIN=$(${javaBin}); export SERVER_PORT="\${PORT:-3000}"; ` +
+      `if [ -f ${jar} ]; then exec "$JAVA_BIN" -jar ${jar}; ` +
+      `elif [ -f hello-server.jar ]; then exec "$JAVA_BIN" -jar ./hello-server.jar; ` +
+      `elif [ -f HelloServer.class ]; then exec "$JAVA_BIN" -cp . HelloServer; ` +
+      `else echo "no runnable jar/class found" >&2; exit 127; fi'`;
     return {
       build,
-      // Spring Boot honors SERVER_PORT; others often use PORT
-      execStart: `/bin/bash -lc 'export SERVER_PORT="\${PORT:-3000}"; exec java -jar ${jar}'`,
+      execStart,
       entry: jar,
     };
   }
@@ -618,8 +670,15 @@ export function defaultProcessCommands(
   };
 }
 
-/** Detect a reasonable jar path under appDir (Maven/Gradle layouts). */
+/** Detect a reasonable jar / hello source under appDir (Maven/Gradle/hello layouts). */
 export function detectJavaEntry(appDir: string): string | undefined {
+  // YSK single-file hello templates first
+  for (const rel of ['HelloServer.java', 'HelloServer.kt', 'Main.java', 'App.java']) {
+    if (existsSync(join(appDir, rel))) return rel;
+  }
+  if (existsSync(join(appDir, 'HelloServer.class'))) return 'HelloServer.java';
+  if (existsSync(join(appDir, 'hello-server.jar'))) return './hello-server.jar';
+
   const candidates = [
     'app.jar',
     'application.jar',

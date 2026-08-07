@@ -279,6 +279,7 @@ export class ProjectService {
       hsts: false,
       preferred_port: preferredPort,
       doc_root: defaultDocRoot,
+      deploy_entry: scaffold?.entry ? String(scaffold.entry) : undefined,
       owner_user_id: input.actorUserId,
       created_at: now,
       updated_at: now };

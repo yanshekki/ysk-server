@@ -107,9 +107,18 @@ describe('multi-version runtimes', () => {
     expect(listSupportedRuntimes().bun).toEqual([]);
 
     const j = defaultProcessCommands('java', { entry: 'app.jar', port: 8080 });
-    expect(j.execStart).toContain('java -jar');
+    expect(j.execStart).toMatch(/-jar/);
     expect(j.execStart).not.toContain('node ');
-    expect(j.build).toMatch(/mvnw|gradlew|Maven/);
+    expect(j.build).toMatch(/mvnw|gradlew|Maven|HelloServer/);
+
+    const hello = defaultProcessCommands('java', {
+      entry: 'HelloServer.java',
+      version: '25',
+    });
+    expect(hello.build).toContain('javac');
+    expect(hello.build).toContain('HelloServer.java');
+    expect(hello.execStart).toContain('HelloServer');
+    expect(hello.execStart).not.toMatch(/-jar/);
 
     const b = defaultProcessCommands('bun', { entry: 'index.ts' });
     expect(b.execStart).toContain('bun');
@@ -119,8 +128,13 @@ describe('multi-version runtimes', () => {
   it('detects java jar and bun entry on disk', () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-rt-'));
     try {
+      writeFileSync(join(dir, 'HelloServer.java'), 'class HelloServer {}');
+      expect(detectJavaEntry(dir)).toBe('HelloServer.java');
       mkdirSync(join(dir, 'target'), { recursive: true });
       writeFileSync(join(dir, 'target', 'demo-SNAPSHOT.jar'), 'x');
+      // hello source wins over jar
+      expect(detectJavaEntry(dir)).toBe('HelloServer.java');
+      rmSync(join(dir, 'HelloServer.java'));
       expect(detectJavaEntry(dir)).toContain('.jar');
       writeFileSync(join(dir, 'index.ts'), 'console.log(1)');
       expect(detectBunEntry(dir)).toBe('index.ts');
