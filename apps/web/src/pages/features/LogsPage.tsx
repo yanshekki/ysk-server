@@ -2,7 +2,7 @@
  * System Log Center — SOC-style professional UX.
  * Explore (sources + viewer) · Ops (vacuum/disk) · Settings
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../shared/lib/i18n';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -346,7 +346,10 @@ export function LogsPage() {
     void refreshMeta();
   }, [refreshMeta]);
 
-  // deep links
+  /** Avoid re-auto-query loop when runQuery rewrites ?source= / ?unit= */
+  const deepLinkQueryKey = useRef<string | null>(null);
+
+  // deep links: select source AND load logs immediately (e.g. /logs?source=file:letsencrypt)
   useEffect(() => {
     const u = searchParams.get('unit');
     const s = searchParams.get('source');
@@ -357,13 +360,21 @@ export function LogsPage() {
       if (mapped) setTab(mapped);
       if (t === 'projects') setProjectsOnly(true);
     }
-    if (u) setActiveSource(`journal:${u}`);
-    else if (s) setActiveSource(s);
+    const deepSrc = u ? `journal:${u}` : s || null;
+    if (deepSrc) {
+      setActiveSource(deepSrc);
+      // Auto-open: run query once per distinct deep-link target
+      if (deepLinkQueryKey.current !== deepSrc) {
+        deepLinkQueryKey.current = deepSrc;
+        void runQuery(deepSrc);
+      }
+    }
     if (projectId) {
       setProjectsOnly(true);
       setCollapsedProjects((c) => ({ ...c, [projectId]: false }));
     }
     if (searchParams.get('projectsOnly') === '1') setProjectsOnly(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to URL; runQuery is stable enough for fire-and-forget
   }, [searchParams, setTab]);
 
   // When ?project= and index loaded, pick first available source for that project
@@ -374,12 +385,16 @@ export function LogsPage() {
     const p = projects.find((x) => x.projectId === projectId);
     if (!p) return;
     const firstFile = p.files.find((f) => f.previewable !== false);
-    if (firstFile) {
-      setActiveSource(`project:${p.projectId}:${firstFile.name}`);
-      return;
+    const next = firstFile
+      ? `project:${p.projectId}:${firstFile.name}`
+      : p.related?.find((r) => r.available)?.source;
+    if (!next) return;
+    setActiveSource(next);
+    if (deepLinkQueryKey.current !== next) {
+      deepLinkQueryKey.current = next;
+      void runQuery(next);
     }
-    const rel = p.related?.find((r) => r.available);
-    if (rel) setActiveSource(rel.source);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projects, searchParams]);
 
   const railItems = useMemo((): RailItem[] => {
