@@ -249,6 +249,34 @@ describe('firewall-ops', () => {
     expect(bothCalls.some((a) => a.includes('53/tcp'))).toBe(true);
     expect(bothCalls.some((a) => a.includes('53/udp'))).toBe(true);
 
+    const fromCalls: string[][] = [];
+    const fromHost = host({
+      execute: true,
+      run: (argv) => {
+        fromCalls.push(argv.map(String));
+        return { stdout: 'Rule added', stderr: '', exitCode: 0, argv, dryRun: false };
+      },
+    });
+    expect((await firewallAllowPort(fromHost, 3306, 'tcp', '203.0.113.10')).ok).toBe(true);
+    expect(
+      fromCalls.some(
+        (a) =>
+          a.includes('from') &&
+          a.includes('203.0.113.10') &&
+          a.includes('3306') &&
+          a.includes('tcp'),
+      ),
+    ).toBe(true);
+    expect((await firewallAllowPort(fromHost, '30000:30100', 'tcp', '10.0.0.0/8')).ok).toBe(
+      true,
+    );
+    expect(
+      fromCalls.some(
+        (a) => a.includes('from') && a.includes('10.0.0.0/8') && a.includes('30000:30100'),
+      ),
+    ).toBe(true);
+    expect((await firewallAllowPort(fromHost, 8080, 'tcp', 'not-an-ip')).ok).toBe(false);
+
     const blocked = host({ execute: false });
     expect((await firewallDenyIp(blocked, '1.1.1.1')).blocked).toBe(true);
     expect((await firewallDeleteDenyIp(blocked, '1.1.1.1')).blocked).toBe(true);

@@ -83,11 +83,22 @@ export const systemApi = {
       method: 'POST',
       body: JSON.stringify({ num }),
     }),
-  /** port: number | "80" | "30000:30100"; proto includes both (TCP+UDP) */
-  firewallAllowPort: (port: number | string, proto: 'tcp' | 'udp' | 'both' = 'tcp') =>
+  /**
+   * port: number | "80" | "30000:30100"; proto includes both (TCP+UDP).
+   * from: optional source IP/CIDR — only allow that source (UFW `allow from …`).
+   */
+  firewallAllowPort: (
+    port: number | string,
+    proto: 'tcp' | 'udp' | 'both' = 'tcp',
+    from?: string,
+  ) =>
     api.requestRaw('/api/v1/system/firewall/allow-port', {
       method: 'POST',
-      body: JSON.stringify({ port, proto }),
+      body: JSON.stringify({
+        port,
+        proto,
+        ...(from?.trim() ? { from: from.trim() } : {}),
+      }),
     }),
   firewallServicePorts: () =>
     api.requestRaw<{

@@ -5,7 +5,7 @@ import { tl } from '@ysk/shared';
  */
 
 import type { HostExecutor } from '../host/executor.js';
-import { isValidIp, normalizeIp } from '../net/ip.js';
+import { isValidIp, normalizeIp, normalizeIpOrCidr } from '../net/ip.js';
 import { HostSoftwareProbe } from './software-probe/index.js';
 
 export type UfwRule = {
@@ -253,11 +253,14 @@ export async function firewallDeleteRuleNumber(
  * Allow a single port or UFW range (e.g. 30000:30100 for FTPS PASV).
  * `port` may be number, "80", or "30000:30100".
  * `proto: 'both'` opens TCP and UDP (two UFW rules).
+ * Optional `from` (IPv4/IPv6 or CIDR) → `ufw allow from <src> to any port <n> proto <p>`.
+ * Empty / omitted `from` → public allow (anywhere).
  */
 export async function firewallAllowPort(
   host: HostExecutor,
   port: number | string,
   proto: 'tcp' | 'udp' | 'both' = 'tcp',
+  from?: string,
 ): Promise<{ ok: boolean; notes: string[]; blocked?: boolean }> {
   const block = needExec(host);
   if (block) return block;
@@ -276,6 +279,15 @@ export async function firewallAllowPort(
   const protos: Array<'tcp' | 'udp'> =
     proto === 'both' ? ['tcp', 'udp'] : [proto === 'udp' ? 'udp' : 'tcp'];
 
+  const fromRaw = String(from ?? '').trim();
+  let fromNorm: string | null = null;
+  if (fromRaw) {
+    fromNorm = normalizeIpOrCidr(fromRaw);
+    if (!fromNorm) {
+      return { ok: false, notes: [tl('notes.invalidIp46')] };
+    }
+  }
+
   const notes: string[] = [];
   let okCount = 0;
   let failCount = 0;
@@ -285,14 +297,18 @@ export async function firewallAllowPort(
     if (!target) {
       return { ok: false, notes: [tl('notes.auto.n1113')] };
     }
-    const r = await host.runCommand(['ufw', 'allow', target], { timeoutMs: 12_000 });
+    const argv = fromNorm
+      ? (['ufw', 'allow', 'from', fromNorm, 'to', 'any', 'port', label, 'proto', p] as string[])
+      : (['ufw', 'allow', target] as string[]);
+    const r = await host.runCommand(argv, { timeoutMs: 12_000 });
     const combined = `${r.stdout || ''}\n${r.stderr || ''}`;
+    const fromSuffix = fromNorm ? ` from ${fromNorm}` : '';
     if (r.exitCode === 0) {
       okCount += 1;
       if (/skipping|existing|already/i.test(combined)) {
-        notes.push(`${label}/${p}: already allowed (idempotent)`);
+        notes.push(`${label}/${p}${fromSuffix}: already allowed (idempotent)`);
       } else {
-        notes.push(tl('notes.auto.t0168', { v0: label, v1: p }));
+        notes.push(`${tl('notes.auto.t0168', { v0: label, v1: p })}${fromSuffix}`);
       }
     } else {
       failCount += 1;

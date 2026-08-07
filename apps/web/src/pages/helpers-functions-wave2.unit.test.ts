@@ -59,7 +59,6 @@ import {
   countFailedCerts,
   stepStatusLabel,
   formatStepLine,
-  bindingHasTargets,
 } from './features/SslPage';
 import {
   countAppliedDomains,
@@ -501,11 +500,6 @@ describe('SslPage wave2 helpers', () => {
     expect(
       formatStepLine({ name: 'issue', status: 'failed', detail: 'nx' }, t),
     ).toBe('issue: ssl.step.failed — nx');
-
-    expect(bindingHasTargets({})).toBe(false);
-    expect(bindingHasTargets({ projects: [] })).toBe(false);
-    expect(bindingHasTargets({ projects: [{ name: 'a' }] })).toBe(true);
-    expect(bindingHasTargets({ mailDomains: [{ domain: 'm' }] })).toBe(true);
   });
 });
 

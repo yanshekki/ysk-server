@@ -62,7 +62,6 @@ import {
   countFailedCerts,
   stepStatusLabel,
   formatStepLine,
-  bindingHasTargets,
 } from './features/SslPage';
 import {
   countAppliedDomains,
@@ -308,10 +307,6 @@ describe('Dns Ftp Sql Redis Ssl Email helpers', () => {
     expect(countFailedCerts([{ status: 'failed' }, { status: 'ok' }])).toBe(1);
     expect(stepStatusLabel('done', t)).toBeTruthy();
     expect(formatStepLine({ status: 'ok', message: 'm' } as never, t)).toBeTruthy();
-    expect(bindingHasTargets({ projects: ['a'] })).toBe(true);
-    expect(bindingHasTargets({ mailDomains: ['m'] })).toBe(true);
-    expect(bindingHasTargets({ domains: ['a'] } as never)).toBe(false);
-    expect(bindingHasTargets({})).toBe(false);
   });
 
   it('email list helpers', () => {

@@ -145,6 +145,16 @@ export function isValidDenyIp(ip: string): boolean {
   return /^[\d.a-fA-F:/]+$/.test(s) && s.length >= 3;
 }
 
+/**
+ * Optional allow-from source: empty = anywhere; otherwise IPv4/IPv6 or CIDR-looking string.
+ * Final validation is server-side (normalizeIpOrCidr).
+ */
+export function isValidAllowFrom(raw: string): boolean {
+  const s = raw.trim();
+  if (!s) return true;
+  return isValidDenyIp(s);
+}
+
 /** Map raw rule rows into table-friendly shape. */
 export function mapFirewallRules(
   rules:
@@ -214,6 +224,8 @@ export function FirewallPage() {
   const [denyIp, setDenyIp] = useState('');
   const [portInput, setPortInput] = useState('80/tcp');
   const [portProto, setPortProto] = useState<'tcp' | 'udp' | 'both'>('tcp');
+  /** Optional source IP/CIDR — empty = allow from anywhere */
+  const [portFrom, setPortFrom] = useState('');
 
   const onPortChipChange = useCallback((v: string) => {
     setPortInput(v);
@@ -519,15 +531,38 @@ export function FirewallPage() {
                     disabled={busy}
                   />
                 </Field>
+                <Field
+                  label={t('firewall.allowFrom')}
+                  htmlFor="fw-from"
+                  flush
+                  hint={t('firewall.allowFromHint')}
+                >
+                  <input
+                    id="fw-from"
+                    value={portFrom}
+                    onChange={bindInput(setPortFrom)}
+                    placeholder={t('firewall.allowFromPlaceholder')}
+                    spellCheck={false}
+                    disabled={busy}
+                    autoComplete="off"
+                  />
+                </Field>
               </FormLayout>
               {(() => {
                 const chip = SERVICE_PORT_CHIPS.find((c) => c.value === portInput);
                 if (!chip?.privateRecommended) return null;
                 return (
                   <Alert variant="warn" className="u-mt-2">
-                    {t('firewall.privatePortWarn', {
-                      service: chip.label,
-                    })}
+                    {portFrom.trim()
+                      ? t('firewall.privatePortWarnWithFrom', {
+                          service: chip.label,
+                          defaultValue: t('firewall.privatePortWarn', {
+                            service: chip.label,
+                          }),
+                        })
+                      : t('firewall.privatePortWarn', {
+                          service: chip.label,
+                        })}
                   </Alert>
                 );
               })()}
@@ -536,25 +571,39 @@ export function FirewallPage() {
                   variant="primary"
                   size="md"
                   loading={busy}
-                  disabled={!canEdit || parsePortInput(portInput) == null}
+                  disabled={
+                    !canEdit ||
+                    parsePortInput(portInput) == null ||
+                    !isValidAllowFrom(portFrom)
+                  }
                   title={!canEdit ? t('rbac.cap.firewallEdit') : undefined}
                   onClick={() =>
                     void run(async () => {
                       const n = parsePortInput(portInput);
                       if (n == null) return { ok: false, notes: ['bad port'] };
+                      const from = portFrom.trim() || undefined;
                       const r = (await systemApi.firewallAllowPort(
                         n,
                         portProto,
+                        from,
                       )) as OpsResultLike;
                       await refresh();
                       return r;
-                    }, t('firewall.allowedPort', {
-                      proto:
+                    }, (() => {
+                      const port = parsePortInput(portInput) ?? portInput;
+                      const proto =
                         portProto === 'both'
                           ? t('firewall.protoBothLabel')
-                          : portProto.toUpperCase(),
-                      port: parsePortInput(portInput) ?? portInput,
-                    }))
+                          : portProto.toUpperCase();
+                      const from = portFrom.trim();
+                      return from
+                        ? t('firewall.allowedPortFrom', {
+                            proto,
+                            port,
+                            from,
+                          })
+                        : t('firewall.allowedPort', { proto, port });
+                    })())
                   }
                 >
                   {t('firewall.allowThisPort')}

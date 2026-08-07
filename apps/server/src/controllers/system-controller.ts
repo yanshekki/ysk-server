@@ -1785,6 +1785,8 @@ export async function handleSystemRoutes(
     const data = JSON.parse(raw || '{}') as {
       port?: number | string;
       proto?: 'tcp' | 'udp' | 'both';
+      /** Optional source IP or CIDR — port only open to this source */
+      from?: string;
     };
     const { firewallAllowPort } = await import('@ysk/core');
     // number | "80" | "30000:30100" | "53/udp" (proto from body wins if set)
@@ -1797,11 +1799,12 @@ export async function handleSystemRoutes(
     const protoRaw = String(data.proto ?? 'tcp').toLowerCase();
     const proto: 'tcp' | 'udp' | 'both' =
       protoRaw === 'udp' ? 'udp' : protoRaw === 'both' || protoRaw === 'any' ? 'both' : 'tcp';
-    const r = await firewallAllowPort(ctx.host, portArg, proto);
+    const fromArg = String(data.from ?? '').trim() || undefined;
+    const r = await firewallAllowPort(ctx.host, portArg, proto, fromArg);
     ctx.audit.append({
       actor: user.username,
       action: 'system.firewall.allow_port',
-      detail: { port: portArg, proto },
+      detail: { port: portArg, proto, from: fromArg },
       ok: r.ok,
     });
     sendOpsResult(res, r);

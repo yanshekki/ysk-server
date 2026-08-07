@@ -11,7 +11,11 @@ import {
   formatValue,
   keysInDb,
 } from './features/RedisPage';
-import { parsePorts, parsePortSpecs } from './features/FirewallPage';
+import {
+  parsePorts,
+  parsePortSpecs,
+  isValidAllowFrom,
+} from './features/FirewallPage';
 import { enabledLabel, actionLabel, toneFor } from './features/ServicesPage';
 import { applyLabel } from './EmailPage';
 import { statusLabel as ftpsStatusLabel } from './features/FtpsServicePage';
@@ -126,6 +130,14 @@ describe('Firewall parsePorts', () => {
     expect(parsePortSpecs('21,30000:30100,990')).toEqual(['21', '30000:30100', '990']);
     expect(parsePortSpecs('5:3')).toEqual(['3:5']);
     expect(parsePortSpecs('')).toEqual([]);
+  });
+
+  it('isValidAllowFrom: empty = anywhere; IP/CIDR shape', () => {
+    expect(isValidAllowFrom('')).toBe(true);
+    expect(isValidAllowFrom('  ')).toBe(true);
+    expect(isValidAllowFrom('203.0.113.10')).toBe(true);
+    expect(isValidAllowFrom('10.0.0.0/8')).toBe(true);
+    expect(isValidAllowFrom('nope!')).toBe(false);
   });
 });
 

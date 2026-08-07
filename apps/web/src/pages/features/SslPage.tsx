@@ -79,13 +79,6 @@ export function formatStepLine(
   return s.detail ? `${s.name}: ${st} — ${s.detail}` : `${s.name}: ${st}`;
 }
 
-export function bindingHasTargets(b: {
-  projects?: unknown[];
-  mailDomains?: unknown[];
-}): boolean {
-  return (b.projects?.length ?? 0) + (b.mailDomains?.length ?? 0) > 0;
-}
-
 export function SslPage() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -110,19 +103,6 @@ export function SslPage() {
   const items = certList.items;
   const refreshTable = certList.refresh;
 
-  const refreshBindings = () => {
-    void import('../../features/ssl/api').then(({ sslApi }) =>
-      sslApi
-        .bindings()
-        .then((r) => {
-          setBindings(r.items ?? []);
-          setRenewNotes(r.notes ?? r.renewal?.notes ?? []);
-          setRenewal(r.renewal ?? null);
-        })
-        .catch(() => undefined),
-    );
-  };
-
   const [uploadOpen, setUploadOpen] = useState(false);
   const [leOpen, setLeOpen] = useState(false);
   const [del, setDel] = useState<CertificateView | null>(null);
@@ -130,25 +110,6 @@ export function SslPage() {
   const [fullchain, setFullchain] = useState('');
   const [privkey, setPrivkey] = useState('');
   const [email, setEmail] = useState('');
-  const [bindings, setBindings] = useState<
-    Array<{
-      domain: string;
-      expires_at?: string | null;
-      projects?: Array<{ name: string }>;
-      mailDomains?: Array<{ domain: string }>;
-    }>
-  >([]);
-  const [renewNotes, setRenewNotes] = useState<string[]>([]);
-  const [renewal, setRenewal] = useState<{
-    autoRenew: boolean;
-    source: string;
-    unitFound: boolean;
-    enabled?: boolean;
-    active?: boolean;
-    unitName?: string;
-    cronJobCount: number;
-    notes: string[];
-  } | null>(null);
 
   // Preset from other pages: ?domain=example.com&action=le
   useEffect(() => {
@@ -163,11 +124,6 @@ export function SslPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    refreshBindings();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items.length]);
-
   async function onUpload(e: FormEvent) {
     e.preventDefault();
     try {
@@ -178,7 +134,6 @@ export function SslPage() {
       setPrivkey('');
     } finally {
       await refreshTable().catch(() => undefined);
-      refreshBindings();
     }
   }
 
@@ -198,7 +153,6 @@ export function SslPage() {
       setLeOpen(false);
     } finally {
       await refreshTable().catch(() => undefined);
-      refreshBindings();
     }
   }
 
@@ -216,7 +170,6 @@ export function SslPage() {
       /* error surface via hook state */
     } finally {
       await refreshTable().catch(() => undefined);
-      refreshBindings();
     }
   }
 
@@ -242,7 +195,6 @@ export function SslPage() {
             label: t('ssl.statWithFiles'),
             value: items.filter((c) => c.files_exist).length,
           },
-          { label: t('ssl.statBindings'), value: bindings.length },
           {
             label: t('ssl.statFailed'),
             value: failedCount,
@@ -312,68 +264,6 @@ export function SslPage() {
           }
           busy={busy}
         />
-
-        <Card>
-          <CardSection title={t('ssl.bindingsTitle')}>
-            <div className="u-mb-3">
-              <p className="u-text-sm u-mb-1">
-                <strong>{t('ssl.autoRenewLabel')}：</strong>
-                {renewal == null ? (
-                  <span className="muted">{t('common.loading')}</span>
-                ) : renewal.autoRenew ? (
-                  <Badge tone="ok">{t('ssl.autoRenewYes')}</Badge>
-                ) : (
-                  <Badge tone="warn">{t('ssl.autoRenewNo')}</Badge>
-                )}
-              </p>
-              {renewal ? (
-                <p className="muted u-text-sm">
-                  {renewal.autoRenew
-                    ? t('ssl.autoRenewYesDetail', {
-                        source:
-                          renewal.source === 'cron'
-                            ? t('ssl.renewSourceCron')
-                            : renewal.unitName || renewal.source,
-                      })
-                    : t('ssl.autoRenewNoDetail')}
-                </p>
-              ) : null}
-              {(renewal?.notes ?? renewNotes).map((n) => (
-                <p key={n} className="muted u-text-sm">
-                  {n}
-                </p>
-              ))}
-            </div>
-            {bindings.filter(bindingHasTargets).length > 0 ? (
-              <ul className="list-plain list-spaced u-mt-2">
-                {bindings
-                  .filter(bindingHasTargets)
-                  .map((b) => (
-                    <li key={b.domain}>
-                      <strong>{b.domain}</strong>
-                      {b.expires_at
-                        ? t('ssl.expiresAt', {
-                            date: new Date(b.expires_at).toLocaleDateString(),
-                          })
-                        : ''}
-                      {b.projects?.length
-                        ? t('ssl.projectsAt', {
-                            names: b.projects.map((p) => p.name).join(', '),
-                          })
-                        : ''}
-                      {b.mailDomains?.length
-                        ? t('ssl.mailAt', {
-                            domains: b.mailDomains.map((m) => m.domain).join(', '),
-                          })
-                        : ''}
-                    </li>
-                  ))}
-              </ul>
-            ) : (
-              <p className="muted u-text-sm">{t('ssl.noBindings')}</p>
-            )}
-          </CardSection>
-        </Card>
 
         <Card>
           <CardSection title={t('ssl.certsTitle', { count: items.length })}>
@@ -652,7 +542,6 @@ export function SslPage() {
               .then(() => setDel(null))
               .finally(() => {
                 void refreshTable().catch(() => undefined);
-                refreshBindings();
               });
           }}
           title={t('ssl.deleteTitle')}
