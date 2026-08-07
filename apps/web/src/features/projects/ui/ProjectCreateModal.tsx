@@ -49,6 +49,25 @@ function asProjectRuntime(v: string | undefined | null): ProjectRuntime | null {
   return PROJECT_RUNTIMES.includes(x as ProjectRuntime) ? (x as ProjectRuntime) : null;
 }
 
+type AppTemplateItem = {
+  id: string;
+  name: string;
+  description: string;
+  runtime: string;
+};
+
+/** Client fallback when GET /templates fails or is empty — one Hello World per runtime. */
+const HELLO_TEMPLATES: AppTemplateItem[] = PROJECT_RUNTIMES.map((rt) => ({
+  id: `${rt}-hello`,
+  name: 'Hello World!',
+  description: `Minimal ${rt} demo`,
+  runtime: rt,
+}));
+
+function helloTemplateId(runtime: ProjectRuntime): string {
+  return `${runtime}-hello`;
+}
+
 export interface ProjectCreateModalProps {
   open: boolean;
   onClose: () => void;
@@ -86,14 +105,12 @@ export function ProjectCreateModal({
   const [runtimeVersion, setRuntimeVersion] = useState(() =>
     defaultRuntimeInstallVersion('node'),
   );
-  const [templateId, setTemplateId] = useState('');
+  const [templateId, setTemplateId] = useState(() => helloTemplateId('node'));
   const [createDns, setCreateDns] = useState(false);
   const [createMail, setCreateMail] = useState(false);
   const [serverIp, setServerIp] = useState('');
   const [serverIpv6, setServerIpv6] = useState('');
-  const [templates, setTemplates] = useState<
-    Array<{ id: string; name: string; description: string; runtime: string }>
-  >([]);
+  const [templates, setTemplates] = useState<AppTemplateItem[]>(HELLO_TEMPLATES);
 
   const [versionChoices, setVersionChoices] = useState<string[]>(() =>
     runtimeVersionChoices('node'),
@@ -103,8 +120,24 @@ export function ProjectCreateModal({
     if (!open) return;
     void projectsApi
       .listTemplates()
-      .then((r) => setTemplates(r.items))
-      .catch(() => undefined);
+      .then((r) => {
+        const items = Array.isArray(r.items) ? r.items : [];
+        // Merge API + fallback so every runtime always has a Hello World option
+        const byRuntime = new Map<string, AppTemplateItem>();
+        for (const h of HELLO_TEMPLATES) byRuntime.set(h.runtime, h);
+        for (const it of items) {
+          if (it?.runtime && it?.id) {
+            byRuntime.set(String(it.runtime), {
+              id: String(it.id),
+              name: String(it.name || 'Hello World!'),
+              description: String(it.description || ''),
+              runtime: String(it.runtime),
+            });
+          }
+        }
+        setTemplates([...byRuntime.values()]);
+      })
+      .catch(() => setTemplates(HELLO_TEMPLATES));
   }, [open]);
 
   // Prefer discovery API for version chips
@@ -133,7 +166,7 @@ export function ProjectCreateModal({
       setRuntime('node');
       setRuntimeVersion(defaultRuntimeInstallVersion('node'));
       setVersionChoices(runtimeVersionChoices('node'));
-      setTemplateId('');
+      setTemplateId(helloTemplateId('node'));
       setCreateDns(false);
       setCreateMail(false);
       setServerIp('');
@@ -166,8 +199,11 @@ export function ProjectCreateModal({
       setVersionChoices(choices);
       setRuntimeVersion(r.latest || choices[0] || defaultRuntimeInstallVersion(next));
     });
-    const tpl = templates.find((x) => x.id === templateId);
-    if (tpl && tpl.runtime !== next) setTemplateId('');
+    // Always offer / preselect Hello World for the chosen runtime (incl. PHP)
+    const match =
+      templates.find((x) => x.runtime === next) ||
+      HELLO_TEMPLATES.find((x) => x.runtime === next);
+    setTemplateId(match?.id ?? helloTemplateId(next));
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -198,15 +234,26 @@ export function ProjectCreateModal({
 
   const hasDomain = Boolean(domain.trim());
 
+  /** Only templates for the selected runtime (PHP → php-hello, etc.). */
   const filteredTemplates = useMemo(() => {
-    return [...templates].sort((a, b) => {
-      const aMatch = a.runtime === runtime ? 0 : 1;
-      const bMatch = b.runtime === runtime ? 0 : 1;
-      return aMatch - bMatch;
-    });
+    const forRt = templates.filter((t) => t.runtime === runtime);
+    if (forRt.length > 0) return forRt;
+    const fb = HELLO_TEMPLATES.find((t) => t.runtime === runtime);
+    return fb ? [fb] : [];
   }, [templates, runtime]);
 
-  const selectedTpl = templates.find((x) => x.id === templateId);
+  // Keep templateId in sync when runtime/templates change
+  useEffect(() => {
+    if (!open) return;
+    const stillValid = filteredTemplates.some((t) => t.id === templateId);
+    if (!stillValid) {
+      setTemplateId(filteredTemplates[0]?.id ?? helloTemplateId(runtime));
+    }
+  }, [open, runtime, filteredTemplates, templateId]);
+
+  const selectedTpl =
+    filteredTemplates.find((x) => x.id === templateId) ||
+    templates.find((x) => x.id === templateId);
 
   return (
     <Modal
@@ -362,14 +409,20 @@ export function ProjectCreateModal({
               <option value="">{t('projects.templateNone')}</option>
               {filteredTemplates.map((tpl) => (
                 <option key={tpl.id} value={tpl.id}>
-                  {tpl.name}
-                  {tpl.runtime === runtime
-                    ? ''
-                    : `（${formatRuntimeName(tpl.runtime, t)}）`}
+                  {tpl.name || 'Hello World!'}
+                  {tpl.id ? ` · ${tpl.id}` : ''}
                 </option>
               ))}
             </select>
           </Field>
+          {filteredTemplates.length === 0 ? (
+            <FormHint>
+              {t('projects.createTemplateMissing', {
+                runtime: formatRuntimeName(runtime, t),
+                defaultValue: `未載入 ${formatRuntimeName(runtime, t)} 範本；請重新整理或選「— 無 —」空白專案。`,
+              })}
+            </FormHint>
+          ) : null}
         </FormLayout>
 
         {selectedTpl ? (
