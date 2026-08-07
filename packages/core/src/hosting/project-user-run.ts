@@ -63,12 +63,32 @@ export async function chownProjectHome(
   const home = row.home_dir;
   const u = row.linux_user;
   const g = row.linux_group || u;
+  // Owner = project user; then re-apply ysk-web group bits so www-data/nginx can read public trees
+  // (plain chown -R user:user would leave Apache/Nginx unable to read → 403/502 on PHP/static).
   const r = await host.runCommand(
-    ['bash', '-c', `chown -R ${shellQuote(u)}:${shellQuote(g)} ${shellQuote(home)} && chmod 750 ${shellQuote(home)}`],
+    [
+      'bash',
+      '-c',
+      [
+        `chown -R ${shellQuote(u)}:${shellQuote(g)} ${shellQuote(home)}`,
+        `chmod 750 ${shellQuote(home)}`,
+        `groupadd --system ysk-web 2>/dev/null || true`,
+        `id www-data >/dev/null 2>&1 && usermod -aG ysk-web www-data 2>/dev/null || true`,
+        `id nginx >/dev/null 2>&1 && usermod -aG ysk-web nginx 2>/dev/null || true`,
+        `usermod -aG ysk-web ${shellQuote(u)} 2>/dev/null || true`,
+        `chgrp ysk-web ${shellQuote(home)} 2>/dev/null || true`,
+        `chmod 750 ${shellQuote(home)} 2>/dev/null || true`,
+        `for d in app/public public app; do`,
+        `  p=${shellQuote(home)}/$d`,
+        `  if [ -d "$p" ]; then chgrp -R ysk-web "$p" 2>/dev/null || true; chmod -R g+rX "$p" 2>/dev/null || true; fi`,
+        `done`,
+      ].join('\n'),
+    ],
     { timeoutMs: 60_000 },
   );
   if (r.exitCode === 0) {
     notes?.push(tl('notes.auto.t0143', { v0: (u), v1: (g), v2: (home) }));
+    notes?.push('ysk-web group readability reapplied for public trees');
     return { ok: true };
   }
   notes?.push(tl('notes.tpl.chownFailed', { detail: (r.stderr || r.stdout || '').slice(0, 200) }));

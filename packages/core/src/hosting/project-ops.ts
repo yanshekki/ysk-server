@@ -53,6 +53,7 @@ import { loadRuntimeTuning, tuningToEnv, type TuningKind } from './runtime-tunin
 import { assertQuotaMb, assertWithinQuota, checkProjectQuota } from './quota.js';
 import { applyPm2Start, applyPm2Stop, writePm2Ecosystem } from './pm2-apply.js';
 import { loadRealIpConfig, type RealIpProviderId } from './real-ip/index.js';
+import { applyProjectWebGroupAccess } from './project-web-group.js';
 import {
   assertOsIsolationForDeploy,
   canRunAsProjectUser,
@@ -1404,6 +1405,14 @@ export class ProjectOpsService {
       host: this.host,
       enableSite: canProd || opts.enableApache === true });
     await chownProjectHome(this.host, row, notes);
+    // Re-apply ysk-web so Apache/www-data can read DocumentRoot after chown
+    const wg = await applyProjectWebGroupAccess({
+      host: this.host,
+      linuxUser: row.linux_user,
+      linuxGroup: row.linux_group,
+      homeDir: row.home_dir,
+    });
+    notes.push(...wg.notes);
     written.push(...apply.written);
     notes.push(...apply.notes);
 

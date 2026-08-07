@@ -14,15 +14,25 @@ import {
   projectHomeDir } from './project.js';
 import { planIsolationMigration } from './project-isolation-status.js';
 import { webGroupProvisionCommands } from './project-web-group.js';
-import { renderNginxProxy } from './nginx-ssl.js';
+import {
+  buildServerNameList,
+  renderNginxPhpFpm,
+  renderNginxProxy,
+  renderNginxStatic,
+} from './nginx-ssl.js';
 import type { ProjectRepository, ProjectRow } from '../repositories/project-repo.js';
 import type { HostExecutor } from '../host/executor.js';
 import type { AuditRepository } from '../repositories/audit-repo.js';
 import { getAppTemplate, scaffoldAppTemplate, type AppTemplateId } from './app-templates.js';
-import { normalizeRuntimeVersion, selectPhpRuntime } from './runtime.js';
+import {
+  apacheBackendUpstream,
+  normalizeRuntimeVersion,
+  selectPhpRuntime,
+} from './runtime.js';
 import { normalizeExtraLogDirs } from './project-logs.js';
 import { normalizeProjectDocRoot } from './project-ops.js';
 import { applyPm2Stop } from './pm2-apply.js';
+import { applyProjectWebGroupAccess } from './project-web-group.js';
 
 export type DeleteProjectResult = {
   ok: boolean;
@@ -177,20 +187,6 @@ export class ProjectService {
       ).catch(() => undefined);
     }
 
-    // Optional nginx config in dataDir (port filled on deploy)
-    let nginxPath: string | undefined;
-    if (input.domain) {
-      const confDir = join(this.dataDir, 'nginx', 'conf.d');
-      mkdirSync(confDir, { recursive: true });
-      const conf = renderNginxProxy({
-        serverName: input.domain,
-        upstream: `http://127.0.0.1:3100`,
-        ssl: false,
-        cloudflareRealIp: true });
-      nginxPath = join(confDir, `${plan.project.linuxUser}.conf`);
-      writeFileSync(nginxPath, conf, 'utf8');
-    }
-
     let scaffold: ReturnType<typeof scaffoldAppTemplate> | undefined;
     if (input.templateId) {
       scaffold = scaffoldAppTemplate({
@@ -201,7 +197,70 @@ export class ProjectService {
         force: input.forceTemplate });
     }
 
+    // PHP/static hello uses app/public; default doc_root so Apache/Nginx match scaffold
+    const defaultDocRoot =
+      runtime === 'php' || runtime === 'static' || (scaffold?.docRoot && /public/.test(scaffold.docRoot))
+        ? 'app/public'
+        : undefined;
+
     const aliases = normalizeAliases(input.domainAliases, input.domain);
+    // Optional nginx config in dataDir — MUST match runtime (PHP never points at fake :3100)
+    let nginxPath: string | undefined;
+    if (input.domain) {
+      const confDir = join(this.dataDir, 'nginx', 'conf.d');
+      mkdirSync(confDir, { recursive: true });
+      const serverName = buildServerNameList(input.domain, aliases);
+      const docRootAbs = join(homeDir, defaultDocRoot || 'app/public');
+      let conf: string;
+      if (runtime === 'php') {
+        // Nginx → Apache:8080 → FPM (deploy enables Apache/FPM; conf must not use Node port)
+        conf = renderNginxPhpFpm({
+          serverName,
+          docRoot: docRootAbs,
+          apacheUpstream: apacheBackendUpstream(),
+          ssl: false,
+          cloudflareRealIp: true,
+        });
+      } else if (runtime === 'static') {
+        conf = renderNginxStatic({
+          serverName,
+          docRoot: docRootAbs,
+          ssl: false,
+          cloudflareRealIp: true,
+        });
+      } else {
+        // Process runtimes: provisional upstream until deploy assigns real port
+        conf = renderNginxProxy({
+          serverName,
+          upstream: `http://127.0.0.1:3100`,
+          ssl: false,
+          cloudflareRealIp: true,
+        });
+      }
+      nginxPath = join(confDir, `${plan.project.linuxUser}.conf`);
+      writeFileSync(nginxPath, conf, 'utf8');
+    }
+
+    if (canOs && homeDir === canonicalHome) {
+      // Scaffold wrote as root — re-own then ysk-web so Apache/www-data can read PHP public/
+      await this.host
+        .runCommand(
+          [
+            'bash',
+            '-c',
+            `chown -R ${plan.project.linuxUser}:${plan.project.linuxGroup} ${JSON.stringify(homeDir)} && chmod 750 ${JSON.stringify(homeDir)}`,
+          ],
+          { timeoutMs: 15_000 },
+        )
+        .catch(() => undefined);
+      await applyProjectWebGroupAccess({
+        host: this.host,
+        linuxUser: plan.project.linuxUser,
+        linuxGroup: plan.project.linuxGroup,
+        homeDir,
+      }).catch(() => undefined);
+    }
+
     const now = new Date().toISOString();
     const row: ProjectRow = {
       id,
@@ -219,6 +278,7 @@ export class ProjectService {
       os_provisioned: osProvision.ok,
       force_https: false,
       hsts: false,
+      doc_root: defaultDocRoot,
       owner_user_id: input.actorUserId,
       created_at: now,
       updated_at: now };

@@ -30,11 +30,12 @@ describe('ProjectService real lifecycle', () => {
     const list = svc.list();
     expect(list).toHaveLength(1);
     expect(list[0].name).toBe('Demo Site');
-    // nginx conf written
+    // nginx conf written (node → provisional proxy)
     expect(created.project.domain).toBe('demo.local');
     const nginx = join(dir, 'nginx', 'conf.d', `${created.project.linuxUser}.conf`);
     expect(existsSync(nginx)).toBe(true);
     expect(readFileSync(nginx, 'utf8')).toContain('demo.local');
+    expect(readFileSync(nginx, 'utf8')).toContain('proxy_pass');
 
     await svc.delete(created.project.id, 'admin');
     expect(svc.list()).toHaveLength(0);
@@ -182,6 +183,31 @@ describe('ProjectService network meta and honesty paths', () => {
     expect(bulk.requiresExecute || bulk.requiresRoot).toBe(true);
     // empty name validation
     await expect(svc.create({ name: '  ', runtime: 'node', actor: 'a' })).rejects.toThrow();
+    closeDatabase(db);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('php hello create writes nginx→apache upstream not :3100', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-php-create-'));
+    const db = openDatabase(join(dir, 'db.json'));
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const svc = new ProjectService(new ProjectRepository(db), host, dir);
+    const created = await svc.create({
+      name: 'PhpHello',
+      domain: 'php.example.test',
+      runtime: 'php',
+      runtimeVersion: '8.3',
+      templateId: 'php-hello',
+      actor: 'a',
+    });
+    expect(created.project.docRoot).toBe('app/public');
+    expect(existsSync(join(created.project.homeDir, 'app', 'public', 'index.php'))).toBe(true);
+    const nginx = join(dir, 'nginx', 'conf.d', `${created.project.linuxUser}.conf`);
+    expect(existsSync(nginx)).toBe(true);
+    const conf = readFileSync(nginx, 'utf8');
+    expect(conf).toContain('proxy_pass http://127.0.0.1:8080');
+    expect(conf).not.toContain('3100');
+    expect(conf).not.toContain('fastcgi_pass');
     closeDatabase(db);
     rmSync(dir, { recursive: true, force: true });
   });

@@ -659,6 +659,7 @@ export function renderPhpVhost(opts: {
 <VirtualHost ${bind}:${port}>
   ServerName ${opts.domain}
 ${aliasLine}  DocumentRoot ${opts.docRoot}
+  DirectoryIndex index.php index.html
   <Directory ${opts.docRoot}>
     Options FollowSymLinks
     AllowOverride All
