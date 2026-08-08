@@ -1,28 +1,45 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+import type { ProjectDto } from '@ysk/shared';
 import {
   WithPageGuide,
   DataTable,
   ActionBar,
   Alert,
+  Badge,
   Button,
   ConfirmDialog,
   EmptyState,
   Field,
   FeaturePageLayout,
   FormLayout,
+  LogViewer,
   Modal,
   ServerListFilters,
   SoftwareInstallBanner,
   SoftwareVersionBar,
   FormHint,
   CheckboxField,
-  SegRadio } from '../../shared/components/ui';
+  SegRadio,
+  buttonClassName } from '../../shared/components/ui';
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import type { ResourceRow } from '../../features/resources/api';
 import { systemApi } from '../../features/system';
+import { projectsApi } from '../../features/projects/api';
 import { bindSet, bindCall1 } from '../bind-handlers';
+
+const PROJECT_PAGE_SIZE = 5;
+
+type ProjectConfPreview = { projectId: string; name: string; path: string | null; content: string };
+
+/** Projects that have (or may have) panel-managed Nginx conf. */
+export function projectNginxRows(projects: ProjectDto[]): ProjectDto[] {
+  return projects.filter(
+    (p) => Boolean(p.nginxConfigPath?.trim()) || Boolean(p.domain?.trim()),
+  );
+}
 
 export function NginxPage() {
   const { t } = useTranslation();
@@ -48,6 +65,55 @@ export function NginxPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [edit, setEdit] = useState<ResourceRow | null>(null);
   const [delId, setDelId] = useState<string | null>(null);
+  const [projects, setProjects] = useState<ProjectDto[]>([]);
+  const [projLoadErr, setProjLoadErr] = useState<string | null>(null);
+  const [projPage, setProjPage] = useState(0);
+  const [projPreview, setProjPreview] = useState<ProjectConfPreview | null>(null);
+  const [projPreviewBusy, setProjPreviewBusy] = useState(false);
+
+  const refreshProjects = useCallback(async () => {
+    setProjLoadErr(null);
+    try {
+      const r = await projectsApi.list();
+      setProjects(r.items ?? []);
+      setProjPage(0);
+    } catch (e) {
+      setProjLoadErr(e instanceof Error ? e.message : t('common.loadFailed'));
+    }
+  }, [t]);
+
+  useEffect(() => {
+    void refreshProjects();
+  }, [refreshProjects]);
+
+  const projectSites = useMemo(() => projectNginxRows(projects), [projects]);
+  const projPageCount = Math.max(1, Math.ceil(projectSites.length / PROJECT_PAGE_SIZE));
+  const projPageSafe = Math.min(projPage, projPageCount - 1);
+  const projectPageItems = useMemo(() => {
+    const start = projPageSafe * PROJECT_PAGE_SIZE;
+    return projectSites.slice(start, start + PROJECT_PAGE_SIZE);
+  }, [projectSites, projPageSafe]);
+
+  const openProjectPreview = useCallback(
+    async (p: ProjectDto) => {
+      setProjPreviewBusy(true);
+      try {
+        const r = await projectsApi.nginxConf(p.id);
+        const content = String(r.content ?? r.conf ?? '');
+        setProjPreview({
+          projectId: p.id,
+          name: p.name,
+          path: r.path ?? p.nginxConfigPath ?? null,
+          content: content || t('nginx.projectConfEmpty'),
+        });
+      } catch (e) {
+        setProjLoadErr(e instanceof Error ? e.message : t('nginx.projectConfReadFail'));
+      } finally {
+        setProjPreviewBusy(false);
+      }
+    },
+    [t],
+  );
   const [serverName, setServerName] = useState('');
   const [kind, setKind] = useState<'proxy' | 'static' | 'php'>('proxy');
   const [upstream, setUpstream] = useState('http://127.0.0.1:3000');
@@ -108,22 +174,28 @@ export function NginxPage() {
       title={t('nav.nginx')}
       status={{
         pill: {
-          label: t('nginx.pillSites', { count: items.length }),
-          tone: items.length ? 'ok' : 'warn' },
+          label: t('nginx.pillSites', {
+            count: items.length + projectSites.length,
+          }),
+          tone: items.length || projectSites.length ? 'ok' : 'warn' },
         items: [
           { label: t('nginx.statSites'), value: items.length },
           {
+            label: t('nginx.statProjectSites'),
+            value: projectSites.length,
+          },
+          {
             label: t('nginx.kindProxy'),
             value: items.filter((r) => r.kind === 'proxy').length },
-          {
-            label: 'Static/PHP',
-            value: items.filter((r) => r.kind !== 'proxy').length },
           {
             label: t('nginx.statSslFlag'),
             value: items.filter((r) => r.ssl).length },
         ] }}
       actions={
         <ActionBar>
+          <Button variant="secondary" size="sm" onClick={() => void refreshProjects()}>
+            {t('common.refresh')}
+          </Button>
           <Button
             variant="secondary"
             size="sm"
@@ -156,11 +228,147 @@ export function NginxPage() {
           </>
         }
       >
-        <Alert variant="info">
-          {t('nginx.projectSitesHint')}
-        </Alert>
+        <Alert variant="info">{t('nginx.projectSitesHint')}</Alert>
         {error ? <Alert variant="error">{error}</Alert> : null}
+        {projLoadErr ? <Alert variant="error">{projLoadErr}</Alert> : null}
         {purgeMsg ? <Alert variant="info">{purgeMsg}</Alert> : null}
+
+        <DataTable
+          rowKey={(p) => p.id}
+          title={t('nginx.projectListTitle', { count: projectSites.length })}
+          description={t('nginx.projectListDesc')}
+          columns={[
+            {
+              key: 'name',
+              header: t('nginx.colProject'),
+              render: (p) => (
+                <Link
+                  to={`/projects/${p.id}`}
+                  className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+                >
+                  <strong>{p.name}</strong>
+                </Link>
+              ),
+            },
+            {
+              key: 'domain',
+              header: t('nginx.colServerName'),
+              render: (p) => <code className="inline">{p.domain || '—'}</code>,
+            },
+            {
+              key: 'runtime',
+              header: t('nginx.colRuntime'),
+              render: (p) => p.runtime || '—',
+            },
+            {
+              key: 'conf',
+              header: t('nginx.colConf'),
+              render: (p) =>
+                p.nginxConfigPath ? (
+                  <Badge tone="ok">{t('nginx.confWritten')}</Badge>
+                ) : (
+                  <Badge tone="warn">{t('nginx.confMissing')}</Badge>
+                ),
+            },
+            {
+              key: 'port',
+              header: t('common.port'),
+              render: (p) => (p.port != null ? String(p.port) : '—'),
+            },
+          ]}
+          rows={projectPageItems}
+          empty={
+            <EmptyState
+              title={t('nginx.projectEmptyTitle')}
+              description={t('nginx.projectEmptyDesc')}
+            />
+          }
+          rowActions={(p) => (
+            <ActionBar>
+              <Button
+                variant="secondary"
+                size="sm"
+                loading={projPreviewBusy}
+                disabled={!p.nginxConfigPath}
+                onClick={() => void openProjectPreview(p)}
+              >
+                {t('nginx.preview')}
+              </Button>
+              <Link
+                to={`/projects/${p.id}?tab=network`}
+                className={buttonClassName({ variant: 'primary', size: 'sm' })}
+              >
+                {t('nginx.openProject')}
+              </Link>
+            </ActionBar>
+          )}
+        />
+        {projectSites.length > PROJECT_PAGE_SIZE ? (
+          <div className="sys-conf-pager" role="navigation" aria-label={t('nginx.projectPager')}>
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={projPageSafe <= 0}
+              onClick={() => setProjPage((p) => Math.max(0, p - 1))}
+            >
+              {t('nginx.prevPage')}
+            </Button>
+            <span className="sys-conf-pager__meta">
+              {t('nginx.pageOf', {
+                page: projPageSafe + 1,
+                total: projPageCount,
+                count: projectSites.length,
+              })}
+            </span>
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={projPageSafe >= projPageCount - 1}
+              onClick={() => setProjPage((p) => Math.min(projPageCount - 1, p + 1))}
+            >
+              {t('nginx.nextPage')}
+            </Button>
+          </div>
+        ) : null}
+
+        <Modal
+          open={Boolean(projPreview)}
+          onClose={() => {
+            if (!projPreviewBusy) setProjPreview(null);
+          }}
+          title={projPreview?.name ?? t('nginx.preview')}
+          description={
+            projPreview?.path
+              ? t('nginx.projectPreviewPath', { path: projPreview.path })
+              : t('nginx.projectListDesc')
+          }
+          size="xl"
+          footer={
+            <>
+              {projPreview ? (
+                <Link
+                  to={`/projects/${projPreview.projectId}?tab=network`}
+                  className={buttonClassName({ variant: 'primary', size: 'md' })}
+                >
+                  {t('nginx.openProject')}
+                </Link>
+              ) : null}
+              <Button variant="secondary" size="md" onClick={() => setProjPreview(null)}>
+                {t('common.close')}
+              </Button>
+            </>
+          }
+        >
+          {projPreview ? (
+            <LogViewer
+              text={projPreview.content}
+              highlight={false}
+              linkIps={false}
+              maxHeight={480}
+            />
+          ) : null}
+        </Modal>
+
         <DataTable
           rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
           title={t('nginx.listTitle', { count: total })}
