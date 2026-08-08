@@ -1,7 +1,7 @@
 /**
  * ownCloud-style file manager — public + project roots, trash, shares, upload.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
@@ -432,6 +432,9 @@ export function FilesPage() {
   /** Draft for text editor (dirty tracking vs preview.content) */
   const [editorDraft, setEditorDraft] = useState('');
   const [editorSaving, setEditorSaving] = useState(false);
+  const [editorBytes, setEditorBytes] = useState(0);
+  const editorAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  const editorGutterRef = useRef<HTMLDivElement | null>(null);
   const [trash, setTrash] = useState<TrashEntry[]>([]);
   const [shares, setShares] = useState<FileShare[]>([]);
   const [sharePath, setSharePath] = useState<string | null>(null);
@@ -660,6 +663,32 @@ export function FilesPage() {
   const editorDirty =
     preview?.kind === 'text' && editorDraft !== (preview.content ?? '');
 
+  const editorLineCount = useMemo(() => {
+    if (preview?.kind !== 'text') return 1;
+    // count lines without allocating huge arrays for multi-MB paste edge cases
+    let n = 1;
+    for (let i = 0; i < editorDraft.length; i++) {
+      if (editorDraft.charCodeAt(i) === 10) n += 1;
+    }
+    return n;
+  }, [editorDraft, preview?.kind]);
+
+  const editorLineLabels = useMemo(() => {
+    if (preview?.kind !== 'text') return '';
+    // Cap gutter render for very large files (still editable)
+    const max = Math.min(editorLineCount, 20_000);
+    let s = '';
+    for (let i = 1; i <= max; i++) s += `${i}\n`;
+    if (editorLineCount > max) s += '…\n';
+    return s;
+  }, [editorLineCount, preview?.kind]);
+
+  function syncEditorScroll() {
+    const area = editorAreaRef.current;
+    const gutter = editorGutterRef.current;
+    if (area && gutter) gutter.scrollTop = area.scrollTop;
+  }
+
   function closePreview() {
     if (editorDirty) {
       const ok = window.confirm(t('files.editorDiscardConfirm'));
@@ -676,6 +705,7 @@ export function FilesPage() {
       return null;
     });
     setEditorDraft('');
+    setEditorBytes(0);
   }
 
   async function saveTextEditor() {
@@ -684,6 +714,7 @@ export function FilesPage() {
     try {
       await filesApi.write(root, preview.entry.path, editorDraft);
       setPreview({ ...preview, content: editorDraft });
+      setEditorBytes(new TextEncoder().encode(editorDraft).length);
       setMsg(t('files.editorSaved', { name: preview.entry.name }));
       await refresh();
     } catch (e) {
@@ -753,11 +784,15 @@ export function FilesPage() {
         const r = await filesApi.read(root, e.path);
         const body = r.content ?? '';
         setEditorDraft(body);
+        setEditorBytes(r.bytes ?? new TextEncoder().encode(body).length);
         setPreview({ entry: e, kind: 'text', content: body });
       } catch (err) {
-        setError(err instanceof Error ? err.message : t('files.previewFailed'));
+        const msg = err instanceof Error ? err.message : t('files.previewFailed');
+        setError(msg);
+        // Large-file / validation errors: still offer download
         setPreview({ entry: e, kind: 'other' });
         setEditorDraft('');
+        setEditorBytes(0);
       } finally {
         setBusy(false);
       }
@@ -2360,18 +2395,53 @@ export function FilesPage() {
                   <Badge tone="ok">{t('files.editorClean')}</Badge>
                 )}
                 <span className="muted u-text-sm">
+                  {t('files.editorLines', { count: editorLineCount })}
+                </span>
+                <span className="muted u-text-sm">
                   {t('files.editorChars', { count: editorDraft.length })}
                 </span>
+                {editorBytes > 0 ? (
+                  <span className="muted u-text-sm">
+                    {formatBytes(editorBytes)}
+                  </span>
+                ) : null}
               </span>
             </div>
-            <textarea
-              className="fm-text-editor__area"
-              value={editorDraft}
-              onChange={(e) => setEditorDraft(e.target.value)}
-              spellCheck={false}
-              wrap="off"
-              aria-label={t('files.editorAria', { name: preview.entry.name })}
-            />
+            {editorBytes > 512_000 ? (
+              <Alert variant="warn">{t('files.editorLargeHint')}</Alert>
+            ) : null}
+            <div className="fm-text-editor__wrap">
+              <div
+                ref={editorGutterRef}
+                className="fm-text-editor__gutter"
+                aria-hidden
+              >
+                {editorLineLabels}
+              </div>
+              <textarea
+                ref={editorAreaRef}
+                className="fm-text-editor__area"
+                value={editorDraft}
+                onChange={(e) => setEditorDraft(e.target.value)}
+                onScroll={syncEditorScroll}
+                onKeyDown={(e) => {
+                  if (e.key !== 'Tab' || e.metaKey || e.ctrlKey || e.altKey) return;
+                  e.preventDefault();
+                  const el = e.currentTarget;
+                  const start = el.selectionStart;
+                  const end = el.selectionEnd;
+                  const next =
+                    editorDraft.slice(0, start) + '  ' + editorDraft.slice(end);
+                  setEditorDraft(next);
+                  requestAnimationFrame(() => {
+                    el.selectionStart = el.selectionEnd = start + 2;
+                  });
+                }}
+                spellCheck={false}
+                wrap="off"
+                aria-label={t('files.editorAria', { name: preview.entry.name })}
+              />
+            </div>
           </div>
         ) : null}
         {preview?.kind === 'image' && preview.url ? (

@@ -3380,7 +3380,9 @@
     "publicShareFailedGeneric": "下载失败",
     "publicShareDefaultName": "download",
     "publicSharePanelLogin": "登录控制面",
-    "password": "密码"
+    "password": "密码",
+    "editorLines": "{{count}} 行",
+    "editorLargeHint": "文件较大，编辑可能较慢。超过约 2 MB 请改用下载（服务器上限）。"
   },
   "firewall": {
     "profiles": {

@@ -3380,7 +3380,9 @@
     "publicShareFailedGeneric": "Download failed",
     "publicShareDefaultName": "download",
     "publicSharePanelLogin": "Panel sign-in",
-    "password": "Password"
+    "password": "Password",
+    "editorLines": "{{count}} lines",
+    "editorLargeHint": "Large file — editing may feel slow. Prefer download for multi‑MB files (server cap ~2 MB)."
   },
   "firewall": {
     "profiles": {
