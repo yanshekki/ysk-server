@@ -709,26 +709,58 @@
   font-size: var(--text-xs);
 }
 
-/* —— VS Code–style text editor —— */
+/* —— VS Code–style text editor (opaque dark shell + syntax tokens) —— */
 .modal.fm-editor-modal {
   max-width: min(96vw, 72rem);
+  /* solid panel — never translucent over the file list */
+  background: #1e1e1e !important;
+  border-color: #2b2b2b !important;
+  box-shadow:
+    0 0 0 1px #111,
+    0 24px 64px rgba(0, 0, 0, 0.55) !important;
+  opacity: 1 !important;
 }
 
 .modal.fm-editor-modal .modal__body {
   padding: 0;
-  background: #1e1e1e;
-  color: #cccccc;
+  background: #1e1e1e !important;
+  color: #d4d4d4;
+  opacity: 1 !important;
 }
 
 .modal.fm-editor-modal .modal__header {
-  background: #252526;
+  background: #252526 !important;
   border-bottom: 1px solid #1e1e1e;
+  opacity: 1 !important;
+}
+
+.modal.fm-editor-modal .modal__title {
+  color: #cccccc !important;
+}
+
+.modal.fm-editor-modal .modal__desc {
+  color: #858585 !important;
+}
+
+.modal.fm-editor-modal .modal__close {
+  color: #cccccc;
+}
+
+.modal.fm-editor-modal .modal__close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
 }
 
 .modal.fm-editor-modal .modal__footer {
-  background: #252526;
+  background: #252526 !important;
   border-top: 1px solid #1e1e1e;
   padding: 0.5rem 0.75rem;
+  opacity: 1 !important;
+}
+
+.modal.fm-editor-modal .modal__footer .btn {
+  /* keep actions readable on dark chrome */
+  --_btn-fg: #e5e5e5;
 }
 
 .fm-vscode {
@@ -738,6 +770,7 @@
   max-height: min(78vh, 44rem);
   background: #1e1e1e;
   color: #d4d4d4;
+  opacity: 1;
   font-family:
     'Cascadia Code',
     'Fira Code',
@@ -759,6 +792,7 @@
   background: #252526;
   border-bottom: 1px solid #1e1e1e;
   padding-right: 0.35rem;
+  opacity: 1;
 }
 
 .fm-vscode__tab {
@@ -806,6 +840,7 @@
 .fm-vscode__actions .btn {
   color: #cccccc;
   border-color: transparent;
+  background: transparent;
 }
 
 .fm-vscode__actions .btn:hover {
@@ -818,6 +853,7 @@
   background: #5a3e1b;
   color: #f0d9b5;
   border-bottom: 1px solid #3d2a12;
+  opacity: 1;
 }
 
 .fm-vscode__body {
@@ -827,6 +863,7 @@
   min-height: 0;
   overflow: hidden;
   background: #1e1e1e;
+  opacity: 1;
 }
 
 .fm-vscode__gutter {
@@ -841,35 +878,133 @@
   border-right: 1px solid #2b2b2b;
   user-select: none;
   white-space: pre;
+  opacity: 1;
 }
 
-.fm-vscode__area {
+/* Highlight layer under transparent textarea (solid bg on pre) */
+.fm-vscode__code {
+  position: relative;
   flex: 1 1 auto;
-  width: 100%;
   min-width: 0;
-  min-height: 100%;
+  min-height: 0;
   height: 100%;
-  resize: none;
+  overflow: hidden;
+  background: #1e1e1e;
+  opacity: 1;
+}
+
+.fm-vscode__highlight,
+.fm-vscode__area {
+  box-sizing: border-box;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
   font: inherit;
   font-size: 0.875rem;
   line-height: 1.5;
+  letter-spacing: normal;
   padding: 0.65rem 0.9rem 1.25rem;
   border: none;
   border-radius: 0;
-  background: #1e1e1e;
-  color: #d4d4d4;
-  caret-color: #aeafad;
   tab-size: 2;
   white-space: pre;
   overflow: auto;
+  word-wrap: normal;
+  overflow-wrap: normal;
+}
+
+.fm-vscode__highlight {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: #1e1e1e !important;
+  color: #d4d4d4;
+  opacity: 1 !important;
+  /* hide scrollbar under textarea */
+  scrollbar-width: none;
+}
+
+.fm-vscode__highlight::-webkit-scrollbar {
+  display: none;
+}
+
+/* VS Code Dark+ token colors */
+.fm-vscode__highlight .tok-keyword {
+  color: #569cd6;
+}
+.fm-vscode__highlight .tok-control {
+  color: #c586c0;
+}
+.fm-vscode__highlight .tok-type {
+  color: #4ec9b0;
+}
+.fm-vscode__highlight .tok-class {
+  color: #4ec9b0;
+}
+.fm-vscode__highlight .tok-function {
+  color: #dcdcaa;
+}
+.fm-vscode__highlight .tok-string {
+  color: #ce9178;
+}
+.fm-vscode__highlight .tok-number {
+  color: #b5cea8;
+}
+.fm-vscode__highlight .tok-comment {
+  color: #6a9955;
+  font-style: italic;
+}
+.fm-vscode__highlight .tok-variable {
+  color: #9cdcfe;
+}
+.fm-vscode__highlight .tok-attr {
+  color: #9cdcfe;
+}
+.fm-vscode__highlight .tok-tag {
+  color: #569cd6;
+}
+.fm-vscode__highlight .tok-operator {
+  color: #d4d4d4;
+}
+.fm-vscode__highlight .tok-punct {
+  color: #d4d4d4;
+}
+.fm-vscode__highlight .tok-plain {
+  color: #d4d4d4;
+}
+
+.fm-vscode__area {
+  position: relative;
+  z-index: 1;
+  resize: none;
+  /* transparent ink so highlight layer colors show; panel stays solid */
+  background: transparent !important;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent;
+  caret-color: #aeafad;
+  box-shadow: none !important;
+  border: none !important;
+  min-height: 100% !important;
+  opacity: 1 !important;
 }
 
 .fm-vscode__area:focus {
   outline: none;
+  box-shadow: none !important;
+  border: none !important;
 }
 
 .fm-vscode__area::selection {
-  background: rgba(38, 79, 120, 0.75);
+  background: rgba(38, 79, 120, 0.85);
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.fm-vscode__area::-moz-selection {
+  background: rgba(38, 79, 120, 0.85);
+  color: transparent;
 }
 
 .fm-vscode__statusbar {
@@ -884,6 +1019,7 @@
   font-size: 0.7rem;
   font-weight: 500;
   letter-spacing: 0.01em;
+  opacity: 1;
 }
 
 .fm-vscode__status-item {
@@ -900,7 +1036,7 @@
 }
 
 .fm-vscode__status-item--lang {
-  background: rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.18);
 }
 
 .fm-vscode__status-spacer {

@@ -44,6 +44,10 @@ import { projectsApi } from '../features/projects';
 import { authStore } from '../shared/stores/auth-store';
 import { toast } from '../shared/stores/toast-store';
 import {
+  highlightToHtml,
+  syntaxLangFromName,
+} from '../shared/lib/simple-syntax';
+import {
   bindSet,
   bindInput,
   bindVoid,
@@ -506,6 +510,7 @@ export function FilesPage() {
   const [editorCursor, setEditorCursor] = useState({ line: 1, col: 1 });
   const editorAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const editorGutterRef = useRef<HTMLDivElement | null>(null);
+  const editorHighlightRef = useRef<HTMLPreElement | null>(null);
   const [trash, setTrash] = useState<TrashEntry[]>([]);
   const [shares, setShares] = useState<FileShare[]>([]);
   const [sharePath, setSharePath] = useState<string | null>(null);
@@ -754,10 +759,21 @@ export function FilesPage() {
     return s;
   }, [editorLineCount, preview?.kind]);
 
+  const editorHighlightHtml = useMemo(() => {
+    if (preview?.kind !== 'text') return '';
+    const lang = syntaxLangFromName(preview.entry.name);
+    return highlightToHtml(editorDraft, lang);
+  }, [editorDraft, preview]);
+
   function syncEditorScroll() {
     const area = editorAreaRef.current;
     const gutter = editorGutterRef.current;
+    const hi = editorHighlightRef.current;
     if (area && gutter) gutter.scrollTop = area.scrollTop;
+    if (area && hi) {
+      hi.scrollTop = area.scrollTop;
+      hi.scrollLeft = area.scrollLeft;
+    }
   }
 
   function updateEditorCursor(el: HTMLTextAreaElement) {
@@ -2521,41 +2537,51 @@ export function FilesPage() {
               >
                 {editorLineLabels}
               </div>
-              <textarea
-                ref={editorAreaRef}
-                className="fm-vscode__area"
-                value={editorDraft}
-                onChange={(e) => {
-                  setEditorDraft(e.target.value);
-                  updateEditorCursor(e.target);
-                }}
-                onScroll={syncEditorScroll}
-                onClick={(e) => updateEditorCursor(e.currentTarget)}
-                onKeyUp={(e) => updateEditorCursor(e.currentTarget)}
-                onSelect={(e) => updateEditorCursor(e.currentTarget)}
-                onKeyDown={(e) => {
-                  if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+              <div className="fm-vscode__code">
+                <pre
+                  ref={editorHighlightRef}
+                  className="fm-vscode__highlight"
+                  aria-hidden
+                  dangerouslySetInnerHTML={{
+                    __html: editorHighlightHtml || ' ',
+                  }}
+                />
+                <textarea
+                  ref={editorAreaRef}
+                  className="fm-vscode__area"
+                  value={editorDraft}
+                  onChange={(e) => {
+                    setEditorDraft(e.target.value);
+                    updateEditorCursor(e.target);
+                  }}
+                  onScroll={syncEditorScroll}
+                  onClick={(e) => updateEditorCursor(e.currentTarget)}
+                  onKeyUp={(e) => updateEditorCursor(e.currentTarget)}
+                  onSelect={(e) => updateEditorCursor(e.currentTarget)}
+                  onKeyDown={(e) => {
+                    if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                      e.preventDefault();
+                      if (editorDirty && !editorSaving) void saveTextEditor();
+                      return;
+                    }
+                    if (e.key !== 'Tab' || e.metaKey || e.ctrlKey || e.altKey) return;
                     e.preventDefault();
-                    if (editorDirty && !editorSaving) void saveTextEditor();
-                    return;
-                  }
-                  if (e.key !== 'Tab' || e.metaKey || e.ctrlKey || e.altKey) return;
-                  e.preventDefault();
-                  const el = e.currentTarget;
-                  const start = el.selectionStart;
-                  const end = el.selectionEnd;
-                  const next =
-                    editorDraft.slice(0, start) + '  ' + editorDraft.slice(end);
-                  setEditorDraft(next);
-                  requestAnimationFrame(() => {
-                    el.selectionStart = el.selectionEnd = start + 2;
-                    updateEditorCursor(el);
-                  });
-                }}
-                spellCheck={false}
-                wrap="off"
-                aria-label={t('files.editorAria', { name: preview.entry.name })}
-              />
+                    const el = e.currentTarget;
+                    const start = el.selectionStart;
+                    const end = el.selectionEnd;
+                    const next =
+                      editorDraft.slice(0, start) + '  ' + editorDraft.slice(end);
+                    setEditorDraft(next);
+                    requestAnimationFrame(() => {
+                      el.selectionStart = el.selectionEnd = start + 2;
+                      updateEditorCursor(el);
+                    });
+                  }}
+                  spellCheck={false}
+                  wrap="off"
+                  aria-label={t('files.editorAria', { name: preview.entry.name })}
+                />
+              </div>
             </div>
             <div className="fm-vscode__statusbar" role="status">
               <span className="fm-vscode__status-item fm-vscode__status-item--accent">
