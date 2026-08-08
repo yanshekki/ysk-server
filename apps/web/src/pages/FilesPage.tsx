@@ -271,6 +271,28 @@ export function previewKind(
   return previewKindFromName(name) ?? 'other';
 }
 
+/** Resolve share expiry ISO string from preset / custom datetime-local. */
+export function resolveShareExpiresAt(
+  preset: string,
+  customLocal?: string,
+): string | null {
+  const now = Date.now();
+  if (preset === 'never' || !preset) return null;
+  if (preset === '1h') return new Date(now + 3600_000).toISOString();
+  if (preset === '1d') return new Date(now + 86400_000).toISOString();
+  if (preset === '7d') return new Date(now + 7 * 86400_000).toISOString();
+  if (preset === '30d') return new Date(now + 30 * 86400_000).toISOString();
+  if (preset === 'custom') {
+    const raw = String(customLocal || '').trim();
+    if (!raw) return null;
+    const d = new Date(raw);
+    if (Number.isNaN(d.getTime())) return null;
+    if (d.getTime() <= now) return null;
+    return d.toISOString();
+  }
+  return null;
+}
+
 export function parseSortValue(v: string): {
   sort: SortKey;
   order: 'asc' | 'desc';
@@ -415,6 +437,10 @@ export function FilesPage() {
   const [sharePath, setSharePath] = useState<string | null>(null);
   const [sharePass, setSharePass] = useState('');
   const [shareResult, setShareResult] = useState<string | null>(null);
+  /** never | 1h | 1d | 7d | 30d | custom */
+  const [shareExpirePreset, setShareExpirePreset] = useState('7d');
+  const [shareExpireCustom, setShareExpireCustom] = useState('');
+  const [shareResultExpires, setShareResultExpires] = useState<string | null>(null);
   const [versionsPath, setVersionsPath] = useState<string | null>(null);
   const [versions, setVersions] = useState<
     Array<{ id: string; path: string; createdAt: string; bytes: number }>
@@ -1503,6 +1529,15 @@ export function FilesPage() {
                         </code>
                       ) },
                     {
+                      key: 'expires',
+                      header: t('files.colExpires'),
+                      nowrap: true,
+                      render: (s) =>
+                        s.expiresAt
+                          ? new Date(s.expiresAt).toLocaleString()
+                          : t('files.shareExpireNever'),
+                    },
+                    {
                       key: 'downloads',
                       header: t('files.colDownloads'),
                       nowrap: true,
@@ -1868,6 +1903,9 @@ export function FilesPage() {
           setSharePath(null);
           setSharePass('');
           setShareResult(null);
+          setShareResultExpires(null);
+          setShareExpirePreset('7d');
+          setShareExpireCustom('');
         }}
         title={
           shareResult ? t('files.shareReadyTitle') : t('files.shareCreateTitle')
@@ -1884,6 +1922,7 @@ export function FilesPage() {
                 size="md"
                 onClick={() => {
                   setShareResult(null);
+                  setShareResultExpires(null);
                   setSharePass('');
                 }}
               >
@@ -1896,6 +1935,9 @@ export function FilesPage() {
                   setSharePath(null);
                   setSharePass('');
                   setShareResult(null);
+                  setShareResultExpires(null);
+                  setShareExpirePreset('7d');
+                  setShareExpireCustom('');
                 }}
               >
                 {t('common.done')}
@@ -1911,6 +1953,7 @@ export function FilesPage() {
                   setSharePath(null);
                   setSharePass('');
                   setShareResult(null);
+                  setShareResultExpires(null);
                 }}
               >
                 {t('common.cancel')}
@@ -1922,14 +1965,26 @@ export function FilesPage() {
                 onClick={() =>
                   void run(async () => {
                     if (!sharePath) return;
+                    const expiresAt = resolveShareExpiresAt(
+                      shareExpirePreset,
+                      shareExpireCustom,
+                    );
+                    if (shareExpirePreset === 'custom' && !expiresAt) {
+                      setError(t('files.shareExpireInvalid'));
+                      return;
+                    }
                     const r = await filesApi.createShare(root, {
                       path: sharePath,
                       password: sharePass || undefined,
+                      expiresAt: expiresAt || undefined,
                     });
                     const url = `${window.location.origin}${
                       r.share.url ?? `/api/v1/public/files/${r.share.token}`
                     }`;
                     setShareResult(url);
+                    setShareResultExpires(
+                      r.share.expiresAt ?? expiresAt ?? null,
+                    );
                     toast.ok(t('files.shareCreatedToast'));
                   })
                 }
@@ -1968,6 +2023,42 @@ export function FilesPage() {
                 placeholder={t('files.passwordPlaceholder')}
               />
             </Field>
+            <Field
+              label={t('files.shareExpireLabel')}
+              htmlFor="share-exp"
+              flush
+              hint={t('files.shareExpireHint')}
+            >
+              <select
+                id="share-exp"
+                className="input"
+                value={shareExpirePreset}
+                onChange={(e) => setShareExpirePreset(e.target.value)}
+              >
+                <option value="never">{t('files.shareExpireNever')}</option>
+                <option value="1h">{t('files.shareExpire1h')}</option>
+                <option value="1d">{t('files.shareExpire1d')}</option>
+                <option value="7d">{t('files.shareExpire7d')}</option>
+                <option value="30d">{t('files.shareExpire30d')}</option>
+                <option value="custom">{t('files.shareExpireCustom')}</option>
+              </select>
+            </Field>
+            {shareExpirePreset === 'custom' ? (
+              <Field
+                label={t('files.shareExpireAt')}
+                htmlFor="share-exp-at"
+                flush
+                required
+              >
+                <input
+                  id="share-exp-at"
+                  type="datetime-local"
+                  className="input"
+                  value={shareExpireCustom}
+                  onChange={bindInput(setShareExpireCustom)}
+                />
+              </Field>
+            ) : null}
           </div>
         ) : (
           <div className="fm-share fm-share--ready">
@@ -1977,6 +2068,15 @@ export function FilesPage() {
                 <Badge tone="warn">{t('files.shareProtected')}</Badge>
               ) : (
                 <Badge tone="neutral">{t('files.shareOpenAccess')}</Badge>
+              )}
+              {shareResultExpires ? (
+                <Badge tone="info">
+                  {t('files.shareExpiresAt', {
+                    at: new Date(shareResultExpires).toLocaleString(),
+                  })}
+                </Badge>
+              ) : (
+                <Badge tone="neutral">{t('files.shareExpireNever')}</Badge>
               )}
             </div>
             <label className="fm-share__link-label" htmlFor="fm-share-url">
@@ -1998,7 +2098,6 @@ export function FilesPage() {
                     ?.writeText(shareResult)
                     .then(() => toast.ok(t('files.linkCopied')))
                     .catch(() => {
-                      /* fallback */
                       try {
                         const el = document.getElementById(
                           'fm-share-url',

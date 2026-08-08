@@ -194,5 +194,17 @@
   "shareAgain": "再建一个",
   "shareCreatedToast": "分享链接已创建",
   "linkCopied": "已复制链接",
-  "linkCopyFailed": "无法自动复制，请手动选择复制"
+  "linkCopyFailed": "无法自动复制，请手动选择复制",
+  "shareExpireLabel": "链接有效期",
+  "shareExpireHint": "到期后链接失效",
+  "shareExpireNever": "永不过期",
+  "shareExpire1h": "1 小时",
+  "shareExpire1d": "1 天",
+  "shareExpire7d": "7 天",
+  "shareExpire30d": "30 天",
+  "shareExpireCustom": "自定义…",
+  "shareExpireAt": "到期时间",
+  "shareExpireInvalid": "请选择未来的日期时间",
+  "shareExpiresAt": "到期 {{at}}",
+  "colExpires": "到期"
 }

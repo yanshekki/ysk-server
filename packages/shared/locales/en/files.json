@@ -194,5 +194,17 @@
   "shareAgain": "New link",
   "shareCreatedToast": "Share link created",
   "linkCopied": "Link copied",
-  "linkCopyFailed": "Could not copy — select and copy manually"
+  "linkCopyFailed": "Could not copy — select and copy manually",
+  "shareExpireLabel": "Link expiry",
+  "shareExpireHint": "After this time the link stops working",
+  "shareExpireNever": "Never",
+  "shareExpire1h": "1 hour",
+  "shareExpire1d": "1 day",
+  "shareExpire7d": "7 days",
+  "shareExpire30d": "30 days",
+  "shareExpireCustom": "Custom…",
+  "shareExpireAt": "Expires at",
+  "shareExpireInvalid": "Pick a future date and time",
+  "shareExpiresAt": "Expires {{at}}",
+  "colExpires": "Expires"
 }

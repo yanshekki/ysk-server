@@ -3347,7 +3347,19 @@
     "shareAgain": "再建一個",
     "shareCreatedToast": "分享連結已建立",
     "linkCopied": "已複製連結",
-    "linkCopyFailed": "無法自動複製，請手動選取複製"
+    "linkCopyFailed": "無法自動複製，請手動選取複製",
+    "shareExpireLabel": "連結有效期",
+    "shareExpireHint": "到期後連結失效",
+    "shareExpireNever": "永不過期",
+    "shareExpire1h": "1 小時",
+    "shareExpire1d": "1 日",
+    "shareExpire7d": "7 日",
+    "shareExpire30d": "30 日",
+    "shareExpireCustom": "自訂…",
+    "shareExpireAt": "到期時間",
+    "shareExpireInvalid": "請選擇未來嘅日期時間",
+    "shareExpiresAt": "到期 {{at}}",
+    "colExpires": "到期"
   },
   "firewall": {
     "profiles": {
