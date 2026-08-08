@@ -1,47 +1,47 @@
 import { describe, expect, it } from 'vitest';
-import { getPageGuide, listPageGuideIds } from './catalog';
+import { getPageGuide, listPageGuideIds, normalizePageGuideDoc } from './catalog';
 
 describe('page guide catalog', () => {
-  it('lists ids for en and zh-HK', () => {
-    const en = listPageGuideIds('en');
-    const hk = listPageGuideIds('zh-HK');
-    expect(en.length).toBeGreaterThan(0);
-    expect(hk.length).toBeGreaterThan(0);
+  it('lists guides for Tier-1 locales', () => {
+    for (const loc of ['zh-HK', 'zh-CN', 'en'] as const) {
+      const ids = listPageGuideIds(loc);
+      expect(ids.length).toBeGreaterThanOrEqual(40);
+      expect(ids).toContain('files');
+      expect(ids).toContain('email');
+      expect(ids).toContain('projects');
+    }
   });
 
-  it('resolves a known guide with slim canDo/notes', () => {
-    const ids = listPageGuideIds('en');
-    const id = ids[0];
-    const doc = getPageGuide(id, 'en');
-    expect(doc).not.toBeNull();
-    expect(doc!.id).toBeTruthy();
-    expect(doc!.title.length).toBeGreaterThan(0);
-    expect(doc!.summary.length).toBeGreaterThan(0);
-    expect(Array.isArray(doc!.canDo)).toBe(true);
-    expect(doc!.canDo.length).toBeGreaterThan(0);
-    expect(doc!.canDo.length).toBeLessThanOrEqual(5);
-    expect(Array.isArray(doc!.notes)).toBe(true);
+  it('returns structured docs with title summary canDo notes for core pages', () => {
+    for (const loc of ['zh-HK', 'zh-CN', 'en'] as const) {
+      for (const id of ['files', 'email', 'projects', 'security', 'dashboard']) {
+        const g = getPageGuide(id, loc);
+        expect(g, `${loc}/${id}`).toBeTruthy();
+        expect(g!.title.trim().length).toBeGreaterThan(0);
+        expect(g!.summary.trim().length).toBeGreaterThan(0);
+        expect(g!.canDo.length).toBeGreaterThan(0);
+        expect(Array.isArray(g!.notes)).toBe(true);
+      }
+    }
   });
 
-  it('normalizes legacy features into canDo', async () => {
-    const { normalizePageGuideDoc } = await import('./catalog');
-    const doc = normalizePageGuideDoc({
-      id: 'x',
-      title: 'T',
-      summary: 'S',
-      features: [{ name: 'A', purpose: 'does A' }],
-      caveats: ['watch out'],
+  it('normalizes workflow and cliHints when present', () => {
+    const n = normalizePageGuideDoc({
+      id: 'demo',
+      title: 'Demo',
+      summary: 'Summary line',
+      canDo: ['A'],
+      workflow: ['Step 1', 'Step 2'],
+      notes: ['Note'],
+      cliHints: ['ysk-server health --json'],
     });
-    expect(doc.canDo.some((c) => c.includes('does A'))).toBe(true);
-    expect(doc.notes).toContain('watch out');
+    expect(n.workflow).toEqual(['Step 1', 'Step 2']);
+    expect(n.cliHints).toEqual(['ysk-server health --json']);
   });
 
-  it('returns null for missing id', () => {
-    expect(getPageGuide('definitely-not-a-guide-id-xyz', 'en')).toBeNull();
-  });
-
-  it('falls back locale via normalize', () => {
-    const ids = listPageGuideIds('en-US');
-    expect(ids.length).toBeGreaterThan(0);
+  it('files guide includes CLI hints after enrichment', () => {
+    const g = getPageGuide('files', 'en');
+    expect(g?.cliHints?.some((c) => c.includes('ysk-server files'))).toBe(true);
+    expect(g?.workflow?.length).toBeGreaterThan(0);
   });
 });

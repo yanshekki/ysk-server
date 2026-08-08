@@ -1,6 +1,11 @@
 {
-  "missing": "暂无此页说明。",
-  "canDoTitle": "你可以做什么",
-  "notesTitle": "注意",
+  "missing": "此页尚未提供说明内容。",
+  "missingTitle": "暂无说明",
+  "eyebrow": "说明",
+  "canDoTitle": "可以做什么",
+  "workflowTitle": "建议流程",
+  "notesTitle": "注意事项",
+  "cliTitle": "CLI 速查",
+  "cliFoot": "完整参数请执行 ysk-server <command> --help 或参阅文档。",
   "relatedTitle": "相关功能"
 }

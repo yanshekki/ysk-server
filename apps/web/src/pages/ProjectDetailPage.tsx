@@ -26,7 +26,6 @@ import {
   ConfirmDialog,
   FeaturePageLayout,
   LoadingBlock,
-  Modal,
   OpsResultPanel,
   PageGuide,
   PageTabs } from '../shared/components/ui';
@@ -51,6 +50,7 @@ export function projectTabIds(
   ids.push('network');
   if (ui.showResourcesTab) ids.push('isolation');
   ids.push('more');
+  ids.push('about');
   return ids;
 }
 
@@ -64,7 +64,7 @@ export function resolveActiveTab(
     resources: 'isolation',
     logs: 'more',
     advanced: 'more',
-    about: 'overview' };
+  };
   const id = alias[tab] ?? tab;
   return tabs.some((x) => x.id === id) ? id : 'overview';
 }
@@ -182,7 +182,6 @@ export function ProjectDetailPage() {
     }>
   >([]);
   const [confirm, setConfirm] = useState<ConfirmKind>(null);
-  const [guideOpen, setGuideOpen] = useState(false);
   const [phpVersion, setPhpVersion] = useState('8.2');
 
   const refreshProject = useCallback(async () => {
@@ -330,6 +329,7 @@ export function ProjectDetailPage() {
         ]
       : []),
     { id: 'more', label: t('projects.tabMore', { defaultValue: t('projects.tabAdvanced') }) },
+    { id: 'about', label: t('common.about') },
   ];
   const activeTab = resolveActiveTab(tabs, tab);
   const display = deriveProjectStatus(project);
@@ -395,14 +395,6 @@ export function ProjectDetailPage() {
             onHealth={bindRun(run, 'health', project.id)}
             onRefresh={bindVoid(refreshProject)}
           />
-          <Button
-            variant="ghost"
-            size="md"
-            onClick={() => setGuideOpen(true)}
-            title={t('common.about')}
-          >
-            ?
-          </Button>
         </ActionBar>
       }
     >
@@ -554,18 +546,10 @@ export function ProjectDetailPage() {
             />
           </div>
         ) : null}
+        {activeTab === 'about' ? <PageGuide guideId="projectDetail" /> : null}
       </PageTabs>
 
       <OpsResultPanel title={t('projects.opsResult')} result={opsLog} message={msg} busy={busy} />
-
-      <Modal
-        open={guideOpen}
-        onClose={() => setGuideOpen(false)}
-        title={t('common.about')}
-        size="lg"
-      >
-        <PageGuide guideId="projectDetail" />
-      </Modal>
 
       <ConfirmDialog
         open={confirm === 'stop'}

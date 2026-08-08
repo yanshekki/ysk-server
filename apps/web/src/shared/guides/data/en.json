@@ -26,6 +26,15 @@
         "label": "Protection",
         "to": "/protection"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server readiness --json",
+      "ysk-server health --json"
     ]
   },
   "projects": {
@@ -56,6 +65,15 @@
         "label": "SSL",
         "to": "/ssl"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server projects list --json",
+      "ysk-server projects create --name demo --runtime node"
     ]
   },
   "projectDetail": {
@@ -82,6 +100,15 @@
         "label": "Logs",
         "to": "/logs"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server projects get --id <ID> --json",
+      "ysk-server projects deploy --id <ID> --execute"
     ]
   },
   "email": {
@@ -108,6 +135,15 @@
         "label": "SSL",
         "to": "/ssl"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server email domains --json",
+      "ysk-server email bootstrap --domain example.com --ip A.B.C.D --execute"
     ]
   },
   "emailDomain": {
@@ -134,6 +170,15 @@
         "label": "DNS",
         "to": "/dns"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server email mailboxes --domain example.com --json",
+      "ysk-server email deliverability --domain example.com --json"
     ]
   },
   "files": {
@@ -160,6 +205,15 @@
         "label": "Backups",
         "to": "/backups"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server files list --root public --json",
+      "ysk-server files shares list --root public --json"
     ]
   },
   "publicFiles": {
@@ -181,6 +235,14 @@
         "label": "Files",
         "to": "/files"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server hosting public-files --domain files.example.com --reload"
     ]
   },
   "ftp": {
@@ -207,6 +269,14 @@
         "label": "Files",
         "to": "/files"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server hosting ftps-apply --domain example.com --execute"
     ]
   },
   "ftpService": {
@@ -233,6 +303,14 @@
         "label": "Protection center",
         "to": "/protection"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server hosting ftps-apply --domain example.com --execute"
     ]
   },
   "mysql": {
@@ -259,6 +337,14 @@
         "label": "Projects",
         "to": "/projects"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server hosting mysql-provision --db NAME --user U --password P --execute"
     ]
   },
   "mysqlService": {
@@ -285,6 +371,14 @@
         "label": "Services overview",
         "to": "/services"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server db-cluster list --json"
     ]
   },
   "mariadb": {
@@ -311,6 +405,14 @@
         "label": "Projects",
         "to": "/projects"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server hosting mysql-provision --db NAME --user U --password P --execute"
     ]
   },
   "mariadbService": {
@@ -337,6 +439,14 @@
         "label": "Services overview",
         "to": "/services"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server db-cluster list --json"
     ]
   },
   "postgres": {
@@ -363,6 +473,14 @@
         "label": "Projects",
         "to": "/projects"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server hosting postgres-provision --db NAME --user U --password P --execute"
     ]
   },
   "postgresService": {
@@ -389,6 +507,14 @@
         "label": "Services overview",
         "to": "/services"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server db-cluster list --json"
     ]
   },
   "redis": {
@@ -411,6 +537,14 @@
         "label": "Redis service",
         "to": "/databases/redis/service"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server hosting redis-provision --execute"
     ]
   },
   "redisService": {
@@ -437,6 +571,14 @@
         "label": "Services overview",
         "to": "/services"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server hosting redis-provision --execute"
     ]
   },
   "dns": {
@@ -463,6 +605,15 @@
         "label": "Mail",
         "to": "/email"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server dns zones --json",
+      "ysk-server hosting dns-zone --zone example.com --ip A.B.C.D"
     ]
   },
   "cdn": {
@@ -493,6 +644,15 @@
         "label": "SSL",
         "to": "/ssl"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server cdn nodes --json",
+      "ysk-server cdn sites --json"
     ]
   },
   "ssl": {
@@ -519,6 +679,15 @@
         "label": "DNS",
         "to": "/dns"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server ssl list --json",
+      "ysk-server ssl get --domain example.com --json"
     ]
   },
   "nginx": {
@@ -549,6 +718,15 @@
         "label": "CDN",
         "to": "/cdn"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server nginx status --json",
+      "ysk-server nginx list --json"
     ]
   },
   "node": {
@@ -575,6 +753,14 @@
         "label": "Services",
         "to": "/services"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind node --version 22 --execute"
     ]
   },
   "php": {
@@ -601,6 +787,14 @@
         "label": "Services",
         "to": "/services"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind php --version 8.3 --execute"
     ]
   },
   "python": {
@@ -627,6 +821,14 @@
         "label": "Services",
         "to": "/services"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind python --version 3.12 --execute"
     ]
   },
   "go": {
@@ -653,6 +855,14 @@
         "label": "Services",
         "to": "/services"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind go --version 1.24 --execute"
     ]
   },
   "rust": {
@@ -679,6 +889,14 @@
         "label": "Services",
         "to": "/services"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind rust --version stable --execute"
     ]
   },
   "protection": {
@@ -709,6 +927,15 @@
         "label": "Security",
         "to": "/security"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server defense status --json",
+      "ysk-server defense ban --ip 1.2.3.4 --json"
     ]
   },
   "firewall": {
@@ -735,6 +962,14 @@
         "label": "Fail2ban",
         "to": "/protection/fail2ban"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server hosting firewall-apply --execute"
     ]
   },
   "fail2ban": {
@@ -761,6 +996,14 @@
         "label": "Firewall",
         "to": "/protection/firewall"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server defense status --json"
     ]
   },
   "security": {
@@ -786,6 +1029,15 @@
         "label": "Protection",
         "to": "/protection"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server security status --json",
+      "ysk-server security sessions list --json"
     ]
   },
   "users": {
@@ -812,6 +1064,14 @@
         "label": "Projects",
         "to": "/projects"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server users list --json"
     ]
   },
   "services": {
@@ -837,6 +1097,14 @@
         "label": "Logs",
         "to": "/logs"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server services --json"
     ]
   },
   "metrics": {
@@ -858,6 +1126,14 @@
         "label": "Dashboard",
         "to": "/"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server host metrics --json"
     ]
   },
   "network": {
@@ -879,6 +1155,14 @@
         "label": "DNS",
         "to": "/dns"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server host overview --json"
     ]
   },
   "logs": {
@@ -904,6 +1188,15 @@
         "label": "Protection",
         "to": "/protection"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server logs sources --json",
+      "ysk-server logs query --source journal: --lines 50 --json"
     ]
   },
   "cron": {
@@ -925,6 +1218,15 @@
         "label": "Backups",
         "to": "/backups"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server cron list --json",
+      "ysk-server cron install --execute"
     ]
   },
   "backups": {
@@ -951,6 +1253,15 @@
         "label": "Files",
         "to": "/files"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server backup list --json",
+      "ysk-server backup status --json"
     ]
   },
   "migrate": {
@@ -977,6 +1288,14 @@
         "label": "DNS",
         "to": "/dns"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server migrate status --json"
     ]
   },
   "updates": {
@@ -1003,6 +1322,14 @@
         "label": "Dashboard",
         "to": "/"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server update --json"
     ]
   },
   "systemd": {
@@ -1024,6 +1351,14 @@
         "label": "Services",
         "to": "/services"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server system unit-install --enable --execute"
     ]
   },
   "readiness": {
@@ -1045,6 +1380,15 @@
         "label": "Dashboard",
         "to": "/"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server readiness --json",
+      "ysk-server doctor --json"
     ]
   },
   "systemIndex": {
@@ -1070,6 +1414,14 @@
         "label": "Updates",
         "to": "/updates"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server status --json"
     ]
   },
   "ai": {
@@ -1092,6 +1444,15 @@
         "label": "Agents",
         "to": "/agents"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server ask \"…\" --json",
+      "ysk-server tools --json"
     ]
   },
   "agents": {
@@ -1113,6 +1474,15 @@
         "label": "AI tasks",
         "to": "/ai"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server agents runtimes --json",
+      "ysk-server agent run --json"
     ]
   },
   "servicesConsole": {
@@ -1134,6 +1504,14 @@
         "label": "Services overview",
         "to": "/services"
       }
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server services --json"
     ]
   },
   "java": {
@@ -1146,6 +1524,14 @@
     ],
     "notes": [
       "Projects use the host JDK for builds"
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind java --version 21 --execute"
     ]
   },
   "kotlin": {
@@ -1158,6 +1544,14 @@
     ],
     "notes": [
       "Kotlin requires a local JDK"
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind kotlin --version 2.0 --execute"
     ]
   },
   "bun": {
@@ -1170,6 +1564,14 @@
     ],
     "notes": [
       "Used when a project runtime is Bun"
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind bun --version latest --execute"
     ]
   },
   "terminal": {
@@ -1184,6 +1586,14 @@
     "notes": [
       "Arbitrary remote SSH (v1 is local host only)",
       "Connect without root + EXECUTE"
+    ],
+    "workflow": [
+      "Review status on this page",
+      "Apply changes with panel actions",
+      "Confirm with readiness / health if host-changing"
+    ],
+    "cliHints": [
+      "# browser PTY only — no remote SSH required"
     ]
   }
 }

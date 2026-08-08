@@ -22,6 +22,15 @@
         "label": "監控",
         "to": "/metrics"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server readiness --json",
+      "ysk-server health --json"
     ]
   },
   "projects": {
@@ -52,6 +61,15 @@
         "label": "CDN",
         "to": "/cdn"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server projects list --json",
+      "ysk-server projects create --name demo --runtime node"
     ]
   },
   "projectDetail": {
@@ -82,6 +100,15 @@
         "label": "日誌",
         "to": "/logs"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server projects get --id <ID> --json",
+      "ysk-server projects deploy --id <ID> --execute"
     ]
   },
   "email": {
@@ -108,6 +135,15 @@
         "label": "SSL",
         "to": "/ssl"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server email domains --json",
+      "ysk-server email bootstrap --domain example.com --ip A.B.C.D --execute"
     ]
   },
   "emailDomain": {
@@ -134,6 +170,15 @@
         "label": "DNS",
         "to": "/dns"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server email mailboxes --domain example.com --json",
+      "ysk-server email deliverability --domain example.com --json"
     ]
   },
   "files": {
@@ -160,6 +205,15 @@
         "label": "備份",
         "to": "/backups"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server files list --root public --json",
+      "ysk-server files shares list --root public --json"
     ]
   },
   "publicFiles": {
@@ -181,6 +235,14 @@
         "label": "檔案",
         "to": "/files"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server hosting public-files --domain files.example.com --reload"
     ]
   },
   "ftp": {
@@ -207,6 +269,14 @@
         "label": "檔案",
         "to": "/files"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server hosting ftps-apply --domain example.com --execute"
     ]
   },
   "ftpService": {
@@ -233,6 +303,14 @@
         "label": "防護中心",
         "to": "/protection"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server hosting ftps-apply --domain example.com --execute"
     ]
   },
   "mysql": {
@@ -259,6 +337,14 @@
         "label": "專案",
         "to": "/projects"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server hosting mysql-provision --db NAME --user U --password P --execute"
     ]
   },
   "mysqlService": {
@@ -285,6 +371,14 @@
         "label": "服務總覽",
         "to": "/services"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server db-cluster list --json"
     ]
   },
   "mariadb": {
@@ -311,6 +405,14 @@
         "label": "專案",
         "to": "/projects"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server hosting mysql-provision --db NAME --user U --password P --execute"
     ]
   },
   "mariadbService": {
@@ -337,6 +439,14 @@
         "label": "服務總覽",
         "to": "/services"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server db-cluster list --json"
     ]
   },
   "postgres": {
@@ -363,6 +473,14 @@
         "label": "專案",
         "to": "/projects"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server hosting postgres-provision --db NAME --user U --password P --execute"
     ]
   },
   "postgresService": {
@@ -389,6 +507,14 @@
         "label": "服務總覽",
         "to": "/services"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server db-cluster list --json"
     ]
   },
   "redis": {
@@ -411,6 +537,14 @@
         "label": "Redis 服務",
         "to": "/databases/redis/service"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server hosting redis-provision --execute"
     ]
   },
   "redisService": {
@@ -437,6 +571,14 @@
         "label": "服務總覽",
         "to": "/services"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server hosting redis-provision --execute"
     ]
   },
   "dns": {
@@ -467,6 +609,15 @@
         "label": "郵件",
         "to": "/email"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server dns zones --json",
+      "ysk-server hosting dns-zone --zone example.com --ip A.B.C.D"
     ]
   },
   "cdn": {
@@ -503,6 +654,15 @@
         "label": "專案",
         "to": "/projects"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server cdn nodes --json",
+      "ysk-server cdn sites --json"
     ]
   },
   "ssl": {
@@ -533,6 +693,15 @@
         "label": "Nginx",
         "to": "/nginx"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server ssl list --json",
+      "ysk-server ssl get --domain example.com --json"
     ]
   },
   "nginx": {
@@ -559,6 +728,15 @@
         "label": "CDN",
         "to": "/cdn"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server nginx status --json",
+      "ysk-server nginx list --json"
     ]
   },
   "node": {
@@ -585,6 +763,14 @@
         "label": "服務",
         "to": "/services"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind node --version 22 --execute"
     ]
   },
   "php": {
@@ -611,6 +797,14 @@
         "label": "服務",
         "to": "/services"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind php --version 8.3 --execute"
     ]
   },
   "python": {
@@ -637,6 +831,14 @@
         "label": "服務",
         "to": "/services"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind python --version 3.12 --execute"
     ]
   },
   "go": {
@@ -663,6 +865,14 @@
         "label": "服務",
         "to": "/services"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind go --version 1.24 --execute"
     ]
   },
   "rust": {
@@ -689,6 +899,14 @@
         "label": "服務",
         "to": "/services"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind rust --version stable --execute"
     ]
   },
   "protection": {
@@ -719,6 +937,15 @@
         "label": "帳號安全",
         "to": "/security"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server defense status --json",
+      "ysk-server defense ban --ip 1.2.3.4 --json"
     ]
   },
   "firewall": {
@@ -744,6 +971,14 @@
         "label": "fail2ban 工具",
         "to": "/protection/fail2ban"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server hosting firewall-apply --execute"
     ]
   },
   "fail2ban": {
@@ -769,6 +1004,14 @@
         "label": "UFW 工具",
         "to": "/protection/firewall"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server defense status --json"
     ]
   },
   "security": {
@@ -790,6 +1033,15 @@
         "label": "用戶與方案",
         "to": "/users"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server security status --json",
+      "ysk-server security sessions list --json"
     ]
   },
   "users": {
@@ -811,6 +1063,14 @@
         "label": "帳號安全",
         "to": "/security"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server users list --json"
     ]
   },
   "services": {
@@ -832,6 +1092,14 @@
         "label": "systemd 單元",
         "to": "/system/unit"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server services --json"
     ]
   },
   "metrics": {
@@ -853,6 +1121,14 @@
         "label": "儀表板",
         "to": "/"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server host metrics --json"
     ]
   },
   "network": {
@@ -874,6 +1150,14 @@
         "label": "DNS",
         "to": "/dns"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server host overview --json"
     ]
   },
   "logs": {
@@ -895,6 +1179,15 @@
         "label": "專案",
         "to": "/projects"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server logs sources --json",
+      "ysk-server logs query --source journal: --lines 50 --json"
     ]
   },
   "cron": {
@@ -916,6 +1209,15 @@
         "label": "備份",
         "to": "/backups"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server cron list --json",
+      "ysk-server cron install --execute"
     ]
   },
   "backups": {
@@ -942,6 +1244,15 @@
         "label": "整機遷移",
         "to": "/system/migrate"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server backup list --json",
+      "ysk-server backup status --json"
     ]
   },
   "migrate": {
@@ -968,6 +1279,14 @@
         "label": "DNS",
         "to": "/dns"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server migrate status --json"
     ]
   },
   "updates": {
@@ -989,6 +1308,14 @@
         "label": "就緒檢查",
         "to": "/system/readiness"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server update --json"
     ]
   },
   "systemd": {
@@ -1010,6 +1337,14 @@
         "label": "服務",
         "to": "/services"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server system unit-install --enable --execute"
     ]
   },
   "readiness": {
@@ -1031,6 +1366,15 @@
         "label": "儀表板",
         "to": "/"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server readiness --json",
+      "ysk-server doctor --json"
     ]
   },
   "systemIndex": {
@@ -1056,6 +1400,14 @@
         "label": "更新",
         "to": "/updates"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server status --json"
     ]
   },
   "ai": {
@@ -1078,6 +1430,15 @@
         "label": "Agents",
         "to": "/agents"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server ask \"…\" --json",
+      "ysk-server tools --json"
     ]
   },
   "agents": {
@@ -1099,6 +1460,15 @@
         "label": "AI 任務",
         "to": "/ai"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server agents runtimes --json",
+      "ysk-server agent run --json"
     ]
   },
   "servicesConsole": {
@@ -1120,6 +1490,14 @@
         "label": "服務總覽",
         "to": "/services"
       }
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server services --json"
     ]
   },
   "java": {
@@ -1132,6 +1510,14 @@
     ],
     "notes": [
       "專案部署時使用主機已安裝的 JDK"
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind java --version 21 --execute"
     ]
   },
   "kotlin": {
@@ -1144,6 +1530,14 @@
     ],
     "notes": [
       "Kotlin 需要本機已安裝 JDK"
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind kotlin --version 2.0 --execute"
     ]
   },
   "bun": {
@@ -1156,6 +1550,14 @@
     ],
     "notes": [
       "專案 runtime 選 Bun 時使用此環境"
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "ysk-server hosting runtime-install --kind bun --version latest --execute"
     ]
   },
   "terminal": {
@@ -1170,6 +1572,14 @@
     "notes": [
       "任意遠端主機 SSH（v1 只限本機）",
       "無 root／EXECUTE 時無法連線"
+    ],
+    "workflow": [
+      "先看本頁狀態",
+      "用面板按鈕套用變更",
+      "若改主機，再到就緒／健康確認"
+    ],
+    "cliHints": [
+      "# browser PTY only — no remote SSH required"
     ]
   }
 }
