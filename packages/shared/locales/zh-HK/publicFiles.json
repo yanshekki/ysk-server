@@ -17,5 +17,16 @@
   "unlimited": "不限",
   "applyHint": "套用成功只代表設定已寫入；DNS、SSL 與防火牆需另行就緒才會對外服務。",
   "appliedOk": "已套用公開檔案站點",
-  "applyReload": "套用並重載 Nginx"
+  "applyReload": "套用並重載 Nginx",
+  "statusLive": "Nginx 已生效",
+  "statusManagedOnly": "僅管理檔",
+  "statusNotApplied": "未套用",
+  "nginxLive": "已在 conf.d",
+  "nginxNotLive": "未進 conf.d",
+  "openSite": "開啟網站",
+  "notLiveHint": "域名 404 多數係 conf 只寫在 dataDir、未複製到 /etc/nginx/conf.d，或未 reload。請用 root + YSK_EXECUTE 再套用。未發 SSL 前請用 http:// 開啟。",
+  "diskRoot": "磁碟根目錄",
+  "filesInRoot": "項目數",
+  "managedConf": "管理 conf",
+  "systemConf": "系統 conf.d"
 }

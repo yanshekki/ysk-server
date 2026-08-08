@@ -761,4 +761,21 @@ export const systemApi = {
       method: 'POST',
       body: JSON.stringify(body),
     }),
+
+  publicFilesStatus: () =>
+    api.requestRaw<{
+      publicRoot: string;
+      publicRootExists: boolean;
+      indexExists: boolean;
+      fileCount: number;
+      serverName?: string;
+      managedConf?: string;
+      managedConfExists: boolean;
+      systemConf?: string;
+      systemConfExists: boolean;
+      executeEnabled: boolean;
+      isRoot: boolean;
+      notes: string[];
+      likelyLive: boolean;
+    }>('/api/v1/hosting/files/status'),
 };

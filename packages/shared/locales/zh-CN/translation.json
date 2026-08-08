@@ -8208,7 +8208,18 @@
     "unlimited": "不限",
     "applyHint": "套用成功只代表设置已写入；DNS、SSL 与防火墙需另行就绪才会对外服务。",
     "appliedOk": "已套用公开文件站点",
-    "applyReload": "套用并重载 Nginx"
+    "applyReload": "套用并重载 Nginx",
+    "statusLive": "Nginx 已生效",
+    "statusManagedOnly": "仅管理档",
+    "statusNotApplied": "未套用",
+    "nginxLive": "已在 conf.d",
+    "nginxNotLive": "未进 conf.d",
+    "openSite": "打开网站",
+    "notLiveHint": "域名 404 多数是 conf 只写在 dataDir、未复制到 /etc/nginx/conf.d，或未 reload。请用 root + YSK_EXECUTE 再套用。未签发 SSL 前请用 http:// 打开。",
+    "diskRoot": "磁盘根目录",
+    "filesInRoot": "条目数",
+    "managedConf": "管理 conf",
+    "systemConf": "系统 conf.d"
   },
   "rbac": {
     "permissions": "权限",

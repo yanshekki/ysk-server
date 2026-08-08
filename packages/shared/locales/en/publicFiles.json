@@ -17,5 +17,16 @@
   "unlimited": "Unlimited",
   "applyHint": "Apply only writes config;",
   "appliedOk": "Public files site applied",
-  "applyReload": "Apply and reload Nginx"
+  "applyReload": "Apply and reload Nginx",
+  "statusLive": "Live on nginx",
+  "statusManagedOnly": "Managed only",
+  "statusNotApplied": "Not applied",
+  "nginxLive": "in conf.d",
+  "nginxNotLive": "not in conf.d",
+  "openSite": "Open site",
+  "notLiveHint": "Domain 404 usually means conf is only under dataDir, not copied to /etc/nginx/conf.d, or nginx was not reloaded. Re-apply with root + YSK_EXECUTE. Use http:// until SSL is issued for this hostname.",
+  "diskRoot": "Disk root",
+  "filesInRoot": "Entries",
+  "managedConf": "Managed conf",
+  "systemConf": "System conf.d"
 }

@@ -1066,6 +1066,12 @@ export async function handleHostingRoutes(
         sendJson(res, 200, planPublicFileServer({}));
         return true;
       }
+      if (method === 'GET' && url.pathname === '/api/v1/hosting/files/status') {
+        ctx.auth.authenticate(getBearer(req));
+        const { probePublicFileServer } = await import('@ysk/core');
+        sendJson(res, 200, probePublicFileServer({ dataDir: ctx.dataDir, host: ctx.host }));
+        return true;
+      }
       if (method === 'POST' && url.pathname === '/api/v1/hosting/files/apply') {
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
@@ -1085,7 +1091,13 @@ export async function handleHostingRoutes(
           actor: user.username,
           action: 'hosting.public_files.apply',
           resource: result.serverName,
-          detail: { ok: result.ok, nginxPath: result.nginxPath, publicRoot: result.publicRoot },
+          detail: {
+            ok: result.ok,
+            nginxPath: result.nginxPath,
+            publicRoot: result.publicRoot,
+            nginxReloaded: result.nginxReloaded,
+            live: result.live,
+          },
           ok: result.ok,
         });
         sendOpsResult(res, result);
