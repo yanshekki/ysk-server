@@ -1,15 +1,16 @@
 /**
  * Destructive project delete — type name to confirm; optional keep files.
+ * Layout: shared .delete-confirm professional pattern.
  */
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ProjectDto } from '@ysk/shared';
 import {
   Alert,
+  Badge,
   Button,
   CheckboxField,
   Field,
-  FormHint,
   Modal } from '../../../shared/components/ui';
 import { projectsApi } from '../api';
 
@@ -66,13 +67,19 @@ export function ProjectDeleteDialog({
 
   if (!project) return null;
 
+  const impactItems = [
+    t('projects.deleteWillStop'),
+    t('projects.deleteWillWeb'),
+    removeFiles ? t('projects.deleteWillOs') : t('projects.deleteKeepOs'),
+    t('projects.deleteWillDb'),
+  ];
+
   return (
     <Modal
       open={open}
       onClose={() => !busy && onClose()}
-      title={t('projects.deleteDialogTitle', { })}
-      description={t('projects.deleteDialogDesc', {
-        name: project.name })}
+      title={t('projects.deleteDialogTitle')}
+      description={t('projects.deleteDialogDesc', { name: project.name })}
       size="md"
       footer={
         <>
@@ -91,90 +98,94 @@ export function ProjectDeleteDialog({
         </>
       }
     >
-      <div className="u-stack u-gap-3">
-        <Alert variant="warn">
-          <ul className="u-text-sm u-mb-0" style={{ paddingLeft: '1.2rem' }}>
-            <li>
-              {t('projects.deleteWillStop', { })}
-            </li>
-            <li>
-              {t('projects.deleteWillWeb', { })}
-            </li>
-            <li>
-              {removeFiles
-                ? t('projects.deleteWillOs', { })
-                : t('projects.deleteKeepOs', { })}
-            </li>
-            <li>
-              {t('projects.deleteWillDb', { })}
-            </li>
-          </ul>
-        </Alert>
-
-        <dl className="u-text-sm" style={{ margin: 0 }}>
-          <div>
-            <dt className="muted">{t('projects.name')}</dt>
-            <dd>
-              <code>{project.name}</code>
-            </dd>
-          </div>
-          <div>
-            <dt className="muted">domain</dt>
-            <dd>{project.domain || '—'}</dd>
-          </div>
-          <div>
-            <dt className="muted">linux_user</dt>
-            <dd>
-              <code>{project.linuxUser}</code>
-            </dd>
-          </div>
-          <div>
-            <dt className="muted">home</dt>
-            <dd>
-              <code className="u-text-sm">{project.homeDir}</code>
-            </dd>
-          </div>
-          <div>
-            <dt className="muted">runtime</dt>
-            <dd>
-              {project.runtime}
-              {project.runtimeVersion ? ` ${project.runtimeVersion}` : ''}
-            </dd>
-          </div>
-        </dl>
-
-        <CheckboxField
-          id="del-files"
-          label={t('projects.deleteRemoveFiles', { })}
-          description={t('projects.deleteRemoveFilesDesc', { })}
-          checked={removeFiles}
-          onChange={setRemoveFiles}
-          disabled={busy}
-        />
-
-        <Field
-          label={t('projects.deleteTypeName', { })}
-          htmlFor="del-name"
-          hint={t('projects.deleteTypeNameHint', {
-            name: project.name })}
-          flush
+      <div className="delete-confirm">
+        <section
+          className="delete-confirm__impact"
+          aria-label={t('dialogs.severity.consequencesTitle')}
         >
-          <input
-            id="del-name"
-            className="input"
-            value={confirmName}
-            onChange={(e) => setConfirmName(e.target.value)}
-            placeholder={project.name}
-            autoComplete="off"
+          <header className="delete-confirm__section-head">
+            <span className="delete-confirm__section-label">
+              {t('dialogs.severity.consequencesTitle')}
+            </span>
+          </header>
+          <ul className="delete-confirm__impact-list">
+            {impactItems.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="delete-confirm__meta">
+          <div className="delete-confirm__meta-grid">
+            <div className="delete-confirm__meta-cell">
+              <span className="delete-confirm__meta-lab">{t('projects.name')}</span>
+              <span className="delete-confirm__meta-val">
+                <code className="delete-confirm__code">{project.name}</code>
+              </span>
+            </div>
+            <div className="delete-confirm__meta-cell">
+              <span className="delete-confirm__meta-lab">domain</span>
+              <span className="delete-confirm__meta-val">
+                {project.domain || '—'}
+              </span>
+            </div>
+            <div className="delete-confirm__meta-cell">
+              <span className="delete-confirm__meta-lab">linux_user</span>
+              <span className="delete-confirm__meta-val">
+                <code className="delete-confirm__code">{project.linuxUser}</code>
+              </span>
+            </div>
+            <div className="delete-confirm__meta-cell">
+              <span className="delete-confirm__meta-lab">runtime</span>
+              <span className="delete-confirm__meta-val">
+                <Badge tone="info">
+                  {project.runtime}
+                  {project.runtimeVersion ? ` ${project.runtimeVersion}` : ''}
+                </Badge>
+              </span>
+            </div>
+            <div className="delete-confirm__meta-cell" style={{ gridColumn: '1 / -1' }}>
+              <span className="delete-confirm__meta-lab">home</span>
+              <span className="delete-confirm__meta-val">
+                <code className="delete-confirm__code">{project.homeDir}</code>
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <section className="delete-confirm__options">
+          <CheckboxField
+            id="del-files"
+            label={t('projects.deleteRemoveFiles')}
+            description={t('projects.deleteRemoveFilesDesc')}
+            checked={removeFiles}
+            onChange={setRemoveFiles}
             disabled={busy}
-            spellCheck={false}
           />
-        </Field>
+        </section>
+
+        <section className="delete-confirm__type">
+          <Field
+            label={t('projects.deleteTypeName')}
+            htmlFor="del-name"
+            hint={t('projects.deleteTypeNameHint', { name: project.name, v0: project.name })}
+            flush
+          >
+            <input
+              id="del-name"
+              className="input"
+              value={confirmName}
+              onChange={(e) => setConfirmName(e.target.value)}
+              placeholder={project.name}
+              autoComplete="off"
+              disabled={busy}
+              spellCheck={false}
+              autoFocus
+            />
+          </Field>
+        </section>
 
         {error ? <Alert variant="error">{error}</Alert> : null}
-        <FormHint>
-          {t('projects.deleteDnsWarn', { })}
-        </FormHint>
       </div>
     </Modal>
   );

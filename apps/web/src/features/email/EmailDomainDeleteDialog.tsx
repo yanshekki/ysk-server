@@ -1,16 +1,16 @@
 /**
- * Destructive email domain delete — same UX as ProjectDeleteDialog:
- * type domain name to confirm; optional remove local dataDir.
+ * Destructive email domain delete — same safety model as ProjectDeleteDialog,
+ * professional delete-confirm layout.
  */
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { EmailDomain } from '@ysk/shared';
 import {
   Alert,
+  Badge,
   Button,
   CheckboxField,
   Field,
-  FormHint,
   Modal } from '../../shared/components/ui';
 import { emailApi } from './api';
 
@@ -70,6 +70,14 @@ export function EmailDomainDeleteDialog({
 
   if (!domain) return null;
 
+  const applyLabel = String(domain.apply_status ?? 'draft');
+  const impactItems = [
+    t('email.deleteDomainC1'),
+    t('email.deleteDomainC2'),
+    removeData ? t('email.deleteWillData') : t('email.deleteKeepData'),
+    t('email.deleteDomainC4'),
+  ];
+
   return (
     <Modal
       open={open}
@@ -94,72 +102,84 @@ export function EmailDomainDeleteDialog({
         </>
       }
     >
-      <div className="u-stack u-gap-3">
-        <Alert variant="warn">
-          <ul className="u-text-sm u-mb-0" style={{ paddingLeft: '1.2rem' }}>
-            <li>{t('email.deleteDomainC1')}</li>
-            <li>{t('email.deleteDomainC2')}</li>
-            <li>
-              {removeData ? t('email.deleteWillData') : t('email.deleteKeepData')}
-            </li>
-            <li>{t('email.deleteDomainC4')}</li>
+      <div className="delete-confirm">
+        <section className="delete-confirm__impact" aria-label={t('dialogs.severity.consequencesTitle')}>
+          <header className="delete-confirm__section-head">
+            <span className="delete-confirm__section-label">
+              {t('dialogs.severity.consequencesTitle')}
+            </span>
+          </header>
+          <ul className="delete-confirm__impact-list">
+            {impactItems.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
           </ul>
-        </Alert>
+        </section>
 
-        <dl className="u-text-sm" style={{ margin: 0 }}>
-          <div>
-            <dt className="muted">{t('email.domain')}</dt>
-            <dd>
-              <code>{domain.domain}</code>
-            </dd>
+        <section className="delete-confirm__meta" aria-label={t('email.domain')}>
+          <div className="delete-confirm__meta-grid">
+            <div className="delete-confirm__meta-cell">
+              <span className="delete-confirm__meta-lab">{t('email.domain')}</span>
+              <span className="delete-confirm__meta-val">
+                <code className="delete-confirm__code">{domain.domain}</code>
+              </span>
+            </div>
+            <div className="delete-confirm__meta-cell">
+              <span className="delete-confirm__meta-lab">{t('email.serverIp')}</span>
+              <span className="delete-confirm__meta-val">
+                <code className="delete-confirm__code">{domain.server_ip || '—'}</code>
+              </span>
+            </div>
+            <div className="delete-confirm__meta-cell">
+              <span className="delete-confirm__meta-lab">{t('email.statHealth')}</span>
+              <span className="delete-confirm__meta-val">
+                <Badge tone={domain.health_score >= 80 ? 'ok' : 'warn'}>
+                  {domain.health_score}/100
+                </Badge>
+              </span>
+            </div>
+            <div className="delete-confirm__meta-cell">
+              <span className="delete-confirm__meta-lab">{t('email.statApply')}</span>
+              <span className="delete-confirm__meta-val">
+                <Badge tone={applyLabel === 'applied' ? 'ok' : 'neutral'}>{applyLabel}</Badge>
+              </span>
+            </div>
           </div>
-          <div>
-            <dt className="muted">{t('email.serverIp')}</dt>
-            <dd>{domain.server_ip || '—'}</dd>
-          </div>
-          <div>
-            <dt className="muted">{t('email.statHealth')}</dt>
-            <dd>
-              {domain.health_score}/100
-            </dd>
-          </div>
-          <div>
-            <dt className="muted">{t('email.statApply')}</dt>
-            <dd>
-              <code>{String(domain.apply_status ?? 'draft')}</code>
-            </dd>
-          </div>
-        </dl>
+        </section>
 
-        <CheckboxField
-          id="email-del-data"
-          label={t('email.deleteRemoveData')}
-          description={t('email.deleteRemoveDataDesc')}
-          checked={removeData}
-          onChange={setRemoveData}
-          disabled={busy}
-        />
-
-        <Field
-          label={t('email.deleteTypeName')}
-          htmlFor="email-del-name"
-          hint={t('email.deleteTypeNameHint', { name: domain.domain })}
-          flush
-        >
-          <input
-            id="email-del-name"
-            className="input"
-            value={confirmName}
-            onChange={(e) => setConfirmName(e.target.value)}
-            placeholder={domain.domain}
-            autoComplete="off"
+        <section className="delete-confirm__options">
+          <CheckboxField
+            id="email-del-data"
+            label={t('email.deleteRemoveData')}
+            description={t('email.deleteRemoveDataDesc')}
+            checked={removeData}
+            onChange={setRemoveData}
             disabled={busy}
-            spellCheck={false}
           />
-        </Field>
+        </section>
+
+        <section className="delete-confirm__type">
+          <Field
+            label={t('email.deleteTypeName')}
+            htmlFor="email-del-name"
+            hint={t('email.deleteTypeNameHint', { name: domain.domain })}
+            flush
+          >
+            <input
+              id="email-del-name"
+              className="input"
+              value={confirmName}
+              onChange={(e) => setConfirmName(e.target.value)}
+              placeholder={domain.domain}
+              autoComplete="off"
+              disabled={busy}
+              spellCheck={false}
+              autoFocus
+            />
+          </Field>
+        </section>
 
         {error ? <Alert variant="error">{error}</Alert> : null}
-        <FormHint>{t('email.deleteSystemWarn')}</FormHint>
       </div>
     </Modal>
   );
