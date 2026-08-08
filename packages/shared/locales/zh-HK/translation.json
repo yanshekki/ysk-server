@@ -9993,7 +9993,12 @@
     "aboutReq": "需求",
     "aboutReqBody": "控制面須以 root 執行，並開啟 YSK_EXECUTE。",
     "aboutUsers": "身份",
-    "aboutUsersBody": "可選 root，或已 OS 佈建的專案 Linux 用戶。"
+    "aboutUsersBody": "可選 root，或已 OS 佈建的專案 Linux 用戶。",
+    "stepUpRequired": "Root shell 需要 TOTP／救援碼",
+    "stepUpHint": "帳戶已啟用 2FA 時，root 登入需再驗證。",
+    "stepUpTitle": "確認 root shell",
+    "stepUpDesc": "輸入驗證器代碼或救援碼。",
+    "totpLabel": "TOTP／救援碼"
   },
   "uiInline": {
     "s27d9daa5": "已預填 runtime {{v0}} {{v1}}，可建立專案",

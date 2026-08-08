@@ -15,10 +15,13 @@ import {
   Badge,
   Button,
   FeaturePageLayout,
+  Field,
+  Modal,
   PageTabs,
   buttonClassName,
 } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
+import { ApiError } from '../../shared/services/api';
 import {
   terminalApi,
   terminalWsUrl,
@@ -40,6 +43,9 @@ export function TerminalPage() {
   const [statusLine, setStatusLine] = useState<string | null>(null);
   const [dims, setDims] = useState({ cols: 120, rows: 32 });
   const [sessionUser, setSessionUser] = useState<string | null>(null);
+  const [totpOpen, setTotpOpen] = useState(false);
+  const [totpCode, setTotpCode] = useState('');
+  const [totpBusy, setTotpBusy] = useState(false);
 
   const hostRef = useRef<HTMLDivElement | null>(null);
   const termRef = useRef<Terminal | null>(null);
@@ -212,143 +218,170 @@ export function TerminalPage() {
     if (msg) setStatusLine(msg);
   }, []);
 
-  const connect = useCallback(async () => {
-    if (!targets?.canOpen) {
-      setStatusLine(t('terminal.needRootExecute'));
-      setConn('error');
-      return;
-    }
-    const term = termRef.current;
-    const fit = fitRef.current;
-    if (!term) return;
+  const connect = useCallback(
+    async (opts?: { totp?: string }) => {
+      if (!targets?.canOpen) {
+        setStatusLine(t('terminal.needRootExecute'));
+        setConn('error');
+        return;
+      }
+      const term = termRef.current;
+      const fit = fitRef.current;
+      if (!term) return;
 
-    // Close any stale socket first
-    try {
-      wsRef.current?.close();
-    } catch {
-      /* */
-    }
-    wsRef.current = null;
+      // Close any stale socket first
+      try {
+        wsRef.current?.close();
+      } catch {
+        /* */
+      }
+      wsRef.current = null;
 
-    try {
-      fit?.fit();
-    } catch {
-      /* */
-    }
-    const cols = term.cols;
-    const rows = term.rows;
-    setDims({ cols, rows });
+      try {
+        fit?.fit();
+      } catch {
+        /* */
+      }
+      const cols = term.cols;
+      const rows = term.rows;
+      setDims({ cols, rows });
 
-    const target: 'root' | { projectId: string } =
-      targetId === 'root'
-        ? 'root'
-        : { projectId: targetId.replace(/^project:/, '') };
+      const target: 'root' | { projectId: string } =
+        targetId === 'root'
+          ? 'root'
+          : { projectId: targetId.replace(/^project:/, '') };
 
-    setConn('connecting');
-    setSessionUser(null);
-    setStatusLine(t('terminal.connecting'));
-    term.reset();
-    term.focus();
-    term.writeln(`\x1b[90m${t('terminal.connecting')}\x1b[0m`);
+      // Root + enrolled TOTP: ask for code before ticket (unless already provided)
+      if (
+        target === 'root' &&
+        targets.rootNeedsStepUp &&
+        !opts?.totp?.trim()
+      ) {
+        setTotpCode('');
+        setTotpOpen(true);
+        setStatusLine(t('terminal.stepUpRequired'));
+        setConn('idle');
+        return;
+      }
 
-    try {
-      const sess = await terminalApi.openSession({ target, cols, rows });
-      const url = terminalWsUrl(sess.wsPath);
-      const ws = new WebSocket(url);
-      ws.binaryType = 'arraybuffer';
-      wsRef.current = ws;
+      setConn('connecting');
+      setSessionUser(null);
+      setStatusLine(t('terminal.connecting'));
+      term.reset();
+      term.focus();
+      term.writeln(`\x1b[90m${t('terminal.connecting')}\x1b[0m`);
 
-      ws.onopen = () => {
-        connectedRef.current = true;
-        setConn('connected');
-        setSessionUser(sess.linuxUser);
-        setStatusLine(t('terminal.connectedAs', { user: sess.linuxUser }));
-        // Clear banner — real shell prompt arrives via PTY
-        term.reset();
-        term.focus();
-        // Sync size after ready path (ready frame may arrive just after open)
-        try {
-          fit?.fit();
-          ws.send(JSON.stringify({ t: 'resize', cols: term.cols, rows: term.rows }));
-        } catch {
-          /* */
-        }
-      };
+      try {
+        const sess = await terminalApi.openSession({
+          target,
+          cols,
+          rows,
+          totp: opts?.totp?.trim() || undefined,
+        });
+        setTotpOpen(false);
+        setTotpCode('');
+        const url = terminalWsUrl(sess.wsPath);
+        const ws = new WebSocket(url);
+        ws.binaryType = 'arraybuffer';
+        wsRef.current = ws;
 
-      ws.onmessage = (ev) => {
-        if (typeof ev.data === 'string') {
+        ws.onopen = () => {
+          connectedRef.current = true;
+          setConn('connected');
+          setSessionUser(sess.linuxUser);
+          setStatusLine(t('terminal.connectedAs', { user: sess.linuxUser }));
+          // Clear banner — real shell prompt arrives via PTY
+          term.reset();
+          term.focus();
           try {
-            const msg = JSON.parse(ev.data) as {
-              t?: string;
-              message?: string;
-              code?: number;
-              user?: string;
-            };
-            if (msg.t === 'err') {
-              term.writeln(`\r\n\x1b[31m${msg.message ?? 'error'}\x1b[0m`);
-              setStatusLine(msg.message ?? t('terminal.error'));
-              setConn('error');
-              connectedRef.current = false;
-              return;
-            }
-            if (msg.t === 'exit') {
-              term.writeln(
-                `\r\n\x1b[90m[${t('terminal.exitCode', { code: msg.code ?? 0 })}]\x1b[0m`,
-              );
-              setStatusLine(t('terminal.exitCode', { code: msg.code ?? 0 }));
-              setConn('closed');
-              setSessionUser(null);
-              connectedRef.current = false;
-              return;
-            }
-            if (msg.t === 'ready' && msg.user) {
-              setSessionUser(msg.user);
-              setStatusLine(t('terminal.connectedAs', { user: msg.user }));
-              setConn('connected');
-              try {
-                fit?.fit();
-                ws.send(
-                  JSON.stringify({ t: 'resize', cols: term.cols, rows: term.rows }),
-                );
-              } catch {
-                /* */
-              }
-            }
-            // ignore pong / other control frames
+            fit?.fit();
+            ws.send(JSON.stringify({ t: 'resize', cols: term.cols, rows: term.rows }));
           } catch {
-            term.write(ev.data);
+            /* */
           }
+        };
+
+        ws.onmessage = (ev) => {
+          if (typeof ev.data === 'string') {
+            try {
+              const msg = JSON.parse(ev.data) as {
+                t?: string;
+                message?: string;
+                code?: number;
+                user?: string;
+              };
+              if (msg.t === 'err') {
+                term.writeln(`\r\n\x1b[31m${msg.message ?? 'error'}\x1b[0m`);
+                setStatusLine(msg.message ?? t('terminal.error'));
+                setConn('error');
+                connectedRef.current = false;
+                return;
+              }
+              if (msg.t === 'exit') {
+                term.writeln(
+                  `\r\n\x1b[90m[${t('terminal.exitCode', { code: msg.code ?? 0 })}]\x1b[0m`,
+                );
+                setStatusLine(t('terminal.exitCode', { code: msg.code ?? 0 }));
+                setConn('closed');
+                setSessionUser(null);
+                connectedRef.current = false;
+                return;
+              }
+              if (msg.t === 'ready' && msg.user) {
+                setSessionUser(msg.user);
+                setStatusLine(t('terminal.connectedAs', { user: msg.user }));
+                setConn('connected');
+                try {
+                  fit?.fit();
+                  ws.send(
+                    JSON.stringify({ t: 'resize', cols: term.cols, rows: term.rows }),
+                  );
+                } catch {
+                  /* */
+                }
+              }
+            } catch {
+              term.write(ev.data);
+            }
+            return;
+          }
+          const buf = ev.data as ArrayBuffer;
+          const text = new TextDecoder().decode(buf);
+          term.write(text);
+        };
+
+        ws.onerror = () => {
+          setStatusLine(t('terminal.wsError'));
+          setConn('error');
+          connectedRef.current = false;
+        };
+
+        ws.onclose = () => {
+          if (connectedRef.current) {
+            setStatusLine(t('terminal.disconnected'));
+            setConn('closed');
+          }
+          connectedRef.current = false;
+          setSessionUser(null);
+          if (wsRef.current === ws) wsRef.current = null;
+        };
+      } catch (e) {
+        if (e instanceof ApiError && e.needsTotp) {
+          setTotpOpen(true);
+          setStatusLine(t('terminal.stepUpRequired'));
+          setConn('idle');
+          term.writeln(`\r\n\x1b[33m${t('terminal.stepUpRequired')}\x1b[0m`);
           return;
         }
-        // binary stdout from PTY
-        const buf = ev.data as ArrayBuffer;
-        const text = new TextDecoder().decode(buf);
-        term.write(text);
-      };
-
-      ws.onerror = () => {
-        setStatusLine(t('terminal.wsError'));
+        const msg = e instanceof Error ? e.message : t('terminal.error');
+        term.writeln(`\r\n\x1b[31m${msg}\x1b[0m`);
+        setStatusLine(msg);
         setConn('error');
-        connectedRef.current = false;
-      };
-
-      ws.onclose = () => {
-        if (connectedRef.current) {
-          setStatusLine(t('terminal.disconnected'));
-          setConn('closed');
-        }
-        connectedRef.current = false;
         setSessionUser(null);
-        if (wsRef.current === ws) wsRef.current = null;
-      };
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : t('terminal.error');
-      term.writeln(`\r\n\x1b[31m${msg}\x1b[0m`);
-      setStatusLine(msg);
-      setConn('error');
-      setSessionUser(null);
-    }
-  }, [t, targetId, targets?.canOpen]);
+      }
+    },
+    [t, targetId, targets?.canOpen, targets?.rootNeedsStepUp],
+  );
 
   const selected: TerminalTarget | undefined = useMemo(
     () => targets?.items.find((i) => i.id === targetId),
@@ -482,6 +515,77 @@ export function TerminalPage() {
               ) : null}
             </div>
           </div>
+
+          {targetId === 'root' && targets?.rootNeedsStepUp ? (
+            <Alert variant="info">{t('terminal.stepUpHint')}</Alert>
+          ) : null}
+
+          <Modal
+            open={totpOpen}
+            onClose={() => {
+              if (!totpBusy) {
+                setTotpOpen(false);
+                setTotpCode('');
+              }
+            }}
+            title={t('terminal.stepUpTitle')}
+            description={t('terminal.stepUpDesc')}
+            size="sm"
+            footer={
+              <>
+                <Button
+                  variant="secondary"
+                  size="md"
+                  disabled={totpBusy}
+                  onClick={() => {
+                    setTotpOpen(false);
+                    setTotpCode('');
+                  }}
+                >
+                  {t('common.cancel')}
+                </Button>
+                <Button
+                  variant="primary"
+                  size="md"
+                  loading={totpBusy}
+                  disabled={!totpCode.trim()}
+                  onClick={() => {
+                    setTotpBusy(true);
+                    void connect({ totp: totpCode })
+                      .catch(() => {
+                        /* errors handled in connect */
+                      })
+                      .finally(() => setTotpBusy(false));
+                  }}
+                >
+                  {t('terminal.connect')}
+                </Button>
+              </>
+            }
+          >
+            <Field label={t('terminal.totpLabel')} htmlFor="term-totp" flush required>
+              <input
+                id="term-totp"
+                className="input"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                autoFocus
+                value={totpCode}
+                onChange={(e) => setTotpCode(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && totpCode.trim() && !totpBusy) {
+                    setTotpBusy(true);
+                    void connect({ totp: totpCode })
+                      .catch(() => {
+                        /* */
+                      })
+                      .finally(() => setTotpBusy(false));
+                  }
+                }}
+                placeholder="000000"
+              />
+            </Field>
+          </Modal>
 
           <div
             className={`term-frame${conn === 'connected' ? ' is-connected' : ''}${

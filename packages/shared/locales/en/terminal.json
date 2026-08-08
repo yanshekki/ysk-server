@@ -24,5 +24,10 @@
   "aboutReq": "Requirements",
   "aboutReqBody": "Control plane must run as root with YSK_EXECUTE enabled.",
   "aboutUsers": "Identities",
-  "aboutUsersBody": "Root, or OS-provisioned project Linux users."
+  "aboutUsersBody": "Root, or OS-provisioned project Linux users.",
+  "stepUpRequired": "Root shell needs a TOTP / recovery code",
+  "stepUpHint": "Root login requires 2FA step-up when your account has TOTP enabled.",
+  "stepUpTitle": "Confirm root shell",
+  "stepUpDesc": "Enter your authenticator code or a recovery code.",
+  "totpLabel": "TOTP / recovery code"
 }

@@ -24,5 +24,10 @@
   "aboutReq": "需求",
   "aboutReqBody": "控制面须以 root 运行，并开启 YSK_EXECUTE。",
   "aboutUsers": "身份",
-  "aboutUsersBody": "可选 root，或已 OS 布建的项目 Linux 用户。"
+  "aboutUsersBody": "可选 root，或已 OS 布建的项目 Linux 用户。",
+  "stepUpRequired": "Root shell 需要 TOTP／救援码",
+  "stepUpHint": "账户已启用 2FA 时，root 登录需再验证。",
+  "stepUpTitle": "确认 root shell",
+  "stepUpDesc": "输入验证器代码或救援码。",
+  "totpLabel": "TOTP／救援码"
 }

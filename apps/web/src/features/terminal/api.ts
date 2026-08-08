@@ -31,6 +31,8 @@ export type TerminalTargetsResponse = {
   canOpen: boolean;
   items: TerminalTarget[];
   notes: string[];
+  /** True when actor has TOTP enabled — root shell needs step-up code */
+  rootNeedsStepUp?: boolean;
 };
 
 export type TerminalSessionTicket = {
@@ -50,6 +52,8 @@ export const terminalApi = {
     target: 'root' | { projectId: string };
     cols: number;
     rows: number;
+    /** Required for root when actor has TOTP enrolled (or recent step-up) */
+    totp?: string;
   }) =>
     api.requestRaw<TerminalSessionTicket>('/api/v1/terminal/sessions', {
       method: 'POST',
