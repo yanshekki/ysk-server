@@ -22,7 +22,6 @@ import {
   Modal,
   OpsResultPanel,
   PresetChips,
-  SegRadio,
   PageTabs,
   FormActions,
   buttonClassName } from '../shared/components/ui';
@@ -673,10 +672,12 @@ export function FilesPage() {
         {/* Main */}
         <div className="fm-main">
                       <>
-              {/* Toolbar */}
+              {/* Toolbar — single dense row: actions | search+sort+view */}
               <div className="fm-toolbar">
-                <ActionBar>
-                  <label className={`${buttonClassName({ variant: 'primary', size: 'md' })} fm-upload-btn`}>
+                <div className="fm-toolbar__primary" role="toolbar" aria-label={t('files.toolbarAria')}>
+                  <label
+                    className={`${buttonClassName({ variant: 'primary', size: 'sm' })} fm-upload-btn`}
+                  >
                     {t('files.upload')}
                     <input
                       type="file"
@@ -688,7 +689,9 @@ export function FilesPage() {
                       }}
                     />
                   </label>
-                  <label className={`${buttonClassName({ variant: 'secondary', size: 'md' })} fm-upload-btn`}>
+                  <label
+                    className={`${buttonClassName({ variant: 'secondary', size: 'sm' })} fm-upload-btn`}
+                  >
                     {t('files.uploadFolder')}
                     <input
                       type="file"
@@ -706,17 +709,18 @@ export function FilesPage() {
                       }}
                     />
                   </label>
-                  <Button variant="secondary" size="md" onClick={bindSet(setMkdirOpen, true)}>
+                  <Button variant="secondary" size="sm" onClick={bindSet(setMkdirOpen, true)}>
                     {t('files.newFolder')}
                   </Button>
-                  <Button variant="secondary" size="md" onClick={bindSet(setNewFileOpen, true)}>
+                  <Button variant="secondary" size="sm" onClick={bindSet(setNewFileOpen, true)}>
                     {t('files.newTextFile')}
                   </Button>
                   {selected.size > 0 ? (
                     <>
+                      <span className="fm-toolbar__sep" aria-hidden />
                       <Button
                         variant="secondary"
-                        size="md"
+                        size="sm"
                         loading={busy}
                         onClick={() => {
                           const first = selectedEntries[0];
@@ -727,21 +731,21 @@ export function FilesPage() {
                       </Button>
                       <Button
                         variant="secondary"
-                        size="md"
+                        size="sm"
                         onClick={bindOpenMoveCopy(setMoveTarget, setMoveDest, selectedEntries, 'copy', path)}
                       >
                         {t('files.copy')}
                       </Button>
                       <Button
                         variant="secondary"
-                        size="md"
+                        size="sm"
                         onClick={bindOpenMoveCopy(setMoveTarget, setMoveDest, selectedEntries, 'move', path)}
                       >
                         {t('files.move')}
                       </Button>
                       <Button
                         variant="secondary"
-                        size="md"
+                        size="sm"
                         disabled={busy}
                         onClick={bindOpenChmod(setChmodMode, setChmodOpen)}
                       >
@@ -749,7 +753,7 @@ export function FilesPage() {
                       </Button>
                       <Button
                         variant="secondary"
-                        size="md"
+                        size="sm"
                         disabled={busy}
                         onClick={bindOpenZip(setZipName, setZipOpen)}
                       >
@@ -759,7 +763,7 @@ export function FilesPage() {
                       selectedEntries[0]?.name.toLowerCase().endsWith('.zip') ? (
                         <Button
                           variant="secondary"
-                          size="md"
+                          size="sm"
                           loading={busy}
                           onClick={() => {
                             const zipPath = selectedEntries[0]!.path;
@@ -790,55 +794,57 @@ export function FilesPage() {
                       ) : null}
                       <Button
                         variant="danger"
-                        size="md"
+                        size="sm"
                         onClick={bindCall1(setDelPaths, [...selected])}
                       >
                         {t('files.delete')}
                       </Button>
                     </>
                   ) : null}
-                </ActionBar>
-                <ActionBar>
+                </div>
+                <div className="fm-toolbar__tools">
                   <input
-                    className="fm-search"
+                    className="fm-search input"
+                    type="search"
                     placeholder={t('files.searchName')}
                     value={query}
                     onChange={bindInput(setQuery)}
+                    aria-label={t('files.searchName')}
                   />
-                  <SegRadio
-                    name="fm-sort"
+                  <select
+                    className="fm-sort input"
                     aria-label={t('files.sortAria')}
-                    size="sm"
                     value={`${sort}:${order}`}
-                    onChange={(v) => {
-                      const { sort: s, order: o } = parseSortValue(v);
+                    onChange={(e) => {
+                      const { sort: s, order: o } = parseSortValue(e.target.value);
                       setSort(s);
                       setOrder(o);
                     }}
-                    options={[
-                      { value: 'name:asc', label: t('files.sortNameAsc') },
-                      { value: 'name:desc', label: t('files.sortNameDesc') },
-                      { value: 'size:asc', label: t('files.sortSizeAsc') },
-                      { value: 'size:desc', label: t('files.sortSizeDesc') },
-                      { value: 'mtime:desc', label: t('files.sortMtimeDesc') },
-                      { value: 'mtime:asc', label: t('files.sortMtimeAsc') },
-                    ]}
-                  />
-                  <Button
-                    variant={view === 'list' ? 'primary' : 'ghost'}
-                    size="sm"
-                    onClick={bindSet(setView, 'list')}
                   >
-                    {t('files.viewList')}
-                  </Button>
-                  <Button
-                    variant={view === 'grid' ? 'primary' : 'ghost'}
-                    size="sm"
-                    onClick={bindSet(setView, 'grid')}
-                  >
-                    {t('files.viewIcons')}
-                  </Button>
-                </ActionBar>
+                    <option value="name:asc">{t('files.sortNameAsc')}</option>
+                    <option value="name:desc">{t('files.sortNameDesc')}</option>
+                    <option value="size:asc">{t('files.sortSizeAsc')}</option>
+                    <option value="size:desc">{t('files.sortSizeDesc')}</option>
+                    <option value="mtime:desc">{t('files.sortMtimeDesc')}</option>
+                    <option value="mtime:asc">{t('files.sortMtimeAsc')}</option>
+                  </select>
+                  <div className="fm-view-toggle" role="group" aria-label={t('files.viewAria')}>
+                    <Button
+                      variant={view === 'list' ? 'primary' : 'ghost'}
+                      size="sm"
+                      onClick={bindSet(setView, 'list')}
+                    >
+                      {t('files.viewList')}
+                    </Button>
+                    <Button
+                      variant={view === 'grid' ? 'primary' : 'ghost'}
+                      size="sm"
+                      onClick={bindSet(setView, 'grid')}
+                    >
+                      {t('files.viewIcons')}
+                    </Button>
+                  </div>
+                </div>
               </div>
 
               {/* Breadcrumb */}

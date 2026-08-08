@@ -64,28 +64,96 @@
   min-width: 0;
 }
 
+/* Dense single-row toolbar — no huge empty middle gap */
 .fm-toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3);
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-3);
+  gap: 0.5rem 0.75rem;
+  margin-bottom: var(--space-2);
+  padding: 0.4rem 0.55rem;
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.fm-toolbar__primary,
+.fm-toolbar__tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.fm-toolbar__primary {
+  flex: 1 1 auto;
+}
+
+.fm-toolbar__tools {
+  flex: 0 1 auto;
+  margin-left: auto;
+}
+
+.fm-toolbar__sep {
+  width: 1px;
+  height: 1.25rem;
+  background: var(--border-color);
+  margin: 0 0.15rem;
+  flex-shrink: 0;
 }
 
 .fm-search {
-  min-width: 10rem;
-  max-width: 16rem;
+  width: 9.5rem;
+  min-width: 7rem;
+  max-width: 14rem;
+  height: 1.9rem;
+  padding: 0.2rem 0.55rem;
+  font-size: var(--text-sm);
+}
+
+.fm-sort {
+  width: auto;
+  min-width: 6.5rem;
+  max-width: 10rem;
+  height: 1.9rem;
+  padding: 0.15rem 0.4rem;
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.fm-view-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.1rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle, rgba(0, 0, 0, 0.04));
 }
 
 .fm-upload-btn {
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  white-space: nowrap;
 }
 
 .fm-breadcrumb {
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-2);
+  flex-wrap: wrap;
+  gap: 0.15rem;
+}
+
+@media (max-width: 720px) {
+  .fm-toolbar__tools {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .fm-search {
+    flex: 1 1 8rem;
+    max-width: none;
+  }
 }
 
 .fm-drop {
