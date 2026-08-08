@@ -3,7 +3,7 @@
  * Create only in domains ListPanel toolbar (table top-right).
  * Software version bars live only on the software tab — never page chrome.
  */
-import { FormEvent, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { emailApi, type EmailDomain } from '../features/email';
@@ -16,9 +16,6 @@ import {
   EmptyState,
   FeaturePageLayout,
   Field,
-  FormActions,
-  FormHint,
-  FormLayout,
   ListPanel,
   ListToolbar,
   Modal,
@@ -26,10 +23,30 @@ import {
   PageTabs,
   SoftwareInstallBanner,
   SoftwareVersionBar } from '../shared/components/ui';
+import { api } from '../shared/services/api';
 import { getServerContext, setServerContext } from '../shared/stores/server-context';
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { useServerList } from '../shared/hooks/useServerList';
-import { bindCall1, bindCloseIfIdle, bindFilter, bindFormSubmit, bindInput, bindInputContext, bindRefreshCatch, bindSeq, bindSet, bindVoid } from './bind-handlers';
+import {
+  bindCall1,
+  bindCloseIfIdle,
+  bindFilter,
+  bindFormSubmit,
+  bindInput,
+  bindInputContext,
+  bindRefreshCatch,
+  bindSeq,
+  bindSet,
+  bindVoid } from './bind-handlers';
+
+function isIpv4(s: string): boolean {
+  return /^\d{1,3}(\.\d{1,3}){3}$/.test(s.trim());
+}
+
+function isIpv6(s: string): boolean {
+  const t = s.trim();
+  return t.includes(':') && !isIpv4(t);
+}
 
 const TABS = ['domains', 'queue', 'stack', 'about'] as const;
 
@@ -109,6 +126,41 @@ export function EmailPage() {
   const [queueMsg, setQueueMsg] = useState<string | null>(null);
   const [queueOk, setQueueOk] = useState<boolean | null>(null);
   const [queueItems, setQueueItems] = useState<Array<{ id: string; raw: string }>>([]);
+  const [hostIps, setHostIps] = useState<string[]>([]);
+
+  const hostV4 = useMemo(() => hostIps.filter(isIpv4), [hostIps]);
+  const hostV6 = useMemo(() => hostIps.filter(isIpv6), [hostIps]);
+
+  useEffect(() => {
+    if (!createOpen) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const r = await api.requestRaw<{ items?: string[] }>('/api/v1/system/ips');
+        if (cancelled) return;
+        const raw = (r.items ?? [])
+          .map((s) => s.replace(/\/\d+$/, '').trim())
+          .filter(Boolean);
+        const flat = raw.flatMap((s) => s.split(/\s+/)).filter(Boolean);
+        const uniq = [...new Set(flat)];
+        setHostIps(uniq);
+        setServerIp((cur) => {
+          if (cur.trim()) return cur;
+          const first4 = uniq.find(isIpv4);
+          if (first4) {
+            setServerContext({ serverIp: first4 });
+            return first4;
+          }
+          return cur;
+        });
+      } catch {
+        if (!cancelled) setHostIps([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [createOpen]);
 
   const total = list.meta?.total ?? items.length;
   const facets = list.meta?.facets;
@@ -417,7 +469,6 @@ export function EmailPage() {
         open={createOpen}
         onClose={bindSet(setCreateOpen, false)}
         title={t('email.create')}
-        description={t('email.createModalDesc')}
         footer={
           <>
             <Button
@@ -440,59 +491,73 @@ export function EmailPage() {
           </>
         }
       >
-        <form id="email-create-form" onSubmit={bindFormSubmit(onCreate)}>
-          <FormLayout columns={2}>
-            <Field
-              label={t('email.domain')}
-              htmlFor="edomain"
-              flush
+        <form id="email-create-form" className="stack" onSubmit={bindFormSubmit(onCreate)}>
+          <Field label={t('email.domain')} htmlFor="edomain" flush required>
+            <input
+              id="edomain"
+              value={domain}
+              onChange={bindInput(setDomain)}
+              placeholder="example.com"
               required
-              hint={t('email.domainApexHint')}
-            >
-              <input
-                id="edomain"
-                value={domain}
-                onChange={bindInput(setDomain)}
-                placeholder="example.com"
-                required
-                autoFocus
-                spellCheck={false}
-              />
-            </Field>
-            <Field
-              label={t('email.serverIp')}
-              htmlFor="eip"
-              flush
+              autoFocus
+              spellCheck={false}
+            />
+          </Field>
+
+          <Field label={t('email.serverIp')} htmlFor="eip" flush required>
+            <input
+              id="eip"
+              value={serverIp}
+              onChange={bindInputContext(setServerIp, setServerContext, 'serverIp')}
               required
-              hint={t('email.serverIpv4Hint')}
-            >
-              <input
-                id="eip"
-                value={serverIp}
-                onChange={bindInputContext(setServerIp, setServerContext, 'serverIp')}
-                required
-                placeholder={t('email.serverIpv4Ph')}
-                spellCheck={false}
-              />
-            </Field>
-            <Field
-              label={t('email.serverIpv6')}
-              htmlFor="eip6"
-              flush
-              hint={t('email.serverIpv6Hint')}
-            >
-              <input
-                id="eip6"
-                value={serverIpv6}
-                onChange={bindInputContext(setServerIpv6, setServerContext, 'serverIpv6')}
-                placeholder={t('email.serverIpv6Ph')}
-                spellCheck={false}
-              />
-            </Field>
-          </FormLayout>
-          <FormHint>
-            {t('email.registerNote')}
-          </FormHint>
+              placeholder="203.0.113.10"
+              spellCheck={false}
+            />
+            {hostV4.length > 0 ? (
+              <div className="mail-ip-presets" role="group" aria-label={t('email.hostIpPick')}>
+                {hostV4.map((ip) => (
+                  <button
+                    key={ip}
+                    type="button"
+                    className={`mail-ip-presets__chip${serverIp.trim() === ip ? ' is-on' : ''}`}
+                    onClick={() => {
+                      setServerIp(ip);
+                      setServerContext({ serverIp: ip });
+                    }}
+                  >
+                    {ip}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </Field>
+
+          <Field label={t('email.serverIpv6')} htmlFor="eip6" flush>
+            <input
+              id="eip6"
+              value={serverIpv6}
+              onChange={bindInputContext(setServerIpv6, setServerContext, 'serverIpv6')}
+              placeholder={t('email.serverIpv6Ph')}
+              spellCheck={false}
+            />
+            {hostV6.length > 0 ? (
+              <div className="mail-ip-presets" role="group" aria-label={t('email.hostIpPickV6')}>
+                {hostV6.map((ip) => (
+                  <button
+                    key={ip}
+                    type="button"
+                    className={`mail-ip-presets__chip${serverIpv6.trim() === ip ? ' is-on' : ''}`}
+                    onClick={() => {
+                      setServerIpv6(ip);
+                      setServerContext({ serverIpv6: ip });
+                    }}
+                  >
+                    {ip}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </Field>
         </form>
       </Modal>
 
