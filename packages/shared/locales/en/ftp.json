@@ -122,5 +122,10 @@
   "applyRestart": "Apply and restart",
   "afterInstall": "After install you can log in with FTPS accounts. Admin rights needed to install.",
   "saveSettings": "Save settings",
-  "saveApplyHint": "Save updates panel only; Apply and restart writes vsftpd.conf and reloads."
+  "saveApplyHint": "Save updates panel only; Apply and restart writes vsftpd.conf and reloads.",
+  "portsLabel": "Open ports",
+  "copyUfw": "Copy ufw",
+  "pasvIpShort": "PASV public IP empty — set on Network.",
+  "installAndStart": "Install & start",
+  "manageAccounts": "Accounts"
 }

@@ -122,5 +122,10 @@
   "applyRestart": "套用並重啟",
   "afterInstall": "安裝後即可使用 FTPS 帳戶登入。需系統管理員權限才能完成安裝。",
   "saveSettings": "儲存設定",
-  "saveApplyHint": "儲存只更新面板設定；「套用並重啟」才寫入 vsftpd.設定檔 並重載服務。"
+  "saveApplyHint": "儲存只更新面板設定；「套用並重啟」才寫入 vsftpd.設定檔 並重載服務。",
+  "portsLabel": "需開埠",
+  "copyUfw": "複製 ufw",
+  "pasvIpShort": "PASV 公網 IP 未填 — 請到「網絡」設定。",
+  "installAndStart": "安裝並啟動",
+  "manageAccounts": "帳戶"
 }

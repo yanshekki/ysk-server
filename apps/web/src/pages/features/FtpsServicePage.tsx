@@ -1,5 +1,5 @@
 /**
- * vsftpd service page — professional console layout.
+ * vsftpd service — compact ops console (no fluff).
  */
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -18,24 +18,28 @@ import {
   FeaturePageLayout,
   Field,
   FormActions,
-  FormHint,
   FormLayout,
   OpsResultPanel,
   PresetChips,
   SegRadio,
   PageTabs,
   SoftwareInstallBanner,
-  SoftwareVersionBar } from '../../shared/components/ui';
+  SoftwareVersionBar,
+} from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { ftpApi, type FtpsSettings, type FtpsStatus } from '../../features/ftp';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { softwareApi } from '../../features/software';
 import { sanitizeOperatorNotes } from '../../shared/lib/operator-messages';
 import { toast } from '../../shared/stores/toast-store';
-import { bindSet } from '../bind-handlers';
+import { usePageTab } from '../../shared/hooks/usePageTab';
+
+const FTPS_TABS = ['overview', 'network', 'security', 'stack', 'about'] as const;
 
 /** Ports the operator must open — never auto-opened by FTPS apply. */
-export function ftpsOpenPortList(settings: Pick<FtpsSettings, 'listenPort' | 'pasvMin' | 'pasvMax'>): string[] {
+export function ftpsOpenPortList(
+  settings: Pick<FtpsSettings, 'listenPort' | 'pasvMin' | 'pasvMax'>,
+): string[] {
   const listen = Number(settings.listenPort) || 21;
   const min = Number(settings.pasvMin) || 30000;
   const max = Number(settings.pasvMax) || 30100;
@@ -64,9 +68,13 @@ const empty: FtpsSettings = {
   chrootLocalUser: true,
   allowWriteableChroot: true,
   banner: 'YSK FTPS',
-  guestUsername: 'ftp' };
+  guestUsername: 'ftp',
+};
 
-export function statusLabel(s: FtpsStatus | null | undefined, t: (k: string) => string): { text: string; tone: 'ok' | 'warn' | 'danger' | 'neutral' } {
+export function statusLabel(
+  s: FtpsStatus | null | undefined,
+  t: (k: string) => string,
+): { text: string; tone: 'ok' | 'warn' | 'danger' | 'neutral' } {
   if (!s) return { text: t('common.loading'), tone: 'neutral' };
   if (!s.installed) return { text: t('common.notInstalled'), tone: 'danger' };
   if (s.active === 'active') return { text: t('common.running'), tone: 'ok' };
@@ -80,7 +88,7 @@ export function FtpsServicePage() {
   const [status, setStatus] = useState<FtpsStatus | null>(null);
   const [domains, setDomains] = useState<Array<{ value: string; label: string }>>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [tab, setTab] = useState('lifecycle');
+  const [tab, setTab] = usePageTab(FTPS_TABS, 'overview');
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
 
   const refresh = useCallback(async () => {
@@ -93,7 +101,7 @@ export function FtpsServicePage() {
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : t('common.loadFailed'));
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void refresh();
@@ -130,7 +138,8 @@ export function FtpsServicePage() {
               inst.results?.find((r) => r.blockMessage)?.blockMessage ??
               notes[0] ??
               t('ftp.installIncomplete'),
-            notes } satisfies OpsResultLike;
+            notes,
+          } satisfies OpsResultLike;
         }
       } catch (e) {
         const m = e instanceof Error ? e.message : t('common.installFailed');
@@ -138,7 +147,8 @@ export function FtpsServicePage() {
           ok: false,
           blocked: looksLikeBlockedMessage(m),
           blockMessage: m,
-          notes: [m] } satisfies OpsResultLike;
+          notes: [m],
+        } satisfies OpsResultLike;
       }
       const r = await ftpApi.apply({ settings, applySystem: true });
       await refresh();
@@ -156,38 +166,33 @@ export function FtpsServicePage() {
 
   const st = statusLabel(status, t);
   const installed = Boolean(status?.installed);
-
-  const tabs = [
-    { id: 'lifecycle', label: t('common.lifecycle') },
-    { id: 'overview', label: t('publicFiles.overview') },
-    { id: 'network', label: t('system.network') },
-    { id: 'security', label: t('nav.sections.security') },
-    { id: 'stack', label: t('tabs.stack') },
-    { id: 'about', label: t('common.about') },
-  ];
+  const running = status?.active === 'active';
 
   return (
     <FeaturePageLayout
-      title={t('nav.ftpService', { defaultValue: t('nav.ftpService') })}
+      title={t('nav.ftpService')}
+      showCapability={false}
       status={{
-        pill: {
-          label: st.text,
-          tone: st.tone === 'neutral' ? 'warn' : st.tone },
+        pill: { label: st.text, tone: st.tone === 'neutral' ? 'warn' : st.tone },
         items: [
-          {
-            label: t('common.status'),
-            value: st.text,
-            tone: st.tone === 'neutral' ? 'neutral' : st.tone },
           { label: t('common.port'), value: String(settings.listenPort) },
           {
             label: t('ftp.accounts'),
-            value: status?.accountCount != null ? String(status.accountCount) : '—' },
+            value: status?.accountCount != null ? String(status.accountCount) : '—',
+          },
           {
             label: 'FTPS',
             value: settings.sslEnable ? t('common.on') : t('common.off'),
-            tone: settings.sslEnable ? 'ok' : 'warn' },
-        ] }}
-      actions={<ActionBar>
+            tone: settings.sslEnable ? 'ok' : 'warn',
+          },
+          {
+            label: 'PASV',
+            value: `${settings.pasvMin}–${settings.pasvMax}`,
+          },
+        ],
+      }}
+      actions={
+        <ActionBar size="sm">
           <Link to="/ftp">
             <Button variant="secondary" size="sm">
               {t('ftp.accounts')}
@@ -210,115 +215,147 @@ export function FtpsServicePage() {
     >
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error && !result ? <Alert variant="error">{error}</Alert> : null}
-      <Alert variant="info">
-        <strong>{t('ftp.openPortsAlertTitle')}</strong>{' '}
-        {t('ftp.openPortsAlert', { ports: openPorts.join(', ') })}
-        <p className="u-text-sm u-mt-2 u-mb-0">{t('ftp.openPortsCloudSg')}</p>
-        <div className="u-flex u-flex-wrap u-gap-2 u-mt-2">
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={() => {
-              const text = ftpsUfwCopyCommands(openPorts);
-              void navigator.clipboard?.writeText(text).then(
-                () => toast.ok(t('ftp.ufwCopied')),
-                () => toast.error(t('common.copyFailed', { defaultValue: 'Copy failed' })),
-              );
-            }}
-          >
-            {t('ftp.copyUfwCommands')}
-          </Button>
-          <Link to="/firewall">
-            <Button type="button" variant="secondary" size="sm">
-              {t('ftp.openFirewallPage')}
-            </Button>
-          </Link>
-        </div>
-        <p className="muted u-text-sm u-mb-0 u-mt-2">
-          {t('ftp.firewallPresetHint')}
-        </p>
-      </Alert>
-      {needPasvPublicIp ? (
-        <Alert variant="warn">
-          <strong>{t('ftp.pasvPublicIpNeededTitle')}</strong>{' '}
-          {t('ftp.pasvPublicIpNeeded')}
-        </Alert>
-      ) : null}
-      <PageTabs tabs={tabs} active={tab} onChange={setTab} variant="scroll">
-        {tab === 'lifecycle' ? (
-          <Card>
-            <CardSection title={t('common.lifecycle')} description={t('ftp.installStart')}>
-              <div className="lifecycle-toolbar">
-                {!installed ? (
-                  <p className="muted u-text-sm u-mb-0">
-                    {t('ftp.installFtpsBanner')}
-                  </p>
-                ) : status?.active !== 'active' ? (
-                  <Button variant="primary" size="md" loading={busy} onClick={onApplySettings}>
-                    {t('fail2ban.startService')}
-                  </Button>
-                ) : (
-                  <Button variant="secondary" size="md" loading={busy} onClick={onApplySettings}>
-                    {t('ftp.applyRestart')}
-                  </Button>
-                )}
-              </div>
-              {!installed ? (
-                <p className="muted u-text-sm u-mt-3">
-                  {t('ftp.afterInstall')}
-                </p>
-              ) : null}
-            </CardSection>
-          </Card>
-        ) : null}
 
+      {/* Compact ops strip — ports + PASV IP only when needed */}
+      <div className="ftps-ops-strip">
+        <div className="ftps-ops-strip__row">
+          <span className="ftps-ops-strip__label">{t('ftp.portsLabel')}</span>
+          <code className="ftps-ops-strip__ports">{openPorts.join(', ')}</code>
+          <ActionBar size="sm">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                void navigator.clipboard?.writeText(ftpsUfwCopyCommands(openPorts)).then(
+                  () => toast.ok(t('ftp.ufwCopied')),
+                  () => toast.error(t('common.copyFailed', { defaultValue: 'Copy failed' })),
+                );
+              }}
+            >
+              {t('ftp.copyUfw')}
+            </Button>
+            <Link to="/firewall">
+              <Button type="button" variant="ghost" size="sm">
+                {t('nav.firewall')}
+              </Button>
+            </Link>
+          </ActionBar>
+        </div>
+        {needPasvPublicIp ? (
+          <p className="ftps-ops-strip__warn">
+            {t('ftp.pasvIpShort')}{' '}
+            <button type="button" className="btn btn--ghost btn--sm" onClick={() => setTab('network')}>
+              {t('system.network')}
+            </button>
+          </p>
+        ) : null}
+      </div>
+
+      <PageTabs
+        tabs={[
+          { id: 'overview', label: t('publicFiles.overview') },
+          { id: 'network', label: t('system.network') },
+          { id: 'security', label: t('nav.sections.security') },
+          { id: 'stack', label: t('tabs.stack') },
+          { id: 'about', label: t('common.about') },
+        ]}
+        active={tab}
+        onChange={setTab}
+        variant="scroll"
+      >
         {tab === 'overview' ? (
-          <Card>
-            <CardSection title={t('db.serviceOverview')} description={t('db.readonlyStatus')}>
-              <DescriptionList
-                columns={2}
-                items={[
-                  { label: t('common.status'), value: <Badge tone={st.tone}>{st.text}</Badge> },
-                  { label: t('ftp.listenPort'), value: String(settings.listenPort) },
-                  { label: t('ftp.accountCount'), value: status?.accountCount != null ? String(status.accountCount) : '—' },
-                  { label: t('ftp.loginBanner'), value: settings.banner || '—' },
-                  { label: t('ftp.sslDomain'), value: settings.sslDomain || '—' },
-                  { label: t('ftp.pasvRange'), value: `${settings.pasvMin}–${settings.pasvMax}` },
-                  { label: 'FTPS', value: settings.sslEnable ? t('common.open') : t('common.close') },
-                  { label: t('ftp.forceTls'), value: settings.forceSsl ? t('common.yes') : t('common.no') },
-                  { label: t('ftp.allowWrite'), value: settings.writeEnable ? t('common.yes') : t('common.no') },
-                  { label: 'Chroot', value: settings.chrootLocalUser ? t('common.yes') : t('common.no') },
-                ]}
-              />
-            </CardSection>
-          </Card>
+          <div className="tab-panel">
+            <Card>
+              <CardSection title={t('publicFiles.overview')}>
+                <DescriptionList
+                  columns={2}
+                  items={[
+                    {
+                      label: t('common.status'),
+                      value: <Badge tone={st.tone}>{st.text}</Badge>,
+                    },
+                    {
+                      label: t('ftp.listenPort'),
+                      value: String(settings.listenPort),
+                    },
+                    {
+                      label: t('ftp.accountCount'),
+                      value:
+                        status?.accountCount != null
+                          ? String(status.accountCount)
+                          : '—',
+                    },
+                    {
+                      label: t('ftp.pasvRange'),
+                      value: `${settings.pasvMin}–${settings.pasvMax}`,
+                    },
+                    {
+                      label: t('ftp.pasvPublicIp'),
+                      value: settings.pasvAddress?.trim() || (
+                        <Badge tone="warn">{t('common.missing')}</Badge>
+                      ),
+                    },
+                    {
+                      label: 'FTPS',
+                      value: settings.sslEnable ? t('common.on') : t('common.off'),
+                    },
+                    {
+                      label: t('ftp.sslDomain'),
+                      value: settings.sslDomain || '—',
+                    },
+                    {
+                      label: t('ftp.allowWrite'),
+                      value: settings.writeEnable ? t('common.yes') : t('common.no'),
+                    },
+                  ]}
+                />
+                <div className="ftps-overview-actions">
+                  {!installed ? (
+                    <Button
+                      variant="primary"
+                      size="md"
+                      loading={busy}
+                      onClick={() => void onInstallAndStart()}
+                    >
+                      {t('ftp.installAndStart')}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant={running ? 'secondary' : 'primary'}
+                      size="md"
+                      loading={busy}
+                      onClick={() => void onApplySettings()}
+                    >
+                      {running ? t('ftp.applyRestart') : t('fail2ban.startService')}
+                    </Button>
+                  )}
+                  <Link to="/ftp">
+                    <Button variant="ghost" size="md">
+                      {t('ftp.manageAccounts')}
+                    </Button>
+                  </Link>
+                </div>
+              </CardSection>
+            </Card>
+          </div>
         ) : null}
 
         {tab === 'network' ? (
           <Card>
-            <CardSection
-              title={t('ftp.networkTitle')}
-              description={t('ftp.networkDesc')}
-            >
+            <CardSection title={t('system.network')}>
               <form
                 onSubmit={(e) => {
                   void onSave(e);
                 }}
               >
                 <FormLayout columns={2}>
-                  <Field
-                    label={t('ftp.listenPort')}
-                    htmlFor="listenPort"
-                    flush
-                    required
-                    hint={t('ftp.listenPortHint')}
-                  >
+                  <Field label={t('ftp.listenPort')} htmlFor="listenPort" flush required>
                     <PresetChips
                       options={[
                         { value: '21', label: '21' },
                         { value: '2121', label: '2121' },
-                        { value: '990', label: '990 FTPS' },
+                        { value: '990', label: '990' },
                       ]}
                       value={String(settings.listenPort)}
                       onChange={(v) => patch('listenPort', Number(v) || 21)}
@@ -326,12 +363,7 @@ export function FtpsServicePage() {
                       customPlaceholder={t('ftp.customPort')}
                     />
                   </Field>
-                  <Field
-                    label={t('ftp.ipStack')}
-                    htmlFor="listenStack"
-                    flush
-                    hint={t('ftp.ipStackHint')}
-                  >
+                  <Field label={t('ftp.ipStack')} htmlFor="listenStack" flush>
                     <SegRadio
                       name="listenStack"
                       aria-label={t('ftp.ipStack')}
@@ -344,58 +376,25 @@ export function FtpsServicePage() {
                         );
                       }}
                       options={[
-                        { value: 'ipv4', label: t('ftp.ipv4Only') },
-                        { value: 'ipv6', label: t('ftp.ipv6Mapped') },
+                        { value: 'ipv4', label: 'IPv4' },
+                        { value: 'ipv6', label: 'IPv6' },
                       ]}
                     />
                   </Field>
-                  <Field
-                    label={t('ftp.loginBanner')}
-                    htmlFor="banner"
-                    flush
-                    hint={t('ftp.bannerHint')}
-                  >
+                  <Field label={t('ftp.pasvStart')} htmlFor="pasvMin" flush>
                     <input
-                      id="banner"
-                      value={settings.banner}
-                      onChange={(e) => patch('banner', e.target.value)}
-                      placeholder="YSK FTPS"
+                      id="pasvMin"
+                      type="number"
+                      value={settings.pasvMin}
+                      onChange={(e) => patch('pasvMin', Number(e.target.value) || 30000)}
                     />
                   </Field>
-                  <Field
-                    label={t('ftp.pasvStart')}
-                    htmlFor="pasvMin"
-                    flush
-                    hint={t('ftp.pasvStartHint')}
-                  >
-                    <PresetChips
-                      options={[
-                        { value: '30000', label: '30000' },
-                        { value: '40000', label: '40000' },
-                        { value: '50000', label: '50000' },
-                      ]}
-                      value={String(settings.pasvMin)}
-                      onChange={(v) => patch('pasvMin', Number(v) || 30000)}
-                      allowCustom
-                      customPlaceholder={t('ftp.customStart')}
-                    />
-                  </Field>
-                  <Field
-                    label={t('ftp.pasvEnd')}
-                    htmlFor="pasvMax"
-                    flush
-                    hint={t('ftp.pasvEndHint')}
-                  >
-                    <PresetChips
-                      options={[
-                        { value: '30100', label: '30100' },
-                        { value: '40100', label: '40100' },
-                        { value: '50100', label: '50100' },
-                      ]}
-                      value={String(settings.pasvMax)}
-                      onChange={(v) => patch('pasvMax', Number(v) || 30100)}
-                      allowCustom
-                      customPlaceholder={t('ftp.customEnd')}
+                  <Field label={t('ftp.pasvEnd')} htmlFor="pasvMax" flush>
+                    <input
+                      id="pasvMax"
+                      type="number"
+                      value={settings.pasvMax}
+                      onChange={(e) => patch('pasvMax', Number(e.target.value) || 30100)}
                     />
                   </Field>
                   <Field
@@ -403,20 +402,27 @@ export function FtpsServicePage() {
                     htmlFor="pasvAddress"
                     fullWidth
                     flush
-                    hint={t('ftp.pasvPublicIpHint')}
+                    required={needPasvPublicIp}
                   >
                     <input
                       id="pasvAddress"
                       value={settings.pasvAddress ?? ''}
                       onChange={(e) => patch('pasvAddress', e.target.value || undefined)}
-                      placeholder={t('ftp.optionalEmpty')}
+                      placeholder="x.x.x.x"
                       spellCheck={false}
+                    />
+                  </Field>
+                  <Field label={t('ftp.loginBanner')} htmlFor="banner" flush>
+                    <input
+                      id="banner"
+                      value={settings.banner}
+                      onChange={(e) => patch('banner', e.target.value)}
                     />
                   </Field>
                 </FormLayout>
                 <FormActions>
                   <Button type="submit" variant="secondary" size="md" loading={busy}>
-                    {t('ftp.saveSettings')}
+                    {t('common.save')}
                   </Button>
                   {installed ? (
                     <Button
@@ -424,7 +430,7 @@ export function FtpsServicePage() {
                       variant="primary"
                       size="md"
                       loading={busy}
-                      onClick={onApplySettings}
+                      onClick={() => void onApplySettings()}
                     >
                       {t('ftp.applyRestart')}
                     </Button>
@@ -437,29 +443,20 @@ export function FtpsServicePage() {
 
         {tab === 'security' ? (
           <Card>
-            <CardSection
-              title={t('ftp.securityTitle')}
-              description={t('ftp.securityDesc')}
-            >
+            <CardSection title={t('nav.sections.security')}>
               <form
                 onSubmit={(e) => {
                   void onSave(e);
                 }}
               >
                 <FormLayout columns={2}>
-                  <Field
-                    label={t('ftp.sslCertDomain')}
-                    htmlFor="sslDomain"
-                    fullWidth
-                    flush
-                    hint={t('ftp.sslCertDomainHint')}
-                  >
+                  <Field label={t('ftp.sslCertDomain')} htmlFor="sslDomain" fullWidth flush>
                     <select
                       id="sslDomain"
                       value={settings.sslDomain}
                       onChange={(e) => patch('sslDomain', e.target.value)}
                     >
-                      <option value="">{t('security.ssh.selectOption')}</option>
+                      <option value="">{t('common.noneSelectedShort')}</option>
                       {domains.map((d) => (
                         <option key={d.value} value={d.value}>
                           {d.label}
@@ -468,47 +465,41 @@ export function FtpsServicePage() {
                     </select>
                   </Field>
                 </FormLayout>
-                <div className="form-check-row u-mt-4">
+                <div className="form-check-row u-mt-3">
                   <CheckboxField
                     id="sslEnable"
                     label={t('ftp.enableFtps')}
-                    description={t('ftp.enableFtpsDesc')}
                     checked={settings.sslEnable}
                     onChange={(v) => patch('sslEnable', v)}
                   />
                   <CheckboxField
                     id="forceSsl"
                     label={t('ftp.forceTlsLogin')}
-                    description={t('ftp.forceTlsLoginDesc')}
                     checked={settings.forceSsl}
                     onChange={(v) => patch('forceSsl', v)}
                   />
                   <CheckboxField
                     id="writeEnable"
                     label={t('ftp.allowWrite')}
-                    description={t('ftp.allowWriteDesc')}
                     checked={settings.writeEnable}
                     onChange={(v) => patch('writeEnable', v)}
                   />
                   <CheckboxField
                     id="chrootLocalUser"
                     label={t('ftp.chrootUsers')}
-                    description={t('ftp.chrootUsersDesc')}
                     checked={settings.chrootLocalUser}
                     onChange={(v) => patch('chrootLocalUser', v)}
                   />
                   <CheckboxField
                     id="allowWriteableChroot"
                     label={t('ftp.writableChroot')}
-                    description={t('ftp.writableChrootDesc')}
                     checked={settings.allowWriteableChroot}
                     onChange={(v) => patch('allowWriteableChroot', v)}
                   />
                 </div>
-                <FormHint>{t('ftp.saveApplyHint')}</FormHint>
                 <FormActions>
                   <Button type="submit" variant="secondary" size="md" loading={busy}>
-                    {t('ftp.saveSettings')}
+                    {t('common.save')}
                   </Button>
                   {installed ? (
                     <Button
@@ -516,7 +507,7 @@ export function FtpsServicePage() {
                       variant="primary"
                       size="md"
                       loading={busy}
-                      onClick={onApplySettings}
+                      onClick={() => void onApplySettings()}
                     >
                       {t('ftp.applyRestart')}
                     </Button>
@@ -526,7 +517,7 @@ export function FtpsServicePage() {
             </CardSection>
           </Card>
         ) : null}
-      
+
         {tab === 'stack' ? (
           <div className="tab-panel stack">
             <SoftwareInstallBanner
@@ -537,6 +528,7 @@ export function FtpsServicePage() {
             <SoftwareVersionBar softwareId="vsftpd" />
           </div>
         ) : null}
+
         {tab === 'about' ? <PageGuide guideId="ftpService" /> : null}
       </PageTabs>
 
@@ -545,9 +537,7 @@ export function FtpsServicePage() {
         result={result}
         message={msg}
         onRetry={
-          installed && status?.active !== 'active'
-            ? () => void onApplySettings()
-            : undefined
+          installed && !running ? () => void onApplySettings() : undefined
         }
         busy={busy}
       />

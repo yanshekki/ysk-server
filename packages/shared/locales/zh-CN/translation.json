@@ -3599,7 +3599,12 @@
     "applyRestart": "应用并重启",
     "afterInstall": "安装后即可使用 FTPS 账户登录。需系统管理员权限才能完成安装。",
     "saveSettings": "保存设置",
-    "saveApplyHint": "保存只更新面板设置；「应用并重启」才写入 vsftpd.conf 并重载服务。"
+    "saveApplyHint": "保存只更新面板设置；「应用并重启」才写入 vsftpd.conf 并重载服务。",
+    "portsLabel": "需开端口",
+    "copyUfw": "复制 ufw",
+    "pasvIpShort": "PASV 公网 IP 未填 — 请到「网络」设置。",
+    "installAndStart": "安装并启动",
+    "manageAccounts": "账户"
   },
   "geo": {
     "continents": {

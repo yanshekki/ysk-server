@@ -271,10 +271,10 @@ describe('functions-wave deep interactions', () => {
     const sslSel = document.getElementById('sslDomain') as HTMLSelectElement | null;
     if (sslSel) fireEvent.change(sslSel, { target: { value: 'mail.test' } });
     await clickNamed(user, /save|apply|restart|refresh|close/i, 6);
-    const life = screen
+    const overview = screen
       .queryAllByRole('tab')
-      .find((t) => /lifecycle/i.test(t.textContent ?? ''));
-    if (life) await user.click(life);
+      .find((t) => /overview|概覽|概览/i.test(t.textContent ?? ''));
+    if (overview) await user.click(overview);
     await clickNamed(user, /apply|restart|start|install/i, 3);
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
   });
