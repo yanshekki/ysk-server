@@ -1,6 +1,11 @@
 /* —— Section block inside tabs / cards —— */
+/* Flex stack so title / actions / tables never stick together */
 .section-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
   margin-bottom: var(--space-section);
+  min-width: 0;
 }
 
 .section-block:last-child {
@@ -8,18 +13,33 @@
 }
 
 .section-block__title {
-  margin: 0 0 var(--space-3);
+  margin: 0;
   font-size: var(--text-md);
   font-weight: 700;
   line-height: 1.3;
 }
 
+/* Pull description closer to title (tighter pair), keep air below via gap */
 .section-block__desc {
-  margin: 0 0 var(--space-section);
+  margin: calc(var(--space-3) * -1) 0 0;
   font-size: var(--text-sm);
   color: var(--text-sub);
   line-height: 1.55;
   max-width: 48rem;
+}
+
+/* Direct content children: no utility margin fighting the flex gap */
+.section-block > .summary-strip,
+.section-block > .action-bar,
+.section-block > .data-table,
+.section-block > .alert,
+.section-block > .empty,
+.section-block > .ops-result,
+.section-block > .form-layout,
+.section-block > .mail-probe,
+.section-block > .mail-messages {
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 /* Block titles after dense content (tables, lists) */

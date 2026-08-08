@@ -837,213 +837,235 @@ export function EmailDomainPage() {
         ) : null}
 
         {tab === 'health' ? (
-          <div className="tab-panel">
-          <Card>
-            <CardSection title={t('email.healthLiveTitle')}>
-              <SummaryStrip
-                items={[
-                  {
-                    label: t('email.serverIpLabel'),
-                    value: domain.server_ip || '—' },
-                  {
-                    label: t('email.healthScore'),
-                    value: live
-                      ? String(
-                          (live as { health?: { score?: number } }).health?.score ??
-                            domain.health_score,
-                        )
-                      : String(domain.health_score),
-                    tone: healthScoreTone(
-                      live
-                        ? Number(
+          <div className="tab-panel mail-check">
+            <Card>
+              <CardSection title={t('email.healthLiveTitle')}>
+                <SummaryStrip
+                  items={[
+                    {
+                      label: t('email.serverIpLabel'),
+                      value: domain.server_ip || '—',
+                    },
+                    {
+                      label: t('email.healthScore'),
+                      value: live
+                        ? String(
                             (live as { health?: { score?: number } }).health?.score ??
                               domain.health_score,
                           )
-                        : domain.health_score,
-                    ) },
-                  {
-                    label: t('email.liveCheck'),
-                    value: live
-                      ? (live as { ok?: boolean }).ok
-                        ? t('email.liveOk')
-                        : t('email.liveBad')
-                      : t('email.notTested'),
-                    tone: live
-                      ? (live as { ok?: boolean }).ok
-                        ? 'ok'
-                        : 'warn'
-                      : 'default' },
-                  {
-                    label: t('email.blacklist'),
-                    value: dnsblSummaryLabel(
-                      dnsbl as { ok?: boolean } | null,
-                      (live as { dnsbl?: { ok?: boolean } } | null)?.dnsbl,
-                      t('email.notTested'),
-                    ),
-                    tone: dnsblSummaryTone(
-                      dnsbl as { ok?: boolean } | null,
-                      (live as { dnsbl?: { ok?: boolean } } | null)?.dnsbl,
-                    ) },
-                ]}
-              />
-              <ActionBar className="u-mb-3">
-                <Button
-                  variant="primary"
-                  size="md"
-                  loading={busy}
-                  onClick={bindBusySetAndTab(
-                    withBusy,
-                    () => emailApi.deliverability(domain.id),
-                    setDeliverability,
-                    setTab,
-                    'deliverability',
-                  )}
-                >
-                  {t('email.runDeliverabilityPack')}
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="md"
-                  loading={busy}
-                  onClick={bindBusyLiveReload(
-                    withBusy,
-                    () => emailApi.liveCheck(domain.id),
-                    setLive,
-                    load,
-                  )}
-                >
-                  {t('email.runLiveCheck')}
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="md"
-                  loading={busy}
-                  onClick={bindBusySet(withBusy, () => emailApi.dnsbl(domain.server_ip), setDnsbl)}
-                >
-                  {t('email.dnsblThisIp')}
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="md"
-                  loading={busy}
-                  onClick={bindBusyDnsblMulti(
-                    withBusy,
-                    async () => {
-                      const r = await api.requestRaw<{ items: string[] }>(
-                        '/api/v1/system/ips',
-                      );
-                      return r.items ?? [];
+                        : String(domain.health_score),
+                      tone: healthScoreTone(
+                        live
+                          ? Number(
+                              (live as { health?: { score?: number } }).health?.score ??
+                                domain.health_score,
+                            )
+                          : domain.health_score,
+                      ),
                     },
-                    domain.server_ip,
-                    (ips) => emailApi.dnsblMulti(ips),
-                    uniqueIps,
-                    setDnsbl,
-                  )}
-                >
-                  {t('email.multiIpRbl')}
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="md"
-                  loading={busy}
-                  onClick={bindBusySet(withBusy, () => emailApi.warmupDomain(domain.id), setWarmup)}
-                >
-                  {t('email.warmupAdvice')}
-                </Button>
-              </ActionBar>
-
-              {live ? (
-                <div className="u-mb-4">
-                  <h3 className="section-block__title">{t('email.probeMatrix')}</h3>
-                  <DataTable
-                    columns={[
-                      {
-                        key: 'item',
-                        header: t('email.colItem'),
-                        nowrap: true,
-                        render: (r) => <strong>{r.label}</strong> },
-                      {
-                        key: 'st',
-                        header: t('email.colStatus'),
-                        nowrap: true,
-                        render: (r) => (
-                          <Badge tone={probeOkTone(r.ok)}>
-                            {r.ok === true
-                              ? t('email.pass')
-                              : r.ok === false
-                                ? t('email.fail')
-                                : t('email.unknown')}
-                          </Badge>
-                        ) },
-                      {
-                        key: 'detail',
-                        header: t('email.colDetail'),
-                        className: 'u-break-all',
-                        render: (r) => (
-                          <code className="inline u-text-sm">{r.detail}</code>
-                        ) },
-                    ]}
-                    rows={mapLiveProbeRows(live, t('email.outboundPort25'), {
-                      mx: t('email.probeMx'),
-                      spf: t('email.probeSpf'),
-                      dkim: t('email.probeDkim'),
-                      dmarc: t('email.probeDmarc'),
-                      ptr: t('email.probePtr'),
-                      dnsbl: t('email.probeDnsbl') })}
-                    rowKey={(r) => r.id}
-                    empty={<p className="muted">{t('email.noProbeResults')}</p>}
-                  />
-                  {dnsAuthRepairHints(live, t).length > 0 ? (
-                    <Alert variant="warn" className="u-mt-3">
-                      <strong>{t('email.dnsAuthRepairTitle')}</strong>
-                      <ul className="list-flush u-mt-2 u-mb-0">
-                        {dnsAuthRepairHints(live, t).map((h) => (
-                          <li key={h}>{h}</li>
-                        ))}
-                      </ul>
-                      <p className="muted u-text-sm u-mb-0 u-mt-2">{t('email.dnsAuthRepairHint')}</p>
-                    </Alert>
-                  ) : null}
-                  {Array.isArray(
-                    (live as { health?: { messages?: string[] } }).health?.messages,
-                  ) &&
-                  ((live as { health?: { messages?: string[] } }).health
-                    ?.messages?.length ?? 0) > 0 ? (
-                    <ul className="muted list-flush u-mt-3">
-                      {(
-                        (live as { health?: { messages?: string[] } }).health
-                          ?.messages ?? []
-                      ).map((m) => (
-                        <li key={m}>{m}</li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </div>
-              ) : (
-                <EmptyState title={t('email.noLiveYet')} />
-              )}
-
-              {dnsbl ? (
-                <OpsResultPanel title={t('email.dnsblResult')} result={asOps(dnsbl)} />
-              ) : null}
-              {warmup ? (
-                <OpsResultPanel title={t('email.warmupResult')} result={asOps(warmup)} />
-              ) : null}
-            </CardSection>
-          </Card>
-          </div>
-        ) : null}
-
-        {tab === 'deliverability' ? (
-          <div className="tab-panel">
-            <Card>
-              <CardSection title={t('email.deliverabilityTitle')}>
-                <ActionBar className="u-mb-3">
+                    {
+                      label: t('email.liveCheck'),
+                      value: live
+                        ? (live as { ok?: boolean }).ok
+                          ? t('email.liveOk')
+                          : t('email.liveBad')
+                        : t('email.notTested'),
+                      tone: live
+                        ? (live as { ok?: boolean }).ok
+                          ? 'ok'
+                          : 'warn'
+                        : 'default',
+                    },
+                    {
+                      label: t('email.blacklist'),
+                      value: dnsblSummaryLabel(
+                        dnsbl as { ok?: boolean } | null,
+                        (live as { dnsbl?: { ok?: boolean } } | null)?.dnsbl,
+                        t('email.notTested'),
+                      ),
+                      tone: dnsblSummaryTone(
+                        dnsbl as { ok?: boolean } | null,
+                        (live as { dnsbl?: { ok?: boolean } } | null)?.dnsbl,
+                      ),
+                    },
+                  ]}
+                />
+                <ActionBar size="md" className="action-bar--toolbar" aria-label={t('email.healthLiveTitle')}>
                   <Button
                     variant="primary"
                     size="md"
                     loading={busy}
-                    onClick={bindBusySet(withBusy, () => emailApi.deliverability(domain.id), setDeliverability)}
+                    onClick={bindBusySetAndTab(
+                      withBusy,
+                      () => emailApi.deliverability(domain.id),
+                      setDeliverability,
+                      setTab,
+                      'deliverability',
+                    )}
+                  >
+                    {t('email.runDeliverabilityPack')}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    loading={busy}
+                    onClick={bindBusyLiveReload(
+                      withBusy,
+                      () => emailApi.liveCheck(domain.id),
+                      setLive,
+                      load,
+                    )}
+                  >
+                    {t('email.runLiveCheck')}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    loading={busy}
+                    onClick={bindBusySet(withBusy, () => emailApi.dnsbl(domain.server_ip), setDnsbl)}
+                  >
+                    {t('email.dnsblThisIp')}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    loading={busy}
+                    onClick={bindBusyDnsblMulti(
+                      withBusy,
+                      async () => {
+                        const r = await api.requestRaw<{ items: string[] }>(
+                          '/api/v1/system/ips',
+                        );
+                        return r.items ?? [];
+                      },
+                      domain.server_ip,
+                      (ips) => emailApi.dnsblMulti(ips),
+                      uniqueIps,
+                      setDnsbl,
+                    )}
+                  >
+                    {t('email.multiIpRbl')}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    loading={busy}
+                    onClick={bindBusySet(withBusy, () => emailApi.warmupDomain(domain.id), setWarmup)}
+                  >
+                    {t('email.warmupAdvice')}
+                  </Button>
+                </ActionBar>
+              </CardSection>
+            </Card>
+
+            {live ? (
+              <Card>
+                <CardSection title={t('email.probeMatrix')}>
+                  <div className="mail-probe">
+                    <DataTable
+                      columns={[
+                        {
+                          key: 'item',
+                          header: t('email.colItem'),
+                          nowrap: true,
+                          render: (r) => <strong>{r.label}</strong>,
+                        },
+                        {
+                          key: 'st',
+                          header: t('email.colStatus'),
+                          nowrap: true,
+                          render: (r) => (
+                            <Badge tone={probeOkTone(r.ok)}>
+                              {r.ok === true
+                                ? t('email.pass')
+                                : r.ok === false
+                                  ? t('email.fail')
+                                  : t('email.unknown')}
+                            </Badge>
+                          ),
+                        },
+                        {
+                          key: 'detail',
+                          header: t('email.colDetail'),
+                          className: 'u-break-all',
+                          render: (r) => (
+                            <code className="inline u-text-sm">{r.detail}</code>
+                          ),
+                        },
+                      ]}
+                      rows={mapLiveProbeRows(live, t('email.outboundPort25'), {
+                        mx: t('email.probeMx'),
+                        spf: t('email.probeSpf'),
+                        dkim: t('email.probeDkim'),
+                        dmarc: t('email.probeDmarc'),
+                        ptr: t('email.probePtr'),
+                        dnsbl: t('email.probeDnsbl'),
+                      })}
+                      rowKey={(r) => r.id}
+                      empty={<p className="muted">{t('email.noProbeResults')}</p>}
+                    />
+                    {dnsAuthRepairHints(live, t).length > 0 ? (
+                      <Alert variant="warn">
+                        <strong>{t('email.dnsAuthRepairTitle')}</strong>
+                        <ul className="list-plain list-spaced">
+                          {dnsAuthRepairHints(live, t).map((h) => (
+                            <li key={h}>{h}</li>
+                          ))}
+                        </ul>
+                        <p className="muted u-text-sm u-mb-0">{t('email.dnsAuthRepairHint')}</p>
+                      </Alert>
+                    ) : null}
+                    {Array.isArray(
+                      (live as { health?: { messages?: string[] } }).health?.messages,
+                    ) &&
+                    ((live as { health?: { messages?: string[] } }).health?.messages
+                      ?.length ?? 0) > 0 ? (
+                      <ul className="mail-messages">
+                        {(
+                          (live as { health?: { messages?: string[] } }).health
+                            ?.messages ?? []
+                        ).map((m) => (
+                          <li key={m}>{m}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </div>
+                </CardSection>
+              </Card>
+            ) : (
+              <Card>
+                <div className="mail-empty">
+                  <EmptyState
+                    title={t('email.noLiveYet')}
+                    description={t('email.noLiveYetHint')}
+                  />
+                </div>
+              </Card>
+            )}
+
+            {dnsbl ? (
+              <OpsResultPanel title={t('email.dnsblResult')} result={asOps(dnsbl)} />
+            ) : null}
+            {warmup ? (
+              <OpsResultPanel title={t('email.warmupResult')} result={asOps(warmup)} />
+            ) : null}
+          </div>
+        ) : null}
+
+        {tab === 'deliverability' ? (
+          <div className="tab-panel mail-check">
+            <Card>
+              <CardSection title={t('email.deliverabilityTitle')}>
+                <ActionBar size="md" aria-label={t('email.deliverabilityTitle')}>
+                  <Button
+                    variant="primary"
+                    size="md"
+                    loading={busy}
+                    onClick={bindBusySet(
+                      withBusy,
+                      () => emailApi.deliverability(domain.id),
+                      setDeliverability,
+                    )}
                   >
                     {t('email.runDeliverabilityPack')}
                   </Button>
@@ -1055,69 +1077,77 @@ export function EmailDomainPage() {
                     {t('email.tabRelay')}
                   </Button>
                 </ActionBar>
-                {deliverability ? (
-                  <>
-                    <SummaryStrip
-                      items={[
-                        {
-                          label: t('email.healthScore'),
-                          value: String(deliverability.score),
-                          tone: healthScoreTone(deliverability.score) },
-                        {
-                          label: t('email.panelReady'),
-                          value: deliverability.panelReady
-                            ? t('common.ready')
-                            : t('email.gaps'),
-                          tone: deliverability.panelReady ? 'ok' : 'warn',
-                        },
-                      ]}
-                    />
-                    <DataTable
-                      columns={[
-                        {
-                          key: 'title',
-                          header: t('common.name'),
-                          render: (i) => <strong>{i.title}</strong>,
-                        },
-                        {
-                          key: 'ok',
-                          header: t('common.status'),
-                          render: (i) => (
-                            <Badge tone={deliverabilityItemTone(i)}>
-                              {i.ok === true
-                                ? t('email.checkOk')
-                                : i.level === 'external'
-                                  ? t('email.checkExternal')
-                                  : i.ok === false
-                                    ? t('email.checkFail')
-                                    : '—'}
-                            </Badge>
-                          ),
-                        },
-                        {
-                          key: 'detail',
-                          header: t('common.notes'),
-                          className: 'u-text-sm',
-                          render: (i) => i.detail || i.fixHint || '—',
-                        },
-                      ]}
-                      rows={deliverability.items}
-                      rowKey={(i) => i.id}
-                    />
-                    {deliverability.externalTodos?.length ? (
-                      <p className="muted u-text-sm u-mt-3 u-mb-0">
-                        {t('email.externalTodosOneLiner')}
-                      </p>
-                    ) : null}
-                  </>
-                ) : (
+              </CardSection>
+            </Card>
+
+            {deliverability ? (
+              <Card>
+                <CardSection title={t('email.probeMatrix')}>
+                  <SummaryStrip
+                    items={[
+                      {
+                        label: t('email.healthScore'),
+                        value: String(deliverability.score),
+                        tone: healthScoreTone(deliverability.score),
+                      },
+                      {
+                        label: t('email.panelReady'),
+                        value: deliverability.panelReady
+                          ? t('common.ready')
+                          : t('email.gaps'),
+                        tone: deliverability.panelReady ? 'ok' : 'warn',
+                      },
+                    ]}
+                  />
+                  <DataTable
+                    columns={[
+                      {
+                        key: 'title',
+                        header: t('common.name'),
+                        render: (i) => <strong>{i.title}</strong>,
+                      },
+                      {
+                        key: 'ok',
+                        header: t('common.status'),
+                        render: (i) => (
+                          <Badge tone={deliverabilityItemTone(i)}>
+                            {i.ok === true
+                              ? t('email.checkOk')
+                              : i.level === 'external'
+                                ? t('email.checkExternal')
+                                : i.ok === false
+                                  ? t('email.checkFail')
+                                  : '—'}
+                          </Badge>
+                        ),
+                      },
+                      {
+                        key: 'detail',
+                        header: t('common.notes'),
+                        className: 'u-text-sm',
+                        render: (i) => i.detail || i.fixHint || '—',
+                      },
+                    ]}
+                    rows={deliverability.items}
+                    rowKey={(i) => i.id}
+                  />
+                  {deliverability.externalTodos?.length ? (
+                    <p className="muted u-text-sm u-mb-0">
+                      {t('email.externalTodosOneLiner')}
+                    </p>
+                  ) : null}
+                </CardSection>
+              </Card>
+            ) : (
+              <Card>
+                <div className="mail-empty">
                   <EmptyState
                     title={t('email.deliverabilityEmpty')}
                     description={t('email.deliverabilityEmptyDesc')}
                   />
-                )}
-              </CardSection>
-            </Card>
+                </div>
+              </Card>
+            )}
           </div>
         ) : null}
 

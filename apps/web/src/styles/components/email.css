@@ -6,6 +6,71 @@
   gap: var(--space-4);
 }
 
+/**
+ * Health / deliverability check panels
+ * Multi-card stack with clear blocks: status → actions → results → ops
+ */
+.mail-check {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-stack);
+  min-width: 0;
+}
+
+.mail-probe {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.mail-probe__title {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text-main);
+}
+
+.mail-messages {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle);
+  color: var(--text-sub);
+  font-size: var(--text-sm);
+  line-height: 1.55;
+}
+
+.mail-messages li + li {
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border-light);
+}
+
+.mail-empty {
+  padding: var(--space-4) 0;
+  text-align: center;
+}
+
+.mail-empty .empty {
+  padding: var(--space-8) var(--space-5);
+}
+
+/* Nested probe stack: neutralize alert default bottom margin */
+.mail-probe > .alert {
+  margin-bottom: 0;
+}
+
+/* Ops result as tab-panel peer of cards */
+.mail-check > .ops-result {
+  margin: 0;
+}
+
 .mail-toolbar {
   display: flex;
   flex-wrap: wrap;

@@ -119,11 +119,17 @@
 }
 
 .action-bar--sm {
-  gap: 0.35rem;
+  gap: var(--space-2);
 }
 
 .action-bar--md {
-  gap: var(--space-control-gap);
+  gap: var(--space-2) var(--space-3);
+}
+
+/* Toolbar row under summary — visual separation without sticking to pills */
+.action-bar--toolbar {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-light);
 }
 
 /* Compact labeled control inside ActionBar / DataTable toolbar */
