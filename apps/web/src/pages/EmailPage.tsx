@@ -374,13 +374,8 @@ export function EmailPage() {
           <div className="tab-panel mail-panel">
             <div className="mail-card">
               <div className="mail-card__head">
-                <div>
-                  <h3 className="mail-card__title">{t('email.queueLocalTitle')}</h3>
-                  <p className="mail-card__desc muted u-text-sm">
-                    {t('email.needExecute')}
-                  </p>
-                </div>
-                <ActionBar>
+                <h3 className="mail-card__title">{t('email.queueLocalTitle')}</h3>
+                <ActionBar size="md">
                   <Button
                     variant="secondary"
                     size="md"
@@ -400,23 +395,9 @@ export function EmailPage() {
                 </ActionBar>
               </div>
 
-              {queueMsg ? (
-                <Alert
-                  variant={
-                    queueOk === false
-                      ? 'error'
-                      : queueOk === true
-                        ? 'ok'
-                        : 'info'
-                  }
-                >
-                  {queueMsg}
-                </Alert>
-              ) : (
-                <Alert variant="info">
-                  {t('email.queueHint')}
-                </Alert>
-              )}
+              {queueMsg && queueOk === false ? (
+                <Alert variant="error">{queueMsg}</Alert>
+              ) : null}
 
               {queueItems.length > 0 ? (
                 <ul className="mail-queue-list">
@@ -435,7 +416,7 @@ export function EmailPage() {
                   ))}
                 </ul>
               ) : queueOk === true ? (
-                <EmptyState title={t('email.queueEmpty')} description={t('email.queueEmptyHint')} />
+                <EmptyState title={t('email.queueEmpty')} />
               ) : null}
             </div>
           </div>
