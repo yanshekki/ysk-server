@@ -1,10 +1,10 @@
 /**
- * Public file share landing — guest-first (no panel chrome).
- * YSK Limited branding, language switcher, streamed download with progress.
+ * Public file share landing — guest-first, spacious professional layout.
+ * YSK Limited branding (company name → ysk.hk), language switcher, download progress.
  */
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Trans, useTranslation } from 'react-i18next';
-import { Link, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useParams } from 'react-router-dom';
 import {
   LOCALE_LABELS,
   LOCALES,
@@ -52,8 +52,18 @@ function triggerBlobDownload(blob: Blob, name: string): void {
   document.body.appendChild(a);
   a.click();
   a.remove();
-  // Delay revoke so the browser can start the download
   window.setTimeout(() => URL.revokeObjectURL(href), 2_000);
+}
+
+function fileKindIcon(name: string | null): string {
+  if (!name) return '📄';
+  const ext = name.includes('.') ? name.slice(name.lastIndexOf('.') + 1).toLowerCase() : '';
+  if (['mp4', 'webm', 'mov', 'mkv', 'avi'].includes(ext)) return '🎬';
+  if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'heic'].includes(ext)) return '🖼️';
+  if (['mp3', 'wav', 'flac', 'aac', 'm4a', 'ogg'].includes(ext)) return '🎵';
+  if (ext === 'pdf') return '📕';
+  if (['zip', 'tar', 'gz', '7z', 'rar'].includes(ext)) return '📦';
+  return '📄';
 }
 
 export function PublicSharePage() {
@@ -220,6 +230,9 @@ export function PublicSharePage() {
     return t('files.publicShareWait');
   }, [pct, received, t, total]);
 
+  const sizeLabel =
+    total != null || received > 0 ? formatBytes(total ?? received) : null;
+
   return (
     <div className="pub-share">
       <div className="pub-share__shell">
@@ -234,8 +247,8 @@ export function PublicSharePage() {
               className="pub-share__logo"
               src="/logo.svg"
               alt=""
-              width={36}
-              height={36}
+              width={44}
+              height={44}
             />
             <span className="pub-share__brand-text">
               <span className="pub-share__product">{product}</span>
@@ -268,11 +281,28 @@ export function PublicSharePage() {
 
           {phase === 'loading' || phase === 'downloading' ? (
             <div className="pub-share__body">
-              {fileName ? (
-                <p className="pub-share__file">
-                  <strong>{fileName}</strong>
-                </p>
-              ) : null}
+              <div className="pub-share__file-panel">
+                <div className="pub-share__file-icon" aria-hidden>
+                  {fileKindIcon(fileName)}
+                </div>
+                <div className="pub-share__file-meta">
+                  {fileName ? (
+                    <p className="pub-share__file">
+                      <strong>{fileName}</strong>
+                    </p>
+                  ) : (
+                    <p className="pub-share__file muted">
+                      {phase === 'downloading'
+                        ? t('files.publicShareDownloading')
+                        : t('files.publicShareChecking')}
+                    </p>
+                  )}
+                  {sizeLabel ? (
+                    <p className="pub-share__size">{sizeLabel}</p>
+                  ) : null}
+                </div>
+              </div>
+
               <div
                 className={
                   pct == null
@@ -291,17 +321,12 @@ export function PublicSharePage() {
                 />
               </div>
               <p className="pub-share__progress-label">{progressLabel}</p>
-              <p className="muted pub-share__msg">
-                {phase === 'downloading'
-                  ? t('files.publicShareDownloading')
-                  : t('files.publicShareChecking')}
-              </p>
               {phase === 'downloading' ? (
-                <FormActions>
+                <FormActions className="pub-share__actions">
                   <Button
                     type="button"
                     variant="ghost"
-                    size="md"
+                    size="lg"
                     onClick={() => {
                       cancelDownload();
                       setPhase('error');
@@ -330,8 +355,8 @@ export function PublicSharePage() {
                   placeholder={t('files.publicSharePasswordPh')}
                 />
               </Field>
-              <FormActions>
-                <Button type="submit" variant="primary" size="md">
+              <FormActions className="pub-share__actions">
+                <Button type="submit" variant="primary" size="lg" className="pub-share__cta">
                   {t('files.publicShareDownload')}
                 </Button>
               </FormActions>
@@ -343,21 +368,27 @@ export function PublicSharePage() {
               <div className="pub-share__ok" role="status">
                 {t('files.publicShareDone')}
               </div>
-              {fileName ? (
-                <p className="pub-share__file">
-                  <strong>{fileName}</strong>
-                </p>
-              ) : null}
-              {total != null || received > 0 ? (
-                <p className="muted pub-share__msg">
-                  {formatBytes(total ?? received)}
-                </p>
-              ) : null}
+              <div className="pub-share__file-panel">
+                <div className="pub-share__file-icon" aria-hidden>
+                  {fileKindIcon(fileName)}
+                </div>
+                <div className="pub-share__file-meta">
+                  {fileName ? (
+                    <p className="pub-share__file">
+                      <strong>{fileName}</strong>
+                    </p>
+                  ) : null}
+                  {sizeLabel ? (
+                    <p className="pub-share__size">{sizeLabel}</p>
+                  ) : null}
+                </div>
+              </div>
               <p className="muted pub-share__msg">{t('files.publicShareDoneHint')}</p>
-              <FormActions>
+              <FormActions className="pub-share__actions">
                 <Button
                   variant="primary"
-                  size="md"
+                  size="lg"
+                  className="pub-share__cta"
                   onClick={() => void tryDownload(password || undefined)}
                 >
                   {t('files.publicShareDownloadAgain')}
@@ -369,10 +400,11 @@ export function PublicSharePage() {
           {phase === 'error' ? (
             <div className="pub-share__body">
               <Alert variant="error">{error || t('files.publicShareFailedGeneric')}</Alert>
-              <FormActions>
+              <FormActions className="pub-share__actions">
                 <Button
                   variant="primary"
-                  size="md"
+                  size="lg"
+                  className="pub-share__cta"
                   onClick={() => void tryDownload(password || undefined)}
                 >
                   {t('common.retry')}
@@ -384,18 +416,11 @@ export function PublicSharePage() {
 
         <footer className="pub-share__foot">
           <p className="pub-share__powered">
-            <Trans
-              i18nKey="files.publicSharePoweredBy"
-              values={{ company }}
-              components={{
-                companyLink: (
-                  <a href={COMPANY_URL} target="_blank" rel="noreferrer" />
-                ),
-              }}
-            />
-          </p>
-          <p className="pub-share__login-hint">
-            <Link to="/login">{t('files.publicShareHasAccount')}</Link>
+            {t('files.publicSharePoweredPrefix')}
+            <a href={COMPANY_URL} target="_blank" rel="noreferrer">
+              {company}
+            </a>
+            {t('files.publicSharePoweredSuffix')}
           </p>
         </footer>
       </div>
