@@ -1,16 +1,11 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { ProjectDto } from '@ysk/shared';
-import { Badge, Button } from '../../../shared/components/ui';
+import { Badge } from '../../../shared/components/ui';
 import { ProjectStatusBadge } from './ProjectStatusBadge';
 
-export function ProjectListItem({
-  project,
-  onDelete,
-}: {
-  project: ProjectDto;
-  onDelete?: (p: ProjectDto) => void;
-}) {
+/** List row only — delete is detail/advanced, not list (same as email domains). */
+export function ProjectListItem({ project }: { project: ProjectDto }) {
   const { t } = useTranslation();
   return (
     <div className="list-row">
@@ -33,19 +28,6 @@ export function ProjectListItem({
       </Link>
       <div className="list-row__side">
         <ProjectStatusBadge project={project} />
-        {onDelete ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onDelete(project);
-            }}
-          >
-            {t('common.delete')}
-          </Button>
-        ) : null}
         <Link to={`/projects/${project.id}`} className="list-row__chevron" aria-hidden>
           ›
         </Link>

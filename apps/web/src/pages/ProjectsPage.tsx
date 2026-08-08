@@ -8,7 +8,6 @@ import type { ProjectDto } from '@ysk/shared';
 import {
   ProjectCreateModal,
   ProjectList,
-  ProjectDeleteDialog,
   projectsApi } from '../features/projects';
 import { summarizeProjects } from '../features/projects/model/status';
 import {
@@ -20,21 +19,18 @@ import {
   ListToolbar,
   WithPageGuide } from '../shared/components/ui';
 import { useServerList } from '../shared/hooks/useServerList';
-import { useCapabilities } from '../shared/hooks/useCapabilities';
 import { toast } from '../shared/stores/toast-store';
 import { bindFilter, bindFormSubmit, bindInput, bindSet, bindValueSet } from './bind-handlers';
 
 export function ProjectsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { can } = useCapabilities();
   const [searchParams, setSearchParams] = useSearchParams();
   const list = useServerList<ProjectDto>({ path: '/api/v1/projects', debounceMs: 300 });
   const [createOpen, setCreateOpen] = useState(false);
   const [hintRuntime, setHintRuntime] = useState<string | null>(null);
   const [hintVersion, setHintVersion] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [deleteProject, setDeleteProject] = useState<ProjectDto | null>(null);
   const setMsg = useCallback((text: string | null) => {
     if (text) toast.ok(text);
   }, []);
@@ -173,11 +169,6 @@ export function ProjectsPage() {
                 ? t('projects.emptyFilterHint')
                 : t('projects.emptyHint')
             }
-            onDelete={
-              can('projects.delete')
-                ? (p) => setDeleteProject(p)
-                : undefined
-            }
           />
         </ListPanel>
 
@@ -216,22 +207,6 @@ export function ProjectsPage() {
               list.setError(e instanceof Error ? e.message : t('common.createFailed'));
             } finally {
               setBusy(false);
-            }
-          }}
-        />
-
-        <ProjectDeleteDialog
-          project={deleteProject}
-          open={Boolean(deleteProject)}
-          busy={busy}
-          onClose={() => setDeleteProject(null)}
-          onDeleted={(r) => {
-            setDeleteProject(null);
-            if (r.ok) {
-              toast.ok(t('projects.deletedOk'));
-              void list.refresh();
-            } else {
-              list.setError((r.notes ?? []).join(' · ') || t('common.deleteFailed'));
             }
           }}
         />
