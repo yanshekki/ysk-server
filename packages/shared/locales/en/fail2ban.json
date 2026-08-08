@@ -71,5 +71,12 @@
   "systemdTitle": "systemd control",
   "enableAndStart": "Enable and start",
   "serviceHint": "For attack response use",
-  "serviceHintSuffix": "(calls this page’s jails + Nginx rate limits;"
+  "serviceHintSuffix": "(calls this page’s jails + Nginx rate limits;",
+  "actionOk": {
+    "enable": "fail2ban enabled and started",
+    "start": "fail2ban started",
+    "reload": "fail2ban reloaded",
+    "restart": "fail2ban restarted",
+    "stop": "fail2ban stopped"
+  }
 }

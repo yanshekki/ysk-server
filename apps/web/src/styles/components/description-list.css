@@ -166,40 +166,6 @@
   max-width: 40rem;
 }
 
-/* FTPS service — compact ops strip */
-.ftps-ops-strip {
-  margin-bottom: var(--space-3);
-  padding: 0.55rem 0.75rem;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  background: var(--bg-white);
-}
-
-.ftps-ops-strip__row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 0.75rem;
-}
-
-.ftps-ops-strip__label {
-  font-size: var(--text-xs);
-  font-weight: 700;
-  color: var(--text-muted);
-}
-
-.ftps-ops-strip__ports {
-  font-size: var(--text-xs);
-  font-weight: 650;
-}
-
-.ftps-ops-strip__warn {
-  margin: 0.4rem 0 0;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--warn, #b45309);
-}
-
 .ftps-overview-actions {
   display: flex;
   flex-wrap: wrap;

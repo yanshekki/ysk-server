@@ -71,5 +71,12 @@
   "systemdTitle": "系統服務 控制",
   "enableAndStart": "啟用並啟動",
   "serviceHint": "攻擊應變請用",
-  "serviceHintSuffix": "（會呼叫本頁 jail + Nginx 限速，不重複建第二套 UFW）。"
+  "serviceHintSuffix": "（會呼叫本頁 jail + Nginx 限速，不重複建第二套 UFW）。",
+  "actionOk": {
+    "enable": "已啟用並啟動 fail2ban",
+    "start": "已啟動 fail2ban",
+    "reload": "已重新載入 fail2ban",
+    "restart": "已重啟 fail2ban",
+    "stop": "已停止 fail2ban"
+  }
 }

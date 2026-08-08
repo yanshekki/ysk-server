@@ -3146,7 +3146,14 @@
     "systemdTitle": "系統服務 控制",
     "enableAndStart": "啟用並啟動",
     "serviceHint": "攻擊應變請用",
-    "serviceHintSuffix": "（會呼叫本頁 jail + Nginx 限速，不重複建第二套 UFW）。"
+    "serviceHintSuffix": "（會呼叫本頁 jail + Nginx 限速，不重複建第二套 UFW）。",
+    "actionOk": {
+      "enable": "已啟用並啟動 fail2ban",
+      "start": "已啟動 fail2ban",
+      "reload": "已重新載入 fail2ban",
+      "restart": "已重啟 fail2ban",
+      "stop": "已停止 fail2ban"
+    }
   },
   "featurePage": {
     "back": "返回"
@@ -3547,14 +3554,7 @@
     "customStart": "自訂起始",
     "pasvEnd": "PASV 結束埠",
     "pasvEndHint": "需 ≥ 起始埠；防火牆需放行此範圍",
-    "openPortsAlertTitle": "請自行開埠",
-    "openPortsAlert": "套用 FTPS 不會代你開防火牆。請在主機防火牆同雲安全組放行 TCP {{ports}}。登入成功但 LIST 逾時，多半係 PASV 範圍被擋。",
-    "copyUfwCommands": "複製 ufw 指令",
-    "ufwCopied": "已複製 ufw 指令到剪貼簿",
     "openFirewallPage": "打開防火牆頁",
-    "firewallPresetHint": "防火牆頁可選「FTPS+PASV」preset 後自行套用（仍係你確認先開）。",
-    "pasvPublicIpNeededTitle": "建議填 PASV 公網 IP",
-    "pasvPublicIpNeeded": "雲主機／NAT 若留空，客戶端可能連錯內網 IP。請在「網絡」填公網 IP（例如 84.x.x.x）。",
     "customEnd": "自訂結束",
     "pasvPublicIp": "PASV 公網 IP",
     "pasvPublicIpHint": "NAT／雲主機可填公網 IP；本機可留空",
@@ -3600,11 +3600,10 @@
     "afterInstall": "安裝後即可使用 FTPS 帳戶登入。需系統管理員權限才能完成安裝。",
     "saveSettings": "儲存設定",
     "saveApplyHint": "儲存只更新面板設定；「套用並重啟」才寫入 vsftpd.設定檔 並重載服務。",
-    "portsLabel": "需開埠",
-    "copyUfw": "複製 ufw",
-    "pasvIpShort": "PASV 公網 IP 未填 — 請到「網絡」設定。",
     "installAndStart": "安裝並啟動",
-    "manageAccounts": "帳戶"
+    "manageAccounts": "帳戶",
+    "openFirewallPorts": "開防火牆埠",
+    "firewallPortsApplied": "已放行 TCP {{ports}}"
   },
   "geo": {
     "continents": {

@@ -212,17 +212,17 @@
   "ftpService": {
     "id": "ftpService",
     "title": "FTPS service",
-    "summary": "Install and tune FTPS (for example vsftpd): lifecycle and passive-mode ports.",
+    "summary": "Install and control vsftpd/FTPS from the panel: lifecycle, TLS, PASV, and host firewall ports.",
     "canDo": [
-      "Install and start：One-click install banner for software deployment.",
-      "TLS / passive ports：Configure secure transfer and the PASV port range firewall needs.",
-      "Enable secure file transfer on a new host",
-      "One-click install",
-      "Adjust SSL and PASV ports"
+      "Install and start FTPS",
+      "Apply config and restart",
+      "Open listen + PASV ports via panel firewall",
+      "Set public PASV IP and TLS domain"
     ],
     "notes": [
-      "Requires system-change permission",
-      "If PASV ports are blocked, listing may work while transfers fail"
+      "Open firewall ports from Overview (needs root + EXECUTE) — do not SSH to run ufw",
+      "Set PASV public IP under Network if behind NAT",
+      "Cloud security groups must still allow the same TCP ports if used"
     ],
     "related": [
       {

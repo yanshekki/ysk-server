@@ -727,7 +727,9 @@ export function Fail2banPage() {
                       systemApi.fail2banService,
                       action,
                       refresh,
-                      `systemctl ${action}`,
+                      t(`fail2ban.actionOk.${action}`, {
+                        defaultValue: t('common.success'),
+                      }),
                     )}
                   >
                     {label}

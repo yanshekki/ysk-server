@@ -70,14 +70,7 @@
   "customStart": "Custom start",
   "pasvEnd": "PASV end port",
   "pasvEndHint": "Must be ≥ start; firewall must allow the range",
-  "openPortsAlertTitle": "Open these ports yourself",
-  "openPortsAlert": "FTPS does not open the firewall for you. Allow TCP {{ports}} on the host firewall and cloud security group. Login OK but LIST timeout usually means the PASV range is blocked.",
-  "copyUfwCommands": "Copy ufw commands",
-  "ufwCopied": "ufw commands copied to clipboard",
   "openFirewallPage": "Open firewall page",
-  "firewallPresetHint": "On the firewall page, pick the FTPS+PASV preset and apply yourself (still your confirmatio",
-  "pasvPublicIpNeededTitle": "Set PASV public IP",
-  "pasvPublicIpNeeded": "On cloud/NAT, leaving PASV public IP empty may advertise a private address. Set your public IP under Network (e.g. 84.x.x.x).",
   "customEnd": "Custom end",
   "pasvPublicIp": "PASV public IP",
   "pasvPublicIpHint": "NAT/cloud: set public IP; local can leave empty",
@@ -123,9 +116,8 @@
   "afterInstall": "After install you can log in with FTPS accounts. Admin rights needed to install.",
   "saveSettings": "Save settings",
   "saveApplyHint": "Save updates panel only; Apply and restart writes vsftpd.conf and reloads.",
-  "portsLabel": "Open ports",
-  "copyUfw": "Copy ufw",
-  "pasvIpShort": "PASV public IP empty — set on Network.",
   "installAndStart": "Install & start",
-  "manageAccounts": "Accounts"
+  "manageAccounts": "Accounts",
+  "openFirewallPorts": "Open firewall ports",
+  "firewallPortsApplied": "Firewall allowed TCP {{ports}}"
 }

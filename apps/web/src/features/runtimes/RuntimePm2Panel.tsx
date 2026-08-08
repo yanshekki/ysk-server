@@ -312,18 +312,6 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
                       : t('common.no') },
                 ]}
               />
-              {startup.suggestedCommands.length > 0 ? (
-                <pre className="code-block u-text-sm u-mt-2">
-                  {startup.suggestedCommands.join('\n')}
-                </pre>
-              ) : null}
-              {startup.notes.length > 0 ? (
-                <ul className="muted u-text-sm u-mt-2">
-                  {startup.notes.slice(0, 6).map((n) => (
-                    <li key={n}>{n}</li>
-                  ))}
-                </ul>
-              ) : null}
               <div className="u-flex u-flex-wrap u-gap-2 u-mt-3">
                 <Button
                   type="button"
@@ -355,7 +343,6 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
                   {t('common.refresh')}
                 </Button>
               </div>
-              <p className="muted u-text-sm u-mt-2">{t('runtime.pm2.startupHint')}</p>
             </>
           ) : (
             <p className="muted u-text-sm">{t('common.loading')}</p>

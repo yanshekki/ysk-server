@@ -30,13 +30,13 @@ import type { OpsResultLike } from '../../shared/components/ui';
 import { ftpApi, type FtpsSettings, type FtpsStatus } from '../../features/ftp';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { softwareApi } from '../../features/software';
+import { systemApi } from '../../features/system';
 import { sanitizeOperatorNotes } from '../../shared/lib/operator-messages';
-import { toast } from '../../shared/stores/toast-store';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 
 const FTPS_TABS = ['overview', 'network', 'security', 'stack', 'about'] as const;
 
-/** Ports the operator must open — never auto-opened by FTPS apply. */
+/** TCP ports/ranges for panel firewall apply (listen + PASV + 990). */
 export function ftpsOpenPortList(
   settings: Pick<FtpsSettings, 'listenPort' | 'pasvMin' | 'pasvMax'>,
 ): string[] {
@@ -48,11 +48,6 @@ export function ftpsOpenPortList(
   const ports = [String(listen), lo === hi ? String(lo) : `${lo}:${hi}`];
   if (listen !== 990) ports.push('990');
   return [...new Set(ports)];
-}
-
-/** Shell lines to copy — operator runs manually / cloud SG. */
-export function ftpsUfwCopyCommands(ports: string[]): string {
-  return ports.map((p) => `sudo ufw allow ${p}/tcp`).join('\n') + '\n';
 }
 
 const empty: FtpsSettings = {
@@ -164,6 +159,33 @@ export function FtpsServicePage() {
     }, t('ftp.settingsApplied'));
   }
 
+  /** Panel-only: open FTPS ports via host firewall API (no shell copy). */
+  async function onOpenFirewallPorts() {
+    await run(async () => {
+      const notes: string[] = [];
+      let ok = true;
+      for (const port of openPorts) {
+        const r = (await systemApi.firewallAllowPort(port, 'tcp')) as {
+          ok?: boolean;
+          notes?: string[];
+          blockMessage?: string;
+        };
+        if (r.notes?.length) notes.push(...r.notes.map(String));
+        if (r.ok === false) {
+          ok = false;
+          if (r.blockMessage) notes.push(r.blockMessage);
+        }
+      }
+      return {
+        ok,
+        notes: notes.length
+          ? notes
+          : [t('ftp.firewallPortsApplied', { ports: openPorts.join(', ') })],
+        blockMessage: ok ? undefined : notes[0],
+      } satisfies OpsResultLike;
+    }, t('ftp.firewallPortsApplied', { ports: openPorts.join(', ') }));
+  }
+
   const st = statusLabel(status, t);
   const installed = Boolean(status?.installed);
   const running = status?.active === 'active';
@@ -215,42 +237,6 @@ export function FtpsServicePage() {
     >
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error && !result ? <Alert variant="error">{error}</Alert> : null}
-
-      {/* Compact ops strip — ports + PASV IP only when needed */}
-      <div className="ftps-ops-strip">
-        <div className="ftps-ops-strip__row">
-          <span className="ftps-ops-strip__label">{t('ftp.portsLabel')}</span>
-          <code className="ftps-ops-strip__ports">{openPorts.join(', ')}</code>
-          <ActionBar size="sm">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                void navigator.clipboard?.writeText(ftpsUfwCopyCommands(openPorts)).then(
-                  () => toast.ok(t('ftp.ufwCopied')),
-                  () => toast.error(t('common.copyFailed', { defaultValue: 'Copy failed' })),
-                );
-              }}
-            >
-              {t('ftp.copyUfw')}
-            </Button>
-            <Link to="/firewall">
-              <Button type="button" variant="ghost" size="sm">
-                {t('nav.firewall')}
-              </Button>
-            </Link>
-          </ActionBar>
-        </div>
-        {needPasvPublicIp ? (
-          <p className="ftps-ops-strip__warn">
-            {t('ftp.pasvIpShort')}{' '}
-            <button type="button" className="btn btn--ghost btn--sm" onClick={() => setTab('network')}>
-              {t('system.network')}
-            </button>
-          </p>
-        ) : null}
-      </div>
 
       <PageTabs
         tabs={[
@@ -330,6 +316,14 @@ export function FtpsServicePage() {
                       {running ? t('ftp.applyRestart') : t('fail2ban.startService')}
                     </Button>
                   )}
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    loading={busy}
+                    onClick={() => void onOpenFirewallPorts()}
+                  >
+                    {t('ftp.openFirewallPorts')}
+                  </Button>
                   <Link to="/ftp">
                     <Button variant="ghost" size="md">
                       {t('ftp.manageAccounts')}

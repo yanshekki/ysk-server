@@ -212,17 +212,17 @@
   "ftpService": {
     "id": "ftpService",
     "title": "FTPS 服务",
-    "summary": "安装与调整 vsftpd 等 FTPS 服务生命周期与被动模式端口。",
+    "summary": "在面板控制 vsftpd/FTPS：安装启动、TLS、PASV、防火墙端口。",
     "canDo": [
-      "安装与启动：一键安装横幅完成软件部署。",
-      "TLS／被动端口：设置安全傳输与防火墙所需端口段。",
-      "新主机启用安全文件傳输",
-      "一键安装",
-      "调整 SSL 与 PASV 端口"
+      "安装并启动 FTPS",
+      "套用配置并重启",
+      "在面板开放 listen／PASV 端口",
+      "设置 PASV 公网 IP 与 TLS 域名"
     ],
     "notes": [
-      "需系统变更权限",
-      "防火墙未放行 PASV 会导致列表成功但傳输失败"
+      "概览可「开防火墙端口」（需 root + EXECUTE），无需 SSH 执行 ufw",
+      "NAT 环境请到网络填写 PASV 公网 IP",
+      "若使用云安全组，需同样放行 TCP 端口"
     ],
     "related": [
       {

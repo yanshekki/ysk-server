@@ -70,14 +70,7 @@
   "customStart": "自定义起始",
   "pasvEnd": "PASV 结束埠",
   "pasvEndHint": "需 ≥ 起始埠；防火墙需放行此範圍",
-  "openPortsAlertTitle": "请自行开端口",
-  "openPortsAlert": "套用 FTPS 不会代你开防火墙。请在主机防火墙和云安全组放行 TCP {{ports}}。登录成功但 LIST 超时，多半是 PASV 范围被挡。",
-  "copyUfwCommands": "复制 ufw 命令",
-  "ufwCopied": "已复制 ufw 命令到剪贴板",
   "openFirewallPage": "打开防火墙页",
-  "firewallPresetHint": "防火墙页可选「FTPS+PASV」preset 后自行套用（仍需你确认）。",
-  "pasvPublicIpNeededTitle": "建议填写 PASV 公网 IP",
-  "pasvPublicIpNeeded": "云主机/NAT 若留空，客户端可能连到内网 IP。请在「网络」填写公网 IP。",
   "customEnd": "自定义结束",
   "pasvPublicIp": "PASV 公网 IP",
   "pasvPublicIpHint": "NAT／雲主机可填公网 IP；本机可留空",
@@ -123,9 +116,8 @@
   "afterInstall": "安装后即可使用 FTPS 账户登录。需系统管理员权限才能完成安装。",
   "saveSettings": "保存设置",
   "saveApplyHint": "保存只更新面板设置；「应用并重启」才写入 vsftpd.conf 并重载服务。",
-  "portsLabel": "需开端口",
-  "copyUfw": "复制 ufw",
-  "pasvIpShort": "PASV 公网 IP 未填 — 请到「网络」设置。",
   "installAndStart": "安装并启动",
-  "manageAccounts": "账户"
+  "manageAccounts": "账户",
+  "openFirewallPorts": "开防火墙端口",
+  "firewallPortsApplied": "已放行 TCP {{ports}}"
 }
