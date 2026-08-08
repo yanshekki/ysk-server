@@ -1023,175 +1023,11 @@ export function EmailDomainPage() {
                 <EmptyState title={t('email.noLiveYet')} />
               )}
 
-              <div className="u-mt-4">
-                <h3 className="section-block__title">{t('email.mailSslTitle')}</h3>
-                <p className="section-block__desc">
-                  {t('email.mailSslHint')}
-                </p>
-                <ActionBar>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={bindNavigate(navigate, `/ssl?domain=${encodeURIComponent(defaultMailSslDomain(domain.domain))}&action=le`)}
-                  >
-                    {t('email.leMailHost', { host: defaultMailSslDomain(domain.domain) })}
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={bindNavigate(navigate, `/ssl?domain=${encodeURIComponent(webmailDomain || defaultWebmailDomain(domain.domain))}&action=le`)}
-                  >
-                    {t('email.leWebmailHost', {
-                      host: webmailDomain || defaultWebmailDomain(domain.domain) })}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={bindNavigate(
-                      navigate,
-                      `/ssl?domain=${encodeURIComponent(domain.domain)}&action=le`,
-                    )}
-                  >
-                    {t('email.leApexHost', { host: domain.domain })}
-                  </Button>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    loading={busy}
-                    onClick={() => {
-                      void withBusy(async () => {
-                        const r = await emailApi.applyMailTls({
-                          domain: domain.domain,
-                          mailHost: defaultMailSslDomain(domain.domain) });
-                        setLive((prev) => ({
-                          ...(prev ?? {}),
-                          mailTlsApply: r }));
-                      });
-                    }}
-                  >
-                    {t('email.applyMailTls')}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={bindNavigate(navigate, '/ssl')}
-                  >
-                    {t('email.openSslPage')}
-                  </Button>
-                </ActionBar>
-                <p className="muted u-text-sm u-mt-2">{t('email.applyMailTlsHint')}</p>
-              </div>
-
-              <div className="u-mt-4">
-                <h3 className="section-block__title">{t('email.webmailSsoSkeleton')}</h3>
-                <ActionBar>
-                  <Button
-                    variant="ghost"
-                    size="md"
-                    loading={busy}
-                    onClick={bindBusySet(
-                      withBusy,
-                      () =>
-                        api.requestRaw('/api/v1/email/webmail/sso-plugin', {
-                          method: 'POST',
-                          body: JSON.stringify({}) }),
-                      setLive,
-                    )}
-                  >
-                    {t('email.writeRoundcubeSso')}
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="md"
-                    loading={busy}
-                    onClick={bindBusySet(
-                      withBusy,
-                      () =>
-                        api.requestRaw('/api/v1/email/webmail/sso-plugin', {
-                          method: 'POST',
-                          body: JSON.stringify({ enableSystem: true }) }),
-                      setLive,
-                    )}
-                  >
-                    {t('email.ssoSkeletonSymlink')}
-                  </Button>
-                </ActionBar>
-              </div>
-
-              <div className="u-mt-4">
-                <h3 className="section-block__title">{t('email.rateLimitTitle')}</h3>
-                <p className="section-block__desc">
-                  {t('email.rateLimitDesc')}
-                </p>
-                <p className="muted u-text-sm u-mb-3">{t('email.policyApplySystemHint')}</p>
-                <FormLayout columns={2}>
-                  <Field
-                    label={t('email.hourlyMsgCap')}
-                    htmlFor="policy-rate"
-                    flush
-                    hint={t('email.hourlyMsgCapHint')}
-                  >
-                    <input
-                      id="policy-rate"
-                      type="number"
-                      min={10}
-                      max={100000}
-                      value={policyRate}
-                      onChange={bindInput(setPolicyRate)}
-                    />
-                  </Field>
-                  <CheckboxField
-                    id="policy-spam"
-                    label={t('email.enableAntispam')}
-                    checked={policyAntispam}
-                    onChange={setPolicyAntispam}
-                    disabled={busy}
-                  />
-                </FormLayout>
-                <FormActions align="end">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    loading={busy}
-                    onClick={bindBusyApplyPolicy(
-                      withBusy,
-                      emailApi.applyPolicy,
-                      domain.id,
-                      {
-                        rateLimitPerHour: parsePolicyRate(policyRate),
-                        antispam: policyAntispam,
-                        applySystem: false },
-                      setPolicyLog,
-                      load,
-                    )}
-                  >
-                    {t('email.writeControlOnly')}
-                  </Button>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    loading={busy}
-                    onClick={bindBusyApplyPolicy(
-                      withBusy,
-                      emailApi.applyPolicy,
-                      domain.id,
-                      {
-                        rateLimitPerHour: parsePolicyRate(policyRate),
-                        antispam: policyAntispam,
-                        applySystem: true },
-                      setPolicyLog,
-                      load,
-                    )}
-                  >
-                    {t('email.applyToSystemBtn')}
-                  </Button>
-                </FormActions>
-              </div>
-
-              {dnsbl ? <OpsResultPanel title={t('email.dnsblResult')} result={asOps(dnsbl)} /> : null}
-              {warmup ? <OpsResultPanel title={t('email.warmupResult')} result={asOps(warmup)} /> : null}
-              {policyLog ? (
-                <OpsResultPanel title={t('email.policyResult')} result={asOps(policyLog)} busy={busy} />
+              {dnsbl ? (
+                <OpsResultPanel title={t('email.dnsblResult')} result={asOps(dnsbl)} />
+              ) : null}
+              {warmup ? (
+                <OpsResultPanel title={t('email.warmupResult')} result={asOps(warmup)} />
               ) : null}
             </CardSection>
           </Card>
@@ -1425,6 +1261,193 @@ export function EmailDomainPage() {
 
         {tab === 'advanced' ? (
           <div className="stack">
+            <Card>
+              <CardSection title={t('email.mailSslTitle')}>
+                <ActionBar className="u-mb-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={bindNavigate(
+                      navigate,
+                      `/ssl?domain=${encodeURIComponent(defaultMailSslDomain(domain.domain))}&action=le`,
+                    )}
+                  >
+                    {t('email.leMailHost', {
+                      host: defaultMailSslDomain(domain.domain),
+                    })}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={bindNavigate(
+                      navigate,
+                      `/ssl?domain=${encodeURIComponent(webmailDomain || defaultWebmailDomain(domain.domain))}&action=le`,
+                    )}
+                  >
+                    {t('email.leWebmailHost', {
+                      host: webmailDomain || defaultWebmailDomain(domain.domain),
+                    })}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={bindNavigate(
+                      navigate,
+                      `/ssl?domain=${encodeURIComponent(domain.domain)}&action=le`,
+                    )}
+                  >
+                    {t('email.leApexHost', { host: domain.domain })}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    loading={busy}
+                    onClick={() => {
+                      void withBusy(async () => {
+                        const r = await emailApi.applyMailTls({
+                          domain: domain.domain,
+                          mailHost: defaultMailSslDomain(domain.domain),
+                        });
+                        setLive((prev) => ({
+                          ...(prev ?? {}),
+                          mailTlsApply: r,
+                        }));
+                      });
+                    }}
+                  >
+                    {t('email.applyMailTls')}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={bindNavigate(navigate, '/ssl')}
+                  >
+                    {t('email.openSslPage')}
+                  </Button>
+                </ActionBar>
+                {(live as { mailTlsApply?: OpsResultLike } | null)?.mailTlsApply ? (
+                  <OpsResultPanel
+                    title={t('email.applyMailTls')}
+                    result={asOps(
+                      (live as { mailTlsApply?: OpsResultLike }).mailTlsApply,
+                    )}
+                  />
+                ) : null}
+              </CardSection>
+            </Card>
+            <Card>
+              <CardSection title={t('email.webmailSsoSkeleton')}>
+                <ActionBar>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    loading={busy}
+                    onClick={bindBusySet(
+                      withBusy,
+                      () =>
+                        api.requestRaw('/api/v1/email/webmail/sso-plugin', {
+                          method: 'POST',
+                          body: JSON.stringify({}),
+                        }),
+                      setLive,
+                    )}
+                  >
+                    {t('email.writeRoundcubeSso')}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={busy}
+                    onClick={bindBusySet(
+                      withBusy,
+                      () =>
+                        api.requestRaw('/api/v1/email/webmail/sso-plugin', {
+                          method: 'POST',
+                          body: JSON.stringify({ enableSystem: true }),
+                        }),
+                      setLive,
+                    )}
+                  >
+                    {t('email.ssoSkeletonSymlink')}
+                  </Button>
+                </ActionBar>
+              </CardSection>
+            </Card>
+            <Card>
+              <CardSection title={t('email.rateLimitTitle')}>
+                <FormLayout columns={2}>
+                  <Field
+                    label={t('email.hourlyMsgCap')}
+                    htmlFor="policy-rate"
+                    flush
+                    hint={t('email.hourlyMsgCapHint')}
+                  >
+                    <input
+                      id="policy-rate"
+                      type="number"
+                      min={10}
+                      max={100000}
+                      value={policyRate}
+                      onChange={bindInput(setPolicyRate)}
+                    />
+                  </Field>
+                  <CheckboxField
+                    id="policy-spam"
+                    label={t('email.enableAntispam')}
+                    checked={policyAntispam}
+                    onChange={setPolicyAntispam}
+                    disabled={busy}
+                  />
+                </FormLayout>
+                <FormActions align="end">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={busy}
+                    onClick={bindBusyApplyPolicy(
+                      withBusy,
+                      emailApi.applyPolicy,
+                      domain.id,
+                      {
+                        rateLimitPerHour: parsePolicyRate(policyRate),
+                        antispam: policyAntispam,
+                        applySystem: false,
+                      },
+                      setPolicyLog,
+                      load,
+                    )}
+                  >
+                    {t('email.writeControlOnly')}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    loading={busy}
+                    onClick={bindBusyApplyPolicy(
+                      withBusy,
+                      emailApi.applyPolicy,
+                      domain.id,
+                      {
+                        rateLimitPerHour: parsePolicyRate(policyRate),
+                        antispam: policyAntispam,
+                        applySystem: true,
+                      },
+                      setPolicyLog,
+                      load,
+                    )}
+                  >
+                    {t('email.applyToSystemBtn')}
+                  </Button>
+                </FormActions>
+                {policyLog ? (
+                  <OpsResultPanel
+                    title={t('email.policyResult')}
+                    result={asOps(policyLog)}
+                    busy={busy}
+                  />
+                ) : null}
+              </CardSection>
+            </Card>
             <Card>
               <CardSection title={t('email.domainSslTitle')}>
                 <FormActions>
