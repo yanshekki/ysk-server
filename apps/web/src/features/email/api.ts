@@ -69,9 +69,11 @@ export const emailApi = {
     forceHttps?: boolean;
     installSsoPlugin?: boolean;
   }) =>
-    api.requestRaw<Record<string, unknown>>('/api/v1/email/webmail/apply', {
+    // 403/422 still return full ops body (notes, projectId) — do not throw first note as page error
+    api.requestRawAllowStatus<Record<string, unknown>>('/api/v1/email/webmail/apply', {
       method: 'POST',
       body: JSON.stringify(body),
+      allowStatuses: [403, 422],
     }),
   bootstrap: (body: {
     domain: string;

@@ -35,7 +35,8 @@ import {
   SegRadio,
   DescriptionList } from '../shared/components/ui';
 import type { OpsResultLike } from '../shared/components/ui';
-import { api } from '../shared/services/api';
+import { ApiError, api } from '../shared/services/api';
+import { notifyError, notifyOk, notifyWarn } from '../shared/lib/notify';
 import {
   bindBusyApplyPolicy,
   bindBusyAutodiscover,
@@ -73,6 +74,37 @@ export function asOps(r: Record<string, unknown> | null): OpsResultLike | null {
     blocked,
     blockMessage: typeof r.blockMessage === 'string' ? r.blockMessage : undefined,
     notes: Array.isArray(r.notes) ? r.notes.map(String) : [] } as OpsResultLike;
+}
+
+/**
+ * Top-right toast for ops results — never use page-top red Alert for success notes.
+ * ok → green; blocked/partial fail → amber; bare exceptions handled by withBusy.
+ */
+export function notifyOpsResult(
+  r: Record<string, unknown> | null | undefined,
+  t: (k: string) => string,
+): void {
+  if (!r || typeof r !== 'object') return;
+  const notes = Array.isArray(r.notes)
+    ? r.notes.map(String).map((n) => n.trim()).filter(Boolean)
+    : [];
+  const blocked = Boolean(
+    r.blocked ||
+      r.requiresExecute ||
+      r.requiresRoot ||
+      r.apply_status === 'blocked',
+  );
+  const ok = r.ok === true && !blocked;
+  const blockMsg =
+    typeof r.blockMessage === 'string' && r.blockMessage.trim()
+      ? r.blockMessage.trim()
+      : '';
+  const main = blockMsg || notes[0] || (ok ? t('common.completed') : t('common.opFailed'));
+  const extra = notes.filter((n) => n !== main).slice(0, 4);
+  const detail = extra.length ? extra.join('\n') : undefined;
+  const opts = detail ? { detail, durationMs: 8000 as const } : undefined;
+  if (ok) notifyOk(main, opts);
+  else notifyWarn(main, opts);
 }
 
 /** Normalize apply_status for display comparisons. */
@@ -420,16 +452,43 @@ export function EmailDomainPage() {
     };
   }, [load, t]);
 
+  /** Run mutation with top-right toast feedback (no page-top red Alert). */
   async function withBusy(fn: () => Promise<void>) {
     setBusy(true);
-    setError(null);
     try {
       await fn();
     } catch (e) {
-      setError(e instanceof Error ? e.message : t('common.opFailed'));
+      if (e instanceof ApiError && e.details && typeof e.details === 'object') {
+        const d = e.details as Record<string, unknown>;
+        if (
+          Array.isArray(d.notes) ||
+          d.requiresExecute != null ||
+          d.requiresRoot != null ||
+          d.blocked != null ||
+          typeof d.blockMessage === 'string' ||
+          typeof d.ok === 'boolean'
+        ) {
+          notifyOpsResult({ ...d, ok: d.ok === true ? true : false }, t);
+          if (d.projectId != null || d.tool != null || d.urlHint != null) {
+            setWebmailLog(d);
+          }
+          return;
+        }
+      }
+      notifyError(e instanceof Error ? e.message : t('common.opFailed'));
     } finally {
       setBusy(false);
     }
+  }
+
+  function setWebmailLogToast(r: Record<string, unknown>) {
+    setWebmailLog(r);
+    notifyOpsResult(r, t);
+  }
+
+  function setBootstrapLogToast(r: Record<string, unknown>) {
+    setBootstrapLog(r);
+    notifyOpsResult(r, t);
   }
 
   if (loading) return <LoadingBlock />;
@@ -524,7 +583,6 @@ export function EmailDomainPage() {
       }
     >
       <SoftwareInstallBanner feature="email" title={t('email.softwareNeeded')} />
-      {error ? <Alert variant="error">{error}</Alert> : null}
 
       <PageTabs tabs={tabs} active={tab} onChange={setTab} variant="scroll">
         {tab === 'dns' ? (
@@ -1395,7 +1453,7 @@ export function EmailDomainPage() {
                       withBusy,
                       bootstrapPassword,
                       isBootstrapPasswordValid,
-                      () => setError(t('email.adminPasswordRequired')),
+                      () => notifyWarn(t('email.adminPasswordRequired')),
                       emailApi.bootstrap,
                       {
                         domain: domain.domain,
@@ -1405,7 +1463,7 @@ export function EmailDomainPage() {
                         installPackages: true,
                         webmail: true,
                       },
-                      setBootstrapLog,
+                      setBootstrapLogToast,
                       load,
                     )}
                   >
@@ -1502,7 +1560,7 @@ export function EmailDomainPage() {
                           forceHttps: webmailForceHttps,
                           installSsoPlugin: webmailTool === 'roundcube',
                         }),
-                      setWebmailLog,
+                      setWebmailLogToast,
                     )}
                   >
                     {t('email.installWebmailProject')}
@@ -1531,7 +1589,7 @@ export function EmailDomainPage() {
                               ? webmailLog.projectId
                               : undefined,
                         }),
-                      setWebmailLog,
+                      setWebmailLogToast,
                     )}
                   >
                     {t('email.reinstallWebmail')}
@@ -1977,9 +2035,10 @@ export function EmailDomainPage() {
           setDeleteBusy(false);
           setDeleteOpen(false);
           if (r.ok) {
+            notifyOk(t('common.success'));
             navigate('/email');
           } else {
-            setError((r.notes ?? []).join(' · ') || t('common.deleteFailed'));
+            notifyWarn((r.notes ?? []).join(' · ') || t('common.deleteFailed'));
           }
         }}
       />
@@ -1994,13 +2053,10 @@ export function EmailDomainPage() {
           const target = delMailbox;
           setDelMailbox(null);
           void withBusy(async () => {
-            try {
-              const r = await emailApi.deleteMailbox(domain.id, target.id);
-              setMboxLog(r);
-              setMailboxes((await emailApi.listMailboxes(domain.id)).items);
-            } catch (e) {
-              setError(e instanceof Error ? e.message : t('common.deleteFailed'));
-            }
+            const r = await emailApi.deleteMailbox(domain.id, target.id);
+            setMboxLog(r);
+            notifyOpsResult(r as Record<string, unknown>, t);
+            setMailboxes((await emailApi.listMailboxes(domain.id)).items);
           });
         }}
         title={t('email.deleteMailboxTitle')}
