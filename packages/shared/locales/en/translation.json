@@ -3397,7 +3397,7 @@
     "publicShareProgressIndeterminate": "Received {{loaded}}…",
     "publicShareCancel": "Cancel",
     "publicShareCancelled": "Download cancelled",
-    "publicSharePoweredBy": "Powered by {{company}}",
+    "publicSharePoweredBy": "Powered by <companyLink>{{company}}</companyLink>",
     "publicShareHasAccount": "Have an account? Sign in",
     "password": "Password",
     "editorLines": "{{count}} lines",

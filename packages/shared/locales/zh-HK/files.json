@@ -232,7 +232,7 @@
   "publicShareProgressIndeterminate": "已接收 {{loaded}}…",
   "publicShareCancel": "取消",
   "publicShareCancelled": "已取消下載",
-  "publicSharePoweredBy": "由 {{company}} 提供",
+  "publicSharePoweredBy": "由 <companyLink>{{company}}</companyLink> 提供",
   "publicShareHasAccount": "已有帳號？登入",
   "password": "密碼",
   "editorLines": "{{count}} 行",

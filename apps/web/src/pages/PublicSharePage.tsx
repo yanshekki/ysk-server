@@ -3,7 +3,7 @@
  * YSK Limited branding, language switcher, streamed download with progress.
  */
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
 import {
   LOCALE_LABELS,
@@ -14,7 +14,7 @@ import {
 import { Alert, Button, Field, FormActions } from '../shared/components/ui';
 import { setAppLocale } from '../shared/lib/i18n';
 
-const COMPANY_URL = 'https://ysk.hk';
+const COMPANY_URL = 'https://ysk.hk/';
 
 type Phase = 'loading' | 'password' | 'downloading' | 'done' | 'error';
 
@@ -384,10 +384,15 @@ export function PublicSharePage() {
 
         <footer className="pub-share__foot">
           <p className="pub-share__powered">
-            {t('files.publicSharePoweredBy', { company })}{' '}
-            <a href={COMPANY_URL} target="_blank" rel="noreferrer">
-              ysk.hk
-            </a>
+            <Trans
+              i18nKey="files.publicSharePoweredBy"
+              values={{ company }}
+              components={{
+                companyLink: (
+                  <a href={COMPANY_URL} target="_blank" rel="noreferrer" />
+                ),
+              }}
+            />
           </p>
           <p className="pub-share__login-hint">
             <Link to="/login">{t('files.publicShareHasAccount')}</Link>
