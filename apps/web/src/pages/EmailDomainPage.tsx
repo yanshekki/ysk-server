@@ -1329,7 +1329,8 @@ export function EmailDomainPage() {
                   <OpsResultPanel
                     title={t('email.applyMailTls')}
                     result={asOps(
-                      (live as { mailTlsApply?: OpsResultLike }).mailTlsApply,
+                      ((live as { mailTlsApply?: OpsResultLike }).mailTlsApply ??
+                        null) as Record<string, unknown> | null,
                     )}
                   />
                 ) : null}
