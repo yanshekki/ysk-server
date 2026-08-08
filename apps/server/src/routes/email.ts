@@ -142,7 +142,23 @@ export async function handleEmailRoutes(
       if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[5] ?? '';
-        const result = ctx.email.deleteDomain(id, user.username);
+        let body: { confirmName?: string; removeData?: boolean } = {};
+        try {
+          const raw = await readBody(req);
+          if (raw?.trim()) body = JSON.parse(raw) as typeof body;
+        } catch {
+          body = {};
+        }
+        if (url.searchParams.has('confirmName')) {
+          body.confirmName = url.searchParams.get('confirmName') || undefined;
+        }
+        if (url.searchParams.has('removeData')) {
+          body.removeData = url.searchParams.get('removeData') !== '0';
+        }
+        const result = ctx.email.deleteDomain(id, user.username, {
+          confirmName: body.confirmName,
+          removeData: body.removeData !== false,
+        });
         ctx.audit.append({
           actor: user.username,
           action: 'email.domain.delete',
@@ -151,6 +167,7 @@ export async function handleEmailRoutes(
             id,
             removedMailboxes: result.removedMailboxes,
             removedAliases: result.removedAliases,
+            removeData: body.removeData !== false,
           },
           ok: result.ok,
         });

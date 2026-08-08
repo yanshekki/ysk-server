@@ -2998,7 +2998,17 @@
     "deleteDomainC1": "所有信箱與別名",
     "deleteDomainC2": "控制面 DKIM／DNS 建議與旗標",
     "deleteDomainC3": "本機 dataDir/email 目錄（若存在）",
-    "deleteDomainC4": "系統 MTA 映射可能仍在，需另行清理"
+    "deleteDomainC4": "系統 MTA 映射可能仍在，需另行清理",
+    "deleteDialogTitle": "永久刪除郵件域名",
+    "deleteDialogDesc": "即將永久刪除 {{domain}}。此操作無法復原。",
+    "deletePermanent": "永久刪除",
+    "deleteRemoveData": "刪除本機 dataDir 郵件資料",
+    "deleteRemoveDataDesc": "取消勾選則只從面板移除；Maildir／設定檔保留在磁碟",
+    "deleteTypeName": "輸入域名以確認",
+    "deleteTypeNameHint": "請輸入「{{name}}」",
+    "deleteWillData": "本機 dataDir/email 目錄會被刪除（若存在）",
+    "deleteKeepData": "本機 dataDir 郵件資料會保留",
+    "deleteSystemWarn": "系統 Postfix／Dovecot 映射唔會自動清乾淨；必要時請另行處理。"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "未授權",
@@ -4406,7 +4416,9 @@
       "domainDeleteSystemHint": "控制面已刪除；系統 MTA 映射若仍存在請重新套用其餘域名或人手清理",
       "mailboxDeleted": "已刪除信箱 {{address}}",
       "mailboxNotFound": "找不到信箱",
-      "mailboxDataRemoved": "已移除本機目錄 {{path}}"
+      "mailboxDataRemoved": "已移除本機目錄 {{path}}",
+      "domainDeleteConfirmMismatch": "確認字串與域名不符，已拒絕刪除",
+      "domainDataKept": "已保留本機 dataDir 郵件資料（removeData=false）"
     },
     "agents": {
       "sessionNotFound": "找不到 工作階段：{{sessionId}}"

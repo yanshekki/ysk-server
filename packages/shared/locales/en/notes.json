@@ -142,7 +142,9 @@
     "domainDeleteSystemHint": "Control plane removed; re-apply remaining domains or clean system MTA maps if needed",
     "mailboxDeleted": "Deleted mailbox {{address}}",
     "mailboxNotFound": "Mailbox not found",
-    "mailboxDataRemoved": "Removed local path {{path}}"
+    "mailboxDataRemoved": "Removed local path {{path}}",
+    "domainDeleteConfirmMismatch": "Confirm name does not match domain; delete refused",
+    "domainDataKept": "Kept local dataDir mail data (removeData=false)"
   },
   "agents": {
     "sessionNotFound": "Session not found: {{sessionId}}"

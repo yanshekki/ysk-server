@@ -13,7 +13,11 @@ export const emailApi = {
       method: 'POST',
       body: JSON.stringify(body),
     }),
-  deleteDomain: (id: string) =>
+  /** Same safety model as projectsApi.remove — type domain name + optional removeData */
+  deleteDomain: (
+    id: string,
+    body: { confirmName: string; removeData?: boolean },
+  ) =>
     api.requestRaw<{
       ok: boolean;
       domain: string;
@@ -21,8 +25,10 @@ export const emailApi = {
       removedAliases: number;
       notes: string[];
       written: string[];
+      warnings?: string[];
     }>(`/api/v1/email/domains/${encodeURIComponent(id)}`, {
       method: 'DELETE',
+      body: JSON.stringify(body),
     }),
   listMailboxes: (domainId?: string) =>
     domainId

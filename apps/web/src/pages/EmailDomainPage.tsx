@@ -4,7 +4,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { emailApi, type EmailBundle, type EmailDomain } from '../features/email';
+import {
+  emailApi,
+  EmailDomainDeleteDialog,
+  type EmailBundle,
+  type EmailDomain,
+} from '../features/email';
 import {
   PageGuide,
   ActionBar,
@@ -1961,40 +1966,22 @@ export function EmailDomainPage() {
         <p className="muted u-text-sm u-mb-0">{t('email.flushQueueConfirm')}</p>
       </Modal>
 
-      <ConfirmDialog
+      <EmailDomainDeleteDialog
+        domain={domain}
         open={deleteOpen}
+        busy={deleteBusy}
         onClose={() => {
           if (!deleteBusy) setDeleteOpen(false);
         }}
-        onConfirm={() => {
-          void (async () => {
-            setDeleteBusy(true);
-            setError(null);
-            try {
-              await emailApi.deleteDomain(domain.id);
-              setDeleteOpen(false);
-              navigate('/email');
-            } catch (e) {
-              setError(e instanceof Error ? e.message : t('common.deleteFailed'));
-              setDeleteOpen(false);
-            } finally {
-              setDeleteBusy(false);
-            }
-          })();
+        onDeleted={(r) => {
+          setDeleteBusy(false);
+          setDeleteOpen(false);
+          if (r.ok) {
+            navigate('/email');
+          } else {
+            setError((r.notes ?? []).join(' · ') || t('common.deleteFailed'));
+          }
         }}
-        title={t('email.deleteDomainConfirmTitle')}
-        description={t('email.deleteDomainConfirm', { domain: domain.domain })}
-        consequences={[
-          t('email.deleteDomainC1'),
-          t('email.deleteDomainC2'),
-          t('email.deleteDomainC3'),
-          t('email.deleteDomainC4'),
-        ]}
-        confirmText={domain.domain}
-        confirmLabel={t('email.deleteDomainBtn')}
-        cancelLabel={t('common.cancel')}
-        severity="critical"
-        busy={deleteBusy}
       />
 
       <ConfirmDialog

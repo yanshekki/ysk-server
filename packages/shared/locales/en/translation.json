@@ -2998,7 +2998,17 @@
     "deleteDomainC1": "All mailboxes and aliases",
     "deleteDomainC2": "Control-plane DKIM/DNS suggestions and flags",
     "deleteDomainC3": "Local dataDir/email directory if present",
-    "deleteDomainC4": "System MTA maps may remain; clean separately if needed"
+    "deleteDomainC4": "System MTA maps may remain; clean separately if needed",
+    "deleteDialogTitle": "Permanently delete mail domain",
+    "deleteDialogDesc": "About to permanently delete {{domain}}. This cannot be undone.",
+    "deletePermanent": "Delete permanently",
+    "deleteRemoveData": "Remove local dataDir mail data",
+    "deleteRemoveDataDesc": "Uncheck to remove from panel only; Maildir/configs stay on disk",
+    "deleteTypeName": "Type the domain name to confirm",
+    "deleteTypeNameHint": "Type \"{{name}}\"",
+    "deleteWillData": "Local dataDir/email directory will be removed if present",
+    "deleteKeepData": "Local dataDir mail data will be kept",
+    "deleteSystemWarn": "System Postfix/Dovecot maps are not auto-cleaned; clean separately if needed."
   },
   "errors": {
     "YSK_UNAUTHORIZED": "Unauthorized",
@@ -4406,7 +4416,9 @@
       "domainDeleteSystemHint": "Control plane removed; re-apply remaining domains or clean system MTA maps if needed",
       "mailboxDeleted": "Deleted mailbox {{address}}",
       "mailboxNotFound": "Mailbox not found",
-      "mailboxDataRemoved": "Removed local path {{path}}"
+      "mailboxDataRemoved": "Removed local path {{path}}",
+      "domainDeleteConfirmMismatch": "Confirm name does not match domain; delete refused",
+      "domainDataKept": "Kept local dataDir mail data (removeData=false)"
     },
     "agents": {
       "sessionNotFound": "Session not found: {{sessionId}}"

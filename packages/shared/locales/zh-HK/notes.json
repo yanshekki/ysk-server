@@ -142,7 +142,9 @@
     "domainDeleteSystemHint": "控制面已刪除；系統 MTA 映射若仍存在請重新套用其餘域名或人手清理",
     "mailboxDeleted": "已刪除信箱 {{address}}",
     "mailboxNotFound": "找不到信箱",
-    "mailboxDataRemoved": "已移除本機目錄 {{path}}"
+    "mailboxDataRemoved": "已移除本機目錄 {{path}}",
+    "domainDeleteConfirmMismatch": "確認字串與域名不符，已拒絕刪除",
+    "domainDataKept": "已保留本機 dataDir 郵件資料（removeData=false）"
   },
   "agents": {
     "sessionNotFound": "找不到 工作階段：{{sessionId}}"

@@ -135,13 +135,14 @@ export class EmailService {
   }
 
   /**
-   * Delete email domain from control plane + related mailboxes/aliases.
-   * Best-effort remove dataDir/email/{domain}. Does not claim system Postfix/Dovecot
-   * maps were rewritten — operator may re-apply remaining domains.
+   * Delete email domain — same safety model as project delete:
+   * require confirmName === domain; optional removeData (dataDir/email/{domain}).
+   * Does not claim system Postfix/Dovecot maps were cleaned.
    */
   deleteDomain(
     id: string,
     actor: string,
+    opts?: { confirmName?: string; removeData?: boolean },
   ): {
     ok: boolean;
     domain: string;
@@ -149,6 +150,7 @@ export class EmailService {
     removedAliases: number;
     notes: string[];
     written: string[];
+    warnings?: string[];
   } {
     const row = domains(this.db).find((e) => e.id === id);
     if (!row) {
@@ -157,8 +159,16 @@ export class EmailService {
       });
     }
     const domainName = row.domain;
+    const confirm = (opts?.confirmName ?? '').trim().toLowerCase();
+    if (!confirm || confirm !== domainName.trim().toLowerCase()) {
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.email.domainDeleteConfirmMismatch'), {
+        httpStatus: 400,
+      });
+    }
+    const removeData = opts?.removeData !== false;
     const notes: string[] = [];
     const written: string[] = [];
+    const warnings: string[] = [];
 
     const beforeMb = this.db.snapshot.mailboxes.length;
     this.db.snapshot.mailboxes = this.db.snapshot.mailboxes.filter(
@@ -184,7 +194,7 @@ export class EmailService {
       }),
     );
 
-    if (this.dataDir) {
+    if (removeData && this.dataDir) {
       const dir = join(this.dataDir, 'email', domainName);
       if (existsSync(dir)) {
         try {
@@ -198,11 +208,20 @@ export class EmailService {
               detail: e instanceof Error ? e.message : String(e),
             }),
           );
+          warnings.push(
+            tl('notes.email.domainDataDirRemoveFailed', {
+              path: dir,
+              detail: e instanceof Error ? e.message : String(e),
+            }),
+          );
         }
       }
+    } else if (!removeData) {
+      notes.push(tl('notes.email.domainDataKept'));
     }
 
     notes.push(tl('notes.email.domainDeleteSystemHint'));
+    warnings.push(tl('notes.email.domainDeleteSystemHint'));
 
     this.audit?.append({
       actor,
@@ -212,6 +231,7 @@ export class EmailService {
         id,
         removedMailboxes,
         removedAliases,
+        removeData,
         written,
       },
       ok: true,
@@ -224,6 +244,7 @@ export class EmailService {
       removedAliases,
       notes,
       written,
+      warnings,
     };
   }
 

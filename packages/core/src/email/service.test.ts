@@ -34,7 +34,11 @@ describe('EmailService real keygen + persistence', () => {
     expect(updated.health.score).toBe(100);
     expect(svc.list()).toHaveLength(1);
 
-    const del = svc.deleteDomain(created.domain.id, 'admin');
+    expect(() => svc.deleteDomain(created.domain.id, 'admin', { confirmName: 'wrong' })).toThrow();
+    const del = svc.deleteDomain(created.domain.id, 'admin', {
+      confirmName: 'example.com',
+      removeData: true,
+    });
     expect(del.ok).toBe(true);
     expect(del.domain).toBe('example.com');
     expect(svc.list()).toHaveLength(0);
@@ -74,7 +78,10 @@ describe('EmailService real keygen + persistence', () => {
       svc.createMailbox(created.domain.id, { localPart: 'info', actor: 'admin' }),
     ).rejects.toThrow(/already exists|已存在/i);
 
-    const del = svc.deleteDomain(created.domain.id, 'admin');
+    const del = svc.deleteDomain(created.domain.id, 'admin', {
+      confirmName: 'mail.test',
+      removeData: true,
+    });
     expect(del.ok).toBe(true);
     expect(del.removedMailboxes).toBe(1);
     expect(svc.listMailboxes()).toHaveLength(0);

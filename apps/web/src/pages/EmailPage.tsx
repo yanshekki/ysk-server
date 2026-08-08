@@ -6,7 +6,11 @@
 import { FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { emailApi, type EmailDomain } from '../features/email';
+import {
+  emailApi,
+  EmailDomainDeleteDialog,
+  type EmailDomain,
+} from '../features/email';
 import {
   PageGuide,
   ActionBar,
@@ -196,21 +200,6 @@ export function EmailPage() {
       setQueueMsg(e instanceof Error ? e.message : t('email.queueDeleteFailed'));
     } finally {
       setQueueBusy(false);
-    }
-  }
-
-  async function onDeleteDomain() {
-    if (!deleteTarget) return;
-    setDeleteBusy(true);
-    list.setError(null);
-    try {
-      await emailApi.deleteDomain(deleteTarget.id);
-      setDeleteTarget(null);
-      await list.refresh();
-    } catch (err) {
-      list.setError(err instanceof Error ? err.message : t('common.deleteFailed'));
-    } finally {
-      setDeleteBusy(false);
     }
   }
 
@@ -547,29 +536,22 @@ export function EmailPage() {
         </form>
       </Modal>
 
-      <ConfirmDialog
+      <EmailDomainDeleteDialog
+        domain={deleteTarget}
         open={Boolean(deleteTarget)}
+        busy={deleteBusy}
         onClose={() => {
           if (!deleteBusy) setDeleteTarget(null);
         }}
-        onConfirm={() => {
-          void onDeleteDomain();
+        onDeleted={(r) => {
+          setDeleteTarget(null);
+          setDeleteBusy(false);
+          if (r.ok) {
+            void list.refresh();
+          } else {
+            list.setError((r.notes ?? []).join(' · ') || t('common.deleteFailed'));
+          }
         }}
-        title={t('email.deleteDomainConfirmTitle')}
-        description={t('email.deleteDomainConfirm', {
-          domain: deleteTarget?.domain ?? '',
-        })}
-        consequences={[
-          t('email.deleteDomainC1'),
-          t('email.deleteDomainC2'),
-          t('email.deleteDomainC3'),
-          t('email.deleteDomainC4'),
-        ]}
-        confirmText={deleteTarget?.domain}
-        confirmLabel={t('email.deleteDomainBtn')}
-        cancelLabel={t('common.cancel')}
-        severity="critical"
-        busy={deleteBusy}
       />
 
       <ConfirmDialog
