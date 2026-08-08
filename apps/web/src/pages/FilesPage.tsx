@@ -533,6 +533,7 @@ export function FilesPage() {
   const [webdavUpdatedAt, setWebdavUpdatedAt] = useState<string | null>(null);
   const [webdavLoaded, setWebdavLoaded] = useState(false);
   const [webdavBusy, setWebdavBusy] = useState(false);
+  const [tab, setTab] = usePageTab(FILE_TABS, 'browse');
 
   const webdavUrl = useMemo(() => {
     if (typeof window === 'undefined') return webdavMountPath || '/webdav';
@@ -1032,8 +1033,6 @@ export function FilesPage() {
   }
 
   const selectedEntries = items.filter((i) => selected.has(i.path));
-
-  const [tab, setTab] = usePageTab(FILE_TABS, 'browse');
 
   return (
     <FeaturePageLayout
