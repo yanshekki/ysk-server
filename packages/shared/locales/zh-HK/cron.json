@@ -123,5 +123,7 @@
   "runAsHintFull": "揀專案用戶會同步上方專案；揀系統用戶則為系統級 定時工作",
   "systemParenFull": "（系統級，未綁專案）",
   "hostOtherLines": "主機非 YSK 行數",
-  "hostOtherLinesVal": "其他 {{other}} 行（主機有效共 {{total}}）"
+  "hostOtherLinesVal": "其他 {{other}} 行（主機有效共 {{total}}）",
+  "deleteTitle": "刪除 Cron 工作？",
+  "deleteDesc": "將刪除「{{name}}」。套用到系統 crontab 前只影響控制面。"
 }

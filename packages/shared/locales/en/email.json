@@ -419,5 +419,17 @@
   "deleteDomain": "Delete domain",
   "deleteDomainConfirmTitle": "Delete email domain?",
   "deleteDomainConfirm": "Deletes {{domain}} and its mailboxes, aliases, and control-plane data. System Postfix/Dovecot config may still need cleanup.",
-  "deleteDomainBtn": "Delete"
+  "deleteDomainBtn": "Delete",
+  "deleteMailbox": "Delete mailbox",
+  "deleteMailboxTitle": "Delete mailbox?",
+  "deleteMailboxDesc": "Deletes {{address}}, control-plane data, and local Maildir if present.",
+  "deleteMailboxC1": "Mailbox login and mail files",
+  "deleteMailboxC2": "Rewrite domain virtual map (control plane)",
+  "deleteMailboxC3": "System Dovecot/Postfix may still need cleanup",
+  "deleteAliasTitle": "Delete alias/forward?",
+  "deleteAliasDesc": "Deletes {{source}}.",
+  "deleteDomainC1": "All mailboxes and aliases",
+  "deleteDomainC2": "Control-plane DKIM/DNS suggestions and flags",
+  "deleteDomainC3": "Local dataDir/email directory if present",
+  "deleteDomainC4": "System MTA maps may remain; clean separately if needed"
 }

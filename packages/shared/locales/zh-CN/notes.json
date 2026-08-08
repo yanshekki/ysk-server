@@ -139,7 +139,10 @@
     "domainDeleted": "已删除域名 {{domain}}（邮箱 {{mailboxes}}、别名 {{aliases}}）",
     "domainDataDirRemoved": "已移除本机数据目录 {{path}}",
     "domainDataDirRemoveFailed": "无法移除数据目录 {{path}}：{{detail}}",
-    "domainDeleteSystemHint": "控制面已删除；系统 MTA 映射若仍存在请重新应用其余域名或手动清理"
+    "domainDeleteSystemHint": "控制面已删除；系统 MTA 映射若仍存在请重新应用其余域名或手动清理",
+    "mailboxDeleted": "已删除邮箱 {{address}}",
+    "mailboxNotFound": "找不到邮箱",
+    "mailboxDataRemoved": "已移除本机目录 {{path}}"
   },
   "agents": {
     "sessionNotFound": "找不到 session：{{sessionId}}"

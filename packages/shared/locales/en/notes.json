@@ -139,7 +139,10 @@
     "domainDeleted": "Deleted domain {{domain}} ({{mailboxes}} mailboxes, {{aliases}} aliases)",
     "domainDataDirRemoved": "Removed local data directory {{path}}",
     "domainDataDirRemoveFailed": "Could not remove data directory {{path}}: {{detail}}",
-    "domainDeleteSystemHint": "Control plane removed; re-apply remaining domains or clean system MTA maps if needed"
+    "domainDeleteSystemHint": "Control plane removed; re-apply remaining domains or clean system MTA maps if needed",
+    "mailboxDeleted": "Deleted mailbox {{address}}",
+    "mailboxNotFound": "Mailbox not found",
+    "mailboxDataRemoved": "Removed local path {{path}}"
   },
   "agents": {
     "sessionNotFound": "Session not found: {{sessionId}}"

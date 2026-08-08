@@ -1,14 +1,20 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { ProjectDto } from '@ysk/shared';
-import { Badge } from '../../../shared/components/ui';
+import { Badge, Button } from '../../../shared/components/ui';
 import { ProjectStatusBadge } from './ProjectStatusBadge';
 
-export function ProjectListItem({ project }: { project: ProjectDto }) {
+export function ProjectListItem({
+  project,
+  onDelete,
+}: {
+  project: ProjectDto;
+  onDelete?: (p: ProjectDto) => void;
+}) {
   const { t } = useTranslation();
   return (
-    <Link to={`/projects/${project.id}`} className="list-row">
-      <div className="list-row__main">
+    <div className="list-row">
+      <Link to={`/projects/${project.id}`} className="list-row__main">
         <div className="list-row__title">
           <span>{project.name}</span>
           <Badge tone="info">{project.runtime}</Badge>
@@ -24,13 +30,26 @@ export function ProjectListItem({ project }: { project: ProjectDto }) {
             <span>{t('projects.neverDeployed')}</span>
           )}
         </div>
-      </div>
+      </Link>
       <div className="list-row__side">
         <ProjectStatusBadge project={project} />
-        <span className="list-row__chevron" aria-hidden>
+        {onDelete ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onDelete(project);
+            }}
+          >
+            {t('common.delete')}
+          </Button>
+        ) : null}
+        <Link to={`/projects/${project.id}`} className="list-row__chevron" aria-hidden>
           ›
-        </span>
+        </Link>
       </div>
-    </Link>
+    </div>
   );
 }

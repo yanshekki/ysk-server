@@ -508,7 +508,11 @@
     "none": "（无）",
     "writeRegionDns": "写入 region 子域名 A/AAAA（如 hkg）",
     "workflowHint": "流程：写入 conf → 套用 edges → 探活+DNS → SSL。项目一键：/cdn?fromProject=项目ID",
-    "healthLoopAll": "全站健康循环"
+    "healthLoopAll": "全站健康循环",
+    "deleteNodeDesc": "将删除 CDN 节点「{{name}}」。",
+    "deleteSiteDesc": "将删除 CDN 站点「{{name}}」。",
+    "deleteSiteC1": "站点策略与边缘关联",
+    "deleteSiteC2": "已下发的 nginx 配置需另行清理或重新应用"
   },
   "cli": {
     "unknownCommand": "未知命令：{{command}}\n执行 `{{cli}} help`",
@@ -1939,7 +1943,9 @@
     "runAsHintFull": "选项目用户会同步上方项目；选系统用户則为系统级 cron",
     "systemParenFull": "（系统级，未綁项目）",
     "hostOtherLines": "主机非 YSK 行数",
-    "hostOtherLinesVal": "其他 {{other}} 行（主机有效共 {{total}}）"
+    "hostOtherLinesVal": "其他 {{other}} 行（主机有效共 {{total}}）",
+    "deleteTitle": "删除 Cron 工作？",
+    "deleteDesc": "将删除「{{name}}」。应用到系统 crontab 前只影响控制面。"
   },
   "dashboard": {
     "title": "控制台",
@@ -2345,7 +2351,11 @@
   },
   "dialogs": {
     "confirmDefault": "确认",
-    "cancelDefault": "取消"
+    "cancelDefault": "取消",
+    "severity": {
+      "consequencesTitle": "将会发生：",
+      "typeToConfirm": "请输入「{{text}}」以确认"
+    }
   },
   "dns": {
     "templates": {
@@ -2976,7 +2986,19 @@
     "deleteDomain": "删除域名",
     "deleteDomainConfirmTitle": "删除邮件域名？",
     "deleteDomainConfirm": "将删除 {{domain}} 及其邮箱、别名与控制面数据。系统 Postfix／Dovecot 配置可能需另行清理。",
-    "deleteDomainBtn": "删除"
+    "deleteDomainBtn": "删除",
+    "deleteMailbox": "删除邮箱",
+    "deleteMailboxTitle": "删除邮箱？",
+    "deleteMailboxDesc": "将删除 {{address}} 及其控制面数据与本机 Maildir（若存在）。",
+    "deleteMailboxC1": "邮箱登录与邮件文件",
+    "deleteMailboxC2": "重写该域 virtual map（控制面）",
+    "deleteMailboxC3": "系统 Dovecot／Postfix 可能仍需另行清理",
+    "deleteAliasTitle": "删除别名／转发？",
+    "deleteAliasDesc": "将删除 {{source}}。",
+    "deleteDomainC1": "所有邮箱与别名",
+    "deleteDomainC2": "控制面 DKIM／DNS 建议与旗标",
+    "deleteDomainC3": "本机 dataDir/email 目录（若存在）",
+    "deleteDomainC4": "系统 MTA 映射可能仍在，需另行清理"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "未授权",
@@ -4381,7 +4403,10 @@
       "domainDeleted": "已删除域名 {{domain}}（邮箱 {{mailboxes}}、别名 {{aliases}}）",
       "domainDataDirRemoved": "已移除本机数据目录 {{path}}",
       "domainDataDirRemoveFailed": "无法移除数据目录 {{path}}：{{detail}}",
-      "domainDeleteSystemHint": "控制面已删除；系统 MTA 映射若仍存在请重新应用其余域名或手动清理"
+      "domainDeleteSystemHint": "控制面已删除；系统 MTA 映射若仍存在请重新应用其余域名或手动清理",
+      "mailboxDeleted": "已删除邮箱 {{address}}",
+      "mailboxNotFound": "找不到邮箱",
+      "mailboxDataRemoved": "已移除本机目录 {{path}}"
     },
     "agents": {
       "sessionNotFound": "找不到 session：{{sessionId}}"

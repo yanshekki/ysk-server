@@ -528,6 +528,99 @@ export class EmailService {
   }
 
   /**
+   * Delete one mailbox from control plane + Maildir best-effort; rewrite maps.
+   */
+  async deleteMailbox(
+    domainId: string,
+    mailboxId: string,
+    actor: string,
+  ): Promise<{
+    ok: boolean;
+    address: string;
+    notes: string[];
+    written: string[];
+  }> {
+    const row = this.get(domainId);
+    const mb = this.db.snapshot.mailboxes.find(
+      (m) => String(m.id) === mailboxId && String(m.domain_id) === domainId,
+    );
+    if (!mb) {
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.email.mailboxNotFound'), {
+        httpStatus: 404,
+      });
+    }
+    const address = String(mb.address ?? '');
+    const notes: string[] = [];
+    const written: string[] = [];
+
+    this.db.snapshot.mailboxes = this.db.snapshot.mailboxes.filter(
+      (m) => !(String(m.id) === mailboxId && String(m.domain_id) === domainId),
+    );
+    this.db.persist();
+    notes.push(tl('notes.email.mailboxDeleted', { address }));
+
+    if (this.dataDir) {
+      const local = String(mb.local_part ?? address.split('@')[0] ?? '');
+      const base = join(this.dataDir, 'email', row.domain, 'mailboxes', local);
+      if (existsSync(base)) {
+        try {
+          rmSync(base, { recursive: true, force: true });
+          written.push(base);
+          notes.push(tl('notes.email.mailboxDataRemoved', { path: base }));
+        } catch {
+          /* best-effort */
+        }
+      }
+      // rewrite virtual_mailbox from remaining
+      const mapDir = join(this.dataDir, 'email', row.domain, 'postfix');
+      mkdirSync(mapDir, { recursive: true });
+      const remaining = this.db.snapshot.mailboxes.filter((m) => m.domain_id === domainId);
+      const vmailbox = remaining
+        .map((m) => {
+          const md =
+            (m.maildir as string) ||
+            join(
+              this.dataDir!,
+              'email',
+              row.domain,
+              'mailboxes',
+              String(m.local_part),
+              'Maildir',
+            );
+          return `${m.address} ${md}/`;
+        })
+        .join('\n');
+      const vpath = join(mapDir, 'virtual_mailbox');
+      writeFileSync(vpath, vmailbox ? vmailbox + '\n' : '', 'utf8');
+      written.push(vpath);
+      try {
+        const { writeDovecotPassdb } = await import('./dovecot-passdb.js');
+        const pd = writeDovecotPassdb({
+          dataDir: this.dataDir,
+          db: this.db,
+          domain: row.domain,
+          domainId,
+        });
+        written.push(...pd.written);
+        notes.push(...pd.notes.slice(0, 3));
+      } catch {
+        /* optional */
+      }
+    }
+    notes.push(tl('notes.email.domainDeleteSystemHint'));
+
+    this.audit?.append({
+      actor,
+      action: 'email.mailbox.delete',
+      resource: address,
+      detail: { id: mailboxId, domainId },
+      ok: true,
+    });
+
+    return { ok: true, address, notes, written };
+  }
+
+  /**
    * Alias / forward / catch-all entries for a domain.
    * type=catchall uses local_part="*" → virtual_alias `@domain dest`
    */

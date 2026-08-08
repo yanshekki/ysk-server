@@ -354,6 +354,14 @@ export function EmailDomainPage() {
   const [flushQueueOpen, setFlushQueueOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteBusy, setDeleteBusy] = useState(false);
+  const [delMailbox, setDelMailbox] = useState<{
+    id: string;
+    address: string;
+  } | null>(null);
+  const [delAlias, setDelAlias] = useState<{
+    id: string;
+    source: string;
+  } | null>(null);
 
   useEffect(() => {
     setAutoreplySubject((prev) => prev || t('email.defaultAutoreplySubject'));
@@ -668,11 +676,29 @@ export function EmailDomainPage() {
                 {mailboxes.length > 0 ? (
                   <ul className="list-plain list-spaced">
                     {mailboxes.map((m) => (
-                      <li key={String(m.id)}>
-                        <code className="inline">{String(m.address)}</code>{' '}
-                        <Badge tone={mailboxStatusTone(m.status)}>
-                          {String(m.status ?? '—')}
-                        </Badge>
+                      <li
+                        key={String(m.id)}
+                        className="u-flex u-justify-between u-items-center"
+                      >
+                        <span>
+                          <code className="inline">{String(m.address)}</code>{' '}
+                          <Badge tone={mailboxStatusTone(m.status)}>
+                            {String(m.status ?? '—')}
+                          </Badge>
+                        </span>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          loading={busy}
+                          onClick={() =>
+                            setDelMailbox({
+                              id: String(m.id),
+                              address: String(m.address),
+                            })
+                          }
+                        >
+                          {t('email.deleteMailbox')}
+                        </Button>
                       </li>
                     ))}
                   </ul>
@@ -763,13 +789,12 @@ export function EmailDomainPage() {
                           variant="danger"
                           size="sm"
                           loading={busy}
-                          onClick={bindBusyMutateList(
-                              withBusy,
-                              () => emailApi.deleteAlias(domain.id, String(a.id)),
-                              setAliasLog,
-                              () => emailApi.listAliases(domain.id),
-                              setAliases,
-                            )}
+                          onClick={() =>
+                            setDelAlias({
+                              id: String(a.id),
+                              source: String(a.source),
+                            })
+                          }
                         >
                           {t('common.delete')}
                         </Button>
@@ -1959,10 +1984,76 @@ export function EmailDomainPage() {
         }}
         title={t('email.deleteDomainConfirmTitle')}
         description={t('email.deleteDomainConfirm', { domain: domain.domain })}
+        consequences={[
+          t('email.deleteDomainC1'),
+          t('email.deleteDomainC2'),
+          t('email.deleteDomainC3'),
+          t('email.deleteDomainC4'),
+        ]}
+        confirmText={domain.domain}
         confirmLabel={t('email.deleteDomainBtn')}
         cancelLabel={t('common.cancel')}
-        danger
+        severity="critical"
         busy={deleteBusy}
+      />
+
+      <ConfirmDialog
+        open={Boolean(delMailbox)}
+        onClose={() => {
+          if (!busy) setDelMailbox(null);
+        }}
+        onConfirm={() => {
+          if (!delMailbox) return;
+          const target = delMailbox;
+          setDelMailbox(null);
+          void withBusy(async () => {
+            try {
+              const r = await emailApi.deleteMailbox(domain.id, target.id);
+              setMboxLog(r);
+              setMailboxes((await emailApi.listMailboxes(domain.id)).items);
+            } catch (e) {
+              setError(e instanceof Error ? e.message : t('common.deleteFailed'));
+            }
+          });
+        }}
+        title={t('email.deleteMailboxTitle')}
+        description={t('email.deleteMailboxDesc', {
+          address: delMailbox?.address ?? '',
+        })}
+        consequences={[
+          t('email.deleteMailboxC1'),
+          t('email.deleteMailboxC2'),
+          t('email.deleteMailboxC3'),
+        ]}
+        confirmLabel={t('email.deleteMailbox')}
+        severity="destructive"
+        busy={busy}
+      />
+
+      <ConfirmDialog
+        open={Boolean(delAlias)}
+        onClose={() => {
+          if (!busy) setDelAlias(null);
+        }}
+        onConfirm={() => {
+          if (!delAlias) return;
+          const target = delAlias;
+          setDelAlias(null);
+          bindBusyMutateList(
+            withBusy,
+            () => emailApi.deleteAlias(domain.id, target.id),
+            setAliasLog,
+            () => emailApi.listAliases(domain.id),
+            setAliases,
+          )();
+        }}
+        title={t('email.deleteAliasTitle')}
+        description={t('email.deleteAliasDesc', {
+          source: delAlias?.source ?? '',
+        })}
+        confirmLabel={t('common.delete')}
+        severity="standard"
+        busy={busy}
       />
     </FeaturePageLayout>
   );

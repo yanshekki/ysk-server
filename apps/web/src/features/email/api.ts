@@ -38,6 +38,11 @@ export const emailApi = {
       method: 'POST',
       body: JSON.stringify(body),
     }),
+  deleteMailbox: (domainId: string, mailboxId: string) =>
+    api.requestRaw<Record<string, unknown>>(
+      `/api/v1/email/domains/${encodeURIComponent(domainId)}/mailboxes/${encodeURIComponent(mailboxId)}`,
+      { method: 'DELETE' },
+    ),
   dovecotPassdb: (domainId: string) =>
     api.requestRaw<Record<string, unknown>>(
       `/api/v1/email/domains/${domainId}/dovecot-passdb`,

@@ -532,6 +532,7 @@ export function SslPage() {
           }}
           title={t('ssl.deleteTitle')}
           description={t('ssl.deleteDesc', { domain: del?.domain ?? '' })}
+          severity="destructive"
           confirmLabel={t('common.delete')}
           cancelLabel={t('common.cancel')}
           danger

@@ -769,6 +769,7 @@ export function FirewallPage() {
         }}
         title={t('firewall.deleteRuleTitle', { n: delRuleNum ?? '' })}
         description={t('firewall.deleteRuleDesc')}
+        severity="standard"
         confirmLabel={t('common.delete')}
         cancelLabel={t('common.cancel')}
         danger

@@ -16,7 +16,8 @@ import {
   FormLayout,
   OpsResultPanel,
   PageTabs,
-  Modal } from '../../shared/components/ui';
+  Modal,
+  ConfirmDialog } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { api } from '../../shared/services/api';
@@ -159,6 +160,7 @@ export function CronPage() {
   const [projects, setProjects] = useState<CronProjectOpt[]>([]);
   const [needsInstallHint, setNeedsInstallHint] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
+  const [delCron, setDelCron] = useState<{ id: string; label: string } | null>(null);
   const { busy, error: actErr, result, msg, run, setMsg } = useFeatureAction();
 
   function openCreate() {
@@ -500,17 +502,10 @@ export function CronPage() {
                             size="sm"
                             loading={busy}
                             onClick={() =>
-                              void run(async () => {
-                                await api.requestRaw(`/api/v1/cron/${job.id}`, {
-                                  method: 'DELETE' });
-                                setNeedsInstallHint(true);
-                                await refresh();
-                                return {
-                                  ok: true,
-                                  notes: [
-                                    t('cron.deletedManage'),
-                                  ] };
-                              }, t('redis.deleted'))
+                              setDelCron({
+                                id: job.id,
+                                label: String(job.command || job.schedule || job.id),
+                              })
                             }
                           >
                             {t('common.delete')}
@@ -803,6 +798,32 @@ export function CronPage() {
           </p>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        open={Boolean(delCron)}
+        onClose={() => {
+          if (!busy) setDelCron(null);
+        }}
+        onConfirm={() => {
+          if (!delCron) return;
+          const id = delCron.id;
+          setDelCron(null);
+          void run(async () => {
+            await api.requestRaw(`/api/v1/cron/${id}`, { method: 'DELETE' });
+            setNeedsInstallHint(true);
+            await refresh();
+            return {
+              ok: true,
+              notes: [t('cron.deletedManage')],
+            };
+          }, t('redis.deleted'));
+        }}
+        title={t('cron.deleteTitle')}
+        description={t('cron.deleteDesc', { name: delCron?.label ?? '' })}
+        confirmLabel={t('common.delete')}
+        severity="standard"
+        busy={busy}
+      />
     </FeaturePageLayout>
   );
 }

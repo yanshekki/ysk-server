@@ -111,5 +111,9 @@
   "none": "（无）",
   "writeRegionDns": "写入 region 子域名 A/AAAA（如 hkg）",
   "workflowHint": "流程：写入 conf → 套用 edges → 探活+DNS → SSL。项目一键：/cdn?fromProject=项目ID",
-  "healthLoopAll": "全站健康循环"
+  "healthLoopAll": "全站健康循环",
+  "deleteNodeDesc": "将删除 CDN 节点「{{name}}」。",
+  "deleteSiteDesc": "将删除 CDN 站点「{{name}}」。",
+  "deleteSiteC1": "站点策略与边缘关联",
+  "deleteSiteC2": "已下发的 nginx 配置需另行清理或重新应用"
 }

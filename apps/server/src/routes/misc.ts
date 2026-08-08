@@ -1169,6 +1169,25 @@ export async function handleMiscRoutes(
         sendOpsResult(res, result);
         return true;
       }
+      if (
+        method === 'DELETE' &&
+        url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+\/mailboxes\/[^/]+$/)
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const parts = url.pathname.split('/');
+        const domainId = parts[5] ?? '';
+        const mailboxId = parts[7] ?? '';
+        const result = await ctx.email.deleteMailbox(domainId, mailboxId, user.username);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'email.mailbox.delete',
+          resource: result.address,
+          detail: { domainId, mailboxId },
+          ok: result.ok,
+        });
+        sendOpsResult(res, result);
+        return true;
+      }
       if (method === 'GET' && url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+\/aliases$/)) {
         ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[5];

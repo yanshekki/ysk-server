@@ -123,5 +123,7 @@
   "runAsHintFull": "Project user syncs project above; system user = system-level cron",
   "systemParenFull": "(system-level, unbound)",
   "hostOtherLines": "Host non-YSK lines",
-  "hostOtherLinesVal": "{{other}} other ({{total}} host job lines)"
+  "hostOtherLinesVal": "{{other}} other ({{total}} host job lines)",
+  "deleteTitle": "Delete cron job?",
+  "deleteDesc": "Deletes \"{{name}}\". Only control-plane until applied to system crontab."
 }

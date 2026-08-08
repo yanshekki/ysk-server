@@ -673,6 +673,7 @@ export function FtpPage() {
         onConfirm={bindRemoveIf(delId, crud.remove, setDelId)}
         title={t('ftp.deleteAccountTitle')}
         description={t('ftp.deleteAccountDesc')}
+        severity="standard"
         confirmLabel={t('common.delete')}
         cancelLabel={t('common.cancel')}
         danger
@@ -696,6 +697,7 @@ export function FtpPage() {
         }}
         title={t('ftp.deleteKeyTitle')}
         description={t('ftp.deleteKeyDesc')}
+        severity="standard"
         confirmLabel={t('common.delete')}
         cancelLabel={t('common.cancel')}
         danger

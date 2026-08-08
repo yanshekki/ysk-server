@@ -19,7 +19,7 @@ export { Modal } from './Modal';
 export type { ModalProps } from './Modal';
 
 export { ConfirmDialog } from './ConfirmDialog';
-export type { ConfirmDialogProps } from './ConfirmDialog';
+export type { ConfirmDialogProps, ConfirmSeverity } from './ConfirmDialog';
 
 export { SqlEngineSwitchDialog } from './SqlEngineSwitchDialog';
 export type { SqlEngineSwitchDialogProps } from './SqlEngineSwitchDialog';

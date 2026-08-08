@@ -508,7 +508,11 @@
     "none": "(none)",
     "writeRegionDns": "Write region subdomain A/AAAA (e.g. hkg)",
     "workflowHint": "Flow: write conf → apply edges → probe+DNS → SSL",
-    "healthLoopAll": "Health loop all sites"
+    "healthLoopAll": "Health loop all sites",
+    "deleteNodeDesc": "Deletes CDN node \"{{name}}\".",
+    "deleteSiteDesc": "Deletes CDN site \"{{name}}\".",
+    "deleteSiteC1": "Site policy and edge associations",
+    "deleteSiteC2": "Applied nginx configs may need separate cleanup or re-apply"
   },
   "cli": {
     "unknownCommand": "Unknown command: {{command}}\nRun `{{cli}} help`",
@@ -1939,7 +1943,9 @@
     "runAsHintFull": "Project user syncs project above; system user = system-level cron",
     "systemParenFull": "(system-level, unbound)",
     "hostOtherLines": "Host non-YSK lines",
-    "hostOtherLinesVal": "{{other}} other ({{total}} host job lines)"
+    "hostOtherLinesVal": "{{other}} other ({{total}} host job lines)",
+    "deleteTitle": "Delete cron job?",
+    "deleteDesc": "Deletes \"{{name}}\". Only control-plane until applied to system crontab."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -2345,7 +2351,11 @@
   },
   "dialogs": {
     "confirmDefault": "Confirm",
-    "cancelDefault": "Cancel"
+    "cancelDefault": "Cancel",
+    "severity": {
+      "consequencesTitle": "This will:",
+      "typeToConfirm": "Type \"{{text}}\" to confirm"
+    }
   },
   "dns": {
     "templates": {
@@ -2976,7 +2986,19 @@
     "deleteDomain": "Delete domain",
     "deleteDomainConfirmTitle": "Delete email domain?",
     "deleteDomainConfirm": "Deletes {{domain}} and its mailboxes, aliases, and control-plane data. System Postfix/Dovecot config may still need cleanup.",
-    "deleteDomainBtn": "Delete"
+    "deleteDomainBtn": "Delete",
+    "deleteMailbox": "Delete mailbox",
+    "deleteMailboxTitle": "Delete mailbox?",
+    "deleteMailboxDesc": "Deletes {{address}}, control-plane data, and local Maildir if present.",
+    "deleteMailboxC1": "Mailbox login and mail files",
+    "deleteMailboxC2": "Rewrite domain virtual map (control plane)",
+    "deleteMailboxC3": "System Dovecot/Postfix may still need cleanup",
+    "deleteAliasTitle": "Delete alias/forward?",
+    "deleteAliasDesc": "Deletes {{source}}.",
+    "deleteDomainC1": "All mailboxes and aliases",
+    "deleteDomainC2": "Control-plane DKIM/DNS suggestions and flags",
+    "deleteDomainC3": "Local dataDir/email directory if present",
+    "deleteDomainC4": "System MTA maps may remain; clean separately if needed"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "Unauthorized",
@@ -4381,7 +4403,10 @@
       "domainDeleted": "Deleted domain {{domain}} ({{mailboxes}} mailboxes, {{aliases}} aliases)",
       "domainDataDirRemoved": "Removed local data directory {{path}}",
       "domainDataDirRemoveFailed": "Could not remove data directory {{path}}: {{detail}}",
-      "domainDeleteSystemHint": "Control plane removed; re-apply remaining domains or clean system MTA maps if needed"
+      "domainDeleteSystemHint": "Control plane removed; re-apply remaining domains or clean system MTA maps if needed",
+      "mailboxDeleted": "Deleted mailbox {{address}}",
+      "mailboxNotFound": "Mailbox not found",
+      "mailboxDataRemoved": "Removed local path {{path}}"
     },
     "agents": {
       "sessionNotFound": "Session not found: {{sessionId}}"

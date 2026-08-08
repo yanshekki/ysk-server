@@ -1905,6 +1905,7 @@ export function DnsPage() {
         }}
         title={t('dns.deleteZoneTitle')}
         description={t('dns.deleteZoneDesc')}
+        severity="destructive"
         confirmLabel={t('common.delete')}
         cancelLabel={t('common.cancel')}
         danger
@@ -1916,6 +1917,7 @@ export function DnsPage() {
         onConfirm={bindRemoveIf(delRec, records.remove, setDelRec)}
         title={t('dns.deleteRecordTitle')}
         description={t('dns.deleteRecordDesc')}
+        severity="standard"
         confirmLabel={t('common.delete')}
         cancelLabel={t('common.cancel')}
         danger

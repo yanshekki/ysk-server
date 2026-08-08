@@ -1052,6 +1052,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         onConfirm={bindRemoveIf(delDb, dbs.remove, setDelDb)}
         title={t('db.deleteDbTitle')}
         description={t('db.deleteDbDesc')}
+        severity="destructive"
         confirmLabel={t('common.delete')}
         cancelLabel={t('common.cancel')}
         danger
@@ -1063,6 +1064,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         onConfirm={bindRemoveIf(delUser, users.remove, setDelUser)}
         title={t('db.deleteUserTitle')}
         description={t('db.deleteUserDesc')}
+        severity="standard"
         confirmLabel={t('common.delete')}
         cancelLabel={t('common.cancel')}
         danger

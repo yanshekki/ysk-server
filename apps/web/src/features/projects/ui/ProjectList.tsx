@@ -6,16 +6,22 @@ export interface ProjectListProps {
   items: ProjectDto[];
   emptyTitle: string;
   emptyDescription?: string;
+  onDelete?: (p: ProjectDto) => void;
 }
 
-export function ProjectList({ items, emptyTitle, emptyDescription }: ProjectListProps) {
+export function ProjectList({
+  items,
+  emptyTitle,
+  emptyDescription,
+  onDelete,
+}: ProjectListProps) {
   if (items.length === 0) {
     return <EmptyState title={emptyTitle} description={emptyDescription} />;
   }
   return (
     <div className="list-panel" role="list">
       {items.map((p) => (
-        <ProjectListItem key={p.id} project={p} />
+        <ProjectListItem key={p.id} project={p} onDelete={onDelete} />
       ))}
     </div>
   );

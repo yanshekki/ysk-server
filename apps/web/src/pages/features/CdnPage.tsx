@@ -19,6 +19,7 @@ import {
   FormHint,
   FormLayout,
   Modal,
+  ConfirmDialog,
   PageGuide,
   PageTabs,
   ServerListFilters,
@@ -372,6 +373,8 @@ export function CdnPage() {
   const nodes = nodeList.items;
   const sites = siteList.items;
   const [busy, setBusy] = useState(false);
+  const [delNode, setDelNode] = useState<{ id: string; name: string } | null>(null);
+  const [delSite, setDelSite] = useState<{ id: string; name: string } | null>(null);
   /** Toast-backed feedback (errors must not use ok toast). */
   const setMsg = useCallback((text: string | null) => {
     if (!text) return;
@@ -711,7 +714,6 @@ export function CdnPage() {
   }
 
   async function onDeleteNode(id: string) {
-    if (!window.confirm(t('cdn.confirmDeleteNode'))) return;
     setBusy(true);
     try {
       await api.requestRaw(`/api/v1/cdn/nodes/${encodeURIComponent(id)}`, {
@@ -726,7 +728,6 @@ export function CdnPage() {
   }
 
   async function onDeleteSite(id: string) {
-    if (!window.confirm(t('cdn.confirmDeleteSite'))) return;
     setBusy(true);
     try {
       await api.requestRaw(`/api/v1/cdn/sites/${encodeURIComponent(id)}`, {
@@ -975,7 +976,9 @@ export function CdnPage() {
                         variant="ghost"
                         size="sm"
                         loading={busy}
-                        onClick={bindCall1(onDeleteNode, n.id)}
+                        onClick={() =>
+                          setDelNode({ id: n.id, name: String(n.name || n.id) })
+                        }
                       >
                         {t('common.delete')}
                       </Button>
@@ -1197,7 +1200,9 @@ export function CdnPage() {
                         variant="ghost"
                         size="sm"
                         loading={busy}
-                        onClick={bindCall1(onDeleteSite, s.id)}
+                        onClick={() =>
+                          setDelSite({ id: s.id, name: String(s.name || s.id) })
+                        }
                       >
                         {t('common.delete')}
                       </Button>
@@ -1772,6 +1777,45 @@ export function CdnPage() {
             {t('cdn.workflowHint')}</FormHint>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        open={Boolean(delNode)}
+        onClose={() => {
+          if (!busy) setDelNode(null);
+        }}
+        onConfirm={() => {
+          if (!delNode) return;
+          const id = delNode.id;
+          setDelNode(null);
+          void onDeleteNode(id);
+        }}
+        title={t('cdn.confirmDeleteNode')}
+        description={t('cdn.deleteNodeDesc', { name: delNode?.name ?? '' })}
+        confirmLabel={t('common.delete')}
+        severity="standard"
+        busy={busy}
+      />
+      <ConfirmDialog
+        open={Boolean(delSite)}
+        onClose={() => {
+          if (!busy) setDelSite(null);
+        }}
+        onConfirm={() => {
+          if (!delSite) return;
+          const id = delSite.id;
+          setDelSite(null);
+          void onDeleteSite(id);
+        }}
+        title={t('cdn.confirmDeleteSite')}
+        description={t('cdn.deleteSiteDesc', { name: delSite?.name ?? '' })}
+        consequences={[
+          t('cdn.deleteSiteC1'),
+          t('cdn.deleteSiteC2'),
+        ]}
+        confirmLabel={t('common.delete')}
+        severity="destructive"
+        busy={busy}
+      />
     </FeaturePageLayout>
   );
 }

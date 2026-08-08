@@ -1,4 +1,8 @@
 {
   "confirmDefault": "确认",
-  "cancelDefault": "取消"
+  "cancelDefault": "取消",
+  "severity": {
+    "consequencesTitle": "将会发生：",
+    "typeToConfirm": "请输入「{{text}}」以确认"
+  }
 }

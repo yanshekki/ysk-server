@@ -111,5 +111,9 @@
   "none": "(none)",
   "writeRegionDns": "Write region subdomain A/AAAA (e.g. hkg)",
   "workflowHint": "Flow: write conf → apply edges → probe+DNS → SSL",
-  "healthLoopAll": "Health loop all sites"
+  "healthLoopAll": "Health loop all sites",
+  "deleteNodeDesc": "Deletes CDN node \"{{name}}\".",
+  "deleteSiteDesc": "Deletes CDN site \"{{name}}\".",
+  "deleteSiteC1": "Site policy and edge associations",
+  "deleteSiteC2": "Applied nginx configs may need separate cleanup or re-apply"
 }

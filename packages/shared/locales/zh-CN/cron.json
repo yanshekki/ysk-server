@@ -123,5 +123,7 @@
   "runAsHintFull": "选项目用户会同步上方项目；选系统用户則为系统级 cron",
   "systemParenFull": "（系统级，未綁项目）",
   "hostOtherLines": "主机非 YSK 行数",
-  "hostOtherLinesVal": "其他 {{other}} 行（主机有效共 {{total}}）"
+  "hostOtherLinesVal": "其他 {{other}} 行（主机有效共 {{total}}）",
+  "deleteTitle": "删除 Cron 工作？",
+  "deleteDesc": "将删除「{{name}}」。应用到系统 crontab 前只影响控制面。"
 }

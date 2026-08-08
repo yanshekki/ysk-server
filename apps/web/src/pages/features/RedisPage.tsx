@@ -575,6 +575,7 @@ export function RedisPage() {
         onConfirm={onDeleteKey}
         title={t('redis.deleteKeyTitle')}
         description={t('redis.deleteKeyDesc', { db, key: delKey })}
+        severity="standard"
         confirmLabel={t('common.delete')}
         cancelLabel={t('common.cancel')}
         danger

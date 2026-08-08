@@ -1259,7 +1259,7 @@ export function BackupsPage() {
         description={deleteTarget ? t('backups.deleteDesc', { name: deleteTarget.name }) : ''}
         confirmLabel={t('common.delete')}
         cancelLabel={t('common.cancel')}
-        danger
+        severity="destructive"
         busy={busy}
       />
 

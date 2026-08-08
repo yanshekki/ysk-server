@@ -559,9 +559,16 @@ export function EmailPage() {
         description={t('email.deleteDomainConfirm', {
           domain: deleteTarget?.domain ?? '',
         })}
+        consequences={[
+          t('email.deleteDomainC1'),
+          t('email.deleteDomainC2'),
+          t('email.deleteDomainC3'),
+          t('email.deleteDomainC4'),
+        ]}
+        confirmText={deleteTarget?.domain}
         confirmLabel={t('email.deleteDomainBtn')}
         cancelLabel={t('common.cancel')}
-        danger
+        severity="critical"
         busy={deleteBusy}
       />
 

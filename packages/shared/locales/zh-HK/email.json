@@ -419,5 +419,17 @@
   "deleteDomain": "刪除域名",
   "deleteDomainConfirmTitle": "刪除郵件域名？",
   "deleteDomainConfirm": "將刪除 {{domain}} 及其信箱、別名與控制面資料。系統 Postfix／Dovecot 設定可能需另行清理。",
-  "deleteDomainBtn": "刪除"
+  "deleteDomainBtn": "刪除",
+  "deleteMailbox": "刪除信箱",
+  "deleteMailboxTitle": "刪除信箱？",
+  "deleteMailboxDesc": "將刪除 {{address}} 及其控制面資料與本機 Maildir（若存在）。",
+  "deleteMailboxC1": "信箱登入與郵件檔",
+  "deleteMailboxC2": "重寫該域 virtual map（控制面）",
+  "deleteMailboxC3": "系統 Dovecot／Postfix 可能仍需另行清理",
+  "deleteAliasTitle": "刪除別名／轉寄？",
+  "deleteAliasDesc": "將刪除 {{source}}。",
+  "deleteDomainC1": "所有信箱與別名",
+  "deleteDomainC2": "控制面 DKIM／DNS 建議與旗標",
+  "deleteDomainC3": "本機 dataDir/email 目錄（若存在）",
+  "deleteDomainC4": "系統 MTA 映射可能仍在，需另行清理"
 }

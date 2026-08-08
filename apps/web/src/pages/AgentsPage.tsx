@@ -934,7 +934,7 @@ intervalMs: 5000`}
         description={t('agents.deleteDesc')}
         confirmLabel={t('common.delete')}
         cancelLabel={t('common.cancel')}
-        danger
+        severity="standard"
         onConfirm={() => {
           const a = delAgent;
           setDelAgent(null);

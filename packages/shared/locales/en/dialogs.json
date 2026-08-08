@@ -1,4 +1,8 @@
 {
   "confirmDefault": "Confirm",
-  "cancelDefault": "Cancel"
+  "cancelDefault": "Cancel",
+  "severity": {
+    "consequencesTitle": "This will:",
+    "typeToConfirm": "Type \"{{text}}\" to confirm"
+  }
 }
