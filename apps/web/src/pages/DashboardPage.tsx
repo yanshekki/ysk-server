@@ -664,14 +664,23 @@ export function DashboardPage() {
                         </div>
                       ) : (
                         <ul className="dash-kpi__audit">
-                          {audit.slice(0, 5).map((a) => (
-                            <li key={String(a.id)}>
-                              <code className="inline">{String(a.action)}</code>
-                              <time className="dash-kpi__time">
-                                {String(a.created_at).replace('T', ' ').slice(5, 19)}
-                              </time>
-                            </li>
-                          ))}
+                          {audit.slice(0, 5).map((a) => {
+                            const action = String(a.action ?? '');
+                            const actionKey = `audit.actions.${action}`;
+                            const actionLabel = t(actionKey, {
+                              defaultValue: action,
+                            });
+                            return (
+                              <li key={String(a.id)}>
+                                <span className="inline" title={action}>
+                                  {actionLabel === actionKey ? action : actionLabel}
+                                </span>
+                                <time className="dash-kpi__time">
+                                  {String(a.created_at).replace('T', ' ').slice(5, 19)}
+                                </time>
+                              </li>
+                            );
+                          })}
                         </ul>
                       )}
                     </div>

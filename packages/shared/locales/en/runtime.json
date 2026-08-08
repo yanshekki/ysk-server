@@ -143,7 +143,7 @@
   "unsupported": "Unsupported",
   "tuneSaved": "Tuning saved",
   "nodeDetectedHint": "Node detected on host; reinstall follows privileges and may overwrite.",
-  "nodeProbeAfter": "After install, Re-probe to confirm PATH and version.",
+  "nodeProbeAfter": "After install, re-probe to confirm PATH and version.",
   "installNodeVBtn": "Install Node {{version}}",
   "installPhpVBtn": "Install PHP {{version}}",
   "phpIniSteps1": "Design global values on the php.ini tab and save",
@@ -454,5 +454,11 @@
     "pm2OnlyDesc": "Only apps started with PM2 under the panel user. systemd deploys appear above."
   },
   "recordedInstalled": "Recorded {{v}}",
-  "remoteSourceSuffix": " ({{source}})"
+  "remoteSourceSuffix": " ({{source}})",
+  "nodePathYskMissingTitle": "Managed Node path not ready",
+  "nodePathYskMissing": "YSK-managed Node for version {{version}} is not ready. Re-probe or reinstall.",
+  "nodePathUnsafeTitle": "Node path is unsafe",
+  "nodePathUnsafe": "Path {{path}} is outside the managed tree; project deploys may fail.",
+  "recordedButProbeEmpty": "Panel recorded install {{v}}, but the host probe found no binary. Not installed — re-probe or reinstall.",
+  "tabTuning": "Tuning"
 }

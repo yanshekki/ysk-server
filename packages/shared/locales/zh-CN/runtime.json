@@ -10,7 +10,7 @@
   "installNode": "安装 Node.js",
   "needExecuteAdmin": "需系统变更权限与管理员",
   "nodeMajor": "Node 主版本",
-  "nodeMajorHint": "LTS 建议 20 或 22；与项目 runtime 对齐",
+  "nodeMajorHint": "LTS 建议 20 或 22；与项目运行时对齐",
   "installedNode": "已安装 Node {{version}}",
   "installPm2": "安装 PM2",
   "installPm2Desc": "一键 npm install -g pm2（项目进程管理）。需先有 Node.js。",
@@ -120,7 +120,7 @@
   "tune": "调校",
   "loadedShort": "已载",
   "host": "主机",
-  "tabOverviewInstall": "总览 / 安装",
+  "tabOverviewInstall": "总览／安装",
   "tabTune": "执行调校",
   "probeReadonlyInstall": "只读 · 安装成功后请再探测确认",
   "hostDefault": "主机预设",
@@ -142,8 +142,8 @@
   "envPreviewDesc": "保存后／上次加载的合併结果",
   "unsupported": "不支持",
   "tuneSaved": "已保存调校",
-  "nodeDetectedHint": "主机上已偵测到 Node；重装会依权限执行，可能覆蓋现有安装。",
-  "nodeProbeAfter": "安装完成后请再「重新探测」确认 PATH 与版本。",
+  "nodeDetectedHint": "主机上已检测到 Node；重装会按权限执行，可能覆盖现有安装。",
+  "nodeProbeAfter": "安装完成后请再「重新探测」确认路径与版本。",
   "installNodeVBtn": "安装 Node {{version}}",
   "installPhpVBtn": "安装 PHP {{version}}",
   "phpIniSteps1": "在 php.ini 分页设计全局数值并保存",
@@ -454,5 +454,11 @@
     "pm2OnlyDesc": "仅显示 panel 用户用 PM2 启动的进程。systemd 部署见上方项目表。"
   },
   "recordedInstalled": "记录已装 {{v}}",
-  "remoteSourceSuffix": "（{{source}}）"
+  "remoteSourceSuffix": "（{{source}}）",
+  "nodePathYskMissingTitle": "受管 Node 路径未就绪",
+  "nodePathYskMissing": "版本 {{version}} 的 YSK 受管 Node 尚未就绪。请重新探测或重新安装。",
+  "nodePathUnsafeTitle": "Node 路径不安全",
+  "nodePathUnsafe": "当前路径 {{path}} 不在受管目录；项目部署可能失败。",
+  "recordedButProbeEmpty": "控制面曾记录安装 {{v}}，但主机探测未见可执行文件。不算已安装——请「重新探测」或重新安装。",
+  "tabTuning": "调校"
 }

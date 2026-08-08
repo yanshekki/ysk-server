@@ -30,23 +30,50 @@
     "stopped": "Stopped"
   },
   "badge": {
-    "update": "Update available"
+    "update": "Update available",
+    "upToDate": "Up to date"
   },
   "meta": {
     "installed": "Installed: {{list}}",
     "default": "Default {{v}}",
     "remote": "Upstream ~{{v}}",
-    "openManage": "Open manage page to install or configure"
+    "openManage": "Open manage page to install or configure",
+    "aptCurrentLatest": "Installed {{v}} · repo is latest",
+    "aptVersion": "Installed {{v}}",
+    "aptUpgrade": "{{from}} → {{to}} available",
+    "aptUpgradeMulti": "{{n}} packages upgradable: {{list}}",
+    "aptNotInstalled": "Package not installed (open manage page to install)",
+    "hostUpgradable": "~{{n}} upgradable packages on host",
+    "checking": "Checking versions… or open manage page"
   },
   "action": {
     "manage": "Manage",
     "useInProject": "Use in project",
     "useInProjectTitle": "Open projects — set this runtime on an app",
     "update": "Update",
-    "updateTitle": "Install or switch to {{v}}"
+    "updateTitle": "Install or switch to {{v}}",
+    "updateTo": "Update to {{v}}",
+    "installVersion": "Install {{v}}"
   },
   "apply": {
     "blockedShort": "Blocked",
-    "failedShort": "Failed"
+    "failedShort": "Failed",
+    "failed": "Install incomplete",
+    "blocked": "Blocked",
+    "confirm": "Confirm install",
+    "confirmTitle": "Confirm software install?",
+    "confirmBody": "Install/update {{pkg}}: {{from}} → {{to}}. Needs system-change rights.",
+    "ok": "Applied {{pkg}}"
+  },
+  "version": {
+    "loading": "Loading versions…",
+    "installed": "Installed",
+    "latest": "Latest",
+    "upToDate": "Up to date / repo latest",
+    "refresh": "Recheck latest",
+    "pick": "Pick version",
+    "noTarget": "No update target",
+    "needRuntimePage": "Install this version on the runtime page",
+    "noAptCandidate": "No apt candidate version"
   }
 }

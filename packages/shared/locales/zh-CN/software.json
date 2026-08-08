@@ -30,23 +30,50 @@
     "stopped": "已停止"
   },
   "badge": {
-    "update": "有新版本"
+    "update": "有新版本",
+    "upToDate": "已是最新"
   },
   "meta": {
     "installed": "已装：{{list}}",
     "default": "默认 {{v}}",
     "remote": "上游约 {{v}}",
-    "openManage": "打开管理页安装或设置"
+    "openManage": "打开管理页安装或配置",
+    "aptCurrentLatest": "已装 {{v}} · 已是仓库最新",
+    "aptVersion": "已装 {{v}}",
+    "aptUpgrade": "{{from}} → {{to}} 可升级",
+    "aptUpgradeMulti": "{{n}} 个软件包可升级：{{list}}",
+    "aptNotInstalled": "系统未安装此软件包（可到管理页安装）",
+    "hostUpgradable": "主机约 {{n}} 个可升级软件包",
+    "checking": "正在检查版本…或打开管理页配置"
   },
   "action": {
     "manage": "管理",
     "useInProject": "用到项目",
     "useInProjectTitle": "到项目页，可将此 runtime 用于应用",
     "update": "更新",
-    "updateTitle": "前往安装／切换至 {{v}}"
+    "updateTitle": "前往安装／切换至 {{v}}",
+    "updateTo": "更新至 {{v}}",
+    "installVersion": "安装 {{v}}"
   },
   "apply": {
     "blockedShort": "被阻挡",
-    "failedShort": "失败"
+    "failedShort": "失败",
+    "failed": "安装未完成",
+    "blocked": "被阻挡",
+    "confirm": "确认安装",
+    "confirmTitle": "确认安装软件？",
+    "confirmBody": "将安装／更新 {{pkg}}：{{from}} → {{to}}。需系统变更权限。",
+    "ok": "已应用 {{pkg}}"
+  },
+  "version": {
+    "loading": "加载版本中…",
+    "installed": "已装",
+    "latest": "最新",
+    "upToDate": "已是最新／仓库最新",
+    "refresh": "重新检查最新",
+    "pick": "选择版本",
+    "noTarget": "没有可更新版本",
+    "needRuntimePage": "请在运行环境页安装此版本",
+    "noAptCandidate": "没有可用的 apt 候选版本"
   }
 }

@@ -204,6 +204,24 @@
     "issued": "已簽發",
     "missing": "檔案缺失"
   },
+  "audit": {
+    "recent": "最近稽核",
+    "lastN": "最近 {{n}} 筆",
+    "actions": {
+      "protection.change": "防護設定變更",
+      "auth.locale": "介面語言變更",
+      "auth.login": "登入",
+      "auth.logout": "登出",
+      "system.firewall.allow_port": "防火牆允許埠",
+      "system.firewall.deny": "防火牆拒絕 IP",
+      "system.firewall.apply": "防火牆套用",
+      "project.deploy": "專案部署",
+      "project.create": "建立專案",
+      "project.delete": "刪除專案",
+      "ssl.request": "申請 SSL",
+      "ssl.upload": "上載 SSL"
+    }
+  },
   "backups": {
     "settingsSaved": "已儲存備份設定",
     "saveFailed": "儲存失敗",
@@ -8200,14 +8218,14 @@
     "probe": "探測",
     "read": "已讀取",
     "targetVersion": "目標版本",
-    "nodeMissing": "節點.js 尚未安裝",
+    "nodeMissing": "Node.js 尚未安裝",
     "probeResult": "探測結果",
     "readonly": "唯讀",
-    "installNode": "安裝 節點.js",
+    "installNode": "安裝 Node.js",
     "needExecuteAdmin": "需系統變更權限與管理員",
-    "nodeMajor": "節點 主版本",
-    "nodeMajorHint": "LTS 建議 20 或 22；與專案 運行時 對齊",
-    "installedNode": "已安裝 節點 {{version}}",
+    "nodeMajor": "Node 主版本",
+    "nodeMajorHint": "LTS 建議 20 或 22；與專案運行時對齊",
+    "installedNode": "已安裝 Node {{version}}",
     "installPm2": "安裝 PM2",
     "installPm2Desc": "一鍵 npm install -g pm2（專案進程管理）。需先有 Node.js。",
     "installPm2Btn": "一鍵安裝 PM2",
@@ -8313,7 +8331,7 @@
     "notFound": "未找到",
     "available": "可用",
     "moduleCount": "模組數",
-    "installNodeV": "安裝 節點 {{v}}",
+    "installNodeV": "安裝 Node {{v}}",
     "installPhpV": "安裝 PHP {{v}}",
     "installPythonV": "安裝 Python {{v}}",
     "installGoV": "安裝 Go {{v}}",
@@ -8328,7 +8346,7 @@
     "tune": "調校",
     "loadedShort": "已載",
     "host": "主機",
-    "tabOverviewInstall": "總覽 / 安裝",
+    "tabOverviewInstall": "總覽／安裝",
     "tabTune": "執行調校",
     "probeReadonlyInstall": "唯讀 · 安裝成功後請再探測確認",
     "hostDefault": "主機預設",
@@ -8350,9 +8368,9 @@
     "envPreviewDesc": "儲存後／上次載入的合併結果",
     "unsupported": "不支援",
     "tuneSaved": "已儲存調校",
-    "nodeDetectedHint": "主機上已偵測到 節點；重裝會依權限執行，可能覆蓋現有安裝。",
-    "nodeProbeAfter": "安裝完成後請再「重新探測」確認 路徑 與版本。",
-    "installNodeVBtn": "安裝 節點 {{version}}",
+    "nodeDetectedHint": "主機上已偵測到 Node；重裝會依權限執行，可能覆蓋現有安裝。",
+    "nodeProbeAfter": "安裝完成後請再「重新探測」確認路徑與版本。",
+    "installNodeVBtn": "安裝 Node {{version}}",
     "installPhpVBtn": "安裝 PHP {{version}}",
     "phpIniSteps1": "在 php.ini 分頁設計全域數值並儲存",
     "phpIniSteps2": "可選：套用到系統（寫入 /etc/php/…/conf.d，需要管理員權限）",
@@ -8371,7 +8389,7 @@
     "applyPhpVhost": "套用 PHP vhost / 程序池",
     "reprobeTools": "重新探測工具",
     "pressReprobe": "按「重新探測工具」載入",
-    "installNodeLabel": "安裝 節點 {{v}}",
+    "installNodeLabel": "安裝 Node {{v}}",
     "installPhpLabel": "安裝 PHP {{v}}",
     "installPythonLabel": "安裝 Python {{v}}",
     "installGoLabel": "安裝 Go {{v}}",
@@ -8650,7 +8668,13 @@
       "pm2OnlyDesc": "只顯示 panel 用戶用 PM2 啟動的程序。systemd 部署見上方專案表。"
     },
     "recordedInstalled": "記錄已裝 {{v}}",
-    "remoteSourceSuffix": "（{{source}}）"
+    "remoteSourceSuffix": "（{{source}}）",
+    "nodePathYskMissingTitle": "受管 Node 路徑未就緒",
+    "nodePathYskMissing": "版本 {{version}} 的 YSK 受管 Node 尚未就緒。請重新探測或重新安裝。",
+    "nodePathUnsafeTitle": "Node 路徑不安全",
+    "nodePathUnsafe": "目前路徑 {{path}} 不在受管目錄；專案部署可能失敗。",
+    "recordedButProbeEmpty": "控制面曾記錄安裝 {{v}}，但主機探測未見執行檔。不算已安裝——請「重新探測」或重新安裝。",
+    "tabTuning": "調校"
   },
   "security": {
     "title": "帳號安全",
@@ -9118,24 +9142,51 @@
       "stopped": "已停止"
     },
     "badge": {
-      "update": "有新版本"
+      "update": "有新版本",
+      "upToDate": "已是最新"
     },
     "meta": {
       "installed": "已裝：{{list}}",
       "default": "預設 {{v}}",
       "remote": "上游約 {{v}}",
-      "openManage": "開啟管理頁安裝或設定"
+      "openManage": "開啟管理頁安裝或設定",
+      "aptCurrentLatest": "已裝 {{v}} · 已是倉庫最新",
+      "aptVersion": "已裝 {{v}}",
+      "aptUpgrade": "{{from}} → {{to}} 可升級",
+      "aptUpgradeMulti": "{{n}} 個套件可升級：{{list}}",
+      "aptNotInstalled": "系統未安裝此套件（可到管理頁安裝）",
+      "hostUpgradable": "主機約 {{n}} 個可升級套件",
+      "checking": "正在檢查版本…或開啟管理頁設定"
     },
     "action": {
       "manage": "管理",
       "useInProject": "用到專案",
       "useInProjectTitle": "到專案頁，可將此 runtime 用於應用",
       "update": "更新",
-      "updateTitle": "前往安裝／切換至 {{v}}"
+      "updateTitle": "前往安裝／切換至 {{v}}",
+      "updateTo": "更新至 {{v}}",
+      "installVersion": "安裝 {{v}}"
     },
     "apply": {
       "blockedShort": "被阻擋",
-      "failedShort": "失敗"
+      "failedShort": "失敗",
+      "failed": "安裝未完成",
+      "blocked": "被阻擋",
+      "confirm": "確認安裝",
+      "confirmTitle": "確認安裝軟件？",
+      "confirmBody": "將安裝／更新 {{pkg}}：{{from}} → {{to}}。需系統變更權限。",
+      "ok": "已套用 {{pkg}}"
+    },
+    "version": {
+      "loading": "載入版本中…",
+      "installed": "已裝",
+      "latest": "最新",
+      "upToDate": "已是最新／倉庫最新",
+      "refresh": "重新檢查最新",
+      "pick": "選擇版本",
+      "noTarget": "沒有可更新版本",
+      "needRuntimePage": "請在執行環境頁安裝此版本",
+      "noAptCandidate": "沒有可用的 apt 候選版本"
     }
   },
   "softwareBanner": {
@@ -9675,7 +9726,7 @@
     "s9b6c1b03": "說明",
     "s858f4eca": "專案已刪除",
     "s090aa1a7": "此頁只管理獨立站點資源。專案的 Nginx 請到 Projects → 專案 → 網絡。",
-    "sac96ec39": "控制面曾記錄安裝 {{v0}}，但主機探測未見 binary。不算已裝——請「重新探測」或重新安裝。",
+    "sac96ec39": "控制面曾記錄安裝 {{v0}}，但主機探測未見執行檔。不算已安裝——請「重新探測」或重新安裝。",
     "sf7f7807b": "預設",
     "sc9530028": "載入最新版本中，或手動輸入",
     "s9602769e": "已裝 {{v0}} · 上游最新 {{v1}}",
@@ -9700,7 +9751,7 @@
     "s0aa24093": "{{v0}} 更新完成",
     "s5d92ffc3": "部分成功：{{v0}}；失敗：{{v1}}",
     "sa15a291f": "部分套件更新失敗",
-    "sbb823c06": "更新未完成",
+    "sbb823c06": "失敗",
     "s68db1348": "{{v0}} 更新失敗",
     "s84a4e7c6": "正在安裝：{{v0}}…",
     "s2ca8a4f5": "需 root + EXECUTE；可能需要一兩分鐘。",
@@ -9710,7 +9761,7 @@
     "s18bb4b62": "{{v0}} 安裝完成／已提交",
     "se9a47def": "安裝未完成",
     "sdc0528a2": "{{v0}} 安裝失敗",
-    "s69e60fb5": "未有可選版本",
+    "s69e60fb5": "沒有可更新版本",
     "s3f50fa6e": "正在安裝／更新 {{v0}} {{v1}}…（可能需要一兩分鐘）",
     "s1f5eef17": "下方會即時顯示 server 輸出，請勿關閉頁面。",
     "s2bf6b642": "更新被阻擋（需 root 且 YSK_EXECUTE=1）",
@@ -9756,7 +9807,7 @@
     "sf6cc774f": "系統未安裝此套件（可到管理頁安裝）",
     "s42f9c88b": "主機約 {{v0}} 個套件可升級",
     "sb72e8ebc": "正在檢查版本…或開啟管理頁設定",
-    "sabac942e": "面板功能頁（非 OS 套件，無系統版本更新）",
+    "sabac942e": "開啟管理頁安裝或設定",
     "sbd26894e": "有新版本",
     "s5985ee9a": "已是最新",
     "s090e6a43": "選擇版本",
@@ -9844,7 +9895,7 @@
     "sae926193": "無可用倉庫候選版本",
     "s52573ef8": "更新被阻擋（需 root+EXECUTE）",
     "s872d2fe0": "已套用 {{v0}} 更新",
-    "s6a93c0ec": "檢查版本…",
+    "s6a93c0ec": "載入版本中…",
     "s378e49b6": "已裝",
     "s7e805a12": "最新",
     "s74b39712": "已是最新／倉庫最新",

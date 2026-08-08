@@ -466,10 +466,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
       ) : null}
       {recordedButProbeEmpty ? (
         <Alert variant="warn">
-          {t('runtime.recordedButProbeEmpty', {
-            v: recordedPin,
-            defaultValue: t('uiInline.sac96ec39', { v0: recordedPin }),
-          })}
+          {t('runtime.recordedButProbeEmpty', { v: recordedPin })}
         </Alert>
       ) : null}
       <PageTabs

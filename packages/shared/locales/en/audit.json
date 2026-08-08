@@ -1,0 +1,18 @@
+{
+  "recent": "Recent audit",
+  "lastN": "Last {{n}}",
+  "actions": {
+    "protection.change": "Protection settings changed",
+    "auth.locale": "UI language changed",
+    "auth.login": "Signed in",
+    "auth.logout": "Signed out",
+    "system.firewall.allow_port": "Firewall allow port",
+    "system.firewall.deny": "Firewall deny IP",
+    "system.firewall.apply": "Firewall apply",
+    "project.deploy": "Project deploy",
+    "project.create": "Project created",
+    "project.delete": "Project deleted",
+    "ssl.request": "SSL request",
+    "ssl.upload": "SSL upload"
+  }
+}

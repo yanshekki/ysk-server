@@ -1,0 +1,18 @@
+{
+  "recent": "最近稽核",
+  "lastN": "最近 {{n}} 筆",
+  "actions": {
+    "protection.change": "防護設定變更",
+    "auth.locale": "介面語言變更",
+    "auth.login": "登入",
+    "auth.logout": "登出",
+    "system.firewall.allow_port": "防火牆允許埠",
+    "system.firewall.deny": "防火牆拒絕 IP",
+    "system.firewall.apply": "防火牆套用",
+    "project.deploy": "專案部署",
+    "project.create": "建立專案",
+    "project.delete": "刪除專案",
+    "ssl.request": "申請 SSL",
+    "ssl.upload": "上載 SSL"
+  }
+}

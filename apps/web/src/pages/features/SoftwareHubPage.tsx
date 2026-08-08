@@ -16,8 +16,7 @@ import {
   InstallStreamPanel,
   LoadingBlock,
   PageTabs,
-  buttonClassName,
-} from '../../shared/components/ui';
+  buttonClassName } from '../../shared/components/ui';
 import type { InstallStreamLine } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { updatesApi } from '../../features/updates';
@@ -30,8 +29,7 @@ import {
   cardsForTab,
   type RuntimeKindKey,
   type SoftwareCardDef,
-  type SoftwareTabId,
-} from '../../shared/nav/software-catalog';
+  type SoftwareTabId } from '../../shared/nav/software-catalog';
 type MatrixItem = {
   id?: string;
   label?: string;
@@ -243,8 +241,7 @@ export function SoftwareHubPage() {
           ? (row.candidates as Array<{ version?: string; label?: string }>).map(
               (c) => ({
                 version: String(c.version ?? ''),
-                label: String(c.label ?? c.version ?? ''),
-              }),
+                label: String(c.label ?? c.version ?? '') }),
             )
           : [];
 
@@ -253,8 +250,7 @@ export function SoftwareHubPage() {
           map[kind] = {
             panelLatest: currentVersion || '—',
             remoteLatest: latestVersion,
-            newerThanPanel: upgradable,
-          };
+            newerThanPanel: upgradable };
           candMap[kind] = candidates.filter((c) => c.version);
         }
 
@@ -269,8 +265,7 @@ export function SoftwareHubPage() {
             : latestVersion || currentVersion,
           latestVersion,
           upgradable,
-          source: row.source != null ? String(row.source) : undefined,
-        };
+          source: row.source != null ? String(row.source) : undefined };
         if (upgradable && updateKind === 'apt') aptUpCount += 1;
       }
 
@@ -385,34 +380,34 @@ export function SoftwareHubPage() {
       if (def.runtimeKind) {
         if (runtimeInstalled) {
           status = 'ok';
-          statusLabel = t('software.status.installed', { defaultValue: t('uiInline.s7aa09150') });
+          statusLabel = t('software.status.installed');
         } else {
           status = 'warn';
-          statusLabel = t('software.status.notInstalled', { defaultValue: t('uiInline.sbcbdbc49') });
+          statusLabel = t('software.status.notInstalled');
         }
       } else if (mx) {
         if (mx.active === 'active' || mx.active === 'tool') {
           status = 'ok';
-          statusLabel = t('software.status.running', { defaultValue: t('uiInline.sae7738d0') });
+          statusLabel = t('software.status.running');
         } else if (mx.installed === false || mx.active === 'not-found') {
           status = 'danger';
-          statusLabel = t('software.status.missing', { defaultValue: t('uiInline.sf3af7c5e') });
+          statusLabel = t('software.status.missing');
         } else if (mx.active === 'inactive' || mx.active === 'failed') {
           status = mx.active === 'failed' ? 'danger' : 'warn';
           statusLabel =
             mx.active === 'failed'
-              ? t('software.status.failed', { defaultValue: t('uiInline.sa1d77833') })
-              : t('software.status.stopped', { defaultValue: t('uiInline.s75dddf52') });
+              ? t('software.status.failed')
+              : t('software.status.stopped');
         } else if (mx.installed) {
           status = 'ok';
-          statusLabel = t('software.status.installed', { defaultValue: t('uiInline.s7aa09150') });
+          statusLabel = t('software.status.installed');
         }
       } else if (primaryApt?.installed) {
         status = 'ok';
-        statusLabel = t('software.status.installed', { defaultValue: t('uiInline.s7aa09150') });
+        statusLabel = t('software.status.installed');
       } else if (aptChecked && !aptInstalled) {
         status = 'warn';
-        statusLabel = t('software.status.notInstalled', { defaultValue: t('uiInline.sbcbdbc49') });
+        statusLabel = t('software.status.notInstalled');
       }
 
       const runtimeUpdate = Boolean(
@@ -468,8 +463,7 @@ export function SoftwareHubPage() {
         candidateVersion: String(
           r.candidateVersion || r.latestVersion || '',
         ),
-        softwareId: r.id,
-      }));
+        softwareId: r.id }));
 
       return {
         def,
@@ -496,8 +490,7 @@ export function SoftwareHubPage() {
         aptMissingIds,
         canInstallMissing,
         hostUpdatesHint,
-        candidates,
-      };
+        candidates };
     },
     [
       matrix,
@@ -530,8 +523,7 @@ export function SoftwareHubPage() {
       updates,
       serviceBad,
       catalogAptUpgradable,
-      hostUpgradable,
-    };
+      hostUpgradable };
   }, [allViews, catalogAptUpgradable, hostUpgradable]);
 
   const confirmApplyPackages = useCallback(async () => {
@@ -550,21 +542,17 @@ export function SoftwareHubPage() {
             n: i + 1,
             total: pkgs.length,
             pkg: p.packageName,
-            defaultValue: t('uiInline.s4e7f6152', { v0: i + 1, v1: pkgs.length, v2: p.packageName }),
-          }),
+            defaultValue: t('uiInline.s4e7f6152', { v0: i + 1, v1: pkgs.length, v2: p.packageName }) }),
           detail: t('software.apply.progressDetail', {
             from: p.currentVersion || '—',
             to: p.candidateVersion,
-            defaultValue: `${p.currentVersion || '—'} → ${p.candidateVersion}`,
-          }),
-        });
+            defaultValue: `${p.currentVersion || '—'} → ${p.candidateVersion}` }) });
         try {
           const r = await updatesApi.applyPackage({
             packageName: p.packageName,
             currentVersion: p.currentVersion,
             candidateVersion: p.candidateVersion,
-            confirmHighRisk: true,
-          });
+            confirmHighRisk: true });
           if (r.blocked) {
             failList.push(
               `${p.packageName}: ${r.blockMessage || t('software.apply.blockedShort')}`,
@@ -586,32 +574,26 @@ export function SoftwareHubPage() {
         toast.ok(
           t('software.apply.okMulti', {
             list: okList.join(', '),
-            defaultValue: t('uiInline.s7a90f74c', { v0: okList.join(', ') }),
-          }),
+            defaultValue: t('uiInline.s7a90f74c', { v0: okList.join(', ') }) }),
         );
         setInstallFeedback({
           tone: 'ok',
           title: t('software.apply.okMultiTitle', {
             label,
-            defaultValue: t('uiInline.s0aa24093', { v0: label }),
-          }),
-          detail: okList.join(', '),
-        });
+            defaultValue: t('uiInline.s0aa24093', { v0: label }) }),
+          detail: okList.join(', ') });
         setApplyTarget(null);
         void refresh();
       } else if (okList.length && failList.length) {
         toast.error(
           t('software.apply.partial', {
-            defaultValue: t('uiInline.s5d92ffc3', { v0: okList.join(', '), v1: failList.join(' · ') }),
-          }),
+            defaultValue: t('uiInline.s5d92ffc3', { v0: okList.join(', '), v1: failList.join(' · ') }) }),
         );
         setInstallFeedback({
           tone: 'error',
           title: t('software.apply.partialTitle', {
-            defaultValue: t('uiInline.sa15a291f'),
-          }),
-          detail: `OK: ${okList.join(', ')} · FAIL: ${failList.join(' · ')}`,
-        });
+            defaultValue: t('uiInline.sa15a291f') }),
+          detail: `OK: ${okList.join(', ')} · FAIL: ${failList.join(' · ')}` });
         setApplyTarget(null);
         void refresh();
       } else {
@@ -620,10 +602,8 @@ export function SoftwareHubPage() {
           tone: 'error',
           title: t('software.apply.failedTitle', {
             label,
-            defaultValue: t('uiInline.s68db1348', { v0: label }),
-          }),
-          detail: failList.join(' · '),
-        });
+            defaultValue: t('uiInline.s68db1348', { v0: label }) }),
+          detail: failList.join(' · ') });
       }
     } finally {
       setApplyBusy(false);
@@ -640,12 +620,9 @@ export function SoftwareHubPage() {
       tone: 'info',
       title: t('software.install.progress', {
         list: ids.join(', '),
-        defaultValue: t('uiInline.s84a4e7c6', { v0: ids.join(', ') }),
-      }),
+        defaultValue: t('uiInline.s84a4e7c6', { v0: ids.join(', ') }) }),
       detail: t('software.install.progressHint', {
-        defaultValue: t('uiInline.s2ca8a4f5'),
-      }),
-    });
+        defaultValue: t('uiInline.s2ca8a4f5') }) });
     try {
       const r = (await softwareApi.installMany(ids)) as {
         ok?: boolean;
@@ -661,32 +638,26 @@ export function SoftwareHubPage() {
         const msg =
           r.blockMessage ||
           t('software.apply.blocked', {
-            defaultValue: t('uiInline.sd9419dc9'),
-          });
+            defaultValue: t('uiInline.sd9419dc9') });
         toast.error(msg);
         setInstallFeedback({
           tone: 'error',
           title: t('software.install.blockedTitle', {
             label,
-            defaultValue: t('uiInline.s3ec3d449', { v0: label }),
-          }),
-          detail: [msg, ...notes].filter(Boolean).join(' · '),
-        });
+            defaultValue: t('uiInline.s3ec3d449', { v0: label }) }),
+          detail: [msg, ...notes].filter(Boolean).join(' · ') });
       } else if (r.ok !== false) {
         toast.ok(
           t('software.install.ok', {
             list: ids.join(', '),
-            defaultValue: t('uiInline.sbb8dfdeb', { v0: ids.join(', ') }),
-          }),
+            defaultValue: t('uiInline.sbb8dfdeb', { v0: ids.join(', ') }) }),
         );
         setInstallFeedback({
           tone: 'ok',
           title: t('software.install.okTitle', {
             label,
-            defaultValue: t('uiInline.s18bb4b62', { v0: label }),
-          }),
-          detail: notes.slice(0, 4).join(' · ') || ids.join(', '),
-        });
+            defaultValue: t('uiInline.s18bb4b62', { v0: label }) }),
+          detail: notes.slice(0, 4).join(' · ') || ids.join(', ') });
         setInstallTarget(null);
         void refresh();
       } else {
@@ -698,10 +669,8 @@ export function SoftwareHubPage() {
           tone: 'error',
           title: t('software.install.failedTitle', {
             label,
-            defaultValue: t('uiInline.sdc0528a2', { v0: label }),
-          }),
-          detail: msg,
-        });
+            defaultValue: t('uiInline.sdc0528a2', { v0: label }) }),
+          detail: msg });
       }
     } catch (e) {
       const msg = e instanceof Error ? e.message : t('common.loadFailed');
@@ -710,10 +679,8 @@ export function SoftwareHubPage() {
         tone: 'error',
         title: t('software.install.failedTitle', {
           label,
-          defaultValue: t('uiInline.sdc0528a2', { v0: label }),
-        }),
-        detail: msg,
-      });
+          defaultValue: t('uiInline.sdc0528a2', { v0: label }) }),
+        detail: msg });
     } finally {
       setApplyBusy(false);
       setBusyCardId(null);
@@ -736,22 +703,17 @@ export function SoftwareHubPage() {
         title: t('software.runtime.installing', {
           kind,
           v: ver,
-          defaultValue: t('uiInline.s3f50fa6e', { v0: kind, v1: ver }),
-        }),
+          defaultValue: t('uiInline.s3f50fa6e', { v0: kind, v1: ver }) }),
         detail: t('software.runtime.installingHint', {
-          defaultValue: t('uiInline.s1f5eef17'),
-        }),
-      });
+          defaultValue: t('uiInline.s1f5eef17') }) });
       try {
         const r = await systemApi.runtimeInstallStream(
           {
             kind,
             version: ver,
-            install: true,
-          },
+            install: true },
           {
-            onLog: (line) => setInstallLog((prev) => [...prev.slice(-1999), line]),
-          },
+            onLog: (line) => setInstallLog((prev) => [...prev.slice(-1999), line]) },
         );
         const notes = (r.notes ?? [])
           .map((n) => humanizeOperatorNote(String(n)))
@@ -765,18 +727,15 @@ export function SoftwareHubPage() {
           const msg =
             r.blockMessage ||
             t('software.apply.blocked', {
-              defaultValue: t('uiInline.s2bf6b642'),
-            });
+              defaultValue: t('uiInline.s2bf6b642') });
           toast.error(msg);
           setInstallFeedback({
             tone: 'error',
             title: t('software.runtime.blockedTitle', {
               kind,
               v: ver,
-              defaultValue: t('uiInline.s9b4a58e8', { v0: kind, v1: ver }),
-            }),
-            detail: [msg, detail].filter(Boolean).join(' · '),
-          });
+              defaultValue: t('uiInline.s9b4a58e8', { v0: kind, v1: ver }) }),
+            detail: [msg, detail].filter(Boolean).join(' · ') });
           return;
         }
 
@@ -786,22 +745,18 @@ export function SoftwareHubPage() {
             t('software.runtime.installed', {
               kind,
               v: ver,
-              defaultValue: t('uiInline.s6dc82720', { v0: kind, v1: ver }),
-            }),
+              defaultValue: t('uiInline.s6dc82720', { v0: kind, v1: ver }) }),
           );
           setInstallFeedback({
             tone: 'ok',
             title: t('software.runtime.installed', {
               kind,
               v: ver,
-              defaultValue: t('uiInline.s6dc82720', { v0: kind, v1: ver }),
-            }),
+              defaultValue: t('uiInline.s6dc82720', { v0: kind, v1: ver }) }),
             detail:
               detail ||
               t('software.runtime.installedDetail', {
-                defaultValue: t('uiInline.s94a1f025'),
-              }),
-          });
+                defaultValue: t('uiInline.s94a1f025') }) });
           // Soft refresh — discovery failure must not wipe cards
           void refresh();
           return;
@@ -816,10 +771,8 @@ export function SoftwareHubPage() {
           title: t('software.runtime.failedTitle', {
             kind,
             v: ver,
-            defaultValue: t('uiInline.s73cae5a0', { v0: kind, v1: ver }),
-          }),
-          detail: failMsg,
-        });
+            defaultValue: t('uiInline.s73cae5a0', { v0: kind, v1: ver }) }),
+          detail: failMsg });
       } catch (e) {
         const msg = e instanceof Error ? e.message : t('common.loadFailed');
         toast.error(msg);
@@ -828,10 +781,8 @@ export function SoftwareHubPage() {
           title: t('software.runtime.failedTitle', {
             kind,
             v: ver,
-            defaultValue: t('uiInline.s73cae5a0', { v0: kind, v1: ver }),
-          }),
-          detail: msg,
-        });
+            defaultValue: t('uiInline.s73cae5a0', { v0: kind, v1: ver }) }),
+          detail: msg });
       } finally {
         setInstallingKind(null);
       }
@@ -858,22 +809,19 @@ export function SoftwareHubPage() {
                 ? t('uiInline.s4344c486')
                 : x.id === 'mail-files'
                   ? t('uiInline.sed2550e1')
-                  : t('uiInline.scb435db5'),
-    }),
+                  : t('uiInline.scb435db5') }),
     badge: (() => {
       if (x.id === 'overview') return summary.updates > 0 ? summary.updates : undefined;
       const n = allViews.filter((v) => v.def.tab === x.id && v.hasUpdate).length;
       return n > 0 ? n : undefined;
-    })(),
-  }));
+    })() }));
 
   return (
     <FeaturePageLayout
       title={t('software.title', { defaultValue: t('uiInline.s97bbc1b7') })}
       subtitle={t('software.desc', {
         defaultValue:
-          t('uiInline.s60a23151'),
-      })}
+          t('uiInline.s60a23151') })}
       actions={
         <Button variant="secondary" size="sm" loading={loading} onClick={() => void refresh()}>
           {t('common.refresh', { defaultValue: t('uiInline.s5387b55b') })}
@@ -943,8 +891,7 @@ export function SoftwareHubPage() {
                       </span>
                       <span className="software-hub__stat-label">
                         {t('software.stat.runtimesInstalled', {
-                          defaultValue: t('uiInline.s4be2a3a4'),
-                        })}
+                          defaultValue: t('uiInline.s4be2a3a4') })}
                       </span>
                     </div>
                     <div
@@ -969,33 +916,28 @@ export function SoftwareHubPage() {
                     <Card className="u-mb-3">
                       <CardSection
                         title={t('software.aptSummaryTitle', {
-                          defaultValue: t('uiInline.sdd33adf9'),
-                        })}
+                          defaultValue: t('uiInline.sdd33adf9') })}
                         description={t('software.aptSummaryDesc', {
                           defaultValue:
-                            t('uiInline.sdfaaf946'),
-                        })}
+                            t('uiInline.sdfaaf946') })}
                       >
                         <div className="software-card__actions">
                           <Badge tone="warn">
                             {t('software.aptSummary.catalog', {
                               n: summary.catalogAptUpgradable,
-                              defaultValue: t('uiInline.s78f03e20', { v0: summary.catalogAptUpgradable }),
-                            })}
+                              defaultValue: t('uiInline.s78f03e20', { v0: summary.catalogAptUpgradable }) })}
                           </Badge>
                           <Badge tone={summary.hostUpgradable ? 'warn' : 'neutral'}>
                             {t('software.aptSummary.host', {
                               n: summary.hostUpgradable,
-                              defaultValue: t('uiInline.sbf368054', { v0: summary.hostUpgradable }),
-                            })}
+                              defaultValue: t('uiInline.sbf368054', { v0: summary.hostUpgradable }) })}
                           </Badge>
                           <Link
                             to="/updates"
                             className={buttonClassName({ variant: 'primary', size: 'sm' })}
                           >
                             {t('software.aptSummary.openUpdates', {
-                              defaultValue: t('uiInline.s235a7426'),
-                            })}
+                              defaultValue: t('uiInline.s235a7426') })}
                           </Link>
                         </div>
                       </CardSection>
@@ -1006,8 +948,7 @@ export function SoftwareHubPage() {
                     <CardSection
                       title={t('software.quickTitle', { defaultValue: t('uiInline.s14249f75') })}
                       description={t('software.quickDesc', {
-                        defaultValue: t('uiInline.saff76d0a'),
-                      })}
+                        defaultValue: t('uiInline.saff76d0a') })}
                     >
                       <div className="software-card__actions">
                         {(
@@ -1026,8 +967,7 @@ export function SoftwareHubPage() {
                             onClick={() => onTab(id)}
                           >
                             {t(`software.tabs.${id === 'mail-files' ? 'mailFiles' : id}`, {
-                              defaultValue: label,
-                            })}
+                              defaultValue: label })}
                           </Button>
                         ))}
                         <Link
@@ -1056,12 +996,10 @@ export function SoftwareHubPage() {
                     <Card className="u-mb-3">
                       <CardSection
                         title={t('software.updatesTitle', {
-                          defaultValue: t('uiInline.s24f12f4f'),
-                        })}
+                          defaultValue: t('uiInline.s24f12f4f') })}
                         description={t('software.updatesDesc', {
                           defaultValue:
-                            t('uiInline.s43a9fd7a'),
-                        })}
+                            t('uiInline.s43a9fd7a') })}
                       >
                         <div className="software-hub__grid">
                           {allViews
@@ -1133,8 +1071,7 @@ export function SoftwareHubPage() {
       <ConfirmDialog
         open={Boolean(applyTarget)}
         title={t('software.apply.confirmTitle', {
-          defaultValue: t('uiInline.s00338fde'),
-        })}
+          defaultValue: t('uiInline.s00338fde') })}
         description={
           applyTarget
             ? t('software.apply.confirmBodyMulti', {
@@ -1150,8 +1087,7 @@ export function SoftwareHubPage() {
                     (p) =>
                       `${p.packageName} (${p.currentVersion || '—'} → ${p.candidateVersion})`,
                   )
-                  .join('；')}。需 root 且 YSK_EXECUTE=1。`,
-              })
+                  .join('；')}。需 root 且 YSK_EXECUTE=1。` })
             : ''
         }
         confirmLabel={t('software.apply.confirm', { defaultValue: t('uiInline.s0e05f4b7') })}
@@ -1170,15 +1106,13 @@ export function SoftwareHubPage() {
       <ConfirmDialog
         open={Boolean(installTarget)}
         title={t('software.install.confirmTitle', {
-          defaultValue: t('uiInline.s92b8bf67'),
-        })}
+          defaultValue: t('uiInline.s92b8bf67') })}
         description={
           installTarget
             ? t('software.install.confirmBody', {
                 label: installTarget.cardLabel,
                 list: installTarget.ids.join(', '),
-                defaultValue: t('uiInline.s9af27043', { v0: installTarget.cardLabel, v1: installTarget.ids.join(', ') }),
-              })
+                defaultValue: t('uiInline.s9af27043', { v0: installTarget.cardLabel, v1: installTarget.ids.join(', ') }) })
             : ''
         }
         confirmLabel={t('software.install.confirm', { defaultValue: t('uiInline.s28263d85') })}
@@ -1234,8 +1168,7 @@ function SoftwareCard({
   onRequestAptApply,
   onRequestInstall,
   onInstallRuntime,
-  installBusy,
-}: {
+  installBusy }: {
   view: CardView;
   t: (k: string, o?: Record<string, unknown>) => string;
   onRequestAptApply?: (
@@ -1270,8 +1203,7 @@ function SoftwareCard({
     aptMissingIds = [],
     canInstallMissing,
     hostUpdatesHint,
-    candidates = [],
-  } = view;
+    candidates = [] } = view;
 
   const name = t(`nav.${def.navKey}`, { defaultValue: def.navKey });
   // Prefer remote/panel latest for runtime update deep-link; apt → updates center
@@ -1330,27 +1262,18 @@ function SoftwareCard({
   const metaParts: string[] = [];
   if (installedLabels.length) {
     metaParts.push(
-      t('software.meta.installed', {
-        list: installedLabels.join(', '),
-        defaultValue: t('uiInline.s2e37cbfa', { v0: installedLabels.join(', ') }),
-      }),
+      t('software.meta.installed', { list: installedLabels.join(', ') }),
     );
   }
   if (activeVersion) {
     metaParts.push(
-      t('software.meta.default', {
-        v: activeVersion,
-        defaultValue: t('uiInline.s7d52bb0c', { v0: activeVersion }),
-      }),
+      t('software.meta.default', { v: activeVersion }),
     );
   }
   if (versionOutput) metaParts.push(versionOutput);
   if (latest?.remoteLatest && hasUpdate && !aptUpdate) {
     metaParts.push(
-      t('software.meta.remote', {
-        v: latest.remoteLatest,
-        defaultValue: t('uiInline.s9f898b85', { v0: latest.remoteLatest }),
-      }),
+      t('software.meta.remote', { v: latest.remoteLatest }),
     );
   }
   if (aptPackagesToUpdate.length > 1) {
@@ -1362,55 +1285,32 @@ function SoftwareCard({
           .join(', '),
         defaultValue: `${aptPackagesToUpdate.length} 個套件可升級：${aptPackagesToUpdate
           .map((p) => `${p.packageName}→${p.candidateVersion}`)
-          .join(', ')}`,
-      }),
+          .join(', ')}` }),
     );
   } else if (aptCurrent && aptUpdate && aptCandidate) {
     metaParts.push(
-      t('software.meta.aptUpgrade', {
-        from: aptCurrent,
-        to: aptCandidate,
-        defaultValue: t('uiInline.s93dde991', { v0: aptCurrent, v1: aptCandidate }),
-      }),
+      t('software.meta.aptUpgrade', { from: aptCurrent,
+        to: aptCandidate }),
     );
   } else if (aptCurrent && aptUpToDate) {
     metaParts.push(
-      t('software.meta.aptCurrentLatest', {
-        v: aptCurrent,
-        defaultValue: t('uiInline.s9071dcb7', { v0: aptCurrent }),
-      }),
+      t('software.meta.aptCurrentLatest', { v: aptCurrent }),
     );
   } else if (aptCurrent && !def.runtimeKind) {
-    metaParts.push(
-      t('software.meta.aptVersion', {
-        v: aptCurrent,
-        defaultValue: t('uiInline.s0b09f444', { v0: aptCurrent }),
-      }),
-    );
+    metaParts.push(t('software.meta.aptVersion', { v: aptCurrent }));
   } else if (aptChecked && !aptCurrent && !def.runtimeKind) {
-    metaParts.push(
-      t('software.meta.aptNotInstalled', {
-        defaultValue: t('uiInline.sf6cc774f'),
-      }),
-    );
+    metaParts.push(t('software.meta.aptNotInstalled'));
   }
   if (hostUpdatesHint != null && hostUpdatesHint > 0) {
     metaParts.push(
-      t('software.meta.hostUpgradable', {
-        n: hostUpdatesHint,
-        defaultValue: t('uiInline.s42f9c88b', { v0: hostUpdatesHint }),
-      }),
+      t('software.meta.hostUpgradable', { n: hostUpdatesHint }),
     );
   }
   if (!metaParts.length) {
     metaParts.push(
       def.softwareIds?.length || def.runtimeKind
-        ? t('software.meta.checking', {
-            defaultValue: t('uiInline.sb72e8ebc'),
-          })
-        : t('software.meta.openManage', {
-            defaultValue: t('uiInline.sabac942e'),
-          }),
+        ? t('software.meta.checking')
+        : t('software.meta.openManage'),
     );
   }
 
@@ -1427,12 +1327,10 @@ function SoftwareCard({
           <Badge tone={status}>{statusLabel}</Badge>
           {hasUpdate ? (
             <Badge tone="warn">
-              {t('software.badge.update', { defaultValue: t('uiInline.sbd26894e') })}
+              {t('software.badge.update')}
             </Badge>
           ) : aptUpToDate ? (
-            <Badge tone="ok">
-              {t('software.badge.upToDate', { defaultValue: t('uiInline.s5985ee9a') })}
-            </Badge>
+            <Badge tone="ok">{t('software.badge.upToDate')}</Badge>
           ) : null}
         </div>
       </div>
@@ -1461,8 +1359,7 @@ function SoftwareCard({
             disabled={installBusy || !String(picked || updateTarget || candidates[0]?.version || '').trim()}
             title={t('software.action.installVersion', {
               v: picked || updateTarget,
-              defaultValue: t('uiInline.s8253535d', { v0: picked || updateTarget }),
-            })}
+              defaultValue: t('uiInline.s8253535d', { v0: picked || updateTarget }) })}
             onClick={() => {
               if (!def.runtimeKind) return;
               const target = String(
@@ -1485,8 +1382,7 @@ function SoftwareCard({
             disabled={installBusy}
             title={t('software.action.applyAptTitle', {
               pkg: aptPackagesToUpdate.map((p) => p.packageName).join(', '),
-              defaultValue: t('uiInline.sba60558e', { v0: aptPackagesToUpdate.map((p) => p.packageName).join(', ') }),
-            })}
+              defaultValue: t('uiInline.sba60558e', { v0: aptPackagesToUpdate.map((p) => p.packageName).join(', ') }) })}
             onClick={() => onRequestAptApply?.(aptPackagesToUpdate, cardLabel)}
           >
             {installBusy
@@ -1494,8 +1390,7 @@ function SoftwareCard({
               : aptPackagesToUpdate.length > 1
                 ? t('software.action.updateN', {
                     n: aptPackagesToUpdate.length,
-                    defaultValue: t('uiInline.s706de938', { v0: aptPackagesToUpdate.length }),
-                  })
+                    defaultValue: t('uiInline.s706de938', { v0: aptPackagesToUpdate.length }) })
                 : t('software.action.update', { defaultValue: t('uiInline.sd9db02d0') })}
           </button>
         ) : showAptInstall ? (
@@ -1505,8 +1400,7 @@ function SoftwareCard({
             disabled={installBusy}
             title={t('software.action.installTitle', {
               list: aptMissingIds.join(', '),
-              defaultValue: t('uiInline.s0f9ddc70', { v0: aptMissingIds.join(', ') }),
-            })}
+              defaultValue: t('uiInline.s0f9ddc70', { v0: aptMissingIds.join(', ') }) })}
             onClick={() => onRequestInstall?.(aptMissingIds, cardLabel)}
           >
             {installBusy
@@ -1521,13 +1415,11 @@ function SoftwareCard({
               updateTarget
                 ? t('software.action.updateTitle', {
                     v: updateTarget,
-                    defaultValue: t('uiInline.s59f613d5', { v0: updateTarget }),
-                  })
+                    defaultValue: t('uiInline.s59f613d5', { v0: updateTarget }) })
                 : aptPackage
                   ? t('software.action.updateAptTitle', {
                       pkg: aptPackage,
-                      defaultValue: t('uiInline.s78b1688f', { v0: aptPackage }),
-                    })
+                      defaultValue: t('uiInline.s78b1688f', { v0: aptPackage }) })
                   : undefined
             }
           >
@@ -1538,8 +1430,7 @@ function SoftwareCard({
           to={def.to}
           className={buttonClassName({
             variant: updateHref ? 'secondary' : 'primary',
-            size: 'sm',
-          })}
+            size: 'sm' })}
         >
           {t('software.action.manage', { defaultValue: t('uiInline.s4989b5cf') })}
         </Link>
@@ -1549,8 +1440,7 @@ function SoftwareCard({
             className={buttonClassName({ variant: 'secondary', size: 'sm' })}
           >
             {t(`nav.${def.serviceNavKey ?? 'services'}`, {
-              defaultValue: t('uiInline.s72203f17'),
-            })}
+              defaultValue: t('uiInline.s72203f17') })}
           </Link>
         ) : null}
         {projectHref ? (
@@ -1558,8 +1448,7 @@ function SoftwareCard({
             to={projectHref}
             className={buttonClassName({ variant: 'ghost', size: 'sm' })}
             title={t('software.action.useInProjectTitle', {
-              defaultValue: t('uiInline.s75817a35'),
-            })}
+              defaultValue: t('uiInline.s75817a35') })}
           >
             {t('software.action.useInProject', { defaultValue: t('uiInline.s6d449473') })}
           </Link>

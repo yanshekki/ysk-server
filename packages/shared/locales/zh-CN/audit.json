@@ -1,0 +1,18 @@
+{
+  "recent": "最近审计",
+  "lastN": "最近 {{n}} 条",
+  "actions": {
+    "protection.change": "防护设置变更",
+    "auth.locale": "界面语言变更",
+    "auth.login": "登录",
+    "auth.logout": "登出",
+    "system.firewall.allow_port": "防火墙允许端口",
+    "system.firewall.deny": "防火墙拒绝 IP",
+    "system.firewall.apply": "防火墙应用",
+    "project.deploy": "项目部署",
+    "project.create": "创建项目",
+    "project.delete": "删除项目",
+    "ssl.request": "申请 SSL",
+    "ssl.upload": "上传 SSL"
+  }
+}
