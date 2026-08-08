@@ -14,7 +14,7 @@ import { probePowerDns } from './powerdns-apply.js';
 import { probePm2 } from './pm2-apply.js';
 import { buildProjectIsolationReadinessItems } from './project-isolation-status.js';
 import { binPresent } from './software-probe/index.js';
-import { findWebUiIndex } from './web-ui-build.js';
+import { assessWebUiFix } from './web-ui-build.js';
 
 export type { ReadinessLevel } from '@ysk/shared';
 export type ReadinessItem = ReadinessItemDto;
@@ -491,19 +491,28 @@ export async function assessProductionReadiness(input: {
     fixHref: pdns.available ? undefined : '/dns',
     severity: 'optional' });
 
-  const webFound = findWebUiIndex(input.dataDir);
-  const webReady = Boolean(webFound);
+  const webAssess = assessWebUiFix(input.dataDir);
+  const webReady = webAssess.ready;
   push({
     id: 'web-ui',
     category: 'core',
     title: tl('notes.auto.n0204'),
     level: webReady ? 'ready' : 'degraded',
     detail: webReady
-      ? webFound!.path
+      ? (webAssess.path ?? '')
       : tl('notes.auto.n0708'),
     spec: '§3.9',
-    fixHint: webReady ? undefined : tl('readiness.itemWebBuildFix'),
-    fixAction: webReady ? undefined : 'build-web-ui',
+    // One-click only when monorepo (or copyable source) exists — never fake "Fix now"
+    fixHint: webReady
+      ? undefined
+      : webAssess.canAutoFix
+        ? tl('readiness.itemWebBuildFix')
+        : tl('readiness.itemWebBuildManual'),
+    fixAction: webReady
+      ? undefined
+      : webAssess.canAutoFix
+        ? 'build-web-ui'
+        : undefined,
     severity: 'recommended' });
 
   push({

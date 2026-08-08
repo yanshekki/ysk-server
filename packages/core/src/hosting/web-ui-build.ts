@@ -17,17 +17,56 @@ import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
 
-/** Known index.html locations (same spirit as resolveWebRoot). */
+function pushUnique(list: string[], path: string | undefined | null): void {
+  if (!path) return;
+  const p = resolve(path);
+  if (!list.includes(p)) list.push(p);
+}
+
+/**
+ * index.html candidates: env, dataDir, monorepo dist, packaged server public/web.
+ * Aligns with apps/server resolveWebRoot spirit + production install layouts.
+ */
 export function webUiIndexCandidates(dataDir: string, cwd = process.cwd()): string[] {
   const envRoot = process.env.YSK_WEB_ROOT?.trim();
-  const list = [
-    envRoot ? join(envRoot, 'index.html') : '',
-    join(cwd, 'apps/web/dist/index.html'),
-    join(dataDir, 'web/index.html'),
-    join(cwd, 'apps/server/public/web/index.html'),
-    join(cwd, 'web/dist/index.html'),
-    join(cwd, 'public/web/index.html'),
-  ].filter(Boolean);
+  const list: string[] = [];
+
+  if (envRoot) {
+    pushUnique(list, join(envRoot, 'index.html'));
+    // allow YSK_WEB_ROOT to point at index.html itself
+    if (envRoot.endsWith('index.html')) pushUnique(list, envRoot);
+  }
+
+  pushUnique(list, join(dataDir, 'web/index.html'));
+  pushUnique(list, join(cwd, 'apps/web/dist/index.html'));
+  pushUnique(list, join(cwd, 'apps/server/public/web/index.html'));
+  pushUnique(list, join(cwd, 'web/dist/index.html'));
+  pushUnique(list, join(cwd, 'public/web/index.html'));
+
+  // Running node …/dist/cli.js or …/cli.js — packaged next to server
+  try {
+    const argv1 = process.argv[1] ? resolve(process.argv[1]) : '';
+    if (argv1) {
+      const d = dirname(argv1);
+      pushUnique(list, join(d, '../public/web/index.html'));
+      pushUnique(list, join(d, 'public/web/index.html'));
+      pushUnique(list, join(d, '../../public/web/index.html'));
+      pushUnique(list, join(d, '../../../apps/web/dist/index.html'));
+    }
+  } catch {
+    /* */
+  }
+
+  // Common global npm layouts for @ysk/server
+  for (const base of [
+    '/usr/lib/node_modules/@ysk/server/public/web/index.html',
+    '/usr/local/lib/node_modules/@ysk/server/public/web/index.html',
+    '/usr/lib/node_modules/ysk-server/public/web/index.html',
+    '/usr/local/lib/node_modules/ysk-server/public/web/index.html',
+  ]) {
+    pushUnique(list, base);
+  }
+
   return list;
 }
 
@@ -50,7 +89,7 @@ export function findWebUiIndex(
 /** Walk up for monorepo with apps/web. */
 export function findMonorepoRoot(start = process.cwd()): string | null {
   let dir = resolve(start);
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 12; i++) {
     const hasWs =
       existsSync(join(dir, 'pnpm-workspace.yaml')) ||
       existsSync(join(dir, 'pnpm-workspace.yml'));
@@ -74,9 +113,54 @@ export function findMonorepoRoot(start = process.cwd()): string | null {
   return null;
 }
 
+/**
+ * Sync assess: can one-click fix succeed without user building elsewhere?
+ * - monorepo present → can build
+ * - SPA already somewhere findable → can copy into dataDir/web
+ */
+export function assessWebUiFix(
+  dataDir: string,
+  cwd = process.cwd(),
+): {
+  ready: boolean;
+  path?: string;
+  root?: string;
+  monorepo: string | null;
+  /** True when POST readiness/fix build-web-ui can reasonably succeed */
+  canAutoFix: boolean;
+  /** Why canAutoFix is false (operator-facing English notes; UI uses i18n) */
+  reasonCodes: string[];
+} {
+  const existing = findWebUiIndex(dataDir, cwd);
+  const monorepo = findMonorepoRoot(cwd);
+  if (existing) {
+    return {
+      ready: true,
+      path: existing.path,
+      root: existing.root,
+      monorepo,
+      canAutoFix: false,
+      reasonCodes: [],
+    };
+  }
+  if (monorepo) {
+    return {
+      ready: false,
+      monorepo,
+      canAutoFix: true,
+      reasonCodes: [],
+    };
+  }
+  return {
+    ready: false,
+    monorepo: null,
+    canAutoFix: false,
+    reasonCodes: ['NO_MONOREPO', 'NO_PACKAGED_UI'],
+  };
+}
+
 function copyDirContents(src: string, dest: string): void {
   mkdirSync(dest, { recursive: true });
-  // wipe dest files for clean install
   try {
     for (const name of readdirSync(dest)) {
       rmSync(join(dest, name), { recursive: true, force: true });
@@ -99,9 +183,54 @@ async function whichBin(bin: string): Promise<string | null> {
   }
 }
 
+/** npm root -g /@ysk/server/public/web when global package embeds SPA */
+async function findGlobalNpmPackagedWeb(): Promise<string | null> {
+  const npm = await whichBin('npm');
+  if (!npm) return null;
+  try {
+    const r = await execFileAsync(npm, ['root', '-g'], {
+      timeout: 15_000,
+      maxBuffer: 1024 * 1024,
+    });
+    const root = String(r.stdout || '').trim();
+    if (!root) return null;
+    for (const rel of [
+      '@ysk/server/public/web/index.html',
+      'ysk-server/public/web/index.html',
+    ]) {
+      const idx = join(root, rel);
+      if (existsSync(idx) && statSync(idx).isFile()) return idx;
+    }
+  } catch {
+    /* */
+  }
+  return null;
+}
+
+function installIntoDataDir(
+  sourceRoot: string,
+  dataDir: string,
+  notes: string[],
+): { ok: boolean; path?: string } {
+  const dest = join(dataDir, 'web');
+  try {
+    copyDirContents(sourceRoot, dest);
+    notes.push(`installed → ${dest}`);
+    return { ok: true, path: join(dest, 'index.html') };
+  } catch (e) {
+    notes.push(e instanceof Error ? e.message : String(e));
+    const fallback = join(sourceRoot, 'index.html');
+    if (existsSync(fallback)) {
+      notes.push(`serve may use source: ${fallback}`);
+      return { ok: true, path: fallback };
+    }
+    return { ok: false };
+  }
+}
+
 /**
  * Ensure SPA assets exist under dataDir/web (and/or monorepo dist).
- * Tries: already present → copy from existing dist → pnpm/npm build → copy.
+ * Tries: already present → packaged copy → monorepo build → global npm package.
  */
 export async function ensureWebUiBuilt(input: {
   dataDir: string;
@@ -110,14 +239,16 @@ export async function ensureWebUiBuilt(input: {
   ok: boolean;
   path?: string;
   notes: string[];
+  /** Machine codes for UI (e.g. NO_MONOREPO) */
+  codes?: string[];
 }> {
   const notes: string[] = [];
+  const codes: string[] = [];
   const cwd = input.cwd ?? process.cwd();
   const dataDir = input.dataDir;
 
   const existing = findWebUiIndex(dataDir, cwd);
   if (existing) {
-    // Prefer durable copy under dataDir so restarts/cwd shifts stay ready
     const dest = join(dataDir, 'web');
     if (!existsSync(join(dest, 'index.html'))) {
       try {
@@ -137,13 +268,32 @@ export async function ensureWebUiBuilt(input: {
     return { ok: true, path: join(dest, 'index.html'), notes };
   }
 
+  // Async: global npm package embed (production without monorepo)
+  const globalIdx = await findGlobalNpmPackagedWeb();
+  if (globalIdx) {
+    notes.push(`found global package UI: ${globalIdx}`);
+    const inst = installIntoDataDir(dirname(globalIdx), dataDir, notes);
+    if (inst.ok) return { ok: true, path: inst.path, notes };
+  }
+
   const mono = findMonorepoRoot(cwd);
   if (!mono) {
+    codes.push('NO_MONOREPO', 'NO_PACKAGED_UI');
     notes.push(
-      'no monorepo (apps/web) found from cwd — run: pnpm --filter @ysk/web build',
+      'No monorepo (apps/web) and no packaged SPA found — one-click build cannot run here.',
     );
     notes.push(`cwd=${cwd}`);
-    return { ok: false, notes };
+    notes.push(`dataDir=${dataDir}`);
+    notes.push(
+      'Manual: on a machine with source, run: pnpm --filter @ysk/web build',
+    );
+    notes.push(
+      `then: mkdir -p ${join(dataDir, 'web')} && cp -a apps/web/dist/. ${join(dataDir, 'web')}/`,
+    );
+    notes.push(
+      'Or set YSK_WEB_ROOT to a directory containing index.html and restart the panel.',
+    );
+    return { ok: false, notes, codes };
   }
   notes.push(`monorepo: ${mono}`);
 
@@ -154,8 +304,9 @@ export async function ensureWebUiBuilt(input: {
     const pnpm = await whichBin('pnpm');
     const npm = await whichBin('npm');
     if (!pnpm && !npm) {
+      codes.push('NO_PACKAGE_MANAGER');
       notes.push('neither pnpm nor npm found on PATH');
-      return { ok: false, notes };
+      return { ok: false, notes, codes };
     }
     try {
       if (pnpm) {
@@ -180,30 +331,23 @@ export async function ensureWebUiBuilt(input: {
       const err = e as { stderr?: string; message?: string };
       notes.push(String(err.stderr || err.message || e).slice(-1200));
       notes.push('web build failed');
-      return { ok: false, notes };
+      codes.push('BUILD_FAILED');
+      return { ok: false, notes, codes };
     }
   } else {
     notes.push('apps/web/dist already built');
   }
 
   if (!existsSync(distIndex)) {
+    codes.push('DIST_MISSING');
     notes.push(`missing ${distIndex} after build`);
-    return { ok: false, notes };
+    return { ok: false, notes, codes };
   }
 
-  const dest = join(dataDir, 'web');
-  try {
-    copyDirContents(distDir, dest);
-    notes.push(`installed → ${dest}`);
-  } catch (e) {
-    notes.push(e instanceof Error ? e.message : String(e));
-    // still ok if monorepo dist is enough for cwd-based serve
-    if (existsSync(distIndex)) {
-      notes.push(`serve may use monorepo dist: ${distIndex}`);
-      return { ok: true, path: distIndex, notes };
-    }
-    return { ok: false, notes };
+  const inst = installIntoDataDir(distDir, dataDir, notes);
+  if (!inst.ok) {
+    codes.push('INSTALL_FAILED');
+    return { ok: false, notes, codes };
   }
-
-  return { ok: true, path: join(dest, 'index.html'), notes };
+  return { ok: true, path: inst.path, notes };
 }

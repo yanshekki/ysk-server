@@ -8335,7 +8335,7 @@
     "itemDataDirWorldW": "請將 dataDir chmod 750（或 700），並 變更擁有者 給面板用戶",
     "itemDataDirOtherR": "建議 dataDir chmod 750，避免其他用戶讀取控制平面 JSON",
     "itemRustToolchain": "Rust 工具鏈",
-    "itemWebBuildFix": "按「立即修復」建置 Web 介面，或執行 pnpm --filter @ysk/web build",
+    "itemWebBuildFix": "按「立即修復」建置 Web 介面（本機需有 monorepo），或執行：pnpm --filter @ysk/web build",
     "itemStateStore": "控制平面狀態儲存",
     "itemStateStoreSqliteHint": "可選：YSK_STORE=sqlite 使用 WAL document store",
     "itemBackupFreshness": "最近完整備份",
@@ -8353,7 +8353,8 @@
     "fixNow": "立即修復",
     "fixFailed": "修復失敗",
     "fixDone": "已修復 dataDir 權限（chmod 750）",
-    "fixDoneWebUi": "已建置／安裝 Web 介面"
+    "fixDoneWebUi": "已建置／安裝 Web 介面",
+    "itemWebBuildManual": "本機無 monorepo／無已打包 SPA，無法一鍵修復。請喺有源碼嘅機器執行 pnpm --filter @ysk/web build，再將 apps/web/dist/* 複製到 dataDir/web（例如 /var/lib/ysk-server/web），或設定 YSK_WEB_ROOT 後重啟控制面。"
   },
   "redis": {
     "neverExpire": "永不過期",

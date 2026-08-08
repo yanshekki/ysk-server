@@ -2778,14 +2778,24 @@ export async function handleSystemRoutes(
           fixAction: action,
           path: result.path,
           notes: result.notes,
+          codes: result.codes,
         },
         ok: result.ok,
       });
+      // Prefer localized operator message when monorepo/package missing
+      const notes =
+        result.ok || !result.codes?.includes('NO_MONOREPO')
+          ? result.notes
+          : [
+              tl('readiness.itemWebBuildManual'),
+              ...result.notes,
+            ];
       sendJson(res, result.ok ? 200 : 400, {
         ok: result.ok,
         action,
         path: result.path,
-        notes: result.notes,
+        notes,
+        codes: result.codes,
       });
       return true;
     }

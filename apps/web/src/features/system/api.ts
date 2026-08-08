@@ -751,6 +751,7 @@ export const systemApi = {
       before?: string;
       after?: string;
       notes?: string[];
+      codes?: string[];
     }>('/api/v1/system/readiness/fix', {
       method: 'POST',
       body: JSON.stringify({ action }),

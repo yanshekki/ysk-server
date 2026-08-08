@@ -165,10 +165,16 @@ export function ReadinessPage() {
           );
           await load();
         } else {
-          setError(
-            (r.notes && r.notes.length ? r.notes.join('；') : null) ||
-              t('readiness.fixFailed'),
-          );
+          const codes = (r as { codes?: string[] }).codes ?? [];
+          // Prefer localized operator copy when auto-build is impossible
+          if (action === 'build-web-ui' && codes.includes('NO_MONOREPO')) {
+            setError(t('readiness.itemWebBuildManual'));
+          } else {
+            setError(
+              (r.notes && r.notes.length ? r.notes.join('；') : null) ||
+                t('readiness.fixFailed'),
+            );
+          }
           await load();
         }
       } catch (e) {
