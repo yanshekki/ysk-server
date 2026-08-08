@@ -494,6 +494,26 @@
   outline-offset: 1px;
 }
 
+.fm-pdf-preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 0;
+}
+
+.fm-pdf-preview__frame {
+  width: 100%;
+  height: min(70vh, 36rem);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: #525659;
+}
+
+.fm-pdf-preview__fallback {
+  margin: 0;
+  font-size: var(--text-xs);
+}
+
 .fm-media-preview {
   display: flex;
   align-items: center;

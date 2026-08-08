@@ -3359,7 +3359,8 @@
     "shareExpireAt": "到期时间",
     "shareExpireInvalid": "请选择未来的日期时间",
     "shareExpiresAt": "到期 {{at}}",
-    "colExpires": "到期"
+    "colExpires": "到期",
+    "pdfInlineHint": "若浏览器无法内嵌显示 PDF，请下载查看。"
   },
   "firewall": {
     "profiles": {

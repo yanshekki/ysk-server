@@ -693,7 +693,10 @@ export function FilesPage() {
     }
   }
 
-  async function openBlobPreview(e: FileEntry, kind: 'image' | 'video' | 'audio') {
+  async function openBlobPreview(
+    e: FileEntry,
+    kind: 'image' | 'video' | 'audio' | 'pdf',
+  ) {
     try {
       setBusy(true);
       const tkn = authStore.getToken();
@@ -703,17 +706,18 @@ export function FilesPage() {
       if (!res.ok) throw new Error(t('files.previewFailed'));
       const blob = await res.blob();
       // Prefer server Content-Type when blob is generic
+      const fallbackType =
+        kind === 'image'
+          ? e.mime || 'image/*'
+          : kind === 'video'
+            ? e.mime || 'video/mp4'
+            : kind === 'audio'
+              ? e.mime || 'audio/*'
+              : 'application/pdf';
       const typed =
         blob.type && blob.type !== 'application/octet-stream'
           ? blob
-          : new Blob([blob], {
-              type:
-                kind === 'image'
-                  ? e.mime || 'image/*'
-                  : kind === 'video'
-                    ? e.mime || 'video/mp4'
-                    : e.mime || 'audio/*',
-            });
+          : new Blob([blob], { type: fallbackType });
       setPreview((prev) => {
         if (prev?.url) {
           try {
@@ -739,12 +743,8 @@ export function FilesPage() {
       return;
     }
     const kind = previewKind(e.mime, e.name);
-    if (kind === 'image' || kind === 'video' || kind === 'audio') {
+    if (kind === 'image' || kind === 'video' || kind === 'audio' || kind === 'pdf') {
       await openBlobPreview(e, kind);
-      return;
-    }
-    if (kind === 'pdf') {
-      setPreview({ entry: e, kind: 'pdf' });
       return;
     }
     if (kind === 'text') {
@@ -1182,7 +1182,7 @@ export function FilesPage() {
                     rowActions={(e) => (
                       <ActionBar align="end">
                         {e.type === 'file' &&
-                        ['image', 'video', 'audio', 'text'].includes(
+                        ['image', 'video', 'audio', 'text', 'pdf'].includes(
                           previewKind(e.mime, e.name),
                         ) ? (
                           <Button
@@ -2306,7 +2306,8 @@ export function FilesPage() {
           preview?.kind === 'image' ||
           preview?.kind === 'video' ||
           preview?.kind === 'audio' ||
-          preview?.kind === 'text'
+          preview?.kind === 'text' ||
+          preview?.kind === 'pdf'
             ? 'xl'
             : 'md'
         }
@@ -2393,7 +2394,26 @@ export function FilesPage() {
             </audio>
           </div>
         ) : null}
-        {preview?.kind === 'pdf' ? (
+        {preview?.kind === 'pdf' && preview.url ? (
+          <div className="fm-pdf-preview">
+            <iframe
+              className="fm-pdf-preview__frame"
+              title={preview.entry.name}
+              src={preview.url}
+            />
+            <p className="fm-pdf-preview__fallback muted">
+              {t('files.pdfInlineHint')}{' '}
+              <button
+                type="button"
+                className="btn btn--ghost btn--sm"
+                onClick={() => void doDownload(preview.entry.path)}
+              >
+                {t('files.download')}
+              </button>
+            </p>
+          </div>
+        ) : null}
+        {preview?.kind === 'pdf' && !preview.url ? (
           <p className="muted">{t('files.pdfDownloadHint')}</p>
         ) : null}
         {preview?.kind === 'other' ? (

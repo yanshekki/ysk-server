@@ -206,5 +206,6 @@
   "shareExpireAt": "Expires at",
   "shareExpireInvalid": "Pick a future date and time",
   "shareExpiresAt": "Expires {{at}}",
-  "colExpires": "Expires"
+  "colExpires": "Expires",
+  "pdfInlineHint": "If the PDF does not display, download it."
 }
