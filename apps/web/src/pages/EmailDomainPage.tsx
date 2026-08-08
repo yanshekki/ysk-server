@@ -14,7 +14,6 @@ import {
   Card,
   CardSection,
   DataTable,
-  DescriptionList,
   EmptyState,
   FeaturePageLayout,
   Field,
@@ -27,7 +26,6 @@ import {
   PageTabs,
   FormActions,
   CheckboxField,
-  FormHint,
   SegRadio } from '../shared/components/ui';
 import type { OpsResultLike } from '../shared/components/ui';
 import { api } from '../shared/services/api';
@@ -416,9 +414,7 @@ export function EmailDomainPage() {
     { id: 'mailbox', label: t('email.tabMailbox') },
     { id: 'aliases', label: t('email.tabAliases') },
     { id: 'health', label: t('email.tabHealth') },
-    {
-      id: 'deliverability',
-      label: t('email.tabDeliverability', { defaultValue: 'Deliverability' }) },
+    { id: 'deliverability', label: t('email.tabDeliverability') },
     { id: 'relay', label: t('email.tabRelay') },
     { id: 'sieve', label: t('email.tabSieve') },
     { id: 'advanced', label: t('email.tabAdvanced') },
@@ -481,10 +477,7 @@ export function EmailDomainPage() {
       <PageTabs tabs={tabs} active={tab} onChange={setTab} variant="scroll">
         {tab === 'dns' ? (
           <Card>
-            <CardSection
-              title={t('email.dnsTodosTitle')}
-              description={t('email.dnsTodosDesc')}
-            >
+            <CardSection title={t('email.dnsTodosTitle')}>
               {bundle ? (
                 <>
                   <ActionBar className="u-mb-3">
@@ -502,54 +495,76 @@ export function EmailDomainPage() {
                     >
                       {t('email.openDnsPage')}
                     </Button>
+                    {bundle.externalTodos.length > 0 ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={bindClipboard(formatExternalTodosText(bundle.externalTodos))}
+                      >
+                        {t('email.copyExternalTodos')}
+                      </Button>
+                    ) : null}
                   </ActionBar>
-                  <DescriptionList
-                    columns={2}
+                  <SummaryStrip
                     items={[
                       {
                         label: t('email.healthScore'),
-                        value: (
-                          <Badge tone={healthScoreTone(bundle.health.score)}>
-                            {bundle.health.score}/{bundle.health.maxScore}
-                          </Badge>
-                        ) },
-                      { label: t('email.suggestedRecords'), value: String(bundle.records.length) },
-                      { label: t('email.externalTodosCount'), value: String(bundle.externalTodos.length) },
+                        value: `${bundle.health.score}/${bundle.health.maxScore}`,
+                        tone: healthScoreTone(bundle.health.score),
+                      },
+                      {
+                        label: t('email.suggestedRecords'),
+                        value: String(bundle.records.length),
+                      },
+                      {
+                        label: t('email.pendingCount'),
+                        value: String(
+                          bundle.health.messages.length + bundle.externalTodos.length,
+                        ),
+                        tone:
+                          bundle.health.messages.length + bundle.externalTodos.length > 0
+                            ? 'warn'
+                            : 'ok',
+                      },
                     ]}
                   />
                   {bundle.health.messages.length > 0 ? (
-                    <ul className="muted list-flush u-mt-3">
-                      {bundle.health.messages.map((m) => (
+                    <ul className="list-plain list-spaced u-mt-3 u-text-sm">
+                      {bundle.health.messages.slice(0, 5).map((m) => (
                         <li key={m}>{m}</li>
                       ))}
                     </ul>
                   ) : null}
-                  <div className="u-mt-4">
+                  <div className="u-mt-3">
                     <DataTable
                       columns={[
                         {
                           key: 'type',
                           header: t('email.colType'),
                           nowrap: true,
-                          render: (r) => <Badge>{r.type}</Badge> },
+                          render: (r) => (
+                            <span title={r.description || undefined}>
+                              <Badge>{r.type}</Badge>
+                            </span>
+                          ),
+                        },
                         {
                           key: 'name',
                           header: t('email.colName'),
                           render: (r) => (
                             <code className="inline">{r.name}</code>
-                          ) },
+                          ),
+                        },
                         {
                           key: 'value',
                           header: t('email.colValue'),
                           className: 'u-break-all',
                           render: (r) => (
-                            <code className="inline">{r.value}</code>
-                          ) },
-                        {
-                          key: 'description',
-                          header: t('email.colNote'),
-                          className: 'muted u-text-sm',
-                          render: (r) => r.description },
+                            <code className="inline" title={r.description || undefined}>
+                              {r.value}
+                            </code>
+                          ),
+                        },
                       ]}
                       rows={bundle.records}
                       rowKey={(r, i) => `${r.type}-${r.name}-${i}`}
@@ -568,36 +583,13 @@ export function EmailDomainPage() {
                     />
                   </div>
                   {bundle.externalTodos.length > 0 ? (
-                    <div className="u-mt-4">
-                      <h4 className="u-mb-2">{t('email.externalTodosHeading')}</h4>
-                      <FormHint>
-                        {t('email.externalTodosBody')}</FormHint>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="u-mb-3"
-                        onClick={bindClipboard(formatExternalTodosText(bundle.externalTodos))}
-                      >
-                        {t('email.copyExternalTodos')}
-                      </Button>
-                      <ul className="list-plain list-spaced">
-                        {bundle.externalTodos.map((todo) => (
-                          <li key={todo.id}>
-                            <Badge tone={todo.completed ? 'ok' : 'warn'}>
-                              {todo.completed ? t('email.todoDone') : t('email.todoPending')}
-                            </Badge>{' '}
-                            <strong>{todo.title}</strong>
-                            <div className="muted u-text-sm">{todo.description}</div>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                    <p className="muted u-text-sm u-mt-3 u-mb-0">
+                      {t('email.externalTodosOneLiner')}
+                    </p>
                   ) : null}
                 </>
               ) : (
-                <p className="muted u-m-0">
-                  {t('email.refreshDnsHint')}
-                </p>
+                <p className="muted u-m-0">{t('email.refreshDnsHint')}</p>
               )}
             </CardSection>
           </Card>
@@ -608,7 +600,6 @@ export function EmailDomainPage() {
             <Card>
               <CardSection
                 title={t('email.mailboxListTitle', { count: mailboxes.length })}
-                description={t('email.mailboxListDesc')}
               >
                 <ActionBar className="u-mb-3">
                   <Button
@@ -658,7 +649,7 @@ export function EmailDomainPage() {
         {tab === 'aliases' ? (
           <div className="tab-panel">
             <Card>
-              <CardSection title={t('email.aliasesTitle')} description={t('email.aliasesDesc')}>
+              <CardSection title={t('email.aliasesTitle')}>
                 <FormLayout columns={2}>
                   <Field label={t('email.aliasType')} htmlFor="al-type" flush>
                     <SegRadio
@@ -753,25 +744,17 @@ export function EmailDomainPage() {
               </CardSection>
             </Card>
             <Card>
-              <CardSection
-                title={t('email.autoreplyTitle')}
-                description={t('email.autoreplyDesc')}
-              >
-                <FormHint>
-                  {t('email.autoreplyBodyHint')}
-                </FormHint>
+              <CardSection title={t('email.autoreplyTitle')}>
                 <div className="form-switches">
                   <CheckboxField
                     id="ar-on"
                     label={t('email.enableAutoreply')}
-                    description={t('email.enableAutoreplyDesc')}
                     checked={autoreplyOn}
                     onChange={setAutoreplyOn}
                   />
                   <CheckboxField
                     id="ar-sys"
                     label={t('email.applyToSystem')}
-                    description={t('email.applyToSystemDesc')}
                     checked={flagsApplySystem}
                     onChange={setFlagsApplySystem}
                   />
@@ -856,10 +839,7 @@ export function EmailDomainPage() {
         {tab === 'health' ? (
           <div className="tab-panel">
           <Card>
-            <CardSection
-              title={t('email.healthLiveTitle')}
-              description={t('email.healthLiveDesc')}
-            >
+            <CardSection title={t('email.healthLiveTitle')}>
               <SummaryStrip
                 items={[
                   {
@@ -906,9 +886,6 @@ export function EmailDomainPage() {
                     ) },
                 ]}
               />
-              <FormHint>
-                {t('email.healthExternalNote')}
-              </FormHint>
               <ActionBar className="u-mb-3">
                 <Button
                   variant="primary"
@@ -922,8 +899,7 @@ export function EmailDomainPage() {
                     'deliverability',
                   )}
                 >
-                  {t('email.runDeliverabilityPack', {
-                    defaultValue: 'Run deliverability pack' })}
+                  {t('email.runDeliverabilityPack')}
                 </Button>
                 <Button
                   variant="secondary"
@@ -1044,10 +1020,7 @@ export function EmailDomainPage() {
                   ) : null}
                 </div>
               ) : (
-                <EmptyState
-                  title={t('email.noLiveYet')}
-                  description={t('email.noLiveYetHint')}
-                />
+                <EmptyState title={t('email.noLiveYet')} />
               )}
 
               <div className="u-mt-4">
@@ -1170,7 +1143,6 @@ export function EmailDomainPage() {
                   <CheckboxField
                     id="policy-spam"
                     label={t('email.enableAntispam')}
-                    description={t('email.enableAntispamDesc')}
                     checked={policyAntispam}
                     onChange={setPolicyAntispam}
                     disabled={busy}
@@ -1229,18 +1201,7 @@ export function EmailDomainPage() {
         {tab === 'deliverability' ? (
           <div className="tab-panel">
             <Card>
-              <CardSection
-                title={t('email.deliverabilityTitle', {
-                  defaultValue: 'Deliverability pack' })}
-                description={t('email.deliverabilityDesc', {
-                  defaultValue:
-                    'Unified PTR / DNS / DNSBL / Port 25 / relay / warm-up checklist. Never claims global inbox delivery.' })}
-              >
-                <Alert variant="info">
-                  {t('email.deliverabilityHonesty', {
-                    defaultValue:
-                      'YSK cannot set PTR or unlock Port 25 at the VPS provider. Gmail/Outlook placement is external.' })}
-                </Alert>
+              <CardSection title={t('email.deliverabilityTitle')}>
                 <ActionBar className="u-mb-3">
                   <Button
                     variant="primary"
@@ -1248,8 +1209,7 @@ export function EmailDomainPage() {
                     loading={busy}
                     onClick={bindBusySet(withBusy, () => emailApi.deliverability(domain.id), setDeliverability)}
                   >
-                    {t('email.runDeliverabilityPack', {
-                      defaultValue: 'Run deliverability pack' })}
+                    {t('email.runDeliverabilityPack')}
                   </Button>
                   <Button
                     variant="secondary"
@@ -1268,86 +1228,56 @@ export function EmailDomainPage() {
                           value: String(deliverability.score),
                           tone: healthScoreTone(deliverability.score) },
                         {
-                          label: t('email.panelReady', { defaultValue: 'Panel-checkable' }),
+                          label: t('email.panelReady'),
                           value: deliverability.panelReady
-                            ? t('common.ready', { defaultValue: 'Ready' })
-                            : t('common.degraded', { defaultValue: 'Gaps' }),
-                          tone: deliverability.panelReady ? 'ok' : 'warn' },
-                        {
-                          label: t('email.guaranteed', { defaultValue: 'Inbox guarantee' }),
-                          value: t('common.no'),
-                          tone: 'default' },
+                            ? t('common.ready')
+                            : t('email.gaps'),
+                          tone: deliverability.panelReady ? 'ok' : 'warn',
+                        },
                       ]}
                     />
-                    <ul className="list-plain u-mt-3">
-                      {deliverability.honesty.map((h) => (
-                        <li key={h} className="muted u-text-sm">
-                          {h}
-                        </li>
-                      ))}
-                    </ul>
                     <DataTable
-                      title={t('email.checklist', { defaultValue: 'Checklist' })}
                       columns={[
                         {
                           key: 'title',
                           header: t('common.name'),
-                          render: (i) => <strong>{i.title}</strong> },
+                          render: (i) => <strong>{i.title}</strong>,
+                        },
                         {
                           key: 'ok',
                           header: t('common.status'),
                           render: (i) => (
                             <Badge tone={deliverabilityItemTone(i)}>
                               {i.ok === true
-                                ? 'OK'
+                                ? t('email.checkOk')
                                 : i.level === 'external'
-                                  ? 'External'
+                                  ? t('email.checkExternal')
                                   : i.ok === false
-                                    ? 'Fail'
+                                    ? t('email.checkFail')
                                     : '—'}
                             </Badge>
-                          ) },
-                        {
-                          key: 'owner',
-                          header: t('email.owner', { defaultValue: 'Owner' }),
-                          className: 'muted u-text-sm',
-                          render: (i) => i.owner },
+                          ),
+                        },
                         {
                           key: 'detail',
                           header: t('common.notes'),
                           className: 'u-text-sm',
-                          render: (i) => (
-                            <span>
-                              {i.detail}
-                              {i.fixHint ? (
-                                <span className="muted"> · {i.fixHint}</span>
-                              ) : null}
-                            </span>
-                          ) },
+                          render: (i) => i.detail || i.fixHint || '—',
+                        },
                       ]}
                       rows={deliverability.items}
                       rowKey={(i) => i.id}
                     />
                     {deliverability.externalTodos?.length ? (
-                      <div className="u-mt-4">
-                        <h4>{t('email.externalTodosHeading')}</h4>
-                        <ul className="u-text-sm">
-                          {deliverability.externalTodos.map((todo) => (
-                            <li key={todo.id}>
-                              <strong>{todo.title ?? todo.id}</strong>
-                              {todo.description ? ` — ${todo.description}` : ''}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+                      <p className="muted u-text-sm u-mt-3 u-mb-0">
+                        {t('email.externalTodosOneLiner')}
+                      </p>
                     ) : null}
                   </>
                 ) : (
                   <EmptyState
-                    title={t('email.deliverabilityEmpty', {
-                      defaultValue: 'No pack run yet' })}
-                    description={t('email.deliverabilityEmptyDesc', {
-                      defaultValue: 'Click Run deliverability pack to probe DNS, PTR, Port 25, DNSBL.' })}
+                    title={t('email.deliverabilityEmpty')}
+                    description={t('email.deliverabilityEmptyDesc')}
                   />
                 )}
               </CardSection>
@@ -1358,10 +1288,7 @@ export function EmailDomainPage() {
         {tab === 'relay' ? (
           <div className="tab-panel">
             <Card>
-              <CardSection
-                title={t('email.relayTitle')}
-                description={t('email.relayDesc')}
-              >
+              <CardSection title={t('email.relayTitle')}>
                 <FormLayout columns={2}>
                   <Field label={t('email.relayHost')} htmlFor="rh" required flush>
                     <input
@@ -1392,7 +1319,6 @@ export function EmailDomainPage() {
                   <CheckboxField
                     id="ras"
                     label={t('email.applyRelaySystem')}
-                    description={t('email.applyRelaySystemDesc')}
                     checked={relayApplySystem}
                     onChange={setRelayApplySystem}
                   />
@@ -1427,16 +1353,12 @@ export function EmailDomainPage() {
         {tab === 'sieve' ? (
           <div className="stack">
             <Card>
-              <CardSection
-                title={t('email.webmailSsoTitle')}
-                description={t('email.webmailSsoDesc')}
-              >
+              <CardSection title={t('email.webmailSsoTitle')}>
                 <FormLayout>
                   <Field
                     label={t('email.mailboxPasswordOptional')}
                     htmlFor="sso-pw"
                     flush
-                    hint={t('email.mailboxPasswordHint', { domain: domain.domain })}
                   >
                     <input
                       id="sso-pw"
@@ -1446,7 +1368,6 @@ export function EmailDomainPage() {
                     />
                   </Field>
                 </FormLayout>
-                <FormHint>{t('email.ssoTokenHint')}</FormHint>
                 <FormActions>
                   <Button
                     variant="primary"
@@ -1467,13 +1388,7 @@ export function EmailDomainPage() {
               </CardSection>
             </Card>
             <Card>
-              <CardSection
-                title={t('email.sieveTitle')}
-                description={t('email.sieveDesc')}
-              >
-                <FormHint>
-                  {t('email.sieveTemplateHint', { domain: domain.domain })}
-                </FormHint>
+              <CardSection title={t('email.sieveTitle')}>
                 <FormActions>
                   <Button
                     variant="primary"
@@ -1511,10 +1426,7 @@ export function EmailDomainPage() {
         {tab === 'advanced' ? (
           <div className="stack">
             <Card>
-              <CardSection
-                title={t('email.domainSslTitle')}
-                description={t('email.domainSslDesc')}
-              >
+              <CardSection title={t('email.domainSslTitle')}>
                 <FormActions>
                   <Button
                     variant="secondary"
@@ -1530,11 +1442,7 @@ export function EmailDomainPage() {
               </CardSection>
             </Card>
             <Card>
-              <CardSection
-                title={t('email.clientAutoTitle')}
-                description={t('email.clientAutoDesc')}
-              >
-                <FormHint>{t('email.clientAutoHint')}</FormHint>
+              <CardSection title={t('email.clientAutoTitle')}>
                 <FormActions>
                   <Button
                     variant="secondary"
@@ -1552,10 +1460,7 @@ export function EmailDomainPage() {
               </CardSection>
             </Card>
             <Card>
-              <CardSection
-                title={t('email.queueTitle')}
-                description={t('email.queueDesc')}
-              >
+              <CardSection title={t('email.queueTitle')}>
                 <FormActions>
                   <Button
                     variant="secondary"
@@ -1582,29 +1487,16 @@ export function EmailDomainPage() {
                     {t('email.flushQueue')}
                   </Button>
                 </FormActions>
-                <FormHint>
-                  {t('email.publicAutoconfig')}
-                  <code className="inline">
-                    /mail/config-v1.1.xml?domain={domain.domain}
-                  </code>
-                </FormHint>
               </CardSection>
             </Card>
             <Card>
-              <CardSection
-                title={t('email.bootstrapTitle')}
-                description={t('email.bootstrapDesc')}
-              >
-                <Alert variant="info">
-                  {t('email.bootstrapHonesty')}
-                </Alert>
+              <CardSection title={t('email.bootstrapTitle')}>
                 <FormLayout>
                   <Field
                     label={t('email.adminPassword')}
                     htmlFor="boot-pw"
                     flush
                     required
-                    hint={t('email.adminPasswordHint')}
                   >
                     <input
                       id="boot-pw"
@@ -1658,10 +1550,7 @@ export function EmailDomainPage() {
               </CardSection>
             </Card>
             <Card>
-              <CardSection
-                title={t('email.webmailRoundcube')}
-                description={t('email.webmailInstallDesc')}
-              >
+              <CardSection title={t('email.webmailRoundcube')}>
                 <FormLayout columns={2}>
                   <Field
                     label={t('email.webmailHostname')}
