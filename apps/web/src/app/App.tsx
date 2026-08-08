@@ -157,6 +157,9 @@ const MetricsPage = lazy(() =>
 const NetworkPage = lazy(() =>
   import('../pages/features/NetworkPage').then((m) => ({ default: m.NetworkPage })),
 );
+const TerminalPage = lazy(() =>
+  import('../pages/features/TerminalPage').then((m) => ({ default: m.TerminalPage })),
+);
 const LogsPage = lazy(() =>
   import('../pages/features/LogsPage').then((m) => ({ default: m.LogsPage })),
 );
@@ -508,6 +511,14 @@ export function App() {
               element={
                 <Lazy>
                   <NetworkPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="terminal"
+              element={
+                <Lazy>
+                  <TerminalPage />
                 </Lazy>
               }
             />

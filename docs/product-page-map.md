@@ -41,6 +41,7 @@ See also: [`product-feature-matrix.md`](./product-feature-matrix.md).
 | System | `/users` | Users & packages | T |
 | System | `/services` | Service matrix | O |
 | System | `/metrics` | Metrics | P |
+| System | `/terminal` | Browser terminal |
 | System | `/logs` | Log Center | T |
 | System | `/cron` | Cron | K |
 | System | `/backups` | Backups | L |

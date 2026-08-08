@@ -46,6 +46,8 @@ import {
   handleToolsRoutes,
   handleUpdatesRoutes,
 } from './routes/index.js';
+import { handleTerminalRoutes } from './routes/terminal.js';
+import { attachTerminalWebSocket } from './terminal/ws-handler.js';
 
 export type ControlPlaneServer = HttpServer | HttpsServer;
 
@@ -87,6 +89,17 @@ function attachRequestHandler(ctx: AppContext, webRoot: string | null) {
         if (await handleMetricsRoutes(ctx, req, res, url, method)) return;
         if (await handleNetworkRoutes(ctx, req, res, url, method)) return;
         if (await handleSystemRoutes(ctx, req, res, url, method)) return;
+        if (
+          await handleTerminalRoutes(
+            ctx,
+            req,
+            res,
+            url,
+            method,
+            ctx.terminalTickets,
+          )
+        )
+          return;
 
         // Domain route modules (extracted from former monolithic handler)
         if (await handlePublicRoutes(ctx, req, res, url, method)) return;
@@ -141,16 +154,23 @@ export function createControlPlaneServer(ctx: AppContext): CreateServerResult {
   const webRoot = resolveWebRoot(ctx.webRoot);
   const handler = attachRequestHandler(ctx, webRoot);
   const tls = loadPanelTlsOptions(ctx.config);
+  let server: ControlPlaneServer;
+  let https = false;
   if (tls) {
-    return { server: createNodeHttpsServer(tls, handler), https: true };
+    server = createNodeHttpsServer(tls, handler);
+    https = true;
+  } else {
+    if (ctx.config?.tlsEnabled) {
+      // Config wants TLS but files missing — fall back to HTTP with stderr warning
+      process.stderr.write(
+        '[ysk-server] tlsEnabled but cert/key missing or unreadable — serving plain HTTP\n',
+      );
+    }
+    server = createNodeHttpServer(handler);
   }
-  if (ctx.config?.tlsEnabled) {
-    // Config wants TLS but files missing — fall back to HTTP with stderr warning
-    process.stderr.write(
-      '[ysk-server] tlsEnabled but cert/key missing or unreadable — serving plain HTTP\n',
-    );
-  }
-  return { server: createNodeHttpServer(handler), https: false };
+  // Interactive browser terminal (WebSocket upgrade)
+  attachTerminalWebSocket(server, ctx, ctx.terminalTickets);
+  return { server, https };
 }
 
 export type DualListenResult = {
@@ -223,6 +243,10 @@ export async function listenControlPlane(
     : attachRequestHandler(ctx, resolveWebRoot(ctx.webRoot));
 
   const httpServer = createNodeHttpServer(httpHandler);
+  // Full-API dual HTTP (no redirect) needs the same terminal WS upgrade as primary.
+  if (!redirect) {
+    attachTerminalWebSocket(httpServer, ctx, ctx.terminalTickets);
+  }
   try {
     await listen(httpServer, host, wantHttp);
     const httpPort = boundPort(httpServer, wantHttp);

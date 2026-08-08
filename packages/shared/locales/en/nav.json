@@ -58,5 +58,6 @@
   "java": "Java",
   "kotlin": "Kotlin",
   "bun": "Bun",
-  "software": "Software"
+  "software": "Software",
+  "terminal": "Terminal"
 }

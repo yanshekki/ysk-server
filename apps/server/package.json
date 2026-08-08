@@ -25,7 +25,13 @@
     "directory": "apps/server"
   },
   "license": "MIT",
-  "keywords": ["ysk-server", "cli", "hosting", "linux", "control-plane"],
+  "keywords": [
+    "ysk-server",
+    "cli",
+    "hosting",
+    "linux",
+    "control-plane"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json && node ./scripts/chmod-bin.mjs",
     "dev": "tsx src/cli.ts serve",
@@ -38,13 +44,16 @@
   },
   "dependencies": {
     "@ysk/core": "workspace:*",
-    "@ysk/shared": "workspace:*"
+    "@ysk/shared": "workspace:*",
+    "node-pty": "^1.1.0",
+    "ws": "^8.21.3"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
+    "@types/ws": "^8.18.1",
+    "@vitest/coverage-v8": "^2.1.8",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8",
-    "@vitest/coverage-v8": "^2.1.8"
+    "vitest": "^2.1.8"
   }
 }

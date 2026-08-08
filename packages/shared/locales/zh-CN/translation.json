@@ -4145,7 +4145,8 @@
     "java": "Java",
     "kotlin": "Kotlin",
     "bun": "Bun",
-    "software": "软件中心"
+    "software": "软件中心",
+    "terminal": "终端"
   },
   "network": {
     "title": "网络接口",
@@ -9965,6 +9966,34 @@
     "about": "说明",
     "main": "操作",
     "stack": "软件"
+  },
+  "terminal": {
+    "tabSession": "连接",
+    "target": "登录身份",
+    "connect": "连接",
+    "disconnect": "断开",
+    "user": "用户",
+    "size": "尺寸",
+    "stateConnected": "已连接",
+    "stateConnecting": "连接中",
+    "stateIdle": "未连接",
+    "connecting": "正在建立会话…",
+    "connectedAs": "已以 {{user}} 登录",
+    "disconnected": "已断开",
+    "error": "终端错误",
+    "wsError": "WebSocket 连接失败",
+    "exitCode": "退出码 {{code}}",
+    "needRootExecute": "需要 root 与 YSK_EXECUTE=1 才能打开系统 shell。",
+    "unavailable": "不可用",
+    "placeholder": "选择身份后按「连接」",
+    "aboutTitle": "终端说明",
+    "aboutSub": "浏览器交互 shell（本机 OS 用户），不是任意远程 SSH 客户端。",
+    "aboutWhat": "是什么",
+    "aboutWhatBody": "真实 PTY 登录 shell（bash -l）。项目用户用 runuser；root 用 root shell。",
+    "aboutReq": "需求",
+    "aboutReqBody": "控制面须以 root 运行，并开启 YSK_EXECUTE。",
+    "aboutUsers": "身份",
+    "aboutUsersBody": "可选 root，或已 OS 布建的项目 Linux 用户。"
   },
   "uiInline": {
     "s27d9daa5": "已預填 runtime {{v0}} {{v1}}，可建立專案",

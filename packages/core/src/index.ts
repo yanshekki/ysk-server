@@ -2,6 +2,7 @@ export * from './config/schema.js';
 export * from './net/index.js';
 export * from './security/index.js';
 export * from './hosting/index.js';
+export * from './terminal/index.js';
 export * from './llm/index.js';
 export * from './update/index.js';
 export * from './email/index.js';

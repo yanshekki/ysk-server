@@ -1157,5 +1157,19 @@
     "notes": [
       "專案 runtime 選 Bun 時使用此環境"
     ]
+  },
+  "terminal": {
+    "id": "terminal",
+    "title": "終端機",
+    "summary": "瀏覽器內真實 PTY shell：可選 root 或專案 Linux 用戶。",
+    "canDo": [
+      "以 root 或專案用戶開啟互動 shell",
+      "完整終端體驗（顏色、vim、resize）",
+      "斷線即關閉 PTY"
+    ],
+    "notes": [
+      "任意遠端主機 SSH（v1 只限本機）",
+      "無 root／EXECUTE 時無法連線"
+    ]
   }
 }

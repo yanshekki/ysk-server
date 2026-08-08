@@ -34,9 +34,11 @@ import {
   runProtectionProbes,
   backupAllProjects,
   checkIpDnsbl,
+  createTerminalTicketStore,
   type Allowlist,
   type HostExecutor,
   type ProtectionState,
+  type TerminalTicketStore,
   type YskConfig,
   type YskDatabase,
 } from '@ysk/core';
@@ -70,6 +72,8 @@ export interface AppContext {
   dataDir: string;
   /** Packaged Web UI root (null if not built) */
   webRoot?: string;
+  /** One-time tickets for browser terminal WebSocket */
+  terminalTickets: TerminalTicketStore;
   /** Rebuild LLM gateway from settings (after settings.llm update) */
   reloadLlm: () => void;
   /** Run protection probes and apply resulting mode */
@@ -178,6 +182,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
     configPath: opts.configPath,
     dataDir,
     webRoot: opts.webRoot,
+    terminalTickets: createTerminalTicketStore(),
     reloadLlm() {
       ctx.llm = buildLlm(settings);
       ctx.llm.setProtection(ctx.protection);

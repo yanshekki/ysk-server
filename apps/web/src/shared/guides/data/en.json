@@ -1171,5 +1171,19 @@
     "notes": [
       "Used when a project runtime is Bun"
     ]
+  },
+  "terminal": {
+    "id": "terminal",
+    "title": "Terminal",
+    "summary": "Real PTY shell in the browser as root or a project Linux user.",
+    "canDo": [
+      "Open interactive shell as root or project user",
+      "Full terminal feel (colors, vim, resize)",
+      "Disconnect kills the PTY"
+    ],
+    "notes": [
+      "Arbitrary remote SSH (v1 is local host only)",
+      "Connect without root + EXECUTE"
+    ]
   }
 }

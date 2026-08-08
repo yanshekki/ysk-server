@@ -286,6 +286,12 @@ export const MUTATING_ROUTE_CAP_RULES: readonly RouteCapRule[] = [
     cap: 'security.policy',
   },
   {
+    methods: ['POST'],
+    pattern: /^\/api\/v1\/terminal\//,
+    cap: 'settings.system',
+    note: 'browser terminal tickets — privilege shell access',
+  },
+  {
     methods: ['POST', 'PUT', 'PATCH', 'DELETE'],
     pattern: /^\/api\/v1\/sftp\//,
     cap: 'files.project',
@@ -372,6 +378,7 @@ export const FEATURE_NAV_CAPS: Readonly<Record<string, readonly CapabilityId[]>>
   agents: ['services.read', 'services.control', 'runtime.tuning'],
   cdn: ['publish.apply', 'projects.read'],
   rbac: ['rbac.policy', 'users.manage'],
+  terminal: ['settings.system', 'services.control'],
 };
 
 /** Path prefix → any-of caps (for SPA route guard). Longer prefixes win. */
@@ -398,6 +405,7 @@ export const PATH_CAP_GUARDS: ReadonlyArray<{
   { prefix: '/system/migrate', caps: ['settings.system', 'backups.restore'] },
   { prefix: '/system/unit', caps: ['services.control', 'settings.system'] },
   { prefix: '/system/readiness', caps: ['dashboard.read', 'settings.system'] },
+  { prefix: '/terminal', caps: ['settings.system', 'services.control'] },
   { prefix: '/agents', caps: ['services.read', 'services.control', 'runtime.tuning'] },
   { prefix: '/cdn', caps: ['publish.apply', 'projects.read'] },
 ];

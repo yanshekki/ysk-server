@@ -58,5 +58,6 @@
   "java": "Java",
   "kotlin": "Kotlin",
   "bun": "Bun",
-  "software": "软件中心"
+  "software": "软件中心",
+  "terminal": "终端"
 }

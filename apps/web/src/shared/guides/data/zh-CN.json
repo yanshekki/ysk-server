@@ -1171,5 +1171,19 @@
     "notes": [
       "项目 runtime 选择 Bun 时使用此环境"
     ]
+  },
+  "terminal": {
+    "id": "terminal",
+    "title": "终端",
+    "summary": "浏览器内真实 PTY shell：可选 root 或项目 Linux 用户。",
+    "canDo": [
+      "以 root 或项目用户打开交互 shell",
+      "完整终端体验（颜色、vim、resize）",
+      "断线即关闭 PTY"
+    ],
+    "notes": [
+      "任意远端主机 SSH（v1 仅限本机）",
+      "无 root／EXECUTE 时无法连接"
+    ]
   }
 }

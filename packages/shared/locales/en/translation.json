@@ -4145,7 +4145,8 @@
     "java": "Java",
     "kotlin": "Kotlin",
     "bun": "Bun",
-    "software": "Software"
+    "software": "Software",
+    "terminal": "Terminal"
   },
   "network": {
     "title": "Network interfaces",
@@ -9965,6 +9966,34 @@
     "about": "About",
     "main": "Actions",
     "stack": "Software"
+  },
+  "terminal": {
+    "tabSession": "Session",
+    "target": "Login as",
+    "connect": "Connect",
+    "disconnect": "Disconnect",
+    "user": "User",
+    "size": "Size",
+    "stateConnected": "Connected",
+    "stateConnecting": "Connecting",
+    "stateIdle": "Idle",
+    "connecting": "Opening session…",
+    "connectedAs": "Logged in as {{user}}",
+    "disconnected": "Disconnected",
+    "error": "Terminal error",
+    "wsError": "WebSocket failed",
+    "exitCode": "Exit code {{code}}",
+    "needRootExecute": "Requires root + YSK_EXECUTE=1 for system shells.",
+    "unavailable": "unavailable",
+    "placeholder": "Pick an identity, then Connect",
+    "aboutTitle": "About terminal",
+    "aboutSub": "Interactive OS shell in the browser (local users). Not an arbitrary remote SSH client.",
+    "aboutWhat": "What it is",
+    "aboutWhatBody": "Real PTY login shell (bash -l). Project users via runuser; root via root shell.",
+    "aboutReq": "Requirements",
+    "aboutReqBody": "Control plane must run as root with YSK_EXECUTE enabled.",
+    "aboutUsers": "Identities",
+    "aboutUsersBody": "Root, or OS-provisioned project Linux users."
   },
   "uiInline": {
     "s27d9daa5": "runtime {{v0}} {{v1}}，",
