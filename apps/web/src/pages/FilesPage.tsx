@@ -109,14 +109,47 @@ export function formatBytes(n: number): string {
   return `${(n / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 }
 
+export type PreviewKind = 'image' | 'video' | 'audio' | 'pdf' | 'text' | 'other';
+
+/** Extension → kind when server mime is missing or generic. */
+export function previewKindFromName(name?: string | null): PreviewKind | null {
+  const n = String(name ?? '')
+    .trim()
+    .toLowerCase();
+  const ext = n.includes('.') ? n.slice(n.lastIndexOf('.') + 1) : '';
+  if (!ext) return null;
+  if (
+    ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp', 'ico', 'avif', 'heic', 'heif'].includes(
+      ext,
+    )
+  ) {
+    return 'image';
+  }
+  if (['mp4', 'webm', 'ogg', 'ogv', 'mov', 'm4v', 'mkv', 'avi'].includes(ext)) {
+    return 'video';
+  }
+  if (['mp3', 'wav', 'ogg', 'oga', 'm4a', 'aac', 'flac', 'opus'].includes(ext)) {
+    return 'audio';
+  }
+  if (ext === 'pdf') return 'pdf';
+  if (
+    ['txt', 'md', 'json', 'js', 'ts', 'tsx', 'jsx', 'css', 'html', 'htm', 'xml', 'yml', 'yaml', 'log', 'csv', 'sh', 'env'].includes(
+      ext,
+    )
+  ) {
+    return 'text';
+  }
+  return null;
+}
+
 export function iconFor(e: FileEntry): string {
   if (e.type === 'dir') return '📁';
-  const m = e.mime ?? '';
-  if (m.startsWith('image/')) return '🖼';
-  if (m === 'application/pdf') return '📄';
-  if (m.startsWith('video/')) return '🎬';
-  if (m.startsWith('audio/')) return '🎵';
-  if (m.startsWith('text/') || m.includes('json')) return '📝';
+  const kind = previewKind(e.mime, e.name);
+  if (kind === 'image') return '🖼';
+  if (kind === 'pdf') return '📄';
+  if (kind === 'video') return '🎬';
+  if (kind === 'audio') return '🎵';
+  if (kind === 'text') return '📝';
   return '📎';
 }
 
@@ -133,13 +166,23 @@ export function pathCrumbs(path: string): string[] {
 
 export function previewKind(
   mime?: string | null,
-): 'image' | 'pdf' | 'text' | 'other' {
-  const m = mime ?? '';
+  name?: string | null,
+): PreviewKind {
+  const m = (mime ?? '').toLowerCase();
   if (m.startsWith('image/')) return 'image';
+  if (m.startsWith('video/')) return 'video';
+  if (m.startsWith('audio/')) return 'audio';
   if (m === 'application/pdf') return 'pdf';
-  if (m.startsWith('text/') || m.includes('json') || m.includes('javascript'))
+  if (
+    m.startsWith('text/') ||
+    m.includes('json') ||
+    m.includes('javascript') ||
+    m.includes('xml')
+  ) {
     return 'text';
-  return 'other';
+  }
+  // Fallback by filename (server may omit mime or use application/octet-stream)
+  return previewKindFromName(name) ?? 'other';
 }
 
 export function parseSortValue(v: string): {
@@ -274,7 +317,7 @@ export function FilesPage() {
   const [delPaths, setDelPaths] = useState<string[] | null>(null);
   const [preview, setPreview] = useState<{
     entry: FileEntry;
-    kind: 'text' | 'image' | 'pdf' | 'other';
+    kind: PreviewKind;
     content?: string;
     url?: string;
   } | null>(null);
@@ -499,24 +542,67 @@ export function FilesPage() {
     setSelected(selectAllPaths(items, selected.size));
   }
 
+  function closePreview() {
+    setPreview((prev) => {
+      if (prev?.url) {
+        try {
+          URL.revokeObjectURL(prev.url);
+        } catch {
+          /* */
+        }
+      }
+      return null;
+    });
+  }
+
+  async function openBlobPreview(e: FileEntry, kind: 'image' | 'video' | 'audio') {
+    try {
+      setBusy(true);
+      const tkn = authStore.getToken();
+      const res = await fetch(filesApi.downloadUrl(root, e.path), {
+        headers: tkn ? { Authorization: `Bearer ${tkn}` } : {},
+      });
+      if (!res.ok) throw new Error(t('files.previewFailed'));
+      const blob = await res.blob();
+      // Prefer server Content-Type when blob is generic
+      const typed =
+        blob.type && blob.type !== 'application/octet-stream'
+          ? blob
+          : new Blob([blob], {
+              type:
+                kind === 'image'
+                  ? e.mime || 'image/*'
+                  : kind === 'video'
+                    ? e.mime || 'video/mp4'
+                    : e.mime || 'audio/*',
+            });
+      setPreview((prev) => {
+        if (prev?.url) {
+          try {
+            URL.revokeObjectURL(prev.url);
+          } catch {
+            /* */
+          }
+        }
+        return { entry: e, kind, url: URL.createObjectURL(typed) };
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('files.previewFailed'));
+      setPreview({ entry: e, kind: 'other' });
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function openEntry(e: FileEntry) {
     if (e.type === 'dir') {
       setPath(e.path);
       setSide('all');
       return;
     }
-    const kind = previewKind(e.mime);
-    if (kind === 'image') {
-      try {
-        const tkn = authStore.getToken();
-        const res = await fetch(filesApi.downloadUrl(root, e.path), {
-          headers: tkn ? { Authorization: `Bearer ${tkn}` } : {} });
-        if (!res.ok) throw new Error('preview failed');
-        const blob = await res.blob();
-        setPreview({ entry: e, kind: 'image', url: URL.createObjectURL(blob) });
-      } catch {
-        setPreview({ entry: e, kind: 'other' });
-      }
+    const kind = previewKind(e.mime, e.name);
+    if (kind === 'image' || kind === 'video' || kind === 'audio') {
+      await openBlobPreview(e, kind);
       return;
     }
     if (kind === 'pdf') {
@@ -524,8 +610,13 @@ export function FilesPage() {
       return;
     }
     if (kind === 'text') {
-      const r = await filesApi.read(root, e.path);
-      setPreview({ entry: e, kind: 'text', content: r.content });
+      try {
+        const r = await filesApi.read(root, e.path);
+        setPreview({ entry: e, kind: 'text', content: r.content });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : t('files.previewFailed'));
+        setPreview({ entry: e, kind: 'other' });
+      }
       return;
     }
     setPreview({ entry: e, kind: 'other' });
@@ -946,6 +1037,19 @@ export function FilesPage() {
                     rowKey={(e) => e.path}
                     rowActions={(e) => (
                       <ActionBar align="end">
+                        {e.type === 'file' &&
+                        ['image', 'video', 'audio'].includes(
+                          previewKind(e.mime, e.name),
+                        ) ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            loading={busy}
+                            onClick={() => void openEntry(e)}
+                          >
+                            {t('files.preview')}
+                          </Button>
+                        ) : null}
                         {e.type === 'file' ? (
                           <Button
                             variant="ghost"
@@ -1871,14 +1975,21 @@ export function FilesPage() {
         busy={busy}
       />
 
-      {/* Preview */}
+      {/* Preview — image / video / audio / text in browser popup */}
       <Modal
         open={Boolean(preview)}
-        onClose={bindSet(setPreview, null)}
+        onClose={closePreview}
         title={preview?.entry.name ?? t('files.preview')}
+        size={
+          preview?.kind === 'image' ||
+          preview?.kind === 'video' ||
+          preview?.kind === 'audio'
+            ? 'xl'
+            : 'md'
+        }
         footer={
           <>
-            <Button variant="secondary" size="md" onClick={bindSet(setPreview, null)}>
+            <Button variant="secondary" size="md" onClick={closePreview}>
               {t('common.close')}
             </Button>
             {preview ? (
@@ -1894,19 +2005,39 @@ export function FilesPage() {
         }
       >
         {preview?.kind === 'text' ? (
-          <pre className="code u-scroll-preview">
-            {preview.content}
-          </pre>
+          <pre className="code u-scroll-preview">{preview.content}</pre>
         ) : null}
         {preview?.kind === 'image' && preview.url ? (
-          <img
-            src={preview.url}
-            alt={preview.entry.name}
-            className="u-max-w-full u-scroll-preview"
-            onError={() => setError(t('files.imagePreviewNeedLogin'))}
-          />
+          <div className="fm-media-preview">
+            <img
+              src={preview.url}
+              alt={preview.entry.name}
+              className="fm-media-preview__img"
+              onError={() => setError(t('files.imagePreviewNeedLogin'))}
+            />
+          </div>
         ) : null}
-        {preview?.kind === 'pdf' && preview.url ? (
+        {preview?.kind === 'video' && preview.url ? (
+          <div className="fm-media-preview">
+            <video
+              className="fm-media-preview__video"
+              src={preview.url}
+              controls
+              playsInline
+              preload="metadata"
+            >
+              {t('files.videoNotSupported')}
+            </video>
+          </div>
+        ) : null}
+        {preview?.kind === 'audio' && preview.url ? (
+          <div className="fm-media-preview fm-media-preview--audio">
+            <audio className="fm-media-preview__audio" src={preview.url} controls preload="metadata">
+              {t('files.audioNotSupported')}
+            </audio>
+          </div>
+        ) : null}
+        {preview?.kind === 'pdf' ? (
           <p className="muted">{t('files.pdfDownloadHint')}</p>
         ) : null}
         {preview?.kind === 'other' ? (

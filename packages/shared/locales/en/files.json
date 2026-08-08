@@ -169,5 +169,8 @@
   "uploadStatusQueued": "Queued",
   "uploadNoFile": "No file data",
   "uploadSomeFailed": "{{count}} item(s) failed",
-  "uploadTruncated": "Upload limited to {{max}} items ({{total}} selected; rest skipped)"
+  "uploadTruncated": "Upload limited to {{max}} items ({{total}} selected; rest skipped)",
+  "previewFailed": "Preview failed",
+  "videoNotSupported": "Your browser cannot play this video.",
+  "audioNotSupported": "Your browser cannot play this audio."
 }

@@ -128,7 +128,11 @@ describe('FilesPage wave2 helpers', () => {
     expect(previewKind('text/plain')).toBe('text');
     expect(previewKind('application/json')).toBe('text');
     expect(previewKind('application/javascript')).toBe('text');
+    expect(previewKind('video/mp4')).toBe('video');
+    expect(previewKind('audio/mpeg')).toBe('audio');
     expect(previewKind('application/octet-stream')).toBe('other');
+    expect(previewKind('application/octet-stream', 'clip.mp4')).toBe('video');
+    expect(previewKind('application/octet-stream', 'shot.webp')).toBe('image');
     expect(previewKind(undefined)).toBe('other');
     expect(previewKind(null)).toBe('other');
   });

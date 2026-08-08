@@ -3321,7 +3321,10 @@
     "uploadSomeFailed": "{{count}} 个项目上传失败",
     "uploadTruncated": "一次最多上传 {{max}} 项（共选了 {{total}} 项，其余已跳过）",
     "viewAria": "视图模式",
-    "toolbarAria": "文件操作"
+    "toolbarAria": "文件操作",
+    "previewFailed": "预览失败",
+    "videoNotSupported": "浏览器无法播放此视频。",
+    "audioNotSupported": "浏览器无法播放此音频。"
   },
   "firewall": {
     "profiles": {

@@ -367,6 +367,44 @@
   line-height: 1;
 }
 
+.fm-media-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-height: min(70vh, 36rem);
+  overflow: auto;
+  background: #0c0f14;
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+}
+
+.fm-media-preview--audio {
+  background: var(--bg-subtle, #f4f6f9);
+  min-height: 4rem;
+  padding: var(--space-4);
+}
+
+.fm-media-preview__img {
+  max-width: 100%;
+  max-height: min(68vh, 34rem);
+  height: auto;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.fm-media-preview__video {
+  width: 100%;
+  max-height: min(68vh, 34rem);
+  background: #000;
+  border-radius: var(--radius-sm);
+}
+
+.fm-media-preview__audio {
+  width: 100%;
+  max-width: 28rem;
+}
+
 .fm-grid-name {
   font-size: var(--text-xs);
   font-weight: 600;
