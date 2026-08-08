@@ -3,7 +3,7 @@
  */
 
 import { generateKeyPairSync, randomUUID } from 'node:crypto';
-import { mkdirSync, writeFileSync, unlinkSync, existsSync } from 'node:fs';
+import { mkdirSync, writeFileSync, unlinkSync, existsSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import type { EmailDnsRecord, EmailExternalTodo, EmailHealthReport } from '@ysk/shared';
 import { ErrorCodes, YskError, tl} from '@ysk/shared';
@@ -132,6 +132,97 @@ export class EmailService {
       externalTodos: health.externalTodos,
       health,
       installPlan: planEmailStackInstall(domain) };
+  }
+
+  /**
+   * Delete email domain from control plane + related mailboxes/aliases.
+   * Best-effort remove dataDir/email/{domain}. Does not claim system Postfix/Dovecot
+   * maps were rewritten — operator may re-apply remaining domains.
+   */
+  deleteDomain(
+    id: string,
+    actor: string,
+  ): {
+    ok: boolean;
+    domain: string;
+    removedMailboxes: number;
+    removedAliases: number;
+    notes: string[];
+    written: string[];
+  } {
+    const row = domains(this.db).find((e) => e.id === id);
+    if (!row) {
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.email.domainNotFound', { id }), {
+        httpStatus: 404,
+      });
+    }
+    const domainName = row.domain;
+    const notes: string[] = [];
+    const written: string[] = [];
+
+    const beforeMb = this.db.snapshot.mailboxes.length;
+    this.db.snapshot.mailboxes = this.db.snapshot.mailboxes.filter(
+      (m) => String(m.domain_id) !== id,
+    );
+    const removedMailboxes = beforeMb - this.db.snapshot.mailboxes.length;
+
+    const aliases = this.db.snapshot.email_aliases ?? [];
+    const beforeAl = aliases.length;
+    this.db.snapshot.email_aliases = aliases.filter((a) => String(a.domain_id) !== id);
+    const removedAliases = beforeAl - (this.db.snapshot.email_aliases?.length ?? 0);
+
+    this.db.snapshot.email_domains = domains(this.db).filter((e) => e.id !== id);
+    this.db.persist();
+
+    notes.push(
+      tl('notes.email.domainDeleted', {
+        domain: domainName,
+        mailboxes: removedMailboxes,
+        aliases: removedAliases,
+      }),
+    );
+
+    if (this.dataDir) {
+      const dir = join(this.dataDir, 'email', domainName);
+      if (existsSync(dir)) {
+        try {
+          rmSync(dir, { recursive: true, force: true });
+          written.push(dir);
+          notes.push(tl('notes.email.domainDataDirRemoved', { path: dir }));
+        } catch (e) {
+          notes.push(
+            tl('notes.email.domainDataDirRemoveFailed', {
+              path: dir,
+              detail: e instanceof Error ? e.message : String(e),
+            }),
+          );
+        }
+      }
+    }
+
+    notes.push(tl('notes.email.domainDeleteSystemHint'));
+
+    this.audit?.append({
+      actor,
+      action: 'email.domain.delete',
+      resource: domainName,
+      detail: {
+        id,
+        removedMailboxes,
+        removedAliases,
+        written,
+      },
+      ok: true,
+    });
+
+    return {
+      ok: true,
+      domain: domainName,
+      removedMailboxes,
+      removedAliases,
+      notes,
+      written,
+    };
   }
 
   /**

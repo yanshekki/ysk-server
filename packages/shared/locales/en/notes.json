@@ -135,7 +135,11 @@
   "email": {
     "domainNotFound": "Mail domain not found: {{id}}",
     "wroteNginx": "Wrote Nginx config: {{nginxPath}}",
-    "wrotePath": "Wrote {{path}}"
+    "wrotePath": "Wrote {{path}}",
+    "domainDeleted": "Deleted domain {{domain}} ({{mailboxes}} mailboxes, {{aliases}} aliases)",
+    "domainDataDirRemoved": "Removed local data directory {{path}}",
+    "domainDataDirRemoveFailed": "Could not remove data directory {{path}}: {{detail}}",
+    "domainDeleteSystemHint": "Control plane removed; re-apply remaining domains or clean system MTA maps if needed"
   },
   "agents": {
     "sessionNotFound": "Session not found: {{sessionId}}"

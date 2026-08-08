@@ -2972,7 +2972,11 @@
     "tlsRequestLe": "Request LE",
     "advancedToolsTitle": "Queue & clients",
     "flushQueueConfirm": "Flush the local MTA queue? This cannot be undone.",
-    "mailSslTitleShort": "Certificates & TLS"
+    "mailSslTitleShort": "Certificates & TLS",
+    "deleteDomain": "Delete domain",
+    "deleteDomainConfirmTitle": "Delete email domain?",
+    "deleteDomainConfirm": "Deletes {{domain}} and its mailboxes, aliases, and control-plane data. System Postfix/Dovecot config may still need cleanup.",
+    "deleteDomainBtn": "Delete"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "Unauthorized",
@@ -4373,7 +4377,11 @@
     "email": {
       "domainNotFound": "Mail domain not found: {{id}}",
       "wroteNginx": "Wrote Nginx config: {{nginxPath}}",
-      "wrotePath": "Wrote {{path}}"
+      "wrotePath": "Wrote {{path}}",
+      "domainDeleted": "Deleted domain {{domain}} ({{mailboxes}} mailboxes, {{aliases}} aliases)",
+      "domainDataDirRemoved": "Removed local data directory {{path}}",
+      "domainDataDirRemoveFailed": "Could not remove data directory {{path}}: {{detail}}",
+      "domainDeleteSystemHint": "Control plane removed; re-apply remaining domains or clean system MTA maps if needed"
     },
     "agents": {
       "sessionNotFound": "Session not found: {{sessionId}}"

@@ -415,5 +415,9 @@
   "tlsRequestLe": "申請 LE",
   "advancedToolsTitle": "佇列與客戶端",
   "flushQueueConfirm": "確定清空本機 MTA 佇列？此操作不可復原。",
-  "mailSslTitleShort": "憑證與 TLS"
+  "mailSslTitleShort": "憑證與 TLS",
+  "deleteDomain": "刪除域名",
+  "deleteDomainConfirmTitle": "刪除郵件域名？",
+  "deleteDomainConfirm": "將刪除 {{domain}} 及其信箱、別名與控制面資料。系統 Postfix／Dovecot 設定可能需另行清理。",
+  "deleteDomainBtn": "刪除"
 }

@@ -13,6 +13,17 @@ export const emailApi = {
       method: 'POST',
       body: JSON.stringify(body),
     }),
+  deleteDomain: (id: string) =>
+    api.requestRaw<{
+      ok: boolean;
+      domain: string;
+      removedMailboxes: number;
+      removedAliases: number;
+      notes: string[];
+      written: string[];
+    }>(`/api/v1/email/domains/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    }),
   listMailboxes: (domainId?: string) =>
     domainId
       ? api.requestRaw<{ items: Array<Record<string, unknown>> }>(

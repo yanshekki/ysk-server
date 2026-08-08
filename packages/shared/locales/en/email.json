@@ -415,5 +415,9 @@
   "tlsRequestLe": "Request LE",
   "advancedToolsTitle": "Queue & clients",
   "flushQueueConfirm": "Flush the local MTA queue? This cannot be undone.",
-  "mailSslTitleShort": "Certificates & TLS"
+  "mailSslTitleShort": "Certificates & TLS",
+  "deleteDomain": "Delete domain",
+  "deleteDomainConfirmTitle": "Delete email domain?",
+  "deleteDomainConfirm": "Deletes {{domain}} and its mailboxes, aliases, and control-plane data. System Postfix/Dovecot config may still need cleanup.",
+  "deleteDomainBtn": "Delete"
 }

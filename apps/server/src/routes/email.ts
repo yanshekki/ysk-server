@@ -139,6 +139,24 @@ export async function handleEmailRoutes(
         sendJson(res, 201, created);
         return true;
       }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5] ?? '';
+        const result = ctx.email.deleteDomain(id, user.username);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'email.domain.delete',
+          resource: result.domain,
+          detail: {
+            id,
+            removedMailboxes: result.removedMailboxes,
+            removedAliases: result.removedAliases,
+          },
+          ok: result.ok,
+        });
+        sendOpsResult(res, result);
+        return true;
+      }
       if (method === 'GET' && url.pathname === '/api/v1/email/queue') {
         ctx.auth.authenticate(getBearer(req));
         const { listMailQueue } = await import('@ysk/core');

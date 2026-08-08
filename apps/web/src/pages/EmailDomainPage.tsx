@@ -13,6 +13,7 @@ import {
   Button,
   Card,
   CardSection,
+  ConfirmDialog,
   DataTable,
   EmptyState,
   FeaturePageLayout,
@@ -351,6 +352,8 @@ export function EmailDomainPage() {
   const [bootstrapLog, setBootstrapLog] = useState<Record<string, unknown> | null>(null);
   const [advancedOpsLog, setAdvancedOpsLog] = useState<Record<string, unknown> | null>(null);
   const [flushQueueOpen, setFlushQueueOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteBusy, setDeleteBusy] = useState(false);
 
   useEffect(() => {
     setAutoreplySubject((prev) => prev || t('email.defaultAutoreplySubject'));
@@ -480,7 +483,8 @@ export function EmailDomainPage() {
           { label: t('email.statMailboxes'), value: mailboxes.length },
           { label: t('email.statDnsRecords'), value: (bundle?.records ?? []).length },
         ] }}
-      actions={<ActionBar>
+      actions={
+        <ActionBar>
           <Button
             variant="secondary"
             size="sm"
@@ -494,6 +498,14 @@ export function EmailDomainPage() {
             )}
           >
             {t('common.refresh')}
+          </Button>
+          <Button
+            variant="danger"
+            size="sm"
+            loading={deleteBusy}
+            onClick={bindSet(setDeleteOpen, true)}
+          >
+            {t('email.deleteDomain')}
           </Button>
         </ActionBar>
       }
@@ -1923,6 +1935,35 @@ export function EmailDomainPage() {
       >
         <p className="muted u-text-sm u-mb-0">{t('email.flushQueueConfirm')}</p>
       </Modal>
+
+      <ConfirmDialog
+        open={deleteOpen}
+        onClose={() => {
+          if (!deleteBusy) setDeleteOpen(false);
+        }}
+        onConfirm={() => {
+          void (async () => {
+            setDeleteBusy(true);
+            setError(null);
+            try {
+              await emailApi.deleteDomain(domain.id);
+              setDeleteOpen(false);
+              navigate('/email');
+            } catch (e) {
+              setError(e instanceof Error ? e.message : t('common.deleteFailed'));
+              setDeleteOpen(false);
+            } finally {
+              setDeleteBusy(false);
+            }
+          })();
+        }}
+        title={t('email.deleteDomainConfirmTitle')}
+        description={t('email.deleteDomainConfirm', { domain: domain.domain })}
+        confirmLabel={t('email.deleteDomainBtn')}
+        cancelLabel={t('common.cancel')}
+        danger
+        busy={deleteBusy}
+      />
     </FeaturePageLayout>
   );
 }

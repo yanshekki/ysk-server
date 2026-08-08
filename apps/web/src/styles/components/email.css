@@ -164,8 +164,26 @@
   letter-spacing: -0.01em;
 }
 
+.mail-domain-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.mail-domain-row__link {
+  display: block;
+  min-width: 0;
+  text-decoration: none;
+  color: inherit;
+}
+
 .mail-domain-row:hover {
   background: rgba(59, 130, 246, 0.04);
+}
+
+.mail-domain-row__delete {
+  flex-shrink: 0;
 }
 
 .mail-card {

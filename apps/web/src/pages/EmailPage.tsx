@@ -104,6 +104,8 @@ export function EmailPage() {
   const [serverIp, setServerIp] = useState(ctx.serverIp);
   const [serverIpv6, setServerIpv6] = useState(ctx.serverIpv6 ?? '');
   const [busy, setBusy] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<EmailDomain | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
   const [queueBusy, setQueueBusy] = useState(false);
   const [flushConfirmOpen, setFlushConfirmOpen] = useState(false);
   const [queueMsg, setQueueMsg] = useState<string | null>(null);
@@ -194,6 +196,21 @@ export function EmailPage() {
       setQueueMsg(e instanceof Error ? e.message : t('email.queueDeleteFailed'));
     } finally {
       setQueueBusy(false);
+    }
+  }
+
+  async function onDeleteDomain() {
+    if (!deleteTarget) return;
+    setDeleteBusy(true);
+    list.setError(null);
+    try {
+      await emailApi.deleteDomain(deleteTarget.id);
+      setDeleteTarget(null);
+      await list.refresh();
+    } catch (err) {
+      list.setError(err instanceof Error ? err.message : t('common.deleteFailed'));
+    } finally {
+      setDeleteBusy(false);
     }
   }
 
@@ -319,12 +336,11 @@ export function EmailPage() {
                 {items.map((d) => {
                   const st = applyLabel(d.apply_status, t);
                   return (
-                    <Link
-                      key={d.id}
-                      to={`/email/domains/${d.id}`}
-                      className="list-row mail-domain-row"
-                    >
-                      <div className="list-row__main">
+                    <div key={d.id} className="list-row mail-domain-row">
+                      <Link
+                        to={`/email/domains/${d.id}`}
+                        className="list-row__main mail-domain-row__link"
+                      >
                         <div className="list-row__title">
                           <span className="mail-domain-name">{d.domain}</span>
                           <Badge tone={st.tone}>{st.text}</Badge>
@@ -332,16 +348,32 @@ export function EmailPage() {
                         <div className="list-row__meta">
                           <span>IP {d.server_ip || '—'}</span>
                         </div>
-                      </div>
+                      </Link>
                       <div className="list-row__side">
                         <Badge tone={d.health_score >= 80 ? 'ok' : 'warn'}>
                           {d.health_score}/100
                         </Badge>
-                        <span className="list-row__chevron" aria-hidden>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="mail-domain-row__delete"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setDeleteTarget(d);
+                          }}
+                        >
+                          {t('email.deleteDomainBtn')}
+                        </Button>
+                        <Link
+                          to={`/email/domains/${d.id}`}
+                          className="list-row__chevron"
+                          aria-hidden
+                        >
                           ›
-                        </span>
+                        </Link>
                       </div>
-                    </Link>
+                    </div>
                   );
                 })}
               </div>
@@ -514,6 +546,24 @@ export function EmailPage() {
           </FormHint>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        onClose={() => {
+          if (!deleteBusy) setDeleteTarget(null);
+        }}
+        onConfirm={() => {
+          void onDeleteDomain();
+        }}
+        title={t('email.deleteDomainConfirmTitle')}
+        description={t('email.deleteDomainConfirm', {
+          domain: deleteTarget?.domain ?? '',
+        })}
+        confirmLabel={t('email.deleteDomainBtn')}
+        cancelLabel={t('common.cancel')}
+        danger
+        busy={deleteBusy}
+      />
 
       <ConfirmDialog
         open={flushConfirmOpen}

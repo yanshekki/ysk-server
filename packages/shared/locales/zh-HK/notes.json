@@ -135,7 +135,11 @@
   "email": {
     "domainNotFound": "找不到郵件域名：{{id}}",
     "wroteNginx": "已寫入 Nginx 設定：{{nginxPath}}",
-    "wrotePath": "已寫入 {{path}}"
+    "wrotePath": "已寫入 {{path}}",
+    "domainDeleted": "已刪除域名 {{domain}}（信箱 {{mailboxes}}、別名 {{aliases}}）",
+    "domainDataDirRemoved": "已移除本機資料目錄 {{path}}",
+    "domainDataDirRemoveFailed": "無法移除資料目錄 {{path}}：{{detail}}",
+    "domainDeleteSystemHint": "控制面已刪除；系統 MTA 映射若仍存在請重新套用其餘域名或人手清理"
   },
   "agents": {
     "sessionNotFound": "找不到 工作階段：{{sessionId}}"
