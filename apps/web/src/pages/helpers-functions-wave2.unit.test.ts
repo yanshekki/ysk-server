@@ -14,6 +14,8 @@ import {
 import {
   pathCrumbs,
   previewKind,
+  editorLanguageLabel,
+  cursorFromOffset,
   parseSortValue,
   togglePathInSet,
   selectAllPaths,
@@ -138,6 +140,15 @@ describe('FilesPage wave2 helpers', () => {
     expect(previewKind(undefined, 'notes.md')).toBe('text');
     expect(previewKind(undefined)).toBe('other');
     expect(previewKind(null)).toBe('other');
+  });
+
+  it('editorLanguageLabel + cursorFromOffset', () => {
+    expect(editorLanguageLabel('index.html')).toBe('HTML');
+    expect(editorLanguageLabel('a.php')).toBe('PHP');
+    expect(editorLanguageLabel('x.unknown')).toBe('Plain Text');
+    expect(cursorFromOffset('ab\ncd', 0)).toEqual({ line: 1, col: 1 });
+    expect(cursorFromOffset('ab\ncd', 3)).toEqual({ line: 2, col: 1 });
+    expect(cursorFromOffset('ab\ncd', 4)).toEqual({ line: 2, col: 2 });
   });
 
   it('parseSortValue', () => {

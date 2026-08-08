@@ -272,6 +272,76 @@ export function previewKind(
 }
 
 /** Resolve share expiry ISO string from preset / custom datetime-local. */
+/** VS Code–style language label from filename. */
+export function editorLanguageLabel(name: string): string {
+  const base = name.split('/').pop() || name;
+  const lower = base.toLowerCase();
+  if (lower === 'dockerfile') return 'Dockerfile';
+  if (lower === 'makefile') return 'Makefile';
+  const ext = lower.includes('.') ? lower.slice(lower.lastIndexOf('.') + 1) : '';
+  const map: Record<string, string> = {
+    html: 'HTML',
+    htm: 'HTML',
+    css: 'CSS',
+    scss: 'SCSS',
+    less: 'Less',
+    js: 'JavaScript',
+    mjs: 'JavaScript',
+    cjs: 'JavaScript',
+    jsx: 'JavaScript React',
+    ts: 'TypeScript',
+    tsx: 'TypeScript React',
+    json: 'JSON',
+    md: 'Markdown',
+    markdown: 'Markdown',
+    php: 'PHP',
+    phtml: 'PHP',
+    py: 'Python',
+    rb: 'Ruby',
+    go: 'Go',
+    rs: 'Rust',
+    java: 'Java',
+    kt: 'Kotlin',
+    c: 'C',
+    h: 'C',
+    cpp: 'C++',
+    hpp: 'C++',
+    cs: 'C#',
+    sh: 'Shell Script',
+    bash: 'Shell Script',
+    zsh: 'Shell Script',
+    sql: 'SQL',
+    yml: 'YAML',
+    yaml: 'YAML',
+    toml: 'TOML',
+    xml: 'XML',
+    svg: 'XML',
+    env: 'Properties',
+    conf: 'Properties',
+    ini: 'Properties',
+    log: 'Log',
+    txt: 'Plain Text',
+    vue: 'Vue',
+    svelte: 'Svelte',
+  };
+  return map[ext] || 'Plain Text';
+}
+
+export function cursorFromOffset(text: string, offset: number): { line: number; col: number } {
+  const pos = Math.max(0, Math.min(offset, text.length));
+  let line = 1;
+  let col = 1;
+  for (let i = 0; i < pos; i++) {
+    if (text.charCodeAt(i) === 10) {
+      line += 1;
+      col = 1;
+    } else {
+      col += 1;
+    }
+  }
+  return { line, col };
+}
+
 export function resolveShareExpiresAt(
   preset: string,
   customLocal?: string,
@@ -433,6 +503,7 @@ export function FilesPage() {
   const [editorDraft, setEditorDraft] = useState('');
   const [editorSaving, setEditorSaving] = useState(false);
   const [editorBytes, setEditorBytes] = useState(0);
+  const [editorCursor, setEditorCursor] = useState({ line: 1, col: 1 });
   const editorAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const editorGutterRef = useRef<HTMLDivElement | null>(null);
   const [trash, setTrash] = useState<TrashEntry[]>([]);
@@ -687,6 +758,10 @@ export function FilesPage() {
     const area = editorAreaRef.current;
     const gutter = editorGutterRef.current;
     if (area && gutter) gutter.scrollTop = area.scrollTop;
+  }
+
+  function updateEditorCursor(el: HTMLTextAreaElement) {
+    setEditorCursor(cursorFromOffset(editorDraft, el.selectionStart));
   }
 
   function closePreview() {
@@ -2338,15 +2413,21 @@ export function FilesPage() {
         busy={busy}
       />
 
-      {/* Preview / text editor popup */}
+      {/* Preview / VS Code–style text editor */}
       <Modal
         open={Boolean(preview)}
         onClose={closePreview}
         title={
           preview?.kind === 'text'
-            ? t('files.editorTitle', { name: preview.entry.name })
+            ? `${preview.entry.name}${editorDirty ? ' ●' : ''}`
             : (preview?.entry.name ?? t('files.preview'))
         }
+        description={
+          preview?.kind === 'text'
+            ? preview.entry.path
+            : undefined
+        }
+        className={preview?.kind === 'text' ? 'fm-editor-modal' : undefined}
         size={
           preview?.kind === 'image' ||
           preview?.kind === 'video' ||
@@ -2357,74 +2438,107 @@ export function FilesPage() {
             : 'md'
         }
         footer={
-          <>
-            <Button variant="secondary" size="md" onClick={closePreview}>
-              {t('common.close')}
-            </Button>
-            {preview ? (
+          preview?.kind === 'text' ? (
+            <>
+              <Button variant="ghost" size="sm" onClick={closePreview}>
+                {t('common.close')}
+              </Button>
               <Button
                 variant="secondary"
-                size="md"
+                size="sm"
                 onClick={bindCall1(doDownload, preview.entry.path)}
               >
                 {t('files.download')}
               </Button>
-            ) : null}
-            {preview?.kind === 'text' ? (
               <Button
                 variant="primary"
-                size="md"
+                size="sm"
                 loading={editorSaving}
                 disabled={!editorDirty || editorSaving}
                 onClick={() => void saveTextEditor()}
               >
                 {editorDirty ? t('files.editorSave') : t('files.editorSavedIdle')}
               </Button>
-            ) : null}
-          </>
+            </>
+          ) : (
+            <>
+              <Button variant="secondary" size="md" onClick={closePreview}>
+                {t('common.close')}
+              </Button>
+              {preview ? (
+                <Button
+                  variant="secondary"
+                  size="md"
+                  onClick={bindCall1(doDownload, preview.entry.path)}
+                >
+                  {t('files.download')}
+                </Button>
+              ) : null}
+            </>
+          )
         }
       >
         {preview?.kind === 'text' ? (
-          <div className="fm-text-editor">
-            <div className="fm-text-editor__meta">
-              <code className="fm-text-editor__path">{preview.entry.path}</code>
-              <span className="fm-text-editor__status">
-                {editorDirty ? (
-                  <Badge tone="warn">{t('files.editorDirty')}</Badge>
-                ) : (
-                  <Badge tone="ok">{t('files.editorClean')}</Badge>
-                )}
-                <span className="muted u-text-sm">
-                  {t('files.editorLines', { count: editorLineCount })}
+          <div className="fm-vscode">
+            <div className="fm-vscode__tabbar">
+              <div className={`fm-vscode__tab${editorDirty ? ' is-dirty' : ''}`}>
+                <span className="fm-vscode__tab-icon" aria-hidden>
+                  {preview.entry.name.toLowerCase().endsWith('.html') ||
+                  preview.entry.name.toLowerCase().endsWith('.htm')
+                    ? '〈/〉'
+                    : '📄'}
                 </span>
-                <span className="muted u-text-sm">
-                  {t('files.editorChars', { count: editorDraft.length })}
+                <span className="fm-vscode__tab-name">
+                  {preview.entry.name}
+                  {editorDirty ? (
+                    <span className="fm-vscode__dirty" title={t('files.editorDirty')}>
+                      ●
+                    </span>
+                  ) : null}
                 </span>
-                {editorBytes > 0 ? (
-                  <span className="muted u-text-sm">
-                    {formatBytes(editorBytes)}
-                  </span>
-                ) : null}
-              </span>
+              </div>
+              <div className="fm-vscode__actions">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  loading={editorSaving}
+                  disabled={!editorDirty || editorSaving}
+                  onClick={() => void saveTextEditor()}
+                  title={`${t('files.editorSave')} (Ctrl+S)`}
+                >
+                  {editorDirty ? t('files.editorSave') : t('files.editorSavedIdle')}
+                </Button>
+              </div>
             </div>
             {editorBytes > 512_000 ? (
-              <Alert variant="warn">{t('files.editorLargeHint')}</Alert>
+              <div className="fm-vscode__banner">{t('files.editorLargeHint')}</div>
             ) : null}
-            <div className="fm-text-editor__wrap">
+            <div className="fm-vscode__body">
               <div
                 ref={editorGutterRef}
-                className="fm-text-editor__gutter"
+                className="fm-vscode__gutter"
                 aria-hidden
               >
                 {editorLineLabels}
               </div>
               <textarea
                 ref={editorAreaRef}
-                className="fm-text-editor__area"
+                className="fm-vscode__area"
                 value={editorDraft}
-                onChange={(e) => setEditorDraft(e.target.value)}
+                onChange={(e) => {
+                  setEditorDraft(e.target.value);
+                  updateEditorCursor(e.target);
+                }}
                 onScroll={syncEditorScroll}
+                onClick={(e) => updateEditorCursor(e.currentTarget)}
+                onKeyUp={(e) => updateEditorCursor(e.currentTarget)}
+                onSelect={(e) => updateEditorCursor(e.currentTarget)}
                 onKeyDown={(e) => {
+                  if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                    e.preventDefault();
+                    if (editorDirty && !editorSaving) void saveTextEditor();
+                    return;
+                  }
                   if (e.key !== 'Tab' || e.metaKey || e.ctrlKey || e.altKey) return;
                   e.preventDefault();
                   const el = e.currentTarget;
@@ -2435,12 +2549,40 @@ export function FilesPage() {
                   setEditorDraft(next);
                   requestAnimationFrame(() => {
                     el.selectionStart = el.selectionEnd = start + 2;
+                    updateEditorCursor(el);
                   });
                 }}
                 spellCheck={false}
                 wrap="off"
                 aria-label={t('files.editorAria', { name: preview.entry.name })}
               />
+            </div>
+            <div className="fm-vscode__statusbar" role="status">
+              <span className="fm-vscode__status-item fm-vscode__status-item--accent">
+                {editorDirty ? t('files.editorDirty') : t('files.editorClean')}
+              </span>
+              <span className="fm-vscode__status-item">
+                {t('files.editorLnCol', {
+                  line: editorCursor.line,
+                  col: editorCursor.col,
+                })}
+              </span>
+              <span className="fm-vscode__status-item">
+                {t('files.editorLines', { count: editorLineCount })}
+              </span>
+              <span className="fm-vscode__status-spacer" />
+              <span className="fm-vscode__status-item">
+                {formatBytes(
+                  editorBytes || new TextEncoder().encode(editorDraft).length,
+                )}
+              </span>
+              <span className="fm-vscode__status-item">UTF-8</span>
+              <span className="fm-vscode__status-item">
+                {t('files.editorSpaces', { n: 2 })}
+              </span>
+              <span className="fm-vscode__status-item fm-vscode__status-item--lang">
+                {editorLanguageLabel(preview.entry.name)}
+              </span>
             </div>
           </div>
         ) : null}
