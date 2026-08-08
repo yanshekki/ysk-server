@@ -37,6 +37,11 @@ export const emailApi = {
     imapHost?: string;
     smtpHost?: string;
     download?: boolean;
+    /** PHP project path (Adminer/phpMyAdmin model) */
+    asProject?: boolean;
+    projectName?: string;
+    tool?: 'roundcube' | 'snappymail';
+    mailDomain?: string;
   }) =>
     api.requestRaw<Record<string, unknown>>('/api/v1/email/webmail/apply', {
       method: 'POST',

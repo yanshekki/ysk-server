@@ -204,7 +204,57 @@ export async function handleEmailRoutes(
           smtpHost?: string;
           download?: boolean;
           systemInstall?: boolean;
+          /** Create PHP project + goLive (Adminer/phpMyAdmin model). Default when tool/projectName set. */
+          asProject?: boolean;
+          projectName?: string;
+          tool?: 'roundcube' | 'snappymail';
+          mailDomain?: string;
         };
+        const useProject =
+          data.asProject === true ||
+          Boolean(data.projectName?.trim()) ||
+          data.tool === 'snappymail' ||
+          data.tool === 'roundcube';
+        if (useProject) {
+          const {
+            createWebmailProject,
+            normalizeWebmailTool,
+            defaultWebmailProjectName,
+            defaultWebmailHostname,
+          } = await import('@ysk/core');
+          const tool = normalizeWebmailTool(data.tool);
+          const mailDomain = (data.mailDomain ?? data.domain ?? '').trim();
+          const domain =
+            (data.domain ?? '').trim() ||
+            defaultWebmailHostname(mailDomain || 'example.com');
+          const name =
+            (data.projectName ?? '').trim() ||
+            defaultWebmailProjectName(tool, mailDomain || domain);
+          const result = await createWebmailProject({
+            projects: ctx.projects,
+            projectOps: ctx.projectOps,
+            host: ctx.host,
+            actor: user.username,
+            actorUserId: user.id,
+            name,
+            domain,
+            tool,
+            download: data.download !== false,
+            imapHost: data.imapHost,
+            smtpHost: data.smtpHost,
+            mailDomain: mailDomain || undefined,
+          });
+          ctx.audit.append({
+            actor: user.username,
+            action: 'email.webmail.project_create',
+            resource: result.projectId,
+            detail: { tool, name, domain, ok: result.ok },
+            ok: result.ok,
+          });
+          sendOpsResult(res, result);
+          return true;
+        }
+        // Legacy: dataDir skeleton + optional tarball (no PHP project)
         const result = await applyWebmail({
           dataDir: ctx.dataDir,
           host: ctx.host,

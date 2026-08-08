@@ -2841,7 +2841,7 @@
       "honestyPortOk": "Port 25 probe succeeded — still monitor bounces and DNSBL."
     },
     "catchall": "Catch-all",
-    "webmailRoundcube": "Webmail (Roundcube)",
+    "webmailRoundcube": "Webmail",
     "warmup": {
       "p1g1": "Send only transactional / known-good recipients",
       "p1g2": "Monitor bounces; keep complaint rate near zero",
@@ -2951,7 +2951,14 @@
     "rateLimitPerHour": "每小時訊息上限",
     "rateLimitGlobalHint": "全域取各域名最小值",
     "savePolicyWritten": "只寫入控制面",
-    "dnsblMultiIp": "多 IP RBL"
+    "dnsblMultiIp": "多 IP RBL",
+    "webmailTool": "Webmail software",
+    "webmailToolRoundcube": "Roundcube (default)",
+    "webmailToolSnappy": "SnappyMail (lightweight)",
+    "webmailProjectName": "Project name",
+    "installWebmailProject": "Create & go live",
+    "openWebmail": "Open webmail",
+    "webmailRisk": "Public webmail is risky — enable HTTPS soon."
   },
   "errors": {
     "YSK_UNAUTHORIZED": "Unauthorized",
@@ -6929,6 +6936,22 @@
       "installAborted": "Install aborted (client disconnected or cancelled)",
       "phpPackagesPartialFail": "Some PHP packages failed: {{list}} (core CLI may still work)",
       "pdnsBindConflict": "PowerDNS cannot bind 0.0.0.0:53 (in use); often conflicts with systemd-resolved. Bind the public IP (panel: Fix PowerDNS)."
+    },
+    "webmail": {
+      "notInstalled": "Webmail is not installed; enable download and re-run",
+      "needExecute": "Downloading webmail needs system-change permission (YSK_EXECUTE) and outbound network",
+      "extractFailed": "{{tool}} download or extract failed: {{detail}}",
+      "roundcubeInstalled": "Installed Roundcube {{version}} → {{path}}",
+      "roundcubeReuse": "Reusing installed Roundcube → {{path}}",
+      "roundcubeConfigWritten": "Wrote Roundcube config (SQLite, IMAP 993, SMTP 587)",
+      "snappyInstalled": "Installed SnappyMail {{version}} → {{path}}",
+      "snappyReuse": "Reusing installed SnappyMail → {{path}}",
+      "snappyAdminHint": "On first open, finish SnappyMail admin setup and add the local IMAP domain",
+      "imapSmtpHint": "IMAP {{imap}}:993 · SMTP {{smtp}}:587 (login with full mailbox address and password)",
+      "projectCreated": "Created PHP project {{name}} ({{tool}}, {{id}})",
+      "domainRequired": "Webmail hostname is required",
+      "openHint": "Sign in with mailbox address and password; open the URL from Projects or this page after go-live",
+      "sslHint": "Recommend Let’s Encrypt for {{domain}} (SSL page)"
     }
   },
   "ops": {

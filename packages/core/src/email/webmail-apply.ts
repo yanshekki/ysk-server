@@ -111,7 +111,7 @@ echo "IMAP: ${imapHost}:993  SMTP: ${smtpHost}:587\\n";
       `CFG=${JSON.stringify(configPath)}`,
       'TMP=$(mktemp -d)',
       'cd "$TMP"',
-      'VER=${ROUNDCUBE_VERSION:-1.6.9}',
+      'VER=${ROUNDCUBE_VERSION:-1.7.2}',
       'curl -fsSL -o rc.tar.gz "https://github.com/roundcube/roundcubemail/releases/download/${VER}/roundcubemail-${VER}-complete.tar.gz"',
       'tar -xzf rc.tar.gz',
       'rm -rf "$ROOT"/*',

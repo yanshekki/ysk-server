@@ -212,7 +212,7 @@
   "bootstrapBtn": "一鍵設定郵件",
   "webmailHostname": "Webmail 主機名",
   "webmailHostnameHint": "虚拟主機 server_name，例如 webmail.example.com",
-  "installWebmail": "安裝／套用 Webmail",
+  "installWebmail": "建立並上線網頁電郵",
   "bootstrapResult": "一鍵設定／Webmail 結果",
   "createMailboxTitle": "建立郵箱",
   "createMailboxDesc": "完整位址會是 {{local}}@{{domain}}",
@@ -266,7 +266,7 @@
     "honestyPortOk": "埠 25 探測成功 — 仍請監察退信與 DNSBL。"
   },
   "catchall": "Catch-all（全收）",
-  "webmailRoundcube": "Webmail（Roundcube）",
+  "webmailRoundcube": "網頁電郵",
   "warmup": {
     "p1g1": "只寄交易類／已知可靠收件人",
     "p1g2": "監察退信；投訴率保持接近零",
@@ -394,5 +394,12 @@
   "rateLimitPerHour": "每小時訊息上限",
   "rateLimitGlobalHint": "全域取各域名最小值",
   "savePolicyWritten": "只寫入控制面",
-  "dnsblMultiIp": "多 IP RBL"
+  "dnsblMultiIp": "多 IP RBL",
+  "webmailTool": "網頁電郵軟件",
+  "webmailToolRoundcube": "Roundcube（預設）",
+  "webmailToolSnappy": "SnappyMail（輕量）",
+  "webmailProjectName": "專案名稱",
+  "installWebmailProject": "建立並上線網頁電郵",
+  "openWebmail": "開啟網頁電郵",
+  "webmailRisk": "公開網頁電郵有風險 — 請盡快上 HTTPS。"
 }

@@ -284,7 +284,7 @@
     "honestyPortOk": "Port 25 probe succeeded — still monitor bounces and DNSBL."
   },
   "catchall": "Catch-all",
-  "webmailRoundcube": "Webmail (Roundcube)",
+  "webmailRoundcube": "Webmail",
   "warmup": {
     "p1g1": "Send only transactional / known-good recipients",
     "p1g2": "Monitor bounces; keep complaint rate near zero",
@@ -394,5 +394,12 @@
   "rateLimitPerHour": "每小時訊息上限",
   "rateLimitGlobalHint": "全域取各域名最小值",
   "savePolicyWritten": "只寫入控制面",
-  "dnsblMultiIp": "多 IP RBL"
+  "dnsblMultiIp": "多 IP RBL",
+  "webmailTool": "Webmail software",
+  "webmailToolRoundcube": "Roundcube (default)",
+  "webmailToolSnappy": "SnappyMail (lightweight)",
+  "webmailProjectName": "Project name",
+  "installWebmailProject": "Create & go live",
+  "openWebmail": "Open webmail",
+  "webmailRisk": "Public webmail is risky — enable HTTPS soon."
 }

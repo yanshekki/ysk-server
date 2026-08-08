@@ -288,7 +288,7 @@
     "honestyPortOk": "Port 25 探测成功 — 仍请监察退信与 DNSBL。"
   },
   "catchall": "Catch-all（全收）",
-  "webmailRoundcube": "Webmail（Roundcube）",
+  "webmailRoundcube": "网页邮件",
   "warmup": {
     "p1g1": "只发交易类／已知可靠收件人",
     "p1g2": "监控退信；投诉率保持接近零",
@@ -394,5 +394,12 @@
   "rateLimitPerHour": "每小時訊息上限",
   "rateLimitGlobalHint": "全域取各域名最小值",
   "savePolicyWritten": "只寫入控制面",
-  "dnsblMultiIp": "多 IP RBL"
+  "dnsblMultiIp": "多 IP RBL",
+  "webmailTool": "网页邮件软件",
+  "webmailToolRoundcube": "Roundcube（默认）",
+  "webmailToolSnappy": "SnappyMail（轻量）",
+  "webmailProjectName": "项目名称",
+  "installWebmailProject": "创建并上线网页邮件",
+  "openWebmail": "打开网页邮件",
+  "webmailRisk": "公开网页邮件有风险 — 请尽快上 HTTPS。"
 }

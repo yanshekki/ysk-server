@@ -2712,5 +2712,21 @@
     "installAborted": "安裝已中止（客戶端斷線或取消）",
     "phpPackagesPartialFail": "部分 PHP 套件安裝失敗：{{list}}（核心 CLI 可能仍可用）",
     "pdnsBindConflict": "PowerDNS 無法綁定 0.0.0.0:53（埠被佔用），多與 systemd-resolved 衝突。請改綁公網 IP（面板：修復 PowerDNS）。"
+  },
+  "webmail": {
+    "notInstalled": "尚未安裝網頁電郵；請勾選下載後再執行",
+    "needExecute": "下載網頁電郵需要系統變更權限（YSK_EXECUTE）及外網",
+    "extractFailed": "{{tool}} 下載或解壓失敗：{{detail}}",
+    "roundcubeInstalled": "已安裝 Roundcube {{version}} → {{path}}",
+    "roundcubeReuse": "沿用已安裝 Roundcube → {{path}}",
+    "roundcubeConfigWritten": "已寫入 Roundcube 設定（SQLite、IMAP 993、SMTP 587）",
+    "snappyInstalled": "已安裝 SnappyMail {{version}} → {{path}}",
+    "snappyReuse": "沿用已安裝 SnappyMail → {{path}}",
+    "snappyAdminHint": "首次開啟請完成 SnappyMail 管理員初始化，並新增本機 IMAP 網域",
+    "imapSmtpHint": "IMAP {{imap}}:993 · SMTP {{smtp}}:587（登入用信箱完整地址與密碼）",
+    "projectCreated": "已建立 PHP 專案 {{name}}（{{tool}}，{{id}}）",
+    "domainRequired": "需要網頁電郵主機名",
+    "openHint": "以信箱地址與密碼登入；上線後請到專案頁或本頁開啟網址",
+    "sslHint": "建議為 {{domain}} 申請 Let’s Encrypt（SSL 頁）"
   }
 }

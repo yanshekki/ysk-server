@@ -223,6 +223,21 @@ export function defaultWebmailDomain(domain: string): string {
   return `webmail.${domain}`;
 }
 
+/** Default PHP project name for webmail tool + apex domain. */
+export function defaultWebmailProjectName(
+  tool: 'roundcube' | 'snappymail',
+  mailDomain: string,
+): string {
+  const base = tool === 'snappymail' ? 'snappymail' : 'roundcube';
+  const slug = mailDomain
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9.-]/g, '')
+    .replace(/\./g, '-')
+    .slice(0, 40);
+  return slug ? `${base}-${slug}` : base;
+}
+
 /** Default mail SSL hostname. */
 export function defaultMailSslDomain(domain: string): string {
   return `mail.${domain}`;
@@ -328,6 +343,8 @@ export function EmailDomainPage() {
   const [autoreplySubject, setAutoreplySubject] = useState('');
   const [autoreplyBody, setAutoreplyBody] = useState('');
   const [webmailDomain, setWebmailDomain] = useState('webmail.example.com');
+  const [webmailTool, setWebmailTool] = useState<'roundcube' | 'snappymail'>('roundcube');
+  const [webmailProjectName, setWebmailProjectName] = useState('roundcube');
   const [webmailLog, setWebmailLog] = useState<Record<string, unknown> | null>(null);
 
   useEffect(() => {
@@ -352,6 +369,11 @@ export function EmailDomainPage() {
       setMailboxes((await emailApi.listMailboxes(found.id)).items);
       setAliases((await emailApi.listAliases(found.id)).items);
       setWebmailDomain(defaultWebmailDomain(found.domain));
+      setWebmailProjectName((prev) =>
+        prev && prev !== 'roundcube'
+          ? prev
+          : defaultWebmailProjectName('roundcube', found.domain),
+      );
     } catch {
       /* optional */
     }
@@ -1605,7 +1627,23 @@ export function EmailDomainPage() {
             </Card>
             <Card>
               <CardSection title={t('email.webmailRoundcube')}>
+                <p className="muted u-text-sm u-mb-0">{t('email.webmailRisk')}</p>
                 <FormLayout columns={2}>
+                  <Field label={t('email.webmailTool')} htmlFor="wtool" flush>
+                    <SegRadio
+                      name="webmail-tool"
+                      value={webmailTool}
+                      onChange={(v) => {
+                        const tool = v === 'snappymail' ? 'snappymail' : 'roundcube';
+                        setWebmailTool(tool);
+                        setWebmailProjectName(defaultWebmailProjectName(tool, domain.domain));
+                      }}
+                      options={[
+                        { value: 'roundcube', label: t('email.webmailToolRoundcube') },
+                        { value: 'snappymail', label: t('email.webmailToolSnappy') },
+                      ]}
+                    />
+                  </Field>
                   <Field
                     label={t('email.webmailHostname')}
                     htmlFor="wmd"
@@ -1620,26 +1658,63 @@ export function EmailDomainPage() {
                       spellCheck={false}
                     />
                   </Field>
+                  <Field label={t('email.webmailProjectName')} htmlFor="wpn" flush>
+                    <input
+                      id="wpn"
+                      value={webmailProjectName}
+                      onChange={bindInput(setWebmailProjectName)}
+                      placeholder={defaultWebmailProjectName(webmailTool, domain.domain)}
+                      spellCheck={false}
+                    />
+                  </Field>
                 </FormLayout>
                 <FormActions>
                   <Button
-                    variant="secondary"
+                    variant="primary"
                     size="md"
                     loading={busy}
                     onClick={bindBusySet(
                       withBusy,
                       () =>
                         emailApi.webmailApply({
-                          domain: webmailDomain,
-                          download: true }),
+                          domain: webmailDomain.trim() || defaultWebmailDomain(domain.domain),
+                          mailDomain: domain.domain,
+                          projectName:
+                            webmailProjectName.trim() ||
+                            defaultWebmailProjectName(webmailTool, domain.domain),
+                          tool: webmailTool,
+                          asProject: true,
+                          download: true,
+                        }),
                       setWebmailLog,
                     )}
                   >
-                    {t('email.installWebmail')}
+                    {t('email.installWebmailProject')}
+                  </Button>
+                  {typeof webmailLog?.urlHint === 'string' && webmailLog.urlHint ? (
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      onClick={() => {
+                        window.open(String(webmailLog.urlHint), '_blank', 'noopener,noreferrer');
+                      }}
+                    >
+                      {t('email.openWebmail')}
+                    </Button>
+                  ) : null}
+                  <Button
+                    variant="ghost"
+                    size="md"
+                    onClick={bindNavigate(
+                      navigate,
+                      `/ssl?domain=${encodeURIComponent(webmailDomain || defaultWebmailDomain(domain.domain))}&action=le`,
+                    )}
+                  >
+                    {t('email.openSslPage')}
                   </Button>
                 </FormActions>
                 <OpsResultPanel
-                  title={t('email.bootstrapResult')}
+                  title={t('email.webmailRoundcube')}
                   result={asOps(webmailLog)}
                   busy={busy}
                 />
