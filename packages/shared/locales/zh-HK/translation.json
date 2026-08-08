@@ -3180,7 +3180,7 @@
     "unzipDone": "已解壓 {{path}}",
     "unzipFailed": "unzip 失敗",
     "delete": "刪除",
-    "searchName": "搜尋檔名…",
+    "searchName": "搜尋…",
     "sortAria": "排序",
     "sortNameAsc": "名↑",
     "sortNameDesc": "名↓",
@@ -3319,7 +3319,9 @@
     "uploadStatusQueued": "排隊",
     "uploadNoFile": "無檔案內容",
     "uploadSomeFailed": "{{count}} 個項目上傳失敗",
-    "uploadTruncated": "一次最多上傳 {{max}} 項（共選了 {{total}} 項，其餘已略過）"
+    "uploadTruncated": "一次最多上傳 {{max}} 項（共選了 {{total}} 項，其餘已略過）",
+    "viewAria": "檢視模式",
+    "toolbarAria": "檔案操作"
   },
   "firewall": {
     "profiles": {
