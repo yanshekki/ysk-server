@@ -562,6 +562,9 @@ async function mainInner(
           adminLocalPart: getOpt(args, '--admin') ?? 'postmaster',
           adminPassword: getOpt(args, '--password'),
           webmail: !hasFlag(args, '--no-webmail'),
+          projects: ctx.projects,
+          projectOps: ctx.projectOps,
+          webmailDownload: wantsHostExecute(args) || hasFlag(args, '--install'),
         });
         printJson(result);
         return exitFromResult(result);
@@ -3003,7 +3006,11 @@ async function mainInner(
           installPackages: hasFlag(args, '--install') || wantsHostExecute(args),
           adminLocalPart: getOpt(args, '--admin') ?? 'postmaster',
           adminPassword: getOpt(args, '--password'),
-          webmail: !hasFlag(args, '--no-webmail') });
+          webmail: !hasFlag(args, '--no-webmail'),
+          projects: ctx.projects,
+          projectOps: ctx.projectOps,
+          webmailDownload: wantsHostExecute(args) || hasFlag(args, '--install'),
+        });
         printJson(result);
         return exitFromResult(result);
       }

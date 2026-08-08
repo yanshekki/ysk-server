@@ -30,4 +30,28 @@ describe('webmail-sso', () => {
       rmSync(dir, { recursive: true, force: true });
     }
   });
+
+  it('loginUrl uses webmailBaseUrl + _ysk_sso for Roundcube plugin', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-wm-sso-url-'));
+    try {
+      const db = new JsonStore(join(dir, 'db.json'));
+      const issued = issueWebmailSso({
+        db,
+        email: 'postmaster@example.com',
+        domain: 'example.com',
+        password: 'secret-pass',
+        webmailBaseUrl: 'https://webmail.example.com/',
+      });
+      expect(issued.ok).toBe(true);
+      expect(issued.loginUrl).toMatch(
+        /^https:\/\/webmail\.example\.com\/\?_ysk_sso=/,
+      );
+      expect(issued.loginUrl).toContain(issued.token);
+      const c = consumeWebmailSso(db, issued.token!);
+      expect(c.ok).toBe(true);
+      expect(c.password).toBe('secret-pass');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });

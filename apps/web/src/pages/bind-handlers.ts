@@ -575,6 +575,8 @@ export function bindBusyWebmailSso(
   webmailSso: (body: any) => Promise<unknown>,
   setLog: AnyFn,
   webmailBaseUrl?: string,
+  /** Open Roundcube SSO URL in new tab when issue succeeds */
+  openLoginUrl?: boolean,
 ): () => void {
   return () => {
     void withBusy(async () => {
@@ -583,15 +585,21 @@ export function bindBusyWebmailSso(
       const base =
         webmailBaseUrl?.trim() ||
         `https://webmail.${domainName.replace(/^webmail\./, '')}`;
-      setLog(
-        await webmailSso({
-          email,
-          domain: domainName,
-          ttlMinutes: 10,
-          password,
-          webmailBaseUrl: base,
-        }),
-      );
+      const r = (await webmailSso({
+        email,
+        domain: domainName,
+        ttlMinutes: 10,
+        password,
+        webmailBaseUrl: base,
+      })) as { ok?: boolean; loginUrl?: string };
+      setLog(r);
+      if (openLoginUrl !== false && r?.ok && typeof r.loginUrl === 'string' && r.loginUrl) {
+        try {
+          window.open(r.loginUrl, '_blank', 'noopener,noreferrer');
+        } catch {
+          /* popup blocked — operator uses loginUrl from ops panel */
+        }
+      }
     });
   };
 }

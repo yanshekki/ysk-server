@@ -259,16 +259,19 @@ async function installSnappyMail(input: {
   const tmp = join(input.homeDir, 'tmp', 'snappymail.tgz');
   mkdirSync(join(input.homeDir, 'tmp'), { recursive: true });
   const extract = join(docRoot, '.sm-extract');
+  // Official release may be: flat index.php, snappymail-X/, or public_html/
   const script = [
     `set -e`,
     `curl -fsSL ${JSON.stringify(SNAPPYMAIL_URL)} -o ${JSON.stringify(tmp)}`,
     `rm -rf ${JSON.stringify(extract)}`,
     `mkdir -p ${JSON.stringify(extract)}`,
-    `tar -xzf ${JSON.stringify(tmp)} -C ${JSON.stringify(extract)}`,
-    // Flatten: either extract root has index.php or one top-level dir
-    `if [ -f ${JSON.stringify(join(extract, 'index.php'))} ]; then INNER=${JSON.stringify(extract)}; ` +
-      `else INNER=$(find ${JSON.stringify(extract)} -maxdepth 2 -type f -name index.php | head -1 | xargs dirname); fi`,
-    `if [ -z "$INNER" ] || [ ! -f "$INNER/index.php" ]; then echo "SnappyMail extract failed"; exit 1; fi`,
+    // try tar.gz; if zip, unzip
+    `if file ${JSON.stringify(tmp)} | grep -qi 'zip'; then unzip -q ${JSON.stringify(tmp)} -d ${JSON.stringify(extract)}; else tar -xzf ${JSON.stringify(tmp)} -C ${JSON.stringify(extract)}; fi`,
+    `INNER=""`,
+    `if [ -f ${JSON.stringify(join(extract, 'index.php'))} ]; then INNER=${JSON.stringify(extract)}; fi`,
+    `if [ -z "$INNER" ] && [ -f ${JSON.stringify(join(extract, 'public_html', 'index.php'))} ]; then INNER=${JSON.stringify(join(extract, 'public_html'))}; fi`,
+    `if [ -z "$INNER" ]; then INNER=$(find ${JSON.stringify(extract)} -maxdepth 3 -type f -name index.php 2>/dev/null | head -1 | xargs -r dirname); fi`,
+    `if [ -z "$INNER" ] || [ ! -f "$INNER/index.php" ]; then echo "SnappyMail extract failed"; ls -la ${JSON.stringify(extract)}; exit 1; fi`,
     `shopt -s dotglob`,
     `rm -rf ${JSON.stringify(docRoot)}/*`,
     `cp -a "$INNER"/* ${JSON.stringify(docRoot)}/`,
