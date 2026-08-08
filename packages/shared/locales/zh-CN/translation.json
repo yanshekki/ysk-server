@@ -3360,7 +3360,27 @@
     "shareExpireInvalid": "请选择未来的日期时间",
     "shareExpiresAt": "到期 {{at}}",
     "colExpires": "到期",
-    "pdfInlineHint": "若浏览器无法内嵌显示 PDF，请下载查看。"
+    "pdfInlineHint": "若浏览器无法内嵌显示 PDF，请下载查看。",
+    "publicShareTitle": "分享文件",
+    "publicShareSub": "通过公开链接下载",
+    "publicShareChecking": "检查中…",
+    "publicShareDownloading": "下载中…",
+    "publicShareWait": "请稍候",
+    "publicShareNeedPassword": "此链接需要密码",
+    "publicSharePasswordPh": "分享密码",
+    "publicShareDownload": "下载",
+    "publicShareDownloadAgain": "再次下载",
+    "publicShareDone": "已开始下载",
+    "publicShareDoneHint": "请查看浏览器下载",
+    "publicShareNotFound": "分享不存在或已过期",
+    "publicShareDenied": "无法访问",
+    "publicShareBadPassword": "密码错误",
+    "publicShareMissing": "链接无效",
+    "publicShareFailed": "下载失败（{{status}}）",
+    "publicShareFailedGeneric": "下载失败",
+    "publicShareDefaultName": "download",
+    "publicSharePanelLogin": "登录控制面",
+    "password": "密码"
   },
   "firewall": {
     "profiles": {

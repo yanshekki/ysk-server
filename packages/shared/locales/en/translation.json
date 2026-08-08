@@ -3360,7 +3360,27 @@
     "shareExpireInvalid": "Pick a future date and time",
     "shareExpiresAt": "Expires {{at}}",
     "colExpires": "Expires",
-    "pdfInlineHint": "If the PDF does not display, download it."
+    "pdfInlineHint": "If the PDF does not display, download it.",
+    "publicShareTitle": "Shared file",
+    "publicShareSub": "Download from a public share link",
+    "publicShareChecking": "Checking…",
+    "publicShareDownloading": "Downloading…",
+    "publicShareWait": "Please wait",
+    "publicShareNeedPassword": "This link is password protected",
+    "publicSharePasswordPh": "Share password",
+    "publicShareDownload": "Download",
+    "publicShareDownloadAgain": "Download again",
+    "publicShareDone": "Download started",
+    "publicShareDoneHint": "Check your browser downloads",
+    "publicShareNotFound": "Share not found or expired",
+    "publicShareDenied": "Access denied",
+    "publicShareBadPassword": "Wrong password",
+    "publicShareMissing": "Invalid share link",
+    "publicShareFailed": "Download failed ({{status}})",
+    "publicShareFailedGeneric": "Download failed",
+    "publicShareDefaultName": "download",
+    "publicSharePanelLogin": "Panel sign-in",
+    "password": "Password"
   },
   "firewall": {
     "profiles": {

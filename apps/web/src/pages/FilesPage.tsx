@@ -1523,11 +1523,16 @@ export function FilesPage() {
                     {
                       key: 'url',
                       header: t('files.colLink'),
-                      render: (s) => (
-                        <code className="inline u-break-all">
-                          {s.url ?? `/api/v1/public/files/${s.token}`}
-                        </code>
-                      ) },
+                      render: (s) => {
+                        const path = s.url ?? `/share/${s.token}`;
+                        const abs = path.startsWith('http')
+                          ? path
+                          : `${window.location.origin}${path}`;
+                        return (
+                          <code className="inline u-break-all">{abs}</code>
+                        );
+                      },
+                    },
                     {
                       key: 'expires',
                       header: t('files.colExpires'),
@@ -1978,9 +1983,14 @@ export function FilesPage() {
                       password: sharePass || undefined,
                       expiresAt: expiresAt || undefined,
                     });
-                    const url = `${window.location.origin}${
-                      r.share.url ?? `/api/v1/public/files/${r.share.token}`
-                    }`;
+                    const path =
+                      r.share.url ??
+                      (r.share.token
+                        ? `/share/${r.share.token}`
+                        : `/api/v1/public/files/${r.share.token}`);
+                    const url = path.startsWith('http')
+                      ? path
+                      : `${window.location.origin}${path}`;
                     setShareResult(url);
                     setShareResultExpires(
                       r.share.expiresAt ?? expiresAt ?? null,

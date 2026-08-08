@@ -542,7 +542,10 @@ export async function handleFilesRoutes(
       share: {
         ...share,
         passwordHash: undefined,
-        url: `/api/v1/public/files/${share.token}` } });
+        // SPA landing (password UI); download still via /api/v1/public/files/:token
+        url: `/share/${share.token}`,
+      },
+    });
     return true;
   }
   if (method === 'DELETE' && url.pathname.startsWith('/api/v1/files/shares/')) {

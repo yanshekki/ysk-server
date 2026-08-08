@@ -46,6 +46,9 @@ const AiPage = lazy(() => import('../pages/AiPage').then((m) => ({ default: m.Ai
 const FilesPage = lazy(() =>
   import('../pages/FilesPage').then((m) => ({ default: m.FilesPage })),
 );
+const PublicSharePage = lazy(() =>
+  import('../pages/PublicSharePage').then((m) => ({ default: m.PublicSharePage })),
+);
 const SystemPage = lazy(() =>
   import('../pages/SystemPage').then((m) => ({ default: m.SystemPage })),
 );
@@ -196,6 +199,15 @@ export function App() {
               <GuestOnly>
                 <LoginPage />
               </GuestOnly>
+            }
+          />
+          {/* Public file share — no panel session */}
+          <Route
+            path="/share/:token"
+            element={
+              <Lazy>
+                <PublicSharePage />
+              </Lazy>
             }
           />
           <Route
