@@ -6,11 +6,7 @@
 import { FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import {
-  emailApi,
-  EmailDomainDeleteDialog,
-  type EmailDomain,
-} from '../features/email';
+import { emailApi, type EmailDomain } from '../features/email';
 import {
   PageGuide,
   ActionBar,
@@ -108,8 +104,6 @@ export function EmailPage() {
   const [serverIp, setServerIp] = useState(ctx.serverIp);
   const [serverIpv6, setServerIpv6] = useState(ctx.serverIpv6 ?? '');
   const [busy, setBusy] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<EmailDomain | null>(null);
-  const [deleteBusy, setDeleteBusy] = useState(false);
   const [queueBusy, setQueueBusy] = useState(false);
   const [flushConfirmOpen, setFlushConfirmOpen] = useState(false);
   const [queueMsg, setQueueMsg] = useState<string | null>(null);
@@ -325,11 +319,12 @@ export function EmailPage() {
                 {items.map((d) => {
                   const st = applyLabel(d.apply_status, t);
                   return (
-                    <div key={d.id} className="list-row mail-domain-row">
-                      <Link
-                        to={`/email/domains/${d.id}`}
-                        className="list-row__main mail-domain-row__link"
-                      >
+                    <Link
+                      key={d.id}
+                      to={`/email/domains/${d.id}`}
+                      className="list-row mail-domain-row"
+                    >
+                      <div className="list-row__main">
                         <div className="list-row__title">
                           <span className="mail-domain-name">{d.domain}</span>
                           <Badge tone={st.tone}>{st.text}</Badge>
@@ -337,32 +332,16 @@ export function EmailPage() {
                         <div className="list-row__meta">
                           <span>IP {d.server_ip || '—'}</span>
                         </div>
-                      </Link>
+                      </div>
                       <div className="list-row__side">
                         <Badge tone={d.health_score >= 80 ? 'ok' : 'warn'}>
                           {d.health_score}/100
                         </Badge>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="mail-domain-row__delete"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setDeleteTarget(d);
-                          }}
-                        >
-                          {t('email.deleteDomainBtn')}
-                        </Button>
-                        <Link
-                          to={`/email/domains/${d.id}`}
-                          className="list-row__chevron"
-                          aria-hidden
-                        >
+                        <span className="list-row__chevron" aria-hidden>
                           ›
-                        </Link>
+                        </span>
                       </div>
-                    </div>
+                    </Link>
                   );
                 })}
               </div>
@@ -516,24 +495,6 @@ export function EmailPage() {
           </FormHint>
         </form>
       </Modal>
-
-      <EmailDomainDeleteDialog
-        domain={deleteTarget}
-        open={Boolean(deleteTarget)}
-        busy={deleteBusy}
-        onClose={() => {
-          if (!deleteBusy) setDeleteTarget(null);
-        }}
-        onDeleted={(r) => {
-          setDeleteTarget(null);
-          setDeleteBusy(false);
-          if (r.ok) {
-            void list.refresh();
-          } else {
-            list.setError((r.notes ?? []).join(' · ') || t('common.deleteFailed'));
-          }
-        }}
-      />
 
       <ConfirmDialog
         open={flushConfirmOpen}
