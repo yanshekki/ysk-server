@@ -171,7 +171,9 @@ export class EmailService {
     this.db.snapshot.email_aliases = aliases.filter((a) => String(a.domain_id) !== id);
     const removedAliases = beforeAl - (this.db.snapshot.email_aliases?.length ?? 0);
 
-    this.db.snapshot.email_domains = domains(this.db).filter((e) => e.id !== id);
+    this.db.snapshot.email_domains = domains(this.db).filter(
+      (e) => e.id !== id,
+    ) as unknown as typeof this.db.snapshot.email_domains;
     this.db.persist();
 
     notes.push(
