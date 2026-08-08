@@ -2733,7 +2733,7 @@
     "noProbeResults": "尚无探测结果",
     "noLiveYet": "尚未执行 Live 检查",
     "noLiveYetHint": "先执行即时检查",
-    "mailSslTitle": "邮件 SSL（Let’s Encrypt）",
+    "mailSslTitle": "证书与 TLS",
     "mailSslHint": "真实签发在 SSL 页完成；此处一键跳到对应主机名（mail / webmail / 域名）",
     "openSslPage": "开启 SSL 页",
     "webmailSsoSkeleton": "Webmail SSO 骨架",
@@ -2961,7 +2961,18 @@
     "openWebmail": "打开网页邮件",
     "webmailRisk": "公开网页邮件有风险 — 请尽快上 HTTPS。",
     "webmailForceHttps": "强制 HTTPS（Roundcube；需已绑 SSL）",
-    "reinstallWebmail": "重新安装／升级"
+    "reinstallWebmail": "重新安装／升级",
+    "webmailSsoAdvanced": "高级 · SSO 插件",
+    "tlsRoleMail": "mail（IMAP／SMTP）",
+    "tlsRoleMailHint": "邮件服务器主机名",
+    "tlsRoleWebmail": "webmail（网页邮件）",
+    "tlsRoleWebmailHint": "网页邮件虚拟主机",
+    "tlsRoleApex": "主域名",
+    "tlsRoleApexHint": "网页／apex 证书",
+    "tlsRequestLe": "申请 LE",
+    "advancedToolsTitle": "队列与客户端",
+    "flushQueueConfirm": "确定清空本机 MTA 队列？此操作不可复原。",
+    "mailSslTitleShort": "证书与 TLS"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "未授权",

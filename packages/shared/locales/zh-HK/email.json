@@ -167,7 +167,7 @@
   "outboundPort25": "出站 Port 25",
   "noProbeResults": "尚無探測結果",
   "noLiveYet": "尚未執行 Live 檢查",
-  "mailSslTitle": "郵件 SSL（Let’s Encrypt）",
+  "mailSslTitle": "憑證與 TLS",
   "mailSslHint": "憑證在 SSL 頁簽發；此處跳到 mail／webmail／域名。",
   "openSslPage": "開啟 SSL 頁",
   "webmailSsoSkeleton": "Webmail SSO 骨架",
@@ -404,5 +404,16 @@
   "openWebmail": "開啟網頁電郵",
   "webmailRisk": "公開網頁電郵有風險 — 請盡快上 HTTPS。",
   "webmailForceHttps": "強制 HTTPS（Roundcube；需已綁 SSL）",
-  "reinstallWebmail": "重新安裝／升級"
+  "reinstallWebmail": "重新安裝／升級",
+  "webmailSsoAdvanced": "進階 · SSO 插件",
+  "tlsRoleMail": "mail（IMAP／SMTP）",
+  "tlsRoleMailHint": "郵件伺服器主機名",
+  "tlsRoleWebmail": "webmail（網頁電郵）",
+  "tlsRoleWebmailHint": "網頁電郵虛擬主機",
+  "tlsRoleApex": "主域名",
+  "tlsRoleApexHint": "網頁／apex 憑證",
+  "tlsRequestLe": "申請 LE",
+  "advancedToolsTitle": "佇列與客戶端",
+  "flushQueueConfirm": "確定清空本機 MTA 佇列？此操作不可復原。",
+  "mailSslTitleShort": "憑證與 TLS"
 }

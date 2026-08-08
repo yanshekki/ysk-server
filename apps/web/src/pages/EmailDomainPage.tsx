@@ -26,7 +26,8 @@ import {
   PageTabs,
   FormActions,
   CheckboxField,
-  SegRadio } from '../shared/components/ui';
+  SegRadio,
+  DescriptionList } from '../shared/components/ui';
 import type { OpsResultLike } from '../shared/components/ui';
 import { api } from '../shared/services/api';
 import {
@@ -347,6 +348,9 @@ export function EmailDomainPage() {
   const [webmailProjectName, setWebmailProjectName] = useState('roundcube');
   const [webmailForceHttps, setWebmailForceHttps] = useState(false);
   const [webmailLog, setWebmailLog] = useState<Record<string, unknown> | null>(null);
+  const [bootstrapLog, setBootstrapLog] = useState<Record<string, unknown> | null>(null);
+  const [advancedOpsLog, setAdvancedOpsLog] = useState<Record<string, unknown> | null>(null);
+  const [flushQueueOpen, setFlushQueueOpen] = useState(false);
 
   useEffect(() => {
     setAutoreplySubject((prev) => prev || t('email.defaultAutoreplySubject'));
@@ -1316,262 +1320,12 @@ export function EmailDomainPage() {
         ) : null}
 
         {tab === 'advanced' ? (
-          <div className="stack">
-            <Card>
-              <CardSection title={t('email.mailSslTitle')}>
-                <ActionBar className="u-mb-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={bindNavigate(
-                      navigate,
-                      `/ssl?domain=${encodeURIComponent(defaultMailSslDomain(domain.domain))}&action=le`,
-                    )}
-                  >
-                    {t('email.leMailHost', {
-                      host: defaultMailSslDomain(domain.domain),
-                    })}
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={bindNavigate(
-                      navigate,
-                      `/ssl?domain=${encodeURIComponent(webmailDomain || defaultWebmailDomain(domain.domain))}&action=le`,
-                    )}
-                  >
-                    {t('email.leWebmailHost', {
-                      host: webmailDomain || defaultWebmailDomain(domain.domain),
-                    })}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={bindNavigate(
-                      navigate,
-                      `/ssl?domain=${encodeURIComponent(domain.domain)}&action=le`,
-                    )}
-                  >
-                    {t('email.leApexHost', { host: domain.domain })}
-                  </Button>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    loading={busy}
-                    onClick={() => {
-                      void withBusy(async () => {
-                        const r = await emailApi.applyMailTls({
-                          domain: domain.domain,
-                          mailHost: defaultMailSslDomain(domain.domain),
-                        });
-                        setLive((prev) => ({
-                          ...(prev ?? {}),
-                          mailTlsApply: r,
-                        }));
-                      });
-                    }}
-                  >
-                    {t('email.applyMailTls')}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={bindNavigate(navigate, '/ssl')}
-                  >
-                    {t('email.openSslPage')}
-                  </Button>
-                </ActionBar>
-                {(live as { mailTlsApply?: OpsResultLike } | null)?.mailTlsApply ? (
-                  <OpsResultPanel
-                    title={t('email.applyMailTls')}
-                    result={asOps(
-                      ((live as { mailTlsApply?: OpsResultLike }).mailTlsApply ??
-                        null) as Record<string, unknown> | null,
-                    )}
-                  />
-                ) : null}
-              </CardSection>
-            </Card>
-            <Card>
-              <CardSection title={t('email.webmailSsoSkeleton')}>
-                <ActionBar>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    loading={busy}
-                    onClick={bindBusySet(
-                      withBusy,
-                      () =>
-                        api.requestRaw('/api/v1/email/webmail/sso-plugin', {
-                          method: 'POST',
-                          body: JSON.stringify({}),
-                        }),
-                      setLive,
-                    )}
-                  >
-                    {t('email.writeRoundcubeSso')}
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    loading={busy}
-                    onClick={bindBusySet(
-                      withBusy,
-                      () =>
-                        api.requestRaw('/api/v1/email/webmail/sso-plugin', {
-                          method: 'POST',
-                          body: JSON.stringify({ enableSystem: true }),
-                        }),
-                      setLive,
-                    )}
-                  >
-                    {t('email.ssoSkeletonSymlink')}
-                  </Button>
-                </ActionBar>
-              </CardSection>
-            </Card>
-            <Card>
-              <CardSection title={t('email.rateLimitTitle')}>
-                <FormLayout columns={2}>
-                  <Field
-                    label={t('email.hourlyMsgCap')}
-                    htmlFor="policy-rate"
-                    flush
-                    hint={t('email.hourlyMsgCapHint')}
-                  >
-                    <input
-                      id="policy-rate"
-                      type="number"
-                      min={10}
-                      max={100000}
-                      value={policyRate}
-                      onChange={bindInput(setPolicyRate)}
-                    />
-                  </Field>
-                  <CheckboxField
-                    id="policy-spam"
-                    label={t('email.enableAntispam')}
-                    checked={policyAntispam}
-                    onChange={setPolicyAntispam}
-                    disabled={busy}
-                  />
-                </FormLayout>
-                <FormActions align="end">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    loading={busy}
-                    onClick={bindBusyApplyPolicy(
-                      withBusy,
-                      emailApi.applyPolicy,
-                      domain.id,
-                      {
-                        rateLimitPerHour: parsePolicyRate(policyRate),
-                        antispam: policyAntispam,
-                        applySystem: false,
-                      },
-                      setPolicyLog,
-                      load,
-                    )}
-                  >
-                    {t('email.writeControlOnly')}
-                  </Button>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    loading={busy}
-                    onClick={bindBusyApplyPolicy(
-                      withBusy,
-                      emailApi.applyPolicy,
-                      domain.id,
-                      {
-                        rateLimitPerHour: parsePolicyRate(policyRate),
-                        antispam: policyAntispam,
-                        applySystem: true,
-                      },
-                      setPolicyLog,
-                      load,
-                    )}
-                  >
-                    {t('email.applyToSystemBtn')}
-                  </Button>
-                </FormActions>
-                {policyLog ? (
-                  <OpsResultPanel
-                    title={t('email.policyResult')}
-                    result={asOps(policyLog)}
-                    busy={busy}
-                  />
-                ) : null}
-              </CardSection>
-            </Card>
-            <Card>
-              <CardSection title={t('email.domainSslTitle')}>
-                <FormActions>
-                  <Button
-                    variant="secondary"
-                    size="md"
-                    onClick={bindNavigate(
-                      navigate,
-                      `/ssl?domain=${encodeURIComponent(domain.domain)}&action=le`,
-                    )}
-                  >
-                    {t('email.requestCert', { domain: domain.domain })}
-                  </Button>
-                </FormActions>
-              </CardSection>
-            </Card>
-            <Card>
-              <CardSection title={t('email.clientAutoTitle')}>
-                <FormActions>
-                  <Button
-                    variant="secondary"
-                    size="md"
-                    loading={busy}
-                    onClick={bindBusyAutodiscover(
-                      withBusy,
-                      () => emailApi.autodiscover(domain.id),
-                      setWebmailLog,
-                    )}
-                  >
-                    {t('email.generateCopyXml')}
-                  </Button>
-                </FormActions>
-              </CardSection>
-            </Card>
-            <Card>
-              <CardSection title={t('email.queueTitle')}>
-                <FormActions>
-                  <Button
-                    variant="secondary"
-                    size="md"
-                    loading={busy}
-                    onClick={bindBusyMailQueue(
-                      withBusy,
-                      () => emailApi.mailQueue(),
-                      setWebmailLog,
-                    )}
-                  >
-                    {t('email.viewQueue')}
-                  </Button>
-                  <Button
-                    variant="danger"
-                    size="md"
-                    loading={busy}
-                    onClick={bindBusySet(
-                      withBusy,
-                      () => emailApi.flushQueue({ all: true }),
-                      setWebmailLog,
-                    )}
-                  >
-                    {t('email.flushQueue')}
-                  </Button>
-                </FormActions>
-              </CardSection>
-            </Card>
+          <div className="tab-panel mail-check mail-advanced">
+            {/* 1. First-time ready */}
             <Card>
               <CardSection title={t('email.bootstrapTitle')}>
-                <FormLayout>
+                <p className="muted u-text-sm u-mb-0">{t('email.bootstrapAfterSteps')}</p>
+                <FormLayout columns={2}>
                   <Field
                     label={t('email.adminPassword')}
                     htmlFor="boot-pw"
@@ -1589,8 +1343,7 @@ export function EmailDomainPage() {
                     />
                   </Field>
                 </FormLayout>
-                <p className="muted u-text-sm u-mb-3">{t('email.bootstrapAfterSteps')}</p>
-                <FormActions>
+                <ActionBar size="md">
                   <Button
                     variant="primary"
                     size="md"
@@ -1608,8 +1361,9 @@ export function EmailDomainPage() {
                         adminLocalPart: 'postmaster',
                         adminPassword: bootstrapPassword.trim(),
                         installPackages: true,
-                        webmail: true },
-                      setWebmailLog,
+                        webmail: true,
+                      },
+                      setBootstrapLog,
                       load,
                     )}
                   >
@@ -1618,7 +1372,6 @@ export function EmailDomainPage() {
                   <Button
                     variant="secondary"
                     size="md"
-                    loading={busy}
                     onClick={bindNavigate(
                       navigate,
                       `/ssl?domain=${encodeURIComponent(defaultMailSslDomain(domain.domain))}&action=le`,
@@ -1626,9 +1379,18 @@ export function EmailDomainPage() {
                   >
                     {t('email.bootstrapThenSsl')}
                   </Button>
-                </FormActions>
+                </ActionBar>
+                {bootstrapLog ? (
+                  <OpsResultPanel
+                    title={t('email.bootstrapTitle')}
+                    result={asOps(bootstrapLog)}
+                    busy={busy}
+                  />
+                ) : null}
               </CardSection>
             </Card>
+
+            {/* 2. Webmail */}
             <Card>
               <CardSection title={t('email.webmailRoundcube')}>
                 <p className="muted u-text-sm u-mb-0">{t('email.webmailRisk')}</p>
@@ -1678,7 +1440,7 @@ export function EmailDomainPage() {
                   onChange={setWebmailForceHttps}
                   label={t('email.webmailForceHttps')}
                 />
-                <FormActions>
+                <ActionBar size="md">
                   <Button
                     variant="primary"
                     size="md"
@@ -1748,19 +1510,311 @@ export function EmailDomainPage() {
                     size="md"
                     onClick={bindNavigate(
                       navigate,
-                      `/ssl?domain=${encodeURIComponent(webmailDomain || defaultWebmailDomain(domain.domain))}&action=le`,
+                      `/ssl?domain=${encodeURIComponent(
+                        webmailDomain || defaultWebmailDomain(domain.domain),
+                      )}&action=le`,
                     )}
                   >
                     {t('email.openSslPage')}
                   </Button>
-                </FormActions>
-                <OpsResultPanel
-                  title={t('email.webmailRoundcube')}
-                  result={asOps(webmailLog)}
-                  busy={busy}
-                />
+                </ActionBar>
+                <details className="mail-advanced__details">
+                  <summary>{t('email.webmailSsoAdvanced')}</summary>
+                  <ActionBar size="md" className="mail-advanced__details-actions">
+                    <Button
+                      variant="ghost"
+                      size="md"
+                      loading={busy}
+                      onClick={bindBusySet(
+                        withBusy,
+                        () =>
+                          api.requestRaw('/api/v1/email/webmail/sso-plugin', {
+                            method: 'POST',
+                            body: JSON.stringify({}),
+                          }),
+                        setAdvancedOpsLog,
+                      )}
+                    >
+                      {t('email.writeRoundcubeSso')}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      loading={busy}
+                      onClick={bindBusySet(
+                        withBusy,
+                        () =>
+                          api.requestRaw('/api/v1/email/webmail/sso-plugin', {
+                            method: 'POST',
+                            body: JSON.stringify({ enableSystem: true }),
+                          }),
+                        setAdvancedOpsLog,
+                      )}
+                    >
+                      {t('email.ssoSkeletonSymlink')}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="md"
+                      onClick={bindSet(setTab, 'sieve')}
+                    >
+                      {t('email.tabSieve')}
+                    </Button>
+                  </ActionBar>
+                </details>
+                {webmailLog ? (
+                  <OpsResultPanel
+                    title={t('email.webmailRoundcube')}
+                    result={asOps(webmailLog)}
+                    busy={busy}
+                  />
+                ) : null}
               </CardSection>
             </Card>
+
+            {/* 3. Certificates & TLS */}
+            <Card>
+              <CardSection title={t('email.mailSslTitle')}>
+                <DescriptionList
+                  columns={1}
+                  items={[
+                    {
+                      label: t('email.tlsRoleMail'),
+                      value: (
+                        <span className="mail-advanced__host-row">
+                          <code className="inline">
+                            {defaultMailSslDomain(domain.domain)}
+                          </code>
+                          <Button
+                            variant="secondary"
+                            size="md"
+                            onClick={bindNavigate(
+                              navigate,
+                              `/ssl?domain=${encodeURIComponent(defaultMailSslDomain(domain.domain))}&action=le`,
+                            )}
+                          >
+                            {t('email.tlsRequestLe')}
+                          </Button>
+                        </span>
+                      ),
+                      hint: t('email.tlsRoleMailHint'),
+                    },
+                    {
+                      label: t('email.tlsRoleWebmail'),
+                      value: (
+                        <span className="mail-advanced__host-row">
+                          <code className="inline">
+                            {webmailDomain || defaultWebmailDomain(domain.domain)}
+                          </code>
+                          <Button
+                            variant="secondary"
+                            size="md"
+                            onClick={bindNavigate(
+                              navigate,
+                              `/ssl?domain=${encodeURIComponent(
+                                webmailDomain || defaultWebmailDomain(domain.domain),
+                              )}&action=le`,
+                            )}
+                          >
+                            {t('email.tlsRequestLe')}
+                          </Button>
+                        </span>
+                      ),
+                      hint: t('email.tlsRoleWebmailHint'),
+                    },
+                    {
+                      label: t('email.tlsRoleApex'),
+                      value: (
+                        <span className="mail-advanced__host-row">
+                          <code className="inline">{domain.domain}</code>
+                          <Button
+                            variant="secondary"
+                            size="md"
+                            onClick={bindNavigate(
+                              navigate,
+                              `/ssl?domain=${encodeURIComponent(domain.domain)}&action=le`,
+                            )}
+                          >
+                            {t('email.tlsRequestLe')}
+                          </Button>
+                        </span>
+                      ),
+                      hint: t('email.tlsRoleApexHint'),
+                    },
+                  ]}
+                />
+                <ActionBar size="md" className="action-bar--toolbar">
+                  <Button
+                    variant="primary"
+                    size="md"
+                    loading={busy}
+                    onClick={() => {
+                      void withBusy(async () => {
+                        const r = await emailApi.applyMailTls({
+                          domain: domain.domain,
+                          mailHost: defaultMailSslDomain(domain.domain),
+                        });
+                        setLive((prev) => ({
+                          ...(prev ?? {}),
+                          mailTlsApply: r,
+                        }));
+                      });
+                    }}
+                  >
+                    {t('email.applyMailTls')}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="md"
+                    onClick={bindNavigate(navigate, '/ssl')}
+                  >
+                    {t('email.openSslPage')}
+                  </Button>
+                </ActionBar>
+                {(live as { mailTlsApply?: OpsResultLike } | null)?.mailTlsApply ? (
+                  <OpsResultPanel
+                    title={t('email.applyMailTls')}
+                    result={asOps(
+                      ((live as { mailTlsApply?: OpsResultLike }).mailTlsApply ??
+                        null) as Record<string, unknown> | null,
+                    )}
+                  />
+                ) : null}
+              </CardSection>
+            </Card>
+
+            {/* 4. Ops tools */}
+            <div className="mail-advanced__ops-grid">
+              <Card>
+                <CardSection title={t('email.rateLimitTitle')}>
+                  <FormLayout>
+                    <Field
+                      label={t('email.hourlyMsgCap')}
+                      htmlFor="policy-rate"
+                      flush
+                      hint={t('email.hourlyMsgCapHint')}
+                    >
+                      <input
+                        id="policy-rate"
+                        type="number"
+                        min={10}
+                        max={100000}
+                        value={policyRate}
+                        onChange={bindInput(setPolicyRate)}
+                      />
+                    </Field>
+                    <CheckboxField
+                      id="policy-spam"
+                      label={t('email.enableAntispam')}
+                      checked={policyAntispam}
+                      onChange={setPolicyAntispam}
+                      disabled={busy}
+                    />
+                  </FormLayout>
+                  <ActionBar size="md">
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      loading={busy}
+                      onClick={bindBusyApplyPolicy(
+                        withBusy,
+                        emailApi.applyPolicy,
+                        domain.id,
+                        {
+                          rateLimitPerHour: parsePolicyRate(policyRate),
+                          antispam: policyAntispam,
+                          applySystem: false,
+                        },
+                        setPolicyLog,
+                        load,
+                      )}
+                    >
+                      {t('email.writeControlOnly')}
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="md"
+                      loading={busy}
+                      onClick={bindBusyApplyPolicy(
+                        withBusy,
+                        emailApi.applyPolicy,
+                        domain.id,
+                        {
+                          rateLimitPerHour: parsePolicyRate(policyRate),
+                          antispam: policyAntispam,
+                          applySystem: true,
+                        },
+                        setPolicyLog,
+                        load,
+                      )}
+                    >
+                      {t('email.applyToSystemBtn')}
+                    </Button>
+                  </ActionBar>
+                  {policyLog ? (
+                    <OpsResultPanel
+                      title={t('email.policyResult')}
+                      result={asOps(policyLog)}
+                      busy={busy}
+                    />
+                  ) : null}
+                </CardSection>
+              </Card>
+
+              <Card>
+                <CardSection title={t('email.advancedToolsTitle')}>
+                  <div className="mail-advanced__tool-block">
+                    <h4 className="mail-advanced__tool-label">{t('email.queueTitle')}</h4>
+                    <ActionBar size="md">
+                      <Button
+                        variant="secondary"
+                        size="md"
+                        loading={busy}
+                        onClick={bindBusyMailQueue(
+                          withBusy,
+                          () => emailApi.mailQueue(),
+                          setAdvancedOpsLog,
+                        )}
+                      >
+                        {t('email.viewQueue')}
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="md"
+                        loading={busy}
+                        onClick={bindSet(setFlushQueueOpen, true)}
+                      >
+                        {t('email.flushQueue')}
+                      </Button>
+                    </ActionBar>
+                  </div>
+                  <div className="mail-advanced__tool-block">
+                    <h4 className="mail-advanced__tool-label">{t('email.clientAutoTitle')}</h4>
+                    <ActionBar size="md">
+                      <Button
+                        variant="secondary"
+                        size="md"
+                        loading={busy}
+                        onClick={bindBusyAutodiscover(
+                          withBusy,
+                          () => emailApi.autodiscover(domain.id),
+                          setAdvancedOpsLog,
+                        )}
+                      >
+                        {t('email.generateCopyXml')}
+                      </Button>
+                    </ActionBar>
+                  </div>
+                  {advancedOpsLog ? (
+                    <OpsResultPanel
+                      title={t('email.advancedToolsTitle')}
+                      result={asOps(advancedOpsLog)}
+                      busy={busy}
+                    />
+                  ) : null}
+                </CardSection>
+              </Card>
+            </div>
           </div>
         ) : null}
       
@@ -1833,6 +1887,41 @@ export function EmailDomainPage() {
             />
           </Field>
         </FormLayout>
+      </Modal>
+
+      <Modal
+        open={flushQueueOpen}
+        onClose={bindSet(setFlushQueueOpen, false)}
+        title={t('email.flushQueue')}
+        description={t('email.flushQueueConfirm')}
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={bindSet(setFlushQueueOpen, false)}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="danger"
+              size="md"
+              loading={busy}
+              onClick={() => {
+                setFlushQueueOpen(false);
+                bindBusySet(
+                  withBusy,
+                  () => emailApi.flushQueue({ all: true }),
+                  setAdvancedOpsLog,
+                )();
+              }}
+            >
+              {t('email.flushQueue')}
+            </Button>
+          </>
+        }
+      >
+        <p className="muted u-text-sm u-mb-0">{t('email.flushQueueConfirm')}</p>
       </Modal>
     </FeaturePageLayout>
   );

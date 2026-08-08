@@ -2730,7 +2730,7 @@
     "noProbeResults": "No probe results yet",
     "noLiveYet": "Live check not run yet",
     "noLiveYetHint": "Run a live check first",
-    "mailSslTitle": "Mail SSL (Let’s Encrypt)",
+    "mailSslTitle": "Certificates & TLS",
     "mailSslHint": "Real issue is on SSL page; jump to mail / webmail / domain hostnames here",
     "openSslPage": "Open SSL page",
     "webmailSsoSkeleton": "Webmail SSO skeleton",
@@ -2961,7 +2961,18 @@
     "openWebmail": "Open webmail",
     "webmailRisk": "Public webmail is risky — enable HTTPS soon.",
     "webmailForceHttps": "Force HTTPS (Roundcube; SSL required)",
-    "reinstallWebmail": "Reinstall / upgrade"
+    "reinstallWebmail": "Reinstall / upgrade",
+    "webmailSsoAdvanced": "Advanced · SSO plugin",
+    "tlsRoleMail": "mail (IMAP/SMTP)",
+    "tlsRoleMailHint": "Mail server hostname",
+    "tlsRoleWebmail": "webmail",
+    "tlsRoleWebmailHint": "Webmail virtual host",
+    "tlsRoleApex": "Apex domain",
+    "tlsRoleApexHint": "Web / apex certificate",
+    "tlsRequestLe": "Request LE",
+    "advancedToolsTitle": "Queue & clients",
+    "flushQueueConfirm": "Flush the local MTA queue? This cannot be undone.",
+    "mailSslTitleShort": "Certificates & TLS"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "Unauthorized",

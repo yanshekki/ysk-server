@@ -71,6 +71,81 @@
   margin: 0;
 }
 
+/* —— Advanced tab: 4-zone console —— */
+.mail-advanced__ops-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-stack);
+  min-width: 0;
+  align-items: stretch;
+}
+
+.mail-advanced__ops-grid > .card {
+  min-height: 0;
+  height: 100%;
+}
+
+@media (max-width: 900px) {
+  .mail-advanced__ops-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mail-advanced__host-row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.mail-advanced__details {
+  margin: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle);
+}
+
+.mail-advanced__details > summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: var(--text-sm);
+  color: var(--text-sub);
+  list-style: none;
+}
+
+.mail-advanced__details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.mail-advanced__details[open] > summary {
+  margin-bottom: var(--space-4);
+  color: var(--text-main);
+}
+
+.mail-advanced__details-actions {
+  margin: 0;
+}
+
+.mail-advanced__tool-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.mail-advanced__tool-block + .mail-advanced__tool-block {
+  margin-top: var(--space-5);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border-light);
+}
+
+.mail-advanced__tool-label {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-main);
+}
+
 .mail-toolbar {
   display: flex;
   flex-wrap: wrap;
