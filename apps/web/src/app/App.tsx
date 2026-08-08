@@ -39,10 +39,6 @@ const ProjectDetailPage = lazy(() =>
 const UpdatesPage = lazy(() =>
   import('../pages/UpdatesPage').then((m) => ({ default: m.UpdatesPage })),
 );
-const AgentsPage = lazy(() =>
-  import('../pages/AgentsPage').then((m) => ({ default: m.AgentsPage })),
-);
-const AiPage = lazy(() => import('../pages/AiPage').then((m) => ({ default: m.AiPage })));
 const FilesPage = lazy(() =>
   import('../pages/FilesPage').then((m) => ({ default: m.FilesPage })),
 );
@@ -220,14 +216,9 @@ export function App() {
             }
           >
             <Route index element={<DashboardPage />} />
-            <Route
-              path="ai"
-              element={
-                <Lazy>
-                  <AiPage />
-                </Lazy>
-              }
-            />
+            {/* AI panel UI removed — use CLI (ask / agents / tools) + docs */}
+            <Route path="ai" element={<Navigate to="/" replace />} />
+            <Route path="agents" element={<Navigate to="/" replace />} />
             <Route
               path="projects"
               element={
@@ -595,14 +586,6 @@ export function App() {
               element={
                 <Lazy>
                   <UpdatesPage />
-                </Lazy>
-              }
-            />
-            <Route
-              path="agents"
-              element={
-                <Lazy>
-                  <AgentsPage />
                 </Lazy>
               }
             />

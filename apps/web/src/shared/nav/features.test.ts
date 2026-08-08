@@ -35,4 +35,10 @@ describe('allFeatureTiles', () => {
     expect(tiles.every((t) => t.to !== '/')).toBe(true);
     expect(tiles.some((t) => t.key === 'projects')).toBe(true);
   });
+
+  it('does not expose AI Tasks / Agents panel routes', () => {
+    expect(FEATURE_SECTIONS.some((s) => s.sectionKey === 'ai')).toBe(false);
+    const tiles = allFeatureTiles();
+    expect(tiles.some((t) => t.to === '/ai' || t.to === '/agents')).toBe(false);
+  });
 });

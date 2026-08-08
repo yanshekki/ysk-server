@@ -102,13 +102,8 @@ export const FEATURE_SECTIONS: FeatureSection[] = [
       { to: '/system', key: 'systemIndex', icon: '▦' },
     ],
   },
-  {
-    sectionKey: 'ai',
-    items: [
-      { to: '/ai', key: 'ai', icon: '✦' },
-      { to: '/agents', key: 'agents', icon: '⚡' },
-    ],
-  },
+  // AI Tasks / Agents experimental UI removed — operators use CLI + docs
+  // (`ysk-server ask`, `agents`, tools). No panel chrome for AI.
 ];
 
 /** Flat list for dashboard grid (skip dashboard self-link) */
