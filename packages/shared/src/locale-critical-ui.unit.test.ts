@@ -44,3 +44,16 @@ describe('critical UI locale strings', () => {
     }
   });
 });
+
+describe('software aptSummary interpolation params', () => {
+  it('uses {{n}} matching SoftwareHub call site', () => {
+    for (const loc of ['zh-HK', 'zh-CN', 'en'] as const) {
+      const sw = load(loc, 'software.json') as any;
+      expect(sw.aptSummary.catalog).toContain('{{n}}');
+      expect(sw.aptSummary.host).toContain('{{n}}');
+      expect(sw.aptSummary.catalog).not.toContain('{{v0}}');
+      expect(sw.navBadgeTitle).toContain('{{n}}');
+      expect(sw.navBadgeTitle).not.toContain('{{v0}}');
+    }
+  });
+});

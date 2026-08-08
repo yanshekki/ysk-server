@@ -146,5 +146,5 @@
   "batchCancelled": "Cancelled (remaining skipped)",
   "batchRescanned": "Host package state re-scanned",
   "applyLogTitle": "Update（）",
-  "navBadgeTitle": "：{{v0}}"
+  "navBadgeTitle": "Upgradable packages: {{n}}"
 }

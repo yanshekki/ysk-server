@@ -9187,32 +9187,34 @@
     "action": {
       "manage": "管理",
       "useInProject": "用到项目",
-      "useInProjectTitle": "到项目页，可将此 runtime 用于应用",
+      "useInProjectTitle": "到项目页设置此 runtime",
       "update": "更新",
       "updateTitle": "前往安装／切换至 {{v}}",
       "updateTo": "更新至 {{v}}",
       "installVersion": "安装 {{v}}",
-      "applyAptTitle": "確認後更新 {{v0}}",
-      "updateN": "更新 {{v0}} 項",
-      "installTitle": "安裝 {{v0}}",
-      "install": "安裝",
-      "updateAptTitle": "前往更新中心處理 {{v0}}"
+      "applyAptTitle": "确认后更新 {{pkg}}",
+      "updateN": "更新 {{n}} 项",
+      "installTitle": "安装 {{list}}",
+      "install": "安装",
+      "updateAptTitle": "前往更新中心处理 {{pkg}}"
     },
     "apply": {
       "blockedShort": "被阻挡",
       "failedShort": "失败",
-      "failed": "安装未完成",
+      "failed": "更新失败",
       "blocked": "被阻挡",
-      "confirm": "确认安装",
-      "confirmTitle": "确认安装软件？",
-      "confirmBody": "将安装／更新 {{pkg}}：{{from}} → {{to}}。需系统变更权限。",
+      "confirm": "确认更新",
+      "confirmTitle": "确认更新软件？",
+      "confirmBody": "将更新 {{pkg}}：{{from}} → {{to}}。需系统变更权限。",
       "ok": "已应用 {{pkg}}",
-      "progress": "更新中 {{v0}}/{{v1}}：{{v2}}",
-      "okMulti": "已更新：{{v0}}",
-      "okMultiTitle": "{{v0}} 更新完成",
-      "partial": "部分成功：{{v0}}；失敗：{{v1}}",
-      "partialTitle": "部分套件更新失敗",
-      "failedTitle": "{{v0}} 更新失敗"
+      "progress": "更新中 {{n}}/{{total}}：{{pkg}}",
+      "okMulti": "已更新：{{list}}",
+      "okMultiTitle": "{{label}} 更新完成",
+      "partial": "部分成功",
+      "partialTitle": "部分更新失败",
+      "failedTitle": "{{label}} 更新失败",
+      "progressDetail": "{{from}} → {{to}}",
+      "confirmBodyMulti": "将更新 {{label}}：{{list}}"
     },
     "version": {
       "loading": "加载版本中…",
@@ -9226,33 +9228,33 @@
       "noAptCandidate": "没有可用的 apt 候选版本"
     },
     "install": {
-      "progress": "正在安裝：{{v0}}…",
-      "progressHint": "需 root + EXECUTE；可能需要一兩分鐘。",
-      "blockedTitle": "{{v0}} 未能安裝",
-      "ok": "已提交安裝：{{v0}}",
-      "okTitle": "{{v0}} 安裝完成／已提交",
-      "failedTitle": "{{v0}} 安裝失敗",
-      "confirmTitle": "確認安裝軟件？",
-      "confirmBody": "將安裝 {{v0}}：{{v1}}。需 root 且 YSK_EXECUTE=1。",
-      "confirm": "確認安裝"
+      "progress": "正在安装：{{list}}…",
+      "progressHint": "可能需要一两分钟",
+      "blockedTitle": "{{label}} 未能安装",
+      "ok": "已提交安装：{{list}}",
+      "okTitle": "{{label}} 安装完成／已提交",
+      "failedTitle": "{{label}} 安装失败",
+      "confirmTitle": "确认安装软件？",
+      "confirmBody": "将安装 {{label}}：{{list}}。需系统变更权限。",
+      "confirm": "确认安装"
     },
     "runtime": {
-      "installing": "正在安裝／更新 {{v0}} {{v1}}…（可能需要一兩分鐘）",
-      "installingHint": "下方會即時顯示 server 輸出，請勿關閉頁面。",
-      "blockedTitle": "{{v0}} {{v1}} 未能安裝",
-      "installed": "已安裝／更新 {{v0}} {{v1}}",
-      "installedDetail": "狀態已重新整理。若仍顯示有新版本，可再檢查或到執行環境頁確認。",
-      "failedTitle": "{{v0}} {{v1}} 安裝失敗",
-      "installingShort": "安裝中…"
+      "installing": "正在安装／更新 {{kind}} {{v}}…",
+      "installingHint": "可能需要一两分钟",
+      "blockedTitle": "{{kind}} {{v}} 未能安装",
+      "installed": "已安装／更新 {{kind}} {{v}}",
+      "installedDetail": "可在项目选择此版本",
+      "failedTitle": "{{kind}} {{v}} 安装失败",
+      "installingShort": "安装中…"
     },
-    "aptSummaryTitle": "系統倉庫可升級",
-    "aptSummaryDesc": "目錄軟件與主機套件清單分開統計；實際套用可在更新中心或卡片一鍵確認。",
+    "aptSummaryTitle": "系统仓库可升级",
+    "aptSummaryDesc": "目录与主机套件分开统计；可在更新中心或卡片确认应用。",
     "aptSummary": {
-      "catalog": "目錄軟件 {{v0}}",
-      "host": "主機套件 {{v0}}",
-      "openUpdates": "開啟更新中心"
+      "catalog": "目录软件 {{n}}",
+      "host": "主机套件 {{n}}",
+      "openUpdates": "打开更新中心"
     },
-    "navBadgeTitle": "目錄軟件系統倉庫可升級：{{v0}}",
+    "navBadgeTitle": "目录软件可升级：{{n}}",
     "projectHint": "已预填 runtime {{runtime}}，可创建项目",
     "projectHintWithVersion": "已预填 runtime {{runtime}} {{version}}，可创建项目"
   },
@@ -10123,7 +10125,7 @@
     "batchCancelled": "已取消（其余未执行）",
     "batchRescanned": "已重新扫描主机软件包状态",
     "applyLogTitle": "套件更新日誌（即時）",
-    "navBadgeTitle": "主機可升級套件：{{v0}}"
+    "navBadgeTitle": "可升级软件包：{{n}}"
   },
   "users": {
     "userCount": "{{count}} 用户",

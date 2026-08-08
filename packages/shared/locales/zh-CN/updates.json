@@ -146,5 +146,5 @@
   "batchCancelled": "已取消（其余未执行）",
   "batchRescanned": "已重新扫描主机软件包状态",
   "applyLogTitle": "套件更新日誌（即時）",
-  "navBadgeTitle": "主機可升級套件：{{v0}}"
+  "navBadgeTitle": "可升级软件包：{{n}}"
 }

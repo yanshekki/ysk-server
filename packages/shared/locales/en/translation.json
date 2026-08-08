@@ -9187,32 +9187,34 @@
     "action": {
       "manage": "Manage",
       "useInProject": "Use in project",
-      "useInProjectTitle": "Open projects — set this runtime on an app",
+      "useInProjectTitle": "Open projects to set this runtime",
       "update": "Update",
       "updateTitle": "Install or switch to {{v}}",
       "updateTo": "Update to {{v}}",
       "installVersion": "Install {{v}}",
-      "applyAptTitle": "Update {{v0}}",
-      "updateN": "Update {{v0}}",
-      "installTitle": "Install {{v0}}",
+      "applyAptTitle": "Confirm update {{pkg}}",
+      "updateN": "Update {{n}} items",
+      "installTitle": "Install {{list}}",
       "install": "Install",
-      "updateAptTitle": "Update {{v0}}"
+      "updateAptTitle": "Open Updates for {{pkg}}"
     },
     "apply": {
       "blockedShort": "Blocked",
       "failedShort": "Failed",
-      "failed": "Install incomplete",
+      "failed": "Update failed",
       "blocked": "Blocked",
-      "confirm": "Confirm install",
-      "confirmTitle": "Confirm software install?",
-      "confirmBody": "Install/update {{pkg}}: {{from}} → {{to}}. Needs system-change rights.",
+      "confirm": "Confirm update",
+      "confirmTitle": "Confirm software update?",
+      "confirmBody": "Update {{pkg}}: {{from}} → {{to}}. Needs system-change rights.",
       "ok": "Applied {{pkg}}",
-      "progress": "Update… {{v0}}/{{v1}}：{{v2}}",
-      "okMulti": "Update：{{v0}}",
-      "okMultiTitle": "{{v0}} Update",
-      "partial": "：{{v0}}；Failed：{{v1}}",
-      "partialTitle": "UpdateFailed",
-      "failedTitle": "{{v0}} UpdateFailed"
+      "progress": "Updating {{n}}/{{total}}: {{pkg}}",
+      "okMulti": "Updated: {{list}}",
+      "okMultiTitle": "{{label}} updated",
+      "partial": "Partial success",
+      "partialTitle": "Some updates failed",
+      "failedTitle": "{{label}} update failed",
+      "progressDetail": "{{from}} → {{to}}",
+      "confirmBodyMulti": "Update {{label}}: {{list}}"
     },
     "version": {
       "loading": "Loading versions…",
@@ -9226,33 +9228,33 @@
       "noAptCandidate": "No apt candidate version"
     },
     "install": {
-      "progress": "Install：{{v0}}…",
-      "progressHint": "root + EXECUTE；。",
-      "blockedTitle": "{{v0}} Install",
-      "ok": "Install：{{v0}}",
-      "okTitle": "{{v0}} Install／",
-      "failedTitle": "{{v0}} InstallFailed",
-      "confirmTitle": "Install？",
-      "confirmBody": "Install {{v0}}：{{v1}}。 root YSK_EXECUTE=1。",
-      "confirm": "Install"
+      "progress": "Installing: {{list}}…",
+      "progressHint": "May take a minute or two",
+      "blockedTitle": "{{label}} could not install",
+      "ok": "Install queued: {{list}}",
+      "okTitle": "{{label}} installed / queued",
+      "failedTitle": "{{label}} install failed",
+      "confirmTitle": "Confirm software install?",
+      "confirmBody": "Install {{label}}: {{list}}. Needs system-change rights.",
+      "confirm": "Confirm install"
     },
     "runtime": {
-      "installing": "Install／Update {{v0}} {{v1}}…（）",
-      "installingHint": "Show server ，Close。",
-      "blockedTitle": "{{v0}} {{v1}} Install",
-      "installed": "Installed／Update {{v0}} {{v1}}",
-      "installedDetail": "。Show，。",
-      "failedTitle": "{{v0}} {{v1}} InstallFailed",
-      "installingShort": "Install……"
+      "installing": "Installing/updating {{kind}} {{v}}…",
+      "installingHint": "May take a minute or two",
+      "blockedTitle": "{{kind}} {{v}} could not install",
+      "installed": "Installed/updated {{kind}} {{v}}",
+      "installedDetail": "Select this version on a project",
+      "failedTitle": "{{kind}} {{v}} install failed",
+      "installingShort": "Installing…"
     },
-    "aptSummaryTitle": "…",
-    "aptSummaryDesc": "；Update。",
+    "aptSummaryTitle": "Repo upgrades available",
+    "aptSummaryDesc": "Catalog and host package counts are separate; apply from Updates or a card.",
     "aptSummary": {
-      "catalog": "{{v0}}",
-      "host": "{{v0}}",
-      "openUpdates": "Update"
+      "catalog": "Catalog {{n}}",
+      "host": "Host packages {{n}}",
+      "openUpdates": "Open updates"
     },
-    "navBadgeTitle": "：{{v0}}",
+    "navBadgeTitle": "Catalog upgrades: {{n}}",
     "projectHint": "Runtime {{runtime}} prefilled — create a project",
     "projectHintWithVersion": "Runtime {{runtime}} {{version}} prefilled — create a project"
   },
@@ -10123,7 +10125,7 @@
     "batchCancelled": "Cancelled (remaining skipped)",
     "batchRescanned": "Host package state re-scanned",
     "applyLogTitle": "Update（）",
-    "navBadgeTitle": "：{{v0}}"
+    "navBadgeTitle": "Upgradable packages: {{n}}"
   },
   "users": {
     "userCount": "{{count}} users",
