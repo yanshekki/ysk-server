@@ -129,10 +129,13 @@ export function SystemPage() {
 
   const [snapshot, setSnapshot] = useState<ExportSnapshot | null>(null);
   const [managed, setManaged] = useState<ManagedConf[]>([]);
+  /** Managed Nginx list: 5 files per page (popup preview). */
+  const [managedPage, setManagedPage] = useState(0);
   const [archives, setArchives] = useState<ExportFile[]>([]);
   const [confPreview, setConfPreview] = useState<{ name: string; content: string } | null>(
     null,
   );
+  const [confPreviewLoading, setConfPreviewLoading] = useState(false);
   const [opsResult, setOpsResult] = useState<RebuildResult | null>(null);
   const [caps, setCaps] = useState<{ executeEnabled?: boolean; isRoot?: boolean }>({});
   const [panelTls, setPanelTls] = useState<Awaited<
@@ -180,7 +183,9 @@ export function SystemPage() {
         api.requestRaw<{ items: ExportFile[] }>('/api/v1/system/exports'),
       ]);
       setSnapshot(ex);
-      setManaged(confs.items ?? []);
+      const items = confs.items ?? [];
+      setManaged(items);
+      setManagedPage(0);
       setArchives(hist.items ?? []);
     } catch (e) {
       setErr(e instanceof Error ? e.message : t('system.exportLoadFailed'));
@@ -195,6 +200,40 @@ export function SystemPage() {
   }, [refresh]);
 
   const [tab, setTab] = usePageTab(SYS_TABS, 'host');
+
+  const MANAGED_PAGE_SIZE = 5;
+  const managedPageCount = Math.max(1, Math.ceil(managed.length / MANAGED_PAGE_SIZE));
+  const managedPageSafe = Math.min(managedPage, managedPageCount - 1);
+  const managedPageItems = useMemo(() => {
+    const start = managedPageSafe * MANAGED_PAGE_SIZE;
+    return managed.slice(start, start + MANAGED_PAGE_SIZE);
+  }, [managed, managedPageSafe]);
+
+  const openManagedPreview = useCallback(
+    (c: ManagedConf) => {
+      setConfPreviewLoading(true);
+      setBusy(true);
+      void api
+        .requestRaw<{
+          ok: boolean;
+          content?: string;
+          notes?: string[];
+        }>(`/api/v1/system/managed-nginx/${encodeURIComponent(c.name)}`)
+        .then((r) => {
+          if (r.ok && r.content != null) {
+            setConfPreview({ name: c.name, content: r.content });
+          } else {
+            setErr(r.notes?.join('；') ?? t('system.readFailed'));
+          }
+        })
+        .catch((e: Error) => setErr(e.message))
+        .finally(() => {
+          setBusy(false);
+          setConfPreviewLoading(false);
+        });
+    },
+    [setErr, t],
+  );
 
   useEffect(() => {
     if (tab === 'export') void refreshExportMeta();
@@ -1283,71 +1322,88 @@ export function SystemPage() {
                     description={t('system.noManagedDesc')}
                   />
                 ) : (
-                  <div className="sys-conf-list">
-                    {managed.map((c) => (
-                      <div key={c.name} className="sys-conf-row">
-                        <div className="sys-conf-row__main">
-                          <code className="sys-conf-row__name">{c.name}</code>
-                          <span className="sys-conf-row__meta">
-                            {formatBytes(c.bytes)}
-                            {c.mtime
-                              ? ` · ${new Date(c.mtime).toLocaleString('zh-TW')}`
-                              : ''}
-                          </span>
+                  <>
+                    <div className="sys-conf-list">
+                      {managedPageItems.map((c) => (
+                        <div key={c.name} className="sys-conf-row">
+                          <div className="sys-conf-row__main">
+                            <code className="sys-conf-row__name">{c.name}</code>
+                            <span className="sys-conf-row__meta">
+                              {formatBytes(c.bytes)}
+                              {c.mtime
+                                ? ` · ${new Date(c.mtime).toLocaleString()}`
+                                : ''}
+                            </span>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            loading={busy && confPreviewLoading}
+                            onClick={() => openManagedPreview(c)}
+                          >
+                            {t('system.preview')}
+                          </Button>
                         </div>
+                      ))}
+                    </div>
+                    {managed.length > MANAGED_PAGE_SIZE ? (
+                      <div className="sys-conf-pager" role="navigation" aria-label={t('system.managedPager')}>
                         <Button
-                          variant="ghost"
+                          variant="secondary"
                           size="sm"
-                          loading={busy}
-                          onClick={() => {
-                            setBusy(true);
-                            void api
-                              .requestRaw<{
-                                ok: boolean;
-                                content?: string;
-                                notes?: string[];
-                              }>(
-                                `/api/v1/system/managed-nginx/${encodeURIComponent(c.name)}`,
-                              )
-                              .then((r) => {
-                                if (r.ok && r.content != null) {
-                                  setConfPreview({
-                                    name: c.name,
-                                    content: r.content });
-                                } else {
-                                  setErr(r.notes?.join('；') ?? t('system.readFailed'));
-                                }
-                              })
-                              .catch((e: Error) => setErr(e.message))
-                              .finally(() => setBusy(false));
-                          }}
+                          disabled={managedPageSafe <= 0}
+                          onClick={() => setManagedPage((p) => Math.max(0, p - 1))}
                         >
-                          {t('system.preview')}
+                          {t('system.prevPage')}
+                        </Button>
+                        <span className="sys-conf-pager__meta">
+                          {t('system.pageOf', {
+                            page: managedPageSafe + 1,
+                            total: managedPageCount,
+                            count: managed.length,
+                          })}
+                        </span>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          disabled={managedPageSafe >= managedPageCount - 1}
+                          onClick={() =>
+                            setManagedPage((p) => Math.min(managedPageCount - 1, p + 1))
+                          }
+                        >
+                          {t('system.nextPage')}
                         </Button>
                       </div>
-                    ))}
-                  </div>
+                    ) : null}
+                  </>
                 )}
-                {confPreview ? (
-                  <div className="sys-preview">
-                    <div className="sys-preview__bar">
-                      <strong>{confPreview.name}</strong>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={bindSet(setConfPreview, null)}
-                      >
-                        {t('common.close')}
-                      </Button>
-                    </div>
+                <Modal
+                  open={Boolean(confPreview)}
+                  onClose={() => {
+                    if (!confPreviewLoading) setConfPreview(null);
+                  }}
+                  title={confPreview?.name ?? t('system.preview')}
+                  description={t('system.previewModalDesc')}
+                  size="xl"
+                  footer={
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      onClick={bindSet(setConfPreview, null)}
+                    >
+                      {t('common.close')}
+                    </Button>
+                  }
+                >
+                  {confPreview ? (
                     <LogViewer
                       text={confPreview.content}
                       highlight={false}
                       linkIps={false}
-                      maxHeight={300}
+                      maxHeight={480}
                     />
-                  </div>
-                ) : null}
+                  ) : null}
+                </Modal>
               </section>
 
               {/* Step 3 */}
