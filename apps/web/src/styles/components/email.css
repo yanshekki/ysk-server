@@ -72,6 +72,7 @@
 }
 
 /* —— Advanced tab: 4-zone console —— */
+/* Equal-height twin cards (rate limit | queue tools) */
 .mail-advanced__ops-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -81,13 +82,47 @@
 }
 
 .mail-advanced__ops-grid > .card {
-  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  min-height: 100%;
   height: 100%;
+  margin-top: 0; /* never stack margin inside grid */
+  box-sizing: border-box;
+}
+
+/* Section fills card so both panels share the same bottom edge */
+.mail-advanced__ops-grid > .card > .section-block {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;
+  min-height: 0;
+  gap: var(--space-5);
+}
+
+/* Keep primary actions near the bottom when content is short */
+.mail-advanced__ops-grid > .card > .section-block > .action-bar:last-of-type,
+.mail-advanced__ops-grid > .card > .section-block > .form-actions:last-of-type {
+  margin-top: auto;
+}
+
+.mail-advanced__ops-grid > .card > .section-block > .ops-result {
+  margin-top: var(--space-4);
 }
 
 @media (max-width: 900px) {
   .mail-advanced__ops-grid {
     grid-template-columns: 1fr;
+  }
+
+  .mail-advanced__ops-grid > .card {
+    height: auto;
+    min-height: 0;
+  }
+
+  .mail-advanced__ops-grid > .card > .section-block > .action-bar:last-of-type {
+    margin-top: 0;
   }
 }
 
