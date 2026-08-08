@@ -133,6 +133,9 @@ describe('FilesPage wave2 helpers', () => {
     expect(previewKind('application/octet-stream')).toBe('other');
     expect(previewKind('application/octet-stream', 'clip.mp4')).toBe('video');
     expect(previewKind('application/octet-stream', 'shot.webp')).toBe('image');
+    expect(previewKind('application/octet-stream', 'app.php')).toBe('text');
+    expect(previewKind('application/x-sh', 'run.sh')).toBe('text');
+    expect(previewKind(undefined, 'notes.md')).toBe('text');
     expect(previewKind(undefined)).toBe('other');
     expect(previewKind(null)).toBe('other');
   });

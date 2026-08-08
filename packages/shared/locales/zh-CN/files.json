@@ -172,5 +172,16 @@
   "toolbarAria": "文件操作",
   "previewFailed": "预览失败",
   "videoNotSupported": "浏览器无法播放此视频。",
-  "audioNotSupported": "浏览器无法播放此音频。"
+  "audioNotSupported": "浏览器无法播放此音频。",
+  "edit": "编辑",
+  "editorTitle": "编辑 · {{name}}",
+  "editorSave": "保存",
+  "editorSavedIdle": "已保存",
+  "editorSaved": "已保存 {{name}}",
+  "editorSaveFailed": "保存失败",
+  "editorDirty": "未保存",
+  "editorClean": "已保存",
+  "editorChars": "{{count}} 字符",
+  "editorAria": "编辑 {{name}}",
+  "editorDiscardConfirm": "放弃未保存的更改？"
 }

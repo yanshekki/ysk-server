@@ -133,8 +133,81 @@ export function previewKindFromName(name?: string | null): PreviewKind | null {
   }
   if (ext === 'pdf') return 'pdf';
   if (
-    ['txt', 'md', 'json', 'js', 'ts', 'tsx', 'jsx', 'css', 'html', 'htm', 'xml', 'yml', 'yaml', 'log', 'csv', 'sh', 'env'].includes(
-      ext,
+    [
+      'txt',
+      'md',
+      'markdown',
+      'json',
+      'js',
+      'mjs',
+      'cjs',
+      'ts',
+      'tsx',
+      'jsx',
+      'css',
+      'scss',
+      'less',
+      'html',
+      'htm',
+      'xml',
+      'svg',
+      'yml',
+      'yaml',
+      'toml',
+      'ini',
+      'cfg',
+      'conf',
+      'config',
+      'log',
+      'csv',
+      'tsv',
+      'sh',
+      'bash',
+      'zsh',
+      'fish',
+      'env',
+      'php',
+      'phtml',
+      'py',
+      'rb',
+      'go',
+      'rs',
+      'java',
+      'kt',
+      'c',
+      'h',
+      'cpp',
+      'hpp',
+      'cs',
+      'sql',
+      'vue',
+      'svelte',
+      'astro',
+      'r',
+      'pl',
+      'pm',
+      'lua',
+      'swift',
+      'dockerfile',
+      'makefile',
+      'cmake',
+      'gradle',
+      'properties',
+      'gitignore',
+      'dockerignore',
+      'editorconfig',
+      'nginx',
+      'service',
+      'timer',
+      'lock',
+    ].includes(ext)
+  ) {
+    return 'text';
+  }
+  // names without extension
+  if (
+    ['dockerfile', 'makefile', 'gemfile', 'rakefile', 'procfile', 'readme', 'license', 'changelog'].includes(
+      n,
     )
   ) {
     return 'text';
@@ -177,7 +250,20 @@ export function previewKind(
     m.startsWith('text/') ||
     m.includes('json') ||
     m.includes('javascript') ||
-    m.includes('xml')
+    m.includes('typescript') ||
+    m.includes('xml') ||
+    m.includes('php') ||
+    m.includes('python') ||
+    m.includes('shell') ||
+    m.includes('script') ||
+    m.includes('yaml') ||
+    m.includes('toml') ||
+    m.includes('sql') ||
+    m.includes('ruby') ||
+    m.includes('rust') ||
+    m.includes('x-sh') ||
+    m.includes('x-csh') ||
+    m.includes('x-httpd-php')
   ) {
     return 'text';
   }
@@ -321,6 +407,9 @@ export function FilesPage() {
     content?: string;
     url?: string;
   } | null>(null);
+  /** Draft for text editor (dirty tracking vs preview.content) */
+  const [editorDraft, setEditorDraft] = useState('');
+  const [editorSaving, setEditorSaving] = useState(false);
   const [trash, setTrash] = useState<TrashEntry[]>([]);
   const [shares, setShares] = useState<FileShare[]>([]);
   const [sharePath, setSharePath] = useState<string | null>(null);
@@ -542,7 +631,14 @@ export function FilesPage() {
     setSelected(selectAllPaths(items, selected.size));
   }
 
+  const editorDirty =
+    preview?.kind === 'text' && editorDraft !== (preview.content ?? '');
+
   function closePreview() {
+    if (editorDirty) {
+      const ok = window.confirm(t('files.editorDiscardConfirm'));
+      if (!ok) return;
+    }
     setPreview((prev) => {
       if (prev?.url) {
         try {
@@ -553,6 +649,22 @@ export function FilesPage() {
       }
       return null;
     });
+    setEditorDraft('');
+  }
+
+  async function saveTextEditor() {
+    if (!preview || preview.kind !== 'text') return;
+    setEditorSaving(true);
+    try {
+      await filesApi.write(root, preview.entry.path, editorDraft);
+      setPreview({ ...preview, content: editorDraft });
+      setMsg(t('files.editorSaved', { name: preview.entry.name }));
+      await refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('files.editorSaveFailed'));
+    } finally {
+      setEditorSaving(false);
+    }
   }
 
   async function openBlobPreview(e: FileEntry, kind: 'image' | 'video' | 'audio') {
@@ -611,11 +723,17 @@ export function FilesPage() {
     }
     if (kind === 'text') {
       try {
+        setBusy(true);
         const r = await filesApi.read(root, e.path);
-        setPreview({ entry: e, kind: 'text', content: r.content });
+        const body = r.content ?? '';
+        setEditorDraft(body);
+        setPreview({ entry: e, kind: 'text', content: body });
       } catch (err) {
         setError(err instanceof Error ? err.message : t('files.previewFailed'));
         setPreview({ entry: e, kind: 'other' });
+        setEditorDraft('');
+      } finally {
+        setBusy(false);
       }
       return;
     }
@@ -1038,7 +1156,7 @@ export function FilesPage() {
                     rowActions={(e) => (
                       <ActionBar align="end">
                         {e.type === 'file' &&
-                        ['image', 'video', 'audio'].includes(
+                        ['image', 'video', 'audio', 'text'].includes(
                           previewKind(e.mime, e.name),
                         ) ? (
                           <Button
@@ -1047,7 +1165,9 @@ export function FilesPage() {
                             loading={busy}
                             onClick={() => void openEntry(e)}
                           >
-                            {t('files.preview')}
+                            {previewKind(e.mime, e.name) === 'text'
+                              ? t('files.edit')
+                              : t('files.preview')}
                           </Button>
                         ) : null}
                         {e.type === 'file' ? (
@@ -1975,15 +2095,20 @@ export function FilesPage() {
         busy={busy}
       />
 
-      {/* Preview — image / video / audio / text in browser popup */}
+      {/* Preview / text editor popup */}
       <Modal
         open={Boolean(preview)}
         onClose={closePreview}
-        title={preview?.entry.name ?? t('files.preview')}
+        title={
+          preview?.kind === 'text'
+            ? t('files.editorTitle', { name: preview.entry.name })
+            : (preview?.entry.name ?? t('files.preview'))
+        }
         size={
           preview?.kind === 'image' ||
           preview?.kind === 'video' ||
-          preview?.kind === 'audio'
+          preview?.kind === 'audio' ||
+          preview?.kind === 'text'
             ? 'xl'
             : 'md'
         }
@@ -1994,18 +2119,51 @@ export function FilesPage() {
             </Button>
             {preview ? (
               <Button
-                variant="primary"
+                variant="secondary"
                 size="md"
                 onClick={bindCall1(doDownload, preview.entry.path)}
               >
                 {t('files.download')}
               </Button>
             ) : null}
+            {preview?.kind === 'text' ? (
+              <Button
+                variant="primary"
+                size="md"
+                loading={editorSaving}
+                disabled={!editorDirty || editorSaving}
+                onClick={() => void saveTextEditor()}
+              >
+                {editorDirty ? t('files.editorSave') : t('files.editorSavedIdle')}
+              </Button>
+            ) : null}
           </>
         }
       >
         {preview?.kind === 'text' ? (
-          <pre className="code u-scroll-preview">{preview.content}</pre>
+          <div className="fm-text-editor">
+            <div className="fm-text-editor__meta">
+              <code className="fm-text-editor__path">{preview.entry.path}</code>
+              <span className="fm-text-editor__status">
+                {editorDirty ? (
+                  <Badge tone="warn">{t('files.editorDirty')}</Badge>
+                ) : (
+                  <Badge tone="ok">{t('files.editorClean')}</Badge>
+                )}
+                <span className="muted u-text-sm">
+                  {t('files.editorChars', { count: editorDraft.length })}
+                </span>
+              </span>
+            </div>
+            <textarea
+              className="fm-text-editor__area"
+              value={editorDraft}
+              onChange={(e) => setEditorDraft(e.target.value)}
+              spellCheck={false}
+              wrap="off"
+              aria-label={t('files.editorAria', { name: preview.entry.name })}
+            />
+          </div>
         ) : null}
         {preview?.kind === 'image' && preview.url ? (
           <div className="fm-media-preview">

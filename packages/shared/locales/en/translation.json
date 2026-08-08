@@ -3324,7 +3324,18 @@
     "uploadTruncated": "Upload limited to {{max}} items ({{total}} selected; rest skipped)",
     "previewFailed": "Preview failed",
     "videoNotSupported": "Your browser cannot play this video.",
-    "audioNotSupported": "Your browser cannot play this audio."
+    "audioNotSupported": "Your browser cannot play this audio.",
+    "edit": "Edit",
+    "editorTitle": "Edit · {{name}}",
+    "editorSave": "Save",
+    "editorSavedIdle": "Saved",
+    "editorSaved": "Saved {{name}}",
+    "editorSaveFailed": "Save failed",
+    "editorDirty": "Unsaved",
+    "editorClean": "Saved",
+    "editorChars": "{{count}} chars",
+    "editorAria": "Editor for {{name}}",
+    "editorDiscardConfirm": "Discard unsaved changes?"
   },
   "firewall": {
     "profiles": {

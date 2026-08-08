@@ -172,5 +172,16 @@
   "toolbarAria": "檔案操作",
   "previewFailed": "預覽失敗",
   "videoNotSupported": "瀏覽器無法播放此影片。",
-  "audioNotSupported": "瀏覽器無法播放此音訊。"
+  "audioNotSupported": "瀏覽器無法播放此音訊。",
+  "edit": "編輯",
+  "editorTitle": "編輯 · {{name}}",
+  "editorSave": "儲存",
+  "editorSavedIdle": "已儲存",
+  "editorSaved": "已儲存 {{name}}",
+  "editorSaveFailed": "儲存失敗",
+  "editorDirty": "未儲存",
+  "editorClean": "已儲存",
+  "editorChars": "{{count}} 字元",
+  "editorAria": "編輯 {{name}}",
+  "editorDiscardConfirm": "放棄未儲存變更？"
 }
