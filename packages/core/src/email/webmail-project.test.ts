@@ -10,8 +10,10 @@ import {
   ensureRoundcubeRuntime,
   ensureSnappyMailAdminBootstrap,
   installYskSsoIntoRoundcube,
+  isRoundcubeDocRoot,
   normalizeWebmailTool,
 } from './webmail-project.js';
+import { writeFileSync, mkdirSync } from 'node:fs';
 
 describe('webmail-project helpers', () => {
   it('normalizes tool ids', () => {
@@ -23,6 +25,7 @@ describe('webmail-project helpers', () => {
   });
 
   it('default project names and hostnames', () => {
+    expect(defaultWebmailProjectName('roundcube', '')).toBe('ysk-webmail');
     expect(defaultWebmailProjectName('roundcube', 'example.com')).toBe(
       'roundcube-example-com',
     );
@@ -57,6 +60,20 @@ describe('webmail-project helpers', () => {
     expect(cfg).toContain('sqlite:');
     expect(cfg).toContain("force_https'] = true");
     expect(cfg).toContain('abcdefghijklmnopqrstuvwx');
+  });
+
+  it('detects Roundcube vs php-hello doc roots', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-wm-detect-'));
+    try {
+      writeFileSync(join(dir, 'index.php'), '<?php echo "YSK PHP OK\\n";\n', 'utf8');
+      expect(isRoundcubeDocRoot(dir)).toBe(false);
+      mkdirSync(join(dir, 'program', 'include'), { recursive: true });
+      writeFileSync(join(dir, 'program', 'include', 'iniset.php'), '<?php\n', 'utf8');
+      writeFileSync(join(dir, 'index.php'), '<?php /* ROUNDCUBE */\n', 'utf8');
+      expect(isRoundcubeDocRoot(dir)).toBe(true);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it('writes SSO plugin and force_https runtime', () => {

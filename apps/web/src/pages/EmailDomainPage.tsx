@@ -382,9 +382,6 @@ export function EmailDomainPage() {
   const [autoreplySubject, setAutoreplySubject] = useState('');
   const [autoreplyBody, setAutoreplyBody] = useState('');
   const [webmailDomain, setWebmailDomain] = useState('webmail.example.com');
-  const [webmailTool, setWebmailTool] = useState<'roundcube' | 'snappymail'>('roundcube');
-  const [webmailProjectName, setWebmailProjectName] = useState('roundcube');
-  const [webmailForceHttps, setWebmailForceHttps] = useState(false);
   const [webmailLog, setWebmailLog] = useState<Record<string, unknown> | null>(null);
   const [bootstrapLog, setBootstrapLog] = useState<Record<string, unknown> | null>(null);
   const [advancedOpsLog, setAdvancedOpsLog] = useState<Record<string, unknown> | null>(null);
@@ -422,11 +419,6 @@ export function EmailDomainPage() {
       setMailboxes((await emailApi.listMailboxes(found.id)).items);
       setAliases((await emailApi.listAliases(found.id)).items);
       setWebmailDomain(defaultWebmailDomain(found.domain));
-      setWebmailProjectName((prev) =>
-        prev && prev !== 'roundcube'
-          ? prev
-          : defaultWebmailProjectName('roundcube', found.domain),
-      );
     } catch {
       /* optional */
     }
@@ -479,11 +471,6 @@ export function EmailDomainPage() {
     } finally {
       setBusy(false);
     }
-  }
-
-  function setWebmailLogToast(r: Record<string, unknown>) {
-    setWebmailLog(r);
-    notifyOpsResult(r, t);
   }
 
   function setBootstrapLogToast(r: Record<string, unknown>) {
@@ -1490,185 +1477,26 @@ export function EmailDomainPage() {
               </CardSection>
             </Card>
 
-            {/* 2. Webmail */}
+            {/* 2. Webmail — global (all domains); install on Email → 網頁電郵 */}
             <Card>
               <CardSection title={t('email.webmailRoundcube')}>
-                <p className="muted u-text-sm u-mb-0">{t('email.webmailRisk')}</p>
-                <FormLayout columns={2}>
-                  <Field label={t('email.webmailTool')} htmlFor="wtool" flush>
-                    <SegRadio
-                      name="webmail-tool"
-                      value={webmailTool}
-                      onChange={(v) => {
-                        const tool = v === 'snappymail' ? 'snappymail' : 'roundcube';
-                        setWebmailTool(tool);
-                        setWebmailProjectName(defaultWebmailProjectName(tool, domain.domain));
-                      }}
-                      options={[
-                        { value: 'roundcube', label: t('email.webmailToolRoundcube') },
-                        { value: 'snappymail', label: t('email.webmailToolSnappy') },
-                      ]}
-                    />
-                  </Field>
-                  <Field
-                    label={t('email.webmailHostname')}
-                    htmlFor="wmd"
-                    flush
-                    hint={t('email.webmailHostnameHint')}
-                  >
-                    <input
-                      id="wmd"
-                      value={webmailDomain}
-                      onChange={bindInput(setWebmailDomain)}
-                      placeholder={defaultWebmailDomain(domain.domain)}
-                      spellCheck={false}
-                    />
-                  </Field>
-                  <Field label={t('email.webmailProjectName')} htmlFor="wpn" flush>
-                    <input
-                      id="wpn"
-                      value={webmailProjectName}
-                      onChange={bindInput(setWebmailProjectName)}
-                      placeholder={defaultWebmailProjectName(webmailTool, domain.domain)}
-                      spellCheck={false}
-                    />
-                  </Field>
-                </FormLayout>
-                <CheckboxField
-                  id="wm-https"
-                  checked={webmailForceHttps}
-                  onChange={setWebmailForceHttps}
-                  label={t('email.webmailForceHttps')}
-                />
-                <ActionBar size="md">
+                <p className="muted u-text-sm u-mb-0">{t('email.webmailMovedHint')}</p>
+                <ActionBar size="md" className="u-mt-3">
                   <Button
                     variant="primary"
                     size="md"
-                    loading={busy}
-                    onClick={bindBusySet(
-                      withBusy,
-                      () =>
-                        emailApi.webmailApply({
-                          domain: webmailDomain.trim() || defaultWebmailDomain(domain.domain),
-                          mailDomain: domain.domain,
-                          projectName:
-                            webmailProjectName.trim() ||
-                            defaultWebmailProjectName(webmailTool, domain.domain),
-                          tool: webmailTool,
-                          asProject: true,
-                          download: true,
-                          forceHttps: webmailForceHttps,
-                          installSsoPlugin: webmailTool === 'roundcube',
-                        }),
-                      setWebmailLogToast,
-                    )}
+                    onClick={bindNavigate(navigate, '/email?tab=webmail')}
                   >
-                    {t('email.installWebmailProject')}
+                    {t('email.openGlobalWebmailSettings')}
                   </Button>
-                  <Button
-                    variant="secondary"
-                    size="md"
-                    loading={busy}
-                    onClick={bindBusySet(
-                      withBusy,
-                      () =>
-                        emailApi.webmailApply({
-                          domain: webmailDomain.trim() || defaultWebmailDomain(domain.domain),
-                          mailDomain: domain.domain,
-                          projectName:
-                            webmailProjectName.trim() ||
-                            defaultWebmailProjectName(webmailTool, domain.domain),
-                          tool: webmailTool,
-                          asProject: true,
-                          reinstall: true,
-                          download: true,
-                          forceHttps: webmailForceHttps,
-                          installSsoPlugin: webmailTool === 'roundcube',
-                          projectId:
-                            typeof webmailLog?.projectId === 'string'
-                              ? webmailLog.projectId
-                              : undefined,
-                        }),
-                      setWebmailLogToast,
-                    )}
-                  >
-                    {t('email.reinstallWebmail')}
-                  </Button>
-                  {typeof webmailLog?.urlHint === 'string' && webmailLog.urlHint ? (
-                    <Button
-                      variant="secondary"
-                      size="md"
-                      onClick={() => {
-                        window.open(String(webmailLog.urlHint), '_blank', 'noopener,noreferrer');
-                      }}
-                    >
-                      {t('email.openWebmail')}
-                    </Button>
-                  ) : null}
                   <Button
                     variant="ghost"
                     size="md"
-                    onClick={bindNavigate(
-                      navigate,
-                      `/ssl?domain=${encodeURIComponent(
-                        webmailDomain || defaultWebmailDomain(domain.domain),
-                      )}&action=le`,
-                    )}
+                    onClick={bindSet(setTab, 'sieve')}
                   >
-                    {t('email.openSslPage')}
+                    {t('email.tabSieve')}
                   </Button>
                 </ActionBar>
-                <details className="mail-advanced__details">
-                  <summary>{t('email.webmailSsoAdvanced')}</summary>
-                  <ActionBar size="md" className="mail-advanced__details-actions">
-                    <Button
-                      variant="ghost"
-                      size="md"
-                      loading={busy}
-                      onClick={bindBusySet(
-                        withBusy,
-                        () =>
-                          api.requestRaw('/api/v1/email/webmail/sso-plugin', {
-                            method: 'POST',
-                            body: JSON.stringify({}),
-                          }),
-                        setAdvancedOpsLog,
-                      )}
-                    >
-                      {t('email.writeRoundcubeSso')}
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="md"
-                      loading={busy}
-                      onClick={bindBusySet(
-                        withBusy,
-                        () =>
-                          api.requestRaw('/api/v1/email/webmail/sso-plugin', {
-                            method: 'POST',
-                            body: JSON.stringify({ enableSystem: true }),
-                          }),
-                        setAdvancedOpsLog,
-                      )}
-                    >
-                      {t('email.ssoSkeletonSymlink')}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="md"
-                      onClick={bindSet(setTab, 'sieve')}
-                    >
-                      {t('email.tabSieve')}
-                    </Button>
-                  </ActionBar>
-                </details>
-                {webmailLog ? (
-                  <OpsResultPanel
-                    title={t('email.webmailRoundcube')}
-                    result={asOps(webmailLog)}
-                    busy={busy}
-                  />
-                ) : null}
               </CardSection>
             </Card>
 

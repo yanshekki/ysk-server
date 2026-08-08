@@ -2725,6 +2725,10 @@
   "webmail": {
     "notInstalled": "尚未安裝網頁電郵；請勾選下載後再執行",
     "needExecute": "下載網頁電郵需要系統變更權限（YSK_EXECUTE）及外網",
+    "needExecuteBeforeCreate": "未開系統變更權限前不會建立半成品專案",
+    "notRoundcubeTree": "文件根目錄不是完整 Roundcube（仍可能係 php-hello）",
+    "notSnappyTree": "文件根目錄不是完整 SnappyMail",
+    "installIncompleteHint": "專案已存在但網頁電郵未裝好 — 請開 EXECUTE 後按「重新安裝／升級」",
     "extractFailed": "{{tool}} 下載或解壓失敗：{{detail}}",
     "roundcubeInstalled": "已安裝 Roundcube {{version}} → {{path}}",
     "roundcubeReuse": "沿用已安裝 Roundcube → {{path}}",

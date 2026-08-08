@@ -13,17 +13,25 @@ import {
   Alert,
   Badge,
   Button,
+  Card,
+  CardSection,
+  CheckboxField,
   EmptyState,
   FeaturePageLayout,
   Field,
+  FormLayout,
   ListPanel,
   ListToolbar,
   Modal,
   ConfirmDialog,
+  OpsResultPanel,
   PageTabs,
+  SegRadio,
   SoftwareInstallBanner,
   SoftwareVersionBar } from '../shared/components/ui';
+import type { OpsResultLike } from '../shared/components/ui';
 import { api } from '../shared/services/api';
+import { notifyError, notifyOk, notifyWarn } from '../shared/lib/notify';
 import { getServerContext, setServerContext } from '../shared/stores/server-context';
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { useServerList } from '../shared/hooks/useServerList';
@@ -39,6 +47,42 @@ import {
   bindSet,
   bindVoid } from './bind-handlers';
 
+function asOps(r: Record<string, unknown> | null): OpsResultLike | null {
+  if (!r) return null;
+  const blocked = Boolean(r.blocked || r.requiresExecute || r.requiresRoot);
+  const ok =
+    typeof r.ok === 'boolean' ? r.ok : !blocked && r.apply_status !== 'blocked';
+  return {
+    ...r,
+    ok,
+    blocked,
+    blockMessage: typeof r.blockMessage === 'string' ? r.blockMessage : undefined,
+    notes: Array.isArray(r.notes) ? r.notes.map(String) : [],
+  } as OpsResultLike;
+}
+
+function notifyOps(
+  r: Record<string, unknown>,
+  t: (k: string) => string,
+): void {
+  const notes = Array.isArray(r.notes)
+    ? r.notes.map(String).map((n) => n.trim()).filter(Boolean)
+    : [];
+  const blocked = Boolean(
+    r.blocked || r.requiresExecute || r.requiresRoot || r.apply_status === 'blocked',
+  );
+  const ok = r.ok === true && !blocked;
+  const main =
+    (typeof r.blockMessage === 'string' && r.blockMessage.trim()) ||
+    notes[0] ||
+    (ok ? t('common.completed') : t('common.opFailed'));
+  const extra = notes.filter((n) => n !== main).slice(0, 4);
+  const detail = extra.length ? extra.join('\n') : undefined;
+  const opts = detail ? { detail, durationMs: 8000 as const } : undefined;
+  if (ok) notifyOk(main, opts);
+  else notifyWarn(main, opts);
+}
+
 function isIpv4(s: string): boolean {
   return /^\d{1,3}(\.\d{1,3}){3}$/.test(s.trim());
 }
@@ -48,7 +92,8 @@ function isIpv6(s: string): boolean {
   return t.includes(':') && !isIpv4(t);
 }
 
-const TABS = ['domains', 'queue', 'stack', 'about'] as const;
+const TABS = ['domains', 'webmail', 'queue', 'stack', 'about'] as const;
+const GLOBAL_WEBMAIL_PROJECT = 'ysk-webmail';
 
 export function applyLabel(status: string | undefined, t: (k: string) => string): { text: string; tone: 'ok' | 'info' | 'neutral' | 'warn' } {
   const s = (status ?? 'draft').toLowerCase();
@@ -128,8 +173,26 @@ export function EmailPage() {
   const [queueItems, setQueueItems] = useState<Array<{ id: string; raw: string }>>([]);
   const [hostIps, setHostIps] = useState<string[]>([]);
 
+  // Global webmail (shared by all mail domains)
+  const [wmTool, setWmTool] = useState<'roundcube' | 'snappymail'>('roundcube');
+  const [wmHost, setWmHost] = useState('webmail.example.com');
+  const [wmProject, setWmProject] = useState(GLOBAL_WEBMAIL_PROJECT);
+  const [wmForceHttps, setWmForceHttps] = useState(false);
+  const [wmLog, setWmLog] = useState<Record<string, unknown> | null>(null);
+  const [wmBusy, setWmBusy] = useState(false);
+
   const hostV4 = useMemo(() => hostIps.filter(isIpv4), [hostIps]);
   const hostV6 = useMemo(() => hostIps.filter(isIpv6), [hostIps]);
+
+  // Prefill webmail host from first registered domain when available
+  useEffect(() => {
+    if (!items.length) return;
+    setWmHost((cur) => {
+      if (cur && cur !== 'webmail.example.com') return cur;
+      const d = items[0]?.domain?.trim();
+      return d ? `webmail.${d}` : cur;
+    });
+  }, [items]);
 
   useEffect(() => {
     if (!createOpen) return;
@@ -249,6 +312,35 @@ export function EmailPage() {
     }
   }
 
+  async function runWebmail(opts: { reinstall?: boolean }) {
+    setWmBusy(true);
+    try {
+      const host = wmHost.trim() || 'webmail.local';
+      const firstDomain = items[0]?.domain?.trim();
+      const r = await emailApi.webmailApply({
+        domain: host,
+        mailDomain: firstDomain,
+        projectName: wmProject.trim() || GLOBAL_WEBMAIL_PROJECT,
+        tool: wmTool,
+        asProject: true,
+        download: true,
+        reinstall: opts.reinstall !== false,
+        forceHttps: wmForceHttps,
+        installSsoPlugin: wmTool === 'roundcube',
+        projectId:
+          opts.reinstall && typeof wmLog?.projectId === 'string'
+            ? wmLog.projectId
+            : undefined,
+      });
+      setWmLog(r);
+      notifyOps(r, t);
+    } catch (e) {
+      notifyError(e instanceof Error ? e.message : t('common.opFailed'));
+    } finally {
+      setWmBusy(false);
+    }
+  }
+
   return (
     <FeaturePageLayout
       title={t('nav.email')}
@@ -292,6 +384,7 @@ export function EmailPage() {
             id: 'domains',
             label: t('email.tabDomains'),
             badge: items.length || undefined },
+          { id: 'webmail', label: t('email.tabWebmail') },
           {
             id: 'queue',
             label: t('email.tabQueue'),
@@ -398,6 +491,112 @@ export function EmailPage() {
                 })}
               </div>
             </ListPanel>
+          </div>
+        ) : null}
+
+        {tab === 'webmail' ? (
+          <div className="tab-panel mail-panel">
+            <Card>
+              <CardSection
+                title={t('email.webmailRoundcube')}
+                description={t('email.webmailGlobalDesc')}
+              >
+                <Alert variant="info">{t('email.webmailGlobalHint')}</Alert>
+                <p className="muted u-text-sm">{t('email.webmailRisk')}</p>
+                <FormLayout columns={2}>
+                  <Field label={t('email.webmailTool')} htmlFor="g-wtool" flush>
+                    <SegRadio
+                      name="global-webmail-tool"
+                      value={wmTool}
+                      onChange={(v) =>
+                        setWmTool(v === 'snappymail' ? 'snappymail' : 'roundcube')
+                      }
+                      options={[
+                        { value: 'roundcube', label: t('email.webmailToolRoundcube') },
+                        { value: 'snappymail', label: t('email.webmailToolSnappy') },
+                      ]}
+                    />
+                  </Field>
+                  <Field
+                    label={t('email.webmailHostname')}
+                    htmlFor="g-wmd"
+                    flush
+                    hint={t('email.webmailHostnameHint')}
+                    required
+                  >
+                    <input
+                      id="g-wmd"
+                      value={wmHost}
+                      onChange={bindInput(setWmHost)}
+                      placeholder="webmail.example.com"
+                      spellCheck={false}
+                    />
+                  </Field>
+                  <Field label={t('email.webmailProjectName')} htmlFor="g-wpn" flush>
+                    <input
+                      id="g-wpn"
+                      value={wmProject}
+                      onChange={bindInput(setWmProject)}
+                      placeholder={GLOBAL_WEBMAIL_PROJECT}
+                      spellCheck={false}
+                    />
+                  </Field>
+                </FormLayout>
+                <CheckboxField
+                  id="g-wm-https"
+                  checked={wmForceHttps}
+                  onChange={setWmForceHttps}
+                  label={t('email.webmailForceHttps')}
+                />
+                <ActionBar size="md">
+                  <Button
+                    variant="primary"
+                    size="md"
+                    loading={wmBusy}
+                    onClick={() => void runWebmail({ reinstall: true })}
+                  >
+                    {t('email.installWebmailProject')}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    loading={wmBusy}
+                    onClick={() => void runWebmail({ reinstall: true })}
+                  >
+                    {t('email.reinstallWebmail')}
+                  </Button>
+                  {typeof wmLog?.urlHint === 'string' && wmLog.urlHint ? (
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      onClick={() => {
+                        window.open(String(wmLog.urlHint), '_blank', 'noopener,noreferrer');
+                      }}
+                    >
+                      {t('email.openWebmail')}
+                    </Button>
+                  ) : null}
+                  <Button
+                    variant="ghost"
+                    size="md"
+                    onClick={() =>
+                      navigate(
+                        `/ssl?domain=${encodeURIComponent(wmHost.trim() || 'webmail.local')}&action=le`,
+                      )
+                    }
+                  >
+                    {t('email.openSslPage')}
+                  </Button>
+                </ActionBar>
+                {wmLog ? (
+                  <OpsResultPanel
+                    title={t('email.webmailRoundcube')}
+                    result={asOps(wmLog)}
+                    busy={wmBusy}
+                  />
+                ) : null}
+              </CardSection>
+            </Card>
           </div>
         ) : null}
 

@@ -37,13 +37,48 @@ export function normalizeWebmailTool(raw: unknown): WebmailTool {
   return 'roundcube';
 }
 
+/** Shared panel webmail project (one instance for all mail domains). */
+export const GLOBAL_WEBMAIL_PROJECT_NAME = 'ysk-webmail';
+
 export function defaultWebmailProjectName(tool: WebmailTool, mailDomain?: string): string {
-  const base = tool === 'snappymail' ? 'snappymail' : 'roundcube';
+  // Global shared install: stable name so retries reinstall instead of spawning many projects
   const d = (mailDomain ?? '').trim().toLowerCase().replace(/[^a-z0-9.-]/g, '');
-  if (!d) return base;
-  // keep short unique-ish name
+  if (!d) return GLOBAL_WEBMAIL_PROJECT_NAME;
+  const base = tool === 'snappymail' ? 'snappymail' : 'roundcube';
+  // keep short unique-ish name (legacy per-domain); prefer GLOBAL for panel UI
   const slug = d.replace(/^webmail\./, '').replace(/\./g, '-').slice(0, 40);
   return `${base}-${slug}`;
+}
+
+/** True when docRoot looks like real Roundcube (not php-hello). */
+export function isRoundcubeDocRoot(docRoot: string): boolean {
+  try {
+    if (!existsSync(join(docRoot, 'index.php'))) return false;
+    if (existsSync(join(docRoot, 'program', 'include', 'iniset.php'))) return true;
+    if (existsSync(join(docRoot, 'program', 'lib'))) return true;
+    const idx = readFileSync(join(docRoot, 'index.php'), 'utf8');
+    if (/YSK PHP OK/i.test(idx)) return false;
+    if (/ROUNDCUBE|roundcube/i.test(idx)) return true;
+  } catch {
+    /* */
+  }
+  return false;
+}
+
+/** True when SnappyMail markers present. */
+export function isSnappyMailDocRoot(docRoot: string): boolean {
+  try {
+    if (!existsSync(join(docRoot, 'index.php'))) return false;
+    if (existsSync(join(docRoot, 'snappymail')) || existsSync(join(docRoot, '_include.php'))) {
+      return true;
+    }
+    const idx = readFileSync(join(docRoot, 'index.php'), 'utf8');
+    if (/YSK PHP OK/i.test(idx)) return false;
+    if (/snappymail|rainloop/i.test(idx)) return true;
+  } catch {
+    /* */
+  }
+  return false;
 }
 
 export function defaultWebmailHostname(mailDomain: string): string {
@@ -192,13 +227,16 @@ async function installRoundcube(input: {
   ].join('\n');
 
   const r = await input.host.runCommand(['bash', '-c', script], { timeoutMs: 300_000 });
-  if (r.exitCode !== 0 || !existsSync(marker)) {
+  if (r.exitCode !== 0 || !existsSync(marker) || !isRoundcubeDocRoot(docRoot)) {
     notes.push(
       tl('notes.webmail.extractFailed', {
         tool: 'Roundcube',
         detail: (r.stderr || r.stdout || '').slice(0, 300),
       }),
     );
+    if (existsSync(marker) && !isRoundcubeDocRoot(docRoot)) {
+      notes.push(tl('notes.webmail.notRoundcubeTree'));
+    }
     return { ok: false, notes, written, entryFile: 'index.php' };
   }
 
@@ -609,6 +647,7 @@ function randomDesKey(): string {
 
 /**
  * Create PHP project + install webmail + goLive (deploy + nginx via project lifecycle).
+ * Shared instance for all mail domains — one project / one hostname.
  */
 export async function createWebmailProject(input: {
   projects: ProjectService;
@@ -629,7 +668,7 @@ export async function createWebmailProject(input: {
   panelBaseUrl?: string;
   /**
    * If project name or domain already exists, reinstall webmail into that project
-   * instead of failing (upgrade path).
+   * instead of failing (upgrade path). Default true for global shared webmail.
    */
   reinstall?: boolean;
 }): Promise<{
@@ -649,9 +688,12 @@ export async function createWebmailProject(input: {
 }> {
   const notes: string[] = [];
   const written: string[] = [];
-  const name = input.name.trim();
+  const name = input.name.trim() || GLOBAL_WEBMAIL_PROJECT_NAME;
   const domain = input.domain.trim().toLowerCase();
   const tool = normalizeWebmailTool(input.tool);
+  const wantDownload = input.download !== false;
+  // Shared webmail: existing project → reinstall by default (no orphan hellos)
+  const reinstall = input.reinstall !== false;
 
   if (!name) {
     throw new YskError(ErrorCodes.VALIDATION, tl('notes.needProjectName'), { httpStatus: 400 });
@@ -662,6 +704,21 @@ export async function createWebmailProject(input: {
     });
   }
 
+  // Honest gate: never create a half project when download needs EXECUTE
+  if (wantDownload && !input.host.executeEnabled()) {
+    const msg = tl('notes.webmail.needExecute');
+    return {
+      ok: false,
+      tool,
+      notes: [msg, tl('notes.webmail.needExecuteBeforeCreate')],
+      written,
+      blocked: true,
+      requiresExecute: true,
+      blockMessage: msg,
+      apply_status: 'blocked',
+    };
+  }
+
   const byName = input.projects.list().find(
     (p) => p.name.trim().toLowerCase() === name.toLowerCase(),
   );
@@ -670,7 +727,26 @@ export async function createWebmailProject(input: {
   );
   const existing = byName ?? byDomain;
 
-  if (existing && !input.reinstall) {
+  if (existing && reinstall) {
+    notes.push(tl('notes.webmail.reinstalling', { id: existing.id, name: existing.name }));
+    return reinstallWebmailProject({
+      projects: input.projects,
+      projectOps: input.projectOps,
+      host: input.host,
+      actor: input.actor,
+      projectId: existing.id,
+      tool,
+      download: wantDownload,
+      imapHost: input.imapHost,
+      smtpHost: input.smtpHost,
+      forceHttps: input.forceHttps,
+      installSsoPlugin: input.installSsoPlugin,
+      panelBaseUrl: input.panelBaseUrl,
+      goLive: true,
+    });
+  }
+
+  if (existing && !reinstall) {
     return {
       ok: false,
       tool,
@@ -685,31 +761,13 @@ export async function createWebmailProject(input: {
     };
   }
 
-  if (existing && input.reinstall) {
-    notes.push(tl('notes.webmail.reinstalling', { id: existing.id, name: existing.name }));
-    return reinstallWebmailProject({
-      projects: input.projects,
-      projectOps: input.projectOps,
-      host: input.host,
-      actor: input.actor,
-      projectId: existing.id,
-      tool,
-      download: input.download !== false,
-      imapHost: input.imapHost,
-      smtpHost: input.smtpHost,
-      forceHttps: input.forceHttps,
-      installSsoPlugin: input.installSsoPlugin,
-      panelBaseUrl: input.panelBaseUrl,
-      goLive: true,
-    });
-  }
-
   let created: Awaited<ReturnType<ProjectService['create']>>;
   try {
     created = await input.projects.create({
       name,
       domain,
       runtime: 'php',
+      // Empty-ish scaffold; install replaces docRoot immediately after
       templateId: 'php-hello',
       forceTemplate: true,
       actor: input.actor,
@@ -727,8 +785,13 @@ export async function createWebmailProject(input: {
   const docRoot = join(row.homeDir, (row.docRoot || 'app/public').replace(/^\//, ''));
 
   try {
-    const hello = join(docRoot, 'index.php');
-    if (existsSync(hello)) rmSync(hello, { force: true });
+    // Wipe hello template so we never leave only YSK PHP OK after a failed mid-install
+    if (existsSync(docRoot)) {
+      for (const ent of ['index.php', 'index.html']) {
+        const p = join(docRoot, ent);
+        if (existsSync(p)) rmSync(p, { force: true });
+      }
+    }
   } catch {
     /* best-effort */
   }
@@ -741,7 +804,7 @@ export async function createWebmailProject(input: {
     domain,
     imapHost: input.imapHost,
     smtpHost: input.smtpHost,
-    download: input.download !== false,
+    download: wantDownload,
     forceHttps: input.forceHttps === true,
     installSsoPlugin: input.installSsoPlugin !== false,
     panelBaseUrl: input.panelBaseUrl,
@@ -749,6 +812,26 @@ export async function createWebmailProject(input: {
   notes.push(...inst.notes);
   written.push(...inst.written);
   if (!inst.ok) {
+    const needEx = notes.some((n) => /YSK_EXECUTE|execute|EXECUTE/i.test(n));
+    return {
+      ok: false,
+      project: row,
+      projectId: row.id,
+      tool,
+      notes: [...notes, tl('notes.webmail.installIncompleteHint')],
+      written,
+      urlHint: `http://${domain}/`,
+      apply_status: needEx ? 'blocked' : 'failed',
+      requiresExecute: needEx,
+      blocked: needEx,
+      blockMessage: notes.find((n) => /YSK_EXECUTE|execute|EXECUTE/i.test(n)),
+      snappyAdminPassword: inst.snappyAdminPassword,
+    };
+  }
+
+  // Verify real app tree before deploy
+  if (tool === 'roundcube' && !isRoundcubeDocRoot(docRoot)) {
+    notes.push(tl('notes.webmail.notRoundcubeTree'));
     return {
       ok: false,
       project: row,
@@ -758,10 +841,19 @@ export async function createWebmailProject(input: {
       written,
       urlHint: `http://${domain}/`,
       apply_status: 'failed',
-      requiresExecute: notes.some((n) => /YSK_EXECUTE|execute/i.test(n)),
-      blocked: notes.some((n) => /YSK_EXECUTE|execute/i.test(n)),
-      blockMessage: notes.find((n) => /YSK_EXECUTE|execute/i.test(n)),
-      snappyAdminPassword: inst.snappyAdminPassword,
+    };
+  }
+  if (tool === 'snappymail' && !isSnappyMailDocRoot(docRoot)) {
+    notes.push(tl('notes.webmail.notSnappyTree'));
+    return {
+      ok: false,
+      project: row,
+      projectId: row.id,
+      tool,
+      notes,
+      written,
+      urlHint: `http://${domain}/`,
+      apply_status: 'failed',
     };
   }
 
@@ -770,19 +862,23 @@ export async function createWebmailProject(input: {
   notes.push(tl('notes.webmail.openHint'));
   notes.push(tl('notes.webmail.sslHint', { domain }));
   const fresh = input.projects.get(row.id);
-  const ok = Boolean(live.ok) && inst.ok;
+  const blocked = Boolean(live.deploy?.requiresExecute || live.publish?.requiresExecute);
+  const ok = Boolean(live.ok) && inst.ok && !blocked;
   return {
     ok,
     project: fresh,
     projectId: fresh.id,
     tool,
-    urlHint: `http://${domain}/`,
+    urlHint: `https://${domain}/`,
     notes,
     written,
-    blocked: Boolean(live.deploy?.requiresExecute || live.publish?.requiresExecute),
+    blocked,
     requiresExecute: Boolean(live.deploy?.requiresExecute || live.publish?.requiresExecute),
     requiresRoot: Boolean(live.deploy?.requiresRoot || live.publish?.requiresRoot),
-    apply_status: ok ? 'applied' : live.ok === false ? 'failed' : 'written',
+    blockMessage: blocked
+      ? (live.notes ?? []).find((n) => /YSK_EXECUTE|execute|root/i.test(n))
+      : undefined,
+    apply_status: ok ? 'applied' : blocked ? 'blocked' : live.ok === false ? 'failed' : 'written',
     snappyAdminPassword: inst.snappyAdminPassword,
   };
 }
@@ -836,6 +932,23 @@ export async function reinstallWebmailProject(input: {
   }
   const domain = (row.domain ?? '').trim().toLowerCase() || 'webmail.local';
   const docRoot = join(row.homeDir, (row.docRoot || 'app/public').replace(/^\//, ''));
+  const wantDownload = input.download !== false;
+  if (wantDownload && !input.host.executeEnabled()) {
+    const msg = tl('notes.webmail.needExecute');
+    return {
+      ok: false,
+      project: row,
+      projectId: row.id,
+      tool,
+      notes: [msg],
+      written,
+      blocked: true,
+      requiresExecute: true,
+      blockMessage: msg,
+      apply_status: 'blocked',
+      urlHint: `https://${domain}/`,
+    };
+  }
   notes.push(
     tl('notes.webmail.reinstallStart', {
       id: row.id,
@@ -851,7 +964,7 @@ export async function reinstallWebmailProject(input: {
     domain,
     imapHost: input.imapHost ?? defaultImapHostForWebmail(domain),
     smtpHost: input.smtpHost,
-    download: input.download !== false,
+    download: wantDownload,
     forceHttps: input.forceHttps === true,
     installSsoPlugin: input.installSsoPlugin !== false,
     panelBaseUrl: input.panelBaseUrl,
@@ -859,6 +972,25 @@ export async function reinstallWebmailProject(input: {
   notes.push(...inst.notes);
   written.push(...inst.written);
   if (!inst.ok) {
+    const needEx = notes.some((n) => /YSK_EXECUTE|execute|EXECUTE/i.test(n));
+    return {
+      ok: false,
+      project: row,
+      projectId: row.id,
+      tool,
+      notes: [...notes, tl('notes.webmail.installIncompleteHint')],
+      written,
+      urlHint: `https://${domain}/`,
+      apply_status: needEx ? 'blocked' : 'failed',
+      blocked: needEx,
+      blockMessage: notes.find((n) => /YSK_EXECUTE|execute|EXECUTE/i.test(n)),
+      snappyAdminPassword: inst.snappyAdminPassword,
+      requiresExecute: needEx,
+    };
+  }
+
+  if (tool === 'roundcube' && !isRoundcubeDocRoot(docRoot)) {
+    notes.push(tl('notes.webmail.notRoundcubeTree'));
     return {
       ok: false,
       project: row,
@@ -866,30 +998,34 @@ export async function reinstallWebmailProject(input: {
       tool,
       notes,
       written,
-      urlHint: `http://${domain}/`,
+      urlHint: `https://${domain}/`,
       apply_status: 'failed',
-      snappyAdminPassword: inst.snappyAdminPassword,
-      requiresExecute: notes.some((n) => /YSK_EXECUTE|execute/i.test(n)),
     };
   }
 
   if (input.goLive !== false) {
     const live = await input.projectOps.goLive(row.id, { actor: input.actor });
     notes.push(...(live.notes ?? []).slice(0, 12));
+    notes.push(tl('notes.webmail.openHint'));
+    notes.push(tl('notes.webmail.sslHint', { domain }));
     const fresh = input.projects.get(row.id);
-    const ok = Boolean(live.ok) && inst.ok;
+    const blocked = Boolean(live.deploy?.requiresExecute || live.publish?.requiresExecute);
+    const ok = Boolean(live.ok) && inst.ok && !blocked;
     return {
       ok,
       project: fresh,
       projectId: fresh.id,
       tool,
-      urlHint: `http://${domain}/`,
+      urlHint: `https://${domain}/`,
       notes,
       written,
-      blocked: Boolean(live.deploy?.requiresExecute || live.publish?.requiresExecute),
+      blocked,
       requiresExecute: Boolean(live.deploy?.requiresExecute || live.publish?.requiresExecute),
       requiresRoot: Boolean(live.deploy?.requiresRoot || live.publish?.requiresRoot),
-      apply_status: ok ? 'applied' : 'written',
+      blockMessage: blocked
+        ? (live.notes ?? []).find((n) => /YSK_EXECUTE|execute|root/i.test(n))
+        : undefined,
+      apply_status: ok ? 'applied' : blocked ? 'blocked' : 'written',
       snappyAdminPassword: inst.snappyAdminPassword,
     };
   }
@@ -899,7 +1035,7 @@ export async function reinstallWebmailProject(input: {
     project: row,
     projectId: row.id,
     tool,
-    urlHint: `http://${domain}/`,
+    urlHint: `https://${domain}/`,
     notes,
     written,
     apply_status: 'written',
