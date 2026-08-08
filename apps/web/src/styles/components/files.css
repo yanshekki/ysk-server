@@ -726,6 +726,17 @@
   background: #1e1e1e !important;
   color: #d4d4d4;
   opacity: 1 !important;
+  /* editor body owns the scrollbar — don't nest another scrollport */
+  overflow: hidden !important;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.modal.fm-editor-modal .modal__body > .fm-vscode {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
 }
 
 .modal.fm-editor-modal .modal__header {
@@ -766,8 +777,10 @@
 .fm-vscode {
   display: flex;
   flex-direction: column;
-  min-height: min(72vh, 40rem);
+  /* fixed viewport height so body can scroll long files with a full track */
+  height: min(72vh, 40rem);
   max-height: min(78vh, 44rem);
+  min-height: min(48vh, 24rem);
   background: #1e1e1e;
   color: #d4d4d4;
   opacity: 1;
@@ -856,18 +869,24 @@
   opacity: 1;
 }
 
+/* One scrollport for gutter + code so the thumb matches full line count */
 .fm-vscode__body {
   display: flex;
   flex: 1 1 auto;
-  align-items: stretch;
+  align-items: flex-start;
   min-height: 0;
-  overflow: hidden;
+  overflow: auto;
+  overflow-x: auto;
   background: #1e1e1e;
   opacity: 1;
+  scrollbar-gutter: stable;
 }
 
 .fm-vscode__gutter {
   flex: 0 0 3.25rem;
+  position: sticky;
+  left: 0;
+  z-index: 2;
   padding: 0.65rem 0.45rem 0.65rem 0.35rem;
   overflow: hidden;
   text-align: right;
@@ -879,6 +898,9 @@
   user-select: none;
   white-space: pre;
   opacity: 1;
+  /* height grows with line labels (same line-height as code) */
+  min-height: 100%;
+  box-sizing: border-box;
 }
 
 /* Highlight layer under transparent textarea (solid bg on pre) */
@@ -886,9 +908,10 @@
   position: relative;
   flex: 1 1 auto;
   min-width: 0;
-  min-height: 0;
-  height: 100%;
-  overflow: hidden;
+  /* grow with textarea content; body is the scroller */
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
   background: #1e1e1e;
   opacity: 1;
 }
@@ -898,8 +921,6 @@
   box-sizing: border-box;
   margin: 0;
   width: 100%;
-  height: 100%;
-  min-height: 100%;
   font: inherit;
   font-size: 0.875rem;
   line-height: 1.5;
@@ -909,25 +930,25 @@
   border-radius: 0;
   tab-size: 2;
   white-space: pre;
-  overflow: auto;
   word-wrap: normal;
   overflow-wrap: normal;
 }
 
 .fm-vscode__highlight {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: 0;
   pointer-events: none;
+  /* match textarea height (set inline by layout sync) */
+  height: 100%;
+  min-height: 100%;
+  overflow: hidden;
   background: #1e1e1e !important;
   color: #d4d4d4;
   opacity: 1 !important;
-  /* hide scrollbar under textarea */
-  scrollbar-width: none;
-}
-
-.fm-vscode__highlight::-webkit-scrollbar {
-  display: none;
+  margin: 0;
 }
 
 /* VS Code Dark+ token colors */
@@ -978,7 +999,12 @@
 .fm-vscode__area {
   position: relative;
   z-index: 1;
+  display: block;
   resize: none;
+  /* height is set by JS to content scrollHeight so parent body scrolls fully */
+  height: auto;
+  min-height: 100%;
+  overflow: hidden;
   /* transparent ink so highlight layer colors show; panel stays solid */
   background: transparent !important;
   color: transparent !important;
@@ -986,7 +1012,6 @@
   caret-color: #aeafad;
   box-shadow: none !important;
   border: none !important;
-  min-height: 100% !important;
   opacity: 1 !important;
 }
 

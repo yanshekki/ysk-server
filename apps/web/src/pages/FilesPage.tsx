@@ -511,6 +511,7 @@ export function FilesPage() {
   const editorAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const editorGutterRef = useRef<HTMLDivElement | null>(null);
   const editorHighlightRef = useRef<HTMLPreElement | null>(null);
+  const editorBodyRef = useRef<HTMLDivElement | null>(null);
   const [trash, setTrash] = useState<TrashEntry[]>([]);
   const [shares, setShares] = useState<FileShare[]>([]);
   const [sharePath, setSharePath] = useState<string | null>(null);
@@ -765,16 +766,49 @@ export function FilesPage() {
     return highlightToHtml(editorDraft, lang);
   }, [editorDraft, preview]);
 
-  function syncEditorScroll() {
+  /**
+   * Grow textarea (+ highlight) to full content height so `.fm-vscode__body`
+   * is the only scroller — scrollbar thumb then matches real line count.
+   */
+  const layoutTextEditor = useCallback(() => {
     const area = editorAreaRef.current;
-    const gutter = editorGutterRef.current;
+    const body = editorBodyRef.current;
     const hi = editorHighlightRef.current;
-    if (area && gutter) gutter.scrollTop = area.scrollTop;
-    if (area && hi) {
-      hi.scrollTop = area.scrollTop;
-      hi.scrollLeft = area.scrollLeft;
+    const gutter = editorGutterRef.current;
+    if (!area || !body) return;
+
+    // Reset so scrollHeight reflects content, not previous forced height
+    area.style.height = '0px';
+    const contentH = area.scrollHeight;
+    const viewH = body.clientHeight || 0;
+    const h = Math.max(contentH, viewH);
+    area.style.height = `${h}px`;
+    if (hi) {
+      hi.style.height = `${h}px`;
+      hi.style.minHeight = `${h}px`;
     }
-  }
+    if (gutter) {
+      gutter.style.minHeight = `${h}px`;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (preview?.kind !== 'text') return;
+    // After paint: draft / highlight HTML ready
+    const id = requestAnimationFrame(() => {
+      layoutTextEditor();
+      // second frame: fonts/line-wrap settle
+      requestAnimationFrame(layoutTextEditor);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [editorDraft, editorHighlightHtml, preview?.kind, layoutTextEditor]);
+
+  useEffect(() => {
+    if (preview?.kind !== 'text') return;
+    const onResize = () => layoutTextEditor();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [preview?.kind, layoutTextEditor]);
 
   function updateEditorCursor(el: HTMLTextAreaElement) {
     setEditorCursor(cursorFromOffset(editorDraft, el.selectionStart));
@@ -2529,7 +2563,7 @@ export function FilesPage() {
             {editorBytes > 512_000 ? (
               <div className="fm-vscode__banner">{t('files.editorLargeHint')}</div>
             ) : null}
-            <div className="fm-vscode__body">
+            <div ref={editorBodyRef} className="fm-vscode__body">
               <div
                 ref={editorGutterRef}
                 className="fm-vscode__gutter"
@@ -2550,11 +2584,12 @@ export function FilesPage() {
                   ref={editorAreaRef}
                   className="fm-vscode__area"
                   value={editorDraft}
+                  rows={Math.min(Math.max(editorLineCount, 20), 500)}
                   onChange={(e) => {
                     setEditorDraft(e.target.value);
                     updateEditorCursor(e.target);
+                    requestAnimationFrame(layoutTextEditor);
                   }}
-                  onScroll={syncEditorScroll}
                   onClick={(e) => updateEditorCursor(e.currentTarget)}
                   onKeyUp={(e) => updateEditorCursor(e.currentTarget)}
                   onSelect={(e) => updateEditorCursor(e.currentTarget)}
@@ -2575,6 +2610,7 @@ export function FilesPage() {
                     requestAnimationFrame(() => {
                       el.selectionStart = el.selectionEnd = start + 2;
                       updateEditorCursor(el);
+                      layoutTextEditor();
                     });
                   }}
                   spellCheck={false}
