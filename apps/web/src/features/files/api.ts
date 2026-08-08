@@ -180,6 +180,7 @@ export const filesApi = {
       enabled: boolean;
       mountPath: string;
       tokenId?: string;
+      updated_at?: string;
     }>('/api/v1/files/webdav?root=public'),
 
   webdavIssueToken: () =>
@@ -189,10 +190,11 @@ export const filesApi = {
       tokenId?: string;
       mountPath: string;
       notes: string[];
+      updated_at?: string;
     }>('/api/v1/files/webdav/token?root=public', { method: 'POST', body: '{}' }),
 
   webdavDisable: () =>
-    api.requestRaw<{ ok: boolean }>('/api/v1/files/webdav/disable?root=public', {
+    api.requestRaw<{ ok: boolean; enabled?: boolean }>('/api/v1/files/webdav/disable?root=public', {
       method: 'POST',
       body: '{}',
     }),

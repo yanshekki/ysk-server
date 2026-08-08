@@ -14,6 +14,7 @@ import {
   CardSection,
   ConfirmDialog,
   DataTable,
+  DescriptionList,
   EmptyState,
   FeaturePageLayout,
   Field,
@@ -527,6 +528,90 @@ export function FilesPage() {
   >([]);
   const [webdavToken, setWebdavToken] = useState<string | null>(null);
   const [webdavEnabled, setWebdavEnabled] = useState(false);
+  const [webdavMountPath, setWebdavMountPath] = useState('/webdav');
+  const [webdavTokenId, setWebdavTokenId] = useState<string | null>(null);
+  const [webdavUpdatedAt, setWebdavUpdatedAt] = useState<string | null>(null);
+  const [webdavLoaded, setWebdavLoaded] = useState(false);
+  const [webdavBusy, setWebdavBusy] = useState(false);
+
+  const webdavUrl = useMemo(() => {
+    if (typeof window === 'undefined') return webdavMountPath || '/webdav';
+    const path = (webdavMountPath || '/webdav').startsWith('/')
+      ? webdavMountPath || '/webdav'
+      : `/${webdavMountPath}`;
+    return `${window.location.origin}${path}/`;
+  }, [webdavMountPath]);
+
+  const refreshWebdavStatus = useCallback(async () => {
+    const s = await filesApi.webdavStatus();
+    setWebdavEnabled(Boolean(s.enabled));
+    setWebdavMountPath(s.mountPath || '/webdav');
+    setWebdavTokenId(s.tokenId ? String(s.tokenId) : null);
+    setWebdavUpdatedAt(s.updated_at ? String(s.updated_at) : null);
+    setWebdavLoaded(true);
+    return s;
+  }, []);
+
+  useEffect(() => {
+    if (tab !== 'webdav') return;
+    let cancelled = false;
+    setWebdavBusy(true);
+    void refreshWebdavStatus()
+      .catch((e: Error) => {
+        if (!cancelled) setError(e.message);
+      })
+      .finally(() => {
+        if (!cancelled) setWebdavBusy(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [tab, refreshWebdavStatus, setError]);
+
+  function copyText(label: string, text: string) {
+    void navigator.clipboard?.writeText(text).then(
+      () => toast.ok(t('files.copiedLabel', { label })),
+      () => toast.error(t('common.copyFailed', { defaultValue: 'Copy failed' })),
+    );
+  }
+
+  async function issueWebdavToken() {
+    if (webdavEnabled && webdavTokenId) {
+      const ok = window.confirm(t('files.webdavReissueConfirm'));
+      if (!ok) return;
+    }
+    setWebdavBusy(true);
+    try {
+      const r = await filesApi.webdavIssueToken();
+      setWebdavToken(r.token);
+      setWebdavEnabled(true);
+      setWebdavMountPath(r.mountPath || '/webdav');
+      setWebdavTokenId(r.tokenId ? String(r.tokenId) : null);
+      setWebdavUpdatedAt(new Date().toISOString());
+      setMsg(r.notes?.join(' · ') ?? t('files.tokenIssued'));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('common.opFailed'));
+    } finally {
+      setWebdavBusy(false);
+    }
+  }
+
+  async function disableWebdav() {
+    if (!window.confirm(t('files.webdavDisableConfirm'))) return;
+    setWebdavBusy(true);
+    try {
+      await filesApi.webdavDisable();
+      setWebdavEnabled(false);
+      setWebdavToken(null);
+      setWebdavTokenId(null);
+      setWebdavUpdatedAt(new Date().toISOString());
+      setMsg(t('files.webdavDisabled'));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('common.opFailed'));
+    } finally {
+      setWebdavBusy(false);
+    }
+  }
   const [chmodOpen, setChmodOpen] = useState(false);
   const [chmodMode, setChmodMode] = useState('644');
   const [zipOpen, setZipOpen] = useState(false);
@@ -1739,77 +1824,278 @@ export function FilesPage() {
         ) : null}
 
         {tab === 'webdav' ? (
-          <div className="tab-panel">
-      <Card>
-        <CardSection
-          title="WebDAV"
-          description={t('files.webdavDesc')}
-        >
-          <ActionBar>
-            <Button
-              variant="primary"
-              size="sm"
-              loading={busy}
-              onClick={() => {
-                setBusy(true);
-                void filesApi
-                  .webdavIssueToken()
-                  .then((r) => {
-                    setWebdavToken(r.token);
-                    setWebdavEnabled(true);
-                    setMsg(r.notes?.join(' · ') ?? t('files.tokenIssued'));
-                  })
-                  .catch((e: Error) => setError(e.message))
-                  .finally(() => setBusy(false));
-              }}
-            >
-              {t('files.enableIssueToken')}
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              loading={busy}
-              onClick={() => {
-                void filesApi
-                  .webdavStatus()
-                  .then((s) => {
-                    setWebdavEnabled(s.enabled);
-                    setMsg(s.enabled ? t('files.enabledMount', { path: s.mountPath }) : t('files.notEnabled'));
-                  })
-                  .catch((e: Error) => setError(e.message));
-              }}
-            >
-              {t('files.status')}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              loading={busy}
-              onClick={() => {
-                void filesApi
-                  .webdavDisable()
-                  .then(() => {
-                    setWebdavEnabled(false);
-                    setWebdavToken(null);
-                    setMsg(t('files.webdavDisabled'));
-                  })
-                  .catch((e: Error) => setError(e.message));
-              }}
-            >
-              {t('files.disable')}
-            </Button>
-          </ActionBar>
-          {webdavToken ? (
-            <p className="u-mt-2">
-              <code className="inline u-break-all">{webdavToken}</code>
-            </p>
-          ) : (
-            <p className="muted u-text-sm u-mt-2">
-              {webdavEnabled ? t('files.webdavEnabledNoEcho') : t('files.webdavDefaultOff')}
-            </p>
-          )}
-        </CardSection>
-      </Card>
+          <div className="tab-panel u-stack u-gap-4">
+            <Card>
+              <CardSection
+                title={t('files.webdavTitle')}
+                description={t('files.webdavDesc')}
+              >
+                <div className="u-flex u-flex-wrap u-items-center u-gap-2 u-mb-3">
+                  <Badge tone={webdavEnabled ? 'ok' : 'neutral'}>
+                    {webdavEnabled ? t('files.webdavOn') : t('files.webdavOff')}
+                  </Badge>
+                  {webdavTokenId ? (
+                    <Badge tone="info">
+                      {t('files.webdavTokenId', { id: webdavTokenId })}
+                    </Badge>
+                  ) : null}
+                  {webdavUpdatedAt ? (
+                    <span className="muted u-text-sm">
+                      {t('files.webdavUpdated', {
+                        at: new Date(webdavUpdatedAt).toLocaleString(),
+                      })}
+                    </span>
+                  ) : null}
+                </div>
+
+                <ActionBar size="md">
+                  <Button
+                    variant="primary"
+                    size="md"
+                    loading={webdavBusy}
+                    onClick={() => void issueWebdavToken()}
+                  >
+                    {webdavEnabled
+                      ? t('files.webdavReissueToken')
+                      : t('files.enableIssueToken')}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    loading={webdavBusy}
+                    onClick={() => {
+                      setWebdavBusy(true);
+                      void refreshWebdavStatus()
+                        .then((s) => {
+                          setMsg(
+                            s.enabled
+                              ? t('files.enabledMount', { path: s.mountPath })
+                              : t('files.notEnabled'),
+                          );
+                        })
+                        .catch((e: Error) => setError(e.message))
+                        .finally(() => setWebdavBusy(false));
+                    }}
+                  >
+                    {t('common.refresh')}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="md"
+                    loading={webdavBusy}
+                    disabled={!webdavEnabled && !webdavLoaded}
+                    onClick={() => void disableWebdav()}
+                  >
+                    {t('files.disable')}
+                  </Button>
+                </ActionBar>
+
+                {webdavToken ? (
+                  <Alert variant="warn" className="u-mt-3">
+                    <strong>{t('files.webdavTokenOnceTitle')}</strong>
+                    <p className="u-mb-0 u-mt-1 muted u-text-sm">
+                      {t('files.webdavTokenOnceHint')}
+                    </p>
+                    <div className="u-flex u-flex-wrap u-gap-2 u-items-center u-mt-2">
+                      <code className="inline u-break-all">{webdavToken}</code>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() =>
+                          copyText(t('files.webdavPassword'), webdavToken)
+                        }
+                      >
+                        {t('common.copy')}
+                      </Button>
+                    </div>
+                  </Alert>
+                ) : (
+                  <p className="muted u-text-sm u-mt-3 u-mb-0">
+                    {webdavEnabled
+                      ? t('files.webdavEnabledNoEcho')
+                      : t('files.webdavDefaultOff')}
+                  </p>
+                )}
+              </CardSection>
+            </Card>
+
+            <Card>
+              <CardSection
+                title={t('files.webdavConnTitle')}
+                description={t('files.webdavConnDesc')}
+              >
+                <DescriptionList
+                  columns={1}
+                  items={[
+                    {
+                      label: t('files.webdavUrl'),
+                      value: (
+                        <span className="u-flex u-flex-wrap u-gap-2 u-items-center">
+                          <code className="inline u-break-all">{webdavUrl}</code>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => copyText(t('files.webdavUrl'), webdavUrl)}
+                          >
+                            {t('common.copy')}
+                          </Button>
+                        </span>
+                      ),
+                    },
+                    {
+                      label: t('files.webdavUsername'),
+                      value: (
+                        <span className="u-flex u-flex-wrap u-gap-2 u-items-center">
+                          <code className="inline">ysk</code>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              copyText(t('files.webdavUsername'), 'ysk')
+                            }
+                          >
+                            {t('common.copy')}
+                          </Button>
+                        </span>
+                      ),
+                    },
+                    {
+                      label: t('files.webdavPassword'),
+                      value: webdavToken ? (
+                        <span className="u-flex u-flex-wrap u-gap-2 u-items-center">
+                          <code className="inline u-break-all">{webdavToken}</code>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              copyText(t('files.webdavPassword'), webdavToken)
+                            }
+                          >
+                            {t('common.copy')}
+                          </Button>
+                        </span>
+                      ) : (
+                        <span className="muted">
+                          {webdavEnabled
+                            ? t('files.webdavPasswordHidden')
+                            : t('files.webdavPasswordNone')}
+                        </span>
+                      ),
+                    },
+                    {
+                      label: t('files.webdavRoot'),
+                      value: t('files.webdavRootValue'),
+                    },
+                    {
+                      label: t('files.webdavAuth'),
+                      value: t('files.webdavAuthValue'),
+                    },
+                  ]}
+                />
+                {webdavToken ? (
+                  <FormActions className="u-mt-3">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="md"
+                      onClick={() =>
+                        copyText(
+                          t('files.webdavConnBundle'),
+                          [
+                            `URL: ${webdavUrl}`,
+                            `Username: ysk`,
+                            `Password: ${webdavToken}`,
+                          ].join('\n'),
+                        )
+                      }
+                    >
+                      {t('files.webdavCopyAll')}
+                    </Button>
+                  </FormActions>
+                ) : null}
+              </CardSection>
+            </Card>
+
+            <Card>
+              <CardSection
+                title={t('files.webdavClientsTitle')}
+                description={t('files.webdavClientsDesc')}
+              >
+                <div className="u-stack u-gap-3">
+                  <div>
+                    <h4 className="u-text-sm u-font-bold u-mb-1">
+                      {t('files.webdavClientFinder')}
+                    </h4>
+                    <p className="muted u-text-sm u-mb-1">
+                      {t('files.webdavClientFinderHint')}
+                    </p>
+                    <code className="inline u-break-all">
+                      {webdavUrl.replace(/^https?:\/\//, 'https://')}
+                    </code>
+                  </div>
+                  <div>
+                    <h4 className="u-text-sm u-font-bold u-mb-1">
+                      {t('files.webdavClientWin')}
+                    </h4>
+                    <p className="muted u-text-sm u-mb-0">
+                      {t('files.webdavClientWinHint')}
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="u-text-sm u-font-bold u-mb-1">rclone</h4>
+                    <pre className="code-block u-text-sm" style={{ margin: 0 }}>
+                      {`rclone config
+# type = webdav
+# url  = ${webdavUrl}
+# vendor = other
+# user = ysk
+# pass = <token>`}
+                    </pre>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="u-mt-1"
+                      onClick={() =>
+                        copyText(
+                          'rclone',
+                          [
+                            'type = webdav',
+                            `url = ${webdavUrl}`,
+                            'vendor = other',
+                            'user = ysk',
+                            'pass = <token from panel>',
+                          ].join('\n'),
+                        )
+                      }
+                    >
+                      {t('common.copy')}
+                    </Button>
+                  </div>
+                  <div>
+                    <h4 className="u-text-sm u-font-bold u-mb-1">curl</h4>
+                    <pre className="code-block u-text-sm" style={{ margin: 0 }}>
+                      {`curl -u 'ysk:TOKEN' -X PROPFIND '${webdavUrl}'`}
+                    </pre>
+                  </div>
+                </div>
+              </CardSection>
+            </Card>
+
+            <Card>
+              <CardSection title={t('files.webdavNotesTitle')}>
+                <ul className="muted u-text-sm u-mb-0" style={{ paddingLeft: '1.15rem' }}>
+                  <li>{t('files.webdavNote1')}</li>
+                  <li>{t('files.webdavNote2')}</li>
+                  <li>{t('files.webdavNote3')}</li>
+                  <li>{t('files.webdavNote4')}</li>
+                </ul>
+              </CardSection>
+            </Card>
           </div>
         ) : null}
       
