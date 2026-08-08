@@ -1,11 +1,12 @@
 /**
  * Deploy tab — runtime-aware cards (Deploy · Git · Env).
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../../shared/lib/i18n';
 import type { ProjectDto } from '@ysk/shared';
 import {
+  ActionBar,
   Badge,
   Button,
   Card,
@@ -31,7 +32,14 @@ import {
   type ProcessManager } from '../model/deploy-prefs';
 import { projectsApi } from '../api';
 import { systemApi } from '../../system/api';
+import { pm2Api } from '../../pm2/api';
 import { bindInput, bindVoid, bindValueSet, bindAllOrValue } from '../../../pages/bind-handlers';
+
+/** Match core `pm2AppName` — YSK ecosystem app name from project linux user. */
+export function projectPm2AppName(linuxUser: string): string {
+  const u = String(linuxUser || '').trim();
+  return u ? `ysk-${u}` : '';
+}
 
 export interface ProjectDeployTabProps {
   project: ProjectDto;
@@ -97,6 +105,10 @@ export function envPlaceholder(runtime: string, deployIsPhp: boolean): string {
   return 'NODE_ENV=production\n# KEY=value';
 }
 
+function supportsPm2ForProject(runtime: string): boolean {
+  return runtime === 'node' || runtime === 'bun';
+}
+
 export function ProjectDeployTab({
   project,
   busy,
@@ -148,6 +160,7 @@ export function ProjectDeployTab({
   const [processManager, setProcessManager] = useState<ProcessManager>(() =>
     normalizeProcessManager(prefs.processManager),
   );
+  const [procBusy, setProcBusy] = useState<'restart' | 'stop' | 'reload' | null>(null);
   const runtimeLabel = formatRuntimeName(project.runtime, t);
   const processRuntime =
     project.runtime === 'node' ||
@@ -157,6 +170,69 @@ export function ProjectDeployTab({
     project.runtime === 'java' ||
     project.runtime === 'kotlin' ||
     project.runtime === 'bun';
+
+  const runProcessAction = useCallback(
+    async (action: 'restart' | 'stop' | 'reload') => {
+      setProcBusy(action);
+      try {
+        if (processManager === 'pm2' && supportsPm2ForProject(project.runtime)) {
+          const appName = projectPm2AppName(project.linuxUser);
+          if (!appName) {
+            onOpsMessage?.(t('projects.procMissingUser'));
+            return;
+          }
+          const pmAction = action === 'stop' ? 'stop' : action === 'reload' ? 'reload' : 'restart';
+          const r = await pm2Api.pm2Action(appName, pmAction);
+          onOpsMessage?.(
+            r.ok
+              ? t('projects.procActionOk', {
+                  action: t(`projects.proc_${pmAction}`),
+                  notes: r.notes?.join('；') || appName,
+                })
+              : t('projects.procActionFail', {
+                  action: t(`projects.proc_${pmAction}`),
+                  notes: r.notes?.join('；') || appName,
+                }),
+          );
+        } else {
+          if (action === 'reload') {
+            // systemd has no reload for unit here — use restart
+            const r = await pm2Api.systemdAction(project.id, 'restart');
+            onOpsMessage?.(
+              r.ok
+                ? t('projects.procActionOk', {
+                    action: t('projects.proc_restart'),
+                    notes: r.notes?.join('；') || r.unit,
+                  })
+                : t('projects.procActionFail', {
+                    action: t('projects.proc_restart'),
+                    notes: r.notes?.join('；') || r.unit,
+                  }),
+            );
+          } else {
+            const r = await pm2Api.systemdAction(project.id, action);
+            onOpsMessage?.(
+              r.ok
+                ? t('projects.procActionOk', {
+                    action: t(`projects.proc_${action}`),
+                    notes: r.notes?.join('；') || r.unit,
+                  })
+                : t('projects.procActionFail', {
+                    action: t(`projects.proc_${action}`),
+                    notes: r.notes?.join('；') || r.unit,
+                  }),
+            );
+          }
+        }
+      } catch (e) {
+        onOpsMessage?.(e instanceof Error ? e.message : t('projects.procActionFailShort'));
+      } finally {
+        setProcBusy(null);
+      }
+    },
+    [processManager, project.id, project.linuxUser, project.runtime, onOpsMessage, t],
+  );
+
   const supportsPm2Choice =
     project.runtime === 'node' || project.runtime === 'bun';
   const rtKind = runtimeInstallKind(project.runtime);
@@ -554,6 +630,50 @@ export function ProjectDeployTab({
                 </Button>
               ) : null}
             </FormActions>
+            {processRuntime ? (
+              <div className="u-mt-3">
+                <p className="muted u-text-sm u-mb-2 u-mt-0">
+                  {t('projects.procControlsHint', {
+                    manager:
+                      processManager === 'pm2' && supportsPm2ForProject(project.runtime)
+                        ? 'PM2'
+                        : 'systemd',
+                  })}
+                  {project.processStatus ? ` · ${project.processStatus}` : ''}
+                </p>
+                <ActionBar size="sm">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={procBusy === 'restart'}
+                    disabled={Boolean(procBusy) || anyBusy}
+                    onClick={() => void runProcessAction('restart')}
+                  >
+                    {t('projects.proc_restart')}
+                  </Button>
+                  {processManager === 'pm2' && supportsPm2ForProject(project.runtime) ? (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      loading={procBusy === 'reload'}
+                      disabled={Boolean(procBusy) || anyBusy}
+                      onClick={() => void runProcessAction('reload')}
+                    >
+                      {t('projects.proc_reload')}
+                    </Button>
+                  ) : null}
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    loading={procBusy === 'stop'}
+                    disabled={Boolean(procBusy) || anyBusy}
+                    onClick={() => void runProcessAction('stop')}
+                  >
+                    {t('projects.proc_stop')}
+                  </Button>
+                </ActionBar>
+              </div>
+            ) : null}
             {chainBusy || installLog.length ? (
               <InstallStreamPanel lines={installLog} busy={chainBusy} />
             ) : null}
