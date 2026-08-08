@@ -107,5 +107,5 @@
   "fixFailed": "修復失敗",
   "fixDone": "已修復 dataDir 權限（chmod 750）",
   "fixDoneWebUi": "已建置／安裝 Web 介面",
-  "itemWebBuildManual": "本機無 monorepo／無已打包 SPA，無法一鍵修復。請喺有源碼嘅機器執行 pnpm --filter @ysk/web build，再將 apps/web/dist/* 複製到 dataDir/web（例如 /var/lib/ysk-server/web），或設定 YSK_WEB_ROOT 後重啟控制面。"
+  "itemWebBuildManual": "本機無 monorepo／無已打包 SPA，無法一鍵修復。請在有源碼的機器執行 pnpm --filter @ysk/web build，再將 apps/web/dist/* 複製到 dataDir/web（例如 /var/lib/ysk-server/web），或設定 YSK_WEB_ROOT 後重啟控制面。"
 }

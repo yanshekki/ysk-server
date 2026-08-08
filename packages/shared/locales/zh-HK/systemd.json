@@ -87,8 +87,8 @@
   "nextAction": "建議下一步",
   "controlRunningHint": "systemctl is-active = active",
   "aboutPolicyTitle": "套用政策",
-  "aboutPolicySub": "寫範本同安裝到系統係兩步；裝完仍可重跑，唔代表未完成。",
+  "aboutPolicySub": "寫範本同安裝到系統係兩步；裝完仍可重跑，不代表未完成。",
   "policyInstallFull": "安裝並啟用：複製到 /etc/systemd/system、daemon-reload、enable --now。需 root + EXECUTE。",
   "policyBlockedTitle": "無權限時封鎖",
-  "policyNotEqualTitle": "狀態唔等同"
+  "policyNotEqualTitle": "狀態不等同"
 }

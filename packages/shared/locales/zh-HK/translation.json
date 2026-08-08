@@ -2614,7 +2614,7 @@
     "tabOps": "分工",
     "webmailGlobalDesc": "全面板共用一套網頁電郵；所有郵件域名的用戶都用同一個入口登入。",
     "webmailGlobalHint": "需要系統變更權限（YSK_EXECUTE）與外網以下載 Roundcube／SnappyMail。未開權限時不會建立半成品專案。",
-    "webmailMovedHint": "網頁電郵已改為全站共用設定，唔再按單一域名安裝。",
+    "webmailMovedHint": "網頁電郵已改為全站共用設定，不再按單一域名安裝。",
     "openGlobalWebmailSettings": "前往網頁電郵設定",
     "domainsTitle": "域名 ({{filtered}}/{{total}})",
     "emptyFilterHint": "沒有符合搜尋的域名",
@@ -3022,7 +3022,7 @@
     "deleteTypeNameHint": "必須完全一致：{{name}}",
     "deleteWillData": "本機 dataDir/email 目錄（若存在）",
     "deleteKeepData": "保留本機 dataDir 郵件資料",
-    "deleteSystemWarn": "系統 Postfix／Dovecot 映射唔會自動清乾淨；必要時請另行處理。",
+    "deleteSystemWarn": "系統 Postfix／Dovecot 映射不會自動清乾淨；必要時請另行處理。",
     "hostIpPick": "本機 IPv4",
     "hostIpPickV6": "本機 IPv6"
   },
@@ -3245,7 +3245,7 @@
     "webdavDesc": "用 Basic 認證把公用檔案根掛到 Finder／Windows／rclone；權杖只顯示一次。",
     "enableIssueToken": "啟用並簽發權杖",
     "webdavReissueToken": "重新簽發權杖",
-    "webdavReissueConfirm": "重新簽發會立即作廢舊密碼，已掛載的用戶端會斷線。確定？",
+    "webdavReissueConfirm": "重新簽發會立即作廢舊密碼，已掛載的客戶端會斷線。確定？",
     "webdavDisableConfirm": "停用後 /webdav 將拒絕所有連線。確定？",
     "tokenIssued": "已簽發權杖",
     "status": "狀態",
@@ -3262,7 +3262,7 @@
     "webdavTokenOnceTitle": "請立即複製密碼",
     "webdavTokenOnceHint": "此密碼只顯示一次；關掉此頁後無法再查看。",
     "webdavConnTitle": "連線資訊",
-    "webdavConnDesc": "用戶端用以下 URL 與 Basic 帳密連入",
+    "webdavConnDesc": "客戶端用以下 URL 與 Basic 帳密連入",
     "webdavUrl": "伺服器 URL",
     "webdavUsername": "用戶名",
     "webdavPassword": "密碼（權杖）",
@@ -3274,14 +3274,14 @@
     "webdavAuthValue": "HTTP Basic · 用戶 ysk · 密碼 = 面板簽發的權杖",
     "webdavConnBundle": "連線資料",
     "webdavCopyAll": "複製全部連線資料",
-    "webdavClientsTitle": "用戶端設定",
-    "webdavClientsDesc": "常見掛載方式（HTTPS 建議；自簽憑證需在用戶端信任）",
+    "webdavClientsTitle": "客戶端設定",
+    "webdavClientsDesc": "常見掛載方式（HTTPS 建議；自簽憑證需在客戶端信任）",
     "webdavClientFinder": "macOS Finder",
     "webdavClientFinderHint": "前往 → 連接伺服器…（⌘K），貼上 URL，用戶 ysk，密碼為權杖。",
     "webdavClientWin": "Windows",
-    "webdavClientWinHint": "此電腦 → 對應網路磁碟機 → 選擇「使用其他認證」；或用 Cyberduck / WinSCP（WebDAV）。",
+    "webdavClientWinHint": "此電腦 → 對應網絡磁碟機 → 選擇「使用其他認證」；或用 Cyberduck / WinSCP（WebDAV）。",
     "webdavNotesTitle": "注意事項",
-    "webdavNote1": "WebDAV 對應公用檔案根，唔係整個主機檔案系統。",
+    "webdavNote1": "WebDAV 對應公用檔案根，不是整個主機檔案系統。",
     "webdavNote2": "需要由 reverse proxy／防火牆放行面板埠，並建議只用 HTTPS。",
     "webdavNote3": "重新簽發權杖會即時作廢舊密碼；停用會拒絕所有 /webdav 請求。",
     "webdavNote4": "支援 OPTIONS／PROPFIND／GET／PUT；進階 LOCK 等未必齊全。",
@@ -8487,7 +8487,7 @@
     "fixFailed": "修復失敗",
     "fixDone": "已修復 dataDir 權限（chmod 750）",
     "fixDoneWebUi": "已建置／安裝 Web 介面",
-    "itemWebBuildManual": "本機無 monorepo／無已打包 SPA，無法一鍵修復。請喺有源碼嘅機器執行 pnpm --filter @ysk/web build，再將 apps/web/dist/* 複製到 dataDir/web（例如 /var/lib/ysk-server/web），或設定 YSK_WEB_ROOT 後重啟控制面。"
+    "itemWebBuildManual": "本機無 monorepo／無已打包 SPA，無法一鍵修復。請在有源碼的機器執行 pnpm --filter @ysk/web build，再將 apps/web/dist/* 複製到 dataDir/web（例如 /var/lib/ysk-server/web），或設定 YSK_WEB_ROOT 後重啟控制面。"
   },
   "redis": {
     "neverExpire": "永不過期",
@@ -10116,10 +10116,10 @@
     "nextAction": "建議下一步",
     "controlRunningHint": "systemctl is-active = active",
     "aboutPolicyTitle": "套用政策",
-    "aboutPolicySub": "寫範本同安裝到系統係兩步；裝完仍可重跑，唔代表未完成。",
+    "aboutPolicySub": "寫範本同安裝到系統係兩步；裝完仍可重跑，不代表未完成。",
     "policyInstallFull": "安裝並啟用：複製到 /etc/systemd/system、daemon-reload、enable --now。需 root + EXECUTE。",
     "policyBlockedTitle": "無權限時封鎖",
-    "policyNotEqualTitle": "狀態唔等同"
+    "policyNotEqualTitle": "狀態不等同"
   },
   "tabs": {
     "scrollLeft": "向左捲動分頁",
@@ -10522,7 +10522,7 @@
     "batchRescanned": "已重新掃描主機套件狀態",
     "applyLogTitle": "套件更新日誌（即時）",
     "navBadgeTitle": "可升級套件：{{n}}",
-    "aboutPolicySub": "掃描、套用、權限同 OSV 邊界；掃描唔等於已升級。"
+    "aboutPolicySub": "掃描、套用、權限同 OSV 邊界；掃描不等於已升級。"
   },
   "users": {
     "userCount": "{{count}} 用戶",

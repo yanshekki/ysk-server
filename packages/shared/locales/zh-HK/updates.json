@@ -147,5 +147,5 @@
   "batchRescanned": "已重新掃描主機套件狀態",
   "applyLogTitle": "套件更新日誌（即時）",
   "navBadgeTitle": "可升級套件：{{n}}",
-  "aboutPolicySub": "掃描、套用、權限同 OSV 邊界；掃描唔等於已升級。"
+  "aboutPolicySub": "掃描、套用、權限同 OSV 邊界；掃描不等於已升級。"
 }

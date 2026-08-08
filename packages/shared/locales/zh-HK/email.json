@@ -38,7 +38,7 @@
   "tabOps": "分工",
   "webmailGlobalDesc": "全面板共用一套網頁電郵；所有郵件域名的用戶都用同一個入口登入。",
   "webmailGlobalHint": "需要系統變更權限（YSK_EXECUTE）與外網以下載 Roundcube／SnappyMail。未開權限時不會建立半成品專案。",
-  "webmailMovedHint": "網頁電郵已改為全站共用設定，唔再按單一域名安裝。",
+  "webmailMovedHint": "網頁電郵已改為全站共用設定，不再按單一域名安裝。",
   "openGlobalWebmailSettings": "前往網頁電郵設定",
   "domainsTitle": "域名 ({{filtered}}/{{total}})",
   "emptyFilterHint": "沒有符合搜尋的域名",
@@ -446,7 +446,7 @@
   "deleteTypeNameHint": "必須完全一致：{{name}}",
   "deleteWillData": "本機 dataDir/email 目錄（若存在）",
   "deleteKeepData": "保留本機 dataDir 郵件資料",
-  "deleteSystemWarn": "系統 Postfix／Dovecot 映射唔會自動清乾淨；必要時請另行處理。",
+  "deleteSystemWarn": "系統 Postfix／Dovecot 映射不會自動清乾淨；必要時請另行處理。",
   "hostIpPick": "本機 IPv4",
   "hostIpPickV6": "本機 IPv6"
 }
