@@ -1860,18 +1860,61 @@ export function FilesPage() {
         </FormLayout>
       </Modal>
 
-      {/* Share */}
+      {/* Share — create → copy-link success */}
       <Modal
         open={Boolean(sharePath)}
-        onClose={bindSet(setSharePath, null)}
-        title={t('files.shareCreateTitle')}
-        description={t('files.shareCreateDesc')}
+        onClose={() => {
+          if (busy) return;
+          setSharePath(null);
+          setSharePass('');
+          setShareResult(null);
+        }}
+        title={
+          shareResult ? t('files.shareReadyTitle') : t('files.shareCreateTitle')
+        }
+        description={
+          shareResult ? t('files.shareReadyDesc') : t('files.shareCreateDesc')
+        }
+        size="md"
         footer={
-          <>
-            <Button variant="secondary" size="md" onClick={bindSet(setSharePath, null)}>
-              {t('common.close')}
-            </Button>
-            {!shareResult ? (
+          shareResult ? (
+            <>
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={() => {
+                  setShareResult(null);
+                  setSharePass('');
+                }}
+              >
+                {t('files.shareAgain')}
+              </Button>
+              <Button
+                variant="primary"
+                size="md"
+                onClick={() => {
+                  setSharePath(null);
+                  setSharePass('');
+                  setShareResult(null);
+                }}
+              >
+                {t('common.done')}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="secondary"
+                size="md"
+                disabled={busy}
+                onClick={() => {
+                  setSharePath(null);
+                  setSharePass('');
+                  setShareResult(null);
+                }}
+              >
+                {t('common.cancel')}
+              </Button>
               <Button
                 variant="primary"
                 size="md"
@@ -1881,44 +1924,100 @@ export function FilesPage() {
                     if (!sharePath) return;
                     const r = await filesApi.createShare(root, {
                       path: sharePath,
-                      password: sharePass || undefined });
-                    const url = `${window.location.origin}${r.share.url ?? `/api/v1/public/files/${r.share.token}`}`;
+                      password: sharePass || undefined,
+                    });
+                    const url = `${window.location.origin}${
+                      r.share.url ?? `/api/v1/public/files/${r.share.token}`
+                    }`;
                     setShareResult(url);
+                    toast.ok(t('files.shareCreatedToast'));
                   })
                 }
               >
                 {t('files.createLink')}
               </Button>
-            ) : null}
-          </>
+            </>
+          )
         }
       >
-        <FormHint>
-          {t('files.sharePath')}<code className="inline">{sharePath}</code>
-        </FormHint>
-        <FormLayout>
-          <Field
-            label={t('files.passwordOptional')}
-            htmlFor="sp"
-            flush
-            hint={t('files.passwordOptionalHint')}
-          >
-            <input
-              id="sp"
-              type="password"
-              value={sharePass}
-              onChange={bindInput(setSharePass)}
-              autoComplete="new-password"
-              placeholder={t('files.passwordPlaceholder')}
-            />
-          </Field>
-        </FormLayout>
-        {shareResult ? (
-          <Alert variant="ok">
-            {t('files.linkCreated')}
-            <code className="inline u-break-all">{shareResult}</code>
-          </Alert>
-        ) : null}
+        {!shareResult ? (
+          <div className="fm-share">
+            <div className="fm-share__file">
+              <span className="fm-share__file-icon" aria-hidden>
+                📎
+              </span>
+              <div className="fm-share__file-body">
+                <div className="fm-share__file-name">
+                  {sharePath?.split('/').pop() || sharePath}
+                </div>
+                <code className="fm-share__file-path">{sharePath}</code>
+              </div>
+            </div>
+            <Field
+              label={t('files.passwordOptional')}
+              htmlFor="sp"
+              flush
+              hint={t('files.passwordOptionalHint')}
+            >
+              <input
+                id="sp"
+                type="password"
+                value={sharePass}
+                onChange={bindInput(setSharePass)}
+                autoComplete="new-password"
+                placeholder={t('files.passwordPlaceholder')}
+              />
+            </Field>
+          </div>
+        ) : (
+          <div className="fm-share fm-share--ready">
+            <div className="fm-share__status">
+              <Badge tone="ok">{t('files.shareReadyBadge')}</Badge>
+              {sharePass ? (
+                <Badge tone="warn">{t('files.shareProtected')}</Badge>
+              ) : (
+                <Badge tone="neutral">{t('files.shareOpenAccess')}</Badge>
+              )}
+            </div>
+            <label className="fm-share__link-label" htmlFor="fm-share-url">
+              {t('files.shareLinkLabel')}
+            </label>
+            <div className="fm-share__link-row">
+              <input
+                id="fm-share-url"
+                className="fm-share__link-input input"
+                readOnly
+                value={shareResult}
+                onFocus={(e) => e.target.select()}
+              />
+              <Button
+                variant="primary"
+                size="md"
+                onClick={() => {
+                  void navigator.clipboard
+                    ?.writeText(shareResult)
+                    .then(() => toast.ok(t('files.linkCopied')))
+                    .catch(() => {
+                      /* fallback */
+                      try {
+                        const el = document.getElementById(
+                          'fm-share-url',
+                        ) as HTMLInputElement | null;
+                        el?.select();
+                        document.execCommand('copy');
+                        toast.ok(t('files.linkCopied'));
+                      } catch {
+                        toast.error(t('files.linkCopyFailed'));
+                      }
+                    });
+                }}
+              >
+                {t('common.copy')}
+              </Button>
+            </div>
+            <p className="fm-share__hint muted">{t('files.shareCopyHint')}</p>
+          </div>
+        )}
       </Modal>
 
       {/* chmod */}
