@@ -373,7 +373,8 @@
     "webmailOk": "网页邮件方案 {{mode}}（{{host}}）",
     "mailTlsTodo": "邮件 TLS：请为 {{mailHost}} 申请证书后，在健康分页按「套用邮件 TLS 路径」。",
     "externalDns": "外部待办（你负责）：在 DNS 商设置 MX/SPF/DKIM/DMARC；VPS 设 PTR；开放端口 25 或改用 SMTP 中继。",
-    "healthScore": "健康分数 {{score}}/{{max}}（DNS/PTR/端口 25 不会自动完成）"
+    "healthScore": "健康分数 {{score}}/{{max}}（DNS/PTR/端口 25 不会自动完成）",
+    "webmailProjectOk": "网页邮件项目 {{tool}} @ {{host}}（{{status}}）"
   },
   "tabDeliverability": "送达",
   "pendingCount": "待处理",
@@ -401,5 +402,7 @@
   "webmailProjectName": "项目名称",
   "installWebmailProject": "创建并上线网页邮件",
   "openWebmail": "打开网页邮件",
-  "webmailRisk": "公开网页邮件有风险 — 请尽快上 HTTPS。"
+  "webmailRisk": "公开网页邮件有风险 — 请尽快上 HTTPS。",
+  "webmailForceHttps": "强制 HTTPS（Roundcube；需已绑 SSL）",
+  "reinstallWebmail": "重新安装／升级"
 }

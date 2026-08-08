@@ -369,7 +369,8 @@
     "webmailOk": "Webmail plan {{mode}} for {{host}}",
     "mailTlsTodo": "Mail TLS: issue a cert for {{mailHost}}, then use Apply mail TLS paths on the health tab.",
     "externalDns": "External (operator-owned): set MX/SPF/DKIM/DMARC at DNS; PTR at VPS; Port 25 or SMTP relay.",
-    "healthScore": "Health score {{score}}/{{max}} (DNS/PTR/Port25 not auto-complete)"
+    "healthScore": "Health score {{score}}/{{max}} (DNS/PTR/Port25 not auto-complete)",
+    "webmailProjectOk": "Webmail project {{tool}} @ {{host}} ({{status}})"
   },
   "tabDeliverability": "Delivery",
   "pendingCount": "Pending",
@@ -401,5 +402,7 @@
   "webmailProjectName": "Project name",
   "installWebmailProject": "Create & go live",
   "openWebmail": "Open webmail",
-  "webmailRisk": "Public webmail is risky — enable HTTPS soon."
+  "webmailRisk": "Public webmail is risky — enable HTTPS soon.",
+  "webmailForceHttps": "Force HTTPS (Roundcube; SSL required)",
+  "reinstallWebmail": "Reinstall / upgrade"
 }

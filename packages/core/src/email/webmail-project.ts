@@ -19,14 +19,14 @@ import type { ProjectOpsService } from '../hosting/project-ops.js';
 
 export type WebmailTool = 'roundcube' | 'snappymail';
 
-/** Default Roundcube complete package (security line 1.7.x). Override with YSK_ROUNDCUBE_URL. */
-const ROUNDCUBE_VERSION = process.env.YSK_ROUNDCUBE_VERSION ?? '1.7.2';
+/** Default Roundcube complete package (security line 1.7.x). Override with YSK_ROUNDCUBE_URL / YSK_ROUNDCUBE_VERSION. */
+export const ROUNDCUBE_VERSION = process.env.YSK_ROUNDCUBE_VERSION ?? '1.7.2';
 const ROUNDCUBE_URL =
   process.env.YSK_ROUNDCUBE_URL ??
   `https://github.com/roundcube/roundcubemail/releases/download/${ROUNDCUBE_VERSION}/roundcubemail-${ROUNDCUBE_VERSION}-complete.tar.gz`;
 
-/** SnappyMail release. Override with YSK_SNAPPYMAIL_URL. */
-const SNAPPYMAIL_VERSION = process.env.YSK_SNAPPYMAIL_VERSION ?? '2.38.2';
+/** SnappyMail release. Override with YSK_SNAPPYMAIL_URL / YSK_SNAPPYMAIL_VERSION. */
+export const SNAPPYMAIL_VERSION = process.env.YSK_SNAPPYMAIL_VERSION ?? '2.38.2';
 const SNAPPYMAIL_URL =
   process.env.YSK_SNAPPYMAIL_URL ??
   `https://github.com/the-djmaze/snappymail/releases/download/v${SNAPPYMAIL_VERSION}/snappymail-${SNAPPYMAIL_VERSION}.tar.gz`;
@@ -75,7 +75,18 @@ export async function installWebmailIntoProject(input: {
   imapHost?: string;
   smtpHost?: string;
   download?: boolean;
-}): Promise<{ ok: boolean; notes: string[]; written: string[]; entryFile: string }> {
+  forceHttps?: boolean;
+  /** Install ysk_sso plugin into Roundcube plugins/ */
+  installSsoPlugin?: boolean;
+  panelBaseUrl?: string;
+}): Promise<{
+  ok: boolean;
+  notes: string[];
+  written: string[];
+  entryFile: string;
+  /** SnappyMail admin password (shown once) */
+  snappyAdminPassword?: string;
+}> {
   const notes: string[] = [];
   const written: string[] = [];
   const docRoot = input.docRoot ?? join(input.homeDir, 'app', 'public');
@@ -93,6 +104,9 @@ export async function installWebmailIntoProject(input: {
       download,
       imapHost,
       smtpHost,
+      forceHttps: input.forceHttps === true,
+      installSsoPlugin: input.installSsoPlugin !== false,
+      panelBaseUrl: input.panelBaseUrl ?? 'http://127.0.0.1:8787',
       notes,
       written,
     });
@@ -116,6 +130,9 @@ async function installRoundcube(input: {
   download: boolean;
   imapHost: string;
   smtpHost: string;
+  forceHttps: boolean;
+  installSsoPlugin: boolean;
+  panelBaseUrl: string;
   notes: string[];
   written: string[];
 }): Promise<{ ok: boolean; notes: string[]; written: string[]; entryFile: string }> {
@@ -132,7 +149,11 @@ async function installRoundcube(input: {
         entryFile: 'index.php',
       };
     }
-    const rt = ensureRoundcubeRuntime(docRoot, input.imapHost, input.smtpHost);
+    const rt = ensureRoundcubeRuntime(docRoot, input.imapHost, input.smtpHost, {
+      forceHttps: input.forceHttps,
+      installSsoPlugin: input.installSsoPlugin,
+      panelBaseUrl: input.panelBaseUrl,
+    });
     written.push(...rt.written);
     notes.push(tl('notes.webmail.roundcubeReuse', { path: docRoot }), ...rt.notes);
     return { ok: true, notes, written, entryFile: 'index.php' };
@@ -181,7 +202,11 @@ async function installRoundcube(input: {
     return { ok: false, notes, written, entryFile: 'index.php' };
   }
 
-  const rt = ensureRoundcubeRuntime(docRoot, input.imapHost, input.smtpHost);
+  const rt = ensureRoundcubeRuntime(docRoot, input.imapHost, input.smtpHost, {
+    forceHttps: input.forceHttps,
+    installSsoPlugin: input.installSsoPlugin,
+    panelBaseUrl: input.panelBaseUrl,
+  });
   written.push(docRoot, ...rt.written);
   notes.push(
     tl('notes.webmail.roundcubeInstalled', { path: docRoot, version: ROUNDCUBE_VERSION }),
@@ -199,7 +224,13 @@ async function installSnappyMail(input: {
   smtpHost: string;
   notes: string[];
   written: string[];
-}): Promise<{ ok: boolean; notes: string[]; written: string[]; entryFile: string }> {
+}): Promise<{
+  ok: boolean;
+  notes: string[];
+  written: string[];
+  entryFile: string;
+  snappyAdminPassword?: string;
+}> {
   const { docRoot, notes, written } = input;
   const marker = join(docRoot, 'index.php');
 
@@ -258,12 +289,175 @@ async function installSnappyMail(input: {
   }
 
   written.push(docRoot);
+  const admin = ensureSnappyMailAdminBootstrap(docRoot, input.imapHost, input.smtpHost);
+  written.push(...admin.written);
   notes.push(
     tl('notes.webmail.snappyInstalled', { path: docRoot, version: SNAPPYMAIL_VERSION }),
-    tl('notes.webmail.snappyAdminHint'),
+    ...admin.notes,
     tl('notes.webmail.imapSmtpHint', { imap: input.imapHost, smtp: input.smtpHost }),
   );
-  return { ok: true, notes, written, entryFile: 'index.php' };
+  return {
+    ok: true,
+    notes,
+    written,
+    entryFile: 'index.php',
+    snappyAdminPassword: admin.adminPassword,
+  };
+}
+
+/**
+ * Seed SnappyMail data dir + admin password (shown once).
+ * Domain defaults point at local IMAP/SMTP; admin uses /?admin.
+ */
+export function ensureSnappyMailAdminBootstrap(
+  docRoot: string,
+  imapHost: string,
+  smtpHost: string,
+  adminPassword?: string,
+): { written: string[]; notes: string[]; adminPassword: string } {
+  const written: string[] = [];
+  const notes: string[] = [];
+  const pass = adminPassword || randomAdminPassword();
+  const dataRoot = join(docRoot, 'data', '_data_', '_default_');
+  const cfgDir = join(dataRoot, 'configs');
+  const domDir = join(dataRoot, 'domains');
+  mkdirSync(cfgDir, { recursive: true });
+  mkdirSync(domDir, { recursive: true });
+  try {
+    chmodSync(join(docRoot, 'data'), 0o777);
+  } catch {
+    /* best-effort */
+  }
+
+  // bcrypt-compatible hash for PHP password_verify (SnappyMail admin)
+  // Use PHP-style $2y$ via openssl/passlib is hard without PHP; write plain marker + PHP bootstrap file instead.
+  const adminPhp = join(docRoot, 'ysk-snappy-admin.php');
+  writeFileSync(
+    adminPhp,
+    `<?php
+/**
+ * YSK one-shot: set SnappyMail admin password then self-delete.
+ * Open once as panel operator, then remove.
+ */
+$pass = ${JSON.stringify(pass)};
+$cfgDir = __DIR__ . '/data/_data_/_default_/configs';
+if (!is_dir($cfgDir)) { @mkdir($cfgDir, 0777, true); }
+$hash = password_hash($pass, PASSWORD_DEFAULT);
+$ini = "[webmail]\\n; YSK-managed\\n[security]\\nadmin_login = \\"admin\\"\\nadmin_password = \\"{$hash}\\"\\nallow_admin_panel = On\\n";
+file_put_contents($cfgDir . '/application.ini', $ini);
+@unlink(__FILE__);
+header('Content-Type: text/plain; charset=utf-8');
+echo "SnappyMail admin password applied. Login /?admin as admin. This helper was removed.\\n";
+`,
+    'utf8',
+  );
+  written.push(adminPhp);
+
+  // Domain domain.json-style json for default IMAP (SnappyMail domain files are JSON in newer versions)
+  const domainJson = join(domDir, `${imapHost.replace(/[^a-z0-9.-]/gi, '_') || 'mail'}.json`);
+  writeFileSync(
+    domainJson,
+    JSON.stringify(
+      {
+        name: imapHost,
+        IMAP: { host: imapHost, port: 993, secure: 1, shortLogin: false },
+        SMTP: { host: smtpHost, port: 587, secure: 2, shortLogin: false, auth: true, usePhpMail: false },
+      },
+      null,
+      2,
+    ),
+    'utf8',
+  );
+  written.push(domainJson);
+
+  // Plaintext once for operator (not stored on disk after helper runs)
+  const once = join(docRoot, '..', 'SNAPPYMAIL_ADMIN_ONCE.txt');
+  writeFileSync(
+    once,
+    [
+      'YSK SnappyMail admin (show once — delete after use)',
+      `Login path: /?admin`,
+      `User: admin`,
+      `Password: ${pass}`,
+      `Or open once: /ysk-snappy-admin.php then use the password above`,
+      `IMAP: ${imapHost}:993  SMTP: ${smtpHost}:587`,
+      '',
+    ].join('\n'),
+    'utf8',
+  );
+  written.push(once);
+
+  notes.push(tl('notes.webmail.snappyAdminOnce', { user: 'admin' }));
+  notes.push(tl('notes.webmail.snappyAdminPassword', { password: pass }));
+  return { written, notes, adminPassword: pass };
+}
+
+function randomAdminPassword(): string {
+  const chars = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let s = '';
+  for (let i = 0; i < 16; i++) s += chars[Math.floor(Math.random() * chars.length)]!;
+  return s;
+}
+
+/** Write ysk_sso plugin into Roundcube plugins/ and enable in config. */
+export function installYskSsoIntoRoundcube(
+  docRoot: string,
+  panelBaseUrl: string,
+): { written: string[]; notes: string[]; pluginDir: string } {
+  const written: string[] = [];
+  const notes: string[] = [];
+  const pluginDir = join(docRoot, 'plugins', 'ysk_sso');
+  mkdirSync(pluginDir, { recursive: true });
+  const base = panelBaseUrl.replace(/\/$/, '');
+  const php = `<?php
+/**
+ * YSK Webmail SSO — Roundcube auto-login (installed into project plugins/)
+ */
+class ysk_sso extends rcube_plugin {
+  public $task = 'login|mail';
+  function init() {
+    $this->add_hook('startup', array($this, 'startup'));
+  }
+  function startup($args) {
+    $token = isset($_GET['_ysk_sso']) ? $_GET['_ysk_sso'] : null;
+    if (!$token) return $args;
+    $url = ${JSON.stringify(base + '/api/v1/email/webmail/sso/consume')};
+    $ctx = stream_context_create(array(
+      'http' => array(
+        'method' => 'POST',
+        'header' => "Content-Type: application/json\\r\\n",
+        'content' => json_encode(array('token' => $token)),
+        'timeout' => 8,
+        'ignore_errors' => true,
+      ),
+    ));
+    $raw = @file_get_contents($url, false, $ctx);
+    $data = $raw ? json_decode($raw, true) : null;
+    if (empty($data['ok']) || empty($data['email'])) {
+      error_log('YSK SSO consume failed');
+      return $args;
+    }
+    $email = $data['email'];
+    $pass = isset($data['password']) ? $data['password'] : null;
+    $rcmail = rcube::get_instance();
+    if ($pass && method_exists($rcmail, 'login')) {
+      $auth = $rcmail->login($email, $pass, $rcmail->config->get('default_host'), true);
+      if ($auth) {
+        $rcmail->session->set('user_id', $rcmail->get_user_id());
+        $rcmail->session->set('password', $rcmail->encrypt($pass));
+        header('Location: ./?_task=mail');
+        exit;
+      }
+    }
+    return $args;
+  }
+}
+`;
+  const path = join(pluginDir, 'ysk_sso.php');
+  writeFileSync(path, php, 'utf8');
+  written.push(path);
+  notes.push(tl('notes.webmail.ssoPluginInstalled', { path: pluginDir }));
+  return { written, notes, pluginDir };
 }
 
 /** Write/refresh Roundcube config.inc.php + writable temp/logs. */
@@ -271,6 +465,11 @@ export function ensureRoundcubeRuntime(
   docRoot: string,
   imapHost: string,
   smtpHost: string,
+  opts?: {
+    forceHttps?: boolean;
+    installSsoPlugin?: boolean;
+    panelBaseUrl?: string;
+  },
 ): { written: string[]; notes: string[] } {
   const written: string[] = [];
   const notes: string[] = [];
@@ -290,6 +489,17 @@ export function ensureRoundcubeRuntime(
     }
   }
 
+  const plugins: string[] = ['archive', 'zipdownload', 'managesieve'];
+  if (opts?.installSsoPlugin !== false) {
+    const sso = installYskSsoIntoRoundcube(
+      docRoot,
+      opts?.panelBaseUrl ?? 'http://127.0.0.1:8787',
+    );
+    written.push(...sso.written);
+    notes.push(...sso.notes);
+    plugins.push('ysk_sso');
+  }
+
   const configPath = join(configDir, 'config.inc.php');
   // Preserve existing des_key if reinstall
   let desKey = randomDesKey();
@@ -303,6 +513,7 @@ export function ensureRoundcubeRuntime(
     }
   }
 
+  const forceHttps = opts?.forceHttps === true;
   writeFileSync(
     configPath,
     buildRoundcubeConfigInc({
@@ -310,12 +521,19 @@ export function ensureRoundcubeRuntime(
       imapHost,
       smtpHost,
       dbPath: join(dbDir, 'roundcube.db'),
+      forceHttps,
+      plugins,
     }),
     'utf8',
   );
   written.push(configPath, tempDir, logsDir, dbDir);
   notes.push(tl('notes.webmail.roundcubeConfigWritten'));
   notes.push(tl('notes.webmail.imapSmtpHint', { imap: imapHost, smtp: smtpHost }));
+  if (forceHttps) {
+    notes.push(tl('notes.webmail.forceHttpsOn'));
+  } else {
+    notes.push(tl('notes.webmail.forceHttpsOff'));
+  }
   return { written, notes };
 }
 
@@ -324,15 +542,20 @@ export function buildRoundcubeConfigInc(input: {
   imapHost: string;
   smtpHost: string;
   dbPath: string;
+  forceHttps?: boolean;
+  plugins?: string[];
 }): string {
   const des = String(input.desKey || randomDesKey()).replace(/'/g, '');
   const imap = String(input.imapHost).replace(/'/g, '');
   const smtp = String(input.smtpHost).replace(/'/g, '');
   const db = String(input.dbPath).replace(/'/g, "\\'");
+  const plugins = input.plugins?.length
+    ? input.plugins
+    : ['archive', 'zipdownload', 'managesieve'];
+  const pluginPhp = plugins.map((p) => `'${String(p).replace(/'/g, '')}'`).join(', ');
   // SQLite absolute path: sqlite:////absolute/path
-  const dsn = db.startsWith('/')
-    ? `sqlite:///${db}?mode=0646`
-    : `sqlite:///${db}?mode=0646`;
+  const dsn = `sqlite:///${db}?mode=0646`;
+  const forceHttps = input.forceHttps === true;
   return `<?php
 /**
  * YSK-managed Roundcube config — do not use the web installer.
@@ -362,7 +585,7 @@ $config['smtp_conn_options'] = [
 $config['support_url'] = '';
 $config['product_name'] = 'YSK Webmail';
 $config['des_key'] = '${des}';
-$config['plugins'] = ['archive', 'zipdownload', 'managesieve'];
+$config['plugins'] = [${pluginPhp}];
 $config['skin'] = 'elastic';
 $config['enable_installer'] = false;
 $config['mime_types'] = null;
@@ -370,7 +593,7 @@ $config['temp_dir'] = __DIR__ . '/../temp';
 $config['log_dir'] = __DIR__ . '/../logs';
 $config['session_lifetime'] = 30;
 $config['ip_check'] = false;
-$config['force_https'] = false;
+$config['force_https'] = ${forceHttps ? 'true' : 'false'};
 `;
 }
 
@@ -398,6 +621,14 @@ export async function createWebmailProject(input: {
   smtpHost?: string;
   /** Apex mail domain for default naming only */
   mailDomain?: string;
+  forceHttps?: boolean;
+  installSsoPlugin?: boolean;
+  panelBaseUrl?: string;
+  /**
+   * If project name or domain already exists, reinstall webmail into that project
+   * instead of failing (upgrade path).
+   */
+  reinstall?: boolean;
 }): Promise<{
   ok: boolean;
   project?: ProjectDto;
@@ -411,6 +642,7 @@ export async function createWebmailProject(input: {
   requiresExecute?: boolean;
   requiresRoot?: boolean;
   apply_status: 'applied' | 'written' | 'blocked' | 'failed';
+  snappyAdminPassword?: string;
 }> {
   const notes: string[] = [];
   const written: string[] = [];
@@ -427,20 +659,46 @@ export async function createWebmailProject(input: {
     });
   }
 
-  const existing = input.projects.list().find(
+  const byName = input.projects.list().find(
     (p) => p.name.trim().toLowerCase() === name.toLowerCase(),
   );
-  if (existing) {
+  const byDomain = input.projects.list().find(
+    (p) => (p.domain ?? '').trim().toLowerCase() === domain,
+  );
+  const existing = byName ?? byDomain;
+
+  if (existing && !input.reinstall) {
     return {
       ok: false,
       tool,
       notes: [
-        tl('notes.ops.projectNameExists', { name }),
+        tl('notes.ops.projectNameExists', { name: existing.name }),
         `existingProjectId=${existing.id}`,
+        tl('notes.webmail.reinstallHint'),
       ],
       written,
+      projectId: existing.id,
       apply_status: 'failed',
     };
+  }
+
+  if (existing && input.reinstall) {
+    notes.push(tl('notes.webmail.reinstalling', { id: existing.id, name: existing.name }));
+    return reinstallWebmailProject({
+      projects: input.projects,
+      projectOps: input.projectOps,
+      host: input.host,
+      actor: input.actor,
+      projectId: existing.id,
+      tool,
+      download: input.download !== false,
+      imapHost: input.imapHost,
+      smtpHost: input.smtpHost,
+      forceHttps: input.forceHttps,
+      installSsoPlugin: input.installSsoPlugin,
+      panelBaseUrl: input.panelBaseUrl,
+      goLive: true,
+    });
   }
 
   let created: Awaited<ReturnType<ProjectService['create']>>;
@@ -481,6 +739,9 @@ export async function createWebmailProject(input: {
     imapHost: input.imapHost,
     smtpHost: input.smtpHost,
     download: input.download !== false,
+    forceHttps: input.forceHttps === true,
+    installSsoPlugin: input.installSsoPlugin !== false,
+    panelBaseUrl: input.panelBaseUrl,
   });
   notes.push(...inst.notes);
   written.push(...inst.written);
@@ -497,6 +758,7 @@ export async function createWebmailProject(input: {
       requiresExecute: notes.some((n) => /YSK_EXECUTE|execute/i.test(n)),
       blocked: notes.some((n) => /YSK_EXECUTE|execute/i.test(n)),
       blockMessage: notes.find((n) => /YSK_EXECUTE|execute/i.test(n)),
+      snappyAdminPassword: inst.snappyAdminPassword,
     };
   }
 
@@ -518,5 +780,126 @@ export async function createWebmailProject(input: {
     requiresExecute: Boolean(live.deploy?.requiresExecute || live.publish?.requiresExecute),
     requiresRoot: Boolean(live.deploy?.requiresRoot || live.publish?.requiresRoot),
     apply_status: ok ? 'applied' : live.ok === false ? 'failed' : 'written',
+    snappyAdminPassword: inst.snappyAdminPassword,
+  };
+}
+
+/**
+ * Re-download / rewrite webmail into an existing PHP project (upgrade path).
+ */
+export async function reinstallWebmailProject(input: {
+  projects: ProjectService;
+  projectOps: ProjectOpsService;
+  host: HostExecutor;
+  actor: string;
+  projectId: string;
+  tool?: WebmailTool;
+  download?: boolean;
+  imapHost?: string;
+  smtpHost?: string;
+  forceHttps?: boolean;
+  installSsoPlugin?: boolean;
+  panelBaseUrl?: string;
+  goLive?: boolean;
+}): Promise<{
+  ok: boolean;
+  project?: ProjectDto;
+  projectId?: string;
+  urlHint?: string;
+  tool: WebmailTool;
+  notes: string[];
+  written: string[];
+  blocked?: boolean;
+  blockMessage?: string;
+  requiresExecute?: boolean;
+  requiresRoot?: boolean;
+  apply_status: 'applied' | 'written' | 'blocked' | 'failed';
+  snappyAdminPassword?: string;
+}> {
+  const notes: string[] = [];
+  const written: string[] = [];
+  const tool = normalizeWebmailTool(input.tool);
+  let row: ProjectDto;
+  try {
+    row = input.projects.get(input.projectId);
+  } catch {
+    return {
+      ok: false,
+      tool,
+      notes: [tl('notes.webmail.projectNotFound')],
+      written,
+      apply_status: 'failed',
+    };
+  }
+  const domain = (row.domain ?? '').trim().toLowerCase() || 'webmail.local';
+  const docRoot = join(row.homeDir, (row.docRoot || 'app/public').replace(/^\//, ''));
+  notes.push(
+    tl('notes.webmail.reinstallStart', {
+      id: row.id,
+      version: tool === 'snappymail' ? SNAPPYMAIL_VERSION : ROUNDCUBE_VERSION,
+    }),
+  );
+
+  const inst = await installWebmailIntoProject({
+    host: input.host,
+    homeDir: row.homeDir,
+    docRoot,
+    tool,
+    domain,
+    imapHost: input.imapHost ?? defaultImapHostForWebmail(domain),
+    smtpHost: input.smtpHost,
+    download: input.download !== false,
+    forceHttps: input.forceHttps === true,
+    installSsoPlugin: input.installSsoPlugin !== false,
+    panelBaseUrl: input.panelBaseUrl,
+  });
+  notes.push(...inst.notes);
+  written.push(...inst.written);
+  if (!inst.ok) {
+    return {
+      ok: false,
+      project: row,
+      projectId: row.id,
+      tool,
+      notes,
+      written,
+      urlHint: `http://${domain}/`,
+      apply_status: 'failed',
+      snappyAdminPassword: inst.snappyAdminPassword,
+      requiresExecute: notes.some((n) => /YSK_EXECUTE|execute/i.test(n)),
+    };
+  }
+
+  if (input.goLive !== false) {
+    const live = await input.projectOps.goLive(row.id, { actor: input.actor });
+    notes.push(...(live.notes ?? []).slice(0, 12));
+    const fresh = input.projects.get(row.id);
+    const ok = Boolean(live.ok) && inst.ok;
+    return {
+      ok,
+      project: fresh,
+      projectId: fresh.id,
+      tool,
+      urlHint: `http://${domain}/`,
+      notes,
+      written,
+      blocked: Boolean(live.deploy?.requiresExecute || live.publish?.requiresExecute),
+      requiresExecute: Boolean(live.deploy?.requiresExecute || live.publish?.requiresExecute),
+      requiresRoot: Boolean(live.deploy?.requiresRoot || live.publish?.requiresRoot),
+      apply_status: ok ? 'applied' : 'written',
+      snappyAdminPassword: inst.snappyAdminPassword,
+    };
+  }
+
+  return {
+    ok: true,
+    project: row,
+    projectId: row.id,
+    tool,
+    urlHint: `http://${domain}/`,
+    notes,
+    written,
+    apply_status: 'written',
+    snappyAdminPassword: inst.snappyAdminPassword,
   };
 }

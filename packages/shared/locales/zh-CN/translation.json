@@ -2930,7 +2930,8 @@
       "webmailOk": "网页邮件方案 {{mode}}（{{host}}）",
       "mailTlsTodo": "邮件 TLS：请为 {{mailHost}} 申请证书后，在健康分页按「套用邮件 TLS 路径」。",
       "externalDns": "外部待办（你负责）：在 DNS 商设置 MX/SPF/DKIM/DMARC；VPS 设 PTR；开放端口 25 或改用 SMTP 中继。",
-      "healthScore": "健康分数 {{score}}/{{max}}（DNS/PTR/端口 25 不会自动完成）"
+      "healthScore": "健康分数 {{score}}/{{max}}（DNS/PTR/端口 25 不会自动完成）",
+      "webmailProjectOk": "网页邮件项目 {{tool}} @ {{host}}（{{status}}）"
     },
     "tabDeliverability": "送达",
     "pendingCount": "待处理",
@@ -2958,7 +2959,9 @@
     "webmailProjectName": "项目名称",
     "installWebmailProject": "创建并上线网页邮件",
     "openWebmail": "打开网页邮件",
-    "webmailRisk": "公开网页邮件有风险 — 请尽快上 HTTPS。"
+    "webmailRisk": "公开网页邮件有风险 — 请尽快上 HTTPS。",
+    "webmailForceHttps": "强制 HTTPS（Roundcube；需已绑 SSL）",
+    "reinstallWebmail": "重新安装／升级"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "未授权",
@@ -6951,7 +6954,17 @@
       "projectCreated": "已创建 PHP 项目 {{name}}（{{tool}}，{{id}}）",
       "domainRequired": "需要网页邮件主机名",
       "openHint": "以邮箱地址与密码登录；上线后请到项目页或本页打开网址",
-      "sslHint": "建议为 {{domain}} 申请 Let’s Encrypt（SSL 页）"
+      "sslHint": "建议为 {{domain}} 申请 Let’s Encrypt（SSL 页）",
+      "bootstrapLegacyHint": "Bootstrap 未注入项目服务，已写 dataDir 骨架；面板请用「创建并上线」走 PHP 项目路径",
+      "ssoPluginInstalled": "已安装 SSO 插件 → {{path}}",
+      "forceHttpsOn": "Roundcube force_https 已开启（需已有 HTTPS）",
+      "forceHttpsOff": "force_https 关闭 — 请在 SSL 页签发后重装并勾选强制 HTTPS",
+      "reinstallHint": "项目已存在：请用「重新安装／升级」或传 reinstall:true",
+      "reinstalling": "重新安装网页邮件到项目 {{name}}（{{id}}）",
+      "reinstallStart": "开始升级／重装（目标版本相关：{{version}}，项目 {{id}}）",
+      "projectNotFound": "找不到网页邮件项目",
+      "snappyAdminOnce": "SnappyMail 管理员账号 {{user}} — 密码只显示一次（见结果／ONCE 文件）",
+      "snappyAdminPassword": "SnappyMail 管理员密码（请立即复制）：{{password}}"
     }
   },
   "ops": {

@@ -42,6 +42,10 @@ export const emailApi = {
     projectName?: string;
     tool?: 'roundcube' | 'snappymail';
     mailDomain?: string;
+    reinstall?: boolean;
+    projectId?: string;
+    forceHttps?: boolean;
+    installSsoPlugin?: boolean;
   }) =>
     api.requestRaw<Record<string, unknown>>('/api/v1/email/webmail/apply', {
       method: 'POST',
@@ -122,6 +126,7 @@ export const emailApi = {
     domain: string;
     ttlMinutes?: number;
     password?: string;
+    webmailBaseUrl?: string;
   }) =>
     api.requestRaw<{
       ok: boolean;

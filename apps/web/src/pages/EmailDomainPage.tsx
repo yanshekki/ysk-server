@@ -345,6 +345,7 @@ export function EmailDomainPage() {
   const [webmailDomain, setWebmailDomain] = useState('webmail.example.com');
   const [webmailTool, setWebmailTool] = useState<'roundcube' | 'snappymail'>('roundcube');
   const [webmailProjectName, setWebmailProjectName] = useState('roundcube');
+  const [webmailForceHttps, setWebmailForceHttps] = useState(false);
   const [webmailLog, setWebmailLog] = useState<Record<string, unknown> | null>(null);
 
   useEffect(() => {
@@ -1268,6 +1269,9 @@ export function EmailDomainPage() {
                       domain.domain,
                       emailApi.webmailSso,
                       setWebmailLog,
+                      webmailDomain
+                        ? `https://${webmailDomain}`
+                        : `https://webmail.${domain.domain}`,
                     )}
                   >
                     {t('email.issueSsoToken')}
@@ -1668,6 +1672,12 @@ export function EmailDomainPage() {
                     />
                   </Field>
                 </FormLayout>
+                <CheckboxField
+                  id="wm-https"
+                  checked={webmailForceHttps}
+                  onChange={setWebmailForceHttps}
+                  label={t('email.webmailForceHttps')}
+                />
                 <FormActions>
                   <Button
                     variant="primary"
@@ -1685,11 +1695,42 @@ export function EmailDomainPage() {
                           tool: webmailTool,
                           asProject: true,
                           download: true,
+                          forceHttps: webmailForceHttps,
+                          installSsoPlugin: webmailTool === 'roundcube',
                         }),
                       setWebmailLog,
                     )}
                   >
                     {t('email.installWebmailProject')}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    loading={busy}
+                    onClick={bindBusySet(
+                      withBusy,
+                      () =>
+                        emailApi.webmailApply({
+                          domain: webmailDomain.trim() || defaultWebmailDomain(domain.domain),
+                          mailDomain: domain.domain,
+                          projectName:
+                            webmailProjectName.trim() ||
+                            defaultWebmailProjectName(webmailTool, domain.domain),
+                          tool: webmailTool,
+                          asProject: true,
+                          reinstall: true,
+                          download: true,
+                          forceHttps: webmailForceHttps,
+                          installSsoPlugin: webmailTool === 'roundcube',
+                          projectId:
+                            typeof webmailLog?.projectId === 'string'
+                              ? webmailLog.projectId
+                              : undefined,
+                        }),
+                      setWebmailLog,
+                    )}
+                  >
+                    {t('email.reinstallWebmail')}
                   </Button>
                   {typeof webmailLog?.urlHint === 'string' && webmailLog.urlHint ? (
                     <Button

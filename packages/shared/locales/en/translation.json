@@ -2926,7 +2926,8 @@
       "webmailOk": "Webmail plan {{mode}} for {{host}}",
       "mailTlsTodo": "Mail TLS: issue a cert for {{mailHost}}, then use Apply mail TLS paths on the health tab.",
       "externalDns": "External (operator-owned): set MX/SPF/DKIM/DMARC at DNS; PTR at VPS; Port 25 or SMTP relay.",
-      "healthScore": "Health score {{score}}/{{max}} (DNS/PTR/Port25 not auto-complete)"
+      "healthScore": "Health score {{score}}/{{max}} (DNS/PTR/Port25 not auto-complete)",
+      "webmailProjectOk": "Webmail project {{tool}} @ {{host}} ({{status}})"
     },
     "tabDeliverability": "Delivery",
     "pendingCount": "Pending",
@@ -2958,7 +2959,9 @@
     "webmailProjectName": "Project name",
     "installWebmailProject": "Create & go live",
     "openWebmail": "Open webmail",
-    "webmailRisk": "Public webmail is risky — enable HTTPS soon."
+    "webmailRisk": "Public webmail is risky — enable HTTPS soon.",
+    "webmailForceHttps": "Force HTTPS (Roundcube; SSL required)",
+    "reinstallWebmail": "Reinstall / upgrade"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "Unauthorized",
@@ -6951,7 +6954,17 @@
       "projectCreated": "Created PHP project {{name}} ({{tool}}, {{id}})",
       "domainRequired": "Webmail hostname is required",
       "openHint": "Sign in with mailbox address and password; open the URL from Projects or this page after go-live",
-      "sslHint": "Recommend Let’s Encrypt for {{domain}} (SSL page)"
+      "sslHint": "Recommend Let’s Encrypt for {{domain}} (SSL page)",
+      "bootstrapLegacyHint": "Bootstrap had no project service — wrote dataDir skeleton; use Create & go live in the panel for PHP project path",
+      "ssoPluginInstalled": "Installed SSO plugin → {{path}}",
+      "forceHttpsOn": "Roundcube force_https enabled (HTTPS required)",
+      "forceHttpsOff": "force_https off — after SSL, reinstall with force HTTPS checked",
+      "reinstallHint": "Project exists — use Reinstall/Upgrade or reinstall:true",
+      "reinstalling": "Reinstalling webmail into project {{name}} ({{id}})",
+      "reinstallStart": "Starting reinstall/upgrade (version pin {{version}}, project {{id}})",
+      "projectNotFound": "Webmail project not found",
+      "snappyAdminOnce": "SnappyMail admin {{user}} — password shown once (see result / ONCE file)",
+      "snappyAdminPassword": "SnappyMail admin password (copy now): {{password}}"
     }
   },
   "ops": {

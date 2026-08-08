@@ -209,15 +209,23 @@ export async function handleEmailRoutes(
           projectName?: string;
           tool?: 'roundcube' | 'snappymail';
           mailDomain?: string;
+          reinstall?: boolean;
+          projectId?: string;
+          forceHttps?: boolean;
+          installSsoPlugin?: boolean;
+          panelBaseUrl?: string;
         };
         const useProject =
           data.asProject === true ||
           Boolean(data.projectName?.trim()) ||
+          Boolean(data.projectId?.trim()) ||
+          data.reinstall === true ||
           data.tool === 'snappymail' ||
           data.tool === 'roundcube';
         if (useProject) {
           const {
             createWebmailProject,
+            reinstallWebmailProject,
             normalizeWebmailTool,
             defaultWebmailProjectName,
             defaultWebmailHostname,
@@ -230,23 +238,48 @@ export async function handleEmailRoutes(
           const name =
             (data.projectName ?? '').trim() ||
             defaultWebmailProjectName(tool, mailDomain || domain);
-          const result = await createWebmailProject({
-            projects: ctx.projects,
-            projectOps: ctx.projectOps,
-            host: ctx.host,
-            actor: user.username,
-            actorUserId: user.id,
-            name,
-            domain,
-            tool,
-            download: data.download !== false,
-            imapHost: data.imapHost,
-            smtpHost: data.smtpHost,
-            mailDomain: mailDomain || undefined,
-          });
+          const panelBaseUrl =
+            data.panelBaseUrl?.trim() ||
+            `${req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http'}://${req.headers.host ?? '127.0.0.1'}`;
+          const result = data.projectId?.trim()
+            ? await reinstallWebmailProject({
+                projects: ctx.projects,
+                projectOps: ctx.projectOps,
+                host: ctx.host,
+                actor: user.username,
+                projectId: data.projectId.trim(),
+                tool,
+                download: data.download !== false,
+                imapHost: data.imapHost,
+                smtpHost: data.smtpHost,
+                forceHttps: data.forceHttps === true,
+                installSsoPlugin: data.installSsoPlugin !== false,
+                panelBaseUrl,
+                goLive: true,
+              })
+            : await createWebmailProject({
+                projects: ctx.projects,
+                projectOps: ctx.projectOps,
+                host: ctx.host,
+                actor: user.username,
+                actorUserId: user.id,
+                name,
+                domain,
+                tool,
+                download: data.download !== false,
+                imapHost: data.imapHost,
+                smtpHost: data.smtpHost,
+                mailDomain: mailDomain || undefined,
+                reinstall: data.reinstall === true,
+                forceHttps: data.forceHttps === true,
+                installSsoPlugin: data.installSsoPlugin !== false,
+                panelBaseUrl,
+              });
           ctx.audit.append({
             actor: user.username,
-            action: 'email.webmail.project_create',
+            action: data.reinstall || data.projectId
+              ? 'email.webmail.reinstall'
+              : 'email.webmail.project_create',
             resource: result.projectId,
             detail: { tool, name, domain, ok: result.ok },
             ok: result.ok,
@@ -328,12 +361,16 @@ export async function handleEmailRoutes(
           serverIp: data.serverIp ?? '',
           mailHostname: data.mailHostname,
           actor: user.username,
+          actorUserId: user.id,
           audit: ctx.audit,
           installPackages: data.installPackages,
           adminLocalPart: data.adminLocalPart,
           adminPassword: data.adminPassword,
           webmail: data.webmail,
           relay: data.relay,
+          projects: ctx.projects,
+          projectOps: ctx.projectOps,
+          webmailDownload: true,
         });
         sendOpsResult(res, result);
         return true;
@@ -346,6 +383,7 @@ export async function handleEmailRoutes(
           domain?: string;
           ttlMinutes?: number;
           password?: string;
+          webmailBaseUrl?: string;
         };
         const { issueWebmailSso } = await import('@ysk/core');
         const r = issueWebmailSso({
@@ -354,6 +392,7 @@ export async function handleEmailRoutes(
           domain: data.domain ?? '',
           ttlMinutes: data.ttlMinutes,
           password: data.password,
+          webmailBaseUrl: data.webmailBaseUrl,
         });
         ctx.audit.append({
           actor: user.username,

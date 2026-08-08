@@ -2727,6 +2727,16 @@
     "projectCreated": "Created PHP project {{name}} ({{tool}}, {{id}})",
     "domainRequired": "Webmail hostname is required",
     "openHint": "Sign in with mailbox address and password; open the URL from Projects or this page after go-live",
-    "sslHint": "Recommend Let’s Encrypt for {{domain}} (SSL page)"
+    "sslHint": "Recommend Let’s Encrypt for {{domain}} (SSL page)",
+    "bootstrapLegacyHint": "Bootstrap had no project service — wrote dataDir skeleton; use Create & go live in the panel for PHP project path",
+    "ssoPluginInstalled": "Installed SSO plugin → {{path}}",
+    "forceHttpsOn": "Roundcube force_https enabled (HTTPS required)",
+    "forceHttpsOff": "force_https off — after SSL, reinstall with force HTTPS checked",
+    "reinstallHint": "Project exists — use Reinstall/Upgrade or reinstall:true",
+    "reinstalling": "Reinstalling webmail into project {{name}} ({{id}})",
+    "reinstallStart": "Starting reinstall/upgrade (version pin {{version}}, project {{id}})",
+    "projectNotFound": "Webmail project not found",
+    "snappyAdminOnce": "SnappyMail admin {{user}} — password shown once (see result / ONCE file)",
+    "snappyAdminPassword": "SnappyMail admin password (copy now): {{password}}"
   }
 }

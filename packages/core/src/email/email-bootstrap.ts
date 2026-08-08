@@ -11,8 +11,16 @@ import { EmailService } from './service.js';
 import { applyEmailStack } from '../hosting/system-apply.js';
 import { writeDovecotPassdb } from './dovecot-passdb.js';
 import { applyWebmail } from './webmail-apply.js';
+import {
+  createWebmailProject,
+  defaultWebmailHostname,
+  defaultWebmailProjectName,
+  type WebmailTool,
+} from './webmail-project.js';
 import { applySmtpRelay } from './relay.js';
-import { ErrorCodes, YskError, tl} from '@ysk/shared';
+import { ErrorCodes, YskError, tl } from '@ysk/shared';
+import type { ProjectService } from '../hosting/project-service.js';
+import type { ProjectOpsService } from '../hosting/project-ops.js';
 
 export interface EmailBootstrapResult {
   ok: boolean;
@@ -24,6 +32,9 @@ export interface EmailBootstrapResult {
   requiresExecute: boolean;
   requiresRoot: boolean;
   externalTodos: Array<{ id: string; title: string; description: string }>;
+  /** Set when webmail project path used */
+  webmailProjectId?: string;
+  webmailUrlHint?: string;
 }
 
 /**
@@ -51,8 +62,15 @@ export async function bootstrapEmailServer(input: {
     username?: string;
     password?: string;
   };
-  /** Also write webmail plan for webmail.<domain> */
+  /** Also create webmail (PHP project when projects provided) */
   webmail?: boolean;
+  /** Prefer project lifecycle (Adminer model). Requires projects + projectOps. */
+  projects?: ProjectService;
+  projectOps?: ProjectOpsService;
+  actorUserId?: string;
+  webmailTool?: WebmailTool;
+  /** Download Roundcube/SnappyMail during bootstrap (needs YSK_EXECUTE) */
+  webmailDownload?: boolean;
 }): Promise<EmailBootstrapResult> {
   const domain = input.domain.trim().toLowerCase();
   if (!domain) {
@@ -198,25 +216,68 @@ export async function bootstrapEmailServer(input: {
         : tl('notes.auto.n0503') });
   }
 
-  // 6. Webmail plan
+  // 6. Webmail — PHP project path when projects available (same as Adminer/PMA)
+  let webmailProjectId: string | undefined;
+  let webmailUrlHint: string | undefined;
   if (input.webmail !== false) {
-    const wm = await applyWebmail({
-      dataDir: input.dataDir,
-      host: input.host,
-      domain: `webmail.${domain}`,
-      imapHost: input.mailHostname ?? `mail.${domain}`,
-      smtpHost: input.mailHostname ?? `mail.${domain}`,
-      download: false });
-    written.push(...wm.written);
-    notes.push(...wm.notes);
-    steps.push({
-      id: 'webmail',
-      ok: wm.ok,
-      detail: tl('email.bootstrap.webmailOk', {
-        mode: wm.mode,
-        host: `webmail.${domain}`,
-      }),
-    });
+    const wmHost = defaultWebmailHostname(domain);
+    const imapHost = input.mailHostname ?? `mail.${domain}`;
+    if (input.projects && input.projectOps) {
+      const tool = input.webmailTool ?? 'roundcube';
+      const wm = await createWebmailProject({
+        projects: input.projects,
+        projectOps: input.projectOps,
+        host: input.host,
+        actor: input.actor,
+        actorUserId: input.actorUserId,
+        name: defaultWebmailProjectName(tool, domain),
+        domain: wmHost,
+        tool,
+        mailDomain: domain,
+        imapHost,
+        smtpHost: imapHost,
+        download: input.webmailDownload !== false,
+        installSsoPlugin: tool === 'roundcube',
+        forceHttps: false,
+      });
+      written.push(...wm.written);
+      notes.push(...wm.notes);
+      webmailProjectId = wm.projectId;
+      webmailUrlHint = wm.urlHint;
+      steps.push({
+        id: 'webmail',
+        ok: wm.ok || wm.apply_status === 'written',
+        detail: tl('email.bootstrap.webmailProjectOk', {
+          tool,
+          host: wmHost,
+          status: wm.apply_status,
+        }),
+      });
+      if (wm.requiresExecute) {
+        notes.push(tl('notes.webmail.needExecute'));
+      }
+    } else {
+      // Legacy skeleton only (CLI without project service)
+      const wm = await applyWebmail({
+        dataDir: input.dataDir,
+        host: input.host,
+        domain: wmHost,
+        imapHost,
+        smtpHost: imapHost,
+        download: false,
+      });
+      written.push(...wm.written);
+      notes.push(...wm.notes);
+      notes.push(tl('notes.webmail.bootstrapLegacyHint'));
+      steps.push({
+        id: 'webmail',
+        ok: wm.ok,
+        detail: tl('email.bootstrap.webmailOk', {
+          mode: wm.mode,
+          host: wmHost,
+        }),
+      });
+    }
   }
 
   // Honesty: mail TLS is separate — cert issue + path apply are operator steps
@@ -248,6 +309,8 @@ export async function bootstrapEmailServer(input: {
   const ok = steps.every((s) => s.ok);
   return {
     ok,
+    webmailProjectId,
+    webmailUrlHint,
     domainId,
     domain,
     steps,

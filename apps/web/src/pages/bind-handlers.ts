@@ -574,17 +574,22 @@ export function bindBusyWebmailSso(
   domainName: string,
   webmailSso: (body: any) => Promise<unknown>,
   setLog: AnyFn,
+  webmailBaseUrl?: string,
 ): () => void {
   return () => {
     void withBusy(async () => {
       const pwEl = document.getElementById(passwordInputId) as HTMLInputElement | null;
       const password = pwEl?.value || undefined;
+      const base =
+        webmailBaseUrl?.trim() ||
+        `https://webmail.${domainName.replace(/^webmail\./, '')}`;
       setLog(
         await webmailSso({
           email,
           domain: domainName,
           ttlMinutes: 10,
           password,
+          webmailBaseUrl: base,
         }),
       );
     });

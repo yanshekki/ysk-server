@@ -43,6 +43,11 @@ export function issueWebmailSso(input: {
   ttlMinutes?: number;
   /** Mailbox password for one-time Roundcube auto-login (not re-displayed) */
   password?: string;
+  /**
+   * Public webmail base URL, e.g. https://webmail.example.com
+   * Token is appended as ?_ysk_sso= for Roundcube ysk_sso plugin.
+   */
+  webmailBaseUrl?: string;
 }): {
   ok: boolean;
   token?: string;
@@ -70,7 +75,10 @@ export function issueWebmailSso(input: {
   const all = load(input.db).filter((t) => !t.usedAt && t.expiresAt > new Date().toISOString());
   all.unshift(row);
   save(input.db, all);
-  const loginUrl = `/webmail/sso?token=${encodeURIComponent(plain)}&email=${encodeURIComponent(email)}`;
+  const base = (input.webmailBaseUrl ?? '').trim().replace(/\/$/, '');
+  const loginUrl = base
+    ? `${base}/?_ysk_sso=${encodeURIComponent(plain)}`
+    : `https://webmail.${domain}/?_ysk_sso=${encodeURIComponent(plain)}`;
   return {
     ok: true,
     token: plain,
