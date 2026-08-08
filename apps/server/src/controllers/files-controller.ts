@@ -279,10 +279,16 @@ export async function handleFilesRoutes(
     }
     const results: Array<{ path: string; bytes: number }> = [];
     const paths: string[] = [];
-    for (const f of files.slice(0, 50)) {
-      const name = f.name.replace(/[/\\]/g, '');
-      if (!name) continue;
-      const path = dir === '.' ? name : `${dir}/${name}`;
+    // Allow nested relative paths from folder drag-drop (e.g. photos/a.jpg)
+    for (const f of files.slice(0, 200)) {
+      const rel = String(f.name ?? '')
+        .replace(/\\/g, '/')
+        .replace(/^\/+/, '')
+        .split('/')
+        .filter((seg) => seg && seg !== '.' && seg !== '..')
+        .join('/');
+      if (!rel) continue;
+      const path = dir === '.' ? rel : `${dir.replace(/\/$/, '')}/${rel}`;
       results.push(fm.writeBase64(path, f.base64));
       paths.push(path);
     }

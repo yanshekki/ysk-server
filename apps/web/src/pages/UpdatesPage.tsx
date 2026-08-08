@@ -1,5 +1,5 @@
 /**
- * Smart updates — tabbed: packages · panel self · schedule · policy.
+ * Smart updates — tabbed: packages · panel self · schedule · about.
  * Inventory filters are server-backed (ListQuery on GET /updates/inventory).
  */
 import { useEffect, useMemo, useState } from 'react';
@@ -29,7 +29,7 @@ import { useCapabilities } from '../shared/hooks/useCapabilities';
 import { humanizeOperatorNote } from '../shared/lib/operator-messages';
 import { bindAllOrValue, bindCall1, bindCall2, bindCloseIfIdle, bindInput, bindSet, bindValueSet, bindVoid } from './bind-handlers';
 
-const UPD_TABS = ['packages', 'panel', 'schedule', 'policy', 'about'] as const;
+const UPD_TABS = ['packages', 'panel', 'schedule', 'about'] as const;
 type RiskFilter = 'all' | 'upgradable' | 'high' | 'medium' | 'low' | 'approval';
 
 export function riskTone(risk?: string): 'ok' | 'warn' | 'danger' | 'info' | 'neutral' {
@@ -458,7 +458,6 @@ export function UpdatesPage() {
             id: 'schedule',
             label: t('updates.schedule'),
             badge: jobs.length || undefined },
-          { id: 'policy', label: t('updates.tabPolicy') },
           { id: 'about', label: t('common.about') },
         ]}
         active={tab}
@@ -908,47 +907,59 @@ export function UpdatesPage() {
           </div>
         ) : null}
 
-        {tab === 'policy' ? (
+        {tab === 'about' ? (
           <div className="tab-panel stack">
-            <InfoCard
-              title={t('updates.policyTitle')}
-              facts={[
-                {
-                  label: t('updates.scanPolicy'),
-                  value: t('updates.scanPolicyV') },
-                {
-                  label: t('updates.highRisk'),
-                  value: t('updates.highRiskPolicyV') },
-                {
-                  label: t('updates.permPolicy'),
-                  value: t('updates.permPolicyV') },
-                {
-                  label: 'OSV',
-                  value: t('updates.osvPolicyV') },
-              ]}
-            />
-            <nav className="upd-shortcuts" aria-label={t('updates.relatedAria')}>
-              <Link to="/system" className="upd-shortcut">
-                <span className="upd-shortcut__t">{t('updates.scHost')}</span>
-                <span className="upd-shortcut__d">EXECUTE / root</span>
-              </Link>
-              <Link to="/system/readiness" className="upd-shortcut">
-                <span className="upd-shortcut__t">{t('updates.scReadiness')}</span>
-                <span className="upd-shortcut__d">{t('updates.scReadinessD')}</span>
-              </Link>
-              <Link to="/system/unit" className="upd-shortcut">
-                <span className="upd-shortcut__t">{t('updates.scSystemd')}</span>
-                <span className="upd-shortcut__d">{t('updates.scSystemdD')}</span>
-              </Link>
-              <Link to="/security" className="upd-shortcut">
-                <span className="upd-shortcut__t">{t('updates.scSecurity')}</span>
-                <span className="upd-shortcut__d">{t('updates.scSecurityD')}</span>
-              </Link>
-            </nav>
+            <section className="upd-panel upd-panel--primary" aria-labelledby="upd-about-policy">
+              <header className="upd-panel__head">
+                <div>
+                  <h3 id="upd-about-policy" className="upd-panel__title">
+                    {t('updates.policyTitle')}
+                  </h3>
+                  <p className="upd-panel__sub">{t('updates.aboutPolicySub')}</p>
+                </div>
+              </header>
+              <ol className="upd-policy">
+                <li className="upd-policy__item">
+                  <span className="upd-policy__n" aria-hidden>1</span>
+                  <div className="upd-policy__body">
+                    <div className="upd-policy__title">{t('updates.scanPolicy')}</div>
+                    <p className="upd-policy__text">{t('updates.scanPolicyV')}</p>
+                  </div>
+                </li>
+                <li className="upd-policy__item">
+                  <span className="upd-policy__n" aria-hidden>2</span>
+                  <div className="upd-policy__body">
+                    <div className="upd-policy__title">{t('updates.highRisk')}</div>
+                    <p className="upd-policy__text">{t('updates.highRiskPolicyV')}</p>
+                  </div>
+                </li>
+                <li className="upd-policy__item">
+                  <span className="upd-policy__n" aria-hidden>3</span>
+                  <div className="upd-policy__body">
+                    <div className="upd-policy__title">{t('updates.permPolicy')}</div>
+                    <p className="upd-policy__text">{t('updates.permPolicyV')}</p>
+                  </div>
+                </li>
+                <li className="upd-policy__item">
+                  <span className="upd-policy__n" aria-hidden>4</span>
+                  <div className="upd-policy__body">
+                    <div className="upd-policy__title">OSV</div>
+                    <p className="upd-policy__text">{t('updates.osvPolicyV')}</p>
+                  </div>
+                </li>
+              </ol>
+            </section>
+
+            <section className="upd-panel" aria-labelledby="upd-about-guide">
+              <header className="upd-panel__head">
+                <h3 id="upd-about-guide" className="upd-panel__title">
+                  {t('common.about')}
+                </h3>
+              </header>
+              <PageGuide guideId="updates" />
+            </section>
           </div>
         ) : null}
-      
-        {tab === 'about' ? <PageGuide guideId="updates" /> : null}
       </PageTabs>
 
       <ConfirmDialog

@@ -241,7 +241,7 @@ export function preflightWebAuthn(
 
 export function SecurityPage() {
   const { t } = useTranslation();
-  const { tools, approvals, error, result, busy, runSysInfo, approve } = useSecurity();
+  const { tools, approvals, error, result, busy, approve } = useSecurity();
   const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTab] = usePageTab(TAB_IDS, 'account');
   const [createKeyOpen, setCreateKeyOpen] = useState(false);
@@ -358,10 +358,6 @@ export function SecurityPage() {
             value: approvals.length,
             tone: approvals.length > 0 ? 'danger' : 'ok' },
         ] }}
-      actions={<Button variant="secondary" size="sm" loading={busy} onClick={bindVoid(runSysInfo)}>
-          {t('security.runSysInfo')}
-        </Button>
-      }
     >
       <PageTabs
         tabs={[
@@ -373,7 +369,6 @@ export function SecurityPage() {
             badge: sshCounts.identities + sshCounts.loginKeys || undefined },
           { id: 'approvals', label: t('security.tabApprovals'), badge: approvals.length || undefined },
           { id: 'allowlist', label: t('security.tabAllowlist'), badge: tools.length || undefined },
-        
           { id: 'about', label: t('common.about') },
         ]}
         active={tab}
@@ -382,9 +377,6 @@ export function SecurityPage() {
       >
         {tab === 'account' ? (
           <div className="tab-panel">
-            <Alert variant="info" className="u-mb-3">
-              {t('security.mySecurityHint')}
-            </Alert>
             <Card>
               <CardSection>
                 <TotpSetupPanel status={totpStatus} onStatusChange={refreshTotp} />
@@ -392,29 +384,8 @@ export function SecurityPage() {
             </Card>
 
             <Card>
-              <CardSection
-                title={t('security.sessionsTitle')}
-                description={t('security.sessionsDesc')}
-              >
-                {sessions.length > 0 ? (
-                  <div className="sess-summary u-mb-3">
-                    <div className="sess-summary__stat">
-                      <span className="sess-summary__n">{sessions.length}</span>
-                      <span className="sess-summary__l">{t('security.sessionsActive')}</span>
-                    </div>
-                    <div className="sess-summary__stat">
-                      <span className="sess-summary__n">
-                        {sessions.filter((s) => !s.current).length}
-                      </span>
-                      <span className="sess-summary__l">{t('security.sessionsOther')}</span>
-                    </div>
-                    <p className="sess-summary__hint muted u-text-sm">
-                      {t('security.sessionsHint')}
-                    </p>
-                  </div>
-                ) : null}
-
-                <ActionBar className="u-mb-4">
+              <CardSection title={t('security.sessionsTitle')}>
+                <ActionBar className="u-mb-3">
                   <Button
                     variant="secondary"
                     size="md"
@@ -433,10 +404,7 @@ export function SecurityPage() {
                 </ActionBar>
 
                 {sessions.length === 0 ? (
-                  <EmptyState
-                    title={t('security.noSessions')}
-                    description={t('security.noSessionsHint')}
-                  />
+                  <EmptyState title={t('security.noSessions')} />
                 ) : (
                   <ul className="sess-list">
                     {[...sessions]
@@ -473,14 +441,6 @@ export function SecurityPage() {
                                 </span>
                                 <span>
                                   {t('security.sessionLastActive', { when })}
-                                </span>
-                              </div>
-                              <div className="sess-card__sub muted u-text-sm">
-                                {t('security.sessionStarted', {
-                                  when: relativeTime(s.created_at, t) })}
-                                <span className="sess-card__id" title={s.id}>
-                                  {t('security.sessionIdShort', {
-                                    id: s.id.slice(0, 10) })}
                                 </span>
                               </div>
                             </div>
@@ -559,26 +519,13 @@ export function SecurityPage() {
             </Card>
 
             <Card>
-              <CardSection
-                title={t('security.passkeyTitle')}
-                description={t('security.passkeyDesc')}
-              >
-                {/* Diagnosis only — never disable buttons. Brave/NordPass need HTTPS + domain. */}
+              <CardSection title={t('security.passkeyTitle')}>
                 {(() => {
                   const env = getWebAuthnEnv();
-                  if (env.likelyOk) {
-                    return (
-                      <Alert variant="info" className="u-mb-3">
-                        {t('security.webauthnEnvOk', { origin: env.origin })}
-                      </Alert>
-                    );
-                  }
+                  if (env.likelyOk) return null;
                   return (
-                    <Alert variant="info" className="u-mb-3">
-                      {t('security.webauthnEnvCurrent', { origin: env.origin || '—' })}
-                      <span className="u-block u-mt-1 muted u-text-sm">
-                        {diagnoseWebAuthnBlocker(t, env) ?? t('security.webauthnUnavailableHint')}
-                      </span>
+                    <Alert variant="warn" className="u-mb-3">
+                      {diagnoseWebAuthnBlocker(t, env) ?? t('security.webauthnUnavailableHint')}
                     </Alert>
                   );
                 })()}
@@ -698,17 +645,11 @@ export function SecurityPage() {
                     {t('security.verifyWithPasskey')}
                   </Button>
                 </ActionBar>
-                <FormHint>
-                  {t('security.passkeyHint')}
-                </FormHint>
               </CardSection>
             </Card>
 
             <Card>
-              <CardSection
-                title={t('security.devicesTitle')}
-                description={t('security.devicesDesc')}
-              >
+              <CardSection title={t('security.devicesTitle')}>
                 <FormActions>
                   <Button
                     variant="secondary"
@@ -775,11 +716,7 @@ export function SecurityPage() {
             </Card>
 
             <Card>
-              <CardSection
-                title={t('security.adminPolicyTitle')}
-                description={t('security.adminPolicyDesc')}
-              >
-                <p className="muted u-text-sm u-mb-3">{t('security.policyTotpHint')}</p>
+              <CardSection title={t('security.adminPolicyTitle')}>
                 <label className="ssh-check">
                   <input
                     type="checkbox"
@@ -800,7 +737,6 @@ export function SecurityPage() {
                   label={t('security.confirmTotpPolicy')}
                   htmlFor="pol-totp"
                   className="u-mt-4"
-                  hint={t('security.confirmTotpPolicyHint')}
                 >
                   <input
                     id="pol-totp"

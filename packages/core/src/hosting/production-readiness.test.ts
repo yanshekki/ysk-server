@@ -232,3 +232,21 @@ describe('assessProductionReadiness', () => {
     expect(r.items.some((i) => i.id === 'svc-nginx' && i.level === 'unknown')).toBe(true);
   });
 });
+
+describe('datadir-perms fixAction', () => {
+  it('offers harden-datadir when mode is 755', async () => {
+    const dir = join(tmpdir(), `ysk-rdy-dd-${Date.now()}`);
+    mkdirSync(dir, { recursive: true });
+    try {
+      chmodSync(dir, 0o755);
+      const host = mockHost({ execute: true, root: true });
+      const r = await assessProductionReadiness({ dataDir: dir, host, product: 'YSK' });
+      const item = r.items.find((i) => i.id === 'datadir-perms');
+      expect(item).toBeTruthy();
+      expect(item?.level).toBe('degraded');
+      expect(item?.fixAction).toBe('harden-datadir');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});

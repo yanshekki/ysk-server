@@ -146,5 +146,6 @@
   "batchCancelled": "Cancelled (remaining skipped)",
   "batchRescanned": "Host package state re-scanned",
   "applyLogTitle": "Update（）",
-  "navBadgeTitle": "Upgradable packages: {{n}}"
+  "navBadgeTitle": "Upgradable packages: {{n}}",
+  "aboutPolicySub": "Scan, apply, privilege, and OSV boundaries. Scan is not the same as upgraded."
 }

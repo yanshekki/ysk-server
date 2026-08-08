@@ -27,7 +27,7 @@ import {
   buttonClassName } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 
-const DNS_TABS = ['zones', 'records', 'cluster', 'dnssec', 'tools', 'about'] as const;
+const DNS_TABS = ['zones', 'records', 'cluster', 'dnssec', 'tools', 'stack', 'about'] as const;
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import type { ResourceRow } from '../../features/resources/api';
@@ -188,6 +188,29 @@ export function DnsPage() {
     if (!selectedZone) return null;
     return zones.items.find((z) => z.id === selectedZone.id) ?? selectedZone;
   }, [zones.items, selectedZone]);
+
+  const dnsTabs = useMemo(() => {
+    const tabs: Array<{ id: string; label: string; badge?: number | string }> = [
+      { id: 'zones', label: t('dns.tabs.zones'), badge: zones.items.length || undefined },
+    ];
+    if (selectedLive) {
+      tabs.push(
+        {
+          id: 'records',
+          label: t('dns.tabs.records'),
+          badge: records.items.length || undefined,
+        },
+        { id: 'cluster', label: t('dns.tabs.cluster'), badge: peers.length || undefined },
+        { id: 'dnssec', label: t('dns.tabs.dnssec') },
+      );
+    }
+    tabs.push(
+      { id: 'tools', label: t('dns.tabs.tools') },
+      { id: 'stack', label: t('tabs.stack') },
+      { id: 'about', label: t('dns.tabs.about') },
+    );
+    return tabs;
+  }, [t, zones.items.length, selectedLive, records.items.length, peers.length]);
 
   // Prefill SOA fields when selection changes
   useEffect(() => {
@@ -424,6 +447,13 @@ export function DnsPage() {
     void refreshHealth();
   }, [refreshHealth]);
 
+  // Zone-scoped tabs require a selected zone
+  useEffect(() => {
+    if (!selectedLive && (tab === 'records' || tab === 'cluster' || tab === 'dnssec')) {
+      setTab('zones');
+    }
+  }, [selectedLive, tab, setTab]);
+
   // Load cluster peers when opening cluster tab
   useEffect(() => {
     if (tab === 'cluster') void refreshPeers().catch(() => undefined);
@@ -440,68 +470,39 @@ export function DnsPage() {
             ? health.ok
               ? t('dns.healthPillOk')
               : t('dns.healthPillBad')
-            : `${zones.items.length} zones`,
-          tone: health ? (health.ok ? 'ok' : 'danger') : zones.items.length ? 'ok' : 'warn' },
+            : t('dns.zonesTitle', { count: zones.items.length }),
+          tone: health ? (health.ok ? 'ok' : 'danger') : zones.items.length ? 'ok' : 'warn',
+        },
         items: [
           {
             label: t('dns.healthService'),
             value: health?.unitActive ? health.unit : t('dns.healthServiceDown'),
-            tone: health?.unitActive ? 'ok' : 'danger' },
+            tone: health?.unitActive ? 'ok' : 'danger',
+          },
           {
             label: t('dns.healthListen'),
             value: health
               ? `UDP${health.listenUdp53 ? '✓' : '×'} TCP${health.listenTcp53 ? '✓' : '×'}`
               : '—',
-            tone: health?.listenUdp53 || health?.listenTcp53 ? 'ok' : 'danger' },
+            tone: health?.listenUdp53 || health?.listenTcp53 ? 'ok' : 'danger',
+          },
           {
-            label: t('dns.healthWritten'),
-            value: health ? String(health.zoneFiles) : zones.items.length,
-            tone: (health?.zoneFiles ?? 0) > 0 ? 'ok' : 'warn' },
-          {
-            label: t('dns.healthLoaded', { defaultValue: 'Loaded' }),
-            value:
-              health?.pdnsZoneCount != null
-                ? String(health.pdnsZoneCount)
-                : '—',
-            tone:
-              health?.pdnsZoneCount == null
-                ? 'neutral'
-                : health.pdnsZoneCount === 0 && (health.zoneFiles ?? 0) > 0
-                  ? 'danger'
-                  : health.pdnsZoneCount > 0
-                    ? 'ok'
-                    : 'warn' },
-          {
-            label: t('dns.healthAnswering'),
-            value:
-              health?.answeringLocalA === true
-                ? `${health.digAName ?? 'A'}=${health.digAAnswers?.[0] ?? 'OK'}`
-                : health?.answeringLocal === true
-                  ? t('dns.healthAnsweringYes')
-                  : health?.answeringLocal === false
-                    ? t('dns.healthAnsweringNo')
-                    : '—',
-            tone:
-              health?.answeringLocalA === true || health?.answeringLocal === true
-                ? 'ok'
-                : health?.answeringLocal === false
-                  ? 'danger'
-                  : undefined },
-          {
-            label: t('dns.healthPublicNs', { defaultValue: 'Public NS' }),
-            value:
-              health?.publicNs && health.publicNs.length
-                ? health.publicNs.slice(0, 2).join(', ')
-                : '—',
-            tone:
-              health?.publicNsPointsHere === true
-                ? 'ok'
-                : health?.publicNs && health.publicNs.length
-                  ? 'warn'
-                  : undefined },
-        ] }}
+            label: t('dns.tabs.zones'),
+            value: zones.items.length,
+          },
+          ...(selectedLive
+            ? [
+                {
+                  label: t('dns.colZoneName'),
+                  value: String(selectedLive.zone),
+                  tone: 'ok' as const,
+                },
+              ]
+            : []),
+        ],
+      }}
       actions={
-        <>
+        <ActionBar size="sm">
           <Button
             variant="secondary"
             size="sm"
@@ -510,168 +511,9 @@ export function DnsPage() {
           >
             {t('dns.healthRefresh')}
           </Button>
-          <Button variant="secondary" size="sm" onClick={bindSet(setTab, 'records')}>
-            {t('dns.statRecords')}
-          </Button>
-          <Link to="/ssl" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-            SSL
-          </Link>
-          <Link to="/firewall" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
-            {t('nav.firewall', { defaultValue: 'Firewall' })}
-          </Link>
-        </>
+        </ActionBar>
       }
     >
-      <SoftwareInstallBanner feature="dns" title={t('dns.notInstalled')} />
-      <SoftwareVersionBar softwareId="pdns-server" />
-      {health ? (
-        <Card className="u-mb-3">
-          <CardSection
-            title={t('dns.healthTitle')}
-            description={t('dns.healthDesc')}
-          >
-            <div className="u-flex u-flex-wrap u-gap-2 u-mb-2">
-              <Badge tone={toneBadge(health.states.service)}>
-                {t('dns.stateService')}: {health.unitActive ? health.unit : '—'}
-              </Badge>
-              <Badge tone={toneBadge(health.states.listen)}>
-                {t('dns.stateListen')}:{' '}
-                {health.listenUdp53 || health.listenTcp53
-                  ? `53 ${health.listenUdp53 ? 'UDP' : ''}${health.listenUdp53 && health.listenTcp53 ? '+' : ''}${health.listenTcp53 ? 'TCP' : ''}`
-                  : t('dns.healthPortClosed')}
-              </Badge>
-              <Badge tone={toneBadge(health.states.written)}>
-                {t('dns.stateWritten')}: {health.zoneFiles}{' '}
-                {health.latestZoneWriteAt
-                  ? `(${health.latestZone ?? ''} ${health.latestZoneWriteAt.slice(0, 19)})`
-                  : ''}
-              </Badge>
-              <Badge tone={toneBadge(health.states.loaded ?? 'neutral')}>
-                {t('dns.stateLoaded', { defaultValue: 'Loaded' })}:{' '}
-                {health.pdnsZoneCount != null ? health.pdnsZoneCount : '—'}
-              </Badge>
-              <Badge tone={toneBadge(health.states.answering)}>
-                {t('dns.stateAnswering')}:{' '}
-                {health.answeringLocalA === true
-                  ? `A ${health.digAAnswers?.[0] ?? 'OK'}`
-                  : health.answeringLocal === true
-                    ? 'OK'
-                    : health.answeringLocal === false
-                      ? t('dns.healthAnsweringNo')
-                      : '—'}
-              </Badge>
-              <Badge tone={toneBadge(health.states.publicNs ?? 'neutral')}>
-                {t('dns.statePublicNs', { defaultValue: 'Public NS' })}:{' '}
-                {health.publicNsPointsHere === true
-                  ? t('dns.publicNsHere', { defaultValue: '→ this host' })
-                  : health.publicNs?.length
-                    ? health.publicNs[0]
-                    : '—'}
-              </Badge>
-            </div>
-            {health.notes.length ? (
-              <ul className="notes-list u-mb-2">
-                {health.notes.slice(0, 6).map((n) => (
-                  <li key={n} className="muted u-text-sm">
-                    {n}
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-            <FormActions>
-              <Button
-                variant="secondary"
-                size="sm"
-                loading={healthBusy}
-                onClick={() => void refreshHealth()}
-              >
-                {t('dns.healthProbeLocal')}
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                loading={pdnsHealBusy}
-                disabled={
-                  // Keep enabled when listen is OK but zones not loaded / dig REFUSED
-                  Boolean(
-                    health.unitActive &&
-                      health.listenUdp53 &&
-                      health.answeringLocal === true &&
-                      (health.pdnsZoneCount == null || health.pdnsZoneCount > 0),
-                  )
-                }
-                title={t('dns.healthHealPdnsHint')}
-                onClick={() => {
-                  setPdnsHealBusy(true);
-                  void api
-                    .requestRawAllowStatus<{
-                      ok?: boolean;
-                      notes?: string[];
-                      localAddress?: string;
-                      blocked?: boolean;
-                      blockMessage?: string;
-                    }>('/api/v1/hosting/dns/powerdns/heal', {
-                      method: 'POST',
-                      body: '{}',
-                      allowStatuses: [403, 422] })
-                    .then((r) => {
-                      if (r.blocked) {
-                        toast.warn(r.blockMessage ?? r.notes?.[0] ?? t('dns.healthHealPdnsFailed'));
-                      } else if (r.ok === false) {
-                        toast.error(
-                          r.notes?.[0] ?? t('dns.healthHealPdnsFailed'),
-                          { detail: r.notes?.slice(1, 4).join('\n') },
-                        );
-                      } else {
-                        toast.ok(
-                          t('dns.healthHealPdnsOk', {
-                            ip: r.localAddress ?? '—' }),
-                          { detail: r.notes?.slice(0, 3).join('\n') },
-                        );
-                      }
-                      return refreshHealth();
-                    })
-                    .catch((e: Error) => toast.error(e.message))
-                    .finally(() => setPdnsHealBusy(false));
-                }}
-              >
-                {t('dns.healthHealPdns')}
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                loading={fwBusy}
-                disabled={health.listenUdp53 && health.listenTcp53}
-                title={
-                  health.listenUdp53 && health.listenTcp53
-                    ? t('dns.healthPortOpenAlready')
-                    : undefined
-                }
-                onClick={() => {
-                  setFwBusy(true);
-                  void systemApi
-                    .firewallAllowPort(53, 'both')
-                    .then((r) => {
-                      const ok = (r as { ok?: boolean }).ok !== false;
-                      if (ok) toast.ok(t('dns.healthOpened53'));
-                      else
-                        toast.error(
-                          (r as { notes?: string[] }).notes?.[0] ??
-                            t('dns.healthOpen53Failed'),
-                        );
-                      return refreshHealth();
-                    })
-                    .catch((e: Error) => toast.error(e.message))
-                    .finally(() => setFwBusy(false));
-                }}
-              >
-                {t('dns.healthOpen53')}
-              </Button>
-            </FormActions>
-            <FormHint>{t('dns.healthHint')}</FormHint>
-          </CardSection>
-        </Card>
-      ) : null}
       {zones.error || records.error ? (
         <Alert variant="error">{zones.error ?? records.error}</Alert>
       ) : null}
@@ -712,45 +554,16 @@ export function DnsPage() {
         </Alert>
       ) : null}
       <PageTabs
-        tabs={[
-          { id: 'zones', label: t('dns.tabs.zones'), badge: zones.items.length || undefined },
-          {
-            id: 'records',
-            label: t('dns.tabs.records'),
-            badge: selectedLive ? records.items.length || undefined : undefined },
-          { id: 'cluster', label: t('dns.tabs.cluster'), badge: peers.length || undefined },
-          { id: 'dnssec', label: t('dns.tabs.dnssec') },
-          { id: 'tools', label: t('dns.tabs.tools') },
-          { id: 'about', label: t('dns.tabs.about') },
-        ]}
+        tabs={dnsTabs}
         active={tab}
-        onChange={(id) => {
-          setTab(id);
-          if (id === 'records' && !selectedZone && zones.items[0]) {
-            setSelectedZone(zones.items[0]);
-          }
-        }}
+        onChange={setTab}
         variant="scroll"
       >
         {tab === 'zones' ? (
           <div className="tab-panel">
-            {zones.lastNotes.length > 0 ? (
-              <Card>
-                <CardSection title={t('dns.recentWrite')}>
-                  <ul className="notes-list">
-                    {zones.lastNotes.map((n) => (
-                      <li key={n} className="muted u-text-sm">
-                        {n}
-                      </li>
-                    ))}
-                  </ul>
-                </CardSection>
-              </Card>
-            ) : null}
             <DataTable
                   rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
                   title={t('dns.zonesTitle', { count: zones.total })}
-                  description={t('dns.zonesDesc')}
                   toolbar={
                     <ActionBar>
                       <Button variant="primary" size="sm" onClick={bindSet(setZoneOpen, true)}>
@@ -795,10 +608,7 @@ export function DnsPage() {
                   ]}
                   rows={zones.items}
                   empty={
-                    <EmptyState
-                      title={t('dns.emptyZonesTitle')}
-                      description={t('dns.emptyZonesDesc')}
-                    />
+                    <EmptyState title={t('dns.emptyZonesTitle')} />
                   }
                   rowActions={(r) => (
                     <ActionBar>
@@ -1535,12 +1345,140 @@ export function DnsPage() {
         ) : null}
 
         {tab === 'tools' ? (
-          <div className="tab-panel">
+          <div className="tab-panel stack">
+            {health ? (
+              <Card>
+                <CardSection title={t('dns.healthTitle')}>
+                  <div className="u-flex u-flex-wrap u-gap-2 u-mb-3">
+                    <Badge tone={toneBadge(health.states.service)}>
+                      {t('dns.stateService')}: {health.unitActive ? health.unit : '—'}
+                    </Badge>
+                    <Badge tone={toneBadge(health.states.listen)}>
+                      {t('dns.stateListen')}:{' '}
+                      {health.listenUdp53 || health.listenTcp53
+                        ? `53 ${health.listenUdp53 ? 'UDP' : ''}${
+                            health.listenUdp53 && health.listenTcp53 ? '+' : ''
+                          }${health.listenTcp53 ? 'TCP' : ''}`
+                        : t('dns.healthPortClosed')}
+                    </Badge>
+                    <Badge tone={toneBadge(health.states.answering)}>
+                      {t('dns.stateAnswering')}:{' '}
+                      {health.answeringLocalA === true
+                        ? `A ${health.digAAnswers?.[0] ?? 'OK'}`
+                        : health.answeringLocal === true
+                          ? 'OK'
+                          : health.answeringLocal === false
+                            ? t('dns.healthAnsweringNo')
+                            : '—'}
+                    </Badge>
+                  </div>
+                  {health.notes.length ? (
+                    <ul className="notes-list u-mb-3">
+                      {health.notes.slice(0, 3).map((n) => (
+                        <li key={n} className="muted u-text-sm">
+                          {n}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                  <FormActions>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      loading={healthBusy}
+                      onClick={() => void refreshHealth()}
+                    >
+                      {t('dns.healthProbeLocal')}
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      loading={pdnsHealBusy}
+                      onClick={() => {
+                        setPdnsHealBusy(true);
+                        void api
+                          .requestRawAllowStatus<{
+                            ok?: boolean;
+                            notes?: string[];
+                            localAddress?: string;
+                            blocked?: boolean;
+                            blockMessage?: string;
+                          }>('/api/v1/hosting/dns/powerdns/heal', {
+                            method: 'POST',
+                            body: '{}',
+                            allowStatuses: [403, 422],
+                          })
+                          .then((r) => {
+                            if (r.blocked) {
+                              toast.warn(
+                                r.blockMessage ??
+                                  r.notes?.[0] ??
+                                  t('dns.healthHealPdnsFailed'),
+                              );
+                            } else if (r.ok === false) {
+                              toast.error(
+                                r.notes?.[0] ?? t('dns.healthHealPdnsFailed'),
+                              );
+                            } else {
+                              toast.ok(
+                                t('dns.healthHealPdnsOk', {
+                                  ip: r.localAddress ?? '—',
+                                }),
+                              );
+                            }
+                            return refreshHealth();
+                          })
+                          .catch((e: Error) => toast.error(e.message))
+                          .finally(() => setPdnsHealBusy(false));
+                      }}
+                    >
+                      {t('dns.healthHealPdns')}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      loading={fwBusy}
+                      disabled={Boolean(health.listenUdp53 && health.listenTcp53)}
+                      onClick={() => {
+                        setFwBusy(true);
+                        void systemApi
+                          .firewallAllowPort(53, 'both')
+                          .then((r) => {
+                            const ok = (r as { ok?: boolean }).ok !== false;
+                            if (ok) toast.ok(t('dns.healthOpened53'));
+                            else
+                              toast.error(
+                                (r as { notes?: string[] }).notes?.[0] ??
+                                  t('dns.healthOpen53Failed'),
+                              );
+                            return refreshHealth();
+                          })
+                          .catch((e: Error) => toast.error(e.message))
+                          .finally(() => setFwBusy(false));
+                      }}
+                    >
+                      {t('dns.healthOpen53')}
+                    </Button>
+                  </FormActions>
+                </CardSection>
+              </Card>
+            ) : (
+              <Card>
+                <CardSection title={t('dns.healthTitle')}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={healthBusy}
+                    onClick={() => void refreshHealth()}
+                  >
+                    {t('dns.healthProbeLocal')}
+                  </Button>
+                </CardSection>
+              </Card>
+            )}
+
             <Card>
-              <CardSection
-                title={t('dns.lookupTitle')}
-                description={t('dns.lookupDesc')}
-              >
+              <CardSection title={t('dns.lookupTitle')}>
                 <form onSubmit={bindFormSubmit(onLookup)}>
                   <FormLayout columns={2}>
                     <Field
@@ -1548,7 +1486,6 @@ export function DnsPage() {
                       htmlFor="lookup-name"
                       flush
                       required
-                      hint={t('dns.lookupNamePlaceholder')}
                     >
                       <input
                         id="lookup-name"
@@ -1578,7 +1515,6 @@ export function DnsPage() {
                       label={t('dns.lookupServer')}
                       htmlFor="lookup-server"
                       flush
-                      hint={t('dns.lookupServerHint')}
                     >
                       <input
                         id="lookup-server"
@@ -1614,8 +1550,6 @@ export function DnsPage() {
                     ) : null}
                   </FormActions>
                 </form>
-                <FormHint>
-                  {t('dns.lookupToolHint')}</FormHint>
               </CardSection>
             </Card>
             {lookupResult ? (
@@ -1659,30 +1593,78 @@ export function DnsPage() {
                       ))}
                     </ul>
                   ) : null}
-                  <Alert
-                    variant={lookupResult.ok ? 'ok' : 'error'}
-                    className="u-mt-2"
-                  >
-                    {lookupResult.ok
-                      ? t('dns.lookupOkHint')
-                      : t('dns.lookupFailHint')}
-                  </Alert>
                 </CardSection>
               </Card>
             ) : null}
-            <Card>
-              <CardSection
-                title={t('dns.validateTitle')}
-                description={t('dns.validateDesc')}
-              >
-                <FormHint>
-                  {t('dns.validateExtra')}</FormHint>
-              </CardSection>
-            </Card>
           </div>
         ) : null}
       
-        {tab === 'about' ? <PageGuide guideId="dns" /> : null}
+        {tab === 'stack' ? (
+          <div className="tab-panel stack">
+            <SoftwareInstallBanner feature="dns" title={t('dns.notInstalled')} />
+            <SoftwareVersionBar softwareId="pdns-server" />
+          </div>
+        ) : null}
+
+        {tab === 'about' ? (
+          <div className="tab-panel stack">
+            <section className="dns-about" aria-labelledby="dns-about-policy">
+              <header className="dns-about__head">
+                <h3 id="dns-about-policy" className="dns-about__title">
+                  {t('dns.aboutTitle')}
+                </h3>
+                <p className="dns-about__sub">{t('dns.aboutSub')}</p>
+              </header>
+              <ol className="dns-about__list">
+                <li className="dns-about__item">
+                  <span className="dns-about__n" aria-hidden>
+                    1
+                  </span>
+                  <div className="dns-about__body">
+                    <div className="dns-about__item-title">{t('dns.validateTitle')}</div>
+                    <p className="dns-about__text">{t('dns.validateDesc')}</p>
+                    <p className="dns-about__text">{t('dns.validateExtra')}</p>
+                  </div>
+                </li>
+                <li className="dns-about__item">
+                  <span className="dns-about__n" aria-hidden>
+                    2
+                  </span>
+                  <div className="dns-about__body">
+                    <div className="dns-about__item-title">{t('dns.aboutZonesTitle')}</div>
+                    <p className="dns-about__text">{t('dns.aboutZonesBody')}</p>
+                  </div>
+                </li>
+                <li className="dns-about__item">
+                  <span className="dns-about__n" aria-hidden>
+                    3
+                  </span>
+                  <div className="dns-about__body">
+                    <div className="dns-about__item-title">{t('dns.aboutHealthTitle')}</div>
+                    <p className="dns-about__text">{t('dns.aboutHealthBody')}</p>
+                  </div>
+                </li>
+                <li className="dns-about__item">
+                  <span className="dns-about__n" aria-hidden>
+                    4
+                  </span>
+                  <div className="dns-about__body">
+                    <div className="dns-about__item-title">{t('dns.aboutStackTitle')}</div>
+                    <p className="dns-about__text">{t('dns.aboutStackBody')}</p>
+                  </div>
+                </li>
+              </ol>
+            </section>
+            <section className="dns-about dns-about--guide" aria-labelledby="dns-about-guide">
+              <header className="dns-about__head">
+                <h3 id="dns-about-guide" className="dns-about__title">
+                  {t('common.about')}
+                </h3>
+              </header>
+              <PageGuide guideId="dns" />
+            </section>
+          </div>
+        ) : null}
       </PageTabs>
 
       <Modal

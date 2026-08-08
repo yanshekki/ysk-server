@@ -14,6 +14,7 @@ import { probePowerDns } from './powerdns-apply.js';
 import { probePm2 } from './pm2-apply.js';
 import { buildProjectIsolationReadinessItems } from './project-isolation-status.js';
 import { binPresent } from './software-probe/index.js';
+import { findWebUiIndex } from './web-ui-build.js';
 
 export type { ReadinessLevel } from '@ysk/shared';
 export type ReadinessItem = ReadinessItemDto;
@@ -243,6 +244,7 @@ export async function assessProductionReadiness(input: {
       const mode = st.mode & 0o777;
       const worldW = (mode & 0o002) !== 0;
       const otherR = (mode & 0o004) !== 0;
+      const needsFix = worldW || otherR;
       push({
         id: 'datadir-perms',
         category: 'security',
@@ -254,6 +256,8 @@ export async function assessProductionReadiness(input: {
           : otherR
             ? tl('readiness.itemDataDirOtherR')
             : undefined,
+        // One-click chmod 750 from readiness UI / install repair
+        fixAction: needsFix ? 'harden-datadir' : undefined,
         severity: worldW ? 'critical' : 'recommended',
         spec: '§2.3',
       });
@@ -487,20 +491,19 @@ export async function assessProductionReadiness(input: {
     fixHref: pdns.available ? undefined : '/dns',
     severity: 'optional' });
 
-  const webDist = join(process.cwd(), 'apps/web/dist/index.html');
-  const webAlt = existsSync(join(input.dataDir, 'web/index.html'));
+  const webFound = findWebUiIndex(input.dataDir);
+  const webReady = Boolean(webFound);
   push({
     id: 'web-ui',
     category: 'core',
     title: tl('notes.auto.n0204'),
-    level: existsSync(webDist) || webAlt ? 'ready' : 'degraded',
-    detail: existsSync(webDist)
-      ? tl('notes.auto.n0225')
-      : webAlt
-        ? tl('notes.auto.n0246')
-        : tl('notes.auto.n0708'),
+    level: webReady ? 'ready' : 'degraded',
+    detail: webReady
+      ? webFound!.path
+      : tl('notes.auto.n0708'),
     spec: '§3.9',
-    fixHint: tl('readiness.itemWebBuildFix'),
+    fixHint: webReady ? undefined : tl('readiness.itemWebBuildFix'),
+    fixAction: webReady ? undefined : 'build-web-ui',
     severity: 'recommended' });
 
   push({

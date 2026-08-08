@@ -6,14 +6,15 @@
   "statGateway": "Gateway",
   "pageActions": "Page actions",
   "loadingSnap": "Loading network snapshot…",
-  "mutateHint": "Changes are live by default (ip addr / link / route) and may reset on reboot",
-  "cannotMutate": "Cannot change network now (needs YSK_EXECUTE and root). View only; submit honestly reports blocked.",
+  "mutateHint": "Changes apply live; may reset on reboot.",
+  "cannotMutate": "Cannot change: needs EXECUTE and root.",
   "tabs": {
     "ifaces": "Interfaces",
     "routes": "Routes",
     "dns": "DNS",
     "advanced": "Advanced",
-    "about": "About"
+    "about": "About",
+    "realip": "Real IP / CDN"
   },
   "ifaceSummary": "{{count}} interface(s) · {{up}} UP",
   "noIfaces": "No interfaces",
@@ -90,7 +91,7 @@
   "refresh": "Refresh",
   "hostSettings": "Host settings",
   "protection": "Protection",
-  "defaultEgressBadge": "Default egress",
+  "defaultEgressBadge": "Default",
   "opsAria": "{{name}} actions",
   "details": "Details",
   "addIp": "Add IP",
@@ -104,5 +105,38 @@
   "loadRaw": "Load raw output",
   "confirmDown": "Confirm Down",
   "defaultRouteDownWarn": "This interface is the default route egress; down may cut panel access.",
-  "deleteDefaultMayDrop": " — deleting default may drop connectivity."
+  "deleteDefaultMayDrop": " — deleting default may drop connectivity.",
+  "gateway": "Gateway",
+  "nameservers": "Nameservers",
+  "searchDomains": "Search domains",
+  "backend": "Backend",
+  "cidr": "CIDR",
+  "realip": {
+    "title": "CDN / Real client IP",
+    "desc": "Restore visitor IP behind CDN; trust edge CIDRs only.",
+    "provider": "Default provider",
+    "providerHint": "none = direct origin; pick CDN when behind edge.",
+    "mode": "Trust mode",
+    "modeSingle": "Single provider header (recommended)",
+    "modeXff": "X-Forwarded-For + merged CDN CIDRs",
+    "customCidrs": "Extra trusted CIDRs",
+    "customCidrsHint": "One CIDR per line.",
+    "lastRefresh": "Last CIDR refresh",
+    "active": "Active default",
+    "republishHint": "Re-publish project Nginx after save.",
+    "refresh": "Refresh CDN IP lists",
+    "refreshOk": "CIDR lists refreshed",
+    "providers": {
+      "none": "None (direct origin)",
+      "cloudflare": "Cloudflare",
+      "fastly": "Fastly",
+      "bunny": "Bunny CDN",
+      "cloudfront": "AWS CloudFront",
+      "azure_frontdoor": "Azure Front Door",
+      "gcore": "Gcore CDN",
+      "custom": "Custom proxies"
+    }
+  },
+  "linkUp": "Up",
+  "linkDown": "Down"
 }

@@ -22,7 +22,7 @@ import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { bindSet, bindCall1 } from '../bind-handlers';
 
-const SDU_TABS = ['guide', 'status', 'install', 'policy', 'about'] as const;
+const SDU_TABS = ['guide', 'status', 'install', 'about'] as const;
 
 type SystemdStatus = {
   unit: string;
@@ -164,8 +164,8 @@ export function SystemdUnitPage() {
         id: 'running',
         title: t('systemd.controlRunning'),
         detail: status.show?.mainPid
-          ? `MainPID ${status.show.mainPid}`
-          : 'systemctl is-active: active',
+          ? t('systemd.pid', { pid: status.show.mainPid })
+          : t('systemd.controlRunningHint'),
         done: true });
     }
 
@@ -278,10 +278,8 @@ export function SystemdUnitPage() {
               { id: 'guide', label: t('systemd.suggestedSteps') },
               { id: 'status', label: t('common.status') },
               { id: 'install', label: t('common.install') },
-              { id: 'policy', label: t('updates.tabPolicy') },
-            
-          { id: 'about', label: t('common.about') },
-        ]}
+              { id: 'about', label: t('common.about') },
+            ]}
             active={tab}
             onChange={setTab}
             variant="scroll"
@@ -352,80 +350,161 @@ export function SystemdUnitPage() {
             ) : null}
 
             {tab === 'status' ? (
-              <div className="tab-panel">
-                <section className="sdu-panel">
-                  <header className="sdu-panel__head">
-                    <h3 className="sdu-panel__title">{t('systemd.probeDetail')}</h3>
-                    <p className="sdu-panel__sub">{t('systemd.probeDetailSub')}</p>
-                  </header>
-                  <dl className="sdu-dl">
-                    <div>
-                      <dt>{t('systemd.unit')}</dt>
-                      <dd>
+              <div className="tab-panel stack">
+                {/* Identity + health */}
+                <section className="sdu-panel sdu-panel--primary" aria-labelledby="sdu-status-title">
+                  <header className="sdu-panel__head sdu-status-head">
+                    <div className="sdu-status-id">
+                      <p className="sdu-status-kicker">{t('systemd.controlPlaneUnit')}</p>
+                      <h3 id="sdu-status-title" className="sdu-status-name">
                         <code>{status.unit}.service</code>
-                      </dd>
+                      </h3>
+                      {status.show?.description ? (
+                        <p className="sdu-status-desc">{status.show.description}</p>
+                      ) : (
+                        <p className="sdu-status-desc muted">{t('systemd.probeDetailSub')}</p>
+                      )}
                     </div>
-                    <div>
-                      <dt>is-active</dt>
-                      <dd>
-                        <Badge tone={activeTone(active)}>{active}</Badge>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>is-enabled</dt>
-                      <dd>
-                        <Badge tone={enabledTone(status.enabled)}>
-                          {status.enabled}
-                        </Badge>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>{t('logs.catSystem')}</dt>
-                      <dd>
-                        {status.systemUnitExists ? t('systemd.exists') : t('systemd.missing')} ·{' '}
-                        <code className="sdu-dl__path">{status.unitPathHint}</code>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>{t('systemd.manageTemplate')}</dt>
-                      <dd>
-                        {status.managedUnitExists ? t('systemd.exists') : t('systemd.notWritten')}
-                        {status.managedUnitPath ? (
+                    <Badge tone={activeTone(active)}>{activeLabel(active)}</Badge>
+                  </header>
+
+                  <div className="sdu-kpi" role="list">
+                    <div className="sdu-kpi__card" role="listitem">
+                      <span className="sdu-kpi__lab">{t('systemd.kpiRuntime')}</span>
+                      <span className={`sdu-kpi__val sdu-kpi__val--${activeTone(active)}`}>
+                        {activeLabel(active)}
+                      </span>
+                      <span className="sdu-kpi__meta">
+                        <code>{active}</code>
+                        {status.show?.mainPid ? (
                           <>
-                            <br />
-                            <code className="sdu-dl__path">
-                              {status.managedUnitPath}
-                            </code>
+                            {' · '}
+                            {t('systemd.pid', { pid: status.show.mainPid })}
                           </>
                         ) : null}
-                      </dd>
+                      </span>
                     </div>
-                    {status.show?.fragmentPath ? (
-                      <div>
-                        <dt>Fragment</dt>
-                        <dd>
-                          <code className="sdu-dl__path">
-                            {status.show.fragmentPath}
-                          </code>
-                        </dd>
-                      </div>
-                    ) : null}
-                    {status.show?.mainPid ? (
-                      <div>
-                        <dt>MainPID</dt>
-                        <dd>
-                          <code>{status.show.mainPid}</code>
-                        </dd>
-                      </div>
-                    ) : null}
-                    {status.show?.description ? (
-                      <div>
-                        <dt>Description</dt>
-                        <dd>{status.show.description}</dd>
-                      </div>
-                    ) : null}
-                  </dl>
+                    <div className="sdu-kpi__card" role="listitem">
+                      <span className="sdu-kpi__lab">{t('systemd.kpiBoot')}</span>
+                      <span className={`sdu-kpi__val sdu-kpi__val--${enabledTone(status.enabled)}`}>
+                        {enabledLabel(status.enabled)}
+                      </span>
+                      <span className="sdu-kpi__meta">
+                        <code>{status.enabled || '—'}</code>
+                      </span>
+                    </div>
+                    <div className="sdu-kpi__card" role="listitem">
+                      <span className="sdu-kpi__lab">{t('systemd.kpiCaps')}</span>
+                      <span
+                        className={`sdu-kpi__val sdu-kpi__val--${canInstall ? 'ok' : 'warn'}`}
+                      >
+                        {canInstall ? t('systemd.capsReady') : t('systemd.capsBlocked')}
+                      </span>
+                      <span className="sdu-kpi__meta">
+                        EXECUTE {status.executeEnabled ? t('common.on') : t('common.off')}
+                        {' · '}
+                        Root {status.isRoot ? t('common.yes') : t('common.no')}
+                      </span>
+                    </div>
+                  </div>
                 </section>
+
+                {/* Unit files on disk */}
+                <section className="sdu-panel" aria-labelledby="sdu-files-title">
+                  <header className="sdu-panel__head">
+                    <div>
+                      <h3 id="sdu-files-title" className="sdu-panel__title">
+                        {t('systemd.unitFiles')}
+                      </h3>
+                      <p className="sdu-panel__sub">{t('systemd.unitFilesSub')}</p>
+                    </div>
+                  </header>
+                  <ul className="sdu-files">
+                    <li className="sdu-file">
+                      <div className="sdu-file__top">
+                        <span className="sdu-file__name">{t('systemd.systemUnitFile')}</span>
+                        <Badge tone={status.systemUnitExists ? 'ok' : 'warn'}>
+                          {status.systemUnitExists ? t('systemd.exists') : t('systemd.missing')}
+                        </Badge>
+                      </div>
+                      <code className="sdu-file__path">{status.unitPathHint}</code>
+                      <p className="sdu-file__hint muted u-text-sm">
+                        {t('systemd.systemUnitHint')}
+                      </p>
+                    </li>
+                    <li className="sdu-file">
+                      <div className="sdu-file__top">
+                        <span className="sdu-file__name">{t('systemd.managedUnitFile')}</span>
+                        <Badge tone={status.managedUnitExists ? 'ok' : 'warn'}>
+                          {status.managedUnitExists ? t('systemd.exists') : t('systemd.notWritten')}
+                        </Badge>
+                      </div>
+                      <code className="sdu-file__path">
+                        {status.managedUnitPath ?? t('systemd.managedPathHint')}
+                      </code>
+                      <p className="sdu-file__hint muted u-text-sm">
+                        {t('systemd.managedUnitHint')}
+                      </p>
+                    </li>
+                    {status.show?.fragmentPath ? (
+                      <li className="sdu-file">
+                        <div className="sdu-file__top">
+                          <span className="sdu-file__name">{t('systemd.fragmentPath')}</span>
+                          <Badge tone="neutral">{t('systemd.fromSystemd')}</Badge>
+                        </div>
+                        <code className="sdu-file__path">{status.show.fragmentPath}</code>
+                      </li>
+                    ) : null}
+                  </ul>
+                </section>
+
+                {/* Quick actions when not healthy */}
+                {!running || !status.systemUnitExists ? (
+                  <section className="sdu-panel sdu-panel--actions">
+                    <header className="sdu-panel__head">
+                      <h3 className="sdu-panel__title">{t('systemd.nextAction')}</h3>
+                    </header>
+                    <ActionBar>
+                      {!status.managedUnitExists ? (
+                        <Button
+                          variant="secondary"
+                          size="md"
+                          loading={busy}
+                          onClick={() => {
+                            setTab('install');
+                            void doInstall(false);
+                          }}
+                        >
+                          {t('systemd.writeTemplateOnly')}
+                        </Button>
+                      ) : null}
+                      <Button
+                        variant="primary"
+                        size="md"
+                        loading={busy}
+                        disabled={!canInstall}
+                        onClick={() => {
+                          setTab('install');
+                          void doInstall(true);
+                        }}
+                      >
+                        {t('systemd.installAndEnable')}
+                      </Button>
+                      <Link
+                        to="/services"
+                        className={buttonClassName({ variant: 'ghost', size: 'md' })}
+                      >
+                        {t('system.scServices')}
+                      </Link>
+                    </ActionBar>
+                    {!canInstall ? (
+                      <p className="sdu-callout sdu-callout--warn u-mt-3">
+                        {t('systemd.cannotInstallFull')}{' '}
+                        <Link to="/system">{t('updates.scHost')}</Link>
+                      </p>
+                    ) : null}
+                  </section>
+                ) : null}
               </div>
             ) : null}
 
@@ -476,47 +555,60 @@ export function SystemdUnitPage() {
               </div>
             ) : null}
 
-            {tab === 'policy' ? (
+            {tab === 'about' ? (
               <div className="tab-panel stack">
-                <section className="sdu-panel">
+                <section className="sdu-panel sdu-panel--primary" aria-labelledby="sdu-about-policy">
                   <header className="sdu-panel__head">
-                    <h3 className="sdu-panel__title">{t('updates.tabPolicy')}</h3>
+                    <div>
+                      <h3 id="sdu-about-policy" className="sdu-panel__title">
+                        {t('systemd.aboutPolicyTitle')}
+                      </h3>
+                      <p className="sdu-panel__sub">{t('systemd.aboutPolicySub')}</p>
+                    </div>
                   </header>
-                  <ul className="sdu-bullets">
-                    <li>
-                      {t('systemd.policyWriteFull')}
+                  <ol className="sdu-policy">
+                    <li className="sdu-policy__item">
+                      <span className="sdu-policy__n" aria-hidden>1</span>
+                      <div className="sdu-policy__body">
+                        <div className="sdu-policy__title">{t('systemd.writeTemplateOnly')}</div>
+                        <p className="sdu-policy__text">{t('systemd.policyWriteFull')}</p>
+                      </div>
                     </li>
-                    <li>
-                      <strong>{t('systemd.installAndEnable')}</strong> — cp + daemon-reload + enable
-                      --now
+                    <li className="sdu-policy__item">
+                      <span className="sdu-policy__n" aria-hidden>2</span>
+                      <div className="sdu-policy__body">
+                        <div className="sdu-policy__title">{t('systemd.installAndEnable')}</div>
+                        <p className="sdu-policy__text">{t('systemd.policyInstallFull')}</p>
+                      </div>
                     </li>
-                    <li>{t('systemd.policyBlocked')}</li>
-                    <li>{t('systemd.policyNotEqualFull')}</li>
-                  </ul>
+                    <li className="sdu-policy__item">
+                      <span className="sdu-policy__n" aria-hidden>3</span>
+                      <div className="sdu-policy__body">
+                        <div className="sdu-policy__title">{t('systemd.policyBlockedTitle')}</div>
+                        <p className="sdu-policy__text">{t('systemd.policyBlocked')}</p>
+                      </div>
+                    </li>
+                    <li className="sdu-policy__item">
+                      <span className="sdu-policy__n" aria-hidden>4</span>
+                      <div className="sdu-policy__body">
+                        <div className="sdu-policy__title">{t('systemd.policyNotEqualTitle')}</div>
+                        <p className="sdu-policy__text">{t('systemd.policyNotEqualFull')}</p>
+                      </div>
+                    </li>
+                  </ol>
                 </section>
-                <nav className="sdu-shortcuts" aria-label={t('updates.relatedAria')}>
-                  <Link to="/system" className="sdu-shortcut">
-                    <span className="sdu-shortcut__t">{t('updates.scHost')}</span>
-                    <span className="sdu-shortcut__d">{t('systemd.shortcutPower')}</span>
-                  </Link>
-                  <Link to="/services" className="sdu-shortcut">
-                    <span className="sdu-shortcut__t">{t('system.scServices')}</span>
-                    <span className="sdu-shortcut__d">{t('systemd.shortcutOther')}</span>
-                  </Link>
-                  <Link to="/system/readiness" className="sdu-shortcut">
-                    <span className="sdu-shortcut__t">{t('updates.scReadiness')}</span>
-                    <span className="sdu-shortcut__d">{t('updates.scReadinessD')}</span>
-                  </Link>
-                  <Link to="/logs" className="sdu-shortcut">
-                    <span className="sdu-shortcut__t">{t('system.scLogs')}</span>
-                    <span className="sdu-shortcut__d">journal</span>
-                  </Link>
-                </nav>
+
+                <section className="sdu-panel" aria-labelledby="sdu-about-guide">
+                  <header className="sdu-panel__head">
+                    <h3 id="sdu-about-guide" className="sdu-panel__title">
+                      {t('common.about')}
+                    </h3>
+                  </header>
+                  <PageGuide guideId="systemd" />
+                </section>
               </div>
             ) : null}
-          
-        {tab === 'about' ? <PageGuide guideId="systemd" /> : null}
-      </PageTabs>
+          </PageTabs>
 
           <OpsResultPanel
             title={t('systemd.opsResult')}

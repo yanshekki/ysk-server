@@ -43,7 +43,7 @@
   "rootProject": "專案",
   "emptyFavorites": "尚未有收藏",
   "emptyFolder": "此資料夾是空的",
-  "emptyFolderHint": "拖放檔案到此處上傳，或按「上傳」",
+  "emptyFolderHint": "拖放檔案或整個資料夾到此處上傳，或按「上傳」",
   "selectItem": "選擇 {{name}}",
   "colName": "名稱",
   "colSize": "大小",
@@ -155,5 +155,17 @@
   "noEmbedPreview": "此類型無法內嵌預覽，請下載。",
   "uploadDone": "已上傳 {{count}} 個檔案",
   "downloadFailedStatus": "下載失敗 ({{status}})",
-  "downloadFailed": "下載失敗"
+  "downloadFailed": "下載失敗",
+  "uploadFolder": "上傳資料夾",
+  "dropFolderOrFile": "放開以上傳檔案或整個資料夾",
+  "uploadPanelTitle": "上傳進度",
+  "uploadPanelStats": "{{done}}／{{total}} 完成 · 失敗 {{err}}",
+  "uploadClearDone": "清除已完成",
+  "uploadInFolder": "資料夾 {{folder}}",
+  "uploadStatusDone": "完成",
+  "uploadStatusError": "失敗",
+  "uploadStatusQueued": "排隊",
+  "uploadNoFile": "無檔案內容",
+  "uploadSomeFailed": "{{count}} 個項目上傳失敗",
+  "uploadTruncated": "一次最多上傳 {{max}} 項（共選了 {{total}} 項，其餘已略過）"
 }

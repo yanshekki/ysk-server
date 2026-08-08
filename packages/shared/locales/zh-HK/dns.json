@@ -105,7 +105,7 @@
   "lookupOkHint": "以上為即時查詢結果。CDN multi-A 應看到多個 IP；健康摘除後應減少。",
   "lookupFailHint": "查詢失敗或無答案。請確認名稱、類型與上游解析器。",
   "validateTitle": "記錄驗證",
-  "validateDesc": "新增／編輯記錄時會自動呼叫 /api/v1/dns/validate（CNAME 衝突、A/AAAA 格式等）。",
+  "validateDesc": "新增／編輯時自動驗證（CNAME 衝突、A/AAAA 格式等）。",
   "createZoneTitle": "建立 DNS 區域",
   "createZoneDesc": "依模板產生記錄",
   "zoneNameHint": "例如 example.com（不含結尾點）",
@@ -162,7 +162,7 @@
   "lookupName": "名稱",
   "fillCurrentZone": "填入目前區域",
   "lookupToolHint": "優先使用主機上的 dig；若無 dig 則 fallback 至 node dns。結果反映查詢當下解析器所見，不等於 面板 內記錄。",
-  "validateExtra": "儲存前若有 錯誤 級問題會擋下；warn（例如 apex CNAME）只提示。CDN 模組日後會用同一驗證器保護 managedBy=cdn 的 RRset。",
+  "validateExtra": "error 會擋儲存；warn（如 apex CNAME）只提示。",
   "createAfterHint": "建立後請在「記錄」分頁檢視並「寫入區域檔」才會落到磁碟。",
   "valueLabel": "值",
   "ttlHint": "快取時間",
@@ -204,5 +204,13 @@
   "healthHealPdns": "修復 PowerDNS 綁定",
   "healthHealPdnsHint": "將 local-address 設為公網 IP，避免同 systemd-resolved 搶 0.0.0.0:53",
   "healthHealPdnsOk": "PowerDNS 已綁 {{ip}} 並嘗試啟動",
-  "healthHealPdnsFailed": "PowerDNS 修復失敗"
+  "healthHealPdnsFailed": "PowerDNS 修復失敗",
+  "aboutTitle": "DNS 使用要點",
+  "aboutSub": "區域為主；記錄／叢集／DNSSEC 要先選域名。",
+  "aboutZonesTitle": "區域與域名範圍",
+  "aboutZonesBody": "先在「區域」選域名，再管理該域名的記錄、叢集、DNSSEC。",
+  "aboutHealthTitle": "服務健康",
+  "aboutHealthBody": "在「工具」探測 PowerDNS、修復綁定、開放 53 埠。",
+  "aboutStackTitle": "軟件版本",
+  "aboutStackBody": "在「軟件」檢查／更新 PowerDNS 套件。"
 }

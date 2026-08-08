@@ -88,7 +88,7 @@
   "itemDataDirWorldW": "請將 dataDir chmod 750（或 700），並 變更擁有者 給面板用戶",
   "itemDataDirOtherR": "建議 dataDir chmod 750，避免其他用戶讀取控制平面 JSON",
   "itemRustToolchain": "Rust 工具鏈",
-  "itemWebBuildFix": "執行 pnpm --filter @ysk/網站 建置",
+  "itemWebBuildFix": "按「立即修復」建置 Web 介面，或執行 pnpm --filter @ysk/web build",
   "itemStateStore": "控制平面狀態儲存",
   "itemStateStoreSqliteHint": "可選：YSK_STORE=sqlite 使用 WAL document store",
   "itemBackupFreshness": "最近完整備份",
@@ -102,5 +102,9 @@
   "apachePort80Detail": "Apache 正在監聽 :80，Nginx 未佔用公開 HTTP — 與「Nginx 作邊緣」拓撲衝突。",
   "apachePort80Both": "Apache 與 Nginx 同時出現在 :80 監聽 — 請將 Apache 改綁 127.0.0.1:8080。",
   "apachePort80Ok": "Apache 運作中但未獨佔公開 :80（拓撲可接受）。",
-  "apachePort80Fix": "於安裝腳本已有 rebind；可停用 Apache 佔用 80 的 vhost，或 systemctl reload 後確認 ss -lntp。"
+  "apachePort80Fix": "於安裝腳本已有 rebind；可停用 Apache 佔用 80 的 vhost，或 systemctl reload 後確認 ss -lntp。",
+  "fixNow": "立即修復",
+  "fixFailed": "修復失敗",
+  "fixDone": "已修復 dataDir 權限（chmod 750）",
+  "fixDoneWebUi": "已建置／安裝 Web 介面"
 }

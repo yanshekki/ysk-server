@@ -88,7 +88,7 @@
   "itemDataDirWorldW": "chmod 750 (or 700) dataDir; chown to panel user",
   "itemDataDirOtherR": "Prefer chmod 750 dataDir so other users cannot read control-plane JSON",
   "itemRustToolchain": "Rust toolchain",
-  "itemWebBuildFix": "pnpm --filter @ysk/web build",
+  "itemWebBuildFix": "Click “Fix now” to build the Web UI, or run: pnpm --filter @ysk/web build",
   "itemStateStore": "Control-plane state store",
   "itemStateStoreSqliteHint": "Optional: YSK_STORE=sqlite for WAL document store",
   "itemBackupFreshness": "Last full backup run",
@@ -102,5 +102,9 @@
   "apachePort80Detail": "Apache is listening on :80 and Nginx is not on public HTTP — conflicts with Nginx-as-edge topology.",
   "apachePort80Both": "Both Apache and Nginx appear on :80 — rebind Apache to 127.0.0.1:8080.",
   "apachePort80Ok": "Apache is running but not solely owning public :80 (topology OK).",
-  "apachePort80Fix": "Install rebind helpers exist; disable Apache vhosts on 80 or verify with ss -lntp after reload."
+  "apachePort80Fix": "Install rebind helpers exist; disable Apache vhosts on 80 or verify with ss -lntp after reload.",
+  "fixNow": "Fix now",
+  "fixFailed": "Fix failed",
+  "fixDone": "dataDir permissions hardened (chmod 750)",
+  "fixDoneWebUi": "Web UI built / installed"
 }

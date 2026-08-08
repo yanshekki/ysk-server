@@ -6,14 +6,15 @@
   "statGateway": "閘道",
   "pageActions": "頁面操作",
   "loadingSnap": "讀取網絡快照…",
-  "mutateHint": "變更預設為即時（ip addr / link / route），重開可能還原。防火牆請用防護中心。",
-  "cannotMutate": "目前無法變更網絡（需 系統變更權限 與管理員權限）。可查看；提交會誠實回報 已封鎖。",
+  "mutateHint": "變更即時生效，重開可能還原。",
+  "cannotMutate": "無法變更：需 EXECUTE 與 root。",
   "tabs": {
     "ifaces": "介面",
     "routes": "路由",
     "dns": "DNS",
     "advanced": "進階",
-    "about": "說明"
+    "about": "說明",
+    "realip": "真實 IP / CDN"
   },
   "ifaceSummary": "{{count}} 個介面 · {{up}} 個 UP",
   "noIfaces": "沒有介面",
@@ -90,7 +91,7 @@
   "refresh": "重新整理",
   "hostSettings": "主機設定",
   "protection": "防護中心",
-  "defaultEgressBadge": "預設出口",
+  "defaultEgressBadge": "預設",
   "opsAria": "{{name}} 操作",
   "details": "詳情",
   "addIp": "加 IP",
@@ -104,5 +105,38 @@
   "loadRaw": "載入 raw 輸出",
   "confirmDown": "確認 Down",
   "defaultRouteDownWarn": "此介面是預設路由出口，down 後可能無法連上管理面板。",
-  "deleteDefaultMayDrop": "— 刪除 預設 可能斷線。"
+  "deleteDefaultMayDrop": "— 刪除 預設 可能斷線。",
+  "gateway": "閘道",
+  "nameservers": "名稱伺服器",
+  "searchDomains": "搜尋網域",
+  "backend": "後端",
+  "cidr": "CIDR",
+  "realip": {
+    "title": "CDN / 真實用戶 IP",
+    "desc": "還原 CDN 後方訪客 IP；只信任邊緣 CIDR。",
+    "provider": "預設供應商",
+    "providerHint": "直連選 none；在 CDN 後選供應商。",
+    "mode": "信任模式",
+    "modeSingle": "單一供應商標頭（建議）",
+    "modeXff": "X-Forwarded-For + 合併 CDN CIDR",
+    "customCidrs": "額外信任 CIDR",
+    "customCidrsHint": "每行一個 CIDR。",
+    "lastRefresh": "上次 CIDR 更新",
+    "active": "目前預設",
+    "republishHint": "儲存後請重新發布專案 Nginx。",
+    "refresh": "更新 CDN IP 列表",
+    "refreshOk": "已更新 CIDR 列表",
+    "providers": {
+      "none": "無（直連源站）",
+      "cloudflare": "Cloudflare",
+      "fastly": "Fastly",
+      "bunny": "Bunny CDN",
+      "cloudfront": "AWS CloudFront",
+      "azure_frontdoor": "Azure Front Door",
+      "gcore": "Gcore CDN",
+      "custom": "自訂代理"
+    }
+  },
+  "linkUp": "Up",
+  "linkDown": "Down"
 }

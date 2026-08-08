@@ -147,11 +147,17 @@ export function NginxPage() {
         </ActionBar>
       }
     >
-      <WithPageGuide guideId="nginx">
-        <SoftwareInstallBanner feature="nginx" title={t('nginx.notInstalled')} />
-        <SoftwareVersionBar softwareId="nginx" />
+      <WithPageGuide
+        guideId="nginx"
+        stackContent={
+          <>
+            <SoftwareInstallBanner feature="nginx" title={t('nginx.notInstalled')} />
+            <SoftwareVersionBar softwareId="nginx" />
+          </>
+        }
+      >
         <Alert variant="info">
-          {t('nginx.projectSitesHint', { })}
+          {t('nginx.projectSitesHint')}
         </Alert>
         {error ? <Alert variant="error">{error}</Alert> : null}
         {purgeMsg ? <Alert variant="info">{purgeMsg}</Alert> : null}

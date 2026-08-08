@@ -6,14 +6,15 @@
   "statGateway": "网关",
   "pageActions": "页面操作",
   "loadingSnap": "读取网络快照…",
-  "mutateHint": "变更默认为即时（ip addr / link / route），重启可能还原。防火墙请用防护中心。",
-  "cannotMutate": "当前無法變更网络（需 YSK_EXECUTE 與 root）。可查看；提交会诚实回报 blocked。",
+  "mutateHint": "变更即时生效，重启可能还原。",
+  "cannotMutate": "无法变更：需 EXECUTE 与 root。",
   "tabs": {
     "ifaces": "接口",
     "routes": "路由",
     "dns": "DNS",
     "advanced": "高级",
-    "about": "说明"
+    "about": "说明",
+    "realip": "真实 IP / CDN"
   },
   "ifaceSummary": "{{count}} 个接口 · {{up}} 個 UP",
   "noIfaces": "没有接口",
@@ -90,7 +91,7 @@
   "refresh": "刷新",
   "hostSettings": "主机设置",
   "protection": "防护中心",
-  "defaultEgressBadge": "默认出口",
+  "defaultEgressBadge": "默认",
   "opsAria": "{{name}} 操作",
   "details": "详情",
   "addIp": "加 IP",
@@ -104,5 +105,38 @@
   "loadRaw": "加载 raw 输出",
   "confirmDown": "确认 Down",
   "defaultRouteDownWarn": "此接口是默认路由出口，down 后可能无法连上管理面板。",
-  "deleteDefaultMayDrop": " — 删除 default 可能断线。"
+  "deleteDefaultMayDrop": " — 删除 default 可能断线。",
+  "gateway": "网关",
+  "nameservers": "名称服务器",
+  "searchDomains": "搜索域",
+  "backend": "后端",
+  "cidr": "CIDR",
+  "realip": {
+    "title": "CDN / 真实用户 IP",
+    "desc": "还原 CDN 后方访客 IP；只信任边缘 CIDR。",
+    "provider": "默认供应商",
+    "providerHint": "直连选 none；在 CDN 后选供应商。",
+    "mode": "信任模式",
+    "modeSingle": "单一供应商头（推荐）",
+    "modeXff": "X-Forwarded-For + 合并 CDN CIDR",
+    "customCidrs": "额外信任 CIDR",
+    "customCidrsHint": "每行一个 CIDR。",
+    "lastRefresh": "上次 CIDR 更新",
+    "active": "当前默认",
+    "republishHint": "保存后请重新发布项目 Nginx。",
+    "refresh": "更新 CDN IP 列表",
+    "refreshOk": "已更新 CIDR 列表",
+    "providers": {
+      "none": "无（直连源站）",
+      "cloudflare": "Cloudflare",
+      "fastly": "Fastly",
+      "bunny": "Bunny CDN",
+      "cloudfront": "AWS CloudFront",
+      "azure_frontdoor": "Azure Front Door",
+      "gcore": "Gcore CDN",
+      "custom": "自定义代理"
+    }
+  },
+  "linkUp": "Up",
+  "linkDown": "Down"
 }

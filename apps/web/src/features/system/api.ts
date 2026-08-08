@@ -742,6 +742,19 @@ export const systemApi = {
     }
     return data;
   },
+  /** One-click readiness repair (e.g. harden-datadir → chmod 750). */
+  readinessFix: (action: string) =>
+    api.requestRaw<{
+      ok: boolean;
+      action: string;
+      path?: string;
+      before?: string;
+      after?: string;
+      notes?: string[];
+    }>('/api/v1/system/readiness/fix', {
+      method: 'POST',
+      body: JSON.stringify({ action }),
+    }),
   publicFilesApply: (body: { serverName: string; quotaMb?: number; reload?: boolean }) =>
     api.requestRaw('/api/v1/hosting/files/apply', {
       method: 'POST',

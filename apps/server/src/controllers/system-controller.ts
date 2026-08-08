@@ -75,6 +75,8 @@ import {
   listCertificatesView,
   dedupeCertificatesInStore,
   deleteCertificate,
+  hardenDataDirPerms,
+  ensureWebUiBuilt,
 } from '@ysk/core';
 import type { AppContext } from '../app-context.js';
 import { applyProtection } from '../app-context.js';
@@ -2731,6 +2733,70 @@ export async function handleSystemRoutes(
     sendOpsResult(res, r);
     return true;
   }
+
+
+
+  if (method === 'POST' && url.pathname === '/api/v1/system/readiness/fix') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { action?: string };
+    const action = String(data.action ?? '').trim();
+    if (!action) {
+      sendJson(res, 400, { ok: false, notes: ['action required'] });
+      return true;
+    }
+    if (action === 'harden-datadir') {
+      const result = hardenDataDirPerms(ctx.dataDir);
+      ctx.audit.append({
+        actor: user.username,
+        action: 'system.readiness.fix',
+        detail: {
+          fixAction: action,
+          path: result.path,
+          before: result.before,
+          after: result.after,
+          notes: result.notes,
+        },
+        ok: result.ok,
+      });
+      sendJson(res, result.ok ? 200 : 400, {
+        ok: result.ok,
+        action,
+        path: result.path,
+        before: result.before,
+        after: result.after,
+        notes: result.notes,
+      });
+      return true;
+    }
+    if (action === 'build-web-ui') {
+      const result = await ensureWebUiBuilt({ dataDir: ctx.dataDir });
+      ctx.audit.append({
+        actor: user.username,
+        action: 'system.readiness.fix',
+        detail: {
+          fixAction: action,
+          path: result.path,
+          notes: result.notes,
+        },
+        ok: result.ok,
+      });
+      sendJson(res, result.ok ? 200 : 400, {
+        ok: result.ok,
+        action,
+        path: result.path,
+        notes: result.notes,
+      });
+      return true;
+    }
+    sendJson(res, 400, {
+      ok: false,
+      notes: [`unknown readiness fix action: ${action}`],
+      action,
+    });
+    return true;
+  }
+
 
   return false;
 }

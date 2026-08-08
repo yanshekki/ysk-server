@@ -13,6 +13,7 @@ import {
   openDatabase,
   closeDatabase,
   writeControlPlaneSystemdUnit,
+  hardenDataDirPerms,
 } from '@ysk/core';
 import { CLI_NAME, PRODUCT_NAME, type StructuredResult, tl } from '@ysk/shared';
 import { assessPassword, isBootstrapDefaultPassword } from '@ysk/core';
@@ -90,6 +91,12 @@ export function runSetup(opts: SetupOptions = {}): StructuredResult<{
     mkdirSync(join(dataDir, 'backups'), { recursive: true });
     mkdirSync(join(dataDir, 'projects'), { recursive: true });
     mkdirSync(join(dataDir, 'nginx', 'conf.d'), { recursive: true });
+    // §2.3 — other users must not read control-plane JSON (install + setup)
+    const perms = hardenDataDirPerms(dataDir);
+    if (!perms.ok) {
+      // Non-fatal: readiness still flags + UI one-click fix
+      console.warn(`[setup] dataDir chmod 750 failed: ${perms.notes.join('; ')}`);
+    }
 
     writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8');
     writeFileSync(

@@ -20,8 +20,9 @@ import type {
   ReadinessLevel } from '../../features/system/api';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { bindSet, bindInput, bindVoid } from '../bind-handlers';
+import { toast } from '../../shared/stores/toast-store';
 
-const RDY_TABS = ['priority', 'checklist', 'summary', 'about'] as const;
+const RDY_TABS = ['priority', 'checklist', 'about'] as const;
 
 export function catLabel(cat: string, t: (k: string) => string): string {
   const key = `readiness.cat.${cat}`;
@@ -56,13 +57,20 @@ function ItemRow({
   item,
   index,
   emphasize,
-  t }: {
+  t,
+  fixing,
+  onFixAction,
+}: {
   item: ReadinessItemDto;
   index?: number;
   emphasize?: boolean;
-  t: (k: string) => string;
+  t: (k: string, opts?: Record<string, unknown>) => string;
+  fixing?: boolean;
+  onFixAction?: (action: string) => void;
 }) {
   const sev = severityLabel(item.severity, t);
+  const canAction = Boolean(item.fixAction) && item.level !== 'ready' && onFixAction;
+  const canHref = Boolean(item.fixHref) && item.level !== 'ready';
   return (
     <article
       className={`rdy-item rdy-item--${item.level}${emphasize ? ' rdy-item--emphasis' : ''}`}
@@ -89,9 +97,18 @@ function ItemRow({
         </div>
       </div>
       <div className="rdy-item__action">
-        {item.fixHref && item.level !== 'ready' ? (
+        {canAction ? (
+          <Button
+            variant={emphasize || item.level === 'missing' ? 'primary' : 'secondary'}
+            size="sm"
+            loading={fixing}
+            onClick={() => onFixAction!(item.fixAction!)}
+          >
+            {t('readiness.fixNow')}
+          </Button>
+        ) : canHref ? (
           <Link
-            to={item.fixHref}
+            to={item.fixHref!}
             className={`btn btn--sm ${emphasize || item.level === 'missing' ? 'btn--primary' : 'btn--secondary'}`}
           >
             {t('readiness.fix')}
@@ -116,6 +133,7 @@ export function ReadinessPage() {
   const [catFilter, setCatFilter] = useState<string>('all');
   const [q, setQ] = useState('');
   const [tab, setTab] = usePageTab(RDY_TABS, 'priority');
+  const [fixingAction, setFixingAction] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setBusy(true);
@@ -132,6 +150,35 @@ export function ReadinessPage() {
       setBusy(false);
     }
   }, [t, locale]);
+
+  const runFix = useCallback(
+    async (action: string) => {
+      setFixingAction(action);
+      setError(null);
+      try {
+        const r = await systemApi.readinessFix(action);
+        if (r.ok) {
+          toast.ok(
+            action === 'build-web-ui'
+              ? t('readiness.fixDoneWebUi')
+              : t('readiness.fixDone'),
+          );
+          await load();
+        } else {
+          setError(
+            (r.notes && r.notes.length ? r.notes.join('；') : null) ||
+              t('readiness.fixFailed'),
+          );
+          await load();
+        }
+      } catch (e) {
+        setError(e instanceof Error ? e.message : t('readiness.fixFailed'));
+      } finally {
+        setFixingAction(null);
+      }
+    },
+    [load, t],
+  );
 
   useEffect(() => {
     void load();
@@ -299,10 +346,8 @@ export function ReadinessPage() {
                 id: 'checklist',
                 label: t('readiness.checklistTab'),
                 badge: report.items.length || undefined },
-              { id: 'summary', label: t('readiness.summaryTab') },
-            
-          { id: 'about', label: t('common.about') },
-        ]}
+              { id: 'about', label: t('common.about') },
+            ]}
             active={tab}
             onChange={setTab}
             variant="scroll"
@@ -351,7 +396,7 @@ export function ReadinessPage() {
                   ) : (
                     <div className="rdy-item-list">
                       {blockers.map((item, i) => (
-                        <ItemRow key={item.id} item={item} t={t} index={i} emphasize />
+                        <ItemRow key={item.id} item={item} t={t} index={i} emphasize fixing={fixingAction === item.fixAction} onFixAction={runFix} />
                       ))}
                     </div>
                   )}
@@ -499,7 +544,7 @@ export function ReadinessPage() {
                           </div>
                           <div className="rdy-item-list">
                             {items.map((item) => (
-                              <ItemRow key={item.id} item={item} t={t} />
+                              <ItemRow key={item.id} item={item} t={t} fixing={fixingAction === item.fixAction} onFixAction={runFix} />
                             ))}
                           </div>
                         </div>
@@ -510,55 +555,27 @@ export function ReadinessPage() {
               </div>
             ) : null}
 
-            {tab === 'summary' ? (
+            {tab === 'about' ? (
               <div className="tab-panel stack">
-                <section className="rdy-panel">
-                  <header className="rdy-panel__head">
-                    <h2 className="rdy-panel__title">{t('readiness.summary')}</h2>
-                  </header>
-                  <ul className="rdy-summary">
-                    {report.summary.map((line) => (
-                      <li key={line}>{line}</li>
-                    ))}
-                  </ul>
-                </section>
-
-                <section className="rdy-panel">
-                  <header className="rdy-panel__head">
-                    <h2 className="rdy-panel__title">{t('readiness.shortcuts')}</h2>
-                  </header>
-                  <nav className="rdy-shortcuts" aria-label={t('readiness.opsShortcutsAria')}>
-                    <Link to="/system" className="rdy-shortcut">
-                      <span className="rdy-shortcut__t">{t('readiness.scHost')}</span>
-                      <span className="rdy-shortcut__d">{t('readiness.scHostD')}</span>
-                    </Link>
-                    <Link to="/system/unit" className="rdy-shortcut">
-                      <span className="rdy-shortcut__t">{t('readiness.scUnit')}</span>
-                      <span className="rdy-shortcut__d">{t('readiness.scUnitD')}</span>
-                    </Link>
-                    <Link to="/services" className="rdy-shortcut">
-                      <span className="rdy-shortcut__t">{t('readiness.scServices')}</span>
-                      <span className="rdy-shortcut__d">{t('readiness.scServicesD')}</span>
-                    </Link>
-                    <Link to="/metrics" className="rdy-shortcut">
-                      <span className="rdy-shortcut__t">{t('readiness.scMetrics')}</span>
-                      <span className="rdy-shortcut__d">{t('readiness.scMetricsD')}</span>
-                    </Link>
-                    <Link to="/protection" className="rdy-shortcut">
-                      <span className="rdy-shortcut__t">{t('readiness.scProtection')}</span>
-                      <span className="rdy-shortcut__d">{t('readiness.scProtectionD')}</span>
-                    </Link>
-                  </nav>
-                </section>
-
-                <p className="rdy-footnote">
-                  {t('readiness.policyNote')}
-                </p>
+                {report.summary?.length ? (
+                  <section className="rdy-panel" aria-labelledby="rdy-about-summary">
+                    <header className="rdy-panel__head">
+                      <h2 id="rdy-about-summary" className="rdy-panel__title">
+                        {t('readiness.summary')}
+                      </h2>
+                    </header>
+                    <ul className="rdy-summary">
+                      {report.summary.map((line) => (
+                        <li key={line}>{line}</li>
+                      ))}
+                    </ul>
+                  </section>
+                ) : null}
+                <p className="rdy-footnote">{t('readiness.policyNote')}</p>
+                <PageGuide guideId="readiness" />
               </div>
             ) : null}
-          
-        {tab === 'about' ? <PageGuide guideId="readiness" /> : null}
-      </PageTabs>
+          </PageTabs>
         </div>
       ) : null}
 

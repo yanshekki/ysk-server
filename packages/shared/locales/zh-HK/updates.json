@@ -146,5 +146,6 @@
   "batchCancelled": "已取消（其餘未執行）",
   "batchRescanned": "已重新掃描主機套件狀態",
   "applyLogTitle": "套件更新日誌（即時）",
-  "navBadgeTitle": "可升級套件：{{n}}"
+  "navBadgeTitle": "可升級套件：{{n}}",
+  "aboutPolicySub": "掃描、套用、權限同 OSV 邊界；掃描唔等於已升級。"
 }

@@ -46,6 +46,8 @@ export * from './powerdns-apply.js';
 export * from './apply-honesty.js';
 export * from './runtime-probe.js';
 export * from './production-readiness.js';
+export * from './datadir-perms.js';
+export * from './web-ui-build.js';
 export * from './public-files.js';
 export * from './managed-resources.js';
 export * from './ftps-service.js';

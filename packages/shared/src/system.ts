@@ -12,7 +12,13 @@ export interface ReadinessItemDto {
   detail: string;
   spec?: string;
   fixHint?: string;
+  /** Navigate to a UI page for manual fix */
   fixHref?: string;
+  /**
+   * Built-in one-click fix id (e.g. harden-datadir).
+   * UI POSTs /api/v1/system/readiness/fix with { action }.
+   */
+  fixAction?: string;
   severity?: 'critical' | 'recommended' | 'optional';
 }
 

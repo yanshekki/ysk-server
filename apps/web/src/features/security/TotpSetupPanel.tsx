@@ -197,7 +197,13 @@ export function TotpSetupPanel({ status, onStatusChange }: TotpSetupPanelProps) 
             <Badge tone="neutral">{t('security.totpNotSet')}</Badge>
           )}
         </div>
-        <p className="totp-setup__lead muted u-text-sm">{t('security.totpLead')}</p>
+        {!enabled && phase === 'idle' ? (
+          <p className="totp-setup__lead muted u-text-sm">{t('security.totpLead')}</p>
+        ) : enabled && phase === 'idle' && typeof status?.recoveryRemaining === 'number' ? (
+          <p className="totp-setup__lead muted u-text-sm">
+            {t('security.totpRecoveryRemaining', { n: status.recoveryRemaining })}
+          </p>
+        ) : null}
       </div>
 
       {phase === 'enroll' || phase === 'recovery' ? (
@@ -253,23 +259,13 @@ export function TotpSetupPanel({ status, onStatusChange }: TotpSetupPanelProps) 
       {/* —— Enabled: status + disable —— */}
       {enabled && phase === 'idle' ? (
         <div className="totp-setup__enabled">
-          <Alert variant="ok" className="u-mb-3">
-            {t('security.totpEnabledDesc')}
-            {typeof status?.recoveryRemaining === 'number' ? (
-              <span className="u-block u-mt-1 muted u-text-sm">
-                {t('security.totpRecoveryRemaining', { n: status.recoveryRemaining })}
-              </span>
-            ) : null}
-          </Alert>
           <details className="totp-setup__advanced">
             <summary>{t('security.totpResetSummary')}</summary>
-            <p className="muted u-text-sm u-mt-2">{t('security.totpResetHint')}</p>
             <FormLayout columns={2} className="u-mt-2">
               <Field
                 label={t('security.reauthPassword')}
                 htmlFor="totp-reset-pw"
                 flush
-                hint={t('security.reauthPasswordHint')}
               >
                 <input
                   id="totp-reset-pw"
@@ -283,7 +279,6 @@ export function TotpSetupPanel({ status, onStatusChange }: TotpSetupPanelProps) 
                 label={t('security.confirmCode')}
                 htmlFor="totp-disable-code"
                 flush
-                hint={t('security.totpDisableCodeHint')}
               >
                 <input
                   id="totp-disable-code"
@@ -322,17 +317,11 @@ export function TotpSetupPanel({ status, onStatusChange }: TotpSetupPanelProps) 
       {/* —— Idle not enabled: start —— */}
       {!enabled && phase === 'idle' ? (
         <div className="totp-setup__start">
-          <ul className="totp-setup__why">
-            <li>{t('security.totpWhy1')}</li>
-            <li>{t('security.totpWhy2')}</li>
-            <li>{t('security.totpWhy3')}</li>
-          </ul>
           <Field
             label={t('security.reauthPassword')}
             htmlFor="totp-start-pw"
             flush
             required
-            hint={t('security.reauthPasswordHint')}
           >
             <input
               id="totp-start-pw"
@@ -359,9 +348,6 @@ export function TotpSetupPanel({ status, onStatusChange }: TotpSetupPanelProps) 
               {t('security.start2fa')}
             </Button>
           </ActionBar>
-          <div className="u-mt-2">
-            <FormHint>{t('security.totpAppsHint')}</FormHint>
-          </div>
         </div>
       ) : null}
 

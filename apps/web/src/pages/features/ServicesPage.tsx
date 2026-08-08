@@ -72,7 +72,6 @@ export function ServicesPage() {
   const [tab, setTab] = useState('matrix');
   const [catFilter, setCatFilter] = useState('all');
   const [q, setQ] = useState('');
-  const [probe, setProbe] = useState<Record<string, unknown> | null>(null);
   const [haOverview, setHaOverview] = useState<{
     count: number;
     items: Array<{ name: string; engine: string; status: string; id: string }>;
@@ -250,7 +249,6 @@ export function ServicesPage() {
             tabs={[
               { id: 'matrix', label: t('services.matrixTab', { count: items.length }) },
               { id: 'stack', label: t('services.stackTab') },
-              { id: 'protection', label: t('services.protectionTab') },
               { id: 'about', label: t('common.about') },
             ]}
             active={tab}
@@ -408,60 +406,6 @@ export function ServicesPage() {
                       </article>
                     ))}
                   </div>
-                )}
-              </section>
-            ) : null}
-
-            {tab === 'protection' ? (
-              <section className="ops-panel">
-                <header className="ops-panel__head">
-                  <div>
-                    <h3 className="ops-panel__title">{t('services.protectionTitle')}</h3>
-                    <p className="ops-panel__sub">{t('services.protectionSub')}</p>
-                  </div>
-                </header>
-                <div className="ops-panel__actions">
-                  <Button
-                    variant="primary"
-                    size="md"
-                    loading={busy}
-                    onClick={() =>
-                      void run(async () => {
-                        const r = (await systemApi.protectionProbe()) as Record<
-                          string,
-                          unknown
-                        >;
-                        setProbe(r);
-                        return {
-                          ok: true,
-                          notes: [t('services.protectionDoneNote')],
-                          ...r } as unknown as OpsResultLike;
-                      }, t('services.probeDone'))
-                    }
-                  >
-                    {t('services.runProtection')}
-                  </Button>
-                  <Link
-                    to="/protection"
-                    className={buttonClassName({ variant: 'secondary', size: 'md' })}
-                  >
-                    {t('nav.protection')}
-                  </Link>
-                </div>
-                {probe ? (
-                  <dl className="ops-dl">
-                    {Object.entries(probe)
-                      .filter(([, v]) => v == null || typeof v !== 'object')
-                      .slice(0, 24)
-                      .map(([k, v]) => (
-                        <div key={k}>
-                          <dt>{k}</dt>
-                          <dd>{String(v)}</dd>
-                        </div>
-                      ))}
-                  </dl>
-                ) : (
-                  <p className="ops-muted">{t('services.notProbedYet')}</p>
                 )}
               </section>
             ) : null}

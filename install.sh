@@ -250,13 +250,84 @@ WRAP
   manifest_add_component "control-plane-product" "" "ysk-server" "" "npm"
 }
 
+
+# §3.9 embed SPA under dataDir/web when monorepo source is available
+ensure_web_ui() {
+  local dir="${1:-$DATA_DIR}"
+  local root="${INSTALL_ROOT:-}"
+  if [[ -z "$root" || ! -f "$root/apps/web/package.json" ]]; then
+    # try cwd
+    if [[ -f "./apps/web/package.json" ]]; then
+      root="$(pwd)"
+    else
+      log "Web UI: no monorepo apps/web — skip embed (use packaged public/web or fix in readiness)"
+      return 0
+    fi
+  fi
+  phase "web-ui"
+  log "Building @ysk/web from $root …"
+  (
+    cd "$root"
+    if command -v pnpm >/dev/null 2>&1; then
+      pnpm --filter @ysk/web build || log "WARN: web build failed"
+    elif command -v npm >/dev/null 2>&1; then
+      npm run build -w @ysk/web || log "WARN: web build failed"
+    else
+      log "WARN: no pnpm/npm — skip web build"
+      return 0
+    fi
+  )
+  if [[ -f "$root/apps/web/dist/index.html" && -n "$dir" ]]; then
+    resolve_sudo || true
+    # shellcheck disable=SC2086
+    $SUDO mkdir -p "$dir/web" 2>/dev/null || mkdir -p "$dir/web"
+    if [[ -w "$dir/web" ]] || [[ "$(id -u)" -eq 0 ]]; then
+      rm -rf "$dir/web"/* 2>/dev/null || true
+      cp -a "$root/apps/web/dist/." "$dir/web/"
+    else
+      # shellcheck disable=SC2086
+      $SUDO rm -rf "$dir/web"/* 2>/dev/null || true
+      $SUDO cp -a "$root/apps/web/dist/." "$dir/web/"
+    fi
+    log "Web UI installed → $dir/web"
+  else
+    log "WARN: apps/web/dist missing after build"
+  fi
+}
+
+# §2.3 harden: dataDir 750 so other users cannot read control-plane JSON
+harden_data_dir() {
+  local dir="${1:-$DATA_DIR}"
+  if [[ -z "$dir" || ! -d "$dir" ]]; then
+    return 0
+  fi
+  resolve_sudo || true
+  log "Hardening dataDir mode 750: $dir"
+  # shellcheck disable=SC2086
+  if $SUDO chmod 750 "$dir" 2>/dev/null; then
+    log "dataDir mode set to 750"
+  elif chmod 750 "$dir" 2>/dev/null; then
+    log "dataDir mode set to 750"
+  else
+    log "WARN: could not chmod 750 $dir — fix later: chmod 750 $dir"
+    return 1
+  fi
+  return 0
+}
+
 run_setup() {
   phase "setup"
   if [[ "$RUN_SETUP" -ne 1 ]]; then
     log "Skipping setup (--skip-setup)"
+    # Still harden if directory already exists (upgrade / re-run)
+    harden_data_dir "$DATA_DIR" || true
     return 0
   fi
   export YSK_DATA_DIR="${DATA_DIR}"
+  # Ensure path exists before setup so chmod always has a target
+  resolve_sudo || true
+  # shellcheck disable=SC2086
+  $SUDO mkdir -p "$DATA_DIR" 2>/dev/null || mkdir -p "$DATA_DIR" 2>/dev/null || true
   local setup_cmd=("$CLI" setup --non-interactive --data-dir "$DATA_DIR")
   if [[ "$NON_INTERACTIVE" -eq 1 ]]; then
     setup_cmd+=(--force)
@@ -267,6 +338,8 @@ run_setup() {
   else
     log "CLI not on PATH yet; run: $CLI setup --data-dir $DATA_DIR"
   fi
+  harden_data_dir "$DATA_DIR" || true
+  ensure_web_ui "$DATA_DIR" || true
 }
 
 install_systemd_unit() {

@@ -43,7 +43,7 @@
   "rootProject": "Project",
   "emptyFavorites": "No favorites yet",
   "emptyFolder": "This folder is empty",
-  "emptyFolderHint": "Drop files here to upload, or click Upload",
+  "emptyFolderHint": "Drop files or folders here to upload, or click Upload",
   "selectItem": "Select {{name}}",
   "colName": "Name",
   "colSize": "Size",
@@ -155,5 +155,17 @@
   "noEmbedPreview": "This type cannot be embedded; please download.",
   "uploadDone": "Uploaded {{count}} file(s)",
   "downloadFailedStatus": "Download failed ({{status}})",
-  "downloadFailed": "Download failed"
+  "downloadFailed": "Download failed",
+  "uploadFolder": "Upload folder",
+  "dropFolderOrFile": "Drop files or folders to upload",
+  "uploadPanelTitle": "Uploads",
+  "uploadPanelStats": "{{done}}/{{total}} done · {{err}} failed",
+  "uploadClearDone": "Clear finished",
+  "uploadInFolder": "Folder {{folder}}",
+  "uploadStatusDone": "Done",
+  "uploadStatusError": "Failed",
+  "uploadStatusQueued": "Queued",
+  "uploadNoFile": "No file data",
+  "uploadSomeFailed": "{{count}} item(s) failed",
+  "uploadTruncated": "Upload limited to {{max}} items ({{total}} selected; rest skipped)"
 }

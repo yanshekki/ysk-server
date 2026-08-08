@@ -162,6 +162,7 @@ export function FtpsServicePage() {
     { id: 'overview', label: t('publicFiles.overview') },
     { id: 'network', label: t('system.network') },
     { id: 'security', label: t('nav.sections.security') },
+    { id: 'stack', label: t('tabs.stack') },
     { id: 'about', label: t('common.about') },
   ];
 
@@ -207,12 +208,6 @@ export function FtpsServicePage() {
         </ActionBar>
       }
     >
-      <SoftwareInstallBanner
-        feature="ftp"
-        title={t('ftp.softwareMissingService')}
-        onInstalled={() => void refresh()}
-      />
-      <SoftwareVersionBar softwareId="vsftpd" />
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error && !result ? <Alert variant="error">{error}</Alert> : null}
       <Alert variant="info">
@@ -532,6 +527,16 @@ export function FtpsServicePage() {
           </Card>
         ) : null}
       
+        {tab === 'stack' ? (
+          <div className="tab-panel stack">
+            <SoftwareInstallBanner
+              feature="ftp"
+              title={t('ftp.softwareMissingService')}
+              onInstalled={() => void refresh()}
+            />
+            <SoftwareVersionBar softwareId="vsftpd" />
+          </div>
+        ) : null}
         {tab === 'about' ? <PageGuide guideId="ftpService" /> : null}
       </PageTabs>
 

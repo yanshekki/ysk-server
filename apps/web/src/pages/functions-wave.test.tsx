@@ -341,7 +341,7 @@ describe('functions-wave deep interactions', () => {
     setVal('svc-q', 'nginx');
     fireEvent.change(document.getElementById('svc-q')!, { target: { value: 'nginx' } });
     await clickAllTabs(user);
-    await clickNamed(user, /protection|probe|run|close/i, 4);
+    await clickNamed(user, /stack|套件|about|說明|说明|matrix|矩陣|矩阵/i, 3);
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
   });
 

@@ -4,14 +4,12 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import {
   PageGuide,
   ActionBar,
   Alert,
   Badge,
   Button,
-  buttonClassName,
   Card,
   CardHeader,
   CodeBlock,
@@ -91,6 +89,17 @@ export function parseMtu(raw: string): number | null {
   const n = Number(String(raw).trim());
   if (!Number.isFinite(n) || n < 576 || n > 9000) return null;
   return Math.floor(n);
+}
+
+/** Localize CDN provider catalog label (fallback to API English). */
+export function realIpProviderLabel(
+  id: string,
+  fallback: string,
+  t: (k: string) => string,
+): string {
+  const key = `network.realip.providers.${id}`;
+  const v = t(key);
+  return v === key ? fallback : v;
 }
 
 /** Loose CIDR validation for add-address form. */
@@ -301,15 +310,8 @@ export function NetworkPage() {
                   label: t('network.statGateway'),
                   value: snap.defaultGateway
                     ? `${snap.defaultGateway}${snap.defaultDev ? ` · ${snap.defaultDev}` : ''}`
-                    : '—' },
-                {
-                  label: 'EXECUTE',
-                  value: snap.caps.executeEnabled ? t('network.on') : t('network.off'),
-                  tone: snap.caps.executeEnabled ? 'ok' : 'warn' },
-                {
-                  label: 'root',
-                  value: snap.caps.isRoot ? t('common.yes') : t('common.no'),
-                  tone: snap.caps.isRoot ? 'ok' : 'warn' },
+                    : '—',
+                },
               ] }
           : undefined
       }
@@ -323,18 +325,6 @@ export function NetworkPage() {
           >
             {t('network.refresh')}
           </Button>
-          <Link
-            to="/system"
-            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-          >
-            {t('network.hostSettings')}
-          </Link>
-          <Link
-            to="/protection"
-            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-          >
-            {t('network.protection')}
-          </Link>
         </ActionBar>
       }
     >
@@ -343,11 +333,9 @@ export function NetworkPage() {
 
       {snap ? (
         <div className="stack">
-          <Alert variant="info">
-            {snap.caps.canMutate
-              ? t('network.mutateHint')
-              : t('network.cannotMutate')}
-          </Alert>
+          {!snap.caps.canMutate ? (
+            <Alert variant="warn">{t('network.cannotMutate')}</Alert>
+          ) : null}
 
           {lastOps ? (
             <OpsResultPanel
@@ -376,7 +364,7 @@ export function NetworkPage() {
                 badge: snap.dns.nameservers.length || undefined },
               {
                 id: 'realip',
-                label: t('network.tabs.realip', { defaultValue: 'Real IP / CDN' }) },
+                label: t('network.tabs.realip') },
               { id: 'advanced', label: t('network.tabs.advanced') },
               { id: 'about', label: t('network.tabs.about') },
             ]}
@@ -387,12 +375,10 @@ export function NetworkPage() {
             {tab === 'ifaces' ? (
               <div className="tab-panel">
                 <DataTable<NetInterface>
-                  title={t('network.title')}
-                  description={t('network.ifaceSummary', { count: snap.interfaces.length, up: upCount })}
                   dense
                   rows={snap.interfaces}
                   rowKey={(r) => r.name}
-                  empty={<EmptyState title={t('network.noIfaces')} description={t('network.noIfacesDesc')} />}
+                  empty={<EmptyState title={t('network.noIfaces')} />}
                   columns={[
                     {
                       key: 'name',
@@ -400,32 +386,31 @@ export function NetworkPage() {
                       nowrap: true,
                       render: (r) => (
                         <>
-                          <code>{r.name}</code>{' '}
+                          <code>{r.name}</code>
                           {r.isDefaultEgress ? (
-                            <Badge tone="info">{t('network.defaultEgressBadge')}</Badge>
-                          ) : null}{' '}
-                          {r.isLoopback ? (
-                            <Badge tone="neutral">lo</Badge>
+                            <>
+                              {' '}
+                              <Badge tone="info">{t('network.defaultEgressBadge')}</Badge>
+                            </>
                           ) : null}
                         </>
-                      ) },
+                      ),
+                    },
                     {
                       key: 'state',
                       header: t('network.colStatus'),
                       nowrap: true,
                       render: (r) => (
-                        <Badge tone={operTone(r.operstate)}>
-                          {r.operstate}
-                        </Badge>
-                      ) },
+                        <Badge tone={operTone(r.operstate)}>{r.operstate}</Badge>
+                      ),
+                    },
                     {
                       key: 'v4',
                       header: 'IPv4',
                       render: (r) => (
-                        <code className="u-text-sm">
-                          {joinCidrs(r.addrs, 'inet')}
-                        </code>
-                      ) },
+                        <code className="u-text-sm">{joinCidrs(r.addrs, 'inet')}</code>
+                      ),
+                    },
                     {
                       key: 'v6',
                       header: 'IPv6',
@@ -433,21 +418,8 @@ export function NetworkPage() {
                         <code className="u-text-sm muted">
                           {joinCidrs(r.addrs, 'inet6')}
                         </code>
-                      ) },
-                    {
-                      key: 'mac',
-                      header: 'MAC',
-                      nowrap: true,
-                      render: (r) => (
-                        <span className="u-text-sm muted">
-                          {r.mac ?? '—'}
-                        </span>
-                      ) },
-                    {
-                      key: 'mtu',
-                      header: 'MTU',
-                      nowrap: true,
-                      render: (r) => r.mtu ?? '—' },
+                      ),
+                    },
                   ]}
                   rowActions={(r) => (
                     <ActionBar
@@ -477,7 +449,7 @@ export function NetworkPage() {
                           disabled={busy || r.isLoopback}
                           onClick={bindSet2(setDownConfirm, '', setDownDlg, r)}
                         >
-                          Down
+                          {t('network.linkDown')}
                         </Button>
                       ) : (
                         <Button
@@ -490,7 +462,7 @@ export function NetworkPage() {
                             )
                           }
                         >
-                          Up
+                          {t('network.linkUp')}
                         </Button>
                       )}
                     </ActionBar>
@@ -502,13 +474,6 @@ export function NetworkPage() {
             {tab === 'routes' ? (
               <div className="tab-panel stack">
                 <DataTable<NetRoute>
-                  title={t('network.routeTable')}
-                  description={
-                    snap.defaultGateway
-                      ? t('network.defaultGw', { gw: snap.defaultGateway }) +
-                        (snap.defaultDev ? ` · ${snap.defaultDev}` : '')
-                      : t('network.liveIpRoute')
-                  }
                   dense
                   rows={snap.routes}
                   rowKey={(r, i) =>
@@ -581,7 +546,7 @@ export function NetworkPage() {
                         placeholder={t('network.destPlaceholder')}
                       />
                     </Field>
-                    <Field label="Gateway" htmlFor="net-route-gw">
+                    <Field label={t('network.gateway')} htmlFor="net-route-gw">
                       <input
                         id="net-route-gw"
                         value={routeGw}
@@ -726,7 +691,7 @@ export function NetworkPage() {
 
                 <Card>
                   <CardHeader
-                    title="Nameservers"
+                    title={t('network.nameservers')}
                     description={t('network.nameserverEditHint')}
                   />
                   <div className="u-mb-3">
@@ -867,7 +832,7 @@ export function NetworkPage() {
 
                   <FormLayout>
                     <Field
-                      label="Search domains"
+                      label={t('network.searchDomains')}
                       htmlFor="net-dns-search"
                       hint={t('network.searchDomainsPlaceholder')}
                       fullWidth
@@ -1020,7 +985,7 @@ export function NetworkPage() {
               <div className="tab-panel stack">
                 <Card>
                   <CardHeader
-                    title="Backend"
+                    title={t('network.backend')}
                     description={t('network.stackDetect')}
                     actions={
                       <ActionBar size="sm">
@@ -1075,19 +1040,15 @@ export function NetworkPage() {
               <div className="tab-panel">
                 <Card>
                   <CardHeader
-                    title={t('network.realip.title', {
-                      defaultValue: 'CDN / Real client IP' })}
-                    description={t('network.realip.desc', {
-                      defaultValue:
-                        'Restore visitor IP behind CDN. Only trusts edge CIDRs — never blind X-Forwarded-For.' })}
+                    title={t('network.realip.title')}
+                    description={t('network.realip.desc')}
                   />
                   {realIpMsg ? <Alert variant="info">{realIpMsg}</Alert> : null}
                   <FormLayout>
                     <Field
-                      label={t('network.realip.provider', { defaultValue: 'Default provider' })}
+                      label={t('network.realip.provider')}
                       htmlFor="rip-prov"
-                      hint={t('network.realip.providerHint', {
-                        defaultValue: 'none = direct origin; pick CDN when origin is behind edge' })}
+                      hint={t('network.realip.providerHint')}
                       flush
                     >
                       <select
@@ -1098,17 +1059,21 @@ export function NetworkPage() {
                       >
                         {(realIp?.catalog ?? [
                           { id: 'none', label: 'None', clientIpHeader: '' },
-                          { id: 'cloudflare', label: 'Cloudflare', clientIpHeader: 'CF-Connecting-IP' },
+                          {
+                            id: 'cloudflare',
+                            label: 'Cloudflare',
+                            clientIpHeader: 'CF-Connecting-IP',
+                          },
                         ]).map((p) => (
                           <option key={p.id} value={p.id}>
-                            {p.label}
+                            {realIpProviderLabel(p.id, p.label, t)}
                             {p.clientIpHeader ? ` (${p.clientIpHeader})` : ''}
                           </option>
                         ))}
                       </select>
                     </Field>
                     <Field
-                      label={t('network.realip.mode', { defaultValue: 'Trust mode' })}
+                      label={t('network.realip.mode')}
                       htmlFor="rip-mode"
                       flush
                     >
@@ -1121,21 +1086,17 @@ export function NetworkPage() {
                         }
                       >
                         <option value="single_provider">
-                          {t('network.realip.modeSingle', {
-                            defaultValue: 'Single provider header (recommended)' })}
+                          {t('network.realip.modeSingle')}
                         </option>
                         <option value="xff_merged">
-                          {t('network.realip.modeXff', {
-                            defaultValue: 'X-Forwarded-For + merged CDN CIDRs' })}
+                          {t('network.realip.modeXff')}
                         </option>
                       </select>
                     </Field>
                     <Field
-                      label={t('network.realip.customCidrs', {
-                        defaultValue: 'Extra trusted CIDRs' })}
+                      label={t('network.realip.customCidrs')}
                       htmlFor="rip-cidr"
-                      hint={t('network.realip.customCidrsHint', {
-                        defaultValue: 'One per line. Never use 0.0.0.0/0.' })}
+                      hint={t('network.realip.customCidrsHint')}
                       flush
                     >
                       <textarea
@@ -1152,19 +1113,21 @@ export function NetworkPage() {
                     columns={2}
                     items={[
                       {
-                        label: t('network.realip.lastRefresh', {
-                          defaultValue: 'Last CIDR refresh' }),
-                        value: realIp?.config.lastRefreshAt || '—' },
+                        label: t('network.realip.lastRefresh'),
+                        value: realIp?.config.lastRefreshAt || '—',
+                      },
                       {
-                        label: t('network.realip.active', { defaultValue: 'Active default' }),
-                        value: realIp?.config.defaultProvider || '—' },
+                        label: t('network.realip.active'),
+                        value: realIp?.config.defaultProvider
+                          ? realIpProviderLabel(
+                              realIp.config.defaultProvider,
+                              realIp.config.defaultProvider,
+                              t,
+                            )
+                          : '—',
+                      },
                     ]}
                   />
-                  <FormHint>
-                    {t('network.realip.republishHint', {
-                      defaultValue:
-                        'After save, re-publish project Nginx configs so sites pick up real_ip. PHP also uses Apache RemoteIP behind local Nginx.' })}
-                  </FormHint>
                   <FormActions>
                     <Button
                       variant="primary"
@@ -1182,11 +1145,9 @@ export function NetworkPage() {
                                 .split(/[\n,]+/)
                                 .map((s) => s.trim())
                                 .filter(Boolean),
-                              enableApacheRemoteIp: true });
-                            setRealIpMsg(
-                              r.notes?.join('；') ||
-                                t('common.savedOk', { defaultValue: 'Saved' }),
-                            );
+                              enableApacheRemoteIp: true,
+                            });
+                            setRealIpMsg(r.notes?.join('；') || t('common.savedOk'));
                             await loadRealIp();
                           } catch (e) {
                             setRealIpMsg(
@@ -1211,9 +1172,7 @@ export function NetworkPage() {
                           try {
                             const r = await networkApi.refreshRealIp();
                             setRealIpMsg(
-                              r.notes?.join('；') ||
-                                t('network.realip.refreshOk', {
-                                  defaultValue: 'CIDR lists refreshed' }),
+                              r.notes?.join('；') || t('network.realip.refreshOk'),
                             );
                             await loadRealIp();
                           } catch (e) {
@@ -1226,8 +1185,7 @@ export function NetworkPage() {
                         })();
                       }}
                     >
-                      {t('network.realip.refresh', {
-                        defaultValue: 'Refresh CDN IP lists' })}
+                      {t('network.realip.refresh')}
                     </Button>
                     <Button
                       variant="ghost"
@@ -1241,7 +1199,7 @@ export function NetworkPage() {
               </div>
             ) : null}
 
-            {tab === 'about' ? <PageGuide guideId="network" /> : null}
+{tab === 'about' ? <PageGuide guideId="network" /> : null}
           </PageTabs>
         </div>
       ) : null}
@@ -1436,7 +1394,7 @@ export function NetworkPage() {
       >
         <FormLayout>
           <Field
-            label="CIDR"
+            label={t('network.cidr')}
             htmlFor="net-add-cidr"
             hint={t('network.cidrPlaceholder')}
           >

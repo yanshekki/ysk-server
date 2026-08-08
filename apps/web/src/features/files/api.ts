@@ -198,11 +198,20 @@ export const filesApi = {
     }),
 };
 
-/** Read file as base64 via FileReader */
-export function fileToBase64(file: File): Promise<string> {
+/** Read file as base64 via FileReader; optional 0–1 progress while reading */
+export function fileToBase64(
+  file: File,
+  onProgress?: (ratio: number) => void,
+): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
+    reader.onprogress = (ev) => {
+      if (ev.lengthComputable && onProgress) {
+        onProgress(Math.min(1, ev.loaded / Math.max(1, ev.total)));
+      }
+    };
     reader.onload = () => {
+      onProgress?.(1);
       const r = String(reader.result ?? '');
       const i = r.indexOf(',');
       resolve(i >= 0 ? r.slice(i + 1) : r);

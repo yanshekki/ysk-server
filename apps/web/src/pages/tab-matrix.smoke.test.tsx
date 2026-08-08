@@ -783,7 +783,7 @@ const matrix: Array<{
   {
     name: 'Dns',
     base: '/dns',
-    tabs: ['zones', 'records', 'cluster', 'dnssec', 'tools', 'about'],
+    tabs: ['zones', 'records', 'cluster', 'dnssec', 'tools', 'stack', 'about'],
     el: <DnsPage /> },
   {
     name: 'Backups',
@@ -843,7 +843,7 @@ const matrix: Array<{
   {
     name: 'Updates',
     base: '/updates',
-    tabs: ['packages', 'panel', 'schedule', 'policy', 'about'],
+    tabs: ['packages', 'panel', 'schedule', 'about'],
     el: <UpdatesPage /> },
   {
     name: 'Ai',
@@ -866,7 +866,7 @@ const matrix: Array<{
   {
     name: 'Readiness',
     base: '/system/readiness',
-    tabs: ['priority', 'checklist', 'summary', 'about'],
+    tabs: ['priority', 'checklist', 'about'],
     el: <ReadinessPage /> },
   {
     name: 'Services',

@@ -29,7 +29,18 @@ import {
 import { usePageTab } from '../shared/hooks/usePageTab';
 
 const FILE_TABS = ['browse', 'trash', 'shares', 'webdav', 'about'] as const;
-import { filesApi, fileToBase64, type FileEntry, type TrashEntry, type FileShare } from '../features/files/api';
+import {
+  filesApi,
+  fileToBase64,
+  type FileEntry,
+  type TrashEntry,
+  type FileShare,
+} from '../features/files/api';
+import {
+  collectFromDataTransfer,
+  collectFromFileList,
+  type CollectedUpload,
+} from '../features/files/drop-collect';
 import { projectsApi } from '../features/projects';
 import { authStore } from '../shared/stores/auth-store';
 import { toast } from '../shared/stores/toast-store';
@@ -50,6 +61,46 @@ import {
 type ViewMode = 'list' | 'grid';
 type SideView = 'all' | 'favorites' | 'shares' | 'trash';
 type SortKey = 'name' | 'size' | 'mtime';
+
+type UploadJobStatus = 'queued' | 'uploading' | 'done' | 'error';
+
+type UploadJob = {
+  id: string;
+  relativePath: string;
+  folderLabel: string;
+  kind: 'file' | 'dir';
+  status: UploadJobStatus;
+  /** 0–100 */
+  progress: number;
+  error?: string;
+  file?: File;
+};
+
+const UPLOAD_CONCURRENCY = 4;
+const UPLOAD_MAX_ITEMS = 200;
+
+function joinUploadPath(dir: string, relativePath: string): string {
+  const rel = relativePath.replace(/^\/+/, '');
+  if (!dir || dir === '.') return rel;
+  return `${dir.replace(/\/$/, '')}/${rel}`;
+}
+
+async function runPool<T>(
+  items: T[],
+  concurrency: number,
+  worker: (item: T) => Promise<void>,
+): Promise<void> {
+  let i = 0;
+  const n = Math.max(1, concurrency);
+  await Promise.all(
+    Array.from({ length: Math.min(n, items.length) }, async () => {
+      while (i < items.length) {
+        const idx = i++;
+        await worker(items[idx]!);
+      }
+    }),
+  );
+}
 
 export function formatBytes(n: number): string {
   if (!Number.isFinite(n) || n < 0) return '—';
@@ -206,6 +257,9 @@ export function FilesPage() {
   }, []);
   const [busy, setBusy] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [dragDepth, setDragDepth] = useState(0);
+  const [uploads, setUploads] = useState<UploadJob[]>([]);
+  const [uploadPanelOpen, setUploadPanelOpen] = useState(false);
 
   // dialogs
   const [mkdirOpen, setMkdirOpen] = useState(false);
@@ -326,17 +380,117 @@ export function FilesPage() {
     }
   }
 
-  async function onUploadFiles(fileList: FileList | File[]) {
-    const files = Array.from(fileList).slice(0, 30);
-    if (!files.length) return;
-    await run(async () => {
-      const payload = [];
-      for (const f of files) {
-        payload.push({ name: f.name, base64: await fileToBase64(f) });
+  const patchUpload = useCallback((id: string, patch: Partial<UploadJob>) => {
+    setUploads((prev) => prev.map((u) => (u.id === id ? { ...u, ...patch } : u)));
+  }, []);
+
+  async function enqueueUploads(collected: CollectedUpload[]) {
+    if (!collected.length) return;
+    if (collected.length > UPLOAD_MAX_ITEMS) {
+      toast.warn(
+        t('files.uploadTruncated', { max: UPLOAD_MAX_ITEMS, total: collected.length }),
+      );
+    }
+    const batch = collected.slice(0, UPLOAD_MAX_ITEMS);
+
+    const jobs: UploadJob[] = batch.map((c, i) => ({
+      id: `${Date.now()}-${i}-${c.relativePath}`,
+      relativePath: c.relativePath,
+      folderLabel: c.folderLabel,
+      kind: c.kind,
+      status: 'queued',
+      progress: 0,
+      file: c.file,
+    }));
+
+    setUploads((prev) => [...jobs, ...prev].slice(0, 300));
+    setUploadPanelOpen(true);
+
+    const targetDir = path;
+    const rootKey = root;
+    let okCount = 0;
+    let errCount = 0;
+
+    await runPool(jobs, UPLOAD_CONCURRENCY, async (job) => {
+      patchUpload(job.id, { status: 'uploading', progress: 2 });
+      try {
+        if (job.kind === 'dir') {
+          const full = joinUploadPath(targetDir, job.relativePath);
+          await filesApi.mkdir(rootKey, full);
+          patchUpload(job.id, { status: 'done', progress: 100 });
+          okCount += 1;
+          return;
+        }
+        if (!job.file) {
+          patchUpload(job.id, {
+            status: 'error',
+            progress: 0,
+            error: t('files.uploadNoFile'),
+          });
+          errCount += 1;
+          return;
+        }
+        const base64 = await fileToBase64(job.file, (ratio) => {
+          // Reading local file: 0–70%
+          patchUpload(job.id, {
+            status: 'uploading',
+            progress: Math.round(ratio * 70),
+          });
+        });
+        patchUpload(job.id, { progress: 75 });
+        await filesApi.upload(rootKey, targetDir, [
+          { name: job.relativePath, base64 },
+        ]);
+        patchUpload(job.id, { status: 'done', progress: 100 });
+        okCount += 1;
+      } catch (e) {
+        patchUpload(job.id, {
+          status: 'error',
+          progress: 0,
+          error: e instanceof Error ? e.message : t('common.opFailed'),
+        });
+        errCount += 1;
       }
-      await filesApi.upload(root, path, payload);
-    }, t('files.uploadDone', { count: files.length }));
+    });
+
+    await refresh();
+    if (okCount > 0) setMsg(t('files.uploadDone', { count: okCount }));
+    if (errCount > 0) setError(t('files.uploadSomeFailed', { count: errCount }));
   }
+
+  async function onUploadFiles(fileList: FileList | File[]) {
+    await enqueueUploads(collectFromFileList(fileList));
+  }
+
+  async function onDropTransfer(dt: DataTransfer) {
+    const collected = await collectFromDataTransfer(dt);
+    await enqueueUploads(collected);
+  }
+
+  const uploadStats = useMemo(() => {
+    const total = uploads.length;
+    const active = uploads.filter((u) => u.status === 'uploading' || u.status === 'queued');
+    const done = uploads.filter((u) => u.status === 'done').length;
+    const err = uploads.filter((u) => u.status === 'error').length;
+    const overall =
+      total === 0
+        ? 0
+        : Math.round(
+            uploads.reduce((s, u) => s + (u.status === 'done' ? 100 : u.progress), 0) /
+              total,
+          );
+    // Active first so progress list shows what's running now
+    const rank: Record<UploadJobStatus, number> = {
+      uploading: 0,
+      queued: 1,
+      error: 2,
+      done: 3,
+    };
+    const visible = [...uploads]
+      .sort((a, b) => rank[a.status] - rank[b.status])
+      .slice(0, 40);
+    return { total, active: active.length, done, err, overall, visible };
+  }, [uploads]);
 
   function toggleSelect(p: string) {
     setSelected((prev) => togglePathInSet(prev, p));
@@ -534,6 +688,24 @@ export function FilesPage() {
                       }}
                     />
                   </label>
+                  <label className={`${buttonClassName({ variant: 'secondary', size: 'md' })} fm-upload-btn`}>
+                    {t('files.uploadFolder')}
+                    <input
+                      type="file"
+                      multiple
+                      hidden
+                      ref={(el) => {
+                        if (el) {
+                          el.setAttribute('webkitdirectory', '');
+                          el.setAttribute('directory', '');
+                        }
+                      }}
+                      onChange={(e) => {
+                        if (e.target.files) void onUploadFiles(e.target.files);
+                        e.target.value = '';
+                      }}
+                    />
+                  </label>
                   <Button variant="secondary" size="md" onClick={bindSet(setMkdirOpen, true)}>
                     {t('files.newFolder')}
                   </Button>
@@ -687,15 +859,33 @@ export function FilesPage() {
               {/* Drop zone + content */}
               <div
                 className={`fm-drop${dragOver ? ' is-drag' : ''}`}
-                onDragOver={(e) => {
+                onDragEnter={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
+                  setDragDepth((d) => d + 1);
                   setDragOver(true);
                 }}
-                onDragLeave={() => setDragOver(false)}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.dataTransfer.dropEffect = 'copy';
+                  setDragOver(true);
+                }}
+                onDragLeave={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setDragDepth((d) => {
+                    const next = Math.max(0, d - 1);
+                    if (next === 0) setDragOver(false);
+                    return next;
+                  });
+                }}
                 onDrop={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
+                  setDragDepth(0);
                   setDragOver(false);
-                  if (e.dataTransfer.files?.length) void onUploadFiles(e.dataTransfer.files);
+                  void onDropTransfer(e.dataTransfer);
                 }}
               >
                 {items.length === 0 ? (
@@ -860,8 +1050,117 @@ export function FilesPage() {
                     ))}
                   </div>
                 )}
-                {dragOver ? <div className="fm-drop-hint">{t('files.dropToUpload')}</div> : null}
+                {dragOver ? (
+                  <div className="fm-drop-hint">{t('files.dropFolderOrFile')}</div>
+                ) : null}
               </div>
+
+              {uploads.length > 0 ? (
+                uploadPanelOpen ? (
+                  <div className="fm-upload-panel" role="status" aria-live="polite">
+                    <div className="fm-upload-panel__head">
+                      <div>
+                        <strong>{t('files.uploadPanelTitle')}</strong>
+                        <span className="muted u-text-sm">
+                          {' '}
+                          {t('files.uploadPanelStats', {
+                            done: uploadStats.done,
+                            total: uploadStats.total,
+                            err: uploadStats.err,
+                          })}
+                        </span>
+                      </div>
+                      <ActionBar>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            setUploads((prev) =>
+                              prev.filter(
+                                (u) => u.status === 'uploading' || u.status === 'queued',
+                              ),
+                            )
+                          }
+                        >
+                          {t('files.uploadClearDone')}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setUploadPanelOpen(false)}
+                        >
+                          {t('common.close')}
+                        </Button>
+                      </ActionBar>
+                    </div>
+                    <div className="fm-upload-panel__overall">
+                      <div
+                        className="fm-upload-panel__bar"
+                        style={{ width: `${uploadStats.overall}%` }}
+                      />
+                    </div>
+                    <ul className="fm-upload-panel__list">
+                      {uploadStats.visible.map((u) => (
+                        <li key={u.id} className={`fm-upload-item is-${u.status}`}>
+                          <div className="fm-upload-item__row">
+                            <span className="fm-upload-item__name" title={u.relativePath}>
+                              {u.kind === 'dir' ? '📁 ' : '📄 '}
+                              {u.relativePath}
+                            </span>
+                            <span className="fm-upload-item__meta muted u-text-sm">
+                              {u.folderLabel
+                                ? t('files.uploadInFolder', { folder: u.folderLabel })
+                                : null}{' '}
+                              {u.status === 'done'
+                                ? t('files.uploadStatusDone')
+                                : u.status === 'error'
+                                  ? t('files.uploadStatusError')
+                                  : u.status === 'queued'
+                                    ? t('files.uploadStatusQueued')
+                                    : `${u.progress}%`}
+                            </span>
+                          </div>
+                          <div className="fm-upload-item__track">
+                            <div
+                              className={`fm-upload-item__bar${u.status === 'error' ? ' is-error' : ''}${u.status === 'done' ? ' is-done' : ''}`}
+                              style={{
+                                width: `${u.status === 'done' ? 100 : u.progress}%`,
+                              }}
+                            />
+                          </div>
+                          {u.error ? (
+                            <div className="fm-upload-item__err muted u-text-sm">{u.error}</div>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className="fm-upload-dock"
+                    onClick={() => setUploadPanelOpen(true)}
+                  >
+                    <span className="fm-upload-dock__label">
+                      {t('files.uploadPanelTitle')}
+                      <span className="muted u-text-sm">
+                        {' '}
+                        {t('files.uploadPanelStats', {
+                          done: uploadStats.done,
+                          total: uploadStats.total,
+                          err: uploadStats.err,
+                        })}
+                      </span>
+                    </span>
+                    <span className="fm-upload-dock__track" aria-hidden>
+                      <span
+                        className="fm-upload-dock__bar"
+                        style={{ width: `${uploadStats.overall}%` }}
+                      />
+                    </span>
+                  </button>
+                )
+              ) : null}
             </>
 
         </div>

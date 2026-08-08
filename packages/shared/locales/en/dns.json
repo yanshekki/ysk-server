@@ -105,7 +105,7 @@
   "lookupOkHint": "Live query results",
   "lookupFailHint": "Lookup failed or empty. Check name, type, and upstream resolvers.",
   "validateTitle": "Record validation",
-  "validateDesc": "Create/edit calls /api/v1/dns/validate (CNAME conflicts, A/AAAA format, etc.).",
+  "validateDesc": "Create/edit auto-validates (CNAME clashes, A/AAAA format, etc.).",
   "createZoneTitle": "Create DNS zone",
   "createZoneDesc": "Generate records from a template",
   "zoneNameHint": "e.g. example.com (no trailing dot)",
@@ -162,7 +162,7 @@
   "lookupName": "Name",
   "fillCurrentZone": "Fill current zone",
   "lookupToolHint": "Prefers host dig;",
-  "validateExtra": "Error-level issues block save; warns (e.g. apex CNAME) only notify. CDN will reuse this validator for managedBy=cdn RRsets.",
+  "validateExtra": "Errors block save; warns (e.g. apex CNAME) only notify.",
   "createAfterHint": "After create, review on Records tab and write the zone file to disk.",
   "valueLabel": "Value",
   "ttlHint": "Cache time",
@@ -204,5 +204,13 @@
   "healthHealPdns": "Heal PowerDNS bind",
   "healthHealPdnsHint": "Set local-address to public IP to avoid clashing with systemd-resolved on 0",
   "healthHealPdnsOk": "PowerDNS bound to {{ip}} and start attempted",
-  "healthHealPdnsFailed": "PowerDNS heal failed"
+  "healthHealPdnsFailed": "PowerDNS heal failed",
+  "aboutTitle": "DNS essentials",
+  "aboutSub": "Zones first; records, cluster, and DNSSEC need a selected domain.",
+  "aboutZonesTitle": "Zones and scope",
+  "aboutZonesBody": "Pick a zone under Zones, then manage records, cluster, and DNSSEC for that domain.",
+  "aboutHealthTitle": "Service health",
+  "aboutHealthBody": "Use Tools to probe PowerDNS, heal bind, and open port 53.",
+  "aboutStackTitle": "Software",
+  "aboutStackBody": "Check/update the PowerDNS package under Software."
 }

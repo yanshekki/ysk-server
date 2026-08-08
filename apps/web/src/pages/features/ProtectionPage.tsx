@@ -23,11 +23,11 @@ import {
   PresetChips,
   SegRadio,
   SummaryStrip,
+  SoftwareVersionBar,
   PageTabs,
   ConfirmDialog,
   PromptDialog,
   ServerListFilters,
-  SoftwareVersionBar,
   buttonClassName } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { api } from '../../shared/services/api';
@@ -807,30 +807,27 @@ export function ProtectionPage() {
                 {
                   label: 'fail2ban',
                   value: labels?.fail2ban.short ?? '—',
-                  tone: toneToBadge(labels?.fail2ban.tone) },
+                  tone: toneToBadge(labels?.fail2ban.tone),
+                },
                 {
                   label: t('protection.statFirewall'),
                   value: labels?.firewall.short ?? '—',
-                  tone: toneToBadge(labels?.firewall.tone) },
-                {
-                  label: t('protection.statAutoBan'),
-                  value: labels?.autoBan.short ?? t('common.close'),
-                  tone: toneToBadge(labels?.autoBan.tone) },
-                {
-                  label: t('protection.statApply'),
-                  value: labels?.apply.short ?? '—',
-                  tone: toneToBadge(labels?.apply.tone) },
+                  tone: toneToBadge(labels?.firewall.tone),
+                },
                 {
                   label: t('protection.statActiveBans'),
                   value: status.bans?.count ?? 0,
-                  tone: banCountTone(status.bans?.count ?? 0) },
+                  tone: banCountTone(status.bans?.count ?? 0),
+                },
                 {
                   label: t('protection.statPreset'),
-                  value: activePreset?.label ?? '—' },
+                  value: activePreset?.label ?? '—',
+                },
               ] }
           : undefined
       }
-      actions={<div className="def-head-actions">
+      actions={
+        <ActionBar size="sm">
           <Button
             variant="secondary"
             size="sm"
@@ -845,51 +842,21 @@ export function ProtectionPage() {
           >
             {t('common.reprobe')}
           </Button>
-          {status &&
-          recommendedPreset &&
-          status.activePreset !== recommendedPreset ? (
-            <Button
-              variant="danger"
-              size="sm"
-              loading={busy}
-              onClick={bindPreset(applyPreset, recommendedPreset!, true)}
-            >
-              {t('protection.oneClickSuggested')}
-            </Button>
-          ) : (
-            <Button variant="primary" size="sm" onClick={goCommand}>
-              {t('protection.viewPresets')}
-            </Button>
-          )}
           {actionableSuspects.length > 0 ? (
             <Button variant="danger" size="sm" onClick={goBans}>
               {t('protection.suspectIpsCount', { count: actionableSuspects.length })}
             </Button>
-          ) : (
-            <Button variant="secondary" size="sm" onClick={goBans}>
-              {t('protection.goBans')}
-            </Button>
-          )}
-        </div>
+          ) : null}
+        </ActionBar>
       }
     >
       {loadErr ? <Alert variant="error">{loadErr}</Alert> : null}
       {error ? <Alert variant="error">{error}</Alert> : null}
       {loading && !status ? <LoadingBlock label={t('protection.loadingStatus')} /> : null}
 
-      <SoftwareVersionBar softwareId="ufw" />
-      <SoftwareVersionBar softwareId="fail2ban" />
-
-      <Alert variant="info">
-        <strong>{t('protection.singleEntryPrefix')}</strong> {t('protection.singleEntryBody')}
-        <strong>{t('protection.emergencyNeverAuto')}</strong>.
-      </Alert>
-
       {!status?.executeEnabled && status ? (
-        <Alert variant="info">
-          {t('protection.writeOnlyBanner')}{' '}
-          <code className="inline">YSK_EXECUTE=1</code>.{' '}
-          <Link to="/system/readiness">{t('protection.readiness')}</Link>
+        <Alert variant="warn">
+          {t('protection.writeOnlyBanner')}
         </Alert>
       ) : null}
 
@@ -916,8 +883,8 @@ export function ProtectionPage() {
           {
             id: 'intel',
             label: t('protection.tabs.intel'),
-            badge: activeSignalsCount(status?.signals) || undefined },
-        
+            badge: activeSignalsCount(status?.signals) || undefined,
+          },
           { id: 'about', label: t('protection.tabs.about') },
         ]}
         active={tab}
@@ -926,47 +893,8 @@ export function ProtectionPage() {
       >
         {tab === 'command' ? (
           <div className="tab-panel def-panel">
-            {status?.suggestions?.length ? (
-              <div className="def-suggest">
-                {status.suggestions.slice(0, 3).map((s) => (
-                  <div key={s.id} className="def-suggest__item">
-                    <div>
-                      <strong>{s.title}</strong>
-                      <p>{s.body}</p>
-                    </div>
-                    {s.action?.startsWith('preset:') ? (
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        loading={busy}
-                        onClick={bindPreset(applyPreset, s.action!.replace('preset:', ''), true)}
-                      >
-                        {t('common.apply')}
-                      </Button>
-                    ) : s.action === 'tab:bans' ? (
-                      <Button variant="secondary" size="sm" onClick={goBans}>
-                        {t('protection.goTo')}
-                      </Button>
-                    ) : s.action?.startsWith('href:') ? (
-                      <Link
-                        to={s.action.slice(5)}
-                        className={buttonClassName({ variant: 'secondary', size: 'sm' })}
-                      >
-                        {t('protection.goTo')}
-                      </Link>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            ) : null}
-
             <div className="def-section-head">
-              <div>
-                <h3 className="def-section-head__title">{t('protection.sectionPreset')}</h3>
-                <p className="def-section-head__desc">
-                  {t('protection.presetGuide')}
-                </p>
-              </div>
+              <h3 className="def-section-head__title">{t('protection.sectionPreset')}</h3>
             </div>
 
             <div className="def-ramp" role="list">
@@ -996,17 +924,13 @@ export function ProtectionPage() {
                           {p.label}
                           {active ? <Badge tone="ok">{t('protection.active')}</Badge> : null}
                           {recommended ? <Badge tone="warn">{t('protection.recommended')}</Badge> : null}
-                          {p.danger && !active ? <Badge tone="danger">{t('protection.useCarefully')}</Badge> : null}
+                          {p.danger && !active ? (
+                            <Badge tone="danger">{t('protection.useCarefully')}</Badge>
+                          ) : null}
                         </h4>
                         <span className="def-ramp__when">{whenLabel}</span>
                       </div>
                     </header>
-                    <p className="def-ramp__short">{p.short}</p>
-                    <ul className="def-ramp__bullets">
-                      {p.bullets.slice(0, 3).map((b) => (
-                        <li key={b}>{b}</li>
-                      ))}
-                    </ul>
                     <footer className="def-ramp__foot">
                       <Button
                         variant="ghost"
@@ -1051,10 +975,6 @@ export function ProtectionPage() {
                   tone: executePathTone(status?.executeEnabled, status?.isRoot) },
               ]}
             />
-            <p className="muted u-text-sm u-mt-2">
-              {t('protection.stackToolsSee')}{' '}
-              <Link to="/system/readiness">{t('protection.readinessCheck')}</Link>
-            </p>
           </div>
         ) : null}
 
@@ -1634,10 +1554,9 @@ export function ProtectionPage() {
         ) : null}
 
         {tab === 'stack' ? (
-          <div className="tab-panel def-panel">
-            <p className="muted u-text-sm">
-              {t('protection.stackRoleNote')}
-            </p>
+          <div className="tab-panel def-panel stack">
+            <SoftwareVersionBar softwareId="ufw" />
+            <SoftwareVersionBar softwareId="fail2ban" />
             <div className="def-split">
               <section className="def-panel-card">
                 <div className="def-section-head">
@@ -1681,14 +1600,6 @@ export function ProtectionPage() {
                   </Link>
                 </FormActions>
               </section>
-            </div>
-            <div className="def-panel-card def-panel-card--muted">
-              <strong>{t('protection.divisionTitle')}</strong>
-              <ul className="def-ramp__bullets">
-                <li>{t('protection.divisionUfw')}</li>
-                <li>{t('protection.divisionF2b')}</li>
-                <li>{t('protection.divisionDefense')}</li>
-              </ul>
             </div>
           </div>
         ) : null}

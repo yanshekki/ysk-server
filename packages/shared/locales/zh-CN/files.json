@@ -43,7 +43,7 @@
   "rootProject": "项目",
   "emptyFavorites": "尚未有收藏",
   "emptyFolder": "此文件夹是空的",
-  "emptyFolderHint": "拖放文件到此处上传，或按「上传」",
+  "emptyFolderHint": "拖放文件或整个文件夹到此处上传，或按「上传」",
   "selectItem": "选择 {{name}}",
   "colName": "名称",
   "colSize": "大小",
@@ -155,5 +155,17 @@
   "noEmbedPreview": "此类型无法内嵌预览，请下载。",
   "uploadDone": "已上传 {{count}} 个文件",
   "downloadFailedStatus": "下载失败 ({{status}})",
-  "downloadFailed": "下载失败"
+  "downloadFailed": "下载失败",
+  "uploadFolder": "上传文件夹",
+  "dropFolderOrFile": "放开以上传文件或整个文件夹",
+  "uploadPanelTitle": "上传进度",
+  "uploadPanelStats": "{{done}}／{{total}} 完成 · 失败 {{err}}",
+  "uploadClearDone": "清除已完成",
+  "uploadInFolder": "文件夹 {{folder}}",
+  "uploadStatusDone": "完成",
+  "uploadStatusError": "失败",
+  "uploadStatusQueued": "排队",
+  "uploadNoFile": "无文件内容",
+  "uploadSomeFailed": "{{count}} 个项目上传失败",
+  "uploadTruncated": "一次最多上传 {{max}} 项（共选了 {{total}} 项，其余已跳过）"
 }

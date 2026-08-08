@@ -164,11 +164,13 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
       { id: 'overview', label: t('publicFiles.overview') },
       { id: 'cluster', label: t('dns.tabs.cluster') },
     ];
+    const stack = { id: 'stack', label: t('tabs.stack') };
     const about = { id: 'about', label: t('common.about') };
-    if (!console) return [...base, about];
+    if (!console) return [...base, stack, about];
     return [
       ...base,
       ...console.categories.map((c) => ({ id: c.id, label: c.label })),
+      stack,
       about,
     ];
   }, [console]);
@@ -506,22 +508,6 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
         </ActionBar>
       }
     >
-      <SoftwareInstallBanner
-        feature={engine}
-        title={t('db.console.softwareMissing', { title: console?.title ?? engine })}
-        onInstalled={() => void refresh()}
-      />
-      <SoftwareVersionBar
-        softwareId={
-          engine === 'mysql'
-            ? 'mysql-server'
-            : engine === 'mariadb'
-              ? 'mariadb-server'
-              : engine === 'postgres'
-                ? 'postgresql'
-                : 'redis-server'
-        }
-      />
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error ? <Alert variant="error">{error}</Alert> : null}
       {console?.blockedByExclusive === 'mariadb-server' ? (
@@ -598,6 +584,29 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
           ) : null,
         )}
       
+        {tab === 'stack' ? (
+          <div className="tab-panel stack">
+            <SoftwareInstallBanner
+              feature={engine}
+              title={t('db.console.softwareMissing', {
+                title: console?.title ?? engine,
+              })}
+              onInstalled={() => void refresh()}
+            />
+            <SoftwareVersionBar
+              softwareId={
+                engine === 'mysql'
+                  ? 'mysql-server'
+                  : engine === 'mariadb'
+                    ? 'mariadb-server'
+                    : engine === 'postgres'
+                      ? 'postgresql'
+                      : 'redis-server'
+              }
+            />
+          </div>
+        ) : null}
+
         {tab === 'about' ? (
           <PageGuide
             guideId={
