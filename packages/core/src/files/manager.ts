@@ -14,8 +14,8 @@ import {
   copyFileSync,
   cpSync,
   chmodSync } from 'node:fs';
-import { join, resolve, relative, dirname, basename, extname } from 'node:path';
-import { createHash, randomBytes } from 'node:crypto';
+import { join, resolve, relative, dirname, basename, extname, sep } from 'node:path';
+import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import { listFileVersions, restoreFileVersion, snapshotFileVersion } from './versions.js';
@@ -50,17 +50,30 @@ export interface TrashEntry extends FileEntry {
 const TRASH_DIR = '.trash';
 const HIDDEN_PREFIXES = ['.trash', '.versions', '.ysk'];
 
-function assertInside(root: string, target: string): string {
+/**
+ * Resolve `target` under `root` or throw SANDBOX_VIOLATION.
+ * Uses boundary-safe prefix check (not bare startsWith) to avoid
+ * `/data/file` matching `/data/file-evil` style escapes.
+ */
+export function assertInside(root: string, target: string): string {
+  if (typeof target === 'string' && target.includes('\0')) {
+    throw new YskError(ErrorCodes.SANDBOX_VIOLATION, tl('notes.files.pathOutsideSandbox', { target }), {
+      httpStatus: 403,
+    });
+  }
   const rootAbs = resolve(root);
-  const abs = resolve(rootAbs, target);
+  const abs = resolve(rootAbs, target ?? '.');
   const rel = relative(rootAbs, abs);
   if (rel.startsWith('..') || rel === '..') {
     throw new YskError(ErrorCodes.SANDBOX_VIOLATION, tl('notes.files.pathOutsideSandbox', { target }), {
-      httpStatus: 403 });
+      httpStatus: 403,
+    });
   }
-  if (!abs.startsWith(rootAbs)) {
+  // Boundary-safe: abs === root or abs under root + sep
+  if (abs !== rootAbs && !abs.startsWith(rootAbs.endsWith(sep) ? rootAbs : rootAbs + sep)) {
     throw new YskError(ErrorCodes.SANDBOX_VIOLATION, tl('notes.files.pathOutsideSandbox', { target }), {
-      httpStatus: 403 });
+      httpStatus: 403,
+    });
   }
   return abs;
 }
@@ -529,6 +542,18 @@ export type FileShareRecord = {
 
 export function hashSharePassword(password: string): string {
   return createHash('sha256').update(password).digest('hex');
+}
+
+/** Constant-time compare of hex digests (share / token hashes). */
+export function safeHexEqual(a: string, b: string): boolean {
+  try {
+    const ba = Buffer.from(String(a), 'utf8');
+    const bb = Buffer.from(String(b), 'utf8');
+    if (ba.length !== bb.length || ba.length === 0) return false;
+    return timingSafeEqual(ba, bb);
+  } catch {
+    return false;
+  }
 }
 
 export function newShareToken(): string {

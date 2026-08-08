@@ -5,7 +5,10 @@ import { tl } from '@ysk/shared';
  */
 
 import type { JsonStore } from '../db/store.js';
-import { randomBytes, createHash } from 'node:crypto';
+import { randomBytes, createHash, timingSafeEqual } from 'node:crypto';
+
+/** Fixed Basic username for WebDAV (password = issued token). */
+export const WEBDAV_USERNAME = 'ysk';
 
 export type WebDavSettings = {
   enabled: boolean;
@@ -68,9 +71,39 @@ export function issueWebDavToken(db: JsonStore): {
 
 export function verifyWebDavToken(db: JsonStore, password: string): boolean {
   const s = getWebDavSettings(db);
-  if (!s.enabled || !s.tokenHash) return false;
+  if (!s.enabled || !s.tokenHash || !password) return false;
   const h = createHash('sha256').update(password).digest('hex');
-  return h === s.tokenHash;
+  try {
+    const a = Buffer.from(h, 'utf8');
+    const b = Buffer.from(String(s.tokenHash), 'utf8');
+    if (a.length !== b.length) return false;
+    return timingSafeEqual(a, b);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Parse HTTP Basic credentials. Username must be WEBDAV_USERNAME.
+ * Returns false if header missing/malformed or user/password wrong.
+ */
+export function verifyWebDavBasicAuth(
+  db: JsonStore,
+  authorizationHeader: string | undefined,
+): boolean {
+  const auth = authorizationHeader ?? '';
+  if (!auth.startsWith('Basic ')) return false;
+  try {
+    const decoded = Buffer.from(auth.slice(6), 'base64').toString('utf8');
+    const colon = decoded.indexOf(':');
+    if (colon < 0) return false;
+    const user = decoded.slice(0, colon);
+    const pass = decoded.slice(colon + 1);
+    if (user !== WEBDAV_USERNAME) return false;
+    return verifyWebDavToken(db, pass);
+  } catch {
+    return false;
+  }
 }
 
 export function buildPropfindResponse(input: {

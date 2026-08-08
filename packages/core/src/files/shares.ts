@@ -4,7 +4,12 @@
 
 import type { JsonStore } from '../db/store.js';
 import { ErrorCodes, YskError, tl} from '@ysk/shared';
-import { hashSharePassword, newShareToken, type FileShareRecord } from './manager.js';
+import {
+  hashSharePassword,
+  newShareToken,
+  safeHexEqual,
+  type FileShareRecord,
+} from './manager.js';
 
 function list(store: JsonStore): FileShareRecord[] {
   if (!Array.isArray(store.snapshot.file_shares)) {
@@ -68,7 +73,7 @@ export function getShareByToken(store: JsonStore, token: string): FileShareRecor
 export function verifySharePassword(row: FileShareRecord, password?: string): boolean {
   if (!row.passwordHash) return true;
   if (!password) return false;
-  return hashSharePassword(password) === row.passwordHash;
+  return safeHexEqual(hashSharePassword(password), row.passwordHash);
 }
 
 export function bumpShareDownload(store: JsonStore, token: string): void {

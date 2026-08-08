@@ -8,6 +8,8 @@ import {
   setWebDavSettings,
   issueWebDavToken,
   verifyWebDavToken,
+  verifyWebDavBasicAuth,
+  WEBDAV_USERNAME,
   buildPropfindResponse,
 } from './webdav.js';
 
@@ -23,6 +25,14 @@ describe('webdav', () => {
       expect(issued.token.length).toBeGreaterThan(10);
       expect(verifyWebDavToken(db, issued.token)).toBe(true);
       expect(verifyWebDavToken(db, 'wrong')).toBe(false);
+      // Basic: username must be ysk
+      const good = Buffer.from(`${WEBDAV_USERNAME}:${issued.token}`, 'utf8').toString(
+        'base64',
+      );
+      const badUser = Buffer.from(`admin:${issued.token}`, 'utf8').toString('base64');
+      expect(verifyWebDavBasicAuth(db, `Basic ${good}`)).toBe(true);
+      expect(verifyWebDavBasicAuth(db, `Basic ${badUser}`)).toBe(false);
+      expect(verifyWebDavBasicAuth(db, undefined)).toBe(false);
       const xml = buildPropfindResponse({
         href: '/dav/',
         entries: [

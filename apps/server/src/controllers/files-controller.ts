@@ -71,37 +71,43 @@ export async function handleFilesRoutes(
   url: URL,
   method: string,
 ): Promise<boolean> {
-  // Minimal WebDAV on /webdav/* (Basic ysk:token)
+  // Minimal WebDAV on /webdav/* (Basic ysk:token only)
   if (url.pathname === '/webdav' || url.pathname.startsWith('/webdav/')) {
-    const { getWebDavSettings, verifyWebDavToken, buildPropfindResponse, publicFilesRoot, FileManager } =
-      await import('@ysk/core');
+    const {
+      getWebDavSettings,
+      verifyWebDavBasicAuth,
+      buildPropfindResponse,
+      publicFilesRoot,
+      FileManager,
+    } = await import('@ysk/core');
     const settings = getWebDavSettings(ctx.db);
     if (!settings.enabled) {
       sendJson(res, 503, { ok: false, message: tl('notes.auto.n0206') });
       return true;
     }
-    const auth = req.headers.authorization ?? '';
-    let okAuth = false;
-    if (auth.startsWith('Basic ')) {
-      try {
-        const decoded = Buffer.from(auth.slice(6), 'base64').toString('utf8');
-        const pass = decoded.includes(':') ? decoded.slice(decoded.indexOf(':') + 1) : '';
-        okAuth = verifyWebDavToken(ctx.db, pass);
-      } catch {
-        okAuth = false;
-      }
-    }
-    if (!okAuth) {
+    if (!verifyWebDavBasicAuth(ctx.db, req.headers.authorization)) {
       res.writeHead(401, {
         'WWW-Authenticate': 'Basic realm="YSK WebDAV"',
-        'Content-Type': 'application/json' });
+        'Content-Type': 'application/json',
+      });
       res.end(JSON.stringify({ ok: false, message: tl('notes.auto.n0960') }));
       return true;
     }
-    const rel =
+    let rel =
       url.pathname === '/webdav' || url.pathname === '/webdav/'
         ? '.'
         : decodeURIComponent(url.pathname.replace(/^\/webdav\/?/, ''));
+    // Reject null bytes / path segments that attempt traversal (defense in depth)
+    if (
+      rel.includes('\0') ||
+      rel.split(/[/\\]/).some((seg) => seg === '..')
+    ) {
+      sendJson(res, 400, {
+        ok: false,
+        message: tl('notes.files.pathOutsideSandbox', { target: rel }),
+      });
+      return true;
+    }
     const fm = new FileManager(publicFilesRoot(ctx.dataDir));
     if (method === 'OPTIONS' || method === 'PROPFIND') {
       const entries =
