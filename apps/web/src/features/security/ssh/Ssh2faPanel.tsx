@@ -16,8 +16,7 @@ import { ActionBar,
   FormHint,
   FormLayout,
   Modal,
-  PromptDialog,
-} from '../../../shared/components/ui';
+  PromptDialog } from '../../../shared/components/ui';
 import { api } from '../../../shared/services/api';
 import {
   bindCall1,
@@ -28,8 +27,7 @@ import {
   bindInput,
   bindRefreshCatch,
   bindSet,
-  bindVoid,
-} from '../../../pages/bind-handlers';
+  bindVoid } from '../../../pages/bind-handlers';
 
 type Row = {
   id: string;
@@ -136,8 +134,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
         id: p.id,
         name: p.name,
         linuxUser: p.linuxUser,
-        homeDir: p.homeDir,
-      })),
+        homeDir: p.homeDir })),
     );
   }, []);
 
@@ -171,8 +168,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
         setReveal({
           secret: r.secret,
           otpauthUrl: r.otpauthUrl ?? '',
-          id: r.record.id,
-        });
+          id: r.record.id });
         setConfirmId(r.record.id);
         setConfirmCode('');
       }
@@ -216,8 +212,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
         notes?: string[];
       }>(`/api/v1/ssh/2fa/${id}/install`, {
         method: 'POST',
-        body: JSON.stringify({ apply: true }),
-      });
+        body: JSON.stringify({ apply: true }) });
       onFlash(
         r.ok && r.applied ? 'ok' : r.blocked ? 'error' : 'ok',
         (r.notes ?? []).join(' · ') ||
@@ -362,8 +357,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
                           setBusy(true);
                           void api
                             .requestRaw(`/api/v1/ssh/2fa/${row.id}?purgeFile=1`, {
-                              method: 'DELETE',
-                            })
+                              method: 'DELETE' })
                             .then(() => {
                               onFlash('ok', t('security.ssh.retiredOk'));
                               return refresh();
@@ -462,9 +456,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
                       method: 'POST',
                       body: JSON.stringify({
                         apply: false,
-                        recoveryUsers: recoveryUsers.split(/[\s,]+/).filter(Boolean),
-                      }),
-                    },
+                        recoveryUsers: recoveryUsers.split(/[\s,]+/).filter(Boolean) }) },
                   )
                   .then((r) => {
                     onFlash('ok', (r.notes ?? []).join(' · ') || 'strict dry-run');
@@ -645,9 +637,7 @@ export function Ssh2faPanel({ onFlash }: Props) {
               body: JSON.stringify({
                 apply: true,
                 totp,
-                recoveryUsers: recoveryUsers.split(/[\s,]+/).filter(Boolean),
-              }),
-            });
+                recoveryUsers: recoveryUsers.split(/[\s,]+/).filter(Boolean) }) });
             onFlash(
               r.ok ? 'ok' : 'error',
               (r.notes ?? []).join(' · ') || (r.ok ? t('security.ssh.appliedOk') : t('common.failed')),

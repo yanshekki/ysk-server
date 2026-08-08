@@ -10,8 +10,7 @@ import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
   softwareReadyRoute,
-  type FetchRoute,
-} from '../test/mock-fetch';
+  type FetchRoute } from '../test/mock-fetch';
 import { authStore } from '../shared/stores/auth-store';
 
 import { ProtectionPage } from './features/ProtectionPage';
@@ -92,23 +91,20 @@ const defenseRoutes = (): FetchRoute[] => [
       ],
       bans: {
         count: 1,
-        items: [{ ip: '203.0.113.10', source: 'fail2ban', jail: 'sshd', reason: 'auth' }],
-      },
+        items: [{ ip: '203.0.113.10', source: 'fail2ban', jail: 'sshd', reason: 'auth' }] },
       nginxLimits: {
         reqRate: '10r/s',
         burst: 20,
         connLimit: 40,
         confPath: '/etc/nginx/conf.d/d.conf',
-        exists: true,
-      },
+        exists: true },
       firewall: { active: 'inactive', installed: true },
       fail2ban: { active: 'inactive', installed: true, jails: 1 },
       labels: {
         firewall: { short: 'off', tone: 'warn' },
         fail2ban: { short: 'off', tone: 'warn' },
         apply: { short: 'written', tone: 'info' },
-        autoBan: { short: 'on', tone: 'ok' },
-      },
+        autoBan: { short: 'on', tone: 'ok' } },
       autoBan: {
         enabled: true,
         mode: 'normal',
@@ -116,17 +112,14 @@ const defenseRoutes = (): FetchRoute[] => [
         cooldownMinutes: 30,
         maxAutoBansPerHour: 20,
         whitelist: ['127.0.0.1'],
-        autoBansLastHour: 1,
-      },
+        autoBansLastHour: 1 },
       executeEnabled: false,
       isRoot: false,
       suggestions: [
         { id: 's1', title: 'Apply daily', body: 'x', action: 'preset:daily' },
         { id: 's2', title: 'Review bans', body: 'y', action: 'tab:bans' },
       ],
-      notes: [],
-    },
-  },
+      notes: [] } },
   {
     match: (url) => url.startsWith('/api/v1/defense/geoip/status'),
     body: {
@@ -148,19 +141,15 @@ const defenseRoutes = (): FetchRoute[] => [
         cityPolicyEnabled: false,
         asns: [],
         enforce: { autoBan: true, nginx: true, ufw: false },
-        autoUpdate: true,
-      },
+        autoUpdate: true },
       sources: [
         {
           filename: 'dbip-country.mmdb',
           present: true,
           mtime: new Date().toISOString(),
-          bytes: 1000,
-        },
+          bytes: 1000 },
       ],
-      meta: { lastSuccessAt: new Date().toISOString() },
-    },
-  },
+      meta: { lastSuccessAt: new Date().toISOString() } } },
   {
     match: (url) => url.startsWith('/api/v1/defense/automation'),
     body: {
@@ -173,8 +162,7 @@ const defenseRoutes = (): FetchRoute[] => [
           suggestEmergencyAt: 90,
           deescalateEnabled: true,
           deescalateToDailyBelow: 20,
-          holdMinutes: 30,
-        },
+          holdMinutes: 30 },
         autoBan: {
           enabled: true,
           mode: 'normal',
@@ -186,14 +174,10 @@ const defenseRoutes = (): FetchRoute[] => [
           cooldownMinutes: 30,
           maxAutoBansPerHour: 20,
           intervalSeconds: 60,
-          whitelist: ['127.0.0.1'],
-        },
+          whitelist: ['127.0.0.1'] },
         signalWeights: { highReqRate: 10, f2bBans: 5 },
-        cloudflare: { enabled: false, zones: [], onAutoEscalate: false },
-      },
-      mechanisms: [{ step: '1', mechanism: 'fail2ban', tunable: 'bantime' }],
-    },
-  },
+        cloudflare: { enabled: false, zones: [], onAutoEscalate: false } },
+      mechanisms: [{ step: '1', mechanism: 'fail2ban', tunable: 'bantime' }] } },
   {
     match: (url) => url.startsWith('/api/v1/defense/suspects'),
     body: {
@@ -206,8 +190,7 @@ const defenseRoutes = (): FetchRoute[] => [
           sources: ['nginx'],
           lastSeen: new Date().toISOString(),
           alreadyBanned: false,
-          whitelisted: false,
-        },
+          whitelisted: false },
         {
           ip: '198.51.100.8',
           score: 10,
@@ -216,42 +199,31 @@ const defenseRoutes = (): FetchRoute[] => [
           sources: ['nginx'],
           lastSeen: new Date().toISOString(),
           alreadyBanned: true,
-          whitelisted: false,
-        },
+          whitelisted: false },
       ],
-      notes: [],
-    },
-  },
+      notes: [] } },
   {
     match: (url) => url.startsWith('/api/v1/defense/timeline'),
     body: {
-      items: [{ at: new Date().toISOString(), kind: 'preset', title: 'daily', detail: 'ok' }],
-    },
-  },
+      items: [{ at: new Date().toISOString(), kind: 'preset', title: 'daily', detail: 'ok' }] } },
   {
     match: (url) => url.startsWith('/api/v1/defense/intel'),
     body: {
       topIps: [{ ip: '1.1.1.1', hits: 9, s429: 1, scan: 0, score: 4 }],
       vhostLimits: { withLimit: 1, total: 2, items: [{ server: 'a.com', limit: '10r/s' }] },
       hasCfToken: false,
-      cfZones: [],
-    },
-  },
+      cfZones: [] } },
   {
     match: (url) => url.startsWith('/api/v1/defense/bans'),
     body: {
       items: [{ ip: '203.0.113.10', source: 'fail2ban', jail: 'sshd' }],
-      meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-    },
-  },
+      meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } } },
   {
     match: /\/api\/v1\/defense/,
-    body: HONESTY_WRITTEN_BLOCKED,
-  },
+    body: HONESTY_WRITTEN_BLOCKED },
   {
     match: /\/api\/v1\/system\/firewall/,
-    body: { installed: true, active: 'inactive', rules: [], allowCount: 0, denyCount: 0 },
-  },
+    body: { installed: true, active: 'inactive', rules: [], allowCount: 0, denyCount: 0 } },
   {
     match: /\/api\/v1\/system\/fail2ban/,
     body: {
@@ -260,9 +232,7 @@ const defenseRoutes = (): FetchRoute[] => [
       jails: [{ name: 'sshd', currentlyBanned: 1 }],
       banned: [{ jail: 'sshd', ip: '203.0.113.10' }],
       ignoreIps: ['127.0.0.1'],
-      catalog: [],
-    },
-  },
+      catalog: [] } },
   { match: /.*/, body: { ok: true, items: [], ready: true, missing: [] } },
 ];
 
@@ -277,8 +247,7 @@ const networkRoutes = (): FetchRoute[] => [
           ok: true,
           notes: ['written ≠ applied on host'],
           blocked: false,
-          executeEnabled: false,
-        };
+          executeEnabled: false };
       }
       return {
         ok: true,
@@ -288,8 +257,7 @@ const networkRoutes = (): FetchRoute[] => [
           hasIp: true,
           networkManager: 'inactive',
           networkd: 'inactive',
-          canPersist: true,
-        },
+          canPersist: true },
         interfaces: [
           {
             name: 'eth0',
@@ -301,8 +269,7 @@ const networkRoutes = (): FetchRoute[] => [
             isLoopback: false,
             isDefaultEgress: true,
             addrs: [{ family: 'inet', local: '10.0.0.5', prefixlen: 24 }],
-            stats: { rxBytes: 1e6, txBytes: 2e6, rxPackets: 100, txPackets: 200 },
-          },
+            stats: { rxBytes: 1e6, txBytes: 2e6, rxPackets: 100, txPackets: 200 } },
           {
             name: 'lo',
             ifindex: 1,
@@ -310,8 +277,7 @@ const networkRoutes = (): FetchRoute[] => [
             flags: ['UP', 'LOOPBACK'],
             mtu: 65536,
             isLoopback: true,
-            addrs: [{ family: 'inet', local: '127.0.0.1', prefixlen: 8 }],
-          },
+            addrs: [{ family: 'inet', local: '127.0.0.1', prefixlen: 8 }] },
         ],
         routes: [
           { dst: 'default', gateway: '10.0.0.1', dev: 'eth0' },
@@ -328,12 +294,9 @@ const networkRoutes = (): FetchRoute[] => [
           notes: [],
           ignoreAutoDns: true,
           canApply: true,
-          mode: 'static',
-        },
-        raw: { addr: 'addr show', route: 'route show' },
-      };
-    },
-  },
+          mode: 'static' },
+        raw: { addr: 'addr show', route: 'route show' } };
+    } },
   { match: /.*/, body: { ok: true, items: [] } },
 ];
 
@@ -347,8 +310,7 @@ const cdnRoutes = (): FetchRoute[] => [
       sites: {
         total: 1,
         byApplyStatus: { planned: 1 },
-        rows: [{ id: 'site-1', name: 'Demo site', apply_status: 'planned' }],
-      },
+        rows: [{ id: 'site-1', name: 'Demo site', apply_status: 'planned' }] },
       cache: [
         {
           siteId: 'site-1',
@@ -357,12 +319,9 @@ const cdnRoutes = (): FetchRoute[] => [
           hits: 10,
           misses: 2,
           method: 'stub',
-          notes: [],
-        },
+          notes: [] },
       ],
-      notes: [],
-    },
-  },
+      notes: [] } },
   {
     match: (url, init) =>
       url.startsWith('/api/v1/cdn/nodes') && (init?.method ?? 'GET').toUpperCase() === 'GET',
@@ -378,11 +337,8 @@ const cdnRoutes = (): FetchRoute[] => [
           weight: 100,
           status: 'online',
           healthUrl: 'http://203.0.113.10/health',
-          baseUrl: 'http://203.0.113.10',
-        },
-      ],
-    },
-  },
+          baseUrl: 'http://203.0.113.10' },
+      ] } },
   {
     match: (url, init) =>
       url.startsWith('/api/v1/cdn/sites') && (init?.method ?? 'GET').toUpperCase() === 'GET',
@@ -399,19 +355,14 @@ const cdnRoutes = (): FetchRoute[] => [
           cache: { enabled: true, zoneSize: '10m', maxAge: '10m' },
           ssl: { mode: 'off' },
           apply_status: 'planned',
-          edge_status: { n1: 'planned' },
-        },
-      ],
-    },
-  },
+          edge_status: { n1: 'planned' } },
+      ] } },
   {
     match: (url) => url.startsWith('/api/v1/resources/dns/zones'),
-    body: { items: [{ id: 'z1', zone: 'example.com' }] },
-  },
+    body: { items: [{ id: 'z1', zone: 'example.com' }] } },
   {
     match: /\/api\/v1\/cdn/,
-    body: { ...HONESTY_WRITTEN_BLOCKED, conf: '# conf', contentHash: 'h1' },
-  },
+    body: { ...HONESTY_WRITTEN_BLOCKED, conf: '# conf', contentHash: 'h1' } },
   { match: /.*/, body: { ok: true, items: [] } },
 ];
 
@@ -437,9 +388,7 @@ const dnsRoutes = (): FetchRoute[] => [
             serverIp: '203.0.113.20',
             nsName: 'ns1.new.example.com',
             ttl: 300,
-            apply_status: 'planned',
-          },
-        };
+            apply_status: 'planned' } };
       }
       if (url.includes('dns/zones')) {
         return {
@@ -451,11 +400,9 @@ const dnsRoutes = (): FetchRoute[] => [
               nsName: 'ns1.example.com',
               ttl: 300,
               apply_status: 'planned',
-              backend: 'bind',
-            },
+              backend: 'bind' },
           ],
-          meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-        };
+          meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } };
       }
       if (url.includes('dns/records')) {
         return {
@@ -466,15 +413,12 @@ const dnsRoutes = (): FetchRoute[] => [
               type: 'A',
               name: '@',
               value: '203.0.113.10',
-              ttl: 300,
-            },
+              ttl: 300 },
           ],
-          meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-        };
+          meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } };
       }
       return { items: [] };
-    },
-  },
+    } },
   {
     match: /\/api\/v1\/dns/,
     body: {
@@ -484,9 +428,7 @@ const dnsRoutes = (): FetchRoute[] => [
       dsRecord: 'example.com. IN DS 1 13 2 AB',
       notes: ['ok'],
       items: [{ id: 'peer-1', host: 'ns2.example.com', user: 'ysk' }],
-      peers: [{ host: 'ns2.example.com', ok: false, notes: ['timeout'] }],
-    },
-  },
+      peers: [{ host: 'ns2.example.com', ok: false, notes: ['timeout'] }] } },
   { match: /.*/, body: { ok: true, items: [] } },
 ];
 
@@ -504,13 +446,10 @@ const backupsRoutes = (): FetchRoute[] => [
           port: 22,
           username: 'ysk',
           path: '/backups/ysk',
-          password: '***',
-        },
+          password: '***' },
         exclusions: ['node_modules'],
-        restic: { enabled: true, repoPath: '/var/backups/restic', password: '***' },
-      };
-    },
-  },
+        restic: { enabled: true, repoPath: '/var/backups/restic', password: '***' } };
+    } },
   {
     match: /\/api\/v1\/backups/,
     handler: (url, init) => {
@@ -525,10 +464,8 @@ const backupsRoutes = (): FetchRoute[] => [
               time: new Date().toISOString(),
               hostname: 'ysk',
               paths: ['/home/demo'],
-              short_id: 'abc',
-            },
-          ],
-        };
+              short_id: 'abc' },
+          ] };
       }
       return {
         items: [
@@ -538,17 +475,13 @@ const backupsRoutes = (): FetchRoute[] => [
             path: '/var/backups/p1.tgz',
             bytes: 2048,
             mtime: new Date().toISOString(),
-            kind: 'full',
-          },
+            kind: 'full' },
         ],
-        lastRun: { at: new Date().toISOString(), ok: true },
-      };
-    },
-  },
+        lastRun: { at: new Date().toISOString(), ok: true } };
+    } },
   {
     match: /\/api\/v1\/projects/,
-    body: { items: [{ id: 'p1', name: 'Demo', domain: 'demo.example.com' }] },
-  },
+    body: { items: [{ id: 'p1', name: 'Demo', domain: 'demo.example.com' }] } },
   { match: /.*/, body: { ok: true, items: [] } },
 ];
 
@@ -569,8 +502,7 @@ const logsRoutes = (): FetchRoute[] => [
           maxLines: 300,
           sources: 2,
           units: 1,
-          projects: 1,
-        };
+          projects: 1 };
       }
       if (url.includes('/sources')) {
         return {
@@ -581,10 +513,8 @@ const logsRoutes = (): FetchRoute[] => [
               label: 'nginx',
               unit: 'nginx.service',
               group: 'web',
-              available: true,
-            },
-          ],
-        };
+              available: true },
+          ] };
       }
       if (url.includes('/journal/units')) {
         return { items: [{ unit: 'nginx.service', active: 'active' }] };
@@ -596,10 +526,8 @@ const logsRoutes = (): FetchRoute[] => [
               projectId: 'p1',
               name: 'Demo',
               files: [{ name: 'app.log', bytes: 10, previewable: true }],
-              related: [],
-            },
-          ],
-        };
+              related: [] },
+          ] };
       }
       if (url.includes('/settings')) {
         return {
@@ -612,20 +540,16 @@ const logsRoutes = (): FetchRoute[] => [
               id: 'b1',
               name: 'errors',
               source: 'journal:nginx.service',
-              grep: 'error',
-            },
-          ],
-        };
+              grep: 'error' },
+          ] };
       }
       return {
         ok: true,
         text: 'GET / 200\nerror denied\n',
         lines: ['GET / 200', 'error denied'],
         truncated: false,
-        notes: [],
-      };
-    },
-  },
+        notes: [] };
+    } },
   { match: /.*/, body: { ok: true, items: [] } },
 ];
 
@@ -641,14 +565,11 @@ const metricsRoutes = (): FetchRoute[] => [
           name: 'Demo',
           usedMb: 120,
           quotaMb: 1024,
-          path: '/home/demo',
-        },
+          path: '/home/demo' },
       ],
       totalMb: 1024,
       usedMb: 120,
-      at: new Date().toISOString(),
-    },
-  },
+      at: new Date().toISOString() } },
   {
     match: (url) => url.startsWith('/api/v1/metrics/processes'),
     handler: (url, init) => {
@@ -658,8 +579,7 @@ const metricsRoutes = (): FetchRoute[] => [
           ok: true,
           pid: 42,
           signal: 'TERM',
-          stillAlive: true,
-        };
+          stillAlive: true };
       }
       if (url.includes('detail') || /processes\/\d+/.test(url)) {
         return {
@@ -671,8 +591,7 @@ const metricsRoutes = (): FetchRoute[] => [
           mem: 1.2,
           nice: 0,
           state: 'S',
-          threads: 2,
-        };
+          threads: 2 };
       }
       return {
         ok: true,
@@ -689,8 +608,7 @@ const metricsRoutes = (): FetchRoute[] => [
             state: 'S',
             etime: '01:00',
             resKiB: 20000,
-            virtKiB: 100000,
-          },
+            virtKiB: 100000 },
         ],
         notes: [],
         topHeader: {
@@ -708,8 +626,7 @@ const metricsRoutes = (): FetchRoute[] => [
             hi: 0,
             si: 0,
             st: 0,
-            busyPct: 12,
-          },
+            busyPct: 12 },
           cpus: [
             {
               us: 5,
@@ -720,22 +637,17 @@ const metricsRoutes = (): FetchRoute[] => [
               hi: 0,
               si: 0,
               st: 0,
-              busyPct: 7,
-            },
+              busyPct: 7 },
           ],
           memory: {
             totalKiB: 2e6,
             freeKiB: 1e6,
             usedKiB: 5e5,
             buffCacheKiB: 5e5,
-            availableKiB: 1.5e6,
-          },
+            availableKiB: 1.5e6 },
           swap: { totalKiB: 1e6, freeKiB: 9e5, usedKiB: 1e5 },
-          notes: [],
-        },
-      };
-    },
-  },
+          notes: [] } };
+    } },
   {
     match: (url) => url.startsWith('/api/v1/metrics'),
     body: {
@@ -746,8 +658,7 @@ const metricsRoutes = (): FetchRoute[] => [
         total: 2e9,
         free: 1e9,
         usedRatio: 0.25,
-        available: 1.5e9,
-      },
+        available: 1.5e9 },
       uptimeSec: 3600,
       disk: { path: '/', free: 9e10, total: 1e11, usedRatio: 0.1 },
       diskMounts: [
@@ -757,13 +668,10 @@ const metricsRoutes = (): FetchRoute[] => [
           used: 1e10,
           avail: 9e10,
           usedRatio: 0.1,
-          mount: '/',
-        },
+          mount: '/' },
       ],
       alerts: ['disk_high'],
-      notes: [],
-    },
-  },
+      notes: [] } },
   { match: /.*/, body: { ok: true, items: [] } },
 ];
 
@@ -778,22 +686,18 @@ const sqlRoutes = (): FetchRoute[] => [
       engine: 'mysql',
       executeEnabled: false,
       isRoot: false,
-      version: '8.0',
-    },
-  },
+      version: '8.0' } },
   {
     match: (url, init) =>
       /\/api\/v1\/system\/db\//.test(url) && (init?.method ?? 'GET').toUpperCase() !== 'GET',
-    body: HONESTY_WRITTEN_BLOCKED,
-  },
+    body: HONESTY_WRITTEN_BLOCKED },
   {
     match: /\/api\/v1\/resources\//,
     handler: (_u, init) => {
       if ((init?.method ?? 'GET').toUpperCase() !== 'GET') {
         return {
           ...HONESTY_WRITTEN_BLOCKED,
-          item: { id: 'db1', name: 'app_db', engine: 'mysql', host: 'localhost' },
-        };
+          item: { id: 'db1', name: 'app_db', engine: 'mysql', host: 'localhost' } };
       }
       return {
         items: [
@@ -803,13 +707,10 @@ const sqlRoutes = (): FetchRoute[] => [
             engine: 'mysql',
             username: 'app',
             host: 'localhost',
-            apply_status: 'planned',
-          },
+            apply_status: 'planned' },
         ],
-        meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-      };
-    },
-  },
+        meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } };
+    } },
   {
     match: /\/api\/v1\/db\//,
     handler: (_u, init) => {
@@ -823,20 +724,16 @@ const sqlRoutes = (): FetchRoute[] => [
             engine: 'mysql',
             username: 'ro_tmp',
             dbName: 'app_db',
-            expiresAt: new Date(Date.now() + 86400000).toISOString(),
-          },
+            expiresAt: new Date(Date.now() + 86400000).toISOString() },
           {
             id: 'rh1',
             engine: 'mysql',
             label: 'replica',
             host: '10.0.0.9',
             port: 3306,
-            username: 'repl',
-          },
-        ],
-      };
-    },
-  },
+            username: 'repl' },
+        ] };
+    } },
   { match: /.*/, body: { ok: true, items: [] } },
 ];
 
@@ -845,8 +742,7 @@ describe('coverage climb deep interactions', () => {
     authStore.setSession('t', {
       username: 'admin',
       roles: ['admin'],
-      capabilities: [],
-    });
+      capabilities: [] });
     vi.spyOn(window, 'confirm').mockReturnValue(true);
   });
   afterEach(() => {
@@ -862,8 +758,7 @@ describe('coverage climb deep interactions', () => {
       installFetchMock(defenseRoutes());
       renderAt('/protection', <ProtectionPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument(), {
-        timeout: 8000,
-      });
+        timeout: 8000 });
 
       await clickAllTabs(user);
 
@@ -979,8 +874,7 @@ describe('coverage climb deep interactions', () => {
       installFetchMock(cdnRoutes());
       renderAt('/cdn', <CdnPage />);
       await waitFor(() => expect(screen.getByText(/edge-1/i)).toBeInTheDocument(), {
-        timeout: 8000,
-      });
+        timeout: 8000 });
 
       await clickMatching(user, /add node/i, 1);
       const nameField =
@@ -1043,8 +937,7 @@ describe('coverage climb deep interactions', () => {
       installFetchMock(dnsRoutes());
       renderAt('/dns', <DnsPage />);
       await waitFor(() => expect(screen.getByText(/example\.com/i)).toBeInTheDocument(), {
-        timeout: 8000,
-      });
+        timeout: 8000 });
 
       // Select zone row
       try {
@@ -1100,8 +993,7 @@ describe('coverage climb deep interactions', () => {
       installFetchMock(backupsRoutes());
       renderAt('/backups', <BackupsPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument(), {
-        timeout: 8000,
-      });
+        timeout: 8000 });
       await clickAllTabs(user);
       await clickMatching(
         user,
@@ -1122,8 +1014,7 @@ describe('coverage climb deep interactions', () => {
       installFetchMock(logsRoutes());
       renderAt('/logs', <LogsPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument(), {
-        timeout: 8000,
-      });
+        timeout: 8000 });
       await clickAllTabs(user);
       await clickMatching(user, /refresh|query|run|search|export|save|bookmark|vacuum/i, 10);
       // pick a source if listed
@@ -1146,8 +1037,7 @@ describe('coverage climb deep interactions', () => {
       installFetchMock(metricsRoutes());
       renderAt('/metrics', <MetricsPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument(), {
-        timeout: 8000,
-      });
+        timeout: 8000 });
       await clickAllTabs(user);
 
       const live = screen.queryByRole('tab', { name: /live/i });
@@ -1189,8 +1079,7 @@ describe('coverage climb deep interactions', () => {
       installFetchMock(sqlRoutes());
       renderAt('/databases/mysql-engine', <SqlEnginePage engine="mysql" />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument(), {
-        timeout: 8000,
-      });
+        timeout: 8000 });
       await clickAllTabs(user);
       await clickMatching(user, /create|install|start|adminer|expire|clean/i, 8);
 
@@ -1248,20 +1137,15 @@ describe('coverage climb deep interactions', () => {
               mainPid: null,
               activeEnterTimestamp: null,
               fragmentPath: null,
-              description: 'YSK',
-            },
-          },
-        },
+              description: 'YSK' } } },
         {
           match: /\/api\/v1\/system\/systemd/,
-          body: HONESTY_WRITTEN_BLOCKED,
-        },
+          body: HONESTY_WRITTEN_BLOCKED },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
       renderAt('/systemd', <SystemdUnitPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument(), {
-        timeout: 8000,
-      });
+        timeout: 8000 });
       await clickAllTabs(user);
       await clickMatching(user, /write template|install|refresh|enable/i, 6);
       expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
@@ -1287,14 +1171,11 @@ describe('coverage climb deep interactions', () => {
                   roles: ['admin'],
                   packageId: 'pkg1',
                   suspended: false,
-                  locale: 'en',
-                },
+                  locale: 'en' },
               ],
               meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-              hostUsage: { projects: 1, diskMb: 100, limitMb: 10240 },
-            };
-          },
-        },
+              hostUsage: { projects: 1, diskMb: 100, limitMb: 10240 } };
+          } },
         {
           match: (url) => url.startsWith('/api/v1/packages'),
           handler: (_u, init) => {
@@ -1311,12 +1192,9 @@ describe('coverage climb deep interactions', () => {
                   bandwidthMb: 0,
                   ftp: true,
                   ssh: true,
-                  notes: '',
-                },
-              ],
-            };
-          },
-        },
+                  notes: '' },
+              ] };
+          } },
         {
           match: (url) => url.includes('/api/v1/rbac'),
           handler: (_u, init) => {
@@ -1327,24 +1205,19 @@ describe('coverage climb deep interactions', () => {
                   role: 'operator',
                   dirty: true,
                   policy: { maxLevel: 'write-high', capabilities: ['projects.read'] },
-                  factory: { maxLevel: 'write-high', capabilities: ['projects.read'] },
-                },
+                  factory: { maxLevel: 'write-high', capabilities: ['projects.read'] } },
                 {
                   role: 'admin',
                   dirty: false,
                   policy: { maxLevel: 'admin', capabilities: [] },
-                  factory: { maxLevel: 'admin', capabilities: [] },
-                },
-              ],
-            };
-          },
-        },
+                  factory: { maxLevel: 'admin', capabilities: [] } },
+              ] };
+          } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
       renderAt('/users', <UsersPage />);
       await waitFor(() => expect(screen.getByText(/admin/i)).toBeInTheDocument(), {
-        timeout: 8000,
-      });
+        timeout: 8000 });
       await clickAllTabs(user);
       await clickMatching(user, /create user|create package|details|delete|save|restore/i, 8);
       const dialog = screen.queryAllByRole('dialog')[0];
@@ -1391,10 +1264,8 @@ describe('coverage climb deep interactions', () => {
                     type: 'file',
                     size: 1,
                     deletedAt: now,
-                    mtime: now,
-                  },
-                ],
-              };
+                    mtime: now },
+                ] };
             }
             if (url.includes('share')) {
               return {
@@ -1403,10 +1274,8 @@ describe('coverage climb deep interactions', () => {
                     id: 'sh1',
                     path: 'a.txt',
                     token: 'tok',
-                    createdAt: now,
-                  },
-                ],
-              };
+                    createdAt: now },
+                ] };
             }
             return {
               ok: true,
@@ -1418,16 +1287,13 @@ describe('coverage climb deep interactions', () => {
               items: [
                 { name: 'a.txt', path: 'a.txt', type: 'file', size: 1, mtime: now },
                 { name: 'docs', path: 'docs', type: 'dir', size: 0, mtime: now },
-              ],
-            };
-          },
-        },
+              ] };
+          } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
       renderAt('/files', <FilesPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument(), {
-        timeout: 8000,
-      });
+        timeout: 8000 });
       await clickAllTabs(user);
       await clickMatching(
         user,
@@ -1466,10 +1332,8 @@ describe('coverage climb deep interactions', () => {
                     agent_id: 'ag-1',
                     status: 'done',
                     payload: { type: 'ping' },
-                    createdAt: new Date().toISOString(),
-                  },
-                ],
-              };
+                    createdAt: new Date().toISOString() },
+                ] };
             }
             return {
               items: [
@@ -1479,12 +1343,9 @@ describe('coverage climb deep interactions', () => {
                   status: 'connected',
                   group: 'edge',
                   last_seen_at: new Date().toISOString(),
-                  meta: { hostname: 'edge-1' },
-                },
-              ],
-            };
-          },
-        },
+                  meta: { hostname: 'edge-1' } },
+              ] };
+          } },
         {
           match: /\/api\/v1\/agents\//,
           handler: (_u, init) => {
@@ -1495,8 +1356,7 @@ describe('coverage climb deep interactions', () => {
                 requiresExecute: true,
                 notes: ['Host execute is off'],
                 kind: 'openclaw',
-                status: 'missing',
-              };
+                status: 'missing' };
             }
             return {
               items: [
@@ -1508,18 +1368,14 @@ describe('coverage climb deep interactions', () => {
                   unitActive: 'inactive',
                   pathExists: false,
                   installPath: '/opt/openclaw',
-                  probedAt: new Date().toISOString(),
-                },
-              ],
-            };
-          },
-        },
+                  probedAt: new Date().toISOString() },
+              ] };
+          } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
       renderAt('/agents', <AgentsPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument(), {
-        timeout: 8000,
-      });
+        timeout: 8000 });
       await clickMatching(user, /register|command|history|delete|refresh|probe|install|plan/i, 10);
       const dialog = screen.queryAllByRole('dialog')[0];
       if (dialog) {
@@ -1553,8 +1409,7 @@ describe('coverage climb deep interactions', () => {
                 fingerprintSha256: 'SHA256:abcdef0123456789',
                 publicKey: 'ssh-ed25519 AAAA',
                 createdAt: new Date().toISOString(),
-                binding: { linuxUser: 'ysk', homeDir: '/home/ysk' },
-              },
+                binding: { linuxUser: 'ysk', homeDir: '/home/ysk' } },
             ],
             host: { notes: [], lights: { package: 'ok', pam: 'ok', kbdInteractive: 'ok' } },
             pamSnippet: '#',
@@ -1566,15 +1421,11 @@ describe('coverage climb deep interactions', () => {
               name: 'new',
               purpose: 'panel_outbound',
               status: 'stored',
-              fingerprintSha256: 'SHA256:x',
-            },
-            privateKey: 'PRIVATE',
-          },
-        },
+              fingerprintSha256: 'SHA256:x' },
+            privateKey: 'PRIVATE' } },
         {
           match: /\/api\/v1\/sftp\//,
-          body: { ok: true, items: [], snippet: '', notes: [] },
-        },
+          body: { ok: true, items: [], snippet: '', notes: [] } },
         {
           match: /\/api\/v1\/security/,
           body: {
@@ -1585,9 +1436,7 @@ describe('coverage climb deep interactions', () => {
             apiKeys: [{ id: 'k1', name: 'ci', createdAt: new Date().toISOString() }],
             tools: [],
             approvals: [],
-            webauthnCredentials: [],
-          },
-        },
+            webauthnCredentials: [] } },
         {
           match: (url) =>
             url === '/api/v1/email/domains' || url.startsWith('/api/v1/email/domains?'),
@@ -1598,11 +1447,8 @@ describe('coverage climb deep interactions', () => {
                 domain: 'example.com',
                 rate_limit_per_hour: 200,
                 antispam: true,
-                server_ip: '203.0.113.10',
-              },
-            ],
-          },
-        },
+                server_ip: '203.0.113.10' },
+            ] } },
         {
           match: (url) => url.includes('/api/v1/email/domains/dom-1'),
           handler: (url, init) => {
@@ -1613,8 +1459,7 @@ describe('coverage climb deep interactions', () => {
                 records: [{ type: 'MX', name: '@', value: 'mail.example.com', note: 'mail' }],
                 externalTodos: ['Add SPF at registrar'],
                 health: { score: 50, maxScore: 100, messages: ['SPF missing'] },
-                notes: [],
-              };
+                notes: [] };
             }
             if (url.includes('/mailboxes')) {
               return {
@@ -1623,15 +1468,12 @@ describe('coverage climb deep interactions', () => {
                     id: 'mb1',
                     local_part: 'info',
                     address: 'info@example.com',
-                    quotaMb: 500,
-                  },
-                ],
-              };
+                    quotaMb: 500 },
+                ] };
             }
             if (url.includes('/aliases')) {
               return {
-                items: [{ id: 'al1', source: 'hello@example.com', dest: 'info@example.com' }],
-              };
+                items: [{ id: 'al1', source: 'hello@example.com', dest: 'info@example.com' }] };
             }
             if (url.includes('/deliverability')) {
               return { ok: true, score: 50, checks: [], recommendations: ['Add SPF'] };
@@ -1642,10 +1484,8 @@ describe('coverage climb deep interactions', () => {
               rate_limit_per_hour: 200,
               antispam: true,
               server_ip: '203.0.113.10',
-              apply_status: 'planned',
-            };
-          },
-        },
+              apply_status: 'planned' };
+          } },
         { match: /\/api\/v1\/projects/, body: { items: [] } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
@@ -1658,8 +1498,7 @@ describe('coverage climb deep interactions', () => {
 
       renderAt('/email/dom-1', <EmailDomainPage />, '/email/:id');
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument(), {
-        timeout: 8000,
-      });
+        timeout: 8000 });
       await clickAllTabs(user);
       await clickMatching(
         user,

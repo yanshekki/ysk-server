@@ -7,8 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
   listFirewallPortChips,
-  parsePortChipValue,
-} from '@ysk/shared';
+  parsePortChipValue } from '@ysk/shared';
 import {
   PageGuide,
   ActionBar,
@@ -28,8 +27,7 @@ import {
   SoftwareInstallBanner,
   PageTabs,
   ConfirmDialog,
-  ServerListFilters,
-} from '../../shared/components/ui';
+  ServerListFilters } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
@@ -188,8 +186,7 @@ export function mapFirewallRules(
       action: r.action ?? '?',
       to: r.to ?? r.raw ?? '—',
       from: r.from ?? '—',
-      raw: r.raw ?? `${r.num ?? ''}`,
-    }));
+      raw: r.raw ?? `${r.num ?? ''}` }));
   }
   return (numbered ?? []).map((raw) => {
     if (typeof raw === 'string') {
@@ -198,16 +195,14 @@ export function mapFirewallRules(
         action: '?',
         to: raw,
         from: '—',
-        raw,
-      };
+        raw };
     }
     return {
       num: raw.num,
       action: raw.action ?? '?',
       to: raw.to ?? raw.raw ?? '—',
       from: raw.from ?? '—',
-      raw: raw.raw ?? `${raw.num ?? ''}`,
-    };
+      raw: raw.raw ?? `${raw.num ?? ''}` };
   });
 }
 
@@ -248,8 +243,7 @@ export function FirewallPage() {
       PROFILE_DEFS.map((p) => ({
         ...p,
         label: t(`firewall.profiles.${p.id}.label`),
-        short: t(`firewall.profiles.${p.id}.short`),
-      })),
+        short: t(`firewall.profiles.${p.id}.short`) })),
     [t],
   );
 
@@ -288,8 +282,7 @@ export function FirewallPage() {
       const r = (await systemApi.firewallApply({
         allowSmtp: p.allowSmtp,
         apply: true,
-        extraPortSpecs: parsePortSpecs(p.extra),
-      })) as OpsResultLike;
+        extraPortSpecs: parsePortSpecs(p.extra) })) as OpsResultLike;
       await refresh();
       return r;
     }, t('firewall.appliedProfile', { label: p.label }));
@@ -303,38 +296,30 @@ export function FirewallPage() {
       status={{
         pill: {
           label: status?.activeLabel ?? '—',
-          tone: firewallActiveTone(active, status?.installed),
-        },
+          tone: firewallActiveTone(active, status?.installed) },
         items: [
           {
             label: t('firewall.statRules'),
-            value: status?.rules?.length ?? status?.numberedRules?.length ?? 0,
-          },
+            value: status?.rules?.length ?? status?.numberedRules?.length ?? 0 },
           {
             label: t('firewall.statDenyIps'),
-            value: status?.denyFromIps?.length ?? 0,
-          },
+            value: status?.denyFromIps?.length ?? 0 },
           {
             label: t('firewall.statAllow'),
-            value: status?.allowCount ?? 0,
-          },
+            value: status?.allowCount ?? 0 },
           {
             label: t('firewall.statDeny'),
-            value: status?.denyCount ?? 0,
-          },
+            value: status?.denyCount ?? 0 },
           {
             label: t('firewall.statDefaultIn'),
-            value: status?.defaultIncoming ?? '—',
-          },
+            value: status?.defaultIncoming ?? '—' },
           {
             label: 'EXECUTE',
             value: status?.executeEnabled
               ? t('firewall.executeOn')
               : t('firewall.executeOff'),
-            tone: status?.executeEnabled ? 'ok' : 'warn',
-          },
-        ],
-      }}
+            tone: status?.executeEnabled ? 'ok' : 'warn' },
+        ] }}
       actions={
         <div className="def-head-actions">
           <Button
@@ -390,14 +375,12 @@ export function FirewallPage() {
           {
             id: 'rules',
             label: t('firewall.tabs.rules'),
-            badge: status?.rules?.length || status?.numberedRules?.length || undefined,
-          },
+            badge: status?.rules?.length || status?.numberedRules?.length || undefined },
           { id: 'ports', label: t('firewall.tabs.ports') },
           {
             id: 'deny',
             label: t('firewall.tabs.deny'),
-            badge: status?.denyFromIps?.length || undefined,
-          },
+            badge: status?.denyFromIps?.length || undefined },
           { id: 'profiles', label: t('firewall.tabs.profiles') },
           { id: 'about', label: t('firewall.tabs.about') },
         ]}
@@ -439,27 +422,23 @@ export function FirewallPage() {
                     header: '#',
                     className: 'muted',
                     nowrap: true,
-                    render: (r) => r.num ?? '—',
-                  },
+                    render: (r) => r.num ?? '—' },
                   {
                     key: 'action',
                     header: t('firewall.colAction'),
                     nowrap: true,
                     render: (r) => (
                       <Badge tone={firewallActionTone(r.action)}>{r.action}</Badge>
-                    ),
-                  },
+                    ) },
                   {
                     key: 'to',
                     header: t('firewall.colTo'),
-                    render: (r) => <code className="inline">{r.to ?? r.raw}</code>,
-                  },
+                    render: (r) => <code className="inline">{r.to ?? r.raw}</code> },
                   {
                     key: 'from',
                     header: t('firewall.colFrom'),
                     className: 'u-text-sm',
-                    render: (r) => r.from ?? '—',
-                  },
+                    render: (r) => r.from ?? '—' },
                 ]}
                 rows={tableRules}
                 rowKey={(r, i) => r.raw + i}
@@ -522,8 +501,7 @@ export function FirewallPage() {
                   <PresetChips
                     options={SERVICE_PORT_CHIPS.map((c) => ({
                       value: c.value,
-                      label: c.label,
-                    }))}
+                      label: c.label }))}
                     value={portInput}
                     onChange={onPortChipChange}
                     allowCustom
@@ -557,12 +535,9 @@ export function FirewallPage() {
                       ? t('firewall.privatePortWarnWithFrom', {
                           service: chip.label,
                           defaultValue: t('firewall.privatePortWarn', {
-                            service: chip.label,
-                          }),
-                        })
+                            service: chip.label }) })
                       : t('firewall.privatePortWarn', {
-                          service: chip.label,
-                        })}
+                          service: chip.label })}
                   </Alert>
                 );
               })()}
@@ -600,8 +575,7 @@ export function FirewallPage() {
                         ? t('firewall.allowedPortFrom', {
                             proto,
                             port,
-                            from,
-                          })
+                            from })
                         : t('firewall.allowedPort', { proto, port });
                     })())
                   }
@@ -759,8 +733,7 @@ export function FirewallPage() {
                       const r = (await systemApi.firewallApply({
                         allowSmtp,
                         apply: true,
-                        extraPortSpecs: parsePortSpecs(extraPorts),
-                      })) as OpsResultLike;
+                        extraPortSpecs: parsePortSpecs(extraPorts) })) as OpsResultLike;
                       await refresh();
                       return r;
                     }, t('firewall.appliedCustom'))

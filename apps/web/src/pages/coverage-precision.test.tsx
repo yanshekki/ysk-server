@@ -11,15 +11,13 @@ import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
   softwareReadyRoute,
-  type FetchRoute,
-} from '../test/mock-fetch';
+  type FetchRoute } from '../test/mock-fetch';
 import { authStore } from '../shared/stores/auth-store';
 import {
   humanizeOperatorNote,
   isOperatorNoise,
   looksLikeBlockedMessage,
-  sanitizeOperatorNotes,
-} from '../shared/lib/operator-messages';
+  sanitizeOperatorNotes } from '../shared/lib/operator-messages';
 import { setAppLocale, cycleAppLocale, applyUserLocale } from '../shared/lib/i18n';
 
 import { ProtectionPage } from './features/ProtectionPage';
@@ -139,8 +137,7 @@ describe('operator-messages + i18n unit', () => {
     installFetchMock([
       {
         match: (url) => url.includes('/auth/locale') || url.includes('/locale'),
-        body: { ok: true, user: { username: 'admin', roles: ['admin'], locale: 'zh-HK' } },
-      },
+        body: { ok: true, user: { username: 'admin', roles: ['admin'], locale: 'zh-HK' } } },
       { match: /.*/, body: { ok: true } },
     ]);
     setAppLocale('zh-CN');
@@ -173,8 +170,7 @@ describe('precision page handlers', () => {
     try {
       Object.defineProperty(navigator, 'clipboard', {
         configurable: true,
-        value: { writeText: vi.fn().mockResolvedValue(undefined) },
-      });
+        value: { writeText: vi.fn().mockResolvedValue(undefined) } });
     } catch {
       /* ignore */
     }
@@ -213,15 +209,13 @@ describe('precision page handlers', () => {
             ],
             bans: {
               count: 1,
-              items: [{ ip: '203.0.113.9', source: 'fail2ban', jail: 'sshd', reason: 'auth' }],
-            },
+              items: [{ ip: '203.0.113.9', source: 'fail2ban', jail: 'sshd', reason: 'auth' }] },
             nginxLimits: {
               reqRate: '10r/s',
               burst: 20,
               connLimit: 40,
               confPath: '/x',
-              exists: true,
-            },
+              exists: true },
             firewall: { active: 'active', installed: true },
             fail2ban: { active: 'active', installed: true, jails: 2 },
             autoBan: {
@@ -230,8 +224,7 @@ describe('precision page handlers', () => {
               method: 'fail2ban',
               cooldownMinutes: 30,
               maxAutoBansPerHour: 20,
-              whitelist: [],
-            },
+              whitelist: [] },
             executeEnabled: true,
             isRoot: false,
             suggestions: [{ id: 's1', title: 'Apply', body: 'x', action: 'preset:daily' }],
@@ -240,9 +233,7 @@ describe('precision page handlers', () => {
               'Wrote nginx 00-ysk-defense /home/demo/x',
               'Wrote jail.local fail2ban',
               'a'.repeat(140) + ' /home/user/long/path',
-            ],
-          },
-        },
+            ] } },
         {
           match: (url) => url.startsWith('/api/v1/defense/timeline'),
           body: {
@@ -250,9 +241,7 @@ describe('precision page handlers', () => {
               { at: minAgo, kind: 'preset', summary: 'daily', tone: 'ok' },
               { at: hoursAgo, kind: 'ban', summary: 'ban ip', tone: 'danger' },
               { at: t, kind: 'info', summary: 'tick', tone: 'info' },
-            ],
-          },
-        },
+            ] } },
         {
           match: (url) => url.startsWith('/api/v1/defense/suspects'),
           body: {
@@ -263,12 +252,9 @@ describe('precision page handlers', () => {
                 hits: 99,
                 reasons: ['scan'],
                 sources: ['nginx'],
-                lastSeen: t,
-              },
+                lastSeen: t },
             ],
-            notes: [],
-          },
-        },
+            notes: [] } },
         {
           match: (url) => url.startsWith('/api/v1/defense/automation'),
           handler: (_u, init) => {
@@ -284,8 +270,7 @@ describe('precision page handlers', () => {
                     suggestEmergencyAt: 90,
                     deescalateEnabled: true,
                     deescalateToDailyBelow: 10,
-                    holdMinutes: 15,
-                  },
+                    holdMinutes: 15 },
                   autoBan: {
                     enabled: true,
                     mode: 'aggressive',
@@ -297,13 +282,10 @@ describe('precision page handlers', () => {
                     cooldownMinutes: 15,
                     maxAutoBansPerHour: 50,
                     intervalSeconds: 30,
-                    whitelist: ['10.0.0.1'],
-                  },
+                    whitelist: ['10.0.0.1'] },
                   cloudflare: { enabled: true, zones: ['example.com'] },
-                  suggestEmergency: true,
-                },
-                ...HONESTY_WRITTEN_BLOCKED,
-              };
+                  suggestEmergency: true },
+                ...HONESTY_WRITTEN_BLOCKED };
             }
             return {
               automation: {
@@ -316,8 +298,7 @@ describe('precision page handlers', () => {
                   suggestEmergencyAt: 90,
                   deescalateEnabled: true,
                   deescalateToDailyBelow: 20,
-                  holdMinutes: 30,
-                },
+                  holdMinutes: 30 },
                 autoBan: {
                   enabled: true,
                   mode: 'normal',
@@ -329,27 +310,21 @@ describe('precision page handlers', () => {
                   cooldownMinutes: 30,
                   maxAutoBansPerHour: 20,
                   intervalSeconds: 60,
-                  whitelist: ['127.0.0.1'],
-                },
+                  whitelist: ['127.0.0.1'] },
                 cloudflare: { enabled: false, zones: [] },
-                suggestEmergency: true,
-              },
+                suggestEmergency: true },
               mechanisms: [{ step: '1', mechanism: 'fail2ban', tunable: 'bantime' }],
               autoBansLastHour: 2,
               scheduler: { nextRunAt: t, intervalMs: 60000, lastRunAt: minAgo },
-              hasCfToken: true,
-            };
-          },
-        },
+              hasCfToken: true };
+          } },
         {
           match: (url) => url.startsWith('/api/v1/defense/intel'),
           body: {
             topIps: [{ ip: '1.1.1.1', hits: 10, s429: 1, scan: 2, score: 5 }],
             vhosts: [{ name: 'a.example', hasDefenseMarker: true }],
             vhostsWithLimit: 1,
-            vhostsTotal: 2,
-          },
-        },
+            vhostsTotal: 2 } },
         {
           match: (url) => url.startsWith('/api/v1/defense/geoip/status'),
           body: {
@@ -371,12 +346,9 @@ describe('precision page handlers', () => {
               cityPolicyEnabled: true,
               asns: [],
               enforce: { autoBan: true, nginx: true, ufw: false },
-              autoUpdate: true,
-            },
+              autoUpdate: true },
             sources: [{ filename: 'city.mmdb', present: true, mtime: t, bytes: 100 }],
-            meta: { lastSuccessAt: t },
-          },
-        },
+            meta: { lastSuccessAt: t } } },
         {
           match: (url) => url.includes('/geoip/lookup'),
           body: {
@@ -391,11 +363,8 @@ describe('precision page handlers', () => {
               continent: 'NA',
               asn: '15169',
               asName: 'Google',
-              source: 'dbip',
-            },
-            access: { blocked: false, matched: [] },
-          },
-        },
+              source: 'dbip' },
+            access: { blocked: false, matched: [] } } },
         {
           match: /\/api\/v1\/defense/,
           body: {
@@ -404,9 +373,7 @@ describe('precision page handlers', () => {
               'YSK_EXECUTE blocked',
               'Wrote nginx /home/x/00-ysk-defense',
               'Wrote jail.local fail2ban',
-            ],
-          },
-        },
+            ] } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -499,15 +466,13 @@ describe('precision page handlers', () => {
               identity: {
                 hostname: 'ysk.example.com',
                 prettyHostname: 'YSK',
-                timezone: 'UTC',
-              },
+                timezone: 'UTC' },
               os: {
                 platform: 'linux',
                 arch: 'x64',
                 release: '24.04',
                 kernel: '6.8',
-                prettyName: 'Ubuntu 24.04',
-              },
+                prettyName: 'Ubuntu 24.04' },
               runtime: {
                 uptimeSec: 1000,
                 loadavg: [0.1, 0.1, 0.1],
@@ -515,31 +480,25 @@ describe('precision page handlers', () => {
                 memory: { total: 4e9, free: 2e9, usedRatio: 0.5 },
                 node: 'v20',
                 pid: 1,
-                uid: 0,
-              },
+                uid: 0 },
               time: {
                 utc: now(),
                 local: now(),
                 ntpEnabled: true,
                 ntpSynchronized: false,
-                timeSource: 'local',
-              },
+                timeSource: 'local' },
               network: { ips: ['10.0.0.5'], interfaces: [], resolvers: ['1.1.1.1'] },
               disks: [{ mount: '/', size: '50G', used: '10G', avail: '40G', usePct: 20 }],
               power: {
-                pending: { action: 'reboot', actionHint: 'reboot in 10s', at: now() },
-              },
+                pending: { action: 'reboot', actionHint: 'reboot in 10s', at: now() } },
               boot: { defaultTarget: 'multi-user.target' },
               caps: {
                 executeEnabled: true,
                 isRoot: true,
                 canPower: true,
-                canIdentity: true,
-              },
-              collectedAt: now(),
-            };
-          },
-        },
+                canIdentity: true },
+              collectedAt: now() };
+          } },
         {
           match: /\/api\/v1\/system\/export/,
           body: {
@@ -548,17 +507,13 @@ describe('precision page handlers', () => {
             exportedAt: now(),
             counts: { projects: 1, sites: 1 },
             projects: [{ id: 'p1', name: 'Demo' }],
-            items: [{ path: '/etc/ysk/x', kind: 'conf' }],
-          },
-        },
+            items: [{ path: '/etc/ysk/x', kind: 'conf' }] } },
         {
           match: /\/api\/v1\/system\/managed-nginx/,
           body: {
             items: [
               { name: 'demo.conf', path: '/etc/nginx/sites-enabled/demo', bytes: 100 },
-            ],
-          },
-        },
+            ] } },
         {
           match: /\/api\/v1\/system\/exports/,
           body: {
@@ -567,11 +522,8 @@ describe('precision page handlers', () => {
                 name: 'export-1.json',
                 path: '/var/lib/ysk/exports/export-1.json',
                 mtime: now(),
-                bytes: 2048,
-              },
-            ],
-          },
-        },
+                bytes: 2048 },
+            ] } },
         {
           match: /\/api\/v1\/system\/rebuild/,
           body: {
@@ -580,13 +532,10 @@ describe('precision page handlers', () => {
             mode: 'sync',
             notes: ['rebuilt'],
             executeEnabled: true,
-            isRoot: true,
-          },
-        },
+            isRoot: true } },
         {
           match: /\/api\/v1\/system\/host-identity|\/host\/ntp|\/host\/power/,
-          body: { ok: true, notes: ['done'], ...HONESTY_WRITTEN_BLOCKED },
-        },
+          body: { ok: true, notes: ['done'], ...HONESTY_WRITTEN_BLOCKED } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -640,12 +589,10 @@ describe('precision page handlers', () => {
                 otpauthUrl: 'otpauth://totp/YSK:admin?secret=JBSWY3DPEHPK3PXP',
                 enabled: true,
                 enrolled: true,
-                recoveryCodes: ['aaaa-bbbb', 'cccc-dddd'],
-              };
+                recoveryCodes: ['aaaa-bbbb', 'cccc-dddd'] };
             }
             return { enabled: false, enrolled: false };
-          },
-        },
+          } },
         {
           match: (url) => url.startsWith('/api/v1/auth/sessions'),
           handler: (_u, init) => {
@@ -658,40 +605,32 @@ describe('precision page handlers', () => {
                   expires_at: t,
                   current: true,
                   ip: '1.1.1.1',
-                  user_agent: 'vitest',
-                },
+                  user_agent: 'vitest' },
                 {
                   id: 's2',
                   created_at: t,
                   expires_at: t,
                   current: false,
-                  ip: '2.2.2.2',
-                },
-              ],
-            };
-          },
-        },
+                  ip: '2.2.2.2' },
+              ] };
+          } },
         {
           match: (url) => url.startsWith('/api/v1/auth/api-keys'),
           handler: (_u, init) => {
             if ((init?.method ?? 'GET').toUpperCase() !== 'GET') {
               return {
                 key: { id: 'k2', name: 'ci', prefix: 'ysk_x', created_at: t },
-                token: 'ysk_x_secret_token',
-              };
+                token: 'ysk_x_secret_token' };
             }
             return {
-              items: [{ id: 'k1', name: 'old', prefix: 'ysk_old', created_at: t }],
-            };
-          },
-        },
+              items: [{ id: 'k1', name: 'old', prefix: 'ysk_old', created_at: t }] };
+          } },
         {
           match: (url) => url.startsWith('/api/v1/settings/security'),
           handler: (_u, init) => {
             if ((init?.method ?? 'GET').toUpperCase() !== 'GET') return HONESTY_WRITTEN_BLOCKED;
             return { requireAdminTotp: false, requireAdminTotpStrict: false, ok: true };
-          },
-        },
+          } },
         {
           match: (url) => url.startsWith('/api/v1/approvals'),
           body: {
@@ -700,15 +639,11 @@ describe('precision page handlers', () => {
                 id: 'ap1',
                 tool: 'sys.shell',
                 status: 'pending',
-                requestedAt: t,
-              },
-            ],
-          },
-        },
+                requestedAt: t },
+            ] } },
         {
           match: (url) => url.includes('/ssh'),
-          body: { items: [], ok: true },
-        },
+          body: { items: [], ok: true } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -769,8 +704,7 @@ describe('precision page handlers', () => {
                 blocked: true,
                 blockMessage: 'need execute',
                 notes: ['written only'],
-                id: 'mb-new',
-              };
+                id: 'mb-new' };
             }
             if (url.includes('/dns')) {
               return {
@@ -785,8 +719,7 @@ describe('precision page handlers', () => {
                   { title: 'SPF', description: 'Tighten', priority: 'med' },
                 ],
                 health: { score: 40, maxScore: 100, messages: ['SPF soft'] },
-                notes: [],
-              };
+                notes: [] };
             }
             if (url.includes('/mailboxes')) {
               return {
@@ -795,10 +728,8 @@ describe('precision page handlers', () => {
                     id: 'mb1',
                     local_part: 'info',
                     address: 'info@example.com',
-                    quotaMb: 500,
-                  },
-                ],
-              };
+                    quotaMb: 500 },
+                ] };
             }
             if (url.includes('/aliases')) {
               return {
@@ -807,10 +738,8 @@ describe('precision page handlers', () => {
                     id: 'al1',
                     source: 'hi@example.com',
                     dest: 'info@example.com',
-                    type: 'forward',
-                  },
-                ],
-              };
+                    type: 'forward' },
+                ] };
             }
             if (url.includes('/deliverability')) {
               return {
@@ -823,8 +752,7 @@ describe('precision page handlers', () => {
                 items: [
                   { id: 'spf', title: 'SPF', ok: false, detail: 'missing' },
                   { id: 'dkim', title: 'DKIM', ok: true, detail: 'ok' },
-                ],
-              };
+                ] };
             }
             if (url.includes('/warmup') || url.includes('/dnsbl') || url.includes('/live')) {
               return {
@@ -833,8 +761,7 @@ describe('precision page handlers', () => {
                 health: { score: 60 },
                 items: [],
                 listed: false,
-                notes: [],
-              };
+                notes: [] };
             }
             if (
               url.includes('/sieve') ||
@@ -850,8 +777,7 @@ describe('precision page handlers', () => {
                 subject: 'OOO',
                 body: 'away',
                 host: 'smtp.example.com',
-                username: 'u',
-              };
+                username: 'u' };
             }
             return {
               items: [
@@ -863,12 +789,9 @@ describe('precision page handlers', () => {
                   server_ip: '203.0.113.10',
                   health_score: 55,
                   suspended: false,
-                  managed: true,
-                },
-              ],
-            };
-          },
-        },
+                  managed: true },
+              ] };
+          } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -961,9 +884,7 @@ describe('precision page handlers', () => {
                   fingerprintSha256: 'SHA256:new',
                   publicKey: 'ssh-ed25519 CCC',
                   status: 'created',
-                  createdAt: t,
-                },
-              };
+                  createdAt: t } };
             }
             return {
               ok: true,
@@ -980,8 +901,7 @@ describe('precision page handlers', () => {
                   install: { path: '/home/ysk/.ssh/id_ysk', applied: true },
                   lastVerifyNote: 'ok 2024',
                   lastTestAt: t,
-                  lastTestOk: true,
-                },
+                  lastTestOk: true },
                 {
                   id: 'id2',
                   name: 'proj-out',
@@ -994,13 +914,9 @@ describe('precision page handlers', () => {
                   binding: {
                     projectId: 'p1',
                     linuxUser: 'demou',
-                    homeDir: '/home/demou',
-                  },
-                },
-              ],
-            };
-          },
-        },
+                    homeDir: '/home/demou' } },
+              ] };
+          } },
         {
           match: /\/api\/v1\/projects/,
           body: {
@@ -1009,11 +925,8 @@ describe('precision page handlers', () => {
                 id: 'p1',
                 name: 'Demo',
                 linuxUser: 'demou',
-                homeDir: '/home/demou',
-              },
-            ],
-          },
-        },
+                homeDir: '/home/demou' },
+            ] } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -1122,8 +1035,7 @@ describe('precision page handlers', () => {
           hi: 0,
           si: 0,
           st: 0,
-          busyPct: 30,
-        },
+          busyPct: 30 },
         cpus: [
           {
             us: 20,
@@ -1134,19 +1046,16 @@ describe('precision page handlers', () => {
             hi: 0,
             si: 0,
             st: 0,
-            busyPct: 30,
-          },
+            busyPct: 30 },
         ],
         memory: {
           totalKiB: 8e6,
           freeKiB: 5e5,
           usedKiB: 7e6,
           buffCacheKiB: 5e5,
-          availableKiB: 1e6,
-        },
+          availableKiB: 1e6 },
         swap: { totalKiB: 1e6, freeKiB: 1e5, usedKiB: 9e5 },
-        notes: [],
-      };
+        notes: [] };
       installFetchMock([
         softwareReadyRoute(),
         {
@@ -1156,9 +1065,7 @@ describe('precision page handlers', () => {
             pid: '42',
             signal: 'TERM',
             stillAlive: false,
-            notes: ['sent'],
-          },
-        },
+            notes: ['sent'] } },
         {
           match: (url) => /\/metrics\/processes\/\d+/.test(url),
           body: {
@@ -1172,9 +1079,7 @@ describe('precision page handlers', () => {
             ppid: '1',
             cmdline: '/usr/sbin/nginx',
             env: ['PATH=/bin'],
-            notes: [],
-          },
-        },
+            notes: [] } },
         {
           match: (url) => url.startsWith('/api/v1/metrics/processes'),
           body: {
@@ -1193,8 +1098,7 @@ describe('precision page handlers', () => {
                 state: 'S',
                 etime: '01:00',
                 resKiB: 50000,
-                virtKiB: 100000,
-              },
+                virtKiB: 100000 },
               {
                 pid: '99',
                 user: 'alice',
@@ -1204,8 +1108,7 @@ describe('precision page handlers', () => {
                 state: 'R',
                 etime: '00:30',
                 resKiB: 20000,
-                virtKiB: 80000,
-              },
+                virtKiB: 80000 },
               {
                 pid: '7',
                 user: 'bob',
@@ -1215,24 +1118,18 @@ describe('precision page handlers', () => {
                 state: 'S',
                 etime: '00:05',
                 resKiB: 2000,
-                virtKiB: 4000,
-              },
+                virtKiB: 4000 },
             ],
-            notes: [],
-          },
-        },
+            notes: [] } },
         {
           match: (url) => url.startsWith('/api/v1/metrics/top'),
-          body: topHeader,
-        },
+          body: topHeader },
         {
           match: (url) => url.startsWith('/api/v1/metrics/projects'),
           body: {
             items: [
               { projectId: 'p1', name: 'Demo', diskMb: 100, path: '/home/demo' },
-            ],
-          },
-        },
+            ] } },
         {
           match: (url) => url.startsWith('/api/v1/metrics'),
           body: {
@@ -1244,8 +1141,7 @@ describe('precision page handlers', () => {
               total: 8e9,
               free: 0.5e9,
               usedRatio: 0.92,
-              available: 0.8e9,
-            },
+              available: 0.8e9 },
             disk: { path: '/', free: 5e9, total: 100e9, usedRatio: 0.95 },
             diskMounts: [
               {
@@ -1254,13 +1150,10 @@ describe('precision page handlers', () => {
                 size: 100e9,
                 used: 95e9,
                 avail: 5e9,
-                usedRatio: 0.95,
-              },
+                usedRatio: 0.95 },
             ],
             alerts: ['mem_high', 'disk_high'],
-            notes: [],
-          },
-        },
+            notes: [] } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -1342,8 +1235,7 @@ describe('precision page handlers', () => {
                   { id: 'r6', type: 'NS', name: '@', value: 'ns1.example.com', ttl: 300 },
                   { id: 'r7', type: 'SRV', name: '_sip._tcp', value: '0 5 5060 sip', ttl: 300 },
                 ],
-                notes: [],
-              };
+                notes: [] };
             }
             return {
               items: [
@@ -1353,13 +1245,10 @@ describe('precision page handlers', () => {
                   serverIp: '203.0.113.10',
                   nsName: 'ns1.example.com',
                   ttl: 300,
-                  apply_status: 'planned',
-                },
+                  apply_status: 'planned' },
               ],
-              meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-            };
-          },
-        },
+              meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } };
+          } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -1420,9 +1309,7 @@ describe('precision page handlers', () => {
               uptimeSec: 10000,
               loadavg: [0.5, 0.4, 0.3],
               runtime: {
-                memory: { usedRatio: 0.6, total: 8e9, free: 3e9 },
-              },
-            },
+                memory: { usedRatio: 0.6, total: 8e9, free: 3e9 } } },
             services: [
               { id: 'nginx', label: 'Nginx', active: 'active', ok: true },
               { id: 'ssh', label: 'SSH', active: 'failed', ok: false },
@@ -1442,9 +1329,7 @@ describe('precision page handlers', () => {
               { to: '/files', label: 'Files' },
               { to: '/logs', label: 'Logs' },
             ],
-            counts: { projects: 3, users: 2 },
-          },
-        },
+            counts: { projects: 3, users: 2 } } },
         {
           match: (url) => url.startsWith('/api/v1/users'),
           handler: (_u, init) => {
@@ -1460,22 +1345,18 @@ describe('precision page handlers', () => {
                   locale: 'en',
                   email: 'a@b.c',
                   capabilityGrants: ['projects.read'],
-                  capabilityRevokes: [],
-                },
+                  capabilityRevokes: [] },
                 {
                   id: 'u2',
                   username: 'bob',
                   roles: ['user'],
                   packageId: 'pkg1',
                   suspended: true,
-                  locale: 'zh-CN',
-                },
+                  locale: 'zh-CN' },
               ],
               hostUsage: { projects: 2, diskMb: 100, quotaMb: 1000 },
-              meta: { total: 2, page: 1, limit: 50 },
-            };
-          },
-        },
+              meta: { total: 2, page: 1, limit: 50 } };
+          } },
         {
           match: (url) => url.startsWith('/api/v1/packages'),
           body: {
@@ -1489,11 +1370,8 @@ describe('precision page handlers', () => {
                 diskMb: 1024,
                 bandwidthMb: 0,
                 ftp: true,
-                ssh: true,
-              },
-            ],
-          },
-        },
+                ssh: true },
+            ] } },
         {
           match: (url) => url.includes('/rbac'),
           body: {
@@ -1503,16 +1381,11 @@ describe('precision page handlers', () => {
                 dirty: true,
                 policy: {
                   maxLevel: 'write-high',
-                  capabilities: ['projects.read', 'projects.write'],
-                },
+                  capabilities: ['projects.read', 'projects.write'] },
                 factory: {
                   maxLevel: 'write-high',
-                  capabilities: ['projects.read'],
-                },
-              },
-            ],
-          },
-        },
+                  capabilities: ['projects.read'] } },
+            ] } },
         {
           match: (url) => url.startsWith('/api/v1/network'),
           handler: (_u, init) => {
@@ -1525,8 +1398,7 @@ describe('precision page handlers', () => {
                 hasIp: true,
                 networkManager: 'active',
                 networkd: 'inactive',
-                canPersist: true,
-              },
+                canPersist: true },
               interfaces: [
                 {
                   name: 'eth0',
@@ -1539,8 +1411,7 @@ describe('precision page handlers', () => {
                   addrs: [
                     { family: 'inet', local: '10.0.0.5', prefixlen: 24 },
                     { family: 'inet6', local: 'fe80::1', prefixlen: 64 },
-                  ],
-                },
+                  ] },
               ],
               routes: [
                 { dst: 'default', gateway: '10.0.0.1', dev: 'eth0' },
@@ -1556,11 +1427,8 @@ describe('precision page handlers', () => {
                 source: 'static',
                 notes: [],
                 ignoreAutoDns: true,
-                canApply: true,
-              },
-            };
-          },
-        },
+                canApply: true } };
+          } },
         {
           match: (url) => url.startsWith('/api/v1/backups'),
           handler: (_u, init) => {
@@ -1574,16 +1442,13 @@ describe('precision page handlers', () => {
                   port: 22,
                   username: 'ysk',
                   path: '/backups',
-                  password: '***',
-                },
+                  password: '***' },
                 exclusions: ['node_modules'],
                 restic: {
                   enabled: true,
                   repoPath: '/var/backups/restic',
                   password: '***',
-                  s3Repo: '',
-                },
-              };
+                  s3Repo: '' } };
             }
             return {
               items: [
@@ -1593,20 +1458,16 @@ describe('precision page handlers', () => {
                   path: '/var/backups/p1.tgz',
                   bytes: 4096,
                   mtime: t,
-                  kind: 'full',
-                },
+                  kind: 'full' },
               ],
               lastRun: {
                 at: t,
                 ok: false,
-                results: [{ projectId: 'p1', ok: false, notes: ['fail'] }],
-              },
+                results: [{ projectId: 'p1', ok: false, notes: ['fail'] }] },
               snapshots: [
                 { id: 'snap-1', time: t, tags: ['p1'], paths: ['/home/demo'], short_id: 'abc' },
-              ],
-            };
-          },
-        },
+              ] };
+          } },
         {
           match: (url) => url.includes('/cdn') || url.includes('/cloudflare'),
           handler: (_u, init) => {
@@ -1618,14 +1479,11 @@ describe('precision page handlers', () => {
                   id: 'c1',
                   domain: 'cdn.example.com',
                   status: 'active',
-                  provider: 'cloudflare',
-                },
+                  provider: 'cloudflare' },
               ],
               zones: [{ id: 'z1', name: 'example.com' }],
-              notes: [],
-            };
-          },
-        },
+              notes: [] };
+          } },
         {
           match: /\/api\/v1\/fleet\//,
           handler: (_u, init) => {
@@ -1640,10 +1498,8 @@ describe('precision page handlers', () => {
                     agent_id: 'ag-1',
                     status: 'done',
                     payload: { type: 'ping' },
-                    createdAt: t,
-                  },
-                ],
-              };
+                    createdAt: t },
+                ] };
             }
             return {
               items: [
@@ -1653,16 +1509,12 @@ describe('precision page handlers', () => {
                   status: 'connected',
                   group: 'edge',
                   last_seen_at: t,
-                  meta: { hostname: 'edge-1' },
-                },
-              ],
-            };
-          },
-        },
+                  meta: { hostname: 'edge-1' } },
+              ] };
+          } },
         {
           match: /\/api\/v1\/projects/,
-          body: { items: [{ id: 'p1', name: 'Demo' }] },
-        },
+          body: { items: [{ id: 'p1', name: 'Demo' }] } },
         { match: /.*/, body: { ok: true, items: [], ready: true } },
       ]);
 
@@ -1756,17 +1608,14 @@ describe('precision page handlers', () => {
                     kind: 'journal',
                     label: 'nginx',
                     unit: 'nginx.service',
-                    available: true,
-                  },
+                    available: true },
                   {
                     id: 'file:auth',
                     kind: 'file',
                     label: 'auth',
                     available: true,
-                    bytes: 1000,
-                  },
-                ],
-              };
+                    bytes: 1000 },
+                ] };
             }
             if (url.includes('overview')) {
               return {
@@ -1777,8 +1626,7 @@ describe('precision page handlers', () => {
                 maxLines: 100,
                 isRoot: true,
                 executeEnabled: true,
-                quickUnits: [{ unit: 'ssh.service', label: 'SSH' }],
-              };
+                quickUnits: [{ unit: 'ssh.service', label: 'SSH' }] };
             }
             if (url.includes('settings')) {
               return {
@@ -1791,8 +1639,7 @@ describe('precision page handlers', () => {
                 autoVacuumTime: '03:00',
                 journalWarnMb: 200,
                 customAllowPaths: [],
-                disabledSources: [],
-              };
+                disabledSources: [] };
             }
             if (url.includes('bookmarks')) {
               return {
@@ -1801,10 +1648,8 @@ describe('precision page handlers', () => {
                     id: 'bm1',
                     name: 'n',
                     source: 'journal:nginx.service',
-                    lines: 50,
-                  },
-                ],
-              };
+                    lines: 50 },
+                ] };
             }
             if (url.includes('projects')) {
               return {
@@ -1814,10 +1659,8 @@ describe('precision page handlers', () => {
                     name: 'App',
                     linuxUser: 'appu',
                     files: [{ name: 'app.log', previewable: true }],
-                    related: [],
-                  },
-                ],
-              };
+                    related: [] },
+                ] };
             }
             if (url.includes('units')) {
               return { items: [{ unit: 'nginx.service', active: 'active' }] };
@@ -1826,10 +1669,8 @@ describe('precision page handlers', () => {
               ok: true,
               lines: ['err line', 'ok line'],
               lineCount: 2,
-              notes: [],
-            };
-          },
-        },
+              notes: [] };
+          } },
         {
           match: (url) => url.includes('/api/v1/files'),
           handler: (url, init) => {
@@ -1846,23 +1687,19 @@ describe('precision page handlers', () => {
                     trashId: 'tr1',
                     name: 'g.txt',
                     originalPath: 'g.txt',
-                    deletedAt: t,
-                  },
-                ],
-              };
+                    deletedAt: t },
+                ] };
             }
             if (url.includes('shares')) {
               return {
-                items: [{ id: 'sh1', path: 'a.txt', token: 't', createdAt: t }],
-              };
+                items: [{ id: 'sh1', path: 'a.txt', token: 't', createdAt: t }] };
             }
             if (url.includes('webdav')) {
               return { enabled: false, mountPath: '/webdav' };
             }
             if (url.includes('versions')) {
               return {
-                items: [{ id: 'v1', path: 'a.txt', createdAt: t, bytes: 10 }],
-              };
+                items: [{ id: 'v1', path: 'a.txt', createdAt: t, bytes: 10 }] };
             }
             const entries = [
               {
@@ -1871,26 +1708,22 @@ describe('precision page handlers', () => {
                 type: 'file',
                 size: 10,
                 mtime: t,
-                mime: 'text/plain',
-              },
+                mime: 'text/plain' },
               {
                 name: 'b.zip',
                 path: 'b.zip',
                 type: 'file',
                 size: 100,
                 mtime: t,
-                mime: 'application/zip',
-              },
+                mime: 'application/zip' },
               { name: 'd', path: 'd', type: 'dir', size: 0, mtime: t },
             ];
             return {
               items: entries,
               entries,
               path: '.',
-              usage: { bytes: 5000, fileCount: 2, dirCount: 1 },
-            };
-          },
-        },
+              usage: { bytes: 5000, fileCount: 2, dirCount: 1 } };
+          } },
         {
           match: (url) =>
             url.includes('/db/') ||
@@ -1907,26 +1740,22 @@ describe('precision page handlers', () => {
                   id: 'db1',
                   name: 'app',
                   engine: 'mysql',
-                  status: 'online',
-                },
+                  status: 'online' },
               ],
               clusters: [
                 {
                   id: 'cl1',
                   name: 'primary',
                   role: 'primary',
-                  hosts: [{ host: '10.0.0.1', port: 3306 }],
-                },
+                  hosts: [{ host: '10.0.0.1', port: 3306 }] },
               ],
               serverInstalled: true,
               active: 'active',
               engine: 'mysql',
               executeEnabled: false,
               isRoot: false,
-              notes: [],
-            };
-          },
-        },
+              notes: [] };
+          } },
         {
           match: (url) => url.includes('/projects'),
           handler: (_u, init) => {
@@ -1941,8 +1770,7 @@ describe('precision page handlers', () => {
                   linuxUser: 'demou',
                   homeDir: '/home/demou',
                   domain: 'demo.local',
-                  port: 3000,
-                },
+                  port: 3000 },
               ],
               project: {
                 id: 'p1',
@@ -1952,12 +1780,9 @@ describe('precision page handlers', () => {
                 linuxUser: 'demou',
                 homeDir: '/home/demou',
                 domain: 'demo.local',
-                port: 3000,
-              },
-              ok: true,
-            };
-          },
-        },
+                port: 3000 },
+              ok: true };
+          } },
         {
           match: (url) => url.includes('/email'),
           body: {
@@ -1966,11 +1791,8 @@ describe('precision page handlers', () => {
                 id: 'dom-1',
                 domain: 'example.com',
                 health_score: 50,
-                server_ip: '1.2.3.4',
-              },
-            ],
-          },
-        },
+                server_ip: '1.2.3.4' },
+            ] } },
         {
           match: (url) =>
             url.includes('/nginx') ||
@@ -1990,18 +1812,15 @@ describe('precision page handlers', () => {
                     { key: 'workers', label: 'W', type: 'int', default: 2 },
                     { key: 'mem', label: 'M', type: 'bytes', default: '512M' },
                     { key: 'debug', label: 'D', type: 'bool', default: false },
-                  ],
-                },
+                  ] },
               ],
               settings: { values: {}, extra: {}, version: 'default' },
               versions: ['18', '20'],
               version: '20',
               installed: true,
               active: 'active',
-              notes: [],
-            };
-          },
-        },
+              notes: [] };
+          } },
         { match: /.*/, body: { ok: true, items: [], ready: true } },
       ]);
 

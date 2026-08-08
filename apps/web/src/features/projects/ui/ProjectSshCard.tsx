@@ -11,8 +11,7 @@ import {
   CardSection,
   FormActions,
   FormLayout,
-  Field,
-} from '../../../shared/components/ui';
+  Field } from '../../../shared/components/ui';
 import { sshApi } from '../../security/ssh';
 import { shortFingerprint, statusLabel, statusTone } from '../../security/ssh/labels';
 
@@ -101,9 +100,7 @@ export function ProjectSshCard(props: {
                     binding: {
                       projectId: project.id,
                       linuxUser: project.linuxUser,
-                      homeDir: project.homeDir,
-                    },
-                  })
+                      homeDir: project.homeDir } })
                   .then((r) => {
                     onMessage?.(
                       (r.notes ?? []).join('；') ||

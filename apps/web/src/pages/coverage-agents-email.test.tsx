@@ -9,8 +9,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
-  softwareReadyRoute,
-} from '../test/mock-fetch';
+  softwareReadyRoute } from '../test/mock-fetch';
 import { authStore } from '../shared/stores/auth-store';
 import { AgentsPage } from './AgentsPage';
 import { EmailDomainPage } from './EmailDomainPage';
@@ -41,8 +40,7 @@ describe('agents + email + batch hole fillers', () => {
     try {
       Object.defineProperty(navigator, 'clipboard', {
         configurable: true,
-        value: { writeText: vi.fn().mockResolvedValue(undefined) },
-      });
+        value: { writeText: vi.fn().mockResolvedValue(undefined) } });
     } catch {
       /* ignore */
     }
@@ -69,10 +67,8 @@ describe('agents + email + batch hole fillers', () => {
             ok: true,
             exitCode: 0,
             result: { ready: true },
-            at: t,
-          },
-          createdAt: t,
-        },
+            at: t },
+          createdAt: t },
         {
           id: 'c2',
           agent_id: 'ag-1',
@@ -82,25 +78,21 @@ describe('agents + email + batch hole fillers', () => {
             ok: false,
             exitCode: 1,
             error: 'failed',
-            stderr: 'boom',
-          },
-          createdAt: t,
-        },
+            stderr: 'boom' },
+          createdAt: t },
         {
           id: 'c3',
           agent_id: 'ag-1',
           status: 'queued',
           payload: { op: 'ping' },
-          createdAt: t,
-        },
+          createdAt: t },
         {
           id: 'c4',
           agent_id: 'ag-1',
           status: 'acked',
           payload: 'plain-string-payload',
           result: { exitCode: 2, blocked: true, note: 'need execute' },
-          createdAt: t,
-        },
+          createdAt: t },
         {
           id: 'c5',
           agent_id: 'ag-1',
@@ -108,26 +100,22 @@ describe('agents + email + batch hole fillers', () => {
           payload: { big: 'x'.repeat(100) },
           result: {
             exitCode: 3,
-            result: { nested: true, data: Array.from({ length: 50 }, (_, i) => i) },
-          },
-          createdAt: t,
-        },
+            result: { nested: true, data: Array.from({ length: 50 }, (_, i) => i) } },
+          createdAt: t },
         {
           id: 'c6',
           agent_id: 'ag-1',
           status: 'done',
           payload: { circular: true },
           result: { exitCode: 4 },
-          createdAt: t,
-        },
+          createdAt: t },
         {
           id: 'c7',
           agent_id: 'ag-1',
           status: 'done',
           payload: null,
           result: { exitCode: 5 },
-          createdAt: t,
-        },
+          createdAt: t },
       ];
 
       installFetchMock([
@@ -143,8 +131,7 @@ describe('agents + email + batch hole fillers', () => {
                   agent_id: 'ag-1',
                   status: 'queued',
                   payload: { cli: ['host'] },
-                  createdAt: t,
-                };
+                  createdAt: t };
               }
               return { items: commands };
             }
@@ -155,8 +142,7 @@ describe('agents + email + batch hole fillers', () => {
                 status: 'connected',
                 group: 'default',
                 last_seen_at: t,
-                meta: { hostname: 'edge-2' },
-              };
+                meta: { hostname: 'edge-2' } };
             }
             if (method === 'DELETE') return { ok: true, id: 'sess-1' };
             return {
@@ -167,49 +153,41 @@ describe('agents + email + batch hole fillers', () => {
                   status: 'connected',
                   group: 'edge',
                   last_seen_at: t,
-                  meta: { hostname: 'edge-1', version: '0.1' },
-                },
+                  meta: { hostname: 'edge-1', version: '0.1' } },
                 {
                   id: 'sess-2',
                   agent_id: 'ag-2',
                   status: 'offline',
                   group: 'default',
                   last_seen_at: t,
-                  meta: { hostname: 'edge-2' },
-                },
+                  meta: { hostname: 'edge-2' } },
                 {
                   id: 'sess-3',
                   agent_id: 'ag-3',
                   status: 'not_installed',
                   group: 'lab',
-                  last_seen_at: t,
-                },
+                  last_seen_at: t },
                 {
                   id: 'sess-4',
                   agent_id: 'ag-4',
                   status: 'failed',
                   group: 'lab',
-                  last_seen_at: t,
-                },
+                  last_seen_at: t },
                 {
                   id: 'sess-5',
                   agent_id: 'ag-5',
                   status: 'unknown',
                   group: 'lab',
-                  last_seen_at: t,
-                },
+                  last_seen_at: t },
                 {
                   id: 'sess-6',
                   agent_id: 'ag-6',
                   status: 'weird',
                   group: 'lab',
-                  last_seen_at: t,
-                },
+                  last_seen_at: t },
               ],
-              meta: { total: 6, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-            };
-          },
-        },
+              meta: { total: 6, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } };
+          } },
         {
           match: (url) => url.includes('/api/v1/agents/runtimes'),
           handler: (url, init) => {
@@ -222,10 +200,8 @@ describe('agents + email + batch hole fillers', () => {
                   kind: 'edge',
                   status: 'running',
                   unitActive: 'active',
-                  version: '0.1',
-                },
-                notes: ['ok'],
-              };
+                  version: '0.1' },
+                notes: ['ok'] };
             }
             return {
               items: [
@@ -233,32 +209,25 @@ describe('agents + email + batch hole fillers', () => {
                   kind: 'edge',
                   status: 'running',
                   unitActive: 'active',
-                  version: '0.1',
-                },
+                  version: '0.1' },
                 {
                   kind: 'worker',
                   status: 'stopped',
                   unitActive: 'inactive',
-                  version: '0.1',
-                },
+                  version: '0.1' },
                 {
                   kind: 'legacy',
                   status: 'not_installed',
-                  unitActive: 'failed',
-                },
+                  unitActive: 'failed' },
                 {
                   kind: 'x',
                   status: 'error',
-                  unitActive: 'activating',
-                },
+                  unitActive: 'activating' },
                 {
                   kind: 'y',
-                  status: 'unknown',
-                },
-              ],
-            };
-          },
-        },
+                  status: 'unknown' },
+              ] };
+          } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -391,8 +360,7 @@ describe('agents + email + batch hole fillers', () => {
                 blocked: true,
                 blockMessage: 'need execute',
                 notes: ['written only'],
-                id: 'new-id',
-              };
+                id: 'new-id' };
             }
             if (url.includes('/dns')) {
               return {
@@ -405,8 +373,7 @@ describe('agents + email + batch hole fillers', () => {
                   { title: 'DKIM', description: 'publish', priority: 'high' },
                 ],
                 health: { score: 40, maxScore: 100, messages: ['soft'] },
-                notes: [],
-              };
+                notes: [] };
             }
             if (url.includes('/mailboxes')) {
               return {
@@ -415,15 +382,12 @@ describe('agents + email + batch hole fillers', () => {
                     id: 'mb1',
                     local_part: 'info',
                     address: 'info@example.com',
-                    quotaMb: 500,
-                  },
-                ],
-              };
+                    quotaMb: 500 },
+                ] };
             }
             if (url.includes('/aliases')) {
               return {
-                items: [{ id: 'al1', source: 'hi@example.com', dest: 'info@example.com' }],
-              };
+                items: [{ id: 'al1', source: 'hi@example.com', dest: 'info@example.com' }] };
             }
             if (url.includes('/deliverability')) {
               return {
@@ -433,8 +397,7 @@ describe('agents + email + batch hole fillers', () => {
                 honesty: ['h'],
                 checks: [],
                 recommendations: ['fix'],
-                items: [],
-              };
+                items: [] };
             }
             if (
               url.includes('/sieve') ||
@@ -451,8 +414,7 @@ describe('agents + email + batch hole fillers', () => {
                 items: [],
                 host: 'smtp.example.com',
                 score: 50,
-                health: { score: 50 },
-              };
+                health: { score: 50 } };
             }
             return {
               items: [
@@ -464,12 +426,9 @@ describe('agents + email + batch hole fillers', () => {
                   server_ip: '203.0.113.10',
                   health_score: 40,
                   suspended: false,
-                  managed: true,
-                },
-              ],
-            };
-          },
-        },
+                  managed: true },
+              ] };
+          } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -490,8 +449,7 @@ describe('agents + email + batch hole fillers', () => {
       await fillMaybe('ar-body', 'Back later', user);
       for (const b of screen
         .queryAllByRole('button', {
-          name: /save|suspend|resume|apply|autoreply/i,
-        })
+          name: /save|suspend|resume|apply|autoreply/i })
         .slice(0, 8)) {
         try {
           await user.click(b);
@@ -553,8 +511,7 @@ describe('agents + email + batch hole fillers', () => {
         }
         for (const b of screen
           .queryAllByRole('button', {
-            name: /save|create|add|apply|test|check|refresh|copy|enable|disable|generate/i,
-          })
+            name: /save|create|add|apply|test|check|refresh|copy|enable|disable|generate/i })
           .slice(0, 8)) {
           try {
             await user.click(b);
@@ -586,12 +543,10 @@ describe('agents + email + batch hole fillers', () => {
                 secret: 'JBSWY3DPEHPK3PXP',
                 otpauthUrl: 'otpauth://totp/YSK:admin?secret=JBSWY3DPEHPK3PXP',
                 enabled: true,
-                recoveryCodes: ['aaaa-bbbb', 'cccc-dddd'],
-              };
+                recoveryCodes: ['aaaa-bbbb', 'cccc-dddd'] };
             }
             return { enabled: false, enrolled: false };
-          },
-        },
+          } },
         {
           match: (url) => url.startsWith('/api/v1/auth/sessions'),
           body: {
@@ -602,36 +557,28 @@ describe('agents + email + batch hole fillers', () => {
                 expires_at: t,
                 current: true,
                 ip: '1.1.1.1',
-                user_agent: 'vitest',
-              },
+                user_agent: 'vitest' },
               {
                 id: 's2',
                 created_at: t,
                 expires_at: t,
                 current: false,
-                ip: '2.2.2.2',
-              },
-            ],
-          },
-        },
+                ip: '2.2.2.2' },
+            ] } },
         {
           match: (url) => url.startsWith('/api/v1/auth/api-keys'),
           handler: (_u, init) => {
             if ((init?.method ?? 'GET').toUpperCase() !== 'GET') {
               return {
                 key: { id: 'k2', name: 'ci', prefix: 'ysk_x', created_at: t },
-                token: 'ysk_secret',
-              };
+                token: 'ysk_secret' };
             }
             return {
-              items: [{ id: 'k1', name: 'old', prefix: 'ysk_old', created_at: t }],
-            };
-          },
-        },
+              items: [{ id: 'k1', name: 'old', prefix: 'ysk_old', created_at: t }] };
+          } },
         {
           match: (url) => url.startsWith('/api/v1/settings/security'),
-          body: { requireAdminTotp: true, requireAdminTotpStrict: false, ok: true },
-        },
+          body: { requireAdminTotp: true, requireAdminTotpStrict: false, ok: true } },
         {
           match: (url) => url.startsWith('/api/v1/approvals'),
           handler: (_u, init) => {
@@ -642,12 +589,9 @@ describe('agents + email + batch hole fillers', () => {
                   id: 'ap1',
                   tool: 'sys.shell',
                   status: 'pending',
-                  requestedAt: t,
-                },
-              ],
-            };
-          },
-        },
+                  requestedAt: t },
+              ] };
+          } },
         {
           match: (url) => url.includes('/ssh') || url.includes('/identities'),
           handler: (_u, init) => {
@@ -665,9 +609,7 @@ describe('agents + email + batch hole fillers', () => {
                   fingerprintSha256: 'SHA256:n',
                   publicKey: 'ssh-ed25519 X',
                   status: 'created',
-                  createdAt: t,
-                },
-              };
+                  createdAt: t } };
             }
             return {
               items: [
@@ -681,8 +623,7 @@ describe('agents + email + batch hole fillers', () => {
                   status: 'installed',
                   createdAt: t,
                   install: { path: '/home/ysk/.ssh/id', applied: true },
-                  lastVerifyNote: 'ok',
-                },
+                  lastVerifyNote: 'ok' },
                 {
                   id: 'id2',
                   name: 'proj',
@@ -695,19 +636,13 @@ describe('agents + email + batch hole fillers', () => {
                   binding: {
                     projectId: 'p1',
                     linuxUser: 'u',
-                    homeDir: '/home/u',
-                  },
-                },
-              ],
-            };
-          },
-        },
+                    homeDir: '/home/u' } },
+              ] };
+          } },
         {
           match: /\/api\/v1\/projects/,
           body: {
-            items: [{ id: 'p1', name: 'Demo', linuxUser: 'u', homeDir: '/home/u' }],
-          },
-        },
+            items: [{ id: 'p1', name: 'Demo', linuxUser: 'u', homeDir: '/home/u' }] } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -723,8 +658,7 @@ describe('agents + email + batch hole fillers', () => {
       await fillMaybe('reauth-pw', 'adminpass', user);
       for (const b of screen
         .queryAllByRole('button', {
-          name: /start|2fa|reset|enroll|confirm|create|revoke|logout|approve|deny|copy|save/i,
-        })
+          name: /start|2fa|reset|enroll|confirm|create|revoke|logout|approve|deny|copy|save/i })
         .slice(0, 15)) {
         try {
           await user.click(b);
@@ -754,8 +688,7 @@ describe('agents + email + batch hole fillers', () => {
       }
       for (const b of screen
         .queryAllByRole('button', {
-          name: /copy|install|test|rotate|delete|local|allow|create|next|finish/i,
-        })
+          name: /copy|install|test|rotate|delete|local|allow|create|next|finish/i })
         .slice(0, 12)) {
         try {
           await user.click(b);
@@ -788,8 +721,7 @@ describe('agents + email + batch hole fillers', () => {
               hostname: 'ysk',
               uptimeSec: 99999,
               loadavg: [1, 1, 1],
-              runtime: { memory: { usedRatio: 0.85, total: 8e9, free: 1e9 } },
-            },
+              runtime: { memory: { usedRatio: 0.85, total: 8e9, free: 1e9 } } },
             services: [
               { id: 'nginx', label: 'Nginx', active: 'active', ok: true },
               { id: 'ssh', label: 'SSH', active: 'failed', ok: false },
@@ -810,9 +742,7 @@ describe('agents + email + batch hole fillers', () => {
               { to: '/files', label: 'Files' },
               { to: '/logs', label: 'Logs' },
             ],
-            counts: { projects: 5, users: 2, domains: 1 },
-          },
-        },
+            counts: { projects: 5, users: 2, domains: 1 } } },
         {
           match: (url) => url.startsWith('/api/v1/users'),
           handler: (_u, init) => {
@@ -828,22 +758,18 @@ describe('agents + email + batch hole fillers', () => {
                   locale: 'en',
                   email: 'a@b.c',
                   capabilityGrants: ['projects.read'],
-                  capabilityRevokes: ['projects.write'],
-                },
+                  capabilityRevokes: ['projects.write'] },
                 {
                   id: 'u2',
                   username: 'bob',
                   roles: ['user'],
                   packageId: 'pkg1',
                   suspended: true,
-                  locale: 'zh-CN',
-                },
+                  locale: 'zh-CN' },
               ],
               hostUsage: { projects: 2, diskMb: 100, quotaMb: 1000 },
-              meta: { total: 2, page: 1, limit: 50 },
-            };
-          },
-        },
+              meta: { total: 2, page: 1, limit: 50 } };
+          } },
         {
           match: (url) => url.startsWith('/api/v1/packages'),
           body: {
@@ -857,11 +783,8 @@ describe('agents + email + batch hole fillers', () => {
                 diskMb: 1024,
                 bandwidthMb: 0,
                 ftp: true,
-                ssh: true,
-              },
-            ],
-          },
-        },
+                ssh: true },
+            ] } },
         {
           match: (url) => url.includes('/rbac'),
           body: {
@@ -871,16 +794,11 @@ describe('agents + email + batch hole fillers', () => {
                 dirty: true,
                 policy: {
                   maxLevel: 'write-high',
-                  capabilities: ['projects.read', 'projects.write'],
-                },
+                  capabilities: ['projects.read', 'projects.write'] },
                 factory: {
                   maxLevel: 'write-high',
-                  capabilities: ['projects.read'],
-                },
-              },
-            ],
-          },
-        },
+                  capabilities: ['projects.read'] } },
+            ] } },
         {
           match: (url) => url.startsWith('/api/v1/backups'),
           handler: (_u, init) => {
@@ -898,16 +816,13 @@ describe('agents + email + batch hole fillers', () => {
                   s3Region: 'us-east-1',
                   s3Endpoint: '',
                   accessKey: 'A',
-                  secretKey: 'S',
-                },
+                  secretKey: 'S' },
                 exclusions: ['node_modules', '.git'],
                 restic: {
                   enabled: true,
                   repoPath: '/var/backups/restic',
                   password: '***',
-                  s3Repo: 's3:https://s3/b',
-                },
-              };
+                  s3Repo: 's3:https://s3/b' } };
             }
             return {
               items: [
@@ -917,16 +832,14 @@ describe('agents + email + batch hole fillers', () => {
                   path: '/var/backups/p1.tgz',
                   bytes: 4096,
                   mtime: t,
-                  kind: 'full',
-                },
+                  kind: 'full' },
                 {
                   projectId: 'p2',
                   name: 'Other',
                   path: '/var/backups/p2.tgz',
                   bytes: 1024,
                   mtime: t,
-                  kind: 'incremental',
-                },
+                  kind: 'incremental' },
               ],
               lastRun: {
                 at: t,
@@ -934,20 +847,16 @@ describe('agents + email + batch hole fillers', () => {
                 results: [
                   { projectId: 'p1', ok: true, notes: ['ok'] },
                   { projectId: 'p2', ok: false, notes: ['fail'] },
-                ],
-              },
+                ] },
               snapshots: [
                 {
                   id: 'snap-1',
                   time: t,
                   tags: ['p1'],
                   paths: ['/home/demo'],
-                  short_id: 'abc',
-                },
-              ],
-            };
-          },
-        },
+                  short_id: 'abc' },
+              ] };
+          } },
         {
           match: (url) => url.startsWith('/api/v1/network'),
           handler: (_u, init) => {
@@ -960,8 +869,7 @@ describe('agents + email + batch hole fillers', () => {
                 hasIp: true,
                 networkManager: 'active',
                 networkd: 'inactive',
-                canPersist: true,
-              },
+                canPersist: true },
               interfaces: [
                 {
                   name: 'eth0',
@@ -974,8 +882,7 @@ describe('agents + email + batch hole fillers', () => {
                   addrs: [
                     { family: 'inet', local: '10.0.0.5', prefixlen: 24 },
                     { family: 'inet6', local: 'fe80::1', prefixlen: 64 },
-                  ],
-                },
+                  ] },
                 {
                   name: 'lo',
                   ifindex: 1,
@@ -984,8 +891,7 @@ describe('agents + email + batch hole fillers', () => {
                   mtu: 65536,
                   isLoopback: true,
                   isDefaultEgress: false,
-                  addrs: [{ family: 'inet', local: '127.0.0.1', prefixlen: 8 }],
-                },
+                  addrs: [{ family: 'inet', local: '127.0.0.1', prefixlen: 8 }] },
               ],
               routes: [
                 { dst: 'default', gateway: '10.0.0.1', dev: 'eth0', metric: 100 },
@@ -1001,11 +907,8 @@ describe('agents + email + batch hole fillers', () => {
                 source: 'static',
                 notes: [],
                 ignoreAutoDns: true,
-                canApply: true,
-              },
-            };
-          },
-        },
+                canApply: true } };
+          } },
         {
           match: (url) =>
             url.includes('/cdn') ||
@@ -1021,22 +924,18 @@ describe('agents + email + batch hole fillers', () => {
                   domain: 'cdn.example.com',
                   status: 'active',
                   provider: 'cloudflare',
-                  zones: ['example.com'],
-                },
+                  zones: ['example.com'] },
               ],
               sites: [
                 {
                   id: 's1',
                   name: 'main',
                   domains: ['cdn.example.com', 'www.example.com'],
-                  status: 'active',
-                },
+                  status: 'active' },
               ],
               zones: [{ id: 'z1', name: 'example.com', status: 'active' }],
-              notes: [],
-            };
-          },
-        },
+              notes: [] };
+          } },
         {
           match: (url) =>
             url.includes('/api/v1/resources/dns') ||
@@ -1064,8 +963,7 @@ describe('agents + email + batch hole fillers', () => {
                     type: 'SRV',
                     name: '_sip._tcp',
                     value: '0 5 5060 sip',
-                    ttl: 300,
-                  },
+                    ttl: 300 },
                   { id: 'r8', type: 'CAA', name: '@', value: '0 issue letsencrypt.org', ttl: 300 },
                 ],
                 notes: [],
@@ -1076,9 +974,7 @@ describe('agents + email + batch hole fillers', () => {
                   refresh: 3600,
                   retry: 600,
                   expire: 86400,
-                  minimum: 300,
-                },
-              };
+                  minimum: 300 } };
             }
             return {
               items: [
@@ -1088,17 +984,13 @@ describe('agents + email + batch hole fillers', () => {
                   serverIp: '203.0.113.10',
                   nsName: 'ns1.example.com',
                   ttl: 300,
-                  apply_status: 'planned',
-                },
+                  apply_status: 'planned' },
               ],
-              meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-            };
-          },
-        },
+              meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } };
+          } },
         {
           match: /\/api\/v1\/projects/,
-          body: { items: [{ id: 'p1', name: 'Demo' }] },
-        },
+          body: { items: [{ id: 'p1', name: 'Demo' }] } },
         { match: /.*/, body: { ok: true, items: [], ready: true } },
       ]);
 
@@ -1157,8 +1049,7 @@ describe('agents + email + batch hole fillers', () => {
         }
         for (const b of screen
           .queryAllByRole('button', {
-            name: /save|create|add|apply|delete|edit|refresh|backup|restore|run|export|download|detail|suspend|enable|disable|probe|sync|record|zone/i,
-          })
+            name: /save|create|add|apply|delete|edit|refresh|backup|restore|run|export|download|detail|suspend|enable|disable|probe|sync|record|zone/i })
           .slice(0, 12)) {
           if ((b as HTMLButtonElement).disabled) continue;
           try {

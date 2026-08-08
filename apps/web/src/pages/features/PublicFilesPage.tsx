@@ -17,8 +17,7 @@ import {
   FormLayout,
   OpsResultPanel,
   PresetChips,
-  buttonClassName,
-} from '../../shared/components/ui';
+  buttonClassName } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { getServerContext, setServerContext } from '../../shared/stores/server-context';
 import { systemApi } from '../../features/system';
@@ -40,18 +39,15 @@ export function PublicFilesPage() {
       status={{
         pill: {
           label: serverName || t('publicFiles.notSet'),
-          tone: serverName ? 'ok' : 'warn',
-        },
+          tone: serverName ? 'ok' : 'warn' },
         items: [
           { label: 'server_name', value: serverName || t('common.noneSelectedShort') },
           {
             label: t('publicFiles.quota'),
-            value: `${quotaMb || t('common.noneSelectedShort')} MiB`,
-          },
+            value: `${quotaMb || t('common.noneSelectedShort')} MiB` },
           { label: 'Reload', value: t('publicFiles.reloadOnApply') },
           { label: t('publicFiles.path'), value: 'dataDir/files' },
-        ],
-      }}
+        ] }}
       actions={
         <>
           <Link to="/files" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
@@ -75,12 +71,10 @@ export function PublicFilesPage() {
               items={[
                 {
                   label: t('publicFiles.serverName'),
-                  value: serverName || t('common.noneSelectedShort'),
-                },
+                  value: serverName || t('common.noneSelectedShort') },
                 {
                   label: t('publicFiles.quota'),
-                  value: `${quotaMb || t('common.noneSelectedShort')} MiB`,
-                },
+                  value: `${quotaMb || t('common.noneSelectedShort')} MiB` },
                 { label: t('publicFiles.reloadNginx'), value: t('publicFiles.reloadTry') },
               ]}
             />
@@ -145,8 +139,7 @@ export function PublicFilesPage() {
                       return (await systemApi.publicFilesApply({
                         serverName,
                         quotaMb: Number(quotaMb) || undefined,
-                        reload: true,
-                      })) as OpsResultLike;
+                        reload: true })) as OpsResultLike;
                     } catch (e) {
                       const m = e instanceof Error ? e.message : t('common.applyFailed');
                       return { ok: false, blocked: true, blockMessage: m, notes: [m] };

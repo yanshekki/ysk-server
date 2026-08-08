@@ -7,15 +7,13 @@ import {
   toast,
   toastStore,
   type ToastItem,
-  type ToastVariant,
-} from '../../stores/toast-store';
+  type ToastVariant } from '../../stores/toast-store';
 
 const VARIANT_CLASS: Record<ToastVariant, string> = {
   ok: 'ysk-toast ysk-toast--ok',
   error: 'ysk-toast ysk-toast--error',
   info: 'ysk-toast ysk-toast--info',
-  warn: 'ysk-toast ysk-toast--warn',
-};
+  warn: 'ysk-toast ysk-toast--warn' };
 
 function ToastCard({ item }: { item: ToastItem }) {
   const { t } = useTranslation();

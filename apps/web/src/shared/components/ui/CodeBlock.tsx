@@ -94,8 +94,7 @@ export function LogViewer({
   emptyLabel = '—',
   highlight = true,
   linkIps = true,
-  maxHeight,
-}: LogViewerProps) {
+  maxHeight }: LogViewerProps) {
   const style =
     maxHeight != null
       ? { maxHeight: typeof maxHeight === 'number' ? `${maxHeight}px` : maxHeight }

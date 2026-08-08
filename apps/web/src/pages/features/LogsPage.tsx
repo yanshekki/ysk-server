@@ -20,8 +20,7 @@ import {
   PromptDialog,
   SegRadio,
   PageTabs,
-  buttonClassName,
-} from '../../shared/components/ui';
+  buttonClassName } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { api } from '../../shared/services/api';
 import { authStore } from '../../shared/stores/auth-store';
@@ -40,8 +39,7 @@ import {
   bindDraftCheck,
   bindToggleAndTab,
   bindCopyMsg,
-  bindDraftString,
-} from '../bind-handlers';
+  bindDraftString } from '../bind-handlers';
 
 /** Public tabs — old journal/files/projects deep-links map into explore */
 const TABS = ['explore', 'ops', 'settings', 'about'] as const;
@@ -51,8 +49,7 @@ const LEGACY_TAB_MAP: Record<string, (typeof TABS)[number]> = {
   files: 'explore',
   projects: 'explore',
   maintain: 'ops',
-  settings: 'settings',
-};
+  settings: 'settings' };
 
 type LogSettings = {
   maxLines: number;
@@ -174,8 +171,7 @@ export function groupLabel(g: string): string {
     security: i18n.t('nav.sections.security'),
     app: i18n.t('logs.catApp'),
     other: i18n.t('logs.catOther'),
-    journal: i18n.t('logs.journalService'),
-  };
+    journal: i18n.t('logs.journalService') };
   return map[g] || g;
 }
 
@@ -412,8 +408,7 @@ export function LogsPage() {
         meta: unitName,
         group: 'journal',
         kind: 'journal',
-        available: true,
-      });
+        available: true });
     }
     for (const q of overview?.quickUnits ?? []) {
       if (journalSeen.has(q.unit)) continue;
@@ -425,8 +420,7 @@ export function LogsPage() {
         meta: q.unit,
         group: 'journal',
         kind: 'journal',
-        available: true,
-      });
+        available: true });
     }
     for (const u of units.slice(0, 80)) {
       if (journalSeen.has(u.unit)) continue;
@@ -440,8 +434,7 @@ export function LogsPage() {
         meta: u.active ? u.active : undefined,
         group: 'journal',
         kind: 'journal',
-        available: true,
-      });
+        available: true });
     }
 
     for (const s of sources.filter((x) => x.kind === 'file')) {
@@ -461,8 +454,7 @@ export function LogsPage() {
           group: `proj:${owner.name}`,
           kind: 'project',
           available: s.available,
-          projectId: owner.projectId,
-        });
+          projectId: owner.projectId });
         continue;
       }
       items.push({
@@ -472,8 +464,7 @@ export function LogsPage() {
         meta: s.available ? formatBytes(s.bytes) : t('network.unavailable'),
         group: s.group || 'other',
         kind: 'file',
-        available: s.available,
-      });
+        available: s.available });
     }
 
     // Every project: related + files under its own group
@@ -490,8 +481,7 @@ export function LogsPage() {
           group: g,
           kind: r.kind === 'journal' ? 'journal' : 'project',
           available: r.available,
-          projectId: p.projectId,
-        });
+          projectId: p.projectId });
       }
       for (const f of p.files) {
         const previewable = f.previewable !== false;
@@ -503,8 +493,7 @@ export function LogsPage() {
           group: g,
           kind: 'project',
           available: previewable,
-          projectId: p.projectId,
-        });
+          projectId: p.projectId });
       }
       if (!(p.related?.length) && !p.files.length) {
         items.push({
@@ -515,8 +504,7 @@ export function LogsPage() {
           group: g,
           kind: 'project',
           available: true,
-          projectId: p.projectId,
-        });
+          projectId: p.projectId });
       }
     }
     return items;
@@ -527,8 +515,7 @@ export function LogsPage() {
       filterRailItems(railItems, {
         focusProject: searchParams.get('project'),
         projectsOnly,
-        q: railFilter,
-      }),
+        q: railFilter }),
     [railItems, railFilter, projectsOnly, searchParams],
   );
 
@@ -580,8 +567,7 @@ export function LogsPage() {
       return {
         ok: r.ok,
         notes: r.notes,
-        blocked: r.blocked,
-      } as OpsResultLike;
+        blocked: r.blocked } as OpsResultLike;
     }, t('logs.logsLoaded'));
   }
 
@@ -612,8 +598,7 @@ export function LogsPage() {
       const q = new URLSearchParams({
         source: src,
         lines: String(lines),
-        interval: String(followSec),
-      });
+        interval: String(followSec) });
       if (since) q.set('since', since);
       if (priority) q.set('priority', priority);
       if (grep.trim()) q.set('grep', grep.trim());
@@ -625,8 +610,7 @@ export function LogsPage() {
           const res = await fetch(`/api/v1/logs/stream?${q}`, {
             headers,
             signal: ac.signal,
-            credentials: 'include',
-          });
+            credentials: 'include' });
           if (!res.ok || !res.body) {
             setError(t('logs.sseFailed'));
             setUseSse(false);
@@ -678,8 +662,7 @@ export function LogsPage() {
           const q = new URLSearchParams({
             source: src,
             lines: String(lines),
-            since,
-          });
+            since });
           if (priority) q.set('priority', priority);
           if (grep.trim()) q.set('grep', grep.trim());
           const r = await api.requestRaw<QueryResult>(`/api/v1/logs/query?${q}`);
@@ -718,9 +701,7 @@ export function LogsPage() {
           autoVacuumTime: settingsDraft.autoVacuumTime || '03:00',
           journalWarnMb: Number(settingsDraft.journalWarnMb) || 1024,
           customAllowPaths: settingsDraft.customAllowPaths ?? [],
-          disabledSources: settingsDraft.disabledSources ?? [],
-        }),
-      });
+          disabledSources: settingsDraft.disabledSources ?? [] }) });
       setSettings(r);
       setSettingsDraft(r);
       await refreshMeta();
@@ -743,9 +724,7 @@ export function LogsPage() {
           since: isJournal ? since : undefined,
           priority: isJournal && priority ? priority : undefined,
           grep: grep.trim() || undefined,
-          format,
-        }),
-      });
+          format }) });
       if (r.ok && r.id) {
         await api.downloadAuthenticated(
           `/api/v1/logs/export/${r.id}`,
@@ -766,9 +745,7 @@ export function LogsPage() {
           since: isJournal ? since : undefined,
           priority: priority || undefined,
           grep: grep.trim() || undefined,
-          lines,
-        }),
-      });
+          lines }) });
       await refreshMeta();
       return { ok: true, notes: [t('logs.bookmarkSaved')] } as OpsResultLike;
     }, t('logs.bookmarkSaved'));
@@ -801,8 +778,7 @@ export function LogsPage() {
               ? 'ok'
               : journalHigh || (overview?.recentErrors ?? 0) > 20
                 ? 'warn'
-                : 'warn',
-        },
+                : 'warn' },
         items: [
           {
             label: t('logs.groupJournal'),
@@ -810,36 +786,29 @@ export function LogsPage() {
               overview?.journalDiskMb != null
                 ? `${overview.journalDiskMb} MB`
                 : '—',
-            tone: journalHigh ? 'warn' : undefined,
-          },
+            tone: journalHigh ? 'warn' : undefined },
           {
             label: t('logs.groupVarLog'),
             value:
-              overview?.varLogMb != null ? `≈${overview.varLogMb}MB` : '—',
-          },
+              overview?.varLogMb != null ? `≈${overview.varLogMb}MB` : '—' },
           {
             label: t('projects.healthDetail.error'),
             value: overview?.recentErrors ?? '—',
-            tone: (overview?.recentErrors ?? 0) > 20 ? 'warn' : 'ok',
-          },
+            tone: (overview?.recentErrors ?? 0) > 20 ? 'warn' : 'ok' },
           {
             label: t('logs.projectLog'),
             value:
               overview?.projectLogs?.fileCount ??
-              projects.reduce((n, p) => n + (p.files?.length ?? 0), 0),
-          },
+              projects.reduce((n, p) => n + (p.files?.length ?? 0), 0) },
           {
             label: t('system.executeLabel'),
             value: overview?.executeEnabled ? t('common.on') : t('common.off'),
-            tone: overview?.executeEnabled ? 'ok' : 'warn',
-          },
+            tone: overview?.executeEnabled ? 'ok' : 'warn' },
           {
             label: t('system.rootLabel'),
             value: overview?.isRoot ? t('common.yes') : t('common.no'),
-            tone: overview?.isRoot ? 'ok' : 'warn',
-          },
-        ],
-      }}
+            tone: overview?.isRoot ? 'ok' : 'warn' },
+        ] }}
       actions={<div className="lc-head-actions">
           <Button
             variant="secondary"
@@ -976,8 +945,7 @@ export function LogsPage() {
                               if (!pid) return;
                               setCollapsedProjects((c) => ({
                                 ...c,
-                                [pid]: !collapsed,
-                              }));
+                                [pid]: !collapsed }));
                             }}
                           >
                             <span>
@@ -1498,8 +1466,7 @@ export function LogsPage() {
                             customAllowPaths: [
                               ...(d.customAllowPaths ?? []),
                               p,
-                            ].slice(0, 40),
-                          }));
+                            ].slice(0, 40) }));
                           setCustomPathInput('');
                         }
                       }}
@@ -1515,8 +1482,7 @@ export function LogsPage() {
                           customAllowPaths: [
                             ...(d.customAllowPaths ?? []),
                             p,
-                          ].slice(0, 40),
-                        }));
+                          ].slice(0, 40) }));
                         setCustomPathInput('');
                       }}
                     >
@@ -1538,8 +1504,7 @@ export function LogsPage() {
                                 ...d,
                                 customAllowPaths: (d.customAllowPaths ?? []).filter(
                                   (x) => x !== p,
-                                ),
-                              }))
+                                ) }))
                             }
                           >
                             {t('security.ssh.remove')}
@@ -1594,8 +1559,7 @@ export function LogsPage() {
                                   await refreshMeta();
                                   return {
                                     ok: true,
-                                    notes: [t('logs.deleted')],
-                                  } as OpsResultLike;
+                                    notes: [t('logs.deleted')] } as OpsResultLike;
                                 }, t('logs.bookmarkDeleted'));
                               }}
                             >
@@ -1669,8 +1633,7 @@ export function LogsPage() {
             void run(async () => {
               const r = (await api.requestRaw('/api/v1/logs/journal/vacuum', {
                 method: 'POST',
-                body: JSON.stringify({ mode: 'time', value: vacuumDays }),
-              })) as OpsResultLike;
+                body: JSON.stringify({ mode: 'time', value: vacuumDays }) })) as OpsResultLike;
               await refreshMeta();
               return r;
             }, t('logs.vacuumRequested'));
@@ -1678,8 +1641,7 @@ export function LogsPage() {
             void run(async () => {
               const r = (await api.requestRaw('/api/v1/logs/journal/vacuum', {
                 method: 'POST',
-                body: JSON.stringify({ mode: 'size', value: '500M' }),
-              })) as OpsResultLike;
+                body: JSON.stringify({ mode: 'size', value: '500M' }) })) as OpsResultLike;
               await refreshMeta();
               return r;
             }, t('logs.vacuumSizeRequested'));

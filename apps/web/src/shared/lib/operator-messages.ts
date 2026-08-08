@@ -25,7 +25,10 @@ export function isOperatorNoise(text: string): boolean {
   if (t.length > 220 && TECH_BLOB.test(t)) return true;
   if (/^export\s+/i.test(t)) return true;
   if (/^建置\s*[：:]\s*export/i.test(t) || /^build\s*[：:]\s*export/i.test(t)) return true;
-  if (/Managed configs live|Include them from nginx/i.test(t)) return true;
+  if (/Managed configs live|Include them from nginx|管理設定目錄|管理配置目录|Managed config dir/i.test(t))
+    return true;
+  if (/include\s+\/.*\/\*\.conf|於 Nginx 加入|在 Nginx 加入|In nginx:\s*include/i.test(t))
+    return true;
   if (/^#\s/.test(t) && t.includes('/')) return true;
   if (t.includes('\n') && /--\w+/.test(t) && t.split('\n').length <= 6) return true;
   if (/^(CREATE |GRANT |ALTER |DROP )/i.test(t)) return true;
@@ -55,7 +58,7 @@ export function classifyOpsNote(text: string): OpsNoteKind {
   if (isOperatorNoise(raw)) return 'drop';
   // Explicit technical diagnostics
   if (
-    /systemd|unit|MainPID|is-active|203\/EXEC|pidfile|journalctl|conf\.d|已寫入系統服務|已写入系统服务|已複製\d+|已复制\d+|Managed configs|Include them|ysk-web group|chown|擁有者|拥有者|隔離模式|隔离模式|以專案用戶|以项目用户|已送 SIGTERM|已套用面板|已套用.*調校|已套用.*调校/i.test(
+    /systemd|unit|MainPID|is-active|203\/EXEC|pidfile|journalctl|conf\.d|已寫入系統服務|已写入系统服务|已複製\d+|已复制\d+|Managed configs|Include them|管理設定目錄|管理配置目录|ysk-web group|chown|擁有者|拥有者|隔離模式|隔离模式|以專案用戶|以项目用户|已送 SIGTERM|已套用面板|已套用.*調校|已套用.*调校|類型：|类型：|php-proxy|fpm/i.test(
       raw,
     )
   ) {

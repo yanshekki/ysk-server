@@ -24,8 +24,7 @@ export function ActionBar({
   size = 'sm',
   wrap = true,
   className,
-  'aria-label': ariaLabel,
-}: ActionBarProps) {
+  'aria-label': ariaLabel }: ActionBarProps) {
   const cls = [
     'action-bar',
     align === 'end' ? 'action-bar--end' : '',

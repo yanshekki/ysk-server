@@ -19,8 +19,7 @@ import {
   FormLayout,
   LoadingBlock,
   OpsResultPanel,
-  PageTabs,
-} from '../../shared/components/ui';
+  PageTabs } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../shared/lib/i18n';
@@ -28,8 +27,7 @@ import { bindInput, bindCheck, bindVoid } from '../bind-handlers';
 import {
   migrateApi,
   type MigrateJob,
-  type MigrateOpsResult,
-} from '../../features/migrate/api';
+  type MigrateOpsResult } from '../../features/migrate/api';
 
 const TABS = ['wizard', 'jobs', 'about'] as const;
 
@@ -105,8 +103,7 @@ export function MigrateHostPage() {
         forceWipeTarget: forceWipe,
         targetDataDir: targetDataDir.trim() || '/var/lib/ysk-server',
         dryRun,
-        execute: !dryRun,
-      };
+        execute: !dryRun };
       if (authMode === 'password' && password) {
         body.password = password;
       } else if (authMode === 'identityId' && identityId) {
@@ -165,22 +162,18 @@ export function MigrateHostPage() {
               : err
                 ? t('migrate.inventoryFailed')
                 : t('migrate.pendingInventory'),
-          tone: inventory?.ok ? 'ok' : err ? 'danger' : 'neutral',
-        },
+          tone: inventory?.ok ? 'ok' : err ? 'danger' : 'neutral' },
         items: [
           { label: t('common.project'), value: counts.projects ?? '—' },
           { label: t('users.mailboxes'), value: counts.mailboxes ?? '—' },
           { label: t('common.user'), value: counts.users ?? '—' },
           {
             label: t('migrate.software'),
-            value: softwareNeeded.length || '—',
-          },
+            value: softwareNeeded.length || '—' },
           {
             label: t('migrate.jobs'),
-            value: jobs.length,
-          },
-        ],
-      }}
+            value: jobs.length },
+        ] }}
       actions={
         <ActionBar>
           <Button
@@ -255,8 +248,7 @@ export function MigrateHostPage() {
                           value: String(
                             (inventory.manifest as { source?: { hostname?: string } })
                               ?.source?.hostname ?? '—',
-                          ),
-                        },
+                          ) },
                         {
                           label: 'dataDir',
                           value: (
@@ -266,30 +258,25 @@ export function MigrateHostPage() {
                                   ?.source?.dataDir ?? '—',
                               )}
                             </code>
-                          ),
-                        },
+                          ) },
                         {
                           label: t('migrate.projectHome'),
-                          value: `${counts.projects ?? 0} / ${counts.homes_on_disk ?? '—'}`,
-                        },
+                          value: `${counts.projects ?? 0} / ${counts.homes_on_disk ?? '—'}` },
                         {
                           label: t('users.mailboxes'),
-                          value: String(counts.mailboxes ?? 0),
-                        },
+                          value: String(counts.mailboxes ?? 0) },
                         {
                           label: 'DB / Redis',
                           value: `${
                             (counts.mysql_databases ?? 0) +
                             (counts.postgres_databases ?? 0)
-                          } / ${counts.redis_instances ?? 0}`,
-                        },
+                          } / ${counts.redis_instances ?? 0}` },
                         {
                           label: t('migrate.needSoftware'),
                           value: softwareNeeded.length
                             ? softwareNeeded.slice(0, 6).join(', ') +
                               (softwareNeeded.length > 6 ? '…' : '')
-                            : '—',
-                        },
+                            : '—' },
                       ]}
                     />
                     {inventory.notes?.length ? (
@@ -539,8 +526,7 @@ export function MigrateHostPage() {
                         | 'blocked'
                         | 'failed'
                         | 'partial'
-                        | undefined,
-                    }}
+                        | undefined }}
                   />
 
                   {cutover.length > 0 ? (
@@ -578,8 +564,7 @@ export function MigrateHostPage() {
                     <code className="u-text-sm" title={j.id}>
                       {j.id.slice(0, 8)}…
                     </code>
-                  ),
-                },
+                  ) },
                 {
                   key: 'phase',
                   header: t('migrate.phase'),
@@ -596,23 +581,20 @@ export function MigrateHostPage() {
                     >
                       {j.phase}
                     </Badge>
-                  ),
-                },
+                  ) },
                 {
                   key: 'target',
                   header: t('common.target'),
                   render: (j) =>
                     j.target
                       ? `${j.target.user}@${j.target.host}:${j.target.port}`
-                      : '—',
-                },
+                      : '—' },
                 {
                   key: 'at',
                   header: t('updates.badgeUpdate'),
                   nowrap: true,
                   render: (j) =>
-                    new Date(j.updatedAt).toLocaleString(),
-                },
+                    new Date(j.updatedAt).toLocaleString() },
                 {
                   key: 'err',
                   header: t('common.notes'),
@@ -620,8 +602,7 @@ export function MigrateHostPage() {
                     <span className="muted u-text-sm">
                       {j.lastError || '—'}
                     </span>
-                  ),
-                },
+                  ) },
               ]}
               rows={jobs}
               rowKey={(j) => j.id}

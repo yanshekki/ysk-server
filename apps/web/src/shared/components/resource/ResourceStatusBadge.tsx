@@ -10,8 +10,7 @@ const TONE: Record<string, BadgeTone> = {
   pending_execute: 'warn',
   uploaded: 'ok',
   issued: 'ok',
-  missing: 'danger',
-};
+  missing: 'danger' };
 
 const KEY: Record<string, string> = {
   draft: 'applyStatus.draft',
@@ -22,8 +21,7 @@ const KEY: Record<string, string> = {
   pending_execute: 'applyStatus.pendingExecute',
   uploaded: 'applyStatus.uploaded',
   issued: 'applyStatus.issued',
-  missing: 'applyStatus.missing',
-};
+  missing: 'applyStatus.missing' };
 
 export function ResourceStatusBadge({ status }: { status?: string | null }) {
   const { t } = useTranslation();

@@ -22,15 +22,13 @@ import {
   OpsResultPanel,
   PresetChips,
   SoftwareInstallBanner,
-  SplitPanel,
-} from '../../shared/components/ui';
+  SplitPanel } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import {
   redisApi,
   type RedisKeyListItem,
   type RedisKeyView,
-  type RedisServiceStatus,
-} from '../../features/redis';
+  type RedisServiceStatus } from '../../features/redis';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { bindSet, bindInput, bindCall1 } from '../bind-handlers';
 
@@ -68,8 +66,7 @@ export function typeLabel(
     hash: i18n.t('redis.typeHash'),
     list: i18n.t('redis.typeList'),
     set: i18n.t('redis.typeSet'),
-    zset: i18n.t('redis.typeZset'),
-  };
+    zset: i18n.t('redis.typeZset') };
   return type ? map[type] ?? type : '—';
 }
 
@@ -206,8 +203,7 @@ export function RedisPage() {
           db,
           key: keyToOpen,
           value: newVal,
-          ttl: parseOptionalTtl(newTtl),
-        });
+          ttl: parseOptionalTtl(newTtl) });
         setSetOpen(false);
         setNewKey('');
         setNewVal('');
@@ -269,8 +265,7 @@ export function RedisPage() {
       {
         label: t('common.status'),
         value: online ? t('common.running') : t('redis.offline'),
-        tone: online ? ('ok' as const) : ('danger' as const),
-      },
+        tone: online ? ('ok' as const) : ('danger' as const) },
       { label: t('common.version'), value: svc.version ?? '—' },
       { label: t('common.memory'), value: svc.usedMemory ?? '—' },
       { label: t('redis.connections'), value: svc.connectedClients ?? '—' },
@@ -278,8 +273,7 @@ export function RedisPage() {
       {
         label: t('redis.writable'),
         value: online ? t('common.available') : t('network.unavailable'),
-        tone: online ? ('ok' as const) : ('warn' as const),
-      },
+        tone: online ? ('ok' as const) : ('warn' as const) },
     ];
   }, [svc, online, totalKeys]);
 
@@ -295,20 +289,17 @@ export function RedisPage() {
       status={{
         pill: {
           label: online ? t('redis.connected') : t('redis.notConnected'),
-          tone: online ? 'ok' : 'warn',
-        },
+          tone: online ? 'ok' : 'warn' },
         items: summaryItems.length
           ? summaryItems.slice(0, 4).map((s) => ({
               label: s.label,
-              value: s.value,
-            }))
+              value: s.value }))
           : [
               { label: t('common.status'), value: online ? 'online' : 'offline' },
               { label: 'DB', value: db },
               { label: t('redis.keys'), value: keys.length },
               { label: t('redis.selected'), value: selectedKey ? '1' : '0' },
-            ],
-      }}
+            ] }}
       actions={<ActionBar>
           <Link to="/databases/redis/service">
             <Button variant="secondary" size="sm">

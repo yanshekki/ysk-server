@@ -26,8 +26,7 @@ export function SplitPanel({
   rightActions,
   ratio = '1fr 1.1fr',
   minHeight = '24rem',
-  className,
-}: SplitPanelProps) {
+  className }: SplitPanelProps) {
   return (
     <div
       className={`split-panel${className ? ` ${className}` : ''}`}

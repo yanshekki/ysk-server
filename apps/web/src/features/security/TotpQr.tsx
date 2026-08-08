@@ -28,8 +28,7 @@ export function TotpQr({ otpauthUrl, size = 200, className }: TotpQrProps) {
           errorCorrectionLevel: 'M',
           margin: 2,
           width: size * 2,
-          color: { dark: '#0f172a', light: '#ffffff' },
-        });
+          color: { dark: '#0f172a', light: '#ffffff' } });
         if (!cancelled) setDataUrl(url);
       } catch {
         if (!cancelled) setErr(t('security.totpQrFailed'));

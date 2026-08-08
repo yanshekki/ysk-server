@@ -8,8 +8,7 @@ import { MemoryRouter } from 'react-router-dom';
 import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
-  softwareReadyRoute,
-} from '../../test/mock-fetch';
+  softwareReadyRoute } from '../../test/mock-fetch';
 import { authStore } from '../../shared/stores/auth-store';
 import { MigrateHostPage } from './MigrateHostPage';
 
@@ -42,13 +41,10 @@ describe('MigrateHostPage deep', () => {
             mail_domains: 1,
             redis_dbs: 0,
             bytes: 5e9,
-            software: { nginx: true, mysql: true },
-          },
+            software: { nginx: true, mysql: true } },
           notes: ['scanned'],
           executeEnabled: false,
-          isRoot: false,
-        },
-      },
+          isRoot: false } },
       {
         match: (url) => url.startsWith('/api/v1/system/migrate/jobs'),
         handler: (_u, init) => {
@@ -61,15 +57,12 @@ describe('MigrateHostPage deep', () => {
                 status: 'planned',
                 target: '10.0.0.9',
                 createdAt: now,
-                apply_status: 'written',
-              },
+                apply_status: 'written' },
               summary: ['packed'],
               phases: {
                 pack: { ok: true, notes: ['ok'] },
-                transfer: { ok: false, notes: ['need execute'] },
-              },
-              notes: ['written ≠ applied'],
-            };
+                transfer: { ok: false, notes: ['need execute'] } },
+              notes: ['written ≠ applied'] };
           }
           return {
             ok: true,
@@ -80,23 +73,18 @@ describe('MigrateHostPage deep', () => {
                 target: '10.0.0.9',
                 createdAt: now,
                 apply_status: 'written',
-                manifest: { projects: 2 },
-              },
+                manifest: { projects: 2 } },
               {
                 id: 'mj0',
                 status: 'failed',
                 target: '10.0.0.8',
                 createdAt: now,
-                notes: ['ssh failed'],
-              },
-            ],
-          };
-        },
-      },
+                notes: ['ssh failed'] },
+            ] };
+        } },
       {
         match: (url) => url.startsWith('/api/v1/system/migrate/post'),
-        body: HONESTY_WRITTEN_BLOCKED,
-      },
+        body: HONESTY_WRITTEN_BLOCKED },
       {
         match: /\/api\/v1\/ssh\/identities/,
         body: {
@@ -106,11 +94,8 @@ describe('MigrateHostPage deep', () => {
               name: 'panel-key',
               status: 'installed',
               purpose: 'panel_outbound',
-              fingerprintSha256: 'SHA256:abc',
-            },
-          ],
-        },
-      },
+              fingerprintSha256: 'SHA256:abc' },
+          ] } },
       { match: /.*/, body: { ok: true, items: [] } },
     ]);
 

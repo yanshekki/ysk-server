@@ -5,8 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
-  softwareReadyRoute,
-} from '../test/mock-fetch';
+  softwareReadyRoute } from '../test/mock-fetch';
 import { authStore } from '../shared/stores/auth-store';
 import { ServiceConsolePage } from './features/ServiceConsolePage';
 
@@ -26,8 +25,7 @@ describe('ServiceConsole function coverage', () => {
       softwareReadyRoute(),
       {
         match: (url) => url.includes('/auth/me'),
-        body: { user: { username: 'admin', roles: ['admin'] }, capabilities: ['*'] },
-      },
+        body: { user: { username: 'admin', roles: ['admin'] }, capabilities: ['*'] } },
       {
         match: (url) => url.includes('/console') || url.includes('/db/') || url.includes('postgres') || url.includes('mysql') || url.includes('redis') || url.includes('mariadb'),
         handler: (_u, init) => {
@@ -55,55 +53,47 @@ describe('ServiceConsole function coverage', () => {
                     label: 'Max connections',
                     type: 'int',
                     liveValue: '100',
-                    applyMode: 'restart',
-                  },
+                    applyMode: 'restart' },
                   {
                     key: 'ssl',
                     label: 'SSL',
                     type: 'bool',
                     liveValue: 'ON',
                     enumValues: ['ON', 'OFF'],
-                    applyMode: 'reload',
-                  },
+                    applyMode: 'reload' },
                   {
                     key: 'log_level',
                     label: 'Log level',
                     type: 'enum',
                     liveValue: 'info',
                     enumValues: ['debug', 'info', 'warn', 'error'],
-                    applyMode: 'runtime',
-                  },
+                    applyMode: 'runtime' },
                   {
                     key: 'shared_buffers',
                     label: 'Shared buffers',
                     type: 'string',
                     liveValue: '128MB',
-                    applyMode: 'restart',
-                  },
+                    applyMode: 'restart' },
                   {
                     key: 'port',
                     label: 'Port',
                     type: 'int',
                     liveValue: '5432',
-                    applyMode: 'restart',
-                  },
+                    applyMode: 'restart' },
                   {
                     key: 'idle_timeout',
                     label: 'Idle timeout',
                     type: 'int',
                     liveValue: '60',
-                    applyMode: 'runtime',
-                  },
+                    applyMode: 'runtime' },
                   {
                     key: 'big_enum',
                     label: 'Big enum',
                     type: 'enum',
                     liveValue: 'a1',
                     enumValues: Array.from({ length: 15 }, (_, i) => `a${i + 1}`),
-                    applyMode: 'runtime',
-                  },
-                ],
-              },
+                    applyMode: 'runtime' },
+                ] },
               {
                 id: 'memory',
                 label: 'Memory',
@@ -113,14 +103,10 @@ describe('ServiceConsole function coverage', () => {
                     label: 'Work mem',
                     type: 'string',
                     liveValue: '4MB',
-                    applyMode: 'runtime',
-                  },
-                ],
-              },
-            ],
-          };
-        },
-      },
+                    applyMode: 'runtime' },
+                ] },
+            ] };
+        } },
     ]);
     render(
       <MemoryRouter>
@@ -190,14 +176,10 @@ describe('ServiceConsole function coverage', () => {
                     label: 'Port',
                     type: 'int',
                     liveValue: '6379',
-                    applyMode: 'restart',
-                  },
-                ],
-              },
-            ],
-          };
-        },
-      },
+                    applyMode: 'restart' },
+                ] },
+            ] };
+        } },
     ]);
     for (const engine of ['mysql', 'redis', 'mariadb'] as const) {
       const { unmount } = render(

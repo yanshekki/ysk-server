@@ -8,8 +8,7 @@ import { MemoryRouter } from 'react-router-dom';
 import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
-  softwareReadyRoute,
-} from '../../test/mock-fetch';
+  softwareReadyRoute } from '../../test/mock-fetch';
 import { authStore } from '../../shared/stores/auth-store';
 import { DbClusterPanel } from './DbClusterPanel';
 
@@ -27,8 +26,7 @@ const cluster = {
   artifactDir: '/var/lib/ysk/c1',
   notes: [],
   createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-};
+  updatedAt: new Date().toISOString() };
 
 const plan = {
   ok: true,
@@ -45,8 +43,7 @@ const plan = {
   ],
   notes: ['dry-run plan'],
   requiresExecute: true,
-  requiresRoot: true,
-};
+  requiresRoot: true };
 
 function clusterRoutes(engine = 'postgres') {
   return [
@@ -75,8 +72,7 @@ function clusterRoutes(engine = 'postgres') {
             notes: ['written ≠ applied'],
             requiresExecute: true,
             requiresRoot: true,
-            ...HONESTY_WRITTEN_BLOCKED,
-          };
+            ...HONESTY_WRITTEN_BLOCKED };
         }
         if (url.includes('/probe')) {
           return {
@@ -88,10 +84,8 @@ function clusterRoutes(engine = 'postgres') {
               wsrep_ready: 'ON',
               wsrep_connected: 'ON',
               wsrep_cluster_size: '2',
-              other: 'x',
-            },
-            notes: ['probed'],
-          };
+              other: 'x' },
+            notes: ['probed'] };
         }
         if (url.includes('/install-peers') || url.includes('installPeers')) {
           return { ok: true, dryRun: true, notes: ['peer install plan'], targets: [] };
@@ -101,8 +95,7 @@ function clusterRoutes(engine = 'postgres') {
             ok: true,
             dryRun: true,
             notes: ['push plan'],
-            targets: [{ host: '10.0.0.2', files: ['a.conf'], remotePath: '/tmp/ysk' }],
-          };
+            targets: [{ host: '10.0.0.2', files: ['a.conf'], remotePath: '/tmp/ysk' }] };
         }
         if (url.includes('/fleet')) {
           return { ok: true, dryRun: true, notes: ['fleet plan'] };
@@ -114,8 +107,7 @@ function clusterRoutes(engine = 'postgres') {
           return { ok: true, notes: ['removed'] };
         }
         return { ok: true, cluster, items: [cluster] };
-      },
-    },
+      } },
     { match: /.*/, body: { ok: true, items: [], notes: [] } },
   ];
 }
@@ -141,8 +133,7 @@ describe('DbClusterPanel deep', () => {
 
     // open wizard
     const create = screen.getAllByRole('button', {
-      name: /create|replica|galera|cluster|建立|叢集|集群/i,
-    })[0]!;
+      name: /create|replica|galera|cluster|建立|叢集|集群/i })[0]!;
     await user.click(create);
 
     await waitFor(() => expect(document.getElementById('dbc-name')).toBeTruthy());
@@ -163,8 +154,7 @@ describe('DbClusterPanel deep', () => {
     if (peer3) await user.type(peer3, '10.0.0.12');
 
     const gen = screen.getAllByRole('button', {
-      name: /generate|plan|產生|生成/i,
-    }).find((b) => (b as HTMLButtonElement).type === 'submit' || /generate|plan|產生|生成/i.test(b.textContent ?? ''));
+      name: /generate|plan|產生|生成/i }).find((b) => (b as HTMLButtonElement).type === 'submit' || /generate|plan|產生|生成/i.test(b.textContent ?? ''));
     if (gen) await user.click(gen);
 
     await waitFor(
@@ -203,14 +193,12 @@ describe('DbClusterPanel deep', () => {
 
     // confirm apply dialog
     const confirmApply = screen.queryAllByRole('button', {
-      name: /confirm|apply|確認|确认|套用/i,
-    })[0];
+      name: /confirm|apply|確認|确认|套用/i })[0];
     if (confirmApply) await user.click(confirmApply);
 
     await clickAll(/^Bootstrap$/i, 1);
     const confirmBoot = screen.queryAllByRole('button', {
-      name: /confirm|apply|確認|确认/i,
-    })[0];
+      name: /confirm|apply|確認|确认/i })[0];
     if (confirmBoot) await user.click(confirmBoot);
 
     await clickAll(/probe|探測|探测/i, 3);
@@ -222,8 +210,7 @@ describe('DbClusterPanel deep', () => {
     // delete with confirm
     await clickAll(/delete|remove|刪除|删除/i, 1);
     const confirmDel = screen.queryAllByRole('button', {
-      name: /confirm|delete|確認|确认|刪除/i,
-    })[0];
+      name: /confirm|delete|確認|确认|刪除/i })[0];
     if (confirmDel) await user.click(confirmDel);
 
     // dismiss msg alert close if present
@@ -248,8 +235,7 @@ describe('DbClusterPanel deep', () => {
     await waitFor(() => expect(document.body.textContent!.length).toBeGreaterThan(10));
 
     const create = screen.getAllByRole('button', {
-      name: /create|galera|cluster|建立/i,
-    })[0];
+      name: /create|galera|cluster|建立/i })[0];
     if (create) {
       await user.click(create);
       await waitFor(() => expect(document.getElementById('dbc-name')).toBeTruthy());
@@ -269,8 +255,7 @@ describe('DbClusterPanel deep', () => {
       softwareReadyRoute(),
       {
         match: (url: string) => url.includes('/api/v1/db/clusters'),
-        body: { ok: true, items: [] },
-      },
+        body: { ok: true, items: [] } },
       { match: /.*/, body: { ok: true, items: [] } },
     ]);
 
@@ -294,8 +279,7 @@ describe('DbClusterPanel deep', () => {
       {
         match: (url: string) => url.includes('/api/v1/db/clusters'),
         status: 500,
-        body: { message: 'cluster list boom' },
-      },
+        body: { message: 'cluster list boom' } },
     ]);
     render(
       <MemoryRouter>

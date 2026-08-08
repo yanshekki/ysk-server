@@ -29,8 +29,7 @@ import {
   FormLayout,
   Modal,
   PromptDialog,
-  PageTabs,
-} from '../shared/components/ui';
+  PageTabs } from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { bindSet, bindInput, bindCheck, bindVoid } from './bind-handlers';
 
@@ -151,8 +150,7 @@ export function getWebAuthnEnv(): WebAuthnEnv {
       hasPublicKeyCredential: false,
       isIpHost: false,
       isLocalhost: false,
-      likelyOk: false,
-    };
+      likelyOk: false };
   }
   const hostname = location.hostname || '';
   const isLocalhost =
@@ -169,8 +167,7 @@ export function getWebAuthnEnv(): WebAuthnEnv {
     hasPublicKeyCredential,
     isIpHost,
     isLocalhost,
-    likelyOk,
-  };
+    likelyOk };
 }
 
 /**
@@ -346,26 +343,21 @@ export function SecurityPage() {
               : totpStatus?.enabled
                 ? t('security.pillReady')
                 : t('security.pill2faOff'),
-          tone: approvals.length > 0 ? 'warn' : totpStatus?.enabled ? 'ok' : 'warn',
-        },
+          tone: approvals.length > 0 ? 'warn' : totpStatus?.enabled ? 'ok' : 'warn' },
         items: [
           {
             label: t('security.stat2fa'),
             value: totpStatus?.enabled ? t('common.on') : t('common.off'),
-            tone: totpStatus?.enabled ? 'ok' : 'warn',
-          },
+            tone: totpStatus?.enabled ? 'ok' : 'warn' },
           { label: t('security.statApi'), value: apiKeys.length },
           {
             label: t('security.statSsh'),
-            value: `${sshCounts.identities}/${sshCounts.loginKeys}`,
-          },
+            value: `${sshCounts.identities}/${sshCounts.loginKeys}` },
           {
             label: t('security.statPending'),
             value: approvals.length,
-            tone: approvals.length > 0 ? 'danger' : 'ok',
-          },
-        ],
-      }}
+            tone: approvals.length > 0 ? 'danger' : 'ok' },
+        ] }}
       actions={<Button variant="secondary" size="sm" loading={busy} onClick={bindVoid(runSysInfo)}>
           {t('security.runSysInfo')}
         </Button>
@@ -378,8 +370,7 @@ export function SecurityPage() {
           {
             id: 'ssh',
             label: t('security.tabSsh'),
-            badge: sshCounts.identities + sshCounts.loginKeys || undefined,
-          },
+            badge: sshCounts.identities + sshCounts.loginKeys || undefined },
           { id: 'approvals', label: t('security.tabApprovals'), badge: approvals.length || undefined },
           { id: 'allowlist', label: t('security.tabAllowlist'), badge: tools.length || undefined },
         
@@ -455,8 +446,7 @@ export function SecurityPage() {
                         const title = ua.os
                           ? t('security.sessionDeviceOn', {
                               browser: ua.browser,
-                              os: ua.os,
-                            })
+                              os: ua.os })
                           : ua.browser;
                         const when = relativeTime(s.last_seen_at ?? s.created_at, t);
                         return (
@@ -487,12 +477,10 @@ export function SecurityPage() {
                               </div>
                               <div className="sess-card__sub muted u-text-sm">
                                 {t('security.sessionStarted', {
-                                  when: relativeTime(s.created_at, t),
-                                })}
+                                  when: relativeTime(s.created_at, t) })}
                                 <span className="sess-card__id" title={s.id}>
                                   {t('security.sessionIdShort', {
-                                    id: s.id.slice(0, 10),
-                                  })}
+                                    id: s.id.slice(0, 10) })}
                                 </span>
                               </div>
                             </div>
@@ -524,8 +512,7 @@ export function SecurityPage() {
                     revokeTarget
                       ? t('security.revokeSessionDesc', {
                           device: parseUserAgent(revokeTarget.user_agent).browser,
-                          ip: revokeTarget.ip || '—',
-                        })
+                          ip: revokeTarget.ip || '—' })
                       : ''
                   }
                   confirmLabel={t('security.revoke')}
@@ -550,8 +537,7 @@ export function SecurityPage() {
                   open={revokeOthersOpen}
                   title={t('security.revokeOthersTitle')}
                   description={t('security.revokeOthersDesc', {
-                    count: sessions.filter((s) => !s.current).length,
-                  })}
+                    count: sessions.filter((s) => !s.current).length })}
                   confirmLabel={t('security.revokeOtherSessions')}
                   danger
                   onClose={bindSet(setRevokeOthersOpen, false)}
@@ -561,8 +547,7 @@ export function SecurityPage() {
                       .revokeOtherSessions()
                       .then((r) => {
                         toast.ok(t('security.revokedOtherSessions', {
-                            count: r.revoked,
-                          }));
+                            count: r.revoked }));
                         return refreshSessions();
                       })
                       .catch((e: Error) =>
@@ -625,22 +610,19 @@ export function SecurityPage() {
                             options: PublicKeyCredentialCreationOptionsJSON;
                           }>('/api/v1/auth/webauthn/register/begin', {
                             method: 'POST',
-                            body: '{}',
-                          });
+                            body: '{}' });
                           if (!begin?.options) {
                             setPasskeyErr(t('security.webauthnFailed'));
                             return;
                           }
                           const att = await startRegistration({
-                            optionsJSON: begin.options as never,
-                          });
+                            optionsJSON: begin.options as never });
                           const fin = await api.requestRaw<{
                             ok: boolean;
                             notes?: string[];
                           }>('/api/v1/auth/webauthn/register/finish', {
                             method: 'POST',
-                            body: JSON.stringify({ response: att, name: 'Passkey' }),
-                          });
+                            body: JSON.stringify({ response: att, name: 'Passkey' }) });
                           setPasskeyMsg(
                             fin.ok
                               ? t('security.passkeyRegistered')
@@ -685,8 +667,7 @@ export function SecurityPage() {
                             notes?: string[];
                           }>('/api/v1/auth/webauthn/authenticate/begin', {
                             method: 'POST',
-                            body: '{}',
-                          });
+                            body: '{}' });
                           if (!begin.ok || !begin.options) {
                             setPasskeyErr(
                               (begin.notes ?? []).join(' · ') || t('security.noPasskey'),
@@ -694,14 +675,12 @@ export function SecurityPage() {
                             return;
                           }
                           const ass = await startAuthentication({
-                            optionsJSON: begin.options as never,
-                          });
+                            optionsJSON: begin.options as never });
                           const fin = await api.requestRaw<{ ok: boolean; notes?: string[] }>(
                             '/api/v1/auth/webauthn/authenticate/finish',
                             {
                               method: 'POST',
-                              body: JSON.stringify({ response: ass }),
-                            },
+                              body: JSON.stringify({ response: ass }) },
                           );
                           setPasskeyMsg(
                             fin.ok
@@ -741,8 +720,7 @@ export function SecurityPage() {
                         )
                         .then((r) =>
                           toast.ok(t('security.trustedDevicesCount', {
-                              count: (r.items ?? []).length,
-                            })),
+                              count: (r.items ?? []).length })),
                         )
                         .catch((e: Error) =>
                           toast.error(e.message),
@@ -783,8 +761,7 @@ export function SecurityPage() {
                         .then((r) =>
                           toast.ok(t('security.fail2banSnippetMsg', {
                               written: (r.written ?? []).join(', '),
-                              notes: (r.notes ?? []).join(' · '),
-                            })),
+                              notes: (r.notes ?? []).join(' · ') })),
                         )
                         .catch((e: Error) =>
                           toast.error(e.message),
@@ -842,8 +819,7 @@ export function SecurityPage() {
                         .setSecuritySettings({
                           requireAdminTotp,
                           requireAdminTotpStrict: requireStrict,
-                          totp: policyTotp || undefined,
-                        })
+                          totp: policyTotp || undefined })
                         .then(() => {
                           toast.ok(t('security.policyUpdated'));
                           setPolicyTotp('');
@@ -930,19 +906,16 @@ export function SecurityPage() {
                 {
                   key: 'name',
                   header: t('security.colName'),
-                  render: (k) => <strong>{k.name}</strong>,
-                },
+                  render: (k) => <strong>{k.name}</strong> },
                 {
                   key: 'prefix',
                   header: t('security.colPrefix'),
-                  render: (k) => <span className="muted">{k.prefix}…</span>,
-                },
+                  render: (k) => <span className="muted">{k.prefix}…</span> },
                 {
                   key: 'created',
                   header: t('security.colCreated'),
                   className: 'muted u-text-sm',
-                  render: (k) => k.created_at,
-                },
+                  render: (k) => k.created_at },
               ]}
               rows={apiKeys}
               rowKey={(k) => k.id}
@@ -1036,8 +1009,7 @@ export function SecurityPage() {
                   header: 'Tool',
                   render: (tool) => (
                     <code className="inline">{String(tool.tool)}</code>
-                  ),
-                },
+                  ) },
                 {
                   key: 'allowed',
                   header: 'Allowed',
@@ -1046,18 +1018,15 @@ export function SecurityPage() {
                     <Badge tone={tool.allowed ? 'ok' : 'danger'}>
                       {String(tool.allowed)}
                     </Badge>
-                  ),
-                },
+                  ) },
                 {
                   key: 'risk',
                   header: 'Risk',
-                  render: (tool) => String(tool.risk),
-                },
+                  render: (tool) => String(tool.risk) },
                 {
                   key: 'approval',
                   header: 'Approval',
-                  render: (tool) => String(tool.requiresApproval),
-                },
+                  render: (tool) => String(tool.requiresApproval) },
               ]}
               rows={tools}
               rowKey={(tool) => String(tool.tool)}
@@ -1097,8 +1066,7 @@ export function SecurityPage() {
                     token: string;
                   }>('/api/v1/auth/api-keys', {
                     method: 'POST',
-                    body: JSON.stringify({ name: newKeyName, scope }),
-                  })
+                    body: JSON.stringify({ name: newKeyName, scope }) })
                   .then((r) => {
                     setNewKeyToken(r.token);
                     toast.ok(t('security.apiKeyCreated'));
@@ -1160,8 +1128,7 @@ export function SecurityPage() {
                 notes?: string[];
               }>('/api/v1/auth/totp/backup', {
                 method: 'POST',
-                body: JSON.stringify({ totp }),
-              });
+                body: JSON.stringify({ totp }) });
               if (r.blob) {
                 void navigator.clipboard?.writeText(r.blob);
                 toast.ok(t('security.backupCopied'));
@@ -1195,8 +1162,7 @@ export function SecurityPage() {
                 token: string;
               }>('/api/v1/auth/api-keys', {
                 method: 'POST',
-                body: JSON.stringify({ name: newKeyName, totp, scope }),
-              });
+                body: JSON.stringify({ name: newKeyName, totp, scope }) });
               setNewKeyToken(r.token);
               toast.ok(t('security.apiKeyCreated'));
               setCreateKeyOpen(false);

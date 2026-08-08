@@ -115,5 +115,8 @@
   "deletedOk": "Deleted",
   "applyDone": "Apply completed",
   "applyIncomplete": "Apply incomplete",
-  "checking": "Checking…"
+  "checking": "Checking…",
+  "dismiss": "Close",
+  "hide": "Hide",
+  "show": "Show"
 }

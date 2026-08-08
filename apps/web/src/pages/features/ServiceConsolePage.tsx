@@ -23,16 +23,14 @@ import {
   PageTabs,
   FeaturePageLayout,
   SoftwareInstallBanner,
-  SoftwareVersionBar,
-} from '../../shared/components/ui';
+  SoftwareVersionBar } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import type { DbServiceEngine } from '../../features/db-service';
 import {
   consoleApi,
   type ConsoleCategory,
   type ConsoleSetting,
-  type ServiceConsole,
-} from '../../features/db-service/console-api';
+  type ServiceConsole } from '../../features/db-service/console-api';
 import { DbClusterPanel } from '../../features/db-service/DbClusterPanel';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { useTranslation } from 'react-i18next';
@@ -43,8 +41,7 @@ const DATA_LINK: Record<DbServiceEngine, { path: string; label: string }> = {
   redis: { path: '/databases/redis', label: i18n.t('db.console.dataBrowse') },
   mysql: { path: '/databases/mysql', label: i18n.t('db.console.dbManage') },
   mariadb: { path: '/databases/mariadb', label: i18n.t('db.console.dbManage') },
-  postgres: { path: '/databases/postgres', label: i18n.t('db.console.dbManage') },
-};
+  postgres: { path: '/databases/postgres', label: i18n.t('db.console.dbManage') } };
 
 export function applyModeLabel(m: string): string {
   if (m === 'runtime') return i18n.t('db.console.realtime');
@@ -420,15 +417,13 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
         label: t('common.status'),
         value: (
           <Badge tone={console.active === 'active' ? 'ok' : 'warn'}>{console.activeLabel}</Badge>
-        ),
-      },
+        ) },
       { label: 'systemd', value: console.unit },
       { label: t('systemd.bootEnabled'), value: console.enabled ?? '—' },
       { label: t('common.version'), value: console.version ?? '—' },
       {
         label: t('db.systemChange'),
-        value: console.executeEnabled ? t('db.opened') : t('db.notOpened'),
-      },
+        value: console.executeEnabled ? t('db.opened') : t('db.notOpened') },
       { label: t('roles.admin'), value: console.isRoot ? t('common.yes') : t('common.no') },
       ...(console.metrics.Uptime
         ? [{ label: t('db.console.uptimeSec'), value: console.metrics.Uptime }]
@@ -458,8 +453,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
                     ? 'ok'
                     : console.installed
                       ? 'warn'
-                      : 'danger',
-              },
+                      : 'danger' },
               items: [
                 {
                   label: t('common.status'),
@@ -469,32 +463,26 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
                       ? 'ok'
                       : console.installed
                         ? 'warn'
-                        : 'danger',
-                },
+                        : 'danger' },
                 {
                   label: t('common.version'),
                   value:
                     console.version?.replace(/^mysql\s+Ver\s+/i, '').slice(0, 28) ??
-                    '—',
-                },
+                    '—' },
                 {
                   label: 'EXECUTE',
                   value: console.executeEnabled ? t('common.on') : t('common.off'),
-                  tone: console.executeEnabled ? 'ok' : 'warn',
-                },
+                  tone: console.executeEnabled ? 'ok' : 'warn' },
                 { label: t('db.console.changes'), value: dirtyKeys.length },
                 {
                   label: 'Root',
                   value: console.isRoot ? t('common.yes') : t('common.no'),
-                  tone: console.isRoot ? 'ok' : 'warn',
-                },
+                  tone: console.isRoot ? 'ok' : 'warn' },
                 {
                   label: t('systemd.bootEnabled'),
                   value:
-                    console.enabled === 'enabled' ? t('common.yes') : console.enabled ?? '—',
-                },
-              ],
-            }
+                    console.enabled === 'enabled' ? t('common.yes') : console.enabled ?? '—' },
+              ] }
           : undefined
       }
       actions={<ActionBar>

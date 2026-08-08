@@ -25,8 +25,7 @@ import {
   SegRadio,
   PageTabs,
   FormActions,
-  buttonClassName,
-} from '../shared/components/ui';
+  buttonClassName } from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
 
 const FILE_TABS = ['browse', 'trash', 'shares', 'webdav', 'about'] as const;
@@ -46,8 +45,7 @@ import {
   bindOpenChmod,
   bindFilesSide,
   bindCloseVersions,
-  bindCloseIfIdle,
-} from './bind-handlers';
+  bindCloseIfIdle } from './bind-handlers';
 
 type ViewMode = 'list' | 'grid';
 type SideView = 'all' | 'favorites' | 'shares' | 'trash';
@@ -264,8 +262,7 @@ export function FilesPage() {
       const r = await filesApi.list(root, path, {
         sort,
         order,
-        q: debouncedQuery || undefined,
-      });
+        q: debouncedQuery || undefined });
       let list = r.items;
       if (side === 'favorites') {
         list = list.filter((i) => i.favorite);
@@ -360,8 +357,7 @@ export function FilesPage() {
       try {
         const tkn = authStore.getToken();
         const res = await fetch(filesApi.downloadUrl(root, e.path), {
-          headers: tkn ? { Authorization: `Bearer ${tkn}` } : {},
-        });
+          headers: tkn ? { Authorization: `Bearer ${tkn}` } : {} });
         if (!res.ok) throw new Error('preview failed');
         const blob = await res.blob();
         setPreview({ entry: e, kind: 'image', url: URL.createObjectURL(blob) });
@@ -387,8 +383,7 @@ export function FilesPage() {
     try {
       const tkn = authStore.getToken();
       const res = await fetch(filesApi.downloadUrl(root, p), {
-        headers: tkn ? { Authorization: `Bearer ${tkn}` } : {},
-      });
+        headers: tkn ? { Authorization: `Bearer ${tkn}` } : {} });
       if (!res.ok) throw new Error(t('files.downloadFailedStatus', { status: res.status }));
       const blob = await res.blob();
       const a = document.createElement('a');
@@ -413,27 +408,23 @@ export function FilesPage() {
       status={{
         pill: {
           label: t('files.pillFiles', { count: items.filter((i) => i.type === 'file').length }),
-          tone: 'ok',
-        },
+          tone: 'ok' },
         items: [
           {
             label: t('files.statFiles'),
             value: String(
               usage?.fileCount ?? items.filter((i) => i.type === 'file').length,
-            ),
-          },
+            ) },
           {
             label: t('files.statFolders'),
             value: String(
               usage?.dirCount ?? items.filter((i) => i.type === 'dir').length,
-            ),
-          },
+            ) },
           { label: t('files.statUsage'), value: formatBytes(usage?.bytes ?? 0) },
           { label: t('files.statSelected'), value: String(selected.size) },
           { label: t('files.statTrash'), value: trash.length },
           { label: t('files.statShares'), value: shares.length },
-        ],
-      }}
+        ] }}
       actions={<ActionBar>
           <Link to="/files/public" className={buttonClassName({ variant: 'secondary', size: 'sm' })}>
             {t('files.publicSiteSettings')}
@@ -451,8 +442,7 @@ export function FilesPage() {
             title={t('files.opsResultTitle')}
             result={{
               ok: opsNote.ok,
-              notes: opsNote.notes,
-            }}
+              notes: opsNote.notes }}
             busy={busy}
           />
           <ActionBar size="sm">
@@ -612,8 +602,7 @@ export function FilesPage() {
                                 );
                                 setOpsNote({
                                   ok: true,
-                                  notes: r.notes ?? [t('files.unzipDone', { path: zipPath })],
-                                });
+                                  notes: r.notes ?? [t('files.unzipDone', { path: zipPath })] });
                                 setMsg(t('files.unzipDone', { path: zipPath }));
                                 await refresh();
                               } catch (e) {
@@ -729,8 +718,7 @@ export function FilesPage() {
                             onChange={() => toggleSelect(e.path)}
                             aria-label={t('files.selectItem', { name: e.name })}
                           />
-                        ),
-                      },
+                        ) },
                       {
                         key: 'name',
                         header: t('files.colName'),
@@ -743,23 +731,20 @@ export function FilesPage() {
                             <span aria-hidden>{iconFor(e)}</span> {e.name}
                             {e.favorite ? ' ★' : ''}
                           </button>
-                        ),
-                      },
+                        ) },
                       {
                         key: 'size',
                         header: t('files.colSize'),
                         nowrap: true,
                         render: (e) =>
-                          e.type === 'dir' ? '—' : formatBytes(e.size),
-                      },
+                          e.type === 'dir' ? '—' : formatBytes(e.size) },
                       {
                         key: 'mtime',
                         header: t('files.colMtime'),
                         className: 'muted',
                         nowrap: true,
                         render: (e) =>
-                          formatMtimeCell(e.mtime),
-                      },
+                          formatMtimeCell(e.mtime) },
                     ]}
                     rows={items}
                     rowKey={(e) => e.path}
@@ -916,23 +901,20 @@ export function FilesPage() {
                         <>
                           {iconFor(t)} {t.name}
                         </>
-                      ),
-                    },
+                      ) },
                     {
                       key: 'path',
                       header: t('files.colOrigPath'),
                       render: (t) => (
                         <code className="inline">{t.originalPath}</code>
-                      ),
-                    },
+                      ) },
                     {
                       key: 'deleted',
                       header: t('files.colDeletedAt'),
                       className: 'muted',
                       nowrap: true,
                       render: (t) =>
-                        (t.deletedAt ?? '').slice(0, 19).replace('T', ' ') || '—',
-                    },
+                        (t.deletedAt ?? '').slice(0, 19).replace('T', ' ') || '—' },
                   ]}
                   rows={trash}
                   rowKey={(entry) => entry.trashId}
@@ -982,8 +964,7 @@ export function FilesPage() {
                       header: t('files.colPath'),
                       render: (s) => (
                         <code className="inline">{s.path}</code>
-                      ),
-                    },
+                      ) },
                     {
                       key: 'url',
                       header: t('files.colLink'),
@@ -991,14 +972,12 @@ export function FilesPage() {
                         <code className="inline u-break-all">
                           {s.url ?? `/api/v1/public/files/${s.token}`}
                         </code>
-                      ),
-                    },
+                      ) },
                     {
                       key: 'downloads',
                       header: t('files.colDownloads'),
                       nowrap: true,
-                      render: (s) => s.downloadCount,
-                    },
+                      render: (s) => s.downloadCount },
                   ]}
                   rows={shares}
                   rowKey={(s) => s.id}
@@ -1304,8 +1283,7 @@ export function FilesPage() {
           moveTarget
             ? t('files.copyMoveDesc', {
                 action: moveTarget.mode === 'copy' ? t('files.actionCopy') : t('files.actionMove'),
-                count: moveTarget.entries.length,
-              })
+                count: moveTarget.entries.length })
             : undefined
         }
         footer={
@@ -1374,8 +1352,7 @@ export function FilesPage() {
                     if (!sharePath) return;
                     const r = await filesApi.createShare(root, {
                       path: sharePath,
-                      password: sharePass || undefined,
-                    });
+                      password: sharePass || undefined });
                     const url = `${window.location.origin}${r.share.url ?? `/api/v1/public/files/${r.share.token}`}`;
                     setShareResult(url);
                   })
@@ -1448,8 +1425,7 @@ export function FilesPage() {
                       ok: true,
                       notes: [
                         t('files.chmodDone', { mode: chmodMode.trim(), count: selected.size }),
-                      ],
-                    });
+                      ] });
                     setMsg(t('files.chmodDoneShort', { mode: chmodMode.trim() }));
                     setChmodOpen(false);
                     await refresh();
@@ -1531,8 +1507,7 @@ export function FilesPage() {
                     const r = await filesApi.zip(root, [...selected], destPath);
                     setOpsNote({
                       ok: true,
-                      notes: r.notes ?? [t('files.zipCreated', { path: destPath })],
-                    });
+                      notes: r.notes ?? [t('files.zipCreated', { path: destPath })] });
                     setMsg(t('files.zipDone', { path: destPath }));
                     setZipOpen(false);
                     setSelected(new Set());

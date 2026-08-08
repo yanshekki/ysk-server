@@ -13,8 +13,7 @@ import { ActionBar,
   FormHint,
   FormLayout,
   Modal,
-  SegRadio,
-} from '../../../shared/components/ui';
+  SegRadio } from '../../../shared/components/ui';
 import { sshApi } from './api';
 import {
   nextAction,
@@ -23,8 +22,7 @@ import {
   purposeLabel,
   shortFingerprint,
   statusLabel,
-  statusTone,
-} from './labels';
+  statusTone } from './labels';
 import type { ProjectOpt, SshIdentityRow } from './types';
 import { bindCall1, bindCheck, bindClipboard, bindInput, bindRefreshCatch, bindSet, bindVoid } from '../../../pages/bind-handlers';
 
@@ -133,10 +131,8 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
             ? {
                 projectId: proj.id,
                 linuxUser: proj.linuxUser,
-                homeDir: proj.homeDir,
-              }
-            : undefined,
-      });
+                homeDir: proj.homeDir }
+            : undefined });
       if (!r.ok) {
         onFlash('error', (r.notes ?? []).join(' · ') || t('security.ssh.createFailed'));
         return;

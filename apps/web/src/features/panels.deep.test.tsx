@@ -10,8 +10,7 @@ import type { ProjectDto } from '@ysk/shared';
 import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
-  softwareReadyRoute,
-} from '../test/mock-fetch';
+  softwareReadyRoute } from '../test/mock-fetch';
 import { authStore } from '../shared/stores/auth-store';
 import { SshWorkspace } from './security/ssh/SshWorkspace';
 import { OutboundIdentities } from './security/ssh/OutboundIdentities';
@@ -39,8 +38,7 @@ import { ProjectListItem } from './projects/ui/ProjectListItem';
 import { TopHeaderPanel, formatRes } from './metrics/TopHeaderPanel';
 import {
   formatRuntimeName,
-  getProjectUiProfile,
-} from './projects/model/runtime-ui';
+  getProjectUiProfile } from './projects/model/runtime-ui';
 import {
   nextAction,
   pipelineStep,
@@ -48,21 +46,18 @@ import {
   purposeLabel,
   shortFingerprint,
   statusLabel,
-  statusTone,
-} from './security/ssh/labels';
+  statusTone } from './security/ssh/labels';
 import {
   defaultRuntimeInstallVersion,
   loadDeployPrefs,
   runtimeInstallKind,
   runtimePagePath,
   runtimeVersionChoices,
-  saveDeployPrefs,
-} from './projects/model/deploy-prefs';
+  saveDeployPrefs } from './projects/model/deploy-prefs';
 import {
   buildProjectChecklist,
   deriveProjectStatus,
-  formatHealthFacts,
-} from './projects/model/status';
+  formatHealthFacts } from './projects/model/status';
 
 const project = {
   id: 'p1',
@@ -81,8 +76,7 @@ const project = {
   linuxUser: 'demo',
   homeDir: '/home/demo',
   osProvisioned: true,
-  nginxConfigPath: '/etc/nginx/sites-enabled/demo',
-} as unknown as ProjectDto;
+  nginxConfigPath: '/etc/nginx/sites-enabled/demo' } as unknown as ProjectDto;
 
 const identity = {
   id: 'id-1',
@@ -93,8 +87,7 @@ const identity = {
   fingerprintSha256: 'SHA256:abcdef0123456789abcdef',
   publicKey: 'ssh-ed25519 AAAA test',
   createdAt: new Date().toISOString(),
-  binding: { linuxUser: 'ysk', homeDir: '/home/ysk', projectId: 'p1' },
-};
+  binding: { linuxUser: 'ysk', homeDir: '/home/ysk', projectId: 'p1' } };
 
 const t = (k: string) => k;
 
@@ -103,16 +96,14 @@ function sshRoutes() {
     softwareReadyRoute(),
     {
       match: (url: string) => url.startsWith('/api/v1/ssh/identities'),
-      body: { ok: true, items: [identity], identity, privateKey: 'PRIVATE', notes: ['created'] },
-    },
+      body: { ok: true, items: [identity], identity, privateKey: 'PRIVATE', notes: ['created'] } },
     {
       match: (url: string) =>
         url.includes('/install') ||
         url.includes('/test') ||
         url.includes('/rotate') ||
         url.includes('/authorize'),
-      body: HONESTY_WRITTEN_BLOCKED,
-    },
+      body: HONESTY_WRITTEN_BLOCKED },
     {
       match: (url: string) => url.startsWith('/api/v1/sftp/'),
       body: {
@@ -124,13 +115,10 @@ function sshRoutes() {
             publicKey: 'ssh-ed25519 AAAA',
             comment: 'laptop',
             fingerprint: 'SHA256:xyz',
-            linuxUser: 'demo',
-          },
+            linuxUser: 'demo' },
         ],
         snippet: 'Match Group sftp',
-        notes: ['snippet ready'],
-      },
-    },
+        notes: ['snippet ready'] } },
     {
       match: (url: string) => url.startsWith('/api/v1/ssh/2fa'),
       body: {
@@ -144,25 +132,20 @@ function sshRoutes() {
             status: 'enrolled',
             label: 'demo',
             notes: [],
-            hasSecret: true,
-          },
+            hasSecret: true },
         ],
         host: {
           notes: ['ok'],
-          lights: { package: 'ok', pam: 'ok', kbdInteractive: 'warn' },
-        },
+          lights: { package: 'ok', pam: 'ok', kbdInteractive: 'warn' } },
         pamSnippet: '# pam',
         sshdHints: '# sshd',
         strictSnippet: '# strict',
         strictNotes: ['note'],
         secret: 'SECRET',
-        otpauthUrl: 'otpauth://totp/demo',
-      },
-    },
+        otpauthUrl: 'otpauth://totp/demo' } },
     {
       match: (url: string) => url.startsWith('/api/v1/projects'),
-      body: { items: [project], ...project },
-    },
+      body: { items: [project], ...project } },
     { match: /.*/, body: { ok: true, items: [], notes: [] } },
   ];
 }
@@ -280,17 +263,14 @@ describe('DbClusterPanel', () => {
                 kind: 'postgres-replica',
                 status: 'draft',
                 members: [],
-                params: {},
-              },
+                params: {} },
               plan: {
                 ok: true,
                 notes: ['plan'],
                 steps: [],
                 clusterId: 'c1',
-                files: [],
-              },
-              ...HONESTY_WRITTEN_BLOCKED,
-            };
+                files: [] },
+              ...HONESTY_WRITTEN_BLOCKED };
           }
           return {
             ok: true,
@@ -305,8 +285,7 @@ describe('DbClusterPanel', () => {
                   { host: '10.0.0.1', role: 'primary', access: 'local', label: 'primary' },
                 ],
                 params: {},
-                artifactDir: '/var/lib/ysk/c1',
-              },
+                artifactDir: '/var/lib/ysk/c1' },
             ],
             cluster: {
               id: 'c1',
@@ -315,18 +294,14 @@ describe('DbClusterPanel', () => {
               kind: 'postgres-replica',
               status: 'planned',
               members: [],
-              params: {},
-            },
+              params: {} },
             plan: {
               ok: true,
               notes: ['dry-run'],
               steps: [{ id: '1', title: 'cfg' }],
               clusterId: 'c1',
-              files: [],
-            },
-          };
-        },
-      },
+              files: [] } };
+        } },
     ]);
     render(
       <MemoryRouter>
@@ -335,8 +310,7 @@ describe('DbClusterPanel', () => {
     );
     await waitFor(() => expect(screen.getByText(/ysk-cluster/i)).toBeInTheDocument());
     const createBtns = screen.queryAllByRole('button', {
-      name: /create|new|plan|wizard|新增|建立/i,
-    });
+      name: /create|new|plan|wizard|新增|建立/i });
     if (createBtns[0]) await user.click(createBtns[0]!);
   });
 });
@@ -351,8 +325,7 @@ describe('Users panels', () => {
               role: 'operator',
               dirty: false,
               policy: { maxLevel: 'write-high', capabilities: ['projects.read'] },
-              factory: { maxLevel: 'write-high', capabilities: ['projects.read'] },
-            },
+              factory: { maxLevel: 'write-high', capabilities: ['projects.read'] } },
           ]}
           policyRole="operator"
           draftMax="write-high"
@@ -381,8 +354,7 @@ describe('Users panels', () => {
             username: 'alice',
             roles: ['operator'],
             packageId: 'pkg1',
-            suspended: false,
-          }}
+            suspended: false }}
           packages={[{ id: 'pkg1', name: 'default' }]}
           role="operator"
           packageId="pkg1"
@@ -431,10 +403,8 @@ describe('Project UI panels', () => {
                   action: 'project.deploy',
                   actor: 'admin',
                   created_at: new Date().toISOString(),
-                  detail: { entry: 'server.js', port: 3000 },
-                },
-              ],
-            };
+                  detail: { entry: 'server.js', port: 3000 } },
+              ] };
           }
           return {
             items: [project],
@@ -446,18 +416,14 @@ describe('Project UI panels', () => {
             status2xx: 1,
             status4xx: 0,
             ok: true,
-            templates: [],
-          };
-        },
-      },
+            templates: [] };
+        } },
       {
         match: /\/api\/v1\/ssh\//,
-        body: { items: [identity], ok: true },
-      },
+        body: { items: [identity], ok: true } },
       {
         match: /\/api\/v1\/sftp\//,
-        body: { items: [], ok: true, snippet: '', notes: [] },
-      },
+        body: { items: [], ok: true, snippet: '', notes: [] } },
       { match: /.*/, body: { ok: true, items: [], notes: [], templates: [] } },
     ]);
     const noop = vi.fn();
@@ -589,13 +555,11 @@ describe('TopHeaderPanel', () => {
             freeKiB: 512 * 1024,
             usedKiB: 512 * 1024,
             buffCacheKiB: 0,
-            availableKiB: 512 * 1024,
-          },
+            availableKiB: 512 * 1024 },
           swap: { totalKiB: 1024 * 1024, freeKiB: 1024 * 1024, usedKiB: 0 },
           loadavg: [0.1, 0.2, 0.3],
           uptimeSec: 90000,
-          notes: ['sample'],
-        }}
+          notes: ['sample'] }}
         perCpu
         onTogglePerCpu={vi.fn()}
       />,

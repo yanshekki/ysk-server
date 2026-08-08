@@ -11,8 +11,7 @@ import { buttonClassName, ToastViewport } from '../../shared/components/ui';
 import {
   cycleAppLocale,
   LOCALE_LABELS,
-  normalizeLocale,
-} from '../../shared/lib/i18n';
+  normalizeLocale } from '../../shared/lib/i18n';
 import { bindVoid } from '../../pages/bind-handlers';
 
 /** All nav paths — used so /ftp does not stay active on /ftp/service */
@@ -56,8 +55,7 @@ export function AppShell() {
         ...section,
         items: section.items.filter(
           (item) => isAdmin || canSeeFeature(item.key, capabilities),
-        ),
-      })).filter((section) => section.items.length > 0),
+        ) })).filter((section) => section.items.length > 0),
     [capabilities, isAdmin],
   );
 
@@ -111,8 +109,7 @@ export function AppShell() {
               {section.sectionKey !== 'overview' ? (
                 <span className="shell__nav-section-title">
                   {t(`nav.sections.${section.sectionKey}`, {
-                    defaultValue: section.sectionKey,
-                  })}
+                    defaultValue: section.sectionKey })}
                 </span>
               ) : null}
               {section.items.map((item) => {
@@ -139,13 +136,9 @@ export function AppShell() {
                         title={
                           item.to === '/software'
                             ? t('software.navBadgeTitle', {
-                                n: badgeN,
-                                defaultValue: t('uiInline.s239f6551', { v0: badgeN }),
-                              })
+                                n: badgeN })
                             : t('updates.navBadgeTitle', {
-                                n: badgeN,
-                                defaultValue: t('uiInline.sa00380bd', { v0: badgeN }),
-                              })
+                                n: badgeN })
                         }
                       >
                         {badgeN > 99 ? '99+' : badgeN}

@@ -22,8 +22,7 @@ import {
   SoftwareVersionBar,
   FormHint,
   WithPageGuide,
-  buttonClassName,
-} from '../../shared/components/ui';
+  buttonClassName } from '../../shared/components/ui';
 import { useServerList } from '../../shared/hooks/useServerList';
 import { useSslCertificates } from '../../features/ssl/useSslCertificates';
 import type { CertificateView } from '../../features/ssl/api';
@@ -94,12 +93,10 @@ export function SslPage() {
     lastLe,
     upload,
     requestCertificate,
-    remove,
-  } = useSslCertificates();
+    remove } = useSslCertificates();
   const certList = useServerList<CertificateView>({
     path: '/api/v1/ssl/certificates',
-    debounceMs: 300,
-  });
+    debounceMs: 300 });
   const items = certList.items;
   const refreshTable = certList.refresh;
 
@@ -187,21 +184,17 @@ export function SslPage() {
       status={{
         pill: {
           label: t('ssl.pillCount', { count: items.length }),
-          tone: items.length ? 'ok' : 'warn',
-        },
+          tone: items.length ? 'ok' : 'warn' },
         items: [
           { label: t('ssl.statCerts'), value: items.length },
           {
             label: t('ssl.statWithFiles'),
-            value: items.filter((c) => c.files_exist).length,
-          },
+            value: items.filter((c) => c.files_exist).length },
           {
             label: t('ssl.statFailed'),
             value: failedCount,
-            tone: failedCount > 0 ? 'danger' : 'ok',
-          },
-        ],
-      }}
+            tone: failedCount > 0 ? 'danger' : 'ok' },
+        ] }}
       actions={
         <ActionBar>
           <Button variant="secondary" size="sm" onClick={bindSet(setLeOpen, true)}>
@@ -253,13 +246,11 @@ export function SslPage() {
                   notes: [
                     ...steps.map((s) => formatStepLine(s, t)),
                     ...notes,
-                  ],
-                }
+                  ] }
               : error && steps.length
                 ? {
                     ok: false,
-                    notes: steps.map((s) => formatStepLine(s, t)),
-                  }
+                    notes: steps.map((s) => formatStepLine(s, t)) }
                 : null
           }
           busy={busy}
@@ -284,8 +275,7 @@ export function SslPage() {
                 {
                   key: 'domain',
                   header: t('ssl.colDomain'),
-                  render: (r) => <strong>{r.domain}</strong>,
-                },
+                  render: (r) => <strong>{r.domain}</strong> },
                 {
                   key: 'provider',
                   header: t('ssl.colProvider'),
@@ -294,8 +284,7 @@ export function SslPage() {
                       ? 'Let’s Encrypt'
                       : r.provider === 'upload'
                         ? t('ssl.providerUpload')
-                        : r.provider,
-                },
+                        : r.provider },
                 {
                   key: 'files',
                   header: t('ssl.colLocalFiles'),
@@ -304,8 +293,7 @@ export function SslPage() {
                       <Badge tone="ok">{t('ssl.filesYes')}</Badge>
                     ) : (
                       <Badge tone="neutral">{t('ssl.filesNo')}</Badge>
-                    ),
-                },
+                    ) },
                 {
                   key: 'expires',
                   header: t('ssl.colExpires'),
@@ -333,13 +321,11 @@ export function SslPage() {
                         ) : null}
                       </span>
                     );
-                  },
-                },
+                  } },
                 {
                   key: 'status',
                   header: t('ssl.colStatus'),
-                  render: (r) => statusBadge(r.status, r.files_exist, t),
-                },
+                  render: (r) => statusBadge(r.status, r.files_exist, t) },
               ]}
               rows={items}
               rowKey={(r) => String(r.id ?? r.domain)}

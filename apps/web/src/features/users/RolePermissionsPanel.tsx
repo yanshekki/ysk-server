@@ -11,15 +11,13 @@ import {
   factoryRolePolicy,
   type CapabilityId,
   type OperationLevel,
-  type SystemRole,
-} from '@ysk/shared';
+  type SystemRole } from '@ysk/shared';
 import { bindCall1, bindCall2, bindCheck, bindInput, bindValueSet } from '../../pages/bind-handlers';
 import {
   ActionBar,
   Alert,
   Badge,
-  Button,
-} from '../../shared/components/ui';
+  Button } from '../../shared/components/ui';
 
 export type RolePolicyView = {
   role: SystemRole;
@@ -60,8 +58,7 @@ export function RolePermissionsPanel({
   onCapsChange,
   onSave,
   onRestoreRole,
-  onRestoreAll,
-}: Props) {
+  onRestoreAll }: Props) {
   const { t } = useTranslation();
   const policyView = policies.find((p) => p.role === policyRole);
   const factoryCaps =
@@ -152,15 +149,13 @@ export function RolePermissionsPanel({
               <p className="rbac-panel__subtitle muted u-text-sm">
                 {policyView?.dirty
                   ? t('rbac.dirtyHint', {
-                      defaultValue: t('rbac.dirty'),
-                    })
+                      defaultValue: t('rbac.dirty') })
                   : t('rbac.factory')}
                 {' · '}
                 {t('rbac.enabledCount', {
                   enabled: enabledCount,
                   total: totalCount,
-                  defaultValue: `${enabledCount} / ${totalCount}`,
-                })}
+                  defaultValue: `${enabledCount} / ${totalCount}` })}
               </p>
             </div>
             <ActionBar align="end" className="rbac-panel__actions">

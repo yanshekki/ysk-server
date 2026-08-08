@@ -14,25 +14,20 @@ describe('StackWizard', () => {
             {
               id: 'recommended',
               title: 'Recommended',
-              bundles: ['control-plane', 'web', 'database', 'defense'],
-            },
+              bundles: ['control-plane', 'web', 'database', 'defense'] },
             { id: 'minimal', title: 'Minimal', bundles: ['control-plane'] },
           ],
           bundles: [
             { id: 'web', title: 'Web', components: ['nginx'] },
             { id: 'defense', title: 'Defense', components: ['ufw'] },
-          ],
-        },
-      },
+          ] } },
       {
         match: /\/api\/v1\/system\/stack\/expand/,
         body: {
           ok: true,
           plan: 'recommended',
           bundles: ['control-plane', 'web', 'database', 'defense'],
-          components: ['base-deps', 'nginx', 'mariadb-server', 'ufw'],
-        },
-      },
+          components: ['base-deps', 'nginx', 'mariadb-server', 'ufw'] } },
       {
         match: /\/api\/v1\/system\/stack/,
         body: {
@@ -45,14 +40,11 @@ describe('StackWizard', () => {
             {
               id: 'recommended',
               title: 'Recommended',
-              bundles: ['control-plane', 'web', 'database', 'defense'],
-            },
+              bundles: ['control-plane', 'web', 'database', 'defense'] },
           ],
           bundles: [{ id: 'web', title: 'Web', components: ['nginx'] }],
           executeEnabled: false,
-          isRoot: false,
-        },
-      },
+          isRoot: false } },
     ]);
 
     render(<StackWizard />);

@@ -11,8 +11,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
-  softwareReadyRoute,
-} from '../test/mock-fetch';
+  softwareReadyRoute } from '../test/mock-fetch';
 import { authStore } from '../shared/stores/auth-store';
 import { SecurityPage } from './SecurityPage';
 import { DashboardPage } from './DashboardPage';
@@ -37,8 +36,7 @@ describe('ua wizard dns precision', () => {
     try {
       Object.defineProperty(navigator, 'clipboard', {
         configurable: true,
-        value: { writeText: vi.fn().mockResolvedValue(undefined) },
-      });
+        value: { writeText: vi.fn().mockResolvedValue(undefined) } });
     } catch {
       /* ignore */
     }
@@ -85,12 +83,10 @@ describe('ua wizard dns precision', () => {
                 otpauthUrl: 'otpauth://totp/YSK:admin?secret=JBSWY3DPEHPK3PXP',
                 enabled: true,
                 enrolled: true,
-                recoveryCodes: ['aaaa-bbbb', 'cccc-dddd', 'eeee-ffff'],
-              };
+                recoveryCodes: ['aaaa-bbbb', 'cccc-dddd', 'eeee-ffff'] };
             }
             return { enabled: false, enrolled: false };
-          },
-        },
+          } },
         {
           match: (url) => url.startsWith('/api/v1/auth/sessions'),
           handler: (_u, init) => {
@@ -102,28 +98,22 @@ describe('ua wizard dns precision', () => {
                 expires_at: tWeek,
                 current: i === 0,
                 ip: `1.1.1.${i}`,
-                user_agent: ua,
-              })),
-            };
-          },
-        },
+                user_agent: ua })) };
+          } },
         {
           match: (url) => url.startsWith('/api/v1/auth/api-keys'),
           handler: (_u, init) => {
             if ((init?.method ?? 'GET').toUpperCase() !== 'GET') {
               return {
                 key: { id: 'k2', name: 'ci', prefix: 'ysk_x', created_at: t0 },
-                token: 'ysk_secret_token_value',
-              };
+                token: 'ysk_secret_token_value' };
             }
             return {
               items: [
                 { id: 'k1', name: 'old', prefix: 'ysk_old', created_at: t0 },
                 { id: 'k2', name: 'ci', prefix: 'ysk_ci', created_at: tMin },
-              ],
-            };
-          },
-        },
+              ] };
+          } },
         {
           match: (url) => url.startsWith('/api/v1/settings/security'),
           handler: (_u, init) => {
@@ -131,10 +121,8 @@ describe('ua wizard dns precision', () => {
             return {
               requireAdminTotp: true,
               requireAdminTotpStrict: true,
-              ok: true,
-            };
-          },
-        },
+              ok: true };
+          } },
         {
           match: (url) => url.startsWith('/api/v1/approvals'),
           handler: (_u, init) => {
@@ -146,22 +134,17 @@ describe('ua wizard dns precision', () => {
                   tool: 'sys.shell',
                   status: 'pending',
                   requestedAt: t0,
-                  requestedBy: 'admin',
-                },
+                  requestedBy: 'admin' },
                 {
                   id: 'ap2',
                   tool: 'sys.reboot',
                   status: 'pending',
-                  requestedAt: tMin,
-                },
-              ],
-            };
-          },
-        },
+                  requestedAt: tMin },
+              ] };
+          } },
         {
           match: (url) => url.includes('/ssh'),
-          body: { items: [], ok: true },
-        },
+          body: { items: [], ok: true } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -270,31 +253,25 @@ describe('ua wizard dns precision', () => {
                 id: 'nginx',
                 features: ['nginx'],
                 installed: true,
-                active: 'active',
-              },
+                active: 'active' },
               {
                 id: 'php',
                 features: ['php'],
                 installed: false,
-                active: 'inactive',
-              },
+                active: 'inactive' },
               {
                 id: 'mysql',
                 features: ['mysql'],
                 installed: true,
-                active: 'inactive',
-              },
+                active: 'inactive' },
               {
                 id: 'orphan',
                 features: [],
                 installed: true,
-                active: 'active',
-              },
+                active: 'active' },
             ],
             missing: [],
-            ready: true,
-          },
-        },
+            ready: true } },
         {
           match: (url) =>
             url.startsWith('/api/v1/dashboard') ||
@@ -310,8 +287,7 @@ describe('ua wizard dns precision', () => {
               hostname: 'ysk',
               uptimeSec: 1000,
               loadavg: [0.1, 0.2, 0.3],
-              runtime: { memory: { usedRatio: 0.5, total: 8e9, free: 4e9 } },
-            },
+              runtime: { memory: { usedRatio: 0.5, total: 8e9, free: 4e9 } } },
             services: [
               { id: 'nginx', label: 'Nginx', active: 'active', ok: true },
               { id: 'ssh', label: 'SSH', active: 'failed', ok: false },
@@ -337,13 +313,10 @@ describe('ua wizard dns precision', () => {
                 title: 'Alert',
                 body: 'x',
                 createdAt: t,
-                read: false,
-              },
+                read: false },
             ],
             unread: 1,
-            total: 1,
-          },
-        },
+            total: 1 } },
         {
           match: (url) => url.includes('/wizard'),
           body: {
@@ -353,9 +326,7 @@ describe('ua wizard dns precision', () => {
             steps: [
               { step: 'project', ok: true },
               { step: 'dns', ok: false, notes: ['skip'] },
-            ],
-          },
-        },
+            ] } },
         {
           match: (url) => url.includes('/projects'),
           body: {
@@ -364,24 +335,18 @@ describe('ua wizard dns precision', () => {
                 id: 'p1',
                 name: 'Demo',
                 processStatus: 'running',
-                runtime: 'node',
-              },
+                runtime: 'node' },
               {
                 id: 'p2',
                 name: 'Other',
                 processStatus: 'stopped',
-                runtime: 'php',
-              },
-            ],
-          },
-        },
+                runtime: 'php' },
+            ] } },
         {
           match: (url) => url.includes('/backups'),
           body: {
             items: [{ projectId: 'p1', name: 'Demo', mtime: t, bytes: 100 }],
-            lastRun: { at: t, ok: true },
-          },
-        },
+            lastRun: { at: t, ok: true } } },
         {
           match: (url) => url.includes('/ssl') || url.includes('/certs'),
           body: {
@@ -389,11 +354,8 @@ describe('ua wizard dns precision', () => {
               {
                 id: 'c1',
                 domain: 'ex.com',
-                expiresAt: new Date(Date.now() + 86400e3 * 5).toISOString(),
-              },
-            ],
-          },
-        },
+                expiresAt: new Date(Date.now() + 86400e3 * 5).toISOString() },
+            ] } },
         {
           match: (url) => url.includes('/audit'),
           body: {
@@ -402,11 +364,8 @@ describe('ua wizard dns precision', () => {
                 id: 'a1',
                 action: 'login',
                 at: t,
-                actor: 'admin',
-              },
-            ],
-          },
-        },
+                actor: 'admin' },
+            ] } },
         {
           match: (url) => url.includes('/metrics'),
           body: {
@@ -414,17 +373,13 @@ describe('ua wizard dns precision', () => {
             loadavg: [0.1, 0.1, 0.1],
             cpuCount: 2,
             memory: { total: 8e9, free: 4e9, usedRatio: 0.5 },
-            disk: { path: '/', free: 50e9, total: 100e9, usedRatio: 0.5 },
-          },
-        },
+            disk: { path: '/', free: 50e9, total: 100e9, usedRatio: 0.5 } } },
         {
           match: (url) => url.includes('/readiness'),
           body: {
             ok: false,
             productionReady: false,
-            checks: [{ id: 'c1', ok: false, title: 'x' }],
-          },
-        },
+            checks: [{ id: 'c1', ok: false, title: 'x' }] } },
         { match: /.*/, body: { ok: true, items: [], ready: true } },
       ]);
 
@@ -530,8 +485,7 @@ describe('ua wizard dns precision', () => {
                   notes: ['dnssec enabled'],
                   dsRecord: 'example.com. IN DS 12345 13 2 ABCD',
                   publicKey: 'key',
-                  files: ['/var/lib/bind/example.com.zone'],
-                };
+                  files: ['/var/lib/bind/example.com.zone'] };
               }
               if (url.includes('cluster')) {
                 return {
@@ -542,8 +496,7 @@ describe('ua wizard dns precision', () => {
                     { host: 'ns2.example.com', ok: true },
                     { host: 'ns3.example.com', ok: false, notes: ['timeout'] },
                   ],
-                  requiresExecute: true,
-                };
+                  requiresExecute: true };
               }
               return {
                 ...HONESTY_WRITTEN_BLOCKED,
@@ -551,23 +504,20 @@ describe('ua wizard dns precision', () => {
                 zone: 'new.example.com',
                 serverIp: '1.2.3.4',
                 nsName: 'ns1.new.example.com',
-                ttl: 300,
-              };
+                ttl: 300 };
             }
             if (url.includes('dnssec')) {
               return {
                 ok: true,
                 notes: ['listed'],
                 files: ['/var/lib/bind/example.com.zone'],
-                dsRecord: 'example.com. IN DS 12345 13 2 ABCD',
-              };
+                dsRecord: 'example.com. IN DS 12345 13 2 ABCD' };
             }
             if (url.includes('cluster') || url.includes('peers')) {
               return {
                 items: [
                   { id: 'peer-1', host: 'ns2.example.com', user: 'ysk', label: 'secondary' },
-                ],
-              };
+                ] };
             }
             if (
               url.includes('records') ||
@@ -587,8 +537,7 @@ describe('ua wizard dns precision', () => {
                   { id: 'r3', type: 'MX', name: '@', value: 'mail.example.com', priority: 10 },
                   { id: 'r4', type: 'TXT', name: '@', value: 'v=spf1 mx -all' },
                 ],
-                notes: [],
-              };
+                notes: [] };
             }
             return {
               items: [
@@ -598,13 +547,10 @@ describe('ua wizard dns precision', () => {
                   serverIp: '203.0.113.10',
                   nsName: 'ns1.example.com',
                   ttl: 300,
-                  apply_status: 'planned',
-                },
+                  apply_status: 'planned' },
               ],
-              meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-            };
-          },
-        },
+              meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } };
+          } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -642,8 +588,7 @@ describe('ua wizard dns precision', () => {
       }
       for (const b of screen
         .queryAllByRole('button', {
-          name: /dnssec|cluster|sync|create|add|save|apply|delete|edit|refresh|peer|record|zone|validate|lookup/i,
-        })
+          name: /dnssec|cluster|sync|create|add|save|apply|delete|edit|refresh|peer|record|zone|validate|lookup/i })
         .slice(0, 20)) {
         if ((b as HTMLButtonElement).disabled) continue;
         try {
@@ -678,8 +623,7 @@ describe('ua wizard dns precision', () => {
           hi: 0,
           si: 0,
           st: 0,
-          busyPct: 2,
-        },
+          busyPct: 2 },
         cpus: [
           {
             us: 1,
@@ -690,19 +634,16 @@ describe('ua wizard dns precision', () => {
             hi: 0,
             si: 0,
             st: 0,
-            busyPct: 2,
-          },
+            busyPct: 2 },
         ],
         memory: {
           totalKiB: 8e6,
           freeKiB: 4e6,
           usedKiB: 3e6,
           buffCacheKiB: 1e6,
-          availableKiB: 5e6,
-        },
+          availableKiB: 5e6 },
         swap: { totalKiB: 1e6, freeKiB: 1e6, usedKiB: 0 },
-        notes: [],
-      };
+        notes: [] };
       installFetchMock([
         softwareReadyRoute(),
         {
@@ -720,22 +661,18 @@ describe('ua wizard dns precision', () => {
                   locale: 'en',
                   email: 'a@b.c',
                   capabilityGrants: ['projects.read'],
-                  capabilityRevokes: [],
-                },
+                  capabilityRevokes: [] },
                 {
                   id: 'u2',
                   username: 'bob',
                   roles: ['user', 'operator'],
                   packageId: 'pkg1',
                   suspended: true,
-                  locale: 'zh-CN',
-                },
+                  locale: 'zh-CN' },
               ],
               hostUsage: { projects: 2, diskMb: 100, quotaMb: 1000 },
-              meta: { total: 2, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-            };
-          },
-        },
+              meta: { total: 2, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } };
+          } },
         {
           match: (url) => url.startsWith('/api/v1/packages'),
           handler: (_u, init) => {
@@ -751,8 +688,7 @@ describe('ua wizard dns precision', () => {
                   diskMb: 1024,
                   bandwidthMb: 0,
                   ftp: true,
-                  ssh: true,
-                },
+                  ssh: true },
                 {
                   id: 'pkg2',
                   name: 'pro',
@@ -762,12 +698,9 @@ describe('ua wizard dns precision', () => {
                   diskMb: 10240,
                   bandwidthMb: 1000,
                   ftp: true,
-                  ssh: true,
-                },
-              ],
-            };
-          },
-        },
+                  ssh: true },
+              ] };
+          } },
         {
           match: (url) => url.includes('/rbac'),
           handler: (_u, init) => {
@@ -779,29 +712,21 @@ describe('ua wizard dns precision', () => {
                   dirty: true,
                   policy: {
                     maxLevel: 'write-high',
-                    capabilities: ['projects.read', 'projects.write'],
-                  },
+                    capabilities: ['projects.read', 'projects.write'] },
                   factory: {
                     maxLevel: 'write-high',
-                    capabilities: ['projects.read'],
-                  },
-                },
+                    capabilities: ['projects.read'] } },
                 {
                   role: 'user',
                   dirty: false,
                   policy: {
                     maxLevel: 'read',
-                    capabilities: ['projects.read'],
-                  },
+                    capabilities: ['projects.read'] },
                   factory: {
                     maxLevel: 'read',
-                    capabilities: ['projects.read'],
-                  },
-                },
-              ],
-            };
-          },
-        },
+                    capabilities: ['projects.read'] } },
+              ] };
+          } },
         {
           match: (url) => url.startsWith('/api/v1/metrics/projects'),
           body: {
@@ -811,18 +736,14 @@ describe('ua wizard dns precision', () => {
                 name: 'Demo',
                 diskMb: 100,
                 path: '/home/demo',
-                files: 10,
-              },
+                files: 10 },
               {
                 projectId: 'p2',
                 name: 'Other',
                 diskMb: 200,
                 path: '/home/other',
-                files: 20,
-              },
-            ],
-          },
-        },
+                files: 20 },
+            ] } },
         {
           match: (url) => url.startsWith('/api/v1/metrics/processes'),
           body: {
@@ -841,16 +762,12 @@ describe('ua wizard dns precision', () => {
                 state: 'S',
                 etime: '1:00',
                 resKiB: 1000,
-                virtKiB: 2000,
-              },
+                virtKiB: 2000 },
             ],
-            notes: [],
-          },
-        },
+            notes: [] } },
         {
           match: (url) => url.startsWith('/api/v1/metrics/top'),
-          body: topHeader,
-        },
+          body: topHeader },
         {
           match: (url) => url.startsWith('/api/v1/metrics'),
           body: {
@@ -867,13 +784,10 @@ describe('ua wizard dns precision', () => {
                 size: 100e9,
                 used: 50e9,
                 avail: 50e9,
-                usedRatio: 0.5,
-              },
+                usedRatio: 0.5 },
             ],
             alerts: [],
-            notes: [],
-          },
-        },
+            notes: [] } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -894,8 +808,7 @@ describe('ua wizard dns precision', () => {
       }
       for (const b of screen
         .queryAllByRole('button', {
-          name: /create|add|save|edit|delete|suspend|package|policy|role|refresh|detail/i,
-        })
+          name: /create|add|save|edit|delete|suspend|package|policy|role|refresh|detail/i })
         .slice(0, 15)) {
         try {
           await user.click(b);

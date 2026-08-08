@@ -27,8 +27,7 @@ import {
   FormHint,
   CheckboxField,
   SegRadio,
-  buttonClassName,
-} from '../shared/components/ui';
+  buttonClassName } from '../shared/components/ui';
 import { allFeatureTiles } from '../shared/nav/features';
 import { api } from '../shared/services/api';
 import { toast } from '../shared/stores/toast-store';
@@ -36,8 +35,7 @@ import { usePageTab } from '../shared/hooks/usePageTab';
 import { bindSet, bindInput } from './bind-handlers';
 import {
   defaultRuntimeInstallVersion,
-  runtimeVersionChoices,
-} from '../features/projects/model/deploy-prefs';
+  runtimeVersionChoices } from '../features/projects/model/deploy-prefs';
 
 const DASH_TABS = ['overview', 'wizard', 'notifications', 'features', 'about'] as const;
 
@@ -63,8 +61,7 @@ const KEY_TO_FEATURE: Record<string, string> = {
   rust: 'rust',
   firewall: 'firewall',
   fail2ban: 'fail2ban',
-  email: 'email',
-};
+  email: 'email' };
 
 export function badgeForKey(
   key: string,
@@ -116,8 +113,7 @@ export function DashboardPage() {
     notifCounts,
     applyAudit,
     error,
-    loading,
-  } = useDashboard();
+    loading } = useDashboard();
 
   const [software, setSoftware] = useState<SoftwareStatus[]>([]);
   const [svcMatrix, setSvcMatrix] = useState<
@@ -188,9 +184,7 @@ export function DashboardPage() {
           serverIpv6: wizServerIpv6.trim() || undefined,
           createDns: wizDns && Boolean(wizDomain),
           createMail: wizMail && Boolean(wizDomain),
-          createDb: wizDb,
-        }),
-      });
+          createDb: wizDb }) });
       setWizMsg(
         (r.notes ?? []).join('；') ||
           (r.ok ? t('dashboard.wizardOk') : t('dashboard.wizardPartial')),
@@ -220,9 +214,7 @@ export function DashboardPage() {
         description: t(`features.desc.${i.key}`, { defaultValue: '' }),
         badge: badgeForKey(i.key, software, {
           executeEnabled,
-          productionReady: readiness?.productionReady,
-        }, t),
-      }));
+          productionReady: readiness?.productionReady }, t) }));
   }, [t, software, executeEnabled, readiness?.productionReady]);
 
   const notifBadge =
@@ -247,15 +239,13 @@ export function DashboardPage() {
               ? 'ok'
               : notifCounts.critical > 0
                 ? 'danger'
-                : 'warn',
-        },
+                : 'warn' },
         items: [
           { label: t('nav.projects'), value: projects.length },
           {
             label: t('projects.statRunning'),
             value: running,
-            tone: running > 0 ? 'ok' : 'neutral',
-          },
+            tone: running > 0 ? 'ok' : 'neutral' },
           { label: t('dashboard.stat.backups'), value: backups },
           {
             label: t('dashboard.stat.notifications'),
@@ -265,21 +255,17 @@ export function DashboardPage() {
                 ? 'danger'
                 : notifCounts.warn > 0
                   ? 'warn'
-                  : 'ok',
-          },
+                  : 'ok' },
           {
             label: t('dashboard.executeLabel', { defaultValue: 'EXECUTE' }),
             value:
               executeEnabled === true ? t('common.on') : executeEnabled === false ? t('common.off') : t('common.noneSelectedShort'),
-            tone: executeEnabled === true ? 'ok' : 'warn',
-          },
+            tone: executeEnabled === true ? 'ok' : 'warn' },
           {
             label: t('dashboard.stat.certExpiry'),
             value: expiringCerts?.length ?? 0,
-            tone: (expiringCerts?.length ?? 0) > 0 ? 'warn' : 'ok',
-          },
-        ],
-      }}
+            tone: (expiringCerts?.length ?? 0) > 0 ? 'warn' : 'ok' },
+        ] }}
       actions={<ActionBar>
           <Link to="/projects" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
             {t('nav.projects')}
@@ -303,8 +289,7 @@ export function DashboardPage() {
           {
             id: 'notifications',
             label: t('dashboard.tabs.notifications'),
-            badge: notifBadge || undefined,
-          },
+            badge: notifBadge || undefined },
           { id: 'features', label: t('dashboard.tabs.features') },
           { id: 'about', label: t('common.about') },
         ]}
@@ -356,11 +341,9 @@ export function DashboardPage() {
                     defaultValue:
                       readiness.mode === 'production_capable'
                         ? t('dashboard.mode.production_capable')
-                        : t('dashboard.mode.degraded'),
-                  }),
+                        : t('dashboard.mode.degraded') }),
                   ready: readiness.score.ready,
-                  total: readiness.score.total,
-                })}
+                  total: readiness.score.total })}
                 {' · '}
                 <Link to="/system/readiness">{t('dashboard.details')}</Link>
               </Alert>
@@ -416,8 +399,7 @@ export function DashboardPage() {
                       {t('dashboard.applyAuditBadge', {
                         ok: applyAudit.summary.ok,
                         warn: applyAudit.summary.warn,
-                        bad: applyAudit.summary.bad,
-                      })}
+                        bad: applyAudit.summary.bad })}
                     </Badge>
                   ) : null}
                   <Badge tone={executeEnabled === true ? 'ok' : 'warn'}>
@@ -668,8 +650,7 @@ export function DashboardPage() {
                             const action = String(a.action ?? '');
                             const actionKey = `audit.actions.${action}`;
                             const actionLabel = t(actionKey, {
-                              defaultValue: action,
-                            });
+                              defaultValue: action });
                             return (
                               <li key={String(a.id)}>
                                 <span className="inline" title={action}>
@@ -687,8 +668,7 @@ export function DashboardPage() {
                     <footer className="dash-kpi__foot">
                       <span className="dash-kpi__hint">
                         {t('dashboard.runningCount', {
-                          n: String((summary?.projects as { running?: number })?.running ?? running),
-                        })}
+                          n: String((summary?.projects as { running?: number })?.running ?? running) })}
                       </span>
                       <Link to="/security" className="dash-kpi__link">
                         {t('dashboard.securityLink')}
@@ -792,8 +772,7 @@ export function DashboardPage() {
                           options={runtimeVersionChoices(wizRuntime).map((v) => ({
                             value: v,
                             label:
-                              wizRuntime === 'node' && v === '20' ? '20 LTS' : v,
-                          }))}
+                              wizRuntime === 'node' && v === '20' ? '20 LTS' : v }))}
                         />
                       </Field>
                     ) : null}
@@ -877,8 +856,7 @@ export function DashboardPage() {
                 description={t('dashboard.notifCenterDesc', {
                   critical: notifCounts.critical,
                   warn: notifCounts.warn,
-                  info: notifCounts.info,
-                })}
+                  info: notifCounts.info })}
               >
                 {notifications.length === 0 ? (
                   <EmptyState title={t('dashboard.noNotifs')} description={t('dashboard.noNotifsDesc')} />
@@ -918,8 +896,7 @@ export function DashboardPage() {
                   description={t('dashboard.applyAuditDesc', {
                     ok: applyAudit.summary.ok,
                     warn: applyAudit.summary.warn,
-                    bad: applyAudit.summary.bad,
-                  })}
+                    bad: applyAudit.summary.bad })}
                 >
                   <ul className="list-plain list-spaced">
                     {applyAudit.findings.map((f, i) => (

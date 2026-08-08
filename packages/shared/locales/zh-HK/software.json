@@ -53,7 +53,12 @@
     "update": "更新",
     "updateTitle": "前往安裝／切換至 {{v}}",
     "updateTo": "更新至 {{v}}",
-    "installVersion": "安裝 {{v}}"
+    "installVersion": "安裝 {{v}}",
+    "applyAptTitle": "確認後更新 {{v0}}",
+    "updateN": "更新 {{v0}} 項",
+    "installTitle": "安裝 {{v0}}",
+    "install": "安裝",
+    "updateAptTitle": "前往更新中心處理 {{v0}}"
   },
   "apply": {
     "blockedShort": "被阻擋",
@@ -63,7 +68,13 @@
     "confirm": "確認安裝",
     "confirmTitle": "確認安裝軟件？",
     "confirmBody": "將安裝／更新 {{pkg}}：{{from}} → {{to}}。需系統變更權限。",
-    "ok": "已套用 {{pkg}}"
+    "ok": "已套用 {{pkg}}",
+    "progress": "更新中 {{v0}}/{{v1}}：{{v2}}",
+    "okMulti": "已更新：{{v0}}",
+    "okMultiTitle": "{{v0}} 更新完成",
+    "partial": "部分成功：{{v0}}；失敗：{{v1}}",
+    "partialTitle": "部分套件更新失敗",
+    "failedTitle": "{{v0}} 更新失敗"
   },
   "version": {
     "loading": "載入版本中…",
@@ -75,5 +86,35 @@
     "noTarget": "沒有可更新版本",
     "needRuntimePage": "請在執行環境頁安裝此版本",
     "noAptCandidate": "沒有可用的 apt 候選版本"
-  }
+  },
+  "install": {
+    "progress": "正在安裝：{{v0}}…",
+    "progressHint": "需 root + EXECUTE；可能需要一兩分鐘。",
+    "blockedTitle": "{{v0}} 未能安裝",
+    "ok": "已提交安裝：{{v0}}",
+    "okTitle": "{{v0}} 安裝完成／已提交",
+    "failedTitle": "{{v0}} 安裝失敗",
+    "confirmTitle": "確認安裝軟件？",
+    "confirmBody": "將安裝 {{v0}}：{{v1}}。需 root 且 YSK_EXECUTE=1。",
+    "confirm": "確認安裝"
+  },
+  "runtime": {
+    "installing": "正在安裝／更新 {{v0}} {{v1}}…（可能需要一兩分鐘）",
+    "installingHint": "下方會即時顯示 server 輸出，請勿關閉頁面。",
+    "blockedTitle": "{{v0}} {{v1}} 未能安裝",
+    "installed": "已安裝／更新 {{v0}} {{v1}}",
+    "installedDetail": "狀態已重新整理。若仍顯示有新版本，可再檢查或到執行環境頁確認。",
+    "failedTitle": "{{v0}} {{v1}} 安裝失敗",
+    "installingShort": "安裝中…"
+  },
+  "aptSummaryTitle": "系統倉庫可升級",
+  "aptSummaryDesc": "目錄軟件與主機套件清單分開統計；實際套用可在更新中心或卡片一鍵確認。",
+  "aptSummary": {
+    "catalog": "目錄軟件 {{v0}}",
+    "host": "主機套件 {{v0}}",
+    "openUpdates": "開啟更新中心"
+  },
+  "navBadgeTitle": "目錄軟件系統倉庫可升級：{{v0}}",
+  "projectHint": "已預填 runtime {{runtime}}，可建立專案",
+  "projectHintWithVersion": "已預填 runtime {{runtime}} {{version}}，可建立專案"
 }

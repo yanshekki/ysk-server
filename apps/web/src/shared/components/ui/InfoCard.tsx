@@ -59,8 +59,7 @@ export type InfoCardGridCols = 2 | 3 | 4;
 export function InfoCardGrid({
   children,
   cols = 3,
-  className,
-}: {
+  className }: {
   children: ReactNode;
   cols?: InfoCardGridCols;
   className?: string;

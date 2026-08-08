@@ -8,8 +8,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
-  softwareReadyRoute,
-} from '../test/mock-fetch';
+  softwareReadyRoute } from '../test/mock-fetch';
 import { authStore } from '../shared/stores/auth-store';
 import { BackupsPage } from './features/BackupsPage';
 import { EmailDomainPage } from './EmailDomainPage';
@@ -68,8 +67,7 @@ describe('surgical form coverage', () => {
               burst: 20,
               connLimit: 40,
               confPath: '/x',
-              exists: true,
-            },
+              exists: true },
             firewall: { active: 'inactive', installed: true },
             fail2ban: { active: 'inactive', installed: true, jails: 0 },
             autoBan: {
@@ -78,14 +76,11 @@ describe('surgical form coverage', () => {
               method: 'fail2ban',
               cooldownMinutes: 30,
               maxAutoBansPerHour: 20,
-              whitelist: [],
-            },
+              whitelist: [] },
             executeEnabled: false,
             isRoot: false,
             suggestions: [],
-            notes: [],
-          },
-        },
+            notes: [] } },
         {
           match: (url) => url.startsWith('/api/v1/defense/geoip/status'),
           body: {
@@ -107,19 +102,15 @@ describe('surgical form coverage', () => {
               cityPolicyEnabled: true,
               asns: [],
               enforce: { autoBan: true, nginx: true, ufw: false },
-              autoUpdate: true,
-            },
+              autoUpdate: true },
             sources: [
               {
                 filename: 'dbip-city.mmdb',
                 present: true,
                 mtime: now,
-                bytes: 1000,
-              },
+                bytes: 1000 },
             ],
-            meta: { lastSuccessAt: now },
-          },
-        },
+            meta: { lastSuccessAt: now } } },
         {
           match: (url) => url.includes('/api/v1/defense/geoip/lookup'),
           body: {
@@ -136,19 +127,14 @@ describe('surgical form coverage', () => {
               longitude: -74.0,
               asn: '13335',
               asName: 'Cloudflare',
-              source: 'dbip',
-            },
-            access: { blocked: false, matched: ['country'] },
-          },
-        },
+              source: 'dbip' },
+            access: { blocked: false, matched: ['country'] } } },
         {
           match: /\/api\/v1\/defense/,
-          body: HONESTY_WRITTEN_BLOCKED,
-        },
+          body: HONESTY_WRITTEN_BLOCKED },
         {
           match: /\/api\/v1\/system\//,
-          body: { installed: true, active: 'inactive', rules: [], jails: [], banned: [] },
-        },
+          body: { installed: true, active: 'inactive', rules: [], jails: [], banned: [] } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -205,18 +191,14 @@ describe('surgical form coverage', () => {
                 port: 22,
                 username: 'ysk',
                 path: '/backups/ysk',
-                password: '***',
-              },
+                password: '***' },
               exclusions: ['node_modules'],
               restic: {
                 enabled: true,
                 repoPath: '/var/backups/restic',
                 password: '***',
-                s3Repo: '',
-              },
-            };
-          },
-        },
+                s3Repo: '' } };
+          } },
         {
           match: /\/api\/v1\/backups/,
           handler: (url, init) => {
@@ -225,8 +207,7 @@ describe('surgical form coverage', () => {
                 ...HONESTY_WRITTEN_BLOCKED,
                 results: [{ projectId: 'p1', ok: true }],
                 snapshots: [{ id: 'snap-1', time: now, short_id: 'abc' }],
-                install: { ok: false, notes: ['need execute'], requiresExecute: true },
-              };
+                install: { ok: false, notes: ['need execute'], requiresExecute: true } };
             }
             if (url.includes('snapshot')) {
               return {
@@ -235,11 +216,9 @@ describe('surgical form coverage', () => {
                     id: 'snap-1',
                     time: now,
                     tags: ['p1'],
-                    paths: ['/home/demo'],
-                  },
+                    paths: ['/home/demo'] },
                 ],
-                notes: ['listed'],
-              };
+                notes: ['listed'] };
             }
             return {
               items: [
@@ -249,21 +228,16 @@ describe('surgical form coverage', () => {
                   path: '/var/backups/p1.tgz',
                   bytes: 4096,
                   mtime: now,
-                  kind: 'full',
-                },
+                  kind: 'full' },
               ],
               lastRun: {
                 at: now,
                 ok: true,
-                results: [{ projectId: 'p1', ok: true, notes: ['ok'] }],
-              },
-            };
-          },
-        },
+                results: [{ projectId: 'p1', ok: true, notes: ['ok'] }] } };
+          } },
         {
           match: /\/api\/v1\/projects/,
-          body: { items: [{ id: 'p1', name: 'Demo' }] },
-        },
+          body: { items: [{ id: 'p1', name: 'Demo' }] } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -378,11 +352,8 @@ describe('surgical form coverage', () => {
                 domain: 'example.com',
                 rate_limit_per_hour: 200,
                 antispam: true,
-                server_ip: '203.0.113.10',
-              },
-            ],
-          },
-        },
+                server_ip: '203.0.113.10' },
+            ] } },
         {
           match: (url) => url.includes('/api/v1/email/domains/dom-1'),
           handler: (url, init) => {
@@ -396,8 +367,7 @@ describe('surgical form coverage', () => {
                 ],
                 externalTodos: ['Publish DKIM'],
                 health: { score: 40, maxScore: 100, messages: ['SPF soft'] },
-                notes: [],
-              };
+                notes: [] };
             }
             if (url.includes('/mailboxes')) {
               return {
@@ -406,15 +376,12 @@ describe('surgical form coverage', () => {
                     id: 'mb1',
                     local_part: 'info',
                     address: 'info@example.com',
-                    quotaMb: 500,
-                  },
-                ],
-              };
+                    quotaMb: 500 },
+                ] };
             }
             if (url.includes('/aliases')) {
               return {
-                items: [{ id: 'al1', source: 'hi@example.com', dest: 'info@example.com' }],
-              };
+                items: [{ id: 'al1', source: 'hi@example.com', dest: 'info@example.com' }] };
             }
             if (url.includes('/deliverability')) {
               return {
@@ -427,8 +394,7 @@ describe('surgical form coverage', () => {
                 items: [
                   { id: 'spf', title: 'SPF', ok: false, detail: 'missing' },
                   { id: 'dkim', title: 'DKIM', ok: true, detail: 'ok' },
-                ],
-              };
+                ] };
             }
             if (url.includes('/sieve') || url.includes('/relay') || url.includes('/warmup')) {
               return { ok: true, items: [], script: '', enabled: false };
@@ -440,10 +406,8 @@ describe('surgical form coverage', () => {
               antispam: true,
               server_ip: '203.0.113.10',
               apply_status: 'planned',
-              managed: true,
-            };
-          },
-        },
+              managed: true };
+          } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -467,8 +431,7 @@ describe('surgical form coverage', () => {
         }
         for (const b of screen
           .queryAllByRole('button', {
-            name: /create|add|save|apply|copy|delete|refresh|enable|test|send/i,
-          })
+            name: /create|add|save|apply|copy|delete|refresh|enable|test|send/i })
           .slice(0, 8)) {
           if ((b as HTMLButtonElement).disabled) continue;
           try {
@@ -537,10 +500,8 @@ describe('surgical form coverage', () => {
                     type: 'file',
                     size: 1,
                     deletedAt: now,
-                    mtime: now,
-                  },
-                ],
-              };
+                    mtime: now },
+                ] };
             }
             if (url.includes('share')) {
               return {
@@ -550,10 +511,8 @@ describe('surgical form coverage', () => {
                     path: 'a.txt',
                     token: 'tok',
                     createdAt: now,
-                    expiresAt: null,
-                  },
-                ],
-              };
+                    expiresAt: null },
+                ] };
             }
             if (url.includes('/read')) {
               return { content: 'hello world', path: 'a.txt', bytes: 11 };
@@ -568,10 +527,8 @@ describe('surgical form coverage', () => {
               items: [
                 { name: 'a.txt', path: 'a.txt', type: 'file', size: 11, mtime: now },
                 { name: 'docs', path: 'docs', type: 'dir', size: 0, mtime: now },
-              ],
-            };
-          },
-        },
+              ] };
+          } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -666,13 +623,10 @@ describe('surgical form coverage', () => {
                   roles: ['admin'],
                   packageId: 'pkg1',
                   suspended: false,
-                  locale: 'en',
-                },
+                  locale: 'en' },
               ],
-              hostUsage: { projects: 1, diskMb: 10, limitMb: 1000 },
-            };
-          },
-        },
+              hostUsage: { projects: 1, diskMb: 10, limitMb: 1000 } };
+          } },
         {
           match: (url) => url.startsWith('/api/v1/packages'),
           handler: (_u, init) => {
@@ -688,12 +642,9 @@ describe('surgical form coverage', () => {
                   diskMb: 1024,
                   bandwidthMb: 0,
                   ftp: true,
-                  ssh: true,
-                },
-              ],
-            };
-          },
-        },
+                  ssh: true },
+              ] };
+          } },
         {
           match: (url) => url.includes('/api/v1/rbac'),
           handler: (_u, init) => {
@@ -705,14 +656,10 @@ describe('surgical form coverage', () => {
                   dirty: true,
                   policy: {
                     maxLevel: 'write-high',
-                    capabilities: ['projects.read', 'projects.write'],
-                  },
-                  factory: { maxLevel: 'write-high', capabilities: ['projects.read'] },
-                },
-              ],
-            };
-          },
-        },
+                    capabilities: ['projects.read', 'projects.write'] },
+                  factory: { maxLevel: 'write-high', capabilities: ['projects.read'] } },
+              ] };
+          } },
         {
           match: (url) => url.startsWith('/api/v1/auth/'),
           handler: (_u, init) => {
@@ -725,8 +672,7 @@ describe('surgical form coverage', () => {
                 enrolled: true,
                 recoveryCodes: ['aaaa-bbbb'],
                 token: 'tok',
-                key: { id: 'k2', name: 'n', prefix: 'ysk', created_at: now },
-              };
+                key: { id: 'k2', name: 'n', prefix: 'ysk', created_at: now } };
             }
             if (_u.includes('totp')) return { enabled: false, enrolled: false };
             if (_u.includes('sessions')) {
@@ -737,29 +683,22 @@ describe('surgical form coverage', () => {
                     created_at: now,
                     expires_at: now,
                     current: true,
-                    ip: '1.1.1.1',
-                  },
-                ],
-              };
+                    ip: '1.1.1.1' },
+                ] };
             }
             if (_u.includes('api-keys')) {
               return {
-                items: [{ id: 'k1', name: 'ci', prefix: 'ysk_ci', created_at: now }],
-              };
+                items: [{ id: 'k1', name: 'ci', prefix: 'ysk_ci', created_at: now }] };
             }
             return { ok: true };
-          },
-        },
+          } },
         {
           match: (url) => url.startsWith('/api/v1/settings/security'),
-          body: { requireAdminTotp: false, requireAdminTotpStrict: false, ok: true },
-        },
+          body: { requireAdminTotp: false, requireAdminTotpStrict: false, ok: true } },
         {
           match: (url) => url.startsWith('/api/v1/approvals'),
           body: {
-            items: [{ id: 'ap1', tool: 'sys.shell', status: 'pending', requestedAt: now }],
-          },
-        },
+            items: [{ id: 'ap1', tool: 'sys.shell', status: 'pending', requestedAt: now }] } },
         {
           match: (url) => url.startsWith('/api/v1/tools'),
           handler: (_u, init) => {
@@ -768,10 +707,8 @@ describe('surgical form coverage', () => {
               items: [
                 { id: 'sys.info', name: 'sys.info', allowed: true, requiresApproval: false },
                 { id: 'sys.shell', name: 'sys.shell', allowed: false, requiresApproval: true },
-              ],
-            };
-          },
-        },
+              ] };
+          } },
         {
           match: /\/api\/v1\/ssh\//,
           body: {
@@ -786,20 +723,16 @@ describe('surgical form coverage', () => {
                 fingerprintSha256: 'SHA256:abcdef0123456789abcd',
                 publicKey: 'ssh-ed25519 AAAA',
                 createdAt: now,
-                binding: { linuxUser: 'ysk', homeDir: '/home/ysk' },
-              },
+                binding: { linuxUser: 'ysk', homeDir: '/home/ysk' } },
             ],
             host: { notes: [], lights: { package: 'ok', pam: 'ok', kbdInteractive: 'ok' } },
             pamSnippet: '#',
             sshdHints: '#',
             snippet: 'Match',
-            notes: [],
-          },
-        },
+            notes: [] } },
         {
           match: /\/api\/v1\/sftp\//,
-          body: { ok: true, items: [], snippet: '', notes: [] },
-        },
+          body: { ok: true, items: [], snippet: '', notes: [] } },
         {
           match: (url) =>
             url.startsWith('/api/v1/defense/status') || url.startsWith('/api/v1/defense/probe'),
@@ -821,8 +754,7 @@ describe('surgical form coverage', () => {
               burst: 20,
               connLimit: 40,
               confPath: '/x',
-              exists: true,
-            },
+              exists: true },
             firewall: { active: 'inactive', installed: true },
             fail2ban: { active: 'inactive', installed: true, jails: 1 },
             autoBan: {
@@ -831,20 +763,16 @@ describe('surgical form coverage', () => {
               method: 'fail2ban',
               cooldownMinutes: 30,
               maxAutoBansPerHour: 20,
-              whitelist: ['127.0.0.1'],
-            },
+              whitelist: ['127.0.0.1'] },
             executeEnabled: false,
             isRoot: false,
             suggestions: [
               { id: 's1', title: 'Apply', body: 'x', action: 'preset:daily' },
             ],
-            notes: [],
-          },
-        },
+            notes: [] } },
         {
           match: /\/api\/v1\/defense/,
-          body: HONESTY_WRITTEN_BLOCKED,
-        },
+          body: HONESTY_WRITTEN_BLOCKED },
         {
           match: /\/api\/v1\/logs\//,
           handler: (url, init) => {
@@ -858,10 +786,8 @@ describe('surgical form coverage', () => {
                     label: 'nginx',
                     unit: 'nginx.service',
                     group: 'web',
-                    available: true,
-                  },
-                ],
-              };
+                    available: true },
+                ] };
             }
             if (url.includes('overview')) {
               return {
@@ -869,8 +795,7 @@ describe('surgical form coverage', () => {
                 followIntervalSec: 3,
                 journalWarnMb: 40,
                 vacuumDefaultDays: 14,
-                maxLines: 200,
-              };
+                maxLines: 200 };
             }
             if (url.includes('settings')) {
               return {
@@ -882,10 +807,8 @@ describe('surgical form coverage', () => {
                     id: 'b1',
                     name: 'err',
                     source: 'journal:nginx.service',
-                    grep: 'error',
-                  },
-                ],
-              };
+                    grep: 'error' },
+                ] };
             }
             if (url.includes('projects')) {
               return {
@@ -894,20 +817,16 @@ describe('surgical form coverage', () => {
                     projectId: 'p1',
                     name: 'Demo',
                     files: [{ name: 'app.log', bytes: 1, previewable: true }],
-                    related: [],
-                  },
-                ],
-              };
+                    related: [] },
+                ] };
             }
             return {
               ok: true,
               text: 'err line\nok\n',
               lines: ['err line', 'ok'],
               truncated: true,
-              notes: [],
-            };
-          },
-        },
+              notes: [] };
+          } },
         {
           match: /\/api\/v1\/resources\//,
           handler: (_u, init) => {
@@ -919,9 +838,7 @@ describe('surgical form coverage', () => {
                   zone: 'example.com',
                   nsName: 'ns1.example.com',
                   ttl: 300,
-                  apply_status: 'planned',
-                },
-              };
+                  apply_status: 'planned' } };
             }
             if (_u.includes('zones')) {
               return {
@@ -932,11 +849,9 @@ describe('surgical form coverage', () => {
                     serverIp: '1.2.3.4',
                     nsName: 'ns1.example.com',
                     ttl: 300,
-                    apply_status: 'planned',
-                  },
+                    apply_status: 'planned' },
                 ],
-                meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-              };
+                meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } };
             }
             return {
               items: [
@@ -946,13 +861,10 @@ describe('surgical form coverage', () => {
                   type: 'A',
                   name: '@',
                   value: '1.2.3.4',
-                  ttl: 300,
-                },
+                  ttl: 300 },
               ],
-              meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-            };
-          },
-        },
+              meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } };
+          } },
         {
           match: /\/api\/v1\/dns/,
           body: {
@@ -962,9 +874,7 @@ describe('surgical form coverage', () => {
             notes: [],
             items: [],
             peers: [],
-            dsRecord: 'x',
-          },
-        },
+            dsRecord: 'x' } },
         {
           match: /\/api\/v1\/system\//,
           body: {
@@ -974,9 +884,7 @@ describe('surgical form coverage', () => {
             jails: [],
             banned: [],
             ignoreIps: [],
-            catalog: [],
-          },
-        },
+            catalog: [] } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -989,8 +897,7 @@ describe('surgical form coverage', () => {
       ] as const) {
         const { unmount } = renderAt(path, el, route);
         await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument(), {
-          timeout: 8000,
-        });
+          timeout: 8000 });
         for (const label of screen.queryAllByRole('tab').map((t) => t.textContent ?? '')) {
           if (!label.trim()) continue;
           try {

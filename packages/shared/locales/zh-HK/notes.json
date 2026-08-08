@@ -47,7 +47,9 @@
   "nginx": {
     "reloaded": "已重載 Nginx",
     "configOk": "Nginx 設定檢查通過",
-    "reloadExit": "Nginx 重新載入 結束碼={{code}}"
+    "reloadExit": "Nginx 重新載入 結束碼={{code}}",
+    "managedDir": "管理設定目錄：{{path}}",
+    "includeHint": "於 Nginx 加入：include {{path}}/*.conf;"
   },
   "ssl": {
     "requestCert": "申請憑證"

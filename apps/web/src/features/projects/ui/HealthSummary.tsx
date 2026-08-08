@@ -3,8 +3,7 @@ import { Badge } from '../../../shared/components/ui';
 import { formatHealthFacts } from '../model/status';
 
 export function HealthSummary({
-  lastHealth,
-}: {
+  lastHealth }: {
   lastHealth?: Record<string, unknown> | null;
 }) {
   const { t } = useTranslation();

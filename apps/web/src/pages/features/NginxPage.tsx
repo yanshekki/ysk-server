@@ -17,8 +17,7 @@ import {
   SoftwareVersionBar,
   FormHint,
   CheckboxField,
-  SegRadio,
-} from '../../shared/components/ui';
+  SegRadio } from '../../shared/components/ui';
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import type { ResourceRow } from '../../features/resources/api';
@@ -43,8 +42,7 @@ export function NginxPage() {
     listLoading,
     total,
     activeFilterCount,
-    clearSearch,
-  } = useResourceCrud('nginx/sites');
+    clearSearch } = useResourceCrud('nginx/sites');
   const [purgeBusy, setPurgeBusy] = useState(false);
   const [purgeMsg, setPurgeMsg] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
@@ -71,8 +69,7 @@ export function NginxPage() {
       kind,
       upstream: kind === 'proxy' ? upstream : undefined,
       root: kind !== 'proxy' ? root || undefined : undefined,
-      ssl,
-    });
+      ssl });
     setCreateOpen(false);
     resetForm();
   }
@@ -85,8 +82,7 @@ export function NginxPage() {
       kind,
       upstream: kind === 'proxy' ? upstream : undefined,
       root: kind !== 'proxy' ? root || undefined : undefined,
-      ssl,
-    });
+      ssl });
     setEdit(null);
     resetForm();
   }
@@ -113,24 +109,19 @@ export function NginxPage() {
       status={{
         pill: {
           label: t('nginx.pillSites', { count: items.length }),
-          tone: items.length ? 'ok' : 'warn',
-        },
+          tone: items.length ? 'ok' : 'warn' },
         items: [
           { label: t('nginx.statSites'), value: items.length },
           {
             label: t('nginx.kindProxy'),
-            value: items.filter((r) => r.kind === 'proxy').length,
-          },
+            value: items.filter((r) => r.kind === 'proxy').length },
           {
             label: 'Static/PHP',
-            value: items.filter((r) => r.kind !== 'proxy').length,
-          },
+            value: items.filter((r) => r.kind !== 'proxy').length },
           {
             label: t('nginx.statSslFlag'),
-            value: items.filter((r) => r.ssl).length,
-          },
-        ],
-      }}
+            value: items.filter((r) => r.ssl).length },
+        ] }}
       actions={
         <ActionBar>
           <Button
@@ -160,10 +151,7 @@ export function NginxPage() {
         <SoftwareInstallBanner feature="nginx" title={t('nginx.notInstalled')} />
         <SoftwareVersionBar softwareId="nginx" />
         <Alert variant="info">
-          {t('nginx.projectSitesHint', {
-            defaultValue:
-              t('uiInline.s090aa1a7'),
-          })}
+          {t('nginx.projectSitesHint', { })}
         </Alert>
         {error ? <Alert variant="error">{error}</Alert> : null}
         {purgeMsg ? <Alert variant="info">{purgeMsg}</Alert> : null}
@@ -201,13 +189,11 @@ export function NginxPage() {
             {
               key: 'serverName',
               header: t('nginx.colServerName'),
-              render: (r) => <strong>{String(r.serverName ?? '—')}</strong>,
-            },
+              render: (r) => <strong>{String(r.serverName ?? '—')}</strong> },
             {
               key: 'kind',
               header: t('nginx.colKind'),
-              render: (r) => kindLabel(String(r.kind ?? 'proxy')),
-            },
+              render: (r) => kindLabel(String(r.kind ?? 'proxy')) },
             {
               key: 'target',
               header: t('nginx.colTarget'),
@@ -215,20 +201,17 @@ export function NginxPage() {
                 <code className="inline u-break-all">
                   {String(r.upstream ?? r.root ?? '—')}
                 </code>
-              ),
-            },
+              ) },
             {
               key: 'ssl',
               header: 'SSL',
-              render: (r) => (r.ssl ? t('common.yes') : t('common.no')),
-            },
+              render: (r) => (r.ssl ? t('common.yes') : t('common.no')) },
             {
               key: 'status',
               header: t('nginx.colStatus'),
               render: (r) => (
                 <ResourceStatusBadge status={String(r.apply_status)} />
-              ),
-            },
+              ) },
           ]}
           rows={items}
           empty={

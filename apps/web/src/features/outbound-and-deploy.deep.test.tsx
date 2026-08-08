@@ -9,8 +9,7 @@ import type { ProjectDto } from '@ysk/shared';
 import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
-  softwareReadyRoute,
-} from '../test/mock-fetch';
+  softwareReadyRoute } from '../test/mock-fetch';
 import { authStore } from '../shared/stores/auth-store';
 import { OutboundIdentities } from './security/ssh/OutboundIdentities';
 import { ProjectDeployTab } from './projects/ui/ProjectDeployTab';
@@ -26,8 +25,7 @@ const identity = {
   fingerprintSha256: 'SHA256:abcdef0123456789abcdef01',
   publicKey: 'ssh-ed25519 AAAAtestkey panel',
   createdAt: new Date().toISOString(),
-  binding: { linuxUser: 'ysk', homeDir: '/home/ysk', projectId: 'p1' },
-};
+  binding: { linuxUser: 'ysk', homeDir: '/home/ysk', projectId: 'p1' } };
 
 const project = {
   id: 'p1',
@@ -48,8 +46,7 @@ const project = {
   osProvisioned: true,
   nginxConfigPath: null,
   lastDeployAt: null,
-  deployEntry: 'server.js',
-} as unknown as ProjectDto;
+  deployEntry: 'server.js' } as unknown as ProjectDto;
 
 describe('OutboundIdentities deep', () => {
   beforeEach(() => {
@@ -74,18 +71,14 @@ describe('OutboundIdentities deep', () => {
               identity: { ...identity, id: 'id-new', name: 'created' },
               privateKey: '-----BEGIN PRIVATE KEY-----\nX\n-----END PRIVATE KEY-----',
               notes: ['created'],
-              ...HONESTY_WRITTEN_BLOCKED,
-            };
+              ...HONESTY_WRITTEN_BLOCKED };
           }
           return { ok: true, items: [identity, { ...identity, id: 'id-2', status: 'retired', name: 'old' }] };
-        },
-      },
+        } },
       {
         match: /\/api\/v1\/projects/,
         body: {
-          items: [{ id: 'p1', name: 'Demo', linuxUser: 'demo', homeDir: '/home/demo' }],
-        },
-      },
+          items: [{ id: 'p1', name: 'Demo', linuxUser: 'demo', homeDir: '/home/demo' }] } },
       { match: /.*/, body: { ...HONESTY_WRITTEN_BLOCKED, ok: true, items: [], notes: [] } },
     ]);
 
@@ -125,8 +118,7 @@ describe('OutboundIdentities deep', () => {
       }
       // next / submit buttons
       for (const b of screen.queryAllByRole('button', {
-        name: /next|continue|create|generate|finish|save|下一步|建立/i,
-      }).slice(0, 5)) {
+        name: /next|continue|create|generate|finish|save|下一步|建立/i }).slice(0, 5)) {
         try {
           await user.click(b);
         } catch {
@@ -138,8 +130,7 @@ describe('OutboundIdentities deep', () => {
     // action buttons on selected identity
     for (const b of screen
       .queryAllByRole('button', {
-        name: /install|test|copy|rotate|delete|remove|authorize|安裝|測試|複製/i,
-      })
+        name: /install|test|copy|rotate|delete|remove|authorize|安裝|測試|複製/i })
       .slice(0, 6)) {
       try {
         await user.click(b);
@@ -169,23 +160,18 @@ describe('ProjectDeployTab deep', () => {
               action: 'project.deploy',
               actor: 'admin',
               created_at: new Date().toISOString(),
-              detail: { entry: 'server.js', port: 3000, processStatus: 'running' },
-            },
+              detail: { entry: 'server.js', port: 3000, processStatus: 'running' } },
             {
               id: 'h2',
               ok: false,
               action: 'project.git-deploy',
               actor: 'admin',
               created_at: new Date().toISOString(),
-              detail: null,
-            },
-          ],
-        },
-      },
+              detail: null },
+          ] } },
       {
         match: /\/api\/v1\/projects/,
-        body: { ok: true, items: [project], project, ...HONESTY_WRITTEN_BLOCKED },
-      },
+        body: { ok: true, items: [project], project, ...HONESTY_WRITTEN_BLOCKED } },
       {
         match: /\/api\/v1\/hosting\/runtimes/,
         body: {
@@ -194,9 +180,7 @@ describe('ProjectDeployTab deep', () => {
           catalog: [],
           settings: { values: {}, env: {} },
           envPreview: {},
-          notes: [],
-        },
-      },
+          notes: [] } },
       { match: /.*/, body: { ok: true, items: [], notes: [], templates: [] } },
     ]);
 
@@ -236,8 +220,7 @@ describe('ProjectDeployTab deep', () => {
 
     for (const b of screen
       .queryAllByRole('button', {
-        name: /deploy|save|pull|install|build|skip|git|環境|部署/i,
-      })
+        name: /deploy|save|pull|install|build|skip|git|環境|部署/i })
       .slice(0, 8)) {
       try {
         await user.click(b);
@@ -283,10 +266,8 @@ describe('SoftwareInstallBanner + OpsResultPanel honesty', () => {
           return {
             items: [{ id: 'nginx', title: 'Nginx', installed: false }],
             missing: [{ id: 'nginx', title: 'Nginx', installed: false }],
-            ready: false,
-          };
-        },
-      },
+            ready: false };
+        } },
     ]);
 
     render(
@@ -302,8 +283,7 @@ describe('SoftwareInstallBanner + OpsResultPanel honesty', () => {
             processStatus: 'stopped',
             port: 80,
             url: 'https://example.com',
-            pid: 42,
-          }}
+            pid: 42 }}
           onRetry={vi.fn()}
         />
       </MemoryRouter>,

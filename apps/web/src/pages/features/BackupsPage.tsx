@@ -20,8 +20,7 @@ import {
   PageTabs,
   FormActions,
   SegRadio,
-  PromptDialog,
-} from '../../shared/components/ui';
+  PromptDialog } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { api } from '../../shared/services/api';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
@@ -141,8 +140,7 @@ export function BackupsPage() {
     enabled: false,
     kind: 'sftp',
     port: 22,
-    path: '/backups/ysk',
-  });
+    path: '/backups/ysk' });
   const [restic, setRestic] = useState<ResticSettings>({ enabled: false });
   /** true when server already has a password (masked as ***) */
   const [resticPasswordSet, setResticPasswordSet] = useState(false);
@@ -196,8 +194,7 @@ export function BackupsPage() {
         s3Endpoint: s.remote.s3Endpoint ?? '',
         awsAccessKeyId: s.remote.awsAccessKeyId ?? '',
         awsSecretAccessKey:
-          s.remote.awsSecretAccessKey === '***' ? '' : (s.remote.awsSecretAccessKey ?? ''),
-      });
+          s.remote.awsSecretAccessKey === '***' ? '' : (s.remote.awsSecretAccessKey ?? '') });
     }
     if (s.restic) {
       const hasPw =
@@ -208,8 +205,7 @@ export function BackupsPage() {
         enabled: Boolean(s.restic.enabled),
         repoPath: s.restic.repoPath ?? '',
         password: s.restic.password === '***' ? '' : (s.restic.password ?? ''),
-        s3Repo: s.restic.s3Repo ?? '',
-      });
+        s3Repo: s.restic.s3Repo ?? '' });
     }
     if (s.exclusions?.length) {
       setExclusionsText(s.exclusions.join('\n'));
@@ -243,20 +239,16 @@ export function BackupsPage() {
           ...(remote.password ? { password: remote.password } : {}),
           ...(remote.awsSecretAccessKey
             ? { awsSecretAccessKey: remote.awsSecretAccessKey }
-            : {}),
-        },
+            : {}) },
         exclusions,
         restic: {
           enabled: restic.enabled,
           repoPath: restic.repoPath || undefined,
           s3Repo: restic.s3Repo || undefined,
-          ...(restic.password ? { password: restic.password } : {}),
-        },
-      };
+          ...(restic.password ? { password: restic.password } : {}) } };
       await api.requestRaw('/api/v1/backups/settings', {
         method: 'POST',
-        body: JSON.stringify(body),
-      });
+        body: JSON.stringify(body) });
       setMsg(t('backups.settingsSaved'));
       await refresh();
     } catch (e) {
@@ -341,8 +333,7 @@ export function BackupsPage() {
               ? 'danger'
               : lastTone === 'warn'
                 ? 'warn'
-                : 'ok',
-        },
+                : 'ok' },
         items: [
           { label: t('backups.backupFiles'), value: items.length },
           { label: t('common.project'), value: liveProjectCount },
@@ -354,21 +345,17 @@ export function BackupsPage() {
                 ? 'danger'
                 : lastTone === 'warn'
                   ? 'warn'
-                  : 'ok',
-          },
+                  : 'ok' },
           {
             label: 'restic',
             value: resticLabel,
-            tone: resticTone as 'ok' | 'warn' | 'neutral',
-          },
+            tone: resticTone as 'ok' | 'warn' | 'neutral' },
           {
             label: t('backups.remoteStep'),
             value: remote.enabled ? remote.kind : t('common.close'),
-            tone: remote.enabled ? 'ok' : 'neutral',
-          },
+            tone: remote.enabled ? 'ok' : 'neutral' },
           { label: t('backups.withBackups'), value: archiveProjectCount },
-        ],
-      }}
+        ] }}
       actions={<>
           <Button
             variant="secondary"
@@ -525,8 +512,7 @@ export function BackupsPage() {
                 void run(async () => {
                   try {
                     const r = (await api.requestRaw('/api/v1/backups/run-all', {
-                      method: 'POST',
-                    })) as OpsResultLike & {
+                      method: 'POST' })) as OpsResultLike & {
                       results?: Array<{
                         projectId?: string;
                         ok?: boolean;
@@ -547,8 +533,7 @@ export function BackupsPage() {
                       notes: [
                         ...(r.notes ?? []),
                         extra ? t('backups.summary', { extra }) : '',
-                      ].filter(Boolean),
-                    };
+                      ].filter(Boolean) };
                   } catch (e) {
                     const m = e instanceof Error ? e.message : t('backups.backupFailed');
                     return { ok: false, notes: [m], blockMessage: m };
@@ -566,8 +551,7 @@ export function BackupsPage() {
                 void run(async () => {
                   const r = (await api.requestRaw('/api/v1/backups/schedule', {
                     method: 'POST',
-                    body: JSON.stringify({ schedule: '0 3 * * *', install: true }),
-                  })) as OpsResultLike & {
+                    body: JSON.stringify({ schedule: '0 3 * * *', install: true }) })) as OpsResultLike & {
                     install?: { ok?: boolean; notes?: string[]; requiresExecute?: boolean };
                   };
                   return {
@@ -577,8 +561,7 @@ export function BackupsPage() {
                       ...(r.install?.notes ?? []),
                       t('backups.cronCmd'),
                       t('backups.cronHint'),
-                    ],
-                  };
+                    ] };
                 }, t('backups.dailyCronRegistered'))
               }
             >
@@ -594,8 +577,7 @@ export function BackupsPage() {
                   try {
                     const r = (await api.requestRaw('/api/v1/backups/control-plane', {
                       method: 'POST',
-                      body: '{}',
-                    })) as OpsResultLike;
+                      body: '{}' })) as OpsResultLike;
                     await refresh();
                     return r;
                   } catch (e) {
@@ -622,8 +604,7 @@ export function BackupsPage() {
                   try {
                     return (await api.requestRaw('/api/v1/backups/restic/run', {
                       method: 'POST',
-                      body: '{}',
-                    })) as OpsResultLike;
+                      body: '{}' })) as OpsResultLike;
                   } catch (e) {
                     const m = e instanceof Error ? e.message : t('backups.resticFailed');
                     return { ok: false, notes: [m], blockMessage: m };
@@ -678,8 +659,7 @@ export function BackupsPage() {
                     label: t('common.time'),
                     value: lastRun.at
                       ? new Date(String(lastRun.at)).toLocaleString()
-                      : '—',
-                  },
+                      : '—' },
                   {
                     label: t('projects.healthDetail.overall'),
                     value:
@@ -689,16 +669,14 @@ export function BackupsPage() {
                           : t('common.success')
                         : lastOk === false
                           ? t('backups.hasFailures')
-                          : '—',
-                  },
+                          : '—' },
                   {
                     label: t('common.notes'),
                     value: Array.isArray(lastRun.notes)
                       ? (lastRun.notes as string[]).join(
                           i18n.language?.toLowerCase().startsWith('en') ? '; ' : '；',
                         )
-                      : '—',
-                  },
+                      : '—' },
                 ]}
               />
               {lastResults.length > 0 ? (
@@ -713,8 +691,7 @@ export function BackupsPage() {
                             {(row.projectId ?? '—').slice(0, 8)}
                             {(row.projectId?.length ?? 0) > 8 ? '…' : ''}
                           </code>
-                        ),
-                      },
+                        ) },
                       {
                         key: 'status',
                         header: t('common.status'),
@@ -726,14 +703,12 @@ export function BackupsPage() {
                             <Badge tone="ok">{t('common.success')}</Badge>
                           ) : (
                             <Badge tone="danger">{t('common.failed')}</Badge>
-                          ),
-                      },
+                          ) },
                       {
                         key: 'notes',
                         header: t('common.notes'),
                         className: 'muted u-text-sm',
-                        render: (row) => (row.notes ?? []).join('；') || '—',
-                      },
+                        render: (row) => (row.notes ?? []).join('；') || '—' },
                     ]}
                     rows={lastResults}
                     rowKey={(row, i) => String(row.projectId ?? i)}
@@ -759,15 +734,13 @@ export function BackupsPage() {
                             {(row.projectId ?? '—').slice(0, 8)}
                             {(row.projectId?.length ?? 0) > 8 ? '…' : ''}
                           </code>
-                        ),
-                      },
+                        ) },
                       {
                         key: 'kind',
                         header: t('common.steps'),
                         nowrap: true,
                         render: (row) =>
-                          row.kind === 'restic' ? 'restic' : t('backups.remoteStep'),
-                      },
+                          row.kind === 'restic' ? 'restic' : t('backups.remoteStep') },
                       {
                         key: 'status',
                         header: t('common.status'),
@@ -779,15 +752,13 @@ export function BackupsPage() {
                             <Badge tone="ok">{t('common.success')}</Badge>
                           ) : (
                             <Badge tone="danger">{t('common.failed')}</Badge>
-                          ),
-                      },
+                          ) },
                       {
                         key: 'notes',
                         header: t('common.notes'),
                         className: 'muted u-text-sm',
                         render: (row) =>
-                          (row.notes ?? []).slice(0, 3).join('；') || '—',
-                      },
+                          (row.notes ?? []).slice(0, 3).join('；') || '—' },
                     ]}
                     rows={sideResults}
                     rowKey={(row, i) =>
@@ -815,22 +786,19 @@ export function BackupsPage() {
                     {
                       key: 'id',
                       header: 'Snapshot',
-                      render: (s) => <code className="inline">{s.id}</code>,
-                    },
+                      render: (s) => <code className="inline">{s.id}</code> },
                     {
                       key: 'time',
                       header: t('common.time'),
                       className: 'muted',
                       nowrap: true,
                       render: (s) =>
-                        s.time ? new Date(s.time).toLocaleString() : '—',
-                    },
+                        s.time ? new Date(s.time).toLocaleString() : '—' },
                     {
                       key: 'tags',
                       header: 'Tags',
                       className: 'muted u-text-sm',
-                      render: (s) => (s.tags ?? []).join(', ') || '—',
-                    },
+                      render: (s) => (s.tags ?? []).join(', ') || '—' },
                   ]}
                   rows={snapshots}
                   rowKey={(s) => s.id}
@@ -861,9 +829,7 @@ export function BackupsPage() {
                                 body: JSON.stringify({
                                   projectId: pid,
                                   snapshotId: s.id,
-                                  dryRun: true,
-                                }),
-                              },
+                                  dryRun: true }) },
                             )) as OpsResultLike;
                           }, t('backups.dryRunDone'));
                         }}
@@ -911,8 +877,7 @@ export function BackupsPage() {
                           }
                           setResticOverwrite({
                             projectId: pid,
-                            snapshotId: s.id,
-                          });
+                            snapshotId: s.id });
                         }}
                       >
                         {t('backups.overwriteHome')}
@@ -934,19 +899,16 @@ export function BackupsPage() {
                       <Badge tone={lastRun.ok ? 'ok' : 'warn'}>
                         {lastRun.ok ? t('backups.allSuccess') : t('backups.failOrSkip')}
                       </Badge>
-                    ),
-                  },
+                    ) },
                   {
                     label: t('common.time'),
                     value: lastRun.at
                       ? new Date(String(lastRun.at)).toLocaleString()
-                      : '—',
-                  },
+                      : '—' },
                   ...(Array.isArray(lastRun.notes)
                     ? (lastRun.notes as string[]).slice(0, 4).map((n, i) => ({
                         label: i === 0 ? t('common.notes') : t('backups.noteN', { n: i + 1 }),
-                        value: n,
-                      }))
+                        value: n }))
                     : []),
                 ]}
               />
@@ -993,8 +955,7 @@ export function BackupsPage() {
                       onChange={(v) =>
                         setRemote((r) => ({
                           ...r,
-                          kind: v === 'local' || v === 's3' ? v : 'sftp',
-                        }))
+                          kind: v === 'local' || v === 's3' ? v : 'sftp' }))
                       }
                       options={[
                         { value: 'sftp', label: 'SFTP / scp' },
@@ -1096,8 +1057,7 @@ export function BackupsPage() {
                           onChange={(e) =>
                             setRemote((r) => ({
                               ...r,
-                              awsSecretAccessKey: e.target.value,
-                            }))
+                              awsSecretAccessKey: e.target.value }))
                           }
                           placeholder={t('backups.savedLeaveEmpty')}
                         />
@@ -1242,9 +1202,7 @@ export function BackupsPage() {
                 body: JSON.stringify({
                   projectId: restoreTarget.projectId,
                   name: restoreTarget.name,
-                  mode: restoreMode,
-                }),
-              });
+                  mode: restoreMode }) });
               setRestoreTarget(null);
               await refresh();
               return r as OpsResultLike;
@@ -1287,9 +1245,7 @@ export function BackupsPage() {
                 method: 'DELETE',
                 body: JSON.stringify({
                   projectId: deleteTarget.projectId,
-                  name: deleteTarget.name,
-                }),
-              });
+                  name: deleteTarget.name }) });
               setDeleteTarget(null);
               await refresh();
               return r as OpsResultLike;
@@ -1329,9 +1285,7 @@ export function BackupsPage() {
               body: JSON.stringify({
                 projectId: tgt.projectId,
                 snapshotId: tgt.snapshotId,
-                overwriteHome: false,
-              }),
-            })) as OpsResultLike;
+                overwriteHome: false }) })) as OpsResultLike;
           }, t('backups.resticRestoreDone'));
         }}
       />
@@ -1362,9 +1316,7 @@ export function BackupsPage() {
                 projectId: tgt.projectId,
                 snapshotId: tgt.snapshotId,
                 overwriteHome: true,
-                confirmPhrase: 'OVERWRITE',
-              }),
-            })) as OpsResultLike;
+                confirmPhrase: 'OVERWRITE' }) })) as OpsResultLike;
           }, t('backups.resticOverwriteDone'));
           return true;
         }}

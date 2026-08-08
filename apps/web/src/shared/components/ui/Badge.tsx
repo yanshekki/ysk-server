@@ -11,8 +11,7 @@ const TONE_CLASS: Record<BadgeTone, string> = {
   warn: 'badge badge--warn',
   danger: 'badge badge--danger',
   neutral: 'badge badge--neutral',
-  info: 'badge',
-};
+  info: 'badge' };
 
 export function Badge({ children, tone = 'info', className }: BadgeProps) {
   const cls = [TONE_CLASS[tone], className ?? ''].filter(Boolean).join(' ');

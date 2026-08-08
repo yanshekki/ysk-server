@@ -11,8 +11,7 @@ import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
   softwareReadyRoute,
-  type FetchRoute,
-} from '../test/mock-fetch';
+  type FetchRoute } from '../test/mock-fetch';
 import { authStore } from '../shared/stores/auth-store';
 
 import { DashboardPage } from './DashboardPage';
@@ -41,8 +40,7 @@ import {
   GoRuntimePage,
   NodeRuntimePage as GenericNodeRuntimePage,
   PythonRuntimePage,
-  RustRuntimePage,
-} from './features/GenericRuntimePage';
+  RustRuntimePage } from './features/GenericRuntimePage';
 import { LogsPage } from './features/LogsPage';
 import { MariadbPage } from './features/MariadbPage';
 import { MariadbServicePage } from './features/MariadbServicePage';
@@ -104,14 +102,12 @@ const hostOverview = {
   identity: {
     hostname: 'ysk-test',
     prettyHostname: 'YSK Test',
-    timezone: 'UTC',
-  },
+    timezone: 'UTC' },
   os: {
     platform: 'linux',
     arch: 'x64',
     release: 'Test OS',
-    kernel: '6.0',
-  },
+    kernel: '6.0' },
   runtime: {
     uptimeSec: 100,
     loadavg: [0.1, 0.1, 0.1],
@@ -119,15 +115,13 @@ const hostOverview = {
     memory: { total: 8_000_000_000, free: 4_000_000_000, usedRatio: 0.5 },
     node: 'v20.0.0',
     pid: 1,
-    uid: 0,
-  },
+    uid: 0 },
   time: {
     utc: new Date().toISOString(),
     local: new Date().toISOString(),
     ntpEnabled: true,
     ntpSynchronized: true,
-    timeSource: 'ntp',
-  },
+    timeSource: 'ntp' },
   network: { ips: ['127.0.0.1'], interfaces: [], resolvers: ['1.1.1.1'] },
   disks: [],
   power: { pending: null },
@@ -136,18 +130,15 @@ const hostOverview = {
     executeEnabled: false,
     isRoot: false,
     canPower: false,
-    canIdentity: false,
-  },
-  collectedAt: new Date().toISOString(),
-};
+    canIdentity: false },
+  collectedAt: new Date().toISOString() };
 
 const emailBundle = {
   domain: 'example.com',
   records: [],
   externalTodos: [],
   health: { score: 50, maxScore: 100, messages: [] },
-  notes: [],
-};
+  notes: [] };
 
 const networkSnap = {
   ok: true,
@@ -157,8 +148,7 @@ const networkSnap = {
     hasIp: true,
     networkManager: 'inactive',
     networkd: 'inactive',
-    canPersist: false,
-  },
+    canPersist: false },
   interfaces: [
     {
       name: 'eth0',
@@ -170,8 +160,7 @@ const networkSnap = {
       isLoopback: false,
       isDefaultEgress: true,
       addrs: [{ family: 'inet' as const, local: '10.0.0.5', prefixlen: 24 }],
-      stats: { rxBytes: 1000, txBytes: 2000, rxPackets: 10, txPackets: 10 },
-    },
+      stats: { rxBytes: 1000, txBytes: 2000, rxPackets: 10, txPackets: 10 } },
   ],
   routes: [{ dst: 'default', gateway: '10.0.0.1', dev: 'eth0', protocol: 'static' }],
   caps: { canMutate: true, executeEnabled: false, isRoot: false },
@@ -185,9 +174,7 @@ const networkSnap = {
     notes: [],
     ignoreAutoDns: true,
     canApply: true,
-    mode: 'static' as const,
-  },
-};
+    mode: 'static' as const } };
 
 const readinessReport = {
   productionReady: false,
@@ -202,12 +189,10 @@ const readinessReport = {
       severity: 'critical',
       title: 'Execute',
       detail: 'Host execute is off',
-      fixHint: 'Enable execute',
-    },
+      fixHint: 'Enable execute' },
   ],
   blockers: [],
-  categories: ['security'],
-};
+  categories: ['security'] };
 
 const dbConsole = {
   engine: 'postgres',
@@ -235,8 +220,7 @@ const dbConsole = {
           type: 'text',
           applyMode: 'restart',
           liveValue: '128MB',
-          description: 'Buffer pool',
-        },
+          description: 'Buffer pool' },
         {
           key: 'log_level',
           label: 'Log level',
@@ -244,8 +228,7 @@ const dbConsole = {
           type: 'enum',
           enumValues: ['info', 'warn', 'error'],
           applyMode: 'reload',
-          liveValue: 'info',
-        },
+          liveValue: 'info' },
         {
           key: 'danger_flag',
           label: 'Danger',
@@ -254,13 +237,10 @@ const dbConsole = {
           applyMode: 'runtime',
           liveValue: 'off',
           danger: true,
-          advanced: true,
-        },
-      ],
-    },
+          advanced: true },
+      ] },
   ],
-  live: { shared_buffers: '128MB' },
-};
+  live: { shared_buffers: '128MB' } };
 
 const defenseStatus = {
   at: new Date().toISOString(),
@@ -276,48 +256,41 @@ const defenseStatus = {
       id: 'daily',
       label: 'Daily',
       short: 'Normal',
-      bullets: ['rate limits', 'fail2ban'],
-    },
+      bullets: ['rate limits', 'fail2ban'] },
     {
       id: 'hardened',
       label: 'Hardened',
       short: 'Firm',
-      bullets: ['tighter limits'],
-    },
+      bullets: ['tighter limits'] },
     {
       id: 'under_attack',
       label: 'Under attack',
       short: 'Alert',
       bullets: ['aggressive'],
-      danger: true,
-    },
+      danger: true },
     {
       id: 'emergency',
       label: 'Emergency',
       short: 'Critical',
       bullets: ['lockdown'],
-      danger: true,
-    },
+      danger: true },
   ],
   bans: {
     count: 1,
-    items: [{ ip: '203.0.113.10', source: 'fail2ban', jail: 'sshd', reason: 'auth' }],
-  },
+    items: [{ ip: '203.0.113.10', source: 'fail2ban', jail: 'sshd', reason: 'auth' }] },
   nginxLimits: {
     reqRate: '10r/s',
     burst: 20,
     connLimit: 40,
     confPath: '/etc/nginx/conf.d/ysk-defense.conf',
-    exists: true,
-  },
+    exists: true },
   firewall: { active: 'inactive', installed: true },
   fail2ban: { active: 'inactive', installed: true, jails: 1 },
   labels: {
     firewall: { short: 'off', tone: 'warn' as const },
     fail2ban: { short: 'off', tone: 'warn' as const },
     apply: { short: 'written', tone: 'info' as const },
-    autoBan: { short: 'on', tone: 'ok' as const },
-  },
+    autoBan: { short: 'on', tone: 'ok' as const } },
   autoBan: {
     enabled: true,
     mode: 'normal' as const,
@@ -325,8 +298,7 @@ const defenseStatus = {
     cooldownMinutes: 30,
     maxAutoBansPerHour: 20,
     whitelist: ['127.0.0.1'],
-    autoBansLastHour: 1,
-  },
+    autoBansLastHour: 1 },
   protectionMode: 'observe',
   executeEnabled: false,
   isRoot: false,
@@ -335,17 +307,14 @@ const defenseStatus = {
       id: 's1',
       title: 'Apply daily preset',
       body: 'Baseline protection',
-      action: 'preset:daily',
-    },
+      action: 'preset:daily' },
     {
       id: 's2',
       title: 'Review bans',
       body: 'Check ban list',
-      action: 'tab:bans',
-    },
+      action: 'tab:bans' },
   ],
-  notes: ['written ≠ applied on host'],
-};
+  notes: ['written ≠ applied on host'] };
 
 const geoipStatus = {
   provider: 'dbip',
@@ -366,8 +335,7 @@ const geoipStatus = {
     cityPolicyEnabled: false,
     asns: [],
     enforce: { autoBan: true, nginx: true, ufw: false },
-    autoUpdate: true,
-  },
+    autoUpdate: true },
   sources: [
     {
       filename: 'dbip-country.mmdb',
@@ -375,12 +343,10 @@ const geoipStatus = {
       mtime: new Date().toISOString(),
       bytes: 1000,
       license: 'free',
-      updateHint: 'weekly',
-    },
+      updateHint: 'weekly' },
   ],
   meta: { lastSuccessAt: new Date().toISOString() },
-  scheduler: { intervalMs: 86400000 },
-};
+  scheduler: { intervalMs: 86400000 } };
 
 const defenseAutomation = {
   enabled: true,
@@ -391,8 +357,7 @@ const defenseAutomation = {
     suggestEmergencyAt: 90,
     deescalateEnabled: true,
     deescalateToDailyBelow: 20,
-    holdMinutes: 30,
-  },
+    holdMinutes: 30 },
   autoBan: {
     enabled: true,
     mode: 'normal' as const,
@@ -405,25 +370,21 @@ const defenseAutomation = {
     maxAutoBansPerHour: 20,
     intervalSeconds: 60,
     whitelist: ['127.0.0.1'],
-    syncFail2banIgnoreip: true,
-  },
+    syncFail2banIgnoreip: true },
   signalWeights: {
     networkDown: 20,
     highReqRate: 10,
     ddosHeuristic: 15,
     tcpInuse: 5,
     ufwInactive: 5,
-    f2bBans: 5,
-  },
+    f2bBans: 5 },
   cloudflare: {
     enabled: false,
     zones: [],
-    onAutoEscalate: false,
-  },
+    onAutoEscalate: false },
   lastTickAt: new Date().toISOString(),
   lastTickNotes: ['ok'],
-  suggestEmergency: false,
-};
+  suggestEmergency: false };
 
 const commonRoutes = (): FetchRoute[] => [
   softwareReadyRoute(),
@@ -431,20 +392,16 @@ const commonRoutes = (): FetchRoute[] => [
   { match: '/api/v1/health', body: { ok: true, status: 'ok' } },
   {
     match: '/api/v1/readiness',
-    body: readinessReport,
-  },
+    body: readinessReport },
   {
     match: /\/api\/v1\/system\/host/,
-    body: hostOverview,
-  },
+    body: hostOverview },
   {
     match: /\/api\/v1\/network/,
-    body: networkSnap,
-  },
+    body: networkSnap },
   {
     match: /\/api\/v1\/system\/db\/\w+\/console/,
-    body: dbConsole,
-  },
+    body: dbConsole },
   {
     match: (url) => url.startsWith('/api/v1/system/db/redis/status'),
     body: {
@@ -467,9 +424,7 @@ const commonRoutes = (): FetchRoute[] => [
         { db: 1, keys: 0 },
       ],
       databases: 16,
-      configuredDatabases: 16,
-    },
-  },
+      configuredDatabases: 16 } },
   {
     match: (url) => url.startsWith('/api/v1/system/redis/'),
     handler: (url, init) => {
@@ -483,8 +438,7 @@ const commonRoutes = (): FetchRoute[] => [
             { key: 'session:1', type: 'string', ttl: 3600 },
             { key: 'cache:home', type: 'hash', ttl: -1 },
           ],
-          notes: [],
-        };
+          notes: [] };
       }
       return {
         ok: true,
@@ -492,12 +446,9 @@ const commonRoutes = (): FetchRoute[] => [
           key: 'session:1',
           type: 'string',
           ttl: 3600,
-          value: 'user-1',
-        },
-        notes: [],
-      };
-    },
-  },
+          value: 'user-1' },
+        notes: [] };
+    } },
   {
     match: /\/api\/v1\/system\/db\/\w+\/status/,
     body: {
@@ -506,9 +457,7 @@ const commonRoutes = (): FetchRoute[] => [
       activeLabel: 'inactive',
       engine: 'mysql',
       executeEnabled: false,
-      isRoot: false,
-    },
-  },
+      isRoot: false } },
   {
     match: /\/api\/v1\/system\/fail2ban\/status/,
     body: {
@@ -520,9 +469,7 @@ const commonRoutes = (): FetchRoute[] => [
       banned: [],
       ignoreIps: [],
       catalog: [],
-      defaultJails: [],
-    },
-  },
+      defaultJails: [] } },
   {
     match: /\/api\/v1\/system\/firewall/,
     body: {
@@ -531,9 +478,7 @@ const commonRoutes = (): FetchRoute[] => [
       activeLabel: 'inactive',
       rules: [],
       allowCount: 0,
-      denyCount: 0,
-    },
-  },
+      denyCount: 0 } },
   {
     match: /\/api\/v1\/system\/ftps/,
     body: {
@@ -541,13 +486,10 @@ const commonRoutes = (): FetchRoute[] => [
         enabled: false,
         listenPort: 21,
         pasvMin: 40000,
-        pasvMax: 40100,
-      },
+        pasvMax: 40100 },
       status: { installed: true, active: 'inactive', activeLabel: 'inactive' },
       domains: [],
-      homes: [],
-    },
-  },
+      homes: [] } },
   {
     match: /\/api\/v1\/system\/nginx/,
     body: {
@@ -555,9 +497,7 @@ const commonRoutes = (): FetchRoute[] => [
       active: 'inactive',
       activeLabel: 'inactive',
       sites: [],
-      configTestOk: true,
-    },
-  },
+      configTestOk: true } },
   {
     match: (url) => /\/api\/v1\/hosting\/runtimes\/\w+\/tuning/.test(url),
     body: {
@@ -573,21 +513,16 @@ const commonRoutes = (): FetchRoute[] => [
               label: 'Heap',
               type: 'number',
               default: 512,
-              hint: 'MB',
-            },
-          ],
-        },
+              hint: 'MB' },
+          ] },
       ],
       settings: {
         kind: 'node',
         version: '20',
         values: { max_old_space: 512 },
-        env: { NODE_ENV: 'production' },
-      },
+        env: { NODE_ENV: 'production' } },
       envPreview: { NODE_ENV: 'production' },
-      notes: [],
-    },
-  },
+      notes: [] } },
   {
     match: (url) => url.includes('/api/v1/hosting/php/ini'),
     body: {
@@ -603,29 +538,22 @@ const commonRoutes = (): FetchRoute[] => [
               label: 'memory_limit',
               type: 'text',
               default: '128M',
-              hint: 'RAM',
-            },
-          ],
-        },
+              hint: 'RAM' },
+          ] },
       ],
       settings: {
         version: '8.2',
         values: { memory_limit: '128M' },
         extra: {},
-        rawAppend: '',
-      },
+        rawAppend: '' },
       managedIniPath: '/etc/php/8.2/conf.d/ysk.ini',
       notes: [],
-      ok: true,
-    },
-  },
+      ok: true } },
   {
     match: (url) => url.startsWith('/api/v1/runtimes/tools'),
     body: {
       composer: { present: true, version: '2' },
-      wpCli: { present: false },
-    },
-  },
+      wpCli: { present: false } } },
   {
     match: /\/api\/v1\/hosting\/runtimes/,
     body: {
@@ -637,9 +565,7 @@ const commonRoutes = (): FetchRoute[] => [
       catalog: [],
       settings: { values: {}, env: {} },
       envPreview: {},
-      notes: [],
-    },
-  },
+      notes: [] } },
   {
     match: /\/api\/v1\/cron/,
     handler: (url, init) => {
@@ -651,9 +577,7 @@ const commonRoutes = (): FetchRoute[] => [
             name: 'Nightly backup',
             schedule: '0 2 * * *',
             command: 'ysk backup',
-            enabled: true,
-          },
-        };
+            enabled: true } };
       }
       if (url.includes('/status') || url.includes('status')) {
         return {
@@ -666,8 +590,7 @@ const commonRoutes = (): FetchRoute[] => [
           executeEnabled: false,
           lastInstallOk: false,
           lastInstallAt: new Date().toISOString(),
-          notes: ['written ≠ applied'],
-        };
+          notes: ['written ≠ applied'] };
       }
       return {
         items: [
@@ -677,15 +600,13 @@ const commonRoutes = (): FetchRoute[] => [
             schedule: '0 2 * * *',
             command: 'ysk backup',
             enabled: true,
-            projectId: 'p1',
-          },
+            projectId: 'p1' },
           {
             id: 'job-2',
             name: 'Health ping',
             schedule: '*/5 * * * *',
             command: 'curl -fsS localhost/health',
-            enabled: false,
-          },
+            enabled: false },
         ],
         managedPath: '/etc/cron.d/ysk',
         managedLines: 2,
@@ -695,10 +616,8 @@ const commonRoutes = (): FetchRoute[] => [
         hostCrontabPreview: '0 2 * * * root ysk backup\n',
         executeEnabled: false,
         lastInstallOk: null,
-        lastInstallAt: null,
-      };
-    },
-  },
+        lastInstallAt: null };
+    } },
   {
     match: /\/api\/v1\/logs\//,
     handler: (url, init) => {
@@ -713,10 +632,8 @@ const commonRoutes = (): FetchRoute[] => [
               projectId: 'p1',
               name: 'Demo',
               files: [{ name: 'app.log', bytes: 100, previewable: true, path: '/var/log/demo/app.log' }],
-              related: [{ id: 'journal:ysk-project-p1.service', label: 'unit' }],
-            },
-          ],
-        };
+              related: [{ id: 'journal:ysk-project-p1.service', label: 'unit' }] },
+          ] };
       }
       if (url.includes('/sources')) {
         return {
@@ -727,26 +644,22 @@ const commonRoutes = (): FetchRoute[] => [
               label: 'nginx',
               unit: 'nginx.service',
               group: 'web',
-              available: true,
-            },
+              available: true },
             {
               id: 'file:nginx-access',
               kind: 'file',
               label: 'nginx access',
               path: '/var/log/nginx/access.log',
               group: 'web',
-              available: true,
-            },
-          ],
-        };
+              available: true },
+          ] };
       }
       if (url.includes('/journal/units')) {
         return {
           items: [
             { unit: 'nginx.service', active: 'active' },
             { unit: 'ysk-project-p1.service', active: 'inactive' },
-          ],
-        };
+          ] };
       }
       if (url.includes('/overview')) {
         return {
@@ -758,8 +671,7 @@ const commonRoutes = (): FetchRoute[] => [
           maxLines: 300,
           sources: 2,
           units: 2,
-          projects: 1,
-        };
+          projects: 1 };
       }
       if (url.includes('/settings')) {
         return {
@@ -767,8 +679,7 @@ const commonRoutes = (): FetchRoute[] => [
           maxLines: 300,
           journalWarnMb: 1024,
           followIntervalSec: 3,
-          bookmarks: [{ id: 'b1', name: 'nginx errors', source: 'journal:nginx.service', grep: 'error' }],
-        };
+          bookmarks: [{ id: 'b1', name: 'nginx errors', source: 'journal:nginx.service', grep: 'error' }] };
       }
       if (url.includes('/query') || url.includes('/tail') || url.includes('/read')) {
         return {
@@ -776,8 +687,7 @@ const commonRoutes = (): FetchRoute[] => [
           text: 'access ok\nerror denied\n',
           lines: ['access ok', 'error denied'],
           truncated: false,
-          notes: [],
-        };
+          notes: [] };
       }
       return {
         ok: true,
@@ -792,10 +702,8 @@ const commonRoutes = (): FetchRoute[] => [
         maxLines: 300,
         text: 'sample log line',
         lines: ['sample log line'],
-        settings: {},
-      };
-    },
-  },
+        settings: {} };
+    } },
   {
     match: (url) => url.startsWith('/api/v1/metrics/projects'),
     body: {
@@ -806,14 +714,11 @@ const commonRoutes = (): FetchRoute[] => [
           name: 'Demo',
           usedMb: 120,
           quotaMb: 1024,
-          path: '/home/demo',
-        },
+          path: '/home/demo' },
       ],
       totalMb: 1024,
       usedMb: 120,
-      at: new Date().toISOString(),
-    },
-  },
+      at: new Date().toISOString() } },
   {
     match: (url) => url.startsWith('/api/v1/metrics/processes'),
     handler: (url, init) => {
@@ -823,8 +728,7 @@ const commonRoutes = (): FetchRoute[] => [
           ok: true,
           pid: 42,
           signal: 'TERM',
-          stillAlive: true,
-        };
+          stillAlive: true };
       }
       if (url.includes('/detail') || /\/processes\/\d+/.test(url)) {
         return {
@@ -839,8 +743,7 @@ const commonRoutes = (): FetchRoute[] => [
           threads: 2,
           start: new Date().toISOString(),
           cwd: '/',
-          exe: '/usr/sbin/nginx',
-        };
+          exe: '/usr/sbin/nginx' };
       }
       return {
         ok: true,
@@ -857,8 +760,7 @@ const commonRoutes = (): FetchRoute[] => [
             state: 'S',
             etime: '01:00',
             resKiB: 20000,
-            virtKiB: 100000,
-          },
+            virtKiB: 100000 },
           {
             pid: '99',
             user: 'demo',
@@ -868,8 +770,7 @@ const commonRoutes = (): FetchRoute[] => [
             state: 'R',
             etime: '00:30',
             resKiB: 40000,
-            virtKiB: 200000,
-          },
+            virtKiB: 200000 },
         ],
         notes: [],
         topHeader: {
@@ -887,8 +788,7 @@ const commonRoutes = (): FetchRoute[] => [
             hi: 0,
             si: 0,
             st: 0,
-            busyPct: 12,
-          },
+            busyPct: 12 },
           cpus: [
             {
               us: 5,
@@ -899,22 +799,17 @@ const commonRoutes = (): FetchRoute[] => [
               hi: 0,
               si: 0,
               st: 0,
-              busyPct: 7,
-            },
+              busyPct: 7 },
           ],
           memory: {
             totalKiB: 2e6,
             freeKiB: 1e6,
             usedKiB: 5e5,
             buffCacheKiB: 5e5,
-            availableKiB: 1.5e6,
-          },
+            availableKiB: 1.5e6 },
           swap: { totalKiB: 1e6, freeKiB: 9e5, usedKiB: 1e5 },
-          notes: [],
-        },
-      };
-    },
-  },
+          notes: [] } };
+    } },
   {
     match: (url) => url.startsWith('/api/v1/metrics'),
     body: {
@@ -925,8 +820,7 @@ const commonRoutes = (): FetchRoute[] => [
         total: 2e9,
         free: 1e9,
         usedRatio: 0.25,
-        available: 1.5e9,
-      },
+        available: 1.5e9 },
       uptimeSec: 3600,
       disk: { path: '/', free: 9e10, total: 1e11, usedRatio: 0.1 },
       diskMounts: [
@@ -936,25 +830,20 @@ const commonRoutes = (): FetchRoute[] => [
           used: 1e10,
           avail: 9e10,
           usedRatio: 0.1,
-          mount: '/',
-        },
+          mount: '/' },
         {
           filesystem: '/dev/sda2',
           size: 5e10,
           used: 5e9,
           avail: 4.5e10,
           usedRatio: 0.1,
-          mount: '/var',
-        },
+          mount: '/var' },
       ],
       alerts: ['disk_high'],
-      notes: [],
-    },
-  },
+      notes: [] } },
   {
     match: (url) => url.startsWith('/api/v1/defense/geoip/status'),
-    body: geoipStatus,
-  },
+    body: geoipStatus },
   {
     match: (url) => url.startsWith('/api/v1/defense/geoip/'),
     handler: (url, init) => {
@@ -976,16 +865,12 @@ const commonRoutes = (): FetchRoute[] => [
           longitude: -74.0,
           asn: '13335',
           asName: 'Cloudflare',
-          source: 'dbip',
-        },
-        access: { blocked: false, matched: [] },
-      };
-    },
-  },
+          source: 'dbip' },
+        access: { blocked: false, matched: [] } };
+    } },
   {
     match: (url) => url.startsWith('/api/v1/defense/status') || url.startsWith('/api/v1/defense/probe'),
-    body: defenseStatus,
-  },
+    body: defenseStatus },
   {
     match: (url) => url.startsWith('/api/v1/defense/timeline'),
     body: {
@@ -994,11 +879,8 @@ const commonRoutes = (): FetchRoute[] => [
           at: new Date().toISOString(),
           kind: 'preset',
           title: 'Preset daily',
-          detail: 'applied in panel',
-        },
-      ],
-    },
-  },
+          detail: 'applied in panel' },
+      ] } },
   {
     match: (url) => url.startsWith('/api/v1/defense/suspects'),
     body: {
@@ -1009,12 +891,9 @@ const commonRoutes = (): FetchRoute[] => [
           hits: 100,
           reasons: ['scan'],
           sources: ['nginx'],
-          lastSeen: new Date().toISOString(),
-        },
+          lastSeen: new Date().toISOString() },
       ],
-      notes: [],
-    },
-  },
+      notes: [] } },
   {
     match: (url) => url.startsWith('/api/v1/defense/automation'),
     body: {
@@ -1024,9 +903,7 @@ const commonRoutes = (): FetchRoute[] => [
         { step: '2', mechanism: 'nginx', tunable: 'limit_req' },
       ],
       autoBansLastHour: 1,
-      schedNext: new Date(Date.now() + 60_000).toISOString(),
-    },
-  },
+      schedNext: new Date(Date.now() + 60_000).toISOString() } },
   {
     match: (url) => url.startsWith('/api/v1/defense/intel'),
     body: {
@@ -1034,23 +911,17 @@ const commonRoutes = (): FetchRoute[] => [
       vhostLimits: {
         withLimit: 1,
         total: 2,
-        items: [{ name: 'demo.example.com', hasDefenseMarker: true }],
-      },
+        items: [{ name: 'demo.example.com', hasDefenseMarker: true }] },
       hasCfToken: false,
-      cfZones: [],
-    },
-  },
+      cfZones: [] } },
   {
     match: (url) => url.startsWith('/api/v1/defense/bans'),
     body: {
       items: [{ ip: '203.0.113.10', source: 'fail2ban', jail: 'sshd', reason: 'auth' }],
-      meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-    },
-  },
+      meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } } },
   {
     match: (url) => url.startsWith('/api/v1/defense/whitelist'),
-    body: { items: ['127.0.0.1'], ok: true },
-  },
+    body: { items: ['127.0.0.1'], ok: true } },
   {
     match: /\/api\/v1\/defense/,
     body: {
@@ -1066,9 +937,7 @@ const commonRoutes = (): FetchRoute[] => [
       bans: defenseStatus.bans,
       suspects: { items: [], notes: [] },
       mode: 'observe',
-      level: 'elevated',
-    },
-  },
+      level: 'elevated' } },
   {
     match: /\/api\/v1\/ssh\//,
     body: {
@@ -1083,21 +952,17 @@ const commonRoutes = (): FetchRoute[] => [
           fingerprintSha256: 'SHA256:abc',
           publicKey: 'ssh-ed25519 AAAA',
           createdAt: new Date().toISOString(),
-          binding: { linuxUser: 'ysk', homeDir: '/home/ysk' },
-        },
+          binding: { linuxUser: 'ysk', homeDir: '/home/ysk' } },
       ],
       host: {
         notes: ['pam ready'],
-        lights: { package: 'ok', pam: 'ok', kbdInteractive: 'warn' },
-      },
+        lights: { package: 'ok', pam: 'ok', kbdInteractive: 'warn' } },
       pamSnippet: '# pam',
       sshdHints: '# sshd',
       strictSnippet: '# strict',
       strictNotes: [],
       snippet: 'Match User ysk',
-      notes: [],
-    },
-  },
+      notes: [] } },
   {
     match: /\/api\/v1\/sftp\//,
     body: {
@@ -1108,13 +973,10 @@ const commonRoutes = (): FetchRoute[] => [
           projectId: 'p1',
           publicKey: 'ssh-ed25519 AAAA',
           comment: 'laptop',
-          fingerprint: 'SHA256:xyz',
-        },
+          fingerprint: 'SHA256:xyz' },
       ],
       snippet: 'Match Group sftp',
-      notes: [],
-    },
-  },
+      notes: [] } },
   {
     match: /\/api\/v1\/db\/clusters/,
     body: {
@@ -1131,8 +993,7 @@ const commonRoutes = (): FetchRoute[] => [
             { host: '10.0.0.2', role: 'replica', access: 'ssh', label: 'replica-1' },
           ],
           params: {},
-          artifactDir: '/var/lib/ysk/clusters/c1',
-        },
+          artifactDir: '/var/lib/ysk/clusters/c1' },
       ],
       cluster: {
         id: 'c1',
@@ -1141,21 +1002,16 @@ const commonRoutes = (): FetchRoute[] => [
         kind: 'postgres-replica',
         status: 'planned',
         members: [],
-        params: {},
-      },
+        params: {} },
       plan: {
         ok: true,
         notes: ['dry-run plan'],
         steps: [{ id: '1', title: 'Write config', detail: 'pg_hba' }],
         clusterId: 'c1',
-        files: ['pg_hba.conf'],
-      },
-    },
-  },
+        files: ['pg_hba.conf'] } } },
   {
     match: /\/api\/v1\/ssl/,
-    body: emptyList,
-  },
+    body: emptyList },
   {
     match: /\/api\/v1\/dns/,
     handler: (url, init) => {
@@ -1168,8 +1024,7 @@ const commonRoutes = (): FetchRoute[] => [
           files: ['/var/lib/bind/example.com.zone'],
           answers: ['203.0.113.10'],
           notes: ['written ≠ applied'],
-          peers: [{ host: 'peer.example.com', ok: false }],
-        };
+          peers: [{ host: 'peer.example.com', ok: false }] };
       }
       if (url.includes('/cluster/peers')) {
         return {
@@ -1178,14 +1033,11 @@ const commonRoutes = (): FetchRoute[] => [
               id: 'peer-1',
               host: 'peer.example.com',
               user: 'ysk',
-              label: 'peer',
-            },
-          ],
-        };
+              label: 'peer' },
+          ] };
       }
       return emptyList;
-    },
-  },
+    } },
   {
     match: (url) => url.includes('/api/v1/cdn/dashboard') || url.includes('/cdn/dashboard'),
     body: {
@@ -1196,13 +1048,11 @@ const commonRoutes = (): FetchRoute[] => [
         offline: 0,
         draining: 0,
         unknown: 0,
-        byRegion: { local: 1 },
-      },
+        byRegion: { local: 1 } },
       sites: {
         total: 1,
         byApplyStatus: { planned: 1 },
-        rows: [{ id: 'site-1', name: 'Demo site', apply_status: 'planned' }],
-      },
+        rows: [{ id: 'site-1', name: 'Demo site', apply_status: 'planned' }] },
       cache: [
         {
           siteId: 'site-1',
@@ -1211,13 +1061,10 @@ const commonRoutes = (): FetchRoute[] => [
           hits: 100,
           misses: 20,
           method: 'stub',
-          notes: [],
-        },
+          notes: [] },
       ],
       overallHitRatePct: 80,
-      notes: [],
-    },
-  },
+      notes: [] } },
   {
     match: (url, init) => {
       const m = (init?.method ?? 'GET').toUpperCase();
@@ -1237,12 +1084,9 @@ const commonRoutes = (): FetchRoute[] => [
           healthUrl: 'http://203.0.113.10/health',
           baseUrl: 'http://203.0.113.10',
           lastHeartbeatAt: new Date().toISOString(),
-          lastHealth: { ok: true, latencyMs: 12, at: new Date().toISOString() },
-        },
+          lastHealth: { ok: true, latencyMs: 12, at: new Date().toISOString() } },
       ],
-      meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-    },
-  },
+      meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } } },
   {
     match: (url, init) => {
       const m = (init?.method ?? 'GET').toUpperCase();
@@ -1261,12 +1105,9 @@ const commonRoutes = (): FetchRoute[] => [
           cache: { enabled: true, zoneSize: '10m', maxAge: '10m' },
           ssl: { mode: 'off' },
           apply_status: 'planned',
-          edge_status: { n1: 'planned' },
-        },
+          edge_status: { n1: 'planned' } },
       ],
-      meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-    },
-  },
+      meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } } },
   {
     match: /\/api\/v1\/cdn/,
     handler: (_url, init) => {
@@ -1275,36 +1116,28 @@ const commonRoutes = (): FetchRoute[] => [
           ...HONESTY_WRITTEN_BLOCKED,
           ok: true,
           contentHash: 'abc',
-          conf: '# nginx conf',
-        };
+          conf: '# nginx conf' };
       }
       return emptyList;
-    },
-  },
+    } },
   {
     match: (url) => /\/api\/v1\/email\/domains\/[^/]+\/dns/.test(url),
-    body: emailBundle,
-  },
+    body: emailBundle },
   {
     match: (url) => /\/api\/v1\/email\/domains\/[^/]+\/mailboxes/.test(url),
-    body: emptyList,
-  },
+    body: emptyList },
   {
     match: (url) => /\/api\/v1\/email\/domains\/[^/]+\/aliases/.test(url),
-    body: emptyList,
-  },
+    body: emptyList },
   {
     match: /\/api\/v1\/email/,
-    body: emptyList,
-  },
+    body: emptyList },
   {
     match: /\/api\/v1\/scheduler/,
-    body: { jobs: [], items: [] },
-  },
+    body: { jobs: [], items: [] } },
   {
     match: /\/api\/v1\/projects/,
-    body: emptyList,
-  },
+    body: emptyList },
   {
     match: (url) => url.startsWith('/api/v1/backups/settings'),
     handler: (_url, init) => {
@@ -1317,17 +1150,13 @@ const commonRoutes = (): FetchRoute[] => [
           port: 22,
           username: 'ysk',
           path: '/backups/ysk',
-          password: '***',
-        },
+          password: '***' },
         exclusions: ['node_modules', '.git'],
         restic: {
           enabled: true,
           repoPath: '/var/backups/restic',
-          password: '***',
-        },
-      };
-    },
-  },
+          password: '***' } };
+    } },
   {
     match: /\/api\/v1\/backups/,
     handler: (url, init) => {
@@ -1342,10 +1171,8 @@ const commonRoutes = (): FetchRoute[] => [
               time: new Date().toISOString(),
               hostname: 'ysk',
               paths: ['/home/demo'],
-              short_id: 'abc123',
-            },
-          ],
-        };
+              short_id: 'abc123' },
+          ] };
       }
       return {
         items: [
@@ -1355,17 +1182,13 @@ const commonRoutes = (): FetchRoute[] => [
             path: '/var/backups/p1-2026.tgz',
             bytes: 1_024_000,
             mtime: new Date().toISOString(),
-            kind: 'full',
-          },
+            kind: 'full' },
         ],
         lastRun: {
           at: new Date().toISOString(),
           ok: true,
-          notes: ['completed'],
-        },
-      };
-    },
-  },
+          notes: ['completed'] } };
+    } },
   {
     match: /\/api\/v1\/users/,
     body: {
@@ -1376,12 +1199,9 @@ const commonRoutes = (): FetchRoute[] => [
           roles: ['admin'],
           packageId: 'pkg1',
           suspended: false,
-          locale: 'en',
-        },
+          locale: 'en' },
       ],
-      meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-    },
-  },
+      meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } } },
   {
     match: /\/api\/v1\/packages/,
     body: {
@@ -1396,11 +1216,8 @@ const commonRoutes = (): FetchRoute[] => [
           bandwidthMb: 0,
           ftp: true,
           ssh: true,
-          notes: '',
-        },
-      ],
-    },
-  },
+          notes: '' },
+      ] } },
   {
     match: /\/api\/v1\/resources\//,
     handler: (url, init) => {
@@ -1415,10 +1232,8 @@ const commonRoutes = (): FetchRoute[] => [
             value: '203.0.113.10',
             ttl: 300,
             nsName: 'ns1.example.com',
-            apply_status: 'planned',
-          },
-          ok: true,
-        };
+            apply_status: 'planned' },
+          ok: true };
       }
       if (url.includes('dns/zones')) {
         return {
@@ -1430,11 +1245,9 @@ const commonRoutes = (): FetchRoute[] => [
               nsName: 'ns1.example.com',
               ttl: 300,
               apply_status: 'planned',
-              backend: 'bind',
-            },
+              backend: 'bind' },
           ],
-          meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-        };
+          meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } };
       }
       if (url.includes('dns/records')) {
         return {
@@ -1445,19 +1258,16 @@ const commonRoutes = (): FetchRoute[] => [
               type: 'A',
               name: '@',
               value: '203.0.113.10',
-              ttl: 300,
-            },
+              ttl: 300 },
             {
               id: 'r2',
               zoneId: 'z1',
               type: 'MX',
               name: '@',
               value: '10 mail.example.com.',
-              ttl: 300,
-            },
+              ttl: 300 },
           ],
-          meta: { total: 2, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-        };
+          meta: { total: 2, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } };
       }
       if (url.includes('mysql/databases') || url.includes('mysql/users')) {
         return {
@@ -1467,15 +1277,12 @@ const commonRoutes = (): FetchRoute[] => [
               name: 'app_db',
               engine: 'mysql',
               username: 'app',
-              host: 'localhost',
-            },
+              host: 'localhost' },
           ],
-          meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-        };
+          meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } };
       }
       return emptyList;
-    },
-  },
+    } },
   {
     match: /\/api\/v1\/ai\//,
     body: {
@@ -1488,12 +1295,9 @@ const commonRoutes = (): FetchRoute[] => [
           steps: [
             { id: 's1', title: 'Plan', status: 'completed' },
             { id: 's2', title: 'Run', status: 'executed' },
-          ],
-        },
+          ] },
       ],
-      meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-    },
-  },
+      meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } } },
   {
     match: /\/api\/v1\/fleet\//,
     handler: (url, init) => {
@@ -1503,8 +1307,7 @@ const commonRoutes = (): FetchRoute[] => [
           ok: true,
           id: 'cmd-1',
           agent_id: 'ag-1',
-          status: 'queued',
-        };
+          status: 'queued' };
       }
       if (url.includes('/commands')) {
         return {
@@ -1514,10 +1317,8 @@ const commonRoutes = (): FetchRoute[] => [
               agent_id: 'ag-1',
               status: 'done',
               payload: { type: 'ping' },
-              createdAt: new Date().toISOString(),
-            },
-          ],
-        };
+              createdAt: new Date().toISOString() },
+          ] };
       }
       return {
         items: [
@@ -1527,12 +1328,9 @@ const commonRoutes = (): FetchRoute[] => [
             status: 'connected',
             group: 'edge',
             last_seen_at: new Date().toISOString(),
-            meta: { hostname: 'edge-1' },
-          },
-        ],
-      };
-    },
-  },
+            meta: { hostname: 'edge-1' } },
+        ] };
+    } },
   {
     match: /\/api\/v1\/agents\//,
     handler: (url, init) => {
@@ -1543,8 +1341,7 @@ const commonRoutes = (): FetchRoute[] => [
           requiresExecute: true,
           notes: ['Host execute is off'],
           kind: 'openclaw',
-          status: 'missing',
-        };
+          status: 'missing' };
       }
       return {
         items: [
@@ -1556,8 +1353,7 @@ const commonRoutes = (): FetchRoute[] => [
             unitActive: 'inactive',
             pathExists: false,
             installPath: '/opt/openclaw',
-            probedAt: new Date().toISOString(),
-          },
+            probedAt: new Date().toISOString() },
         ],
         runtime: {
           kind: 'openclaw',
@@ -1567,19 +1363,14 @@ const commonRoutes = (): FetchRoute[] => [
           unitActive: 'inactive',
           pathExists: false,
           installPath: '/opt/openclaw',
-          probedAt: new Date().toISOString(),
-        },
-      };
-    },
-  },
+          probedAt: new Date().toISOString() } };
+    } },
   {
     match: (url) => url.startsWith('/api/v1/updates/inventory'),
     body: {
       inventory: [],
       advice: [],
-      collectedAt: new Date().toISOString(),
-    },
-  },
+      collectedAt: new Date().toISOString() } },
   {
     match: (url) => url.startsWith('/api/v1/updates/self'),
     body: {
@@ -1588,9 +1379,7 @@ const commonRoutes = (): FetchRoute[] => [
       updateAvailable: false,
       currentVersion: '0.1.0',
       latestVersion: '0.1.0',
-      channel: 'stable',
-    },
-  },
+      channel: 'stable' } },
   {
     match: /\/api\/v1\/updates/,
     body: {
@@ -1600,18 +1389,14 @@ const commonRoutes = (): FetchRoute[] => [
       advice: [],
       current: { version: '0.1.0' },
       channel: 'stable',
-      pending: [],
-    },
-  },
+      pending: [] } },
   {
     match: /\/api\/v1\/files/,
     body: {
       ok: true,
       entries: [],
       path: '/',
-      items: [],
-    },
-  },
+      items: [] } },
   {
     match: (url, init) =>
       url.includes('/api/v1/hosting/files') &&
@@ -1629,10 +1414,8 @@ const commonRoutes = (): FetchRoute[] => [
               type: 'file',
               size: 1,
               deletedAt: now,
-              mtime: now,
-            },
-          ],
-        };
+              mtime: now },
+          ] };
       }
       return {
         ok: true,
@@ -1646,10 +1429,8 @@ const commonRoutes = (): FetchRoute[] => [
           { name: 'a.txt', path: 'a.txt', type: 'file', size: 1, mtime: now, mime: 'text/plain' },
           { name: 'pic.png', path: 'pic.png', type: 'file', size: 10, mtime: now, mime: 'image/png' },
           { name: 'docs', path: 'docs', type: 'dir', size: 0, mtime: now },
-        ],
-      };
-    },
-  },
+        ] };
+    } },
   {
     match: /\/api\/v1\/system\/services/,
     handler: (url, init) => {
@@ -1668,8 +1449,7 @@ const commonRoutes = (): FetchRoute[] => [
               installed: true,
               active: 'inactive',
               enabled: 'disabled',
-              activeLabel: 'inactive',
-            },
+              activeLabel: 'inactive' },
             {
               id: 'redis',
               label: 'Redis',
@@ -1679,8 +1459,7 @@ const commonRoutes = (): FetchRoute[] => [
               installed: true,
               active: 'active',
               enabled: 'enabled',
-              activeLabel: 'active',
-            },
+              activeLabel: 'active' },
             {
               id: 'postgresql',
               label: 'PostgreSQL',
@@ -1689,17 +1468,14 @@ const commonRoutes = (): FetchRoute[] => [
               installed: true,
               active: 'inactive',
               enabled: 'disabled',
-              activeLabel: 'inactive',
-            },
+              activeLabel: 'inactive' },
           ],
           executeEnabled: false,
           isRoot: false,
-          probedAt: new Date().toISOString(),
-        };
+          probedAt: new Date().toISOString() };
       }
       return emptyList;
-    },
-  },
+    } },
   {
     match: (url) => url.startsWith('/api/v1/system/systemd/status'),
     body: {
@@ -1717,15 +1493,11 @@ const commonRoutes = (): FetchRoute[] => [
         mainPid: null,
         activeEnterTimestamp: null,
         fragmentPath: null,
-        description: 'YSK Server',
-      },
-    },
-  },
+        description: 'YSK Server' } } },
   {
     match: (url, init) =>
       url.startsWith('/api/v1/system/systemd/') && (init?.method ?? 'GET').toUpperCase() !== 'GET',
-    body: HONESTY_WRITTEN_BLOCKED,
-  },
+    body: HONESTY_WRITTEN_BLOCKED },
   {
     match: /\/api\/v1\/system\/systemd/,
     body: {
@@ -1734,33 +1506,25 @@ const commonRoutes = (): FetchRoute[] => [
       active: 'inactive',
       enabled: 'disabled',
       executeEnabled: false,
-      isRoot: false,
-    },
-  },
+      isRoot: false } },
   {
     match: /\/api\/v1\/dashboard\//,
-    body: { ok: true, items: [], summary: {} },
-  },
+    body: { ok: true, items: [], summary: {} } },
   {
     match: /\/api\/v1\/notifications/,
-    body: { items: [], counts: { critical: 0, warn: 0, info: 0 } },
-  },
+    body: { items: [], counts: { critical: 0, warn: 0, info: 0 } } },
   {
     match: /\/api\/v1\/system\/apply-audit/,
-    body: { findings: [], summary: { ok: 0, warn: 0, bad: 0, total: 0 } },
-  },
+    body: { findings: [], summary: { ok: 0, warn: 0, bad: 0, total: 0 } } },
   {
     match: /\/api\/v1\/system\/export/,
-    body: { ok: true, generatedAt: null, items: [] },
-  },
+    body: { ok: true, generatedAt: null, items: [] } },
   {
     match: /\/api\/v1\/system\/managed-nginx/,
-    body: emptyList,
-  },
+    body: emptyList },
   {
     match: /\/api\/v1\/system\/exports/,
-    body: emptyList,
-  },
+    body: emptyList },
   {
     match: (url) => url.startsWith('/api/v1/security/totp') || url.includes('/totp'),
     handler: (_u, init) => {
@@ -1771,12 +1535,10 @@ const commonRoutes = (): FetchRoute[] => [
           secret: 'JBSWY3DPEHPK3PXP',
           otpauthUrl: 'otpauth://totp/YSK:admin?secret=JBSWY3DPEHPK3PXP',
           enabled: false,
-          enrolled: true,
-        };
+          enrolled: true };
       }
       return { enabled: false, enrolled: false, totpEnabled: false };
-    },
-  },
+    } },
   {
     match: (url) => url.includes('/api/v1/security/api-keys') || url.includes('/api-keys'),
     body: {
@@ -1786,11 +1548,8 @@ const commonRoutes = (): FetchRoute[] => [
           name: 'ci',
           prefix: 'ysk_ci',
           createdAt: new Date().toISOString(),
-          lastUsedAt: null,
-        },
-      ],
-    },
-  },
+          lastUsedAt: null },
+      ] } },
   {
     match: (url) => url.includes('/api/v1/security/sessions') || url.includes('/sessions'),
     body: {
@@ -1800,11 +1559,8 @@ const commonRoutes = (): FetchRoute[] => [
           createdAt: new Date().toISOString(),
           ip: '203.0.113.50',
           userAgent: 'vitest',
-          current: true,
-        },
-      ],
-    },
-  },
+          current: true },
+      ] } },
   {
     match: (url) =>
       url.includes('/api/v1/security/approvals') || url.includes('/approvals'),
@@ -1815,11 +1571,8 @@ const commonRoutes = (): FetchRoute[] => [
           tool: 'sys.shell',
           status: 'pending',
           requestedAt: new Date().toISOString(),
-          reason: 'debug',
-        },
-      ],
-    },
-  },
+          reason: 'debug' },
+      ] } },
   {
     match: (url) => url.includes('/api/v1/security/tools') || url.includes('/tools'),
     body: {
@@ -1828,17 +1581,13 @@ const commonRoutes = (): FetchRoute[] => [
           id: 'sys.info',
           name: 'sys.info',
           allowed: true,
-          requiresApproval: false,
-        },
+          requiresApproval: false },
         {
           id: 'sys.shell',
           name: 'sys.shell',
           allowed: false,
-          requiresApproval: true,
-        },
-      ],
-    },
-  },
+          requiresApproval: true },
+      ] } },
   {
     match: /\/api\/v1\/security/,
     body: {
@@ -1855,16 +1604,13 @@ const commonRoutes = (): FetchRoute[] => [
           created_at: new Date().toISOString(),
           last_seen_at: new Date().toISOString(),
           userAgent: 'vitest',
-          ip: '127.0.0.1',
-        },
+          ip: '127.0.0.1' },
       ],
       ssh: { keys: [], config: {} },
       tools: [],
       approvals: [],
       apiKeys: [],
-      items: [],
-    },
-  },
+      items: [] } },
   {
     match: /\/api\/v1\/auth\/me/,
     body: {
@@ -1873,11 +1619,8 @@ const commonRoutes = (): FetchRoute[] => [
         username: 'admin',
         roles: ['admin'],
         locale: 'en',
-        capabilities: [],
-      },
-      capabilities: [],
-    },
-  },
+        capabilities: [] },
+      capabilities: [] } },
   {
     match: (url) => url.startsWith('/api/v1/auth/totp'),
     handler: (_u, init) => {
@@ -1888,12 +1631,10 @@ const commonRoutes = (): FetchRoute[] => [
           otpauthUrl: 'otpauth://totp/YSK:admin?secret=JBSWY3DPEHPK3PXP',
           enabled: true,
           enrolled: true,
-          recoveryCodes: ['aaaa-bbbb', 'cccc-dddd'],
-        };
+          recoveryCodes: ['aaaa-bbbb', 'cccc-dddd'] };
       }
       return { enabled: false, enrolled: false, recoveryRemaining: 0 };
-    },
-  },
+    } },
   {
     match: (url) => url.startsWith('/api/v1/auth/sessions'),
     handler: (_u, init) => {
@@ -1909,20 +1650,16 @@ const commonRoutes = (): FetchRoute[] => [
             last_seen_at: new Date().toISOString(),
             user_agent: 'vitest',
             ip: '203.0.113.50',
-            current: true,
-          },
+            current: true },
           {
             id: 'sess-2',
             created_at: new Date().toISOString(),
             expires_at: new Date(Date.now() + 86400000).toISOString(),
             user_agent: 'curl',
             ip: '198.51.100.1',
-            current: false,
-          },
-        ],
-      };
-    },
-  },
+            current: false },
+        ] };
+    } },
   {
     match: (url) => url.startsWith('/api/v1/auth/api-keys'),
     handler: (_u, init) => {
@@ -1933,10 +1670,8 @@ const commonRoutes = (): FetchRoute[] => [
             id: 'k2',
             name: 'new-key',
             prefix: 'ysk_nw',
-            created_at: new Date().toISOString(),
-          },
-          token: 'ysk_nw_secret_token',
-        };
+            created_at: new Date().toISOString() },
+          token: 'ysk_nw_secret_token' };
       }
       return {
         items: [
@@ -1944,16 +1679,12 @@ const commonRoutes = (): FetchRoute[] => [
             id: 'k1',
             name: 'ci',
             prefix: 'ysk_ci',
-            created_at: new Date().toISOString(),
-          },
-        ],
-      };
-    },
-  },
+            created_at: new Date().toISOString() },
+        ] };
+    } },
   {
     match: /\/api\/v1\/auth\//,
-    body: { ok: true },
-  },
+    body: { ok: true } },
   {
     match: (url) => url.startsWith('/api/v1/settings/security'),
     handler: (_u, init) => {
@@ -1961,12 +1692,10 @@ const commonRoutes = (): FetchRoute[] => [
         return {
           ok: true,
           requireAdminTotp: true,
-          requireAdminTotpStrict: false,
-        };
+          requireAdminTotpStrict: false };
       }
       return { requireAdminTotp: false, requireAdminTotpStrict: false };
-    },
-  },
+    } },
   {
     match: (url) => url.startsWith('/api/v1/approvals'),
     handler: (_u, init) => {
@@ -1978,12 +1707,9 @@ const commonRoutes = (): FetchRoute[] => [
             tool: 'sys.shell',
             status: 'pending',
             requestedAt: new Date().toISOString(),
-            reason: 'debug',
-          },
-        ],
-      };
-    },
-  },
+            reason: 'debug' },
+        ] };
+    } },
   {
     match: (url) => url.startsWith('/api/v1/tools'),
     handler: (_u, init) => {
@@ -1996,18 +1722,14 @@ const commonRoutes = (): FetchRoute[] => [
             id: 'sys.info',
             name: 'sys.info',
             allowed: true,
-            requiresApproval: false,
-          },
+            requiresApproval: false },
           {
             id: 'sys.shell',
             name: 'sys.shell',
             allowed: false,
-            requiresApproval: true,
-          },
-        ],
-      };
-    },
-  },
+            requiresApproval: true },
+        ] };
+    } },
   {
     match: (url) => url.startsWith('/api/v1/system/migrate/inventory'),
     body: {
@@ -2019,13 +1741,10 @@ const commonRoutes = (): FetchRoute[] => [
         mysql_databases: 1,
         postgres_databases: 0,
         mail_domains: 0,
-        bytes: 1e9,
-      },
+        bytes: 1e9 },
       notes: ['inventory ok'],
       executeEnabled: false,
-      isRoot: false,
-    },
-  },
+      isRoot: false } },
   {
     match: (url) => url.startsWith('/api/v1/system/migrate/jobs'),
     handler: (_u, init) => {
@@ -2037,11 +1756,9 @@ const commonRoutes = (): FetchRoute[] => [
             id: 'mj1',
             status: 'planned',
             target: '10.0.0.9',
-            createdAt: new Date().toISOString(),
-          },
+            createdAt: new Date().toISOString() },
           summary: ['planned'],
-          phases: { pack: { ok: true, notes: ['ok'] } },
-        };
+          phases: { pack: { ok: true, notes: ['ok'] } } };
       }
       return {
         ok: true,
@@ -2051,26 +1768,19 @@ const commonRoutes = (): FetchRoute[] => [
             status: 'planned',
             target: '10.0.0.9',
             createdAt: new Date().toISOString(),
-            manifest: { projects: 1 },
-          },
-        ],
-      };
-    },
-  },
+            manifest: { projects: 1 } },
+        ] };
+    } },
   {
     match: (url) => url.startsWith('/api/v1/system/migrate'),
-    body: HONESTY_WRITTEN_BLOCKED,
-  },
+    body: HONESTY_WRITTEN_BLOCKED },
   {
     match: /\/api\/v1\/migrate/,
-    body: { ok: true, items: [], steps: [], jobs: [] },
-  },
+    body: { ok: true, items: [], steps: [], jobs: [] } },
   {
     match: /\/api\/v1\/search/,
     body: {
-      items: [{ kind: 'project', title: 'Demo', subtitle: 'demo.example.com', href: '/projects/p1' }],
-    },
-  },
+      items: [{ kind: 'project', title: 'Demo', subtitle: 'demo.example.com', href: '/projects/p1' }] } },
   {
     match: /\/api\/v1\/rbac\//,
     body: {
@@ -2079,11 +1789,8 @@ const commonRoutes = (): FetchRoute[] => [
           role: 'operator',
           dirty: false,
           policy: { maxLevel: 'write-high', capabilities: ['projects.read'] },
-          factory: { maxLevel: 'write-high', capabilities: ['projects.read'] },
-        },
-      ],
-    },
-  },
+          factory: { maxLevel: 'write-high', capabilities: ['projects.read'] } },
+      ] } },
 ];
 
 function renderAt(path: string, el: ReactElement, routePath = '*') {
@@ -2113,8 +1820,7 @@ const demoProject = {
   linuxUser: 'demo',
   homeDir: '/home/demo',
   osProvisioned: true,
-  nginxConfigPath: '/etc/nginx/sites-enabled/demo',
-};
+  nginxConfigPath: '/etc/nginx/sites-enabled/demo' };
 
 const smokeCases: SmokeCase[] = [
   // Top-level pages
@@ -2139,11 +1845,8 @@ const smokeCases: SmokeCase[] = [
               id: 'dom-1',
               domain: 'example.com',
               rate_limit_per_hour: 200,
-              antispam: true,
-            },
-          ],
-        },
-      },
+              antispam: true },
+          ] } },
       {
         match: (url) => url.includes('/api/v1/email/domains/dom-1'),
         handler: (url) => {
@@ -2155,8 +1858,7 @@ const smokeCases: SmokeCase[] = [
               ok: true,
               score: 50,
               checks: [],
-              recommendations: ['Add SPF'],
-            };
+              recommendations: ['Add SPF'] };
           }
           if (url.includes('/live') || url.includes('/dnsbl') || url.includes('/warmup')) {
             return { ok: true, items: [], score: 1 };
@@ -2165,12 +1867,9 @@ const smokeCases: SmokeCase[] = [
             id: 'dom-1',
             domain: 'example.com',
             rate_limit_per_hour: 200,
-            antispam: true,
-          };
-        },
-      },
-    ],
-  },
+            antispam: true };
+        } },
+    ] },
   { name: 'FilesPage', path: '/files', el: <FilesPage />, heading: /files/i, clickTabs: true },
   { name: 'ProjectsPage', path: '/projects', el: <ProjectsPage />, heading: /project/i, clickTabs: true },
   {
@@ -2195,16 +1894,12 @@ const smokeCases: SmokeCase[] = [
                   action: 'project.deploy',
                   actor: 'admin',
                   created_at: new Date().toISOString(),
-                  detail: { entry: 'server.js', port: 3000 },
-                },
-              ],
-            };
+                  detail: { entry: 'server.js', port: 3000 } },
+              ] };
           }
           return { items: [demoProject], ...demoProject, project: demoProject };
-        },
-      },
-    ],
-  },
+        } },
+    ] },
   { name: 'SecurityPage', path: '/security', el: <SecurityPage />, heading: /security/i, clickTabs: true },
   { name: 'SystemPage', path: '/system', el: <SystemPage />, heading: /system/i, clickTabs: true },
   { name: 'UpdatesPage', path: '/updates', el: <UpdatesPage />, heading: /update/i, clickTabs: true },
@@ -2225,13 +1920,10 @@ const smokeCases: SmokeCase[] = [
               roles: ['admin'],
               packageId: 'pkg1',
               suspended: false,
-              locale: 'en',
-            },
+              locale: 'en' },
           ],
           meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-          hostUsage: { projects: 1, diskMb: 100, limitMb: 10240 },
-        },
-      },
+          hostUsage: { projects: 1, diskMb: 100, limitMb: 10240 } } },
       {
         match: (url) => url.startsWith('/api/v1/packages'),
         body: {
@@ -2246,12 +1938,9 @@ const smokeCases: SmokeCase[] = [
               bandwidthMb: 0,
               ftp: true,
               ssh: true,
-              notes: '',
-            },
+              notes: '' },
           ],
-          meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-        },
-      },
+          meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } } },
       {
         match: (url) => url.includes('/api/v1/rbac'),
         body: {
@@ -2260,25 +1949,19 @@ const smokeCases: SmokeCase[] = [
               role: 'operator',
               dirty: false,
               policy: { maxLevel: 'write-high', capabilities: ['projects.read'] },
-              factory: { maxLevel: 'write-high', capabilities: ['projects.read'] },
-            },
+              factory: { maxLevel: 'write-high', capabilities: ['projects.read'] } },
             {
               role: 'viewer',
               dirty: false,
               policy: { maxLevel: 'read', capabilities: ['projects.read'] },
-              factory: { maxLevel: 'read', capabilities: ['projects.read'] },
-            },
+              factory: { maxLevel: 'read', capabilities: ['projects.read'] } },
             {
               role: 'admin',
               dirty: false,
               policy: { maxLevel: 'admin', capabilities: [] },
-              factory: { maxLevel: 'admin', capabilities: [] },
-            },
-          ],
-        },
-      },
-    ],
-  },
+              factory: { maxLevel: 'admin', capabilities: [] } },
+          ] } },
+    ] },
   { name: 'LoginPage', path: '/login', el: <LoginPage />, heading: /ysk/i },
 
   // Feature pages
@@ -2294,37 +1977,32 @@ const smokeCases: SmokeCase[] = [
     path: '/ftp/service',
     el: <FtpsServicePage />,
     heading: /ftp|vsftpd|service/i,
-    clickTabs: true,
-  },
+    clickTabs: true },
   {
     name: 'GenericNodeRuntimePage',
     path: '/runtimes/node',
     el: <GenericNodeRuntimePage />,
     heading: /node/i,
-    clickTabs: true,
-  },
+    clickTabs: true },
   {
     name: 'PythonRuntimePage',
     path: '/runtimes/python',
     el: <PythonRuntimePage />,
     heading: /python/i,
-    clickTabs: true,
-  },
+    clickTabs: true },
   { name: 'GoRuntimePage', path: '/runtimes/go', el: <GoRuntimePage />, heading: /^go$/i, clickTabs: true },
   {
     name: 'RustRuntimePage',
     path: '/runtimes/rust',
     el: <RustRuntimePage />,
     heading: /rust/i,
-    clickTabs: true,
-  },
+    clickTabs: true },
   {
     name: 'NodeRuntimePage (standalone)',
     path: '/runtimes/node-legacy',
     el: <NodeRuntimePage />,
     heading: /node/i,
-    clickTabs: true,
-  },
+    clickTabs: true },
   { name: 'PhpRuntimePage', path: '/runtimes/php', el: <PhpRuntimePage />, heading: /php/i, clickTabs: true },
   { name: 'LogsPage', path: '/logs', el: <LogsPage />, heading: /log/i, clickTabs: true },
   {
@@ -2332,45 +2010,39 @@ const smokeCases: SmokeCase[] = [
     path: '/databases/mariadb',
     el: <MariadbPage />,
     heading: /mariadb|mysql/i,
-    clickTabs: true,
-  },
+    clickTabs: true },
   {
     name: 'MariadbServicePage',
     path: '/databases/mariadb/service',
     el: <MariadbServicePage />,
     heading: /mariadb|mysql|service/i,
-    clickTabs: true,
-  },
+    clickTabs: true },
   { name: 'MetricsPage', path: '/metrics', el: <MetricsPage />, heading: /metric/i, clickTabs: true },
   {
     name: 'MigrateHostPage',
     path: '/system/migrate',
     el: <MigrateHostPage />,
     heading: /migrate/i,
-    clickTabs: true,
-  },
+    clickTabs: true },
   { name: 'MysqlPage', path: '/databases/mysql', el: <MysqlPage />, heading: /mysql/i, clickTabs: true },
   {
     name: 'MysqlServicePage',
     path: '/databases/mysql/service',
     el: <MysqlServicePage />,
     heading: /mysql|service/i,
-    clickTabs: true,
-  },
+    clickTabs: true },
   {
     name: 'SqlEngineMysql',
     path: '/databases/mysql-engine',
     el: <SqlEnginePage engine="mysql" />,
     heading: /mysql/i,
-    clickTabs: true,
-  },
+    clickTabs: true },
   {
     name: 'SqlEngineMariadb',
     path: '/databases/mariadb-engine',
     el: <SqlEnginePage engine="mariadb" />,
     heading: /mariadb|mysql/i,
-    clickTabs: true,
-  },
+    clickTabs: true },
   { name: 'NetworkPage', path: '/network', el: <NetworkPage />, heading: /network/i, clickTabs: true },
   { name: 'NginxPage', path: '/nginx', el: <NginxPage />, heading: /nginx/i, clickTabs: true },
   {
@@ -2378,44 +2050,38 @@ const smokeCases: SmokeCase[] = [
     path: '/databases/postgres',
     el: <PostgresPage />,
     heading: /postgres/i,
-    clickTabs: true,
-  },
+    clickTabs: true },
   {
     name: 'PostgresServicePage',
     path: '/databases/postgres/service',
     el: <PostgresServicePage />,
     heading: /postgres|service/i,
-    clickTabs: true,
-  },
+    clickTabs: true },
   {
     name: 'ProtectionPage',
     path: '/protection',
     el: <ProtectionPage />,
     heading: /defense|protection/i,
-    clickTabs: true,
-  },
+    clickTabs: true },
   {
     name: 'PublicFilesPage',
     path: '/files/public',
     el: <PublicFilesPage />,
     heading: /public/i,
-    clickTabs: true,
-  },
+    clickTabs: true },
   {
     name: 'ReadinessPage',
     path: '/system/readiness',
     el: <ReadinessPage />,
     heading: /readiness/i,
-    clickTabs: true,
-  },
+    clickTabs: true },
   { name: 'RedisPage', path: '/databases/redis', el: <RedisPage />, heading: /redis/i, clickTabs: true },
   {
     name: 'RedisServicePage',
     path: '/databases/redis/service',
     el: <RedisServicePage />,
     heading: /redis|service/i,
-    clickTabs: true,
-  },
+    clickTabs: true },
   { name: 'ServicesPage', path: '/services', el: <ServicesPage />, heading: /service/i, clickTabs: true },
   { name: 'SslPage', path: '/ssl', el: <SslPage />, heading: /ssl|certificate/i, clickTabs: true },
   {
@@ -2423,8 +2089,7 @@ const smokeCases: SmokeCase[] = [
     path: '/systemd',
     el: <SystemdUnitPage />,
     heading: /systemd/i,
-    clickTabs: true,
-  },
+    clickTabs: true },
 ];
 
 describe('all pages smoke render', () => {
@@ -2442,8 +2107,7 @@ describe('all pages smoke render', () => {
         'rbac.policy',
         'system.read',
         'system.write',
-      ],
-    });
+      ] });
   });
 
   afterEach(() => {
@@ -2482,8 +2146,7 @@ describe('all pages smoke render', () => {
         match: (url, init) =>
           url.includes('/api/v1/hosting/files/apply') &&
           (init?.method ?? 'GET').toUpperCase() === 'POST',
-        body: HONESTY_WRITTEN_BLOCKED,
-      },
+        body: HONESTY_WRITTEN_BLOCKED },
       ...commonRoutes(),
     ]);
     renderAt('/files/public', <PublicFilesPage />);

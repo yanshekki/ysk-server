@@ -19,8 +19,7 @@ export type WithPageGuideProps = {
 export function WithPageGuide({
   guideId,
   children,
-  mainLabel,
-}: WithPageGuideProps) {
+  mainLabel }: WithPageGuideProps) {
   const { t } = useTranslation();
   const [tab, setTab] = usePageTab(TABS, 'main');
   return (

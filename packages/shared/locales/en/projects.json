@@ -537,5 +537,15 @@
   "netPublishPrimary": "Basic",
   "netPublishSsl": "HTTPS / SSL",
   "netPublishMaint": "Maintenance",
-  "sslNeedDomain": "Set a domain before publishing Nginx / SSL."
+  "sslNeedDomain": "Set a domain before publishing Nginx / SSL.",
+  "createTemplateMissing": "{{v0}} ；「— —」。",
+  "deleteDialogDesc": "「{{v0}}」。。",
+  "deleteWillStop": "systemd / PM2 /",
+  "deleteWillWeb": "Nginx conf、PHP-FPM pool、Apache vhost（）",
+  "deleteWillOs": "Linux home （）",
+  "deleteKeepOs": "home Linux （）",
+  "deleteWillDb": "…",
+  "deleteRemoveFilesDesc": "Cancel，",
+  "deleteTypeNameHint": "「{{v0}}」",
+  "deleteDnsWarn": "DNS zone / domain 。"
 }

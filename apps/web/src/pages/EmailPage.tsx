@@ -25,8 +25,7 @@ import {
   ConfirmDialog,
   PageTabs,
   SoftwareInstallBanner,
-  SoftwareVersionBar,
-} from '../shared/components/ui';
+  SoftwareVersionBar } from '../shared/components/ui';
 import { getServerContext, setServerContext } from '../shared/stores/server-context';
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { useServerList } from '../shared/hooks/useServerList';
@@ -97,8 +96,7 @@ export function EmailPage() {
   const ctx = getServerContext();
   const list = useServerList<EmailDomain>({
     path: '/api/v1/email/domains',
-    debounceMs: 300,
-  });
+    debounceMs: 300 });
   const items = list.items;
   const [tab, setTab] = usePageTab(TABS, 'domains');
   const [createOpen, setCreateOpen] = useState(false);
@@ -126,15 +124,13 @@ export function EmailPage() {
       const created = await emailApi.create({
         domain,
         serverIp,
-        ...(serverIpv6.trim() ? { serverIpv6: serverIpv6.trim() } : {}),
-      });
+        ...(serverIpv6.trim() ? { serverIpv6: serverIpv6.trim() } : {}) });
       setDomain('');
       setCreateOpen(false);
       setServerContext({
         domain,
         serverIp,
-        serverIpv6: serverIpv6.trim() || undefined,
-      });
+        serverIpv6: serverIpv6.trim() || undefined });
       const domainName = domainNameFromCreate(created);
       const next = await list.refresh();
       // refresh doesn't return items from useServerList — use list after
@@ -207,27 +203,22 @@ export function EmailPage() {
       status={{
         pill: {
           label: total ? t('email.pillDomains', { count: total }) : t('email.pillNoDomain'),
-          tone: total ? 'ok' : 'warn',
-        },
+          tone: total ? 'ok' : 'warn' },
         items: [
           { label: t('email.statDomains'), value: total },
           {
             label: t('email.statHealthy80'),
             value: healthy,
-            tone: healthy > 0 ? 'ok' : undefined,
-          },
+            tone: healthy > 0 ? 'ok' : undefined },
           {
             label: t('email.statApplied'),
             value: applied,
-            tone: applied > 0 ? 'ok' : undefined,
-          },
+            tone: applied > 0 ? 'ok' : undefined },
           {
             label: t('email.statDraft'),
             value: draft,
-            tone: draft > 0 ? 'warn' : undefined,
-          },
-        ],
-      }}
+            tone: draft > 0 ? 'warn' : undefined },
+        ] }}
       actions={
         <ActionBar>
           <Button
@@ -248,13 +239,11 @@ export function EmailPage() {
           {
             id: 'domains',
             label: t('email.tabDomains'),
-            badge: items.length || undefined,
-          },
+            badge: items.length || undefined },
           {
             id: 'queue',
             label: t('email.tabQueue'),
-            badge: queueItems.length || undefined,
-          },
+            badge: queueItems.length || undefined },
           { id: 'stack', label: t('email.tabStack') },
           { id: 'about', label: t('common.about') },
         ]}
@@ -302,21 +291,17 @@ export function EmailPage() {
                           id: 'applied',
                           label: t('email.applyApplied'),
                           count: facets?.status?.applied,
-                          tone: 'ok',
-                        },
+                          tone: 'ok' },
                         {
                           id: 'draft',
                           label: t('email.applyDraft'),
-                          count: facets?.status?.draft,
-                        },
+                          count: facets?.status?.draft },
                         {
                           id: 'failed',
                           label: t('email.applyFailed'),
                           count: facets?.status?.failed,
-                          tone: 'danger',
-                        },
-                      ],
-                    },
+                          tone: 'danger' },
+                      ] },
                   ]}
                 />
               }

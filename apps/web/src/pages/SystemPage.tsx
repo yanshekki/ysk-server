@@ -20,8 +20,7 @@ import {
   PageTabs,
   LogViewer,
   LoadingBlock,
-  buttonClassName,
-} from '../shared/components/ui';
+  buttonClassName } from '../shared/components/ui';
 import type { OpsResultLike } from '../shared/components/ui';
 import { systemApi } from '../features/system';
 import type { HostOverviewDto } from '../features/system/api';
@@ -164,8 +163,7 @@ export function SystemPage() {
     }
     setCaps({
       executeEnabled: o.caps.executeEnabled,
-      isRoot: o.caps.isRoot,
-    });
+      isRoot: o.caps.isRoot });
     if (tls) {
       setPanelTls(tls);
       if (tls.panelDomain && !hostname) {
@@ -204,8 +202,7 @@ export function SystemPage() {
 
   function downloadJson(data: unknown, filename: string) {
     const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: 'application/json; charset=utf-8',
-    });
+      type: 'application/json; charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -228,9 +225,7 @@ export function SystemPage() {
         body: JSON.stringify({
           writeExport: opts.writeExport !== false,
           syncNginx: Boolean(opts.syncNginx),
-          dryRun: Boolean(opts.dryRun),
-        }),
-      });
+          dryRun: Boolean(opts.dryRun) }) });
       setOpsResult(r);
       setCaps({ executeEnabled: r.executeEnabled, isRoot: r.isRoot });
       if (r.ok) {
@@ -249,8 +244,7 @@ export function SystemPage() {
       setErr(e instanceof Error ? e.message : t('system.rebuildFailed'));
       setOpsResult({
         ok: false,
-        notes: [e instanceof Error ? e.message : t('common.failed')],
-      });
+        notes: [e instanceof Error ? e.message : t('common.failed')] });
     } finally {
       setBusy(false);
     }
@@ -282,22 +276,18 @@ export function SystemPage() {
           ? {
               pill: {
                 label: host?.identity.hostname || hostname || t('system.hostFallback'),
-                tone: heroTone === 'neutral' ? 'ok' : heroTone,
-              },
+                tone: heroTone === 'neutral' ? 'ok' : heroTone },
               items: [
                 {
                   label: t('system.uptime'),
-                  value: formatUptime(host?.runtime.uptimeSec),
-                },
+                  value: formatUptime(host?.runtime.uptimeSec) },
                 {
                   label: t('system.load1m'),
-                  value: load1 != null ? load1.toFixed(2) : '—',
-                },
+                  value: load1 != null ? load1.toFixed(2) : '—' },
                 {
                   label: t('common.memory'),
                   value: memPct != null ? `${memPct}%` : '—',
-                  tone: memTone(host?.runtime.memory.usedRatio),
-                },
+                  tone: memTone(host?.runtime.memory.usedRatio) },
                 {
                   label: t('system.diskPeak'),
                   value:
@@ -311,20 +301,16 @@ export function SystemPage() {
                         : worstDisk.usePct >= 75
                           ? 'warn'
                           : 'ok'
-                      : undefined,
-                },
+                      : undefined },
                 {
                   label: t('system.executeLabel'),
                   value: host?.caps.executeEnabled ? t('common.on') : t('common.off'),
-                  tone: host?.caps.executeEnabled ? 'ok' : 'warn',
-                },
+                  tone: host?.caps.executeEnabled ? 'ok' : 'warn' },
                 {
                   label: t('system.rootLabel'),
                   value: host?.caps.isRoot ? t('common.yes') : t('common.no'),
-                  tone: host?.caps.isRoot ? 'ok' : 'warn',
-                },
-              ],
-            }
+                  tone: host?.caps.isRoot ? 'ok' : 'warn' },
+              ] }
           : {
               pill: { label: t('system.exportRebuild'), tone: 'ok' },
               items: [
@@ -332,8 +318,7 @@ export function SystemPage() {
                 { label: t('common.mail'), value: counts?.email_domains ?? t('common.noneSelectedShort') },
                 {
                   label: t('system.dnsCerts'),
-                  value: `${counts?.dns_zones ?? '—'}/${counts?.certificates ?? '—'}`,
-                },
+                  value: `${counts?.dns_zones ?? '—'}/${counts?.certificates ?? '—'}` },
                 { label: t('system.managedCount'), value: managed.length },
                 {
                   label: t('system.executeLabel'),
@@ -348,14 +333,11 @@ export function SystemPage() {
                       ? 'warn'
                       : caps.executeEnabled
                         ? 'ok'
-                        : 'neutral',
-                },
+                        : 'neutral' },
                 {
                   label: t('system.exportsCount'),
-                  value: archives.length,
-                },
-              ],
-            }
+                  value: archives.length },
+              ] }
       }
       actions={<ActionBar>
           {tab === 'host' ? (
@@ -393,8 +375,7 @@ export function SystemPage() {
                   void runRebuild({
                     writeExport: true,
                     syncNginx: false,
-                    dryRun: false,
-                  })
+                    dryRun: false })
                 }
               >
                 {t('system.writeExports')}
@@ -407,8 +388,7 @@ export function SystemPage() {
                   void runRebuild({
                     writeExport: false,
                     syncNginx: false,
-                    dryRun: true,
-                  })
+                    dryRun: true })
                 }
               >
                 {t('system.dryRunSync')}
@@ -534,8 +514,7 @@ export function SystemPage() {
                                 hostname: hostname || undefined,
                                 timezone: timezone || undefined,
                                 // Always send so clear is possible
-                                prettyHostname: prettyHostname ?? '',
-                              })
+                                prettyHostname: prettyHostname ?? '' })
                               .then(async (r) => {
                                 const body = r as {
                                   ok?: boolean;
@@ -698,8 +677,7 @@ export function SystemPage() {
                                 email:
                                   panelEmail.trim() ||
                                   `admin@${hostname.trim().replace(/^\*\./, '')}`,
-                                restart: tlsRestart,
-                              })
+                                restart: tlsRestart })
                               .then((r) => {
                                 setOpsResult(r as RebuildResult);
                                 if (r.ok) {
@@ -725,8 +703,7 @@ export function SystemPage() {
                                 if (tlsRestart) {
                                   setMsg(
                                     t('system.panelTls.reconnectHttps', {
-                                      url: httpsHint,
-                                    }),
+                                      url: httpsHint }),
                                   );
                                 } else {
                                   setErr(e.message);
@@ -756,8 +733,7 @@ export function SystemPage() {
                             void systemApi
                               .panelTlsEnable({
                                 domain: hostname.trim(),
-                                restart: tlsRestart,
-                              })
+                                restart: tlsRestart })
                               .then((r) => {
                                 setOpsResult(r as RebuildResult);
                                 if (r.ok) {
@@ -776,8 +752,7 @@ export function SystemPage() {
                                 if (tlsRestart) {
                                   setMsg(
                                     t('system.panelTls.reconnectHttps', {
-                                      url: httpsHint,
-                                    }),
+                                      url: httpsHint }),
                                   );
                                 } else {
                                   setErr(e.message);
@@ -1068,8 +1043,7 @@ export function SystemPage() {
                         setPowerDlg({
                           action: 'reboot',
                           confirmNeed: 'REBOOT',
-                          delaySec: 10,
-                        });
+                          delaySec: 10 });
                       }}
                     >
                       {t('system.rebootHost')}
@@ -1084,8 +1058,7 @@ export function SystemPage() {
                         setPowerDlg({
                           action: 'poweroff',
                           confirmNeed: 'POWEROFF',
-                          delaySec: 60,
-                        });
+                          delaySec: 60 });
                       }}
                     >
                       {t('system.poweroffHost')}
@@ -1162,8 +1135,7 @@ export function SystemPage() {
                             .hostPower({
                               action: powerDlg.action,
                               confirm: powerConfirm.trim(),
-                              delaySec: powerDlg.delaySec,
-                            })
+                              delaySec: powerDlg.delaySec })
                             .then((r) => {
                               if (r.ok) {
                                 setMsg(
@@ -1341,8 +1313,7 @@ export function SystemPage() {
                                 if (r.ok && r.content != null) {
                                   setConfPreview({
                                     name: c.name,
-                                    content: r.content,
-                                  });
+                                    content: r.content });
                                 } else {
                                   setErr(r.notes?.join('；') ?? t('system.readFailed'));
                                 }
@@ -1401,8 +1372,7 @@ export function SystemPage() {
                       void runRebuild({
                         writeExport: false,
                         syncNginx: false,
-                        dryRun: true,
-                      })
+                        dryRun: true })
                     }
                   >
                     {t('system.dryRun')}
@@ -1423,8 +1393,7 @@ export function SystemPage() {
                       void runRebuild({
                         writeExport: true,
                         syncNginx: false,
-                        dryRun: false,
-                      })
+                        dryRun: false })
                     }
                   >
                     {t('system.exportOnly')}
@@ -1501,16 +1470,14 @@ export function SystemPage() {
                         ? [
                             {
                               label: t('system.managedConf'),
-                              value: String(opsResult.nginxConfDetails.length),
-                            },
+                              value: String(opsResult.nginxConfDetails.length) },
                           ]
                         : []),
                       ...(opsResult.dryRun
                         ? [
                             {
                               label: t('system.dryRunFlag'),
-                              value: t('common.yes'),
-                            },
+                              value: t('common.yes') },
                           ]
                         : []),
                     ]
@@ -1537,8 +1504,7 @@ export function SystemPage() {
           void runRebuild({
             writeExport: true,
             syncNginx: true,
-            dryRun: false,
-          });
+            dryRun: false });
         }}
       />
     </FeaturePageLayout>

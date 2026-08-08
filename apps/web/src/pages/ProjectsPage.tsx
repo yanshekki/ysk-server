@@ -8,8 +8,7 @@ import type { ProjectDto } from '@ysk/shared';
 import {
   ProjectCreateModal,
   ProjectList,
-  projectsApi,
-} from '../features/projects';
+  projectsApi } from '../features/projects';
 import { summarizeProjects } from '../features/projects/model/status';
 import {
   ActionBar,
@@ -18,8 +17,7 @@ import {
   FeaturePageLayout,
   ListPanel,
   ListToolbar,
-  WithPageGuide,
-} from '../shared/components/ui';
+  WithPageGuide } from '../shared/components/ui';
 import { useServerList } from '../shared/hooks/useServerList';
 import { toast } from '../shared/stores/toast-store';
 import { bindFilter, bindFormSubmit, bindInput, bindSet, bindValueSet } from './bind-handlers';
@@ -46,13 +44,9 @@ export function ProjectsPage() {
     setHintVersion(ver);
     setCreateOpen(true);
     toast.ok(
-      t('software.projectHint', {
-        runtime: rt,
-        version: ver ?? '—',
-        defaultValue: ver
-          ? t('uiInline.s27d9daa5', { v0: rt, v1: ver })
-          : t('uiInline.sb8eaefa3', { v0: rt }),
-      }),
+      ver
+        ? t('software.projectHintWithVersion', { runtime: rt, version: ver })
+        : t('software.projectHint', { runtime: rt }),
     );
     const next = new URLSearchParams(searchParams);
     next.delete('hintRuntime');
@@ -74,8 +68,7 @@ export function ProjectsPage() {
           label: total
             ? t('projects.statProjects', { count: total })
             : t('projects.noProjectsShort'),
-          tone: total ? 'ok' : 'warn',
-        },
+          tone: total ? 'ok' : 'warn' },
         items: [
           { label: t('projects.statTotal'), value: total },
           { label: t('projects.statRunning'), value: stats.running, tone: 'ok' },
@@ -83,16 +76,13 @@ export function ProjectsPage() {
           {
             label: t('projects.statPendingOs'),
             value: stats.pendingOs,
-            tone: stats.pendingOs > 0 ? 'warn' : undefined,
-          },
+            tone: stats.pendingOs > 0 ? 'warn' : undefined },
           {
             label: t('projects.statUnhealthy'),
             value: stats.unhealthy,
-            tone: 'danger',
-          },
+            tone: 'danger' },
           { label: t('projects.statStopped'), value: stats.stopped },
-        ],
-      }}
+        ] }}
       actions={
         <ActionBar>
           <Button
@@ -150,10 +140,8 @@ export function ProjectsPage() {
                     {
                       id: 'static',
                       label: t('common.static'),
-                      count: facets?.runtime?.static,
-                    },
-                  ],
-                },
+                      count: facets?.runtime?.static },
+                  ] },
               ]}
             />
           }

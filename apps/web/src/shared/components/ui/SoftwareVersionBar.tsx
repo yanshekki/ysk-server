@@ -34,8 +34,7 @@ type Status = {
 export function SoftwareVersionBar({
   softwareId,
   onRuntimeInstall,
-  className,
-}: SoftwareVersionBarProps) {
+  className }: SoftwareVersionBarProps) {
   const { t } = useTranslation();
   const [st, setSt] = useState<Status | null>(null);
   const [loading, setLoading] = useState(true);
@@ -49,8 +48,7 @@ export function SoftwareVersionBar({
       try {
         const r = await systemApi.softwareVersions({
           id: softwareId,
-          refresh,
-        });
+          refresh });
         const next: Status = {
           installed: Boolean(r.installed),
           currentVersion: r.currentVersion,
@@ -60,11 +58,9 @@ export function SoftwareVersionBar({
           packageName: r.packageName,
           candidates: (r.candidates ?? []).map((c) => ({
             version: c.version,
-            label: c.label,
-          })),
+            label: c.label })),
           source: r.source,
-          notes: r.notes ?? [],
-        };
+          notes: r.notes ?? [] };
         setSt(next);
         const pick =
           next.latestVersion ||
@@ -113,8 +109,7 @@ export function SoftwareVersionBar({
           packageName: pkg,
           currentVersion: cur,
           candidateVersion: cand,
-          confirmHighRisk: true,
-        });
+          confirmHighRisk: true });
         if (r.blocked) {
           toast.error(r.blockMessage || t('software.apply.blocked'));
         } else if (r.ok && r.applied) {
@@ -215,11 +210,9 @@ export function SoftwareVersionBar({
           >
             {st.installed && st.upgradable
               ? t('software.action.updateTo', {
-                  v: selected || st.latestVersion,
-                })
+                  v: selected || st.latestVersion })
               : t('software.action.installVersion', {
-                  v: selected || st.latestVersion,
-                })}
+                  v: selected || st.latestVersion })}
           </Button>
         ) : null}
       </div>
@@ -232,8 +225,7 @@ export function SoftwareVersionBar({
         description={t('software.apply.confirmBody', {
           pkg: st.packageName || softwareId,
           from: st.currentVersion || '—',
-          to: selected || st.latestVersion || '—',
-        })}
+          to: selected || st.latestVersion || '—' })}
         busy={busy}
         danger
         confirmLabel={t('software.apply.confirm')}

@@ -537,5 +537,15 @@
   "netPublishPrimary": "基本",
   "netPublishSsl": "HTTPS / SSL",
   "netPublishMaint": "維護",
-  "sslNeedDomain": "請先填寫網域，才能發佈 Nginx / SSL。"
+  "sslNeedDomain": "請先填寫網域，才能發佈 Nginx / SSL。",
+  "createTemplateMissing": "未載入 {{v0}} 範本；請重新整理或選「— 無 —」空白專案。",
+  "deleteDialogDesc": "將銷毀「{{v0}}」。此操作無法還原。",
+  "deleteWillStop": "停止 systemd / PM2 / 本機進程",
+  "deleteWillWeb": "移除 Nginx conf、PHP-FPM pool、Apache vhost（如有）",
+  "deleteWillOs": "刪除 Linux 用戶與 home 目錄（安全路徑）",
+  "deleteKeepOs": "保留 home 與 Linux 用戶（僅面板移除）",
+  "deleteWillDb": "從控制面資料庫移除專案",
+  "deleteRemoveFilesDesc": "取消勾選則只從面板移除，檔案與系統用戶保留",
+  "deleteTypeNameHint": "請輸入「{{v0}}」",
+  "deleteDnsWarn": "共享 DNS zone / 郵箱 domain 不會自動刪除。"
 }

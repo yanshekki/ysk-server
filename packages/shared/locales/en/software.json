@@ -53,7 +53,12 @@
     "update": "Update",
     "updateTitle": "Install or switch to {{v}}",
     "updateTo": "Update to {{v}}",
-    "installVersion": "Install {{v}}"
+    "installVersion": "Install {{v}}",
+    "applyAptTitle": "Update {{v0}}",
+    "updateN": "Update {{v0}}",
+    "installTitle": "Install {{v0}}",
+    "install": "Install",
+    "updateAptTitle": "Update {{v0}}"
   },
   "apply": {
     "blockedShort": "Blocked",
@@ -63,7 +68,13 @@
     "confirm": "Confirm install",
     "confirmTitle": "Confirm software install?",
     "confirmBody": "Install/update {{pkg}}: {{from}} → {{to}}. Needs system-change rights.",
-    "ok": "Applied {{pkg}}"
+    "ok": "Applied {{pkg}}",
+    "progress": "Update… {{v0}}/{{v1}}：{{v2}}",
+    "okMulti": "Update：{{v0}}",
+    "okMultiTitle": "{{v0}} Update",
+    "partial": "：{{v0}}；Failed：{{v1}}",
+    "partialTitle": "UpdateFailed",
+    "failedTitle": "{{v0}} UpdateFailed"
   },
   "version": {
     "loading": "Loading versions…",
@@ -75,5 +86,35 @@
     "noTarget": "No update target",
     "needRuntimePage": "Install this version on the runtime page",
     "noAptCandidate": "No apt candidate version"
-  }
+  },
+  "install": {
+    "progress": "Install：{{v0}}…",
+    "progressHint": "root + EXECUTE；。",
+    "blockedTitle": "{{v0}} Install",
+    "ok": "Install：{{v0}}",
+    "okTitle": "{{v0}} Install／",
+    "failedTitle": "{{v0}} InstallFailed",
+    "confirmTitle": "Install？",
+    "confirmBody": "Install {{v0}}：{{v1}}。 root YSK_EXECUTE=1。",
+    "confirm": "Install"
+  },
+  "runtime": {
+    "installing": "Install／Update {{v0}} {{v1}}…（）",
+    "installingHint": "Show server ，Close。",
+    "blockedTitle": "{{v0}} {{v1}} Install",
+    "installed": "Installed／Update {{v0}} {{v1}}",
+    "installedDetail": "。Show，。",
+    "failedTitle": "{{v0}} {{v1}} InstallFailed",
+    "installingShort": "Install……"
+  },
+  "aptSummaryTitle": "…",
+  "aptSummaryDesc": "；Update。",
+  "aptSummary": {
+    "catalog": "{{v0}}",
+    "host": "{{v0}}",
+    "openUpdates": "Update"
+  },
+  "navBadgeTitle": "：{{v0}}",
+  "projectHint": "Runtime {{runtime}} prefilled — create a project",
+  "projectHintWithVersion": "Runtime {{runtime}} {{version}} prefilled — create a project"
 }

@@ -10,8 +10,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
-  softwareReadyRoute,
-} from '../test/mock-fetch';
+  softwareReadyRoute } from '../test/mock-fetch';
 import { authStore } from '../shared/stores/auth-store';
 import { BackupsPage } from './features/BackupsPage';
 import { CdnPage } from './features/CdnPage';
@@ -72,14 +71,12 @@ describe('coverage floor 90d', () => {
     authStore.setSession('t', {
       username: 'admin',
       roles: ['admin'],
-      capabilities: ['*'],
-    });
+      capabilities: ['*'] });
     vi.spyOn(window, 'confirm').mockReturnValue(true);
     vi.spyOn(window, 'prompt').mockReturnValue('OVERWRITE');
     vi.stubGlobal('navigator', {
       ...navigator,
-      clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
-    });
+      clipboard: { writeText: vi.fn().mockResolvedValue(undefined) } });
   });
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -102,11 +99,8 @@ describe('coverage floor 90d', () => {
               username: 'admin',
               roles: ['admin'],
               locale: 'en',
-              capabilities: ['backups.restore', 'backups.run'],
-            },
-            capabilities: ['backups.restore', 'backups.run'],
-          },
-        },
+              capabilities: ['backups.restore', 'backups.run'] },
+            capabilities: ['backups.restore', 'backups.run'] } },
         {
           match: (url) => url.includes('/backups/settings'),
           handler: (_u, init) => {
@@ -119,34 +113,27 @@ describe('coverage floor 90d', () => {
                 port: 22,
                 username: 'bk',
                 path: '/backups/ysk',
-                password: '***',
-              },
+                password: '***' },
               restic: {
                 enabled: true,
                 repoPath: '/var/restic',
                 password: '***',
-                s3Repo: '',
-              },
-              exclusions: ['node_modules', '.git'],
-            };
-          },
-        },
+                s3Repo: '' },
+              exclusions: ['node_modules', '.git'] };
+          } },
         {
           match: (url) => url.includes('/backups/restic/snapshots') || url.includes('/snapshots'),
           body: {
             snapshots: [
               { id: 'snap1', time: now(), tags: ['project:proj-aaaaaaa1', 'full'] },
               { id: 'snap2', time: now(), tags: ['manual'] },
-            ],
-          },
-        },
+            ] } },
         {
           match: (url) => url.includes('/backups/download'),
           handler: async () => {
             // downloadAuthenticated expects binary; return empty blob-like JSON fallback
             return { ok: true };
-          },
-        },
+          } },
         {
           match: (url) => url.includes('/api/v1/backups'),
           handler: (_u, init) => {
@@ -165,8 +152,7 @@ describe('coverage floor 90d', () => {
                   status: 'ok',
                   type: 'full',
                   path: '/var/backups/b1.tgz',
-                  projectId: 'proj-aaaaaaa1',
-                },
+                  projectId: 'proj-aaaaaaa1' },
                 {
                   id: 'b2',
                   name: 'web-only.tgz',
@@ -177,8 +163,7 @@ describe('coverage floor 90d', () => {
                   status: 'ok',
                   type: 'web',
                   path: '/var/backups/b2.tgz',
-                  projectId: 'proj-bbbbbbbb',
-                },
+                  projectId: 'proj-bbbbbbbb' },
               ],
               lastRun: {
                 ok: true,
@@ -197,29 +182,22 @@ describe('coverage floor 90d', () => {
                     kind: 'restic',
                     ok: true,
                     skipped: false,
-                    notes: ['snap'],
-                  },
+                    notes: ['snap'] },
                   {
                     projectId: 'proj-bbbbbbbb',
                     kind: 'remote',
                     ok: false,
                     skipped: false,
-                    notes: ['sftp'],
-                  },
-                ],
-              },
-            };
-          },
-        },
+                    notes: ['sftp'] },
+                ] } };
+          } },
         {
           match: (url) => url.includes('/projects'),
           body: {
             items: [
               { id: 'proj-aaaaaaa1', name: 'A' },
               { id: 'proj-bbbbbbbb', name: 'B' },
-            ],
-          },
-        },
+            ] } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -301,8 +279,7 @@ describe('coverage floor 90d', () => {
         sshIdentityId: 'id1',
         sshHost: '203.0.113.10',
         sshUsername: 'root',
-        fleetAgentId: '',
-      };
+        fleetAgentId: '' };
       const site = {
         id: 'site1',
         name: 'Demo site',
@@ -315,13 +292,11 @@ describe('coverage floor 90d', () => {
           strategy: 'multi_a',
           zoneId: 'z1',
           geoMap: { hkg: ['n1'] },
-          geoSubdomains: true,
-        },
+          geoSubdomains: true },
         ssl: { mode: 'off' },
         originShieldNodeId: '',
         status: 'planned',
-        apply_status: 'planned',
-      };
+        apply_status: 'planned' };
       installFetchMock([
         softwareReadyRoute(),
         {
@@ -334,13 +309,11 @@ describe('coverage floor 90d', () => {
               offline: 0,
               draining: 0,
               unknown: 0,
-              byRegion: { local: 1 },
-            },
+              byRegion: { local: 1 } },
             sites: {
               total: 1,
               byApplyStatus: { planned: 1 },
-              rows: [{ id: 'site1', name: 'Demo site', apply_status: 'planned' }],
-            },
+              rows: [{ id: 'site1', name: 'Demo site', apply_status: 'planned' }] },
             cache: [
               {
                 siteId: 'site1',
@@ -349,32 +322,25 @@ describe('coverage floor 90d', () => {
                 hits: 10,
                 misses: 2,
                 method: 'stub',
-                notes: [],
-              },
+                notes: [] },
             ],
             notes: [],
-            overallHitRatePct: 80,
-          },
-        },
+            overallHitRatePct: 80 } },
         {
           match: (url) => url.includes('/cdn/from-project'),
           body: {
             ok: true,
             created: true,
             notes: ['from project'],
-            site,
-          },
-        },
+            site } },
         {
           match: (url, init) =>
             url.startsWith('/api/v1/cdn/nodes') && (init?.method ?? 'GET').toUpperCase() === 'GET',
-          body: { items: [node] },
-        },
+          body: { items: [node] } },
         {
           match: (url, init) =>
             url.startsWith('/api/v1/cdn/sites') && (init?.method ?? 'GET').toUpperCase() === 'GET',
-          body: { items: [site] },
-        },
+          body: { items: [site] } },
         {
           match: (url) => url.includes('/api/v1/cdn'),
           body: {
@@ -383,9 +349,7 @@ describe('coverage floor 90d', () => {
             apply_status: 'written',
             notes: ['ok'],
             conf: 'server{}',
-            hash: 'h1',
-          },
-        },
+            hash: 'h1' } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -447,11 +411,8 @@ describe('coverage floor 90d', () => {
               username: 'admin',
               roles: ['admin'],
               locale: 'en',
-              capabilities: ['*'],
-            },
-            capabilities: ['*'],
-          },
-        },
+              capabilities: ['*'] },
+            capabilities: ['*'] } },
         {
           match: (url) => url.includes('/wizard/create'),
           body: {
@@ -461,9 +422,7 @@ describe('coverage floor 90d', () => {
             steps: [
               { step: 'project', ok: true },
               { step: 'dns', ok: false, notes: ['skip'] },
-            ],
-          },
-        },
+            ] } },
         {
           match: (url) =>
             url.includes('/dashboard') ||
@@ -487,20 +446,17 @@ describe('coverage floor 90d', () => {
                 level: 'critical',
                 title: 'Exec off',
                 body: 'need execute',
-                href: '/system',
-              },
+                href: '/system' },
               {
                 id: 'n2',
                 level: 'warn',
                 title: 'Disk',
-                body: 'high',
-              },
+                body: 'high' },
               {
                 id: 'n3',
                 level: 'info',
                 title: 'Info',
-                body: 'ok',
-              },
+                body: 'ok' },
             ],
             applyAudit: {
               summary: { ok: 1, warn: 1, bad: 1 },
@@ -510,18 +466,13 @@ describe('coverage floor 90d', () => {
                   name: 'site1',
                   severity: 'bad',
                   issue: 'missing',
-                  href: '/nginx',
-                },
+                  href: '/nginx' },
                 {
                   kind: 'ssl',
                   name: 'cert1',
                   severity: 'warn',
-                  issue: 'expiring',
-                },
-              ],
-            },
-          },
-        },
+                  issue: 'expiring' },
+              ] } } },
         {
           match: (url) => url.startsWith('/api/v1/network'),
           handler: (_u, init) => {
@@ -536,8 +487,7 @@ describe('coverage floor 90d', () => {
                 hasIp: true,
                 networkManager: 'inactive',
                 networkd: 'inactive',
-                canPersist: true,
-              },
+                canPersist: true },
               interfaces: [
                 {
                   name: 'eth0',
@@ -554,8 +504,7 @@ describe('coverage floor 90d', () => {
                     { family: 'inet6', local: 'fe80::2', prefixlen: 64 },
                     { family: 'inet6', local: 'fe80::3', prefixlen: 64 },
                   ],
-                  stats: { rxBytes: 1e9, txBytes: 2e9, rxPackets: 1, txPackets: 2 },
-                },
+                  stats: { rxBytes: 1e9, txBytes: 2e9, rxPackets: 1, txPackets: 2 } },
                 {
                   name: 'lo',
                   ifindex: 1,
@@ -563,8 +512,7 @@ describe('coverage floor 90d', () => {
                   flags: ['UP', 'LOOPBACK'],
                   mtu: 65536,
                   isLoopback: true,
-                  addrs: [{ family: 'inet', local: '127.0.0.1', prefixlen: 8 }],
-                },
+                  addrs: [{ family: 'inet', local: '127.0.0.1', prefixlen: 8 }] },
               ],
               routes: [
                 { dst: 'default', gateway: '10.0.0.1', dev: 'eth0' },
@@ -579,11 +527,8 @@ describe('coverage floor 90d', () => {
                 search: ['lan'],
                 source: 'static',
                 notes: [],
-                ignoreAutoDns: true,
-              },
-            };
-          },
-        },
+                ignoreAutoDns: true } };
+          } },
         {
           match: (url) => url.includes('/api/v1/email'),
           handler: (url, init) => {
@@ -595,16 +540,14 @@ describe('coverage floor 90d', () => {
                 written: true,
                 blocked: true,
                 blockMessage: 'need execute',
-                notes: ['written'],
-              };
+                notes: ['written'] };
             }
             if (url.includes('/dns')) {
               return {
                 domain: 'example.com',
                 records: [{ type: 'MX', name: '@', value: 'mail' }],
                 externalTodos: [],
-                health: { score: 40, maxScore: 100, messages: [] },
-              };
+                health: { score: 40, maxScore: 100, messages: [] } };
             }
             if (url.includes('/mailboxes') || url.includes('/aliases')) return { items: [] };
             return {
@@ -616,12 +559,9 @@ describe('coverage floor 90d', () => {
                   health_score: 40,
                   suspended: false,
                   rate_limit_per_hour: 200,
-                  antispam: true,
-                },
-              ],
-            };
-          },
-        },
+                  antispam: true },
+              ] };
+          } },
         {
           match: (url) => url.includes('/ssh'),
           handler: (_u, init) => {
@@ -638,17 +578,13 @@ describe('coverage floor 90d', () => {
                   fingerprintSha256: 'SHA256:abcdefghijklmnopqrstuvwxyz0123',
                   publicKey: 'ssh-ed25519 AAAA',
                   status: 'stored',
-                  createdAt: t,
-                },
-              };
+                  createdAt: t } };
             }
             return { items: [] };
-          },
-        },
+          } },
         {
           match: /\/api\/v1\/projects/,
-          body: { items: [{ id: 'p1', name: 'Demo', linuxUser: 'd', homeDir: '/home/d' }] },
-        },
+          body: { items: [{ id: 'p1', name: 'Demo', linuxUser: 'd', homeDir: '/home/d' }] } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -808,21 +744,16 @@ describe('coverage floor 90d', () => {
                     category: 'net',
                     type: 'int',
                     applyMode: 'restart',
-                    liveValue: '3306',
-                  },
+                    liveValue: '3306' },
                   {
                     key: 'max_connections',
                     label: 'Max conn',
                     category: 'net',
                     type: 'int',
                     applyMode: 'runtime',
-                    liveValue: '151',
-                  },
-                ],
-              },
-            ],
-          },
-        },
+                    liveValue: '151' },
+                ] },
+            ] } },
         {
           match: (url) => url.includes('/runtime') || url.includes('/hosting'),
           body: {
@@ -835,19 +766,15 @@ describe('coverage floor 90d', () => {
               {
                 id: 'g',
                 title: 'G',
-                fields: [{ key: 'k', label: 'K', value: '1', type: 'number' }],
-              },
+                fields: [{ key: 'k', label: 'K', value: '1', type: 'number' }] },
             ],
             catalog: [
               {
                 id: 'g',
                 title: 'G',
-                fields: [{ key: 'k', label: 'K', value: '1', type: 'number' }],
-              },
+                fields: [{ key: 'k', label: 'K', value: '1', type: 'number' }] },
             ],
-            items: [{ version: '20', path: '/u', default: true }],
-          },
-        },
+            items: [{ version: '20', path: '/u', default: true }] } },
         {
           match: (url) => url.includes('/projects/'),
           handler: (url, init) => {
@@ -868,19 +795,15 @@ describe('coverage floor 90d', () => {
               nginxConfigPath: '/x',
               lastHealth: { ok: true, status: 200, ms: 1, at: t },
               entry: 'server.js',
-              env: { A: '1' },
-            };
-          },
-        },
+              env: { A: '1' } };
+          } },
         {
           match: (url) => url.includes('/logs'),
           body: {
             sources: [{ id: 'j', label: 'Journal', kind: 'journal' }],
             lines: [{ ts: t, line: 'err', source: 'j' }],
             bookmarks: [],
-            settings: { follow: false, lines: 100 },
-          },
-        },
+            settings: { follow: false, lines: 100 } } },
         {
           match: /\/api\/v1\/resources\//,
           body: {
@@ -890,11 +813,8 @@ describe('coverage floor 90d', () => {
                 zone: 'example.com',
                 serverIp: '1.2.3.4',
                 nsName: 'ns1',
-                ttl: 300,
-              },
-            ],
-          },
-        },
+                ttl: 300 },
+            ] } },
         {
           match: (url) => url.includes('/files'),
           body: {
@@ -907,8 +827,7 @@ describe('coverage floor 90d', () => {
                 type: 'file',
                 size: 1,
                 mtime: t,
-                mime: 'text/plain',
-              },
+                mime: 'text/plain' },
             ],
             entries: [
               {
@@ -917,12 +836,9 @@ describe('coverage floor 90d', () => {
                 type: 'file',
                 size: 1,
                 mtime: t,
-                mime: 'text/plain',
-              },
+                mime: 'text/plain' },
             ],
-            favorites: [],
-          },
-        },
+            favorites: [] } },
         {
           match: (url) => url.includes('/readiness'),
           body: {
@@ -931,9 +847,7 @@ describe('coverage floor 90d', () => {
             productionReady: false,
             checks: [{ id: 'e', ok: false, label: 'exec', detail: 'off' }],
             missing: ['YSK_EXECUTE'],
-            notes: [],
-          },
-        },
+            notes: [] } },
         {
           match: (url) => url.includes('/system') || url.includes('/updates'),
           body: {
@@ -943,9 +857,7 @@ describe('coverage floor 90d', () => {
             active: 'active',
             updates: [],
             channel: 'stable',
-            version: '1',
-          },
-        },
+            version: '1' } },
         {
           match: (url) => url.includes('/email'),
           body: {
@@ -955,11 +867,8 @@ describe('coverage floor 90d', () => {
                 domain: 'x.com',
                 server_ip: '1.1.1.1',
                 health_score: 10,
-                suspended: false,
-              },
-            ],
-          },
-        },
+                suspended: false },
+            ] } },
         {
           match: (url) => url.includes('/users') || url.includes('/packages') || url.includes('/rbac'),
           body: {
@@ -971,13 +880,10 @@ describe('coverage floor 90d', () => {
                 packageId: null,
                 suspended: false,
                 capabilityGrants: [],
-                capabilityRevokes: [],
-              },
+                capabilityRevokes: [] },
             ],
             meta: { total: 1, page: 1, limit: 50, facets: {} },
-            hostUsage: { projects: 0, diskMb: 0, freeMb: 1 },
-          },
-        },
+            hostUsage: { projects: 0, diskMb: 0, freeMb: 1 } } },
         {
           match: (url) => url.includes('/auth/') || url.includes('/security') || url.includes('/ssh'),
           body: {
@@ -986,9 +892,7 @@ describe('coverage floor 90d', () => {
             enrolled: false,
             ok: true,
             requireAdminTotp: false,
-            requireAdminTotpStrict: false,
-          },
-        },
+            requireAdminTotpStrict: false } },
         {
           match: (url) => url.includes('/agents') || url.includes('/fleet'),
           body: {
@@ -998,11 +902,8 @@ describe('coverage floor 90d', () => {
                 agent_id: 'edge-1',
                 status: 'connected',
                 group: 'default',
-                last_seen_at: t,
-              },
-            ],
-          },
-        },
+                last_seen_at: t },
+            ] } },
         {
           match: (url) => url.includes('/metrics'),
           body: {
@@ -1017,9 +918,7 @@ describe('coverage floor 90d', () => {
             alerts: [],
             rows: [],
             notes: [],
-            items: [],
-          },
-        },
+            items: [] } },
         {
           match: (url) => url.includes('/defense') || url.includes('/fail2ban') || url.includes('/firewall') || url.includes('/redis') || url.includes('/mysql'),
           body: {
@@ -1046,8 +945,7 @@ describe('coverage floor 90d', () => {
               method: 'fail2ban',
               cooldownMinutes: 1,
               maxAutoBansPerHour: 1,
-              whitelist: [],
-            },
+              whitelist: [] },
             executeEnabled: false,
             isRoot: false,
             suggestions: [],
@@ -1063,13 +961,10 @@ describe('coverage floor 90d', () => {
               cityPolicyEnabled: false,
               asns: [],
               enforce: { autoBan: false, nginx: false, ufw: false },
-              autoUpdate: false,
-            },
+              autoUpdate: false },
             sources: [],
             meta: {},
-            provider: 'dbip',
-          },
-        },
+            provider: 'dbip' } },
         { match: /.*/, body: { ok: true, items: [], installed: true, active: 'active' } },
       ]);
 

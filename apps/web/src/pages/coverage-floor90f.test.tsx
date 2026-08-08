@@ -10,8 +10,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
-  softwareReadyRoute,
-} from '../test/mock-fetch';
+  softwareReadyRoute } from '../test/mock-fetch';
 import { authStore } from '../shared/stores/auth-store';
 import { NetworkPage } from './features/NetworkPage';
 import { EmailDomainPage } from './EmailDomainPage';
@@ -105,22 +104,19 @@ const PROJECT = {
   quotaMb: 1024,
   memoryMax: '512M',
   cpuQuotaPercent: 100,
-  logExtraDirs: ['/var/log/app'],
-};
+  logExtraDirs: ['/var/log/app'] };
 
 describe('coverage floor 90f — surgical multi-step', () => {
   beforeEach(() => {
     authStore.setSession('t', {
       username: 'admin',
       roles: ['admin'],
-      capabilities: ['*'],
-    });
+      capabilities: ['*'] });
     vi.spyOn(window, 'confirm').mockReturnValue(true);
     vi.spyOn(window, 'prompt').mockReturnValue('OVERWRITE');
     vi.stubGlobal('navigator', {
       ...navigator,
-      clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
-    });
+      clipboard: { writeText: vi.fn().mockResolvedValue(undefined) } });
   });
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -152,8 +148,7 @@ describe('coverage floor 90f — surgical multi-step', () => {
                 ...HONESTY_WRITTEN_BLOCKED,
                 ok: true,
                 notes: ['written'],
-                answers: ['1.2.3.4'],
-              };
+                answers: ['1.2.3.4'] };
             }
             return {
               ok: true,
@@ -163,8 +158,7 @@ describe('coverage floor 90f — surgical multi-step', () => {
                 hasIp: true,
                 networkManager: 'active',
                 networkd: 'inactive',
-                canPersist: true,
-              },
+                canPersist: true },
               interfaces: [
                 {
                   name: 'eth0',
@@ -180,8 +174,7 @@ describe('coverage floor 90f — surgical multi-step', () => {
                     { family: 'inet6', local: 'fe80::1', prefixlen: 64, scope: 'link' },
                     { family: 'inet6', local: '2001:db8::5', prefixlen: 64, scope: 'global' },
                   ],
-                  stats: { rxBytes: 1e9, txBytes: 2e9, rxPackets: 10, txPackets: 20 },
-                },
+                  stats: { rxBytes: 1e9, txBytes: 2e9, rxPackets: 10, txPackets: 20 } },
                 {
                   name: 'lo',
                   ifindex: 1,
@@ -194,8 +187,7 @@ describe('coverage floor 90f — surgical multi-step', () => {
                   addrs: [
                     { family: 'inet', local: '127.0.0.1', prefixlen: 8 },
                     { family: 'inet6', local: '::1', prefixlen: 128 },
-                  ],
-                },
+                  ] },
               ],
               routes: [
                 { dst: 'default', gateway: '10.0.0.1', dev: 'eth0', protocol: 'static', metric: 100 },
@@ -215,11 +207,8 @@ describe('coverage floor 90f — surgical multi-step', () => {
                 connection: 'Wired connection 1',
                 device: 'eth0',
                 mode: 'static',
-                gatewayDns: '10.0.0.1',
-              },
-            };
-          },
-        },
+                gatewayDns: '10.0.0.1' } };
+          } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -295,16 +284,13 @@ describe('coverage floor 90f — surgical multi-step', () => {
       const modal = document.querySelector('[role="dialog"]');
       if (modal) {
         const applyBtn = within(modal as HTMLElement).queryAllByRole('button', {
-          name: /apply|套用|应用/i,
-        })[0];
+          name: /apply|套用|应用/i })[0];
         if (applyBtn) await user.click(applyBtn);
         const delAddr = within(modal as HTMLElement).queryAllByRole('button', {
-          name: /delete|刪|删/i,
-        })[0];
+          name: /delete|刪|删/i })[0];
         if (delAddr && !(delAddr as HTMLButtonElement).disabled) await user.click(delAddr);
         const addIp = within(modal as HTMLElement).queryAllByRole('button', {
-          name: /add ip|新增|添加/i,
-        })[0];
+          name: /add ip|新增|添加/i })[0];
         if (addIp) await user.click(addIp);
       } else {
         await clickFirst(user, /add ip|新增 IP|添加 IP/i);
@@ -348,11 +334,8 @@ describe('coverage floor 90f — surgical multi-step', () => {
                 health_score: 55,
                 suspended: false,
                 rate_limit_per_hour: 200,
-                antispam: true,
-              },
-            ],
-          },
-        },
+                antispam: true },
+            ] } },
         {
           match: (url) => url.includes('/api/v1/email'),
           handler: (url, init) => {
@@ -364,8 +347,7 @@ describe('coverage floor 90f — surgical multi-step', () => {
                 blocked: true,
                 apply_status: 'written',
                 notes: ['written'],
-                items: [],
-              };
+                items: [] };
             }
             if (url.includes('/dns')) {
               return {
@@ -375,8 +357,7 @@ describe('coverage floor 90f — surgical multi-step', () => {
                   { type: 'TXT', name: '@', value: 'v=spf1 mx -all' },
                 ],
                 externalTodos: [],
-                health: { score: 55, maxScore: 100, messages: ['ok'] },
-              };
+                health: { score: 55, maxScore: 100, messages: ['ok'] } };
             }
             if (url.includes('/mailboxes')) {
               return {
@@ -385,10 +366,8 @@ describe('coverage floor 90f — surgical multi-step', () => {
                     id: 'mb1',
                     local_part: 'info',
                     address: 'info@example.com',
-                    status: 'active',
-                  },
-                ],
-              };
+                    status: 'active' },
+                ] };
             }
             if (url.includes('/aliases')) {
               return {
@@ -397,10 +376,8 @@ describe('coverage floor 90f — surgical multi-step', () => {
                     id: 'al1',
                     type: 'forward',
                     source: 'sales@example.com',
-                    destinations: ['info@example.com'],
-                  },
-                ],
-              };
+                    destinations: ['info@example.com'] },
+                ] };
             }
             if (url.includes('/deliverability')) {
               return {
@@ -415,19 +392,16 @@ describe('coverage floor 90f — surgical multi-step', () => {
                     ok: true,
                     level: 'panel',
                     detail: 'ok',
-                    owner: 'dns',
-                  },
+                    owner: 'dns' },
                 ],
                 externalTodos: [],
                 warmup: {},
                 panelReady: true,
                 deliveryGuaranteed: false,
-                relayConfigured: false,
-              };
+                relayConfigured: false };
             }
             return { ok: true, items: [] };
-          },
-        },
+          } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -509,18 +483,14 @@ describe('coverage floor 90f — surgical multi-step', () => {
                 port: 22,
                 username: 'ysk',
                 path: '/backups',
-                password: '***',
-              },
+                password: '***' },
               exclusions: ['node_modules', '.git'],
               restic: {
                 enabled: true,
                 repoPath: '/var/backups/restic',
                 password: '***',
-                s3Repo: '',
-              },
-            };
-          },
-        },
+                s3Repo: '' } };
+          } },
         {
           match: (url) => url.includes('/api/v1/backups'),
           handler: (url, init) => {
@@ -530,8 +500,7 @@ describe('coverage floor 90f — surgical multi-step', () => {
                 ok: true,
                 notes: ['written'],
                 results: [{ projectId: longPid, ok: true }],
-                empty: false,
-              };
+                empty: false };
             }
             if (url.includes('snapshot')) {
               return {
@@ -541,17 +510,14 @@ describe('coverage floor 90f — surgical multi-step', () => {
                     id: 'snap1',
                     time: t,
                     tags: [`project:${longPid}`, 'full'],
-                    paths: ['/home/demo'],
-                  },
+                    paths: ['/home/demo'] },
                   {
                     id: 'snap2',
                     time: t,
                     tags: ['manual'],
-                    paths: ['/tmp'],
-                  },
+                    paths: ['/tmp'] },
                 ],
-                notes: ['listed 2'],
-              };
+                notes: ['listed 2'] };
             }
             return {
               items: [
@@ -560,8 +526,7 @@ describe('coverage floor 90f — surgical multi-step', () => {
                   name: 'nightly.tgz',
                   path: '/var/backups/nightly.tgz',
                   bytes: 5_000_000,
-                  mtime: t,
-                },
+                  mtime: t },
               ],
               lastRun: {
                 ok: true,
@@ -575,8 +540,7 @@ describe('coverage floor 90f — surgical multi-step', () => {
                     ok: true,
                     skipped: false,
                     notes: ['tar ok'],
-                    archivePath: '/var/backups/nightly.tgz',
-                  },
+                    archivePath: '/var/backups/nightly.tgz' },
                 ],
                 sideResults: [
                   {
@@ -584,31 +548,24 @@ describe('coverage floor 90f — surgical multi-step', () => {
                     kind: 'restic',
                     ok: true,
                     skipped: false,
-                    notes: ['snap ok'],
-                  },
+                    notes: ['snap ok'] },
                   {
                     projectId: 'p2',
                     kind: 'remote',
                     ok: false,
                     skipped: false,
-                    notes: ['timeout'],
-                  },
+                    notes: ['timeout'] },
                   {
                     projectId: 'p3',
                     kind: 'remote',
                     ok: true,
                     skipped: true,
-                    notes: [],
-                  },
-                ],
-              },
-            };
-          },
-        },
+                    notes: [] },
+                ] } };
+          } },
         {
           match: (url) => url.includes('/api/v1/projects'),
-          body: { items: [{ id: longPid, name: 'Demo' }] },
-        },
+          body: { items: [{ id: longPid, name: 'Demo' }] } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -676,10 +633,8 @@ describe('coverage floor 90f — surgical multi-step', () => {
               executeEnabled: true,
               isRoot: true,
               canProvision: true,
-              blockMessage: null,
-            };
-          },
-        },
+              blockMessage: null };
+          } },
         {
           match: (url) => url.includes('/api/v1/resources/mysql/databases'),
           handler: (_u, init) => {
@@ -693,12 +648,9 @@ describe('coverage floor 90f — surgical multi-step', () => {
                   name: 'app',
                   engine: 'mysql',
                   status: 'active',
-                  users: ['u1'],
-                },
-              ],
-            };
-          },
-        },
+                  users: ['u1'] },
+              ] };
+          } },
         {
           match: (url) => url.includes('/api/v1/resources/mysql/users'),
           handler: (_u, init) => {
@@ -706,10 +658,8 @@ describe('coverage floor 90f — surgical multi-step', () => {
               return { item: { id: 'u1', name: 'u' }, ...HONESTY_WRITTEN_BLOCKED };
             }
             return {
-              items: [{ id: 'u1', name: 'appuser', host: '%', engine: 'mysql' }],
-            };
-          },
-        },
+              items: [{ id: 'u1', name: 'appuser', host: '%', engine: 'mysql' }] };
+          } },
         {
           match: (url) => url.includes('/api/v1/db/temp-users'),
           handler: (url, init) => {
@@ -722,8 +672,7 @@ describe('coverage floor 90f — surgical multi-step', () => {
                 ok: true,
                 password: 'TempPass99!',
                 notes: ['created'],
-                user: { id: 'tu1', username: 'tmp_app', database: 'app' },
-              };
+                user: { id: 'tu1', username: 'tmp_app', database: 'app' } };
             }
             return {
               items: [
@@ -733,12 +682,9 @@ describe('coverage floor 90f — surgical multi-step', () => {
                   database: 'app',
                   engine: 'mysql',
                   apply_status: 'written',
-                  expiresAt: t,
-                },
-              ],
-            };
-          },
-        },
+                  expiresAt: t },
+              ] };
+          } },
         {
           match: (url) => url.includes('/api/v1/db/remote-hosts'),
           handler: (url, init) => {
@@ -757,12 +703,9 @@ describe('coverage floor 90f — surgical multi-step', () => {
                   host: '10.0.0.9',
                   port: 3306,
                   username: 'ro',
-                  hasPassword: true,
-                },
-              ],
-            };
-          },
-        },
+                  hasPassword: true },
+              ] };
+          } },
         {
           match: (url) => url.includes('/api/v1/db/adminer'),
           body: {
@@ -770,9 +713,7 @@ describe('coverage floor 90f — surgical multi-step', () => {
             ok: true,
             urlHint: 'https://adminer.mysql.local',
             apply_status: 'written',
-            notes: ['written'],
-          },
-        },
+            notes: ['written'] } },
         {
           match: (url) =>
             url.includes('/dump') || url.includes('/hosting/db') || url.includes('/db/'),
@@ -781,8 +722,7 @@ describe('coverage floor 90f — surgical multi-step', () => {
               return { ok: true, notes: ['dumped'], items: [{ name: 'app-2024.sql' }] };
             }
             return { ok: true, items: [{ name: 'app-2024.sql', size: 100 }], notes: ['ok'] };
-          },
-        },
+          } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -855,9 +795,7 @@ describe('coverage floor 90f — surgical multi-step', () => {
           match: (url) => url.includes('/auth/me'),
           body: {
             user: { id: '1', username: 'admin', roles: ['admin'], locale: 'en' },
-            capabilities: ['*'],
-          },
-        },
+            capabilities: ['*'] } },
         {
           match: (url) => url.includes('/api/v1/projects'),
           handler: (url, init) => {
@@ -868,8 +806,7 @@ describe('coverage floor 90f — surgical multi-step', () => {
                 ok: true,
                 notes: ['ok'],
                 osProvision: { detail: 'user ready' },
-                extraDirs: ['/var/log/app', '/tmp/logs'],
-              };
+                extraDirs: ['/var/log/app', '/tmp/logs'] };
             }
             if (url.includes('/logs')) {
               const u = new URL(url, 'http://local.test');
@@ -884,8 +821,7 @@ describe('coverage floor 90f — surgical multi-step', () => {
                       {
                         file: 'error.log',
                         lines: ['ERR boom', 'ERR again'],
-                        matched: 2,
-                      },
+                        matched: 2 },
                     ]
                   : [],
                 notes: grep ? ['matched 2'] : [],
@@ -896,16 +832,13 @@ describe('coverage floor 90f — surgical multi-step', () => {
                     kind: 'nginx',
                     label: 'Nginx error',
                     source: 'file',
-                    available: true,
-                  },
+                    available: true },
                 ],
                 extraDirs: ['/var/log/app'],
                 tail: {
                   file: grep ? 'error.log' : 'app.log',
                   lines: grep ? ['ERR boom', 'line2'] : ['started', 'ready'],
-                  notes: ['ok'],
-                },
-              };
+                  notes: ['ok'] } };
             }
             if (url.includes('/log-dirs')) {
               return { ok: true, extraDirs: ['/var/log/app', '/tmp/logs'], notes: ['saved'] };
@@ -915,15 +848,13 @@ describe('coverage floor 90f — surgical multi-step', () => {
               return { items: [PROJECT] };
             }
             return { ...PROJECT, items: [PROJECT] };
-          },
-        },
+          } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
       renderAt('/projects/p1?tab=logs&fresh=1', <ProjectDetailPage />, '/projects/:id');
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument(), {
-        timeout: 10_000,
-      });
+        timeout: 10_000 });
 
       // Stop confirm
       await clickFirst(user, /stop|停止/i);
@@ -995,14 +926,12 @@ describe('coverage floor 90f — surgical multi-step', () => {
                       label: 'Max old space',
                       type: 'int',
                       default: 512,
-                      hint: 'MB',
-                    },
+                      hint: 'MB' },
                     {
                       key: 'enable_source_maps',
                       label: 'Source maps',
                       type: 'bool',
-                      default: false,
-                    },
+                      default: false },
                     {
                       key: 'log_level',
                       label: 'Log level',
@@ -1018,22 +947,18 @@ describe('coverage floor 90f — surgical multi-step', () => {
                         { value: 'silent', label: 'silent' },
                         { value: 'verbose', label: 'verbose' },
                         { value: 'all', label: 'all' },
-                      ],
-                    },
+                      ] },
                     {
                       key: 'worker_threads',
                       label: 'Workers',
                       type: 'int',
-                      default: 2,
-                    },
+                      default: 2 },
                     {
                       key: 'custom_flag',
                       label: 'Custom',
                       type: 'string',
-                      default: '',
-                    },
-                  ],
-                },
+                      default: '' },
+                  ] },
                 {
                   id: 'gc',
                   title: 'GC',
@@ -1042,22 +967,18 @@ describe('coverage floor 90f — surgical multi-step', () => {
                       key: 'gogc',
                       label: 'GOGC',
                       type: 'int',
-                      default: 100,
-                    },
+                      default: 100 },
                     {
                       key: 'gomaxprocs',
                       label: 'GOMAXPROCS',
                       type: 'int',
-                      default: 0,
-                    },
+                      default: 0 },
                     {
                       key: 'other_int',
                       label: 'Other',
                       type: 'int',
-                      default: 1,
-                    },
-                  ],
-                },
+                      default: 1 },
+                  ] },
               ],
               settings: {
                 kind: 'node',
@@ -1070,18 +991,13 @@ describe('coverage floor 90f — surgical multi-step', () => {
                   custom_flag: '',
                   gogc: 100,
                   gomaxprocs: 0,
-                  other_int: 1,
-                },
-                env: { NODE_ENV: 'production' },
-              },
+                  other_int: 1 },
+                env: { NODE_ENV: 'production' } },
               envPreview: {
                 NODE_OPTIONS: '--max-old-space-size=512',
-                NODE_ENV: 'production',
-              },
-              notes: [],
-            };
-          },
-        },
+                NODE_ENV: 'production' },
+              notes: [] };
+          } },
         {
           match: (url) => url.includes('/api/v1/hosting/runtimes'),
           handler: (_u, init) => {
@@ -1095,24 +1011,18 @@ describe('coverage floor 90f — surgical multi-step', () => {
                     version: '20',
                     available: true,
                     resolvedPath: '/usr/bin/node',
-                    versionOutput: 'v20.11.0',
-                  },
+                    versionOutput: 'v20.11.0' },
                   {
                     version: '18',
                     available: false,
                     resolvedPath: null,
-                    versionOutput: null,
-                  },
+                    versionOutput: null },
                 ],
                 hostNode: 'v20.11.0',
-                notes: ['host has node'],
-              },
+                notes: ['host has node'] },
               supported: {
-                node: ['18', '20', '22', '16', '14', '12', '10', '8', '6'],
-              },
-            };
-          },
-        },
+                node: ['18', '20', '22', '16', '14', '12', '10', '8', '6'] } };
+          } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -1160,8 +1070,7 @@ describe('coverage floor 90f — surgical multi-step', () => {
       const extra = document.getElementById('tune-node-extra') as HTMLTextAreaElement | null;
       if (extra) {
         fireEvent.change(extra, {
-          target: { value: 'FOO=1\n# comment\nBAR=two\nbadline\n=novalue' },
-        });
+          target: { value: 'FOO=1\n# comment\nBAR=two\nbadline\n=novalue' } });
       }
       for (const input of Array.from(
         document.querySelectorAll<HTMLInputElement>('input:not([type="hidden"]):not([type="checkbox"])'),
@@ -1201,20 +1110,16 @@ describe('coverage floor 90f — surgical multi-step', () => {
                   fields: [
                     { key: 'gogc', label: 'GOGC', type: 'int', default: 100 },
                     { key: 'gomaxprocs', label: 'GOMAXPROCS', type: 'int', default: 0 },
-                  ],
-                },
+                  ] },
               ],
               settings: {
                 kind: 'go',
                 version: '1.22',
                 values: { gogc: 100, gomaxprocs: 0 },
-                env: {},
-              },
+                env: {} },
               envPreview: { GOGC: '100' },
-              notes: [],
-            };
-          },
-        },
+              notes: [] };
+          } },
         {
           match: (url) => url.includes('/api/v1/hosting/runtimes'),
           handler: (_u, init) => {
@@ -1226,16 +1131,12 @@ describe('coverage floor 90f — surgical multi-step', () => {
                     version: '1.22',
                     available: true,
                     resolvedPath: '/usr/local/go/bin/go',
-                    versionOutput: 'go1.22.1',
-                  },
+                    versionOutput: 'go1.22.1' },
                 ],
                 hostGo: 'go1.22.1',
-                notes: [],
-              },
-              supported: { go: ['1.21', '1.22', '1.23'] },
-            };
-          },
-        },
+                notes: [] },
+              supported: { go: ['1.21', '1.22', '1.23'] } };
+          } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 

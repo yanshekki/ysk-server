@@ -31,7 +31,7 @@
     "i18n:rebuild": "node ./scripts/rebuild-translation.mjs",
     "i18n:check-drift": "node ./scripts/i18n-rebuild-drift.mjs",
     "i18n:check-guides": "node ./scripts/i18n-guides-parity.mjs",
-    "gates": "pnpm honesty:lint && pnpm primitives:check && pnpm chrome:check && pnpm about-tab:check && pnpm css:reuse && pnpm probe:ssot && pnpm i18n:check-keys && pnpm i18n:check-ui && pnpm i18n:check-api && pnpm i18n:check-glossary && pnpm i18n:check-drift && pnpm i18n:check-guides",
+    "gates": "pnpm honesty:lint && pnpm primitives:check && pnpm chrome:check && pnpm about-tab:check && pnpm css:reuse && pnpm probe:ssot && pnpm i18n:check-keys && pnpm i18n:check-ui && pnpm i18n:check-api && pnpm i18n:check-glossary && pnpm i18n:check-drift && pnpm i18n:check-guides && pnpm i18n:check-no-uiinline-default",
     "review:inventory": "node ./scripts/review-inventory.mjs",
     "e2e:real-ops": "bash scripts/e2e-real-ops.sh",
     "e2e:hosting-root": "bash scripts/e2e-hosting-root.sh",
@@ -40,7 +40,8 @@
     "i18n:check-glossary": "node ./scripts/i18n-hk-glossary-lint.mjs",
     "docs:bilingual": "node ./scripts/docs-bilingual-check.mjs",
     "e2e:sql-switch": "bash scripts/e2e-sql-switch-check.sh",
-    "e2e:sql-switch-live": "bash scripts/e2e-sql-switch-live-docker.sh"
+    "e2e:sql-switch-live": "bash scripts/e2e-sql-switch-live-docker.sh",
+    "i18n:check-no-uiinline-default": "node ./scripts/i18n-no-uiinline-default.mjs"
   },
   "engines": {
     "node": ">=20"

@@ -16,8 +16,7 @@ describe('AppShell', () => {
     authStore.setSession('test-token', {
       username: 'admin',
       roles: ['admin'],
-      capabilities: [],
-    });
+      capabilities: [] });
   });
 
   afterEach(() => {
@@ -37,11 +36,8 @@ describe('AppShell', () => {
               kind: 'project',
               title: 'Demo App',
               subtitle: 'demo.example.com',
-              href: '/projects/p1',
-            },
-          ],
-        },
-      },
+              href: '/projects/p1' },
+          ] } },
       { match: /\/api\/v1\/auth\/logout/, body: { ok: true } },
       { match: /\/api\/v1\/auth\/me/, body: { user: { username: 'admin', roles: ['admin'] }, capabilities: [] } },
       { match: /.*/, body: { ok: true, items: [] } },
@@ -73,16 +69,14 @@ describe('AppShell', () => {
     }
 
     const localeBtns = screen.queryAllByRole('button', {
-      name: /EN|中文|HK|locale|語言|English/i,
-    });
+      name: /EN|中文|HK|locale|語言|English/i });
     if (localeBtns[0]) await user.click(localeBtns[0]!);
 
     const menuBtns = screen.queryAllByRole('button', { name: /menu|nav|導航/i });
     if (menuBtns[0]) await user.click(menuBtns[0]!);
 
     const logoutBtns = screen.queryAllByRole('button', {
-      name: /log\s*out|sign\s*out|登出/i,
-    });
+      name: /log\s*out|sign\s*out|登出/i });
     if (logoutBtns[0]) {
       await user.click(logoutBtns[0]!);
       await waitFor(() => {
@@ -98,8 +92,7 @@ describe('App routes mount', () => {
     authStore.setSession('test-token', {
       username: 'admin',
       roles: ['admin'],
-      capabilities: [],
-    });
+      capabilities: [] });
   });
 
   afterEach(() => {

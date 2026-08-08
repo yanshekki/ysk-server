@@ -10,8 +10,7 @@ import {
   type StackBundle,
   type StackOpResult,
   type StackPlan,
-  type StackStatusResponse,
-} from './api';
+  type StackStatusResponse } from './api';
 
 const ALL_BUNDLE_IDS = [
   'web',
@@ -73,8 +72,7 @@ export function StackWizard() {
         plan: plan === 'custom' ? undefined : plan,
         bundles: plan === 'custom' ? selectedBundles : undefined,
         sqlServer,
-        clamav,
-      })
+        clamav })
       .then((r) => {
         if (!cancelled && r.ok && r.components) setPreview(r.components);
       })
@@ -101,8 +99,7 @@ export function StackWizard() {
         bundles: plan === 'custom' ? selectedBundles : undefined,
         sqlServer,
         clamav,
-        dryRun,
-      });
+        dryRun });
       setResult(r);
       if (!dryRun) await refresh();
     } catch (e) {
@@ -128,8 +125,7 @@ export function StackWizard() {
         bundles: unBundles.length ? unBundles : undefined,
         all: unBundles.length === 0,
         dataPolicy,
-        dryRun,
-      });
+        dryRun });
       setResult(r);
       if (!dryRun) await refresh();
     } catch (e) {

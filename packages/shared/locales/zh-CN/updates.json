@@ -144,5 +144,7 @@
   "batchCancel": "取消批量",
   "batchCancelling": "正在取消…（当前软件包完成后停止）",
   "batchCancelled": "已取消（其余未执行）",
-  "batchRescanned": "已重新扫描主机软件包状态"
+  "batchRescanned": "已重新扫描主机软件包状态",
+  "applyLogTitle": "套件更新日誌（即時）",
+  "navBadgeTitle": "主機可升級套件：{{v0}}"
 }

@@ -31,8 +31,7 @@ export function PageStatusBar({
   chips,
   note,
   actions,
-  className,
-}: PageStatusBarProps) {
+  className }: PageStatusBarProps) {
   const list = (chips ?? []).slice(0, 6);
   return (
     <div

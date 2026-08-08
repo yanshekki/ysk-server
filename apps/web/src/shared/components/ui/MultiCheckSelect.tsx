@@ -47,8 +47,7 @@ export type MultiCheckSelectProps = {
 const LIST_SIZE_CLASS: Record<NonNullable<MultiCheckSelectProps['listSize']>, string> = {
   sm: 'mcs__list--sm',
   md: 'mcs__list--md',
-  lg: 'mcs__list--lg',
-};
+  lg: 'mcs__list--lg' };
 
 export function MultiCheckSelect({
   id,
@@ -66,8 +65,7 @@ export function MultiCheckSelect({
   showSelectAll = true,
   listMaxHeight,
   listSize = 'lg',
-  chipCollapseAt = 8,
-}: MultiCheckSelectProps) {
+  chipCollapseAt = 8 }: MultiCheckSelectProps) {
   const { t } = useTranslation();
   const [q, setQ] = useState('');
   const [custom, setCustom] = useState('');
@@ -275,8 +273,7 @@ export function MultiCheckSelect({
             <span className="mcs__count muted u-text-sm">
               {t('multiCheck.selectedCount', {
                 n: value.filter((v) => optionValues.includes(v)).length,
-                total: optionValues.length,
-              })}
+                total: optionValues.length })}
             </span>
           </div>
         ) : null}
@@ -317,8 +314,7 @@ export function MultiCheckSelect({
           <p className="mcs__more muted u-text-sm">
             {t('multiCheck.showingCapped', {
               shown: maxVisible,
-              total: filtered.length,
-            })}
+              total: filtered.length })}
           </p>
         ) : null}
       </div>

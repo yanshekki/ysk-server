@@ -7,8 +7,7 @@ import {
   CardSection,
   Field,
   FormActions,
-  FormLayout,
-} from '../../../shared/components/ui';
+  FormLayout } from '../../../shared/components/ui';
 import { getProjectUiProfile } from '../model/runtime-ui';
 import { projectsApi } from '../api';
 import { bindInput, bindVoid } from '../../../pages/bind-handlers';
@@ -33,8 +32,7 @@ export function ProjectAdvancedTab({
   onSuspend,
   onUnsuspend,
   onDelete,
-  onOpsMessage,
-}: ProjectAdvancedTabProps) {
+  onOpsMessage }: ProjectAdvancedTabProps) {
   const { t } = useTranslation();
   const ui = getProjectUiProfile(project.runtime);
   const suspended = project.status === 'suspended';
@@ -48,13 +46,11 @@ export function ProjectAdvancedTab({
       const r = await projectsApi.createFtp(project.id, {
         username: ftpUser || undefined,
         password: ftpPass,
-        homeSubdir: 'app',
-      });
+        homeSubdir: 'app' });
       onOpsMessage?.(
         r.ok
           ? t('projects.advFtpCreated', {
-              user: String((r.account as { username?: string })?.username ?? ''),
-            })
+              user: String((r.account as { username?: string })?.username ?? '') })
           : (r.notes ?? []).join('；') || t('common.createFailed'),
       );
       if (r.ok) setFtpPass('');

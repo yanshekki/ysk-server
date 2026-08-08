@@ -11,8 +11,7 @@ import { ActionBar,
   FormActions,
   FormHint,
   FormLayout,
-  Modal,
-} from '../../../shared/components/ui';
+  Modal } from '../../../shared/components/ui';
 import { sshApi } from './api';
 import type { ProjectOpt, SftpKeyRow } from './types';
 import { bindSet, bindInput, bindVoid } from '../../../pages/bind-handlers';
@@ -57,8 +56,7 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
       const r = await sshApi.addLoginKey({
         projectId,
         publicKey: pub.trim(),
-        comment: comment.trim() || undefined,
-      });
+        comment: comment.trim() || undefined });
       onFlash(
         r.ok ? 'ok' : 'error',
         (r.notes ?? []).join(' · ') || (r.ok ? t('security.ssh.loginAdded') : t('common.failed')),

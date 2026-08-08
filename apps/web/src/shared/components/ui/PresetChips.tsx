@@ -33,8 +33,7 @@ export function PresetChips({
   disabled = false,
   allowCustom = false,
   customPlaceholder,
-  looseMatch = true,
-}: PresetChipsProps) {
+  looseMatch = true }: PresetChipsProps) {
   const { t } = useTranslation();
   const current = norm(value, looseMatch);
   const isPreset = options.some((o) => norm(o.value, looseMatch) === current);

@@ -21,8 +21,7 @@ export function ProjectDetailHeader({
   onDeploy,
   onStop,
   onHealth,
-  onRefresh,
-}: ProjectDetailHeaderProps) {
+  onRefresh }: ProjectDetailHeaderProps) {
   const { t } = useTranslation();
   const ui = getProjectUiProfile(project.runtime);
 

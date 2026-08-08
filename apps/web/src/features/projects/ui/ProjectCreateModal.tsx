@@ -8,16 +8,14 @@ import {
   FormHint,
   FormLayout,
   Modal,
-  SegRadio,
-} from '../../../shared/components/ui';
+  SegRadio } from '../../../shared/components/ui';
 import { projectsApi } from '../api';
 import { formatRuntimeName } from '../model/runtime-ui';
 import { bindInput } from '../../../pages/bind-handlers';
 import {
   defaultRuntimeInstallVersion,
   fetchRuntimeVersionChoices,
-  runtimeVersionChoices,
-} from '../model/deploy-prefs';
+  runtimeVersionChoices } from '../model/deploy-prefs';
 
 type ProjectRuntime =
   | 'node'
@@ -60,8 +58,7 @@ const HELLO_TEMPLATES: AppTemplateItem[] = PROJECT_RUNTIMES.map((rt) => ({
   id: `${rt}-hello`,
   name: 'Hello World!',
   description: `Minimal ${rt} demo`,
-  runtime: rt,
-}));
+  runtime: rt }));
 
 function helloTemplateId(runtime: ProjectRuntime): string {
   return `${runtime}-hello`;
@@ -96,8 +93,7 @@ export function ProjectCreateModal({
   busy,
   initialRuntime,
   initialRuntimeVersion,
-  onSubmit,
-}: ProjectCreateModalProps) {
+  onSubmit }: ProjectCreateModalProps) {
   const { t } = useTranslation();
   const [name, setName] = useState('');
   const [domain, setDomain] = useState('');
@@ -134,8 +130,7 @@ export function ProjectCreateModal({
               id: String(it.id),
               name: String(it.name || 'Hello World!'),
               description: String(it.description || ''),
-              runtime: String(it.runtime),
-            });
+              runtime: String(it.runtime) });
           }
         }
         setTemplates([...byRuntime.values()]);
@@ -240,8 +235,7 @@ export function ProjectCreateModal({
       serverIpv6:
         createDns || createMail
           ? serverIpv6.trim() || undefined
-          : undefined,
-    });
+          : undefined });
   }
 
   const hasDomain = Boolean(domain.trim());
@@ -361,8 +355,7 @@ export function ProjectCreateModal({
                       ? '20 LTS'
                       : runtime === 'rust' && v === 'stable'
                         ? 'stable'
-                        : v,
-                }))}
+                        : v }))}
               />
             </Field>
           ) : null}
@@ -429,9 +422,7 @@ export function ProjectCreateModal({
           {filteredTemplates.length === 0 ? (
             <FormHint>
               {t('projects.createTemplateMissing', {
-                runtime: formatRuntimeName(runtime, t),
-                defaultValue: t('uiInline.s99cc48c1', { v0: formatRuntimeName(runtime, t) }),
-              })}
+                runtime: formatRuntimeName(runtime, t) })}
             </FormHint>
           ) : null}
         </FormLayout>
@@ -439,16 +430,14 @@ export function ProjectCreateModal({
         <FormLayout>
           <CheckboxField
             id="pc-golive"
-            label={t('projects.createGoLive', {
-              defaultValue: t('uiInline.sa87ceeff'),
-            })}
+            label={t('projects.createGoLive', { })}
             checked={goLive}
             onChange={setGoLive}
             disabled={busy}
           />
           {runtime !== 'static' && runtime !== 'php' ? (
             <Field
-              label={t('projects.createPreferredPort', { defaultValue: t('uiInline.s38a63bcb') })}
+              label={t('projects.createPreferredPort')}
               htmlFor="pport"
               flush
             >

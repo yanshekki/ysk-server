@@ -10,8 +10,7 @@ import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
   softwareReadyRoute,
-  type FetchRoute,
-} from '../test/mock-fetch';
+  type FetchRoute } from '../test/mock-fetch';
 import { authStore } from '../shared/stores/auth-store';
 import { ProtectionPage } from './features/ProtectionPage';
 import { SystemPage } from './SystemPage';
@@ -57,8 +56,7 @@ const defenseRoutes = (): FetchRoute[] => [
         burst: 20,
         connLimit: 40,
         confPath: '/etc/nginx/conf.d/d.conf',
-        exists: true,
-      },
+        exists: true },
       firewall: { active: 'inactive', installed: true },
       fail2ban: { active: 'inactive', installed: true, jails: 1 },
       autoBan: {
@@ -67,16 +65,13 @@ const defenseRoutes = (): FetchRoute[] => [
         method: 'fail2ban',
         cooldownMinutes: 30,
         maxAutoBansPerHour: 20,
-        whitelist: ['127.0.0.1'],
-      },
+        whitelist: ['127.0.0.1'] },
       executeEnabled: false,
       isRoot: false,
       suggestions: [
         { id: 's1', title: 'Apply', body: 'x', action: 'preset:daily' },
       ],
-      notes: [],
-    },
-  },
+      notes: [] } },
   {
     match: (url) => url.startsWith('/api/v1/defense/geoip/status'),
     body: {
@@ -96,12 +91,9 @@ const defenseRoutes = (): FetchRoute[] => [
         cityPolicyEnabled: false,
         asns: [],
         enforce: { autoBan: true, nginx: true, ufw: false },
-        autoUpdate: true,
-      },
+        autoUpdate: true },
       sources: [],
-      meta: null,
-    },
-  },
+      meta: null } },
   {
     match: (url) => url.startsWith('/api/v1/defense/automation'),
     body: {
@@ -114,8 +106,7 @@ const defenseRoutes = (): FetchRoute[] => [
           suggestEmergencyAt: 90,
           deescalateEnabled: true,
           deescalateToDailyBelow: 20,
-          holdMinutes: 30,
-        },
+          holdMinutes: 30 },
         autoBan: {
           enabled: true,
           mode: 'normal',
@@ -127,12 +118,8 @@ const defenseRoutes = (): FetchRoute[] => [
           cooldownMinutes: 30,
           maxAutoBansPerHour: 20,
           intervalSeconds: 60,
-          whitelist: [],
-        },
-      },
-      mechanisms: [{ step: '1', mechanism: 'fail2ban', tunable: 'bantime' }],
-    },
-  },
+          whitelist: [] } },
+      mechanisms: [{ step: '1', mechanism: 'fail2ban', tunable: 'bantime' }] } },
   {
     match: (url) => url.startsWith('/api/v1/defense/suspects'),
     body: {
@@ -143,40 +130,30 @@ const defenseRoutes = (): FetchRoute[] => [
           hits: 100,
           reasons: ['scan'],
           sources: ['nginx'],
-          lastSeen: new Date().toISOString(),
-        },
+          lastSeen: new Date().toISOString() },
       ],
-      notes: [],
-    },
-  },
+      notes: [] } },
   {
     match: (url) => url.startsWith('/api/v1/defense/timeline'),
-    body: { items: [{ at: new Date().toISOString(), kind: 'x', title: 't' }] },
-  },
+    body: { items: [{ at: new Date().toISOString(), kind: 'x', title: 't' }] } },
   {
     match: (url) => url.startsWith('/api/v1/defense/intel'),
     body: {
       topIps: [{ ip: '1.1.1.1', hits: 1, s429: 0, scan: 0, score: 1 }],
       vhostLimits: { withLimit: 0, total: 0, items: [] },
       hasCfToken: false,
-      cfZones: [],
-    },
-  },
+      cfZones: [] } },
   {
     match: (url) => url.startsWith('/api/v1/defense/bans'),
     body: {
       items: [{ ip: '203.0.113.10', source: 'fail2ban', jail: 'sshd' }],
-      meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-    },
-  },
+      meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } } },
   {
     match: /\/api\/v1\/defense/,
-    body: HONESTY_WRITTEN_BLOCKED,
-  },
+    body: HONESTY_WRITTEN_BLOCKED },
   {
     match: /\/api\/v1\/system\/firewall/,
-    body: { installed: true, active: 'inactive', rules: [], allowCount: 0, denyCount: 0 },
-  },
+    body: { installed: true, active: 'inactive', rules: [], allowCount: 0, denyCount: 0 } },
   {
     match: /\/api\/v1\/system\/fail2ban/,
     body: {
@@ -185,9 +162,7 @@ const defenseRoutes = (): FetchRoute[] => [
       jails: [],
       banned: [],
       ignoreIps: [],
-      catalog: [],
-    },
-  },
+      catalog: [] } },
   { match: /.*/, body: { ok: true, items: [], ready: true, missing: [] } },
 ];
 
@@ -196,8 +171,7 @@ describe('deep page interactions', () => {
     authStore.setSession('t', {
       username: 'admin',
       roles: ['admin'],
-      capabilities: [],
-    });
+      capabilities: [] });
   });
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -211,8 +185,7 @@ describe('deep page interactions', () => {
       installFetchMock(defenseRoutes());
       renderPage('/protection', <ProtectionPage />);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument(), {
-        timeout: 8000,
-      });
+        timeout: 8000 });
 
       for (const tab of screen.getAllByRole('tab').slice(0, 8)) {
         await user.click(tab);
@@ -220,8 +193,7 @@ describe('deep page interactions', () => {
 
       // Apply suggestion / preset if present
       const applyBtns = screen.queryAllByRole('button', {
-        name: /apply|preset|ban|save|refresh/i,
-      });
+        name: /apply|preset|ban|save|refresh/i });
       for (const b of applyBtns.slice(0, 3)) {
         try {
           await user.click(b);
@@ -251,15 +223,13 @@ describe('deep page interactions', () => {
             memory: { total: 1e9, free: 5e8, usedRatio: 0.5 },
             node: 'v20',
             pid: 1,
-            uid: 0,
-          },
+            uid: 0 },
           time: {
             utc: new Date().toISOString(),
             local: new Date().toISOString(),
             ntpEnabled: true,
             ntpSynchronized: true,
-            timeSource: 'ntp',
-          },
+            timeSource: 'ntp' },
           network: { ips: ['127.0.0.1'], interfaces: [], resolvers: [] },
           disks: [],
           power: { pending: null },
@@ -268,11 +238,8 @@ describe('deep page interactions', () => {
             executeEnabled: false,
             isRoot: false,
             canPower: false,
-            canIdentity: true,
-          },
-          collectedAt: new Date().toISOString(),
-        },
-      },
+            canIdentity: true },
+          collectedAt: new Date().toISOString() } },
       {
         match: /\/api\/v1\/system\/export/,
         body: {
@@ -281,9 +248,7 @@ describe('deep page interactions', () => {
           items: [],
           exportedAt: new Date().toISOString(),
           counts: { projects: 0 },
-          projects: [],
-        },
-      },
+          projects: [] } },
       { match: /.*/, body: { ok: true, items: [], ready: true, missing: [] } },
     ]);
     renderPage('/system', <SystemPage />);
@@ -311,20 +276,16 @@ describe('deep page interactions', () => {
               fingerprintSha256: 'SHA256:abcdef0123456789',
               publicKey: 'ssh-ed25519 AAAA',
               createdAt: new Date().toISOString(),
-              binding: { linuxUser: 'ysk', homeDir: '/home/ysk' },
-            },
+              binding: { linuxUser: 'ysk', homeDir: '/home/ysk' } },
           ],
           host: { notes: [], lights: { package: 'ok', pam: 'ok', kbdInteractive: 'ok' } },
           pamSnippet: '#',
           sshdHints: '#',
           snippet: 'Match',
-          notes: [],
-        },
-      },
+          notes: [] } },
       {
         match: /\/api\/v1\/sftp\//,
-        body: { ok: true, items: [], snippet: '', notes: [] },
-      },
+        body: { ok: true, items: [], snippet: '', notes: [] } },
       {
         match: /\/api\/v1\/security/,
         body: {
@@ -335,13 +296,10 @@ describe('deep page interactions', () => {
           apiKeys: [],
           tools: [],
           approvals: [],
-          webauthnCredentials: [],
-        },
-      },
+          webauthnCredentials: [] } },
       {
         match: /\/api\/v1\/projects/,
-        body: { items: [] },
-      },
+        body: { items: [] } },
       { match: /.*/, body: { ok: true, items: [] } },
     ]);
     renderPage('/security', <SecurityPage />);
@@ -374,24 +332,19 @@ describe('deep page interactions', () => {
               fingerprintSha256: 'SHA256:abcdef0123456789abcd',
               publicKey: 'ssh-ed25519 AAAA',
               createdAt: new Date().toISOString(),
-              binding: { linuxUser: 'ysk', homeDir: '/home/ysk' },
-            },
+              binding: { linuxUser: 'ysk', homeDir: '/home/ysk' } },
           ],
           identity: {
             id: 'id-2',
             name: 'new',
             purpose: 'panel_outbound',
             status: 'stored',
-            fingerprintSha256: 'SHA256:x',
-          },
+            fingerprintSha256: 'SHA256:x' },
           privateKey: 'PRIVATE',
-          notes: [],
-        },
-      },
+          notes: [] } },
       {
         match: /\/api\/v1\/projects/,
-        body: { items: [{ id: 'p1', name: 'Demo', linuxUser: 'demo', homeDir: '/home/demo' }] },
-      },
+        body: { items: [{ id: 'p1', name: 'Demo', linuxUser: 'demo', homeDir: '/home/demo' }] } },
       { match: /.*/, body: { ...HONESTY_WRITTEN_BLOCKED, items: [], ok: true } },
     ]);
     render(
@@ -427,17 +380,14 @@ describe('deep page interactions', () => {
                 status: 'planned',
                 members: [],
                 params: {},
-                artifactDir: '/tmp/c1',
-              },
+                artifactDir: '/tmp/c1' },
               plan: {
                 ok: true,
                 notes: ['dry'],
                 steps: [{ id: '1', title: 'cfg' }],
                 clusterId: 'c1',
-                files: ['a.conf'],
-              },
-              ...HONESTY_WRITTEN_BLOCKED,
-            };
+                files: ['a.conf'] },
+              ...HONESTY_WRITTEN_BLOCKED };
           }
           return {
             ok: true,
@@ -450,12 +400,9 @@ describe('deep page interactions', () => {
                 status: 'planned',
                 members: [{ host: '10.0.0.1', role: 'primary', access: 'local', label: 'p' }],
                 params: {},
-                artifactDir: '/tmp/c1',
-              },
-            ],
-          };
-        },
-      },
+                artifactDir: '/tmp/c1' },
+            ] };
+        } },
     ]);
     render(
       <MemoryRouter>
@@ -495,8 +442,7 @@ describe('deep page interactions', () => {
             freeKiB: 5e5,
             usedKiB: 5e5,
             buffCacheKiB: 0,
-            availableKiB: 5e5,
-          },
+            availableKiB: 5e5 },
           disk: { usedGb: 1, totalGb: 50, percent: 2 },
           load: [0.1, 0.1, 0.1],
           loadavg: [0.1, 0.1, 0.1],
@@ -511,9 +457,7 @@ describe('deep page interactions', () => {
           notes: [],
           tasks: { total: 1, running: 0, sleeping: 1, stopped: 0, zombie: 0 },
           cpus: [],
-          swap: { totalKiB: 0, freeKiB: 0, usedKiB: 0 },
-        },
-      },
+          swap: { totalKiB: 0, freeKiB: 0, usedKiB: 0 } } },
       {
         match: /\/api\/v1\/cdn\/dashboard/,
         body: {
@@ -521,9 +465,7 @@ describe('deep page interactions', () => {
           nodes: { total: 1, online: 1, offline: 0, draining: 0, unknown: 0, byRegion: {} },
           sites: { total: 0, byApplyStatus: {}, rows: [] },
           cache: [],
-          notes: [],
-        },
-      },
+          notes: [] } },
       {
         match: /\/api\/v1\/email\/domains/,
         body: {
@@ -534,9 +476,7 @@ describe('deep page interactions', () => {
           health: { score: 50, maxScore: 100, messages: [] },
           notes: [],
           checks: [],
-          recommendations: [],
-        },
-      },
+          recommendations: [] } },
       {
         match: (url) =>
           url.includes('/trash') || url.includes('/api/v1/files') || url.includes('/hosting/files'),
@@ -552,11 +492,9 @@ describe('deep page interactions', () => {
                   type: 'file',
                   size: 1,
                   deletedAt: now,
-                  mtime: now,
-                },
+                  mtime: now },
               ],
-              entries: [],
-            };
+              entries: [] };
           }
           return {
             ok: true,
@@ -566,8 +504,7 @@ describe('deep page interactions', () => {
                 path: 'a.txt',
                 type: 'file',
                 size: 1,
-                mtime: now,
-              },
+                mtime: now },
             ],
             items: [
               {
@@ -575,20 +512,15 @@ describe('deep page interactions', () => {
                 path: 'a.txt',
                 type: 'file',
                 size: 1,
-                mtime: now,
-              },
+                mtime: now },
             ],
-            path: '/',
-          };
-        },
-      },
+            path: '/' };
+        } },
       {
         match: /\/api\/v1\/dns/,
         body: {
           items: [{ id: 'z1', name: 'example.com', type: 'zone' }],
-          meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-        },
-      },
+          meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } } },
       {
         match: /\/api\/v1\/backups/,
         body: {
@@ -598,11 +530,8 @@ describe('deep page interactions', () => {
               name: 'Demo',
               path: '/backups/p1.tgz',
               bytes: 100,
-              mtime: new Date().toISOString(),
-            },
-          ],
-        },
-      },
+              mtime: new Date().toISOString() },
+          ] } },
       { match: /.*/, body: { ok: true, items: [], ready: true, missing: [], notes: [] } },
     ];
     installFetchMock(routes);
@@ -617,8 +546,7 @@ describe('deep page interactions', () => {
     ] as const) {
       const { unmount } = renderPage(path, el, routePath);
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument(), {
-        timeout: 5000,
-      });
+        timeout: 5000 });
       for (const tab of screen.queryAllByRole('tab')) {
         await user.click(tab);
       }

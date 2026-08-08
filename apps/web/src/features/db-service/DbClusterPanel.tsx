@@ -19,16 +19,14 @@ import { ActionBar,
   FormLayout,
   Modal,
   OpsResultPanel,
-  SegRadio,
-} from '../../shared/components/ui';
+  SegRadio } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import type { DbServiceEngine } from './api';
 import {
   dbClusterApi,
   type ClusterPlan,
   type DbCluster,
-  type DbClusterKind,
-} from './cluster-api';
+  type DbClusterKind } from './cluster-api';
 import { useFeatureAction } from '../system/useFeatureAction';
 import { api } from '../../shared/services/api';
 import { useTranslation } from 'react-i18next';
@@ -137,36 +135,31 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
               host: localHost.trim(),
               role: 'node',
               access: 'local',
-              label: 'local',
-            },
+              label: 'local' },
             {
               host: peerHost.trim(),
               role: 'node',
               access: 'ssh',
-              label: 'peer-1',
-            },
+              label: 'peer-1' },
           ]
         : [
             {
               host: localHost.trim(),
               role: primaryRole,
               access: 'local',
-              label: primaryRole,
-            },
+              label: primaryRole },
             {
               host: peerHost.trim(),
               role: 'replica',
               access: 'ssh',
-              label: 'replica-1',
-            },
+              label: 'replica-1' },
           ];
       if (peer3Host.trim()) {
         members.push({
           host: peer3Host.trim(),
           role: isGalera ? 'node' : 'replica',
           access: 'ssh',
-          label: isGalera ? 'peer-2' : 'replica-2',
-        });
+          label: isGalera ? 'peer-2' : 'replica-2' });
       }
       const params: Record<string, string | number | boolean> = {};
       if (isGalera) {
@@ -186,8 +179,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
         engine,
         kind,
         members,
-        params,
-      });
+        params });
       const planned = await dbClusterApi.plan(created.cluster.id);
       setActiveId(created.cluster.id);
       setLastPlan(planned.plan);
@@ -202,8 +194,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
           planned.cluster.artifactDir
             ? t('db.cluster.artifactNote', { dir: planned.cluster.artifactDir })
             : '',
-        ].filter(Boolean),
-      } as OpsResultLike;
+        ].filter(Boolean) } as OpsResultLike;
     }, t('db.cluster.planGenerated'));
   }
 
@@ -216,8 +207,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
       return {
         ok: planned.plan.ok,
         dryRun: true,
-        notes: planned.plan.notes,
-      } as OpsResultLike;
+        notes: planned.plan.notes } as OpsResultLike;
     }, t('db.cluster.planUpdated'));
   }
 
@@ -231,8 +221,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
         ok: r.ok,
         dryRun: r.dryRun,
         notes: r.notes,
-        written: r.written,
-      } as OpsResultLike;
+        written: r.written } as OpsResultLike;
     }, t('db.cluster.manageWritten'));
   }
 
@@ -248,8 +237,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
         notes: r.notes,
         written: r.written,
         requiresExecute: r.requiresExecute,
-        requiresRoot: r.requiresRoot,
-      } as OpsResultLike;
+        requiresRoot: r.requiresRoot } as OpsResultLike;
     }, bootstrap ? t('db.cluster.bootstrapTried') : t('db.cluster.applyTried'));
   }
 
@@ -269,8 +257,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
             : r.localOk
               ? t('db.cluster.localOk')
               : t('db.cluster.localProbeFail'),
-        ],
-      } as OpsResultLike;
+        ] } as OpsResultLike;
     }, peers ? t('db.cluster.probedWithPeers') : t('db.cluster.probedLocal'));
   }
 
@@ -283,8 +270,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
       );
       return {
         ok: true,
-        notes: [t('db.cluster.peerTarNote')],
-      } as OpsResultLike;
+        notes: [t('db.cluster.peerTarNote')] } as OpsResultLike;
     }, t('protection.downloaded'));
   }
 
@@ -302,8 +288,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
           ...r.targets.map(
             (t) => `${t.host}: ${t.files.length} files → ${t.remotePath}`,
           ),
-        ],
-      } as OpsResultLike;
+        ] } as OpsResultLike;
     }, execute ? t('db.cluster.peerPushed') : t('db.cluster.pushPlanGenerated'));
   }
 
@@ -365,29 +350,25 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
               {
                 key: 'name',
                 header: t('common.name'),
-                render: (c) => <code className="inline">{c.name}</code>,
-              },
+                render: (c) => <code className="inline">{c.name}</code> },
               {
                 key: 'kind',
                 header: t('common.type'),
                 className: 'muted',
                 nowrap: true,
-                render: (c) => c.kind,
-              },
+                render: (c) => c.kind },
               {
                 key: 'status',
                 header: t('common.status'),
                 nowrap: true,
                 render: (c) => (
                   <Badge tone={statusTone(c.status)}>{c.status}</Badge>
-                ),
-              },
+                ) },
               {
                 key: 'members',
                 header: t('db.cluster.nodes'),
                 className: 'muted',
-                render: (c) => (c.members ?? []).map((m) => m.host).join(', '),
-              },
+                render: (c) => (c.members ?? []).map((m) => m.host).join(', ') },
             ]}
             rows={items}
             rowKey={(c) => c.id}
@@ -448,13 +429,11 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                   onClick={() =>
                     void run(async () => {
                       const r = await dbClusterApi.installPeers(c.id, {
-                        execute: false,
-                      });
+                        execute: false });
                       return {
                         ok: r.ok || r.dryRun,
                         dryRun: r.dryRun,
-                        notes: r.notes,
-                      } as OpsResultLike;
+                        notes: r.notes } as OpsResultLike;
                     }, t('db.cluster.remoteInstallPlan'))
                   }
                 >
@@ -502,13 +481,11 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                     void run(async () => {
                       const r = await dbClusterApi.fleet(c.id, {
                         execute: false,
-                        op: 'sync',
-                      });
+                        op: 'sync' });
                       return {
                         ok: r.ok || r.dryRun,
                         dryRun: r.dryRun,
-                        notes: r.notes,
-                      } as OpsResultLike;
+                        notes: r.notes } as OpsResultLike;
                     }, t('db.cluster.fleetSyncPlan'))
                   }
                 >
@@ -586,16 +563,13 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                 { label: 'cluster', value: lastPlan.clusterId.slice(0, 8) + '…' },
                 {
                   label: t('common.steps'),
-                  value: String(lastPlan.steps.length),
-                },
+                  value: String(lastPlan.steps.length) },
                 {
                   label: t('common.files'),
-                  value: String(lastPlan.files.length),
-                },
+                  value: String(lastPlan.files.length) },
                 {
                   label: t('db.systemChange'),
-                  value: lastPlan.requiresExecute ? t('db.cluster.systemChangeNeed') : t('common.no'),
-                },
+                  value: lastPlan.requiresExecute ? t('db.cluster.systemChangeNeed') : t('common.no') },
               ]}
             />
             <ul className="list-plain list-spaced u-mt-3">
@@ -812,8 +786,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
             void run(async () => {
               const sync = await dbClusterApi.fleet(p.id, {
                 execute: true,
-                op: 'sync',
-              });
+                op: 'sync' });
               return { ok: sync.ok, notes: sync.notes } as OpsResultLike;
             }, t('db.cluster.fleetSynced'));
           } else if (p.kind === 'fleetApply') {
@@ -821,8 +794,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
               const r = await dbClusterApi.fleet(p.id, {
                 execute: true,
                 op: 'apply',
-                edgeExecute: true,
-              });
+                edgeExecute: true });
               return { ok: r.ok, notes: r.notes } as OpsResultLike;
             }, t('db.cluster.fleetApplyQueued'));
           }

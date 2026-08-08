@@ -11,8 +11,7 @@ import {
   Button,
   Card,
   CardSection,
-  PageTabs,
-} from '../../../shared/components/ui';
+  PageTabs } from '../../../shared/components/ui';
 import { OutboundIdentities } from './OutboundIdentities';
 import { LoginKeysPanel } from './LoginKeysPanel';
 import { SshdPanel } from './SshdPanel';
@@ -75,23 +74,19 @@ export function SshWorkspace(props: {
         {
           id: 'outbound' as const,
           label: t('security.ssh.subOutbound'),
-          hint: t('security.ssh.subOutboundHint'),
-        },
+          hint: t('security.ssh.subOutboundHint') },
         {
           id: 'login' as const,
           label: t('security.ssh.subLogin'),
-          hint: t('security.ssh.subLoginHint'),
-        },
+          hint: t('security.ssh.subLoginHint') },
         {
           id: '2fa' as const,
           label: t('security.ssh.sub2fa'),
-          hint: t('security.ssh.sub2faHint'),
-        },
+          hint: t('security.ssh.sub2faHint') },
         {
           id: 'sshd' as const,
           label: t('security.ssh.subSshd'),
-          hint: t('security.ssh.subSshdHint'),
-        },
+          hint: t('security.ssh.subSshdHint') },
       ] as const,
     [t],
   );
@@ -189,8 +184,7 @@ export function SshWorkspace(props: {
               ? identitiesN || undefined
               : s.id === 'login'
                 ? loginN || undefined
-                : undefined,
-        }))}
+                : undefined }))}
         active={sub}
         onChange={setSub}
         variant="scroll"

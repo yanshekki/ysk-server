@@ -13,8 +13,7 @@ export type InstallStreamLine = {
 export function InstallStreamPanel({
   lines,
   busy,
-  title,
-}: {
+  title }: {
   lines: InstallStreamLine[];
   busy?: boolean;
   title?: string;
@@ -39,24 +38,22 @@ export function InstallStreamPanel({
       <header className="install-stream-panel__head">
         <h4 className="install-stream-panel__title">
           {title ??
-            t('runtime.installLogTitle', {
-              defaultValue: t('uiInline.s296817b1'),
-            })}
+            t('runtime.installLogTitle', { })}
         </h4>
         {busy ? (
           <span className="install-stream-panel__badge">
-            {t('runtime.installLogStreaming', { defaultValue: t('uiInline.s3568a3da') })}
+            {t('runtime.installLogStreaming')}
           </span>
         ) : (
           <span className="install-stream-panel__badge install-stream-panel__badge--done">
-            {t('runtime.installLogDone', { defaultValue: t('uiInline.s28256229') })}
+            {t('runtime.installLogDone')}
           </span>
         )}
       </header>
       <pre className="install-stream-panel__log" ref={boxRef} tabIndex={0}>
         {lines.length === 0 && busy ? (
           <span className="install-stream-panel__muted">
-            {t('runtime.installLogWaiting', { defaultValue: t('uiInline.s3971290f') })}
+            {t('runtime.installLogWaiting')}
           </span>
         ) : null}
         {lines.map((row, i) => (

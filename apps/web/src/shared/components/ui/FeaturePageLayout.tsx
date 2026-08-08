@@ -57,15 +57,13 @@ export function FeaturePageLayout({
   status,
   backTo,
   backLabel,
-  children,
-}: FeaturePageLayoutProps) {
+  children }: FeaturePageLayoutProps) {
   const { t } = useTranslation();
   const chips: PageStatusChip[] | undefined = status?.items?.length
     ? status.items.slice(0, 6).map((s) => ({
         label: s.label,
         value: s.value,
-        tone: s.tone,
-      }))
+        tone: s.tone }))
     : undefined;
 
   const showStatus =

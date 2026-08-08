@@ -51,5 +51,4 @@ export type {
   FieldProps,
   FormLayoutProps,
   FormActionsProps,
-  CheckboxFieldProps,
-} from './Field';
+  CheckboxFieldProps } from './Field';

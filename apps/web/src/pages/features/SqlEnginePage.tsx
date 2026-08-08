@@ -28,8 +28,7 @@ import {
   SegRadio,
   ServerListFilters,
   SoftwareInstallBanner,
-  buttonClassName,
-} from '../../shared/components/ui';
+  buttonClassName } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
@@ -185,8 +184,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           ok: false,
           blocked: looksLikeBlockedMessage(m),
           blockMessage: m,
-          notes: [m],
-        } satisfies OpsResultLike;
+          notes: [m] } satisfies OpsResultLike;
       }
     }, t('db.startedOk', { engine: title }));
   }
@@ -204,8 +202,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
           ok: false,
           blocked: looksLikeBlockedMessage(m),
           blockMessage: m,
-          notes: [m],
-        } satisfies OpsResultLike;
+          notes: [m] } satisfies OpsResultLike;
       }
     }, t('db.unfreezeOk', { engine: title }));
   }
@@ -218,8 +215,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
       createUser,
       username: createUser ? username || name : undefined,
       password: createUser ? password : undefined,
-      host,
-    });
+      host });
     await users.refresh();
     setCreateOpen(false);
     setName('');
@@ -235,8 +231,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
       host,
       engine,
       databaseId: dbId || undefined,
-      privileges: ['ALL'],
-    });
+      privileges: ['ALL'] });
     setUserOpen(false);
     setUsername('');
     setPassword('');
@@ -255,33 +250,27 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
       status={{
         pill: {
           label: st.text,
-          tone: pillToneFromService(st.tone),
-        },
+          tone: pillToneFromService(st.tone) },
         items: [
           {
             label: t('common.status'),
             value: st.text,
-            tone: st.tone === 'neutral' ? 'neutral' : st.tone,
-          },
+            tone: st.tone === 'neutral' ? 'neutral' : st.tone },
           {
             label: 'EXECUTE',
             value: svc?.executeEnabled ? t('common.on') : t('common.off'),
-            tone: svc?.executeEnabled ? 'ok' : 'warn',
-          },
+            tone: svc?.executeEnabled ? 'ok' : 'warn' },
           { label: t('common.database'), value: dbs.items.length },
           { label: t('common.user'), value: users.items.length },
           {
             label: 'Root',
             value: svc?.isRoot ? t('common.yes') : t('common.no'),
-            tone: svc?.isRoot ? 'ok' : 'warn',
-          },
+            tone: svc?.isRoot ? 'ok' : 'warn' },
           {
             label: t('db.client'),
             value: svc?.clientInstalled ? t('ssl.filesYes') : t('ssl.filesNo'),
-            tone: svc?.clientInstalled ? 'ok' : 'danger',
-          },
-        ],
-      }}
+            tone: svc?.clientInstalled ? 'ok' : 'danger' },
+        ] }}
       actions={<ActionBar>
           <Link to={servicePath}>
             <Button variant="secondary" size="sm">
@@ -314,8 +303,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               void systemApi
                 .dbDump({
                   engine: engine === 'mariadb' ? 'mariadb' : 'mysql',
-                  dbName: name,
-                })
+                  dbName: name })
                 .then((r) => {
                   const notes = (r as { notes?: string[]; ok?: boolean }).notes;
                   if ((r as { ok?: boolean }).ok) setMsg(notes?.[0] ?? t('db.dumpOk'));
@@ -356,8 +344,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               void api
                 .requestRaw('/api/v1/db/temp-users/expire', {
                   method: 'POST',
-                  body: JSON.stringify({ dropSystem: true }),
-                })
+                  body: JSON.stringify({ dropSystem: true }) })
                 .then((r) => {
                   setMsg(
                     ((r as { notes?: string[] }).notes ?? []).join('；') || t('db.expiredTempUsersProcessed'),
@@ -413,17 +400,14 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               { label: t('common.version'), value: svc?.version ?? '—' },
               {
                 label: t('db.systemChange'),
-                value: svc?.executeEnabled ? t('db.opened') : t('db.notOpened'),
-              },
+                value: svc?.executeEnabled ? t('db.opened') : t('db.notOpened') },
               { label: t('roles.admin'), value: svc?.isRoot ? t('common.yes') : t('common.no') },
               {
                 label: t('db.client'),
-                value: svc?.clientInstalled ? t('common.installed') : t('common.notInstalled'),
-              },
+                value: svc?.clientInstalled ? t('common.installed') : t('common.notInstalled') },
               {
                 label: t('db.canProvision'),
-                value: svc?.canProvision ? t('common.yes') : t('common.no'),
-              },
+                value: svc?.canProvision ? t('common.yes') : t('common.no') },
             ]}
           />
           {svc?.blockMessage && !svc.canProvision ? (
@@ -436,8 +420,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               <strong>{t('db.serviceDownTitle')}</strong>
               <p className="u-mb-0 u-mt-2 u-text-sm">
                 {t('db.serviceDownBody', {
-                  empty: svc?.datadirEmpty ? t('common.yes') : t('common.no'),
-                })}
+                  empty: svc?.datadirEmpty ? t('common.yes') : t('common.no') })}
               </p>
               {Array.isArray(svc?.healthFindings) && svc.healthFindings.length > 0 ? (
                 <ul className="list-plain u-mt-2 u-mb-0 u-text-sm">
@@ -499,8 +482,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         title={t('db.unfreezeConfirmTitle', { engine: title })}
         description={t('db.unfreezeConfirmDesc', {
           engine: title,
-          empty: svc?.datadirEmpty ? t('common.yes') : t('common.no'),
-        })}
+          empty: svc?.datadirEmpty ? t('common.yes') : t('common.no') })}
         confirmLabel={t('db.unfreezeConfirmBtn')}
       />
 
@@ -564,18 +546,15 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                   {
                     key: 'name',
                     header: t('common.database'),
-                    render: (r) => <strong>{String(r.name)}</strong>,
-                  },
+                    render: (r) => <strong>{String(r.name)}</strong> },
                   {
                     key: 'charset',
                     header: t('db.charset'),
-                    render: (r) => String(r.charset ?? 'utf8mb4'),
-                  },
+                    render: (r) => String(r.charset ?? 'utf8mb4') },
                   {
                     key: 'status',
                     header: t('common.status'),
-                    render: (r) => <ResourceStatusBadge status={String(r.apply_status)} />,
-                  },
+                    render: (r) => <ResourceStatusBadge status={String(r.apply_status)} /> },
                 ]}
                 rows={dbs.items}
                 empty={
@@ -650,21 +629,18 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                       <strong>
                         {String(r.username)}@{String(r.host ?? '%')}
                       </strong>
-                    ),
-                  },
+                    ) },
                   {
                     key: 'db',
                     header: t('common.database'),
                     render: (r) =>
                       r.databaseId
                         ? dbNameById.get(String(r.databaseId)) ?? String(r.databaseId)
-                        : '—',
-                  },
+                        : '—' },
                   {
                     key: 'status',
                     header: t('common.status'),
-                    render: (r) => <ResourceStatusBadge status={String(r.apply_status)} />,
-                  },
+                    render: (r) => <ResourceStatusBadge status={String(r.apply_status)} /> },
                 ]}
                 rows={users.items}
                 empty={<EmptyState title={t('db.noUsersYet')} />}
@@ -738,16 +714,13 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                           engine,
                           database: tempDb,
                           ttlHours: Number(tempTtl) || 24,
-                          apply: true,
-                        }),
-                      });
+                          apply: true }) });
                       if (r.password) setLastTempPassword(r.password);
                       await refreshExtras();
                       return {
                         ...r,
                         ok: r.ok,
-                        notes: r.notes ?? [],
-                      } as OpsResultLike;
+                        notes: r.notes ?? [] } as OpsResultLike;
                     }, t('db.tempUserCreated'));
                   }}
                 >
@@ -851,9 +824,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                           host: remoteHost,
                           port: Number(remotePort) || undefined,
                           username: remoteUser || undefined,
-                          password: remotePass || undefined,
-                        }),
-                      })
+                          password: remotePass || undefined }) })
                       .then(() => {
                         setRemotePass('');
                         setMsg(t('db.remoteHostSaved'));
@@ -879,8 +850,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                       onClick={() => {
                         void api
                           .requestRaw(`/api/v1/db/remote-hosts/${h.id}`, {
-                            method: 'DELETE',
-                          })
+                            method: 'DELETE' })
                           .then(() => refreshExtras())
                           .catch((e: Error) => setError(e.message));
                       }}
@@ -1057,8 +1027,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             .dbImport({
               engine: engine === 'mariadb' ? 'mariadb' : 'mysql',
               dbName: c.dbName,
-              name: c.dumpName,
-            })
+              name: c.dumpName })
             .then((r) => {
               const notes = (r as { notes?: string[]; ok?: boolean }).notes;
               if ((r as { ok?: boolean }).ok) setMsg(notes?.[0] ?? t('db.importOk'));
@@ -1103,9 +1072,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
       <Modal
         open={adminerOpen}
         onClose={bindCloseIfIdle(busy, bindSet(setAdminerOpen, false))}
-        title={t('db.browserProjectTitle', {
-          defaultValue: t('uiInline.s777e90e0'),
-        })}
+        title={t('db.browserProjectTitle', { })}
         size="md"
         footer={
           <FormActions align="end">
@@ -1138,11 +1105,8 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                           ok: false,
                           notes: [
                             t('db.browserNameTaken', {
-                              defaultValue: t('uiInline.sd8bc8ab3'),
-                              name: hit.name,
-                            }),
-                          ],
-                        } as OpsResultLike;
+                              name: hit.name }),
+                          ] } as OpsResultLike;
                       }
                       const res = await api.requestRaw<{
                         ok: boolean;
@@ -1163,9 +1127,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                             adminerDomain.trim() ||
                             defaultDbBrowserDomain(browserTool, engine),
                           download: adminerDownload,
-                          engine,
-                        }),
-                      });
+                          engine }) });
                       return {
                         ok: res.ok,
                         blocked: res.blocked,
@@ -1180,9 +1142,8 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                             ? `projectId=${res.projectId ?? res.project?.id}`
                             : '',
                         ].filter(Boolean),
-                        url: res.urlHint,
-                      } as OpsResultLike;
-                    }, t('db.browserProjectCreated', { defaultValue: t('uiInline.s09877be5') }));
+                        url: res.urlHint } as OpsResultLike;
+                    }, t('db.browserProjectCreated'));
                     // Navigate to project when we got an id in notes
                     const idNote = (r as OpsResultLike | null)?.notes?.find((n) =>
                       n.startsWith('projectId='),
@@ -1197,21 +1158,21 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                 })();
               }}
             >
-              {t('db.createBrowserProject', { defaultValue: t('uiInline.sd95910ce') })}
+              {t('db.createBrowserProject')}
             </Button>
           </FormActions>
         }
       >
         <FormLayout columns={1}>
           <Field
-            label={t('db.browserTool', { defaultValue: t('uiInline.sa72ef18d') })}
+            label={t('db.browserTool')}
             htmlFor="browser-tool"
             required
             flush
           >
             <SegRadio
               name="browser-tool"
-              aria-label={t('db.browserTool', { defaultValue: t('uiInline.sa72ef18d') })}
+              aria-label={t('db.browserTool')}
               value={browserTool}
               onChange={(v) => {
                 const tool = v === 'phpmyadmin' ? 'phpmyadmin' : 'adminer';
@@ -1227,19 +1188,15 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             />
           </Field>
           <Field
-            label={t('projects.createName', { defaultValue: t('uiInline.s4b2bec80') })}
+            label={t('projects.createName')}
             htmlFor="browser-name"
             required
             flush
             hint={
               nameClash
                 ? t('db.browserNameTaken', {
-                    defaultValue: t('uiInline.sd8bc8ab3'),
-                    name: nameClash,
-                  })
-                : t('db.browserNameHint', {
-                    defaultValue: t('uiInline.sd00c0d39'),
-                  })
+                    name: nameClash })
+                : t('db.browserNameHint', { })
             }
           >
             <input
@@ -1273,9 +1230,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             id="adminer-dl"
             label={
               browserTool === 'phpmyadmin'
-                ? t('db.downloadPhpMyAdmin', {
-                    defaultValue: t('uiInline.sd7c669ac'),
-                  })
+                ? t('db.downloadPhpMyAdmin', { })
                 : t('db.downloadAdminer')
             }
             checked={adminerDownload}

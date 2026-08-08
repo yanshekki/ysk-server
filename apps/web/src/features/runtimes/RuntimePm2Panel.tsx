@@ -15,15 +15,13 @@ import {
   DescriptionList,
   EmptyState,
   Modal,
-  buttonClassName,
-} from '../../shared/components/ui';
+  buttonClassName } from '../../shared/components/ui';
 import {
   pm2Api,
   type Pm2AppRow,
   type Pm2StartupProbe,
   type ProcessFleetSnapshot,
-  type ProjectProcessRow,
-} from '../pm2/api';
+  type ProjectProcessRow } from '../pm2/api';
 
 function formatMem(n: number | null): string {
   if (n == null || !Number.isFinite(n)) return '—';
@@ -130,8 +128,7 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
       interval: 2,
       runtimes,
       onTick: applyFleet,
-      onError: (msg) => setErr(msg),
-    });
+      onError: (msg) => setErr(msg) });
     acRef.current = ac;
     return () => {
       ac.abort();
@@ -254,8 +251,7 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
                     <Badge tone={snap.available ? 'ok' : 'warn'}>
                       {snap.available ? t('common.yes') : t('common.no')}
                     </Badge>
-                  ),
-                },
+                  ) },
                 { label: t('runtime.pm2.version'), value: snap.version || '—' },
                 { label: t('runtime.pm2.path'), value: snap.path || '—' },
                 {
@@ -264,13 +260,10 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
                     n: snap.apps.length,
                     run: snap.running,
                     stop: snap.stopped,
-                    err: snap.errored,
-                  }),
-                },
+                    err: snap.errored }) },
                 {
                   label: t('runtime.pm2.projectsCount'),
-                  value: String(projects.length),
-                },
+                  value: String(projects.length) },
                 { label: t('runtime.pm2.updatedAt'), value: fleet?.at || snap.at || '—' },
               ]}
             />
@@ -306,20 +299,17 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
                           ? t('runtime.pm2.startupReadyYes')
                           : t('runtime.pm2.startupReadyNo')}
                       </Badge>
-                    ),
-                  },
+                    ) },
                   {
                     label: t('runtime.pm2.startupUnit'),
                     value: startup.unit
                       ? `${startup.unit} · ${startup.unitActive ?? '?'} / ${startup.unitEnabled ?? '?'}`
-                      : '—',
-                  },
+                      : '—' },
                   {
                     label: t('runtime.pm2.startupDump'),
                     value: startup.dumpExists
                       ? startup.dumpPath || t('common.yes')
-                      : t('common.no'),
-                  },
+                      : t('common.no') },
                 ]}
               />
               {startup.suggestedCommands.length > 0 ? (
@@ -393,44 +383,36 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
                   header: t('runtime.pm2.col.name'),
                   render: (r) => (
                     <Link to={`/projects/${r.projectId}`}>{r.name}</Link>
-                  ),
-                },
+                  ) },
                 {
                   key: 'user',
                   header: t('runtime.pm2.col.user'),
-                  render: (r) => r.linuxUser,
-                },
+                  render: (r) => r.linuxUser },
                 {
                   key: 'active',
                   header: t('runtime.pm2.col.status'),
-                  render: (r) => <Badge tone={statusTone(r.active)}>{r.active}</Badge>,
-                },
+                  render: (r) => <Badge tone={statusTone(r.active)}>{r.active}</Badge> },
                 {
                   key: 'pid',
                   header: 'PID',
-                  render: (r) => (r.mainPid ? String(r.mainPid) : '—'),
-                },
+                  render: (r) => (r.mainPid ? String(r.mainPid) : '—') },
                 {
                   key: 'port',
                   header: t('common.port'),
-                  render: (r) => (r.port != null ? String(r.port) : '—'),
-                },
+                  render: (r) => (r.port != null ? String(r.port) : '—') },
                 {
                   key: 'mode',
                   header: t('runtime.pm2.col.mode'),
-                  render: (r) => r.deployMode || '—',
-                },
+                  render: (r) => r.deployMode || '—' },
                 {
                   key: 'unit',
                   header: t('runtime.pm2.col.unit'),
-                  render: (r) => <span className="u-text-sm">{r.unit}</span>,
-                },
+                  render: (r) => <span className="u-text-sm">{r.unit}</span> },
                 {
                   key: 'rt',
                   header: t('runtime.pm2.col.runtime'),
                   render: (r) =>
-                    `${r.runtime}${r.runtimeVersion ? ` ${r.runtimeVersion}` : ''}`,
-                },
+                    `${r.runtime}${r.runtimeVersion ? ` ${r.runtimeVersion}` : ''}` },
               ]}
               rows={projects}
               rowActions={(r) => (
@@ -501,46 +483,38 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
                     <span>
                       {a.name} {a.yskManaged ? <Badge tone="ok">ysk</Badge> : null}
                     </span>
-                  ),
-                },
+                  ) },
                 {
                   key: 'pid',
                   header: 'PID',
-                  render: (a) => (a.pid && a.pid > 0 ? String(a.pid) : '—'),
-                },
+                  render: (a) => (a.pid && a.pid > 0 ? String(a.pid) : '—') },
                 {
                   key: 'status',
                   header: t('runtime.pm2.col.status'),
-                  render: (a) => <Badge tone={statusTone(a.status)}>{a.status}</Badge>,
-                },
+                  render: (a) => <Badge tone={statusTone(a.status)}>{a.status}</Badge> },
                 {
                   key: 'cpu',
                   header: 'CPU%',
-                  render: (a) => (a.cpu != null ? a.cpu.toFixed(1) : '—'),
-                },
+                  render: (a) => (a.cpu != null ? a.cpu.toFixed(1) : '—') },
                 {
                   key: 'mem',
                   header: t('runtime.pm2.col.mem'),
-                  render: (a) => formatMem(a.memory),
-                },
+                  render: (a) => formatMem(a.memory) },
                 {
                   key: 'restarts',
                   header: t('runtime.pm2.col.restarts'),
                   render: (a) =>
                     a.restarts != null
                       ? `${a.restarts}${a.unstableRestarts ? ` (u${a.unstableRestarts})` : ''}`
-                      : '—',
-                },
+                      : '—' },
                 {
                   key: 'uptime',
                   header: t('runtime.pm2.col.uptime'),
-                  render: (a) => formatUptime(a.pmUptime),
-                },
+                  render: (a) => formatUptime(a.pmUptime) },
                 {
                   key: 'port',
                   header: t('common.port'),
-                  render: (a) => a.port || '—',
-                },
+                  render: (a) => a.port || '—' },
                 {
                   key: 'script',
                   header: t('runtime.pm2.col.script'),
@@ -548,8 +522,7 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
                     <span className="u-text-sm" title={a.cwd}>
                       {a.script || '—'}
                     </span>
-                  ),
-                },
+                  ) },
                 {
                   key: 'interp',
                   header: t('runtime.pm2.col.interpreter'),
@@ -557,8 +530,7 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
                     <span className="u-text-sm" title={a.interpreter}>
                       {(a.interpreter || '—').split('/').slice(-2).join('/')}
                     </span>
-                  ),
-                },
+                  ) },
               ]}
               rows={rows}
               rowActions={(a) => (

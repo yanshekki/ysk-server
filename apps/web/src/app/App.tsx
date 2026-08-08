@@ -63,8 +63,7 @@ const NodeRuntimePage = lazy(() =>
 );
 const PythonRuntimePage = lazy(() =>
   import('../pages/features/GenericRuntimePage').then((m) => ({
-    default: m.PythonRuntimePage,
-  })),
+    default: m.PythonRuntimePage })),
 );
 const RustRuntimePage = lazy(() =>
   import('../pages/features/GenericRuntimePage').then((m) => ({ default: m.RustRuntimePage })),
@@ -113,13 +112,11 @@ const MysqlServicePage = lazy(() =>
 );
 const MariadbServicePage = lazy(() =>
   import('../pages/features/MariadbServicePage').then((m) => ({
-    default: m.MariadbServicePage,
-  })),
+    default: m.MariadbServicePage })),
 );
 const PostgresServicePage = lazy(() =>
   import('../pages/features/PostgresServicePage').then((m) => ({
-    default: m.PostgresServicePage,
-  })),
+    default: m.PostgresServicePage })),
 );
 const RedisServicePage = lazy(() =>
   import('../pages/features/RedisServicePage').then((m) => ({ default: m.RedisServicePage })),

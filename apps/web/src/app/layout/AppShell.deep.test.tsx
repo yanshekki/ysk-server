@@ -21,24 +21,18 @@ function shellRoutes(searchItems?: Array<{ kind: string; title: string; subtitle
             kind: 'project',
             title: 'Demo App',
             subtitle: 'demo.example.com',
-            href: '/projects/p1',
-          },
+            href: '/projects/p1' },
           {
             kind: 'page',
             title: 'Security',
-            href: '/security',
-          },
-        ],
-      },
-    },
+            href: '/security' },
+        ] } },
     { match: /\/api\/v1\/auth\/logout/, body: { ok: true } },
     {
       match: /\/api\/v1\/auth\/me/,
       body: {
         user: { username: 'admin', roles: ['admin'], locale: 'en' },
-        capabilities: [],
-      },
-    },
+        capabilities: [] } },
     { match: /.*/, body: { ok: true, items: [], ready: true, missing: [] } },
   ];
 }
@@ -48,8 +42,7 @@ function renderShell(initial = '/', user?: { username: string; roles: string[]; 
   authStore.setSession('test-token', {
     username: user?.username ?? 'admin',
     roles: user?.roles ?? ['admin'],
-    capabilities: (user?.capabilities ?? []) as never,
-  });
+    capabilities: (user?.capabilities ?? []) as never });
 
   return render(
     <MemoryRouter initialEntries={[initial]}>
@@ -174,8 +167,7 @@ describe('AppShell full interactions', () => {
     renderShell('/');
 
     const locale = screen.getAllByRole('button', {
-      name: /language|EN|English|中文|語言|语言/i,
-    })[0]!;
+      name: /language|EN|English|中文|語言|语言/i })[0]!;
     await user.click(locale);
     await user.click(locale);
 
@@ -193,16 +185,13 @@ describe('AppShell full interactions', () => {
         match: /\/api\/v1\/auth\/me/,
         body: {
           user: { username: 'op', roles: ['operator'], locale: 'en' },
-          capabilities: ['projects.read', 'dashboard.read'],
-        },
-      },
+          capabilities: ['projects.read', 'dashboard.read'] } },
       { match: /.*/, body: { ok: true, items: [] } },
     ]);
     renderShell('/', {
       username: 'op',
       roles: ['operator'],
-      capabilities: ['projects.read', 'dashboard.read'],
-    });
+      capabilities: ['projects.read', 'dashboard.read'] });
 
     await waitFor(() => {
       expect(document.querySelector('.shell__user')?.textContent).toMatch(/op/i);

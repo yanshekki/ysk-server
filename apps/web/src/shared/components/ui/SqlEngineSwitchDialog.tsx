@@ -32,8 +32,7 @@ export function SqlEngineSwitchDialog({
   preview,
   busy = false,
   onClose,
-  onConfirm,
-}: SqlEngineSwitchDialogProps) {
+  onConfirm }: SqlEngineSwitchDialogProps) {
   const { t } = useTranslation();
   const [ack, setAck] = useState(false);
   const [phrase, setPhrase] = useState('');
@@ -140,8 +139,7 @@ export function SqlEngineSwitchDialog({
                   {t(`sqlEngineSwitch.warn.${key}`, {
                     from: fromLabel,
                     to: toLabel,
-                    count: dbCount,
-                  })}
+                    count: dbCount })}
                 </span>
               </li>
             ))}

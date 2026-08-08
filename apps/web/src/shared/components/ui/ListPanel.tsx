@@ -29,8 +29,7 @@ export function ListPanel({
   empty,
   emptyTitle,
   emptyDescription,
-  className,
-}: ListPanelProps) {
+  className }: ListPanelProps) {
   const { t } = useTranslation();
   const cls = ['data-table', 'list-panel-shell', className ?? ''].filter(Boolean).join(' ');
   return (

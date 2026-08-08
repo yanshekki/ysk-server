@@ -11,8 +11,7 @@ import {
   Button,
   Field,
   FormHint,
-  FormLayout,
-} from '../../shared/components/ui';
+  FormLayout } from '../../shared/components/ui';
 import { bindInput } from '../../pages/bind-handlers';
 import { TotpQr, formatTotpSecret } from './TotpQr';
 

@@ -10,8 +10,7 @@ import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
   softwareReadyRoute,
-  type FetchRoute,
-} from '../test/mock-fetch';
+  type FetchRoute } from '../test/mock-fetch';
 import { authStore } from '../shared/stores/auth-store';
 
 import { ServicesPage } from './features/ServicesPage';
@@ -115,10 +114,8 @@ function redisRoutes(): FetchRoute[] {
           connectedClients: '3',
           keyspace: [{ db: 0, keys: 2, expires: 1 }],
           databases: 16,
-          configuredDatabases: 16,
-        };
-      },
-    },
+          configuredDatabases: 16 };
+      } },
     {
       match: (url) => url.startsWith('/api/v1/system/redis/'),
       handler: (url, init) => {
@@ -129,15 +126,12 @@ function redisRoutes(): FetchRoute[] {
             keys: [
               { key: 'session:1', type: 'string', ttl: 60 },
               { key: 'cache:home', type: 'hash', ttl: -1 },
-            ],
-          };
+            ] };
         }
         return {
           ok: true,
-          view: { key: 'session:1', type: 'string', ttl: 60, value: 'abc' },
-        };
-      },
-    },
+          view: { key: 'session:1', type: 'string', ttl: 60, value: 'abc' } };
+      } },
     catchAll,
   ];
 }
@@ -160,8 +154,7 @@ function servicesRoutes(): FetchRoute[] {
               installed: true,
               active: 'inactive',
               enabled: 'disabled',
-              activeLabel: 'inactive',
-            },
+              activeLabel: 'inactive' },
             {
               id: 'redis',
               label: 'Redis',
@@ -170,19 +163,15 @@ function servicesRoutes(): FetchRoute[] {
               installed: true,
               active: 'active',
               enabled: 'enabled',
-              activeLabel: 'active',
-            },
+              activeLabel: 'active' },
           ],
           executeEnabled: false,
           isRoot: false,
-          probedAt: new Date().toISOString(),
-        };
-      },
-    },
+          probedAt: new Date().toISOString() };
+      } },
     {
       match: /\/api\/v1\/protection/,
-      body: HONESTY_WRITTEN_BLOCKED,
-    },
+      body: HONESTY_WRITTEN_BLOCKED },
     catchAll,
   ];
 }
@@ -201,9 +190,7 @@ function cronRoutes(): FetchRoute[] {
               name: 'x',
               schedule: '* * * * *',
               command: 'true',
-              enabled: true,
-            },
-          };
+              enabled: true } };
         }
         if (url.includes('status')) {
           return {
@@ -215,8 +202,7 @@ function cronRoutes(): FetchRoute[] {
             hostCrontabPreview: '0 2 * * * root ysk backup\n',
             executeEnabled: false,
             lastInstallOk: false,
-            lastInstallAt: new Date().toISOString(),
-          };
+            lastInstallAt: new Date().toISOString() };
         }
         return {
           items: [
@@ -225,16 +211,12 @@ function cronRoutes(): FetchRoute[] {
               name: 'Nightly backup',
               schedule: '0 2 * * *',
               command: 'ysk backup',
-              enabled: true,
-            },
-          ],
-        };
-      },
-    },
+              enabled: true },
+          ] };
+      } },
     {
       match: /\/api\/v1\/projects/,
-      body: { items: [{ id: 'p1', name: 'Demo' }] },
-    },
+      body: { items: [{ id: 'p1', name: 'Demo' }] } },
     catchAll,
   ];
 }
@@ -252,12 +234,10 @@ function securityRoutes(): FetchRoute[] {
             otpauthUrl: 'otpauth://totp/YSK:admin?secret=JBSWY3DPEHPK3PXP',
             enabled: true,
             enrolled: true,
-            recoveryCodes: ['aaaa-bbbb'],
-          };
+            recoveryCodes: ['aaaa-bbbb'] };
         }
         return { enabled: false, enrolled: false };
-      },
-    },
+      } },
     {
       match: (url) => url.startsWith('/api/v1/auth/sessions'),
       body: {
@@ -267,36 +247,28 @@ function securityRoutes(): FetchRoute[] {
             created_at: new Date().toISOString(),
             expires_at: new Date().toISOString(),
             current: true,
-            ip: '1.1.1.1',
-          },
+            ip: '1.1.1.1' },
           {
             id: 'sess-2',
             created_at: new Date().toISOString(),
             expires_at: new Date().toISOString(),
             current: false,
-            ip: '2.2.2.2',
-          },
-        ],
-      },
-    },
+            ip: '2.2.2.2' },
+        ] } },
     {
       match: (url) => url.startsWith('/api/v1/auth/api-keys'),
       handler: (_u, init) => {
         if ((init?.method ?? 'GET').toUpperCase() !== 'GET') {
           return {
             key: { id: 'k2', name: 'n', prefix: 'ysk_n', created_at: new Date().toISOString() },
-            token: 'tok',
-          };
+            token: 'tok' };
         }
         return {
-          items: [{ id: 'k1', name: 'ci', prefix: 'ysk_ci', created_at: new Date().toISOString() }],
-        };
-      },
-    },
+          items: [{ id: 'k1', name: 'ci', prefix: 'ysk_ci', created_at: new Date().toISOString() }] };
+      } },
     {
       match: (url) => url.startsWith('/api/v1/settings/security'),
-      body: { requireAdminTotp: false, requireAdminTotpStrict: false, ok: true },
-    },
+      body: { requireAdminTotp: false, requireAdminTotpStrict: false, ok: true } },
     {
       match: (url) => url.startsWith('/api/v1/approvals'),
       handler: (_u, init) => {
@@ -307,12 +279,9 @@ function securityRoutes(): FetchRoute[] {
               id: 'ap1',
               tool: 'sys.shell',
               status: 'pending',
-              requestedAt: new Date().toISOString(),
-            },
-          ],
-        };
-      },
-    },
+              requestedAt: new Date().toISOString() },
+          ] };
+      } },
     {
       match: (url) => url.startsWith('/api/v1/tools'),
       handler: (_u, init) => {
@@ -323,10 +292,8 @@ function securityRoutes(): FetchRoute[] {
           items: [
             { id: 'sys.info', name: 'sys.info', allowed: true, requiresApproval: false },
             { id: 'sys.shell', name: 'sys.shell', allowed: false, requiresApproval: true },
-          ],
-        };
-      },
-    },
+          ] };
+      } },
     {
       match: /\/api\/v1\/ssh\//,
       body: {
@@ -341,24 +308,19 @@ function securityRoutes(): FetchRoute[] {
             fingerprintSha256: 'SHA256:abcdef0123456789',
             publicKey: 'ssh-ed25519 AAAA',
             createdAt: new Date().toISOString(),
-            binding: { linuxUser: 'ysk', homeDir: '/home/ysk' },
-          },
+            binding: { linuxUser: 'ysk', homeDir: '/home/ysk' } },
         ],
         host: { notes: [], lights: { package: 'ok', pam: 'ok', kbdInteractive: 'ok' } },
         pamSnippet: '#',
         sshdHints: '#',
         snippet: 'Match',
-        notes: [],
-      },
-    },
+        notes: [] } },
     {
       match: /\/api\/v1\/sftp\//,
-      body: { ok: true, items: [], snippet: '', notes: [] },
-    },
+      body: { ok: true, items: [], snippet: '', notes: [] } },
     {
       match: /\/api\/v1\/projects/,
-      body: { items: [] },
-    },
+      body: { items: [] } },
     catchAll,
   ];
 }
@@ -476,13 +438,10 @@ describe('coverage wave2 page interactions', () => {
                 port: 22,
                 username: 'ysk',
                 path: '/backups',
-                password: '***',
-              },
+                password: '***' },
               exclusions: ['node_modules'],
-              restic: { enabled: true, repoPath: '/var/backups/restic', password: '***' },
-            };
-          },
-        },
+              restic: { enabled: true, repoPath: '/var/backups/restic', password: '***' } };
+          } },
         {
           match: /\/api\/v1\/backups/,
           handler: (_u, init) => {
@@ -494,17 +453,13 @@ describe('coverage wave2 page interactions', () => {
                   name: 'Demo',
                   path: '/var/backups/p1.tgz',
                   bytes: 1000,
-                  mtime: new Date().toISOString(),
-                },
+                  mtime: new Date().toISOString() },
               ],
-              lastRun: { at: new Date().toISOString(), ok: true },
-            };
-          },
-        },
+              lastRun: { at: new Date().toISOString(), ok: true } };
+          } },
         {
           match: /\/api\/v1\/projects/,
-          body: { items: [{ id: 'p1', name: 'Demo' }] },
-        },
+          body: { items: [{ id: 'p1', name: 'Demo' }] } },
         catchAll,
       ]);
       renderAt('/backups', <BackupsPage />);
@@ -552,11 +507,8 @@ describe('coverage wave2 page interactions', () => {
                 domain: 'example.com',
                 rate_limit_per_hour: 200,
                 antispam: true,
-                server_ip: '203.0.113.10',
-              },
-            ],
-          },
-        },
+                server_ip: '203.0.113.10' },
+            ] } },
         {
           match: (url) => url.includes('/api/v1/email/domains/dom-1'),
           handler: (url, init) => {
@@ -567,8 +519,7 @@ describe('coverage wave2 page interactions', () => {
                 records: [{ type: 'MX', name: '@', value: 'mail.example.com' }],
                 externalTodos: ['Add SPF'],
                 health: { score: 40, maxScore: 100, messages: [] },
-                notes: [],
-              };
+                notes: [] };
             }
             if (url.includes('/mailboxes')) {
               return {
@@ -577,15 +528,12 @@ describe('coverage wave2 page interactions', () => {
                     id: 'mb1',
                     local_part: 'info',
                     address: 'info@example.com',
-                    quotaMb: 500,
-                  },
-                ],
-              };
+                    quotaMb: 500 },
+                ] };
             }
             if (url.includes('/aliases')) {
               return {
-                items: [{ id: 'al1', source: 'hi@example.com', dest: 'info@example.com' }],
-              };
+                items: [{ id: 'al1', source: 'hi@example.com', dest: 'info@example.com' }] };
             }
             return {
               id: 'dom-1',
@@ -593,10 +541,8 @@ describe('coverage wave2 page interactions', () => {
               rate_limit_per_hour: 200,
               antispam: true,
               server_ip: '203.0.113.10',
-              apply_status: 'planned',
-            };
-          },
-        },
+              apply_status: 'planned' };
+          } },
         {
           match: (url) => url.startsWith('/api/v1/users'),
           handler: (_u, init) => {
@@ -609,13 +555,10 @@ describe('coverage wave2 page interactions', () => {
                   roles: ['admin'],
                   packageId: 'pkg1',
                   suspended: false,
-                  locale: 'en',
-                },
+                  locale: 'en' },
               ],
-              hostUsage: { projects: 1, diskMb: 10, limitMb: 1000 },
-            };
-          },
-        },
+              hostUsage: { projects: 1, diskMb: 10, limitMb: 1000 } };
+          } },
         {
           match: (url) => url.startsWith('/api/v1/packages'),
           body: {
@@ -629,11 +572,8 @@ describe('coverage wave2 page interactions', () => {
                 diskMb: 1024,
                 bandwidthMb: 0,
                 ftp: true,
-                ssh: true,
-              },
-            ],
-          },
-        },
+                ssh: true },
+            ] } },
         {
           match: (url) => url.includes('/api/v1/rbac'),
           body: {
@@ -642,11 +582,8 @@ describe('coverage wave2 page interactions', () => {
                 role: 'operator',
                 dirty: true,
                 policy: { maxLevel: 'write-high', capabilities: ['projects.read'] },
-                factory: { maxLevel: 'write-high', capabilities: ['projects.read'] },
-              },
-            ],
-          },
-        },
+                factory: { maxLevel: 'write-high', capabilities: ['projects.read'] } },
+            ] } },
         {
           match: /\/api\/v1\/system\/host/,
           body: {
@@ -660,15 +597,13 @@ describe('coverage wave2 page interactions', () => {
               memory: { total: 1e9, free: 5e8, usedRatio: 0.5 },
               node: 'v20',
               pid: 1,
-              uid: 0,
-            },
+              uid: 0 },
             time: {
               utc: new Date().toISOString(),
               local: new Date().toISOString(),
               ntpEnabled: true,
               ntpSynchronized: true,
-              timeSource: 'ntp',
-            },
+              timeSource: 'ntp' },
             network: { ips: ['127.0.0.1'], interfaces: [], resolvers: [] },
             disks: [],
             power: { pending: null },
@@ -677,15 +612,11 @@ describe('coverage wave2 page interactions', () => {
               executeEnabled: false,
               isRoot: false,
               canPower: false,
-              canIdentity: true,
-            },
-            collectedAt: new Date().toISOString(),
-          },
-        },
+              canIdentity: true },
+            collectedAt: new Date().toISOString() } },
         {
           match: /\/api\/v1\/system\//,
-          body: HONESTY_WRITTEN_BLOCKED,
-        },
+          body: HONESTY_WRITTEN_BLOCKED },
         catchAll,
       ]);
 
@@ -739,13 +670,10 @@ describe('coverage wave2 page interactions', () => {
                 name: 'demo',
                 enabled: true,
                 serverName: 'demo.example.com',
-                path: '/etc/nginx/sites-enabled/demo',
-              },
+                path: '/etc/nginx/sites-enabled/demo' },
             ],
             configTestOk: true,
-            version: '1.24',
-          },
-        },
+            version: '1.24' } },
         {
           match: /\/api\/v1\/system\/firewall/,
           body: {
@@ -757,9 +685,7 @@ describe('coverage wave2 page interactions', () => {
               { num: 2, to: 'Anywhere', action: 'DENY', from: '203.0.113.10' },
             ],
             allowCount: 1,
-            denyCount: 1,
-          },
-        },
+            denyCount: 1 } },
         {
           match: /\/api\/v1\/system\/fail2ban/,
           body: {
@@ -771,9 +697,7 @@ describe('coverage wave2 page interactions', () => {
             banned: [{ jail: 'sshd', ip: '203.0.113.10' }],
             ignoreIps: ['127.0.0.1'],
             catalog: [{ name: 'sshd', description: 'SSH' }],
-            defaultJails: ['sshd'],
-          },
-        },
+            defaultJails: ['sshd'] } },
         {
           match: (url) => url.includes('/api/v1/hosting/php/ini'),
           body: {
@@ -787,22 +711,17 @@ describe('coverage wave2 page interactions', () => {
                     key: 'memory_limit',
                     label: 'memory_limit',
                     type: 'text',
-                    default: '128M',
-                  },
-                ],
-              },
+                    default: '128M' },
+                ] },
             ],
             settings: {
               version: '8.2',
               values: { memory_limit: '128M' },
               extra: {},
-              rawAppend: '',
-            },
+              rawAppend: '' },
             managedIniPath: '/etc/php/8.2/conf.d/ysk.ini',
             notes: [],
-            ok: true,
-          },
-        },
+            ok: true } },
         {
           match: /\/api\/v1\/hosting\/runtimes/,
           body: {
@@ -812,9 +731,7 @@ describe('coverage wave2 page interactions', () => {
             settings: { values: {}, env: {} },
             envPreview: {},
             notes: [],
-            php: { versions: ['8.2'], active: '8.2' },
-          },
-        },
+            php: { versions: ['8.2'], active: '8.2' } } },
         {
           match: /\/api\/v1\/system\/ftps|\/api\/v1\/ftp/,
           body: {
@@ -822,14 +739,11 @@ describe('coverage wave2 page interactions', () => {
               enabled: true,
               listenPort: 21,
               pasvMin: 40000,
-              pasvMax: 40100,
-            },
+              pasvMax: 40100 },
             status: { installed: true, active: 'inactive', activeLabel: 'inactive' },
             domains: [{ domain: 'ftp.example.com', user: 'demo' }],
             homes: [{ user: 'demo', path: '/home/demo' }],
-            items: [{ id: 'f1', user: 'demo', home: '/home/demo' }],
-          },
-        },
+            items: [{ id: 'f1', user: 'demo', home: '/home/demo' }] } },
         {
           match: /\/api\/v1\/migrate/,
           body: {
@@ -839,13 +753,10 @@ describe('coverage wave2 page interactions', () => {
               { id: 'export', title: 'Export', status: 'pending' },
               { id: 'import', title: 'Import', status: 'pending' },
             ],
-            notes: [],
-          },
-        },
+            notes: [] } },
         {
           match: /\/api\/v1\/system\//,
-          body: HONESTY_WRITTEN_BLOCKED,
-        },
+          body: HONESTY_WRITTEN_BLOCKED },
         catchAll,
       ]);
 
@@ -859,8 +770,7 @@ describe('coverage wave2 page interactions', () => {
       ] as const) {
         const { unmount } = renderAt(path, el);
         await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument(), {
-          timeout: 5000,
-        });
+          timeout: 5000 });
         await clickAllTabs(user);
         await clickMatching(
           user,
@@ -884,9 +794,7 @@ describe('coverage wave2 page interactions', () => {
           body: {
             ok: true,
             summary: { projects: 1, threats: 1 },
-            items: [{ id: 'a', title: 'Alert', tone: 'warn' }],
-          },
-        },
+            items: [{ id: 'a', title: 'Alert', tone: 'warn' }] } },
         {
           match: (url) =>
             url.startsWith('/api/v1/defense/status') || url.startsWith('/api/v1/defense/probe'),
@@ -906,8 +814,7 @@ describe('coverage wave2 page interactions', () => {
               burst: 20,
               connLimit: 40,
               confPath: '/x',
-              exists: true,
-            },
+              exists: true },
             firewall: { active: 'inactive', installed: true },
             fail2ban: { active: 'inactive', installed: true, jails: 0 },
             autoBan: {
@@ -916,18 +823,14 @@ describe('coverage wave2 page interactions', () => {
               method: 'fail2ban',
               cooldownMinutes: 30,
               maxAutoBansPerHour: 20,
-              whitelist: [],
-            },
+              whitelist: [] },
             executeEnabled: false,
             isRoot: false,
             suggestions: [{ id: 's1', title: 'Apply', body: 'x', action: 'preset:daily' }],
-            notes: [],
-          },
-        },
+            notes: [] } },
         {
           match: /\/api\/v1\/defense/,
-          body: HONESTY_WRITTEN_BLOCKED,
-        },
+          body: HONESTY_WRITTEN_BLOCKED },
         {
           match: /\/api\/v1\/logs\//,
           handler: (url, init) => {
@@ -941,10 +844,8 @@ describe('coverage wave2 page interactions', () => {
                     label: 'nginx',
                     unit: 'nginx.service',
                     group: 'web',
-                    available: true,
-                  },
-                ],
-              };
+                    available: true },
+                ] };
             }
             if (url.includes('overview')) {
               return {
@@ -952,20 +853,17 @@ describe('coverage wave2 page interactions', () => {
                 followIntervalSec: 3,
                 journalWarnMb: 100,
                 vacuumDefaultDays: 14,
-                maxLines: 200,
-              };
+                maxLines: 200 };
             }
             if (url.includes('settings')) {
               return {
                 vacuumDefaultDays: 14,
                 maxLines: 200,
                 journalWarnMb: 100,
-                bookmarks: [],
-              };
+                bookmarks: [] };
             }
             return { ok: true, text: 'line\n', lines: ['line'], items: [] };
-          },
-        },
+          } },
         {
           match: (url) => url.includes('/api/v1/files') || url.includes('/hosting/files'),
           handler: (_u, init) => {
@@ -980,10 +878,8 @@ describe('coverage wave2 page interactions', () => {
               ],
               items: [
                 { name: 'a.txt', path: 'a.txt', type: 'file', size: 1, mtime: now },
-              ],
-            };
-          },
-        },
+              ] };
+          } },
         {
           match: (url) => url.startsWith('/api/v1/network'),
           handler: (_u, init) => {
@@ -996,8 +892,7 @@ describe('coverage wave2 page interactions', () => {
                 hasIp: true,
                 networkManager: 'inactive',
                 networkd: 'inactive',
-                canPersist: true,
-              },
+                canPersist: true },
               interfaces: [
                 {
                   name: 'eth0',
@@ -1007,8 +902,7 @@ describe('coverage wave2 page interactions', () => {
                   mtu: 1500,
                   isLoopback: false,
                   isDefaultEgress: true,
-                  addrs: [{ family: 'inet', local: '10.0.0.5', prefixlen: 24 }],
-                },
+                  addrs: [{ family: 'inet', local: '10.0.0.5', prefixlen: 24 }] },
               ],
               routes: [{ dst: 'default', gateway: '10.0.0.1', dev: 'eth0' }],
               caps: { canMutate: true, executeEnabled: false, isRoot: false },
@@ -1021,11 +915,8 @@ describe('coverage wave2 page interactions', () => {
                 source: 'static',
                 notes: [],
                 ignoreAutoDns: true,
-                canApply: true,
-              },
-            };
-          },
-        },
+                canApply: true } };
+          } },
         {
           match: /\/api\/v1\/resources\//,
           body: {
@@ -1036,12 +927,9 @@ describe('coverage wave2 page interactions', () => {
                 serverIp: '1.2.3.4',
                 nsName: 'ns1.example.com',
                 ttl: 300,
-                apply_status: 'planned',
-              },
+                apply_status: 'planned' },
             ],
-            meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-          },
-        },
+            meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } } },
         {
           match: (url) => url.startsWith('/api/v1/metrics/processes'),
           body: {
@@ -1055,12 +943,9 @@ describe('coverage wave2 page interactions', () => {
                 user: 'root',
                 cpu: 0.1,
                 mem: 0.2,
-                command: 'systemd',
-              },
+                command: 'systemd' },
             ],
-            notes: [],
-          },
-        },
+            notes: [] } },
         {
           match: (url) => url.startsWith('/api/v1/metrics'),
           body: {
@@ -1076,12 +961,9 @@ describe('coverage wave2 page interactions', () => {
                 used: 1e10,
                 avail: 9e10,
                 usedRatio: 0.1,
-                mount: '/',
-              },
+                mount: '/' },
             ],
-            alerts: [],
-          },
-        },
+            alerts: [] } },
         {
           match: /\/api\/v1\/system\/db\//,
           body: {
@@ -1090,9 +972,7 @@ describe('coverage wave2 page interactions', () => {
             activeLabel: 'inactive',
             engine: 'mysql',
             executeEnabled: false,
-            isRoot: false,
-          },
-        },
+            isRoot: false } },
         {
           match: /\/api\/v1\/fleet\//,
           body: {
@@ -1102,11 +982,8 @@ describe('coverage wave2 page interactions', () => {
                 agent_id: 'ag-1',
                 status: 'connected',
                 group: 'edge',
-                last_seen_at: new Date().toISOString(),
-              },
-            ],
-          },
-        },
+                last_seen_at: new Date().toISOString() },
+            ] } },
         {
           match: /\/api\/v1\/agents\//,
           body: {
@@ -1119,11 +996,8 @@ describe('coverage wave2 page interactions', () => {
                 unitActive: 'inactive',
                 pathExists: false,
                 installPath: '/opt/openclaw',
-                probedAt: new Date().toISOString(),
-              },
-            ],
-          },
-        },
+                probedAt: new Date().toISOString() },
+            ] } },
         {
           match: /\/api\/v1\/updates/,
           body: {
@@ -1131,9 +1005,7 @@ describe('coverage wave2 page interactions', () => {
             self: { current: '0.1.0', latest: '0.1.1', channel: 'stable' },
             inventory: { packages: [] },
             policy: { auto: false },
-            ok: true,
-          },
-        },
+            ok: true } },
         {
           match: /\/api\/v1\/ai\//,
           body: {
@@ -1143,11 +1015,8 @@ describe('coverage wave2 page interactions', () => {
                 title: 'Task',
                 status: 'completed',
                 createdAt: new Date().toISOString(),
-                steps: [{ id: 's1', title: 'Plan', status: 'completed' }],
-              },
-            ],
-          },
-        },
+                steps: [{ id: 's1', title: 'Plan', status: 'completed' }] },
+            ] } },
         {
           match: /\/api\/v1\/ssl|\/api\/v1\/system\/ssl/,
           body: {
@@ -1157,11 +1026,8 @@ describe('coverage wave2 page interactions', () => {
                 domain: 'example.com',
                 expiresAt: new Date(Date.now() + 86400000 * 30).toISOString(),
                 issuer: 'LE',
-                apply_status: 'planned',
-              },
-            ],
-          },
-        },
+                apply_status: 'planned' },
+            ] } },
         catchAll,
       ]);
 
@@ -1181,8 +1047,7 @@ describe('coverage wave2 page interactions', () => {
       ] as const) {
         const { unmount } = renderAt(path, el);
         await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument(), {
-          timeout: 6000,
-        });
+          timeout: 6000 });
         await clickAllTabs(user);
         await clickMatching(
           user,
@@ -1223,12 +1088,9 @@ describe('coverage wave2 feature hooks', () => {
                 agent_id: 'ag-1',
                 status: 'connected',
                 group: 'edge',
-                last_seen_at: new Date().toISOString(),
-              },
-            ],
-          };
-        },
-      },
+                last_seen_at: new Date().toISOString() },
+            ] };
+        } },
       {
         match: /\/api\/v1\/agents\//,
         handler: (_u, init) => {
@@ -1238,8 +1100,7 @@ describe('coverage wave2 feature hooks', () => {
               requiresExecute: true,
               notes: ['Host execute is off'],
               kind: 'openclaw',
-              status: 'missing',
-            };
+              status: 'missing' };
           }
           return {
             items: [
@@ -1251,8 +1112,7 @@ describe('coverage wave2 feature hooks', () => {
                 unitActive: 'inactive',
                 pathExists: false,
                 installPath: '/opt/o',
-                probedAt: new Date().toISOString(),
-              },
+                probedAt: new Date().toISOString() },
             ],
             runtime: {
               kind: 'openclaw',
@@ -1262,11 +1122,8 @@ describe('coverage wave2 feature hooks', () => {
               unitActive: 'inactive',
               pathExists: false,
               installPath: '/opt/o',
-              probedAt: new Date().toISOString(),
-            },
-          };
-        },
-      },
+              probedAt: new Date().toISOString() } };
+        } },
       catchAll,
     ]);
     const { result } = renderHook(() => useAgents());
@@ -1308,10 +1165,8 @@ describe('coverage wave2 feature hooks', () => {
             self: { current: '0.1.0', latest: '0.2.0', channel: 'stable' },
             inventory: { packages: [{ name: 'nginx', current: '1', latest: '2' }] },
             policy: { auto: false, channel: 'stable' },
-            ok: true,
-          };
-        },
-      },
+            ok: true };
+        } },
       {
         match: /\/api\/v1\/ssl|\/api\/v1\/system\/ssl/,
         handler: (_u, init) => {
@@ -1322,12 +1177,9 @@ describe('coverage wave2 feature hooks', () => {
                 id: 'c1',
                 domain: 'example.com',
                 expiresAt: new Date().toISOString(),
-                issuer: 'LE',
-              },
-            ],
-          };
-        },
-      },
+                issuer: 'LE' },
+            ] };
+        } },
       {
         match: /\/api\/v1\/system\/software/,
         handler: (_u, init) => {
@@ -1335,10 +1187,8 @@ describe('coverage wave2 feature hooks', () => {
           return {
             items: [{ name: 'nginx', installed: false }],
             missing: ['nginx'],
-            ready: false,
-          };
-        },
-      },
+            ready: false };
+        } },
       {
         match: /\/api\/v1\/ai\//,
         handler: (_u, init) => {
@@ -1350,25 +1200,19 @@ describe('coverage wave2 feature hooks', () => {
                 title: 'T',
                 status: 'pending',
                 createdAt: new Date().toISOString(),
-                steps: [],
-              },
+                steps: [] },
             ],
             task: {
               id: 't1',
               title: 'T',
               status: 'pending',
               createdAt: new Date().toISOString(),
-              steps: [],
-            },
-          };
-        },
-      },
+              steps: [] } };
+        } },
       {
         match: /\/api\/v1\/email/,
         body: {
-          items: [{ id: 'dom-1', domain: 'example.com' }],
-        },
-      },
+          items: [{ id: 'dom-1', domain: 'example.com' }] } },
       {
         match: (url) => url.includes('/api/v1/files') || url.includes('/hosting/files'),
         handler: (_u, init) => {
@@ -1377,25 +1221,20 @@ describe('coverage wave2 feature hooks', () => {
             ok: true,
             path: '/',
             entries: [{ name: 'a.txt', path: 'a.txt', type: 'file', size: 1, mtime: new Date().toISOString() }],
-            items: [{ name: 'a.txt', path: 'a.txt', type: 'file', size: 1, mtime: new Date().toISOString() }],
-          };
-        },
-      },
+            items: [{ name: 'a.txt', path: 'a.txt', type: 'file', size: 1, mtime: new Date().toISOString() }] };
+        } },
       {
         match: /\/api\/v1\/resources\//,
         handler: (_u, init) => {
           if ((init?.method ?? 'GET').toUpperCase() !== 'GET') {
             return {
               ...HONESTY_WRITTEN_BLOCKED,
-              item: { id: 'x1', name: 'n' },
-            };
+              item: { id: 'x1', name: 'n' } };
           }
           return {
             items: [{ id: 'x1', name: 'n', apply_status: 'planned' }],
-            meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-          };
-        },
-      },
+            meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } };
+        } },
       catchAll,
     ]);
 

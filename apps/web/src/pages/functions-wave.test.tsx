@@ -10,8 +10,7 @@ import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
   softwareReadyRoute,
-  type FetchRoute,
-} from '../test/mock-fetch';
+  type FetchRoute } from '../test/mock-fetch';
 import { authStore } from '../shared/stores/auth-store';
 
 import { RedisPage } from './features/RedisPage';
@@ -97,9 +96,7 @@ function meRoute(): FetchRoute {
     match: (url) => url.includes('/auth/me'),
     body: {
       user: { id: '1', username: 'admin', roles: ['admin'] },
-      capabilities: ['*'],
-    },
-  };
+      capabilities: ['*'] } };
 }
 
 describe('functions-wave deep interactions', () => {
@@ -107,13 +104,11 @@ describe('functions-wave deep interactions', () => {
     authStore.setSession('t', {
       username: 'admin',
       roles: ['admin'],
-      capabilities: [],
-    });
+      capabilities: [] });
     vi.spyOn(window, 'confirm').mockReturnValue(true);
     try {
       Object.assign(navigator, {
-        clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
-      });
+        clipboard: { writeText: vi.fn().mockResolvedValue(undefined) } });
     } catch {
       /* ignore */
     }
@@ -154,8 +149,7 @@ describe('functions-wave deep interactions', () => {
                 { db: 1, keys: 1 },
               ],
               databases: 16,
-              configuredDatabases: 16,
-            };
+              configuredDatabases: 16 };
           }
           if (url.includes('keys')) {
             return {
@@ -163,15 +157,12 @@ describe('functions-wave deep interactions', () => {
               keys: [
                 { key: 'session:1', type: 'string', ttl: 60 },
                 { key: 'cache:home', type: 'hash', ttl: -1 },
-              ],
-            };
+              ] };
           }
           return {
             ok: true,
-            view: { key: 'session:1', type: 'string', ttl: 60, value: 'abc' },
-          };
-        },
-      },
+            view: { key: 'session:1', type: 'string', ttl: 60, value: 'abc' } };
+        } },
     ]);
     renderAt('/databases/redis', <RedisPage />);
     await waitFor(() => expect(screen.getByText('session:1')).toBeInTheDocument());
@@ -195,8 +186,7 @@ describe('functions-wave deep interactions', () => {
       within(dialogs[dialogs.length - 1]).getByRole('button', { name: /^delete$/i }),
     );
     fireEvent.change(document.getElementById('redis-db-select')!, {
-      target: { value: '1' },
-    });
+      target: { value: '1' } });
     for (const b of document.querySelectorAll('button.redis-db-pill')) {
       await user.click(b as HTMLElement);
     }
@@ -227,8 +217,7 @@ describe('functions-wave deep interactions', () => {
                 { value: 'example.com', label: 'example.com' },
                 { value: 'mail.test', label: 'mail.test' },
               ],
-              homes: [{ value: '/home/ftp', label: '/home/ftp' }],
-            };
+              homes: [{ value: '/home/ftp', label: '/home/ftp' }] };
           }
           if (url.includes('settings') || url.includes('status')) {
             return {
@@ -245,18 +234,14 @@ describe('functions-wave deep interactions', () => {
                 chrootLocalUser: true,
                 allowWriteableChroot: true,
                 banner: 'YSK FTPS',
-                guestUsername: 'ftp',
-              },
+                guestUsername: 'ftp' },
               status: {
                 installed: true,
                 active: 'active',
-                accountCount: 2,
-              },
-            };
+                accountCount: 2 } };
           }
           return honesty();
-        },
-      },
+        } },
     ]);
     renderAt('/ftp/service', <FtpsServicePage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -314,8 +299,7 @@ describe('functions-wave deep interactions', () => {
                 installed: true,
                 active: 'inactive',
                 enabled: 'disabled',
-                activeLabel: 'inactive',
-              },
+                activeLabel: 'inactive' },
               {
                 id: 'redis',
                 label: 'Redis',
@@ -324,8 +308,7 @@ describe('functions-wave deep interactions', () => {
                 installed: true,
                 active: 'active',
                 enabled: 'enabled',
-                activeLabel: 'active',
-              },
+                activeLabel: 'active' },
               {
                 id: 'missing',
                 label: 'Missing',
@@ -334,26 +317,20 @@ describe('functions-wave deep interactions', () => {
                 installed: false,
                 active: 'not-found',
                 enabled: 'not-found',
-                activeLabel: 'missing',
-              },
+                activeLabel: 'missing' },
             ],
             executeEnabled: true,
             isRoot: true,
-            probedAt: now(),
-          };
-        },
-      },
+            probedAt: now() };
+        } },
       {
         match: (url) => url.includes('lifecycle') || url.includes('protection'),
-        body: honesty(),
-      },
+        body: honesty() },
       {
         match: (url) => url.includes('db-cluster') || url.includes('cluster'),
         body: {
           count: 1,
-          items: [{ id: 'c1', name: 'galera', engine: 'mariadb', status: 'healthy' }],
-        },
-      },
+          items: [{ id: 'c1', name: 'galera', engine: 'mariadb', status: 'healthy' }] } },
     ]);
     renderAt('/services', <ServicesPage />);
     await waitFor(() => expect(screen.getAllByText(/nginx/i).length).toBeGreaterThan(0));
@@ -402,10 +379,8 @@ describe('functions-wave deep interactions', () => {
             defaultJails: ['sshd', 'nginx-http-auth'],
             bantime: '1h',
             findtime: '10m',
-            maxretry: 5,
-          };
-        },
-      },
+            maxretry: 5 };
+        } },
     ]);
     renderAt('/fail2ban', <Fail2banPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -449,10 +424,8 @@ describe('functions-wave deep interactions', () => {
               { num: 1, rule: '22/tcp ALLOW IN' },
               { num: 2, rule: '80/tcp ALLOW IN' },
             ],
-            denyFromIps: ['203.0.113.50'],
-          };
-        },
-      },
+            denyFromIps: ['203.0.113.50'] };
+        } },
     ]);
     renderAt('/firewall', <FirewallPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -501,8 +474,7 @@ describe('functions-wave deep interactions', () => {
                 { id: 'q1', raw: 'queued message 1' },
                 { id: 'q2', raw: 'queued message 2' },
               ],
-              notes: ['2 in queue'],
-            };
+              notes: ['2 in queue'] };
           }
           if (url.includes('domains')) {
             return {
@@ -512,26 +484,21 @@ describe('functions-wave deep interactions', () => {
                   domain: 'example.com',
                   apply_status: 'applied',
                   health_score: 90,
-                  serverIp: '203.0.113.1',
-                },
+                  serverIp: '203.0.113.1' },
                 {
                   id: 'd2',
                   domain: 'draft.test',
                   apply_status: 'draft',
                   health_score: 40,
-                  serverIp: '203.0.113.2',
-                },
+                  serverIp: '203.0.113.2' },
               ],
               total: 2,
               meta: {
                 total: 2,
-                facets: { status: { applied: 1, draft: 1, written: 0 } },
-              },
-            };
+                facets: { status: { applied: 1, draft: 1, written: 0 } } } };
           }
           return { ok: true, items: [], notes: [] };
-        },
-      },
+        } },
     ]);
     renderAt('/email', <EmailPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -565,11 +532,9 @@ describe('functions-wave deep interactions', () => {
                   domain: 'example.com',
                   expires_at: now(),
                   projects: [{ name: 'web' }],
-                  mailDomains: [{ domain: 'mail.example.com' }],
-                },
+                  mailDomains: [{ domain: 'mail.example.com' }] },
               ],
-              notes: ['ok'],
-            };
+              notes: ['ok'] };
           }
           return {
             items: [
@@ -578,26 +543,21 @@ describe('functions-wave deep interactions', () => {
                 domain: 'example.com',
                 status: 'issued',
                 files_exist: true,
-                expires_at: now(),
-              },
+                expires_at: now() },
               {
                 id: 'c2',
                 domain: 'fail.test',
                 status: 'failed',
-                files_exist: false,
-              },
+                files_exist: false },
               {
                 id: 'c3',
                 domain: 'planned.test',
                 status: 'planned',
-                files_exist: false,
-              },
+                files_exist: false },
             ],
             total: 3,
-            meta: { total: 3 },
-          };
-        },
-      },
+            meta: { total: 3 } };
+        } },
     ]);
     renderAt('/ssl', <SslPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -606,8 +566,7 @@ describe('functions-wave deep interactions', () => {
     if (dialogs[0]) {
       for (const input of within(dialogs[0]).queryAllByRole('textbox')) {
         fireEvent.change(input, {
-          target: { value: 'example.com\n-----BEGIN CERT-----\nx\n-----END CERT-----' },
-        });
+          target: { value: 'example.com\n-----BEGIN CERT-----\nx\n-----END CERT-----' } });
       }
       await clickNamed(user, /upload|save|submit/i, 1);
       await clickNamed(user, /cancel|close/i, 2);
@@ -645,8 +604,7 @@ describe('functions-wave deep interactions', () => {
               activeLabel: 'active',
               executeEnabled: false,
               isRoot: false,
-              version: '16',
-            };
+              version: '16' };
           }
           return {
             items: [
@@ -654,14 +612,11 @@ describe('functions-wave deep interactions', () => {
                 id: 'db1',
                 name: 'appdb',
                 apply_status: 'applied',
-                username: 'app',
-              },
+                username: 'app' },
             ],
             total: 1,
-            meta: { total: 1 },
-          };
-        },
-      },
+            meta: { total: 1 } };
+        } },
     ]);
     renderAt('/databases/postgres', <PostgresPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -695,9 +650,7 @@ describe('functions-wave deep interactions', () => {
                 id: 't-new',
                 status: 'planned',
                 prompt: 'x',
-                steps: [{ id: 's1', status: 'pending', title: 'step' }],
-              },
-            };
+                steps: [{ id: 's1', status: 'pending', title: 'step' }] } };
           }
           return {
             tasks: [
@@ -709,31 +662,26 @@ describe('functions-wave deep interactions', () => {
                 steps: [
                   { id: 's1', status: 'pending', title: 'Probe' },
                   { id: 's2', status: 'pending', title: 'Fix' },
-                ],
-              },
+                ] },
               {
                 id: 't2',
                 status: 'completed',
                 prompt: 'Done task',
                 createdAt: now(),
-                steps: [{ id: 's1', status: 'done', title: 'Done' }],
-              },
+                steps: [{ id: 's1', status: 'done', title: 'Done' }] },
               {
                 id: 't3',
                 status: 'failed',
                 prompt: 'Failed',
                 createdAt: now(),
-                steps: [{ id: 's1', status: 'error', title: 'Boom' }],
-              },
+                steps: [{ id: 's1', status: 'error', title: 'Boom' }] },
             ],
             playbooks: [
               { id: 'pb1', name: 'Hardening', description: 'Secure host' },
               { id: 'pb2', name: 'Backup check', description: 'Verify backups' },
             ],
-            items: [],
-          };
-        },
-      },
+            items: [] };
+        } },
     ]);
     renderAt('/ai', <AiPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -781,8 +729,7 @@ describe('functions-wave deep interactions', () => {
               category: 'security',
               severity: 'critical',
               fixHref: '/firewall',
-              fixHint: 'Enable ufw',
-            },
+              fixHint: 'Enable ufw' },
           ],
           items: [
             {
@@ -794,8 +741,7 @@ describe('functions-wave deep interactions', () => {
               severity: 'critical',
               fixHref: '/ssl',
               fixHint: 'Issue cert',
-              spec: 'tls',
-            },
+              spec: 'tls' },
             {
               id: 'fw',
               title: 'Firewall',
@@ -804,8 +750,7 @@ describe('functions-wave deep interactions', () => {
               category: 'security',
               severity: 'critical',
               fixHref: '/firewall',
-              fixHint: 'Enable ufw',
-            },
+              fixHint: 'Enable ufw' },
             {
               id: 'mail',
               title: 'Mail stack',
@@ -813,11 +758,8 @@ describe('functions-wave deep interactions', () => {
               level: 'degraded',
               category: 'mail',
               severity: 'recommended',
-              fixHref: '/email',
-            },
-          ],
-        },
-      },
+              fixHref: '/email' },
+          ] } },
     ]);
     renderAt('/readiness', <ReadinessPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -843,16 +785,13 @@ describe('functions-wave deep interactions', () => {
                 domain: 'app.example.com',
                 root: '/var/www/app',
                 apply_status: 'applied',
-                ssl: true,
-              },
+                ssl: true },
             ],
             total: 1,
             meta: { total: 1 },
             installed: true,
-            active: 'active',
-          };
-        },
-      },
+            active: 'active' };
+        } },
     ]);
     renderAt('/nginx', <NginxPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -884,19 +823,14 @@ describe('functions-wave deep interactions', () => {
                 username: 'ftpuser',
                 comment: 'laptop',
                 publicKey: 'ssh-ed25519 AAAA',
-                created_at: now(),
-              },
-            ],
-          };
-        },
-      },
+                created_at: now() },
+            ] };
+        } },
       {
         match: (url) => url.includes('/system/ftps/options'),
         body: {
           domains: [{ value: 'example.com', label: 'example.com' }],
-          homes: [{ value: '/home/ftp', label: '/home/ftp' }],
-        },
-      },
+          homes: [{ value: '/home/ftp', label: '/home/ftp' }] } },
       {
         match: (url) =>
           url.includes('ftp') ||
@@ -912,14 +846,11 @@ describe('functions-wave deep interactions', () => {
                 username: 'ftpuser',
                 homePath: '/home/ftpuser',
                 apply_status: 'applied',
-                domain: 'example.com',
-              },
+                domain: 'example.com' },
             ],
             total: 1,
-            meta: { total: 1 },
-          };
-        },
-      },
+            meta: { total: 1 } };
+        } },
     ]);
     renderAt('/ftp', <FtpPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -948,8 +879,7 @@ describe('functions-wave deep interactions', () => {
       port: 3000,
       apply_status: 'applied',
       gitUrl: 'https://github.com/ex/demo.git',
-      branch: 'main',
-    };
+      branch: 'main' };
     installFetchMock([
       softwareReadyRoute(),
       meRoute(),
@@ -962,12 +892,10 @@ describe('functions-wave deep interactions', () => {
               ...project,
               envText: 'NODE_ENV=production',
               logs: 'boot ok\n',
-              process: { status: 'running', pid: 1234 },
-            };
+              process: { status: 'running', pid: 1234 } };
           }
           return { items: [project], total: 1, meta: { total: 1 } };
-        },
-      },
+        } },
     ]);
     renderAt('/projects', <ProjectsPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -1001,21 +929,17 @@ describe('functions-wave deep interactions', () => {
                 records: [
                   { id: 'r1', name: '@', type: 'A', content: '203.0.113.1', ttl: 300 },
                   { id: 'r2', name: 'www', type: 'CNAME', content: 'example.com', ttl: 300 },
-                ],
-              },
+                ] },
             ],
             items: [
               {
                 id: 'z1',
                 name: 'example.com',
-                dnssec: false,
-              },
+                dnssec: false },
             ],
             total: 1,
-            meta: { total: 1 },
-          };
-        },
-      },
+            meta: { total: 1 } };
+        } },
     ]);
     renderAt('/dns', <DnsPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -1046,18 +970,14 @@ describe('functions-wave deep interactions', () => {
             offline: 0,
             draining: 0,
             unknown: 0,
-            byRegion: { local: 1 },
-          },
+            byRegion: { local: 1 } },
           sites: {
             total: 1,
             byApplyStatus: { planned: 1 },
-            rows: [{ id: 's1', name: 'cdn.example.com', apply_status: 'planned' }],
-          },
+            rows: [{ id: 's1', name: 'cdn.example.com', apply_status: 'planned' }] },
           cache: [],
           overallHitRatePct: 80,
-          notes: [],
-        },
-      },
+          notes: [] } },
       {
         match: (url) => url.includes('/cdn/nodes'),
         handler: (_u, init) => {
@@ -1071,14 +991,11 @@ describe('functions-wave deep interactions', () => {
                 region: 'local',
                 roles: ['edge'],
                 status: 'online',
-                ipv4: '203.0.113.10',
-              },
+                ipv4: '203.0.113.10' },
             ],
             total: 1,
-            meta: { total: 1 },
-          };
-        },
-      },
+            meta: { total: 1 } };
+        } },
       {
         match: (url) => url.includes('/cdn/sites'),
         handler: (_u, init) => {
@@ -1091,21 +1008,17 @@ describe('functions-wave deep interactions', () => {
                 domains: ['cdn.example.com'],
                 originUrl: 'https://origin.example.com',
                 apply_status: 'planned',
-                mode: 'origin_pull',
-              },
+                mode: 'origin_pull' },
             ],
             total: 1,
-            meta: { total: 1 },
-          };
-        },
-      },
+            meta: { total: 1 } };
+        } },
       {
         match: (url) => url.includes('/cdn') || url.includes('dns/zones'),
         handler: (_u, init) => {
           if ((init?.method ?? 'GET').toUpperCase() !== 'GET') return honesty();
           return { items: [], total: 0, meta: { total: 0 } };
-        },
-      },
+        } },
     ]);
     renderAt('/cdn', <CdnPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -1148,11 +1061,9 @@ describe('functions-wave deep interactions', () => {
                 cityPolicyEnabled: false,
                 asns: [],
                 enforce: { autoBan: true, nginx: true, ufw: false },
-                autoUpdate: true,
-              },
+                autoUpdate: true },
               sources: [],
-              meta: null,
-            };
+              meta: null };
           }
           if (url.includes('automation')) {
             return {
@@ -1165,18 +1076,14 @@ describe('functions-wave deep interactions', () => {
                   suggestEmergencyAt: 90,
                   deescalateEnabled: true,
                   deescalateToDailyBelow: 20,
-                  holdMinutes: 30,
-                },
+                  holdMinutes: 30 },
                 autoBan: {
                   enabled: true,
                   mode: 'normal',
                   method: 'fail2ban',
                   cooldownMinutes: 30,
                   maxAutoBansPerHour: 20,
-                  whitelist: ['127.0.0.1'],
-                },
-              },
-            };
+                  whitelist: ['127.0.0.1'] } } };
           }
           return {
             at: now(),
@@ -1192,15 +1099,13 @@ describe('functions-wave deep interactions', () => {
             ],
             bans: {
               count: 1,
-              items: [{ ip: '203.0.113.10', source: 'fail2ban', jail: 'sshd' }],
-            },
+              items: [{ ip: '203.0.113.10', source: 'fail2ban', jail: 'sshd' }] },
             nginxLimits: {
               reqRate: '10r/s',
               burst: 20,
               connLimit: 40,
               confPath: '/etc/nginx/conf.d/d.conf',
-              exists: true,
-            },
+              exists: true },
             firewall: { active: 'active', installed: true },
             fail2ban: { active: 'active', installed: true, jails: 2 },
             autoBan: {
@@ -1209,15 +1114,12 @@ describe('functions-wave deep interactions', () => {
               method: 'fail2ban',
               cooldownMinutes: 30,
               maxAutoBansPerHour: 20,
-              whitelist: ['127.0.0.1'],
-            },
+              whitelist: ['127.0.0.1'] },
             executeEnabled: false,
             isRoot: false,
             suggestions: [{ id: 's1', title: 'Apply', body: 'x', action: 'preset:daily' }],
-            notes: ['n1'],
-          };
-        },
-      },
+            notes: ['n1'] };
+        } },
     ]);
     renderAt('/protection', <ProtectionPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -1254,10 +1156,8 @@ describe('functions-wave deep interactions', () => {
                   type: 'file',
                   size: 9,
                   deletedAt: t,
-                  mtime: t,
-                },
-              ],
-            };
+                  mtime: t },
+              ] };
           }
           if (url.includes('shares')) {
             return { items: [] };
@@ -1267,8 +1167,7 @@ describe('functions-wave deep interactions', () => {
               content: 'hello',
               path: 'readme.txt',
               bytes: 5,
-              mime: 'text/plain',
-            };
+              mime: 'text/plain' };
           }
           return {
             path: '.',
@@ -1281,28 +1180,23 @@ describe('functions-wave deep interactions', () => {
                 size: 100,
                 mtime: t,
                 mime: 'text/plain',
-                favorite: true,
-              },
+                favorite: true },
               {
                 name: 'docs',
                 path: 'docs',
                 type: 'dir',
                 size: 0,
-                mtime: t,
-              },
+                mtime: t },
               {
                 name: 'photo.png',
                 path: 'photo.png',
                 type: 'file',
                 size: 2048,
                 mtime: t,
-                mime: 'image/png',
-              },
+                mime: 'image/png' },
             ],
-            usage: { bytes: 2148, fileCount: 2, dirCount: 1 },
-          };
-        },
-      },
+            usage: { bytes: 2148, fileCount: 2, dirCount: 1 } };
+        } },
     ]);
     renderAt('/files', <FilesPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -1339,10 +1233,8 @@ describe('functions-wave deep interactions', () => {
                   id: 'p1',
                   name: 'demo',
                   homeDir: '/home/ysk/demo',
-                  runtime: 'node',
-                },
-              ],
-            };
+                  runtime: 'node' },
+              ] };
           }
           return {
             jobs: [
@@ -1351,8 +1243,7 @@ describe('functions-wave deep interactions', () => {
                 name: 'nightly',
                 schedule: '0 2 * * *',
                 command: 'echo hi',
-                enabled: true,
-              },
+                enabled: true },
             ],
             items: [
               {
@@ -1360,13 +1251,10 @@ describe('functions-wave deep interactions', () => {
                 name: 'nightly',
                 schedule: '0 2 * * *',
                 command: 'echo hi',
-                enabled: true,
-              },
+                enabled: true },
             ],
-            installed: true,
-          };
-        },
-      },
+            installed: true };
+        } },
     ]);
     renderAt('/cron', <CronPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -1399,10 +1287,8 @@ describe('functions-wave deep interactions', () => {
             description: 'Nginx',
             fragmentPath: '/lib/systemd/system/nginx.service',
             executeEnabled: false,
-            isRoot: false,
-          };
-        },
-      },
+            isRoot: false };
+        } },
     ]);
     renderAt('/system/unit', <SystemdUnitPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -1428,21 +1314,17 @@ describe('functions-wave deep interactions', () => {
                 current: '1.0',
                 candidate: '1.1',
                 risk: 'high',
-                requiresApproval: true,
-              },
+                requiresApproval: true },
               {
                 id: 'u2',
                 name: 'curl',
                 current: '7.0',
                 candidate: '8.0',
-                risk: 'low',
-              },
+                risk: 'low' },
             ],
             lastCheckedAt: now(),
-            notes: [],
-          };
-        },
-      },
+            notes: [] };
+        } },
     ]);
     renderAt('/updates', <UpdatesPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -1473,11 +1355,9 @@ describe('functions-wave deep interactions', () => {
                   engine: 'mariadb',
                   kind: 'mariadb-galera',
                   status: 'healthy',
-                  members: [{ host: '10.0.0.1', role: 'primary' }],
-                },
+                  members: [{ host: '10.0.0.1', role: 'primary' }] },
               ],
-              count: 1,
-            };
+              count: 1 };
           }
           return {
             items: [
@@ -1485,22 +1365,18 @@ describe('functions-wave deep interactions', () => {
                 id: 'e1',
                 username: 'alice',
                 status: 'enrolled',
-                createdAt: now(),
-              },
+                createdAt: now() },
               {
                 id: 'e2',
                 username: 'bob',
                 status: 'file_written',
-                createdAt: now(),
-              },
+                createdAt: now() },
             ],
             hostNotes: ['pam ok'],
             package: 'ok',
             pam: 'ok',
-            lights: { package: 'ok', pam: 'ok', sshd: 'ok' },
-          };
-        },
-      },
+            lights: { package: 'ok', pam: 'ok', sshd: 'ok' } };
+        } },
     ]);
     render(
       <MemoryRouter>

@@ -23,8 +23,7 @@ import {
   SegRadio,
   SoftwareInstallBanner,
   PageTabs,
-  buttonClassName,
-} from '../../shared/components/ui';
+  buttonClassName } from '../../shared/components/ui';
 import { Link, useSearchParams } from 'react-router-dom';
 import type { OpsResultLike, InstallStreamLine } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
@@ -34,8 +33,7 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../../shared/lib/i18n';
 import {
   resolveRuntimeInstallState,
-  versionChipLabel,
-} from '../../features/runtimes/install-state';
+  versionChipLabel } from '../../features/runtimes/install-state';
 import { RuntimePluginsField } from '../../features/runtimes/RuntimePluginsField';
 import { RuntimeInstallActions } from '../../features/runtimes/RuntimeInstallActions';
 import { RuntimePm2Panel } from '../../features/runtimes/RuntimePm2Panel';
@@ -67,51 +65,42 @@ const META: Record<
     title: 'Node.js',
     defaultVersion: '20',
     installLabelKey: 'runtime.installNodeLabel',
-    bannerTitle: i18n.t('runtime.nodeMissing'),
-  },
+    bannerTitle: i18n.t('runtime.nodeMissing') },
   php: {
     title: 'PHP',
     defaultVersion: '8.2',
     installLabelKey: 'runtime.installPhpLabel',
-    bannerTitle: i18n.t('runtime.phpMissing'),
-  },
+    bannerTitle: i18n.t('runtime.phpMissing') },
   python: {
     title: 'Python',
     defaultVersion: '3.12',
     installLabelKey: 'runtime.installPythonLabel',
-    bannerTitle: i18n.t('runtime.pythonMissing'),
-  },
+    bannerTitle: i18n.t('runtime.pythonMissing') },
   go: {
     title: 'Go',
     defaultVersion: '1.22',
     installLabelKey: 'runtime.installGoLabel',
-    bannerTitle: i18n.t('runtime.goMissing'),
-  },
+    bannerTitle: i18n.t('runtime.goMissing') },
   rust: {
     title: 'Rust',
     defaultVersion: 'stable',
     installLabelKey: 'runtime.installRustLabel',
-    bannerTitle: i18n.t('runtime.rustMissing'),
-  },
+    bannerTitle: i18n.t('runtime.rustMissing') },
   java: {
     title: 'Java',
     defaultVersion: '21',
     installLabelKey: 'runtime.installJavaLabel',
-    bannerTitle: i18n.t('runtime.javaMissing'),
-  },
+    bannerTitle: i18n.t('runtime.javaMissing') },
   kotlin: {
     title: 'Kotlin',
     defaultVersion: '2.1.0',
     installLabelKey: 'runtime.installKotlinLabel',
-    bannerTitle: i18n.t('runtime.kotlinMissing'),
-  },
+    bannerTitle: i18n.t('runtime.kotlinMissing') },
   bun: {
     title: 'Bun',
     defaultVersion: 'latest',
     installLabelKey: 'runtime.installBunLabel',
-    bannerTitle: i18n.t('runtime.bunMissing'),
-  },
-};
+    bannerTitle: i18n.t('runtime.bunMissing') } };
 
 const RT_TABS_BASE = ['overview', 'tuning', 'about'] as const;
 const RT_TABS_PROCESS = ['overview', 'processes', 'tuning', 'about'] as const;
@@ -210,16 +199,14 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
         if (cancelled) return;
         const candidates = (h.candidates ?? []).map((c) => ({
           version: c.version,
-          label: c.label,
-        }));
+          label: c.label }));
         setVersionStatus({
           latestVersion: h.latestVersion,
           currentVersion: h.currentVersion,
           upgradable: h.upgradable,
           candidates,
           source: h.source,
-          notes: h.notes,
-        });
+          notes: h.notes });
         // No URL pin: always prefer discovered latest over offline META default
         // (do not use `prev || latest` — defaultVersion is truthy and would lock forever)
         const urlPin = searchParams.get('version');
@@ -327,8 +314,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
         versionStatus?.candidates.map((c) => c.version).filter(Boolean) ??
         supported?.[kind] ??
         [],
-      notes: Array.isArray(p?.notes) ? (p!.notes as string[]) : [],
-    };
+      notes: Array.isArray(p?.notes) ? (p!.notes as string[]) : [] };
   }, [probe, kind, versionStatus?.candidates]);
 
   /** Host path unsafe for project systemd user (mirrors core isProjectUserExecutablePath). */
@@ -375,11 +361,9 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
         version: i.version != null ? String(i.version) : undefined,
         available: Boolean(i.available),
         active: Boolean(i.active),
-        versionOutput: i.versionOutput != null ? String(i.versionOutput) : undefined,
-      })),
+        versionOutput: i.versionOutput != null ? String(i.versionOutput) : undefined })),
       hostDefault: probeData.hostRaw || null,
-      multiVersion,
-    });
+      multiVersion });
   }, [version, probeData, multiVersion]);
 
   const parseExtraEnv = (): Record<string, string> => {
@@ -406,8 +390,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
           if (probeData.available.length) {
             return {
               label: t('runtime.availableCount', { n: probeData.available.length }),
-              tone: 'ok' as const,
-            };
+              tone: 'ok' as const };
           }
           // Never show "recorded installed" as ready — probe empty = not detected
           return { label: t('runtime.notDetected'), tone: 'warn' as const };
@@ -416,17 +399,14 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
           {
             label: t('common.probe'),
             value: probe ? t('runtime.readShort') : '—',
-            tone: probe ? 'ok' : 'neutral',
-          },
+            tone: probe ? 'ok' : 'neutral' },
           {
             label: t('common.available'),
-            value: probeData.available.length,
-          },
+            value: probeData.available.length },
           { label: t('common.target'), value: version },
           { label: t('runtime.tune'), value: tuningLoaded ? t('runtime.loadedShort') : '—' },
           { label: t('common.host'), value: probeData.host || '—' },
-        ],
-      }}
+        ] }}
       actions={<>
           <Button
             variant="secondary"
@@ -497,8 +477,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                     { label: t('runtime.hostDefault'), value: probeData.host },
                     {
                       label: t('runtime.panelSupport'),
-                      value: probeData.supported.join(', '),
-                    },
+                      value: probeData.supported.join(', ') },
                     {
                       label: t('ssl.status.ready'),
                       value: probeData.available.length ? (
@@ -511,8 +490,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                         </span>
                       ) : (
                         t('runtime.notDetectedYet')
-                      ),
-                    },
+                      ) },
                   ]}
                 />
                 {probeData.items.length > 0 ? (
@@ -525,7 +503,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                         </Badge>
                         {i.available && i.active ? (
                           <Badge tone="ok">
-                            {t('runtime.activeDefault', { defaultValue: t('uiInline.sf7f7807b') })}
+                            {t('runtime.activeDefault')}
                           </Badge>
                         ) : null}
                         {i.resolvedPath ? (
@@ -557,8 +535,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                     hint={
                       installState.installedVersions.length
                         ? t('runtime.installedVersionsHint', {
-                            list: installState.installedVersions.join(', '),
-                          })
+                            list: installState.installedVersions.join(', ') })
                         : t('runtime.installScriptNote')
                     }
                   >
@@ -574,9 +551,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                             id={`rt-${kind}-ver`}
                             value={version}
                             onChange={bindInput(setVersion)}
-                            placeholder={t('runtime.versionPlaceholder', {
-                              defaultValue: t('uiInline.sc9530028'),
-                            })}
+                            placeholder={t('runtime.versionPlaceholder', { })}
                           />
                         );
                       }
@@ -589,8 +564,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                             onChange={setVersion}
                             options={vers.map((v) => ({
                               value: v,
-                              label: versionChipLabel(v, installState.installedVersions),
-                            }))}
+                              label: versionChipLabel(v, installState.installedVersions) }))}
                           />
                         );
                       }
@@ -623,10 +597,8 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                         (probeData.hostRaw ? probeData.hostRaw : '—'),
                       source: versionStatus.source
                         ? t('runtime.remoteSourceSuffix', {
-                            source: versionStatus.source,
-                          })
-                        : '',
-                    })}
+                            source: versionStatus.source })
+                        : '' })}
                   </FormHint>
                 ) : versionStatus?.notes?.length ? (
                   <FormHint>
@@ -655,8 +627,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                             void run(async () => {
                               const r = await systemApi.runtimeSwitch({
                                 kind: kind as 'go' | 'rust',
-                                version,
-                              });
+                                version });
                               await refresh();
                               setPluginsRefreshToken((n) => n + 1);
                               return r as OpsResultLike;
@@ -666,10 +637,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                     extraHints={
                       multiVersion ? (
                         <FormHint>
-                          {t('runtime.multiVersionHint', {
-                            defaultValue:
-                              t('uiInline.sb8b5a353'),
-                          })}
+                          {t('runtime.multiVersionHint', { })}
                         </FormHint>
                       ) : installState.newerAvailable.length === 0 ? (
                         <FormHint>{t('runtime.installScriptNote')}</FormHint>
@@ -683,12 +651,10 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                             kind,
                             version,
                             install: true,
-                            plugins,
-                          },
+                            plugins },
                           {
                             onLog: (line) =>
-                              setInstallLog((prev) => [...prev.slice(-1999), line]),
-                          },
+                              setInstallLog((prev) => [...prev.slice(-1999), line]) },
                         );
                         await refresh();
                         setPluginsRefreshToken((n) => n + 1);
@@ -795,8 +761,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                                     onChange={(v) => setValue(f.key, v)}
                                     options={merged.map((o) => ({
                                       value: o.value,
-                                      label: o.label,
-                                    }))}
+                                      label: o.label }))}
                                   />
                                 );
                               }
@@ -903,8 +868,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                         <code className="desc-list__code">
                           {v == null || v === '' ? '—' : String(v)}
                         </code>
-                      ),
-                    }))}
+                      ) }))}
                   />
                 </CardSection>
               </Card>
@@ -922,8 +886,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                     const r = await systemApi.runtimeTuningSave(kind, {
                       version,
                       values,
-                      env: parseExtraEnv(),
-                    });
+                      env: parseExtraEnv() });
                     await loadTuning();
                     return r as OpsResultLike;
                   }, t('runtime.tuneSaved'))

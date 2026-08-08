@@ -14,8 +14,7 @@ const TONE_CLASS: Record<StatTone, string> = {
   default: 'stat-pill',
   ok: 'stat-pill stat-pill--ok',
   warn: 'stat-pill stat-pill--warn',
-  danger: 'stat-pill stat-pill--danger',
-};
+  danger: 'stat-pill stat-pill--danger' };
 
 export function SummaryStrip({ items }: SummaryStripProps) {
   return (

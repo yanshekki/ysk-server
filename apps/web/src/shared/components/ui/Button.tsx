@@ -27,8 +27,7 @@ const VARIANT: Record<ButtonVariant, string> = {
   secondary: 'btn btn--secondary',
   ghost: 'btn btn--ghost',
   danger: 'btn btn--danger',
-  link: 'btn btn--link',
-};
+  link: 'btn btn--link' };
 
 /** Single system size class — sm/md/lg aliases kept so call sites need no rewrite. */
 const SIZE_CLASS = 'btn--md';

@@ -219,7 +219,16 @@
       "project.create": "建立專案",
       "project.delete": "刪除專案",
       "ssl.request": "申請 SSL",
-      "ssl.upload": "上載 SSL"
+      "ssl.upload": "上載 SSL",
+      "system.firewall.enable": "防火牆啟用／停用",
+      "system.firewall.delete_rule": "刪除防火牆規則",
+      "system.firewall.delete_deny": "移除永久拒 IP",
+      "db.adminer.apply": "資料庫管理專案",
+      "project.goLive": "專案上線",
+      "project.publish": "發佈 Nginx",
+      "project.suspend": "暫停專案",
+      "software.install": "安裝軟件",
+      "software.update": "更新軟件"
     }
   },
   "backups": {
@@ -1800,7 +1809,10 @@
     "deletedOk": "已刪除",
     "applyDone": "套用完成",
     "applyIncomplete": "套用未完成",
-    "checking": "檢查中…"
+    "checking": "檢查中…",
+    "dismiss": "關閉",
+    "hide": "隱藏",
+    "show": "顯示"
   },
   "cron": {
     "presetCdTrue": "cd app + 是（測試）",
@@ -4232,7 +4244,9 @@
     "nginx": {
       "reloaded": "已重載 Nginx",
       "configOk": "Nginx 設定檢查通過",
-      "reloadExit": "Nginx 重新載入 結束碼={{code}}"
+      "reloadExit": "Nginx 重新載入 結束碼={{code}}",
+      "managedDir": "管理設定目錄：{{path}}",
+      "includeHint": "於 Nginx 加入：include {{path}}/*.conf;"
     },
     "ssl": {
       "requestCert": "申請憑證"
@@ -7556,7 +7570,17 @@
     "netPublishPrimary": "基本",
     "netPublishSsl": "HTTPS / SSL",
     "netPublishMaint": "維護",
-    "sslNeedDomain": "請先填寫網域，才能發佈 Nginx / SSL。"
+    "sslNeedDomain": "請先填寫網域，才能發佈 Nginx / SSL。",
+    "createTemplateMissing": "未載入 {{v0}} 範本；請重新整理或選「— 無 —」空白專案。",
+    "deleteDialogDesc": "將銷毀「{{v0}}」。此操作無法還原。",
+    "deleteWillStop": "停止 systemd / PM2 / 本機進程",
+    "deleteWillWeb": "移除 Nginx conf、PHP-FPM pool、Apache vhost（如有）",
+    "deleteWillOs": "刪除 Linux 用戶與 home 目錄（安全路徑）",
+    "deleteKeepOs": "保留 home 與 Linux 用戶（僅面板移除）",
+    "deleteWillDb": "從控制面資料庫移除專案",
+    "deleteRemoveFilesDesc": "取消勾選則只從面板移除，檔案與系統用戶保留",
+    "deleteTypeNameHint": "請輸入「{{v0}}」",
+    "deleteDnsWarn": "共享 DNS zone / 郵箱 domain 不會自動刪除。"
   },
   "protection": {
     "levels": {
@@ -8674,7 +8698,9 @@
     "nodePathUnsafeTitle": "Node 路徑不安全",
     "nodePathUnsafe": "目前路徑 {{path}} 不在受管目錄；專案部署可能失敗。",
     "recordedButProbeEmpty": "控制面曾記錄安裝 {{v}}，但主機探測未見執行檔。不算已安裝——請「重新探測」或重新安裝。",
-    "tabTuning": "調校"
+    "tabTuning": "調校",
+    "versionPlaceholder": "載入最新版本中，或手動輸入",
+    "pluginsBundleWithRuntime": "選定工具會隨下方「安裝 runtime」一併安裝（只有一個安裝按鈕）。"
   },
   "security": {
     "title": "帳號安全",
@@ -9165,7 +9191,12 @@
       "update": "更新",
       "updateTitle": "前往安裝／切換至 {{v}}",
       "updateTo": "更新至 {{v}}",
-      "installVersion": "安裝 {{v}}"
+      "installVersion": "安裝 {{v}}",
+      "applyAptTitle": "確認後更新 {{v0}}",
+      "updateN": "更新 {{v0}} 項",
+      "installTitle": "安裝 {{v0}}",
+      "install": "安裝",
+      "updateAptTitle": "前往更新中心處理 {{v0}}"
     },
     "apply": {
       "blockedShort": "被阻擋",
@@ -9175,7 +9206,13 @@
       "confirm": "確認安裝",
       "confirmTitle": "確認安裝軟件？",
       "confirmBody": "將安裝／更新 {{pkg}}：{{from}} → {{to}}。需系統變更權限。",
-      "ok": "已套用 {{pkg}}"
+      "ok": "已套用 {{pkg}}",
+      "progress": "更新中 {{v0}}/{{v1}}：{{v2}}",
+      "okMulti": "已更新：{{v0}}",
+      "okMultiTitle": "{{v0}} 更新完成",
+      "partial": "部分成功：{{v0}}；失敗：{{v1}}",
+      "partialTitle": "部分套件更新失敗",
+      "failedTitle": "{{v0}} 更新失敗"
     },
     "version": {
       "loading": "載入版本中…",
@@ -9187,7 +9224,37 @@
       "noTarget": "沒有可更新版本",
       "needRuntimePage": "請在執行環境頁安裝此版本",
       "noAptCandidate": "沒有可用的 apt 候選版本"
-    }
+    },
+    "install": {
+      "progress": "正在安裝：{{v0}}…",
+      "progressHint": "需 root + EXECUTE；可能需要一兩分鐘。",
+      "blockedTitle": "{{v0}} 未能安裝",
+      "ok": "已提交安裝：{{v0}}",
+      "okTitle": "{{v0}} 安裝完成／已提交",
+      "failedTitle": "{{v0}} 安裝失敗",
+      "confirmTitle": "確認安裝軟件？",
+      "confirmBody": "將安裝 {{v0}}：{{v1}}。需 root 且 YSK_EXECUTE=1。",
+      "confirm": "確認安裝"
+    },
+    "runtime": {
+      "installing": "正在安裝／更新 {{v0}} {{v1}}…（可能需要一兩分鐘）",
+      "installingHint": "下方會即時顯示 server 輸出，請勿關閉頁面。",
+      "blockedTitle": "{{v0}} {{v1}} 未能安裝",
+      "installed": "已安裝／更新 {{v0}} {{v1}}",
+      "installedDetail": "狀態已重新整理。若仍顯示有新版本，可再檢查或到執行環境頁確認。",
+      "failedTitle": "{{v0}} {{v1}} 安裝失敗",
+      "installingShort": "安裝中…"
+    },
+    "aptSummaryTitle": "系統倉庫可升級",
+    "aptSummaryDesc": "目錄軟件與主機套件清單分開統計；實際套用可在更新中心或卡片一鍵確認。",
+    "aptSummary": {
+      "catalog": "目錄軟件 {{v0}}",
+      "host": "主機套件 {{v0}}",
+      "openUpdates": "開啟更新中心"
+    },
+    "navBadgeTitle": "目錄軟件系統倉庫可升級：{{v0}}",
+    "projectHint": "已預填 runtime {{runtime}}，可建立專案",
+    "projectHintWithVersion": "已預填 runtime {{runtime}} {{version}}，可建立專案"
   },
   "softwareBanner": {
     "titleDefault": "尚未安裝所需軟件",
@@ -10054,7 +10121,9 @@
     "batchCancel": "取消批量",
     "batchCancelling": "正在取消…（目前套件完成後停止）",
     "batchCancelled": "已取消（其餘未執行）",
-    "batchRescanned": "已重新掃描主機套件狀態"
+    "batchRescanned": "已重新掃描主機套件狀態",
+    "applyLogTitle": "套件更新日誌（即時）",
+    "navBadgeTitle": "主機可升級套件：{{v0}}"
   },
   "users": {
     "userCount": "{{count}} 用戶",

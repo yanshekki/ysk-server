@@ -144,5 +144,7 @@
   "batchCancel": "Cancel bulk",
   "batchCancelling": "Cancelling… (stops after current package)",
   "batchCancelled": "Cancelled (remaining skipped)",
-  "batchRescanned": "Host package state re-scanned"
+  "batchRescanned": "Host package state re-scanned",
+  "applyLogTitle": "Update（）",
+  "navBadgeTitle": "：{{v0}}"
 }

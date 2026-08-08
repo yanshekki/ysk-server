@@ -10,8 +10,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
-  softwareReadyRoute,
-} from '../test/mock-fetch';
+  softwareReadyRoute } from '../test/mock-fetch';
 import { authStore } from '../shared/stores/auth-store';
 import { DashboardPage } from './DashboardPage';
 import { NetworkPage } from './features/NetworkPage';
@@ -60,14 +59,12 @@ describe('coverage floor 90e', () => {
     authStore.setSession('t', {
       username: 'admin',
       roles: ['admin'],
-      capabilities: ['*'],
-    });
+      capabilities: ['*'] });
     vi.spyOn(window, 'confirm').mockReturnValue(true);
     vi.spyOn(window, 'prompt').mockReturnValue('OVERWRITE');
     vi.stubGlobal('navigator', {
       ...navigator,
-      clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
-    });
+      clipboard: { writeText: vi.fn().mockResolvedValue(undefined) } });
   });
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -93,28 +90,23 @@ describe('coverage floor 90e', () => {
                 body: 'off',
                 href: '/system',
                 source: 'ctl',
-                at: now(),
-              },
+                at: now() },
               {
                 id: 'n2',
                 level: 'warn',
                 title: 'Disk',
                 body: 'high',
                 source: 'met',
-                at: now(),
-              },
+                at: now() },
               {
                 id: 'n3',
                 level: 'info',
                 title: 'Info',
                 body: 'ok',
                 source: 'sys',
-                at: now(),
-              },
+                at: now() },
             ],
-            counts: { critical: 1, warn: 1, info: 1 },
-          },
-        },
+            counts: { critical: 1, warn: 1, info: 1 } } },
         {
           match: (url) => url.includes('/apply-audit'),
           body: {
@@ -125,62 +117,48 @@ describe('coverage floor 90e', () => {
                 name: 'site1',
                 severity: 'bad',
                 issue: 'missing conf',
-                href: '/nginx',
-              },
+                href: '/nginx' },
               {
                 kind: 'ssl',
                 id: 'c1',
                 name: 'cert1',
                 severity: 'warn',
-                issue: 'expiring',
-              },
+                issue: 'expiring' },
             ],
-            summary: { ok: 2, warn: 1, bad: 1, total: 4 },
-          },
-        },
+            summary: { ok: 2, warn: 1, bad: 1, total: 4 } } },
         {
           match: (url) => url.includes('/wizard/create'),
           body: {
             ok: true,
             projectId: 'p-new',
             notes: ['created project'],
-            steps: [{ step: 'project', ok: true }],
-          },
-        },
+            steps: [{ step: 'project', ok: true }] } },
         {
           match: (url) => url.includes('/dashboard/summary'),
-          body: { projects: 1, services: 2, notes: [] },
-        },
+          body: { projects: 1, services: 2, notes: [] } },
         {
           match: (url) => url.includes('/readiness'),
           body: {
             productionReady: false,
             mode: 'dev',
             summary: ['need execute'],
-            score: { ready: 1, degraded: 1, missing: 1, total: 3 },
-          },
-        },
+            score: { ready: 1, degraded: 1, missing: 1, total: 3 } } },
         {
           match: (url) => url.includes('/health') || url === '/health',
           body: {
             ok: true,
             executeEnabled: false,
             product: 'ysk',
-            version: '1',
-          },
-        },
+            version: '1' } },
         {
           match: (url) => url.includes('/audit'),
-          body: { items: [{ id: 'a1', action: 'login', at: now() }] },
-        },
+          body: { items: [{ id: 'a1', action: 'login', at: now() }] } },
         {
           match: (url) => url.includes('/metrics'),
           body: {
             loadavg: [0.5, 0.4, 0.3],
             memory: { usedRatio: 0.5 },
-            disk: { usedRatio: 0.4 },
-          },
-        },
+            disk: { usedRatio: 0.4 } } },
         {
           match: (url) => url.includes('/projects'),
           body: {
@@ -189,15 +167,11 @@ describe('coverage floor 90e', () => {
                 id: 'p1',
                 name: 'Demo',
                 processStatus: 'running',
-                status: 'running',
-              },
-            ],
-          },
-        },
+                status: 'running' },
+            ] } },
         {
           match: (url) => url.includes('/backups'),
-          body: { items: [{ id: 'b1', name: 'x' }] },
-        },
+          body: { items: [{ id: 'b1', name: 'x' }] } },
         {
           match: (url) => url.includes('/ssl'),
           body: {
@@ -205,20 +179,15 @@ describe('coverage floor 90e', () => {
               {
                 domain: 'x.com',
                 expires_at: new Date(Date.now() + 5 * 864e5).toISOString(),
-                files_exist: true,
-              },
-            ],
-          },
-        },
+                files_exist: true },
+            ] } },
         {
           match: (url) => url.includes('/software'),
           body: {
             items: [
               { id: 'nginx', features: ['nginx'], installed: true, active: 'active' },
               { id: 'php', features: ['php'], installed: false, active: 'inactive' },
-            ],
-          },
-        },
+            ] } },
         {
           match: (url) => url.includes('/services/matrix'),
           body: {
@@ -228,11 +197,8 @@ describe('coverage floor 90e', () => {
                 label: 'Nginx',
                 active: 'active',
                 activeLabel: 'running',
-                href: '/nginx',
-              },
-            ],
-          },
-        },
+                href: '/nginx' },
+            ] } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -287,8 +253,7 @@ describe('coverage floor 90e', () => {
                 ...HONESTY_WRITTEN_BLOCKED,
                 ok: true,
                 notes: ['written'],
-                answers: ['1.2.3.4', '1.2.3.5'],
-              };
+                answers: ['1.2.3.4', '1.2.3.5'] };
             }
             return {
               ok: true,
@@ -298,8 +263,7 @@ describe('coverage floor 90e', () => {
                 hasIp: true,
                 networkManager: 'active',
                 networkd: 'inactive',
-                canPersist: true,
-              },
+                canPersist: true },
               interfaces: [
                 {
                   name: 'eth0',
@@ -316,8 +280,7 @@ describe('coverage floor 90e', () => {
                     { family: 'inet6', local: 'fe80::2', prefixlen: 64 },
                     { family: 'inet6', local: 'fe80::3', prefixlen: 64 },
                   ],
-                  stats: { rxBytes: 1e9, txBytes: 2e9, rxPackets: 10, txPackets: 20 },
-                },
+                  stats: { rxBytes: 1e9, txBytes: 2e9, rxPackets: 10, txPackets: 20 } },
               ],
               routes: [{ dst: 'default', gateway: '10.0.0.1', dev: 'eth0' }],
               caps: { canMutate: true, executeEnabled: false, isRoot: false },
@@ -332,11 +295,8 @@ describe('coverage floor 90e', () => {
                 ignoreAutoDns: true,
                 canApply: true,
                 connection: 'Wired connection 1',
-                device: 'eth0',
-              },
-            };
-          },
-        },
+                device: 'eth0' } };
+          } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -406,8 +366,7 @@ describe('coverage floor 90e', () => {
                 hits: [
                   {
                     file: 'error.log',
-                    lines: ['ERR boom', 'ERR again'],
-                  },
+                    lines: ['ERR boom', 'ERR again'] },
                 ],
                 notes: ['matched'],
                 related: [{ path: '/var/log/nginx/error.log', kind: 'nginx' }],
@@ -415,9 +374,7 @@ describe('coverage floor 90e', () => {
                 tail: {
                   file: 'error.log',
                   lines: ['ERR boom', 'line2'],
-                  notes: ['ok'],
-                },
-              };
+                  notes: ['ok'] } };
             }
             return {
               id: 'p1',
@@ -438,14 +395,11 @@ describe('coverage floor 90e', () => {
                 ms: 12,
                 nginxStatus: 'live',
                 nginxReloaded: true,
-                at: t,
-              },
+                at: t },
               entry: 'server.js',
               env: { NODE_ENV: 'production' },
-              port: 3000,
-            };
-          },
-        },
+              port: 3000 };
+          } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -491,9 +445,7 @@ describe('coverage floor 90e', () => {
           match: (url) => url.includes('/auth/me'),
           body: {
             user: { id: '1', username: 'admin', roles: ['admin'], locale: 'en' },
-            capabilities: ['*'],
-          },
-        },
+            capabilities: ['*'] } },
         {
           match: (url) => url.includes('/api/v1/email'),
           handler: (url, init) => {
@@ -505,16 +457,14 @@ describe('coverage floor 90e', () => {
                 written: true,
                 blocked: true,
                 blockMessage: 'need execute',
-                notes: ['written'],
-              };
+                notes: ['written'] };
             }
             if (url.includes('/dns')) {
               return {
                 domain: 'example.com',
                 records: [{ type: 'A', name: '@', value: '1.2.3.4' }],
                 externalTodos: [],
-                health: { score: 40, maxScore: 100, messages: [] },
-              };
+                health: { score: 40, maxScore: 100, messages: [] } };
             }
             if (url.includes('/mailboxes') || url.includes('/aliases')) return { items: [] };
             return {
@@ -526,28 +476,21 @@ describe('coverage floor 90e', () => {
                   health_score: 40,
                   suspended: false,
                   rate_limit_per_hour: 200,
-                  antispam: true,
-                },
-              ],
-            };
-          },
-        },
+                  antispam: true },
+              ] };
+          } },
         {
           match: (url) => url.includes('/backups/settings'),
           body: {
             remote: { enabled: false, kind: 'sftp', path: '/b' },
             restic: { enabled: true, repoPath: '/r', password: '***' },
-            exclusions: [],
-          },
-        },
+            exclusions: [] } },
         {
           match: (url) => url.includes('/backups/restic/snapshots'),
           body: {
             snapshots: [
               { id: 'snap1', time: t, tags: ['project:proj-aaaa1111', 'full'] },
-            ],
-          },
-        },
+            ] } },
         {
           match: (url) => url.includes('/api/v1/backups'),
           handler: (_u, init) => {
@@ -561,8 +504,7 @@ describe('coverage floor 90e', () => {
                   name: 'n.tgz',
                   mtime: t,
                   bytes: 1000,
-                  projectId: 'proj-aaaa1111',
-                },
+                  projectId: 'proj-aaaa1111' },
               ],
               lastRun: {
                 ok: true,
@@ -576,13 +518,9 @@ describe('coverage floor 90e', () => {
                     kind: 'restic',
                     ok: true,
                     skipped: false,
-                    notes: ['ok'],
-                  },
-                ],
-              },
-            };
-          },
-        },
+                    notes: ['ok'] },
+                ] } };
+          } },
         {
           match: (url) =>
             url.includes('/mysql') || url.includes('/databases') || url.includes('/sql'),
@@ -597,10 +535,8 @@ describe('coverage floor 90e', () => {
               remote: [],
               ok: true,
               installed: true,
-              active: 'active',
-            };
-          },
-        },
+              active: 'active' };
+          } },
         {
           match: (url) => url.includes('/logs'),
           body: {
@@ -613,9 +549,7 @@ describe('coverage floor 90e', () => {
               { ts: t, line: 'info y', source: 'nginx' },
             ],
             bookmarks: [{ id: 'bm1', name: 'errs', query: 'error' }],
-            settings: { follow: false, lines: 200 },
-          },
-        },
+            settings: { follow: false, lines: 200 } } },
         {
           match: (url) => url.includes('/runtime') || url.includes('/hosting'),
           handler: (_u, init) => {
@@ -635,10 +569,8 @@ describe('coverage floor 90e', () => {
                       key: 'max_old_space_size',
                       label: 'Max old space',
                       value: '512',
-                      type: 'number',
-                    },
-                  ],
-                },
+                      type: 'number' },
+                  ] },
               ],
               catalog: [
                 {
@@ -649,18 +581,14 @@ describe('coverage floor 90e', () => {
                       key: 'max_old_space_size',
                       label: 'Max old space',
                       value: '512',
-                      type: 'number',
-                    },
-                  ],
-                },
+                      type: 'number' },
+                  ] },
               ],
               items: [
                 { version: '20.11.0', path: '/usr/bin/node', default: true },
                 { version: '18.19.0', path: '/usr/bin/node18', default: false },
-              ],
-            };
-          },
-        },
+              ] };
+          } },
         {
           match: (url) => url.includes('/redis'),
           handler: (_u, init) => {
@@ -669,10 +597,8 @@ describe('coverage floor 90e', () => {
               items: [{ id: 'r1', name: 'cache', port: 6379, status: 'running' }],
               instances: [{ id: 'r1', name: 'cache', port: 6379, status: 'running' }],
               info: { used_memory_human: '10M', connected_clients: 2 },
-              ok: true,
-            };
-          },
-        },
+              ok: true };
+          } },
         {
           match: (url) => url.includes('/projects'),
           handler: (_u, init) => {
@@ -687,12 +613,9 @@ describe('coverage floor 90e', () => {
                   at: t,
                   ok: true,
                   notes: ['ok'],
-                  entry: 'server.js',
-                },
-              ],
-            };
-          },
-        },
+                  entry: 'server.js' },
+              ] };
+          } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -800,8 +723,7 @@ describe('coverage floor 90e', () => {
         deployEntry: 'server.js',
         lastDeployAt: t,
         status: 'running',
-        processStatus: 'running',
-      } as unknown as ProjectDto;
+        processStatus: 'running' } as unknown as ProjectDto;
       const setGit = vi.fn();
       const setEnv = vi.fn();
       r = render(

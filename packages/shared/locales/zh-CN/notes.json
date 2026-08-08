@@ -47,7 +47,9 @@
   "nginx": {
     "reloaded": "已重载 Nginx",
     "configOk": "Nginx 配置检查通过",
-    "reloadExit": "Nginx reload 结束码={{code}}"
+    "reloadExit": "Nginx reload 结束码={{code}}",
+    "managedDir": "管理配置目录：{{path}}",
+    "includeHint": "在 Nginx 加入：include {{path}}/*.conf;"
   },
   "ssl": {
     "requestCert": "申请证书"

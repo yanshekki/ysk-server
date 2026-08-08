@@ -51,8 +51,7 @@ export function DataTable<T>({
   rowClassName,
   empty,
   className,
-  dense = true,
-}: DataTableProps<T>) {
+  dense = true }: DataTableProps<T>) {
   const { t } = useTranslation();
   const shellCls = [
     'data-table',

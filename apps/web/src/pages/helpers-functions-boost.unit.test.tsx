@@ -14,8 +14,7 @@ import {
   getGeoContinents,
   getGeoCountries,
   getGeoRegions,
-  GEO_ASN_PROVIDERS,
-} from '../features/defense/geo-options';
+  GEO_ASN_PROVIDERS } from '../features/defense/geo-options';
 import { MultiCheckSelect } from '../shared/components/ui/MultiCheckSelect';
 import { Tabs } from '../shared/components/ui/Tabs';
 import { SoftwareInstallBanner } from '../shared/components/ui/SoftwareInstallBanner';
@@ -26,12 +25,9 @@ vi.mock('../features/resources/api', () => ({
     list: vi.fn(async () => ({ items: [{ id: 'a1' }] })),
     create: vi.fn(async (c: string, body: unknown) => ({ item: { id: 'new', ...(body as object) } })),
     update: vi.fn(async (_c: string, id: string, body: unknown) => ({
-      item: { id, ...(body as object) },
-    })),
+      item: { id, ...(body as object) } })),
     remove: vi.fn(async () => ({ ok: true })),
-    apply: vi.fn(async () => ({ ok: true, notes: ['applied'] })),
-  },
-}));
+    apply: vi.fn(async () => ({ ok: true, notes: ['applied'] })) } }));
 
 vi.mock('../shared/services/api', async () => {
   const actual = await vi.importActual<typeof import('../shared/services/api')>(
@@ -45,8 +41,7 @@ vi.mock('../shared/services/api', async () => {
         if (path.includes('settings')) {
           return {
             settings: { listen: '0.0.0.0', pasvMin: 30000, pasvMax: 30100 },
-            status: { installed: true, active: 'active' },
-          };
+            status: { installed: true, active: 'active' } };
         }
         if (path.includes('options')) {
           return { domains: [{ value: 'ex.com', label: 'ex.com' }], homes: [] };
@@ -58,9 +53,7 @@ vi.mock('../shared/services/api', async () => {
           return { ok: true, notes: ['written'] };
         }
         return { ok: true };
-      }),
-    },
-  };
+      }) } };
 });
 
 describe('geo-options pure helpers', () => {
@@ -198,8 +191,7 @@ describe('Tabs scroll arrows', () => {
     const many = Array.from({ length: 20 }, (_, i) => ({
       id: `t${i}`,
       label: `Tab ${i} long label here`,
-      badge: i,
-    }));
+      badge: i }));
 
     render(
       <div style={{ width: 120 }}>
@@ -216,8 +208,7 @@ describe('Tabs scroll arrows', () => {
       Object.defineProperty(list, 'scrollLeft', {
         configurable: true,
         get: () => 50,
-        set: () => undefined,
-      });
+        set: () => undefined });
       list.scrollBy = vi.fn();
       // trigger resize observer / scroll listeners
       fireEvent.scroll(list);
@@ -257,17 +248,14 @@ describe('SoftwareInstallBanner not-ready', () => {
               ok: true,
               notes: ['installed'],
               blocked: false,
-              results: [{ id: 'vsftpd', ok: true, notes: ['ok'], title: 'vsftpd' }],
-            };
+              results: [{ id: 'vsftpd', ok: true, notes: ['ok'], title: 'vsftpd' }] };
           }
           // Stay not-ready so banner remains mounted (avoid missing=undefined crash)
           return {
             items: [{ id: 'vsftpd', title: 'vsftpd', installed: false }],
             missing: [{ id: 'vsftpd', title: 'vsftpd', installed: false }],
-            ready: false,
-          };
-        },
-      },
+            ready: false };
+        } },
       { match: /.*/, body: { ok: true, items: [], missing: [], ready: true } },
     ]);
   });

@@ -60,8 +60,7 @@ export function defaultScheduleState(): ScheduleState {
     hour: 3,
     weekdays: [1],
     dayOfMonth: 1,
-    custom: '0 3 * * *',
-  };
+    custom: '0 3 * * *' };
 }
 
 export function buildCronExpr(s: ScheduleState): string {
@@ -148,8 +147,7 @@ export function parseCronToState(expr: string): ScheduleState {
       mode: 'daily',
       minute: Number(min),
       hour: Number(hour),
-      custom: expr,
-    };
+      custom: expr };
   }
   if (/^\d+$/.test(min) && /^\d+$/.test(hour) && dom === '*' && dow !== '*') {
     const days = dow.split(',').map((x) => Number(x)).filter((n) => n >= 0 && n <= 7);
@@ -161,8 +159,7 @@ export function parseCronToState(expr: string): ScheduleState {
       minute: Number(min),
       hour: Number(hour),
       weekdays: weekdays.length ? weekdays : [1],
-      custom: expr,
-    };
+      custom: expr };
   }
   if (/^\d+$/.test(min) && /^\d+$/.test(hour) && /^\d+$/.test(dom) && dow === '*') {
     return {
@@ -171,8 +168,7 @@ export function parseCronToState(expr: string): ScheduleState {
       minute: Number(min),
       hour: Number(hour),
       dayOfMonth: Number(dom),
-      custom: expr,
-    };
+      custom: expr };
   }
   return { ...base, mode: 'custom', custom: expr };
 }
@@ -243,8 +239,7 @@ export function CronScheduleBuilder({ value, onChange }: CronScheduleBuilderProp
               onChange={(v) => patch({ everyMinutes: Number(v) })}
               options={EVERY_N.map((n) => ({
                 value: String(n),
-                label: n === 1 ? t('cron.min1') : t('cron.minN', { n }),
-              }))}
+                label: n === 1 ? t('cron.min1') : t('cron.minN', { n }) }))}
             />
           </Field>
         ) : null}
@@ -254,8 +249,7 @@ export function CronScheduleBuilder({ value, onChange }: CronScheduleBuilderProp
             <PresetChips
               options={MINUTE_STEPS.map((n) => ({
                 value: String(n),
-                label: t('cron.minPad', { n: String(n).padStart(2, '0') }),
-              }))}
+                label: t('cron.minPad', { n: String(n).padStart(2, '0') }) }))}
               value={String(value.minute)}
               onChange={(v) => patch({ minute: Number(v) || 0 })}
               allowCustom
@@ -295,8 +289,7 @@ export function CronScheduleBuilder({ value, onChange }: CronScheduleBuilderProp
               <PresetChips
                 options={MINUTE_STEPS.map((n) => ({
                   value: String(n),
-                  label: String(n).padStart(2, '0'),
-                }))}
+                  label: String(n).padStart(2, '0') }))}
                 value={String(value.minute)}
                 onChange={(v) =>
                   patch({ minute: Math.max(0, Math.min(59, Number(v) || 0)) })

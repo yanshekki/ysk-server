@@ -12,8 +12,7 @@ import {
   CardSection,
   DescriptionList,
   FormActions,
-  SummaryStrip,
-} from '../../../shared/components/ui';
+  SummaryStrip } from '../../../shared/components/ui';
 import { HealthSummary } from './HealthSummary';
 import { projectNeedsLiveRetry } from '../model/status';
 import { projectsApi } from '../api';
@@ -49,8 +48,7 @@ export function ProjectOverviewTab({
   project,
   busy,
   onRetryDeploy,
-  onRetryPublish,
-}: ProjectOverviewTabProps) {
+  onRetryPublish }: ProjectOverviewTabProps) {
   const { t } = useTranslation();
   const copy = t('common.copy');
   const needRetry = projectNeedsLiveRetry(project);
@@ -73,8 +71,7 @@ export function ProjectOverviewTab({
         setUsage({
           usedMb: r.usedMb,
           quotaMb: r.quotaMb,
-          withinQuota: r.withinQuota,
-        }),
+          withinQuota: r.withinQuota }),
       )
       .catch(() => setUsage(null));
     void projectsApi
@@ -84,8 +81,7 @@ export function ProjectOverviewTab({
           linesRead: r.linesRead,
           status2xx: r.status2xx,
           status4xx: r.status4xx,
-          status5xx: r.status5xx,
-        }),
+          status5xx: r.status5xx }),
       )
       .catch(() => setWebStats(null));
   }, [project.id, project.quotaMb]);
@@ -97,7 +93,7 @@ export function ProjectOverviewTab({
       {needRetry ? (
         <Alert variant="warn">
           <strong>
-            {t('projects.retryLiveTitle', { defaultValue: t('uiInline.sdcdc5029') })}
+            {t('projects.retryLiveTitle')}
           </strong>
           {notes.length ? (
             <ul className="u-mb-2 u-mt-2 u-pl-5">
@@ -109,9 +105,7 @@ export function ProjectOverviewTab({
             </ul>
           ) : (
             <p className="u-mb-2 u-mt-1 u-text-sm">
-              {t('projects.retryLiveBody', {
-                defaultValue: t('uiInline.s55cc91e0'),
-              })}
+              {t('projects.retryLiveBody', { })}
             </p>
           )}
           <FormActions>
@@ -122,7 +116,7 @@ export function ProjectOverviewTab({
                 loading={busy}
                 onClick={onRetryDeploy}
               >
-                {t('projects.retryDeploy', { defaultValue: t('uiInline.s303f6113') })}
+                {t('projects.retryDeploy')}
               </Button>
             ) : null}
             {onRetryPublish ? (
@@ -133,7 +127,7 @@ export function ProjectOverviewTab({
                 disabled={!project.domain?.trim() && project.runtime !== 'static'}
                 onClick={onRetryPublish}
               >
-                {t('projects.retryPublish', { defaultValue: t('uiInline.s3265f9ed') })}
+                {t('projects.retryPublish')}
               </Button>
             ) : null}
           </FormActions>
@@ -146,8 +140,7 @@ export function ProjectOverviewTab({
             { label: t('projects.ovUsed'), value: `${usage.usedMb} MiB` },
             {
               label: t('publicFiles.quota'),
-              value: usage.quotaMb != null ? `${usage.quotaMb} MiB` : t('projects.ovQuotaUnset'),
-            },
+              value: usage.quotaMb != null ? `${usage.quotaMb} MiB` : t('projects.ovQuotaUnset') },
             {
               label: t('projects.ovQuotaStatus'),
               value:
@@ -161,8 +154,7 @@ export function ProjectOverviewTab({
                   ? 'danger'
                   : usage.withinQuota === true
                     ? 'ok'
-                    : 'default',
-            },
+                    : 'default' },
             ...(webStats
               ? [
                   {
@@ -173,8 +165,7 @@ export function ProjectOverviewTab({
                         ? ('danger' as const)
                         : webStats.status4xx > webStats.status2xx
                           ? ('warn' as const)
-                          : ('ok' as const),
-                  },
+                          : ('ok' as const) },
                 ]
               : []),
           ]}
@@ -188,12 +179,10 @@ export function ProjectOverviewTab({
             items={[
               {
                 label: 'ID',
-                value: <PathValue value={project.id} copyLabel={copy} />,
-              },
+                value: <PathValue value={project.id} copyLabel={copy} /> },
               {
                 label: t('projects.home'),
-                value: <PathValue value={project.homeDir} copyLabel={copy} />,
-              },
+                value: <PathValue value={project.homeDir} copyLabel={copy} /> },
               {
                 label: t('projects.runtime'),
                 value: (
@@ -203,23 +192,19 @@ export function ProjectOverviewTab({
                       ? ` ${project.runtimeVersion}`
                       : ''}
                   </>
-                ),
-              },
+                ) },
               {
                 label: t('common.domain'),
-                value: project.domain || '—',
-              },
+                value: project.domain || '—' },
               {
                 label: t('projects.ovAliases'),
                 value:
                   project.domainAliases && project.domainAliases.length > 0
                     ? project.domainAliases.join(', ')
-                    : '—',
-              },
+                    : '—' },
               {
                 label: t('projects.ovDocroot'),
-                value: project.docRoot || 'app/public',
-              },
+                value: project.docRoot || 'app/public' },
               {
                 label: t('common.port'),
                 value:
@@ -227,16 +212,13 @@ export function ProjectOverviewTab({
                     ? String(project.port)
                     : project.preferredPort != null
                       ? `pref ${project.preferredPort}`
-                      : '—',
-              },
+                      : '—' },
               {
                 label: 'Nginx',
-                value: project.nginxConfigPath || '—',
-              },
+                value: project.nginxConfigPath || '—' },
               {
                 label: t('projects.env'),
-                value: project.env ?? '—',
-              },
+                value: project.env ?? '—' },
             ]}
           />
         </CardSection>

@@ -5,8 +5,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
-  softwareReadyRoute,
-} from '../test/mock-fetch';
+  softwareReadyRoute } from '../test/mock-fetch';
 import { authStore } from '../shared/stores/auth-store';
 import { LoginPage } from './LoginPage';
 import { PublicFilesPage } from './features/PublicFilesPage';
@@ -33,8 +32,7 @@ describe('page smoke tests (honesty fixtures)', () => {
     authStore.setSession('test-token', {
       username: 'admin',
       roles: ['admin'],
-      capabilities: [],
-    });
+      capabilities: [] });
   });
 
   afterEach(() => {
@@ -48,8 +46,7 @@ describe('page smoke tests (honesty fixtures)', () => {
       {
         match: '/api/v1/auth/login',
         status: 401,
-        body: { message: 'Invalid credentials', code: 'YSK_AUTH' },
-      },
+        body: { message: 'Invalid credentials', code: 'YSK_AUTH' } },
     ]);
     renderPage('/login', <LoginPage />);
     const userInput = screen.getByLabelText(/username/i);
@@ -73,13 +70,11 @@ describe('page smoke tests (honesty fixtures)', () => {
         match: (url, init) =>
           url.includes('/api/v1/hosting/files/apply') &&
           (init?.method ?? 'GET').toUpperCase() === 'POST',
-        body: honestyShape,
-      },
+        body: honestyShape },
     ]);
     renderPage('/files/public', <PublicFilesPage />);
     const applyBtn = await screen.findByRole('button', {
-      name: /apply|reload/i,
-    });
+      name: /apply|reload/i });
     await user.click(applyBtn);
     await waitFor(() => {
       expect(screen.getByText(/cannot run/i)).toBeInTheDocument();
@@ -97,14 +92,12 @@ describe('page smoke tests (honesty fixtures)', () => {
         match: (url, init) =>
           url.includes('/api/v1/hosting/runtimes/install') &&
           (init?.method ?? '').toUpperCase() === 'POST',
-        body: honestyShape,
-      },
+        body: honestyShape },
       {
         match: (url) =>
           url === '/api/v1/hosting/runtimes' ||
           url.startsWith('/api/v1/hosting/runtimes?'),
-        body: { ok: true, nodeVersion: 'v20.0.0', nodePath: '/usr/bin/node' },
-      },
+        body: { ok: true, nodeVersion: 'v20.0.0', nodePath: '/usr/bin/node' } },
     ]);
     renderPage('/runtimes/node', <NodeRuntimePage />);
     await waitFor(() => {
@@ -133,15 +126,12 @@ describe('page smoke tests (honesty fixtures)', () => {
           banned: [],
           ignoreIps: [],
           catalog: [{ id: 'sshd', desc: 'SSH' }],
-          defaultJails: ['sshd'],
-        },
-      },
+          defaultJails: ['sshd'] } },
       {
         match: (url, init) =>
           url.includes('/api/v1/system/fail2ban/service') &&
           (init?.method ?? '').toUpperCase() === 'POST',
-        body: honestyShape,
-      },
+        body: honestyShape },
     ]);
     renderPage('/fail2ban', <Fail2banPage />);
     const start = await screen.findByRole('button', { name: /start/i });
@@ -170,9 +160,7 @@ describe('page smoke tests (honesty fixtures)', () => {
           canLifecycle: true,
           metrics: {},
           categories: [],
-          live: {},
-        },
-      },
+          live: {} } },
       {
         match: /\/api\/v1\/resources\/postgres/,
         body: {
@@ -180,18 +168,14 @@ describe('page smoke tests (honesty fixtures)', () => {
             {
               id: 'db1',
               name: 'appdb',
-              apply_status: 'written',
-            },
+              apply_status: 'written' },
           ],
-          meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-        },
-      },
+          meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } } },
       {
         match: (url, init) =>
           url.includes('/api/v1/system/db/postgres/lifecycle') &&
           (init?.method ?? '').toUpperCase() === 'POST',
-        body: honestyShape,
-      },
+        body: honestyShape },
     ]);
     renderPage('/databases/postgres', <PostgresPage />);
     // Written honesty badge in table — not bare "Success"
@@ -229,20 +213,16 @@ describe('page smoke tests (honesty fixtures)', () => {
               hostCrontabPreview: '',
               executeEnabled: false,
               lastInstallOk: null,
-              lastInstallAt: null,
-            };
+              lastInstallAt: null };
           }
           return { items: [] };
-        },
-      },
+        } },
       {
         match: '/api/v1/projects',
-        body: { items: [] },
-      },
+        body: { items: [] } },
       {
         match: (url) => url.includes('/api/v1/cron/install'),
-        body: honestyShape,
-      },
+        body: honestyShape },
     ]);
     renderPage('/cron', <CronPage />);
     await waitFor(() => {
@@ -250,8 +230,7 @@ describe('page smoke tests (honesty fixtures)', () => {
     });
     // Find install / push to host action if present
     const installCandidates = screen.queryAllByRole('button', {
-      name: /install|host|apply|push/i,
-    });
+      name: /install|host|apply|push/i });
     if (installCandidates.length > 0) {
       await user.click(installCandidates[0]!);
       await waitFor(() => {

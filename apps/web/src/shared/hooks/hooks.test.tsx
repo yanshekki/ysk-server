@@ -18,8 +18,7 @@ function wrapRouter(initial = '/?tab=b') {
 describe('usePageTab', () => {
   it('syncs tab from URL and setTab updates search params', async () => {
     const { result } = renderHook(() => usePageTab(['a', 'b', 'c'] as const, 'a'), {
-      wrapper: wrapRouter('/?tab=b'),
-    });
+      wrapper: wrapRouter('/?tab=b') });
     expect(result.current[0]).toBe('b');
     act(() => {
       result.current[1]('c');
@@ -57,14 +56,12 @@ describe('useServerList', () => {
       if (failNext) {
         return new Response(JSON.stringify({ message: 'network boom' }), {
           status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        });
+          headers: { 'Content-Type': 'application/json' } });
       }
       return new Response(
         JSON.stringify({
           items: [{ id: '1', name: 'Alpha' }],
-          meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-        }),
+          meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } }),
         { status: 200, headers: { 'Content-Type': 'application/json' } },
       );
     });
@@ -74,8 +71,7 @@ describe('useServerList', () => {
     const opts = {
       path: '/api/v1/demo-list',
       debounceMs: 10,
-      initialQ: '',
-    };
+      initialQ: '' };
     const { result } = renderHook(() =>
       useServerList<{ id: string; name: string }>(opts),
     );
@@ -132,16 +128,12 @@ describe('useAuth + useCapabilities', () => {
         match: '/api/v1/auth/login',
         body: {
           token: 'tok',
-          user: { id: '1', username: 'admin', roles: ['admin'], locale: 'en' },
-        },
-      },
+          user: { id: '1', username: 'admin', roles: ['admin'], locale: 'en' } } },
       {
         match: '/api/v1/auth/me',
         body: {
           user: { id: '1', username: 'admin', roles: ['admin'], locale: 'en' },
-          capabilities: ['projects.read'],
-        },
-      },
+          capabilities: ['projects.read'] } },
       { match: '/api/v1/auth/logout', body: { ok: true } },
     ]);
 
@@ -169,8 +161,7 @@ describe('useAuth + useCapabilities', () => {
       {
         match: '/api/v1/auth/me',
         status: 500,
-        body: { message: 'down' },
-      },
+        body: { message: 'down' } },
     ]);
     const { result } = renderHook(() => useCapabilities());
     await waitFor(() => expect(result.current.loaded).toBe(true));

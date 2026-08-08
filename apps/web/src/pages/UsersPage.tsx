@@ -11,8 +11,7 @@ import {
   factoryRolePolicy,
   type CapabilityId,
   type OperationLevel,
-  type SystemRole,
-} from '@ysk/shared';
+  type SystemRole } from '@ysk/shared';
 import { useCapabilities } from '../shared/hooks/useCapabilities';
 import { useServerList } from '../shared/hooks/useServerList';
 import { toast } from '../shared/stores/toast-store';
@@ -34,8 +33,7 @@ import {
   PageTabs,
   PresetChips,
   SegRadio,
-  buttonClassName,
-} from '../shared/components/ui';
+  buttonClassName } from '../shared/components/ui';
 import { UserDetailModal } from '../features/users/UserDetailModal';
 import { RolePermissionsPanel } from '../features/users/RolePermissionsPanel';
 import { ApiError, api } from '../shared/services/api';
@@ -368,9 +366,7 @@ export function UsersPage() {
             password,
             roles: [role],
             packageId: userPkgId || undefined,
-            locale: createLocale || undefined,
-          }),
-        });
+            locale: createLocale || undefined }) });
         setCreateUserOpen(false);
         setMsg(t('users.createdUser', { name: username }));
         await refresh();
@@ -400,14 +396,12 @@ export function UsersPage() {
       bandwidth_mb: Number(pkgBw) || 0,
       allow_ftp: pkgFtp,
       allow_ssh: pkgSsh,
-      notes: pkgNotes || undefined,
-    };
+      notes: pkgNotes || undefined };
     try {
       if (editingPkg) {
         await api.requestRaw(`/api/v1/packages/${editingPkg.id}`, {
           method: 'PATCH',
-          body: JSON.stringify(body),
-        });
+          body: JSON.stringify(body) });
         setMsg(t('users.pkgUpdated', { name: pkgName }));
       } else {
         await api.requestRaw('/api/v1/packages', {
@@ -421,9 +415,7 @@ export function UsersPage() {
             bandwidthMb: body.bandwidth_mb,
             allowFtp: body.allow_ftp,
             allowSsh: body.allow_ssh,
-            notes: body.notes,
-          }),
-        });
+            notes: body.notes }) });
         setMsg(t('users.createdPkg', { name: pkgName }));
       }
       setPkgFormOpen(false);
@@ -446,13 +438,11 @@ export function UsersPage() {
           packageId: detailPkg || null,
           suspended: detailSuspended,
           capabilityGrants: detailGrants,
-          capabilityRevokes: detailRevokes,
-        };
+          capabilityRevokes: detailRevokes };
         if (detailPassword.length >= 8) patch.password = detailPassword;
         await api.requestRaw(`/api/v1/users/${detailUser.id}`, {
           method: 'PATCH',
-          body: JSON.stringify(patch),
-        });
+          body: JSON.stringify(patch) });
         setMsg(t('users.userSaved', { name: detailUser.username }));
         setDetailUser(null);
         await refresh();
@@ -482,8 +472,7 @@ export function UsersPage() {
     if ((addsDanger || elevatesMax) && !force) {
       setPending({
         kind: 'dangerPolicySave',
-        next: () => void saveRolePolicy(true),
-      });
+        next: () => void saveRolePolicy(true) });
       return;
     }
     setBusy(true);
@@ -491,8 +480,7 @@ export function UsersPage() {
     try {
       await api.requestRaw(`/api/v1/rbac/policies/${policyRole}`, {
         method: 'PUT',
-        body: JSON.stringify({ maxLevel: draftMax, capabilities: draftCaps }),
-      });
+        body: JSON.stringify({ maxLevel: draftMax, capabilities: draftCaps }) });
       setMsg(t('rbac.saved', { role: policyRole }));
       await refresh();
     } catch (err) {
@@ -521,8 +509,7 @@ export function UsersPage() {
       roles: [detailRole],
       rolePolicies: map,
       grants: detailGrants,
-      revokes: detailRevokes,
-    });
+      revokes: detailRevokes });
   }, [detailUser, detailRole, detailGrants, detailRevokes, policies]);
 
   const userChipId = activeUserChip();
@@ -531,40 +518,33 @@ export function UsersPage() {
     {
       id: 'admin',
       label: t('users.filterAdmin'),
-      count: facets?.role?.admin,
-    },
+      count: facets?.role?.admin },
     {
       id: 'operator',
       label: t('users.filterOperator'),
-      count: facets?.role?.operator,
-    },
+      count: facets?.role?.operator },
     {
       id: 'viewer',
       label: t('users.filterViewer'),
-      count: facets?.role?.viewer,
-    },
+      count: facets?.role?.viewer },
     {
       id: 'suspended',
       label: t('users.filterSuspended'),
       count: facets?.status?.suspended,
-      tone: 'warn' as const,
-    },
+      tone: 'warn' as const },
     {
       id: 'noPkg',
       label: t('users.filterNoPkg'),
-      count: facets?.package?.none,
-    },
+      count: facets?.package?.none },
     {
       id: '2faOff',
       label: t('users.filter2faOff'),
-      count: facets?.totp?.['0'],
-    },
+      count: facets?.totp?.['0'] },
     {
       id: 'overrides',
       label: t('users.filterOverrides'),
       count: facets?.overrides?.['1'],
-      tone: 'warn' as const,
-    },
+      tone: 'warn' as const },
   ];
 
   return (
@@ -579,12 +559,10 @@ export function UsersPage() {
           {
             label: t('users.suspended'),
             value: suspended,
-            tone: suspended ? 'warn' : 'ok',
-          },
+            tone: suspended ? 'warn' : 'ok' },
           { label: t('users.packages'), value: pkgOptions.length || pkgTotal },
           { label: '2FA', value: with2fa },
-        ],
-      }}
+        ] }}
       actions={
         <ActionBar align="end">
           <Button
@@ -612,8 +590,7 @@ export function UsersPage() {
             {
               id: 'packages',
               label: t('users.packages'),
-              badge: pkgTotal || undefined,
-            },
+              badge: pkgTotal || undefined },
             { id: 'permissions', label: t('rbac.permissions') },
             { id: 'about', label: t('common.about') },
           ]}
@@ -654,12 +631,10 @@ export function UsersPage() {
                           id: c.id,
                           label: c.label,
                           count: c.count,
-                          tone: c.tone,
-                        })),
+                          tone: c.tone })),
                       allLabel: t('users.filterAll'),
                       value: userChipId === 'all' ? '' : userChipId,
-                      onChange: (v) => applyUserChip(v || 'all'),
-                    },
+                      onChange: (v) => applyUserChip(v || 'all') },
                   ]}
                 />
               }
@@ -669,8 +644,7 @@ export function UsersPage() {
                   header: t('users.user'),
                   render: (u) => (
                     <span className="u-font-semibold">{u.username}</span>
-                  ),
-                },
+                  ) },
                 {
                   key: 'roles',
                   header: t('users.roles'),
@@ -686,8 +660,7 @@ export function UsersPage() {
                         <Badge tone="info">{t('rbac.overridesBadge')}</Badge>
                       ) : null}
                     </span>
-                  ),
-                },
+                  ) },
                 {
                   key: 'status',
                   header: t('common.status'),
@@ -696,13 +669,11 @@ export function UsersPage() {
                     <Badge tone={u.suspended ? 'warn' : 'ok'}>
                       {u.suspended ? t('users.suspended') : t('common.normal')}
                     </Badge>
-                  ),
-                },
+                  ) },
                 {
                   key: 'pkg',
                   header: t('users.package'),
-                  render: (u) => u.packageName || u.packageId || t('users.noneOption'),
-                },
+                  render: (u) => u.packageName || u.packageId || t('users.noneOption') },
                 {
                   key: 'seen',
                   header: t('users.lastSeen'),
@@ -710,8 +681,7 @@ export function UsersPage() {
                   render: (u) =>
                     u.lastSeenAt
                       ? new Date(u.lastSeenAt).toLocaleString()
-                      : t('users.neverSeen'),
-                },
+                      : t('users.neverSeen') },
               ]}
               rows={users}
               rowKey={(u) => u.id}
@@ -782,14 +752,12 @@ export function UsersPage() {
                     header: t('common.name'),
                     render: (p) => (
                       <span className="u-font-semibold">{p.name}</span>
-                    ),
-                  },
+                    ) },
                   {
                     key: 'subs',
                     header: t('users.subscribers'),
                     nowrap: true,
-                    render: (p) => t('users.subscribersN', { count: p.subscriberCount ?? 0 }),
-                  },
+                    render: (p) => t('users.subscribersN', { count: p.subscriberCount ?? 0 }) },
                   {
                     key: 'usage',
                     header: t('users.hostUsage'),
@@ -808,50 +776,42 @@ export function UsersPage() {
                           {t('users.databases')}: {usageBar(hu.databases, p.max_databases)}
                         </span>
                       );
-                    },
-                  },
+                    } },
                   {
                     key: 'projects',
                     header: t('common.project'),
                     nowrap: true,
-                    render: (p) => p.max_projects,
-                  },
+                    render: (p) => p.max_projects },
                   {
                     key: 'mail',
                     header: t('users.mailboxes'),
                     nowrap: true,
-                    render: (p) => p.max_mailboxes,
-                  },
+                    render: (p) => p.max_mailboxes },
                   {
                     key: 'db',
                     header: t('users.databases'),
                     nowrap: true,
-                    render: (p) => p.max_databases,
-                  },
+                    render: (p) => p.max_databases },
                   {
                     key: 'disk',
                     header: t('users.diskMiB'),
                     nowrap: true,
-                    render: (p) => p.disk_mb,
-                  },
+                    render: (p) => p.disk_mb },
                   {
                     key: 'bw',
                     header: t('users.bandwidth'),
                     nowrap: true,
-                    render: (p) => p.bandwidth_mb ?? 0,
-                  },
+                    render: (p) => p.bandwidth_mb ?? 0 },
                   {
                     key: 'ftp',
                     header: t('users.ftp'),
                     nowrap: true,
-                    render: (p) => (p.allow_ftp ? t('common.yes') : t('common.no')),
-                  },
+                    render: (p) => (p.allow_ftp ? t('common.yes') : t('common.no')) },
                   {
                     key: 'ssh',
                     header: t('users.ssh'),
                     nowrap: true,
-                    render: (p) => (p.allow_ssh ? t('common.yes') : t('common.no')),
-                  },
+                    render: (p) => (p.allow_ssh ? t('common.yes') : t('common.no')) },
                 ]}
                 rows={packages}
                 rowKey={(p) => p.id}
@@ -1193,8 +1153,7 @@ export function UsersPage() {
           try {
             await api.requestRaw(`/api/v1/users/${target.id}/security/totp/clear`, {
               method: 'POST',
-              body: JSON.stringify({ confirmUsername: name }),
-            });
+              body: JSON.stringify({ confirmUsername: name }) });
             setMsg(t('users.securityClearOk', { name: target.username }));
             setDetailUser((u) =>
               u && u.id === target.id ? { ...u, totpEnabled: false } : u,
@@ -1208,8 +1167,7 @@ export function UsersPage() {
               setClearTotp({
                 user: target,
                 phase: 'totp',
-                confirmUsername: name,
-              });
+                confirmUsername: name });
               // false → do not run onClose (would wipe phase); open prop switches dialogs
               return false;
             }
@@ -1240,8 +1198,7 @@ export function UsersPage() {
           try {
             await api.requestRaw(`/api/v1/users/${target.id}/security/totp/clear`, {
               method: 'POST',
-              body: JSON.stringify({ totp, confirmUsername }),
-            });
+              body: JSON.stringify({ totp, confirmUsername }) });
             setMsg(t('users.securityClearOk', { name: target.username }));
             setDetailUser((u) =>
               u && u.id === target.id ? { ...u, totpEnabled: false } : u,
@@ -1339,15 +1296,13 @@ export function UsersPage() {
                 };
               }>(`/api/v1/users/${p.user.id}/impersonate`, {
                 method: 'POST',
-                body: '{}',
-              })
+                body: '{}' })
               .then((r) => {
                 authStore.setSession(r.token, {
                   id: r.user.id,
                   username: r.user.username,
                   roles: r.user.roles,
-                  locale: r.user.locale ?? 'zh-TW',
-                });
+                  locale: r.user.locale ?? 'zh-TW' });
                 window.location.href = '/';
               })
               .catch((e: Error) => setError(e.message))
@@ -1394,8 +1349,7 @@ export function UsersPage() {
             void api
               .requestRaw(`/api/v1/rbac/users/${p.user.id}/restore`, {
                 method: 'POST',
-                body: '{}',
-              })
+                body: '{}' })
               .then(() => {
                 setDetailGrants([]);
                 setDetailRevokes([]);

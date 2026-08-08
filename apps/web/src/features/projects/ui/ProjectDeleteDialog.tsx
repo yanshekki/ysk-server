@@ -10,8 +10,7 @@ import {
   CheckboxField,
   Field,
   FormHint,
-  Modal,
-} from '../../../shared/components/ui';
+  Modal } from '../../../shared/components/ui';
 import { projectsApi } from '../api';
 
 export interface ProjectDeleteDialogProps {
@@ -31,8 +30,7 @@ export function ProjectDeleteDialog({
   open,
   busy: parentBusy,
   onClose,
-  onDeleted,
-}: ProjectDeleteDialogProps) {
+  onDeleted }: ProjectDeleteDialogProps) {
   const { t } = useTranslation();
   const [confirmName, setConfirmName] = useState('');
   const [removeFiles, setRemoveFiles] = useState(true);
@@ -57,8 +55,7 @@ export function ProjectDeleteDialog({
     try {
       const r = await projectsApi.remove(project.id, {
         confirmName: confirmName.trim(),
-        removeFiles,
-      });
+        removeFiles });
       onDeleted(r);
     } catch (e) {
       setError(e instanceof Error ? e.message : t('common.deleteFailed'));
@@ -73,13 +70,9 @@ export function ProjectDeleteDialog({
     <Modal
       open={open}
       onClose={() => !busy && onClose()}
-      title={t('projects.deleteDialogTitle', {
-        defaultValue: t('uiInline.s56f99a6b'),
-      })}
+      title={t('projects.deleteDialogTitle', { })}
       description={t('projects.deleteDialogDesc', {
-        name: project.name,
-        defaultValue: t('uiInline.sa0f2f5c6', { v0: project.name }),
-      })}
+        name: project.name })}
       size="md"
       footer={
         <>
@@ -93,7 +86,7 @@ export function ProjectDeleteDialog({
             disabled={!nameOk}
             onClick={() => void submit()}
           >
-            {t('projects.deletePermanent', { defaultValue: t('uiInline.sa6710b42') })}
+            {t('projects.deletePermanent')}
           </Button>
         </>
       }
@@ -102,35 +95,25 @@ export function ProjectDeleteDialog({
         <Alert variant="warn">
           <ul className="u-text-sm u-mb-0" style={{ paddingLeft: '1.2rem' }}>
             <li>
-              {t('projects.deleteWillStop', {
-                defaultValue: t('uiInline.s06569331'),
-              })}
+              {t('projects.deleteWillStop', { })}
             </li>
             <li>
-              {t('projects.deleteWillWeb', {
-                defaultValue: t('uiInline.sd20a5b0c'),
-              })}
+              {t('projects.deleteWillWeb', { })}
             </li>
             <li>
               {removeFiles
-                ? t('projects.deleteWillOs', {
-                    defaultValue: t('uiInline.s4ff53acc'),
-                  })
-                : t('projects.deleteKeepOs', {
-                    defaultValue: t('uiInline.s50dda2df'),
-                  })}
+                ? t('projects.deleteWillOs', { })
+                : t('projects.deleteKeepOs', { })}
             </li>
             <li>
-              {t('projects.deleteWillDb', {
-                defaultValue: t('uiInline.sa7f90a4a'),
-              })}
+              {t('projects.deleteWillDb', { })}
             </li>
           </ul>
         </Alert>
 
         <dl className="u-text-sm" style={{ margin: 0 }}>
           <div>
-            <dt className="muted">{t('projects.name', { defaultValue: t('uiInline.se0d24557') })}</dt>
+            <dt className="muted">{t('projects.name')}</dt>
             <dd>
               <code>{project.name}</code>
             </dd>
@@ -162,26 +145,18 @@ export function ProjectDeleteDialog({
 
         <CheckboxField
           id="del-files"
-          label={t('projects.deleteRemoveFiles', {
-            defaultValue: t('uiInline.s9a9e4e32'),
-          })}
-          description={t('projects.deleteRemoveFilesDesc', {
-            defaultValue: t('uiInline.s1cf2a97b'),
-          })}
+          label={t('projects.deleteRemoveFiles', { })}
+          description={t('projects.deleteRemoveFilesDesc', { })}
           checked={removeFiles}
           onChange={setRemoveFiles}
           disabled={busy}
         />
 
         <Field
-          label={t('projects.deleteTypeName', {
-            defaultValue: t('uiInline.s51af87fd'),
-          })}
+          label={t('projects.deleteTypeName', { })}
           htmlFor="del-name"
           hint={t('projects.deleteTypeNameHint', {
-            name: project.name,
-            defaultValue: t('uiInline.s8b04d62f', { v0: project.name }),
-          })}
+            name: project.name })}
           flush
         >
           <input
@@ -198,9 +173,7 @@ export function ProjectDeleteDialog({
 
         {error ? <Alert variant="error">{error}</Alert> : null}
         <FormHint>
-          {t('projects.deleteDnsWarn', {
-            defaultValue: t('uiInline.s49d55c8f'),
-          })}
+          {t('projects.deleteDnsWarn', { })}
         </FormHint>
       </div>
     </Modal>

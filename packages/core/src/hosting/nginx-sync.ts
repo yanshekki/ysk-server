@@ -49,8 +49,8 @@ export async function syncNginxConfigs(opts: {
     ? readdirSync(sourceDir).filter((f) => f.endsWith('.inc'))
     : [];
   const notes: string[] = [
-    `Managed configs live in ${sourceDir}`,
-    `Include them from nginx: include ${sourceDir}/*.conf;`,
+    tl('notes.nginx.managedDir', { path: sourceDir }),
+    tl('notes.nginx.includeHint', { path: sourceDir }),
   ];
   const copied: string[] = [];
   const targetDir = opts.systemConfDir ?? null;

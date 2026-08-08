@@ -13,8 +13,7 @@ export function formatUptime(sec: number, t: (k: string, o?: Record<string, unkn
     return t('metrics.uptimeDays', {
       d,
       h,
-      m: String(m).padStart(2, '0'),
-    });
+      m: String(m).padStart(2, '0') });
   }
   return `${h}:${String(m).padStart(2, '0')}`;
 }
@@ -29,8 +28,7 @@ export function kibToHuman(kib: number): string {
 function CpuStackBar({
   cpu,
   label,
-  compact,
-}: {
+  compact }: {
   cpu: CpuTimesPct;
   label?: string;
   compact?: boolean;
@@ -70,8 +68,7 @@ function CpuStackBar({
 export function TopHeaderPanel({
   header,
   perCpu,
-  onTogglePerCpu,
-}: {
+  onTogglePerCpu }: {
   header: TopHeader | null | undefined;
   perCpu: boolean;
   onTogglePerCpu: (v: boolean) => void;

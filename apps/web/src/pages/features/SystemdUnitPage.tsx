@@ -15,8 +15,7 @@ import {
   LoadingBlock,
   OpsResultPanel,
   PageTabs,
-  buttonClassName,
-} from '../../shared/components/ui';
+  buttonClassName } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
@@ -134,15 +133,13 @@ export function SystemdUnitPage() {
         title: t('systemd.writeTemplate'),
         detail: t('systemd.writeTemplateDesc'),
         action: 'template',
-        done: false,
-      });
+        done: false });
     } else {
       steps.push({
         id: 'template',
         title: t('systemd.templateExists'),
         detail: status.managedUnitPath ?? 'dataDir/systemd/ysk-server.service',
-        done: true,
-      });
+        done: true });
     }
 
     if (!status.systemUnitExists || status.enabled === 'not-found') {
@@ -153,8 +150,7 @@ export function SystemdUnitPage() {
           ? t('systemd.installEnableDesc')
           : t('systemd.needExecuteRoot'),
         action: 'install',
-        done: false,
-      });
+        done: false });
     } else if (!running) {
       steps.push({
         id: 'start',
@@ -162,8 +158,7 @@ export function SystemdUnitPage() {
         detail: t('systemd.serviceNotRunningHint'),
         action: 'install',
         href: '/services',
-        done: false,
-      });
+        done: false });
     } else {
       steps.push({
         id: 'running',
@@ -171,8 +166,7 @@ export function SystemdUnitPage() {
         detail: status.show?.mainPid
           ? `MainPID ${status.show.mainPid}`
           : 'systemctl is-active: active',
-        done: true,
-      });
+        done: true });
     }
 
     if (!canInstall) {
@@ -181,8 +175,7 @@ export function SystemdUnitPage() {
         title: t('systemd.unlockApply'),
         detail: t('systemd.startAsRoot'),
         href: '/system',
-        done: false,
-      });
+        done: false });
     }
 
     return steps;
@@ -197,40 +190,32 @@ export function SystemdUnitPage() {
           ? {
               pill: {
                 label: activeLabel(active),
-                tone: activeTone(active),
-              },
+                tone: activeTone(active) },
               items: [
                 {
                   label: t('common.status'),
                   value: activeLabel(active),
-                  tone: activeTone(active),
-                },
+                  tone: activeTone(active) },
                 {
                   label: t('systemd.bootEnabled'),
                   value: enabledLabel(status.enabled),
-                  tone: enabledTone(status.enabled),
-                },
+                  tone: enabledTone(status.enabled) },
                 {
                   label: 'EXECUTE',
                   value: status.executeEnabled ? t('common.on') : t('common.off'),
-                  tone: status.executeEnabled ? 'ok' : 'warn',
-                },
+                  tone: status.executeEnabled ? 'ok' : 'warn' },
                 {
                   label: 'Root',
                   value: status.isRoot ? t('common.yes') : t('common.no'),
-                  tone: status.isRoot ? 'ok' : 'warn',
-                },
+                  tone: status.isRoot ? 'ok' : 'warn' },
                 {
                   label: t('systemd.canInstall'),
                   value: canInstall ? t('common.yes') : t('common.no'),
-                  tone: canInstall ? 'ok' : 'warn',
-                },
+                  tone: canInstall ? 'ok' : 'warn' },
                 {
                   label: 'Unit',
-                  value: `${status.unit}.service`,
-                },
-              ],
-            }
+                  value: `${status.unit}.service` },
+              ] }
           : undefined
       }
       actions={

@@ -16,8 +16,7 @@ import {
   FormActions,
   FormHint,
   FormLayout,
-  PresetChips,
-} from '../../../shared/components/ui';
+  PresetChips } from '../../../shared/components/ui';
 import { projectsApi } from '../api';
 import { sslApi } from '../../ssl/api';
 import { bindInput, bindCall1, bindCall2 } from '../../../pages/bind-handlers';
@@ -46,19 +45,19 @@ function edgeStatus(project: ProjectDto, t: (k: string, o?: Record<string, strin
     deployMode?: string;
   };
   if (!project.nginxConfigPath) {
-    return t('projects.nginxValueNone', { defaultValue: t('uiInline.s5ac95c29') });
+    return t('projects.nginxValueNone');
   }
   if (lh.nginxReloaded || lh.nginxStatus === 'reloaded') {
-    return t('projects.nginxLive', { defaultValue: t('uiInline.sea4ba90a') });
+    return t('projects.nginxLive');
   }
   if (lh.nginxStatus === 'managed_only' || lh.nginxStatus === 'synced') {
-    return t('projects.nginxWritten', { defaultValue: t('uiInline.sc8f34a0d') });
+    return t('projects.nginxWritten');
   }
   if (lh.nginxStatus === 'needs_deploy') {
-    return t('projects.nginxNeedsDeploy', { defaultValue: t('uiInline.s07fb5671') });
+    return t('projects.nginxNeedsDeploy');
   }
   if (lh.nginxStatus?.startsWith('reload_failed') || lh.nginxStatus === 'nginx_t_failed') {
-    return t('projects.nginxFailed', { defaultValue: t('uiInline.sa5f994e3') });
+    return t('projects.nginxFailed');
   }
   return project.nginxConfigPath ? t('projects.status.published') : t('projects.nginxValueNone');
 }
@@ -83,8 +82,7 @@ export function ProjectNetworkTab({
   onPublish,
   onPublishSsl,
   onSaved,
-  onOpsResult,
-}: ProjectNetworkTabProps) {
+  onOpsResult }: ProjectNetworkTabProps) {
   const { t } = useTranslation();
   const [domain, setDomain] = useState(project.domain ?? '');
   const [aliasesText, setAliasesText] = useState((project.domainAliases ?? []).join('\n'));
@@ -192,10 +190,7 @@ export function ProjectNetworkTab({
     if (ssl && !sslReady) {
       onOpsResult?.(
         null,
-        t('projects.sslRequiredFirst', {
-          defaultValue:
-            t('uiInline.s32dd17d9'),
-        }),
+        t('projects.sslRequiredFirst', { }),
       );
       return;
     }
@@ -216,8 +211,7 @@ export function ProjectNetworkTab({
         realIpProvider:
           realIpProvider === 'inherit' ? null : realIpProvider || null,
         publish,
-        ssl,
-      });
+        ssl });
       if (res.publish) {
         onOpsResult?.(res.publish, publish ? t('projects.netSavedPublished') : undefined);
       } else {
@@ -244,14 +238,14 @@ export function ProjectNetworkTab({
       {suspended ? <Alert variant="info">{t('projects.netSuspended')}</Alert> : null}
 
       <Card>
-        <CardSection title={t('projects.netEdgeStatus', { defaultValue: t('uiInline.s5516cb5b') })}>
+        <CardSection title={t('projects.netEdgeStatus')}>
           <FormLayout columns={2}>
             <Field label="Nginx" htmlFor="net-st" flush>
               <code id="net-st" className="inline">
                 {edgeStatus(project, t)}
               </code>
             </Field>
-            <Field label={t('projects.netUpstream', { defaultValue: t('uiInline.sed38f4ea') })} htmlFor="net-up" flush>
+            <Field label={t('projects.netUpstream')} htmlFor="net-up" flush>
               <code id="net-up" className="inline">
                 {upstreamLabel(project)}
               </code>
@@ -390,14 +384,12 @@ export function ProjectNetworkTab({
 
       {showPort ? (
         <Card>
-          <CardSection title={t('projects.netPortTitle', { defaultValue: t('uiInline.sadb6ef47') })}>
+          <CardSection title={t('projects.netPortTitle')}>
             <FormLayout columns={2}>
               <Field
-                label={t('projects.createPreferredPort', { defaultValue: t('uiInline.se7a422dd') })}
+                label={t('projects.createPreferredPort')}
                 htmlFor="net-pref-port"
-                hint={t('projects.preferredPortRedeployHint', {
-                  defaultValue: t('uiInline.s2eff57b7'),
-                })}
+                hint={t('projects.preferredPortRedeployHint', { })}
                 flush
               >
                 <input
@@ -409,7 +401,7 @@ export function ProjectNetworkTab({
                   disabled={suspended}
                 />
               </Field>
-              <Field label={t('projects.netCurrentPort', { defaultValue: t('uiInline.s110671e6') })} htmlFor="net-cur-port" flush>
+              <Field label={t('projects.netCurrentPort')} htmlFor="net-cur-port" flush>
                 <code id="net-cur-port" className="inline">
                   {project.port != null ? String(project.port) : '—'}
                 </code>
@@ -460,14 +452,14 @@ export function ProjectNetworkTab({
       )}
 
       <Card>
-        <CardSection title={t('projects.netPublishTitle', { defaultValue: t('uiInline.s549ea65e') })}>
+        <CardSection title={t('projects.netPublishTitle')}>
           <div className="stack" style={{ gap: '0.85rem' }}>
             {/* Primary: save meta + edge without SSL */}
             <div>
               <div className="u-text-muted u-text-sm u-mb-1">
-                {t('projects.netPublishPrimary', { defaultValue: t('uiInline.s9dc5c003') })}
+                {t('projects.netPublishPrimary')}
               </div>
-              <ActionBar size="md" wrap aria-label={t('projects.netPublishPrimary', { defaultValue: t('uiInline.s9dc5c003') })}>
+              <ActionBar size="md" wrap aria-label={t('projects.netPublishPrimary')}>
                 <Button
                   variant="secondary"
                   size="md"
@@ -505,13 +497,9 @@ export function ProjectNetworkTab({
               </div>
               {!canSsl && hasDomain ? (
                 <Alert variant="warn" className="u-mb-2">
-                  {t('projects.sslGateHint', {
-                    defaultValue: t('uiInline.s04a32a1e'),
-                  })}{' '}
+                  {t('projects.sslGateHint', { })}{' '}
                   <Link to="/ssl">{t('nav.ssl')}</Link>{' '}
-                  {t('projects.sslGateHint2', {
-                    defaultValue: t('uiInline.s564d50b7'),
-                  })}
+                  {t('projects.sslGateHint2', { })}
                   {sslReady === null
                     ? ` (${t('common.checking')})`
                     : ''}
@@ -520,9 +508,7 @@ export function ProjectNetworkTab({
               {!hasDomain ? (
                 <div className="u-mb-2">
                   <FormHint>
-                    {t('projects.sslNeedDomain', {
-                      defaultValue: t('uiInline.sd9b695a5'),
-                    })}
+                    {t('projects.sslNeedDomain', { })}
                   </FormHint>
                 </div>
               ) : null}
@@ -534,14 +520,12 @@ export function ProjectNetworkTab({
                   disabled={suspended || !canSsl}
                   title={
                     !canSsl
-                      ? t('projects.sslRequiredFirst', {
-                          defaultValue: t('uiInline.scb85cfff'),
-                        })
+                      ? t('projects.sslRequiredFirst', { })
                       : undefined
                   }
                   onClick={bindCall2(saveNetwork, true, true)}
                 >
-                  {t('projects.savePublishSsl', { defaultValue: t('uiInline.s18c1af46') })}
+                  {t('projects.savePublishSsl')}
                 </Button>
                 <Button
                   variant="ghost"
@@ -550,26 +534,21 @@ export function ProjectNetworkTab({
                   disabled={suspended || !canSsl}
                   title={
                     !canSsl
-                      ? t('projects.sslRequiredFirst', {
-                          defaultValue: t('uiInline.scb85cfff'),
-                        })
+                      ? t('projects.sslRequiredFirst', { })
                       : undefined
                   }
                   onClick={() => {
                     if (!canSsl) {
                       onOpsResult?.(
                         null,
-                        t('projects.sslRequiredFirst', {
-                          defaultValue:
-                            t('uiInline.s32dd17d9'),
-                        }),
+                        t('projects.sslRequiredFirst', { }),
                       );
                       return;
                     }
                     onPublishSsl();
                   }}
                 >
-                  {t('projects.publishNginxSsl', { defaultValue: t('uiInline.s6a284cb0') })}
+                  {t('projects.publishNginxSsl')}
                 </Button>
               </ActionBar>
             </div>
@@ -577,9 +556,9 @@ export function ProjectNetworkTab({
             {/* Maintenance */}
             <div>
               <div className="u-text-muted u-text-sm u-mb-1">
-                {t('projects.netPublishMaint', { defaultValue: t('uiInline.s85483ffb') })}
+                {t('projects.netPublishMaint')}
               </div>
-              <ActionBar size="md" wrap aria-label={t('projects.netPublishMaint', { defaultValue: t('uiInline.s85483ffb') })}>
+              <ActionBar size="md" wrap aria-label={t('projects.netPublishMaint')}>
                 <Button
                   variant="ghost"
                   size="md"
@@ -596,8 +575,7 @@ export function ProjectNetworkTab({
                             notes: r.notes ?? [],
                             projectId: project.id,
                             processStatus: 'stopped',
-                            listening: false,
-                          } as OpsApplyResultDto,
+                            listening: false } as OpsApplyResultDto,
                           r.ok
                             ? t('projects.netPurgeOk')
                             : r.notes?.join('；') ?? t('projects.netPurgeFailed'),
@@ -638,8 +616,8 @@ export function ProjectNetworkTab({
                 }}
               >
                 {confPreview != null
-                  ? t('common.hide', { defaultValue: t('uiInline.s6993c6ba') })
-                  : t('common.show', { defaultValue: t('uiInline.s15671929') })}
+                  ? t('common.hide')
+                  : t('common.show')}
               </Button>
             </FormActions>
             {confPreview != null ? (

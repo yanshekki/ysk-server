@@ -12,14 +12,12 @@ import {
   FormActions,
   FormLayout,
   PresetChips,
-  SegRadio,
-} from '../../../shared/components/ui';
+  SegRadio } from '../../../shared/components/ui';
 import { projectsApi } from '../api';
 import {
   loadDeployPrefs,
   normalizeProcessManager,
-  type ProcessManager,
-} from '../model/deploy-prefs';
+  type ProcessManager } from '../model/deploy-prefs';
 import { ProjectSshCard } from './ProjectSshCard';
 import { bindCloseIfIdle, bindSet, bindVoid } from '../../../pages/bind-handlers';
 
@@ -52,8 +50,7 @@ export function ProjectResourcesTab({
   onSetResources,
   onProvisionOs,
   onOpsMessage,
-  onProjectRefresh,
-}: ProjectResourcesTabProps) {
+  onProjectRefresh }: ProjectResourcesTabProps) {
   const { t } = useTranslation();
   const [tasksMax, setTasksMax] = useState(
     project.tasksMax != null ? String(project.tasksMax) : '512',
@@ -125,8 +122,7 @@ export function ProjectResourcesTab({
         cpuQuotaPercent: Number(cpuQuota) || undefined,
         tasksMax: Number(tasksMax) || undefined,
         limitNofile: Number(limitNofile) || undefined,
-        quotaMb: Number(quotaMb) || undefined,
-      };
+        quotaMb: Number(quotaMb) || undefined };
       const r = await projectsApi.patchOsUser(project.id, body);
       const notes = r.notes?.join('；') ?? '';
       if (r.blocked) {

@@ -9,8 +9,7 @@ import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
   softwareReadyRoute,
-  type FetchRoute,
-} from '../test/mock-fetch';
+  type FetchRoute } from '../test/mock-fetch';
 import { authStore } from '../shared/stores/auth-store';
 import { ProtectionPage } from './features/ProtectionPage';
 import { SystemPage } from './SystemPage';
@@ -47,8 +46,7 @@ function rootRoutes(): FetchRoute[] {
     requiresExecute: false,
     notes: ['applied on host'],
     executeEnabled: true,
-    isRoot: true,
-  };
+    isRoot: true };
   return [
     softwareReadyRoute(),
     {
@@ -71,8 +69,7 @@ function rootRoutes(): FetchRoute[] {
           burst: 20,
           connLimit: 40,
           confPath: '/x',
-          exists: true,
-        },
+          exists: true },
         firewall: { active: 'active', installed: true },
         fail2ban: { active: 'active', installed: true, jails: 2 },
         autoBan: {
@@ -81,18 +78,14 @@ function rootRoutes(): FetchRoute[] {
           method: 'fail2ban',
           cooldownMinutes: 30,
           maxAutoBansPerHour: 20,
-          whitelist: [],
-        },
+          whitelist: [] },
         executeEnabled: true,
         isRoot: true,
         suggestions: [{ id: 's1', title: 'Apply', body: 'x', action: 'preset:daily' }],
-        notes: [],
-      },
-    },
+        notes: [] } },
     {
       match: /\/api\/v1\/defense/,
-      body: applied,
-    },
+      body: applied },
     {
       match: /\/api\/v1\/system\/host/,
       body: {
@@ -106,15 +99,13 @@ function rootRoutes(): FetchRoute[] {
           memory: { total: 1e9, free: 5e8, usedRatio: 0.5 },
           node: 'v20',
           pid: 1,
-          uid: 0,
-        },
+          uid: 0 },
         time: {
           utc: now,
           local: now,
           ntpEnabled: true,
           ntpSynchronized: true,
-          timeSource: 'ntp',
-        },
+          timeSource: 'ntp' },
         network: { ips: ['127.0.0.1'], interfaces: [], resolvers: [] },
         disks: [],
         power: { pending: null },
@@ -123,11 +114,8 @@ function rootRoutes(): FetchRoute[] {
           executeEnabled: true,
           isRoot: true,
           canPower: true,
-          canIdentity: true,
-        },
-        collectedAt: now,
-      },
-    },
+          canIdentity: true },
+        collectedAt: now } },
     {
       match: (url) => url.startsWith('/api/v1/network'),
       handler: (_u, init) => {
@@ -140,8 +128,7 @@ function rootRoutes(): FetchRoute[] {
             hasIp: true,
             networkManager: 'active',
             networkd: 'inactive',
-            canPersist: true,
-          },
+            canPersist: true },
           interfaces: [
             {
               name: 'eth0',
@@ -151,8 +138,7 @@ function rootRoutes(): FetchRoute[] {
               mtu: 1500,
               isLoopback: false,
               isDefaultEgress: true,
-              addrs: [{ family: 'inet', local: '10.0.0.5', prefixlen: 24 }],
-            },
+              addrs: [{ family: 'inet', local: '10.0.0.5', prefixlen: 24 }] },
           ],
           routes: [{ dst: 'default', gateway: '10.0.0.1', dev: 'eth0' }],
           caps: { canMutate: true, executeEnabled: true, isRoot: true },
@@ -165,11 +151,8 @@ function rootRoutes(): FetchRoute[] {
             source: 'static',
             notes: [],
             ignoreAutoDns: true,
-            canApply: true,
-          },
-        };
-      },
-    },
+            canApply: true } };
+      } },
     {
       match: /\/api\/v1\/system\/firewall/,
       body: {
@@ -183,9 +166,7 @@ function rootRoutes(): FetchRoute[] {
           { num: 2, to: 'Anywhere', action: 'DENY', from: '203.0.113.10' },
         ],
         allowCount: 1,
-        denyCount: 1,
-      },
-    },
+        denyCount: 1 } },
     {
       match: /\/api\/v1\/system\/fail2ban/,
       body: {
@@ -199,9 +180,7 @@ function rootRoutes(): FetchRoute[] {
         banned: [{ jail: 'sshd', ip: '203.0.113.10' }],
         ignoreIps: ['127.0.0.1'],
         catalog: [{ id: 'sshd', desc: 'SSH' }],
-        defaultJails: ['sshd'],
-      },
-    },
+        defaultJails: ['sshd'] } },
     {
       match: /\/api\/v1\/system\/services/,
       body: {
@@ -214,14 +193,11 @@ function rootRoutes(): FetchRoute[] {
             installed: true,
             active: 'active',
             enabled: 'enabled',
-            activeLabel: 'active',
-          },
+            activeLabel: 'active' },
         ],
         executeEnabled: true,
         isRoot: true,
-        probedAt: now,
-      },
-    },
+        probedAt: now } },
     {
       match: (url) => url.startsWith('/api/v1/system/systemd'),
       handler: (_u, init) => {
@@ -241,11 +217,8 @@ function rootRoutes(): FetchRoute[] {
             mainPid: null,
             activeEnterTimestamp: null,
             fragmentPath: null,
-            description: 'YSK',
-          },
-        };
-      },
-    },
+            description: 'YSK' } };
+      } },
     {
       match: (url) => url.startsWith('/api/v1/system/db/redis'),
       body: {
@@ -265,9 +238,7 @@ function rootRoutes(): FetchRoute[] {
         connectedClients: '1',
         keyspace: [{ db: 0, keys: 2 }],
         databases: 16,
-        configuredDatabases: 16,
-      },
-    },
+        configuredDatabases: 16 } },
     {
       match: (url) => url.startsWith('/api/v1/system/redis'),
       handler: (_u, init) => {
@@ -275,10 +246,8 @@ function rootRoutes(): FetchRoute[] {
         return {
           ok: true,
           keys: [{ key: 'k1', type: 'string', ttl: 60 }],
-          view: { key: 'k1', type: 'string', ttl: 60, value: 'v' },
-        };
-      },
-    },
+          view: { key: 'k1', type: 'string', ttl: 60, value: 'v' } };
+      } },
     {
       match: /\/api\/v1\/system\/db\//,
       body: {
@@ -287,9 +256,7 @@ function rootRoutes(): FetchRoute[] {
         activeLabel: 'active',
         engine: 'mysql',
         executeEnabled: true,
-        isRoot: true,
-      },
-    },
+        isRoot: true } },
     {
       match: /\/api\/v1\/system\/nginx/,
       body: {
@@ -299,9 +266,7 @@ function rootRoutes(): FetchRoute[] {
         sites: [{ name: 'demo', enabled: true, serverName: 'demo.example.com' }],
         configTestOk: true,
         executeEnabled: true,
-        isRoot: true,
-      },
-    },
+        isRoot: true } },
     {
       match: /\/api\/v1\/cron/,
       handler: (_u, init) => {
@@ -316,8 +281,7 @@ function rootRoutes(): FetchRoute[] {
             hostCrontabPreview: '0 2 * * * root true\n',
             executeEnabled: true,
             lastInstallOk: true,
-            lastInstallAt: now,
-          };
+            lastInstallAt: now };
         }
         return {
           items: [
@@ -327,12 +291,9 @@ function rootRoutes(): FetchRoute[] {
               command: 'true',
               enabled: true,
               user: 'root',
-              last_install: { ok: true },
-            },
-          ],
-        };
-      },
-    },
+              last_install: { ok: true } },
+          ] };
+      } },
     {
       match: /\/api\/v1\/backups/,
       handler: (_u, init) => {
@@ -346,11 +307,9 @@ function rootRoutes(): FetchRoute[] {
               port: 22,
               username: 'ysk',
               path: '/b',
-              password: '***',
-            },
+              password: '***' },
             exclusions: [],
-            restic: { enabled: true, repoPath: '/r', password: '***' },
-          };
+            restic: { enabled: true, repoPath: '/r', password: '***' } };
         }
         return {
           items: [
@@ -359,13 +318,10 @@ function rootRoutes(): FetchRoute[] {
               name: 'Demo',
               path: '/b/p1.tgz',
               bytes: 100,
-              mtime: now,
-            },
+              mtime: now },
           ],
-          lastRun: { at: now, ok: true },
-        };
-      },
-    },
+          lastRun: { at: now, ok: true } };
+      } },
     {
       match: /\/api\/v1\/updates/,
       body: {
@@ -374,8 +330,7 @@ function rootRoutes(): FetchRoute[] {
             packageName: 'nginx',
             currentVersion: '1.0',
             candidateVersion: '1.1',
-            risk: 'low',
-          },
+            risk: 'low' },
         ],
         advice: [
           {
@@ -386,21 +341,17 @@ function rootRoutes(): FetchRoute[] {
             risk: 'low',
             cves: [],
             requiresApproval: false,
-            summary: 'bump',
-          },
+            summary: 'bump' },
         ],
         self: {
           ok: true,
           checked: true,
           updateAvailable: true,
           currentVersion: '0.1.0',
-          latestVersion: '0.2.0',
-        },
+          latestVersion: '0.2.0' },
         items: [],
         ok: true,
-        collectedAt: now,
-      },
-    },
+        collectedAt: now } },
     {
       match: /\/api\/v1\/fleet\//,
       body: {
@@ -410,11 +361,8 @@ function rootRoutes(): FetchRoute[] {
             agent_id: 'ag-1',
             status: 'connected',
             group: 'edge',
-            last_seen_at: now,
-          },
-        ],
-      },
-    },
+            last_seen_at: now },
+        ] } },
     {
       match: /\/api\/v1\/agents\//,
       body: {
@@ -427,11 +375,8 @@ function rootRoutes(): FetchRoute[] {
             unitActive: 'inactive',
             pathExists: false,
             installPath: '/opt/o',
-            probedAt: now,
-          },
-        ],
-      },
-    },
+            probedAt: now },
+        ] } },
     {
       match: (url) => url.startsWith('/api/v1/metrics'),
       body: {
@@ -447,8 +392,7 @@ function rootRoutes(): FetchRoute[] {
             used: 1e10,
             avail: 9e10,
             usedRatio: 0.1,
-            mount: '/',
-          },
+            mount: '/' },
         ],
         alerts: [],
         ok: true,
@@ -456,9 +400,7 @@ function rootRoutes(): FetchRoute[] {
         limit: 40,
         rows: [{ pid: '1', user: 'root', cpu: 0.1, mem: 0.1, command: 'init' }],
         notes: [],
-        items: [],
-      },
-    },
+        items: [] } },
     {
       match: /\/api\/v1\/hosting\/php\/ini/,
       body: {
@@ -472,22 +414,17 @@ function rootRoutes(): FetchRoute[] {
                 key: 'memory_limit',
                 label: 'memory_limit',
                 type: 'text',
-                default: '128M',
-              },
-            ],
-          },
+                default: '128M' },
+            ] },
         ],
         settings: {
           version: '8.2',
           values: { memory_limit: '256M' },
           extra: {},
-          rawAppend: '',
-        },
+          rawAppend: '' },
         managedIniPath: '/etc/php/8.2/conf.d/ysk.ini',
         notes: [],
-        ok: true,
-      },
-    },
+        ok: true } },
     {
       match: /\/api\/v1\/hosting\/runtimes/,
       body: {
@@ -496,9 +433,7 @@ function rootRoutes(): FetchRoute[] {
         settings: { values: {}, env: {} },
         envPreview: {},
         notes: [],
-        php: { versions: ['8.2', '8.3'], active: '8.2' },
-      },
-    },
+        php: { versions: ['8.2', '8.3'], active: '8.2' } } },
     {
       match: /\/api\/v1\/resources\//,
       body: {
@@ -507,18 +442,14 @@ function rootRoutes(): FetchRoute[] {
             id: 'db1',
             name: 'app',
             engine: 'mysql',
-            apply_status: 'planned',
-          },
+            apply_status: 'planned' },
         ],
         meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
         item: { id: 'db1', name: 'app' },
-        ...applied,
-      },
-    },
+        ...applied } },
     {
       match: /\/api\/v1\/system\//,
-      body: applied,
-    },
+      body: applied },
     { match: /.*/, body: { ...applied, items: [], ready: true, missing: [] } },
   ];
 }
@@ -563,8 +494,7 @@ describe('root/execute-enabled page interactions', () => {
       for (const [path, el] of pages) {
         const { unmount } = renderAt(path, el);
         await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument(), {
-          timeout: 6000,
-        });
+          timeout: 6000 });
         for (const label of screen.queryAllByRole('tab').map((t) => t.textContent ?? '')) {
           if (!label.trim()) continue;
           try {
@@ -576,8 +506,7 @@ describe('root/execute-enabled page interactions', () => {
         }
         for (const b of screen
           .queryAllByRole('button', {
-            name: /apply|start|stop|restart|reload|install|enable|ban|unban|save|run|probe|backup|schedule|update|write|template/i,
-          })
+            name: /apply|start|stop|restart|reload|install|enable|ban|unban|save|run|probe|backup|schedule|update|write|template/i })
           .slice(0, 12)) {
           if ((b as HTMLButtonElement).disabled) continue;
           try {

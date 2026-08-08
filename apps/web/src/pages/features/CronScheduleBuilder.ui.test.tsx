@@ -4,8 +4,7 @@ import userEvent from '@testing-library/user-event';
 import {
   CronScheduleBuilder,
   defaultScheduleState,
-  type ScheduleState,
-} from './CronScheduleBuilder';
+  type ScheduleState } from './CronScheduleBuilder';
 
 describe('CronScheduleBuilder UI', () => {
   it('switches modes and patches schedule', async () => {
@@ -54,8 +53,7 @@ describe('CronScheduleBuilder UI', () => {
       mode: 'weekly',
       weekdays: [1, 3],
       hour: 9,
-      minute: 15,
-    };
+      minute: 15 };
     const onChange = vi.fn((next: ScheduleState) => {
       state = next;
       rerender(<CronScheduleBuilder value={state} onChange={onChange} />);

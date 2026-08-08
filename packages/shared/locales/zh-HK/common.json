@@ -115,5 +115,8 @@
   "deletedOk": "已刪除",
   "applyDone": "套用完成",
   "applyIncomplete": "套用未完成",
-  "checking": "檢查中…"
+  "checking": "檢查中…",
+  "dismiss": "關閉",
+  "hide": "隱藏",
+  "show": "顯示"
 }

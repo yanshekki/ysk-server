@@ -28,8 +28,7 @@ import {
   FormActions,
   CheckboxField,
   FormHint,
-  SegRadio,
-} from '../shared/components/ui';
+  SegRadio } from '../shared/components/ui';
 import type { OpsResultLike } from '../shared/components/ui';
 import { api } from '../shared/services/api';
 import {
@@ -54,8 +53,7 @@ import {
   bindInput,
   bindNavigate,
   bindOpenCreate,
-  bindSet,
-} from './bind-handlers';
+  bindSet } from './bind-handlers';
 
 export function asOps(r: Record<string, unknown> | null): OpsResultLike | null {
   if (!r) return null;
@@ -69,8 +67,7 @@ export function asOps(r: Record<string, unknown> | null): OpsResultLike | null {
     ok,
     blocked,
     blockMessage: typeof r.blockMessage === 'string' ? r.blockMessage : undefined,
-    notes: Array.isArray(r.notes) ? r.notes.map(String) : [],
-  } as OpsResultLike;
+    notes: Array.isArray(r.notes) ? r.notes.map(String) : [] } as OpsResultLike;
 }
 
 /** Normalize apply_status for display comparisons. */
@@ -193,8 +190,7 @@ export function mapLiveProbeRows(
       id,
       label,
       ok: c?.ok ?? null,
-      detail: String(c?.detail ?? '—'),
-    };
+      detail: String(c?.detail ?? '—') };
   });
 }
 
@@ -249,8 +245,7 @@ export function flagsResultToLog(r: {
     notes: r.notes ?? [],
     written: r.written,
     blocked: r.blocked,
-    blockMessage: r.blockMessage,
-  };
+    blockMessage: r.blockMessage };
 }
 
 /** Deliverability checklist row tone. */
@@ -423,8 +418,7 @@ export function EmailDomainPage() {
     { id: 'health', label: t('email.tabHealth') },
     {
       id: 'deliverability',
-      label: t('email.tabDeliverability', { defaultValue: 'Deliverability' }),
-    },
+      label: t('email.tabDeliverability', { defaultValue: 'Deliverability' }) },
     { id: 'relay', label: t('email.tabRelay') },
     { id: 'sieve', label: t('email.tabSieve') },
     { id: 'advanced', label: t('email.tabAdvanced') },
@@ -446,28 +440,23 @@ export function EmailDomainPage() {
       status={{
         pill: {
           label: t(applyStatusPillKey(domain.apply_status)),
-          tone: applyStatusTone(domain.apply_status),
-        },
+          tone: applyStatusTone(domain.apply_status) },
         items: [
           {
             label: t('email.statHealth'),
             value: `${domain.health_score}/100`,
-            tone: healthScoreTone(domain.health_score),
-          },
+            tone: healthScoreTone(domain.health_score) },
           {
             label: t('email.statApply'),
             value: applySt,
-            tone: applyStatusTone(domain.apply_status),
-          },
+            tone: applyStatusTone(domain.apply_status) },
           {
             label: t('email.statDomain'),
             value: suspended ? t('email.pausedFlag') : t('email.normal'),
-            tone: suspended ? 'warn' : 'ok',
-          },
+            tone: suspended ? 'warn' : 'ok' },
           { label: t('email.statMailboxes'), value: mailboxes.length },
           { label: t('email.statDnsRecords'), value: (bundle?.records ?? []).length },
-        ],
-      }}
+        ] }}
       actions={<ActionBar>
           <Button
             variant="secondary"
@@ -523,8 +512,7 @@ export function EmailDomainPage() {
                           <Badge tone={healthScoreTone(bundle.health.score)}>
                             {bundle.health.score}/{bundle.health.maxScore}
                           </Badge>
-                        ),
-                      },
+                        ) },
                       { label: t('email.suggestedRecords'), value: String(bundle.records.length) },
                       { label: t('email.externalTodosCount'), value: String(bundle.externalTodos.length) },
                     ]}
@@ -543,29 +531,25 @@ export function EmailDomainPage() {
                           key: 'type',
                           header: t('email.colType'),
                           nowrap: true,
-                          render: (r) => <Badge>{r.type}</Badge>,
-                        },
+                          render: (r) => <Badge>{r.type}</Badge> },
                         {
                           key: 'name',
                           header: t('email.colName'),
                           render: (r) => (
                             <code className="inline">{r.name}</code>
-                          ),
-                        },
+                          ) },
                         {
                           key: 'value',
                           header: t('email.colValue'),
                           className: 'u-break-all',
                           render: (r) => (
                             <code className="inline">{r.value}</code>
-                          ),
-                        },
+                          ) },
                         {
                           key: 'description',
                           header: t('email.colNote'),
                           className: 'muted u-text-sm',
-                          render: (r) => r.description,
-                        },
+                          render: (r) => r.description },
                       ]}
                       rows={bundle.records}
                       rowKey={(r, i) => `${r.type}-${r.name}-${i}`}
@@ -727,8 +711,7 @@ export function EmailDomainPage() {
                         emailApi.createAlias(domain.id, {
                           type: aliasType,
                           localPart: aliasType === 'catchall' ? undefined : aliasLocal,
-                          destinations: parseAliasDestinations(aliasDest),
-                        }),
+                          destinations: parseAliasDestinations(aliasDest) }),
                       setAliasLog,
                       () => emailApi.listAliases(domain.id),
                       setAliases,
@@ -823,8 +806,7 @@ export function EmailDomainPage() {
                         autoreplyEnabled: autoreplyOn,
                         autoreplySubject,
                         autoreplyBody,
-                        applySystem: flagsApplySystem,
-                      },
+                        applySystem: flagsApplySystem },
                       flagsResultToLog,
                       setFlagsLog,
                       load,
@@ -882,8 +864,7 @@ export function EmailDomainPage() {
                 items={[
                   {
                     label: t('email.serverIpLabel'),
-                    value: domain.server_ip || '—',
-                  },
+                    value: domain.server_ip || '—' },
                   {
                     label: t('email.healthScore'),
                     value: live
@@ -899,8 +880,7 @@ export function EmailDomainPage() {
                               domain.health_score,
                           )
                         : domain.health_score,
-                    ),
-                  },
+                    ) },
                   {
                     label: t('email.liveCheck'),
                     value: live
@@ -912,8 +892,7 @@ export function EmailDomainPage() {
                       ? (live as { ok?: boolean }).ok
                         ? 'ok'
                         : 'warn'
-                      : 'default',
-                  },
+                      : 'default' },
                   {
                     label: t('email.blacklist'),
                     value: dnsblSummaryLabel(
@@ -924,8 +903,7 @@ export function EmailDomainPage() {
                     tone: dnsblSummaryTone(
                       dnsbl as { ok?: boolean } | null,
                       (live as { dnsbl?: { ok?: boolean } } | null)?.dnsbl,
-                    ),
-                  },
+                    ) },
                 ]}
               />
               <FormHint>
@@ -945,8 +923,7 @@ export function EmailDomainPage() {
                   )}
                 >
                   {t('email.runDeliverabilityPack', {
-                    defaultValue: 'Run deliverability pack',
-                  })}
+                    defaultValue: 'Run deliverability pack' })}
                 </Button>
                 <Button
                   variant="secondary"
@@ -1008,8 +985,7 @@ export function EmailDomainPage() {
                         key: 'item',
                         header: t('email.colItem'),
                         nowrap: true,
-                        render: (r) => <strong>{r.label}</strong>,
-                      },
+                        render: (r) => <strong>{r.label}</strong> },
                       {
                         key: 'st',
                         header: t('email.colStatus'),
@@ -1022,16 +998,14 @@ export function EmailDomainPage() {
                                 ? t('email.fail')
                                 : t('email.unknown')}
                           </Badge>
-                        ),
-                      },
+                        ) },
                       {
                         key: 'detail',
                         header: t('email.colDetail'),
                         className: 'u-break-all',
                         render: (r) => (
                           <code className="inline u-text-sm">{r.detail}</code>
-                        ),
-                      },
+                        ) },
                     ]}
                     rows={mapLiveProbeRows(live, t('email.outboundPort25'), {
                       mx: t('email.probeMx'),
@@ -1039,8 +1013,7 @@ export function EmailDomainPage() {
                       dkim: t('email.probeDkim'),
                       dmarc: t('email.probeDmarc'),
                       ptr: t('email.probePtr'),
-                      dnsbl: t('email.probeDnsbl'),
-                    })}
+                      dnsbl: t('email.probeDnsbl') })}
                     rowKey={(r) => r.id}
                     empty={<p className="muted">{t('email.noProbeResults')}</p>}
                   />
@@ -1096,8 +1069,7 @@ export function EmailDomainPage() {
                     onClick={bindNavigate(navigate, `/ssl?domain=${encodeURIComponent(webmailDomain || defaultWebmailDomain(domain.domain))}&action=le`)}
                   >
                     {t('email.leWebmailHost', {
-                      host: webmailDomain || defaultWebmailDomain(domain.domain),
-                    })}
+                      host: webmailDomain || defaultWebmailDomain(domain.domain) })}
                   </Button>
                   <Button
                     variant="ghost"
@@ -1117,12 +1089,10 @@ export function EmailDomainPage() {
                       void withBusy(async () => {
                         const r = await emailApi.applyMailTls({
                           domain: domain.domain,
-                          mailHost: defaultMailSslDomain(domain.domain),
-                        });
+                          mailHost: defaultMailSslDomain(domain.domain) });
                         setLive((prev) => ({
                           ...(prev ?? {}),
-                          mailTlsApply: r,
-                        }));
+                          mailTlsApply: r }));
                       });
                     }}
                   >
@@ -1151,8 +1121,7 @@ export function EmailDomainPage() {
                       () =>
                         api.requestRaw('/api/v1/email/webmail/sso-plugin', {
                           method: 'POST',
-                          body: JSON.stringify({}),
-                        }),
+                          body: JSON.stringify({}) }),
                       setLive,
                     )}
                   >
@@ -1167,8 +1136,7 @@ export function EmailDomainPage() {
                       () =>
                         api.requestRaw('/api/v1/email/webmail/sso-plugin', {
                           method: 'POST',
-                          body: JSON.stringify({ enableSystem: true }),
-                        }),
+                          body: JSON.stringify({ enableSystem: true }) }),
                       setLive,
                     )}
                   >
@@ -1220,8 +1188,7 @@ export function EmailDomainPage() {
                       {
                         rateLimitPerHour: parsePolicyRate(policyRate),
                         antispam: policyAntispam,
-                        applySystem: false,
-                      },
+                        applySystem: false },
                       setPolicyLog,
                       load,
                     )}
@@ -1239,8 +1206,7 @@ export function EmailDomainPage() {
                       {
                         rateLimitPerHour: parsePolicyRate(policyRate),
                         antispam: policyAntispam,
-                        applySystem: true,
-                      },
+                        applySystem: true },
                       setPolicyLog,
                       load,
                     )}
@@ -1265,18 +1231,15 @@ export function EmailDomainPage() {
             <Card>
               <CardSection
                 title={t('email.deliverabilityTitle', {
-                  defaultValue: 'Deliverability pack',
-                })}
+                  defaultValue: 'Deliverability pack' })}
                 description={t('email.deliverabilityDesc', {
                   defaultValue:
-                    'Unified PTR / DNS / DNSBL / Port 25 / relay / warm-up checklist. Never claims global inbox delivery.',
-                })}
+                    'Unified PTR / DNS / DNSBL / Port 25 / relay / warm-up checklist. Never claims global inbox delivery.' })}
               >
                 <Alert variant="info">
                   {t('email.deliverabilityHonesty', {
                     defaultValue:
-                      'YSK cannot set PTR or unlock Port 25 at the VPS provider. Gmail/Outlook placement is external.',
-                  })}
+                      'YSK cannot set PTR or unlock Port 25 at the VPS provider. Gmail/Outlook placement is external.' })}
                 </Alert>
                 <ActionBar className="u-mb-3">
                   <Button
@@ -1286,8 +1249,7 @@ export function EmailDomainPage() {
                     onClick={bindBusySet(withBusy, () => emailApi.deliverability(domain.id), setDeliverability)}
                   >
                     {t('email.runDeliverabilityPack', {
-                      defaultValue: 'Run deliverability pack',
-                    })}
+                      defaultValue: 'Run deliverability pack' })}
                   </Button>
                   <Button
                     variant="secondary"
@@ -1304,20 +1266,17 @@ export function EmailDomainPage() {
                         {
                           label: t('email.healthScore'),
                           value: String(deliverability.score),
-                          tone: healthScoreTone(deliverability.score),
-                        },
+                          tone: healthScoreTone(deliverability.score) },
                         {
                           label: t('email.panelReady', { defaultValue: 'Panel-checkable' }),
                           value: deliverability.panelReady
                             ? t('common.ready', { defaultValue: 'Ready' })
                             : t('common.degraded', { defaultValue: 'Gaps' }),
-                          tone: deliverability.panelReady ? 'ok' : 'warn',
-                        },
+                          tone: deliverability.panelReady ? 'ok' : 'warn' },
                         {
                           label: t('email.guaranteed', { defaultValue: 'Inbox guarantee' }),
                           value: t('common.no'),
-                          tone: 'default',
-                        },
+                          tone: 'default' },
                       ]}
                     />
                     <ul className="list-plain u-mt-3">
@@ -1333,8 +1292,7 @@ export function EmailDomainPage() {
                         {
                           key: 'title',
                           header: t('common.name'),
-                          render: (i) => <strong>{i.title}</strong>,
-                        },
+                          render: (i) => <strong>{i.title}</strong> },
                         {
                           key: 'ok',
                           header: t('common.status'),
@@ -1348,14 +1306,12 @@ export function EmailDomainPage() {
                                     ? 'Fail'
                                     : '—'}
                             </Badge>
-                          ),
-                        },
+                          ) },
                         {
                           key: 'owner',
                           header: t('email.owner', { defaultValue: 'Owner' }),
                           className: 'muted u-text-sm',
-                          render: (i) => i.owner,
-                        },
+                          render: (i) => i.owner },
                         {
                           key: 'detail',
                           header: t('common.notes'),
@@ -1367,8 +1323,7 @@ export function EmailDomainPage() {
                                 <span className="muted"> · {i.fixHint}</span>
                               ) : null}
                             </span>
-                          ),
-                        },
+                          ) },
                       ]}
                       rows={deliverability.items}
                       rowKey={(i) => i.id}
@@ -1390,11 +1345,9 @@ export function EmailDomainPage() {
                 ) : (
                   <EmptyState
                     title={t('email.deliverabilityEmpty', {
-                      defaultValue: 'No pack run yet',
-                    })}
+                      defaultValue: 'No pack run yet' })}
                     description={t('email.deliverabilityEmptyDesc', {
-                      defaultValue: 'Click Run deliverability pack to probe DNS, PTR, Port 25, DNSBL.',
-                    })}
+                      defaultValue: 'Click Run deliverability pack to probe DNS, PTR, Port 25, DNSBL.' })}
                   />
                 )}
               </CardSection>
@@ -1458,8 +1411,7 @@ export function EmailDomainPage() {
                         username: relayUser || undefined,
                         password: relayPass || undefined,
                         security: 'starttls',
-                        applySystem: relayApplySystem,
-                      },
+                        applySystem: relayApplySystem },
                       setRelayLog,
                     )}
                   >
@@ -1684,8 +1636,7 @@ export function EmailDomainPage() {
                         adminLocalPart: 'postmaster',
                         adminPassword: bootstrapPassword.trim(),
                         installPackages: true,
-                        webmail: true,
-                      },
+                        webmail: true },
                       setWebmailLog,
                       load,
                     )}
@@ -1737,8 +1688,7 @@ export function EmailDomainPage() {
                       () =>
                         emailApi.webmailApply({
                           domain: webmailDomain,
-                          download: true,
-                        }),
+                          download: true }),
                       setWebmailLog,
                     )}
                   >

@@ -24,8 +24,7 @@ import {
   ServerListFilters,
   SoftwareInstallBanner,
   FormHint,
-  CheckboxField,
-} from '../../shared/components/ui';
+  CheckboxField } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
@@ -65,8 +64,7 @@ export function PostgresPage() {
       name,
       createUser,
       username: createUser ? username || name : undefined,
-      password: createUser ? password : undefined,
-    });
+      password: createUser ? password : undefined });
     setCreateOpen(false);
     setName('');
     setUsername('');
@@ -98,27 +96,22 @@ export function PostgresPage() {
       status={{
         pill: {
           label: svc?.activeLabel ?? (installed ? t('common.installed') : t('db.notInstalledShort')),
-          tone: running ? 'ok' : installed ? 'warn' : 'danger',
-        },
+          tone: running ? 'ok' : installed ? 'warn' : 'danger' },
         items: [
           {
             label: t('common.status'),
             value: svc?.activeLabel ?? '—',
-            tone: running ? 'ok' : installed ? 'warn' : 'danger',
-          },
+            tone: running ? 'ok' : installed ? 'warn' : 'danger' },
           {
             label: 'EXECUTE',
             value: svc?.executeEnabled ? t('common.on') : t('common.off'),
-            tone: svc?.executeEnabled ? 'ok' : 'warn',
-          },
+            tone: svc?.executeEnabled ? 'ok' : 'warn' },
           {
             label: 'Root',
             value: svc?.isRoot ? t('common.yes') : t('common.no'),
-            tone: svc?.isRoot ? 'ok' : 'warn',
-          },
+            tone: svc?.isRoot ? 'ok' : 'warn' },
           { label: t('common.database'), value: dbs.items.length },
-        ],
-      }}
+        ] }}
       actions={<ActionBar>
           <Link to="/databases/postgres/service">
             <Button variant="secondary" size="sm">
@@ -165,14 +158,12 @@ export function PostgresPage() {
                   <Badge tone={running ? 'ok' : installed ? 'warn' : 'danger'}>
                     {svc?.activeLabel ?? '—'}
                   </Badge>
-                ),
-              },
+                ) },
               { label: t('common.version'), value: svc?.version ?? '—' },
               { label: 'unit', value: svc?.unit ?? 'postgresql' },
               {
                 label: t('db.systemChange'),
-                value: svc?.executeEnabled ? t('db.opened') : t('db.notOpened'),
-              },
+                value: svc?.executeEnabled ? t('db.opened') : t('db.notOpened') },
             ]}
           />
           {svc?.blockMessage ? (
@@ -223,8 +214,7 @@ export function PostgresPage() {
               {
                 key: 'status',
                 header: t('common.status'),
-                render: (r) => <ResourceStatusBadge status={String(r.apply_status)} />,
-              },
+                render: (r) => <ResourceStatusBadge status={String(r.apply_status)} /> },
               {
                 key: 'updated',
                 header: t('updates.badgeUpdate'),
@@ -232,8 +222,7 @@ export function PostgresPage() {
                   <span className="muted u-nowrap">
                     {String(r.updated_at ?? '').slice(0, 19).replace('T', ' ') || '—'}
                   </span>
-                ),
-              },
+                ) },
             ]}
             rows={dbs.items}
             empty={

@@ -460,5 +460,7 @@
   "nodePathUnsafeTitle": "Node 路径不安全",
   "nodePathUnsafe": "当前路径 {{path}} 不在受管目录；项目部署可能失败。",
   "recordedButProbeEmpty": "控制面曾记录安装 {{v}}，但主机探测未见可执行文件。不算已安装——请「重新探测」或重新安装。",
-  "tabTuning": "调校"
+  "tabTuning": "调校",
+  "versionPlaceholder": "載入最新版本中，或手動輸入",
+  "pluginsBundleWithRuntime": "選定工具會隨下方「安裝 runtime」一併安裝（只有一個安裝按鈕）。"
 }

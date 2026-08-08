@@ -7,8 +7,7 @@ import userEvent from '@testing-library/user-event';
 import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
-  type FetchRoute,
-} from '../test/mock-fetch';
+  type FetchRoute } from '../test/mock-fetch';
 import { authStore } from '../shared/stores/auth-store';
 import { useUpdates } from './updates/useUpdates';
 import { useSslCertificates } from './ssl/useSslCertificates';
@@ -41,8 +40,7 @@ describe('feature hooks coverage', () => {
             {
               packageName: 'nginx',
               currentVersion: '1.0',
-              candidateVersion: '1.1',
-            },
+              candidateVersion: '1.1' },
           ],
           advice: [
             {
@@ -53,13 +51,10 @@ describe('feature hooks coverage', () => {
               risk: 'medium',
               cves: [],
               requiresApproval: false,
-              summary: 'bump',
-            },
+              summary: 'bump' },
           ],
           collectedAt: new Date().toISOString(),
-          meta: { notes: ['ok'] },
-        },
-      },
+          meta: { notes: ['ok'] } } },
       {
         match: (url) => url.startsWith('/api/v1/updates/inventory'),
         body: {
@@ -69,8 +64,7 @@ describe('feature hooks coverage', () => {
               currentVersion: '1.0',
               candidateVersion: '1.1',
               risk: 'medium',
-              needsApproval: false,
-            },
+              needsApproval: false },
           ],
           advice: [
             {
@@ -81,21 +75,16 @@ describe('feature hooks coverage', () => {
               risk: 'medium',
               cves: ['CVE-1'],
               requiresApproval: false,
-              summary: 'bump',
-            },
+              summary: 'bump' },
           ],
           collectedAt: new Date().toISOString(),
-          listMeta: { total: 1 },
-        },
-      },
+          listMeta: { total: 1 } } },
       {
         match: (url) => url.startsWith('/api/v1/updates/apply'),
-        body: HONESTY_WRITTEN_BLOCKED,
-      },
+        body: HONESTY_WRITTEN_BLOCKED },
       {
         match: (url) => url.startsWith('/api/v1/updates/self/apply'),
-        body: { ok: true, applied: false, notes: ['up to date'] },
-      },
+        body: { ok: true, applied: false, notes: ['up to date'] } },
       {
         match: (url) => url.startsWith('/api/v1/updates/self'),
         body: {
@@ -104,17 +93,13 @@ describe('feature hooks coverage', () => {
             checked: true,
             updateAvailable: true,
             currentVersion: '0.1.0',
-            latestVersion: '0.2.0',
-          },
+            latestVersion: '0.2.0' },
           currentVersion: '0.1.0',
           latestVersion: '0.2.0',
-          updateAvailable: true,
-        },
-      },
+          updateAvailable: true } },
       {
         match: /\/api\/v1\/scheduler/,
-        body: { jobs: [{ id: 'j1', name: 'scan', next: new Date().toISOString() }] },
-      },
+        body: { jobs: [{ id: 'j1', name: 'scan', next: new Date().toISOString() }] } },
       catchAll,
     ]);
     const { result } = renderHook(() => useUpdates());
@@ -151,16 +136,12 @@ describe('feature hooks coverage', () => {
                 domain: 'example.com',
                 expiresAt: new Date(Date.now() + 86400000 * 40).toISOString(),
                 issuer: "Let's Encrypt",
-                apply_status: 'planned',
-              },
-            ],
-          };
-        },
-      },
+                apply_status: 'planned' },
+            ] };
+        } },
       {
         match: (url) => url.startsWith('/api/v1/ssl/upload'),
-        body: { certificate: { id: 'c2', domain: 'x.com' } },
-      },
+        body: { certificate: { id: 'c2', domain: 'x.com' } } },
       {
         match: (url) =>
           url.startsWith('/api/v1/ssl/letsencrypt') || url.startsWith('/api/v1/system/ssl/apply'),
@@ -169,9 +150,7 @@ describe('feature hooks coverage', () => {
           ok: true,
           notes: ['written'],
           steps: [{ name: 'issue', status: 'blocked', detail: 'need execute' }],
-          certificate: { id: 'c3', domain: 'le.example.com' },
-        },
-      },
+          certificate: { id: 'c3', domain: 'le.example.com' } } },
       {
         match: (url) => url.startsWith('/api/v1/ssl/bindings'),
         body: {
@@ -180,13 +159,10 @@ describe('feature hooks coverage', () => {
               id: 'c1',
               domain: 'example.com',
               projects: [{ id: 'p1', name: 'Demo' }],
-              mailDomains: [],
-            },
+              mailDomains: [] },
           ],
           renewJobs: [],
-          notes: [],
-        },
-      },
+          notes: [] } },
       catchAll,
     ]);
     const { result } = renderHook(() => useSslCertificates());
@@ -232,25 +208,20 @@ describe('feature hooks coverage', () => {
                   ok: false,
                   blocked: true,
                   blockMessage: 'Host execute is off',
-                  notes: ['need root'],
-                },
-              ],
-            };
+                  notes: ['need root'] },
+              ] };
           }
           if (ready) {
             return {
               items: [{ id: 'nginx', title: 'nginx', installed: true }],
               missing: [],
-              ready: true,
-            };
+              ready: true };
           }
           return {
             items: [{ id: 'nginx', title: 'nginx', installed: false }],
             missing: [{ id: 'nginx', title: 'nginx', installed: false }],
-            ready: false,
-          };
-        },
-      },
+            ready: false };
+        } },
       catchAll,
     ]);
 
@@ -295,16 +266,12 @@ describe('feature hooks coverage', () => {
                 title: 'Play',
                 status: 'pending',
                 createdAt: new Date().toISOString(),
-                steps: [{ id: 's1', title: 'Step', status: 'pending' }],
-              },
-            };
+                steps: [{ id: 's1', title: 'Step', status: 'pending' }] } };
           }
           if (url.includes('runs')) return { items: [{ id: 'r1', playbookId: 'pb1' }] };
           return {
-            items: [{ id: 'pb1', name: 'Health check', description: 'd' }],
-          };
-        },
-      },
+            items: [{ id: 'pb1', name: 'Health check', description: 'd' }] };
+        } },
       {
         match: (url) => url.startsWith('/api/v1/ai/tasks'),
         handler: (url, init) => {
@@ -316,8 +283,7 @@ describe('feature hooks coverage', () => {
               status: 'pending',
               createdAt: new Date().toISOString(),
               steps: [{ id: 's1', title: 'Plan', status: 'pending' }],
-              prompt: 'hi',
-            };
+              prompt: 'hi' };
           }
           if (method !== 'GET') {
             return {
@@ -325,8 +291,7 @@ describe('feature hooks coverage', () => {
               title: 'New',
               status: 'running',
               createdAt: new Date().toISOString(),
-              steps: [{ id: 's1', title: 'Plan', status: 'completed' }],
-            };
+              steps: [{ id: 's1', title: 'Plan', status: 'completed' }] };
           }
           return {
             items: [
@@ -336,12 +301,9 @@ describe('feature hooks coverage', () => {
                 status: 'pending',
                 createdAt: new Date().toISOString(),
                 steps: [{ id: 's1', title: 'Plan', status: 'pending' }],
-                prompt: 'x',
-              },
-            ],
-          };
-        },
-      },
+                prompt: 'x' },
+            ] };
+        } },
       catchAll,
     ]);
     const { result } = renderHook(() => useAiTasks());
@@ -387,10 +349,8 @@ describe('feature hooks coverage', () => {
               { name: 'd', path: 'd', type: 'dir', size: 0, mtime: now },
             ],
             path: '/',
-            root: 'public',
-          };
-        },
-      },
+            root: 'public' };
+        } },
       catchAll,
     ]);
     const { result } = renderHook(() => useFiles());
@@ -429,12 +389,10 @@ describe('feature hooks coverage', () => {
               domain: 'example.com',
               records: [{ type: 'MX', name: '@', value: 'mail' }],
               externalTodos: [],
-              health: { score: 1, maxScore: 1, messages: [] },
-            };
+              health: { score: 1, maxScore: 1, messages: [] } };
           }
           return { items: [{ id: 'dom-1', domain: 'example.com' }] };
-        },
-      },
+        } },
       catchAll,
     ]);
     const { result } = renderHook(() => useEmailDomains());
@@ -470,12 +428,9 @@ describe('feature hooks coverage', () => {
                 agent_id: 'ag-1',
                 status: 'connected',
                 group: 'g',
-                last_seen_at: new Date().toISOString(),
-              },
-            ],
-          };
-        },
-      },
+                last_seen_at: new Date().toISOString() },
+            ] };
+        } },
       {
         match: /\/api\/v1\/agents\//,
         handler: (_u, init) => {
@@ -485,8 +440,7 @@ describe('feature hooks coverage', () => {
               requiresExecute: true,
               notes: ['Host execute is off'],
               kind: 'openclaw',
-              status: 'missing',
-            };
+              status: 'missing' };
           }
           return {
             items: [
@@ -498,8 +452,7 @@ describe('feature hooks coverage', () => {
                 unitActive: 'inactive',
                 pathExists: false,
                 installPath: '/opt/o',
-                probedAt: new Date().toISOString(),
-              },
+                probedAt: new Date().toISOString() },
             ],
             runtime: {
               kind: 'openclaw',
@@ -509,11 +462,8 @@ describe('feature hooks coverage', () => {
               unitActive: 'inactive',
               pathExists: false,
               installPath: '/opt/o',
-              probedAt: new Date().toISOString(),
-            },
-          };
-        },
-      },
+              probedAt: new Date().toISOString() } };
+        } },
       {
         match: /\/api\/v1\/resources\//,
         handler: (_u, init) => {
@@ -522,10 +472,8 @@ describe('feature hooks coverage', () => {
           }
           return {
             items: [{ id: 'z1', zone: 'a.com', apply_status: 'planned' }],
-            meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-          };
-        },
-      },
+            meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } };
+        } },
       {
         match: /\/api\/v1\/projects/,
         handler: (_u, init) => {
@@ -539,12 +487,9 @@ describe('feature hooks coverage', () => {
                 name: 'Demo',
                 domain: 'demo.example.com',
                 runtime: 'node',
-                processStatus: 'stopped',
-              },
-            ],
-          };
-        },
-      },
+                processStatus: 'stopped' },
+            ] };
+        } },
       catchAll,
     ]);
 

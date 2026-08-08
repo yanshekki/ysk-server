@@ -24,8 +24,7 @@ import {
   PresetChips,
   SegRadio,
   ServerListFilters,
-  buttonClassName,
-} from '../../shared/components/ui';
+  buttonClassName } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 
 const DNS_TABS = ['zones', 'records', 'cluster', 'dnssec', 'tools', 'about'] as const;
@@ -97,8 +96,7 @@ export function mapRecordsForValidate(
     type: String(r.type ?? ''),
     name: String(r.name ?? '@'),
     value: String(r.value ?? ''),
-    ttl: parseDnsTtl(r.ttl as string | number | undefined),
-  }));
+    ttl: parseDnsTtl(r.ttl as string | number | undefined) }));
 }
 
 /** Build human message from DNS validate API issues/notes. */
@@ -224,8 +222,7 @@ export function DnsPage() {
       soaRefresh: parseDnsTtl(editSoaRefresh),
       soaRetry: parseDnsTtl(editSoaRetry),
       soaExpire: parseDnsTtl(editSoaExpire),
-      soaMinimum: parseDnsTtl(editSoaMinimum),
-    };
+      soaMinimum: parseDnsTtl(editSoaMinimum) };
   }
 
   async function onDnssec(zoneName: string) {
@@ -242,8 +239,7 @@ export function DnsPage() {
         files?: string[];
       }>(`/api/v1/dns/zones/${encodeURIComponent(zoneName)}/dnssec`, {
         method: 'POST',
-        body: '{}',
-      });
+        body: '{}' });
       setDnssecNotes(r.notes ?? []);
       setDnssecDs(r.dsRecord ?? null);
       setDnssecMsg(
@@ -271,8 +267,7 @@ export function DnsPage() {
       backend: 'bind',
       template,
       nsName: soaNs.trim() || undefined,
-      ttl: parseDnsTtl(soaTtl),
-    });
+      ttl: parseDnsTtl(soaTtl) });
     setZoneOpen(false);
     setSelectedZone(item);
     setZone('');
@@ -303,10 +298,8 @@ export function DnsPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(bearer ? { Authorization: `Bearer ${bearer}` } : {}),
-        },
-        body: JSON.stringify(body),
-      });
+          ...(bearer ? { Authorization: `Bearer ${bearer}` } : {}) },
+        body: JSON.stringify(body) });
       const r = (await res.json().catch(() => ({}))) as {
         ok?: boolean;
         apply_status?: string;
@@ -344,8 +337,7 @@ export function DnsPage() {
       type: rtype,
       name: rname,
       value: val,
-      ttl: parseDnsTtl(rttl),
-    };
+      ttl: parseDnsTtl(rttl) };
     // Server-side validation (honest); also check set conflicts with existing
     try {
       const existing = mapRecordsForValidate(records.items);
@@ -359,9 +351,7 @@ export function DnsPage() {
       }>('/api/v1/dns/validate', {
         method: 'POST',
         body: JSON.stringify({
-          records: [...withoutEdit, body],
-        }),
-      });
+          records: [...withoutEdit, body] }) });
       if (!check.ok) {
         setValidateMsg(formatDnsValidateMessage(check, t('dns.validateFailed')));
         return;
@@ -394,16 +384,13 @@ export function DnsPage() {
         body: JSON.stringify({
           name: lookupName.trim(),
           type: lookupType,
-          server: lookupServer.trim() || undefined,
-        }),
-      });
+          server: lookupServer.trim() || undefined }) });
       setLookupResult(r);
     } catch (err) {
       setLookupResult({
         ok: false,
         answers: [],
-        notes: [err instanceof Error ? err.message : t('dns.lookupFailed')],
-      });
+        notes: [err instanceof Error ? err.message : t('dns.lookupFailed')] });
     } finally {
       setLookupBusy(false);
     }
@@ -454,26 +441,22 @@ export function DnsPage() {
               ? t('dns.healthPillOk')
               : t('dns.healthPillBad')
             : `${zones.items.length} zones`,
-          tone: health ? (health.ok ? 'ok' : 'danger') : zones.items.length ? 'ok' : 'warn',
-        },
+          tone: health ? (health.ok ? 'ok' : 'danger') : zones.items.length ? 'ok' : 'warn' },
         items: [
           {
             label: t('dns.healthService'),
             value: health?.unitActive ? health.unit : t('dns.healthServiceDown'),
-            tone: health?.unitActive ? 'ok' : 'danger',
-          },
+            tone: health?.unitActive ? 'ok' : 'danger' },
           {
             label: t('dns.healthListen'),
             value: health
               ? `UDP${health.listenUdp53 ? '✓' : '×'} TCP${health.listenTcp53 ? '✓' : '×'}`
               : '—',
-            tone: health?.listenUdp53 || health?.listenTcp53 ? 'ok' : 'danger',
-          },
+            tone: health?.listenUdp53 || health?.listenTcp53 ? 'ok' : 'danger' },
           {
             label: t('dns.healthWritten'),
             value: health ? String(health.zoneFiles) : zones.items.length,
-            tone: (health?.zoneFiles ?? 0) > 0 ? 'ok' : 'warn',
-          },
+            tone: (health?.zoneFiles ?? 0) > 0 ? 'ok' : 'warn' },
           {
             label: t('dns.healthLoaded', { defaultValue: 'Loaded' }),
             value:
@@ -487,8 +470,7 @@ export function DnsPage() {
                   ? 'danger'
                   : health.pdnsZoneCount > 0
                     ? 'ok'
-                    : 'warn',
-          },
+                    : 'warn' },
           {
             label: t('dns.healthAnswering'),
             value:
@@ -504,8 +486,7 @@ export function DnsPage() {
                 ? 'ok'
                 : health?.answeringLocal === false
                   ? 'danger'
-                  : undefined,
-          },
+                  : undefined },
           {
             label: t('dns.healthPublicNs', { defaultValue: 'Public NS' }),
             value:
@@ -517,10 +498,8 @@ export function DnsPage() {
                 ? 'ok'
                 : health?.publicNs && health.publicNs.length
                   ? 'warn'
-                  : undefined,
-          },
-        ],
-      }}
+                  : undefined },
+        ] }}
       actions={
         <>
           <Button
@@ -634,8 +613,7 @@ export function DnsPage() {
                     }>('/api/v1/hosting/dns/powerdns/heal', {
                       method: 'POST',
                       body: '{}',
-                      allowStatuses: [403, 422],
-                    })
+                      allowStatuses: [403, 422] })
                     .then((r) => {
                       if (r.blocked) {
                         toast.warn(r.blockMessage ?? r.notes?.[0] ?? t('dns.healthHealPdnsFailed'));
@@ -647,8 +625,7 @@ export function DnsPage() {
                       } else {
                         toast.ok(
                           t('dns.healthHealPdnsOk', {
-                            ip: r.localAddress ?? '—',
-                          }),
+                            ip: r.localAddress ?? '—' }),
                           { detail: r.notes?.slice(0, 3).join('\n') },
                         );
                       }
@@ -740,8 +717,7 @@ export function DnsPage() {
           {
             id: 'records',
             label: t('dns.tabs.records'),
-            badge: selectedLive ? records.items.length || undefined : undefined,
-          },
+            badge: selectedLive ? records.items.length || undefined : undefined },
           { id: 'cluster', label: t('dns.tabs.cluster'), badge: peers.length || undefined },
           { id: 'dnssec', label: t('dns.tabs.dnssec') },
           { id: 'tools', label: t('dns.tabs.tools') },
@@ -806,19 +782,16 @@ export function DnsPage() {
                         >
                           <strong>{String(r.zone)}</strong>
                         </button>
-                      ),
-                    },
+                      ) },
                     { key: 'ip', header: t('dns.colServerIp'), render: (r) => String(r.serverIp ?? '—') },
                     {
                       key: 'tpl',
                       header: t('dns.colTemplate'),
-                      render: (r) => String(r.template ?? 'full'),
-                    },
+                      render: (r) => String(r.template ?? 'full') },
                     {
                       key: 'status',
                       header: t('dns.colStatus'),
-                      render: (r) => <ResourceStatusBadge status={String(r.apply_status)} />,
-                    },
+                      render: (r) => <ResourceStatusBadge status={String(r.apply_status)} /> },
                   ]}
                   rows={zones.items}
                   empty={
@@ -1183,30 +1156,26 @@ export function DnsPage() {
                                 {ty}
                               </span>
                             );
-                          },
-                        },
+                          } },
                         {
                           key: 'name',
                           header: t('dns.colName'),
                           render: (r) => (
                             <span className="dns-zone__rec-name">{String(r.name)}</span>
-                          ),
-                        },
+                          ) },
                         {
                           key: 'value',
                           header: t('dns.colValue'),
                           render: (r) => (
                             <span className="dns-zone__rec-value">{String(r.value)}</span>
-                          ),
-                        },
+                          ) },
                         {
                           key: 'ttl',
                           header: 'TTL',
                           nowrap: true,
                           render: (r) => (
                             <span className="dns-zone__rec-ttl">{String(r.ttl ?? 300)}</span>
-                          ),
-                        },
+                          ) },
                       ]}
                       rows={records.items}
                       rowKey={(r) => String((r as { id?: string }).id ?? '')}
@@ -1323,9 +1292,7 @@ export function DnsPage() {
                             host: peerHost.trim(),
                             username: peerUser.trim() || 'root',
                             path: '/var/lib/ysk/dns/zones',
-                            label: peerLabel.trim() || undefined,
-                          }),
-                        })
+                            label: peerLabel.trim() || undefined }) })
                         .then(() => {
                           setPeerHost('');
                           setPeerLabel('');
@@ -1819,8 +1786,7 @@ export function DnsPage() {
                 onChange={bindValueSet(setTemplate as (v: string) => void)}
                 options={ZONE_TEMPLATE_IDS.map((id) => ({
                   value: id,
-                  label: t(`dns.templates.${id}`),
-                }))}
+                  label: t(`dns.templates.${id}`) }))}
               />
             </Field>
           </FormLayout>
@@ -1856,8 +1822,7 @@ export function DnsPage() {
                 onChange={setRtype}
                 options={['A', 'AAAA', 'CNAME', 'MX', 'TXT', 'NS'].map((t) => ({
                   value: t,
-                  label: t,
-                }))}
+                  label: t }))}
               />
             </Field>
             <Field

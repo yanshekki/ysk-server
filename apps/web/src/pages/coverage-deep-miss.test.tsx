@@ -11,8 +11,7 @@ import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
   softwareReadyRoute,
-  type FetchRoute,
-} from '../test/mock-fetch';
+  type FetchRoute } from '../test/mock-fetch';
 import { authStore } from '../shared/stores/auth-store';
 
 import { FilesPage } from './FilesPage';
@@ -81,71 +80,62 @@ function fileEntries() {
       size: 512,
       mtime: t,
       mime: 'text/plain',
-      favorite: true,
-    },
+      favorite: true },
     {
       name: 'photo.png',
       path: 'photo.png',
       type: 'file' as const,
       size: 2048,
       mtime: t,
-      mime: 'image/png',
-    },
+      mime: 'image/png' },
     {
       name: 'doc.pdf',
       path: 'doc.pdf',
       type: 'file' as const,
       size: 1024 * 50,
       mtime: t,
-      mime: 'application/pdf',
-    },
+      mime: 'application/pdf' },
     {
       name: 'clip.mp4',
       path: 'clip.mp4',
       type: 'file' as const,
       size: 1024 * 1024 * 3,
       mtime: t,
-      mime: 'video/mp4',
-    },
+      mime: 'video/mp4' },
     {
       name: 'song.mp3',
       path: 'song.mp3',
       type: 'file' as const,
       size: 1024 * 400,
       mtime: t,
-      mime: 'audio/mpeg',
-    },
+      mime: 'audio/mpeg' },
     {
       name: 'data.json',
       path: 'data.json',
       type: 'file' as const,
       size: 88,
       mtime: t,
-      mime: 'application/json',
-    },
+      mime: 'application/json' },
     {
       name: 'bundle.zip',
       path: 'bundle.zip',
       type: 'file' as const,
       size: 1024 * 1024 * 12,
       mtime: t,
-      mime: 'application/zip',
-    },
+      mime: 'application/zip' },
     {
       name: 'bin.dat',
       path: 'bin.dat',
       type: 'file' as const,
       size: 42,
       mtime: t,
-      mime: 'application/octet-stream',
-    },
+      mime: 'application/octet-stream' },
     {
       name: 'docs',
       path: 'docs',
       type: 'dir' as const,
       size: 0,
-      mtime: t,
-    },
+      mtime: t },
   ];
 }
 
@@ -174,10 +164,8 @@ function filesRoutes(): FetchRoute[] {
                 path: 'readme.txt',
                 token: 'tok-new',
                 url: '/api/v1/public/files/tok-new',
-                createdAt: t,
-              },
-              notes: ['share created'],
-            };
+                createdAt: t },
+              notes: ['share created'] };
           }
           if (url.includes('versions/restore')) {
             return { ok: true, notes: ['restored'] };
@@ -198,8 +186,7 @@ function filesRoutes(): FetchRoute[] {
               tokenId: 'wd1',
               mountPath: '/webdav',
               notes: ['token issued'],
-              enabled: true,
-            };
+              enabled: true };
           }
           return { ...HONESTY_WRITTEN_BLOCKED, ok: true, path: 'x', favorited: true };
         }
@@ -217,10 +204,8 @@ function filesRoutes(): FetchRoute[] {
                 type: 'file',
                 size: 9,
                 deletedAt: t,
-                mtime: t,
-              },
-            ],
-          };
+                mtime: t },
+            ] };
         }
         if (url.includes('shares')) {
           return {
@@ -230,10 +215,8 @@ function filesRoutes(): FetchRoute[] {
                 path: 'readme.txt',
                 token: 'tok1',
                 createdAt: t,
-                expiresAt: null,
-              },
-            ],
-          };
+                expiresAt: null },
+            ] };
         }
         if (url.includes('versions')) {
           return {
@@ -241,8 +224,7 @@ function filesRoutes(): FetchRoute[] {
             items: [
               { id: 'v1', path: 'readme.txt', createdAt: t, bytes: 100 },
               { id: 'v2', path: 'readme.txt', createdAt: t, bytes: 1024 * 2000 },
-            ],
-          };
+            ] };
         }
         if (url.includes('favorites')) {
           return { items: [{ root: 'public', path: 'readme.txt' }] };
@@ -256,14 +238,11 @@ function filesRoutes(): FetchRoute[] {
           root: 'public',
           usage: { bytes: 1024 * 1024 * 1024 * 2.5, fileCount: 8, dirCount: 1 },
           entries,
-          items: entries,
-        };
-      },
-    },
+          items: entries };
+      } },
     {
       match: /\/api\/v1\/projects/,
-      body: { items: [{ id: 'p1', name: 'Demo' }] },
-    },
+      body: { items: [{ id: 'p1', name: 'Demo' }] } },
     { match: /.*/, body: { ok: true, items: [], ready: true, missing: [] } },
   ];
 }
@@ -292,15 +271,13 @@ function defenseRich(): FetchRoute[] {
           items: [
             { ip: '203.0.113.10', source: 'fail2ban', jail: 'sshd', reason: 'auth' },
             { ip: '198.51.100.1', source: 'ufw' },
-          ],
-        },
+          ] },
         nginxLimits: {
           reqRate: '10r/s',
           burst: 20,
           connLimit: 40,
           confPath: '/etc/nginx/conf.d/d.conf',
-          exists: true,
-        },
+          exists: true },
         firewall: { active: 'active', installed: true },
         fail2ban: { active: 'active', installed: true, jails: 2 },
         autoBan: {
@@ -309,8 +286,7 @@ function defenseRich(): FetchRoute[] {
           method: 'fail2ban',
           cooldownMinutes: 30,
           maxAutoBansPerHour: 20,
-          whitelist: ['127.0.0.1'],
-        },
+          whitelist: ['127.0.0.1'] },
         executeEnabled: false,
         isRoot: false,
         suggestions: [{ id: 's1', title: 'Apply', body: 'x', action: 'preset:daily' }],
@@ -320,9 +296,7 @@ function defenseRich(): FetchRoute[] {
           'Wrote jail.local fail2ban',
           'a'.repeat(130) + ' /home/user/path/extra',
           'plain note',
-        ],
-      },
-    },
+        ] } },
     {
       match: (url) => url.startsWith('/api/v1/defense/geoip/status'),
       body: {
@@ -344,14 +318,11 @@ function defenseRich(): FetchRoute[] {
           cityPolicyEnabled: true,
           asns: ['13335'],
           enforce: { autoBan: true, nginx: true, ufw: false },
-          autoUpdate: true,
-        },
+          autoUpdate: true },
         sources: [
           { filename: 'dbip-city.mmdb', present: true, mtime: t, bytes: 1000 },
         ],
-        meta: { lastSuccessAt: t },
-      },
-    },
+        meta: { lastSuccessAt: t } } },
     {
       match: (url) => url.startsWith('/api/v1/defense/automation'),
       body: {
@@ -364,8 +335,7 @@ function defenseRich(): FetchRoute[] {
             suggestEmergencyAt: 90,
             deescalateEnabled: true,
             deescalateToDailyBelow: 20,
-            holdMinutes: 30,
-          },
+            holdMinutes: 30 },
           autoBan: {
             enabled: true,
             mode: 'normal',
@@ -377,12 +347,8 @@ function defenseRich(): FetchRoute[] {
             cooldownMinutes: 30,
             maxAutoBansPerHour: 20,
             intervalSeconds: 60,
-            whitelist: ['10.0.0.1'],
-          },
-        },
-        mechanisms: [{ step: '1', mechanism: 'fail2ban', tunable: 'bantime' }],
-      },
-    },
+            whitelist: ['10.0.0.1'] } },
+        mechanisms: [{ step: '1', mechanism: 'fail2ban', tunable: 'bantime' }] } },
     {
       match: (url) => url.startsWith('/api/v1/defense/suspects'),
       body: {
@@ -393,12 +359,9 @@ function defenseRich(): FetchRoute[] {
             hits: 100,
             reasons: ['scan'],
             sources: ['nginx'],
-            lastSeen: t,
-          },
+            lastSeen: t },
         ],
-        notes: [],
-      },
-    },
+        notes: [] } },
     {
       match: (url) => url.includes('/api/v1/defense/geoip/lookup'),
       body: {
@@ -415,11 +378,8 @@ function defenseRich(): FetchRoute[] {
           longitude: -74.0,
           asn: '13335',
           asName: 'Cloudflare',
-          source: 'dbip',
-        },
-        access: { blocked: false, matched: ['country'] },
-      },
-    },
+          source: 'dbip' },
+        access: { blocked: false, matched: ['country'] } } },
     {
       match: /\/api\/v1\/defense/,
       body: {
@@ -428,13 +388,10 @@ function defenseRich(): FetchRoute[] {
           'YSK_EXECUTE blocked',
           'Wrote nginx /home/x/00-ysk-defense',
           'Wrote jail.local fail2ban',
-        ],
-      },
-    },
+        ] } },
     {
       match: /\/api\/v1\/system\//,
-      body: { installed: true, active: 'active', rules: [], jails: [], banned: [] },
-    },
+      body: { installed: true, active: 'active', rules: [], jails: [], banned: [] } },
     { match: /.*/, body: { ok: true, items: [] } },
   ];
 }
@@ -463,8 +420,7 @@ function phpIniCatalog() {
           options: [
             { value: 'E_ALL', label: 'E_ALL' },
             { value: '0', label: 'Off' },
-          ],
-        },
+          ] },
         {
           key: 'date.timezone',
           label: 'Timezone',
@@ -472,14 +428,11 @@ function phpIniCatalog() {
           default: 'UTC',
           options: Array.from({ length: 12 }, (_, i) => ({
             value: `TZ${i}`,
-            label: `Zone ${i}`,
-          })),
-        },
+            label: `Zone ${i}` })) },
         { key: 'auto_prepend_file', label: 'Prepend', type: 'textarea', default: '' },
         { key: 'custom_str', label: 'Custom', type: 'string', default: 'x' },
         { key: 'weird_int', label: 'Weird', type: 'int', default: 1 },
-      ],
-    },
+      ] },
     {
       id: 'opcache',
       title: 'OPcache',
@@ -489,18 +442,15 @@ function phpIniCatalog() {
           key: 'opcache.interned_strings_buffer',
           label: 'Interned',
           type: 'int',
-          default: 16,
-        },
+          default: 16 },
         {
           key: 'opcache.max_accelerated_files',
           label: 'Max files',
           type: 'int',
-          default: 10000,
-        },
+          default: 10000 },
         { key: 'opcache.revalidate_freq', label: 'Revalidate', type: 'int', default: 2 },
         { key: 'opcache.enable', label: 'Enable', type: 'bool', default: true, danger: true },
-      ],
-    },
+      ] },
   ];
 }
 
@@ -512,8 +462,7 @@ describe('deep-miss coverage attacks', () => {
     try {
       Object.defineProperty(navigator, 'clipboard', {
         configurable: true,
-        value: { writeText: vi.fn().mockResolvedValue(undefined) },
-      });
+        value: { writeText: vi.fn().mockResolvedValue(undefined) } });
     } catch {
       /* happy-dom may already define clipboard */
     }
@@ -730,17 +679,13 @@ describe('deep-miss coverage attacks', () => {
                   memory_limit: '256M',
                   max_execution_time: 30,
                   display_errors: false,
-                  'opcache.enable': true,
-                },
+                  'opcache.enable': true },
                 extra: { variables_order: 'GPCS' },
                 rawAppend: '; custom',
-                updatedAt: now(),
-              },
+                updatedAt: now() },
               managedIniPath: '/etc/php/8.2/fpm/conf.d/99-ysk.ini',
-              notes: [],
-            };
-          },
-        },
+              notes: [] };
+          } },
         {
           match: (url) =>
             url.includes('/hosting/runtimes') ||
@@ -754,22 +699,17 @@ describe('deep-miss coverage attacks', () => {
               composer: { available: true, version: '2.7' },
               wpCli: { available: false },
               notes: ['probed'],
-              ok: true,
-            };
-          },
-        },
+              ok: true };
+          } },
         {
           match: (url) => url.includes('/runtimes/tools'),
           body: {
             php: {
               version: '8.2.0',
-              modules: Array.from({ length: 45 }, (_, i) => `mod${i}`),
-            },
+              modules: Array.from({ length: 45 }, (_, i) => `mod${i}`) },
             composer: { available: true, version: '2.7.1' },
             wpCli: { available: true, version: '2.10' },
-            notes: ['tools ok'],
-          },
-        },
+            notes: ['tools ok'] } },
         { match: /.*/, body: { ok: true, items: [], ready: true, missing: [] } },
       ]);
 
@@ -866,8 +806,7 @@ describe('deep-miss coverage attacks', () => {
                 enabledJobs: 2,
                 totalJobs: 3,
                 hostHasYskEntries: true,
-                notes: ['ok'],
-              };
+                notes: ['ok'] };
             }
             return {
               items: [
@@ -878,20 +817,16 @@ describe('deep-miss coverage attacks', () => {
                   user: 'ysk',
                   projectId: 'p-php',
                   enabled: true,
-                  last_install: { ok: true, at: now() },
-                },
+                  last_install: { ok: true, at: now() } },
                 {
                   id: 'c2',
                   schedule: '0 3 * * *',
                   command: 'cd /home/n/app && npm run cron',
                   user: 'nodeu',
                   project_id: 'p-node',
-                  enabled: false,
-                },
-              ],
-            };
-          },
-        },
+                  enabled: false },
+              ] };
+          } },
         {
           match: /\/api\/v1\/projects/,
           body: {
@@ -901,46 +836,38 @@ describe('deep-miss coverage attacks', () => {
                 name: 'PHP App',
                 linuxUser: 'phpu',
                 homeDir: '/home/phpu',
-                runtime: 'php',
-              },
+                runtime: 'php' },
               {
                 id: 'p-node',
                 name: 'Node App',
                 linuxUser: 'nodeu',
                 homeDir: '/home/nodeu',
-                runtime: 'node',
-              },
+                runtime: 'node' },
               {
                 id: 'p-py',
                 name: 'Py App',
                 linuxUser: 'pyu',
                 homeDir: '/home/pyu',
-                runtime: 'python',
-              },
+                runtime: 'python' },
               {
                 id: 'p-go',
                 name: 'Go App',
                 linuxUser: 'gou',
                 homeDir: '/home/gou',
-                runtime: 'go',
-              },
+                runtime: 'go' },
               {
                 id: 'p-static',
                 name: 'Static',
                 linuxUser: 'statu',
                 homeDir: '/home/statu',
-                runtime: 'static',
-              },
+                runtime: 'static' },
               {
                 id: 'p-none',
                 name: 'No User',
                 linuxUser: '',
                 homeDir: '/home/x',
-                runtime: 'other',
-              },
-            ],
-          },
-        },
+                runtime: 'other' },
+            ] } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -1089,33 +1016,28 @@ describe('deep-miss coverage attacks', () => {
                     label: 'nginx',
                     unit: 'nginx.service',
                     group: 'web',
-                    available: true,
-                  },
+                    available: true },
                   {
                     id: 'file:auth',
                     kind: 'file',
                     label: 'auth.log',
                     group: 'system',
                     available: true,
-                    bytes: 1024 * 900,
-                  },
+                    bytes: 1024 * 900 },
                   {
                     id: 'file:managed:phpu.access.log',
                     kind: 'file',
                     label: 'phpu access',
                     group: 'managed',
                     available: true,
-                    bytes: 2048,
-                  },
+                    bytes: 2048 },
                   {
                     id: 'file:nginx-error',
                     kind: 'file',
                     label: 'nginx error',
                     available: false,
-                    bytes: 0,
-                  },
-                ],
-              };
+                    bytes: 0 },
+                ] };
             }
             if (url.includes('overview')) {
               return {
@@ -1129,8 +1051,7 @@ describe('deep-miss coverage attacks', () => {
                 quickUnits: [
                   { unit: 'ssh.service', label: 'SSH' },
                   { unit: 'fail2ban.service', label: 'Fail2ban' },
-                ],
-              };
+                ] };
             }
             if (url.includes('units')) {
               return {
@@ -1138,8 +1059,7 @@ describe('deep-miss coverage attacks', () => {
                   { unit: 'nginx.service', active: 'active' },
                   { unit: 'ysk-project-x.service', active: 'inactive' },
                   { unit: 'cron.service', active: 'active' },
-                ],
-              };
+                ] };
             }
             if (url.includes('settings')) {
               return {
@@ -1152,8 +1072,7 @@ describe('deep-miss coverage attacks', () => {
                 autoVacuumTime: '03:00',
                 journalWarnMb: 1024,
                 customAllowPaths: ['/var/log/custom.log'],
-                disabledSources: [],
-              };
+                disabledSources: [] };
             }
             if (url.includes('bookmarks')) {
               return {
@@ -1163,10 +1082,8 @@ describe('deep-miss coverage attacks', () => {
                     name: 'nginx errors',
                     source: 'journal:nginx.service',
                     since: '1h',
-                    lines: 100,
-                  },
-                ],
-              };
+                    lines: 100 },
+                ] };
             }
             if (url.includes('projects')) {
               return {
@@ -1181,25 +1098,21 @@ describe('deep-miss coverage attacks', () => {
                     ],
                     related: [
                       { source: 'journal:php8.2-fpm.service', available: true, label: 'fpm' },
-                    ],
-                  },
-                ],
-              };
+                    ] },
+                ] };
             }
             if (url.includes('query') || url.includes('stream')) {
               return {
                 ok: true,
                 lines: ['2024-01-01 error foo', '2024-01-01 info bar'],
                 lineCount: 2,
-                notes: ['ok'],
-              };
+                notes: ['ok'] };
             }
             if (url.includes('export/')) {
               return { ok: true };
             }
             return { ok: true, items: [], lines: [], text: '' };
-          },
-        },
+          } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -1288,23 +1201,20 @@ describe('deep-miss coverage attacks', () => {
                 ...HONESTY_WRITTEN_BLOCKED,
                 ok: true,
                 notes: ['written'],
-                blockMessage: 'need execute',
-              };
+                blockMessage: 'need execute' };
             }
             return {
               ok: true,
               identity: {
                 hostname: 'ysk.example.com',
                 prettyHostname: 'YSK Box',
-                timezone: 'UTC',
-              },
+                timezone: 'UTC' },
               os: {
                 platform: 'linux',
                 arch: 'x64',
                 release: 'Ubuntu 24.04',
                 kernel: '6.8.0',
-                prettyName: 'Ubuntu 24.04',
-              },
+                prettyName: 'Ubuntu 24.04' },
               runtime: {
                 uptimeSec: 86400 * 3,
                 loadavg: [0.5, 0.4, 0.3],
@@ -1312,20 +1222,17 @@ describe('deep-miss coverage attacks', () => {
                 memory: { total: 8e9, free: 5e9, usedRatio: 0.4 },
                 node: 'v20',
                 pid: 1,
-                uid: 0,
-              },
+                uid: 0 },
               time: {
                 utc: now(),
                 local: now(),
                 ntpEnabled: true,
                 ntpSynchronized: true,
-                timeSource: 'ntp',
-              },
+                timeSource: 'ntp' },
               network: {
                 ips: ['10.0.0.5'],
                 interfaces: [{ name: 'eth0', addrs: ['10.0.0.5/24'] }],
-                resolvers: ['1.1.1.1'],
-              },
+                resolvers: ['1.1.1.1'] },
               disks: [
                 {
                   mount: '/',
@@ -1333,8 +1240,7 @@ describe('deep-miss coverage attacks', () => {
                   used: '40G',
                   avail: '60G',
                   usePct: 40,
-                  fstype: 'ext4',
-                },
+                  fstype: 'ext4' },
               ],
               power: { pending: null },
               boot: { defaultTarget: 'multi-user.target' },
@@ -1343,12 +1249,9 @@ describe('deep-miss coverage attacks', () => {
                 isRoot: false,
                 canPower: true,
                 canIdentity: true,
-                canExport: true,
-              },
-              collectedAt: now(),
-            };
-          },
-        },
+                canExport: true },
+              collectedAt: now() };
+          } },
         {
           match: /\/api\/v1\/system\/export/,
           body: {
@@ -1357,13 +1260,10 @@ describe('deep-miss coverage attacks', () => {
             items: [],
             exportedAt: now(),
             counts: { projects: 1 },
-            projects: [{ id: 'p1', name: 'Demo' }],
-          },
-        },
+            projects: [{ id: 'p1', name: 'Demo' }] } },
         {
           match: (url) => url.includes('/power') || url.includes('/reboot'),
-          body: HONESTY_WRITTEN_BLOCKED,
-        },
+          body: HONESTY_WRITTEN_BLOCKED },
         { match: /.*/, body: { ok: true, items: [], ready: true } },
       ]);
 
@@ -1424,8 +1324,7 @@ describe('deep-miss coverage attacks', () => {
           hi: 0,
           si: 0,
           st: 0,
-          busyPct: 15,
-        },
+          busyPct: 15 },
         cpus: [
           {
             us: 10,
@@ -1436,19 +1335,16 @@ describe('deep-miss coverage attacks', () => {
             hi: 0,
             si: 0,
             st: 0,
-            busyPct: 15,
-          },
+            busyPct: 15 },
         ],
         memory: {
           totalKiB: 8e6,
           freeKiB: 1e6,
           usedKiB: 6e6,
           buffCacheKiB: 1e6,
-          availableKiB: 2e6,
-        },
+          availableKiB: 2e6 },
         swap: { totalKiB: 1e6, freeKiB: 9e5, usedKiB: 1e5 },
-        notes: [],
-      };
+        notes: [] };
       installFetchMock([
         softwareReadyRoute(),
         {
@@ -1459,9 +1355,7 @@ describe('deep-miss coverage attacks', () => {
             signal: 'TERM',
             stillAlive: false,
             notes: ['signaled'],
-            requiresExecute: true,
-          },
-        },
+            requiresExecute: true } },
         {
           match: (url) => /\/api\/v1\/metrics\/processes\/\d+/.test(url),
           body: {
@@ -1477,9 +1371,7 @@ describe('deep-miss coverage attacks', () => {
             start: t,
             cmdline: '/usr/sbin/nginx',
             env: ['PATH=/usr/bin'],
-            notes: [],
-          },
-        },
+            notes: [] } },
         {
           match: (url) => url.startsWith('/api/v1/metrics/processes'),
           body: {
@@ -1498,8 +1390,7 @@ describe('deep-miss coverage attacks', () => {
                 state: 'S',
                 etime: '1-00:00',
                 resKiB: 1000,
-                virtKiB: 5000,
-              },
+                virtKiB: 5000 },
               {
                 pid: '42',
                 user: 'www-data',
@@ -1509,8 +1400,7 @@ describe('deep-miss coverage attacks', () => {
                 state: 'S',
                 etime: '01:00',
                 resKiB: 50000,
-                virtKiB: 100000,
-              },
+                virtKiB: 100000 },
               {
                 pid: '99',
                 user: 'alice',
@@ -1520,8 +1410,7 @@ describe('deep-miss coverage attacks', () => {
                 state: 'R',
                 etime: '00:30',
                 resKiB: 20000,
-                virtKiB: 80000,
-              },
+                virtKiB: 80000 },
               {
                 pid: '100',
                 user: 'bob',
@@ -1531,16 +1420,12 @@ describe('deep-miss coverage attacks', () => {
                 state: 'S',
                 etime: '00:10',
                 resKiB: 2000,
-                virtKiB: 4000,
-              },
+                virtKiB: 4000 },
             ],
-            notes: [],
-          },
-        },
+            notes: [] } },
         {
           match: (url) => url.startsWith('/api/v1/metrics/top'),
-          body: topHeader,
-        },
+          body: topHeader },
         {
           match: (url) => url.startsWith('/api/v1/metrics/projects'),
           body: {
@@ -1549,11 +1434,8 @@ describe('deep-miss coverage attacks', () => {
                 projectId: 'p1',
                 name: 'Demo',
                 diskMb: 100,
-                path: '/home/demo',
-              },
-            ],
-          },
-        },
+                path: '/home/demo' },
+            ] } },
         {
           match: (url) => url.startsWith('/api/v1/metrics'),
           body: {
@@ -1567,15 +1449,13 @@ describe('deep-miss coverage attacks', () => {
               used: 7.2e9,
               free: 0.8e9,
               usedRatio: 0.9,
-              available: 1e9,
-            },
+              available: 1e9 },
             disk: {
               path: '/',
               total: 100e9,
               used: 92e9,
               free: 8e9,
-              usedRatio: 0.92,
-            },
+              usedRatio: 0.92 },
             diskMounts: [
               {
                 filesystem: '/dev/sda1',
@@ -1583,21 +1463,17 @@ describe('deep-miss coverage attacks', () => {
                 size: 100e9,
                 used: 92e9,
                 avail: 8e9,
-                usedRatio: 0.92,
-              },
+                usedRatio: 0.92 },
               {
                 filesystem: '/dev/sdb1',
                 mount: '/home',
                 size: 50e9,
                 used: 10e9,
                 avail: 40e9,
-                usedRatio: 0.2,
-              },
+                usedRatio: 0.2 },
             ],
             alerts: ['mem_high'],
-            notes: [],
-          },
-        },
+            notes: [] } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -1669,8 +1545,7 @@ describe('deep-miss coverage attacks', () => {
                 enrolled: true,
                 recoveryCodes: ['aaaa-bbbb', 'cccc-dddd'],
                 token: 'ysk_new_secret',
-                key: { id: 'k2', name: 'ci', prefix: 'ysk_x', created_at: t },
-              };
+                key: { id: 'k2', name: 'ci', prefix: 'ysk_x', created_at: t } };
             }
             if (url.includes('totp')) return { enabled: false, enrolled: false };
             if (url.includes('sessions')) {
@@ -1682,32 +1557,26 @@ describe('deep-miss coverage attacks', () => {
                     expires_at: t,
                     current: true,
                     ip: '1.1.1.1',
-                    user_agent: 'vitest',
-                  },
+                    user_agent: 'vitest' },
                   {
                     id: 's2',
                     created_at: t,
                     expires_at: t,
                     current: false,
-                    ip: '2.2.2.2',
-                  },
-                ],
-              };
+                    ip: '2.2.2.2' },
+                ] };
             }
             if (url.includes('api-keys')) {
               return {
-                items: [{ id: 'k1', name: 'ci', prefix: 'ysk_ci', created_at: t, lastUsedAt: t }],
-              };
+                items: [{ id: 'k1', name: 'ci', prefix: 'ysk_ci', created_at: t, lastUsedAt: t }] };
             }
             if (url.includes('webauthn')) {
               return {
                 items: [{ id: 'c1', name: 'yubikey', createdAt: t }],
-                ok: true,
-              };
+                ok: true };
             }
             return { ok: true };
-          },
-        },
+          } },
         {
           match: (url) => url.startsWith('/api/v1/settings/security'),
           handler: (_u, init) => {
@@ -1715,10 +1584,8 @@ describe('deep-miss coverage attacks', () => {
             return {
               requireAdminTotp: false,
               requireAdminTotpStrict: false,
-              ok: true,
-            };
-          },
-        },
+              ok: true };
+          } },
         {
           match: (url) => url.startsWith('/api/v1/approvals'),
           handler: (_u, init) => {
@@ -1730,12 +1597,9 @@ describe('deep-miss coverage attacks', () => {
                   tool: 'sys.shell',
                   status: 'pending',
                   requestedAt: t,
-                  requestedBy: 'admin',
-                },
-              ],
-            };
-          },
-        },
+                  requestedBy: 'admin' },
+              ] };
+          } },
         {
           match: (url) => url.includes('/ssh') || url.includes('/security/ssh'),
           handler: (url, init) => {
@@ -1755,9 +1619,7 @@ describe('deep-miss coverage attacks', () => {
                   fingerprintSha256: 'SHA256:abc',
                   publicKey: 'ssh-ed25519 AAAA',
                   status: 'created',
-                  createdAt: t,
-                },
-              };
+                  createdAt: t } };
             }
             return {
               items: [
@@ -1771,8 +1633,7 @@ describe('deep-miss coverage attacks', () => {
                   status: 'installed',
                   createdAt: t,
                   lastTestAt: t,
-                  lastTestOk: true,
-                },
+                  lastTestOk: true },
                 {
                   id: 'id2',
                   name: 'proj-out',
@@ -1785,15 +1646,11 @@ describe('deep-miss coverage attacks', () => {
                   binding: {
                     projectId: 'p1',
                     linuxUser: 'demou',
-                    homeDir: '/home/demou',
-                  },
-                },
+                    homeDir: '/home/demou' } },
               ],
               ssHd: { PasswordAuthentication: 'no', PermitRootLogin: 'prohibit-password' },
-              notes: [],
-            };
-          },
-        },
+              notes: [] };
+          } },
         {
           match: /\/api\/v1\/projects/,
           body: {
@@ -1802,11 +1659,8 @@ describe('deep-miss coverage attacks', () => {
                 id: 'p1',
                 name: 'Demo',
                 linuxUser: 'demou',
-                homeDir: '/home/demou',
-              },
-            ],
-          },
-        },
+                homeDir: '/home/demou' },
+            ] } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -1920,8 +1774,7 @@ describe('deep-miss coverage attacks', () => {
                 ],
                 externalTodos: ['Publish DKIM'],
                 health: { score: 40, maxScore: 100, messages: ['SPF soft'] },
-                notes: [],
-              };
+                notes: [] };
             }
             if (url.includes('/mailboxes')) {
               return {
@@ -1930,15 +1783,12 @@ describe('deep-miss coverage attacks', () => {
                     id: 'mb1',
                     local_part: 'info',
                     address: 'info@example.com',
-                    quotaMb: 500,
-                  },
-                ],
-              };
+                    quotaMb: 500 },
+                ] };
             }
             if (url.includes('/aliases')) {
               return {
-                items: [{ id: 'al1', source: 'hi@example.com', dest: 'info@example.com' }],
-              };
+                items: [{ id: 'al1', source: 'hi@example.com', dest: 'info@example.com' }] };
             }
             if (url.includes('/deliverability')) {
               return {
@@ -1951,8 +1801,7 @@ describe('deep-miss coverage attacks', () => {
                 items: [
                   { id: 'spf', title: 'SPF', ok: false, detail: 'missing' },
                   { id: 'dkim', title: 'DKIM', ok: true, detail: 'ok' },
-                ],
-              };
+                ] };
             }
             if (
               url.includes('/sieve') ||
@@ -1966,8 +1815,7 @@ describe('deep-miss coverage attacks', () => {
                 script: 'require ["fileinto"];',
                 enabled: true,
                 subject: 'OOO',
-                body: 'away',
-              };
+                body: 'away' };
             }
             if (url.match(/\/domains\/[^/?]+$/)) {
               return {
@@ -1979,8 +1827,7 @@ describe('deep-miss coverage attacks', () => {
                 apply_status: 'planned',
                 managed: true,
                 health_score: 55,
-                suspended: false,
-              };
+                suspended: false };
             }
             return {
               items: [
@@ -1990,12 +1837,9 @@ describe('deep-miss coverage attacks', () => {
                   rate_limit_per_hour: 200,
                   antispam: true,
                   server_ip: '203.0.113.10',
-                  health_score: 55,
-                },
-              ],
-            };
-          },
-        },
+                  health_score: 55 },
+              ] };
+          } },
         {
           match: (url) =>
             url.includes('/api/v1/resources/dns') ||
@@ -2017,8 +1861,7 @@ describe('deep-miss coverage attacks', () => {
                   { id: 'r3', type: 'MX', name: '@', value: 'mail.example.com', priority: 10 },
                   { id: 'r4', type: 'TXT', name: '@', value: 'v=spf1 mx -all' },
                 ],
-                notes: [],
-              };
+                notes: [] };
             }
             return {
               items: [
@@ -2028,13 +1871,10 @@ describe('deep-miss coverage attacks', () => {
                   serverIp: '203.0.113.10',
                   nsName: 'ns1.example.com',
                   ttl: 300,
-                  apply_status: 'planned',
-                },
+                  apply_status: 'planned' },
               ],
-              meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-            };
-          },
-        },
+              meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } };
+          } },
         { match: /.*/, body: { ok: true, items: [] } },
       ]);
 
@@ -2147,9 +1987,7 @@ describe('deep-miss coverage attacks', () => {
               { id: 'cpu', label: 'CPU', value: '10%', tone: 'ok' },
               { id: 'mem', label: 'Mem', value: '50%', tone: 'warn' },
             ],
-            quickLinks: [{ to: '/files', label: 'Files' }],
-          },
-        },
+            quickLinks: [{ to: '/files', label: 'Files' }] } },
         {
           match: (url) => url.startsWith('/api/v1/users'),
           handler: (_u, init) => {
@@ -2165,22 +2003,18 @@ describe('deep-miss coverage attacks', () => {
                   locale: 'en',
                   capabilityGrants: ['projects.read'],
                   capabilityRevokes: [],
-                  email: 'a@b.c',
-                },
+                  email: 'a@b.c' },
                 {
                   id: 'u2',
                   username: 'bob',
                   roles: ['user'],
                   packageId: 'pkg1',
                   suspended: true,
-                  locale: 'zh-CN',
-                },
+                  locale: 'zh-CN' },
               ],
               hostUsage: { projects: 2, diskMb: 100, quotaMb: 1000 },
-              meta: { total: 2, page: 1, limit: 50 },
-            };
-          },
-        },
+              meta: { total: 2, page: 1, limit: 50 } };
+          } },
         {
           match: (url) => url.startsWith('/api/v1/packages'),
           handler: (_u, init) => {
@@ -2196,12 +2030,9 @@ describe('deep-miss coverage attacks', () => {
                   diskMb: 1024,
                   bandwidthMb: 0,
                   ftp: true,
-                  ssh: true,
-                },
-              ],
-            };
-          },
-        },
+                  ssh: true },
+              ] };
+          } },
         {
           match: (url) => url.includes('/rbac'),
           handler: (_u, init) => {
@@ -2213,14 +2044,10 @@ describe('deep-miss coverage attacks', () => {
                   dirty: true,
                   policy: {
                     maxLevel: 'write-high',
-                    capabilities: ['projects.read', 'projects.write'],
-                  },
-                  factory: { maxLevel: 'write-high', capabilities: ['projects.read'] },
-                },
-              ],
-            };
-          },
-        },
+                    capabilities: ['projects.read', 'projects.write'] },
+                  factory: { maxLevel: 'write-high', capabilities: ['projects.read'] } },
+              ] };
+          } },
         {
           match: (url) => url.startsWith('/api/v1/network'),
           handler: (_u, init) => {
@@ -2233,8 +2060,7 @@ describe('deep-miss coverage attacks', () => {
                 hasIp: true,
                 networkManager: 'inactive',
                 networkd: 'inactive',
-                canPersist: true,
-              },
+                canPersist: true },
               interfaces: [
                 {
                   name: 'eth0',
@@ -2244,8 +2070,7 @@ describe('deep-miss coverage attacks', () => {
                   mtu: 1500,
                   isLoopback: false,
                   isDefaultEgress: true,
-                  addrs: [{ family: 'inet', local: '10.0.0.5', prefixlen: 24 }],
-                },
+                  addrs: [{ family: 'inet', local: '10.0.0.5', prefixlen: 24 }] },
                 {
                   name: 'lo',
                   ifindex: 1,
@@ -2254,8 +2079,7 @@ describe('deep-miss coverage attacks', () => {
                   mtu: 65536,
                   isLoopback: true,
                   isDefaultEgress: false,
-                  addrs: [{ family: 'inet', local: '127.0.0.1', prefixlen: 8 }],
-                },
+                  addrs: [{ family: 'inet', local: '127.0.0.1', prefixlen: 8 }] },
               ],
               routes: [{ dst: 'default', gateway: '10.0.0.1', dev: 'eth0' }],
               caps: { canMutate: true, executeEnabled: false, isRoot: false },
@@ -2268,11 +2092,8 @@ describe('deep-miss coverage attacks', () => {
                 source: 'static',
                 notes: [],
                 ignoreAutoDns: true,
-                canApply: true,
-              },
-            };
-          },
-        },
+                canApply: true } };
+          } },
         {
           match: (url) => url.startsWith('/api/v1/backups'),
           handler: (_u, init) => {
@@ -2291,16 +2112,13 @@ describe('deep-miss coverage attacks', () => {
                   s3Region: 'us-east-1',
                   s3Endpoint: '',
                   accessKey: 'AK',
-                  secretKey: 'SK',
-                },
+                  secretKey: 'SK' },
                 exclusions: ['node_modules', '.git'],
                 restic: {
                   enabled: true,
                   repoPath: '/var/backups/restic',
                   password: '***',
-                  s3Repo: 's3:https://s3/bucket',
-                },
-              };
+                  s3Repo: 's3:https://s3/bucket' } };
             }
             return {
               items: [
@@ -2310,22 +2128,17 @@ describe('deep-miss coverage attacks', () => {
                   path: '/var/backups/p1.tgz',
                   bytes: 4096,
                   mtime: t,
-                  kind: 'full',
-                },
+                  kind: 'full' },
               ],
               lastRun: {
                 at: t,
                 ok: true,
-                results: [{ projectId: 'p1', ok: true, notes: ['ok'] }],
-              },
-              snapshots: [{ id: 'snap-1', time: t, tags: ['p1'], paths: ['/home/demo'] }],
-            };
-          },
-        },
+                results: [{ projectId: 'p1', ok: true, notes: ['ok'] }] },
+              snapshots: [{ id: 'snap-1', time: t, tags: ['p1'], paths: ['/home/demo'] }] };
+          } },
         {
           match: /\/api\/v1\/projects/,
-          body: { items: [{ id: 'p1', name: 'Demo' }] },
-        },
+          body: { items: [{ id: 'p1', name: 'Demo' }] } },
         { match: /.*/, body: { ok: true, items: [], ready: true } },
       ]);
 
@@ -2402,11 +2215,8 @@ describe('deep-miss coverage attacks', () => {
                 name: 'nightly',
                 schedule: '0 3 * * *',
                 enabled: true,
-                kind: 'updates',
-              },
-            ],
-          },
-        },
+                kind: 'updates' },
+            ] } },
         {
           match: (url) => url.includes('/api/v1/updates'),
           handler: (_u, init) => {
@@ -2417,8 +2227,7 @@ describe('deep-miss coverage attacks', () => {
                 current: '0.1.0',
                 latest: '0.1.1',
                 upgradable: true,
-                notes: [],
-              };
+                notes: [] };
             }
             return {
               ok: true,
@@ -2429,14 +2238,11 @@ describe('deep-miss coverage attacks', () => {
                   version: '1.0',
                   current: '0.9',
                   candidate: '1.0',
-                  risk: 'medium',
-                },
+                  risk: 'medium' },
               ],
               lastAt: now(),
-              notes: [],
-            };
-          },
-        },
+              notes: [] };
+          } },
         {
           match: (url) =>
             url.includes('/runtimes') ||
@@ -2456,8 +2262,7 @@ describe('deep-miss coverage attacks', () => {
                     { key: 'workers', label: 'Workers', type: 'int', default: 2 },
                     { key: 'memory', label: 'Memory', type: 'bytes', default: '512M' },
                     { key: 'debug', label: 'Debug', type: 'bool', default: false },
-                  ],
-                },
+                  ] },
               ],
               settings: { values: { workers: 2 }, extra: {}, version: 'default' },
               versions: ['18', '20', '22'],
@@ -2467,10 +2272,8 @@ describe('deep-miss coverage attacks', () => {
               sites: [{ name: 'demo', enabled: true, path: '/etc/nginx/sites-enabled/demo' }],
               notes: ['ok'],
               steps: [{ id: 's1', label: 'Export', status: 'done' }],
-              status: 'ready',
-            };
-          },
-        },
+              status: 'ready' };
+          } },
         { match: /.*/, body: { ok: true, items: [], ready: true, jobs: [] } },
       ]);
 

@@ -10,8 +10,7 @@ import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
   softwareReadyRoute,
-  type FetchRoute,
-} from '../test/mock-fetch';
+  type FetchRoute } from '../test/mock-fetch';
 import { authStore } from '../shared/stores/auth-store';
 
 import { ProtectionPage } from './features/ProtectionPage';
@@ -39,8 +38,7 @@ import { SqlEnginePage } from './features/SqlEnginePage';
 
 const emptyList = {
   items: [],
-  meta: { total: 0, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-};
+  meta: { total: 0, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } };
 
 function routes(): FetchRoute[] {
   const now = new Date().toISOString();
@@ -48,8 +46,7 @@ function routes(): FetchRoute[] {
     softwareReadyRoute(),
     {
       match: /\/api\/v1\/scheduler/,
-      body: { jobs: [], items: [] },
-    },
+      body: { jobs: [], items: [] } },
     {
       match: (url) => url.startsWith('/api/v1/readiness') || url.includes('/readiness'),
       body: {
@@ -65,13 +62,10 @@ function routes(): FetchRoute[] {
             severity: 'critical',
             title: 'Execute',
             detail: 'Host execute is off',
-            fixHint: 'Enable execute',
-          },
+            fixHint: 'Enable execute' },
         ],
         blockers: [],
-        categories: ['security'],
-      },
-    },
+        categories: ['security'] } },
     {
       match: (url) => url.startsWith('/api/v1/defense/status') || url.includes('/defense/probe'),
       body: {
@@ -94,23 +88,20 @@ function routes(): FetchRoute[] {
           items: [
             { ip: '203.0.113.10', source: 'fail2ban', jail: 'sshd', reason: 'auth' },
             { ip: '198.51.100.1', source: 'ufw', reason: 'manual' },
-          ],
-        },
+          ] },
         nginxLimits: {
           reqRate: '10r/s',
           burst: 20,
           connLimit: 40,
           confPath: '/etc/nginx/conf.d/d.conf',
-          exists: true,
-        },
+          exists: true },
         firewall: { active: 'active', installed: true },
         fail2ban: { active: 'active', installed: true, jails: 3 },
         labels: {
           firewall: { short: 'on', tone: 'ok' },
           fail2ban: { short: 'on', tone: 'ok' },
           apply: { short: 'written', tone: 'info' },
-          autoBan: { short: 'on', tone: 'ok' },
-        },
+          autoBan: { short: 'on', tone: 'ok' } },
         autoBan: {
           enabled: true,
           mode: 'aggressive',
@@ -118,8 +109,7 @@ function routes(): FetchRoute[] {
           cooldownMinutes: 15,
           maxAutoBansPerHour: 50,
           whitelist: ['127.0.0.1'],
-          autoBansLastHour: 3,
-        },
+          autoBansLastHour: 3 },
         executeEnabled: false,
         isRoot: false,
         suggestions: [
@@ -127,9 +117,7 @@ function routes(): FetchRoute[] {
           { id: 's2', title: 'Bans', body: 'y', action: 'tab:bans' },
           { id: 's3', title: 'Readiness', body: 'z', action: 'href:/system/readiness' },
         ],
-        notes: ['YSK_EXECUTE blocked system'],
-      },
-    },
+        notes: ['YSK_EXECUTE blocked system'] } },
     {
       match: (url) => url.startsWith('/api/v1/defense/geoip'),
       body: {
@@ -150,8 +138,7 @@ function routes(): FetchRoute[] {
           cityPolicyEnabled: true,
           asns: ['AS123'],
           enforce: { autoBan: true, nginx: true, ufw: true },
-          autoUpdate: true,
-        },
+          autoUpdate: true },
         sources: [
           {
             filename: 'dbip.mmdb',
@@ -159,16 +146,13 @@ function routes(): FetchRoute[] {
             mtime: now,
             bytes: 1000,
             license: 'free',
-            updateHint: 'weekly',
-          },
+            updateHint: 'weekly' },
         ],
         meta: { lastSuccessAt: now },
         lookup: { country: 'US', city: 'NYC' },
         access: { blocked: false, matched: [] },
         ok: true,
-        ...HONESTY_WRITTEN_BLOCKED,
-      },
-    },
+        ...HONESTY_WRITTEN_BLOCKED } },
     {
       match: (url) => url.startsWith('/api/v1/defense/automation'),
       body: {
@@ -181,8 +165,7 @@ function routes(): FetchRoute[] {
             suggestEmergencyAt: 90,
             deescalateEnabled: true,
             deescalateToDailyBelow: 20,
-            holdMinutes: 30,
-          },
+            holdMinutes: 30 },
           autoBan: {
             enabled: true,
             mode: 'aggressive',
@@ -195,25 +178,20 @@ function routes(): FetchRoute[] {
             maxAutoBansPerHour: 50,
             intervalSeconds: 30,
             whitelist: ['127.0.0.1'],
-            syncFail2banIgnoreip: true,
-          },
+            syncFail2banIgnoreip: true },
           cloudflare: {
             enabled: true,
             zones: ['example.com'],
-            onAutoEscalate: true,
-          },
+            onAutoEscalate: true },
           lastTickAt: now,
           lastTickNotes: ['tick'],
-          suggestEmergency: true,
-        },
+          suggestEmergency: true },
         mechanisms: [
           { step: '1', mechanism: 'fail2ban', tunable: 'bantime' },
           { step: '2', mechanism: 'nginx', tunable: 'limit_req' },
         ],
         autoBansLastHour: 3,
-        schedNext: now,
-      },
-    },
+        schedNext: now } },
     {
       match: (url) => url.startsWith('/api/v1/defense/suspects'),
       body: {
@@ -224,12 +202,9 @@ function routes(): FetchRoute[] {
             hits: 200,
             reasons: ['scan', '429'],
             sources: ['nginx'],
-            lastSeen: now,
-          },
+            lastSeen: now },
         ],
-        notes: [],
-      },
-    },
+        notes: [] } },
     {
       match: (url) => url.startsWith('/api/v1/defense/intel'),
       body: {
@@ -237,32 +212,24 @@ function routes(): FetchRoute[] {
         vhostLimits: {
           withLimit: 1,
           total: 2,
-          items: [{ name: 'a.example.com', hasDefenseMarker: true }],
-        },
+          items: [{ name: 'a.example.com', hasDefenseMarker: true }] },
         hasCfToken: true,
-        cfZones: ['example.com'],
-      },
-    },
+        cfZones: ['example.com'] } },
     {
       match: (url) => url.startsWith('/api/v1/defense/timeline'),
       body: {
         items: [
           { at: now, kind: 'preset', title: 'Hardened', detail: 'auto' },
           { at: now, kind: 'ban', title: 'Ban IP', detail: '203.0.113.10' },
-        ],
-      },
-    },
+        ] } },
     {
       match: (url) => url.startsWith('/api/v1/defense/bans'),
       body: {
         items: [{ ip: '203.0.113.10', source: 'fail2ban', jail: 'sshd', reason: 'auth' }],
-        meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-      },
-    },
+        meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } } },
     {
       match: /\/api\/v1\/defense/,
-      body: { ...HONESTY_WRITTEN_BLOCKED, items: [], whitelist: ['127.0.0.1'] },
-    },
+      body: { ...HONESTY_WRITTEN_BLOCKED, items: [], whitelist: ['127.0.0.1'] } },
     {
       match: /\/api\/v1\/cdn\/dashboard/,
       body: {
@@ -273,8 +240,7 @@ function routes(): FetchRoute[] {
           offline: 1,
           draining: 0,
           unknown: 0,
-          byRegion: { ap: 1, eu: 1 },
-        },
+          byRegion: { ap: 1, eu: 1 } },
         sites: {
           total: 1,
           byApplyStatus: { written: 1 },
@@ -289,10 +255,8 @@ function routes(): FetchRoute[] {
               edgeCount: 1,
               edgesApplied: 0,
               onlineEdges: 1,
-              managedDnsRecords: 1,
-            },
-          ],
-        },
+              managedDnsRecords: 1 },
+          ] },
         cache: [
           {
             siteId: 's1',
@@ -301,13 +265,10 @@ function routes(): FetchRoute[] {
             hitRatePct: 80,
             hits: 100,
             misses: 20,
-            notes: [],
-          },
+            notes: [] },
         ],
         overallHitRatePct: 80,
-        notes: [],
-      },
-    },
+        notes: [] } },
     {
       match: (url: string, init?: RequestInit) =>
         url.startsWith('/api/v1/cdn/nodes') && (init?.method ?? 'GET').toUpperCase() === 'GET',
@@ -321,12 +282,9 @@ function routes(): FetchRoute[] {
             host: '10.0.0.2',
             region: 'ap',
             status: 'online',
-            apply_status: 'applied',
-          },
+            apply_status: 'applied' },
         ],
-        meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-      },
-    },
+        meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } } },
     {
       match: (url: string, init?: RequestInit) =>
         url.startsWith('/api/v1/cdn/sites') && (init?.method ?? 'GET').toUpperCase() === 'GET',
@@ -340,16 +298,12 @@ function routes(): FetchRoute[] {
             origin: { url: 'http://origin.example.com' },
             edgeNodeIds: ['n1'],
             status: 'written',
-            apply_status: 'written',
-          },
+            apply_status: 'written' },
         ],
-        meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-      },
-    },
+        meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } } },
     {
       match: /\/api\/v1\/cdn/,
-      body: HONESTY_WRITTEN_BLOCKED,
-    },
+      body: HONESTY_WRITTEN_BLOCKED },
     {
       match: /\/api\/v1\/dns/,
       body: {
@@ -360,13 +314,10 @@ function routes(): FetchRoute[] {
             type: 'A',
             content: '1.2.3.4',
             ttl: 300,
-            apply_status: 'written',
-          },
+            apply_status: 'written' },
         ],
         meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-        peers: [],
-      },
-    },
+        peers: [] } },
     {
       match: /\/api\/v1\/backups/,
       body: {
@@ -376,11 +327,8 @@ function routes(): FetchRoute[] {
             name: 'Demo',
             path: '/backups/p1.tgz',
             bytes: 1024,
-            mtime: now,
-          },
-        ],
-      },
-    },
+            mtime: now },
+        ] } },
     {
       match: /\/api\/v1\/logs\//,
       handler: (url) => {
@@ -391,10 +339,8 @@ function routes(): FetchRoute[] {
                 projectId: 'p1',
                 name: 'Demo',
                 files: [{ name: 'app.log', bytes: 100, previewable: true }],
-                related: [],
-              },
-            ],
-          };
+                related: [] },
+            ] };
         }
         if (url.includes('/sources')) {
           return {
@@ -405,18 +351,15 @@ function routes(): FetchRoute[] {
                 label: 'nginx',
                 unit: 'nginx.service',
                 group: 'journal',
-                available: true,
-              },
-            ],
-          };
+                available: true },
+            ] };
         }
         if (url.includes('/journal/units')) {
           return {
             items: [
               { unit: 'nginx.service', active: 'active' },
               { unit: 'ysk-project-p1.service', active: 'active' },
-            ],
-          };
+            ] };
         }
         return {
           ok: true,
@@ -429,10 +372,8 @@ function routes(): FetchRoute[] {
           text: 'boot\n',
           lines: ['boot'],
           quickUnits: [],
-          settings: {},
-        };
-      },
-    },
+          settings: {} };
+      } },
     {
       match: /\/api\/v1\/metrics/,
       body: {
@@ -450,8 +391,7 @@ function routes(): FetchRoute[] {
           freeKiB: 1e6,
           usedKiB: 1e6,
           buffCacheKiB: 0,
-          availableKiB: 1e6,
-        },
+          availableKiB: 1e6 },
         disk: { usedGb: 10, totalGb: 100, percent: 10 },
         load: [0.2, 0.2, 0.2],
         loadavg: [0.2, 0.2, 0.2],
@@ -464,8 +404,7 @@ function routes(): FetchRoute[] {
             user: 'root',
             cpu: 0.1,
             mem: 0.1,
-            command: 'systemd',
-          },
+            command: 'systemd' },
         ],
         disks: [],
         items: [],
@@ -474,9 +413,7 @@ function routes(): FetchRoute[] {
         notes: [],
         tasks: { total: 10, running: 1, sleeping: 9, stopped: 0, zombie: 0 },
         cpus: [{ us: 3, sy: 2, ni: 0, id: 95, wa: 0, hi: 0, si: 0, st: 0, busyPct: 5 }],
-        swap: { totalKiB: 0, freeKiB: 0, usedKiB: 0 },
-      },
-    },
+        swap: { totalKiB: 0, freeKiB: 0, usedKiB: 0 } } },
     {
       match: /\/api\/v1\/network/,
       body: {
@@ -493,8 +430,7 @@ function routes(): FetchRoute[] {
             addrs: ['10.0.0.5/24'],
             addresses: [{ address: '10.0.0.5', prefix: 24, family: 'inet' }],
             rxBytes: 1000,
-            txBytes: 2000,
-          },
+            txBytes: 2000 },
         ],
         routes: [
           {
@@ -502,18 +438,14 @@ function routes(): FetchRoute[] {
             gateway: '10.0.0.1',
             device: 'eth0',
             dest: 'default',
-            iface: 'eth0',
-          },
+            iface: 'eth0' },
         ],
         caps: { canMutate: false, executeEnabled: false, isRoot: false },
         dns: {
           nameservers: ['1.1.1.1'],
           uplinkServers: [],
           search: ['local'],
-          ignoreAutoDns: true,
-        },
-      },
-    },
+          ignoreAutoDns: true } } },
     {
       match: /\/api\/v1\/system\/host/,
       body: {
@@ -527,15 +459,13 @@ function routes(): FetchRoute[] {
           memory: { total: 8e9, free: 4e9, usedRatio: 0.5 },
           node: 'v20',
           pid: 1,
-          uid: 0,
-        },
+          uid: 0 },
         time: {
           utc: now,
           local: now,
           ntpEnabled: true,
           ntpSynchronized: true,
-          timeSource: 'ntp',
-        },
+          timeSource: 'ntp' },
         network: { ips: ['10.0.0.5'], interfaces: [], resolvers: ['1.1.1.1'] },
         disks: [{ filesystem: '/dev/sda1', size: 1e11, used: 5e10, avail: 5e10, usedRatio: 0.5, mount: '/' }],
         power: { pending: null },
@@ -544,11 +474,8 @@ function routes(): FetchRoute[] {
           executeEnabled: false,
           isRoot: false,
           canPower: true,
-          canIdentity: true,
-        },
-        collectedAt: now,
-      },
-    },
+          canIdentity: true },
+        collectedAt: now } },
     {
       match: /\/api\/v1\/ssh\//,
       body: {
@@ -563,19 +490,15 @@ function routes(): FetchRoute[] {
             fingerprintSha256: 'SHA256:abcdef0123456789abcd',
             publicKey: 'ssh-ed25519 AAAA',
             createdAt: now,
-            binding: { linuxUser: 'ysk', homeDir: '/home/ysk' },
-          },
+            binding: { linuxUser: 'ysk', homeDir: '/home/ysk' } },
         ],
         host: {
           notes: ['ok'],
-          lights: { package: 'ok', pam: 'ok', kbdInteractive: 'ok' },
-        },
+          lights: { package: 'ok', pam: 'ok', kbdInteractive: 'ok' } },
         pamSnippet: '# pam',
         sshdHints: '# sshd',
         snippet: 'Match',
-        notes: [],
-      },
-    },
+        notes: [] } },
     {
       match: /\/api\/v1\/sftp\//,
       body: {
@@ -587,13 +510,10 @@ function routes(): FetchRoute[] {
             publicKey: 'ssh-ed25519 AAAA',
             comment: 'laptop',
             fingerprint: 'SHA256:x',
-            linuxUser: 'demo',
-          },
+            linuxUser: 'demo' },
         ],
         snippet: 'Match',
-        notes: [],
-      },
-    },
+        notes: [] } },
     {
       match: /\/api\/v1\/security/,
       body: {
@@ -607,15 +527,12 @@ function routes(): FetchRoute[] {
             created_at: now,
             last_seen_at: now,
             userAgent: 'vitest',
-            ip: '127.0.0.1',
-          },
+            ip: '127.0.0.1' },
         ],
         apiKeys: [{ id: 'ak1', name: 'ci', created_at: now, prefix: 'ysk_' }],
         tools: [{ id: 't1', name: 'shell', enabled: false }],
         approvals: [{ id: 'ap1', tool: 'shell', status: 'pending', created_at: now }],
-        webauthnCredentials: [],
-      },
-    },
+        webauthnCredentials: [] } },
     {
       match: /\/api\/v1\/rbac/,
       body: {
@@ -624,23 +541,18 @@ function routes(): FetchRoute[] {
             role: 'operator',
             dirty: false,
             policy: { maxLevel: 'write-high', capabilities: ['projects.read', 'projects.write'] },
-            factory: { maxLevel: 'write-high', capabilities: ['projects.read'] },
-          },
+            factory: { maxLevel: 'write-high', capabilities: ['projects.read'] } },
           {
             role: 'viewer',
             dirty: false,
             policy: { maxLevel: 'read', capabilities: ['projects.read'] },
-            factory: { maxLevel: 'read', capabilities: ['projects.read'] },
-          },
+            factory: { maxLevel: 'read', capabilities: ['projects.read'] } },
           {
             role: 'admin',
             dirty: false,
             policy: { maxLevel: 'admin', capabilities: [] },
-            factory: { maxLevel: 'admin', capabilities: [] },
-          },
-        ],
-      },
-    },
+            factory: { maxLevel: 'admin', capabilities: [] } },
+        ] } },
     {
       match: /\/api\/v1\/users/,
       body: {
@@ -653,13 +565,10 @@ function routes(): FetchRoute[] {
             packageName: 'default',
             suspended: false,
             locale: 'en',
-            totpEnabled: false,
-          },
+            totpEnabled: false },
         ],
         meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-        hostUsage: { projects: 1, diskMb: 100, limitMb: 10240 },
-      },
-    },
+        hostUsage: { projects: 1, diskMb: 100, limitMb: 10240 } } },
     {
       match: /\/api\/v1\/packages/,
       body: {
@@ -674,12 +583,9 @@ function routes(): FetchRoute[] {
             bandwidthMb: 0,
             ftp: true,
             ssh: true,
-            notes: '',
-          },
+            notes: '' },
         ],
-        meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-      },
-    },
+        meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } } },
     {
       match: (url) => url.includes('/hosting/files') || url.includes('/api/v1/files'),
       handler: (url) => {
@@ -693,10 +599,8 @@ function routes(): FetchRoute[] {
                 type: 'file',
                 size: 1,
                 deletedAt: now,
-                mtime: now,
-              },
-            ],
-          };
+                mtime: now },
+            ] };
         }
         if (url.includes('share')) {
           return {
@@ -706,10 +610,8 @@ function routes(): FetchRoute[] {
                 id: 'sh1',
                 path: '/pub',
                 token: 'tok',
-                createdAt: now,
-              },
-            ],
-          };
+                createdAt: now },
+            ] };
         }
         return {
           ok: true,
@@ -719,8 +621,7 @@ function routes(): FetchRoute[] {
               path: 'a.txt',
               type: 'file',
               size: 10,
-              mtime: now,
-            },
+              mtime: now },
             { name: 'dir', path: 'dir', type: 'dir', mtime: now },
           ],
           items: [
@@ -729,13 +630,10 @@ function routes(): FetchRoute[] {
               path: 'a.txt',
               type: 'file',
               size: 10,
-              mtime: now,
-            },
+              mtime: now },
           ],
-          path: '/',
-        };
-      },
-    },
+          path: '/' };
+      } },
     {
       match: /\/api\/v1\/agents/,
       body: {
@@ -745,12 +643,9 @@ function routes(): FetchRoute[] {
             name: 'edge',
             status: 'online',
             lastSeenAt: now,
-            version: '0.1.0',
-          },
+            version: '0.1.0' },
         ],
-        meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-      },
-    },
+        meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } } },
     {
       match: /\/api\/v1\/cron/,
       body: {
@@ -760,8 +655,7 @@ function routes(): FetchRoute[] {
             schedule: '0 * * * *',
             command: 'true',
             enabled: true,
-            projectId: 'p1',
-          },
+            projectId: 'p1' },
         ],
         managedPath: '/etc/cron.d/ysk',
         managedLines: 1,
@@ -771,9 +665,7 @@ function routes(): FetchRoute[] {
         hostCrontabPreview: '0 * * * * true',
         executeEnabled: false,
         lastInstallOk: true,
-        lastInstallAt: now,
-      },
-    },
+        lastInstallAt: now } },
     {
       match: /\/api\/v1\/email/,
       body: {
@@ -788,9 +680,7 @@ function routes(): FetchRoute[] {
         notes: [],
         checks: [{ id: 'spf', ok: true, detail: 'pass' }],
         recommendations: ['Add DMARC'],
-        score: 70,
-      },
-    },
+        score: 70 } },
     {
       match: /\/api\/v1\/projects/,
       body: {
@@ -813,11 +703,8 @@ function routes(): FetchRoute[] {
             homeDir: '/home/demo',
             osProvisioned: true,
             nginxConfigPath: '/etc/nginx/sites-enabled/demo',
-            lastDeployAt: now,
-          },
-        ],
-      },
-    },
+            lastDeployAt: now },
+        ] } },
     {
       match: /\/api\/v1\/updates/,
       body: {
@@ -830,8 +717,7 @@ function routes(): FetchRoute[] {
             current: '1.0',
             candidate: '3.0',
             risk: 'high',
-            upgradable: true,
-          },
+            upgradable: true },
         ],
         advice: [{ id: 'a1', title: 'Upgrade openssl', risk: 'high' }],
         current: { version: '0.1.0' },
@@ -840,9 +726,7 @@ function routes(): FetchRoute[] {
         updateAvailable: true,
         checked: true,
         currentVersion: '0.1.0',
-        latestVersion: '0.2.0',
-      },
-    },
+        latestVersion: '0.2.0' } },
     {
       match: /\/api\/v1\/ai\//,
       body: {
@@ -855,11 +739,8 @@ function routes(): FetchRoute[] {
             steps: [
               { id: 's1', title: 'Plan', status: 'completed' },
               { id: 's2', title: 'Run', status: 'executed' },
-            ],
-          },
-        ],
-      },
-    },
+            ] },
+        ] } },
     {
       match: /\/api\/v1\/dashboard\//,
       body: {
@@ -867,9 +748,7 @@ function routes(): FetchRoute[] {
         items: [],
         summary: { projects: 1, alerts: 0 },
         notifications: [],
-        wizard: { steps: [], completed: 0 },
-      },
-    },
+        wizard: { steps: [], completed: 0 } } },
     { match: /.*/, body: { ok: true, items: [], ready: true, missing: [], notes: [] } },
   ];
 }
@@ -895,137 +774,115 @@ const matrix: Array<{
     name: 'Protection',
     base: '/protection',
     tabs: ['command', 'automation', 'bans', 'geo', 'stack', 'intel', 'about'],
-    el: <ProtectionPage />,
-  },
+    el: <ProtectionPage /> },
   {
     name: 'Cdn',
     base: '/cdn',
     tabs: ['nodes', 'sites', 'dashboard', 'about'],
-    el: <CdnPage />,
-  },
+    el: <CdnPage /> },
   {
     name: 'Dns',
     base: '/dns',
     tabs: ['zones', 'records', 'cluster', 'dnssec', 'tools', 'about'],
-    el: <DnsPage />,
-  },
+    el: <DnsPage /> },
   {
     name: 'Backups',
     base: '/backups',
     tabs: ['files', 'ops', 'remote', 'about'],
-    el: <BackupsPage />,
-  },
+    el: <BackupsPage /> },
   {
     name: 'Logs',
     base: '/logs',
     tabs: ['explore', 'ops', 'settings', 'about'],
-    el: <LogsPage />,
-  },
+    el: <LogsPage /> },
   {
     name: 'Metrics',
     base: '/metrics',
     tabs: ['overview', 'live', 'storage', 'projects', 'alerts', 'about'],
-    el: <MetricsPage />,
-  },
+    el: <MetricsPage /> },
   {
     name: 'Network',
     base: '/network',
     tabs: ['ifaces', 'routes', 'dns', 'advanced', 'about'],
-    el: <NetworkPage />,
-  },
+    el: <NetworkPage /> },
   {
     name: 'Security',
     base: '/security',
     tabs: ['account', 'keys', 'ssh', 'approvals', 'allowlist', 'about'],
-    el: <SecurityPage />,
-  },
+    el: <SecurityPage /> },
   {
     name: 'Users',
     base: '/users',
     tabs: ['users', 'packages', 'permissions', 'about'],
-    el: <UsersPage />,
-  },
+    el: <UsersPage /> },
   {
     name: 'Files',
     base: '/files',
     tabs: ['browse', 'trash', 'shares', 'webdav', 'about'],
-    el: <FilesPage />,
-  },
+    el: <FilesPage /> },
   {
     name: 'System',
     base: '/system',
     tabs: ['host', 'export', 'about'],
-    el: <SystemPage />,
-  },
+    el: <SystemPage /> },
   {
     name: 'Agents',
     base: '/agents',
     tabs: ['list', 'about'],
-    el: <AgentsPage />,
-  },
+    el: <AgentsPage /> },
   {
     name: 'Cron',
     base: '/cron',
     tabs: ['jobs', 'status', 'about'],
-    el: <CronPage />,
-  },
+    el: <CronPage /> },
   {
     name: 'Dashboard',
     base: '/',
     tabs: ['overview', 'wizard', 'notifications', 'features', 'about'],
-    el: <DashboardPage />,
-  },
+    el: <DashboardPage /> },
   {
     name: 'Updates',
     base: '/updates',
     tabs: ['packages', 'panel', 'schedule', 'policy', 'about'],
-    el: <UpdatesPage />,
-  },
+    el: <UpdatesPage /> },
   {
     name: 'Ai',
     base: '/ai',
     tabs: ['tasks', 'playbooks', 'about'],
-    el: <AiPage />,
-  },
+    el: <AiPage /> },
   {
     name: 'EmailDomain',
     base: '/email/dom-1',
     routePath: '/email/:id',
     tabs: ['dns', 'mailbox', 'aliases', 'health', 'deliverability', 'relay', 'sieve', 'advanced', 'about'],
     // EmailDomainPage uses local useState tab, not usePageTab — still mount once
-    el: <EmailDomainPage />,
-  },
+    el: <EmailDomainPage /> },
   {
     name: 'ProjectDetail',
     base: '/projects/p1',
     routePath: '/projects/:id',
     tabs: ['overview', 'deploy', 'network', 'resources', 'logs', 'advanced', 'about'],
-    el: <ProjectDetailPage />,
-  },
+    el: <ProjectDetailPage /> },
   {
     name: 'Readiness',
     base: '/system/readiness',
     tabs: ['priority', 'checklist', 'summary', 'about'],
-    el: <ReadinessPage />,
-  },
+    el: <ReadinessPage /> },
   {
     name: 'Services',
     base: '/services',
     tabs: ['list', 'about'],
-    el: <ServicesPage />,
-  },
+    el: <ServicesPage /> },
   {
     name: 'Redis',
     base: '/databases/redis',
     tabs: ['data', 'about'],
-    el: <RedisPage />,
-  },
+    el: <RedisPage /> },
   {
     name: 'SqlEngine',
     base: '/databases/mysql',
     tabs: ['databases', 'users', 'about'],
-    el: <SqlEnginePage engine="mysql" />,
-  },
+    el: <SqlEnginePage engine="mysql" /> },
 ];
 
 describe('tab matrix smoke', () => {
@@ -1042,8 +899,7 @@ describe('tab matrix smoke', () => {
         'rbac.policy',
         'system.read',
         'system.write',
-      ],
-    });
+      ] });
   });
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -1056,8 +912,7 @@ describe('tab matrix smoke', () => {
         caseName: `${m.name}:${tab}`,
         path: `${m.base}?tab=${tab}`,
         routePath: m.routePath ?? '*',
-        el: m.el,
-      })),
+        el: m.el })),
     ),
   )(
     'renders $caseName',

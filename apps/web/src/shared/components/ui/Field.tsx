@@ -30,8 +30,7 @@ export function Field({
   flush,
   fullWidth,
   techKey,
-  className,
-}: FieldProps) {
+  className }: FieldProps) {
   const cls = [
     'field',
     flush ? 'field--flush' : '',
@@ -123,8 +122,7 @@ export function CheckboxField({
   description,
   checked,
   onChange,
-  disabled,
-}: CheckboxFieldProps) {
+  disabled }: CheckboxFieldProps) {
   return (
     <label className="checkbox-field" htmlFor={id}>
       <input

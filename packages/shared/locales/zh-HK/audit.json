@@ -13,6 +13,15 @@
     "project.create": "建立專案",
     "project.delete": "刪除專案",
     "ssl.request": "申請 SSL",
-    "ssl.upload": "上載 SSL"
+    "ssl.upload": "上載 SSL",
+    "system.firewall.enable": "防火牆啟用／停用",
+    "system.firewall.delete_rule": "刪除防火牆規則",
+    "system.firewall.delete_deny": "移除永久拒 IP",
+    "db.adminer.apply": "資料庫管理專案",
+    "project.goLive": "專案上線",
+    "project.publish": "發佈 Nginx",
+    "project.suspend": "暫停專案",
+    "software.install": "安裝軟件",
+    "software.update": "更新軟件"
   }
 }

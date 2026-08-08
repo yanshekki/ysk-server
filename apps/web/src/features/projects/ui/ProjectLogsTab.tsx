@@ -13,8 +13,7 @@ import {
   FormLayout,
   LogViewer,
   PresetChips,
-  Badge,
-} from '../../../shared/components/ui';
+  Badge } from '../../../shared/components/ui';
 
 export interface ProjectLogFile {
   name: string;
@@ -76,8 +75,7 @@ export function ProjectLogsTab({
   onRefreshFile,
   onSaveExtraDirs,
   autoLoad = true,
-  projectId,
-}: ProjectLogsTabProps) {
+  projectId }: ProjectLogsTabProps) {
   const { t } = useTranslation();
   const loaded = useRef(false);
 
@@ -105,8 +103,7 @@ export function ProjectLogsTab({
   function runScan() {
     onLoad({
       name: nameQ.trim() || undefined,
-      grep: grepQ.trim() || undefined,
-    });
+      grep: grepQ.trim() || undefined });
   }
 
   return (
@@ -172,8 +169,7 @@ export function ProjectLogsTab({
               size="sm"
               onClick={() => {
                 const blob = new Blob([logTail], {
-                  type: 'text/plain;charset=utf-8',
-                });
+                  type: 'text/plain;charset=utf-8' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
@@ -226,8 +222,7 @@ export function ProjectLogsTab({
                   }`}
                   onClick={() =>
                     onSelectFile?.(h.file, {
-                      grep: grepQ.trim() || undefined,
-                    })
+                      grep: grepQ.trim() || undefined })
                   }
                   title={t('projects.logsLinesHit', { count: h.matched })}
                 >
@@ -254,8 +249,7 @@ export function ProjectLogsTab({
                   }`}
                   onClick={() =>
                     onSelectFile?.(f.name, {
-                      grep: grepQ.trim() || undefined,
-                    })
+                      grep: grepQ.trim() || undefined })
                   }
                   title={f.root ? `root: ${f.root}` : undefined}
                 >
@@ -275,8 +269,7 @@ export function ProjectLogsTab({
           <LogViewer
             text={logTail}
             emptyLabel={t('projects.logsEmpty', {
-              defaultValue: t('projects.logsNoContent'),
-            })}
+              defaultValue: t('projects.logsNoContent') })}
           />
         </div>
       </Card>
@@ -309,8 +302,7 @@ export function ProjectLogsTab({
               { value: 'tmp', label: 'tmp' },
               {
                 value: 'storage/logs\nvar/log',
-                label: 'Laravel+var',
-              },
+                label: 'Laravel+var' },
             ]}
             value=""
             onChange={(v) => {

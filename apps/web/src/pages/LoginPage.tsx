@@ -10,8 +10,7 @@ import {
   Field,
   FormActions,
   FormLayout,
-  buttonClassName,
-} from '../shared/components/ui';
+  buttonClassName } from '../shared/components/ui';
 
 export function LoginPage() {
   const { t } = useTranslation();
@@ -37,9 +36,7 @@ export function LoginPage() {
       sessionExpired
         ? t('errors.auth.sessionExpired', {
             defaultValue: t('login.sessionExpired', {
-              defaultValue: 'Session expired; sign in again',
-            }),
-          })
+              defaultValue: 'Session expired; sign in again' }) })
         : null,
     [sessionExpired, t],
   );

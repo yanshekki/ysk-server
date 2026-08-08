@@ -8,8 +8,7 @@ import { MemoryRouter } from 'react-router-dom';
 import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
-  softwareReadyRoute,
-} from '../../../test/mock-fetch';
+  softwareReadyRoute } from '../../../test/mock-fetch';
 import { authStore } from '../../../shared/stores/auth-store';
 import { LoginKeysPanel } from './LoginKeysPanel';
 import { SshdPanel } from './SshdPanel';
@@ -27,8 +26,7 @@ const loginKey = {
   comment: 'laptop',
   fingerprint: 'SHA256:xyz',
   linuxUser: 'ysk_demo',
-  homeDir: '/home/demo',
-};
+  homeDir: '/home/demo' };
 
 const identity = {
   id: 'id-1',
@@ -39,15 +37,13 @@ const identity = {
   fingerprintSha256: 'SHA256:abcdef0123456789abcdef01',
   publicKey: 'ssh-ed25519 AAAAtestkey panel',
   createdAt: new Date().toISOString(),
-  binding: { linuxUser: 'ysk', homeDir: '/home/ysk', projectId: 'p1' },
-};
+  binding: { linuxUser: 'ysk', homeDir: '/home/ysk', projectId: 'p1' } };
 
 const project = {
   id: 'p1',
   name: 'Demo',
   linuxUser: 'ysk_demo',
-  homeDir: '/home/demo',
-};
+  homeDir: '/home/demo' };
 
 function securityRoutes(opts?: { twofaStatus?: string }) {
   const twofaStatus = opts?.twofaStatus ?? 'enrolled';
@@ -60,8 +56,7 @@ function securityRoutes(opts?: { twofaStatus?: string }) {
         if (method === 'POST') return { ok: true, notes: ['key added'] };
         if (method === 'DELETE') return { ok: true, notes: ['removed'] };
         return { items: [loginKey] };
-      },
-    },
+      } },
     {
       match: (url: string) => url.includes('/sftp/sshd-snippet'),
       handler: (_url: string, init?: RequestInit) => {
@@ -69,8 +64,7 @@ function securityRoutes(opts?: { twofaStatus?: string }) {
           return { ok: true, notes: ['installed'], ...HONESTY_WRITTEN_BLOCKED };
         }
         return { snippet: 'Match Group sftp_users\n', notes: ['preview ready'] };
-      },
-    },
+      } },
     {
       match: (url: string) => url.includes('/api/v1/ssh/2fa'),
       handler: (url: string, init?: RequestInit) => {
@@ -80,8 +74,7 @@ function securityRoutes(opts?: { twofaStatus?: string }) {
             pamSnippet: '# pam_google_authenticator',
             sshdHints: 'AuthenticationMethods publickey,keyboard-interactive',
             strictSnippet: '# strict',
-            strictNotes: ['root rescue'],
-          };
+            strictNotes: ['root rescue'] };
         }
         if (method === 'POST' && url.endsWith('/2fa')) {
           return {
@@ -96,10 +89,8 @@ function securityRoutes(opts?: { twofaStatus?: string }) {
               status: 'enrolled',
               label: 'demo',
               notes: [],
-              hasSecret: true,
-            },
-            notes: ['enrolled'],
-          };
+              hasSecret: true },
+            notes: ['enrolled'] };
         }
         if (url.includes('/confirm')) {
           return { ok: true, notes: ['confirmed'] };
@@ -120,8 +111,7 @@ function securityRoutes(opts?: { twofaStatus?: string }) {
               label: 'demo',
               notes: [],
               hasSecret: true,
-              filePath: '/home/demo/.google_authenticator',
-            },
+              filePath: '/home/demo/.google_authenticator' },
             {
               id: 't2',
               linuxUser: 'other',
@@ -129,8 +119,7 @@ function securityRoutes(opts?: { twofaStatus?: string }) {
               status: 'confirmed',
               label: 'other',
               notes: [],
-              hasSecret: true,
-            },
+              hasSecret: true },
             {
               id: 't3',
               linuxUser: 'written',
@@ -139,16 +128,12 @@ function securityRoutes(opts?: { twofaStatus?: string }) {
               label: 'written',
               notes: [],
               hasSecret: true,
-              fromPanel: true,
-            },
+              fromPanel: true },
           ],
           host: {
             notes: ['host note'],
-            lights: { package: 'green', pam: 'yellow', kbdInteractive: 'red' },
-          },
-        };
-      },
-    },
+            lights: { package: 'green', pam: 'yellow', kbdInteractive: 'red' } } };
+      } },
     {
       match: (url: string) => url.includes('/api/v1/ssh/identities'),
       handler: (url: string, init?: RequestInit) => {
@@ -159,27 +144,22 @@ function securityRoutes(opts?: { twofaStatus?: string }) {
             identity: { ...identity, id: 'id-new', name: 'created' },
             privateKey: '-----BEGIN PRIVATE KEY-----\nX\n-----END-----',
             notes: ['created'],
-            ...HONESTY_WRITTEN_BLOCKED,
-          };
+            ...HONESTY_WRITTEN_BLOCKED };
         }
         if (url.includes('/install') || url.includes('/test') || url.includes('/rotate') || url.includes('/authorize')) {
           return HONESTY_WRITTEN_BLOCKED;
         }
         if (method === 'DELETE') return { ok: true };
         return { ok: true, items: [identity, { ...identity, id: 'id-2', status: 'installed', name: 'installed-key' }] };
-      },
-    },
+      } },
     {
       match: (url: string) => url.includes('/api/v1/projects'),
-      body: { items: [project] },
-    },
+      body: { items: [project] } },
     {
       match: (url: string) => url.includes('/api/v1/security'),
       body: {
         items: [{ id: 'sys.info', name: 'sys.info' }],
-        tools: [{ id: 'sys.info' }],
-      },
-    },
+        tools: [{ id: 'sys.info' }] } },
     { match: /.*/, body: { ok: true, items: [], notes: [] } },
   ];
 }
@@ -263,8 +243,7 @@ describe('SshdPanel deep', () => {
     const writeText = vi.fn(async () => undefined);
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
-      value: { writeText },
-    });
+      value: { writeText } });
     installFetchMock(securityRoutes());
 
     render(
@@ -415,8 +394,7 @@ describe('SshWorkspace + OutboundIdentities actions', () => {
 
     for (const b of screen
       .queryAllByRole('button', {
-        name: /install|test|copy|rotate|delete|remove|authorize|reveal|安裝|測試|複製|刪除/i,
-      })
+        name: /install|test|copy|rotate|delete|remove|authorize|reveal|安裝|測試|複製|刪除/i })
       .slice(0, 10)) {
       try {
         await user.click(b);
@@ -457,10 +435,8 @@ describe('useSecurity hook', () => {
             items: [
               { id: 'a1', tool: 'sys.info', status: 'pending' },
               { id: 'sys.info', name: 'sys.info' },
-            ],
-          };
-        },
-      },
+            ] };
+        } },
       { match: /.*/, body: { ok: true, items: [] } },
     ]);
 

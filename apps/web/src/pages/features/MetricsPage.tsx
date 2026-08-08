@@ -21,8 +21,7 @@ import {
   Modal,
   OpsResultPanel,
   PageTabs,
-  buttonClassName,
-} from '../../shared/components/ui';
+  buttonClassName } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import {
   metricsApi,
@@ -34,13 +33,11 @@ import {
   type SignalProcessResult,
   type ProcessDetail,
   type ProjectDiskUsageRow,
-  type ProjectsDiskUsageSnapshot,
-} from '../../features/metrics/api';
+  type ProjectsDiskUsageSnapshot } from '../../features/metrics/api';
 import { bindSet, bindInput, bindCheck, bindVoid, bindCall1, bindCall2 } from '../bind-handlers';
 import {
   TopHeaderPanel,
-  formatRes,
-} from '../../features/metrics/TopHeaderPanel';
+  formatRes } from '../../features/metrics/TopHeaderPanel';
 
 const MET_TABS = ['overview', 'live', 'storage', 'projects', 'alerts', 'about'] as const;
 
@@ -208,8 +205,7 @@ export function MetricsPage() {
         sort,
         limit,
         top: showRawTop,
-        header: true,
-      });
+        header: true });
       setProcesses(p);
       setStreamErr(p.ok ? null : p.notes?.[0] ?? t('metrics.procListFailed'));
     } catch (e) {
@@ -280,8 +276,7 @@ export function MetricsPage() {
           if (reason && reason !== 'http_error') {
             setStreamErr((e) => e ?? t('metrics.streamEnded', { reason }));
           }
-        },
-      });
+        } });
     } catch (e) {
       setFollow(false);
       setStreamErr(e instanceof Error ? e.message : t('metrics.streamOpenFailed'));
@@ -363,8 +358,7 @@ export function MetricsPage() {
       setPending({
         pid,
         signal,
-        command: row?.command ?? detail?.command ?? '—',
-      });
+        command: row?.command ?? detail?.command ?? '—' });
     },
     [rows, detail?.command],
   );
@@ -376,8 +370,7 @@ export function MetricsPage() {
       const result = await metricsApi.signal({
         pid: pending.pid,
         signal: pending.signal,
-        confirmKill: pending.signal === 'KILL' ? true : undefined,
-      });
+        confirmKill: pending.signal === 'KILL' ? true : undefined });
       setLastSignal(result);
       if (result.ok && !result.stillAlive) {
         setSelected((prev) => {
@@ -394,8 +387,7 @@ export function MetricsPage() {
         ok: false,
         pid: pending.pid,
         signal: pending.signal,
-        notes: [e instanceof Error ? e.message : t('metrics.signalFailed')],
-      });
+        notes: [e instanceof Error ? e.message : t('metrics.signalFailed')] });
     } finally {
       setSignalBusy(false);
       setPending(null);
@@ -413,8 +405,7 @@ export function MetricsPage() {
       setDetail({
         ok: false,
         pid,
-        notes: [e instanceof Error ? e.message : t('metrics.detailFailed')],
-      });
+        notes: [e instanceof Error ? e.message : t('metrics.detailFailed')] });
     } finally {
       setDetailLoading(false);
     }
@@ -450,13 +441,11 @@ export function MetricsPage() {
                     : heroTone === 'warn'
                       ? t('metrics.attention')
                       : t('metrics.normal'),
-                tone: heroTone,
-              },
+                tone: heroTone },
               items: [
                 {
                   label: 'Load 1m',
-                  value: load1 != null ? load1.toFixed(2) : '—',
-                },
+                  value: load1 != null ? load1.toFixed(2) : '—' },
                 {
                   label: t('common.memory'),
                   value: memPct != null ? `${memPct}%` : '—',
@@ -465,8 +454,7 @@ export function MetricsPage() {
                       ? 'danger'
                       : memPct != null && memPct >= 75
                         ? 'warn'
-                        : 'ok',
-                },
+                        : 'ok' },
                 {
                   label: t('metrics.disk'),
                   value: diskPct != null ? `${diskPct}%` : '—',
@@ -475,17 +463,14 @@ export function MetricsPage() {
                       ? 'danger'
                       : diskPct != null && diskPct >= 75
                         ? 'warn'
-                        : 'ok',
-                },
+                        : 'ok' },
                 {
                   label: t('metrics.alerts'),
                   value: alerts.length,
-                  tone: alerts.length ? 'warn' : 'ok',
-                },
+                  tone: alerts.length ? 'warn' : 'ok' },
                 { label: 'CPU', value: cpuCount || '—' },
                 { label: 'Uptime', value: formatUptime(uptimeSec) },
-              ],
-            }
+              ] }
           : undefined
       }
       actions={
@@ -533,18 +518,15 @@ export function MetricsPage() {
               {
                 id: 'storage',
                 label: t('metrics.disk'),
-                badge: mounts.length || undefined,
-              },
+                badge: mounts.length || undefined },
               {
                 id: 'projects',
                 label: t('metrics.tabs.projectUsage'),
-                badge: projectUsage?.items?.length || undefined,
-              },
+                badge: projectUsage?.items?.length || undefined },
               {
                 id: 'alerts',
                 label: t('metrics.alerts'),
-                badge: alerts.length || undefined,
-              },
+                badge: alerts.length || undefined },
             
           { id: 'about', label: t('common.about') },
         ]}
@@ -958,8 +940,7 @@ export function MetricsPage() {
                               ]
                             : []),
                           ...(lastSignal.notes ?? []),
-                        ],
-                      }}
+                        ] }}
                     />
                   </div>
                 ) : null}
@@ -971,8 +952,7 @@ export function MetricsPage() {
                     more:
                       filteredRows.length !== rows.length
                         ? `/${rows.length}`
-                        : '',
-                  })}
+                        : '' })}
                   description={t('metrics.procTableDesc')}
                   columns={[
                     {
@@ -997,8 +977,7 @@ export function MetricsPage() {
                           onChange={() => toggleSelect(r.pid)}
                           aria-label={t('metrics.selectPidAria', { pid: r.pid })}
                         />
-                      ),
-                    },
+                      ) },
                     {
                       key: 'pid',
                       header: 'PID',
@@ -1011,43 +990,37 @@ export function MetricsPage() {
                         >
                           <code>{r.pid}</code>
                         </button>
-                      ),
-                    },
+                      ) },
                     {
                       key: 'user',
                       header: 'USER',
                       nowrap: true,
-                      render: (r) => r.user,
-                    },
+                      render: (r) => r.user },
                     {
                       key: 'pr',
                       header: 'PR',
                       className: 'u-num muted',
                       nowrap: true,
-                      render: (r) => r.pr ?? '—',
-                    },
+                      render: (r) => r.pr ?? '—' },
                     {
                       key: 'ni',
                       header: 'NI',
                       className: 'u-num muted',
                       nowrap: true,
-                      render: (r) => (r.ni != null ? r.ni : '—'),
-                    },
+                      render: (r) => (r.ni != null ? r.ni : '—') },
                     {
                       key: 'res',
                       header: 'RES',
                       className: 'u-num',
                       nowrap: true,
-                      render: (r) => formatRes(r.resKiB),
-                    },
+                      render: (r) => formatRes(r.resKiB) },
                     {
                       key: 'state',
                       header: 'S',
                       nowrap: true,
                       render: (r) => (
                         <code className="met-state">{r.state?.[0] ?? '—'}</code>
-                      ),
-                    },
+                      ) },
                     {
                       key: 'cpu',
                       header: '%CPU',
@@ -1057,22 +1030,19 @@ export function MetricsPage() {
                         <span className={r.cpu >= 20 ? 'met-hot' : undefined}>
                           {r.cpu.toFixed(1)}
                         </span>
-                      ),
-                    },
+                      ) },
                     {
                       key: 'mem',
                       header: '%MEM',
                       className: 'u-num',
                       nowrap: true,
-                      render: (r) => r.mem.toFixed(1),
-                    },
+                      render: (r) => r.mem.toFixed(1) },
                     {
                       key: 'time',
                       header: 'TIME+',
                       className: 'data-table__etime',
                       nowrap: true,
-                      render: (r) => r.timePlus ?? r.etime ?? '—',
-                    },
+                      render: (r) => r.timePlus ?? r.etime ?? '—' },
                     {
                       key: 'cmd',
                       header: 'COMMAND',
@@ -1084,8 +1054,7 @@ export function MetricsPage() {
                             <Badge tone="warn">{t('metrics.controlPlane')}</Badge>
                           ) : null}
                         </span>
-                      ),
-                    },
+                      ) },
                   ]}
                   rows={filteredRows}
                   rowKey={(r) => `${r.pid}-${r.command.slice(0, 24)}`}
@@ -1276,16 +1245,14 @@ export function MetricsPage() {
                                 try {
                                   const r = await metricsApi.renice({
                                     pid: detailPid,
-                                    nice: Number(niceVal),
-                                  });
+                                    nice: Number(niceVal) });
                                   setLastSignal({
                                     ok: r.ok,
                                     blocked: r.blocked,
                                     blockMessage: r.blockMessage,
                                     pid: r.pid,
                                     signal: 'TERM',
-                                    notes: r.notes,
-                                  });
+                                    notes: r.notes });
                                 } finally {
                                   setSignalBusy(false);
                                 }
@@ -1319,34 +1286,29 @@ export function MetricsPage() {
                       header: 'Filesystem',
                       render: (m) => (
                         <code className="inline">{m.filesystem}</code>
-                      ),
-                    },
+                      ) },
                     {
                       key: 'mount',
                       header: 'Mount',
-                      render: (m) => <code className="inline">{m.mount}</code>,
-                    },
+                      render: (m) => <code className="inline">{m.mount}</code> },
                     {
                       key: 'size',
                       header: 'Size',
                       className: 'u-num',
                       nowrap: true,
-                      render: (m) => formatBytes(m.size),
-                    },
+                      render: (m) => formatBytes(m.size) },
                     {
                       key: 'used',
                       header: 'Used',
                       className: 'u-num',
                       nowrap: true,
-                      render: (m) => formatBytes(m.used),
-                    },
+                      render: (m) => formatBytes(m.used) },
                     {
                       key: 'avail',
                       header: 'Avail',
                       className: 'u-num',
                       nowrap: true,
-                      render: (m) => formatBytes(m.avail),
-                    },
+                      render: (m) => formatBytes(m.avail) },
                     {
                       key: 'pct',
                       header: 'Use%',
@@ -1366,8 +1328,7 @@ export function MetricsPage() {
                             {pct}%
                           </Badge>
                         );
-                      },
-                    },
+                      } },
                     {
                       key: 'bar',
                       header: '',
@@ -1386,8 +1347,7 @@ export function MetricsPage() {
                             />
                           </div>
                         );
-                      },
-                    },
+                      } },
                   ]}
                   rows={mounts}
                   rowKey={(m) => `${m.filesystem}:${m.mount}`}
@@ -1401,8 +1361,7 @@ export function MetricsPage() {
                 {projectUsage?.items.length ? (
                   <p className="met-footnote u-mt-3">
                     {t('metrics.seeProjectUsage', {
-                      size: formatBytes(projectUsage.totalUsedBytes),
-                    })}
+                      size: formatBytes(projectUsage.totalUsedBytes) })}
                   </p>
                 ) : null}
               </div>
@@ -1449,8 +1408,7 @@ export function MetricsPage() {
                               <span className="muted u-text-sm"> · {r.domain}</span>
                             ) : null}
                           </Link>
-                        ),
-                      },
+                        ) },
                       {
                         key: 'home',
                         header: 'Home',
@@ -1458,19 +1416,16 @@ export function MetricsPage() {
                           <code className="inline u-break-all">
                             {r.homeDir || '—'}
                           </code>
-                        ),
-                      },
+                        ) },
                       {
                         key: 'used',
                         header: t('metrics.used'),
-                        render: (r) => formatBytes(r.usedBytes),
-                      },
+                        render: (r) => formatBytes(r.usedBytes) },
                       {
                         key: 'quota',
                         header: t('metrics.quota'),
                         render: (r) =>
-                          r.quotaMb != null ? `${r.quotaMb} MiB` : t('metrics.unlimited'),
-                      },
+                          r.quotaMb != null ? `${r.quotaMb} MiB` : t('metrics.unlimited') },
                       {
                         key: 'ratio',
                         header: t('metrics.ratio'),
@@ -1492,8 +1447,7 @@ export function MetricsPage() {
                               {pct}%
                             </Badge>
                           );
-                        },
-                      },
+                        } },
                     ]}
                     rows={projectUsage?.items ?? []}
                     rowKey={(r) => r.projectId}

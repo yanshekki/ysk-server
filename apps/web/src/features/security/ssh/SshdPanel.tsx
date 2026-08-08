@@ -7,8 +7,7 @@ import {
   CardSection,
   Field,
   FormActions,
-  FormHint,
-} from '../../../shared/components/ui';
+  FormHint } from '../../../shared/components/ui';
 import { sshApi } from './api';
 
 type Props = {

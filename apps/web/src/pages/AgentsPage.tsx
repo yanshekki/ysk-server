@@ -29,8 +29,7 @@ import {
   Modal,
   SegRadio,
   ServerListFilters,
-  buttonClassName,
-} from '../shared/components/ui';
+  buttonClassName } from '../shared/components/ui';
 import { useServerList } from '../shared/hooks/useServerList';
 import { bindCall1, bindCloseIfIdle, bindInput, bindSet, bindVoid } from './bind-handlers';
 
@@ -140,8 +139,7 @@ export function exitHint(code: number | null): string {
     2: 'validation',
     3: 'blocked',
     4: 'not_found',
-    5: 'host_error',
-  };
+    5: 'host_error' };
   return map[code] ?? `code ${code}`;
 }
 
@@ -163,12 +161,10 @@ export function AgentsPage() {
     loadCommands,
     probeKind,
     writeUnit,
-    installKind,
-  } = useAgents();
+    installKind } = useAgents();
   const fleetList = useServerList<FleetAgent>({
     path: '/api/v1/fleet/agents',
-    debounceMs: 300,
-  });
+    debounceMs: 300 });
   const agents = fleetList.items;
   const refreshAll = async () => {
     await Promise.all([refresh(), fleetList.refresh()]);
@@ -313,23 +309,19 @@ export function AgentsPage() {
               : agents.length
                 ? t('agents.registeredOnly')
                 : t('agents.awaitProbe'),
-          tone: liveAgents > 0 ? 'ok' : 'warn',
-        },
+          tone: liveAgents > 0 ? 'ok' : 'warn' },
         items: [
           { label: t('agents.runtimes'), value: runtimeList.length },
           {
             label: t('agents.running'),
             value: running,
-            tone: running > 0 ? 'ok' : 'neutral',
-          },
+            tone: running > 0 ? 'ok' : 'neutral' },
           {
             label: t('agents.liveAgents'),
             value: liveAgents,
-            tone: liveAgents > 0 ? 'ok' : 'warn',
-          },
+            tone: liveAgents > 0 ? 'ok' : 'warn' },
           { label: t('agents.fleet'), value: agents.length },
-        ],
-      }}
+        ] }}
       actions={<ActionBar>
           <Button
             variant="ghost"
@@ -417,8 +409,7 @@ export function AgentsPage() {
                       { id: 'registered', label: t('agents.status.registered') },
                       { id: 'stale', label: t('agents.status.stale'), tone: 'warn' },
                       { id: 'offline', label: t('agents.status.disconnected'), tone: 'danger' },
-                    ],
-                  },
+                    ] },
                 ]}
               />
             }
@@ -426,8 +417,7 @@ export function AgentsPage() {
               {
                 key: 'id',
                 header: t('agents.colId'),
-                render: (a) => <code className="inline">{a.agent_id}</code>,
-              },
+                render: (a) => <code className="inline">{a.agent_id}</code> },
               {
                 key: 'status',
                 header: t('agents.colStatus'),
@@ -436,21 +426,18 @@ export function AgentsPage() {
                   <Badge tone={statusTone(a.status)}>
                     {statusLabel(a.status, t)}
                   </Badge>
-                ),
-              },
+                ) },
               {
                 key: 'group',
                 header: t('agents.colGroup'),
-                render: (a) => a.group ?? '—',
-              },
+                render: (a) => a.group ?? '—' },
               {
                 key: 'last_seen',
                 header: t('agents.colLastSeen'),
                 nowrap: true,
                 className: 'muted',
                 render: (a) =>
-                  a.last_seen_at?.slice(0, 19).replace('T', ' ') ?? '—',
-              },
+                  a.last_seen_at?.slice(0, 19).replace('T', ' ') ?? '—' },
             ]}
             rows={agents}
             rowKey={(a) => a.id}
@@ -546,16 +533,14 @@ export function AgentsPage() {
                         </div>
                       ) : null}
                     </>
-                  ),
-                },
+                  ) },
                 {
                   key: 'status',
                   header: t('agents.colStatus'),
                   nowrap: true,
                   render: (c) => (
                     <Badge tone={cmdStatusTone(c.status)}>{c.status}</Badge>
-                  ),
-                },
+                  ) },
                 {
                   key: 'exit',
                   header: 'exit',
@@ -570,8 +555,7 @@ export function AgentsPage() {
                     ) : (
                       <span className="muted">—</span>
                     );
-                  },
-                },
+                  } },
                 {
                   key: 'payload',
                   header: t('agents.colCommand'),
@@ -579,8 +563,7 @@ export function AgentsPage() {
                     <code className="inline u-break-all">
                       {summarizePayload(c.payload)}
                     </code>
-                  ),
-                },
+                  ) },
                 {
                   key: 'summary',
                   header: t('agents.colResult'),
@@ -606,8 +589,7 @@ export function AgentsPage() {
                     if (code === 0) return 'ok';
                     if (code != null) return exitHint(code);
                     return t('agents.hasResult');
-                  },
-                },
+                  } },
               ]}
               rows={commands}
               rowKey={(c) => c.id}
@@ -685,19 +667,16 @@ intervalMs: 5000`}
                     title={rt.name ?? rt.kind}
                     badge={{
                       label: statusLabel(rt.status, t),
-                      tone: statusTone(rt.status),
-                    }}
+                      tone: statusTone(rt.status) }}
                     facts={[
                       {
                         label: t('agents.path'),
                         value: pathLine,
-                        mono: Boolean(rt.installPath),
-                      },
+                        mono: Boolean(rt.installPath) },
                       {
                         label: 'systemd',
                         value: unitLine,
-                        mono: Boolean(rt.unitName),
-                      },
+                        mono: Boolean(rt.unitName) },
                     ]}
                     actions={
                       <ActionBar>

@@ -22,8 +22,7 @@ import {
   InfoCardGrid,
   ListToolbar,
   LoadingBlock,
-  PageTabs,
-} from '../shared/components/ui';
+  PageTabs } from '../shared/components/ui';
 import type { InstallStreamLine } from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { useCapabilities } from '../shared/hooks/useCapabilities';
@@ -67,10 +66,10 @@ export function adviceLabel(
   const out = tr(key, { defaultValue: '' });
   if (out && out !== key) return out;
   // fallbacks if locale missing
-  if (a === 'update') return tr('updates.advice.update', { defaultValue: tr('uiInline.s3f7c3eae') });
-  if (a === 'skip') return tr('updates.advice.skip', { defaultValue: tr('uiInline.s92e48065') });
-  if (a === 'watch') return tr('updates.advice.watch', { defaultValue: tr('uiInline.sdff0f697') });
-  if (a === 'urgent') return tr('updates.advice.urgent', { defaultValue: tr('uiInline.s012f2d7e') });
+  if (a === 'update') return tr('updates.advice.update');
+  if (a === 'skip') return tr('updates.advice.skip');
+  if (a === 'watch') return tr('updates.advice.watch');
+  if (a === 'urgent') return tr('updates.advice.urgent');
   return advice ?? '—';
 }
 
@@ -182,8 +181,7 @@ export function UpdatesPage() {
     load,
     applySelf,
     applyPackage,
-    applyPackages,
-  } = useUpdates();
+    applyPackages } = useUpdates();
 
   const [tab, setTab] = usePageTab(UPD_TABS, 'packages');
   const [riskFilter, setRiskFilter] = useState<RiskFilter>('all');
@@ -305,16 +303,14 @@ export function UpdatesPage() {
   function toastEmptySelect() {
     // lightweight: set batch progress message
     setBatchProgress(
-      t('updates.batchNoneUpgradable', {
-        defaultValue: t('uiInline.s20455064'),
-      }),
+      t('updates.batchNoneUpgradable', { }),
     );
   }
 
   function openBatchConfirm() {
     if (!selectedUpgradable.length) {
       setBatchProgress(
-        t('updates.batchEmpty', { defaultValue: t('uiInline.s9b34f8c3') }),
+        t('updates.batchEmpty'),
       );
       return;
     }
@@ -332,9 +328,7 @@ export function UpdatesPage() {
       t('updates.batchProgress', {
         n: 0,
         total: rows.length,
-        pkg: rows[0]?.packageName ?? '',
-        defaultValue: t('uiInline.s8e3824cb', { v0: rows.length }),
-      }),
+        pkg: rows[0]?.packageName ?? '' }),
     );
     try {
       const result = await applyPackages(rows, {
@@ -347,19 +341,14 @@ export function UpdatesPage() {
             t('updates.batchProgress', {
               n,
               total,
-              pkg,
-              defaultValue: t('uiInline.sc2570ff7', { v0: n, v1: total, v2: pkg }),
-            }),
+              pkg }),
           );
-        },
-      });
+        } });
       setSelectedKeys(new Set());
       setBatchProgress(
         t('updates.batchDone', {
           ok: result.ok.length,
-          fail: result.fail.length,
-          defaultValue: t('uiInline.s0bd0c471', { v0: result.ok.length, v1: result.fail.length }),
-        }) +
+          fail: result.fail.length }) +
           (result.fail.length
             ? ' · ' +
               t('updates.batchPartialFail', {
@@ -370,14 +359,11 @@ export function UpdatesPage() {
                 defaultValue: result.fail
                   .slice(0, 5)
                   .map((f) => `${f.pkg}: ${f.message}`)
-                  .join('；'),
-              })
+                  .join('；') })
             : '') +
           (result.ok.length
             ? ' · ' +
-              t('updates.batchRescanned', {
-                defaultValue: t('uiInline.s2980553a'),
-              })
+              t('updates.batchRescanned', { })
             : ''),
       );
       // Do NOT reload cached inventory — applyPackages already rescanned live apt
@@ -404,36 +390,29 @@ export function UpdatesPage() {
                 : inventory.length
                   ? t('updates.riskOk')
                   : t('updates.pendingScan'),
-          tone: heroTone,
-        },
+          tone: heroTone },
         items: [
           { label: t('updates.packages'), value: inventory.length },
           {
             label: t('updates.highRisk'),
             value: highRisk,
-            tone: highRisk > 0 ? 'danger' : 'ok',
-          },
+            tone: highRisk > 0 ? 'danger' : 'ok' },
           {
             label: t('updates.needApproval'),
             value: needApproval,
-            tone: needApproval > 0 ? 'warn' : 'neutral',
-          },
+            tone: needApproval > 0 ? 'warn' : 'neutral' },
           {
             label: t('updates.hasCve'),
             value: withCve,
-            tone: withCve > 0 ? 'warn' : 'neutral',
-          },
+            tone: withCve > 0 ? 'warn' : 'neutral' },
           {
             label: t('updates.panel'),
             value: selfAvailable ? `${selfVersion}→${selfLatest}` : selfVersion,
-            tone: selfAvailable ? 'warn' : 'ok',
-          },
+            tone: selfAvailable ? 'warn' : 'ok' },
           {
             label: t('updates.schedule'),
-            value: jobs.length,
-          },
-        ],
-      }}
+            value: jobs.length },
+        ] }}
       actions={
         <ActionBar align="end">
           <Button
@@ -470,18 +449,15 @@ export function UpdatesPage() {
           {
             id: 'packages',
             label: t('updates.tabInventory'),
-            badge: inventory.length || undefined,
-          },
+            badge: inventory.length || undefined },
           {
             id: 'panel',
             label: t('updates.tabSelf'),
-            badge: selfAvailable ? t('updates.badgeUpdate') : undefined,
-          },
+            badge: selfAvailable ? t('updates.badgeUpdate') : undefined },
           {
             id: 'schedule',
             label: t('updates.schedule'),
-            badge: jobs.length || undefined,
-          },
+            badge: jobs.length || undefined },
           { id: 'policy', label: t('updates.tabPolicy') },
           { id: 'about', label: t('common.about') },
         ]}
@@ -504,13 +480,11 @@ export function UpdatesPage() {
                           onClick={() => {
                             batchAbort.abort();
                             setBatchProgress(
-                              t('updates.batchCancelling', {
-                                defaultValue: t('uiInline.s303ee0f7'),
-                              }),
+                              t('updates.batchCancelling', { }),
                             );
                           }}
                         >
-                          {t('updates.batchCancel', { defaultValue: t('uiInline.s21858fe5') })}
+                          {t('updates.batchCancel')}
                         </Button>
                       ) : (
                         <Button
@@ -521,7 +495,7 @@ export function UpdatesPage() {
                             if (!busy) setApplyLog([]);
                           }}
                         >
-                          {t('common.dismiss', { defaultValue: t('uiInline.sddc05404') })}
+                          {t('common.dismiss')}
                         </Button>
                       )}
                     </div>
@@ -530,9 +504,7 @@ export function UpdatesPage() {
                 <InstallStreamPanel
                   lines={applyLog}
                   busy={Boolean(busy && batchProgress)}
-                  title={t('updates.applyLogTitle', {
-                    defaultValue: t('uiInline.saf251c2a'),
-                  })}
+                  title={t('updates.applyLogTitle', { })}
                 />
               </div>
             ) : null}
@@ -544,8 +516,7 @@ export function UpdatesPage() {
                 description={t('updates.inventoryDesc', {
                   shown: filtered.length,
                   total: filtered.length,
-                  when: relTime(lastAt, t),
-                })}
+                  when: relTime(lastAt, t) })}
                 toolbar={
                   <ActionBar align="end">
                     <Button
@@ -554,9 +525,7 @@ export function UpdatesPage() {
                       disabled={busy || !filteredUpgradable.length}
                       onClick={selectAllUpgradableInFilter}
                     >
-                      {t('updates.selectAllUpgradable', {
-                        defaultValue: t('uiInline.s5929623c'),
-                      })}
+                      {t('updates.selectAllUpgradable', { })}
                     </Button>
                     <Button
                       variant="ghost"
@@ -564,9 +533,7 @@ export function UpdatesPage() {
                       disabled={busy || selectedKeys.size === 0}
                       onClick={() => setSelectedKeys(new Set())}
                     >
-                      {t('updates.clearSelection', {
-                        defaultValue: t('uiInline.s18b08919'),
-                      })}
+                      {t('updates.clearSelection', { })}
                     </Button>
                     <Button
                       variant="primary"
@@ -579,17 +546,13 @@ export function UpdatesPage() {
                         !canApply
                           ? t('rbac.cap.updatesApply')
                           : selectedUpgradable.length === 0
-                            ? t('updates.batchEmpty', {
-                                defaultValue: t('uiInline.s9b34f8c3'),
-                              })
+                            ? t('updates.batchEmpty', { })
                             : undefined
                       }
                       onClick={openBatchConfirm}
                     >
                       {t('updates.updateSelected', {
-                        n: selectedUpgradable.length,
-                        defaultValue: t('uiInline.se2b088fc', { v0: selectedUpgradable.length }),
-                      })}
+                        n: selectedUpgradable.length })}
                     </Button>
                   </ActionBar>
                 }
@@ -598,8 +561,7 @@ export function UpdatesPage() {
                     search={q}
                     onSearchChange={setQ}
                     searchPlaceholder={t('updates.searchPh', {
-                      defaultValue: t('listToolbar.searchPlaceholder'),
-                    })}
+                      defaultValue: t('listToolbar.searchPlaceholder') })}
                     searching={busy}
                     loading={busy}
                     total={filtered.length}
@@ -620,32 +582,26 @@ export function UpdatesPage() {
                           {
                             id: 'upgradable',
                             label: t('updates.upgradable'),
-                            count: upgradableCount,
-                          },
+                            count: upgradableCount },
                           {
                             id: 'high',
                             label: t('updates.highRisk'),
                             count: highRisk,
-                            tone: 'danger',
-                          },
+                            tone: 'danger' },
                           {
                             id: 'medium',
                             label: t('updates.mediumFilter'),
-                            tone: 'warn',
-                          },
+                            tone: 'warn' },
                           {
                             id: 'low',
                             label: t('updates.lowUnmarked'),
-                            tone: 'ok',
-                          },
+                            tone: 'ok' },
                           {
                             id: 'approval',
                             label: t('updates.needApproval'),
                             count: needApproval,
-                            tone: 'warn',
-                          },
-                        ],
-                      },
+                            tone: 'warn' },
+                        ] },
                     ]}
                   />
                 }
@@ -677,8 +633,7 @@ export function UpdatesPage() {
                           onChange={(e) => toggleSelect(i, e.target.checked)}
                         />
                       );
-                    },
-                  },
+                    } },
                   {
                     key: 'pkg',
                     header: t('updates.colPackage'),
@@ -710,8 +665,7 @@ export function UpdatesPage() {
                           </div>
                         ) : null}
                       </div>
-                    ),
-                  },
+                    ) },
                   {
                     key: 'ver',
                     header: t('updates.colVersion'),
@@ -734,8 +688,7 @@ export function UpdatesPage() {
                           )}
                         </div>
                       );
-                    },
-                  },
+                    } },
                   {
                     key: 'advice',
                     header: t('updates.colAdvice'),
@@ -761,8 +714,7 @@ export function UpdatesPage() {
                       ) : (
                         <span className="muted">—</span>
                       );
-                    },
-                  },
+                    } },
                 ]}
                 rows={filtered}
                 rowKey={(i) => packageRowKey(i)}
@@ -840,8 +792,7 @@ export function UpdatesPage() {
                       : selfAvailable
                         ? t('updates.selfUpdatable')
                         : t('updates.selfUpToDate'),
-                    tone: !selfOk ? 'danger' : selfAvailable ? 'warn' : 'ok',
-                  }}
+                    tone: !selfOk ? 'danger' : selfAvailable ? 'warn' : 'ok' }}
                   facts={[
                     { label: t('updates.selfCurrentShort'), value: selfVersion, mono: true },
                     { label: t('updates.selfLatestShort'), value: selfLatest, mono: true },
@@ -851,8 +802,7 @@ export function UpdatesPage() {
                           {
                             label: t('updates.packages'),
                             value: String(selfUpdate.packageName),
-                            mono: true as const,
-                          },
+                            mono: true as const },
                         ]
                       : []),
                     ...(Array.isArray(selfUpdate.notes) &&
@@ -862,8 +812,7 @@ export function UpdatesPage() {
                             label: t('common.about'),
                             value: humanizeOperatorNote(
                               String((selfUpdate.notes as string[])[0]),
-                            ),
-                          },
+                            ) },
                         ]
                       : []),
                     {
@@ -872,8 +821,7 @@ export function UpdatesPage() {
                         ? t('updates.remoteUnknown')
                         : selfAvailable
                           ? t('updates.hasUpdate')
-                          : t('updates.selfUpToDate'),
-                    },
+                          : t('updates.selfUpToDate') },
                   ]}
                   actions={
                     <ActionBar>
@@ -903,17 +851,14 @@ export function UpdatesPage() {
                   facts={[
                     {
                       label: t('updates.aboutScope'),
-                      value: t('updates.aboutScopeV'),
-                    },
+                      value: t('updates.aboutScopeV') },
                     {
                       label: t('updates.aboutChannel'),
                       value:
-                        t('updates.aboutChannelV'),
-                    },
+                        t('updates.aboutChannelV') },
                     {
                       label: t('updates.aboutFail'),
-                      value: t('updates.aboutFailV'),
-                    },
+                      value: t('updates.aboutFailV') },
                   ]}
                 />
               </InfoCardGrid>
@@ -952,8 +897,7 @@ export function UpdatesPage() {
                             : '—'}
                         {j.lastRunAt
                           ? t('updates.lastRun', {
-                              when: relTime(String(j.lastRunAt), t),
-                            })
+                              when: relTime(String(j.lastRunAt), t) })
                           : ''}
                       </span>
                     </li>
@@ -971,20 +915,16 @@ export function UpdatesPage() {
               facts={[
                 {
                   label: t('updates.scanPolicy'),
-                  value: t('updates.scanPolicyV'),
-                },
+                  value: t('updates.scanPolicyV') },
                 {
                   label: t('updates.highRisk'),
-                  value: t('updates.highRiskPolicyV'),
-                },
+                  value: t('updates.highRiskPolicyV') },
                 {
                   label: t('updates.permPolicy'),
-                  value: t('updates.permPolicyV'),
-                },
+                  value: t('updates.permPolicyV') },
                 {
                   label: 'OSV',
-                  value: t('updates.osvPolicyV'),
-                },
+                  value: t('updates.osvPolicyV') },
               ]}
             />
             <nav className="upd-shortcuts" aria-label={t('updates.relatedAria')}>
@@ -1044,20 +984,13 @@ export function UpdatesPage() {
         onClose={() => {
           if (!busy) setBatchConfirmOpen(false);
         }}
-        title={t('updates.batchConfirmTitle', {
-          defaultValue: t('uiInline.sb2848bc7'),
-        })}
+        title={t('updates.batchConfirmTitle', { })}
         description={
           t('updates.batchConfirmBody', {
-            n: selectedUpgradable.length,
-            defaultValue: t('uiInline.sc1910cf2', { v0: selectedUpgradable.length }),
-          }) +
+            n: selectedUpgradable.length }) +
           (selectedHasHighRisk
             ? '\n\n' +
-              t('updates.batchConfirmHighRisk', {
-                defaultValue:
-                  t('uiInline.sc13bb38c'),
-              })
+              t('updates.batchConfirmHighRisk', { })
             : '') +
           '\n\n' +
           selectedUpgradable
@@ -1072,9 +1005,7 @@ export function UpdatesPage() {
             : '')
         }
         confirmLabel={t('updates.updateSelected', {
-          n: selectedUpgradable.length,
-          defaultValue: t('uiInline.se2b088fc', { v0: selectedUpgradable.length }),
-        })}
+          n: selectedUpgradable.length })}
         cancelLabel={t('common.cancel')}
         danger={selectedHasHighRisk}
         busy={busy}

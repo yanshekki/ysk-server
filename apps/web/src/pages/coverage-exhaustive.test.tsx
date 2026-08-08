@@ -10,8 +10,7 @@ import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
   softwareReadyRoute,
-  type FetchRoute,
-} from '../test/mock-fetch';
+  type FetchRoute } from '../test/mock-fetch';
 import { authStore } from '../shared/stores/auth-store';
 
 import { ProtectionPage } from './features/ProtectionPage';
@@ -131,8 +130,7 @@ async function exhaust(user: ReturnType<typeof userEvent.setup>, rounds = 3) {
     // Confirm / submit dialogs
     for (const b of screen
       .queryAllByRole('button', {
-        name: /confirm|delete|yes|apply|save|ok|create|submit|install|ban|lookup/i,
-      })
+        name: /confirm|delete|yes|apply|save|ok|create|submit|install|ban|lookup/i })
       .slice(0, 10)) {
       try {
         await user.click(b);
@@ -169,40 +167,34 @@ function megaRoutes(): FetchRoute[] {
         ],
         bans: {
           count: 1,
-          items: [{ ip: '203.0.113.10', source: 'fail2ban', jail: 'sshd' }],
-        },
+          items: [{ ip: '203.0.113.10', source: 'fail2ban', jail: 'sshd' }] },
         nginxLimits: {
           reqRate: '10r/s',
           burst: 20,
           connLimit: 40,
           confPath: '/x',
-          exists: true,
-        },
+          exists: true },
         firewall: { active: 'inactive', installed: true },
         fail2ban: { active: 'inactive', installed: true, jails: 1 },
         labels: {
           firewall: { short: 'off', tone: 'warn' },
           fail2ban: { short: 'off', tone: 'warn' },
           apply: { short: 'written', tone: 'info' },
-          autoBan: { short: 'on', tone: 'ok' },
-        },
+          autoBan: { short: 'on', tone: 'ok' } },
         autoBan: {
           enabled: true,
           mode: 'normal',
           method: 'fail2ban',
           cooldownMinutes: 30,
           maxAutoBansPerHour: 20,
-          whitelist: ['127.0.0.1'],
-        },
+          whitelist: ['127.0.0.1'] },
         executeEnabled: false,
         isRoot: false,
         suggestions: [
           { id: 's1', title: 'Apply daily', body: 'x', action: 'preset:daily' },
           { id: 's2', title: 'Bans', body: 'y', action: 'tab:bans' },
         ],
-        notes: [],
-      },
-    },
+        notes: [] } },
     {
       match: (url) => url.startsWith('/api/v1/defense/'),
       handler: (_u, init) => {
@@ -217,8 +209,7 @@ function megaRoutes(): FetchRoute[] {
               sources: ['nginx'],
               lastSeen: now,
               alreadyBanned: false,
-              whitelisted: false,
-            },
+              whitelisted: false },
           ],
           notes: [],
           automation: {
@@ -230,8 +221,7 @@ function megaRoutes(): FetchRoute[] {
               suggestEmergencyAt: 90,
               deescalateEnabled: true,
               deescalateToDailyBelow: 20,
-              holdMinutes: 30,
-            },
+              holdMinutes: 30 },
             autoBan: {
               enabled: true,
               mode: 'normal',
@@ -243,11 +233,9 @@ function megaRoutes(): FetchRoute[] {
               cooldownMinutes: 30,
               maxAutoBansPerHour: 20,
               intervalSeconds: 60,
-              whitelist: [],
-            },
+              whitelist: [] },
             signalWeights: {},
-            cloudflare: { enabled: false, zones: [], onAutoEscalate: false },
-          },
+            cloudflare: { enabled: false, zones: [], onAutoEscalate: false } },
           mechanisms: [{ step: '1', mechanism: 'fail2ban', tunable: 'bantime' }],
           topIps: [{ ip: '1.1.1.1', hits: 1, s429: 0, scan: 0, score: 1 }],
           vhostLimits: { withLimit: 0, total: 0, items: [] },
@@ -268,15 +256,12 @@ function megaRoutes(): FetchRoute[] {
             cityPolicyEnabled: false,
             asns: [],
             enforce: { autoBan: true, nginx: true, ufw: false },
-            autoUpdate: true,
-          },
+            autoUpdate: true },
           sources: [],
           meta: {},
           attribution: [],
-          notes: [],
-        };
-      },
-    },
+          notes: [] };
+      } },
     {
       match: (url) => url.startsWith('/api/v1/backups'),
       handler: (_u, init) => {
@@ -290,11 +275,9 @@ function megaRoutes(): FetchRoute[] {
               port: 22,
               username: 'ysk',
               path: '/backups',
-              password: '***',
-            },
+              password: '***' },
             exclusions: ['node_modules', '.git'],
-            restic: { enabled: true, repoPath: '/var/backups/restic', password: '***' },
-          };
+            restic: { enabled: true, repoPath: '/var/backups/restic', password: '***' } };
         }
         return {
           items: [
@@ -304,14 +287,11 @@ function megaRoutes(): FetchRoute[] {
               path: '/var/backups/p1.tgz',
               bytes: 2048,
               mtime: now,
-              kind: 'full',
-            },
+              kind: 'full' },
           ],
           lastRun: { at: now, ok: true },
-          snapshots: [{ id: 'snap-1', time: now, short_id: 'abc' }],
-        };
-      },
-    },
+          snapshots: [{ id: 'snap-1', time: now, short_id: 'abc' }] };
+      } },
     {
       match: (url) => url.includes('/api/v1/email/domains'),
       handler: (url, init) => {
@@ -325,8 +305,7 @@ function megaRoutes(): FetchRoute[] {
             ],
             externalTodos: ['Add SPF at registrar'],
             health: { score: 40, maxScore: 100, messages: ['SPF missing'] },
-            notes: [],
-          };
+            notes: [] };
         }
         if (url.includes('/mailboxes')) {
           return {
@@ -335,15 +314,12 @@ function megaRoutes(): FetchRoute[] {
                 id: 'mb1',
                 local_part: 'info',
                 address: 'info@example.com',
-                quotaMb: 500,
-              },
-            ],
-          };
+                quotaMb: 500 },
+            ] };
         }
         if (url.includes('/aliases')) {
           return {
-            items: [{ id: 'al1', source: 'hi@example.com', dest: 'info@example.com' }],
-          };
+            items: [{ id: 'al1', source: 'hi@example.com', dest: 'info@example.com' }] };
         }
         if (url.includes('dom-1') && !url.includes('?')) {
           return {
@@ -352,8 +328,7 @@ function megaRoutes(): FetchRoute[] {
             rate_limit_per_hour: 200,
             antispam: true,
             server_ip: '203.0.113.10',
-            apply_status: 'planned',
-          };
+            apply_status: 'planned' };
         }
         return {
           items: [
@@ -362,12 +337,9 @@ function megaRoutes(): FetchRoute[] {
               domain: 'example.com',
               rate_limit_per_hour: 200,
               antispam: true,
-              server_ip: '203.0.113.10',
-            },
-          ],
-        };
-      },
-    },
+              server_ip: '203.0.113.10' },
+          ] };
+      } },
     {
       match: (url) =>
         url.includes('/api/v1/files') ||
@@ -387,15 +359,12 @@ function megaRoutes(): FetchRoute[] {
                 type: 'file',
                 size: 1,
                 deletedAt: now,
-                mtime: now,
-              },
-            ],
-          };
+                mtime: now },
+            ] };
         }
         if (url.includes('share')) {
           return {
-            items: [{ id: 'sh1', path: 'a.txt', token: 'tok', createdAt: now }],
-          };
+            items: [{ id: 'sh1', path: 'a.txt', token: 'tok', createdAt: now }] };
         }
         if (url.includes('/read')) {
           return { content: 'hello', path: 'a.txt', bytes: 5 };
@@ -410,10 +379,8 @@ function megaRoutes(): FetchRoute[] {
           items: [
             { name: 'a.txt', path: 'a.txt', type: 'file', size: 1, mtime: now },
             { name: 'docs', path: 'docs', type: 'dir', size: 0, mtime: now },
-          ],
-        };
-      },
-    },
+          ] };
+      } },
     {
       match: (url) => url.startsWith('/api/v1/users'),
       handler: (_u, init) => {
@@ -426,21 +393,17 @@ function megaRoutes(): FetchRoute[] {
               roles: ['admin'],
               packageId: 'pkg1',
               suspended: false,
-              locale: 'en',
-            },
+              locale: 'en' },
             {
               id: 'u2',
               username: 'ops',
               roles: ['operator'],
               packageId: 'pkg1',
               suspended: false,
-              locale: 'en',
-            },
+              locale: 'en' },
           ],
-          hostUsage: { projects: 2, diskMb: 100, limitMb: 10240 },
-        };
-      },
-    },
+          hostUsage: { projects: 2, diskMb: 100, limitMb: 10240 } };
+      } },
     {
       match: (url) => url.startsWith('/api/v1/packages'),
       body: {
@@ -454,11 +417,8 @@ function megaRoutes(): FetchRoute[] {
             diskMb: 10240,
             bandwidthMb: 0,
             ftp: true,
-            ssh: true,
-          },
-        ],
-      },
-    },
+            ssh: true },
+        ] } },
     {
       match: (url) => url.includes('/api/v1/rbac'),
       body: {
@@ -467,17 +427,13 @@ function megaRoutes(): FetchRoute[] {
             role: 'operator',
             dirty: true,
             policy: { maxLevel: 'write-high', capabilities: ['projects.read', 'projects.write'] },
-            factory: { maxLevel: 'write-high', capabilities: ['projects.read'] },
-          },
+            factory: { maxLevel: 'write-high', capabilities: ['projects.read'] } },
           {
             role: 'admin',
             dirty: false,
             policy: { maxLevel: 'admin', capabilities: [] },
-            factory: { maxLevel: 'admin', capabilities: [] },
-          },
-        ],
-      },
-    },
+            factory: { maxLevel: 'admin', capabilities: [] } },
+        ] } },
     {
       match: (url) => url.startsWith('/api/v1/auth/'),
       handler: (_u, init) => {
@@ -490,8 +446,7 @@ function megaRoutes(): FetchRoute[] {
             enrolled: true,
             recoveryCodes: ['aaaa-bbbb'],
             token: 'ysk_tok',
-            key: { id: 'k2', name: 'n', prefix: 'ysk_n', created_at: now },
-          };
+            key: { id: 'k2', name: 'n', prefix: 'ysk_n', created_at: now } };
         }
         if (_u.includes('totp')) return { enabled: false, enrolled: false };
         if (_u.includes('sessions')) {
@@ -502,23 +457,18 @@ function megaRoutes(): FetchRoute[] {
                 created_at: now,
                 expires_at: now,
                 current: true,
-                ip: '1.1.1.1',
-              },
-            ],
-          };
+                ip: '1.1.1.1' },
+            ] };
         }
         if (_u.includes('api-keys')) {
           return {
-            items: [{ id: 'k1', name: 'ci', prefix: 'ysk_ci', created_at: now }],
-          };
+            items: [{ id: 'k1', name: 'ci', prefix: 'ysk_ci', created_at: now }] };
         }
         return { ok: true };
-      },
-    },
+      } },
     {
       match: (url) => url.startsWith('/api/v1/settings/security'),
-      body: { requireAdminTotp: false, requireAdminTotpStrict: false, ok: true },
-    },
+      body: { requireAdminTotp: false, requireAdminTotpStrict: false, ok: true } },
     {
       match: (url) => url.startsWith('/api/v1/approvals'),
       body: {
@@ -527,11 +477,8 @@ function megaRoutes(): FetchRoute[] {
             id: 'ap1',
             tool: 'sys.shell',
             status: 'pending',
-            requestedAt: now,
-          },
-        ],
-      },
-    },
+            requestedAt: now },
+        ] } },
     {
       match: (url) => url.startsWith('/api/v1/tools'),
       handler: (_u, init) => {
@@ -542,10 +489,8 @@ function megaRoutes(): FetchRoute[] {
           items: [
             { id: 'sys.info', name: 'sys.info', allowed: true, requiresApproval: false },
             { id: 'sys.shell', name: 'sys.shell', allowed: false, requiresApproval: true },
-          ],
-        };
-      },
-    },
+          ] };
+      } },
     {
       match: /\/api\/v1\/ssh\//,
       body: {
@@ -560,8 +505,7 @@ function megaRoutes(): FetchRoute[] {
             fingerprintSha256: 'SHA256:abcdef0123456789abcd',
             publicKey: 'ssh-ed25519 AAAA',
             createdAt: now,
-            binding: { linuxUser: 'ysk', homeDir: '/home/ysk' },
-          },
+            binding: { linuxUser: 'ysk', homeDir: '/home/ysk' } },
           {
             id: 'id-2',
             name: 'stored-key',
@@ -571,8 +515,7 @@ function megaRoutes(): FetchRoute[] {
             fingerprintSha256: 'SHA256:fedcba9876543210fedc',
             publicKey: 'ssh-ed25519 BBBB',
             createdAt: now,
-            binding: { linuxUser: 'ysk', homeDir: '/home/ysk' },
-          },
+            binding: { linuxUser: 'ysk', homeDir: '/home/ysk' } },
         ],
         host: { notes: [], lights: { package: 'ok', pam: 'ok', kbdInteractive: 'ok' } },
         pamSnippet: '#pam',
@@ -584,11 +527,8 @@ function megaRoutes(): FetchRoute[] {
           name: 'new',
           purpose: 'panel_outbound',
           status: 'stored',
-          fingerprintSha256: 'SHA256:x',
-        },
-        privateKey: 'PRIVATE',
-      },
-    },
+          fingerprintSha256: 'SHA256:x' },
+        privateKey: 'PRIVATE' } },
     {
       match: /\/api\/v1\/sftp\//,
       body: {
@@ -600,13 +540,10 @@ function megaRoutes(): FetchRoute[] {
             publicKey: 'ssh-ed25519 AAAA',
             comment: 'laptop',
             fingerprint: 'SHA256:xyz',
-            linuxUser: 'demo',
-          },
+            linuxUser: 'demo' },
         ],
         snippet: 'Match Group sftp',
-        notes: [],
-      },
-    },
+        notes: [] } },
     {
       match: /\/api\/v1\/logs\//,
       handler: (url, init) => {
@@ -622,18 +559,15 @@ function megaRoutes(): FetchRoute[] {
                 label: 'nginx',
                 unit: 'nginx.service',
                 group: 'web',
-                available: true,
-              },
+                available: true },
               {
                 id: 'file:access',
                 kind: 'file',
                 label: 'access',
                 path: '/var/log/nginx/access.log',
                 group: 'web',
-                available: true,
-              },
-            ],
-          };
+                available: true },
+            ] };
         }
         if (url.includes('overview')) {
           return {
@@ -644,8 +578,7 @@ function megaRoutes(): FetchRoute[] {
             maxLines: 300,
             sources: 2,
             units: 1,
-            projects: 1,
-          };
+            projects: 1 };
         }
         if (url.includes('settings')) {
           return {
@@ -657,10 +590,8 @@ function megaRoutes(): FetchRoute[] {
                 id: 'b1',
                 name: 'errors',
                 source: 'journal:nginx.service',
-                grep: 'error',
-              },
-            ],
-          };
+                grep: 'error' },
+            ] };
         }
         if (url.includes('projects')) {
           return {
@@ -669,10 +600,8 @@ function megaRoutes(): FetchRoute[] {
                 projectId: 'p1',
                 name: 'Demo',
                 files: [{ name: 'app.log', bytes: 10, previewable: true }],
-                related: [],
-              },
-            ],
-          };
+                related: [] },
+            ] };
         }
         if (url.includes('units')) {
           return { items: [{ unit: 'nginx.service', active: 'active' }] };
@@ -682,10 +611,8 @@ function megaRoutes(): FetchRoute[] {
           text: 'GET / 200\nerror denied\n',
           lines: ['GET / 200', 'error denied'],
           truncated: false,
-          notes: [],
-        };
-      },
-    },
+          notes: [] };
+      } },
     {
       match: /\/api\/v1\/resources\//,
       handler: (_u, init) => {
@@ -701,9 +628,7 @@ function megaRoutes(): FetchRoute[] {
               value: '1.2.3.4',
               ttl: 300,
               nsName: 'ns1.example.com',
-              apply_status: 'planned',
-            },
-          };
+              apply_status: 'planned' } };
         }
         if (_u.includes('dns/zones')) {
           return {
@@ -715,11 +640,9 @@ function megaRoutes(): FetchRoute[] {
                 nsName: 'ns1.example.com',
                 ttl: 300,
                 apply_status: 'planned',
-                backend: 'bind',
-              },
+                backend: 'bind' },
             ],
-            meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-          };
+            meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } };
         }
         if (_u.includes('dns/records')) {
           return {
@@ -730,11 +653,9 @@ function megaRoutes(): FetchRoute[] {
                 type: 'A',
                 name: '@',
                 value: '203.0.113.10',
-                ttl: 300,
-              },
+                ttl: 300 },
             ],
-            meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-          };
+            meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } };
         }
         return {
           items: [
@@ -744,13 +665,10 @@ function megaRoutes(): FetchRoute[] {
               engine: 'mysql',
               username: 'app',
               host: 'localhost',
-              apply_status: 'planned',
-            },
+              apply_status: 'planned' },
           ],
-          meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-        };
-      },
-    },
+          meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } };
+      } },
     {
       match: /\/api\/v1\/dns/,
       body: {
@@ -760,9 +678,7 @@ function megaRoutes(): FetchRoute[] {
         notes: ['ok'],
         items: [{ id: 'peer-1', host: 'ns2.example.com', user: 'ysk' }],
         peers: [{ host: 'ns2.example.com', ok: false }],
-        dsRecord: 'example.com. IN DS 1 13 2 AB',
-      },
-    },
+        dsRecord: 'example.com. IN DS 1 13 2 AB' } },
     {
       match: /\/api\/v1\/system\/host/,
       body: {
@@ -776,15 +692,13 @@ function megaRoutes(): FetchRoute[] {
           memory: { total: 1e9, free: 5e8, usedRatio: 0.5 },
           node: 'v20',
           pid: 1,
-          uid: 0,
-        },
+          uid: 0 },
         time: {
           utc: now,
           local: now,
           ntpEnabled: true,
           ntpSynchronized: true,
-          timeSource: 'ntp',
-        },
+          timeSource: 'ntp' },
         network: { ips: ['127.0.0.1'], interfaces: [], resolvers: ['1.1.1.1'] },
         disks: [],
         power: { pending: null },
@@ -793,11 +707,8 @@ function megaRoutes(): FetchRoute[] {
           executeEnabled: false,
           isRoot: false,
           canPower: false,
-          canIdentity: true,
-        },
-        collectedAt: now,
-      },
-    },
+          canIdentity: true },
+        collectedAt: now } },
     {
       match: /\/api\/v1\/fleet\//,
       body: {
@@ -808,11 +719,8 @@ function megaRoutes(): FetchRoute[] {
             status: 'connected',
             group: 'edge',
             last_seen_at: now,
-            meta: { hostname: 'edge-1' },
-          },
-        ],
-      },
-    },
+            meta: { hostname: 'edge-1' } },
+        ] } },
     {
       match: /\/api\/v1\/agents\//,
       body: {
@@ -825,11 +733,8 @@ function megaRoutes(): FetchRoute[] {
             unitActive: 'inactive',
             pathExists: false,
             installPath: '/opt/openclaw',
-            probedAt: now,
-          },
-        ],
-      },
-    },
+            probedAt: now },
+        ] } },
     {
       match: /\/api\/v1\/cron/,
       handler: (_u, init) => {
@@ -844,8 +749,7 @@ function megaRoutes(): FetchRoute[] {
             hostCrontabPreview: '0 2 * * * root true\n',
             executeEnabled: false,
             lastInstallOk: false,
-            lastInstallAt: now,
-          };
+            lastInstallAt: now };
         }
         return {
           items: [
@@ -855,12 +759,9 @@ function megaRoutes(): FetchRoute[] {
               schedule: '0 2 * * *',
               command: 'true',
               enabled: true,
-              user: 'root',
-            },
-          ],
-        };
-      },
-    },
+              user: 'root' },
+          ] };
+      } },
     {
       match: (url) => url.startsWith('/api/v1/network'),
       handler: (_u, init) => {
@@ -873,8 +774,7 @@ function megaRoutes(): FetchRoute[] {
             hasIp: true,
             networkManager: 'inactive',
             networkd: 'inactive',
-            canPersist: true,
-          },
+            canPersist: true },
           interfaces: [
             {
               name: 'eth0',
@@ -884,8 +784,7 @@ function megaRoutes(): FetchRoute[] {
               mtu: 1500,
               isLoopback: false,
               isDefaultEgress: true,
-              addrs: [{ family: 'inet', local: '10.0.0.5', prefixlen: 24 }],
-            },
+              addrs: [{ family: 'inet', local: '10.0.0.5', prefixlen: 24 }] },
           ],
           routes: [{ dst: 'default', gateway: '10.0.0.1', dev: 'eth0' }],
           caps: { canMutate: true, executeEnabled: false, isRoot: false },
@@ -898,11 +797,8 @@ function megaRoutes(): FetchRoute[] {
             source: 'static',
             notes: [],
             ignoreAutoDns: true,
-            canApply: true,
-          },
-        };
-      },
-    },
+            canApply: true } };
+      } },
     {
       match: /\/api\/v1\/cdn/,
       handler: (url, init) => {
@@ -916,8 +812,7 @@ function megaRoutes(): FetchRoute[] {
             sites: {
               total: 1,
               byApplyStatus: { planned: 1 },
-              rows: [{ id: 'site-1', name: 'S', apply_status: 'planned' }],
-            },
+              rows: [{ id: 'site-1', name: 'S', apply_status: 'planned' }] },
             cache: [
               {
                 siteId: 'site-1',
@@ -926,11 +821,9 @@ function megaRoutes(): FetchRoute[] {
                 hits: 1,
                 misses: 0,
                 method: 'stub',
-                notes: [],
-              },
+                notes: [] },
             ],
-            notes: [],
-          };
+            notes: [] };
         }
         if (url.includes('nodes')) {
           return {
@@ -943,10 +836,8 @@ function megaRoutes(): FetchRoute[] {
                 publicIpv4: ['203.0.113.10'],
                 publicIpv6: [],
                 weight: 100,
-                status: 'online',
-              },
-            ],
-          };
+                status: 'online' },
+            ] };
         }
         if (url.includes('sites')) {
           return {
@@ -962,19 +853,15 @@ function megaRoutes(): FetchRoute[] {
                   strategy: 'multi_a',
                   ttlHealthy: 60,
                   ttlUnhealthy: 30,
-                  minHealthyEdges: 1,
-                },
+                  minHealthyEdges: 1 },
                 cache: { enabled: true, zoneSize: '10m', maxAge: '10m' },
                 ssl: { mode: 'off' },
                 apply_status: 'planned',
-                edge_status: { n1: 'planned' },
-              },
-            ],
-          };
+                edge_status: { n1: 'planned' } },
+            ] };
         }
         return { items: [] };
-      },
-    },
+      } },
     {
       match: (url) => url.startsWith('/api/v1/metrics'),
       handler: (url, init) => {
@@ -991,11 +878,9 @@ function megaRoutes(): FetchRoute[] {
                 user: 'root',
                 cpu: 1,
                 mem: 2,
-                command: 'nginx: master',
-              },
+                command: 'nginx: master' },
             ],
-            notes: [],
-          };
+            notes: [] };
         }
         if (url.includes('projects')) {
           return {
@@ -1006,13 +891,11 @@ function megaRoutes(): FetchRoute[] {
                 name: 'Demo',
                 usedMb: 10,
                 quotaMb: 100,
-                path: '/home/demo',
-              },
+                path: '/home/demo' },
             ],
             totalMb: 100,
             usedMb: 10,
-            at: now,
-          };
+            at: now };
         }
         return {
           at: now,
@@ -1027,13 +910,10 @@ function megaRoutes(): FetchRoute[] {
               used: 1e10,
               avail: 9e10,
               usedRatio: 0.1,
-              mount: '/',
-            },
+              mount: '/' },
           ],
-          alerts: ['disk_high'],
-        };
-      },
-    },
+          alerts: ['disk_high'] };
+      } },
     {
       match: /\/api\/v1\/system\/db\//,
       body: {
@@ -1042,9 +922,7 @@ function megaRoutes(): FetchRoute[] {
         activeLabel: 'inactive',
         engine: 'mysql',
         executeEnabled: false,
-        isRoot: false,
-      },
-    },
+        isRoot: false } },
     {
       match: /\/api\/v1\/db\//,
       body: {
@@ -1054,13 +932,10 @@ function megaRoutes(): FetchRoute[] {
             engine: 'mysql',
             username: 'ro',
             dbName: 'app_db',
-            expiresAt: now,
-          },
+            expiresAt: now },
         ],
         password: 'once',
-        ...HONESTY_WRITTEN_BLOCKED,
-      },
-    },
+        ...HONESTY_WRITTEN_BLOCKED } },
     {
       match: /\/api\/v1\/db\/clusters/,
       body: {
@@ -1074,16 +949,14 @@ function megaRoutes(): FetchRoute[] {
             status: 'planned',
             members: [{ host: '10.0.0.1', role: 'primary', access: 'local', label: 'p' }],
             params: {},
-            artifactDir: '/tmp/c1',
-          },
+            artifactDir: '/tmp/c1' },
         ],
         plan: {
           ok: true,
           notes: ['dry'],
           steps: [{ id: '1', title: 'cfg' }],
           clusterId: 'c1',
-          files: ['a.conf'],
-        },
+          files: ['a.conf'] },
         cluster: {
           id: 'c1',
           name: 'ysk-cluster',
@@ -1092,19 +965,14 @@ function megaRoutes(): FetchRoute[] {
           status: 'planned',
           members: [],
           params: {},
-          artifactDir: '/tmp/c1',
-        },
-        ...HONESTY_WRITTEN_BLOCKED,
-      },
-    },
+          artifactDir: '/tmp/c1' },
+        ...HONESTY_WRITTEN_BLOCKED } },
     {
       match: /\/api\/v1\/dashboard\//,
       body: {
         ok: true,
         summary: { projects: 1 },
-        items: [{ id: 'a', title: 'Alert', tone: 'warn' }],
-      },
-    },
+        items: [{ id: 'a', title: 'Alert', tone: 'warn' }] } },
     {
       match: /\/api\/v1\/projects/,
       body: {
@@ -1116,11 +984,8 @@ function megaRoutes(): FetchRoute[] {
             runtime: 'node',
             processStatus: 'stopped',
             linuxUser: 'demo',
-            homeDir: '/home/demo',
-          },
-        ],
-      },
-    },
+            homeDir: '/home/demo' },
+        ] } },
     {
       match: /\/api\/v1\/ftp|\/api\/v1\/system\/ftps/,
       body: {
@@ -1128,9 +993,7 @@ function megaRoutes(): FetchRoute[] {
         status: { installed: true, active: 'inactive', activeLabel: 'inactive' },
         domains: [{ value: 'ftp.example.com', label: 'ftp.example.com' }],
         homes: [{ value: '/home/demo', label: '/home/demo' }],
-        items: [{ id: 'f1', username: 'demo', homePath: '/home/demo' }],
-      },
-    },
+        items: [{ id: 'f1', username: 'demo', homePath: '/home/demo' }] } },
     {
       match: /\/api\/v1\/hosting\/php\/ini/,
       body: {
@@ -1144,22 +1007,17 @@ function megaRoutes(): FetchRoute[] {
                 key: 'memory_limit',
                 label: 'memory_limit',
                 type: 'text',
-                default: '128M',
-              },
-            ],
-          },
+                default: '128M' },
+            ] },
         ],
         settings: {
           version: '8.2',
           values: { memory_limit: '128M' },
           extra: {},
-          rawAppend: '',
-        },
+          rawAppend: '' },
         managedIniPath: '/etc/php/8.2/conf.d/ysk.ini',
         notes: [],
-        ok: true,
-      },
-    },
+        ok: true } },
     {
       match: /\/api\/v1\/hosting\/runtimes/,
       body: {
@@ -1168,13 +1026,10 @@ function megaRoutes(): FetchRoute[] {
         settings: { values: {}, env: {} },
         envPreview: {},
         notes: [],
-        php: { versions: ['8.2'], active: '8.2' },
-      },
-    },
+        php: { versions: ['8.2'], active: '8.2' } } },
     {
       match: /\/api\/v1\/system\//,
-      body: HONESTY_WRITTEN_BLOCKED,
-    },
+      body: HONESTY_WRITTEN_BLOCKED },
     { match: /.*/, body: { ok: true, items: [], ready: true, missing: [], notes: [] } },
   ];
 }

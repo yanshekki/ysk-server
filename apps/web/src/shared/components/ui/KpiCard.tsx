@@ -6,8 +6,7 @@ export type KpiGridCols = 2 | 3 | 4;
 export function KpiGrid({
   children,
   cols = 4,
-  className,
-}: {
+  className }: {
   children: ReactNode;
   cols?: KpiGridCols;
   className?: string;

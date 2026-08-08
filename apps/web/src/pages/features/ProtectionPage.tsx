@@ -28,8 +28,7 @@ import {
   PromptDialog,
   ServerListFilters,
   SoftwareVersionBar,
-  buttonClassName,
-} from '../../shared/components/ui';
+  buttonClassName } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { api } from '../../shared/services/api';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
@@ -42,8 +41,7 @@ import {
   getGeoContinents,
   getGeoCountries,
   getGeoRegions,
-  normalizeAsnInput,
-} from '../../features/defense/geo-options';
+  normalizeAsnInput } from '../../features/defense/geo-options';
 
 const TABS = ['command', 'automation', 'bans', 'geo', 'stack', 'intel', 'about'] as const;
 
@@ -205,8 +203,7 @@ const LEVEL_TONES: Record<ThreatLevel, 'ok' | 'warn' | 'danger'> = {
   low: 'ok',
   elevated: 'warn',
   under_attack: 'danger',
-  critical: 'danger',
-};
+  critical: 'danger' };
 
 export function levelMeta(
   t: (key: string, opts?: Record<string, unknown>) => string,
@@ -216,16 +213,14 @@ export function levelMeta(
     label: t(`protection.levels.${level}.label`),
     verb: t(`protection.levels.${level}.verb`),
     tone: LEVEL_TONES[level],
-    hint: t(`protection.levels.${level}.hint`),
-  };
+    hint: t(`protection.levels.${level}.hint`) };
 }
 
 const PRESET_META_BASE: Record<string, { step: number; accent: string }> = {
   daily: { step: 1, accent: 'calm' },
   hardened: { step: 2, accent: 'firm' },
   under_attack: { step: 3, accent: 'alert' },
-  emergency: { step: 4, accent: 'critical' },
-};
+  emergency: { step: 4, accent: 'critical' } };
 
 export function presetWhen(t: (key: string) => string, id: string): string {
   const k = `protection.presetsWhen.${id}`;
@@ -477,8 +472,7 @@ export function ProtectionPage() {
   const banList = useServerList<BanRow>({
     path: '/api/v1/defense/bans',
     debounceMs: 300,
-    enabled: tab === 'bans' || tab === 'command',
-  });
+    enabled: tab === 'bans' || tab === 'command' });
   const [suspects, setSuspects] = useState<SuspectIp[]>([]);
   const [suspectNotes, setSuspectNotes] = useState<string[]>([]);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
@@ -630,8 +624,7 @@ export function ProtectionPage() {
         setVhostLimits({
           withLimit: intel.vhostsWithLimit ?? 0,
           total: intel.vhostsTotal ?? 0,
-          items: intel.vhosts ?? [],
-        });
+          items: intel.vhosts ?? [] });
       } catch {
         /* optional */
       }
@@ -657,8 +650,7 @@ export function ProtectionPage() {
           activeLabel: f2b.activeLabel,
           installed: f2b.installed,
           jails: f2b.jails?.length,
-          banned: f2b.banned?.length,
-        });
+          banned: f2b.banned?.length });
       } catch {
         setStackF2b(null);
       }
@@ -718,9 +710,7 @@ export function ProtectionPage() {
         body: JSON.stringify({
           preset: id,
           apply: !preview,
-          confirm,
-        }),
-      })) as OpsResultLike;
+          confirm }) })) as OpsResultLike;
       if (!preview) await refresh();
       if (r.notes) r.notes = summarizeOpsNotes(r.notes, t);
       return r;
@@ -734,9 +724,7 @@ export function ProtectionPage() {
         body: JSON.stringify({
           ip,
           reason: reason || banReason || t('protection.manualBan'),
-          method: banMethod,
-        }),
-      })) as OpsResultLike;
+          method: banMethod }) })) as OpsResultLike;
       if (r.notes) r.notes = summarizeOpsNotes(r.notes, t);
       await refresh();
       return r;
@@ -751,9 +739,7 @@ export function ProtectionPage() {
         body: JSON.stringify({
           ips: selectedIps,
           reason: banReason || t('protection.quickSelectBan'),
-          method: banMethod,
-        }),
-      })) as OpsResultLike;
+          method: banMethod }) })) as OpsResultLike;
       if (r.notes) r.notes = summarizeOpsNotes(r.notes, t);
       setSelected({});
       await refresh();
@@ -765,15 +751,13 @@ export function ProtectionPage() {
     await run(async () => {
       const r = (await api.requestRaw('/api/v1/defense/auto-ban', {
         method: 'PUT',
-        body: JSON.stringify(patch),
-      })) as OpsResultLike & AutoBanPolicy;
+        body: JSON.stringify(patch) })) as OpsResultLike & AutoBanPolicy;
       await refresh();
       return {
         ok: true,
         notes: [
           t('protection.autoBanStatus', { onOff: r.enabled ? t('protection.on') : t('protection.off'), mode: r.mode, method: r.method }),
-        ],
-      };
+        ] };
     }, t('protection.autoBanUpdated'));
   }
 
@@ -797,8 +781,7 @@ export function ProtectionPage() {
           t('protection.automationMaster', { onOff: r.automation.enabled ? t('protection.on') : t('protection.off') }),
           t('protection.autoPresetStatus', { onOff: r.automation.autoPreset.enabled ? t('protection.on') : t('protection.off') }),
           t('protection.autoBanAutomation', { onOff: r.automation.autoBan.enabled ? t('protection.on') : t('protection.off'), mode: r.automation.autoBan.mode }),
-        ],
-      };
+        ] };
     }, t('protection.automationSaved'));
   }
 
@@ -819,40 +802,32 @@ export function ProtectionPage() {
           ? {
               pill: {
                 label: t('protection.threatPill', { label: meta.label, score }),
-                tone: meta.tone,
-              },
+                tone: meta.tone },
               items: [
                 {
                   label: 'fail2ban',
                   value: labels?.fail2ban.short ?? '—',
-                  tone: toneToBadge(labels?.fail2ban.tone),
-                },
+                  tone: toneToBadge(labels?.fail2ban.tone) },
                 {
                   label: t('protection.statFirewall'),
                   value: labels?.firewall.short ?? '—',
-                  tone: toneToBadge(labels?.firewall.tone),
-                },
+                  tone: toneToBadge(labels?.firewall.tone) },
                 {
                   label: t('protection.statAutoBan'),
                   value: labels?.autoBan.short ?? t('common.close'),
-                  tone: toneToBadge(labels?.autoBan.tone),
-                },
+                  tone: toneToBadge(labels?.autoBan.tone) },
                 {
                   label: t('protection.statApply'),
                   value: labels?.apply.short ?? '—',
-                  tone: toneToBadge(labels?.apply.tone),
-                },
+                  tone: toneToBadge(labels?.apply.tone) },
                 {
                   label: t('protection.statActiveBans'),
                   value: status.bans?.count ?? 0,
-                  tone: banCountTone(status.bans?.count ?? 0),
-                },
+                  tone: banCountTone(status.bans?.count ?? 0) },
                 {
                   label: t('protection.statPreset'),
-                  value: activePreset?.label ?? '—',
-                },
-              ],
-            }
+                  value: activePreset?.label ?? '—' },
+              ] }
           : undefined
       }
       actions={<div className="def-head-actions">
@@ -924,13 +899,11 @@ export function ProtectionPage() {
           {
             id: 'automation',
             label: t('protection.tabs.automation'),
-            badge: automation?.enabled ? 'ON' : undefined,
-          },
+            badge: automation?.enabled ? 'ON' : undefined },
           {
             id: 'bans',
             label: t('protection.tabs.bans'),
-            badge: actionableSuspects.length || status?.bans.count || undefined,
-          },
+            badge: actionableSuspects.length || status?.bans.count || undefined },
           {
             id: 'geo',
             label: t('protection.tabs.geo'),
@@ -938,14 +911,12 @@ export function ProtectionPage() {
               ? 'ON'
               : geoStatus?.ready
                 ? undefined
-                : '!',
-          },
+                : '!' },
           { id: 'stack', label: t('protection.tabs.stack') },
           {
             id: 'intel',
             label: t('protection.tabs.intel'),
-            badge: activeSignalsCount(status?.signals) || undefined,
-          },
+            badge: activeSignalsCount(status?.signals) || undefined },
         
           { id: 'about', label: t('protection.tabs.about') },
         ]}
@@ -1066,12 +1037,10 @@ export function ProtectionPage() {
                   value: status?.nginxLimits.exists
                     ? `${status.nginxLimits.reqRate ?? '—'}/${status.nginxLimits.burst ?? '—'}/${status.nginxLimits.connLimit ?? '—'}`
                     : t('protection.notWritten'),
-                  tone: nginxLimitsTone(status?.nginxLimits.exists),
-                },
+                  tone: nginxLimitsTone(status?.nginxLimits.exists) },
                 {
                   label: t('protection.mode'),
-                  value: status?.protectionMode ?? '—',
-                },
+                  value: status?.protectionMode ?? '—' },
                 {
                   label: t('protection.controlPlane'),
                   value: status?.executeEnabled
@@ -1079,8 +1048,7 @@ export function ProtectionPage() {
                       ? t('protection.canApply')
                       : t('protection.needRoot')
                     : t('protection.writeOnly'),
-                  tone: executePathTone(status?.executeEnabled, status?.isRoot),
-                },
+                  tone: executePathTone(status?.executeEnabled, status?.isRoot) },
               ]}
             />
             <p className="muted u-text-sm u-mt-2">
@@ -1432,20 +1400,17 @@ export function ProtectionPage() {
                       key: 'step',
                       header: t('protection.step'),
                       nowrap: true,
-                      render: (row) => <strong>{row.step}</strong>,
-                    },
+                      render: (row) => <strong>{row.step}</strong> },
                     {
                       key: 'mechanism',
                       header: t('protection.mechanism'),
                       className: 'u-text-sm',
-                      render: (row) => row.mechanism,
-                    },
+                      render: (row) => row.mechanism },
                     {
                       key: 'tunable',
                       header: t('protection.youCanTune'),
                       className: 'u-text-sm muted',
-                      render: (row) => row.tunable,
-                    },
+                      render: (row) => row.tunable },
                   ]}
                   rows={
                     mechanisms.length
@@ -1454,13 +1419,11 @@ export function ProtectionPage() {
                           {
                             step: t('protection.probe'),
                             mechanism: t('protection.probeSignals'),
-                            tunable: t('protection.escalateThreshold'),
-                          },
+                            tunable: t('protection.escalateThreshold') },
                           {
                             step: t('protection.emergency'),
                             mechanism: t('protection.neverAuto'),
-                            tunable: t('protection.manualEmergency'),
-                          },
+                            tunable: t('protection.manualEmergency') },
                         ]
                   }
                   rowKey={(row) => row.step}
@@ -1535,14 +1498,11 @@ export function ProtectionPage() {
                                             ufwInactive: 1,
                                             f2bBans: 1,
                                             ...a.signalWeights,
-                                            [key]: n,
-                                          },
-                                        }
+                                            [key]: n } }
                                       : a,
                                   );
                                   void saveAutomation({
-                                    signalWeights: { [key]: n },
-                                  });
+                                    signalWeights: { [key]: n } });
                                 }}
                               />
                               <span>{n}</span>
@@ -1572,9 +1532,7 @@ export function ProtectionPage() {
                             .split(/[,\s]+/)
                             .map((s) => s.trim())
                             .filter(Boolean),
-                          onAutoEscalate: automation?.cloudflare?.onAutoEscalate !== false,
-                        },
-                      })
+                          onAutoEscalate: automation?.cloudflare?.onAutoEscalate !== false } })
                     }
                   />
                   <span>{automation?.cloudflare?.enabled ? t('protection.on') : t('protection.off')}</span>
@@ -1609,9 +1567,7 @@ export function ProtectionPage() {
                           .filter(Boolean),
                         onAutoEscalate: automation?.cloudflare?.onAutoEscalate !== false,
                         ufwAllowOnlyCf: e.target.checked,
-                        ufwKeepTcpPorts: automation?.cloudflare?.ufwKeepTcpPorts ?? [22],
-                      },
-                    })
+                        ufwKeepTcpPorts: automation?.cloudflare?.ufwKeepTcpPorts ?? [22] } })
                   }
                 />
                 <span>{t('protection.ufwOnlyCf')}</span>
@@ -1647,8 +1603,7 @@ export function ProtectionPage() {
                       zones: cfZonesText
                         .split(/[,\s]+/)
                         .map((s) => s.trim())
-                        .filter(Boolean),
-                    },
+                        .filter(Boolean) },
                     t('protection.underAttackRequested'),
                   )}
                 >
@@ -1667,8 +1622,7 @@ export function ProtectionPage() {
                       zones: cfZonesText
                         .split(/[,\s]+/)
                         .map((s) => s.trim())
-                        .filter(Boolean),
-                    },
+                        .filter(Boolean) },
                     t('protection.underAttackCleared'),
                   )}
                 >
@@ -1695,8 +1649,7 @@ export function ProtectionPage() {
                 <p className="def-kpi-body">
                   {t('protection.fwStats', {
                     allow: stackFw?.allowCount ?? '—',
-                    deny: stackFw?.denyCount ?? '—',
-                  })}
+                    deny: stackFw?.denyCount ?? '—' })}
                 </p>
                 <FormActions>
                   <Link
@@ -1717,8 +1670,7 @@ export function ProtectionPage() {
                 <p className="def-kpi-body">
                   {t('protection.f2bStats', {
                     jails: stackF2b?.jails ?? 0,
-                    banned: stackF2b?.banned ?? 0,
-                  })}
+                    banned: stackF2b?.banned ?? 0 })}
                 </p>
                 <FormActions>
                   <Link
@@ -1774,8 +1726,7 @@ export function ProtectionPage() {
                     onChange={(e) =>
                       void saveAutoBan({
                         enabled: e.target.checked,
-                        mode: e.target.checked ? ab?.mode || 'soft' : 'off',
-                      })
+                        mode: e.target.checked ? ab?.mode || 'soft' : 'off' })
                     }
                   />
                   <span>{ab?.enabled ? t('protection.open') : t('common.close')}</span>
@@ -1789,8 +1740,7 @@ export function ProtectionPage() {
                   onChange={(mode) =>
                     void saveAutoBan({
                       mode: mode as AutoBanPolicy['mode'],
-                      enabled: mode !== 'off',
-                    })
+                      enabled: mode !== 'off' })
                   }
                   options={[
                     { value: 'soft', label: t('protection.soft') },
@@ -1939,8 +1889,7 @@ export function ProtectionPage() {
                               void run(async () => {
                                 await api.requestRaw('/api/v1/defense/whitelist', {
                                   method: 'POST',
-                                  body: JSON.stringify({ ip: s.ip, action: 'add' }),
-                                });
+                                  body: JSON.stringify({ ip: s.ip, action: 'add' }) });
                                 await refresh();
                                 return { ok: true, notes: [t('protection.whitelistPlus', { ip: s.ip })] };
                               }, t('protection.whitelistAdded'))
@@ -1964,8 +1913,7 @@ export function ProtectionPage() {
 
             <DataTable
               title={t('protection.activeBansTitle', {
-                count: banList.meta?.total ?? status?.bans.count ?? banList.items.length,
-              })}
+                count: banList.meta?.total ?? status?.bans.count ?? banList.items.length })}
               description={t('protection.activeBansDesc')}
               toolbar={
                 <ActionBar>
@@ -1983,8 +1931,7 @@ export function ProtectionPage() {
                       void run(async () => {
                         const r = (await api.requestRaw('/api/v1/defense/stack/apply', {
                           method: 'POST',
-                          body: JSON.stringify({ execute: true }),
-                        })) as OpsResultLike;
+                          body: JSON.stringify({ execute: true }) })) as OpsResultLike;
                         if (r.notes) r.notes = summarizeOpsNotes(r.notes, t);
                         await refresh();
                         await banList.refresh();
@@ -2017,8 +1964,7 @@ export function ProtectionPage() {
                         { id: 'panel', label: 'panel' },
                         { id: 'ufw', label: 'ufw' },
                         { id: 'auto', label: 'auto' },
-                      ],
-                    },
+                      ] },
                   ]}
                 />
               }
@@ -2026,15 +1972,13 @@ export function ProtectionPage() {
                 {
                   key: 'ip',
                   header: 'IP',
-                  render: (b) => <code className="inline">{b.ip}</code>,
-                },
+                  render: (b) => <code className="inline">{b.ip}</code> },
                 {
                   key: 'src',
                   header: t('protection.source'),
                   className: 'muted u-text-sm',
                   render: (b) =>
-                    `${b.source}${b.jail ? ` · ${b.jail}` : ''}`,
-                },
+                    `${b.source}${b.jail ? ` · ${b.jail}` : ''}` },
               ]}
               rows={banList.items.length ? banList.items : status?.bans.items ?? []}
               rowKey={(b) => `${b.source}-${b.jail}-${b.ip}`}
@@ -2051,9 +1995,7 @@ export function ProtectionPage() {
                           body: JSON.stringify({
                             ip: b.ip,
                             jail: b.jail,
-                            method: 'fail2ban',
-                          }),
-                        })) as OpsResultLike;
+                            method: 'fail2ban' }) })) as OpsResultLike;
                         if (r.notes) r.notes = summarizeOpsNotes(r.notes, t);
                         await refresh();
                         return r;
@@ -2256,8 +2198,7 @@ export function ProtectionPage() {
                       header: 'IP',
                       render: (row) => (
                         <code className="inline">{row.ip}</code>
-                      ),
-                    },
+                      ) },
                     {
                       key: 'score',
                       header: t('protection.colScore'),
@@ -2266,20 +2207,17 @@ export function ProtectionPage() {
                         <Badge tone={row.score >= 40 ? 'warn' : 'info'}>
                           {row.score}
                         </Badge>
-                      ),
-                    },
+                      ) },
                     {
                       key: 'hits',
                       header: 'hits',
                       nowrap: true,
-                      render: (row) => row.hits,
-                    },
+                      render: (row) => row.hits },
                     {
                       key: 's429',
                       header: '429',
                       nowrap: true,
-                      render: (row) => row.s429,
-                    },
+                      render: (row) => row.s429 },
                   ]}
                   rows={topIps.slice(0, 20)}
                   rowKey={(row) => row.ip}
@@ -2349,8 +2287,7 @@ export function ProtectionPage() {
                         <div>
                           <Badge tone="info">
                             {t(`protection.eventKind.${e.kind}`, {
-                              defaultValue: e.kind.replace(/_/g, ' '),
-                            })}
+                              defaultValue: e.kind.replace(/_/g, ' ') })}
                           </Badge>{' '}
                           <strong>{e.title}</strong>
                           {e.detail ? <p className="muted u-text-sm">{e.detail}</p> : null}
@@ -2390,13 +2327,11 @@ export function ProtectionPage() {
                           status?: GeoipStatus;
                         }>('/api/v1/defense/geoip/update', {
                           method: 'POST',
-                          body: '{}',
-                        });
+                          body: '{}' });
                         await loadGeo();
                         return {
                           ok: r.ok,
-                          notes: r.notes ?? [],
-                        };
+                          notes: r.notes ?? [] };
                       }, t('protection.geoipUpdated'))
                     }
                   >
@@ -2436,19 +2371,16 @@ export function ProtectionPage() {
                       {
                         label: t('protection.dbReady'),
                         value: geoStatus.ready ? t('protection.yes') : t('protection.no'),
-                        tone: geoStatus.ready ? 'ok' : 'warn',
-                      },
+                        tone: geoStatus.ready ? 'ok' : 'warn' },
                       {
                         label: t('protection.stale'),
                         value: geoStatus.stale ? t('protection.older7d') : 'OK',
-                        tone: geoStatus.stale ? 'warn' : 'ok',
-                      },
+                        tone: geoStatus.stale ? 'warn' : 'ok' },
                       {
                         label: t('protection.lastSuccess'),
                         value: geoStatus.meta?.lastSuccessAt
                           ? relTime(geoStatus.meta.lastSuccessAt, t)
-                          : '—',
-                      },
+                          : '—' },
                     ]}
                   />
                   <ul className="list-plain list-spaced">
@@ -2736,18 +2668,14 @@ export function ProtectionPage() {
                           enforce: {
                             autoBan: true,
                             nginx: true,
-                            ufw: false,
-                          },
-                        }),
-                      });
+                            ufw: false } }) });
                       await loadGeo();
                       return {
                         ok: true,
                         notes: [
                           t('protection.policySaved', { c: r.policy.countries.length, r: r.policy.regions?.length ?? 0, a: r.policy.asns.length }),
                           ...(r.applyNotes ?? []),
-                        ],
-                      };
+                        ] };
                     }, t('protection.ipPolicySaved'))
                   }
                 >
@@ -2802,8 +2730,7 @@ export function ProtectionPage() {
                         };
                       }>('/api/v1/defense/geoip/lookup', {
                         method: 'POST',
-                        body: JSON.stringify({ ip: lookupIp }),
-                      });
+                        body: JSON.stringify({ ip: lookupIp }) });
                       setLookupResult(r);
                       const L = r.lookup ?? {};
                       return {
@@ -2814,8 +2741,7 @@ export function ProtectionPage() {
                             ? t('protection.wouldBlock', { reason: r.access.reason, matched: r.access.matched?.join(', ') })
                             : t('protection.wouldAllow', { reason: r.access?.reason ?? 'ok' }),
                           ...((L.notes as string[]) ?? []).slice(0, 4),
-                        ],
-                      };
+                        ] };
                     }, t('protection.lookupDone'))
                   }
                 >
@@ -2888,13 +2814,11 @@ export function ProtectionPage() {
                         key: 'label',
                         header: t('protection.item'),
                         nowrap: true,
-                        render: (row) => <strong>{row.label}</strong>,
-                      },
+                        render: (row) => <strong>{row.label}</strong> },
                       {
                         key: 'value',
                         header: t('protection.value'),
-                        render: (row) => row.value,
-                      },
+                        render: (row) => row.value },
                     ]}
                     rows={(
                       [
@@ -2927,8 +2851,7 @@ export function ProtectionPage() {
                       ] as const
                     ).map(([label, v]) => ({
                       label,
-                      value: String(v ?? '—'),
-                    }))}
+                      value: String(v ?? '—') }))}
                     rowKey={(row) => row.label}
                   />
                 </>
@@ -2949,8 +2872,7 @@ export function ProtectionPage() {
                 notes: summarizeOpsNotes(
                   Array.isArray(result.notes) ? result.notes.map(String) : undefined,
                   t,
-                ),
-              }
+                ) }
             : result
         }
         message={msg}

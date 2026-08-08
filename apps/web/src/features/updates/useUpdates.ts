@@ -61,8 +61,7 @@ export function useUpdates() {
                   risk: (i.risk as AdviceRow['risk']) ?? 'low',
                   cves: [] as string[],
                   requiresApproval: Boolean((i as { needsApproval?: boolean }).needsApproval),
-                  summary: '',
-                }))
+                  summary: '' }))
               : (inv.advice ?? []);
         setInventory(merged.slice(0, 200));
         setLastAt(inv.collectedAt ?? null);
@@ -83,8 +82,7 @@ export function useUpdates() {
           updateAvailable: false,
           currentVersion: '—',
           latestVersion: 'unknown',
-          notes: [e instanceof Error ? e.message : t('updates.panelCheckFailed')],
-        });
+          notes: [e instanceof Error ? e.message : t('updates.panelCheckFailed')] });
       }
       try {
         const sch = await updatesApi.scheduler();
@@ -124,8 +122,7 @@ export function useUpdates() {
               risk: 'low' as const,
               cves: [] as string[],
               requiresApproval: up,
-              summary: '',
-            };
+              summary: '' };
           }),
         );
       }
@@ -154,8 +151,7 @@ export function useUpdates() {
         cves: row.cves,
         requiresApproval: row.requiresApproval,
         summary: row.summary,
-        confirmHighRisk,
-      };
+        confirmHighRisk };
       const r = opts?.onLog
         ? await updatesApi.applyPackageStream(body, { onLog: opts.onLog })
         : await updatesApi.applyPackage(body);
@@ -175,8 +171,7 @@ export function useUpdates() {
                   currentVersion: row.candidateVersion ?? x.currentVersion,
                   candidateVersion: row.candidateVersion ?? x.candidateVersion,
                   advice: 'skip',
-                  requiresApproval: false,
-                }
+                  requiresApproval: false }
               : x,
           ),
         );
@@ -227,15 +222,12 @@ export function useUpdates() {
                 risk: row.risk,
                 cves: row.cves,
                 requiresApproval: row.requiresApproval,
-                summary: row.summary,
-              })),
-              confirmHighRisk: Boolean(opts?.confirmHighRisk),
-            };
+                summary: row.summary })),
+              confirmHighRisk: Boolean(opts?.confirmHighRisk) };
             const batch = opts?.onLog
               ? await updatesApi.applyBatchStream(batchBody, {
                   onLog: opts.onLog,
-                  signal: opts.signal,
-                })
+                  signal: opts.signal })
               : await updatesApi.applyBatch(batchBody);
             for (const r of batch.results ?? []) {
               // Require applied===true — never count plan-only / empty as success
@@ -246,8 +238,7 @@ export function useUpdates() {
                   message:
                     r.blockMessage ??
                     (r.notes ?? [])[0] ??
-                    t('updates.applyIncomplete'),
-                });
+                    t('updates.applyIncomplete') });
               }
             }
             opts?.onProgress?.(rows.length, rows.length, rows[rows.length - 1]!.packageName);
@@ -263,8 +254,7 @@ export function useUpdates() {
                     currentVersion: cand,
                     candidateVersion: cand,
                     advice: 'skip',
-                    requiresApproval: false,
-                  };
+                    requiresApproval: false };
                 }),
               );
               await rescanInventoryQuiet();
@@ -272,9 +262,7 @@ export function useUpdates() {
             if (!opts?.quiet) {
               const msg = t('updates.batchDone', {
                 ok: ok.length,
-                fail: fail.length,
-                defaultValue: t('uiInline.s9e5d3a97', { v0: ok.length, v1: fail.length }),
-              });
+                fail: fail.length });
               if (fail.length) toast.error(msg);
               else toast.ok(msg);
             }
@@ -288,17 +276,11 @@ export function useUpdates() {
           if (opts?.signal?.aborted) {
             fail.push({
               pkg: rows[i]!.packageName,
-              message: t('updates.batchCancelled', {
-                defaultValue: t('uiInline.s1f0a4bf9'),
-              }),
-            });
+              message: t('updates.batchCancelled', { }) });
             for (let j = i + 1; j < rows.length; j++) {
               fail.push({
                 pkg: rows[j]!.packageName,
-                message: t('updates.batchCancelled', {
-                  defaultValue: t('uiInline.s1f0a4bf9'),
-                }),
-              });
+                message: t('updates.batchCancelled', { }) });
             }
             break;
           }
@@ -313,28 +295,24 @@ export function useUpdates() {
               cves: row.cves,
               requiresApproval: row.requiresApproval,
               summary: row.summary,
-              confirmHighRisk: Boolean(opts?.confirmHighRisk),
-            };
+              confirmHighRisk: Boolean(opts?.confirmHighRisk) };
             const r = opts?.onLog
               ? await updatesApi.applyPackageStream(body, {
                   onLog: opts.onLog,
-                  signal: opts.signal,
-                })
+                  signal: opts.signal })
               : await updatesApi.applyPackage(body);
             const notes = sanitizeOperatorNotes(r.notes);
             if (r.blocked || !r.ok || r.applied === false) {
               fail.push({
                 pkg: row.packageName,
-                message: r.blockMessage ?? notes[0] ?? t('updates.applyIncomplete'),
-              });
+                message: r.blockMessage ?? notes[0] ?? t('updates.applyIncomplete') });
             } else {
               ok.push(row.packageName);
             }
           } catch (e) {
             fail.push({
               pkg: row.packageName,
-              message: e instanceof Error ? e.message : t('updates.updateFailed'),
-            });
+              message: e instanceof Error ? e.message : t('updates.updateFailed') });
           }
         }
         if (ok.length) {
@@ -348,8 +326,7 @@ export function useUpdates() {
                 currentVersion: cand,
                 candidateVersion: cand,
                 advice: 'skip',
-                requiresApproval: false,
-              };
+                requiresApproval: false };
             }),
           );
           await rescanInventoryQuiet();
@@ -359,17 +336,13 @@ export function useUpdates() {
             toast.ok(
               t('updates.batchDone', {
                 ok: ok.length,
-                fail: 0,
-                defaultValue: t('uiInline.s7193f51b', { v0: ok.length }),
-              }),
+                fail: 0 }),
             );
           } else if (ok.length || fail.length) {
             toast.error(
               t('updates.batchDone', {
                 ok: ok.length,
-                fail: fail.length,
-                defaultValue: t('uiInline.s9e5d3a97', { v0: ok.length, v1: fail.length }),
-              }),
+                fail: fail.length }),
             );
           }
         }
@@ -431,6 +404,5 @@ export function useUpdates() {
     load,
     applySelf,
     applyPackage,
-    applyPackages,
-  };
+    applyPackages };
 }

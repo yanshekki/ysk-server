@@ -27,16 +27,14 @@ import {
   PresetChips,
   SegRadio,
   SoftwareInstallBanner,
-  PageTabs,
-} from '../../shared/components/ui';
+  PageTabs } from '../../shared/components/ui';
 import type { OpsResultLike, MultiCheckOption, InstallStreamLine } from '../../shared/components/ui';
 import { getServerContext, setServerContext } from '../../shared/stores/server-context';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import {
   resolveRuntimeInstallState,
-  versionChipLabel,
-} from '../../features/runtimes/install-state';
+  versionChipLabel } from '../../features/runtimes/install-state';
 import { RuntimeInstallActions } from '../../features/runtimes/RuntimeInstallActions';
 import { api } from '../../shared/services/api';
 import { toast } from '../../shared/stores/toast-store';
@@ -272,10 +270,8 @@ export function PhpRuntimePage() {
       probeItems: items.map((i) => ({
         version: i.version != null ? String(i.version) : undefined,
         available: Boolean(i.available),
-        versionOutput: i.versionOutput != null ? String(i.versionOutput) : undefined,
-      })),
-      hostDefault: hostPhp,
-    });
+        versionOutput: i.versionOutput != null ? String(i.versionOutput) : undefined })),
+      hostDefault: hostPhp });
   }, [probe, version, phpCandidates]);
 
   const refresh = useCallback(async () => {
@@ -324,15 +320,13 @@ export function PhpRuntimePage() {
             recommended: Boolean(e.recommended),
             required: Boolean(e.required),
             package: e.package ?? `php${ver}-${e.id}`,
-            installed: Boolean(e.installed) || optSet.has(e.id),
-          }));
+            installed: Boolean(e.installed) || optSet.has(e.id) }));
           defaults = r.defaults ?? [];
         } catch {
           const r = await systemApi.phpExtensions(ver, { bust });
           extensions = r.extensions.map((e) => ({
             ...e,
-            installed: Boolean(e.installed) || optSet.has(e.id),
-          }));
+            installed: Boolean(e.installed) || optSet.has(e.id) }));
           defaults = r.defaults;
         }
         setExtCatalog(extensions);
@@ -370,8 +364,7 @@ export function PhpRuntimePage() {
       .map((e) => ({
         value: e.id,
         label: `${e.label} (${e.package})`,
-        hint: e.hint,
-      }));
+        hint: e.hint }));
   }, [extCatalog]);
 
   const installedOptionalExt = useMemo(
@@ -451,10 +444,8 @@ export function PhpRuntimePage() {
           { label: 'Pool', value: poolName || '—' },
           {
             label: 'php.ini',
-            value: iniLoaded ? (iniUpdatedAt ? t('runtime.loaded') : t('runtime.default')) : '—',
-          },
-        ],
-      }}
+            value: iniLoaded ? (iniUpdatedAt ? t('runtime.loaded') : t('runtime.default')) : '—' },
+        ] }}
       actions={<Button
           variant="secondary"
           size="sm"
@@ -502,8 +493,7 @@ export function PhpRuntimePage() {
                         onChange={setVersion}
                         options={phpVersionOptions.map((v) => ({
                           value: v,
-                          label: versionChipLabel(v, phpInstallState.installedVersions),
-                        }))}
+                          label: versionChipLabel(v, phpInstallState.installedVersions) }))}
                       />
                     ) : (
                       <select
@@ -532,9 +522,7 @@ export function PhpRuntimePage() {
                       label={t('runtime.phpExtAlreadyOnHost')}
                       htmlFor="php-ext-installed"
                       flush
-                      hint={t('runtime.phpExtUninstallHint', {
-                        defaultValue: t('uiInline.sac155c20'),
-                      })}
+                      hint={t('runtime.phpExtUninstallHint', { })}
                     >
                       <ul className="runtime-plugins__list" id="php-ext-installed">
                         {installedOptionalExt.map((e) => (
@@ -613,12 +601,10 @@ export function PhpRuntimePage() {
                               kind: 'php',
                               version,
                               install: true,
-                              extensions: [...new Set([...required, ...optional])],
-                            },
+                              extensions: [...new Set([...required, ...optional])] },
                             {
                               onLog: (line) =>
-                                setInstallLog((prev) => [...prev.slice(-1999), line]),
-                            },
+                                setInstallLog((prev) => [...prev.slice(-1999), line]) },
                           );
                           setExtCatalog((prev) =>
                             prev.map((e) =>
@@ -628,17 +614,14 @@ export function PhpRuntimePage() {
                           await refresh();
                           await loadExtensions(version, {
                             bust: true,
-                            optimisticInstalled: optional,
-                          });
+                            optimisticInstalled: optional });
                           return r as OpsResultLike;
                         }, t('runtime.phpExtInstallSelected', {
-                          n: optional.length,
-                        }));
+                          n: optional.length }));
                       }}
                     >
                       {t('runtime.phpExtInstallSelected', {
-                        n: extSelected.filter((id) => selectableExtIds.includes(id)).length,
-                      })}
+                        n: extSelected.filter((id) => selectableExtIds.includes(id)).length })}
                     </Button>
                   ) : null}
                   <Button
@@ -673,14 +656,9 @@ export function PhpRuntimePage() {
                 </FormActions>
                 <FormHint>
                   {phpInstallState.selectedInstalled
-                    ? t('runtime.phpExtInstallNoteInstalled', {
-                        defaultValue:
-                          t('uiInline.s23379974'),
-                      })
+                    ? t('runtime.phpExtInstallNoteInstalled', { })
                     : t('runtime.phpExtInstallNoteFirst', {
-                        version,
-                        defaultValue: t('uiInline.s7b6d4414', { v0: version, v1: version }),
-                      })}
+                        version })}
                 </FormHint>
                 {/* Runtime install only when pin not on host (or user picks a newer pin). */}
                 {!phpInstallState.selectedInstalled ? (
@@ -690,9 +668,7 @@ export function PhpRuntimePage() {
                     busy={busy}
                     installLabel={t('runtime.installPhpWithExt', {
                       version,
-                      n: extSelected.filter((id) => selectableExtIds.includes(id)).length,
-                      defaultValue: t('uiInline.s2e9a1b03', { v0: version }),
-                    })}
+                      n: extSelected.filter((id) => selectableExtIds.includes(id)).length })}
                     onSelectNewer={setVersion}
                     extraHints={<FormHint>{t('runtime.phpExtHint')}</FormHint>}
                     onInstall={() =>
@@ -714,12 +690,10 @@ export function PhpRuntimePage() {
                                 ...required,
                                 ...(optional.length ? optional : extDefaults),
                               ]),
-                            ],
-                          },
+                            ] },
                           {
                             onLog: (line) =>
-                              setInstallLog((prev) => [...prev.slice(-1999), line]),
-                          },
+                              setInstallLog((prev) => [...prev.slice(-1999), line]) },
                         );
                         await refresh();
                         await loadExtensions(version, { bust: true });
@@ -731,26 +705,23 @@ export function PhpRuntimePage() {
                   <FormHint>
                     {t('runtime.newerVersionAvailable', {
                       current: phpInstallState.newestInstalled ?? version,
-                      newer: phpInstallState.newerAvailable.join(', '),
-                    })}
+                      newer: phpInstallState.newerAvailable.join(', ') })}
                   </FormHint>
                 ) : null}
                 <InstallStreamPanel lines={installLog} busy={busy} />
                 {extOps ? (
                   <div className="u-mt-3">
-                    <OpsResultPanel title={t('runtime.phpExtOpsTitle', { defaultValue: t('uiInline.s62b73dd7') })} result={extOps} />
+                    <OpsResultPanel title={t('runtime.phpExtOpsTitle')} result={extOps} />
                   </div>
                 ) : null}
                 <ConfirmDialog
                   open={Boolean(confirmExtUninstall)}
-                  title={t('runtime.phpExtUninstallConfirmTitle', { defaultValue: t('uiInline.se23513e5') })}
+                  title={t('runtime.phpExtUninstallConfirmTitle')}
                   description={
                     confirmExtUninstall
                       ? t('runtime.phpExtUninstallConfirm', {
                           name: confirmExtUninstall.label,
-                          pkg: confirmExtUninstall.package,
-                          defaultValue: t('uiInline.sf8c8ff4b', { v0: confirmExtUninstall.package }),
-                        })
+                          pkg: confirmExtUninstall.package })
                       : ''
                   }
                   confirmLabel={t('runtime.pluginUninstall')}
@@ -764,8 +735,7 @@ export function PhpRuntimePage() {
                     void systemApi
                       .phpExtensionsUninstall({
                         version,
-                        extensions: [row.id],
-                      })
+                        extensions: [row.id] })
                       .then((r) => {
                         const body = r as {
                           ok?: boolean;
@@ -777,8 +747,7 @@ export function PhpRuntimePage() {
                           ok: body.ok !== false && !body.blocked,
                           notes: body.notes,
                           blocked: body.blocked,
-                          blockMessage: body.blockMessage,
-                        });
+                          blockMessage: body.blockMessage });
                         if (body.blocked) {
                           toast.warn(body.blockMessage ?? body.notes?.[0] ?? t('runtime.pluginUninstallBlocked'));
                         } else if (body.ok === false) {
@@ -861,8 +830,7 @@ export function PhpRuntimePage() {
                         onChange={setVersion}
                         options={phpVersionOptions.map((v) => ({
                           value: v,
-                          label: v,
-                        }))}
+                          label: v }))}
                       />
                     ) : (
                       <select
@@ -966,8 +934,7 @@ export function PhpRuntimePage() {
                                     onChange={(v) => setValue(f.key, v)}
                                     options={merged.map((o) => ({
                                       value: o.value,
-                                      label: o.label,
-                                    }))}
+                                      label: o.label }))}
                                   />
                                 );
                               }
@@ -1004,15 +971,12 @@ export function PhpRuntimePage() {
                                   label: o.label || o.value,
                                   hint: o.group
                                     ? t(`runtime.phpIniCatalog.disableFn.groups.${o.group}`, {
-                                        defaultValue: o.group,
-                                      })
-                                    : undefined,
-                                })),
+                                        defaultValue: o.group })
+                                    : undefined })),
                                 ...extras.map((v) => ({
                                   value: v,
                                   label: v,
-                                  hint: t('runtime.phpIniCatalog.disableFn.extraHint'),
-                                })),
+                                  hint: t('runtime.phpIniCatalog.disableFn.extraHint') })),
                               ];
                               return (
                                 <MultiCheckSelect
@@ -1129,8 +1093,7 @@ export function PhpRuntimePage() {
                       version,
                       values,
                       extra: parseExtra(),
-                      rawAppend,
-                    });
+                      rawAppend });
                     await loadIni(version);
                     return r as OpsResultLike;
                   }, t('runtime.phpIniSaved'))
@@ -1148,8 +1111,7 @@ export function PhpRuntimePage() {
                       version,
                       values,
                       extra: parseExtra(),
-                      rawAppend,
-                    });
+                      rawAppend });
                     return (await systemApi.phpIniApply(version)) as OpsResultLike;
                   }, t('runtime.appliedSystem'))
                 }
@@ -1238,8 +1200,7 @@ export function PhpRuntimePage() {
                           return (await systemApi.phpApply({
                             domain,
                             poolName,
-                            enableSite,
-                          })) as OpsResultLike;
+                            enableSite })) as OpsResultLike;
                         } catch (e) {
                           const m = e instanceof Error ? e.message : t('common.applyFailed');
                           return { ok: false, blocked: true, blockMessage: m, notes: [m] };
@@ -1273,8 +1234,7 @@ export function PhpRuntimePage() {
                         setTools(probe);
                         return {
                           ok: true,
-                          notes: probe.notes ?? [t('runtime.toolsProbed')],
-                        } as OpsResultLike;
+                          notes: probe.notes ?? [t('runtime.toolsProbed')] } as OpsResultLike;
                       }, t('runtime.toolsProbed'))
                     }
                   >
@@ -1293,20 +1253,17 @@ export function PhpRuntimePage() {
                             <Badge tone="ok">{tools.composer.version ?? t('common.available')}</Badge>
                           ) : (
                             <Badge tone="warn">{t('network.unavailable')}</Badge>
-                          ),
-                        },
+                          ) },
                         {
                           label: 'WP-CLI',
                           value: tools.wpCli?.available ? (
                             <Badge tone="ok">{tools.wpCli.version ?? t('common.available')}</Badge>
                           ) : (
                             <Badge tone="warn">{t('network.unavailable')}</Badge>
-                          ),
-                        },
+                          ) },
                         {
                           label: t('runtime.moduleCount'),
-                          value: String(tools.php?.modules?.length ?? 0),
-                        },
+                          value: String(tools.php?.modules?.length ?? 0) },
                       ]}
                     />
                     {tools.php?.modules?.length ? (

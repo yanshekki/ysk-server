@@ -25,8 +25,7 @@ import {
   SegRadio,
   PageTabs,
   SoftwareInstallBanner,
-  SoftwareVersionBar,
-} from '../../shared/components/ui';
+  SoftwareVersionBar } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { ftpApi, type FtpsSettings, type FtpsStatus } from '../../features/ftp';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
@@ -65,8 +64,7 @@ const empty: FtpsSettings = {
   chrootLocalUser: true,
   allowWriteableChroot: true,
   banner: 'YSK FTPS',
-  guestUsername: 'ftp',
-};
+  guestUsername: 'ftp' };
 
 export function statusLabel(s: FtpsStatus | null | undefined, t: (k: string) => string): { text: string; tone: 'ok' | 'warn' | 'danger' | 'neutral' } {
   if (!s) return { text: t('common.loading'), tone: 'neutral' };
@@ -132,8 +130,7 @@ export function FtpsServicePage() {
               inst.results?.find((r) => r.blockMessage)?.blockMessage ??
               notes[0] ??
               t('ftp.installIncomplete'),
-            notes,
-          } satisfies OpsResultLike;
+            notes } satisfies OpsResultLike;
         }
       } catch (e) {
         const m = e instanceof Error ? e.message : t('common.installFailed');
@@ -141,8 +138,7 @@ export function FtpsServicePage() {
           ok: false,
           blocked: looksLikeBlockedMessage(m),
           blockMessage: m,
-          notes: [m],
-        } satisfies OpsResultLike;
+          notes: [m] } satisfies OpsResultLike;
       }
       const r = await ftpApi.apply({ settings, applySystem: true });
       await refresh();
@@ -175,26 +171,21 @@ export function FtpsServicePage() {
       status={{
         pill: {
           label: st.text,
-          tone: st.tone === 'neutral' ? 'warn' : st.tone,
-        },
+          tone: st.tone === 'neutral' ? 'warn' : st.tone },
         items: [
           {
             label: t('common.status'),
             value: st.text,
-            tone: st.tone === 'neutral' ? 'neutral' : st.tone,
-          },
+            tone: st.tone === 'neutral' ? 'neutral' : st.tone },
           { label: t('common.port'), value: String(settings.listenPort) },
           {
             label: t('ftp.accounts'),
-            value: status?.accountCount != null ? String(status.accountCount) : '—',
-          },
+            value: status?.accountCount != null ? String(status.accountCount) : '—' },
           {
             label: 'FTPS',
             value: settings.sslEnable ? t('common.on') : t('common.off'),
-            tone: settings.sslEnable ? 'ok' : 'warn',
-          },
-        ],
-      }}
+            tone: settings.sslEnable ? 'ok' : 'warn' },
+        ] }}
       actions={<ActionBar>
           <Link to="/ftp">
             <Button variant="secondary" size="sm">

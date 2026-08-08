@@ -24,8 +24,7 @@ import {
   PresetChips,
   SegRadio,
   SoftwareInstallBanner,
-  PageTabs,
-} from '../../shared/components/ui';
+  PageTabs } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
@@ -39,8 +38,7 @@ import {
   bindApiRefresh0,
   bindApiRefresh1,
   bindApiRefresh2,
-  bindClipboard,
-} from '../bind-handlers';
+  bindClipboard } from '../bind-handlers';
 
 const F2B_TABS = ['bans', 'whitelist', 'jails', 'policy', 'service', 'about'] as const;
 
@@ -163,18 +161,15 @@ export function Fail2banPage() {
       status={{
         pill: {
           label: status?.activeLabel ?? '—',
-          tone: running ? 'ok' : status?.installed ? 'warn' : 'danger',
-        },
+          tone: running ? 'ok' : status?.installed ? 'warn' : 'danger' },
         items: [
           {
             label: t('fail2ban.statCurrentBan'),
             value:
-              status?.jails?.reduce((a, j) => a + (j.currentlyBanned ?? 0), 0) ?? 0,
-          },
+              status?.jails?.reduce((a, j) => a + (j.currentlyBanned ?? 0), 0) ?? 0 },
           {
             label: t('fail2ban.statTotal'),
-            value: status?.jails?.reduce((a, j) => a + (j.totalBanned ?? 0), 0) ?? 0,
-          },
+            value: status?.jails?.reduce((a, j) => a + (j.totalBanned ?? 0), 0) ?? 0 },
           { label: 'Jail', value: status?.jails?.length ?? 0 },
           { label: t('fail2ban.statBanList'), value: banned.length },
           { label: 'ignoreip', value: status?.ignoreIps?.length ?? 0 },
@@ -182,10 +177,8 @@ export function Fail2banPage() {
             label: t('fail2ban.statBoot'),
             value: status?.installed
               ? (status.enabled ?? '—')
-              : t('common.notInstalled'),
-          },
-        ],
-      }}
+              : t('common.notInstalled') },
+        ] }}
       actions={
         <div className="def-head-actions">
           <Button
@@ -232,18 +225,15 @@ export function Fail2banPage() {
           {
             id: 'bans',
             label: t('fail2ban.tabs.bans'),
-            badge: banned.length || undefined,
-          },
+            badge: banned.length || undefined },
           {
             id: 'whitelist',
             label: t('fail2ban.tabs.whitelist'),
-            badge: status?.ignoreIps?.length || undefined,
-          },
+            badge: status?.ignoreIps?.length || undefined },
           {
             id: 'jails',
             label: t('fail2ban.tabs.jails'),
-            badge: status?.jails?.length || undefined,
-          },
+            badge: status?.jails?.length || undefined },
           { id: 'policy', label: t('fail2ban.tabs.policy') },
           { id: 'service', label: t('fail2ban.tabs.service') },
           { id: 'about', label: t('fail2ban.tabs.about') },
@@ -348,13 +338,11 @@ export function Fail2banPage() {
                     key: 'jail',
                     header: 'Jail',
                     nowrap: true,
-                    render: (b) => <code className="inline">{b.jail}</code>,
-                  },
+                    render: (b) => <code className="inline">{b.jail}</code> },
                   {
                     key: 'ip',
                     header: 'IP',
-                    render: (b) => <code className="inline">{b.ip}</code>,
-                  },
+                    render: (b) => <code className="inline">{b.ip}</code> },
                 ]}
                 rows={banned}
                 rowKey={(b) => `${b.jail}-${b.ip}`}
@@ -464,8 +452,7 @@ export function Fail2banPage() {
                       jails: selected,
                       bantime: normalizeDurationPreset(bantime, '1h'),
                       findtime: normalizeDurationPreset(findtime, '10m'),
-                      maxretry: clampMaxretry(maxretry),
-                    },
+                      maxretry: clampMaxretry(maxretry) },
                     refresh,
                     t('fail2ban.applyIgnoreipOk'),
                   )}
@@ -477,15 +464,13 @@ export function Fail2banPage() {
               <DataTable
                 className="u-mt-4"
                 title={t('fail2ban.whitelistTitle', {
-                  count: status?.ignoreIps?.length ?? 0,
-                })}
+                  count: status?.ignoreIps?.length ?? 0 })}
                 description="dataDir/fail2ban/ignoreip.txt"
                 columns={[
                   {
                     key: 'ip',
                     header: 'IP',
-                    render: (row) => <code className="inline">{row.ip}</code>,
-                  },
+                    render: (row) => <code className="inline">{row.ip}</code> },
                 ]}
                 rows={(status?.ignoreIps ?? []).map((ip) => ({ ip }))}
                 rowKey={(row) => row.ip}
@@ -537,8 +522,7 @@ export function Fail2banPage() {
                   {
                     key: 'name',
                     header: 'Jail',
-                    render: (j) => <code className="inline">{j.name}</code>,
-                  },
+                    render: (j) => <code className="inline">{j.name}</code> },
                   {
                     key: 'enabled',
                     header: t('fail2ban.colEnabled', { defaultValue: 'On' }),
@@ -549,26 +533,22 @@ export function Fail2banPage() {
                           ? t('common.off', { defaultValue: 'off' })
                           : t('common.on', { defaultValue: 'on' })}
                       </Badge>
-                    ),
-                  },
+                    ) },
                   {
                     key: 'currently',
                     header: t('fail2ban.colCurrent'),
                     nowrap: true,
-                    render: (j) => j.currentlyBanned ?? '—',
-                  },
+                    render: (j) => j.currentlyBanned ?? '—' },
                   {
                     key: 'total',
                     header: t('fail2ban.colTotal'),
                     nowrap: true,
-                    render: (j) => j.totalBanned ?? '—',
-                  },
+                    render: (j) => j.totalBanned ?? '—' },
                   {
                     key: 'desc',
                     header: t('fail2ban.colDesc'),
                     className: 'muted u-text-sm',
-                    render: (j) => descFor(j.name) ?? '—',
-                  },
+                    render: (j) => descFor(j.name) ?? '—' },
                 ]}
                 rows={status?.jails ?? []}
                 rowKey={(j) => j.name}
@@ -663,8 +643,7 @@ export function Fail2banPage() {
                       id,
                       label: id,
                       desc: descFor(id) ?? '',
-                      group: 'other',
-                    }))
+                      group: 'other' }))
                 ).map((c) => (
                   <CheckboxField
                     key={c.id}
@@ -690,8 +669,7 @@ export function Fail2banPage() {
                       jails: selected,
                       bantime: normalizeDurationPreset(bantime, '1h'),
                       findtime: normalizeDurationPreset(findtime, '10m'),
-                      maxretry: clampMaxretry(maxretry),
-                    },
+                      maxretry: clampMaxretry(maxretry) },
                     null,
                     t('fail2ban.writtenOnlyMsg'),
                   )}
@@ -711,8 +689,7 @@ export function Fail2banPage() {
                       jails: selected,
                       bantime: normalizeDurationPreset(bantime, '1h'),
                       findtime: normalizeDurationPreset(findtime, '10m'),
-                      maxretry: clampMaxretry(maxretry),
-                    },
+                      maxretry: clampMaxretry(maxretry) },
                     refresh,
                     t('fail2ban.appliedOk'),
                   )}

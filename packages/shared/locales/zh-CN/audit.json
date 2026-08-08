@@ -13,6 +13,15 @@
     "project.create": "创建项目",
     "project.delete": "删除项目",
     "ssl.request": "申请 SSL",
-    "ssl.upload": "上传 SSL"
+    "ssl.upload": "上传 SSL",
+    "system.firewall.enable": "防火墙启用／停用",
+    "system.firewall.delete_rule": "删除防火墙规则",
+    "system.firewall.delete_deny": "移除永久拒 IP",
+    "db.adminer.apply": "数据库管理项目",
+    "project.goLive": "项目上线",
+    "project.publish": "发布 Nginx",
+    "project.suspend": "暂停项目",
+    "software.install": "安装软件",
+    "software.update": "更新软件"
   }
 }

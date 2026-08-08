@@ -45,8 +45,7 @@ import {
   SplitPanel,
   StructuredFacts,
   SummaryStrip,
-  WithPageGuide,
-} from './index';
+  WithPageGuide } from './index';
 
 function wrap(ui: React.ReactElement) {
   return render(<MemoryRouter>{ui}</MemoryRouter>);
@@ -207,8 +206,7 @@ describe('UI primitives smoke', () => {
               allLabel: 'All',
               value: 'admin',
               onChange: vi.fn(),
-              chips: [{ id: 'admin', label: 'Admin', count: 1 }],
-            },
+              chips: [{ id: 'admin', label: 'Admin', count: 1 }] },
           ]}
         />
         <ServerListFilters
@@ -352,8 +350,7 @@ describe('UI primitives smoke', () => {
           backTo="/"
           status={{
             pill: { label: 'Live', tone: 'ok' },
-            items: [{ label: 'Count', value: 1 }],
-          }}
+            items: [{ label: 'Count', value: 1 }] }}
         >
           <p>body-content</p>
         </FeaturePageLayout>
@@ -378,8 +375,7 @@ describe('UI primitives smoke', () => {
               icon: '▣',
               title: 'Projects',
               description: 'Sites',
-              badge: { label: 'new', tone: 'info' },
-            },
+              badge: { label: 'new', tone: 'info' } },
           ]}
         />
         <PageGuide
@@ -392,8 +388,7 @@ describe('UI primitives smoke', () => {
             features: [{ name: 'F1', purpose: 'does things' }],
             useCases: ['uc1'],
             workflow: ['w1'],
-            caveats: ['c1'],
-          }}
+            caveats: ['c1'] }}
         />
         <WithPageGuide guideId="__missing__" mainLabel="Main">
           <span>main-body</span>
@@ -414,8 +409,7 @@ describe('UI primitives smoke', () => {
           apply_status: 'written',
           requiresExecute: true,
           notes: ['written ≠ applied'],
-          blockMessage: 'Host execute is off',
-        }}
+          blockMessage: 'Host execute is off' }}
       />,
     );
     // Blocked honesty banner
@@ -449,8 +443,7 @@ describe('UI primitives smoke', () => {
             '健康檢查通過（4ms）',
             'systemd: is-active=inactive, MainPID=0 journalctl -u foo',
             'export CARGO_HOME=/usr/local/ysk/rust/cargo cargo build --release',
-          ],
-        }}
+          ] }}
       />,
     );
     expect(screen.getByText(/^Success$/)).toBeInTheDocument();

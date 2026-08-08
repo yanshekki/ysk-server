@@ -460,5 +460,7 @@
   "nodePathUnsafeTitle": "Node path is unsafe",
   "nodePathUnsafe": "Path {{path}} is outside the managed tree; project deploys may fail.",
   "recordedButProbeEmpty": "Panel recorded install {{v}}, but the host probe found no binary. Not installed — re-probe or reinstall.",
-  "tabTuning": "Tuning"
+  "tabTuning": "Tuning",
+  "versionPlaceholder": "Latest，",
+  "pluginsBundleWithRuntime": "Tools「Install runtime」Install（Install）。"
 }

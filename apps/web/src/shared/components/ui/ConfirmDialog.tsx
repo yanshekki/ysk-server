@@ -23,8 +23,7 @@ export function ConfirmDialog({
   confirmLabel,
   cancelLabel,
   danger = false,
-  busy = false,
-}: ConfirmDialogProps) {
+  busy = false }: ConfirmDialogProps) {
   const { t } = useTranslation();
   return (
     <Modal

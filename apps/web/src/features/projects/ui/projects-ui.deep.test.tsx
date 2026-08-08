@@ -10,8 +10,7 @@ import type { ProjectDto } from '@ysk/shared';
 import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
-  softwareReadyRoute,
-} from '../../../test/mock-fetch';
+  softwareReadyRoute } from '../../../test/mock-fetch';
 import { authStore } from '../../../shared/stores/auth-store';
 import { ProjectCreateModal } from './ProjectCreateModal';
 import { ProjectNetworkTab } from './ProjectNetworkTab';
@@ -52,16 +51,14 @@ const project = {
   bindIp: '',
   deployEntry: 'server.js',
   lastDeployAt: null,
-  lastHealth: { ok: true, status: 'stopped', latencyMs: 2 },
-} as unknown as ProjectDto;
+  lastHealth: { ok: true, status: 'stopped', latencyMs: 2 } } as unknown as ProjectDto;
 
 function baseRoutes() {
   return [
     softwareReadyRoute(),
     {
       match: (url: string) => url.includes('/usage'),
-      body: { usedMb: 42, usedBytes: 42 * 1024 * 1024, quotaMb: 1024, withinQuota: true, notes: [] },
-    },
+      body: { usedMb: 42, usedBytes: 42 * 1024 * 1024, quotaMb: 1024, withinQuota: true, notes: [] } },
     {
       match: (url: string) => url.includes('/web-stats'),
       body: {
@@ -74,9 +71,7 @@ function baseRoutes() {
         daily: [
           { day: '2026-07-30', hits: 50, status2xx: 40, status5xx: 1 },
           { day: '2026-07-31', hits: 60, status2xx: 55, status5xx: 0 },
-        ],
-      },
-    },
+        ] } },
     {
       match: (url: string) => url.includes('/os-user'),
       handler: (_url: string, init?: RequestInit) => {
@@ -98,12 +93,9 @@ function baseRoutes() {
             homeExists: true,
             homeMode: '750',
             locked: false,
-            notes: ['live ok'],
-          },
-          limits: {},
-        };
-      },
-    },
+            notes: ['live ok'] },
+          limits: {} };
+      } },
     {
       match: (url: string) => url.includes('/deploy-history'),
       body: {
@@ -114,11 +106,8 @@ function baseRoutes() {
             action: 'project.deploy',
             actor: 'admin',
             created_at: new Date().toISOString(),
-            detail: { entry: 'server.js', port: 3000 },
-          },
-        ],
-      },
-    },
+            detail: { entry: 'server.js', port: 3000 } },
+        ] } },
     {
       match: (url: string) => url.includes('/templates') || url.includes('listTemplates'),
       body: {
@@ -127,17 +116,13 @@ function baseRoutes() {
             id: 'tpl-node',
             name: 'Express starter',
             description: 'Node express',
-            runtime: 'node',
-          },
+            runtime: 'node' },
           {
             id: 'tpl-php',
             name: 'Laravel',
             description: 'PHP laravel',
-            runtime: 'php',
-          },
-        ],
-      },
-    },
+            runtime: 'php' },
+        ] } },
     {
       match: (url: string) => url.includes('/api/v1/projects'),
       handler: (url: string, init?: RequestInit) => {
@@ -148,8 +133,7 @@ function baseRoutes() {
             project,
             publish: method === 'POST' || url.includes('publish')
               ? { ...HONESTY_WRITTEN_BLOCKED, processStatus: 'stopped', listening: false }
-              : undefined,
-          };
+              : undefined };
         }
         if (url.includes('purge-cache')) {
           return { ok: true, notes: ['cache purged'] };
@@ -164,8 +148,7 @@ function baseRoutes() {
           return { ok: true, items: [project], project, notes: ['ok'], ...HONESTY_WRITTEN_BLOCKED };
         }
         return { items: [project], ...project, templates: [] };
-      },
-    },
+      } },
     {
       match: (url: string) => url.includes('/api/v1/ssh/identities'),
       handler: (_url: string, init?: RequestInit) => {
@@ -178,10 +161,8 @@ function baseRoutes() {
               name: 'demo-outbound',
               status: 'stored',
               fingerprintSha256: 'SHA256:newkeyfingerprint012345',
-              binding: { projectId: 'p1', linuxUser: 'ysk_demo' },
-            },
-            notes: ['created'],
-          };
+              binding: { projectId: 'p1', linuxUser: 'ysk_demo' } },
+            notes: ['created'] };
         }
         return {
           ok: true,
@@ -191,12 +172,9 @@ function baseRoutes() {
               name: 'bound-key',
               status: 'installed',
               fingerprintSha256: 'SHA256:abcdef0123456789abcdef',
-              binding: { projectId: 'p1', linuxUser: 'ysk_demo', homeDir: '/home/demo' },
-            },
-          ],
-        };
-      },
-    },
+              binding: { projectId: 'p1', linuxUser: 'ysk_demo', homeDir: '/home/demo' } },
+          ] };
+      } },
     {
       match: (url: string) => url.includes('/api/v1/sftp/'),
       body: {
@@ -208,18 +186,14 @@ function baseRoutes() {
             publicKey: 'ssh-ed25519 AAAA login-key',
             comment: 'laptop',
             linuxUser: 'ysk_demo',
-            homeDir: '/home/demo',
-          },
+            homeDir: '/home/demo' },
         ],
         snippet: 'Match Group sftp',
         notes: ['ok'],
-        ok: true,
-      },
-    },
+        ok: true } },
     {
       match: (url: string) => url.includes('/api/v1/system/runtimes') || url.includes('runtimeInstall'),
-      body: { ok: true, notes: ['installed'], blocked: false },
-    },
+      body: { ok: true, notes: ['installed'], blocked: false } },
     { match: /.*/, body: { ok: true, items: [], notes: [], templates: [] } },
   ];
 }
@@ -294,8 +268,7 @@ describe('ProjectCreateModal deep', () => {
     if (ip6) await user.type(ip6, '2001:db8::1');
 
     const createBtn = screen.getAllByRole('button', {
-      name: /create|建立|创建/i,
-    }).find((b) => !(b as HTMLButtonElement).disabled);
+      name: /create|建立|创建/i }).find((b) => !(b as HTMLButtonElement).disabled);
     if (createBtn) {
       await user.click(createBtn);
       await waitFor(() => expect(onSubmit).toHaveBeenCalled());
@@ -366,16 +339,14 @@ describe('ProjectNetworkTab deep', () => {
     }
 
     const expand = screen.queryAllByRole('button', {
-      name: /expand|bind|進階|高级|collapse|收合/i,
-    })[0];
+      name: /expand|bind|進階|高级|collapse|收合/i })[0];
     if (expand) await user.click(expand);
     const bind = document.getElementById('net-ip') as HTMLInputElement | null;
     if (bind) await user.type(bind, '0.0.0.0');
 
     for (const b of screen
       .queryAllByRole('button', {
-        name: /save|publish|purge|cache|儲存|发布|發布|清除/i,
-      })
+        name: /save|publish|purge|cache|儲存|发布|發布|清除/i })
       .slice(0, 10)) {
       try {
         if (!(b as HTMLButtonElement).disabled) await user.click(b);
@@ -464,8 +435,7 @@ describe('ProjectResourcesTab deep', () => {
 
     for (const b of screen
       .queryAllByRole('button', {
-        name: /save|apply|quota|chown|fix|refresh|reapply|儲存|套用|修復|遷移|migrate/i,
-      })
+        name: /save|apply|quota|chown|fix|refresh|reapply|儲存|套用|修復|遷移|migrate/i })
       .slice(0, 12)) {
       try {
         if (!(b as HTMLButtonElement).disabled) await user.click(b);
@@ -476,8 +446,7 @@ describe('ProjectResourcesTab deep', () => {
 
     // confirm migrate dialog if open
     const confirm = screen.queryAllByRole('button', {
-      name: /confirm|migrate|確認|确认|遷移/i,
-    })[0];
+      name: /confirm|migrate|確認|确认|遷移/i })[0];
     if (confirm) await user.click(confirm);
 
     await waitFor(() => {
@@ -500,15 +469,13 @@ describe('ProjectLogsTab deep', () => {
     const writeText = vi.fn(async () => undefined);
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
-      value: { writeText },
-    });
+      value: { writeText } });
     const createObjectURL = vi.fn(() => 'blob:test');
     const revokeObjectURL = vi.fn();
     vi.stubGlobal('URL', {
       ...URL,
       createObjectURL,
-      revokeObjectURL,
-    });
+      revokeObjectURL });
 
     render(
       <MemoryRouter>
@@ -532,15 +499,13 @@ describe('ProjectLogsTab deep', () => {
               label: 'nginx access',
               source: 'nginx',
               available: true,
-              meta: '/var/log/nginx',
-            },
+              meta: '/var/log/nginx' },
             {
               id: 'r2',
               kind: 'systemd',
               label: 'unit journal',
               source: 'journal',
-              available: false,
-            },
+              available: false },
           ]}
           extraDirs={['storage/logs']}
           onLoad={onLoad}
@@ -676,8 +641,7 @@ describe('ProjectAdvancedTab + Overview + Deploy variants', () => {
     const writeText = vi.fn(async () => undefined);
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
-      value: { writeText },
-    });
+      value: { writeText } });
     installFetchMock(baseRoutes());
 
     render(
@@ -721,8 +685,7 @@ describe('ProjectAdvancedTab + Overview + Deploy variants', () => {
       runtimeVersion: '3.12',
       lastDeployAt: new Date().toISOString(),
       lastDeployNotes: ['ok'],
-      nginxConfigPath: '/etc/nginx/sites-enabled/demo',
-    } as ProjectDto;
+      nginxConfigPath: '/etc/nginx/sites-enabled/demo' } as ProjectDto;
 
     render(
       <MemoryRouter>
@@ -758,8 +721,7 @@ describe('ProjectAdvancedTab + Overview + Deploy variants', () => {
 
     for (const b of screen
       .queryAllByRole('button', {
-        name: /deploy|install|toolchain|git|save|later|環境|部署|稍後/i,
-      })
+        name: /deploy|install|toolchain|git|save|later|環境|部署|稍後/i })
       .slice(0, 10)) {
       try {
         if (!(b as HTMLButtonElement).disabled) await user.click(b);
@@ -788,15 +750,11 @@ describe('ProjectAdvancedTab + Overview + Deploy variants', () => {
               memory_limit: '256M',
               max_execution_time: 60,
               upload_max_filesize: '32M',
-              display_errors: '0',
-            },
-            extra: {},
-          },
+              display_errors: '0' },
+            extra: {} },
           effective: { values: {}, extra: {} },
           adminValuePreview: [],
-          notes: [],
-        },
-      },
+          notes: [] } },
       { match: /.*/, body: { ok: true, items: [], notes: [] } },
     ]);
 
@@ -847,8 +805,7 @@ describe('ProjectSshCard + NextStep + header + badges', () => {
     });
 
     const write = screen.queryAllByRole('button', {
-      name: /write|home|install|寫入|写入/i,
-    })[0];
+      name: /write|home|install|寫入|写入/i })[0];
     if (write) {
       await user.click(write);
       await waitFor(() => expect(onMsg).toHaveBeenCalled());
@@ -864,12 +821,10 @@ describe('ProjectSshCard + NextStep + header + badges', () => {
             return {
               ok: true,
               identity: { id: 'n', name: 'new', status: 'stored', fingerprintSha256: 'SHA256:x' },
-              notes: ['created'],
-            };
+              notes: ['created'] };
           }
           return { ok: true, items: [] };
-        },
-      },
+        } },
       { match: (url: string) => url.includes('/sftp/'), body: { items: [] } },
       { match: /.*/, body: { ok: true, items: [] } },
     ]);
@@ -880,8 +835,7 @@ describe('ProjectSshCard + NextStep + header + badges', () => {
     );
     await waitFor(() => expect(document.body.textContent).toMatch(/SSH/i));
     const create = screen.queryAllByRole('button', {
-      name: /create|outbound|建立|创建/i,
-    })[0];
+      name: /create|outbound|建立|创建/i })[0];
     if (create) {
       await user.click(create);
       await waitFor(() => expect(onMsg).toHaveBeenCalled());
@@ -893,8 +847,7 @@ describe('ProjectSshCard + NextStep + header + badges', () => {
       ...project,
       osProvisioned: false,
       homeDir: '',
-      linuxUser: '',
-    } as ProjectDto;
+      linuxUser: '' } as ProjectDto;
     const { rerender, container } = render(
       <MemoryRouter>
         <ProjectNextStep project={pendingOs} />
@@ -912,8 +865,7 @@ describe('ProjectSshCard + NextStep + header + badges', () => {
               osProvisioned: true,
               lastDeployAt: null,
               processStatus: 'stopped',
-              status: 'stopped',
-            } as ProjectDto
+              status: 'stopped' } as ProjectDto
           }
         />
       </MemoryRouter>,
@@ -929,8 +881,7 @@ describe('ProjectSshCard + NextStep + header + badges', () => {
               lastDeployAt: new Date().toISOString(),
               nginxConfigPath: null,
               processStatus: 'running',
-              status: 'running',
-            } as ProjectDto
+              status: 'running' } as ProjectDto
           }
         />
       </MemoryRouter>,

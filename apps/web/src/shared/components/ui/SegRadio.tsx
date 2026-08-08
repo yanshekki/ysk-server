@@ -25,8 +25,7 @@ export function SegRadio<T extends string = string>({
   onChange,
   disabled = false,
   'aria-label': ariaLabel,
-  size = 'md',
-}: SegRadioProps<T>) {
+  size = 'md' }: SegRadioProps<T>) {
   return (
     <div
       className={`seg-radios${size === 'sm' ? ' seg-radios--sm' : ''}`}

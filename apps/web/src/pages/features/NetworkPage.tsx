@@ -28,8 +28,7 @@ import {
   Modal,
   OpsResultPanel,
   PageTabs,
-  PresetChips,
-} from '../../shared/components/ui';
+  PresetChips } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { bindCall1, bindCloseIfIdle, bindInput, bindSet, bindSet2, bindSet3, bindVoid } from '../bind-handlers';
 import {
@@ -39,8 +38,7 @@ import {
   type NetInterface,
   type NetRoute,
   type NetworkSnapshot,
-  type RealIpStatusDto,
-} from '../../features/network/api';
+  type RealIpStatusDto } from '../../features/network/api';
 
 const TABS = ['ifaces', 'routes', 'dns', 'realip', 'advanced', 'about'] as const;
 
@@ -266,8 +264,7 @@ export function NetworkPage() {
     } catch (e) {
       const r: NetApplyResult = {
         ok: false,
-        notes: [e instanceof Error ? e.message : t('common.opFailed')],
-      };
+        notes: [e instanceof Error ? e.message : t('common.opFailed')] };
       setLastOps(r);
       return r;
     } finally {
@@ -296,8 +293,7 @@ export function NetworkPage() {
           ? {
               pill: {
                 label: snap.caps.canMutate ? t('network.canMutate') : t('network.readOnlyBlocked'),
-                tone: snap.caps.canMutate ? 'ok' : 'warn',
-              },
+                tone: snap.caps.canMutate ? 'ok' : 'warn' },
               items: [
                 { label: t('network.statIfaces'), value: snap.interfaces.length },
                 { label: 'UP', value: upCount, tone: 'ok' as const },
@@ -305,20 +301,16 @@ export function NetworkPage() {
                   label: t('network.statGateway'),
                   value: snap.defaultGateway
                     ? `${snap.defaultGateway}${snap.defaultDev ? ` · ${snap.defaultDev}` : ''}`
-                    : '—',
-                },
+                    : '—' },
                 {
                   label: 'EXECUTE',
                   value: snap.caps.executeEnabled ? t('network.on') : t('network.off'),
-                  tone: snap.caps.executeEnabled ? 'ok' : 'warn',
-                },
+                  tone: snap.caps.executeEnabled ? 'ok' : 'warn' },
                 {
                   label: 'root',
                   value: snap.caps.isRoot ? t('common.yes') : t('common.no'),
-                  tone: snap.caps.isRoot ? 'ok' : 'warn',
-                },
-              ],
-            }
+                  tone: snap.caps.isRoot ? 'ok' : 'warn' },
+              ] }
           : undefined
       }
       actions={
@@ -364,8 +356,7 @@ export function NetworkPage() {
                 ok: lastOps.ok,
                 blocked: lastOps.blocked,
                 blockMessage: lastOps.blockMessage,
-                notes: lastOps.notes,
-              }}
+                notes: lastOps.notes }}
             />
           ) : null}
 
@@ -374,22 +365,18 @@ export function NetworkPage() {
               {
                 id: 'ifaces',
                 label: t('network.statIfaces'),
-                badge: snap.interfaces.length || undefined,
-              },
+                badge: snap.interfaces.length || undefined },
               {
                 id: 'routes',
                 label: t('network.tabs.routes'),
-                badge: snap.routes.length || undefined,
-              },
+                badge: snap.routes.length || undefined },
               {
                 id: 'dns',
                 label: t('network.tabs.dns'),
-                badge: snap.dns.nameservers.length || undefined,
-              },
+                badge: snap.dns.nameservers.length || undefined },
               {
                 id: 'realip',
-                label: t('network.tabs.realip', { defaultValue: 'Real IP / CDN' }),
-              },
+                label: t('network.tabs.realip', { defaultValue: 'Real IP / CDN' }) },
               { id: 'advanced', label: t('network.tabs.advanced') },
               { id: 'about', label: t('network.tabs.about') },
             ]}
@@ -421,8 +408,7 @@ export function NetworkPage() {
                             <Badge tone="neutral">lo</Badge>
                           ) : null}
                         </>
-                      ),
-                    },
+                      ) },
                     {
                       key: 'state',
                       header: t('network.colStatus'),
@@ -431,8 +417,7 @@ export function NetworkPage() {
                         <Badge tone={operTone(r.operstate)}>
                           {r.operstate}
                         </Badge>
-                      ),
-                    },
+                      ) },
                     {
                       key: 'v4',
                       header: 'IPv4',
@@ -440,8 +425,7 @@ export function NetworkPage() {
                         <code className="u-text-sm">
                           {joinCidrs(r.addrs, 'inet')}
                         </code>
-                      ),
-                    },
+                      ) },
                     {
                       key: 'v6',
                       header: 'IPv6',
@@ -449,8 +433,7 @@ export function NetworkPage() {
                         <code className="u-text-sm muted">
                           {joinCidrs(r.addrs, 'inet6')}
                         </code>
-                      ),
-                    },
+                      ) },
                     {
                       key: 'mac',
                       header: 'MAC',
@@ -459,14 +442,12 @@ export function NetworkPage() {
                         <span className="u-text-sm muted">
                           {r.mac ?? '—'}
                         </span>
-                      ),
-                    },
+                      ) },
                     {
                       key: 'mtu',
                       header: 'MTU',
                       nowrap: true,
-                      render: (r) => r.mtu ?? '—',
-                    },
+                      render: (r) => r.mtu ?? '—' },
                   ]}
                   rowActions={(r) => (
                     <ActionBar
@@ -545,33 +526,28 @@ export function NetworkPage() {
                             <Badge tone="info">default</Badge>
                           ) : null}
                         </>
-                      ),
-                    },
+                      ) },
                     {
                       key: 'gw',
                       header: 'Gateway',
-                      render: (r) => r.gateway ?? '—',
-                    },
+                      render: (r) => r.gateway ?? '—' },
                     {
                       key: 'dev',
                       header: 'Dev',
                       nowrap: true,
                       render: (r) =>
-                        r.dev ? <code>{r.dev}</code> : '—',
-                    },
+                        r.dev ? <code>{r.dev}</code> : '—' },
                     {
                       key: 'proto',
                       header: 'Proto',
                       render: (r) => (
                         <span className="muted">{r.protocol ?? '—'}</span>
-                      ),
-                    },
+                      ) },
                     {
                       key: 'metric',
                       header: 'Metric',
                       nowrap: true,
-                      render: (r) => r.metric ?? '—',
-                    },
+                      render: (r) => r.metric ?? '—' },
                   ]}
                   rowActions={(r) => (
                     <ActionBar size="sm" wrap={false}>
@@ -673,8 +649,7 @@ export function NetworkPage() {
                               snap.defaultDev ||
                               undefined,
                             confirmDefault: isDef,
-                            persistent: false,
-                          }),
+                            persistent: false }),
                         );
                       }}
                     >
@@ -698,8 +673,7 @@ export function NetworkPage() {
                               snap.defaultDev ||
                               undefined,
                             confirmDefault: isDef,
-                            persistent: routePersist,
-                          }),
+                            persistent: routePersist }),
                         );
                       }}
                     >
@@ -729,18 +703,15 @@ export function NetworkPage() {
                     items={[
                       {
                         label: t('network.mode'),
-                        value: snap.dns.mode ?? '—',
-                      },
+                        value: snap.dns.mode ?? '—' },
                       {
                         label: t('network.connection'),
                         value: snap.dns.connection
                           ? `${snap.dns.connection}${snap.dns.device ? ` · ${snap.dns.device}` : ''}`
-                          : '—',
-                      },
+                          : '—' },
                       {
                         label: t('network.source'),
-                        value: snap.dns.source,
-                      },
+                        value: snap.dns.source },
                       {
                         label: t('network.ignoreAutoDns'),
                         value:
@@ -748,8 +719,7 @@ export function NetworkPage() {
                             ? '—'
                             : snap.dns.ignoreAutoDns
                               ? t('network.ignoreYes')
-                              : t('network.ignoreNo'),
-                      },
+                              : t('network.ignoreNo') },
                     ]}
                   />
                 </Card>
@@ -764,22 +734,18 @@ export function NetworkPage() {
                       options={[
                         {
                           value: '1.1.1.1,1.0.0.1',
-                          label: 'Cloudflare',
-                        },
+                          label: 'Cloudflare' },
                         {
                           value: '8.8.8.8,8.8.4.4',
-                          label: 'Google',
-                        },
+                          label: 'Google' },
                         {
                           value: '9.9.9.9,149.112.112.112',
-                          label: 'Quad9',
-                        },
+                          label: 'Quad9' },
                         ...(snap.dns.gatewayDns
                           ? [
                               {
                                 value: snap.dns.gatewayDns,
-                                label: t('network.routerDns', { dns: snap.dns.gatewayDns }),
-                              },
+                                label: t('network.routerDns', { dns: snap.dns.gatewayDns }) },
                             ]
                           : []),
                         {
@@ -795,8 +761,7 @@ export function NetworkPage() {
                                 ns !== '127.0.0.1',
                             )
                             .join(','),
-                          label: t('network.current'),
-                        },
+                          label: t('network.current') },
                       ]}
                       value={dnsPreset}
                       onChange={(v) => {
@@ -820,8 +785,7 @@ export function NetworkPage() {
                     rows={dnsServers.map((value, index) => ({
                       id: `dns-${index}`,
                       value,
-                      index,
-                    }))}
+                      index }))}
                     rowKey={(r) => r.id}
                     empty={
                       <EmptyState
@@ -853,8 +817,7 @@ export function NetworkPage() {
                         nowrap: true,
                         render: (r) => (
                           <span className="muted">{r.index + 1}</span>
-                        ),
-                      },
+                        ) },
                       {
                         key: 'ip',
                         header: 'IP',
@@ -875,8 +838,7 @@ export function NetworkPage() {
                               setDnsPreset('');
                             }}
                           />
-                        ),
-                      },
+                        ) },
                     ]}
                     rowActions={(r) => (
                       <ActionBar size="sm" wrap={false}>
@@ -946,8 +908,7 @@ export function NetworkPage() {
                           networkApi.setDns({
                             mode: 'dhcp',
                             connection: snap.dns.connection,
-                            device: snap.dns.device,
-                          }),
+                            device: snap.dns.device }),
                         )
                       }
                     >
@@ -977,8 +938,7 @@ export function NetworkPage() {
                               .map((s) => s.trim())
                               .filter(Boolean),
                             connection: snap.dns.connection,
-                            device: snap.dns.device,
-                          }),
+                            device: snap.dns.device }),
                         );
                       }}
                     >
@@ -1023,8 +983,7 @@ export function NetworkPage() {
                           setBusy(true);
                           try {
                             const r = await networkApi.testDns({
-                              name: dnsTestName.trim() || 'example.com',
-                            });
+                              name: dnsTestName.trim() || 'example.com' });
                             setLastOps(r);
                             setDnsTestOut(
                               (r as NetApplyResult & { answers?: string[] })
@@ -1035,8 +994,7 @@ export function NetworkPage() {
                               ok: false,
                               notes: [
                                 e instanceof Error ? e.message : t('network.testFailed'),
-                              ],
-                            });
+                              ] });
                             setDnsTestOut(null);
                           } finally {
                             setBusy(false);
@@ -1082,20 +1040,16 @@ export function NetworkPage() {
                     items={[
                       {
                         label: 'iproute2',
-                        value: snap.backend.hasIp ? t('network.available') : t('network.unavailable'),
-                      },
+                        value: snap.backend.hasIp ? t('network.available') : t('network.unavailable') },
                       {
                         label: 'NetworkManager',
-                        value: snap.backend.networkManager,
-                      },
+                        value: snap.backend.networkManager },
                       {
                         label: 'systemd-networkd',
-                        value: snap.backend.networkd,
-                      },
+                        value: snap.backend.networkd },
                       {
                         label: t('network.persistNmCap'),
-                        value: snap.backend.canPersist ? t('common.yes') : t('common.no'),
-                      },
+                        value: snap.backend.canPersist ? t('common.yes') : t('common.no') },
                     ]}
                   />
                   {snap.notes?.length ? (
@@ -1122,12 +1076,10 @@ export function NetworkPage() {
                 <Card>
                   <CardHeader
                     title={t('network.realip.title', {
-                      defaultValue: 'CDN / Real client IP',
-                    })}
+                      defaultValue: 'CDN / Real client IP' })}
                     description={t('network.realip.desc', {
                       defaultValue:
-                        'Restore visitor IP behind CDN. Only trusts edge CIDRs — never blind X-Forwarded-For.',
-                    })}
+                        'Restore visitor IP behind CDN. Only trusts edge CIDRs — never blind X-Forwarded-For.' })}
                   />
                   {realIpMsg ? <Alert variant="info">{realIpMsg}</Alert> : null}
                   <FormLayout>
@@ -1135,8 +1087,7 @@ export function NetworkPage() {
                       label={t('network.realip.provider', { defaultValue: 'Default provider' })}
                       htmlFor="rip-prov"
                       hint={t('network.realip.providerHint', {
-                        defaultValue: 'none = direct origin; pick CDN when origin is behind edge',
-                      })}
+                        defaultValue: 'none = direct origin; pick CDN when origin is behind edge' })}
                       flush
                     >
                       <select
@@ -1171,24 +1122,20 @@ export function NetworkPage() {
                       >
                         <option value="single_provider">
                           {t('network.realip.modeSingle', {
-                            defaultValue: 'Single provider header (recommended)',
-                          })}
+                            defaultValue: 'Single provider header (recommended)' })}
                         </option>
                         <option value="xff_merged">
                           {t('network.realip.modeXff', {
-                            defaultValue: 'X-Forwarded-For + merged CDN CIDRs',
-                          })}
+                            defaultValue: 'X-Forwarded-For + merged CDN CIDRs' })}
                         </option>
                       </select>
                     </Field>
                     <Field
                       label={t('network.realip.customCidrs', {
-                        defaultValue: 'Extra trusted CIDRs',
-                      })}
+                        defaultValue: 'Extra trusted CIDRs' })}
                       htmlFor="rip-cidr"
                       hint={t('network.realip.customCidrsHint', {
-                        defaultValue: 'One per line. Never use 0.0.0.0/0.',
-                      })}
+                        defaultValue: 'One per line. Never use 0.0.0.0/0.' })}
                       flush
                     >
                       <textarea
@@ -1206,21 +1153,17 @@ export function NetworkPage() {
                     items={[
                       {
                         label: t('network.realip.lastRefresh', {
-                          defaultValue: 'Last CIDR refresh',
-                        }),
-                        value: realIp?.config.lastRefreshAt || '—',
-                      },
+                          defaultValue: 'Last CIDR refresh' }),
+                        value: realIp?.config.lastRefreshAt || '—' },
                       {
                         label: t('network.realip.active', { defaultValue: 'Active default' }),
-                        value: realIp?.config.defaultProvider || '—',
-                      },
+                        value: realIp?.config.defaultProvider || '—' },
                     ]}
                   />
                   <FormHint>
                     {t('network.realip.republishHint', {
                       defaultValue:
-                        'After save, re-publish project Nginx configs so sites pick up real_ip. PHP also uses Apache RemoteIP behind local Nginx.',
-                    })}
+                        'After save, re-publish project Nginx configs so sites pick up real_ip. PHP also uses Apache RemoteIP behind local Nginx.' })}
                   </FormHint>
                   <FormActions>
                     <Button
@@ -1239,8 +1182,7 @@ export function NetworkPage() {
                                 .split(/[\n,]+/)
                                 .map((s) => s.trim())
                                 .filter(Boolean),
-                              enableApacheRemoteIp: true,
-                            });
+                              enableApacheRemoteIp: true });
                             setRealIpMsg(
                               r.notes?.join('；') ||
                                 t('common.savedOk', { defaultValue: 'Saved' }),
@@ -1271,8 +1213,7 @@ export function NetworkPage() {
                             setRealIpMsg(
                               r.notes?.join('；') ||
                                 t('network.realip.refreshOk', {
-                                  defaultValue: 'CIDR lists refreshed',
-                                }),
+                                  defaultValue: 'CIDR lists refreshed' }),
                             );
                             await loadRealIp();
                           } catch (e) {
@@ -1286,8 +1227,7 @@ export function NetworkPage() {
                       }}
                     >
                       {t('network.realip.refresh', {
-                        defaultValue: 'Refresh CDN IP lists',
-                      })}
+                        defaultValue: 'Refresh CDN IP lists' })}
                     </Button>
                     <Button
                       variant="ghost"
@@ -1336,18 +1276,15 @@ export function NetworkPage() {
                 { label: t('network.type'), value: detail.linkType ?? '—' },
                 {
                   label: 'Flags',
-                  value: detail.flags.join(', ') || '—',
-                },
+                  value: detail.flags.join(', ') || '—' },
                 ...(detail.stats
                   ? [
                       {
                         label: 'RX',
-                        value: `${formatBytes(detail.stats.rxBytes)} · ${detail.stats.rxPackets} pkt`,
-                      },
+                        value: `${formatBytes(detail.stats.rxBytes)} · ${detail.stats.rxPackets} pkt` },
                       {
                         label: 'TX',
-                        value: `${formatBytes(detail.stats.txBytes)} · ${detail.stats.txPackets} pkt`,
-                      },
+                        value: `${formatBytes(detail.stats.txBytes)} · ${detail.stats.txPackets} pkt` },
                     ]
                   : []),
               ]}
@@ -1406,20 +1343,17 @@ export function NetworkPage() {
                 {
                   key: 'cidr',
                   header: 'CIDR',
-                  render: (a) => <code>{cidrOf(a)}</code>,
-                },
+                  render: (a) => <code>{cidrOf(a)}</code> },
                 {
                   key: 'family',
                   header: 'Family',
-                  render: (a) => a.family,
-                },
+                  render: (a) => a.family },
                 {
                   key: 'scope',
                   header: 'Scope',
                   render: (a) => (
                     <span className="muted">{a.scope ?? '—'}</span>
-                  ),
-                },
+                  ) },
               ]}
               rowActions={(a) => (
                 <ActionBar size="sm" wrap={false}>
@@ -1436,8 +1370,7 @@ export function NetworkPage() {
                       void run(() =>
                         networkApi.delAddr(detail.name, {
                           cidr: cidrOf(a),
-                          persistent: true,
-                        }),
+                          persistent: true }),
                       )
                     }
                   >
@@ -1474,8 +1407,7 @@ export function NetworkPage() {
                 void run(() =>
                   networkApi.addAddr(addIf, {
                     cidr: cidr.trim(),
-                    persistent: false,
-                  }),
+                    persistent: false }),
                 ).then((r) => {
                   if (r.ok) setAddOpen(false);
                 });
@@ -1491,8 +1423,7 @@ export function NetworkPage() {
                 void run(() =>
                   networkApi.addAddr(addIf, {
                     cidr: cidr.trim(),
-                    persistent: addPersist,
-                  }),
+                    persistent: addPersist }),
                 ).then((r) => {
                   if (r.ok) setAddOpen(false);
                 });
@@ -1554,8 +1485,7 @@ export function NetworkPage() {
                 void run(() =>
                   networkApi.setLink(downDlg.name, {
                     action: 'down',
-                    confirmName: downConfirm,
-                  }),
+                    confirmName: downConfirm }),
                 ).then((r) => {
                   if (r.ok) setDownDlg(null);
                 });
@@ -1618,8 +1548,7 @@ export function NetworkPage() {
                     gateway: delRoute.gateway,
                     dev: delRoute.dev,
                     confirmDefault: isDef,
-                    persistent: delRoutePersist,
-                  }),
+                    persistent: delRoutePersist }),
                 ).then((r) => {
                   if (r.ok) setDelRoute(null);
                 });

@@ -47,7 +47,9 @@
   "nginx": {
     "reloaded": "Nginx reloaded",
     "configOk": "Nginx config check passed",
-    "reloadExit": "Nginx reload exit code={{code}}"
+    "reloadExit": "Nginx reload exit code={{code}}",
+    "managedDir": "Managed config dir: {{path}}",
+    "includeHint": "In nginx: include {{path}}/*.conf;"
   },
   "ssl": {
     "requestCert": "Request certificate"

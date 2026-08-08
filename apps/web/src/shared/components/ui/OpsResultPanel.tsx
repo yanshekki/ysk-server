@@ -7,8 +7,7 @@ import { buttonClassName } from './Button';
 import { StructuredFacts, type FactItem } from './StructuredFacts';
 import {
   humanizeOperatorMessage,
-  presentOpsNotes,
-} from '../../lib/operator-messages';
+  presentOpsNotes } from '../../lib/operator-messages';
 
 /**
  * Panel input — shared OpsResultDto plus optional UI-only process facts.
@@ -48,8 +47,7 @@ export function OpsResultPanel({
   facts = [],
   onRetry,
   busy,
-  defaultShowTechnical = false,
-}: OpsResultPanelProps) {
+  defaultShowTechnical = false }: OpsResultPanelProps) {
   const { t } = useTranslation();
   const [showTech, setShowTech] = useState(defaultShowTechnical);
 
@@ -99,8 +97,7 @@ export function OpsResultPanel({
         <a href={result.url} target="_blank" rel="noreferrer">
           {result.url}
         </a>
-      ),
-    });
+      ) });
   }
 
   const hasBody =

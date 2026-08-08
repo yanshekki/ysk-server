@@ -24,8 +24,7 @@ export function Modal({
   children,
   footer,
   size = 'md',
-  className,
-}: ModalProps) {
+  className }: ModalProps) {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);

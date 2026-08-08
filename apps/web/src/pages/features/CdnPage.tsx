@@ -22,8 +22,7 @@ import {
   PageGuide,
   PageTabs,
   ServerListFilters,
-  buttonClassName,
-} from '../../shared/components/ui';
+  buttonClassName } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { useServerList } from '../../shared/hooks/useServerList';
 import { api } from '../../shared/services/api';
@@ -42,15 +41,13 @@ import {
   bindToggleInList,
   bindCloseReset,
   bindRefreshDual,
-  bindFormSubmit,
-} from '../bind-handlers';
+  bindFormSubmit } from '../bind-handlers';
 import type {
   CdnDnsStrategy,
   CdnNodeDto,
   CdnNodeRole,
   CdnSiteDto,
-  CdnSiteMode,
-} from '@ysk/shared';
+  CdnSiteMode } from '@ysk/shared';
 
 const TABS = ['nodes', 'sites', 'dashboard', 'about'] as const;
 
@@ -318,8 +315,7 @@ export function buildCdnNodeBody(input: {
     sshIdentityId: emptyToUndefined(input.sshIdentityId),
     sshHost: emptyToUndefined(input.sshHost),
     sshUsername: emptyToUndefined(input.sshUsername),
-    fleetAgentId: emptyToUndefined(input.fleetAgentId),
-  };
+    fleetAgentId: emptyToUndefined(input.fleetAgentId) };
 }
 
 /** Build POST body fields for site create/update (ssl mode + geo already resolved). */
@@ -352,8 +348,7 @@ export function buildCdnSiteBody(input: {
       maxAge: input.maxAge.trim() || '10m',
       zoneSize: '10m',
       bypassCookies: true,
-      bypassAuth: true,
-    },
+      bypassAuth: true },
     dns: {
       strategy: input.dnsStrategy,
       zoneId: emptyToUndefined(input.dnsZoneId),
@@ -361,10 +356,8 @@ export function buildCdnSiteBody(input: {
       ttlUnhealthy: 30,
       minHealthyEdges: 1,
       geoMap: input.geoMap,
-      geoSubdomains: input.geoSubdomains,
-    },
-    ssl: { mode: input.sslMode },
-  };
+      geoSubdomains: input.geoSubdomains },
+    ssl: { mode: input.sslMode } };
 }
 
 export function CdnPage() {
@@ -372,12 +365,10 @@ export function CdnPage() {
   const [tab, setTab] = usePageTab(TABS, 'nodes');
   const nodeList = useServerList<CdnNodeDto>({
     path: '/api/v1/cdn/nodes',
-    debounceMs: 300,
-  });
+    debounceMs: 300 });
   const siteList = useServerList<CdnSiteDto>({
     path: '/api/v1/cdn/sites',
-    debounceMs: 300,
-  });
+    debounceMs: 300 });
   const nodes = nodeList.items;
   const sites = siteList.items;
   const [busy, setBusy] = useState(false);
@@ -474,8 +465,7 @@ export function CdnPage() {
           site?: CdnSiteDto;
         }>('/api/v1/cdn/from-project', {
           method: 'POST',
-          body: JSON.stringify({ projectId: pid }),
-        });
+          body: JSON.stringify({ projectId: pid }) });
         setNotes(r.notes ?? []);
         setMsg(
           r.created
@@ -597,10 +587,8 @@ export function CdnPage() {
             sshIdentityId,
             sshHost,
             sshUsername,
-            fleetAgentId,
-          }),
-        ),
-      });
+            fleetAgentId }),
+        ) });
       setNodeOpen(false);
       resetNodeForm();
       setMsg(editNode ? t('cdn.nodeUpdated') : t('cdn.nodeCreated'));
@@ -644,10 +632,8 @@ export function CdnPage() {
             dnsZoneId,
             geoMap,
             geoSubdomains,
-            sslMode,
-          }),
-        ),
-      });
+            sslMode }),
+        ) });
       setSiteOpen(false);
       resetSiteForm();
       setMsg(editSite ? t('cdn.siteUpdated') : t('cdn.siteCreated'));
@@ -670,10 +656,8 @@ export function CdnPage() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: '{}',
-        },
+            ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+          body: '{}' },
       );
       const r = (await res.json()) as { ok?: boolean; notes?: string[] };
       setNotes(r.notes ?? []);
@@ -695,10 +679,8 @@ export function CdnPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: '{}',
-      });
+          ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: '{}' });
       const r = (await res.json()) as { ok?: boolean; notes?: string[] };
       setNotes(r.notes ?? []);
       setMsg(r.ok ? t('cdn.batchProbeOk') : t('cdn.batchProbePartial'));
@@ -717,8 +699,7 @@ export function CdnPage() {
         `/api/v1/cdn/nodes/${encodeURIComponent(id)}/drain`,
         {
           method: 'POST',
-          body: JSON.stringify({ draining }),
-        },
+          body: JSON.stringify({ draining }) },
       );
       setMsg(draining ? t('cdn.drainingSet') : t('cdn.drainCleared'));
       await refresh();
@@ -734,8 +715,7 @@ export function CdnPage() {
     setBusy(true);
     try {
       await api.requestRaw(`/api/v1/cdn/nodes/${encodeURIComponent(id)}`, {
-        method: 'DELETE',
-      });
+        method: 'DELETE' });
       setMsg(t('cdn.nodeDeleted'));
       await refresh();
     } catch (err) {
@@ -750,8 +730,7 @@ export function CdnPage() {
     setBusy(true);
     try {
       await api.requestRaw(`/api/v1/cdn/sites/${encodeURIComponent(id)}`, {
-        method: 'DELETE',
-      });
+        method: 'DELETE' });
       setMsg(t('cdn.siteDeleted'));
       await refresh();
     } catch (err) {
@@ -777,10 +756,8 @@ export function CdnPage() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify(body),
-        },
+            ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+          body: JSON.stringify(body) },
       );
       const r = (await res.json()) as {
         ok?: boolean;
@@ -826,18 +803,15 @@ export function CdnPage() {
       status={{
         pill: {
           label: formatCdnPillLabel(nodes.length, sites.length),
-          tone: nodes.length ? 'ok' : 'warn',
-        },
+          tone: nodes.length ? 'ok' : 'warn' },
         items: [
           { label: t('cdn.statNodes'), value: nodes.length },
           { label: 'Online', value: online },
           { label: t('cdn.statSites'), value: sites.length },
           {
             label: 'Hit%',
-            value: formatHitRatePct(dashboard?.overallHitRatePct),
-          },
-        ],
-      }}
+            value: formatHitRatePct(dashboard?.overallHitRatePct) },
+        ] }}
       actions={
         <>
           <Button
@@ -906,8 +880,7 @@ export function CdnPage() {
             <DataTable<CdnNodeDto>
               rowKey={(r) => r.id}
               title={t('cdn.nodesTitle', {
-                count: nodeList.meta?.total ?? nodes.length,
-              })}
+                count: nodeList.meta?.total ?? nodes.length })}
               description={t('cdn.nodesDesc')}
               toolbar={
                 <ActionBar>
@@ -949,13 +922,11 @@ export function CdnPage() {
                     >
                       {n.name}
                     </button>
-                  ),
-                },
+                  ) },
                 {
                   key: 'region',
                   header: 'Region',
-                  render: (n) => n.region,
-                },
+                  render: (n) => n.region },
                 {
                   key: 'roles',
                   header: t('cdn.colRole'),
@@ -964,8 +935,7 @@ export function CdnPage() {
                       <Badge key={role} className="u-mr-1">
                         {role}
                       </Badge>
-                    )),
-                },
+                    )) },
                 {
                   key: 'ip',
                   header: 'IP',
@@ -973,15 +943,13 @@ export function CdnPage() {
                     <code className="inline u-text-sm">
                       {formatNodeIp(n)}
                     </code>
-                  ),
-                },
+                  ) },
                 {
                   key: 'status',
                   header: t('cdn.colStatus'),
                   render: (n) => (
                     <Badge tone={statusTone(n.status)}>{n.status}</Badge>
-                  ),
-                },
+                  ) },
                 {
                   key: 'actions',
                   header: '',
@@ -1012,8 +980,7 @@ export function CdnPage() {
                         {t('common.delete')}
                       </Button>
                     </ActionBar>
-                  ),
-                },
+                  ) },
               ]}
               rows={nodes}
               empty={
@@ -1031,8 +998,7 @@ export function CdnPage() {
             <DataTable<CdnSiteDto>
               rowKey={(r) => r.id}
               title={t('cdn.sitesTitle', {
-                count: siteList.meta?.total ?? sites.length,
-              })}
+                count: siteList.meta?.total ?? sites.length })}
               description={t('cdn.sitesDesc')}
               toolbar={
                 <ActionBar>
@@ -1060,10 +1026,8 @@ export function CdnPage() {
                               'Content-Type': 'application/json',
                               ...(token
                                 ? { Authorization: `Bearer ${token}` }
-                                : {}),
-                            },
-                            body: '{}',
-                          });
+                                : {}) },
+                            body: '{}' });
                           const r = (await res.json()) as {
                             ok?: boolean;
                             notes?: string[];
@@ -1113,8 +1077,7 @@ export function CdnPage() {
                     >
                       {s.name}
                     </button>
-                  ),
-                },
+                  ) },
                 {
                   key: 'domains',
                   header: t('cdn.colDomain'),
@@ -1122,13 +1085,11 @@ export function CdnPage() {
                     <code className="inline u-text-sm">
                       {(s.domains ?? []).join(', ')}
                     </code>
-                  ),
-                },
+                  ) },
                 {
                   key: 'mode',
                   header: t('cdn.colMode'),
-                  render: (s) => s.mode,
-                },
+                  render: (s) => s.mode },
                 {
                   key: 'origin',
                   header: 'Origin',
@@ -1140,13 +1101,11 @@ export function CdnPage() {
                           ? `project:${s.origin.projectId}`
                           : '—'}
                     </span>
-                  ),
-                },
+                  ) },
                 {
                   key: 'edges',
                   header: 'Edges',
-                  render: (s) => s.edgeNodeIds?.length ?? 0,
-                },
+                  render: (s) => s.edgeNodeIds?.length ?? 0 },
                 {
                   key: 'status',
                   header: 'apply',
@@ -1154,8 +1113,7 @@ export function CdnPage() {
                     <Badge tone={statusTone(s.apply_status)}>
                       {s.apply_status}
                     </Badge>
-                  ),
-                },
+                  ) },
                 {
                   key: 'actions',
                   header: '',
@@ -1230,8 +1188,7 @@ export function CdnPage() {
                           void postSiteOp(s.id, 'ssl/issue', {
                             email,
                             run: true,
-                            distribute: true,
-                          });
+                            distribute: true });
                         }}
                       >
                         {t('cdn.leIssue')}
@@ -1245,8 +1202,7 @@ export function CdnPage() {
                         {t('common.delete')}
                       </Button>
                     </ActionBar>
-                  ),
-                },
+                  ) },
               ]}
               rows={sites}
               empty={
@@ -1336,14 +1292,12 @@ export function CdnPage() {
                   {
                     key: 'name',
                     header: t('cdn.statSites'),
-                    render: (r) => String((r as { name: string }).name),
-                  },
+                    render: (r) => String((r as { name: string }).name) },
                   {
                     key: 'strategy',
                     header: 'DNS',
                     render: (r) =>
-                      String((r as { strategy: string }).strategy),
-                  },
+                      String((r as { strategy: string }).strategy) },
                   {
                     key: 'apply',
                     header: 'apply',
@@ -1355,8 +1309,7 @@ export function CdnPage() {
                       >
                         {String((r as { apply_status: string }).apply_status)}
                       </Badge>
-                    ),
-                  },
+                    ) },
                   {
                     key: 'edges',
                     header: 'edges online/applied',
@@ -1367,16 +1320,14 @@ export function CdnPage() {
                         edgeCount: number;
                       };
                       return `${row.onlineEdges}/${row.edgeCount} · applied ${row.edgesApplied}`;
-                    },
-                  },
+                    } },
                   {
                     key: 'dns',
                     header: 'CDN DNS RR',
                     render: (r) =>
                       String(
                         (r as { managedDnsRecords: number }).managedDnsRecords,
-                      ),
-                  },
+                      ) },
                 ]}
                 rows={dashboard.sites.rows}
               />

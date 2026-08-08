@@ -16,8 +16,7 @@ import {
   FormLayout,
   InstallStreamPanel,
   PresetChips,
-  SegRadio,
-} from '../../../shared/components/ui';
+  SegRadio } from '../../../shared/components/ui';
 import type { InstallStreamLine } from '../../../shared/components/ui';
 import { formatRuntimeName, getProjectUiProfile } from '../model/runtime-ui';
 import {
@@ -29,8 +28,7 @@ import {
   runtimeInstallKind,
   runtimeVersionChoices,
   saveDeployPrefs,
-  type ProcessManager,
-} from '../model/deploy-prefs';
+  type ProcessManager } from '../model/deploy-prefs';
 import { projectsApi } from '../api';
 import { systemApi } from '../../system/api';
 import { bindInput, bindVoid, bindValueSet, bindAllOrValue } from '../../../pages/bind-handlers';
@@ -63,8 +61,7 @@ export function processDeployHint(runtime: string): string {
   if (runtime === 'node') return i18n.t('projects.deployNodeHint');
   if (runtime === 'java' || runtime === 'kotlin') {
     return i18n.t('projects.deployJvmHint', {
-      defaultValue: 'JDK + jar entry',
-    });
+      defaultValue: 'JDK + jar entry' });
   }
   if (runtime === 'bun') {
     return i18n.t('projects.deployBunHint', { defaultValue: 'Bun entry' });
@@ -112,8 +109,7 @@ export function ProjectDeployTab({
   onSaveEnv,
   onPhpVersionChange,
   onRuntimeVersionSaved,
-  onOpsMessage,
-}: ProjectDeployTabProps) {
+  onOpsMessage }: ProjectDeployTabProps) {
   const { t } = useTranslation();
   const ui = getProjectUiProfile(project.runtime);
   const [phpVer, setPhpVer] = useState(project.runtimeVersion ?? '8.2');
@@ -255,8 +251,7 @@ export function ProjectDeployTab({
       // node/bun: explicit supervisor; omit for other runtimes
       ...(supportsPm2Choice
         ? { enableSystemd: enableSystemdFromProcessManager(processManager) }
-        : {}),
-    };
+        : {}) };
   }
 
   async function saveRuntimeVersion(next: string) {
@@ -293,11 +288,9 @@ export function ProjectDeployTab({
         {
           kind: rtKind,
           version,
-          install: true,
-        },
+          install: true },
         {
-          onLog: (line) => setInstallLog((prev) => [...prev.slice(-1999), line]),
-        },
+          onLog: (line) => setInstallLog((prev) => [...prev.slice(-1999), line]) },
       );
       const notes = r.notes?.join('；') ?? '';
       if (r.blocked || r.ok === false) {
@@ -425,8 +418,7 @@ export function ProjectDeployTab({
                       saveDeployPrefs(project.id, {
                         entry: e.target.value,
                         skipBuild,
-                        processManager,
-                      });
+                        processManager });
                     }}
                     onBlur={bindVoid(persist)}
                     placeholder={defaultEntryHint(project.runtime)}
@@ -458,12 +450,10 @@ export function ProjectDeployTab({
                   options={[
                     {
                       value: 'systemd',
-                      label: t('projects.deployProcessManagerSystemd'),
-                    },
+                      label: t('projects.deployProcessManagerSystemd') },
                     {
                       value: 'pm2',
-                      label: t('projects.deployProcessManagerPm2'),
-                    },
+                      label: t('projects.deployProcessManagerPm2') },
                   ]}
                 />
               </Field>
@@ -485,8 +475,7 @@ export function ProjectDeployTab({
                     saveDeployPrefs(project.id, {
                       entry,
                       skipBuild: v,
-                      processManager,
-                    });
+                      processManager });
                   }}
                 />
               </div>

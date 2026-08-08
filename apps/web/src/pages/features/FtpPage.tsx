@@ -23,8 +23,7 @@ import {
   ServerListFilters,
   SoftwareInstallBanner,
   PageTabs,
-  FormHint,
-} from '../../shared/components/ui';
+  FormHint } from '../../shared/components/ui';
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import { ftpApi, type SelectOption } from '../../features/ftp';
@@ -73,8 +72,7 @@ export function buildFtpAccountBody(input: {
     username: input.username,
     password_plain: input.password || undefined,
     homePath: input.homePath || undefined,
-    domain: input.domain || undefined,
-  };
+    domain: input.domain || undefined };
 }
 
 export function FtpPage() {
@@ -171,23 +169,19 @@ export function FtpPage() {
       status={{
         pill: {
           label: t('ftp.accountsCount', { count: crud.items.length }),
-          tone: accountPillTone(crud.items.length, draft),
-        },
+          tone: accountPillTone(crud.items.length, draft) },
         items: [
           { label: t('ftp.accounts'), value: crud.items.length },
           {
             label: t('common.applied'),
             value: applied,
-            tone: applied > 0 ? 'ok' : 'neutral',
-          },
+            tone: applied > 0 ? 'ok' : 'neutral' },
           {
             label: t('ftp.pendingApply'),
             value: draft,
-            tone: draft > 0 ? 'warn' : 'ok',
-          },
+            tone: draft > 0 ? 'warn' : 'ok' },
           { label: t('ftp.sftpKeys'), value: sftpKeys.length },
-        ],
-      }}
+        ] }}
       actions={
         <ActionBar>
           <Link to="/ftp/service">
@@ -220,13 +214,11 @@ export function FtpPage() {
           {
             id: 'accounts',
             label: t('ftp.ftpAccounts'),
-            badge: crud.items.length || undefined,
-          },
+            badge: crud.items.length || undefined },
           {
             id: 'sftp',
             label: t('ftp.sftpPubkeys'),
-            badge: sftpKeys.length || undefined,
-          },
+            badge: sftpKeys.length || undefined },
         
           { id: 'about', label: t('common.about') },
         ]}
@@ -273,8 +265,7 @@ export function FtpPage() {
                     {
                       key: 'user',
                       header: t('common.username'),
-                      render: (r) => <strong>{String(r.username)}</strong>,
-                    },
+                      render: (r) => <strong>{String(r.username)}</strong> },
                     {
                       key: 'home',
                       header: t('ftp.homeDir'),
@@ -282,20 +273,17 @@ export function FtpPage() {
                         <span className="u-break-all muted u-text-sm">
                           {String(r.homePath ?? '—')}
                         </span>
-                      ),
-                    },
+                      ) },
                     {
                       key: 'domain',
                       header: t('runtime.domain'),
-                      render: (r) => String(r.domain ?? '—'),
-                    },
+                      render: (r) => String(r.domain ?? '—') },
                     {
                       key: 'status',
                       header: t('common.status'),
                       render: (r) => (
                         <ResourceStatusBadge status={String(r.apply_status)} />
-                      ),
-                    },
+                      ) },
                   ]}
                   rows={crud.items}
                   rowActions={(r) => (
@@ -376,14 +364,12 @@ export function FtpPage() {
                   {
                     key: 'username',
                     header: t('common.user'),
-                    render: (k) => <strong>{k.username}</strong>,
-                  },
+                    render: (k) => <strong>{k.username}</strong> },
                   {
                     key: 'comment',
                     header: t('common.notes'),
                     className: 'muted',
-                    render: (k) => k.comment ?? '—',
-                  },
+                    render: (k) => k.comment ?? '—' },
                   {
                     key: 'key',
                     header: t('ftp.keyFingerprint'),
@@ -392,16 +378,14 @@ export function FtpPage() {
                         {k.publicKey.slice(0, 56)}
                         {k.publicKey.length > 56 ? '…' : ''}
                       </code>
-                    ),
-                  },
+                    ) },
                   {
                     key: 'created',
                     header: t('common.create'),
                     className: 'muted u-nowrap u-text-sm',
                     nowrap: true,
                     render: (k) =>
-                      String(k.created_at).slice(0, 19).replace('T', ' '),
-                  },
+                      String(k.created_at).slice(0, 19).replace('T', ' ') },
                 ]}
                 rows={sftpKeys}
                 rowKey={(k) => k.id}
@@ -604,9 +588,7 @@ export function FtpPage() {
                     body: JSON.stringify({
                       username: keyUser,
                       publicKey: keyPub,
-                      comment: keyComment || undefined,
-                    }),
-                  })
+                      comment: keyComment || undefined }) })
                   .then((r) => {
                     setKeyMsg(r.notes?.join('；') ?? t('ftp.pubkeyAdded'));
                     setKeyOpen(false);

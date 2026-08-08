@@ -18,8 +18,7 @@ export function RuntimeInstallActions({
   onInstall,
   onSwitch,
   onSelectNewer,
-  extraHints,
-}: {
+  extraHints }: {
   installState: RuntimeInstallState;
   version: string;
   busy?: boolean;
@@ -38,9 +37,7 @@ export function RuntimeInstallActions({
     ? installState.selectedActive
       ? t('runtime.installedVersionBtn', { version })
       : t('runtime.installedNotActive', {
-          version,
-          defaultValue: t('uiInline.s8072fa0d', { v0: version }),
-        })
+          version })
     : installLabel;
 
   return (
@@ -48,10 +45,7 @@ export function RuntimeInstallActions({
       {installState.canSwitch ? (
         <FormHint>
           {t('runtime.switchDefaultHint', {
-            version,
-            defaultValue:
-              t('uiInline.s2bf2b4c4'),
-          })}
+            version })}
         </FormHint>
       ) : installState.selectedInstalled ? (
         <FormHint>{t('runtime.versionAlreadyInstalled', { version })}</FormHint>
@@ -59,8 +53,7 @@ export function RuntimeInstallActions({
         <FormHint>
           {t('runtime.newerVersionAvailable', {
             current: installState.newestInstalled ?? '—',
-            newer: installState.newerAvailable.join(', '),
-          })}
+            newer: installState.newerAvailable.join(', ') })}
         </FormHint>
       ) : null}
       {extraHints}
@@ -78,9 +71,7 @@ export function RuntimeInstallActions({
         {canSwitch ? (
           <Button variant="secondary" size="md" loading={busy} onClick={onSwitch}>
             {t('runtime.switchDefaultBtn', {
-              version,
-              defaultValue: t('uiInline.s42f3d613', { v0: version }),
-            })}
+              version })}
           </Button>
         ) : null}
         {installState.newerAvailable[0] && already && onSelectNewer ? (
@@ -91,8 +82,7 @@ export function RuntimeInstallActions({
             onClick={() => onSelectNewer(installState.newerAvailable[0]!)}
           >
             {t('runtime.switchToNewer', {
-              version: installState.newerAvailable[0],
-            })}
+              version: installState.newerAvailable[0] })}
           </Button>
         ) : null}
       </FormActions>

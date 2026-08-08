@@ -8,8 +8,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import {
   HONESTY_WRITTEN_BLOCKED,
   installFetchMock,
-  softwareReadyRoute,
-} from '../test/mock-fetch';
+  softwareReadyRoute } from '../test/mock-fetch';
 import { authStore } from '../shared/stores/auth-store';
 import { UsersPage } from './UsersPage';
 import { FilesPage } from './FilesPage';
@@ -69,8 +68,7 @@ describe('id-targeted forms', () => {
                 suspended: false,
                 locale: 'en',
                 capabilityGrants: [],
-                capabilityRevokes: [],
-              },
+                capabilityRevokes: [] },
             ],
             meta: {
               total: 1,
@@ -79,12 +77,9 @@ describe('id-targeted forms', () => {
               q: '',
               filters: {},
               order: 'asc',
-              facets: { role: { admin: 1 }, status: { suspended: 0 }, totp: { '1': 0 } },
-            },
-            hostUsage: { projects: 1, diskMb: 10, limitMb: 1000 },
-          };
-        },
-      },
+              facets: { role: { admin: 1 }, status: { suspended: 0 }, totp: { '1': 0 } } },
+            hostUsage: { projects: 1, diskMb: 10, limitMb: 1000 } };
+        } },
       {
         match: (url) => url.startsWith('/api/v1/packages'),
         handler: (_u, init) => {
@@ -101,12 +96,9 @@ describe('id-targeted forms', () => {
                 bandwidthMb: 0,
                 ftp: true,
                 ssh: true,
-                notes: '',
-              },
-            ],
-          };
-        },
-      },
+                notes: '' },
+            ] };
+        } },
       {
         match: (url) => url.includes('/api/v1/rbac'),
         handler: (_u, init) => {
@@ -118,23 +110,17 @@ describe('id-targeted forms', () => {
                 dirty: true,
                 policy: {
                   maxLevel: 'write-high',
-                  capabilities: ['projects.read', 'projects.write'],
-                },
+                  capabilities: ['projects.read', 'projects.write'] },
                 factory: {
                   maxLevel: 'write-high',
-                  capabilities: ['projects.read'],
-                },
-              },
+                  capabilities: ['projects.read'] } },
               {
                 role: 'viewer',
                 dirty: false,
                 policy: { maxLevel: 'read', capabilities: ['projects.read'] },
-                factory: { maxLevel: 'read', capabilities: ['projects.read'] },
-              },
-            ],
-          };
-        },
-      },
+                factory: { maxLevel: 'read', capabilities: ['projects.read'] } },
+            ] };
+        } },
       { match: /.*/, body: { ok: true, items: [] } },
     ]);
 
@@ -241,9 +227,7 @@ describe('id-targeted forms', () => {
                 serverIp: '1.2.3.4',
                 nsName: 'ns1.example.com',
                 ttl: 300,
-                apply_status: 'planned',
-              },
-            };
+                apply_status: 'planned' } };
           }
           if (url.includes('zones')) {
             return {
@@ -255,11 +239,9 @@ describe('id-targeted forms', () => {
                   nsName: 'ns1.example.com',
                   ttl: 300,
                   apply_status: 'planned',
-                  backend: 'bind',
-                },
+                  backend: 'bind' },
               ],
-              meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-            };
+              meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } };
           }
           return {
             items: [
@@ -269,13 +251,10 @@ describe('id-targeted forms', () => {
                 type: 'A',
                 name: '@',
                 value: '1.2.3.4',
-                ttl: 300,
-              },
+                ttl: 300 },
             ],
-            meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' },
-          };
-        },
-      },
+            meta: { total: 1, page: 1, limit: 50, q: '', filters: {}, order: 'asc' } };
+        } },
       {
         match: /\/api\/v1\/dns/,
         body: {
@@ -286,9 +265,7 @@ describe('id-targeted forms', () => {
           items: [{ id: 'peer-1', host: 'ns2.example.com', user: 'ysk', label: 'peer' }],
           peers: [{ host: 'ns2.example.com', ok: true }],
           dsRecord: 'example.com. IN DS 1 13 2 AB',
-          files: ['/var/lib/bind/example.com.zone'],
-        },
-      },
+          files: ['/var/lib/bind/example.com.zone'] } },
       { match: /.*/, body: { ok: true, items: [] } },
     ]);
 
@@ -395,16 +372,14 @@ describe('id-targeted forms', () => {
                 type: 'file',
                 size: 11,
                 mtime: now,
-                mime: 'text/plain',
-              },
+                mime: 'text/plain' },
               {
                 name: 'pic.png',
                 path: 'pic.png',
                 type: 'file',
                 size: 20,
                 mtime: now,
-                mime: 'image/png',
-              },
+                mime: 'image/png' },
               { name: 'docs', path: 'docs', type: 'dir', size: 0, mtime: now },
             ],
             items: [
@@ -414,21 +389,17 @@ describe('id-targeted forms', () => {
                 type: 'file',
                 size: 11,
                 mtime: now,
-                mime: 'text/plain',
-              },
+                mime: 'text/plain' },
               {
                 name: 'pic.png',
                 path: 'pic.png',
                 type: 'file',
                 size: 20,
                 mtime: now,
-                mime: 'image/png',
-              },
+                mime: 'image/png' },
               { name: 'docs', path: 'docs', type: 'dir', size: 0, mtime: now },
-            ],
-          };
-        },
-      },
+            ] };
+        } },
       { match: /.*/, body: { ok: true, items: [] } },
     ]);
 
@@ -440,8 +411,7 @@ describe('id-targeted forms', () => {
         // fall through to installFetchMock? re-install after
         return new Response(JSON.stringify({ ok: true, content: 'hello', path: 'a.txt', bytes: 5, items: [], entries: [] }), {
           status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        });
+          headers: { 'Content-Type': 'application/json' } });
       }),
     );
     // Re-install after stub? Actually installFetchMock also stubs. Order matters.
@@ -466,8 +436,7 @@ describe('id-targeted forms', () => {
                 type: 'file',
                 size: 11,
                 mtime: now,
-                mime: 'text/plain',
-              },
+                mime: 'text/plain' },
               { name: 'docs', path: 'docs', type: 'dir', size: 0, mtime: now },
             ],
             items: [
@@ -477,13 +446,10 @@ describe('id-targeted forms', () => {
                 type: 'file',
                 size: 11,
                 mtime: now,
-                mime: 'text/plain',
-              },
+                mime: 'text/plain' },
               { name: 'docs', path: 'docs', type: 'dir', size: 0, mtime: now },
-            ],
-          };
-        },
-      },
+            ] };
+        } },
       { match: /.*/, body: { ok: true, items: [] } },
     ]);
 
@@ -537,12 +503,10 @@ describe('id-targeted forms', () => {
               otpauthUrl: 'otpauth://totp/YSK:admin?secret=JBSWY3DPEHPK3PXP',
               enabled: true,
               enrolled: true,
-              recoveryCodes: ['aaaa-bbbb', 'cccc-dddd'],
-            };
+              recoveryCodes: ['aaaa-bbbb', 'cccc-dddd'] };
           }
           return { enabled: false, enrolled: false };
-        },
-      },
+        } },
       {
         match: (url) => url.startsWith('/api/v1/auth/sessions'),
         body: {
@@ -553,35 +517,26 @@ describe('id-targeted forms', () => {
               expires_at: now,
               current: true,
               ip: '1.1.1.1',
-              user_agent: 'vitest',
-            },
-          ],
-        },
-      },
+              user_agent: 'vitest' },
+          ] } },
       {
         match: (url) => url.startsWith('/api/v1/auth/api-keys'),
         handler: (_u, init) => {
           if ((init?.method ?? 'GET').toUpperCase() !== 'GET') {
             return {
               key: { id: 'k2', name: 'ci2', prefix: 'ysk_x', created_at: now },
-              token: 'ysk_x_secret',
-            };
+              token: 'ysk_x_secret' };
           }
           return {
-            items: [{ id: 'k1', name: 'ci', prefix: 'ysk_ci', created_at: now }],
-          };
-        },
-      },
+            items: [{ id: 'k1', name: 'ci', prefix: 'ysk_ci', created_at: now }] };
+        } },
       {
         match: (url) => url.startsWith('/api/v1/settings/security'),
-        body: { requireAdminTotp: false, requireAdminTotpStrict: false, ok: true },
-      },
+        body: { requireAdminTotp: false, requireAdminTotpStrict: false, ok: true } },
       {
         match: (url) => url.startsWith('/api/v1/approvals'),
         body: {
-          items: [{ id: 'ap1', tool: 'sys.shell', status: 'pending', requestedAt: now }],
-        },
-      },
+          items: [{ id: 'ap1', tool: 'sys.shell', status: 'pending', requestedAt: now }] } },
       {
         match: (url) => url.startsWith('/api/v1/tools'),
         handler: (_u, init) => {
@@ -590,10 +545,8 @@ describe('id-targeted forms', () => {
             items: [
               { id: 'sys.info', name: 'sys.info', allowed: true, requiresApproval: false },
               { id: 'sys.shell', name: 'sys.shell', allowed: false, requiresApproval: true },
-            ],
-          };
-        },
-      },
+            ] };
+        } },
       {
         match: /\/api\/v1\/ssh\//,
         body: {
@@ -602,13 +555,10 @@ describe('id-targeted forms', () => {
           host: { notes: [], lights: { package: 'ok', pam: 'ok', kbdInteractive: 'ok' } },
           pamSnippet: '#',
           sshdHints: '#',
-          notes: [],
-        },
-      },
+          notes: [] } },
       {
         match: /\/api\/v1\/sftp\//,
-        body: { ok: true, items: [], snippet: '', notes: [] },
-      },
+        body: { ok: true, items: [], snippet: '', notes: [] } },
       { match: /.*/, body: { ok: true, items: [] } },
     ]);
 
@@ -698,11 +648,8 @@ describe('id-targeted forms', () => {
               domain: 'example.com',
               rate_limit_per_hour: 200,
               antispam: true,
-              server_ip: '203.0.113.10',
-            },
-          ],
-        },
-      },
+              server_ip: '203.0.113.10' },
+          ] } },
       {
         match: (url) => url.includes('/api/v1/email/domains/dom-1'),
         handler: (url, init) => {
@@ -713,8 +660,7 @@ describe('id-targeted forms', () => {
               records: [{ type: 'MX', name: '@', value: 'mail.example.com' }],
               externalTodos: ['Add SPF'],
               health: { score: 40, maxScore: 100, messages: [] },
-              notes: [],
-            };
+              notes: [] };
           }
           if (url.includes('/mailboxes')) {
             return {
@@ -723,10 +669,8 @@ describe('id-targeted forms', () => {
                   id: 'mb1',
                   local_part: 'info',
                   address: 'info@example.com',
-                  quotaMb: 500,
-                },
-              ],
-            };
+                  quotaMb: 500 },
+              ] };
           }
           if (url.includes('/aliases')) {
             return { items: [{ id: 'al1', source: 'a@example.com', dest: 'info@example.com' }] };
@@ -739,8 +683,7 @@ describe('id-targeted forms', () => {
               honesty: ['No guarantee'],
               checks: [],
               recommendations: ['SPF'],
-              items: [{ id: 'spf', title: 'SPF', ok: false, detail: 'missing' }],
-            };
+              items: [{ id: 'spf', title: 'SPF', ok: false, detail: 'missing' }] };
           }
           if (url.includes('/sieve')) {
             return { ok: true, script: 'require ["fileinto"];', enabled: true };
@@ -751,8 +694,7 @@ describe('id-targeted forms', () => {
               host: 'smtp.example.com',
               port: 587,
               username: 'u',
-              enabled: true,
-            };
+              enabled: true };
           }
           return {
             id: 'dom-1',
@@ -760,10 +702,8 @@ describe('id-targeted forms', () => {
             rate_limit_per_hour: 200,
             antispam: true,
             server_ip: '203.0.113.10',
-            apply_status: 'planned',
-          };
-        },
-      },
+            apply_status: 'planned' };
+        } },
       { match: /.*/, body: { ok: true, items: [] } },
     ]);
 
@@ -794,8 +734,7 @@ describe('id-targeted forms', () => {
       }
       for (const b of screen
         .queryAllByRole('button', {
-          name: /create|add|save|apply|delete|copy|enable|test|send|refresh/i,
-        })
+          name: /create|add|save|apply|delete|copy|enable|test|send|refresh/i })
         .slice(0, 8)) {
         if ((b as HTMLButtonElement).disabled) continue;
         try {

@@ -15,8 +15,7 @@ import {
   ProjectOverviewTab,
   ProjectResourcesTab,
   projectsApi,
-  useProjectOps,
-} from '../features/projects';
+  useProjectOps } from '../features/projects';
 import { envToText, formatRuntimeLabel } from '../features/projects/model/ops';
 import { getProjectUiProfile } from '../features/projects/model/runtime-ui';
 import { deriveProjectStatus } from '../features/projects/model/status';
@@ -30,8 +29,7 @@ import {
   Modal,
   OpsResultPanel,
   PageGuide,
-  PageTabs,
-} from '../shared/components/ui';
+  PageTabs } from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { useCapabilities } from '../shared/hooks/useCapabilities';
 import { bindSet, bindRun, bindVoid, bindNavigate } from './bind-handlers';
@@ -66,8 +64,7 @@ export function resolveActiveTab(
     resources: 'isolation',
     logs: 'more',
     advanced: 'more',
-    about: 'overview',
-  };
+    about: 'overview' };
   const id = alias[tab] ?? tab;
   return tabs.some((x) => x.id === id) ? id : 'overview';
 }
@@ -140,8 +137,7 @@ export function defaultResourceBody(
 ): Record<string, unknown> {
   return {
     kind: kind.trim() || 'generic',
-    name: name.trim() || 'resource',
-  };
+    name: name.trim() || 'resource' };
 }
 
 /** Whether project shows deploy tab from flags. */
@@ -254,8 +250,7 @@ export function ProjectDetailPage() {
         const tail = await projectsApi.logs(project.id, {
           file: first.file,
           lines: 200,
-          grep,
-        });
+          grep });
         const header = formatLogTailHeader(
           tail.tail?.file ?? first.file,
           tail.tail?.notes?.[0],
@@ -270,8 +265,7 @@ export function ProjectDetailPage() {
         const tail = await projectsApi.logs(project.id, {
           file: pick,
           lines: 200,
-          grep,
-        });
+          grep });
         setLogTail(
           formatLogTailHeader(tail.tail?.file ?? pick, tail.tail?.notes) +
             (tail.tail?.lines ?? []).join('\n'),
@@ -332,8 +326,7 @@ export function ProjectDetailPage() {
       ? [
           {
             id: 'isolation',
-            label: t('projects.tabIsolation', { defaultValue: t('projects.tabResources') }),
-          },
+            label: t('projects.tabIsolation', { defaultValue: t('projects.tabResources') }) },
         ]
       : []),
     { id: 'more', label: t('projects.tabMore', { defaultValue: t('projects.tabAdvanced') }) },
@@ -358,21 +351,17 @@ export function ProjectDetailPage() {
       status={{
         pill: {
           label: project.runtime,
-          tone: 'ok',
-        },
+          tone: 'ok' },
         items: [
           {
             label: t('common.status'),
-            value: project.status ?? project.processStatus ?? '—',
-          },
+            value: project.status ?? project.processStatus ?? '—' },
           {
             label: t('common.port'),
-            value: project.port != null ? String(project.port) : '—',
-          },
+            value: project.port != null ? String(project.port) : '—' },
           {
             label: t('common.user'),
-            value: project.linuxUser || '—',
-          },
+            value: project.linuxUser || '—' },
           {
             label: 'Nginx',
             value: (() => {
@@ -382,20 +371,17 @@ export function ProjectDetailPage() {
               };
               if (!project.nginxConfigPath) return t('projects.nginxValueNone');
               if (lh.nginxReloaded || lh.nginxStatus === 'reloaded') {
-                return t('projects.nginxLive', { defaultValue: t('uiInline.sea4ba90a') });
+                return t('projects.nginxLive');
               }
-              return t('projects.nginxWritten', { defaultValue: t('uiInline.sdd78429a') });
+              return t('projects.nginxWritten');
             })(),
-            tone: project.nginxConfigPath ? 'ok' : 'neutral',
-          },
+            tone: project.nginxConfigPath ? 'ok' : 'neutral' },
           {
             label: 'OS',
             value: project.osProvisioned ? t('projects.osValueReady') : t('projects.osValuePending'),
-            tone: project.osProvisioned ? 'ok' : 'warn',
-          },
+            tone: project.osProvisioned ? 'ok' : 'warn' },
         ],
-        note: statusHint ? <span>{statusHint}</span> : undefined,
-      }}
+        note: statusHint ? <span>{statusHint}</span> : undefined }}
       actions={
         <ActionBar>
           <ProjectDetailHeader
@@ -403,8 +389,7 @@ export function ProjectDetailPage() {
             busy={busy}
             onDeploy={() =>
               void run(ui.deployIsPhp ? 'deploy-php' : 'deploy', project.id, {
-                phpVersion,
-              }).catch(() => undefined)
+                phpVersion }).catch(() => undefined)
             }
             onStop={bindSet(setConfirm, 'stop')}
             onHealth={bindRun(run, 'health', project.id)}
@@ -414,7 +399,7 @@ export function ProjectDetailPage() {
             variant="ghost"
             size="md"
             onClick={() => setGuideOpen(true)}
-            title={t('common.about', { defaultValue: t('uiInline.s9b6c1b03') })}
+            title={t('common.about')}
           >
             ?
           </Button>
@@ -428,8 +413,7 @@ export function ProjectDetailPage() {
             busy={busy}
             onRetryDeploy={() =>
               void run(ui.deployIsPhp ? 'deploy-php' : 'deploy', project.id, {
-                phpVersion,
-              }).catch(() => undefined)
+                phpVersion }).catch(() => undefined)
             }
             onRetryPublish={bindRun(run, 'publish-nginx', project.id)}
           />
@@ -447,15 +431,13 @@ export function ProjectDetailPage() {
                 phpVersion,
                 entry: opts?.entry,
                 skipBuild: opts?.skipBuild,
-                enableSystemd: opts?.enableSystemd,
-              }).catch(() => undefined)
+                enableSystemd: opts?.enableSystemd }).catch(() => undefined)
             }
             onGitDeploy={(opts) =>
               void run('git-deploy', project.id, {
                 gitUrl,
                 entry: opts?.entry,
-                skipBuild: opts?.skipBuild,
-              }).catch(() => undefined)
+                skipBuild: opts?.skipBuild }).catch(() => undefined)
             }
             onSaveEnv={bindRun(run, 'env', project.id, { envText })}
             onPhpVersionChange={setPhpVersion}
@@ -521,8 +503,7 @@ export function ProjectDetailPage() {
               }
               onSetResources={bindRun(run, 'resources', project.id, {
                   memoryMax,
-                  cpuQuotaPercent: Number(cpuQuota) || 100,
-                })}
+                  cpuQuotaPercent: Number(cpuQuota) || 100 })}
             />
           </div>
         ) : null}
@@ -580,7 +561,7 @@ export function ProjectDetailPage() {
       <Modal
         open={guideOpen}
         onClose={() => setGuideOpen(false)}
-        title={t('common.about', { defaultValue: t('uiInline.s9b6c1b03') })}
+        title={t('common.about')}
         size="lg"
       >
         <PageGuide guideId="projectDetail" />
@@ -611,7 +592,7 @@ export function ProjectDetailPage() {
           setMsg(
             parts.length
               ? parts.join('；')
-              : t('projects.deletedOk', { defaultValue: t('uiInline.s858f4eca') }),
+              : t('projects.deletedOk'),
           );
           navigate('/projects', { replace: true });
         }}

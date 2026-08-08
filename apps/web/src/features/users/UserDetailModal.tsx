@@ -9,8 +9,7 @@ import {
   OPERATION_LEVELS,
   type CapabilityId,
   type OperationLevel,
-  type SystemRole,
-} from '@ysk/shared';
+  type SystemRole } from '@ysk/shared';
 import {
   ActionBar,
   Alert,
@@ -19,8 +18,7 @@ import {
   Field,
   Modal,
   MultiCheckSelect,
-  PageTabs,
-} from '../../shared/components/ui';
+  PageTabs } from '../../shared/components/ui';
 
 export type UserDetailPkg = { id: string; name: string };
 
@@ -100,8 +98,7 @@ export function UserDetailModal({
   onDelete,
   onRestoreOverrides,
   onClearTotp,
-  clearTotpBusy,
-}: UserDetailModalProps) {
+  clearTotpBusy }: UserDetailModalProps) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<DetailTab>('account');
 
@@ -113,8 +110,7 @@ export function UserDetailModal({
       CAPABILITY_CATALOG.map((c) => ({
         value: c.id,
         label: t(capLabelKey(c.id)),
-        hint: t(`rbac.level.${c.band}`),
-      })),
+        hint: t(`rbac.level.${c.band}`) })),
     [t],
   );
 
@@ -175,8 +171,7 @@ export function UserDetailModal({
             <p className="user-detail__meta">
               {user.lastSeenAt
                 ? t('users.lastSeenValue', {
-                    time: new Date(user.lastSeenAt).toLocaleString(),
-                  })
+                    time: new Date(user.lastSeenAt).toLocaleString() })
                 : t('users.neverSeen')}
               {user.packageName || packageId
                 ? ` · ${t('users.package')}: ${user.packageName || packages.find((p) => p.id === packageId)?.name || packageId}`

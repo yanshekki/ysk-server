@@ -22,8 +22,7 @@ import {
   FormLayout,
   Modal,
   PageTabs,
-  buttonClassName,
-} from '../shared/components/ui';
+  buttonClassName } from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { bindSet, bindInput, bindCall1, bindCall2 } from './bind-handlers';
 
@@ -141,8 +140,7 @@ export function AiPage() {
     runPlaybook,
     cancelTask,
     rejectStep,
-    refresh,
-  } = useAiTasks();
+    refresh } = useAiTasks();
   const [createOpen, setCreateOpen] = useState(false);
   const [tab, setTab] = usePageTab(AI_TABS, 'tasks');
   const [pbFilter, setPbFilter] = useState('');
@@ -217,8 +215,7 @@ export function AiPage() {
             stats.active > 0
               ? t('ai.activeCount', { count: stats.active })
               : t('ai.taskCount', { count: tasks.length }),
-          tone: stats.failed ? 'warn' : stats.active ? 'ok' : 'neutral',
-        },
+          tone: stats.failed ? 'warn' : stats.active ? 'ok' : 'neutral' },
         items: [
           { label: t('ai.tasks'), value: tasks.length },
           { label: t('ai.active'), value: stats.active },
@@ -226,10 +223,8 @@ export function AiPage() {
           {
             label: t('common.failed'),
             value: stats.failed,
-            tone: stats.failed ? 'danger' : 'ok',
-          },
-        ],
-      }}
+            tone: stats.failed ? 'danger' : 'ok' },
+        ] }}
       actions={
         <ActionBar>
           <Button
@@ -302,8 +297,7 @@ export function AiPage() {
                               <span>
                                 {t('ai.stepsOf', {
                                   done: sc.done,
-                                  total: sc.total || t('common.noneSelectedShort'),
-                                })}
+                                  total: sc.total || t('common.noneSelectedShort') })}
                               </span>
                               <span className="ai-task-row__id">
                                 {task.id.slice(0, 8)}
@@ -382,8 +376,7 @@ export function AiPage() {
                         {t('ai.stepsTitle', {
                           count: Array.isArray(selected.steps)
                             ? selected.steps.length
-                            : 0,
-                        })}
+                            : 0 })}
                       </h4>
                       {!Array.isArray(selected.steps) ||
                       selected.steps.length === 0 ? (

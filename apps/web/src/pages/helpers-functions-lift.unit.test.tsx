@@ -13,8 +13,7 @@ import {
   jailEnabledTone,
   normalizeDurationPreset,
   clampMaxretry,
-  isValidBanIp,
-} from './features/Fail2banPage';
+  isValidBanIp } from './features/Fail2banPage';
 import {
   parsePorts,
   firewallActionTone,
@@ -22,21 +21,18 @@ import {
   parsePortInput,
   parsePortInputNumber,
   isValidDenyIp,
-  mapFirewallRules,
-} from './features/FirewallPage';
+  mapFirewallRules } from './features/FirewallPage';
 import {
   catLabel,
   levelTone,
   levelLabel,
-  severityLabel,
-} from './features/ReadinessPage';
+  severityLabel } from './features/ReadinessPage';
 import { RouteFallback, RedirectPreserveQuery, Lazy } from '../app/App';
 import {
   statusTone as cdnStatusTone,
   toggleMembership,
   parseGeoMapText,
-  canDeleteCdnSite,
-} from './features/CdnPage';
+  canDeleteCdnSite } from './features/CdnPage';
 
 const t = (k: string) => k;
 
@@ -55,8 +51,7 @@ describe('Fail2ban pure helpers', () => {
     ]);
     expect(
       initialSelectedJails({
-        catalog: [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }],
-      }),
+        catalog: [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }] }),
     ).toEqual(['a', 'b', 'c', 'd']);
     expect(initialSelectedJails({})).toContain('sshd');
   });

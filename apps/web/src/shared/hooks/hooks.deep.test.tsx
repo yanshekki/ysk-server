@@ -27,8 +27,7 @@ describe('useServerList extra params + debounce search', () => {
       return new Response(
         JSON.stringify({
           items: [{ id: '1', name: 'A' }],
-          meta: { total: 1, page: 1, limit: 20, q: '', filters: {}, order: 'asc' },
-        }),
+          meta: { total: 1, page: 1, limit: 20, q: '', filters: {}, order: 'asc' } }),
         { status: 200, headers: { 'Content-Type': 'application/json' } },
       );
     });
@@ -44,8 +43,7 @@ describe('useServerList extra params + debounce search', () => {
       order: 'asc' as const,
       page: 1,
       limit: 20,
-      extraParams: extra,
-    };
+      extraParams: extra };
 
     const { result } = renderHook(() => useServerList<{ id: string; name: string }>(opts));
 
@@ -85,16 +83,13 @@ describe('useCapabilities non-admin', () => {
     authStore.setSession('t', {
       username: 'op',
       roles: ['operator'],
-      capabilities: ['projects.read'],
-    });
+      capabilities: ['projects.read'] });
     installFetchMock([
       {
         match: '/api/v1/auth/me',
         body: {
           user: { id: '2', username: 'op', roles: ['operator'], locale: 'en' },
-          capabilities: ['projects.read', 'files.read'],
-        },
-      },
+          capabilities: ['projects.read', 'files.read'] } },
     ]);
 
     const { result } = renderHook(() => useCapabilities());
@@ -130,19 +125,15 @@ describe('useAuth edges', () => {
         match: '/api/v1/auth/login',
         body: {
           token: 'tok-2fa',
-          user: { id: '1', username: 'admin', roles: ['admin'], locale: 'zh-HK' },
-        },
-      },
+          user: { id: '1', username: 'admin', roles: ['admin'], locale: 'zh-HK' } } },
       {
         match: '/api/v1/auth/me',
         status: 500,
-        body: { message: 'me down' },
-      },
+        body: { message: 'me down' } },
       {
         match: '/api/v1/auth/logout',
         status: 500,
-        body: { message: 'bye fail' },
-      },
+        body: { message: 'bye fail' } },
     ]);
 
     const { result } = renderHook(() => useAuth());

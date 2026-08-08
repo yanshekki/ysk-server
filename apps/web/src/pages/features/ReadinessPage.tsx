@@ -12,14 +12,12 @@ import {
   FeaturePageLayout,
   LoadingBlock,
   PageTabs,
-  buttonClassName,
-} from '../../shared/components/ui';
+  buttonClassName } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import type {
   ProductionReadinessDto,
   ReadinessItemDto,
-  ReadinessLevel,
-} from '../../features/system/api';
+  ReadinessLevel } from '../../features/system/api';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { bindSet, bindInput, bindVoid } from '../bind-handlers';
 
@@ -58,8 +56,7 @@ function ItemRow({
   item,
   index,
   emphasize,
-  t,
-}: {
+  t }: {
   item: ReadinessItemDto;
   index?: number;
   emphasize?: boolean;
@@ -212,8 +209,7 @@ export function ReadinessPage() {
   function downloadReport() {
     if (!report) return;
     const blob = new Blob([JSON.stringify(report, null, 2)], {
-      type: 'application/json; charset=utf-8',
-    });
+      type: 'application/json; charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -236,37 +232,30 @@ export function ReadinessPage() {
                 label: report.productionReady
                   ? t('readiness.gatePass', { pct: scorePct })
                   : t('readiness.gateFail', { pct: scorePct }),
-                tone: heroTone,
-              },
+                tone: heroTone },
               items: [
                 {
                   label: 'EXECUTE',
                   value: report.executeEnabled ? t('readiness.executeOn') : t('readiness.executeOff'),
-                  tone: report.executeEnabled ? 'ok' : 'warn',
-                },
+                  tone: report.executeEnabled ? 'ok' : 'warn' },
                 {
                   label: 'Root',
                   value: report.isRoot ? t('common.yes') : t('common.no'),
-                  tone: report.isRoot ? 'ok' : 'warn',
-                },
+                  tone: report.isRoot ? 'ok' : 'warn' },
                 { label: t('common.ready'), value: score?.ready ?? 0, tone: 'ok' },
                 {
                   label: t('common.degraded'),
                   value: score?.degraded ?? 0,
-                  tone: (score?.degraded ?? 0) > 0 ? 'warn' : 'neutral',
-                },
+                  tone: (score?.degraded ?? 0) > 0 ? 'warn' : 'neutral' },
                 {
                   label: t('common.missing'),
                   value: score?.missing ?? 0,
-                  tone: (score?.missing ?? 0) > 0 ? 'danger' : 'neutral',
-                },
+                  tone: (score?.missing ?? 0) > 0 ? 'danger' : 'neutral' },
                 {
                   label: t('readiness.blockers'),
                   value: blockers.length,
-                  tone: blockers.length ? 'danger' : 'ok',
-                },
-              ],
-            }
+                  tone: blockers.length ? 'danger' : 'ok' },
+              ] }
           : undefined
       }
       actions={<>
@@ -305,13 +294,11 @@ export function ReadinessPage() {
               {
                 id: 'priority',
                 label: t('readiness.priorityTab'),
-                badge: blockers.length || undefined,
-              },
+                badge: blockers.length || undefined },
               {
                 id: 'checklist',
                 label: t('readiness.checklistTab'),
-                badge: report.items.length || undefined,
-              },
+                badge: report.items.length || undefined },
               { id: 'summary', label: t('readiness.summaryTab') },
             
           { id: 'about', label: t('common.about') },

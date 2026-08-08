@@ -16,8 +16,7 @@ import {
   FormLayout,
   OpsResultPanel,
   PageTabs,
-  Modal,
-} from '../../shared/components/ui';
+  Modal } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { api } from '../../shared/services/api';
@@ -29,8 +28,7 @@ import {
   defaultScheduleState,
   humanizeSchedule,
   parseCronToState,
-  type ScheduleState,
-} from './CronScheduleBuilder';
+  type ScheduleState } from './CronScheduleBuilder';
 
 const CRON_TABS = ['jobs', 'status', 'about'] as const;
 
@@ -50,52 +48,43 @@ export function projectCommandPresets(p: CronProjectOpt): Array<{ label: string;
   const common = [
     {
       label: i18n.t('cron.presetCdTrue'),
-      command: `cd ${app} && /usr/bin/true`,
-    },
+      command: `cd ${app} && /usr/bin/true` },
     {
       label: i18n.t('cron.presetCleanTmp'),
-      command: `find ${home}/tmp -type f -mtime +7 -delete 2>/dev/null || true`,
-    },
+      command: `find ${home}/tmp -type f -mtime +7 -delete 2>/dev/null || true` },
   ];
   switch (p.runtime) {
     case 'php':
       return [
         {
           label: 'Laravel schedule:run',
-          command: `cd ${app} && /usr/bin/php artisan schedule:run >> ${log} 2>&1`,
-        },
+          command: `cd ${app} && /usr/bin/php artisan schedule:run >> ${log} 2>&1` },
         {
           label: 'wp-cron.php',
-          command: `cd ${app} && /usr/bin/php wp-cron.php >> ${log} 2>&1`,
-        },
+          command: `cd ${app} && /usr/bin/php wp-cron.php >> ${log} 2>&1` },
         {
           label: 'composer dump-autoload',
-          command: `cd ${app} && /usr/bin/composer dump-autoload -o >> ${log} 2>&1`,
-        },
+          command: `cd ${app} && /usr/bin/composer dump-autoload -o >> ${log} 2>&1` },
         ...common,
       ];
     case 'node':
       return [
         {
           label: i18n.t('cron.presetNpmCron'),
-          command: `cd ${app} && /usr/bin/npm run cron >> ${log} 2>&1`,
-        },
+          command: `cd ${app} && /usr/bin/npm run cron >> ${log} 2>&1` },
         {
           label: 'node scripts/cron.js',
-          command: `cd ${app} && /usr/bin/node scripts/cron.js >> ${log} 2>&1`,
-        },
+          command: `cd ${app} && /usr/bin/node scripts/cron.js >> ${log} 2>&1` },
         ...common,
       ];
     case 'python':
       return [
         {
           label: 'venv + manage.py（Django）',
-          command: `cd ${app} && . .venv/bin/activate && python manage.py cron >> ${log} 2>&1`,
-        },
+          command: `cd ${app} && . .venv/bin/activate && python manage.py cron >> ${log} 2>&1` },
         {
           label: 'python scripts/job.py',
-          command: `cd ${app} && . .venv/bin/activate 2>/dev/null; python scripts/job.py >> ${log} 2>&1`,
-        },
+          command: `cd ${app} && . .venv/bin/activate 2>/dev/null; python scripts/job.py >> ${log} 2>&1` },
         ...common,
       ];
     case 'go':
@@ -103,16 +92,14 @@ export function projectCommandPresets(p: CronProjectOpt): Array<{ label: string;
       return [
         {
           label: i18n.t('cron.presetAppBin'),
-          command: `cd ${app} && ./app --cron >> ${log} 2>&1`,
-        },
+          command: `cd ${app} && ./app --cron >> ${log} 2>&1` },
         ...common,
       ];
     case 'static':
       return [
         {
           label: i18n.t('cron.presetRsync'),
-          command: `rsync -a --delete ${app}/ ${home}/public/ >> ${log} 2>&1`,
-        },
+          command: `rsync -a --delete ${app}/ ${home}/public/ >> ${log} 2>&1` },
         ...common,
       ];
     default:
@@ -197,8 +184,7 @@ export function CronPage() {
         ? `${p.linuxUser} · ${p.name}`
         : t('cron.noLinuxUser', { name: p.name }),
       disabled: !p.linuxUser?.trim(),
-      group: t('security.ssh.filterUser'),
-    }));
+      group: t('security.ssh.filterUser') }));
     const systemOpts = [
       { value: 's:ysk', label: t('cron.panelUser'), group: t('common.system') },
       { value: 's:root', label: t('cron.rootCareful'), group: t('common.system') },
@@ -209,8 +195,7 @@ export function CronPage() {
       systemOpts.push({
         value: `s:${systemUser}`,
         label: t('cron.customUser', { user: systemUser }),
-        group: t('common.system'),
-      });
+        group: t('common.system') });
     }
     return { projectOpts, systemOpts };
   }, [projects, projectId, systemUser]);
@@ -274,8 +259,7 @@ export function CronPage() {
         name: p.name,
         linuxUser: p.linuxUser,
         homeDir: p.homeDir,
-        runtime: p.runtime,
-      })),
+        runtime: p.runtime })),
     );
   }, []);
 
@@ -295,8 +279,7 @@ export function CronPage() {
         schedule,
         command,
         user: runAsUser,
-        projectId: projectId || undefined,
-      });
+        projectId: projectId || undefined });
       setNeedsInstallHint(true);
       setCreateOpen(false);
       await refresh();
@@ -309,8 +292,7 @@ export function CronPage() {
           t('cron.writtenManage'),
           t('cron.needInstall'),
         ],
-        ...r,
-      } as unknown as OpsResultLike;
+        ...r } as unknown as OpsResultLike;
     }, t('cron.createdManageOnly'));
   }
 
@@ -342,24 +324,20 @@ export function CronPage() {
       status={{
         pill: {
           label: hostOk ? t('cron.hostSynced') : hostNo ? t('cron.hostNotInstalled') : t('cron.statusUnknown'),
-          tone: heroTone,
-        },
+          tone: heroTone },
         items: [
           { label: t('migrate.jobs'), value: status?.totalJobs ?? items.length },
           { label: t('protection.enable'), value: status?.enabledJobs ?? '—' },
           {
             label: t('cron.systemCrontab'),
             value: hostOk ? t('cron.synced') : hostNo ? t('common.notInstalled') : t('common.unknown'),
-            tone: hostOk ? 'ok' : hostNo ? 'warn' : 'neutral',
-          },
+            tone: hostOk ? 'ok' : hostNo ? 'warn' : 'neutral' },
           { label: t('cron.managedLines'), value: status?.managedLines ?? '—' },
           {
             label: 'EXECUTE',
             value: status?.executeEnabled ? t('common.on') : t('common.off'),
-            tone: status?.executeEnabled ? 'ok' : 'warn',
-          },
-        ],
-      }}
+            tone: status?.executeEnabled ? 'ok' : 'warn' },
+        ] }}
       actions={<ActionBar>
           <Button
             variant="ghost"
@@ -504,17 +482,14 @@ export function CronPage() {
                                 await api.requestRaw(`/api/v1/cron/${job.id}`, {
                                   method: 'PATCH',
                                   body: JSON.stringify({
-                                    enabled: job.enabled === false,
-                                  }),
-                                });
+                                    enabled: job.enabled === false }) });
                                 setNeedsInstallHint(true);
                                 await refresh();
                                 return {
                                   ok: true,
                                   notes: [
                                     t('cron.updatedManage'),
-                                  ],
-                                };
+                                  ] };
                               }, t('cron.updatedManageShort'))
                             }
                           >
@@ -527,16 +502,14 @@ export function CronPage() {
                             onClick={() =>
                               void run(async () => {
                                 await api.requestRaw(`/api/v1/cron/${job.id}`, {
-                                  method: 'DELETE',
-                                });
+                                  method: 'DELETE' });
                                 setNeedsInstallHint(true);
                                 await refresh();
                                 return {
                                   ok: true,
                                   notes: [
                                     t('cron.deletedManage'),
-                                  ],
-                                };
+                                  ] };
                               }, t('redis.deleted'))
                             }
                           >
@@ -599,8 +572,7 @@ export function CronPage() {
                         ? '—'
                         : t('cron.hostOtherLinesVal', {
                             other: status.hostOtherLines,
-                            total: status.hostTotalLines ?? '—',
-                          })}
+                            total: status.hostTotalLines ?? '—' })}
                     </dd>
                   </div>
                   <div>

@@ -11,8 +11,7 @@ import {
   firewallActiveTone,
   parsePortInput,
   isValidDenyIp,
-  mapFirewallRules,
-} from './features/FirewallPage';
+  mapFirewallRules } from './features/FirewallPage';
 
 const ok = () => ({ ok: true, notes: ['ok'], blocked: false, apply_status: 'applied' });
 const body = {
@@ -25,8 +24,7 @@ const body = {
   numberedRules: [
     { num: 1, action: 'ALLOW', from: 'Anywhere', to: '22/tcp', raw: '[1] ALLOW' },
   ],
-  denyFromIps: ['203.0.113.10'], notes: [], rulesMeta: { total: 1 },
-};
+  denyFromIps: ['203.0.113.10'], notes: [], rulesMeta: { total: 1 } };
 
 function mount(tab: string) {
   return render(
@@ -44,8 +42,7 @@ describe('firewall surgical + helpers', () => {
       { match: (u) => u.includes('/auth/me'), body: { user: { username: 'admin', roles: ['admin'] }, capabilities: [] } },
       {
         match: (u) => u.includes('/firewall'),
-        handler: (_u, init) => ((init?.method ?? 'GET').toUpperCase() !== 'GET' ? ok() : body),
-      },
+        handler: (_u, init) => ((init?.method ?? 'GET').toUpperCase() !== 'GET' ? ok() : body) },
     ]);
   });
   afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); authStore.clear(); });

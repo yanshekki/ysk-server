@@ -22,8 +22,7 @@ export function SoftwareInstallBanner({
   feature,
   onInstalled,
   autoHideWhenReady = true,
-  title,
-}: SoftwareInstallBannerProps) {
+  title }: SoftwareInstallBannerProps) {
   const { t } = useTranslation();
   const {
     missing,
@@ -38,8 +37,7 @@ export function SoftwareInstallBanner({
     switchPreview,
     switchOpen,
     setSwitchOpen,
-    confirmSwitch,
-  } = useFeatureSoftware(feature);
+    confirmSwitch } = useFeatureSoftware(feature);
 
   // Success feedback is toast-only; hide banner when ready (keep switch dialog / ops detail)
   if (autoHideWhenReady && ready && !error && !lastResult && !switchOpen) {
@@ -58,8 +56,7 @@ export function SoftwareInstallBanner({
         notes: lastResult.notes,
         blocked: lastResult.blocked,
         blockMessage: lastResult.blockMessage,
-        requiresExecute: lastResult.blocked,
-      }
+        requiresExecute: lastResult.blocked }
     : error
       ? { ok: false, blocked: true, blockMessage: error, notes: [] }
       : null;

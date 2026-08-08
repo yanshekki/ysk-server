@@ -15,8 +15,7 @@ import {
   LoadingBlock,
   OpsResultPanel,
   PageTabs,
-  buttonClassName,
-} from '../../shared/components/ui';
+  buttonClassName } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
@@ -88,8 +87,7 @@ export function ServicesPage() {
       setMeta({
         executeEnabled: r.executeEnabled,
         isRoot: r.isRoot,
-        probedAt: r.probedAt,
-      });
+        probedAt: r.probedAt });
       try {
         const ha = await dbClusterApi.overview();
         setHaOverview({
@@ -98,9 +96,7 @@ export function ServicesPage() {
             id: x.id,
             name: x.name,
             engine: x.engine,
-            status: x.status,
-          })),
-        });
+            status: x.status })) });
       } catch {
         setHaOverview(null);
       }
@@ -166,35 +162,29 @@ export function ServicesPage() {
       status={{
         pill: {
           label: t('services.runningOf', { running, total: items.length }),
-          tone: heroTone,
-        },
+          tone: heroTone },
         items: [
           { label: t('common.running'), value: running, tone: 'ok' },
           {
             label: t('common.notInstalled'),
             value: missing,
-            tone: missing ? 'warn' : 'neutral',
-          },
+            tone: missing ? 'warn' : 'neutral' },
           {
             label: 'EXECUTE',
             value: meta.executeEnabled ? t('common.on') : t('common.off'),
-            tone: meta.executeEnabled ? 'ok' : 'warn',
-          },
+            tone: meta.executeEnabled ? 'ok' : 'warn' },
           {
             label: 'Root',
             value: meta.isRoot ? t('common.yes') : t('common.no'),
-            tone: meta.isRoot ? 'ok' : 'warn',
-          },
+            tone: meta.isRoot ? 'ok' : 'warn' },
           {
             label: t('services.canMutate'),
             value: canMutate ? t('common.yes') : t('services.locked'),
-            tone: canMutate ? 'ok' : 'warn',
-          },
+            tone: canMutate ? 'ok' : 'warn' },
           ...(failed > 0
             ? [{ label: t('common.failed'), value: failed, tone: 'danger' as const }]
             : []),
-        ],
-      }}
+        ] }}
       actions={
         <>
           <Button
@@ -289,8 +279,7 @@ export function ServicesPage() {
                       <p className="ops-panel__sub">
                         {t('services.showing', {
                           shown: filtered.length,
-                          total: items.length,
-                        })}
+                          total: items.length })}
                       </p>
                     </div>
                   </div>
@@ -351,8 +340,7 @@ export function ServicesPage() {
                             <code>{row.unit}</code>
                             <span>
                               {t('services.bootPrefix', {
-                                state: enabledLabel(row.enabled, t),
-                              })}
+                                state: enabledLabel(row.enabled, t) })}
                             </span>
                             {!row.installed ? (
                               <Badge tone="danger">{t('common.notInstalled')}</Badge>
@@ -447,8 +435,7 @@ export function ServicesPage() {
                         return {
                           ok: true,
                           notes: [t('services.protectionDoneNote')],
-                          ...r,
-                        } as unknown as OpsResultLike;
+                          ...r } as unknown as OpsResultLike;
                       }, t('services.probeDone'))
                     }
                   >

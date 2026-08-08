@@ -72,8 +72,7 @@ export function ListToolbar({
   shown,
   activeFilterCount = 0,
   onClear,
-  className,
-}: ListToolbarProps) {
+  className }: ListToolbarProps) {
   const { t } = useTranslation();
   const searchId = useId();
   const ph = searchPlaceholder ?? t('listToolbar.searchPlaceholder');

@@ -105,8 +105,7 @@ describe('RequireCapability', () => {
         new Response(
           JSON.stringify({
             user: { username: 'u', roles: ['viewer'], locale: 'en' },
-            capabilities: [],
-          }),
+            capabilities: [] }),
           { status: 200, headers: { 'Content-Type': 'application/json' } },
         ),
       ),
@@ -122,8 +121,7 @@ describe('RequireCapability', () => {
     authStore.setSession('tok', {
       username: 'admin',
       roles: ['admin'],
-      capabilities: [],
-    });
+      capabilities: [] });
     render(
       <MemoryRouter initialEntries={['/projects']}>
         <Routes>
@@ -146,8 +144,7 @@ describe('RequireCapability', () => {
     authStore.setSession('tok', {
       username: 'viewer',
       roles: ['viewer'],
-      capabilities: [],
-    });
+      capabilities: [] });
     render(
       <MemoryRouter initialEntries={['/users']}>
         <Routes>

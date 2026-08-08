@@ -41,8 +41,7 @@ export function PromptDialog({
   secret = false,
   danger = false,
   busy = false,
-  expectExact,
-}: PromptDialogProps) {
+  expectExact }: PromptDialogProps) {
   const { t } = useTranslation();
   const [value, setValue] = useState(defaultValue);
   const [localBusy, setLocalBusy] = useState(false);

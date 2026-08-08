@@ -14,8 +14,7 @@ import {
   FormHint,
   InstallStreamPanel,
   MultiCheckSelect,
-  OpsResultPanel,
-} from '../../shared/components/ui';
+  OpsResultPanel } from '../../shared/components/ui';
 import type { InstallStreamLine, MultiCheckOption, OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../system';
 import { toast } from '../../shared/stores/toast-store';
@@ -38,8 +37,7 @@ export function RuntimePluginsField({
   /** Bump after parent runtime install so catalog re-probes */
   refreshToken = 0,
   /** Hide standalone install when parent shows one runtime install CTA */
-  showInstallButton = true,
-}: {
+  showInstallButton = true }: {
   kind: string;
   value: string[];
   onChange: (ids: string[]) => void;
@@ -96,8 +94,7 @@ export function RuntimePluginsField({
             group: p.group,
             recommended: Boolean(p.recommended),
             required: Boolean(p.required),
-            installed: Boolean(p.installed),
-          }));
+            installed: Boolean(p.installed) }));
           defs = r.defaults ?? [];
         }
         const optSet = new Set(opts?.optimisticInstalled ?? []);
@@ -108,8 +105,7 @@ export function RuntimePluginsField({
           group: p.group,
           recommended: Boolean(p.recommended),
           required: Boolean(p.required),
-          installed: Boolean(p.installed) || optSet.has(p.id),
-        }));
+          installed: Boolean(p.installed) || optSet.has(p.id) }));
         setRows(mapped);
         setDefaults(defs);
         setLoaded(true);
@@ -153,8 +149,7 @@ export function RuntimePluginsField({
       available.map((r) => ({
         value: r.id,
         label: r.label,
-        hint: r.hint ?? r.id,
-      })),
+        hint: r.hint ?? r.id })),
     [available],
   );
 
@@ -188,8 +183,7 @@ export function RuntimePluginsField({
         ok: r.ok !== false && !r.blocked,
         notes: r.notes,
         blocked: r.blocked,
-        blockMessage: r.blockMessage,
-      });
+        blockMessage: r.blockMessage });
       if (r.blocked) {
         toast.warn(r.blockMessage ?? r.notes?.[0] ?? t('runtime.pluginUninstallBlocked'));
       } else if (r.ok === false) {
@@ -210,11 +204,9 @@ export function RuntimePluginsField({
       const r = (await systemApi.runtimePluginsInstallStream(
         {
           kind: kindArg,
-          plugins: installedNow,
-        },
+          plugins: installedNow },
         {
-          onLog: (line) => setInstallLog((prev) => [...prev.slice(-1999), line]),
-        },
+          onLog: (line) => setInstallLog((prev) => [...prev.slice(-1999), line]) },
       )) as { ok?: boolean; notes?: string[]; blocked?: boolean; blockMessage?: string };
       presentOps(
         r,
@@ -258,13 +250,12 @@ export function RuntimePluginsField({
       try {
         const r = (await systemApi.runtimePluginsUninstall({
           kind: kindArg,
-          plugins: ids,
-        })) as { ok?: boolean; notes?: string[]; blocked?: boolean; blockMessage?: string };
+          plugins: ids })) as { ok?: boolean; notes?: string[]; blocked?: boolean; blockMessage?: string };
         presentOps(
           r,
           ids.length === 1
             ? t('runtime.pluginUninstalled', { name: label })
-            : t('runtime.pluginBatchUninstalled', { n: ids.length, defaultValue: t('uiInline.sd93b8620', { v0: ids.length }) }),
+            : t('runtime.pluginBatchUninstalled', { n: ids.length }),
           t('runtime.pluginUninstallFailed', { name: label }),
         );
         setUninstallSelected([]);
@@ -352,9 +343,7 @@ export function RuntimePluginsField({
                   onClick={() => setBatchUninstall(true)}
                 >
                   {t('runtime.pluginBatchUninstall', {
-                    n: uninstallSelected.length,
-                    defaultValue: t('uiInline.sd0ef129c', { v0: uninstallSelected.length }),
-                  })}
+                    n: uninstallSelected.length })}
                 </Button>
               </FormActions>
             ) : null}
@@ -365,7 +354,7 @@ export function RuntimePluginsField({
       {opsResult ? (
         <div className="u-mt-2 u-mb-2" id={`rt-plugins-ops-${kind}`}>
           <OpsResultPanel
-            title={t('runtime.pluginsOpsTitle', { defaultValue: t('uiInline.se6d47d0b') })}
+            title={t('runtime.pluginsOpsTitle')}
             result={opsResult}
           />
         </div>
@@ -408,15 +397,11 @@ export function RuntimePluginsField({
                 onClick={() => void doInstallSelected()}
               >
                 {t('runtime.pluginsInstallSelected', {
-                  n: selectedForInstall.length,
-                  defaultValue: t('uiInline.se6436711', { v0: selectedForInstall.length }),
-                })}
+                  n: selectedForInstall.length })}
               </Button>
             ) : (
               <FormHint>
-                {t('runtime.pluginsBundleWithRuntime', {
-                  defaultValue: t('uiInline.s1a27a3c4'),
-                })}
+                {t('runtime.pluginsBundleWithRuntime', { })}
               </FormHint>
             )}
             <Button
@@ -479,9 +464,7 @@ export function RuntimePluginsField({
         open={batchUninstall}
         title={t('runtime.pluginUninstallConfirmTitle')}
         description={t('runtime.pluginBatchUninstallConfirm', {
-          n: uninstallSelected.length,
-          defaultValue: t('uiInline.s32add03e', { v0: uninstallSelected.length }),
-        })}
+          n: uninstallSelected.length })}
         confirmLabel={t('runtime.pluginUninstall')}
         cancelLabel={t('common.cancel')}
         danger
@@ -489,7 +472,7 @@ export function RuntimePluginsField({
         onConfirm={() => {
           void runUninstallIds(
             uninstallSelected,
-            t('runtime.pluginBatchLabel', { defaultValue: t('uiInline.s3bca33b2') }),
+            t('runtime.pluginBatchLabel'),
           );
         }}
         onClose={() => {

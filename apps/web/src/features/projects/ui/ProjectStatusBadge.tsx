@@ -5,8 +5,7 @@ import { deriveProjectStatus } from '../model/status';
 
 export function ProjectStatusBadge({
   project,
-  showHint,
-}: {
+  showHint }: {
   project: ProjectDto;
   showHint?: boolean;
 }) {
