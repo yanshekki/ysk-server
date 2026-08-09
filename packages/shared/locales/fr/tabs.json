@@ -1,7 +1,7 @@
 {
-  "scrollLeft": "Scroll tabs left",
-  "scrollRight": "Scroll tabs right",
-  "about": "About",
+  "scrollLeft": "Faire défiler les onglets vers la gauche",
+  "scrollRight": "Faire défiler les onglets vers la droite",
+  "about": "À propos",
   "main": "Actions",
-  "stack": "Software"
+  "stack": "Logiciels"
 }

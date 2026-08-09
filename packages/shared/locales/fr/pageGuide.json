@@ -1,11 +1,11 @@
 {
-  "missing": "No help content is available for this page yet.",
-  "missingTitle": "No guide",
-  "eyebrow": "About",
-  "canDoTitle": "What you can do",
-  "workflowTitle": "Suggested flow",
+  "missing": "Aucun contenu d’aide n’est encore disponible pour cette page.",
+  "missingTitle": "Aucun guide",
+  "eyebrow": "À propos",
+  "canDoTitle": "Ce que vous pouvez faire",
+  "workflowTitle": "Flux suggéré",
   "notesTitle": "Notes",
-  "cliTitle": "CLI quick reference",
-  "cliFoot": "For full flags run ysk-server <command> --help or see the docs.",
-  "relatedTitle": "Related"
+  "cliTitle": "Référence rapide CLI",
+  "cliFoot": "Pour toutes les options, exécutez ysk-server <command> --help ou consultez la doc.",
+  "relatedTitle": "Liés"
 }

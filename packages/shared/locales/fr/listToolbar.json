@@ -1,12 +1,12 @@
 {
-  "searchPlaceholder": "Search…",
-  "searchAria": "Search list",
-  "clearSearch": "Clear search",
-  "clearAll": "Clear filters",
-  "resultCount": "{{count}} results",
-  "showingOf": "Showing {{shown}} of {{total}}",
-  "activeFilters": "{{count}} filters active",
-  "noResults": "No matches",
-  "noResultsHint": "Try another keyword or clear filters.",
-  "searching": "Searching…"
+  "searchPlaceholder": "Rechercher…",
+  "searchAria": "Rechercher dans la liste",
+  "clearSearch": "Effacer la recherche",
+  "clearAll": "Effacer les filtres",
+  "resultCount": "{{count}} résultats",
+  "showingOf": "Affichage de {{shown}} sur {{total}}",
+  "activeFilters": "{{count}} filtres actifs",
+  "noResults": "Aucune correspondance",
+  "noResultsHint": "Essayez un autre mot-clé ou effacez les filtres.",
+  "searching": "Recherche…"
 }
