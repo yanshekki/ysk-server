@@ -28,7 +28,7 @@
   "noRoutes": "ルートがありません",
   "colDest": "行き先",
   "addRoute": "ルートを追加",
-  "persistNm": "Save to NetworkManager connection (survives reboot)",
+  "persistNm": "NetworkManager接続に保存（再起動後も存続）",
   "ephemeralRoute": "ライブ IP ルートのみ (再起動すると消える可能性があります)",
   "destPlaceholder": "デフォルトまたは 10.0.0.0/8",
   "devOptional": "開発 (オプション)",
@@ -113,7 +113,7 @@
   "cidr": "CIDR",
   "realip": {
     "title": "CDN / リアルクライアント IP",
-    "desc": "Restore visitor IP behind CDN; trust edge CIDRs only.",
+    "desc": "CDNの背後にある訪問者のIPを復元します。エッジCIDRのみを信頼します。",
     "provider": "デフォルトのプロバイダー",
     "providerHint": "なし = 直接の起源。エッジの後ろにいる場合は CDN を選択します。",
     "mode": "トラストモード",

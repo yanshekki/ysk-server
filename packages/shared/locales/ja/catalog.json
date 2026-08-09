@@ -2,7 +2,7 @@
   "sw": {
     "vsftpd": "vsftpd (FTPS)",
     "db_util": "db-util (FTP ユーザー DB)",
-    "nginx": "Nginx",
+    "nginx": "nginx",
     "certbot": "証明書ボット (Let's Encrypt)",
     "mysql_client": "MySQL/MariaDB クライアント",
     "mysql_server": "MySQLサーバー",
@@ -17,7 +17,7 @@
     "dovecot": "鳩小屋",
     "opendkim": "OpenDKIM",
     "pdns_server": "パワーDNS",
-    "git": "Git",
+    "git": "git",
     "node": "Node.js",
     "php": "PHP",
     "python": "パイソン3",

@@ -23,7 +23,7 @@
   "redisService": "Redisサービス",
   "dns": "DNS",
   "ssl": "SSL証明書",
-  "nginx": "Nginx",
+  "nginx": "nginx",
   "node": "Node.js",
   "php": "PHP",
   "python": "パイソン",

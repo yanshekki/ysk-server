@@ -2,7 +2,7 @@
  * Web i18n — loads catalogs from @ysk/shared/locales (single source of truth).
  * Default: zh-HK (香港書面語). Aliases zh-TW → zh-HK via normalizeLocale.
  * Tier-1: zh-HK, zh-CN, en (quality bar).
- * Tier-2: hi, es, ar, fr, bn, pt, id, ur (scaffolded from English; ar/ur RTL).
+ * Tier-2: ja, ko, hi, es, ar, fr, bn, pt, id, ur (full catalogs; ar/ur RTL).
  */
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
@@ -18,6 +18,8 @@ import {
 import zhHK from '@ysk/shared/locales/zh-HK/translation.json';
 import zhCN from '@ysk/shared/locales/zh-CN/translation.json';
 import en from '@ysk/shared/locales/en/translation.json';
+import ja from '@ysk/shared/locales/ja/translation.json';
+import ko from '@ysk/shared/locales/ko/translation.json';
 import hi from '@ysk/shared/locales/hi/translation.json';
 import es from '@ysk/shared/locales/es/translation.json';
 import ar from '@ysk/shared/locales/ar/translation.json';
@@ -31,6 +33,8 @@ const resources = {
   'zh-HK': { translation: zhHK },
   'zh-CN': { translation: zhCN },
   en: { translation: en },
+  ja: { translation: ja },
+  ko: { translation: ko },
   hi: { translation: hi },
   es: { translation: es },
   ar: { translation: ar },
@@ -74,7 +78,8 @@ void i18n.use(initReactI18next).init({
     'zh-TW': ['zh-HK', 'en'],
     'zh-HK': ['en'],
     'zh-CN': ['zh-HK', 'en'],
-    // Tier-2 scaffolds use English strings; fall back to en for any sparse keys
+    ja: ['en'],
+    ko: ['en'],
     hi: ['en'],
     es: ['en'],
     ar: ['en'],
@@ -87,11 +92,9 @@ void i18n.use(initReactI18next).init({
   },
   supportedLngs: [...LOCALES, 'zh-TW'],
   interpolation: { escapeValue: false },
-  // Prefer explicit keys; avoid silent English fallback masking missing HK keys in dev
   returnNull: false,
 });
 
-// Initial document attributes (SSR-safe: only in browser)
 applyDocumentLocale(i18n.language);
 
 i18n.on('languageChanged', (lng) => {

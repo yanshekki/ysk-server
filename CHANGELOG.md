@@ -13,7 +13,8 @@
 - Removed AI Tasks / Agents panel navigation (CLI retained)
 - Unified professional About / 說明 tab layout with CLI hints
 - Tier-1 locale glossary hardening (zh-HK)
-- Tier-2 locales scaffolded from English: hi, es, ar, fr, bn, pt, id, ur (11 locales, key parity)
+- Locales: Tier-1 (zh-HK / zh-CN / en) + Tier-2 including **Japanese** and **Korean** (13 locales, full key parity)
+- Tier-2 catalogs translated from English (`scripts/i18n-mt-from-en.py`) with UI glossary overrides
 - RTL document direction for Arabic (`ar`) and Urdu (`ur`)
 
 ### Docs / CLI

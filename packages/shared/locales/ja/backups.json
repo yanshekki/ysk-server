@@ -87,7 +87,7 @@
   "repoPath": "リポジトリのパス",
   "repoPassword": "リポジトリのパスワード",
   "repoPassSaved": "保存されました。空 = 保持します。有効にした場合は必須です。",
-  "repoPassRequired": "Required when restic is enabled (no default password)",
+  "repoPassRequired": "Resticが有効になっている場合に必要です（デフォルトのパスワードなし）",
   "savedPlaceholder": "保存済み (空 = 保持)",
   "required": "必須",
   "s3RepoUrl": "または S3 リポジトリ URL",

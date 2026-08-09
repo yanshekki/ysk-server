@@ -66,7 +66,7 @@
   "allowThisPort": "このポートを許可する",
   "allowPortHint": "Web ホスト用に 22/80/443 を保持します。",
   "denyTitle": "永久拒否IP",
-  "denySub": "UFW DENY · different from temporary fail2ban bans",
+  "denySub": "UFW拒否・一時的なfail 2 ban禁止とは異なる",
   "denyPlaceholder": "拒否するIPv4またはIPv6",
   "deniedOk": "永久に拒否されました",
   "removedDeny": "拒否が削除されました",

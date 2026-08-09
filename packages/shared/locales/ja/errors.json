@@ -25,7 +25,7 @@
     "adminTotpStrict": "Admins must enable 2FA (strict). Use an enrolled account or disable strict mode.",
     "totpReplay": "コードはすでに使用されています。次の期間を待ちます",
     "totpRequired": "有効な認証コードが必要です",
-    "mustEnrollTotp": "Admin policy: enable two-factor authentication now",
+    "mustEnrollTotp": "管理者ポリシー：今すぐ二要素認証を有効にする",
     "userNotFound": "ユーザーが見つかりません",
     "totpSetupNeedReauth": "Enabling 2FA requires your password (or a recent step-up code)",
     "totpBeginFirst": "最初に 2FA セットアップを開始します",

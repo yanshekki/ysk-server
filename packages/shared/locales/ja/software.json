@@ -42,7 +42,7 @@
     "aptVersion": "インストールされました {{v}}",
     "aptUpgrade": "{{from}} → {{to}} あり",
     "aptUpgradeMulti": "アップグレード可能な{{n}} パッケージ: {{list}}",
-    "aptNotInstalled": "Package not installed (open manage page to install)",
+    "aptNotInstalled": "パッケージがインストールされていません（インストールするには管理ページを開きます）",
     "hostUpgradable": "ホスト上の ~{{n}} アップグレード可能なパッケージ",
     "checking": "バージョンを確認中…または管理ページを開きます"
   },
@@ -75,7 +75,7 @@
     "partial": "部分的に成功",
     "partialTitle": "一部のアップデートに失敗しました",
     "failedTitle": "{{label}} アップデートに失敗しました",
-    "progressDetail": "{{from}} → {{to}}",
+    "progressDetail": "0/1",
     "confirmBodyMulti": "{{label}} を更新: {{list}}"
   },
   "version": {

@@ -47,7 +47,11 @@ describe('i18n', () => {
     expect(normalizeLocale('id-ID')).toBe('id');
     expect(normalizeLocale('in-ID')).toBe('id'); // legacy Indonesian tag
     expect(normalizeLocale('ur-PK')).toBe('ur');
-    expect(normalizeLocale('ja')).toBe(DEFAULT_LOCALE);
+    expect(normalizeLocale('ja')).toBe('ja');
+    expect(normalizeLocale('ja-JP')).toBe('ja');
+    expect(normalizeLocale('ko')).toBe('ko');
+    expect(normalizeLocale('ko-KR')).toBe('ko');
+    expect(normalizeLocale('de')).toBe(DEFAULT_LOCALE);
   });
 
   it('localeFromAcceptLanguage prefers first matching tag', () => {
@@ -59,7 +63,10 @@ describe('i18n', () => {
     // Tier-2 tags resolve; unsupported still → DEFAULT
     expect(localeFromAcceptLanguage('fr-FR,de;q=0.8')).toBe('fr');
     expect(localeFromAcceptLanguage('ar,en;q=0.5')).toBe('ar');
-    expect(localeFromAcceptLanguage('ja,de;q=0.8')).toBe(DEFAULT_LOCALE);
+    expect(localeFromAcceptLanguage('ja,de;q=0.8')).toBe('ja');
+    expect(localeFromAcceptLanguage('ko-KR,en;q=0.5')).toBe('ko');
+    // unsupported tags only → default (nl still unsupported)
+    expect(localeFromAcceptLanguage('de,nl;q=0.8')).toBe(DEFAULT_LOCALE);
     expect(localeFromAcceptLanguage('zh,en;q=0.5')).toBe('zh-HK');
     // empty segments skipped → next en tag
     expect(localeFromAcceptLanguage(' , en;q=0.9')).toBe('en');

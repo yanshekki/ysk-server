@@ -10,7 +10,7 @@
   "restoreRole": "この役割を復元する",
   "restoreAll": "すべての役割を復元する",
   "restoreRoleTitle": "{{role}}を工場出荷時のデフォルトに戻しますか?",
-  "restoreRoleDesc": "Custom capabilities for this role will be cleared.",
+  "restoreRoleDesc": "この役割のカスタム機能はクリアされます。",
   "restoreAllTitle": "すべての役割を工場出荷時のデフォルトに戻しますか?",
   "restoreAllDesc": "すべてのカスタム役割ポリシーがクリアされます。",
   "restoredRole": "復元されました {{role}}",

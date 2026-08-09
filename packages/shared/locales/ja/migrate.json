@@ -29,7 +29,7 @@
   "projectHome": "プロジェクト / ホーム",
   "needSoftware": "インストールするソフトウェア",
   "noInventory": "まだ在庫はありません",
-  "noInventoryHint": "Use Refresh (top right) to scan host state and jobs",
+  "noInventoryHint": "リフレッシュ（右上）を使用して、ホストの状態とジョブをスキャンします",
   "targetHost": "ターゲットホスト",
   "targetHostDesc": "Root SSH only; password is for this request only and is not stored",
   "sshTarget": "SSHターゲット",
@@ -63,11 +63,11 @@
   "cancel": "キャンセル",
   "success": "成功",
   "unfilledTarget": "(ターゲットなし)",
-  "restartApiHint": "If you just deployed a new version, restart the API (",
+  "restartApiHint": "新しいバージョンをデプロイしたばかりの場合は、APIを再起動します（",
   "afterRestart": ")その後、更新します。",
   "inventoryWarnings": "在庫警告 ({{count}})",
   "moreWarnings": "…その他 {{n}}",
-  "authPassword": "root password (switch to key after temp key install)",
+  "authPassword": "rootパスワード（一時キーインストール後にキーに切り替える）",
   "authIdentity": "SSH ID ボールトの IDId",
   "authAgent": "ローカルのデフォルトエージェント/キー",
   "confirmMaint": "メンテナンス期間の確認",
@@ -75,8 +75,8 @@
   "allowOverwrite": "ターゲット上の既存の YSK データの上書きを許可する",
   "allowOverwriteDesc": "· ターゲットにすでに ysk.json がある場合は必須",
   "dryRunOnly": "ドライランのみ",
-  "dryRunOnlyDesc": "· Inventory + precheck only; no rsync or target writes",
+  "dryRunOnlyDesc": "·インベントリ+事前チェックのみ。rsyncまたはターゲットの書き込みはありません",
   "executeNote": "Host needs YSK_EXECUTE=1 and root API. After migrate, update DNS A/AAAA and check cloud firewall + mail PTR.",
   "dnsCutover": "DNSカットオーバー(手動)",
-  "dnsCutoverDesc": "Point A/AAAA for these names to the new public IP;"
+  "dnsCutoverDesc": "新しいパブリックIPへのこれらの名前のポイントA/AAAA。"
 }

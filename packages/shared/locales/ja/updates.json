@@ -32,7 +32,7 @@
   "tabPolicy": "ポリシー",
   "scanning": "走査…",
   "inventoryTitle": "パッケージの在庫",
-  "inventoryDesc": "Showing {{shown}} / {{total}} · inventoried {{when}}",
+  "inventoryDesc": "{{shown}}/⟦1を表示しています⟧·インベントリ数 {{when}}",
   "riskFilterAria": "リスクフィルター",
   "all": "すべて",
   "upgradable": "アップグレード可能",

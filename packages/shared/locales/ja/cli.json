@@ -8,7 +8,7 @@
     "noUser": "No user found. Create admin first or pass --user <name|id>",
     "tokenOnce": "トークンは一度表示されます - 安全に保管します",
     "sessionRevokeUsage": "Usage: ysk-server security sessions revoke --id <sessionIdPrefix> [--user U]",
-    "apiKeyDeleteUsage": "Usage: ysk-server security api-keys delete --id KEY_ID"
+    "apiKeyDeleteUsage": "使用方法： ysk - server security api - keys delete -- id KEY_ID"
   },
   "help": {
     "blurb": "Control plane CLI — prefer --json for AI agents.\nDocs: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json",
@@ -31,7 +31,7 @@
         "list": {
           "create": {
             "get": {
-              "b94a62": "Usage: ysk-server email domains list|create|get …\n"
+              "b94a62": "使用方法： ysk - server email domains list | create | get…"
             }
           }
         },
@@ -61,7 +61,7 @@
         "--domain": {
           "example": {
             "com": {
-              "26b806": "Usage: ysk-server email dns --domain example.com\n"
+              "26b806": "使用方法： ysk - server email dns -- domain example.com"
             }
           }
         }
@@ -165,7 +165,7 @@
         "--path": {
           "rel": {
             "--permanent": {
-              "fe2051": "Usage: ysk-server files rm --path REL [--permanent]\n"
+              "fe2051": "使用方法： ysk - server files rm -- path REL [-- permanent]"
             }
           }
         }
@@ -174,7 +174,7 @@
         "--from": {
           "rel": {
             "--to": {
-              "35a260": "Usage: ysk-server files rename --from REL --to REL\n"
+              "35a260": "使用方法： ysk - server files rename -- REL -- to REL"
             }
           }
         }
@@ -183,7 +183,7 @@
         "--from": {
           "rel": {
             "--to": {
-              "5337f4": "Usage: ysk-server files copy --from REL --to REL\n"
+              "5337f4": "使用法： ysk - server files copy -- REL -- to REL"
             }
           }
         }
@@ -192,7 +192,7 @@
         "--from": {
           "rel": {
             "--to": {
-              "75cf5d": "Usage: ysk-server files move --from REL --to REL\n"
+              "75cf5d": "使用法： ysk - server files move -- REL -- to REL"
             }
           }
         }
@@ -201,7 +201,7 @@
         "--path": {
           "rel": {
             "--mode": {
-              "39f983": "Usage: ysk-server files chmod --path REL --mode 644\n"
+              "39f983": "使用法： ysk - server files chmod -- path REL -- mode 644"
             }
           }
         }
@@ -210,14 +210,14 @@
         "restore": {
           "--id": {
             "trash": {
-              "c89ce9": "Usage: ysk-server files trash restore --id TRASH_ID\n"
+              "c89ce9": "使用方法： ysk - server files trash restore -- id TRASH_ID"
             }
           }
         },
         "list": {
           "restore": {
             "purge": {
-              "ef063d": "Usage: ysk-server files trash list|restore|purge\n"
+              "ef063d": "使用方法： ysk - server files trash list | restore | purge"
             }
           }
         }
@@ -231,7 +231,7 @@
         "status": {
           "token": {
             "disable": {
-              "f8e94b": "Usage: ysk-server files webdav status|token|disable\n"
+              "f8e94b": "使用方法： ysk - server files webdav status | token | disable"
             }
           }
         }
@@ -342,7 +342,7 @@
         "list": {
           "get": {
             "upsert": {
-              "609da6": "Usage: ysk-server cdn sites list|get|upsert|delete …\n"
+              "609da6": "使用法： ysk - server cdn sites list | get | upsert | delete…"
             }
           }
         },
@@ -358,7 +358,7 @@
         "--site-id": {
           "id": {
             "--dry-run": {
-              "2149eb": "Usage: ysk-server cdn render --site-id ID [--dry-run]\n"
+              "2149eb": "使用方法： ysk - server cdn render -- site - id ID [-- dry - run]"
             }
           }
         }
@@ -495,7 +495,7 @@
         "list": {
           "run": {
             "restore": {
-              "10402b": "Usage: ysk-server backup restic list|run|restore …\n"
+              "10402b": "使用法: ysk - server backup restic list | run | restore…"
             }
           }
         },
@@ -548,21 +548,21 @@
       "stop": {
         "--id": {
           "projectid": {
-            "b15409": "Usage: ysk-server projects stop --id <projectId>\n"
+            "b15409": "使用法: ysk - server projects stop -- id <projectId>"
           }
         }
       },
       "backup": {
         "--id": {
           "projectid": {
-            "e62846": "Usage: ysk-server projects backup --id <projectId>\n"
+            "e62846": "使用法: ysk - server projects backup -- id <projectId>"
           }
         }
       },
       "health": {
         "--id": {
           "projectid": {
-            "e816ec": "Usage: ysk-server projects health --id <projectId>\n"
+            "e816ec": "使用法: ysk - server projects health -- id <projectId>"
           }
         }
       },
@@ -649,7 +649,7 @@
         "db-cluster": {
           "get": {
             "--id": {
-              "00f803": "Usage: {{CLI_NAME}} db-cluster get --id UUID [--json]\n"
+              "00f803": "使用法： ⟦0 db⟧ - cluster get -- id UUID [-- json]"
             }
           },
           "plan": {
@@ -711,7 +711,7 @@
         "ssh-key": {
           "get": {
             "--id": {
-              "292716": "Usage: {{CLI_NAME}} ssh-key get --id UUID [--json]\n"
+              "292716": "使用法： ⟦0 ssh⟧ - key get -- id UUID [-- json]"
             }
           },
           "public": {
@@ -726,7 +726,7 @@
           },
           "delete": {
             "--id": {
-              "a6e2f2": "Usage: {{CLI_NAME}} ssh-key delete --id UUID [--json]\n"
+              "a6e2f2": "使用方法： ⟦0 ssh⟧ - key delete -- id UUID [-- json]"
             }
           },
           "create": {
@@ -773,12 +773,12 @@
         "ssh-2fa": {
           "reveal": {
             "--id": {
-              "a6c27f": "Usage: {{CLI_NAME}} ssh-2fa reveal --id UUID [--json]\n"
+              "a6c27f": "使用方法： ⟦0 ssh⟧ -2 fa reveal -- id UUID [-- json]"
             }
           },
           "retire": {
             "--id": {
-              "6e1fa3": "Usage: {{CLI_NAME}} ssh-2fa retire --id UUID [--json]\n"
+              "6e1fa3": "使用法： ⟦0 ssh⟧ -2 fa retire -- id UUID [-- json]"
             }
           },
           "enroll": {
@@ -810,7 +810,7 @@
         "ssl": {
           "list": {
             "get": {
-              "79c232": "Usage: {{CLI_NAME}} ssl list|get --domain X [--json]\n"
+              "79c232": "使用法： {{CLI_NAME}} ssl list | get -- domain X [-- json]"
             }
           },
           "get": {
@@ -1057,7 +1057,7 @@
     "domain": {
       "missing": {
         "pass": {
-          "5be09b": "Domain missing — pass --ip to create domain first\n"
+          "5be09b": "ドメインが見つかりません—最初にドメインを作成するには-- ipを渡してください"
         }
       }
     },
@@ -1121,28 +1121,28 @@
       "email": {
         "sub": {
           "sub": {
-            "e37257": "Unknown email sub: {{sub}}\nRun: ysk-server email help\n"
+            "e37257": "Unknown email sub: {{sub}}\n: ysk - serverメールヘルプを実行する"
           }
         }
       },
       "cron": {
         "sub": {
           "sub": {
-            "e1a9ed": "Unknown cron sub: {{sub}}\nRun: ysk-server cron help\n"
+            "e1a9ed": "Unknown cron sub: {{sub}}\n実行： ysk - server cron help"
           }
         }
       },
       "files": {
         "sub": {
           "sub": {
-            "07ad7e": "Unknown files sub: {{sub}}\nRun: ysk-server files help\n"
+            "07ad7e": "UNKNOWN FILES SUB: {{sub}}\n: ysk - server files helpを実行します。"
           }
         }
       },
       "store": {
         "sub": {
           "sub": {
-            "b7a083": "Unknown store sub: {{sub}}\nRun: ysk-server store help\n"
+            "b7a083": "Unknown store sub: {{sub}}\n: ysk - server storeヘルプを実行する"
           }
         }
       },
@@ -1168,15 +1168,15 @@
     "weakPassword": "Admin password is weak or default. Pass a strong --admin-password (min 8, not \"admin\"/common defaults), or set YSK_ALLOW_INSECURE_DEFAULTS=1 for local dev only.",
     "weakPasswordShort": "弱いまたはデフォルトの管理者パスワードが拒否されました",
     "nextStart": "Start (API + Web UI): {{cli}} serve --config {{configPath}}",
-    "nextOpen": "Open http://{{host}}:{{port}}/ and login as {{user}}",
+    "nextOpen": "Http ://⟦ 0⟧:⟦ 1⟧/を開き、⟦2としてログインします⟧",
     "nextUnit": "Systemd ユニット テンプレート: {{unitPath}}",
     "nextInstall": "Install unit (root + YSK_EXECUTE): {{cli}} system unit-install --enable --data-dir {{dataDir}}",
     "nextExecute": "Production host mutations require YSK_EXECUTE=1 and root",
     "nextGolive": "Go-live: docs/deploy/go-live.md + ysk-server readiness --json",
     "secPassword": "SECURITY: change admin password immediately (bootstrap used a weak/default password)",
-    "sec2fa": "SECURITY: enable admin 2FA under Security → Account",
+    "sec2fa": "セキュリティ：セキュリティ→アカウントで管理者2 FAを有効にする",
     "secListen": "SECURITY: listening on all interfaces — put behind firewall / reverse proxy; prefer 127.0.0.1 + SSH tunnel for admin",
-    "ok": "{{product}} setup completed (database initialized)",
+    "ok": "{{product}}セットアップが完了しました（データベースが初期化されました）",
     "okInsecure": "{{product}} setup completed (database initialized) [INSECURE BOOTSTRAP — change password]"
   }
 }

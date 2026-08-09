@@ -12,10 +12,12 @@
 | **zh-CN** | 简体中文 |
 | **en** | English（多語擴展時 key 的 SSOT） |
 
-### Tier-2（全球常用語言 — 以英文 scaffold）
+### Tier-2（全球語言 — 完整 key 目錄）
 
 | Code | 說明 | 方向 |
 |------|------|------|
+| **ja** | 日語 | LTR |
+| **ko** | 韓語 | LTR |
 | **hi** | 印地語 | LTR |
 | **es** | 西班牙語 | LTR |
 | **ar** | 阿拉伯語 | **RTL** |
@@ -24,6 +26,8 @@
 | **pt** | 葡萄牙語 | LTR |
 | **id** | 印尼語 | LTR |
 | **ur** | 烏爾都語 | **RTL** |
+
+所有語言共用同一 key 樹（SSOT = `en`）。Tier-2 由英文機器翻譯並對常用 UI 套 glossary；大改英文後可重跑 `python3 scripts/i18n-mt-from-en.py`。
 
 `zh-TW`／裸 `zh` 正規化為 `zh-HK`。舊標籤 `in`（印尼）→ `id`。  
 登錄：`packages/shared/locales/locales.json` 與 `packages/shared/src/i18n/normalize-locale.ts`。

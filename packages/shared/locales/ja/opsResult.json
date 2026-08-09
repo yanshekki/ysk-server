@@ -13,7 +13,7 @@
   "stepBuildOk": "ビルドが完了しました",
   "stepHealthOk": "ヘルスチェックに合格しました",
   "stepProcessStarted": "プロセスが開始されました",
-  "stepSystemdFallback": "Systemd unit not ready — process started via pidfile",
+  "stepSystemdFallback": "Systemdユニットは準備ができていません— pidfile経由でプロセスが開始されました",
   "stepNginxWritten": "Nginx設定が書き込まれました",
   "stepConfigsSynced": "構成がシステムに同期されました",
   "stepStoppedOld": "前のプロセスを停止しました",

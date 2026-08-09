@@ -6,7 +6,7 @@
   "securityCenter": "セキュリティセンター",
   "loading": "ユーザーとパッケージをロード中…",
   "userList": "ユーザー ({{count}})",
-  "userListDesc": "Open detail to edit role, password, package, overrides",
+  "userListDesc": "詳細を開いて、ロール、パスワード、パッケージ、上書きを編集します",
   "createUser": "ユーザーの作成",
   "createUserPlus": "+ ユーザーの作成",
   "searchPh": "ユーザー名 / ロール / パッケージ",
@@ -43,7 +43,7 @@
   "editPkg": "パッケージの編集",
   "pkgUpdated": "パッケージを更新しました {{name}}",
   "pkgList": "パッケージ ({{count}})",
-  "pkgListDesc": "Edit quotas; delete blocked while subscribers remain",
+  "pkgListDesc": "クォータを編集します。購読者が残っている間はブロックされた削除",
   "createPkg": "パッケージの作成",
   "createPkgPlus": "+ パッケージの作成",
   "mailboxes": "メールボックス",
@@ -63,9 +63,9 @@
   "impersonateTitle": "{{name}}になりすますか？",
   "deleteUserTitle": "{{name}}を削除しますか?",
   "deletePkgTitle": "パッケージ {{name}} を削除しますか?",
-  "impersonateDesc": "Your current session will be replaced (~2 hours).",
+  "impersonateDesc": "現在のセッションは置き換えられます（約2時間）。",
   "deleteUserDesc": "これを元に戻すことはできません。",
-  "deletePkgDesc": "Delete is refused while users still use this package.",
+  "deletePkgDesc": "ユーザーがまだこのパッケージを使用している間、削除は拒否されます。",
   "lastSeen": "最後に見た",
   "neverSeen": "一度もない",
   "hostUsage": "ホストの使用状況",
@@ -89,7 +89,7 @@
   "activeHint": "アクティブ: サインインして作業できます",
   "accessHint": "Effective capabilities from role policy (readable labels)",
   "noCapsInBand": "このレベルには機能がありません",
-  "overridesHint": "Affects this user only; role defaults stay unchanged",
+  "overridesHint": "このユーザーにのみ影響します。ロールのデフォルトは変更されません",
   "adminNoOverrides": "Admin users are always fully open; personal revokes are not applied.",
   "grantsHint": "ロールパックを超える追加機能",
   "revokesHint": "継承された機能をオフにする (管理者向けではない)",
@@ -105,9 +105,9 @@
   },
   "roleDesc": {
     "admin": "Full control: users, permissions, destructive ops. Always full-open.",
-    "operator": "Day-to-day ops: services, updates, DNS/SSL, sites.",
+    "operator": "日常業務：サービス、アップデート、DNS/SSL、サイト。",
     "viewer": "読み取り専用: ステータス、ログ、リスト - 変更なし。",
-    "agent": "Automation agent: low-risk writes with scope limits."
+    "agent": "自動化エージェント：スコープ制限のある低リスクの書き込み。"
   },
   "securityTitle": "2 要素認証 (このユーザー)",
   "securityPerUserHint": "TOTP/パスキーはユーザーごとにあります",
@@ -118,5 +118,5 @@
   "securityClearTotpHint": "ステップアップが必要",
   "securityClearConfirm": "ユーザー名を入力して 2FA のクリアを確認します",
   "securityClearOk": "{{name}} の 2FA をクリアしました",
-  "securitySelfNote": "To set up your own 2FA, open Security → My security."
+  "securitySelfNote": "独自→ の2 FAを設定するには、[セキュリティ] [マイセキュリティ]を開きます。"
 }
