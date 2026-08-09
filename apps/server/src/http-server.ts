@@ -38,6 +38,7 @@ import {
   handleDefenseRoutes,
   handleDnsRoutes,
   handleEmailRoutes,
+  handleFilesPublicRoutes,
   handleFirewallRoutes,
   handleHostingRoutes,
   handleMiscRoutes,
@@ -89,7 +90,8 @@ function attachRequestHandler(ctx: AppContext, webRoot: string | null) {
         // Bootstrap weak password: force change before other APIs
         enforceMustChangePassword(ctx, req, method, url.pathname);
 
-        // Modular controllers first (WebDAV needs OPTIONS/PROPFIND)
+        // Modular controllers first (WebDAV needs OPTIONS/PROPFIND — Wave E1 public first)
+        if (await handleFilesPublicRoutes(ctx, req, res, url, method)) return;
         if (await handleFilesRoutes(ctx, req, res, url, method)) return;
 
         if (method === 'OPTIONS') {
