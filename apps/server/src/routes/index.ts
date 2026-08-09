@@ -22,6 +22,8 @@ export { handleDbClustersRoutes } from './db-clusters.js';
 export { handleDbRoutes } from './db.js';
 export { handleDefenseCenterRoutes } from './defense-center.js';
 export { handleDefenseGeoipRoutes } from './defense-geoip.js';
+export { handleDefenseOpsRoutes } from './defense-ops.js';
+export { handleDefenseProtectionRoutes } from './defense-protection.js';
 export { handleDefenseRoutes } from './defense.js';
 export { handleDnsRoutes } from './dns.js';
 export { handleEmailDomainsRoutes } from './email-domains.js';
