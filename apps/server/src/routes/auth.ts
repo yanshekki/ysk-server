@@ -402,5 +402,23 @@ export async function handleAuthRoutes(
         sendJson(res, ok ? 200 : 404, { ok });
         return true;
       }
+      // WebAuthn credential delete (moved from misc)
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/auth\/webauthn\/credentials\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[6] ?? '';
+        const { deleteWebAuthnCredential } = await import('@ysk/core');
+        const ok = deleteWebAuthnCredential(ctx.db, user.id, id);
+        sendJson(res, ok ? 200 : 404, { ok });
+        return true;
+      }
+      // Remember-device revoke (moved from misc)
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/auth\/devices\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5] ?? '';
+        const { revokeRememberDevice } = await import('@ysk/core');
+        const ok = revokeRememberDevice(ctx.db, user.id, id);
+        sendJson(res, ok ? 200 : 404, { ok });
+        return true;
+      }
   return false;
 }

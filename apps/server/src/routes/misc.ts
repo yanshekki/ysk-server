@@ -47,47 +47,8 @@ export async function handleMiscRoutes(
   url: URL,
   method: string,
 ): Promise<boolean> {
-      // users/packages → admin; search → search; real-ip/ips → system-controller; dnssec → dns
-      // sftp/ssh identity+2fa → routes/ssh.ts
-      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/auth\/webauthn\/credentials\/[^/]+$/)) {
-        const user = ctx.auth.authenticate(getBearer(req));
-        const id = url.pathname.split('/')[6];
-        const { deleteWebAuthnCredential } = await import('@ysk/core');
-        const ok = deleteWebAuthnCredential(ctx.db, user.id, id);
-        sendJson(res, ok ? 200 : 404, { ok });
-        return true;
-      }
-      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/auth\/devices\/[^/]+$/)) {
-        const user = ctx.auth.authenticate(getBearer(req));
-        const id = url.pathname.split('/')[5];
-        const { revokeRememberDevice } = await import('@ysk/core');
-        const ok = revokeRememberDevice(ctx.db, user.id, id);
-        sendJson(res, ok ? 200 : 404, { ok });
-        return true;
-      }
-      if (method === 'GET' && url.pathname === '/api/v1/audit') {
-        ctx.auth.authenticate(getBearer(req));
-        const { listWithQuery } = await import('../http/list-response.js');
-        const limitRaw = Number(url.searchParams.get('limit') || 200);
-        const fetchN = Math.min(500, Number.isFinite(limitRaw) && limitRaw > 0 ? limitRaw : 200);
-        type AuditRow = {
-          actor?: string;
-          action?: string;
-          resource?: string;
-          detail?: unknown;
-        };
-        const all = ctx.audit.listRecent(fetchN) as unknown as AuditRow[];
-        const { items, meta } = listWithQuery(url, all, {
-          text: (e: AuditRow) => [
-            String(e.actor ?? ''),
-            String(e.action ?? ''),
-            String(e.resource ?? ''),
-            JSON.stringify(e.detail ?? ''),
-          ],
-        });
-        sendJson(res, 200, { items, meta });
-        return true;
-      }
+      // users/packages → admin; search; real-ip; dnssec; sftp/ssh → domain routes
+      // webauthn/devices → auth; audit → audit
       if (
         method === 'GET' &&
         url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/deploy-history$/)

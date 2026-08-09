@@ -28,6 +28,7 @@ import {
   handleAdminRoutes,
   handleAgentsRoutes,
   handleAiRoutes,
+  handleAuditRoutes,
   handleAuthRoutes,
   handleBackupsRoutes,
   handleCdnRoutes,
@@ -113,6 +114,7 @@ function attachRequestHandler(ctx: AppContext, webRoot: string | null) {
         if (await handleRbacRoutes(ctx, req, res, url, method)) return;
         if (await handleSettingsRoutes(ctx, req, res, url, method)) return;
         if (await handleAdminRoutes(ctx, req, res, url, method)) return;
+        if (await handleAuditRoutes(ctx, req, res, url, method)) return;
         if (await handleSearchRoutes(ctx, req, res, url, method)) return;
         if (await handleSshRoutes(ctx, req, res, url, method)) return;
         if (await handleProjectsRoutes(ctx, req, res, url, method)) return;

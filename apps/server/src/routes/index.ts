@@ -2,6 +2,7 @@
 export { handleAdminRoutes } from './admin.js';
 export { handleAgentsRoutes } from './agents.js';
 export { handleAiRoutes } from './ai.js';
+export { handleAuditRoutes } from './audit.js';
 export { handleAuthRoutes } from './auth.js';
 export { handleBackupsRoutes } from './backups.js';
 export { handleCdnRoutes } from './cdn.js';
