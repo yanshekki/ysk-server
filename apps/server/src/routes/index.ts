@@ -23,5 +23,6 @@ export { handleSettingsRoutes } from './settings.js';
 export { handleSoftwareRoutes } from './software.js';
 export { handleSshRoutes } from './ssh.js';
 export { handleSslRoutes } from './ssl.js';
+export { handleSystemDbRoutes } from './system-db.js';
 export { handleToolsRoutes } from './tools.js';
 export { handleUpdatesRoutes } from './updates.js';
