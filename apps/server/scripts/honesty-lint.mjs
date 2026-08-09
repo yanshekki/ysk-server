@@ -33,6 +33,9 @@ const badTernary =
   /sendJson\(\s*res\s*,\s*\w+\.ok\s*\?\s*200\s*:\s*422\s*,\s*\w+\s*\)/g;
 const badBlocked422 =
   /sendJson\(\s*res\s*,\s*\w+\.ok\s*\?\s*200\s*:\s*\w+\.blocked\s*\?\s*422/g;
+// Also catch 200 : 4xx with blocked ignored (common residual pattern)
+const badOk4xx =
+  /sendJson\(\s*res\s*,\s*\w+\.ok\s*\?\s*200\s*:\s*(400|401|403|500|502)\s*,/g;
 
 for (const file of files) {
   if (file.includes('/http/util.ts')) continue;
@@ -47,6 +50,15 @@ for (const file of files) {
     const line = text.slice(0, m.index).split('\n').length;
     findings.push(`${rel}:${line}: blocked mapped to 422 — use sendOpsResult (403)`);
   }
+  // Soft report (do not fail CI yet): residual ok?200:4xx/5xx — migrate to sendOpsResult
+  for (const m of text.matchAll(badOk4xx)) {
+    const line = text.slice(0, m.index).split('\n').length;
+    if (m[0].includes(': 404')) continue;
+    // collect as soft only after hard findings; print at end
+    findings.push(
+      `SOFT ${rel}:${line}: prefer sendOpsResult for ops-shaped results (ok?200:${m[1]})`,
+    );
+  }
   // Rough: ok: true and blocked: true within 120 chars (production sources only)
   const dish = /ok:\s*true[\s\S]{0,120}blocked:\s*true|blocked:\s*true[\s\S]{0,120}ok:\s*true/g;
   for (const m of text.matchAll(dish)) {
@@ -60,8 +72,17 @@ for (const file of files) {
   }
 }
 
-if (findings.length) {
-  console.error('honesty-lint FAILED:\n' + findings.map((f) => `  ${f}`).join('\n'));
+const hard = findings.filter((f) => !f.startsWith('SOFT '));
+const soft = findings.filter((f) => f.startsWith('SOFT '));
+if (soft.length) {
+  console.warn(
+    `honesty-lint soft (${soft.length}):\n` + soft.map((f) => `  ${f}`).join('\n'),
+  );
+}
+if (hard.length) {
+  console.error('honesty-lint FAILED:\n' + hard.map((f) => `  ${f}`).join('\n'));
   process.exit(1);
 }
-console.log(`honesty-lint OK (${files.length} files, 0 findings)`);
+console.log(
+  `honesty-lint OK (${files.length} files, ${hard.length} hard, ${soft.length} soft)`,
+);

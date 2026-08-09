@@ -10,6 +10,9 @@ import {
 import type { YskDatabase } from '../db/database.js';
 
 /** @deprecated import assertHonestOps from @ysk/shared */
+/** Re-export honesty layer helper for apply paths (SSOT with apply-honesty.ts). */
+export { honestyFromFlags, type HonestyLayer } from './apply-honesty.js';
+
 export function normalizeOpsHonesty<T extends OpsResultInput>(result: T): T & OpsResultDto {
   return assertHonestOps(result);
 }

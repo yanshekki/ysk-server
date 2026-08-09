@@ -188,15 +188,12 @@ export async function handleAuthRoutes(
       }
       if (method === 'POST' && url.pathname === '/api/v1/auth/password') {
         const user = ctx.auth.authenticate(getBearer(req));
-        const raw = await readBody(req);
-        const data = JSON.parse(raw || '{}') as {
-          currentPassword?: string;
-          newPassword?: string;
-        };
+        const { readJsonBody, requireString } = await import('../http/validate.js');
+        const data = await readJsonBody(req);
         const updated = ctx.auth.changeOwnPassword(
           user.id,
-          data.currentPassword ?? '',
-          data.newPassword ?? '',
+          requireString(data, 'currentPassword', { min: 1 }),
+          requireString(data, 'newPassword', { min: 8, max: 200 }),
         );
         sendJson(res, 200, { ok: true, user: updated });
         return true;
