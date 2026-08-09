@@ -45,4 +45,6 @@ export { handleSystemDbRoutes } from './system-db.js';
 export { handleSystemHostRoutes } from './system-host.js';
 export { handleSystemOpsRoutes } from './system-ops.js';
 export { handleToolsRoutes } from './tools.js';
+export { handleUpdatesApplyRoutes } from './updates-apply.js';
+export { handleUpdatesInventoryRoutes } from './updates-inventory.js';
 export { handleUpdatesRoutes } from './updates.js';
