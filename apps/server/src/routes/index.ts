@@ -15,6 +15,7 @@ export { handleEmailRoutes } from './email.js';
 export { handleFilesRoutes } from './files.js';
 export { handleFilesPublicRoutes } from './files-public.js';
 export { handleFirewallRoutes } from './firewall.js';
+export { handleHostingProcessesRoutes } from './hosting-processes.js';
 export { handleHostingRoutes } from './hosting.js';
 export { handleLogsRoutes } from './logs.js';
 export { handleMetricsRoutes } from './metrics.js';
