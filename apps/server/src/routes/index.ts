@@ -2,7 +2,9 @@
 export { handleAdminPackagesRoutes } from './admin-packages.js';
 export { handleAdminRoutes } from './admin.js';
 export { handleAdminUsersRoutes } from './admin-users.js';
+export { handleAgentsFleetRoutes } from './agents-fleet.js';
 export { handleAgentsRoutes } from './agents.js';
+export { handleAgentsRuntimesRoutes } from './agents-runtimes.js';
 export { handleAiRoutes } from './ai.js';
 export { handleAuditRoutes } from './audit.js';
 export { handleAuthMfaRoutes } from './auth-mfa.js';
