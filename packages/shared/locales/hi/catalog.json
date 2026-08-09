@@ -4,14 +4,14 @@
     "db_util": "db-util (FTP user DB)",
     "nginx": "Nginx",
     "certbot": "Certbot (Let's Encrypt)",
-    "mysql_client": "MySQL/MariaDB client",
-    "mysql_server": "MySQL server",
-    "mariadb_server": "MariaDB server",
-    "postgresql_client": "PostgreSQL client",
-    "postgresql": "PostgreSQL server",
-    "redis_tools": "Redis client",
-    "redis_server": "Redis server",
-    "ufw": "UFW firewall",
+    "mysql_client": "MySQL/MariaDB क्लाइंट",
+    "mysql_server": "MySQL सर्वर",
+    "mariadb_server": "MariaDB सर्वर",
+    "postgresql_client": "PostgreSQL क्लाइंट",
+    "postgresql": "PostgreSQL सर्वर",
+    "redis_tools": "Redis क्लाइंट",
+    "redis_server": "Redis सर्वर",
+    "ufw": "UFW फ़ायरवॉल",
     "fail2ban": "fail2ban",
     "postfix": "Postfix",
     "dovecot": "Dovecot",
@@ -25,7 +25,7 @@
     "rust": "Rust (cargo)"
   },
   "php": {
-    "session": "Session",
+    "session": "सत्र",
     "opcache": "OPcache"
   }
 }

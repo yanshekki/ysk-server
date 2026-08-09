@@ -1,14 +1,14 @@
 {
-  "titleDefault": "Required software is not installed",
-  "missing": "Missing: {{names}}",
+  "titleDefault": "आवश्यक सॉफ़्टवेयर इंस्टॉल नहीं है",
+  "missing": "अनुपस्थित: {{names}}",
   "nameSep": ", ",
-  "installOneClick": "Install now",
-  "installing": "Installing…",
-  "reprobe": "Re-check",
-  "close": "Close",
-  "resultTitle": "Install result",
-  "probeFailed": "Probe failed",
-  "installIncomplete": "Install incomplete",
-  "installedOne": "Installed {{name}}",
-  "allInstalled": "Required software installed"
+  "installOneClick": "अभी इंस्टॉल करें",
+  "installing": "इंस्टॉल हो रहा है…",
+  "reprobe": "फिर जाँचें",
+  "close": "बंद करें",
+  "resultTitle": "इंस्टॉल परिणाम",
+  "probeFailed": "प्रोब विफल",
+  "installIncomplete": "इंस्टॉल अधूरा",
+  "installedOne": "{{name}} इंस्टॉल हो गया",
+  "allInstalled": "आवश्यक सॉफ़्टवेयर इंस्टॉल हो गया"
 }

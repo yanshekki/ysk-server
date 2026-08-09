@@ -1,7 +1,7 @@
 {
-  "created": "Created",
-  "updated": "Updated",
-  "deleted": "Deleted",
-  "applyDone": "Apply completed",
-  "applyIncomplete": "Apply incomplete"
+  "created": "बनाया गया",
+  "updated": "अपडेट किया गया",
+  "deleted": "हटा दिया गया",
+  "applyDone": "Apply पूर्ण",
+  "applyIncomplete": "Apply अधूरा"
 }

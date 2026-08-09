@@ -1,11 +1,11 @@
 {
-  "draft": "Draft",
-  "written": "Written (panel data)",
-  "planned": "In progress",
-  "applied": "Applied on host",
-  "failed": "Failed",
-  "pendingExecute": "Needs host execute",
-  "uploaded": "Uploaded",
-  "issued": "Issued",
-  "missing": "File missing"
+  "draft": "ड्राफ़्ट",
+  "written": "लिखा गया (पैनल डेटा)",
+  "planned": "प्रगति में",
+  "applied": "होस्ट पर लागू",
+  "failed": "विफल",
+  "pendingExecute": "होस्ट execute आवश्यक",
+  "uploaded": "अपलोड किया गया",
+  "issued": "जारी किया गया",
+  "missing": "फ़ाइल गायब"
 }

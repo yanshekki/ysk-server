@@ -1,12 +1,12 @@
 {
-  "searchPlaceholder": "Search…",
-  "searchAria": "Search list",
-  "clearSearch": "Clear search",
-  "clearAll": "Clear filters",
-  "resultCount": "{{count}} results",
-  "showingOf": "Showing {{shown}} of {{total}}",
-  "activeFilters": "{{count}} filters active",
-  "noResults": "No matches",
-  "noResultsHint": "Try another keyword or clear filters.",
-  "searching": "Searching…"
+  "searchPlaceholder": "खोजें…",
+  "searchAria": "सूची खोजें",
+  "clearSearch": "खोज साफ़ करें",
+  "clearAll": "फ़िल्टर साफ़ करें",
+  "resultCount": "{{count}} परिणाम",
+  "showingOf": "{{total}} में से {{shown}} दिखा रहे हैं",
+  "activeFilters": "{{count}} फ़िल्टर सक्रिय",
+  "noResults": "कोई मेल नहीं",
+  "noResultsHint": "कोई अन्य कीवर्ड आज़माएँ या फ़िल्टर साफ़ करें।",
+  "searching": "खोज रहे हैं…"
 }

@@ -1,38 +1,38 @@
 {
   "blocked": {
-    "needExecute": "Host execute is off; this action cannot finish from the panel",
-    "needExecuteShort": "Host execute is not enabled",
-    "needExecuteBlocked": "Blocked: host execute is off",
-    "needRoot": "Root privileges required",
-    "needExecuteRoot": "Requires YSK_EXECUTE=1 and root",
-    "needExecuteYsk": "Requires YSK_EXECUTE=1",
-    "writeOutsideDataDir": "Write blocked: host execute is off and the path is outside the panel data directory",
-    "nginxReload": "Cannot reload Nginx: host execute required",
-    "signal": "Cannot send signal: host execute required (YSK_EXECUTE)",
-    "signalNote": "YSK_EXECUTE=1 is required for a real kill",
-    "renice": "Cannot renice: host execute required (YSK_EXECUTE)",
-    "install": "Host execute is off; install cannot finish from the panel",
-    "update": "Host execute is off; update cannot finish from the panel",
-    "panel": "Cannot complete this from the management panel"
+    "needExecute": "Host execute बंद है; यह क्रिया पैनल से पूर्ण नहीं हो सकती",
+    "needExecuteShort": "Host execute सक्षम नहीं है",
+    "needExecuteBlocked": "अवरुद्ध: host execute बंद है",
+    "needRoot": "Root विशेषाधिकार आवश्यक",
+    "needExecuteRoot": "YSK_EXECUTE=1 और root आवश्यक",
+    "needExecuteYsk": "YSK_EXECUTE=1 आवश्यक",
+    "writeOutsideDataDir": "लेखन अवरुद्ध: host execute बंद है और पथ पैनल data directory के बाहर है",
+    "nginxReload": "Nginx रीलोड नहीं हो सकता: host execute आवश्यक",
+    "signal": "सिग्नल नहीं भेजा जा सकता: host execute आवश्यक (YSK_EXECUTE)",
+    "signalNote": "वास्तविक kill के लिए YSK_EXECUTE=1 आवश्यक है",
+    "renice": "renice नहीं हो सकता: host execute आवश्यक (YSK_EXECUTE)",
+    "install": "Host execute बंद है; स्थापना पैनल से पूर्ण नहीं हो सकती",
+    "update": "Host execute बंद है; अपडेट पैनल से पूर्ण नहीं हो सकता",
+    "panel": "प्रबंधन पैनल से यह पूर्ण नहीं किया जा सकता"
   },
   "honesty": {
-    "blockedNotOk": "Honesty fix: blocked cannot be ok=true",
-    "blockedNotApplied": "Honesty fix: blocked cannot be apply_status=applied",
-    "okFalseNotApplied": "Honesty fix: ok=false cannot be apply_status=applied"
+    "blockedNotOk": "Honesty fix: blocked को ok=true नहीं माना जा सकता",
+    "blockedNotApplied": "Honesty fix: blocked को apply_status=applied नहीं माना जा सकता",
+    "okFalseNotApplied": "Honesty fix: ok=false को apply_status=applied नहीं माना जा सकता"
   },
   "status": {
-    "applied": "Status: applied",
-    "failed": "Status: failed",
-    "written": "Status: written",
-    "blocked": "Status: blocked"
+    "applied": "स्थिति: लागू",
+    "failed": "स्थिति: विफल",
+    "written": "स्थिति: लिखा गया",
+    "blocked": "स्थिति: अवरुद्ध"
   },
   "notes": {
-    "writtenSettings": "Settings written",
-    "completed": "Completed",
-    "partialSuccess": "Operation only partially succeeded",
-    "notInstalled": "Not installed",
-    "running": "Running",
-    "stopped": "Stopped",
-    "unknown": "Unknown"
+    "writtenSettings": "सेटिंग्स लिखी गईं",
+    "completed": "पूर्ण",
+    "partialSuccess": "ऑपरेशन केवल आंशिक रूप से सफल हुआ",
+    "notInstalled": "इंस्टॉल नहीं",
+    "running": "चल रहा है",
+    "stopped": "रोका गया",
+    "unknown": "अज्ञात"
   }
 }

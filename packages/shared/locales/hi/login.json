@@ -1,14 +1,14 @@
 {
-  "title": "Sign in to YSK Server",
-  "subtitle": "Server console",
-  "username": "Username",
-  "password": "Password",
-  "submit": "Sign in",
-  "failed": "Sign-in failed. Check username or password.",
-  "footer": "A product of YSK Limited",
-  "totpRequired": "2FA is enabled for this account. Enter the 6-digit code.",
-  "totpLabel": "Authentication code",
-  "totpHint": "6-digit code from your authenticator app",
-  "submitting": "Signing in…",
-  "sessionExpired": "Session expired; sign in again"
+  "title": "YSK Server में साइन इन करें",
+  "subtitle": "सर्वर कंसोल",
+  "username": "उपयोगकर्ता नाम",
+  "password": "पासवर्ड",
+  "submit": "साइन इन",
+  "failed": "साइन इन विफल। उपयोगकर्ता नाम या पासवर्ड जाँचें।",
+  "footer": "YSK Limited का उत्पाद",
+  "totpRequired": "इस खाते के लिए 2FA सक्षम है। 6-अंकों का कोड दर्ज करें।",
+  "totpLabel": "प्रमाणीकरण कोड",
+  "totpHint": "आपके authenticator ऐप से 6-अंकों का कोड",
+  "submitting": "साइन इन हो रहा है…",
+  "sessionExpired": "सत्र समाप्त; फिर से साइन इन करें"
 }
