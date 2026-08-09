@@ -38,6 +38,7 @@ export { handleSettingsRoutes } from './settings.js';
 export { handleSoftwareRoutes } from './software.js';
 export { handleSshIdentitiesRoutes } from './ssh-identities.js';
 export { handleSshRoutes } from './ssh.js';
+export { handleSshSftpRoutes } from './ssh-sftp.js';
 export { handleSslRoutes } from './ssl.js';
 export { handleSystemDbRoutes } from './system-db.js';
 export { handleSystemHostRoutes } from './system-host.js';
