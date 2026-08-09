@@ -8,13 +8,14 @@ Canonical workdir: `/home/ki/文件/ysk-server/`.
 |--------|--------|------|
 | Shared helpers (resolveRoot, rate-limit, chown) | `routes/files-shared.ts` | **E1** |
 | WebDAV protocol + public share download | `routes/files-public.ts` | **E1** |
+| Trash / shares / favorites / versions / WebDAV settings | `routes/files-meta.ts` | **E2** |
 
 ## Still residual in files-controller
 
-- Authenticated CRUD (list/read/write/mkdir/…)
-- Trash / shares / favorites / versions
-- WebDAV control-plane settings (`/api/v1/files/webdav*`)
+- Authenticated CRUD (list/read/write/mkdir/chmod/zip/…)
 
 ## Dispatch note
 
-`handleFilesPublicRoutes` runs **before** `handleFilesRoutes` (WebDAV + public share).
+`handleFilesPublicRoutes` runs **before** `handleFilesRoutes`.  
+`handleFilesMetaSection` runs inside `handleFilesRoutes` after auth + root resolve.
+
