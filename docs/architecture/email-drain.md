@@ -12,7 +12,9 @@ Canonical workdir: `/home/ki/文件/ysk-server/`.
 | Webmail apply / project create | `routes/email-webmail-apply.ts` | **W1** |
 | Webmail SSO / sieve / SSO plugin | `routes/email-webmail-sso.ts` | **W1** |
 | Webmail dispatcher | `routes/email-webmail.ts` | **W1** |
-| Relay / queue / bootstrap / mail-tls / dnsbl / warmup | `routes/email-ops.ts` | **I3** |
+| Relay / queue / mailboxes / bootstrap / mail-tls | `routes/email-ops-stack.ts` | **AC1** |
+| DNSBL / warmup | `routes/email-ops-dnsbl.ts` | **AC1** |
+| Ops dispatcher | `routes/email-ops.ts` | **AC1** |
 
-`routes/email.ts` thin dispatcher: `domains → webmail(apply → sso) → ops`.  
+`routes/email.ts` thin dispatcher: `domains → webmail(apply → sso) → ops(stack → dnsbl)`.  
 `routes/email-domains.ts` thin dispatcher: `crud → ops(deliverability → mailboxes)`.
