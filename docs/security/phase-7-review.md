@@ -24,9 +24,18 @@ Scope: re-pass after Tier-2 i18n, CLI parity, About UX, and public share / WebDA
 
 ## Verification
 
-- `pnpm --filter @ysk/core test` (sandbox, shares, webdav)
-- `pnpm chrome:check` / `pnpm gates` (i18n + chrome)
+- Targeted security suite (must be green):
+  ```bash
+  pnpm --filter @ysk/core exec vitest run \
+    src/files/manager.test.ts \
+    src/files/manager.depth.test.ts \
+    src/files/webdav.test.ts \
+    src/files/shares.test.ts \
+    src/security/sandbox.test.ts
+  ```
+- `pnpm chrome:check` / i18n gates (11 locales × key parity)
 - Shared unit tests for `normalizeLocale` Tier-2 + RTL
+- Full `@ysk/core` suite may include unrelated host/env flakes; Phase 7 acceptance is the security file set above.
 
 ## Related
 

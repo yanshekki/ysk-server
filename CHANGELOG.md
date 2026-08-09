@@ -5,15 +5,21 @@
 
 ### Security
 - Phase 0: file sandbox boundary, WebDAV Basic user enforcement, constant-time token compares
+- Phase 7: public-share passwords use salted `scrypt$salt$hash` (legacy SHA-256 still verified)
+- Phase 7: rate-limit public share and WebDAV Basic auth failures (IP-scoped lockout)
+- Phase 7: harden `pathAllowed` empty-root / bare-`/` edge cases
 
 ### UI
 - Removed AI Tasks / Agents panel navigation (CLI retained)
 - Unified professional About / 說明 tab layout with CLI hints
 - Tier-1 locale glossary hardening (zh-HK)
+- Tier-2 locales scaffolded from English: hi, es, ar, fr, bn, pt, id, ur (11 locales, key parity)
+- RTL document direction for Arabic (`ar`) and Urdu (`ur`)
 
 ### Docs / CLI
 - Panel↔CLI parity matrices refreshed (EN+ZH); CLI help unit tests
 - Feature docs: WebDAV, public shares, global webmail
+- i18n + security docs updated for Tier-2 locales and Phase 7 review (EN+ZH)
 
 ## Unreleased
 

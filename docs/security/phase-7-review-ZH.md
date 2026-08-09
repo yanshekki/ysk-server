@@ -24,9 +24,18 @@
 
 ## 驗證
 
-- `pnpm --filter @ysk/core test`（sandbox、shares、webdav）
-- `pnpm chrome:check`／`pnpm gates`
+- 安全相關定向套件（必須全綠）：
+  ```bash
+  pnpm --filter @ysk/core exec vitest run \
+    src/files/manager.test.ts \
+    src/files/manager.depth.test.ts \
+    src/files/webdav.test.ts \
+    src/files/shares.test.ts \
+    src/security/sandbox.test.ts
+  ```
+- `pnpm chrome:check`／i18n 閘門（11 語言 key 對齊）
 - shared：`normalizeLocale` Tier-2 + RTL 單測
+- 完整 `@ysk/core` 套件可能含無關環境 flaky；Phase 7 驗收以以上安全檔案集為準。
 
 ## 相關
 

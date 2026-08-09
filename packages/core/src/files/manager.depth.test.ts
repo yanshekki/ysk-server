@@ -14,6 +14,7 @@ import {
   hashSharePassword,
   newShareToken,
   publicFilesRoot,
+  verifySharePasswordHash,
 } from './manager.js';
 import { YskError } from '@ysk/shared';
 
@@ -205,9 +206,14 @@ describe('FileManager depth', () => {
   it('hashSharePassword and newShareToken and publicFilesRoot', () => {
     const dir = tmp();
     try {
+      // Phase 7: salted scrypt (not deterministic SHA-256)
       const h = hashSharePassword('secret');
-      expect(h).toHaveLength(64);
-      expect(hashSharePassword('secret')).toBe(h);
+      expect(h).toMatch(/^scrypt\$[a-f0-9]+\$[a-f0-9]+$/);
+      expect(h.length).toBeGreaterThan(64);
+      // Random salt → two hashes of same password differ
+      expect(hashSharePassword('secret')).not.toBe(h);
+      expect(verifySharePasswordHash(h, 'secret')).toBe(true);
+      expect(verifySharePasswordHash(h, 'wrong')).toBe(false);
       const t = newShareToken();
       expect(t.length).toBe(32);
       expect(newShareToken()).not.toBe(t);
