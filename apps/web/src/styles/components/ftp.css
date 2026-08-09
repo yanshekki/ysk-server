@@ -1,0 +1,183 @@
+/* —— FTPS / SFTP keys tab (professional list UX) —— */
+.sftp-keys__card {
+  overflow: hidden;
+}
+
+.sftp-keys__header {
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.sftp-keys__intro {
+  min-width: 0;
+  flex: 1;
+}
+
+.sftp-keys__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-page, #f8fafc);
+}
+
+.sftp-keys__filter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  min-width: 0;
+}
+
+.sftp-keys__filter-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-sub);
+  white-space: nowrap;
+}
+
+.sftp-keys__filter-select {
+  min-width: 10rem;
+  max-width: 18rem;
+  height: 2.125rem;
+  padding: 0 0.65rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 8px);
+  background: var(--bg-white, #fff);
+  color: var(--text-main);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.sftp-keys__filter-select:focus {
+  outline: none;
+  border-color: var(--primary, #2563eb);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary, #2563eb) 20%, transparent);
+}
+
+.sftp-keys__count {
+  white-space: nowrap;
+}
+
+.sftp-keys__body {
+  padding: var(--space-6) var(--space-5);
+}
+
+.sftp-keys__cta {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-3);
+}
+
+.sftp-keys__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sftp-key-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border-color);
+  transition: background 0.12s ease;
+}
+
+.sftp-key-row:last-child {
+  border-bottom: none;
+}
+
+.sftp-key-row:hover {
+  background: color-mix(in srgb, var(--primary, #2563eb) 4%, transparent);
+}
+
+.sftp-key-row__main {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sftp-key-row__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.sftp-key-row__user {
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+.sftp-key-row__note {
+  font-size: 0.875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 28rem;
+}
+
+.sftp-key-row__preview {
+  display: block;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  padding: 0.4rem 0.55rem;
+  border-radius: var(--radius-sm, 6px);
+  background: var(--bg-page, #f1f5f9);
+  color: var(--text-sub);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  border: 1px solid var(--border-color);
+}
+
+.sftp-key-row__time {
+  font-variant-numeric: tabular-nums;
+}
+
+.sftp-key-row__actions {
+  flex-shrink: 0;
+  padding-top: 0.15rem;
+}
+
+.sftp-keys__tech {
+  margin: 0;
+  padding: var(--space-3) var(--space-5) var(--space-4);
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-page, #fafbfc);
+}
+
+.sftp-keys__tech summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-sub);
+  user-select: none;
+}
+
+.sftp-keys__tech summary:hover {
+  color: var(--text-main);
+}
+
+.sftp-keys__tech[open] summary {
+  margin-bottom: var(--space-2);
+  color: var(--text-main);
+}
+
+@media (max-width: 640px) {
+  .sftp-key-row {
+    flex-direction: column;
+  }
+
+  .sftp-key-row__actions {
+    align-self: flex-end;
+  }
+}

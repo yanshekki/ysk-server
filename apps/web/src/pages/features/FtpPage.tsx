@@ -2,7 +2,7 @@
  * FTPS accounts — tabbed UX: {i18n.t('ftp.accountsList')} | SFTP 公鑰
  * List-first; create/edit always in Modal (no huge empty forms).
  */
-import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../shared/lib/i18n';
 import { Link } from 'react-router-dom';
@@ -13,9 +13,9 @@ import {
   Badge,
   Button,
   Card,
-  CardSection,
   ConfirmDialog,
   DataTable,
+  EmptyState,
   Field,
   FeaturePageLayout,
   FormLayout,
@@ -30,7 +30,13 @@ import { ftpApi, type SelectOption } from '../../features/ftp';
 import { api } from '../../shared/services/api';
 import { toast } from '../../shared/stores/toast-store';
 import { usePageTab } from '../../shared/hooks/usePageTab';
-import { bindCall1, bindClear2, bindCloseIfIdle, bindConfirmThen, bindFormSubmit, bindInput, bindRemoveIf, bindSet, bindVoid } from '../bind-handlers';
+import {
+  bindCall1,
+  bindFormSubmit,
+  bindInput,
+  bindRemoveIf,
+  bindSet,
+} from '../bind-handlers';
 
 type SftpKey = {
   id: string;
@@ -39,6 +45,38 @@ type SftpKey = {
   publicKey: string;
   created_at: string;
 };
+
+/** Parse SSH public key line → algorithm + short preview (for list UI). */
+export function parseSshPubkeyMeta(publicKey: string): {
+  algo: string;
+  preview: string;
+  comment: string;
+} {
+  const parts = String(publicKey || '')
+    .trim()
+    .split(/\s+/);
+  const algo = parts[0] && /^ssh-|^ecdsa-|^sk-/.test(parts[0]) ? parts[0] : 'ssh';
+  const body = parts[1] ?? String(publicKey || '').trim();
+  const comment = parts.slice(2).join(' ').trim();
+  const preview =
+    body.length > 40 ? `${body.slice(0, 20)}…${body.slice(-12)}` : body || '—';
+  return { algo, preview, comment };
+}
+
+export function filterSftpKeys(
+  keys: SftpKey[],
+  usernameFilter: string,
+): SftpKey[] {
+  const u = usernameFilter.trim();
+  if (!u) return keys;
+  return keys.filter((k) => k.username === u);
+}
+
+export function formatSftpKeyTime(iso: string): string {
+  const s = String(iso || '');
+  if (!s) return '—';
+  return s.slice(0, 19).replace('T', ' ');
+}
 
 const FTP_TABS = ['accounts', 'sftp', 'about'] as const;
 
@@ -89,6 +127,7 @@ export function FtpPage() {
   const [domains, setDomains] = useState<SelectOption[]>([]);
   const [homes, setHomes] = useState<SelectOption[]>([]);
   const [sftpKeys, setSftpKeys] = useState<SftpKey[]>([]);
+  const [sftpUserFilter, setSftpUserFilter] = useState('');
   const [keyOpen, setKeyOpen] = useState(false);
   const [keyUser, setKeyUser] = useState('');
   const [keyPub, setKeyPub] = useState('');
@@ -155,13 +194,29 @@ export function FtpPage() {
   }
 
   function openKeyCreate(prefillUser?: string) {
-    setKeyUser(prefillUser ?? '');
+    const preferred =
+      prefillUser ||
+      sftpUserFilter ||
+      (crud.items[0] ? String(crud.items[0].username ?? '') : '');
+    setKeyUser(preferred);
     setKeyPub('');
     setKeyComment('');
     setKeyOpen(true);
   }
 
   const { applied, draft } = countApplyStatus(crud.items);
+  const filteredSftpKeys = useMemo(
+    () => filterSftpKeys(sftpKeys, sftpUserFilter),
+    [sftpKeys, sftpUserFilter],
+  );
+  const accountUsernames = useMemo(
+    () =>
+      crud.items
+        .map((r) => String(r.username ?? '').trim())
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b)),
+    [crud.items],
+  );
 
   return (
     <FeaturePageLayout
@@ -344,94 +399,151 @@ export function FtpPage() {
         ) : null}
 
         {tab === 'sftp' ? (
-          <div className="tab-panel">
-            <Card flush>
-              <div className="card__header card__header--pad">
-                <div>
+          <div className="tab-panel sftp-keys">
+            <Card flush className="sftp-keys__card">
+              <div className="card__header card__header--pad sftp-keys__header">
+                <div className="sftp-keys__intro">
                   <h2 className="card__title">{t('ftp.sftpPubkeys')}</h2>
-                  <p className="card__desc u-mb-0">
-                    {t('redis.writable')} <code className="inline">dataDir/ftps/ssh/&lt;user&gt;/authorized_keys</code>
-                    {t('ftp.sshdMatchNote')}
-                  </p>
+                  <p className="card__desc u-mb-0">{t('ftp.sftpTabDesc')}</p>
                 </div>
-                <Button variant="primary" size="sm" onClick={bindVoid(openKeyCreate)}>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  disabled={accountUsernames.length === 0}
+                  onClick={() => openKeyCreate()}
+                  title={
+                    accountUsernames.length === 0
+                      ? t('ftp.sftpNeedAccount')
+                      : t('ftp.addPubkey')
+                  }
+                >
                   {t('ftp.addPubkeyPlus')}
                 </Button>
               </div>
 
-              <DataTable
-                columns={[
-                  {
-                    key: 'username',
-                    header: t('common.user'),
-                    render: (k) => <strong>{k.username}</strong> },
-                  {
-                    key: 'comment',
-                    header: t('common.notes'),
-                    className: 'muted',
-                    render: (k) => k.comment ?? '—' },
-                  {
-                    key: 'key',
-                    header: t('ftp.keyFingerprint'),
-                    render: (k) => (
-                      <code className="inline u-break-all">
-                        {k.publicKey.slice(0, 56)}
-                        {k.publicKey.length > 56 ? '…' : ''}
-                      </code>
-                    ) },
-                  {
-                    key: 'created',
-                    header: t('common.create'),
-                    className: 'muted u-nowrap u-text-sm',
-                    nowrap: true,
-                    render: (k) =>
-                      String(k.created_at).slice(0, 19).replace('T', ' ') },
-                ]}
-                rows={sftpKeys}
-                rowKey={(k) => k.id}
-                rowActions={(k) => (
-                  <ActionBar align="end">
+              {accountUsernames.length === 0 ? (
+                <div className="sftp-keys__body">
+                  <EmptyState
+                    title={t('ftp.sftpNeedAccountTitle')}
+                    description={t('ftp.sftpNeedAccount')}
+                  />
+                  <div className="sftp-keys__cta">
                     <Button
-                      variant="danger"
+                      variant="secondary"
                       size="sm"
-                      loading={keyBusy}
-                      onClick={bindSet(setDelKeyId, k.id)}
+                      onClick={() => {
+                        setTab('accounts');
+                        openCreate();
+                      }}
                     >
-                      {t('common.delete')}
+                      {t('ftp.createAccountPlus')}
                     </Button>
-                  </ActionBar>
-                )}
-                empty={
-                  <div className="empty empty--compact">
-                    <div className="empty__title">{t('ftp.noPubkeys')}</div>
-                    <p>
-                      {crud.items.length === 0
-                        ? t('ftp.createHint')
-                        : t('ftp.pubkeyHint')}
-                    </p>
                   </div>
-                }
-              />
-            </Card>
-
-            {crud.items.length > 0 ? (
-              <Card>
-                <CardSection title={t('ftp.quickSelect')} description={t('ftp.quickSelectHint')}>
-                  <div className="chip-row">
-                    {crud.items.map((r) => (
-                      <button
-                        key={r.id}
-                        type="button"
-                        className="badge badge-link"
-                        onClick={bindCall1(openKeyCreate, String(r.username))}
+                </div>
+              ) : (
+                <>
+                  <div className="sftp-keys__toolbar">
+                    <label className="sftp-keys__filter">
+                      <span className="sftp-keys__filter-label">
+                        {t('ftp.sftpFilterLabel')}
+                      </span>
+                      <select
+                        className="sftp-keys__filter-select"
+                        value={sftpUserFilter}
+                        onChange={(e) => setSftpUserFilter(e.target.value)}
+                        aria-label={t('ftp.sftpFilterLabel')}
                       >
-                        <Badge tone="info">{String(r.username)}</Badge>
-                      </button>
-                    ))}
+                        <option value="">{t('ftp.sftpFilterAll')}</option>
+                        {accountUsernames.map((u) => (
+                          <option key={u} value={u}>
+                            {u}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <span className="sftp-keys__count muted u-text-sm">
+                      {t('ftp.sftpKeyCount', { count: filteredSftpKeys.length })}
+                    </span>
                   </div>
-                </CardSection>
-              </Card>
-            ) : null}
+
+                  {filteredSftpKeys.length === 0 ? (
+                    <div className="sftp-keys__body">
+                      <EmptyState
+                        title={
+                          sftpUserFilter
+                            ? t('ftp.sftpEmptyFiltered')
+                            : t('ftp.noPubkeys')
+                        }
+                        description={
+                          sftpUserFilter
+                            ? t('ftp.sftpEmptyFilteredDesc', {
+                                user: sftpUserFilter,
+                              })
+                            : t('ftp.pubkeyHint')
+                        }
+                      />
+                      <div className="sftp-keys__cta">
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => openKeyCreate(sftpUserFilter || undefined)}
+                        >
+                          {t('ftp.sftpRegister')}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <ul className="sftp-keys__list" aria-label={t('ftp.sftpPubkeys')}>
+                      {filteredSftpKeys.map((k) => {
+                        const meta = parseSshPubkeyMeta(k.publicKey);
+                        const label = k.comment?.trim() || meta.comment || '—';
+                        return (
+                          <li key={k.id} className="sftp-key-row">
+                            <div className="sftp-key-row__main">
+                              <div className="sftp-key-row__top">
+                                <Badge tone="info">{meta.algo.replace(/^ssh-/, '')}</Badge>
+                                <strong className="sftp-key-row__user">{k.username}</strong>
+                                <span className="sftp-key-row__note muted">{label}</span>
+                              </div>
+                              <code className="sftp-key-row__preview" title={k.publicKey}>
+                                {meta.preview}
+                              </code>
+                              <time
+                                className="sftp-key-row__time muted u-text-sm"
+                                dateTime={k.created_at}
+                              >
+                                {t('ftp.sftpAddedAt', {
+                                  time: formatSftpKeyTime(k.created_at),
+                                })}
+                              </time>
+                            </div>
+                            <div className="sftp-key-row__actions">
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                loading={keyBusy && delKeyId === k.id}
+                                onClick={() => setDelKeyId(k.id)}
+                              >
+                                {t('common.delete')}
+                              </Button>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </>
+              )}
+
+              <details className="sftp-keys__tech">
+                <summary>{t('ftp.sftpTechSummary')}</summary>
+                <p className="muted u-text-sm u-mb-0">
+                  {t('ftp.sftpTechNote')}{' '}
+                  <code className="inline">dataDir/ftps/ssh/&lt;user&gt;/authorized_keys</code>
+                  {t('ftp.sshdMatchNote')}
+                </p>
+              </details>
+            </Card>
           </div>
         ) : null}
       
@@ -600,7 +712,7 @@ export function FtpPage() {
                   .finally(() => setKeyBusy(false));
               }}
             >
-              {t('network.add')}
+              {t('ftp.sftpRegister')}
             </Button>
           </>
         }
