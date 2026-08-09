@@ -24,8 +24,27 @@ Language: English | [中文](./install-audit-ZH.md)
 ## Residual
 
 - Global `npm -g` as root remains (I-07) — prefer future dedicated user
-- Optional checksum file for remote install assets not yet shipped
 - Existing HTTP installs are **not** auto-migrated; run `ysk-server ssl bootstrap --force`
+
+## Asset checksums (remote bootstrap)
+
+Repo ships `install/checksums.sha256` for installer libs + stack JSON.
+
+| Mode | Behavior |
+|------|----------|
+| Default remote bootstrap | Download checksums if present → **fail closed** on mismatch |
+| `YSK_INSTALL_REQUIRE_CHECKSUMS=1` | Must fetch + verify checksums or abort |
+| Local checkout (`load_libs` from disk) | No network fetch; source tree is trusted |
+
+Regenerate after editing install libs:
+
+```bash
+# from repo root
+: > install/checksums.sha256
+for f in install/lib/*.sh deploy/stack/bundles.json deploy/stack/components.json; do
+  sha256sum "$f" >> install/checksums.sha256
+done
+```
 
 ## Bootstrap TLS operator path
 

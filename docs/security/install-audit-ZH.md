@@ -24,8 +24,11 @@
 ## 殘留
 
 - root 全域 `npm -g`（I-07）— 日後可改專用用戶
-- 遠端資產 checksum 尚未發佈
 - 舊 HTTP 安裝**唔會**自動升級：請跑 `ysk-server ssl bootstrap --force`
+
+## 遠端 bootstrap 校驗和
+
+倉庫提供 `install/checksums.sha256`。遠端下載後若取得該檔會 **fail closed** 校驗；`YSK_INSTALL_REQUIRE_CHECKSUMS=1` 可強制必須校驗。
 
 ## 操作員路徑
 

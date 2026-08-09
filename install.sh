@@ -168,6 +168,54 @@ if ! load_libs; then
       exit 1
     }
   done
+  # Optional integrity: fetch install/checksums.sha256 and verify (fail closed when present or required)
+  # YSK_INSTALL_REQUIRE_CHECKSUMS=1 → must download + verify
+  # default: verify when checksums file is available from the same base
+  local_require_cs="${YSK_INSTALL_REQUIRE_CHECKSUMS:-0}"
+  if curl -fsSL "$raw/install/checksums.sha256" -o "$tmp/install/checksums.sha256" 2>/dev/null; then
+    log "Verifying downloaded assets against install/checksums.sha256 …"
+    if command -v sha256sum >/dev/null 2>&1; then
+      (
+        cd "$tmp" || exit 1
+        # Only check files we actually downloaded (ignore missing wizard-uninstall etc.)
+        while read -r hash path; do
+          [[ -z "$hash" || "$hash" == \#* ]] && continue
+          [[ -f "$path" ]] || continue
+          echo "$hash  $path"
+        done < install/checksums.sha256 | sha256sum -c - || {
+          err "Checksum verification FAILED — refusing to run untrusted installer assets"
+          err "Pin YSK_INSTALL_RAW to a known commit and ensure checksums.sha256 matches"
+          exit 1
+        }
+      ) || exit 1
+    elif command -v shasum >/dev/null 2>&1; then
+      (
+        cd "$tmp" || exit 1
+        while read -r hash path; do
+          [[ -z "$hash" || "$hash" == \#* ]] && continue
+          [[ -f "$path" ]] || continue
+          got="$(shasum -a 256 "$path" | awk '{print $1}')"
+          if [[ "$got" != "$hash" ]]; then
+            err "Checksum mismatch for $path"
+            exit 1
+          fi
+        done < install/checksums.sha256
+      ) || exit 1
+    else
+      err "sha256sum/shasum missing — cannot verify checksums"
+      if [[ "$local_require_cs" == "1" || "$local_require_cs" == "true" ]]; then
+        exit 1
+      fi
+      log "WARN: continuing without checksum verify (install sha256 tools recommended)"
+    fi
+    log "Asset checksums OK"
+  else
+    if [[ "$local_require_cs" == "1" || "$local_require_cs" == "true" ]]; then
+      err "YSK_INSTALL_REQUIRE_CHECKSUMS=1 but install/checksums.sha256 not available from $raw"
+      exit 1
+    fi
+    log "No install/checksums.sha256 at base (set YSK_INSTALL_REQUIRE_CHECKSUMS=1 to require)"
+  fi
   INSTALL_ROOT="$tmp"
   SCRIPT_DIR="$tmp"
   load_libs || {
