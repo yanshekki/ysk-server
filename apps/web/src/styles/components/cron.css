@@ -162,3 +162,35 @@
   gap: 0.4rem;
 }
 
+
+/* Host crontab inventory (Terminal-style user filter) */
+.cron-host__filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.cron-host__filter-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-sub);
+  white-space: nowrap;
+}
+
+.cron-host__filter-select {
+  min-width: 11rem;
+  max-width: 18rem;
+  height: 2.125rem;
+  padding: 0 0.6rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 8px);
+  background: var(--bg-white, #fff);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.cron-host__user {
+  font-weight: 700;
+  color: var(--primary, #2563eb);
+}

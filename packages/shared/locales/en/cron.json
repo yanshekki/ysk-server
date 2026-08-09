@@ -74,7 +74,7 @@
   "jobsOnlyManage": "Jobs are management-only. System crontab ",
   "hostHasYsk": "includes YSK entries",
   "hostNoYsk": "not installed or no YSK entries",
-  "pressInstall": "Press Install to system crontab.",
+  "pressInstall": "Registered jobs are not on the system crontab yet — click Install to system.",
   "jobsTab": "Jobs ({{count}})",
   "registeredJobs": "Registered jobs ({{count}})",
   "jobsSub": "Management entries · Install to system after changes",
@@ -125,5 +125,15 @@
   "hostOtherLines": "Host non-YSK lines",
   "hostOtherLinesVal": "{{other}} other ({{total}} host job lines)",
   "deleteTitle": "Delete cron job?",
-  "deleteDesc": "Deletes \"{{name}}\". Only control-plane until applied to system crontab."
+  "deleteDesc": "Deletes \"{{name}}\". Only control-plane until applied to system crontab.",
+  "hostJobs": "Host jobs",
+  "hostJobsTitle": "Host crontabs ({{count}})",
+  "usersScanned": "Users",
+  "filterUser": "User",
+  "filterAll": "All users",
+  "sourceYsk": "Panel",
+  "sourceHost": "Host",
+  "noHostJobs": "No crontab jobs in this scope",
+  "hostPartial": "Could not read every user crontab (root required)",
+  "pendingInstall": "Pending install ({{count}})"
 }

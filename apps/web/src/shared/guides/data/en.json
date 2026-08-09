@@ -719,7 +719,8 @@
         "label": "CDN",
         "to": "/cdn"
       }
-    ]
+    ],
+    "id": "nginx"
   },
   "node": {
     "id": "node",
@@ -1192,18 +1193,19 @@
     ]
   },
   "cron": {
-    "id": "cron",
     "title": "Cron",
-    "summary": "Manage scheduled tasks for the system or related projects.",
+    "summary": "Inspect real per-user crontabs and manage panel-registered jobs.",
     "canDo": [
-      "Job list：View active cron entries.",
-      "Create / edit：Set the schedule expression and command.",
-      "Daily backups",
-      "Periodic temp cleanup",
-      "Design the schedule"
+      "List crontab jobs for root and project Linux users",
+      "Filter by user (same identity set as Terminal)",
+      "Create panel jobs and install into the system crontab",
+      "Tell panel-marked lines (# ysk:id) from host-native lines",
+      "Run a panel job once for testing"
     ],
     "notes": [
-      "Bad commands fail repeatedly—validate the command manually first"
+      "Reading other users’ crontabs requires the control plane as root",
+      "Install merges panel jobs into the control-plane user’s crontab (project jobs usually use runuser)",
+      "Host-native lines are visible; v1 does not edit non-YSK lines in-panel"
     ],
     "related": [
       {
@@ -1211,15 +1213,7 @@
         "to": "/backups"
       }
     ],
-    "workflow": [
-      "Review status on this page",
-      "Apply changes with panel actions",
-      "Confirm with readiness / health if host-changing"
-    ],
-    "cliHints": [
-      "ysk-server cron list --json",
-      "ysk-server cron install --execute"
-    ]
+    "id": "cron"
   },
   "backups": {
     "id": "backups",

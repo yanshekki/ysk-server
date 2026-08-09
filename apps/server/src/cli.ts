@@ -678,6 +678,35 @@ async function mainInner(
         });
         return 0;
       }
+      if (sub === 'host-list' || sub === 'host' || sub === 'host-scan') {
+        const projects = (ctx.db.snapshot.projects ?? []).map((p) => ({
+          id: String(p.id ?? ''),
+          name: String(p.name ?? p.id ?? ''),
+          linuxUser: String(p.linux_user ?? ''),
+          linux_user: String(p.linux_user ?? ''),
+        }));
+        const inv = await ctx.cron.listHostCrontabs(projects);
+        const userFilter = (getOpt(args, '--user') ?? '').trim();
+        let lines = inv.lines;
+        if (userFilter) {
+          lines = lines.filter((l) => l.user === userFilter);
+        }
+        const jobsOnly = hasFlag(args, '--jobs-only');
+        if (jobsOnly) {
+          lines = lines.filter((l) => l.kind === 'job');
+        }
+        printJson({
+          ok: true,
+          partial: inv.partial,
+          isRoot: inv.isRoot,
+          executeEnabled: inv.executeEnabled,
+          notes: inv.notes,
+          users: inv.users,
+          lines,
+          jobCount: lines.filter((l) => l.kind === 'job').length,
+        });
+        return inv.partial && lines.length === 0 ? 3 : 0;
+      }
       process.stderr.write(`${tl('cli.err.unknown.cron.sub.sub.e1a9ed', { sub })}\n`);
       return 2;
     } finally {

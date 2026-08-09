@@ -145,9 +145,50 @@ type CronStatus = {
   lastInstallAt: string | null;
 };
 
+type HostCronLine = {
+  user: string;
+  projectId?: string;
+  projectName?: string;
+  schedule?: string;
+  command?: string;
+  raw: string;
+  kind: string;
+  source: string;
+  managedJobId?: string;
+};
+
+type HostCronInventory = {
+  users: Array<{
+    user: string;
+    projectId?: string;
+    projectName?: string;
+    available: boolean;
+    notes: string[];
+    lineCount: number;
+    jobCount: number;
+  }>;
+  lines: HostCronLine[];
+  notes: string[];
+  partial: boolean;
+  isRoot: boolean;
+  executeEnabled: boolean;
+};
+
+export function filterHostCronJobs(
+  lines: HostCronLine[],
+  userFilter: string,
+): HostCronLine[] {
+  const jobs = lines.filter((l) => l.kind === 'job');
+  const u = userFilter.trim();
+  if (!u) return jobs;
+  return jobs.filter((l) => l.user === u);
+}
+
 export function CronPage() {
   const { t } = useTranslation();
   const [items, setItems] = useState<CronJob[]>([]);
+  const [hostInv, setHostInv] = useState<HostCronInventory | null>(null);
+  const [userFilter, setUserFilter] = useState('');
   const [status, setStatus] = useState<CronStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [schedState, setSchedState] = useState<ScheduleState>(() => defaultScheduleState());
@@ -248,13 +289,15 @@ export function CronPage() {
   };
 
   const refresh = useCallback(async () => {
-    const [r, st, proj] = await Promise.all([
-      api.listCron(), // always full list; project is only for create binding
+    const [r, st, proj, host] = await Promise.all([
+      api.listCron(),
       api.cronStatus().catch(() => null),
       api.listProjects().catch(() => ({ items: [] })),
+      api.listCronHost().catch(() => null),
     ]);
     setItems(r.items as CronJob[]);
     if (st) setStatus(st);
+    if (host) setHostInv(host as HostCronInventory);
     setProjects(
       (proj.items ?? []).map((p) => ({
         id: p.id,
@@ -264,6 +307,27 @@ export function CronPage() {
         runtime: p.runtime })),
     );
   }, []);
+
+  const hostJobs = useMemo(
+    () => filterHostCronJobs(hostInv?.lines ?? [], userFilter),
+    [hostInv, userFilter],
+  );
+
+  const managedById = useMemo(() => {
+    const m = new Map<string, CronJob>();
+    for (const j of items) m.set(j.id, j);
+    return m;
+  }, [items]);
+
+  /** Managed rows not yet visible on any host crontab (pending install). */
+  const pendingManaged = useMemo(() => {
+    const onHost = new Set(
+      (hostInv?.lines ?? [])
+        .map((l) => l.managedJobId)
+        .filter(Boolean) as string[],
+    );
+    return items.filter((j) => j.enabled !== false && !onHost.has(j.id));
+  }, [items, hostInv]);
 
   useEffect(() => {
     void refresh().catch((e: Error) => setError(e.message));
@@ -328,17 +392,32 @@ export function CronPage() {
           label: hostOk ? t('cron.hostSynced') : hostNo ? t('cron.hostNotInstalled') : t('cron.statusUnknown'),
           tone: heroTone },
         items: [
-          { label: t('migrate.jobs'), value: status?.totalJobs ?? items.length },
-          { label: t('protection.enable'), value: status?.enabledJobs ?? '—' },
+          {
+            label: t('cron.hostJobs'),
+            value: (hostInv?.lines ?? []).filter((l) => l.kind === 'job').length,
+          },
+          {
+            label: t('cron.usersScanned'),
+            value: hostInv?.users?.length ?? '—',
+          },
           {
             label: t('cron.systemCrontab'),
-            value: hostOk ? t('cron.synced') : hostNo ? t('common.notInstalled') : t('common.unknown'),
-            tone: hostOk ? 'ok' : hostNo ? 'warn' : 'neutral' },
-          { label: t('cron.managedLines'), value: status?.managedLines ?? '—' },
+            value: hostOk
+              ? t('cron.synced')
+              : hostNo
+                ? t('common.notInstalled')
+                : t('common.unknown'),
+            tone: hostOk ? 'ok' : hostNo ? 'warn' : 'neutral',
+          },
+          {
+            label: t('cron.managedLines'),
+            value: status?.managedLines ?? items.length,
+          },
           {
             label: 'EXECUTE',
             value: status?.executeEnabled ? t('common.on') : t('common.off'),
-            tone: status?.executeEnabled ? 'ok' : 'warn' },
+            tone: status?.executeEnabled ? 'ok' : 'warn',
+          },
         ] }}
       actions={<ActionBar>
           <Button
@@ -363,19 +442,24 @@ export function CronPage() {
     >
       {error || actErr ? <Alert variant="error">{error ?? actErr}</Alert> : null}
       <div className="ops">
-        {needsInstallHint || (status && status.enabledJobs > 0 && hostNo) ? (
-          <Alert variant="info">
-            {t('cron.jobsOnlyManage')}{' '}
-            {hostOk ? t('cron.hostHasYsk') : t('cron.hostNoYsk')}.
-            {t('cron.pressInstall')}
+        {hostInv?.partial ? (
+          <Alert variant="warn">
+            {(hostInv.notes ?? []).slice(0, 2).join(' · ') || t('cron.hostPartial')}
           </Alert>
+        ) : null}
+        {needsInstallHint || (pendingManaged.length > 0 && hostNo) ? (
+          <Alert variant="info">{t('cron.pressInstall')}</Alert>
         ) : null}
 
       <PageTabs
         tabs={[
-          { id: 'jobs', label: t('cron.jobsTab', { count: items.length }) },
+          {
+            id: 'jobs',
+            label: t('cron.jobsTab', {
+              count: (hostInv?.lines ?? []).filter((l) => l.kind === 'job').length,
+            }),
+          },
           { id: 'status', label: t('common.status') },
-        
           { id: 'about', label: t('common.about') },
         ]}
         active={tab}
@@ -384,139 +468,201 @@ export function CronPage() {
       >
         {tab === 'jobs' ? (
           <div className="tab-panel">
-            <section className="ops-panel">
+            <section className="ops-panel cron-host">
               <header className="ops-panel__head">
                 <div>
-                  <h3 className="ops-panel__title">{t('cron.registeredJobs', { count: items.length })}</h3>
-                  <p className="ops-panel__sub">
-                    {t('cron.jobsSub')}
-                  </p>
+                  <h3 className="ops-panel__title">
+                    {t('cron.hostJobsTitle', { count: hostJobs.length })}
+                  </h3>
                 </div>
-                <Button variant="primary" size="sm" onClick={openCreate}>
-                  {t('cron.addJob')}
-                </Button>
+                <ActionBar>
+                  <label className="cron-host__filter">
+                    <span className="cron-host__filter-label">{t('cron.filterUser')}</span>
+                    <select
+                      className="cron-host__filter-select"
+                      value={userFilter}
+                      onChange={(e) => setUserFilter(e.target.value)}
+                      aria-label={t('cron.filterUser')}
+                    >
+                      <option value="">{t('cron.filterAll')}</option>
+                      {(hostInv?.users ?? []).map((u) => (
+                        <option key={u.user} value={u.user}>
+                          {u.projectName
+                            ? `${u.user} · ${u.projectName}`
+                            : u.user}
+                          {u.jobCount != null ? ` (${u.jobCount})` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <Button variant="primary" size="sm" onClick={openCreate}>
+                    {t('cron.addJob')}
+                  </Button>
+                </ActionBar>
               </header>
-              {items.length === 0 ? (
-                <EmptyState
-                  title={t('cron.noCron')}
-                  description={t('cron.noCronDesc')}
-                />
+
+              {hostJobs.length === 0 ? (
+                <EmptyState title={t('cron.noHostJobs')} />
               ) : (
                 <div className="ops-svc-list">
-                  {items.map((job) => {
-                    const installed = job.last_install?.ok === true;
+                  {hostJobs.map((line, idx) => {
+                    const managed = line.managedJobId
+                      ? managedById.get(line.managedJobId)
+                      : undefined;
                     const tone =
-                      job.enabled === false
-                        ? 'warn'
-                        : installed
-                          ? 'ok'
-                          : 'warn';
+                      line.source === 'ysk'
+                        ? managed?.enabled === false
+                          ? 'warn'
+                          : 'ok'
+                        : 'neutral';
                     return (
                       <article
-                        key={job.id}
+                        key={`${line.user}-${idx}-${line.raw.slice(0, 24)}`}
                         className={`ops-svc ops-svc--${tone}`}
                       >
                         <div className="ops-svc__body">
                           <div className="ops-svc__head">
                             <h4 className="ops-svc__name">
-                              {job.schedule
-                                ? humanizeSchedule(
-                                    parseCronToState(String(job.schedule)),
-                                  )
-                                : '—'}
+                              <code className="cron-host__user">{line.user}</code>
+                              {line.schedule
+                                ? ` · ${
+                                    line.schedule.startsWith('@')
+                                      ? line.schedule
+                                      : humanizeSchedule(
+                                          parseCronToState(String(line.schedule)),
+                                        )
+                                  }`
+                                : ''}
                             </h4>
-                            <Badge
-                              tone={job.enabled === false ? 'neutral' : 'ok'}
-                            >
-                              {job.enabled === false ? t('common.disabled') : t('common.enabled')}
+                            <Badge tone={line.source === 'ysk' ? 'ok' : 'neutral'}>
+                              {line.source === 'ysk'
+                                ? t('cron.sourceYsk')
+                                : t('cron.sourceHost')}
                             </Badge>
-                            {job.last_install?.ok != null ? (
-                              <Badge
-                                tone={job.last_install.ok ? 'ok' : 'warn'}
-                              >
-                                {job.last_install.ok ? t('cron.onceInstalled') : t('common.installFailed')}
-                              </Badge>
-                            ) : (
-                              <Badge tone="warn">{t('cron.manageOnly')}</Badge>
-                            )}
+                            {line.projectName ? (
+                              <Badge tone="info">{line.projectName}</Badge>
+                            ) : null}
                           </div>
                           <div className="ops-svc__meta">
-                            <code>{job.schedule}</code>
-                            <span>
-                              {t('common.user')} <code>{job.user ?? '—'}</code>
-                            </span>
-                            {job.projectId || job.project_id ? (
-                              <span>
-                                {t('cron.projectLabel')}{' '}
-                                {projects.find(
-                                  (p) =>
-                                    p.id === (job.projectId ?? job.project_id),
-                                )?.name ??
-                                  job.projectId ??
-                                  job.project_id}
-                              </span>
-                            ) : (
-                              <span className="muted">{t('cron.systemLevel')}</span>
-                            )}
+                            {line.schedule ? <code>{line.schedule}</code> : null}
                           </div>
-                          <p className="ops-svc__cmd">{job.command}</p>
+                          <p className="ops-svc__cmd">
+                            {line.command || line.raw}
+                          </p>
                         </div>
-                        <div className="ops-svc__actions">
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            loading={busy}
-                            onClick={() =>
-                              void run(async () => {
-                                const r = await api.runCronNow(job.id);
-                                return r as unknown as OpsResultLike;
-                              }, t('cron.runOnceOk'))
-                            }
-                          >
-                            {t('cron.runOnce')}
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            loading={busy}
-                            onClick={() =>
-                              void run(async () => {
-                                await api.requestRaw(`/api/v1/cron/${job.id}`, {
-                                  method: 'PATCH',
-                                  body: JSON.stringify({
-                                    enabled: job.enabled === false }) });
-                                setNeedsInstallHint(true);
-                                await refresh();
-                                return {
-                                  ok: true,
-                                  notes: [
-                                    t('cron.updatedManage'),
-                                  ] };
-                              }, t('cron.updatedManageShort'))
-                            }
-                          >
-                            {job.enabled === false ? t('protection.enable') : t('files.disable')}
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            loading={busy}
-                            onClick={() =>
-                              setDelCron({
-                                id: job.id,
-                                label: String(job.command || job.schedule || job.id),
-                              })
-                            }
-                          >
-                            {t('common.delete')}
-                          </Button>
-                        </div>
+                        {managed ? (
+                          <div className="ops-svc__actions">
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              loading={busy}
+                              onClick={() =>
+                                void run(async () => {
+                                  const r = await api.runCronNow(managed.id);
+                                  return r as unknown as OpsResultLike;
+                                }, t('cron.runOnceOk'))
+                              }
+                            >
+                              {t('cron.runOnce')}
+                            </Button>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              loading={busy}
+                              onClick={() =>
+                                void run(async () => {
+                                  await api.requestRaw(`/api/v1/cron/${managed.id}`, {
+                                    method: 'PATCH',
+                                    body: JSON.stringify({
+                                      enabled: managed.enabled === false,
+                                    }),
+                                  });
+                                  setNeedsInstallHint(true);
+                                  await refresh();
+                                  return {
+                                    ok: true,
+                                    notes: [t('cron.updatedManage')],
+                                  };
+                                }, t('cron.updatedManageShort'))
+                              }
+                            >
+                              {managed.enabled === false
+                                ? t('protection.enable')
+                                : t('files.disable')}
+                            </Button>
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              loading={busy}
+                              onClick={() =>
+                                setDelCron({
+                                  id: managed.id,
+                                  label: String(
+                                    managed.command || managed.schedule || managed.id,
+                                  ),
+                                })
+                              }
+                            >
+                              {t('common.delete')}
+                            </Button>
+                          </div>
+                        ) : null}
                       </article>
                     );
                   })}
                 </div>
               )}
             </section>
+
+            {pendingManaged.length > 0 ? (
+              <section className="ops-panel u-mt-4">
+                <header className="ops-panel__head">
+                  <h3 className="ops-panel__title">
+                    {t('cron.pendingInstall', { count: pendingManaged.length })}
+                  </h3>
+                </header>
+                <div className="ops-svc-list">
+                  {pendingManaged.map((job) => (
+                    <article key={job.id} className="ops-svc ops-svc--warn">
+                      <div className="ops-svc__body">
+                        <div className="ops-svc__head">
+                          <h4 className="ops-svc__name">
+                            {job.schedule
+                              ? humanizeSchedule(
+                                  parseCronToState(String(job.schedule)),
+                                )
+                              : '—'}
+                          </h4>
+                          <Badge tone="warn">{t('cron.manageOnly')}</Badge>
+                        </div>
+                        <div className="ops-svc__meta">
+                          <code>{job.schedule}</code>
+                          <span>
+                            {t('common.user')} <code>{job.user ?? '—'}</code>
+                          </span>
+                        </div>
+                        <p className="ops-svc__cmd">{job.command}</p>
+                      </div>
+                      <div className="ops-svc__actions">
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          loading={busy}
+                          onClick={() =>
+                            setDelCron({
+                              id: job.id,
+                              label: String(job.command || job.schedule || job.id),
+                            })
+                          }
+                        >
+                          {t('common.delete')}
+                        </Button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            ) : null}
           </div>
         ) : null}
         {tab === 'status' ? (

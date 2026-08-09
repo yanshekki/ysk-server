@@ -74,7 +74,7 @@
   "jobsOnlyManage": "工作只写在管理档。系统 crontab ",
   "hostHasYsk": "已包含 YSK 项目",
   "hostNoYsk": "尚未安装或无 YSK 项目",
-  "pressInstall": "请按「安装到系统 crontab」。",
+  "pressInstall": "有已登记但未写入系统的任务 — 请点「安装到系统」。",
   "jobsTab": "工作 ({{count}})",
   "registeredJobs": "已登记工作 ({{count}})",
   "jobsSub": "管理档项目 · 改动后需「安装到系统」才生效",
@@ -125,5 +125,15 @@
   "hostOtherLines": "主机非 YSK 行数",
   "hostOtherLinesVal": "其他 {{other}} 行（主机有效共 {{total}}）",
   "deleteTitle": "删除 Cron 工作？",
-  "deleteDesc": "将删除「{{name}}」。应用到系统 crontab 前只影响控制面。"
+  "deleteDesc": "将删除「{{name}}」。应用到系统 crontab 前只影响控制面。",
+  "hostJobs": "主机任务",
+  "hostJobsTitle": "主机 crontab（{{count}}）",
+  "usersScanned": "用户",
+  "filterUser": "用户",
+  "filterAll": "全部用户",
+  "sourceYsk": "面板",
+  "sourceHost": "主机",
+  "noHostJobs": "此范围没有 crontab 任务",
+  "hostPartial": "无法完整读取所有用户 crontab（需要 root）",
+  "pendingInstall": "待安装到系统（{{count}}）"
 }

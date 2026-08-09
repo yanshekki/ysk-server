@@ -1895,7 +1895,7 @@
     "jobsOnlyManage": "工作只寫在管理檔。系統 定時工作表",
     "hostHasYsk": "已包含 YSK 項目",
     "hostNoYsk": "尚未安裝或無 YSK 項目",
-    "pressInstall": "請按「安裝到系統 定時工作表」。",
+    "pressInstall": "有已登記但未寫入系統的工作 — 請按「安裝到系統」。",
     "jobsTab": "工作 ({{count}})",
     "registeredJobs": "已登記工作 ({{count}})",
     "jobsSub": "管理檔項目 · 改動後需「安裝到系統」才生效",
@@ -1946,7 +1946,17 @@
     "hostOtherLines": "主機非 YSK 行數",
     "hostOtherLinesVal": "其他 {{other}} 行（主機有效共 {{total}}）",
     "deleteTitle": "刪除 Cron 工作？",
-    "deleteDesc": "將刪除「{{name}}」。套用到系統 crontab 前只影響控制面。"
+    "deleteDesc": "將刪除「{{name}}」。套用到系統 crontab 前只影響控制面。",
+    "hostJobs": "主機工作",
+    "hostJobsTitle": "主機 crontab（{{count}}）",
+    "usersScanned": "用戶",
+    "filterUser": "用戶",
+    "filterAll": "全部用戶",
+    "sourceYsk": "面板",
+    "sourceHost": "主機",
+    "noHostJobs": "此範圍沒有 crontab 工作",
+    "hostPartial": "無法完整讀取所有用戶 crontab（需要 root）",
+    "pendingInstall": "待安裝到系統（{{count}}）"
   },
   "dashboard": {
     "title": "控制台",
@@ -7173,7 +7183,9 @@
     "cron": {
       "preserveHostLines": "已保留主機 crontab 中 {{count}} 行非 YSK 工作（不會整份覆蓋）。",
       "noHostLinesOrEmpty": "主機 crontab 無額外非 YSK 行（或空白）。",
-      "installReplacesYskOnly": "安裝只更新帶 YSK 標記的工作；其他主機工作已合併保留。"
+      "installReplacesYskOnly": "安裝只更新帶 YSK 標記的工作；其他主機工作已合併保留。",
+      "hostScanNeedRoot": "讀取其他用戶 crontab 需要控制面以 root 執行；目前僅能列出控制面自身 crontab。",
+      "hostScanSkipUser": "略過用戶 {{user}}（無權讀取）"
     },
     "dbBrowser": {
       "pmaInstalled": "已安裝 phpMyAdmin → {{path}}",

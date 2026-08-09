@@ -2693,7 +2693,9 @@
   "cron": {
     "preserveHostLines": "Preserved {{count}} non-YSK host crontab line(s) (not a full wipe).",
     "noHostLinesOrEmpty": "No extra non-YSK host crontab lines (or empty).",
-    "installReplacesYskOnly": "Install updates YSK-marked jobs only; other host jobs were merged and kept."
+    "installReplacesYskOnly": "Install updates YSK-marked jobs only; other host jobs were merged and kept.",
+    "hostScanNeedRoot": "Reading other users’ crontabs requires the control plane as root; only the process user’s crontab is listed.",
+    "hostScanSkipUser": "Skipped user {{user}} (no permission)"
   },
   "dbBrowser": {
     "pmaInstalled": "phpMyAdmin installed at {{path}}",

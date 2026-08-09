@@ -719,7 +719,8 @@
         "label": "CDN",
         "to": "/cdn"
       }
-    ]
+    ],
+    "id": "nginx"
   },
   "node": {
     "id": "node",
@@ -1192,18 +1193,19 @@
     ]
   },
   "cron": {
-    "id": "cron",
-    "title": "排程",
-    "summary": "管理系统或项目相关的定时任务。",
+    "title": "Cron",
+    "summary": "查看各 Linux 用户的真实 crontab，并管理面板登记任务。",
     "canDo": [
-      "工作列表：查看启用中的 cron。",
-      "创建／编辑：设置时间表达式与命令。",
-      "每日备份",
-      "定期清理暂存",
-      "设计排程"
+      "列出 root 与项目 Linux 用户的 crontab 任务",
+      "按用户筛选（与终端目标相同）",
+      "新增面板任务并安装到系统 crontab",
+      "识别面板标记（# ysk:id）与主机原生行",
+      "一次执行面板任务以测试"
     ],
     "notes": [
-      "错误命令会反覆失败，请先手动验证命令"
+      "读取其他用户 crontab 需要控制面以 root 运行",
+      "「安装到系统」将面板任务合并进控制面用户 crontab（项目任务通常用 runuser 包装）",
+      "主机原生行可查看；v1 不支持在面板内直接改非 YSK 行"
     ],
     "related": [
       {
@@ -1211,15 +1213,7 @@
         "to": "/backups"
       }
     ],
-    "workflow": [
-      "先查看本页状态",
-      "用面板按钮套用变更",
-      "若改主机，再到就绪／健康确认"
-    ],
-    "cliHints": [
-      "ysk-server cron list --json",
-      "ysk-server cron install --execute"
-    ]
+    "id": "cron"
   },
   "backups": {
     "id": "backups",

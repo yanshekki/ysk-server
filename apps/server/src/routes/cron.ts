@@ -48,6 +48,19 @@ export async function handleCronRoutes(
         sendJson(res, 200, status);
         return true;
       }
+      // Host crontab inventory (root + project linux users) — Terminal-style
+      if (method === 'GET' && url.pathname === '/api/v1/cron/host') {
+        ctx.auth.authenticate(getBearer(req));
+        const projects = (ctx.db.snapshot.projects ?? []).map((p) => ({
+          id: String(p.id ?? ''),
+          name: String(p.name ?? p.id ?? ''),
+          linuxUser: String(p.linux_user ?? ''),
+          linux_user: String(p.linux_user ?? ''),
+        }));
+        const inv = await ctx.cron.listHostCrontabs(projects);
+        sendJson(res, 200, inv);
+        return true;
+      }
       if (method === 'POST' && url.pathname === '/api/v1/cron') {
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);

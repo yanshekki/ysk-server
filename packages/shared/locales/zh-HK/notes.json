@@ -2693,7 +2693,9 @@
   "cron": {
     "preserveHostLines": "已保留主機 crontab 中 {{count}} 行非 YSK 工作（不會整份覆蓋）。",
     "noHostLinesOrEmpty": "主機 crontab 無額外非 YSK 行（或空白）。",
-    "installReplacesYskOnly": "安裝只更新帶 YSK 標記的工作；其他主機工作已合併保留。"
+    "installReplacesYskOnly": "安裝只更新帶 YSK 標記的工作；其他主機工作已合併保留。",
+    "hostScanNeedRoot": "讀取其他用戶 crontab 需要控制面以 root 執行；目前僅能列出控制面自身 crontab。",
+    "hostScanSkipUser": "略過用戶 {{user}}（無權讀取）"
   },
   "dbBrowser": {
     "pmaInstalled": "已安裝 phpMyAdmin → {{path}}",

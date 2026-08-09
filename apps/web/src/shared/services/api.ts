@@ -582,6 +582,35 @@ export const api = {
     const q = projectId ? `?projectId=${encodeURIComponent(projectId)}` : '';
     return request(`/api/v1/cron${q}`);
   },
+  /** Host crontab inventory: root + project linux users (Terminal-style). */
+  listCronHost(): Promise<{
+    users: Array<{
+      user: string;
+      projectId?: string;
+      projectName?: string;
+      available: boolean;
+      notes: string[];
+      lineCount: number;
+      jobCount: number;
+    }>;
+    lines: Array<{
+      user: string;
+      projectId?: string;
+      projectName?: string;
+      schedule?: string;
+      command?: string;
+      raw: string;
+      kind: string;
+      source: string;
+      managedJobId?: string;
+    }>;
+    notes: string[];
+    partial: boolean;
+    isRoot: boolean;
+    executeEnabled: boolean;
+  }> {
+    return request('/api/v1/cron/host');
+  },
   createCron(body: {
     projectId?: string;
     user?: string;
