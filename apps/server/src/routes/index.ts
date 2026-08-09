@@ -23,6 +23,7 @@ export { handleNetworkRoutes } from './network.js';
 export { handleProjectsRoutes } from './projects.js';
 export { handlePublicRoutes } from './public.js';
 export { handleRbacRoutes } from './rbac.js';
+export { handleResourcesRoutes } from './resources.js';
 export { handleSearchRoutes } from './search.js';
 export { handleSettingsRoutes } from './settings.js';
 export { handleSoftwareRoutes } from './software.js';
