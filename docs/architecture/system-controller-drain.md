@@ -10,7 +10,9 @@ God-file split of `apps/server/src/controllers/system-controller.ts` (~2.9k → 
 |--------|--------|------|
 | Defense Center / protection / geoip | `routes/defense.ts` | **C1** |
 | Firewall + Fail2ban | `routes/firewall.ts` | **C2** |
-| Software catalog + stack install | `routes/software.ts` | **C3** |
+| Software catalog probe / install | `routes/software-catalog.ts` | **U2** |
+| Stack plans / install / uninstall | `routes/software-stack.ts` | **U2** |
+| Software dispatcher | `routes/software.ts` | **U2** |
 | System DB engines / redis / dump | `routes/system-db.ts` | **D1** |
 | Real-IP / FTPS / host / panel-TLS / power | `routes/system-host.ts` | **D2** |
 | Email·SSL·PHP apply / nginx / systemd / services / export / migrate / readiness | `routes/system-ops.ts` | **D3** |

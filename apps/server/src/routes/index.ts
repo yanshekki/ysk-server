@@ -79,7 +79,9 @@ export { parseResourceCollection, redactResourceSecrets } from './resources-shar
 export { handleResourcesWriteRoutes } from './resources-write.js';
 export { handleSearchRoutes } from './search.js';
 export { handleSettingsRoutes } from './settings.js';
+export { handleSoftwareCatalogRoutes } from './software-catalog.js';
 export { handleSoftwareRoutes } from './software.js';
+export { handleSoftwareStackRoutes } from './software-stack.js';
 export { handleSsh2faRoutes } from './ssh-2fa.js';
 export { handleSshIdentitiesCrudRoutes } from './ssh-identities-crud.js';
 export { handleSshIdentitiesOpsRoutes } from './ssh-identities-ops.js';
