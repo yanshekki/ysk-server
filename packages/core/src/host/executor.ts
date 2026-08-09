@@ -413,6 +413,18 @@ function isReadOnlyArgv(argv: string[]): boolean {
     );
     return !mut;
   }
+  if (bin === 'resolvectl') {
+    const sub = argv[1] ?? '';
+    // Inventory only — never dns set / domain / revert / flush-caches
+    return (
+      sub === 'status' ||
+      sub === 'query' ||
+      sub === 'dns' ||
+      sub === 'domain' ||
+      sub === '--help' ||
+      sub === 'help'
+    ) && !argv.some((a) => a === '--set' || a === 'flush-caches' || a === 'revert');
+  }
   if (bin === 'sed') {
     // sed -i mutates files
     if (argv.some((a) => a === '-i' || a.startsWith('-i'))) return false;
@@ -617,6 +629,10 @@ function isReadOnlyShellScript(argv: string[]): boolean {
   if (/\bgrep\b/.test(s) && !/\b-l\b/.test(s)) return true;
   if (/\bsystemctl\s+(is-active|is-enabled|status|show)\b/.test(s)) return true;
   if (/\bservice\s+\S+\s+status\b/.test(s)) return true;
+  // Network DNS inventory (resolvectl status | head …)
+  if (/\bresolvectl\s+(status|query|dns|domain)\b/.test(s) && !/\b(flush-caches|revert|--set)\b/.test(s)) {
+    return true;
+  }
 
   // Default: shell scripts require EXECUTE
   return false;

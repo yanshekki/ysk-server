@@ -9,6 +9,6 @@ Thin re-exports under `apps/server/src/controllers/*` keep stable `http-server` 
 | system-controller | `routes/system-ops.ts` (+ domain slices) | C–D |
 | files-controller | `routes/files*.ts` | E |
 | logs-controller | `routes/logs.ts` | **F1** |
-| metrics-controller | (pending) | F2 |
-| network-controller | (pending) | F2 |
+| metrics-controller | `routes/metrics.ts` | **F2** |
+| network-controller | `routes/network.ts` | **F2** |
 | resources-controller | (pending) | F3 |
