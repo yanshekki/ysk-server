@@ -1,11 +1,11 @@
 {
-  "missing": "No help content is available for this page yet.",
-  "missingTitle": "No guide",
-  "eyebrow": "About",
-  "canDoTitle": "What you can do",
-  "workflowTitle": "Suggested flow",
-  "notesTitle": "Notes",
-  "cliTitle": "CLI quick reference",
-  "cliFoot": "For full flags run ysk-server <command> --help or see the docs.",
-  "relatedTitle": "Related"
+  "missing": "اس صفحے کے لیے ابھی کوئی مدد مواد دستیاب نہیں۔",
+  "missingTitle": "کوئی گائیڈ نہیں",
+  "eyebrow": "بارے میں",
+  "canDoTitle": "آپ کیا کر سکتے ہیں",
+  "workflowTitle": "تجویز کردہ بہاؤ",
+  "notesTitle": "نوٹس",
+  "cliTitle": "CLI فوری حوالہ",
+  "cliFoot": "مکمل فلیگز کے لیے ysk-server <command> --help چلائیں یا دستاویزات دیکھیں۔",
+  "relatedTitle": "متعلقہ"
 }

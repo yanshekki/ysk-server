@@ -1,38 +1,38 @@
 {
   "blocked": {
-    "needExecute": "Host execute is off; this action cannot finish from the panel",
-    "needExecuteShort": "Host execute is not enabled",
-    "needExecuteBlocked": "Blocked: host execute is off",
-    "needRoot": "Root privileges required",
-    "needExecuteRoot": "Requires YSK_EXECUTE=1 and root",
-    "needExecuteYsk": "Requires YSK_EXECUTE=1",
-    "writeOutsideDataDir": "Write blocked: host execute is off and the path is outside the panel data directory",
-    "nginxReload": "Cannot reload Nginx: host execute required",
-    "signal": "Cannot send signal: host execute required (YSK_EXECUTE)",
-    "signalNote": "YSK_EXECUTE=1 is required for a real kill",
-    "renice": "Cannot renice: host execute required (YSK_EXECUTE)",
-    "install": "Host execute is off; install cannot finish from the panel",
-    "update": "Host execute is off; update cannot finish from the panel",
-    "panel": "Cannot complete this from the management panel"
+    "needExecute": "ہوسٹ ایکزیکیوٹ بند ہے؛ یہ عمل پینل سے مکمل نہیں ہو سکتا",
+    "needExecuteShort": "ہوسٹ ایکزیکیوٹ فعال نہیں ہے",
+    "needExecuteBlocked": "مسدود: ہوسٹ ایکزیکیوٹ بند ہے",
+    "needRoot": "روٹ مراعات درکار ہیں",
+    "needExecuteRoot": "YSK_EXECUTE=1 اور root درکار ہیں",
+    "needExecuteYsk": "YSK_EXECUTE=1 درکار ہے",
+    "writeOutsideDataDir": "لکھنا مسدود: ہوسٹ ایکزیکیوٹ بند ہے اور پاتھ پینل ڈیٹا ڈائریکٹری سے باہر ہے",
+    "nginxReload": "Nginx دوبارہ لوڈ نہیں کر سکتے: ہوسٹ ایکزیکیوٹ درکار",
+    "signal": "سگنل نہیں بھیج سکتے: ہوسٹ ایکزیکیوٹ درکار (YSK_EXECUTE)",
+    "signalNote": "اصلی kill کے لیے YSK_EXECUTE=1 درکار ہے",
+    "renice": "renice نہیں کر سکتے: ہوسٹ ایکزیکیوٹ درکار (YSK_EXECUTE)",
+    "install": "ہوسٹ ایکزیکیوٹ بند ہے؛ انسٹال پینل سے مکمل نہیں ہو سکتا",
+    "update": "ہوسٹ ایکزیکیوٹ بند ہے؛ اپ ڈیٹ پینل سے مکمل نہیں ہو سکتا",
+    "panel": "یہ انتظامی پینل سے مکمل نہیں کر سکتے"
   },
   "honesty": {
-    "blockedNotOk": "Honesty fix: blocked cannot be ok=true",
-    "blockedNotApplied": "Honesty fix: blocked cannot be apply_status=applied",
-    "okFalseNotApplied": "Honesty fix: ok=false cannot be apply_status=applied"
+    "blockedNotOk": "Honesty fix: blocked کو ok=true نہیں ہو سکتا",
+    "blockedNotApplied": "Honesty fix: blocked کو apply_status=applied نہیں ہو سکتا",
+    "okFalseNotApplied": "Honesty fix: ok=false کو apply_status=applied نہیں ہو سکتا"
   },
   "status": {
-    "applied": "Status: applied",
-    "failed": "Status: failed",
-    "written": "Status: written",
-    "blocked": "Status: blocked"
+    "applied": "حیثیت: لاگو",
+    "failed": "حیثیت: ناکام",
+    "written": "حیثیت: لکھا گیا",
+    "blocked": "حیثیت: مسدود"
   },
   "notes": {
-    "writtenSettings": "Settings written",
-    "completed": "Completed",
-    "partialSuccess": "Operation only partially succeeded",
-    "notInstalled": "Not installed",
-    "running": "Running",
-    "stopped": "Stopped",
-    "unknown": "Unknown"
+    "writtenSettings": "ترتیبات محفوظ ہو گئیں",
+    "completed": "مکمل",
+    "partialSuccess": "عمل صرف جزوی طور پر کامیاب ہوا",
+    "notInstalled": "انسٹال نہیں",
+    "running": "چل رہا ہے",
+    "stopped": "بند",
+    "unknown": "نامعلوم"
   }
 }

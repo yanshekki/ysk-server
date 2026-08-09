@@ -26,7 +26,7 @@
     "chromium": "Chromium / Chrome"
   },
   "php": {
-    "session": "Session",
+    "session": "سیشن",
     "opcache": "OPcache"
   }
 }

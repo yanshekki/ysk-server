@@ -1,11 +1,11 @@
 {
-  "draft": "Draft",
-  "written": "Written (panel data)",
-  "planned": "In progress",
-  "applied": "Applied on host",
-  "failed": "Failed",
-  "pendingExecute": "Needs host execute",
-  "uploaded": "Uploaded",
-  "issued": "Issued",
-  "missing": "File missing"
+  "draft": "مسودہ",
+  "written": "لکھا گیا (پینل ڈیٹا)",
+  "planned": "جاری",
+  "applied": "host پر لاگو",
+  "failed": "ناکام",
+  "pendingExecute": "host پر عملدرآمد درکار",
+  "uploaded": "اپ لوڈ شدہ",
+  "issued": "جاری کردہ",
+  "missing": "فائل غائب"
 }

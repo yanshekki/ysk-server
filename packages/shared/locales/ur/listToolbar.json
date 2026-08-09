@@ -1,12 +1,12 @@
 {
-  "searchPlaceholder": "Search…",
-  "searchAria": "Search list",
-  "clearSearch": "Clear search",
-  "clearAll": "Clear filters",
-  "resultCount": "{{count}} results",
-  "showingOf": "Showing {{shown}} of {{total}}",
-  "activeFilters": "{{count}} filters active",
-  "noResults": "No matches",
-  "noResultsHint": "Try another keyword or clear filters.",
-  "searching": "Searching…"
+  "searchPlaceholder": "تلاش…",
+  "searchAria": "تلاش فہرست",
+  "clearSearch": "تلاش صاف کریں",
+  "clearAll": "فلٹرز صاف کریں",
+  "resultCount": "{{count}} نتائج",
+  "showingOf": "{{total}} میں سے {{shown}} دکھائے جا رہے ہیں",
+  "activeFilters": "{{count}} فلٹرز فعال",
+  "noResults": "کوئی مماثلت نہیں",
+  "noResultsHint": "دوسرا کلیدی لفظ آزمائیں یا فلٹرز صاف کریں۔",
+  "searching": "تلاش ہو رہی ہے…"
 }

@@ -1,50 +1,50 @@
 {
   "discover-host": {
-    "name": "Host discovery",
-    "description": "Read-only host inventory"
+    "name": "ہوسٹ دریافت",
+    "description": "صرف پڑھنے والا ہوسٹ انوینٹری"
   },
   "nginx-health": {
-    "name": "Nginx health check",
-    "description": "Check nginx service status"
+    "name": "Nginx ہیلتھ چیک",
+    "description": "nginx سروس کی حیثیت چیک کریں"
   },
   "nginx-restart": {
-    "name": "Nginx restart (high risk)",
-    "description": "Restart nginx after approval"
+    "name": "Nginx ری سٹارٹ (اعلیٰ خطرہ)",
+    "description": "منظوری کے بعد nginx دوبارہ شروع کریں"
   },
   "local-llm-ops-only": {
-    "name": "Local LLM ops only",
-    "description": "Emergency discovery under protection mode"
+    "name": "صرف مقامی LLM آپریشنز",
+    "description": "حفاظتی موڈ کے تحت ایمرجنسی دریافت"
   },
   "disk-pressure": {
-    "name": "Disk pressure check",
-    "description": "Read-only disk usage via df"
+    "name": "ڈسک پریشر چیک",
+    "description": "df کے ذریعے صرف پڑھنے والا ڈسک استعمال"
   },
   "mail-stack-status": {
-    "name": "Mail stack status",
-    "description": "Check postfix + dovecot units"
+    "name": "میل اسٹیک کی حیثیت",
+    "description": "postfix + dovecot یونٹس چیک کریں"
   },
   "security-units": {
-    "name": "Security units",
-    "description": "fail2ban + sshd status (read-only)"
+    "name": "سیکیورٹی یونٹس",
+    "description": "fail2ban + sshd حیثیت (صرف پڑھنے والا)"
   },
   "web-stack-status": {
-    "name": "Web stack status",
-    "description": "nginx + php-fpm probe"
+    "name": "ویب اسٹیک کی حیثیت",
+    "description": "nginx + php-fpm پروب"
   },
   "emergency-read-only": {
-    "name": "Emergency read-only sweep",
-    "description": "Protection-safe facts only"
+    "name": "ایمرجنسی صرف پڑھنے والا سویپ",
+    "description": "صرف حفاظتی طور پر محفوظ حقائق"
   },
   "backup-health": {
-    "name": "Backup readiness",
-    "description": "Check disk + list processes before backup window"
+    "name": "بیک اپ کی تیاری",
+    "description": "بیک اپ ونڈو سے پہلے ڈسک چیک کریں + عمل کی فہرست"
   },
   "db-stack-status": {
-    "name": "Database stack status",
+    "name": "ڈیٹابیس اسٹیک کی حیثیت",
     "description": "mysql/mariadb/redis/postgres units"
   },
   "ssl-nginx-check": {
-    "name": "SSL + Nginx check",
-    "description": "nginx status before cert ops"
+    "name": "SSL + Nginx چیک",
+    "description": "سرٹیفکیٹ آپریشنز سے پہلے nginx حیثیت"
   }
 }
