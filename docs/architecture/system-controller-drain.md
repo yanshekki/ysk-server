@@ -9,7 +9,9 @@ God-file split of `apps/server/src/controllers/system-controller.ts` (~2.9k → 
 | Domain | Module | Wave |
 |--------|--------|------|
 | Defense Center / protection / geoip | `routes/defense.ts` | **C1** |
-| Firewall + Fail2ban | `routes/firewall.ts` | **C2** |
+| Host firewall (UFW) | `routes/firewall-ufw.ts` | **V2** |
+| Fail2ban | `routes/firewall-fail2ban.ts` | **V2** |
+| Firewall dispatcher | `routes/firewall.ts` | **V2** |
 | Software catalog probe / install | `routes/software-catalog.ts` | **U2** |
 | Stack plans / install / uninstall | `routes/software-stack.ts` | **U2** |
 | Software dispatcher | `routes/software.ts` | **U2** |
