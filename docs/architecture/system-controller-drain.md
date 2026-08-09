@@ -9,6 +9,7 @@ God-file split of `apps/server/src/controllers/system-controller.ts` (~2.9k → 
 | Domain | Module | Wave |
 |--------|--------|------|
 | Defense Center / protection / geoip | `routes/defense.ts` | **C1** |
+| Firewall + Fail2ban | `routes/firewall.ts` | **C2** |
 
 ## Still residual in system-controller
 
@@ -17,10 +18,9 @@ God-file split of `apps/server/src/controllers/system-controller.ts` (~2.9k → 
 - software catalog + stack install
 - DB engines / redis browser / SQL switch
 - FTPS
-- firewall / fail2ban
 - host identity / panel-tls / power
 - nginx / systemd / services / export / migrate / readiness
 
 ## Dispatch note
 
-`handleDefenseRoutes` runs **before** `handleSystemRoutes` in `http-server.ts` (C1).
+`handleDefenseRoutes` and `handleFirewallRoutes` run **before** `handleSystemRoutes` in `http-server.ts`.

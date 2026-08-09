@@ -38,6 +38,7 @@ import {
   handleDefenseRoutes,
   handleDnsRoutes,
   handleEmailRoutes,
+  handleFirewallRoutes,
   handleHostingRoutes,
   handleMiscRoutes,
   handleProjectsRoutes,
@@ -96,8 +97,9 @@ function attachRequestHandler(ctx: AppContext, webRoot: string | null) {
         if (await handleLogsRoutes(ctx, req, res, url, method)) return;
         if (await handleMetricsRoutes(ctx, req, res, url, method)) return;
         if (await handleNetworkRoutes(ctx, req, res, url, method)) return;
-        // Defense before system (Wave C1: defense/protection/geoip left system-controller)
+        // Domain slices before system (C1 defense · C2 firewall/fail2ban)
         if (await handleDefenseRoutes(ctx, req, res, url, method)) return;
+        if (await handleFirewallRoutes(ctx, req, res, url, method)) return;
         if (await handleSystemRoutes(ctx, req, res, url, method)) return;
         if (
           await handleTerminalRoutes(
