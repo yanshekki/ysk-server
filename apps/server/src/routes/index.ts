@@ -7,6 +7,7 @@ export { handleAuthRoutes } from './auth.js';
 export { handleBackupsRoutes } from './backups.js';
 export { handleCdnRoutes } from './cdn.js';
 export { handleCronRoutes } from './cron.js';
+export { handleDashboardRoutes } from './dashboard.js';
 export { handleDbRoutes } from './db.js';
 export { handleDefenseRoutes } from './defense.js';
 export { handleDnsRoutes } from './dns.js';
