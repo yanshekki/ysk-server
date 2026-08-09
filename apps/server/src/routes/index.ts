@@ -66,6 +66,8 @@ export { handleProjectsCrudRoutes } from './projects-crud.js';
 export { handleProjectsIsolationRoutes } from './projects-isolation.js';
 export { handleProjectsLifecycleRoutes } from './projects-lifecycle.js';
 export { handleProjectsOpsDataRoutes } from './projects-ops-data.js';
+export { handleProjectsOpsDeployRoutes } from './projects-ops-deploy.js';
+export { handleProjectsOpsEdgeRoutes } from './projects-ops-edge.js';
 export { handleProjectsOpsRoutes } from './projects-ops.js';
 export { handleProjectsOpsRuntimeRoutes } from './projects-ops-runtime.js';
 export { handleProjectsRoutes } from './projects.js';
