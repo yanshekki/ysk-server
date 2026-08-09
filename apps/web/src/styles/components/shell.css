@@ -107,6 +107,23 @@
   color: var(--text-muted);
 }
 
+/* Same pattern as public share footer: 「由 YSK Limited 提供」 */
+.shell__powered {
+  margin: 0;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.shell__powered a {
+  color: var(--brand-blue, #2563eb);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.shell__powered a:hover {
+  text-decoration: underline;
+}
+
 .shell__main {
   flex: 1;
   min-width: 0;

@@ -158,10 +158,13 @@ export function LoginPage() {
         </form>
 
         <div className="login-card__footer">
-          {t('login.footer')} ·{' '}
-          <a href="https://ysk.hk" target="_blank" rel="noreferrer">
-            ysk.hk
-          </a>
+          <p className="login-card__powered">
+            {t('files.publicSharePoweredPrefix', { defaultValue: 'Powered by ' })}
+            <a href="https://ysk.hk/" target="_blank" rel="noreferrer">
+              {t('company', { defaultValue: 'YSK Limited' })}
+            </a>
+            {t('files.publicSharePoweredSuffix', { defaultValue: '' })}
+          </p>
         </div>
       </div>
     </div>

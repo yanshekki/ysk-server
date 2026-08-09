@@ -151,10 +151,13 @@ export function AppShell() {
           ))}
         </nav>
         <div className="shell__footer">
-          YSK Limited ·{' '}
-          <a href="https://ysk.hk" target="_blank" rel="noreferrer">
-            ysk.hk
-          </a>
+          <p className="shell__powered">
+            {t('files.publicSharePoweredPrefix', { defaultValue: 'Powered by ' })}
+            <a href="https://ysk.hk/" target="_blank" rel="noreferrer">
+              {t('company', { defaultValue: 'YSK Limited' })}
+            </a>
+            {t('files.publicSharePoweredSuffix', { defaultValue: '' })}
+          </p>
         </div>
       </aside>
 
