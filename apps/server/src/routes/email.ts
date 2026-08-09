@@ -440,11 +440,34 @@ export async function handleEmailRoutes(
         return true;
       }
       if (method === 'POST' && url.pathname === '/api/v1/email/webmail/sso/consume') {
-        // Used by webmail edge / test — token in body
+        // Used by webmail edge / test — token in body; rate-limit guesses
+        const { checkRateLimit, recordRateLimitFailure, clearRateLimit, consumeWebmailSso } =
+          await import('@ysk/core');
+        const ip =
+          process.env.YSK_TRUST_PROXY === '1' || process.env.YSK_TRUST_PROXY === 'true'
+            ? (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() ||
+              req.socket.remoteAddress ||
+              'local'
+            : req.socket.remoteAddress || 'local';
+        const rlKey = `sso:${ip}`;
+        const gate = checkRateLimit('webmail-sso', rlKey, {
+          maxFailures: 20,
+          windowMs: 15 * 60_000,
+          lockMs: 15 * 60_000,
+        });
+        if (!gate.ok) {
+          sendJson(res, 429, {
+            ok: false,
+            message: 'rate limited',
+            retryAfterSec: gate.retryAfterSec,
+          });
+          return true;
+        }
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as { token?: string };
-        const { consumeWebmailSso } = await import('@ysk/core');
         const r = consumeWebmailSso(ctx.db, data.token ?? '');
+        if (!r.ok) recordRateLimitFailure('webmail-sso', rlKey);
+        else clearRateLimit('webmail-sso', rlKey);
         sendJson(res, r.ok ? 200 : 401, r);
         return true;
       }

@@ -422,6 +422,45 @@ function isReadOnlyArgv(argv: string[]): boolean {
     return isReadOnlyShellScript(argv);
   }
 
+  // Version / inventory probes for interpreters & package managers (readiness)
+  const versionBins = new Set([
+    'php',
+    'node',
+    'nodejs',
+    'python',
+    'python3',
+    'perl',
+    'ruby',
+    'java',
+    'go',
+    'rustc',
+    'bun',
+    'deno',
+    'npm',
+    'pnpm',
+    'yarn',
+    'composer',
+    'pip',
+    'pip3',
+    'docker',
+    'podman',
+    'redis-cli',
+    'mysqld',
+    'postgres',
+  ]);
+  if (versionBins.has(bin)) {
+    const sub = argv[1] ?? '';
+    if (
+      sub === '-v' ||
+      sub === '-V' ||
+      sub === '--version' ||
+      sub === 'version' ||
+      (bin === 'java' && (sub === '-version' || argv.includes('-version')))
+    ) {
+      return true;
+    }
+  }
+
   // Always-mutating host ops
   if (
     [

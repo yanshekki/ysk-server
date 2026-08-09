@@ -31,7 +31,7 @@ describe('public routes (HTTP)', () => {
     }
   });
 
-  it('status is public when unauthenticated', async () => {
+  it('status is public when unauthenticated (no host secrets)', async () => {
     ts = await startTestServer();
     const res = await apiJson(ts, 'GET', '/api/v1/status', undefined, {
       auth: false,
@@ -42,9 +42,13 @@ describe('public routes (HTTP)', () => {
       version?: string;
       executeEnabled?: boolean;
       tools?: unknown[];
+      dataDir?: string;
     };
     expect(body.product).toBeTruthy();
-    expect(Array.isArray(body.tools)).toBe(true);
+    // Sensitive recon fields only when authenticated
+    expect(body.tools).toBeUndefined();
+    expect(body.dataDir).toBeUndefined();
+    expect(body.executeEnabled).toBeUndefined();
   });
 
   it('readiness responds without auth (install probe)', async () => {

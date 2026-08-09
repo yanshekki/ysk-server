@@ -36,7 +36,8 @@ describe('health / system / protection (HTTP)', () => {
     expect(res.status).toBe(200);
     const body = res.body as { product?: string; executeEnabled?: boolean };
     expect(body.product).toBeTruthy();
-    expect(typeof body.executeEnabled).toBe('boolean');
+    // executeEnabled is authenticated-only (anti-recon)
+    expect(body.executeEnabled).toBeUndefined();
   });
 
   it('rejects unauthenticated protection status', async () => {

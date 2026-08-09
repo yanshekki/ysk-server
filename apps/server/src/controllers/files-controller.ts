@@ -232,7 +232,12 @@ export async function handleFilesRoutes(
       sendJson(res, 404, { ok: false, message: tl('notes.auto.n0595') });
       return true;
     }
-    const password = url.searchParams.get('password') ?? undefined;
+    // Prefer header (not query — avoids access logs / Referer leak)
+    const hdr =
+      (typeof req.headers['x-share-password'] === 'string'
+        ? req.headers['x-share-password']
+        : undefined) ?? undefined;
+    const password = hdr ?? url.searchParams.get('password') ?? undefined;
     if (!verifySharePassword(share, password)) {
       recordRateLimitFailure('share-auth', shareRlKey, PUBLIC_AUTH_RL);
       sendJson(res, 401, { ok: false, message: tl('notes.auto.n1577'), needPassword: true });

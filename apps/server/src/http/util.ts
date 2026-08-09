@@ -21,14 +21,36 @@ export function readBody(req: IncomingMessage): Promise<string> {
   });
 }
 
+/** Baseline security headers for all JSON API responses. */
+export function securityHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'Referrer-Policy': 'no-referrer',
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+    'Cache-Control': 'no-store',
+  };
+  // CORS: same-origin panel needs no *; set YSK_CORS_ORIGIN for split-origin dev only
+  const cors = process.env.YSK_CORS_ORIGIN?.trim();
+  if (cors && cors !== '*') {
+    headers['Access-Control-Allow-Origin'] = cors;
+    headers['Access-Control-Allow-Headers'] =
+      'Content-Type, Authorization, Accept-Language, X-Share-Password, X-Ysk-Agent-Token';
+    headers['Access-Control-Allow-Methods'] = 'GET,POST,PATCH,PUT,DELETE,OPTIONS';
+    headers.Vary = 'Origin';
+  }
+  if (process.env.YSK_HSTS === '1' || process.env.YSK_HSTS === 'true') {
+    headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains';
+  }
+  return headers;
+}
+
 export function sendJson(res: ServerResponse, status: number, body: unknown): void {
   const payload = JSON.stringify(body);
   res.writeHead(status, {
     'Content-Type': 'application/json; charset=utf-8',
     'Content-Length': Buffer.byteLength(payload),
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, Accept-Language',
-    'Access-Control-Allow-Methods': 'GET,POST,PATCH,PUT,DELETE,OPTIONS',
+    ...securityHeaders(),
   });
   res.end(payload);
 }

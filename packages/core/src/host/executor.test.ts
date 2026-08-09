@@ -97,5 +97,9 @@ describe('pathUnderRoot + commandRequiresExecute', () => {
     expect(commandRequiresExecute(['bash', '-c', 'echo hi'])).toBe(false);
     expect(commandRequiresExecute(['bash', '-c', 'rm -rf /'])).toBe(true);
     expect(commandRequiresExecute(['true'])).toBe(false);
+    // readiness inventory probes
+    expect(commandRequiresExecute(['php', '-v'])).toBe(false);
+    expect(commandRequiresExecute(['node', '-v'])).toBe(false);
+    expect(commandRequiresExecute(['php', '-r', 'evil()'])).toBe(true);
   });
 });

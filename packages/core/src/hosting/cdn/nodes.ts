@@ -12,6 +12,7 @@ import {
   type CdnNodeStatus,  tl} from '@ysk/shared';
 import type { JsonStore } from '../../db/store.js';
 import { probeTcp } from '../../email/live-checks.js';
+import { assertSafeOutboundUrl } from '../../net/ssrf.js';
 
 const KEY = 'cdn_nodes';
 const MAX = 50;
@@ -81,13 +82,9 @@ function normalizeIps(list: string[] | undefined, family: 4 | 6): string[] {
 
 function normalizeHealthUrl(raw?: string): string | undefined {
   if (!raw?.trim()) return undefined;
-  const u = raw.trim();
-  if (!/^https?:\/\//i.test(u)) {
-    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0303'), {
-      httpStatus: 400,
-      details: { healthUrl: u } });
-  }
-  return u.slice(0, 500);
+  // CDN fleet may use private health endpoints; still block IMDS/loopback
+  const u = assertSafeOutboundUrl(raw.trim(), { field: 'healthUrl', policy: 'metadata' });
+  return u.toString().slice(0, 500);
 }
 
 function loadAll(db: JsonStore): CdnNodeDto[] {
@@ -147,10 +144,15 @@ export function upsertCdnNode(db: JsonStore, input: UpsertCdnNodeInput): CdnNode
       ? Math.round(sshPortRaw)
       : undefined;
 
+  const baseUrlRaw = input.baseUrl?.trim() || prev?.baseUrl;
+  if (baseUrlRaw) {
+    assertSafeOutboundUrl(baseUrlRaw, { field: 'baseUrl', policy: 'metadata' });
+  }
+
   const row: CdnNodeDto = {
     id,
     name,
-    baseUrl: input.baseUrl?.trim() || prev?.baseUrl,
+    baseUrl: baseUrlRaw,
     fleetAgentId: input.fleetAgentId?.trim() || prev?.fleetAgentId,
     sshIdentityId: input.sshIdentityId?.trim() || prev?.sshIdentityId,
     sshHost: (input.sshHost ?? prev?.sshHost)?.trim() || undefined,
@@ -260,6 +262,8 @@ export async function probeCdnNode(
   if (healthTarget) {
     method = 'http';
     try {
+      // Re-check at probe time (stored URL may predate SSRF gate)
+      assertSafeOutboundUrl(healthTarget, { field: 'healthUrl', policy: 'metadata' });
       const ac = new AbortController();
       const timer = setTimeout(() => ac.abort(), 8_000);
       const res = await fetch(healthTarget, {

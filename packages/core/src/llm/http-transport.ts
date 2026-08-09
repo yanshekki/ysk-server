@@ -7,6 +7,13 @@ import { ErrorCodes, YskError, tl} from '@ysk/shared';
 
 export const fetchTransport: LlmTransport = {
   async complete(input) {
+    // SSRF: block cloud metadata / private targets unless local LLM allowed
+    const { assertSafeOutboundUrl } = await import('../net/ssrf.js');
+    const allowPrivate =
+      process.env.YSK_LLM_ALLOW_PRIVATE === '1' ||
+      process.env.YSK_LLM_ALLOW_PRIVATE === 'true' ||
+      /127\.0\.0\.1|localhost/i.test(input.baseUrl);
+    assertSafeOutboundUrl(input.baseUrl, { field: 'llm.baseUrl', allowPrivate });
     const url = input.baseUrl.replace(/\/$/, '') + '/v1/chat/completions';
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',

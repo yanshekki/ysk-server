@@ -95,6 +95,25 @@ export async function handlePublicRoutes(
         return true;
       }
       if (method === 'GET' && url.pathname === '/api/v1/status') {
+        // Public liveness only — host paths / execute / tools require auth
+        let authed = false;
+        try {
+          ctx.auth.authenticate(getBearer(req));
+          authed = true;
+        } catch {
+          /* public subset */
+        }
+        if (!authed) {
+          sendJson(res, 200, {
+            product: PRODUCT_NAME,
+            cli: CLI_NAME,
+            version: VERSION,
+            startedAt: ctx.startedAt,
+            webUi: Boolean(webRoot),
+            ok: true,
+          });
+          return true;
+        }
         sendJson(res, 200, {
           product: PRODUCT_NAME,
           cli: CLI_NAME,

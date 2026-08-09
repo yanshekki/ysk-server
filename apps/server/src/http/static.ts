@@ -98,6 +98,9 @@ function sendFile(res: ServerResponse, path: string, headOnly: boolean): void {
     'Content-Type': type,
     'Content-Length': size,
     'Cache-Control': ext === '.html' ? 'no-cache' : 'public, max-age=3600',
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'SAMEORIGIN',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
   });
   if (headOnly) {
     res.end();
