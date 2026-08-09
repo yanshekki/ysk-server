@@ -275,6 +275,336 @@ export async function handleProjectsRoutes(
         sendJson(res, 201, { ...created, project, extras });
         return true;
       }
+      if (
+        method === 'GET' &&
+        url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/deploy-history$/)
+      ) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const limit = Math.min(50, Number(url.searchParams.get('limit') ?? 20) || 20);
+        const items = ctx.audit.listForResource(id, {
+          actionPrefix: 'project.deploy',
+          limit });
+        // Also include process deploys recorded as project.deploy_process / deploy_node / deploy_php
+        const more = ctx.audit
+          .listForResource(id, { limit: 80 })
+          .filter((e) =>
+            /deploy|git_deploy/.test(e.action),
+          )
+          .slice(0, limit);
+        const merged = [...items, ...more]
+          .filter(
+            (e, i, arr) => arr.findIndex((x) => x.id === e.id) === i,
+          )
+          .sort(
+            (a, b) =>
+              new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+          )
+          .slice(0, limit);
+        sendJson(res, 200, { items: merged });
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/template$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { templateId?: string; force?: boolean };
+        const result = ctx.projects.applyTemplate(
+          id,
+          data.templateId ?? 'node-starter',
+          user.username,
+          data.force,
+        );
+        sendJson(res, 200, result);
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/deploy$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          port?: number;
+          entry?: string;
+          skipBuild?: boolean;
+          nodeVersion?: string;
+          enableSystemd?: boolean;
+          preferFpm?: boolean;
+          forceBuiltin?: boolean;
+          ssl?: boolean;
+          reload?: boolean;
+        };
+        const proj = ctx.projects.get(id);
+        const processRuntimes = new Set([
+          'python',
+          'go',
+          'rust',
+          'java',
+          'kotlin',
+          'bun',
+        ]);
+        const result =
+          proj.runtime === 'php'
+            ? await ctx.projectOps.deployPhp(id, {
+                actor: user.username,
+                port: data.port,
+                preferFpm: data.preferFpm,
+                forceBuiltin: data.forceBuiltin })
+            : proj.runtime === 'static'
+              ? await ctx.projectOps.deployStatic(id, {
+                  actor: user.username,
+                  ssl: data.ssl,
+                  reload: data.reload })
+              : processRuntimes.has(proj.runtime)
+                ? await ctx.projectOps.deployProcess(id, {
+                    actor: user.username,
+                    port: data.port,
+                    entry: data.entry,
+                    skipBuild: data.skipBuild })
+                : await ctx.projectOps.deployNode(id, {
+                    actor: user.username,
+                    port: data.port,
+                    entry: data.entry,
+                    nodeVersion: data.nodeVersion,
+                    enableSystemd: data.enableSystemd });
+        sendOpsResult(res, result);
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/deploy-static$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { ssl?: boolean; reload?: boolean };
+        const result = await ctx.projectOps.deployStatic(id, {
+          actor: user.username,
+          ssl: data.ssl,
+          reload: data.reload });
+        sendOpsResult(res, result);
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/os-provision$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const result = await ctx.projects.provisionOsIsolation(id, user.username);
+        sendOpsResult(res, result);
+        return true;
+      }
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/os-user$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const result = await ctx.projectOps.getOsUser(id);
+        sendJson(res, 200, result);
+        return true;
+      }
+      if (method === 'PATCH' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/os-user$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          shell?: string;
+          accountLocked?: boolean;
+          memoryMax?: string;
+          cpuQuotaPercent?: number;
+          tasksMax?: number;
+          limitNofile?: number;
+          quotaMb?: number;
+        };
+        const result = await ctx.projectOps.patchOsUser(id, data, user.username);
+        sendJson(res, result.ok || result.written ? 200 : 422, result);
+        return true;
+      }
+      if (
+        method === 'POST' &&
+        url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/os-user\/apply-limits$/)
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const result = await ctx.projectOps.applyOsLimits(id, user.username);
+        sendJson(res, result.ok || result.written ? 200 : 422, result);
+        return true;
+      }
+      if (
+        method === 'POST' &&
+        url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/os-user\/chown-home$/)
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const result = await ctx.projectOps.chownOsHome(id, user.username);
+        sendOpsResult(res, result);
+        return true;
+      }
+      if (
+        method === 'POST' &&
+        url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/os-user\/migrate$/)
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { removePreviousHome?: boolean };
+        const result = await ctx.projects.migrateOsIsolation(id, user.username, {
+          removePreviousHome: data.removePreviousHome !== false });
+        sendOpsResult(res, result);
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/stop$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const result = await ctx.projectOps.stopNode(id, user.username);
+        sendOpsResult(res, result);
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/publish-nginx$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          systemConfDir?: string;
+          ssl?: boolean;
+          forceHttps?: boolean;
+          hsts?: boolean;
+        };
+        const result = await ctx.projectOps.publishNginx(id, {
+          actor: user.username,
+          systemConfDir: data.systemConfDir,
+          ssl: data.ssl,
+          forceHttps: data.forceHttps,
+          hsts: data.hsts });
+        sendOpsResult(res, result);
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/purge-cache$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const { purgeNginxCache } = await import('@ysk/core');
+        const r = await purgeNginxCache({ host: ctx.host });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'project.purge_cache',
+          resource: id,
+          detail: r,
+          ok: r.ok });
+        sendOpsResult(res, {
+          ...r,
+          projectId: id,
+          notes: [
+            ...r.notes,
+            tl('notes.auto.n0695'),
+          ] });
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/suspend$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const result = await ctx.projectOps.suspend(id, user.username);
+        sendJson(res, 200, result);
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/unsuspend$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const result = await ctx.projectOps.unsuspend(id, user.username);
+        sendJson(res, 200, result);
+        return true;
+      }
+      if (method === 'PATCH' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/network$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          domain?: string;
+          domainAliases?: string[];
+          forceHttps?: boolean;
+          hsts?: boolean;
+          siteRedirectUrl?: string | null;
+          httpAuthUser?: string | null;
+          httpAuthPass?: string | null;
+          docRoot?: string | null;
+          bindIp?: string | null;
+          realIpProvider?: string | null;
+          preferredPort?: number | null;
+          publish?: boolean;
+          ssl?: boolean;
+        };
+        const project = ctx.projects.updateNetwork(
+          id,
+          {
+            domain: data.domain,
+            domainAliases: data.domainAliases,
+            forceHttps: data.forceHttps,
+            hsts: data.hsts,
+            siteRedirectUrl: data.siteRedirectUrl,
+            httpAuthUser: data.httpAuthUser,
+            httpAuthPass: data.httpAuthPass,
+            docRoot: data.docRoot,
+            bindIp: data.bindIp,
+            realIpProvider: data.realIpProvider,
+            preferredPort: data.preferredPort,
+          },
+          user.username,
+        );
+        if (data.publish) {
+          const pub = await ctx.projectOps.publishNginx(id, {
+            actor: user.username,
+            ssl: data.ssl,
+            forceHttps: data.forceHttps ?? project.forceHttps,
+            hsts: data.hsts ?? project.hsts });
+          sendJson(res, 200, { project, publish: pub });
+          return true;
+        }
+        sendJson(res, 200, { project });
+        return true;
+      }
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/nginx-conf$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        const proj = ctx.projects.get(id);
+        const path = proj.nginxConfigPath;
+        if (!path) {
+          sendJson(res, 200, { content: '', path: null });
+          return true;
+        }
+        try {
+          const { readFileSync, existsSync } = await import('node:fs');
+          const content = existsSync(path) ? readFileSync(path, 'utf8') : '';
+          sendJson(res, 200, { content, path });
+        } catch (e) {
+          sendJson(res, 200, {
+            content: '',
+            path,
+            error: e instanceof Error ? e.message : String(e),
+          });
+        }
+        return true;
+      }
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        sendJson(res, 200, { project: ctx.projects.get(id) });
+        return true;
+      }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[4];
+        let body: { confirmName?: string; removeFiles?: boolean } = {};
+        try {
+          const raw = await readBody(req);
+          if (raw?.trim()) body = JSON.parse(raw) as typeof body;
+        } catch {
+          body = {};
+        }
+        // Also accept query params for simple clients
+        if (url.searchParams.has('confirmName')) {
+          body.confirmName = url.searchParams.get('confirmName') || undefined;
+        }
+        if (url.searchParams.has('removeFiles')) {
+          body.removeFiles = url.searchParams.get('removeFiles') !== '0';
+        }
+        const result = await ctx.projects.delete(id, user.username, {
+          confirmName: body.confirmName,
+          removeFiles: body.removeFiles !== false,
+        });
+        sendJson(res, 200, result);
+        return true;
+      }
       if (method === 'GET' && url.pathname === '/api/v1/templates') {
         ctx.auth.authenticate(getBearer(req));
         sendJson(res, 200, { items: listAppTemplates() });

@@ -328,6 +328,10 @@ const READ_ONLY_SIMPLE_BINS = new Set([
   'egrep',
   'fgrep',
   'awk',
+  'du',
+  'cut',
+  'sort',
+  'uniq',
   'sleep',
   'hostname',
   'getconf',
@@ -577,6 +581,10 @@ function isReadOnlyShellScript(argv: string[]): boolean {
 
   // Allow pure inventory / probe helpers used by panel without EXECUTE
   if (/\bapt\s+list\b/.test(s) || /\bapt-cache\b/.test(s) || /\bdpkg-query\b/.test(s)) {
+    return true;
+  }
+  // Disk usage probes (quota)
+  if (/\bdu\s+(-[a-zA-Z]*k|-sk|-sb)\b/.test(s) || /\bdu\s+-[a-zA-Z]*\b/.test(s)) {
     return true;
   }
   // Simple echo / printf probes (no redirect — already denied above)
