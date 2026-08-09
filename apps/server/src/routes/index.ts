@@ -81,6 +81,8 @@ export { handleSystemDbRoutes } from './system-db.js';
 export { handleSystemHostIdentityRoutes } from './system-host-identity.js';
 export { handleSystemHostNetRoutes } from './system-host-net.js';
 export { handleSystemHostRoutes } from './system-host.js';
+export { handleSystemMigrateExportRoutes } from './system-migrate-export.js';
+export { handleSystemMigrateHostRoutes } from './system-migrate-host.js';
 export { handleSystemMigrateRoutes } from './system-migrate.js';
 export { handleSystemOpsRoutes } from './system-ops.js';
 export { handleToolsRoutes } from './tools.js';
