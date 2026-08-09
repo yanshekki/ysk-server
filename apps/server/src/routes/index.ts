@@ -15,6 +15,7 @@ export { handleMiscRoutes } from './misc.js';
 export { handleProjectsRoutes } from './projects.js';
 export { handlePublicRoutes } from './public.js';
 export { handleRbacRoutes } from './rbac.js';
+export { handleSearchRoutes } from './search.js';
 export { handleSettingsRoutes } from './settings.js';
 export { handleSshRoutes } from './ssh.js';
 export { handleSslRoutes } from './ssl.js';

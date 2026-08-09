@@ -231,5 +231,32 @@ export async function handleDnsRoutes(
         });
         return true;
       }
+  // DNSSEC (moved from misc)
+  if (method === 'POST' && url.pathname.match(/^\/api\/v1\/dns\/zones\/[^/]+\/dnssec$/)) {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const zone = decodeURIComponent(url.pathname.split('/')[5] ?? '');
+    const { generateDnssecKeys } = await import('@ysk/core');
+    const r = await generateDnssecKeys({
+      dataDir: ctx.dataDir,
+      zone,
+      host: ctx.host,
+    });
+    ctx.audit.append({
+      actor: user.username,
+      action: 'dns.dnssec.generate',
+      resource: zone,
+      detail: r,
+      ok: r.ok,
+    });
+    sendOpsResult(res, r);
+    return true;
+  }
+  if (method === 'GET' && url.pathname.match(/^\/api\/v1\/dns\/zones\/[^/]+\/dnssec$/)) {
+    ctx.auth.authenticate(getBearer(req));
+    const zone = decodeURIComponent(url.pathname.split('/')[5] ?? '');
+    const { listDnssecMaterial } = await import('@ysk/core');
+    sendJson(res, 200, listDnssecMaterial(ctx.dataDir, zone));
+    return true;
+  }
   return false;
 }
