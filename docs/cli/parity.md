@@ -2,108 +2,107 @@
 
 > Language: English | [中文](./parity-ZH.md)
 
-**硬規則：** Panel 有嘅能力，CLI 必須有對等入口；AI agents 優先用 CLI + 本檔 + [reference.md](./reference.md) + [../agent/commands.json](../agent/commands.json)。
+**Hard rule:** Every production panel capability must have a CLI entry (or an explicit, documented intentional gap). Prefer `--json` for automation.
 
-| 標記 | 含義 |
-|------|------|
-| ✅ | CLI 已有可用命令 |
-| ⚠️ | 有部分 / 需 flag / 間接 |
-| ❌ | Panel 有、CLI 缺（缺口） |
-| · | 雙方都弱 / 實驗 |
+| Mark | Meaning |
+|------|---------|
+| ✅ | CLI available |
+| ⚠️ | Partial / needs flags / intentional panel-only with note |
+| ❌ | Panel has it, CLI missing (**must not ship unmarked**) |
 
 ---
 
-## 控制平面
+## Control plane
 
-| Panel / API | CLI | 狀態 |
-|-------------|-----|------|
+| Panel / API | CLI | Status |
+|-------------|-----|--------|
 | Setup / first admin | `ysk-server setup` | ✅ |
 | Serve API+UI | `ysk-server serve` | ✅ |
-| Readiness | `ysk-server readiness` · `doctor` | ✅ |
-| Health | `ysk-server health [--url]` | ✅ |
-| System unit install | `ysk-server system unit-install` | ✅ |
-| State store json/sqlite/pg | `store status\|export\|import\|migrate` | ✅ |
+| Readiness / doctor | `readiness` · `doctor` | ✅ |
+| Health | `health [--url]` | ✅ |
+| System unit install | `system unit-install` | ✅ |
+| Document store | `store status\|export\|import\|migrate` | ✅ |
+| Self-update | `update` | ✅ |
 
-## 專案 / 架站
+## Projects / sites
 
-| Panel | CLI | 狀態 |
-|-------|-----|------|
-| Projects list/create | `projects list\|create` | ✅ |
-| Deploy node/php/static | `projects deploy` [--entry|--port|--fpm] | ✅ |
+| Panel | CLI | Status |
+|-------|-----|--------|
+| Projects list/create/detail | `projects list\|get\|create` | ✅ |
+| Deploy / stop / health | `projects deploy\|stop\|health` | ✅ |
 | Git deploy | `projects git-deploy` | ✅ |
-| Nginx publish | `nginx` / hosting | ✅ |
-| SSL | `ssl` | ✅ |
-| Logs | `logs` | ✅ |
-| Templates | `templates` | ✅ |
+| Isolation / resources | `projects isolation …` | ✅ |
+| Templates | `templates list\|apply` | ✅ |
+| Nginx publish / status | `nginx status\|list\|test\|sync` · hosting | ✅ |
+| SSL | `ssl list\|get` | ✅ |
+| Logs | `logs sources\|query\|journal` | ✅ |
 
-## 備份
+## Files / public / FTP / WebDAV
 
-| Panel / API | CLI | 狀態 |
-|-------------|-----|------|
-| 列表 / 搜尋 | `backup list --q` | ✅ |
-| 狀態 / lastRun | `backup status` | ✅ |
-| 全部備份 + side | `backup all` | ✅ |
-| 專案 tar / restore | `projects backup` · `backup restore` | ✅ |
-| 排程 + install | `backup schedule [--install]` | ✅ |
-| 控制平面 | `backup control-plane` | ✅ |
-| restic | `backup restic …` | ✅ |
-| 遠端 / exclusions / restic 設定 | `backup settings get|set` | ✅ |
+| Panel | CLI | Status |
+|-------|-----|--------|
+| File browser CRUD | `files list\|read\|write\|mkdir\|rm\|stat\|rename\|copy\|move\|chmod` | ✅ |
+| Upload | `files upload` | ✅ |
+| Trash | `files trash list\|restore\|purge` | ✅ |
+| Public shares list | `files shares list` | ✅ |
+| WebDAV enable/token/disable | `files webdav status\|token\|disable` | ✅ |
+| Public-files site | `hosting public-files --domain …` | ✅ |
+| FTPS accounts / service | `hosting ftps-apply` | ✅ |
+| Browser text editor / media preview | *(panel UX only)* | ⚠️ intentional UI |
+| Public share landing `/share/:token` | *(HTTP public API; create via panel/API)* | ⚠️ panel create + public GET |
 
-## 安全 / 用戶
+## Email / DNS / CDN
 
-| Panel | CLI | 狀態 |
-|-------|-----|------|
-| Login / sessions | `security sessions list\|revoke\|revoke-others` | ✅ |
-| API keys | `security api-keys list\|create\|delete` | ✅ |
-| Users / packages | `users` · `packages` | ✅ |
-| RBAC | `rbac` | ✅ |
-| 2FA / security | `security status` | ✅ |
-| SSH keys / 2FA | `ssh-key` · `ssh-2fa` | ✅ |
-| Audit | `audit list --q` | ✅ |
-
-## 郵件 / DNS / CDN
-
-| Panel | CLI | 狀態 |
-|-------|-----|------|
-| Email domains/mailboxes | `email domains\|mailboxes\|…` | ✅ |
+| Panel | CLI | Status |
+|-------|-----|--------|
+| Domains / mailboxes / DNS bundle | `email domains\|mailboxes\|dns\|bootstrap` | ✅ |
 | Deliverability | `email deliverability` | ✅ |
-| DNS zones | `dns` / hosting | ✅ |
-| CDN nodes/sites/apply | `cdn nodes\|sites\|apply\|…` | ✅ |
-| Fleet agents | `agents fleet …` · `agent run` | ✅ |
+| Webmail install (global) | `hosting webmail-apply --domain webmail.example.com` | ✅ |
+| DNS zones | `dns zone\|zones` · hosting | ✅ |
+| CDN nodes/sites | `cdn nodes\|sites\|apply\|…` | ✅ |
 
-## 防護 / 系統
+## Security / defense / system
 
-| Panel | CLI | 狀態 |
-|-------|-----|------|
-| Firewall UFW | `defense firewall` | ✅ |
-| Fail2ban | `defense fail2ban` | ✅ |
-| Defense center | `defense status\|stack-apply\|presets\|timeline` | ✅ |
-| Metrics / network | `host metrics|network|overview` | ✅ |
-| Updates | `update` | ✅ |
+| Panel | CLI | Status |
+|-------|-----|--------|
+| Sessions / API keys / 2FA flags | `security status\|sessions\|api-keys` | ✅ |
+| Users / RBAC | `users` · `packages` · `rbac` | ✅ |
+| SSH keys / SSH 2FA | `ssh-key` · `ssh-2fa` | ✅ |
+| Firewall / fail2ban / protection | `defense …` · `hosting firewall-apply` | ✅ |
+| Metrics / network / host | `host overview\|metrics\|network` | ✅ |
+| Services matrix | `services` | ✅ |
 | Cron | `cron list\|create\|install\|status` | ✅ |
-| Files | `files list\|read\|write\|…` | ✅ |
-| Files multi-upload / WebDAV | `files upload` · `files webdav token` | ✅ |
-| DB provision | `hosting mysql-provision|postgres-provision`（plan 預設） | ✅ |
-| Migrate host | `migrate` | ✅ |
+| Backups | `backup list\|status\|all\|schedule\|…` | ✅ |
+| Migrate | `migrate inventory\|host\|status\|…` | ✅ |
+| Browser terminal (PTY) | *(panel only; no remote SSH)* | ⚠️ intentional UI |
+
+## AI / agents (no panel chrome)
+
+| Surface | CLI | Status |
+|---------|-----|--------|
+| NL → plan | `ask` | ✅ |
+| Tools allowlist run | `tools` · `tools run` | ✅ |
+| Fleet / runtimes | `agents` · `agent run` | ✅ |
 
 ---
 
-## 驗收
+## Help discovery
 
-- [x] 矩陣無 ❌ / 無 ⚠️（Admin 運維 in-scope 全 ✅）
-- [x] `commands.json` 覆蓋主命令（含 sessions / api-keys）
-- [x] 主 list 支援 `--json` + 可選 `--q`
-- [x] AI SKILL.md 指向本矩陣
-- [x] document store 文件 + CLI 完整（[state-store.md](../deploy/state-store.md)）
+```bash
+ysk-server --help
+ysk-server help [--locale zh-HK|zh-CN|en]
+ysk-server files          # usage for files + webdav + shares
+ysk-server email          # usage for mail domain ops
+ysk-server readiness --json
+```
 
-## Wave 歷史
+Machine-readable command list: [../agent/commands.json](../agent/commands.json).
 
-| 波 | 狀態 |
-|----|------|
-| A–D（14 項） | ✅ |
-| E（Files / CDN ack / parity） | ✅ |
-| F（Cron / Email / Defense / fleet routes） | ✅ |
-| G（parity→CLI 深化 8 項） | ✅ |
-| H（sessions/api-keys CLI · misc 拆 · coverage · store docs · seal） | ✅ |
+## Acceptance
 
-*Last updated: 2026-07-31 — Wave H complete → Admin ops / CLI parity **100%**（in-scope）。*
+- [x] No unmarked production ❌ for Admin panel in-scope features
+- [x] Primary list/status commands support `--json`
+- [x] Files WebDAV + shares documented
+- [x] Panel-only UX (editor, terminal, share landing) marked ⚠️ with rationale
+
+*Last updated: 2026-08-09 — Phase 4 seal.*
