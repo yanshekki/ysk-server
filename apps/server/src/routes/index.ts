@@ -36,6 +36,7 @@ export { handleResourcesRoutes } from './resources.js';
 export { handleSearchRoutes } from './search.js';
 export { handleSettingsRoutes } from './settings.js';
 export { handleSoftwareRoutes } from './software.js';
+export { handleSshIdentitiesRoutes } from './ssh-identities.js';
 export { handleSshRoutes } from './ssh.js';
 export { handleSslRoutes } from './ssl.js';
 export { handleSystemDbRoutes } from './system-db.js';
