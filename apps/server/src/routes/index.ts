@@ -34,6 +34,8 @@ export { handleFirewallRoutes } from './firewall.js';
 export { handleHostingInfraRoutes } from './hosting-infra.js';
 export { handleHostingProcessesRoutes } from './hosting-processes.js';
 export { handleHostingRoutes } from './hosting.js';
+export { handleHostingRuntimesCoreRoutes } from './hosting-runtimes-core.js';
+export { handleHostingRuntimesPhpRoutes } from './hosting-runtimes-php.js';
 export { handleHostingRuntimesRoutes } from './hosting-runtimes.js';
 export { handleLogsRoutes } from './logs.js';
 export { handleMetricsRoutes } from './metrics.js';
