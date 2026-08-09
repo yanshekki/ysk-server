@@ -80,6 +80,8 @@ export { handleSystemHostRoutes } from './system-host.js';
 export { handleSystemMigrateRoutes } from './system-migrate.js';
 export { handleSystemOpsRoutes } from './system-ops.js';
 export { handleToolsRoutes } from './tools.js';
+export { handleUpdatesApplyBatchRoutes } from './updates-apply-batch.js';
 export { handleUpdatesApplyRoutes } from './updates-apply.js';
+export { handleUpdatesApplySingleRoutes } from './updates-apply-single.js';
 export { handleUpdatesInventoryRoutes } from './updates-inventory.js';
 export { handleUpdatesRoutes } from './updates.js';
