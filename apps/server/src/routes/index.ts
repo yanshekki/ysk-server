@@ -25,5 +25,6 @@ export { handleSshRoutes } from './ssh.js';
 export { handleSslRoutes } from './ssl.js';
 export { handleSystemDbRoutes } from './system-db.js';
 export { handleSystemHostRoutes } from './system-host.js';
+export { handleSystemOpsRoutes } from './system-ops.js';
 export { handleToolsRoutes } from './tools.js';
 export { handleUpdatesRoutes } from './updates.js';
