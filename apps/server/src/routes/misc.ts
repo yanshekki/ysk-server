@@ -581,7 +581,7 @@ export async function handleMiscRoutes(
                     entry: data.entry,
                     nodeVersion: data.nodeVersion,
                     enableSystemd: data.enableSystemd });
-        sendJson(res, result.ok ? 200 : 502, result);
+        sendOpsResult(res, result);
         return true;
       }
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/deploy-static$/)) {
@@ -593,7 +593,7 @@ export async function handleMiscRoutes(
           actor: user.username,
           ssl: data.ssl,
           reload: data.reload });
-        sendJson(res, result.ok ? 200 : 502, result);
+        sendOpsResult(res, result);
         return true;
       }
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/os-provision$/)) {
@@ -2069,7 +2069,7 @@ export async function handleMiscRoutes(
           redeploy: data.redeploy,
           entry: data.entry,
           skipBuild: data.skipBuild });
-        sendJson(res, result.ok ? 200 : 502, result);
+        sendOpsResult(res, result);
         return true;
       }
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/env$/)) {
@@ -2085,7 +2085,7 @@ export async function handleMiscRoutes(
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[4];
         const result = await ctx.projectOps.backup(id, user.username);
-        sendJson(res, result.ok ? 200 : 500, result);
+        sendOpsResult(res, result);
         return true;
       }
       if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/logs$/)) {
@@ -2405,7 +2405,7 @@ export async function handleMiscRoutes(
           enableApache: data.enableApache,
           preferFpm: data.preferFpm,
           forceBuiltin: data.forceBuiltin });
-        sendJson(res, result.ok ? 200 : 502, result);
+        sendOpsResult(res, result);
         return true;
       }
   return false;

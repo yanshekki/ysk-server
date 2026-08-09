@@ -203,7 +203,7 @@ export async function handleUpdatesRoutes(
         const { checkSelfUpdate } = await import('@ysk/core');
         const status = await checkSelfUpdate({ currentVersion: VERSION });
         // Flatten for panel: never pretend latest=current without a real channel check
-        sendJson(res, status.ok ? 200 : 502, {
+        sendOpsResult(res, {
           currentVersion: status.currentVersion,
           latestVersion: status.latestVersion,
           updateAvailable: status.updateAvailable,

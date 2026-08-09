@@ -1056,7 +1056,7 @@ export async function handleSystemRoutes(
       { plan: data.plan, bundles: data.bundles },
       { sqlServer: data.sqlServer, clamav: data.clamav },
     );
-    sendJson(res, r.ok ? 200 : 400, r);
+    sendOpsResult(res, r);
     return true;
   }
 
@@ -2759,7 +2759,7 @@ export async function handleSystemRoutes(
         },
         ok: result.ok,
       });
-      sendJson(res, result.ok ? 200 : 400, {
+      sendOpsResult(res, {
         ok: result.ok,
         action,
         path: result.path,
@@ -2790,7 +2790,7 @@ export async function handleSystemRoutes(
               tl('readiness.itemWebBuildManual'),
               ...result.notes,
             ];
-      sendJson(res, result.ok ? 200 : 400, {
+      sendOpsResult(res, {
         ok: result.ok,
         action,
         path: result.path,

@@ -436,7 +436,7 @@ export async function handleEmailRoutes(
           detail: { ok: r.ok, expiresAt: r.expiresAt, hasPassword: Boolean(data.password) },
           ok: r.ok,
         });
-        sendJson(res, r.ok ? 200 : 400, r);
+        sendOpsResult(res, r);
         return true;
       }
       if (method === 'POST' && url.pathname === '/api/v1/email/webmail/sso/consume') {
@@ -468,7 +468,12 @@ export async function handleEmailRoutes(
         const r = consumeWebmailSso(ctx.db, data.token ?? '');
         if (!r.ok) recordRateLimitFailure('webmail-sso', rlKey);
         else clearRateLimit('webmail-sso', rlKey);
-        sendJson(res, r.ok ? 200 : 401, r);
+        // Unauthorized token → 401 (not ops blocked); success still honest envelope
+        if (!r.ok) {
+          sendJson(res, 401, { ok: false, notes: r.notes, code: 'YSK_UNAUTHORIZED' });
+          return true;
+        }
+        sendOpsResult(res, r);
         return true;
       }
       if (method === 'GET' && url.pathname === '/api/v1/email/sieve') {
