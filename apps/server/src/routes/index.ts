@@ -30,6 +30,8 @@ export { handleDefenseOpsRoutes } from './defense-ops.js';
 export { handleDefenseProtectionRoutes } from './defense-protection.js';
 export { handleDefenseRoutes } from './defense.js';
 export { handleDnsRoutes } from './dns.js';
+export { handleEmailDomainsCrudRoutes } from './email-domains-crud.js';
+export { handleEmailDomainsOpsRoutes } from './email-domains-ops.js';
 export { handleEmailDomainsRoutes } from './email-domains.js';
 export { handleEmailOpsRoutes } from './email-ops.js';
 export { handleEmailRoutes } from './email.js';
