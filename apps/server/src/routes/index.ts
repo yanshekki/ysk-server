@@ -12,6 +12,7 @@ export { handleDbRoutes } from './db.js';
 export { handleDefenseRoutes } from './defense.js';
 export { handleDnsRoutes } from './dns.js';
 export { handleEmailDomainsRoutes } from './email-domains.js';
+export { handleEmailOpsRoutes } from './email-ops.js';
 export { handleEmailRoutes } from './email.js';
 export { handleEmailWebmailRoutes } from './email-webmail.js';
 export { handleFilesRoutes } from './files.js';
