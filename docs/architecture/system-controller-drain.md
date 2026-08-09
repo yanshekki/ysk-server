@@ -12,15 +12,14 @@ God-file split of `apps/server/src/controllers/system-controller.ts` (~2.9k → 
 | Firewall + Fail2ban | `routes/firewall.ts` | **C2** |
 | Software catalog + stack install | `routes/software.ts` | **C3** |
 | System DB engines / redis / dump | `routes/system-db.ts` | **D1** |
+| Real-IP / FTPS / host / panel-TLS / power | `routes/system-host.ts` | **D2** |
 
 ## Still residual in system-controller
 
-- real-ip / host IPs
 - system email/ssl/php apply
-- FTPS
-- host identity / panel-tls / power
-- nginx / systemd / services / export / migrate / readiness
+- nginx / systemd / services / updates-self
+- export / managed-nginx / rebuild / migrate / readiness
 
 ## Dispatch note
 
-Domain slices (`defense`, `firewall`, `software`, `system-db`) run **before** `handleSystemRoutes` in `http-server.ts`.
+Domain slices (`defense`, `firewall`, `software`, `system-db`, `system-host`) run **before** `handleSystemRoutes` in `http-server.ts`.

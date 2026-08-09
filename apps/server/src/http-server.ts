@@ -50,6 +50,7 @@ import {
   handleSshRoutes,
   handleSslRoutes,
   handleSystemDbRoutes,
+  handleSystemHostRoutes,
   handleToolsRoutes,
   handleUpdatesRoutes,
 } from './routes/index.js';
@@ -99,11 +100,12 @@ function attachRequestHandler(ctx: AppContext, webRoot: string | null) {
         if (await handleLogsRoutes(ctx, req, res, url, method)) return;
         if (await handleMetricsRoutes(ctx, req, res, url, method)) return;
         if (await handleNetworkRoutes(ctx, req, res, url, method)) return;
-        // Domain slices before system (C1–C3 · D1 system-db)
+        // Domain slices before system (C1–C3 · D1 system-db · D2 system-host)
         if (await handleDefenseRoutes(ctx, req, res, url, method)) return;
         if (await handleFirewallRoutes(ctx, req, res, url, method)) return;
         if (await handleSoftwareRoutes(ctx, req, res, url, method)) return;
         if (await handleSystemDbRoutes(ctx, req, res, url, method)) return;
+        if (await handleSystemHostRoutes(ctx, req, res, url, method)) return;
         if (await handleSystemRoutes(ctx, req, res, url, method)) return;
         if (
           await handleTerminalRoutes(
