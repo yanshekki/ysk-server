@@ -49,6 +49,8 @@ export { handleHostingRuntimesInstallRoutes } from './hosting-runtimes-install.j
 export { handleHostingRuntimesPhpRoutes } from './hosting-runtimes-php.js';
 export { handleHostingRuntimesPluginsRoutes } from './hosting-runtimes-plugins.js';
 export { handleHostingRuntimesRoutes } from './hosting-runtimes.js';
+export { handleLogsOpsRoutes } from './logs-ops.js';
+export { handleLogsReadRoutes } from './logs-read.js';
 export { handleLogsRoutes } from './logs.js';
 export { handleMetricsRoutes } from './metrics.js';
 export { handleMiscRoutes } from './misc.js';
