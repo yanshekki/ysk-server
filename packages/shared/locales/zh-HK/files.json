@@ -133,10 +133,10 @@
   "textFileCreated": "已建立文字檔",
   "fileName": "檔名",
   "fileNameHint": "例如 readme.md 或 notes.txt",
-  "versionsTitle": "版本 — {{path}}",
-  "versionsDesc": "覆寫前自動快照（.versions）；最多保留 20 版",
-  "noVersions": "尚無版本",
-  "noVersionsHint": "修改並儲存檔案後會產生快照",
+  "versionsTitle": "版本歷程",
+  "versionsDesc": "",
+  "noVersions": "尚無歷史版本",
+  "noVersionsHint": "",
   "versionRestored": "已還原",
   "renameTitle": "重新命名",
   "renameCurrent": "目前：{{name}}",
@@ -276,5 +276,9 @@
   "editorLargeHint": "檔案較大，編輯可能較慢。超過約 2 MB 請改用下載（伺服器上限）。",
   "editorLnCol": "行 {{line}}，欄 {{col}}",
   "editorSpaces": "空格：{{n}}",
-  "copyLink": "複製連結"
+  "copyLink": "複製連結",
+  "versionsTitleShort": "版本歷程",
+  "versionsCount": "{{count}} / {{max}} 版",
+  "versionN": "第 {{n}} 版",
+  "versionLatest": "最新"
 }

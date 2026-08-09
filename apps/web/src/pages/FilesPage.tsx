@@ -2241,12 +2241,12 @@ export function FilesPage() {
         </FormLayout>
       </Modal>
 
-      {/* Versions */}
+      {/* Versions — professional history list */}
       <Modal
         open={Boolean(versionsPath)}
         onClose={bindCloseVersions(setVersionsPath, setVersions)}
-        title={t('files.versionsTitle', { path: versionsPath ?? '' })}
-        description={t('files.versionsDesc')}
+        title={t('files.versionsTitleShort')}
+        size="md"
         footer={
           <Button
             variant="secondary"
@@ -2257,38 +2257,87 @@ export function FilesPage() {
           </Button>
         }
       >
-        {versions.length === 0 ? (
-          <EmptyState title={t('files.noVersions')} description={t('files.noVersionsHint')} />
-        ) : (
-          <ul className="list-plain list-spaced">
-            {versions.map((v) => (
-              <li key={v.id} className="">
-                <span className="muted u-text-sm">
-                  {new Date(v.createdAt).toLocaleString()} · {formatBytes(v.bytes)}
-                </span>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  loading={busy}
-                  onClick={() => {
-                    if (!versionsPath) return;
-                    setBusy(true);
-                    void filesApi
-                      .restoreVersion(root, versionsPath, v.id)
-                      .then((r) => {
-                        setMsg(r.notes?.join(' · ') ?? t('files.versionRestored'));
-                        return refresh();
-                      })
-                      .catch((e: Error) => setError(e.message))
-                      .finally(() => setBusy(false));
-                  }}
-                >
-                  {t('files.restore')}
-                </Button>
-              </li>
-            ))}
-          </ul>
-        )}
+        <div className="fm-versions">
+          <div className="fm-versions__file">
+            <span className="fm-versions__file-icon" aria-hidden>
+              📄
+            </span>
+            <div className="fm-versions__file-meta">
+              <strong className="fm-versions__file-name" title={versionsPath ?? undefined}>
+                {versionsPath ? versionsPath.split('/').pop() || versionsPath : '—'}
+              </strong>
+              {versionsPath && versionsPath.includes('/') ? (
+                <code className="fm-versions__file-path">{versionsPath}</code>
+              ) : null}
+            </div>
+            <Badge tone="neutral">
+              {t('files.versionsCount', { count: versions.length, max: 20 })}
+            </Badge>
+          </div>
+
+          {versions.length === 0 ? (
+            <EmptyState title={t('files.noVersions')} />
+          ) : (
+            <ul className="fm-versions__list" aria-label={t('files.versionsTitleShort')}>
+              {versions.map((v, idx) => {
+                const newest = idx === 0;
+                const when = new Date(v.createdAt);
+                return (
+                  <li
+                    key={v.id}
+                    className={`fm-versions__row${newest ? ' is-newest' : ''}`}
+                  >
+                    <div className="fm-versions__main">
+                      <div className="fm-versions__top">
+                        <span className="fm-versions__index">
+                          {t('files.versionN', { n: versions.length - idx })}
+                        </span>
+                        {newest ? (
+                          <Badge tone="ok">{t('files.versionLatest')}</Badge>
+                        ) : null}
+                      </div>
+                      <time
+                        className="fm-versions__time"
+                        dateTime={v.createdAt}
+                        title={when.toISOString()}
+                      >
+                        {when.toLocaleString()}
+                      </time>
+                      <span className="fm-versions__size muted">
+                        {formatBytes(v.bytes)}
+                      </span>
+                    </div>
+                    <div className="fm-versions__actions">
+                      <Button
+                        variant={newest ? 'primary' : 'secondary'}
+                        size="sm"
+                        loading={busy}
+                        onClick={() => {
+                          if (!versionsPath) return;
+                          setBusy(true);
+                          void filesApi
+                            .restoreVersion(root, versionsPath, v.id)
+                            .then((r) => {
+                              setMsg(
+                                r.notes?.join(' · ') ?? t('files.versionRestored'),
+                              );
+                              setVersionsPath(null);
+                              setVersions([]);
+                              return refresh();
+                            })
+                            .catch((e: Error) => setError(e.message))
+                            .finally(() => setBusy(false));
+                        }}
+                      >
+                        {t('files.restore')}
+                      </Button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
       </Modal>
 
       {/* Rename */}

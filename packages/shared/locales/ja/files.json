@@ -135,10 +135,10 @@
   "textFileCreated": "テキストファイルが作成されました",
   "fileName": "ファイル名",
   "fileNameHint": "例えばreadme.mdまたはnotes.txt",
-  "versionsTitle": "バージョン — {{path}}",
-  "versionsDesc": "Auto snapshot before overwrite (.versions); keep up to 20",
-  "noVersions": "まだバージョンがありません",
-  "noVersionsHint": "編集して保存するとスナップショットが表示されます",
+  "versionsTitle": "バージョン履歴",
+  "versionsDesc": "",
+  "noVersions": "履歴はまだありません",
+  "noVersionsHint": "",
   "versionRestored": "復元されました",
   "renameTitle": "名前の変更",
   "renameCurrent": "現在: {{name}}",
@@ -276,5 +276,9 @@
   "editorLargeHint": "Large file — editing may feel slow. Prefer download for multi‑MB files (server cap ~2 MB).",
   "editorLnCol": "行{{line}}、列{{col}}",
   "editorSpaces": "スペース: {{n}}",
-  "copyLink": "Copy link"
+  "copyLink": "Copy link",
+  "versionsTitleShort": "バージョン履歴",
+  "versionsCount": "{{count}} / {{max}}",
+  "versionN": "v{{n}}",
+  "versionLatest": "最新"
 }

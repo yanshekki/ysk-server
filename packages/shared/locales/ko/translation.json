@@ -3310,10 +3310,10 @@
     "textFileCreated": "Text file created",
     "fileName": "File name",
     "fileNameHint": "e.g. readme.md or notes.txt",
-    "versionsTitle": "Versions — {{path}}",
-    "versionsDesc": "Auto snapshot before overwrite (.versions); keep up to 20",
-    "noVersions": "No versions yet",
-    "noVersionsHint": "Snapshots appear after edit and save",
+    "versionsTitle": "버전 기록",
+    "versionsDesc": "",
+    "noVersions": "아직 버전 기록이 없습니다",
+    "noVersionsHint": "",
     "versionRestored": "Restored",
     "renameTitle": "Rename",
     "renameCurrent": "Current: {{name}}",
@@ -3451,7 +3451,11 @@
     "editorLargeHint": "Large file — editing may feel slow. Prefer download for multi‑MB files (server cap ~2 MB).",
     "editorLnCol": "Ln {{line}}, Col {{col}}",
     "editorSpaces": "Spaces: {{n}}",
-    "copyLink": "링크 복사"
+    "copyLink": "링크 복사",
+    "versionsTitleShort": "버전 기록",
+    "versionsCount": "{{count}} / {{max}}",
+    "versionN": "v{{n}}",
+    "versionLatest": "최신"
   },
   "firewall": {
     "profiles": {
