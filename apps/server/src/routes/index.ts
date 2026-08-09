@@ -1,6 +1,8 @@
 /** Route modules — Wave2 R2 */
 export { handleAdminPackagesRoutes } from './admin-packages.js';
 export { handleAdminRoutes } from './admin.js';
+export { handleAdminUsersListRoutes } from './admin-users-list.js';
+export { handleAdminUsersOpsRoutes } from './admin-users-ops.js';
 export { handleAdminUsersRoutes } from './admin-users.js';
 export { handleAgentsFleetRoutes } from './agents-fleet.js';
 export { handleAgentsRoutes } from './agents.js';
