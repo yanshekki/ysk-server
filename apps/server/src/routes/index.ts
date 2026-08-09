@@ -17,6 +17,7 @@ export { handleFilesPublicRoutes } from './files-public.js';
 export { handleFirewallRoutes } from './firewall.js';
 export { handleHostingProcessesRoutes } from './hosting-processes.js';
 export { handleHostingRoutes } from './hosting.js';
+export { handleHostingRuntimesRoutes } from './hosting-runtimes.js';
 export { handleLogsRoutes } from './logs.js';
 export { handleMetricsRoutes } from './metrics.js';
 export { handleMiscRoutes } from './misc.js';
