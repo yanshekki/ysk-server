@@ -1,12 +1,12 @@
 {
-  "searchPlaceholder": "Search…",
-  "searchAria": "Search list",
-  "clearSearch": "Clear search",
-  "clearAll": "Clear filters",
-  "resultCount": "{{count}} results",
-  "showingOf": "Showing {{shown}} of {{total}}",
-  "activeFilters": "{{count}} filters active",
-  "noResults": "No matches",
-  "noResultsHint": "Try another keyword or clear filters.",
-  "searching": "Searching…"
+  "searchPlaceholder": "অনুসন্ধান…",
+  "searchAria": "সার্চ তালিকা",
+  "clearSearch": "সার্চ মুছুন",
+  "clearAll": "ফিল্টার মুছুন",
+  "resultCount": "{{count}} ফলাফল",
+  "showingOf": "{{total}}-এর মধ্যে {{shown}} দেখানো হচ্ছে",
+  "activeFilters": "{{count}} ফিল্টার সক্রিয়",
+  "noResults": "কোনো মিল নেই",
+  "noResultsHint": "অন্য কীওয়ার্ড চেষ্টা করুন বা ফিল্টার মুছুন।",
+  "searching": "খোঁজা হচ্ছে…"
 }

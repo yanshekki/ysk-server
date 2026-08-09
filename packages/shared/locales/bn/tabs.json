@@ -1,7 +1,7 @@
 {
-  "scrollLeft": "Scroll tabs left",
-  "scrollRight": "Scroll tabs right",
-  "about": "About",
-  "main": "Actions",
-  "stack": "Software"
+  "scrollLeft": "ট্যাব বামে স্ক্রল",
+  "scrollRight": "ট্যাব ডানে স্ক্রল",
+  "about": "সম্পর্কে",
+  "main": "অ্যাকশন",
+  "stack": "সফটওয়্যার"
 }

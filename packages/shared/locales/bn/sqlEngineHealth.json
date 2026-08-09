@@ -1,31 +1,31 @@
 {
   "finding": {
-    "package_missing": "Server package for {{flavor}} is not installed.",
-    "client_missing": "SQL client tools are not installed.",
-    "frozen_marker": "Debian freeze marker present (mode: {{mode}}). Daemon start is blocked until released.",
-    "datadir_uninitialized": "Data directory has no system catalog — needs initialization.",
-    "config_flavor_mismatch": "my.cnf points at the wrong engine for {{flavor}} ({{path}}).",
-    "residual_foreign_plugins": "Residual config/plugins from the other SQL engine can crash this daemon.",
-    "unit_failed": "Service unit {{unit}} is failed.",
-    "unit_not_active": "Service unit {{unit}} is {{active}} (not active).",
-    "port_conflict": "Port 3306 is in use while this engine is down (possible conflict)."
+    "package_missing": "{{flavor}}-এর সার্ভার প্যাকেজ ইনস্টল নেই।",
+    "client_missing": "SQL ক্লায়েন্ট টুলস ইনস্টল নেই।",
+    "frozen_marker": "Debian ফ্রিজ মার্কার উপস্থিত (মোড: {{mode}})। রিলিজ না হওয়া পর্যন্ত ডেমন স্টার্ট ব্লক।",
+    "datadir_uninitialized": "ডেটা ডিরেক্টরিতে সিস্টেম ক্যাটালগ নেই — ইনিশিয়ালাইজেশন প্রয়োজন।",
+    "config_flavor_mismatch": "my.cnf {{flavor}}-এর জন্য ভুল ইঞ্জিন নির্দেশ করে ({{path}})।",
+    "residual_foreign_plugins": "অন্য SQL ইঞ্জিনের অবশিষ্ট কনফিগ/প্লাগইন এই ডেমন ক্র্যাশ করতে পারে।",
+    "unit_failed": "সার্ভিস ইউনিট {{unit}} failed।",
+    "unit_not_active": "সার্ভিস ইউনিট {{unit}} {{active}} (সক্রিয় নয়)।",
+    "port_conflict": "এই ইঞ্জিন বন্ধ থাকলেও পোর্ট 3306 ব্যবহৃত হচ্ছে (সম্ভাব্য দ্বন্দ্ব)।"
   },
   "action": {
-    "stop_unit": "Stop service unit",
-    "clear_frozen": "Clear freeze marker",
-    "sanitize_config": "Align my.cnf and disable foreign engine plugins",
-    "init_datadir": "Initialize empty data directory",
-    "reset_failed": "Reset failed unit state",
-    "enable_unit": "Enable service at boot",
-    "start_unit": "Start service",
-    "verify_active": "Verify service is active"
+    "stop_unit": "সার্ভিস ইউনিট বন্ধ করুন",
+    "clear_frozen": "ফ্রিজ মার্কার মুছুন",
+    "sanitize_config": "my.cnf মিলিয়ে নিন এবং বিদেশি ইঞ্জিন প্লাগইন নিষ্ক্রিয় করুন",
+    "init_datadir": "খালি ডেটা ডিরেক্টরি ইনিশিয়ালাইজ করুন",
+    "reset_failed": "failed ইউনিট স্টেট রিসেট করুন",
+    "enable_unit": "বুটে সার্ভিস সক্রিয় করুন",
+    "start_unit": "সার্ভিস চালু করুন",
+    "verify_active": "সার্ভিস সক্রিয় কিনা যাচাই করুন"
   },
   "note": {
-    "alreadyHealthy": "SQL engine already healthy — no repair needed.",
-    "needsConfirm": "Repair needs confirmation ({{count}} steps: {{findings}}).",
-    "installPackageFirst": "Install {{flavor}} server package first, then repair.",
-    "stepFailed": "Repair step {{action}} failed: {{detail}}",
-    "repairOk": "Repair complete — {{unit}} is active.",
-    "repairIncomplete": "Repair finished but unit is still {{active}}."
+    "alreadyHealthy": "SQL ইঞ্জিন ইতিমধ্যে স্বাস্থ্যকর — মেরামতের প্রয়োজন নেই।",
+    "needsConfirm": "মেরামতের নিশ্চিতকরণ প্রয়োজন ({{count}} ধাপ: {{findings}})।",
+    "installPackageFirst": "প্রথমে {{flavor}} সার্ভার প্যাকেজ ইনস্টল করুন, তারপর মেরামত করুন।",
+    "stepFailed": "মেরামত ধাপ {{action}} ব্যর্থ: {{detail}}",
+    "repairOk": "মেরামত সম্পন্ন — {{unit}} সক্রিয়।",
+    "repairIncomplete": "মেরামত শেষ কিন্তু ইউনিট এখনও {{active}}।"
   }
 }

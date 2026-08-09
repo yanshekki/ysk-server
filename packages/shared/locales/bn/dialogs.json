@@ -1,8 +1,8 @@
 {
-  "confirmDefault": "Confirm",
-  "cancelDefault": "Cancel",
+  "confirmDefault": "নিশ্চিত করুন",
+  "cancelDefault": "বাতিল",
   "severity": {
-    "consequencesTitle": "This will:",
-    "typeToConfirm": "Type \"{{text}}\" to confirm"
+    "consequencesTitle": "এটি করবে:",
+    "typeToConfirm": "নিশ্চিত করতে \"{{text}}\" টাইপ করুন"
   }
 }

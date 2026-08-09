@@ -1,38 +1,38 @@
 {
   "blocked": {
-    "needExecute": "Host execute is off; this action cannot finish from the panel",
-    "needExecuteShort": "Host execute is not enabled",
-    "needExecuteBlocked": "Blocked: host execute is off",
-    "needRoot": "Root privileges required",
-    "needExecuteRoot": "Requires YSK_EXECUTE=1 and root",
-    "needExecuteYsk": "Requires YSK_EXECUTE=1",
-    "writeOutsideDataDir": "Write blocked: host execute is off and the path is outside the panel data directory",
-    "nginxReload": "Cannot reload Nginx: host execute required",
-    "signal": "Cannot send signal: host execute required (YSK_EXECUTE)",
-    "signalNote": "YSK_EXECUTE=1 is required for a real kill",
-    "renice": "Cannot renice: host execute required (YSK_EXECUTE)",
-    "install": "Host execute is off; install cannot finish from the panel",
-    "update": "Host execute is off; update cannot finish from the panel",
-    "panel": "Cannot complete this from the management panel"
+    "needExecute": "Host execute বন্ধ; এই অ্যাকশন প্যানেল থেকে শেষ করা যায় না",
+    "needExecuteShort": "Host execute সক্রিয় নয়",
+    "needExecuteBlocked": "ব্লকড: host execute বন্ধ",
+    "needRoot": "Root সুবিধা প্রয়োজন",
+    "needExecuteRoot": "YSK_EXECUTE=1 এবং root প্রয়োজন",
+    "needExecuteYsk": "YSK_EXECUTE=1 প্রয়োজন",
+    "writeOutsideDataDir": "লেখা ব্লকড: host execute বন্ধ এবং path প্যানেল ডেটা ডিরেক্টরির বাইরে",
+    "nginxReload": "Nginx রিলোড করা যায়নি: host execute প্রয়োজন",
+    "signal": "সিগন্যাল পাঠানো যায়নি: host execute প্রয়োজন (YSK_EXECUTE)",
+    "signalNote": "প্রকৃত kill-এর জন্য YSK_EXECUTE=1 প্রয়োজন",
+    "renice": "renice করা যায়নি: host execute প্রয়োজন (YSK_EXECUTE)",
+    "install": "Host execute বন্ধ; ইনস্টল প্যানেল থেকে শেষ করা যায় না",
+    "update": "Host execute বন্ধ; আপডেট প্যানেল থেকে শেষ করা যায় না",
+    "panel": "ম্যানেজমেন্ট প্যানেল থেকে এটি সম্পূর্ণ করা যায় না"
   },
   "honesty": {
-    "blockedNotOk": "Honesty fix: blocked cannot be ok=true",
-    "blockedNotApplied": "Honesty fix: blocked cannot be apply_status=applied",
-    "okFalseNotApplied": "Honesty fix: ok=false cannot be apply_status=applied"
+    "blockedNotOk": "Honesty fix: blocked ok=true হতে পারে না",
+    "blockedNotApplied": "Honesty fix: blocked apply_status=applied হতে পারে না",
+    "okFalseNotApplied": "Honesty fix: ok=false apply_status=applied হতে পারে না"
   },
   "status": {
-    "applied": "Status: applied",
-    "failed": "Status: failed",
-    "written": "Status: written",
-    "blocked": "Status: blocked"
+    "applied": "স্ট্যাটাস: প্রয়োগ করা হয়েছে",
+    "failed": "স্ট্যাটাস: ব্যর্থ",
+    "written": "স্ট্যাটাস: লেখা হয়েছে",
+    "blocked": "স্ট্যাটাস: blocked"
   },
   "notes": {
-    "writtenSettings": "Settings written",
-    "completed": "Completed",
-    "partialSuccess": "Operation only partially succeeded",
-    "notInstalled": "Not installed",
-    "running": "Running",
-    "stopped": "Stopped",
-    "unknown": "Unknown"
+    "writtenSettings": "সেটিংস লেখা হয়েছে",
+    "completed": "সম্পন্ন",
+    "partialSuccess": "অপারেশন কেবল আংশিকভাবে সফল হয়েছে",
+    "notInstalled": "ইনস্টল নেই",
+    "running": "চলছে",
+    "stopped": "বন্ধ",
+    "unknown": "অজানা"
   }
 }
