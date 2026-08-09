@@ -1,14 +1,23 @@
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 /**
  * HTTP routes — agents / fleet.
  * Fleet edge paths require agent token; panel register requires auth or enroll secret.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { probeAllAgentRuntimes } from '@ysk/core';
+import {
+  probeAllAgentRuntimes,
+  applyAgentInstall,
+  parseAgentKind,
+  planAgentInstall,
+  probeAgentRuntime,
+  renderAgentSystemdUnit,
+} from '@ysk/core';
 import { ErrorCodes } from '@ysk/shared';
 import type { AppContext } from '../app-context.js';
 import { getAgentToken } from '../http/auth-guards.js';
 import { listWithQuery } from '../http/list-response.js';
-import { getBearer, readBody, sendJson } from '../http/util.js';
+import { getBearer, readBody, sendJson, sendOpsResult } from '../http/util.js';
 
 function enrollTokenOk(ctx: AppContext, provided: string | undefined): boolean {
   const expected =
@@ -194,5 +203,73 @@ export async function handleAgentsRoutes(
     sendJson(res, 200, cmd);
     return true;
   }
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/agents\/runtimes\/[^/]+$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const kind = url.pathname.split('/')[5];
+        const probe = await probeAgentRuntime(kind, ctx.host);
+        sendJson(res, 200, { runtime: probe });
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/agents\/runtimes\/[^/]+\/plan$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const kind = parseAgentKind(url.pathname.split('/')[5]);
+        sendJson(res, 200, planAgentInstall(kind));
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/agents\/runtimes\/[^/]+\/unit$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const kind = parseAgentKind(url.pathname.split('/')[5]);
+        const plan = planAgentInstall(kind);
+        const unitsDir = join(ctx.dataDir, 'systemd');
+        mkdirSync(unitsDir, { recursive: true });
+        const unitName = `ysk-agent-${kind}.service`;
+        const unitPath = join(unitsDir, unitName);
+        const content = renderAgentSystemdUnit({
+          kind,
+          installPath: plan.runtime.installPath ?? `/opt/ysk-server/agents/${kind}`,
+          nodePath: process.execPath });
+        writeFileSync(unitPath, content, 'utf8');
+        ctx.audit.append({
+          actor: user.username,
+          action: 'agent.unit.write',
+          resource: kind,
+          detail: { unitPath },
+          ok: true });
+        sendJson(res, 200, {
+          ok: true,
+          unitPath,
+          unitName,
+          notes: [
+            `Unit template written to ${unitPath}`,
+            'Enable with root + YSK_EXECUTE: cp to /etc/systemd/system && systemctl enable --now',
+          ] });
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/agents\/runtimes\/[^/]+\/install$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const kind = parseAgentKind(url.pathname.split('/')[5]);
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { execute?: boolean; enableUnit?: boolean };
+        const result = await applyAgentInstall({
+          dataDir: ctx.dataDir,
+          kind,
+          host: ctx.host,
+          execute: data.execute,
+          enableUnit: data.enableUnit,
+          nodePath: process.execPath });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'agent.install',
+          resource: kind,
+          detail: {
+            ok: result.ok,
+            enabled: result.enabled,
+            requiresExecute: result.requiresExecute,
+            notes: result.notes },
+          ok: result.ok });
+        sendOpsResult(res, result);
+        return true;
+      }
+
   return false;
 }

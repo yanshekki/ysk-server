@@ -50,73 +50,7 @@ export async function handleMiscRoutes(
       // users/packages → admin; search; real-ip; dnssec; sftp/ssh → domain routes
       // webauthn/devices → auth; audit → audit
       // project detail/deploy/* → routes/projects.ts
-      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/agents\/runtimes\/[^/]+$/)) {
-        ctx.auth.authenticate(getBearer(req));
-        const kind = url.pathname.split('/')[5];
-        const probe = await probeAgentRuntime(kind, ctx.host);
-        sendJson(res, 200, { runtime: probe });
-        return true;
-      }
-      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/agents\/runtimes\/[^/]+\/plan$/)) {
-        ctx.auth.authenticate(getBearer(req));
-        const kind = parseAgentKind(url.pathname.split('/')[5]);
-        sendJson(res, 200, planAgentInstall(kind));
-        return true;
-      }
-      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/agents\/runtimes\/[^/]+\/unit$/)) {
-        const user = ctx.auth.authenticate(getBearer(req));
-        const kind = parseAgentKind(url.pathname.split('/')[5]);
-        const plan = planAgentInstall(kind);
-        const unitsDir = join(ctx.dataDir, 'systemd');
-        mkdirSync(unitsDir, { recursive: true });
-        const unitName = `ysk-agent-${kind}.service`;
-        const unitPath = join(unitsDir, unitName);
-        const content = renderAgentSystemdUnit({
-          kind,
-          installPath: plan.runtime.installPath ?? `/opt/ysk-server/agents/${kind}`,
-          nodePath: process.execPath });
-        writeFileSync(unitPath, content, 'utf8');
-        ctx.audit.append({
-          actor: user.username,
-          action: 'agent.unit.write',
-          resource: kind,
-          detail: { unitPath },
-          ok: true });
-        sendJson(res, 200, {
-          ok: true,
-          unitPath,
-          unitName,
-          notes: [
-            `Unit template written to ${unitPath}`,
-            'Enable with root + YSK_EXECUTE: cp to /etc/systemd/system && systemctl enable --now',
-          ] });
-        return true;
-      }
-      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/agents\/runtimes\/[^/]+\/install$/)) {
-        const user = ctx.auth.authenticate(getBearer(req));
-        const kind = parseAgentKind(url.pathname.split('/')[5]);
-        const raw = await readBody(req);
-        const data = JSON.parse(raw || '{}') as { execute?: boolean; enableUnit?: boolean };
-        const result = await applyAgentInstall({
-          dataDir: ctx.dataDir,
-          kind,
-          host: ctx.host,
-          execute: data.execute,
-          enableUnit: data.enableUnit,
-          nodePath: process.execPath });
-        ctx.audit.append({
-          actor: user.username,
-          action: 'agent.install',
-          resource: kind,
-          detail: {
-            ok: result.ok,
-            enabled: result.enabled,
-            requiresExecute: result.requiresExecute,
-            notes: result.notes },
-          ok: result.ok });
-        sendJson(res, result.ok || !data.execute ? 200 : 422, result);
-        return true;
-      }
+      // agent runtime plan/unit/install → agents.ts
       if (method === 'GET' && url.pathname === '/api/v1/dashboard/summary') {
         ctx.auth.authenticate(getBearer(req));
         const projects = ctx.projects.list();
