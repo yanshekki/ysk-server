@@ -49,6 +49,8 @@ export { handleEmailRoutes } from './email.js';
 export { handleEmailWebmailApplyRoutes } from './email-webmail-apply.js';
 export { handleEmailWebmailRoutes } from './email-webmail.js';
 export { handleEmailWebmailSsoRoutes } from './email-webmail-sso.js';
+export { handleFilesContentRoutes } from './files-content.js';
+export { handleFilesFsOpsRoutes } from './files-fs-ops.js';
 export { handleFilesReadRoutes } from './files-read.js';
 export { handleFilesRoutes } from './files.js';
 export { handleFilesPublicRoutes } from './files-public.js';
