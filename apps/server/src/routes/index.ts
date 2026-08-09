@@ -1,5 +1,7 @@
 /** Route modules — Wave2 R2 */
+export { handleAdminPackagesRoutes } from './admin-packages.js';
 export { handleAdminRoutes } from './admin.js';
+export { handleAdminUsersRoutes } from './admin-users.js';
 export { handleAgentsRoutes } from './agents.js';
 export { handleAiRoutes } from './ai.js';
 export { handleAuditRoutes } from './audit.js';
