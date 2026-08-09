@@ -96,6 +96,8 @@ function attachRequestHandler(ctx: AppContext, webRoot: string | null) {
         if (await handleLogsRoutes(ctx, req, res, url, method)) return;
         if (await handleMetricsRoutes(ctx, req, res, url, method)) return;
         if (await handleNetworkRoutes(ctx, req, res, url, method)) return;
+        // Defense before system (Wave C1: defense/protection/geoip left system-controller)
+        if (await handleDefenseRoutes(ctx, req, res, url, method)) return;
         if (await handleSystemRoutes(ctx, req, res, url, method)) return;
         if (
           await handleTerminalRoutes(
@@ -123,7 +125,7 @@ function attachRequestHandler(ctx: AppContext, webRoot: string | null) {
         if (await handleAgentsRoutes(ctx, req, res, url, method)) return;
         if (await handleEmailRoutes(ctx, req, res, url, method)) return;
         if (await handleToolsRoutes(ctx, req, res, url, method)) return;
-        if (await handleDefenseRoutes(ctx, req, res, url, method)) return;
+        // handleDefenseRoutes already run above (before system)
         if (await handleAiRoutes(ctx, req, res, url, method)) return;
         if (await handleUpdatesRoutes(ctx, req, res, url, method)) return;
         if (await handleBackupsRoutes(ctx, req, res, url, method)) return;

@@ -560,8 +560,11 @@ function isReadOnlyShellScript(argv: string[]): boolean {
   const s = script.trim();
   if (!s) return false;
 
-  // Hard deny: redirects, pipes to shells, interpreters writing, package mutations
-  if (/[>]{1,2}|<<|tee\b|\bdd\b/.test(s)) return false;
+  // Hard deny: file-writing redirects (allow >/dev/null · 2>/dev/null · N>&M inventory probes)
+  const withoutNullRedirects = s
+    .replace(/\d*>&\d+/g, ' ')
+    .replace(/\d*>>?\/dev\/null/g, ' ');
+  if (/[>]{1,2}|<<|tee\b|\bdd\b/.test(withoutNullRedirects)) return false;
   if (/\bapt-get\s+update\b/.test(s)) return false;
   if (
     /\bapt(-get)?\s+(install|remove|purge|upgrade|dist-upgrade|autoremove|full-upgrade)\b/.test(s)
@@ -576,7 +579,13 @@ function isReadOnlyShellScript(argv: string[]): boolean {
   if (/\bsystemctl\s+(enable|start|restart|stop|disable|mask|daemon-reload|reload)\b/.test(s)) {
     return false;
   }
-  if (/\b(python3?|perl|php|node|ruby|lua)\b/.test(s)) return false;
+  // Deny *running* interpreters (not package names like python3 / nodejs / php-cli in lists)
+  if (
+    /(^|[;&|`(\n]\s*)(python3?|perl|php|node|ruby|lua)(?:\s|$)/m.test(s) ||
+    /\b(python3?|perl|php|node|ruby|lua)\s+(-[ce]|--|\/|\.\/)/.test(s)
+  ) {
+    return false;
+  }
   if (/\b(curl|wget)\b/.test(s) && /\s-\w*o\b|\s--output\b/.test(s)) return false;
 
   // Allow pure inventory / probe helpers used by panel without EXECUTE
