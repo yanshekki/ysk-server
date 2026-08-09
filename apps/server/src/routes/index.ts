@@ -20,6 +20,8 @@ export { handleDashboardRoutes } from './dashboard.js';
 export { handleDbAccessRoutes } from './db-access.js';
 export { handleDbClustersRoutes } from './db-clusters.js';
 export { handleDbRoutes } from './db.js';
+export { handleDefenseCenterRoutes } from './defense-center.js';
+export { handleDefenseGeoipRoutes } from './defense-geoip.js';
 export { handleDefenseRoutes } from './defense.js';
 export { handleDnsRoutes } from './dns.js';
 export { handleEmailDomainsRoutes } from './email-domains.js';
