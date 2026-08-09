@@ -73,6 +73,8 @@ export { handleSearchRoutes } from './search.js';
 export { handleSettingsRoutes } from './settings.js';
 export { handleSoftwareRoutes } from './software.js';
 export { handleSsh2faRoutes } from './ssh-2fa.js';
+export { handleSshIdentitiesCrudRoutes } from './ssh-identities-crud.js';
+export { handleSshIdentitiesOpsRoutes } from './ssh-identities-ops.js';
 export { handleSshIdentitiesRoutes } from './ssh-identities.js';
 export { handleSshRoutes } from './ssh.js';
 export { handleSshSftpRoutes } from './ssh-sftp.js';
