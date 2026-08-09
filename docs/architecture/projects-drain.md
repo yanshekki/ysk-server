@@ -6,6 +6,12 @@ Canonical workdir: `/home/ki/文件/ysk-server/`.
 |--------|--------|------|
 | Deploy / lifecycle / os-user / suspend | `routes/projects-lifecycle.ts` | **H1** |
 | Network / logs / ftp / php / quota / … | `routes/projects-ops.ts` | **H2** |
-| CRUD / wizard / templates + dispatcher | (pending in projects.ts) | H3 |
+| Isolation / list / wizard / create / get / delete / templates | `routes/projects-crud.ts` | **H3** |
 
-Dispatch inside `handleProjectsRoutes`: lifecycle → ops → CRUD/get/delete/templates.
+`routes/projects.ts` is a **thin dispatcher**:
+
+```
+lifecycle → ops → crud
+```
+
+**Wave H complete.**
