@@ -3864,7 +3864,15 @@
     "loading": "Loading…",
     "modeSwitchHint": "Switching mode opens a new session and clears cookies.",
     "copied": "URL copied",
-    "downloadHint": "Non-HTML response — open content frame or navigate again."
+    "downloadHint": "Non-HTML response — open content frame or navigate again.",
+    "engineLabel": "Engine",
+    "engineProxy": "Proxy",
+    "engineBrowser": "Real browser",
+    "engineSwitchHint": "Switching engine opens a new session.",
+    "needChrome": "Real browser needs system Chrome/Chromium (or set YSK_HOST_BROWSE_CHROME). Using proxy otherwise.",
+    "needChromeFallback": "Chrome unavailable — switched to proxy engine.",
+    "liveError": "Live stream failed",
+    "liveWaiting": "Connecting host browser…"
   },
   "listToolbar": {
     "searchPlaceholder": "Cari…",

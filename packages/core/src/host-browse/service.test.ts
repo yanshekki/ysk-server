@@ -47,9 +47,11 @@ describe('HostBrowseService integration', () => {
     const svc = new HostBrowseService({
       allowLoopback: true,
       extraPorts: [port],
+      defaultEngine: 'proxy',
     });
-    const meta = svc.createSession('user-1', 'intranet');
+    const meta = svc.createSession('user-1', 'intranet', 'proxy');
     expect(meta.contentToken).toBeTruthy();
+    expect(meta.engine).toBe('proxy');
 
     const nav = await svc.navigate('user-1', meta.sessionId, {
       url: `${base}/set`,
@@ -96,8 +98,9 @@ describe('HostBrowseService integration', () => {
     const svc = new HostBrowseService({
       allowLoopback: true,
       extraPorts: [port],
+      defaultEngine: 'proxy',
     });
-    const meta = svc.createSession('user-2', 'internet');
+    const meta = svc.createSession('user-2', 'internet', 'proxy');
     const nav = await svc.navigate('user-2', meta.sessionId, {
       url: `${base}/set`,
       action: 'goto',
@@ -106,8 +109,29 @@ describe('HostBrowseService integration', () => {
   });
 
   it('rejects foreign session access', () => {
-    const svc = new HostBrowseService();
-    const meta = svc.createSession('a', 'internet');
+    const svc = new HostBrowseService({ defaultEngine: 'proxy' });
+    const meta = svc.createSession('a', 'internet', 'proxy');
     expect(() => svc.getSession('b', meta.sessionId)).toThrow();
+  });
+
+  it('form rewrite points action to form endpoint', async () => {
+    const port = Number(new URL(base).port);
+    const svc = new HostBrowseService({
+      allowLoopback: true,
+      extraPorts: [port],
+      defaultEngine: 'proxy',
+    });
+    // extend test server path via navigate to set page with form - unit level via rewrite
+    const { rewriteHtml } = await import('./rewrite-html.js');
+    const { html } = rewriteHtml(
+      `<form method="post" action="/login"><input name="u"></form>`,
+      {
+        pageUrl: 'https://example.com/x',
+        proxyUrl: (u) => `/c?u=${encodeURIComponent(u)}`,
+        formUrl: (u) => `/f?u=${encodeURIComponent(u)}`,
+      },
+    );
+    expect(html).toContain('/f?u=');
+    expect(html).toContain(encodeURIComponent('https://example.com/login'));
   });
 });

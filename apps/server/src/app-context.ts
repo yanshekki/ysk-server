@@ -36,7 +36,9 @@ import {
   checkIpDnsbl,
   createTerminalTicketStore,
   HostBrowseService,
+  createHostBrowseLiveTicketStore,
   type Allowlist,
+  type HostBrowseLiveTicketStore,
   type HostExecutor,
   type ProtectionState,
   type TerminalTicketStore,
@@ -77,6 +79,8 @@ export interface AppContext {
   terminalTickets: TerminalTicketStore;
   /** Host-mediated proxy browser (privacy egress) */
   hostBrowse: HostBrowseService;
+  /** One-time tickets for host-browse live screencast WS */
+  hostBrowseLiveTickets: HostBrowseLiveTicketStore;
   /** Rebuild LLM gateway from settings (after settings.llm update) */
   reloadLlm: () => void;
   /** Run protection probes and apply resulting mode */
@@ -199,6 +203,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
     hostBrowse: new HostBrowseService(
       {
         allowLoopback: process.env.YSK_HOST_BROWSE_LOOPBACK === '1',
+        chromePath: process.env.YSK_HOST_BROWSE_CHROME?.trim() || undefined,
       },
       (event) => {
         try {
@@ -214,6 +219,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
         }
       },
     ),
+    hostBrowseLiveTickets: createHostBrowseLiveTicketStore(),
     reloadLlm() {
       ctx.llm = buildLlm(settings);
       ctx.llm.setProtection(ctx.protection);

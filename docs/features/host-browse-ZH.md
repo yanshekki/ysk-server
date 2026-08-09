@@ -4,11 +4,25 @@
 
 ## 用途
 
-**主機瀏覽** 讓營運者經 **控制面主機** 開啟 HTTP(S) 網址：
+**主機瀏覽** 讓營運者經 **控制面主機** 開啟 HTTP(S)：
 
-- 外網（公網站點）與內網（LAN／RFC1918 管理頁）
-- 出口 IP、DNS、TLS 由 **主機** 處理，不是操作者桌面瀏覽器
-- 目標站唔會見到操作者瀏覽器 UA、Client Hints、panel Cookie 或操作者客戶端 IP
+- 外網與內網（LAN／RFC1918）
+- 出口 IP、DNS、TLS 由 **主機** 處理
+- 目標站唔會見到操作者桌面瀏覽器身分
+
+## 雙引擎
+
+| 引擎 | 原理 | 適合 |
+|------|------|------|
+| **代理** | 主機 HTTP 擷取 + HTML/CSS 改寫 + sandbox iframe | 文件、靜態站、多數管理頁、表單 POST |
+| **真實瀏覽器** | 主機 **Chromium**（Playwright）+ 畫面串流 + 滑鼠鍵盤 | 重 SPA、需完整 JS 渲染 |
+
+- UI：**代理 | 真實瀏覽器**
+- 環境變數：`YSK_HOST_BROWSE_ENGINE=auto|proxy|browser`
+- Chrome：`YSK_HOST_BROWSE_CHROME` 或系統 chrome/chromium
+- 內網 loopback：`YSK_HOST_BROWSE_LOOPBACK=1`
+
+無 Chrome 時要求 browser 會回 `YSK_HOST_BROWSE_NEED_CHROME`（誠實失敗／UI 可降級代理）。
 
 ## 路由
 
@@ -16,38 +30,16 @@
 |------|-----|
 | UI | `/browse` |
 | API | `/api/v1/host-browse/*` |
-| 能力 | `network.browse`（特權；管理員出廠包含） |
-| `YSK_EXECUTE` | **不需要**（panel 進程出站 HTTP） |
+| Live WS | `/api/v1/host-browse/ws?ticket=` |
+| 能力 | `network.browse` |
+| `YSK_EXECUTE` | **不需要** |
 
-## 分頁
+## 私隱與 SSRF
 
-| 分頁 | 內容 |
-|------|------|
-| 主機瀏覽 | 瀏覽器 chrome + 外網/內網模式 + 沙箱內容 |
-| 說明 | 頁面指南（安全模型與限制） |
+同英文版：固定 UA、server cookie、分模式 SSRF、metadata 永拒。
 
-## 私隱模型
+## 限制
 
-- 固定 User-Agent：`YSK-HostBrowse/1.0 …`
-- 只允許出站 header 白名單（唔轉發 `Authorization`、`Sec-CH-*`、`X-Forwarded-For`、panel `Origin` 等）
-- Cookie jar **只在伺服器**、按工作階段
-- 內容 iframe 用短命 `contentToken`（避免長期 API Bearer 入 log）
-
-## SSRF
-
-| 模式 | 策略 |
-|------|------|
-| 外網 | 拒 loopback、RFC1918、link-local、ULA、cloud metadata |
-| 內網 | 允許私網；**永遠**拒 cloud metadata；loopback 預設關（`YSK_HOST_BROWSE_LOOPBACK=1` 可開） |
-
-DNS rebinding：解析 A/AAAA 並檢查每個地址；redirect 再檢。
-
-## 限制（v1）
-
-- 唔係完整 Chromium 替代 — 複雜 SPA 可能顯示不全
-- 唔代理目標 WebSocket
-- 回應體約 8 MiB 上限；約 60 次導航／用戶／分鐘
-
-## 相關
-
-[系統主機](./system-host-ZH.md) · [product-page-map](../product-page-map-ZH.md)
+- 代理唔係完整 Chrome 替身
+- 真實引擎要主機有 Chrome，消耗 CPU/RAM
+- 唔保證繞過網站 bot 防護

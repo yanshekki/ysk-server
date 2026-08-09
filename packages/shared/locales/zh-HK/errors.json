@@ -48,5 +48,9 @@
     "requestFailed": "請求失敗（{{status}}）",
     "jsonInvalid": "JSON 無效",
     "internal": "內部錯誤"
-  }
+  },
+  "YSK_HOST_BROWSE_SSRF": "主機瀏覽已被安全政策攔截",
+  "YSK_HOST_BROWSE_SESSION": "主機瀏覽工作階段不存在或已過期",
+  "YSK_HOST_BROWSE_UPSTREAM": "主機瀏覽上游擷取失敗",
+  "YSK_HOST_BROWSE_NEED_CHROME": "真實瀏覽器引擎需要主機上的 Chrome／Chromium"
 }

@@ -30,5 +30,13 @@
   "loading": "載入中…",
   "modeSwitchHint": "切換模式會開新工作階段並清除 Cookie。",
   "copied": "已複製網址",
-  "downloadHint": "非 HTML 回應 — 請睇內容框或再導航。"
+  "downloadHint": "非 HTML 回應 — 請睇內容框或再導航。",
+  "engineLabel": "引擎",
+  "engineProxy": "代理",
+  "engineBrowser": "真實瀏覽器",
+  "engineSwitchHint": "切換引擎會開新工作階段。",
+  "needChrome": "真實瀏覽器需要系統 Chrome／Chromium（或設定 YSK_HOST_BROWSE_CHROME）。否則用代理模式。",
+  "needChromeFallback": "Chrome 不可用 — 已切換代理引擎。",
+  "liveError": "即時串流失敗",
+  "liveWaiting": "正在連接主機瀏覽器…"
 }

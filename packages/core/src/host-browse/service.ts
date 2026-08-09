@@ -1,21 +1,21 @@
 /**
- * HostBrowseService — host-egress HTTP fetch with privacy + SSRF.
+ * HostBrowseService — proxy (HTTP rewrite) + browser (Chromium) engines.
  */
 
 import { ErrorCodes, YskError } from '@ysk/shared';
+import { BrowserEngine } from './browser-engine.js';
+import { probeChrome } from './chrome-probe.js';
 import { buildOutboundHeaders, filterResponseMetaHeaders } from './headers.js';
-import {
-  extractTitle,
-  rewriteCss,
-  rewriteHtml,
-} from './rewrite-html.js';
+import { extractTitle, rewriteCss, rewriteHtml } from './rewrite-html.js';
 import { assertHostBrowseTarget } from './ssrf.js';
 import {
   HostBrowseSessionStore,
   type HostBrowseSession,
 } from './session-store.js';
 import type {
+  HostBrowseCapabilities,
   HostBrowseContentResult,
+  HostBrowseEngine,
   HostBrowseFetchResult,
   HostBrowseMode,
   HostBrowseNavigateAction,
@@ -33,27 +33,74 @@ export type HostBrowseAuditFn = (event: {
 
 export class HostBrowseService {
   readonly store: HostBrowseSessionStore;
+  readonly browser: BrowserEngine;
 
   constructor(
     private readonly policy: HostBrowsePolicy = {},
     private readonly audit?: HostBrowseAuditFn,
   ) {
     this.store = new HostBrowseSessionStore(policy);
+    this.browser = new BrowserEngine(policy);
   }
 
-  createSession(userId: string, mode: HostBrowseMode): HostBrowseSessionMeta {
+  capabilities(): HostBrowseCapabilities {
+    const p = probeChrome();
+    const available = Boolean(this.policy.chromePath || p.available);
+    const engines: HostBrowseEngine[] = available
+      ? ['proxy', 'browser']
+      : ['proxy'];
+    const defEnv = this.policy.defaultEngine ?? process.env.YSK_HOST_BROWSE_ENGINE ?? 'auto';
+    let defaultEngine: HostBrowseEngine = 'proxy';
+    if (defEnv === 'browser' && available) defaultEngine = 'browser';
+    else if (defEnv === 'auto' && available) defaultEngine = 'browser';
+    else if (defEnv === 'proxy') defaultEngine = 'proxy';
+    return {
+      chromeAvailable: available,
+      chromePath: this.policy.chromePath || p.path,
+      engines,
+      defaultEngine,
+      reason: available ? undefined : p.reason,
+    };
+  }
+
+  resolveEngine(requested?: string | null): HostBrowseEngine {
+    const caps = this.capabilities();
+    if (requested === 'browser') {
+      if (!caps.chromeAvailable) {
+        throw new YskError(
+          ErrorCodes.HOST_BROWSE_NEED_CHROME,
+          caps.reason || 'Chrome required for browser engine',
+          { httpStatus: 503, details: { requiresChrome: true } },
+        );
+      }
+      return 'browser';
+    }
+    if (requested === 'proxy') return 'proxy';
+    return caps.defaultEngine;
+  }
+
+  createSession(
+    userId: string,
+    mode: HostBrowseMode,
+    engine?: string | null,
+  ): HostBrowseSessionMeta {
     if (mode !== 'internet' && mode !== 'intranet') {
       throw new YskError(ErrorCodes.VALIDATION, 'Invalid browse mode', {
         httpStatus: 400,
         details: { field: 'mode' },
       });
     }
-    const s = this.store.create(userId, mode);
+    const eng = this.resolveEngine(engine);
+    // purge expired browser contexts
+    for (const id of this.store.purgeExpired()) {
+      void this.browser.closeSession(id);
+    }
+    const s = this.store.create(userId, mode, eng);
     this.audit?.({
       action: 'host_browse.session_create',
       userId,
       ok: true,
-      detail: { sessionId: s.sessionId, mode },
+      detail: { sessionId: s.sessionId, mode, engine: eng },
     });
     return this.store.toMeta(s);
   }
@@ -63,13 +110,17 @@ export class HostBrowseService {
     return this.store.toMeta(s);
   }
 
-  deleteSession(userId: string, sessionId: string): void {
-    const ok = this.store.delete(sessionId, userId);
-    if (!ok) {
+  async deleteSession(userId: string, sessionId: string): Promise<void> {
+    const s = this.store.get(sessionId, userId);
+    if (!s) {
       throw new YskError(ErrorCodes.HOST_BROWSE_SESSION, 'Session not found', {
         httpStatus: 404,
       });
     }
+    if (s.engine === 'browser') {
+      await this.browser.closeSession(sessionId);
+    }
+    this.store.delete(sessionId, userId);
     this.audit?.({
       action: 'host_browse.session_delete',
       userId,
@@ -78,15 +129,36 @@ export class HostBrowseService {
     });
   }
 
-  clearCookies(userId: string, sessionId: string): HostBrowseSessionMeta {
+  async clearCookies(
+    userId: string,
+    sessionId: string,
+  ): Promise<HostBrowseSessionMeta> {
     const s = this.requireSession(userId, sessionId);
-    s.jar.clear();
+    if (s.engine === 'browser') {
+      await this.browser.clearCookies(sessionId);
+      s.browserCookieCount = 0;
+    } else {
+      s.jar.clear();
+    }
     return this.store.toMeta(s);
+  }
+
+  abort(userId: string, sessionId: string): void {
+    if (!this.store.abort(sessionId, userId)) {
+      throw new YskError(ErrorCodes.HOST_BROWSE_SESSION, 'Session not found', {
+        httpStatus: 404,
+      });
+    }
   }
 
   contentPath(session: HostBrowseSession, absoluteUrl: string): string {
     const u = encodeURIComponent(absoluteUrl);
     return `/api/v1/host-browse/sessions/${session.sessionId}/content?u=${u}&ct=${encodeURIComponent(session.contentToken)}`;
+  }
+
+  formPath(session: HostBrowseSession, absoluteUrl: string): string {
+    const u = encodeURIComponent(absoluteUrl);
+    return `/api/v1/host-browse/sessions/${session.sessionId}/form?u=${u}&ct=${encodeURIComponent(session.contentToken)}`;
   }
 
   async navigate(
@@ -104,6 +176,96 @@ export class HostBrowseService {
       });
     }
 
+    if (s.engine === 'browser') {
+      return this.navigateBrowser(userId, s, input);
+    }
+    return this.navigateProxy(userId, s, input);
+  }
+
+  private async navigateBrowser(
+    userId: string,
+    s: HostBrowseSession,
+    input: { url?: string; action?: HostBrowseNavigateAction },
+  ): Promise<HostBrowseFetchResult> {
+    await this.browser.openSession({
+      sessionId: s.sessionId,
+      userId,
+      mode: s.mode,
+    });
+
+    const action = input.action ?? 'goto';
+    let nav;
+    if (action === 'back') {
+      nav = await this.browser.goBack(s.sessionId);
+      // history index for browser is approximate
+      if (s.historyIndex > 0) s.historyIndex -= 1;
+    } else if (action === 'forward') {
+      nav = await this.browser.goForward(s.sessionId);
+      if (s.historyIndex < s.history.length - 1) s.historyIndex += 1;
+    } else if (action === 'reload') {
+      nav = await this.browser.reload(s.sessionId);
+    } else {
+      if (!input.url) {
+        throw new YskError(ErrorCodes.VALIDATION, 'URL required', {
+          httpStatus: 400,
+          details: { field: 'url' },
+        });
+      }
+      nav = await this.browser.navigate(s.sessionId, input.url);
+      if (!nav.blocked) {
+        this.store.pushHistory(s, nav.finalUrl, nav.title);
+      }
+    }
+
+    s.currentUrl = nav.finalUrl || s.currentUrl;
+    s.browserCookieCount = nav.cookieCount;
+    const meta = this.store.toMeta(s);
+
+    const result: HostBrowseFetchResult = {
+      ok: nav.ok && !nav.blocked,
+      status: nav.status,
+      finalUrl: nav.finalUrl,
+      contentType: 'text/html',
+      bytes: 0,
+      title: nav.title,
+      warnings: nav.blocked ? [] : [],
+      contentPath: '',
+      latencyMs: nav.latencyMs,
+      rewritten: false,
+      blocked: nav.blocked,
+      blockReason: nav.blockReason,
+      engine: 'browser',
+      canGoBack: meta.canGoBack,
+      canGoForward: meta.canGoForward,
+      historyIndex: meta.historyIndex,
+      historyLength: meta.historyLength,
+      cookieCount: meta.cookieCount,
+    };
+
+    this.audit?.({
+      action: 'host_browse.navigate',
+      userId,
+      ok: result.ok && !result.blocked,
+      detail: {
+        sessionId: s.sessionId,
+        mode: s.mode,
+        engine: 'browser',
+        action,
+        host: safeHost(result.finalUrl),
+        status: result.status,
+        blocked: result.blocked,
+        latencyMs: result.latencyMs,
+      },
+    });
+
+    return result;
+  }
+
+  private async navigateProxy(
+    userId: string,
+    s: HostBrowseSession,
+    input: { url?: string; action?: HostBrowseNavigateAction },
+  ): Promise<HostBrowseFetchResult> {
     const action = input.action ?? 'goto';
     let targetUrl: string | null = null;
 
@@ -140,19 +302,27 @@ export class HostBrowseService {
       }
     }
 
-    const result = await this.fetchThroughSession(s, targetUrl, {
+    const result = await this.fetchThroughSession(s, targetUrl!, {
       method: 'GET',
       pushHistory: action === 'goto' || action === 'reload',
       replaceHistoryUrl: action === 'back' || action === 'forward',
     });
+
+    const meta = this.store.toMeta(s);
+    result.canGoBack = meta.canGoBack;
+    result.canGoForward = meta.canGoForward;
+    result.historyIndex = meta.historyIndex;
+    result.historyLength = meta.historyLength;
+    result.cookieCount = meta.cookieCount;
 
     this.audit?.({
       action: 'host_browse.navigate',
       userId,
       ok: result.ok && !result.blocked,
       detail: {
-        sessionId,
+        sessionId: s.sessionId,
         mode: s.mode,
+        engine: 'proxy',
         action,
         host: safeHost(result.finalUrl),
         status: result.status,
@@ -176,6 +346,14 @@ export class HostBrowseService {
     },
   ): Promise<HostBrowseFetchResult> {
     const s = this.requireSession(userId, sessionId);
+    if (s.engine === 'browser') {
+      // Browser engine: navigate to form URL after note — full form automation later
+      throw new YskError(
+        ErrorCodes.VALIDATION,
+        'Use live browser surface for forms in browser engine',
+        { httpStatus: 400, details: { engine: 'browser' } },
+      );
+    }
     if (!this.store.checkRate(userId)) {
       throw new YskError(ErrorCodes.RATE_LIMITED, 'Host browse rate limit', {
         httpStatus: 429,
@@ -220,10 +398,35 @@ export class HostBrowseService {
     return result;
   }
 
-  /**
-   * Return body for iframe — auth is sessionId + contentToken only
-   * (iframe cannot send Bearer; token is high-entropy and session-scoped).
-   */
+  /** Form POST from iframe (contentToken auth). */
+  async submitByToken(
+    sessionId: string,
+    contentToken: string,
+    rawUrl: string,
+    body: string,
+    contentType: string,
+  ): Promise<HostBrowseFetchResult> {
+    this.store.purgeExpired();
+    const s = this.store.getById(sessionId);
+    if (!s || !this.store.verifyContentToken(s, contentToken)) {
+      throw new YskError(ErrorCodes.UNAUTHORIZED, 'Invalid content token', {
+        httpStatus: 401,
+      });
+    }
+    s.lastAccessAt = Date.now();
+    if (s.engine !== 'proxy') {
+      throw new YskError(ErrorCodes.VALIDATION, 'Form POST only for proxy engine', {
+        httpStatus: 400,
+      });
+    }
+    return this.submit(s.userId, sessionId, {
+      url: rawUrl,
+      method: 'POST',
+      contentType,
+      body,
+    });
+  }
+
   async getContentByToken(
     sessionId: string,
     contentToken: string,
@@ -238,7 +441,6 @@ export class HostBrowseService {
     }
     s.lastAccessAt = Date.now();
 
-    // Serve cache if same URL just navigated
     if (s.lastContent && s.lastContent.url === rawUrl) {
       return {
         status: s.lastContent.status,
@@ -279,7 +481,6 @@ export class HostBrowseService {
     };
   }
 
-  /** @deprecated prefer getContentByToken for iframe; kept for tests with user binding */
   async getContent(
     userId: string,
     sessionId: string,
@@ -317,6 +518,7 @@ export class HostBrowseService {
       allowLoopback: this.policy.allowLoopback,
       extraPorts: this.policy.extraPorts,
     };
+    const signal = this.store.beginAbortable(s);
 
     let current: URL;
     try {
@@ -337,6 +539,7 @@ export class HostBrowseService {
           blockReason: String(
             (e.details as { reason?: string } | undefined)?.reason ?? 'ssrf',
           ),
+          engine: 'proxy',
         };
       }
       throw e;
@@ -352,6 +555,11 @@ export class HostBrowseService {
     let referer = s.currentUrl;
 
     for (let hop = 0; hop <= maxRedirects; hop++) {
+      if (signal.aborted) {
+        throw new YskError(ErrorCodes.HOST_BROWSE_UPSTREAM, 'Aborted', {
+          httpStatus: 499,
+        });
+      }
       const cookie = s.jar.cookieHeaderFor(current);
       const headers = buildOutboundHeaders({
         userAgent: s.userAgent || HOST_BROWSE_DEFAULT_UA,
@@ -362,26 +570,33 @@ export class HostBrowseService {
       });
 
       let res: Response;
+      const timer = setTimeout(() => s.abort?.abort(), timeoutMs);
       try {
         res = await fetch(current.href, {
           method,
           headers,
-          body: body != null && method !== 'GET' && method !== 'HEAD' ? body : undefined,
+          body:
+            body != null && method !== 'GET' && method !== 'HEAD' ? body : undefined,
           redirect: 'manual',
-          signal: AbortSignal.timeout(timeoutMs),
+          signal,
         });
       } catch (e) {
+        if (signal.aborted) {
+          throw new YskError(ErrorCodes.HOST_BROWSE_UPSTREAM, 'Aborted', {
+            httpStatus: 499,
+          });
+        }
         const msg = e instanceof Error ? e.message : String(e);
         throw new YskError(ErrorCodes.HOST_BROWSE_UPSTREAM, msg, {
           httpStatus: 502,
           details: { url: current.href.slice(0, 300) },
         });
+      } finally {
+        clearTimeout(timer);
       }
 
-      // Absorb cookies for this hop
       s.jar.absorbFromResponseHeaders(res.headers, current);
 
-      // Redirects
       if (res.status >= 300 && res.status < 400) {
         const loc = res.headers.get('location');
         if (!loc) break;
@@ -408,13 +623,13 @@ export class HostBrowseService {
               rewritten: false,
               blocked: true,
               blockReason: 'redirect_ssrf',
+              engine: 'proxy',
             };
           }
           throw e;
         }
         referer = current.href;
         current = next;
-        // POST → GET on 301/302/303
         if (res.status === 303 || res.status === 302 || res.status === 301) {
           method = 'GET';
           body = undefined;
@@ -423,7 +638,6 @@ export class HostBrowseService {
         continue;
       }
 
-      // Read body with size limit
       const ab = await res.arrayBuffer();
       let buf = Buffer.from(ab);
       if (buf.length > maxBody) {
@@ -439,7 +653,6 @@ export class HostBrowseService {
 
       const isHtml =
         contentTypeHdr.includes('html') ||
-        contentTypeHdr === 'text/html' ||
         contentTypeHdr === 'application/xhtml+xml';
       const isCss = contentTypeHdr.includes('text/css');
 
@@ -449,6 +662,7 @@ export class HostBrowseService {
         const { html: out, warnings: rw } = rewriteHtml(html, {
           pageUrl: current.href,
           proxyUrl: (abs) => this.contentPath(s, abs),
+          formUrl: (abs) => this.formPath(s, abs),
         });
         html = out;
         warnings.push(...rw);
@@ -502,6 +716,7 @@ export class HostBrowseService {
         contentPath: this.contentPath(s, current.href),
         latencyMs: Date.now() - started,
         rewritten,
+        engine: 'proxy',
       };
     }
 

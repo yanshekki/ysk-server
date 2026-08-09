@@ -29,6 +29,8 @@ export const ErrorCodes = {
   HOST_BROWSE_SESSION: 'YSK_HOST_BROWSE_SESSION',
   /** Host-browse upstream fetch failed */
   HOST_BROWSE_UPSTREAM: 'YSK_HOST_BROWSE_UPSTREAM',
+  /** Real browser engine requires system Chrome / Chromium */
+  HOST_BROWSE_NEED_CHROME: 'YSK_HOST_BROWSE_NEED_CHROME',
 } as const;
 
 export type ErrorCode = (typeof ErrorCodes)[keyof typeof ErrorCodes];

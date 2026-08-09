@@ -1,17 +1,16 @@
 /**
  * HTML rewrite so navigations and subresources go through host-browse proxy.
+ * Forms POST → formUrl (contentToken auth); GET resources → proxyUrl.
  */
 
 const SKIP_SCHEMES = /^(javascript:|data:|mailto:|tel:|blob:|#)/i;
 
 export type RewriteHtmlOpts = {
-  /** Absolute page URL after redirects */
   pageUrl: string;
-  /**
-   * Build proxied content/asset URL for an absolute target URL.
-   * e.g. (abs) => `/api/v1/host-browse/sessions/SID/content?u=...&ct=...`
-   */
+  /** GET content/asset proxy */
   proxyUrl: (absoluteTarget: string) => string;
+  /** POST form endpoint (contentToken) */
+  formUrl?: (absoluteTarget: string) => string;
 };
 
 function resolveUrl(base: string, href: string): string | null {
@@ -30,11 +29,7 @@ function rewriteAttr(
   pageUrl: string,
   proxyUrl: (abs: string) => string,
 ): string {
-  // attr="..." or attr='...'
-  const re = new RegExp(
-    `(\\s${attr}\\s*=\\s*)(["'])([^"']*)(["'])`,
-    'gi',
-  );
+  const re = new RegExp(`(\\s${attr}\\s*=\\s*)(["'])([^"']*)(["'])`, 'gi');
   return html.replace(re, (full, pre, q1, val, q2) => {
     const abs = resolveUrl(pageUrl, val);
     if (!abs) return full;
@@ -65,32 +60,69 @@ function rewriteSrcset(
   });
 }
 
+/** Rewrite <form ...> action for GET→content, POST→form endpoint. */
+function rewriteForms(
+  html: string,
+  pageUrl: string,
+  proxyUrl: (abs: string) => string,
+  formUrl?: (abs: string) => string,
+): string {
+  return html.replace(/<form\b([^>]*)>/gi, (_full, attrs: string) => {
+    const methodM = attrs.match(/\smethod\s*=\s*(["']?)(get|post|put|patch)\1/i);
+    const method = (methodM?.[2] || 'get').toLowerCase();
+    const isPost = method === 'post' || method === 'put' || method === 'patch';
+
+    let action = pageUrl;
+    const actionM = attrs.match(/\saction\s*=\s*(["'])([^"']*)\1/i);
+    if (actionM) {
+      const abs = resolveUrl(pageUrl, actionM[2]);
+      if (abs) action = abs;
+    } else {
+      // default form action = current page
+      action = pageUrl;
+    }
+
+    const targetFn = isPost && formUrl ? formUrl : proxyUrl;
+    const proxied = targetFn(action);
+
+    let next = attrs;
+    if (actionM) {
+      next = next.replace(
+        /\saction\s*=\s*(["'])([^"']*)\1/i,
+        ` action="${proxied}"`,
+      );
+    } else {
+      next = `${next} action="${proxied}"`;
+    }
+    // Ensure POST methods stay POST for form endpoint
+    if (isPost && formUrl && !methodM) {
+      next = `${next} method="post"`;
+    }
+    return `<form${next}>`;
+  });
+}
+
 /**
- * Inject <base> is risky with sandbox; we rewrite common attrs instead.
- * Also rewrite meta refresh URLs.
+ * Rewrite HTML attributes + forms. Strips meta CSP that blocks proxy assets.
  */
-export function rewriteHtml(html: string, opts: RewriteHtmlOpts): {
-  html: string;
-  warnings: string[];
-} {
+export function rewriteHtml(
+  html: string,
+  opts: RewriteHtmlOpts,
+): { html: string; warnings: string[] } {
   const warnings: string[] = [];
   let out = html;
-  const { pageUrl, proxyUrl } = opts;
+  const { pageUrl, proxyUrl, formUrl } = opts;
 
-  const attrs = [
-    'href',
-    'src',
-    'action',
-    'poster',
-    'data',
-    'xlink:href',
-  ];
+  // Forms first (action before generic attr rewrite)
+  out = rewriteForms(out, pageUrl, proxyUrl, formUrl);
+
+  // Note: form action already rewritten — do not re-proxy action= attributes
+  const attrs = ['href', 'src', 'poster', 'data', 'xlink:href'];
   for (const a of attrs) {
     out = rewriteAttr(out, a, pageUrl, proxyUrl);
   }
   out = rewriteSrcset(out, pageUrl, proxyUrl);
 
-  // meta refresh
   out = out.replace(
     /(<meta\b[^>]*http-equiv\s*=\s*["']?refresh["']?[^>]*content\s*=\s*["'])([^"']*)(["'])/gi,
     (full, pre, content, post) => {
@@ -102,23 +134,23 @@ export function rewriteHtml(html: string, opts: RewriteHtmlOpts): {
     },
   );
 
-  // Strip CSP meta that would break proxy (honest note)
   const beforeCsp = out;
   out = out.replace(
     /<meta\b[^>]*http-equiv\s*=\s*["']?content-security-policy["']?[^>]*>/gi,
     '',
   );
-  if (out !== beforeCsp) {
-    warnings.push('stripped_meta_csp');
-  }
+  if (out !== beforeCsp) warnings.push('stripped_meta_csp');
 
-  // Block service worker registration is not possible via static rewrite alone
+  // @import in style tags
+  out = out.replace(
+    /(<style\b[^>]*>)([\s\S]*?)(<\/style>)/gi,
+    (_f, open, css, close) => `${open}${rewriteCss(css, opts)}${close}`,
+  );
+
   warnings.push('spa_may_break');
-
   return { html: out, warnings };
 }
 
-/** Extract <title> text if present. */
 export function extractTitle(html: string): string | undefined {
   const m = html.match(/<title[^>]*>([^<]*)<\/title>/i);
   if (!m) return undefined;
@@ -126,11 +158,20 @@ export function extractTitle(html: string): string | undefined {
   return t ? t.slice(0, 200) : undefined;
 }
 
-/** Basic CSS url(...) rewrite. */
+/** CSS url() + @import rewrite. */
 export function rewriteCss(css: string, opts: RewriteHtmlOpts): string {
-  return css.replace(/url\(\s*(['"]?)([^)'"]+)\1\s*\)/gi, (full, _q, raw) => {
+  let out = css.replace(/url\(\s*(['"]?)([^)'"]+)\1\s*\)/gi, (full, _q, raw) => {
     const abs = resolveUrl(opts.pageUrl, String(raw).trim());
     if (!abs) return full;
     return `url(${opts.proxyUrl(abs)})`;
   });
+  out = out.replace(
+    /@import\s+(?:url\(\s*)?(['"]?)([^'")\s]+)\1\s*\)?/gi,
+    (full, _q, raw) => {
+      const abs = resolveUrl(opts.pageUrl, String(raw).trim());
+      if (!abs) return full;
+      return `@import url(${opts.proxyUrl(abs)})`;
+    },
+  );
+  return out;
 }

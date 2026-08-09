@@ -3086,7 +3086,11 @@
       "requestFailed": "请求失败（{{status}}）",
       "jsonInvalid": "JSON 无效",
       "internal": "内部错误"
-    }
+    },
+    "YSK_HOST_BROWSE_SSRF": "主机浏览已被安全策略拦截",
+    "YSK_HOST_BROWSE_SESSION": "主机浏览会话不存在或已过期",
+    "YSK_HOST_BROWSE_UPSTREAM": "主机浏览上游抓取失败",
+    "YSK_HOST_BROWSE_NEED_CHROME": "真实浏览器引擎需要主机上的 Chrome／Chromium"
   },
   "fail2ban": {
     "backToProtection": "防护中心",
@@ -3864,7 +3868,15 @@
     "loading": "加载中…",
     "modeSwitchHint": "切换模式会打开新会话并清除 Cookie。",
     "copied": "已复制网址",
-    "downloadHint": "非 HTML 响应 — 请查看内容框或重新导航。"
+    "downloadHint": "非 HTML 响应 — 请查看内容框或重新导航。",
+    "engineLabel": "引擎",
+    "engineProxy": "代理",
+    "engineBrowser": "真实浏览器",
+    "engineSwitchHint": "切换引擎会打开新会话。",
+    "needChrome": "真实浏览器需要系统 Chrome／Chromium（或设置 YSK_HOST_BROWSE_CHROME）。否则使用代理模式。",
+    "needChromeFallback": "Chrome 不可用 — 已切换到代理引擎。",
+    "liveError": "实时串流失败",
+    "liveWaiting": "正在连接主机浏览器…"
   },
   "listToolbar": {
     "searchPlaceholder": "搜索…",

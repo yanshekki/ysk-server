@@ -48,5 +48,9 @@
     "requestFailed": "请求失败（{{status}}）",
     "jsonInvalid": "JSON 无效",
     "internal": "内部错误"
-  }
+  },
+  "YSK_HOST_BROWSE_SSRF": "主机浏览已被安全策略拦截",
+  "YSK_HOST_BROWSE_SESSION": "主机浏览会话不存在或已过期",
+  "YSK_HOST_BROWSE_UPSTREAM": "主机浏览上游抓取失败",
+  "YSK_HOST_BROWSE_NEED_CHROME": "真实浏览器引擎需要主机上的 Chrome／Chromium"
 }

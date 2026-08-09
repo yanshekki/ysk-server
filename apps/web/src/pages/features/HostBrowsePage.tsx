@@ -1,6 +1,7 @@
 /**
- * Host-mediated proxy browser — real host egress, no operator browser fingerprint.
- * Tabs: browse | about (code style).
+ * Host-mediated proxy browser — dual engine:
+ *  - proxy: rewritten HTML iframe
+ *  - browser: host Chromium screencast + input
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -18,6 +19,9 @@ import { usePageTab } from '../../shared/hooks/usePageTab';
 import { ApiError } from '../../shared/services/api';
 import {
   hostBrowseApi,
+  hostBrowseLiveWsUrl,
+  type HostBrowseCapabilities,
+  type HostBrowseEngine,
   type HostBrowseMode,
   type HostBrowseNavigateResult,
   type HostBrowseSession,
@@ -31,23 +35,107 @@ export function HostBrowsePage() {
   const [tab, setTab] = usePageTab(TABS, 'browse');
 
   const [mode, setMode] = useState<HostBrowseMode>('internet');
+  const [engine, setEngine] = useState<HostBrowseEngine>('proxy');
+  const [caps, setCaps] = useState<HostBrowseCapabilities | null>(null);
   const [session, setSession] = useState<HostBrowseSession | null>(null);
   const [urlDraft, setUrlDraft] = useState('');
   const [last, setLast] = useState<HostBrowseNavigateResult | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [frameSrc, setFrameSrc] = useState<string | null>(null);
+  const [liveImg, setLiveImg] = useState<string | null>(null);
+  const [liveSize, setLiveSize] = useState({ w: 1280, h: 800 });
+
   const abortRef = useRef(false);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const liveRef = useRef<HTMLImageElement | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
+
+  // Load capabilities once
+  useEffect(() => {
+    void hostBrowseApi
+      .capabilities()
+      .then((c) => {
+        setCaps(c);
+        if (c.defaultEngine) setEngine(c.defaultEngine);
+      })
+      .catch(() => {
+        /* ignore — default proxy */
+      });
+  }, []);
+
+  const closeLive = useCallback(() => {
+    try {
+      wsRef.current?.close();
+    } catch {
+      /* */
+    }
+    wsRef.current = null;
+    setLiveImg(null);
+  }, []);
+
+  const openLive = useCallback(
+    async (sessionId: string) => {
+      closeLive();
+      try {
+        const ticket = await hostBrowseApi.liveTicket(sessionId);
+        const ws = new WebSocket(hostBrowseLiveWsUrl(ticket.wsPath));
+        wsRef.current = ws;
+        ws.onmessage = (ev) => {
+          try {
+            const msg = JSON.parse(String(ev.data)) as {
+              t?: string;
+              mime?: string;
+              data?: string;
+              w?: number;
+              h?: number;
+              url?: string;
+              title?: string;
+              message?: string;
+            };
+            if (msg.t === 'frame' && msg.data) {
+              setLiveImg(`data:${msg.mime || 'image/jpeg'};base64,${msg.data}`);
+              if (msg.w && msg.h) setLiveSize({ w: msg.w, h: msg.h });
+            } else if (msg.t === 'meta' && msg.url) {
+              setUrlDraft(msg.url);
+            } else if (msg.t === 'err') {
+              setError(msg.message || t('hostBrowse.loadFailed'));
+            }
+          } catch {
+            /* */
+          }
+        };
+        ws.onerror = () => {
+          setError(t('hostBrowse.liveError'));
+        };
+      } catch (e) {
+        setError(e instanceof Error ? e.message : t('hostBrowse.liveError'));
+      }
+    },
+    [closeLive, t],
+  );
+
+  useEffect(() => () => closeLive(), [closeLive]);
 
   const ensureSession = useCallback(
-    async (m: HostBrowseMode): Promise<HostBrowseSession> => {
-      if (session && session.mode === m) return session;
-      const created = await hostBrowseApi.createSession({ mode: m });
+    async (m: HostBrowseMode, eng: HostBrowseEngine): Promise<HostBrowseSession> => {
+      if (session && session.mode === m && session.engine === eng) return session;
+      // Close previous
+      if (session) {
+        try {
+          await hostBrowseApi.deleteSession(session.sessionId);
+        } catch {
+          /* */
+        }
+        closeLive();
+      }
+      const created = await hostBrowseApi.createSession({ mode: m, engine: eng });
       setSession(created);
       setLast(null);
+      setFrameSrc(null);
       return created;
     },
-    [session],
+    [session, closeLive],
   );
 
   const applyNav = useCallback(
@@ -58,7 +146,11 @@ export function HostBrowsePage() {
           ? {
               ...prev,
               currentUrl: result.finalUrl || prev.currentUrl,
-              historyIndex: result.blocked ? prev.historyIndex : prev.historyIndex,
+              historyIndex: result.historyIndex ?? prev.historyIndex,
+              historyLength: result.historyLength ?? prev.historyLength,
+              cookieCount: result.cookieCount ?? prev.cookieCount,
+              canGoBack: result.canGoBack ?? prev.canGoBack,
+              canGoForward: result.canGoForward ?? prev.canGoForward,
             }
           : prev,
       );
@@ -70,11 +162,10 @@ export function HostBrowsePage() {
       } else {
         setError(null);
       }
-      if (result.contentPath && !result.blocked) {
-        // iframe loads proxied content with contentToken (no Bearer in URL long-term beyond ct)
-        if (iframeRef.current) {
-          iframeRef.current.src = result.contentPath;
-        }
+
+      if (s.engine === 'proxy' && result.contentPath && !result.blocked) {
+        setFrameSrc(result.contentPath);
+        if (iframeRef.current) iframeRef.current.src = result.contentPath;
       }
     },
     [t],
@@ -89,18 +180,22 @@ export function HostBrowsePage() {
       setError(null);
       abortRef.current = false;
       try {
-        const s = await ensureSession(mode);
+        const s = await ensureSession(mode, engine);
         if (abortRef.current) return;
         const result = await hostBrowseApi.navigate(s.sessionId, body);
         if (abortRef.current) return;
-        // refresh cookie count
         try {
           const meta = await hostBrowseApi.getSession(s.sessionId);
           setSession(meta);
         } catch {
-          /* ignore */
+          /* */
         }
         applyNav(s, result);
+
+        // Browser engine: open live stream after first successful nav
+        if (s.engine === 'browser' && !result.blocked) {
+          await openLive(s.sessionId);
+        }
       } catch (e) {
         const msg =
           e instanceof ApiError
@@ -109,11 +204,15 @@ export function HostBrowsePage() {
               ? e.message
               : t('common.loadFailed');
         setError(msg);
+        if (e instanceof ApiError && e.code === 'YSK_HOST_BROWSE_NEED_CHROME') {
+          setEngine('proxy');
+          notifyInfo(t('hostBrowse.needChromeFallback'));
+        }
       } finally {
         setBusy(false);
       }
     },
-    [applyNav, ensureSession, mode, t],
+    [applyNav, ensureSession, mode, engine, openLive, t],
   );
 
   const onGo = useCallback(() => {
@@ -129,10 +228,28 @@ export function HostBrowsePage() {
       setSession(null);
       setLast(null);
       setError(null);
-      if (iframeRef.current) iframeRef.current.src = 'about:blank';
+      setFrameSrc(null);
+      closeLive();
       notifyInfo(t('hostBrowse.modeSwitchHint'));
     },
-    [mode, t],
+    [mode, t, closeLive],
+  );
+
+  const onEngineChange = useCallback(
+    (eng: HostBrowseEngine) => {
+      if (eng === engine) return;
+      if (eng === 'browser' && caps && !caps.chromeAvailable) {
+        setError(t('hostBrowse.needChrome'));
+        return;
+      }
+      setEngine(eng);
+      setSession(null);
+      setLast(null);
+      setFrameSrc(null);
+      closeLive();
+      notifyInfo(t('hostBrowse.engineSwitchHint'));
+    },
+    [engine, caps, t, closeLive],
   );
 
   const onClearCookies = useCallback(async () => {
@@ -151,12 +268,13 @@ export function HostBrowsePage() {
     try {
       await hostBrowseApi.deleteSession(session.sessionId);
     } catch {
-      /* ignore */
+      /* */
     }
+    closeLive();
     setSession(null);
     setLast(null);
-    if (iframeRef.current) iframeRef.current.src = 'about:blank';
-  }, [session]);
+    setFrameSrc(null);
+  }, [session, closeLive]);
 
   const onCopyUrl = useCallback(async () => {
     const u = last?.finalUrl || session?.currentUrl || urlDraft;
@@ -165,25 +283,70 @@ export function HostBrowsePage() {
       await navigator.clipboard.writeText(u);
       notifyOk(t('hostBrowse.copied'));
     } catch {
-      /* ignore */
+      /* */
     }
   }, [last, session, t, urlDraft]);
 
-  // Stop: best-effort cancel flag (in-flight fetch may still complete server-side)
   const onStop = useCallback(() => {
     abortRef.current = true;
     setBusy(false);
+    if (session) {
+      void hostBrowseApi.abort(session.sessionId).catch(() => undefined);
+    }
+  }, [session]);
+
+  const onLivePointer = useCallback(
+    (type: 'click' | 'move' | 'down' | 'up' | 'wheel', e: React.MouseEvent | React.WheelEvent) => {
+      const el = liveRef.current;
+      const ws = wsRef.current;
+      if (!el || !ws || ws.readyState !== WebSocket.OPEN) return;
+      const rect = el.getBoundingClientRect();
+      const scaleX = liveSize.w / rect.width;
+      const scaleY = liveSize.h / rect.height;
+      const x = Math.round((e.clientX - rect.left) * scaleX);
+      const y = Math.round((e.clientY - rect.top) * scaleY);
+      if (type === 'wheel' && 'deltaY' in e) {
+        ws.send(
+          JSON.stringify({
+            t: 'mouse',
+            type: 'wheel',
+            x,
+            y,
+            deltaY: (e as React.WheelEvent).deltaY,
+          }),
+        );
+        return;
+      }
+      ws.send(JSON.stringify({ t: 'mouse', type, x, y, button: 'left' }));
+    },
+    [liveSize],
+  );
+
+  const onLiveKey = useCallback((e: React.KeyboardEvent) => {
+    const ws = wsRef.current;
+    if (!ws || ws.readyState !== WebSocket.OPEN) return;
+    e.preventDefault();
+    ws.send(
+      JSON.stringify({
+        t: 'key',
+        type: e.type === 'keydown' ? 'down' : 'up',
+        key: e.key,
+      }),
+    );
   }, []);
 
-  useEffect(() => {
-    return () => {
-      abortRef.current = true;
-    };
-  }, []);
+  const canBack = Boolean(session?.canGoBack ?? (session && session.historyIndex > 0));
+  const canForward = Boolean(
+    session?.canGoForward ??
+      (session &&
+        session.historyIndex >= 0 &&
+        session.historyIndex < session.historyLength - 1),
+  );
 
   const statusPill = useMemo(() => {
     if (busy) return { label: t('hostBrowse.loading'), tone: 'warn' as const };
-    if (error || last?.blocked) return { label: t('hostBrowse.ssrfBlocked'), tone: 'danger' as const };
+    if (error || last?.blocked)
+      return { label: t('hostBrowse.ssrfBlocked'), tone: 'danger' as const };
     if (session) return { label: t('hostBrowse.sessionReady'), tone: 'ok' as const };
     return { label: t('hostBrowse.noSession'), tone: 'neutral' as const };
   }, [busy, error, last, session, t]);
@@ -195,7 +358,9 @@ export function HostBrowsePage() {
     return '—';
   }, [last, session, t]);
 
-  const hasContent = Boolean(last?.contentPath && !last.blocked);
+  const isBrowser = (session?.engine ?? engine) === 'browser';
+  const hasProxyContent = Boolean(frameSrc && !last?.blocked && !isBrowser);
+  const hasLive = Boolean(liveImg && isBrowser);
 
   return (
     <FeaturePageLayout
@@ -210,11 +375,11 @@ export function HostBrowsePage() {
             tone: 'ok',
           },
           {
-            label: t('hostBrowse.modeInternet'),
+            label: t('hostBrowse.engineLabel'),
             value:
-              mode === 'internet'
-                ? t('hostBrowse.modeInternet')
-                : t('hostBrowse.modeIntranet'),
+              (session?.engine ?? engine) === 'browser'
+                ? t('hostBrowse.engineBrowser')
+                : t('hostBrowse.engineProxy'),
           },
           {
             label: t('hostBrowse.cookies'),
@@ -227,16 +392,14 @@ export function HostBrowsePage() {
         ],
       }}
       actions={
-        <>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => void onCloseSession()}
-            disabled={!session || busy}
-          >
-            {t('hostBrowse.closeSession')}
-          </Button>
-        </>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => void onCloseSession()}
+          disabled={!session || busy}
+        >
+          {t('hostBrowse.closeSession')}
+        </Button>
       }
     >
       <PageTabs
@@ -256,6 +419,9 @@ export function HostBrowsePage() {
                 {last?.blockReason ? ` (${String(last.blockReason)})` : ''}
               </Alert>
             ) : null}
+            {caps && !caps.chromeAvailable ? (
+              <Alert variant="info">{t('hostBrowse.needChrome')}</Alert>
+            ) : null}
 
             <div className="hb-chrome">
               <div className="hb-toolbar">
@@ -267,14 +433,22 @@ export function HostBrowsePage() {
                     value={mode}
                     onChange={(v) => onModeChange(v as HostBrowseMode)}
                     options={[
-                      {
-                        value: 'internet',
-                        label: t('hostBrowse.modeInternet'),
-                      },
-                      {
-                        value: 'intranet',
-                        label: t('hostBrowse.modeIntranet'),
-                      },
+                      { value: 'internet', label: t('hostBrowse.modeInternet') },
+                      { value: 'intranet', label: t('hostBrowse.modeIntranet') },
+                    ]}
+                    disabled={busy}
+                  />
+                </div>
+                <div className="hb-toolbar__mode">
+                  <SegRadio
+                    name="hb-engine"
+                    size="sm"
+                    aria-label={t('hostBrowse.engineLabel')}
+                    value={engine}
+                    onChange={(v) => onEngineChange(v as HostBrowseEngine)}
+                    options={[
+                      { value: 'proxy', label: t('hostBrowse.engineProxy') },
+                      { value: 'browser', label: t('hostBrowse.engineBrowser') },
                     ]}
                     disabled={busy}
                   />
@@ -284,7 +458,7 @@ export function HostBrowsePage() {
                     size="sm"
                     variant="ghost"
                     onClick={() => void runNavigate({ action: 'back' })}
-                    disabled={busy || !session}
+                    disabled={busy || !session || !canBack}
                     aria-label={t('hostBrowse.back')}
                   >
                     ←
@@ -293,7 +467,7 @@ export function HostBrowsePage() {
                     size="sm"
                     variant="ghost"
                     onClick={() => void runNavigate({ action: 'forward' })}
-                    disabled={busy || !session}
+                    disabled={busy || !session || !canForward}
                     aria-label={t('hostBrowse.forward')}
                   >
                     →
@@ -311,7 +485,7 @@ export function HostBrowsePage() {
                     size="sm"
                     variant="ghost"
                     onClick={onStop}
-                    disabled={!busy}
+                    disabled={!busy && !session}
                     aria-label={t('hostBrowse.stop')}
                   >
                     ⏹
@@ -368,8 +542,10 @@ export function HostBrowsePage() {
                 <div className={`hb-progress__bar${busy ? '' : ' is-done'}`} />
               </div>
 
-              <div className={`hb-frame-wrap${hasContent ? '' : ' is-empty'}`}>
-                {!hasContent ? (
+              <div
+                className={`hb-frame-wrap${hasProxyContent || hasLive ? '' : ' is-empty'}`}
+              >
+                {!hasProxyContent && !hasLive ? (
                   <div className="hb-empty">
                     <EmptyState
                       title={t('hostBrowse.emptyTitle')}
@@ -377,14 +553,45 @@ export function HostBrowsePage() {
                     />
                   </div>
                 ) : null}
-                <iframe
-                  ref={iframeRef}
-                  className="hb-frame"
-                  title={t('nav.hostBrowse')}
-                  sandbox="allow-scripts allow-forms allow-modals allow-popups allow-downloads"
-                  referrerPolicy="no-referrer"
-                  // no allow-same-origin — panel isolation
-                />
+
+                {/* Proxy iframe */}
+                {!isBrowser ? (
+                  <iframe
+                    ref={iframeRef}
+                    className="hb-frame"
+                    title={t('nav.hostBrowse')}
+                    sandbox="allow-scripts allow-forms allow-modals allow-popups allow-downloads"
+                    referrerPolicy="no-referrer"
+                    src={frameSrc ?? undefined}
+                  />
+                ) : null}
+
+                {/* Live browser surface */}
+                {isBrowser ? (
+                  <div
+                    className="hb-live"
+                    tabIndex={0}
+                    onKeyDown={onLiveKey}
+                    onKeyUp={onLiveKey}
+                  >
+                    {liveImg ? (
+                      // eslint-disable-next-line jsx-a11y/alt-text
+                      <img
+                        ref={liveRef}
+                        className="hb-live__img"
+                        src={liveImg}
+                        draggable={false}
+                        onClick={(e) => onLivePointer('click', e)}
+                        onMouseMove={(e) => {
+                          if (e.buttons === 1) onLivePointer('move', e);
+                        }}
+                        onWheel={(e) => onLivePointer('wheel', e)}
+                      />
+                    ) : (
+                      <div className="hb-live__wait">{t('hostBrowse.liveWaiting')}</div>
+                    )}
+                  </div>
+                ) : null}
               </div>
 
               <div className="hb-status">
@@ -398,7 +605,7 @@ export function HostBrowsePage() {
                     ? t('hostBrowse.statusLine', {
                         status: last.blocked ? 'blocked' : last.status,
                         ms: last.latencyMs,
-                        type: last.contentType || '—',
+                        type: last.contentType || (isBrowser ? 'browser' : '—'),
                       })
                     : t('hostBrowse.viaHost')}
                 </span>
@@ -406,6 +613,7 @@ export function HostBrowsePage() {
                   <Badge tone="neutral">{session.userAgent.slice(0, 28)}…</Badge>
                 ) : null}
                 {last?.rewritten ? <Badge tone="ok">rewrite</Badge> : null}
+                {isBrowser ? <Badge tone="ok">chromium</Badge> : null}
               </div>
             </div>
           </div>

@@ -4,6 +4,7 @@
 
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import type {
+  HostBrowseEngine,
   HostBrowseHistoryEntry,
   HostBrowseMode,
   HostBrowsePolicy,
@@ -16,6 +17,7 @@ export type HostBrowseSession = {
   sessionId: string;
   userId: string;
   mode: HostBrowseMode;
+  engine: HostBrowseEngine;
   contentToken: string;
   userAgent: string;
   createdAt: number;
@@ -24,7 +26,9 @@ export type HostBrowseSession = {
   history: HostBrowseHistoryEntry[];
   historyIndex: number;
   currentUrl: string | null;
-  /** Cached last content body for reload of same URL without re-nav (optional). */
+  /** Browser-engine cookie count override when jar unused */
+  browserCookieCount?: number;
+  abort?: AbortController;
   lastContent?: {
     url: string;
     status: number;
@@ -65,15 +69,19 @@ export class HostBrowseSessionStore {
     return this.policy.rateLimitPerMinute ?? 60;
   }
 
-  purgeExpired(now = Date.now()): void {
+  purgeExpired(now = Date.now()): string[] {
+    const dropped: string[] = [];
     for (const [id, s] of this.sessions) {
       if (
         now - s.lastAccessAt > this.idleTtl() ||
         now - s.createdAt > this.maxLife()
       ) {
+        s.abort?.abort();
         this.sessions.delete(id);
+        dropped.push(id);
       }
     }
+    return dropped;
   }
 
   checkRate(userId: string): boolean {
@@ -89,20 +97,27 @@ export class HostBrowseSessionStore {
     return true;
   }
 
-  create(userId: string, mode: HostBrowseMode): HostBrowseSession {
+  create(
+    userId: string,
+    mode: HostBrowseMode,
+    engine: HostBrowseEngine,
+  ): HostBrowseSession {
     this.purgeExpired();
     const existing = [...this.sessions.values()].filter((s) => s.userId === userId);
     if (existing.length >= this.maxPerUser()) {
-      // Drop oldest
       existing.sort((a, b) => a.lastAccessAt - b.lastAccessAt);
       const drop = existing[0];
-      if (drop) this.sessions.delete(drop.sessionId);
+      if (drop) {
+        drop.abort?.abort();
+        this.sessions.delete(drop.sessionId);
+      }
     }
     const now = Date.now();
     const session: HostBrowseSession = {
       sessionId: newId(),
       userId,
       mode,
+      engine,
       contentToken: newToken(),
       userAgent: this.policy.userAgent ?? HOST_BROWSE_DEFAULT_UA,
       createdAt: now,
@@ -124,7 +139,6 @@ export class HostBrowseSessionStore {
     return s;
   }
 
-  /** Lookup by id only (content-token path validates token separately). */
   getById(sessionId: string): HostBrowseSession | null {
     this.purgeExpired();
     return this.sessions.get(sessionId) ?? null;
@@ -133,6 +147,7 @@ export class HostBrowseSessionStore {
   delete(sessionId: string, userId: string): boolean {
     const s = this.sessions.get(sessionId);
     if (!s || s.userId !== userId) return false;
+    s.abort?.abort();
     this.sessions.delete(sessionId);
     return true;
   }
@@ -149,30 +164,50 @@ export class HostBrowseSessionStore {
     }
   }
 
+  beginAbortable(s: HostBrowseSession): AbortSignal {
+    s.abort?.abort();
+    s.abort = new AbortController();
+    return s.abort.signal;
+  }
+
+  abort(sessionId: string, userId: string): boolean {
+    const s = this.get(sessionId, userId);
+    if (!s) return false;
+    s.abort?.abort();
+    s.abort = undefined;
+    return true;
+  }
+
   toMeta(s: HostBrowseSession): HostBrowseSessionMeta {
     const idle = this.idleTtl();
     const life = this.maxLife();
     const expIdle = s.lastAccessAt + idle;
     const expLife = s.createdAt + life;
     const expiresAt = Math.min(expIdle, expLife);
+    const cookieCount =
+      s.engine === 'browser'
+        ? (s.browserCookieCount ?? 0)
+        : s.jar.size;
     return {
       sessionId: s.sessionId,
       userId: s.userId,
       mode: s.mode,
+      engine: s.engine,
       contentToken: s.contentToken,
       userAgent: s.userAgent,
       createdAt: new Date(s.createdAt).toISOString(),
       expiresAt: new Date(expiresAt).toISOString(),
       lastAccessAt: new Date(s.lastAccessAt).toISOString(),
-      cookieCount: s.jar.size,
+      cookieCount,
       historyIndex: s.historyIndex,
       historyLength: s.history.length,
       currentUrl: s.currentUrl,
+      canGoBack: s.historyIndex > 0,
+      canGoForward: s.historyIndex >= 0 && s.historyIndex < s.history.length - 1,
     };
   }
 
   pushHistory(s: HostBrowseSession, url: string, title?: string): void {
-    // Truncate forward history
     if (s.historyIndex >= 0 && s.historyIndex < s.history.length - 1) {
       s.history = s.history.slice(0, s.historyIndex + 1);
     }

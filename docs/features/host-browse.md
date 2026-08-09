@@ -10,44 +10,59 @@
 - Egress IP, DNS, and TLS use the **host** — not the operator’s desktop browser
 - Target sites never see the operator browser User-Agent, Client Hints, panel cookies, or operator client IP
 
+## Dual engine
+
+| Engine | How it works | Best for |
+|--------|----------------|----------|
+| **Proxy** (default if no Chrome) | Host HTTP fetch + HTML/CSS rewrite + sandboxed iframe | Docs, static sites, many admin panels, form POST |
+| **Real browser** | Host **Chromium** via Playwright + JPEG screencast + mouse/keyboard | Heavy SPAs (e.g. modern marketing sites), JS-heavy UIs |
+
+- UI toggle: **Proxy | Real browser**
+- Env: `YSK_HOST_BROWSE_ENGINE=auto|proxy|browser` (default auto → browser when Chrome found)
+- Chrome path: `YSK_HOST_BROWSE_CHROME` or system `google-chrome` / `chromium`
+- Optional: `YSK_HOST_BROWSE_NO_SANDBOX=1` (containers only)
+- Loopback (intranet): `YSK_HOST_BROWSE_LOOPBACK=1`
+
+If Chrome is missing and engine=`browser` is requested, API returns `YSK_HOST_BROWSE_NEED_CHROME` (honest fail / UI falls back).
+
 ## Route
 
 | Item | Value |
 |------|--------|
 | UI | `/browse` |
 | API | `/api/v1/host-browse/*` |
+| Live WS | `/api/v1/host-browse/ws?ticket=` |
 | Capability | `network.browse` (privilege; admin factory includes it) |
-| `YSK_EXECUTE` | **Not required** (outbound HTTP from the panel process) |
+| `YSK_EXECUTE` | **Not required** |
 
 ## Tabs
 
 | Tab | Content |
 |-----|---------|
-| Browse | Browser chrome + Internet/Intranet mode + sandboxed content |
-| About | Page guide (security model & limits) |
+| Browse | Browser chrome + mode + engine + viewport |
+| About | Page guide |
 
 ## Privacy model
 
-- Fixed User-Agent: `YSK-HostBrowse/1.0 …`
-- Header allowlist only (no `Authorization`, `Sec-CH-*`, `X-Forwarded-For`, panel `Origin`, …)
-- Cookie jar is **server-side** per session
-- Content iframe uses a short-lived `contentToken` (not the long-lived API Bearer in logs)
+- Fixed User-Agent: `YSK-HostBrowse/1.0 …` (both engines)
+- Header allowlist only (proxy); Playwright context uses the same fixed UA
+- Cookie jar / browser storage **server-side only**
+- Content iframe uses short-lived `contentToken`; live WS uses one-time ticket
 
 ## SSRF
 
 | Mode | Policy |
 |------|--------|
 | Internet | Block loopback, RFC1918, link-local, ULA, cloud metadata |
-| Intranet | Allow private LAN; **always** block cloud metadata; loopback off unless `YSK_HOST_BROWSE_LOOPBACK=1` |
+| Intranet | Allow private LAN; **always** block cloud metadata; loopback off unless env |
 
-DNS rebinding: resolve A/AAAA and check every address before connect; re-check redirects.
+## Limits
 
-## Limits (v1)
-
-- Not a full Chromium substitute — complex SPAs may break
-- No WebSocket upgrade to targets
-- Response body cap ~8 MiB; rate limit ~60 navigations / user / minute
+- Proxy: not a full Chromium substitute for all SPAs
+- Browser engine: needs host Chrome; CPU/RAM limited (session caps)
+- No guarantee of bypassing site bot protection
+- Response body ~8 MiB (proxy); rate ~60 nav/user/min
 
 ## Related
 
-[Network](./system-host.md) · [Terminal](../security/ssh.md) · [product-page-map](../product-page-map.md)
+[product-page-map](../product-page-map.md)

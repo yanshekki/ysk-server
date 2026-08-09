@@ -4,6 +4,9 @@
 
 export type HostBrowseMode = 'internet' | 'intranet';
 
+/** proxy = HTTP rewrite iframe; browser = host Chromium screencast */
+export type HostBrowseEngine = 'proxy' | 'browser';
+
 export type HostBrowseNavigateAction = 'goto' | 'reload' | 'back' | 'forward';
 
 export const HOST_BROWSE_DEFAULT_UA =
@@ -38,6 +41,12 @@ export interface HostBrowsePolicy {
   extraPorts?: number[];
   /** Rate limit: max navigations per user per minute (default 60). */
   rateLimitPerMinute?: number;
+  /** Override Chrome executable path */
+  chromePath?: string;
+  /** Max concurrent browser-engine sessions (default 4). */
+  maxBrowserSessions?: number;
+  /** Default engine when client omits (default auto→browser if chrome). */
+  defaultEngine?: HostBrowseEngine | 'auto';
 }
 
 export interface HostBrowseHistoryEntry {
@@ -50,6 +59,7 @@ export interface HostBrowseSessionMeta {
   sessionId: string;
   userId: string;
   mode: HostBrowseMode;
+  engine: HostBrowseEngine;
   contentToken: string;
   userAgent: string;
   createdAt: string;
@@ -59,6 +69,8 @@ export interface HostBrowseSessionMeta {
   historyIndex: number;
   historyLength: number;
   currentUrl: string | null;
+  canGoBack: boolean;
+  canGoForward: boolean;
 }
 
 export interface HostBrowseFetchResult {
@@ -69,13 +81,19 @@ export interface HostBrowseFetchResult {
   bytes: number;
   title?: string;
   warnings: string[];
-  /** Absolute path for iframe content (includes content token query). */
+  /** Absolute path for iframe content (proxy engine; includes content token). */
   contentPath: string;
   latencyMs: number;
   /** True when body is HTML and was rewritten for proxy. */
   rewritten: boolean;
   blocked?: boolean;
   blockReason?: string;
+  engine: HostBrowseEngine;
+  canGoBack?: boolean;
+  canGoForward?: boolean;
+  historyIndex?: number;
+  historyLength?: number;
+  cookieCount?: number;
 }
 
 export interface HostBrowseContentResult {
@@ -86,4 +104,12 @@ export interface HostBrowseContentResult {
   rewritten: boolean;
   warnings: string[];
   headers: Record<string, string>;
+}
+
+export interface HostBrowseCapabilities {
+  chromeAvailable: boolean;
+  chromePath: string | null;
+  engines: HostBrowseEngine[];
+  defaultEngine: HostBrowseEngine;
+  reason?: string;
 }

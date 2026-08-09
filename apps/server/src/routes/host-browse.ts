@@ -44,7 +44,19 @@ export async function handleHostBrowseRoutes(
 
   const svc = ctx.hostBrowse;
 
-  // Content for iframe — contentToken auth only (no Bearer required)
+  // GET /capabilities — auth + cap
+  if (method === 'GET' && url.pathname === '/api/v1/host-browse/capabilities') {
+    try {
+      const user = ctx.auth.authenticate(getBearer(req));
+      requireCap(ctx, user, 'network.browse');
+      sendJson(res, 200, { ok: true, ...svc.capabilities() });
+    } catch (e) {
+      sendBrowseError(res, e);
+    }
+    return true;
+  }
+
+  // Content for iframe — contentToken auth only
   const contentMatch = url.pathname.match(
     /^\/api\/v1\/host-browse\/sessions\/([^/]+)\/content$/,
   );
@@ -73,9 +85,52 @@ export async function handleHostBrowseRoutes(
         'X-Ysk-Host-Browse': '1',
         'X-Ysk-Final-Url': content.finalUrl.slice(0, 500),
       };
-      // Allow framing by same origin panel (override default DENY from securityHeaders)
       res.writeHead(content.status || 200, headers);
       res.end(content.body);
+    } catch (e) {
+      sendBrowseError(res, e);
+    }
+    return true;
+  }
+
+  // Form POST from iframe — contentToken auth
+  const formMatch = url.pathname.match(
+    /^\/api\/v1\/host-browse\/sessions\/([^/]+)\/form$/,
+  );
+  if (method === 'POST' && formMatch) {
+    const sessionId = formMatch[1];
+    const ct = url.searchParams.get('ct') || '';
+    const target = url.searchParams.get('u') || '';
+    try {
+      if (!target) {
+        sendJson(res, 400, {
+          ok: false,
+          code: ErrorCodes.VALIDATION,
+          message: 'u query required',
+        });
+        return true;
+      }
+      const rawBody = await readBody(req);
+      const ctHdr =
+        (req.headers['content-type'] as string) ||
+        'application/x-www-form-urlencoded';
+      const result = await svc.submitByToken(
+        sessionId,
+        ct,
+        target,
+        rawBody,
+        ctHdr,
+      );
+      // After form POST, redirect browser frame to content of final URL
+      if (result.contentPath && !result.blocked) {
+        res.writeHead(303, {
+          Location: result.contentPath,
+          'Cache-Control': 'no-store',
+        });
+        res.end();
+      } else {
+        sendJson(res, 200, { ...result, privacy: privacyBlock() });
+      }
     } catch (e) {
       sendBrowseError(res, e);
     }
@@ -93,15 +148,15 @@ export async function handleHostBrowseRoutes(
   }
 
   try {
-    // POST /sessions
     if (method === 'POST' && url.pathname === '/api/v1/host-browse/sessions') {
       const raw = await readBody(req);
       const data = JSON.parse(raw || '{}') as {
         mode?: string;
+        engine?: string;
         startUrl?: string;
       };
       const mode = data.mode === 'intranet' ? 'intranet' : 'internet';
-      const meta = svc.createSession(user.id, mode);
+      const meta = svc.createSession(user.id, mode, data.engine);
       let start: unknown = null;
       if (data.startUrl) {
         start = await svc.navigate(user.id, meta.sessionId, {
@@ -113,6 +168,7 @@ export async function handleHostBrowseRoutes(
         ok: true,
         ...meta,
         privacy: privacyBlock(),
+        capabilities: svc.capabilities(),
         start,
       });
       return true;
@@ -134,19 +190,29 @@ export async function handleHostBrowseRoutes(
 
     if (method === 'GET' && rest === '') {
       const meta = svc.getSession(user.id, sessionId);
-      sendJson(res, 200, { ok: true, ...meta, privacy: privacyBlock() });
+      sendJson(res, 200, {
+        ok: true,
+        ...meta,
+        privacy: privacyBlock(),
+      });
       return true;
     }
 
     if (method === 'DELETE' && rest === '') {
-      svc.deleteSession(user.id, sessionId);
+      await svc.deleteSession(user.id, sessionId);
       sendJson(res, 200, { ok: true });
       return true;
     }
 
     if (method === 'POST' && rest === '/clear-cookies') {
-      const meta = svc.clearCookies(user.id, sessionId);
+      const meta = await svc.clearCookies(user.id, sessionId);
       sendJson(res, 200, { ok: true, ...meta });
+      return true;
+    }
+
+    if (method === 'POST' && rest === '/abort') {
+      svc.abort(user.id, sessionId);
+      sendJson(res, 200, { ok: true });
       return true;
     }
 
@@ -184,6 +250,38 @@ export async function handleHostBrowseRoutes(
         body: data.body,
       });
       sendJson(res, 200, { ...result, privacy: privacyBlock() });
+      return true;
+    }
+
+    if (method === 'POST' && rest === '/live') {
+      // One-time WS ticket for browser-engine screencast
+      const meta = svc.getSession(user.id, sessionId);
+      if (meta.engine !== 'browser') {
+        sendJson(res, 400, {
+          ok: false,
+          code: ErrorCodes.VALIDATION,
+          message: 'live stream requires browser engine',
+          details: { engine: meta.engine },
+        });
+        return true;
+      }
+      // Ensure browser context exists
+      await svc.browser.openSession({
+        sessionId,
+        userId: user.id,
+        mode: meta.mode,
+      });
+      const ticket = ctx.hostBrowseLiveTickets.issue({
+        sessionId,
+        userId: user.id,
+        ttlMs: 60_000,
+      });
+      sendJson(res, 200, {
+        ok: true,
+        ticket: ticket.ticket,
+        expiresAt: new Date(ticket.expiresAt).toISOString(),
+        wsPath: `/api/v1/host-browse/ws?ticket=${encodeURIComponent(ticket.ticket)}`,
+      });
       return true;
     }
 

@@ -15,6 +15,17 @@ describe('host-browse rewrite', () => {
     expect(out).toContain(encodeURIComponent('https://cdn.example/a.png'));
   });
 
+  it('rewrites POST form action to formUrl', () => {
+    const html = `<form method="post" action="/login"><button>go</button></form>`;
+    const { html: out } = rewriteHtml(html, {
+      pageUrl: 'https://example.com/page',
+      proxyUrl,
+      formUrl: (abs) => `/form?u=${encodeURIComponent(abs)}`,
+    });
+    expect(out).toContain('/form?u=');
+    expect(out).toContain(encodeURIComponent('https://example.com/login'));
+  });
+
   it('skips javascript and data urls', () => {
     const html = `<a href="javascript:alert(1)">x</a><img src="data:image/png;base64,xx">`;
     const { html: out } = rewriteHtml(html, {

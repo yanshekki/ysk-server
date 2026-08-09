@@ -58,6 +58,7 @@ import {
 import { handleTerminalRoutes } from './routes/terminal.js';
 import { handleHostBrowseRoutes } from './routes/host-browse.js';
 import { attachTerminalWebSocket } from './terminal/ws-handler.js';
+import { attachHostBrowseWebSocket } from './host-browse/ws-handler.js';
 
 export type ControlPlaneServer = HttpServer | HttpsServer;
 
@@ -213,6 +214,7 @@ export function createControlPlaneServer(ctx: AppContext): CreateServerResult {
   }
   // Interactive browser terminal (WebSocket upgrade)
   attachTerminalWebSocket(server, ctx, ctx.terminalTickets);
+  attachHostBrowseWebSocket(server, ctx, ctx.hostBrowseLiveTickets);
   return { server, https };
 }
 
@@ -297,6 +299,7 @@ export async function listenControlPlane(
   // Full-API dual HTTP (no redirect) needs the same terminal WS upgrade as primary.
   if (!redirect) {
     attachTerminalWebSocket(httpServer, ctx, ctx.terminalTickets);
+    attachHostBrowseWebSocket(httpServer, ctx, ctx.hostBrowseLiveTickets);
   }
   try {
     await listen(httpServer, host, wantHttp);
