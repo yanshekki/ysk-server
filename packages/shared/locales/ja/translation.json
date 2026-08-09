@@ -3451,7 +3451,7 @@
     "editorLargeHint": "Large file — editing may feel slow. Prefer download for multi‑MB files (server cap ~2 MB).",
     "editorLnCol": "行{{line}}、列{{col}}",
     "editorSpaces": "スペース: {{n}}",
-    "copyLink": "Copy link",
+    "copyLink": "リンクをコピー",
     "versionsTitleShort": "バージョン履歴",
     "versionsCount": "{{count}} / {{max}}",
     "versionN": "v{{n}}",
