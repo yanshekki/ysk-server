@@ -1,7 +1,7 @@
 {
-  "scrollLeft": "Scroll tabs left",
-  "scrollRight": "Scroll tabs right",
-  "about": "About",
-  "main": "Actions",
+  "scrollLeft": "Deslocar separadores para a esquerda",
+  "scrollRight": "Deslocar separadores para a direita",
+  "about": "Acerca",
+  "main": "Ações",
   "stack": "Software"
 }

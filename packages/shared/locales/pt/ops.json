@@ -1,38 +1,38 @@
 {
   "blocked": {
-    "needExecute": "Host execute is off; this action cannot finish from the panel",
-    "needExecuteShort": "Host execute is not enabled",
-    "needExecuteBlocked": "Blocked: host execute is off",
-    "needRoot": "Root privileges required",
-    "needExecuteRoot": "Requires YSK_EXECUTE=1 and root",
-    "needExecuteYsk": "Requires YSK_EXECUTE=1",
-    "writeOutsideDataDir": "Write blocked: host execute is off and the path is outside the panel data directory",
-    "nginxReload": "Cannot reload Nginx: host execute required",
-    "signal": "Cannot send signal: host execute required (YSK_EXECUTE)",
-    "signalNote": "YSK_EXECUTE=1 is required for a real kill",
-    "renice": "Cannot renice: host execute required (YSK_EXECUTE)",
-    "install": "Host execute is off; install cannot finish from the panel",
-    "update": "Host execute is off; update cannot finish from the panel",
-    "panel": "Cannot complete this from the management panel"
+    "needExecute": "A execução no anfitrião está desligada; esta ação não pode concluir a partir do painel",
+    "needExecuteShort": "A execução no anfitrião não está ativada",
+    "needExecuteBlocked": "Bloqueado: a execução no anfitrião está desligada",
+    "needRoot": "Privilégios de root necessários",
+    "needExecuteRoot": "Requer YSK_EXECUTE=1 e root",
+    "needExecuteYsk": "Requer YSK_EXECUTE=1",
+    "writeOutsideDataDir": "Escrita bloqueada: a execução no anfitrião está desligada e o caminho está fora do diretório de dados do painel",
+    "nginxReload": "Não é possível recarregar o Nginx: é necessária a execução no anfitrião",
+    "signal": "Não é possível enviar sinal: é necessária a execução no anfitrião (YSK_EXECUTE)",
+    "signalNote": "YSK_EXECUTE=1 é necessário para um kill real",
+    "renice": "Não é possível renice: é necessária a execução no anfitrião (YSK_EXECUTE)",
+    "install": "A execução no anfitrião está desligada; a instalação não pode concluir a partir do painel",
+    "update": "A execução no anfitrião está desligada; a atualização não pode concluir a partir do painel",
+    "panel": "Não é possível concluir isto a partir do painel de gestão"
   },
   "honesty": {
-    "blockedNotOk": "Honesty fix: blocked cannot be ok=true",
-    "blockedNotApplied": "Honesty fix: blocked cannot be apply_status=applied",
-    "okFalseNotApplied": "Honesty fix: ok=false cannot be apply_status=applied"
+    "blockedNotOk": "Correção de honestidade: blocked não pode ser ok=true",
+    "blockedNotApplied": "Correção de honestidade: blocked não pode ser apply_status=applied",
+    "okFalseNotApplied": "Correção de honestidade: ok=false não pode ser apply_status=applied"
   },
   "status": {
-    "applied": "Status: applied",
-    "failed": "Status: failed",
-    "written": "Status: written",
-    "blocked": "Status: blocked"
+    "applied": "Estado: aplicado",
+    "failed": "Estado: falhou",
+    "written": "Estado: escrito",
+    "blocked": "Estado: bloqueado"
   },
   "notes": {
-    "writtenSettings": "Settings written",
-    "completed": "Completed",
-    "partialSuccess": "Operation only partially succeeded",
-    "notInstalled": "Not installed",
-    "running": "Running",
-    "stopped": "Stopped",
-    "unknown": "Unknown"
+    "writtenSettings": "Definições gravadas",
+    "completed": "Concluído",
+    "partialSuccess": "A operação só foi parcialmente bem-sucedida",
+    "notInstalled": "Não instalado",
+    "running": "Em execução",
+    "stopped": "Parado",
+    "unknown": "Desconhecido"
   }
 }

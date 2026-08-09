@@ -1,18 +1,18 @@
 {
-  "unknownCommand": "Unknown command: {{command}}\nRun `{{cli}} help`",
-  "usagePrefix": "Usage:",
+  "unknownCommand": "Comando desconhecido: {{command}}\nExecute `{{cli}} help`",
+  "usagePrefix": "Utilização:",
   "security": {
-    "help": "Usage: ysk-server security status\n       ysk-server security sessions list|revoke|revoke-others [--user U]\n       ysk-server security api-keys list|create|delete …",
-    "sessionsHelp": "Usage: ysk-server security sessions list [--user U]\n       ysk-server security sessions revoke --id PREFIX [--user U]\n       ysk-server security sessions revoke-others [--user U] [--keep-token T]",
-    "apiKeysHelp": "Usage: ysk-server security api-keys list\n       ysk-server security api-keys create --name N [--user U] [--scope full|read]\n       ysk-server security api-keys delete --id KEY_ID",
-    "noUser": "No user found. Create admin first or pass --user <name|id>",
-    "tokenOnce": "token shown once — store securely",
-    "sessionRevokeUsage": "Usage: ysk-server security sessions revoke --id <sessionIdPrefix> [--user U]",
-    "apiKeyDeleteUsage": "Usage: ysk-server security api-keys delete --id KEY_ID"
+    "help": "Utilização: ysk-server security status\n       ysk-server security sessions list|revoke|revoke-others [--user U]\n       ysk-server security api-keys list|create|delete …",
+    "sessionsHelp": "Utilização: ysk-server security sessions list [--user U]\n       ysk-server security sessions revoke --id PREFIX [--user U]\n       ysk-server security sessions revoke-others [--user U] [--keep-token T]",
+    "apiKeysHelp": "Utilização: ysk-server security api-keys list\n       ysk-server security api-keys create --name N [--user U] [--scope full|read]\n       ysk-server security api-keys delete --id KEY_ID",
+    "noUser": "Nenhum utilizador encontrado. Crie primeiro o administrador ou passe --user <name|id>",
+    "tokenOnce": "token mostrado uma vez — guarde de forma segura",
+    "sessionRevokeUsage": "Utilização: ysk-server security sessions revoke --id <sessionIdPrefix> [--user U]",
+    "apiKeyDeleteUsage": "Utilização: ysk-server security api-keys delete --id KEY_ID"
   },
   "help": {
-    "blurb": "Control plane CLI — prefer --json for AI agents.\nDocs: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json",
-    "main": "{{product}} ({{cli}}) v{{version}}\n\nControl plane CLI — prefer --json for AI agents.\nDocs: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json\n\nUsage:\n  {{cli}} <command> [options]\n\nCommands:\n  setup                 Init dataDir + admin\n  update                Self-update check/apply\n  serve                 HTTP API + Web UI\n  system unit-install   Install ysk-server.service [--enable]\n  tools                 List tools; tools run --tool <name> [--dry-run]\n  ask                   NL → AI plan [--execute]\n  projects              list|get|create|deploy|stop|health|backup|template\n  backup                all|list|status|restore|delete|schedule|control-plane|settings|restic\n  templates             App templates\n  hosting               nginx|dns|db|firewall helpers\n  dns                   zone|zones (AI alias → hosting dns-*)\n  logs                  sources|query|journal|overview\n  host                  overview|metrics (read-only)\n  nginx                 status|list|test|sync\n  ssl                   list|get (certificates)\n  db-cluster            list|get|create|plan (HA plan-first)\n  ssh-key               list|create|import|public|export|install|delete (SSH identity vault)\n  ssh-2fa               list|enroll|confirm|install|pam|retire (SSH login TOTP ≠ panel 2FA)\n  services              Host service matrix (systemctl probe)\n  defense | protection  status|ban|unban|whitelist\n  security              status|sessions|api-keys (2FA flags · session revoke · API keys)\n  cdn                   nodes|sites|render|apply|purge|probe|dashboard|health-loop|from-project\n  agents                runtimes|fleet list|commands|register (panel + edge)\n  agent run             Outbound fleet poller (experimental)\n  store                 status|export|import|migrate (json|sqlite|postgres document backends)\n  files                 list|read|write|mkdir|rm|stat|rename|copy|move|chmod|trash|shares (sandbox)\n  cron                  list|create|delete|enable|disable|run|install|status\n  email                 domains|mailboxes|deliverability|bootstrap|dns (panel parity)\n  health                Local mode snapshot or --url http://host:port/health\n  readiness | doctor    Production readiness (honest)\n  migrate               inventory|host|post|status|resume (full host migrate)\n  version | help\n\nGlobal:\n  --json                JSON stdout (AI)\n  --data-dir PATH\n  --config PATH\n  --help | --version\n\nExit: 0 ok · 1 error · 2 validation · 3 blocked · 4 not found · 5 host error\n\nSafety:\n  Dangerous ops default to dry-run (plan only).\n  Pass --execute (alias --apply) + env YSK_EXECUTE=1 to mutate host.\n\nExamples:\n  {{cli}} readiness --json\n  {{cli}} host --json\n  {{cli}} nginx status --json\n  {{cli}} ssl list --json\n  {{cli}} projects get --id UUID --json\n  {{cli}} defense ban --ip 1.2.3.4 --json          # dry-run plan\n  {{cli}} projects list --json\n  {{cli}} logs query --source journal: --lines 100 --json\n  {{cli}} tools --json"
+    "blurb": "CLI do plano de controlo — prefira --json para agentes de IA.\nDocs: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json",
+    "main": "{{product}} ({{cli}}) v{{version}}\n\nCLI do plano de controlo — prefira --json para agentes de IA.\nDocs: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json\n\nUtilização:\n  {{cli}} <command> [options]\n\nComandos:\n  setup                 Inicializar dataDir + admin\n  update                Verificar/aplicar autoatualização\n  serve                 API HTTP + UI Web\n  system unit-install   Instalar ysk-server.service [--enable]\n  tools                 Listar tools; tools run --tool <name> [--dry-run]\n  ask                   NL → plano de IA [--execute]\n  projects              list|get|create|deploy|stop|health|backup|template\n  backup                all|list|status|restore|delete|schedule|control-plane|settings|restic\n  templates             Modelos de aplicação\n  hosting               auxiliares nginx|dns|db|firewall\n  dns                   zone|zones (alias IA → hosting dns-*)\n  logs                  sources|query|journal|overview\n  host                  overview|metrics (só leitura)\n  nginx                 status|list|test|sync\n  ssl                   list|get (certificados)\n  db-cluster            list|get|create|plan (HA plan-first)\n  ssh-key               list|create|import|public|export|install|delete (cofre de identidades SSH)\n  ssh-2fa               list|enroll|confirm|install|pam|retire (TOTP de login SSH ≠ 2FA do painel)\n  services              Matriz de serviços do host (sonda systemctl)\n  defense | protection  status|ban|unban|whitelist\n  security              status|sessions|api-keys (flags 2FA · revogar sessão · chaves API)\n  cdn                   nodes|sites|render|apply|purge|probe|dashboard|health-loop|from-project\n  agents                runtimes|fleet list|commands|register (painel + edge)\n  agent run             Poller de frota outbound (experimental)\n  store                 status|export|import|migrate (backends de documentos json|sqlite|postgres)\n  files                 list|read|write|mkdir|rm|stat|rename|copy|move|chmod|trash|shares (sandbox)\n  cron                  list|create|delete|enable|disable|run|install|status\n  email                 domains|mailboxes|deliverability|bootstrap|dns (paridade com o painel)\n  health                Instantâneo em modo local ou --url http://host:port/health\n  readiness | doctor    Prontidão de produção (honesta)\n  migrate               inventory|host|post|status|resume (migração completa do host)\n  version | help\n\nGlobal:\n  --json                JSON em stdout (IA)\n  --data-dir PATH\n  --config PATH\n  --help | --version\n\nSaída: 0 ok · 1 erro · 2 validação · 3 bloqueado · 4 não encontrado · 5 erro do host\n\nSegurança:\n  Operações perigosas usam dry-run por predefinição (apenas plano).\n  Passe --execute (alias --apply) + env YSK_EXECUTE=1 para alterar o host.\n\nExemplos:\n  {{cli}} readiness --json\n  {{cli}} host --json\n  {{cli}} nginx status --json\n  {{cli}} ssl list --json\n  {{cli}} projects get --id UUID --json\n  {{cli}} defense ban --ip 1.2.3.4 --json          # plano dry-run\n  {{cli}} projects list --json\n  {{cli}} logs query --source journal: --lines 100 --json\n  {{cli}} tools --json"
   },
   "usage": {
     "tools": {
@@ -20,7 +20,7 @@
         "--tool": {
           "name": {
             "--arg": {
-              "cd327c": "Usage: ysk-server tools run --tool <name> [--arg key=val] [--dry-run]\n"
+              "cd327c": "Utilização: ysk-server tools run --tool <name> [--arg key=val] [--dry-run]\n"
             }
           }
         }
@@ -31,14 +31,14 @@
         "list": {
           "create": {
             "get": {
-              "b94a62": "Usage: ysk-server email domains list|create|get …\n"
+              "b94a62": "Utilização: ysk-server email domains list|create|get …\n"
             }
           }
         },
         "create": {
           "--domain": {
             "example": {
-              "bd4036": "Usage: ysk-server email domains create --domain example.com --ip A.B.C.D\n"
+              "bd4036": "Utilização: ysk-server email domains create --domain example.com --ip A.B.C.D\n"
             }
           }
         }
@@ -46,13 +46,13 @@
       "mailboxes": {
         "list": {
           "create": {
-            "42b26c": "Usage: ysk-server email mailboxes list|create …\n"
+            "42b26c": "Utilização: ysk-server email mailboxes list|create …\n"
           }
         },
         "create": {
           "--domain": {
             "example": {
-              "7227f3": "Usage: ysk-server email mailboxes create --domain example.com --local user [--password P]\n"
+              "7227f3": "Utilização: ysk-server email mailboxes create --domain example.com --local user [--password P]\n"
             }
           }
         }
@@ -61,7 +61,7 @@
         "--domain": {
           "example": {
             "com": {
-              "26b806": "Usage: ysk-server email dns --domain example.com\n"
+              "26b806": "Utilização: ysk-server email dns --domain example.com\n"
             }
           }
         }
@@ -70,7 +70,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "73dad0": "Usage: ysk-server email <sub> [--data-dir PATH] [--json]\n  domains list|create|get [--q TEXT]\n    create --domain example.com --ip A.B.C.D\n    get --domain example.com | --id UUID\n  mailboxes list|create [--domain D | --id domainId]\n    create --domain D --local user [--password P]\n  deliverability --domain D | --id UUID\n  deliverability-overview\n  bootstrap --domain D --ip A.B.C.D [--install]\n  dns --domain D | --id UUID     # DNS bundle for panel\nAlso: hosting email-apply|email-mailbox|email-deliverability (aliases)\n"
+              "73dad0": "Utilização: ysk-server email <sub> [--data-dir PATH] [--json]\n  domains list|create|get [--q TEXT]\n    create --domain example.com --ip A.B.C.D\n    get --domain example.com | --id UUID\n  mailboxes list|create [--domain D | --id domainId]\n    create --domain D --local user [--password P]\n  deliverability --domain D | --id UUID\n  deliverability-overview\n  bootstrap --domain D --ip A.B.C.D [--install]\n  dns --domain D | --id UUID     # pacote DNS para o painel\nTambém: hosting email-apply|email-mailbox|email-deliverability (aliases)\n"
             }
           }
         }
@@ -79,7 +79,7 @@
         "--domain": {
           "example": {
             "com": {
-              "b0dff0": "Usage: ysk-server email deliverability --domain example.com\n"
+              "b0dff0": "Utilização: ysk-server email deliverability --domain example.com\n"
             }
           }
         }
@@ -88,7 +88,7 @@
         "--domain": {
           "example": {
             "com": {
-              "affc8d": "Usage: ysk-server email bootstrap --domain example.com --ip 1.2.3.4 [--install]\n"
+              "affc8d": "Utilização: ysk-server email bootstrap --domain example.com --ip 1.2.3.4 [--install]\n"
             }
           }
         }
@@ -99,7 +99,7 @@
         "--id": {
           "job": {
             "id": {
-              "f6aafe": "Usage: ysk-server cron delete --id JOB_ID\n"
+              "f6aafe": "Utilização: ysk-server cron delete --id JOB_ID\n"
             }
           }
         }
@@ -108,14 +108,14 @@
         "--id": {
           "job": {
             "id": {
-              "99cfdf": "Usage: ysk-server cron {{sub}} --id JOB_ID\n"
+              "99cfdf": "Utilização: ysk-server cron {{sub}} --id JOB_ID\n"
             }
           }
         },
         "--data-dir": {
           "path": {
             "--json": {
-              "0349e6": "Usage: ysk-server cron <sub> [--data-dir PATH] [--json]\n  list [--project-id ID] [--q TEXT]\n  create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n  delete --id JOB_ID\n  enable|disable --id JOB_ID\n  run --id JOB_ID              # run-now (needs YSK_EXECUTE=1)\n  install                     # load managed crontab (needs EXECUTE)\n  status                      # probe managed file vs host crontab\nHonesty: install blocked without YSK_EXECUTE=1 (file still written).\n"
+              "0349e6": "Utilização: ysk-server cron <sub> [--data-dir PATH] [--json]\n  list [--project-id ID] [--q TEXT]\n  create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n  delete --id JOB_ID\n  enable|disable --id JOB_ID\n  run --id JOB_ID              # executar já (precisa de YSK_EXECUTE=1)\n  install                     # carregar crontab gerido (precisa de EXECUTE)\n  status                      # sondar ficheiro gerido vs crontab do host\nHonestidade: install bloqueado sem YSK_EXECUTE=1 (o ficheiro é mesmo assim escrito).\n"
             }
           }
         }
@@ -124,7 +124,7 @@
         "--id": {
           "job": {
             "id": {
-              "a0a97f": "Usage: ysk-server cron run --id JOB_ID\n"
+              "a0a97f": "Utilização: ysk-server cron run --id JOB_ID\n"
             }
           }
         }
@@ -133,7 +133,7 @@
         "--schedule": {
           "0": {
             "3": {
-              "9a8328": "Usage: ysk-server cron create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n"
+              "9a8328": "Utilização: ysk-server cron create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n"
             }
           }
         }
@@ -143,21 +143,21 @@
       "stat": {
         "--path": {
           "rel": {
-            "17c8f2": "Usage: ysk-server files stat --path REL\n"
+            "17c8f2": "Utilização: ysk-server files stat --path REL\n"
           }
         }
       },
       "read": {
         "--path": {
           "rel": {
-            "e35f8d": "Usage: ysk-server files read --path REL\n"
+            "e35f8d": "Utilização: ysk-server files read --path REL\n"
           }
         }
       },
       "mkdir": {
         "--path": {
           "rel": {
-            "ae0438": "Usage: ysk-server files mkdir --path REL\n"
+            "ae0438": "Utilização: ysk-server files mkdir --path REL\n"
           }
         }
       },
@@ -165,7 +165,7 @@
         "--path": {
           "rel": {
             "--permanent": {
-              "fe2051": "Usage: ysk-server files rm --path REL [--permanent]\n"
+              "fe2051": "Utilização: ysk-server files rm --path REL [--permanent]\n"
             }
           }
         }
@@ -174,7 +174,7 @@
         "--from": {
           "rel": {
             "--to": {
-              "35a260": "Usage: ysk-server files rename --from REL --to REL\n"
+              "35a260": "Utilização: ysk-server files rename --from REL --to REL\n"
             }
           }
         }
@@ -183,7 +183,7 @@
         "--from": {
           "rel": {
             "--to": {
-              "5337f4": "Usage: ysk-server files copy --from REL --to REL\n"
+              "5337f4": "Utilização: ysk-server files copy --from REL --to REL\n"
             }
           }
         }
@@ -192,7 +192,7 @@
         "--from": {
           "rel": {
             "--to": {
-              "75cf5d": "Usage: ysk-server files move --from REL --to REL\n"
+              "75cf5d": "Utilização: ysk-server files move --from REL --to REL\n"
             }
           }
         }
@@ -201,7 +201,7 @@
         "--path": {
           "rel": {
             "--mode": {
-              "39f983": "Usage: ysk-server files chmod --path REL --mode 644\n"
+              "39f983": "Utilização: ysk-server files chmod --path REL --mode 644\n"
             }
           }
         }
@@ -210,28 +210,28 @@
         "restore": {
           "--id": {
             "trash": {
-              "c89ce9": "Usage: ysk-server files trash restore --id TRASH_ID\n"
+              "c89ce9": "Utilização: ysk-server files trash restore --id TRASH_ID\n"
             }
           }
         },
         "list": {
           "restore": {
             "purge": {
-              "ef063d": "Usage: ysk-server files trash list|restore|purge\n"
+              "ef063d": "Utilização: ysk-server files trash list|restore|purge\n"
             }
           }
         }
       },
       "shares": {
         "list": {
-          "ac342c": "Usage: ysk-server files shares list\n"
+          "ac342c": "Utilização: ysk-server files shares list\n"
         }
       },
       "webdav": {
         "status": {
           "token": {
             "disable": {
-              "f8e94b": "Usage: ysk-server files webdav status|token|disable\n"
+              "f8e94b": "Utilização: ysk-server files webdav status|token|disable\n"
             }
           }
         }
@@ -240,7 +240,7 @@
         "--root": {
           "public": {
             "project": {
-              "42ebd4": "Usage: ysk-server files <sub> [--root public|project:ID] [--data-dir PATH] [--json]\n  list   [--path DIR] [--q TEXT] [--sort name|size|mtime] [--order asc|desc]\n  stat   --path REL\n  read   --path REL\n  write  --path REL --content TEXT | --file LOCAL\n  mkdir  --path REL\n  rm     --path REL [--permanent]\n  rename --from REL --to REL\n  copy   --from REL --to REL\n  move   --from REL --to REL\n  chmod  --path REL --mode 644\n  trash  list|restore|purge [--id TRASH_ID]\n  shares list\n  favorites list\n  upload --dir REL --file LOCAL [--file LOCAL2…]\n  webdav status|token|disable\nSandbox: only public files root or project home (path-constrained).\n"
+              "42ebd4": "Utilização: ysk-server files <sub> [--root public|project:ID] [--data-dir PATH] [--json]\n  list   [--path DIR] [--q TEXT] [--sort name|size|mtime] [--order asc|desc]\n  stat   --path REL\n  read   --path REL\n  write  --path REL --content TEXT | --file LOCAL\n  mkdir  --path REL\n  rm     --path REL [--permanent]\n  rename --from REL --to REL\n  copy   --from REL --to REL\n  move   --from REL --to REL\n  chmod  --path REL --mode 644\n  trash  list|restore|purge [--id TRASH_ID]\n  shares list\n  favorites list\n  upload --dir REL --file LOCAL [--file LOCAL2…]\n  webdav status|token|disable\nSandbox: apenas a raiz de ficheiros public ou a home do projeto (caminho limitado).\n"
             }
           }
         }
@@ -249,7 +249,7 @@
         "--path": {
           "rel": {
             "--content": {
-              "0addb1": "Usage: ysk-server files write --path REL --content TEXT | --file LOCAL\n"
+              "0addb1": "Utilização: ysk-server files write --path REL --content TEXT | --file LOCAL\n"
             }
           }
         }
@@ -258,7 +258,7 @@
         "--dir": {
           "rel": {
             "--file": {
-              "f8c3bf": "Usage: ysk-server files upload --dir REL --file LOCAL [--file LOCAL2…]\n"
+              "f8c3bf": "Utilização: ysk-server files upload --dir REL --file LOCAL [--file LOCAL2…]\n"
             }
           }
         }
@@ -269,7 +269,7 @@
         "--in": {
           "file": {
             "json": {
-              "5b6fdd": "Usage: ysk-server store import --in FILE.json\n"
+              "5b6fdd": "Utilização: ysk-server store import --in FILE.json\n"
             }
           }
         }
@@ -278,7 +278,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "d580e4": "Usage: ysk-server store <sub> [--data-dir PATH] [--json]\n  status                         Show backend kind + counts\n  export --out FILE.json         Dump document snapshot\n  import --in FILE.json          Overwrite snapshot from file\n  migrate --to sqlite|json [--out PATH]\n    Copy current store into another backend file\nEnv: YSK_STORE=json|sqlite|postgres  YSK_DATABASE_URL=postgres://…\nHonesty: document-blob backends (not full relational schema yet).\n"
+              "d580e4": "Utilização: ysk-server store <sub> [--data-dir PATH] [--json]\n  status                         Mostrar tipo de backend + contagens\n  export --out FILE.json         Exportar instantâneo de documentos\n  import --in FILE.json          Sobrescrever instantâneo a partir do ficheiro\n  migrate --to sqlite|json [--out PATH]\n    Copiar o store atual para outro ficheiro de backend\nEnv: YSK_STORE=json|sqlite|postgres  YSK_DATABASE_URL=postgres://…\nHonestidade: backends de blob de documentos (ainda sem esquema relacional completo).\n"
             }
           }
         }
@@ -287,7 +287,7 @@
         "--to": {
           "json": {
             "sqlite": {
-              "1c52a3": "Usage: ysk-server store migrate --to json|sqlite [--out PATH]\n  (postgres: export JSON then import under YSK_DATABASE_URL)\n"
+              "1c52a3": "Utilização: ysk-server store migrate --to json|sqlite [--out PATH]\n  (postgres: exportar JSON e depois importar com YSK_DATABASE_URL)\n"
             }
           }
         }
@@ -298,28 +298,28 @@
         "delete": {
           "--id": {
             "node": {
-              "0c6a1e": "Usage: ysk-server cdn nodes delete --id NODE_ID\n"
+              "0c6a1e": "Utilização: ysk-server cdn nodes delete --id NODE_ID\n"
             }
           }
         },
         "drain": {
           "--id": {
             "node": {
-              "a8aa81": "Usage: ysk-server cdn nodes drain --id NODE_ID [--off]\n"
+              "a8aa81": "Utilização: ysk-server cdn nodes drain --id NODE_ID [--off]\n"
             }
           }
         },
         "list": {
           "upsert": {
             "delete": {
-              "52549e": "Usage: ysk-server cdn nodes list|upsert|delete|probe|drain …\n"
+              "52549e": "Utilização: ysk-server cdn nodes list|upsert|delete|probe|drain …\n"
             }
           }
         },
         "upsert": {
           "--name": {
             "name": {
-              "8f6f39": "Usage: ysk-server cdn nodes upsert --name NAME [--id ID] [--base-url U] [--fleet-agent-id S] [--ssh-host H] [--region R]\n"
+              "8f6f39": "Utilização: ysk-server cdn nodes upsert --name NAME [--id ID] [--base-url U] [--fleet-agent-id S] [--ssh-host H] [--region R]\n"
             }
           }
         }
@@ -328,28 +328,28 @@
         "get": {
           "--id": {
             "site": {
-              "3c3c35": "Usage: ysk-server cdn sites get --id SITE_ID\n"
+              "3c3c35": "Utilização: ysk-server cdn sites get --id SITE_ID\n"
             }
           }
         },
         "delete": {
           "--id": {
             "site": {
-              "51ef8f": "Usage: ysk-server cdn sites delete --id SITE_ID\n"
+              "51ef8f": "Utilização: ysk-server cdn sites delete --id SITE_ID\n"
             }
           }
         },
         "list": {
           "get": {
             "upsert": {
-              "609da6": "Usage: ysk-server cdn sites list|get|upsert|delete …\n"
+              "609da6": "Utilização: ysk-server cdn sites list|get|upsert|delete …\n"
             }
           }
         },
         "upsert": {
           "--name": {
             "n": {
-              "6ebb75": "Usage: ysk-server cdn sites upsert --name N --domains a.com,b.com [--edge-id ID]… [--origin-url U] [--origin-project ID]\n"
+              "6ebb75": "Utilização: ysk-server cdn sites upsert --name N --domains a.com,b.com [--edge-id ID]… [--origin-url U] [--origin-project ID]\n"
             }
           }
         }
@@ -358,7 +358,7 @@
         "--site-id": {
           "id": {
             "--dry-run": {
-              "2149eb": "Usage: ysk-server cdn render --site-id ID [--dry-run]\n"
+              "2149eb": "Utilização: ysk-server cdn render --site-id ID [--dry-run]\n"
             }
           }
         }
@@ -367,7 +367,7 @@
         "--site-id": {
           "id": {
             "--edge-id": {
-              "a527b3": "Usage: ysk-server cdn apply --site-id ID [--edge-id EDGE]\n"
+              "a527b3": "Utilização: ysk-server cdn apply --site-id ID [--edge-id EDGE]\n"
             }
           }
         }
@@ -376,7 +376,7 @@
         "--site-id": {
           "id": {
             "--edge-id": {
-              "bc08ec": "Usage: ysk-server cdn purge --site-id ID [--edge-id EDGE]\n"
+              "bc08ec": "Utilização: ysk-server cdn purge --site-id ID [--edge-id EDGE]\n"
             }
           }
         }
@@ -385,7 +385,7 @@
         "--site-id": {
           "id": {
             "--apply-zone": {
-              "343068": "Usage: ysk-server cdn dns-sync --site-id ID [--apply-zone]\n"
+              "343068": "Utilização: ysk-server cdn dns-sync --site-id ID [--apply-zone]\n"
             }
           }
         }
@@ -394,7 +394,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "092842": "Usage: ysk-server cdn <sub> [--data-dir PATH] [--json]\n  nodes list|upsert|delete|probe|drain\n  sites list|upsert|delete|get\n  render --site-id ID [--dry-run]\n  apply  --site-id ID [--edge-id ID]   # fan-out (fleet queue ok without EXECUTE)\n  purge  --site-id ID [--edge-id ID]\n  dns-sync --site-id ID [--apply-zone]\n  probe | dashboard | health-loop [--apply-zone]\n  from-project --project-id ID [--edge-id ID…]\nHonesty: apply_status written/queued ≠ edge nginx applied until agent ack / EXECUTE reload.\n"
+              "092842": "Utilização: ysk-server cdn <sub> [--data-dir PATH] [--json]\n  nodes list|upsert|delete|probe|drain\n  sites list|upsert|delete|get\n  render --site-id ID [--dry-run]\n  apply  --site-id ID [--edge-id ID]   # fan-out (fila fleet ok sem EXECUTE)\n  purge  --site-id ID [--edge-id ID]\n  dns-sync --site-id ID [--apply-zone]\n  probe | dashboard | health-loop [--apply-zone]\n  from-project --project-id ID [--edge-id ID…]\nHonestidade: apply_status written/queued ≠ nginx no edge aplicado até ack do agent / reload EXECUTE.\n"
             }
           }
         }
@@ -403,7 +403,7 @@
         "--project-id": {
           "id": {
             "--edge-id": {
-              "a96f42": "Usage: ysk-server cdn from-project --project-id ID [--edge-id ID]…\n"
+              "a96f42": "Utilização: ysk-server cdn from-project --project-id ID [--edge-id ID]…\n"
             }
           }
         }
@@ -414,21 +414,21 @@
         "remove": {
           "--session": {
             "session": {
-              "1827fe": "Usage: ysk-server agents fleet remove --session SESSION_ID\n"
+              "1827fe": "Utilização: ysk-server agents fleet remove --session SESSION_ID\n"
             }
           }
         },
         "register": {
           "--id": {
             "agent": {
-              "209b2d": "Usage: ysk-server agents fleet register --id AGENT_ID [--group g] [--edge]\n"
+              "209b2d": "Utilização: ysk-server agents fleet register --id AGENT_ID [--group g] [--edge]\n"
             }
           }
         },
         "commands": {
           "--session": {
             "session": {
-              "f8067c": "Usage: ysk-server agents fleet commands --session SESSION_ID\n"
+              "f8067c": "Utilização: ysk-server agents fleet commands --session SESSION_ID\n"
             }
           }
         }
@@ -437,7 +437,7 @@
         "--id": {
           "agent": {
             "id": {
-              "3c4477": "Usage: ysk-server agents register --id AGENT_ID [--group g]\n"
+              "3c4477": "Utilização: ysk-server agents register --id AGENT_ID [--group g]\n"
             }
           }
         }
@@ -446,7 +446,7 @@
         "--session": {
           "session": {
             "id": {
-              "e620d2": "Usage: ysk-server agents commands --session SESSION_ID\n"
+              "e620d2": "Utilização: ysk-server agents commands --session SESSION_ID\n"
             }
           }
         }
@@ -455,7 +455,7 @@
         "probe": {
           "fleet": {
             "list": {
-              "261fa4": "Usage: ysk-server agents [runtimes|probe|fleet list|fleet register|fleet commands|register|commands]\n"
+              "261fa4": "Utilização: ysk-server agents [runtimes|probe|fleet list|fleet register|fleet commands|register|commands]\n"
             }
           }
         }
@@ -466,7 +466,7 @@
         "--control-plane": {
           "url": {
             "--id": {
-              "cfefbe": "Usage: ysk-server agent run --control-plane URL --id AGENT_ID [--group g]\n"
+              "cfefbe": "Utilização: ysk-server agent run --control-plane URL --id AGENT_ID [--group g]\n"
             }
           }
         }
@@ -476,7 +476,7 @@
       "check": {
         "system": {
           "info": {
-            "b0c781": "Usage: ysk-server ask \"check system info\"\n"
+            "b0c781": "Utilização: ysk-server ask \"check system info\"\n"
           }
         }
       }
@@ -486,7 +486,7 @@
         "--project-id": {
           "id": {
             "--name": {
-              "d66c29": "Usage: ysk-server backup delete --project-id ID --name ARCHIVE\n"
+              "d66c29": "Utilização: ysk-server backup delete --project-id ID --name ARCHIVE\n"
             }
           }
         }
@@ -495,14 +495,14 @@
         "list": {
           "run": {
             "restore": {
-              "10402b": "Usage: ysk-server backup restic list|run|restore …\n"
+              "10402b": "Utilização: ysk-server backup restic list|run|restore …\n"
             }
           }
         },
         "restore": {
           "--project-id": {
             "id": {
-              "a8f133": "Usage: ysk-server backup restic restore --project-id ID --snapshot SNAP [--dry-run] [--overwrite-home --confirm PHRASE]\n"
+              "a8f133": "Utilização: ysk-server backup restic restore --project-id ID --snapshot SNAP [--dry-run] [--overwrite-home --confirm PHRASE]\n"
             }
           }
         }
@@ -511,7 +511,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "777243": "Usage: ysk-server backup <sub> [--data-dir PATH] [--json]\n  all                         Backup all project homes (+ remote/restic side when configured)\n  list [--project-id ID] [--q TEXT]\n  status                      Last run + schedule probe\n  restore --project-id ID --name ARCHIVE [--mode full|web|dry-run]\n  delete  --project-id ID --name ARCHIVE\n  schedule [--cron \"0 3 * * *\"] [--install]\n  control-plane               Snapshot ysk.json + config.json\n  control-plane-restore --name ARCHIVE [--mode dry-run|full] [--confirm RESTORE-CONTROL-PLANE]\n  settings [get|set]          Remote / exclusions / restic\n    set --remote-kind local|sftp|s3 --remote-path P [--remote-host H] …\n    set --exclude a,b,c | --exclusions-file FILE\n    set --restic-enable --restic-password P [--restic-repo PATH]\n    set --from-json FILE      # full patch {remote?,exclusions?,restic?}\n  restic list|run|restore     Incremental restic helpers\n"
+              "777243": "Utilização: ysk-server backup <sub> [--data-dir PATH] [--json]\n  all                         Backup de todos os homes de projeto (+ remoto/restic quando configurado)\n  list [--project-id ID] [--q TEXT]\n  status                      Última execução + sonda de agendamento\n  restore --project-id ID --name ARCHIVE [--mode full|web|dry-run]\n  delete  --project-id ID --name ARCHIVE\n  schedule [--cron \"0 3 * * *\"] [--install]\n  control-plane               Snapshot de ysk.json + config.json\n  control-plane-restore --name ARCHIVE [--mode dry-run|full] [--confirm RESTORE-CONTROL-PLANE]\n  settings [get|set]          Remoto / exclusões / restic\n    set --remote-kind local|sftp|s3 --remote-path P [--remote-host H] …\n    set --exclude a,b,c | --exclusions-file FILE\n    set --restic-enable --restic-password P [--restic-repo PATH]\n    set --from-json FILE      # patch completo {remote?,exclusions?,restic?}\n  restic list|run|restore     Auxiliares incrementais restic\n"
             }
           }
         }
@@ -520,7 +520,7 @@
         "--name": {
           "archive": {
             "--mode": {
-              "316a76": "Usage: ysk-server backup control-plane-restore --name ARCHIVE [--mode dry-run|full] [--confirm RESTORE-CONTROL-PLANE]\n"
+              "316a76": "Utilização: ysk-server backup control-plane-restore --name ARCHIVE [--mode dry-run|full] [--confirm RESTORE-CONTROL-PLANE]\n"
             }
           }
         }
@@ -529,7 +529,7 @@
         "--project-id": {
           "id": {
             "--name": {
-              "bc7041": "Usage: ysk-server backup restore --project-id ID --name ARCHIVE [--mode full|web|dry-run]\n"
+              "bc7041": "Utilização: ysk-server backup restore --project-id ID --name ARCHIVE [--mode full|web|dry-run]\n"
             }
           }
         }
@@ -539,7 +539,7 @@
       "list": {
         "--q": {
           "text": {
-            "b8e16b": "Usage: ysk-server packages list [--q text]\n"
+            "b8e16b": "Utilização: ysk-server packages list [--q text]\n"
           }
         }
       }
@@ -548,21 +548,21 @@
       "stop": {
         "--id": {
           "projectid": {
-            "b15409": "Usage: ysk-server projects stop --id <projectId>\n"
+            "b15409": "Utilização: ysk-server projects stop --id <projectId>\n"
           }
         }
       },
       "backup": {
         "--id": {
           "projectid": {
-            "e62846": "Usage: ysk-server projects backup --id <projectId>\n"
+            "e62846": "Utilização: ysk-server projects backup --id <projectId>\n"
           }
         }
       },
       "health": {
         "--id": {
           "projectid": {
-            "e816ec": "Usage: ysk-server projects health --id <projectId>\n"
+            "e816ec": "Utilização: ysk-server projects health --id <projectId>\n"
           }
         }
       },
@@ -570,21 +570,21 @@
         "provision": {
           "--id": {
             "projectid": {
-              "5aff44": "Usage: ysk-server projects isolation provision --id <projectId>\n       ysk-server projects isolation provision-all [--limit 20]\n"
+              "5aff44": "Utilização: ysk-server projects isolation provision --id <projectId>\n       ysk-server projects isolation provision-all [--limit 20]\n"
             }
           }
         },
         "backfill-owners": {
           "--owner-user-id": {
             "id": {
-              "8691da": "Usage: ysk-server projects isolation backfill-owners --owner-user-id <id>\n"
+              "8691da": "Utilização: ysk-server projects isolation backfill-owners --owner-user-id <id>\n"
             }
           }
         },
         "list": {
           "provision": {
             "provision-all": {
-              "8e9da3": "Usage: ysk-server projects isolation list|provision|provision-all|backfill-owners\n"
+              "8e9da3": "Utilização: ysk-server projects isolation list|provision|provision-all|backfill-owners\n"
             }
           }
         }
@@ -593,7 +593,7 @@
         "--id": {
           "projectid": {
             "name": {
-              "b0d532": "Usage: ysk-server projects get --id <projectId|name> [--json]\n"
+              "b0d532": "Utilização: ysk-server projects get --id <projectId|name> [--json]\n"
             }
           }
         }
@@ -602,7 +602,7 @@
         "--name": {
           "name": {
             "--domain": {
-              "66e857": "Usage: ysk-server projects create --name <name> [--domain d] [--runtime node|php|static|python|go|rust] [--template id]\n"
+              "66e857": "Utilização: ysk-server projects create --name <name> [--domain d] [--runtime node|php|static|python|go|rust] [--template id]\n"
             }
           }
         }
@@ -611,7 +611,7 @@
         "--id": {
           "projectid": {
             "--entry": {
-              "339111": "Usage: ysk-server projects deploy --id <projectId> [--entry f] [--port N] [--fpm|--builtin] [--reload]\n"
+              "339111": "Utilização: ysk-server projects deploy --id <projectId> [--entry f] [--port N] [--fpm|--builtin] [--reload]\n"
             }
           }
         }
@@ -620,7 +620,7 @@
         "--id": {
           "id": {
             "--git-url": {
-              "a513f5": "Usage: ysk-server projects git-deploy --id ID [--git-url URL] [--branch main] [--no-redeploy] [--depth 1] [--entry f]\n"
+              "a513f5": "Utilização: ysk-server projects git-deploy --id ID [--git-url URL] [--branch main] [--no-redeploy] [--depth 1] [--entry f]\n"
             }
           }
         }
@@ -629,7 +629,7 @@
         "--id": {
           "projectid": {
             "--template": {
-              "591ce4": "Usage: ysk-server projects template --id <projectId> --template <id> [--force]\n"
+              "591ce4": "Utilização: ysk-server projects template --id <projectId> --template <id> [--force]\n"
             }
           }
         }
@@ -638,7 +638,7 @@
         "get": {
           "create": {
             "deploy": {
-              "253b48": "Usage: ysk-server projects list|get|create|deploy|git-deploy|stop|backup|template|health [options]\n  deploy --id UUID [--entry f] [--port N] [--fpm|--builtin] [--reload]\n  git-deploy --id UUID [--git-url URL] [--branch B] [--no-redeploy]\n"
+              "253b48": "Utilização: ysk-server projects list|get|create|deploy|git-deploy|stop|backup|template|health [options]\n  deploy --id UUID [--entry f] [--port N] [--fpm|--builtin] [--reload]\n  git-deploy --id UUID [--git-url URL] [--branch B] [--no-redeploy]\n"
             }
           }
         }
@@ -649,240 +649,240 @@
         "db-cluster": {
           "get": {
             "--id": {
-              "00f803": "Usage: {{CLI_NAME}} db-cluster get --id UUID [--json]\n"
+              "00f803": "Utilização: {{CLI_NAME}} db-cluster get --id UUID [--json]\n"
             }
           },
           "plan": {
             "--id": {
-              "483f52": "Usage: {{CLI_NAME}} db-cluster plan --id UUID [--json]\n"
+              "483f52": "Utilização: {{CLI_NAME}} db-cluster plan --id UUID [--json]\n"
             }
           },
           "artifacts": {
             "--id": {
-              "6b33c4": "Usage: {{CLI_NAME}} db-cluster artifacts --id UUID [--json]\n"
+              "6b33c4": "Utilização: {{CLI_NAME}} db-cluster artifacts --id UUID [--json]\n"
             }
           },
           "bundle": {
             "--id": {
-              "94ed27": "Usage: {{CLI_NAME}} db-cluster bundle --id UUID [--json]\n"
+              "94ed27": "Utilização: {{CLI_NAME}} db-cluster bundle --id UUID [--json]\n"
             }
           },
           "delete": {
             "--id": {
-              "3de0e4": "Usage: {{CLI_NAME}} db-cluster delete --id UUID [--json]\n"
+              "3de0e4": "Utilização: {{CLI_NAME}} db-cluster delete --id UUID [--json]\n"
             }
           },
           "create": {
             "--name": {
-              "e3b733": "Usage: {{CLI_NAME}} db-cluster create --name N --engine mariadb --kind mariadb-galera --member HOST=role[:access] ...\n"
+              "e3b733": "Utilização: {{CLI_NAME}} db-cluster create --name N --engine mariadb --kind mariadb-galera --member HOST=role[:access] ...\n"
             }
           },
           "apply": {
             "--id": {
-              "4cddb8": "Usage: {{CLI_NAME}} db-cluster apply --id UUID [--execute] [--bootstrap] [--json]\n"
+              "4cddb8": "Utilização: {{CLI_NAME}} db-cluster apply --id UUID [--execute] [--bootstrap] [--json]\n"
             }
           },
           "probe": {
             "--id": {
-              "22870c": "Usage: {{CLI_NAME}} db-cluster probe --id UUID [--peers] [--json]\n"
+              "22870c": "Utilização: {{CLI_NAME}} db-cluster probe --id UUID [--peers] [--json]\n"
             }
           },
           "install-peers": {
             "--id": {
-              "600b02": "Usage: {{CLI_NAME}} db-cluster install-peers --id UUID [--execute] [--no-restart] [--identity ID] [--json]\n"
+              "600b02": "Utilização: {{CLI_NAME}} db-cluster install-peers --id UUID [--execute] [--no-restart] [--identity ID] [--json]\n"
             }
           },
           "push": {
             "--id": {
-              "697080": "Usage: {{CLI_NAME}} db-cluster push --id UUID [--member ID] [--identity ID] [--execute] [--json]\n"
+              "697080": "Utilização: {{CLI_NAME}} db-cluster push --id UUID [--member ID] [--identity ID] [--execute] [--json]\n"
             }
           },
           "fleet": {
             "--id": {
-              "239462": "Usage: {{CLI_NAME}} db-cluster fleet --id UUID [--op apply|probe|plan] [--execute] [--edge-execute] [--json]\n"
+              "239462": "Utilização: {{CLI_NAME}} db-cluster fleet --id UUID [--op apply|probe|plan] [--execute] [--edge-execute] [--json]\n"
             }
           },
           "list": {
             "get": {
-              "3b9cfa": "Usage: {{CLI_NAME}} db-cluster list|get|create|plan|apply|probe|install-peers|artifacts|bundle|push|fleet|overview|delete [--peers] [--execute] [--json]\n"
+              "3b9cfa": "Utilização: {{CLI_NAME}} db-cluster list|get|create|plan|apply|probe|install-peers|artifacts|bundle|push|fleet|overview|delete [--peers] [--execute] [--json]\n"
             }
           }
         },
         "ssh-key": {
           "get": {
             "--id": {
-              "292716": "Usage: {{CLI_NAME}} ssh-key get --id UUID [--json]\n"
+              "292716": "Utilização: {{CLI_NAME}} ssh-key get --id UUID [--json]\n"
             }
           },
           "public": {
             "--id": {
-              "525d7d": "Usage: {{CLI_NAME}} ssh-key public --id UUID\n"
+              "525d7d": "Utilização: {{CLI_NAME}} ssh-key public --id UUID\n"
             }
           },
           "export": {
             "--id": {
-              "0a6d81": "Usage: {{CLI_NAME}} ssh-key export --id UUID [--out PATH] [--json]\n"
+              "0a6d81": "Utilização: {{CLI_NAME}} ssh-key export --id UUID [--out PATH] [--json]\n"
             }
           },
           "delete": {
             "--id": {
-              "a6e2f2": "Usage: {{CLI_NAME}} ssh-key delete --id UUID [--json]\n"
+              "a6e2f2": "Utilização: {{CLI_NAME}} ssh-key delete --id UUID [--json]\n"
             }
           },
           "create": {
             "--name": {
-              "8b1d79": "Usage: {{CLI_NAME}} ssh-key create --name N [--algo ed25519|rsa-4096] [--purpose user|panel|unbound] [--project ID] [--user U] [--home PATH] [--reveal] [--json]\n"
+              "8b1d79": "Utilização: {{CLI_NAME}} ssh-key create --name N [--algo ed25519|rsa-4096] [--purpose user|panel|unbound] [--project ID] [--user U] [--home PATH] [--reveal] [--json]\n"
             }
           },
           "import": {
             "--name": {
-              "6eb800": "Usage: {{CLI_NAME}} ssh-key import --name N --file PATH [--purpose panel|user] [--json]\n"
+              "6eb800": "Utilização: {{CLI_NAME}} ssh-key import --name N --file PATH [--purpose panel|user] [--json]\n"
             }
           },
           "install": {
             "--id": {
-              "b99c56": "Usage: {{CLI_NAME}} ssh-key install --id UUID [--execute] [--json]\n"
+              "b99c56": "Utilização: {{CLI_NAME}} ssh-key install --id UUID [--execute] [--json]\n"
             }
           },
           "test": {
             "--id": {
-              "e1aed3": "Usage: {{CLI_NAME}} ssh-key test --id UUID --target user@host[:port] [--execute] [--json]\n"
+              "e1aed3": "Utilização: {{CLI_NAME}} ssh-key test --id UUID --target user@host[:port] [--execute] [--json]\n"
             }
           },
           "rotate": {
             "--id": {
-              "9c3224": "Usage: {{CLI_NAME}} ssh-key rotate --id UUID [--reveal] [--json]\n"
+              "9c3224": "Utilização: {{CLI_NAME}} ssh-key rotate --id UUID [--reveal] [--json]\n"
             }
           },
           "authorize-self": {
             "--id": {
-              "b7ea2e": "Usage: {{CLI_NAME}} ssh-key authorize-self --id UUID [--json]\n"
+              "b7ea2e": "Utilização: {{CLI_NAME}} ssh-key authorize-self --id UUID [--json]\n"
             }
           },
           "uninstall": {
             "--id": {
-              "afcba0": "Usage: {{CLI_NAME}} ssh-key uninstall --id UUID [--execute] [--json]\n"
+              "afcba0": "Utilização: {{CLI_NAME}} ssh-key uninstall --id UUID [--execute] [--json]\n"
             }
           },
           "list": {
             "get": {
-              "2c92c6": "Usage: {{CLI_NAME}} ssh-key list|get|create|import|public|export|install|test|rotate|authorize-self|uninstall|delete [--json]\n"
+              "2c92c6": "Utilização: {{CLI_NAME}} ssh-key list|get|create|import|public|export|install|test|rotate|authorize-self|uninstall|delete [--json]\n"
             }
           }
         },
         "ssh-2fa": {
           "reveal": {
             "--id": {
-              "a6c27f": "Usage: {{CLI_NAME}} ssh-2fa reveal --id UUID [--json]\n"
+              "a6c27f": "Utilização: {{CLI_NAME}} ssh-2fa reveal --id UUID [--json]\n"
             }
           },
           "retire": {
             "--id": {
-              "6e1fa3": "Usage: {{CLI_NAME}} ssh-2fa retire --id UUID [--json]\n"
+              "6e1fa3": "Utilização: {{CLI_NAME}} ssh-2fa retire --id UUID [--json]\n"
             }
           },
           "enroll": {
             "--user": {
-              "081432": "Usage: {{CLI_NAME}} ssh-2fa enroll --user LINUX|--project ID [--home PATH] [--from-panel] [--json]\n"
+              "081432": "Utilização: {{CLI_NAME}} ssh-2fa enroll --user LINUX|--project ID [--home PATH] [--from-panel] [--json]\n"
             }
           },
           "confirm": {
             "--id": {
-              "9ee8a2": "Usage: {{CLI_NAME}} ssh-2fa confirm --id UUID --code 123456 [--json]\n"
+              "9ee8a2": "Utilização: {{CLI_NAME}} ssh-2fa confirm --id UUID --code 123456 [--json]\n"
             }
           },
           "install": {
             "--id": {
-              "dace06": "Usage: {{CLI_NAME}} ssh-2fa install --id UUID [--execute] [--json]\n"
+              "dace06": "Utilização: {{CLI_NAME}} ssh-2fa install --id UUID [--execute] [--json]\n"
             }
           },
           "uninstall": {
             "--id": {
-              "0bb464": "Usage: {{CLI_NAME}} ssh-2fa uninstall --id UUID [--execute] [--json]\n"
+              "0bb464": "Utilização: {{CLI_NAME}} ssh-2fa uninstall --id UUID [--execute] [--json]\n"
             }
           },
           "list": {
             "enroll": {
-              "802ed0": "Usage: {{CLI_NAME}} ssh-2fa list|enroll|confirm|install|uninstall|pam|reveal|retire [--json]\n"
+              "802ed0": "Utilização: {{CLI_NAME}} ssh-2fa list|enroll|confirm|install|uninstall|pam|reveal|retire [--json]\n"
             }
           }
         },
         "ssl": {
           "list": {
             "get": {
-              "79c232": "Usage: {{CLI_NAME}} ssl list|get --domain X [--json]\n"
+              "79c232": "Utilização: {{CLI_NAME}} ssl list|get --domain X [--json]\n"
             }
           },
           "get": {
             "--domain": {
-              "91c444": "Usage: {{CLI_NAME}} ssl get --domain example.com [--json]\n"
+              "91c444": "Utilização: {{CLI_NAME}} ssl get --domain example.com [--json]\n"
             }
           }
         },
         "dns": {
           "zone": {
             "--zone": {
-              "ad30fa": "Usage: {{CLI_NAME}} dns zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n"
+              "ad30fa": "Utilização: {{CLI_NAME}} dns zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n"
             }
           },
           "zones": {
             "zone": {
-              "5b8bda": "Usage: {{CLI_NAME}} dns zones|zone --zone X --ip A.B.C.D [--ipv6 …] [--json]\n"
+              "5b8bda": "Utilização: {{CLI_NAME}} dns zones|zone --zone X --ip A.B.C.D [--ipv6 …] [--json]\n"
             }
           }
         },
         "nginx": {
           "status": {
             "list": {
-              "d67a16": "Usage: {{CLI_NAME}} nginx status|list|test|sync [--execute] [--json]\n"
+              "d67a16": "Utilização: {{CLI_NAME}} nginx status|list|test|sync [--execute] [--json]\n"
             }
           }
         },
         "host": {
           "overview": {
             "metrics": {
-              "93c828": "Usage: {{CLI_NAME}} host overview|metrics|network [--path /] [--json]\n"
+              "93c828": "Utilização: {{CLI_NAME}} host overview|metrics|network [--path /] [--json]\n"
             }
           }
         },
         "logs": {
           "sources": {
             "overview": {
-              "79058c": "Usage: {{CLI_NAME}} logs sources|overview|units|journal|query [--source id] [--json]\n"
+              "79058c": "Utilização: {{CLI_NAME}} logs sources|overview|units|journal|query [--source id] [--json]\n"
             }
           }
         },
         "services": {
           "sub": {
             "--unit": {
-              "4fe3fa": "Usage: {{CLI_NAME}} services {{sub}} --unit <systemd-unit> [--execute] [--json]\n"
+              "4fe3fa": "Utilização: {{CLI_NAME}} services {{sub}} --unit <systemd-unit> [--execute] [--json]\n"
             }
           },
           "matrix": {
             "start": {
-              "4f3a35": "Usage: {{CLI_NAME}} services matrix|start|stop|restart|reload --unit NAME [--execute] [--json]\n"
+              "4f3a35": "Utilização: {{CLI_NAME}} services matrix|start|stop|restart|reload --unit NAME [--execute] [--json]\n"
             }
           }
         },
         "defense": {
           "ban": {
             "--ip": {
-              "cc22de": "Usage: {{CLI_NAME}} defense ban --ip <ip> [--method fail2ban|ufw|both] [--reason t] [--execute]\n"
+              "cc22de": "Utilização: {{CLI_NAME}} defense ban --ip <ip> [--method fail2ban|ufw|both] [--reason t] [--execute]\n"
             }
           },
           "unban": {
             "--ip": {
-              "46aa23": "Usage: {{CLI_NAME}} defense unban --ip <ip> [--method fail2ban|ufw|both] [--execute]\n"
+              "46aa23": "Utilização: {{CLI_NAME}} defense unban --ip <ip> [--method fail2ban|ufw|both] [--execute]\n"
             }
           },
           "whitelist": {
             "--action": {
-              "c1cbdf": "Usage: {{CLI_NAME}} defense whitelist --action list|add|remove [--ip IP]\n"
+              "c1cbdf": "Utilização: {{CLI_NAME}} defense whitelist --action list|add|remove [--ip IP]\n"
             }
           },
           "status": {
             "bans": {
-              "a8d96b": "Usage: {{CLI_NAME}} defense status|bans|suspects|ban|unban|whitelist|stack-apply|fail2ban|firewall|timeline|presets [--json]\n` +\n          `  bans [--q text] [--source fail2ban|panel|ufw|auto]\n` +\n          `  suspects [--q text]\n` +\n          `  stack-apply [--execute]   # UFW + fail2ban + current preset\n` +\n          `  fail2ban | firewall       # deep probes (honest)\n` +\n          `  timeline [--limit N] [--q text]\n` +\n          `  presets                   # list + activePreset\n"
+              "a8d96b": "Utilização: {{CLI_NAME}} defense status|bans|suspects|ban|unban|whitelist|stack-apply|fail2ban|firewall|timeline|presets [--json]\n` +\n          `  bans [--q text] [--source fail2ban|panel|ufw|auto]\n` +\n          `  suspects [--q text]\n` +\n          `  stack-apply [--execute]   # UFW + fail2ban + preset atual\n` +\n          `  fail2ban | firewall       # sondagens aprofundadas (honestas)\n` +\n          `  timeline [--limit N] [--q text]\n` +\n          `  presets                   # listar + activePreset\n"
             }
           }
         }
@@ -893,7 +893,7 @@
         "--enable": {
           "--data-dir": {
             "path": {
-              "33daa1": "Usage: ysk-server system unit-install [--enable] [--data-dir PATH]\n"
+              "33daa1": "Utilização: ysk-server system unit-install [--enable] [--data-dir PATH]\n"
             }
           }
         }
@@ -904,7 +904,7 @@
         "--username": {
           "u": {
             "--password": {
-              "7145c7": "Usage: ysk-server users create --username <u> --password <p> [--role operator|viewer|admin] [--package-id id]\n"
+              "7145c7": "Utilização: ysk-server users create --username <u> --password <p> [--role operator|viewer|admin] [--package-id id]\n"
             }
           }
         }
@@ -913,7 +913,7 @@
         "--q": {
           "text": {
             "--role": {
-              "544685": "Usage: ysk-server users list [--q text] [--role admin|operator|viewer]\n       ysk-server users create --username u --password p [--role operator]\n"
+              "544685": "Utilização: ysk-server users list [--q text] [--role admin|operator|viewer]\n       ysk-server users create --username u --password p [--role operator]\n"
             }
           }
         }
@@ -922,7 +922,7 @@
     "rbac": {
       "list": {
         "policies": {
-          "330ade": "Usage: ysk-server rbac list|policies\n       ysk-server rbac show --role operator\n       ysk-server rbac audit   # route→cap sample matrix\n"
+          "330ade": "Utilização: ysk-server rbac list|policies\n       ysk-server rbac show --role operator\n       ysk-server rbac audit   # amostra da matriz route→cap\n"
         }
       }
     },
@@ -931,7 +931,7 @@
         "--db": {
           "name": {
             "--user": {
-              "2c8889": "Usage: ysk-server hosting postgres-provision --db NAME --user U --password P(min8) [--execute]\n  Default dry-run (no host change). Pass --execute + YSK_EXECUTE=1 to apply.\n"
+              "2c8889": "Utilização: ysk-server hosting postgres-provision --db NAME --user U --password P(min8) [--execute]\n  Por predefinição dry-run (sem alterar o anfitrião). Passe --execute + YSK_EXECUTE=1 para aplicar.\n"
             }
           }
         }
@@ -940,7 +940,7 @@
         "--db": {
           "name": {
             "--user": {
-              "fc25aa": "Usage: ysk-server hosting mysql-provision --db NAME --user U --password P(min8) [--execute]\n  Default dry-run (no host change). Pass --execute + YSK_EXECUTE=1 to apply.\n"
+              "fc25aa": "Utilização: ysk-server hosting mysql-provision --db NAME --user U --password P(min8) [--execute]\n  Por predefinição dry-run (sem alterar o anfitrião). Passe --execute + YSK_EXECUTE=1 para aplicar.\n"
             }
           }
         }
@@ -949,7 +949,7 @@
         "--zone": {
           "example": {
             "com": {
-              "bdaa0d": "Usage: ysk-server hosting dns-zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n"
+              "bdaa0d": "Utilização: ysk-server hosting dns-zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n"
             }
           }
         }
@@ -958,7 +958,7 @@
         "--zone": {
           "example": {
             "com": {
-              "dba49c": "Usage: ysk-server hosting powerdns-load --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--load|--execute]\n"
+              "dba49c": "Utilização: ysk-server hosting powerdns-load --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--load|--execute]\n"
             }
           }
         }
@@ -967,7 +967,7 @@
         "--domain": {
           "example": {
             "com": {
-              "37d350": "Usage: ysk-server hosting email-apply --domain example.com [--install|--execute]\n"
+              "37d350": "Utilização: ysk-server hosting email-apply --domain example.com [--install|--execute]\n"
             }
           }
         }
@@ -976,7 +976,7 @@
         "--domain": {
           "x": {
             "--local": {
-              "3d9be3": "Usage: ysk-server hosting email-mailbox --domain X --local user [--password P] [--ip A.B.C.D]\n"
+              "3d9be3": "Utilização: ysk-server hosting email-mailbox --domain X --local user [--password P] [--ip A.B.C.D]\n"
             }
           }
         }
@@ -985,7 +985,7 @@
         "--domain": {
           "files": {
             "example": {
-              "284a7c": "Usage: ysk-server hosting ftps-apply --domain files.example.com [--install|--execute]\n"
+              "284a7c": "Utilização: ysk-server hosting ftps-apply --domain files.example.com [--install|--execute]\n"
             }
           }
         }
@@ -994,7 +994,7 @@
         "--domain": {
           "webmail": {
             "example": {
-              "2ad5b5": "Usage: ysk-server hosting webmail-apply --domain webmail.example.com [--download]\n"
+              "2ad5b5": "Utilização: ysk-server hosting webmail-apply --domain webmail.example.com [--download]\n"
             }
           }
         }
@@ -1003,7 +1003,7 @@
         "--domain": {
           "files": {
             "example": {
-              "0e9013": "Usage: ysk-server hosting public-files --domain files.example.com [--reload]\n"
+              "0e9013": "Utilização: ysk-server hosting public-files --domain files.example.com [--reload]\n"
             }
           }
         }
@@ -1012,7 +1012,7 @@
         "--domain": {
           "example": {
             "com": {
-              "8774a4": "Usage: ysk-server hosting email-deliverability --domain example.com\n       ysk-server hosting email-deliverability --id <domainId>\n"
+              "8774a4": "Utilização: ysk-server hosting email-deliverability --domain example.com\n       ysk-server hosting email-deliverability --id <domainId>\n"
             }
           }
         }
@@ -1021,7 +1021,7 @@
         "--domain": {
           "example": {
             "com": {
-              "796da5": "Usage: ysk-server hosting email-bootstrap --domain example.com --ip 1.2.3.4 [--admin postmaster] [--password P] [--install]\n"
+              "796da5": "Utilização: ysk-server hosting email-bootstrap --domain example.com --ip 1.2.3.4 [--admin postmaster] [--password P] [--install]\n"
             }
           }
         }
@@ -1032,7 +1032,7 @@
         "--job": {
           "id": {
             "--data-dir": {
-              "6a73cd": "Usage: ysk-server migrate post --job <id> --data-dir PATH --execute\n"
+              "6a73cd": "Utilização: ysk-server migrate post --job <id> --data-dir PATH --execute\n"
             }
           }
         }
@@ -1041,77 +1041,77 @@
         "--target": {
           "root": {
             "new": {
-              "3e94a2": "Usage: ysk-server migrate host --target root@NEW_IP [--identity-file PATH|--identity-id ID] [--password] --execute --data-dir PATH\n"
+              "3e94a2": "Utilização: ysk-server migrate host --target root@NEW_IP [--identity-file PATH|--identity-id ID] [--password] --execute --data-dir PATH\n"
             }
           }
         }
       }
     },
     "x": {
-      "972912": "Usage:\n  ysk-server migrate inventory [--data-dir PATH] --json\n  ysk-server migrate host --target root@IP [--identity-file PATH|--identity-id ID|--password PW] --execute [--maintenance] [--force-wipe-target]\n  ysk-server migrate post --job ID --data-dir PATH --execute   # on target\n  ysk-server migrate status [--job ID]\n  ysk-server migrate resume --job ID --execute\n"
+      "972912": "Utilização:\n  ysk-server migrate inventory [--data-dir PATH] --json\n  ysk-server migrate host --target root@IP [--identity-file PATH|--identity-id ID|--password PW] --execute [--maintenance] [--force-wipe-target]\n  ysk-server migrate post --job ID --data-dir PATH --execute   # no destino\n  ysk-server migrate status [--job ID]\n  ysk-server migrate resume --job ID --execute\n"
     },
-    "hostingHelp": "Usage: ysk-server hosting <sub>\n  Dangerous ops default dry-run; add --execute (+ YSK_EXECUTE=1) to apply\n  nginx | nginx-sync [--execute]\n  redis-provision | postgres-provision | mysql-provision [--execute]\n  dns-zone --zone X --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n  dns-zones | powerdns-status | powerdns-install [--install|--execute]\n  powerdns-load --zone X --ip A.B.C.D [--load|--execute]\n  email-apply --domain X [--install|--execute]\n  email-mailbox --domain X --local user [--password P] [--ip A.B.C.D] [--system]\n  ftps-apply --domain X [--install|--execute]\n  runtimes | runtime-install --kind node|php|python|go|rust --version V [--install|--execute]\n  dovecot-passdb --domain X | --all\n  webmail-apply --domain webmail.example.com [--download]\n  public-files --domain files.example.com [--reload]\n  email-bootstrap --domain example.com --ip A.B.C.D [--install|--execute]\n  email-deliverability --domain example.com   # PTR/DNSBL/warmup pack (honest)\n  firewall-apply [--smtp] [--execute]\n",
-    "logsQuery": "Usage: {{CLI_NAME}} logs query --source <id> [--lines N] [--grep G] [--since 1h] [--priority err]\n  source examples: journal:  journal:nginx.service  file:syslog  project:<uuid>\n  {{CLI_NAME}} logs sources --json\n  {{CLI_NAME}} logs journal [--unit nginx.service] --json\n"
+    "hostingHelp": "Utilização: ysk-server hosting <sub>\n  Operações perigosas são dry-run por predefinição; adicione --execute (+ YSK_EXECUTE=1) para aplicar\n  nginx | nginx-sync [--execute]\n  redis-provision | postgres-provision | mysql-provision [--execute]\n  dns-zone --zone X --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n  dns-zones | powerdns-status | powerdns-install [--install|--execute]\n  powerdns-load --zone X --ip A.B.C.D [--load|--execute]\n  email-apply --domain X [--install|--execute]\n  email-mailbox --domain X --local user [--password P] [--ip A.B.C.D] [--system]\n  ftps-apply --domain X [--install|--execute]\n  runtimes | runtime-install --kind node|php|python|go|rust --version V [--install|--execute]\n  dovecot-passdb --domain X | --all\n  webmail-apply --domain webmail.example.com [--download]\n  public-files --domain files.example.com [--reload]\n  email-bootstrap --domain example.com --ip A.B.C.D [--install|--execute]\n  email-deliverability --domain example.com   # pacote PTR/DNSBL/warmup (honesto)\n  firewall-apply [--smtp] [--execute]\n",
+    "logsQuery": "Utilização: {{CLI_NAME}} logs query --source <id> [--lines N] [--grep G] [--since 1h] [--priority err]\n  exemplos de source: journal:  journal:nginx.service  file:syslog  project:<uuid>\n  {{CLI_NAME}} logs sources --json\n  {{CLI_NAME}} logs journal [--unit nginx.service] --json\n"
   },
   "msg": {
     "domain": {
       "missing": {
         "pass": {
-          "5be09b": "Domain missing — pass --ip to create domain first\n"
+          "5be09b": "Domínio em falta — passe --ip para criar o domínio primeiro\n"
         }
       }
     },
     "--root": {
       "must": {
         "be": {
-          "a84834": "--root must be public or project:<id>\n"
+          "a84834": "--root tem de ser public ou project:<id>\n"
         }
       }
     },
     "need": {
       "--content": {
         "or": {
-          "4d7001": "Need --content or --file\n"
+          "4d7001": "É necessário --content ou --file\n"
         }
       },
       "at": {
         "least": {
-          "7d311a": "Need at least one --member HOST[=role][:access]\n"
+          "7d311a": "É necessário pelo menos um --member HOST[=role][:access]\n"
         }
       }
     },
     "action": {
       "must": {
         "be": {
-          "ba14c1": "action must be list|add|remove\n"
+          "ba14c1": "a ação deve ser list|add|remove\n"
         }
       }
     },
     "use": {
       "ysk-server": {
         "backup": {
-          "ca67f4": "Use: ysk-server backup control-plane-restore --name ARCHIVE (not restore --project-id control-plane)\n"
+          "ca67f4": "Use: ysk-server backup control-plane-restore --name ARCHIVE (não restore --project-id control-plane)\n"
         }
       }
     },
     "new": {
       "domain": {
         "requires": {
-          "986b78": "New domain requires --ip A.B.C.D (no placeholder defaults)\n"
+          "986b78": "Um novo domínio requer --ip A.B.C.D (sem predefinições de exemplo)\n"
         }
       }
     },
     "import-sync": {
       "prefers": {
         "fleet": {
-          "4d7590": "import-sync prefers fleet clusterSync payload; or --file snapshot.json\n"
+          "4d7590": "import-sync prefere o payload fleet clusterSync; ou --file snapshot.json\n"
         }
       }
     },
     "security": {
       "control": {
         "plane": {
-          "f59a63": "SECURITY: control plane bound publicly (0.0.0.0/::). Prefer 127.0.0.1 + reverse proxy / UFW.\n"
+          "f59a63": "SEGURANÇA: control plane ligado publicamente (0.0.0.0/::). Prefira 127.0.0.1 + reverse proxy / UFW.\n"
         }
       }
     }
@@ -1121,42 +1121,42 @@
       "email": {
         "sub": {
           "sub": {
-            "e37257": "Unknown email sub: {{sub}}\nRun: ysk-server email help\n"
+            "e37257": "Subcomando email desconhecido: {{sub}}\nExecute: ysk-server email help\n"
           }
         }
       },
       "cron": {
         "sub": {
           "sub": {
-            "e1a9ed": "Unknown cron sub: {{sub}}\nRun: ysk-server cron help\n"
+            "e1a9ed": "Subcomando cron desconhecido: {{sub}}\nExecute: ysk-server cron help\n"
           }
         }
       },
       "files": {
         "sub": {
           "sub": {
-            "07ad7e": "Unknown files sub: {{sub}}\nRun: ysk-server files help\n"
+            "07ad7e": "Subcomando files desconhecido: {{sub}}\nExecute: ysk-server files help\n"
           }
         }
       },
       "store": {
         "sub": {
           "sub": {
-            "b7a083": "Unknown store sub: {{sub}}\nRun: ysk-server store help\n"
+            "b7a083": "Subcomando store desconhecido: {{sub}}\nExecute: ysk-server store help\n"
           }
         }
       },
       "cdn": {
         "subcommand": {
           "sub": {
-            "76664f": "Unknown cdn subcommand: {{sub}}\nRun: ysk-server cdn help\n"
+            "76664f": "Subcomando cdn desconhecido: {{sub}}\nExecute: ysk-server cdn help\n"
           }
         }
       },
       "backup": {
         "subcommand": {
           "sub": {
-            "4092ad": "Unknown backup subcommand: {{sub}}\nRun: ysk-server backup help\n"
+            "4092ad": "Subcomando backup desconhecido: {{sub}}\nExecute: ysk-server backup help\n"
           }
         }
       }
@@ -1164,19 +1164,19 @@
   },
   "setup": {
     "dryRunOk": "{{product}} setup dry-run OK",
-    "dryRunNext": "Re-run without --dry-run to write config and initialize database",
-    "weakPassword": "Admin password is weak or default. Pass a strong --admin-password (min 8, not \"admin\"/common defaults), or set YSK_ALLOW_INSECURE_DEFAULTS=1 for local dev only.",
-    "weakPasswordShort": "Weak or default admin password rejected",
-    "nextStart": "Start (API + Web UI): {{cli}} serve --config {{configPath}}",
-    "nextOpen": "Open http://{{host}}:{{port}}/ and login as {{user}}",
-    "nextUnit": "Systemd unit template: {{unitPath}}",
-    "nextInstall": "Install unit (root + YSK_EXECUTE): {{cli}} system unit-install --enable --data-dir {{dataDir}}",
-    "nextExecute": "Production host mutations require YSK_EXECUTE=1 and root",
+    "dryRunNext": "Volte a executar sem --dry-run para gravar a configuração e inicializar a base de dados",
+    "weakPassword": "A palavra-passe de administrador é fraca ou predefinida. Passe uma --admin-password forte (mín. 8, não \"admin\"/predefinições comuns), ou defina YSK_ALLOW_INSECURE_DEFAULTS=1 apenas para desenvolvimento local.",
+    "weakPasswordShort": "Palavra-passe de administrador fraca ou predefinida rejeitada",
+    "nextStart": "Iniciar (API + Web UI): {{cli}} serve --config {{configPath}}",
+    "nextOpen": "Abra http://{{host}}:{{port}}/ e inicie sessão como {{user}}",
+    "nextUnit": "Modelo de unit systemd: {{unitPath}}",
+    "nextInstall": "Instalar unit (root + YSK_EXECUTE): {{cli}} system unit-install --enable --data-dir {{dataDir}}",
+    "nextExecute": "Alterações no anfitrião de produção requerem YSK_EXECUTE=1 e root",
     "nextGolive": "Go-live: docs/deploy/go-live.md + ysk-server readiness --json",
-    "secPassword": "SECURITY: change admin password immediately (bootstrap used a weak/default password)",
-    "sec2fa": "SECURITY: enable admin 2FA under Security → Account",
-    "secListen": "SECURITY: listening on all interfaces — put behind firewall / reverse proxy; prefer 127.0.0.1 + SSH tunnel for admin",
-    "ok": "{{product}} setup completed (database initialized)",
-    "okInsecure": "{{product}} setup completed (database initialized) [INSECURE BOOTSTRAP — change password]"
+    "secPassword": "SEGURANÇA: altere a palavra-passe de administrador imediatamente (o bootstrap usou uma palavra-passe fraca/predefinida)",
+    "sec2fa": "SEGURANÇA: ative a 2FA de administrador em Segurança → Conta",
+    "secListen": "SEGURANÇA: a escutar em todas as interfaces — coloque atrás de firewall / reverse proxy; prefira 127.0.0.1 + túnel SSH para administração",
+    "ok": "{{product}} configuração concluída (base de dados inicializada)",
+    "okInsecure": "{{product}} configuração concluída (base de dados inicializada) [BOOTSTRAP INSEGURO — altere a palavra-passe]"
   }
 }

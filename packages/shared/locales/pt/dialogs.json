@@ -1,8 +1,8 @@
 {
-  "confirmDefault": "Confirm",
-  "cancelDefault": "Cancel",
+  "confirmDefault": "Confirmar",
+  "cancelDefault": "Cancelar",
   "severity": {
-    "consequencesTitle": "This will:",
-    "typeToConfirm": "Type \"{{text}}\" to confirm"
+    "consequencesTitle": "Isto irá:",
+    "typeToConfirm": "Escreva \"{{text}}\" para confirmar"
   }
 }

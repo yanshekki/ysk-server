@@ -1,11 +1,11 @@
 {
-  "draft": "Draft",
-  "written": "Written (panel data)",
-  "planned": "In progress",
-  "applied": "Applied on host",
-  "failed": "Failed",
-  "pendingExecute": "Needs host execute",
-  "uploaded": "Uploaded",
-  "issued": "Issued",
-  "missing": "File missing"
+  "draft": "Rascunho",
+  "written": "Escrito (dados do painel)",
+  "planned": "Em curso",
+  "applied": "Aplicado no host",
+  "failed": "Falhou",
+  "pendingExecute": "Requer execução no host",
+  "uploaded": "Carregado",
+  "issued": "Emitido",
+  "missing": "Ficheiro em falta"
 }

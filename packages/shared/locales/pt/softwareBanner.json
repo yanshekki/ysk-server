@@ -1,14 +1,14 @@
 {
-  "titleDefault": "Required software is not installed",
-  "missing": "Missing: {{names}}",
+  "titleDefault": "O software necessário não está instalado",
+  "missing": "Em falta: {{names}}",
   "nameSep": ", ",
-  "installOneClick": "Install now",
-  "installing": "Installing…",
-  "reprobe": "Re-check",
-  "close": "Close",
-  "resultTitle": "Install result",
-  "probeFailed": "Probe failed",
-  "installIncomplete": "Install incomplete",
-  "installedOne": "Installed {{name}}",
-  "allInstalled": "Required software installed"
+  "installOneClick": "Instalar agora",
+  "installing": "A instalar…",
+  "reprobe": "Verificar novamente",
+  "close": "Fechar",
+  "resultTitle": "Resultado da instalação",
+  "probeFailed": "Falha na sondagem",
+  "installIncomplete": "Instalação incompleta",
+  "installedOne": "{{name}} instalado",
+  "allInstalled": "Software necessário instalado"
 }
