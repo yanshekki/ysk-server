@@ -16,6 +16,13 @@ describe('Kernel Sandbox planner', () => {
   it('validates allowed paths', () => {
     expect(pathAllowed('/var/lib/ysk-server/a', ['/var/lib/ysk-server'])).toBe(true);
     expect(pathAllowed('/etc/shadow', ['/var/lib/ysk-server'])).toBe(false);
+    // Boundary-safe: /var must not match /var-evil
+    expect(pathAllowed('/var-evil', ['/var'])).toBe(false);
+    // Empty roots ignored; bare / only allows exact /
+    expect(pathAllowed('/etc/passwd', [''])).toBe(false);
+    expect(pathAllowed('/etc/passwd', ['/'])).toBe(false);
+    expect(pathAllowed('/', ['/'])).toBe(true);
+    expect(pathAllowed('/x\0y', ['/x'])).toBe(false);
   });
 
   it('rejects unconfined without runAsUser', () => {

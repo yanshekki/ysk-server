@@ -10,9 +10,11 @@ import { fileURLToPath } from 'node:url';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const pagesDir = join(root, 'src', 'pages');
 
-/** Thin wrappers + non-page modules */
+/** Thin wrappers + non-page modules + guest/public surfaces */
 const SKIP = new Set([
   'LoginPage.tsx',
+  'PublicSharePage.tsx', // guest landing — not panel FeaturePageLayout chrome
+  'NodeRuntimePage.tsx', // re-export only → GenericRuntimePage
   'CronScheduleBuilder.tsx',
   'MariadbPage.tsx',
   'MariadbServicePage.tsx',

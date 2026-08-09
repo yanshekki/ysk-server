@@ -15,7 +15,7 @@ import {
   cpSync,
   chmodSync } from 'node:fs';
 import { join, resolve, relative, dirname, basename, extname, sep } from 'node:path';
-import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
+import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import { listFileVersions, restoreFileVersion, snapshotFileVersion } from './versions.js';
@@ -540,8 +540,36 @@ export type FileShareRecord = {
   downloadCount: number;
 };
 
+/**
+ * Hash a user-chosen share password.
+ * Format: `scrypt$<saltHex>$<hashHex>` (salted; resists offline cracking).
+ * Legacy rows may still store bare SHA-256 hex — verified in verifySharePasswordHash.
+ */
 export function hashSharePassword(password: string): string {
-  return createHash('sha256').update(password).digest('hex');
+  const salt = randomBytes(16).toString('hex');
+  const hash = scryptSync(password, salt, 32).toString('hex');
+  return `scrypt$${salt}$${hash}`;
+}
+
+/**
+ * Verify password against stored hash (scrypt preferred; legacy SHA-256 hex supported).
+ */
+export function verifySharePasswordHash(stored: string, password: string): boolean {
+  const s = String(stored || '');
+  if (!s || !password) return false;
+  if (s.startsWith('scrypt$')) {
+    const parts = s.split('$');
+    if (parts.length !== 3 || !parts[1] || !parts[2]) return false;
+    try {
+      const actual = scryptSync(password, parts[1], 32).toString('hex');
+      return safeHexEqual(actual, parts[2]);
+    } catch {
+      return false;
+    }
+  }
+  // Legacy unsalted SHA-256 (Phase 0 short-term; still accepted for existing shares)
+  const legacy = createHash('sha256').update(password).digest('hex');
+  return safeHexEqual(legacy, s);
 }
 
 /** Constant-time compare of hex digests (share / token hashes). */

@@ -17,9 +17,22 @@ import {
   bumpShareDownload,
   listFavorites,
   toggleFavorite,
-  chownProjectPath } from '@ysk/core';
+  chownProjectPath,
+  checkRateLimit,
+  recordRateLimitFailure,
+  clearRateLimit,
+} from '@ysk/core';
 import type { AppContext } from '../app-context.js';
 import { getBearer, readBody, sendJson, sendOpsResult } from '../http/util.js';
+
+/** Public share + WebDAV auth: 10 fails / 15m → 15m lock */
+const PUBLIC_AUTH_RL = { maxFailures: 10, windowMs: 15 * 60_000, lockMs: 15 * 60_000 };
+
+function clientIp(req: IncomingMessage): string {
+  const xf = req.headers['x-forwarded-for'];
+  if (typeof xf === 'string' && xf.trim()) return xf.split(',')[0]!.trim();
+  return req.socket.remoteAddress ?? 'unknown';
+}
 
 function resolveRoot(
   ctx: AppContext,
@@ -85,7 +98,24 @@ export async function handleFilesRoutes(
       sendJson(res, 503, { ok: false, message: tl('notes.auto.n0206') });
       return true;
     }
+    const webdavRlKey = clientIp(req);
+    const webdavGate = checkRateLimit('webdav-auth', webdavRlKey, PUBLIC_AUTH_RL);
+    if (!webdavGate.ok) {
+      res.writeHead(429, {
+        'Content-Type': 'application/json',
+        'Retry-After': String(webdavGate.retryAfterSec),
+      });
+      res.end(
+        JSON.stringify({
+          ok: false,
+          message: tl('notes.auto.n0960'),
+          retryAfterSec: webdavGate.retryAfterSec,
+        }),
+      );
+      return true;
+    }
     if (!verifyWebDavBasicAuth(ctx.db, req.headers.authorization)) {
+      recordRateLimitFailure('webdav-auth', webdavRlKey, PUBLIC_AUTH_RL);
       res.writeHead(401, {
         'WWW-Authenticate': 'Basic realm="YSK WebDAV"',
         'Content-Type': 'application/json',
@@ -93,6 +123,7 @@ export async function handleFilesRoutes(
       res.end(JSON.stringify({ ok: false, message: tl('notes.auto.n0960') }));
       return true;
     }
+    clearRateLimit('webdav-auth', webdavRlKey);
     let rel =
       url.pathname === '/webdav' || url.pathname === '/webdav/'
         ? '.'
@@ -154,19 +185,40 @@ export async function handleFilesRoutes(
     return true;
   }
 
-  // Public share download (no auth)
+  // Public share download (no session auth; rate-limit password guesses)
   if (method === 'GET' && url.pathname.startsWith('/api/v1/public/files/')) {
     const token = url.pathname.split('/').pop() ?? '';
+    const shareRlKey = `${clientIp(req)}:${token.slice(0, 16)}`;
+    const shareGate = checkRateLimit('share-auth', shareRlKey, PUBLIC_AUTH_RL);
+    if (!shareGate.ok) {
+      res.writeHead(429, {
+        'Content-Type': 'application/json',
+        'Retry-After': String(shareGate.retryAfterSec),
+      });
+      res.end(
+        JSON.stringify({
+          ok: false,
+          message: tl('notes.auto.n1577'),
+          needPassword: true,
+          retryAfterSec: shareGate.retryAfterSec,
+        }),
+      );
+      return true;
+    }
     const share = getShareByToken(ctx.db, token);
     if (!share) {
+      // Count unknown tokens lightly to slow token scanning
+      recordRateLimitFailure('share-auth', shareRlKey, PUBLIC_AUTH_RL);
       sendJson(res, 404, { ok: false, message: tl('notes.auto.n0595') });
       return true;
     }
     const password = url.searchParams.get('password') ?? undefined;
     if (!verifySharePassword(share, password)) {
+      recordRateLimitFailure('share-auth', shareRlKey, PUBLIC_AUTH_RL);
       sendJson(res, 401, { ok: false, message: tl('notes.auto.n1577'), needPassword: true });
       return true;
     }
+    clearRateLimit('share-auth', shareRlKey);
     try {
       const { root } = resolveRoot(ctx, share.root);
       const fm = new FileManager(root);

@@ -72,11 +72,17 @@ export function planSandbox(
 
 /**
  * Validate that a path is within allowed roots.
+ * Empty / whitespace roots are ignored (never treat as filesystem root).
+ * Uses boundary-safe prefix (`root + '/'`) so `/var` does not match `/var-evil`.
  */
 export function pathAllowed(path: string, allowedPaths: string[]): boolean {
+  if (!path || typeof path !== 'string' || path.includes('\0')) return false;
   const normalized = path.replace(/\/+$/, '') || '/';
   return allowedPaths.some((root) => {
+    if (!root || typeof root !== 'string' || !root.trim()) return false;
     const r = root.replace(/\/+$/, '') || '/';
+    // Bare `/` would allow everything — require explicit single-root policy
+    if (r === '/') return normalized === '/';
     return normalized === r || normalized.startsWith(r + '/');
   });
 }

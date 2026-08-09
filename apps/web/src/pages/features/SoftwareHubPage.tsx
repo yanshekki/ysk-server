@@ -785,6 +785,37 @@ export function SoftwareHubPage() {
     <FeaturePageLayout
       title={t('software.title')}
       subtitle={t('software.desc')}
+      status={{
+        pill: loading
+          ? { label: t('common.loading', { defaultValue: '…' }), tone: 'neutral' as const }
+          : summary.updates > 0
+            ? {
+                label: t('software.updatesAvailable', {
+                  n: summary.updates,
+                  defaultValue: `${summary.updates} updates`,
+                }),
+                tone: 'warn' as const,
+              }
+            : { label: t('common.ready', { defaultValue: 'Ready' }), tone: 'ok' as const },
+        items: [
+          {
+            label: t('software.cards', { defaultValue: 'Cards' }),
+            value: allViews.length,
+          },
+          {
+            label: t('updates.title', { defaultValue: 'Updates' }),
+            value: summary.updates,
+            tone: summary.updates > 0 ? ('warn' as const) : ('ok' as const),
+          },
+          {
+            label: t('common.tab', { defaultValue: 'Tab' }),
+            value: t(
+              SOFTWARE_TABS.find((x) => x.id === tab)?.labelKey ?? 'software.title',
+              { defaultValue: tab },
+            ),
+          },
+        ],
+      }}
       actions={
         <Button variant="secondary" size="sm" loading={loading} onClick={() => void refresh()}>
           {t('common.refresh')}

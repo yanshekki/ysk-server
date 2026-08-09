@@ -20,8 +20,10 @@ YSK Server is a **single-host** control plane. Security is fail-closed for host 
 - **2FA (panel)** — [2fa.md](./2fa.md) (distinct from SSH 2FA)
 - **SSH identities / FIDO2 / SSH 2FA** — [ssh.md](./ssh.md)
 - **Host defense (UFW, fail2ban, protection center)** — [defense.md](../features/defense.md)
-- **Public file shares** — token URL; optional password (hashed); expiry
-- **WebDAV** — Basic `ysk` + one-time token; disable revokes access
+- **Public file shares** — token URL; optional password (`scrypt` salted; legacy SHA-256 accepted); expiry; auth rate-limited
+- **WebDAV** — Basic `ysk` + one-time token; disable revokes access; auth rate-limited
+
+Reviews: [phase-0-review.md](./phase-0-review.md) · [phase-7-review.md](./phase-7-review.md)
 
 ## CLI
 

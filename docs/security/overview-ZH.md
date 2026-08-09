@@ -20,8 +20,10 @@ YSK Server 是**單機**控制平面。安全模型對主機變更 **fail-closed
 - **面板 2FA** — [2fa-ZH.md](./2fa-ZH.md)（與 SSH 2FA 分開）
 - **SSH 身分／FIDO2／SSH 2FA** — [ssh-ZH.md](./ssh-ZH.md)
 - **主機防護（UFW、fail2ban、防護中心）** — [defense-ZH.md](../features/defense-ZH.md)
-- **公開檔案分享** — token 連結；可選密碼（雜湊）；可到期
-- **WebDAV** — Basic `ysk` + 一次性權杖；停用即撤銷
+- **公開檔案分享** — token 連結；可選密碼（`scrypt` 加鹽；舊 SHA-256 仍可驗證）；可到期；認證限流
+- **WebDAV** — Basic `ysk` + 一次性權杖；停用即撤銷；認證限流
+
+覆核：[phase-0-review-ZH.md](./phase-0-review-ZH.md) · [phase-7-review-ZH.md](./phase-7-review-ZH.md)
 
 ## CLI
 

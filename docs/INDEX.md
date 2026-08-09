@@ -99,3 +99,4 @@
 - Prefer **CLI + `--json`** for AI agents.
 - Host mutations default **dry-run** until `--execute` and `YSK_EXECUTE=1` (often root).
 - [Security Phase 0](security/phase-0-review.md)
+- [Security Phase 7](security/phase-7-review.md)

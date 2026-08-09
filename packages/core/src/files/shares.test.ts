@@ -13,6 +13,8 @@ import {
   toggleFavorite,
   listFavorites,
 } from './shares.js';
+import { createHash } from 'node:crypto';
+import { hashSharePassword, verifySharePasswordHash } from './manager.js';
 
 describe('file shares', () => {
   it('creates passworded share and favorites', () => {
@@ -30,8 +32,10 @@ describe('file shares', () => {
       });
       expect(listFileShares(store, 'public')).toHaveLength(1);
       expect(getShareByToken(store, s.token)?.path).toBe('docs/a.txt');
+      expect(s.passwordHash).toMatch(/^scrypt\$[a-f0-9]+\$[a-f0-9]+$/);
       expect(verifySharePassword(s, undefined)).toBe(false);
       expect(verifySharePassword(s, 'secret12')).toBe(true);
+      expect(verifySharePassword(s, 'wrong')).toBe(false);
       bumpShareDownload(store, s.token);
       expect(listFileShares(store)[0].downloadCount).toBe(1);
       expect(toggleFavorite(store, 'public', 'docs/a.txt').favorited).toBe(true);
@@ -41,5 +45,16 @@ describe('file shares', () => {
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+
+  it('verifies scrypt and legacy SHA-256 share password hashes', () => {
+    const scrypt = hashSharePassword('new-pass');
+    expect(scrypt.startsWith('scrypt$')).toBe(true);
+    expect(verifySharePasswordHash(scrypt, 'new-pass')).toBe(true);
+    expect(verifySharePasswordHash(scrypt, 'nope')).toBe(false);
+
+    const legacy = createHash('sha256').update('old-pass').digest('hex');
+    expect(verifySharePasswordHash(legacy, 'old-pass')).toBe(true);
+    expect(verifySharePasswordHash(legacy, 'nope')).toBe(false);
   });
 });

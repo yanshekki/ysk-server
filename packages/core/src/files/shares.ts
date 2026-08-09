@@ -7,7 +7,7 @@ import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import {
   hashSharePassword,
   newShareToken,
-  safeHexEqual,
+  verifySharePasswordHash,
   type FileShareRecord,
 } from './manager.js';
 
@@ -73,7 +73,7 @@ export function getShareByToken(store: JsonStore, token: string): FileShareRecor
 export function verifySharePassword(row: FileShareRecord, password?: string): boolean {
   if (!row.passwordHash) return true;
   if (!password) return false;
-  return safeHexEqual(hashSharePassword(password), row.passwordHash);
+  return verifySharePasswordHash(row.passwordHash, password);
 }
 
 export function bumpShareDownload(store: JsonStore, token: string): void {
