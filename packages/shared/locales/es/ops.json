@@ -1,38 +1,38 @@
 {
   "blocked": {
-    "needExecute": "Host execute is off; this action cannot finish from the panel",
-    "needExecuteShort": "Host execute is not enabled",
-    "needExecuteBlocked": "Blocked: host execute is off",
-    "needRoot": "Root privileges required",
-    "needExecuteRoot": "Requires YSK_EXECUTE=1 and root",
-    "needExecuteYsk": "Requires YSK_EXECUTE=1",
-    "writeOutsideDataDir": "Write blocked: host execute is off and the path is outside the panel data directory",
-    "nginxReload": "Cannot reload Nginx: host execute required",
-    "signal": "Cannot send signal: host execute required (YSK_EXECUTE)",
-    "signalNote": "YSK_EXECUTE=1 is required for a real kill",
-    "renice": "Cannot renice: host execute required (YSK_EXECUTE)",
-    "install": "Host execute is off; install cannot finish from the panel",
-    "update": "Host execute is off; update cannot finish from the panel",
-    "panel": "Cannot complete this from the management panel"
+    "needExecute": "Host execute está desactivado; esta acción no puede completarse desde el panel",
+    "needExecuteShort": "Host execute no está habilitado",
+    "needExecuteBlocked": "Bloqueado: host execute está desactivado",
+    "needRoot": "Se requieren privilegios de root",
+    "needExecuteRoot": "Requiere YSK_EXECUTE=1 y root",
+    "needExecuteYsk": "Requiere YSK_EXECUTE=1",
+    "writeOutsideDataDir": "Escritura bloqueada: host execute está desactivado y la ruta está fuera del directorio de datos del panel",
+    "nginxReload": "No se puede recargar Nginx: se requiere host execute",
+    "signal": "No se puede enviar la señal: se requiere host execute (YSK_EXECUTE)",
+    "signalNote": "Se requiere YSK_EXECUTE=1 para un kill real",
+    "renice": "No se puede renice: se requiere host execute (YSK_EXECUTE)",
+    "install": "Host execute está desactivado; la instalación no puede completarse desde el panel",
+    "update": "Host execute está desactivado; la actualización no puede completarse desde el panel",
+    "panel": "No se puede completar esto desde el panel de gestión"
   },
   "honesty": {
-    "blockedNotOk": "Honesty fix: blocked cannot be ok=true",
-    "blockedNotApplied": "Honesty fix: blocked cannot be apply_status=applied",
-    "okFalseNotApplied": "Honesty fix: ok=false cannot be apply_status=applied"
+    "blockedNotOk": "Corrección de honestidad: blocked no puede ser ok=true",
+    "blockedNotApplied": "Corrección de honestidad: blocked no puede ser apply_status=applied",
+    "okFalseNotApplied": "Corrección de honestidad: ok=false no puede ser apply_status=applied"
   },
   "status": {
-    "applied": "Status: applied",
-    "failed": "Status: failed",
-    "written": "Status: written",
-    "blocked": "Status: blocked"
+    "applied": "Estado: aplicado",
+    "failed": "Estado: fallido",
+    "written": "Estado: escrito",
+    "blocked": "Estado: bloqueado"
   },
   "notes": {
-    "writtenSettings": "Settings written",
-    "completed": "Completed",
-    "partialSuccess": "Operation only partially succeeded",
-    "notInstalled": "Not installed",
-    "running": "Running",
-    "stopped": "Stopped",
-    "unknown": "Unknown"
+    "writtenSettings": "Ajustes escritos",
+    "completed": "Completado",
+    "partialSuccess": "La operación solo se completó parcialmente",
+    "notInstalled": "No instalado",
+    "running": "En ejecución",
+    "stopped": "Detenido",
+    "unknown": "Desconocido"
   }
 }

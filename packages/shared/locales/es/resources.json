@@ -1,7 +1,7 @@
 {
-  "created": "Created",
-  "updated": "Updated",
-  "deleted": "Deleted",
-  "applyDone": "Apply completed",
-  "applyIncomplete": "Apply incomplete"
+  "created": "Creado",
+  "updated": "Actualizado",
+  "deleted": "Eliminado",
+  "applyDone": "Aplicación completada",
+  "applyIncomplete": "Aplicación incompleta"
 }

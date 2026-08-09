@@ -1,7 +1,7 @@
 {
-  "scrollLeft": "Scroll tabs left",
-  "scrollRight": "Scroll tabs right",
-  "about": "About",
-  "main": "Actions",
+  "scrollLeft": "Desplazar pestañas a la izquierda",
+  "scrollRight": "Desplazar pestañas a la derecha",
+  "about": "Acerca de",
+  "main": "Acciones",
   "stack": "Software"
 }

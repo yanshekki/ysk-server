@@ -1,50 +1,50 @@
 {
   "discover-host": {
-    "name": "Host discovery",
-    "description": "Read-only host inventory"
+    "name": "Descubrimiento del host",
+    "description": "Inventario del host de solo lectura"
   },
   "nginx-health": {
-    "name": "Nginx health check",
-    "description": "Check nginx service status"
+    "name": "Comprobación de estado de Nginx",
+    "description": "Comprobar el estado del servicio nginx"
   },
   "nginx-restart": {
-    "name": "Nginx restart (high risk)",
-    "description": "Restart nginx after approval"
+    "name": "Reinicio de Nginx (alto riesgo)",
+    "description": "Reiniciar nginx tras aprobación"
   },
   "local-llm-ops-only": {
-    "name": "Local LLM ops only",
-    "description": "Emergency discovery under protection mode"
+    "name": "Solo operaciones de LLM local",
+    "description": "Descubrimiento de emergencia en modo protección"
   },
   "disk-pressure": {
-    "name": "Disk pressure check",
-    "description": "Read-only disk usage via df"
+    "name": "Comprobación de presión de disco",
+    "description": "Uso de disco de solo lectura mediante df"
   },
   "mail-stack-status": {
-    "name": "Mail stack status",
-    "description": "Check postfix + dovecot units"
+    "name": "Estado de la pila de correo",
+    "description": "Comprobar unidades postfix + dovecot"
   },
   "security-units": {
-    "name": "Security units",
-    "description": "fail2ban + sshd status (read-only)"
+    "name": "Unidades de seguridad",
+    "description": "Estado de fail2ban + sshd (solo lectura)"
   },
   "web-stack-status": {
-    "name": "Web stack status",
-    "description": "nginx + php-fpm probe"
+    "name": "Estado de la pila web",
+    "description": "Sonda nginx + php-fpm"
   },
   "emergency-read-only": {
-    "name": "Emergency read-only sweep",
-    "description": "Protection-safe facts only"
+    "name": "Barrido de emergencia de solo lectura",
+    "description": "Solo hechos seguros en modo protección"
   },
   "backup-health": {
-    "name": "Backup readiness",
-    "description": "Check disk + list processes before backup window"
+    "name": "Preparación de copias de seguridad",
+    "description": "Comprobar disco y listar procesos antes de la ventana de copia"
   },
   "db-stack-status": {
-    "name": "Database stack status",
-    "description": "mysql/mariadb/redis/postgres units"
+    "name": "Estado de la pila de bases de datos",
+    "description": "unidades mysql/mariadb/redis/postgres"
   },
   "ssl-nginx-check": {
-    "name": "SSL + Nginx check",
-    "description": "nginx status before cert ops"
+    "name": "Comprobación SSL + Nginx",
+    "description": "estado de nginx antes de operaciones de certificados"
   }
 }

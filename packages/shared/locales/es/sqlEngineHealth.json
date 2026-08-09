@@ -1,31 +1,31 @@
 {
   "finding": {
-    "package_missing": "Server package for {{flavor}} is not installed.",
-    "client_missing": "SQL client tools are not installed.",
-    "frozen_marker": "Debian freeze marker present (mode: {{mode}}). Daemon start is blocked until released.",
-    "datadir_uninitialized": "Data directory has no system catalog — needs initialization.",
-    "config_flavor_mismatch": "my.cnf points at the wrong engine for {{flavor}} ({{path}}).",
-    "residual_foreign_plugins": "Residual config/plugins from the other SQL engine can crash this daemon.",
-    "unit_failed": "Service unit {{unit}} is failed.",
-    "unit_not_active": "Service unit {{unit}} is {{active}} (not active).",
-    "port_conflict": "Port 3306 is in use while this engine is down (possible conflict)."
+    "package_missing": "El paquete de servidor para {{flavor}} no está instalado.",
+    "client_missing": "Las herramientas de cliente SQL no están instaladas.",
+    "frozen_marker": "Marcador de congelación de Debian presente (modo: {{mode}}). El arranque del daemon está bloqueado hasta que se libere.",
+    "datadir_uninitialized": "El directorio de datos no tiene catálogo del sistema — necesita inicialización.",
+    "config_flavor_mismatch": "my.cnf apunta al motor incorrecto para {{flavor}} ({{path}}).",
+    "residual_foreign_plugins": "La configuración/plugins residuales del otro motor SQL pueden hacer fallar este daemon.",
+    "unit_failed": "La unidad de servicio {{unit}} ha fallado.",
+    "unit_not_active": "La unidad de servicio {{unit}} está {{active}} (no activa).",
+    "port_conflict": "El puerto 3306 está en uso mientras este motor está detenido (posible conflicto)."
   },
   "action": {
-    "stop_unit": "Stop service unit",
-    "clear_frozen": "Clear freeze marker",
-    "sanitize_config": "Align my.cnf and disable foreign engine plugins",
-    "init_datadir": "Initialize empty data directory",
-    "reset_failed": "Reset failed unit state",
-    "enable_unit": "Enable service at boot",
-    "start_unit": "Start service",
-    "verify_active": "Verify service is active"
+    "stop_unit": "Detener unidad de servicio",
+    "clear_frozen": "Borrar marcador de congelación",
+    "sanitize_config": "Alinear my.cnf y desactivar plugins del motor ajeno",
+    "init_datadir": "Inicializar directorio de datos vacío",
+    "reset_failed": "Restablecer estado de unidad fallida",
+    "enable_unit": "Habilitar servicio al arranque",
+    "start_unit": "Iniciar servicio",
+    "verify_active": "Verificar que el servicio está activo"
   },
   "note": {
-    "alreadyHealthy": "SQL engine already healthy — no repair needed.",
-    "needsConfirm": "Repair needs confirmation ({{count}} steps: {{findings}}).",
-    "installPackageFirst": "Install {{flavor}} server package first, then repair.",
-    "stepFailed": "Repair step {{action}} failed: {{detail}}",
-    "repairOk": "Repair complete — {{unit}} is active.",
-    "repairIncomplete": "Repair finished but unit is still {{active}}."
+    "alreadyHealthy": "El motor SQL ya está en buen estado — no se necesita reparación.",
+    "needsConfirm": "La reparación necesita confirmación ({{count}} pasos: {{findings}}).",
+    "installPackageFirst": "Instale primero el paquete de servidor {{flavor}} y luego repare.",
+    "stepFailed": "El paso de reparación {{action}} falló: {{detail}}",
+    "repairOk": "Reparación completa — {{unit}} está activo.",
+    "repairIncomplete": "Reparación finalizada pero la unidad sigue {{active}}."
   }
 }
