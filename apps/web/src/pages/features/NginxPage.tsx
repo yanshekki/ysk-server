@@ -228,7 +228,6 @@ export function NginxPage() {
           </>
         }
       >
-        <Alert variant="info">{t('nginx.projectSitesHint')}</Alert>
         {error ? <Alert variant="error">{error}</Alert> : null}
         {projLoadErr ? <Alert variant="error">{projLoadErr}</Alert> : null}
         {purgeMsg ? <Alert variant="info">{purgeMsg}</Alert> : null}
@@ -236,7 +235,6 @@ export function NginxPage() {
         <DataTable
           rowKey={(p) => p.id}
           title={t('nginx.projectListTitle', { count: projectSites.length })}
-          description={t('nginx.projectListDesc')}
           columns={[
             {
               key: 'name',
@@ -277,12 +275,7 @@ export function NginxPage() {
             },
           ]}
           rows={projectPageItems}
-          empty={
-            <EmptyState
-              title={t('nginx.projectEmptyTitle')}
-              description={t('nginx.projectEmptyDesc')}
-            />
-          }
+          empty={<EmptyState title={t('nginx.projectEmptyTitle')} />}
           rowActions={(p) => (
             <ActionBar>
               <Button
@@ -340,7 +333,7 @@ export function NginxPage() {
           description={
             projPreview?.path
               ? t('nginx.projectPreviewPath', { path: projPreview.path })
-              : t('nginx.projectListDesc')
+              : undefined
           }
           size="xl"
           footer={
@@ -372,7 +365,6 @@ export function NginxPage() {
         <DataTable
           rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
           title={t('nginx.listTitle', { count: total })}
-          description={t('nginx.listDesc')}
           toolbar={
             <ActionBar>
               <Button
@@ -428,12 +420,7 @@ export function NginxPage() {
               ) },
           ]}
           rows={items}
-          empty={
-            <EmptyState
-              title={t('nginx.emptyTitle')}
-              description={t('nginx.emptyDesc')}
-            />
-          }
+          empty={<EmptyState title={t('nginx.emptyTitle')} />}
           rowActions={(r) => (
             <ActionBar>
               <Button
@@ -469,7 +456,6 @@ export function NginxPage() {
           open={createOpen}
           onClose={bindSet(setCreateOpen, false)}
           title={t('nginx.createTitle')}
-          description={t('nginx.createDesc')}
           footer={
             <>
               <Button
@@ -511,7 +497,6 @@ export function NginxPage() {
           open={Boolean(edit)}
           onClose={bindSet(setEdit, null)}
           title={t('nginx.editTitle')}
-          description={t('nginx.editDesc')}
           footer={
             <>
               <Button variant="secondary" size="md" onClick={bindSet(setEdit, null)}>

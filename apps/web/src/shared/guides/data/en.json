@@ -691,19 +691,19 @@
     ]
   },
   "nginx": {
-    "id": "nginx",
     "title": "Nginx",
-    "summary": "Panel-managed vhost configs; validate with nginx -t and reload.",
+    "summary": "Manage standalone vhosts and review project-managed conf.",
     "canDo": [
-      "Managed conf：Configs the panel owns and can rewrite.",
-      "Validate / reload：nginx -t then reload when EXECUTE allows.",
-      "Publish a new site after deploy",
-      "Recover from a bad conf with honest failure notes",
-      "Review conf for the site"
+      "List project sites (managed conf from publish / goLive)",
+      "Create standalone sites and Apply to the system",
+      "Preview conf; edit project Nginx under Project → Network",
+      "Run nginx -t / reload when permitted",
+      "Purge panel-managed Nginx cache when available"
     ],
     "notes": [
-      "Failed nginx -t never reloads—fix and fix first",
-      "Without EXECUTE, conf may only be written as a plan"
+      "Project sites and standalone sites are listed separately; change project conf under Project Network",
+      "Apply after create to write system conf; failed nginx -t never marks applied",
+      "CDN-managed conf has a separate lifecycle—do not mix with hand edits"
     ],
     "related": [
       {
@@ -718,15 +718,6 @@
         "label": "CDN",
         "to": "/cdn"
       }
-    ],
-    "workflow": [
-      "Review status on this page",
-      "Apply changes with panel actions",
-      "Confirm with readiness / health if host-changing"
-    ],
-    "cliHints": [
-      "ysk-server nginx status --json",
-      "ysk-server nginx list --json"
     ]
   },
   "node": {

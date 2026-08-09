@@ -691,19 +691,19 @@
     ]
   },
   "nginx": {
-    "id": "nginx",
     "title": "Nginx",
-    "summary": "查看与同步面板管理的 Nginx 虚拟主机配置，并用 nginx -t／reload 验证。",
+    "summary": "管理独立 vhost，并查看项目发布的受管 conf。",
     "canDo": [
-      "托管配置：面板拥有并可重写的配置。",
-      "校验／重载：在允许 EXECUTE 时执行 nginx -t 再 reload。",
-      "部署后发布新站点",
-      "根据诚实失败说明修复错误配置",
-      "查看站点配置"
+      "查看项目站点（publish／goLive 写入的受管 conf）",
+      "创建独立站点并「套用」同步到系统",
+      "预览 conf；改项目 Nginx 请到项目 → 网络",
+      "执行 nginx -t／reload（需权限）",
+      "清除面板管理的 Nginx 缓存（若提供）"
     ],
     "notes": [
-      "nginx -t 失败时不会 reload——请先修正",
-      "无 EXECUTE 时可能仅写入计划"
+      "项目站点与独立站点分开列出；项目 conf 请在项目「网络」修改",
+      "创建站点后须「套用」才写入系统；nginx -t 失败不会假标 applied",
+      "CDN 管理的 conf 有独立生命周期，勿与手改文件混用"
     ],
     "related": [
       {
@@ -718,15 +718,6 @@
         "label": "CDN",
         "to": "/cdn"
       }
-    ],
-    "workflow": [
-      "先查看本页状态",
-      "用面板按钮套用变更",
-      "若改主机，再到就绪／健康确认"
-    ],
-    "cliHints": [
-      "ysk-server nginx status --json",
-      "ysk-server nginx list --json"
     ]
   },
   "node": {

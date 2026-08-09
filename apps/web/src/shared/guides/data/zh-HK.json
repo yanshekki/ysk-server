@@ -705,19 +705,19 @@
     ]
   },
   "nginx": {
-    "id": "nginx",
     "title": "Nginx",
-    "summary": "檢視與同步面板管理的 Nginx 虛擬主機設定，並驗證 nginx -t／reload。",
+    "summary": "管理獨立 vhost，並查看專案發布的受管 conf。",
     "canDo": [
-      "設定清單：列出 dataDir 管理的 conf。",
-      "同步與檢測：同步到系統路徑並執行語法檢查。",
-      "排查 vhost 錯誤",
-      "確認專案發布的 conf 已載入",
-      "由專案發布 Nginx"
+      "查看專案站點（publish／goLive 寫入的受管 conf）",
+      "建立獨立站點並「套用」同步到系統",
+      "預覽 conf；改專案 Nginx 請到專案 → 網絡",
+      "執行 nginx -t／reload（需權限）",
+      "清除面板管理的 Nginx 快取（若提供）"
     ],
     "notes": [
-      "CDN 管理的 conf 有獨立生命週期，勿與手改檔混用",
-      "nginx -t 失敗時不會假標 applied"
+      "專案站點與獨立站點分開列出；專案 conf 請在專案「網絡」修改",
+      "建立站點後須「套用」才寫入系統；nginx -t 失敗不會假標 applied",
+      "CDN 管理的 conf 有獨立生命週期，勿與手改檔混用"
     ],
     "related": [
       {
@@ -728,15 +728,6 @@
         "label": "CDN",
         "to": "/cdn"
       }
-    ],
-    "workflow": [
-      "先看本頁狀態",
-      "用面板按鈕套用變更",
-      "若改主機，再到就緒／健康確認"
-    ],
-    "cliHints": [
-      "ysk-server nginx status --json",
-      "ysk-server nginx list --json"
     ]
   },
   "node": {
