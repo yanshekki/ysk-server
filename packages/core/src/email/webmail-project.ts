@@ -203,25 +203,30 @@ async function installRoundcube(input: {
     };
   }
 
-  const tmp = join(input.homeDir, 'tmp', 'roundcube.tgz');
-  mkdirSync(join(input.homeDir, 'tmp'), { recursive: true });
-  const extract = join(docRoot, '.rc-extract');
+  // Extract OUTSIDE docRoot. Never use docRoot/.rc-extract: with
+  // `shopt -s dotglob` + `rm -rf docRoot/*` the extract tree is deleted before cp
+  // (cp: cannot stat '.../roundcubemail-*'), leaving php-hello residue.
+  const tmpDir = join(input.homeDir, 'tmp');
+  const tmp = join(tmpDir, 'roundcube.tgz');
+  const extract = join(tmpDir, 'rc-extract');
+  mkdirSync(tmpDir, { recursive: true });
   const script = [
-    `set -e`,
+    `set -euo pipefail`,
     `curl -fsSL ${JSON.stringify(ROUNDCUBE_URL)} -o ${JSON.stringify(tmp)}`,
     `rm -rf ${JSON.stringify(extract)}`,
-    `mkdir -p ${JSON.stringify(extract)}`,
+    `mkdir -p ${JSON.stringify(extract)} ${JSON.stringify(docRoot)}`,
     `tar -xzf ${JSON.stringify(tmp)} -C ${JSON.stringify(extract)}`,
     `INNER=$(find ${JSON.stringify(extract)} -maxdepth 1 -type d -name 'roundcubemail-*' | head -1)`,
-    `if [ -z "$INNER" ]; then echo "Roundcube extract failed"; exit 1; fi`,
+    `if [ -z "$INNER" ] || [ ! -d "$INNER" ]; then echo "Roundcube extract failed"; ls -la ${JSON.stringify(extract)}; exit 1; fi`,
+    `if [ ! -f "$INNER/index.php" ]; then echo "Roundcube tree missing index.php"; ls -la "$INNER"; exit 1; fi`,
     // Keep existing config if reinstall
     `CFG_BAK=""`,
     `if [ -f ${JSON.stringify(configPath)} ]; then CFG_BAK=$(mktemp); cp ${JSON.stringify(configPath)} "$CFG_BAK"; fi`,
-    `shopt -s dotglob`,
-    `rm -rf ${JSON.stringify(docRoot)}/*`,
-    `cp -a "$INNER"/* ${JSON.stringify(docRoot)}/`,
+    // Wipe only contents of docRoot (extract lives under home/tmp, not here)
+    `find ${JSON.stringify(docRoot)} -mindepth 1 -maxdepth 1 -exec rm -rf {} +`,
+    `cp -a "$INNER"/. ${JSON.stringify(docRoot)}/`,
     `rm -rf ${JSON.stringify(extract)} ${JSON.stringify(tmp)}`,
-    `if [ -n "$CFG_BAK" ]; then mkdir -p ${JSON.stringify(join(docRoot, 'config'))}; cp "$CFG_BAK" ${JSON.stringify(configPath)}; rm -f "$CFG_BAK"; fi`,
+    `if [ -n "\${CFG_BAK:-}" ]; then mkdir -p ${JSON.stringify(join(docRoot, 'config'))}; cp "$CFG_BAK" ${JSON.stringify(configPath)}; rm -f "$CFG_BAK"; fi`,
     `mkdir -p ${JSON.stringify(join(docRoot, 'temp'))} ${JSON.stringify(join(docRoot, 'logs'))} ${JSON.stringify(join(docRoot, 'config'))}`,
     `chmod 777 ${JSON.stringify(join(docRoot, 'temp'))} ${JSON.stringify(join(docRoot, 'logs'))} 2>/dev/null || true`,
   ].join('\n');
@@ -294,15 +299,17 @@ async function installSnappyMail(input: {
     };
   }
 
-  const tmp = join(input.homeDir, 'tmp', 'snappymail.tgz');
-  mkdirSync(join(input.homeDir, 'tmp'), { recursive: true });
-  const extract = join(docRoot, '.sm-extract');
+  // Extract outside docRoot (same class of bug as Roundcube: wipe must not delete INNER)
+  const tmpDir = join(input.homeDir, 'tmp');
+  const tmp = join(tmpDir, 'snappymail.tgz');
+  const extract = join(tmpDir, 'sm-extract');
+  mkdirSync(tmpDir, { recursive: true });
   // Official release may be: flat index.php, snappymail-X/, or public_html/
   const script = [
-    `set -e`,
+    `set -euo pipefail`,
     `curl -fsSL ${JSON.stringify(SNAPPYMAIL_URL)} -o ${JSON.stringify(tmp)}`,
     `rm -rf ${JSON.stringify(extract)}`,
-    `mkdir -p ${JSON.stringify(extract)}`,
+    `mkdir -p ${JSON.stringify(extract)} ${JSON.stringify(docRoot)}`,
     // try tar.gz; if zip, unzip
     `if file ${JSON.stringify(tmp)} | grep -qi 'zip'; then unzip -q ${JSON.stringify(tmp)} -d ${JSON.stringify(extract)}; else tar -xzf ${JSON.stringify(tmp)} -C ${JSON.stringify(extract)}; fi`,
     `INNER=""`,
@@ -310,9 +317,8 @@ async function installSnappyMail(input: {
     `if [ -z "$INNER" ] && [ -f ${JSON.stringify(join(extract, 'public_html', 'index.php'))} ]; then INNER=${JSON.stringify(join(extract, 'public_html'))}; fi`,
     `if [ -z "$INNER" ]; then INNER=$(find ${JSON.stringify(extract)} -maxdepth 3 -type f -name index.php 2>/dev/null | head -1 | xargs -r dirname); fi`,
     `if [ -z "$INNER" ] || [ ! -f "$INNER/index.php" ]; then echo "SnappyMail extract failed"; ls -la ${JSON.stringify(extract)}; exit 1; fi`,
-    `shopt -s dotglob`,
-    `rm -rf ${JSON.stringify(docRoot)}/*`,
-    `cp -a "$INNER"/* ${JSON.stringify(docRoot)}/`,
+    `find ${JSON.stringify(docRoot)} -mindepth 1 -maxdepth 1 -exec rm -rf {} +`,
+    `cp -a "$INNER"/. ${JSON.stringify(docRoot)}/`,
     `rm -rf ${JSON.stringify(extract)} ${JSON.stringify(tmp)}`,
     `mkdir -p ${JSON.stringify(join(docRoot, 'data'))}`,
     `chmod 777 ${JSON.stringify(join(docRoot, 'data'))} 2>/dev/null || true`,

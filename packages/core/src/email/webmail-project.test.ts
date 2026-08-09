@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { mkdtempSync, existsSync, readFileSync, rmSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { execFileSync } from 'node:child_process';
 import {
   buildRoundcubeConfigInc,
   defaultImapHostForWebmail,
@@ -9,11 +17,13 @@ import {
   defaultWebmailProjectName,
   ensureRoundcubeRuntime,
   ensureSnappyMailAdminBootstrap,
+  installWebmailIntoProject,
   installYskSsoIntoRoundcube,
   isRoundcubeDocRoot,
   normalizeWebmailTool,
+  ROUNDCUBE_VERSION,
 } from './webmail-project.js';
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { LocalHostExecutor } from '../host/executor.js';
 
 describe('webmail-project helpers', () => {
   it('normalizes tool ids', () => {
@@ -71,6 +81,68 @@ describe('webmail-project helpers', () => {
       writeFileSync(join(dir, 'program', 'include', 'iniset.php'), '<?php\n', 'utf8');
       writeFileSync(join(dir, 'index.php'), '<?php /* ROUNDCUBE */\n', 'utf8');
       expect(isRoundcubeDocRoot(dir)).toBe(true);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  /**
+   * Regression: extract under docRoot + shopt dotglob wipe deleted INNER before cp
+   * (user saw: cp: cannot stat '.../roundcubemail-*').
+   * Real bash path with local tarball — no network.
+   */
+  it('installRoundcube extract outside docRoot survives wipe (no network)', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-wm-extract-'));
+    try {
+      const homeDir = join(dir, 'home');
+      const docRoot = join(homeDir, 'app', 'public');
+      const build = join(dir, 'build', `roundcubemail-${ROUNDCUBE_VERSION}`);
+      mkdirSync(join(build, 'program', 'include'), { recursive: true });
+      mkdirSync(join(build, 'config'), { recursive: true });
+      mkdirSync(docRoot, { recursive: true });
+      writeFileSync(join(build, 'index.php'), '<?php /* ROUNDCUBE */\n', 'utf8');
+      writeFileSync(join(build, 'program', 'include', 'iniset.php'), '<?php\n', 'utf8');
+      writeFileSync(join(docRoot, 'index.php'), '<?php echo "YSK PHP OK\\n";\n', 'utf8');
+      const tgz = join(dir, 'rc.tgz');
+      execFileSync('tar', ['-czf', tgz, '-C', join(dir, 'build'), `roundcubemail-${ROUNDCUBE_VERSION}`]);
+
+      const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: true });
+      const orig = host.runCommand.bind(host);
+      host.runCommand = async (argv, opts) => {
+        const script = argv[0] === 'bash' && argv[1] === '-c' ? String(argv[2] ?? '') : '';
+        if (script.includes('curl') && script.includes('roundcube')) {
+          // Skip network: drop curl line, inject local tarball as the download target
+          const patched = script
+            .split('\n')
+            .map((line) => {
+              if (line.includes('curl') && line.includes('-o')) {
+                const m = line.match(/-o\s+(\S+)/);
+                const dest = m ? m[1].replace(/^"|"$/g, '') : '';
+                if (dest) {
+                  return `cp ${JSON.stringify(tgz)} ${JSON.stringify(dest)}`;
+                }
+              }
+              return line;
+            })
+            .join('\n');
+          return orig(['bash', '-c', patched], opts);
+        }
+        return orig(argv, opts);
+      };
+
+      const r = await installWebmailIntoProject({
+        host,
+        homeDir,
+        docRoot,
+        tool: 'roundcube',
+        domain: 'webmail.example.com',
+        download: true,
+        installSsoPlugin: false,
+      });
+      expect(r.ok, r.notes.join('\n')).toBe(true);
+      expect(isRoundcubeDocRoot(docRoot)).toBe(true);
+      expect(readFileSync(join(docRoot, 'index.php'), 'utf8')).toMatch(/ROUNDCUBE/i);
+      expect(existsSync(join(docRoot, '.rc-extract'))).toBe(false);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
