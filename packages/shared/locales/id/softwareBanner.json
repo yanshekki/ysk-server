@@ -1,14 +1,14 @@
 {
-  "titleDefault": "Required software is not installed",
-  "missing": "Missing: {{names}}",
+  "titleDefault": "Perangkat lunak yang diperlukan belum terinstal",
+  "missing": "Hilang: {{names}}",
   "nameSep": ", ",
-  "installOneClick": "Install now",
-  "installing": "Installing…",
-  "reprobe": "Re-check",
-  "close": "Close",
-  "resultTitle": "Install result",
-  "probeFailed": "Probe failed",
-  "installIncomplete": "Install incomplete",
-  "installedOne": "Installed {{name}}",
-  "allInstalled": "Required software installed"
+  "installOneClick": "Instal sekarang",
+  "installing": "Menginstal…",
+  "reprobe": "Periksa ulang",
+  "close": "Tutup",
+  "resultTitle": "Hasil instalasi",
+  "probeFailed": "Probe gagal",
+  "installIncomplete": "Instalasi tidak lengkap",
+  "installedOne": "{{name}} terinstal",
+  "allInstalled": "Perangkat lunak yang diperlukan sudah terinstal"
 }

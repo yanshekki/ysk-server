@@ -1,11 +1,11 @@
 {
-  "missing": "No help content is available for this page yet.",
-  "missingTitle": "No guide",
-  "eyebrow": "About",
-  "canDoTitle": "What you can do",
-  "workflowTitle": "Suggested flow",
-  "notesTitle": "Notes",
-  "cliTitle": "CLI quick reference",
-  "cliFoot": "For full flags run ysk-server <command> --help or see the docs.",
-  "relatedTitle": "Related"
+  "missing": "Belum ada konten bantuan untuk halaman ini.",
+  "missingTitle": "Tidak ada panduan",
+  "eyebrow": "Tentang",
+  "canDoTitle": "Yang dapat Anda lakukan",
+  "workflowTitle": "Alur yang disarankan",
+  "notesTitle": "Catatan",
+  "cliTitle": "Referensi cepat CLI",
+  "cliFoot": "Untuk flag lengkap jalankan ysk-server <command> --help atau lihat dokumentasi.",
+  "relatedTitle": "Terkait"
 }

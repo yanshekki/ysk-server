@@ -1,12 +1,12 @@
 {
-  "searchPlaceholder": "Search…",
-  "searchAria": "Search list",
-  "clearSearch": "Clear search",
-  "clearAll": "Clear filters",
-  "resultCount": "{{count}} results",
-  "showingOf": "Showing {{shown}} of {{total}}",
-  "activeFilters": "{{count}} filters active",
-  "noResults": "No matches",
-  "noResultsHint": "Try another keyword or clear filters.",
-  "searching": "Searching…"
+  "searchPlaceholder": "Cari…",
+  "searchAria": "Cari daftar",
+  "clearSearch": "Hapus pencarian",
+  "clearAll": "Hapus filter",
+  "resultCount": "{{count}} hasil",
+  "showingOf": "Menampilkan {{shown}} dari {{total}}",
+  "activeFilters": "{{count}} filter aktif",
+  "noResults": "Tidak ada yang cocok",
+  "noResultsHint": "Coba kata kunci lain atau hapus filter.",
+  "searching": "Mencari…"
 }

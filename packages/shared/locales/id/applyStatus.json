@@ -1,11 +1,11 @@
 {
-  "draft": "Draft",
-  "written": "Written (panel data)",
-  "planned": "In progress",
-  "applied": "Applied on host",
-  "failed": "Failed",
-  "pendingExecute": "Needs host execute",
-  "uploaded": "Uploaded",
-  "issued": "Issued",
-  "missing": "File missing"
+  "draft": "Draf",
+  "written": "Tertulis (data panel)",
+  "planned": "Sedang berlangsung",
+  "applied": "Diterapkan di host",
+  "failed": "Gagal",
+  "pendingExecute": "Perlu eksekusi host",
+  "uploaded": "Diunggah",
+  "issued": "Diterbitkan",
+  "missing": "File hilang"
 }

@@ -1,50 +1,50 @@
 {
   "discover-host": {
-    "name": "Host discovery",
-    "description": "Read-only host inventory"
+    "name": "Penemuan host",
+    "description": "Inventaris host hanya-baca"
   },
   "nginx-health": {
-    "name": "Nginx health check",
-    "description": "Check nginx service status"
+    "name": "Pemeriksaan kesehatan Nginx",
+    "description": "Periksa status layanan nginx"
   },
   "nginx-restart": {
-    "name": "Nginx restart (high risk)",
-    "description": "Restart nginx after approval"
+    "name": "Restart Nginx (risiko tinggi)",
+    "description": "Restart nginx setelah persetujuan"
   },
   "local-llm-ops-only": {
-    "name": "Local LLM ops only",
-    "description": "Emergency discovery under protection mode"
+    "name": "Operasi LLM lokal saja",
+    "description": "Penemuan darurat dalam mode proteksi"
   },
   "disk-pressure": {
-    "name": "Disk pressure check",
-    "description": "Read-only disk usage via df"
+    "name": "Pemeriksaan tekanan disk",
+    "description": "Penggunaan disk hanya-baca via df"
   },
   "mail-stack-status": {
-    "name": "Mail stack status",
-    "description": "Check postfix + dovecot units"
+    "name": "Status tumpukan mail",
+    "description": "Periksa unit postfix + dovecot"
   },
   "security-units": {
-    "name": "Security units",
-    "description": "fail2ban + sshd status (read-only)"
+    "name": "Unit keamanan",
+    "description": "Status fail2ban + sshd (hanya-baca)"
   },
   "web-stack-status": {
-    "name": "Web stack status",
-    "description": "nginx + php-fpm probe"
+    "name": "Status tumpukan web",
+    "description": "Probe nginx + php-fpm"
   },
   "emergency-read-only": {
-    "name": "Emergency read-only sweep",
-    "description": "Protection-safe facts only"
+    "name": "Sapuan darurat hanya-baca",
+    "description": "Fakta aman-proteksi saja"
   },
   "backup-health": {
-    "name": "Backup readiness",
-    "description": "Check disk + list processes before backup window"
+    "name": "Kesiapan cadangan",
+    "description": "Periksa disk + daftar proses sebelum jendela cadangan"
   },
   "db-stack-status": {
-    "name": "Database stack status",
-    "description": "mysql/mariadb/redis/postgres units"
+    "name": "Status tumpukan basis data",
+    "description": "Unit mysql/mariadb/redis/postgres"
   },
   "ssl-nginx-check": {
-    "name": "SSL + Nginx check",
-    "description": "nginx status before cert ops"
+    "name": "Pemeriksaan SSL + Nginx",
+    "description": "Status nginx sebelum operasi sertifikat"
   }
 }

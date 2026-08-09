@@ -1,14 +1,14 @@
 {
-  "title": "Sign in to YSK Server",
-  "subtitle": "Server console",
-  "username": "Username",
-  "password": "Password",
-  "submit": "Sign in",
-  "failed": "Sign-in failed. Check username or password.",
-  "footer": "A product of YSK Limited",
-  "totpRequired": "2FA is enabled for this account. Enter the 6-digit code.",
-  "totpLabel": "Authentication code",
-  "totpHint": "6-digit code from your authenticator app",
-  "submitting": "Signing in…",
-  "sessionExpired": "Session expired; sign in again"
+  "title": "Masuk ke YSK Server",
+  "subtitle": "Konsol server",
+  "username": "Nama pengguna",
+  "password": "Kata sandi",
+  "submit": "Masuk",
+  "failed": "Gagal masuk. Periksa nama pengguna atau kata sandi.",
+  "footer": "Produk dari YSK Limited",
+  "totpRequired": "2FA diaktifkan untuk akun ini. Masukkan kode 6 digit.",
+  "totpLabel": "Kode autentikasi",
+  "totpHint": "Kode 6 digit dari aplikasi autentikator Anda",
+  "submitting": "Sedang masuk…",
+  "sessionExpired": "Sesi berakhir; masuk kembali"
 }

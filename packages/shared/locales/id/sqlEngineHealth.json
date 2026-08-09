@@ -1,31 +1,31 @@
 {
   "finding": {
-    "package_missing": "Server package for {{flavor}} is not installed.",
-    "client_missing": "SQL client tools are not installed.",
-    "frozen_marker": "Debian freeze marker present (mode: {{mode}}). Daemon start is blocked until released.",
-    "datadir_uninitialized": "Data directory has no system catalog — needs initialization.",
-    "config_flavor_mismatch": "my.cnf points at the wrong engine for {{flavor}} ({{path}}).",
-    "residual_foreign_plugins": "Residual config/plugins from the other SQL engine can crash this daemon.",
-    "unit_failed": "Service unit {{unit}} is failed.",
-    "unit_not_active": "Service unit {{unit}} is {{active}} (not active).",
-    "port_conflict": "Port 3306 is in use while this engine is down (possible conflict)."
+    "package_missing": "Paket server untuk {{flavor}} belum terinstal.",
+    "client_missing": "Alat klien SQL belum terinstal.",
+    "frozen_marker": "Penanda freeze Debian ada (mode: {{mode}}). Start daemon diblokir hingga dilepas.",
+    "datadir_uninitialized": "Direktori data tidak memiliki katalog sistem — perlu inisialisasi.",
+    "config_flavor_mismatch": "my.cnf mengarah ke engine yang salah untuk {{flavor}} ({{path}}).",
+    "residual_foreign_plugins": "Sisa konfigurasi/plugin dari engine SQL lain dapat membuat daemon ini crash.",
+    "unit_failed": "Unit layanan {{unit}} gagal.",
+    "unit_not_active": "Unit layanan {{unit}} berstatus {{active}} (tidak aktif).",
+    "port_conflict": "Port 3306 sedang digunakan sementara engine ini mati (kemungkinan konflik)."
   },
   "action": {
-    "stop_unit": "Stop service unit",
-    "clear_frozen": "Clear freeze marker",
-    "sanitize_config": "Align my.cnf and disable foreign engine plugins",
-    "init_datadir": "Initialize empty data directory",
-    "reset_failed": "Reset failed unit state",
-    "enable_unit": "Enable service at boot",
-    "start_unit": "Start service",
-    "verify_active": "Verify service is active"
+    "stop_unit": "Hentikan unit layanan",
+    "clear_frozen": "Hapus penanda freeze",
+    "sanitize_config": "Sesuaikan my.cnf dan nonaktifkan plugin engine asing",
+    "init_datadir": "Inisialisasi direktori data kosong",
+    "reset_failed": "Reset status unit yang gagal",
+    "enable_unit": "Aktifkan layanan saat boot",
+    "start_unit": "Mulai layanan",
+    "verify_active": "Verifikasi layanan aktif"
   },
   "note": {
-    "alreadyHealthy": "SQL engine already healthy — no repair needed.",
-    "needsConfirm": "Repair needs confirmation ({{count}} steps: {{findings}}).",
-    "installPackageFirst": "Install {{flavor}} server package first, then repair.",
-    "stepFailed": "Repair step {{action}} failed: {{detail}}",
-    "repairOk": "Repair complete — {{unit}} is active.",
-    "repairIncomplete": "Repair finished but unit is still {{active}}."
+    "alreadyHealthy": "Engine SQL sudah sehat — tidak perlu perbaikan.",
+    "needsConfirm": "Perbaikan memerlukan konfirmasi ({{count}} langkah: {{findings}}).",
+    "installPackageFirst": "Instal paket server {{flavor}} terlebih dahulu, lalu perbaiki.",
+    "stepFailed": "Langkah perbaikan {{action}} gagal: {{detail}}",
+    "repairOk": "Perbaikan selesai — {{unit}} aktif.",
+    "repairIncomplete": "Perbaikan selesai tetapi unit masih {{active}}."
   }
 }

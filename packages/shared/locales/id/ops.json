@@ -1,38 +1,38 @@
 {
   "blocked": {
-    "needExecute": "Host execute is off; this action cannot finish from the panel",
-    "needExecuteShort": "Host execute is not enabled",
-    "needExecuteBlocked": "Blocked: host execute is off",
-    "needRoot": "Root privileges required",
-    "needExecuteRoot": "Requires YSK_EXECUTE=1 and root",
-    "needExecuteYsk": "Requires YSK_EXECUTE=1",
-    "writeOutsideDataDir": "Write blocked: host execute is off and the path is outside the panel data directory",
-    "nginxReload": "Cannot reload Nginx: host execute required",
-    "signal": "Cannot send signal: host execute required (YSK_EXECUTE)",
-    "signalNote": "YSK_EXECUTE=1 is required for a real kill",
-    "renice": "Cannot renice: host execute required (YSK_EXECUTE)",
-    "install": "Host execute is off; install cannot finish from the panel",
-    "update": "Host execute is off; update cannot finish from the panel",
-    "panel": "Cannot complete this from the management panel"
+    "needExecute": "Host execute nonaktif; aksi ini tidak dapat diselesaikan dari panel",
+    "needExecuteShort": "Host execute tidak diaktifkan",
+    "needExecuteBlocked": "Diblokir: host execute nonaktif",
+    "needRoot": "Diperlukan hak root",
+    "needExecuteRoot": "Memerlukan YSK_EXECUTE=1 dan root",
+    "needExecuteYsk": "Memerlukan YSK_EXECUTE=1",
+    "writeOutsideDataDir": "Penulisan diblokir: host execute nonaktif dan path di luar direktori data panel",
+    "nginxReload": "Tidak dapat memuat ulang Nginx: host execute diperlukan",
+    "signal": "Tidak dapat mengirim sinyal: host execute diperlukan (YSK_EXECUTE)",
+    "signalNote": "YSK_EXECUTE=1 diperlukan untuk kill yang sesungguhnya",
+    "renice": "Tidak dapat renice: host execute diperlukan (YSK_EXECUTE)",
+    "install": "Host execute nonaktif; instalasi tidak dapat diselesaikan dari panel",
+    "update": "Host execute nonaktif; pembaruan tidak dapat diselesaikan dari panel",
+    "panel": "Tidak dapat menyelesaikan ini dari panel manajemen"
   },
   "honesty": {
-    "blockedNotOk": "Honesty fix: blocked cannot be ok=true",
-    "blockedNotApplied": "Honesty fix: blocked cannot be apply_status=applied",
-    "okFalseNotApplied": "Honesty fix: ok=false cannot be apply_status=applied"
+    "blockedNotOk": "Perbaikan kejujuran: blocked tidak boleh ok=true",
+    "blockedNotApplied": "Perbaikan kejujuran: blocked tidak boleh apply_status=applied",
+    "okFalseNotApplied": "Perbaikan kejujuran: ok=false tidak boleh apply_status=applied"
   },
   "status": {
-    "applied": "Status: applied",
-    "failed": "Status: failed",
-    "written": "Status: written",
-    "blocked": "Status: blocked"
+    "applied": "Status: diterapkan",
+    "failed": "Status: gagal",
+    "written": "Status: ditulis",
+    "blocked": "Status: diblokir"
   },
   "notes": {
-    "writtenSettings": "Settings written",
-    "completed": "Completed",
-    "partialSuccess": "Operation only partially succeeded",
-    "notInstalled": "Not installed",
-    "running": "Running",
-    "stopped": "Stopped",
-    "unknown": "Unknown"
+    "writtenSettings": "Pengaturan ditulis",
+    "completed": "Selesai",
+    "partialSuccess": "Operasi hanya berhasil sebagian",
+    "notInstalled": "Belum terpasang",
+    "running": "Berjalan",
+    "stopped": "Berhenti",
+    "unknown": "Tidak diketahui"
   }
 }
