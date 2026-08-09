@@ -1,0 +1,11 @@
+{
+  "draft": "下書き",
+  "written": "書き込み済み（パネルデータ）",
+  "planned": "進行中",
+  "applied": "ホストに適用される",
+  "failed": "失敗した",
+  "pendingExecute": "ホストの実行が必要",
+  "uploaded": "アップロードされました",
+  "issued": "発行済み",
+  "missing": "ファイルがありません"
+}

@@ -1,0 +1,20 @@
+{
+  "customPlaceholder": "カスタムコード",
+  "searchPlaceholder": "検索…",
+  "emptyText": "一致するアイテムはありません",
+  "removeTitle": "クリックして削除します",
+  "noneSelected": "何も選択されていません",
+  "optionsAria": "オプション",
+  "showingCapped": "Showing first {{shown}} of {{total}} — use search to narrow",
+  "add": "追加",
+  "bulkAria": "一括選択",
+  "selectAll": "すべて選択",
+  "selectAllTitle": "{{n}} 項目をすべて選択してください",
+  "selectFiltered": "フィルタ済みを選択 ({{n}})",
+  "selectFilteredTitle": "{{n}} の検索結果をすべて選択します",
+  "clearAll": "すべてクリア",
+  "clearFiltered": "フィルターをクリア",
+  "selectedCount": "{{n}} / {{total}} が選択されました",
+  "chipsCollapsed": "{{n}} 選択済み — 展開",
+  "chipsCollapse": "崩壊"
+}

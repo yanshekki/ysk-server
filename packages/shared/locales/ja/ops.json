@@ -1,0 +1,38 @@
+{
+  "blocked": {
+    "needExecute": "Host execute is off; this action cannot finish from the panel",
+    "needExecuteShort": "ホスト実行が有効になっていません",
+    "needExecuteBlocked": "ブロック済み: ホストの実行がオフになっています",
+    "needRoot": "root権限が必要です",
+    "needExecuteRoot": "YSK_EXECUTE=1 および root が必要です",
+    "needExecuteYsk": "YSK_EXECUTE=1が必要です",
+    "writeOutsideDataDir": "Write blocked: host execute is off and the path is outside the panel data directory",
+    "nginxReload": "Nginx をリロードできません: ホストの実行が必要です",
+    "signal": "Cannot send signal: host execute required (YSK_EXECUTE)",
+    "signalNote": "実際のキルにはYSK_EXECUTE=1が必要です",
+    "renice": "Cannot renice: host execute required (YSK_EXECUTE)",
+    "install": "Host execute is off; install cannot finish from the panel",
+    "update": "Host execute is off; update cannot finish from the panel",
+    "panel": "管理パネルからはこれを完了できません"
+  },
+  "honesty": {
+    "blockedNotOk": "正直な修正: ブロックを ok=true にすることはできません",
+    "blockedNotApplied": "Honesty fix: blocked cannot be apply_status=applied",
+    "okFalseNotApplied": "Honesty fix: ok=false cannot be apply_status=applied"
+  },
+  "status": {
+    "applied": "ステータス: 適用済み",
+    "failed": "ステータス: 失敗しました",
+    "written": "ステータス: 書き込み済み",
+    "blocked": "ステータス: ブロックされました"
+  },
+  "notes": {
+    "writtenSettings": "書き込まれた設定",
+    "completed": "完了",
+    "partialSuccess": "操作は部分的にのみ成功しました",
+    "notInstalled": "未インストール",
+    "running": "ランニング",
+    "stopped": "停止しました",
+    "unknown": "不明"
+  }
+}

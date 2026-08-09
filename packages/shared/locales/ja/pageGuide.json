@@ -1,0 +1,11 @@
+{
+  "missing": "このページにはまだヘルプ コンテンツがありません。",
+  "missingTitle": "ガイドなし",
+  "eyebrow": "説明",
+  "canDoTitle": "できること",
+  "workflowTitle": "推奨フロー",
+  "notesTitle": "注意事項",
+  "cliTitle": "CLI クイックリファレンス",
+  "cliFoot": "For full flags run ysk-server <command> --help or see the docs.",
+  "relatedTitle": "関連している"
+}

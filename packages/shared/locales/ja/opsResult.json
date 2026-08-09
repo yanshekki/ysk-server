@@ -1,0 +1,23 @@
+{
+  "title": "結果",
+  "status": "状態",
+  "port": "ポート",
+  "url": "URL",
+  "pid": "PID",
+  "blocked": "実行できません",
+  "success": "成功",
+  "failed": "失敗した",
+  "retry": "リトライ",
+  "showDetails": "詳細 ({{count}})",
+  "hideDetails": "詳細を隠す",
+  "stepBuildOk": "ビルドが完了しました",
+  "stepHealthOk": "ヘルスチェックに合格しました",
+  "stepProcessStarted": "プロセスが開始されました",
+  "stepSystemdFallback": "Systemd unit not ready — process started via pidfile",
+  "stepNginxWritten": "Nginx設定が書き込まれました",
+  "stepConfigsSynced": "構成がシステムに同期されました",
+  "stepStoppedOld": "前のプロセスを停止しました",
+  "stepTuningApplied": "実行時チューニングが適用されました",
+  "stepUnitWritten": "サービスユニットの書き込み",
+  "stepSystemdStartFailed": "Systemd の起動に失敗しました — プロセス フォールバックを使用しています"
+}

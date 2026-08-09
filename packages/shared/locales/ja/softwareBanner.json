@@ -1,0 +1,14 @@
+{
+  "titleDefault": "必要なソフトウェアがインストールされていません",
+  "missing": "欠落: {{names}}",
+  "nameSep": ", ",
+  "installOneClick": "今すぐインストール",
+  "installing": "インストール中…",
+  "reprobe": "再確認",
+  "close": "閉じる",
+  "resultTitle": "インストール結果",
+  "probeFailed": "プローブが失敗しました",
+  "installIncomplete": "インストールが不完全",
+  "installedOne": "インストールされました {{name}}",
+  "allInstalled": "必要なソフトウェアがインストールされている"
+}

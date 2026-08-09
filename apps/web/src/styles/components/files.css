@@ -1227,3 +1227,16 @@ input[type='radio'] {
   background: transparent;
 }
 
+
+/* Share list link cell */
+.fm-share-list__link {
+  max-width: 28rem;
+}
+.fm-share-list__link code {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}

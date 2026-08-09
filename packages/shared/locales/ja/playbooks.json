@@ -1,0 +1,50 @@
+{
+  "discover-host": {
+    "name": "ホストの検出",
+    "description": "読み取り専用ホストインベントリ"
+  },
+  "nginx-health": {
+    "name": "Nginx ヘルスチェック",
+    "description": "nginxサービスのステータスを確認する"
+  },
+  "nginx-restart": {
+    "name": "Nginx の再起動 (高リスク)",
+    "description": "承認後にnginxを再起動する"
+  },
+  "local-llm-ops-only": {
+    "name": "ローカル LLM 操作のみ",
+    "description": "保護モードでの緊急検出"
+  },
+  "disk-pressure": {
+    "name": "ディスク圧力チェック",
+    "description": "df による読み取り専用ディスクの使用量"
+  },
+  "mail-stack-status": {
+    "name": "メールスタックのステータス",
+    "description": "postfix + dovecot ユニットを確認する"
+  },
+  "security-units": {
+    "name": "警備ユニット",
+    "description": "failed2ban + sshd ステータス (読み取り専用)"
+  },
+  "web-stack-status": {
+    "name": "Webスタックのステータス",
+    "description": "nginx + php-fpm プローブ"
+  },
+  "emergency-read-only": {
+    "name": "緊急読み取り専用スイープ",
+    "description": "保護に安全な事実のみ"
+  },
+  "backup-health": {
+    "name": "バックアップの準備状況",
+    "description": "バックアップウィンドウの前にディスクをチェックし、プロセスをリストする"
+  },
+  "db-stack-status": {
+    "name": "データベーススタックのステータス",
+    "description": "mysql/mariadb/redis/postgres ユニット"
+  },
+  "ssl-nginx-check": {
+    "name": "SSL+Nginxチェック",
+    "description": "証明書操作前の nginx のステータス"
+  }
+}

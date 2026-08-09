@@ -1,0 +1,31 @@
+{
+  "finding": {
+    "package_missing": "{{flavor}} のサーバー パッケージがインストールされていません。",
+    "client_missing": "SQL クライアント ツールがインストールされていません。",
+    "frozen_marker": "Debian freeze marker present (mode: {{mode}}). Daemon start is blocked until released.",
+    "datadir_uninitialized": "Data directory has no system catalog — needs initialization.",
+    "config_flavor_mismatch": "my.cnf points at the wrong engine for {{flavor}} ({{path}}).",
+    "residual_foreign_plugins": "Residual config/plugins from the other SQL engine can crash this daemon.",
+    "unit_failed": "サービスユニット {{unit}} に障害が発生しました。",
+    "unit_not_active": "Service unit {{unit}} is {{active}} (not active).",
+    "port_conflict": "Port 3306 is in use while this engine is down (possible conflict)."
+  },
+  "action": {
+    "stop_unit": "サービスユニットの停止",
+    "clear_frozen": "フリーズマーカーをクリア",
+    "sanitize_config": "my.cnf を調整し、外部エンジン プラグインを無効にする",
+    "init_datadir": "空のデータディレクトリを初期化する",
+    "reset_failed": "故障したユニットの状態をリセットする",
+    "enable_unit": "起動時にサービスを有効にする",
+    "start_unit": "サービス開始",
+    "verify_active": "サービスがアクティブであることを確認する"
+  },
+  "note": {
+    "alreadyHealthy": "SQL エンジンはすでに正常であるため、修復する必要はありません。",
+    "needsConfirm": "Repair needs confirmation ({{count}} steps: {{findings}}).",
+    "installPackageFirst": "Install {{flavor}} server package first, then repair.",
+    "stepFailed": "修復ステップ {{action}} が失敗しました: {{detail}}",
+    "repairOk": "修復が完了しました — {{unit}} がアクティブです。",
+    "repairIncomplete": "修理は完了しましたが、ユニットはまだ {{active}} です。"
+  }
+}

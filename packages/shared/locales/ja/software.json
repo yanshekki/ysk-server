@@ -1,0 +1,122 @@
+{
+  "title": "ソフトウェア",
+  "desc": "All managed software: install status, service health, newer versions, and links to use in projects.",
+  "tabs": {
+    "overview": "概要",
+    "runtimes": "ランタイム",
+    "databases": "データベース",
+    "edge": "ドメインとエッジ",
+    "mailFiles": "メールとファイル",
+    "host": "ホストサービス"
+  },
+  "stat": {
+    "catalog": "カタログアイテム",
+    "runtimesInstalled": "インストールされているランタイム",
+    "updates": "アップデート/拡張可能",
+    "attention": "注意が必要です"
+  },
+  "quickTitle": "ショートカット",
+  "quickDesc": "セクションまたはホスト ツールにジャンプします",
+  "updatesTitle": "アップデートとインストール可能なバージョン",
+  "updatesDesc": "Newer upstream or panel pins. Install, then select the runtime on a project.",
+  "allSoftware": "すべてのソフトウェア",
+  "status": {
+    "unknown": "—",
+    "installed": "インストール済み",
+    "notInstalled": "未インストール",
+    "running": "ランニング",
+    "missing": "検出されませんでした",
+    "failed": "失敗した",
+    "stopped": "停止しました"
+  },
+  "badge": {
+    "update": "利用可能なアップデート",
+    "upToDate": "最新の"
+  },
+  "meta": {
+    "installed": "インストール済み: {{list}}",
+    "default": "デフォルト {{v}}",
+    "remote": "上流 ~{{v}}",
+    "openManage": "管理ページを開いてインストールまたは設定を行います",
+    "aptCurrentLatest": "インストール済み {{v}} · リポジトリは最新です",
+    "aptVersion": "インストールされました {{v}}",
+    "aptUpgrade": "{{from}} → {{to}} あり",
+    "aptUpgradeMulti": "アップグレード可能な{{n}} パッケージ: {{list}}",
+    "aptNotInstalled": "Package not installed (open manage page to install)",
+    "hostUpgradable": "ホスト上の ~{{n}} アップグレード可能なパッケージ",
+    "checking": "バージョンを確認中…または管理ページを開きます"
+  },
+  "action": {
+    "manage": "管理",
+    "useInProject": "プロジェクトで使用する",
+    "useInProjectTitle": "プロジェクトを開いてこのランタイムを設定します",
+    "update": "アップデート",
+    "updateTitle": "{{v}} をインストールまたは切り替えてください",
+    "updateTo": "{{v}} に更新します",
+    "installVersion": "{{v}}をインストール",
+    "applyAptTitle": "アップデートを確認 {{pkg}}",
+    "updateN": "{{n}} アイテムを更新",
+    "installTitle": "{{list}}をインストール",
+    "install": "インストール",
+    "updateAptTitle": "{{pkg}} のアップデートを開く"
+  },
+  "apply": {
+    "blockedShort": "ブロックされました",
+    "failedShort": "失敗した",
+    "failed": "アップデートに失敗しました",
+    "blocked": "ブロックされました",
+    "confirm": "更新を確認する",
+    "confirmTitle": "ソフトウェアアップデートを確認しますか?",
+    "confirmBody": "Update {{pkg}}: {{from}} → {{to}}. Needs system-change rights.",
+    "ok": "適用済み {{pkg}}",
+    "progress": "{{n}}/{{total}} を更新中: {{pkg}}",
+    "okMulti": "更新日: {{list}}",
+    "okMultiTitle": "{{label}} 更新されました",
+    "partial": "部分的に成功",
+    "partialTitle": "一部のアップデートに失敗しました",
+    "failedTitle": "{{label}} アップデートに失敗しました",
+    "progressDetail": "{{from}} → {{to}}",
+    "confirmBodyMulti": "{{label}} を更新: {{list}}"
+  },
+  "version": {
+    "loading": "バージョンをロード中…",
+    "installed": "インストール済み",
+    "latest": "最新",
+    "upToDate": "最新 / 最新のリポジトリ",
+    "refresh": "最新の再確認",
+    "pick": "バージョンを選択してください",
+    "noTarget": "アップデート対象なし",
+    "needRuntimePage": "このバージョンをランタイム ページにインストールします",
+    "noAptCandidate": "適切な候補バージョンがありません"
+  },
+  "install": {
+    "progress": "インストール中: {{list}}…",
+    "progressHint": "1 ～ 2 分かかる場合があります",
+    "blockedTitle": "{{label}} をインストールできませんでした",
+    "ok": "インストール待ち: {{list}}",
+    "okTitle": "{{label}} がインストールされているかキューに登録されています",
+    "failedTitle": "{{label}} インストールに失敗しました",
+    "confirmTitle": "ソフトウェアのインストールを確認しますか?",
+    "confirmBody": "Install {{label}}: {{list}}. Needs system-change rights.",
+    "confirm": "インストールの確認"
+  },
+  "runtime": {
+    "installing": "{{kind}} {{v}} をインストール/アップデート中…",
+    "installingHint": "1 ～ 2 分かかる場合があります",
+    "blockedTitle": "{{kind}} {{v}} をインストールできませんでした",
+    "installed": "インストール/更新されました {{kind}} {{v}}",
+    "installedDetail": "プロジェクトでこのバージョンを選択してください",
+    "failedTitle": "{{kind}} {{v}} インストールに失敗しました",
+    "installingShort": "インストール中…"
+  },
+  "aptSummaryTitle": "リポジトリのアップグレードが利用可能",
+  "aptSummaryDesc": "Catalog and host package counts are separate; apply from Updates or a card.",
+  "aptSummary": {
+    "catalog": "カタログ {{n}}",
+    "host": "ホストパッケージ {{n}}",
+    "openUpdates": "オープンアップデート"
+  },
+  "navBadgeTitle": "カタログのアップグレード: {{n}}",
+  "projectHint": "ランタイム {{runtime}} 事前入力 — プロジェクトの作成",
+  "projectHintWithVersion": "Runtime {{runtime}} {{version}} prefilled — create a project"
+}

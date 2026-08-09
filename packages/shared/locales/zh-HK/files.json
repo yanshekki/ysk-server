@@ -275,5 +275,6 @@
   "editorLines": "{{count}} 行",
   "editorLargeHint": "檔案較大，編輯可能較慢。超過約 2 MB 請改用下載（伺服器上限）。",
   "editorLnCol": "行 {{line}}，欄 {{col}}",
-  "editorSpaces": "空格：{{n}}"
+  "editorSpaces": "空格：{{n}}",
+  "copyLink": "複製連結"
 }

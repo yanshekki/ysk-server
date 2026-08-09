@@ -1,0 +1,27 @@
+{
+  "recent": "最近の監査",
+  "lastN": "最後 {{n}}",
+  "actions": {
+    "protection.change": "保護設定が変更されました",
+    "auth.locale": "UI言語が変更されました",
+    "auth.login": "サインインしました",
+    "auth.logout": "サインアウトしました",
+    "system.firewall.allow_port": "ファイアウォールの許可ポート",
+    "system.firewall.deny": "ファイアウォール拒否IP",
+    "system.firewall.apply": "ファイアウォール適用",
+    "project.deploy": "プロジェクトのデプロイ",
+    "project.create": "プロジェクトが作成されました",
+    "project.delete": "プロジェクトが削除されました",
+    "ssl.request": "SSLリクエスト",
+    "ssl.upload": "SSLアップロード",
+    "system.firewall.enable": "ファイアウォールの有効化/無効化",
+    "system.firewall.delete_rule": "ファイアウォールルールの削除",
+    "system.firewall.delete_deny": "永続的な拒否 IP を削除する",
+    "db.adminer.apply": "DBブラウザプロジェクト",
+    "project.goLive": "プロジェクトの稼働開始",
+    "project.publish": "Nginxを公開する",
+    "project.suspend": "プロジェクトを一時停止する",
+    "software.install": "ソフトウェアのインストール",
+    "software.update": "ソフトウェアをアップデートする"
+  }
+}

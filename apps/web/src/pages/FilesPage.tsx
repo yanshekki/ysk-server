@@ -576,6 +576,41 @@ export function FilesPage() {
     );
   }
 
+  /** Absolute public share URL for list / copy. */
+  function shareAbsoluteUrl(s: Pick<FileShare, 'url' | 'token'>): string {
+    const path = s.url ?? `/share/${s.token}`;
+    if (path.startsWith('http://') || path.startsWith('https://')) return path;
+    const origin =
+      typeof window !== 'undefined' ? window.location.origin : '';
+    return `${origin}${path.startsWith('/') ? path : `/${path}`}`;
+  }
+
+  function copyShareLink(url: string) {
+    const done = () => toast.ok(t('files.linkCopied'));
+    const fail = () =>
+      toast.error(
+        t('files.linkCopyFailed', { defaultValue: t('common.copyFailed', { defaultValue: 'Copy failed' }) }),
+      );
+    if (navigator.clipboard?.writeText) {
+      void navigator.clipboard.writeText(url).then(done, fail);
+      return;
+    }
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = url;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      done();
+    } catch {
+      fail();
+    }
+  }
+
   async function issueWebdavToken() {
     if (webdavEnabled && webdavTokenId) {
       const ok = window.confirm(t('files.webdavReissueConfirm'));
@@ -1768,12 +1803,13 @@ export function FilesPage() {
                       key: 'url',
                       header: t('files.colLink'),
                       render: (s) => {
-                        const path = s.url ?? `/share/${s.token}`;
-                        const abs = path.startsWith('http')
-                          ? path
-                          : `${window.location.origin}${path}`;
+                        const abs = shareAbsoluteUrl(s);
                         return (
-                          <code className="inline u-break-all">{abs}</code>
+                          <div className="fm-share-list__link">
+                            <code className="inline u-break-all" title={abs}>
+                              {abs}
+                            </code>
+                          </div>
                         );
                       },
                     },
@@ -1794,22 +1830,33 @@ export function FilesPage() {
                   ]}
                   rows={shares}
                   rowKey={(s) => s.id}
-                  rowActions={(s) => (
-                    <ActionBar align="end">
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        loading={busy}
-                        onClick={() =>
-                          void run(async () => {
-                            await filesApi.deleteShare(root, s.id);
-                          }, t('files.unshareDone'))
-                        }
-                      >
-                        {t('files.unshare')}
-                      </Button>
-                    </ActionBar>
-                  )}
+                  rowActions={(s) => {
+                    const abs = shareAbsoluteUrl(s);
+                    return (
+                      <ActionBar align="end">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => copyShareLink(abs)}
+                          title={t('files.copyLink')}
+                        >
+                          {t('files.copyLink')}
+                        </Button>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          loading={busy}
+                          onClick={() =>
+                            void run(async () => {
+                              await filesApi.deleteShare(root, s.id);
+                            }, t('files.unshareDone'))
+                          }
+                        >
+                          {t('files.unshare')}
+                        </Button>
+                      </ActionBar>
+                    );
+                  }}
                   empty={
                     <EmptyState
                       title={t('files.sharesEmpty')}

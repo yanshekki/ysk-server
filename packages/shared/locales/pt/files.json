@@ -275,5 +275,6 @@
   "editorLines": "{{count}} lines",
   "editorLargeHint": "Large file — editing may feel slow. Prefer download for multi‑MB files (server cap ~2 MB).",
   "editorLnCol": "Ln {{line}}, Col {{col}}",
-  "editorSpaces": "Spaces: {{n}}"
+  "editorSpaces": "Spaces: {{n}}",
+  "copyLink": "Copy link"
 }

@@ -1,0 +1,466 @@
+{
+  "probed": "調査された",
+  "notProbed": "調査されていない",
+  "probe": "プローブ",
+  "read": "読む",
+  "targetVersion": "対象バージョン",
+  "nodeMissing": "Node.jsがインストールされていない",
+  "probeResult": "プローブ結果",
+  "readonly": "読み取り専用",
+  "installNode": "Node.jsをインストールする",
+  "needExecuteAdmin": "システム変更権限と管理者が必要です",
+  "nodeMajor": "ノードのメジャーバージョン",
+  "nodeMajorHint": "LTS は 20 または 22 であることがよくあります。プロジェクトのランタイムに合わせる",
+  "installedNode": "インストールされているノード {{version}}",
+  "installPm2": "PM2をインストールする",
+  "installPm2Desc": "One-click npm install -g pm2 (process manager). Requires Node.js first.",
+  "installPm2Btn": "PM2をインストールする",
+  "reinstallPm2": "PM2を再インストールする",
+  "installedPm2": "PM2搭載",
+  "pm2Status": "PM2ステータス",
+  "pm2Ready": "準備完了",
+  "pm2MissingShort": "未インストール",
+  "pm2NeedNodeFirst": "最初に Node.js をインストールし、次に PM2 をインストールします。",
+  "pm2InstallHint": "システム変更権限を持つ root として npm -g を実行します。",
+  "pm2ReadyHint": "PM2 is on PATH; projects can use PM2 process mode.",
+  "opsResult": "作戦結果",
+  "unlimited": "無制限",
+  "zeroUnlimited": "0 = 無制限",
+  "m24": "24メートル",
+  "h1": "1時間",
+  "d1": "1d",
+  "d7": "7日",
+  "phpIniLoadFailed": "php.iniのロードに失敗しました",
+  "loaded": "ロード済み",
+  "default": "デフォルト",
+  "phpMissing": "PHPがインストールされていない",
+  "overview": "概要",
+  "fpmSites": "FPM / サイト",
+  "tools": "ツール",
+  "about": "説明",
+  "installPhp": "PHPをインストールする",
+  "versionAlreadyInstalled": "バージョン {{version}} はすでにホスト上にあります",
+  "installedVersionBtn": "インストールされました {{version}}",
+  "newerVersionAvailable": "Current {{current}}; newer supported: {{newer}} (select to install)",
+  "switchToNewer": "{{version}}を選択してください",
+  "installedVersionsHint": "検出されました: {{list}}",
+  "phpInstallHint": "システム変更権限と管理者が必要です。",
+  "phpVersion": "PHPのバージョン",
+  "phpExtHint": "インストールする拡張機能を選択してください",
+  "phpExtSelect": "PHP 拡張機能",
+  "phpExtSelectHint": "パッケージは php{{version}}-… としてインストールされます。",
+  "phpExtRequired": "必須（コア）",
+  "phpExtRecommended": "おすすめセット",
+  "phpExtSelectAll": "すべての拡張子を選択します",
+  "phpExtCoreOnly": "コアのみ",
+  "phpExtSearch": "検索拡張機能 (mysql、gd、redis…)",
+  "phpExtEmpty": "一致する拡張子はありません",
+  "pluginsSelect": "共通ツール/プラグイン",
+  "pluginsSelectHint": "Select to install with the runtime (e.g. PM2 for Node, Poetry for Python)",
+  "pluginsSearch": "検索ツール (pm2、詩、maven…)",
+  "pluginsEmpty": "一致するツールがありません",
+  "pluginsRecommended": "おすすめセット",
+  "pluginsSelectAll": "利用可能なものをすべて選択してください",
+  "pluginsNone": "付属ツールなし",
+  "pluginsInstallNote": "Select tools then Install selected. First-time runtime install can include tools; if runtime is present, only use the button above.",
+  "installPluginsOnly": "Install selected tools ({{version}} already present)",
+  "installExtOnly": "Install selected extensions (PHP {{version}} present)",
+  "pluginAlreadyOnHost": "すでにホスト上にあります",
+  "installAddonsOnly": "選択したアドオンをインストールします ({{version}} 存在)",
+  "remoteNewerHint": "Installed {{current}} · upstream latest {{remote}}{{source}}",
+  "installedPhp": "インストールされた PHP {{version}}",
+  "nextSteps": "次へ",
+  "suggestedFlow": "推奨フロー",
+  "globalPhpIni": "グローバルphp.ini",
+  "globalPhpIniDesc": "行ごとに 1 つの設定",
+  "managePath": "管理パス",
+  "loading": "読み込み中",
+  "cannotLoadSettings": "設定テーブルをロードできません",
+  "reloadFailed": "リロードに失敗しました",
+  "sensitive": "敏感な設定 - 慎重に",
+  "on": "オン",
+  "off": "オフ",
+  "customNumber": "カスタム番号",
+  "customExample": "カスタム、例: 768M",
+  "advancedExtra": "上級: 追加のキーと生のキー",
+  "advancedExtraDesc": "Directives not in catalog; one key=value per line; raw appends to ini tail",
+  "extraDirectives": "追加のディレクティブ",
+  "extraDirectivesHint": "1 行に 1 つの key=value (すでに上にないキー)",
+  "rawAppend": "rawをiniの末尾に追加する",
+  "phpIniSaved": "php.iniが保存されました",
+  "appliedSystem": "システムに適用される",
+  "demoVhost": "システムツール: デモ仮想ホスト/プール",
+  "demoVhostDesc": "Advanced/debug; daily sites use Projects → Deploy",
+  "domain": "ドメイン",
+  "vhostServerName": "仮想ホストのサーバー名",
+  "poolName": "プール名",
+  "poolNameHint": "Hand-typed id (demo); project paths use ysks_* users",
+  "enableReload": "サービスを有効にしてリロードする",
+  "enableReloadHint": "Needs system-change rights; off = write management only",
+  "applyFailed": "適用に失敗しました",
+  "phpVhostApplied": "PHP仮想ホスト/プールが適用されました",
+  "composerTools": "コンポーザー / WP-CLI / モジュール",
+  "composerToolsDesc": "PATH ツールと php -m のライブ プローブ (読み取り専用)",
+  "toolsProbed": "調査されたツール",
+  "notFound": "見つかりません",
+  "available": "利用可能",
+  "moduleCount": "モジュール",
+  "installNodeV": "ノード {{v}} をインストールします",
+  "installPhpV": "PHP {{v}} をインストールする",
+  "installPythonV": "Python {{v}} をインストールする",
+  "installGoV": "Go {{v}} をインストールする",
+  "installRustV": "Rust {{v}} をインストールする",
+  "pythonMissing": "Pythonがインストールされていない",
+  "goMissing": "Goがインストールされていません",
+  "rustMissing": "錆び/カーゴは取り付けられていません",
+  "tuneLoadFailed": "チューニングのロードに失敗しました",
+  "availableCount": "{{n}} 利用可能",
+  "notDetected": "検出されませんでした",
+  "target": "ターゲット",
+  "tune": "チューン",
+  "loadedShort": "ロード済み",
+  "host": "ホスト",
+  "tabOverviewInstall": "概要/インストール",
+  "tabTune": "チューニング",
+  "probeReadonlyInstall": "読み取り専用 · インストール後に再度プローブします",
+  "hostDefault": "ホストのデフォルト",
+  "panelSupport": "パネルサポート",
+  "ready": "準備完了",
+  "notDetectedYet": "まだ検出されていません",
+  "install": "インストール",
+  "installHint": "Needs system-change rights and admin; installing toolchain ≠ project is public",
+  "panelTune": "パネルチューニング",
+  "panelTuneDesc": "書き込み管理。デプロイ時に環境を注入する",
+  "bindVersion": "ピンのバージョン",
+  "onePerRow": "行ごとに 1 つの設定",
+  "zeroAll": "0 = すべて",
+  "custom": "カスタム",
+  "extraEnv": "追加の環境変数",
+  "extraEnvHint": "1 行に 1 つの KEY=value",
+  "customEnv": "カスタム環境",
+  "envPreview": "環境プレビュー",
+  "envPreviewDesc": "保存/最後のロード後のマージ結果",
+  "unsupported": "サポートされていません",
+  "tuneSaved": "チューニングが保存されました",
+  "nodeDetectedHint": "Node detected on host; reinstall follows privileges and may overwrite.",
+  "nodeProbeAfter": "After install, re-probe to confirm PATH and version.",
+  "installNodeVBtn": "ノード {{version}} をインストールします",
+  "installPhpVBtn": "PHP {{version}} をインストールする",
+  "phpIniSteps1": "php.ini タブでグローバル値を設計し、保存します。",
+  "phpIniSteps2": "Optional: Apply to system (writes /etc/php/…/conf.d, needs root)",
+  "phpIniSteps3": "Project deploy injects merged ini as php_admin_* on the FPM pool",
+  "phpIniSteps4": "Projects can override individual keys (Project → Deploy)",
+  "phpIniNote": "Changes save to panel dataDir first; Apply to system copies to /etc/php and reloads FPM. Project pools inject php_admin_value on deploy.",
+  "phpIniLoading": "php.ini フォームを読み込んでいます…",
+  "phpIniEmpty": "空のカタログ — リロードするか、API が起動していることを確認します。",
+  "reloadForm": "フォームをリロードする",
+  "savePhpIni": "php.iniを保存する",
+  "prodUseProjects": "本番環境ではプロジェクトを使用する必要があります",
+  "prodPathDesc": ": create PHP project → deploy/apply FPM (pool = project Linux user + isolated home)",
+  "systemDemo": "システムレベルのデモ/ツール",
+  "demoNotBind": "(hand-typed pool name) and does not auto-bind project isolation. Global php.ini is on the php.ini tab.",
+  "applyOkWritten": "Apply success = files written. Prefer project deploy so User=project Linux user.",
+  "applyPhpVhost": "PHP 仮想ホスト/プールを適用する",
+  "reprobeTools": "再プローブツール",
+  "pressReprobe": "再プローブツールを押してロードします",
+  "installNodeLabel": "ノード {{v}} をインストールします",
+  "installPhpLabel": "PHP {{v}} をインストールする",
+  "installPythonLabel": "Python {{v}} をインストールする",
+  "installGoLabel": "Go {{v}} をインストールする",
+  "installRustLabel": "Rust {{v}} をインストールする",
+  "readShort": "読む",
+  "pressReprobeHost": "[再プローブ] を押してホスト バージョン マトリックスをロードします",
+  "installScriptNote": "Writes install script; runs only with privileges. Tuning is on the Tuning tab; redeploy projects for process changes.",
+  "envNote": "Node: max-old-space-size merges into NODE_OPTIONS. Go/Python/Rust use official env vars.",
+  "saveTune": "チューニングの保存",
+  "pressReprobeLoad": "再プローブツールを押してロードします",
+  "installJavaLabel": "OpenJDKのインストール/アップデート",
+  "installKotlinLabel": "Kotlin のインストール/更新",
+  "installBunLabel": "Bun のインストール/アップデート",
+  "javaMissing": "Java (OpenJDK) が検出されない",
+  "kotlinMissing": "Kotlin コンパイラが検出されない",
+  "bunMissing": "パンが検出されませんでした",
+  "phpIniCatalog": {
+    "groups": {
+      "resource": {
+        "title": "リソース制限",
+        "description": "メモリ、実行時間、入力制限"
+      },
+      "upload": {
+        "title": "アップロードと投稿",
+        "description": "ファイルのアップロードと POST 本文のサイズ"
+      },
+      "session": {
+        "title": "セッション",
+        "description": "セッションストレージとCookie"
+      },
+      "error": {
+        "title": "エラーとロギング",
+        "description": "エラー、ログ、レポートレベルの表示"
+      },
+      "opcache": {
+        "title": "OPキャッシュ",
+        "description": "バイトコードキャッシュ"
+      },
+      "security": {
+        "title": "セキュリティとパス",
+        "description": "リモートファイル、露出、および無効化された機能"
+      },
+      "locale": {
+        "title": "タイムゾーンと文字セット"
+      },
+      "misc": {
+        "title": "その他の一般的な設定"
+      }
+    },
+    "fields": {
+      "memory_limit": {
+        "label": "メモリ制限",
+        "hint": "例えば128M、256M、512M、-1（無制限）"
+      },
+      "max_execution_time": {
+        "label": "最大実行時間",
+        "hint": "秒。 0 = 無制限 (CLI)"
+      },
+      "max_input_time": {
+        "label": "最大入力時間",
+        "hint": "秒。リクエストを解析する最大時間"
+      },
+      "max_input_vars": {
+        "label": "最大入力変数",
+        "hint": "$_GET / $_POST / $_COOKIE 変数の制限"
+      },
+      "max_input_nesting_level": {
+        "label": "最大入力ネストレベル"
+      },
+      "file_uploads": {
+        "label": "ファイルのアップロードを許可する"
+      },
+      "upload_max_filesize": {
+        "label": "アップロードファイルの最大サイズ"
+      },
+      "post_max_size": {
+        "label": "最大POSTサイズ",
+        "hint": "最大アップロード ファイル サイズ以上である必要があります"
+      },
+      "max_file_uploads": {
+        "label": "リクエストあたりの最大ファイル数"
+      },
+      "session_save_handler": {
+        "label": "セッション保存ハンドラー"
+      },
+      "session_gc_maxlifetime": {
+        "label": "セッションの有効期間 (秒)",
+        "hint": "秒"
+      },
+      "session_cookie_httponly": {
+        "label": "クッキーHTTPのみ"
+      },
+      "session_cookie_secure": {
+        "label": "Cookie セキュア (HTTPS のみ)",
+        "hint": "HTTPS サイトに推奨"
+      },
+      "session_use_strict_mode": {
+        "label": "セッション厳密モード"
+      },
+      "display_errors": {
+        "label": "表示エラー (ページ上)",
+        "hint": "運用環境で無効にする"
+      },
+      "display_startup_errors": {
+        "label": "起動エラーを表示する"
+      },
+      "log_errors": {
+        "label": "エラーをログに記録する"
+      },
+      "error_reporting": {
+        "label": "エラー報告レベル",
+        "hint": "または 32767 などの整数"
+      },
+      "error_log": {
+        "label": "エラーログのパス",
+        "hint": "空 = システムのデフォルト。絶対パスは許可されます"
+      },
+      "opcache_enable": {
+        "label": "OPcache を有効にする"
+      },
+      "opcache_enable_cli": {
+        "label": "CLI の OPcache を有効にする"
+      },
+      "opcache_memory_consumption": {
+        "label": "OPcache メモリ (MB)",
+        "hint": "単位：MB"
+      },
+      "opcache_interned_strings_buffer": {
+        "label": "インターンされた文字列バッファー (MB)"
+      },
+      "opcache_max_accelerated_files": {
+        "label": "高速化されたファイルの最大数"
+      },
+      "opcache_validate_timestamps": {
+        "label": "タイムスタンプを検証する",
+        "hint": "In production you may disable and reload manually"
+      },
+      "opcache_revalidate_freq": {
+        "label": "再検証の頻度 (秒)"
+      },
+      "allow_url_fopen": {
+        "label": "URL fopen を許可する"
+      },
+      "allow_url_include": {
+        "label": "URL のインクルードを許可する"
+      },
+      "expose_php": {
+        "label": "PHPバージョンヘッダーを公開する"
+      },
+      "open_basedir": {
+        "label": "open_basedir パス制限",
+        "hint": "空 = 制限なし。パスは次のように区切ります。"
+      },
+      "disable_functions": {
+        "label": "無効化された機能",
+        "hint": "カンマ区切り。厳密すぎるとパッケージが壊れる可能性があります"
+      },
+      "date_timezone": {
+        "label": "タイムゾーン"
+      },
+      "default_charset": {
+        "label": "デフォルトの文字セット"
+      },
+      "short_open_tag": {
+        "label": "短い開始タグ (<?) を許可します。"
+      },
+      "realpath_cache_size": {
+        "label": "リアルパスのキャッシュサイズ"
+      },
+      "realpath_cache_ttl": {
+        "label": "リアルパス キャッシュ TTL (秒)"
+      },
+      "cgi_fix_redirect": {
+        "label": "CGI 修正パスのリダイレクト"
+      }
+    },
+    "options": {
+      "sessionFiles": "ファイル",
+      "sessionRedis": "レディス",
+      "sessionMemcached": "Memcached",
+      "errorReportingProd": "本番環境 (E_ALL から非推奨/厳密を除く)",
+      "errorReportingAll": "すべて (E_ALL)",
+      "errorReportingQuiet": "静かになりました (通知なし/非推奨)",
+      "errorReportingMinimal": "エラー/警告/解析のみ",
+      "errorReportingOff": "オフ (0)",
+      "openBasedirNone": "制限なし（空）",
+      "openBasedirVarWww": "/var/www",
+      "openBasedirHome": "/home",
+      "openBasedirWwwTmp": "/var/www および /tmp",
+      "errorLogDefault": "システムのデフォルト (空)",
+      "errorLogPhp": "/var/log/php/error.log",
+      "errorLogFpm": "FPM ログ パス",
+      "errorLogSyslog": "シスログ"
+    },
+    "disableFn": {
+      "groups": {
+        "process": "プロセスの実行",
+        "dynamic": "動的ロード",
+        "info": "情報開示",
+        "filesystem": "ファイルシステム",
+        "network": "ネットワーク・その他"
+      },
+      "extraHint": "カタログにありません (ホストは存在します)",
+      "customPlaceholder": "その他の機能名…",
+      "searchPlaceholder": "検索機能…",
+      "emptyText": "一致しません"
+    }
+  },
+  "pluginsAvailableTitle": "インストール可能",
+  "pluginsInstalledTitle": "ホストにインストールされている",
+  "pluginsInstalledHint": "Detected on PATH; excluded from install selection. Uninstall is best-effort.",
+  "pluginsAllInstalled": "すべてのカタログ ツールはすでにこのホスト上にあります。",
+  "pluginStatusInstalled": "インストール済み",
+  "pluginUninstall": "アンインストール",
+  "pluginUninstallConfirmTitle": "アンインストールツール?",
+  "pluginUninstallConfirm": "Remove \"{{name}}\" from this host (via npm/apt/pip as applicable). Stop services that depend on it first.",
+  "pluginUninstalled": "アンインストールされました {{name}}",
+  "pluginUninstallFailed": "{{name}} のアンインストールに失敗しました",
+  "pluginUninstallBlocked": "パネルをアンインストールできません (root + EXECUTE が必要)",
+  "phpExtAlreadyOnHost": "インストールされている拡張機能",
+  "pluginsInstallSelected": "選択したインストール ({{n}})",
+  "pluginInstallOk": "インストールされている {{n}} ツール",
+  "pluginInstallFailed": "ツールのインストールに失敗しました",
+  "phpExtUninstallHint": "Uninstall optional extensions (apt remove; never FPM/CLI)",
+  "phpExtUninstallConfirmTitle": "PHP 拡張機能をアンインストールしますか?",
+  "phpExtUninstallConfirm": "Will apt remove “{{pkg}}” ({{name}}). Core FPM/CLI is never removed.",
+  "phpExtOpsTitle": "拡張運用の結果",
+  "pluginsOpsTitle": "ツール運用の結果",
+  "pluginBatchUninstall": "選択したアンインストール ({{n}})",
+  "pluginBatchUninstallConfirm": "選択した{{n}} ツールをアンインストールしますか?",
+  "pluginBatchUninstalled": "アンインストールされた {{n}} ツール",
+  "pluginBatchLabel": "選択されたツール",
+  "addonsInstallAbove": "Use “Install selected…” above for tools/extensions. This button only installs/confirms the runtime version.",
+  "phpExtInstallSelected": "選択した拡張機能をインストールします ({{n}})",
+  "phpExtInstallNote": "Select extensions then Install selected. First-time PHP uses Install PHP below (core+ext); when installed only the extensions button is shown.",
+  "phpExtInstallNoteInstalled": "Select extensions then Install selected. This version is already on the host — no runtime reinstall.",
+  "phpExtInstallNoteFirst": "PHP {{version}} is not installed: select extensions then use Install PHP {{version}} below (one install button, core+extensions).",
+  "installPhpWithExt": "Install PHP {{version}} (with selected extensions)",
+  "installLogTitle": "インストールログ (ライブ)",
+  "installLogStreaming": "ストリーミング中…",
+  "installLogDone": "終了した",
+  "installLogWaiting": "サーバー出力を待っています…",
+  "activeDefault": "デフォルト",
+  "switchDefaultBtn": "デフォルトを{{version}}に切り替えます",
+  "switchDefaultHint": "This version is installed but not the active default",
+  "installedNotActive": "{{version}} がインストールされています (デフォルトではありません)",
+  "multiVersionHint": "Go/Rust keep multiple versions: Install missing ones, then Switch default for PATH",
+  "tabProcesses": "プロセス",
+  "pm2": {
+    "title": "PM2フリート",
+    "desc": "Read-only view of pm2 jlist (panel user PM2_HOME). Live SSE refreshes every 2s.",
+    "live": "ライブ",
+    "installed": "PM2搭載",
+    "version": "pm2バージョン",
+    "path": "pm2パス",
+    "counts": "プロセス",
+    "countsValue": "{{n}} total · {{run}} online · {{stop}} stopped · {{err}} errored",
+    "updatedAt": "最終更新",
+    "notInstalled": "PM2 が PATH 上にありません。",
+    "installHint": "概要にコンパニオンプラグインをインストールする",
+    "tableTitle": "プロセス一覧",
+    "yskOnly": "YSKアプリのみ（ysk-*）",
+    "filterPh": "フィルター名/スクリプト/pid…",
+    "emptyTitle": "PM2は利用できません",
+    "emptyDesc": "Node 用の pm2 プラグインをインストールし、更新します。",
+    "noApps": "プロセスがありません",
+    "noAppsDesc": "パネルユーザーには PM2 アプリはありません",
+    "streamLog": "ライブティックログ",
+    "streamLogDesc": "SSE ティックごとに 1 行 (標準出力を処理しない)。",
+    "col": {
+      "name": "名前",
+      "status": "状態",
+      "mem": "メモリ",
+      "restarts": "再起動",
+      "uptime": "稼働時間",
+      "mode": "モード",
+      "script": "スクリプト",
+      "interpreter": "通訳者",
+      "user": "ユーザー",
+      "unit": "ユニット",
+      "runtime": "ランタイム"
+    },
+    "projectsTitle": "YSKプロジェクトのプロセス",
+    "projectsDesc": "systemd units for panel projects (default deploy path — not PM2).",
+    "projectsCount": "YSKプロジェクト",
+    "noProjects": "プロジェクトがありません",
+    "noProjectsDesc": "No node/bun projects in the panel, or OS user not provisioned.",
+    "pm2OnlyDesc": "Only apps started with PM2 under the panel user. systemd deploys appear above."
+  },
+  "recordedInstalled": "記録しました {{v}}",
+  "remoteSourceSuffix": "({{source}})",
+  "nodePathYskMissingTitle": "管理対象ノードのパスの準備ができていません",
+  "nodePathYskMissing": "YSK-managed Node for version {{version}} is not ready. Re-probe or reinstall.",
+  "nodePathUnsafeTitle": "ノードパスが安全ではありません",
+  "nodePathUnsafe": "Path {{path}} is outside the managed tree; project deploys may fail.",
+  "recordedButProbeEmpty": "Panel recorded install {{v}}, but the host probe found no binary. Not installed — re-probe or reinstall.",
+  "tabTuning": "チューニング",
+  "versionPlaceholder": "最新、",
+  "pluginsBundleWithRuntime": "ツール「ランタイムのインストール」をインストール（インストール）します。"
+}

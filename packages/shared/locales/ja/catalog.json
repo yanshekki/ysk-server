@@ -1,0 +1,31 @@
+{
+  "sw": {
+    "vsftpd": "vsftpd (FTPS)",
+    "db_util": "db-util (FTP ユーザー DB)",
+    "nginx": "Nginx",
+    "certbot": "証明書ボット (Let's Encrypt)",
+    "mysql_client": "MySQL/MariaDB クライアント",
+    "mysql_server": "MySQLサーバー",
+    "mariadb_server": "MariaDBサーバー",
+    "postgresql_client": "PostgreSQLクライアント",
+    "postgresql": "PostgreSQLサーバー",
+    "redis_tools": "Redisクライアント",
+    "redis_server": "Redisサーバー",
+    "ufw": "UFW ファイアウォール",
+    "fail2ban": "失敗2禁止",
+    "postfix": "接尾語",
+    "dovecot": "鳩小屋",
+    "opendkim": "OpenDKIM",
+    "pdns_server": "パワーDNS",
+    "git": "Git",
+    "node": "Node.js",
+    "php": "PHP",
+    "python": "パイソン3",
+    "go": "行く",
+    "rust": "錆（貨物）"
+  },
+  "php": {
+    "session": "セッション",
+    "opcache": "OPキャッシュ"
+  }
+}
