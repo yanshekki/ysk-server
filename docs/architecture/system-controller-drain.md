@@ -10,12 +10,12 @@ God-file split of `apps/server/src/controllers/system-controller.ts` (~2.9k → 
 |--------|--------|------|
 | Defense Center / protection / geoip | `routes/defense.ts` | **C1** |
 | Firewall + Fail2ban | `routes/firewall.ts` | **C2** |
+| Software catalog + stack install | `routes/software.ts` | **C3** |
 
 ## Still residual in system-controller
 
 - real-ip / host IPs
 - system email/ssl/php apply
-- software catalog + stack install
 - DB engines / redis browser / SQL switch
 - FTPS
 - host identity / panel-tls / power
@@ -23,4 +23,4 @@ God-file split of `apps/server/src/controllers/system-controller.ts` (~2.9k → 
 
 ## Dispatch note
 
-`handleDefenseRoutes` and `handleFirewallRoutes` run **before** `handleSystemRoutes` in `http-server.ts`.
+`handleDefenseRoutes`, `handleFirewallRoutes`, and `handleSoftwareRoutes` run **before** `handleSystemRoutes` in `http-server.ts`.

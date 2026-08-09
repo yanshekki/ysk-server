@@ -46,6 +46,7 @@ import {
   handleRbacRoutes,
   handleSearchRoutes,
   handleSettingsRoutes,
+  handleSoftwareRoutes,
   handleSshRoutes,
   handleSslRoutes,
   handleToolsRoutes,
@@ -97,9 +98,10 @@ function attachRequestHandler(ctx: AppContext, webRoot: string | null) {
         if (await handleLogsRoutes(ctx, req, res, url, method)) return;
         if (await handleMetricsRoutes(ctx, req, res, url, method)) return;
         if (await handleNetworkRoutes(ctx, req, res, url, method)) return;
-        // Domain slices before system (C1 defense · C2 firewall/fail2ban)
+        // Domain slices before system (C1 defense · C2 firewall · C3 software/stack)
         if (await handleDefenseRoutes(ctx, req, res, url, method)) return;
         if (await handleFirewallRoutes(ctx, req, res, url, method)) return;
+        if (await handleSoftwareRoutes(ctx, req, res, url, method)) return;
         if (await handleSystemRoutes(ctx, req, res, url, method)) return;
         if (
           await handleTerminalRoutes(
