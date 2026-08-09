@@ -78,7 +78,8 @@
     "rbacPolicy": "Politique RBAC",
     "settingsSystem": "Paramètres système",
     "auditExport": "Export d'audit",
-    "securityApiKeysAdmin": "Administration des clés API"
+    "securityApiKeysAdmin": "Administration des clés API",
+    "networkBrowse": "Navigation via l’hôte"
   },
   "aboutRoles": "Rôles (valeurs d'usine)",
   "aboutRolesBody": "Les rôles définissent les capacités par défaut ; les utilisateurs peuvent en remplacer certaines individuellement.",

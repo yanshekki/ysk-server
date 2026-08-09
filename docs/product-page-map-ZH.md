@@ -41,6 +41,7 @@
 | 系統 | `/users` | Users & packages | T |
 | 系統 | `/services` | 服務矩陣 | O |
 | 系統 | `/metrics` | 指標 | P |
+| 系統 | `/browse` | 主機瀏覽（代理瀏覽器） | |
 | 系統 | `/terminal` | 瀏覽器終端機 |
 | 系統 | `/logs` | 日誌中心 | T |
 | 系統 | `/cron` | Cron | K |

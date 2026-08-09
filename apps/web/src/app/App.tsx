@@ -159,6 +159,9 @@ const NetworkPage = lazy(() =>
 const TerminalPage = lazy(() =>
   import('../pages/features/TerminalPage').then((m) => ({ default: m.TerminalPage })),
 );
+const HostBrowsePage = lazy(() =>
+  import('../pages/features/HostBrowsePage').then((m) => ({ default: m.HostBrowsePage })),
+);
 const LogsPage = lazy(() =>
   import('../pages/features/LogsPage').then((m) => ({ default: m.LogsPage })),
 );
@@ -514,6 +517,14 @@ export function App() {
               element={
                 <Lazy>
                   <NetworkPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="browse"
+              element={
+                <Lazy>
+                  <HostBrowsePage />
                 </Lazy>
               }
             />

@@ -91,6 +91,7 @@ export const FEATURE_SECTIONS: FeatureSection[] = [
       { to: '/services', key: 'services', icon: '⚙' },
       { to: '/metrics', key: 'metrics', icon: '📊' },
       { to: '/network', key: 'network', icon: '🔌' },
+      { to: '/browse', key: 'hostBrowse', icon: '🧭' },
       { to: '/logs', key: 'logs', icon: '📄' },
       { to: '/terminal', key: 'terminal', icon: '⌘' },
       { to: '/cron', key: 'cron', icon: '⏱' },

@@ -3832,6 +3832,40 @@
       "RU-SPE": "St Petersburg"
     }
   },
+  "hostBrowse": {
+    "tabBrowse": "主机浏览",
+    "subtitle": "经主机出站代理浏览外网或内网；目标站不会看到你本机浏览器身份。",
+    "modeInternet": "外网",
+    "modeIntranet": "内网",
+    "modeHint": "外网会拒绝私网 IP；内网可访问 LAN。两侧都拒绝 cloud metadata。",
+    "urlPlaceholder": "https://example.com 或 192.168.1.1",
+    "go": "前往",
+    "back": "返回",
+    "forward": "前进",
+    "reload": "刷新",
+    "stop": "停止",
+    "clearCookies": "清除 Cookie",
+    "closeSession": "关闭会话",
+    "copyUrl": "复制网址",
+    "newSession": "新会话",
+    "privacyOn": "隐私代浏",
+    "viaHost": "经主机",
+    "emptyTitle": "主机代浏览",
+    "emptyBody": "输入网址。DNS、TLS 与出站由本服务器处理，不是你的桌面浏览器。Cookie 只存在服务器 jar。",
+    "ssrfBlocked": "已由安全策略拦截（SSRF／模式）",
+    "loadFailed": "主机抓取失败",
+    "sessionReady": "会话就绪",
+    "noSession": "无会话",
+    "statusLine": "{{status}} · {{ms}}ms · {{type}} · 经主机",
+    "cookies": "Cookie",
+    "latency": "延迟",
+    "locked": "HTTPS",
+    "insecure": "HTTP",
+    "loading": "加载中…",
+    "modeSwitchHint": "切换模式会打开新会话并清除 Cookie。",
+    "copied": "已复制网址",
+    "downloadHint": "非 HTML 响应 — 请查看内容框或重新导航。"
+  },
   "listToolbar": {
     "searchPlaceholder": "搜索…",
     "searchAria": "搜索列表",
@@ -4291,7 +4325,8 @@
     "kotlin": "Kotlin",
     "bun": "Bun",
     "software": "软件中心",
-    "terminal": "终端"
+    "terminal": "终端",
+    "hostBrowse": "主机浏览"
   },
   "network": {
     "title": "网络接口",
@@ -8394,7 +8429,8 @@
       "rbacPolicy": "权限策略",
       "settingsSystem": "系统设置",
       "auditExport": "审计导出",
-      "securityApiKeysAdmin": "API 密钥管理"
+      "securityApiKeysAdmin": "API 密钥管理",
+      "networkBrowse": "主机代浏览"
     },
     "aboutRoles": "角色说明（出厂默认）",
     "aboutRolesBody": "角色决定默认权限；用户可再覆盖个别能力。",

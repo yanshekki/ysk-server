@@ -49,6 +49,7 @@ import { MigrateHostPage } from './features/MigrateHostPage';
 import { MysqlPage } from './features/MysqlPage';
 import { MysqlServicePage } from './features/MysqlServicePage';
 import { NetworkPage } from './features/NetworkPage';
+import { HostBrowsePage } from './features/HostBrowsePage';
 import { NginxPage } from './features/NginxPage';
 import { NodeRuntimePage } from './features/NodeRuntimePage';
 import { PhpRuntimePage } from './features/PhpRuntimePage';
@@ -2044,6 +2045,13 @@ const smokeCases: SmokeCase[] = [
     heading: /mariadb|mysql/i,
     clickTabs: true },
   { name: 'NetworkPage', path: '/network', el: <NetworkPage />, heading: /network/i, clickTabs: true },
+  {
+    name: 'HostBrowsePage',
+    path: '/browse',
+    el: <HostBrowsePage />,
+    heading: /browse|主機瀏覽|主机浏览/i,
+    clickTabs: true,
+  },
   { name: 'NginxPage', path: '/nginx', el: <NginxPage />, heading: /nginx/i, clickTabs: true },
   {
     name: 'PostgresPage',

@@ -77,6 +77,7 @@
     "securityPolicy": "सुरक्षा नीति",
     "rbacPolicy": "RBAC नीति",
     "settingsSystem": "सिस्टम सेटिंग्स",
+    "networkBrowse": "होस्ट-मध्यस्थ ब्राउज़",
     "auditExport": "ऑडिट निर्यात",
     "securityApiKeysAdmin": "API कुंजी व्यवस्थापक"
   },

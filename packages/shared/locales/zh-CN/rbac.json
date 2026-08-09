@@ -78,7 +78,8 @@
     "rbacPolicy": "权限策略",
     "settingsSystem": "系统设置",
     "auditExport": "审计导出",
-    "securityApiKeysAdmin": "API 密钥管理"
+    "securityApiKeysAdmin": "API 密钥管理",
+    "networkBrowse": "主机代浏览"
   },
   "aboutRoles": "角色说明（出厂默认）",
   "aboutRolesBody": "角色决定默认权限；用户可再覆盖个别能力。",

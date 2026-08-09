@@ -3832,6 +3832,40 @@
       "RU-SPE": "SPE"
     }
   },
+  "hostBrowse": {
+    "tabBrowse": "Browse",
+    "subtitle": "Browse the internet or LAN via this host. Targets never see your desktop browser identity.",
+    "modeInternet": "Internet",
+    "modeIntranet": "Intranet",
+    "modeHint": "Internet blocks private IPs; Intranet allows LAN targets. Both block cloud metadata.",
+    "urlPlaceholder": "https://example.com or 192.168.1.1",
+    "go": "Go",
+    "back": "Back",
+    "forward": "Forward",
+    "reload": "Reload",
+    "stop": "Stop",
+    "clearCookies": "Clear cookies",
+    "closeSession": "Close session",
+    "copyUrl": "Copy URL",
+    "newSession": "New session",
+    "privacyOn": "Privacy on",
+    "viaHost": "via host",
+    "emptyTitle": "Host-mediated browse",
+    "emptyBody": "Enter a URL. DNS, TLS, and egress use this server — not your browser. Cookies stay in a server-side jar.",
+    "ssrfBlocked": "Blocked by security policy (SSRF / mode)",
+    "loadFailed": "Fetch failed on host",
+    "sessionReady": "Session ready",
+    "noSession": "No session",
+    "statusLine": "{{status}} · {{ms}}ms · {{type}} · via host",
+    "cookies": "Cookies",
+    "latency": "Latency",
+    "locked": "HTTPS",
+    "insecure": "HTTP",
+    "loading": "Loading…",
+    "modeSwitchHint": "Switching mode opens a new session and clears cookies.",
+    "copied": "URL copied",
+    "downloadHint": "Non-HTML response — open content frame or navigate again."
+  },
   "listToolbar": {
     "searchPlaceholder": "Rechercher…",
     "searchAria": "Rechercher dans la liste",
@@ -4291,7 +4325,8 @@
     "kotlin": "Kotlin",
     "bun": "Bun",
     "software": "Logiciels",
-    "terminal": "Terminal"
+    "terminal": "Terminal",
+    "hostBrowse": "Navigation hôte"
   },
   "network": {
     "title": "Interfaces réseau",
@@ -8394,7 +8429,8 @@
       "rbacPolicy": "Politique RBAC",
       "settingsSystem": "Paramètres système",
       "auditExport": "Export d'audit",
-      "securityApiKeysAdmin": "Administration des clés API"
+      "securityApiKeysAdmin": "Administration des clés API",
+      "networkBrowse": "Navigation via l’hôte"
     },
     "aboutRoles": "Rôles (valeurs d'usine)",
     "aboutRolesBody": "Les rôles définissent les capacités par défaut ; les utilisateurs peuvent en remplacer certaines individuellement.",

@@ -59,5 +59,6 @@
   "kotlin": "Kotlin",
   "bun": "Bun",
   "software": "软件中心",
-  "terminal": "终端"
+  "terminal": "终端",
+  "hostBrowse": "主机浏览"
 }

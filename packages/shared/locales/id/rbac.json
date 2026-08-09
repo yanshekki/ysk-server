@@ -78,7 +78,8 @@
     "rbacPolicy": "Kebijakan RBAC",
     "settingsSystem": "Pengaturan sistem",
     "auditExport": "Ekspor audit",
-    "securityApiKeysAdmin": "Admin kunci API"
+    "securityApiKeysAdmin": "Admin kunci API",
+    "networkBrowse": "Jelajah dimediasi host"
   },
   "aboutRoles": "Peran (default pabrik)",
   "aboutRolesBody": "Peran menetapkan kapabilitas default; pengguna dapat menimpa masing-masing.",

@@ -729,8 +729,7 @@
         "label": "CDN",
         "to": "/cdn"
       }
-    ],
-    "id": "nginx"
+    ]
   },
   "node": {
     "id": "node",
@@ -1566,6 +1565,41 @@
     ],
     "cliHints": [
       "# browser PTY only — no remote SSH required"
+    ]
+  },
+  "hostBrowse": {
+    "id": "hostBrowse",
+    "title": "主機瀏覽",
+    "summary": "經主機出站瀏覽外網或內網。目標站只會見到主機出口 IP 同固定 User-Agent，唔會見到你桌面瀏覽器。",
+    "canDo": [
+      "外網模式：公網 HTTP(S)，攔截私網 IP",
+      "內網模式：經主機開 RFC1918／LAN 管理頁",
+      "Cookie 只存在伺服器 jar，唔會寫入你瀏覽器",
+      "沙箱 iframe 隔離 panel 與頁面腳本"
+    ],
+    "notes": [
+      "唔係完整 Chromium 替代；複雜 SPA 可能顯示不全",
+      "Cloud metadata 永遠攔截",
+      "需要 network.browse 能力（管理員預設有）"
+    ],
+    "workflow": [
+      "由系統選單開啟主機瀏覽",
+      "揀外網或內網模式",
+      "輸入網址後按前往",
+      "說明分頁有安全模型詳情"
+    ],
+    "cliHints": [
+      "# panel only — no CLI browse in v1"
+    ],
+    "related": [
+      {
+        "label": "網絡",
+        "to": "/network"
+      },
+      {
+        "label": "終端機",
+        "to": "/terminal"
+      }
     ]
   }
 }

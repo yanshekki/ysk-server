@@ -719,8 +719,7 @@
         "label": "CDN",
         "to": "/cdn"
       }
-    ],
-    "id": "nginx"
+    ]
   },
   "node": {
     "id": "node",
@@ -1580,6 +1579,41 @@
     ],
     "cliHints": [
       "# browser PTY only — no remote SSH required"
+    ]
+  },
+  "hostBrowse": {
+    "id": "hostBrowse",
+    "title": "Host Browse",
+    "summary": "Browse internet or LAN through this host. Targets see only the host egress IP and a fixed User-Agent — never your desktop browser.",
+    "canDo": [
+      "Internet mode: public HTTPS/HTTP with private IP blocked",
+      "Intranet mode: reach RFC1918 / LAN admin UIs via the host",
+      "Server-side cookie jar — target cookies never land in your browser",
+      "Sandboxed content frame isolates the panel from page scripts"
+    ],
+    "notes": [
+      "Not a full Chromium substitute — complex SPAs may break",
+      "Cloud metadata endpoints are always blocked",
+      "Requires network.browse capability (admin by default)"
+    ],
+    "workflow": [
+      "Open Host Browse from System menu",
+      "Pick Internet or Intranet mode",
+      "Enter a URL and press Go",
+      "Use About tab for security model details"
+    ],
+    "cliHints": [
+      "# panel only — no CLI browse in v1"
+    ],
+    "related": [
+      {
+        "label": "Network",
+        "to": "/network"
+      },
+      {
+        "label": "Terminal",
+        "to": "/terminal"
+      }
     ]
   }
 }

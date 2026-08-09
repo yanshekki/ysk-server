@@ -293,6 +293,12 @@ export const MUTATING_ROUTE_CAP_RULES: readonly RouteCapRule[] = [
   },
   {
     methods: ['POST', 'PUT', 'PATCH', 'DELETE'],
+    pattern: /^\/api\/v1\/host-browse\//,
+    cap: 'network.browse',
+    note: 'host-mediated proxy browser sessions',
+  },
+  {
+    methods: ['POST', 'PUT', 'PATCH', 'DELETE'],
     pattern: /^\/api\/v1\/sftp\//,
     cap: 'files.project',
   },
@@ -379,6 +385,7 @@ export const FEATURE_NAV_CAPS: Readonly<Record<string, readonly CapabilityId[]>>
   cdn: ['publish.apply', 'projects.read'],
   rbac: ['rbac.policy', 'users.manage'],
   terminal: ['settings.system', 'services.control'],
+  hostBrowse: ['network.browse'],
 };
 
 /** Path prefix → any-of caps (for SPA route guard). Longer prefixes win. */
@@ -406,6 +413,7 @@ export const PATH_CAP_GUARDS: ReadonlyArray<{
   { prefix: '/system/unit', caps: ['services.control', 'settings.system'] },
   { prefix: '/system/readiness', caps: ['dashboard.read', 'settings.system'] },
   { prefix: '/terminal', caps: ['settings.system', 'services.control'] },
+  { prefix: '/browse', caps: ['network.browse'] },
   { prefix: '/agents', caps: ['services.read', 'services.control', 'runtime.tuning'] },
   { prefix: '/cdn', caps: ['publish.apply', 'projects.read'] },
 ];

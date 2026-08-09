@@ -3832,6 +3832,40 @@
       "RU-SPE": "St Petersburg"
     }
   },
+  "hostBrowse": {
+    "tabBrowse": "主機瀏覽",
+    "subtitle": "經主機出站代理瀏覽外網或內網；目標站唔會見到你本機瀏覽器身分。",
+    "modeInternet": "外網",
+    "modeIntranet": "內網",
+    "modeHint": "外網會拒私網 IP；內網可開 LAN。兩邊都拒 cloud metadata。",
+    "urlPlaceholder": "https://example.com 或 192.168.1.1",
+    "go": "前往",
+    "back": "返回",
+    "forward": "前進",
+    "reload": "重新整理",
+    "stop": "停止",
+    "clearCookies": "清除 Cookie",
+    "closeSession": "關閉工作階段",
+    "copyUrl": "複製網址",
+    "newSession": "新工作階段",
+    "privacyOn": "私隱代瀏",
+    "viaHost": "經主機",
+    "emptyTitle": "主機代瀏覽",
+    "emptyBody": "輸入網址。DNS、TLS 同出站由呢部伺服器處理，唔係你桌面瀏覽器。Cookie 只存在伺服器 jar。",
+    "ssrfBlocked": "已由安全政策攔截（SSRF／模式）",
+    "loadFailed": "主機擷取失敗",
+    "sessionReady": "工作階段就緒",
+    "noSession": "未有工作階段",
+    "statusLine": "{{status}} · {{ms}}ms · {{type}} · 經主機",
+    "cookies": "Cookie",
+    "latency": "延遲",
+    "locked": "HTTPS",
+    "insecure": "HTTP",
+    "loading": "載入中…",
+    "modeSwitchHint": "切換模式會開新工作階段並清除 Cookie。",
+    "copied": "已複製網址",
+    "downloadHint": "非 HTML 回應 — 請睇內容框或再導航。"
+  },
   "listToolbar": {
     "searchPlaceholder": "搜尋…",
     "searchAria": "搜尋列表",
@@ -4291,7 +4325,8 @@
     "kotlin": "Kotlin",
     "bun": "Bun",
     "software": "軟件中心",
-    "terminal": "終端機"
+    "terminal": "終端機",
+    "hostBrowse": "主機瀏覽"
   },
   "network": {
     "title": "網絡介面",
@@ -8394,7 +8429,8 @@
       "rbacPolicy": "權限政策",
       "settingsSystem": "系統設定",
       "auditExport": "審計匯出",
-      "securityApiKeysAdmin": "介面 金鑰管理"
+      "securityApiKeysAdmin": "介面 金鑰管理",
+      "networkBrowse": "主機代瀏覽"
     },
     "aboutRoles": "角色說明（出廠預設）",
     "aboutRolesBody": "角色決定預設權限；用戶可再覆寫個別能力。",

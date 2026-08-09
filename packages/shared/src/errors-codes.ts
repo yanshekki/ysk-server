@@ -23,6 +23,12 @@ export const ErrorCodes = {
   NEED_ROOT: 'YSK_NEED_ROOT',
   RATE_LIMITED: 'YSK_RATE_LIMITED',
   TOTP_REQUIRED: 'YSK_TOTP_REQUIRED',
+  /** Host-mediated browse blocked by SSRF / mode policy */
+  HOST_BROWSE_SSRF: 'YSK_HOST_BROWSE_SSRF',
+  /** Host-browse session missing, expired, or not owned */
+  HOST_BROWSE_SESSION: 'YSK_HOST_BROWSE_SESSION',
+  /** Host-browse upstream fetch failed */
+  HOST_BROWSE_UPSTREAM: 'YSK_HOST_BROWSE_UPSTREAM',
 } as const;
 
 export type ErrorCode = (typeof ErrorCodes)[keyof typeof ErrorCodes];

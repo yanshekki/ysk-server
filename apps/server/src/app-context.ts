@@ -35,6 +35,7 @@ import {
   backupAllProjects,
   checkIpDnsbl,
   createTerminalTicketStore,
+  HostBrowseService,
   type Allowlist,
   type HostExecutor,
   type ProtectionState,
@@ -74,6 +75,8 @@ export interface AppContext {
   webRoot?: string;
   /** One-time tickets for browser terminal WebSocket */
   terminalTickets: TerminalTicketStore;
+  /** Host-mediated proxy browser (privacy egress) */
+  hostBrowse: HostBrowseService;
   /** Rebuild LLM gateway from settings (after settings.llm update) */
   reloadLlm: () => void;
   /** Run protection probes and apply resulting mode */
@@ -193,6 +196,24 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
     dataDir,
     webRoot: opts.webRoot,
     terminalTickets: createTerminalTicketStore(),
+    hostBrowse: new HostBrowseService(
+      {
+        allowLoopback: process.env.YSK_HOST_BROWSE_LOOPBACK === '1',
+      },
+      (event) => {
+        try {
+          audit.append({
+            actor: event.userId,
+            action: event.action,
+            resource: 'host-browse',
+            detail: event.detail,
+            ok: event.ok,
+          });
+        } catch {
+          /* non-fatal */
+        }
+      },
+    ),
     reloadLlm() {
       ctx.llm = buildLlm(settings);
       ctx.llm.setProtection(ctx.protection);

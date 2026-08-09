@@ -78,7 +78,8 @@
     "rbacPolicy": "RBAC 정책",
     "settingsSystem": "시스템 설정",
     "auditExport": "감사 내보내기",
-    "securityApiKeysAdmin": "API 키 관리"
+    "securityApiKeysAdmin": "API 키 관리",
+    "networkBrowse": "호스트 중개 브라우징"
   },
   "aboutRoles": "역할 (공장 기본값)",
   "aboutRolesBody": "역할은 기본 권한을 설정하며, 사용자는 개별 항목을 재정의할 수 있습니다.",

@@ -719,8 +719,7 @@
         "label": "CDN",
         "to": "/cdn"
       }
-    ],
-    "id": "nginx"
+    ]
   },
   "node": {
     "id": "node",
@@ -1580,6 +1579,41 @@
     ],
     "cliHints": [
       "# browser PTY only — no remote SSH required"
+    ]
+  },
+  "hostBrowse": {
+    "id": "hostBrowse",
+    "title": "主机浏览",
+    "summary": "经主机出站浏览外网或内网。目标站只会看到主机出口 IP 与固定 User-Agent，不会看到你桌面浏览器。",
+    "canDo": [
+      "外网模式：公网 HTTP(S)，拦截私网 IP",
+      "内网模式：经主机打开 RFC1918／LAN 管理页",
+      "Cookie 只存在服务器 jar，不会写入你的浏览器",
+      "沙箱 iframe 隔离 panel 与页面脚本"
+    ],
+    "notes": [
+      "不是完整 Chromium 替代；复杂 SPA 可能显示不全",
+      "Cloud metadata 永远拦截",
+      "需要 network.browse 能力（管理员默认有）"
+    ],
+    "workflow": [
+      "从系统菜单打开主机浏览",
+      "选择外网或内网模式",
+      "输入网址后点击前往",
+      "说明分页有安全模型详情"
+    ],
+    "cliHints": [
+      "# panel only — no CLI browse in v1"
+    ],
+    "related": [
+      {
+        "label": "网络",
+        "to": "/network"
+      },
+      {
+        "label": "终端",
+        "to": "/terminal"
+      }
     ]
   }
 }

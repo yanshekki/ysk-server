@@ -56,6 +56,7 @@ import {
   handleUpdatesRoutes,
 } from './routes/index.js';
 import { handleTerminalRoutes } from './routes/terminal.js';
+import { handleHostBrowseRoutes } from './routes/host-browse.js';
 import { attachTerminalWebSocket } from './terminal/ws-handler.js';
 
 export type ControlPlaneServer = HttpServer | HttpsServer;
@@ -120,6 +121,7 @@ function attachRequestHandler(ctx: AppContext, webRoot: string | null) {
           )
         )
           return;
+        if (await handleHostBrowseRoutes(ctx, req, res, url, method)) return;
 
         // Domain route modules (extracted from former monolithic handler)
         if (await handlePublicRoutes(ctx, req, res, url, method)) return;

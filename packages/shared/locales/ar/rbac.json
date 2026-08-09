@@ -78,7 +78,8 @@
     "rbacPolicy": "RBAC policy",
     "settingsSystem": "System settings",
     "auditExport": "Audit export",
-    "securityApiKeysAdmin": "API keys admin"
+    "securityApiKeysAdmin": "API keys admin",
+    "networkBrowse": "تصفح عبر المضيف"
   },
   "aboutRoles": "Roles (factory defaults)",
   "aboutRolesBody": "Roles set default capabilities; users can override individual ones.",

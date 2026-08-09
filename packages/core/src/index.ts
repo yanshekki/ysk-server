@@ -15,4 +15,5 @@ export * from './host/index.js';
 export * from './skills/index.js';
 export * from './monitoring/index.js';
 export * from './files/index.js';
+export * from './host-browse/index.js';
 
