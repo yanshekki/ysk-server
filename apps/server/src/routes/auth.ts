@@ -183,11 +183,26 @@ export async function handleAuthRoutes(
         sendJson(res, 200, ctx.auth.disableTotp(user.id, data.code ?? ''));
         return true;
       }
+      if (method === 'POST' && url.pathname === '/api/v1/auth/password') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          currentPassword?: string;
+          newPassword?: string;
+        };
+        const updated = ctx.auth.changeOwnPassword(
+          user.id,
+          data.currentPassword ?? '',
+          data.newPassword ?? '',
+        );
+        sendJson(res, 200, { ok: true, user: updated });
+        return true;
+      }
       if (method === 'GET' && url.pathname === '/api/v1/auth/api-keys') {
         const user = ctx.auth.authenticate(getBearer(req));
         const { listApiKeys } = await import('@ysk/core');
-        void user;
-        sendJson(res, 200, { items: listApiKeys(ctx.db) });
+        // Own keys only (admins do not see others' secrets here — use users admin later)
+        sendJson(res, 200, { items: listApiKeys(ctx.db, user.id) });
         return true;
       }
       if (method === 'POST' && url.pathname === '/api/v1/auth/api-keys') {
@@ -376,7 +391,7 @@ export async function handleAuthRoutes(
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[5] ?? '';
         const { deleteApiKey } = await import('@ysk/core');
-        const ok = deleteApiKey(ctx.db, id);
+        const ok = deleteApiKey(ctx.db, id, { ownerUserId: user.id });
         ctx.audit.append({
           actor: user.username,
           action: 'auth.api_key.delete',

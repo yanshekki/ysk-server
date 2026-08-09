@@ -10,12 +10,13 @@ import type {
   ToolCallRequest,
   ToolCallResult } from '@ysk/shared';
 import { ErrorCodes, YskError, tl} from '@ysk/shared';
+import { resolve as pathResolve } from 'node:path';
 import type { Allowlist } from './allowlist.js';
 import type { ApprovalQueue } from './approval.js';
 import { checkRbac } from './rbac.js';
 import { toolImpliedLevel } from './operation-level.js';
 import type { ProtectionState } from '../services/protection.js';
-import type { HostExecutor } from '../host/executor.js';
+import { pathUnderRoot, type HostExecutor } from '../host/executor.js';
 import type { AuditRepository } from '../repositories/audit-repo.js';
 
 const EMERGENCY_TOOLS = new Set([
@@ -36,8 +37,13 @@ export interface ToolExecutorOptions {
   protection?: ProtectionState;
   host: HostExecutor;
   audit?: AuditRepository;
-  /** Extra allowed write root for fs.write (dataDir) */
+  /** dataDir is always an allowed FS root for tools */
   dataDir?: string;
+  /**
+   * Additional absolute roots for fs.read/list/write/delete.
+   * Fail-closed: if neither dataDir nor fsRoots is set, fs.* tools refuse.
+   */
+  fsRoots?: string[];
 }
 
 /**
@@ -155,35 +161,80 @@ export async function executeToolCall(
   }
 }
 
+/** Resolve allowed roots for tool filesystem ops (fail-closed when empty). */
+export function toolFsRoots(opts: Pick<ToolExecutorOptions, 'dataDir' | 'fsRoots'>): string[] {
+  const roots: string[] = [];
+  if (opts.dataDir?.trim()) roots.push(pathResolve(opts.dataDir.trim()));
+  for (const r of opts.fsRoots ?? []) {
+    const t = String(r ?? '').trim();
+    if (t) roots.push(pathResolve(t));
+  }
+  return roots;
+}
+
+/**
+ * Ensure tool path is inside at least one allowed root (boundary-safe).
+ * Returns resolved absolute path.
+ */
+export function assertToolFsPath(
+  rawPath: string,
+  roots: string[],
+): string {
+  if (!rawPath?.trim()) {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.needPath'), { httpStatus: 400 });
+  }
+  if (rawPath.includes('\0')) {
+    throw new YskError(ErrorCodes.SANDBOX_VIOLATION, tl('notes.files.pathOutsideSandbox', { target: rawPath }), {
+      httpStatus: 403,
+      details: { path: rawPath },
+    });
+  }
+  if (!roots.length) {
+    throw new YskError(
+      ErrorCodes.SANDBOX_VIOLATION,
+      tl('notes.files.pathOutsideSandbox', { target: rawPath }),
+      {
+        httpStatus: 403,
+        details: { path: rawPath, reason: 'fs_tools_require_sandbox_roots' },
+      },
+    );
+  }
+  const abs = pathResolve(rawPath);
+  for (const root of roots) {
+    if (pathUnderRoot(root, abs)) return abs;
+  }
+  throw new YskError(ErrorCodes.SANDBOX_VIOLATION, tl('notes.files.pathOutsideSandbox', { target: rawPath }), {
+    httpStatus: 403,
+    details: { path: abs, roots },
+  });
+}
+
 async function dispatchTool(
   tool: string,
   args: Record<string, unknown>,
   opts: ToolExecutorOptions,
 ): Promise<Record<string, unknown>> {
   const host = opts.host;
+  const roots = toolFsRoots(opts);
   switch (tool) {
     case 'fs.read': {
-      const path = String(args.path ?? '');
-      if (!path) throw new YskError(ErrorCodes.VALIDATION, tl('notes.needPath'), { httpStatus: 400 });
+      const path = assertToolFsPath(String(args.path ?? ''), roots);
       const content = await host.readFile(path);
       return { path, content, bytes: Buffer.byteLength(content) };
     }
     case 'fs.list': {
-      const path = String(args.path ?? '');
-      if (!path) throw new YskError(ErrorCodes.VALIDATION, tl('notes.needPath'), { httpStatus: 400 });
+      const path = assertToolFsPath(String(args.path ?? ''), roots);
       const entries = await host.listDir(path);
       return { path, entries };
     }
     case 'fs.write': {
-      const path = String(args.path ?? '');
+      const path = assertToolFsPath(String(args.path ?? ''), roots);
       const content = String(args.content ?? '');
-      if (!path) throw new YskError(ErrorCodes.VALIDATION, tl('notes.needPath'), { httpStatus: 400 });
       await host.writeFile(path, content);
       return { path, bytesWritten: Buffer.byteLength(content) };
     }
     case 'fs.delete': {
-      const path = String(args.path ?? '');
-      if (!path) throw new YskError(ErrorCodes.VALIDATION, tl('notes.needPath'), { httpStatus: 400 });
+      const path = assertToolFsPath(String(args.path ?? ''), roots);
       await host.deletePath(path);
       return { path, deleted: true };
     }

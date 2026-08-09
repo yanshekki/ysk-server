@@ -51,6 +51,8 @@ export async function handleToolsRoutes(
             host: ctx.host,
             audit: ctx.audit,
             dataDir: ctx.dataDir,
+            // Project homes often live under /home; still boundary-checked (no .. escape)
+            fsRoots: ['/tmp', '/home'],
           },
           data.approvalId,
         );

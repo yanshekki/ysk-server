@@ -243,6 +243,7 @@ describe('security residual — tool-executor dispatch', () => {
         { tool: 'fs.read', args: { path: join(dir, 'big.txt') } },
         {
           ...opts,
+          dataDir: dir,
           host: {
             ...host,
             readFile: async () => 'y'.repeat(250),

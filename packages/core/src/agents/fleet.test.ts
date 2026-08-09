@@ -15,16 +15,24 @@ describe('FleetService', () => {
     expect(() => fleet.register('')).toThrow(YskError);
     const s = fleet.register('edge-1', 'default', { region: 'hk' });
     expect(s.agent_id).toBe('edge-1');
+    expect(s.token).toMatch(/^ysk_agent_/);
     // Panel register is not live
     expect(s.status).toBe('registered');
+    // Public list never includes token_hash
+    expect((s as { token_hash?: string }).token_hash).toBeUndefined();
 
     const edge = fleet.register('edge-2', 'dc', { source: 'edge' });
     expect(edge.status).toBe('connected');
+    expect(edge.token).toBeTruthy();
 
     const listed = fleet.list();
     expect(listed.some((a) => a.id === s.id)).toBe(true);
     expect(fleet.list('default').some((a) => a.id === s.id)).toBe(true);
     expect(fleet.list('other')).toHaveLength(0);
+
+    expect(() => fleet.assertAgentAuth(s.id, undefined)).toThrow(YskError);
+    expect(() => fleet.assertAgentAuth(s.id, 'wrong')).toThrow(YskError);
+    fleet.assertAgentAuth(s.id, s.token);
 
     const hb = fleet.heartbeat(s.id);
     expect(hb.status).toBe('connected');
@@ -40,6 +48,7 @@ describe('FleetService', () => {
     const acked = fleet.ack(cmd.id, { pong: true });
     expect(acked?.status).toBe('done');
     expect(acked?.result).toEqual({ pong: true });
+    expect(fleet.getCommandSessionId(cmd.id)).toBe(s.id);
 
     const after = fleet.pullCommands(s.id);
     expect(after.every((c) => c.id !== cmd.id)).toBe(true);

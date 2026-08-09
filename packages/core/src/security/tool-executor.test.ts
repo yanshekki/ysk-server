@@ -39,10 +39,30 @@ describe('executeToolCall (real host)', () => {
         actor: 'admin',
         roles: ['admin'],
         host,
+        dataDir: dir,
       },
     );
     expect(result.allowed).toBe(true);
     expect(result.result).toMatchObject({ content: 'hello-ysk', executed: true });
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('refuses fs.read outside sandbox (e.g. /etc/passwd)', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-tool-'));
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    await expect(
+      executeToolCall(
+        { tool: 'fs.read', args: { path: '/etc/passwd' } },
+        {
+          allowlist: createDefaultAllowlist(),
+          approvals: new ApprovalQueue(),
+          actor: 'admin',
+          roles: ['admin'],
+          host,
+          dataDir: dir,
+        },
+      ),
+    ).rejects.toThrow(/sandbox|SANDBOX|outside|path|沙箱|範圍/i);
     rmSync(dir, { recursive: true, force: true });
   });
 
@@ -55,7 +75,7 @@ describe('executeToolCall (real host)', () => {
 
     const pending = await executeToolCall(
       { tool: 'fs.write', args: { path: file, content: 'written-for-real' } },
-      { allowlist, approvals, actor: 'operator', roles: ['admin'], host },
+      { allowlist, approvals, actor: 'operator', roles: ['admin'], host, dataDir: dir },
     );
     expect(pending.requiresApproval).toBe(true);
     expect(pending.approvalId).toBeTruthy();
@@ -65,7 +85,7 @@ describe('executeToolCall (real host)', () => {
     approvals.approve(pending.approvalId!, 'admin');
     const done = await executeToolCall(
       { tool: 'fs.write', args: { path: file, content: 'written-for-real' } },
-      { allowlist, approvals, actor: 'operator', roles: ['admin'], host },
+      { allowlist, approvals, actor: 'operator', roles: ['admin'], host, dataDir: dir },
       pending.approvalId,
     );
     expect(done.allowed).toBe(true);
@@ -159,6 +179,7 @@ describe('executeToolCall (real host)', () => {
         actor: 'admin',
         roles: ['admin'],
         host,
+        dataDir: dir,
       },
     );
     expect(list.allowed).toBe(true);
@@ -189,13 +210,13 @@ describe('executeToolCall (real host)', () => {
     // fs.delete may require approval depending on allowlist
     const first = await executeToolCall(
       { tool: 'fs.delete', args: { path: file } },
-      { allowlist, approvals, actor: 'admin', roles: ['admin'], host },
+      { allowlist, approvals, actor: 'admin', roles: ['admin'], host, dataDir: dir },
     );
     if (first.requiresApproval && first.approvalId) {
       approvals.approve(first.approvalId, 'admin');
       const done = await executeToolCall(
         { tool: 'fs.delete', args: { path: file } },
-        { allowlist, approvals, actor: 'admin', roles: ['admin'], host },
+        { allowlist, approvals, actor: 'admin', roles: ['admin'], host, dataDir: dir },
         first.approvalId,
       );
       expect(done.allowed).toBe(true);

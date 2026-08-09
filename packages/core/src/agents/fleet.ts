@@ -3,7 +3,7 @@
  * Panel register ≠ live agent: only heartbeat promotes to connected.
  */
 
-import { randomUUID } from 'node:crypto';
+import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import type { YskDatabase } from '../db/database.js';
 
@@ -17,7 +17,12 @@ export interface FleetAgent {
   connected_at: string;
   last_seen_at: string;
   meta?: Record<string, unknown>;
+  /** SHA-256 of agent secret (never returned to clients) */
+  token_hash?: string;
 }
+
+/** Register result includes one-time plaintext token (shown once). */
+export type FleetRegisterResult = Omit<FleetAgent, 'token_hash'> & { token: string };
 
 export interface FleetCommand {
   id: string;
@@ -51,12 +56,14 @@ export class FleetService {
    * Control-plane registration only. Does not mean the edge process is online.
    * Real agents call heartbeat after register (or re-register themselves).
    */
-  register(agentId: string, group?: string, meta?: Record<string, unknown>): FleetAgent {
+  register(agentId: string, group?: string, meta?: Record<string, unknown>): FleetRegisterResult {
     if (!agentId?.trim()) {
       throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0027'), { httpStatus: 400 });
     }
     const now = new Date().toISOString();
     const fromEdge = Boolean(meta && (meta as { source?: string }).source === 'edge');
+    const plainToken = `ysk_agent_${randomBytes(24).toString('base64url')}`;
+    const token_hash = hashAgentToken(plainToken);
     const row: FleetAgent = {
       id: randomUUID(),
       agent_id: agentId.trim(),
@@ -64,7 +71,9 @@ export class FleetService {
       status: fromEdge ? 'connected' : 'registered',
       connected_at: now,
       last_seen_at: now,
-      meta };
+      meta,
+      token_hash,
+    };
     agents(this.db).unshift(row);
     messages(this.db).push({
       id: randomUUID(),
@@ -74,7 +83,59 @@ export class FleetService {
       payload: { agentId, group: row.group, source: fromEdge ? 'edge' : 'panel' },
       created_at: now });
     this.db.persist();
-    return { ...row };
+    const { token_hash: _h, ...publicRow } = row;
+    return { ...publicRow, token: plainToken };
+  }
+
+  /**
+   * Verify agent secret for heartbeat / pull / ack.
+   * Fail-closed: missing or wrong token → 401.
+   */
+  assertAgentAuth(sessionId: string, token: string | undefined): FleetAgent {
+    const a = agents(this.db).find((x) => x.id === sessionId);
+    if (!a) {
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.agents.sessionNotFound', { sessionId }), {
+        httpStatus: 404,
+      });
+    }
+    if (!token?.trim()) {
+      throw new YskError(ErrorCodes.UNAUTHORIZED, tl('notes.auto.n0027'), {
+        httpStatus: 401,
+        details: { reason: 'agent_token_required' },
+      });
+    }
+    const stored = String(a.token_hash ?? '');
+    if (!stored) {
+      // Legacy session without token — refuse (force re-register)
+      throw new YskError(ErrorCodes.UNAUTHORIZED, tl('notes.auto.n0027'), {
+        httpStatus: 401,
+        details: { reason: 'agent_reregister_required' },
+      });
+    }
+    const h = hashAgentToken(token.trim());
+    try {
+      const ba = Buffer.from(h, 'hex');
+      const bb = Buffer.from(stored, 'hex');
+      if (ba.length !== bb.length || !timingSafeEqual(ba, bb)) {
+        throw new YskError(ErrorCodes.UNAUTHORIZED, tl('notes.auto.n0027'), {
+          httpStatus: 401,
+          details: { reason: 'agent_token_invalid' },
+        });
+      }
+    } catch (e) {
+      if (e instanceof YskError) throw e;
+      throw new YskError(ErrorCodes.UNAUTHORIZED, tl('notes.auto.n0027'), {
+        httpStatus: 401,
+        details: { reason: 'agent_token_invalid' },
+      });
+    }
+    return { ...a, token_hash: undefined };
+  }
+
+  /** Resolve command → session for ack auth. */
+  getCommandSessionId(commandId: string): string | null {
+    const m = messages(this.db).find((x) => x.id === commandId);
+    return m?.session_id ? String(m.session_id) : null;
   }
 
   heartbeat(sessionId: string): FleetAgent {
@@ -108,7 +169,8 @@ export class FleetService {
       if (a.status === 'registered' && age > 300_000) {
         a.status = 'stale';
       }
-      return { ...a };
+      const { token_hash: _th, ...pub } = a;
+      return { ...pub };
     });
     this.db.persist();
     return group ? all.filter((a) => a.group === group) : all;
@@ -222,4 +284,9 @@ export class FleetService {
       result: m.result,
       finished_at: String(m.finished_at) };
   }
+}
+
+
+function hashAgentToken(token: string): string {
+  return createHash('sha256').update(token).digest('hex');
 }

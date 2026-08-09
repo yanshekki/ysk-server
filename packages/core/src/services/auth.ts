@@ -19,7 +19,7 @@ import {
   generateTotpSecret,
   matchTotpStep,
 } from '../security/totp.js';
-import { verifyApiKey } from '../security/api-keys.js';
+import { verifyApiKey, verifyApiKeyDetailed } from '../security/api-keys.js';
 import {
   checkRateLimit,
   clearRateLimit,
@@ -564,6 +564,83 @@ export class AuthService {
         ok: true,
       });
     }
+  }
+
+
+  /**
+   * Self-service password change. Clears must_change_password on success.
+   */
+  changeOwnPassword(userId: string, currentPassword: string, nextPassword: string): UserDto {
+    const user = this.users.findById(userId);
+    if (!user) {
+      throw yskError(ErrorCodes.NOT_FOUND, { httpStatus: 404, messageKey: 'errors.auth.userNotFound' });
+    }
+    if (!verifyPassword(currentPassword, user.password_salt, user.password_hash)) {
+      throw yskError(ErrorCodes.UNAUTHORIZED, {
+        httpStatus: 401,
+        messageKey: 'errors.auth.badCredentials',
+      });
+    }
+    const policy = assessPassword(nextPassword);
+    if (!policy.ok || isBootstrapDefaultPassword(nextPassword)) {
+      throw yskError(ErrorCodes.VALIDATION, {
+        httpStatus: 400,
+        messageKey: 'errors.auth.needCredentials',
+        details: { reasons: policy.reasons },
+      });
+    }
+    const salt = randomBytes(16).toString('hex');
+    const password_hash = hashPassword(nextPassword, salt);
+    const updated = this.users.update(userId, {
+      password_hash,
+      password_salt: salt,
+      must_change_password: false,
+    });
+    if (!updated) {
+      throw yskError(ErrorCodes.NOT_FOUND, { httpStatus: 404, messageKey: 'errors.auth.userNotFound' });
+    }
+    this.audit?.append({
+      actor: user.username,
+      action: 'auth.password.change',
+      detail: { self: true },
+      ok: true,
+    });
+    return toDto(updated);
+  }
+
+  /**
+   * Authenticate + optional API-key read-only flag (for HTTP mutation gate).
+   */
+  authenticateDetailed(token: string | undefined): {
+    user: UserDto;
+    apiKeyReadOnly?: boolean;
+    viaApiKey?: boolean;
+  } {
+    if (!token) {
+      throw yskError(ErrorCodes.UNAUTHORIZED, { httpStatus: 401, messageKey: 'errors.auth.missingCredential' });
+    }
+    if (this.db && token.startsWith('ysk_')) {
+      const detailed = verifyApiKeyDetailed(this.db, token);
+      if (!detailed) {
+        throw yskError(ErrorCodes.UNAUTHORIZED, { httpStatus: 401, messageKey: 'errors.auth.apiKeyInvalid' });
+      }
+      const user = this.users.findById(detailed.userId);
+      if (!user) {
+        throw yskError(ErrorCodes.UNAUTHORIZED, {
+          messageKey: 'errors.auth.apiKeyUserMissing',
+          httpStatus: 401,
+        });
+      }
+      if (user.suspended) {
+        throw yskError(ErrorCodes.FORBIDDEN, { httpStatus: 403, messageKey: 'errors.auth.accountSuspended' });
+      }
+      return {
+        user: toDto(user),
+        apiKeyReadOnly: detailed.readOnly,
+        viaApiKey: true,
+      };
+    }
+    return { user: this.authenticate(token), viaApiKey: false };
   }
 
   authenticate(token: string | undefined): UserDto {

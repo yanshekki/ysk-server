@@ -10,13 +10,22 @@ export interface OutboundAgentOptions {
   fetchImpl?: typeof fetch;
   onCommand?: (cmd: { id: string; payload: unknown }) => Promise<unknown> | unknown;
   signal?: AbortSignal;
+  /** Enrollment token for unauthenticated edge register (YSK_FLEET_ENROLL_TOKEN). */
+  enrollToken?: string;
+  /** Panel bearer when enrolling via authenticated panel API. */
+  panelToken?: string;
+  /** Persisted agent secret from previous register (preferred over re-register). */
+  agentToken?: string;
 }
 
 /**
  * Register, heartbeat, pull commands, execute handler, ack — one cycle.
  */
-export async function agentCycle(opts: OutboundAgentOptions & { sessionId?: string }): Promise<{
+export async function agentCycle(
+  opts: OutboundAgentOptions & { sessionId?: string; agentToken?: string },
+): Promise<{
   sessionId: string;
+  agentToken: string;
   heartbeated: boolean;
   commandsHandled: number;
 }> {
@@ -24,31 +33,48 @@ export async function agentCycle(opts: OutboundAgentOptions & { sessionId?: stri
   const base = opts.controlPlane.replace(/\/$/, '');
 
   let sessionId = opts.sessionId;
-  if (!sessionId) {
+  let agentToken = opts.agentToken;
+  if (!sessionId || !agentToken) {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (opts.panelToken) headers.Authorization = `Bearer ${opts.panelToken}`;
+    if (opts.enrollToken) headers['X-Ysk-Enroll'] = opts.enrollToken;
     const reg = await fetchFn(`${base}/api/v1/fleet/agents/register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({
         agentId: opts.agentId,
         group: opts.group,
         meta: { source: 'edge' },
+        enrollToken: opts.enrollToken,
       }),
     });
     if (!reg.ok) {
       throw new Error(`register failed: HTTP ${reg.status}`);
     }
-    const body = (await reg.json()) as { id: string };
+    const body = (await reg.json()) as { id: string; token?: string };
     sessionId = body.id;
+    agentToken = body.token;
+    if (!agentToken) {
+      throw new Error('register failed: no agent token in response');
+    }
   }
+
+  const agentHeaders: Record<string, string> = {
+    'X-Ysk-Agent-Token': agentToken,
+    Authorization: `Bearer ${agentToken}`,
+  };
 
   const hb = await fetchFn(`${base}/api/v1/fleet/agents/${sessionId}/heartbeat`, {
     method: 'POST',
+    headers: agentHeaders,
   });
   if (!hb.ok) {
     throw new Error(`heartbeat failed: HTTP ${hb.status}`);
   }
 
-  const pull = await fetchFn(`${base}/api/v1/fleet/agents/${sessionId}/commands`);
+  const pull = await fetchFn(`${base}/api/v1/fleet/agents/${sessionId}/commands`, {
+    headers: agentHeaders,
+  });
   if (!pull.ok) {
     throw new Error(`pull commands failed: HTTP ${pull.status}`);
   }
@@ -77,13 +103,13 @@ export async function agentCycle(opts: OutboundAgentOptions & { sessionId?: stri
     }
     await fetchFn(`${base}/api/v1/fleet/commands/${cmd.id}/ack`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...agentHeaders, 'Content-Type': 'application/json' },
       body: JSON.stringify({ result, error: err }),
     }).catch(() => undefined);
     handled += 1;
   }
 
-  return { sessionId, heartbeated: true, commandsHandled: handled };
+  return { sessionId, agentToken, heartbeated: true, commandsHandled: handled };
 }
 
 /**
@@ -92,10 +118,12 @@ export async function agentCycle(opts: OutboundAgentOptions & { sessionId?: stri
 export async function runOutboundAgent(opts: OutboundAgentOptions): Promise<void> {
   const interval = opts.intervalMs ?? 5000;
   let sessionId: string | undefined;
+  let agentToken: string | undefined = opts.agentToken;
   while (!opts.signal?.aborted) {
     try {
-      const r = await agentCycle({ ...opts, sessionId });
+      const r = await agentCycle({ ...opts, sessionId, agentToken });
       sessionId = r.sessionId;
+      agentToken = r.agentToken;
     } catch (e) {
       // reconnect next tick
       sessionId = undefined;

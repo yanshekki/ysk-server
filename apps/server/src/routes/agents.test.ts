@@ -8,7 +8,7 @@ describe('agents / fleet routes (HTTP)', () => {
     if (ts) await ts.close();
   });
 
-  it('POST agents/register without auth still registers', async () => {
+  it('POST agents/register without auth is rejected', async () => {
     ts = await startTestServer();
     const res = await apiJson(
       ts,
@@ -17,8 +17,16 @@ describe('agents / fleet routes (HTTP)', () => {
       { agentId: 'http-agent-reg-1' },
       { auth: false },
     );
+    expect(res.status).toBeGreaterThanOrEqual(401);
+  });
+
+  it('POST agents/register with panel auth works', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'POST', '/api/v1/agents/register', {
+      agentId: 'http-agent-reg-1',
+    });
     expect(res.status).toBe(200);
-    const body = res.body as { agentId?: string; id?: string; token?: string };
+    const body = res.body as { agentId?: string; id?: string };
     expect(body.agentId || body.id).toBeTruthy();
   });
 
@@ -38,17 +46,32 @@ describe('agents / fleet routes (HTTP)', () => {
   it('fleet agents register, list, heartbeat, commands, ack, delete', async () => {
     ts = await startTestServer();
 
-    const reg = await apiJson(
+    // unauthenticated register without enroll → 401
+    const unauth = await apiJson(
       ts,
       'POST',
       '/api/v1/fleet/agents/register',
-      { agentId: 'fleet-http-1', group: 'edge', meta: { source: 'test' } },
+      { agentId: 'fleet-http-1', group: 'edge' },
       { auth: false },
     );
+    expect(unauth.status).toBeGreaterThanOrEqual(401);
+
+    const reg = await apiJson(ts, 'POST', '/api/v1/fleet/agents/register', {
+      agentId: 'fleet-http-1',
+      group: 'edge',
+      meta: { source: 'test' },
+    });
     expect(reg.status).toBe(200);
-    const session = reg.body as { id?: string; agentId?: string; agent_id?: string };
+    const session = reg.body as {
+      id?: string;
+      agentId?: string;
+      agent_id?: string;
+      token?: string;
+    };
     const sessionId = session.id;
+    const agentToken = session.token;
     expect(sessionId).toBeTruthy();
+    expect(agentToken).toMatch(/^ysk_agent_/);
 
     const list = await apiJson(ts, 'GET', '/api/v1/fleet/agents?group=edge&status=unknown');
     expect(list.status).toBe(200);
@@ -57,13 +80,20 @@ describe('agents / fleet routes (HTTP)', () => {
     const listAll = await apiJson(ts, 'GET', '/api/v1/fleet/agents');
     expect(listAll.status).toBe(200);
 
-    const hb = await apiJson(
+    // heartbeat without agent token → 401
+    const hbNo = await apiJson(
       ts,
       'POST',
       `/api/v1/fleet/agents/${sessionId}/heartbeat`,
       {},
       { auth: false },
     );
+    expect(hbNo.status).toBeGreaterThanOrEqual(401);
+
+    const hb = await fetch(`${ts.baseUrl}/api/v1/fleet/agents/${sessionId}/heartbeat`, {
+      method: 'POST',
+      headers: { 'X-Ysk-Agent-Token': agentToken! },
+    });
     expect(hb.status).toBe(200);
 
     const enq = await apiJson(ts, 'POST', `/api/v1/fleet/agents/${sessionId}/commands`, {
@@ -73,15 +103,21 @@ describe('agents / fleet routes (HTTP)', () => {
     const cmd = enq.body as { id?: string };
     expect(cmd.id).toBeTruthy();
 
-    const pull = await apiJson(
+    const pullUnauth = await apiJson(
       ts,
       'GET',
       `/api/v1/fleet/agents/${sessionId}/commands`,
       undefined,
       { auth: false },
     );
-    expect(pull.status).toBe(200);
-    expect(Array.isArray((pull.body as { items?: unknown[] }).items)).toBe(true);
+    expect(pullUnauth.status).toBeGreaterThanOrEqual(401);
+
+    const pullRes = await fetch(`${ts.baseUrl}/api/v1/fleet/agents/${sessionId}/commands`, {
+      headers: { 'X-Ysk-Agent-Token': agentToken! },
+    });
+    expect(pullRes.status).toBe(200);
+    const pullBody = (await pullRes.json()) as { items?: unknown[] };
+    expect(Array.isArray(pullBody.items)).toBe(true);
 
     const history = await apiJson(
       ts,
@@ -90,22 +126,24 @@ describe('agents / fleet routes (HTTP)', () => {
     );
     expect(history.status).toBe(200);
 
-    const ack = await apiJson(
-      ts,
-      'POST',
-      `/api/v1/fleet/commands/${cmd.id}/ack`,
-      { result: { ok: true }, error: false },
-      { auth: false },
-    );
+    const ack = await fetch(`${ts.baseUrl}/api/v1/fleet/commands/${cmd.id}/ack`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'X-Ysk-Agent-Token': agentToken!,
+      },
+      body: JSON.stringify({ result: { ok: true }, error: false }),
+    });
     expect(ack.status).toBe(200);
 
-    const ackMiss = await apiJson(
-      ts,
-      'POST',
-      '/api/v1/fleet/commands/no-such-cmd/ack',
-      { result: {} },
-      { auth: false },
-    );
+    const ackMiss = await fetch(`${ts.baseUrl}/api/v1/fleet/commands/no-such-cmd/ack`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'X-Ysk-Agent-Token': agentToken!,
+      },
+      body: JSON.stringify({ result: {} }),
+    });
     expect(ackMiss.status).toBe(404);
 
     const del = await apiJson(ts, 'DELETE', `/api/v1/fleet/agents/${sessionId}`);

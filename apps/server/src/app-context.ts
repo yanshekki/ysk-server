@@ -131,9 +131,19 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
   const rbac = new RbacPolicyService(db, audit);
   const adminUsername = opts.config?.adminUsername ?? 'admin';
   const locale = opts.config?.locale ?? 'zh-TW';
-  const password = opts.adminPassword ?? process.env.YSK_ADMIN_PASSWORD ?? 'admin';
+  // Never silently seed default "admin" password on empty DB.
+  // Tests/harness pass adminPassword; production must set YSK_ADMIN_PASSWORD or run setup.
+  const password = opts.adminPassword ?? process.env.YSK_ADMIN_PASSWORD;
   if (users.count() === 0) {
-    auth.ensureAdmin(adminUsername, password, locale);
+    const allowInsecure =
+      process.env.YSK_ALLOW_INSECURE_DEFAULTS === '1' ||
+      process.env.YSK_ALLOW_INSECURE_DEFAULTS === 'true';
+    if (password) {
+      auth.ensureAdmin(adminUsername, password, locale);
+    } else if (allowInsecure) {
+      auth.ensureAdmin(adminUsername, 'admin', locale);
+    }
+    // else: empty user table — operator must run `ysk-server setup`
   }
   // Hard guarantee: at least one full-privilege user (users.manage + rbac.policy)
   rbac.ensureFullPrivilegeHolder();

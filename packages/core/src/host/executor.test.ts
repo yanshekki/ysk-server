@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { LocalHostExecutor } from './executor.js';
+import {
+  LocalHostExecutor,
+  commandRequiresExecute,
+  pathUnderRoot,
+} from './executor.js';
 import { YskError } from '@ysk/shared';
 
 describe('LocalHostExecutor', () => {
@@ -39,6 +43,30 @@ describe('LocalHostExecutor', () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
+  it('blocks path traversal via .. under write roots', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-exec-'));
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: true });
+    await expect(host.writeFile(join(dir, '..', 'escape-outside.txt'), 'x')).rejects.toThrow(
+      YskError,
+    );
+    await expect(host.mkdirp(join(dir, '..', 'escape-mkdir'))).rejects.toThrow(YskError);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('mkdirp under managed root works without EXECUTE; outside needs EXECUTE', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-exec-mkdir-'));
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    await host.mkdirp(join(dir, 'nested', 'ok'));
+    await expect(host.mkdirp('/etc/ysk-mkdir-forbidden')).rejects.toThrow(YskError);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('fail-closed: unknown interpreters require EXECUTE', async () => {
+    const host = new LocalHostExecutor({ executeEnabled: false });
+    await expect(host.runCommand(['python3', '-c', 'print(1)'])).rejects.toThrow(/YSK_EXECUTE|blocked|權限|FORBIDDEN|forbidden|notes\.auto/i);
+    await expect(host.runCommand(['bash', '-c', 'echo pwn > /tmp/ysk-pwn-test'])).rejects.toThrow();
+  });
+
   it('streams stdout lines via onChunk when requested', async () => {
     const host = new LocalHostExecutor({ executeEnabled: true });
     const lines: string[] = [];
@@ -53,5 +81,21 @@ describe('LocalHostExecutor', () => {
     );
     expect(r.exitCode).toBe(0);
     expect(lines).toEqual(expect.arrayContaining(['line1', 'line2', 'line3']));
+  });
+});
+
+describe('pathUnderRoot + commandRequiresExecute', () => {
+  it('resolves .. escape attempts', () => {
+    expect(pathUnderRoot('/tmp/ysk-root', '/tmp/ysk-root/a')).toBe(true);
+    expect(pathUnderRoot('/tmp/ysk-root', '/tmp/ysk-root/../etc/passwd')).toBe(false);
+    expect(pathUnderRoot('/home/u', '/home/u2/secret')).toBe(false);
+  });
+
+  it('defaults unknown bins to require execute', () => {
+    expect(commandRequiresExecute(['python3', '-c', 'x'])).toBe(true);
+    expect(commandRequiresExecute(['systemctl', 'is-active', 'ssh'])).toBe(false);
+    expect(commandRequiresExecute(['bash', '-c', 'echo hi'])).toBe(false);
+    expect(commandRequiresExecute(['bash', '-c', 'rm -rf /'])).toBe(true);
+    expect(commandRequiresExecute(['true'])).toBe(false);
   });
 });

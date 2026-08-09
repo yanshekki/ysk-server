@@ -44,16 +44,19 @@ const PUBLIC_MUTATING_PREFIXES = [
   '/api/v1/auth/login',
   '/api/v1/auth/logout',
   '/api/v1/auth/locale',
+  '/api/v1/auth/password', // self-service change (still needs session in handler)
   '/api/v1/auth/totp',
   '/api/v1/auth/sessions',
   '/api/v1/auth/devices',
   '/api/v1/auth/webauthn',
   '/api/v1/auth/api-keys', // handler still checks; self-service keys
-  '/api/v1/agents/register',
-  '/api/v1/fleet/agents/register',
+  // Fleet/agent register is NOT public — requires panel auth or enroll token in handler
 ];
 
-/** Edge agent poller paths — no panel session (register already public). */
+/**
+ * Edge agent poller paths — agent secret checked in handler (not panel session).
+ * Register is intentionally excluded (enrollment / panel auth required).
+ */
 function isFleetAgentPublicMutating(pathname: string): boolean {
   return (
     /^\/api\/v1\/fleet\/agents\/[^/]+\/heartbeat$/.test(pathname) ||

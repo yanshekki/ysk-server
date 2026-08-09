@@ -15,6 +15,7 @@ import {
   appendFileSync,
 } from 'node:fs';
 import { cpus, freemem, loadavg, totalmem, uptime, hostname, platform, arch, release } from 'node:os';
+import { resolve as pathResolve, sep as pathSep } from 'node:path';
 import { promisify } from 'node:util';
 import { ErrorCodes, YskError, yskError, tl } from '@ysk/shared';
 
@@ -147,7 +148,23 @@ export class LocalHostExecutor implements HostExecutor {
   }
 
   async mkdirp(path: string): Promise<void> {
-    // mkdir for project homes is always allowed under write roots / any path for control-plane data
+    const inManagedRoot = this.isUnderWriteRoots(path);
+    if (this.writeRoots.length > 0) this.assertWritable(path);
+    // Outside managed roots requires YSK_EXECUTE (same posture as writeFile)
+    if (!inManagedRoot && this.writeRoots.length > 0 && !this.executeOn) {
+      throw new YskError(
+        ErrorCodes.FORBIDDEN,
+        tl('ops.blocked.writeOutsideDataDir'),
+        { httpStatus: 403, details: { path } },
+      );
+    }
+    if (!inManagedRoot && this.writeRoots.length === 0 && !this.executeOn) {
+      throw new YskError(
+        ErrorCodes.FORBIDDEN,
+        tl('ops.blocked.writeOutsideDataDir'),
+        { httpStatus: 403, details: { path } },
+      );
+    }
     mkdirSync(path, { recursive: true });
   }
 
@@ -232,9 +249,7 @@ export class LocalHostExecutor implements HostExecutor {
 
   private isUnderWriteRoots(path: string): boolean {
     if (!this.writeRoots.length) return false;
-    return this.writeRoots.some(
-      (root) => path === root || path.startsWith(root.endsWith('/') ? root : `${root}/`),
-    );
+    return this.writeRoots.some((root) => pathUnderRoot(root, path));
   }
 
   private assertWritable(path: string): void {
@@ -248,157 +263,306 @@ export class LocalHostExecutor implements HostExecutor {
   }
 }
 
+/**
+ * Boundary-safe path containment (resolve + prefix). Prevents `/tmp/../etc` escaping
+ * string-prefix roots.
+ */
+export function pathUnderRoot(root: string, target: string): boolean {
+  if (!root || !target) return false;
+  if (target.includes('\0') || root.includes('\0')) return false;
+  const rootAbs = pathResolve(root);
+  const abs = pathResolve(target);
+  if (abs === rootAbs) return true;
+  // Bare filesystem root `/` only matches exact `/`
+  if (rootAbs === pathSep) return abs === pathSep;
+  const prefix = rootAbs.endsWith(pathSep) ? rootAbs : rootAbs + pathSep;
+  return abs.startsWith(prefix);
+}
+
+/**
+ * True when argv requires YSK_EXECUTE.
+ * Fail-closed: unknown binaries / free-form shell default to mutating.
+ * Exported for unit tests and security audits.
+ */
+export function commandRequiresExecute(argv: string[]): boolean {
+  return isMutatingArgv(argv);
+}
+
 function isMutatingArgv(argv: string[]): boolean {
-  const bin = argv[0];
-  // Whole-host power / identity — always mutating
-  if (
-    bin === 'shutdown' ||
-    bin === 'reboot' ||
-    bin === 'poweroff' ||
-    bin === 'halt' ||
-    bin === 'init'
-  ) {
-    return true;
-  }
+  if (!argv.length) return true;
+  // Fail-closed: only explicit read-only catalog may skip EXECUTE
+  return !isReadOnlyArgv(argv);
+}
+
+/** Known-safe pure readers (no shell, no redirect, argv form). */
+const READ_ONLY_SIMPLE_BINS = new Set([
+  'true',
+  'false',
+  'echo',
+  'printf',
+  'cat',
+  'head',
+  'tail',
+  'wc',
+  'df',
+  'free',
+  'uname',
+  'whoami',
+  'id',
+  'pwd',
+  'date',
+  'ps',
+  'which',
+  'type',
+  'command',
+  'test',
+  '[',
+  'ls',
+  'stat',
+  'file',
+  'realpath',
+  'readlink',
+  'dirname',
+  'basename',
+  'grep',
+  'egrep',
+  'fgrep',
+  'awk',
+  'sleep',
+  'hostname',
+  'getconf',
+  'nproc',
+  'arch',
+  'env',
+  'printenv',
+]);
+
+function isReadOnlyArgv(argv: string[]): boolean {
+  const bin = baseBin(argv[0] ?? '');
+  if (!bin) return false;
+
+  // Power / identity always mutating (never read-only)
+  if (['shutdown', 'reboot', 'poweroff', 'halt', 'init'].includes(bin)) return false;
+
   if (bin === 'hostnamectl') {
-    const sub = argv[1];
-    // show / status / help are read-only
-    return sub !== 'show' && sub !== 'status' && sub !== '--help' && sub !== 'help';
+    const sub = argv[1] ?? '';
+    return sub === 'show' || sub === 'status' || sub === '--help' || sub === 'help';
   }
   if (bin === 'timedatectl') {
-    const sub = argv[1];
+    const sub = argv[1] ?? '';
     return (
-      sub !== 'show' &&
-      sub !== 'status' &&
-      sub !== 'list-timezones' &&
-      sub !== '--help' &&
-      sub !== 'help'
+      sub === 'show' ||
+      sub === 'status' ||
+      sub === 'list-timezones' ||
+      sub === '--help' ||
+      sub === 'help'
     );
   }
   if (bin === 'systemctl') {
-    const sub = argv[1];
-    // read-only probes
+    const sub = argv[1] ?? '';
     return (
-      sub !== 'is-active' &&
-      sub !== 'is-enabled' &&
-      sub !== 'status' &&
-      sub !== 'show' &&
-      sub !== 'list-units' &&
-      sub !== 'cat' &&
-      sub !== 'get-default'
+      sub === 'is-active' ||
+      sub === 'is-enabled' ||
+      sub === 'status' ||
+      sub === 'show' ||
+      sub === 'list-units' ||
+      sub === 'cat' ||
+      sub === 'get-default' ||
+      sub === 'help' ||
+      sub === '--help'
     );
   }
-  if (
-    bin === 'apt-get' ||
-    bin === 'apt' ||
-    bin === 'useradd' ||
-    bin === 'userdel' ||
-    bin === 'groupadd' ||
-    bin === 'groupdel' ||
-    bin === 'usermod' ||
-    bin === 'runuser' ||
-    bin === 'chown' ||
-    bin === 'chmod' ||
-    bin === 'cp' ||
-    bin === 'mv' ||
-    bin === 'rm' ||
-    bin === 'rmdir' ||
-    bin === 'unlink' ||
-    bin === 'install' ||
-    bin === 'ln' ||
-    bin === 'crontab' ||
-    bin === 'a2ensite' ||
-    bin === 'a2dissite' ||
-    bin === 'mysql' ||
-    bin === 'psql' ||
-    bin === 'nginx' ||
-    bin === 'pm2' ||
-    bin === 'pdnsutil'
-  ) {
-    // nginx -t is read-only check
-    if (bin === 'nginx' && argv[1] === '-t') return false;
-    // pm2 jlist / list are read-only
-    if (bin === 'pm2' && (argv[1] === 'jlist' || argv[1] === 'list' || argv[1] === 'status')) {
-      return false;
-    }
-    // mysql/psql read-only: --version, SHOW, SELECT without write keywords
-    if (bin === 'mysql' || bin === 'psql') {
-      const joined = argv.join(' ').toLowerCase();
-      if (argv.includes('--version') || argv.includes('-V')) return false;
-      if (/\b(show|select|status)\b/.test(joined) && !/\b(insert|update|delete|drop|create|alter|set\s+global|grant)\b/.test(joined)) {
-        return false;
-      }
-    }
-    return true;
+  if (bin === 'nginx') return argv[1] === '-t';
+  if (bin === 'pm2') {
+    const sub = argv[1] ?? '';
+    return sub === 'jlist' || sub === 'list' || sub === 'status';
   }
-  if (bin === 'certbot') return true;
-  // NetworkManager: show/device/general are read-only; modify/up/down/add/delete mutate
+  if (bin === 'mysql' || bin === 'psql') {
+    const joined = argv.join(' ').toLowerCase();
+    if (argv.includes('--version') || argv.includes('-V')) return true;
+    if (
+      /\b(show|select|status)\b/.test(joined) &&
+      !/\b(insert|update|delete|drop|create|alter|set\s+global|grant|truncate|replace)\b/.test(
+        joined,
+      )
+    ) {
+      return true;
+    }
+    return false;
+  }
   if (bin === 'nmcli') {
     const sub = argv[1] ?? '';
     const rest = argv.slice(1).join(' ');
-    if (
-      sub === 'connection' &&
-      /\b(modify|add|delete|clone|up|down|reload)\b/.test(rest)
-    ) {
-      return true;
-    }
-    if (sub === 'device' && /\b(connect|disconnect|set|reapply|modify)\b/.test(rest)) {
-      return true;
-    }
-    if (sub === 'networking' && /\b(on|off)\b/.test(rest)) return true;
-    return false;
-  }
-  // kill -0 is existence probe (read-only); any other kill is mutating
-  if (bin === 'kill') {
-    if (argv[1] === '-0') return false;
-    return true;
-  }
-  if (bin === 'renice') return true;
-  // iproute2: JSON/show/list are read-only; add/del/set/flush/replace mutate
-  if (bin === 'ip') {
-    const joined = argv.join(' ');
-    if (/\b(add|del|delete|change|replace|set|flush|addrlabel)\b/.test(joined)) {
-      // allow "ip -j" pure reads even if word appears in ifname unlikely
-      if (argv.includes('-j') || argv.includes('-json')) {
-        // still mutating if has add/del/set after family
-        const mut = argv.some((a) =>
-          ['add', 'del', 'delete', 'change', 'replace', 'set', 'flush'].includes(a),
-        );
-        return mut;
-      }
-      return true;
-    }
-    return false;
-  }
-  // bash -c: only treat as mutating when the script clearly mutates the host.
-  // Read-only apt probes (list / cache policy / dpkg-query) must work without YSK_EXECUTE.
-  if (bin === 'bash' || bin === 'sh') {
-    const script = argv.slice(1).join(' ');
-    // apt-get update writes package indexes — requires EXECUTE
-    if (/\bapt-get\s+update\b/.test(script)) return true;
-    if (
-      /\bapt(-get)?\s+(install|remove|purge|upgrade|dist-upgrade|autoremove|full-upgrade)\b/.test(
-        script,
-      )
-    ) {
-      return true;
-    }
-    // Pure inventory / probe helpers — not mutating
-    if (
-      /\bapt\s+list\b/.test(script) ||
-      /\bapt-cache\b/.test(script) ||
-      /\bdpkg-query\b/.test(script)
-    ) {
+    if (sub === 'connection' && /\b(modify|add|delete|clone|up|down|reload)\b/.test(rest)) {
       return false;
     }
-    if (
-      /\b(rm|mv|cp|useradd|userdel|usermod|chown|chmod|systemctl\s+(enable|start|restart|stop|disable)|crontab|kill\s+-)\b/.test(
-        script,
-      )
-    ) {
-      return true;
+    if (sub === 'device' && /\b(connect|disconnect|set|reapply|modify)\b/.test(rest)) {
+      return false;
     }
+    if (sub === 'networking' && /\b(on|off)\b/.test(rest)) return false;
+    return true; // show / device status / general
   }
+  if (bin === 'kill') return argv[1] === '-0';
+  if (bin === 'ip') {
+    const mut = argv.some((a) =>
+      ['add', 'del', 'delete', 'change', 'replace', 'set', 'flush', 'addrlabel'].includes(a),
+    );
+    return !mut;
+  }
+  if (bin === 'sed') {
+    // sed -i mutates files
+    if (argv.some((a) => a === '-i' || a.startsWith('-i'))) return false;
+    return true;
+  }
+  if (bin === 'find') {
+    if (argv.some((a) => a === '-delete' || a === '-exec' || a === '-execdir')) return false;
+    return true;
+  }
+  if (bin === 'bash' || bin === 'sh') {
+    return isReadOnlyShellScript(argv);
+  }
+
+  // Always-mutating host ops
+  if (
+    [
+      'apt-get',
+      'apt',
+      'useradd',
+      'userdel',
+      'groupadd',
+      'groupdel',
+      'usermod',
+      'runuser',
+      'chown',
+      'chmod',
+      'cp',
+      'mv',
+      'rm',
+      'rmdir',
+      'unlink',
+      'install',
+      'ln',
+      'mkdir',
+      'crontab',
+      'a2ensite',
+      'a2dissite',
+      'certbot',
+      'renice',
+      'pdnsutil',
+      'postsuper',
+      'npm',
+      'pnpm',
+      'yarn',
+      'docker',
+      'podman',
+      'sudo',
+      'su',
+      'python',
+      'python3',
+      'perl',
+      'php',
+      'node',
+      'ruby',
+      'curl',
+      'wget',
+      'dd',
+      'tee',
+      'ufw',
+      'iptables',
+      'nft',
+    ].includes(bin)
+  ) {
+    // apt list / apt-cache / apt-get --version are read-only inventory
+    if (bin === 'apt' || bin === 'apt-get') {
+      const sub = argv[1] ?? '';
+      if (sub === 'list' || sub === 'show' || sub === 'search' || sub === 'policy' || sub === '--version') {
+        return true;
+      }
+      if (sub === 'cache') return true;
+    }
+    if (bin === 'curl' || bin === 'wget') {
+      // network fetch can write with -o; treat as mutating always (SSRF + write)
+      return false;
+    }
+    return false;
+  }
+
+  if (READ_ONLY_SIMPLE_BINS.has(bin)) {
+    // hostname set requires arg; bare hostname is read
+    if (bin === 'hostname' && argv.length > 1 && !argv[1]!.startsWith('-')) return false;
+    return true;
+  }
+
+  // Unknown binary → mutating (fail-closed)
+  return false;
+}
+
+function baseBin(raw: string): string {
+  const s = raw.trim();
+  if (!s) return '';
+  const base = s.includes('/') ? s.slice(s.lastIndexOf('/') + 1) : s;
+  return base.toLowerCase();
+}
+
+/**
+ * Free-form shell is high risk. Only allow known inventory / probe patterns
+ * without redirects that write files.
+ */
+function isReadOnlyShellScript(argv: string[]): boolean {
+  // argv: bash [-c] script  OR  bash -c script
+  let script = '';
+  const cIdx = argv.indexOf('-c');
+  if (cIdx >= 0 && argv[cIdx + 1]) script = argv[cIdx + 1]!;
+  else script = argv.slice(1).join(' ');
+  const s = script.trim();
+  if (!s) return false;
+
+  // Hard deny: redirects, pipes to shells, interpreters writing, package mutations
+  if (/[>]{1,2}|<<|tee\b|\bdd\b/.test(s)) return false;
+  if (/\bapt-get\s+update\b/.test(s)) return false;
+  if (
+    /\bapt(-get)?\s+(install|remove|purge|upgrade|dist-upgrade|autoremove|full-upgrade)\b/.test(s)
+  ) {
+    return false;
+  }
+  if (
+    /\b(rm|mv|cp|mkdir|useradd|userdel|usermod|chown|chmod|crontab|dd|mkfs|fdisk|parted)\b/.test(s)
+  ) {
+    return false;
+  }
+  if (/\bsystemctl\s+(enable|start|restart|stop|disable|mask|daemon-reload|reload)\b/.test(s)) {
+    return false;
+  }
+  if (/\b(python3?|perl|php|node|ruby|lua)\b/.test(s)) return false;
+  if (/\b(curl|wget)\b/.test(s) && /\s-\w*o\b|\s--output\b/.test(s)) return false;
+
+  // Allow pure inventory / probe helpers used by panel without EXECUTE
+  if (/\bapt\s+list\b/.test(s) || /\bapt-cache\b/.test(s) || /\bdpkg-query\b/.test(s)) {
+    return true;
+  }
+  // Simple echo / printf probes (no redirect — already denied above)
+  if (/^(echo|printf)(\s|$)/.test(s) || /^(echo|printf)\s/.test(s)) {
+    // multi-statement only echo/printf/true/false/exit
+    if (/[;&](?!\s*(echo|printf|true|false|exit)\b)/.test(s) && /[;&]/.test(s)) {
+      // allow "echo a; echo b; echo c" and "exit N"
+      const parts = s.split(/;+/).map((p) => p.trim()).filter(Boolean);
+      if (parts.every((p) => /^(echo|printf|true|false|exit)(\s|$)/.test(p))) return true;
+      return false;
+    }
+    return true;
+  }
+  if (/^exit\s+\d+\s*$/.test(s)) return true;
+  // /proc readers
+  if (/\/proc\/\d+\//.test(s) && /\b(tr|readlink|ls|wc|head|cat)\b/.test(s)) return true;
+  if (/\btop\s+-b\b/.test(s)) return true;
+  if (/\bpostqueue\b/.test(s)) return true;
+  if (/\bpostfix\s+check\b/.test(s)) return true;
+  if (/\btest\s+-d\b/.test(s) || /\b\[\s+-d\b/.test(s)) return true;
+  if (/\bgrep\b/.test(s) && !/\b-l\b/.test(s)) return true;
+  if (/\bsystemctl\s+(is-active|is-enabled|status|show)\b/.test(s)) return true;
+  if (/\bservice\s+\S+\s+status\b/.test(s)) return true;
+
+  // Default: shell scripts require EXECUTE
   return false;
 }
 

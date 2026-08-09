@@ -15,7 +15,7 @@ describe('outbound-agent', () => {
       if (u.endsWith('/register')) {
         return {
           ok: true,
-          json: async () => ({ id: 'sess-1' }),
+          json: async () => ({ id: 'sess-1', token: 'ysk_agent_testtoken1' }),
         } as Response;
       }
       if (u.includes('/heartbeat')) {
@@ -55,7 +55,10 @@ describe('outbound-agent', () => {
     const fetchImpl = vi.fn(async (url: string, init?: RequestInit) => {
       const u = String(url);
       if (u.endsWith('/register')) {
-        return { ok: true, json: async () => ({ id: 'sess-2' }) } as Response;
+        return {
+          ok: true,
+          json: async () => ({ id: 'sess-2', token: 'ysk_agent_testtoken2' }),
+        } as Response;
       }
       if (u.includes('/heartbeat')) {
         return { ok: true, json: async () => ({}) } as Response;
@@ -107,7 +110,10 @@ describe('outbound-agent', () => {
       n += 1;
       if (n > 2) ac.abort();
       if (String(url).endsWith('/register')) {
-        return { ok: true, json: async () => ({ id: 's' }) } as Response;
+        return {
+          ok: true,
+          json: async () => ({ id: 's', token: 'ysk_agent_loop' }),
+        } as Response;
       }
       if (String(url).includes('/heartbeat')) {
         return { ok: true, json: async () => ({}) } as Response;

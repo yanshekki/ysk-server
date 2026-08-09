@@ -36,8 +36,12 @@ function mapKey(k: Record<string, unknown>): ApiKeyPublic {
   };
 }
 
-export function listApiKeys(db: JsonStore): ApiKeyPublic[] {
-  return (db.snapshot.api_keys ?? []).map((k) => mapKey(k as Record<string, unknown>));
+export function listApiKeys(db: JsonStore, userId?: string): ApiKeyPublic[] {
+  const all = db.snapshot.api_keys ?? [];
+  const filtered = userId
+    ? all.filter((k) => String((k as { user_id?: string }).user_id ?? '') === userId)
+    : all;
+  return filtered.map((k) => mapKey(k as Record<string, unknown>));
 }
 
 export function createApiKey(
@@ -68,9 +72,19 @@ export function createApiKey(
   };
 }
 
-export function deleteApiKey(db: JsonStore, id: string): boolean {
-  const before = (db.snapshot.api_keys ?? []).length;
-  db.snapshot.api_keys = (db.snapshot.api_keys ?? []).filter((k) => k.id !== id);
+export function deleteApiKey(
+  db: JsonStore,
+  id: string,
+  opts?: { ownerUserId?: string; allowAny?: boolean },
+): boolean {
+  const keys = db.snapshot.api_keys ?? [];
+  const row = keys.find((k) => k.id === id) as { id: string; user_id?: string } | undefined;
+  if (!row) return false;
+  if (opts?.ownerUserId && !opts.allowAny) {
+    if (String(row.user_id ?? '') !== opts.ownerUserId) return false;
+  }
+  const before = keys.length;
+  db.snapshot.api_keys = keys.filter((k) => k.id !== id);
   db.persist();
   return (db.snapshot.api_keys ?? []).length < before;
 }
