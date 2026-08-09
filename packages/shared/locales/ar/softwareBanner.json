@@ -1,14 +1,14 @@
 {
-  "titleDefault": "Required software is not installed",
-  "missing": "Missing: {{names}}",
+  "titleDefault": "البرمجيات المطلوبة غير مثبتة",
+  "missing": "مفقود: {{names}}",
   "nameSep": ", ",
-  "installOneClick": "Install now",
-  "installing": "Installing…",
-  "reprobe": "Re-check",
-  "close": "Close",
-  "resultTitle": "Install result",
-  "probeFailed": "Probe failed",
-  "installIncomplete": "Install incomplete",
-  "installedOne": "Installed {{name}}",
-  "allInstalled": "Required software installed"
+  "installOneClick": "تثبيت الآن",
+  "installing": "جارٍ التثبيت…",
+  "reprobe": "إعادة الفحص",
+  "close": "إغلاق",
+  "resultTitle": "نتيجة التثبيت",
+  "probeFailed": "فشل الفحص",
+  "installIncomplete": "التثبيت غير مكتمل",
+  "installedOne": "تم تثبيت {{name}}",
+  "allInstalled": "تم تثبيت البرمجيات المطلوبة"
 }

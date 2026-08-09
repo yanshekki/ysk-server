@@ -1,7 +1,7 @@
 {
-  "created": "Created",
-  "updated": "Updated",
-  "deleted": "Deleted",
-  "applyDone": "Apply completed",
-  "applyIncomplete": "Apply incomplete"
+  "created": "تم الإنشاء",
+  "updated": "تم التحديث",
+  "deleted": "تم الحذف",
+  "applyDone": "اكتمل التطبيق",
+  "applyIncomplete": "التطبيق غير مكتمل"
 }

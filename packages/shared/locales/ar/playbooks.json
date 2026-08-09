@@ -1,50 +1,50 @@
 {
   "discover-host": {
-    "name": "Host discovery",
-    "description": "Read-only host inventory"
+    "name": "اكتشاف المضيف",
+    "description": "جرد المضيف للقراءة فقط"
   },
   "nginx-health": {
-    "name": "Nginx health check",
-    "description": "Check nginx service status"
+    "name": "فحص صحة Nginx",
+    "description": "فحص حالة خدمة nginx"
   },
   "nginx-restart": {
-    "name": "Nginx restart (high risk)",
-    "description": "Restart nginx after approval"
+    "name": "إعادة تشغيل Nginx (مخاطرة عالية)",
+    "description": "إعادة تشغيل nginx بعد الموافقة"
   },
   "local-llm-ops-only": {
-    "name": "Local LLM ops only",
-    "description": "Emergency discovery under protection mode"
+    "name": "عمليات LLM المحلية فقط",
+    "description": "اكتشاف طارئ تحت وضع الحماية"
   },
   "disk-pressure": {
-    "name": "Disk pressure check",
-    "description": "Read-only disk usage via df"
+    "name": "فحص ضغط القرص",
+    "description": "استخدام القرص للقراءة فقط عبر df"
   },
   "mail-stack-status": {
-    "name": "Mail stack status",
-    "description": "Check postfix + dovecot units"
+    "name": "حالة مكدس البريد",
+    "description": "فحص وحدات postfix + dovecot"
   },
   "security-units": {
-    "name": "Security units",
-    "description": "fail2ban + sshd status (read-only)"
+    "name": "وحدات الأمان",
+    "description": "حالة fail2ban + sshd (قراءة فقط)"
   },
   "web-stack-status": {
-    "name": "Web stack status",
-    "description": "nginx + php-fpm probe"
+    "name": "حالة مكدس الويب",
+    "description": "فحص nginx + php-fpm"
   },
   "emergency-read-only": {
-    "name": "Emergency read-only sweep",
-    "description": "Protection-safe facts only"
+    "name": "مسح طارئ للقراءة فقط",
+    "description": "حقائق آمنة لوضع الحماية فقط"
   },
   "backup-health": {
-    "name": "Backup readiness",
-    "description": "Check disk + list processes before backup window"
+    "name": "جاهزية النسخ الاحتياطي",
+    "description": "فحص القرص + سرد العمليات قبل نافذة النسخ الاحتياطي"
   },
   "db-stack-status": {
-    "name": "Database stack status",
-    "description": "mysql/mariadb/redis/postgres units"
+    "name": "حالة مكدس قواعد البيانات",
+    "description": "وحدات mysql/mariadb/redis/postgres"
   },
   "ssl-nginx-check": {
-    "name": "SSL + Nginx check",
-    "description": "nginx status before cert ops"
+    "name": "فحص SSL + Nginx",
+    "description": "حالة nginx قبل عمليات الشهادات"
   }
 }

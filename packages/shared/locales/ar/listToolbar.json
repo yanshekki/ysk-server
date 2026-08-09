@@ -1,12 +1,12 @@
 {
-  "searchPlaceholder": "Search…",
-  "searchAria": "Search list",
-  "clearSearch": "Clear search",
-  "clearAll": "Clear filters",
-  "resultCount": "{{count}} results",
-  "showingOf": "Showing {{shown}} of {{total}}",
-  "activeFilters": "{{count}} filters active",
-  "noResults": "No matches",
-  "noResultsHint": "Try another keyword or clear filters.",
-  "searching": "Searching…"
+  "searchPlaceholder": "بحث…",
+  "searchAria": "قائمة البحث",
+  "clearSearch": "مسح البحث",
+  "clearAll": "مسح عوامل التصفية",
+  "resultCount": "{{count}} نتيجة",
+  "showingOf": "عرض {{shown}} من {{total}}",
+  "activeFilters": "{{count}} عوامل تصفية نشطة",
+  "noResults": "لا تطابقات",
+  "noResultsHint": "جرّب كلمة مفتاحية أخرى أو امسح عوامل التصفية.",
+  "searching": "جارٍ البحث…"
 }

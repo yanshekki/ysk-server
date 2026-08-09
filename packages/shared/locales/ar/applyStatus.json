@@ -1,11 +1,11 @@
 {
-  "draft": "Draft",
-  "written": "Written (panel data)",
-  "planned": "In progress",
-  "applied": "Applied on host",
-  "failed": "Failed",
-  "pendingExecute": "Needs host execute",
-  "uploaded": "Uploaded",
-  "issued": "Issued",
-  "missing": "File missing"
+  "draft": "مسودة",
+  "written": "مكتوب (بيانات اللوحة)",
+  "planned": "قيد التنفيذ",
+  "applied": "مُطبَّق على المضيف",
+  "failed": "فشل",
+  "pendingExecute": "يحتاج تنفيذًا على المضيف",
+  "uploaded": "تم الرفع",
+  "issued": "تم الإصدار",
+  "missing": "الملف مفقود"
 }
