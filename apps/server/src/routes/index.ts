@@ -55,6 +55,8 @@ export { handleSshRoutes } from './ssh.js';
 export { handleSshSftpRoutes } from './ssh-sftp.js';
 export { handleSslRoutes } from './ssl.js';
 export { handleSystemApplyRoutes } from './system-apply.js';
+export { handleSystemDbEnginesRoutes } from './system-db-engines.js';
+export { handleSystemDbRedisRoutes } from './system-db-redis.js';
 export { handleSystemDbRoutes } from './system-db.js';
 export { handleSystemHostIdentityRoutes } from './system-host-identity.js';
 export { handleSystemHostNetRoutes } from './system-host-net.js';
