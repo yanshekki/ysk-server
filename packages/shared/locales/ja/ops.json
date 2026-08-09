@@ -1,18 +1,18 @@
 {
   "blocked": {
-    "needExecute": "Host execute is off; this action cannot finish from the panel",
+    "needExecute": "ホスト execute がオフのため、この操作はパネルから完了できません",
     "needExecuteShort": "ホスト実行が有効になっていません",
     "needExecuteBlocked": "ブロック済み: ホストの実行がオフになっています",
     "needRoot": "root権限が必要です",
     "needExecuteRoot": "YSK_EXECUTE=1 および root が必要です",
     "needExecuteYsk": "YSK_EXECUTE=1が必要です",
-    "writeOutsideDataDir": "Write blocked: host execute is off and the path is outside the panel data directory",
+    "writeOutsideDataDir": "書き込みブロック: ホスト execute がオフで、パスがパネルデータディレクトリ外です",
     "nginxReload": "Nginx をリロードできません: ホストの実行が必要です",
-    "signal": "Cannot send signal: host execute required (YSK_EXECUTE)",
+    "signal": "シグナルを送信できません: ホスト execute が必要です（YSK_EXECUTE）",
     "signalNote": "実際のキルにはYSK_EXECUTE=1が必要です",
     "renice": "Reniceできません：ホスト実行が必要です（ YSK_EXECUTE ）",
-    "install": "Host execute is off; install cannot finish from the panel",
-    "update": "Host execute is off; update cannot finish from the panel",
+    "install": "ホスト execute がオフのため、インストールはパネルから完了できません",
+    "update": "ホスト execute がオフのため、更新はパネルから完了できません",
     "panel": "管理パネルからはこれを完了できません"
   },
   "honesty": {

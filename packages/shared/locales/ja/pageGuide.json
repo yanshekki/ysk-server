@@ -6,6 +6,6 @@
   "workflowTitle": "推奨フロー",
   "notesTitle": "注意事項",
   "cliTitle": "CLI クイックリファレンス",
-  "cliFoot": "For full flags run ysk-server <command> --help or see the docs.",
+  "cliFoot": "全フラグは ysk-server <command> --help を実行するかドキュメントを参照してください。",
   "relatedTitle": "関連している"
 }

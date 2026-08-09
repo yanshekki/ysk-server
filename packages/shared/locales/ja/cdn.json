@@ -40,15 +40,15 @@
     "about": "説明"
   },
   "nodesTitle": "CDN ノード ({{count}})",
-  "nodesDesc": "Register control / origin / edge / dns. Probe updates status.",
+  "nodesDesc": "control / origin / edge / dns を登録。Probe でステータス更新。",
   "colName": "名前",
   "colRole": "役割",
   "colStatus": "状態",
   "clearDrain": "きれいな排水管",
   "emptyNodesTitle": "CDN ノードはまだありません",
-  "emptyNodesDesc": "Use “+ Add node” to register an edge, then create sites.",
+  "emptyNodesDesc": "「+ Add node」でエッジを登録してからサイトを作成。",
   "sitesTitle": "CDN サイト ({{count}})",
-  "sitesDesc": "Domain + origin + edges + cache + multi-A DNS. Apply edges / DNS sync / purge.",
+  "sitesDesc": "ドメイン + origin + edges + cache + multi-A DNS。Apply edges / DNS sync / purge。",
   "healthLoopOk": "すべてのサイトのヘルス ループが完了しました",
   "healthLoopPartial": "ヘルスループが部分的に失敗しました",
   "healthLoopFailed": "ヘルスループが失敗しました",
@@ -56,7 +56,7 @@
   "colMode": "モード",
   "emptySitesTitle": "CDN サイトはまだありません",
   "emptySitesDesc": "表ツールバーの「+ サイトの追加」を使用します。",
-  "emptySitesNoEdge": "No edges yet: register nodes on the Nodes tab first, then create a site.",
+  "emptySitesNoEdge": "エッジがまだない: 先に Nodes タブでノードを登録してからサイトを作成。",
   "dashboardTitle": "CDN ダッシュボード",
   "updatedAt": "{{at}} 更新しました",
   "dashboardEmpty": "ダッシュボードが読み込まれていません",
@@ -115,5 +115,5 @@
   "deleteNodeDesc": "CDN ノード「{{name}}」を削除します。",
   "deleteSiteDesc": "CDN サイト「{{name}}」を削除します。",
   "deleteSiteC1": "サイトポリシーとエッジの関連付け",
-  "deleteSiteC2": "Applied nginx configs may need separate cleanup or re-apply"
+  "deleteSiteC2": "適用済み nginx 設定は別途クリーンアップまたは再適用が必要な場合あり"
 }

@@ -1,6 +1,6 @@
 {
   "title": "ソフトウェア",
-  "desc": "All managed software: install status, service health, newer versions, and links to use in projects.",
+  "desc": "管理対象の全ソフトウェア: インストール状態、サービス稼働、新バージョン、プロジェクトでの利用リンク。",
   "tabs": {
     "overview": "概要",
     "runtimes": "ランタイム",
@@ -18,7 +18,7 @@
   "quickTitle": "ショートカット",
   "quickDesc": "セクションまたはホスト ツールにジャンプします",
   "updatesTitle": "アップデートとインストール可能なバージョン",
-  "updatesDesc": "Newer upstream or panel pins. Install, then select the runtime on a project.",
+  "updatesDesc": "上流またはパネルの新しいピン。インストール後、プロジェクトでランタイムを選択してください。",
   "allSoftware": "すべてのソフトウェア",
   "status": {
     "unknown": "—",
@@ -67,7 +67,7 @@
     "blocked": "ブロックされました",
     "confirm": "更新を確認する",
     "confirmTitle": "ソフトウェアアップデートを確認しますか?",
-    "confirmBody": "Update {{pkg}}: {{from}} → {{to}}. Needs system-change rights.",
+    "confirmBody": "{{pkg}} を更新: {{from}} → {{to}}。システム変更権限が必要です。",
     "ok": "適用済み {{pkg}}",
     "progress": "{{n}}/{{total}} を更新中: {{pkg}}",
     "okMulti": "更新日: {{list}}",
@@ -97,7 +97,7 @@
     "okTitle": "{{label}} がインストールされているかキューに登録されています",
     "failedTitle": "{{label}} インストールに失敗しました",
     "confirmTitle": "ソフトウェアのインストールを確認しますか?",
-    "confirmBody": "Install {{label}}: {{list}}. Needs system-change rights.",
+    "confirmBody": "{{label}} をインストール: {{list}}。システム変更権限が必要です。",
     "confirm": "インストールの確認"
   },
   "runtime": {
@@ -110,7 +110,7 @@
     "installingShort": "インストール中…"
   },
   "aptSummaryTitle": "リポジトリのアップグレードが利用可能",
-  "aptSummaryDesc": "Catalog and host package counts are separate; apply from Updates or a card.",
+  "aptSummaryDesc": "カタログとホストのパッケージ数は別管理です。更新画面またはカードから適用してください。",
   "aptSummary": {
     "catalog": "カタログ {{n}}",
     "host": "ホストパッケージ {{n}}",
@@ -118,5 +118,5 @@
   },
   "navBadgeTitle": "カタログのアップグレード: {{n}}",
   "projectHint": "ランタイム {{runtime}} 事前入力 — プロジェクトの作成",
-  "projectHintWithVersion": "Runtime {{runtime}} {{version}} prefilled — create a project"
+  "projectHintWithVersion": "ランタイム {{runtime}} {{version}} を事前入力 — プロジェクトを作成"
 }

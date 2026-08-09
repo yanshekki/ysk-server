@@ -24,7 +24,7 @@
   "softwareMissing": "Redis ソフトウェアがインストールされていません",
   "notConnectedTitle": "Redis に接続されていません",
   "installThenStart": "バナーを介してRedisをインストールし、サービスを開始します。",
-  "installedNotConnected": "Installed but not connected — start the service to browse keys.",
+  "installedNotConnected": "インストール済みだが未接続 — サービスを起動してキーを参照してください。",
   "keysCountSuffix": "· {{n}} キー",
   "searchPlaceholder": "検索キー、例:ユーザー:* または *",
   "searchKeys": "検索キー",
@@ -49,7 +49,7 @@
   "stringValue": "SET による文字列値",
   "stringContent": "文字列の内容",
   "deleteKeyTitle": "このキーを削除しますか?",
-  "deleteKeyDesc": "Delete “{{key}}” from DB {{db}}? This cannot be undone.",
+  "deleteKeyDesc": "DB {{db}} から “{{key}}” を削除しますか？この操作は元に戻せません。",
   "installedOk": "Redis がインストールされている",
   "startedOk": "Redisを開始しました",
   "memory": "メモリ",
@@ -63,6 +63,6 @@
   "keyList": "キーリスト",
   "pickKey": "左側のキーを選択してコンテンツを表示します。",
   "ttlPrefix": "TTL",
-  "writeLiveHint": "Writes live Redis; cannot undo from the panel in one click.",
+  "writeLiveHint": "書き込みはライブ Redis へ。パネルからワンクリックでは取り消しできません。",
   "refPath": "参照: {{path}}"
 }

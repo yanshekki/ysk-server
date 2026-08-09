@@ -1,7 +1,7 @@
 {
-  "purgeConfirm": "Confirm purge? Registered data paths (databases/mail) will be deleted permanently.",
+  "purgeConfirm": "パージを確認しますか？登録済みデータパス（データベース/メール）は完全に削除されます。",
   "installedCount": "インストールされています {{installed}} · {{missing}} が見つかりません",
-  "needRootExecute": "Live install/remove needs administrator rights and system-change permission. You can still dry-run.",
+  "needRootExecute": "本番のインストール/削除には管理者権限とシステム変更権限が必要です。ドライランは可能です。",
   "modeInstall": "インストール計画",
   "modeUninstall": "アンインストール",
   "plan": "プラン",

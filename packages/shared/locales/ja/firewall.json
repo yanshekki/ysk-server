@@ -28,7 +28,7 @@
   "enableUfw": "UFW を有効にする",
   "notInstalled": "UFWがインストールされていない",
   "toolHintPrefix": "基礎となるツール:",
-  "toolHintBody": "UFW = ports / permanent rules · for attack response and auto-ban use",
+  "toolHintBody": "UFW = ポート／恒久ルール · 攻撃対応と自動 BAN には",
   "toolHintFail2ban": "failed2ban = 一時的なログベースの禁止",
   "executeOffHint": "システムがオフになります - ステータスは読み取り可能です。",
   "tabs": {
@@ -54,11 +54,11 @@
   "protoBothLabel": "TCP+UDP",
   "port": "ポート",
   "portHint": "共通ポートを選択するか、以下のカスタムポートを選択します",
-  "portHintYsk": "All YSK service ports (Panel, Web, SSH, mail, FTP, DNS, DB, Redis);",
-  "privatePortWarn": "{{service}} should usually stay private; public allow is risky. Prefer a source IP/CIDR.",
-  "privatePortWarnWithFrom": "{{service}} will only allow the given source; double-check the IP/CIDR.",
+  "portHintYsk": "すべての YSK サービスポート（Panel、Web、SSH、mail、FTP、DNS、DB、Redis）；",
+  "privatePortWarn": "{{service}} は通常プライベートのままにします。公開許可は危険です。送信元 IP/CIDR を推奨。",
+  "privatePortWarnWithFrom": "{{service}} は指定した送信元のみ許可します。IP/CIDR を再確認してください。",
   "allowFrom": "送信元IP/CIDR (オプション)",
-  "allowFromHint": "Empty = anywhere; set an IP or CIDR to allow only that source on this port",
+  "allowFromHint": "空 = どこからでも可；このポートでその送信元のみ許可する場合は IP または CIDR を設定",
   "allowFromPlaceholder": "例えば203.0.113.10 または 10.0.0.0/8",
   "customPort": "カスタムポート (例: 8080 または 30000:30100)",
   "allowedPort": "許可 {{proto}}/{{port}}",
@@ -73,7 +73,7 @@
   "remove": "取り除く",
   "noDenyRules": "永続的な拒否 IP ルールはありません",
   "oneClickProfiles": "ワンクリックプロファイル",
-  "oneClickDesc": "Write panel script and apply UFW (does not install fail2ban — use the fail2ban page)",
+  "oneClickDesc": "パネル用スクリプトを書き出し UFW を適用（fail2ban はインストールしません — fail2ban ページを使用）",
   "customApply": "カスタム適用",
   "allowSmtp": "SMTP/IMAP ポートを許可する",
   "extraTcp": "追加の TCP ポート",
@@ -85,5 +85,5 @@
   "applyToSystem": "システムに適用する",
   "deletedRule": "#{{n}} を削除しました",
   "deleteRuleTitle": "ルール #{{n}} を削除しますか?",
-  "deleteRuleDesc": "Removes that UFW rule number (needs system-change permission)."
+  "deleteRuleDesc": "その UFW ルール番号を削除（system-change 権限が必要）。"
 }

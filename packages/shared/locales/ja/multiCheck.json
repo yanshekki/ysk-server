@@ -5,7 +5,7 @@
   "removeTitle": "クリックして削除します",
   "noneSelected": "何も選択されていません",
   "optionsAria": "オプション",
-  "showingCapped": "Showing first {{shown}} of {{total}} — use search to narrow",
+  "showingCapped": "{{total}} 件中 先頭 {{shown}} 件を表示 — 検索で絞り込んでください",
   "add": "追加",
   "bulkAria": "一括選択",
   "selectAll": "すべて選択",

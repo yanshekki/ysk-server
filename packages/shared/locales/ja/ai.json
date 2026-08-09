@@ -19,7 +19,7 @@
   "tasksTab": "タスク ({{count}})",
   "playbooksTab": "プレイブック ({{count}})",
   "queueTitle": "タスクキュー",
-  "queueSub": "Select to view plan & steps · no extra actions on terminal state",
+  "queueSub": "選択してプランとステップを表示 · 終端状態では追加操作なし",
   "createTaskPlus": "+ タスクの作成",
   "emptyTasks": "まだタスクはありません",
   "emptyTasksDesc": "リストからタスクを作成するか、プレイブックを実行します",
@@ -45,7 +45,7 @@
   "selectTask": "タスクを選択してください",
   "selectTaskDesc": "左側でタスクを選択すると、計画と手順が表示されます",
   "playbooksTitle": "プレイブック",
-  "playbooksSub": "Preset ops · running creates a task and switches to Tasks",
+  "playbooksSub": "プリセット運用 · 実行するとタスクを作成し Tasks へ切替",
   "countItems": "{{count}}",
   "searchPh": "名前/説明",
   "noPlaybooks": "一致するプレイブックはありません",
@@ -57,5 +57,5 @@
   "promptLabel": "自然言語指導",
   "promptHint": "例えばホストの負荷をチェックします。またはnginxのステータス",
   "promptPh": "欲しいものを説明してください…",
-  "createHint": "Next: Approve & run in the task detail, or reject individual steps."
+  "createHint": "次へ: タスク詳細で Approve & run、または個別ステップを reject。"
 }
