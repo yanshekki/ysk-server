@@ -1,7 +1,7 @@
 {
-  "created": "Created",
-  "updated": "Updated",
-  "deleted": "Deleted",
-  "applyDone": "Apply completed",
-  "applyIncomplete": "Apply incomplete"
+  "created": "생성됨",
+  "updated": "업데이트됨",
+  "deleted": "삭제됨",
+  "applyDone": "적용 완료",
+  "applyIncomplete": "적용 미완료"
 }

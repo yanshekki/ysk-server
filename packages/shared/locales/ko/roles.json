@@ -1,6 +1,6 @@
 {
-  "admin": "Admin",
-  "operator": "Operator",
-  "viewer": "Viewer",
-  "agent": "Agent"
+  "admin": "관리자",
+  "operator": "운영자",
+  "viewer": "뷰어",
+  "agent": "에이전트"
 }

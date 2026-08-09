@@ -1,14 +1,14 @@
 {
-  "titleDefault": "Required software is not installed",
-  "missing": "Missing: {{names}}",
+  "titleDefault": "필수 소프트웨어가 설치되어 있지 않습니다",
+  "missing": "누락: {{names}}",
   "nameSep": ", ",
-  "installOneClick": "Install now",
-  "installing": "Installing…",
-  "reprobe": "Re-check",
-  "close": "Close",
-  "resultTitle": "Install result",
-  "probeFailed": "Probe failed",
-  "installIncomplete": "Install incomplete",
-  "installedOne": "Installed {{name}}",
-  "allInstalled": "Required software installed"
+  "installOneClick": "지금 설치",
+  "installing": "설치 중…",
+  "reprobe": "다시 확인",
+  "close": "닫기",
+  "resultTitle": "설치 결과",
+  "probeFailed": "프로브 실패",
+  "installIncomplete": "설치 미완료",
+  "installedOne": "{{name}} 설치됨",
+  "allInstalled": "필수 소프트웨어 설치됨"
 }

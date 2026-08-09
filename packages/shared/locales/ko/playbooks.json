@@ -1,50 +1,50 @@
 {
   "discover-host": {
-    "name": "Host discovery",
-    "description": "Read-only host inventory"
+    "name": "호스트 검색",
+    "description": "읽기 전용 호스트 인벤토리"
   },
   "nginx-health": {
-    "name": "Nginx health check",
-    "description": "Check nginx service status"
+    "name": "Nginx 상태 검사",
+    "description": "nginx 서비스 상태 확인"
   },
   "nginx-restart": {
-    "name": "Nginx restart (high risk)",
-    "description": "Restart nginx after approval"
+    "name": "Nginx 재시작(고위험)",
+    "description": "승인 후 nginx 재시작"
   },
   "local-llm-ops-only": {
-    "name": "Local LLM ops only",
-    "description": "Emergency discovery under protection mode"
+    "name": "로컬 LLM 운영 전용",
+    "description": "보호 모드에서의 비상 검색"
   },
   "disk-pressure": {
-    "name": "Disk pressure check",
-    "description": "Read-only disk usage via df"
+    "name": "디스크 압박 검사",
+    "description": "df를 통한 읽기 전용 디스크 사용량"
   },
   "mail-stack-status": {
-    "name": "Mail stack status",
-    "description": "Check postfix + dovecot units"
+    "name": "메일 스택 상태",
+    "description": "postfix + dovecot 유닛 확인"
   },
   "security-units": {
-    "name": "Security units",
-    "description": "fail2ban + sshd status (read-only)"
+    "name": "보안 유닛",
+    "description": "fail2ban + sshd 상태 (읽기 전용)"
   },
   "web-stack-status": {
-    "name": "Web stack status",
-    "description": "nginx + php-fpm probe"
+    "name": "웹 스택 상태",
+    "description": "nginx + php-fpm 프로브"
   },
   "emergency-read-only": {
-    "name": "Emergency read-only sweep",
-    "description": "Protection-safe facts only"
+    "name": "긴급 읽기 전용 스윕",
+    "description": "보호에 안전한 사실만"
   },
   "backup-health": {
-    "name": "Backup readiness",
-    "description": "Check disk + list processes before backup window"
+    "name": "백업 준비 상태",
+    "description": "백업 윈도우 전 디스크 확인 + 프로세스 목록"
   },
   "db-stack-status": {
-    "name": "Database stack status",
-    "description": "mysql/mariadb/redis/postgres units"
+    "name": "데이터베이스 스택 상태",
+    "description": "mysql/mariadb/redis/postgres 유닛"
   },
   "ssl-nginx-check": {
-    "name": "SSL + Nginx check",
-    "description": "nginx status before cert ops"
+    "name": "SSL + Nginx 확인",
+    "description": "인증서 작업 전 nginx 상태"
   }
 }

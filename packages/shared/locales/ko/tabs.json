@@ -1,7 +1,7 @@
 {
-  "scrollLeft": "Scroll tabs left",
-  "scrollRight": "Scroll tabs right",
-  "about": "About",
-  "main": "Actions",
+  "scrollLeft": "탭 왼쪽으로 스크롤",
+  "scrollRight": "탭 오른쪽으로 스크롤",
+  "about": "정보",
+  "main": "작업",
   "stack": "Software"
 }

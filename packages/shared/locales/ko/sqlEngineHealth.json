@@ -1,31 +1,31 @@
 {
   "finding": {
-    "package_missing": "Server package for {{flavor}} is not installed.",
-    "client_missing": "SQL client tools are not installed.",
-    "frozen_marker": "Debian freeze marker present (mode: {{mode}}). Daemon start is blocked until released.",
-    "datadir_uninitialized": "Data directory has no system catalog — needs initialization.",
-    "config_flavor_mismatch": "my.cnf points at the wrong engine for {{flavor}} ({{path}}).",
-    "residual_foreign_plugins": "Residual config/plugins from the other SQL engine can crash this daemon.",
-    "unit_failed": "Service unit {{unit}} is failed.",
-    "unit_not_active": "Service unit {{unit}} is {{active}} (not active).",
-    "port_conflict": "Port 3306 is in use while this engine is down (possible conflict)."
+    "package_missing": "{{flavor}}용 서버 패키지가 설치되어 있지 않습니다.",
+    "client_missing": "SQL 클라이언트 도구가 설치되어 있지 않습니다.",
+    "frozen_marker": "Debian 동결 마커가 있습니다(모드: {{mode}}). 해제될 때까지 데몬 시작이 차단됩니다.",
+    "datadir_uninitialized": "데이터 디렉터리에 시스템 카탈로그가 없습니다 — 초기화가 필요합니다.",
+    "config_flavor_mismatch": "my.cnf가 {{flavor}}에 잘못된 엔진을 가리킵니다({{path}}).",
+    "residual_foreign_plugins": "다른 SQL 엔진의 잔여 설정/플러그인이 이 데몬을 충돌시킬 수 있습니다.",
+    "unit_failed": "서비스 유닛 {{unit}}이(가) 실패 상태입니다.",
+    "unit_not_active": "서비스 유닛 {{unit}}이(가) {{active}} 상태입니다(active 아님).",
+    "port_conflict": "이 엔진이 중지된 상태에서 포트 3306이 사용 중입니다(충돌 가능)."
   },
   "action": {
-    "stop_unit": "Stop service unit",
-    "clear_frozen": "Clear freeze marker",
-    "sanitize_config": "Align my.cnf and disable foreign engine plugins",
-    "init_datadir": "Initialize empty data directory",
-    "reset_failed": "Reset failed unit state",
-    "enable_unit": "Enable service at boot",
-    "start_unit": "Start service",
-    "verify_active": "Verify service is active"
+    "stop_unit": "서비스 유닛 중지",
+    "clear_frozen": "동결 마커 지우기",
+    "sanitize_config": "my.cnf 정렬 및 외부 엔진 플러그인 비활성화",
+    "init_datadir": "빈 데이터 디렉터리 초기화",
+    "reset_failed": "실패한 유닛 상태 재설정",
+    "enable_unit": "부팅 시 서비스 사용",
+    "start_unit": "서비스 시작",
+    "verify_active": "서비스가 active인지 확인"
   },
   "note": {
-    "alreadyHealthy": "SQL engine already healthy — no repair needed.",
-    "needsConfirm": "Repair needs confirmation ({{count}} steps: {{findings}}).",
-    "installPackageFirst": "Install {{flavor}} server package first, then repair.",
-    "stepFailed": "Repair step {{action}} failed: {{detail}}",
-    "repairOk": "Repair complete — {{unit}} is active.",
-    "repairIncomplete": "Repair finished but unit is still {{active}}."
+    "alreadyHealthy": "SQL 엔진이 이미 정상입니다 — 복구가 필요 없습니다.",
+    "needsConfirm": "복구에 확인이 필요합니다({{count}}단계: {{findings}}).",
+    "installPackageFirst": "먼저 {{flavor}} 서버 패키지를 설치한 다음 복구하세요.",
+    "stepFailed": "복구 단계 {{action}} 실패: {{detail}}",
+    "repairOk": "복구 완료 — {{unit}}이(가) active입니다.",
+    "repairIncomplete": "복구가 끝났지만 유닛이 여전히 {{active}}입니다."
   }
 }

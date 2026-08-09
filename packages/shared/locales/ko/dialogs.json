@@ -1,8 +1,8 @@
 {
-  "confirmDefault": "Confirm",
-  "cancelDefault": "Cancel",
+  "confirmDefault": "확인",
+  "cancelDefault": "취소",
   "severity": {
-    "consequencesTitle": "This will:",
-    "typeToConfirm": "Type \"{{text}}\" to confirm"
+    "consequencesTitle": "다음을 수행합니다:",
+    "typeToConfirm": "확인하려면 \"{{text}}\"을(를) 입력하세요"
   }
 }

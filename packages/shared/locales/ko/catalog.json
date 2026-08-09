@@ -1,17 +1,17 @@
 {
   "sw": {
     "vsftpd": "vsftpd (FTPS)",
-    "db_util": "db-util (FTP user DB)",
+    "db_util": "db-util (FTP 사용자 DB)",
     "nginx": "Nginx",
     "certbot": "Certbot (Let's Encrypt)",
-    "mysql_client": "MySQL/MariaDB client",
-    "mysql_server": "MySQL server",
-    "mariadb_server": "MariaDB server",
-    "postgresql_client": "PostgreSQL client",
-    "postgresql": "PostgreSQL server",
-    "redis_tools": "Redis client",
-    "redis_server": "Redis server",
-    "ufw": "UFW firewall",
+    "mysql_client": "MySQL/MariaDB 클라이언트",
+    "mysql_server": "MySQL 서버",
+    "mariadb_server": "MariaDB 서버",
+    "postgresql_client": "PostgreSQL 클라이언트",
+    "postgresql": "PostgreSQL 서버",
+    "redis_tools": "Redis 클라이언트",
+    "redis_server": "Redis 서버",
+    "ufw": "UFW 방화벽",
     "fail2ban": "fail2ban",
     "postfix": "Postfix",
     "dovecot": "Dovecot",
@@ -25,7 +25,7 @@
     "rust": "Rust (cargo)"
   },
   "php": {
-    "session": "Session",
+    "session": "세션",
     "opcache": "OPcache"
   }
 }

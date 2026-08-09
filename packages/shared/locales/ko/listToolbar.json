@@ -1,12 +1,12 @@
 {
-  "searchPlaceholder": "Search…",
-  "searchAria": "Search list",
-  "clearSearch": "Clear search",
-  "clearAll": "Clear filters",
-  "resultCount": "{{count}} results",
-  "showingOf": "Showing {{shown}} of {{total}}",
-  "activeFilters": "{{count}} filters active",
-  "noResults": "No matches",
-  "noResultsHint": "Try another keyword or clear filters.",
-  "searching": "Searching…"
+  "searchPlaceholder": "검색…",
+  "searchAria": "목록 검색",
+  "clearSearch": "검색 지우기",
+  "clearAll": "필터 지우기",
+  "resultCount": "{{count}}개 결과",
+  "showingOf": "{{total}}개 중 {{shown}}개 표시",
+  "activeFilters": "필터 {{count}}개 적용 중",
+  "noResults": "일치 항목 없음",
+  "noResultsHint": "다른 키워드를 시도하거나 필터를 지워 보세요.",
+  "searching": "검색 중…"
 }

@@ -1,14 +1,14 @@
 {
-  "title": "Sign in to YSK Server",
-  "subtitle": "Server console",
-  "username": "Username",
-  "password": "Password",
-  "submit": "Sign in",
-  "failed": "Sign-in failed. Check username or password.",
-  "footer": "A product of YSK Limited",
-  "totpRequired": "2FA is enabled for this account. Enter the 6-digit code.",
-  "totpLabel": "Authentication code",
-  "totpHint": "6-digit code from your authenticator app",
-  "submitting": "Signing in…",
-  "sessionExpired": "Session expired; sign in again"
+  "title": "YSK Server에 로그인",
+  "subtitle": "서버 콘솔",
+  "username": "사용자 이름",
+  "password": "비밀번호",
+  "submit": "로그인",
+  "failed": "로그인 실패. 사용자 이름 또는 비밀번호를 확인하세요.",
+  "footer": "YSK Limited 제품",
+  "totpRequired": "이 계정에 2FA가 활성화되어 있습니다. 6자리 코드를 입력하세요.",
+  "totpLabel": "인증 코드",
+  "totpHint": "인증 앱의 6자리 코드",
+  "submitting": "로그인 중…",
+  "sessionExpired": "세션이 만료됨; 다시 로그인하세요"
 }
