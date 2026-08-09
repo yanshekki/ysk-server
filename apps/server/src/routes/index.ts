@@ -11,6 +11,7 @@ export { handleDashboardRoutes } from './dashboard.js';
 export { handleDbRoutes } from './db.js';
 export { handleDefenseRoutes } from './defense.js';
 export { handleDnsRoutes } from './dns.js';
+export { handleEmailDomainsRoutes } from './email-domains.js';
 export { handleEmailRoutes } from './email.js';
 export { handleFilesRoutes } from './files.js';
 export { handleFilesPublicRoutes } from './files-public.js';
