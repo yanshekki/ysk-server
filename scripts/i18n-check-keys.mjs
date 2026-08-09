@@ -8,7 +8,24 @@ import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const localesDir = join(root, 'packages/shared/locales');
-const LOCALES = ['zh-HK', 'zh-CN', 'en'];
+
+function listLocales() {
+  return readdirSync(localesDir)
+    .filter((name) => {
+      const p = join(localesDir, name);
+      try {
+        return (
+          statSync(p).isDirectory() &&
+          readdirSync(p).includes('translation.json')
+        );
+      } catch {
+        return false;
+      }
+    })
+    .sort();
+}
+
+const LOCALES = listLocales();
 
 function flatten(obj, prefix = '', out = new Set()) {
   if (obj == null) return out;
@@ -35,16 +52,21 @@ for (const code of LOCALES) {
   maps[code] = flatten(loadTranslation(code));
 }
 
-const base = maps['zh-HK'];
+// Use English as key SSOT for multi-locale expansion; Tier-1 must match en too.
+const base = maps['en'] ?? maps['zh-HK'];
 const failures = [];
 
+if (!maps['en'] || !maps['zh-HK'] || !maps['zh-CN']) {
+  failures.push('missing required Tier-1 locale en/zh-HK/zh-CN');
+}
+
 for (const code of LOCALES) {
-  if (code === 'zh-HK') continue;
+  if (code === 'en' && maps['en'] === base) continue;
   for (const k of base) {
     if (!maps[code].has(k)) failures.push(`missing in ${code}: ${k}`);
   }
   for (const k of maps[code]) {
-    if (!base.has(k)) failures.push(`extra in ${code} (not in zh-HK): ${k}`);
+    if (!base.has(k)) failures.push(`extra in ${code} (not in en): ${k}`);
   }
 }
 

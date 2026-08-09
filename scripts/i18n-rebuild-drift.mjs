@@ -10,9 +10,26 @@ import { createHash } from 'node:crypto';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const localesDir = join(root, 'packages/shared/locales');
-const LOCALES = ['zh-HK', 'zh-CN', 'en'];
 const LEAF_KEYS = ['product', 'tagline', 'company'];
-const SKIP = new Set(['translation.json']);
+const SKIP = new Set(['translation.json', 'locales.json']);
+
+function listLocales() {
+  return readdirSync(localesDir)
+    .filter((name) => {
+      const p = join(localesDir, name);
+      try {
+        return (
+          existsSync(p) &&
+          readdirSync(p).some((f) => f.endsWith('.json') && f !== 'translation.json')
+        );
+      } catch {
+        return false;
+      }
+    })
+    .sort();
+}
+
+const LOCALES = listLocales();
 
 function loadJson(p) {
   return JSON.parse(readFileSync(p, 'utf8'));

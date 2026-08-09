@@ -68,7 +68,7 @@
 | [security/2fa.md](./security/2fa.md) | Panel & SSH 2FA |
 | [security/ssh.md](./security/ssh.md) | SSH identities |
 | [api/overview.md](./api/overview.md) | HTTP API map |
-| [i18n.md](./i18n.md) | Locales (zh-HK / zh-CN / en) |
+| [i18n.md](./i18n.md) | Locales: Tier-1 (zh-HK / zh-CN / en) + Tier-2 world languages + RTL |
 
 ## User manual
 

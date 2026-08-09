@@ -1,6 +1,8 @@
 /**
  * Web i18n — loads catalogs from @ysk/shared/locales (single source of truth).
  * Default: zh-HK (香港書面語). Aliases zh-TW → zh-HK via normalizeLocale.
+ * Tier-1: zh-HK, zh-CN, en (quality bar).
+ * Tier-2: hi, es, ar, fr, bn, pt, id, ur (scaffolded from English; ar/ur RTL).
  */
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
@@ -8,6 +10,7 @@ import {
   DEFAULT_LOCALE,
   LOCALES,
   LOCALE_LABELS,
+  isRtlLocale,
   normalizeLocale,
   type LocaleCode,
 } from '@ysk/shared';
@@ -15,11 +18,27 @@ import {
 import zhHK from '@ysk/shared/locales/zh-HK/translation.json';
 import zhCN from '@ysk/shared/locales/zh-CN/translation.json';
 import en from '@ysk/shared/locales/en/translation.json';
+import hi from '@ysk/shared/locales/hi/translation.json';
+import es from '@ysk/shared/locales/es/translation.json';
+import ar from '@ysk/shared/locales/ar/translation.json';
+import fr from '@ysk/shared/locales/fr/translation.json';
+import bn from '@ysk/shared/locales/bn/translation.json';
+import pt from '@ysk/shared/locales/pt/translation.json';
+import id from '@ysk/shared/locales/id/translation.json';
+import ur from '@ysk/shared/locales/ur/translation.json';
 
 const resources = {
   'zh-HK': { translation: zhHK },
   'zh-CN': { translation: zhCN },
   en: { translation: en },
+  hi: { translation: hi },
+  es: { translation: es },
+  ar: { translation: ar },
+  fr: { translation: fr },
+  bn: { translation: bn },
+  pt: { translation: pt },
+  id: { translation: id },
+  ur: { translation: ur },
   /** Compat: historical locale code */
   'zh-TW': { translation: zhHK },
 } as const;
@@ -37,6 +56,17 @@ function detectInitialLng(): LocaleCode {
   return DEFAULT_LOCALE;
 }
 
+/** Sync <html lang> + dir for accessibility and RTL (ar, ur). */
+export function applyDocumentLocale(lng: string): void {
+  if (typeof document === 'undefined') return;
+  const code = normalizeLocale(lng);
+  const root = document.documentElement;
+  root.lang = code;
+  root.dir = isRtlLocale(code) ? 'rtl' : 'ltr';
+  root.dataset.locale = code;
+  root.dataset.rtl = isRtlLocale(code) ? 'true' : 'false';
+}
+
 void i18n.use(initReactI18next).init({
   resources,
   lng: detectInitialLng(),
@@ -44,12 +74,28 @@ void i18n.use(initReactI18next).init({
     'zh-TW': ['zh-HK', 'en'],
     'zh-HK': ['en'],
     'zh-CN': ['zh-HK', 'en'],
+    // Tier-2 scaffolds use English strings; fall back to en for any sparse keys
+    hi: ['en'],
+    es: ['en'],
+    ar: ['en'],
+    fr: ['en'],
+    bn: ['en'],
+    pt: ['en'],
+    id: ['en'],
+    ur: ['en'],
     default: ['en'],
   },
   supportedLngs: [...LOCALES, 'zh-TW'],
   interpolation: { escapeValue: false },
   // Prefer explicit keys; avoid silent English fallback masking missing HK keys in dev
   returnNull: false,
+});
+
+// Initial document attributes (SSR-safe: only in browser)
+applyDocumentLocale(i18n.language);
+
+i18n.on('languageChanged', (lng) => {
+  applyDocumentLocale(lng);
 });
 
 /**
@@ -59,6 +105,7 @@ void i18n.use(initReactI18next).init({
 export function setAppLocale(lng: string, opts?: { syncServer?: boolean }): void {
   const code = normalizeLocale(lng);
   void i18n.changeLanguage(code);
+  applyDocumentLocale(code);
   try {
     localStorage.setItem('ysk.locale', code);
   } catch {
@@ -101,7 +148,7 @@ export function applyUserLocale(locale?: string | null): void {
   setAppLocale(locale, { syncServer: false });
 }
 
-export { LOCALE_LABELS, LOCALES, DEFAULT_LOCALE, normalizeLocale };
+export { LOCALE_LABELS, LOCALES, DEFAULT_LOCALE, normalizeLocale, isRtlLocale };
 export type { LocaleCode };
 
 export default i18n;

@@ -20,7 +20,12 @@ const CATALOGS: Partial<Record<LocaleCode, GuideMap>> = {
 
 function mapFor(locale?: string | null): GuideMap {
   const code = normalizeLocale(locale);
-  return (CATALOGS[code] as GuideMap | undefined) ?? (CATALOGS['zh-HK'] as GuideMap);
+  // Tier-1 has native catalogs; Tier-2 falls back to English (scaffold quality bar).
+  return (
+    (CATALOGS[code] as GuideMap | undefined) ??
+    (CATALOGS.en as GuideMap) ??
+    (CATALOGS['zh-HK'] as GuideMap)
+  );
 }
 
 function uniqTrimmed(items: string[], max: number): string[] {

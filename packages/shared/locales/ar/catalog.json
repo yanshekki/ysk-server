@@ -1,0 +1,31 @@
+{
+  "sw": {
+    "vsftpd": "vsftpd (FTPS)",
+    "db_util": "db-util (FTP user DB)",
+    "nginx": "Nginx",
+    "certbot": "Certbot (Let's Encrypt)",
+    "mysql_client": "MySQL/MariaDB client",
+    "mysql_server": "MySQL server",
+    "mariadb_server": "MariaDB server",
+    "postgresql_client": "PostgreSQL client",
+    "postgresql": "PostgreSQL server",
+    "redis_tools": "Redis client",
+    "redis_server": "Redis server",
+    "ufw": "UFW firewall",
+    "fail2ban": "fail2ban",
+    "postfix": "Postfix",
+    "dovecot": "Dovecot",
+    "opendkim": "OpenDKIM",
+    "pdns_server": "PowerDNS",
+    "git": "Git",
+    "node": "Node.js",
+    "php": "PHP",
+    "python": "Python 3",
+    "go": "Go",
+    "rust": "Rust (cargo)"
+  },
+  "php": {
+    "session": "Session",
+    "opcache": "OPcache"
+  }
+}

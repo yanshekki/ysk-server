@@ -2,8 +2,10 @@ export {
   type LocaleCode,
   LOCALES,
   DEFAULT_LOCALE,
+  RTL_LOCALES,
   LOCALE_LABELS,
   normalizeLocale,
+  isRtlLocale,
   localeFromAcceptLanguage,
 } from './normalize-locale.js';
 

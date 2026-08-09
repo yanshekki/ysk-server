@@ -11,6 +11,17 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/* RTL (ar, ur): document dir is set by applyDocumentLocale in shared/lib/i18n.ts */
+html[dir='rtl'] body {
+  direction: rtl;
+  text-align: start;
+}
+
+html[dir='rtl'] .shell__nav,
+html[dir='rtl'] .shell__sidebar {
+  text-align: start;
+}
+
 body {
   margin: 0;
   min-height: 100vh;

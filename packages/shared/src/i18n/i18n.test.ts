@@ -37,7 +37,16 @@ describe('i18n', () => {
     // zh-cn-* still simplified after generic zh- branch
     expect(normalizeLocale('zh-cn-something')).toBe('zh-CN');
     expect(normalizeLocale('zh-SG')).toBe('zh-HK'); // bare zh-* → HK default
-    expect(normalizeLocale('fr-FR')).toBe(DEFAULT_LOCALE);
+    // Tier-2 world languages
+    expect(normalizeLocale('fr-FR')).toBe('fr');
+    expect(normalizeLocale('es-MX')).toBe('es');
+    expect(normalizeLocale('pt-BR')).toBe('pt');
+    expect(normalizeLocale('ar-SA')).toBe('ar');
+    expect(normalizeLocale('hi-IN')).toBe('hi');
+    expect(normalizeLocale('bn-BD')).toBe('bn');
+    expect(normalizeLocale('id-ID')).toBe('id');
+    expect(normalizeLocale('in-ID')).toBe('id'); // legacy Indonesian tag
+    expect(normalizeLocale('ur-PK')).toBe('ur');
     expect(normalizeLocale('ja')).toBe(DEFAULT_LOCALE);
   });
 
@@ -47,12 +56,24 @@ describe('i18n', () => {
     expect(localeFromAcceptLanguage('zh-TW,zh;q=0.8')).toBe('zh-HK');
     expect(localeFromAcceptLanguage(null)).toBe(DEFAULT_LOCALE);
     expect(localeFromAcceptLanguage('')).toBe(DEFAULT_LOCALE);
-    // first tag always wins via normalizeLocale (even unsupported → DEFAULT)
-    expect(localeFromAcceptLanguage('fr-FR,de;q=0.8')).toBe(DEFAULT_LOCALE);
+    // Tier-2 tags resolve; unsupported still → DEFAULT
+    expect(localeFromAcceptLanguage('fr-FR,de;q=0.8')).toBe('fr');
+    expect(localeFromAcceptLanguage('ar,en;q=0.5')).toBe('ar');
+    expect(localeFromAcceptLanguage('ja,de;q=0.8')).toBe(DEFAULT_LOCALE);
     expect(localeFromAcceptLanguage('zh,en;q=0.5')).toBe('zh-HK');
     // empty segments skipped → next en tag
     expect(localeFromAcceptLanguage(' , en;q=0.9')).toBe('en');
     expect(localeFromAcceptLanguage('en-GB;q=0.8')).toBe('en');
+  });
+
+  it('isRtlLocale covers Arabic and Urdu', async () => {
+    const { isRtlLocale, RTL_LOCALES } = await import('./normalize-locale.js');
+    expect(RTL_LOCALES).toEqual(['ar', 'ur']);
+    expect(isRtlLocale('ar')).toBe(true);
+    expect(isRtlLocale('ar-SA')).toBe(true);
+    expect(isRtlLocale('ur')).toBe(true);
+    expect(isRtlLocale('en')).toBe(false);
+    expect(isRtlLocale('zh-HK')).toBe(false);
   });
 
   it('t returns zh-HK common strings', () => {

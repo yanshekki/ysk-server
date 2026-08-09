@@ -2,15 +2,17 @@
 
 Operator-facing text rules for YSK Server (Web + API + notes).
 
-## Languages (required)
+## Languages
+
+### Tier-1 (required quality bar)
 
 | Code | Role |
 |------|------|
 | **zh-HK** | Default UI. **Hong Kong written Chinese** only — no spoken Cantonese. |
 | **zh-CN** | Simplified Chinese (standard PRC UI wording). |
-| **en** | Concise English. No marketing fluff. |
+| **en** | Concise English. No marketing fluff. Key SSOT for multi-locale expansion. |
 
-All three must share the same key tree.
+Tier-1 must share the same key tree. **Tier-2** (`hi`, `es`, `ar`, `fr`, `bn`, `pt`, `id`, `ur`) ship as English scaffolds with the same keys; native translation may replace values later. `ar` / `ur` are RTL.
 
 ## SSOT
 

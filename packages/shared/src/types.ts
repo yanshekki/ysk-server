@@ -78,7 +78,9 @@ export type { LocaleCode } from './i18n/normalize-locale.js';
 export {
   LOCALES,
   DEFAULT_LOCALE,
+  RTL_LOCALES,
   LOCALE_LABELS,
   normalizeLocale,
+  isRtlLocale,
   localeFromAcceptLanguage,
 } from './i18n/normalize-locale.js';

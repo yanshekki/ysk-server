@@ -1,18 +1,56 @@
 /**
- * Supported UI/API locales. zh-HK = 香港書面語（繁體）.
+ * Supported UI/API locales.
+ * Tier-1: zh-HK (香港書面語), zh-CN, en — quality bar.
+ * Tier-2: top world languages scaffolded from English.
  */
-export type LocaleCode = 'zh-HK' | 'zh-CN' | 'en';
+export type LocaleCode =
+  | 'zh-HK'
+  | 'zh-CN'
+  | 'en'
+  | 'hi'
+  | 'es'
+  | 'ar'
+  | 'fr'
+  | 'bn'
+  | 'pt'
+  | 'id'
+  | 'ur';
 
-export const LOCALES: readonly LocaleCode[] = ['zh-HK', 'zh-CN', 'en'] as const;
+export const LOCALES: readonly LocaleCode[] = [
+  'zh-HK',
+  'zh-CN',
+  'en',
+  'hi',
+  'es',
+  'ar',
+  'fr',
+  'bn',
+  'pt',
+  'id',
+  'ur',
+] as const;
 
 export const DEFAULT_LOCALE: LocaleCode = 'zh-HK';
+
+/** Locales that require RTL document direction */
+export const RTL_LOCALES: readonly LocaleCode[] = ['ar', 'ur'] as const;
 
 /** Display names (in that language where possible) */
 export const LOCALE_LABELS: Record<LocaleCode, string> = {
   'zh-HK': '繁體中文',
   'zh-CN': '简体中文',
   en: 'English',
+  hi: 'हिन्दी',
+  es: 'Español',
+  ar: 'العربية',
+  fr: 'Français',
+  bn: 'বাংলা',
+  pt: 'Português',
+  id: 'Bahasa Indonesia',
+  ur: 'اردو',
 };
+
+const SUPPORTED = new Set<string>(LOCALES);
 
 /**
  * Normalize Accept-Language / stored user locale to a supported code.
@@ -22,26 +60,55 @@ export function normalizeLocale(input?: string | null): LocaleCode {
   if (!input || typeof input !== 'string') return DEFAULT_LOCALE;
   const raw = input.trim().replace('_', '-');
   const lower = raw.toLowerCase();
+  const primary = lower.split('-')[0] ?? lower;
 
   if (lower === 'en' || lower.startsWith('en-')) return 'en';
-  if (lower === 'zh-cn' || lower === 'zh-hans' || lower.startsWith('zh-hans')) {
+  // Simplified Chinese (before generic zh-* → HK)
+  if (
+    lower === 'zh-cn' ||
+    lower.startsWith('zh-cn-') ||
+    lower === 'zh-hans' ||
+    lower.startsWith('zh-hans') ||
+    lower.includes('hans')
+  ) {
     return 'zh-CN';
   }
   if (
     lower === 'zh-hk' ||
+    lower.startsWith('zh-hk-') ||
     lower === 'zh-tw' ||
+    lower.startsWith('zh-tw-') ||
     lower === 'zh-hant' ||
     lower.startsWith('zh-hant') ||
     lower === 'zh' ||
     lower.startsWith('zh-')
   ) {
-    // Default Chinese → Hong Kong written Traditional
-    if (lower === 'zh-cn' || lower.startsWith('zh-cn') || lower.includes('hans')) {
-      return 'zh-CN';
-    }
     return 'zh-HK';
   }
+
+  // Exact or primary match for Tier-2
+  for (const code of LOCALES) {
+    if (lower === code.toLowerCase() || primary === code.toLowerCase()) {
+      return code;
+    }
+  }
+  // es-MX, pt-BR, etc.
+  if (primary === 'es') return 'es';
+  if (primary === 'pt') return 'pt';
+  if (primary === 'ar') return 'ar';
+  if (primary === 'fr') return 'fr';
+  if (primary === 'hi') return 'hi';
+  if (primary === 'bn') return 'bn';
+  if (primary === 'id' || primary === 'in') return 'id';
+  if (primary === 'ur') return 'ur';
+
+  if (SUPPORTED.has(raw as LocaleCode)) return raw as LocaleCode;
   return DEFAULT_LOCALE;
+}
+
+export function isRtlLocale(input?: string | null): boolean {
+  const code = normalizeLocale(input);
+  return (RTL_LOCALES as readonly string[]).includes(code);
 }
 
 /** Parse Accept-Language header (first matching supported tag). */
@@ -50,12 +117,17 @@ export function localeFromAcceptLanguage(header?: string | null): LocaleCode {
   const parts = header.split(',').map((p) => p.trim().split(';')[0]?.trim());
   for (const p of parts) {
     if (!p) continue;
+    const lower = p.toLowerCase();
+    if (lower.startsWith('en')) return 'en';
+    if (lower.includes('cn') || lower.includes('hans')) return 'zh-CN';
+    if (lower.startsWith('zh')) return 'zh-HK';
     const n = normalizeLocale(p);
-    // Only accept if the raw tag is related to our result
-    if (p.toLowerCase().startsWith('en')) return 'en';
-    if (p.toLowerCase().includes('cn') || p.toLowerCase().includes('hans')) return 'zh-CN';
-    if (p.toLowerCase().startsWith('zh')) return 'zh-HK';
-    if (n) return n;
+    if (n !== DEFAULT_LOCALE || lower.startsWith('zh')) return n;
+    // If normalize returned default, only accept when primary is a known Tier-2
+    const primary = lower.split('-')[0] ?? '';
+    if (['hi', 'es', 'ar', 'fr', 'bn', 'pt', 'id', 'ur'].includes(primary)) {
+      return normalizeLocale(primary);
+    }
   }
   return DEFAULT_LOCALE;
 }
