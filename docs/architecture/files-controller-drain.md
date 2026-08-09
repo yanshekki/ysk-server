@@ -9,7 +9,9 @@ Canonical workdir: `/home/ki/文件/ysk-server/`.
 | Shared helpers (resolveRoot, rate-limit, chown) | `routes/files-shared.ts` | **E1** |
 | WebDAV protocol + public share download | `routes/files-public.ts` | **E1** |
 | Trash / shares / favorites / versions / WebDAV settings | `routes/files-meta.ts` | **E2** |
-| Authenticated file CRUD | `routes/files.ts` | **E3** |
+| Authenticated list/read/download/stat | `routes/files-read.ts` | **T1** |
+| Authenticated write/mutate (upload/mkdir/zip/…) | `routes/files-write.ts` | **T1** |
+| Auth + root dispatcher | `routes/files.ts` | **T1** |
 
 ## Residual
 
@@ -24,4 +26,5 @@ Stable import path for `http-server.ts` kept.
 ## Dispatch note
 
 1. `handleFilesPublicRoutes` (WebDAV + public share)  
-2. `handleFilesRoutes` → CRUD + `handleFilesMetaSection` after auth/root  
+2. `handleFilesRoutes` → auth+root → read → write → `handleFilesMetaSection`  
+
