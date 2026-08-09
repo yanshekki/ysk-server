@@ -285,9 +285,19 @@
   color: var(--text-muted);
 }
 
+.login-card__powered {
+  margin: 0;
+  line-height: 1.4;
+}
+
 .login-card__footer a {
   color: var(--brand-blue);
   font-weight: 600;
+  text-decoration: none;
+}
+
+.login-card__footer a:hover {
+  text-decoration: underline;
 }
 
 /* Health / meta text blocks inside cards */
