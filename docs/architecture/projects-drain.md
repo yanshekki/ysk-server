@@ -4,7 +4,9 @@ Canonical workdir: `/home/ki/文件/ysk-server/`.
 
 | Domain | Module | Wave |
 |--------|--------|------|
-| Deploy / lifecycle / os-user / suspend | `routes/projects-lifecycle.ts` | **H1** |
+| Deploy / stop / publish / suspend | `routes/projects-deploy.ts` | **AB1** |
+| OS user provision / limits / migrate | `routes/projects-os-user.ts` | **AB1** |
+| Lifecycle dispatcher | `routes/projects-lifecycle.ts` | **AB1** |
 | Network / logs / ftp / php / quota / … | `routes/projects-ops.ts` | **H2** |
 | Isolation report / backfill / provision-all | `routes/projects-isolation.ts` | **T3** |
 | Wizard / create / delete | `routes/projects-create.ts` | **Z2** |
@@ -15,7 +17,7 @@ Canonical workdir: `/home/ki/文件/ysk-server/`.
 `routes/projects.ts` is a **thin dispatcher**:
 
 ```
-lifecycle → ops → crud(isolation → catalog(create → list))
+lifecycle(deploy → os-user) → ops → crud(isolation → catalog(create → list))
 ```
 
 **Wave H complete.** Wave T3 / Z2 further drain CRUD.
