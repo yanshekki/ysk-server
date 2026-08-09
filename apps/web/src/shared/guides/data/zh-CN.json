@@ -691,6 +691,7 @@
     ]
   },
   "nginx": {
+    "id": "nginx",
     "title": "Nginx",
     "summary": "管理独立 vhost，并查看项目发布的受管 conf。",
     "canDo": [

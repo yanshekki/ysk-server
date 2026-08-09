@@ -691,6 +691,7 @@
     ]
   },
   "nginx": {
+    "id": "nginx",
     "title": "Nginx",
     "summary": "Manage standalone vhosts and review project-managed conf.",
     "canDo": [

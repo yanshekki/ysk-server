@@ -705,6 +705,7 @@
     ]
   },
   "nginx": {
+    "id": "nginx",
     "title": "Nginx",
     "summary": "管理獨立 vhost，並查看專案發布的受管 conf。",
     "canDo": [
