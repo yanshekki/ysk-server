@@ -258,5 +258,20 @@ export async function handleDnsRoutes(
     sendJson(res, 200, listDnssecMaterial(ctx.dataDir, zone));
     return true;
   }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/dns\/cluster\/peers\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[6];
+        const { deleteDnsClusterPeer } = await import('@ysk/core');
+        const ok = deleteDnsClusterPeer(ctx.db, id);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'dns.cluster.peer.delete',
+          resource: id,
+          detail: { ok },
+          ok });
+        sendJson(res, ok ? 200 : 404, { ok });
+        return true;
+      }
+
   return false;
 }

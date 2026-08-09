@@ -1190,5 +1190,62 @@ export async function handleHostingRoutes(
         sendOpsResult(res, result);
         return true;
       }
+      if (
+        method === 'GET' &&
+        url.pathname.match(/^\/api\/v1\/hosting\/runtimes\/(node|python|go|rust)\/tuning$/)
+      ) {
+        ctx.auth.authenticate(getBearer(req));
+        const kind = url.pathname.split('/')[5] as 'node' | 'python' | 'go' | 'rust';
+        const version = url.searchParams.get('version') ?? 'default';
+        const {
+          loadRuntimeTuning,
+          listTuningCatalog,
+          tuningToEnv } = await import('@ysk/core');
+        const settings = loadRuntimeTuning(ctx.dataDir, kind, version);
+        sendJson(res, 200, {
+          kind,
+          version: settings.version,
+          catalog: listTuningCatalog(kind),
+          settings,
+          envPreview: tuningToEnv(settings),
+          notes: [
+            tl('notes.auto.n0577'),
+            tl('notes.auto.n0472'),
+          ] });
+        return true;
+      }
+      if (
+        method === 'PUT' &&
+        url.pathname.match(/^\/api\/v1\/hosting\/runtimes\/(node|python|go|rust)\/tuning$/)
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const kind = url.pathname.split('/')[5] as 'node' | 'python' | 'go' | 'rust';
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          version?: string;
+          values?: Record<string, string | number | boolean>;
+          env?: Record<string, string>;
+        };
+        const { saveRuntimeTuning, tuningToEnv, listTuningCatalog } = await import('@ysk/core');
+        const result = saveRuntimeTuning(ctx.dataDir, {
+          kind,
+          version: data.version ?? 'default',
+          values: data.values ?? {},
+          env: data.env ?? {} });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'hosting.runtime.tuning.save',
+          detail: { kind, version: result.settings.version, written: result.written },
+          ok: true });
+        sendJson(res, 200, {
+          ok: true,
+          catalog: listTuningCatalog(kind),
+          settings: result.settings,
+          envPreview: tuningToEnv(result.settings),
+          written: result.written,
+          notes: [tl('notes.auto.n0767')] });
+        return true;
+      }
+
   return false;
 }

@@ -13,6 +13,7 @@ import {
   getBearer,
   readBody,
   sendJson,
+  sendOpsResult,
 } from '../http/util.js';
 
 export async function handleSslRoutes(
@@ -128,5 +129,20 @@ export async function handleSslRoutes(
         });
         return true;
       }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/ssl\/certificates\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const idOrDomain = decodeURIComponent(url.pathname.split('/').pop() ?? '');
+        const { deleteCertificate } = await import('@ysk/core');
+        const r = deleteCertificate(ctx.db, ctx.dataDir, idOrDomain);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssl.delete',
+          resource: r.domain,
+          detail: r,
+          ok: r.ok });
+        sendOpsResult(res, r, { notFound: true });
+        return true;
+      }
+
   return false;
 }

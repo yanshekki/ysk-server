@@ -10,7 +10,6 @@ import {
   downloadWordpressCore,
   listAppTemplates,
   listProjectLogs,
-  listProjectRelatedLogSources,
   normalizeRuntimeVersion,
   searchProjectLogs,
   tailProjectLog,

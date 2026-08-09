@@ -281,5 +281,320 @@ export async function handleCdnRoutes(
         sendJson(res, 200, dash);
         return true;
       }
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/cdn\/nodes\/[^/]+$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { getCdnNode } = await import('@ysk/core');
+        const node = getCdnNode(ctx.db, id);
+        if (!node) {
+          sendJson(res, 404, { ok: false, notes: [tl('notes.auto.n0866')] });
+          return true;
+        }
+        sendJson(res, 200, { node });
+        return true;
+      }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/cdn\/nodes\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { deleteCdnNode } = await import('@ysk/core');
+        const ok = deleteCdnNode(ctx.db, id);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cdn.node.delete',
+          resource: id,
+          detail: { ok },
+          ok });
+        sendJson(res, ok ? 200 : 404, { ok });
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/cdn\/nodes\/[^/]+\/probe$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { probeCdnNode } = await import('@ysk/core');
+        const r = await probeCdnNode(ctx.db, id);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cdn.node.probe',
+          resource: id,
+          detail: { ok: r.ok, method: r.method },
+          ok: r.ok });
+        sendOpsResult(res, r);
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/cdn\/nodes\/[^/]+\/drain$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { draining?: boolean };
+        const { setCdnNodeDrain } = await import('@ysk/core');
+        const node = setCdnNodeDrain(ctx.db, id, data.draining !== false);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cdn.node.drain',
+          resource: id,
+          detail: { status: node.status },
+          ok: true });
+        sendJson(res, 200, { node });
+        return true;
+      }
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/cdn\/sites\/[^/]+$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { getCdnSite, readCdnSiteRenderedConf } = await import('@ysk/core');
+        const site = getCdnSite(ctx.db, id);
+        if (!site) {
+          sendJson(res, 404, { ok: false, notes: [tl('notes.auto.n0024')] });
+          return true;
+        }
+        const rendered = readCdnSiteRenderedConf(ctx.dataDir, id);
+        sendJson(res, 200, { site, rendered });
+        return true;
+      }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/cdn\/sites\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { deleteCdnSite } = await import('@ysk/core');
+        const ok = deleteCdnSite(ctx.db, id);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cdn.site.delete',
+          resource: id,
+          detail: { ok },
+          ok });
+        sendJson(res, ok ? 200 : 404, { ok });
+        return true;
+      }
+      if (
+        method === 'POST' &&
+        url.pathname.match(/^\/api\/v1\/cdn\/sites\/[^/]+\/render$/)
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          dryRun?: boolean;
+          projectOriginUrl?: string;
+        };
+        const { applyCdnSiteEdgeRender } = await import('@ysk/core');
+        const r = await applyCdnSiteEdgeRender({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          siteId: id,
+          host: ctx.host,
+          dryRun: data.dryRun === true,
+          projectOriginUrl: data.projectOriginUrl });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cdn.site.render',
+          resource: id,
+          detail: {
+            ok: r.ok,
+            apply_status: r.apply_status,
+            contentHash: r.contentHash,
+            dryRun: data.dryRun === true },
+          ok: r.ok });
+        sendOpsResult(res, r);
+        return true;
+      }
+      if (
+        method === 'POST' &&
+        url.pathname.match(/^\/api\/v1\/cdn\/sites\/[^/]+\/apply$/)
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          edgeNodeId?: string;
+          skipDraining?: boolean;
+          projectOriginUrl?: string;
+        };
+        const { fanOutCdnSite } = await import('@ysk/core');
+        const r = await fanOutCdnSite({
+          db: ctx.db,
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          siteId: id,
+          edgeNodeId: data.edgeNodeId,
+          skipDraining: data.skipDraining,
+          projectOriginUrl: data.projectOriginUrl,
+          enqueue: (sessionId, payload) => ctx.fleet.enqueue(sessionId, payload) });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cdn.site.apply',
+          resource: id,
+          detail: {
+            ok: r.ok,
+            apply_status: r.apply_status,
+            edges: r.edges?.length },
+          ok: r.ok });
+        sendOpsResult(res, r);
+        return true;
+      }
+      if (
+        method === 'POST' &&
+        url.pathname.match(/^\/api\/v1\/cdn\/sites\/[^/]+\/purge$/)
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          edgeNodeId?: string;
+          skipDraining?: boolean;
+        };
+        const { purgeCdnSite } = await import('@ysk/core');
+        const r = await purgeCdnSite({
+          db: ctx.db,
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          siteId: id,
+          edgeNodeId: data.edgeNodeId,
+          skipDraining: data.skipDraining,
+          enqueue: (sessionId, payload) => ctx.fleet.enqueue(sessionId, payload) });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cdn.site.purge',
+          resource: id,
+          detail: {
+            ok: r.ok,
+            apply_status: r.apply_status,
+            edges: r.edges?.length },
+          ok: r.ok });
+        sendOpsResult(res, r);
+        return true;
+      }
+      if (
+        method === 'POST' &&
+        url.pathname.match(/^\/api\/v1\/cdn\/sites\/[^/]+\/dns-sync$/)
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          probeFirst?: boolean;
+          applyZone?: boolean;
+        };
+        const { syncCdnSiteDns } = await import('@ysk/core');
+        const r = await syncCdnSiteDns({
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+          siteId: id,
+          host: ctx.host,
+          probeFirst: data.probeFirst,
+          applyZone: data.applyZone });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cdn.site.dns_sync',
+          resource: id,
+          detail: {
+            ok: r.ok,
+            strategy: r.strategy,
+            ipv4: r.selectedIpv4,
+            recordsTouched: r.recordsTouched },
+          ok: r.ok });
+        sendOpsResult(res, r);
+        return true;
+      }
+      if (
+        method === 'GET' &&
+        url.pathname.match(/^\/api\/v1\/cdn\/sites\/[^/]+\/dns-records$/)
+      ) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { listCdnManagedDnsRecords } = await import('@ysk/core');
+        sendJson(res, 200, {
+          items: listCdnManagedDnsRecords(ctx.db, id) });
+        return true;
+      }
+      if (
+        method === 'POST' &&
+        url.pathname.match(/^\/api\/v1\/cdn\/sites\/[^/]+\/ssl\/distribute$/)
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          applyNginx?: boolean;
+          edgeNodeId?: string;
+          skipDraining?: boolean;
+        };
+        const { distributeCdnSiteSsl } = await import('@ysk/core');
+        const r = await distributeCdnSiteSsl({
+          db: ctx.db,
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          siteId: id,
+          applyNginx: data.applyNginx,
+          edgeNodeId: data.edgeNodeId,
+          skipDraining: data.skipDraining,
+          enqueue: (sessionId, payload) => ctx.fleet.enqueue(sessionId, payload) });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cdn.site.ssl_distribute',
+          resource: id,
+          detail: {
+            ok: r.ok,
+            apply_status: r.apply_status,
+            domain: r.cert?.domain },
+          ok: r.ok });
+        sendOpsResult(res, r);
+        return true;
+      }
+      if (
+        method === 'POST' &&
+        url.pathname.match(/^\/api\/v1\/cdn\/sites\/[^/]+\/ssl\/issue$/)
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          email?: string;
+          run?: boolean;
+          distribute?: boolean;
+        };
+        const { issueCdnSiteLetsEncrypt } = await import('@ysk/core');
+        const r = await issueCdnSiteLetsEncrypt({
+          db: ctx.db,
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          siteId: id,
+          email: data.email ?? '',
+          run: data.run,
+          distribute: data.distribute,
+          enqueue: (sessionId, payload) => ctx.fleet.enqueue(sessionId, payload) });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cdn.site.ssl_issue',
+          resource: id,
+          detail: {
+            ok: r.ok,
+            apply_status: r.apply_status,
+            executed: r.executed },
+          ok: r.ok });
+        sendOpsResult(res, r);
+        return true;
+      }
+      if (
+        method === 'POST' &&
+        url.pathname.match(/^\/api\/v1\/cdn\/sites\/[^/]+\/ssl\/prepare-acme$/)
+      ) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { prepareCdnSiteAcme } = await import('@ysk/core');
+        const r = await prepareCdnSiteAcme({
+          db: ctx.db,
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          siteId: id,
+          enqueue: (sessionId, payload) => ctx.fleet.enqueue(sessionId, payload) });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'cdn.site.ssl_prepare_acme',
+          resource: id,
+          detail: { ok: r.ok, apply_status: r.apply_status },
+          ok: r.ok });
+        sendOpsResult(res, r);
+        return true;
+      }
+
   return false;
 }

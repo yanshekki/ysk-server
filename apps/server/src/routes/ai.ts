@@ -126,5 +126,33 @@ export async function handleAiRoutes(
         sendJson(res, 200, report);
         return true;
       }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ai\/tasks\/[^/]+\/approve$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        sendJson(res, 200, ctx.ai.approve(id, user.username));
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ai\/tasks\/[^/]+\/execute$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const task = await ctx.ai.execute(id, user.username, user.roles as SystemRole[]);
+        sendJson(res, 200, task);
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ai\/tasks\/[^/]+\/cancel$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        sendJson(res, 200, ctx.ai.cancel(id, user.username));
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ai\/tasks\/[^/]+\/steps\/[^/]+\/reject$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const parts = url.pathname.split('/');
+        const id = parts[5];
+        const stepId = parts[7];
+        sendJson(res, 200, ctx.ai.rejectStep(id, stepId, user.username));
+        return true;
+      }
+
   return false;
 }
