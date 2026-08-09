@@ -14,6 +14,8 @@ export { handleBackupsRoutes } from './backups.js';
 export { handleBackupsSettingsRoutes } from './backups-settings.js';
 export { handleCdnNodesRoutes } from './cdn-nodes.js';
 export { handleCdnRoutes } from './cdn.js';
+export { handleCdnSitesCrudRoutes } from './cdn-sites-crud.js';
+export { handleCdnSitesEdgeRoutes } from './cdn-sites-edge.js';
 export { handleCdnSitesRoutes } from './cdn-sites.js';
 export { handleCronRoutes } from './cron.js';
 export { handleDashboardRoutes } from './dashboard.js';
