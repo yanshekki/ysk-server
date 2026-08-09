@@ -383,6 +383,309 @@ export async function handleSshRoutes(
         sendOpsResult(res, r);
         return true;
       }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/sftp\/keys\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { removeSftpKey } = await import('@ysk/core');
+        const r = removeSftpKey(ctx.db, ctx.dataDir, id);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'sftp.key.remove',
+          resource: id,
+          detail: r,
+          ok: r.ok });
+        sendOpsResult(res, r, { notFound: true });
+        return true;
+      }
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/ssh\/identities\/[^/]+\/public$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { getSshIdentity } = await import('@ysk/core');
+        const identity = getSshIdentity(ctx.dataDir, id);
+        if (!identity) {
+          sendJson(res, 404, { ok: false, message: tl('notes.ssh.identityNotFound') });
+          return true;
+        }
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        res.statusCode = 200;
+        res.end(identity.publicKey.endsWith('\n') ? identity.publicKey : identity.publicKey + '\n');
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ssh\/identities\/[^/]+\/export$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        if (!user.roles?.includes('admin')) {
+          sendJson(res, 403, {
+            ok: false,
+            code: 'YSK_FORBIDDEN',
+            message: tl('notes.auto.n0281') });
+          return true;
+        }
+        const rawBody = await readBody(req).catch(() => '{}');
+        const expData = JSON.parse(rawBody || '{}') as { totp?: string };
+        try {
+          ctx.auth.requireStepUp(user.id, expData.totp);
+        } catch (e) {
+          if (e instanceof YskError) {
+            sendJson(res, e.httpStatus || 403, {
+              ok: false,
+              code: e.code,
+              message: e.message,
+              needsStepUp: true });
+            return true;
+          }
+          throw e;
+        }
+        const id = url.pathname.split('/')[5];
+        const { exportSshIdentityPrivate } = await import('@ysk/core');
+        const r = exportSshIdentityPrivate(ctx.dataDir, id);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.identity.export',
+          resource: id,
+          detail: { fingerprint: r.fingerprintSha256, ok: r.ok },
+          ok: r.ok });
+        sendOpsResult(res, r, { notFound: true });
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ssh\/identities\/[^/]+\/install$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { apply?: boolean };
+        const { installSshIdentity } = await import('@ysk/core');
+        const r = await installSshIdentity({
+          dataDir: ctx.dataDir,
+          id,
+          apply: data.apply === true,
+          host: ctx.host,
+          executeEnabled: ctx.host.executeEnabled() });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.identity.install',
+          resource: id,
+          detail: {
+            apply: data.apply === true,
+            applied: r.applied,
+            path: r.plannedPath,
+            ok: r.ok },
+          ok: r.ok });
+        sendOpsResult(res, r);
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ssh\/identities\/[^/]+\/uninstall$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { apply?: boolean; purgeFiles?: boolean };
+        const { uninstallSshIdentity } = await import('@ysk/core');
+        const r = await uninstallSshIdentity({
+          dataDir: ctx.dataDir,
+          id,
+          apply: data.apply === true,
+          purgeFiles: data.purgeFiles !== false });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.identity.uninstall',
+          resource: id,
+          detail: { apply: data.apply === true, ok: r.ok },
+          ok: r.ok });
+        sendOpsResult(res, r, { notFound: true });
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ssh\/identities\/[^/]+\/test$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { target?: string; apply?: boolean };
+        const { testSshIdentity } = await import('@ysk/core');
+        const r = await testSshIdentity({
+          dataDir: ctx.dataDir,
+          id,
+          target: data.target ?? '',
+          apply: data.apply === true,
+          host: ctx.host,
+          executeEnabled: ctx.host.executeEnabled() });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.identity.test',
+          resource: id,
+          detail: {
+            target: data.target,
+            apply: data.apply === true,
+            ok: r.ok,
+            dryRun: r.dryRun },
+          ok: r.ok });
+        sendOpsResult(res, r);
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ssh\/identities\/[^/]+\/rotate$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { revealPrivate?: boolean };
+        const { rotateSshIdentity } = await import('@ysk/core');
+        const r = rotateSshIdentity({
+          dataDir: ctx.dataDir,
+          id,
+          revealPrivate: data.revealPrivate === true,
+          db: ctx.db });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.identity.rotate',
+          resource: id,
+          detail: {
+            newId: r.newIdentity?.id,
+            fingerprint: r.newIdentity?.fingerprintSha256,
+            ok: r.ok },
+          ok: r.ok });
+        sendOpsResult(res, r);
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ssh\/identities\/[^/]+\/authorize-self$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { authorizeSelfSshIdentity } = await import('@ysk/core');
+        const r = await authorizeSelfSshIdentity({
+          dataDir: ctx.dataDir,
+          db: ctx.db,
+          id,
+          host: ctx.host });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.identity.authorize_self',
+          resource: id,
+          detail: { keyId: r.keyId, ok: r.ok },
+          ok: r.ok });
+        sendOpsResult(res, r);
+        return true;
+      }
+      if (method === 'GET' && url.pathname.match(/^\/api\/v1\/ssh\/identities\/[^/]+$/)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { getSshIdentity } = await import('@ysk/core');
+        const identity = getSshIdentity(ctx.dataDir, id);
+        if (!identity) {
+          sendJson(res, 404, { ok: false, message: tl('notes.ssh.identityNotFound') });
+          return true;
+        }
+        sendJson(res, 200, { ok: true, identity });
+        return true;
+      }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/ssh\/identities\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const purgeDisk = url.searchParams.get('purgeDisk') === '1';
+        const { deleteSshIdentity, uninstallSshIdentity } = await import('@ysk/core');
+        if (purgeDisk) {
+          await uninstallSshIdentity({
+            dataDir: ctx.dataDir,
+            id,
+            apply: true,
+            purgeFiles: true });
+        }
+        const r = deleteSshIdentity(ctx.dataDir, id);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.identity.delete',
+          resource: id,
+          detail: { purgeDisk, ok: r.ok },
+          ok: r.ok });
+        sendOpsResult(res, r, { notFound: true });
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ssh\/2fa\/[^/]+\/confirm$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { code?: string };
+        const { confirmSsh2fa } = await import('@ysk/core');
+        const r = confirmSsh2fa(ctx.dataDir, id, data.code ?? '');
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.2fa.confirm',
+          resource: id,
+          detail: { ok: r.ok },
+          ok: r.ok });
+        sendOpsResult(res, r);
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ssh\/2fa\/[^/]+\/install$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { apply?: boolean };
+        const { installSsh2faFile } = await import('@ysk/core');
+        const r = await installSsh2faFile({
+          dataDir: ctx.dataDir,
+          id,
+          apply: data.apply === true,
+          host: ctx.host,
+          executeEnabled: ctx.host.executeEnabled() });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.2fa.install',
+          resource: id,
+          detail: { apply: data.apply === true, applied: r.applied, ok: r.ok },
+          ok: r.ok });
+        sendOpsResult(res, r);
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ssh\/2fa\/[^/]+\/uninstall$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { apply?: boolean };
+        const { uninstallSsh2faFile } = await import('@ysk/core');
+        const r = await uninstallSsh2faFile({
+          dataDir: ctx.dataDir,
+          id,
+          apply: data.apply === true,
+          retire: true });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.2fa.uninstall',
+          resource: id,
+          detail: { ok: r.ok },
+          ok: r.ok });
+        sendOpsResult(res, r, { notFound: true });
+        return true;
+      }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ssh\/2fa\/[^/]+\/reveal$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        if (!user.roles?.includes('admin')) {
+          sendJson(res, 403, { ok: false, code: 'YSK_FORBIDDEN', message: tl('notes.auto.n0561') });
+          return true;
+        }
+        const id = url.pathname.split('/')[5];
+        const { revealSsh2faSecret } = await import('@ysk/core');
+        const r = revealSsh2faSecret(ctx.dataDir, id);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.2fa.reveal',
+          resource: id,
+          detail: { ok: r.ok },
+          ok: r.ok });
+        sendOpsResult(res, r, { notFound: true });
+        return true;
+      }
+      if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/ssh\/2fa\/[^/]+$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5];
+        const { retireSsh2fa, uninstallSsh2faFile } = await import('@ysk/core');
+        if (url.searchParams.get('purgeFile') === '1') {
+          await uninstallSsh2faFile({ dataDir: ctx.dataDir, id, apply: true, retire: true });
+        } else {
+          retireSsh2fa(ctx.dataDir, id);
+        }
+        ctx.audit.append({
+          actor: user.username,
+          action: 'ssh.2fa.retire',
+          resource: id,
+          detail: {},
+          ok: true });
+        sendJson(res, 200, { ok: true });
+        return true;
+      }
       if (method === 'GET' && url.pathname === '/api/v1/security/fail2ban-snippets') {
         ctx.auth.authenticate(getBearer(req));
         const { writeFail2banSnippets } = await import('@ysk/core');
