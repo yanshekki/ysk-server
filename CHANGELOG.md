@@ -1,5 +1,20 @@
 # Changelog
 
+
+## 2026-08-09
+
+### Security
+- Phase 0: file sandbox boundary, WebDAV Basic user enforcement, constant-time token compares
+
+### UI
+- Removed AI Tasks / Agents panel navigation (CLI retained)
+- Unified professional About / 說明 tab layout with CLI hints
+- Tier-1 locale glossary hardening (zh-HK)
+
+### Docs / CLI
+- Panel↔CLI parity matrices refreshed (EN+ZH); CLI help unit tests
+- Feature docs: WebDAV, public shares, global webmail
+
 ## Unreleased
 
 - **HostSoftwareProbe**: single class for presence / version / upgrade; MySQL vs MariaDB exclusive; service-console, db-engine, probeSoftware, stack, service-matrix, redis, FTPS, UFW/fail2ban, restic, PowerDNS, pm2; `pnpm probe:ssot` in gates

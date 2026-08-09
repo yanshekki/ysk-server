@@ -98,3 +98,4 @@
 - Every formal doc has a **`-ZH.md`** sibling (Chinese).
 - Prefer **CLI + `--json`** for AI agents.
 - Host mutations default **dry-run** until `--execute` and `YSK_EXECUTE=1` (often root).
+- [Security Phase 0](security/phase-0-review.md)

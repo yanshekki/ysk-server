@@ -97,4 +97,5 @@
 
 - 正式文件均有 **`-ZH.md`** 中文版本。  
 - AI 優先用 **CLI + `--json`**。  
-- 主機變更預設 **dry-run**，直至 `--execute` 且 `YSK_EXECUTE=1`（通常需 root）。  
+- 主機變更預設 **dry-run**，直至 `--execute` 且 `YSK_EXECUTE=1`（通常需 root）。
+- [安全 Phase 0](security/phase-0-review-ZH.md)
