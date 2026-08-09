@@ -30,6 +30,9 @@ SQL_SERVER="mariadb"
 DATA_DIR=""
 SKIP_WIZARD=0
 OPERATION=install
+BOOTSTRAP_TLS=1
+LISTEN_HOST_OVERRIDE=""
+TLS_SAN_IPS=""
 
 # Resolve script directory (works when executed as file; pipe uses fetch)
 SCRIPT_DIR=""
@@ -70,6 +73,10 @@ Options:
   --full                  Alias for --plan full
   --minimal               Alias for --plan minimal
   --skip-runtimes         Remove 'runtimes' from selected bundles
+  --bootstrap-tls         Generate self-signed panel TLS for IP login (default on)
+  --no-bootstrap-tls      Skip TLS bootstrap (lab only — HTTP insecure)
+  --listen-host HOST      Override listen host (default 0.0.0.0 with TLS)
+  --tls-san IPS           Extra SAN IPs comma-separated for bootstrap cert
   -h, --help              Show help
 
 Logs: /var/log/ysk-server/install-*.log (root) or ~/.ysk/logs/
@@ -97,6 +104,10 @@ while [[ $# -gt 0 ]]; do
     --bundles) BUNDLES_CSV="${2:-}"; PLAN="${PLAN:-custom}"; shift 2 ;;
     --data-dir) DATA_DIR="${2:-}"; shift 2 ;;
     --skip-wizard) SKIP_WIZARD=1; NON_INTERACTIVE=1; shift ;;
+    --bootstrap-tls) BOOTSTRAP_TLS=1; shift ;;
+    --no-bootstrap-tls) BOOTSTRAP_TLS=0; shift ;;
+    --listen-host) LISTEN_HOST_OVERRIDE="${2:-}"; shift 2 ;;
+    --tls-san) TLS_SAN_IPS="${2:-}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown option: $1" >&2; usage; exit 1 ;;
   esac
@@ -136,9 +147,18 @@ if ! load_libs; then
   PRODUCT="YSK Server"
   log() { printf '[%s] %s\n' "$PRODUCT" "$*"; }
   err() { printf '[%s] ERROR: %s\n' "$PRODUCT" "$*" >&2; }
+  # I-01: only HTTPS raw base; prefer pin via YSK_INSTALL_RAW (commit SHA URL)
   raw="${YSK_INSTALL_RAW:-https://raw.githubusercontent.com/yanshekki/ysk-server/main}"
+  case "$raw" in
+    https://*) ;;
+    *)
+      err "YSK_INSTALL_RAW must be https:// (refusing $raw)"
+      exit 1
+      ;;
+  esac
   tmp="$(mktemp -d "${TMPDIR:-/tmp}/ysk-install-XXXXXX")"
   log "Fetching installer assets from $raw …"
+  log "Tip: pin a commit, e.g. YSK_INSTALL_RAW=https://raw.githubusercontent.com/yanshekki/ysk-server/<sha>"
   mkdir -p "$tmp/install/lib" "$tmp/deploy/stack"
   for f in install/lib/common.sh install/lib/manifest.sh install/lib/stack-ops.sh \
            install/lib/verify.sh install/lib/wizard-install.sh \
@@ -221,9 +241,10 @@ WRAP
         mkdir -p "$HOME/.local/bin"
         write_cli "$HOME/.local/bin/ysk-server"
         if require_cmd sudo; then
+          # Quote CLI path (I-08)
           sudo tee "$wrapper" >/dev/null <<WRAP
 #!/usr/bin/env bash
-exec node $cli_js "\$@"
+exec node "$cli_js" "\$@"
 WRAP
           sudo chmod +x "$wrapper" || true
         fi
@@ -239,13 +260,20 @@ WRAP
   else
     log "Installing $PKG via npm..."
   fi
+  # I-06: allow pin via YSK_NPM_VERSION (default latest)
+  local npm_spec="${YSK_NPM_VERSION:-latest}"
+  local npm_pkg="${PKG}@${npm_spec}"
+  log "npm package: $npm_pkg"
   if [[ "$(id -u)" -eq 0 ]]; then
-    npm install -g "$PKG@latest" || npm install -g "$PKG"
+    npm install -g "$npm_pkg" || npm install -g "$PKG"
   else
-    npm install -g "$PKG@latest" || npm install -g "$PKG" || {
+    npm install -g "$npm_pkg" || npm install -g "$PKG" || {
       record_hard_fail "Global npm install failed for $PKG"
       return 1
     }
+  fi
+  if require_cmd npm; then
+    log "Installed: $(npm list -g --depth=0 "$PKG" 2>/dev/null | tail -1 || echo "$PKG")"
   fi
   manifest_add_component "control-plane-product" "" "ysk-server" "" "npm"
 }
@@ -329,17 +357,79 @@ run_setup() {
   # shellcheck disable=SC2086
   $SUDO mkdir -p "$DATA_DIR" 2>/dev/null || mkdir -p "$DATA_DIR" 2>/dev/null || true
   local setup_cmd=("$CLI" setup --non-interactive --data-dir "$DATA_DIR")
+  # IP-first login needs bind-all when TLS bootstrap is on
+  if [[ "$BOOTSTRAP_TLS" -eq 1 ]]; then
+    setup_cmd+=(--host "${LISTEN_HOST_OVERRIDE:-0.0.0.0}")
+  elif [[ -n "$LISTEN_HOST_OVERRIDE" ]]; then
+    setup_cmd+=(--host "$LISTEN_HOST_OVERRIDE")
+  fi
   if [[ "$NON_INTERACTIVE" -eq 1 ]]; then
     setup_cmd+=(--force)
   fi
   if require_cmd "$CLI"; then
     log "Running: ${setup_cmd[*]}"
-    "${setup_cmd[@]}" || log "setup returned non-zero (config may already exist)"
+    if ! "${setup_cmd[@]}"; then
+      # I-02: do not swallow total failure when config is missing
+      if [[ ! -f "$DATA_DIR/config.json" ]]; then
+        record_hard_fail "setup failed and $DATA_DIR/config.json is missing"
+        return 1
+      fi
+      log "setup returned non-zero (config already present — continuing)"
+    fi
   else
     log "CLI not on PATH yet; run: $CLI setup --data-dir $DATA_DIR"
+    if [[ ! -f "$DATA_DIR/config.json" ]]; then
+      record_hard_fail "CLI missing and setup not completed"
+      return 1
+    fi
+  fi
+  if [[ ! -f "$DATA_DIR/config.json" ]]; then
+    record_hard_fail "setup did not create config.json under $DATA_DIR"
+    return 1
   fi
   harden_data_dir "$DATA_DIR" || true
   ensure_web_ui "$DATA_DIR" || true
+}
+
+# Bootstrap self-signed panel TLS for first HTTPS login by IP (I-03/I-04/I-05)
+run_bootstrap_tls() {
+  if [[ "$BOOTSTRAP_TLS" -ne 1 ]]; then
+    log "Skipping TLS bootstrap (--no-bootstrap-tls) — panel may be HTTP (insecure)"
+    return 0
+  fi
+  phase "bootstrap-tls"
+  if ! require_cmd openssl; then
+    record_hard_fail "openssl required for panel bootstrap TLS"
+    return 1
+  fi
+  if ! require_cmd "$CLI"; then
+    record_hard_fail "CLI required for ssl bootstrap"
+    return 1
+  fi
+  local boot_cmd=("$CLI" ssl bootstrap --data-dir "$DATA_DIR")
+  if [[ -n "$TLS_SAN_IPS" ]]; then
+    boot_cmd+=(--ip "$TLS_SAN_IPS")
+  fi
+  if [[ -n "$LISTEN_HOST_OVERRIDE" ]]; then
+    boot_cmd+=(--host "$LISTEN_HOST_OVERRIDE")
+  fi
+  log "Running: ${boot_cmd[*]}"
+  if ! "${boot_cmd[@]}"; then
+    record_hard_fail "ssl bootstrap failed"
+    return 1
+  fi
+  # Harden secrets (I-05)
+  local ssl_dir="$DATA_DIR/ssl/panel"
+  if [[ -d "$ssl_dir" ]]; then
+    resolve_sudo || true
+    # shellcheck disable=SC2086
+    $SUDO chmod 700 "$ssl_dir" 2>/dev/null || chmod 700 "$ssl_dir" 2>/dev/null || true
+    # shellcheck disable=SC2086
+    $SUDO chmod 600 "$ssl_dir"/bootstrap-key.pem 2>/dev/null || chmod 600 "$ssl_dir"/bootstrap-key.pem 2>/dev/null || true
+    # shellcheck disable=SC2086
+    $SUDO chmod 644 "$ssl_dir"/bootstrap-cert.pem 2>/dev/null || chmod 644 "$ssl_dir"/bootstrap-cert.pem 2>/dev/null || true
+  fi
+  return 0
 }
 
 install_systemd_unit() {
@@ -361,6 +451,18 @@ install_systemd_unit() {
 }
 
 print_next() {
+  local ip_hint="127.0.0.1"
+  if command -v hostname >/dev/null 2>&1; then
+    local first
+    first="$(hostname -I 2>/dev/null | awk '{print $1}')"
+    if [[ -n "$first" && "$first" != 127.* ]]; then
+      ip_hint="$first"
+    fi
+  fi
+  local panel_url="https://${ip_hint}:9287"
+  if [[ "$BOOTSTRAP_TLS" -ne 1 ]]; then
+    panel_url="http://${ip_hint}:9287  (INSECURE — bootstrap TLS disabled)"
+  fi
   cat <<EOF
 
 ============================================================
@@ -372,13 +474,19 @@ print_next() {
  Manifest: ${MANIFEST_PATH:-n/a}
  Data dir: $DATA_DIR
 
+ Panel (HTTPS preferred):
+   $panel_url
+   Accept the browser warning if using the install-time self-signed cert.
+   After you have a domain: issue Let's Encrypt from panel SSL settings.
+
  Next:
-   1. $CLI setup --non-interactive --data-dir $DATA_DIR
-   2. $CLI readiness --data-dir $DATA_DIR --json
-   3. $CLI serve --data-dir $DATA_DIR --port 9287
-   4. Open Web UI → login → enable 2FA
+   1. $CLI serve --data-dir $DATA_DIR --port 9287
+      (or: YSK_EXECUTE=1 $CLI system unit-install --enable --data-dir $DATA_DIR)
+   2. Open Web UI → login → enable 2FA immediately
+   3. $CLI readiness --data-dir $DATA_DIR --json
 
  Host mutations need: export YSK_EXECUTE=1  (and often root)
+ Open firewall for TCP 9287 if logging in from another machine.
 
  Uninstall (partial or full):
    ./uninstall.sh
@@ -426,6 +534,7 @@ main() {
   install_node_globals
   install_product
   run_setup
+  run_bootstrap_tls
   install_systemd_unit
 
   # verify (skip pure optional soft components that may not exist)

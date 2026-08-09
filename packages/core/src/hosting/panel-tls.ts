@@ -3,8 +3,15 @@
  * Uses Let's Encrypt live paths or managed dataDir certs; config written to config.json.
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
 import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import type { YskConfig } from '../config/schema.js';
 import { mergePanelTlsConfig, parseConfig } from '../config/schema.js';
 import type { HostExecutor } from '../host/executor.js';
@@ -17,6 +24,256 @@ import {
 } from './ssl-certs.js';
 import { panelBlockMessage } from './system-apply.js';
 import { tl } from '@ysk/shared';
+
+/** Bootstrap self-signed materials for first IP login (under dataDir). */
+export function panelBootstrapTlsDir(dataDir: string): string {
+  return join(dataDir, 'ssl', 'panel');
+}
+
+export function panelBootstrapCertPaths(dataDir: string): {
+  certPath: string;
+  keyPath: string;
+  dir: string;
+} {
+  const dir = panelBootstrapTlsDir(dataDir);
+  return {
+    dir,
+    certPath: join(dir, 'bootstrap-cert.pem'),
+    keyPath: join(dir, 'bootstrap-key.pem'),
+  };
+}
+
+/** Detect primary non-loopback IPv4 for SAN (best-effort). */
+export function detectPrimaryIpv4(): string | undefined {
+  try {
+    const r = spawnSync('hostname', ['-I'], { encoding: 'utf8', timeout: 3000 });
+    if (r.status === 0 && r.stdout) {
+      for (const part of r.stdout.trim().split(/\s+/)) {
+        if (/^\d+\.\d+\.\d+\.\d+$/.test(part) && !part.startsWith('127.')) {
+          return part;
+        }
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+  try {
+    const r = spawnSync(
+      'ip',
+      ['-4', 'route', 'get', '1.1.1.1'],
+      { encoding: 'utf8', timeout: 3000 },
+    );
+    const m = r.stdout?.match(/\bsrc\s+(\d+\.\d+\.\d+\.\d+)\b/);
+    if (m?.[1] && !m[1].startsWith('127.')) return m[1];
+  } catch {
+    /* ignore */
+  }
+  return undefined;
+}
+
+/**
+ * Build OpenSSL -addext subjectAltName value from IPs + DNS names.
+ */
+export function buildBootstrapSan(input: {
+  ips?: string[];
+  dns?: string[];
+}): string {
+  const ips = new Set<string>(['127.0.0.1']);
+  for (const ip of input.ips ?? []) {
+    const t = String(ip || '').trim();
+    if (/^\d+\.\d+\.\d+\.\d+$/.test(t)) ips.add(t);
+  }
+  const dns = new Set<string>(['localhost']);
+  for (const d of input.dns ?? []) {
+    const t = String(d || '').trim().toLowerCase();
+    if (t && /^[a-z0-9._-]+$/i.test(t)) dns.add(t);
+  }
+  const parts = [
+    ...[...ips].map((ip) => `IP:${ip}`),
+    ...[...dns].map((d) => `DNS:${d}`),
+  ];
+  return parts.join(',');
+}
+
+export type BootstrapPanelTlsResult = {
+  ok: boolean;
+  notes: string[];
+  certPath?: string;
+  keyPath?: string;
+  fingerprintSha256?: string;
+  primaryIp?: string;
+  httpsUrl?: string;
+  regenerated: boolean;
+  configUpdated: boolean;
+};
+
+/**
+ * Generate (or reuse) self-signed panel cert for IP-first login and enable TLS in config.
+ * HTTPS-only: sets tlsHttpsOnly + listenHost 0.0.0.0 by default.
+ */
+export function ensureBootstrapPanelTls(input: {
+  dataDir: string;
+  configPath?: string;
+  /** Extra IPs for SAN */
+  ips?: string[];
+  /** Extra DNS names for SAN */
+  dns?: string[];
+  force?: boolean;
+  /** Days validity (default 825 ≈ 27 months) */
+  days?: number;
+  listenHost?: string;
+  listenPort?: number;
+}): BootstrapPanelTlsResult {
+  const notes: string[] = [];
+  const dataDir = input.dataDir;
+  if (!dataDir) {
+    return { ok: false, notes: ['dataDir required'], regenerated: false, configUpdated: false };
+  }
+  const configPath = input.configPath ?? join(dataDir, 'config.json');
+  const paths = panelBootstrapCertPaths(dataDir);
+  const detected = detectPrimaryIpv4();
+  const ips = [...(input.ips ?? [])];
+  if (detected) ips.unshift(detected);
+
+  mkdirSync(paths.dir, { recursive: true, mode: 0o700 });
+  try {
+    chmodSync(paths.dir, 0o700);
+  } catch {
+    /* best-effort */
+  }
+
+  let regenerated = false;
+  const have =
+    existsSync(paths.certPath) &&
+    existsSync(paths.keyPath) &&
+    !input.force;
+
+  if (have) {
+    notes.push('reusing existing bootstrap cert/key');
+  } else {
+    {
+      const ov = spawnSync('openssl', ['version'], { encoding: 'utf8' });
+      if (ov.error || ov.status !== 0) {
+        return {
+          ok: false,
+          notes: ['openssl not found — install openssl to bootstrap panel TLS'],
+          regenerated: false,
+          configUpdated: false,
+        };
+      }
+    }
+    const san = buildBootstrapSan({ ips, dns: input.dns });
+    const days = input.days ?? 825;
+    // OpenSSL 1.1.1+ -addext; write temp config for broader compatibility
+    const cnf = join(paths.dir, 'bootstrap-openssl.cnf');
+    writeFileSync(
+      cnf,
+      [
+        '[req]',
+        'distinguished_name = req_distinguished_name',
+        'x509_extensions = v3_req',
+        'prompt = no',
+        '[req_distinguished_name]',
+        'CN = ysk-server-bootstrap',
+        'O = YSK Server',
+        '[v3_req]',
+        'subjectAltName = ' + san,
+        'basicConstraints = CA:FALSE',
+        'keyUsage = digitalSignature, keyEncipherment',
+        'extendedKeyUsage = serverAuth',
+        '',
+      ].join('\n'),
+      { mode: 0o600 },
+    );
+    const r = spawnSync(
+      'openssl',
+      [
+        'req',
+        '-x509',
+        '-newkey',
+        'rsa:2048',
+        '-nodes',
+        '-keyout',
+        paths.keyPath,
+        '-out',
+        paths.certPath,
+        '-days',
+        String(days),
+        '-config',
+        cnf,
+        '-extensions',
+        'v3_req',
+      ],
+      { encoding: 'utf8' },
+    );
+    if (r.status !== 0) {
+      return {
+        ok: false,
+        notes: [
+          `openssl failed: ${(r.stderr || r.stdout || '').slice(0, 300)}`,
+        ],
+        regenerated: false,
+        configUpdated: false,
+      };
+    }
+    regenerated = true;
+    notes.push(`generated bootstrap cert (SAN ${san})`);
+  }
+
+  try {
+    chmodSync(paths.keyPath, 0o600);
+    chmodSync(paths.certPath, 0o644);
+  } catch {
+    notes.push('WARN: could not chmod cert/key');
+  }
+
+  let fingerprintSha256: string | undefined;
+  try {
+    const fp = spawnSync(
+      'openssl',
+      ['x509', '-in', paths.certPath, '-noout', '-fingerprint', '-sha256'],
+      { encoding: 'utf8' },
+    );
+    const line = (fp.stdout || '').trim();
+    const m = line.match(/Fingerprint=([0-9A-Fa-f:]+)/);
+    fingerprintSha256 = m?.[1] ?? (line || undefined);
+    if (fingerprintSha256) notes.push(`SHA256 Fingerprint=${fingerprintSha256}`);
+  } catch {
+    /* ignore */
+  }
+
+  let configUpdated = false;
+  if (existsSync(configPath)) {
+    const base = readConfigFile(configPath);
+    const next = mergePanelTlsConfig(base, {
+      tlsEnabled: true,
+      tlsCertPath: paths.certPath,
+      tlsKeyPath: paths.keyPath,
+      tlsHttpsOnly: true,
+      listenHost: input.listenHost ?? '0.0.0.0',
+    });
+    if (input.listenPort != null) next.listenPort = input.listenPort;
+    writeConfigFile(configPath, next);
+    configUpdated = true;
+    notes.push('config.json: tlsEnabled + tlsHttpsOnly + listenHost=0.0.0.0');
+  } else {
+    notes.push(`config missing at ${configPath} — cert written; run setup then tls bootstrap again`);
+  }
+
+  const port = input.listenPort ?? 9287;
+  const primaryIp = detected ?? ips.find((i) => i !== '127.0.0.1') ?? '127.0.0.1';
+  return {
+    ok: true,
+    notes,
+    certPath: paths.certPath,
+    keyPath: paths.keyPath,
+    fingerprintSha256,
+    primaryIp,
+    httpsUrl: `https://${primaryIp}:${port}`,
+    regenerated,
+    configUpdated,
+  };
+}
 
 export type PanelTlsStatus = {
   ok: boolean;

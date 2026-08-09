@@ -161,9 +161,27 @@ export function createControlPlaneServer(ctx: AppContext): CreateServerResult {
     https = true;
   } else {
     if (ctx.config?.tlsEnabled) {
+      const requireTls =
+        ctx.config.tlsHttpsOnly ||
+        process.env.YSK_REQUIRE_TLS === '1' ||
+        process.env.YSK_REQUIRE_TLS === 'true';
+      if (requireTls) {
+        throw new Error(
+          'tlsEnabled/tlsHttpsOnly but cert/key missing or unreadable — refusing plain HTTP (set YSK_ALLOW_HTTP=1 only for lab)',
+        );
+      }
       // Config wants TLS but files missing — fall back to HTTP with stderr warning
       process.stderr.write(
         '[ysk-server] tlsEnabled but cert/key missing or unreadable — serving plain HTTP\n',
+      );
+    }
+    if (
+      process.env.YSK_ALLOW_HTTP !== '1' &&
+      process.env.YSK_ALLOW_HTTP !== 'true' &&
+      ctx.config?.tlsHttpsOnly
+    ) {
+      throw new Error(
+        'tlsHttpsOnly is set but TLS materials unavailable — refusing plain HTTP',
       );
     }
     server = createNodeHttpServer(handler);
@@ -207,6 +225,14 @@ export async function listenControlPlane(
   };
 
   if (!https || !ctx.config) {
+    return { https, primary, servers };
+  }
+
+  // Bootstrap / production IP install: HTTPS only — no companion HTTP API
+  if (ctx.config.tlsHttpsOnly) {
+    process.stdout.write(
+      '[ysk-server] tlsHttpsOnly — no dual HTTP (panel is HTTPS-only)\n',
+    );
     return { https, primary, servers };
   }
 

@@ -18,6 +18,31 @@ Install **YSK Server** (control plane CLI `ysk-server`) and **selected host soft
 **Logs:** `/var/log/ysk-server/install-*.log` (root) or `~/.ysk/logs/`.  
 **Manifest:** `$dataDir/stack-manifest.json` (what was installed — used by uninstall).
 
+### HTTPS bootstrap (first login by IP)
+
+By default, install:
+
+1. Runs `ysk-server setup` with **`listenHost=0.0.0.0`**
+2. Runs **`ysk-server ssl bootstrap`** — self-signed cert under `$dataDir/ssl/panel/` (SAN includes `127.0.0.1`, detected host IP, `localhost`)
+3. Sets **`tlsEnabled` + `tlsHttpsOnly`** — panel is **HTTPS-only** on port **9287**
+
+Open: `https://<server-ip>:9287` and **accept the browser warning** (self-signed).  
+Later replace with Let's Encrypt when you have a domain (panel SSL settings).
+
+| Flag | Meaning |
+|------|---------|
+| `--bootstrap-tls` | Default: generate bootstrap cert |
+| `--no-bootstrap-tls` | Lab only — skip TLS (insecure HTTP) |
+| `--tls-san 1.2.3.4,5.6.7.8` | Extra IPs on the bootstrap cert |
+| `--listen-host 0.0.0.0` | Override bind address |
+
+CLI (re-run anytime):
+
+```bash
+ysk-server ssl bootstrap --data-dir /var/lib/ysk-server --force
+ysk-server serve --data-dir /var/lib/ysk-server --port 9287
+```
+
 ---
 
 ## Interactive wizard (recommended on a VPS)

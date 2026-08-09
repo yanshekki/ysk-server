@@ -4003,7 +4003,35 @@ async function mainInner(
         printJson({ ok: true, certificate: cert });
         return 0;
       }
-      process.stderr.write(`${tl('cli.usage.cli.name.ssl.list.get.79c232', { CLI_NAME })}\n`);
+      if (sub === 'bootstrap' || sub === 'bootstrap-tls') {
+        const { ensureBootstrapPanelTls } = await import('@ysk/core');
+        const force = hasFlag(args, '--force');
+        const ipOpt = getOpt(args, '--ip');
+        const ips = ipOpt
+          ? ipOpt.split(',').map((s) => s.trim()).filter(Boolean)
+          : undefined;
+        const dnsOpt = getOpt(args, '--dns') ?? getOpt(args, '--san-dns');
+        const dns = dnsOpt
+          ? dnsOpt.split(',').map((s) => s.trim()).filter(Boolean)
+          : undefined;
+        const listenHost = getOpt(args, '--host') ?? getOpt(args, '--listen-host');
+        const r = ensureBootstrapPanelTls({
+          dataDir: ctx.dataDir,
+          configPath: join(ctx.dataDir, 'config.json'),
+          ips,
+          dns,
+          force,
+          listenHost: listenHost ?? undefined,
+        });
+        printJson({
+          ...r,
+          ok: r.ok,
+        });
+        return r.ok ? 0 : 1;
+      }
+      process.stderr.write(
+        `${CLI_NAME} ssl list|get|bootstrap [--ip IP] [--dns name] [--force] [--data-dir PATH]\n`,
+      );
       return 2;
     } finally {
       closeAppContext(ctx);

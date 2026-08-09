@@ -4,8 +4,10 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import {
   applyPanelLetsEncrypt,
+  buildBootstrapSan,
   disablePanelTls,
   enablePanelTls,
+  ensureBootstrapPanelTls,
   getPanelTlsStatus,
   loadPanelTlsOptions,
   resolvePanelTlsMaterials,
@@ -85,6 +87,45 @@ describe('panel-tls', () => {
     });
     expect(r.ok).toBe(false);
     expect(existsSync(configPath)).toBe(true);
+  });
+
+  it('buildBootstrapSan includes loopback and custom IP', () => {
+    const san = buildBootstrapSan({ ips: ['203.0.113.10'], dns: ['panel.local'] });
+    expect(san).toContain('IP:127.0.0.1');
+    expect(san).toContain('IP:203.0.113.10');
+    expect(san).toContain('DNS:localhost');
+    expect(san).toContain('DNS:panel.local');
+  });
+
+  it('ensureBootstrapPanelTls generates cert and enables HTTPS-only config', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-boot-tls-'));
+    const configPath = join(dir, 'config.json');
+    writeFileSync(configPath, JSON.stringify(baseConfig(dir), null, 2));
+    const r = ensureBootstrapPanelTls({
+      dataDir: dir,
+      configPath,
+      ips: ['203.0.113.9'],
+      force: true,
+    });
+    if (!r.ok) {
+      // environments without openssl skip
+      expect(r.notes.join(' ')).toMatch(/openssl/i);
+      return;
+    }
+    expect(r.regenerated).toBe(true);
+    expect(r.configUpdated).toBe(true);
+    expect(existsSync(r.certPath!)).toBe(true);
+    expect(existsSync(r.keyPath!)).toBe(true);
+    const cfg = JSON.parse(readFileSync(configPath, 'utf8')) as YskConfig;
+    expect(cfg.tlsEnabled).toBe(true);
+    expect(cfg.tlsHttpsOnly).toBe(true);
+    expect(cfg.listenHost).toBe('0.0.0.0');
+    expect(cfg.tlsCertPath).toBe(r.certPath);
+    expect(loadPanelTlsOptions(cfg)).not.toBeNull();
+    // idempotent reuse
+    const r2 = ensureBootstrapPanelTls({ dataDir: dir, configPath, force: false });
+    expect(r2.ok).toBe(true);
+    expect(r2.regenerated).toBe(false);
   });
 
   it('applyPanelLetsEncrypt blocks without execute', async () => {

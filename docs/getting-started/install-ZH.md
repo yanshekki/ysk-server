@@ -18,6 +18,31 @@
 **日誌：** `/var/log/ysk-server/install-*.log`（root）或 `~/.ysk/logs/`。  
 **Manifest：** `$dataDir/stack-manifest.json`（uninstall 靠呢份）。
 
+### HTTPS 引導（首次用 IP 登入）
+
+安裝預設會：
+
+1. `ysk-server setup` 並 **`listenHost=0.0.0.0`**
+2. **`ysk-server ssl bootstrap`** — 自簽憑證寫入 `$dataDir/ssl/panel/`（SAN 含 `127.0.0.1`、偵測到嘅主機 IP、`localhost`）
+3. 設定 **`tlsEnabled` + `tlsHttpsOnly`** — 面板 **只開 HTTPS**，埠 **9287**
+
+請開：`https://<伺服器IP>:9287`，並**接受瀏覽器自簽警告**。  
+之後有域名再喺面板 SSL 換成 Let's Encrypt。
+
+| 旗標 | 意思 |
+|------|------|
+| `--bootstrap-tls` | 預設：產生引導憑證 |
+| `--no-bootstrap-tls` | 僅實驗環境 — 跳過 TLS（HTTP 不安全） |
+| `--tls-san 1.2.3.4,5.6.7.8` | 額外寫入憑證 SAN 的 IP |
+| `--listen-host 0.0.0.0` | 覆寫 bind 位址 |
+
+CLI（可重跑）：
+
+```bash
+ysk-server ssl bootstrap --data-dir /var/lib/ysk-server --force
+ysk-server serve --data-dir /var/lib/ysk-server --port 9287
+```
+
 ---
 
 ## 互動嚮導（建議用於 VPS）

@@ -30,6 +30,11 @@ export interface YskConfig {
   httpListenPort?: number;
   /** If dual HTTP is up, 301 to HTTPS (default true) */
   tlsHttpRedirect?: boolean;
+  /**
+   * When true (recommended for bootstrap / production IP install),
+   * never bind a companion plain-HTTP listener — HTTPS only.
+   */
+  tlsHttpsOnly?: boolean;
 }
 
 const DEFAULTS = {
@@ -39,7 +44,7 @@ const DEFAULTS = {
   /** 4-digit control-plane port; avoid common 3000/5173/8080/8787 */
   listenPort: 9287,
   adminUsername: 'admin',
-  locale: 'zh-TW',
+  locale: 'zh-HK',
 };
 
 /**
@@ -108,6 +113,7 @@ export function parseConfig(raw: unknown): YskConfig {
         ? o.httpListenPort
         : undefined,
     tlsHttpRedirect: o.tlsHttpRedirect === undefined ? true : Boolean(o.tlsHttpRedirect),
+    tlsHttpsOnly: Boolean(o.tlsHttpsOnly),
   };
 }
 
@@ -125,6 +131,8 @@ export function mergePanelTlsConfig(
     tlsCertPath?: string | null;
     tlsKeyPath?: string | null;
     panelDomain?: string | null;
+    tlsHttpsOnly?: boolean;
+    listenHost?: string;
   },
 ): YskConfig {
   const next: YskConfig = { ...base };
@@ -137,6 +145,14 @@ export function mergePanelTlsConfig(
   }
   if (patch.panelDomain !== undefined) {
     next.panelDomain = patch.panelDomain?.trim() || undefined;
+  }
+  if (patch.tlsHttpsOnly !== undefined) next.tlsHttpsOnly = patch.tlsHttpsOnly;
+  if (patch.listenHost !== undefined && patch.listenHost.trim()) {
+    next.listenHost = patch.listenHost.trim();
+  }
+  // HTTPS-only: drop companion HTTP port so dual bind is skipped
+  if (next.tlsHttpsOnly) {
+    next.httpListenPort = undefined;
   }
   return next;
 }

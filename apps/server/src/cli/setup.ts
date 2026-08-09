@@ -68,7 +68,7 @@ export function runSetup(opts: SetupOptions = {}): StructuredResult<{
       listenHost: opts.listenHost ?? '127.0.0.1',
       listenPort: opts.listenPort ?? 9287,
       adminUsername: opts.adminUsername ?? 'admin',
-      locale: opts.locale ?? 'zh-TW',
+      locale: opts.locale ?? 'zh-HK',
       nonInteractive: Boolean(opts.nonInteractive),
     });
 
