@@ -16,6 +16,7 @@ export { handleFilesRoutes } from './files.js';
 export { handleFilesPublicRoutes } from './files-public.js';
 export { handleFirewallRoutes } from './firewall.js';
 export { handleHostingRoutes } from './hosting.js';
+export { handleLogsRoutes } from './logs.js';
 export { handleMiscRoutes } from './misc.js';
 export { handleProjectsRoutes } from './projects.js';
 export { handlePublicRoutes } from './public.js';
