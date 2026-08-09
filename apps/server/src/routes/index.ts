@@ -79,6 +79,8 @@ export { handleHostingRuntimesRoutes } from './hosting-runtimes.js';
 export { handleLogsOpsRoutes } from './logs-ops.js';
 export { handleLogsReadRoutes } from './logs-read.js';
 export { handleLogsRoutes } from './logs.js';
+export { handleMetricsOpsRoutes } from './metrics-ops.js';
+export { handleMetricsReadRoutes } from './metrics-read.js';
 export { handleMetricsRoutes } from './metrics.js';
 export { handleMiscRoutes } from './misc.js';
 export { handleNetworkIfacesRoutes } from './network-ifaces.js';
