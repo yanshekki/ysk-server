@@ -23,8 +23,17 @@
 
 ## 殘留
 
-- root 全域 `npm -g`（I-07）— 日後可改專用用戶
 - 舊 HTTP 安裝**唔會**自動升級：請跑 `ysk-server ssl bootstrap --force`
+- 專用 `YSK_NPM_USER` 的完整 systemd 生命週期仍為可選
+
+## I-07 npm 安裝路徑（已硬化）
+
+| Env | 作用 |
+|-----|------|
+| `YSK_NPM_PREFIX` | 全域套件裝到此 prefix |
+| `YSK_NPM_USER` | root 時優先用該用戶 `~/.npm-global` |
+| 非 root 預設 | `$HOME/.npm-global` |
+| root 且無 env | **警告**後用系統 global |
 
 ## 遠端 bootstrap 校驗和
 

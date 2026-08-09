@@ -23,8 +23,19 @@ Language: English | [中文](./install-audit-ZH.md)
 
 ## Residual
 
-- Global `npm -g` as root remains (I-07) — prefer future dedicated user
 - Existing HTTP installs are **not** auto-migrated; run `ysk-server ssl bootstrap --force`
+- Full systemd user unit for dedicated `YSK_NPM_USER` lifecycle still optional
+
+## I-07 npm install path (hardened)
+
+| Env | Effect |
+|-----|--------|
+| `YSK_NPM_PREFIX` | Install globals under this prefix (bin on PATH for session) |
+| `YSK_NPM_USER` | Prefer that system user's `~/.npm-global` when running as root |
+| (default non-root) | Uses `$HOME/.npm-global` |
+| (default root, no env) | **Warns** then uses system global |
+
+Skip reinstall of pnpm/pm2 when already on PATH.
 
 ## Asset checksums (remote bootstrap)
 

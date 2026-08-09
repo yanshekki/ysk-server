@@ -240,15 +240,70 @@ embed_web_ui() {
   log "Web UI dist missing — run pnpm --filter @ysk/web build (API-only until then)"
 }
 
+# I-07: prefer non-root global npm prefix when possible
+npm_global_prefix() {
+  if [[ -n "${YSK_NPM_PREFIX:-}" ]]; then
+    echo "$YSK_NPM_PREFIX"
+    return 0
+  fi
+  if [[ "$(id -u)" -eq 0 ]]; then
+    # Dedicated install user (optional): YSK_NPM_USER=ysk-npm
+    if [[ -n "${YSK_NPM_USER:-}" ]] && id "$YSK_NPM_USER" &>/dev/null; then
+      local home
+      home="$(getent passwd "$YSK_NPM_USER" 2>/dev/null | cut -d: -f6 || true)"
+      if [[ -n "$home" ]]; then
+        echo "${home}/.npm-global"
+        return 0
+      fi
+    fi
+    echo ""
+    return 0
+  fi
+  echo "${HOME}/.npm-global"
+}
+
+npm_install_global() {
+  # usage: npm_install_global <pkg-spec> [pkg-spec...]
+  local prefix
+  prefix="$(npm_global_prefix)"
+  local -a extra=()
+  if [[ -n "$prefix" ]]; then
+    mkdir -p "$prefix"
+    extra=(--prefix "$prefix")
+    # Ensure bin on PATH for this install session
+    export PATH="${prefix}/bin:${PATH}"
+    log "npm global prefix: $prefix (I-07 non-root / dedicated prefix)"
+  elif [[ "$(id -u)" -eq 0 ]]; then
+    warn "I-07: installing npm packages as root into system global (set YSK_NPM_PREFIX or YSK_NPM_USER to avoid)"
+  fi
+  if [[ "$(id -u)" -eq 0 && -n "${YSK_NPM_USER:-}" ]] && id "$YSK_NPM_USER" &>/dev/null && [[ -n "$prefix" ]]; then
+    # Run as dedicated user when prefix is under their home
+    runuser -u "$YSK_NPM_USER" -- npm install -g "${extra[@]}" "$@" 2>/dev/null \
+      || sudo -u "$YSK_NPM_USER" npm install -g "${extra[@]}" "$@" 2>/dev/null \
+      || npm install -g "${extra[@]}" "$@"
+  else
+    npm install -g "${extra[@]}" "$@"
+  fi
+}
+
 install_node_globals() {
   phase "node-globals"
   if ! require_cmd npm; then
     record_hard_fail "npm not found"
     return 1
   fi
+  if require_cmd pnpm && require_cmd pm2; then
+    log "pnpm and pm2 already on PATH — skip global reinstall"
+    return 0
+  fi
   log "Installing global npm tools (pnpm, pm2)..."
-  npm install -g pnpm@latest 2>/dev/null || npm install -g pnpm || warn "pnpm install failed"
-  npm install -g pm2@latest 2>/dev/null || npm install -g pm2 || warn "pm2 install failed"
+  npm_install_global pnpm@latest 2>/dev/null || npm_install_global pnpm || warn "pnpm install failed"
+  npm_install_global pm2@latest 2>/dev/null || npm_install_global pm2 || warn "pm2 install failed"
+  local prefix
+  prefix="$(npm_global_prefix)"
+  if [[ -n "$prefix" && -d "$prefix/bin" ]]; then
+    log "Ensure PATH includes: export PATH=\"${prefix}/bin:\$PATH\""
+  fi
 }
 
 install_product() {
@@ -312,16 +367,21 @@ WRAP
   local npm_spec="${YSK_NPM_VERSION:-latest}"
   local npm_pkg="${PKG}@${npm_spec}"
   log "npm package: $npm_pkg"
-  if [[ "$(id -u)" -eq 0 ]]; then
-    npm install -g "$npm_pkg" || npm install -g "$PKG"
-  else
-    npm install -g "$npm_pkg" || npm install -g "$PKG" || {
-      record_hard_fail "Global npm install failed for $PKG"
+  # I-07: use npm_install_global (prefix / dedicated user when configured)
+  if ! npm_install_global "$npm_pkg" 2>/dev/null; then
+    if ! npm_install_global "$PKG"; then
+      record_hard_fail "Global npm install failed for $PKG (try YSK_NPM_PREFIX=\$HOME/.npm-global)"
       return 1
-    }
+    fi
   fi
   if require_cmd npm; then
-    log "Installed: $(npm list -g --depth=0 "$PKG" 2>/dev/null | tail -1 || echo "$PKG")"
+    local prefix
+    prefix="$(npm_global_prefix)"
+    if [[ -n "$prefix" ]]; then
+      log "Installed: $(npm list -g --prefix "$prefix" --depth=0 "$PKG" 2>/dev/null | tail -1 || echo "$PKG @ $prefix")"
+    else
+      log "Installed: $(npm list -g --depth=0 "$PKG" 2>/dev/null | tail -1 || echo "$PKG")"
+    fi
   fi
   manifest_add_component "control-plane-product" "" "ysk-server" "" "npm"
 }
