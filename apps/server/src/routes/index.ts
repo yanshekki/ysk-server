@@ -73,6 +73,8 @@ export { handleSshRoutes } from './ssh.js';
 export { handleSshSftpRoutes } from './ssh-sftp.js';
 export { handleSslRoutes } from './ssl.js';
 export { handleSystemApplyRoutes } from './system-apply.js';
+export { handleSystemApplyServicesRoutes } from './system-apply-services.js';
+export { handleSystemApplyStackRoutes } from './system-apply-stack.js';
 export { handleSystemDbEnginesRoutes } from './system-db-engines.js';
 export { handleSystemDbRedisRoutes } from './system-db-redis.js';
 export { handleSystemDbRoutes } from './system-db.js';
