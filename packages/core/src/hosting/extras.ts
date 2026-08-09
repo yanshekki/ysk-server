@@ -245,6 +245,55 @@ export function planFirewall(opts: {
     commands: [...rules] };
 }
 
+/**
+ * Validate standard 5-field cron schedule (minute hour dom mon dow).
+ * Rejects newlines / carriage returns (crontab injection).
+ */
+export function assertSafeCronSchedule(schedule: string): string {
+  const s = schedule.trim();
+  if (!s || /[\r\n]/.test(s)) {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1396'), { httpStatus: 400 });
+  }
+  // 5 fields: allow numbers, *, /, -, ,, ranges
+  const fields = s.split(/\s+/);
+  if (fields.length !== 5) {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1396'), {
+      httpStatus: 400,
+      details: { reason: 'cron_schedule_fields', got: fields.length },
+    });
+  }
+  for (const f of fields) {
+    if (!/^[0-9*,\/\-]+$/.test(f) && !/^(sun|mon|tue|wed|thu|fri|sat)(-(sun|mon|tue|wed|thu|fri|sat))?$/i.test(f)) {
+      // allow month names abbreviated
+      if (!/^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)(-(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec))?$/i.test(f)) {
+        throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1396'), {
+          httpStatus: 400,
+          details: { reason: 'cron_schedule_field', field: f },
+        });
+      }
+    }
+  }
+  return s;
+}
+
+/** Reject crontab line injection in command body. */
+export function assertSafeCronCommand(command: string): string {
+  const c = command.trim();
+  if (!c || /[\r\n%]/.test(c)) {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1396'), {
+      httpStatus: 400,
+      details: { reason: 'cron_command_injection' },
+    });
+  }
+  if (c.length > 4000) {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1396'), {
+      httpStatus: 400,
+      details: { reason: 'cron_command_too_long' },
+    });
+  }
+  return c;
+}
+
 export function planCronJob(opts: {
   user: string;
   schedule: string;
@@ -254,9 +303,15 @@ export function planCronJob(opts: {
     throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1396'), {
       httpStatus: 400 });
   }
+  const schedule = assertSafeCronSchedule(opts.schedule);
+  const command = assertSafeCronCommand(opts.command);
+  const user = opts.user.trim();
+  if (!/^[a-zA-Z0-9_.-]+$/.test(user)) {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1396'), { httpStatus: 400 });
+  }
   return {
-    crontabLine: `${opts.schedule} ${opts.command} # ysk-server`,
-    notes: [tl('notes.auto.t0359', { v0: (opts.user) }), tl('notes.auto.n0916')] };
+    crontabLine: `${schedule} ${command} # ysk-server`,
+    notes: [tl('notes.auto.t0359', { v0: (user) }), tl('notes.auto.n0916')] };
 }
 
 export function planBackup(opts: {

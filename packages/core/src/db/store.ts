@@ -76,7 +76,15 @@ export interface StorePackage {
 }
 
 export interface StoreSession {
-  token: string;
+  /**
+   * Legacy plaintext token (migrated away on first use).
+   * New sessions only store token_hash + token_prefix.
+   */
+  token?: string;
+  /** SHA-256 hex of session bearer (preferred) */
+  token_hash?: string;
+  /** First 12 chars of plaintext for public session id / revoke */
+  token_prefix?: string;
   user_id: string;
   /** Absolute expiry (max lifetime) */
   expires_at: string;

@@ -30,10 +30,13 @@ export async function handleAuthRoutes(
           deviceToken?: string;
           rememberDevice?: boolean;
         };
-        const ip =
-          (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() ||
-          req.socket.remoteAddress ||
-          'local';
+        const trustProxy =
+          process.env.YSK_TRUST_PROXY === '1' || process.env.YSK_TRUST_PROXY === 'true';
+        const ip = trustProxy
+          ? (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() ||
+            req.socket.remoteAddress ||
+            'local'
+          : req.socket.remoteAddress || 'local';
         try {
           const result = ctx.auth.login(
             {

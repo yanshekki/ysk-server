@@ -408,6 +408,10 @@ export async function applyConsoleSettings(input: {
         blockMessage: tl('notes.redis.cliMissing') };
     }
     for (const [k, v] of Object.entries(changes)) {
+      if (!/^[a-zA-Z0-9_.-]+$/.test(k) || !byKey.has(k)) {
+        notes.push(`${k}: rejected (not in catalog)`);
+        continue;
+      }
       const def = byKey.get(k);
       if (def?.applyMode === 'restart') {
         needsRestart.push(k);
@@ -445,12 +449,16 @@ export async function applyConsoleSettings(input: {
         blockMessage: tl('notes.auto.n0015') };
     }
     for (const [k, v] of Object.entries(changes)) {
-      const def = byKey.get(k);
-      if (def?.applyMode === 'restart') {
+      if (!/^[a-zA-Z0-9_.]+$/.test(k) || !byKey.has(k)) {
+        notes.push(`${k}: rejected (not in catalog)`);
+        continue;
+      }
+      const def = byKey.get(k)!;
+      if (def.applyMode === 'restart') {
         needsRestart.push(k);
         continue;
       }
-      const esc = v.replace(/'/g, "''");
+      const esc = v.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
       const r = await host.runCommand(
         ['mysql', '-e', `SET GLOBAL ${k} = '${esc}';`],
         { timeoutMs: 10_000 },
@@ -476,6 +484,10 @@ export async function applyConsoleSettings(input: {
       blockMessage: tl('notes.auto.n0016') };
   }
   for (const [k, v] of Object.entries(changes)) {
+    if (!/^[a-zA-Z0-9_.]+$/.test(k) || !byKey.has(k)) {
+      notes.push(`${k}: rejected (not in catalog)`);
+      continue;
+    }
     const def = byKey.get(k);
     const esc = v.replace(/'/g, "''");
     const r = await host.runCommand(

@@ -6,6 +6,7 @@ import { tl } from '@ysk/shared';
 import { randomBytes, randomUUID } from 'node:crypto';
 import type { JsonStore } from '../db/store.js';
 import type { HostExecutor } from '../host/executor.js';
+import { escapeMysqlString, validateMysqlIdent } from './db-client.js';
 
 export type TempDbUser = {
   id: string;
@@ -84,6 +85,9 @@ export async function createTempReadonlyUser(input: {
   const username =
     input.username?.trim() ||
     `ro_${randomBytes(3).toString('hex')}`;
+  // Fail closed: reject injected identifiers
+  validateMysqlIdent(username, 'username');
+  validateMysqlIdent(input.database, 'database');
   const password = randomBytes(12).toString('base64url');
   const expiresAt = new Date(Date.now() + ttl * 3600_000).toISOString();
   const notes: string[] = [];
@@ -105,7 +109,8 @@ export async function createTempReadonlyUser(input: {
       row.apply_status = 'blocked';
       notes.push(tl('notes.auto.n1157'));
     } else if (input.engine === 'postgres') {
-      const sql = `DO $$ BEGIN CREATE ROLE ${username} LOGIN PASSWORD '${password}'; EXCEPTION WHEN duplicate_object THEN NULL; END $$; GRANT CONNECT ON DATABASE ${input.database} TO ${username}; GRANT USAGE ON SCHEMA public TO ${username}; GRANT SELECT ON ALL TABLES IN SCHEMA public TO ${username};`;
+      // Identifiers already validated; password dollar-quoted to avoid injection
+      const sql = `DO $$ BEGIN CREATE ROLE ${username} LOGIN PASSWORD $ysk$${password}$ysk$; EXCEPTION WHEN duplicate_object THEN NULL; END $$; GRANT CONNECT ON DATABASE ${input.database} TO ${username}; GRANT USAGE ON SCHEMA public TO ${username}; GRANT SELECT ON ALL TABLES IN SCHEMA public TO ${username};`;
       const r = await input.host.runCommand(
         ['bash', '-c', `sudo -u postgres psql -d ${JSON.stringify(input.database)} -c ${JSON.stringify(sql)} 2>&1`],
         { timeoutMs: 30_000 },
@@ -118,8 +123,9 @@ export async function createTempReadonlyUser(input: {
         notes.push(tl('notes.auto.t0261', { v0: ((r.stderr || r.stdout).slice(0, 200)) }));
       }
     } else {
+      const escPass = escapeMysqlString(password);
       const sql = [
-        `CREATE USER '${username}'@'localhost' IDENTIFIED BY '${password}';`,
+        `CREATE USER '${username}'@'localhost' IDENTIFIED BY '${escPass}';`,
         `GRANT SELECT ON \`${input.database}\`.* TO '${username}'@'localhost';`,
         'FLUSH PRIVILEGES;',
       ].join(' ');

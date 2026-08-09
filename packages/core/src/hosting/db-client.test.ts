@@ -43,6 +43,25 @@ describe('db-client pure', () => {
     expect(r.connectionHint.host).toBe('10.0.0.%');
   });
 
+  it('renderMysqlProvisionSql escapes password injection and rejects bad host', () => {
+    const r = renderMysqlProvisionSql({
+      dbName: 'd1',
+      username: 'u1',
+      password: "x'; DROP DATABASE evil; --",
+      host: '%',
+    });
+    // Quote must be escaped so SQL stays one string literal
+    expect(r.sql[1]).toMatch(/IDENTIFIED BY 'x\\'; DROP DATABASE evil; --'/);
+    expect(() =>
+      renderMysqlProvisionSql({
+        dbName: 'd1',
+        username: 'u1',
+        password: 'p',
+        host: "'; DROP --",
+      }),
+    ).toThrow();
+  });
+
   it('renderMysqlProvisionSql validates inputs before rendering', () => {
     expect(() =>
       renderMysqlProvisionSql({ dbName: 'bad-name', username: 'ok' }),

@@ -22,21 +22,32 @@ import {
   recordRateLimitFailure,
   clearRateLimit,
 } from '@ysk/core';
+import type { UserDto } from '@ysk/shared';
 import type { AppContext } from '../app-context.js';
+import { requireCap } from '../http/rbac-guard.js';
 import { getBearer, readBody, sendJson, sendOpsResult } from '../http/util.js';
 
 /** Public share + WebDAV auth: 10 fails / 15m → 15m lock */
 const PUBLIC_AUTH_RL = { maxFailures: 10, windowMs: 15 * 60_000, lockMs: 15 * 60_000 };
 
+/**
+ * Client IP for rate limits. Only trust X-Forwarded-For when
+ * YSK_TRUST_PROXY=1 (or true) — otherwise spoofable.
+ */
 function clientIp(req: IncomingMessage): string {
-  const xf = req.headers['x-forwarded-for'];
-  if (typeof xf === 'string' && xf.trim()) return xf.split(',')[0]!.trim();
+  const trust =
+    process.env.YSK_TRUST_PROXY === '1' || process.env.YSK_TRUST_PROXY === 'true';
+  if (trust) {
+    const xf = req.headers['x-forwarded-for'];
+    if (typeof xf === 'string' && xf.trim()) return xf.split(',')[0]!.trim();
+  }
   return req.socket.remoteAddress ?? 'unknown';
 }
 
 function resolveRoot(
   ctx: AppContext,
   rootParam: string,
+  opts?: { user?: UserDto; /** Public share download — token already authorized */ skipCap?: boolean },
 ): {
   root: string;
   rootKey: string;
@@ -47,6 +58,15 @@ function resolveRoot(
   }
   if (rootParam.startsWith('project:')) {
     const projectId = rootParam.slice('project:'.length);
+    // Multi-tenant: panel access requires files.project (admin has full pack)
+    if (!opts?.skipCap) {
+      if (!opts?.user) {
+        throw Object.assign(new Error('authentication required for project files'), {
+          httpStatus: 401,
+        });
+      }
+      requireCap(ctx, opts.user, 'files.project');
+    }
     const proj = ctx.projects.get(projectId);
     return {
       root: proj.homeDir,
@@ -220,7 +240,7 @@ export async function handleFilesRoutes(
     }
     clearRateLimit('share-auth', shareRlKey);
     try {
-      const { root } = resolveRoot(ctx, share.root);
+      const { root } = resolveRoot(ctx, share.root, { skipCap: true });
       const fm = new FileManager(root);
       const file = fm.readBinary(share.path);
       bumpShareDownload(ctx.db, token);
@@ -247,7 +267,7 @@ export async function handleFilesRoutes(
   let rootKey: string;
   let owner: { linuxUser: string; linuxGroup: string; homeDir: string } | undefined;
   try {
-    ({ root, rootKey, owner } = resolveRoot(ctx, rootParam));
+    ({ root, rootKey, owner } = resolveRoot(ctx, rootParam, { user }));
   } catch (e) {
     sendJson(res, 400, {
       ok: false,

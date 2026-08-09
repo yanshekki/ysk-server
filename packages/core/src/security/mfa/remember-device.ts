@@ -11,11 +11,8 @@ import { resolveMasterKey } from '../ssh-identity/crypto.js';
 const DEFAULT_DAYS = 30;
 
 function hmacKey(dataDir: string): Buffer {
-  try {
-    return resolveMasterKey(dataDir).key;
-  } catch {
-    return createHash('sha256').update('ysk-dev-fallback').digest();
-  }
+  // Fail closed: never use a static fallback key in production
+  return resolveMasterKey(dataDir).key;
 }
 
 export function createRememberDeviceToken(input: {

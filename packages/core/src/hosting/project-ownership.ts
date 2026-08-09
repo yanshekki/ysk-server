@@ -3,8 +3,9 @@ import { tl } from '@ysk/shared';
  * After any write into a project home, restore ownership to project linux user.
  */
 
-import { join } from 'node:path';
+import { resolve as pathResolve } from 'node:path';
 import type { HostExecutor } from '../host/executor.js';
+import { pathUnderRoot } from '../host/executor.js';
 import { shellQuote } from './project-user-run.js';
 
 export interface ProjectOwnerRef {
@@ -31,9 +32,15 @@ export async function chownProjectPath(
   const u = owner.linuxUser?.trim();
   if (!u) return { ok: false, notes: [tl('notes.auto.n1080')] };
   const g = (owner.linuxGroup || u).trim();
-  // Stay under home when possible
-  const home = owner.homeDir.replace(/\/+$/, '');
-  const target = absPath.startsWith(home) ? absPath : join(home, absPath);
+  // Boundary-safe: must resolve under project home (no /home/u/../root)
+  const home = pathResolve(owner.homeDir);
+  const target = pathResolve(absPath.startsWith('/') ? absPath : pathResolve(home, absPath));
+  if (!pathUnderRoot(home, target)) {
+    return {
+      ok: false,
+      notes: [tl('notes.tpl.chownFailed', { detail: 'path outside project home' })],
+    };
+  }
   const r = await host.runCommand(
     [
       'bash',

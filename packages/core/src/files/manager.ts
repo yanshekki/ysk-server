@@ -13,7 +13,9 @@ import {
   renameSync,
   copyFileSync,
   cpSync,
-  chmodSync } from 'node:fs';
+  chmodSync,
+  realpathSync,
+} from 'node:fs';
 import { join, resolve, relative, dirname, basename, extname, sep } from 'node:path';
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
@@ -74,6 +76,23 @@ export function assertInside(root: string, target: string): string {
     throw new YskError(ErrorCodes.SANDBOX_VIOLATION, tl('notes.files.pathOutsideSandbox', { target }), {
       httpStatus: 403,
     });
+  }
+  // Symlink escape: if path exists, realpath must stay under root
+  try {
+    if (existsSync(abs)) {
+      const real = realpathSync(abs);
+      if (real !== rootAbs && !real.startsWith(rootAbs.endsWith(sep) ? rootAbs : rootAbs + sep)) {
+        throw new YskError(
+          ErrorCodes.SANDBOX_VIOLATION,
+          tl('notes.files.pathOutsideSandbox', { target }),
+          { httpStatus: 403, details: { reason: 'symlink_escape', real } },
+        );
+      }
+      return real;
+    }
+  } catch (e) {
+    if (e instanceof YskError) throw e;
+    /* path may not exist yet — allow create under resolved abs */
   }
   return abs;
 }
