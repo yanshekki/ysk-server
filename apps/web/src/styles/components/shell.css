@@ -136,6 +136,40 @@
   align-items: center;
 }
 
+/* Header language selection (native <select>, all Tier-1 + Tier-2 locales) */
+.shell__lang {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+}
+
+.shell__lang-select {
+  appearance: auto;
+  min-width: 7.5rem;
+  max-width: 12rem;
+  height: 2rem;
+  padding: 0 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 8px);
+  background: var(--bg-page, #f8fafc);
+  color: var(--text-sub);
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.shell__lang-select:hover,
+.shell__lang-select:focus {
+  border-color: var(--primary, #2563eb);
+  outline: none;
+  color: var(--text-main);
+}
+
+.shell__lang-select:focus-visible {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary, #2563eb) 25%, transparent);
+}
+
 .shell__content {
   padding: var(--space-page-y) var(--space-page-x);
   max-width: none;

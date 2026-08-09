@@ -9,10 +9,12 @@ import { FEATURE_SECTIONS } from '../../shared/nav/features';
 import { api } from '../../shared/services/api';
 import { buttonClassName, ToastViewport } from '../../shared/components/ui';
 import {
-  cycleAppLocale,
+  LOCALES,
   LOCALE_LABELS,
-  normalizeLocale } from '../../shared/lib/i18n';
-import { bindVoid } from '../../pages/bind-handlers';
+  normalizeLocale,
+  setAppLocale,
+  type LocaleCode,
+} from '../../shared/lib/i18n';
 
 /** All nav paths — used so /ftp does not stay active on /ftp/service */
 const NAV_PATHS = FEATURE_SECTIONS.flatMap((s) => s.items.map((i) => i.to));
@@ -90,9 +92,7 @@ export function AppShell() {
   const roleLabel = primaryRole
     ? t(`roles.${primaryRole}`, { defaultValue: primaryRole })
     : null;
-  const langLabel =
-    LOCALE_LABELS[normalizeLocale(i18n.language)] ??
-    t('common.languageName', { defaultValue: 'Language' });
+  const locale = normalizeLocale(i18n.language);
 
   return (
     <div className="shell">
@@ -206,15 +206,21 @@ export function AppShell() {
               </div>
             ) : null}
           </div>
-          <button
-            type="button"
-            className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-            onClick={bindVoid(cycleAppLocale)}
-            title={t('common.switchLanguage')}
-            aria-label={`${t('common.language')}: ${langLabel}`}
-          >
-            {langLabel}
-          </button>
+          <label className="shell__lang">
+            <select
+              className="shell__lang-select"
+              value={locale}
+              onChange={(e) => setAppLocale(e.target.value as LocaleCode, { syncServer: true })}
+              title={t('common.switchLanguage', { defaultValue: 'Switch language' })}
+              aria-label={t('common.language', { defaultValue: 'Language' })}
+            >
+              {LOCALES.map((code) => (
+                <option key={code} value={code}>
+                  {LOCALE_LABELS[code]}
+                </option>
+              ))}
+            </select>
+          </label>
           <span className="shell__user">
             {user?.username ?? '—'}
             {roleLabel && roleLabel !== user?.username ? (

@@ -1,6 +1,6 @@
 /**
  * Full AppShell interactions: nav active state, search navigate, menu backdrop,
- * locale cycle, capability-filtered nav for non-admin.
+ * locale select, capability-filtered nav for non-admin.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
@@ -161,15 +161,25 @@ describe('AppShell full interactions', () => {
     }
   });
 
-  it('cycles locale and logs out to login', async () => {
+  it('selects locale from dropdown and logs out to login', async () => {
     const user = userEvent.setup();
-    installFetchMock(shellRoutes());
+    installFetchMock([
+      ...shellRoutes(),
+      { match: /\/api\/v1\/auth\/locale/, method: 'PATCH', body: { ok: true, user: { locale: 'en' } } },
+    ]);
     renderShell('/');
 
-    const locale = screen.getAllByRole('button', {
-      name: /language|EN|English|中文|語言|语言/i })[0]!;
-    await user.click(locale);
-    await user.click(locale);
+    const langSelect = screen.getByRole('combobox', {
+      name: /language|語言|语言|Langue|Idioma|لغة/i,
+    });
+    expect(langSelect.tagName).toBe('SELECT');
+    expect(['zh-HK', 'zh-CN', 'en', 'hi', 'es', 'ar', 'fr', 'bn', 'pt', 'id', 'ur']).toContain(
+      (langSelect as HTMLSelectElement).value,
+    );
+    await user.selectOptions(langSelect, 'en');
+    expect(langSelect).toHaveValue('en');
+    await user.selectOptions(langSelect, 'zh-HK');
+    expect(langSelect).toHaveValue('zh-HK');
 
     await user.click(screen.getAllByRole('button', { name: /log\s*out|sign\s*out|登出/i })[0]!);
     await waitFor(() => {
