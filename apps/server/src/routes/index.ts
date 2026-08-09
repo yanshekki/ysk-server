@@ -23,6 +23,7 @@ export { handleLogsRoutes } from './logs.js';
 export { handleMetricsRoutes } from './metrics.js';
 export { handleMiscRoutes } from './misc.js';
 export { handleNetworkRoutes } from './network.js';
+export { handleProjectsLifecycleRoutes } from './projects-lifecycle.js';
 export { handleProjectsRoutes } from './projects.js';
 export { handlePublicRoutes } from './public.js';
 export { handleRbacRoutes } from './rbac.js';
