@@ -197,3 +197,13 @@
   font-size: var(--text-sm);
   padding: var(--space-4);
 }
+
+button.linkish {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--accent, #3b82f6);
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+}

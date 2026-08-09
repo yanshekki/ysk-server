@@ -93,5 +93,79 @@ export async function handleSettingsRoutes(
           transport: llm.baseUrl || process.env.YSK_LLM_BASE_URL ? 'http' : 'echo' });
         return true;
       }
+
+      // —— Host Browse panel settings (override process env) ——
+      if (method === 'GET' && url.pathname === '/api/v1/settings/host-browse') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const { requireCap } = await import('../http/rbac-guard.js');
+        requireCap(ctx, user, 'network.browse');
+        const panel =
+          ctx.settings.getJson<{
+            engine?: string;
+            chromePath?: string;
+            allowLoopback?: boolean;
+            noSandbox?: boolean;
+          }>('hostBrowse') ?? {};
+        const caps = ctx.hostBrowse.capabilities();
+        sendJson(res, 200, {
+          ok: true,
+          settings: {
+            engine: panel.engine ?? 'auto',
+            chromePath: panel.chromePath ?? '',
+            allowLoopback: Boolean(panel.allowLoopback),
+            noSandbox: Boolean(panel.noSandbox),
+          },
+          capabilities: caps,
+          envHints: {
+            YSK_HOST_BROWSE_ENGINE: process.env.YSK_HOST_BROWSE_ENGINE ?? null,
+            YSK_HOST_BROWSE_CHROME: process.env.YSK_HOST_BROWSE_CHROME ?? null,
+            YSK_HOST_BROWSE_LOOPBACK: process.env.YSK_HOST_BROWSE_LOOPBACK ?? null,
+            YSK_HOST_BROWSE_NO_SANDBOX: process.env.YSK_HOST_BROWSE_NO_SANDBOX ?? null,
+          },
+        });
+        return true;
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/settings/host-browse') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const { requireCap } = await import('../http/rbac-guard.js');
+        requireCap(ctx, user, 'network.browse');
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          engine?: string;
+          chromePath?: string;
+          allowLoopback?: boolean;
+          noSandbox?: boolean;
+        };
+        const engine =
+          data.engine === 'proxy' || data.engine === 'browser' || data.engine === 'auto'
+            ? data.engine
+            : 'auto';
+        const next = {
+          engine,
+          chromePath: String(data.chromePath ?? '').trim(),
+          allowLoopback: Boolean(data.allowLoopback),
+          noSandbox: Boolean(data.noSandbox),
+        };
+        ctx.settings.setJson('hostBrowse', next);
+        await ctx.hostBrowse.applyConfigChanged();
+        ctx.audit.append({
+          actor: user.username,
+          action: 'settings.host_browse',
+          detail: {
+            engine: next.engine,
+            chromePath: next.chromePath ? '[set]' : '',
+            allowLoopback: next.allowLoopback,
+            noSandbox: next.noSandbox,
+          },
+          ok: true,
+        });
+        sendJson(res, 200, {
+          ok: true,
+          settings: next,
+          capabilities: ctx.hostBrowse.capabilities(),
+        });
+        return true;
+      }
+
   return false;
 }

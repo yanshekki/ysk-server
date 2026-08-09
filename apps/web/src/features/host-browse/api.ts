@@ -13,6 +13,15 @@ export type HostBrowsePrivacy = {
   egress: 'host' | string;
 };
 
+export type HostBrowseEnginePref = 'auto' | HostBrowseEngine;
+
+export type HostBrowsePanelSettings = {
+  engine: HostBrowseEnginePref;
+  chromePath: string;
+  allowLoopback: boolean;
+  noSandbox: boolean;
+};
+
 export type HostBrowseCapabilities = {
   ok?: boolean;
   chromeAvailable: boolean;
@@ -20,6 +29,13 @@ export type HostBrowseCapabilities = {
   engines: HostBrowseEngine[];
   defaultEngine: HostBrowseEngine;
   reason?: string;
+  panel?: Partial<HostBrowsePanelSettings>;
+  effective?: {
+    engine: HostBrowseEnginePref;
+    chromePath: string;
+    allowLoopback: boolean;
+    noSandbox: boolean;
+  };
 };
 
 export type HostBrowseSession = {
@@ -140,6 +156,24 @@ export const hostBrowseApi = {
       `/api/v1/host-browse/sessions/${encodeURIComponent(sessionId)}/live`,
       { method: 'POST', body: '{}' },
     ),
+
+  getSettings: () =>
+    api.requestRaw<{
+      ok: boolean;
+      settings: HostBrowsePanelSettings;
+      capabilities: HostBrowseCapabilities;
+      envHints?: Record<string, string | null>;
+    }>('/api/v1/settings/host-browse'),
+
+  saveSettings: (body: Partial<HostBrowsePanelSettings>) =>
+    api.requestRaw<{
+      ok: boolean;
+      settings: HostBrowsePanelSettings;
+      capabilities: HostBrowseCapabilities;
+    }>('/api/v1/settings/host-browse', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
 };
 
 export function hostBrowseLiveWsUrl(wsPath: string): string {

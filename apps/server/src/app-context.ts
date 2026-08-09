@@ -202,8 +202,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
     terminalTickets: createTerminalTicketStore(),
     hostBrowse: new HostBrowseService(
       {
-        allowLoopback: process.env.YSK_HOST_BROWSE_LOOPBACK === '1',
-        chromePath: process.env.YSK_HOST_BROWSE_CHROME?.trim() || undefined,
+        /* env defaults; panel settings overlay via getPanelConfig */
       },
       (event) => {
         try {
@@ -218,6 +217,13 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
           /* non-fatal */
         }
       },
+      () =>
+        settings.getJson<{
+          engine?: 'auto' | 'proxy' | 'browser';
+          chromePath?: string;
+          allowLoopback?: boolean;
+          noSandbox?: boolean;
+        }>('hostBrowse'),
     ),
     hostBrowseLiveTickets: createHostBrowseLiveTicketStore(),
     reloadLlm() {

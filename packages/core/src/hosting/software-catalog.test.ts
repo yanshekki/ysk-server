@@ -28,6 +28,8 @@ describe('software-catalog', () => {
     const mail = listSoftwareForFeature('mail');
     // may be empty if feature key differs — still must be array
     expect(Array.isArray(mail)).toBe(true);
+    const browse = listSoftwareForFeature('hostBrowse');
+    expect(browse.some((s) => s.id === 'chromium')).toBe(true);
   });
 
   it('resolveSoftwareTitle never returns empty for catalog entries', () => {

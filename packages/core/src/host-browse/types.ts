@@ -47,6 +47,46 @@ export interface HostBrowsePolicy {
   maxBrowserSessions?: number;
   /** Default engine when client omits (default auto→browser if chrome). */
   defaultEngine?: HostBrowseEngine | 'auto';
+  /** Pass --no-sandbox to Chromium (containers). */
+  noSandbox?: boolean;
+}
+
+/** Panel-persisted settings (DB) — override process env. */
+export type HostBrowsePanelConfig = {
+  engine?: 'auto' | HostBrowseEngine;
+  chromePath?: string;
+  allowLoopback?: boolean;
+  noSandbox?: boolean;
+};
+
+export function mergeHostBrowsePolicy(
+  base: HostBrowsePolicy,
+  panel?: HostBrowsePanelConfig | null,
+  env: Record<string, string | undefined> = process.env,
+): HostBrowsePolicy {
+  const eng =
+    panel?.engine ??
+    (env.YSK_HOST_BROWSE_ENGINE as HostBrowsePanelConfig['engine'] | undefined) ??
+    base.defaultEngine ??
+    'auto';
+  return {
+    ...base,
+    chromePath:
+      (panel?.chromePath && panel.chromePath.trim()) ||
+      env.YSK_HOST_BROWSE_CHROME?.trim() ||
+      base.chromePath,
+    allowLoopback:
+      panel?.allowLoopback ??
+      (env.YSK_HOST_BROWSE_LOOPBACK === '1' || env.YSK_HOST_BROWSE_LOOPBACK === 'true'
+        ? true
+        : base.allowLoopback),
+    noSandbox:
+      panel?.noSandbox ??
+      (env.YSK_HOST_BROWSE_NO_SANDBOX === '1' || env.YSK_HOST_BROWSE_NO_SANDBOX === 'true'
+        ? true
+        : base.noSandbox),
+    defaultEngine: eng === 'auto' ? 'auto' : eng,
+  };
 }
 
 export interface HostBrowseHistoryEntry {
@@ -112,4 +152,13 @@ export interface HostBrowseCapabilities {
   engines: HostBrowseEngine[];
   defaultEngine: HostBrowseEngine;
   reason?: string;
+  /** Raw panel settings (may be empty) */
+  panel?: HostBrowsePanelConfig;
+  /** Effective values after merge with env */
+  effective?: {
+    engine: 'auto' | HostBrowseEngine;
+    chromePath: string;
+    allowLoopback: boolean;
+    noSandbox: boolean;
+  };
 }

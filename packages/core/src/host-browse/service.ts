@@ -19,10 +19,12 @@ import type {
   HostBrowseFetchResult,
   HostBrowseMode,
   HostBrowseNavigateAction,
+  HostBrowsePanelConfig,
   HostBrowsePolicy,
   HostBrowseSessionMeta,
 } from './types.js';
-import { HOST_BROWSE_DEFAULT_UA } from './types.js';
+import { HOST_BROWSE_DEFAULT_UA, mergeHostBrowsePolicy } from './types.js';
+import { clearChromeProbeCache } from './chrome-probe.js';
 
 export type HostBrowseAuditFn = (event: {
   action: string;
@@ -34,32 +36,66 @@ export type HostBrowseAuditFn = (event: {
 export class HostBrowseService {
   readonly store: HostBrowseSessionStore;
   readonly browser: BrowserEngine;
+  private readonly basePolicy: HostBrowsePolicy;
+  private readonly getPanelConfig?: () => HostBrowsePanelConfig | undefined;
 
   constructor(
-    private readonly policy: HostBrowsePolicy = {},
-    private readonly audit?: HostBrowseAuditFn,
+    policy: HostBrowsePolicy = {},
+    audit?: HostBrowseAuditFn,
+    getPanelConfig?: () => HostBrowsePanelConfig | undefined,
   ) {
+    this.basePolicy = policy;
+    this.audit = audit;
+    this.getPanelConfig = getPanelConfig;
+    const getPol = () => this.effectivePolicy();
     this.store = new HostBrowseSessionStore(policy);
-    this.browser = new BrowserEngine(policy);
+    this.browser = new BrowserEngine(getPol);
+  }
+
+  private audit?: HostBrowseAuditFn;
+
+  /** Live policy: panel settings overlay env/base. */
+  effectivePolicy(): HostBrowsePolicy {
+    return mergeHostBrowsePolicy(this.basePolicy, this.getPanelConfig?.() ?? null);
+  }
+
+  /** After panel settings change — drop Chrome process so path/sandbox re-apply. */
+  async applyConfigChanged(): Promise<void> {
+    clearChromeProbeCache();
+    await this.browser.invalidateBrowser();
   }
 
   capabilities(): HostBrowseCapabilities {
-    const p = probeChrome();
-    const available = Boolean(this.policy.chromePath || p.available);
-    const engines: HostBrowseEngine[] = available
+    const pol = this.effectivePolicy();
+    // Prefer explicit path from settings when probing
+    if (pol.chromePath) {
+      clearChromeProbeCache();
+    }
+    const p = probeChrome(true);
+    const available = Boolean(pol.chromePath || p.available);
+    // If chromePath set, verify executable later at launch; report available=true when path set
+    const pathSet = Boolean(pol.chromePath);
+    const engines: HostBrowseEngine[] = available || pathSet
       ? ['proxy', 'browser']
       : ['proxy'];
-    const defEnv = this.policy.defaultEngine ?? process.env.YSK_HOST_BROWSE_ENGINE ?? 'auto';
+    const defEnv = pol.defaultEngine ?? 'auto';
     let defaultEngine: HostBrowseEngine = 'proxy';
-    if (defEnv === 'browser' && available) defaultEngine = 'browser';
-    else if (defEnv === 'auto' && available) defaultEngine = 'browser';
+    if (defEnv === 'browser' && (available || pathSet)) defaultEngine = 'browser';
+    else if (defEnv === 'auto' && (available || pathSet)) defaultEngine = 'browser';
     else if (defEnv === 'proxy') defaultEngine = 'proxy';
     return {
-      chromeAvailable: available,
-      chromePath: this.policy.chromePath || p.path,
+      chromeAvailable: available || pathSet,
+      chromePath: pol.chromePath || p.path,
       engines,
       defaultEngine,
-      reason: available ? undefined : p.reason,
+      reason: available || pathSet ? undefined : p.reason,
+      panel: this.getPanelConfig?.() ?? {},
+      effective: {
+        engine: defEnv === 'auto' || defEnv === 'proxy' || defEnv === 'browser' ? defEnv : 'auto',
+        chromePath: pol.chromePath || p.path || '',
+        allowLoopback: Boolean(pol.allowLoopback),
+        noSandbox: Boolean(pol.noSandbox),
+      },
     };
   }
 
@@ -366,7 +402,7 @@ export class HostBrowseService {
         details: { field: 'method' },
       });
     }
-    const maxReq = this.policy.maxRequestBodyBytes ?? 1 * 1024 * 1024;
+    const maxReq = this.effectivePolicy().maxRequestBodyBytes ?? 1 * 1024 * 1024;
     const body = input.body ?? '';
     if (Buffer.byteLength(body, 'utf8') > maxReq) {
       throw new YskError(ErrorCodes.VALIDATION, 'Request body too large', {
@@ -513,10 +549,11 @@ export class HostBrowseService {
     },
   ): Promise<HostBrowseFetchResult> {
     const started = Date.now();
+    const pol = this.effectivePolicy();
     const ssrfOpts = {
       mode: s.mode,
-      allowLoopback: this.policy.allowLoopback,
-      extraPorts: this.policy.extraPorts,
+      allowLoopback: pol.allowLoopback,
+      extraPorts: pol.extraPorts,
     };
     const signal = this.store.beginAbortable(s);
 
@@ -545,9 +582,9 @@ export class HostBrowseService {
       throw e;
     }
 
-    const maxRedirects = this.policy.maxRedirects ?? 5;
-    const timeoutMs = this.policy.timeoutMs ?? 30_000;
-    const maxBody = this.policy.maxBodyBytes ?? 8 * 1024 * 1024;
+    const maxRedirects = pol.maxRedirects ?? 5;
+    const timeoutMs = pol.timeoutMs ?? 30_000;
+    const maxBody = pol.maxBodyBytes ?? 8 * 1024 * 1024;
     const warnings: string[] = [];
     let method = opts.method;
     let body = opts.body;
@@ -563,7 +600,7 @@ export class HostBrowseService {
       const cookie = s.jar.cookieHeaderFor(current);
       const headers = buildOutboundHeaders({
         userAgent: s.userAgent || HOST_BROWSE_DEFAULT_UA,
-        acceptLanguage: this.policy.acceptLanguage,
+        acceptLanguage: pol.acceptLanguage,
         cookie: cookie || undefined,
         contentType: body != null ? contentType : undefined,
         referer,

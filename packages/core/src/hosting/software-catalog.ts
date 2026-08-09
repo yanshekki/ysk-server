@@ -31,7 +31,8 @@ export type SoftwareId =
   | 'rust'
   | 'java'
   | 'kotlin'
-  | 'bun';
+  | 'bun'
+  | 'chromium';
 
 export type FeatureSoftwareKey =
   | 'ftp'
@@ -54,6 +55,7 @@ export type FeatureSoftwareKey =
   | 'kotlin'
   | 'bun'
   | 'git'
+  | 'hostBrowse'
   | 'all';
 
 export type RuntimeInstaller =
@@ -308,6 +310,19 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     features: ['bun'],
     installer: 'runtime-bun',
     runtimeVersion: 'latest' },
+  {
+    /** Host Browse real-browser engine — distro Chromium (also detects Google Chrome bins). */
+    id: 'chromium',
+    title: 'Chromium / Chrome',
+    bins: [
+      'google-chrome',
+      'google-chrome-stable',
+      'chromium',
+      'chromium-browser',
+    ],
+    // Prefer distro chromium; Ubuntu may use chromium-browser transitional package
+    aptPackages: ['chromium'],
+    features: ['hostBrowse'] },
 ];
 
 export function getSoftware(id: string): SoftwareSpec | undefined {

@@ -18,10 +18,29 @@
 | **Real browser** | Host **Chromium** via Playwright + JPEG screencast + mouse/keyboard | Heavy SPAs (e.g. modern marketing sites), JS-heavy UIs |
 
 - UI toggle: **Proxy | Real browser**
-- Env: `YSK_HOST_BROWSE_ENGINE=auto|proxy|browser` (default auto → browser when Chrome found)
-- Chrome path: `YSK_HOST_BROWSE_CHROME` or system `google-chrome` / `chromium`
-- Optional: `YSK_HOST_BROWSE_NO_SANDBOX=1` (containers only)
-- Loopback (intranet): `YSK_HOST_BROWSE_LOOPBACK=1`
+### Panel settings (recommended)
+
+On **Host Browse → Settings** (or Software tab):
+
+| Setting | Effect |
+|---------|--------|
+| Default engine | auto / proxy / real browser |
+| Chrome path | Override auto-detect |
+| Allow loopback | Intranet may open 127.0.0.1 |
+| --no-sandbox | Container-friendly Chromium |
+
+Stored in panel DB (`settings.hostBrowse`). **Panel values override process env.**
+
+### One-click install
+
+**Software** tab → installs catalog id `chromium` (distro Chromium via apt). Also detects existing Google Chrome binaries. Needs root + `YSK_EXECUTE=1`.
+
+### Process env (fallback if panel empty)
+
+- `YSK_HOST_BROWSE_ENGINE=auto|proxy|browser`
+- `YSK_HOST_BROWSE_CHROME=/path/to/chrome`
+- `YSK_HOST_BROWSE_NO_SANDBOX=1`
+- `YSK_HOST_BROWSE_LOOPBACK=1`
 
 If Chrome is missing and engine=`browser` is requested, API returns `YSK_HOST_BROWSE_NEED_CHROME` (honest fail / UI falls back).
 

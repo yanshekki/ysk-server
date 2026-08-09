@@ -36,6 +36,7 @@ const VERSION_CMD: Partial<Record<SoftwareId, string[]>> = {
   bun: ['bun', '--version'],
   vsftpd: ['vsftpd', '-v'],
   'pdns-server': ['pdns_server', '--version'],
+  chromium: ['chromium', '--version'],
 };
 
 const DPKG_PRIMARY: Partial<Record<SoftwareId, string>> = {
@@ -59,6 +60,7 @@ const DPKG_PRIMARY: Partial<Record<SoftwareId, string>> = {
   go: 'golang-go',
   node: 'nodejs',
   java: 'openjdk-21-jdk',
+  chromium: 'chromium',
 };
 
 function buildFromCatalog(): Map<SoftwareProbeId, ProbeRegistryEntry> {

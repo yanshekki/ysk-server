@@ -64,10 +64,29 @@ export class BrowserEngine {
   private handles = new Map<string, BrowserSessionHandle>();
   private launching: Promise<Browser> | null = null;
 
-  constructor(private readonly policy: HostBrowsePolicy = {}) {}
+  constructor(private readonly getPolicy: () => HostBrowsePolicy = () => ({})) {}
+
+  private policy(): HostBrowsePolicy {
+    return this.getPolicy();
+  }
 
   get activeCount(): number {
     return this.handles.size;
+  }
+
+  /** Close browser so next ensure re-reads chrome path / sandbox flags. */
+  async invalidateBrowser(): Promise<void> {
+    for (const id of [...this.handles.keys()]) {
+      await this.closeSession(id);
+    }
+    if (this.browser) {
+      try {
+        await this.browser.close();
+      } catch {
+        /* */
+      }
+      this.browser = null;
+    }
   }
 
   async ensureBrowser(): Promise<Browser> {
@@ -76,8 +95,9 @@ export class BrowserEngine {
 
     this.launching = (async () => {
       const pw = await loadPlaywright();
-      const probe = probeChrome();
-      const path = this.policy.chromePath || probe.path;
+      const pol = this.policy();
+      const probe = probeChrome(true);
+      const path = pol.chromePath || probe.path;
       if (!path) {
         throw new YskError(
           ErrorCodes.HOST_BROWSE_NEED_CHROME,
@@ -85,6 +105,10 @@ export class BrowserEngine {
           { httpStatus: 503, details: { reason: 'no_chrome' } },
         );
       }
+      const noSandbox =
+        pol.noSandbox === true ||
+        process.env.YSK_HOST_BROWSE_NO_SANDBOX === '1' ||
+        process.env.YSK_HOST_BROWSE_NO_SANDBOX === 'true';
       const browser = await pw.chromium.launch({
         executablePath: path,
         headless: true,
@@ -98,10 +122,7 @@ export class BrowserEngine {
           '--disable-sync',
           '--metrics-recording-only',
           '--mute-audio',
-          // container-friendly when needed
-          ...(process.env.YSK_HOST_BROWSE_NO_SANDBOX === '1'
-            ? ['--no-sandbox', '--disable-setuid-sandbox']
-            : []),
+          ...(noSandbox ? ['--no-sandbox', '--disable-setuid-sandbox'] : []),
         ],
       });
       this.browser = browser;
@@ -124,7 +145,7 @@ export class BrowserEngine {
     userId: string;
     mode: HostBrowseMode;
   }): Promise<void> {
-    const max = this.policy.maxBrowserSessions ?? 4;
+    const max = this.policy().maxBrowserSessions ?? 4;
     if (this.handles.size >= max && !this.handles.has(input.sessionId)) {
       throw new YskError(ErrorCodes.RATE_LIMITED, 'Too many browser sessions', {
         httpStatus: 429,
@@ -133,18 +154,17 @@ export class BrowserEngine {
     if (this.handles.has(input.sessionId)) return;
 
     const browser = await this.ensureBrowser();
+    const pol = this.policy();
     const context = await browser.newContext({
-      userAgent: this.policy.userAgent ?? HOST_BROWSE_DEFAULT_UA,
+      userAgent: pol.userAgent ?? HOST_BROWSE_DEFAULT_UA,
       locale: 'en-US',
       viewport: { width: 1280, height: 800 },
       ignoreHTTPSErrors: input.mode === 'intranet',
       javaScriptEnabled: true,
-      // No geolocation / notifications
       permissions: [],
     });
-    // Extra privacy: strip extra client-like headers we never set
     await context.setExtraHTTPHeaders({
-      'Accept-Language': this.policy.acceptLanguage ?? 'en-US,en;q=0.9',
+      'Accept-Language': pol.acceptLanguage ?? 'en-US,en;q=0.9',
     });
 
     const page = await context.newPage();
@@ -153,8 +173,8 @@ export class BrowserEngine {
       if (frame !== page.mainFrame()) return;
       void assertHostBrowseTarget(frame.url(), {
         mode: input.mode,
-        allowLoopback: this.policy.allowLoopback,
-        extraPorts: this.policy.extraPorts,
+        allowLoopback: this.policy().allowLoopback,
+        extraPorts: this.policy().extraPorts,
       }).catch(() => {
         /* navigation may be mid-flight; navigate() also gates */
       });
@@ -190,8 +210,8 @@ export class BrowserEngine {
     try {
       url = await assertHostBrowseTarget(rawUrl, {
         mode: h.mode,
-        allowLoopback: this.policy.allowLoopback,
-        extraPorts: this.policy.extraPorts,
+        allowLoopback: this.policy().allowLoopback,
+        extraPorts: this.policy().extraPorts,
       });
     } catch (e) {
       if (e instanceof YskError && e.code === ErrorCodes.HOST_BROWSE_SSRF) {
@@ -214,7 +234,7 @@ export class BrowserEngine {
     try {
       const resp = await h.page.goto(url.href, {
         waitUntil: 'domcontentloaded',
-        timeout: this.policy.timeoutMs ?? 30_000,
+        timeout: this.policy().timeoutMs ?? 30_000,
       });
       // Wait a bit for paint
       await delay(400);

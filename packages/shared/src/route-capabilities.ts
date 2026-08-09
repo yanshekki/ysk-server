@@ -34,6 +34,12 @@ export const MUTATING_ROUTE_CAP_RULES: readonly RouteCapRule[] = [
   },
   { methods: ['PUT', 'POST'], pattern: /^\/api\/v1\/rbac\//, cap: 'rbac.policy' },
   { methods: ['POST'], pattern: /^\/api\/v1\/settings\/security$/, cap: 'security.policy' },
+  {
+    methods: ['POST'],
+    pattern: /^\/api\/v1\/settings\/host-browse$/,
+    cap: 'network.browse',
+    note: 'host browse panel settings (engine / chrome path)',
+  },
   { methods: ['POST'], pattern: /^\/api\/v1\/settings\//, cap: 'settings.system' },
 
   // —— Destructive ——

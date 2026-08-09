@@ -17,12 +17,28 @@
 | **代理** | 主機 HTTP 擷取 + HTML/CSS 改寫 + sandbox iframe | 文件、靜態站、多數管理頁、表單 POST |
 | **真實瀏覽器** | 主機 **Chromium**（Playwright）+ 畫面串流 + 滑鼠鍵盤 | 重 SPA、需完整 JS 渲染 |
 
-- UI：**代理 | 真實瀏覽器**
-- 環境變數：`YSK_HOST_BROWSE_ENGINE=auto|proxy|browser`
-- Chrome：`YSK_HOST_BROWSE_CHROME` 或系統 chrome/chromium
-- 內網 loopback：`YSK_HOST_BROWSE_LOOPBACK=1`
+### 面板設定（建議）
 
-無 Chrome 時要求 browser 會回 `YSK_HOST_BROWSE_NEED_CHROME`（誠實失敗／UI 可降級代理）。
+**主機瀏覽 → 設定**／**軟件** 分頁：
+
+| 設定 | 作用 |
+|------|------|
+| 預設引擎 | 自動／代理／真實瀏覽器 |
+| Chrome 路徑 | 覆寫自動偵測 |
+| 允許 loopback | 內網可開 127.0.0.1 |
+| --no-sandbox | container 用 Chromium |
+
+存於面板 DB（`settings.hostBrowse`）。**面板值優先於行程環境變數。**
+
+### 一鍵安裝
+
+**軟件** 分頁 → 安裝目錄 id `chromium`（apt 發行版 Chromium）。已裝 Google Chrome 亦會偵測。需要 root + `YSK_EXECUTE=1`。
+
+### 環境變數（面板未設時後備）
+
+- `YSK_HOST_BROWSE_ENGINE` / `CHROME` / `NO_SANDBOX` / `LOOPBACK`
+
+無 Chrome 時要求 browser 會回 `YSK_HOST_BROWSE_NEED_CHROME`。
 
 ## 路由
 

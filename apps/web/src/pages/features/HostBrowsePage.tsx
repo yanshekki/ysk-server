@@ -9,11 +9,17 @@ import {
   Alert,
   Badge,
   Button,
+  CheckboxField,
   EmptyState,
   FeaturePageLayout,
+  Field,
+  FormActions,
+  FormLayout,
   PageGuide,
   PageTabs,
   SegRadio,
+  SoftwareInstallBanner,
+  SoftwareVersionBar,
 } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { ApiError } from '../../shared/services/api';
@@ -22,13 +28,15 @@ import {
   hostBrowseLiveWsUrl,
   type HostBrowseCapabilities,
   type HostBrowseEngine,
+  type HostBrowseEnginePref,
   type HostBrowseMode,
   type HostBrowseNavigateResult,
+  type HostBrowsePanelSettings,
   type HostBrowseSession,
 } from '../../features/host-browse/api';
 import { notifyInfo, notifyOk } from '../../shared/lib/notify';
 
-const TABS = ['browse', 'about'] as const;
+const TABS = ['browse', 'stack', 'settings', 'about'] as const;
 
 export function HostBrowsePage() {
   const { t } = useTranslation();
@@ -45,24 +53,67 @@ export function HostBrowsePage() {
   const [frameSrc, setFrameSrc] = useState<string | null>(null);
   const [liveImg, setLiveImg] = useState<string | null>(null);
   const [liveSize, setLiveSize] = useState({ w: 1280, h: 800 });
+  const [settingsDraft, setSettingsDraft] = useState<HostBrowsePanelSettings>({
+    engine: 'auto',
+    chromePath: '',
+    allowLoopback: false,
+    noSandbox: false,
+  });
+  const [settingsBusy, setSettingsBusy] = useState(false);
+  const [envHints, setEnvHints] = useState<Record<string, string | null>>({});
 
   const abortRef = useRef(false);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const liveRef = useRef<HTMLImageElement | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
 
-  // Load capabilities once
-  useEffect(() => {
-    void hostBrowseApi
-      .capabilities()
-      .then((c) => {
+  const loadCapsAndSettings = useCallback(async () => {
+    try {
+      const s = await hostBrowseApi.getSettings();
+      setCaps(s.capabilities);
+      setSettingsDraft({
+        engine: (s.settings.engine as HostBrowseEnginePref) || 'auto',
+        chromePath: s.settings.chromePath || '',
+        allowLoopback: Boolean(s.settings.allowLoopback),
+        noSandbox: Boolean(s.settings.noSandbox),
+      });
+      setEnvHints(s.envHints ?? {});
+      if (s.capabilities.defaultEngine) setEngine(s.capabilities.defaultEngine);
+    } catch {
+      try {
+        const c = await hostBrowseApi.capabilities();
         setCaps(c);
         if (c.defaultEngine) setEngine(c.defaultEngine);
-      })
-      .catch(() => {
-        /* ignore — default proxy */
-      });
+      } catch {
+        /* default proxy */
+      }
+    }
   }, []);
+
+  useEffect(() => {
+    void loadCapsAndSettings();
+  }, [loadCapsAndSettings]);
+
+  const saveSettings = useCallback(async () => {
+    setSettingsBusy(true);
+    setError(null);
+    try {
+      const r = await hostBrowseApi.saveSettings(settingsDraft);
+      setCaps(r.capabilities);
+      setSettingsDraft({
+        engine: (r.settings.engine as HostBrowseEnginePref) || 'auto',
+        chromePath: r.settings.chromePath || '',
+        allowLoopback: Boolean(r.settings.allowLoopback),
+        noSandbox: Boolean(r.settings.noSandbox),
+      });
+      if (r.capabilities.defaultEngine) setEngine(r.capabilities.defaultEngine);
+      notifyOk(t('hostBrowse.settingsSaved'));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('common.loadFailed'));
+    } finally {
+      setSettingsBusy(false);
+    }
+  }, [settingsDraft, t]);
 
   const closeLive = useCallback(() => {
     try {
@@ -405,6 +456,8 @@ export function HostBrowsePage() {
       <PageTabs
         tabs={[
           { id: 'browse', label: t('hostBrowse.tabBrowse') },
+          { id: 'stack', label: t('tabs.stack') },
+          { id: 'settings', label: t('hostBrowse.tabSettings') },
           { id: 'about', label: t('tabs.about') },
         ]}
         active={tab}
@@ -420,7 +473,16 @@ export function HostBrowsePage() {
               </Alert>
             ) : null}
             {caps && !caps.chromeAvailable ? (
-              <Alert variant="info">{t('hostBrowse.needChrome')}</Alert>
+              <Alert variant="info">
+                {t('hostBrowse.needChrome')}{' '}
+                <button
+                  type="button"
+                  className="linkish"
+                  onClick={() => setTab('stack')}
+                >
+                  {t('hostBrowse.goInstallChrome')}
+                </button>
+              </Alert>
             ) : null}
 
             <div className="hb-chrome">
@@ -616,6 +678,100 @@ export function HostBrowsePage() {
                 {isBrowser ? <Badge tone="ok">chromium</Badge> : null}
               </div>
             </div>
+          </div>
+        ) : null}
+
+        {tab === 'stack' ? (
+          <div className="tab-panel stack">
+            <SoftwareInstallBanner
+              feature="hostBrowse"
+              title={t('hostBrowse.softwareNeeded')}
+              onInstalled={() => {
+                void loadCapsAndSettings();
+              }}
+            />
+            <SoftwareVersionBar softwareId="chromium" />
+            <Alert variant="info">{t('hostBrowse.softwareHint')}</Alert>
+          </div>
+        ) : null}
+
+        {tab === 'settings' ? (
+          <div className="tab-panel stack">
+            <p className="muted u-text-sm">{t('hostBrowse.settingsIntro')}</p>
+            <FormLayout>
+              <Field label={t('hostBrowse.settingsEngine')} htmlFor="hb-set-engine">
+                <SegRadio
+                  name="hb-set-engine"
+                  size="sm"
+                  value={settingsDraft.engine}
+                  onChange={(v) =>
+                    setSettingsDraft((d) => ({
+                      ...d,
+                      engine: v as HostBrowseEnginePref,
+                    }))
+                  }
+                  options={[
+                    { value: 'auto', label: t('hostBrowse.engineAuto') },
+                    { value: 'proxy', label: t('hostBrowse.engineProxy') },
+                    { value: 'browser', label: t('hostBrowse.engineBrowser') },
+                  ]}
+                />
+              </Field>
+              <Field
+                label={t('hostBrowse.settingsChromePath')}
+                htmlFor="hb-chrome-path"
+                hint={t('hostBrowse.settingsChromePathHint')}
+              >
+                <input
+                  id="hb-chrome-path"
+                  type="text"
+                  value={settingsDraft.chromePath}
+                  onChange={(e) =>
+                    setSettingsDraft((d) => ({ ...d, chromePath: e.target.value }))
+                  }
+                  placeholder="/usr/bin/google-chrome"
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+              </Field>
+              <CheckboxField
+                id="hb-loopback"
+                label={t('hostBrowse.settingsLoopback')}
+                checked={settingsDraft.allowLoopback}
+                onChange={(c) =>
+                  setSettingsDraft((d) => ({ ...d, allowLoopback: c }))
+                }
+              />
+              <CheckboxField
+                id="hb-nosandbox"
+                label={t('hostBrowse.settingsNoSandbox')}
+                checked={settingsDraft.noSandbox}
+                onChange={(c) =>
+                  setSettingsDraft((d) => ({ ...d, noSandbox: c }))
+                }
+              />
+              <FormActions>
+                <Button
+                  size="md"
+                  loading={settingsBusy}
+                  onClick={() => void saveSettings()}
+                >
+                  {t('hostBrowse.settingsSave')}
+                </Button>
+              </FormActions>
+            </FormLayout>
+            {Object.keys(envHints).length > 0 ? (
+              <div className="stack u-mt-3">
+                <div className="muted u-text-sm">{t('hostBrowse.envHintsTitle')}</div>
+                <ul className="muted u-text-sm">
+                  {Object.entries(envHints).map(([k, v]) => (
+                    <li key={k}>
+                      <code>{k}</code>={v ?? '—'}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </div>
         ) : null}
 

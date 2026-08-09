@@ -38,5 +38,19 @@
   "needChrome": "真实浏览器需要系统 Chrome／Chromium（或设置 YSK_HOST_BROWSE_CHROME）。否则使用代理模式。",
   "needChromeFallback": "Chrome 不可用 — 已切换到代理引擎。",
   "liveError": "实时串流失败",
-  "liveWaiting": "正在连接主机浏览器…"
+  "liveWaiting": "正在连接主机浏览器…",
+  "tabSettings": "设置",
+  "softwareNeeded": "真实浏览器引擎需要 Chromium／Chrome",
+  "softwareHint": "一键通过 apt 安装发行版 Chromium。若已安装 Google Chrome 也会自动检测。需要 root 与 YSK_EXECUTE=1。",
+  "goInstallChrome": "前往软件分页",
+  "settingsIntro": "以下面板设置会覆盖主机浏览相关环境变量。",
+  "settingsEngine": "默认引擎",
+  "engineAuto": "自动",
+  "settingsChromePath": "Chrome／Chromium 路径",
+  "settingsChromePathHint": "留空 = 自动检测。例如 /usr/bin/google-chrome",
+  "settingsLoopback": "内网模式允许 loopback（127.0.0.1）",
+  "settingsNoSandbox": "Chromium --no-sandbox（仅 container）",
+  "settingsSave": "保存设置",
+  "settingsSaved": "主机浏览设置已保存",
+  "envHintsTitle": "进程环境变量（只读；面板有设置时优先用面板）"
 }

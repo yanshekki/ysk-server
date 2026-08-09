@@ -56,6 +56,15 @@ export const SOFTWARE_TABS: Array<{ id: SoftwareTabId; labelKey: string }> = [
 
 /** All software shown in the hub (professional catalog). */
 export const SOFTWARE_CARDS: SoftwareCardDef[] = [
+  // —— Host tools ——
+  {
+    id: 'chromium',
+    tab: 'host',
+    to: '/browse?tab=stack',
+    navKey: 'hostBrowse',
+    icon: '🧭',
+    softwareIds: ['chromium'],
+  },
   // —— Runtimes ——
   {
     id: 'node',

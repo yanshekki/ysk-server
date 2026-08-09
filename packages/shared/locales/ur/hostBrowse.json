@@ -38,5 +38,19 @@
   "needChrome": "Real browser needs system Chrome/Chromium (or set YSK_HOST_BROWSE_CHROME). Using proxy otherwise.",
   "needChromeFallback": "Chrome unavailable — switched to proxy engine.",
   "liveError": "Live stream failed",
-  "liveWaiting": "Connecting host browser…"
+  "liveWaiting": "Connecting host browser…",
+  "tabSettings": "Settings",
+  "softwareNeeded": "Chromium / Chrome required for real browser engine",
+  "softwareHint": "One-click installs distro Chromium via apt. Google Chrome binary is also detected if already present. Requires root + YSK_EXECUTE=1.",
+  "goInstallChrome": "Open Software tab",
+  "settingsIntro": "These panel settings override process environment variables for Host Browse.",
+  "settingsEngine": "Default engine",
+  "engineAuto": "Auto",
+  "settingsChromePath": "Chrome / Chromium path",
+  "settingsChromePathHint": "Empty = auto-detect. Example: /usr/bin/google-chrome",
+  "settingsLoopback": "Allow loopback in intranet mode (127.0.0.1)",
+  "settingsNoSandbox": "Chromium --no-sandbox (containers only)",
+  "settingsSave": "Save settings",
+  "settingsSaved": "Host Browse settings saved",
+  "envHintsTitle": "Process env (read-only; panel settings take precedence when set)"
 }
