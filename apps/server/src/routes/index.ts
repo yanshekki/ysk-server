@@ -70,6 +70,8 @@ export { handleProjectsLifecycleRoutes } from './projects-lifecycle.js';
 export { handleProjectsOpsDataRoutes } from './projects-ops-data.js';
 export { handleProjectsOpsDeployRoutes } from './projects-ops-deploy.js';
 export { handleProjectsOpsEdgeRoutes } from './projects-ops-edge.js';
+export { handleProjectsOpsLogsRoutes } from './projects-ops-logs.js';
+export { handleProjectsOpsQuotaRoutes } from './projects-ops-quota.js';
 export { handleProjectsOpsRoutes } from './projects-ops.js';
 export { handleProjectsOpsRuntimeRoutes } from './projects-ops-runtime.js';
 export { handleProjectsRoutes } from './projects.js';
