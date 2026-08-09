@@ -10,7 +10,7 @@ Thin re-exports under `apps/server/src/controllers/*` keep stable `http-server` 
 | files-controller | `routes/files*.ts` | E |
 | logs-controller | `routes/logs.ts` | **F1** |
 | metrics-controller | `routes/metrics.ts` | **F2** |
-| network-controller | `routes/network.ts` | **F2** |
+| network-controller | `routes/network.ts` (ifaces + routing) | **F2** / **Y2** |
 | resources-controller | `routes/resources.ts` | **F3** |
 
 **Wave F complete** — all modular controllers are thin re-exports into `routes/*`.
