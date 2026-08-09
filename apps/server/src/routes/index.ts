@@ -17,6 +17,8 @@ export { handleCdnRoutes } from './cdn.js';
 export { handleCdnSitesRoutes } from './cdn-sites.js';
 export { handleCronRoutes } from './cron.js';
 export { handleDashboardRoutes } from './dashboard.js';
+export { handleDbAccessRoutes } from './db-access.js';
+export { handleDbClustersRoutes } from './db-clusters.js';
 export { handleDbRoutes } from './db.js';
 export { handleDefenseRoutes } from './defense.js';
 export { handleDnsRoutes } from './dns.js';
