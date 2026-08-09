@@ -113,6 +113,8 @@ export { handleSslRoutes } from './ssl.js';
 export { handleSystemApplyRoutes } from './system-apply.js';
 export { handleSystemApplyServicesRoutes } from './system-apply-services.js';
 export { handleSystemApplyStackRoutes } from './system-apply-stack.js';
+export { handleSystemApplyTlsRoutes } from './system-apply-tls.js';
+export { handleSystemApplyWebRoutes } from './system-apply-web.js';
 export { handleSystemDbConsoleRoutes } from './system-db-console.js';
 export { handleSystemDbEnginesRoutes } from './system-db-engines.js';
 export { handleSystemDbRedisRoutes } from './system-db-redis.js';

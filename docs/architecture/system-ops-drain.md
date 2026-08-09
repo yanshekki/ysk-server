@@ -4,7 +4,9 @@ Canonical workdir: `/home/ki/文件/ysk-server/`.
 
 | Domain | Module | Wave |
 |--------|--------|------|
-| Email/ssl/php apply + nginx site/purge | `routes/system-apply-stack.ts` | **R1** |
+| Email + SSL/LE certificates | `routes/system-apply-tls.ts` | **Y3** |
+| PHP + nginx site/purge | `routes/system-apply-web.ts` | **Y3** |
+| Stack dispatcher | `routes/system-apply-stack.ts` | **Y3** |
 | Systemd, services matrix/lifecycle, self-update | `routes/system-apply-services.ts` | **R1** |
 | Apply dispatcher | `routes/system-apply.ts` | **R1** |
 | Export, managed nginx, rebuild | `routes/system-migrate-export.ts` | **R2** |
