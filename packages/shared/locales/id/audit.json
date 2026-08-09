@@ -22,6 +22,45 @@
     "project.publish": "Publikasikan Nginx",
     "project.suspend": "Tangguhkan proyek",
     "software.install": "Instal perangkat lunak",
-    "software.update": "Perbarui perangkat lunak"
+    "software.update": "Perbarui perangkat lunak",
+    "protection": {
+      "change": "Protection settings changed"
+    },
+    "auth": {
+      "locale": "UI language changed",
+      "login": "Signed in",
+      "logout": "Signed out"
+    },
+    "system": {
+      "firewall": {
+        "allow_port": "Firewall allow port",
+        "deny": "Firewall deny IP",
+        "apply": "Firewall apply",
+        "enable": "Firewall enable/disable",
+        "delete_rule": "Delete firewall rule",
+        "delete_deny": "Remove permanent deny IP"
+      }
+    },
+    "project": {
+      "deploy": "Project deploy",
+      "create": "Project created",
+      "delete": "Project deleted",
+      "goLive": "Project go-live",
+      "publish": "Publish Nginx",
+      "suspend": "Suspend project"
+    },
+    "ssl": {
+      "request": "SSL request",
+      "upload": "SSL upload"
+    },
+    "db": {
+      "adminer": {
+        "apply": "DB browser project"
+      }
+    },
+    "software": {
+      "install": "Install software",
+      "update": "Update software"
+    }
   }
 }

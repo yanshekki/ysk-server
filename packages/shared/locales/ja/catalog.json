@@ -22,7 +22,8 @@
     "php": "PHP",
     "python": "パイソン3",
     "go": "行く",
-    "rust": "錆（貨物）"
+    "rust": "錆（貨物）",
+    "chromium": "Chromium / Chrome"
   },
   "php": {
     "session": "セッション",

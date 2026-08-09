@@ -228,7 +228,46 @@
       "project.publish": "Publicar Nginx",
       "project.suspend": "Suspender proyecto",
       "software.install": "Instalar software",
-      "software.update": "Actualizar software"
+      "software.update": "Actualizar software",
+      "protection": {
+        "change": "Protection settings changed"
+      },
+      "auth": {
+        "locale": "UI language changed",
+        "login": "Signed in",
+        "logout": "Signed out"
+      },
+      "system": {
+        "firewall": {
+          "allow_port": "Firewall allow port",
+          "deny": "Firewall deny IP",
+          "apply": "Firewall apply",
+          "enable": "Firewall enable/disable",
+          "delete_rule": "Delete firewall rule",
+          "delete_deny": "Remove permanent deny IP"
+        }
+      },
+      "project": {
+        "deploy": "Project deploy",
+        "create": "Project created",
+        "delete": "Project deleted",
+        "goLive": "Project go-live",
+        "publish": "Publish Nginx",
+        "suspend": "Suspend project"
+      },
+      "ssl": {
+        "request": "SSL request",
+        "upload": "SSL upload"
+      },
+      "db": {
+        "adminer": {
+          "apply": "DB browser project"
+        }
+      },
+      "software": {
+        "install": "Install software",
+        "update": "Update software"
+      }
     }
   },
   "backups": {
@@ -388,7 +427,8 @@
       "php": "PHP",
       "python": "Python 3",
       "go": "Go",
-      "rust": "Rust (cargo)"
+      "rust": "Rust (cargo)",
+      "chromium": "Chromium / Chrome"
     },
     "php": {
       "session": "Sesión",
@@ -3086,7 +3126,11 @@
       "requestFailed": "Solicitud fallida ({{status}})",
       "jsonInvalid": "JSON no válido",
       "internal": "Error interno"
-    }
+    },
+    "YSK_HOST_BROWSE_SSRF": "Host browse blocked by security policy",
+    "YSK_HOST_BROWSE_SESSION": "Host browse session not found or expired",
+    "YSK_HOST_BROWSE_UPSTREAM": "Host browse upstream fetch failed",
+    "YSK_HOST_BROWSE_NEED_CHROME": "Real browser engine requires Chrome/Chromium on the host"
   },
   "fail2ban": {
     "backToProtection": "Protección",

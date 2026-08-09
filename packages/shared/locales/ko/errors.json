@@ -48,5 +48,9 @@
     "requestFailed": "요청 실패 ({{status}})",
     "jsonInvalid": "잘못된 JSON",
     "internal": "내부 오류"
-  }
+  },
+  "YSK_HOST_BROWSE_SSRF": "Host browse blocked by security policy",
+  "YSK_HOST_BROWSE_SESSION": "Host browse session not found or expired",
+  "YSK_HOST_BROWSE_UPSTREAM": "Host browse upstream fetch failed",
+  "YSK_HOST_BROWSE_NEED_CHROME": "Real browser engine requires Chrome/Chromium on the host"
 }

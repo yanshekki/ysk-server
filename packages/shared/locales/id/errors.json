@@ -48,5 +48,9 @@
     "requestFailed": "Permintaan gagal ({{status}})",
     "jsonInvalid": "JSON tidak valid",
     "internal": "Kesalahan internal"
-  }
+  },
+  "YSK_HOST_BROWSE_SSRF": "Host browse blocked by security policy",
+  "YSK_HOST_BROWSE_SESSION": "Host browse session not found or expired",
+  "YSK_HOST_BROWSE_UPSTREAM": "Host browse upstream fetch failed",
+  "YSK_HOST_BROWSE_NEED_CHROME": "Real browser engine requires Chrome/Chromium on the host"
 }

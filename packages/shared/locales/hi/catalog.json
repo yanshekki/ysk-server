@@ -22,7 +22,8 @@
     "php": "PHP",
     "python": "Python 3",
     "go": "Go",
-    "rust": "Rust (cargo)"
+    "rust": "Rust (cargo)",
+    "chromium": "Chromium / Chrome"
   },
   "php": {
     "session": "सत्र",
