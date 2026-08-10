@@ -4464,7 +4464,8 @@
     "bun": "Bun",
     "software": "Software",
     "terminal": "Terminal",
-    "hostBrowse": "Jelajah Host"
+    "hostBrowse": "Jelajah Host",
+    "cdn": "CDN"
   },
   "network": {
     "title": "Antarmuka jaringan",

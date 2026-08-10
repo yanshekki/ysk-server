@@ -4464,7 +4464,8 @@
     "bun": "Bun",
     "software": "Software",
     "terminal": "터미널",
-    "hostBrowse": "호스트 탐색"
+    "hostBrowse": "호스트 탐색",
+    "cdn": "CDN"
   },
   "network": {
     "title": "네트워크 인터페이스",

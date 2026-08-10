@@ -7,7 +7,7 @@ describe('config schema', () => {
       dataDir: '/var/lib/ysk-server',
       listenPort: 9287,
       adminUsername: 'admin',
-      locale: 'zh-TW',
+      locale: 'zh-HK',
       nonInteractive: true,
       listenHost: '127.0.0.1',
     });

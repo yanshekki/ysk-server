@@ -60,5 +60,6 @@
   "bun": "Bun",
   "software": "Software",
   "terminal": "Terminal",
-  "hostBrowse": "Host Browse"
+  "hostBrowse": "Host Browse",
+  "cdn": "CDN"
 }

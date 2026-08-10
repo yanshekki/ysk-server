@@ -4464,7 +4464,8 @@
     "bun": "Bun",
     "software": "سافٹ ویئر",
     "terminal": "ٹرمینل",
-    "hostBrowse": "ہوسٹ براؤز"
+    "hostBrowse": "ہوسٹ براؤز",
+    "cdn": "CDN"
   },
   "network": {
     "title": "نیٹ ورک انٹرفیسز",

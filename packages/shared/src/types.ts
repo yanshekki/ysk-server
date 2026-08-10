@@ -72,7 +72,7 @@ export interface ResourceScope {
 
 /**
  * Locale codes — canonical in i18n/normalize-locale.ts.
- * zh-HK = 香港書面語（繁體）; zh-TW is accepted via normalizeLocale → zh-HK.
+ * zh-HK = 香港書面語（繁體）SSOT. Browser tag zh-TW is accepted only as alias → zh-HK.
  */
 export type { LocaleCode } from './i18n/normalize-locale.js';
 export {

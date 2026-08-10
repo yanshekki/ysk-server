@@ -4464,7 +4464,8 @@
     "bun": "バン",
     "software": "ソフトウェア",
     "terminal": "ターミナル",
-    "hostBrowse": "ホストブラウズ"
+    "hostBrowse": "ホストブラウズ",
+    "cdn": "CDN"
   },
   "network": {
     "title": "ネットワークインターフェース",

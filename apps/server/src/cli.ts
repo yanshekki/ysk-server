@@ -4798,7 +4798,7 @@ async function mainInner(
           http: dual.http ?? null,
           configPath: configPath ?? null,
           adminUsername: config?.adminUsername ?? 'admin',
-          locale: config?.locale ?? 'zh-TW',
+          locale: config?.locale ?? 'zh-HK',
           webUi: Boolean(webRoot),
           webRoot,
           securityWarnings: publicBind

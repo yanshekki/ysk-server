@@ -4464,7 +4464,8 @@
     "bun": "Bun",
     "software": "البرمجيات",
     "terminal": "الطرفية",
-    "hostBrowse": "تصفح المضيف"
+    "hostBrowse": "تصفح المضيف",
+    "cdn": "CDN"
   },
   "network": {
     "title": "واجهات الشبكة",

@@ -113,7 +113,7 @@ describe('buildHostManifest', () => {
       password_hash: 'x',
       password_salt: 'y',
       roles: ['admin'],
-      locale: 'zh-TW',
+      locale: 'zh-HK',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });

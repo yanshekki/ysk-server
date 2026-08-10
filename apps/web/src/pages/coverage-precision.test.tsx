@@ -142,7 +142,7 @@ describe('operator-messages + i18n unit', () => {
     ]);
     setAppLocale('zh-CN');
     setAppLocale('en', { syncServer: false });
-    setAppLocale('zh-TW');
+    setAppLocale('zh-HK');
     cycleAppLocale();
     applyUserLocale(null);
     applyUserLocale(undefined);

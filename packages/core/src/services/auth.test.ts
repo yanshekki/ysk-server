@@ -28,7 +28,7 @@ describe('auth + protection (persistent)', () => {
       db,
       dir,
     );
-    auth.ensureAdmin('admin', 'secret', 'zh-TW');
+    auth.ensureAdmin('admin', 'secret', 'zh-HK');
     const login = auth.login({ username: 'admin', password: 'secret' });
     expect(login.token).toBeTruthy();
     expect(auth.authenticate(login.token).username).toBe('admin');
@@ -59,7 +59,7 @@ describe('auth + protection (persistent)', () => {
       db,
       dir,
     );
-    auth.ensureAdmin('admin', 'secret', 'zh-TW');
+    auth.ensureAdmin('admin', 'secret', 'zh-HK');
     for (let i = 0; i < 5; i++) {
       try {
         auth.login({ username: 'admin', password: 'wrong' }, { ip: '1.2.3.4' });
@@ -85,7 +85,7 @@ describe('auth + protection (persistent)', () => {
       db,
       dir,
     );
-    auth.ensureAdmin('admin', 'secret', 'zh-TW');
+    auth.ensureAdmin('admin', 'secret', 'zh-HK');
     const admin = users.findByUsername('admin')!;
     expect(() => auth.beginTotp(admin.id)).toThrow(/密碼/);
     const begin = auth.beginTotp(admin.id, { password: 'secret' });
@@ -133,7 +133,7 @@ describe('auth + protection (persistent)', () => {
     const db = openDatabase(dbPath);
     const users = new UserRepository(db);
     const auth = new AuthService(users, new SessionRepository(db), new AuditRepository(db), db, dir);
-    auth.ensureAdmin('admin', 'secret', 'zh-TW');
+    auth.ensureAdmin('admin', 'secret', 'zh-HK');
     const admin = users.findByUsername('admin')!;
     const { token } = createApiKey(db, { name: 'ci', userId: admin.id });
     expect(token.startsWith('ysk_')).toBe(true);
@@ -163,7 +163,7 @@ describe('auth + protection (persistent)', () => {
       db,
       dir,
     );
-    auth.ensureAdmin('admin', 'secret-long-ok1', 'zh-TW');
+    auth.ensureAdmin('admin', 'secret-long-ok1', 'zh-HK');
     expect(() => auth.login({ username: '', password: '' })).toThrow();
     const admin = users.findByUsername('admin')!;
     users.update(admin.id, { suspended: true });
@@ -230,7 +230,7 @@ describe('auth + protection (persistent)', () => {
       db,
       dir,
     );
-    auth.ensureAdmin('admin', 'secret-long-ok2', 'zh-TW');
+    auth.ensureAdmin('admin', 'secret-long-ok2', 'zh-HK');
     const admin = users.findByUsername('admin')!;
     const begin = auth.beginTotp(admin.id, { password: 'secret-long-ok2' });
     const code = generateTotpCode(begin.secret);
@@ -275,7 +275,7 @@ describe('auth + protection (persistent)', () => {
       db,
       dir,
     );
-    auth.ensureAdmin('admin', 'secret-long-ok3', 'zh-TW');
+    auth.ensureAdmin('admin', 'secret-long-ok3', 'zh-HK');
     db.snapshot.settings['security.require_admin_totp'] = '1';
     db.snapshot.settings['security.require_admin_totp_strict'] = '1';
     db.persist();
@@ -292,7 +292,7 @@ describe('auth + protection (persistent)', () => {
     const users = new UserRepository(db);
     const sessions = new SessionRepository(db);
     const auth = new AuthService(users, sessions, new AuditRepository(db), db, dir);
-    auth.ensureAdmin('admin', 'secret-long-ok4', 'zh-TW');
+    auth.ensureAdmin('admin', 'secret-long-ok4', 'zh-HK');
     const admin = users.findByUsername('admin')!;
     const salt = 'opsalt1';
     const now = new Date().toISOString();

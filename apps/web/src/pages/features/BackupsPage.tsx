@@ -422,7 +422,7 @@ export function BackupsPage() {
                           </span>
                           <span>
                             {b.mtime
-                              ? new Date(b.mtime).toLocaleString('zh-TW')
+                              ? new Date(b.mtime).toLocaleString('zh-HK')
                               : '—'}
                           </span>
                         </div>

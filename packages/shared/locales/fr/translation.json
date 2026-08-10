@@ -4464,7 +4464,8 @@
     "bun": "Bun",
     "software": "Logiciels",
     "terminal": "Terminal",
-    "hostBrowse": "Navigation hôte"
+    "hostBrowse": "Navigation hôte",
+    "cdn": "CDN"
   },
   "network": {
     "title": "Interfaces réseau",

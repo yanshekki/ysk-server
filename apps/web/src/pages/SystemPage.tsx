@@ -1484,7 +1484,7 @@ export function SystemPage() {
                           <code className="sys-conf-row__name">{a.name}</code>
                           <div className="sys-conf-row__meta">
                             {formatBytes(a.bytes)} ·{' '}
-                            {new Date(a.mtime).toLocaleString('zh-TW')}
+                            {new Date(a.mtime).toLocaleString('zh-HK')}
                           </div>
                         </div>
                         <Button

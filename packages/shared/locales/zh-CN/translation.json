@@ -4464,7 +4464,8 @@
     "bun": "Bun",
     "software": "软件中心",
     "terminal": "终端",
-    "hostBrowse": "主機瀏覽"
+    "hostBrowse": "主機瀏覽",
+    "cdn": "CDN"
   },
   "network": {
     "title": "网络接口",

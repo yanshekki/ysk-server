@@ -720,7 +720,7 @@ export function CronPage() {
                     <dt>{t('cron.lastInstall')}</dt>
                     <dd>
                       {status?.lastInstallAt
-                        ? `${status.lastInstallOk ? t('common.success') : t('common.failed')} · ${new Date(status.lastInstallAt).toLocaleString('zh-TW')}`
+                        ? `${status.lastInstallOk ? t('common.success') : t('common.failed')} · ${new Date(status.lastInstallAt).toLocaleString('zh-HK')}`
                         : t('backups.notYet')}
                     </dd>
                   </div>

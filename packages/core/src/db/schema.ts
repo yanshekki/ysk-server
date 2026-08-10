@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   password_salt TEXT NOT NULL,
   roles TEXT NOT NULL,
-  locale TEXT NOT NULL DEFAULT 'zh-TW',
+  locale TEXT NOT NULL DEFAULT 'zh-HK',
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
@@ -111,6 +111,14 @@ CREATE TABLE IF NOT EXISTS email_domains (
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_events(created_at);
 CREATE INDEX IF NOT EXISTS idx_approvals_status ON approvals(status);
+`,
+  },
+  {
+    // Product locale SSOT is zh-HK (香港書面語). zh-TW was a legacy default / browser alias only.
+    version: 2,
+    sql: `
+UPDATE users SET locale = 'zh-HK' WHERE lower(replace(locale, '_', '-')) IN ('zh-tw', 'zh', 'zh-hant');
+UPDATE settings SET value = replace(value, '"zh-TW"', '"zh-HK"') WHERE key = 'config' AND value LIKE '%zh-TW%';
 `,
   },
 ];

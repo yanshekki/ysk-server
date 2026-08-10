@@ -279,7 +279,7 @@ describe('setup + persistence', () => {
         dataDir: dir,
         nonInteractive: true,
         listenPort: 8799,
-        locale: 'zh-TW',
+        locale: 'zh-HK',
         adminUsername: 'admin',
         adminPassword: 'admin',
         force: true,
@@ -2986,7 +2986,7 @@ describe('CLI deep coverage climb', () => {
       'node',
       'ysk-server',
       'version',
-      '--locale=zh-TW',
+      '--locale=zh-HK',
       '--json',
     ]);
     expect(locEq.code).toBe(0);

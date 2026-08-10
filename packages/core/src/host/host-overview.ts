@@ -402,7 +402,7 @@ export async function collectHostOverview(host: HostExecutor): Promise<HostOverv
   const now = new Date();
   let local = now.toISOString();
   try {
-    local = now.toLocaleString('zh-TW', { timeZone: timezone || undefined });
+    local = now.toLocaleString('zh-HK', { timeZone: timezone || undefined });
   } catch {
     local = now.toString();
   }

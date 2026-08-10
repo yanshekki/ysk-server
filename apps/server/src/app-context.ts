@@ -137,7 +137,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
   const usersAdmin = new UsersAdminService(users, sessions, db, audit);
   const rbac = new RbacPolicyService(db, audit);
   const adminUsername = opts.config?.adminUsername ?? 'admin';
-  const locale = opts.config?.locale ?? 'zh-TW';
+  const locale = opts.config?.locale ?? 'zh-HK';
   // Never silently seed default "admin" password on empty DB.
   // Tests/harness pass adminPassword; production must set YSK_ADMIN_PASSWORD or run setup.
   const password = opts.adminPassword ?? process.env.YSK_ADMIN_PASSWORD;

@@ -60,5 +60,6 @@
   "bun": "Bun",
   "software": "軟件中心",
   "terminal": "終端機",
-  "hostBrowse": "主機瀏覽"
+  "hostBrowse": "主機瀏覽",
+  "cdn": "CDN"
 }

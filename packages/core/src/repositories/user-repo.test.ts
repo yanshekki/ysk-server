@@ -17,7 +17,7 @@ describe('UserRepository', () => {
       password_hash: 'h',
       password_salt: 's',
       roles: ['admin'],
-      locale: 'zh-TW',
+      locale: 'zh-HK',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });

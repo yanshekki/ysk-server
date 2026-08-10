@@ -1302,7 +1302,7 @@ export function UsersPage() {
                   id: r.user.id,
                   username: r.user.username,
                   roles: r.user.roles,
-                  locale: r.user.locale ?? 'zh-TW' });
+                  locale: r.user.locale ?? 'zh-HK' });
                 window.location.href = '/';
               })
               .catch((e: Error) => setError(e.message))

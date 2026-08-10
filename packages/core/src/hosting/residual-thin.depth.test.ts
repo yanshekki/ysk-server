@@ -655,7 +655,7 @@ describe('hosting residual thin — quota + mysql + package-limits', () => {
           password_hash: 'x',
           password_salt: 'y',
           roles: ['operator'],
-          locale: 'zh-TW',
+          locale: 'zh-HK',
           package_id: 'pkg1',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
