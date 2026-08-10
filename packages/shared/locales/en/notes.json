@@ -2807,5 +2807,11 @@
     "ssKeysCreated": "Shadowsocks server password generated.",
     "ssServerActive": "Shadowsocks server applied (port {{port}}).",
     "ssSharedPassword": "All ss:// labels share one server password (rotate by re-ensuring server)."
+  },
+  "vnc": {
+    "needInstall": "Install {{stack}} from the VNC Install tab (root + YSK_EXECUTE).",
+    "needExecute": "YSK_EXECUTE is disabled — cannot install packages or provision Linux users.",
+    "needRoot": "Not running as root — system useradd and vncserver apply are blocked.",
+    "novncAssetsOnly": "noVNC web assets found; websockify binary still missing."
   }
 }

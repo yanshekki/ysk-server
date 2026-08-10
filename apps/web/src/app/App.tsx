@@ -165,6 +165,9 @@ const HostBrowsePage = lazy(() =>
 const VpnPage = lazy(() =>
   import('../pages/features/VpnPage').then((m) => ({ default: m.VpnPage })),
 );
+const VncPage = lazy(() =>
+  import('../pages/features/VncPage').then((m) => ({ default: m.VncPage })),
+);
 const LogsPage = lazy(() =>
   import('../pages/features/LogsPage').then((m) => ({ default: m.LogsPage })),
 );
@@ -536,6 +539,14 @@ export function App() {
               element={
                 <Lazy>
                   <VpnPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="vnc"
+              element={
+                <Lazy>
+                  <VncPage />
                 </Lazy>
               }
             />

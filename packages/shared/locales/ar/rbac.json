@@ -79,7 +79,8 @@
     "settingsSystem": "إعدادات النظام",
     "auditExport": "تصدير التدقيق",
     "securityApiKeysAdmin": "إدارة مفاتيح API",
-    "networkBrowse": "تصفح عبر المضيف"
+    "networkBrowse": "تصفح عبر المضيف",
+    "networkVnc": "VNC remote desktop"
   },
   "aboutRoles": "الأدوار (الافتراضيات الأصلية)",
   "aboutRolesBody": "تحدد الأدوار القدرات الافتراضية؛ ويمكن للمستخدمين تجاوز القدرات الفردية.",

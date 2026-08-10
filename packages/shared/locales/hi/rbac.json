@@ -79,7 +79,8 @@
     "settingsSystem": "सिस्टम सेटिंग्स",
     "networkBrowse": "होस्ट-मध्यस्थ ब्राउज़",
     "auditExport": "ऑडिट निर्यात",
-    "securityApiKeysAdmin": "API कुंजी व्यवस्थापक"
+    "securityApiKeysAdmin": "API कुंजी व्यवस्थापक",
+    "networkVnc": "VNC remote desktop"
   },
   "aboutRoles": "भूमिकाएँ (फ़ैक्टरी डिफ़ॉल्ट)",
   "aboutRolesBody": "भूमिकाएँ डिफ़ॉल्ट क्षमताएँ सेट करती हैं; उपयोगकर्ता अलग-अलग को ओवरराइड कर सकते हैं।",

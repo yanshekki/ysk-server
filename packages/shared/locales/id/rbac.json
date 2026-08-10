@@ -79,7 +79,8 @@
     "settingsSystem": "Pengaturan sistem",
     "auditExport": "Ekspor audit",
     "securityApiKeysAdmin": "Admin kunci API",
-    "networkBrowse": "Jelajah dimediasi host"
+    "networkBrowse": "Jelajah dimediasi host",
+    "networkVnc": "VNC remote desktop"
   },
   "aboutRoles": "Peran (default pabrik)",
   "aboutRolesBody": "Peran menetapkan kapabilitas default; pengguna dapat menimpa masing-masing.",

@@ -62,5 +62,6 @@
   "terminal": "ٹرمینل",
   "hostBrowse": "ہوسٹ براؤز",
   "cdn": "CDN",
-  "vpn": "VPN"
+  "vpn": "VPN",
+  "vnc": "VNC"
 }

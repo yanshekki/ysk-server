@@ -79,7 +79,8 @@
     "settingsSystem": "سسٹم سیٹنگز",
     "auditExport": "آڈٹ ایکسپورٹ",
     "securityApiKeysAdmin": "API کلیدیں ایڈمن",
-    "networkBrowse": "ہوسٹ سے براؤز"
+    "networkBrowse": "ہوسٹ سے براؤز",
+    "networkVnc": "VNC remote desktop"
   },
   "aboutRoles": "رولز (فیکٹری ڈیفالٹس)",
   "aboutRolesBody": "رولز ڈیفالٹ صلاحیتیں مقرر کرتے ہیں؛ صارفین انفرادی کو اوور رائیڈ کر سکتے ہیں۔",

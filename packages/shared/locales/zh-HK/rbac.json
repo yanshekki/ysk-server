@@ -79,7 +79,8 @@
     "settingsSystem": "系統設定",
     "auditExport": "審計匯出",
     "securityApiKeysAdmin": "介面 金鑰管理",
-    "networkBrowse": "主機代瀏覽"
+    "networkBrowse": "主機代瀏覽",
+    "networkVnc": "VNC 遠端桌面管理"
   },
   "aboutRoles": "角色說明（出廠預設）",
   "aboutRolesBody": "角色決定預設權限；用戶可再覆寫個別能力。",

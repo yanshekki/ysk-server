@@ -83,6 +83,7 @@ export const FEATURE_SECTIONS: FeatureSection[] = [
       { to: '/protection', key: 'protection', icon: '🛡' },
       { to: '/security', key: 'security', icon: '⛨' },
       { to: '/vpn', key: 'vpn', icon: '🔐' },
+      { to: '/vnc', key: 'vnc', icon: '🖥️' },
     ],
   },
   {

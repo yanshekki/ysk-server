@@ -4454,7 +4454,8 @@
     "terminal": "터미널",
     "hostBrowse": "호스트 탐색",
     "cdn": "CDN",
-    "vpn": "VPN"
+    "vpn": "VPN",
+    "vnc": "VNC"
   },
   "network": {
     "title": "네트워크 인터페이스",
@@ -7459,6 +7460,12 @@
       "ssKeysCreated": "Shadowsocks server password generated.",
       "ssServerActive": "Shadowsocks server applied (port {{port}}).",
       "ssSharedPassword": "All ss:// labels share one server password (rotate by re-ensuring server)."
+    },
+    "vnc": {
+      "needInstall": "Install {{stack}} from the VNC Install tab (root + YSK_EXECUTE).",
+      "needExecute": "YSK_EXECUTE is disabled — cannot install packages or provision Linux users.",
+      "needRoot": "Not running as root — system useradd and vncserver apply are blocked.",
+      "novncAssetsOnly": "noVNC web assets found; websockify binary still missing."
     }
   },
   "ops": {
@@ -8606,7 +8613,8 @@
       "settingsSystem": "시스템 설정",
       "auditExport": "감사 내보내기",
       "securityApiKeysAdmin": "API 키 관리",
-      "networkBrowse": "호스트 중개 브라우징"
+      "networkBrowse": "호스트 중개 브라우징",
+      "networkVnc": "VNC remote desktop"
     },
     "aboutRoles": "역할 (공장 기본값)",
     "aboutRolesBody": "역할은 기본 권한을 설정하며, 사용자는 개별 항목을 재정의할 수 있습니다.",
@@ -10891,5 +10899,59 @@
     "securityClearConfirm": "2FA 초기화를 확인하려면 사용자 이름을 입력하세요",
     "securityClearOk": "{{name}}의 2FA가 초기화됨",
     "securitySelfNote": "본인 2FA를 설정하려면 보안 → 내 보안을 여세요."
+  },
+  "vnc": {
+    "pageDesc": "Remote desktop: multi Linux-user VNC sessions, noVNC in the browser, and outbound client profiles.",
+    "result": "VNC operation result",
+    "installed": "Installed",
+    "notInstalled": "Not installed",
+    "stackBins": "Found: {{bins}}",
+    "stackMissing": "Missing: {{bins}}",
+    "executeOn": "YSK_EXECUTE is on — install, useradd, and sessions can apply when root.",
+    "executeOff": "YSK_EXECUTE is off — status is live, but install / Linux users / sessions stay blocked until enabled.",
+    "statAccounts": "Accounts",
+    "statRunning": "Running",
+    "statClients": "Client profiles",
+    "statEndpoint": "Host hint",
+    "goAccounts": "Server accounts",
+    "goClient": "Client",
+    "goInstall": "Install",
+    "accountsComing": "Account create / start / stop ships in the next PR. Stack install and defaults work now.",
+    "accountsEmptyTitle": "No VNC accounts yet",
+    "accountsEmptyDesc": "After TigerVNC is installed, create one Linux user per remote desktop session.",
+    "clientPathHint": "Connect via the server (noVNC proxy) or via your own network (vncviewer / direct RFB).",
+    "clientEmptyTitle": "No client profiles yet",
+    "clientEmptyDesc": "Import a remote host:port in a later PR. Choose via-server or direct path when connecting.",
+    "installHint": "Install TigerVNC first, then noVNC for browser access. XFCE is optional (larger download).",
+    "needTigerVnc": "TigerVNC server is required for multi-user sessions",
+    "needNovnc": "noVNC + websockify for browser remote desktop",
+    "needXfce": "Optional XFCE desktop profile",
+    "needViewer": "Optional TigerVNC viewer (this host as client, direct path)",
+    "needViewerOrNovnc": "Viewer or noVNC recommended for client tab",
+    "settingsHint": "Defaults apply to new accounts. Changing RFB bind to “all interfaces” exposes ports — prefer localhost + noVNC or VPN.",
+    "defaultDesktop": "Default desktop",
+    "defaultGeometry": "Default resolution",
+    "defaultDepth": "Colour depth",
+    "defaultRfbBind": "RFB listen",
+    "defaultAutostart": "Autostart sessions",
+    "autostartLabel": "Start VNC session on boot (when applied)",
+    "settingsSaved": "VNC defaults saved",
+    "tab": {
+      "overview": "Overview",
+      "accounts": "Accounts",
+      "client": "Client",
+      "install": "Install",
+      "settings": "Settings",
+      "about": "About"
+    },
+    "desktop": {
+      "minimal": "Minimal (light)",
+      "xfce": "XFCE (full desktop)",
+      "none": "None (custom xstartup)"
+    },
+    "bind": {
+      "localhost": "Localhost only (noVNC / tunnel)",
+      "all": "All interfaces (direct RFB — open firewall)"
+    }
   }
 }

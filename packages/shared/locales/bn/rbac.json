@@ -79,7 +79,8 @@
     "settingsSystem": "সিস্টেম সেটিংস",
     "auditExport": "অডিট এক্সপোর্ট",
     "securityApiKeysAdmin": "API কী অ্যাডমিন",
-    "networkBrowse": "হোস্ট-মধ্যস্থ ব্রাউজ"
+    "networkBrowse": "হোস্ট-মধ্যস্থ ব্রাউজ",
+    "networkVnc": "VNC remote desktop"
   },
   "aboutRoles": "রোল (ফ্যাক্টরি ডিফল্ট)",
   "aboutRolesBody": "রোল ডিফল্ট সক্ষমতা নির্ধারণ করে; ব্যবহারকারীরা পৃথকগুলো ওভাররাইড করতে পারে।",

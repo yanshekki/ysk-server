@@ -62,5 +62,6 @@
   "terminal": "ターミナル",
   "hostBrowse": "ホストブラウズ",
   "cdn": "CDN",
-  "vpn": "VPN"
+  "vpn": "VPN",
+  "vnc": "VNC"
 }

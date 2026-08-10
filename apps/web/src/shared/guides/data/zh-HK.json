@@ -1638,5 +1638,41 @@
         "to": "/network"
       }
     ]
+  },
+  "vnc": {
+    "id": "vnc",
+    "title": "VNC 遠端桌面",
+    "summary": "以 TigerVNC 提供多用戶 session（每帳獨立 Linux 用戶），用 noVNC 喺瀏覽器開啟，或作 client 連出（經 server 代理／自己網絡直連）。",
+    "canDo": [
+      "一鍵安裝 TigerVNC、noVNC、可選 XFCE 與 viewer",
+      "每個 VNC 帳號對應獨立 Linux 用戶（下個 PR）",
+      "預設 localhost RFB + noVNC；可選直連埠 + 防火牆",
+      "Client 連線路徑：經 server 或直連"
+    ],
+    "workflow": [
+      "安裝分頁 → TigerVNC（再裝 noVNC）",
+      "設定 → 預設桌面／解析度／RFB 監聽",
+      "帳號 → 建立用戶 session（PR-B）",
+      "開 noVNC，或將 host:port 交畀用戶自己網絡連入"
+    ],
+    "notes": [
+      "安裝與 user 建立需 root + YSK_EXECUTE",
+      "RFB 預設只聽 localhost 較安全",
+      "暴露遠端桌面時建議配合 VPN"
+    ],
+    "cliHints": [
+      "vncserver -list",
+      "ss -lntp | grep 590"
+    ],
+    "related": [
+      {
+        "label": "VPN",
+        "to": "/vpn"
+      },
+      {
+        "label": "防火牆",
+        "to": "/protection/firewall"
+      }
+    ]
   }
 }

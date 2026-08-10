@@ -79,7 +79,8 @@
     "settingsSystem": "Definições do sistema",
     "auditExport": "Exportação de auditoria",
     "securityApiKeysAdmin": "Admin de chaves API",
-    "networkBrowse": "Navegação mediada pelo host"
+    "networkBrowse": "Navegação mediada pelo host",
+    "networkVnc": "VNC remote desktop"
   },
   "aboutRoles": "Funções (predefinições de fábrica)",
   "aboutRolesBody": "As funções definem capacidades predefinidas; os utilizadores podem substituir as individuais.",

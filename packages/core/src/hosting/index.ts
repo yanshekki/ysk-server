@@ -79,6 +79,7 @@ export * from './rebuild.js';
 export * from './backup-restic.js';
 export * from './dns-cluster.js';
 export * from './vpn/index.js';
+export * from './vnc/index.js';
 export * from './dns-validate.js';
 export * from './dns-lookup.js';
 export * from './db-cluster/index.js';

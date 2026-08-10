@@ -1650,5 +1650,41 @@
         "to": "/network"
       }
     ]
+  },
+  "vnc": {
+    "id": "vnc",
+    "title": "VNC remote desktop",
+    "summary": "Run multi-user TigerVNC sessions (one Linux user each), open them in the browser with noVNC, or connect outbound as a client via the server proxy or your own network.",
+    "canDo": [
+      "One-click install TigerVNC, noVNC, optional XFCE and viewer",
+      "Create independent Linux users for each VNC account (next PR)",
+      "Prefer localhost RFB + noVNC; optional direct ports with firewall",
+      "Choose client path: via server (proxy) or direct RFB"
+    ],
+    "workflow": [
+      "Install tab → TigerVNC (then noVNC)",
+      "Settings → default desktop / resolution / RFB bind",
+      "Accounts → create user session (PR-B)",
+      "Open noVNC or give the user host:port for their own network"
+    ],
+    "notes": [
+      "Install and user provision need root + YSK_EXECUTE",
+      "Default RFB is localhost-only for safety",
+      "Prefer VPN when exposing remote desktops"
+    ],
+    "cliHints": [
+      "vncserver -list",
+      "ss -lntp | grep 590"
+    ],
+    "related": [
+      {
+        "label": "VPN",
+        "to": "/vpn"
+      },
+      {
+        "label": "Firewall",
+        "to": "/protection/firewall"
+      }
+    ]
   }
 }

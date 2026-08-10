@@ -79,7 +79,8 @@
     "settingsSystem": "システム設定",
     "auditExport": "監査エクスポート",
     "securityApiKeysAdmin": "API キー管理者",
-    "networkBrowse": "ホスト経由ブラウズ"
+    "networkBrowse": "ホスト経由ブラウズ",
+    "networkVnc": "VNC remote desktop"
   },
   "aboutRoles": "役割 (工場出荷時のデフォルト)",
   "aboutRolesBody": "ロールは既定の権限を設定します。ユーザーは個別に上書きできます。",

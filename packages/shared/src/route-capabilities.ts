@@ -267,6 +267,12 @@ export const MUTATING_ROUTE_CAP_RULES: readonly RouteCapRule[] = [
   },
   {
     methods: ['POST', 'PUT', 'PATCH', 'DELETE'],
+    pattern: /^\/api\/v1\/vnc\//,
+    cap: 'network.vnc',
+    note: 'VNC server/client mutations',
+  },
+  {
+    methods: ['POST', 'PUT', 'PATCH', 'DELETE'],
     pattern: /^\/api\/v1\/network\//,
     cap: 'settings.system',
   },
@@ -399,6 +405,7 @@ export const FEATURE_NAV_CAPS: Readonly<Record<string, readonly CapabilityId[]>>
   terminal: ['settings.system', 'services.control'],
   hostBrowse: ['network.browse'],
   vpn: ['network.vpn', 'firewall.edit'],
+  vnc: ['network.vnc', 'firewall.edit'],
 };
 
 /** Path prefix → any-of caps (for SPA route guard). Longer prefixes win. */
@@ -428,6 +435,7 @@ export const PATH_CAP_GUARDS: ReadonlyArray<{
   { prefix: '/terminal', caps: ['settings.system', 'services.control'] },
   { prefix: '/browse', caps: ['network.browse'] },
   { prefix: '/vpn', caps: ['network.vpn'] },
+  { prefix: '/vnc', caps: ['network.vnc'] },
   { prefix: '/agents', caps: ['services.read', 'services.control', 'runtime.tuning'] },
   { prefix: '/cdn', caps: ['publish.apply', 'projects.read'] },
 ];

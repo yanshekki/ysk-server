@@ -4455,7 +4455,8 @@
     "terminal": "终端",
     "hostBrowse": "主機瀏覽",
     "cdn": "CDN",
-    "vpn": "VPN"
+    "vpn": "VPN",
+    "vnc": "VNC"
   },
   "network": {
     "title": "网络接口",
@@ -7466,6 +7467,12 @@
       "ssKeysCreated": "已生成 Shadowsocks 服务器密码。",
       "ssServerActive": "已套用 Shadowsocks 服务器（端口 {{port}}）。",
       "ssSharedPassword": "所有 ss:// 标签共用同一服务器密码（重新启动服务器可轮换）。"
+    },
+    "vnc": {
+      "needInstall": "请在 VNC「安装」分页安装 {{stack}}（需 root + YSK_EXECUTE）。",
+      "needExecute": "未启用 YSK_EXECUTE — 无法安装软件包或创建 Linux 用户。",
+      "needRoot": "非 root — 无法 useradd 或应用 vncserver。",
+      "novncAssetsOnly": "已找到 noVNC 网页资源；仍缺 websockify 可执行文件。"
     }
   },
   "ops": {
@@ -8613,7 +8620,8 @@
       "settingsSystem": "系统设置",
       "auditExport": "审计导出",
       "securityApiKeysAdmin": "API 密钥管理",
-      "networkBrowse": "主機代瀏覽"
+      "networkBrowse": "主機代瀏覽",
+      "networkVnc": "VNC 远程桌面管理"
     },
     "aboutRoles": "角色说明（出厂默认）",
     "aboutRolesBody": "角色决定默认权限；用户可再覆盖个别能力。",
@@ -10898,5 +10906,59 @@
     "securityClearConfirm": "输入用户名以确认清除 2FA",
     "securityClearOk": "已清除 {{name}} 的 2FA",
     "securitySelfNote": "要为自己设置 2FA，请到「安全 → 我的安全」。"
+  },
+  "vnc": {
+    "pageDesc": "远程桌面：多 Linux 用户 VNC 会话、浏览器 noVNC，以及连出 client 配置。",
+    "result": "VNC 操作结果",
+    "installed": "已安装",
+    "notInstalled": "未安装",
+    "stackBins": "找到：{{bins}}",
+    "stackMissing": "缺少：{{bins}}",
+    "executeOn": "已启用 YSK_EXECUTE — 有 root 时可安装、useradd 与启动会话。",
+    "executeOff": "未启用 YSK_EXECUTE — 可查看状态，但安装／Linux 用户／会话会 blocked。",
+    "statAccounts": "账号",
+    "statRunning": "运行中",
+    "statClients": "客户端配置",
+    "statEndpoint": "主机提示",
+    "goAccounts": "服务器账号",
+    "goClient": "客户端",
+    "goInstall": "安装",
+    "accountsComing": "创建／启停账号将在下一 PR 推出。现在可安装堆栈并改默认。",
+    "accountsEmptyTitle": "尚无 VNC 账号",
+    "accountsEmptyDesc": "装好 TigerVNC 后，每个远程桌面会话对应一个独立 Linux 用户。",
+    "clientPathHint": "可选择经 server（noVNC 代理）或经用户自己网络（vncviewer／直连 RFB）。",
+    "clientEmptyTitle": "尚无客户端配置",
+    "clientEmptyDesc": "稍后可导入远程 host:port；连接时选择经 server 或直连。",
+    "installHint": "请先装 TigerVNC，再装 noVNC 供浏览器使用。XFCE 可选（下载较大）。",
+    "needTigerVnc": "多用户会话需要 TigerVNC server",
+    "needNovnc": "浏览器远程桌面需要 noVNC + websockify",
+    "needXfce": "可选 XFCE 桌面 profile",
+    "needViewer": "可选 TigerVNC viewer（本机作 client 直连）",
+    "needViewerOrNovnc": "客户端分页建议安装 viewer 或 noVNC",
+    "settingsHint": "默认应用于新建账号。RFB 改为「全部接口」会暴露端口 — 建议 localhost + noVNC 或经 VPN。",
+    "defaultDesktop": "默认桌面",
+    "defaultGeometry": "默认分辨率",
+    "defaultDepth": "色深",
+    "defaultRfbBind": "RFB 监听",
+    "defaultAutostart": "开机自启",
+    "autostartLabel": "开机启动 VNC 会话（应用后）",
+    "settingsSaved": "已保存 VNC 默认",
+    "tab": {
+      "overview": "总览",
+      "accounts": "账号",
+      "client": "客户端",
+      "install": "安装",
+      "settings": "设置",
+      "about": "说明"
+    },
+    "desktop": {
+      "minimal": "最小（轻量）",
+      "xfce": "XFCE（完整桌面）",
+      "none": "无（自定义 xstartup）"
+    },
+    "bind": {
+      "localhost": "仅本机（noVNC／隧道）",
+      "all": "全部接口（直连 RFB — 需开防火墙）"
+    }
   }
 }

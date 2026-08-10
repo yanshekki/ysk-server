@@ -50,6 +50,7 @@ export type CapabilityId =
   | 'settings.system'
   | 'network.browse'
   | 'network.vpn'
+  | 'network.vnc'
   | 'audit.export'
   | 'security.api_keys.admin';
 
@@ -132,6 +133,7 @@ export const CAPABILITY_CATALOG: readonly CapabilityDef[] = [
   { id: 'settings.system', band: 'privilege', labelKey: 'rbac.cap.settingsSystem' },
   { id: 'network.browse', band: 'privilege', labelKey: 'rbac.cap.networkBrowse' },
   { id: 'network.vpn', band: 'privilege', labelKey: 'rbac.cap.networkVpn' },
+  { id: 'network.vnc', band: 'privilege', labelKey: 'rbac.cap.networkVnc' },
   { id: 'audit.export', band: 'privilege', labelKey: 'rbac.cap.auditExport' },
   { id: 'security.api_keys.admin', band: 'privilege', labelKey: 'rbac.cap.securityApiKeysAdmin' },
 ] as const;

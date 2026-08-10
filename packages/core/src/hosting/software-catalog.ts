@@ -35,7 +35,11 @@ export type SoftwareId =
   | 'chromium'
   | 'wireguard'
   | 'openvpn'
-  | 'shadowsocks';
+  | 'shadowsocks'
+  | 'tigervnc'
+  | 'novnc'
+  | 'vnc-desktop-xfce'
+  | 'tigervnc-viewer';
 
 export type FeatureSoftwareKey =
   | 'ftp'
@@ -63,6 +67,9 @@ export type FeatureSoftwareKey =
   | 'wireguard'
   | 'openvpn'
   | 'outline'
+  | 'vnc'
+  | 'tigervnc'
+  | 'novnc'
   | 'all';
 
 export type RuntimeInstaller =
@@ -350,6 +357,39 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     bins: ['ss-server'],
     aptPackages: ['shadowsocks-libev'],
     features: ['vpn', 'outline'],
+  },
+  {
+    id: 'tigervnc',
+    title: 'TigerVNC server',
+    bins: ['vncserver', 'Xvnc', 'x0vncserver'],
+    // Debian/Ubuntu package names vary; installer tries what apt provides
+    aptPackages: [
+      'tigervnc-standalone-server',
+      'tigervnc-common',
+      'tigervnc-tools',
+    ],
+    features: ['vnc', 'tigervnc'],
+  },
+  {
+    id: 'novnc',
+    title: 'noVNC + websockify',
+    bins: ['websockify', 'novnc_proxy'],
+    aptPackages: ['novnc', 'websockify'],
+    features: ['vnc', 'novnc'],
+  },
+  {
+    id: 'vnc-desktop-xfce',
+    title: 'XFCE desktop (for VNC)',
+    bins: ['startxfce4', 'xfce4-session'],
+    aptPackages: ['xfce4', 'xfce4-goodies', 'dbus-x11'],
+    features: ['vnc'],
+  },
+  {
+    id: 'tigervnc-viewer',
+    title: 'TigerVNC viewer',
+    bins: ['vncviewer', 'xtigervncviewer'],
+    aptPackages: ['tigervnc-viewer'],
+    features: ['vnc'],
   },
 ];
 

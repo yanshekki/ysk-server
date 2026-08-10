@@ -62,5 +62,6 @@
   "terminal": "终端",
   "hostBrowse": "主機瀏覽",
   "cdn": "CDN",
-  "vpn": "VPN"
+  "vpn": "VPN",
+  "vnc": "VNC"
 }

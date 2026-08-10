@@ -62,5 +62,6 @@
   "terminal": "الطرفية",
   "hostBrowse": "تصفح المضيف",
   "cdn": "CDN",
-  "vpn": "VPN"
+  "vpn": "VPN",
+  "vnc": "VNC"
 }

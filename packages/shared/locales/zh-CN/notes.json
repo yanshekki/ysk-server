@@ -2807,5 +2807,11 @@
     "ssKeysCreated": "已生成 Shadowsocks 服务器密码。",
     "ssServerActive": "已套用 Shadowsocks 服务器（端口 {{port}}）。",
     "ssSharedPassword": "所有 ss:// 标签共用同一服务器密码（重新启动服务器可轮换）。"
+  },
+  "vnc": {
+    "needInstall": "请在 VNC「安装」分页安装 {{stack}}（需 root + YSK_EXECUTE）。",
+    "needExecute": "未启用 YSK_EXECUTE — 无法安装软件包或创建 Linux 用户。",
+    "needRoot": "非 root — 无法 useradd 或应用 vncserver。",
+    "novncAssetsOnly": "已找到 noVNC 网页资源；仍缺 websockify 可执行文件。"
   }
 }
