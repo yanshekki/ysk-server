@@ -134,4 +134,51 @@ describe('HostBrowseService integration', () => {
     expect(html).toContain('/f?u=');
     expect(html).toContain(encodeURIComponent('https://example.com/login'));
   });
+
+  it('blocks panel blockHosts and reports media capability honestly', async () => {
+    const libs = new Map<string, ReturnType<typeof import('./bookmarks.js').emptyLibrary>>();
+    const { emptyLibrary } = await import('./bookmarks.js');
+    const svc = new HostBrowseService(
+      { defaultEngine: 'proxy' },
+      undefined,
+      () => ({
+        safetyLevel: 'strict',
+        blockHosts: ['evil.example'],
+        audioBridge: false,
+      }),
+      {
+        getLibrary: (uid) => libs.get(uid) ?? emptyLibrary(),
+        setLibrary: (uid, lib) => {
+          libs.set(uid, lib);
+        },
+      },
+    );
+    const caps = svc.capabilities();
+    expect(caps.media?.audio).toBe('not_bridged');
+    expect(caps.media?.audioBridge).toBe(false);
+
+    const meta = svc.createSession('user-safe', 'internet', 'proxy');
+    const nav = await svc.navigate('user-safe', meta.sessionId, {
+      url: 'https://evil.example/phish',
+      action: 'goto',
+    });
+    expect(nav.blocked).toBe(true);
+    expect(nav.errorCode).toBe('BLOCKLIST');
+
+    const lib = svc.getLibraryFor('user-safe');
+    expect(lib.homeUrl).toBeTruthy();
+    svc.clearLastSnapshot('user-safe');
+    expect(svc.getLibraryFor('user-safe').lastSnapshot).toBeUndefined();
+  });
+
+  it('capabilities advertise pcm_ws when audioBridge policy on', () => {
+    const svc = new HostBrowseService(
+      { defaultEngine: 'proxy', audioBridge: true },
+      undefined,
+      () => ({ audioBridge: true }),
+    );
+    const caps = svc.capabilities();
+    expect(caps.media?.audio).toBe('pcm_ws');
+    expect(caps.media?.policy).toBe('visual_plus_pcm_audio');
+  });
 });

@@ -17,9 +17,7 @@
 | **代理** | 主機 HTTP 擷取 + HTML/CSS 改寫 + sandbox iframe | 文件、靜態站、多數管理頁、表單 POST |
 | **真實瀏覽器** | 主機 **Chromium**（Playwright）+ 畫面串流 + 滑鼠鍵盤 | 重型 SPA、需完整 JavaScript 渲染 |
 
-### 面板設定（建議）
-
-於 **主機瀏覽 → 設定** 或 **軟件** 分頁：
+### 面板設定
 
 | 設定 | 作用 |
 |------|------|
@@ -27,18 +25,21 @@
 | Chrome 路徑 | 覆寫自動偵測 |
 | 允許 loopback | 內網可開啟 127.0.0.1 |
 | --no-sandbox | 供 container 使用 Chromium |
+| 安全等級 | 嚴格／標準／寬鬆 |
+| 封鎖主機清單 | 額外主機名稱封鎖 |
+| 危險下載 | 允許 exe／sh 等高風險類型 |
+| **音訊橋接** | HTML 媒體 PCM 經即時串流（見影音） |
 
 設定存於面板資料庫（`settings.hostBrowse`）。**面板值優先於程序環境變數。**
 
 ### 一鍵安裝
 
-於 **軟件** 分頁安裝目錄 id `chromium`（經 apt 安裝發行版 Chromium）。若已安裝 Google Chrome 亦會偵測。需要 root 與 `YSK_EXECUTE=1`。
+於 **軟件** 分頁安裝目錄 id `chromium`。需要 root 與 `YSK_EXECUTE=1`。
 
 ### 環境變數（面板未設定時之後備）
 
 - `YSK_HOST_BROWSE_ENGINE`／`CHROME`／`NO_SANDBOX`／`LOOPBACK`
-
-若要求使用 browser 引擎但主機沒有 Chrome，會回傳 `YSK_HOST_BROWSE_NEED_CHROME`。
+- `YSK_HOST_BROWSE_AUDIO=1` — 啟用音訊橋接
 
 ## 路由
 
@@ -48,33 +49,54 @@
 | API | `/api/v1/host-browse/*` |
 | Live WS | `/api/v1/host-browse/ws?ticket=` |
 | 能力 | `network.browse` |
-| `YSK_EXECUTE` | **不需要**（一鍵安裝軟件除外） |
+| `YSK_EXECUTE` | 瀏覽本身不需要；安裝 Chromium／臨時 Linux 用戶需要 |
+
+### 工作階段 API 摘要
+
+| 方法 | 路徑 | 說明 |
+|------|------|------|
+| POST | `/sessions` | 建立工作階段 |
+| POST | `/sessions/:id/navigate` | 導航 |
+| POST | `/sessions/:id/live` | 即時串流 ticket |
+| GET/POST/DELETE | `/sessions/:id/tabs…` | 真實瀏覽器多分頁（最多 6） |
+| GET | `/sessions/:id/downloads` | 下載列表 |
+| GET | `/library` | 主頁／書籤／記錄／lastSnapshot |
+| DELETE | `/last-snapshot` | 略過恢復提示 |
+| POST | `/sessions/:id/heartbeat` | 維持真實瀏覽器工作階段 |
+
+### 即時 WebSocket
+
+**主機 → 面板：** `frame`（JPEG）、`audio`（s16le PCM）、`audio_status`、`tabs`、`meta`、`err`
+
+**面板 → 主機：** `mouse`、`key`、`resize`、`stream`、`tab_open`／`tab_switch`／`tab_close`、`ping`
 
 ## 私隱與 SSRF
 
-與英文版相同：固定 User-Agent、伺服器端 Cookie、按模式 SSRF、metadata 一律拒絕。
+固定 User-Agent、伺服器端 Cookie、按模式 SSRF、metadata 一律拒絕。可選臨時 Linux 用戶 `yskb_*` + CDP 連線 Chrome（root + `YSK_EXECUTE`）。
+
+## 瀏覽器殼功能
+
+- 捲動、緊湊工具列、畫質預設（流暢／均衡／高清）
+- 主頁／書籤／記錄；返回可恢復上次分頁快照
+- **伺服器端多分頁**（最多 6）
+- 下載抽屜與副檔名安全
+- 離開頁面／heartbeat 逾時結束 Chrome 與臨時用戶
+- 安全等級與自訂封鎖主機
+- **影音**
+  - 影像：JPEG 畫面串流
+  - 音訊：預設未橋接（Chrome 靜音）
+  - 可選音訊橋接：HTML `video`／`audio` 的 `captureStream` → PCM → 面板 Web Audio（需點擊解鎖）。非完整系統音訊／DRM。
 
 ## 限制
 
 - 代理模式並非完整 Chrome 替身
-- 真實引擎需要主機安裝 Chrome，並會消耗 CPU／記憶體
+- 真實引擎需要主機安裝 Chrome
+- 音訊橋接僅涵蓋可擷取音軌的文件內媒體元素
 - 不保證可繞過網站 bot 防護
 
-## 真實瀏覽器：畫質與尺寸
+## 驗證
 
-- **畫質預設**：流暢／均衡（預設）／高清，即時生效，無需重開工作階段。
-- **視區**：預設跟隨面板視窗大小，視窗縮放會同步 Chromium viewport。
-- **縮放**：適合窗口／百分比，只影響顯示；滑鼠座標已對應 letterbox。
-- **錯誤**：逾時、DNS、TLS、人機驗證、串流失敗等均有代碼與重試動作。
-
-## 瀏覽器殼功能
-
-- **捲動**：真實瀏覽器視區支援滾輪（已修復）
-- **緊湊工具列**：畫質／縮放改為下拉，節省垂直空間
-- **主頁／書籤／記錄**：工具列 ⌂ ☆ 🕐
-- **多個分頁**：真實引擎可開最多 6 個分頁
-- **全螢幕**：⛶
-- **離開頁面**：heartbeat 逾時會結束 Chrome；若已建立臨時 Linux 用戶會嘗試刪除
-- **危險站**：封鎖清單與警告（可設定）
-- **影音**：影像經串流；音訊尚未橋接（二期）
-
+```bash
+pnpm --filter @ysk/core exec vitest run src/host-browse
+bash scripts/e2e-host-browse.sh
+```

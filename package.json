@@ -41,6 +41,7 @@
     "docs:bilingual": "node ./scripts/docs-bilingual-check.mjs",
     "e2e:sql-switch": "bash scripts/e2e-sql-switch-check.sh",
     "e2e:sql-switch-live": "bash scripts/e2e-sql-switch-live-docker.sh",
+    "e2e:host-browse": "bash scripts/e2e-host-browse.sh",
     "i18n:check-no-uiinline-default": "node ./scripts/i18n-no-uiinline-default.mjs"
   },
   "engines": {

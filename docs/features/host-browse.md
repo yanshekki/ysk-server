@@ -15,12 +15,9 @@
 | Engine | How it works | Best for |
 |--------|----------------|----------|
 | **Proxy** (default if no Chrome) | Host HTTP fetch + HTML/CSS rewrite + sandboxed iframe | Docs, static sites, many admin panels, form POST |
-| **Real browser** | Host **Chromium** via Playwright + JPEG screencast + mouse/keyboard | Heavy SPAs (e.g. modern marketing sites), JS-heavy UIs |
+| **Real browser** | Host **Chromium** via Playwright + JPEG screencast + mouse/keyboard | Heavy SPAs, JS-heavy UIs |
 
-- UI toggle: **Proxy | Real browser**
-### Panel settings (recommended)
-
-On **Host Browse → Settings** (or Software tab):
+### Panel settings
 
 | Setting | Effect |
 |---------|--------|
@@ -28,78 +25,102 @@ On **Host Browse → Settings** (or Software tab):
 | Chrome path | Override auto-detect |
 | Allow loopback | Intranet may open 127.0.0.1 |
 | --no-sandbox | Container-friendly Chromium |
+| Safety level | strict / standard / relaxed (navigate policy) |
+| Block hosts | Extra hostname denylist |
+| Dangerous downloads | Allow exe/sh/… when enabled |
+| **Audio bridge** | PCM from HTML media over live WS (see Media) |
 
 Stored in panel DB (`settings.hostBrowse`). **Panel values override process env.**
 
 ### One-click install
 
-**Software** tab → installs catalog id `chromium` (distro Chromium via apt). Also detects existing Google Chrome binaries. Needs root + `YSK_EXECUTE=1`.
+**Software** tab → catalog id `chromium` (needs root + `YSK_EXECUTE=1`).
 
-### Process env (fallback if panel empty)
+### Process env (fallback)
 
 - `YSK_HOST_BROWSE_ENGINE=auto|proxy|browser`
 - `YSK_HOST_BROWSE_CHROME=/path/to/chrome`
 - `YSK_HOST_BROWSE_NO_SANDBOX=1`
 - `YSK_HOST_BROWSE_LOOPBACK=1`
+- `YSK_HOST_BROWSE_AUDIO=1` — enable audio bridge (same as panel)
 
-If Chrome is missing and engine=`browser` is requested, API returns `YSK_HOST_BROWSE_NEED_CHROME` (honest fail / UI falls back).
-
-## Route
+## Routes
 
 | Item | Value |
 |------|--------|
 | UI | `/browse` |
 | API | `/api/v1/host-browse/*` |
 | Live WS | `/api/v1/host-browse/ws?ticket=` |
-| Capability | `network.browse` (privilege; admin factory includes it) |
-| `YSK_EXECUTE` | **Not required** |
+| Capability | `network.browse` |
+| `YSK_EXECUTE` | Not required for browse; required for Chromium install / ephemeral Linux users |
 
-## Tabs
+### Session API (auth + `network.browse`)
 
-| Tab | Content |
-|-----|---------|
-| Browse | Browser chrome + mode + engine + viewport |
-| About | Page guide |
+| Method | Path | Notes |
+|--------|------|--------|
+| POST | `/sessions` | Create (mode, engine, optional startUrl) |
+| POST | `/sessions/:id/navigate` | goto / back / forward / reload |
+| POST | `/sessions/:id/live` | One-time WS ticket |
+| GET | `/sessions/:id/downloads` | List captured downloads |
+| GET | `/sessions/:id/downloads/:dlId` | Authenticated file pull |
+| GET | `/sessions/:id/tabs` | List real Chromium pages |
+| POST | `/sessions/:id/tabs` | Open tab `{ url? }` (max 6) |
+| POST | `/sessions/:id/tabs/:pageId/activate` | Switch tab |
+| DELETE | `/sessions/:id/tabs/:pageId` | Close tab |
+| GET | `/library` | Home, bookmarks, history, lastSnapshot |
+| DELETE | `/last-snapshot` | Dismiss resume banner |
+| POST | `/sessions/:id/heartbeat` | Keep browser session alive |
+
+### Live WebSocket messages
+
+**Server → client:** `ready`, `frame` (JPEG base64), `audio` (s16le PCM base64), `audio_status`, `stream_ok`, `tabs`, `meta`, `err`, `pong`
+
+**Client → server:** `mouse`, `key`, `resize`, `stream`, `reconnect_cast`, `tab_open`, `tab_switch`, `tab_close`, `tabs_list`, `ping`
 
 ## Privacy model
 
-- Fixed User-Agent: `YSK-HostBrowse/1.0 …` (both engines)
-- Header allowlist only (proxy); Playwright context uses the same fixed UA
-- Cookie jar / browser storage **server-side only**
-- Content iframe uses short-lived `contentToken`; live WS uses one-time ticket
+- Fixed User-Agent: `YSK-HostBrowse/1.0 …`
+- Cookie jar / browser profile **server-side only**
+- Content iframe: short-lived `contentToken`; live WS: one-time ticket
+- Optional ephemeral Linux user `yskb_*` + Chrome-as-user via CDP when root + `YSK_EXECUTE`
 
 ## SSRF
 
 | Mode | Policy |
 |------|--------|
 | Internet | Block loopback, RFC1918, link-local, ULA, cloud metadata |
-| Intranet | Allow private LAN; **always** block cloud metadata; loopback off unless env |
+| Intranet | Allow private LAN; **always** block cloud metadata; loopback off unless allowed |
+
+## Browser shell features
+
+- Scroll, compact toolbar, quality presets (smooth / balanced / sharp)
+- Home / bookmarks / history; resume last tabs snapshot on return
+- Multi-tab (server-backed, max 6); fullscreen
+- Downloads drawer with extension safety
+- Leave page / heartbeat reap: stop screencast, kill Chrome, destroy ephemeral user
+- Safety level + custom block hosts
+- **Media**
+  - Video: always JPEG screencast
+  - Audio: default **not bridged** (Chrome muted)
+  - Optional **audio bridge**: HTML `video`/`audio` via `captureStream` → PCM over WS → panel Web Audio (click to unlock). Not full system audio / DRM.
 
 ## Limits
 
-- Proxy: not a full Chromium substitute for all SPAs
-- Browser engine: needs host Chrome; CPU/RAM limited (session caps)
+- Proxy is not a full Chromium substitute
+- Browser engine needs host Chrome; CPU/RAM limited
+- Audio bridge only captures document media elements that expose audio tracks
 - No guarantee of bypassing site bot protection
-- Response body ~8 MiB (proxy); rate ~60 nav/user/min
+
+## Verification
+
+```bash
+# Unit + integration (proxy path; no Chrome required)
+pnpm --filter @ysk/core exec vitest run src/host-browse
+
+# Docs + unit gate script
+bash scripts/e2e-host-browse.sh
+```
 
 ## Related
 
 [product-page-map](../product-page-map.md)
-
-## Real browser: quality & size
-
-- **Quality presets**: Smooth / Balanced (default) / Sharp — apply live over WebSocket without restarting the session.
-- **Viewport**: Defaults to the panel surface size; resizes sync Chromium viewport.
-- **Zoom**: Fit window or percent (display only); pointer mapping accounts for letterboxing.
-- **Errors**: Timeout, DNS, TLS, bot challenge, stream failure — coded messages with retry actions.
-
-## Browser shell
-
-- **Scroll** fixed for real-browser live surface
-- **Compact toolbar**: quality/zoom as compact selects
-- **Home / bookmarks / history**
-- **Multi-tab** (up to 6) + fullscreen
-- **Leave page**: heartbeat reap kills Chrome; ephemeral Linux user removed when created
-- **Danger policy**: blocklist + warn
-- **Media**: video via screencast; audio not bridged yet (phase 2)
-
