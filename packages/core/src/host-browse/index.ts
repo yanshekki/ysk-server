@@ -13,3 +13,4 @@ export * from './bookmarks.js';
 export * from './ephemeral-user.js';
 export * from './danger.js';
 export * from './chrome-as-user.js';
+export * from './downloads.js';

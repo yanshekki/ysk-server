@@ -311,12 +311,8 @@ export async function handleHostBrowseRoutes(
         });
         return true;
       }
-      // Ensure browser context exists
-      await svc.browser.openSession({
-        sessionId,
-        userId: user.id,
-        mode: meta.mode,
-      });
+      // Ensure browser context exists (navigateBrowser already preferred path)
+      await svc.ensureBrowserSession(user.id, sessionId);
       const ticket = ctx.hostBrowseLiveTickets.issue({
         sessionId,
         userId: user.id,
@@ -328,6 +324,28 @@ export async function handleHostBrowseRoutes(
         expiresAt: new Date(ticket.expiresAt).toISOString(),
         wsPath: `/api/v1/host-browse/ws?ticket=${encodeURIComponent(ticket.ticket)}`,
       });
+      return true;
+    }
+
+    if (method === 'GET' && rest === '/downloads') {
+      const downloads = svc.listDownloads(user.id, sessionId);
+      sendJson(res, 200, { ok: true, downloads });
+      return true;
+    }
+
+    const dlMatch = rest.match(/^\/downloads\/([^/]+)$/);
+    if (method === 'GET' && dlMatch) {
+      const d = svc.getDownloadFile(user.id, sessionId, dlMatch[1]);
+      const { createReadStream } = await import('node:fs');
+      const { basename } = await import('node:path');
+      const name = basename(d.filename || 'download');
+      res.writeHead(200, {
+        'Content-Type': d.mime || 'application/octet-stream',
+        'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(name)}`,
+        'Cache-Control': 'no-store',
+        'X-Content-Type-Options': 'nosniff',
+      });
+      createReadStream(d.absPath!).pipe(res);
       return true;
     }
 

@@ -3966,7 +3966,14 @@
     "newTab": "New tab",
     "fullscreen": "Fullscreen",
     "mediaNote": "Real browser: video is streamed; audio is not yet bridged to the panel (phase 2).",
-    "isolationNote": "Real browser creates an ephemeral Linux user for Chrome; leaving the page or idle timeout destroys that user."
+    "isolationNote": "Real browser creates an ephemeral Linux user for Chrome; leaving the page or idle timeout destroys that user.",
+    "downloads": "Downloads",
+    "downloadsEmpty": "No downloads in this session yet.",
+    "downloadBlocked": "Blocked by safety policy",
+    "downloadSave": "Save to device",
+    "downloadFailed": "Download failed",
+    "downloadPending": "Downloading…",
+    "downloadReady": "Ready"
   },
   "listToolbar": {
     "searchPlaceholder": "検索…",

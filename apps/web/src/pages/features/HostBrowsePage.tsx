@@ -22,11 +22,12 @@ import {
   SoftwareVersionBar,
 } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
-import { ApiError } from '../../shared/services/api';
+import { api, ApiError } from '../../shared/services/api';
 import {
   hostBrowseApi,
   hostBrowseLiveWsUrl,
   type HostBrowseCapabilities,
+  type HostBrowseDownload,
   type HostBrowseEngine,
   type HostBrowseEnginePref,
   type HostBrowseMode,
@@ -69,11 +70,12 @@ export function HostBrowsePage() {
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
   const [homeUrl, setHomeUrl] = useState('https://www.google.com/');
   const [bookmarked, setBookmarked] = useState(false);
-  const [drawer, setDrawer] = useState<'none' | 'bookmarks' | 'history'>('none');
+  const [drawer, setDrawer] = useState<'none' | 'bookmarks' | 'history' | 'downloads'>('none');
   const [library, setLibrary] = useState<{
     bookmarks: Array<{ id: string; title: string; url: string }>;
     history: Array<{ id: string; title: string; url: string; at: string }>;
   }>({ bookmarks: [], history: [] });
+  const [downloads, setDownloads] = useState<HostBrowseDownload[]>([]);
   const [settingsDraft, setSettingsDraft] = useState<HostBrowsePanelSettings>({
     engine: 'auto',
     chromePath: '',
@@ -134,6 +136,29 @@ export function HostBrowsePage() {
     tick();
     const id = setInterval(tick, 15_000);
     return () => clearInterval(id);
+  }, [session?.sessionId, session?.engine]);
+
+  // Poll downloads for browser engine
+  useEffect(() => {
+    if (!session || session.engine !== 'browser') {
+      setDownloads([]);
+      return;
+    }
+    let cancelled = false;
+    const refresh = () => {
+      void hostBrowseApi
+        .listDownloads(session.sessionId)
+        .then((r) => {
+          if (!cancelled) setDownloads(r.downloads || []);
+        })
+        .catch(() => undefined);
+    };
+    refresh();
+    const id = setInterval(refresh, 4_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
   }, [session?.sessionId, session?.engine]);
 
   // Leave page → end browser session (kill chrome / ephemeral user)
@@ -865,7 +890,22 @@ export function HostBrowsePage() {
                   >
                     🕐
                   </Button>
-<Button
+                  {isBrowser ? (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      title={t('hostBrowse.downloads')}
+                      onClick={() =>
+                        setDrawer((d) => (d === 'downloads' ? 'none' : 'downloads'))
+                      }
+                    >
+                      ↓
+                      {downloads.length > 0 ? (
+                        <Badge tone="info">{downloads.length}</Badge>
+                      ) : null}
+                    </Button>
+                  ) : null}
+                  <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => void runNavigate({ action: 'back' })}
@@ -1066,6 +1106,67 @@ export function HostBrowsePage() {
                       </li>
                     ))}
                   </ul>
+                </div>
+              ) : null}
+
+              {drawer === 'downloads' ? (
+                <div className="hb-drawer">
+                  <div className="hb-drawer__head">
+                    <strong>{t('hostBrowse.downloads')}</strong>
+                    <Button size="sm" variant="ghost" onClick={() => setDrawer('none')}>
+                      ×
+                    </Button>
+                  </div>
+                  {downloads.length === 0 ? (
+                    <p className="hb-drawer__empty">{t('hostBrowse.downloadsEmpty')}</p>
+                  ) : (
+                    <ul className="hb-drawer__list">
+                      {downloads.map((d) => (
+                        <li key={d.id} className="hb-drawer__dl">
+                          <div className="hb-drawer__item">
+                            <span className="hb-drawer__dl-name">{d.filename}</span>
+                            <span className="hb-drawer__dl-meta">
+                              {d.status === 'completed'
+                                ? t('hostBrowse.downloadReady')
+                                : d.status === 'blocked'
+                                  ? t('hostBrowse.downloadBlocked')
+                                  : d.status === 'pending'
+                                    ? t('hostBrowse.downloadPending')
+                                    : t('hostBrowse.downloadFailed')}
+                              {d.size > 0 ? ` · ${Math.round(d.size / 1024)} KB` : ''}
+                              {d.reason ? ` — ${d.reason}` : ''}
+                            </span>
+                          </div>
+                          {d.hasFile && session ? (
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => {
+                                void api
+                                  .downloadAuthenticated(
+                                    hostBrowseApi.downloadFilePath(
+                                      session.sessionId,
+                                      d.id,
+                                    ),
+                                    d.filename,
+                                  )
+                                  .then(() => notifyOk(t('hostBrowse.downloadSave')))
+                                  .catch((e) =>
+                                    setError(
+                                      e instanceof Error
+                                        ? e.message
+                                        : t('hostBrowse.downloadFailed'),
+                                    ),
+                                  );
+                              }}
+                            >
+                              {t('hostBrowse.downloadSave')}
+                            </Button>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               ) : null}
 

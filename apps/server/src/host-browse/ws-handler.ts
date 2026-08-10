@@ -72,19 +72,7 @@ async function acceptLiveClient(
   }
 
   try {
-    await ctx.hostBrowse.browser.openSession({
-      sessionId: rec.sessionId,
-      userId: rec.userId,
-      mode: session.mode,
-      ephemeral:
-        session.ephemeralUsername && session.ephemeralHomeDir
-          ? {
-              username: session.ephemeralUsername,
-              homeDir: session.ephemeralHomeDir,
-            }
-          : undefined,
-      host: ctx.host,
-    });
+    await ctx.hostBrowse.ensureBrowserSession(rec.userId, rec.sessionId);
   } catch (e) {
     sendJson(ws, {
       t: 'err',

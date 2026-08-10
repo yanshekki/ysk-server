@@ -212,6 +212,32 @@ export const hostBrowseApi = {
       `/api/v1/host-browse/sessions/${encodeURIComponent(sessionId)}/heartbeat`,
       { method: 'POST', body: '{}' },
     ),
+
+  listDownloads: (sessionId: string) =>
+    api.requestRaw<{
+      ok: boolean;
+      downloads: HostBrowseDownload[];
+    }>(
+      `/api/v1/host-browse/sessions/${encodeURIComponent(sessionId)}/downloads`,
+    ),
+
+  /** Authenticated download URL (use with token header via fetch helper). */
+  downloadFilePath: (sessionId: string, downloadId: string) =>
+    `/api/v1/host-browse/sessions/${encodeURIComponent(sessionId)}/downloads/${encodeURIComponent(downloadId)}`,
+};
+
+export type HostBrowseDownload = {
+  id: string;
+  sessionId: string;
+  filename: string;
+  sourceUrl: string;
+  mime: string | null;
+  size: number;
+  status: 'pending' | 'completed' | 'blocked' | 'failed';
+  reason?: string;
+  createdAt: string;
+  finishedAt?: string;
+  hasFile: boolean;
 };
 
 export function hostBrowseLiveWsUrl(wsPath: string): string {

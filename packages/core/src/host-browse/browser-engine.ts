@@ -21,12 +21,24 @@ import {
   type ChromeAsUserHandle,
 } from './chrome-as-user.js';
 import type { HostExecutor } from '../host/executor.js';
+import { evaluateDownloadSafety } from './danger.js';
+import {
+  absPathFor,
+  fileSize,
+  newDownloadId,
+  safeFilename,
+  toPublicDownload,
+  tryUnlink,
+  type BrowseDownload,
+  type BrowseDownloadPublic,
+} from './downloads.js';
 
 type PlaywrightModule = typeof import('playwright-core');
 type Browser = import('playwright-core').Browser;
 type BrowserContext = import('playwright-core').BrowserContext;
 type Page = import('playwright-core').Page;
 type CDPSession = import('playwright-core').CDPSession;
+type Download = import('playwright-core').Download;
 
 export type BrowserSessionHandle = {
   sessionId: string;
@@ -45,6 +57,9 @@ export type BrowserSessionHandle = {
   screencastOn: boolean;
   viewport: { w: number; h: number };
   stream: StreamOptions;
+  /** dataDir root for saving downloads (optional) */
+  dataDir?: string;
+  downloads: BrowseDownload[];
   onFrame?: (frame: {
     mime: string;
     data: Buffer;
@@ -52,6 +67,7 @@ export type BrowserSessionHandle = {
     height: number;
   }) => void;
   onMeta?: (meta: { url: string; title: string }) => void;
+  onDownload?: (d: BrowseDownloadPublic) => void;
 };
 
 export type BrowserNavResult = {
@@ -171,6 +187,8 @@ export class BrowserEngine {
     /** Prefer isolated Chrome process as this Linux user */
     ephemeral?: { username: string; homeDir: string };
     host?: HostExecutor;
+    /** Panel data dir for isolated downloads */
+    dataDir?: string;
   }): Promise<void> {
     const max = this.policy().maxBrowserSessions ?? 4;
     if (this.handles.size >= max && !this.handles.has(input.sessionId)) {
@@ -218,6 +236,7 @@ export class BrowserEngine {
         viewport: { width: vp.w, height: vp.h },
         deviceScaleFactor: 1,
         ignoreHTTPSErrors: input.mode === 'intranet',
+        acceptDownloads: true,
       }));
       page = context.pages()[0] ?? (await context.newPage());
       await page.setViewportSize({ width: vp.w, height: vp.h }).catch(() => undefined);
@@ -230,23 +249,13 @@ export class BrowserEngine {
         ignoreHTTPSErrors: input.mode === 'intranet',
         javaScriptEnabled: true,
         permissions: [],
+        acceptDownloads: true,
       });
       await context.setExtraHTTPHeaders({
         'Accept-Language': pol.acceptLanguage ?? 'en-US,en;q=0.9',
       });
       page = await context.newPage();
     }
-
-    page.on('framenavigated', (frame) => {
-      if (frame !== page.mainFrame()) return;
-      void assertHostBrowseTarget(frame.url(), {
-        mode: input.mode,
-        allowLoopback: this.policy().allowLoopback,
-        extraPorts: this.policy().extraPorts,
-      }).catch(() => {
-        /* mid-flight */
-      });
-    });
 
     const pageId = 'main';
     const pages = new Map<string, Page>([[pageId, page]]);
@@ -266,7 +275,141 @@ export class BrowserEngine {
       screencastOn: false,
       viewport: vp,
       stream: resolveStreamOptions({ preset: 'balanced' }),
+      dataDir: input.dataDir,
+      downloads: [],
     });
+
+    this.wirePage(input.sessionId, page);
+  }
+
+  private wirePage(sessionId: string, page: Page): void {
+    const h = this.handles.get(sessionId);
+    if (!h) return;
+    page.on('framenavigated', (frame) => {
+      if (frame !== page.mainFrame()) return;
+      void assertHostBrowseTarget(frame.url(), {
+        mode: h.mode,
+        allowLoopback: this.policy().allowLoopback,
+        extraPorts: this.policy().extraPorts,
+      }).catch(() => {
+        /* mid-flight */
+      });
+    });
+    page.on('download', (download) => {
+      void this.handleDownload(sessionId, download);
+    });
+  }
+
+  private async handleDownload(
+    sessionId: string,
+    download: Download,
+  ): Promise<void> {
+    const h = this.handles.get(sessionId);
+    if (!h) {
+      try {
+        await download.cancel();
+      } catch {
+        /* */
+      }
+      return;
+    }
+    const filename = safeFilename(download.suggestedFilename() || 'download');
+    const sourceUrl = download.url();
+    const id = newDownloadId();
+    const allowDangerous =
+      (this.policy() as { allowDangerousDownloads?: boolean })
+        .allowDangerousDownloads === true;
+    const safety = evaluateDownloadSafety({
+      filename,
+      allowDangerous,
+    });
+
+    if (safety.action === 'block') {
+      try {
+        await download.cancel();
+      } catch {
+        /* */
+      }
+      const rec: BrowseDownload = {
+        id,
+        sessionId,
+        userId: h.userId,
+        filename,
+        sourceUrl,
+        mime: null,
+        size: 0,
+        absPath: null,
+        status: 'blocked',
+        reason: safety.reason,
+        createdAt: new Date().toISOString(),
+        finishedAt: new Date().toISOString(),
+      };
+      h.downloads.unshift(rec);
+      h.downloads = h.downloads.slice(0, 50);
+      h.onDownload?.(toPublicDownload(rec));
+      return;
+    }
+
+    const pending: BrowseDownload = {
+      id,
+      sessionId,
+      userId: h.userId,
+      filename,
+      sourceUrl,
+      mime: null,
+      size: 0,
+      absPath: null,
+      status: 'pending',
+      reason: safety.action === 'warn' ? safety.reason : undefined,
+      createdAt: new Date().toISOString(),
+    };
+    h.downloads.unshift(pending);
+    h.downloads = h.downloads.slice(0, 50);
+    h.onDownload?.(toPublicDownload(pending));
+
+    if (!h.dataDir) {
+      pending.status = 'failed';
+      pending.reason = 'No data directory configured for downloads';
+      pending.finishedAt = new Date().toISOString();
+      try {
+        await download.cancel();
+      } catch {
+        /* */
+      }
+      h.onDownload?.(toPublicDownload(pending));
+      return;
+    }
+
+    const abs = absPathFor(h.dataDir, h.userId, sessionId, id, filename);
+    try {
+      await download.saveAs(abs);
+      pending.absPath = abs;
+      pending.size = fileSize(abs);
+      pending.status = 'completed';
+      pending.finishedAt = new Date().toISOString();
+    } catch (e) {
+      pending.status = 'failed';
+      pending.reason =
+        e instanceof Error ? e.message.slice(0, 200) : 'download failed';
+      pending.finishedAt = new Date().toISOString();
+      tryUnlink(abs);
+    }
+    h.onDownload?.(toPublicDownload(pending));
+  }
+
+  listDownloads(sessionId: string): BrowseDownloadPublic[] {
+    const h = this.handles.get(sessionId);
+    if (!h) return [];
+    return h.downloads.map(toPublicDownload);
+  }
+
+  getDownload(
+    sessionId: string,
+    downloadId: string,
+  ): BrowseDownload | null {
+    const h = this.handles.get(sessionId);
+    if (!h) return null;
+    return h.downloads.find((d) => d.id === downloadId) ?? null;
   }
 
   /** Open a new tab (Playwright page) in this session. Max 6. */
@@ -280,6 +423,7 @@ export class BrowserEngine {
     h.pages.set(pageId, page);
     h.activePageId = pageId;
     h.page = page;
+    this.wirePage(sessionId, page);
     await page.setViewportSize({ width: h.viewport.w, height: h.viewport.h });
     if (url) {
       await this.navigate(sessionId, url);

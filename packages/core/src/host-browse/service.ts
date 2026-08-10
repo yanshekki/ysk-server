@@ -95,6 +95,28 @@ export class HostBrowseService {
     return this.libOf(userId);
   }
 
+  listDownloads(userId: string, sessionId: string) {
+    this.requireSession(userId, sessionId);
+    return this.browser.listDownloads(sessionId);
+  }
+
+  getDownloadFile(userId: string, sessionId: string, downloadId: string) {
+    this.requireSession(userId, sessionId);
+    const d = this.browser.getDownload(sessionId, downloadId);
+    if (!d || d.userId !== userId) {
+      throw new YskError(ErrorCodes.NOT_FOUND, 'Download not found', {
+        httpStatus: 404,
+      });
+    }
+    if (d.status !== 'completed' || !d.absPath) {
+      throw new YskError(ErrorCodes.VALIDATION, 'Download not ready', {
+        httpStatus: 400,
+        details: { status: d.status, reason: d.reason },
+      });
+    }
+    return d;
+  }
+
   setHomeUrl(userId: string, homeUrl: string): BrowseUserLibrary {
     const lib = setHome(this.libOf(userId), homeUrl);
     this.saveLib(userId, lib);
@@ -327,12 +349,12 @@ export class HostBrowseService {
     return this.navigateProxy(userId, s, input);
   }
 
-  private async navigateBrowser(
-    userId: string,
-    s: HostBrowseSession,
-    input: { url?: string; action?: HostBrowseNavigateAction },
-  ): Promise<HostBrowseFetchResult> {
-    // Ephemeral Linux user for isolation (best-effort when EXECUTE available)
+  /**
+   * Ensure Chromium session is open (ephemeral user + downloads dir when available).
+   * Shared by navigateBrowser and live ticket / WS paths.
+   */
+  async ensureBrowserSession(userId: string, sessionId: string): Promise<void> {
+    const s = this.requireSession(userId, sessionId);
     if (!s.ephemeralUsername && this.getHost && this.getDataDir) {
       const created = await createEphemeralBrowseUser({
         host: this.getHost(),
@@ -349,9 +371,7 @@ export class HostBrowseService {
           ok: true,
           detail: { username: created.user.username, sessionId: s.sessionId },
         });
-      }
-      // If blocked (no execute), still run Chrome as panel process — note in audit
-      else if (created.blocked) {
+      } else if (created.blocked) {
         this.audit?.({
           action: 'host_browse.ephemeral_user',
           userId,
@@ -374,7 +394,16 @@ export class HostBrowseService {
           ? { username: s.ephemeralUsername, homeDir: s.ephemeralHomeDir }
           : undefined,
       host: this.getHost?.(),
+      dataDir: this.getDataDir?.(),
     });
+  }
+
+  private async navigateBrowser(
+    userId: string,
+    s: HostBrowseSession,
+    input: { url?: string; action?: HostBrowseNavigateAction },
+  ): Promise<HostBrowseFetchResult> {
+    await this.ensureBrowserSession(userId, s.sessionId);
 
     const action = input.action ?? 'goto';
     let nav;
