@@ -34,6 +34,7 @@ import {
   type HostBrowseMode,
   type HostBrowseNavigateResult,
   type HostBrowsePanelSettings,
+  type HostBrowseSafetyLevel,
   type HostBrowseSession,
 } from '../../features/host-browse/api';
 import { clientToPage } from '../../features/host-browse/live-geometry';
@@ -83,7 +84,11 @@ export function HostBrowsePage() {
     chromePath: '',
     allowLoopback: false,
     noSandbox: false,
+    safetyLevel: 'standard',
+    blockHosts: [],
+    allowDangerousDownloads: false,
   });
+  const [blockHostsText, setBlockHostsText] = useState('');
   const [settingsBusy, setSettingsBusy] = useState(false);
   const [envHints, setEnvHints] = useState<Record<string, string | null>>({});
 
@@ -99,12 +104,23 @@ export function HostBrowsePage() {
     try {
       const s = await hostBrowseApi.getSettings();
       setCaps(s.capabilities);
+      const safety: HostBrowseSafetyLevel =
+        s.settings.safetyLevel === 'strict' ||
+        s.settings.safetyLevel === 'relaxed' ||
+        s.settings.safetyLevel === 'standard'
+          ? s.settings.safetyLevel
+          : 'standard';
+      const hosts = Array.isArray(s.settings.blockHosts) ? s.settings.blockHosts : [];
       setSettingsDraft({
         engine: (s.settings.engine as HostBrowseEnginePref) || 'auto',
         chromePath: s.settings.chromePath || '',
         allowLoopback: Boolean(s.settings.allowLoopback),
         noSandbox: Boolean(s.settings.noSandbox),
+        safetyLevel: safety,
+        blockHosts: hosts,
+        allowDangerousDownloads: Boolean(s.settings.allowDangerousDownloads),
       });
+      setBlockHostsText(hosts.join('\n'));
       setEnvHints(s.envHints ?? {});
       if (s.capabilities.defaultEngine) setEngine(s.capabilities.defaultEngine);
     } catch {
@@ -179,14 +195,36 @@ export function HostBrowsePage() {
     setSettingsBusy(true);
     setError(null);
     try {
-      const r = await hostBrowseApi.saveSettings(settingsDraft);
+      const hosts = blockHostsText
+        .split(/[\n,]+/)
+        .map((h) => h.trim().toLowerCase())
+        .filter(Boolean)
+        .slice(0, 200);
+      const payload: HostBrowsePanelSettings = {
+        ...settingsDraft,
+        blockHosts: hosts,
+      };
+      const r = await hostBrowseApi.saveSettings(payload);
       setCaps(r.capabilities);
+      const safety: HostBrowseSafetyLevel =
+        r.settings.safetyLevel === 'strict' ||
+        r.settings.safetyLevel === 'relaxed' ||
+        r.settings.safetyLevel === 'standard'
+          ? r.settings.safetyLevel
+          : 'standard';
+      const nextHosts = Array.isArray(r.settings.blockHosts)
+        ? r.settings.blockHosts
+        : hosts;
       setSettingsDraft({
         engine: (r.settings.engine as HostBrowseEnginePref) || 'auto',
         chromePath: r.settings.chromePath || '',
         allowLoopback: Boolean(r.settings.allowLoopback),
         noSandbox: Boolean(r.settings.noSandbox),
+        safetyLevel: safety,
+        blockHosts: nextHosts,
+        allowDangerousDownloads: Boolean(r.settings.allowDangerousDownloads),
       });
+      setBlockHostsText(nextHosts.join('\n'));
       if (r.capabilities.defaultEngine) setEngine(r.capabilities.defaultEngine);
       notifyOk(t('hostBrowse.settingsSaved'));
     } catch (e) {
@@ -194,7 +232,7 @@ export function HostBrowsePage() {
     } finally {
       setSettingsBusy(false);
     }
-  }, [settingsDraft, t]);
+  }, [settingsDraft, blockHostsText, t]);
 
   const clearNoFrameTimer = useCallback(() => {
     if (noFrameTimer.current) {
@@ -1417,6 +1455,54 @@ export function HostBrowsePage() {
                 checked={settingsDraft.noSandbox}
                 onChange={(c) =>
                   setSettingsDraft((d) => ({ ...d, noSandbox: c }))
+                }
+              />
+              <Field
+                label={t('hostBrowse.settingsSafety')}
+                htmlFor="hb-safety"
+                hint={t('hostBrowse.settingsSafetyHint')}
+              >
+                <SegRadio
+                  name="hb-safety"
+                  size="sm"
+                  value={settingsDraft.safetyLevel}
+                  onChange={(v) =>
+                    setSettingsDraft((d) => ({
+                      ...d,
+                      safetyLevel: v as HostBrowseSafetyLevel,
+                    }))
+                  }
+                  options={[
+                    { value: 'strict', label: t('hostBrowse.safetyStrict') },
+                    { value: 'standard', label: t('hostBrowse.safetyStandard') },
+                    { value: 'relaxed', label: t('hostBrowse.safetyRelaxed') },
+                  ]}
+                />
+              </Field>
+              <Field
+                label={t('hostBrowse.settingsBlockHosts')}
+                htmlFor="hb-block-hosts"
+                hint={t('hostBrowse.settingsBlockHostsHint')}
+              >
+                <textarea
+                  id="hb-block-hosts"
+                  rows={4}
+                  value={blockHostsText}
+                  onChange={(e) => setBlockHostsText(e.target.value)}
+                  placeholder="example.bad&#10;malware.test"
+                  spellCheck={false}
+                  className="hb-textarea"
+                />
+              </Field>
+              <CheckboxField
+                id="hb-danger-dl"
+                label={t('hostBrowse.settingsAllowDangerousDownloads')}
+                checked={settingsDraft.allowDangerousDownloads}
+                onChange={(c) =>
+                  setSettingsDraft((d) => ({
+                    ...d,
+                    allowDangerousDownloads: c,
+                  }))
                 }
               />
               <FormActions>

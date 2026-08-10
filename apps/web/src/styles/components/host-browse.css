@@ -395,3 +395,16 @@ button.linkish {
   gap: 0.35rem;
   flex-shrink: 0;
 }
+
+.hb-textarea {
+  width: 100%;
+  min-height: 5rem;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: var(--text-sm);
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--surface-1, transparent);
+  color: inherit;
+  resize: vertical;
+}

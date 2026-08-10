@@ -316,9 +316,7 @@ export class BrowserEngine {
     const filename = safeFilename(download.suggestedFilename() || 'download');
     const sourceUrl = download.url();
     const id = newDownloadId();
-    const allowDangerous =
-      (this.policy() as { allowDangerousDownloads?: boolean })
-        .allowDangerousDownloads === true;
+    const allowDangerous = this.policy().allowDangerousDownloads === true;
     const safety = evaluateDownloadSafety({
       filename,
       allowDangerous,

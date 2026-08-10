@@ -105,8 +105,17 @@ export async function handleSettingsRoutes(
             chromePath?: string;
             allowLoopback?: boolean;
             noSandbox?: boolean;
+            safetyLevel?: string;
+            blockHosts?: string[];
+            allowDangerousDownloads?: boolean;
           }>('hostBrowse') ?? {};
         const caps = ctx.hostBrowse.capabilities();
+        const safetyLevel =
+          panel.safetyLevel === 'strict' ||
+          panel.safetyLevel === 'relaxed' ||
+          panel.safetyLevel === 'standard'
+            ? panel.safetyLevel
+            : 'standard';
         sendJson(res, 200, {
           ok: true,
           settings: {
@@ -114,6 +123,9 @@ export async function handleSettingsRoutes(
             chromePath: panel.chromePath ?? '',
             allowLoopback: Boolean(panel.allowLoopback),
             noSandbox: Boolean(panel.noSandbox),
+            safetyLevel,
+            blockHosts: Array.isArray(panel.blockHosts) ? panel.blockHosts : [],
+            allowDangerousDownloads: Boolean(panel.allowDangerousDownloads),
           },
           capabilities: caps,
           envHints: {
@@ -135,16 +147,41 @@ export async function handleSettingsRoutes(
           chromePath?: string;
           allowLoopback?: boolean;
           noSandbox?: boolean;
+          safetyLevel?: string;
+          blockHosts?: string[] | string;
+          allowDangerousDownloads?: boolean;
         };
         const engine =
           data.engine === 'proxy' || data.engine === 'browser' || data.engine === 'auto'
             ? data.engine
             : 'auto';
+        const safetyLevel =
+          data.safetyLevel === 'strict' ||
+          data.safetyLevel === 'relaxed' ||
+          data.safetyLevel === 'standard'
+            ? data.safetyLevel
+            : 'standard';
+        let blockHosts: string[] = [];
+        if (Array.isArray(data.blockHosts)) {
+          blockHosts = data.blockHosts
+            .map((h) => String(h).trim().toLowerCase())
+            .filter(Boolean)
+            .slice(0, 200);
+        } else if (typeof data.blockHosts === 'string') {
+          blockHosts = data.blockHosts
+            .split(/[\n,]+/)
+            .map((h) => h.trim().toLowerCase())
+            .filter(Boolean)
+            .slice(0, 200);
+        }
         const next = {
           engine,
           chromePath: String(data.chromePath ?? '').trim(),
           allowLoopback: Boolean(data.allowLoopback),
           noSandbox: Boolean(data.noSandbox),
+          safetyLevel,
+          blockHosts,
+          allowDangerousDownloads: Boolean(data.allowDangerousDownloads),
         };
         ctx.settings.setJson('hostBrowse', next);
         await ctx.hostBrowse.applyConfigChanged();
@@ -156,6 +193,9 @@ export async function handleSettingsRoutes(
             chromePath: next.chromePath ? '[set]' : '',
             allowLoopback: next.allowLoopback,
             noSandbox: next.noSandbox,
+            safetyLevel: next.safetyLevel,
+            blockHosts: next.blockHosts.length,
+            allowDangerousDownloads: next.allowDangerousDownloads,
           },
           ok: true,
         });

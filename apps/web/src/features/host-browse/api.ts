@@ -15,11 +15,16 @@ export type HostBrowsePrivacy = {
 
 export type HostBrowseEnginePref = 'auto' | HostBrowseEngine;
 
+export type HostBrowseSafetyLevel = 'strict' | 'standard' | 'relaxed';
+
 export type HostBrowsePanelSettings = {
   engine: HostBrowseEnginePref;
   chromePath: string;
   allowLoopback: boolean;
   noSandbox: boolean;
+  safetyLevel: HostBrowseSafetyLevel;
+  blockHosts: string[];
+  allowDangerousDownloads: boolean;
 };
 
 export type HostBrowseCapabilities = {

@@ -3977,7 +3977,15 @@
     "resume": "Resume",
     "resumeHint": "You can resume the last browse session ({{count}} tabs).",
     "resumeDismiss": "Dismiss",
-    "resumeDone": "Session restored"
+    "resumeDone": "Session restored",
+    "settingsSafety": "Safety level",
+    "settingsSafetyHint": "Strict blocks high-risk hosts; standard warns; relaxed is least strict.",
+    "safetyStrict": "Strict",
+    "safetyStandard": "Standard",
+    "safetyRelaxed": "Relaxed",
+    "settingsBlockHosts": "Blocked hosts",
+    "settingsBlockHostsHint": "One hostname per line (or comma-separated). Applied to navigate.",
+    "settingsAllowDangerousDownloads": "Allow dangerous download types (exe, sh, …)"
   },
   "listToolbar": {
     "searchPlaceholder": "بحث…",

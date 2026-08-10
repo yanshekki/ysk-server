@@ -453,14 +453,11 @@ export class HostBrowseService {
           details: { field: 'url' },
         });
       }
+      const pol = this.effectivePolicy();
       const safety = evaluateNavigateSafety({
         url: input.url.startsWith('http') ? input.url : `https://${input.url}`,
-        level:
-          (this.getPanelConfig?.() as { safetyLevel?: 'strict' | 'standard' | 'relaxed' } | undefined)
-            ?.safetyLevel ?? 'standard',
-        extraBlockHosts: (
-          this.getPanelConfig?.() as { blockHosts?: string[] } | undefined
-        )?.blockHosts,
+        level: pol.safetyLevel ?? 'standard',
+        extraBlockHosts: pol.blockHosts,
       });
       if (safety.action === 'block') {
         return {
@@ -585,11 +582,41 @@ export class HostBrowseService {
       }
     }
 
+    const pol = this.effectivePolicy();
+    const safetyUrl = targetUrl.startsWith('http')
+      ? targetUrl
+      : `https://${targetUrl}`;
+    const safety = evaluateNavigateSafety({
+      url: safetyUrl,
+      level: pol.safetyLevel ?? 'standard',
+      extraBlockHosts: pol.blockHosts,
+    });
+    if (safety.action === 'block') {
+      return {
+        ok: false,
+        status: 0,
+        finalUrl: targetUrl,
+        contentType: null,
+        bytes: 0,
+        warnings: [],
+        contentPath: '',
+        latencyMs: 0,
+        rewritten: false,
+        blocked: true,
+        blockReason: safety.reason,
+        engine: 'proxy',
+        errorCode: safety.code,
+      };
+    }
+
     const result = await this.fetchThroughSession(s, targetUrl!, {
       method: 'GET',
       pushHistory: action === 'goto' || action === 'reload',
       replaceHistoryUrl: action === 'back' || action === 'forward',
     });
+    if (safety.action === 'warn') {
+      result.warnings = [...(result.warnings ?? []), safety.code];
+    }
 
     const meta = this.store.toMeta(s);
     result.canGoBack = meta.canGoBack;

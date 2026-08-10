@@ -49,6 +49,12 @@ export interface HostBrowsePolicy {
   defaultEngine?: HostBrowseEngine | 'auto';
   /** Pass --no-sandbox to Chromium (containers). */
   noSandbox?: boolean;
+  /** Content safety level (navigate + downloads). */
+  safetyLevel?: 'strict' | 'standard' | 'relaxed';
+  /** Extra hosts blocked by safety policy. */
+  blockHosts?: string[];
+  /** Allow potentially dangerous download extensions. */
+  allowDangerousDownloads?: boolean;
 }
 
 /** Panel-persisted settings (DB) — override process env. */
@@ -57,6 +63,10 @@ export type HostBrowsePanelConfig = {
   chromePath?: string;
   allowLoopback?: boolean;
   noSandbox?: boolean;
+  safetyLevel?: 'strict' | 'standard' | 'relaxed';
+  /** Comma or newline separated hostnames */
+  blockHosts?: string[];
+  allowDangerousDownloads?: boolean;
 };
 
 export function mergeHostBrowsePolicy(
@@ -69,6 +79,12 @@ export function mergeHostBrowsePolicy(
     (env.YSK_HOST_BROWSE_ENGINE as HostBrowsePanelConfig['engine'] | undefined) ??
     base.defaultEngine ??
     'auto';
+  const level =
+    panel?.safetyLevel === 'strict' ||
+    panel?.safetyLevel === 'standard' ||
+    panel?.safetyLevel === 'relaxed'
+      ? panel.safetyLevel
+      : base.safetyLevel ?? 'standard';
   return {
     ...base,
     chromePath:
@@ -86,6 +102,12 @@ export function mergeHostBrowsePolicy(
         ? true
         : base.noSandbox),
     defaultEngine: eng === 'auto' ? 'auto' : eng,
+    safetyLevel: level,
+    blockHosts: panel?.blockHosts?.length
+      ? panel.blockHosts.map((h) => h.trim().toLowerCase()).filter(Boolean)
+      : base.blockHosts,
+    allowDangerousDownloads:
+      panel?.allowDangerousDownloads ?? base.allowDangerousDownloads ?? false,
   };
 }
 

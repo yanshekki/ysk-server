@@ -3977,7 +3977,15 @@
     "resume": "恢復",
     "resumeHint": "可恢復上次瀏覽（{{count}} 個分頁）。",
     "resumeDismiss": "略過",
-    "resumeDone": "已恢復上次瀏覽"
+    "resumeDone": "已恢復上次瀏覽",
+    "settingsSafety": "安全等級",
+    "settingsSafetyHint": "嚴格：封鎖高風險主機；標準：警告；寬鬆：最少限制。",
+    "safetyStrict": "嚴格",
+    "safetyStandard": "標準",
+    "safetyRelaxed": "寬鬆",
+    "settingsBlockHosts": "封鎖主機清單",
+    "settingsBlockHostsHint": "每行一個主機名稱（或逗號分隔）。套用至導航。",
+    "settingsAllowDangerousDownloads": "允許高風險下載類型（exe、sh 等）"
   },
   "listToolbar": {
     "searchPlaceholder": "搜尋…",

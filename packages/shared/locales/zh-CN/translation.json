@@ -3977,7 +3977,15 @@
     "resume": "恢复",
     "resumeHint": "可恢复上次浏览（{{count}} 个标签页）。",
     "resumeDismiss": "忽略",
-    "resumeDone": "已恢复上次浏览"
+    "resumeDone": "已恢复上次浏览",
+    "settingsSafety": "安全等级",
+    "settingsSafetyHint": "严格：拦截高风险主机；标准：警告；宽松：最少限制。",
+    "safetyStrict": "严格",
+    "safetyStandard": "标准",
+    "safetyRelaxed": "宽松",
+    "settingsBlockHosts": "封锁主机列表",
+    "settingsBlockHostsHint": "每行一个主机名（或逗号分隔）。应用于导航。",
+    "settingsAllowDangerousDownloads": "允许高风险下载类型（exe、sh 等）"
   },
   "listToolbar": {
     "searchPlaceholder": "搜索…",
