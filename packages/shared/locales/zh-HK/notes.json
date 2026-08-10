@@ -2785,6 +2785,10 @@
     "clientDown": "已斷線：{{name}}",
     "clientDeleted": "已刪除設定檔：{{name}}",
     "autostartOn": "已開機自動連：{{name}}",
-    "autostartOff": "已關閉開機自動連：{{name}}"
+    "autostartOff": "已關閉開機自動連：{{name}}",
+    "ovpnPkiStart": "正在產生 OpenVPN PKI（DH 參數可能需一分鐘）…",
+    "ovpnPkiDone": "OpenVPN PKI 已就緒。",
+    "ovpnServerActive": "已套用 OpenVPN 伺服器（{{proto}} {{port}}）。",
+    "invalidOvpn": "OpenVPN 設定應包含 client／remote。"
   }
 }

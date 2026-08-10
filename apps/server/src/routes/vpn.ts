@@ -50,7 +50,10 @@ export async function handleVpnRoutes(
       sendJson(res, 200, {
         ok: true,
         ...status,
-        serverPeers: vpn.listServerPeers('wireguard'),
+        serverPeers: [
+          ...vpn.listServerPeers('wireguard'),
+          ...vpn.listServerPeers('openvpn'),
+        ],
         clientProfiles: clients,
         portPresets: vpn.portPresets(),
       });
@@ -70,20 +73,15 @@ export async function handleVpnRoutes(
         listenPort?: number;
         endpoint?: string;
         dns?: string;
+        proto?: string;
       };
       const engine = parseEngine(data.engine);
-      if (engine !== 'wireguard') {
-        sendOpsResult(res, {
-          ok: false,
-          apply_status: 'failed',
-          notes: ['OpenVPN / Outline server ensure ships in a follow-up release'],
-        });
-        return true;
-      }
-      const result = await vpn.ensureWireGuardServer({
+      const result = await vpn.ensureServer({
+        engine,
         listenPort: data.listenPort,
         endpoint: data.endpoint,
         dns: data.dns,
+        proto: data.proto === 'tcp' ? 'tcp' : 'udp',
       });
       ctx.audit.append({
         actor: user.username,
@@ -102,10 +100,17 @@ export async function handleVpnRoutes(
     }
 
     if (method === 'GET' && url.pathname === '/api/v1/vpn/server/clients') {
-      sendJson(res, 200, {
-        ok: true,
-        peers: vpn.listServerPeers(parseEngine(url.searchParams.get('engine'))),
-      });
+      const eng = parseEngine(url.searchParams.get('engine'));
+      const peers =
+        eng === 'openvpn'
+          ? vpn.listServerPeers('openvpn')
+          : eng === 'wireguard'
+            ? vpn.listServerPeers('wireguard')
+            : [
+                ...vpn.listServerPeers('wireguard'),
+                ...vpn.listServerPeers('openvpn'),
+              ];
+      sendJson(res, 200, { ok: true, peers });
       return true;
     }
 

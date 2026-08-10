@@ -2785,6 +2785,10 @@
     "clientDown": "Disconnected: {{name}}",
     "clientDeleted": "Deleted profile: {{name}}",
     "autostartOn": "Autostart on: {{name}}",
-    "autostartOff": "Autostart off: {{name}}"
+    "autostartOff": "Autostart off: {{name}}",
+    "ovpnPkiStart": "Generating OpenVPN PKI (may take a minute for DH params)…",
+    "ovpnPkiDone": "OpenVPN PKI ready.",
+    "ovpnServerActive": "OpenVPN server applied ({{proto}} {{port}}).",
+    "invalidOvpn": "OpenVPN conf should include client/remote directives."
   }
 }

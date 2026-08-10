@@ -10843,7 +10843,7 @@
     "goServer": "Server setup",
     "goClient": "Client connect",
     "needWireGuard": "WireGuard tools required for server and client.",
-    "needOpenVpn": "OpenVPN packages (server/client follow-up).",
+    "needOpenVpn": "OpenVPN packages (server and client).",
     "listenPort": "Listen port (UDP)",
     "endpoint": "Public endpoint",
     "endpointHint": "host:port clients use (public IP or domain). Leave empty to auto-detect IP.",
@@ -10861,7 +10861,7 @@
     "qrTitle": "QR — {{name}}",
     "qrHint": "Scan with the WireGuard mobile app.",
     "showConf": "Show config text",
-    "clientIntro": "Import a WireGuard conf to connect this host as a client. No inbound port needed.",
+    "clientIntro": "Import WireGuard conf or OpenVPN .ovpn to connect this host as a client. No inbound port needed.",
     "profileName": "Profile name",
     "pasteConf": "Paste .conf",
     "importProfile": "Import profile",
@@ -10869,7 +10869,11 @@
     "noProfilesHint": "Paste a conf from another server (or a peer export).",
     "connect": "Connect",
     "disconnect": "Disconnect",
-    "installNote": "One-click install uses apt when YSK_EXECUTE is on. WireGuard is ready; OpenVPN UI ships next.",
-    "result": "Result"
+    "installNote": "One-click install uses apt when YSK_EXECUTE is on. WireGuard and OpenVPN server/client are available.",
+    "result": "Result",
+    "serverEngine": "Server engine",
+    "clientEngine": "Profile type",
+    "engineAuto": "Auto-detect",
+    "proto": "Protocol"
   }
 }

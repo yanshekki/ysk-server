@@ -44,8 +44,10 @@ export function VpnPage() {
   const [lastOps, setLastOps] = useState<OpsResultLike | null>(null);
 
   // Server form
+  const [serverEngine, setServerEngine] = useState<'wireguard' | 'openvpn'>('wireguard');
   const [endpoint, setEndpoint] = useState('');
   const [listenPort, setListenPort] = useState(51820);
+  const [ovpnProto, setOvpnProto] = useState<'udp' | 'tcp'>('udp');
   const [peerName, setPeerName] = useState('');
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [qrLabel, setQrLabel] = useState('');
@@ -54,6 +56,7 @@ export function VpnPage() {
   // Client form
   const [importName, setImportName] = useState('');
   const [importConf, setImportConf] = useState('');
+  const [clientEngine, setClientEngine] = useState<'wireguard' | 'openvpn' | 'auto'>('auto');
 
   const load = useCallback(async () => {
     setError(null);
@@ -72,14 +75,12 @@ export function VpnPage() {
     void load();
   }, [load]);
 
-  const wg = useMemo(
-    () => status?.engines.find((e) => e.engine === 'wireguard') ?? null,
-    [status],
+  const peers: VpnServerPeer[] = (status?.serverPeers ?? []).filter(
+    (p) => p.engine === serverEngine,
   );
-  const peers: VpnServerPeer[] = status?.serverPeers ?? [];
   const profiles: VpnClientProfile[] = status?.clientProfiles ?? [];
   const presets: VpnPortPreset[] =
-    status?.portPresets?.filter((p) => p.engine === 'wireguard') ?? [];
+    status?.portPresets?.filter((p) => p.engine === serverEngine) ?? [];
 
   const runOps = async (
     fn: () => Promise<{
@@ -190,10 +191,34 @@ export function VpnPage() {
 
         {tab === 'server' ? (
           <div className="stack">
-            <SoftwareInstallBanner feature="wireguard" title={t('vpn.needWireGuard')} />
-            <SoftwareVersionBar softwareId="wireguard" />
+            {serverEngine === 'wireguard' ? (
+              <>
+                <SoftwareInstallBanner feature="wireguard" title={t('vpn.needWireGuard')} />
+                <SoftwareVersionBar softwareId="wireguard" />
+              </>
+            ) : (
+              <>
+                <SoftwareInstallBanner feature="openvpn" title={t('vpn.needOpenVpn')} />
+                <SoftwareVersionBar softwareId="openvpn" />
+              </>
+            )}
 
             <FormLayout>
+              <Field label={t('vpn.serverEngine')} htmlFor="vpn-srv-eng">
+                <select
+                  id="vpn-srv-eng"
+                  value={serverEngine}
+                  onChange={(e) => {
+                    const eng = e.target.value as 'wireguard' | 'openvpn';
+                    setServerEngine(eng);
+                    setListenPort(eng === 'openvpn' ? 1194 : 51820);
+                    setOvpnProto('udp');
+                  }}
+                >
+                  <option value="wireguard">WireGuard</option>
+                  <option value="openvpn">OpenVPN</option>
+                </select>
+              </Field>
               <Field label={t('vpn.listenPort')} htmlFor="vpn-port">
                 <input
                   id="vpn-port"
@@ -210,12 +235,27 @@ export function VpnPage() {
                     key={`${p.port}-${p.proto}`}
                     size="sm"
                     variant={listenPort === p.port ? 'primary' : 'ghost'}
-                    onClick={() => setListenPort(p.port)}
+                    onClick={() => {
+                      setListenPort(p.port);
+                      if (p.proto === 'tcp' || p.proto === 'udp') setOvpnProto(p.proto);
+                    }}
                   >
                     {p.label}
                   </Button>
                 ))}
               </div>
+              {serverEngine === 'openvpn' ? (
+                <Field label={t('vpn.proto')} htmlFor="vpn-proto">
+                  <select
+                    id="vpn-proto"
+                    value={ovpnProto}
+                    onChange={(e) => setOvpnProto(e.target.value as 'udp' | 'tcp')}
+                  >
+                    <option value="udp">UDP</option>
+                    <option value="tcp">TCP</option>
+                  </select>
+                </Field>
+              ) : null}
               <Field
                 label={t('vpn.endpoint')}
                 htmlFor="vpn-endpoint"
@@ -236,9 +276,10 @@ export function VpnPage() {
                   onClick={() =>
                     void runOps(() =>
                       vpnApi.ensureServer({
-                        engine: 'wireguard',
+                        engine: serverEngine,
                         listenPort,
                         endpoint: endpoint || undefined,
+                        proto: serverEngine === 'openvpn' ? ovpnProto : undefined,
                       }),
                     )
                   }
@@ -250,7 +291,11 @@ export function VpnPage() {
                   loading={busy}
                   onClick={() =>
                     void runOps(() =>
-                      vpnApi.openFirewall({ port: listenPort, proto: 'udp' }),
+                      vpnApi.openFirewall({
+                        port: listenPort,
+                        proto:
+                          serverEngine === 'openvpn' ? ovpnProto : 'udp',
+                      }),
                     )
                   }
                 >
@@ -276,7 +321,10 @@ export function VpnPage() {
                   disabled={!peerName.trim()}
                   onClick={() =>
                     void runOps(() =>
-                      vpnApi.addPeer({ name: peerName.trim(), engine: 'wireguard' }),
+                      vpnApi.addPeer({
+                        name: peerName.trim(),
+                        engine: serverEngine,
+                      }),
                     )
                   }
                 >
@@ -303,7 +351,9 @@ export function VpnPage() {
                           void api
                             .downloadAuthenticated(
                               vpnApi.peerConfigPath(p.id),
-                              `${p.name}.conf`,
+                              p.engine === 'openvpn'
+                                ? `${p.name}.ovpn`
+                                : `${p.name}.conf`,
                             )
                             .then(() => notifyOk(t('vpn.downloaded')))
                             .catch((e) =>
@@ -375,8 +425,22 @@ export function VpnPage() {
         {tab === 'client' ? (
           <div className="stack">
             <SoftwareInstallBanner feature="wireguard" title={t('vpn.needWireGuard')} />
+            <SoftwareInstallBanner feature="openvpn" title={t('vpn.needOpenVpn')} />
             <Alert variant="info">{t('vpn.clientIntro')}</Alert>
             <FormLayout>
+              <Field label={t('vpn.clientEngine')} htmlFor="vpn-cli-eng">
+                <select
+                  id="vpn-cli-eng"
+                  value={clientEngine}
+                  onChange={(e) =>
+                    setClientEngine(e.target.value as 'wireguard' | 'openvpn' | 'auto')
+                  }
+                >
+                  <option value="auto">{t('vpn.engineAuto')}</option>
+                  <option value="wireguard">WireGuard</option>
+                  <option value="openvpn">OpenVPN</option>
+                </select>
+              </Field>
               <Field label={t('vpn.profileName')} htmlFor="vpn-import-name">
                 <input
                   id="vpn-import-name"
@@ -392,7 +456,7 @@ export function VpnPage() {
                   rows={8}
                   value={importConf}
                   onChange={(e) => setImportConf(e.target.value)}
-                  placeholder="[Interface]&#10;PrivateKey = …"
+                  placeholder="[Interface] / client + remote …"
                   spellCheck={false}
                   className="vpn-textarea"
                 />
@@ -406,7 +470,8 @@ export function VpnPage() {
                       vpnApi.importClient({
                         name: importName.trim(),
                         conf: importConf,
-                        engine: 'wireguard',
+                        engine:
+                          clientEngine === 'auto' ? undefined : clientEngine,
                       }),
                     )
                   }

@@ -10848,7 +10848,7 @@
     "goServer": "伺服器設定",
     "goClient": "客戶端連線",
     "needWireGuard": "伺服器與客戶端需 WireGuard 工具。",
-    "needOpenVpn": "OpenVPN 套件（完整流程隨後提供）。",
+    "needOpenVpn": "OpenVPN 套件（伺服器與客戶端）。",
     "listenPort": "監聽埠（UDP）",
     "endpoint": "公開端點",
     "endpointHint": "客戶端使用的 host:port（公網 IP 或域名）。留空則嘗試自動偵測 IP。",
@@ -10866,7 +10866,7 @@
     "qrTitle": "QR — {{name}}",
     "qrHint": "用 WireGuard 手機應用程式掃描。",
     "showConf": "顯示設定文字",
-    "clientIntro": "匯入 WireGuard conf，令本機作為客戶端連出。通常無需開入站埠。",
+    "clientIntro": "匯入 WireGuard conf 或 OpenVPN .ovpn，令本機作為客戶端連出。通常無需開入站埠。",
     "profileName": "設定檔名稱",
     "pasteConf": "貼上 .conf",
     "importProfile": "匯入設定檔",
@@ -10874,7 +10874,11 @@
     "noProfilesHint": "貼上其他伺服器（或本機發出）的 conf。",
     "connect": "連線",
     "disconnect": "斷線",
-    "installNote": "一鍵安裝在 YSK_EXECUTE 開啟時經 apt 進行。WireGuard 已可用；OpenVPN 介面隨後提供。",
-    "result": "結果"
+    "installNote": "一鍵安裝在 YSK_EXECUTE 開啟時經 apt。WireGuard 與 OpenVPN 伺服器／客戶端已可用。",
+    "result": "結果",
+    "serverEngine": "服务器引擎",
+    "clientEngine": "配置类型",
+    "engineAuto": "自动检测",
+    "proto": "协议"
   }
 }

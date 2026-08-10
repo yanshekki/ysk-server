@@ -1,5 +1,5 @@
 /**
- * VPN service — WireGuard server + client (OpenVPN/Outline status stubs).
+ * VPN service — WireGuard + OpenVPN server/client (Outline status stub).
  */
 
 import { randomBytes } from 'node:crypto';
@@ -29,6 +29,19 @@ import {
   nextClientAddress,
   sanitizePeerName,
 } from './wireguard-conf.js';
+import {
+  addOvpnPeer,
+  deleteOvpnPeer,
+  ensureOpenVpnServer,
+  getOvpnPeerConfig,
+  isOvpnServerActive,
+  listOvpnPeers,
+  loadOvpnServer,
+  openvpnClientDown,
+  openvpnClientIsUp,
+  openvpnClientUp,
+  openVpnClientUnitName,
+} from './openvpn-ops.js';
 
 type WgServerState = {
   privateKey: string;
@@ -174,14 +187,20 @@ export class VpnService {
         engine: 'openvpn',
         title: 'OpenVPN',
         installed: ovpnInstalled,
-        serverActive: false,
-        serverPort: defaultPortForEngine('openvpn').port,
-        serverProto: 'udp',
-        peerCount: 0,
+        serverActive: await isOvpnServerActive(this.host),
+        serverPort:
+          loadOvpnServer(this.dataDir)?.listenPort ??
+          defaultPortForEngine('openvpn').port,
+        serverProto: loadOvpnServer(this.dataDir)?.proto ?? 'udp',
+        peerCount: listOvpnPeers(this.dataDir).length,
         clientProfileCount: clients.filter((c) => c.engine === 'openvpn').length,
-        clientConnectedCount: 0,
-        notes: [tl('notes.vpn.openvpnComing')],
-        bins: ['openvpn'],
+        clientConnectedCount: clients.filter(
+          (c) => c.engine === 'openvpn' && c.status === 'up',
+        ).length,
+        notes: ovpnInstalled
+          ? []
+          : [tl('notes.vpn.needInstall', { engine: 'OpenVPN' })],
+        bins: ['openvpn', 'openssl'],
         missingBins: ovpnInstalled ? [] : ['openvpn'],
       },
       {
@@ -310,7 +329,8 @@ export class VpnService {
   }
 
   listServerPeers(engine: VpnEngineId = 'wireguard'): VpnServerPeer[] {
-    if (engine !== 'wireguard') return [];
+    if (engine === 'openvpn') return listOvpnPeers(this.dataDir);
+    if (engine === 'outline') return [];
     const state = this.loadWgServer();
     if (!state) return [];
     return state.peers.map((p) => ({
@@ -321,6 +341,32 @@ export class VpnService {
       publicKey: p.publicKey,
       createdAt: p.createdAt,
     }));
+  }
+
+  async ensureServer(input: {
+    engine?: VpnEngineId;
+    listenPort?: number;
+    endpoint?: string;
+    dns?: string;
+    proto?: 'udp' | 'tcp';
+  }): Promise<{ ok: boolean; notes: string[]; blocked?: boolean; requiresExecute?: boolean }> {
+    const engine = input.engine ?? 'wireguard';
+    if (engine === 'openvpn') {
+      return ensureOpenVpnServer(this.host, this.dataDir, {
+        listenPort: input.listenPort,
+        proto: input.proto,
+        endpoint: input.endpoint,
+        dns: input.dns,
+      });
+    }
+    if (engine === 'outline') {
+      return { ok: false, notes: [tl('notes.vpn.outlineComing')] };
+    }
+    return this.ensureWireGuardServer({
+      listenPort: input.listenPort,
+      endpoint: input.endpoint,
+      dns: input.dns,
+    });
   }
 
   async addServerPeer(input: {
@@ -335,8 +381,11 @@ export class VpnService {
     requiresExecute?: boolean;
   }> {
     const engine = input.engine ?? 'wireguard';
-    if (engine !== 'wireguard') {
-      return { ok: false, notes: [tl('notes.vpn.openvpnComing')] };
+    if (engine === 'openvpn') {
+      return addOvpnPeer(this.host, this.dataDir, input.name);
+    }
+    if (engine === 'outline') {
+      return { ok: false, notes: [tl('notes.vpn.outlineComing')] };
     }
     if (!this.host.executeEnabled() || !this.host.isRoot()) {
       return {
@@ -409,6 +458,8 @@ export class VpnService {
   }
 
   getServerPeerConfig(peerId: string): { config: string; filename: string } | null {
+    const ovpn = getOvpnPeerConfig(this.dataDir, peerId);
+    if (ovpn) return ovpn;
     const state = this.loadWgServer();
     if (!state) return null;
     const peer = state.peers.find((p) => p.id === peerId);
@@ -425,6 +476,10 @@ export class VpnService {
   }
 
   async deleteServerPeer(peerId: string): Promise<{ ok: boolean; notes: string[] }> {
+    const ovpnState = loadOvpnServer(this.dataDir);
+    if (ovpnState?.peers.some((p) => p.id === peerId)) {
+      return deleteOvpnPeer(this.host, this.dataDir, peerId);
+    }
     const state = this.loadWgServer();
     if (!state) return { ok: false, notes: [tl('notes.vpn.serverMissing')] };
     const before = state.peers.length;
@@ -497,6 +552,11 @@ export class VpnService {
     if (!this.host.executeEnabled()) return profiles;
     const next: VpnClientProfile[] = [];
     for (const p of profiles) {
+      if (p.engine === 'openvpn') {
+        const up = await openvpnClientIsUp(this.host, p.iface);
+        next.push({ ...p, status: up ? 'up' : 'down' });
+        continue;
+      }
       if (p.engine !== 'wireguard') {
         next.push(p);
         continue;
@@ -522,23 +582,38 @@ export class VpnService {
     blocked?: boolean;
     requiresExecute?: boolean;
   }> {
-    const engine = input.engine ?? 'wireguard';
-    if (engine !== 'wireguard') {
-      return { ok: false, notes: [tl('notes.vpn.openvpnComing')] };
-    }
+    let engine = input.engine ?? 'wireguard';
     const conf = input.conf.trim();
-    if (!conf.includes('[Interface]') || !conf.includes('PrivateKey')) {
-      return { ok: false, notes: [tl('notes.vpn.invalidConf')] };
+    // Auto-detect OpenVPN
+    if (
+      engine === 'wireguard' &&
+      (conf.includes('client') || conf.includes('<ca>')) &&
+      conf.includes('remote ')
+    ) {
+      engine = 'openvpn';
+    }
+    if (engine === 'outline') {
+      return { ok: false, notes: [tl('notes.vpn.outlineComing')] };
+    }
+    if (engine === 'wireguard') {
+      if (!conf.includes('[Interface]') || !conf.includes('PrivateKey')) {
+        return { ok: false, notes: [tl('notes.vpn.invalidConf')] };
+      }
+    } else if (engine === 'openvpn') {
+      if (!conf.includes('remote ') && !conf.includes('client')) {
+        return { ok: false, notes: [tl('notes.vpn.invalidOvpn')] };
+      }
     }
     this.ensureDirs();
     const id = newId();
-    const iface = clientIfaceName(id);
+    const iface =
+      engine === 'openvpn' ? openVpnClientUnitName(id) : clientIfaceName(id);
     const name = sanitizePeerName(input.name);
-    const confFile = `${id}.conf`;
+    const confFile = engine === 'openvpn' ? `${id}.ovpn` : `${id}.conf`;
     const meta: ClientMeta = {
       id,
       name,
-      engine: 'wireguard',
+      engine,
       iface,
       autostart: input.autostart === true,
       createdAt: new Date().toISOString(),
@@ -552,7 +627,7 @@ export class VpnService {
       profile: {
         id,
         name,
-        engine: 'wireguard',
+        engine,
         iface,
         status: 'down',
         autostart: meta.autostart,
@@ -584,6 +659,11 @@ export class VpnService {
     const confSrc = join(this.clientDir(), meta.confFile);
     if (!existsSync(confSrc)) {
       return { ok: false, notes: [tl('notes.vpn.profileNotFound')] };
+    }
+    if (meta.engine === 'openvpn') {
+      const r = await openvpnClientUp(this.host, confSrc, meta.iface);
+      if (!r.ok) return r;
+      return { ok: true, notes: [tl('notes.vpn.clientUp', { name: meta.name }), ...r.notes] };
     }
     const dest = `/etc/wireguard/${meta.iface}.conf`;
     const script = [
@@ -624,6 +704,10 @@ export class VpnService {
       return { ok: false, notes: [tl('notes.vpn.profileNotFound')] };
     }
     const meta = JSON.parse(readFileSync(metaPath, 'utf8')) as ClientMeta;
+    if (meta.engine === 'openvpn') {
+      await openvpnClientDown(this.host, meta.iface);
+      return { ok: true, notes: [tl('notes.vpn.clientDown', { name: meta.name })] };
+    }
     await this.host.runCommand(
       ['bash', '-c', `wg-quick down ${JSON.stringify(meta.iface)} 2>/dev/null || true`],
       { timeoutMs: 30_000 },

@@ -65,6 +65,7 @@ export const vpnApi = {
     listenPort?: number;
     endpoint?: string;
     dns?: string;
+    proto?: 'udp' | 'tcp';
   }) =>
     api.requestRaw<{
       ok: boolean;
