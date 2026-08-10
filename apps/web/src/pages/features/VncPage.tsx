@@ -34,7 +34,6 @@ import {
   type VncDesktopProfile,
   type VncOpsResult,
   type VncRfbBind,
-  type VncStatusResponse,
 } from '../../features/vnc/api';
 
 const TABS = ['accounts', 'client', 'install', 'settings', 'about'] as const;
@@ -122,7 +121,6 @@ export function VncPage() {
     setError(null);
     try {
       const s = await vncApi.status();
-      setStatus(s);
       setAccounts(s.accounts ?? []);
       setClients(s.clientProfiles ?? []);
       if (s.settings) {
