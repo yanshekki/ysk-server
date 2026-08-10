@@ -408,3 +408,33 @@ button.linkish {
   color: inherit;
   resize: vertical;
 }
+
+.hb-media-card {
+  margin-top: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 8px);
+  background: var(--surface-2, rgba(255, 255, 255, 0.03));
+}
+
+.hb-media-card__title {
+  margin: 0 0 0.5rem;
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.hb-media-card__list {
+  margin: 0 0 0.65rem;
+  padding-left: 1.1rem;
+  font-size: var(--text-sm);
+  color: var(--text-muted, #aaa);
+}
+
+.hb-media-card__list li {
+  margin-bottom: 0.35rem;
+}
+
+.hb-media-card__list strong {
+  color: inherit;
+  font-weight: 600;
+}

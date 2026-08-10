@@ -3926,7 +3926,7 @@
     "bookmarkToggled": "Bookmark updated",
     "newTab": "New tab",
     "fullscreen": "Fullscreen",
-    "mediaNote": "Real browser: video is streamed; audio is not yet bridged to the panel (phase 2).",
+    "mediaNote": "Real browser: video is host screencast; audio is not bridged to the panel (planned later).",
     "isolationNote": "Real browser creates an ephemeral Linux user for Chrome; leaving the page or idle timeout destroys that user.",
     "downloads": "Downloads",
     "downloadsEmpty": "No downloads in this session yet.",
@@ -3946,7 +3946,16 @@
     "safetyRelaxed": "Relaxed",
     "settingsBlockHosts": "Blocked hosts",
     "settingsBlockHostsHint": "One hostname per line (or comma-separated). Applied to navigate.",
-    "settingsAllowDangerousDownloads": "Allow dangerous download types (exe, sh, …)"
+    "settingsAllowDangerousDownloads": "Allow dangerous download types (exe, sh, …)",
+    "mediaPolicyTitle": "Media policy (honest)",
+    "mediaVideoLabel": "Video",
+    "mediaVideoDesc": "Real browser: JPEG screencast frames from the host (not your client webcam).",
+    "mediaAudioLabel": "Audio",
+    "mediaAudioDesc": "Not bridged to the panel. Host Chromium runs muted; site sound does not play in the UI.",
+    "mediaPolicyLabel": "Policy",
+    "mediaPolicyDesc": "visual_only — intentional for privacy and bandwidth until an audio bridge ships.",
+    "audioNotBridged": "Audio: not bridged",
+    "audioNotBridgedHint": "Site audio is muted on the host and is not streamed to this page."
   },
   "listToolbar": {
     "searchPlaceholder": "Search…",

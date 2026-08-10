@@ -3985,7 +3985,16 @@
     "safetyRelaxed": "Relaxed",
     "settingsBlockHosts": "Blocked hosts",
     "settingsBlockHostsHint": "One hostname per line (or comma-separated). Applied to navigate.",
-    "settingsAllowDangerousDownloads": "Allow dangerous download types (exe, sh, …)"
+    "settingsAllowDangerousDownloads": "Allow dangerous download types (exe, sh, …)",
+    "mediaPolicyTitle": "Media policy (honest)",
+    "mediaVideoLabel": "Video",
+    "mediaVideoDesc": "Real browser: JPEG screencast frames from the host (not your client webcam).",
+    "mediaAudioLabel": "Audio",
+    "mediaAudioDesc": "Not bridged to the panel. Host Chromium runs muted; site sound does not play in the UI.",
+    "mediaPolicyLabel": "Policy",
+    "mediaPolicyDesc": "visual_only — intentional for privacy and bandwidth until an audio bridge ships.",
+    "audioNotBridged": "Audio: not bridged",
+    "audioNotBridgedHint": "Site audio is muted on the host and is not streamed to this page."
   },
   "listToolbar": {
     "searchPlaceholder": "Rechercher…",

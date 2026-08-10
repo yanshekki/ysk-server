@@ -41,6 +41,12 @@ export type HostBrowseCapabilities = {
     allowLoopback: boolean;
     noSandbox: boolean;
   };
+  media?: {
+    video: 'screencast_jpeg' | 'proxy_iframe';
+    audio: 'not_bridged';
+    chromeAudioMuted: true;
+    policy: 'visual_only';
+  };
 };
 
 export type HostBrowseSession = {

@@ -3965,7 +3965,7 @@
     "bookmarkToggled": "已更新書籤",
     "newTab": "新分頁",
     "fullscreen": "全螢幕",
-    "mediaNote": "真實瀏覽器：影像經主機串流；音訊尚未橋接至面板（二期）。",
+    "mediaNote": "真实浏览器：影像经主机画面串流；音频尚未桥接至面板（计划于后期）。",
     "isolationNote": "真實瀏覽器會建立臨時 Linux 用戶隔離 Chrome；離開頁面或逾時會結束並刪除該用戶。",
     "downloads": "下载",
     "downloadsEmpty": "此会话尚无下载项目。",
@@ -3985,7 +3985,16 @@
     "safetyRelaxed": "宽松",
     "settingsBlockHosts": "封锁主机列表",
     "settingsBlockHostsHint": "每行一个主机名（或逗号分隔）。应用于导航。",
-    "settingsAllowDangerousDownloads": "允许高风险下载类型（exe、sh 等）"
+    "settingsAllowDangerousDownloads": "允许高风险下载类型（exe、sh 等）",
+    "mediaPolicyTitle": "媒体策略（如实说明）",
+    "mediaVideoLabel": "影像",
+    "mediaVideoDesc": "真实浏览器：主机 JPEG 画面串流（非客户端摄像头）。",
+    "mediaAudioLabel": "音频",
+    "mediaAudioDesc": "尚未桥接至面板。主机 Chromium 以静音运行；站点声音不会在界面播放。",
+    "mediaPolicyLabel": "策略",
+    "mediaPolicyDesc": "仅画面（visual_only）— 出于隐私与带宽考虑，直至音频桥接上线。",
+    "audioNotBridged": "音频：未桥接",
+    "audioNotBridgedHint": "站点音频在主机静音，且不会串流至本页。"
   },
   "listToolbar": {
     "searchPlaceholder": "搜索…",

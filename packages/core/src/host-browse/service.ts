@@ -257,6 +257,12 @@ export class HostBrowseService {
         allowLoopback: Boolean(pol.allowLoopback),
         noSandbox: Boolean(pol.noSandbox),
       },
+      media: {
+        video: 'screencast_jpeg',
+        audio: 'not_bridged',
+        chromeAudioMuted: true,
+        policy: 'visual_only',
+      },
     };
   }
 

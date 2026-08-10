@@ -185,4 +185,14 @@ export interface HostBrowseCapabilities {
     allowLoopback: boolean;
     noSandbox: boolean;
   };
+  /**
+   * Honest media surface: browser engine streams visual frames only.
+   * Audio is intentionally not bridged to the panel (phase-2).
+   */
+  media?: {
+    video: 'screencast_jpeg' | 'proxy_iframe';
+    audio: 'not_bridged';
+    chromeAudioMuted: true;
+    policy: 'visual_only';
+  };
 }

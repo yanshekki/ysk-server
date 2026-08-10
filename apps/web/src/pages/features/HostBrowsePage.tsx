@@ -1382,6 +1382,11 @@ export function HostBrowsePage() {
                 {last?.rewritten ? <Badge tone="ok">rewrite</Badge> : null}
                 {isBrowser ? <Badge tone="ok">chromium</Badge> : null}
                 {livePhase === 'live' ? <Badge tone="ok">live</Badge> : null}
+                {isBrowser ? (
+                  <span title={t('hostBrowse.audioNotBridgedHint')}>
+                    <Badge tone="warn">{t('hostBrowse.audioNotBridged')}</Badge>
+                  </span>
+                ) : null}
                 {errorCode ? <Badge tone="danger">{errorCode}</Badge> : null}
               </div>
             </div>
@@ -1515,7 +1520,27 @@ export function HostBrowsePage() {
                 </Button>
               </FormActions>
             </FormLayout>
-            <Alert variant="info">{t('hostBrowse.mediaNote')}</Alert>
+            <div className="hb-media-card">
+              <h3 className="hb-media-card__title">{t('hostBrowse.mediaPolicyTitle')}</h3>
+              <ul className="hb-media-card__list">
+                <li>
+                  <strong>{t('hostBrowse.mediaVideoLabel')}</strong>
+                  {' — '}
+                  {t('hostBrowse.mediaVideoDesc')}
+                </li>
+                <li>
+                  <strong>{t('hostBrowse.mediaAudioLabel')}</strong>
+                  {' — '}
+                  {t('hostBrowse.mediaAudioDesc')}
+                </li>
+                <li>
+                  <strong>{t('hostBrowse.mediaPolicyLabel')}</strong>
+                  {' — '}
+                  {t('hostBrowse.mediaPolicyDesc')}
+                </li>
+              </ul>
+              <Alert variant="info">{t('hostBrowse.mediaNote')}</Alert>
+            </div>
             <Alert variant="info">{t('hostBrowse.isolationNote')}</Alert>
             {Object.keys(envHints).length > 0 ? (
               <div className="stack u-mt-3">
