@@ -44,11 +44,24 @@
   font-size: var(--text-xs);
   padding: 0.15rem 0.35rem;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border-color);
-  background: var(--surface-1, #12151c);
-  color: inherit;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.18));
+  /* Explicit fg/bg — color:inherit was black-on-black on dark chrome */
+  background: var(--input-bg, var(--surface-2, #1c2230));
+  color: var(--text-primary, #e8eaed);
   max-width: 6.5rem;
   height: 1.75rem;
+  color-scheme: dark;
+}
+
+.hb-compact__select:hover,
+.hb-compact__select:focus {
+  border-color: var(--accent, #3b82f6);
+  outline: none;
+}
+
+.hb-compact__select option {
+  background: var(--surface-1, #1c2230);
+  color: var(--text-primary, #e8eaed);
 }
 
 .hb-toolbar__mode {
