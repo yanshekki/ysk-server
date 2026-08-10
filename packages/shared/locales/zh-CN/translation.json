@@ -98,7 +98,7 @@
     "cmdNote": "Edge ysk-server agent run 收到 CLI JSON 会在本机执行 CLI（自动加 --json）。改系统仍要边缘设 YSK_EXECUTE=1。完成后在「记录」看 exit code 与 JSON。",
     "resultTitle": "指令结果 · exit {{code}}",
     "resultTitlePlain": "指令结果",
-    "codeComment": "# Concept: register → heartbeat loop → pull commands → ack\n# Library: @ysk/core runOutboundAgent / agentCycle",
+    "codeComment": "# 概念：register → heartbeat 循环 → 拉指令 → ack\n# 库：@ysk/core runOutboundAgent / agentCycle",
     "resultOuter": "外层：edge ack（exitCode / stderr）。内层 result：",
     "deleteTitle": "删除 {{id}}？",
     "deleteTitlePlain": "删除 agent？",
@@ -230,30 +230,30 @@
       "software.install": "安装软件",
       "software.update": "更新软件",
       "protection": {
-        "change": "Protection settings changed"
+        "change": "防护设置已更改"
       },
       "auth": {
         "locale": "UI language changed",
-        "login": "Signed in",
-        "logout": "Signed out"
+        "login": "已登录",
+        "logout": "已退出登录"
       },
       "system": {
         "firewall": {
-          "allow_port": "Firewall allow port",
-          "deny": "Firewall deny IP",
-          "apply": "Firewall apply",
-          "enable": "Firewall enable/disable",
-          "delete_rule": "Delete firewall rule",
-          "delete_deny": "Remove permanent deny IP"
+          "allow_port": "防火墙允许端口",
+          "deny": "防火墙拒绝 IP",
+          "apply": "应用防火墙",
+          "enable": "启用/停用防火墙",
+          "delete_rule": "删除防火墙规则",
+          "delete_deny": "移除永久拒绝 IP"
         }
       },
       "project": {
-        "deploy": "Project deploy",
-        "create": "Project created",
-        "delete": "Project deleted",
-        "goLive": "Project go-live",
-        "publish": "Publish Nginx",
-        "suspend": "Suspend project"
+        "deploy": "项目部署",
+        "create": "已创建项目",
+        "delete": "已删除项目",
+        "goLive": "项目上线",
+        "publish": "发布 Nginx",
+        "suspend": "暂停项目"
       },
       "ssl": {
         "request": "SSL request",
@@ -261,12 +261,12 @@
       },
       "db": {
         "adminer": {
-          "apply": "DB browser project"
+          "apply": "数据库浏览器项目"
         }
       },
       "software": {
-        "install": "Install software",
-        "update": "Update software"
+        "install": "安装软件",
+        "update": "更新软件"
       }
     }
   },
@@ -1620,54 +1620,54 @@
       "--root": {
         "must": {
           "be": {
-            "a84834": "--root must be public or project:<id>\n"
+            "a84834": "--root 必须是 public 或 project:<id>\n"
           }
         }
       },
       "need": {
         "--content": {
           "or": {
-            "4d7001": "Need --content or --file\n"
+            "4d7001": "需要 --content 或 --file\n"
           }
         },
         "at": {
           "least": {
-            "7d311a": "Need at least one --member HOST[=role][:access]\n"
+            "7d311a": "至少需要一个 --member HOST[=role][:access]\n"
           }
         }
       },
       "action": {
         "must": {
           "be": {
-            "ba14c1": "action must be list|add|remove\n"
+            "ba14c1": "action 必须是 list|add|remove\n"
           }
         }
       },
       "use": {
         "ysk-server": {
           "backup": {
-            "ca67f4": "Use: ysk-server backup control-plane-restore --name ARCHIVE (not restore --project-id control-plane)\n"
+            "ca67f4": "请用：ysk-server backup control-plane-restore --name ARCHIVE（不要用 restore --project-id control-plane）\n"
           }
         }
       },
       "new": {
         "domain": {
           "requires": {
-            "986b78": "New domain requires --ip A.B.C.D (no placeholder defaults)\n"
+            "986b78": "新域名需要 --ip A.B.C.D（不要用占位默认）\n"
           }
         }
       },
       "import-sync": {
         "prefers": {
           "fleet": {
-            "4d7590": "import-sync prefers fleet clusterSync payload; or --file snapshot.json\n"
+            "4d7590": "import-sync 优先使用 fleet clusterSync payload；或 --file snapshot.json\n"
           }
         }
       },
       "security": {
         "control": {
           "plane": {
-            "f59a63": "SECURITY: control plane bound publicly (0.0.0.0/::). Prefer 127.0.0.1 + reverse proxy / UFW.\n"
+            "f59a63": "安全：控制平面绑定公开地址 (0.0.0.0/::)。建议 127.0.0.1 + 反向代理 / UFW。\n"
           }
         }
       }
@@ -3504,7 +3504,7 @@
     "publicShareMissing": "链接无效",
     "publicShareFailed": "下载失败（{{status}}）",
     "publicShareFailedGeneric": "下载失败",
-    "publicShareDefaultName": "download",
+    "publicShareDefaultName": "下载",
     "publicSharePanelLogin": "登录控制面",
     "publicShareLang": "语言",
     "publicShareProgress": "{{loaded}} / {{total}}（{{pct}}%）",
@@ -4094,7 +4094,7 @@
     "query": "查询",
     "follow": "跟隨",
     "export": "导出",
-    "vacuum": "Vacuum",
+    "vacuum": "清理（Vacuum）",
     "loadFailed": "加载失败",
     "projectLogsLink": "项目 → 日志",
     "projectLogsDesc": " — 单站快捷 + 深鏈",
@@ -4218,7 +4218,7 @@
     "topAria": "top 摘要",
     "perCore": "每核",
     "noPerCore": "无每核数据",
-    "uptimeDays": "{{d}} days, {{h}}:{{m}}",
+    "uptimeDays": "{{d}} 天，{{h}}:{{m}}",
     "used": "已用",
     "free": "空闲",
     "signal": "信号",
@@ -4287,7 +4287,7 @@
     "usageNoteFull": "用量来自本机 du（非估算）。配额为控制面 soft limit；硬 setquota 需「套用限制到系统」。",
     "sseNeedLogin": "未登录，无法开启 SSE",
     "sseSessionExpired": "未登录或 session 失效，无法开启 SSE",
-    "sseHttpError": "stream HTTP {{status}}"
+    "sseHttpError": "流 HTTP {{status}}"
   },
   "migrate": {
     "tabInventory": "盘点",
@@ -4598,7 +4598,7 @@
       }
     },
     "linkUp": "Up",
-    "linkDown": "Down"
+    "linkDown": "断开"
   },
   "nginx": {
     "pillSites": "{{count}} 站点",
@@ -7683,7 +7683,7 @@
     "publishNginx": "发布 Nginx",
     "publishNginxSsl": "发布 Nginx + SSL",
     "opsResult": "操作结果",
-    "runtime": "Runtime",
+    "runtime": "运行时",
     "template": "範本（选填）",
     "templateNone": "— 无 —",
     "searchPlaceholder": "搜索名称、域名或 ID…",
@@ -7717,7 +7717,7 @@
       "desc": "完成以下步骤即可对外提供服务",
       "created": "已创建",
       "os": "OS 用户",
-      "deploy": "Deploy",
+      "deploy": "部署",
       "nginx": "Nginx",
       "health": "健康"
     },
@@ -7782,7 +7782,7 @@
     "netPortTitle": "进程端口",
     "netCurrentPort": "当前端口",
     "netPublishTitle": "发布",
-    "netConfPreview": "Conf",
+    "netConfPreview": "配置",
     "savePublishSsl": "保存并发布 + SSL",
     "retryLiveTitle": "上线未完成",
     "retryLiveBody": "部署或 Nginx 发布未成功，可重试。",
@@ -8192,7 +8192,7 @@
     "deployProcessManagerPm2": "PM2",
     "proc_restart": "重启",
     "proc_stop": "停止",
-    "proc_reload": "Reload",
+    "proc_reload": "重新加载",
     "procControlsHint": "进程控制（{{manager}}）",
     "procActionOk": "{{action}} 成功 · {{notes}}",
     "procActionFail": "{{action}} 失败 · {{notes}}",
@@ -9338,10 +9338,10 @@
         "uptime": "运行时间",
         "mode": "模式",
         "script": "脚本",
-        "interpreter": "Interpreter",
+        "interpreter": "解释器",
         "user": "用户",
         "unit": "Unit",
-        "runtime": "Runtime"
+        "runtime": "运行时"
       },
       "projectsTitle": "YSK 项目进程",
       "projectsDesc": "面板项目对应的 systemd unit（默认部署路径，不是 PM2）。",
@@ -9487,7 +9487,7 @@
     "apiKeysEmpty": "尚未有 API 密钥",
     "apiKeysEmptyHint": "用列表右上角创建；创建后可用 Bearer token 调用 API",
     "approve": "批准",
-    "allowlistTitle": "Allowlist ({{count}})",
+    "allowlistTitle": "允许列表（{{count}}）",
     "allowlistEmpty": "尚无 allowlist 工具",
     "createApiKeyTitle": "创建 API 密钥",
     "createApiKeyDesc": "创建后完整 token 只显示一次",
@@ -10877,9 +10877,9 @@
     "saveUser": "保存用户",
     "userSaved": "已更新 {{name}}",
     "filterAll": "全部",
-    "filterAdmin": "Admin",
-    "filterOperator": "Operator",
-    "filterViewer": "Viewer",
+    "filterAdmin": "管理员",
+    "filterOperator": "操作员",
+    "filterViewer": "查看者",
     "filterSuspended": "已暂停",
     "filterNoPkg": "无套餐",
     "filter2faOff": "未开 2FA",
@@ -10921,7 +10921,7 @@
     "neverSeen": "未见",
     "hostUsage": "主机用量",
     "hostUsageHint": "此为全机（host）总量，非 per-user 硬隔离。方案上限仅作对照。",
-    "hostTotalsBadge": "host totals",
+    "hostTotalsBadge": "主机合计",
     "opsChecklist": "运维 checklist",
     "opsCheck1": "只把 Admin 派给真正需要 privilege 的人；日常用 Operator。",
     "opsCheck2": "在「权限」分页调级后记得 Save；可一键还原系统默认。",
@@ -10949,9 +10949,9 @@
     "no2fa": "未开 2FA",
     "lastSeenValue": "上次活动 {{time}}",
     "roleName": {
-      "admin": "Admin",
-      "operator": "Operator",
-      "viewer": "Viewer",
+      "admin": "管理员",
+      "operator": "操作员",
+      "viewer": "查看者",
       "agent": "Agent"
     },
     "roleDesc": {
@@ -11119,7 +11119,7 @@
     "endpointHint": "客户端连入的公网 host:port",
     "ensureServer": "应用服务器",
     "openFirewall": "开端口 {{port}}/udp",
-    "peersTitle": "Peers",
+    "peersTitle": "对等端",
     "peerName": "名称",
     "addPeer": "新增 peer",
     "noPeers": "暂无 peer",
@@ -11128,7 +11128,7 @@
     "showQr": "QR Code",
     "downloaded": "已下载设置檔",
     "qrReady": "QR 已就緒",
-    "qrTitle": "QR — {{name}}",
+    "qrTitle": "二维码 — {{name}}",
     "qrHint": "用 WireGuard App 扫",
     "showConf": "配置文本",
     "clientIntro": "导入 conf 连出",

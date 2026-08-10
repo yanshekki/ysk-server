@@ -441,10 +441,10 @@
       "uptime": "運行時間",
       "mode": "模式",
       "script": "腳本",
-      "interpreter": "Interpreter",
+      "interpreter": "解譯器",
       "user": "用戶",
       "unit": "Unit",
-      "runtime": "Runtime"
+      "runtime": "執行環境"
     },
     "projectsTitle": "YSK 專案進程",
     "projectsDesc": "面板專案對應的 systemd unit（預設部署路徑，不是 PM2）。",

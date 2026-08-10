@@ -98,7 +98,7 @@
     "cmdNote": "邊緣 ysk-server 代理收到命令列 JSON 後，會在本機執行命令列（自動加上 --json）。變更系統仍須在邊緣開啟系統變更權限。完成後請在「紀錄」查看結束代碼與 JSON。",
     "resultTitle": "指令結果 · 結束 {{code}}",
     "resultTitlePlain": "指令結果",
-    "codeComment": "# Concept: register → heartbeat loop → pull commands → ack\n# Library: @ysk/core runOutboundAgent / agentCycle",
+    "codeComment": "# 概念：register → heartbeat 迴圈 → 拉指令 → ack\n# 函式庫：@ysk/core runOutboundAgent / agentCycle",
     "resultOuter": "外層：邊緣回報（結束代碼／錯誤輸出）。內層結果：",
     "deleteTitle": "刪除 {{id}}？",
     "deleteTitlePlain": "刪除 代理？",
@@ -230,30 +230,30 @@
       "software.install": "安裝軟件",
       "software.update": "更新軟件",
       "protection": {
-        "change": "Protection settings changed"
+        "change": "防護設定已變更"
       },
       "auth": {
         "locale": "UI language changed",
-        "login": "Signed in",
-        "logout": "Signed out"
+        "login": "已登入",
+        "logout": "已登出"
       },
       "system": {
         "firewall": {
-          "allow_port": "Firewall allow port",
-          "deny": "Firewall deny IP",
-          "apply": "Firewall apply",
-          "enable": "Firewall enable/disable",
-          "delete_rule": "Delete firewall rule",
-          "delete_deny": "Remove permanent deny IP"
+          "allow_port": "防火牆允許埠",
+          "deny": "防火牆拒絕 IP",
+          "apply": "套用防火牆",
+          "enable": "啟用／停用防火牆",
+          "delete_rule": "刪除防火牆規則",
+          "delete_deny": "移除永久拒絕 IP"
         }
       },
       "project": {
-        "deploy": "Project deploy",
-        "create": "Project created",
-        "delete": "Project deleted",
-        "goLive": "Project go-live",
-        "publish": "Publish Nginx",
-        "suspend": "Suspend project"
+        "deploy": "專案部署",
+        "create": "已建立專案",
+        "delete": "已刪除專案",
+        "goLive": "專案上線",
+        "publish": "發佈 Nginx",
+        "suspend": "暫停專案"
       },
       "ssl": {
         "request": "SSL request",
@@ -261,12 +261,12 @@
       },
       "db": {
         "adminer": {
-          "apply": "DB browser project"
+          "apply": "資料庫瀏覽器專案"
         }
       },
       "software": {
-        "install": "Install software",
-        "update": "Update software"
+        "install": "安裝軟件",
+        "update": "更新軟件"
       }
     }
   },
@@ -1620,54 +1620,54 @@
       "--root": {
         "must": {
           "be": {
-            "a84834": "--root must be public or project:<id>\n"
+            "a84834": "--root 必須係 public 或 project:<id>\n"
           }
         }
       },
       "need": {
         "--content": {
           "or": {
-            "4d7001": "Need --content or --file\n"
+            "4d7001": "需要 --content 或 --file\n"
           }
         },
         "at": {
           "least": {
-            "7d311a": "Need at least one --member HOST[=role][:access]\n"
+            "7d311a": "至少需要一個 --member HOST[=role][:access]\n"
           }
         }
       },
       "action": {
         "must": {
           "be": {
-            "ba14c1": "action must be list|add|remove\n"
+            "ba14c1": "action 必須係 list|add|remove\n"
           }
         }
       },
       "use": {
         "ysk-server": {
           "backup": {
-            "ca67f4": "Use: ysk-server backup control-plane-restore --name ARCHIVE (not restore --project-id control-plane)\n"
+            "ca67f4": "請用：ysk-server backup control-plane-restore --name ARCHIVE（不要用 restore --project-id control-plane）\n"
           }
         }
       },
       "new": {
         "domain": {
           "requires": {
-            "986b78": "New domain requires --ip A.B.C.D (no placeholder defaults)\n"
+            "986b78": "新網域需要 --ip A.B.C.D（不要用佔位預設）\n"
           }
         }
       },
       "import-sync": {
         "prefers": {
           "fleet": {
-            "4d7590": "import-sync prefers fleet clusterSync payload; or --file snapshot.json\n"
+            "4d7590": "import-sync 優先用 fleet clusterSync payload；或 --file snapshot.json\n"
           }
         }
       },
       "security": {
         "control": {
           "plane": {
-            "f59a63": "SECURITY: control plane bound publicly (0.0.0.0/::). Prefer 127.0.0.1 + reverse proxy / UFW.\n"
+            "f59a63": "安全：控制平面綁定公開位址 (0.0.0.0/::)。建議 127.0.0.1 + 反向代理 / UFW。\n"
           }
         }
       }
@@ -3504,7 +3504,7 @@
     "publicShareMissing": "連結無效",
     "publicShareFailed": "下載失敗（{{status}}）",
     "publicShareFailedGeneric": "下載失敗",
-    "publicShareDefaultName": "download",
+    "publicShareDefaultName": "下載",
     "publicSharePanelLogin": "登入控制面",
     "publicShareLang": "語言",
     "publicShareProgress": "{{loaded}} / {{total}}（{{pct}}%）",
@@ -4094,7 +4094,7 @@
     "query": "查詢",
     "follow": "跟隨",
     "export": "匯出",
-    "vacuum": "Vacuum",
+    "vacuum": "清理（Vacuum）",
     "loadFailed": "載入失敗",
     "projectLogsLink": "專案 → 日誌",
     "projectLogsDesc": "— 單站快捷 + 深鏈",
@@ -4218,7 +4218,7 @@
     "topAria": "top 摘要",
     "perCore": "每核",
     "noPerCore": "無每核資料",
-    "uptimeDays": "{{d}} days, {{h}}:{{m}}",
+    "uptimeDays": "{{d}} 日，{{h}}:{{m}}",
     "used": "已用",
     "free": "空閒",
     "signal": "訊號",
@@ -4287,7 +4287,7 @@
     "usageNoteFull": "用量來自本機 du（非估算）。配額為控制面 soft limit；硬 setquota 需「套用限制到系統」。",
     "sseNeedLogin": "未登入，無法開啟 SSE",
     "sseSessionExpired": "未登入或 工作階段 失效，無法開啟 SSE",
-    "sseHttpError": "stream HTTP {{status}}"
+    "sseHttpError": "串流 HTTP {{status}}"
   },
   "migrate": {
     "tabInventory": "盤點",
@@ -4598,7 +4598,7 @@
       }
     },
     "linkUp": "Up",
-    "linkDown": "Down"
+    "linkDown": "離線"
   },
   "nginx": {
     "pillSites": "{{count}} 站點",
@@ -7434,7 +7434,7 @@
       "docRootUpdateFailed": "無法更新專案文件根：{{detail}}",
       "sqliteSchemaReady": "已初始化 Roundcube SQLite schema",
       "sqliteSchemaFailed": "Roundcube SQLite schema 初始化失敗：{{detail}}",
-      "snappyFullEmailLogin": "郵箱登入須用完整電郵（user@domain），唔好只用 local-part",
+      "snappyFullEmailLogin": "郵箱登入須用完整電郵（user@domain），不要只用 local-part",
       "removedBogusPublicHtml": "已刪殘留 public_html（php-hello），避免 webmail 指錯樹",
       "snappyDocRoot": "SnappyMail HTTP 文件根：{{path}}",
       "phpHelloStillPresent": "安裝後網站根仍係 php-hello（YSK PHP OK）— webmail 未成功取代"
@@ -7486,7 +7486,7 @@
       "invalidGeometry": "解析度無效（例如 1920x1080）",
       "displayBusy": "Display 編號無效或已被使用",
       "displayExhausted": "可用 VNC display 編號已用盡",
-      "userWrittenOnly": "Linux 用戶 {{user}} 只記喺控制面（需 root + YSK_EXECUTE 先 useradd）",
+      "userWrittenOnly": "Linux 用戶 {{user}} 只記在控制面（需 root + YSK_EXECUTE 先 useradd）",
       "userExists": "Linux 用戶 {{user}} 已存在",
       "userCreated": "已建立 Linux 用戶 {{user}}",
       "useraddFailed": "useradd {{user}} 失敗：{{detail}}",
@@ -7495,7 +7495,7 @@
       "userdelFailed": "userdel {{user}} 失敗：{{detail}}",
       "userDeleted": "已刪除 Linux 用戶 {{user}}",
       "passwordTooShort": "VNC 密碼至少 6 個字元",
-      "passwordWrittenOnly": "密碼只記喺控制面（需 root + YSK_EXECUTE 先 vncpasswd）",
+      "passwordWrittenOnly": "密碼只記在控制面（需 root + YSK_EXECUTE 先 vncpasswd）",
       "passwordFailed": "寫入 VNC 密碼失敗：{{detail}}",
       "passwordSet": "已為 {{user}} 設定 VNC 密碼",
       "passwordUpdated": "已更新 {{name}} 嘅密碼",
@@ -7683,7 +7683,7 @@
     "publishNginx": "發布 Nginx",
     "publishNginxSsl": "發布 Nginx + SSL",
     "opsResult": "操作結果",
-    "runtime": "Runtime",
+    "runtime": "執行環境",
     "template": "範本（選填）",
     "templateNone": "— 無 —",
     "searchPlaceholder": "搜尋名稱、域名或 識別碼…",
@@ -7717,7 +7717,7 @@
       "desc": "完成以下步驟即可對外提供服務",
       "created": "已建立",
       "os": "OS 用戶",
-      "deploy": "Deploy",
+      "deploy": "部署",
       "nginx": "Nginx",
       "health": "健康"
     },
@@ -7782,7 +7782,7 @@
     "netPortTitle": "進程埠",
     "netCurrentPort": "目前埠",
     "netPublishTitle": "發佈",
-    "netConfPreview": "Conf",
+    "netConfPreview": "設定",
     "savePublishSsl": "儲存並發佈 + SSL",
     "retryLiveTitle": "上線未完成",
     "retryLiveBody": "部署或 Nginx 發佈未成功，可重試。",
@@ -8192,7 +8192,7 @@
     "deployProcessManagerPm2": "PM2",
     "proc_restart": "重啟",
     "proc_stop": "停止",
-    "proc_reload": "Reload",
+    "proc_reload": "重新載入",
     "procControlsHint": "進程控制（{{manager}}）",
     "procActionOk": "{{action}} 成功 · {{notes}}",
     "procActionFail": "{{action}} 失敗 · {{notes}}",
@@ -9338,10 +9338,10 @@
         "uptime": "運行時間",
         "mode": "模式",
         "script": "腳本",
-        "interpreter": "Interpreter",
+        "interpreter": "解譯器",
         "user": "用戶",
         "unit": "Unit",
-        "runtime": "Runtime"
+        "runtime": "執行環境"
       },
       "projectsTitle": "YSK 專案進程",
       "projectsDesc": "面板專案對應的 systemd unit（預設部署路徑，不是 PM2）。",
@@ -9487,7 +9487,7 @@
     "apiKeysEmpty": "尚未有 介面 金鑰",
     "apiKeysEmptyHint": "用列表右上角建立；建立後可用 Bearer 權杖 呼叫 介面",
     "approve": "批准",
-    "allowlistTitle": "Allowlist ({{count}})",
+    "allowlistTitle": "允許清單（{{count}}）",
     "allowlistEmpty": "尚無 允許清單 工具",
     "createApiKeyTitle": "建立 介面 金鑰",
     "createApiKeyDesc": "建立後完整 權杖 只顯示一次",
@@ -10877,9 +10877,9 @@
     "saveUser": "儲存用戶",
     "userSaved": "已更新 {{name}}",
     "filterAll": "全部",
-    "filterAdmin": "Admin",
-    "filterOperator": "Operator",
-    "filterViewer": "Viewer",
+    "filterAdmin": "管理員",
+    "filterOperator": "操作員",
+    "filterViewer": "檢視者",
     "filterSuspended": "已暫停",
     "filterNoPkg": "無方案",
     "filter2faOff": "未開 雙重驗證",
@@ -10921,7 +10921,7 @@
     "neverSeen": "未見",
     "hostUsage": "主機用量",
     "hostUsageHint": "此為全機（主機）總量，非 per-用戶 硬隔離。方案上限只作對照。",
-    "hostTotalsBadge": "host totals",
+    "hostTotalsBadge": "主機合計",
     "opsChecklist": "運維 checklist",
     "opsCheck1": "只派 管理員 畀真正需要 privilege 的人；日常用 Operator。",
     "opsCheck2": "在「權限」分頁調級後記得 Save；可一鍵還原系統預設。",
@@ -10949,9 +10949,9 @@
     "no2fa": "未開 雙重驗證",
     "lastSeenValue": "上次活動 {{time}}",
     "roleName": {
-      "admin": "Admin",
-      "operator": "Operator",
-      "viewer": "Viewer",
+      "admin": "管理員",
+      "operator": "操作員",
+      "viewer": "檢視者",
       "agent": "Agent"
     },
     "roleDesc": {
@@ -11119,7 +11119,7 @@
     "endpointHint": "客戶端連入的公網 host:port",
     "ensureServer": "套用伺服器",
     "openFirewall": "開埠 {{port}}/udp",
-    "peersTitle": "Peers",
+    "peersTitle": "對等端",
     "peerName": "名稱",
     "addPeer": "新增 peer",
     "noPeers": "未有 peer",

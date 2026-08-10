@@ -2774,7 +2774,10 @@
     "docRootUpdateFailed": "Could not update project document root: {{detail}}",
     "sqliteSchemaReady": "Roundcube SQLite schema initialized",
     "sqliteSchemaFailed": "Roundcube SQLite schema init failed: {{detail}}",
-    "snappyFullEmailLogin": "Mailbox login must use full email (user@domain); short local-part is disabled"
+    "snappyFullEmailLogin": "Mailbox login must use full email (user@domain); short local-part is disabled",
+    "removedBogusPublicHtml": "public_html sisa (php-hello) dihapus agar webmail tidak dilayani dari pohon yang salah",
+    "snappyDocRoot": "Root dokumen HTTP SnappyMail: {{path}}",
+    "phpHelloStillPresent": "Instalasi masih menyisakan php-hello (YSK PHP OK) sebagai root situs — ekstraksi webmail tidak menggantikannya"
   },
   "vpn": {
     "needInstall": "Install {{engine}}",

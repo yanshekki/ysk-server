@@ -124,7 +124,7 @@
   "apiKeysEmpty": "尚未有 API 密钥",
   "apiKeysEmptyHint": "用列表右上角创建；创建后可用 Bearer token 调用 API",
   "approve": "批准",
-  "allowlistTitle": "Allowlist ({{count}})",
+  "allowlistTitle": "允许列表（{{count}}）",
   "allowlistEmpty": "尚无 allowlist 工具",
   "createApiKeyTitle": "创建 API 密钥",
   "createApiKeyDesc": "创建后完整 token 只显示一次",

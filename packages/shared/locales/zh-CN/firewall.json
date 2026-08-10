@@ -1,8 +1,17 @@
 {
   "profiles": {
-    "web": { "label": "Web 主机", "short": "SSH · 80 · 443" },
-    "mail": { "label": "Web + 邮件", "short": "另开 25/465/587/993" },
-    "ftps": { "label": "Web + FTPS", "short": "21 + PASV 30000–30100" }
+    "web": {
+      "label": "Web 主机",
+      "short": "SSH · 80 · 443"
+    },
+    "mail": {
+      "label": "Web + 邮件",
+      "short": "另开 25/465/587/993"
+    },
+    "ftps": {
+      "label": "Web + FTPS",
+      "short": "21 + PASV 30000–30100"
+    }
   },
   "appliedProfile": "已套用配置档：{{label}}",
   "backToProtection": "防护中心",

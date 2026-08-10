@@ -24,30 +24,30 @@
     "software.install": "安装软件",
     "software.update": "更新软件",
     "protection": {
-      "change": "Protection settings changed"
+      "change": "防护设置已更改"
     },
     "auth": {
       "locale": "UI language changed",
-      "login": "Signed in",
-      "logout": "Signed out"
+      "login": "已登录",
+      "logout": "已退出登录"
     },
     "system": {
       "firewall": {
-        "allow_port": "Firewall allow port",
-        "deny": "Firewall deny IP",
-        "apply": "Firewall apply",
-        "enable": "Firewall enable/disable",
-        "delete_rule": "Delete firewall rule",
-        "delete_deny": "Remove permanent deny IP"
+        "allow_port": "防火墙允许端口",
+        "deny": "防火墙拒绝 IP",
+        "apply": "应用防火墙",
+        "enable": "启用/停用防火墙",
+        "delete_rule": "删除防火墙规则",
+        "delete_deny": "移除永久拒绝 IP"
       }
     },
     "project": {
-      "deploy": "Project deploy",
-      "create": "Project created",
-      "delete": "Project deleted",
-      "goLive": "Project go-live",
-      "publish": "Publish Nginx",
-      "suspend": "Suspend project"
+      "deploy": "项目部署",
+      "create": "已创建项目",
+      "delete": "已删除项目",
+      "goLive": "项目上线",
+      "publish": "发布 Nginx",
+      "suspend": "暂停项目"
     },
     "ssl": {
       "request": "SSL request",
@@ -55,12 +55,12 @@
     },
     "db": {
       "adminer": {
-        "apply": "DB browser project"
+        "apply": "数据库浏览器项目"
       }
     },
     "software": {
-      "install": "Install software",
-      "update": "Update software"
+      "install": "安装软件",
+      "update": "更新软件"
     }
   }
 }

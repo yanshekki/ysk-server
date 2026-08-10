@@ -260,7 +260,7 @@
   "publicShareMissing": "連結無效",
   "publicShareFailed": "下載失敗（{{status}}）",
   "publicShareFailedGeneric": "下載失敗",
-  "publicShareDefaultName": "download",
+  "publicShareDefaultName": "下載",
   "publicSharePanelLogin": "登入控制面",
   "publicShareLang": "語言",
   "publicShareProgress": "{{loaded}} / {{total}}（{{pct}}%）",

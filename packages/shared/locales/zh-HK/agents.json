@@ -94,7 +94,7 @@
   "cmdNote": "邊緣 ysk-server 代理收到命令列 JSON 後，會在本機執行命令列（自動加上 --json）。變更系統仍須在邊緣開啟系統變更權限。完成後請在「紀錄」查看結束代碼與 JSON。",
   "resultTitle": "指令結果 · 結束 {{code}}",
   "resultTitlePlain": "指令結果",
-  "codeComment": "# Concept: register → heartbeat loop → pull commands → ack\n# Library: @ysk/core runOutboundAgent / agentCycle",
+  "codeComment": "# 概念：register → heartbeat 迴圈 → 拉指令 → ack\n# 函式庫：@ysk/core runOutboundAgent / agentCycle",
   "resultOuter": "外層：邊緣回報（結束代碼／錯誤輸出）。內層結果：",
   "deleteTitle": "刪除 {{id}}？",
   "deleteTitlePlain": "刪除 代理？",

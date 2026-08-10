@@ -59,7 +59,7 @@
   "topAria": "top 摘要",
   "perCore": "每核",
   "noPerCore": "無每核資料",
-  "uptimeDays": "{{d}} days, {{h}}:{{m}}",
+  "uptimeDays": "{{d}} 日，{{h}}:{{m}}",
   "used": "已用",
   "free": "空閒",
   "signal": "訊號",
@@ -128,5 +128,5 @@
   "usageNoteFull": "用量來自本機 du（非估算）。配額為控制面 soft limit；硬 setquota 需「套用限制到系統」。",
   "sseNeedLogin": "未登入，無法開啟 SSE",
   "sseSessionExpired": "未登入或 工作階段 失效，無法開啟 SSE",
-  "sseHttpError": "stream HTTP {{status}}"
+  "sseHttpError": "串流 HTTP {{status}}"
 }

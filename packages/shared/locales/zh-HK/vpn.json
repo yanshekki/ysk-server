@@ -23,7 +23,7 @@
   "endpointHint": "客戶端連入的公網 host:port",
   "ensureServer": "套用伺服器",
   "openFirewall": "開埠 {{port}}/udp",
-  "peersTitle": "Peers",
+  "peersTitle": "對等端",
   "peerName": "名稱",
   "addPeer": "新增 peer",
   "noPeers": "未有 peer",

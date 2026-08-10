@@ -59,7 +59,7 @@
   "topAria": "top 摘要",
   "perCore": "每核",
   "noPerCore": "无每核数据",
-  "uptimeDays": "{{d}} days, {{h}}:{{m}}",
+  "uptimeDays": "{{d}} 天，{{h}}:{{m}}",
   "used": "已用",
   "free": "空闲",
   "signal": "信号",
@@ -128,5 +128,5 @@
   "usageNoteFull": "用量来自本机 du（非估算）。配额为控制面 soft limit；硬 setquota 需「套用限制到系统」。",
   "sseNeedLogin": "未登录，无法开启 SSE",
   "sseSessionExpired": "未登录或 session 失效，无法开启 SSE",
-  "sseHttpError": "stream HTTP {{status}}"
+  "sseHttpError": "流 HTTP {{status}}"
 }

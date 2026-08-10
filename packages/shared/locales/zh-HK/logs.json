@@ -70,7 +70,7 @@
   "query": "查詢",
   "follow": "跟隨",
   "export": "匯出",
-  "vacuum": "Vacuum",
+  "vacuum": "清理（Vacuum）",
   "loadFailed": "載入失敗",
   "projectLogsLink": "專案 → 日誌",
   "projectLogsDesc": "— 單站快捷 + 深鏈",

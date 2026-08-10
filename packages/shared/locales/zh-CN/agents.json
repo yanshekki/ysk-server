@@ -94,7 +94,7 @@
   "cmdNote": "Edge ysk-server agent run 收到 CLI JSON 会在本机执行 CLI（自动加 --json）。改系统仍要边缘设 YSK_EXECUTE=1。完成后在「记录」看 exit code 与 JSON。",
   "resultTitle": "指令结果 · exit {{code}}",
   "resultTitlePlain": "指令结果",
-  "codeComment": "# Concept: register → heartbeat loop → pull commands → ack\n# Library: @ysk/core runOutboundAgent / agentCycle",
+  "codeComment": "# 概念：register → heartbeat 循环 → 拉指令 → ack\n# 库：@ysk/core runOutboundAgent / agentCycle",
   "resultOuter": "外层：edge ack（exitCode / stderr）。内层 result：",
   "deleteTitle": "删除 {{id}}？",
   "deleteTitlePlain": "删除 agent？",

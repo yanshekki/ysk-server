@@ -1064,54 +1064,54 @@
     "--root": {
       "must": {
         "be": {
-          "a84834": "--root must be public or project:<id>\n"
+          "a84834": "--root 必须是 public 或 project:<id>\n"
         }
       }
     },
     "need": {
       "--content": {
         "or": {
-          "4d7001": "Need --content or --file\n"
+          "4d7001": "需要 --content 或 --file\n"
         }
       },
       "at": {
         "least": {
-          "7d311a": "Need at least one --member HOST[=role][:access]\n"
+          "7d311a": "至少需要一个 --member HOST[=role][:access]\n"
         }
       }
     },
     "action": {
       "must": {
         "be": {
-          "ba14c1": "action must be list|add|remove\n"
+          "ba14c1": "action 必须是 list|add|remove\n"
         }
       }
     },
     "use": {
       "ysk-server": {
         "backup": {
-          "ca67f4": "Use: ysk-server backup control-plane-restore --name ARCHIVE (not restore --project-id control-plane)\n"
+          "ca67f4": "请用：ysk-server backup control-plane-restore --name ARCHIVE（不要用 restore --project-id control-plane）\n"
         }
       }
     },
     "new": {
       "domain": {
         "requires": {
-          "986b78": "New domain requires --ip A.B.C.D (no placeholder defaults)\n"
+          "986b78": "新域名需要 --ip A.B.C.D（不要用占位默认）\n"
         }
       }
     },
     "import-sync": {
       "prefers": {
         "fleet": {
-          "4d7590": "import-sync prefers fleet clusterSync payload; or --file snapshot.json\n"
+          "4d7590": "import-sync 优先使用 fleet clusterSync payload；或 --file snapshot.json\n"
         }
       }
     },
     "security": {
       "control": {
         "plane": {
-          "f59a63": "SECURITY: control plane bound publicly (0.0.0.0/::). Prefer 127.0.0.1 + reverse proxy / UFW.\n"
+          "f59a63": "安全：控制平面绑定公开地址 (0.0.0.0/::)。建议 127.0.0.1 + 反向代理 / UFW。\n"
         }
       }
     }

@@ -124,7 +124,7 @@
   "apiKeysEmpty": "尚未有 介面 金鑰",
   "apiKeysEmptyHint": "用列表右上角建立；建立後可用 Bearer 權杖 呼叫 介面",
   "approve": "批准",
-  "allowlistTitle": "Allowlist ({{count}})",
+  "allowlistTitle": "允許清單（{{count}}）",
   "allowlistEmpty": "尚無 允許清單 工具",
   "createApiKeyTitle": "建立 介面 金鑰",
   "createApiKeyDesc": "建立後完整 權杖 只顯示一次",
