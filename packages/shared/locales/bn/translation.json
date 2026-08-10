@@ -10869,11 +10869,13 @@
     "noProfilesHint": "Paste a conf from another server (or a peer export).",
     "connect": "Connect",
     "disconnect": "Disconnect",
-    "installNote": "One-click install uses apt when YSK_EXECUTE is on. WireGuard and OpenVPN server/client are available.",
+    "installNote": "One-click install: WireGuard, OpenVPN, Shadowsocks-libev when YSK_EXECUTE is on.",
     "result": "Result",
     "serverEngine": "Server engine",
     "clientEngine": "Profile type",
     "engineAuto": "Auto-detect",
-    "proto": "Protocol"
+    "proto": "Protocol",
+    "needSs": "ss-server (shadowsocks-libev) required for ss:// access keys.",
+    "ssHonestUi": "This is Shadowsocks-libev (ss:// keys + QR), not the full Outline Manager appliance."
   }
 }

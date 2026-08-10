@@ -2791,6 +2791,10 @@
     "ovpnPkiStart": "Generating OpenVPN PKI (may take a minute for DH params)…",
     "ovpnPkiDone": "OpenVPN PKI ready.",
     "ovpnServerActive": "OpenVPN server applied ({{proto}} {{port}}).",
-    "invalidOvpn": "OpenVPN conf should include client/remote directives."
+    "invalidOvpn": "OpenVPN conf should include client/remote directives.",
+    "ssHonest": "Uses shadowsocks-libev ss-server — not full Outline Manager.",
+    "ssKeysCreated": "Shadowsocks server password generated.",
+    "ssServerActive": "Shadowsocks server applied (port {{port}}).",
+    "ssSharedPassword": "All ss:// labels share one server password (rotate by re-ensuring server)."
   }
 }

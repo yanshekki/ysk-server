@@ -42,6 +42,15 @@ import {
   openvpnClientUp,
   openVpnClientUnitName,
 } from './openvpn-ops.js';
+import {
+  addSsPeer,
+  deleteSsPeer,
+  ensureSsServer,
+  getSsPeerConfig,
+  isSsServerActive,
+  listSsPeers,
+  loadSsServer,
+} from './outline-ops.js';
 
 type WgServerState = {
   privateKey: string;
@@ -205,17 +214,21 @@ export class VpnService {
       },
       {
         engine: 'outline',
-        title: 'Outline / Shadowsocks',
-        installed: false,
-        serverActive: false,
-        serverPort: defaultPortForEngine('outline').port,
-        serverProto: 'tcp',
-        peerCount: 0,
+        title: 'Shadowsocks (ss-server)',
+        installed: await binExists(this.host, 'ss-server'),
+        serverActive: await isSsServerActive(this.host),
+        serverPort:
+          loadSsServer(this.dataDir)?.listenPort ??
+          defaultPortForEngine('outline').port,
+        serverProto: 'both',
+        peerCount: listSsPeers(this.dataDir).length,
         clientProfileCount: 0,
         clientConnectedCount: 0,
-        notes: [tl('notes.vpn.outlineComing')],
-        bins: [],
-        missingBins: [],
+        notes: (await binExists(this.host, 'ss-server'))
+          ? [tl('notes.vpn.ssHonest')]
+          : [tl('notes.vpn.needInstall', { engine: 'ss-server' }), tl('notes.vpn.ssHonest')],
+        bins: ['ss-server'],
+        missingBins: (await binExists(this.host, 'ss-server')) ? [] : ['ss-server'],
       },
     ];
 
@@ -330,7 +343,7 @@ export class VpnService {
 
   listServerPeers(engine: VpnEngineId = 'wireguard'): VpnServerPeer[] {
     if (engine === 'openvpn') return listOvpnPeers(this.dataDir);
-    if (engine === 'outline') return [];
+    if (engine === 'outline') return listSsPeers(this.dataDir);
     const state = this.loadWgServer();
     if (!state) return [];
     return state.peers.map((p) => ({
@@ -360,7 +373,10 @@ export class VpnService {
       });
     }
     if (engine === 'outline') {
-      return { ok: false, notes: [tl('notes.vpn.outlineComing')] };
+      return ensureSsServer(this.host, this.dataDir, {
+        listenPort: input.listenPort,
+        endpoint: input.endpoint,
+      });
     }
     return this.ensureWireGuardServer({
       listenPort: input.listenPort,
@@ -385,7 +401,7 @@ export class VpnService {
       return addOvpnPeer(this.host, this.dataDir, input.name);
     }
     if (engine === 'outline') {
-      return { ok: false, notes: [tl('notes.vpn.outlineComing')] };
+      return addSsPeer(this.host, this.dataDir, input.name);
     }
     if (!this.host.executeEnabled() || !this.host.isRoot()) {
       return {
@@ -458,6 +474,8 @@ export class VpnService {
   }
 
   getServerPeerConfig(peerId: string): { config: string; filename: string } | null {
+    const ss = getSsPeerConfig(this.dataDir, peerId);
+    if (ss) return ss;
     const ovpn = getOvpnPeerConfig(this.dataDir, peerId);
     if (ovpn) return ovpn;
     const state = this.loadWgServer();
@@ -476,6 +494,10 @@ export class VpnService {
   }
 
   async deleteServerPeer(peerId: string): Promise<{ ok: boolean; notes: string[] }> {
+    const ssState = loadSsServer(this.dataDir);
+    if (ssState?.peers.some((p) => p.id === peerId)) {
+      return deleteSsPeer(this.dataDir, peerId);
+    }
     const ovpnState = loadOvpnServer(this.dataDir);
     if (ovpnState?.peers.some((p) => p.id === peerId)) {
       return deleteOvpnPeer(this.host, this.dataDir, peerId);

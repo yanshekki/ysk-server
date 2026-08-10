@@ -42,6 +42,7 @@
     "e2e:sql-switch": "bash scripts/e2e-sql-switch-check.sh",
     "e2e:sql-switch-live": "bash scripts/e2e-sql-switch-live-docker.sh",
     "e2e:host-browse": "bash scripts/e2e-host-browse.sh",
+    "e2e:vpn": "bash scripts/e2e-vpn.sh",
     "i18n:check-no-uiinline-default": "node ./scripts/i18n-no-uiinline-default.mjs"
   },
   "engines": {

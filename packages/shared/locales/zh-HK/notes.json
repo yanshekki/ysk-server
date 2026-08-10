@@ -2791,6 +2791,10 @@
     "ovpnPkiStart": "正在產生 OpenVPN PKI（DH 參數可能需一分鐘）…",
     "ovpnPkiDone": "OpenVPN PKI 已就緒。",
     "ovpnServerActive": "已套用 OpenVPN 伺服器（{{proto}} {{port}}）。",
-    "invalidOvpn": "OpenVPN 設定應包含 client／remote。"
+    "invalidOvpn": "OpenVPN 設定應包含 client／remote。",
+    "ssHonest": "使用 shadowsocks-libev ss-server — 非完整 Outline Manager。",
+    "ssKeysCreated": "已產生 Shadowsocks 伺服器密碼。",
+    "ssServerActive": "已套用 Shadowsocks 伺服器（埠 {{port}}）。",
+    "ssSharedPassword": "所有 ss:// 標籤共用同一伺服器密碼（重新啟動伺服器可輪換）。"
   }
 }

@@ -44,7 +44,9 @@ export function VpnPage() {
   const [lastOps, setLastOps] = useState<OpsResultLike | null>(null);
 
   // Server form
-  const [serverEngine, setServerEngine] = useState<'wireguard' | 'openvpn'>('wireguard');
+  const [serverEngine, setServerEngine] = useState<
+    'wireguard' | 'openvpn' | 'outline'
+  >('wireguard');
   const [endpoint, setEndpoint] = useState('');
   const [listenPort, setListenPort] = useState(51820);
   const [ovpnProto, setOvpnProto] = useState<'udp' | 'tcp'>('udp');
@@ -196,10 +198,16 @@ export function VpnPage() {
                 <SoftwareInstallBanner feature="wireguard" title={t('vpn.needWireGuard')} />
                 <SoftwareVersionBar softwareId="wireguard" />
               </>
-            ) : (
+            ) : serverEngine === 'openvpn' ? (
               <>
                 <SoftwareInstallBanner feature="openvpn" title={t('vpn.needOpenVpn')} />
                 <SoftwareVersionBar softwareId="openvpn" />
+              </>
+            ) : (
+              <>
+                <SoftwareInstallBanner feature="outline" title={t('vpn.needSs')} />
+                <SoftwareVersionBar softwareId="shadowsocks" />
+                <Alert variant="info">{t('vpn.ssHonestUi')}</Alert>
               </>
             )}
 
@@ -209,14 +217,17 @@ export function VpnPage() {
                   id="vpn-srv-eng"
                   value={serverEngine}
                   onChange={(e) => {
-                    const eng = e.target.value as 'wireguard' | 'openvpn';
+                    const eng = e.target.value as 'wireguard' | 'openvpn' | 'outline';
                     setServerEngine(eng);
-                    setListenPort(eng === 'openvpn' ? 1194 : 51820);
+                    setListenPort(
+                      eng === 'openvpn' ? 1194 : eng === 'outline' ? 8388 : 51820,
+                    );
                     setOvpnProto('udp');
                   }}
                 >
                   <option value="wireguard">WireGuard</option>
                   <option value="openvpn">OpenVPN</option>
+                  <option value="outline">Shadowsocks (ss://)</option>
                 </select>
               </Field>
               <Field label={t('vpn.listenPort')} htmlFor="vpn-port">
@@ -294,7 +305,11 @@ export function VpnPage() {
                       vpnApi.openFirewall({
                         port: listenPort,
                         proto:
-                          serverEngine === 'openvpn' ? ovpnProto : 'udp',
+                          serverEngine === 'outline'
+                            ? 'both'
+                            : serverEngine === 'openvpn'
+                              ? ovpnProto
+                              : 'udp',
                       }),
                     )
                   }
@@ -542,6 +557,8 @@ export function VpnPage() {
             <SoftwareVersionBar softwareId="wireguard" />
             <SoftwareInstallBanner feature="openvpn" title={t('vpn.needOpenVpn')} />
             <SoftwareVersionBar softwareId="openvpn" />
+            <SoftwareInstallBanner feature="outline" title={t('vpn.needSs')} />
+            <SoftwareVersionBar softwareId="shadowsocks" />
             <Alert variant="info">{t('vpn.installNote')}</Alert>
           </div>
         ) : null}

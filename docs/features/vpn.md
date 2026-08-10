@@ -13,9 +13,9 @@ Manage **open-source VPN** on the control-plane host:
 
 | Engine | Status |
 |--------|--------|
-| WireGuard | Full server + client (P0) |
-| OpenVPN | Install catalog; full flow follow-up |
-| Outline / SS | Planned |
+| WireGuard | Full server + client |
+| OpenVPN | Full server + client (PKI, `.ovpn`) |
+| Shadowsocks (`ss-server`) | Server + `ss://` access keys / QR (not full Outline Manager) |
 
 ## Route
 

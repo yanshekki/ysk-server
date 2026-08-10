@@ -10876,11 +10876,13 @@
     "noProfilesHint": "貼上其他伺服器（或本機發出）的 conf。",
     "connect": "連線",
     "disconnect": "斷線",
-    "installNote": "一鍵安裝在 YSK_EXECUTE 開啟時經 apt。WireGuard 與 OpenVPN 伺服器／客戶端已可用。",
+    "installNote": "一鍵安裝：YSK_EXECUTE 開啟時可裝 WireGuard、OpenVPN、Shadowsocks-libev。",
     "result": "結果",
     "serverEngine": "伺服器引擎",
     "clientEngine": "設定檔類型",
     "engineAuto": "自動偵測",
-    "proto": "協定"
+    "proto": "協定",
+    "needSs": "ss:// 金鑰需 ss-server（shadowsocks-libev）。",
+    "ssHonestUi": "此為 Shadowsocks-libev（ss:// 金鑰 + QR），並非完整 Outline Manager。"
   }
 }

@@ -34,7 +34,8 @@ export type SoftwareId =
   | 'bun'
   | 'chromium'
   | 'wireguard'
-  | 'openvpn';
+  | 'openvpn'
+  | 'shadowsocks';
 
 export type FeatureSoftwareKey =
   | 'ftp'
@@ -61,6 +62,7 @@ export type FeatureSoftwareKey =
   | 'vpn'
   | 'wireguard'
   | 'openvpn'
+  | 'outline'
   | 'all';
 
 export type RuntimeInstaller =
@@ -341,6 +343,13 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     bins: ['openvpn'],
     aptPackages: ['openvpn', 'easy-rsa'],
     features: ['vpn', 'openvpn'],
+  },
+  {
+    id: 'shadowsocks',
+    title: 'Shadowsocks (ss-server)',
+    bins: ['ss-server'],
+    aptPackages: ['shadowsocks-libev'],
+    features: ['vpn', 'outline'],
   },
 ];
 

@@ -13,9 +13,9 @@
 
 | 引擎 | 狀態 |
 |------|------|
-| WireGuard | 伺服器 + 客戶端完整（優先） |
-| OpenVPN | 軟件目錄可裝；完整流程隨後 |
-| Outline／SS | 計劃中 |
+| WireGuard | 伺服器 + 客戶端完整 |
+| OpenVPN | 伺服器 + 客戶端完整（PKI、`.ovpn`） |
+| Shadowsocks（`ss-server`） | 伺服器 + `ss://` 金鑰／QR（非完整 Outline Manager） |
 
 ## 路由
 

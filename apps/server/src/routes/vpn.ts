@@ -53,6 +53,7 @@ export async function handleVpnRoutes(
         serverPeers: [
           ...vpn.listServerPeers('wireguard'),
           ...vpn.listServerPeers('openvpn'),
+          ...vpn.listServerPeers('outline'),
         ],
         clientProfiles: clients,
         portPresets: vpn.portPresets(),
