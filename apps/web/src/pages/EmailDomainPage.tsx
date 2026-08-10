@@ -1,7 +1,7 @@
 /**
  * Email domain detail — professional console layout (aligned with recent UX).
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -186,9 +186,15 @@ export function parseAliasDestinations(raw: string): string[] {
 /** Mailbox status badge tone. */
 export function mailboxStatusTone(
   status: unknown,
-): 'ok' | 'neutral' {
-  return String(status) === 'active' ? 'ok' : 'neutral';
+): 'ok' | 'neutral' | 'danger' | 'warn' {
+  const s = String(status ?? '').toLowerCase();
+  if (s === 'disabled') return 'danger';
+  if (s === 'active' || s === 'managed' || s === 'system_provisioned') return 'ok';
+  if (s === 'managed_pending_system' || s === 'managed_system_failed') return 'warn';
+  return 'neutral';
 }
+
+const MBOX_PAGE_SIZE = 10;
 
 /** Probe / check cell tone from ok tri-state. */
 export function probeOkTone(
@@ -392,10 +398,31 @@ export function EmailDomainPage() {
     id: string;
     address: string;
   } | null>(null);
+  const [editMailbox, setEditMailbox] = useState<{
+    id: string;
+    address: string;
+    status: string;
+    has_password: boolean;
+  } | null>(null);
+  const [editMboxPass, setEditMboxPass] = useState('');
+  const [editMboxPass2, setEditMboxPass2] = useState('');
+  const [editMboxStatus, setEditMboxStatus] = useState<'active' | 'disabled'>('active');
+  const [mboxPage, setMboxPage] = useState(0);
   const [delAlias, setDelAlias] = useState<{
     id: string;
     source: string;
   } | null>(null);
+
+  const mboxPageCount = Math.max(1, Math.ceil(mailboxes.length / MBOX_PAGE_SIZE));
+  const mboxPageSafe = Math.min(mboxPage, mboxPageCount - 1);
+  const mboxPageItems = useMemo(() => {
+    const start = mboxPageSafe * MBOX_PAGE_SIZE;
+    return mailboxes.slice(start, start + MBOX_PAGE_SIZE);
+  }, [mailboxes, mboxPageSafe]);
+
+  useEffect(() => {
+    if (mboxPage > mboxPageCount - 1) setMboxPage(Math.max(0, mboxPageCount - 1));
+  }, [mboxPage, mboxPageCount]);
 
   useEffect(() => {
     setAutoreplySubject((prev) => prev || t('email.defaultAutoreplySubject'));
@@ -694,15 +721,20 @@ export function EmailDomainPage() {
 
         {tab === 'mailbox' ? (
           <div className="tab-panel">
-            <Card>
-              <CardSection
-                title={t('email.mailboxListTitle', { count: mailboxes.length })}
-              >
-                <ActionBar className="u-mb-3">
+            <DataTable
+              rowKey={(m) => String(m.id)}
+              title={t('email.mailboxListTitle', { count: mailboxes.length })}
+              description={t('email.mailboxListDesc')}
+              toolbar={
+                <ActionBar>
                   <Button
                     variant="primary"
                     size="sm"
-                    onClick={bindOpenCreate(setCreateMboxOpen, [setMboxLocal, setMboxPass], ['info', ''])}
+                    onClick={bindOpenCreate(
+                      setCreateMboxOpen,
+                      [setMboxLocal, setMboxPass],
+                      ['info', ''],
+                    )}
                   >
                     {t('email.createMailbox')}
                   </Button>
@@ -710,7 +742,12 @@ export function EmailDomainPage() {
                     variant="secondary"
                     size="sm"
                     loading={busy}
-                    onClick={bindBusyMap(withBusy, () => emailApi.listMailboxes(domain.id), setMailboxes, (r) => r.items)}
+                    onClick={bindBusyMap(
+                      withBusy,
+                      () => emailApi.listMailboxes(domain.id),
+                      setMailboxes,
+                      (r) => r.items,
+                    )}
                   >
                     {t('common.refresh')}
                   </Button>
@@ -718,46 +755,140 @@ export function EmailDomainPage() {
                     variant="ghost"
                     size="sm"
                     loading={busy}
-                    onClick={bindBusySet(withBusy, () => emailApi.dovecotPassdb(domain.id), setMboxLog)}
+                    onClick={bindBusySet(
+                      withBusy,
+                      () => emailApi.dovecotPassdb(domain.id),
+                      setMboxLog,
+                    )}
                   >
                     {t('email.writeDovecot')}
                   </Button>
                 </ActionBar>
-                {mailboxes.length > 0 ? (
-                  <ul className="list-plain list-spaced">
-                    {mailboxes.map((m) => (
-                      <li
-                        key={String(m.id)}
-                        className="u-flex u-justify-between u-items-center"
-                      >
-                        <span>
-                          <code className="inline">{String(m.address)}</code>{' '}
-                          <Badge tone={mailboxStatusTone(m.status)}>
-                            {String(m.status ?? '—')}
-                          </Badge>
-                        </span>
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          loading={busy}
-                          onClick={() =>
-                            setDelMailbox({
-                              id: String(m.id),
-                              address: String(m.address),
-                            })
-                          }
-                        >
-                          {t('email.deleteMailbox')}
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="muted">{t('email.noMailboxes')}</p>
-                )}
-                <OpsResultPanel title={t('email.mailboxOpsResult')} result={asOps(mboxLog)} busy={busy} />
-              </CardSection>
-            </Card>
+              }
+              columns={[
+                {
+                  key: 'address',
+                  header: t('email.colAddress'),
+                  render: (m) => (
+                    <code className="inline">{String(m.address ?? '—')}</code>
+                  ),
+                },
+                {
+                  key: 'local_part',
+                  header: t('email.colLocalPart'),
+                  render: (m) => String(m.local_part ?? '—'),
+                },
+                {
+                  key: 'status',
+                  header: t('email.colStatus'),
+                  nowrap: true,
+                  render: (m) => (
+                    <Badge tone={mailboxStatusTone(m.status)}>
+                      {String(m.status ?? '—')}
+                    </Badge>
+                  ),
+                },
+                {
+                  key: 'password',
+                  header: t('email.colPassword'),
+                  nowrap: true,
+                  render: (m) =>
+                    m.has_password ? (
+                      <Badge tone="ok">{t('email.hasPassword')}</Badge>
+                    ) : (
+                      <Badge tone="warn">{t('email.noPassword')}</Badge>
+                    ),
+                },
+                {
+                  key: 'created',
+                  header: t('email.colCreated'),
+                  nowrap: true,
+                  render: (m) => {
+                    const raw = m.created_at;
+                    if (!raw) return '—';
+                    const d = new Date(String(raw));
+                    return Number.isNaN(d.getTime())
+                      ? String(raw)
+                      : d.toLocaleString();
+                  },
+                },
+              ]}
+              rows={mboxPageItems}
+              empty={<EmptyState title={t('email.mailboxEmptyTitle')} description={t('email.noMailboxes')} />}
+              rowActions={(m) => (
+                <ActionBar>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      const st = String(m.status ?? 'active').toLowerCase();
+                      setEditMailbox({
+                        id: String(m.id),
+                        address: String(m.address ?? ''),
+                        status: st,
+                        has_password: Boolean(m.has_password),
+                      });
+                      setEditMboxPass('');
+                      setEditMboxPass2('');
+                      setEditMboxStatus(st === 'disabled' ? 'disabled' : 'active');
+                    }}
+                  >
+                    {t('common.edit')}
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    loading={busy}
+                    onClick={() =>
+                      setDelMailbox({
+                        id: String(m.id),
+                        address: String(m.address),
+                      })
+                    }
+                  >
+                    {t('email.deleteMailbox')}
+                  </Button>
+                </ActionBar>
+              )}
+            />
+            {mailboxes.length > MBOX_PAGE_SIZE ? (
+              <div
+                className="sys-conf-pager"
+                role="navigation"
+                aria-label={t('email.mailboxPager')}
+              >
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={mboxPageSafe <= 0}
+                  onClick={() => setMboxPage((p) => Math.max(0, p - 1))}
+                >
+                  {t('email.prevPage')}
+                </Button>
+                <span className="sys-conf-pager__meta">
+                  {t('email.pageOf', {
+                    page: mboxPageSafe + 1,
+                    total: mboxPageCount,
+                    count: mailboxes.length,
+                  })}
+                </span>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={mboxPageSafe >= mboxPageCount - 1}
+                  onClick={() =>
+                    setMboxPage((p) => Math.min(mboxPageCount - 1, p + 1))
+                  }
+                >
+                  {t('email.nextPage')}
+                </Button>
+              </div>
+            ) : null}
+            <OpsResultPanel
+              title={t('email.mailboxOpsResult')}
+              result={asOps(mboxLog)}
+              busy={busy}
+            />
           </div>
         ) : null}
 
@@ -1811,6 +1942,139 @@ export function EmailDomainPage() {
               type="password"
               value={mboxPass}
               onChange={bindInput(setMboxPass)}
+              autoComplete="new-password"
+            />
+          </Field>
+        </FormLayout>
+      </Modal>
+
+      <Modal
+        open={Boolean(editMailbox)}
+        onClose={() => {
+          if (!busy) {
+            setEditMailbox(null);
+            setEditMboxPass('');
+            setEditMboxPass2('');
+          }
+        }}
+        title={t('email.editMailboxTitle')}
+        description={t('email.editMailboxDesc', {
+          address: editMailbox?.address ?? '',
+        })}
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              size="md"
+              disabled={busy}
+              onClick={() => {
+                setEditMailbox(null);
+                setEditMboxPass('');
+                setEditMboxPass2('');
+              }}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              loading={busy}
+              onClick={() => {
+                if (!editMailbox || !domain) return;
+                const pw = editMboxPass.trim();
+                if (pw && pw !== editMboxPass2.trim()) {
+                  notifyWarn(t('email.passwordMismatch'));
+                  return;
+                }
+                if (pw && pw.length < 8) {
+                  notifyWarn(t('email.passwordTooShort'));
+                  return;
+                }
+                const prevStatus =
+                  String(editMailbox.status).toLowerCase() === 'disabled'
+                    ? 'disabled'
+                    : 'active';
+                const statusChanged = editMboxStatus !== prevStatus;
+                if (!pw && !statusChanged) {
+                  notifyWarn(t('email.mailboxUpdateNeedField'));
+                  return;
+                }
+                const target = editMailbox;
+                void withBusy(async () => {
+                  const r = await emailApi.updateMailbox(domain.id, target.id, {
+                    password: pw || undefined,
+                    status: statusChanged ? editMboxStatus : undefined,
+                  });
+                  setMboxLog(r);
+                  notifyOpsResult(r as Record<string, unknown>, t);
+                  setMailboxes((await emailApi.listMailboxes(domain.id)).items);
+                  setEditMailbox(null);
+                  setEditMboxPass('');
+                  setEditMboxPass2('');
+                });
+              }}
+            >
+              {t('email.editMailboxSave')}
+            </Button>
+          </>
+        }
+      >
+        <FormLayout columns={1}>
+          <Field label={t('email.colAddress')} htmlFor="edit-addr" flush>
+            <input
+              id="edit-addr"
+              value={editMailbox?.address ?? ''}
+              readOnly
+              disabled
+            />
+          </Field>
+          <Field
+            label={t('email.mailboxStatus')}
+            htmlFor="edit-status"
+            hint={t('email.mailboxStatusHint')}
+            flush
+          >
+            <select
+              id="edit-status"
+              value={editMboxStatus}
+              onChange={(e) =>
+                setEditMboxStatus(
+                  e.target.value === 'disabled' ? 'disabled' : 'active',
+                )
+              }
+            >
+              <option value="active">{t('email.mailboxStatusActive')}</option>
+              <option value="disabled">{t('email.mailboxStatusDisabled')}</option>
+            </select>
+          </Field>
+          <Field
+            label={t('email.newPassword')}
+            htmlFor="edit-pass"
+            hint={
+              editMailbox?.has_password
+                ? t('email.newPasswordHint')
+                : t('email.passwordOptionalHint8')
+            }
+            flush
+          >
+            <input
+              id="edit-pass"
+              type="password"
+              value={editMboxPass}
+              onChange={bindInput(setEditMboxPass)}
+              autoComplete="new-password"
+            />
+          </Field>
+          <Field
+            label={t('email.confirmPassword')}
+            htmlFor="edit-pass2"
+            flush
+          >
+            <input
+              id="edit-pass2"
+              type="password"
+              value={editMboxPass2}
+              onChange={bindInput(setEditMboxPass2)}
               autoComplete="new-password"
             />
           </Field>

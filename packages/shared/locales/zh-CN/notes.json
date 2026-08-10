@@ -146,7 +146,12 @@
     "mailboxNotFound": "找不到邮箱",
     "mailboxDataRemoved": "已移除本机目录 {{path}}",
     "domainDeleteConfirmMismatch": "确认字符串与域名不符，已拒绝删除",
-    "domainDataKept": "已保留本机 dataDir 邮件数据（removeData=false）"
+    "domainDataKept": "已保留本机 dataDir 邮件数据（removeData=false）",
+    "mailboxPasswordUpdated": "已更新 {{address}} 的密码",
+    "mailboxStatusUpdated": "已将 {{address}} 状态设为 {{status}}",
+    "mailboxUpdateEmpty": "没有可更新项 — 请提供密码和/或状态",
+    "mailboxStatusInvalid": "无效的邮箱状态",
+    "mailboxNoChanges": "没有变更"
   },
   "agents": {
     "sessionNotFound": "找不到 session：{{sessionId}}"

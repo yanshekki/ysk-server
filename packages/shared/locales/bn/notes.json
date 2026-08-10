@@ -144,7 +144,12 @@
     "mailboxNotFound": "মেলবক্স পাওয়া যায়নি",
     "mailboxDataRemoved": "লোকাল পাথ {{path}} সরানো হয়েছে",
     "domainDeleteConfirmMismatch": "নিশ্চিতকরণ নাম ডোমেইনের সাথে মিলছে না; মুছে ফেলা প্রত্যাখ্যান",
-    "domainDataKept": "লোকাল dataDir মেইল ডেটা রাখা হয়েছে (removeData=false)"
+    "domainDataKept": "লোকাল dataDir মেইল ডেটা রাখা হয়েছে (removeData=false)",
+    "mailboxPasswordUpdated": "Password updated for {{address}}",
+    "mailboxStatusUpdated": "Status for {{address}} set to {{status}}",
+    "mailboxUpdateEmpty": "Nothing to update — provide password and/or status",
+    "mailboxStatusInvalid": "Invalid mailbox status",
+    "mailboxNoChanges": "No changes applied"
   },
   "agents": {
     "sessionNotFound": "সেশন পাওয়া যায়নি: {{sessionId}}"

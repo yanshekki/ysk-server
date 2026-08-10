@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mkdtempSync, existsSync, rmSync } from 'node:fs';
+import { mkdtempSync, existsSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { openDatabase, closeDatabase } from '../db/database.js';
@@ -73,6 +73,39 @@ describe('EmailService real keygen + persistence', () => {
     );
     expect(svc.listMailboxes(created.domain.id)).toHaveLength(1);
     expect(svc.listMailboxes(created.domain.id)[0].has_password).toBe(true);
+
+    const mbId = String(mb.mailbox.id);
+    const updated = await svc.updateMailbox(created.domain.id, mbId, {
+      actor: 'admin',
+      password: 'newsecretpass99',
+      status: 'disabled',
+    });
+    expect(updated.ok).toBe(true);
+    expect(updated.mailbox.status).toBe('disabled');
+    expect(updated.mailbox.has_password).toBe(true);
+    const passwdPath = join(dir, 'email', 'mail.test', 'dovecot', 'passwd');
+    expect(existsSync(passwdPath)).toBe(true);
+    const passwdBody = readFileSync(passwdPath, 'utf8');
+    expect(passwdBody).toContain('info@mail.test:*:');
+
+    const reenabled = await svc.updateMailbox(created.domain.id, mbId, {
+      actor: 'admin',
+      status: 'active',
+    });
+    expect(reenabled.ok).toBe(true);
+    expect(reenabled.mailbox.status).toBe('active');
+    const passwdActive = readFileSync(passwdPath, 'utf8');
+    expect(passwdActive.includes('SHA512-CRYPT') || passwdActive.includes('scrypt$')).toBe(true);
+
+    await expect(
+      svc.updateMailbox(created.domain.id, mbId, { actor: 'admin' }),
+    ).rejects.toThrow();
+    await expect(
+      svc.updateMailbox(created.domain.id, 'missing-id', {
+        actor: 'admin',
+        status: 'active',
+      }),
+    ).rejects.toThrow();
 
     await expect(
       svc.createMailbox(created.domain.id, { localPart: 'info', actor: 'admin' }),

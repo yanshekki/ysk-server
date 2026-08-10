@@ -49,6 +49,16 @@ export const emailApi = {
       `/api/v1/email/domains/${encodeURIComponent(domainId)}/mailboxes/${encodeURIComponent(mailboxId)}`,
       { method: 'DELETE' },
     ),
+  /** Update mailbox password and/or login status (active | disabled). */
+  updateMailbox: (
+    domainId: string,
+    mailboxId: string,
+    body: { password?: string; status?: 'active' | 'disabled' },
+  ) =>
+    api.requestRaw<Record<string, unknown>>(
+      `/api/v1/email/domains/${encodeURIComponent(domainId)}/mailboxes/${encodeURIComponent(mailboxId)}`,
+      { method: 'PATCH', body: JSON.stringify(body) },
+    ),
   dovecotPassdb: (domainId: string) =>
     api.requestRaw<Record<string, unknown>>(
       `/api/v1/email/domains/${domainId}/dovecot-passdb`,

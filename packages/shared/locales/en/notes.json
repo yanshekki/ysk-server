@@ -146,7 +146,12 @@
     "mailboxNotFound": "Mailbox not found",
     "mailboxDataRemoved": "Removed local path {{path}}",
     "domainDeleteConfirmMismatch": "Confirm name does not match domain; delete refused",
-    "domainDataKept": "Kept local dataDir mail data (removeData=false)"
+    "domainDataKept": "Kept local dataDir mail data (removeData=false)",
+    "mailboxPasswordUpdated": "Password updated for {{address}}",
+    "mailboxStatusUpdated": "Status for {{address}} set to {{status}}",
+    "mailboxUpdateEmpty": "Nothing to update — provide password and/or status",
+    "mailboxStatusInvalid": "Invalid mailbox status",
+    "mailboxNoChanges": "No changes applied"
   },
   "agents": {
     "sessionNotFound": "Session not found: {{sessionId}}"

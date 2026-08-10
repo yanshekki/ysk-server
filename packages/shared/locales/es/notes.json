@@ -144,7 +144,12 @@
     "mailboxNotFound": "Buzón no encontrado",
     "mailboxDataRemoved": "Ruta local eliminada {{path}}",
     "domainDeleteConfirmMismatch": "El nombre de confirmación no coincide con el dominio; eliminación rechazada",
-    "domainDataKept": "Datos de correo en dataDir local conservados (removeData=false)"
+    "domainDataKept": "Datos de correo en dataDir local conservados (removeData=false)",
+    "mailboxPasswordUpdated": "Password updated for {{address}}",
+    "mailboxStatusUpdated": "Status for {{address}} set to {{status}}",
+    "mailboxUpdateEmpty": "Nothing to update — provide password and/or status",
+    "mailboxStatusInvalid": "Invalid mailbox status",
+    "mailboxNoChanges": "No changes applied"
   },
   "agents": {
     "sessionNotFound": "Sesión no encontrada: {{sessionId}}"

@@ -144,7 +144,12 @@
     "mailboxNotFound": "Mailbox tidak ditemukan",
     "mailboxDataRemoved": "Path lokal dihapus {{path}}",
     "domainDeleteConfirmMismatch": "Nama konfirmasi tidak cocok dengan domain; penghapusan ditolak",
-    "domainDataKept": "Data mail dataDir lokal dipertahankan (removeData=false)"
+    "domainDataKept": "Data mail dataDir lokal dipertahankan (removeData=false)",
+    "mailboxPasswordUpdated": "Password updated for {{address}}",
+    "mailboxStatusUpdated": "Status for {{address}} set to {{status}}",
+    "mailboxUpdateEmpty": "Nothing to update — provide password and/or status",
+    "mailboxStatusInvalid": "Invalid mailbox status",
+    "mailboxNoChanges": "No changes applied"
   },
   "agents": {
     "sessionNotFound": "Sesi tidak ditemukan: {{sessionId}}"

@@ -642,6 +642,136 @@ export class EmailService {
   }
 
   /**
+   * Update mailbox password and/or status; refresh Dovecot passdb when dataDir present.
+   * Status `disabled` forces passdb password to `*` (login denied) while keeping stored hash.
+   */
+  async updateMailbox(
+    domainId: string,
+    mailboxId: string,
+    input: {
+      actor: string;
+      /** New password (min 8 chars). Omit or empty to keep current. */
+      password?: string;
+      /** Login status: active (allow) or disabled (block). */
+      status?: 'active' | 'disabled';
+    },
+  ): Promise<{
+    ok: boolean;
+    mailbox: Record<string, unknown>;
+    notes: string[];
+    written: string[];
+  }> {
+    const row = this.get(domainId);
+    const mb = this.db.snapshot.mailboxes.find(
+      (m) => String(m.id) === mailboxId && String(m.domain_id) === domainId,
+    );
+    if (!mb) {
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.email.mailboxNotFound'), {
+        httpStatus: 404,
+      });
+    }
+
+    const notes: string[] = [];
+    const written: string[] = [];
+    const address = String(mb.address ?? '');
+    let passwordChanged = false;
+    let statusChanged = false;
+
+    const hasPassword =
+      input.password !== undefined && String(input.password).length > 0;
+    const hasStatus = input.status !== undefined;
+
+    if (!hasPassword && !hasStatus) {
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.email.mailboxUpdateEmpty'), {
+        httpStatus: 400,
+      });
+    }
+
+    if (hasPassword) {
+      const pw = String(input.password);
+      if (pw.length < 8) {
+        throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0667'), {
+          httpStatus: 400,
+        });
+      }
+      const hashed = await hashMailboxPassword(pw);
+      mb.password_hash = hashed.hash;
+      mb.password_scheme = hashed.scheme;
+      passwordChanged = true;
+      notes.push(...hashed.notes);
+      notes.push(tl('notes.email.mailboxPasswordUpdated', { address }));
+    }
+
+    if (hasStatus) {
+      const next = input.status as 'active' | 'disabled';
+      if (next !== 'active' && next !== 'disabled') {
+        throw new YskError(ErrorCodes.VALIDATION, tl('notes.email.mailboxStatusInvalid'), {
+          httpStatus: 400,
+        });
+      }
+      const prev = String(mb.status ?? '');
+      if (prev !== next) {
+        mb.status = next;
+        statusChanged = true;
+        notes.push(
+          tl('notes.email.mailboxStatusUpdated', { address, status: next }),
+        );
+      }
+    }
+
+    if (!passwordChanged && !statusChanged) {
+      notes.push(tl('notes.email.mailboxNoChanges'));
+    }
+
+    this.db.persist();
+
+    if (this.dataDir && (passwordChanged || statusChanged)) {
+      try {
+        const { writeDovecotPassdb } = await import('./dovecot-passdb.js');
+        const pd = writeDovecotPassdb({
+          dataDir: this.dataDir,
+          db: this.db,
+          domain: row.domain,
+          domainId,
+        });
+        written.push(...pd.written);
+        notes.push(...pd.notes.slice(0, 3));
+      } catch (e) {
+        notes.push(
+          tl('notes.auto.t0087', {
+            v0: e instanceof Error ? e.message : String(e),
+          }),
+        );
+      }
+    }
+
+    this.audit?.append({
+      actor: input.actor,
+      action: 'email.mailbox.update',
+      resource: address,
+      detail: {
+        id: mailboxId,
+        domainId,
+        passwordChanged,
+        statusChanged,
+        status: mb.status,
+      },
+      ok: true,
+    });
+
+    const { password_hash: _ph, password_hash_full: _pf, ...rest } = mb;
+    return {
+      ok: true,
+      mailbox: {
+        ...rest,
+        has_password: Boolean(_ph || _pf || mb.password_hash),
+      },
+      notes,
+      written,
+    };
+  }
+
+  /**
    * Alias / forward / catch-all entries for a domain.
    * type=catchall uses local_part="*" → virtual_alias `@domain dest`
    */

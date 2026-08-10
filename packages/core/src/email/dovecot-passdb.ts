@@ -56,7 +56,9 @@ export function writeDovecotPassdb(input: {
     const maildir =
       (m.maildir as string) ||
       join(input.dataDir, 'email', domain, 'mailboxes', String(m.local_part), 'Maildir');
-    const hash = (m.password_hash as string) || '*';
+    // Disabled mailboxes keep stored hash in DB but export * so Dovecot denies login.
+    const disabled = String(m.status ?? '').toLowerCase() === 'disabled';
+    const hash = disabled ? '*' : (m.password_hash as string) || '*';
     // uid/gid 5000 placeholder for vmail; operator should align with system vmail user
     passwdLines.push(`${user}:${hash}:5000:5000::${join(maildir, '..')}::userdb_mail=maildir:${maildir}`);
     userdbLines.push(`${user}::::::userdb_mail=maildir:${maildir}`);

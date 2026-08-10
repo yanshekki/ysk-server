@@ -68,6 +68,27 @@ export async function handleEmailDomainsMailboxesRoutes(
     return true;
   }
   if (
+    method === 'PATCH' &&
+    url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+\/mailboxes\/[^/]+$/)
+  ) {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const parts = url.pathname.split('/');
+    const domainId = parts[5] ?? '';
+    const mailboxId = parts[7] ?? '';
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as {
+      password?: string;
+      status?: 'active' | 'disabled';
+    };
+    const result = await ctx.email.updateMailbox(domainId, mailboxId, {
+      actor: user.username,
+      password: data.password,
+      status: data.status,
+    });
+    sendOpsResult(res, result);
+    return true;
+  }
+  if (
     method === 'DELETE' &&
     url.pathname.match(/^\/api\/v1\/email\/domains\/[^/]+\/mailboxes\/[^/]+$/)
   ) {

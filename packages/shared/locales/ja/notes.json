@@ -144,7 +144,12 @@
     "mailboxNotFound": "メールボックスが見つかりません",
     "mailboxDataRemoved": "ローカル パス {{path}} が削除されました",
     "domainDeleteConfirmMismatch": "名前がドメインと一致しないことを確認します。削除が拒否されました",
-    "domainDataKept": "ローカル dataDir メール データを保持 (removeData=false)"
+    "domainDataKept": "ローカル dataDir メール データを保持 (removeData=false)",
+    "mailboxPasswordUpdated": "{{address}} のパスワードを更新しました",
+    "mailboxStatusUpdated": "{{address}} のステータスを {{status}} に設定しました",
+    "mailboxUpdateEmpty": "更新する内容がありません — パスワードまたはステータスを指定してください",
+    "mailboxStatusInvalid": "無効なメールボックスステータス",
+    "mailboxNoChanges": "変更はありません"
   },
   "agents": {
     "sessionNotFound": "セッションが見つかりません: {{sessionId}}"

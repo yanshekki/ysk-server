@@ -144,7 +144,12 @@
     "mailboxNotFound": "मेलबॉक्स नहीं मिला",
     "mailboxDataRemoved": "स्थानीय पथ {{path}} हटाया",
     "domainDeleteConfirmMismatch": "पुष्टि नाम डोमेन से मेल नहीं खाता; हटाना अस्वीकृत",
-    "domainDataKept": "स्थानीय dataDir मेल डेटा रखा (removeData=false)"
+    "domainDataKept": "स्थानीय dataDir मेल डेटा रखा (removeData=false)",
+    "mailboxPasswordUpdated": "Password updated for {{address}}",
+    "mailboxStatusUpdated": "Status for {{address}} set to {{status}}",
+    "mailboxUpdateEmpty": "Nothing to update — provide password and/or status",
+    "mailboxStatusInvalid": "Invalid mailbox status",
+    "mailboxNoChanges": "No changes applied"
   },
   "agents": {
     "sessionNotFound": "सत्र नहीं मिला: {{sessionId}}"

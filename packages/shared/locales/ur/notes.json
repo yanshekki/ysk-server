@@ -144,7 +144,12 @@
     "mailboxNotFound": "میل باکس نہیں ملا",
     "mailboxDataRemoved": "مقامی path ہٹایا {{path}}",
     "domainDeleteConfirmMismatch": "تصدیقی نام ڈومین سے میل نہیں کھاتا؛ حذف مسترد",
-    "domainDataKept": "مقامی dataDir میل ڈیٹا رکھا (removeData=false)"
+    "domainDataKept": "مقامی dataDir میل ڈیٹا رکھا (removeData=false)",
+    "mailboxPasswordUpdated": "Password updated for {{address}}",
+    "mailboxStatusUpdated": "Status for {{address}} set to {{status}}",
+    "mailboxUpdateEmpty": "Nothing to update — provide password and/or status",
+    "mailboxStatusInvalid": "Invalid mailbox status",
+    "mailboxNoChanges": "No changes applied"
   },
   "agents": {
     "sessionNotFound": "سیشن نہیں ملا: {{sessionId}}"
