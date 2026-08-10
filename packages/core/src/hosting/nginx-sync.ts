@@ -2,7 +2,7 @@
  * Write / sync nginx configs managed under dataDir to optional system path.
  */
 
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { ErrorCodes, YskError, tl} from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
@@ -82,6 +82,21 @@ export async function syncNginxConfigs(opts: {
       const dest = join(targetDir, f.startsWith('ysk-') ? f : `ysk-${f}`);
       copyFileSync(src, dest);
       copied.push(dest);
+    }
+    // Drop orphan project vhosts left after delete/recreate (same server_name → 502)
+    try {
+      const managedSet = new Set(files.map((f) => `ysk-${f}`));
+      for (const f of readdirSync(targetDir)) {
+        // Only project linux_user confs: ysk-ysks_xxxxxxxx.conf
+        if (!/^ysk-ysks_[a-z0-9]+\.conf$/i.test(f)) continue;
+        if (managedSet.has(f)) continue;
+        const orphan = join(targetDir, f);
+        unlinkSync(orphan);
+        notes.push(tl('notes.nginx.removedOrphan', { path: orphan }));
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      notes.push(tl('notes.nginx.orphanCleanupFailed', { detail: msg.slice(0, 120) }));
     }
     notes.push(tl('notes.auto.t0427', { v0: (copied.length) }));
   } else if (targetDir) {

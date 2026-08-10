@@ -922,7 +922,12 @@ export class ProjectOpsService {
     }
     const primary = row.domain ?? `${row.linux_user}.local`;
     const serverName = buildServerNameList(primary, row.domain_aliases);
-    const wantSsl = opts.ssl ?? false;
+    // Prefer dataDir certs, then /etc/letsencrypt/live, then store paths.
+    // Auto-enable SSL when cert files exist unless caller explicitly sets ssl:false.
+    // (goLive used to pass only reload:true → HTTP-only conf while orphan SSL vhosts
+    // from deleted projects kept serving 443 → 502 Bad Gateway.)
+    const cert = resolveBestCertPaths(this.dataDir, primary);
+    const wantSsl = opts.ssl !== undefined ? opts.ssl : cert.exists;
     const forceHttps = opts.forceHttps ?? Boolean(row.force_https);
     const hsts = opts.hsts ?? Boolean(row.hsts);
     if (opts.forceHttps !== undefined || opts.hsts !== undefined) {
@@ -930,9 +935,7 @@ export class ProjectOpsService {
         force_https: forceHttps,
         hsts });
     }
-    // Prefer dataDir certs, then /etc/letsencrypt/live, then store paths.
     // Never emit listen 443 / ssl_certificate when files are missing (breaks nginx -t).
-    const cert = resolveBestCertPaths(this.dataDir, primary);
     if (wantSsl && !cert.exists) {
       return {
         ok: false,
@@ -1701,15 +1704,18 @@ export class ProjectOpsService {
       const fpmSocket =
         `/run/php/php${phpRt.version}-fpm-${row.linux_user}.sock`;
       const authPhp = await this.writeProjectHtpasswd(row);
+      const certProd = resolveBestCertPaths(this.dataDir, domain);
       const conf = renderNginxPhpFpm({
         serverName: buildServerNameList(domain, row.domain_aliases),
         docRoot,
         fpmSocket,
         apacheUpstream: apply.apacheUpstream,
-        ssl: false,
+        ssl: certProd.exists,
+        sslCertificate: certProd.exists ? certProd.fullchain : undefined,
+        sslCertificateKey: certProd.exists ? certProd.privkey : undefined,
         ...this.nginxRealIpOpts(row),
-        forceHttps: Boolean(row.force_https),
-        hsts: Boolean(row.hsts),
+        forceHttps: certProd.exists && Boolean(row.force_https),
+        hsts: certProd.exists && Boolean(row.hsts),
         siteRedirectUrl: row.site_redirect_url,
         authBasicUserFile: authPhp.path,
         authBasicRealm: row.http_auth_user ? 'Restricted' : undefined,
@@ -1868,13 +1874,16 @@ export class ProjectOpsService {
       health.ok && listening ? 'running' : 'unhealthy';
 
     // Proxy nginx for degraded path (local health via php -S)
+    const certDeg = resolveBestCertPaths(this.dataDir, domain);
     const conf = renderNginxProxy({
       serverName: buildServerNameList(domain, row.domain_aliases),
       upstream: `http://127.0.0.1:${port}`,
-      ssl: false,
+      ssl: certDeg.exists,
+      sslCertificate: certDeg.exists ? certDeg.fullchain : undefined,
+      sslCertificateKey: certDeg.exists ? certDeg.privkey : undefined,
       ...this.nginxRealIpOpts(row),
-      forceHttps: Boolean(row.force_https),
-      hsts: Boolean(row.hsts),
+      forceHttps: certDeg.exists && Boolean(row.force_https),
+      hsts: certDeg.exists && Boolean(row.hsts),
       bindIp: row.bind_ip,
     });
     const nginxPath = writeManagedNginxConf(this.dataDir, `${row.linux_user}.conf`, conf);

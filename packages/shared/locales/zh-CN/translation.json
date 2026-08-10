@@ -4683,7 +4683,9 @@
       "configOk": "Nginx 配置检查通过",
       "reloadExit": "Nginx reload 结束码={{code}}",
       "managedDir": "管理配置目录：{{path}}",
-      "includeHint": "在 Nginx 加入：include {{path}}/*.conf;"
+      "includeHint": "在 Nginx 加入：include {{path}}/*.conf;",
+      "removedOrphan": "已删除幽灵 Nginx conf {{path}}",
+      "orphanCleanupFailed": "清理幽灵 Nginx conf 失败：{{detail}}"
     },
     "ssl": {
       "requestCert": "申请证书"

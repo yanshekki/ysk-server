@@ -17,7 +17,24 @@ import { ErrorCodes, YskError, type ProjectDto, tl } from '@ysk/shared';
 import type { HostExecutor } from '../host/executor.js';
 import type { ProjectService } from '../hosting/project-service.js';
 import type { ProjectOpsService } from '../hosting/project-ops.js';
+import { chownProjectHome } from '../hosting/project-user-run.js';
+import type { ProjectRow } from '../repositories/project-repo.js';
 
+/** Best-effort ownership after webmail tree install (root extract → project user). */
+async function ensureWebmailTreeOwnership(
+  host: HostExecutor,
+  project: ProjectDto,
+  notes: string[],
+): Promise<void> {
+  const row = {
+    id: project.id,
+    home_dir: project.homeDir,
+    linux_user: project.linuxUser,
+    linux_group: project.linuxGroup || project.linuxUser,
+    os_provisioned: project.osProvisioned === true,
+  } as ProjectRow;
+  await chownProjectHome(host, row, notes);
+}
 export type WebmailTool = 'roundcube' | 'snappymail';
 
 /** Default Roundcube complete package (security line 1.7.x). Override with YSK_ROUNDCUBE_URL / YSK_ROUNDCUBE_VERSION. */
@@ -1031,6 +1048,9 @@ export async function createWebmailProject(input: {
     };
   }
 
+  // Install may extract as root — fix ownership before goLive / php -S
+  await ensureWebmailTreeOwnership(input.host, input.projects.get(row.id), notes);
+
   // Roundcube 1.6+: persist public_html as project doc_root before goLive
   if (inst.webDocRootRel) {
     try {
@@ -1249,6 +1269,9 @@ export async function reinstallWebmailProject(input: {
       requiresExecute: needEx,
     };
   }
+
+  // Install may extract as root — fix ownership before goLive / php -S
+  await ensureWebmailTreeOwnership(input.host, input.projects.get(row.id), notes);
 
   if (inst.webDocRootRel) {
     try {
