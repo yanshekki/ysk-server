@@ -4707,7 +4707,9 @@
       "configOk": "Verificação da configuração do Nginx concluída com sucesso",
       "reloadExit": "Código de saída do reload do Nginx={{code}}",
       "managedDir": "Diretório de configuração gerido: {{path}}",
-      "includeHint": "No nginx: include {{path}}/*.conf;"
+      "includeHint": "No nginx: include {{path}}/*.conf;",
+      "removedOrphan": "Removed orphan nginx conf {{path}}",
+      "orphanCleanupFailed": "Orphan nginx cleanup failed: {{detail}}"
     },
     "ssl": {
       "requestCert": "Pedir certificado"
@@ -7418,7 +7420,12 @@
       "snappyAdminPassword": "Palavra-passe de admin SnappyMail (copiar agora): {{password}}",
       "publicHtmlStub": "Document root still has the SnappyMail/RainLoop package stub. HTTP must serve the public_html app tree — reinstall webmail after this fix.",
       "goLiveFailed": "Webmail files installed, but project go-live / deploy health failed — expand details.",
-      "forceHttpsNeedsSsl": "Roundcube force_https is on: bind SSL for this hostname before relying on public HTTPS, or uncheck force HTTPS until then."
+      "forceHttpsNeedsSsl": "Roundcube force_https is on: bind SSL for this hostname before relying on public HTTPS, or uncheck force HTTPS until then.",
+      "roundcubePublicHtmlDocRoot": "HTTP doc root set to Roundcube public_html ({{path}})",
+      "docRootUpdated": "Project document root updated to {{path}}",
+      "docRootUpdateFailed": "Could not update project document root: {{detail}}",
+      "sqliteSchemaReady": "Roundcube SQLite schema initialized",
+      "sqliteSchemaFailed": "Roundcube SQLite schema init failed: {{detail}}"
     },
     "vpn": {
       "needInstall": "Install {{engine}} first (Install tab / one-click).",
