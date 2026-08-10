@@ -380,3 +380,18 @@ button.linkish {
   color: var(--text-muted, #888);
   margin-top: 0.15rem;
 }
+
+.hb-resume {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.65rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.hb-resume__btns {
+  display: flex;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}

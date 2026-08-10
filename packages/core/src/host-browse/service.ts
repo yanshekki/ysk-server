@@ -158,17 +158,48 @@ export class HostBrowseService {
     return n;
   }
 
+  /** Persist multi-tab URL snapshot for resume-on-return. */
+  snapshotSession(userId: string, sessionId: string): void {
+    const s = this.store.get(sessionId, userId);
+    if (!s) return;
+    const listed = this.browser.listTabs(sessionId);
+    const tabs =
+      listed.length > 0
+        ? listed
+            .map((t) => ({
+              url: t.url,
+              title: t.title || undefined,
+            }))
+            .filter((t) => t.url && t.url !== 'about:blank')
+        : s.currentUrl
+          ? [{ url: s.currentUrl }]
+          : [];
+    if (!tabs.length) return;
+    const activeIndex = Math.max(
+      0,
+      listed.findIndex((t) => t.active),
+    );
+    const lib = saveSnapshot(this.libOf(userId), {
+      tabs,
+      activeIndex: activeIndex >= 0 ? activeIndex : 0,
+      mode: s.mode,
+      engine: s.engine,
+      updatedAt: new Date().toISOString(),
+    });
+    this.saveLib(userId, lib);
+  }
+
+  clearLastSnapshot(userId: string): BrowseUserLibrary {
+    const lib = { ...this.libOf(userId) };
+    delete lib.lastSnapshot;
+    this.saveLib(userId, lib);
+    return lib;
+  }
+
   async teardownBrowserSession(userId: string, sessionId: string): Promise<void> {
     const s = this.store.getById(sessionId);
     if (s && s.userId === userId) {
-      const lib = saveSnapshot(this.libOf(userId), {
-        tabs: s.currentUrl ? [{ url: s.currentUrl }] : [],
-        activeIndex: 0,
-        mode: s.mode,
-        engine: s.engine,
-        updatedAt: new Date().toISOString(),
-      });
-      this.saveLib(userId, lib);
+      this.snapshotSession(userId, sessionId);
     }
     await this.browser.closeSession(sessionId);
     if (s?.ephemeralUsername) {
@@ -489,6 +520,10 @@ export class HostBrowseService {
       cookieCount: meta.cookieCount,
       errorCode: nav.errorCode,
     };
+
+    if (result.ok && !result.blocked) {
+      this.snapshotSession(userId, s.sessionId);
+    }
 
     this.audit?.({
       action: 'host_browse.navigate',

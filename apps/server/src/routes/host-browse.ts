@@ -186,6 +186,14 @@ export async function handleHostBrowseRoutes(
       sendJson(res, 200, { ok: true, library });
       return true;
     }
+    if (
+      method === 'DELETE' &&
+      url.pathname === '/api/v1/host-browse/last-snapshot'
+    ) {
+      const library = svc.clearLastSnapshot(user.id);
+      sendJson(res, 200, { ok: true, library });
+      return true;
+    }
     if (method === 'POST' && url.pathname === '/api/v1/host-browse/bookmarks') {
       const raw = await readBody(req);
       const data = JSON.parse(raw || '{}') as { url?: string; title?: string };

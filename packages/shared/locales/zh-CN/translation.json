@@ -3973,7 +3973,11 @@
     "downloadSave": "保存到本机",
     "downloadFailed": "下载失败",
     "downloadPending": "下载中…",
-    "downloadReady": "已完成"
+    "downloadReady": "已完成",
+    "resume": "恢复",
+    "resumeHint": "可恢复上次浏览（{{count}} 个标签页）。",
+    "resumeDismiss": "忽略",
+    "resumeDone": "已恢复上次浏览"
   },
   "listToolbar": {
     "searchPlaceholder": "搜索…",

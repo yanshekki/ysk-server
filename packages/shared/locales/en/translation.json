@@ -3934,7 +3934,11 @@
     "downloadSave": "Save to device",
     "downloadFailed": "Download failed",
     "downloadPending": "Downloading…",
-    "downloadReady": "Ready"
+    "downloadReady": "Ready",
+    "resume": "Resume",
+    "resumeHint": "You can resume the last browse session ({{count}} tabs).",
+    "resumeDismiss": "Dismiss",
+    "resumeDone": "Session restored"
   },
   "listToolbar": {
     "searchPlaceholder": "Search…",

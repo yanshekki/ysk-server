@@ -183,12 +183,15 @@ export const hostBrowseApi = {
         homeUrl: string;
         bookmarks: Array<{ id: string; title: string; url: string }>;
         history: Array<{ id: string; title: string; url: string; at: string }>;
-        lastSnapshot?: {
-          tabs: Array<{ url: string; title?: string }>;
-          activeIndex: number;
-        };
+        lastSnapshot?: HostBrowseLastSnapshot;
       };
     }>('/api/v1/host-browse/library'),
+
+  clearLastSnapshot: () =>
+    api.requestRaw<{ ok: boolean; library: { homeUrl?: string } }>(
+      '/api/v1/host-browse/last-snapshot',
+      { method: 'DELETE' },
+    ),
 
   setHome: (homeUrl: string) =>
     api.requestRaw<{ ok: boolean; library: { homeUrl: string } }>(
@@ -238,6 +241,14 @@ export type HostBrowseDownload = {
   createdAt: string;
   finishedAt?: string;
   hasFile: boolean;
+};
+
+export type HostBrowseLastSnapshot = {
+  tabs: Array<{ url: string; title?: string }>;
+  activeIndex: number;
+  mode?: string;
+  engine?: string;
+  updatedAt?: string;
 };
 
 export function hostBrowseLiveWsUrl(wsPath: string): string {

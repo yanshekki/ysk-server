@@ -3973,7 +3973,11 @@
     "downloadSave": "儲存至本機",
     "downloadFailed": "下載失敗",
     "downloadPending": "下載中…",
-    "downloadReady": "已完成"
+    "downloadReady": "已完成",
+    "resume": "恢復",
+    "resumeHint": "可恢復上次瀏覽（{{count}} 個分頁）。",
+    "resumeDismiss": "略過",
+    "resumeDone": "已恢復上次瀏覽"
   },
   "listToolbar": {
     "searchPlaceholder": "搜尋…",

@@ -30,6 +30,7 @@ import {
   type HostBrowseDownload,
   type HostBrowseEngine,
   type HostBrowseEnginePref,
+  type HostBrowseLastSnapshot,
   type HostBrowseMode,
   type HostBrowseNavigateResult,
   type HostBrowsePanelSettings,
@@ -76,6 +77,7 @@ export function HostBrowsePage() {
     history: Array<{ id: string; title: string; url: string; at: string }>;
   }>({ bookmarks: [], history: [] });
   const [downloads, setDownloads] = useState<HostBrowseDownload[]>([]);
+  const [resumeSnap, setResumeSnap] = useState<HostBrowseLastSnapshot | null>(null);
   const [settingsDraft, setSettingsDraft] = useState<HostBrowsePanelSettings>({
     engine: 'auto',
     chromePath: '',
@@ -124,6 +126,8 @@ export function HostBrowsePage() {
         bookmarks: r.library.bookmarks || [],
         history: r.library.history || [],
       });
+      const snap = r.library.lastSnapshot;
+      if (snap?.tabs?.length) setResumeSnap(snap);
     }).catch(() => undefined);
   }, [loadCapsAndSettings]);
 
@@ -453,6 +457,71 @@ export function HostBrowsePage() {
     if (!raw) return;
     void runNavigate({ url: raw, action: 'goto' });
   }, [runNavigate, urlDraft]);
+
+  const dismissResume = useCallback(() => {
+    setResumeSnap(null);
+    void hostBrowseApi.clearLastSnapshot().catch(() => undefined);
+  }, []);
+
+  const onResume = useCallback(async () => {
+    if (!resumeSnap?.tabs?.length) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const m: HostBrowseMode =
+        resumeSnap.mode === 'intranet' ? 'intranet' : 'internet';
+      const eng: HostBrowseEngine =
+        resumeSnap.engine === 'browser' && caps?.chromeAvailable
+          ? 'browser'
+          : resumeSnap.engine === 'proxy'
+            ? 'proxy'
+            : engine;
+      setMode(m);
+      setEngine(eng);
+      const tabs = resumeSnap.tabs
+        .filter((tb) => tb.url)
+        .slice(0, 6)
+        .map((tb, i) => ({
+          id: `t-resume-${i}`,
+          url: tb.url,
+          title: tb.title || tb.url,
+        }));
+      const idx = Math.min(
+        Math.max(0, resumeSnap.activeIndex || 0),
+        Math.max(0, tabs.length - 1),
+      );
+      const active = tabs[idx] || tabs[0];
+      setBrowserTabs(tabs);
+      setActiveTabId(active?.id ?? null);
+      if (active?.url) {
+        setUrlDraft(active.url);
+        const s = await ensureSession(m, eng);
+        const result = await hostBrowseApi.navigate(s.sessionId, {
+          url: active.url,
+          action: 'goto',
+        });
+        applyNav(s, result);
+        if (eng === 'browser') {
+          await openLive(s.sessionId);
+        }
+      }
+      setResumeSnap(null);
+      void hostBrowseApi.clearLastSnapshot().catch(() => undefined);
+      notifyOk(t('hostBrowse.resumeDone'));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('common.loadFailed'));
+    } finally {
+      setBusy(false);
+    }
+  }, [
+    resumeSnap,
+    caps?.chromeAvailable,
+    engine,
+    ensureSession,
+    applyNav,
+    openLive,
+    t,
+  ]);
 
   const onModeChange = useCallback(
     (m: HostBrowseMode) => {
@@ -993,7 +1062,29 @@ export function HostBrowsePage() {
                 <div className={`hb-progress__bar${busy ? '' : ' is-done'}`} />
               </div>
 
-              
+              {resumeSnap && resumeSnap.tabs.length > 0 && !session ? (
+                <div className="hb-resume">
+                  <Alert variant="info">
+                    {t('hostBrowse.resumeHint', {
+                      count: resumeSnap.tabs.length,
+                      defaultValue: `可恢復上次瀏覽（${resumeSnap.tabs.length} 個分頁）`,
+                    })}
+                  </Alert>
+                  <div className="hb-resume__btns">
+                    <Button size="sm" onClick={() => void onResume()} disabled={busy}>
+                      {t('hostBrowse.resume')}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={dismissResume}
+                      disabled={busy}
+                    >
+                      {t('hostBrowse.resumeDismiss')}
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
 
               {(error || errorCode) && hasNavigated ? (
                 <div className="hb-error-actions">

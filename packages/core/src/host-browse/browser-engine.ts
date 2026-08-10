@@ -472,10 +472,16 @@ export class BrowserEngine {
     if (!h) return [];
     const out: Array<{ pageId: string; url: string; title: string; active: boolean }> = [];
     for (const [pageId, page] of h.pages) {
+      let title = '';
+      try {
+        title = page.url() === 'about:blank' ? '' : page.url();
+      } catch {
+        /* */
+      }
       out.push({
         pageId,
         url: page.url(),
-        title: '',
+        title,
         active: pageId === h.activePageId,
       });
     }
