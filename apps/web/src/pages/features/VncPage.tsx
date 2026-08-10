@@ -22,7 +22,6 @@ import {
   PageTabs,
   SoftwareInstallBanner,
   SoftwareVersionBar,
-  SummaryStrip,
   type OpsResultLike,
 } from '../../shared/components/ui';
 import { usePageTab } from '../../shared/hooks/usePageTab';
@@ -35,11 +34,10 @@ import {
   type VncDesktopProfile,
   type VncOpsResult,
   type VncRfbBind,
-  type VncStackStatus,
   type VncStatusResponse,
 } from '../../features/vnc/api';
 
-const TABS = ['overview', 'accounts', 'client', 'install', 'settings', 'about'] as const;
+const TABS = ['accounts', 'client', 'install', 'settings', 'about'] as const;
 const PAGE_SIZE = 10;
 
 function accountStatusTone(
@@ -63,10 +61,9 @@ function opsToPanel(r: VncOpsResult): OpsResultLike {
 
 export function VncPage() {
   const { t } = useTranslation();
-  const [tab, setTab] = usePageTab(TABS, 'overview');
+  const [tab, setTab] = usePageTab(TABS, 'accounts');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [status, setStatus] = useState<VncStatusResponse | null>(null);
   const [accounts, setAccounts] = useState<VncAccountSummary[]>([]);
   const [clients, setClients] = useState<VncClientProfile[]>([]);
   const [lastOps, setLastOps] = useState<OpsResultLike | null>(null);
@@ -173,20 +170,6 @@ export function VncPage() {
     }
   };
 
-  const stackBadge = (s: VncStackStatus) => (
-    <div key={s.id} className="vpn-engine-card">
-      <div className="vpn-engine-card__head">
-        <strong>{s.title}</strong>
-        <Badge tone={s.installed ? 'ok' : 'warn'}>
-          {s.installed ? t('vnc.installed') : t('vnc.notInstalled')}
-        </Badge>
-      </div>
-      {!s.installed ? (
-        <p className="muted u-text-sm u-mb-0">{t('vnc.stackMissingShort')}</p>
-      ) : null}
-    </div>
-  );
-
   const openCreate = () => {
     setCName('');
     setCPass('');
@@ -240,54 +223,6 @@ export function VncPage() {
       >
         {error ? <Alert variant="error">{error}</Alert> : null}
         {lastOps ? <OpsResultPanel title={t('vnc.result')} result={lastOps} /> : null}
-
-        {tab === 'overview' ? (
-          <div className="stack">
-            {!status ? (
-              <LoadingBlock />
-            ) : (
-              <>
-                <Alert variant="info">
-                  {status.executeEnabled ? t('vnc.executeOn') : t('vnc.executeOff')}
-                </Alert>
-                <SummaryStrip
-                  items={[
-                    { label: t('vnc.statAccounts'), value: String(status.accountCount) },
-                    { label: t('vnc.statRunning'), value: String(status.runningCount) },
-                    {
-                      label: t('vnc.statClients'),
-                      value: String(status.clientProfileCount),
-                    },
-                    {
-                      label: t('vnc.statEndpoint'),
-                      value: status.endpointHint || '—',
-                    },
-                  ]}
-                />
-                <div className="vpn-engine-grid">{status.stacks.map(stackBadge)}</div>
-                <div className="u-flex-gap">
-                  <Button size="sm" onClick={() => setTab('accounts')}>
-                    {t('vnc.goAccounts')}
-                  </Button>
-                  <Button size="sm" variant="secondary" onClick={() => setTab('client')}>
-                    {t('vnc.goClient')}
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => setTab('install')}>
-                    {t('vnc.goInstall')}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => void load()}
-                    disabled={busy}
-                  >
-                    {t('common.refresh')}
-                  </Button>
-                </div>
-              </>
-            )}
-          </div>
-        ) : null}
 
         {tab === 'accounts' ? (
           <div className="stack">

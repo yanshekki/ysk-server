@@ -1,7 +1,7 @@
 /**
  * VPN — server (issue clients + QR) and client (import + connect).
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import QRCode from 'qrcode';
 import {
@@ -13,7 +13,6 @@ import {
   Field,
   FormActions,
   FormLayout,
-  LoadingBlock,
   OpsResultPanel,
   PageGuide,
   PageTabs,
@@ -27,17 +26,16 @@ import { notifyOk, notifyWarn } from '../../shared/lib/notify';
 import {
   vpnApi,
   type VpnClientProfile,
-  type VpnEngineStatus,
   type VpnPortPreset,
   type VpnServerPeer,
   type VpnStatusResponse,
 } from '../../features/vpn/api';
 
-const TABS = ['overview', 'server', 'client', 'install', 'about'] as const;
+const TABS = ['server', 'client', 'install', 'about'] as const;
 
 export function VpnPage() {
   const { t } = useTranslation();
-  const [tab, setTab] = usePageTab(TABS, 'overview');
+  const [tab, setTab] = usePageTab(TABS, 'server');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<VpnStatusResponse | null>(null);
@@ -128,26 +126,6 @@ export function VpnPage() {
     }
   };
 
-  const engineBadge = (e: VpnEngineStatus) => (
-    <div key={e.engine} className="vpn-engine-card">
-      <div className="vpn-engine-card__head">
-        <strong>{e.title}</strong>
-        <Badge tone={e.installed ? 'ok' : 'warn'}>
-          {e.installed ? t('vpn.installed') : t('vpn.notInstalled')}
-        </Badge>
-        {e.serverActive ? <Badge tone="ok">{t('vpn.serverUp')}</Badge> : null}
-      </div>
-      <p className="muted u-text-sm u-mb-0">
-        {t('vpn.engineSummary', {
-          port: e.serverPort ?? '—',
-          peers: e.peerCount,
-          clients: e.clientProfileCount,
-          up: e.clientConnectedCount,
-        })}
-      </p>
-    </div>
-  );
-
   return (
     <FeaturePageLayout title={t('nav.vpn')} subtitle={t('vpn.pageDesc')}>
       <PageTabs
@@ -158,36 +136,6 @@ export function VpnPage() {
         {error ? <Alert variant="error">{error}</Alert> : null}
         {lastOps ? (
           <OpsResultPanel title={t('vpn.result')} result={lastOps} />
-        ) : null}
-
-        {tab === 'overview' ? (
-          <div className="stack">
-            {!status ? (
-              <LoadingBlock />
-            ) : (
-              <>
-                <Alert variant="info">
-                  {status.executeEnabled
-                    ? t('vpn.executeOn')
-                    : t('vpn.executeOff')}
-                </Alert>
-                <div className="vpn-engine-grid">
-                  {status.engines.map(engineBadge)}
-                </div>
-                <div className="u-flex-gap">
-                  <Button size="sm" onClick={() => setTab('server')}>
-                    {t('vpn.goServer')}
-                  </Button>
-                  <Button size="sm" variant="secondary" onClick={() => setTab('client')}>
-                    {t('vpn.goClient')}
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => void load()} disabled={busy}>
-                    {t('common.refresh')}
-                  </Button>
-                </div>
-              </>
-            )}
-          </div>
         ) : null}
 
         {tab === 'server' ? (
