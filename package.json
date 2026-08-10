@@ -1,7 +1,7 @@
 {
   "name": "ysk-server",
   "version": "0.1.0",
-  "description": "YSK Server \u2014 AI-secure Linux server manager with full web hosting control panel",
+  "description": "YSK Server — AI-secure Linux server manager with full web hosting control panel",
   "private": true,
   "type": "module",
   "bin": {
@@ -43,6 +43,7 @@
     "e2e:sql-switch-live": "bash scripts/e2e-sql-switch-live-docker.sh",
     "e2e:host-browse": "bash scripts/e2e-host-browse.sh",
     "e2e:vpn": "bash scripts/e2e-vpn.sh",
+    "e2e:vnc": "bash scripts/e2e-vnc.sh",
     "i18n:check-no-uiinline-default": "node ./scripts/i18n-no-uiinline-default.mjs"
   },
   "engines": {
