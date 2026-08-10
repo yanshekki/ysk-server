@@ -37,11 +37,7 @@ export async function handleVncRoutes(
   try {
     if (method === 'GET' && url.pathname === '/api/v1/vnc/status') {
       const status = await vnc.status();
-      sendJson(res, 200, {
-        ok: true,
-        ...status,
-        clientProfiles: [],
-      });
+      sendJson(res, 200, { ok: true, ...status });
       return true;
     }
 
@@ -429,8 +425,133 @@ export async function handleVncRoutes(
     }
 
     if (method === 'GET' && url.pathname === '/api/v1/vnc/client/profiles') {
-      sendJson(res, 200, { ok: true, items: [] });
+      sendJson(res, 200, { ok: true, items: vnc.listClientProfiles() });
       return true;
+    }
+
+    if (method === 'POST' && url.pathname === '/api/v1/vnc/client/profiles') {
+      const raw = await readBody(req);
+      const data = JSON.parse(raw || '{}') as {
+        name?: string;
+        host?: string;
+        port?: number;
+        path?: string;
+        password?: string;
+        autostart?: boolean;
+      };
+      const profile = vnc.createClientProfile({
+        name: data.name ?? '',
+        host: data.host ?? '',
+        port: Number(data.port),
+        path: data.path === 'direct' ? 'direct' : 'via_server',
+        password: data.password,
+        autostart: data.autostart,
+      });
+      ctx.audit.append({
+        actor: user.username,
+        action: 'vnc.client.create',
+        resource: profile.id,
+        ok: true,
+      });
+      sendJson(res, 201, { ok: true, profile });
+      return true;
+    }
+
+    const clientMatch = url.pathname.match(
+      /^\/api\/v1\/vnc\/client\/profiles\/([^/]+)(?:\/(up|down))?$/,
+    );
+    if (clientMatch) {
+      const clientId = decodeURIComponent(clientMatch[1] ?? '');
+      const action = clientMatch[2];
+
+      if (method === 'PATCH' && !action) {
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          name?: string;
+          host?: string;
+          port?: number;
+          path?: string;
+          autostart?: boolean;
+          password?: string | null;
+        };
+        const profile = vnc.updateClientProfile(clientId, {
+          name: data.name,
+          host: data.host,
+          port: data.port,
+          path: data.path === 'direct' || data.path === 'via_server' ? data.path : undefined,
+          autostart: data.autostart,
+          password: data.password,
+        });
+        sendJson(res, 200, { ok: true, profile });
+        return true;
+      }
+
+      if (method === 'DELETE' && !action) {
+        const result = await vnc.deleteClientProfile(clientId);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'vnc.client.delete',
+          resource: clientId,
+          ok: result.ok,
+        });
+        sendOpsResult(res, {
+          ok: result.ok,
+          notes: result.notes,
+          apply_status: result.ok ? 'applied' : 'failed',
+        });
+        return true;
+      }
+
+      if (method === 'POST' && action === 'up') {
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { path?: string };
+        const result = await vnc.clientUp(
+          clientId,
+          data.path === 'direct' || data.path === 'via_server' ? data.path : undefined,
+        );
+        ctx.audit.append({
+          actor: user.username,
+          action: 'vnc.client.up',
+          resource: clientId,
+          ok: result.ok,
+        });
+        sendOpsResult(res, {
+          ok: result.ok,
+          notes: result.notes,
+          blocked: result.blocked,
+          requiresExecute: result.requiresExecute,
+          profile: result.profile,
+          apply_status: result.blocked
+            ? 'blocked'
+            : result.ok
+              ? 'applied'
+              : 'failed',
+        });
+        return true;
+      }
+
+      if (method === 'POST' && action === 'down') {
+        const result = await vnc.clientDown(clientId);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'vnc.client.down',
+          resource: clientId,
+          ok: result.ok,
+        });
+        sendOpsResult(res, {
+          ok: result.ok,
+          notes: result.notes,
+          blocked: result.blocked,
+          requiresExecute: result.requiresExecute,
+          profile: result.profile,
+          apply_status: result.blocked
+            ? 'blocked'
+            : result.ok
+              ? 'applied'
+              : 'failed',
+        });
+        return true;
+      }
     }
 
     sendJson(res, 404, {

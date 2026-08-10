@@ -7523,7 +7523,17 @@
       "firewallNeedExecute": "Opening UFW ports requires YSK_EXECUTE",
       "firewallNeedRoot": "Opening UFW ports requires root",
       "firewallFailed": "ufw allow failed: {{detail}}",
-      "firewallOpened": "UFW allowed TCP {{port}}"
+      "firewallOpened": "UFW allowed TCP {{port}}",
+      "clientInvalid": "Client name and host are required",
+      "clientNotFound": "Client profile not found",
+      "clientUpBlocked": "Cannot connect VNC client without root + YSK_EXECUTE",
+      "clientUpFailed": "Client connect failed: {{detail}}",
+      "clientViaServerUp": "Client {{name}} via server — open {{url}}",
+      "clientDirectUp": "Client {{name}} started with vncviewer ({{target}})",
+      "clientNeedViewer": "Install TigerVNC viewer for direct client path",
+      "clientDownBlocked": "Cannot disconnect without root + YSK_EXECUTE",
+      "clientDown": "Disconnected client {{name}}",
+      "clientDeleted": "Client profile deleted"
     }
   },
   "ops": {
@@ -10978,7 +10988,7 @@
     "accountsEmptyDesc": "Use Create account to add a Linux user and VNC session.",
     "clientPathHint": "Connect via the server (noVNC proxy) or via your own network (vncviewer / direct RFB).",
     "clientEmptyTitle": "No client profiles yet",
-    "clientEmptyDesc": "Import a remote host:port in a later PR. Choose via-server or direct path when connecting.",
+    "clientEmptyDesc": "Add a remote host:port, then connect via server (noVNC) or direct viewer.",
     "installHint": "Install TigerVNC first, then noVNC for browser access. XFCE is optional (larger download).",
     "needTigerVnc": "TigerVNC server is required for multi-user sessions",
     "needNovnc": "noVNC + websockify for browser remote desktop",
@@ -11064,6 +11074,20 @@
     "directAddress": "Address",
     "ticketPath": "View ticket API",
     "directLocalhostWarn": "RFB is localhost-only — change bind to all interfaces for direct internet clients, or use SSH tunnel / noVNC.",
-    "copied": "Copied to clipboard"
+    "copied": "Copied to clipboard",
+    "clientListTitle": "Client profiles ({{count}})",
+    "clientListDesc": "Connect this host to a remote VNC server via noVNC proxy or vncviewer.",
+    "addClient": "+ Add remote",
+    "addClientTitle": "Add remote VNC",
+    "addClientDesc": "Import host:port. Choose path when connecting.",
+    "clientTarget": "Target",
+    "clientPath": "Connect path",
+    "clientHost": "Remote host",
+    "pathViaServerShort": "Via server",
+    "pathDirectShort": "Direct",
+    "disconnect": "Disconnect",
+    "connect": "Connect",
+    "clientNeedFields": "Name and host are required",
+    "clientCreated": "Client profile created"
   }
 }

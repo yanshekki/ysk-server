@@ -30,6 +30,8 @@ import { notifyOk, notifyWarn } from '../../shared/lib/notify';
 import {
   vncApi,
   type VncAccountSummary,
+  type VncClientProfile,
+  type VncConnectPath,
   type VncDesktopProfile,
   type VncOpsResult,
   type VncRfbBind,
@@ -66,8 +68,16 @@ export function VncPage() {
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<VncStatusResponse | null>(null);
   const [accounts, setAccounts] = useState<VncAccountSummary[]>([]);
+  const [clients, setClients] = useState<VncClientProfile[]>([]);
   const [lastOps, setLastOps] = useState<OpsResultLike | null>(null);
   const [page, setPage] = useState(0);
+
+  // Client create form
+  const [clientOpen, setClientOpen] = useState(false);
+  const [clName, setClName] = useState('');
+  const [clHost, setClHost] = useState('');
+  const [clPort, setClPort] = useState(5901);
+  const [clPath, setClPath] = useState<VncConnectPath>('via_server');
 
   // Settings form
   const [desktop, setDesktop] = useState<VncDesktopProfile>('minimal');
@@ -117,6 +127,7 @@ export function VncPage() {
       const s = await vncApi.status();
       setStatus(s);
       setAccounts(s.accounts ?? []);
+      setClients(s.clientProfiles ?? []);
       if (s.settings) {
         setDesktop(s.settings.defaultDesktop);
         setGeometry(s.settings.defaultGeometry);
@@ -468,9 +479,110 @@ export function VncPage() {
           <div className="stack">
             <SoftwareInstallBanner feature="vnc" title={t('vnc.needViewerOrNovnc')} />
             <Alert variant="info">{t('vnc.clientPathHint')}</Alert>
-            <EmptyState
-              title={t('vnc.clientEmptyTitle')}
-              description={t('vnc.clientEmptyDesc')}
+            <DataTable
+              rowKey={(c) => c.id}
+              title={t('vnc.clientListTitle', { count: clients.length })}
+              description={t('vnc.clientListDesc')}
+              toolbar={
+                <ActionBar>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => {
+                      setClName('');
+                      setClHost('');
+                      setClPort(5901);
+                      setClPath('via_server');
+                      setClientOpen(true);
+                    }}
+                  >
+                    {t('vnc.addClient')}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={busy}
+                    onClick={() => void load()}
+                  >
+                    {t('common.refresh')}
+                  </Button>
+                </ActionBar>
+              }
+              columns={[
+                {
+                  key: 'name',
+                  header: t('vnc.colName'),
+                  render: (c) => <strong>{c.name}</strong>,
+                },
+                {
+                  key: 'target',
+                  header: t('vnc.clientTarget'),
+                  render: (c) => (
+                    <code className="inline">
+                      {c.host}:{c.port}
+                    </code>
+                  ),
+                },
+                {
+                  key: 'path',
+                  header: t('vnc.clientPath'),
+                  nowrap: true,
+                  render: (c) =>
+                    c.path === 'direct'
+                      ? t('vnc.pathDirectShort')
+                      : t('vnc.pathViaServerShort'),
+                },
+                {
+                  key: 'status',
+                  header: t('vnc.colStatus'),
+                  nowrap: true,
+                  render: (c) => (
+                    <Badge tone={c.status === 'up' ? 'ok' : 'neutral'}>
+                      {c.status}
+                    </Badge>
+                  ),
+                },
+              ]}
+              rows={clients}
+              empty={
+                <EmptyState
+                  title={t('vnc.clientEmptyTitle')}
+                  description={t('vnc.clientEmptyDesc')}
+                />
+              }
+              rowActions={(c) => (
+                <ActionBar>
+                  {c.status === 'up' ? (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      loading={busy}
+                      onClick={() => void runOps(() => vncApi.clientDown(c.id))}
+                    >
+                      {t('vnc.disconnect')}
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      loading={busy}
+                      onClick={() => void runOps(() => vncApi.clientUp(c.id, c.path))}
+                    >
+                      {t('vnc.connect')}
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    variant="danger"
+                    loading={busy}
+                    onClick={() =>
+                      void runOps(() => vncApi.deleteClientProfile(c.id))
+                    }
+                  >
+                    {t('common.delete')}
+                  </Button>
+                </ActionBar>
+              )}
             />
           </div>
         ) : null}
@@ -901,6 +1013,96 @@ export function VncPage() {
           {t('vnc.removeLinuxUser')}
         </label>
       </ConfirmDialog>
+
+      <Modal
+        open={clientOpen}
+        onClose={() => !busy && setClientOpen(false)}
+        title={t('vnc.addClientTitle')}
+        description={t('vnc.addClientDesc')}
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              size="md"
+              disabled={busy}
+              onClick={() => setClientOpen(false)}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              loading={busy}
+              onClick={() => {
+                if (!clName.trim() || !clHost.trim()) {
+                  notifyWarn(t('vnc.clientNeedFields'));
+                  return;
+                }
+                setBusy(true);
+                void vncApi
+                  .createClientProfile({
+                    name: clName.trim(),
+                    host: clHost.trim(),
+                    port: clPort,
+                    path: clPath,
+                  })
+                  .then(async () => {
+                    notifyOk(t('vnc.clientCreated'));
+                    setClientOpen(false);
+                    await load();
+                  })
+                  .catch((e) =>
+                    setError(e instanceof Error ? e.message : t('common.loadFailed')),
+                  )
+                  .finally(() => setBusy(false));
+              }}
+            >
+              {t('vnc.addClient')}
+            </Button>
+          </>
+        }
+      >
+        <FormLayout columns={1}>
+          <Field label={t('vnc.colName')} htmlFor="cl-name" required flush>
+            <input
+              id="cl-name"
+              value={clName}
+              onChange={(e) => setClName(e.target.value)}
+              placeholder="office-pc"
+            />
+          </Field>
+          <Field label={t('vnc.clientHost')} htmlFor="cl-host" required flush>
+            <input
+              id="cl-host"
+              value={clHost}
+              onChange={(e) => setClHost(e.target.value)}
+              placeholder="192.168.1.50"
+            />
+          </Field>
+          <Field label={t('common.port')} htmlFor="cl-port" flush>
+            <input
+              id="cl-port"
+              type="number"
+              min={1}
+              max={65535}
+              value={clPort}
+              onChange={(e) => setClPort(Number(e.target.value) || 5901)}
+            />
+          </Field>
+          <Field label={t('vnc.clientPath')} htmlFor="cl-path" flush>
+            <select
+              id="cl-path"
+              value={clPath}
+              onChange={(e) =>
+                setClPath(e.target.value === 'direct' ? 'direct' : 'via_server')
+              }
+            >
+              <option value="via_server">{t('vnc.pathViaServer')}</option>
+              <option value="direct">{t('vnc.pathDirect')}</option>
+            </select>
+          </Field>
+        </FormLayout>
+      </Modal>
 
       <Modal
         open={Boolean(connTarget)}

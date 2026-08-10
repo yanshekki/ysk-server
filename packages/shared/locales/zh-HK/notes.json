@@ -2863,6 +2863,16 @@
     "firewallNeedExecute": "開 UFW 埠需 YSK_EXECUTE",
     "firewallNeedRoot": "開 UFW 埠需 root",
     "firewallFailed": "ufw allow 失敗：{{detail}}",
-    "firewallOpened": "UFW 已放行 TCP {{port}}"
+    "firewallOpened": "UFW 已放行 TCP {{port}}",
+    "clientInvalid": "客戶端名稱同主機必填",
+    "clientNotFound": "找不到客戶端設定",
+    "clientUpBlocked": "無權限連線 VNC client（需 root + YSK_EXECUTE）",
+    "clientUpFailed": "客戶端連線失敗：{{detail}}",
+    "clientViaServerUp": "客戶端 {{name}} 經 server — 開啟 {{url}}",
+    "clientDirectUp": "客戶端 {{name}} 已用 vncviewer 啟動（{{target}}）",
+    "clientNeedViewer": "直連路徑請安裝 TigerVNC viewer",
+    "clientDownBlocked": "無權限斷線（需 root + YSK_EXECUTE）",
+    "clientDown": "已斷開客戶端 {{name}}",
+    "clientDeleted": "已刪除客戶端設定"
   }
 }

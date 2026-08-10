@@ -195,4 +195,35 @@ export const vncApi = {
     api.requestRaw<{ ok: boolean; items: VncClientProfile[] }>(
       '/api/v1/vnc/client/profiles',
     ),
+  createClientProfile: (body: {
+    name: string;
+    host: string;
+    port: number;
+    path?: VncConnectPath;
+    password?: string;
+    autostart?: boolean;
+  }) =>
+    api.requestRaw<{ ok: boolean; profile: VncClientProfile }>(
+      '/api/v1/vnc/client/profiles',
+      { method: 'POST', body: JSON.stringify(body) },
+    ),
+  clientUp: (id: string, path?: VncConnectPath) =>
+    api.requestRawAllowStatus<VncOpsResult & { profile?: VncClientProfile }>(
+      `/api/v1/vnc/client/profiles/${encodeURIComponent(id)}/up`,
+      {
+        method: 'POST',
+        body: JSON.stringify(path ? { path } : {}),
+        allowStatuses: [403, 422],
+      },
+    ),
+  clientDown: (id: string) =>
+    api.requestRawAllowStatus<VncOpsResult & { profile?: VncClientProfile }>(
+      `/api/v1/vnc/client/profiles/${encodeURIComponent(id)}/down`,
+      { method: 'POST', body: '{}', allowStatuses: [403, 422] },
+    ),
+  deleteClientProfile: (id: string) =>
+    api.requestRawAllowStatus<VncOpsResult>(
+      `/api/v1/vnc/client/profiles/${encodeURIComponent(id)}`,
+      { method: 'DELETE', body: '{}', allowStatuses: [403, 422] },
+    ),
 };

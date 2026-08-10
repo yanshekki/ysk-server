@@ -30,8 +30,18 @@ import {
   stopNovnc,
 } from './novnc.js';
 import {
+  clientDown,
+  clientUp,
+  createClientProfile,
+  deleteClientProfile,
+  listClientProfilesPublic,
+  updateClientProfile,
+} from './client-profiles.js';
+import {
   DEFAULT_VNC_SETTINGS,
   type VncAccountSummary,
+  type VncClientProfile,
+  type VncConnectPath,
   type VncDesktopProfile,
   type VncOverviewStatus,
   type VncRfbBind,
@@ -759,10 +769,90 @@ export class VncService {
     ];
   }
 
-  async status(): Promise<VncOverviewStatus & { accounts: VncAccountSummary[] }> {
+  listClientProfiles(): VncClientProfile[] {
+    return listClientProfilesPublic(this.dataDir);
+  }
+
+  createClientProfile(input: {
+    name: string;
+    host: string;
+    port: number;
+    path?: VncConnectPath;
+    password?: string;
+    autostart?: boolean;
+  }): VncClientProfile {
+    return createClientProfile(this.dataDir, input);
+  }
+
+  updateClientProfile(
+    id: string,
+    patch: {
+      name?: string;
+      host?: string;
+      port?: number;
+      path?: VncConnectPath;
+      autostart?: boolean;
+      password?: string | null;
+    },
+  ): VncClientProfile {
+    return updateClientProfile(this.dataDir, id, patch);
+  }
+
+  async clientUp(
+    id: string,
+    path?: VncConnectPath,
+  ): Promise<VncOpsResult & { profile?: VncClientProfile }> {
+    const r = await clientUp({
+      host: this.host,
+      dataDir: this.dataDir,
+      id,
+      path,
+    });
+    return {
+      ok: r.ok || Boolean(r.blocked),
+      notes: r.notes,
+      blocked: r.blocked,
+      requiresExecute: r.requiresExecute,
+      profile: r.profile,
+    };
+  }
+
+  async clientDown(
+    id: string,
+  ): Promise<VncOpsResult & { profile?: VncClientProfile }> {
+    const r = await clientDown({
+      host: this.host,
+      dataDir: this.dataDir,
+      id,
+    });
+    return {
+      ok: r.ok || Boolean(r.blocked),
+      notes: r.notes,
+      blocked: r.blocked,
+      requiresExecute: r.requiresExecute,
+      profile: r.profile,
+    };
+  }
+
+  async deleteClientProfile(id: string): Promise<VncOpsResult> {
+    const r = await deleteClientProfile({
+      host: this.host,
+      dataDir: this.dataDir,
+      id,
+    });
+    return { ok: r.ok, notes: r.notes };
+  }
+
+  async status(): Promise<
+    VncOverviewStatus & {
+      accounts: VncAccountSummary[];
+      clientProfiles: VncClientProfile[];
+    }
+  > {
     const stacks = await this.probeStacks();
     const settings = this.loadSettings();
     const accounts = await this.listAccounts();
+    const clientProfiles = this.listClientProfiles();
     const notes: string[] = [];
     if (!this.host.executeEnabled()) notes.push(tl('notes.vnc.needExecute'));
     if (!this.host.isRoot()) notes.push(tl('notes.vnc.needRoot'));
@@ -789,14 +879,15 @@ export class VncService {
       stacks,
       accountCount: accounts.length,
       runningCount: accounts.filter((a) => a.status === 'running').length,
-      clientProfileCount: 0,
-      clientConnectedCount: 0,
+      clientProfileCount: clientProfiles.length,
+      clientConnectedCount: clientProfiles.filter((c) => c.status === 'up').length,
       settings,
       endpointHint,
       executeEnabled: this.host.executeEnabled(),
       isRoot: this.host.isRoot(),
       notes,
       accounts,
+      clientProfiles,
     };
   }
 }

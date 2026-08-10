@@ -2863,6 +2863,16 @@
     "firewallNeedExecute": "Opening UFW ports requires YSK_EXECUTE",
     "firewallNeedRoot": "Opening UFW ports requires root",
     "firewallFailed": "ufw allow failed: {{detail}}",
-    "firewallOpened": "UFW allowed TCP {{port}}"
+    "firewallOpened": "UFW allowed TCP {{port}}",
+    "clientInvalid": "Client name and host are required",
+    "clientNotFound": "Client profile not found",
+    "clientUpBlocked": "Cannot connect VNC client without root + YSK_EXECUTE",
+    "clientUpFailed": "Client connect failed: {{detail}}",
+    "clientViaServerUp": "Client {{name}} via server — open {{url}}",
+    "clientDirectUp": "Client {{name}} started with vncviewer ({{target}})",
+    "clientNeedViewer": "Install TigerVNC viewer for direct client path",
+    "clientDownBlocked": "Cannot disconnect without root + YSK_EXECUTE",
+    "clientDown": "Disconnected client {{name}}",
+    "clientDeleted": "Client profile deleted"
   }
 }

@@ -7523,7 +7523,17 @@
       "firewallNeedExecute": "開 UFW 埠需 YSK_EXECUTE",
       "firewallNeedRoot": "開 UFW 埠需 root",
       "firewallFailed": "ufw allow 失敗：{{detail}}",
-      "firewallOpened": "UFW 已放行 TCP {{port}}"
+      "firewallOpened": "UFW 已放行 TCP {{port}}",
+      "clientInvalid": "客戶端名稱同主機必填",
+      "clientNotFound": "找不到客戶端設定",
+      "clientUpBlocked": "無權限連線 VNC client（需 root + YSK_EXECUTE）",
+      "clientUpFailed": "客戶端連線失敗：{{detail}}",
+      "clientViaServerUp": "客戶端 {{name}} 經 server — 開啟 {{url}}",
+      "clientDirectUp": "客戶端 {{name}} 已用 vncviewer 啟動（{{target}}）",
+      "clientNeedViewer": "直連路徑請安裝 TigerVNC viewer",
+      "clientDownBlocked": "無權限斷線（需 root + YSK_EXECUTE）",
+      "clientDown": "已斷開客戶端 {{name}}",
+      "clientDeleted": "已刪除客戶端設定"
     }
   },
   "ops": {
@@ -10978,7 +10988,7 @@
     "accountsEmptyDesc": "按「建立帳號」新增獨立 Linux 用戶同 VNC session。",
     "clientPathHint": "可選擇經 server（noVNC 代理）或經用戶自己網絡（vncviewer／直連 RFB）。",
     "clientEmptyTitle": "尚未有客戶端設定",
-    "clientEmptyDesc": "稍後可匯入遠端 host:port；連線時揀經 server 或直連。",
+    "clientEmptyDesc": "新增遠端 host:port，再經 server（noVNC）或 viewer 直連。",
     "installHint": "請先裝 TigerVNC，再裝 noVNC 以供瀏覽器。XFCE 可選（下載較大）。",
     "needTigerVnc": "多用戶 session 需要 TigerVNC server",
     "needNovnc": "瀏覽器遠端桌面需要 noVNC + websockify",
@@ -11064,6 +11074,20 @@
     "directAddress": "地址",
     "ticketPath": "觀看 ticket API",
     "directLocalhostWarn": "RFB 只聽 localhost — 要直連公網請改 bind，或用 SSH 隧道／noVNC。",
-    "copied": "已複製"
+    "copied": "已複製",
+    "clientListTitle": "客戶端設定（{{count}}）",
+    "clientListDesc": "本機連去遠端 VNC：經 noVNC 代理或 vncviewer 直連。",
+    "addClient": "+ 新增遠端",
+    "addClientTitle": "新增遠端 VNC",
+    "addClientDesc": "匯入 host:port。連線時可揀路徑。",
+    "clientTarget": "目標",
+    "clientPath": "連線路徑",
+    "clientHost": "遠端主機",
+    "pathViaServerShort": "經 server",
+    "pathDirectShort": "直連",
+    "disconnect": "斷線",
+    "connect": "連線",
+    "clientNeedFields": "名稱同主機必填",
+    "clientCreated": "已建立客戶端設定"
   }
 }
