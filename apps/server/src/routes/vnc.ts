@@ -219,11 +219,11 @@ export async function handleVncRoutes(
 
       if (method === 'POST' && action === 'novnc/start') {
         const result = await vnc.startNovncForAccount(accountId);
-        ctx.audit.append({
-          actor: user.username,
+        ctx.audit.append({actor: user.username,
           action: 'vnc.novnc.start',
           resource: accountId,
           ok: result.ok,
+          detail: {},
         });
         sendOpsResult(res, {
           ok: result.ok,
@@ -242,11 +242,11 @@ export async function handleVncRoutes(
 
       if (method === 'POST' && action === 'novnc/stop') {
         const result = await vnc.stopNovncForAccount(accountId);
-        ctx.audit.append({
-          actor: user.username,
+        ctx.audit.append({actor: user.username,
           action: 'vnc.novnc.stop',
           resource: accountId,
           ok: result.ok,
+          detail: {},
         });
         sendOpsResult(res, {
           ok: result.ok,
@@ -266,11 +266,11 @@ export async function handleVncRoutes(
       if (method === 'POST' && action === 'firewall') {
         requireCap(ctx, user, 'firewall.edit');
         const result = await vnc.openFirewallForAccount(accountId);
-        ctx.audit.append({
-          actor: user.username,
+        ctx.audit.append({actor: user.username,
           action: 'vnc.firewall.account',
           resource: accountId,
           ok: result.ok,
+          detail: {},
         });
         sendOpsResult(res, {
           ok: result.ok,
@@ -313,11 +313,11 @@ export async function handleVncRoutes(
               : undefined,
           autostart: data.autostart,
         });
-        ctx.audit.append({
-          actor: user.username,
+        ctx.audit.append({actor: user.username,
           action: 'vnc.account.update',
           resource: accountId,
           ok: result.ok,
+          detail: {},
         });
         sendOpsResult(res, {
           ok: result.ok,
@@ -353,11 +353,11 @@ export async function handleVncRoutes(
 
       if (method === 'POST' && action === 'start') {
         const result = await vnc.startAccount(accountId);
-        ctx.audit.append({
-          actor: user.username,
+        ctx.audit.append({actor: user.username,
           action: 'vnc.account.start',
           resource: accountId,
           ok: result.ok,
+          detail: {},
         });
         sendOpsResult(res, {
           ok: result.ok,
@@ -377,11 +377,11 @@ export async function handleVncRoutes(
 
       if (method === 'POST' && action === 'stop') {
         const result = await vnc.stopAccount(accountId);
-        ctx.audit.append({
-          actor: user.username,
+        ctx.audit.append({actor: user.username,
           action: 'vnc.account.stop',
           resource: accountId,
           ok: result.ok,
+          detail: {},
         });
         sendOpsResult(res, {
           ok: result.ok,
@@ -402,11 +402,11 @@ export async function handleVncRoutes(
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as { password?: string };
         const result = await vnc.setPassword(accountId, data.password ?? '');
-        ctx.audit.append({
-          actor: user.username,
+        ctx.audit.append({actor: user.username,
           action: 'vnc.account.password',
           resource: accountId,
           ok: result.ok,
+          detail: {},
         });
         sendOpsResult(res, {
           ok: result.ok,
@@ -447,12 +447,12 @@ export async function handleVncRoutes(
         password: data.password,
         autostart: data.autostart,
       });
-      ctx.audit.append({
-        actor: user.username,
+      ctx.audit.append({actor: user.username,
         action: 'vnc.client.create',
         resource: profile.id,
         ok: true,
-      });
+          detail: {},
+        });
       sendJson(res, 201, { ok: true, profile });
       return true;
     }
@@ -488,11 +488,11 @@ export async function handleVncRoutes(
 
       if (method === 'DELETE' && !action) {
         const result = await vnc.deleteClientProfile(clientId);
-        ctx.audit.append({
-          actor: user.username,
+        ctx.audit.append({actor: user.username,
           action: 'vnc.client.delete',
           resource: clientId,
           ok: result.ok,
+          detail: {},
         });
         sendOpsResult(res, {
           ok: result.ok,
@@ -509,11 +509,11 @@ export async function handleVncRoutes(
           clientId,
           data.path === 'direct' || data.path === 'via_server' ? data.path : undefined,
         );
-        ctx.audit.append({
-          actor: user.username,
+        ctx.audit.append({actor: user.username,
           action: 'vnc.client.up',
           resource: clientId,
           ok: result.ok,
+          detail: {},
         });
         sendOpsResult(res, {
           ok: result.ok,
@@ -532,11 +532,11 @@ export async function handleVncRoutes(
 
       if (method === 'POST' && action === 'down') {
         const result = await vnc.clientDown(clientId);
-        ctx.audit.append({
-          actor: user.username,
+        ctx.audit.append({actor: user.username,
           action: 'vnc.client.down',
           resource: clientId,
           ok: result.ok,
+          detail: {},
         });
         sendOpsResult(res, {
           ok: result.ok,
