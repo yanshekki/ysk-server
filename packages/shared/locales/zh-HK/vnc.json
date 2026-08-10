@@ -88,5 +88,21 @@
   "deleteAccountC2": "面板 dataDir/vnc 中的中繼資料",
   "deleteAccountC3User": "會一併刪除 Linux 用戶同 home（userdel -r）",
   "deleteAccountC3Keep": "會保留系統上的 Linux 用戶",
-  "removeLinuxUser": "一併刪除 Linux 用戶同家目錄"
+  "removeLinuxUser": "一併刪除 Linux 用戶同家目錄",
+  "connection": "連線",
+  "connectionTitle": "連入物料",
+  "connectionDesc": "客戶端如何連到 {{name}}",
+  "connectionPathsHint": "建議經 server（本機 noVNC）。直連 RFB 需 bind=全部介面 + 開防火牆。",
+  "pathViaServer": "經 server（noVNC）",
+  "pathDirect": "經用戶自己網絡（直連 RFB）",
+  "recommended": "建議",
+  "startNovnc": "啟動 noVNC",
+  "stopNovnc": "停止 noVNC",
+  "copyNovncUrl": "複製 noVNC URL",
+  "copyAddress": "複製 host:port",
+  "openFirewall": "UFW 放行埠",
+  "directAddress": "地址",
+  "ticketPath": "觀看 ticket API",
+  "directLocalhostWarn": "RFB 只聽 localhost — 要直連公網請改 bind，或用 SSH 隧道／noVNC。",
+  "copied": "已複製"
 }

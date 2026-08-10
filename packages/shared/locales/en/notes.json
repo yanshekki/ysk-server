@@ -2846,6 +2846,23 @@
     "sessionStartUnverified": "Start command returned OK but RFB port not yet listening",
     "sessionStopBlocked": "Cannot stop VNC session without root + YSK_EXECUTE",
     "sessionStopped": "Stopped VNC for {{user}} display :{{display}}",
-    "linuxUserKept": "Kept Linux user {{user}} on the system"
+    "linuxUserKept": "Kept Linux user {{user}} on the system",
+    "novncStartBlocked": "Cannot start noVNC without root + YSK_EXECUTE",
+    "novncAlreadyRunning": "noVNC already running on port {{port}}",
+    "novncStartFailed": "Failed to start websockify: {{detail}}",
+    "novncStarted": "noVNC listening on 127.0.0.1:{{httpPort}} → RFB {{rfbPort}}",
+    "novncNotRunning": "noVNC was not running",
+    "novncStopBlocked": "Cannot stop noVNC without root + YSK_EXECUTE",
+    "novncStopped": "Stopped noVNC on port {{httpPort}}",
+    "directNeedsAllBind": "RFB bind is localhost — direct clients cannot reach from outside without tunnel",
+    "directOpenFirewall": "Open TCP {{port}} in the firewall for direct clients",
+    "viaServerReady": "noVNC is up — open the local URL or use an SSH tunnel",
+    "viaServerStartFirst": "Start noVNC to enable browser access via the server",
+    "viewTicketIssued": "Issued a short-lived view ticket",
+    "invalidPort": "Invalid port number",
+    "firewallNeedExecute": "Opening UFW ports requires YSK_EXECUTE",
+    "firewallNeedRoot": "Opening UFW ports requires root",
+    "firewallFailed": "ufw allow failed: {{detail}}",
+    "firewallOpened": "UFW allowed TCP {{port}}"
   }
 }

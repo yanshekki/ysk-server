@@ -151,6 +151,46 @@ export const vncApi = {
         allowStatuses: [403, 422],
       },
     ),
+  getConnection: (id: string) =>
+    api.requestRaw<{
+      ok: boolean;
+      account: VncAccountSummary;
+      connection: {
+        direct: {
+          host: string;
+          port: number;
+          display: number;
+          address: string;
+          bind: string;
+          recommended: boolean;
+          notes: string[];
+        };
+        viaServer: {
+          available: boolean;
+          httpPort: number | null;
+          localUrl: string | null;
+          ticketPath: string | null;
+          recommended: boolean;
+          notes: string[];
+        };
+      };
+      notes: string[];
+    }>(`/api/v1/vnc/accounts/${encodeURIComponent(id)}/connection`),
+  startNovnc: (id: string) =>
+    api.requestRawAllowStatus<VncOpsResult>(
+      `/api/v1/vnc/accounts/${encodeURIComponent(id)}/novnc/start`,
+      { method: 'POST', body: '{}', allowStatuses: [403, 422] },
+    ),
+  stopNovnc: (id: string) =>
+    api.requestRawAllowStatus<VncOpsResult>(
+      `/api/v1/vnc/accounts/${encodeURIComponent(id)}/novnc/stop`,
+      { method: 'POST', body: '{}', allowStatuses: [403, 422] },
+    ),
+  openFirewall: (id: string) =>
+    api.requestRawAllowStatus<VncOpsResult>(
+      `/api/v1/vnc/accounts/${encodeURIComponent(id)}/firewall`,
+      { method: 'POST', body: '{}', allowStatuses: [403, 422] },
+    ),
   listClientProfiles: () =>
     api.requestRaw<{ ok: boolean; items: VncClientProfile[] }>(
       '/api/v1/vnc/client/profiles',

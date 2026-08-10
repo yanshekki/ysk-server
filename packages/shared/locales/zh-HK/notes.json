@@ -2846,6 +2846,23 @@
     "sessionStartUnverified": "啟動命令成功但 RFB 埠尚未監聽",
     "sessionStopBlocked": "無權限停止 VNC session（需 root + YSK_EXECUTE）",
     "sessionStopped": "已停止 {{user}} 嘅 display :{{display}}",
-    "linuxUserKept": "已保留系統上嘅 Linux 用戶 {{user}}"
+    "linuxUserKept": "已保留系統上嘅 Linux 用戶 {{user}}",
+    "novncStartBlocked": "無權限啟動 noVNC（需 root + YSK_EXECUTE）",
+    "novncAlreadyRunning": "noVNC 已在埠 {{port}} 運行",
+    "novncStartFailed": "啟動 websockify 失敗：{{detail}}",
+    "novncStarted": "noVNC 聽 127.0.0.1:{{httpPort}} → RFB {{rfbPort}}",
+    "novncNotRunning": "noVNC 未在運行",
+    "novncStopBlocked": "無權限停止 noVNC（需 root + YSK_EXECUTE）",
+    "novncStopped": "已停止 noVNC 埠 {{httpPort}}",
+    "directNeedsAllBind": "RFB 只聽 localhost — 外網直連需改 bind 或用隧道",
+    "directOpenFirewall": "直連客戶端請放行 TCP {{port}}",
+    "viaServerReady": "noVNC 已就緒 — 開本機 URL 或用 SSH 隧道",
+    "viaServerStartFirst": "請先啟動 noVNC 以經 server 用瀏覽器連入",
+    "viewTicketIssued": "已發出短期觀看 ticket",
+    "invalidPort": "埠號無效",
+    "firewallNeedExecute": "開 UFW 埠需 YSK_EXECUTE",
+    "firewallNeedRoot": "開 UFW 埠需 root",
+    "firewallFailed": "ufw allow 失敗：{{detail}}",
+    "firewallOpened": "UFW 已放行 TCP {{port}}"
   }
 }

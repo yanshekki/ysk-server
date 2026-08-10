@@ -139,12 +139,157 @@ export async function handleVncRoutes(
       return true;
     }
 
+    // Short-lived noVNC view ticket info (authenticated)
+    const viewMatch = url.pathname.match(/^\/api\/v1\/vnc\/view\/([^/]+)$/);
+    if (method === 'GET' && viewMatch) {
+      const { consumeViewTicket } = await import('@ysk/core');
+      const ticket = consumeViewTicket(ctx.dataDir, decodeURIComponent(viewMatch[1] ?? ''));
+      if (!ticket) {
+        sendJson(res, 404, {
+          ok: false,
+          code: ErrorCodes.NOT_FOUND,
+          message: 'ticket expired or missing',
+        });
+        return true;
+      }
+      sendJson(res, 200, {
+        ok: true,
+        accountId: ticket.accountId,
+        httpPort: ticket.httpPort,
+        expiresAt: new Date(ticket.expiresAt).toISOString(),
+        localUrl: `http://127.0.0.1:${ticket.httpPort}/vnc.html?host=127.0.0.1&port=${ticket.httpPort}`,
+        notes: [
+          'Open localUrl on the server or SSH-tunnel the httpPort; RFB stays on localhost.',
+        ],
+      });
+      return true;
+    }
+
+    if (method === 'POST' && url.pathname === '/api/v1/vnc/firewall/open') {
+      requireCap(ctx, user, 'firewall.edit');
+      const raw = await readBody(req);
+      const data = JSON.parse(raw || '{}') as { port?: number; accountId?: string };
+      let port = Number(data.port);
+      if (data.accountId) {
+        const conn = await vnc.getConnection(data.accountId);
+        port = conn.account.rfbPort;
+      }
+      if (!Number.isInteger(port) || port < 1 || port > 65535) {
+        sendJson(res, 400, {
+          ok: false,
+          code: ErrorCodes.VALIDATION,
+          message: 'invalid port',
+        });
+        return true;
+      }
+      const { openUfwTcpPort } = await import('@ysk/core');
+      const result = await openUfwTcpPort({
+        host: ctx.host,
+        port,
+        comment: 'ysk-vnc',
+      });
+      ctx.audit.append({
+        actor: user.username,
+        action: 'vnc.firewall.open',
+        detail: { port, ok: result.ok },
+        ok: result.ok,
+      });
+      sendOpsResult(res, {
+        ok: result.ok,
+        notes: result.notes,
+        blocked: result.blocked,
+        requiresExecute: result.requiresExecute,
+        apply_status: result.blocked
+          ? 'blocked'
+          : result.ok
+            ? 'applied'
+            : 'failed',
+      });
+      return true;
+    }
+
     const accountMatch = url.pathname.match(
-      /^\/api\/v1\/vnc\/accounts\/([^/]+)(?:\/(start|stop|password))?$/,
+      /^\/api\/v1\/vnc\/accounts\/([^/]+)(?:\/(start|stop|password|connection|novnc\/start|novnc\/stop|firewall))?$/,
     );
     if (accountMatch) {
       const accountId = decodeURIComponent(accountMatch[1] ?? '');
       const action = accountMatch[2];
+
+      if (method === 'GET' && action === 'connection') {
+        const result = await vnc.getConnection(accountId);
+        sendJson(res, 200, result);
+        return true;
+      }
+
+      if (method === 'POST' && action === 'novnc/start') {
+        const result = await vnc.startNovncForAccount(accountId);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'vnc.novnc.start',
+          resource: accountId,
+          ok: result.ok,
+        });
+        sendOpsResult(res, {
+          ok: result.ok,
+          notes: result.notes,
+          blocked: result.blocked,
+          requiresExecute: result.requiresExecute,
+          account: result.account,
+          apply_status: result.blocked
+            ? 'blocked'
+            : result.ok
+              ? 'applied'
+              : 'failed',
+        });
+        return true;
+      }
+
+      if (method === 'POST' && action === 'novnc/stop') {
+        const result = await vnc.stopNovncForAccount(accountId);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'vnc.novnc.stop',
+          resource: accountId,
+          ok: result.ok,
+        });
+        sendOpsResult(res, {
+          ok: result.ok,
+          notes: result.notes,
+          blocked: result.blocked,
+          requiresExecute: result.requiresExecute,
+          account: result.account,
+          apply_status: result.blocked
+            ? 'blocked'
+            : result.ok
+              ? 'applied'
+              : 'failed',
+        });
+        return true;
+      }
+
+      if (method === 'POST' && action === 'firewall') {
+        requireCap(ctx, user, 'firewall.edit');
+        const result = await vnc.openFirewallForAccount(accountId);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'vnc.firewall.account',
+          resource: accountId,
+          ok: result.ok,
+        });
+        sendOpsResult(res, {
+          ok: result.ok,
+          notes: result.notes,
+          blocked: result.blocked,
+          requiresExecute: result.requiresExecute,
+          account: result.account,
+          apply_status: result.blocked
+            ? 'blocked'
+            : result.ok
+              ? 'applied'
+              : 'failed',
+        });
+        return true;
+      }
 
       if (method === 'PATCH' && !action) {
         const raw = await readBody(req);

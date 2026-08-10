@@ -22,6 +22,14 @@ import {
   writeXstartupFile,
 } from './server-session.js';
 import {
+  buildConnectionPayload,
+  createViewTicket,
+  isNovncRunning,
+  openUfwTcpPort,
+  startNovnc,
+  stopNovnc,
+} from './novnc.js';
+import {
   DEFAULT_VNC_SETTINGS,
   type VncAccountSummary,
   type VncDesktopProfile,
@@ -213,9 +221,137 @@ export class VncService {
     const items = this.loadAccountsRaw();
     const out: VncAccountSummary[] = [];
     for (const rec of items) {
-      out.push(toSummary(rec, await this.resolveStatus(rec)));
+      out.push(
+        toSummary(
+          rec,
+          await this.resolveStatus(rec),
+          isNovncRunning(this.dataDir, rec.id),
+        ),
+      );
     }
     return out;
+  }
+
+  async getConnection(id: string): Promise<{
+    ok: boolean;
+    account: VncAccountSummary;
+    connection: ReturnType<typeof buildConnectionPayload>;
+    notes: string[];
+  }> {
+    const rec = this.getAccountOrThrow(id);
+    const notes: string[] = [];
+    let endpointHint: string | null = null;
+    try {
+      const r = await this.host.runCommand(['hostname', '-I'], { timeoutMs: 5_000 });
+      endpointHint =
+        r.stdout
+          .split(/\s+/)
+          .map((s) => s.trim())
+          .find(Boolean) || null;
+    } catch {
+      endpointHint = null;
+    }
+
+    const novncOn = isNovncRunning(this.dataDir, id);
+    let httpPort: number | null = null;
+    let ticketToken: string | null = null;
+    if (novncOn) {
+      const { loadNovncRuntimes } = await import('./novnc.js');
+      const rt = loadNovncRuntimes(this.dataDir).find((x) => x.accountId === id);
+      httpPort = rt?.httpPort ?? null;
+      if (httpPort != null) {
+        const ticket = createViewTicket({
+          dataDir: this.dataDir,
+          accountId: id,
+          httpPort,
+        });
+        ticketToken = ticket.token;
+        notes.push(tl('notes.vnc.viewTicketIssued'));
+      }
+    }
+
+    const account = toSummary(
+      rec,
+      await this.resolveStatus(rec),
+      novncOn,
+    );
+    return {
+      ok: true,
+      account,
+      connection: buildConnectionPayload({
+        accountId: id,
+        name: rec.name,
+        linuxUser: rec.linuxUser,
+        display: rec.display,
+        rfbPort: rec.rfbPort,
+        rfbBind: rec.rfbBind,
+        endpointHint,
+        novncHttpPort: httpPort,
+        viewTicketToken: ticketToken,
+      }),
+      notes,
+    };
+  }
+
+  async startNovncForAccount(id: string): Promise<VncOpsResult> {
+    const rec = this.getAccountOrThrow(id);
+    const r = await startNovnc({
+      host: this.host,
+      dataDir: this.dataDir,
+      accountId: id,
+      display: rec.display,
+    });
+    return {
+      ok: r.ok || Boolean(r.blocked),
+      notes: r.notes,
+      blocked: r.blocked,
+      requiresExecute: r.requiresExecute,
+      account: toSummary(
+        rec,
+        await this.resolveStatus(rec),
+        isNovncRunning(this.dataDir, id),
+      ),
+    };
+  }
+
+  async stopNovncForAccount(id: string): Promise<VncOpsResult> {
+    const rec = this.getAccountOrThrow(id);
+    const r = await stopNovnc({
+      host: this.host,
+      dataDir: this.dataDir,
+      accountId: id,
+    });
+    return {
+      ok: r.ok || Boolean(r.blocked),
+      notes: r.notes,
+      blocked: r.blocked,
+      requiresExecute: r.requiresExecute,
+      account: toSummary(
+        rec,
+        await this.resolveStatus(rec),
+        isNovncRunning(this.dataDir, id),
+      ),
+    };
+  }
+
+  async openFirewallForAccount(id: string): Promise<VncOpsResult> {
+    const rec = this.getAccountOrThrow(id);
+    const r = await openUfwTcpPort({
+      host: this.host,
+      port: rec.rfbPort,
+      comment: `ysk-vnc-${rec.display}`,
+    });
+    return {
+      ok: r.ok || Boolean(r.blocked),
+      notes: r.notes,
+      blocked: r.blocked,
+      requiresExecute: r.requiresExecute,
+      account: toSummary(
+        rec,
+        await this.resolveStatus(rec),
+        isNovncRunning(this.dataDir, id),
+      ),
+    };
   }
 
   async createAccount(input: {

@@ -88,5 +88,21 @@
   "deleteAccountC2": "Panel metadata under dataDir/vnc",
   "deleteAccountC3User": "Linux user home will be removed (userdel -r)",
   "deleteAccountC3Keep": "Linux user will be kept on the system",
-  "removeLinuxUser": "Also remove Linux user and home directory"
+  "removeLinuxUser": "Also remove Linux user and home directory",
+  "connection": "Connect",
+  "connectionTitle": "Connection materials",
+  "connectionDesc": "How clients reach {{name}}",
+  "connectionPathsHint": "Prefer via server (noVNC on localhost). Direct RFB needs bind=all + firewall.",
+  "pathViaServer": "Via server (noVNC)",
+  "pathDirect": "Via your network (direct RFB)",
+  "recommended": "Recommended",
+  "startNovnc": "Start noVNC",
+  "stopNovnc": "Stop noVNC",
+  "copyNovncUrl": "Copy noVNC URL",
+  "copyAddress": "Copy host:port",
+  "openFirewall": "Open UFW port",
+  "directAddress": "Address",
+  "ticketPath": "View ticket API",
+  "directLocalhostWarn": "RFB is localhost-only — change bind to all interfaces for direct internet clients, or use SSH tunnel / noVNC.",
+  "copied": "Copied to clipboard"
 }

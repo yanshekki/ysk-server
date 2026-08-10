@@ -7433,7 +7433,8 @@
       "docRootUpdated": "Project document root updated to {{path}}",
       "docRootUpdateFailed": "Could not update project document root: {{detail}}",
       "sqliteSchemaReady": "Roundcube SQLite schema initialized",
-      "sqliteSchemaFailed": "Roundcube SQLite schema init failed: {{detail}}"
+      "sqliteSchemaFailed": "Roundcube SQLite schema init failed: {{detail}}",
+      "snappyFullEmailLogin": "Mailbox login must use full email (user@domain); short local-part is disabled"
     },
     "vpn": {
       "needInstall": "Install {{engine}} first (Install tab / one-click).",
@@ -7505,7 +7506,24 @@
       "sessionStartUnverified": "Start command returned OK but RFB port not yet listening",
       "sessionStopBlocked": "Cannot stop VNC session without root + YSK_EXECUTE",
       "sessionStopped": "Stopped VNC for {{user}} display :{{display}}",
-      "linuxUserKept": "Kept Linux user {{user}} on the system"
+      "linuxUserKept": "Kept Linux user {{user}} on the system",
+      "novncStartBlocked": "Cannot start noVNC without root + YSK_EXECUTE",
+      "novncAlreadyRunning": "noVNC already running on port {{port}}",
+      "novncStartFailed": "Failed to start websockify: {{detail}}",
+      "novncStarted": "noVNC listening on 127.0.0.1:{{httpPort}} → RFB {{rfbPort}}",
+      "novncNotRunning": "noVNC was not running",
+      "novncStopBlocked": "Cannot stop noVNC without root + YSK_EXECUTE",
+      "novncStopped": "Stopped noVNC on port {{httpPort}}",
+      "directNeedsAllBind": "RFB bind is localhost — direct clients cannot reach from outside without tunnel",
+      "directOpenFirewall": "Open TCP {{port}} in the firewall for direct clients",
+      "viaServerReady": "noVNC is up — open the local URL or use an SSH tunnel",
+      "viaServerStartFirst": "Start noVNC to enable browser access via the server",
+      "viewTicketIssued": "Issued a short-lived view ticket",
+      "invalidPort": "Invalid port number",
+      "firewallNeedExecute": "Opening UFW ports requires YSK_EXECUTE",
+      "firewallNeedRoot": "Opening UFW ports requires root",
+      "firewallFailed": "ufw allow failed: {{detail}}",
+      "firewallOpened": "UFW allowed TCP {{port}}"
     }
   },
   "ops": {
@@ -11030,6 +11048,22 @@
     "deleteAccountC2": "Panel metadata under dataDir/vnc",
     "deleteAccountC3User": "Linux user home will be removed (userdel -r)",
     "deleteAccountC3Keep": "Linux user will be kept on the system",
-    "removeLinuxUser": "Also remove Linux user and home directory"
+    "removeLinuxUser": "Also remove Linux user and home directory",
+    "connection": "Connect",
+    "connectionTitle": "Connection materials",
+    "connectionDesc": "How clients reach {{name}}",
+    "connectionPathsHint": "Prefer via server (noVNC on localhost). Direct RFB needs bind=all + firewall.",
+    "pathViaServer": "Via server (noVNC)",
+    "pathDirect": "Via your network (direct RFB)",
+    "recommended": "Recommended",
+    "startNovnc": "Start noVNC",
+    "stopNovnc": "Stop noVNC",
+    "copyNovncUrl": "Copy noVNC URL",
+    "copyAddress": "Copy host:port",
+    "openFirewall": "Open UFW port",
+    "directAddress": "Address",
+    "ticketPath": "View ticket API",
+    "directLocalhostWarn": "RFB is localhost-only — change bind to all interfaces for direct internet clients, or use SSH tunnel / noVNC.",
+    "copied": "Copied to clipboard"
   }
 }
