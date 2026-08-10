@@ -2755,6 +2755,11 @@
     "snappyAdminPassword": "SnappyMail 管理員密碼（請立即複製）：{{password}}",
     "publicHtmlStub": "文件根目錄仍是 SnappyMail／RainLoop 外層 stub。HTTP 必須指向 public_html 應用樹 — 請套用此修正後重新安裝網頁電郵。",
     "goLiveFailed": "網頁電郵檔案已安裝，但專案上線／部署健康檢查失敗 — 請展開詳細。",
-    "forceHttpsNeedsSsl": "已開啟 Roundcube 強制 HTTPS：請先為此主機名綁定 SSL，否則公網跳轉可能失敗；未綁證前可取消勾選。"
+    "forceHttpsNeedsSsl": "已開啟 Roundcube 強制 HTTPS：請先為此主機名綁定 SSL，否則公網跳轉可能失敗；未綁證前可取消勾選。",
+    "roundcubePublicHtmlDocRoot": "HTTP 文件根已設為 Roundcube public_html（{{path}}）",
+    "docRootUpdated": "專案文件根已更新為 {{path}}",
+    "docRootUpdateFailed": "無法更新專案文件根：{{detail}}",
+    "sqliteSchemaReady": "已初始化 Roundcube SQLite schema",
+    "sqliteSchemaFailed": "Roundcube SQLite schema 初始化失敗：{{detail}}"
   }
 }

@@ -23,6 +23,8 @@ import {
   isSnappyMailDocRoot,
   isWebmailPublicHtmlStub,
   normalizeWebmailTool,
+  resolveRoundcubePackageRoot,
+  resolveRoundcubeWebRoot,
   ROUNDCUBE_VERSION,
 } from './webmail-project.js';
 import { LocalHostExecutor } from '../host/executor.js';
@@ -70,7 +72,8 @@ describe('webmail-project helpers', () => {
     expect(cfg).toContain('product_name');
     expect(cfg).toContain('ysk_sso');
     expect(cfg).toContain('sqlite:');
-    expect(cfg).toContain("force_https'] = true");
+    expect(cfg).toContain("force_https'] = false");
+    expect(cfg).toContain("use_https'] = true");
     expect(cfg).toContain('abcdefghijklmnopqrstuvwx');
   });
 
@@ -83,6 +86,32 @@ describe('webmail-project helpers', () => {
       writeFileSync(join(dir, 'program', 'include', 'iniset.php'), '<?php\n', 'utf8');
       writeFileSync(join(dir, 'index.php'), '<?php /* ROUNDCUBE */\n', 'utf8');
       expect(isRoundcubeDocRoot(dir)).toBe(true);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects Roundcube package-root stub; accepts public_html web root', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-wm-rc17-'));
+    try {
+      mkdirSync(join(dir, 'program', 'include'), { recursive: true });
+      mkdirSync(join(dir, 'public_html'), { recursive: true });
+      writeFileSync(join(dir, 'program', 'include', 'iniset.php'), '<?php\n', 'utf8');
+      writeFileSync(
+        join(dir, 'index.php'),
+        "<?php\n\nexit('Please, configure your HTTP server to point to the /public_html directory (with fallback to /public_html/index.php.');\n",
+        'utf8',
+      );
+      writeFileSync(
+        join(dir, 'public_html', 'index.php'),
+        "<?php\nrequire_once __DIR__ . '/../program/include/iniset.php';\n",
+        'utf8',
+      );
+      expect(isWebmailPublicHtmlStub(dir)).toBe(true);
+      expect(isRoundcubeDocRoot(dir)).toBe(false);
+      expect(isRoundcubeDocRoot(join(dir, 'public_html'))).toBe(true);
+      expect(resolveRoundcubeWebRoot(dir)).toBe(join(dir, 'public_html'));
+      expect(resolveRoundcubePackageRoot(join(dir, 'public_html'))).toBe(dir);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
@@ -241,7 +270,9 @@ describe('webmail-project helpers', () => {
       expect(rt.written.some((p) => p.includes('config.inc.php'))).toBe(true);
       const cfg = readFileSync(join(dir, 'config', 'config.inc.php'), 'utf8');
       expect(cfg).toContain('ysk_sso');
-      expect(cfg).toContain("force_https'] = true");
+      expect(cfg).toContain("force_https'] = false");
+      expect(cfg).toContain("use_https'] = true");
+      expect(cfg).toContain('proxy_whitelist');
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
