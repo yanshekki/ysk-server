@@ -317,9 +317,15 @@ export function EmailPage() {
     try {
       const host = wmHost.trim() || 'webmail.local';
       const firstDomain = items[0]?.domain?.trim();
+      const mailDomain =
+        firstDomain ||
+        (host.match(/^webmail\d*\.(.+)$/i)?.[1] ?? undefined);
+      const imapHost = mailDomain ? `mail.${mailDomain}` : undefined;
       const r = await emailApi.webmailApply({
         domain: host,
-        mailDomain: firstDomain,
+        mailDomain,
+        imapHost,
+        smtpHost: imapHost,
         projectName: wmProject.trim() || GLOBAL_WEBMAIL_PROJECT,
         tool: wmTool,
         asProject: true,

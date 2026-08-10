@@ -35,6 +35,52 @@ async function ensureWebmailTreeOwnership(
   } as ProjectRow;
   await chownProjectHome(host, row, notes);
 }
+
+/**
+ * Ensure Dovecot virtual passdb is installed so webmail IMAP login works with
+ * panel mailbox passwords (not system PAM). Runs on every webmail create/reinstall.
+ */
+async function ensureMailAuthForWebmailLogin(
+  host: HostExecutor,
+  notes: string[],
+  written: string[],
+): Promise<void> {
+  if (!host.executeEnabled() || !host.isRoot()) {
+    notes.push(tl('notes.email.dovecotPassdbWrittenNeedApply'));
+    return;
+  }
+  try {
+    const { applyDovecotPassdbToSystem } = await import('./dovecot-passdb.js');
+    const { openDatabase } = await import('../db/database.js');
+    const dataDir =
+      process.env.YSK_DATA_DIR?.trim() ||
+      (host.pathExists('/var/lib/ysk-server') ? '/var/lib/ysk-server' : '');
+    if (!dataDir) {
+      notes.push(tl('notes.email.dovecotNoPassdbSnippets'));
+      return;
+    }
+    let db: import('../db/database.js').YskDatabase | undefined;
+    try {
+      db = openDatabase(join(dataDir, 'ysk.json'));
+    } catch {
+      db = undefined;
+    }
+    const ap = await applyDovecotPassdbToSystem({
+      dataDir,
+      host,
+      db,
+      rewritePassdbs: Boolean(db),
+    });
+    written.push(...ap.written);
+    notes.push(...ap.notes.slice(0, 6));
+  } catch (e) {
+    notes.push(
+      tl('notes.email.dovecotApplyFailed', {
+        detail: e instanceof Error ? e.message : String(e),
+      }),
+    );
+  }
+}
 export type WebmailTool = 'roundcube' | 'snappymail';
 
 /** Default Roundcube complete package (security line 1.7.x). Override with YSK_ROUNDCUBE_URL / YSK_ROUNDCUBE_VERSION. */
@@ -177,8 +223,36 @@ export function defaultImapHostForWebmail(webmailOrMailDomain: string): string {
   const d = webmailOrMailDomain.trim().toLowerCase();
   if (!d) return 'localhost';
   if (d.startsWith('mail.')) return d;
-  if (d.startsWith('webmail.')) return `mail.${d.slice('webmail.'.length)}`;
+  // webmail.example.com / webmail2.example.com → mail.example.com
+  const stripped = stripWebmailHostnamePrefix(d);
+  if (stripped) return `mail.${stripped}`;
   return `mail.${d}`;
+}
+
+/** webmail.example.com / webmail2.foo.bar → example.com / foo.bar */
+export function stripWebmailHostnamePrefix(host: string): string | undefined {
+  const d = host.trim().toLowerCase();
+  const m = d.match(/^webmail\d*\.(.+)$/i);
+  return m?.[1] || undefined;
+}
+
+/** Resolve apex mail domain + IMAP/SMTP for a webmail install. */
+export function resolveWebmailMailEndpoints(input: {
+  webmailDomain: string;
+  mailDomain?: string;
+  imapHost?: string;
+  smtpHost?: string;
+}): { mailDomain?: string; imapHost: string; smtpHost: string } {
+  const web = (input.webmailDomain || '').trim().toLowerCase();
+  const mailDomain =
+    (input.mailDomain || '').trim().toLowerCase() ||
+    stripWebmailHostnamePrefix(web) ||
+    undefined;
+  const imapHost =
+    (input.imapHost || '').trim().toLowerCase() ||
+    defaultImapHostForWebmail(mailDomain || web || 'localhost');
+  const smtpHost = (input.smtpHost || '').trim().toLowerCase() || imapHost;
+  return { mailDomain, imapHost, smtpHost };
 }
 
 /**
@@ -222,8 +296,15 @@ export async function installWebmailIntoProject(input: {
   mkdirSync(packageRoot, { recursive: true });
   const download = input.download !== false;
   const tool = normalizeWebmailTool(input.tool);
-  const imapHost = input.imapHost ?? defaultImapHostForWebmail(input.domain);
-  const smtpHost = input.smtpHost ?? imapHost;
+  const endpoints = resolveWebmailMailEndpoints({
+    webmailDomain: input.domain,
+    mailDomain: input.mailDomain,
+    imapHost: input.imapHost,
+    smtpHost: input.smtpHost,
+  });
+  const imapHost = endpoints.imapHost;
+  const smtpHost = endpoints.smtpHost;
+  const mailDomain = endpoints.mailDomain;
 
   if (tool === 'roundcube') {
     return installRoundcube({
@@ -247,7 +328,7 @@ export async function installWebmailIntoProject(input: {
     download,
     imapHost,
     smtpHost,
-    mailDomain: input.mailDomain,
+    mailDomain,
     notes,
     written,
   });
@@ -431,6 +512,21 @@ async function installSnappyMail(input: {
       };
     }
     notes.push(tl('notes.webmail.snappyReuse', { path: docRoot }));
+    // Always refresh domain JSON / shortLogin=false even on reuse (login fix must stick)
+    if (isSnappyMailDocRoot(docRoot) && !isWebmailPublicHtmlStub(docRoot)) {
+      const admin = ensureSnappyMailAdminBootstrap(docRoot, input.imapHost, input.smtpHost, undefined, {
+        mailDomain: input.mailDomain,
+      });
+      written.push(...admin.written);
+      notes.push(...admin.notes.filter((n) => !/Password:|admin password/i.test(n)).slice(0, 4));
+      return {
+        ok: true,
+        notes,
+        written,
+        entryFile: 'index.php',
+        snappyAdminPassword: admin.adminPassword,
+      };
+    }
     return { ok: true, notes, written, entryFile: 'index.php' };
   }
 
@@ -1123,6 +1219,8 @@ export async function createWebmailProject(input: {
 
   // Install may extract as root — fix ownership before goLive / php -S
   await ensureWebmailTreeOwnership(input.host, input.projects.get(row.id), notes);
+  // Panel mailbox passwords need live Dovecot passwd-file (not PAM-only)
+  await ensureMailAuthForWebmailLogin(input.host, notes, written);
 
   // Roundcube 1.6+: persist public_html as project doc_root before goLive
   if (inst.webDocRootRel) {
@@ -1311,15 +1409,23 @@ export async function reinstallWebmailProject(input: {
     }),
   );
 
+  const mailDomain = (input.mailDomain || '').trim().toLowerCase() || undefined;
+  const endpoints = resolveWebmailMailEndpoints({
+    webmailDomain: domain,
+    mailDomain: input.mailDomain,
+    imapHost: input.imapHost,
+    smtpHost: input.smtpHost,
+  });
+
   const inst = await installWebmailIntoProject({
     host: input.host,
     homeDir: row.homeDir,
     docRoot: packageRootAbs,
     tool,
     domain,
-    imapHost: input.imapHost ?? defaultImapHostForWebmail(input.mailDomain || domain),
-    smtpHost: input.smtpHost,
-    mailDomain: input.mailDomain,
+    imapHost: endpoints.imapHost,
+    smtpHost: endpoints.smtpHost,
+    mailDomain: endpoints.mailDomain ?? mailDomain,
     download: wantDownload,
     forceHttps: input.forceHttps === true,
     installSsoPlugin: input.installSsoPlugin !== false,
@@ -1347,6 +1453,7 @@ export async function reinstallWebmailProject(input: {
 
   // Install may extract as root — fix ownership before goLive / php -S
   await ensureWebmailTreeOwnership(input.host, input.projects.get(row.id), notes);
+  await ensureMailAuthForWebmailLogin(input.host, notes, written);
 
   if (inst.webDocRootRel) {
     try {

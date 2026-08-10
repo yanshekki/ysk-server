@@ -25,6 +25,8 @@ import {
   normalizeWebmailTool,
   resolveRoundcubePackageRoot,
   resolveRoundcubeWebRoot,
+  resolveWebmailMailEndpoints,
+  stripWebmailHostnamePrefix,
   ROUNDCUBE_VERSION,
 } from './webmail-project.js';
 import { LocalHostExecutor } from '../host/executor.js';
@@ -281,11 +283,34 @@ describe('webmail-project helpers', () => {
   it('seeds SnappyMail admin once password', () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-sm-'));
     try {
-      const r = ensureSnappyMailAdminBootstrap(dir, 'mail.ex.com', 'mail.ex.com', 'TestPass99aa');
+      const r = ensureSnappyMailAdminBootstrap(dir, 'mail.ex.com', 'mail.ex.com', 'TestPass99aa', {
+        mailDomain: 'ex.com',
+      });
       expect(r.adminPassword).toBe('TestPass99aa');
       expect(existsSync(join(dir, 'ysk-snappy-admin.php'))).toBe(true);
+      const domainJson = join(dir, 'data', '_data_', '_default_', 'domains', 'ex.com.json');
+      expect(existsSync(domainJson)).toBe(true);
+      const body = JSON.parse(readFileSync(domainJson, 'utf8')) as {
+        IMAP: { shortLogin: boolean; port: number; host: string };
+      };
+      expect(body.IMAP.shortLogin).toBe(false);
+      expect(body.IMAP.port).toBe(993);
+      expect(body.IMAP.host).toBe('127.0.0.1');
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+
+  it('resolves mail endpoints from webmail2 host and mailDomain', () => {
+    expect(stripWebmailHostnamePrefix('webmail2.hermes.ysk.hk')).toBe('hermes.ysk.hk');
+    expect(defaultImapHostForWebmail('webmail2.hermes.ysk.hk')).toBe('mail.hermes.ysk.hk');
+    expect(defaultImapHostForWebmail('hermes.ysk.hk')).toBe('mail.hermes.ysk.hk');
+    const ep = resolveWebmailMailEndpoints({
+      webmailDomain: 'webmail.hermes.ysk.hk',
+      mailDomain: 'hermes.ysk.hk',
+    });
+    expect(ep.mailDomain).toBe('hermes.ysk.hk');
+    expect(ep.imapHost).toBe('mail.hermes.ysk.hk');
+    expect(ep.smtpHost).toBe('mail.hermes.ysk.hk');
   });
 });

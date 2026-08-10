@@ -54,16 +54,26 @@ export async function handleEmailWebmailApplyRoutes(
         defaultWebmailHostname,
       } = await import('@ysk/core');
       const tool = normalizeWebmailTool(data.tool);
-      const mailDomain = (data.mailDomain ?? data.domain ?? '').trim();
       const domain =
         (data.domain ?? '').trim() ||
-        defaultWebmailHostname(mailDomain || 'example.com');
+        defaultWebmailHostname((data.mailDomain ?? 'example.com').trim() || 'example.com');
+      // Prefer explicit mailDomain; else strip webmailN. from hostname; else first domain field
+      const mailDomainRaw = (data.mailDomain ?? '').trim().toLowerCase();
+      const mailDomain =
+        mailDomainRaw && !/^webmail\d*\./i.test(mailDomainRaw)
+          ? mailDomainRaw
+          : (domain.match(/^webmail\d*\.(.+)$/i)?.[1] || mailDomainRaw || undefined);
       const name =
         (data.projectName ?? '').trim() ||
         defaultWebmailProjectName(tool, mailDomain || domain);
       const panelBaseUrl =
         data.panelBaseUrl?.trim() ||
         `${req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http'}://${req.headers.host ?? '127.0.0.1'}`;
+      // Prefer mail.<apex> when client omitted imapHost
+      const imapHost =
+        data.imapHost?.trim() ||
+        (mailDomain ? `mail.${mailDomain}` : undefined);
+      const smtpHost = data.smtpHost?.trim() || imapHost;
       const result = data.projectId?.trim()
         ? await reinstallWebmailProject({
             projects: ctx.projects,
@@ -73,8 +83,9 @@ export async function handleEmailWebmailApplyRoutes(
             projectId: data.projectId.trim(),
             tool,
             download: data.download !== false,
-            imapHost: data.imapHost,
-            smtpHost: data.smtpHost,
+            imapHost,
+            smtpHost,
+            mailDomain: mailDomain || undefined,
             forceHttps: data.forceHttps === true,
             installSsoPlugin: data.installSsoPlugin !== false,
             panelBaseUrl,
@@ -90,8 +101,8 @@ export async function handleEmailWebmailApplyRoutes(
             domain,
             tool,
             download: data.download !== false,
-            imapHost: data.imapHost,
-            smtpHost: data.smtpHost,
+            imapHost,
+            smtpHost,
             mailDomain: mailDomain || undefined,
             reinstall: data.reinstall === true,
             forceHttps: data.forceHttps === true,
