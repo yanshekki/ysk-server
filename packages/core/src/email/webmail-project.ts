@@ -137,15 +137,20 @@ export function resolveRoundcubePackageRoot(webOrPackageRoot: string): string {
 /** Prefer public_html web root when package root still has the stub index. */
 export function resolveRoundcubeWebRoot(packageRoot: string): string {
   const ph = join(packageRoot, 'public_html');
-  const phIdx = join(ph, 'index.php');
-  if (existsSync(phIdx) && !isWebmailPublicHtmlStub(ph)) {
-    // Prefer public_html whenever present and real (Roundcube ≥1.6 layout)
-    if (
-      isWebmailPublicHtmlStub(packageRoot) ||
-      existsSync(join(packageRoot, 'program', 'include', 'iniset.php'))
-    ) {
-      return ph;
-    }
+  // Only use public_html when it is a real Roundcube tree — never php-hello
+  if (isRoundcubeDocRoot(ph)) {
+    return ph;
+  }
+  if (isRoundcubeDocRoot(packageRoot)) {
+    return packageRoot;
+  }
+  // Prefer public_html when package root is the RC stub that points at it
+  if (
+    isWebmailPublicHtmlStub(packageRoot) &&
+    existsSync(join(ph, 'index.php')) &&
+    !/YSK PHP OK/i.test(readFileSync(join(ph, 'index.php'), 'utf8'))
+  ) {
+    return ph;
   }
   return packageRoot;
 }
@@ -154,17 +159,28 @@ export function resolveRoundcubeWebRoot(packageRoot: string): string {
 export function isRoundcubeDocRoot(docRoot: string): boolean {
   try {
     if (!existsSync(join(docRoot, 'index.php'))) return false;
-    // Package-root stub is NOT a valid document root
+    const idx = readFileSync(join(docRoot, 'index.php'), 'utf8');
+    // Hard reject scaffolds / stubs before any parent-program heuristic
+    if (/YSK PHP OK/i.test(idx)) return false;
     if (isWebmailPublicHtmlStub(docRoot)) return false;
+    if (/point to the\s*[\/"']?public_html/i.test(idx)) return false;
     // Classic layout: program next to index.php
     if (existsSync(join(docRoot, 'program', 'include', 'iniset.php'))) return true;
     if (existsSync(join(docRoot, 'program', 'lib'))) return true;
-    // 1.6+ public_html layout: program lives one level up
-    if (existsSync(join(docRoot, '..', 'program', 'include', 'iniset.php'))) return true;
-    if (existsSync(join(docRoot, '..', 'program', 'lib'))) return true;
-    const idx = readFileSync(join(docRoot, 'index.php'), 'utf8');
-    if (/YSK PHP OK/i.test(idx)) return false;
-    if (/point to the\s*[\/"']?public_html/i.test(idx)) return false;
+    // 1.6+ public_html layout: program lives one level up — index must still be Roundcube
+    if (
+      existsSync(join(docRoot, '..', 'program', 'include', 'iniset.php')) ||
+      existsSync(join(docRoot, '..', 'program', 'lib'))
+    ) {
+      // Real public_html index references INSTALL_PATH / Roundcube bootstrap
+      if (
+        /INSTALL_PATH|ROUNDCUBE|roundcube|iniset\.php|rcmail/i.test(idx) &&
+        !/YSK PHP OK/i.test(idx)
+      ) {
+        return true;
+      }
+      return false;
+    }
     if (/ROUNDCUBE|roundcube/i.test(idx)) return true;
   } catch {
     /* */
@@ -498,9 +514,51 @@ async function installSnappyMail(input: {
   written: string[];
   entryFile: string;
   snappyAdminPassword?: string;
+  webDocRoot?: string;
+  webDocRootRel?: string;
 }> {
-  const { docRoot, notes, written } = input;
+  const { docRoot, notes, written, homeDir } = input;
   const marker = join(docRoot, 'index.php');
+
+  const finishSnappy = (adminPassword?: string) => {
+    // Never serve a nested public_html leftover (php-hello / Roundcube) for SnappyMail
+    try {
+      const ph = join(docRoot, 'public_html');
+      if (existsSync(ph)) {
+        const phIdx = join(ph, 'index.php');
+        const body = existsSync(phIdx) ? readFileSync(phIdx, 'utf8') : '';
+        const looksLikeHello = /YSK PHP OK/i.test(body);
+        const looksLikeRc =
+          existsSync(join(ph, '..', 'program')) ||
+          existsSync(join(docRoot, 'program'));
+        // Snappy app root is docRoot; nested public_html is only OK if it IS the snappy app
+        if (looksLikeHello || (!isSnappyMailDocRoot(ph) && looksLikeRc === false)) {
+          if (looksLikeHello || !isSnappyMailDocRoot(ph)) {
+            rmSync(ph, { recursive: true, force: true });
+            notes.push(tl('notes.webmail.removedBogusPublicHtml'));
+          }
+        }
+      }
+    } catch {
+      /* best-effort */
+    }
+    const rel = docRoot.startsWith(homeDir + '/')
+      ? docRoot.slice(homeDir.length + 1)
+      : docRoot.startsWith(homeDir)
+        ? docRoot.slice(homeDir.length).replace(/^\//, '')
+        : 'app/public';
+    notes.push(tl('notes.webmail.snappyDocRoot', { path: rel.replace(/\\/g, '/') }));
+    return {
+      ok: true as const,
+      notes,
+      written,
+      entryFile: 'index.php',
+      snappyAdminPassword: adminPassword,
+      // SnappyMail MUST be served from package root (app/public), never public_html
+      webDocRoot: docRoot,
+      webDocRootRel: rel.replace(/\\/g, '/'),
+    };
+  };
 
   if (!input.download) {
     if (!existsSync(marker)) {
@@ -519,15 +577,9 @@ async function installSnappyMail(input: {
       });
       written.push(...admin.written);
       notes.push(...admin.notes.filter((n) => !/Password:|admin password/i.test(n)).slice(0, 4));
-      return {
-        ok: true,
-        notes,
-        written,
-        entryFile: 'index.php',
-        snappyAdminPassword: admin.adminPassword,
-      };
+      return finishSnappy(admin.adminPassword);
     }
-    return { ok: true, notes, written, entryFile: 'index.php' };
+    return finishSnappy();
   }
 
   if (!input.host.executeEnabled()) {
@@ -615,13 +667,7 @@ async function installSnappyMail(input: {
     ...admin.notes,
     tl('notes.webmail.imapSmtpHint', { imap: input.imapHost, smtp: input.smtpHost }),
   );
-  return {
-    ok: true,
-    notes,
-    written,
-    entryFile: 'index.php',
-    snappyAdminPassword: admin.adminPassword,
-  };
+  return finishSnappy(admin.adminPassword);
 }
 
 /**
@@ -1169,15 +1215,15 @@ export async function createWebmailProject(input: {
   // Do not surface php-hello scaffold noise when we immediately replace with Roundcube/Snappy
 
   const row = input.projects.get(created.project.id);
-  const docRoot = join(row.homeDir, (row.docRoot || 'app/public').replace(/^\//, ''));
+  // Always install into package root — never inherit a wrong public_html doc_root from scaffold
+  const packageRoot = join(row.homeDir, 'app', 'public');
 
   try {
     // Wipe hello template so we never leave only YSK PHP OK after a failed mid-install
-    if (existsSync(docRoot)) {
-      for (const ent of ['index.php', 'index.html']) {
-        const p = join(docRoot, ent);
-        if (existsSync(p)) rmSync(p, { force: true });
-      }
+    mkdirSync(packageRoot, { recursive: true });
+    for (const ent of ['index.php', 'index.html', 'public_html']) {
+      const p = join(packageRoot, ent);
+      if (existsSync(p)) rmSync(p, { recursive: true, force: true });
     }
   } catch {
     /* best-effort */
@@ -1186,7 +1232,7 @@ export async function createWebmailProject(input: {
   const inst = await installWebmailIntoProject({
     host: input.host,
     homeDir: row.homeDir,
-    docRoot,
+    docRoot: packageRoot,
     tool,
     domain,
     imapHost: input.imapHost,
@@ -1223,14 +1269,19 @@ export async function createWebmailProject(input: {
   await ensureMailAuthForWebmailLogin(input.host, notes, written);
 
   // Roundcube 1.6+: persist public_html as project doc_root before goLive
-  if (inst.webDocRootRel) {
+  // SnappyMail: always persist app/public (never leftover public_html/php-hello)
+  const docRootRel =
+    inst.webDocRootRel ||
+    (tool === 'snappymail' ? 'app/public' : undefined) ||
+    (tool === 'roundcube' ? undefined : 'app/public');
+  if (docRootRel) {
     try {
       input.projects.updateNetwork(
         row.id,
-        { docRoot: inst.webDocRootRel, forceHttps: input.forceHttps === true },
+        { docRoot: docRootRel, forceHttps: input.forceHttps === true },
         input.actor,
       );
-      notes.push(tl('notes.webmail.docRootUpdated', { path: inst.webDocRootRel }));
+      notes.push(tl('notes.webmail.docRootUpdated', { path: docRootRel }));
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       notes.push(tl('notes.webmail.docRootUpdateFailed', { detail: msg }));
@@ -1249,6 +1300,26 @@ export async function createWebmailProject(input: {
       row.homeDir,
       (input.projects.get(row.id).docRoot || 'app/public').replace(/^\//, ''),
     );
+
+  // Never goLive on php-hello leftover
+  try {
+    const idx = join(liveDocRoot, 'index.php');
+    if (existsSync(idx) && /YSK PHP OK/i.test(readFileSync(idx, 'utf8'))) {
+      notes.push(tl('notes.webmail.phpHelloStillPresent'));
+      return {
+        ok: false,
+        project: row,
+        projectId: row.id,
+        tool,
+        notes,
+        written,
+        urlHint: `http://${domain}/`,
+        apply_status: 'failed',
+      };
+    }
+  } catch {
+    /* continue */
+  }
 
   // Verify real app tree before deploy (never goLive on package-root stub)
   if (isWebmailPublicHtmlStub(liveDocRoot)) {
@@ -1384,7 +1455,11 @@ export async function reinstallWebmailProject(input: {
   const domain = (row.domain ?? '').trim().toLowerCase() || 'webmail.local';
   // Always install into package root (app/public), not public_html web root
   const configuredAbs = join(row.homeDir, (row.docRoot || 'app/public').replace(/^\//, ''));
-  const packageRootAbs = resolveRoundcubePackageRoot(configuredAbs);
+  // SnappyMail: never use nested public_html as package root
+  const packageRootAbs =
+    tool === 'snappymail'
+      ? join(row.homeDir, 'app', 'public')
+      : resolveRoundcubePackageRoot(configuredAbs);
   const wantDownload = input.download !== false;
   if (wantDownload && !input.host.executeEnabled()) {
     const msg = tl('notes.webmail.needExecute');
@@ -1455,14 +1530,18 @@ export async function reinstallWebmailProject(input: {
   await ensureWebmailTreeOwnership(input.host, input.projects.get(row.id), notes);
   await ensureMailAuthForWebmailLogin(input.host, notes, written);
 
-  if (inst.webDocRootRel) {
+  const docRootRel =
+    inst.webDocRootRel ||
+    (tool === 'snappymail' ? 'app/public' : undefined) ||
+    'app/public';
+  if (docRootRel) {
     try {
       input.projects.updateNetwork(
         row.id,
-        { docRoot: inst.webDocRootRel, forceHttps: input.forceHttps === true },
+        { docRoot: docRootRel, forceHttps: input.forceHttps === true },
         input.actor,
       );
-      notes.push(tl('notes.webmail.docRootUpdated', { path: inst.webDocRootRel }));
+      notes.push(tl('notes.webmail.docRootUpdated', { path: docRootRel }));
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       notes.push(tl('notes.webmail.docRootUpdateFailed', { detail: msg }));
@@ -1481,6 +1560,25 @@ export async function reinstallWebmailProject(input: {
       row.homeDir,
       (input.projects.get(row.id).docRoot || 'app/public').replace(/^\//, ''),
     );
+
+  try {
+    const idx = join(liveDocRoot, 'index.php');
+    if (existsSync(idx) && /YSK PHP OK/i.test(readFileSync(idx, 'utf8'))) {
+      notes.push(tl('notes.webmail.phpHelloStillPresent'));
+      return {
+        ok: false,
+        project: row,
+        projectId: row.id,
+        tool,
+        notes,
+        written,
+        urlHint: `https://${domain}/`,
+        apply_status: 'failed',
+      };
+    }
+  } catch {
+    /* continue */
+  }
 
   if (tool === 'roundcube' && !isRoundcubeDocRoot(liveDocRoot)) {
     notes.push(tl('notes.webmail.notRoundcubeTree'));

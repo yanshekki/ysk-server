@@ -7434,7 +7434,10 @@
       "docRootUpdateFailed": "無法更新專案文件根：{{detail}}",
       "sqliteSchemaReady": "已初始化 Roundcube SQLite schema",
       "sqliteSchemaFailed": "Roundcube SQLite schema 初始化失敗：{{detail}}",
-      "snappyFullEmailLogin": "郵箱登入須用完整電郵（user@domain），唔好只用 local-part"
+      "snappyFullEmailLogin": "郵箱登入須用完整電郵（user@domain），唔好只用 local-part",
+      "removedBogusPublicHtml": "已刪殘留 public_html（php-hello），避免 webmail 指錯樹",
+      "snappyDocRoot": "SnappyMail HTTP 文件根：{{path}}",
+      "phpHelloStillPresent": "安裝後網站根仍係 php-hello（YSK PHP OK）— webmail 未成功取代"
     },
     "vpn": {
       "needInstall": "請安裝 {{engine}}",

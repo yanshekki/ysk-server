@@ -119,6 +119,20 @@ describe('webmail-project helpers', () => {
     }
   });
 
+  it('never treats public_html php-hello as Roundcube even if parent has program/', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-wm-hello-ph-'));
+    try {
+      mkdirSync(join(dir, 'program', 'include'), { recursive: true });
+      mkdirSync(join(dir, 'public_html'), { recursive: true });
+      writeFileSync(join(dir, 'program', 'include', 'iniset.php'), '<?php\n', 'utf8');
+      writeFileSync(join(dir, 'public_html', 'index.php'), '<?php echo "YSK PHP OK\\n";\n', 'utf8');
+      expect(isRoundcubeDocRoot(join(dir, 'public_html'))).toBe(false);
+      expect(resolveRoundcubeWebRoot(dir)).toBe(dir);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it('rejects SnappyMail public_html package stub as doc root', () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-wm-stub-'));
     try {
