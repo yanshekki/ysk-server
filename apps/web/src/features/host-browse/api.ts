@@ -25,6 +25,8 @@ export type HostBrowsePanelSettings = {
   safetyLevel: HostBrowseSafetyLevel;
   blockHosts: string[];
   allowDangerousDownloads: boolean;
+  /** Stream HTML media audio over live WS (PCM). Requires re-launch Chrome. */
+  audioBridge: boolean;
 };
 
 export type HostBrowseCapabilities = {
@@ -43,9 +45,11 @@ export type HostBrowseCapabilities = {
   };
   media?: {
     video: 'screencast_jpeg' | 'proxy_iframe';
-    audio: 'not_bridged';
-    chromeAudioMuted: true;
-    policy: 'visual_only';
+    audio: 'not_bridged' | 'pcm_ws';
+    chromeAudioMuted: boolean;
+    policy: 'visual_only' | 'visual_plus_pcm_audio';
+    audioBridge: boolean;
+    audioLimits?: string;
   };
 };
 

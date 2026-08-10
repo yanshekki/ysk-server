@@ -60,6 +60,8 @@ export async function launchChromeAsUser(input: {
   chromePath?: string;
   noSandbox?: boolean;
   userAgent?: string;
+  /** Default true (silent). Set false when panel audio bridge is enabled. */
+  muteAudio?: boolean;
 }): Promise<
   | { ok: true; handle: ChromeAsUserHandle; notes: string[] }
   | { ok: false; notes: string[] }
@@ -111,9 +113,12 @@ export async function launchChromeAsUser(input: {
     '--disable-extensions',
     '--disable-sync',
     '--metrics-recording-only',
-    '--mute-audio',
+    '--autoplay-policy=no-user-gesture-required',
     '--window-size=1280,800',
   ];
+  if (input.muteAudio !== false) {
+    args.push('--mute-audio');
+  }
   if (input.noSandbox) {
     args.push('--no-sandbox', '--disable-setuid-sandbox');
   }

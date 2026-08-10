@@ -438,3 +438,19 @@ button.linkish {
   color: inherit;
   font-weight: 600;
 }
+
+.hb-audio-unlock {
+  position: absolute;
+  z-index: 3;
+  top: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--radius-md, 8px);
+  background: rgba(0, 0, 0, 0.72);
+  color: #fff;
+  max-width: 90%;
+}

@@ -123,6 +123,33 @@ async function acceptLiveClient(
     });
   }
 
+  // Optional PCM audio bridge (panel setting audioBridge)
+  try {
+    const audioSt = await ctx.hostBrowse.browser.startAudioBridge(
+      rec.sessionId,
+      (chunk) => {
+        if (ws.readyState !== ws.OPEN) return;
+        sendJson(ws, {
+          t: 'audio',
+          mime: 'audio/pcm',
+          encoding: 's16le',
+          channels: chunk.channels,
+          sampleRate: chunk.sampleRate,
+          data: chunk.pcmB64,
+          ts: Date.now(),
+        });
+      },
+    );
+    sendJson(ws, { t: 'audio_status', ...audioSt });
+  } catch {
+    sendJson(ws, {
+      t: 'audio_status',
+      enabled: false,
+      active: false,
+      reason: 'audio bridge start failed',
+    });
+  }
+
   if (session.currentUrl) {
     sendJson(ws, {
       t: 'meta',
@@ -224,6 +251,7 @@ async function acceptLiveClient(
 
   const cleanup = () => {
     void ctx.hostBrowse.browser.stopScreencast(rec.sessionId);
+    void ctx.hostBrowse.browser.stopAudioBridge(rec.sessionId);
   };
   ws.on('close', cleanup);
   ws.on('error', cleanup);

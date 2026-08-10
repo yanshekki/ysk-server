@@ -14,3 +14,4 @@ export * from './ephemeral-user.js';
 export * from './danger.js';
 export * from './chrome-as-user.js';
 export * from './downloads.js';
+export * from './audio-bridge.js';

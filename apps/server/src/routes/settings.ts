@@ -108,6 +108,7 @@ export async function handleSettingsRoutes(
             safetyLevel?: string;
             blockHosts?: string[];
             allowDangerousDownloads?: boolean;
+            audioBridge?: boolean;
           }>('hostBrowse') ?? {};
         const caps = ctx.hostBrowse.capabilities();
         const safetyLevel =
@@ -126,6 +127,7 @@ export async function handleSettingsRoutes(
             safetyLevel,
             blockHosts: Array.isArray(panel.blockHosts) ? panel.blockHosts : [],
             allowDangerousDownloads: Boolean(panel.allowDangerousDownloads),
+            audioBridge: Boolean(panel.audioBridge),
           },
           capabilities: caps,
           envHints: {
@@ -133,6 +135,7 @@ export async function handleSettingsRoutes(
             YSK_HOST_BROWSE_CHROME: process.env.YSK_HOST_BROWSE_CHROME ?? null,
             YSK_HOST_BROWSE_LOOPBACK: process.env.YSK_HOST_BROWSE_LOOPBACK ?? null,
             YSK_HOST_BROWSE_NO_SANDBOX: process.env.YSK_HOST_BROWSE_NO_SANDBOX ?? null,
+            YSK_HOST_BROWSE_AUDIO: process.env.YSK_HOST_BROWSE_AUDIO ?? null,
           },
         });
         return true;
@@ -150,6 +153,7 @@ export async function handleSettingsRoutes(
           safetyLevel?: string;
           blockHosts?: string[] | string;
           allowDangerousDownloads?: boolean;
+          audioBridge?: boolean;
         };
         const engine =
           data.engine === 'proxy' || data.engine === 'browser' || data.engine === 'auto'
@@ -182,6 +186,7 @@ export async function handleSettingsRoutes(
           safetyLevel,
           blockHosts,
           allowDangerousDownloads: Boolean(data.allowDangerousDownloads),
+          audioBridge: Boolean(data.audioBridge),
         };
         ctx.settings.setJson('hostBrowse', next);
         await ctx.hostBrowse.applyConfigChanged();
@@ -196,6 +201,7 @@ export async function handleSettingsRoutes(
             safetyLevel: next.safetyLevel,
             blockHosts: next.blockHosts.length,
             allowDangerousDownloads: next.allowDangerousDownloads,
+            audioBridge: next.audioBridge,
           },
           ok: true,
         });

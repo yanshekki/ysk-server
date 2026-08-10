@@ -38,6 +38,7 @@ import {
   type HostBrowseSession,
 } from '../../features/host-browse/api';
 import { clientToPage } from '../../features/host-browse/live-geometry';
+import { PcmPlayer } from '../../features/host-browse/pcm-player';
 import { notifyInfo, notifyOk } from '../../shared/lib/notify';
 
 type StreamPreset = 'smooth' | 'balanced' | 'sharp';
@@ -87,10 +88,17 @@ export function HostBrowsePage() {
     safetyLevel: 'standard',
     blockHosts: [],
     allowDangerousDownloads: false,
+    audioBridge: false,
   });
   const [blockHostsText, setBlockHostsText] = useState('');
   const [settingsBusy, setSettingsBusy] = useState(false);
   const [envHints, setEnvHints] = useState<Record<string, string | null>>({});
+  const [audioStatus, setAudioStatus] = useState<{
+    enabled: boolean;
+    active: boolean;
+    reason?: string;
+  } | null>(null);
+  const [audioUnlocked, setAudioUnlocked] = useState(false);
 
   const abortRef = useRef(false);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
@@ -99,6 +107,7 @@ export function HostBrowsePage() {
   const wsRef = useRef<WebSocket | null>(null);
   const lastFrameAt = useRef(0);
   const noFrameTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pcmPlayerRef = useRef<PcmPlayer | null>(null);
 
   const loadCapsAndSettings = useCallback(async () => {
     try {
@@ -119,6 +128,7 @@ export function HostBrowsePage() {
         safetyLevel: safety,
         blockHosts: hosts,
         allowDangerousDownloads: Boolean(s.settings.allowDangerousDownloads),
+        audioBridge: Boolean(s.settings.audioBridge),
       });
       setBlockHostsText(hosts.join('\n'));
       setEnvHints(s.envHints ?? {});
@@ -223,6 +233,7 @@ export function HostBrowsePage() {
         safetyLevel: safety,
         blockHosts: nextHosts,
         allowDangerousDownloads: Boolean(r.settings.allowDangerousDownloads),
+        audioBridge: Boolean(r.settings.audioBridge),
       });
       setBlockHostsText(nextHosts.join('\n'));
       if (r.capabilities.defaultEngine) setEngine(r.capabilities.defaultEngine);
@@ -251,6 +262,10 @@ export function HostBrowsePage() {
     wsRef.current = null;
     setLiveImg(null);
     setLivePhase('idle');
+    setAudioStatus(null);
+    pcmPlayerRef.current?.dispose();
+    pcmPlayerRef.current = null;
+    setAudioUnlocked(false);
   }, [clearNoFrameTimer]);
 
   const sendWs = useCallback((obj: Record<string, unknown>) => {
@@ -279,6 +294,9 @@ export function HostBrowsePage() {
         const ws = new WebSocket(hostBrowseLiveWsUrl(ticket.wsPath));
         wsRef.current = ws;
         lastFrameAt.current = 0;
+        pcmPlayerRef.current?.dispose();
+        pcmPlayerRef.current = new PcmPlayer();
+        setAudioUnlocked(false);
         clearNoFrameTimer();
         noFrameTimer.current = setTimeout(() => {
           if (Date.now() - lastFrameAt.current > 8000) {
@@ -307,6 +325,10 @@ export function HostBrowsePage() {
               message?: string;
               code?: string;
               stream?: { quality?: number; preset?: string };
+              sampleRate?: number;
+              enabled?: boolean;
+              active?: boolean;
+              reason?: string;
             };
             if (msg.t === 'frame' && msg.data) {
               lastFrameAt.current = Date.now();
@@ -314,6 +336,17 @@ export function HostBrowsePage() {
               if (msg.w && msg.h) setLiveSize({ w: msg.w, h: msg.h });
               setLivePhase('live');
               setErrorCode(null);
+            } else if (msg.t === 'audio' && msg.data) {
+              pcmPlayerRef.current?.pushBase64S16le(
+                msg.data,
+                Number(msg.sampleRate) || 48000,
+              );
+            } else if (msg.t === 'audio_status') {
+              setAudioStatus({
+                enabled: Boolean(msg.enabled),
+                active: Boolean(msg.active),
+                reason: msg.reason,
+              });
             } else if (msg.t === 'meta' && msg.url) {
               setUrlDraft(msg.url);
             } else if (msg.t === 'stream_ok' && msg.stream) {
@@ -1332,6 +1365,28 @@ export function HostBrowsePage() {
                     onKeyDown={onLiveKey}
                     onKeyUp={onLiveKey}
                   >
+                    {audioStatus?.enabled && !audioUnlocked ? (
+                      <div className="hb-audio-unlock">
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            void (async () => {
+                              if (!pcmPlayerRef.current) {
+                                pcmPlayerRef.current = new PcmPlayer();
+                              }
+                              const ok = await pcmPlayerRef.current.unlock();
+                              setAudioUnlocked(ok);
+                              if (ok) notifyOk(t('hostBrowse.audioUnlocked'));
+                            })();
+                          }}
+                        >
+                          {t('hostBrowse.audioUnlock')}
+                        </Button>
+                        <span className="muted u-text-xs">
+                          {t('hostBrowse.audioUnlockHint')}
+                        </span>
+                      </div>
+                    ) : null}
                     {liveImg ? (
                       // eslint-disable-next-line jsx-a11y/alt-text
                       <img
@@ -1344,7 +1399,14 @@ export function HostBrowsePage() {
                             ? { maxWidth: `${zoomPercent}%`, maxHeight: `${zoomPercent}%` }
                             : undefined
                         }
-                        onClick={(e) => onLivePointer('click', e)}
+                        onClick={(e) => {
+                          if (audioStatus?.enabled && !audioUnlocked) {
+                            void pcmPlayerRef.current?.unlock().then((ok) => {
+                              setAudioUnlocked(ok);
+                            });
+                          }
+                          onLivePointer('click', e);
+                        }}
                         onMouseMove={(e) => {
                           if (e.buttons === 1) onLivePointer('move', e);
                         }}
@@ -1383,9 +1445,19 @@ export function HostBrowsePage() {
                 {isBrowser ? <Badge tone="ok">chromium</Badge> : null}
                 {livePhase === 'live' ? <Badge tone="ok">live</Badge> : null}
                 {isBrowser ? (
-                  <span title={t('hostBrowse.audioNotBridgedHint')}>
-                    <Badge tone="warn">{t('hostBrowse.audioNotBridged')}</Badge>
-                  </span>
+                  audioStatus?.enabled ? (
+                    <span title={audioStatus.reason || t('hostBrowse.audioBridgedHint')}>
+                      <Badge tone={audioUnlocked ? 'ok' : 'warn'}>
+                        {audioUnlocked
+                          ? t('hostBrowse.audioPlaying')
+                          : t('hostBrowse.audioNeedsUnlock')}
+                      </Badge>
+                    </span>
+                  ) : (
+                    <span title={t('hostBrowse.audioNotBridgedHint')}>
+                      <Badge tone="warn">{t('hostBrowse.audioNotBridged')}</Badge>
+                    </span>
+                  )
                 ) : null}
                 {errorCode ? <Badge tone="danger">{errorCode}</Badge> : null}
               </div>
@@ -1510,6 +1582,15 @@ export function HostBrowsePage() {
                   }))
                 }
               />
+              <CheckboxField
+                id="hb-audio-bridge"
+                label={t('hostBrowse.settingsAudioBridge')}
+                checked={settingsDraft.audioBridge}
+                onChange={(c) =>
+                  setSettingsDraft((d) => ({ ...d, audioBridge: c }))
+                }
+              />
+              <p className="muted u-text-xs">{t('hostBrowse.settingsAudioBridgeHint')}</p>
               <FormActions>
                 <Button
                   size="md"

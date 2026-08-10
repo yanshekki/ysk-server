@@ -55,6 +55,11 @@ export interface HostBrowsePolicy {
   blockHosts?: string[];
   /** Allow potentially dangerous download extensions. */
   allowDangerousDownloads?: boolean;
+  /**
+   * Stream page media audio (PCM over live WS). When true, Chromium is not launched muted.
+   * Capture uses HTMLMediaElement.captureStream (same-document media).
+   */
+  audioBridge?: boolean;
 }
 
 /** Panel-persisted settings (DB) — override process env. */
@@ -67,6 +72,7 @@ export type HostBrowsePanelConfig = {
   /** Comma or newline separated hostnames */
   blockHosts?: string[];
   allowDangerousDownloads?: boolean;
+  audioBridge?: boolean;
 };
 
 export function mergeHostBrowsePolicy(
@@ -108,6 +114,11 @@ export function mergeHostBrowsePolicy(
       : base.blockHosts,
     allowDangerousDownloads:
       panel?.allowDangerousDownloads ?? base.allowDangerousDownloads ?? false,
+    audioBridge:
+      panel?.audioBridge ??
+      (env.YSK_HOST_BROWSE_AUDIO === '1' || env.YSK_HOST_BROWSE_AUDIO === 'true'
+        ? true
+        : base.audioBridge ?? false),
   };
 }
 
@@ -191,8 +202,10 @@ export interface HostBrowseCapabilities {
    */
   media?: {
     video: 'screencast_jpeg' | 'proxy_iframe';
-    audio: 'not_bridged';
-    chromeAudioMuted: true;
-    policy: 'visual_only';
+    audio: 'not_bridged' | 'pcm_ws';
+    chromeAudioMuted: boolean;
+    policy: 'visual_only' | 'visual_plus_pcm_audio';
+    audioBridge: boolean;
+    audioLimits?: string;
   };
 }

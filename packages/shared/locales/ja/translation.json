@@ -3994,7 +3994,15 @@
     "mediaPolicyLabel": "Policy",
     "mediaPolicyDesc": "visual_only — intentional for privacy and bandwidth until an audio bridge ships.",
     "audioNotBridged": "Audio: not bridged",
-    "audioNotBridgedHint": "Site audio is muted on the host and is not streamed to this page."
+    "audioNotBridgedHint": "Site audio is muted on the host and is not streamed to this page.",
+    "settingsAudioBridge": "Audio bridge (PCM over live stream)",
+    "settingsAudioBridgeHint": "Captures HTML video/audio elements via captureStream. Save settings restarts Chrome. DRM / pure WebAudio may stay silent. Browser requires a click to unlock playback.",
+    "audioBridgedHint": "PCM audio bridge is active for HTML media on the page.",
+    "audioNeedsUnlock": "Audio: click to unlock",
+    "audioPlaying": "Audio: bridged",
+    "audioUnlock": "Enable page audio",
+    "audioUnlockHint": "Required by the browser autoplay policy.",
+    "audioUnlocked": "Audio unlocked"
   },
   "listToolbar": {
     "searchPlaceholder": "検索…",

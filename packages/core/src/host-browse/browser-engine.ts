@@ -32,6 +32,11 @@ import {
   type BrowseDownload,
   type BrowseDownloadPublic,
 } from './downloads.js';
+import {
+  AUDIO_BRIDGE_BOOTSTRAP,
+  type AudioBridgeStatus,
+  type AudioPcmChunk,
+} from './audio-bridge.js';
 
 type PlaywrightModule = typeof import('playwright-core');
 type Browser = import('playwright-core').Browser;
@@ -60,6 +65,8 @@ export type BrowserSessionHandle = {
   /** dataDir root for saving downloads (optional) */
   dataDir?: string;
   downloads: BrowseDownload[];
+  audioBridgeOn: boolean;
+  audioPollTimer?: ReturnType<typeof setInterval>;
   onFrame?: (frame: {
     mime: string;
     data: Buffer;
@@ -68,6 +75,7 @@ export type BrowserSessionHandle = {
   }) => void;
   onMeta?: (meta: { url: string; title: string }) => void;
   onDownload?: (d: BrowseDownloadPublic) => void;
+  onAudio?: (chunk: AudioPcmChunk) => void;
 };
 
 export type BrowserNavResult = {
@@ -149,6 +157,7 @@ export class BrowserEngine {
         pol.noSandbox === true ||
         process.env.YSK_HOST_BROWSE_NO_SANDBOX === '1' ||
         process.env.YSK_HOST_BROWSE_NO_SANDBOX === 'true';
+      const muteAudio = pol.audioBridge !== true;
       const browser = await pw.chromium.launch({
         executablePath: path,
         headless: true,
@@ -161,7 +170,8 @@ export class BrowserEngine {
           '--disable-extensions',
           '--disable-sync',
           '--metrics-recording-only',
-          '--mute-audio',
+          '--autoplay-policy=no-user-gesture-required',
+          ...(muteAudio ? ['--mute-audio'] : []),
           ...(noSandbox ? ['--no-sandbox', '--disable-setuid-sandbox'] : []),
         ],
       });
@@ -212,6 +222,7 @@ export class BrowserEngine {
         chromePath: pol.chromePath,
         noSandbox: pol.noSandbox,
         userAgent: pol.userAgent ?? HOST_BROWSE_DEFAULT_UA,
+        muteAudio: pol.audioBridge !== true,
       });
       if (launched.ok) {
         const pw = await loadPlaywright();
@@ -277,6 +288,7 @@ export class BrowserEngine {
       stream: resolveStreamOptions({ preset: 'balanced' }),
       dataDir: input.dataDir,
       downloads: [],
+      audioBridgeOn: false,
     });
 
     this.wirePage(input.sessionId, page);
@@ -294,10 +306,85 @@ export class BrowserEngine {
       }).catch(() => {
         /* mid-flight */
       });
+      const handle = this.handles.get(sessionId);
+      if (handle?.audioBridgeOn) {
+        void this.injectAudioBootstrap(page);
+      }
     });
     page.on('download', (download) => {
       void this.handleDownload(sessionId, download);
     });
+  }
+
+  private async injectAudioBootstrap(page: Page): Promise<void> {
+    try {
+      await page.evaluate(AUDIO_BRIDGE_BOOTSTRAP);
+    } catch {
+      /* cross-origin or detached */
+    }
+  }
+
+  /**
+   * Poll page for PCM chunks from HTML media captureStream.
+   * Requires audioBridge policy (Chrome not muted).
+   */
+  async startAudioBridge(
+    sessionId: string,
+    onAudio: (chunk: AudioPcmChunk) => void,
+  ): Promise<AudioBridgeStatus> {
+    const h = this.require(sessionId);
+    if (this.policy().audioBridge !== true) {
+      return {
+        enabled: false,
+        active: false,
+        reason: 'audioBridge disabled in panel settings',
+      };
+    }
+    h.onAudio = onAudio;
+    if (h.audioPollTimer) {
+      clearInterval(h.audioPollTimer);
+      h.audioPollTimer = undefined;
+    }
+    await this.injectAudioBootstrap(h.page);
+    h.audioBridgeOn = true;
+    h.audioPollTimer = setInterval(() => {
+      void this.pollAudioQueue(sessionId);
+    }, 80);
+    return { enabled: true, active: true };
+  }
+
+  async stopAudioBridge(sessionId: string): Promise<void> {
+    const h = this.handles.get(sessionId);
+    if (!h) return;
+    h.audioBridgeOn = false;
+    h.onAudio = undefined;
+    if (h.audioPollTimer) {
+      clearInterval(h.audioPollTimer);
+      h.audioPollTimer = undefined;
+    }
+  }
+
+  private async pollAudioQueue(sessionId: string): Promise<void> {
+    const h = this.handles.get(sessionId);
+    if (!h?.audioBridgeOn || !h.onAudio) return;
+    try {
+      const chunks = await h.page.evaluate(`(() => {
+        const w = window;
+        const q = w.__yskAudioQ || [];
+        w.__yskAudioQ = [];
+        return q;
+      })()`) as Array<{ sr?: number; pcm?: string; ch?: number }>;
+      for (const c of chunks) {
+        if (!c?.pcm) continue;
+        h.onAudio({
+          sampleRate: Number(c.sr) || 48000,
+          pcmB64: String(c.pcm),
+          channels: 1,
+        });
+      }
+    } catch {
+      /* page navigated */
+    }
   }
 
   private async handleDownload(
@@ -758,6 +845,7 @@ export class BrowserEngine {
   async closeSession(sessionId: string): Promise<void> {
     const h = this.handles.get(sessionId);
     if (!h) return;
+    await this.stopAudioBridge(sessionId);
     await this.stopScreencast(sessionId);
     try {
       if (h.ownsBrowser) {

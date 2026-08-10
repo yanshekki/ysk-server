@@ -257,12 +257,23 @@ export class HostBrowseService {
         allowLoopback: Boolean(pol.allowLoopback),
         noSandbox: Boolean(pol.noSandbox),
       },
-      media: {
-        video: 'screencast_jpeg',
-        audio: 'not_bridged',
-        chromeAudioMuted: true,
-        policy: 'visual_only',
-      },
+      media: pol.audioBridge
+        ? {
+            video: 'screencast_jpeg',
+            audio: 'pcm_ws',
+            chromeAudioMuted: false,
+            policy: 'visual_plus_pcm_audio',
+            audioBridge: true,
+            audioLimits:
+              'PCM via HTMLMediaElement.captureStream; WebAudio-only / DRM may be silent',
+          }
+        : {
+            video: 'screencast_jpeg',
+            audio: 'not_bridged',
+            chromeAudioMuted: true,
+            policy: 'visual_only',
+            audioBridge: false,
+          },
     };
   }
 
