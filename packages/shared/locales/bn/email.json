@@ -375,7 +375,8 @@
     "mailTlsTodo": "মেইল TLS: {{mailHost}}-এর জন্য সার্টিফিকেট ইস্যু করুন, তারপর health ট্যাবে Apply mail TLS paths ব্যবহার করুন।",
     "externalDns": "বহিরাগত (অপারেটর-মালিকানাধীন): DNS-এ MX/SPF/DKIM/DMARC সেট করুন; VPS-এ PTR; পোর্ট 25 বা SMTP relay।",
     "healthScore": "হেলথ স্কোর {{score}}/{{max}} (DNS/PTR/Port25 স্বয়ংক্রিয়ভাবে সম্পূর্ণ হয় না)",
-    "webmailProjectOk": "Webmail প্রজেক্ট {{tool}} @ {{host}} ({{status}})"
+    "webmailProjectOk": "Webmail প্রজেক্ট {{tool}} @ {{host}} ({{status}})",
+    "dovecotApplyOk": "Dovecot virtual auth applied"
   },
   "tabDeliverability": "ডেলিভারি",
   "pendingCount": "অপেক্ষমাণ",

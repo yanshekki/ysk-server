@@ -375,7 +375,8 @@
     "mailTlsTodo": "メール TLS: {{mailHost}} の証明書を発行し、ヘルス用タブで「メール TLS パスを適用」を実行。",
     "externalDns": "外部（運用者側）: DNS で MX/SPF/DKIM/DMARC を設定; VPS で PTR; Port 25 または SMTP リレー。",
     "healthScore": "ヘルススコア {{score}}/{{max}}（DNS/PTR/Port25 は自動完了しません）",
-    "webmailProjectOk": "ウェブメール プロジェクト {{tool}} @ {{host}} ({{status}})"
+    "webmailProjectOk": "ウェブメール プロジェクト {{tool}} @ {{host}} ({{status}})",
+    "dovecotApplyOk": "Dovecot virtual auth applied"
   },
   "tabDeliverability": "配達",
   "pendingCount": "保留中",

@@ -375,7 +375,8 @@
     "mailTlsTodo": "Mail TLS: terbitkan sertifikat untuk {{mailHost}}, lalu gunakan Apply mail TLS paths di tab health.",
     "externalDns": "Eksternal (milik operator): setel MX/SPF/DKIM/DMARC di DNS; PTR di VPS; Port 25 atau SMTP relay.",
     "healthScore": "Skor kesehatan {{score}}/{{max}} (DNS/PTR/Port25 tidak dilengkapi otomatis)",
-    "webmailProjectOk": "Proyek webmail {{tool}} @ {{host}} ({{status}})"
+    "webmailProjectOk": "Proyek webmail {{tool}} @ {{host}} ({{status}})",
+    "dovecotApplyOk": "Dovecot virtual auth applied"
   },
   "tabDeliverability": "Pengiriman",
   "pendingCount": "Menunggu",

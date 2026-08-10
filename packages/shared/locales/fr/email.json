@@ -375,7 +375,8 @@
     "mailTlsTodo": "TLS mail : émettez un certificat pour {{mailHost}}, puis utilisez Appliquer les chemins TLS mail dans l'onglet santé.",
     "externalDns": "Externe (à la charge de l'opérateur) : configurez MX/SPF/DKIM/DMARC au DNS ; PTR chez le VPS ; port 25 ou relais SMTP.",
     "healthScore": "Score de santé {{score}}/{{max}} (DNS/PTR/port 25 non auto-complétés)",
-    "webmailProjectOk": "Projet webmail {{tool}} @ {{host}} ({{status}})"
+    "webmailProjectOk": "Projet webmail {{tool}} @ {{host}} ({{status}})",
+    "dovecotApplyOk": "Dovecot virtual auth applied"
   },
   "tabDeliverability": "Livraison",
   "pendingCount": "En attente",

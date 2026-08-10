@@ -375,7 +375,8 @@
     "mailTlsTodo": "메일 TLS: {{mailHost}}용 인증서를 발급한 뒤, 상태 탭에서 메일 TLS 경로 적용을 사용하세요.",
     "externalDns": "외부(운영자 담당): DNS에서 MX/SPF/DKIM/DMARC 설정; VPS에서 PTR; 포트 25 또는 SMTP 릴레이.",
     "healthScore": "상태 점수 {{score}}/{{max}} (DNS/PTR/Port25는 자동 완료되지 않음)",
-    "webmailProjectOk": "Webmail 프로젝트 {{tool}} @ {{host}} ({{status}})"
+    "webmailProjectOk": "Webmail 프로젝트 {{tool}} @ {{host}} ({{status}})",
+    "dovecotApplyOk": "Dovecot virtual auth applied"
   },
   "tabDeliverability": "배달",
   "pendingCount": "대기 중",

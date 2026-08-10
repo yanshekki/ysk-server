@@ -375,7 +375,8 @@
     "mailTlsTodo": "मेल TLS: {{mailHost}} के लिए प्रमाणपत्र जारी करें, फिर स्वास्थ्य टैब पर Apply mail TLS paths उपयोग करें।",
     "externalDns": "बाहरी (ऑपरेटर-स्वामित्व): DNS पर MX/SPF/DKIM/DMARC सेट करें; VPS पर PTR; पोर्ट 25 या SMTP रिले।",
     "healthScore": "स्वास्थ्य स्कोर {{score}}/{{max}} (DNS/PTR/Port25 स्वतः पूर्ण नहीं)",
-    "webmailProjectOk": "वेबमेल प्रोजेक्ट {{tool}} @ {{host}} ({{status}})"
+    "webmailProjectOk": "वेबमेल प्रोजेक्ट {{tool}} @ {{host}} ({{status}})",
+    "dovecotApplyOk": "Dovecot virtual auth applied"
   },
   "tabDeliverability": "डिलीवरी",
   "pendingCount": "लंबित",

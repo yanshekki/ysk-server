@@ -375,7 +375,8 @@
     "mailTlsTodo": "TLS de correo: emita un certificado para {{mailHost}} y luego use Aplicar rutas TLS de correo en la pestaña de estado.",
     "externalDns": "Externo (a cargo del operador): configure MX/SPF/DKIM/DMARC en el DNS; PTR en el VPS; puerto 25 o retransmisión SMTP.",
     "healthScore": "Puntuación de estado {{score}}/{{max}} (DNS/PTR/Puerto25 no se completan automáticamente)",
-    "webmailProjectOk": "Proyecto de webmail {{tool}} @ {{host}} ({{status}})"
+    "webmailProjectOk": "Proyecto de webmail {{tool}} @ {{host}} ({{status}})",
+    "dovecotApplyOk": "Dovecot virtual auth applied"
   },
   "tabDeliverability": "Entrega",
   "pendingCount": "Pendiente",

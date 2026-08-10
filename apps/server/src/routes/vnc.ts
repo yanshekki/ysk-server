@@ -1,12 +1,12 @@
 /**
- * VNC server + client API (PR-A: status + settings).
+ * VNC server + client API (PR-B: accounts CRUD + session control).
  */
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { createVncService } from '@ysk/core';
 import { ErrorCodes } from '@ysk/shared';
 import type { AppContext } from '../app-context.js';
-import { getBearer, readBody, sendJson } from '../http/util.js';
+import { getBearer, readBody, sendJson, sendOpsResult } from '../http/util.js';
 import { requireCap } from '../http/rbac-guard.js';
 
 export async function handleVncRoutes(
@@ -37,7 +37,11 @@ export async function handleVncRoutes(
   try {
     if (method === 'GET' && url.pathname === '/api/v1/vnc/status') {
       const status = await vnc.status();
-      sendJson(res, 200, { ok: true, ...status, accounts: [], clientProfiles: [] });
+      sendJson(res, 200, {
+        ok: true,
+        ...status,
+        clientProfiles: [],
+      });
       return true;
     }
 
@@ -78,8 +82,205 @@ export async function handleVncRoutes(
     }
 
     if (method === 'GET' && url.pathname === '/api/v1/vnc/accounts') {
-      sendJson(res, 200, { ok: true, items: [] });
+      sendJson(res, 200, { ok: true, items: await vnc.listAccounts() });
       return true;
+    }
+
+    if (method === 'POST' && url.pathname === '/api/v1/vnc/accounts') {
+      const raw = await readBody(req);
+      const data = JSON.parse(raw || '{}') as {
+        name?: string;
+        password?: string;
+        desktop?: string;
+        geometry?: string;
+        depth?: number;
+        rfbBind?: string;
+        autostart?: boolean;
+        display?: number;
+        start?: boolean;
+      };
+      const result = await vnc.createAccount({
+        name: data.name ?? '',
+        password: data.password,
+        desktop:
+          data.desktop === 'xfce' || data.desktop === 'minimal' || data.desktop === 'none'
+            ? data.desktop
+            : undefined,
+        geometry: data.geometry,
+        depth: data.depth,
+        rfbBind:
+          data.rfbBind === 'localhost' || data.rfbBind === 'all'
+            ? data.rfbBind
+            : undefined,
+        autostart: data.autostart,
+        display: data.display,
+        start: data.start,
+      });
+      ctx.audit.append({
+        actor: user.username,
+        action: 'vnc.account.create',
+        resource: result.account?.linuxUser,
+        detail: { id: result.account?.id, ok: result.ok },
+        ok: result.ok,
+      });
+      sendOpsResult(res, {
+        ok: result.ok,
+        notes: result.notes,
+        blocked: result.blocked,
+        requiresExecute: result.requiresExecute,
+        requiresRoot: result.requiresRoot,
+        account: result.account,
+        apply_status: result.blocked
+          ? 'blocked'
+          : result.ok
+            ? 'applied'
+            : 'failed',
+      });
+      return true;
+    }
+
+    const accountMatch = url.pathname.match(
+      /^\/api\/v1\/vnc\/accounts\/([^/]+)(?:\/(start|stop|password))?$/,
+    );
+    if (accountMatch) {
+      const accountId = decodeURIComponent(accountMatch[1] ?? '');
+      const action = accountMatch[2];
+
+      if (method === 'PATCH' && !action) {
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          name?: string;
+          desktop?: string;
+          geometry?: string;
+          depth?: number;
+          rfbBind?: string;
+          autostart?: boolean;
+        };
+        const result = await vnc.updateAccount(accountId, {
+          name: data.name,
+          desktop:
+            data.desktop === 'xfce' ||
+            data.desktop === 'minimal' ||
+            data.desktop === 'none'
+              ? data.desktop
+              : undefined,
+          geometry: data.geometry,
+          depth: data.depth,
+          rfbBind:
+            data.rfbBind === 'localhost' || data.rfbBind === 'all'
+              ? data.rfbBind
+              : undefined,
+          autostart: data.autostart,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'vnc.account.update',
+          resource: accountId,
+          ok: result.ok,
+        });
+        sendOpsResult(res, {
+          ok: result.ok,
+          notes: result.notes,
+          account: result.account,
+          apply_status: result.ok ? 'written' : 'failed',
+        });
+        return true;
+      }
+
+      if (method === 'DELETE' && !action) {
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { removeLinuxUser?: boolean };
+        const result = await vnc.deleteAccount(accountId, {
+          removeLinuxUser: Boolean(data.removeLinuxUser),
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'vnc.account.delete',
+          resource: accountId,
+          detail: { removeLinuxUser: data.removeLinuxUser },
+          ok: result.ok,
+        });
+        sendOpsResult(res, {
+          ok: result.ok,
+          notes: result.notes,
+          blocked: result.blocked,
+          requiresExecute: result.requiresExecute,
+          apply_status: result.ok ? 'applied' : 'failed',
+        });
+        return true;
+      }
+
+      if (method === 'POST' && action === 'start') {
+        const result = await vnc.startAccount(accountId);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'vnc.account.start',
+          resource: accountId,
+          ok: result.ok,
+        });
+        sendOpsResult(res, {
+          ok: result.ok,
+          notes: result.notes,
+          blocked: result.blocked,
+          requiresExecute: result.requiresExecute,
+          requiresRoot: result.requiresRoot,
+          account: result.account,
+          apply_status: result.blocked
+            ? 'blocked'
+            : result.ok
+              ? 'applied'
+              : 'failed',
+        });
+        return true;
+      }
+
+      if (method === 'POST' && action === 'stop') {
+        const result = await vnc.stopAccount(accountId);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'vnc.account.stop',
+          resource: accountId,
+          ok: result.ok,
+        });
+        sendOpsResult(res, {
+          ok: result.ok,
+          notes: result.notes,
+          blocked: result.blocked,
+          requiresExecute: result.requiresExecute,
+          account: result.account,
+          apply_status: result.blocked
+            ? 'blocked'
+            : result.ok
+              ? 'applied'
+              : 'failed',
+        });
+        return true;
+      }
+
+      if (method === 'POST' && action === 'password') {
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { password?: string };
+        const result = await vnc.setPassword(accountId, data.password ?? '');
+        ctx.audit.append({
+          actor: user.username,
+          action: 'vnc.account.password',
+          resource: accountId,
+          ok: result.ok,
+        });
+        sendOpsResult(res, {
+          ok: result.ok,
+          notes: result.notes,
+          blocked: result.blocked,
+          requiresExecute: result.requiresExecute,
+          account: result.account,
+          apply_status: result.blocked
+            ? 'blocked'
+            : result.ok
+              ? 'applied'
+              : 'failed',
+        });
+        return true;
+      }
     }
 
     if (method === 'GET' && url.pathname === '/api/v1/vnc/client/profiles') {

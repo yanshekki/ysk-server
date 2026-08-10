@@ -375,7 +375,8 @@
     "mailTlsTodo": "Mail TLS: أصدر شهادة لـ {{mailHost}}، ثم استخدم تطبيق مسارات Mail TLS في تبويب الصحة.",
     "externalDns": "خارجي (يديره المشغّل): عيّن MX/SPF/DKIM/DMARC في DNS؛ PTR عند VPS؛ المنفذ 25 أو مرحل SMTP.",
     "healthScore": "درجة الصحة {{score}}/{{max}} (DNS/PTR/Port25 لا تكتمل تلقائيًا)",
-    "webmailProjectOk": "مشروع Webmail {{tool}} @ {{host}} ({{status}})"
+    "webmailProjectOk": "مشروع Webmail {{tool}} @ {{host}} ({{status}})",
+    "dovecotApplyOk": "Dovecot virtual auth applied"
   },
   "tabDeliverability": "التسليم",
   "pendingCount": "قيد الانتظار",

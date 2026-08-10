@@ -375,7 +375,8 @@
     "mailTlsTodo": "میل TLS: {{mailHost}} کے لیے سرٹیفکیٹ جاری کریں، پھر ہیلتھ ٹیب پر Apply mail TLS paths استعمال کریں۔",
     "externalDns": "بیرونی (آپریٹر کی ذمہ داری): DNS پر MX/SPF/DKIM/DMARC سیٹ کریں؛ VPS پر PTR؛ پورٹ 25 یا SMTP ریلے۔",
     "healthScore": "ہیلتھ اسکور {{score}}/{{max}} (DNS/PTR/Port25 خود مکمل نہیں)",
-    "webmailProjectOk": "ویب میل پروجیکٹ {{tool}} @ {{host}} ({{status}})"
+    "webmailProjectOk": "ویب میل پروجیکٹ {{tool}} @ {{host}} ({{status}})",
+    "dovecotApplyOk": "Dovecot virtual auth applied"
   },
   "tabDeliverability": "ڈیلیوری",
   "pendingCount": "زیر التوا",
