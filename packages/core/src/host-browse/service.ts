@@ -264,7 +264,7 @@ export class HostBrowseService {
       contentType: 'text/html',
       bytes: 0,
       title: nav.title,
-      warnings: nav.blocked ? [] : [],
+      warnings: nav.warnings ?? [],
       contentPath: '',
       latencyMs: nav.latencyMs,
       rewritten: false,
@@ -276,6 +276,7 @@ export class HostBrowseService {
       historyIndex: meta.historyIndex,
       historyLength: meta.historyLength,
       cookieCount: meta.cookieCount,
+      errorCode: nav.errorCode,
     };
 
     this.audit?.({

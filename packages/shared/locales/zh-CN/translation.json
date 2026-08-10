@@ -3930,7 +3930,34 @@
     "settingsNoSandbox": "Chromium --no-sandbox（僅限 container）",
     "settingsSave": "儲存設定",
     "settingsSaved": "主機瀏覽設定已儲存",
-    "envHintsTitle": "程序環境變數（唯讀；面板已設定時優先採用面板值）"
+    "envHintsTitle": "程序環境變數（唯讀；面板已設定時優先採用面板值）",
+    "stream": {
+      "label": "畫質",
+      "smooth": "流暢",
+      "balanced": "均衡",
+      "sharp": "高清"
+    },
+    "zoom": {
+      "label": "縮放",
+      "fit": "適合窗口",
+      "fill": "填滿"
+    },
+    "retryNav": "重試導航",
+    "retryLive": "重連畫面",
+    "tryProxy": "改用代理引擎",
+    "err": {
+      "LIVE_NO_FRAME": "畫面串流逾時：尚未收到主機畫面。請重連畫面或重試導航。",
+      "LIVE_WS_FAIL": "即時連線失敗。請重連畫面。",
+      "SSRF_BLOCKED": "目標位址已被安全政策攔截。",
+      "BOT_CHALLENGE": "目標頁面可能要求人機驗證或阻擋自動化瀏覽；請在畫面上完成驗證，或改用其他網絡。",
+      "TIMEOUT": "載入逾時。請重試。",
+      "DNS_FAIL": "網域名稱解析失敗。",
+      "TLS_FAIL": "安全連線（TLS）失敗。",
+      "NAV_FAIL": "導航失敗。",
+      "CHROME_LAUNCH": "無法啟動主機 Chromium。請檢查軟件安裝與 no-sandbox 設定。",
+      "SESSION_GONE": "工作階段已失效。請重新前往。",
+      "NEED_CHROME": "需要安裝 Chrome／Chromium。"
+    }
   },
   "listToolbar": {
     "searchPlaceholder": "搜索…",

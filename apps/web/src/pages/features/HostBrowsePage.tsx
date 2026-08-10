@@ -34,7 +34,12 @@ import {
   type HostBrowsePanelSettings,
   type HostBrowseSession,
 } from '../../features/host-browse/api';
+import { clientToPage } from '../../features/host-browse/live-geometry';
 import { notifyInfo, notifyOk } from '../../shared/lib/notify';
+
+type StreamPreset = 'smooth' | 'balanced' | 'sharp';
+type ZoomMode = 'fit' | 'fill' | 'percent';
+type LivePhase = 'idle' | 'connecting' | 'live' | 'error';
 
 const TABS = ['browse', 'stack', 'settings', 'about'] as const;
 
@@ -53,6 +58,13 @@ export function HostBrowsePage() {
   const [frameSrc, setFrameSrc] = useState<string | null>(null);
   const [liveImg, setLiveImg] = useState<string | null>(null);
   const [liveSize, setLiveSize] = useState({ w: 1280, h: 800 });
+  const [streamPreset, setStreamPreset] = useState<StreamPreset>('balanced');
+  const [streamMeta, setStreamMeta] = useState<{ quality?: number; preset?: string } | null>(null);
+  const [zoomMode, setZoomMode] = useState<ZoomMode>('fit');
+  const [zoomPercent, setZoomPercent] = useState(100);
+  const [livePhase, setLivePhase] = useState<LivePhase>('idle');
+  const [errorCode, setErrorCode] = useState<string | null>(null);
+  const [warns, setWarns] = useState<string[]>([]);
   const [settingsDraft, setSettingsDraft] = useState<HostBrowsePanelSettings>({
     engine: 'auto',
     chromePath: '',
@@ -65,7 +77,10 @@ export function HostBrowsePage() {
   const abortRef = useRef(false);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const liveRef = useRef<HTMLImageElement | null>(null);
+  const frameWrapRef = useRef<HTMLDivElement | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
+  const lastFrameAt = useRef(0);
+  const noFrameTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadCapsAndSettings = useCallback(async () => {
     try {
@@ -115,7 +130,15 @@ export function HostBrowsePage() {
     }
   }, [settingsDraft, t]);
 
+  const clearNoFrameTimer = useCallback(() => {
+    if (noFrameTimer.current) {
+      clearTimeout(noFrameTimer.current);
+      noFrameTimer.current = null;
+    }
+  }, []);
+
   const closeLive = useCallback(() => {
+    clearNoFrameTimer();
     try {
       wsRef.current?.close();
     } catch {
@@ -123,15 +146,50 @@ export function HostBrowsePage() {
     }
     wsRef.current = null;
     setLiveImg(null);
+    setLivePhase('idle');
+  }, [clearNoFrameTimer]);
+
+  const sendWs = useCallback((obj: Record<string, unknown>) => {
+    const ws = wsRef.current;
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(obj));
+    }
   }, []);
+
+  const pushViewport = useCallback(() => {
+    const el = frameWrapRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const w = Math.max(320, Math.floor(r.width));
+    const h = Math.max(240, Math.floor(r.height));
+    sendWs({ t: 'resize', w, h });
+  }, [sendWs]);
 
   const openLive = useCallback(
     async (sessionId: string) => {
       closeLive();
+      setLivePhase('connecting');
+      setErrorCode(null);
       try {
         const ticket = await hostBrowseApi.liveTicket(sessionId);
         const ws = new WebSocket(hostBrowseLiveWsUrl(ticket.wsPath));
         wsRef.current = ws;
+        lastFrameAt.current = 0;
+        clearNoFrameTimer();
+        noFrameTimer.current = setTimeout(() => {
+          if (Date.now() - lastFrameAt.current > 8000) {
+            setLivePhase('error');
+            setErrorCode('LIVE_NO_FRAME');
+            setError(t('hostBrowse.err.LIVE_NO_FRAME'));
+            sendWs({ t: 'reconnect_cast' });
+          }
+        }, 8000);
+
+        ws.onopen = () => {
+          // Measure panel and sync Chromium viewport
+          requestAnimationFrame(() => pushViewport());
+          sendWs({ t: 'stream', preset: streamPreset });
+        };
         ws.onmessage = (ev) => {
           try {
             const msg = JSON.parse(String(ev.data)) as {
@@ -143,30 +201,62 @@ export function HostBrowsePage() {
               url?: string;
               title?: string;
               message?: string;
+              code?: string;
+              stream?: { quality?: number; preset?: string };
             };
             if (msg.t === 'frame' && msg.data) {
+              lastFrameAt.current = Date.now();
               setLiveImg(`data:${msg.mime || 'image/jpeg'};base64,${msg.data}`);
               if (msg.w && msg.h) setLiveSize({ w: msg.w, h: msg.h });
+              setLivePhase('live');
+              setErrorCode(null);
             } else if (msg.t === 'meta' && msg.url) {
               setUrlDraft(msg.url);
+            } else if (msg.t === 'stream_ok' && msg.stream) {
+              setStreamMeta({
+                quality: msg.stream.quality,
+                preset: msg.stream.preset,
+              });
+            } else if (msg.t === 'resize_ok' && msg.w && msg.h) {
+              setLiveSize({ w: msg.w, h: msg.h });
             } else if (msg.t === 'err') {
-              setError(msg.message || t('hostBrowse.loadFailed'));
+              setLivePhase('error');
+              setErrorCode(msg.code || 'LIVE_WS_FAIL');
+              setError(msg.message || t('hostBrowse.liveError'));
             }
           } catch {
             /* */
           }
         };
         ws.onerror = () => {
+          setLivePhase('error');
+          setErrorCode('LIVE_WS_FAIL');
           setError(t('hostBrowse.liveError'));
         };
+        ws.onclose = () => {
+          setLivePhase((ph) => (ph === 'live' || ph === 'connecting' ? 'error' : ph));
+        };
       } catch (e) {
+        setLivePhase('error');
+        setErrorCode('LIVE_WS_FAIL');
         setError(e instanceof Error ? e.message : t('hostBrowse.liveError'));
       }
     },
-    [closeLive, t],
+    [closeLive, t, streamPreset, pushViewport, sendWs, clearNoFrameTimer],
   );
 
   useEffect(() => () => closeLive(), [closeLive]);
+
+  // Dynamic resize of live surface
+  useEffect(() => {
+    const el = frameWrapRef.current;
+    if (!el || engine !== 'browser') return;
+    const ro = new ResizeObserver(() => {
+      if (wsRef.current?.readyState === WebSocket.OPEN) pushViewport();
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [engine, pushViewport, session?.sessionId]);
 
   const ensureSession = useCallback(
     async (m: HostBrowseMode, eng: HostBrowseEngine): Promise<HostBrowseSession> => {
@@ -206,12 +296,20 @@ export function HostBrowsePage() {
           : prev,
       );
       if (result.finalUrl) setUrlDraft(result.finalUrl);
+      setWarns(result.warnings ?? []);
+      if (result.errorCode) setErrorCode(result.errorCode);
       if (result.blocked) {
         setError(t('hostBrowse.ssrfBlocked'));
+        setErrorCode(result.errorCode || 'SSRF_BLOCKED');
       } else if (!result.ok && result.status === 0) {
         setError(t('hostBrowse.loadFailed'));
+        setErrorCode(result.errorCode || 'NAV_FAIL');
+      } else if (result.warnings?.includes('possible_bot_challenge')) {
+        setError(null);
+        setErrorCode('BOT_CHALLENGE');
       } else {
         setError(null);
+        if (!result.errorCode) setErrorCode(null);
       }
 
       if (s.engine === 'proxy' && result.contentPath && !result.blocked) {
@@ -352,10 +450,20 @@ export function HostBrowsePage() {
       const ws = wsRef.current;
       if (!el || !ws || ws.readyState !== WebSocket.OPEN) return;
       const rect = el.getBoundingClientRect();
-      const scaleX = liveSize.w / rect.width;
-      const scaleY = liveSize.h / rect.height;
-      const x = Math.round((e.clientX - rect.left) * scaleX);
-      const y = Math.round((e.clientY - rect.top) * scaleY);
+      const relX = e.clientX - rect.left;
+      const relY = e.clientY - rect.top;
+      const mapped = clientToPage(
+        relX,
+        relY,
+        rect.width,
+        rect.height,
+        liveSize.w,
+        liveSize.h,
+        zoomMode,
+        zoomPercent,
+      );
+      if (!mapped.inside && type !== 'wheel') return;
+      const { x, y } = mapped;
       if (type === 'wheel' && 'deltaY' in e) {
         ws.send(
           JSON.stringify({
@@ -370,8 +478,25 @@ export function HostBrowsePage() {
       }
       ws.send(JSON.stringify({ t: 'mouse', type, x, y, button: 'left' }));
     },
-    [liveSize],
+    [liveSize, zoomMode, zoomPercent],
   );
+
+  const onStreamPreset = useCallback(
+    (preset: StreamPreset) => {
+      setStreamPreset(preset);
+      sendWs({ t: 'stream', preset });
+    },
+    [sendWs],
+  );
+
+  const retryLive = useCallback(() => {
+    if (session) void openLive(session.sessionId);
+  }, [session, openLive]);
+
+  const retryNav = useCallback(() => {
+    const u = last?.finalUrl || session?.currentUrl || urlDraft;
+    if (u) void runNavigate({ url: u, action: 'goto' });
+  }, [last, session, urlDraft, runNavigate]);
 
   const onLiveKey = useCallback((e: React.KeyboardEvent) => {
     const ws = wsRef.current;
@@ -411,7 +536,9 @@ export function HostBrowsePage() {
 
   const isBrowser = (session?.engine ?? engine) === 'browser';
   const hasProxyContent = Boolean(frameSrc && !last?.blocked && !isBrowser);
-  const hasLive = Boolean(liveImg && isBrowser);
+  const hasNavigated = Boolean(last || session?.currentUrl);
+  const hasLive = Boolean(isBrowser && hasNavigated);
+  const showEmpty = !hasProxyContent && !hasLive;
 
   return (
     <FeaturePageLayout
@@ -604,10 +731,83 @@ export function HostBrowsePage() {
                 <div className={`hb-progress__bar${busy ? '' : ' is-done'}`} />
               </div>
 
+              {isBrowser ? (
+                <div className="hb-stream-bar">
+                  <SegRadio
+                    name="hb-stream"
+                    size="sm"
+                    aria-label={t('hostBrowse.stream.label')}
+                    value={streamPreset}
+                    onChange={(v) => onStreamPreset(v as StreamPreset)}
+                    options={[
+                      { value: 'smooth', label: t('hostBrowse.stream.smooth') },
+                      { value: 'balanced', label: t('hostBrowse.stream.balanced') },
+                      { value: 'sharp', label: t('hostBrowse.stream.sharp') },
+                    ]}
+                  />
+                  <SegRadio
+                    name="hb-zoom"
+                    size="sm"
+                    aria-label={t('hostBrowse.zoom.label')}
+                    value={zoomMode === 'percent' ? String(zoomPercent) : zoomMode}
+                    onChange={(v) => {
+                      if (v === 'fit' || v === 'fill') {
+                        setZoomMode(v);
+                      } else {
+                        setZoomMode('percent');
+                        setZoomPercent(Number(v) || 100);
+                      }
+                    }}
+                    options={[
+                      { value: 'fit', label: t('hostBrowse.zoom.fit') },
+                      { value: '100', label: '100%' },
+                      { value: '125', label: '125%' },
+                      { value: '75', label: '75%' },
+                    ]}
+                  />
+                  {streamMeta?.quality != null ? (
+                    <span className="hb-stream-bar__meta">
+                      {streamMeta.preset || streamPreset} · {streamMeta.quality}q · {liveSize.w}×{liveSize.h}
+                    </span>
+                  ) : null}
+                </div>
+              ) : null}
+
+              {(error || errorCode) && hasNavigated ? (
+                <div className="hb-error-actions">
+                  <Alert variant={errorCode === 'BOT_CHALLENGE' ? 'warn' : 'error'}>
+                    {error ||
+                      (errorCode ? t(`hostBrowse.err.${errorCode}`, { defaultValue: errorCode }) : '')}
+                    {warns.length ? ` (${warns.join(', ')})` : ''}
+                  </Alert>
+                  <div className="hb-error-actions__btns">
+                    <Button size="sm" variant="secondary" onClick={() => void retryNav()}>
+                      {t('hostBrowse.retryNav')}
+                    </Button>
+                    {isBrowser ? (
+                      <Button size="sm" variant="secondary" onClick={() => void retryLive()}>
+                        {t('hostBrowse.retryLive')}
+                      </Button>
+                    ) : null}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setEngine('proxy');
+                        notifyInfo(t('hostBrowse.tryProxy'));
+                      }}
+                    >
+                      {t('hostBrowse.tryProxy')}
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+
               <div
-                className={`hb-frame-wrap${hasProxyContent || hasLive ? '' : ' is-empty'}`}
+                ref={frameWrapRef}
+                className={`hb-frame-wrap${showEmpty ? ' is-empty' : ''}`}
               >
-                {!hasProxyContent && !hasLive ? (
+                {showEmpty ? (
                   <div className="hb-empty">
                     <EmptyState
                       title={t('hostBrowse.emptyTitle')}
@@ -629,9 +829,9 @@ export function HostBrowsePage() {
                 ) : null}
 
                 {/* Live browser surface */}
-                {isBrowser ? (
+                {isBrowser && hasNavigated ? (
                   <div
-                    className="hb-live"
+                    className={`hb-live hb-live--${zoomMode}`}
                     tabIndex={0}
                     onKeyDown={onLiveKey}
                     onKeyUp={onLiveKey}
@@ -643,6 +843,11 @@ export function HostBrowsePage() {
                         className="hb-live__img"
                         src={liveImg}
                         draggable={false}
+                        style={
+                          zoomMode === 'percent'
+                            ? { maxWidth: `${zoomPercent}%`, maxHeight: `${zoomPercent}%` }
+                            : undefined
+                        }
                         onClick={(e) => onLivePointer('click', e)}
                         onMouseMove={(e) => {
                           if (e.buttons === 1) onLivePointer('move', e);
@@ -650,7 +855,11 @@ export function HostBrowsePage() {
                         onWheel={(e) => onLivePointer('wheel', e)}
                       />
                     ) : (
-                      <div className="hb-live__wait">{t('hostBrowse.liveWaiting')}</div>
+                      <div className="hb-live__wait">
+                        {livePhase === 'connecting' || livePhase === 'idle'
+                          ? t('hostBrowse.liveWaiting')
+                          : t('hostBrowse.err.LIVE_NO_FRAME')}
+                      </div>
                     )}
                   </div>
                 ) : null}
@@ -676,6 +885,8 @@ export function HostBrowsePage() {
                 ) : null}
                 {last?.rewritten ? <Badge tone="ok">rewrite</Badge> : null}
                 {isBrowser ? <Badge tone="ok">chromium</Badge> : null}
+                {livePhase === 'live' ? <Badge tone="ok">live</Badge> : null}
+                {errorCode ? <Badge tone="danger">{errorCode}</Badge> : null}
               </div>
             </div>
           </div>

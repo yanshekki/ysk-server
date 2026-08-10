@@ -8,6 +8,14 @@ import { probeChrome } from './chrome-probe.js';
 import { assertHostBrowseTarget } from './ssrf.js';
 import type { HostBrowseMode, HostBrowsePolicy } from './types.js';
 import { HOST_BROWSE_DEFAULT_UA } from './types.js';
+import {
+  clampViewport,
+  detectBotChallenge,
+  resolveStreamOptions,
+  screencastSize,
+  type StreamOptions,
+  type StreamPresetId,
+} from './stream-presets.js';
 
 type PlaywrightModule = typeof import('playwright-core');
 type Browser = import('playwright-core').Browser;
@@ -23,6 +31,8 @@ export type BrowserSessionHandle = {
   page: Page;
   cdp: CDPSession | null;
   screencastOn: boolean;
+  viewport: { w: number; h: number };
+  stream: StreamOptions;
   onFrame?: (frame: {
     mime: string;
     data: Buffer;
@@ -41,6 +51,8 @@ export type BrowserNavResult = {
   blocked?: boolean;
   blockReason?: string;
   cookieCount: number;
+  warnings: string[];
+  errorCode?: string;
 };
 
 let playwrightMod: PlaywrightModule | null = null;
@@ -155,10 +167,12 @@ export class BrowserEngine {
 
     const browser = await this.ensureBrowser();
     const pol = this.policy();
+    const vp = { w: 1280, h: 800 };
     const context = await browser.newContext({
       userAgent: pol.userAgent ?? HOST_BROWSE_DEFAULT_UA,
       locale: 'en-US',
-      viewport: { width: 1280, height: 800 },
+      viewport: { width: vp.w, height: vp.h },
+      deviceScaleFactor: 1,
       ignoreHTTPSErrors: input.mode === 'intranet',
       javaScriptEnabled: true,
       permissions: [],
@@ -168,7 +182,6 @@ export class BrowserEngine {
     });
 
     const page = await context.newPage();
-    // SSRF gate on every document navigation
     page.on('framenavigated', (frame) => {
       if (frame !== page.mainFrame()) return;
       void assertHostBrowseTarget(frame.url(), {
@@ -176,7 +189,7 @@ export class BrowserEngine {
         allowLoopback: this.policy().allowLoopback,
         extraPorts: this.policy().extraPorts,
       }).catch(() => {
-        /* navigation may be mid-flight; navigate() also gates */
+        /* mid-flight */
       });
     });
 
@@ -188,6 +201,8 @@ export class BrowserEngine {
       page,
       cdp: null,
       screencastOn: false,
+      viewport: vp,
+      stream: resolveStreamOptions({ preset: 'balanced' }),
     });
   }
 
@@ -226,6 +241,8 @@ export class BrowserEngine {
             (e.details as { reason?: string } | undefined)?.reason ?? 'ssrf',
           ),
           cookieCount: 0,
+          warnings: [],
+          errorCode: 'SSRF_BLOCKED',
         };
       }
       throw e;
@@ -236,24 +253,20 @@ export class BrowserEngine {
         waitUntil: 'domcontentloaded',
         timeout: this.policy().timeoutMs ?? 30_000,
       });
-      // Wait a bit for paint
-      await delay(400);
-      const cookies = await h.context.cookies();
-      const title = await h.page.title();
-      const finalUrl = h.page.url();
-      h.onMeta?.({ url: finalUrl, title });
-      return {
-        ok: Boolean(resp?.ok() ?? true),
-        status: resp?.status() ?? 200,
-        finalUrl,
-        title,
-        latencyMs: Date.now() - started,
-        cookieCount: cookies.length,
-      };
+      await delay(500);
+      return await this.snapshotNav(h, started, resp?.status() ?? 200);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
+      const code = /timeout/i.test(msg)
+        ? 'TIMEOUT'
+        : /SSL|certificate|TLS/i.test(msg)
+          ? 'TLS_FAIL'
+          : /net::|DNS|ENOTFOUND|getaddrinfo/i.test(msg)
+            ? 'DNS_FAIL'
+            : 'NAV_FAIL';
       throw new YskError(ErrorCodes.HOST_BROWSE_UPSTREAM, msg, {
         httpStatus: 502,
+        details: { errorCode: code },
       });
     }
   }
@@ -263,15 +276,7 @@ export class BrowserEngine {
     const started = Date.now();
     await h.page.goBack({ waitUntil: 'domcontentloaded', timeout: 30_000 }).catch(() => null);
     await delay(300);
-    const cookies = await h.context.cookies();
-    return {
-      ok: true,
-      status: 200,
-      finalUrl: h.page.url(),
-      title: await h.page.title(),
-      latencyMs: Date.now() - started,
-      cookieCount: cookies.length,
-    };
+    return this.snapshotNav(h, started, 200);
   }
 
   async goForward(sessionId: string): Promise<BrowserNavResult> {
@@ -279,15 +284,7 @@ export class BrowserEngine {
     const started = Date.now();
     await h.page.goForward({ waitUntil: 'domcontentloaded', timeout: 30_000 }).catch(() => null);
     await delay(300);
-    const cookies = await h.context.cookies();
-    return {
-      ok: true,
-      status: 200,
-      finalUrl: h.page.url(),
-      title: await h.page.title(),
-      latencyMs: Date.now() - started,
-      cookieCount: cookies.length,
-    };
+    return this.snapshotNav(h, started, 200);
   }
 
   async reload(sessionId: string): Promise<BrowserNavResult> {
@@ -295,14 +292,42 @@ export class BrowserEngine {
     const started = Date.now();
     await h.page.reload({ waitUntil: 'domcontentloaded', timeout: 30_000 });
     await delay(300);
+    return this.snapshotNav(h, started, 200);
+  }
+
+  private async snapshotNav(
+    h: BrowserSessionHandle,
+    started: number,
+    status: number,
+  ): Promise<BrowserNavResult> {
     const cookies = await h.context.cookies();
+    const title = await h.page.title();
+    const finalUrl = h.page.url();
+    const warnings: string[] = [];
+    if (detectBotChallenge(title, finalUrl)) {
+      warnings.push('possible_bot_challenge');
+    }
+    try {
+      const html = await h.page.content();
+      if (html.replace(/<[^>]+>/g, '').trim().length < 40) {
+        warnings.push('empty_document');
+      }
+    } catch {
+      /* */
+    }
+    h.onMeta?.({ url: finalUrl, title });
     return {
-      ok: true,
-      status: 200,
-      finalUrl: h.page.url(),
-      title: await h.page.title(),
+      ok: status >= 200 && status < 400,
+      status,
+      finalUrl,
+      title,
       latencyMs: Date.now() - started,
       cookieCount: cookies.length,
+      warnings,
+      errorCode:
+        status >= 400 ? `NAV_HTTP_${status}` : warnings.includes('possible_bot_challenge')
+          ? 'BOT_CHALLENGE'
+          : undefined,
     };
   }
 
@@ -317,16 +342,25 @@ export class BrowserEngine {
     await h.context.clearCookies();
   }
 
+  /**
+   * Start or restart screencast. Always tears down previous CDP session first
+   * so re-navigate / quality change never sticks on screencastOn=true.
+   */
   async startScreencast(
     sessionId: string,
     onFrame: BrowserSessionHandle['onFrame'],
-  ): Promise<void> {
+    streamPartial?: Partial<StreamOptions> & { preset?: StreamPresetId },
+  ): Promise<StreamOptions> {
     const h = this.require(sessionId);
+    if (streamPartial) {
+      h.stream = resolveStreamOptions({ ...h.stream, ...streamPartial });
+    }
     h.onFrame = onFrame;
-    if (h.screencastOn) return;
+    await this.stopScreencast(sessionId, false);
 
     const cdp = await h.page.context().newCDPSession(h.page);
     h.cdp = cdp;
+    const vp = h.viewport;
     cdp.on('Page.screencastFrame', (frame: {
       data: string;
       sessionId: number;
@@ -336,37 +370,58 @@ export class BrowserEngine {
       h.onFrame?.({
         mime: 'image/jpeg',
         data: buf,
-        width: frame.metadata?.deviceWidth ?? 1280,
-        height: frame.metadata?.deviceHeight ?? 800,
+        width: frame.metadata?.deviceWidth ?? vp.w,
+        height: frame.metadata?.deviceHeight ?? vp.h,
       });
       void cdp.send('Page.screencastFrameAck', { sessionId: frame.sessionId });
     });
+    const cast = screencastSize(vp, h.stream);
     await cdp.send('Page.startScreencast', {
       format: 'jpeg',
-      quality: 50,
-      maxWidth: 1280,
-      maxHeight: 800,
-      everyNthFrame: 2,
+      quality: h.stream.quality,
+      maxWidth: cast.maxWidth,
+      maxHeight: cast.maxHeight,
+      everyNthFrame: h.stream.everyNthFrame,
     });
     h.screencastOn = true;
+    return { ...h.stream };
   }
 
-  async stopScreencast(sessionId: string): Promise<void> {
+  async stopScreencast(sessionId: string, clearHandler = true): Promise<void> {
     const h = this.handles.get(sessionId);
-    if (!h?.screencastOn || !h.cdp) return;
-    try {
-      await h.cdp.send('Page.stopScreencast');
-    } catch {
-      /* */
-    }
-    try {
-      await h.cdp.detach();
-    } catch {
-      /* */
+    if (!h) return;
+    if (h.cdp) {
+      try {
+        if (h.screencastOn) await h.cdp.send('Page.stopScreencast');
+      } catch {
+        /* */
+      }
+      try {
+        await h.cdp.detach();
+      } catch {
+        /* */
+      }
     }
     h.cdp = null;
     h.screencastOn = false;
-    h.onFrame = undefined;
+    if (clearHandler) h.onFrame = undefined;
+  }
+
+  async setStreamOptions(
+    sessionId: string,
+    partial: Partial<StreamOptions> & { preset?: StreamPresetId },
+  ): Promise<StreamOptions> {
+    const h = this.require(sessionId);
+    h.stream = resolveStreamOptions({ ...h.stream, ...partial });
+    if (h.onFrame) {
+      await this.startScreencast(sessionId, h.onFrame);
+    }
+    return { ...h.stream };
+  }
+
+  getStreamOptions(sessionId: string): StreamOptions | null {
+    const h = this.handles.get(sessionId);
+    return h ? { ...h.stream } : null;
   }
 
   async mouse(
@@ -401,11 +456,20 @@ export class BrowserEngine {
     else if (ev.type === 'up' && ev.key) await h.page.keyboard.up(ev.key);
   }
 
-  async resize(sessionId: string, width: number, height: number): Promise<void> {
+  async resize(
+    sessionId: string,
+    width: number,
+    height: number,
+    opts?: { restartCast?: boolean },
+  ): Promise<{ w: number; h: number; stream: StreamOptions }> {
     const h = this.require(sessionId);
-    const w = Math.max(320, Math.min(1920, Math.floor(width)));
-    const ht = Math.max(240, Math.min(1200, Math.floor(height)));
+    const { w, h: ht } = clampViewport(width, height);
+    h.viewport = { w, h: ht };
     await h.page.setViewportSize({ width: w, height: ht });
+    if (opts?.restartCast !== false && h.onFrame) {
+      await this.startScreencast(sessionId, h.onFrame);
+    }
+    return { w, h: ht, stream: { ...h.stream } };
   }
 
   async closeSession(sessionId: string): Promise<void> {

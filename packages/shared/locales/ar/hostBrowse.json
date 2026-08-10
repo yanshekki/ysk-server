@@ -52,5 +52,32 @@
   "settingsNoSandbox": "Chromium --no-sandbox (للحاويات فقط)",
   "settingsSave": "حفظ الإعدادات",
   "settingsSaved": "تم حفظ إعدادات Host Browse",
-  "envHintsTitle": "بيئة العملية (للقراءة فقط؛ لإعدادات اللوحة الأولوية عند تعيينها)"
+  "envHintsTitle": "بيئة العملية (للقراءة فقط؛ لإعدادات اللوحة الأولوية عند تعيينها)",
+  "stream": {
+    "label": "Quality",
+    "smooth": "Smooth",
+    "balanced": "Balanced",
+    "sharp": "Sharp"
+  },
+  "zoom": {
+    "label": "Zoom",
+    "fit": "Fit",
+    "fill": "Fill"
+  },
+  "retryNav": "Retry navigation",
+  "retryLive": "Reconnect stream",
+  "tryProxy": "Switch to proxy engine",
+  "err": {
+    "LIVE_NO_FRAME": "Stream timed out: no frames received. Reconnect or retry navigation.",
+    "LIVE_WS_FAIL": "Live connection failed. Reconnect the stream.",
+    "SSRF_BLOCKED": "Target blocked by security policy.",
+    "BOT_CHALLENGE": "Target may require human verification or block automation. Complete the challenge on-screen if shown.",
+    "TIMEOUT": "Load timed out. Please retry.",
+    "DNS_FAIL": "DNS resolution failed.",
+    "TLS_FAIL": "TLS/SSL connection failed.",
+    "NAV_FAIL": "Navigation failed.",
+    "CHROME_LAUNCH": "Could not start host Chromium. Check install and no-sandbox settings.",
+    "SESSION_GONE": "Session expired. Navigate again.",
+    "NEED_CHROME": "Chrome/Chromium is required."
+  }
 }

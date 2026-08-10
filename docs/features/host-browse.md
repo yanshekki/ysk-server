@@ -85,3 +85,11 @@ If Chrome is missing and engine=`browser` is requested, API returns `YSK_HOST_BR
 ## Related
 
 [product-page-map](../product-page-map.md)
+
+## Real browser: quality & size
+
+- **Quality presets**: Smooth / Balanced (default) / Sharp — apply live over WebSocket without restarting the session.
+- **Viewport**: Defaults to the panel surface size; resizes sync Chromium viewport.
+- **Zoom**: Fit window or percent (display only); pointer mapping accounts for letterboxing.
+- **Errors**: Timeout, DNS, TLS, bot challenge, stream failure — coded messages with retry actions.
+

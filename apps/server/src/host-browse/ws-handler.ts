@@ -6,7 +6,7 @@ import type { Server as HttpServer } from 'node:http';
 import type { Server as HttpsServer } from 'node:https';
 import type { Duplex } from 'node:stream';
 import { WebSocketServer, type WebSocket } from 'ws';
-import type { HostBrowseLiveTicketStore } from '@ysk/core';
+import type { HostBrowseLiveTicketStore, StreamPresetId } from '@ysk/core';
 import type { AppContext } from '../app-context.js';
 
 function sendJson(ws: WebSocket, obj: unknown): void {
@@ -51,14 +51,22 @@ async function acceptLiveClient(
   const ticket = url.searchParams.get('ticket') || '';
   const rec = tickets.consume(ticket);
   if (!rec) {
-    sendJson(ws, { t: 'err', message: 'invalid or expired live ticket' });
+    sendJson(ws, {
+      t: 'err',
+      code: 'LIVE_WS_FAIL',
+      message: 'invalid or expired live ticket',
+    });
     ws.close(4401, 'unauthorized');
     return;
   }
 
   const session = ctx.hostBrowse.store.get(rec.sessionId, rec.userId);
   if (!session || session.engine !== 'browser') {
-    sendJson(ws, { t: 'err', message: 'browser session not found' });
+    sendJson(ws, {
+      t: 'err',
+      code: 'SESSION_GONE',
+      message: 'browser session not found',
+    });
     ws.close(4404, 'not found');
     return;
   }
@@ -72,39 +80,53 @@ async function acceptLiveClient(
   } catch (e) {
     sendJson(ws, {
       t: 'err',
+      code: 'CHROME_LAUNCH',
       message: e instanceof Error ? e.message : 'failed to open browser',
     });
     ws.close(4503, 'chrome');
     return;
   }
 
+  const handle = ctx.hostBrowse.browser.getHandle(rec.sessionId);
   sendJson(ws, {
     t: 'ready',
     sessionId: rec.sessionId,
     url: session.currentUrl,
+    viewport: handle?.viewport ?? { w: 1280, h: 800 },
+    stream: handle ? ctx.hostBrowse.browser.getStreamOptions(rec.sessionId) : null,
   });
 
-  // Stream frames
-  try {
-    await ctx.hostBrowse.browser.startScreencast(rec.sessionId, (frame) => {
-      if (ws.readyState !== ws.OPEN) return;
-      // binary protocol: JSON meta then base64 in JSON for simplicity
-      sendJson(ws, {
-        t: 'frame',
-        mime: frame.mime,
-        w: frame.width,
-        h: frame.height,
-        data: frame.data.toString('base64'),
-      });
+  const onFrame = (frame: {
+    mime: string;
+    data: Buffer;
+    width: number;
+    height: number;
+  }) => {
+    if (ws.readyState !== ws.OPEN) return;
+    sendJson(ws, {
+      t: 'frame',
+      mime: frame.mime,
+      w: frame.width,
+      h: frame.height,
+      data: frame.data.toString('base64'),
+      ts: Date.now(),
     });
+  };
+
+  try {
+    const stream = await ctx.hostBrowse.browser.startScreencast(
+      rec.sessionId,
+      onFrame,
+    );
+    sendJson(ws, { t: 'stream_ok', stream });
   } catch (e) {
     sendJson(ws, {
       t: 'err',
+      code: 'LIVE_NO_FRAME',
       message: e instanceof Error ? e.message : 'screencast failed',
     });
   }
 
-  // Push initial meta
   if (session.currentUrl) {
     sendJson(ws, {
       t: 'meta',
@@ -128,8 +150,15 @@ async function acceptLiveClient(
           text?: string;
           w?: number;
           h?: number;
+          preset?: StreamPresetId;
+          quality?: number;
+          scale?: number;
+          everyNthFrame?: number;
+          maxWidthCap?: number;
+          maxHeightCap?: number;
         };
         const kind = msg.t || msg.type;
+
         if (kind === 'mouse' && msg.type) {
           await ctx.hostBrowse.browser.mouse(rec.sessionId, {
             type: msg.type as 'move' | 'down' | 'up' | 'click' | 'wheel',
@@ -140,7 +169,6 @@ async function acceptLiveClient(
             deltaY: msg.deltaY,
           });
         } else if (kind === 'mouse' && !msg.type) {
-          // default click
           await ctx.hostBrowse.browser.mouse(rec.sessionId, {
             type: 'click',
             x: Number(msg.x) || 0,
@@ -154,13 +182,44 @@ async function acceptLiveClient(
             text: msg.text,
           });
         } else if (kind === 'resize' && msg.w && msg.h) {
-          await ctx.hostBrowse.browser.resize(rec.sessionId, msg.w, msg.h);
+          const r = await ctx.hostBrowse.browser.resize(
+            rec.sessionId,
+            Number(msg.w),
+            Number(msg.h),
+            { restartCast: true },
+          );
+          sendJson(ws, {
+            t: 'resize_ok',
+            w: r.w,
+            h: r.h,
+            stream: r.stream,
+          });
+        } else if (kind === 'stream') {
+          const stream = await ctx.hostBrowse.browser.setStreamOptions(
+            rec.sessionId,
+            {
+              preset: msg.preset,
+              quality: msg.quality,
+              scale: msg.scale,
+              everyNthFrame: msg.everyNthFrame,
+              maxWidthCap: msg.maxWidthCap,
+              maxHeightCap: msg.maxHeightCap,
+            },
+          );
+          sendJson(ws, { t: 'stream_ok', stream });
+        } else if (kind === 'reconnect_cast') {
+          const stream = await ctx.hostBrowse.browser.startScreencast(
+            rec.sessionId,
+            onFrame,
+          );
+          sendJson(ws, { t: 'stream_ok', stream });
         } else if (kind === 'ping') {
-          sendJson(ws, { t: 'pong' });
+          sendJson(ws, { t: 'pong', ts: Date.now() });
         }
       } catch (e) {
         sendJson(ws, {
           t: 'err',
+          code: 'INPUT_ERROR',
           message: e instanceof Error ? e.message : 'input error',
         });
       }

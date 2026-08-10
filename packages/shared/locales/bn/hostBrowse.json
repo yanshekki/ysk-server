@@ -52,5 +52,32 @@
   "settingsNoSandbox": "Chromium --no-sandbox (শুধু কন্টেইনার)",
   "settingsSave": "সেটিংস সংরক্ষণ",
   "settingsSaved": "Host Browse সেটিংস সংরক্ষিত",
-  "envHintsTitle": "প্রসেস env (শুধুমাত্র পঠনযোগ্য; সেট থাকলে প্যানেল সেটিংস অগ্রাধিকার পায়)"
+  "envHintsTitle": "প্রসেস env (শুধুমাত্র পঠনযোগ্য; সেট থাকলে প্যানেল সেটিংস অগ্রাধিকার পায়)",
+  "stream": {
+    "label": "Quality",
+    "smooth": "Smooth",
+    "balanced": "Balanced",
+    "sharp": "Sharp"
+  },
+  "zoom": {
+    "label": "Zoom",
+    "fit": "Fit",
+    "fill": "Fill"
+  },
+  "retryNav": "Retry navigation",
+  "retryLive": "Reconnect stream",
+  "tryProxy": "Switch to proxy engine",
+  "err": {
+    "LIVE_NO_FRAME": "Stream timed out: no frames received. Reconnect or retry navigation.",
+    "LIVE_WS_FAIL": "Live connection failed. Reconnect the stream.",
+    "SSRF_BLOCKED": "Target blocked by security policy.",
+    "BOT_CHALLENGE": "Target may require human verification or block automation. Complete the challenge on-screen if shown.",
+    "TIMEOUT": "Load timed out. Please retry.",
+    "DNS_FAIL": "DNS resolution failed.",
+    "TLS_FAIL": "TLS/SSL connection failed.",
+    "NAV_FAIL": "Navigation failed.",
+    "CHROME_LAUNCH": "Could not start host Chromium. Check install and no-sandbox settings.",
+    "SESSION_GONE": "Session expired. Navigate again.",
+    "NEED_CHROME": "Chrome/Chromium is required."
+  }
 }

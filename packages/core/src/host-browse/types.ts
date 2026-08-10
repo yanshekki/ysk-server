@@ -134,6 +134,8 @@ export interface HostBrowseFetchResult {
   historyIndex?: number;
   historyLength?: number;
   cookieCount?: number;
+  /** Stable error / warning codes for UI (BOT_CHALLENGE, TIMEOUT, …) */
+  errorCode?: string;
 }
 
 export interface HostBrowseContentResult {

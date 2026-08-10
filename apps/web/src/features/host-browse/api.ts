@@ -79,6 +79,7 @@ export type HostBrowseNavigateResult = {
   historyLength?: number;
   cookieCount?: number;
   privacy?: HostBrowsePrivacy;
+  errorCode?: string;
 };
 
 export type HostBrowseLiveTicket = {
