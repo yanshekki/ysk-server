@@ -369,6 +369,11 @@ export class HostBrowseService {
       sessionId: s.sessionId,
       userId,
       mode: s.mode,
+      ephemeral:
+        s.ephemeralUsername && s.ephemeralHomeDir
+          ? { username: s.ephemeralUsername, homeDir: s.ephemeralHomeDir }
+          : undefined,
+      host: this.getHost?.(),
     });
 
     const action = input.action ?? 'goto';

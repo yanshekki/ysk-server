@@ -16,6 +16,11 @@ import {
   type StreamOptions,
   type StreamPresetId,
 } from './stream-presets.js';
+import {
+  launchChromeAsUser,
+  type ChromeAsUserHandle,
+} from './chrome-as-user.js';
+import type { HostExecutor } from '../host/executor.js';
 
 type PlaywrightModule = typeof import('playwright-core');
 type Browser = import('playwright-core').Browser;
@@ -27,8 +32,15 @@ export type BrowserSessionHandle = {
   sessionId: string;
   userId: string;
   mode: HostBrowseMode;
+  /** Per-session browser when using CDP-as-user; else shared launcher browser */
+  browser: Browser;
+  ownsBrowser: boolean;
+  chromeAsUser?: ChromeAsUserHandle;
   context: BrowserContext;
   page: Page;
+  /** Multi-tab pages (real browser) */
+  pages: Map<string, Page>;
+  activePageId: string;
   cdp: CDPSession | null;
   screencastOn: boolean;
   viewport: { w: number; h: number };
@@ -156,6 +168,9 @@ export class BrowserEngine {
     sessionId: string;
     userId: string;
     mode: HostBrowseMode;
+    /** Prefer isolated Chrome process as this Linux user */
+    ephemeral?: { username: string; homeDir: string };
+    host?: HostExecutor;
   }): Promise<void> {
     const max = this.policy().maxBrowserSessions ?? 4;
     if (this.handles.size >= max && !this.handles.has(input.sessionId)) {
@@ -165,23 +180,63 @@ export class BrowserEngine {
     }
     if (this.handles.has(input.sessionId)) return;
 
-    const browser = await this.ensureBrowser();
     const pol = this.policy();
     const vp = { w: 1280, h: 800 };
-    const context = await browser.newContext({
-      userAgent: pol.userAgent ?? HOST_BROWSE_DEFAULT_UA,
-      locale: 'en-US',
-      viewport: { width: vp.w, height: vp.h },
-      deviceScaleFactor: 1,
-      ignoreHTTPSErrors: input.mode === 'intranet',
-      javaScriptEnabled: true,
-      permissions: [],
-    });
-    await context.setExtraHTTPHeaders({
-      'Accept-Language': pol.acceptLanguage ?? 'en-US,en;q=0.9',
-    });
+    let browser: Browser;
+    let ownsBrowser = false;
+    let chromeAsUser: ChromeAsUserHandle | undefined;
 
-    const page = await context.newPage();
+    if (input.ephemeral && input.host) {
+      const launched = await launchChromeAsUser({
+        host: input.host,
+        username: input.ephemeral.username,
+        homeDir: input.ephemeral.homeDir,
+        chromePath: pol.chromePath,
+        noSandbox: pol.noSandbox,
+        userAgent: pol.userAgent ?? HOST_BROWSE_DEFAULT_UA,
+      });
+      if (launched.ok) {
+        const pw = await loadPlaywright();
+        browser = await pw.chromium.connectOverCDP(launched.handle.cdpUrl);
+        ownsBrowser = true;
+        chromeAsUser = launched.handle;
+      } else {
+        // Fallback: shared process Chrome (honest degradation)
+        browser = await this.ensureBrowser();
+      }
+    } else {
+      browser = await this.ensureBrowser();
+    }
+
+    let context: BrowserContext;
+    let page: Page;
+    if (ownsBrowser && chromeAsUser) {
+      // CDP default context / page
+      context = browser.contexts()[0] ?? (await browser.newContext({
+        userAgent: pol.userAgent ?? HOST_BROWSE_DEFAULT_UA,
+        locale: 'en-US',
+        viewport: { width: vp.w, height: vp.h },
+        deviceScaleFactor: 1,
+        ignoreHTTPSErrors: input.mode === 'intranet',
+      }));
+      page = context.pages()[0] ?? (await context.newPage());
+      await page.setViewportSize({ width: vp.w, height: vp.h }).catch(() => undefined);
+    } else {
+      context = await browser.newContext({
+        userAgent: pol.userAgent ?? HOST_BROWSE_DEFAULT_UA,
+        locale: 'en-US',
+        viewport: { width: vp.w, height: vp.h },
+        deviceScaleFactor: 1,
+        ignoreHTTPSErrors: input.mode === 'intranet',
+        javaScriptEnabled: true,
+        permissions: [],
+      });
+      await context.setExtraHTTPHeaders({
+        'Accept-Language': pol.acceptLanguage ?? 'en-US,en;q=0.9',
+      });
+      page = await context.newPage();
+    }
+
     page.on('framenavigated', (frame) => {
       if (frame !== page.mainFrame()) return;
       void assertHostBrowseTarget(frame.url(), {
@@ -193,17 +248,94 @@ export class BrowserEngine {
       });
     });
 
+    const pageId = 'main';
+    const pages = new Map<string, Page>([[pageId, page]]);
+
     this.handles.set(input.sessionId, {
       sessionId: input.sessionId,
       userId: input.userId,
       mode: input.mode,
+      browser,
+      ownsBrowser,
+      chromeAsUser,
       context,
       page,
+      pages,
+      activePageId: pageId,
       cdp: null,
       screencastOn: false,
       viewport: vp,
       stream: resolveStreamOptions({ preset: 'balanced' }),
     });
+  }
+
+  /** Open a new tab (Playwright page) in this session. Max 6. */
+  async openTab(sessionId: string, url?: string): Promise<{ pageId: string }> {
+    const h = this.require(sessionId);
+    if (h.pages.size >= 6) {
+      throw new YskError(ErrorCodes.VALIDATION, 'Max 6 tabs', { httpStatus: 400 });
+    }
+    const page = await h.context.newPage();
+    const pageId = `p-${Date.now().toString(36)}`;
+    h.pages.set(pageId, page);
+    h.activePageId = pageId;
+    h.page = page;
+    await page.setViewportSize({ width: h.viewport.w, height: h.viewport.h });
+    if (url) {
+      await this.navigate(sessionId, url);
+    }
+    if (h.onFrame) await this.startScreencast(sessionId, h.onFrame);
+    return { pageId };
+  }
+
+  async switchTab(sessionId: string, pageId: string): Promise<void> {
+    const h = this.require(sessionId);
+    const page = h.pages.get(pageId);
+    if (!page) {
+      throw new YskError(ErrorCodes.NOT_FOUND, 'Tab not found', { httpStatus: 404 });
+    }
+    h.activePageId = pageId;
+    h.page = page;
+    if (h.onFrame) await this.startScreencast(sessionId, h.onFrame);
+  }
+
+  async closeTab(sessionId: string, pageId: string): Promise<{ activePageId: string | null }> {
+    const h = this.require(sessionId);
+    const page = h.pages.get(pageId);
+    if (!page) return { activePageId: h.activePageId };
+    if (h.pages.size <= 1) {
+      // keep at least one blank tab
+      await page.goto('about:blank').catch(() => undefined);
+      return { activePageId: h.activePageId };
+    }
+    h.pages.delete(pageId);
+    try {
+      await page.close();
+    } catch {
+      /* */
+    }
+    if (h.activePageId === pageId) {
+      const next = h.pages.keys().next().value as string;
+      h.activePageId = next;
+      h.page = h.pages.get(next)!;
+      if (h.onFrame) await this.startScreencast(sessionId, h.onFrame);
+    }
+    return { activePageId: h.activePageId };
+  }
+
+  listTabs(sessionId: string): Array<{ pageId: string; url: string; title: string; active: boolean }> {
+    const h = this.handles.get(sessionId);
+    if (!h) return [];
+    const out: Array<{ pageId: string; url: string; title: string; active: boolean }> = [];
+    for (const [pageId, page] of h.pages) {
+      out.push({
+        pageId,
+        url: page.url(),
+        title: '',
+        active: pageId === h.activePageId,
+      });
+    }
+    return out;
   }
 
   getHandle(sessionId: string): BrowserSessionHandle | null {
@@ -480,7 +612,11 @@ export class BrowserEngine {
     if (!h) return;
     await this.stopScreencast(sessionId);
     try {
-      await h.context.close();
+      if (h.ownsBrowser) {
+        await h.browser.close();
+      } else {
+        await h.context.close();
+      }
     } catch {
       /* */
     }

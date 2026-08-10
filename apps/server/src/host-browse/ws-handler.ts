@@ -76,6 +76,14 @@ async function acceptLiveClient(
       sessionId: rec.sessionId,
       userId: rec.userId,
       mode: session.mode,
+      ephemeral:
+        session.ephemeralUsername && session.ephemeralHomeDir
+          ? {
+              username: session.ephemeralUsername,
+              homeDir: session.ephemeralHomeDir,
+            }
+          : undefined,
+      host: ctx.host,
     });
   } catch (e) {
     sendJson(ws, {
