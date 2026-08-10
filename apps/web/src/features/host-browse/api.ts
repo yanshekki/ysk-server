@@ -175,6 +175,43 @@ export const hostBrowseApi = {
       method: 'POST',
       body: JSON.stringify(body),
     }),
+
+  library: () =>
+    api.requestRaw<{
+      ok: boolean;
+      library: {
+        homeUrl: string;
+        bookmarks: Array<{ id: string; title: string; url: string }>;
+        history: Array<{ id: string; title: string; url: string; at: string }>;
+        lastSnapshot?: {
+          tabs: Array<{ url: string; title?: string }>;
+          activeIndex: number;
+        };
+      };
+    }>('/api/v1/host-browse/library'),
+
+  setHome: (homeUrl: string) =>
+    api.requestRaw<{ ok: boolean; library: { homeUrl: string } }>(
+      '/api/v1/host-browse/home',
+      { method: 'PUT', body: JSON.stringify({ homeUrl }) },
+    ),
+
+  toggleBookmark: (body: { url: string; title?: string }) =>
+    api.requestRaw<{
+      ok: boolean;
+      library: {
+        bookmarks: Array<{ id: string; title: string; url: string }>;
+      };
+    }>('/api/v1/host-browse/bookmarks', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  heartbeat: (sessionId: string) =>
+    api.requestRaw<{ ok: boolean }>(
+      `/api/v1/host-browse/sessions/${encodeURIComponent(sessionId)}/heartbeat`,
+      { method: 'POST', body: '{}' },
+    ),
 };
 
 export function hostBrowseLiveWsUrl(wsPath: string): string {

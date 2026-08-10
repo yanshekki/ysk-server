@@ -174,6 +174,46 @@ export async function handleHostBrowseRoutes(
       return true;
     }
 
+    // Library: home / bookmarks / history
+    if (method === 'GET' && url.pathname === '/api/v1/host-browse/library') {
+      sendJson(res, 200, { ok: true, library: svc.getLibraryFor(user.id) });
+      return true;
+    }
+    if (method === 'PUT' && url.pathname === '/api/v1/host-browse/home') {
+      const raw = await readBody(req);
+      const data = JSON.parse(raw || '{}') as { homeUrl?: string };
+      const library = svc.setHomeUrl(user.id, String(data.homeUrl || ''));
+      sendJson(res, 200, { ok: true, library });
+      return true;
+    }
+    if (method === 'POST' && url.pathname === '/api/v1/host-browse/bookmarks') {
+      const raw = await readBody(req);
+      const data = JSON.parse(raw || '{}') as { url?: string; title?: string };
+      if (!data.url) {
+        sendJson(res, 400, {
+          ok: false,
+          code: ErrorCodes.VALIDATION,
+          message: 'url required',
+        });
+        return true;
+      }
+      const library = svc.toggleBookmark(user.id, {
+        url: data.url,
+        title: data.title,
+      });
+      sendJson(res, 200, { ok: true, library });
+      return true;
+    }
+    if (
+      method === 'DELETE' &&
+      url.pathname.startsWith('/api/v1/host-browse/bookmarks/')
+    ) {
+      const id = url.pathname.split('/').pop() || '';
+      const library = svc.deleteBookmark(user.id, id);
+      sendJson(res, 200, { ok: true, library });
+      return true;
+    }
+
     const sessionMatch = url.pathname.match(
       /^\/api\/v1\/host-browse\/sessions\/([^/]+)(.*)$/,
     );
@@ -213,6 +253,12 @@ export async function handleHostBrowseRoutes(
     if (method === 'POST' && rest === '/abort') {
       svc.abort(user.id, sessionId);
       sendJson(res, 200, { ok: true });
+      return true;
+    }
+
+    if (method === 'POST' && rest === '/heartbeat') {
+      svc.heartbeat(user.id, sessionId);
+      sendJson(res, 200, { ok: true, at: new Date().toISOString() });
       return true;
     }
 

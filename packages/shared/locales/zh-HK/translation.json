@@ -3957,7 +3957,16 @@
       "CHROME_LAUNCH": "無法啟動主機 Chromium。請檢查軟件安裝與 no-sandbox 設定。",
       "SESSION_GONE": "工作階段已失效。請重新前往。",
       "NEED_CHROME": "需要安裝 Chrome／Chromium。"
-    }
+    },
+    "home": "主頁",
+    "bookmark": "書籤",
+    "bookmarks": "書籤",
+    "history": "瀏覽記錄",
+    "bookmarkToggled": "已更新書籤",
+    "newTab": "新分頁",
+    "fullscreen": "全螢幕",
+    "mediaNote": "真實瀏覽器：影像經主機串流；音訊尚未橋接至面板（二期）。",
+    "isolationNote": "真實瀏覽器會建立臨時 Linux 用戶隔離 Chrome；離開頁面或逾時會結束並刪除該用戶。"
   },
   "listToolbar": {
     "searchPlaceholder": "搜尋…",

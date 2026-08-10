@@ -441,8 +441,11 @@ export class BrowserEngine {
     else if (ev.type === 'down') await h.page.mouse.down({ button: btn });
     else if (ev.type === 'up') await h.page.mouse.up({ button: btn });
     else if (ev.type === 'click') await h.page.mouse.click(ev.x, ev.y, { button: btn });
-    else if (ev.type === 'wheel')
+    else if (ev.type === 'wheel') {
+      // Ensure hover target under cursor before wheel (scrollable regions)
+      await h.page.mouse.move(ev.x, ev.y);
       await h.page.mouse.wheel(ev.deltaX ?? 0, ev.deltaY ?? 0);
+    }
   }
 
   async keyboard(

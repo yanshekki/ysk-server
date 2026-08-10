@@ -3957,7 +3957,16 @@
       "CHROME_LAUNCH": "Could not start host Chromium. Check install and no-sandbox settings.",
       "SESSION_GONE": "Session expired. Navigate again.",
       "NEED_CHROME": "Chrome/Chromium is required."
-    }
+    },
+    "home": "Home",
+    "bookmark": "Bookmark",
+    "bookmarks": "Bookmarks",
+    "history": "History",
+    "bookmarkToggled": "Bookmark updated",
+    "newTab": "New tab",
+    "fullscreen": "Fullscreen",
+    "mediaNote": "Real browser: video is streamed; audio is not yet bridged to the panel (phase 2).",
+    "isolationNote": "Real browser creates an ephemeral Linux user for Chrome; leaving the page or idle timeout destroys that user."
   },
   "listToolbar": {
     "searchPlaceholder": "Rechercher…",

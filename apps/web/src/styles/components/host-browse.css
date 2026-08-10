@@ -27,10 +27,28 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
+  gap: var(--space-1) var(--space-2);
+  padding: var(--space-1) var(--space-2);
   border-bottom: 1px solid var(--border-color);
   background: var(--surface-2, rgba(255, 255, 255, 0.03));
+  min-height: 2.5rem;
+}
+
+.hb-compact {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+}
+
+.hb-compact__select {
+  font-size: var(--text-xs);
+  padding: 0.15rem 0.35rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--surface-1, #12151c);
+  color: inherit;
+  max-width: 6.5rem;
+  height: 1.75rem;
 }
 
 .hb-toolbar__mode {
@@ -208,21 +226,11 @@ button.linkish {
   font: inherit;
 }
 
-.hb-stream-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-1) var(--space-3);
-  border-bottom: 1px solid var(--border-color);
-  background: var(--surface-2, rgba(255, 255, 255, 0.02));
-}
-
+/* Stream quality / zoom are compact selects in the main toolbar (no full-width bars). */
 .hb-stream-bar__meta {
   font-size: var(--text-xs);
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
-  margin-left: auto;
 }
 
 .hb-error-actions {
@@ -249,4 +257,93 @@ button.linkish {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+}
+
+.hb-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--surface-1, #0c0f14);
+  min-height: 1.75rem;
+}
+
+.hb-tabs__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  max-width: 10rem;
+  font-size: var(--text-xs);
+  padding: 0.1rem 0.35rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.hb-tabs__chip.is-active {
+  background: var(--accent, #3b82f6);
+  border-color: transparent;
+  color: #fff;
+}
+
+.hb-tabs__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hb-tabs__x {
+  opacity: 0.7;
+  padding: 0 0.15rem;
+}
+
+.hb-tabs__add {
+  font-size: var(--text-sm);
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0 0.35rem;
+}
+
+.hb-drawer {
+  border-bottom: 1px solid var(--border-color);
+  max-height: 12rem;
+  overflow: auto;
+  background: var(--surface-2, rgba(255, 255, 255, 0.03));
+}
+
+.hb-drawer__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  font-size: var(--text-sm);
+}
+
+.hb-drawer__list {
+  list-style: none;
+  margin: 0;
+  padding: 0 0.5rem 0.5rem;
+}
+
+.hb-drawer__item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: var(--text-xs);
+  padding: 0.35rem 0.25rem;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+.hb-drawer__item:hover {
+  background: rgba(255, 255, 255, 0.06);
 }

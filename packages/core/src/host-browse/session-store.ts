@@ -29,6 +29,9 @@ export type HostBrowseSession = {
   /** Browser-engine cookie count override when jar unused */
   browserCookieCount?: number;
   abort?: AbortController;
+  lastHeartbeatAt?: number;
+  ephemeralUsername?: string;
+  ephemeralHomeDir?: string;
   lastContent?: {
     url: string;
     status: number;
@@ -122,6 +125,7 @@ export class HostBrowseSessionStore {
       userAgent: this.policy.userAgent ?? HOST_BROWSE_DEFAULT_UA,
       createdAt: now,
       lastAccessAt: now,
+      lastHeartbeatAt: now,
       jar: new CookieJar(),
       history: [],
       historyIndex: -1,
@@ -142,6 +146,12 @@ export class HostBrowseSessionStore {
   getById(sessionId: string): HostBrowseSession | null {
     this.purgeExpired();
     return this.sessions.get(sessionId) ?? null;
+  }
+
+  /** All live sessions (for heartbeat reaper). */
+  listAll(): HostBrowseSession[] {
+    this.purgeExpired();
+    return [...this.sessions.values()];
   }
 
   delete(sessionId: string, userId: string): boolean {

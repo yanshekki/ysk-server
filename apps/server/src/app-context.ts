@@ -223,7 +223,37 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
           chromePath?: string;
           allowLoopback?: boolean;
           noSandbox?: boolean;
+          safetyLevel?: 'strict' | 'standard' | 'relaxed';
+          blockHosts?: string[];
+          homeUrl?: string;
         }>('hostBrowse'),
+      {
+        getHost: () => host,
+        getDataDir: () => dataDir,
+        getLibrary: (userId) => {
+          const all =
+            settings.getJson<Record<string, import('@ysk/core').BrowseUserLibrary>>(
+              'hostBrowseLibraries',
+            ) ?? {};
+          return (
+            all[userId] ?? {
+              homeUrl:
+                settings.getJson<{ homeUrl?: string }>('hostBrowse')?.homeUrl ||
+                'https://www.google.com/',
+              bookmarks: [],
+              history: [],
+            }
+          );
+        },
+        setLibrary: (userId, lib) => {
+          const all =
+            settings.getJson<Record<string, import('@ysk/core').BrowseUserLibrary>>(
+              'hostBrowseLibraries',
+            ) ?? {};
+          all[userId] = lib;
+          settings.setJson('hostBrowseLibraries', all);
+        },
+      },
     ),
     hostBrowseLiveTickets: createHostBrowseLiveTicketStore(),
     reloadLlm() {
@@ -574,6 +604,13 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
       { runImmediately: process.env.YSK_DNSBL_ON_START === '1' },
     );
   }
+
+  // Host-browse: kill Chromium + ephemeral users when panel leaves (no heartbeat)
+  setInterval(() => {
+    void ctx.hostBrowse.reapStaleSessions(45_000).catch(() => {
+      /* non-fatal */
+    });
+  }, 15_000);
 
   return ctx;
 }

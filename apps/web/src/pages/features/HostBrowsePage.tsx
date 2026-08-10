@@ -65,6 +65,15 @@ export function HostBrowsePage() {
   const [livePhase, setLivePhase] = useState<LivePhase>('idle');
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [warns, setWarns] = useState<string[]>([]);
+  const [browserTabs, setBrowserTabs] = useState<Array<{ id: string; url: string; title: string }>>([]);
+  const [activeTabId, setActiveTabId] = useState<string | null>(null);
+  const [homeUrl, setHomeUrl] = useState('https://www.google.com/');
+  const [bookmarked, setBookmarked] = useState(false);
+  const [drawer, setDrawer] = useState<'none' | 'bookmarks' | 'history'>('none');
+  const [library, setLibrary] = useState<{
+    bookmarks: Array<{ id: string; title: string; url: string }>;
+    history: Array<{ id: string; title: string; url: string; at: string }>;
+  }>({ bookmarks: [], history: [] });
   const [settingsDraft, setSettingsDraft] = useState<HostBrowsePanelSettings>({
     engine: 'auto',
     chromePath: '',
@@ -107,7 +116,35 @@ export function HostBrowsePage() {
 
   useEffect(() => {
     void loadCapsAndSettings();
+    void hostBrowseApi.library().then((r) => {
+      setHomeUrl(r.library.homeUrl || 'https://www.google.com/');
+      setLibrary({
+        bookmarks: r.library.bookmarks || [],
+        history: r.library.history || [],
+      });
+    }).catch(() => undefined);
   }, [loadCapsAndSettings]);
+
+  // Heartbeat while browser session live on this page
+  useEffect(() => {
+    if (!session || session.engine !== 'browser') return;
+    const tick = () => {
+      void hostBrowseApi.heartbeat(session.sessionId).catch(() => undefined);
+    };
+    tick();
+    const id = setInterval(tick, 15_000);
+    return () => clearInterval(id);
+  }, [session?.sessionId, session?.engine]);
+
+  // Leave page → end browser session (kill chrome / ephemeral user)
+  useEffect(() => {
+    return () => {
+      if (session?.engine === 'browser') {
+        void hostBrowseApi.deleteSession(session.sessionId).catch(() => undefined);
+      }
+    };
+  }, [session?.sessionId, session?.engine]);
+
 
   const saveSettings = useCallback(async () => {
     setSettingsBusy(true);
@@ -341,8 +378,30 @@ export function HostBrowsePage() {
         }
         applyNav(s, result);
 
-        // Browser engine: open live stream after first successful nav
-        if (s.engine === 'browser' && !result.blocked) {
+        if (s.engine === 'browser' && !result.blocked && result.finalUrl) {
+          const tabId = activeTabId || `t-${Date.now()}`;
+          setBrowserTabs((tabs) => {
+            const exists = tabs.find((x) => x.id === tabId);
+            if (exists) {
+              return tabs.map((x) =>
+                x.id === tabId
+                  ? { ...x, url: result.finalUrl, title: result.title || result.finalUrl }
+                  : x,
+              );
+            }
+            return [
+              ...tabs,
+              {
+                id: tabId,
+                url: result.finalUrl,
+                title: result.title || result.finalUrl,
+              },
+            ].slice(0, 6);
+          });
+          setActiveTabId(tabId);
+          setBookmarked(
+            library.bookmarks.some((b) => b.url === result.finalUrl),
+          );
           await openLive(s.sessionId);
         }
       } catch (e) {
@@ -465,13 +524,25 @@ export function HostBrowsePage() {
       if (!mapped.inside && type !== 'wheel') return;
       const { x, y } = mapped;
       if (type === 'wheel' && 'deltaY' in e) {
+        e.preventDefault();
+        const we = e as React.WheelEvent;
+        let dy = we.deltaY;
+        let dx = we.deltaX;
+        if (we.deltaMode === 1) {
+          dy *= 32;
+          dx *= 32;
+        }
+        if (Math.abs(dy) < 4 && dy !== 0) dy = Math.sign(dy) * 40;
+        // move cursor then wheel for reliable scroll targets
+        ws.send(JSON.stringify({ t: 'mouse', type: 'move', x, y }));
         ws.send(
           JSON.stringify({
             t: 'mouse',
             type: 'wheel',
             x,
             y,
-            deltaY: (e as React.WheelEvent).deltaY,
+            deltaX: Math.round(dx),
+            deltaY: Math.round(dy),
           }),
         );
         return;
@@ -510,6 +581,57 @@ export function HostBrowsePage() {
       }),
     );
   }, []);
+
+  // Scroll: non-passive wheel on live surface (prevent page scroll steal)
+  useEffect(() => {
+    const el = frameWrapRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      const ws = wsRef.current;
+      if (!ws || ws.readyState !== WebSocket.OPEN) return;
+      if ((session?.engine ?? engine) !== 'browser') return;
+      e.preventDefault();
+      e.stopPropagation();
+      const img = liveRef.current;
+      const rect = (img ?? el).getBoundingClientRect();
+      const relX = e.clientX - rect.left;
+      const relY = e.clientY - rect.top;
+      const mapped = clientToPage(
+        relX,
+        relY,
+        rect.width,
+        rect.height,
+        liveSize.w,
+        liveSize.h,
+        zoomMode,
+        zoomPercent,
+      );
+      let dy = e.deltaY;
+      let dx = e.deltaX;
+      if (e.deltaMode === 1) {
+        dy *= 32;
+        dx *= 32;
+      } else if (e.deltaMode === 2) {
+        dy *= rect.height;
+        dx *= rect.width;
+      }
+      // Amplify small trackpad deltas
+      if (Math.abs(dy) < 4 && dy !== 0) dy = Math.sign(dy) * 40;
+      ws.send(
+        JSON.stringify({
+          t: 'mouse',
+          type: 'wheel',
+          x: mapped.x,
+          y: mapped.y,
+          deltaX: Math.round(dx),
+          deltaY: Math.round(dy),
+        }),
+      );
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, [session?.engine, engine, liveSize, zoomMode, zoomPercent]);
+
 
   const canBack = Boolean(session?.canGoBack ?? (session && session.historyIndex > 0));
   const canForward = Boolean(
@@ -642,8 +764,108 @@ export function HostBrowsePage() {
                     disabled={busy}
                   />
                 </div>
+
+                {isBrowser ? (
+                  <>
+                    <label className="hb-compact">
+                      <span className="visually-hidden">{t('hostBrowse.stream.label')}</span>
+                      <select
+                        className="hb-compact__select"
+                        value={streamPreset}
+                        onChange={(e) => onStreamPreset(e.target.value as StreamPreset)}
+                        title={t('hostBrowse.stream.label')}
+                      >
+                        <option value="smooth">{t('hostBrowse.stream.smooth')}</option>
+                        <option value="balanced">{t('hostBrowse.stream.balanced')}</option>
+                        <option value="sharp">{t('hostBrowse.stream.sharp')}</option>
+                      </select>
+                    </label>
+                    <label className="hb-compact">
+                      <span className="visually-hidden">{t('hostBrowse.zoom.label')}</span>
+                      <select
+                        className="hb-compact__select"
+                        value={zoomMode === 'percent' ? String(zoomPercent) : zoomMode}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          if (v === 'fit' || v === 'fill') setZoomMode(v);
+                          else {
+                            setZoomMode('percent');
+                            setZoomPercent(Number(v) || 100);
+                          }
+                        }}
+                        title={t('hostBrowse.zoom.label')}
+                      >
+                        <option value="fit">{t('hostBrowse.zoom.fit')}</option>
+                        <option value="100">100%</option>
+                        <option value="125">125%</option>
+                        <option value="75">75%</option>
+                      </select>
+                    </label>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      title={t('hostBrowse.fullscreen')}
+                      onClick={() => {
+                        const el = frameWrapRef.current;
+                        if (!el) return;
+                        if (document.fullscreenElement) void document.exitFullscreen();
+                        else void el.requestFullscreen();
+                      }}
+                    >
+                      ⛶
+                    </Button>
+                  </>
+                ) : null}
+
                 <div className="hb-toolbar__nav">
+                                    <Button
+                    size="sm"
+                    variant="ghost"
+                    title={t('hostBrowse.home')}
+                    onClick={() => {
+                      setUrlDraft(homeUrl);
+                      void runNavigate({ url: homeUrl, action: 'goto' });
+                    }}
+                    disabled={busy}
+                  >
+                    ⌂
+                  </Button>
                   <Button
+                    size="sm"
+                    variant="ghost"
+                    title={t('hostBrowse.bookmark')}
+                    onClick={() => {
+                      const u = last?.finalUrl || session?.currentUrl || urlDraft;
+                      if (!u) return;
+                      void hostBrowseApi
+                        .toggleBookmark({ url: u, title: last?.title })
+                        .then((r) => {
+                          setLibrary((lib) => ({
+                            ...lib,
+                            bookmarks: r.library.bookmarks,
+                          }));
+                          setBookmarked(r.library.bookmarks.some((b) => b.url === u));
+                          notifyOk(t('hostBrowse.bookmarkToggled'));
+                        })
+                        .catch((e) =>
+                          setError(e instanceof Error ? e.message : t('common.loadFailed')),
+                        );
+                    }}
+                    disabled={busy || !(last?.finalUrl || session?.currentUrl || urlDraft)}
+                  >
+                    {bookmarked ? '★' : '☆'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    title={t('hostBrowse.history')}
+                    onClick={() =>
+                      setDrawer((d) => (d === 'history' ? 'none' : 'history'))
+                    }
+                  >
+                    🕐
+                  </Button>
+<Button
                     size="sm"
                     variant="ghost"
                     onClick={() => void runNavigate({ action: 'back' })}
@@ -731,47 +953,7 @@ export function HostBrowsePage() {
                 <div className={`hb-progress__bar${busy ? '' : ' is-done'}`} />
               </div>
 
-              {isBrowser ? (
-                <div className="hb-stream-bar">
-                  <SegRadio
-                    name="hb-stream"
-                    size="sm"
-                    aria-label={t('hostBrowse.stream.label')}
-                    value={streamPreset}
-                    onChange={(v) => onStreamPreset(v as StreamPreset)}
-                    options={[
-                      { value: 'smooth', label: t('hostBrowse.stream.smooth') },
-                      { value: 'balanced', label: t('hostBrowse.stream.balanced') },
-                      { value: 'sharp', label: t('hostBrowse.stream.sharp') },
-                    ]}
-                  />
-                  <SegRadio
-                    name="hb-zoom"
-                    size="sm"
-                    aria-label={t('hostBrowse.zoom.label')}
-                    value={zoomMode === 'percent' ? String(zoomPercent) : zoomMode}
-                    onChange={(v) => {
-                      if (v === 'fit' || v === 'fill') {
-                        setZoomMode(v);
-                      } else {
-                        setZoomMode('percent');
-                        setZoomPercent(Number(v) || 100);
-                      }
-                    }}
-                    options={[
-                      { value: 'fit', label: t('hostBrowse.zoom.fit') },
-                      { value: '100', label: '100%' },
-                      { value: '125', label: '125%' },
-                      { value: '75', label: '75%' },
-                    ]}
-                  />
-                  {streamMeta?.quality != null ? (
-                    <span className="hb-stream-bar__meta">
-                      {streamMeta.preset || streamPreset} · {streamMeta.quality}q · {liveSize.w}×{liveSize.h}
-                    </span>
-                  ) : null}
-                </div>
-              ) : null}
+              
 
               {(error || errorCode) && hasNavigated ? (
                 <div className="hb-error-actions">
@@ -800,6 +982,90 @@ export function HostBrowsePage() {
                       {t('hostBrowse.tryProxy')}
                     </Button>
                   </div>
+                </div>
+              ) : null}
+
+              {isBrowser && browserTabs.length > 0 ? (
+                <div className="hb-tabs">
+                  {browserTabs.map((tb) => (
+                    <button
+                      key={tb.id}
+                      type="button"
+                      className={`hb-tabs__chip${tb.id === activeTabId ? ' is-active' : ''}`}
+                      onClick={() => {
+                        setActiveTabId(tb.id);
+                        setUrlDraft(tb.url);
+                        void runNavigate({ url: tb.url, action: 'goto' });
+                      }}
+                    >
+                      <span className="hb-tabs__title">{tb.title.slice(0, 24)}</span>
+                      <span
+                        className="hb-tabs__x"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setBrowserTabs((tabs) => {
+                            const next = tabs.filter((x) => x.id !== tb.id);
+                            if (activeTabId === tb.id) {
+                              setActiveTabId(next[0]?.id ?? null);
+                            }
+                            return next;
+                          });
+                        }}
+                      >
+                        ×
+                      </span>
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    className="hb-tabs__add"
+                    title={t('hostBrowse.newTab')}
+                    onClick={() => {
+                      const id = `t-${Date.now()}`;
+                      setBrowserTabs((tabs) =>
+                        [...tabs, { id, url: homeUrl, title: t('hostBrowse.newTab') }].slice(
+                          0,
+                          6,
+                        ),
+                      );
+                      setActiveTabId(id);
+                      setUrlDraft(homeUrl);
+                    }}
+                  >
+                    +
+                  </button>
+                </div>
+              ) : null}
+
+              {drawer === 'history' || drawer === 'bookmarks' ? (
+                <div className="hb-drawer">
+                  <div className="hb-drawer__head">
+                    <strong>
+                      {drawer === 'history'
+                        ? t('hostBrowse.history')
+                        : t('hostBrowse.bookmarks')}
+                    </strong>
+                    <Button size="sm" variant="ghost" onClick={() => setDrawer('none')}>
+                      ×
+                    </Button>
+                  </div>
+                  <ul className="hb-drawer__list">
+                    {(drawer === 'history' ? library.history : library.bookmarks).map((item) => (
+                      <li key={item.id}>
+                        <button
+                          type="button"
+                          className="hb-drawer__item"
+                          onClick={() => {
+                            setUrlDraft(item.url);
+                            setDrawer('none');
+                            void runNavigate({ url: item.url, action: 'goto' });
+                          }}
+                        >
+                          {item.title || item.url}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               ) : null}
 
@@ -971,6 +1237,8 @@ export function HostBrowsePage() {
                 </Button>
               </FormActions>
             </FormLayout>
+            <Alert variant="info">{t('hostBrowse.mediaNote')}</Alert>
+            <Alert variant="info">{t('hostBrowse.isolationNote')}</Alert>
             {Object.keys(envHints).length > 0 ? (
               <div className="stack u-mt-3">
                 <div className="muted u-text-sm">{t('hostBrowse.envHintsTitle')}</div>

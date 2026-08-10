@@ -93,3 +93,13 @@ If Chrome is missing and engine=`browser` is requested, API returns `YSK_HOST_BR
 - **Zoom**: Fit window or percent (display only); pointer mapping accounts for letterboxing.
 - **Errors**: Timeout, DNS, TLS, bot challenge, stream failure — coded messages with retry actions.
 
+## Browser shell
+
+- **Scroll** fixed for real-browser live surface
+- **Compact toolbar**: quality/zoom as compact selects
+- **Home / bookmarks / history**
+- **Multi-tab** (up to 6) + fullscreen
+- **Leave page**: heartbeat reap kills Chrome; ephemeral Linux user removed when created
+- **Danger policy**: blocklist + warn
+- **Media**: video via screencast; audio not bridged yet (phase 2)
+

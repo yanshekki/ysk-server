@@ -25,6 +25,21 @@ import type {
 } from './types.js';
 import { HOST_BROWSE_DEFAULT_UA, mergeHostBrowsePolicy } from './types.js';
 import { clearChromeProbeCache } from './chrome-probe.js';
+import { evaluateNavigateSafety } from './danger.js';
+import {
+  emptyLibrary,
+  pushHistory as libPushHistory,
+  removeBookmark,
+  saveSnapshot,
+  setHome,
+  upsertBookmark,
+  type BrowseUserLibrary,
+} from './bookmarks.js';
+import {
+  createEphemeralBrowseUser,
+  destroyEphemeralBrowseUser,
+} from './ephemeral-user.js';
+import type { HostExecutor } from '../host/executor.js';
 
 export type HostBrowseAuditFn = (event: {
   action: string;
@@ -38,21 +53,114 @@ export class HostBrowseService {
   readonly browser: BrowserEngine;
   private readonly basePolicy: HostBrowsePolicy;
   private readonly getPanelConfig?: () => HostBrowsePanelConfig | undefined;
+  private readonly getHost?: () => HostExecutor;
+  private readonly getDataDir?: () => string;
+  private readonly getLibrary?: (userId: string) => BrowseUserLibrary;
+  private readonly setLibrary?: (userId: string, lib: BrowseUserLibrary) => void;
 
   constructor(
     policy: HostBrowsePolicy = {},
     audit?: HostBrowseAuditFn,
     getPanelConfig?: () => HostBrowsePanelConfig | undefined,
+    deps?: {
+      getHost?: () => HostExecutor;
+      getDataDir?: () => string;
+      getLibrary?: (userId: string) => BrowseUserLibrary;
+      setLibrary?: (userId: string, lib: BrowseUserLibrary) => void;
+    },
   ) {
     this.basePolicy = policy;
     this.audit = audit;
     this.getPanelConfig = getPanelConfig;
+    this.getHost = deps?.getHost;
+    this.getDataDir = deps?.getDataDir;
+    this.getLibrary = deps?.getLibrary;
+    this.setLibrary = deps?.setLibrary;
     const getPol = () => this.effectivePolicy();
     this.store = new HostBrowseSessionStore(policy);
     this.browser = new BrowserEngine(getPol);
   }
 
   private audit?: HostBrowseAuditFn;
+
+  private libOf(userId: string): BrowseUserLibrary {
+    return this.getLibrary?.(userId) ?? emptyLibrary();
+  }
+
+  private saveLib(userId: string, lib: BrowseUserLibrary): void {
+    this.setLibrary?.(userId, lib);
+  }
+
+  getLibraryFor(userId: string): BrowseUserLibrary {
+    return this.libOf(userId);
+  }
+
+  setHomeUrl(userId: string, homeUrl: string): BrowseUserLibrary {
+    const lib = setHome(this.libOf(userId), homeUrl);
+    this.saveLib(userId, lib);
+    return lib;
+  }
+
+  toggleBookmark(
+    userId: string,
+    input: { url: string; title?: string },
+  ): BrowseUserLibrary {
+    const lib = upsertBookmark(this.libOf(userId), input);
+    this.saveLib(userId, lib);
+    return lib;
+  }
+
+  deleteBookmark(userId: string, id: string): BrowseUserLibrary {
+    const lib = removeBookmark(this.libOf(userId), id);
+    this.saveLib(userId, lib);
+    return lib;
+  }
+
+  heartbeat(userId: string, sessionId: string): void {
+    const s = this.requireSession(userId, sessionId);
+    s.lastHeartbeatAt = Date.now();
+  }
+
+  /** Kill browser + ephemeral user if heartbeat stale (call from timer). */
+  async reapStaleSessions(maxIdleMs = 45_000): Promise<number> {
+    const now = Date.now();
+    let n = 0;
+    for (const s of this.store.listAll()) {
+      if (s.engine !== 'browser') continue;
+      const last = s.lastHeartbeatAt ?? s.lastAccessAt;
+      if (now - last > maxIdleMs) {
+        await this.teardownBrowserSession(s.userId, s.sessionId);
+        n += 1;
+      }
+    }
+    return n;
+  }
+
+  async teardownBrowserSession(userId: string, sessionId: string): Promise<void> {
+    const s = this.store.getById(sessionId);
+    if (s && s.userId === userId) {
+      const lib = saveSnapshot(this.libOf(userId), {
+        tabs: s.currentUrl ? [{ url: s.currentUrl }] : [],
+        activeIndex: 0,
+        mode: s.mode,
+        engine: s.engine,
+        updatedAt: new Date().toISOString(),
+      });
+      this.saveLib(userId, lib);
+    }
+    await this.browser.closeSession(sessionId);
+    if (s?.ephemeralUsername) {
+      const host = this.getHost?.();
+      if (host) {
+        await destroyEphemeralBrowseUser({
+          host,
+          username: s.ephemeralUsername,
+          homeDir: s.ephemeralHomeDir,
+        });
+      }
+    }
+    this.store.delete(sessionId, userId);
+  }
 
   /** Live policy: panel settings overlay env/base. */
   effectivePolicy(): HostBrowsePolicy {
@@ -154,9 +262,10 @@ export class HostBrowseService {
       });
     }
     if (s.engine === 'browser') {
-      await this.browser.closeSession(sessionId);
+      await this.teardownBrowserSession(userId, sessionId);
+    } else {
+      this.store.delete(sessionId, userId);
     }
-    this.store.delete(sessionId, userId);
     this.audit?.({
       action: 'host_browse.session_delete',
       userId,
@@ -223,6 +332,39 @@ export class HostBrowseService {
     s: HostBrowseSession,
     input: { url?: string; action?: HostBrowseNavigateAction },
   ): Promise<HostBrowseFetchResult> {
+    // Ephemeral Linux user for isolation (best-effort when EXECUTE available)
+    if (!s.ephemeralUsername && this.getHost && this.getDataDir) {
+      const created = await createEphemeralBrowseUser({
+        host: this.getHost(),
+        dataDir: this.getDataDir(),
+        panelUserId: userId,
+        sessionId: s.sessionId,
+      });
+      if (created.ok) {
+        s.ephemeralUsername = created.user.username;
+        s.ephemeralHomeDir = created.user.homeDir;
+        this.audit?.({
+          action: 'host_browse.ephemeral_user',
+          userId,
+          ok: true,
+          detail: { username: created.user.username, sessionId: s.sessionId },
+        });
+      }
+      // If blocked (no execute), still run Chrome as panel process — note in audit
+      else if (created.blocked) {
+        this.audit?.({
+          action: 'host_browse.ephemeral_user',
+          userId,
+          ok: false,
+          detail: {
+            sessionId: s.sessionId,
+            notes: created.notes,
+            requiresExecute: created.requiresExecute,
+          },
+        });
+      }
+    }
+
     await this.browser.openSession({
       sessionId: s.sessionId,
       userId,
@@ -233,7 +375,6 @@ export class HostBrowseService {
     let nav;
     if (action === 'back') {
       nav = await this.browser.goBack(s.sessionId);
-      // history index for browser is approximate
       if (s.historyIndex > 0) s.historyIndex -= 1;
     } else if (action === 'forward') {
       nav = await this.browser.goForward(s.sessionId);
@@ -247,9 +388,45 @@ export class HostBrowseService {
           details: { field: 'url' },
         });
       }
+      const safety = evaluateNavigateSafety({
+        url: input.url.startsWith('http') ? input.url : `https://${input.url}`,
+        level:
+          (this.getPanelConfig?.() as { safetyLevel?: 'strict' | 'standard' | 'relaxed' } | undefined)
+            ?.safetyLevel ?? 'standard',
+        extraBlockHosts: (
+          this.getPanelConfig?.() as { blockHosts?: string[] } | undefined
+        )?.blockHosts,
+      });
+      if (safety.action === 'block') {
+        return {
+          ok: false,
+          status: 0,
+          finalUrl: input.url,
+          contentType: null,
+          bytes: 0,
+          warnings: [],
+          contentPath: '',
+          latencyMs: 0,
+          rewritten: false,
+          blocked: true,
+          blockReason: safety.reason,
+          engine: 'browser',
+          errorCode: safety.code,
+        };
+      }
       nav = await this.browser.navigate(s.sessionId, input.url);
+      if (safety.action === 'warn') {
+        nav.warnings = [...(nav.warnings ?? []), safety.code];
+      }
       if (!nav.blocked) {
         this.store.pushHistory(s, nav.finalUrl, nav.title);
+        this.saveLib(
+          userId,
+          libPushHistory(this.libOf(userId), {
+            url: nav.finalUrl,
+            title: nav.title,
+          }),
+        );
       }
     }
 
