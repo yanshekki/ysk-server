@@ -158,6 +158,16 @@ async function acceptLiveClient(
     });
   }
 
+  const pushTabs = async () => {
+    try {
+      const tabs = await ctx.hostBrowse.listTabs(rec.userId, rec.sessionId);
+      sendJson(ws, { t: 'tabs', tabs });
+    } catch {
+      /* */
+    }
+  };
+  void pushTabs();
+
   ws.on('message', (data) => {
     void (async () => {
       try {
@@ -179,6 +189,8 @@ async function acceptLiveClient(
           everyNthFrame?: number;
           maxWidthCap?: number;
           maxHeightCap?: number;
+          pageId?: string;
+          url?: string;
         };
         const kind = msg.t || msg.type;
 
@@ -236,6 +248,43 @@ async function acceptLiveClient(
             onFrame,
           );
           sendJson(ws, { t: 'stream_ok', stream });
+        } else if (kind === 'tab_open') {
+          const r = await ctx.hostBrowse.openTab(
+            rec.userId,
+            rec.sessionId,
+            msg.url,
+          );
+          sendJson(ws, { t: 'tabs', tabs: r.tabs, pageId: r.pageId });
+        } else if (kind === 'tab_switch' && msg.pageId) {
+          const r = await ctx.hostBrowse.switchTab(
+            rec.userId,
+            rec.sessionId,
+            msg.pageId,
+          );
+          sendJson(ws, {
+            t: 'tabs',
+            tabs: r.tabs,
+            pageId: r.pageId,
+          });
+          if (r.currentUrl) {
+            sendJson(ws, { t: 'meta', url: r.currentUrl, title: r.title });
+          }
+        } else if (kind === 'tab_close' && msg.pageId) {
+          const r = await ctx.hostBrowse.closeTab(
+            rec.userId,
+            rec.sessionId,
+            msg.pageId,
+          );
+          sendJson(ws, {
+            t: 'tabs',
+            tabs: r.tabs,
+            pageId: r.activePageId,
+          });
+          if (r.currentUrl) {
+            sendJson(ws, { t: 'meta', url: r.currentUrl, title: '' });
+          }
+        } else if (kind === 'tabs_list') {
+          await pushTabs();
         } else if (kind === 'ping') {
           sendJson(ws, { t: 'pong', ts: Date.now() });
         }

@@ -242,6 +242,47 @@ export const hostBrowseApi = {
   /** Authenticated download URL (use with token header via fetch helper). */
   downloadFilePath: (sessionId: string, downloadId: string) =>
     `/api/v1/host-browse/sessions/${encodeURIComponent(sessionId)}/downloads/${encodeURIComponent(downloadId)}`,
+
+  listTabs: (sessionId: string) =>
+    api.requestRaw<{ ok: boolean; tabs: HostBrowseTab[] }>(
+      `/api/v1/host-browse/sessions/${encodeURIComponent(sessionId)}/tabs`,
+    ),
+
+  openTab: (sessionId: string, body?: { url?: string }) =>
+    api.requestRaw<{ ok: boolean; pageId: string; tabs: HostBrowseTab[] }>(
+      `/api/v1/host-browse/sessions/${encodeURIComponent(sessionId)}/tabs`,
+      { method: 'POST', body: JSON.stringify(body || {}) },
+    ),
+
+  switchTab: (sessionId: string, pageId: string) =>
+    api.requestRaw<{
+      ok: boolean;
+      pageId: string;
+      tabs: HostBrowseTab[];
+      currentUrl: string | null;
+      title: string;
+    }>(
+      `/api/v1/host-browse/sessions/${encodeURIComponent(sessionId)}/tabs/${encodeURIComponent(pageId)}/activate`,
+      { method: 'POST', body: '{}' },
+    ),
+
+  closeTab: (sessionId: string, pageId: string) =>
+    api.requestRaw<{
+      ok: boolean;
+      activePageId: string | null;
+      tabs: HostBrowseTab[];
+      currentUrl: string | null;
+    }>(
+      `/api/v1/host-browse/sessions/${encodeURIComponent(sessionId)}/tabs/${encodeURIComponent(pageId)}`,
+      { method: 'DELETE' },
+    ),
+};
+
+export type HostBrowseTab = {
+  pageId: string;
+  url: string;
+  title: string;
+  active: boolean;
 };
 
 export type HostBrowseDownload = {

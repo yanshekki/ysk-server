@@ -357,6 +357,50 @@ export async function handleHostBrowseRoutes(
       return true;
     }
 
+    // Multi-tab (browser engine)
+    if (method === 'GET' && rest === '/tabs') {
+      const meta = svc.getSession(user.id, sessionId);
+      if (meta.engine !== 'browser') {
+        sendJson(res, 400, {
+          ok: false,
+          code: ErrorCodes.VALIDATION,
+          message: 'tabs require browser engine',
+        });
+        return true;
+      }
+      const tabs = await svc.listTabs(user.id, sessionId);
+      sendJson(res, 200, { ok: true, tabs });
+      return true;
+    }
+    if (method === 'POST' && rest === '/tabs') {
+      const meta = svc.getSession(user.id, sessionId);
+      if (meta.engine !== 'browser') {
+        sendJson(res, 400, {
+          ok: false,
+          code: ErrorCodes.VALIDATION,
+          message: 'tabs require browser engine',
+        });
+        return true;
+      }
+      const raw = await readBody(req);
+      const data = JSON.parse(raw || '{}') as { url?: string };
+      const result = await svc.openTab(user.id, sessionId, data.url);
+      sendJson(res, 200, { ok: true, ...result });
+      return true;
+    }
+    const tabAct = rest.match(/^\/tabs\/([^/]+)\/activate$/);
+    if (method === 'POST' && tabAct) {
+      const result = await svc.switchTab(user.id, sessionId, tabAct[1]);
+      sendJson(res, 200, { ok: true, ...result });
+      return true;
+    }
+    const tabDel = rest.match(/^\/tabs\/([^/]+)$/);
+    if (method === 'DELETE' && tabDel) {
+      const result = await svc.closeTab(user.id, sessionId, tabDel[1]);
+      sendJson(res, 200, { ok: true, ...result });
+      return true;
+    }
+
     sendJson(res, 404, {
       ok: false,
       code: ErrorCodes.NOT_FOUND,

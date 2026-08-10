@@ -100,6 +100,51 @@ export class HostBrowseService {
     return this.browser.listDownloads(sessionId);
   }
 
+  async listTabs(userId: string, sessionId: string) {
+    this.requireSession(userId, sessionId);
+    await this.ensureBrowserSession(userId, sessionId);
+    return this.browser.listTabsDetailed(sessionId);
+  }
+
+  async openTab(userId: string, sessionId: string, url?: string) {
+    this.requireSession(userId, sessionId);
+    await this.ensureBrowserSession(userId, sessionId);
+    const { pageId } = await this.browser.openTab(sessionId, url);
+    if (url) {
+      const s = this.requireSession(userId, sessionId);
+      s.currentUrl = url;
+      this.snapshotSession(userId, sessionId);
+    }
+    const tabs = await this.browser.listTabsDetailed(sessionId);
+    return { pageId, tabs };
+  }
+
+  async switchTab(userId: string, sessionId: string, pageId: string) {
+    this.requireSession(userId, sessionId);
+    await this.browser.switchTab(sessionId, pageId);
+    const tabs = await this.browser.listTabsDetailed(sessionId);
+    const active = tabs.find((t) => t.active);
+    if (active?.url) {
+      const s = this.requireSession(userId, sessionId);
+      s.currentUrl = active.url;
+    }
+    this.snapshotSession(userId, sessionId);
+    return { pageId, tabs, currentUrl: active?.url ?? null, title: active?.title ?? '' };
+  }
+
+  async closeTab(userId: string, sessionId: string, pageId: string) {
+    this.requireSession(userId, sessionId);
+    const r = await this.browser.closeTab(sessionId, pageId);
+    const tabs = await this.browser.listTabsDetailed(sessionId);
+    const active = tabs.find((t) => t.active);
+    if (active?.url) {
+      const s = this.requireSession(userId, sessionId);
+      s.currentUrl = active.url;
+    }
+    this.snapshotSession(userId, sessionId);
+    return { activePageId: r.activePageId, tabs, currentUrl: active?.url ?? null };
+  }
+
   getDownloadFile(userId: string, sessionId: string, downloadId: string) {
     this.requireSession(userId, sessionId);
     const d = this.browser.getDownload(sessionId, downloadId);

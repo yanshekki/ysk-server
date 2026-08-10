@@ -525,6 +525,7 @@ export class BrowserEngine {
     }
     h.activePageId = pageId;
     h.page = page;
+    if (h.audioBridgeOn) await this.injectAudioBootstrap(page);
     if (h.onFrame) await this.startScreencast(sessionId, h.onFrame);
   }
 
@@ -557,16 +558,46 @@ export class BrowserEngine {
     if (!h) return [];
     const out: Array<{ pageId: string; url: string; title: string; active: boolean }> = [];
     for (const [pageId, page] of h.pages) {
+      let url = '';
+      try {
+        url = page.url();
+      } catch {
+        url = '';
+      }
+      out.push({
+        pageId,
+        url,
+        title: url === 'about:blank' ? '' : url,
+        active: pageId === h.activePageId,
+      });
+    }
+    return out;
+  }
+
+  /** Async list with document titles (for API / UI). */
+  async listTabsDetailed(
+    sessionId: string,
+  ): Promise<Array<{ pageId: string; url: string; title: string; active: boolean }>> {
+    const h = this.handles.get(sessionId);
+    if (!h) return [];
+    const out: Array<{ pageId: string; url: string; title: string; active: boolean }> = [];
+    for (const [pageId, page] of h.pages) {
+      let url = '';
       let title = '';
       try {
-        title = page.url() === 'about:blank' ? '' : page.url();
+        url = page.url();
+      } catch {
+        /* */
+      }
+      try {
+        title = (await page.title()) || '';
       } catch {
         /* */
       }
       out.push({
         pageId,
-        url: page.url(),
-        title,
+        url,
+        title: title || url || '',
         active: pageId === h.activePageId,
       });
     }

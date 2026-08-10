@@ -36,6 +36,7 @@ import {
   type HostBrowsePanelSettings,
   type HostBrowseSafetyLevel,
   type HostBrowseSession,
+  type HostBrowseTab,
 } from '../../features/host-browse/api';
 import { clientToPage } from '../../features/host-browse/live-geometry';
 import { PcmPlayer } from '../../features/host-browse/pcm-player';
@@ -69,7 +70,7 @@ export function HostBrowsePage() {
   const [livePhase, setLivePhase] = useState<LivePhase>('idle');
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [warns, setWarns] = useState<string[]>([]);
-  const [browserTabs, setBrowserTabs] = useState<Array<{ id: string; url: string; title: string }>>([]);
+  const [browserTabs, setBrowserTabs] = useState<HostBrowseTab[]>([]);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
   const [homeUrl, setHomeUrl] = useState('https://www.google.com/');
   const [bookmarked, setBookmarked] = useState(false);
@@ -349,6 +350,12 @@ export function HostBrowsePage() {
               });
             } else if (msg.t === 'meta' && msg.url) {
               setUrlDraft(msg.url);
+            } else if (msg.t === 'tabs' && Array.isArray((msg as { tabs?: HostBrowseTab[] }).tabs)) {
+              const tabs = (msg as { tabs: HostBrowseTab[] }).tabs;
+              setBrowserTabs(tabs);
+              const act = tabs.find((x) => x.active) || tabs[0];
+              setActiveTabId(act?.pageId ?? null);
+              if (act?.url) setUrlDraft(act.url);
             } else if (msg.t === 'stream_ok' && msg.stream) {
               setStreamMeta({
                 quality: msg.stream.quality,
@@ -453,9 +460,45 @@ export function HostBrowsePage() {
         setFrameSrc(result.contentPath);
         if (iframeRef.current) iframeRef.current.src = result.contentPath;
       }
+      if (s.engine === 'browser' && result.finalUrl && !result.blocked) {
+        setBrowserTabs((prev) => {
+          if (!prev.length) {
+            return [
+              {
+                pageId: activeTabId || 'main',
+                url: result.finalUrl,
+                title: result.title || result.finalUrl,
+                active: true,
+              },
+            ];
+          }
+          return prev.map((tb) =>
+            tb.active || tb.pageId === activeTabId
+              ? {
+                  ...tb,
+                  url: result.finalUrl,
+                  title: result.title || result.finalUrl,
+                  active: true,
+                }
+              : { ...tb, active: false },
+          );
+        });
+      }
     },
-    [t],
+    [t, activeTabId],
   );
+
+  const syncTabsFromServer = useCallback(async (sessionId: string) => {
+    try {
+      const r = await hostBrowseApi.listTabs(sessionId);
+      setBrowserTabs(r.tabs || []);
+      const act = (r.tabs || []).find((x) => x.active) || r.tabs?.[0];
+      setActiveTabId(act?.pageId ?? null);
+      if (act?.url) setUrlDraft(act.url);
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   const runNavigate = useCallback(
     async (body: {
@@ -478,31 +521,12 @@ export function HostBrowsePage() {
         }
         applyNav(s, result);
 
-        if (s.engine === 'browser' && !result.blocked && result.finalUrl) {
-          const tabId = activeTabId || `t-${Date.now()}`;
-          setBrowserTabs((tabs) => {
-            const exists = tabs.find((x) => x.id === tabId);
-            if (exists) {
-              return tabs.map((x) =>
-                x.id === tabId
-                  ? { ...x, url: result.finalUrl, title: result.title || result.finalUrl }
-                  : x,
-              );
-            }
-            return [
-              ...tabs,
-              {
-                id: tabId,
-                url: result.finalUrl,
-                title: result.title || result.finalUrl,
-              },
-            ].slice(0, 6);
-          });
-          setActiveTabId(tabId);
+        if (s.engine === 'browser' && !result.blocked) {
           setBookmarked(
             library.bookmarks.some((b) => b.url === result.finalUrl),
           );
           await openLive(s.sessionId);
+          await syncTabsFromServer(s.sessionId);
         }
       } catch (e) {
         const msg =
@@ -520,7 +544,7 @@ export function HostBrowsePage() {
         setBusy(false);
       }
     },
-    [applyNav, ensureSession, mode, engine, openLive, t],
+    [applyNav, ensureSession, mode, engine, openLive, syncTabsFromServer, library.bookmarks, t],
   );
 
   const onGo = useCallback(() => {
@@ -549,31 +573,38 @@ export function HostBrowsePage() {
             : engine;
       setMode(m);
       setEngine(eng);
-      const tabs = resumeSnap.tabs
-        .filter((tb) => tb.url)
-        .slice(0, 6)
-        .map((tb, i) => ({
-          id: `t-resume-${i}`,
-          url: tb.url,
-          title: tb.title || tb.url,
-        }));
+      const urls = resumeSnap.tabs.filter((tb) => tb.url).slice(0, 6);
       const idx = Math.min(
         Math.max(0, resumeSnap.activeIndex || 0),
-        Math.max(0, tabs.length - 1),
+        Math.max(0, urls.length - 1),
       );
-      const active = tabs[idx] || tabs[0];
-      setBrowserTabs(tabs);
-      setActiveTabId(active?.id ?? null);
-      if (active?.url) {
-        setUrlDraft(active.url);
+      const activeUrl = urls[idx]?.url || urls[0]?.url;
+      if (activeUrl) {
+        setUrlDraft(activeUrl);
         const s = await ensureSession(m, eng);
         const result = await hostBrowseApi.navigate(s.sessionId, {
-          url: active.url,
+          url: activeUrl,
           action: 'goto',
         });
         applyNav(s, result);
         if (eng === 'browser') {
+          // Open remaining snapshot URLs as real server tabs
+          for (let i = 0; i < urls.length; i++) {
+            if (i === idx) continue;
+            const u = urls[i]?.url;
+            if (u) {
+              await hostBrowseApi.openTab(s.sessionId, { url: u }).catch(() => undefined);
+            }
+          }
+          if (idx > 0) {
+            const listed = await hostBrowseApi.listTabs(s.sessionId).catch(() => null);
+            const want = listed?.tabs?.[idx];
+            if (want) {
+              await hostBrowseApi.switchTab(s.sessionId, want.pageId).catch(() => undefined);
+            }
+          }
           await openLive(s.sessionId);
+          await syncTabsFromServer(s.sessionId);
         }
       }
       setResumeSnap(null);
@@ -591,6 +622,7 @@ export function HostBrowsePage() {
     ensureSession,
     applyNav,
     openLive,
+    syncTabsFromServer,
     t,
   ]);
 
@@ -1187,31 +1219,60 @@ export function HostBrowsePage() {
                 </div>
               ) : null}
 
-              {isBrowser && browserTabs.length > 0 ? (
+              {isBrowser && session ? (
                 <div className="hb-tabs">
                   {browserTabs.map((tb) => (
                     <button
-                      key={tb.id}
+                      key={tb.pageId}
                       type="button"
-                      className={`hb-tabs__chip${tb.id === activeTabId ? ' is-active' : ''}`}
+                      className={`hb-tabs__chip${
+                        tb.active || tb.pageId === activeTabId ? ' is-active' : ''
+                      }`}
                       onClick={() => {
-                        setActiveTabId(tb.id);
-                        setUrlDraft(tb.url);
-                        void runNavigate({ url: tb.url, action: 'goto' });
+                        if (!session) return;
+                        void (async () => {
+                          try {
+                            const r = await hostBrowseApi.switchTab(
+                              session.sessionId,
+                              tb.pageId,
+                            );
+                            setBrowserTabs(r.tabs || []);
+                            setActiveTabId(r.pageId);
+                            if (r.currentUrl) setUrlDraft(r.currentUrl);
+                            sendWs({ t: 'tabs_list' });
+                          } catch (e) {
+                            setError(
+                              e instanceof Error ? e.message : t('common.loadFailed'),
+                            );
+                          }
+                        })();
                       }}
                     >
-                      <span className="hb-tabs__title">{tb.title.slice(0, 24)}</span>
+                      <span className="hb-tabs__title">
+                        {(tb.title || tb.url || t('hostBrowse.newTab')).slice(0, 24)}
+                      </span>
                       <span
                         className="hb-tabs__x"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setBrowserTabs((tabs) => {
-                            const next = tabs.filter((x) => x.id !== tb.id);
-                            if (activeTabId === tb.id) {
-                              setActiveTabId(next[0]?.id ?? null);
+                          if (!session) return;
+                          void (async () => {
+                            try {
+                              const r = await hostBrowseApi.closeTab(
+                                session.sessionId,
+                                tb.pageId,
+                              );
+                              setBrowserTabs(r.tabs || []);
+                              setActiveTabId(r.activePageId);
+                              if (r.currentUrl) setUrlDraft(r.currentUrl);
+                            } catch (err) {
+                              setError(
+                                err instanceof Error
+                                  ? err.message
+                                  : t('common.loadFailed'),
+                              );
                             }
-                            return next;
-                          });
+                          })();
                         }}
                       >
                         ×
@@ -1222,16 +1283,24 @@ export function HostBrowsePage() {
                     type="button"
                     className="hb-tabs__add"
                     title={t('hostBrowse.newTab')}
+                    disabled={browserTabs.length >= 6 || busy}
                     onClick={() => {
-                      const id = `t-${Date.now()}`;
-                      setBrowserTabs((tabs) =>
-                        [...tabs, { id, url: homeUrl, title: t('hostBrowse.newTab') }].slice(
-                          0,
-                          6,
-                        ),
-                      );
-                      setActiveTabId(id);
-                      setUrlDraft(homeUrl);
+                      if (!session) return;
+                      void (async () => {
+                        try {
+                          const r = await hostBrowseApi.openTab(session.sessionId, {
+                            url: homeUrl,
+                          });
+                          setBrowserTabs(r.tabs || []);
+                          setActiveTabId(r.pageId);
+                          setUrlDraft(homeUrl);
+                          sendWs({ t: 'tabs_list' });
+                        } catch (e) {
+                          setError(
+                            e instanceof Error ? e.message : t('common.loadFailed'),
+                          );
+                        }
+                      })();
                     }}
                   >
                     +
