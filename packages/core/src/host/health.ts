@@ -62,14 +62,24 @@ export interface HttpHealthResult {
 }
 
 /**
- * Poll HTTP GET until status 2xx or timeout.
+ * Poll HTTP GET until the app responds or timeout.
+ *
+ * @param opts.acceptRedirect — treat 3xx as healthy without following (needed when
+ *   Roundcube/nginx force_https redirects loopback health checks to public HTTPS
+ *   that is not ready yet). Default false keeps strict 2xx for callers that need it.
  */
 export async function waitHttpOk(
   url: string,
-  opts: { timeoutMs?: number; intervalMs?: number } = {},
+  opts: {
+    timeoutMs?: number;
+    intervalMs?: number;
+    /** Accept 3xx without following redirects (deploy health). */
+    acceptRedirect?: boolean;
+  } = {},
 ): Promise<HttpHealthResult> {
   const timeoutMs = opts.timeoutMs ?? 12_000;
   const intervalMs = opts.intervalMs ?? 250;
+  const acceptRedirect = opts.acceptRedirect === true;
   const start = Date.now();
   const deadline = start + timeoutMs;
   let lastErr = '';
@@ -80,10 +90,27 @@ export async function waitHttpOk(
         method: 'GET',
         signal: AbortSignal.timeout(2_000),
         headers: { Accept: 'text/plain,*/*' },
+        // Manual: do not chase force_https → https://public-host (often fails on loopback)
+        redirect: acceptRedirect ? 'manual' : 'follow',
       });
-      const body = await res.text();
+      const body = await res.text().catch(() => '');
       if (res.ok) {
-        return { ok: true, status: res.status, body: body.slice(0, 512), ms: Date.now() - start, url };
+        return {
+          ok: true,
+          status: res.status,
+          body: body.slice(0, 512),
+          ms: Date.now() - start,
+          url,
+        };
+      }
+      if (acceptRedirect && res.status >= 300 && res.status < 400) {
+        return {
+          ok: true,
+          status: res.status,
+          body: body.slice(0, 512),
+          ms: Date.now() - start,
+          url,
+        };
       }
       lastErr = `HTTP ${res.status}`;
     } catch (e) {

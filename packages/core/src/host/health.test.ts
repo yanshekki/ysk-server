@@ -29,4 +29,32 @@ describe('host health helpers', () => {
       );
     }
   });
+
+  it('waitHttpOk acceptRedirect treats 302 as healthy without following', async () => {
+    const port = await findFreePort(3400, 3499);
+    const server = createServer((_req, res) => {
+      // Simulate Roundcube force_https
+      res.statusCode = 302;
+      res.setHeader('Location', 'https://webmail.example.test/');
+      res.end();
+    });
+    await new Promise<void>((resolve) => server.listen(port, '127.0.0.1', () => resolve()));
+    try {
+      const strict = await waitHttpOk(`http://127.0.0.1:${port}/`, {
+        timeoutMs: 1500,
+        intervalMs: 100,
+      });
+      expect(strict.ok).toBe(false);
+      const soft = await waitHttpOk(`http://127.0.0.1:${port}/`, {
+        timeoutMs: 3000,
+        acceptRedirect: true,
+      });
+      expect(soft.ok).toBe(true);
+      expect(soft.status).toBe(302);
+    } finally {
+      await new Promise<void>((resolve, reject) =>
+        server.close((e) => (e ? reject(e) : resolve())),
+      );
+    }
+  });
 });

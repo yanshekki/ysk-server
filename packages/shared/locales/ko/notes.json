@@ -2753,6 +2753,8 @@
     "projectNotFound": "Webmail 프로젝트를 찾을 수 없음",
     "snappyAdminOnce": "SnappyMail 관리자 {{user}} — 비밀번호는 한 번만 표시됨(결과 / ONCE 파일 참고)",
     "snappyAdminPassword": "SnappyMail 관리자 비밀번호(지금 복사): {{password}}",
-    "publicHtmlStub": "Document root still has the SnappyMail/RainLoop package stub. HTTP must serve the public_html app tree — reinstall webmail after this fix."
+    "publicHtmlStub": "Document root still has the SnappyMail/RainLoop package stub. HTTP must serve the public_html app tree — reinstall webmail after this fix.",
+    "goLiveFailed": "Webmail files installed, but project go-live / deploy health failed — expand details.",
+    "forceHttpsNeedsSsl": "Roundcube force_https is on: bind SSL for this hostname before relying on public HTTPS, or uncheck force HTTPS until then."
   }
 }

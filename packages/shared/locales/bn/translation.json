@@ -7421,7 +7421,9 @@
       "projectNotFound": "Webmail প্রজেক্ট পাওয়া যায়নি",
       "snappyAdminOnce": "SnappyMail অ্যাডমিন {{user}} — পাসওয়ার্ড একবার দেখানো হয় (result / ONCE ফাইল দেখুন)",
       "snappyAdminPassword": "SnappyMail অ্যাডমিন পাসওয়ার্ড (এখন কপি করুন): {{password}}",
-      "publicHtmlStub": "Document root still has the SnappyMail/RainLoop package stub. HTTP must serve the public_html app tree — reinstall webmail after this fix."
+      "publicHtmlStub": "Document root still has the SnappyMail/RainLoop package stub. HTTP must serve the public_html app tree — reinstall webmail after this fix.",
+      "goLiveFailed": "Webmail files installed, but project go-live / deploy health failed — expand details.",
+      "forceHttpsNeedsSsl": "Roundcube force_https is on: bind SSL for this hostname before relying on public HTTPS, or uncheck force HTTPS until then."
     }
   },
   "ops": {

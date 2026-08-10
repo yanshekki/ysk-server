@@ -838,7 +838,7 @@ export async function createWebmailProject(input: {
     return { ok: false, tool, notes: [msg], written, apply_status: 'failed' };
   }
   notes.push(tl('notes.webmail.projectCreated', { id: created.project.id, name, tool }));
-  if (created.scaffold?.notes?.length) notes.push(...created.scaffold.notes.slice(0, 4));
+  // Do not surface php-hello scaffold noise when we immediately replace with Roundcube/Snappy
 
   const row = input.projects.get(created.project.id);
   const docRoot = join(row.homeDir, (row.docRoot || 'app/public').replace(/^\//, ''));
@@ -930,18 +930,32 @@ export async function createWebmailProject(input: {
   }
 
   const live = await input.projectOps.goLive(row.id, { actor: input.actor });
-  notes.push(...(live.notes ?? []).slice(0, 16));
+  const liveNotes = (live.notes ?? []).slice(0, 16);
+  if (!live.ok) {
+    // Surface deploy failure first so OpsResultPanel summary is not only install success lines
+    notes.unshift(
+      tl('notes.webmail.goLiveFailed'),
+      ...liveNotes.filter((n) => /fail|error|unhealthy|incomplete|失敗|錯誤/i.test(n)).slice(0, 6),
+    );
+    notes.push(...liveNotes.filter((n) => !notes.includes(n)).slice(0, 10));
+  } else {
+    notes.push(...liveNotes);
+  }
   notes.push(tl('notes.webmail.openHint'));
   notes.push(tl('notes.webmail.sslHint', { domain }));
+  if (input.forceHttps === true) {
+    notes.push(tl('notes.webmail.forceHttpsNeedsSsl'));
+  }
   const fresh = input.projects.get(row.id);
   const blocked = Boolean(live.deploy?.requiresExecute || live.publish?.requiresExecute);
+  // Install tree is the critical path; degraded php -S + nginx still counts as applied when deploy ok
   const ok = Boolean(live.ok) && inst.ok && !blocked;
   return {
     ok,
     project: fresh,
     projectId: fresh.id,
     tool,
-    urlHint: `https://${domain}/`,
+    urlHint: input.forceHttps ? `https://${domain}/` : `http://${domain}/`,
     notes,
     written,
     blocked,
@@ -949,7 +963,9 @@ export async function createWebmailProject(input: {
     requiresRoot: Boolean(live.deploy?.requiresRoot || live.publish?.requiresRoot),
     blockMessage: blocked
       ? (live.notes ?? []).find((n) => /YSK_EXECUTE|execute|root/i.test(n))
-      : undefined,
+      : !ok
+        ? notes.find((n) => /goLive|deploy|unhealthy|失敗/i.test(n))
+        : undefined,
     apply_status: ok ? 'applied' : blocked ? 'blocked' : live.ok === false ? 'failed' : 'written',
     snappyAdminPassword: inst.snappyAdminPassword,
   };
@@ -1077,9 +1093,21 @@ export async function reinstallWebmailProject(input: {
 
   if (input.goLive !== false) {
     const live = await input.projectOps.goLive(row.id, { actor: input.actor });
-    notes.push(...(live.notes ?? []).slice(0, 12));
+    const liveNotes = (live.notes ?? []).slice(0, 12);
+    if (!live.ok) {
+      notes.unshift(
+        tl('notes.webmail.goLiveFailed'),
+        ...liveNotes.filter((n) => /fail|error|unhealthy|incomplete|失敗|錯誤/i.test(n)).slice(0, 6),
+      );
+      notes.push(...liveNotes.filter((n) => !notes.includes(n)).slice(0, 10));
+    } else {
+      notes.push(...liveNotes);
+    }
     notes.push(tl('notes.webmail.openHint'));
     notes.push(tl('notes.webmail.sslHint', { domain }));
+    if (input.forceHttps === true) {
+      notes.push(tl('notes.webmail.forceHttpsNeedsSsl'));
+    }
     const fresh = input.projects.get(row.id);
     const blocked = Boolean(live.deploy?.requiresExecute || live.publish?.requiresExecute);
     const ok = Boolean(live.ok) && inst.ok && !blocked;
@@ -1088,7 +1116,7 @@ export async function reinstallWebmailProject(input: {
       project: fresh,
       projectId: fresh.id,
       tool,
-      urlHint: `https://${domain}/`,
+      urlHint: input.forceHttps ? `https://${domain}/` : `http://${domain}/`,
       notes,
       written,
       blocked,
@@ -1096,8 +1124,10 @@ export async function reinstallWebmailProject(input: {
       requiresRoot: Boolean(live.deploy?.requiresRoot || live.publish?.requiresRoot),
       blockMessage: blocked
         ? (live.notes ?? []).find((n) => /YSK_EXECUTE|execute|root/i.test(n))
-        : undefined,
-      apply_status: ok ? 'applied' : blocked ? 'blocked' : 'written',
+        : !ok
+          ? notes.find((n) => /goLive|deploy|unhealthy|失敗/i.test(n))
+          : undefined,
+      apply_status: ok ? 'applied' : blocked ? 'blocked' : live.ok === false ? 'failed' : 'written',
       snappyAdminPassword: inst.snappyAdminPassword,
     };
   }

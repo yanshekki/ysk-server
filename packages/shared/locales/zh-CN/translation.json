@@ -7421,7 +7421,9 @@
       "projectNotFound": "找不到网页邮件项目",
       "snappyAdminOnce": "SnappyMail 管理员账号 {{user}} — 密码只显示一次（见结果／ONCE 文件）",
       "snappyAdminPassword": "SnappyMail 管理员密码（请立即复制）：{{password}}",
-      "publicHtmlStub": "文档根目录仍是 SnappyMail／RainLoop 外层 stub。HTTP 必须指向 public_html 应用树 — 请应用此修复后重新安装网页邮件。"
+      "publicHtmlStub": "文档根目录仍是 SnappyMail／RainLoop 外层 stub。HTTP 必须指向 public_html 应用树 — 请应用此修复后重新安装网页邮件。",
+      "goLiveFailed": "网页邮件文件已安装，但项目上线／部署健康检查失败 — 请展开详情。",
+      "forceHttpsNeedsSsl": "已开启 Roundcube 强制 HTTPS：请先为此主机名绑定 SSL，否则公网跳转可能失败；未绑证前可取消勾选。"
     }
   },
   "ops": {

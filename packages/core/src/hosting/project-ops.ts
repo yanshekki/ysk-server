@@ -1858,7 +1858,11 @@ export class ProjectOpsService {
     await chownProjectHome(this.host, row, notes);
 
     const url = `http://127.0.0.1:${port}/`;
-    const health = await waitHttpOk(url, { timeoutMs: opts.healthTimeoutMs ?? 12_000 });
+    // acceptRedirect: Roundcube force_https returns 3xx to public HTTPS; following breaks loopback health
+    const health = await waitHttpOk(url, {
+      timeoutMs: opts.healthTimeoutMs ?? 12_000,
+      acceptRedirect: true,
+    });
     const listening = await isPortListening(port);
     const processStatus: OpsProcessStatus =
       health.ok && listening ? 'running' : 'unhealthy';
