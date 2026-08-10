@@ -181,14 +181,9 @@ export function VncPage() {
           {s.installed ? t('vnc.installed') : t('vnc.notInstalled')}
         </Badge>
       </div>
-      <p className="muted u-text-sm u-mb-0">
-        {s.bins.length
-          ? t('vnc.stackBins', { bins: s.bins.join(', ') })
-          : t('vnc.stackMissing', {
-              bins: s.missingBins.slice(0, 3).join(', ') || '—',
-            })}
-      </p>
-      {s.notes?.[0] ? <p className="muted u-text-xs">{s.notes[0]}</p> : null}
+      {!s.installed ? (
+        <p className="muted u-text-sm u-mb-0">{t('vnc.stackMissingShort')}</p>
+      ) : null}
     </div>
   );
 

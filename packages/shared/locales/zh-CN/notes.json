@@ -2777,7 +2777,7 @@
     "snappyFullEmailLogin": "邮箱登录须用完整电邮（user@domain），不要只用 local-part"
   },
   "vpn": {
-    "needInstall": "請先安裝 {{engine}}（安裝分頁／一鍵安裝）。",
+    "needInstall": "请安装 {{engine}}",
     "openvpnComing": "OpenVPN 完整流程將於後續版本提供。",
     "outlineComing": "Outline／Shadowsocks 將於後續版本提供。",
     "needExecuteServer": "VPN 伺服器設定需 root 與 YSK_EXECUTE=1。",
@@ -2810,7 +2810,7 @@
     "ssSharedPassword": "所有 ss:// 标签共用同一服务器密码（重新启动服务器可轮换）。"
   },
   "vnc": {
-    "needInstall": "请在 VNC「安装」分页安装 {{stack}}（需 root + YSK_EXECUTE）。",
+    "needInstall": "请安装 {{stack}}",
     "needExecute": "未启用 YSK_EXECUTE — 无法安装软件包或创建 Linux 用户。",
     "needRoot": "非 root — 无法 useradd 或应用 vncserver。",
     "novncAssetsOnly": "已找到 noVNC 网页资源；仍缺 websockify 可执行文件。",

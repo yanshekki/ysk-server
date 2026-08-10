@@ -145,7 +145,6 @@ export function VpnPage() {
           up: e.clientConnectedCount,
         })}
       </p>
-      {e.notes?.[0] ? <p className="muted u-text-xs">{e.notes[0]}</p> : null}
     </div>
   );
 

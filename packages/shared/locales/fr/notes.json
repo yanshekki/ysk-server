@@ -2777,7 +2777,7 @@
     "snappyFullEmailLogin": "Mailbox login must use full email (user@domain); short local-part is disabled"
   },
   "vpn": {
-    "needInstall": "Install {{engine}} first (Install tab / one-click).",
+    "needInstall": "Install {{engine}}",
     "openvpnComing": "OpenVPN full path is staged for the next release.",
     "outlineComing": "Outline / Shadowsocks is staged for a later release.",
     "needExecuteServer": "VPN server setup requires root and YSK_EXECUTE=1.",
@@ -2810,7 +2810,7 @@
     "ssSharedPassword": "All ss:// labels share one server password (rotate by re-ensuring server)."
   },
   "vnc": {
-    "needInstall": "Install {{stack}} from the VNC Install tab (root + YSK_EXECUTE).",
+    "needInstall": "Install {{stack}}",
     "needExecute": "YSK_EXECUTE is disabled — cannot install packages or provision Linux users.",
     "needRoot": "Not running as root — system useradd and vncserver apply are blocked.",
     "novncAssetsOnly": "noVNC web assets found; websockify binary still missing.",
