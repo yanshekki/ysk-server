@@ -1616,5 +1616,41 @@
         "to": "/terminal"
       }
     ]
+  },
+  "vpn": {
+    "id": "vpn",
+    "title": "VPN",
+    "summary": "本機可作 WireGuard 伺服器（給手機／筆電連入），亦可作客戶端連到其他 VPN。",
+    "canDo": [
+      "一鍵安裝 WireGuard 工具",
+      "啟動伺服器並在防火牆放行監聽埠",
+      "建立客戶端並下載 conf／顯示 QR Code",
+      "匯入 conf 令本機作為客戶端連線"
+    ],
+    "workflow": [
+      "安裝分頁 → 安裝 WireGuard",
+      "伺服器分頁 → 設定端點／埠 → 啟動伺服器 → 開防火牆",
+      "建立客戶端 → 下載 conf 或用手機掃 QR",
+      "客戶端分頁 → 貼上 conf → 需要時連線"
+    ],
+    "notes": [
+      "安裝、套用伺服器、客戶端連線需 root 與 YSK_EXECUTE",
+      "請填正確公開端點（IP 或域名），否則手機無法連上",
+      "伺服器 wg0 與客戶端 wg-c-* 可並存；注意 AllowedIPs／路由"
+    ],
+    "cliHints": [
+      "wg show",
+      "systemctl status wg-quick@wg0"
+    ],
+    "related": [
+      {
+        "label": "防護中心",
+        "to": "/protection"
+      },
+      {
+        "label": "網絡",
+        "to": "/network"
+      }
+    ]
   }
 }

@@ -4429,7 +4429,8 @@
     "software": "ソフトウェア",
     "terminal": "ターミナル",
     "hostBrowse": "ホストブラウズ",
-    "cdn": "CDN"
+    "cdn": "CDN",
+    "vpn": "VPN"
   },
   "network": {
     "title": "ネットワークインターフェース",
@@ -8536,7 +8537,8 @@
       "settingsSystem": "システム設定",
       "auditExport": "監査エクスポート",
       "securityApiKeysAdmin": "API キー管理者",
-      "networkBrowse": "ホスト経由ブラウズ"
+      "networkBrowse": "ホスト経由ブラウズ",
+      "networkVpn": "VPN management"
     },
     "aboutRoles": "役割 (工場出荷時のデフォルト)",
     "aboutRolesBody": "ロールは既定の権限を設定します。ユーザーは個別に上書きできます。",
@@ -10821,5 +10823,53 @@
     "securityClearConfirm": "ユーザー名を入力して 2FA のクリアを確認します",
     "securityClearOk": "{{name}} の 2FA をクリアしました",
     "securitySelfNote": "独自→ の2 FAを設定するには、[セキュリティ] [マイセキュリティ]を開きます。"
+  },
+  "vpn": {
+    "pageDesc": "Install and manage VPN server and client on this host. WireGuard first; OpenVPN next.",
+    "eyebrow": "VPN",
+    "tab": {
+      "overview": "Overview",
+      "server": "Server",
+      "client": "Client",
+      "install": "Install",
+      "about": "About"
+    },
+    "installed": "Installed",
+    "notInstalled": "Not installed",
+    "serverUp": "Server up",
+    "engineSummary": "Port {{port}} · server peers {{peers}} · client profiles {{clients}} (up {{up}})",
+    "executeOn": "System changes enabled (YSK_EXECUTE).",
+    "executeOff": "System changes off — install/connect need YSK_EXECUTE=1 and root.",
+    "goServer": "Server setup",
+    "goClient": "Client connect",
+    "needWireGuard": "WireGuard tools required for server and client.",
+    "needOpenVpn": "OpenVPN packages (server/client follow-up).",
+    "listenPort": "Listen port (UDP)",
+    "endpoint": "Public endpoint",
+    "endpointHint": "host:port clients use (public IP or domain). Leave empty to auto-detect IP.",
+    "ensureServer": "Start / apply WireGuard server",
+    "openFirewall": "Open firewall {{port}}/udp",
+    "peersTitle": "Server clients (peers)",
+    "peerName": "Client name",
+    "addPeer": "Create client + key",
+    "noPeers": "No clients yet",
+    "noPeersHint": "Create a named client, then download the conf or scan the QR code.",
+    "downloadKey": "Download key",
+    "showQr": "QR code",
+    "downloaded": "Config downloaded",
+    "qrReady": "QR ready",
+    "qrTitle": "QR — {{name}}",
+    "qrHint": "Scan with the WireGuard mobile app.",
+    "showConf": "Show config text",
+    "clientIntro": "Import a WireGuard conf to connect this host as a client. No inbound port needed.",
+    "profileName": "Profile name",
+    "pasteConf": "Paste .conf",
+    "importProfile": "Import profile",
+    "noProfiles": "No client profiles",
+    "noProfilesHint": "Paste a conf from another server (or a peer export).",
+    "connect": "Connect",
+    "disconnect": "Disconnect",
+    "installNote": "One-click install uses apt when YSK_EXECUTE is on. WireGuard is ready; OpenVPN UI ships next.",
+    "result": "Result"
   }
 }

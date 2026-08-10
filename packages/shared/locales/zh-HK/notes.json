@@ -2761,5 +2761,30 @@
     "docRootUpdateFailed": "無法更新專案文件根：{{detail}}",
     "sqliteSchemaReady": "已初始化 Roundcube SQLite schema",
     "sqliteSchemaFailed": "Roundcube SQLite schema 初始化失敗：{{detail}}"
+  },
+  "vpn": {
+    "needInstall": "請先安裝 {{engine}}（安裝分頁／一鍵安裝）。",
+    "openvpnComing": "OpenVPN 完整流程將於後續版本提供。",
+    "outlineComing": "Outline／Shadowsocks 將於後續版本提供。",
+    "needExecuteServer": "VPN 伺服器設定需 root 與 YSK_EXECUTE=1。",
+    "needExecuteClient": "VPN 客戶端連線需 root 與 YSK_EXECUTE=1。",
+    "keygenFailed": "WireGuard 金鑰產生失敗（是否已安裝 wg？）。",
+    "serverKeysCreated": "已建立 WireGuard 伺服器金鑰。",
+    "applyFailed": "套用 WireGuard 設定失敗：{{detail}}",
+    "serverActive": "已套用 WireGuard 伺服器（UDP {{port}}）。",
+    "serverMissing": "尚未初始化 WireGuard 伺服器 — 請先啟動伺服器。",
+    "peerCreated": "已建立客戶端「{{name}}」。",
+    "peerNotFound": "找不到客戶端。",
+    "peerRemoved": "已移除客戶端。",
+    "setEndpointHint": "請設定公開端點（host:port），手機客戶端才能連上。",
+    "invalidConf": "設定檔須包含 [Interface] 與 PrivateKey。",
+    "clientImported": "已匯入設定檔「{{name}}」。",
+    "profileNotFound": "找不到客戶端設定檔。",
+    "clientUpFailed": "連線失敗：{{detail}}",
+    "clientUp": "已連線：{{name}}",
+    "clientDown": "已斷線：{{name}}",
+    "clientDeleted": "已刪除設定檔：{{name}}",
+    "autostartOn": "已開機自動連：{{name}}",
+    "autostartOff": "已關閉開機自動連：{{name}}"
   }
 }

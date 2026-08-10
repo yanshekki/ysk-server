@@ -61,5 +61,6 @@
   "software": "软件中心",
   "terminal": "终端",
   "hostBrowse": "主機瀏覽",
-  "cdn": "CDN"
+  "cdn": "CDN",
+  "vpn": "VPN"
 }

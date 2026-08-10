@@ -4429,7 +4429,8 @@
     "software": "সফটওয়্যার",
     "terminal": "টার্মিনাল",
     "hostBrowse": "হোস্ট ব্রাউজ",
-    "cdn": "CDN"
+    "cdn": "CDN",
+    "vpn": "VPN"
   },
   "network": {
     "title": "নেটওয়ার্ক ইন্টারফেস",
@@ -8536,7 +8537,8 @@
       "settingsSystem": "সিস্টেম সেটিংস",
       "auditExport": "অডিট এক্সপোর্ট",
       "securityApiKeysAdmin": "API কী অ্যাডমিন",
-      "networkBrowse": "হোস্ট-মধ্যস্থ ব্রাউজ"
+      "networkBrowse": "হোস্ট-মধ্যস্থ ব্রাউজ",
+      "networkVpn": "VPN management"
     },
     "aboutRoles": "রোল (ফ্যাক্টরি ডিফল্ট)",
     "aboutRolesBody": "রোল ডিফল্ট সক্ষমতা নির্ধারণ করে; ব্যবহারকারীরা পৃথকগুলো ওভাররাইড করতে পারে।",
@@ -10821,5 +10823,53 @@
     "securityClearConfirm": "2FA মুছে ফেলা নিশ্চিত করতে ইউজারনেম টাইপ করুন",
     "securityClearOk": "{{name}}-এর 2FA মুছে ফেলা হয়েছে",
     "securitySelfNote": "নিজের 2FA সেট আপ করতে নিরাপত্তা → আমার নিরাপত্তা খুলুন।"
+  },
+  "vpn": {
+    "pageDesc": "Install and manage VPN server and client on this host. WireGuard first; OpenVPN next.",
+    "eyebrow": "VPN",
+    "tab": {
+      "overview": "Overview",
+      "server": "Server",
+      "client": "Client",
+      "install": "Install",
+      "about": "About"
+    },
+    "installed": "Installed",
+    "notInstalled": "Not installed",
+    "serverUp": "Server up",
+    "engineSummary": "Port {{port}} · server peers {{peers}} · client profiles {{clients}} (up {{up}})",
+    "executeOn": "System changes enabled (YSK_EXECUTE).",
+    "executeOff": "System changes off — install/connect need YSK_EXECUTE=1 and root.",
+    "goServer": "Server setup",
+    "goClient": "Client connect",
+    "needWireGuard": "WireGuard tools required for server and client.",
+    "needOpenVpn": "OpenVPN packages (server/client follow-up).",
+    "listenPort": "Listen port (UDP)",
+    "endpoint": "Public endpoint",
+    "endpointHint": "host:port clients use (public IP or domain). Leave empty to auto-detect IP.",
+    "ensureServer": "Start / apply WireGuard server",
+    "openFirewall": "Open firewall {{port}}/udp",
+    "peersTitle": "Server clients (peers)",
+    "peerName": "Client name",
+    "addPeer": "Create client + key",
+    "noPeers": "No clients yet",
+    "noPeersHint": "Create a named client, then download the conf or scan the QR code.",
+    "downloadKey": "Download key",
+    "showQr": "QR code",
+    "downloaded": "Config downloaded",
+    "qrReady": "QR ready",
+    "qrTitle": "QR — {{name}}",
+    "qrHint": "Scan with the WireGuard mobile app.",
+    "showConf": "Show config text",
+    "clientIntro": "Import a WireGuard conf to connect this host as a client. No inbound port needed.",
+    "profileName": "Profile name",
+    "pasteConf": "Paste .conf",
+    "importProfile": "Import profile",
+    "noProfiles": "No client profiles",
+    "noProfilesHint": "Paste a conf from another server (or a peer export).",
+    "connect": "Connect",
+    "disconnect": "Disconnect",
+    "installNote": "One-click install uses apt when YSK_EXECUTE is on. WireGuard is ready; OpenVPN UI ships next.",
+    "result": "Result"
   }
 }

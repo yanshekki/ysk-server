@@ -1614,5 +1614,41 @@
         "to": "/terminal"
       }
     ]
+  },
+  "vpn": {
+    "id": "vpn",
+    "title": "VPN",
+    "summary": "Host WireGuard (and later OpenVPN) as a server for phones/laptops, or connect this host as a client to another VPN.",
+    "canDo": [
+      "One-click install WireGuard tools",
+      "Start a WireGuard server and open the listen port in UFW",
+      "Create clients with downloadable conf + QR code",
+      "Import a conf and connect this host as a client"
+    ],
+    "workflow": [
+      "Install tab → install WireGuard",
+      "Server tab → set endpoint/port → Start server → Open firewall",
+      "Create a client → download conf or scan QR on the phone",
+      "Client tab → paste conf → Connect when you need egress via another VPN"
+    ],
+    "notes": [
+      "Requires root and YSK_EXECUTE for install, server apply, and client connect",
+      "Set a real public endpoint (IP or domain) or mobile clients cannot reach the server",
+      "Server (wg0) and client interfaces (wg-c-*) can coexist; watch AllowedIPs/routing"
+    ],
+    "cliHints": [
+      "wg show",
+      "systemctl status wg-quick@wg0"
+    ],
+    "related": [
+      {
+        "label": "Protection",
+        "to": "/protection"
+      },
+      {
+        "label": "Network",
+        "to": "/network"
+      }
+    ]
   }
 }

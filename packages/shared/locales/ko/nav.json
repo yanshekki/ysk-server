@@ -61,5 +61,6 @@
   "software": "Software",
   "terminal": "터미널",
   "hostBrowse": "호스트 탐색",
-  "cdn": "CDN"
+  "cdn": "CDN",
+  "vpn": "VPN"
 }

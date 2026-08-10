@@ -61,5 +61,6 @@
   "software": "Software",
   "terminal": "Terminal",
   "hostBrowse": "Host Browse",
-  "cdn": "CDN"
+  "cdn": "CDN",
+  "vpn": "VPN"
 }

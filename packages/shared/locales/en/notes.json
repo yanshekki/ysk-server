@@ -2761,5 +2761,30 @@
     "docRootUpdateFailed": "Could not update project document root: {{detail}}",
     "sqliteSchemaReady": "Roundcube SQLite schema initialized",
     "sqliteSchemaFailed": "Roundcube SQLite schema init failed: {{detail}}"
+  },
+  "vpn": {
+    "needInstall": "Install {{engine}} first (Install tab / one-click).",
+    "openvpnComing": "OpenVPN full path is staged for the next release.",
+    "outlineComing": "Outline / Shadowsocks is staged for a later release.",
+    "needExecuteServer": "VPN server setup requires root and YSK_EXECUTE=1.",
+    "needExecuteClient": "VPN client connect requires root and YSK_EXECUTE=1.",
+    "keygenFailed": "WireGuard key generation failed (is wg installed?).",
+    "serverKeysCreated": "WireGuard server keys created.",
+    "applyFailed": "Failed to apply WireGuard config: {{detail}}",
+    "serverActive": "WireGuard server applied (UDP {{port}}).",
+    "serverMissing": "WireGuard server not initialized — run Start server first.",
+    "peerCreated": "Client «{{name}}» created.",
+    "peerNotFound": "Client not found.",
+    "peerRemoved": "Client removed.",
+    "setEndpointHint": "Set public endpoint (host:port) so mobile clients can reach this server.",
+    "invalidConf": "Conf must include [Interface] and PrivateKey.",
+    "clientImported": "Profile «{{name}}» imported.",
+    "profileNotFound": "Client profile not found.",
+    "clientUpFailed": "Connect failed: {{detail}}",
+    "clientUp": "Connected: {{name}}",
+    "clientDown": "Disconnected: {{name}}",
+    "clientDeleted": "Deleted profile: {{name}}",
+    "autostartOn": "Autostart on: {{name}}",
+    "autostartOff": "Autostart off: {{name}}"
   }
 }

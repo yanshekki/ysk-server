@@ -82,6 +82,7 @@ export const FEATURE_SECTIONS: FeatureSection[] = [
       // Single DDoS / host-defense entry — UFW & fail2ban live under 防護中心「底層」
       { to: '/protection', key: 'protection', icon: '🛡' },
       { to: '/security', key: 'security', icon: '⛨' },
+      { to: '/vpn', key: 'vpn', icon: '🔐' },
     ],
   },
   {

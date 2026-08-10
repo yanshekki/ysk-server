@@ -32,7 +32,9 @@ export type SoftwareId =
   | 'java'
   | 'kotlin'
   | 'bun'
-  | 'chromium';
+  | 'chromium'
+  | 'wireguard'
+  | 'openvpn';
 
 export type FeatureSoftwareKey =
   | 'ftp'
@@ -56,6 +58,9 @@ export type FeatureSoftwareKey =
   | 'bun'
   | 'git'
   | 'hostBrowse'
+  | 'vpn'
+  | 'wireguard'
+  | 'openvpn'
   | 'all';
 
 export type RuntimeInstaller =
@@ -323,6 +328,20 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     // Prefer distro chromium; Ubuntu may use chromium-browser transitional package
     aptPackages: ['chromium'],
     features: ['hostBrowse'] },
+  {
+    id: 'wireguard',
+    title: 'WireGuard',
+    bins: ['wg', 'wg-quick'],
+    aptPackages: ['wireguard', 'wireguard-tools', 'qrencode'],
+    features: ['vpn', 'wireguard'],
+  },
+  {
+    id: 'openvpn',
+    title: 'OpenVPN',
+    bins: ['openvpn'],
+    aptPackages: ['openvpn', 'easy-rsa'],
+    features: ['vpn', 'openvpn'],
+  },
 ];
 
 export function getSoftware(id: string): SoftwareSpec | undefined {
