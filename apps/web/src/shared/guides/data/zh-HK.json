@@ -1570,25 +1570,27 @@
   "hostBrowse": {
     "id": "hostBrowse",
     "title": "主機瀏覽",
-    "summary": "經主機以「代理」或「真實瀏覽器（Chromium 串流）」瀏覽；目標站唔會見到你桌面瀏覽器身分。",
+    "summary": "經主機以「代理」或「真實瀏覽器（Chromium 畫面串流）」瀏覽外網或內網；目標站不會看見你桌面瀏覽器身分。",
     "canDo": [
-      "外網／內網模式 + SSRF 策略",
-      "代理引擎：靜態與表單",
-      "真實瀏覽器：完整 Chromium 渲染",
-      "Cookie 只在伺服器"
+      "外網／內網模式，並套用 SSRF 安全策略",
+      "代理引擎：適合靜態頁與表單提交",
+      "真實瀏覽器：完整 Chromium 渲染與互動",
+      "Cookie 僅存於伺服器，不寫入操作者瀏覽器",
+      "面板一鍵安裝 Chromium，並可設定引擎與路徑"
     ],
     "notes": [
-      "代理：HTML 改寫 + 表單 POST；真實瀏覽器需要系統 Chrome",
-      "Cloud metadata 永遠攔截",
-      "需要 network.browse 能力"
+      "代理模式並非完整 Chrome 替身；複雜 SPA 請改用真實瀏覽器",
+      "Cloud metadata 一律攔截",
+      "需要 network.browse 能力；一鍵安裝須 root 與 YSK_EXECUTE=1"
     ],
     "workflow": [
       "開啟主機瀏覽",
-      "揀代理或真實瀏覽器",
-      "輸入網址前往"
+      "於「軟件」分頁安裝 Chromium（如有需要）",
+      "於「設定」分頁調整引擎與路徑（可選）",
+      "選擇代理或真實瀏覽器後輸入網址前往"
     ],
     "cliHints": [
-      "# panel only — install google-chrome for real browser engine"
+      "# 僅面板操作；真實引擎需系統 Chrome／Chromium"
     ],
     "related": [
       {
