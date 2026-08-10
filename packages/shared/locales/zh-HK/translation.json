@@ -7433,7 +7433,8 @@
       "docRootUpdated": "專案文件根已更新為 {{path}}",
       "docRootUpdateFailed": "無法更新專案文件根：{{detail}}",
       "sqliteSchemaReady": "已初始化 Roundcube SQLite schema",
-      "sqliteSchemaFailed": "Roundcube SQLite schema 初始化失敗：{{detail}}"
+      "sqliteSchemaFailed": "Roundcube SQLite schema 初始化失敗：{{detail}}",
+      "snappyFullEmailLogin": "郵箱登入須用完整電郵（user@domain），唔好只用 local-part"
     },
     "vpn": {
       "needInstall": "請先安裝 {{engine}}（安裝分頁／一鍵安裝）。",

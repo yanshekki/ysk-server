@@ -193,6 +193,8 @@ export async function installWebmailIntoProject(input: {
   domain: string;
   imapHost?: string;
   smtpHost?: string;
+  /** Apex mailbox domain for SnappyMail domain JSON (user@domain login). */
+  mailDomain?: string;
   download?: boolean;
   forceHttps?: boolean;
   /** Install ysk_sso plugin into Roundcube plugins/ */
@@ -245,6 +247,7 @@ export async function installWebmailIntoProject(input: {
     download,
     imapHost,
     smtpHost,
+    mailDomain: input.mailDomain,
     notes,
     written,
   });
@@ -405,6 +408,7 @@ async function installSnappyMail(input: {
   download: boolean;
   imapHost: string;
   smtpHost: string;
+  mailDomain?: string;
   notes: string[];
   written: string[];
 }): Promise<{
@@ -506,7 +510,9 @@ async function installSnappyMail(input: {
   }
 
   written.push(docRoot);
-  const admin = ensureSnappyMailAdminBootstrap(docRoot, input.imapHost, input.smtpHost);
+  const admin = ensureSnappyMailAdminBootstrap(docRoot, input.imapHost, input.smtpHost, undefined, {
+    mailDomain: input.mailDomain,
+  });
   written.push(...admin.written);
   notes.push(
     tl('notes.webmail.snappyInstalled', { path: docRoot, version: SNAPPYMAIL_VERSION }),
@@ -531,6 +537,7 @@ export function ensureSnappyMailAdminBootstrap(
   imapHost: string,
   smtpHost: string,
   adminPassword?: string,
+  opts?: { mailDomain?: string },
 ): { written: string[]; notes: string[]; adminPassword: string } {
   const written: string[] = [];
   const notes: string[] = [];
@@ -570,22 +577,84 @@ echo "SnappyMail admin password applied. Login /?admin as admin. This helper was
   );
   written.push(adminPhp);
 
-  // Domain domain.json-style json for default IMAP (SnappyMail domain files are JSON in newer versions)
-  const domainJson = join(domDir, `${imapHost.replace(/[^a-z0-9.-]/gi, '_') || 'mail'}.json`);
-  writeFileSync(
-    domainJson,
-    JSON.stringify(
-      {
-        name: imapHost,
-        IMAP: { host: imapHost, port: 993, secure: 1, shortLogin: false },
-        SMTP: { host: smtpHost, port: 587, secure: 2, shortLogin: false, auth: true, usePhpMail: false },
+  // SnappyMail domain JSON — MUST use shortLogin:false so login is full email
+  // (Dovecot passwd-file keys are user@domain). Prefer apex mail domain file name.
+  const mailDomain = (opts?.mailDomain || '').trim().toLowerCase();
+  const domainPayload = {
+    IMAP: {
+      host: imapHost,
+      port: 993,
+      type: 1,
+      timeout: 300,
+      shortLogin: false,
+      lowerLogin: true,
+      sasl: ['PLAIN', 'LOGIN'],
+      ssl: {
+        verify_peer: false,
+        verify_peer_name: false,
+        allow_self_signed: true,
+        SNI_enabled: true,
+        disable_compression: true,
+        security_level: 1,
       },
-      null,
-      2,
-    ),
-    'utf8',
-  );
-  written.push(domainJson);
+      disabled_capabilities: ['METADATA', 'OBJECTID', 'PREVIEW', 'STATUS=SIZE'],
+      use_expunge_all_on_delete: false,
+      fast_simple_search: true,
+      force_select: false,
+      message_all_headers: false,
+      message_list_limit: 10000,
+      search_filter: '',
+    },
+    SMTP: {
+      host: smtpHost,
+      port: 587,
+      type: 2,
+      timeout: 60,
+      shortLogin: false,
+      lowerLogin: true,
+      sasl: ['PLAIN', 'LOGIN'],
+      ssl: {
+        verify_peer: false,
+        verify_peer_name: false,
+        allow_self_signed: true,
+        SNI_enabled: true,
+        disable_compression: true,
+        security_level: 1,
+      },
+      useAuth: true,
+      setSender: false,
+      usePhpMail: false,
+    },
+    Sieve: {
+      host: imapHost,
+      port: 4190,
+      type: 0,
+      timeout: 10,
+      shortLogin: false,
+      lowerLogin: true,
+      sasl: ['PLAIN', 'LOGIN'],
+      enabled: false,
+    },
+    whiteList: '',
+  };
+  const domainNames = new Set<string>();
+  if (mailDomain) domainNames.add(mailDomain);
+  domainNames.add(imapHost.replace(/[^a-z0-9.-]/gi, '_') || 'mail');
+  domainNames.add('default');
+  // Prefer loopback for same-host PHP → Dovecot (avoids external TLS/SNI issues)
+  const localPayload = {
+    ...domainPayload,
+    IMAP: { ...domainPayload.IMAP, host: '127.0.0.1' },
+    SMTP: { ...domainPayload.SMTP, host: '127.0.0.1' },
+    Sieve: { ...domainPayload.Sieve, host: '127.0.0.1' },
+  };
+  for (const name of domainNames) {
+    const useLocal = name === 'default' || name === mailDomain;
+    const body = useLocal ? localPayload : domainPayload;
+    const path = join(domDir, `${name}.json`);
+    writeFileSync(path, JSON.stringify(body, null, 4) + '\n', 'utf8');
+    written.push(path);
+  }
 
   // Plaintext once for operator (not stored on disk after helper runs)
   const once = join(docRoot, '..', 'SNAPPYMAIL_ADMIN_ONCE.txt');
@@ -598,6 +667,7 @@ echo "SnappyMail admin password applied. Login /?admin as admin. This helper was
       `Password: ${pass}`,
       `Or open once: /ysk-snappy-admin.php then use the password above`,
       `IMAP: ${imapHost}:993  SMTP: ${smtpHost}:587`,
+      'Mailbox login: full email (user@domain), not short local-part',
       '',
     ].join('\n'),
     'utf8',
@@ -606,6 +676,7 @@ echo "SnappyMail admin password applied. Login /?admin as admin. This helper was
 
   notes.push(tl('notes.webmail.snappyAdminOnce', { user: 'admin' }));
   notes.push(tl('notes.webmail.snappyAdminPassword', { password: pass }));
+  notes.push(tl('notes.webmail.snappyFullEmailLogin'));
   return { written, notes, adminPassword: pass };
 }
 
@@ -958,6 +1029,7 @@ export async function createWebmailProject(input: {
       download: wantDownload,
       imapHost: input.imapHost,
       smtpHost: input.smtpHost,
+      mailDomain: input.mailDomain,
       forceHttps: input.forceHttps,
       installSsoPlugin: input.installSsoPlugin,
       panelBaseUrl: input.panelBaseUrl,
@@ -1023,6 +1095,7 @@ export async function createWebmailProject(input: {
     domain,
     imapHost: input.imapHost,
     smtpHost: input.smtpHost,
+    mailDomain: input.mailDomain,
     download: wantDownload,
     forceHttps: input.forceHttps === true,
     installSsoPlugin: input.installSsoPlugin !== false,
@@ -1175,6 +1248,7 @@ export async function reinstallWebmailProject(input: {
   download?: boolean;
   imapHost?: string;
   smtpHost?: string;
+  mailDomain?: string;
   forceHttps?: boolean;
   installSsoPlugin?: boolean;
   panelBaseUrl?: string;
@@ -1243,8 +1317,9 @@ export async function reinstallWebmailProject(input: {
     docRoot: packageRootAbs,
     tool,
     domain,
-    imapHost: input.imapHost ?? defaultImapHostForWebmail(domain),
+    imapHost: input.imapHost ?? defaultImapHostForWebmail(input.mailDomain || domain),
     smtpHost: input.smtpHost,
+    mailDomain: input.mailDomain,
     download: wantDownload,
     forceHttps: input.forceHttps === true,
     installSsoPlugin: input.installSsoPlugin !== false,

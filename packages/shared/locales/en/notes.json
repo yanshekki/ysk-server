@@ -2773,7 +2773,8 @@
     "docRootUpdated": "Project document root updated to {{path}}",
     "docRootUpdateFailed": "Could not update project document root: {{detail}}",
     "sqliteSchemaReady": "Roundcube SQLite schema initialized",
-    "sqliteSchemaFailed": "Roundcube SQLite schema init failed: {{detail}}"
+    "sqliteSchemaFailed": "Roundcube SQLite schema init failed: {{detail}}",
+    "snappyFullEmailLogin": "Mailbox login must use full email (user@domain); short local-part is disabled"
   },
   "vpn": {
     "needInstall": "Install {{engine}} first (Install tab / one-click).",

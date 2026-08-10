@@ -2773,7 +2773,8 @@
     "docRootUpdated": "项目文档根已更新为 {{path}}",
     "docRootUpdateFailed": "无法更新项目文档根：{{detail}}",
     "sqliteSchemaReady": "已初始化 Roundcube SQLite schema",
-    "sqliteSchemaFailed": "Roundcube SQLite schema 初始化失败：{{detail}}"
+    "sqliteSchemaFailed": "Roundcube SQLite schema 初始化失败：{{detail}}",
+    "snappyFullEmailLogin": "邮箱登录须用完整电邮（user@domain），不要只用 local-part"
   },
   "vpn": {
     "needInstall": "請先安裝 {{engine}}（安裝分頁／一鍵安裝）。",
