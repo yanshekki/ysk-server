@@ -169,7 +169,7 @@ export async function bootstrapEmailServer(input: {
     }
   }
 
-  // 4. Dovecot passdb
+  // 4. Dovecot passdb + install into live Dovecot
   try {
     const pd = writeDovecotPassdb({
       dataDir: input.dataDir,
@@ -183,6 +183,28 @@ export async function bootstrapEmailServer(input: {
       ok: pd.ok,
       detail: tl('email.bootstrap.passdbOk', { count: pd.mailboxCount }),
     });
+    if (input.host.executeEnabled() && input.host.isRoot()) {
+      const { applyDovecotPassdbToSystem } = await import('./dovecot-passdb.js');
+      const ap = await applyDovecotPassdbToSystem({
+        dataDir: input.dataDir,
+        host: input.host,
+        db: input.db,
+        rewritePassdbs: false,
+      });
+      written.push(...ap.written);
+      notes.push(...ap.notes);
+      steps.push({
+        id: 'dovecot-apply',
+        ok: ap.ok,
+        detail: ap.ok ? tl('email.bootstrap.dovecotApplyOk') : ap.notes.join('; ').slice(0, 200),
+      });
+    } else {
+      steps.push({
+        id: 'dovecot-apply',
+        ok: false,
+        detail: tl('notes.email.dovecotPassdbWrittenNeedApply'),
+      });
+    }
   } catch (e) {
     steps.push({
       id: 'dovecot-passdb',

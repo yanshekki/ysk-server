@@ -3005,7 +3005,8 @@
       "mailTlsTodo": "邮件 TLS：请为 {{mailHost}} 申请证书后，在健康分页按「套用邮件 TLS 路径」。",
       "externalDns": "外部待办（你负责）：在 DNS 商设置 MX/SPF/DKIM/DMARC；VPS 设 PTR；开放端口 25 或改用 SMTP 中继。",
       "healthScore": "健康分数 {{score}}/{{max}}（DNS/PTR/端口 25 不会自动完成）",
-      "webmailProjectOk": "网页邮件项目 {{tool}} @ {{host}}（{{status}}）"
+      "webmailProjectOk": "网页邮件项目 {{tool}} @ {{host}}（{{status}}）",
+      "dovecotApplyOk": "已套用 Dovecot 虚拟认证"
     },
     "tabDeliverability": "送达",
     "pendingCount": "待处理",
@@ -4809,7 +4810,13 @@
       "mailboxStatusUpdated": "已将 {{address}} 状态设为 {{status}}",
       "mailboxUpdateEmpty": "没有可更新项 — 请提供密码和/或状态",
       "mailboxStatusInvalid": "无效的邮箱状态",
-      "mailboxNoChanges": "没有变更"
+      "mailboxNoChanges": "没有变更",
+      "dovecotApplyNeedRoot": "套用 Dovecot 虚拟邮箱认证需要 root + YSK_EXECUTE",
+      "dovecotNotInstalled": "本机未安装 Dovecot",
+      "dovecotNoPassdbSnippets": "dataDir/email 下找不到域名 passdb snippet",
+      "dovecotApplyFailed": "套用 Dovecot 虚拟邮箱认证失败：{{detail}}",
+      "dovecotApplyOk": "已安装 Dovecot 虚拟邮箱认证（{{conf}}，{{count}} 个域名）",
+      "dovecotPassdbWrittenNeedApply": "已写入 passwd-file（dataDir）— 需 EXECUTE+root 套用到 Dovecot 才可登录"
     },
     "agents": {
       "sessionNotFound": "找不到 session：{{sessionId}}"

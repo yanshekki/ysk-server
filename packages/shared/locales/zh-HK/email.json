@@ -357,7 +357,8 @@
     "mailTlsTodo": "郵件 TLS：請為 {{mailHost}} 申請憑證後，於健康分頁按「套用郵件 TLS 路徑」。",
     "externalDns": "外部待辦（你負責）：於 DNS 商設定 MX/SPF/DKIM/DMARC；VPS 設 PTR；開放埠 25 或改用 SMTP 中繼。",
     "healthScore": "健康分數 {{score}}/{{max}}（DNS/PTR/埠 25 不會自動完成）",
-    "webmailProjectOk": "網頁電郵專案 {{tool}} @ {{host}}（{{status}}）"
+    "webmailProjectOk": "網頁電郵專案 {{tool}} @ {{host}}（{{status}}）",
+    "dovecotApplyOk": "已套用 Dovecot 虛擬認證"
   },
   "tabDeliverability": "送達",
   "pendingCount": "待處理",

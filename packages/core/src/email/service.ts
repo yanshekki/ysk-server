@@ -487,7 +487,7 @@ export class EmailService {
     // Refresh Dovecot passdb for this domain when dataDir present
     if (this.dataDir) {
       try {
-        const { writeDovecotPassdb } = await import('./dovecot-passdb.js');
+        const { writeDovecotPassdb, applyDovecotPassdbToSystem } = await import('./dovecot-passdb.js');
         const pd = writeDovecotPassdb({
           dataDir: this.dataDir,
           db: this.db,
@@ -495,6 +495,18 @@ export class EmailService {
           domainId });
         written.push(...pd.written);
         notes.push(...pd.notes.filter((n) => !notes.includes(n)));
+        if (this.host?.executeEnabled?.() && this.host?.isRoot?.()) {
+          const ap = await applyDovecotPassdbToSystem({
+            dataDir: this.dataDir,
+            host: this.host,
+            db: this.db,
+            rewritePassdbs: false,
+          });
+          written.push(...ap.written);
+          notes.push(...ap.notes.filter((n) => !notes.includes(n)).slice(0, 6));
+        } else {
+          notes.push(tl('notes.email.dovecotPassdbWrittenNeedApply'));
+        }
       } catch (e) {
         notes.push(tl('notes.auto.t0087', { v0: (e instanceof Error ? e.message : String(e)) }));
       }
@@ -615,7 +627,7 @@ export class EmailService {
       writeFileSync(vpath, vmailbox ? vmailbox + '\n' : '', 'utf8');
       written.push(vpath);
       try {
-        const { writeDovecotPassdb } = await import('./dovecot-passdb.js');
+        const { writeDovecotPassdb, applyDovecotPassdbToSystem } = await import('./dovecot-passdb.js');
         const pd = writeDovecotPassdb({
           dataDir: this.dataDir,
           db: this.db,
@@ -624,6 +636,16 @@ export class EmailService {
         });
         written.push(...pd.written);
         notes.push(...pd.notes.slice(0, 3));
+        if (this.host.executeEnabled() && this.host.isRoot()) {
+          const ap = await applyDovecotPassdbToSystem({
+            dataDir: this.dataDir,
+            host: this.host,
+            db: this.db,
+            rewritePassdbs: false,
+          });
+          written.push(...ap.written);
+          notes.push(...ap.notes.slice(0, 4));
+        }
       } catch {
         /* optional */
       }

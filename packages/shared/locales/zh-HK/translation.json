@@ -2983,7 +2983,8 @@
       "mailTlsTodo": "郵件 TLS：請為 {{mailHost}} 申請憑證後，於健康分頁按「套用郵件 TLS 路徑」。",
       "externalDns": "外部待辦（你負責）：於 DNS 商設定 MX/SPF/DKIM/DMARC；VPS 設 PTR；開放埠 25 或改用 SMTP 中繼。",
       "healthScore": "健康分數 {{score}}/{{max}}（DNS/PTR/埠 25 不會自動完成）",
-      "webmailProjectOk": "網頁電郵專案 {{tool}} @ {{host}}（{{status}}）"
+      "webmailProjectOk": "網頁電郵專案 {{tool}} @ {{host}}（{{status}}）",
+      "dovecotApplyOk": "已套用 Dovecot 虛擬認證"
     },
     "tabDeliverability": "送達",
     "pendingCount": "待處理",
@@ -4809,7 +4810,13 @@
       "mailboxStatusUpdated": "已將 {{address}} 狀態設為 {{status}}",
       "mailboxUpdateEmpty": "沒有可更新項目 — 請提供密碼及／或狀態",
       "mailboxStatusInvalid": "無效的信箱狀態",
-      "mailboxNoChanges": "沒有變更"
+      "mailboxNoChanges": "沒有變更",
+      "dovecotApplyNeedRoot": "套用 Dovecot 虛擬郵箱認證需要 root + YSK_EXECUTE",
+      "dovecotNotInstalled": "本機未安裝 Dovecot",
+      "dovecotNoPassdbSnippets": "dataDir/email 下找不到網域 passdb snippet",
+      "dovecotApplyFailed": "套用 Dovecot 虛擬郵箱認證失敗：{{detail}}",
+      "dovecotApplyOk": "已安裝 Dovecot 虛擬郵箱認證（{{conf}}，{{count}} 個網域）",
+      "dovecotPassdbWrittenNeedApply": "已寫入 passwd-file（dataDir）— 需 EXECUTE+root 套用到 Dovecot 先可登入"
     },
     "agents": {
       "sessionNotFound": "找不到 工作階段：{{sessionId}}"

@@ -151,7 +151,13 @@
     "mailboxStatusUpdated": "已將 {{address}} 狀態設為 {{status}}",
     "mailboxUpdateEmpty": "沒有可更新項目 — 請提供密碼及／或狀態",
     "mailboxStatusInvalid": "無效的信箱狀態",
-    "mailboxNoChanges": "沒有變更"
+    "mailboxNoChanges": "沒有變更",
+    "dovecotApplyNeedRoot": "套用 Dovecot 虛擬郵箱認證需要 root + YSK_EXECUTE",
+    "dovecotNotInstalled": "本機未安裝 Dovecot",
+    "dovecotNoPassdbSnippets": "dataDir/email 下找不到網域 passdb snippet",
+    "dovecotApplyFailed": "套用 Dovecot 虛擬郵箱認證失敗：{{detail}}",
+    "dovecotApplyOk": "已安裝 Dovecot 虛擬郵箱認證（{{conf}}，{{count}} 個網域）",
+    "dovecotPassdbWrittenNeedApply": "已寫入 passwd-file（dataDir）— 需 EXECUTE+root 套用到 Dovecot 先可登入"
   },
   "agents": {
     "sessionNotFound": "找不到 工作階段：{{sessionId}}"

@@ -151,7 +151,13 @@
     "mailboxStatusUpdated": "Status for {{address}} set to {{status}}",
     "mailboxUpdateEmpty": "Nothing to update — provide password and/or status",
     "mailboxStatusInvalid": "Invalid mailbox status",
-    "mailboxNoChanges": "No changes applied"
+    "mailboxNoChanges": "No changes applied",
+    "dovecotApplyNeedRoot": "Dovecot virtual auth apply needs root + YSK_EXECUTE",
+    "dovecotNotInstalled": "Dovecot is not installed on this host",
+    "dovecotNoPassdbSnippets": "No domain passdb snippets found under dataDir/email",
+    "dovecotApplyFailed": "Dovecot virtual auth apply failed: {{detail}}",
+    "dovecotApplyOk": "Dovecot virtual auth installed ({{conf}}, {{count}} domain snippet(s))",
+    "dovecotPassdbWrittenNeedApply": "Passwd-file written under dataDir — run apply (EXECUTE+root) so Dovecot loads it"
   },
   "agents": {
     "sessionNotFound": "Session not found: {{sessionId}}"
