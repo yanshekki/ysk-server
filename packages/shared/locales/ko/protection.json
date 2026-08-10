@@ -119,7 +119,7 @@
   "mechanism": "메커니즘",
   "youCanTune": "조정 가능",
   "probe": "프로브",
-  "probeSignals": "WAN / req rate / TCP / f2b / UFW",
+  "probeSignals": "WAN / 요청률 / TCP / f2b / UFW",
   "escalateThreshold": "에스컬레이션 임계값",
   "emergency": "긴급",
   "neverAuto": "자동 안 함",

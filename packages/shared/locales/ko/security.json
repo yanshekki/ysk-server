@@ -79,7 +79,7 @@
   "noSessions": "활성 세션 없음",
   "currentSession": "이 기기",
   "revoke": "로그아웃",
-  "passkeyTitle": "Passkey / WebAuthn",
+  "passkeyTitle": "패스키 / WebAuthn",
   "passkeyDesc": "",
   "passkeyRegistered": "Passkey 등록됨",
   "webauthnFailed": "WebAuthn 실패",

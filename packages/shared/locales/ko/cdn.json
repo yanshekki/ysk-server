@@ -75,7 +75,7 @@
   "addSite": "CDN 사이트 추가",
   "originHint": "Origin은 당분간 URL; 프로젝트 연결은 추후",
   "commaSeparated": "쉼표로 구분",
-  "originUrl": "Edge origin URL",
+  "originUrl": "Edge 오리진 URL",
   "edgeNodes": "Edge 노드",
   "cache": "캐시",
   "dnsPolicy": "DNS 정책",

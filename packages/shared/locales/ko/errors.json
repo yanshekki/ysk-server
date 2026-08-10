@@ -49,8 +49,8 @@
     "jsonInvalid": "잘못된 JSON",
     "internal": "내부 오류"
   },
-  "YSK_HOST_BROWSE_SSRF": "Host browse blocked by security policy",
-  "YSK_HOST_BROWSE_SESSION": "Host browse session not found or expired",
-  "YSK_HOST_BROWSE_UPSTREAM": "Host browse upstream fetch failed",
-  "YSK_HOST_BROWSE_NEED_CHROME": "Real browser engine requires Chrome/Chromium on the host"
+  "YSK_HOST_BROWSE_SSRF": "보안 정책에 의해 호스트 브라우즈가 차단됨",
+  "YSK_HOST_BROWSE_SESSION": "호스트 브라우즈 세션을 찾을 수 없거나 만료됨",
+  "YSK_HOST_BROWSE_UPSTREAM": "호스트 브라우즈 업스트림 가져오기 실패",
+  "YSK_HOST_BROWSE_NEED_CHROME": "실제 브라우저 엔진에는 호스트에 Chrome/Chromium이 필요합니다"
 }

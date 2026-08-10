@@ -1,6 +1,6 @@
 {
   "sw": {
-    "vsftpd": "vsftpd (FTPS)",
+    "vsftpd": "vsftpd（FTPS）",
     "db_util": "db-util (FTP ユーザー DB)",
     "nginx": "nginx",
     "certbot": "証明書ボット (Let's Encrypt)",

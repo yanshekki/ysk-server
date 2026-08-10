@@ -44,7 +44,7 @@
   "writeTemplateOnly": "Escribir solo la plantilla",
   "installAndEnable": "Instalar y habilitar",
   "stepReport": "Informe del paso",
-  "installEnableShort": "Install enable",
+  "installEnableShort": "Instalar y habilitar",
   "cannotInstall": "Aún no se puede instalar en el sistema: se necesita ",
   "andRoot": " y root. Escribir plantilla sigue creando los archivos de gestión. Consulte ",
   "probeDetail": "Detalle del sondeo",

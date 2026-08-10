@@ -1,5 +1,5 @@
 {
-  "title": "Email",
+  "title": "이메일",
   "subtitle": "도메인, DNS, 메일박스 및 릴레이",
   "externalTodos": "서버 외부에서 처리해야 하는 작업",
   "ptr": "역방향 DNS(PTR)는 VPS/클라우드 제공업체에서 설정해야 합니다",
@@ -34,7 +34,7 @@
   "tabDomains": "도메인",
   "tabWebmail": "웹메일",
   "tabQueue": "대기열",
-  "tabStack": "Software",
+  "tabStack": "소프트웨어",
   "tabOps": "역할",
   "webmailGlobalDesc": "패널 전체용 웹메일 앱 하나 — 모든 메일 도메인이 같은 URL로 로그인합니다.",
   "webmailGlobalHint": "시스템 변경 권한(YSK_EXECUTE)과 Roundcube/SnappyMail 다운로드용 아웃바운드 네트워크가 필요합니다. EXECUTE 없이는 반쪽 프로젝트가 생성되지 않습니다.",
@@ -288,7 +288,7 @@
     "honestyPortBlocked": "포트 25가 차단된 것으로 보임 — 대량 발송 전 릴레이 사용 또는 해제 요청.",
     "honestyPortOk": "포트 25 프로브 성공 — 반송 및 DNSBL을 계속 모니터링하세요."
   },
-  "catchall": "Catch-all",
+  "catchall": "캐치올",
   "webmailRoundcube": "웹메일",
   "warmup": {
     "p1g1": "트랜잭션/검증된 수신자에게만 발송",
@@ -376,7 +376,7 @@
     "externalDns": "외부(운영자 담당): DNS에서 MX/SPF/DKIM/DMARC 설정; VPS에서 PTR; 포트 25 또는 SMTP 릴레이.",
     "healthScore": "상태 점수 {{score}}/{{max}} (DNS/PTR/Port25는 자동 완료되지 않음)",
     "webmailProjectOk": "Webmail 프로젝트 {{tool}} @ {{host}} ({{status}})",
-    "dovecotApplyOk": "Dovecot virtual auth applied"
+    "dovecotApplyOk": "Dovecot 가상 인증 적용됨"
   },
   "tabDeliverability": "배달",
   "pendingCount": "대기 중",
@@ -412,9 +412,9 @@
   "webmailForceHttps": "HTTPS 강제 (Roundcube; SSL 필요)",
   "reinstallWebmail": "재설치 / 업그레이드",
   "webmailSsoAdvanced": "고급 · SSO 플러그인",
-  "tlsRoleMail": "mail (IMAP/SMTP)",
+  "tlsRoleMail": "메일 (IMAP/SMTP)",
   "tlsRoleMailHint": "메일 서버 호스트명",
-  "tlsRoleWebmail": "webmail",
+  "tlsRoleWebmail": "웹메일",
   "tlsRoleWebmailHint": "Webmail 가상 호스트",
   "tlsRoleApex": "에이펙스 도메인",
   "tlsRoleApexHint": "Web / 에이펙스 인증서",
@@ -461,17 +461,17 @@
   "mailboxStatusDisabled": "비활성 (로그인 차단)",
   "mailboxStatusHint": "비활성 시 Dovecot passdb에 * 를 기록해 로그인을 거부합니다",
   "colAddress": "주소",
-  "colLocalPart": "로컬 부분",
+  "colLocalPart": "로컬 파트",
   "colPassword": "비밀번호",
-  "colCreated": "생성 시간",
+  "colCreated": "생성됨",
   "hasPassword": "설정됨",
-  "noPassword": "미설정",
+  "noPassword": "설정 안 됨",
   "mailboxPager": "메일박스 페이지",
   "prevPage": "이전",
   "nextPage": "다음",
   "pageOf": "{{page}} / {{total}} 페이지 · {{count}}",
   "mailboxEmptyTitle": "메일박스 없음",
   "passwordMismatch": "비밀번호가 일치하지 않습니다",
-  "passwordTooShort": "비밀번호는 8자 이상이어야 합니다",
+  "passwordTooShort": "비밀번호는 최소 8자여야 합니다",
   "mailboxUpdateNeedField": "새 비밀번호를 설정하거나 상태를 변경하세요"
 }

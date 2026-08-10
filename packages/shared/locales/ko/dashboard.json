@@ -54,7 +54,7 @@
   "criticalCount": " · 심각 {{count}}",
   "warnCount": " · 경고 {{count}}",
   "applyAuditBadge": "적용 감사 · 정상 {{ok}} · 경고 {{warn}} · 불량 {{bad}}",
-  "executeBadge": "EXECUTE {{state}}",
+  "executeBadge": "실행 {{state}}",
   "executeLabel": "EXECUTE",
   "go": "열기",
   "open": "열기",

@@ -41,7 +41,7 @@
   "projectListDesc": "프로젝트 게시 / goLive로 패널이 관리하는 conf — 변경하려면 프로젝트 Network 탭을 여세요.",
   "colProject": "프로젝트",
   "colRuntime": "런타임",
-  "colConf": "Conf",
+  "colConf": "설정",
   "confWritten": "기록됨",
   "confMissing": "경로 없음",
   "projectEmptyTitle": "아직 프로젝트 Nginx 없음",

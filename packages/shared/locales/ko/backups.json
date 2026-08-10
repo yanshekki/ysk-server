@@ -127,7 +127,7 @@
   "safeDir": "안전 디렉터리",
   "remotePushTitle": "원격 푸시 대상",
   "remotePushSub": "로컬 tar 성공 후 SFTP, 로컬 경로 또는 S3로 푸시",
-  "accessKey": "Access Key",
-  "secretKey": "Secret Key",
+  "accessKey": "액세스 키",
+  "secretKey": "시크릿 키",
   "overwriteConfirmHint": "덮어쓰기를 확인하려면 OVERWRITE를 입력하세요"
 }

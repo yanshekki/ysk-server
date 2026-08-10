@@ -80,7 +80,7 @@
     "auditExport": "Exportar auditoría",
     "securityApiKeysAdmin": "Administración de claves API",
     "networkBrowse": "Navegación mediada por host",
-    "networkVnc": "VNC remote desktop"
+    "networkVnc": "Escritorio remoto VNC"
   },
   "aboutRoles": "Roles (valores de fábrica)",
   "aboutRolesBody": "Los roles definen capacidades predeterminadas; los usuarios pueden anular las individuales.",

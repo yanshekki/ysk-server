@@ -121,7 +121,7 @@
   "writeFailed": "Error de escritura",
   "installedMsg": "Instalado {{kind}}",
   "installIncomplete": "Instalación incompleta",
-  "badgeDryRun": "dry-run",
+  "badgeDryRun": "simulación",
   "badgeBlocked": "bloqueado",
   "labelStderr": "stderr",
   "labelAckCli": "ack + CLI JSON",

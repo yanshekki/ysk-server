@@ -137,6 +137,6 @@
       "custom": "사용자 지정 프록시"
     }
   },
-  "linkUp": "Up",
-  "linkDown": "Down"
+  "linkUp": "가동",
+  "linkDown": "중지"
 }

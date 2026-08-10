@@ -94,7 +94,7 @@
   "webdavDefaultOff": "Desactivado por defecto — pulsa Activar y emitir token para empezar",
   "webdavOn": "Activado",
   "webdavOff": "Desactivado",
-  "webdavTokenId": "Token #{{id}}",
+  "webdavTokenId": "Token n.º {{id}}",
   "webdavUpdated": "Actualizado {{at}}",
   "webdavTokenOnceTitle": "Copia la contraseña ahora",
   "webdavTokenOnceHint": "Esta contraseña se muestra solo una vez; no se puede recuperar después de salir de esta página.",

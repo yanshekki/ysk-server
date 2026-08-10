@@ -49,8 +49,8 @@
     "jsonInvalid": "JSON no válido",
     "internal": "Error interno"
   },
-  "YSK_HOST_BROWSE_SSRF": "Host browse blocked by security policy",
-  "YSK_HOST_BROWSE_SESSION": "Host browse session not found or expired",
-  "YSK_HOST_BROWSE_UPSTREAM": "Host browse upstream fetch failed",
-  "YSK_HOST_BROWSE_NEED_CHROME": "Real browser engine requires Chrome/Chromium on the host"
+  "YSK_HOST_BROWSE_SSRF": "Navegación del host bloqueada por política de seguridad",
+  "YSK_HOST_BROWSE_SESSION": "Sesión de navegación del host no encontrada o caducada",
+  "YSK_HOST_BROWSE_UPSTREAM": "Error al obtener datos upstream de la navegación del host",
+  "YSK_HOST_BROWSE_NEED_CHROME": "El motor de navegador real requiere Chrome/Chromium en el host"
 }

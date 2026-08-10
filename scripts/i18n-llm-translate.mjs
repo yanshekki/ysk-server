@@ -24,7 +24,8 @@ const LOCALES = path.join(ROOT, 'packages/shared/locales');
 const CACHE_DIR = path.join(ROOT, '.cache/i18n-llm');
 
 const SKIP_NS = new Set(['translation.json']);
-const BRAND_RE = /^(YSK Server|ysk-server|YSK|OpenClaw|Hermes|IonClaw)$/i;
+const BRAND_RE =
+  /^(YSK Server|ysk-server|YSK|OpenClaw|Hermes|IonClaw|SnappyMail|Roundcube|Postfix|Dovecot|OpenDKIM|PowerDNS|fail2ban|Node\.js|Python( 3)?|OPcache|Memcached|Cloudflare|Fastly|Bunny CDN|AWS CloudFront|Azure Front Door|Gcore CDN|DNSSEC|DKIM( TXT)?|DMARC( TXT)?|DNSBL|FTPS|WebAuthn|Passkey( \/ WebAuthn)?|macOS Finder|Windows|Journal|systemd|Cron|Rust|Java|Kotlin|Nginx|Apache|MySQL|MariaDB|PostgreSQL|Redis|Docker|Linux|Ubuntu|Debian|UFW|SSO|FPM|CLI|API|JSON|XML|CSV|HTML|CSS|JS|UI|SSH|FTP|CDN|VPN|VNC|SQL|PHP|TLS|SSL|HTTP|HTTPS|OK|ID|IP|URL)$/i;
 
 const LANG_NAME = {
   ja: 'Japanese',
@@ -138,6 +139,29 @@ function isSkippable(s) {
   const t = String(s);
   if (!t.trim()) return true;
   if (BRAND_RE.test(t.trim())) return true;
+  // short ops tokens that stay English in the panel
+  if (
+    /^(stderr|stdout|stdin|localhost|download|Runtime|Unit|Deploy|Reload|Conf|Admin|Operator|Viewer|Agent|Interpreter|MemoryMax|Online|Offline|Error|Status|Plan|Playbooks|Peers|Runtimes|Service|Type|Experimental\.?|ack \+ CLI JSON|EXECUTE \{\{state\}\}|warn\+|info\+|Web \+ FTPS|CIDR|PASV|TXT|QR|Host|Panel|Git|Go|No|Yes|normal|min|OK|DNS OK|Certbot|Restic|vsftpd|cargo|Chromium|Chrome)$/i.test(
+      t.trim(),
+    )
+  ) {
+    return true;
+  }
+  // short time / count templates kept English-style
+  if (/^(\d+\s*min|\{\{[a-zA-Z0-9_.]+\}\}\s*min|\{\{[a-zA-Z0-9_.]+\}\}d|·\s*\{\{[^}]+\}\}.*)$/i.test(t.trim())) {
+    return true;
+  }
+  // product + short paren tags
+  if (/^(vsftpd|Certbot|Restic|Chromium)(\s*\/\s*Chrome)?(\s*\([^)]*\))?$/i.test(t.trim())) {
+    return true;
+  }
+  if (/^Rust \(cargo\)$/i.test(t.trim())) return true;
+  if (/^Web — apex \+ www$/i.test(t.trim())) return true;
+  if (/^Playbooks \(\{\{count\}\}\)$/i.test(t.trim())) return true;
+  if (/^Restic incremental$/i.test(t.trim())) return true;
+  if (/^Certbot \(Let's Encrypt\)$/i.test(t.trim())) return true;
+  // pure {{placeholder}}
+  if (/^\{\{[a-zA-Z0-9_.]+\}\}$/.test(t.trim())) return true;
   // punctuation / numbers / units only
   if (/^[\d\s\p{P}\p{S}]+$/u.test(t)) return true;
   // bare paths / flags / unit names
@@ -244,11 +268,12 @@ HARD RULES:
 1. Return ONLY a valid JSON array (no markdown fences, no commentary).
 2. Array length MUST equal input length. Each element: {"i": <number>, "tr": "<translation>"}.
 3. Preserve EVERY {{placeholder}} and %s/%d token EXACTLY (same spelling).
-4. Do NOT translate brand names: YSK Server, ysk-server, YSK, OpenClaw, Hermes, IonClaw.
-5. Do NOT translate file paths, CLI flags, unit/service names that are clearly code.
+4. Keep brand tokens as-is inside sentences: YSK Server, ysk-server, YSK, OpenClaw, Hermes, IonClaw, Nginx, Dovecot, Postfix, Roundcube, SnappyMail.
+5. Keep pure code tokens as-is: file paths, CLI flags (--foo), unit names, bare hostnames.
 6. Tone: professional ops console — concise, not marketing.
 7. Keep punctuation style appropriate for ${langName}; preserve leading/trailing spaces if present.
-8. If a string is already pure code/brand, return it unchanged.
+8. CRITICAL: Natural-language UI sentences MUST be fully translated into ${langName}. Returning the original English for a normal sentence is a FAILURE. Only leave a string completely unchanged if it is 100% code/brand with no prose.
+9. Prefer natural ${langName} used in sysadmin UIs (not literal word-by-word).
 
 INPUT:
 ${JSON.stringify(payload)}`;
@@ -333,6 +358,7 @@ function applyTranslations(lang, enToTr) {
       const tr = map.get(enVal);
       if (!tr || typeof tr !== 'string') continue;
       if (!placeholdersOk(enVal, tr)) continue;
+      if (tr === enVal) continue; // never apply identity "translations"
       const cur = getAt(tgtObj, parts);
       if (cur === tr) continue;
       setAt(tgtObj, parts, tr);
@@ -355,7 +381,15 @@ function uniqueStillEn(lang, cacheMap) {
   const { byEn, need } = collectNeed(lang);
   const unique = [];
   for (const [en] of byEn) {
-    if (cacheMap[en] && placeholdersOk(en, cacheMap[en])) continue;
+    const cached = cacheMap[en];
+    // Must be a real translation — identical EN in cache is not done
+    if (
+      cached &&
+      cached !== en &&
+      placeholdersOk(en, cached)
+    ) {
+      continue;
+    }
     unique.push(en);
   }
   return { unique, need, byEn };
@@ -433,8 +467,8 @@ async function main() {
         bad++;
         continue;
       }
-      // reject if model returned empty
-      if (!tr.trim()) {
+      // reject if model returned empty or left English unchanged
+      if (!tr.trim() || tr === en) {
         bad++;
         continue;
       }

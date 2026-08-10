@@ -2,12 +2,12 @@
   "unknownCommand": "不明なコマンド: {{command}}\n`{{cli}} ヘルプ` を実行します",
   "usagePrefix": "使用法：",
   "security": {
-    "help": "Usage: ysk-server security status\n       ysk-server security sessions list|revoke|revoke-others [--user U]\n       ysk-server security api-keys list|create|delete …",
-    "sessionsHelp": "Usage: ysk-server security sessions list [--user U]\n       ysk-server security sessions revoke --id PREFIX [--user U]\n       ysk-server security sessions revoke-others [--user U] [--keep-token T]",
-    "apiKeysHelp": "Usage: ysk-server security api-keys list\n       ysk-server security api-keys create --name N [--user U] [--scope full|read]\n       ysk-server security api-keys delete --id KEY_ID",
+    "help": "使い方: ysk-server security status\n       ysk-server security sessions list|revoke|revoke-others [--user U]\n       ysk-server security api-keys list|create|delete …",
+    "sessionsHelp": "使い方: ysk-server security sessions list [--user U]\n       ysk-server security sessions revoke --id PREFIX [--user U]\n       ysk-server security sessions revoke-others [--user U] [--keep-token T]",
+    "apiKeysHelp": "使い方: ysk-server security api-keys list\n       ysk-server security api-keys create --name N [--user U] [--scope full|read]\n       ysk-server security api-keys delete --id KEY_ID",
     "noUser": "ユーザーが見つかりません。先に admin を作成するか --user <name|id> を指定",
     "tokenOnce": "トークンは一度表示されます - 安全に保管します",
-    "sessionRevokeUsage": "Usage: ysk-server security sessions revoke --id <sessionIdPrefix> [--user U]",
+    "sessionRevokeUsage": "使い方: ysk-server security sessions revoke --id <sessionIdPrefix> [--user U]",
     "apiKeyDeleteUsage": "使用方法： ysk - server security api - keys delete -- id KEY_ID"
   },
   "help": {
@@ -20,7 +20,7 @@
         "--tool": {
           "name": {
             "--arg": {
-              "cd327c": "Usage: ysk-server tools run --tool <name> [--arg key=val] [--dry-run]\n"
+              "cd327c": "使い方: ysk-server tools run --tool <name> [--arg key=val] [--dry-run]\n"
             }
           }
         }
@@ -38,7 +38,7 @@
         "create": {
           "--domain": {
             "example": {
-              "bd4036": "Usage: ysk-server email domains create --domain example.com --ip A.B.C.D\n"
+              "bd4036": "使い方: ysk-server email domains create --domain example.com --ip A.B.C.D\n"
             }
           }
         }
@@ -52,7 +52,7 @@
         "create": {
           "--domain": {
             "example": {
-              "7227f3": "Usage: ysk-server email mailboxes create --domain example.com --local user [--password P]\n"
+              "7227f3": "使い方: ysk-server email mailboxes create --domain example.com --local user [--password P]\n"
             }
           }
         }
@@ -70,7 +70,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "73dad0": "Usage: ysk-server email <sub> [--data-dir PATH] [--json]\n  domains list|create|get [--q TEXT]\n    create --domain example.com --ip A.B.C.D\n    get --domain example.com | --id UUID\n  mailboxes list|create [--domain D | --id domainId]\n    create --domain D --local user [--password P]\n  deliverability --domain D | --id UUID\n  deliverability-overview\n  bootstrap --domain D --ip A.B.C.D [--install]\n  dns --domain D | --id UUID     # DNS bundle for panel\nAlso: hosting email-apply|email-mailbox|email-deliverability (aliases)\n"
+              "73dad0": "使い方: ysk-server email <sub> [--data-dir PATH] [--json]\n  domains list|create|get [--q TEXT]\n    create --domain example.com --ip A.B.C.D\n    get --domain example.com | --id UUID\n  mailboxes list|create [--domain D | --id domainId]\n    create --domain D --local user [--password P]\n  deliverability --domain D | --id UUID\n  deliverability-overview\n  bootstrap --domain D --ip A.B.C.D [--install]\n  dns --domain D | --id UUID     # パネル用 DNS バンドル\n別名: hosting email-apply|email-mailbox|email-deliverability\n"
             }
           }
         }
@@ -79,7 +79,7 @@
         "--domain": {
           "example": {
             "com": {
-              "b0dff0": "Usage: ysk-server email deliverability --domain example.com\n"
+              "b0dff0": "使い方: ysk-server email deliverability --domain example.com\n"
             }
           }
         }
@@ -88,7 +88,7 @@
         "--domain": {
           "example": {
             "com": {
-              "affc8d": "Usage: ysk-server email bootstrap --domain example.com --ip 1.2.3.4 [--install]\n"
+              "affc8d": "使い方: ysk-server email bootstrap --domain example.com --ip 1.2.3.4 [--install]\n"
             }
           }
         }
@@ -115,7 +115,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "0349e6": "Usage: ysk-server cron <sub> [--data-dir PATH] [--json]\n  list [--project-id ID] [--q TEXT]\n  create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n  delete --id JOB_ID\n  enable|disable --id JOB_ID\n  run --id JOB_ID              # run-now (needs YSK_EXECUTE=1)\n  install                     # load managed crontab (needs EXECUTE)\n  status                      # probe managed file vs host crontab\nHonesty: install blocked without YSK_EXECUTE=1 (file still written).\n"
+              "0349e6": "使い方: ysk-server cron <sub> [--data-dir PATH] [--json]\n  list [--project-id ID] [--q TEXT]\n  create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n  delete --id JOB_ID\n  enable|disable --id JOB_ID\n  run --id JOB_ID              # 即時実行（YSK_EXECUTE=1 が必要）\n  install                     # 管理対象 crontab を読み込み（EXECUTE が必要）\n  status                      # 管理ファイルとホスト crontab を照合\n注意: YSK_EXECUTE=1 なしでは install はブロックされます（ファイルは書き込まれます）。\n"
             }
           }
         }
@@ -133,7 +133,7 @@
         "--schedule": {
           "0": {
             "3": {
-              "9a8328": "Usage: ysk-server cron create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n"
+              "9a8328": "使い方: ysk-server cron create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n"
             }
           }
         }
@@ -240,7 +240,7 @@
         "--root": {
           "public": {
             "project": {
-              "42ebd4": "Usage: ysk-server files <sub> [--root public|project:ID] [--data-dir PATH] [--json]\n  list   [--path DIR] [--q TEXT] [--sort name|size|mtime] [--order asc|desc]\n  stat   --path REL\n  read   --path REL\n  write  --path REL --content TEXT | --file LOCAL\n  mkdir  --path REL\n  rm     --path REL [--permanent]\n  rename --from REL --to REL\n  copy   --from REL --to REL\n  move   --from REL --to REL\n  chmod  --path REL --mode 644\n  trash  list|restore|purge [--id TRASH_ID]\n  shares list\n  favorites list\n  upload --dir REL --file LOCAL [--file LOCAL2…]\n  webdav status|token|disable\nSandbox: only public files root or project home (path-constrained).\n"
+              "42ebd4": "使い方: ysk-server files <sub> [--root public|project:ID] [--data-dir PATH] [--json]\n  list   [--path DIR] [--q TEXT] [--sort name|size|mtime] [--order asc|desc]\n  stat   --path REL\n  read   --path REL\n  write  --path REL --content TEXT | --file LOCAL\n  mkdir  --path REL\n  rm     --path REL [--permanent]\n  rename --from REL --to REL\n  copy   --from REL --to REL\n  move   --from REL --to REL\n  chmod  --path REL --mode 644\n  trash  list|restore|purge [--id TRASH_ID]\n  shares list\n  favorites list\n  upload --dir REL --file LOCAL [--file LOCAL2…]\n  webdav status|token|disable\nサンドボックス: public ファイルルートまたはプロジェクトホームのみ（パス制約あり）。\n"
             }
           }
         }

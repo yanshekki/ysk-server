@@ -30,7 +30,7 @@
   "addRoute": "Añadir ruta",
   "persistNm": "Guardar en la conexión de NetworkManager (persiste tras reinicio)",
   "ephemeralRoute": "Solo ip route en vivo (puede desaparecer al reiniciar)",
-  "destPlaceholder": "default or 10.0.0.0/8",
+  "destPlaceholder": "predeterminado o 10.0.0.0/8",
   "devOptional": "Dev (opcional)",
   "defaultDev": "Salida predeterminada: {{dev}}",
   "saveNm": "Guardar (NetworkManager, persiste tras reinicio)",

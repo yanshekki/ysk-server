@@ -49,8 +49,8 @@
     "jsonInvalid": "無効な JSON",
     "internal": "内部エラー"
   },
-  "YSK_HOST_BROWSE_SSRF": "Host browse blocked by security policy",
-  "YSK_HOST_BROWSE_SESSION": "Host browse session not found or expired",
-  "YSK_HOST_BROWSE_UPSTREAM": "Host browse upstream fetch failed",
-  "YSK_HOST_BROWSE_NEED_CHROME": "Real browser engine requires Chrome/Chromium on the host"
+  "YSK_HOST_BROWSE_SSRF": "ホストブラウズはセキュリティポリシーによりブロックされました",
+  "YSK_HOST_BROWSE_SESSION": "ホストブラウズセッションが見つからないか期限切れです",
+  "YSK_HOST_BROWSE_UPSTREAM": "ホストブラウズのアップストリーム取得に失敗しました",
+  "YSK_HOST_BROWSE_NEED_CHROME": "リアルブラウザエンジンにはホスト上の Chrome/Chromium が必要です"
 }

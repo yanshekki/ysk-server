@@ -26,10 +26,10 @@
   "opsResult": "작업 결과",
   "unlimited": "무제한",
   "zeroUnlimited": "0 = 무제한",
-  "m24": "24m",
-  "h1": "1h",
-  "d1": "1d",
-  "d7": "7d",
+  "m24": "24분",
+  "h1": "1시간",
+  "d1": "1일",
+  "d7": "7일",
   "phpIniLoadFailed": "php.ini를 불러오지 못했습니다",
   "loaded": "로드됨",
   "default": "기본",
@@ -254,7 +254,7 @@
         "hint": "초"
       },
       "session_cookie_httponly": {
-        "label": "Cookie HttpOnly"
+        "label": "쿠키 HttpOnly"
       },
       "session_cookie_secure": {
         "label": "Cookie Secure(HTTPS 전용)",
@@ -415,7 +415,7 @@
   "pm2": {
     "title": "PM2 플릿",
     "desc": "pm2 jlist 읽기 전용 보기(패널 사용자 PM2_HOME). Live SSE가 2초마다 새로고침합니다.",
-    "live": "Live",
+    "live": "라이브",
     "installed": "PM2 설치됨",
     "version": "pm2 버전",
     "path": "pm2 경로",
@@ -462,5 +462,5 @@
   "recordedButProbeEmpty": "패널에 설치 {{v}}가 기록되어 있으나 호스트 프로브에서 바이너리를 찾지 못했습니다. 설치되지 않음 — 다시 프로브하거나 재설치하세요.",
   "tabTuning": "튜닝",
   "versionPlaceholder": "최신，",
-  "pluginsBundleWithRuntime": "Tools「Install runtime」Install（Install）。"
+  "pluginsBundleWithRuntime": "Tools「Install runtime」설치（설치）."
 }

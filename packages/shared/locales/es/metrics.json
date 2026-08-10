@@ -63,7 +63,7 @@
   "used": "Usado",
   "free": "Libre",
   "signal": "Señal",
-  "kill": "Kill",
+  "kill": "Matar",
   "send": "Enviar",
   "procDetail": "Detalle del proceso",
   "refreshProc": "Actualizar procesos",
@@ -128,5 +128,5 @@
   "usageNoteFull": "Uso según du local (no estimado). La cuota es un límite soft del plano de control; setquota hard requiere apply-to-host.",
   "sseNeedLogin": "No ha iniciado sesión; no se puede abrir SSE",
   "sseSessionExpired": "No ha iniciado sesión o la sesión ha caducado; no se puede abrir SSE",
-  "sseHttpError": "stream HTTP {{status}}"
+  "sseHttpError": "flujo HTTP {{status}}"
 }

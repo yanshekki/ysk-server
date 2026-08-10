@@ -105,7 +105,7 @@
   "scHost": "호스트 설정",
   "scReadiness": "준비 상태",
   "scReadinessD": "프로덕션 게이트",
-  "scSystemd": "systemd unit",
+  "scSystemd": "systemd 유닛",
   "scSystemdD": "컨트롤 플레인 서비스",
   "scSecurity": "보안 센터",
   "scSecurityD": "승인 / 도구",

@@ -63,7 +63,7 @@
   "used": "사용",
   "free": "여유",
   "signal": "시그널",
-  "kill": "Kill",
+  "kill": "종료",
   "send": "전송",
   "procDetail": "프로세스 상세",
   "refreshProc": "프로세스 새로고침",
@@ -128,5 +128,5 @@
   "usageNoteFull": "로컬 du 기준 사용량(추정치 아님). 쿼터는 컨트롤 플레인 소프트 한도이며, 하드 setquota는 apply-to-host가 필요합니다.",
   "sseNeedLogin": "로그인되지 않음; SSE를 열 수 없음",
   "sseSessionExpired": "로그인되지 않았거나 세션이 만료됨; SSE를 열 수 없음",
-  "sseHttpError": "stream HTTP {{status}}"
+  "sseHttpError": "스트림 HTTP {{status}}"
 }
