@@ -284,9 +284,6 @@ export function VncPage() {
                     {t('common.refresh')}
                   </Button>
                 </div>
-                {status.notes?.length ? (
-                  <Alert variant="warn">{status.notes.join(' · ')}</Alert>
-                ) : null}
               </>
             )}
           </div>
