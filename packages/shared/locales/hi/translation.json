@@ -7420,7 +7420,8 @@
       "reinstallStart": "पुनः स्थापना/अपग्रेड शुरू (version pin {{version}}, project {{id}})",
       "projectNotFound": "Webmail project नहीं मिला",
       "snappyAdminOnce": "SnappyMail admin {{user}} — पासवर्ड एक बार दिखाया गया (result / ONCE फ़ाइल देखें)",
-      "snappyAdminPassword": "SnappyMail admin पासवर्ड (अभी कॉपी करें): {{password}}"
+      "snappyAdminPassword": "SnappyMail admin पासवर्ड (अभी कॉपी करें): {{password}}",
+      "publicHtmlStub": "Document root still has the SnappyMail/RainLoop package stub. HTTP must serve the public_html app tree — reinstall webmail after this fix."
     }
   },
   "ops": {

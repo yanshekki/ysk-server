@@ -7420,7 +7420,8 @@
       "reinstallStart": "Démarrage de la réinstallation/mise à niveau (version figée {{version}}, projet {{id}})",
       "projectNotFound": "Projet webmail introuvable",
       "snappyAdminOnce": "Admin SnappyMail {{user}} — mot de passe affiché une seule fois (voir résultat / fichier ONCE)",
-      "snappyAdminPassword": "Mot de passe admin SnappyMail (copier maintenant) : {{password}}"
+      "snappyAdminPassword": "Mot de passe admin SnappyMail (copier maintenant) : {{password}}",
+      "publicHtmlStub": "Document root still has the SnappyMail/RainLoop package stub. HTTP must serve the public_html app tree — reinstall webmail after this fix."
     }
   },
   "ops": {

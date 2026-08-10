@@ -2752,6 +2752,7 @@
     "reinstallStart": "Memulai reinstall/upgrade (pin versi {{version}}, proyek {{id}})",
     "projectNotFound": "Proyek webmail tidak ditemukan",
     "snappyAdminOnce": "Admin SnappyMail {{user}} — kata sandi ditampilkan sekali (lihat result / file ONCE)",
-    "snappyAdminPassword": "Kata sandi admin SnappyMail (salin sekarang): {{password}}"
+    "snappyAdminPassword": "Kata sandi admin SnappyMail (salin sekarang): {{password}}",
+    "publicHtmlStub": "Document root still has the SnappyMail/RainLoop package stub. HTTP must serve the public_html app tree — reinstall webmail after this fix."
   }
 }

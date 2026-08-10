@@ -2752,6 +2752,7 @@
     "reinstallStart": "开始升级／重装（目标版本相关：{{version}}，项目 {{id}}）",
     "projectNotFound": "找不到网页邮件项目",
     "snappyAdminOnce": "SnappyMail 管理员账号 {{user}} — 密码只显示一次（见结果／ONCE 文件）",
-    "snappyAdminPassword": "SnappyMail 管理员密码（请立即复制）：{{password}}"
+    "snappyAdminPassword": "SnappyMail 管理员密码（请立即复制）：{{password}}",
+    "publicHtmlStub": "文档根目录仍是 SnappyMail／RainLoop 外层 stub。HTTP 必须指向 public_html 应用树 — 请应用此修复后重新安装网页邮件。"
   }
 }

@@ -20,6 +20,8 @@ import {
   installWebmailIntoProject,
   installYskSsoIntoRoundcube,
   isRoundcubeDocRoot,
+  isSnappyMailDocRoot,
+  isWebmailPublicHtmlStub,
   normalizeWebmailTool,
   ROUNDCUBE_VERSION,
 } from './webmail-project.js';
@@ -81,6 +83,84 @@ describe('webmail-project helpers', () => {
       writeFileSync(join(dir, 'program', 'include', 'iniset.php'), '<?php\n', 'utf8');
       writeFileSync(join(dir, 'index.php'), '<?php /* ROUNDCUBE */\n', 'utf8');
       expect(isRoundcubeDocRoot(dir)).toBe(true);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects SnappyMail public_html package stub as doc root', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-wm-stub-'));
+    try {
+      writeFileSync(
+        join(dir, 'index.php'),
+        'Please, configure your HTTP server to point to the /public_html directory (with fallback to /public_html/index.php).\n',
+        'utf8',
+      );
+      expect(isWebmailPublicHtmlStub(dir)).toBe(true);
+      expect(isSnappyMailDocRoot(dir)).toBe(false);
+      mkdirSync(join(dir, 'snappymail'), { recursive: true });
+      writeFileSync(join(dir, 'index.php'), '<?php // snappymail app\n', 'utf8');
+      writeFileSync(join(dir, '_include.php'), '<?php\n', 'utf8');
+      expect(isWebmailPublicHtmlStub(dir)).toBe(false);
+      expect(isSnappyMailDocRoot(dir)).toBe(true);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('installSnappy prefers public_html over package-root stub (no network)', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-wm-sm-'));
+    try {
+      const homeDir = join(dir, 'home');
+      const docRoot = join(homeDir, 'app', 'public');
+      mkdirSync(docRoot, { recursive: true });
+      // Package layout: root stub + real app under public_html
+      const build = join(dir, 'build');
+      mkdirSync(join(build, 'public_html', 'snappymail'), { recursive: true });
+      writeFileSync(
+        join(build, 'index.php'),
+        'Please, configure your HTTP server to point to the /public_html directory.\n',
+        'utf8',
+      );
+      writeFileSync(join(build, 'public_html', 'index.php'), '<?php // snappymail\n', 'utf8');
+      writeFileSync(join(build, 'public_html', '_include.php'), '<?php\n', 'utf8');
+      const tgz = join(dir, 'sm.tgz');
+      execFileSync('tar', ['-czf', tgz, '-C', build, '.']);
+
+      const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: true });
+      const orig = host.runCommand.bind(host);
+      host.runCommand = async (argv, opts) => {
+        const script = argv[0] === 'bash' && argv[1] === '-c' ? String(argv[2] ?? '') : '';
+        if (script.includes('curl') && script.includes('snappy')) {
+          const patched = script
+            .split('\n')
+            .map((line) => {
+              if (line.includes('curl') && line.includes('-o')) {
+                const m = line.match(/-o\s+(\S+)/);
+                const dest = m ? m[1].replace(/^"|"$/g, '') : '';
+                if (dest) return `cp ${JSON.stringify(tgz)} ${JSON.stringify(dest)}`;
+              }
+              return line;
+            })
+            .join('\n');
+          return orig(['bash', '-c', patched], opts);
+        }
+        return orig(argv, opts);
+      };
+
+      const r = await installWebmailIntoProject({
+        host,
+        homeDir,
+        docRoot,
+        tool: 'snappymail',
+        domain: 'webmail.example.com',
+        download: true,
+      });
+      expect(r.ok, r.notes.join('\n')).toBe(true);
+      expect(isWebmailPublicHtmlStub(docRoot)).toBe(false);
+      expect(isSnappyMailDocRoot(docRoot)).toBe(true);
+      expect(readFileSync(join(docRoot, 'index.php'), 'utf8')).toMatch(/snappymail/i);
+      expect(existsSync(join(docRoot, '_include.php'))).toBe(true);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

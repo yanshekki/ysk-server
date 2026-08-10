@@ -7420,7 +7420,8 @@
       "reinstallStart": "دوبارہ انسٹال/اپ گریڈ شروع (ورژن پن {{version}}، پروجیکٹ {{id}})",
       "projectNotFound": "ویب میل پروجیکٹ نہیں ملا",
       "snappyAdminOnce": "SnappyMail ایڈمن {{user}} — پاس ورڈ ایک بار دکھایا گیا (نتیجہ / ONCE فائل دیکھیں)",
-      "snappyAdminPassword": "SnappyMail ایڈمن پاس ورڈ (ابھی کاپی کریں): {{password}}"
+      "snappyAdminPassword": "SnappyMail ایڈمن پاس ورڈ (ابھی کاپی کریں): {{password}}",
+      "publicHtmlStub": "Document root still has the SnappyMail/RainLoop package stub. HTTP must serve the public_html app tree — reinstall webmail after this fix."
     }
   },
   "ops": {

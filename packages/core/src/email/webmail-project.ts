@@ -65,20 +65,43 @@ export function isRoundcubeDocRoot(docRoot: string): boolean {
   return false;
 }
 
-/** True when SnappyMail markers present. */
+/**
+ * True when SnappyMail markers present.
+ * Rejects the package-root stub that only says "point HTTP to /public_html"
+ * (that stub is NOT a working webmail — docRoot must be the public_html tree).
+ */
 export function isSnappyMailDocRoot(docRoot: string): boolean {
   try {
     if (!existsSync(join(docRoot, 'index.php'))) return false;
+    const idx = readFileSync(join(docRoot, 'index.php'), 'utf8');
+    if (/YSK PHP OK/i.test(idx)) return false;
+    // RainLoop / SnappyMail outer wrapper — wrong document root
+    if (
+      /configure your HTTP server to point to the\s*[\/"']?public_html/i.test(idx) ||
+      (/public_html/i.test(idx) && /fallback to\s*[\/"']?public_html/i.test(idx))
+    ) {
+      return false;
+    }
     if (existsSync(join(docRoot, 'snappymail')) || existsSync(join(docRoot, '_include.php'))) {
       return true;
     }
-    const idx = readFileSync(join(docRoot, 'index.php'), 'utf8');
-    if (/YSK PHP OK/i.test(idx)) return false;
     if (/snappymail|rainloop/i.test(idx)) return true;
   } catch {
     /* */
   }
   return false;
+}
+
+/** True when docRoot is the unusable package-root stub (not public_html). */
+export function isWebmailPublicHtmlStub(docRoot: string): boolean {
+  try {
+    const idx = join(docRoot, 'index.php');
+    if (!existsSync(idx)) return false;
+    const body = readFileSync(idx, 'utf8');
+    return /configure your HTTP server to point to the\s*[\/"']?public_html/i.test(body);
+  } catch {
+    return false;
+  }
 }
 
 export function defaultWebmailHostname(mailDomain: string): string {
@@ -304,19 +327,41 @@ async function installSnappyMail(input: {
   const tmp = join(tmpDir, 'snappymail.tgz');
   const extract = join(tmpDir, 'sm-extract');
   mkdirSync(tmpDir, { recursive: true });
-  // Official release may be: flat index.php, snappymail-X/, or public_html/
+  // Official release may be: flat index.php, snappymail-X/, or public_html/.
+  // Prefer public_html when present — root index.php is often only a stub that says
+  // "point HTTP server to /public_html" (what operators saw on webmail.hermes.ysk.hk).
   const script = [
     `set -euo pipefail`,
     `curl -fsSL ${JSON.stringify(SNAPPYMAIL_URL)} -o ${JSON.stringify(tmp)}`,
     `rm -rf ${JSON.stringify(extract)}`,
     `mkdir -p ${JSON.stringify(extract)} ${JSON.stringify(docRoot)}`,
-    // try tar.gz; if zip, unzip
-    `if file ${JSON.stringify(tmp)} | grep -qi 'zip'; then unzip -q ${JSON.stringify(tmp)} -d ${JSON.stringify(extract)}; else tar -xzf ${JSON.stringify(tmp)} -C ${JSON.stringify(extract)}; fi`,
+    // try tar.gz; if Zip archive (not "gzip" — that substring matched 'zip' and broke extract)
+    `if file ${JSON.stringify(tmp)} | grep -qiE 'Zip archive|zip archive data'; then unzip -q ${JSON.stringify(tmp)} -d ${JSON.stringify(extract)}; else tar -xzf ${JSON.stringify(tmp)} -C ${JSON.stringify(extract)}; fi`,
     `INNER=""`,
-    `if [ -f ${JSON.stringify(join(extract, 'index.php'))} ]; then INNER=${JSON.stringify(extract)}; fi`,
-    `if [ -z "$INNER" ] && [ -f ${JSON.stringify(join(extract, 'public_html', 'index.php'))} ]; then INNER=${JSON.stringify(join(extract, 'public_html'))}; fi`,
-    `if [ -z "$INNER" ]; then INNER=$(find ${JSON.stringify(extract)} -maxdepth 3 -type f -name index.php 2>/dev/null | head -1 | xargs -r dirname); fi`,
-    `if [ -z "$INNER" ] || [ ! -f "$INNER/index.php" ]; then echo "SnappyMail extract failed"; ls -la ${JSON.stringify(extract)}; exit 1; fi`,
+    // 1) nested public_html (preferred)
+    `if [ -f ${JSON.stringify(join(extract, 'public_html', 'index.php'))} ]; then INNER=${JSON.stringify(join(extract, 'public_html'))}; fi`,
+    // 2) public_html one level down (snappymail-X.Y/public_html)
+    `if [ -z "$INNER" ]; then INNER=$(find ${JSON.stringify(extract)} -maxdepth 3 -type d -name public_html 2>/dev/null | while read -r d; do [ -f "$d/index.php" ] && echo "$d" && break; done | head -1); fi`,
+    // 3) flat extract with real app (snappymail/ or _include.php next to index)
+    `if [ -z "$INNER" ] && [ -f ${JSON.stringify(join(extract, 'index.php'))} ]; then`,
+    `  if [ -d ${JSON.stringify(join(extract, 'snappymail'))} ] || [ -f ${JSON.stringify(join(extract, '_include.php'))} ]; then INNER=${JSON.stringify(extract)}; fi`,
+    `fi`,
+    // 4) snappymail-* top folder
+    `if [ -z "$INNER" ]; then`,
+    `  TOP=$(find ${JSON.stringify(extract)} -maxdepth 1 -type d -name 'snappymail-*' | head -1)`,
+    `  if [ -n "$TOP" ] && [ -f "$TOP/public_html/index.php" ]; then INNER="$TOP/public_html";`,
+    `  elif [ -n "$TOP" ] && [ -f "$TOP/index.php" ]; then INNER="$TOP"; fi`,
+    `fi`,
+    // 5) last resort: any index.php that is NOT the public_html stub
+    `if [ -z "$INNER" ]; then`,
+    `  while IFS= read -r f; do`,
+    `    d=$(dirname "$f")`,
+    `    if grep -qi 'configure your HTTP server to point to' "$f" 2>/dev/null; then continue; fi`,
+    `    INNER="$d"; break`,
+    `  done < <(find ${JSON.stringify(extract)} -maxdepth 4 -type f -name index.php 2>/dev/null)`,
+    `fi`,
+    `if [ -z "$INNER" ] || [ ! -f "$INNER/index.php" ]; then echo "SnappyMail extract failed"; ls -laR ${JSON.stringify(extract)} | head -80; exit 1; fi`,
+    `if grep -qi 'configure your HTTP server to point to' "$INNER/index.php" 2>/dev/null; then echo "SnappyMail INNER is public_html stub, not app tree"; exit 1; fi`,
     `find ${JSON.stringify(docRoot)} -mindepth 1 -maxdepth 1 -exec rm -rf {} +`,
     `cp -a "$INNER"/. ${JSON.stringify(docRoot)}/`,
     `rm -rf ${JSON.stringify(extract)} ${JSON.stringify(tmp)}`,
@@ -325,13 +370,21 @@ async function installSnappyMail(input: {
   ].join('\n');
 
   const r = await input.host.runCommand(['bash', '-c', script], { timeoutMs: 300_000 });
-  if (r.exitCode !== 0 || !existsSync(marker)) {
+  if (
+    r.exitCode !== 0 ||
+    !existsSync(marker) ||
+    !isSnappyMailDocRoot(docRoot) ||
+    isWebmailPublicHtmlStub(docRoot)
+  ) {
     notes.push(
       tl('notes.webmail.extractFailed', {
         tool: 'SnappyMail',
         detail: (r.stderr || r.stdout || '').slice(0, 300),
       }),
     );
+    if (isWebmailPublicHtmlStub(docRoot)) {
+      notes.push(tl('notes.webmail.publicHtmlStub'));
+    }
     return { ok: false, notes, written, entryFile: 'index.php' };
   }
 
@@ -835,7 +888,20 @@ export async function createWebmailProject(input: {
     };
   }
 
-  // Verify real app tree before deploy
+  // Verify real app tree before deploy (never goLive on package-root stub)
+  if (isWebmailPublicHtmlStub(docRoot)) {
+    notes.push(tl('notes.webmail.publicHtmlStub'));
+    return {
+      ok: false,
+      project: row,
+      projectId: row.id,
+      tool,
+      notes,
+      written,
+      urlHint: `http://${domain}/`,
+      apply_status: 'failed',
+    };
+  }
   if (tool === 'roundcube' && !isRoundcubeDocRoot(docRoot)) {
     notes.push(tl('notes.webmail.notRoundcubeTree'));
     return {

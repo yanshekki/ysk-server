@@ -2752,6 +2752,7 @@
     "reinstallStart": "再インストール/アップグレードを開始（バージョン固定 {{version}}、プロジェクト {{id}}）",
     "projectNotFound": "Webメールプロジェクトが見つかりません",
     "snappyAdminOnce": "SnappyMail 管理者 {{user}} — パスワードは一度だけ表示（結果 / ONCE ファイルを参照）",
-    "snappyAdminPassword": "SnappyMail管理者パスワード（今すぐコピー） ： {{password}}"
+    "snappyAdminPassword": "SnappyMail管理者パスワード（今すぐコピー） ： {{password}}",
+    "publicHtmlStub": "Document root still has the SnappyMail/RainLoop package stub. HTTP must serve the public_html app tree — reinstall webmail after this fix."
   }
 }

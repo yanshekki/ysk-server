@@ -2752,6 +2752,7 @@
     "reinstallStart": "পুনরায় ইনস্টল/আপগ্রেড শুরু (version pin {{version}}, প্রজেক্ট {{id}})",
     "projectNotFound": "Webmail প্রজেক্ট পাওয়া যায়নি",
     "snappyAdminOnce": "SnappyMail অ্যাডমিন {{user}} — পাসওয়ার্ড একবার দেখানো হয় (result / ONCE ফাইল দেখুন)",
-    "snappyAdminPassword": "SnappyMail অ্যাডমিন পাসওয়ার্ড (এখন কপি করুন): {{password}}"
+    "snappyAdminPassword": "SnappyMail অ্যাডমিন পাসওয়ার্ড (এখন কপি করুন): {{password}}",
+    "publicHtmlStub": "Document root still has the SnappyMail/RainLoop package stub. HTTP must serve the public_html app tree — reinstall webmail after this fix."
   }
 }
