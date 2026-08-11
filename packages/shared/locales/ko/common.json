@@ -119,5 +119,7 @@
   "dismiss": "닫기",
   "hide": "숨기기",
   "show": "표시",
-  "done": "완료"
+  "done": "완료",
+  "next": "다음",
+  "previous": "이전"
 }

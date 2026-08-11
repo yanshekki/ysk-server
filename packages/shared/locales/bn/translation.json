@@ -1904,7 +1904,9 @@
     "dismiss": "বন্ধ",
     "hide": "লুকান",
     "show": "দেখান",
-    "done": "হয়ে গেছে"
+    "done": "হয়ে গেছে",
+    "next": "পরবর্তী",
+    "previous": "পূর্ববর্তী"
   },
   "cron": {
     "presetCdTrue": "cd app + true (পরীক্ষা)",

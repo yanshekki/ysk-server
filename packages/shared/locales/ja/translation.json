@@ -1904,7 +1904,9 @@
     "dismiss": "閉じる",
     "hide": "隠れる",
     "show": "見せる",
-    "done": "終わり"
+    "done": "終わり",
+    "next": "次へ",
+    "previous": "戻る"
   },
   "cron": {
     "presetCdTrue": "cd アプリ + true (テスト)",

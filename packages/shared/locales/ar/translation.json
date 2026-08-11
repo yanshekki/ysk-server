@@ -1904,7 +1904,9 @@
     "dismiss": "إغلاق",
     "hide": "إخفاء",
     "show": "إظهار",
-    "done": "تم"
+    "done": "تم",
+    "next": "التالي",
+    "previous": "السابق"
   },
   "cron": {
     "presetCdTrue": "cd app + true (test)",

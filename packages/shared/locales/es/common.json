@@ -119,5 +119,7 @@
   "dismiss": "Cerrar",
   "hide": "Ocultar",
   "show": "Mostrar",
-  "done": "Hecho"
+  "done": "Hecho",
+  "next": "Siguiente",
+  "previous": "Anterior"
 }

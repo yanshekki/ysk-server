@@ -1875,7 +1875,9 @@
     "dismiss": "Close",
     "hide": "Hide",
     "show": "Show",
-    "done": "Done"
+    "done": "Done",
+    "next": "Next",
+    "previous": "Previous"
   },
   "cron": {
     "presetCdTrue": "cd app + true (test)",

@@ -1904,7 +1904,9 @@
     "dismiss": "Tutup",
     "hide": "Sembunyikan",
     "show": "Tampilkan",
-    "done": "Selesai"
+    "done": "Selesai",
+    "next": "Berikutnya",
+    "previous": "Sebelumnya"
   },
   "cron": {
     "presetCdTrue": "cd app + true (test)",

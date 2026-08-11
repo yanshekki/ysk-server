@@ -1904,7 +1904,9 @@
     "dismiss": "بند کریں",
     "hide": "چھپائیں",
     "show": "دکھائیں",
-    "done": "ہو گیا"
+    "done": "ہو گیا",
+    "next": "اگلا",
+    "previous": "پچھلا"
   },
   "cron": {
     "presetCdTrue": "cd app + true (test)",
