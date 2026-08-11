@@ -131,6 +131,11 @@ export const systemApi = {
       liveRules: Array<{ num?: number; comment?: string; raw: string }>;
       inSync: boolean;
       defaultMode: 'private' | 'public' | 'restricted';
+      firewall?: {
+        installed: boolean;
+        active: string;
+        activeLabel: string;
+      };
     }>(`/api/v1/system/network/service-exposure/${encodeURIComponent(serviceId)}`),
 
   serviceExposureList: () =>

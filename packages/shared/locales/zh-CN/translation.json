@@ -11676,6 +11676,10 @@
     "hintRestricted": "逗号分隔 IP 或 CIDR；仅允许这些来源连接。",
     "restrictedNeedIp": "受限模式请至少加入一个 IP 或网段。",
     "privateStartTitle": "要对外开放 {{service}} 吗？",
-    "confirmAndStart": "确认并启动"
+    "confirmAndStart": "确认并启动",
+    "summaryFirewallOff": "主机防火墙：{{detail}} — UFW 未启用时规则不会生效。",
+    "ufwMissing": "未安装 UFW",
+    "ufwInactive": "已关闭",
+    "firewallOff": "防火墙关闭"
   }
 }

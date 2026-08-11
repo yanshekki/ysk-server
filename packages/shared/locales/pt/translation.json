@@ -11552,6 +11552,10 @@
     "hintRestricted": "Comma-separated IPs or CIDRs. Only these sources may connect.",
     "restrictedNeedIp": "Add at least one IP or CIDR for restricted mode.",
     "privateStartTitle": "Expose {{service}} on the network?",
-    "confirmAndStart": "Confirm and start"
+    "confirmAndStart": "Confirm and start",
+    "summaryFirewallOff": "Host firewall: {{detail}} — rules not enforced until UFW is active.",
+    "ufwMissing": "UFW not installed",
+    "ufwInactive": "inactive",
+    "firewallOff": "Firewall off"
   }
 }

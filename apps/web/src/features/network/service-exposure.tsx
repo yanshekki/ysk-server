@@ -34,6 +34,9 @@ export type ExposureStatus = {
   inSync: boolean;
   defaultMode: ExposureMode;
   liveCount: number;
+  firewallInstalled?: boolean;
+  firewallActive?: string;
+  firewallActiveLabel?: string;
 };
 
 function emptyStatus(serviceId: string): ExposureStatus {
@@ -61,6 +64,9 @@ export async function fetchExposureStatus(serviceId: string): Promise<ExposureSt
     inSync: Boolean(r.inSync),
     defaultMode: r.defaultMode ?? 'public',
     liveCount: Array.isArray(r.liveRules) ? r.liveRules.length : 0,
+    firewallInstalled: r.firewall?.installed,
+    firewallActive: r.firewall?.active,
+    firewallActiveLabel: r.firewall?.activeLabel,
   };
 }
 
@@ -130,14 +136,28 @@ export function ServiceAccessStrip({
   const ports = portsOverride?.length ? portsOverride : status?.ports ?? [];
   const mode = status?.mode ?? 'public';
   const inSync = status?.inSync ?? true;
+  const fwOff =
+    status?.firewallInstalled === false ||
+    (status?.firewallActive != null &&
+      status.firewallActive !== 'active' &&
+      !/active/i.test(status.firewallActive));
   const summary = useMemo(() => {
+    if (fwOff) {
+      return t('serviceExposure.summaryFirewallOff', {
+        detail:
+          status?.firewallActiveLabel ||
+          (status?.firewallInstalled === false
+            ? t('serviceExposure.ufwMissing')
+            : t('serviceExposure.ufwInactive')),
+      });
+    }
     if (mode === 'private') return t('serviceExposure.summaryPrivate');
     if (mode === 'restricted') {
       const n = status?.allowFrom.length ?? 0;
       return t('serviceExposure.summaryRestricted', { count: n });
     }
     return t('serviceExposure.summaryPublic', { ports: formatPorts(ports) });
-  }, [mode, ports, status?.allowFrom.length, t]);
+  }, [mode, ports, status, fwOff, t]);
 
   return (
     <>
@@ -153,6 +173,7 @@ export function ServiceAccessStrip({
             <span className="service-access-strip__label">{t('serviceExposure.title')}</span>
             <Badge tone={modeTone(mode, inSync)}>{modeLabel(mode, t)}</Badge>
             {!inSync ? <Badge tone="warn">{t('serviceExposure.outOfSync')}</Badge> : null}
+            {fwOff ? <Badge tone="warn">{t('serviceExposure.firewallOff')}</Badge> : null}
           </div>
           <p className="service-access-strip__summary muted">{summary}</p>
           {loadError ? <p className="service-access-strip__err">{loadError}</p> : null}

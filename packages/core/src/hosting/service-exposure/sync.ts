@@ -325,6 +325,12 @@ export async function getServiceExposureStatus(
   liveRules: Awaited<ReturnType<typeof listManagedServiceRules>>;
   inSync: boolean;
   defaultMode: import('@ysk/shared').ExposureMode;
+  /** Host UFW / firewall probe for honest UI */
+  firewall?: {
+    installed: boolean;
+    active: string;
+    activeLabel: string;
+  };
 }> {
   const store = loadExposureStore(dataDir);
   const desired = ensureDesired(store, serviceId);
@@ -340,11 +346,27 @@ export async function getServiceExposureStatus(
           ? liveRules.length === 0
           : false;
 
+  let firewall:
+    | { installed: boolean; active: string; activeLabel: string }
+    | undefined;
+  try {
+    const { probeFirewallDeep } = await import('../firewall-ops.js');
+    const st = await probeFirewallDeep(host);
+    firewall = {
+      installed: st.installed,
+      active: st.active,
+      activeLabel: st.activeLabel,
+    };
+  } catch {
+    firewall = undefined;
+  }
+
   return {
     desired,
     liveRules,
     inSync,
     defaultMode: defaultExposureMode(serviceId),
+    firewall,
   };
 }
 

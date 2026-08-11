@@ -20,7 +20,9 @@ import {
   buildTargetRules,
   syncServiceExposure,
   listManagedServiceRules,
+  getServiceExposureStatus,
 } from './sync.js';
+import { syncMailServiceExposure } from './ports.js';
 import {
   engineToServiceId,
   ftpsPortBindings,
@@ -405,5 +407,53 @@ describe('syncServiceExposure', () => {
     const rules = await listManagedServiceRules(h, 'nginx');
     expect(rules).toHaveLength(1);
     expect(rules[0]?.comment).toContain('ysk-svc:nginx');
+  });
+
+  it('getServiceExposureStatus reports firewall probe', async () => {
+    const h = host({
+      run: (argv) => {
+        const s = argv.join(' ');
+        if (s.includes('status verbose')) {
+          return {
+            stdout: 'Status: inactive\n',
+            stderr: '',
+            exitCode: 0,
+            argv,
+            dryRun: false,
+          };
+        }
+        if (s.includes('status numbered')) {
+          return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+      },
+    });
+    // pathExists for ufw
+    const h2 = {
+      ...h,
+      pathExists: (p: string) => p.includes('ufw'),
+    };
+    const st = await getServiceExposureStatus(h2 as typeof h, dir, 'nginx');
+    expect(st.firewall?.installed).toBe(true);
+    expect(st.firewall?.active).toBe('inactive');
+  });
+
+  it('syncMailServiceExposure applies postfix and dovecot', async () => {
+    const allows: string[][] = [];
+    const h = host({
+      run: (argv) => {
+        if (argv[0] === 'ufw' && argv[1] === 'allow') allows.push(argv.map(String));
+        return { stdout: 'Rule added', stderr: '', exitCode: 0, argv, dryRun: false };
+      },
+    });
+    const r = await syncMailServiceExposure({
+      host: h,
+      dataDir: dir,
+      reason: 'apply',
+    });
+    expect(r.ok).toBe(true);
+    expect(allows.length).toBeGreaterThan(2);
+    expect(loadExposureStore(dir).services.postfix).toBeTruthy();
+    expect(loadExposureStore(dir).services.dovecot).toBeTruthy();
   });
 });
