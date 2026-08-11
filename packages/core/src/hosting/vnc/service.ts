@@ -76,32 +76,23 @@ export type VncOpsResult = {
   written?: string[];
 };
 
-async function binExists(host: HostExecutor, bin: string): Promise<boolean> {
-  try {
-    const r = await host.runCommand(
-      ['bash', '-c', `command -v ${bin} >/dev/null 2>&1 && echo ok || true`],
-      { timeoutMs: 5_000 },
-    );
-    return r.stdout.trim().includes('ok') || r.exitCode === 0;
-  } catch {
-    // Without YSK_EXECUTE, shell probes are blocked — best-effort path check
-    return (
-      existsSync(`/usr/bin/${bin}`) ||
-      existsSync(`/bin/${bin}`) ||
-      existsSync(`/usr/local/bin/${bin}`)
-    );
-  }
-}
-
 async function anyBin(
   host: HostExecutor,
   bins: string[],
 ): Promise<{ installed: boolean; missing: string[]; found: string[] }> {
+  const { resolveBin } = await import('../software-probe/resolve-bin.js');
   const found: string[] = [];
   const missing: string[] = [];
   for (const b of bins) {
-    if (await binExists(host, b)) found.push(b);
-    else missing.push(b);
+    const path = await resolveBin(host, b);
+    if (path) found.push(path);
+    else if (
+      existsSync(`/usr/bin/${b}`) ||
+      existsSync(`/bin/${b}`) ||
+      existsSync(`/usr/local/bin/${b}`)
+    ) {
+      found.push(b);
+    } else missing.push(b);
   }
   return { installed: found.length > 0, missing, found };
 }
@@ -745,7 +736,14 @@ export class VncService {
   }
 
   private async probeStacks(): Promise<VncStackStatus[]> {
-    const tigervncBins = ['vncserver', 'Xvnc', 'x0vncserver'];
+    // Prefer tigervncserver (Debian/Ubuntu package name); include X server bins for presence
+    const tigervncBins = [
+      'tigervncserver',
+      'vncserver',
+      'Xtigervnc',
+      'Xvnc',
+      'x0vncserver',
+    ];
     const novncBins = ['websockify', 'novnc_proxy'];
     const xfceBins = ['startxfce4', 'xfce4-session'];
     const viewerBins = ['vncviewer', 'xtigervncviewer'];

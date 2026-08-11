@@ -370,7 +370,8 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
   {
     id: 'tigervnc',
     title: 'TigerVNC server',
-    bins: ['vncserver', 'Xvnc', 'x0vncserver'],
+    // Debian/Ubuntu: tigervncserver wrapper + Xtigervnc; legacy may ship vncserver/Xvnc
+    bins: ['tigervncserver', 'vncserver', 'Xtigervnc', 'Xvnc', 'x0vncserver'],
     // Debian/Ubuntu package names vary; installer tries what apt provides
     aptPackages: [
       'tigervnc-standalone-server',

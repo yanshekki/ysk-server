@@ -5,10 +5,64 @@
 import type { HostExecutor } from '../../host/executor.js';
 import { shellQuote } from '../project-user-run.js';
 import { tl } from '@ysk/shared';
+import { resolveBin } from '../software-probe/resolve-bin.js';
 import type { VncRfbBind } from './types.js';
 import { buildXstartup } from './xstartup.js';
 import type { VncDesktopProfile } from './types.js';
 import { rfbPortForDisplay } from './ports.js';
+
+/** Same bin names SoftwareVersionBar / catalog use for TigerVNC server. */
+export const VNCSERVER_BIN_CANDIDATES = [
+  'tigervncserver',
+  'vncserver',
+] as const;
+
+/**
+ * Resolve absolute path to TigerVNC server wrapper (not bare Xvnc).
+ * Uses shared resolveBin PATH so it matches install / version probes.
+ */
+export async function resolveVncserverBin(
+  host: HostExecutor,
+): Promise<string | null> {
+  for (const name of VNCSERVER_BIN_CANDIDATES) {
+    const path = await resolveBin(host, name);
+    if (path) return path;
+  }
+  // Absolute fallbacks (some hosts strip PATH in non-login shell)
+  for (const p of [
+    '/usr/bin/tigervncserver',
+    '/usr/bin/vncserver',
+    '/usr/local/bin/tigervncserver',
+    '/usr/local/bin/vncserver',
+  ]) {
+    try {
+      if (host.pathExists(p)) return p;
+    } catch {
+      /* */
+    }
+  }
+  return null;
+}
+
+/** True if TigerVNC server stack is present (wrapper or X server binary). */
+export async function isTigerVncInstalled(host: HostExecutor): Promise<{
+  installed: boolean;
+  serverBin: string | null;
+  found: string[];
+}> {
+  const found: string[] = [];
+  const serverBin = await resolveVncserverBin(host);
+  if (serverBin) found.push(serverBin);
+  for (const name of ['Xtigervnc', 'Xvnc', 'x0vncserver'] as const) {
+    const p = await resolveBin(host, name);
+    if (p) found.push(p);
+  }
+  return {
+    installed: Boolean(serverBin) || found.some((f) => /Xtigervnc|Xvnc/.test(f)),
+    serverBin,
+    found,
+  };
+}
 
 export async function writeXstartupFile(input: {
   host: HostExecutor;
@@ -62,23 +116,6 @@ export async function probeSessionRunning(
     return r.stdout.includes('up');
   } catch {
     return false;
-  }
-}
-
-async function resolveVncserverBin(host: HostExecutor): Promise<string | null> {
-  try {
-    const r = await host.runCommand(
-      [
-        'bash',
-        '-c',
-        `command -v vncserver 2>/dev/null || command -v tigervncserver 2>/dev/null || true`,
-      ],
-      { timeoutMs: 5_000 },
-    );
-    const bin = (r.stdout || '').trim().split('\n')[0]?.trim();
-    return bin || null;
-  } catch {
-    return null;
   }
 }
 
@@ -200,9 +237,18 @@ export async function startVncSession(input: {
     };
   }
 
-  const bin = await resolveVncserverBin(host);
+  const probe = await isTigerVncInstalled(host);
+  const bin = probe.serverBin;
   if (!bin) {
+    // Package may show as installed (Xvnc) without wrapper — still honest
     notes.push(tl('notes.vnc.vncserverMissing'));
+    if (probe.found.length) {
+      notes.push(
+        tl('notes.vnc.vncserverWrapperMissing', {
+          found: probe.found.map((p) => p.split('/').pop()).join(', '),
+        }),
+      );
+    }
     return { ok: false, notes, running: false };
   }
 
@@ -225,10 +271,11 @@ export async function startVncSession(input: {
   }
 
   const localhostFlag = rfbBind === 'localhost' ? 'yes' : 'no';
-  const vncName = bin.includes('tigervncserver') ? 'tigervncserver' : 'vncserver';
+  // Absolute path so runuser login shell does not depend on user PATH
   const inner = [
-    `${vncName} :${display}`,
-    `-geometry ${shellQuote(geometry)}`,
+    bin,
+    `:${display}`,
+    `-geometry ${geometry}`,
     `-depth ${depth}`,
     `-localhost ${localhostFlag}`,
   ].join(' ');
