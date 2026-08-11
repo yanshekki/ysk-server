@@ -144,6 +144,11 @@ export class ProjectService {
       runtime = tpl.runtime;
       runtimeVersion = runtimeVersion ?? tpl.runtimeVersion;
     }
+    // Prefer panel default when client/template omitted version
+    if (!String(runtimeVersion ?? '').trim() && runtime !== 'static') {
+      const { resolvePanelRuntimeVersion } = await import('./runtime-panel-defaults.js');
+      runtimeVersion = resolvePanelRuntimeVersion(this.dataDir, runtime);
+    }
     // Never default PHP to Node "20" — resolve by runtime kind
     runtimeVersion = normalizeRuntimeVersion(runtime, runtimeVersion);
     const id = randomUUID();
