@@ -636,15 +636,19 @@ export function VncPage() {
                   render: (c) => {
                     const proxy = c.path === 'server_proxy';
                     return (
-                      <Badge tone={proxy ? 'warn' : 'ok'} title={
-                        proxy
-                          ? t('vnc.pathServerProxyHint')
-                          : t('vnc.pathUserReachableHint')
-                      }>
-                        {proxy
-                          ? t('vnc.pathServerProxyShort')
-                          : t('vnc.pathUserReachableShort')}
-                      </Badge>
+                      <span
+                        title={
+                          proxy
+                            ? t('vnc.pathServerProxyHint')
+                            : t('vnc.pathUserReachableHint')
+                        }
+                      >
+                        <Badge tone={proxy ? 'warn' : 'ok'}>
+                          {proxy
+                            ? t('vnc.pathServerProxyShort')
+                            : t('vnc.pathUserReachableShort')}
+                        </Badge>
+                      </span>
                     );
                   },
                 },

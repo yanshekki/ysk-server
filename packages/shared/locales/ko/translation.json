@@ -11091,7 +11091,7 @@
     "goInstall": "설치",
     "accountsEmptyTitle": "계정 없음",
     "accountsEmptyDesc": "시작하려면 계정을 만드세요",
-    "clientPathHint": "권장: 브라우저에서 열기. 호스트 뷰어는 이 서버에서 vncviewer를 실행합니다.",
+    "clientPathHint": "두 경로 모두 브라우저 VNC. 차이는 대상 의미와 설명(모두 패널 TCP 프록시).",
     "clientEmptyTitle": "클라이언트 없음",
     "clientEmptyDesc": "원격 호스트:포트 추가",
     "installHint": "TigerVNC → noVNC; XFCE 선택 사항",
@@ -11304,10 +11304,15 @@
     "clientPasswordHint": "브라우저 뷰어를 열 때 사용. 비우면 매번 입력.",
     "clientRememberPassword": "이 서버에 비밀번호 저장 후 다음에 사용",
     "clientRememberPasswordWarn": "비밀번호는 패널 dataDir에 저장됩니다(root 읽기 가능). 공용 호스트에서는 매번 입력을 권장.",
-    "pathUserReachable": "User-reachable endpoint",
-    "pathServerProxy": "Via server proxy",
-    "pathUserReachableHint": "For public hostnames or targets reachable as the user configured (e.g. example.com:5901). Browser reaches them through the panel.",
-    "pathServerProxyHint": "For LAN or targets only the control-plane server can reach. Traffic is proxied via this server’s network to the VNC host."
+    "pathUserReachable": "사용자 도달 가능 엔드포인트",
+    "pathServerProxy": "서버 프록시 경유",
+    "pathUserReachableHint": "공개 호스트명 등(예: example.com:5901). 브라우저는 패널 경유. 제어면이 해당 주소로 TCP 가능해야 합니다.",
+    "pathServerProxyHint": "제어면 서버만 도달 가능한 LAN/DC용. 이 서버 네트워크로 VNC에 중계합니다.",
+    "pathUserReachableShort": "사용자 도달",
+    "pathServerProxyShort": "서버 프록시",
+    "clientPathCompare": "「사용자 도달」: 공개 호스트명. 「서버 프록시」: 이 호스트만 도달 가능한 내부망. 연결 전 이 서버에서 TCP 탐침.",
+    "needViewerOptional": "TigerVNC Viewer(선택, 브라우저 경로 아님)",
+    "viewerStackOptional": "브라우저 VNC에는 데스크톱 vncviewer가 필요 없습니다. 아래 Viewer는 선택적 유지보수용입니다."
   },
   "vpn": {
     "pageDesc": "VPN 서버 및 클라이언트",

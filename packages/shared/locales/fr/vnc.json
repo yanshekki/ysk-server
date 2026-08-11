@@ -16,7 +16,7 @@
   "goInstall": "Install",
   "accountsEmptyTitle": "No accounts",
   "accountsEmptyDesc": "Create an account to start",
-  "clientPathHint": "Recommandé : ouvrir dans le navigateur. La visionneuse hôte lance vncviewer sur ce serveur.",
+  "clientPathHint": "Les deux chemins ouvrent VNC dans le navigateur. Différence de sémantique (tous deux proxis TCP via le panneau).",
   "clientEmptyTitle": "No clients",
   "clientEmptyDesc": "Add remote host:port",
   "installHint": "TigerVNC → noVNC; XFCE optional",
@@ -229,8 +229,13 @@
   "clientPasswordHint": "Utilisé à l’ouverture du visualiseur. Laissez vide pour saisir à chaque fois.",
   "clientRememberPassword": "Enregistrer le mot de passe sur ce serveur",
   "clientRememberPasswordWarn": "Le mot de passe est stocké dans dataDir du panneau (lisible par root). Sur hôte partagé, saisissez-le à chaque fois.",
-  "pathUserReachable": "User-reachable endpoint",
-  "pathServerProxy": "Via server proxy",
-  "pathUserReachableHint": "For public hostnames or targets reachable as the user configured (e.g. example.com:5901). Browser reaches them through the panel.",
-  "pathServerProxyHint": "For LAN or targets only the control-plane server can reach. Traffic is proxied via this server’s network to the VNC host."
+  "pathUserReachable": "Point de terminaison joignable par l’utilisateur",
+  "pathServerProxy": "Via proxy serveur",
+  "pathUserReachableHint": "Noms d’hôte publics (ex. example.com:5901). Le navigateur passe par le panneau ; cette machine doit ouvrir le TCP.",
+  "pathServerProxyHint": "LAN ou cibles joignables seulement depuis le serveur de contrôle. Trafic relayé via le réseau de ce serveur.",
+  "pathUserReachableShort": "Joignable utilisateur",
+  "pathServerProxyShort": "Proxy serveur",
+  "clientPathCompare": "« Joignable utilisateur » : noms publics. « Proxy serveur » : cibles LAN/DC. Sondage TCP depuis ce serveur avant connexion.",
+  "needViewerOptional": "TigerVNC Viewer (optionnel, hors chemin navigateur)",
+  "viewerStackOptional": "Le VNC navigateur n’a pas besoin de vncviewer bureau. Le Viewer ci-dessous est optionnel."
 }

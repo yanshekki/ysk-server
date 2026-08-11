@@ -16,7 +16,7 @@
   "goInstall": "Install",
   "accountsEmptyTitle": "No accounts",
   "accountsEmptyDesc": "Create an account to start",
-  "clientPathHint": "Disarankan: buka di peramban. Penampil host menjalankan vncviewer di server ini.",
+  "clientPathHint": "Kedua jalur membuka VNC di peramban. Beda semantik (keduanya proksi TCP panel).",
   "clientEmptyTitle": "No clients",
   "clientEmptyDesc": "Add remote host:port",
   "installHint": "TigerVNC → noVNC; XFCE optional",
@@ -229,8 +229,13 @@
   "clientPasswordHint": "Dipakai saat membuka penampil. Kosongkan agar mengetik setiap kali.",
   "clientRememberPassword": "Simpan kata sandi di server ini",
   "clientRememberPasswordWarn": "Kata sandi disimpan di dataDir panel (bisa dibaca root). Di host bersama, ketik setiap kali.",
-  "pathUserReachable": "User-reachable endpoint",
-  "pathServerProxy": "Via server proxy",
-  "pathUserReachableHint": "For public hostnames or targets reachable as the user configured (e.g. example.com:5901). Browser reaches them through the panel.",
-  "pathServerProxyHint": "For LAN or targets only the control-plane server can reach. Traffic is proxied via this server’s network to the VNC host."
+  "pathUserReachable": "Endpoint dapat dijangkau pengguna",
+  "pathServerProxy": "Via proksi server",
+  "pathUserReachableHint": "Nama host publik (mis. example.com:5901). Peramban lewat panel; host ini harus bisa TCP.",
+  "pathServerProxyHint": "LAN atau target hanya bisa dijangkau server kontrol. Lalu lintas lewat jaringan server ini.",
+  "pathUserReachableShort": "Jangkauan pengguna",
+  "pathServerProxyShort": "Proksi server",
+  "clientPathCompare": "«Jangkauan pengguna»: host publik. «Proksi server»: jaringan internal hanya dari host ini. TCP diuji dulu.",
+  "needViewerOptional": "TigerVNC Viewer (opsional, bukan jalur peramban)",
+  "viewerStackOptional": "VNC peramban tidak butuh vncviewer desktop. Viewer di bawah hanya perawatan opsional."
 }

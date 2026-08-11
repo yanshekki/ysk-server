@@ -16,7 +16,7 @@
   "goInstall": "インストール",
   "accountsEmptyTitle": "アカウントなし",
   "accountsEmptyDesc": "開始するにはアカウントを作成してください",
-  "clientPathHint": "推奨は「ブラウザで開く」。ホストビューアはこのサーバー上で vncviewer を起動します。",
+  "clientPathHint": "どちらの経路もブラウザ内 VNC。違いは目標の意味と説明（いずれもパネル TCP プロキシ）。",
   "clientEmptyTitle": "クライアントなし",
   "clientEmptyDesc": "リモート host:port を追加",
   "installHint": "TigerVNC → noVNC；XFCE は任意",
@@ -229,8 +229,13 @@
   "clientPasswordHint": "ブラウザビューアを開くときに使用。空なら毎回入力。",
   "clientRememberPassword": "このサーバーにパスワードを保存して次回利用",
   "clientRememberPasswordWarn": "パスワードはパネル dataDir に保存されます（root が読めます）。共有ホストでは毎回入力を推奨。",
-  "pathUserReachable": "User-reachable endpoint",
-  "pathServerProxy": "Via server proxy",
-  "pathUserReachableHint": "For public hostnames or targets reachable as the user configured (e.g. example.com:5901). Browser reaches them through the panel.",
-  "pathServerProxyHint": "For LAN or targets only the control-plane server can reach. Traffic is proxied via this server’s network to the VNC host."
+  "pathUserReachable": "ユーザー到達可能エンドポイント",
+  "pathServerProxy": "サーバー経由プロキシ",
+  "pathUserReachableHint": "公開ホスト名など（例 example.com:5901）。ブラウザはパネル経由。制御面がそのアドレスへ TCP できる必要があります。",
+  "pathServerProxyHint": "制御面サーバーだけが到達できる LAN／DC 向け。このサーバー網経由で VNC へ転送します。",
+  "pathUserReachableShort": "ユーザー到達",
+  "pathServerProxyShort": "サーバー代理",
+  "clientPathCompare": "「ユーザー到達」：公開ホスト名。「サーバー代理」：このホストだけが到達できる内網。接続前にこのサーバーから TCP を探测。",
+  "needViewerOptional": "TigerVNC Viewer（任意・ブラウザ経路外）",
+  "viewerStackOptional": "ブラウザ内 VNC にデスクトップ vncviewer は不要です。以下の Viewer は任意の保守用です。"
 }

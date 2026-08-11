@@ -11307,7 +11307,12 @@
     "pathUserReachable": "User-reachable endpoint",
     "pathServerProxy": "Via server proxy",
     "pathUserReachableHint": "For public hostnames or targets reachable as the user configured (e.g. example.com:5901). Browser reaches them through the panel.",
-    "pathServerProxyHint": "For LAN or targets only the control-plane server can reach. Traffic is proxied via this server’s network to the VNC host."
+    "pathServerProxyHint": "For LAN or targets only the control-plane server can reach. Traffic is proxied via this server’s network to the VNC host.",
+    "clientPathCompare": "“User-reachable”: public hostnames (e.g. hermes.example.com:5901). “Server proxy”: LAN / DC targets only this host can reach. TCP is probed from this server before connect.",
+    "pathUserReachableShort": "User-reachable",
+    "pathServerProxyShort": "Server proxy",
+    "needViewerOptional": "TigerVNC Viewer (optional, not for browser path)",
+    "viewerStackOptional": "In-browser VNC does not need desktop vncviewer. The Viewer package below is optional system maintenance only."
   },
   "vpn": {
     "pageDesc": "VPN server & client",

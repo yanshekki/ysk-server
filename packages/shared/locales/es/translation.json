@@ -11091,7 +11091,7 @@
     "goInstall": "Instalar",
     "accountsEmptyTitle": "No accounts",
     "accountsEmptyDesc": "Create an account to start",
-    "clientPathHint": "Recomendado: abrir en el navegador. El visor del host lanza vncviewer en este servidor.",
+    "clientPathHint": "Ambas rutas abren VNC en el navegador. Difieren en la semántica (ambas con proxy TCP del panel).",
     "clientEmptyTitle": "No clients",
     "clientEmptyDesc": "Add remote host:port",
     "installHint": "TigerVNC → noVNC; XFCE optional",
@@ -11304,10 +11304,15 @@
     "clientPasswordHint": "Se usa al abrir el visor. Déjela vacía para escribirla cada vez.",
     "clientRememberPassword": "Guardar la contraseña en este servidor",
     "clientRememberPasswordWarn": "La contraseña se guarda en dataDir del panel (legible por root). En hosts compartidos, escríbala cada vez.",
-    "pathUserReachable": "User-reachable endpoint",
-    "pathServerProxy": "Via server proxy",
-    "pathUserReachableHint": "For public hostnames or targets reachable as the user configured (e.g. example.com:5901). Browser reaches them through the panel.",
-    "pathServerProxyHint": "For LAN or targets only the control-plane server can reach. Traffic is proxied via this server’s network to the VNC host."
+    "pathUserReachable": "Endpoint alcanzable por el usuario",
+    "pathServerProxy": "Vía proxy del servidor",
+    "pathUserReachableHint": "Nombres públicos (p. ej. example.com:5901). El navegador pasa por el panel; este host debe abrir TCP.",
+    "pathServerProxyHint": "LAN o destinos solo alcanzables desde el servidor de control. Tráfico por la red de este servidor.",
+    "pathUserReachableShort": "Alcanzable usuario",
+    "pathServerProxyShort": "Proxy servidor",
+    "clientPathCompare": "«Alcanzable usuario»: nombres públicos. «Proxy servidor»: red interna solo desde este host. Se sondea TCP antes de conectar.",
+    "needViewerOptional": "TigerVNC Viewer (opcional, no es la ruta del navegador)",
+    "viewerStackOptional": "El VNC en navegador no necesita vncviewer de escritorio. El Viewer abajo es solo mantenimiento opcional."
   },
   "vpn": {
     "pageDesc": "VPN server & client",

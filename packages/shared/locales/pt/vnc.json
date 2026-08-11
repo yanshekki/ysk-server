@@ -16,7 +16,7 @@
   "goInstall": "Install",
   "accountsEmptyTitle": "No accounts",
   "accountsEmptyDesc": "Create an account to start",
-  "clientPathHint": "Recomendado: abrir no navegador. O visualizador no host executa vncviewer neste servidor.",
+  "clientPathHint": "Ambos os caminhos abrem VNC no browser. Diferem na semântica (ambos com proxy TCP do painel).",
   "clientEmptyTitle": "No clients",
   "clientEmptyDesc": "Add remote host:port",
   "installHint": "TigerVNC → noVNC; XFCE optional",
@@ -229,8 +229,13 @@
   "clientPasswordHint": "Usada ao abrir o visualizador. Deixe vazio para digitar sempre.",
   "clientRememberPassword": "Guardar a palavra-passe neste servidor",
   "clientRememberPasswordWarn": "A palavra-passe fica em dataDir do painel (legível por root). Em hosts partilhados, digite sempre.",
-  "pathUserReachable": "User-reachable endpoint",
-  "pathServerProxy": "Via server proxy",
-  "pathUserReachableHint": "For public hostnames or targets reachable as the user configured (e.g. example.com:5901). Browser reaches them through the panel.",
-  "pathServerProxyHint": "For LAN or targets only the control-plane server can reach. Traffic is proxied via this server’s network to the VNC host."
+  "pathUserReachable": "Endpoint alcançável pelo utilizador",
+  "pathServerProxy": "Via proxy do servidor",
+  "pathUserReachableHint": "Nomes públicos (ex. example.com:5901). O browser passa pelo painel; este anfitrião deve abrir TCP.",
+  "pathServerProxyHint": "LAN ou alvos só alcançáveis a partir do servidor de controlo. Tráfego pela rede deste servidor.",
+  "pathUserReachableShort": "Alcançável utilizador",
+  "pathServerProxyShort": "Proxy servidor",
+  "clientPathCompare": "«Alcançável utilizador»: nomes públicos. «Proxy servidor»: rede interna só deste anfitrião. TCP é testado antes.",
+  "needViewerOptional": "TigerVNC Viewer (opcional, fora do caminho do browser)",
+  "viewerStackOptional": "O VNC no browser não precisa de vncviewer de ambiente de trabalho. O Viewer abaixo é manutenção opcional."
 }
