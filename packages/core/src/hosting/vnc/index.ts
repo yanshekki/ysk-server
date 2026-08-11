@@ -8,4 +8,5 @@ export * from './novnc.js';
 export * from './client-profiles.js';
 export * from './session-ticket.js';
 export * from './share-links.js';
+export * from './rfb-probe.js';
 export * from './service.js';

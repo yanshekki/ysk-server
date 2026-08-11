@@ -39,6 +39,7 @@ import {
   updateClientProfile,
 } from './client-profiles.js';
 import type { VncSessionKind } from './session-ticket.js';
+import { probeResultNote, probeRfbTcp } from './rfb-probe.js';
 import {
   DEFAULT_VNC_SETTINGS,
   normalizeVncDesktopProfile,
@@ -918,22 +919,37 @@ export class VncService {
     }
     const pathMode =
       cl.path === 'server_proxy' ? 'server_proxy' : 'user_reachable';
+    const target = `${cl.host}:${cl.port}`;
+
+    // Preflight: can this control plane open TCP to the RFB target?
+    const probe = await probeRfbTcp(cl.host, cl.port);
+    if (!probe.ok) {
+      notes.push(probeResultNote(probe));
+      notes.push(
+        pathMode === 'server_proxy'
+          ? tl('notes.vnc.probeHintServerProxy')
+          : tl('notes.vnc.probeHintUserReachable'),
+      );
+      return { ok: false, notes };
+    }
+
     notes.push(
       tl('notes.vnc.browserSessionReady', {
-        name: `${cl.name} (${cl.host}:${cl.port})`,
+        name: `${cl.name} (${target})`,
       }),
     );
     notes.push(
       pathMode === 'server_proxy'
         ? tl('notes.vnc.clientPathServerProxy', {
             name: cl.name,
-            target: `${cl.host}:${cl.port}`,
+            target,
           })
         : tl('notes.vnc.clientPathUserReachable', {
             name: cl.name,
-            target: `${cl.host}:${cl.port}`,
+            target,
           }),
     );
+    notes.push(tl('notes.vnc.probeOk', { target }));
     return {
       ok: true,
       notes,
