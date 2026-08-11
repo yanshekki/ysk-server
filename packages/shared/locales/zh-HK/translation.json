@@ -11288,6 +11288,10 @@
     "connect": "連線",
     "clientNeedFields": "名稱同主機必填",
     "clientCreated": "已建立客戶端設定",
+    "clientPasswordOptional": "VNC 密碼（可選）",
+    "clientPasswordHint": "用「在瀏覽器開啟」時會帶入。留空就每次輸入。",
+    "clientRememberPassword": "將密碼存喺呢部伺服器，下次開啟用",
+    "clientRememberPasswordWarn": "密碼會寫入面板 dataDir（root 可讀）。共用機建議每次手動輸入。",
     "stackMissingShort": "未安裝"
   },
   "vpn": {

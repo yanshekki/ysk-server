@@ -184,6 +184,10 @@
   "connect": "连接",
   "clientNeedFields": "名称与主机必填",
   "clientCreated": "已创建客户端配置",
+  "clientPasswordOptional": "VNC 密码（可选）",
+  "clientPasswordHint": "使用「在浏览器打开」时会带入。留空则每次输入。",
+  "clientRememberPassword": "将密码存到本服务器，下次打开使用",
+  "clientRememberPasswordWarn": "密码会写入面板 dataDir（root 可读）。共用主机建议每次手动输入。",
   "stackMissingShort": "未安装",
   "accountStatus": {
     "running": "运行中",

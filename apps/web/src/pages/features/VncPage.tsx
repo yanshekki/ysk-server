@@ -78,6 +78,8 @@ export function VncPage() {
   const [clHost, setClHost] = useState('');
   const [clPort, setClPort] = useState(5901);
   const [clPath, setClPath] = useState<VncConnectPath>('via_server');
+  const [clPassword, setClPassword] = useState('');
+  const [clRememberPass, setClRememberPass] = useState(false);
   /** In-browser RFB viewer (panel WS proxy) */
   const [viewerTarget, setViewerTarget] = useState<VncViewerTarget | null>(null);
 
@@ -483,6 +485,8 @@ export function VncPage() {
                       setClHost('');
                       setClPort(5901);
                       setClPath('via_server');
+                      setClPassword('');
+                      setClRememberPass(false);
                       setClientOpen(true);
                     }}
                   >
@@ -1060,10 +1064,16 @@ export function VncPage() {
                     host: clHost.trim(),
                     port: clPort,
                     path: clPath,
+                    password:
+                      clRememberPass && clPassword.trim()
+                        ? clPassword
+                        : undefined,
                   })
                   .then(async () => {
                     notifyOk(t('vnc.clientCreated'));
                     setClientOpen(false);
+                    setClPassword('');
+                    setClRememberPass(false);
                     await load();
                   })
                   .catch((e) =>
@@ -1112,10 +1122,37 @@ export function VncPage() {
                 setClPath(e.target.value === 'direct' ? 'direct' : 'via_server')
               }
             >
-              <option value="via_server">{t('vnc.pathViaServer')}</option>
-              <option value="direct">{t('vnc.pathDirect')}</option>
+              <option value="via_server">{t('vnc.pathBrowser')}</option>
+              <option value="direct">{t('vnc.pathHostViewer')}</option>
             </select>
           </Field>
+          <Field
+            label={t('vnc.clientPasswordOptional')}
+            htmlFor="cl-pass"
+            hint={t('vnc.clientPasswordHint')}
+            flush
+          >
+            <input
+              id="cl-pass"
+              type="password"
+              value={clPassword}
+              onChange={(e) => setClPassword(e.target.value)}
+              autoComplete="new-password"
+              placeholder="••••••••"
+            />
+          </Field>
+          <label className="u-flex u-items-start u-gap-2">
+            <input
+              type="checkbox"
+              checked={clRememberPass}
+              onChange={(e) => setClRememberPass(e.target.checked)}
+              disabled={!clPassword.trim()}
+            />
+            <span className="u-text-sm">{t('vnc.clientRememberPassword')}</span>
+          </label>
+          {clRememberPass ? (
+            <Alert variant="warn">{t('vnc.clientRememberPasswordWarn')}</Alert>
+          ) : null}
         </FormLayout>
       </Modal>
 
