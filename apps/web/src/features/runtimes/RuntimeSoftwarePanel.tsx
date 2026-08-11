@@ -2,7 +2,7 @@
  * Runtime software tab — single version list as primary UI.
  * At most one primary CTA per row; uninstall only in ⋯ menu or advanced stack.
  */
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Badge,
@@ -11,6 +11,7 @@ import {
   CardSection,
   DescriptionList,
   EmptyState,
+  FormActions,
   FormHint,
   InstallStreamPanel,
   SoftwareInstallBanner,
@@ -136,8 +137,6 @@ export function RuntimeSoftwarePanel(props: RuntimeSoftwarePanelProps) {
         hostSatisfiesTarget(String(i.versionOutput ?? ''), version)),
   );
 
-  const [menuOpen, setMenuOpen] = useState<string | null>(null);
-
   return (
     <div className="tab-panel runtime-software">
       {/* A. Status row */}
@@ -244,55 +243,20 @@ export function RuntimeSoftwarePanel(props: RuntimeSoftwarePanelProps) {
                           {t('runtime.setHostDefault')}
                         </Button>
                       ) : null}
+                      {st.selectedInstalled && !isPanel ? (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          loading={busy}
+                          onClick={() => onSetPanelDefault(v)}
+                        >
+                          {t('runtime.setPanelDefault')}
+                        </Button>
+                      ) : null}
                       {st.selectedInstalled && isHost && primary === null ? (
                         <span className="runtime-version-row__quiet muted u-text-sm">
                           {t('runtime.alreadyHostDefaultShort')}
                         </span>
-                      ) : null}
-                      {st.selectedInstalled ? (
-                        <details
-                          className="runtime-row-menu"
-                          open={menuOpen === v}
-                          onToggle={(e) => {
-                            const open = (e.target as HTMLDetailsElement).open;
-                            setMenuOpen(open ? v : null);
-                          }}
-                        >
-                          <summary
-                            className="runtime-row-menu__sum"
-                            aria-label={t('runtime.moreActions')}
-                          >
-                            ···
-                          </summary>
-                          <div className="runtime-row-menu__panel" role="menu">
-                            {panelDefault !== v ? (
-                              <button
-                                type="button"
-                                className="runtime-row-menu__item"
-                                role="menuitem"
-                                onClick={() => {
-                                  setMenuOpen(null);
-                                  onSetPanelDefault(v);
-                                }}
-                              >
-                                {t('runtime.setPanelDefault')}
-                              </button>
-                            ) : null}
-                            {versionUninstallOk ? (
-                              <button
-                                type="button"
-                                className="runtime-row-menu__item runtime-row-menu__item--danger"
-                                role="menuitem"
-                                onClick={() => {
-                                  setMenuOpen(null);
-                                  onUninstallVersion(v);
-                                }}
-                              >
-                                {t('runtime.rowUninstall')}
-                              </button>
-                            ) : null}
-                          </div>
-                        </details>
                       ) : null}
                     </div>
                   </div>
@@ -380,7 +344,18 @@ export function RuntimeSoftwarePanel(props: RuntimeSoftwarePanelProps) {
                   showInstallButton
                 />
               ) : null}
-              <p className="muted u-text-sm u-mt-2">{t('runtime.useListForDefaults')}</p>
+              {versionUninstallOk ? (
+                <FormActions>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    loading={busy}
+                    onClick={() => onUninstallVersion(version)}
+                  >
+                    {t('runtime.rowUninstall')}
+                  </Button>
+                </FormActions>
+              ) : null}
             </>
           )}
         </CardSection>
