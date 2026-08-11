@@ -14,6 +14,8 @@ import { ConfirmDialog } from './ConfirmDialog';
 export type SoftwareVersionBarProps = {
   /** Probe / catalog id: nginx, mysql-server, node, go, … */
   softwareId: string;
+  /** Optional display name (defaults to packageName or softwareId). */
+  title?: string;
   /** Prefer runtime install callback when updateKind=runtime */
   onRuntimeInstall?: (version: string) => void | Promise<void>;
   className?: string;
@@ -33,6 +35,7 @@ type Status = {
 
 export function SoftwareVersionBar({
   softwareId,
+  title,
   onRuntimeInstall,
   className }: SoftwareVersionBarProps) {
   const { t } = useTranslation();
@@ -144,8 +147,17 @@ export function SoftwareVersionBar({
     (st.updateKind === 'runtime' && Boolean(st.latestVersion)) ||
     (st.updateKind === 'apt' && st.upgradable);
 
+  const displayName =
+    title?.trim() ||
+    st.packageName?.trim() ||
+    softwareId;
+
   return (
     <div className={`software-version-bar ${className ?? ''}`.trim()}>
+      <div className="software-version-bar__head">
+        <strong className="software-version-bar__name">{displayName}</strong>
+        <span className="muted u-text-sm">{softwareId}</span>
+      </div>
       <div className="software-version-bar__row">
         <span className="software-version-bar__label">
           {t('software.version.installed')}

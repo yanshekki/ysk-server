@@ -12,6 +12,19 @@
   background: var(--bg-white, #fff);
 }
 
+.software-version-bar__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 0.75rem;
+}
+
+.software-version-bar__name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-main, #111827);
+}
+
 .software-version-bar__row {
   display: flex;
   flex-wrap: wrap;

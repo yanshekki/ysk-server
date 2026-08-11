@@ -160,7 +160,8 @@
     "dovecotNoPassdbSnippets": "dataDir/email 下找不到網域 passdb snippet",
     "dovecotApplyFailed": "套用 Dovecot 虛擬郵箱認證失敗：{{detail}}",
     "dovecotApplyOk": "已安裝 Dovecot 虛擬郵箱認證（{{conf}}，{{count}} 個網域）",
-    "dovecotPassdbWrittenNeedApply": "已寫入 passwd-file（dataDir）— 需 EXECUTE+root 套用到 Dovecot 先可登入"
+    "dovecotPassdbWrittenNeedApply": "已寫入 passwd-file（dataDir）— 需 EXECUTE+root 套用到 Dovecot 先可登入",
+    "postqueueSetgidBroken": "Postfix 佇列工具失敗：main.cf 中 setgid_group 為空。應設為 postdrop（有 YSK_EXECUTE 時面板會嘗試自動修復）。"
   },
   "agents": {
     "sessionNotFound": "找不到 工作階段：{{sessionId}}"

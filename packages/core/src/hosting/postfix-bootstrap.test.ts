@@ -82,14 +82,47 @@ describe('postfix-bootstrap', () => {
   });
 
   it('preparePostfixForStart is quiet when already configured', async () => {
-    const h = host({ paths: ['/etc/postfix/main.cf'] });
+    const h = host({
+      paths: ['/etc/postfix/main.cf'],
+      run: (argv) => {
+        const s = argv.join(' ');
+        if (s.includes('setgid_group')) {
+          return {
+            stdout: 'postdrop\n',
+            stderr: '',
+            exitCode: 0,
+            argv,
+            dryRun: false,
+          };
+        }
+        return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+      },
+    });
     const r = await preparePostfixForStart(h);
     expect(r.ok).toBe(true);
-    expect(r.notes).toEqual([]);
+    expect(r.notes.some((n) => n.includes('setgid_group=postdrop'))).toBe(true);
   });
 
   it('preparePostfixForStart creates when missing', async () => {
-    const h = host({ paths: ['/etc/postfix/main.cf.proto'] });
+    const h = host({
+      paths: ['/etc/postfix/main.cf.proto'],
+      run: (argv) => {
+        const s = argv.join(' ');
+        if (argv[0] === 'cp') {
+          return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        if (s.includes('setgid_group')) {
+          return {
+            stdout: 'postdrop\n',
+            stderr: '',
+            exitCode: 0,
+            argv,
+            dryRun: false,
+          };
+        }
+        return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+      },
+    });
     const r = await preparePostfixForStart(h);
     expect(r.ok).toBe(true);
     expect(r.notes.length).toBeGreaterThan(0);

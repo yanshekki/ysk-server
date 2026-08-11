@@ -95,15 +95,81 @@ export async function ensurePostfixMainCf(host: HostExecutor): Promise<EnsurePos
 }
 
 /**
+ * postqueue/postdrop require setgid_group (usually postdrop).
+ * Empty `setgid_group =` yields: fatal: bad string length 0 < 1: setgid_group =
+ */
+export async function ensurePostfixSetgidGroup(
+  host: HostExecutor,
+): Promise<{ ok: boolean; fixed: boolean; notes: string[] }> {
+  const notes: string[] = [];
+  if (!host.executeEnabled()) {
+    return {
+      ok: false,
+      fixed: false,
+      notes: ['setgid_group check needs YSK_EXECUTE'],
+    };
+  }
+  const get = await host.runCommand(
+    ['bash', '-c', 'postconf -h setgid_group 2>/dev/null || true'],
+    { timeoutMs: 8_000 },
+  );
+  const cur = (get.stdout || '').trim();
+  if (cur) {
+    return { ok: true, fixed: false, notes: [`setgid_group=${cur}`] };
+  }
+  // Prefer postdrop group if present
+  const set = await host.runCommand(
+    [
+      'bash',
+      '-c',
+      [
+        'set -e',
+        'G=postdrop',
+        'getent group postdrop >/dev/null 2>&1 || G=postfix',
+        'getent group "$G" >/dev/null 2>&1 || G=mail',
+        'postconf -e "setgid_group=$G"',
+        'postconf -h setgid_group',
+      ].join('\n'),
+    ],
+    { timeoutMs: 15_000 },
+  );
+  const after = (set.stdout || '').trim();
+  if (set.exitCode === 0 && after) {
+    notes.push(`set setgid_group=${after} (was empty — postqueue needs this)`);
+    // Soft: reload so queue tools pick up conf (ignore failure)
+    await host.runCommand(
+      ['bash', '-c', 'postfix reload 2>/dev/null || systemctl reload postfix 2>/dev/null || true'],
+      { timeoutMs: 15_000 },
+    );
+    return { ok: true, fixed: true, notes };
+  }
+  notes.push(
+    `could not set setgid_group: ${set.stderr || set.stdout || set.exitCode}`,
+  );
+  return { ok: false, fixed: false, notes };
+}
+
+/**
  * Preflight before start/enable: create main.cf if needed, return notes.
  */
 export async function preparePostfixForStart(host: HostExecutor): Promise<{
   ok: boolean;
   notes: string[];
 }> {
-  if (!(await postfixMainCfMissing(host))) {
-    return { ok: true, notes: [] };
+  const notes: string[] = [];
+  if (await postfixMainCfMissing(host)) {
+    const r = await ensurePostfixMainCf(host);
+    notes.push(...r.notes);
+    if (!r.ok) return { ok: false, notes };
   }
-  const r = await ensurePostfixMainCf(host);
-  return { ok: r.ok, notes: r.notes };
+  // Best-effort: empty setgid_group breaks postqueue; do not fail start prep if postconf soft-fails
+  try {
+    const gid = await ensurePostfixSetgidGroup(host);
+    notes.push(...gid.notes);
+  } catch (e) {
+    notes.push(
+      `setgid_group ensure skipped: ${e instanceof Error ? e.message : String(e)}`,
+    );
+  }
+  return { ok: true, notes };
 }

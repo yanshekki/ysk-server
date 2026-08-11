@@ -37,19 +37,19 @@ describe('mail-queue', () => {
   it('parses queue and flushes', async () => {
     const h = host(true, (argv) => {
       const s = argv.join(' ');
-      // Full list script contains both shell probe and postqueue -p
-      if (s.includes('postqueue -p') || (s.includes('postqueue') && s.includes('then'))) {
+      if (s.includes('command -v') && s.includes('postqueue') && !s.includes('postqueue -p')) {
         return {
-          stdout: 'ABC123  (queue active)\n  from@x\nDEF456  (queue active)\n',
+          stdout: '/usr/sbin/postqueue\n',
           stderr: '',
           exitCode: 0,
           argv,
           dryRun: false,
         };
       }
-      if (s.includes('command -v')) {
+      // Full list script contains postqueue -p
+      if (s.includes('postqueue -p') || (s.includes('postqueue') && s.includes('then'))) {
         return {
-          stdout: s.includes('postqueue') ? '/usr/sbin/postqueue\n' : '',
+          stdout: 'ABC123  (queue active)\n  from@x\nDEF456  (queue active)\n',
           stderr: '',
           exitCode: 0,
           argv,
@@ -69,6 +69,57 @@ describe('mail-queue', () => {
     expect(fl.flushed).toBe(1);
     const all = await flushMailQueue(h, { all: true });
     expect(all.ok).toBe(true);
+  });
+
+  it('repairs empty setgid_group then lists queue', async () => {
+    let fixed = false;
+    const h = host(true, (argv) => {
+      const s = argv.join(' ');
+      if (s.includes('command -v')) {
+        return {
+          stdout: '/usr/sbin/postqueue\n',
+          stderr: '',
+          exitCode: 0,
+          argv,
+          dryRun: false,
+        };
+      }
+      if (s.includes('postconf -h setgid_group')) {
+        return {
+          stdout: fixed ? 'postdrop\n' : '\n',
+          stderr: '',
+          exitCode: 0,
+          argv,
+          dryRun: false,
+        };
+      }
+      if (s.includes('postconf -e') && s.includes('setgid_group')) {
+        fixed = true;
+        return { stdout: 'postdrop\n', stderr: '', exitCode: 0, argv, dryRun: false };
+      }
+      if (s.includes('postqueue -p') || (s.includes('postqueue') && s.includes('then'))) {
+        if (!fixed) {
+          return {
+            stdout: '',
+            stderr: 'postqueue: fatal: bad string length 0 < 1: setgid_group =',
+            exitCode: 1,
+            argv,
+            dryRun: false,
+          };
+        }
+        return {
+          stdout: 'Mail queue is empty\n',
+          stderr: '',
+          exitCode: 0,
+          argv,
+          dryRun: false,
+        };
+      }
+      return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+    });
+    const r = await listMailQueue(h);
+    expect(r.ok).toBe(true);
+    expect(r.items).toHaveLength(0);
   });
 
   it('handles empty and missing postqueue', async () => {

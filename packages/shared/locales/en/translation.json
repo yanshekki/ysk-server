@@ -4872,7 +4872,8 @@
       "dovecotNoPassdbSnippets": "No domain passdb snippets found under dataDir/email",
       "dovecotApplyFailed": "Dovecot virtual auth apply failed: {{detail}}",
       "dovecotApplyOk": "Dovecot virtual auth installed ({{conf}}, {{count}} domain snippet(s))",
-      "dovecotPassdbWrittenNeedApply": "Passwd-file written under dataDir — run apply (EXECUTE+root) so Dovecot loads it"
+      "dovecotPassdbWrittenNeedApply": "Passwd-file written under dataDir — run apply (EXECUTE+root) so Dovecot loads it",
+      "postqueueSetgidBroken": "Postfix queue tools failed: setgid_group is empty in main.cf. Set setgid_group=postdrop (panel tries to fix when YSK_EXECUTE is on)."
     },
     "agents": {
       "sessionNotFound": "Session not found: {{sessionId}}"

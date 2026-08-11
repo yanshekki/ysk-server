@@ -36,17 +36,75 @@ export async function listMailQueue(host: HostExecutor): Promise<MailQueueResult
       notes: [tl('notes.auto.n0386'), out0.slice(0, 500)],
     };
   }
-  const r = await host.runCommand(
-    ['bash', '-c', `if ${shellBinExists('postqueue')}; then postqueue -p; else echo NO_POSTQUEUE; fi`],
-    { timeoutMs: 15_000 },
-  );
-  const out = (r.stdout || r.stderr || '').trim();
+  const runPostqueue = async () =>
+    host.runCommand(
+      [
+        'bash',
+        '-c',
+        `if ${shellBinExists('postqueue')}; then postqueue -p 2>&1; else echo NO_POSTQUEUE; fi`,
+      ],
+      { timeoutMs: 15_000 },
+    );
+
+  let r = await runPostqueue();
+  let out = (r.stdout || r.stderr || '').trim();
+
+  // Common broken install: setgid_group empty in main.cf
+  if (
+    /setgid_group/i.test(out) &&
+    /bad string length|fatal/i.test(out) &&
+    host.executeEnabled()
+  ) {
+    try {
+      const { ensurePostfixSetgidGroup } = await import(
+        '../hosting/postfix-bootstrap.js'
+      );
+      const heal = await ensurePostfixSetgidGroup(host);
+      r = await runPostqueue();
+      out = (r.stdout || r.stderr || '').trim();
+      if (heal.fixed && (r.exitCode === 0 || /Mail queue is empty/i.test(out))) {
+        // continue into success path below
+      } else if (heal.fixed || heal.notes.length) {
+        // still failing after heal — fall through to error with heal notes
+        if (out.includes('NO_POSTQUEUE') || r.exitCode !== 0) {
+          return {
+            ok: false,
+            requiresExecute: false,
+            items: [],
+            notes: [
+              tl('notes.email.postqueueSetgidBroken'),
+              ...heal.notes.slice(0, 3),
+              out.slice(0, 400),
+            ],
+          };
+        }
+      }
+    } catch (e) {
+      return {
+        ok: false,
+        requiresExecute: false,
+        items: [],
+        notes: [
+          tl('notes.email.postqueueSetgidBroken'),
+          e instanceof Error ? e.message : String(e),
+          out.slice(0, 400),
+        ],
+      };
+    }
+  }
+
   if (out.includes('NO_POSTQUEUE') || r.exitCode !== 0) {
+    const setgidHint = /setgid_group/i.test(out);
     return {
       ok: false,
       requiresExecute: false,
       items: [],
-      notes: [tl('notes.auto.n0386'), out.slice(0, 500)],
+      notes: [
+        setgidHint
+          ? tl('notes.email.postqueueSetgidBroken')
+          : tl('notes.auto.n0386'),
+        out.slice(0, 500),
+      ],
     };
   }
   if (/Mail queue is empty|queue is empty/i.test(out)) {

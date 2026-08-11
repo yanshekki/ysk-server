@@ -426,13 +426,22 @@ export async function installSoftware(input: {
     // Postfix: package can install without main.cf → unit ConditionPathExists skip
     if (spec.id === 'postfix') {
       try {
-        const { ensurePostfixMainCf } = await import('./postfix-bootstrap.js');
+        const { ensurePostfixMainCf, ensurePostfixSetgidGroup } = await import(
+          './postfix-bootstrap.js'
+        );
         const heal = await ensurePostfixMainCf(input.host);
         notes.push(...heal.notes);
         steps.push({
           name: 'postfix main.cf',
           status: heal.ok ? 'ok' : 'failed',
           detail: heal.created ? 'created from template' : heal.ok ? 'already present' : heal.notes.join('; '),
+        });
+        const gid = await ensurePostfixSetgidGroup(input.host);
+        notes.push(...gid.notes);
+        steps.push({
+          name: 'postfix setgid_group',
+          status: gid.ok ? 'ok' : 'failed',
+          detail: gid.notes.join('; '),
         });
       } catch (e) {
         notes.push(`postfix main.cf ensure failed: ${e instanceof Error ? e.message : String(e)}`);
