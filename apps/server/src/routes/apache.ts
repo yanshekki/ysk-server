@@ -55,9 +55,9 @@ export async function handleApacheRoutes(
         actor: user.username,
         action: 'apache.site.create',
         resource: item.id,
+        detail: { serverName: item.serverName, kind: item.kind },
         ok: true,
-      detail: {},
-    });
+      });
       sendJson(res, 201, { item });
       return true;
     }
@@ -76,9 +76,9 @@ export async function handleApacheRoutes(
       ctx.audit.append({
         actor: user.username,
         action: 'apache.settings.patch',
+        detail: { keys: Object.keys(data) },
         ok: true,
-      detail: {},
-    });
+      });
       sendJson(res, 200, { ok: true, settings });
       return true;
     }
@@ -95,9 +95,9 @@ export async function handleApacheRoutes(
       ctx.audit.append({
         actor: user.username,
         action: 'apache.settings.apply',
+        detail: { ok: result.ok, blocked: result.blocked },
         ok: result.ok,
-      detail: {},
-    });
+      });
       sendOpsResult(res, {
         ...result,
         apply_status: result.blocked ? 'blocked' : result.ok ? 'applied' : 'failed',
@@ -128,9 +128,9 @@ export async function handleApacheRoutes(
           actor: user.username,
           action: 'apache.site.delete',
           resource: id,
+          detail: { ok },
           ok,
-      detail: {},
-    });
+        });
         sendJson(res, ok ? 200 : 404, { ok });
         return true;
       }
@@ -146,9 +146,9 @@ export async function handleApacheRoutes(
           actor: user.username,
           action: 'apache.site.apply',
           resource: id,
+          detail: { ok: result.ok, blocked: result.blocked },
           ok: result.ok,
-      detail: {},
-    });
+        });
         sendOpsResult(res, {
           ...result,
           apply_status: result.blocked
@@ -174,9 +174,9 @@ export async function handleApacheRoutes(
           actor: user.username,
           action: 'apache.site.settings',
           resource: id,
+          detail: { keys: Object.keys(data), ok: result.ok, blocked: result.blocked },
           ok: result.ok,
-      detail: {},
-    });
+        });
         sendOpsResult(res, {
           ...result,
           apply_status: result.blocked

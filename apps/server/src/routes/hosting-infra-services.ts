@@ -209,9 +209,16 @@ export async function handleHostingInfraServicesRoutes(
             actor: user.username,
             action: 'nginx.site.settings',
             resource: rawId,
+            detail: {
+              source: 'project',
+              keys: Object.keys(data),
+              ssl: data.ssl,
+              forceHttps: data.forceHttps,
+              hsts: data.hsts,
+              ok: Boolean(result.ok),
+            },
             ok: Boolean(result.ok),
-      detail: {},
-    });
+          });
           sendOpsResult(res, result);
           return true;
         }
@@ -232,9 +239,14 @@ export async function handleHostingInfraServicesRoutes(
           actor: user.username,
           action: 'nginx.site.settings',
           resource: rawId,
+          detail: {
+            source: 'standalone',
+            keys: Object.keys(data),
+            ok: result.ok,
+            blocked: result.blocked,
+          },
           ok: result.ok,
-      detail: {},
-    });
+        });
         sendOpsResult(res, result);
         return true;
       }
