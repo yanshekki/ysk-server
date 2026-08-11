@@ -116,6 +116,7 @@ export function RuntimeSoftwarePanel(props: RuntimeSoftwarePanelProps) {
     onSetPanelDefault,
     onUninstallVersion,
     onReprobe,
+    onStackLifecycleDone,
     detailExtra,
     remoteHint,
   } = props;
@@ -397,6 +398,7 @@ export function RuntimeSoftwarePanel(props: RuntimeSoftwarePanelProps) {
           feature={kind}
           title={bannerTitle}
           readyTitle={t('runtime.stackReadyTitle', { name: title })}
+          onInstalled={onStackLifecycleDone}
         />
       </details>
     </div>
