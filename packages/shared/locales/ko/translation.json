@@ -11198,7 +11198,8 @@
       "about": "정보",
       "wireguard": "WireGuard",
       "openvpn": "OpenVPN",
-      "outline": "Shadowsocks"
+      "outline": "Shadowsocks",
+      "software": "Software"
     },
     "installed": "설치됨",
     "notInstalled": "미설치",
@@ -11271,6 +11272,7 @@
     "protoUdp": "UDP",
     "protoTcp": "TCP",
     "listenPortUdp": "Listen port (UDP)",
-    "listenPortTcp": "Listen port (TCP)"
+    "listenPortTcp": "Listen port (TCP)",
+    "softwareIntro": "Install or update VPN engines here."
   }
 }

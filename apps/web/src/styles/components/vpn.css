@@ -157,6 +157,31 @@ html.dark .vpn-cfg__qr-wrap {
   outline-offset: 1px;
 }
 
+/* —— Software check / update tab —— */
+.vpn-software-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.vpn-software-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 10px);
+  background: var(--bg-elevated, var(--surface-1, #fff));
+}
+
+.vpn-software-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
 .u-flex-gap {
   display: flex;
   flex-wrap: wrap;

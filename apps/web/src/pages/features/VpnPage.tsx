@@ -46,7 +46,7 @@ import {
   type VpnEngineTab,
 } from '../../features/vpn/endpoint-sync';
 
-const TABS = ['wireguard', 'openvpn', 'outline', 'client', 'about'] as const;
+const TABS = ['wireguard', 'openvpn', 'outline', 'client', 'software', 'about'] as const;
 type TabId = (typeof TABS)[number];
 
 function isServerTab(t: TabId): t is VpnEngineTab {
@@ -333,23 +333,9 @@ export function VpnPage() {
 
   const renderServerPanel = (engine: VpnEngineTab) => (
     <div className="stack">
-      {engine === 'wireguard' ? (
-        <>
-          <SoftwareInstallBanner feature="wireguard" title={t('vpn.needWireGuard')} />
-          <SoftwareVersionBar softwareId="wireguard" />
-        </>
-      ) : engine === 'openvpn' ? (
-        <>
-          <SoftwareInstallBanner feature="openvpn" title={t('vpn.needOpenVpn')} />
-          <SoftwareVersionBar softwareId="openvpn" />
-        </>
-      ) : (
-        <>
-          <SoftwareInstallBanner feature="outline" title={t('vpn.needSs')} />
-          <SoftwareVersionBar softwareId="shadowsocks" />
-          <Alert variant="info">{t('vpn.ssHonestUi')}</Alert>
-        </>
-      )}
+      {engine === 'outline' ? (
+        <Alert variant="info">{t('vpn.ssHonestUi')}</Alert>
+      ) : null}
 
       <section className="stack" aria-label={t('vpn.serverSettings')}>
         <FormLayout columns={2}>
@@ -604,10 +590,52 @@ export function VpnPage() {
         {tab === 'openvpn' ? renderServerPanel('openvpn') : null}
         {tab === 'outline' ? renderServerPanel('outline') : null}
 
+        {tab === 'software' ? (
+          <div className="stack">
+            <Alert variant="info">{t('vpn.softwareIntro')}</Alert>
+            <div className="vpn-software-stack">
+              <section className="vpn-software-card" aria-label="WireGuard">
+                <div className="vpn-software-card__head">
+                  <strong>WireGuard</strong>
+                  {engineStatus(status, 'wireguard')?.installed ? (
+                    <Badge tone="ok">{t('vpn.installed')}</Badge>
+                  ) : (
+                    <Badge tone="warn">{t('vpn.notInstalled')}</Badge>
+                  )}
+                </div>
+                <SoftwareInstallBanner feature="wireguard" title={t('vpn.needWireGuard')} />
+                <SoftwareVersionBar softwareId="wireguard" />
+              </section>
+              <section className="vpn-software-card" aria-label="OpenVPN">
+                <div className="vpn-software-card__head">
+                  <strong>OpenVPN</strong>
+                  {engineStatus(status, 'openvpn')?.installed ? (
+                    <Badge tone="ok">{t('vpn.installed')}</Badge>
+                  ) : (
+                    <Badge tone="warn">{t('vpn.notInstalled')}</Badge>
+                  )}
+                </div>
+                <SoftwareInstallBanner feature="openvpn" title={t('vpn.needOpenVpn')} />
+                <SoftwareVersionBar softwareId="openvpn" />
+              </section>
+              <section className="vpn-software-card" aria-label="Shadowsocks">
+                <div className="vpn-software-card__head">
+                  <strong>Shadowsocks</strong>
+                  {engineStatus(status, 'outline')?.installed ? (
+                    <Badge tone="ok">{t('vpn.installed')}</Badge>
+                  ) : (
+                    <Badge tone="warn">{t('vpn.notInstalled')}</Badge>
+                  )}
+                </div>
+                <SoftwareInstallBanner feature="outline" title={t('vpn.needSs')} />
+                <SoftwareVersionBar softwareId="shadowsocks" />
+              </section>
+            </div>
+          </div>
+        ) : null}
+
         {tab === 'client' ? (
           <div className="stack">
-            <SoftwareInstallBanner feature="wireguard" title={t('vpn.needWireGuard')} />
-            <SoftwareInstallBanner feature="openvpn" title={t('vpn.needOpenVpn')} />
             <Alert variant="info">{t('vpn.clientIntro')}</Alert>
 
             <DataTable

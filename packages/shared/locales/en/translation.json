@@ -11162,11 +11162,13 @@
       "openvpn": "OpenVPN",
       "outline": "Shadowsocks",
       "client": "Local client",
+      "software": "Software",
       "about": "About",
       "server": "Server",
       "install": "Install",
       "overview": "Overview"
     },
+    "softwareIntro": "Install or update VPN engines here. Server tabs stay focused on config.",
     "installed": "Installed",
     "notInstalled": "Not installed",
     "serverUp": "Running",

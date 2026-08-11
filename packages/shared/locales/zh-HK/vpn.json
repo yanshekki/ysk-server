@@ -6,11 +6,13 @@
     "openvpn": "OpenVPN",
     "outline": "Shadowsocks",
     "client": "本機連出",
+    "software": "軟件",
     "about": "說明",
     "server": "伺服器",
     "install": "安裝",
     "overview": "總覽"
   },
+  "softwareIntro": "喺呢度檢查／安裝／更新 VPN 引擎。伺服器分頁只做設定。",
   "installed": "已安裝",
   "notInstalled": "未安裝",
   "serverUp": "運行中",

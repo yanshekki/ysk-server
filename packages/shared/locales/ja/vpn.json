@@ -9,7 +9,8 @@
     "about": "説明",
     "wireguard": "WireGuard",
     "openvpn": "OpenVPN",
-    "outline": "Shadowsocks"
+    "outline": "Shadowsocks",
+    "software": "Software"
   },
   "installed": "インストール済み",
   "notInstalled": "未インストール",
@@ -82,5 +83,6 @@
   "protoUdp": "UDP",
   "protoTcp": "TCP",
   "listenPortUdp": "Listen port (UDP)",
-  "listenPortTcp": "Listen port (TCP)"
+  "listenPortTcp": "Listen port (TCP)",
+  "softwareIntro": "Install or update VPN engines here."
 }
