@@ -571,6 +571,32 @@ export class VncService {
         desktop: rec.desktop,
       });
       notes.push(...xs.notes);
+      // Desktop only takes effect on a new X session — bounce if currently up
+      if (xs.ok && this.host.executeEnabled() && this.host.isRoot()) {
+        const wasUp = await probeSessionRunning(this.host, rec.display);
+        if (wasUp) {
+          await stopVncSession({
+            host: this.host,
+            linuxUser: rec.linuxUser,
+            display: rec.display,
+          });
+          const st = await startVncSession({
+            host: this.host,
+            linuxUser: rec.linuxUser,
+            display: rec.display,
+            geometry: rec.geometry,
+            depth: rec.depth,
+            rfbBind: rec.rfbBind,
+            home,
+          });
+          notes.push(...st.notes);
+          if (st.ok) {
+            notes.push(tl('notes.vnc.desktopRestarted', { desktop: rec.desktop }));
+          }
+        } else {
+          notes.push(tl('notes.vnc.desktopNeedsStart', { desktop: rec.desktop }));
+        }
+      }
     }
     rec.updatedAt = new Date().toISOString();
     items[idx] = rec;

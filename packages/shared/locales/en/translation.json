@@ -7594,7 +7594,9 @@
       "clientDownBlocked": "Cannot disconnect without root + YSK_EXECUTE",
       "clientDown": "Disconnected client {{name}}",
       "clientDeleted": "Client profile deleted",
-      "sessionStartCwd": "VNC start failed: working directory not accessible to the session user (display :{{display}}). Fixed by starting from HOME."
+      "sessionStartCwd": "VNC start failed: working directory not accessible to the session user (display :{{display}}). Fixed by starting from HOME.",
+      "desktopRestarted": "Desktop profile applied and session restarted ({{desktop}}). Reconnect VNC/noVNC.",
+      "desktopNeedsStart": "Desktop profile {{desktop}} written to xstartup. Start the session to apply."
     },
     "apache": {
       "needServerName": "Server name required",

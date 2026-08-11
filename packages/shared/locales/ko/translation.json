@@ -7620,7 +7620,9 @@
       "clientDown": "클라이언트 {{name}} 연결 해제됨",
       "clientDeleted": "클라이언트 프로필 삭제됨",
       "sessionStartCwd": "VNC start failed: working directory not accessible to the session user (display :{{display}}). Fixed by starting from HOME.",
-      "xstartupWriteFailed": "Failed to write ~/.vnc/xstartup ({{detail}}). Need root + YSK_EXECUTE."
+      "xstartupWriteFailed": "Failed to write ~/.vnc/xstartup ({{detail}}). Need root + YSK_EXECUTE.",
+      "desktopRestarted": "Desktop profile applied and session restarted ({{desktop}}). Reconnect VNC/noVNC.",
+      "desktopNeedsStart": "Desktop profile {{desktop}} written to xstartup. Start the session to apply."
     },
     "apache": {
       "needServerName": "Server name required",

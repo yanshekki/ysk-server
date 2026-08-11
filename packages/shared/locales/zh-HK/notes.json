@@ -2899,7 +2899,9 @@
     "clientDown": "已斷開客戶端 {{name}}",
     "clientDeleted": "已刪除客戶端設定",
     "sessionStartCwd": "VNC 啟動失敗：工作目錄 VNC 用戶無權限（display :{{display}}）。已改為由 HOME 啟動。",
-    "xstartupWriteFailed": "Failed to write ~/.vnc/xstartup ({{detail}}). Need root + YSK_EXECUTE."
+    "xstartupWriteFailed": "Failed to write ~/.vnc/xstartup ({{detail}}). Need root + YSK_EXECUTE.",
+    "desktopRestarted": "Desktop profile applied and session restarted ({{desktop}}). Reconnect VNC/noVNC.",
+    "desktopNeedsStart": "Desktop profile {{desktop}} written to xstartup. Start the session to apply."
   },
   "apache": {
     "needServerName": "需要域名",
