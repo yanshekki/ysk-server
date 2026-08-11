@@ -3613,7 +3613,8 @@
       "ports": "열린 포트",
       "deny": "영구 차단 IP",
       "profiles": "프로필",
-      "about": "정보"
+      "about": "정보",
+      "services": "Services"
     },
     "currentRules": "현재 규칙",
     "rulesSourceHint": "UFW 번호 규칙 (ufw status numbered)",
@@ -3662,7 +3663,19 @@
     "applyToSystem": "시스템에 적용",
     "deletedRule": "#{{n}} 삭제됨",
     "deleteRuleTitle": "규칙 #{{n}}을(를) 삭제할까요?",
-    "deleteRuleDesc": "해당 UFW 규칙 번호를 제거합니다 (시스템 변경 권한 필요)."
+    "deleteRuleDesc": "해당 UFW 규칙 번호를 제거합니다 (시스템 변경 권한 필요).",
+    "servicesTitle": "Managed services",
+    "servicesHint": "Desired network exposure for YSK services. Opening a service syncs these rules automatically.",
+    "servicesEmpty": "No service exposure data yet",
+    "servicesEmptyDesc": "Start a managed service (web, FTPS, VPN, DB…) to populate this list.",
+    "servicesManualHint": "Manual port chips are under the Ports tab — prefer managing access here so rules stay tagged (ysk-svc).",
+    "portsManualHint": "Advanced manual rules. Prefer the Services tab for managed software.",
+    "colService": "Service",
+    "colMode": "Mode",
+    "colPorts": "Ports",
+    "colSync": "Status",
+    "synced": "Synced",
+    "syncNow": "Sync"
   },
   "ftp": {
     "title": "FTPS 계정",
@@ -11517,5 +11530,28 @@
       "unknown": "Unknown",
       "error": "Error"
     }
+  },
+  "serviceExposure": {
+    "title": "Network access",
+    "manage": "Manage access",
+    "manageTitle": "Service network access",
+    "manageDesc": "Control how {{service}} is reachable on the host firewall.",
+    "mode": "Access mode",
+    "modePrivate": "Local only",
+    "modePublic": "Public",
+    "modeRestricted": "Restricted",
+    "summaryPrivate": "Not open on the public firewall.",
+    "summaryPublic": "Open · {{ports}}",
+    "summaryRestricted": "Restricted · {{count}} source(s)",
+    "outOfSync": "Out of sync",
+    "firewallLink": "Firewall",
+    "portsLabel": "Ports",
+    "allowFrom": "Allowed sources (IP / CIDR)",
+    "hintPrivate": "Service may still listen on localhost; no public UFW allow rules.",
+    "hintPublic": "Warning: opens this port to the whole Internet. Prefer restricted for databases.",
+    "hintRestricted": "Comma-separated IPs or CIDRs. Only these sources may connect.",
+    "restrictedNeedIp": "Add at least one IP or CIDR for restricted mode.",
+    "privateStartTitle": "Expose {{service}} on the network?",
+    "confirmAndStart": "Confirm and start"
   }
 }

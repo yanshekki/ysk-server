@@ -2906,5 +2906,14 @@
     "configFailed": "configtest failed: {{detail}}",
     "reloaded": "Apache reloaded",
     "reloadFailed": "Reload failed"
+  },
+  "firewallDeleteByComment": {
+    "removed": "Removed {{n}} firewall rule(s) matching {{prefix}}",
+    "none": "No firewall rules matched {{prefix}}"
+  },
+  "serviceExposure": {
+    "needsDecision": "{{service}}: confirm whether to expose this service on the network",
+    "private": "{{service}}: kept private (no public firewall allow)",
+    "restrictedEmpty": "Restricted mode needs at least one allowed IP/CIDR"
   }
 }
