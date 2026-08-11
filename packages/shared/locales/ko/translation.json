@@ -193,6 +193,46 @@
     "promptPh": "원하는 작업을 설명하세요…",
     "createHint": "다음: 작업 상세에서 승인 후 실행하거나, 개별 단계를 거부하세요."
   },
+  "apache": {
+    "pageDesc": "Apache sites",
+    "pillSites": "{{count}} sites",
+    "listTitle": "Sites ({{count}})",
+    "emptyTitle": "No sites",
+    "createSite": "+ Create site",
+    "createTitle": "Create site",
+    "editTitle": "Edit site",
+    "deleteTitle": "Delete site?",
+    "deleteDesc": "Remove this Apache site?",
+    "colServerName": "Server name",
+    "colKind": "Type",
+    "colTarget": "Target",
+    "colStatus": "Status",
+    "kindLabel": "Type",
+    "kindProxy": "Proxy",
+    "kindStatic": "Static",
+    "kindPhp": "PHP",
+    "upstreamLabel": "Upstream",
+    "rootLabel": "Document root",
+    "sslLabel": "SSL",
+    "apply": "Apply",
+    "notInstalled": "Apache not installed",
+    "globalSettings": "Global settings",
+    "siteSettings": "Site settings",
+    "saveApply": "Save & apply",
+    "settingsSaved": "Saved",
+    "setGzip": "Gzip",
+    "setShowVersion": "Show version",
+    "setHttp2": "HTTP/2",
+    "setBody": "Max body",
+    "setKeepalive": "Keepalive",
+    "setAccessLog": "Access log",
+    "logOn": "On",
+    "logOff": "Off",
+    "setForceHttps": "Force HTTPS",
+    "setHsts": "HSTS",
+    "setIndexes": "Directory listing",
+    "bodyInherit": "Global"
+  },
   "applyStatus": {
     "draft": "초안",
     "written": "작성됨 (패널 데이터)",
@@ -4456,7 +4496,8 @@
     "hostBrowse": "호스트 탐색",
     "cdn": "CDN",
     "vpn": "VPN",
-    "vnc": "VNC"
+    "vnc": "VNC",
+    "apache": "Apache"
   },
   "network": {
     "title": "네트워크 인터페이스",
@@ -7566,6 +7607,21 @@
       "clientDownBlocked": "root + YSK_EXECUTE 없이 연결 해제할 수 없음",
       "clientDown": "클라이언트 {{name}} 연결 해제됨",
       "clientDeleted": "클라이언트 프로필 삭제됨"
+    },
+    "apache": {
+      "needServerName": "Server name required",
+      "siteExists": "Site already exists",
+      "siteNotFound": "Site not found",
+      "wroteConf": "Wrote {{path}}",
+      "needExecute": "Needs YSK_EXECUTE",
+      "settingsWritten": "Apache defaults written",
+      "managedDir": "Managed dir {{path}}",
+      "dryRun": "Dry run",
+      "copyFailed": "Copy failed: {{file}}",
+      "configOk": "configtest OK",
+      "configFailed": "configtest failed: {{detail}}",
+      "reloaded": "Apache reloaded",
+      "reloadFailed": "Reload failed"
     }
   },
   "ops": {

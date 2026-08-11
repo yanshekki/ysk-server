@@ -63,5 +63,6 @@
   "hostBrowse": "主機瀏覽",
   "cdn": "CDN",
   "vpn": "VPN",
-  "vnc": "VNC"
+  "vnc": "VNC",
+  "apache": "Apache"
 }

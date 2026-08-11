@@ -193,6 +193,46 @@
     "promptPh": "Descreva o que pretende…",
     "createHint": "Seguinte: Aprovar e executar no detalhe da tarefa, ou rejeitar passos individuais."
   },
+  "apache": {
+    "pageDesc": "Apache sites",
+    "pillSites": "{{count}} sites",
+    "listTitle": "Sites ({{count}})",
+    "emptyTitle": "No sites",
+    "createSite": "+ Create site",
+    "createTitle": "Create site",
+    "editTitle": "Edit site",
+    "deleteTitle": "Delete site?",
+    "deleteDesc": "Remove this Apache site?",
+    "colServerName": "Server name",
+    "colKind": "Type",
+    "colTarget": "Target",
+    "colStatus": "Status",
+    "kindLabel": "Type",
+    "kindProxy": "Proxy",
+    "kindStatic": "Static",
+    "kindPhp": "PHP",
+    "upstreamLabel": "Upstream",
+    "rootLabel": "Document root",
+    "sslLabel": "SSL",
+    "apply": "Apply",
+    "notInstalled": "Apache not installed",
+    "globalSettings": "Global settings",
+    "siteSettings": "Site settings",
+    "saveApply": "Save & apply",
+    "settingsSaved": "Saved",
+    "setGzip": "Gzip",
+    "setShowVersion": "Show version",
+    "setHttp2": "HTTP/2",
+    "setBody": "Max body",
+    "setKeepalive": "Keepalive",
+    "setAccessLog": "Access log",
+    "logOn": "On",
+    "logOff": "Off",
+    "setForceHttps": "Force HTTPS",
+    "setHsts": "HSTS",
+    "setIndexes": "Directory listing",
+    "bodyInherit": "Global"
+  },
   "applyStatus": {
     "draft": "Rascunho",
     "written": "Escrito (dados do painel)",
@@ -4456,7 +4496,8 @@
     "hostBrowse": "Navegação host",
     "cdn": "CDN",
     "vpn": "VPN",
-    "vnc": "VNC"
+    "vnc": "VNC",
+    "apache": "Apache"
   },
   "network": {
     "title": "Interfaces de rede",
@@ -7566,6 +7607,21 @@
       "clientDownBlocked": "Cannot disconnect without root + YSK_EXECUTE",
       "clientDown": "Disconnected client {{name}}",
       "clientDeleted": "Client profile deleted"
+    },
+    "apache": {
+      "needServerName": "Server name required",
+      "siteExists": "Site already exists",
+      "siteNotFound": "Site not found",
+      "wroteConf": "Wrote {{path}}",
+      "needExecute": "Needs YSK_EXECUTE",
+      "settingsWritten": "Apache defaults written",
+      "managedDir": "Managed dir {{path}}",
+      "dryRun": "Dry run",
+      "copyFailed": "Copy failed: {{file}}",
+      "configOk": "configtest OK",
+      "configFailed": "configtest failed: {{detail}}",
+      "reloaded": "Apache reloaded",
+      "reloadFailed": "Reload failed"
     }
   },
   "ops": {

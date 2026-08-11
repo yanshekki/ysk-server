@@ -63,5 +63,6 @@
   "hostBrowse": "হোস্ট ব্রাউজ",
   "cdn": "CDN",
   "vpn": "VPN",
-  "vnc": "VNC"
+  "vnc": "VNC",
+  "apache": "Apache"
 }

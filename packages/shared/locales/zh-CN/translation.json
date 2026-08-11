@@ -193,6 +193,46 @@
     "promptPh": "描述想做的事…",
     "createHint": "下一步：在任务详情按「批准并执行」，或拒绝个别步骤。"
   },
+  "apache": {
+    "pageDesc": "Apache 站点",
+    "pillSites": "{{count}} 站点",
+    "listTitle": "站点（{{count}}）",
+    "emptyTitle": "暂无站点",
+    "createSite": "+ 创建站点",
+    "createTitle": "创建站点",
+    "editTitle": "编辑站点",
+    "deleteTitle": "删除站点？",
+    "deleteDesc": "删除此 Apache 站点？",
+    "colServerName": "域名",
+    "colKind": "类型",
+    "colTarget": "目标",
+    "colStatus": "状态",
+    "kindLabel": "类型",
+    "kindProxy": "反代",
+    "kindStatic": "静态",
+    "kindPhp": "PHP",
+    "upstreamLabel": "上游",
+    "rootLabel": "根目录",
+    "sslLabel": "SSL",
+    "apply": "应用",
+    "notInstalled": "未安装 Apache",
+    "globalSettings": "全局设置",
+    "siteSettings": "站点设置",
+    "saveApply": "保存并应用",
+    "settingsSaved": "已保存",
+    "setGzip": "Gzip",
+    "setShowVersion": "显示版本",
+    "setHttp2": "HTTP/2",
+    "setBody": "Body 上限",
+    "setKeepalive": "Keepalive",
+    "setAccessLog": "Access log",
+    "logOn": "开",
+    "logOff": "关",
+    "setForceHttps": "强制 HTTPS",
+    "setHsts": "HSTS",
+    "setIndexes": "目录列表",
+    "bodyInherit": "跟随全局"
+  },
   "applyStatus": {
     "draft": "草稿",
     "written": "已写入管理文件",
@@ -4456,7 +4496,8 @@
     "hostBrowse": "主機瀏覽",
     "cdn": "CDN",
     "vpn": "VPN",
-    "vnc": "VNC"
+    "vnc": "VNC",
+    "apache": "Apache"
   },
   "network": {
     "title": "网络接口",
@@ -7566,6 +7607,21 @@
       "clientDownBlocked": "无权限断开（需 root + YSK_EXECUTE）",
       "clientDown": "已断开客户端 {{name}}",
       "clientDeleted": "已删除客户端配置"
+    },
+    "apache": {
+      "needServerName": "需要域名",
+      "siteExists": "站点已存在",
+      "siteNotFound": "找不到站点",
+      "wroteConf": "已写入 {{path}}",
+      "needExecute": "需 YSK_EXECUTE",
+      "settingsWritten": "已写入 Apache 默认",
+      "managedDir": "管理目录 {{path}}",
+      "dryRun": "预演",
+      "copyFailed": "复制失败：{{file}}",
+      "configOk": "configtest 通过",
+      "configFailed": "configtest 失败：{{detail}}",
+      "reloaded": "Apache 已 reload",
+      "reloadFailed": "reload 失败"
     }
   },
   "ops": {

@@ -8,6 +8,7 @@ export type SoftwareId =
   | 'vsftpd'
   | 'db-util'
   | 'nginx'
+  | 'apache2'
   | 'certbot'
   | 'mysql-client'
   | 'mysql-server'
@@ -44,6 +45,7 @@ export type SoftwareId =
 export type FeatureSoftwareKey =
   | 'ftp'
   | 'nginx'
+  | 'apache'
   | 'ssl'
   | 'mysql'
   | 'mariadb'
@@ -143,6 +145,13 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     aptPackages: ['nginx'],
     units: ['nginx'],
     features: ['nginx'] },
+  {
+    id: 'apache2',
+    title: 'Apache HTTP Server',
+    bins: ['apache2', 'apache2ctl', 'httpd'],
+    aptPackages: ['apache2'],
+    units: ['apache2', 'httpd'],
+    features: ['apache'] },
   {
     id: 'certbot',
     title: 'Certbot (Let’s Encrypt)',

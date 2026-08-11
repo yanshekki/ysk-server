@@ -1686,5 +1686,23 @@
         "to": "/protection/firewall"
       }
     ]
+  },
+  "apache": {
+    "id": "apache",
+    "title": "Apache",
+    "summary": "Manage Apache sites and settings.",
+    "canDo": [
+      "Create proxy/static/PHP vhosts",
+      "Global and site settings",
+      "Apply with configtest"
+    ],
+    "workflow": [
+      "Install Apache",
+      "Create site",
+      "Apply"
+    ],
+    "notes": [
+      "Needs YSK_EXECUTE for system apply"
+    ]
   }
 }

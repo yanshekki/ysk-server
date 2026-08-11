@@ -1688,5 +1688,23 @@
         "to": "/protection/firewall"
       }
     ]
+  },
+  "apache": {
+    "id": "apache",
+    "title": "Apache",
+    "summary": "管理 Apache 站点与设置。",
+    "canDo": [
+      "创建反代／静态／PHP",
+      "全局与站点设置",
+      "应用 configtest"
+    ],
+    "workflow": [
+      "安装 Apache",
+      "创建站点",
+      "应用"
+    ],
+    "notes": [
+      "系统应用需 YSK_EXECUTE"
+    ]
   }
 }

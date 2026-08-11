@@ -2880,5 +2880,20 @@
     "clientDownBlocked": "無權限斷線（需 root + YSK_EXECUTE）",
     "clientDown": "已斷開客戶端 {{name}}",
     "clientDeleted": "已刪除客戶端設定"
+  },
+  "apache": {
+    "needServerName": "需要域名",
+    "siteExists": "站點已存在",
+    "siteNotFound": "找不到站點",
+    "wroteConf": "已寫入 {{path}}",
+    "needExecute": "需 YSK_EXECUTE",
+    "settingsWritten": "已寫入 Apache 預設",
+    "managedDir": "管理目錄 {{path}}",
+    "dryRun": "預演",
+    "copyFailed": "複製失敗：{{file}}",
+    "configOk": "configtest 通過",
+    "configFailed": "configtest 失敗：{{detail}}",
+    "reloaded": "Apache 已 reload",
+    "reloadFailed": "reload 失敗"
   }
 }

@@ -51,6 +51,9 @@ const SystemPage = lazy(() =>
 const NginxPage = lazy(() =>
   import('../pages/features/NginxPage').then((m) => ({ default: m.NginxPage })),
 );
+const ApachePage = lazy(() =>
+  import('../pages/features/ApachePage').then((m) => ({ default: m.ApachePage })),
+);
 const PhpRuntimePage = lazy(() =>
   import('../pages/features/PhpRuntimePage').then((m) => ({ default: m.PhpRuntimePage })),
 );
@@ -345,6 +348,14 @@ export function App() {
               element={
                 <Lazy>
                   <NginxPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="apache"
+              element={
+                <Lazy>
+                  <ApachePage />
                 </Lazy>
               }
             />

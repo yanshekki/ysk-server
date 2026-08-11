@@ -59,6 +59,7 @@ import { handleTerminalRoutes } from './routes/terminal.js';
 import { handleHostBrowseRoutes } from './routes/host-browse.js';
 import { handleVpnRoutes } from './routes/vpn.js';
 import { handleVncRoutes } from './routes/vnc.js';
+import { handleApacheRoutes } from './routes/apache.js';
 import { attachTerminalWebSocket } from './terminal/ws-handler.js';
 import { attachHostBrowseWebSocket } from './host-browse/ws-handler.js';
 
@@ -127,6 +128,7 @@ function attachRequestHandler(ctx: AppContext, webRoot: string | null) {
         if (await handleHostBrowseRoutes(ctx, req, res, url, method)) return;
         if (await handleVpnRoutes(ctx, req, res, url, method)) return;
         if (await handleVncRoutes(ctx, req, res, url, method)) return;
+        if (await handleApacheRoutes(ctx, req, res, url, method)) return;
 
         // Domain route modules (extracted from former monolithic handler)
         if (await handlePublicRoutes(ctx, req, res, url, method)) return;

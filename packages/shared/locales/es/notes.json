@@ -2880,5 +2880,20 @@
     "clientDownBlocked": "No se puede desconectar sin root + YSK_EXECUTE",
     "clientDown": "Cliente {{name}} desconectado",
     "clientDeleted": "Perfil de cliente eliminado"
+  },
+  "apache": {
+    "needServerName": "Server name required",
+    "siteExists": "Site already exists",
+    "siteNotFound": "Site not found",
+    "wroteConf": "Wrote {{path}}",
+    "needExecute": "Needs YSK_EXECUTE",
+    "settingsWritten": "Apache defaults written",
+    "managedDir": "Managed dir {{path}}",
+    "dryRun": "Dry run",
+    "copyFailed": "Copy failed: {{file}}",
+    "configOk": "configtest OK",
+    "configFailed": "configtest failed: {{detail}}",
+    "reloaded": "Apache reloaded",
+    "reloadFailed": "Reload failed"
   }
 }

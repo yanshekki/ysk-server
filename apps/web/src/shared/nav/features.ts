@@ -61,6 +61,7 @@ export const FEATURE_SECTIONS: FeatureSection[] = [
       { to: '/cdn', key: 'cdn', icon: '📡' },
       { to: '/ssl', key: 'ssl', icon: '🔒' },
       { to: '/nginx', key: 'nginx', icon: '🔀' },
+      { to: '/apache', key: 'apache', icon: '🕸️' },
     ],
   },
   {
