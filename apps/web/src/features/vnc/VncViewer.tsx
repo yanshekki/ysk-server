@@ -370,6 +370,28 @@ export function VncViewer({ target, createSession, onClose, onShare }: Props) {
     }
   };
 
+  /** Capture current RFB canvas as PNG download. */
+  const takeScreenshot = () => {
+    const root = screenRef.current;
+    if (!root || state !== 'connected') return;
+    const canvas = root.querySelector('canvas');
+    if (!canvas || !(canvas instanceof HTMLCanvasElement)) {
+      notifyWarn(t('vnc.viewer.screenshotNoCanvas'));
+      return;
+    }
+    try {
+      const url = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      const safe = target.label.replace(/[^\w.-]+/g, '_').slice(0, 40) || 'vnc';
+      a.href = url;
+      a.download = `${safe}-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.png`;
+      a.click();
+      notifyOk(t('vnc.viewer.screenshotSaved'));
+    } catch {
+      notifyWarn(t('vnc.viewer.screenshotFailed'));
+    }
+  };
+
   const tone =
     state === 'connected'
       ? 'ok'
@@ -419,6 +441,15 @@ export function VncViewer({ target, createSession, onClose, onShare }: Props) {
               {t('vnc.viewer.shareLink')}
             </Button>
           ) : null}
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={takeScreenshot}
+            disabled={state !== 'connected'}
+            title={t('vnc.viewer.screenshot')}
+          >
+            {t('vnc.viewer.screenshot')}
+          </Button>
           <Button
             size="sm"
             variant="secondary"

@@ -91,7 +91,11 @@
     "shareGuest": "Shared desktop",
     "shareMissing": "Missing share token",
     "shareExpired": "This share link is invalid or has expired",
-    "viewOnlyBadge": "View only"
+    "viewOnlyBadge": "View only",
+    "screenshot": "Screenshot",
+    "screenshotSaved": "Screenshot downloaded",
+    "screenshotFailed": "Could not capture screenshot",
+    "screenshotNoCanvas": "Display not ready for screenshot"
   },
   "installHint": "TigerVNC → noVNC; XFCE optional",
   "needTigerVnc": "TigerVNC required",

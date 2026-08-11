@@ -90,7 +90,11 @@
     "shareGuest": "分享桌面",
     "shareMissing": "缺少分享 token",
     "shareExpired": "呢個分享連結無效或已過期",
-    "viewOnlyBadge": "只讀"
+    "viewOnlyBadge": "只讀",
+    "screenshot": "截圖",
+    "screenshotSaved": "已下載截圖",
+    "screenshotFailed": "截圖失敗",
+    "screenshotNoCanvas": "畫面未就緒，未能截圖"
   },
   "installHint": "TigerVNC → noVNC；XFCE 可選",
   "needTigerVnc": "需 TigerVNC",
