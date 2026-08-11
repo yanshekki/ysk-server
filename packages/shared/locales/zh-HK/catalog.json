@@ -17,11 +17,11 @@
     "dovecot": "Dovecot",
     "opendkim": "OpenDKIM",
     "pdns_server": "PowerDNS",
-    "git": "Git",
+    "git": "git",
     "node": "Node.js",
     "php": "PHP",
     "python": "Python 3",
-    "go": "Go",
+    "go": "去",
     "rust": "Rust（cargo）",
     "chromium": "Chromium／Chrome"
   },

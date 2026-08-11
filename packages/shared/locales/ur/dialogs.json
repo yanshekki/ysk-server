@@ -1,8 +1,8 @@
 {
-  "confirmDefault": "تصدیق",
-  "cancelDefault": "منسوخ",
+  "confirmDefault": "تصدیق کریں۔",
+  "cancelDefault": "منسوخ کریں۔",
   "severity": {
     "consequencesTitle": "یہ کرے گا:",
-    "typeToConfirm": "تصدیق کے لیے \"{{text}}\" ٹائپ کریں"
+    "typeToConfirm": "تصدیق کرنے کے لیے \"{{text}}\" ٹائپ کریں۔"
   }
 }

@@ -1,7 +1,7 @@
 {
-  "scrollLeft": "Desplazar pestañas a la izquierda",
-  "scrollRight": "Desplazar pestañas a la derecha",
+  "scrollLeft": "Desplazarse por las pestañas hacia la izquierda",
+  "scrollRight": "Desplazarse por las pestañas hacia la derecha",
   "about": "Acerca de",
-  "main": "Acciones",
+  "main": "Comportamiento",
   "stack": "Software"
 }

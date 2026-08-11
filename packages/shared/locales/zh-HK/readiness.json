@@ -89,11 +89,12 @@
   "itemDataDirOtherR": "建議 dataDir chmod 750，避免其他用戶讀取控制平面 JSON",
   "itemRustToolchain": "Rust 工具鏈",
   "itemWebBuildFix": "按「立即修復」建置 Web 介面（本機需有 monorepo），或執行：pnpm --filter @ysk/web build",
+  "itemWebBuildManual": "本機無 monorepo／無已打包 SPA，無法一鍵修復。請在有源碼的機器執行 pnpm --filter @ysk/web build，再將 apps/web/dist/* 複製到 dataDir/web（例如 /var/lib/ysk-server/web），或設定 YSK_WEB_ROOT 後重啟控制面。",
   "itemStateStore": "控制平面狀態儲存",
   "itemStateStoreSqliteHint": "可選：YSK_STORE=sqlite 使用 WAL document store",
   "itemBackupFreshness": "最近完整備份",
   "itemBackupNone": "未記錄 last_backup_run — 請執行 備份 all 或設定排程",
-  "itemBackupFix": "ysk-server backup all · backup schedule --install",
+  "itemBackupFix": "ysk-server 全部備份 · 備份計畫 --install",
   "itemFleetSessions": "機群 代理 工作階段",
   "itemFleetNone": "單機可選：多邊緣需 代理 run + 心跳",
   "itemFleetNoHb": "已註冊但無 心跳 — 請啟動邊緣 代理",
@@ -106,6 +107,5 @@
   "fixNow": "立即修復",
   "fixFailed": "修復失敗",
   "fixDone": "已修復 dataDir 權限（chmod 750）",
-  "fixDoneWebUi": "已建置／安裝 Web 介面",
-  "itemWebBuildManual": "本機無 monorepo／無已打包 SPA，無法一鍵修復。請在有源碼的機器執行 pnpm --filter @ysk/web build，再將 apps/web/dist/* 複製到 dataDir/web（例如 /var/lib/ysk-server/web），或設定 YSK_WEB_ROOT 後重啟控制面。"
+  "fixDoneWebUi": "已建置／安裝 Web 介面"
 }

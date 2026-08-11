@@ -1,6 +1,6 @@
 {
-  "confirmDefault": "Konfirmasi",
-  "cancelDefault": "Batal",
+  "confirmDefault": "Mengonfirmasi",
+  "cancelDefault": "Membatalkan",
   "severity": {
     "consequencesTitle": "Ini akan:",
     "typeToConfirm": "Ketik \"{{text}}\" untuk mengonfirmasi"

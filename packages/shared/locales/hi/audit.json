@@ -2,65 +2,26 @@
   "recent": "हालिया ऑडिट",
   "lastN": "अंतिम {{n}}",
   "actions": {
-    "protection.change": "सुरक्षा सेटिंग्स बदली गईं",
-    "auth.locale": "UI भाषा बदली गई",
-    "auth.login": "साइन इन किया",
-    "auth.logout": "साइन आउट किया",
-    "system.firewall.allow_port": "फ़ायरवॉल पोर्ट अनुमति",
-    "system.firewall.deny": "फ़ायरवॉल IP अस्वीकार",
+    "protection.change": "सुरक्षा सेटिंग बदल गईं",
+    "auth.locale": "यूआई भाषा बदल गई",
+    "auth.login": "साइन इन किया गया",
+    "auth.logout": "साइन आउट कर दिया गया",
+    "system.firewall.allow_port": "फ़ायरवॉल पोर्ट की अनुमति देता है",
+    "system.firewall.deny": "फ़ायरवॉल आईपी से इनकार करता है",
     "system.firewall.apply": "फ़ायरवॉल लागू करें",
-    "project.deploy": "प्रोजेक्ट डिप्लॉय",
+    "project.deploy": "परियोजना परिनियोजन",
     "project.create": "प्रोजेक्ट बनाया गया",
-    "project.delete": "प्रोजेक्ट हटाया गया",
-    "ssl.request": "SSL अनुरोध",
-    "ssl.upload": "SSL अपलोड",
-    "system.firewall.enable": "फ़ायरवॉल सक्षम/अक्षम",
+    "project.delete": "प्रोजेक्ट हटा दिया गया",
+    "ssl.request": "एसएसएल अनुरोध",
+    "ssl.upload": "एसएसएल अपलोड",
+    "system.firewall.enable": "फ़ायरवॉल सक्षम/अक्षम करें",
     "system.firewall.delete_rule": "फ़ायरवॉल नियम हटाएँ",
-    "system.firewall.delete_deny": "स्थायी deny IP हटाएँ",
-    "db.adminer.apply": "DB ब्राउज़र प्रोजेक्ट",
+    "system.firewall.delete_deny": "स्थायी अस्वीकार आईपी हटाएँ",
+    "db.adminer.apply": "डीबी ब्राउज़र प्रोजेक्ट",
     "project.goLive": "प्रोजेक्ट गो-लाइव",
     "project.publish": "Nginx प्रकाशित करें",
-    "project.suspend": "प्रोजेक्ट निलंबित करें",
+    "project.suspend": "प्रोजेक्ट स्थगित करें",
     "software.install": "सॉफ़्टवेयर इंस्टॉल करें",
-    "software.update": "सॉफ़्टवेयर अपडेट करें",
-    "protection": {
-      "change": "Protection settings changed"
-    },
-    "auth": {
-      "locale": "UI language changed",
-      "login": "Signed in",
-      "logout": "Signed out"
-    },
-    "system": {
-      "firewall": {
-        "allow_port": "Firewall allow port",
-        "deny": "Firewall deny IP",
-        "apply": "Firewall apply",
-        "enable": "Firewall enable/disable",
-        "delete_rule": "Delete firewall rule",
-        "delete_deny": "Remove permanent deny IP"
-      }
-    },
-    "project": {
-      "deploy": "Project deploy",
-      "create": "Project created",
-      "delete": "Project deleted",
-      "goLive": "Project go-live",
-      "publish": "Publish Nginx",
-      "suspend": "Suspend project"
-    },
-    "ssl": {
-      "request": "SSL request",
-      "upload": "SSL upload"
-    },
-    "db": {
-      "adminer": {
-        "apply": "DB browser project"
-      }
-    },
-    "software": {
-      "install": "Install software",
-      "update": "Update software"
-    }
+    "software.update": "सॉफ़्टवेयर अद्यतन करें"
   }
 }

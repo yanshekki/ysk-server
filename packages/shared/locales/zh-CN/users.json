@@ -101,7 +101,7 @@
     "admin": "管理员",
     "operator": "操作员",
     "viewer": "查看者",
-    "agent": "Agent"
+    "agent": "代理人"
   },
   "roleDesc": {
     "admin": "全功能、用户与权限、危险操作。永远全开。",

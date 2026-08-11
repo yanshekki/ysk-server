@@ -36,7 +36,7 @@
   "setShowVersion": "显示版本",
   "setHttp2": "HTTP/2",
   "setBody": "Body 上限",
-  "setKeepalive": "Keepalive",
+  "setKeepalive": "保活",
   "setAccessLog": "Access log",
   "logOn": "开",
   "logOff": "关",

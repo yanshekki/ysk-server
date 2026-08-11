@@ -1,12 +1,12 @@
 {
   "title": "ソフトウェア",
-  "desc": "管理対象の全ソフトウェア: インストール状態、サービス稼働、新バージョン、プロジェクトでの利用リンク。",
+  "desc": "すべての管理対象ソフトウェア: インストール ステータス、サービスの健全性、新しいバージョン、プロジェクトで使用するリンク。",
   "tabs": {
     "overview": "概要",
-    "runtimes": "ランタイム",
+    "runtimes": "runtimes",
     "databases": "データベース",
     "edge": "ドメインとエッジ",
-    "mailFiles": "メールとファイル",
+    "mailFiles": "ファイルをメールで送信Comment",
     "host": "ホストサービス"
   },
   "stat": {
@@ -18,20 +18,20 @@
   "quickTitle": "ショートカット",
   "quickDesc": "セクションまたはホスト ツールにジャンプします",
   "updatesTitle": "アップデートとインストール可能なバージョン",
-  "updatesDesc": "上流またはパネルの新しいピン。インストール後、プロジェクトでランタイムを選択してください。",
+  "updatesDesc": "新しい上流ピンまたはパネル ピン。インストールして、プロジェクトのランタイムを選択します。",
   "allSoftware": "すべてのソフトウェア",
   "status": {
     "unknown": "—",
     "installed": "インストール済み",
     "notInstalled": "未インストール",
     "running": "ランニング",
-    "missing": "検出されませんでした",
-    "failed": "失敗した",
-    "stopped": "停止しました"
+    "missing": "非検出",
+    "failed": "失敗しました",
+    "stopped": "中止中"
   },
   "badge": {
     "update": "利用可能なアップデート",
-    "upToDate": "最新の"
+    "upToDate": "最新情報"
   },
   "meta": {
     "installed": "インストール済み: {{list}}",
@@ -40,17 +40,17 @@
     "openManage": "管理ページを開いてインストールまたは設定を行います",
     "aptCurrentLatest": "インストール済み {{v}} · リポジトリは最新です",
     "aptVersion": "インストールされました {{v}}",
-    "aptUpgrade": "{{from}} → {{to}} あり",
+    "aptUpgrade": "{{from}} → {{to}} 利用可能",
     "aptUpgradeMulti": "アップグレード可能な{{n}} パッケージ: {{list}}",
-    "aptNotInstalled": "パッケージがインストールされていません（インストールするには管理ページを開きます）",
+    "aptNotInstalled": "パッケージがインストールされていません (管理ページを開いてインストールします)",
     "hostUpgradable": "ホスト上の ~{{n}} アップグレード可能なパッケージ",
     "checking": "バージョンを確認中…または管理ページを開きます"
   },
   "action": {
-    "manage": "管理",
+    "manage": "管理する",
     "useInProject": "プロジェクトで使用する",
     "useInProjectTitle": "プロジェクトを開いてこのランタイムを設定します",
-    "update": "アップデート",
+    "update": "更新",
     "updateTitle": "{{v}} をインストールまたは切り替えてください",
     "updateTo": "{{v}} に更新します",
     "installVersion": "{{v}}をインストール",
@@ -61,13 +61,13 @@
     "updateAptTitle": "{{pkg}} のアップデートを開く"
   },
   "apply": {
-    "blockedShort": "ブロックされました",
-    "failedShort": "失敗した",
+    "blockedShort": "ブロック済",
+    "failedShort": "失敗しました",
     "failed": "アップデートに失敗しました",
-    "blocked": "ブロックされました",
-    "confirm": "更新を確認する",
+    "blocked": "ブロック済",
+    "confirm": "アップデートの確認",
     "confirmTitle": "ソフトウェアアップデートを確認しますか?",
-    "confirmBody": "{{pkg}} を更新: {{from}} → {{to}}。システム変更権限が必要です。",
+    "confirmBody": "{{pkg}}: {{from}} → {{to}} を更新します。システム変更権限が必要です。",
     "ok": "適用済み {{pkg}}",
     "progress": "{{n}}/{{total}} を更新中: {{pkg}}",
     "okMulti": "更新日: {{list}}",
@@ -75,16 +75,16 @@
     "partial": "部分的に成功",
     "partialTitle": "一部のアップデートに失敗しました",
     "failedTitle": "{{label}} アップデートに失敗しました",
-    "progressDetail": "0/1",
+    "progressDetail": "{{from}} → {{to}}",
     "confirmBodyMulti": "{{label}} を更新: {{list}}"
   },
   "version": {
     "loading": "バージョンをロード中…",
     "installed": "インストール済み",
     "latest": "最新",
-    "upToDate": "最新 / 最新のリポジトリ",
+    "upToDate": "最新/最新のリポジトリ",
     "refresh": "最新の再確認",
-    "pick": "バージョンを選択してください",
+    "pick": "バージョンを選択",
     "noTarget": "アップデート対象なし",
     "needRuntimePage": "このバージョンをランタイム ページにインストールします",
     "noAptCandidate": "適切な候補バージョンがありません"
@@ -97,7 +97,7 @@
     "okTitle": "{{label}} がインストールされているかキューに登録されています",
     "failedTitle": "{{label}} インストールに失敗しました",
     "confirmTitle": "ソフトウェアのインストールを確認しますか?",
-    "confirmBody": "{{label}} をインストール: {{list}}。システム変更権限が必要です。",
+    "confirmBody": "{{label}}: {{list}} をインストールします。システム変更権限が必要です。",
     "confirm": "インストールの確認"
   },
   "runtime": {
@@ -110,13 +110,13 @@
     "installingShort": "インストール中…"
   },
   "aptSummaryTitle": "リポジトリのアップグレードが利用可能",
-  "aptSummaryDesc": "カタログとホストのパッケージ数は別管理です。更新画面またはカードから適用してください。",
+  "aptSummaryDesc": "カタログとホストのパッケージ数は別個です。アップデートまたはカードから適用します。",
   "aptSummary": {
     "catalog": "カタログ {{n}}",
     "host": "ホストパッケージ {{n}}",
-    "openUpdates": "オープンアップデート"
+    "openUpdates": "アップデートを開く"
   },
   "navBadgeTitle": "カタログのアップグレード: {{n}}",
   "projectHint": "ランタイム {{runtime}} 事前入力 — プロジェクトの作成",
-  "projectHintWithVersion": "ランタイム {{runtime}} {{version}} を事前入力 — プロジェクトを作成"
+  "projectHintWithVersion": "ランタイム {{runtime}} {{version}} 事前入力 — プロジェクトの作成"
 }

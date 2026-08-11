@@ -1,6 +1,6 @@
 {
-  "admin": "Admin",
+  "admin": "Administración",
   "operator": "Operador",
-  "viewer": "Visor",
+  "viewer": "Espectador",
   "agent": "Agente"
 }

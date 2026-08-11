@@ -1,66 +1,27 @@
 {
   "recent": "Auditoría reciente",
-  "lastN": "Últimos {{n}}",
+  "lastN": "Último {{n}}",
   "actions": {
-    "protection.change": "Ajustes de protección modificados",
-    "auth.locale": "Idioma de la interfaz cambiado",
-    "auth.login": "Sesión iniciada",
-    "auth.logout": "Sesión cerrada",
-    "system.firewall.allow_port": "Firewall: permitir puerto",
-    "system.firewall.deny": "Firewall: denegar IP",
-    "system.firewall.apply": "Firewall: aplicar",
-    "project.deploy": "Despliegue de proyecto",
+    "protection.change": "La configuración de protección cambió",
+    "auth.locale": "El idioma de la interfaz de usuario cambió",
+    "auth.login": "Iniciado sesión",
+    "auth.logout": "Cerrado sesión",
+    "system.firewall.allow_port": "El firewall permite el puerto",
+    "system.firewall.deny": "El firewall niega IP",
+    "system.firewall.apply": "Aplicar firewall",
+    "project.deploy": "Implementación del proyecto",
     "project.create": "Proyecto creado",
     "project.delete": "Proyecto eliminado",
     "ssl.request": "Solicitud SSL",
-    "ssl.upload": "Carga de SSL",
-    "system.firewall.enable": "Firewall: activar/desactivar",
+    "ssl.upload": "Carga SSL",
+    "system.firewall.enable": "Activar/desactivar firewall",
     "system.firewall.delete_rule": "Eliminar regla de firewall",
-    "system.firewall.delete_deny": "Quitar denegación permanente de IP",
-    "db.adminer.apply": "Proyecto del explorador de BD",
-    "project.goLive": "Puesta en producción del proyecto",
+    "system.firewall.delete_deny": "Eliminar IP denegada permanentemente",
+    "db.adminer.apply": "proyecto de navegador de base de datos",
+    "project.goLive": "Proyecto en marcha",
     "project.publish": "Publicar Nginx",
     "project.suspend": "Suspender proyecto",
-    "software.install": "Instalar software",
-    "software.update": "Actualizar software",
-    "protection": {
-      "change": "Protection settings changed"
-    },
-    "auth": {
-      "locale": "UI language changed",
-      "login": "Signed in",
-      "logout": "Signed out"
-    },
-    "system": {
-      "firewall": {
-        "allow_port": "Firewall allow port",
-        "deny": "Firewall deny IP",
-        "apply": "Firewall apply",
-        "enable": "Firewall enable/disable",
-        "delete_rule": "Delete firewall rule",
-        "delete_deny": "Remove permanent deny IP"
-      }
-    },
-    "project": {
-      "deploy": "Project deploy",
-      "create": "Project created",
-      "delete": "Project deleted",
-      "goLive": "Project go-live",
-      "publish": "Publish Nginx",
-      "suspend": "Suspend project"
-    },
-    "ssl": {
-      "request": "SSL request",
-      "upload": "SSL upload"
-    },
-    "db": {
-      "adminer": {
-        "apply": "DB browser project"
-      }
-    },
-    "software": {
-      "install": "Install software",
-      "update": "Update software"
-    }
+    "software.install": "instalar software",
+    "software.update": "Actualizar software"
   }
 }

@@ -1,11 +1,11 @@
 {
-  "missing": "لا يتوفر محتوى مساعدة لهذه الصفحة بعد.",
+  "missing": "لا يوجد محتوى مساعدة متاح لهذه الصفحة حتى الآن.",
   "missingTitle": "لا يوجد دليل",
-  "eyebrow": "حول",
-  "canDoTitle": "ما يمكنك فعله",
+  "eyebrow": "عن",
+  "canDoTitle": "ما يمكنك القيام به",
   "workflowTitle": "التدفق المقترح",
-  "notesTitle": "ملاحظات",
-  "cliTitle": "مرجع سريع لسطر الأوامر",
-  "cliFoot": "للحصول على كل الأعلام نفّذ ysk-server <command> --help أو راجع الوثائق.",
-  "relatedTitle": "ذات صلة"
+  "notesTitle": "ملحوظات",
+  "cliTitle": "مرجع سريع لـ CLI",
+  "cliFoot": "للحصول على العلامات الكاملة، قم بتشغيل ysk-server <command> --help أو راجع المستندات.",
+  "relatedTitle": "متعلق ب"
 }

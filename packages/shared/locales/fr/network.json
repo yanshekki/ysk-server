@@ -10,7 +10,7 @@
   "cannotMutate": "Modification impossible : nécessite EXECUTE et root.",
   "tabs": {
     "ifaces": "Interfaces",
-    "routes": "Routes",
+    "routes": "Itinéraires",
     "dns": "DNS",
     "advanced": "Avancé",
     "about": "À propos",
@@ -65,9 +65,9 @@
   "stackDetect": "Détection de la pile réseau locale",
   "available": "Disponible",
   "unavailable": "Indisponible",
-  "persistNmCap": "Persistable (NM)",
+  "persistNmCap": "Persistant (NM)",
   "ifaceDetail": "Interface {{name}}",
-  "type": "Type",
+  "type": "Taper",
   "addresses": "Adresses",
   "noAddresses": "Aucune adresse",
   "ifaceAdjust": "Ajustement d'interface",
@@ -109,7 +109,7 @@
   "gateway": "Passerelle",
   "nameservers": "Serveurs de noms",
   "searchDomains": "Domaines de recherche",
-  "backend": "Backend",
+  "backend": "Back-end",
   "cidr": "CIDR",
   "realip": {
     "title": "CDN / IP client réelle",
@@ -128,15 +128,15 @@
     "refreshOk": "Listes CIDR actualisées",
     "providers": {
       "none": "Aucun (origine directe)",
-      "cloudflare": "Cloudflare",
-      "fastly": "Fastly",
-      "bunny": "Bunny CDN",
+      "cloudflare": "Flare nuageuse",
+      "fastly": "Rapidement",
+      "bunny": "Lapin CDN",
       "cloudfront": "AWS CloudFront",
-      "azure_frontdoor": "Azure Front Door",
-      "gcore": "Gcore CDN",
+      "azure_frontdoor": "Porte d'entrée azur",
+      "gcore": "CDN Gcore",
       "custom": "Proxys personnalisés"
     }
   },
-  "linkUp": "Up",
-  "linkDown": "Down"
+  "linkUp": "En haut",
+  "linkDown": "Vers le bas"
 }

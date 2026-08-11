@@ -1,10 +1,10 @@
 {
-  "purgeConfirm": "パージを確認しますか？登録済みデータパス（データベース/メール）は完全に削除されます。",
+  "purgeConfirm": "パージを確認しますか?登録されたデータパス（データベース/メール）は完全に削除されます。",
   "installedCount": "インストールされています {{installed}} · {{missing}} が見つかりません",
-  "needRootExecute": "本番のインストール/削除には管理者権限とシステム変更権限が必要です。ドライランは可能です。",
-  "modeInstall": "インストール計画",
+  "needRootExecute": "ライブ インストール/削除には、管理者権限とシステム変更権限が必要です。ドライランも可能です。",
+  "modeInstall": "プランをインストール",
   "modeUninstall": "アンインストール",
-  "plan": "プラン",
+  "plan": "計画",
   "customBundles": "カスタムバンドル",
   "sqlExclusive": "SQLサーバー(排他)",
   "clamavOptional": "オプション、大",
@@ -13,7 +13,7 @@
   "installNow": "今すぐインストール",
   "uninstallHint": "削除するバンドルを選択してください",
   "dataPolicy": "データポリシー",
-  "keepData": "データを保管する",
-  "purgeData": "データのパージ",
+  "keepData": "データを保持",
+  "purgeData": "古いデータを消去",
   "uninstallNow": "今すぐアンインストールする"
 }

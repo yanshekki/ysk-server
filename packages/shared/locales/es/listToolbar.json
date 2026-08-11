@@ -1,12 +1,12 @@
 {
   "searchPlaceholder": "Buscar…",
-  "searchAria": "Buscar en la lista",
+  "searchAria": "Lista de búsqueda",
   "clearSearch": "Borrar búsqueda",
-  "clearAll": "Borrar filtros",
+  "clearAll": "Limpiar filtros",
   "resultCount": "{{count}} resultados",
   "showingOf": "Mostrando {{shown}} de {{total}}",
   "activeFilters": "{{count}} filtros activos",
-  "noResults": "Sin coincidencias",
-  "noResultsHint": "Pruebe otra palabra clave o borre los filtros.",
-  "searching": "Buscando…"
+  "noResults": "No hay coincidencias",
+  "noResultsHint": "Pruebe con otra palabra clave o borre los filtros.",
+  "searching": "Búsqueda…"
 }

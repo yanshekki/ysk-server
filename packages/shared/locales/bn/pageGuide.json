@@ -1,11 +1,11 @@
 {
-  "missing": "এই পেজের জন্য এখনও কোনো সাহায্য কন্টেন্ট নেই।",
-  "missingTitle": "কোনো গাইড নেই",
+  "missing": "এই পৃষ্ঠার জন্য এখনও কোন সাহায্য সামগ্রী উপলব্ধ নেই৷",
+  "missingTitle": "কোন গাইড নেই",
   "eyebrow": "সম্পর্কে",
-  "canDoTitle": "আপনি যা করতে পারেন",
-  "workflowTitle": "প্রস্তাবিত ফ্লো",
+  "canDoTitle": "আপনি কি করতে পারেন",
+  "workflowTitle": "প্রস্তাবিত প্রবাহ",
   "notesTitle": "নোট",
   "cliTitle": "CLI দ্রুত রেফারেন্স",
-  "cliFoot": "সম্পূর্ণ flags-এর জন্য ysk-server <command> --help চালান অথবা ডক্স দেখুন।",
+  "cliFoot": "সম্পূর্ণ পতাকার জন্য ysk-server <command> --help চালান বা ডক্স দেখুন।",
   "relatedTitle": "সম্পর্কিত"
 }

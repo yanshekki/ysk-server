@@ -1,24 +1,24 @@
 {
   "blocked": {
-    "needExecute": "Host execute está desactivado; esta acción no puede completarse desde el panel",
-    "needExecuteShort": "Host execute no está habilitado",
-    "needExecuteBlocked": "Bloqueado: host execute está desactivado",
+    "needExecute": "La ejecución del host está desactivada; esta acción no puede finalizar desde el panel",
+    "needExecuteShort": "La ejecución del host no está habilitada",
+    "needExecuteBlocked": "Bloqueado: la ejecución del host está desactivada",
     "needRoot": "Se requieren privilegios de root",
     "needExecuteRoot": "Requiere YSK_EXECUTE=1 y root",
     "needExecuteYsk": "Requiere YSK_EXECUTE=1",
-    "writeOutsideDataDir": "Escritura bloqueada: host execute está desactivado y la ruta está fuera del directorio de datos del panel",
-    "nginxReload": "No se puede recargar Nginx: se requiere host execute",
-    "signal": "No se puede enviar la señal: se requiere host execute (YSK_EXECUTE)",
-    "signalNote": "Se requiere YSK_EXECUTE=1 para un kill real",
-    "renice": "No se puede renice: se requiere host execute (YSK_EXECUTE)",
-    "install": "Host execute está desactivado; la instalación no puede completarse desde el panel",
-    "update": "Host execute está desactivado; la actualización no puede completarse desde el panel",
-    "panel": "No se puede completar esto desde el panel de gestión"
+    "writeOutsideDataDir": "Escritura bloqueada: la ejecución del host está desactivada y la ruta está fuera del directorio de datos del panel",
+    "nginxReload": "No se puede recargar Nginx: se requiere ejecución del host",
+    "signal": "No se puede enviar la señal: se requiere ejecución del host (YSK_EXECUTE)",
+    "signalNote": "YSK_EXECUTE=1 es necesario para una muerte real",
+    "renice": "No se puede renunciar: se requiere ejecución del host (YSK_EXECUTE)",
+    "install": "La ejecución del host está desactivada; La instalación no puede finalizar desde el panel.",
+    "update": "La ejecución del host está desactivada; la actualización no puede finalizar desde el panel",
+    "panel": "No se puede completar esto desde el panel de administración"
   },
   "honesty": {
-    "blockedNotOk": "Corrección de honestidad: blocked no puede ser ok=true",
-    "blockedNotApplied": "Corrección de honestidad: blocked no puede ser apply_status=applied",
-    "okFalseNotApplied": "Corrección de honestidad: ok=false no puede ser apply_status=applied"
+    "blockedNotOk": "Solución de honestidad: bloqueado no puede estar bien = verdadero",
+    "blockedNotApplied": "Solución de honestidad: bloqueado no se puede aplicar_status=aplicado",
+    "okFalseNotApplied": "Solución de honestidad: ok=false no se puede aplicar_status=aplicado"
   },
   "status": {
     "applied": "Estado: aplicado",
@@ -27,12 +27,12 @@
     "blocked": "Estado: bloqueado"
   },
   "notes": {
-    "writtenSettings": "Ajustes escritos",
-    "completed": "Completado",
-    "partialSuccess": "La operación solo se completó parcialmente",
+    "writtenSettings": "Configuraciones escritas",
+    "completed": "Terminado",
+    "partialSuccess": "La operación tuvo un éxito parcial",
     "notInstalled": "No instalado",
-    "running": "En ejecución",
-    "stopped": "Detenido",
+    "running": "Correr",
+    "stopped": "Interrumpido",
     "unknown": "Desconocido"
   }
 }

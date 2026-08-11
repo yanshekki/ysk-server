@@ -27,7 +27,7 @@
   "node": "Node.js",
   "php": "PHP",
   "python": "Python",
-  "go": "Go",
+  "go": "去",
   "rust": "Rust",
   "protection": "防護中心",
   "firewall": "防火牆",
@@ -53,7 +53,7 @@
     "runtimes": "執行環境",
     "security": "安全",
     "system": "系統",
-    "ai": "AI"
+    "ai": "人工智慧"
   },
   "java": "Java",
   "kotlin": "Kotlin",

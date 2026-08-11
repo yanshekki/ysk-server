@@ -1,12 +1,12 @@
 {
-  "searchPlaceholder": "Pesquisar…",
-  "searchAria": "Pesquisar lista",
+  "searchPlaceholder": "Procurar…",
+  "searchAria": "Lista de pesquisa",
   "clearSearch": "Limpar pesquisa",
   "clearAll": "Limpar filtros",
   "resultCount": "{{count}} resultados",
-  "showingOf": "A mostrar {{shown}} de {{total}}",
+  "showingOf": "Exibindo {{shown}} de {{total}}",
   "activeFilters": "{{count}} filtros ativos",
-  "noResults": "Sem correspondências",
+  "noResults": "Nenhuma correspondência",
   "noResultsHint": "Experimente outra palavra-chave ou limpe os filtros.",
-  "searching": "A pesquisar…"
+  "searching": "Procurando…"
 }

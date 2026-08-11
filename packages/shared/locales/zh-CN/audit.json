@@ -22,45 +22,6 @@
     "project.publish": "发布 Nginx",
     "project.suspend": "暂停项目",
     "software.install": "安装软件",
-    "software.update": "更新软件",
-    "protection": {
-      "change": "防护设置已更改"
-    },
-    "auth": {
-      "locale": "UI language changed",
-      "login": "已登录",
-      "logout": "已退出登录"
-    },
-    "system": {
-      "firewall": {
-        "allow_port": "防火墙允许端口",
-        "deny": "防火墙拒绝 IP",
-        "apply": "应用防火墙",
-        "enable": "启用/停用防火墙",
-        "delete_rule": "删除防火墙规则",
-        "delete_deny": "移除永久拒绝 IP"
-      }
-    },
-    "project": {
-      "deploy": "项目部署",
-      "create": "已创建项目",
-      "delete": "已删除项目",
-      "goLive": "项目上线",
-      "publish": "发布 Nginx",
-      "suspend": "暂停项目"
-    },
-    "ssl": {
-      "request": "SSL request",
-      "upload": "SSL upload"
-    },
-    "db": {
-      "adminer": {
-        "apply": "数据库浏览器项目"
-      }
-    },
-    "software": {
-      "install": "安装软件",
-      "update": "更新软件"
-    }
+    "software.update": "更新软件"
   }
 }

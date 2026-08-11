@@ -1,7 +1,7 @@
 {
   "created": "Criado",
   "updated": "Atualizado",
-  "deleted": "Eliminado",
-  "applyDone": "Aplicação concluída",
-  "applyIncomplete": "Aplicação incompleta"
+  "deleted": "Excluído",
+  "applyDone": "Inscrição concluída",
+  "applyIncomplete": "Candidatura incompleta"
 }

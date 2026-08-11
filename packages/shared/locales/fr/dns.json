@@ -1,8 +1,8 @@
 {
   "templates": {
     "minimal": "Minimal — apex A uniquement",
-    "web": "Web — apex + www",
-    "mail": "Mail — apex + mail + MX + SPF",
+    "web": "Web — sommet + www",
+    "mail": "Courrier – sommet + courrier + MX + SPF",
     "full": "Complet — web + mail + ftp + SPF",
     "cdn": "CDN — apex + www + cdn (prêt multi-edge)"
   },
@@ -23,7 +23,7 @@
   "tabs": {
     "zones": "Zones",
     "records": "Enregistrements",
-    "cluster": "Cluster",
+    "cluster": "Grappe",
     "dnssec": "DNSSEC",
     "tools": "Outils",
     "about": "À propos"
@@ -61,9 +61,9 @@
   "soaNsLabel": "Serveur de noms SOA",
   "soaNsHint": "Laisser vide → ns1.zone par défaut.",
   "defaultTtl": "TTL par défaut (secondes)",
-  "min1": "1 min",
-  "min5": "5 min",
-  "min10": "10 min",
+  "min1": "1 minute",
+  "min5": "5 minutes",
+  "min10": "10 minutes",
   "hour1": "1 heure",
   "day1": "1 jour",
   "customSeconds": "Secondes personnalisées",
@@ -72,7 +72,7 @@
   "soaSavedAndWritten": "Enregistré et fichier de zone écrit",
   "soaWriteFailed": "Échec de l’écriture du SOA",
   "failed": "Échoué",
-  "colType": "Type",
+  "colType": "Taper",
   "colName": "Nom",
   "colValue": "Valeur",
   "emptyRecords": "Aucun enregistrement",
@@ -185,7 +185,7 @@
   "healthListen": "Port 53",
   "healthWritten": "Fichiers de zone",
   "healthAnswering": "Réponse locale",
-  "healthAnsweringYes": "oui",
+  "healthAnsweringYes": "Oui",
   "healthAnsweringNo": "non/refusé",
   "healthRefresh": "Re-sonder",
   "healthProbeLocal": "Sonder à nouveau l'état de santé",

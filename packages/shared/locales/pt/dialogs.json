@@ -3,6 +3,6 @@
   "cancelDefault": "Cancelar",
   "severity": {
     "consequencesTitle": "Isto irá:",
-    "typeToConfirm": "Escreva \"{{text}}\" para confirmar"
+    "typeToConfirm": "Digite \"{{text}}\" para confirmar"
   }
 }

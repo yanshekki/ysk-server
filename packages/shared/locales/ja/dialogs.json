@@ -1,8 +1,8 @@
 {
-  "confirmDefault": "確認する",
+  "confirmDefault": "確認",
   "cancelDefault": "キャンセル",
   "severity": {
-    "consequencesTitle": "これにより、次のことが行われます。",
+    "consequencesTitle": "この操作は:",
     "typeToConfirm": "「{{text}}」と入力して確認します"
   }
 }

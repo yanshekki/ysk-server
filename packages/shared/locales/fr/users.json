@@ -26,9 +26,9 @@
   "saveUser": "Enregistrer l’utilisateur",
   "userSaved": "{{name}} mis à jour",
   "filterAll": "Tous",
-  "filterAdmin": "Admin",
+  "filterAdmin": "Administrateur",
   "filterOperator": "Opérateur",
-  "filterViewer": "Lecteur",
+  "filterViewer": "Téléspectateur",
   "filterSuspended": "Suspendu",
   "filterNoPkg": "Aucun forfait",
   "filter2faOff": "2FA désactivée",
@@ -39,7 +39,7 @@
   "ssh": "SSH",
   "databases": "Bases de données",
   "bandwidth": "Bande passante MiB",
-  "notes": "Notes",
+  "notes": "Remarques",
   "editPkg": "Modifier le forfait",
   "pkgUpdated": "Forfait {{name}} mis à jour",
   "pkgList": "Forfaits ({{count}})",
@@ -98,9 +98,9 @@
   "no2fa": "2FA désactivée",
   "lastSeenValue": "Dernière activité {{time}}",
   "roleName": {
-    "admin": "Admin",
+    "admin": "Administrateur",
     "operator": "Opérateur",
-    "viewer": "Lecteur",
+    "viewer": "Téléspectateur",
     "agent": "Agent"
   },
   "roleDesc": {

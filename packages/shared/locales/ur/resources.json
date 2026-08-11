@@ -1,7 +1,7 @@
 {
-  "created": "تخلیق شدہ",
-  "updated": "اپ ڈیٹ شدہ",
-  "deleted": "حذف شدہ",
-  "applyDone": "اطلاق مکمل",
-  "applyIncomplete": "اطلاق نامکمل"
+  "created": "بنایا",
+  "updated": "تازہ کاری",
+  "deleted": "حذف کر دیا گیا۔",
+  "applyDone": "درخواست مکمل ہو گئی۔",
+  "applyIncomplete": "نامکمل درخواست دیں۔"
 }

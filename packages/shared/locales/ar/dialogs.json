@@ -1,8 +1,8 @@
 {
-  "confirmDefault": "تأكيد",
-  "cancelDefault": "إلغاء",
+  "confirmDefault": "يتأكد",
+  "cancelDefault": "يلغي",
   "severity": {
-    "consequencesTitle": "سيؤدي هذا إلى:",
+    "consequencesTitle": "هذا سوف:",
     "typeToConfirm": "اكتب \"{{text}}\" للتأكيد"
   }
 }

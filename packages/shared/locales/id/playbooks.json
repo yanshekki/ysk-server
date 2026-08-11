@@ -1,6 +1,6 @@
 {
   "discover-host": {
-    "name": "Penemuan host",
+    "name": "Penemuan tuan rumah",
     "description": "Inventaris host hanya-baca"
   },
   "nginx-health": {
@@ -8,43 +8,43 @@
     "description": "Periksa status layanan nginx"
   },
   "nginx-restart": {
-    "name": "Restart Nginx (risiko tinggi)",
-    "description": "Restart nginx setelah persetujuan"
+    "name": "Nginx restart (risiko tinggi)",
+    "description": "Mulai ulang nginx setelah disetujui"
   },
   "local-llm-ops-only": {
-    "name": "Operasi LLM lokal saja",
-    "description": "Penemuan darurat dalam mode proteksi"
+    "name": "Hanya operasi LLM lokal",
+    "description": "Penemuan darurat dalam mode perlindungan"
   },
   "disk-pressure": {
     "name": "Pemeriksaan tekanan disk",
-    "description": "Penggunaan disk hanya-baca via df"
+    "description": "Penggunaan disk hanya-baca melalui df"
   },
   "mail-stack-status": {
-    "name": "Status tumpukan mail",
+    "name": "Status tumpukan surat",
     "description": "Periksa unit postfix + dovecot"
   },
   "security-units": {
     "name": "Unit keamanan",
-    "description": "Status fail2ban + sshd (hanya-baca)"
+    "description": "fail2ban + status sshd (hanya baca)"
   },
   "web-stack-status": {
     "name": "Status tumpukan web",
-    "description": "Probe nginx + php-fpm"
+    "description": "pemeriksaan nginx + php-fpm"
   },
   "emergency-read-only": {
     "name": "Sapuan darurat hanya-baca",
-    "description": "Fakta aman-proteksi saja"
+    "description": "Hanya fakta yang aman untuk perlindungan"
   },
   "backup-health": {
     "name": "Kesiapan cadangan",
-    "description": "Periksa disk + daftar proses sebelum jendela cadangan"
+    "description": "Periksa proses disk + daftar sebelum jendela pencadangan"
   },
   "db-stack-status": {
     "name": "Status tumpukan basis data",
-    "description": "Unit mysql/mariadb/redis/postgres"
+    "description": "unit mysql/mariadb/redis/postgres"
   },
   "ssl-nginx-check": {
     "name": "Pemeriksaan SSL + Nginx",
-    "description": "Status nginx sebelum operasi sertifikat"
+    "description": "status nginx sebelum operasi sertifikat"
   }
 }

@@ -1,11 +1,11 @@
 {
-  "missing": "इस पृष्ठ के लिए अभी कोई सहायता सामग्री उपलब्ध नहीं है।",
-  "missingTitle": "कोई गाइड नहीं",
-  "eyebrow": "परिचय",
+  "missing": "इस पृष्ठ के लिए अभी तक कोई सहायता सामग्री उपलब्ध नहीं है.",
+  "missingTitle": "कोई मार्गदर्शक नहीं",
+  "eyebrow": "के बारे में",
   "canDoTitle": "आप क्या कर सकते हैं",
   "workflowTitle": "सुझाया गया प्रवाह",
-  "notesTitle": "नोट्स",
-  "cliTitle": "CLI त्वरित संदर्भ",
-  "cliFoot": "पूर्ण flags के लिए ysk-server <command> --help चलाएँ या docs देखें।",
+  "notesTitle": "टिप्पणियाँ",
+  "cliTitle": "सीएलआई त्वरित संदर्भ",
+  "cliFoot": "पूर्ण फ़्लैग के लिए ysk-server <command> --help चलाएँ या दस्तावेज़ देखें।",
   "relatedTitle": "संबंधित"
 }

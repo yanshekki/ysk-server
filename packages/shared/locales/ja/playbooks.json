@@ -17,7 +17,7 @@
   },
   "disk-pressure": {
     "name": "ディスク圧力チェック",
-    "description": "df による読み取り専用ディスクの使用量"
+    "description": "df 経由の読み取り専用ディスク使用量"
   },
   "mail-stack-status": {
     "name": "メールスタックのステータス",

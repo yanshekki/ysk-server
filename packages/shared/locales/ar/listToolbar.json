@@ -1,12 +1,12 @@
 {
-  "searchPlaceholder": "بحث…",
+  "searchPlaceholder": "يبحث…",
   "searchAria": "قائمة البحث",
   "clearSearch": "مسح البحث",
-  "clearAll": "مسح عوامل التصفية",
-  "resultCount": "{{count}} نتيجة",
+  "clearAll": "مسح المرشحات",
+  "resultCount": "{{count}} النتائج",
   "showingOf": "عرض {{shown}} من {{total}}",
-  "activeFilters": "{{count}} عوامل تصفية نشطة",
-  "noResults": "لا تطابقات",
-  "noResultsHint": "جرّب كلمة مفتاحية أخرى أو امسح عوامل التصفية.",
-  "searching": "جارٍ البحث…"
+  "activeFilters": "{{count}} المرشحات نشطة",
+  "noResults": "لا توجد مباريات",
+  "noResultsHint": "جرّب كلمة رئيسية أخرى أو امسح عوامل التصفية.",
+  "searching": "البحث…"
 }

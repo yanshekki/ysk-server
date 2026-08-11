@@ -1,18 +1,18 @@
 {
   "unknownCommand": "不明なコマンド: {{command}}\n`{{cli}} ヘルプ` を実行します",
-  "usagePrefix": "使用法：",
+  "usagePrefix": "使用方法: ",
   "security": {
-    "help": "使い方: ysk-server security status\n       ysk-server security sessions list|revoke|revoke-others [--user U]\n       ysk-server security api-keys list|create|delete …",
-    "sessionsHelp": "使い方: ysk-server security sessions list [--user U]\n       ysk-server security sessions revoke --id PREFIX [--user U]\n       ysk-server security sessions revoke-others [--user U] [--keep-token T]",
-    "apiKeysHelp": "使い方: ysk-server security api-keys list\n       ysk-server security api-keys create --name N [--user U] [--scope full|read]\n       ysk-server security api-keys delete --id KEY_ID",
-    "noUser": "ユーザーが見つかりません。先に admin を作成するか --user <name|id> を指定",
+    "help": "使用法: ysk-server セキュリティ ステータス\n       ysk-server セキュリティ セッション リスト|取り消し|取り消し-その他 [--user U]\n       ysk-server security API-keys list|create|delete …",
+    "sessionsHelp": "使用法: ysk-server セキュリティ セッション リスト [--user U]\n       ysk-server セキュリティ セッションは --id PREFIX [--user U] を取り消します\n       ysk-server セキュリティ セッション revoke-others [--user U] [--keep-token T]",
+    "apiKeysHelp": "使用法: ysk-server security API-keys リスト\n       ysk-server security api-keys create --name N [--user U] [--scope full|read]\n       ysk-server security api-keys delete --id KEY_ID",
+    "noUser": "ユーザーが見つかりませんでした。最初に admin を作成するか、 --user <name|id> を渡します",
     "tokenOnce": "トークンは一度表示されます - 安全に保管します",
-    "sessionRevokeUsage": "使い方: ysk-server security sessions revoke --id <sessionIdPrefix> [--user U]",
-    "apiKeyDeleteUsage": "使用方法： ysk - server security api - keys delete -- id KEY_ID"
+    "sessionRevokeUsage": "使用法: ysk-server セキュリティ セッションは --id <sessionIdPrefix> [--user U] を取り消します",
+    "apiKeyDeleteUsage": "使用法: ysk-server security api-keys delete --id KEY_ID"
   },
   "help": {
-    "blurb": "コントロールプレーン CLI — AI エージェントには --json を推奨。\nDocs: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json",
-    "main": "{{product}} ({{cli}}) v{{version}}\n\nコントロールプレーン CLI — AI エージェントには --json を推奨。\nDocs: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json\n\nUsage:\n  {{cli}} <command> [options]\n\nCommands:\n  setup                 Init dataDir + admin\n  update                Self-update check/apply\n  serve                 HTTP API + Web UI\n  system unit-install   Install ysk-server.service [--enable]\n  tools                 List tools; tools run --tool <name> [--dry-run]\n  ask                   NL → AI plan [--execute]\n  projects              list|get|create|deploy|stop|health|backup|template\n  backup                all|list|status|restore|delete|schedule|control-plane|settings|restic\n  templates             App templates\n  hosting               nginx|dns|db|firewall helpers\n  dns                   zone|zones (AI alias → hosting dns-*)\n  logs                  sources|query|journal|overview\n  host                  overview|metrics (read-only)\n  nginx                 status|list|test|sync\n  ssl                   list|get (certificates)\n  db-cluster            list|get|create|plan (HA plan-first)\n  ssh-key               list|create|import|public|export|install|delete (SSH identity vault)\n  ssh-2fa               list|enroll|confirm|install|pam|retire (SSH login TOTP ≠ panel 2FA)\n  services              Host service matrix (systemctl probe)\n  defense | protection  status|ban|unban|whitelist\n  security              status|sessions|api-keys (2FA flags · session revoke · API keys)\n  cdn                   nodes|sites|render|apply|purge|probe|dashboard|health-loop|from-project\n  agents                runtimes|fleet list|commands|register (panel + edge)\n  agent run             Outbound fleet poller (experimental)\n  store                 status|export|import|migrate (json|sqlite|postgres document backends)\n  files                 list|read|write|mkdir|rm|stat|rename|copy|move|chmod|trash|shares (sandbox)\n  cron                  list|create|delete|enable|disable|run|install|status\n  email                 domains|mailboxes|deliverability|bootstrap|dns (panel parity)\n  health                Local mode snapshot or --url http://host:port/health\n  readiness | doctor    Production readiness (honest)\n  migrate               inventory|host|post|status|resume (full host migrate)\n  version | help\n\nGlobal:\n  --json                JSON stdout (AI)\n  --data-dir PATH\n  --config PATH\n  --help | --version\n\nExit: 0 ok · 1 error · 2 validation · 3 blocked · 4 not found · 5 host error\n\nSafety:\n  危険な操作はデフォルトで dry-run（プランのみ）。\n  ホストを変更するには --execute（別名 --apply）+ 環境変数 YSK_EXECUTE=1 が必要。\n\nExamples:\n  {{cli}} readiness --json\n  {{cli}} host --json\n  {{cli}} nginx status --json\n  {{cli}} ssl list --json\n  {{cli}} projects get --id UUID --json\n  {{cli}} defense ban --ip 1.2.3.4 --json          # dry-run plan\n  {{cli}} projects list --json\n  {{cli}} logs query --source journal: --lines 100 --json\n  {{cli}} tools --json"
+    "blurb": "コントロール プレーン CLI — AI エージェントには --json を推奨します。\nドキュメント: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json",
+    "main": "{{product}} ({{cli}}) v{{version}}\n\nコントロール プレーン CLI — AI エージェントには --json を推奨します。\nドキュメント: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json\n\n使用法:\n  {{cli}} <コマンド> [オプション]\n\nコマンド:\n  setup Init dataDir + admin\n  update 自己更新確認・適用\n  HTTP API + Web UIを提供\n  system unit-install ysk-server.service をインストールします [--enable]\n  ツール ツールをリストします。ツールを実行 --tool <名前> [--dry-run]\n  NLに依頼 → AI計画 [--実行]\n  プロジェクトのリスト|取得|作成|デプロイ|停止|ヘルス|バックアップ|テンプレート\n  すべてバックアップ|リスト|ステータス|復元|削除|スケジュール|コントロールプレーン|設定|レストスティック\n  テンプレート アプリテンプレート\n  nginx|dns|db|ファイアウォール ヘルパーのホスティング\n  dns ゾーン|ゾーン (AI エイリアス → ホスティング dns-*)\n  ログ ソース|クエリ|ジャーナル|概要\n  ホストの概要|メトリクス (読み取り専用)\n  nginx ステータス|リスト|テスト|同期\n  ssl リスト|取得 (証明書)\n  db-cluster list|get|create|plan (HA プランファースト)\n  ssh キー リスト|作成|インポート|パブリック|エクスポート|インストール|削除 (SSH ID ボールト)\n  ssh-2fa list|enroll|confirm|install|pam|retire (SSH ログイン TOTP ≠ パネル 2FA)\n  サービス ホスト サービス マトリックス (systemctl プローブ)\n  守備 |保護ステータス|禁止|禁止解除|ホワイトリスト\n  セキュリティ ステータス|セッション|API キー (2FA フラグ、セッション取り消し、API キー)\n  cdn ノード | サイト | レンダリング | 適用 | パージ | プローブ | ダッシュボード | ヘルスループ | プロジェクトから\n  エージェント ランタイム|フリート リスト|コマンド|登録 (パネル + エッジ)\n  エージェント実行アウトバウンド フリート ポーラー (実験的)\n  ステータスの保存|エクスポート|インポート|移行 (json|sqlite|postgres ドキュメント バックエンド)\n  ファイルリスト|読み取り|書き込み|mkdir|rm|stat|名前変更|コピー|移動|chmod|ゴミ箱|共有 (サンドボックス)\n  cron リスト|作成|削除|有効|無効|実行|インストール|ステータス\n  電子メール ドメイン|メールボックス|配信可能性|ブートストラップ|DNS (パネル パリティ)\n  health ローカル モードのスナップショットまたは --url http://host:port/health\n  準備 |医師 生産準備完了（正直）\n  インベントリの移行|ホスト|ポスト|ステータス|再開 (ホスト全体の移行)\n  バージョン |助けて\n\nグローバル:\n  --json JSON 標準出力 (AI)\n  --data-dir パス\n  --config パス\n  --ヘルプ | --バージョン\n\n終了: 0 OK · 1 エラー · 2 検証 · 3 ブロック · 4 見つからない · 5 ホストエラー\n\n安全性:\n  危険な操作はデフォルトで予行演習されます (計画のみ)。\n  --execute (エイリアス --apply) + env YSK_EXECUTE=1 を渡してホストを変更します。\n\n例:\n  {{cli}} 準備 --json\n  {{cli}} ホスト --json\n  {{cli}} nginx ステータス --json\n  {{cli}} ssl リスト --json\n  {{cli}} プロジェクトは --id UUID --json を取得します\n  {{cli}} 防衛禁止 --ip 1.2.3.4 --json # 予行演習計画\n  {{cli}} プロジェクト リスト --json\n  {{cli}} ログクエリ --source ジャーナル: --lines 100 --json\n  {{cli}} ツール --json"
   },
   "usage": {
     "tools": {
@@ -20,7 +20,7 @@
         "--tool": {
           "name": {
             "--arg": {
-              "cd327c": "使い方: ysk-server tools run --tool <name> [--arg key=val] [--dry-run]\n"
+              "cd327c": "使用法: ysk-server tools run --tool <name> [--arg key=val] [--dry-run]"
             }
           }
         }
@@ -31,14 +31,14 @@
         "list": {
           "create": {
             "get": {
-              "b94a62": "使用方法： ysk - server email domains list | create | get…"
+              "b94a62": "使用法: ysk-server 電子メール ドメイン リスト|作成|取得 …"
             }
           }
         },
         "create": {
           "--domain": {
             "example": {
-              "bd4036": "使い方: ysk-server email domains create --domain example.com --ip A.B.C.D\n"
+              "bd4036": "使用法: ysk-server email Domains create --domain example.com --ip A.B.C.D"
             }
           }
         }
@@ -52,7 +52,7 @@
         "create": {
           "--domain": {
             "example": {
-              "7227f3": "使い方: ysk-server email mailboxes create --domain example.com --local user [--password P]\n"
+              "7227f3": "使用法: ysk-server email mailboxes create --domain example.com --local user [--password P]"
             }
           }
         }
@@ -61,7 +61,7 @@
         "--domain": {
           "example": {
             "com": {
-              "26b806": "使用方法： ysk - server email dns -- domain example.com"
+              "26b806": "使用法: ysk-server email dns --domain example.com"
             }
           }
         }
@@ -70,7 +70,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "73dad0": "使い方: ysk-server email <sub> [--data-dir PATH] [--json]\n  domains list|create|get [--q TEXT]\n    create --domain example.com --ip A.B.C.D\n    get --domain example.com | --id UUID\n  mailboxes list|create [--domain D | --id domainId]\n    create --domain D --local user [--password P]\n  deliverability --domain D | --id UUID\n  deliverability-overview\n  bootstrap --domain D --ip A.B.C.D [--install]\n  dns --domain D | --id UUID     # パネル用 DNS バンドル\n別名: hosting email-apply|email-mailbox|email-deliverability\n"
+              "73dad0": "使用法: ysk-server email <sub> [--data-dir PATH] [--json]\n  ドメインのリスト|作成|取得 [--q TEXT]\n    create --domain example.com --ip A.B.C.D\n    --domain example.com を取得 | --id UUID\n  メールボックス リスト|作成 [--ドメイン D | --id ドメイン ID]\n    create --domain D --local user [--password P]\n  配信可能性 --ドメイン D | --id UUID\n  配信可能性の概要\n  bootstrap --domain D --ip A.B.C.D [--install]\n  dns --ドメイン D | --id UUID # パネルの DNS バンドル\n関連項目: ホスティング email-apply|email-mailbox|email-deliverability (エイリアス)"
             }
           }
         }
@@ -79,7 +79,7 @@
         "--domain": {
           "example": {
             "com": {
-              "b0dff0": "使い方: ysk-server email deliverability --domain example.com\n"
+              "b0dff0": "使用法: ysk-server 電子メール到達性 --domain example.com"
             }
           }
         }
@@ -88,7 +88,7 @@
         "--domain": {
           "example": {
             "com": {
-              "affc8d": "使い方: ysk-server email bootstrap --domain example.com --ip 1.2.3.4 [--install]\n"
+              "affc8d": "使用法: ysk-server email bootstrap --domain example.com --ip 1.2.3.4 [--install]"
             }
           }
         }
@@ -115,7 +115,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "0349e6": "使い方: ysk-server cron <sub> [--data-dir PATH] [--json]\n  list [--project-id ID] [--q TEXT]\n  create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n  delete --id JOB_ID\n  enable|disable --id JOB_ID\n  run --id JOB_ID              # 即時実行（YSK_EXECUTE=1 が必要）\n  install                     # 管理対象 crontab を読み込み（EXECUTE が必要）\n  status                      # 管理ファイルとホスト crontab を照合\n注意: YSK_EXECUTE=1 なしでは install はブロックされます（ファイルは書き込まれます）。\n"
+              "0349e6": "使用法: ysk-server cron <sub> [--data-dir PATH] [--json]\n  リスト [--プロジェクト ID] [--q テキスト]\n  create --schedule \"0 3 * * *\" --command CMD [--プロジェクト ID] [--user USER]\n  削除 --id JOB_ID\n  有効にする|無効にする --id JOB_ID\n  run --id JOB_ID # 今すぐ実行 (YSK_EXECUTE=1 が必要)\n  install # 管理された crontab をロードします (EXECUTE が必要)\n  ステータス # 管理対象ファイルとホストの crontab をプローブします\n正直: YSK_EXECUTE=1 を指定しないとインストールがブロックされました (ファイルはまだ書き込まれています)。"
             }
           }
         }
@@ -133,7 +133,7 @@
         "--schedule": {
           "0": {
             "3": {
-              "9a8328": "使い方: ysk-server cron create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n"
+              "9a8328": "使用法: ysk-server cron create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]"
             }
           }
         }
@@ -165,7 +165,7 @@
         "--path": {
           "rel": {
             "--permanent": {
-              "fe2051": "使用方法： ysk - server files rm -- path REL [-- permanent]"
+              "fe2051": "使用法: ysk-server files rm --path REL [--permanent]"
             }
           }
         }
@@ -174,7 +174,7 @@
         "--from": {
           "rel": {
             "--to": {
-              "35a260": "使用方法： ysk - server files rename -- REL -- to REL"
+              "35a260": "使用法: ysk-server ファイルの名前を --from REL --to REL に変更します"
             }
           }
         }
@@ -183,7 +183,7 @@
         "--from": {
           "rel": {
             "--to": {
-              "5337f4": "使用法： ysk - server files copy -- REL -- to REL"
+              "5337f4": "使用法: ysk-server files copy --from REL --to REL"
             }
           }
         }
@@ -192,7 +192,7 @@
         "--from": {
           "rel": {
             "--to": {
-              "75cf5d": "使用法： ysk - server files move -- REL -- to REL"
+              "75cf5d": "使用法: ysk-server ファイルは --from REL --to REL に移動します"
             }
           }
         }
@@ -201,7 +201,7 @@
         "--path": {
           "rel": {
             "--mode": {
-              "39f983": "使用法： ysk - server files chmod -- path REL -- mode 644"
+              "39f983": "使用法: ysk-server ファイル chmod --path REL --mode 644"
             }
           }
         }
@@ -210,14 +210,14 @@
         "restore": {
           "--id": {
             "trash": {
-              "c89ce9": "使用方法： ysk - server files trash restore -- id TRASH_ID"
+              "c89ce9": "使用法: ysk-server ファイルのゴミ箱復元 --id TRASH_ID"
             }
           }
         },
         "list": {
           "restore": {
             "purge": {
-              "ef063d": "使用方法： ysk - server files trash list | restore | purge"
+              "ef063d": "使用法: ysk-server ファイルのゴミリスト|復元|パージ"
             }
           }
         }
@@ -231,7 +231,7 @@
         "status": {
           "token": {
             "disable": {
-              "f8e94b": "使用方法： ysk - server files webdav status | token | disable"
+              "f8e94b": "使用法: ysk-server ファイル webdav ステータス | トークン | 無効にする"
             }
           }
         }
@@ -240,7 +240,7 @@
         "--root": {
           "public": {
             "project": {
-              "42ebd4": "使い方: ysk-server files <sub> [--root public|project:ID] [--data-dir PATH] [--json]\n  list   [--path DIR] [--q TEXT] [--sort name|size|mtime] [--order asc|desc]\n  stat   --path REL\n  read   --path REL\n  write  --path REL --content TEXT | --file LOCAL\n  mkdir  --path REL\n  rm     --path REL [--permanent]\n  rename --from REL --to REL\n  copy   --from REL --to REL\n  move   --from REL --to REL\n  chmod  --path REL --mode 644\n  trash  list|restore|purge [--id TRASH_ID]\n  shares list\n  favorites list\n  upload --dir REL --file LOCAL [--file LOCAL2…]\n  webdav status|token|disable\nサンドボックス: public ファイルルートまたはプロジェクトホームのみ（パス制約あり）。\n"
+              "42ebd4": "使用法: ysk-server ファイル <sub> [--root public|project:ID] [--data-dir PATH] [--json]\n  リスト [--path DIR] [--q TEXT] [--sort name|size|mtime] [--order asc|desc]\n  stat --path REL\n  読み取り --path REL\n  write --path REL --content テキスト | --ファイルローカル\n  mkdir --path REL\n  rm --path REL [--permanent]\n  --from REL --to REL の名前を変更します\n  --from REL --to REL にコピー\n  --from REL --to REL に移動\n  chmod --path REL --mode 644\n  ゴミ箱リスト|復元|パージ [--id TRASH_ID]\n  株式リスト\n  お気に入りリスト\n  アップロード --dir REL --file LOCAL [--file LOCAL2…]\n  webdav ステータス|トークン|無効化\nサンドボックス: パブリック ファイルのルートまたはプロジェクト ホーム (パス制限) のみ。"
             }
           }
         }
@@ -249,7 +249,7 @@
         "--path": {
           "rel": {
             "--content": {
-              "0addb1": "使い方: ysk-server files write --path REL --content TEXT | --file LOCAL\n"
+              "0addb1": "使用法: ysk-server ファイル書き込み --path REL --content TEXT | --ファイルローカル"
             }
           }
         }
@@ -258,7 +258,7 @@
         "--dir": {
           "rel": {
             "--file": {
-              "f8c3bf": "使い方: ysk-server files upload --dir REL --file LOCAL [--file LOCAL2…]\n"
+              "f8c3bf": "使用法: ysk-server ファイルのアップロード --dir REL --file LOCAL [--file LOCAL2…]"
             }
           }
         }
@@ -278,7 +278,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "d580e4": "使い方: ysk-server store <sub> [--data-dir PATH] [--json]\n  status                         バックエンド種別と件数を表示\n  export --out FILE.json         ドキュメントスナップショットをダンプ\n  import --in FILE.json          ファイルからスナップショットを上書き\n  migrate --to sqlite|json [--out PATH]\n    現在のストアを別バックエンドのファイルへコピー\nEnv: YSK_STORE=json|sqlite|postgres  YSK_DATABASE_URL=postgres://…\nHonesty: document-blob バックエンド（完全なリレーショナルスキーマは未対応）。\n"
+              "d580e4": "使用法: ysk-server store <sub> [--data-dir PATH] [--json]\n  status バックエンドの種類と数を表示します\n  import --out FILE.json ドキュメントのスナップショットをダンプする\n  import --in FILE.json ファイルからスナップショットを上書きする\n  移行 --to sqlite|json [--out PATH]\n    現在のストアを別のバックエンド ファイルにコピーする\n環境: YSK_STORE=json|sqlite|postgres YSK_DATABASE_URL=postgres://…\n正直: ドキュメント BLOB バックエンド (まだ完全なリレーショナル スキーマではありません)。"
             }
           }
         }
@@ -287,7 +287,7 @@
         "--to": {
           "json": {
             "sqlite": {
-              "1c52a3": "使い方: ysk-server store migrate --to json|sqlite [--out PATH]\n  (postgres: JSON を export してから YSK_DATABASE_URL 配下で import)\n"
+              "1c52a3": "使用法: ysk-server store merge --to json|sqlite [--out PATH]\n  (postgres: JSON をエクスポートして、YSK_DATABASE_URL にインポート)"
             }
           }
         }
@@ -305,21 +305,21 @@
         "drain": {
           "--id": {
             "node": {
-              "a8aa81": "使い方: ysk-server cdn nodes drain --id NODE_ID [--off]\n"
+              "a8aa81": "使用法: ysk-server cdn ノード ドレイン --id NODE_ID [--off]"
             }
           }
         },
         "list": {
           "upsert": {
             "delete": {
-              "52549e": "使い方: ysk-server cdn nodes list|upsert|delete|probe|drain …\n"
+              "52549e": "使用法: ysk-server cdn ノード リスト|アップサート|削除|プローブ|ドレイン …"
             }
           }
         },
         "upsert": {
           "--name": {
             "name": {
-              "8f6f39": "使い方: ysk-server cdn nodes upsert --name NAME [--id ID] [--base-url U] [--fleet-agent-id S] [--ssh-host H] [--region R]\n"
+              "8f6f39": "使用法: ysk-server cdn ノード upsert --name NAME [--id ID] [--base-url U] [--fleet-agent-id S] [--ssh-host H] [--region R]"
             }
           }
         }
@@ -342,14 +342,14 @@
         "list": {
           "get": {
             "upsert": {
-              "609da6": "使用法： ysk - server cdn sites list | get | upsert | delete…"
+              "609da6": "使用法: ysk-server cdn sites list|get|upsert|delete …"
             }
           }
         },
         "upsert": {
           "--name": {
             "n": {
-              "6ebb75": "使い方: ysk-server cdn sites upsert --name N --domains a.com,b.com [--edge-id ID]… [--origin-url U] [--origin-project ID]\n"
+              "6ebb75": "使用法: ysk-server cdn sites upsert --name N --domains a.com,b.com [--edge-id ID]… [--origin-url U] [--origin-project ID]"
             }
           }
         }
@@ -358,7 +358,7 @@
         "--site-id": {
           "id": {
             "--dry-run": {
-              "2149eb": "使用方法： ysk - server cdn render -- site - id ID [-- dry - run]"
+              "2149eb": "使用法: ysk-server cdn render --site-id ID [--dry-run]"
             }
           }
         }
@@ -367,7 +367,7 @@
         "--site-id": {
           "id": {
             "--edge-id": {
-              "a527b3": "使い方: ysk-server cdn apply --site-id ID [--edge-id EDGE]\n"
+              "a527b3": "使用法: ysk-server cdn apply --site-id ID [--edge-id EDGE]"
             }
           }
         }
@@ -376,7 +376,7 @@
         "--site-id": {
           "id": {
             "--edge-id": {
-              "bc08ec": "使い方: ysk-server cdn purge --site-id ID [--edge-id EDGE]\n"
+              "bc08ec": "使用法: ysk-server cdn purge --site-id ID [--edge-id EDGE]"
             }
           }
         }
@@ -385,7 +385,7 @@
         "--site-id": {
           "id": {
             "--apply-zone": {
-              "343068": "使い方: ysk-server cdn dns-sync --site-id ID [--apply-zone]\n"
+              "343068": "使用法: ysk-server cdn dns-sync --site-id ID [--apply-zone]"
             }
           }
         }
@@ -394,7 +394,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "092842": "使い方: ysk-server cdn <sub> [--data-dir PATH] [--json]\n  nodes list|upsert|delete|probe|drain\n  sites list|upsert|delete|get\n  render --site-id ID [--dry-run]\n  apply  --site-id ID [--edge-id ID]   # ファンアウト（EXECUTE なしでも fleet queue 可）\n  purge  --site-id ID [--edge-id ID]\n  dns-sync --site-id ID [--apply-zone]\n  probe | dashboard | health-loop [--apply-zone]\n  from-project --project-id ID [--edge-id ID…]\nHonesty: apply_status の written/queued は、agent の ack / EXECUTE reload まで edge nginx 適用済みを意味しない。\n"
+              "092842": "使用法: ysk-server cdn <sub> [--data-dir PATH] [--json]\n  ノードリスト|アップサート|削除|プローブ|ドレイン\n  サイトリスト|更新/挿入|削除|取得\n  render --site-id ID [--dry-run]\n  apply --site-id ID [--edge-id ID] # ファンアウト (フリート キューは EXECUTE なしでも OK)\n  パージ --site-id ID [--edge-id ID]\n  dns-sync --site-id ID [--apply-zone]\n  プローブ |ダッシュボード |ヘルスループ [--apply-zone]\n  from-project --project-id ID [--edge-id ID…]\n正直: apply_status が書き込まれた/キューに入れられた ≠ エッジ nginx は、エージェントが確認する / EXECUTE リロードされるまで適用されます。"
             }
           }
         }
@@ -403,7 +403,7 @@
         "--project-id": {
           "id": {
             "--edge-id": {
-              "a96f42": "使い方: ysk-server cdn from-project --project-id ID [--edge-id ID]…\n"
+              "a96f42": "使用法: ysk-server cdn from-project --project-id ID [--edge-id ID]…"
             }
           }
         }
@@ -414,21 +414,21 @@
         "remove": {
           "--session": {
             "session": {
-              "1827fe": "使い方: ysk-server agents fleet remove --session SESSION_ID\n"
+              "1827fe": "使用法: ysk-server エージェント フリート削除 --session SESSION_ID"
             }
           }
         },
         "register": {
           "--id": {
             "agent": {
-              "209b2d": "使い方: ysk-server agents fleet register --id AGENT_ID [--group g] [--edge]\n"
+              "209b2d": "使用法: ysk-server エージェント フリート登録 --id AGENT_ID [--group g] [--edge]"
             }
           }
         },
         "commands": {
           "--session": {
             "session": {
-              "f8067c": "使い方: ysk-server agents fleet commands --session SESSION_ID\n"
+              "f8067c": "使用法: ysk-server エージェント フリート コマンド --session SESSION_ID"
             }
           }
         }
@@ -437,7 +437,7 @@
         "--id": {
           "agent": {
             "id": {
-              "3c4477": "使い方: ysk-server agents register --id AGENT_ID [--group g]\n"
+              "3c4477": "使用法: ysk-server エージェントは --id AGENT_ID [--group g] を登録します。"
             }
           }
         }
@@ -446,7 +446,7 @@
         "--session": {
           "session": {
             "id": {
-              "e620d2": "使い方: ysk-server agents commands --session SESSION_ID\n"
+              "e620d2": "使用法: ysk-server エージェント コマンド --session SESSION_ID"
             }
           }
         }
@@ -455,7 +455,7 @@
         "probe": {
           "fleet": {
             "list": {
-              "261fa4": "使い方: ysk-server agents [runtimes|probe|fleet list|fleet register|fleet commands|register|commands]\n"
+              "261fa4": "使用法: ysk-server エージェント [ランタイム|プローブ|フリート リスト|フリート登録|フリート コマンド|登録|コマンド]"
             }
           }
         }
@@ -466,7 +466,7 @@
         "--control-plane": {
           "url": {
             "--id": {
-              "cfefbe": "使い方: ysk-server agent run --control-plane URL --id AGENT_ID [--group g]\n"
+              "cfefbe": "使用法: ysk-server エージェントの実行 --control-plane URL --id AGENT_ID [--group g]"
             }
           }
         }
@@ -486,7 +486,7 @@
         "--project-id": {
           "id": {
             "--name": {
-              "d66c29": "使い方: ysk-server backup delete --project-id ID --name ARCHIVE\n"
+              "d66c29": "使用法: ysk-server バックアップ削除 --プロジェクト ID ID --name ARCHIVE"
             }
           }
         }
@@ -495,14 +495,14 @@
         "list": {
           "run": {
             "restore": {
-              "10402b": "使用法: ysk - server backup restic list | run | restore…"
+              "10402b": "使用法: ysk-server バックアップ レスティック リスト|実行|復元 …"
             }
           }
         },
         "restore": {
           "--project-id": {
             "id": {
-              "a8f133": "使い方: ysk-server backup restic restore --project-id ID --snapshot SNAP [--dry-run] [--overwrite-home --confirm PHRASE]\n"
+              "a8f133": "使用法: ysk-server バックアップ Restic Restore --project-id ID --snapshot SNAP [--dry-run] [--overwrite-home --confirm PHRASE]"
             }
           }
         }
@@ -511,7 +511,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "777243": "使い方: ysk-server backup <sub> [--data-dir PATH] [--json]\n  all                         全プロジェクトの home をバックアップ（設定時は remote/restic 側も）\n  list [--project-id ID] [--q TEXT]\n  status                      最終実行とスケジュール probe\n  restore --project-id ID --name ARCHIVE [--mode full|web|dry-run]\n  delete  --project-id ID --name ARCHIVE\n  schedule [--cron \"0 3 * * *\"] [--install]\n  control-plane               ysk.json と config.json のスナップショット\n  control-plane-restore --name ARCHIVE [--mode dry-run|full] [--confirm RESTORE-CONTROL-PLANE]\n  settings [get|set]          Remote / 除外 / restic\n    set --remote-kind local|sftp|s3 --remote-path P [--remote-host H] …\n    set --exclude a,b,c | --exclusions-file FILE\n    set --restic-enable --restic-password P [--restic-repo PATH]\n    set --from-json FILE      # 全体パッチ {remote?,exclusions?,restic?}\n  restic list|run|restore     増分 restic ヘルパー\n"
+              "777243": "使用法: ysk-server バックアップ <sub> [--data-dir PATH] [--json]\n  all すべてのプロジェクト ホームをバックアップします (構成されている場合は + リモート/レスト側)\n  リスト [--プロジェクト ID] [--q テキスト]\n  ステータス 最終実行 + スケジュール プローブ\n  復元 --project-id ID --name ARCHIVE [--mode full|web|dry-run]\n  削除 --プロジェクト ID ID --name アーカイブ\n  スケジュール [--cron \"0 3 * * *\"] [--install]\n  コントロールプレーンのスナップショット ysk.json + config.json\n  control-plane-restore --name ARCHIVE [--mode dry-run|full] [--confirm RESTORE-CONTROL-PLANE]\n  設定 [get|set] リモート / 除外 / 制限\n    set --remote-kind local|sftp|s3 --remote-path P [--remote-host H] …\n    set --exclude a、b、c | --除外ファイル ファイル\n    set --restic-enable --restic-password P [--restic-repo PATH]\n    set --from-json FILE # フルパッチ {remote?,exclusions?,restic?}\n  RESTIC リスト | 実行 | 復元 増分 RESTIC ヘルパー"
             }
           }
         }
@@ -520,7 +520,7 @@
         "--name": {
           "archive": {
             "--mode": {
-              "316a76": "使い方: ysk-server backup control-plane-restore --name ARCHIVE [--mode dry-run|full] [--confirm RESTORE-CONTROL-PLANE]\n"
+              "316a76": "使用法: ysk-server バックアップ コントロール プレーン-リストア --name ARCHIVE [--mode dry-run|full] [--confirm RESTORE-CONTROL-PLANE]"
             }
           }
         }
@@ -529,7 +529,7 @@
         "--project-id": {
           "id": {
             "--name": {
-              "bc7041": "使い方: ysk-server backup restore --project-id ID --name ARCHIVE [--mode full|web|dry-run]\n"
+              "bc7041": "使用法: ysk-server バックアップ リストア --プロジェクト ID ID --name ARCHIVE [--mode full|web|dry-run]"
             }
           }
         }
@@ -548,21 +548,21 @@
       "stop": {
         "--id": {
           "projectid": {
-            "b15409": "使用法: ysk - server projects stop -- id <projectId>"
+            "b15409": "使用法: ysk-server プロジェクト stop --id <projectId>"
           }
         }
       },
       "backup": {
         "--id": {
           "projectid": {
-            "e62846": "使用法: ysk - server projects backup -- id <projectId>"
+            "e62846": "使用法: ysk-server プロジェクトのバックアップ --id <projectId>"
           }
         }
       },
       "health": {
         "--id": {
           "projectid": {
-            "e816ec": "使用法: ysk - server projects health -- id <projectId>"
+            "e816ec": "使用法: ysk-server プロジェクト health --id <projectId>"
           }
         }
       },
@@ -570,21 +570,21 @@
         "provision": {
           "--id": {
             "projectid": {
-              "5aff44": "使い方: ysk-server projects isolation provision --id <projectId>\n       ysk-server projects isolation provision-all [--limit 20]\n"
+              "5aff44": "使用法: ysk-server プロジェクト分離プロビジョン --id <projectId>\n       ysk-server プロジェクト分離プロビジョニング-すべて [--制限 20]"
             }
           }
         },
         "backfill-owners": {
           "--owner-user-id": {
             "id": {
-              "8691da": "使い方: ysk-server projects isolation backfill-owners --owner-user-id <id>\n"
+              "8691da": "使用法: ysk-server プロジェクト分離バックフィル所有者 --owner-user-id <id>"
             }
           }
         },
         "list": {
           "provision": {
             "provision-all": {
-              "8e9da3": "使い方: ysk-server projects isolation list|provision|provision-all|backfill-owners\n"
+              "8e9da3": "使用法: ysk-server プロジェクト分離リスト|プロビジョニング|プロビジョニング-オール|バックフィル所有者"
             }
           }
         }
@@ -593,7 +593,7 @@
         "--id": {
           "projectid": {
             "name": {
-              "b0d532": "使い方: ysk-server projects get --id <projectId|name> [--json]\n"
+              "b0d532": "使用法: ysk-server プロジェクト get --id <projectId|name> [--json]"
             }
           }
         }
@@ -602,7 +602,7 @@
         "--name": {
           "name": {
             "--domain": {
-              "66e857": "使い方: ysk-server projects create --name <name> [--domain d] [--runtime node|php|static|python|go|rust] [--template id]\n"
+              "66e857": "使用法: ysk-server プロジェクト create --name <name> [--domain d] [--runtime node|php|static|python|go|rust] [--template id]"
             }
           }
         }
@@ -611,7 +611,7 @@
         "--id": {
           "projectid": {
             "--entry": {
-              "339111": "使い方: ysk-server projects deploy --id <projectId> [--entry f] [--port N] [--fpm|--builtin] [--reload]\n"
+              "339111": "使用法: ysk-server プロジェクトdeploy --id <projectId> [--entry f] [--port N] [--fpm|--builtin] [--reload]"
             }
           }
         }
@@ -620,7 +620,7 @@
         "--id": {
           "id": {
             "--git-url": {
-              "a513f5": "使い方: ysk-server projects git-deploy --id ID [--git-url URL] [--branch main] [--no-redeploy] [--depth 1] [--entry f]\n"
+              "a513f5": "使用法: ysk-server プロジェクト git-deploy --id ID [--git-url URL] [--branch main] [--no-redeploy] [-- Depth 1] [--entry f]"
             }
           }
         }
@@ -629,7 +629,7 @@
         "--id": {
           "projectid": {
             "--template": {
-              "591ce4": "使い方: ysk-server projects template --id <projectId> --template <id> [--force]\n"
+              "591ce4": "使用法: ysk-server プロジェクト テンプレート --id <プロジェクト ID> --template <id> [--force]"
             }
           }
         }
@@ -638,7 +638,7 @@
         "get": {
           "create": {
             "deploy": {
-              "253b48": "使い方: ysk-server projects list|get|create|deploy|git-deploy|stop|backup|template|health [options]\n  deploy --id UUID [--entry f] [--port N] [--fpm|--builtin] [--reload]\n  git-deploy --id UUID [--git-url URL] [--branch B] [--no-redeploy]\n"
+              "253b48": "使用法: ysk-server プロジェクト list|get|create|deploy|git-deploy|stop|backup|template|health [オプション]\n  デプロイ --id UUID [--entry f] [--port N] [--fpm|--builtin] [--reload]\n  git-deploy --id UUID [--git-url URL] [--ブランチ B] [--no-redeploy]"
             }
           }
         }
@@ -649,69 +649,69 @@
         "db-cluster": {
           "get": {
             "--id": {
-              "00f803": "使用法： ⟦0 db⟧ - cluster get -- id UUID [-- json]"
+              "00f803": "使用法: {{CLI_NAME}} db-cluster get --id UUID [--json]"
             }
           },
           "plan": {
             "--id": {
-              "483f52": "使い方: {{CLI_NAME}} db-cluster plan --id UUID [--json]\n"
+              "483f52": "使用法: {{CLI_NAME}} db-cluster plan --id UUID [--json]"
             }
           },
           "artifacts": {
             "--id": {
-              "6b33c4": "使い方: {{CLI_NAME}} db-cluster artifacts --id UUID [--json]\n"
+              "6b33c4": "使用法: {{CLI_NAME}} db-cluster アーティファクト --id UUID [--json]"
             }
           },
           "bundle": {
             "--id": {
-              "94ed27": "使い方: {{CLI_NAME}} db-cluster bundle --id UUID [--json]\n"
+              "94ed27": "使用法: {{CLI_NAME}} db-cluster バンドル --id UUID [--json]"
             }
           },
           "delete": {
             "--id": {
-              "3de0e4": "使い方: {{CLI_NAME}} db-cluster delete --id UUID [--json]\n"
+              "3de0e4": "使用法: {{CLI_NAME}} db-cluster delete --id UUID [--json]"
             }
           },
           "create": {
             "--name": {
-              "e3b733": "使い方: {{CLI_NAME}} db-cluster create --name N --engine mariadb --kind mariadb-galera --member HOST=role[:access] ...\n"
+              "e3b733": "使用法: {{CLI_NAME}} db-cluster create --name N --engine mariadb --kind mariadb-galera --member HOST=role[:access] ..."
             }
           },
           "apply": {
             "--id": {
-              "4cddb8": "使い方: {{CLI_NAME}} db-cluster apply --id UUID [--execute] [--bootstrap] [--json]\n"
+              "4cddb8": "使用法: {{CLI_NAME}} db-cluster apply --id UUID [--execute] [--bootstrap] [--json]"
             }
           },
           "probe": {
             "--id": {
-              "22870c": "使い方: {{CLI_NAME}} db-cluster probe --id UUID [--peers] [--json]\n"
+              "22870c": "使用法: {{CLI_NAME}} db-cluster プローブ --id UUID [--peers] [--json]"
             }
           },
           "install-peers": {
             "--id": {
-              "600b02": "使い方: {{CLI_NAME}} db-cluster install-peers --id UUID [--execute] [--no-restart] [--identity ID] [--json]\n"
+              "600b02": "使用法: {{CLI_NAME}} db-cluster install-peers --id UUID [--execute] [--no-restart] [--identity ID] [--json]"
             }
           },
           "push": {
             "--id": {
-              "697080": "使い方: {{CLI_NAME}} db-cluster push --id UUID [--member ID] [--identity ID] [--execute] [--json]\n"
+              "697080": "使用法: {{CLI_NAME}} db-cluster Push --id UUID [--メンバー ID] [--アイデンティティ ID] [--実行] [--json]"
             }
           },
           "fleet": {
             "--id": {
-              "239462": "使い方: {{CLI_NAME}} db-cluster fleet --id UUID [--op apply|probe|plan] [--execute] [--edge-execute] [--json]\n"
+              "239462": "使用法: {{CLI_NAME}} db-cluster フリート --id UUID [--op apply|probe|plan] [--execute] [--edge-execute] [--json]"
             }
           },
           "list": {
             "get": {
-              "3b9cfa": "使い方: {{CLI_NAME}} db-cluster list|get|create|plan|apply|probe|install-peers|artifacts|bundle|push|fleet|overview|delete [--peers] [--execute] [--json]\n"
+              "3b9cfa": "使用法: {{CLI_NAME}} db-cluster list|get|create|plan|apply|probe|install-peers|artifacts|bundle|push|fleet|overview|delete [--peers] [--execute] [--json]"
             }
           }
         },
         "ssh-key": {
           "get": {
             "--id": {
-              "292716": "使用法： ⟦0 ssh⟧ - key get -- id UUID [-- json]"
+              "292716": "使用法: {{CLI_NAME}} ssh-key get --id UUID [--json]"
             }
           },
           "public": {
@@ -721,168 +721,168 @@
           },
           "export": {
             "--id": {
-              "0a6d81": "使い方: {{CLI_NAME}} ssh-key export --id UUID [--out PATH] [--json]\n"
+              "0a6d81": "使用法: {{CLI_NAME}} ssh キーのエクスポート --id UUID [--out PATH] [--json]"
             }
           },
           "delete": {
             "--id": {
-              "a6e2f2": "使用方法： ⟦0 ssh⟧ - key delete -- id UUID [-- json]"
+              "a6e2f2": "使用法: {{CLI_NAME}} ssh-key delete --id UUID [--json]"
             }
           },
           "create": {
             "--name": {
-              "8b1d79": "使い方: {{CLI_NAME}} ssh-key create --name N [--algo ed25519|rsa-4096] [--purpose user|panel|unbound] [--project ID] [--user U] [--home PATH] [--reveal] [--json]\n"
+              "8b1d79": "使用法: {{CLI_NAME}} ssh-key create --name N [--algo ed25519|rsa-4096] [--目的 user|panel|unbound] [--project ID] [--user U] [--home PATH] [--reveal] [--json]"
             }
           },
           "import": {
             "--name": {
-              "6eb800": "使い方: {{CLI_NAME}} ssh-key import --name N --file PATH [--purpose panel|user] [--json]\n"
+              "6eb800": "使用法: {{CLI_NAME}} ssh-key import --name N --file PATH [--目的パネル|ユーザー] [--json]"
             }
           },
           "install": {
             "--id": {
-              "b99c56": "使い方: {{CLI_NAME}} ssh-key install --id UUID [--execute] [--json]\n"
+              "b99c56": "使用法: {{CLI_NAME}} ssh-key install --id UUID [--execute] [--json]"
             }
           },
           "test": {
             "--id": {
-              "e1aed3": "使い方: {{CLI_NAME}} ssh-key test --id UUID --target user@host[:port] [--execute] [--json]\n"
+              "e1aed3": "使用法: {{CLI_NAME}} ssh-key test --id UUID --target user@host[:port] [--execute] [--json]"
             }
           },
           "rotate": {
             "--id": {
-              "9c3224": "使い方: {{CLI_NAME}} ssh-key rotate --id UUID [--reveal] [--json]\n"
+              "9c3224": "使用法: {{CLI_NAME}} ssh キー回転 --id UUID [--reveal] [--json]"
             }
           },
           "authorize-self": {
             "--id": {
-              "b7ea2e": "使い方: {{CLI_NAME}} ssh-key authorize-self --id UUID [--json]\n"
+              "b7ea2e": "使用法: {{CLI_NAME}} ssh-key authorize-self --id UUID [--json]"
             }
           },
           "uninstall": {
             "--id": {
-              "afcba0": "使い方: {{CLI_NAME}} ssh-key uninstall --id UUID [--execute] [--json]\n"
+              "afcba0": "使用法: {{CLI_NAME}} ssh-key uninstall --id UUID [--execute] [--json]"
             }
           },
           "list": {
             "get": {
-              "2c92c6": "使い方: {{CLI_NAME}} ssh-key list|get|create|import|public|export|install|test|rotate|authorize-self|uninstall|delete [--json]\n"
+              "2c92c6": "使用法: {{CLI_NAME}} ssh-key list|get|create|import|public|export|install|test|rotate|authorize-self|uninstall|delete [--json]"
             }
           }
         },
         "ssh-2fa": {
           "reveal": {
             "--id": {
-              "a6c27f": "使用方法： ⟦0 ssh⟧ -2 fa reveal -- id UUID [-- json]"
+              "a6c27f": "使用法: {{CLI_NAME}} ssh-2fa 公開 --id UUID [--json]"
             }
           },
           "retire": {
             "--id": {
-              "6e1fa3": "使用法： ⟦0 ssh⟧ -2 fa retire -- id UUID [-- json]"
+              "6e1fa3": "使用法: {{CLI_NAME}} ssh-2fa 引退 --id UUID [--json]"
             }
           },
           "enroll": {
             "--user": {
-              "081432": "使い方: {{CLI_NAME}} ssh-2fa enroll --user LINUX|--project ID [--home PATH] [--from-panel] [--json]\n"
+              "081432": "使用法: {{CLI_NAME}} ssh-2fa 登録 --user LINUX|--プロジェクト ID [--home PATH] [--from-panel] [--json]"
             }
           },
           "confirm": {
             "--id": {
-              "9ee8a2": "使い方: {{CLI_NAME}} ssh-2fa confirm --id UUID --code 123456 [--json]\n"
+              "9ee8a2": "使用法: {{CLI_NAME}} ssh-2fa 確認 --id UUID --code 123456 [--json]"
             }
           },
           "install": {
             "--id": {
-              "dace06": "使い方: {{CLI_NAME}} ssh-2fa install --id UUID [--execute] [--json]\n"
+              "dace06": "使用法: {{CLI_NAME}} ssh-2fa install --id UUID [--execute] [--json]"
             }
           },
           "uninstall": {
             "--id": {
-              "0bb464": "使い方: {{CLI_NAME}} ssh-2fa uninstall --id UUID [--execute] [--json]\n"
+              "0bb464": "使用法: {{CLI_NAME}} ssh-2fa アンインストール --id UUID [--execute] [--json]"
             }
           },
           "list": {
             "enroll": {
-              "802ed0": "使い方: {{CLI_NAME}} ssh-2fa list|enroll|confirm|install|uninstall|pam|reveal|retire [--json]\n"
+              "802ed0": "使用法: {{CLI_NAME}} ssh-2fa list|enroll|confirm|install|uninstall|pam|reveal|retire [--json]"
             }
           }
         },
         "ssl": {
           "list": {
             "get": {
-              "79c232": "使用法： {{CLI_NAME}} ssl list | get -- domain X [-- json]"
+              "79c232": "使用法: {{CLI_NAME}} ssl リスト|get --domain X [--json]"
             }
           },
           "get": {
             "--domain": {
-              "91c444": "使い方: {{CLI_NAME}} ssl get --domain example.com [--json]\n"
+              "91c444": "使用法: {{CLI_NAME}} ssl get --domain example.com [--json]"
             }
           }
         },
         "dns": {
           "zone": {
             "--zone": {
-              "ad30fa": "使い方: {{CLI_NAME}} dns zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n"
+              "ad30fa": "使用法: {{CLI_NAME}} dns ゾーン --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]"
             }
           },
           "zones": {
             "zone": {
-              "5b8bda": "使い方: {{CLI_NAME}} dns zones|zone --zone X --ip A.B.C.D [--ipv6 …] [--json]\n"
+              "5b8bda": "使用法: {{CLI_NAME}} dns ゾーン|ゾーン --zone X --ip A.B.C.D [--ipv6 …] [--json]"
             }
           }
         },
         "nginx": {
           "status": {
             "list": {
-              "d67a16": "使い方: {{CLI_NAME}} nginx status|list|test|sync [--execute] [--json]\n"
+              "d67a16": "使用法: {{CLI_NAME}} nginx ステータス|リスト|テスト|同期 [--execute] [--json]"
             }
           }
         },
         "host": {
           "overview": {
             "metrics": {
-              "93c828": "使い方: {{CLI_NAME}} host overview|metrics|network [--path /] [--json]\n"
+              "93c828": "使用法: {{CLI_NAME}} ホストの概要|メトリクス|ネットワーク [--path /] [--json]"
             }
           }
         },
         "logs": {
           "sources": {
             "overview": {
-              "79058c": "使い方: {{CLI_NAME}} logs sources|overview|units|journal|query [--source id] [--json]\n"
+              "79058c": "使用法: {{CLI_NAME}} ログ ソース|概要|ユニット|ジャーナル|クエリ [--ソース ID] [--json]"
             }
           }
         },
         "services": {
           "sub": {
             "--unit": {
-              "4fe3fa": "使い方: {{CLI_NAME}} services {{sub}} --unit <systemd-unit> [--execute] [--json]\n"
+              "4fe3fa": "使用法: {{CLI_NAME}} サービス {{sub}} --unit <systemd-unit> [--execute] [--json]"
             }
           },
           "matrix": {
             "start": {
-              "4f3a35": "使い方: {{CLI_NAME}} services matrix|start|stop|restart|reload --unit NAME [--execute] [--json]\n"
+              "4f3a35": "使用法: {{CLI_NAME}} サービス マトリックス|開始|停止|再起動|リロード --ユニット名 [--実行] [--json]"
             }
           }
         },
         "defense": {
           "ban": {
             "--ip": {
-              "cc22de": "使い方: {{CLI_NAME}} defense ban --ip <ip> [--method fail2ban|ufw|both] [--reason t] [--execute]\n"
+              "cc22de": "使用法: {{CLI_NAME}} 防御禁止 --ip <ip> [--method failed2ban|ufw|both] [--reason t] [--execute]"
             }
           },
           "unban": {
             "--ip": {
-              "46aa23": "使い方: {{CLI_NAME}} defense unban --ip <ip> [--method fail2ban|ufw|both] [--execute]\n"
+              "46aa23": "使用法: {{CLI_NAME}} 防御禁止解除 --ip <ip> [--method failed2ban|ufw|both] [--execute]"
             }
           },
           "whitelist": {
             "--action": {
-              "c1cbdf": "使い方: {{CLI_NAME}} defense whitelist --action list|add|remove [--ip IP]\n"
+              "c1cbdf": "使用法: {{CLI_NAME}} 防御ホワイトリスト --アクション リスト|追加|削除 [--ip IP]"
             }
           },
           "status": {
             "bans": {
-              "a8d96b": "使い方: {{CLI_NAME}} defense status|bans|suspects|ban|unban|whitelist|stack-apply|fail2ban|firewall|timeline|presets [--json]\n` +\n          `  bans [--q text] [--source fail2ban|panel|ufw|auto]\n` +\n          `  suspects [--q text]\n` +\n          `  stack-apply [--execute]   # UFW + fail2ban + 現在のプリセット\n` +\n          `  fail2ban | firewall       # 詳細プローブ（実測）\n` +\n          `  timeline [--limit N] [--q text]\n` +\n          `  presets                   # 一覧 + activePreset\n"
+              "a8d96b": "使用法: {{CLI_NAME}} 防御ステータス|禁止|容疑者|禁止|禁止解除|ホワイトリスト|スタック適用|fail2ban|ファイアウォール|タイムライン|プリセット [--json]\n` +\n          ` 禁止 [--q テキスト] [--source failed2ban|panel|ufw|auto]\n` +\n          ` 容疑者 [--q テキスト]\n` +\n          ` stack-apply [--execute] # UFW + failed2ban + 現在のプリセット\n` +\n          ` 失敗2禁止 |ファイアウォール # ディーププローブ (正直)\n` +\n          ` タイムライン [--limit N] [--q テキスト]\n` +\n          ` プリセット # リスト + activePreset"
             }
           }
         }
@@ -893,7 +893,7 @@
         "--enable": {
           "--data-dir": {
             "path": {
-              "33daa1": "使い方: ysk-server system unit-install [--enable] [--data-dir PATH]\n"
+              "33daa1": "使用法: ysk-server システムユニット-install [--enable] [--data-dir PATH]"
             }
           }
         }
@@ -904,7 +904,7 @@
         "--username": {
           "u": {
             "--password": {
-              "7145c7": "使い方: ysk-server users create --username <u> --password <p> [--role operator|viewer|admin] [--package-id id]\n"
+              "7145c7": "使用法: ysk-server ユーザーは --username <u> --password <p> [--role オペレーター|ビューア|管理者] [--package-id id] を作成します。"
             }
           }
         }
@@ -913,7 +913,7 @@
         "--q": {
           "text": {
             "--role": {
-              "544685": "使い方: ysk-server users list [--q text] [--role admin|operator|viewer]\n       ysk-server users create --username u --password p [--role operator]\n"
+              "544685": "使用法: ysk-server ユーザーリスト [--q text] [--role admin|operator|viewer]\n       ysk-server ユーザーは --username u --password p [--role 演算子] を作成します"
             }
           }
         }
@@ -922,7 +922,7 @@
     "rbac": {
       "list": {
         "policies": {
-          "330ade": "使い方: ysk-server rbac list|policies\n       ysk-server rbac show --role operator\n       ysk-server rbac audit   # route→cap サンプルマトリクス\n"
+          "330ade": "使用法: ysk-server rbac リスト|ポリシー\n       ysk-server rbac show --role オペレーター\n       ysk-server rbac Audit # ルート→キャップ サンプル マトリックス"
         }
       }
     },
@@ -931,7 +931,7 @@
         "--db": {
           "name": {
             "--user": {
-              "2c8889": "使い方: ysk-server hosting postgres-provision --db NAME --user U --password P(min8) [--execute]\n  デフォルトはドライラン（ホスト変更なし）。適用するには --execute と YSK_EXECUTE=1 を指定。\n"
+              "2c8889": "使用法: ysk-server hosting postgres-provision --db NAME --user U --password P(min8) [--execute]\n  デフォルトのドライラン (ホスト変更なし)。 --execute + YSK_EXECUTE=1 を渡して適用します。"
             }
           }
         }
@@ -940,7 +940,7 @@
         "--db": {
           "name": {
             "--user": {
-              "fc25aa": "使い方: ysk-server hosting mysql-provision --db NAME --user U --password P(min8) [--execute]\n  デフォルトはドライラン（ホスト変更なし）。適用するには --execute と YSK_EXECUTE=1 を指定。\n"
+              "fc25aa": "使用法: ysk-server hosting mysql-provision --db NAME --user U --password P(min8) [--execute]\n  デフォルトのドライラン (ホスト変更なし)。 --execute + YSK_EXECUTE=1 を渡して適用します。"
             }
           }
         }
@@ -949,7 +949,7 @@
         "--zone": {
           "example": {
             "com": {
-              "bdaa0d": "使い方: ysk-server hosting dns-zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n"
+              "bdaa0d": "使用法: ysk-server hosting dns-zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]"
             }
           }
         }
@@ -958,7 +958,7 @@
         "--zone": {
           "example": {
             "com": {
-              "dba49c": "使い方: ysk-server hosting powerdns-load --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--load|--execute]\n"
+              "dba49c": "使用法: ysk-server hosting powerdns-load --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--load|--execute]"
             }
           }
         }
@@ -967,7 +967,7 @@
         "--domain": {
           "example": {
             "com": {
-              "37d350": "使い方: ysk-server hosting email-apply --domain example.com [--install|--execute]\n"
+              "37d350": "使用法: ysk-server hosting email-apply --domain example.com [--install|--execute]"
             }
           }
         }
@@ -976,7 +976,7 @@
         "--domain": {
           "x": {
             "--local": {
-              "3d9be3": "使い方: ysk-server hosting email-mailbox --domain X --local user [--password P] [--ip A.B.C.D]\n"
+              "3d9be3": "使用法: ysk-server hosting email-mailbox --domain X --local user [--password P] [--ip A.B.C.D]"
             }
           }
         }
@@ -985,7 +985,7 @@
         "--domain": {
           "files": {
             "example": {
-              "284a7c": "使い方: ysk-server hosting ftps-apply --domain files.example.com [--install|--execute]\n"
+              "284a7c": "使用法: ysk-server hosting ftps-apply --domain files.example.com [--install|--execute]"
             }
           }
         }
@@ -994,7 +994,7 @@
         "--domain": {
           "webmail": {
             "example": {
-              "2ad5b5": "使い方: ysk-server hosting webmail-apply --domain webmail.example.com [--download]\n"
+              "2ad5b5": "使用法: ysk-server hosting webmail-apply --domain webmail.example.com [--download]"
             }
           }
         }
@@ -1003,7 +1003,7 @@
         "--domain": {
           "files": {
             "example": {
-              "0e9013": "使い方: ysk-server hosting public-files --domain files.example.com [--reload]\n"
+              "0e9013": "使用法: ysk-server hosting public-files --domain files.example.com [--reload]"
             }
           }
         }
@@ -1012,7 +1012,7 @@
         "--domain": {
           "example": {
             "com": {
-              "8774a4": "使い方: ysk-server hosting email-deliverability --domain example.com\n       ysk-server hosting email-deliverability --id <domainId>\n"
+              "8774a4": "使用法: ysk-server hosting email-deliverability --domain example.com\n       ysk-server hosting email-deliverability --id <ドメイン ID>"
             }
           }
         }
@@ -1021,7 +1021,7 @@
         "--domain": {
           "example": {
             "com": {
-              "796da5": "使い方: ysk-server hosting email-bootstrap --domain example.com --ip 1.2.3.4 [--admin postmaster] [--password P] [--install]\n"
+              "796da5": "使用法: ysk-server hosting email-bootstrap --domain example.com --ip 1.2.3.4 [--admin postmaster] [--password P] [--install]"
             }
           }
         }
@@ -1032,7 +1032,7 @@
         "--job": {
           "id": {
             "--data-dir": {
-              "6a73cd": "使い方: ysk-server migrate post --job <id> --data-dir PATH --execute\n"
+              "6a73cd": "使用法: ysk-server merge post --job <id> --data-dir PATH --execute"
             }
           }
         }
@@ -1041,23 +1041,23 @@
         "--target": {
           "root": {
             "new": {
-              "3e94a2": "使い方: ysk-server migrate host --target root@NEW_IP [--identity-file PATH|--identity-id ID] [--password] --execute --data-dir PATH\n"
+              "3e94a2": "使用法: ysk-server merge host --target root@NEW_IP [--identity-file PATH|--identity-id ID] [--password] --execute --data-dir PATH"
             }
           }
         }
       }
     },
     "x": {
-      "972912": "使い方:\n  ysk-server migrate inventory [--data-dir PATH] --json\n  ysk-server migrate host --target root@IP [--identity-file PATH|--identity-id ID|--password PW] --execute [--maintenance] [--force-wipe-target]\n  ysk-server migrate post --job ID --data-dir PATH --execute   # ターゲット上で実行\n  ysk-server migrate status [--job ID]\n  ysk-server migrate resume --job ID --execute\n"
+      "972912": "使用法:\n  ysk-server 移行インベントリ [--data-dir PATH] --json\n  ysk-server merge host --target root@IP [--identity-file PATH|--identity-id ID|--password PW] --execute [--maintenance] [--force-wipe-target]\n  ysk-server merge post --job ID --data-dir PATH --execute # ターゲット上\n  ysk-server 移行ステータス [--ジョブ ID]\n  ysk-server 移行再開 --ジョブ ID --実行"
     },
-    "hostingHelp": "使い方: ysk-server hosting <sub>\n  危険な操作はデフォルトでドライラン。適用するには --execute（+ YSK_EXECUTE=1）を追加\n  nginx | nginx-sync [--execute]\n  redis-provision | postgres-provision | mysql-provision [--execute]\n  dns-zone --zone X --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n  dns-zones | powerdns-status | powerdns-install [--install|--execute]\n  powerdns-load --zone X --ip A.B.C.D [--load|--execute]\n  email-apply --domain X [--install|--execute]\n  email-mailbox --domain X --local user [--password P] [--ip A.B.C.D] [--system]\n  ftps-apply --domain X [--install|--execute]\n  runtimes | runtime-install --kind node|php|python|go|rust --version V [--install|--execute]\n  dovecot-passdb --domain X | --all\n  webmail-apply --domain webmail.example.com [--download]\n  public-files --domain files.example.com [--reload]\n  email-bootstrap --domain example.com --ip A.B.C.D [--install|--execute]\n  email-deliverability --domain example.com   # PTR/DNSBL/ウォームアップ一式（実測）\n  firewall-apply [--smtp] [--execute]\n",
-    "logsQuery": "使い方: {{CLI_NAME}} logs query --source <id> [--lines N] [--grep G] [--since 1h] [--priority err]\n  source の例: journal:  journal:nginx.service  file:syslog  project:<uuid>\n  {{CLI_NAME}} logs sources --json\n  {{CLI_NAME}} logs journal [--unit nginx.service] --json\n"
+    "hostingHelp": "使用法: ysk-server ホスティング <sub>\n  危険な作戦のデフォルトの予行演習。 --execute (+ YSK_EXECUTE=1) を追加して適用します\n  nginx | nginx-sync [--実行]\n  redis-プロビジョニング | postgres-provision | mysql-provision [--execute]\n  dns-zone --zone X --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n  DNS ゾーン |パワーDNSステータス | powerdns-install [--install|--execute]\n  powerdns-load --zone X --ip A.B.C.D [--load|--execute]\n  email-apply --domain X [--install|--execute]\n  電子メールメールボックス --domain X --local user [--password P] [--ip A.B.C.D] [--system]\n  ftps-apply --domain X [--install|--execute]\n  ランタイム | runtime-install --kind node|php|python|go|rust --version V [--install|--execute]\n  dovecot-passdb --ドメイン X | --すべて\n  webmail-apply --domain webmail.example.com [--download]\n  public-files --domain files.example.com [--reload]\n  email-bootstrap --domain example.com --ip A.B.C.D [--install|--execute]\n  email-deliverability --domain example.com # PTR/DNSBL/ウォームアップ パック (正直)\n  ファイアウォール適用 [--smtp] [--execute]",
+    "logsQuery": "使用法: {{CLI_NAME}} ログクエリ --source <id> [--lines N] [--grep G] [--since 1h] [--priority err]\n  ソースの例: ジャーナル: ジャーナル:nginx.service ファイル:syslog プロジェクト:<uuid>\n  {{CLI_NAME}} ログソース --json\n  {{CLI_NAME}} ログジャーナル [--unit nginx.service] --json"
   },
   "msg": {
     "domain": {
       "missing": {
         "pass": {
-          "5be09b": "ドメインが見つかりません—最初にドメインを作成するには-- ipを渡してください"
+          "5be09b": "ドメインがありません — 最初に --ip を渡してドメインを作成します"
         }
       }
     },
@@ -1090,28 +1090,28 @@
     "use": {
       "ysk-server": {
         "backup": {
-          "ca67f4": "使用: ysk-server backup control-plane-restore --name ARCHIVE（restore --project-id control-plane ではない）\n"
+          "ca67f4": "使用: ysk-server Backup control-plane-restore --name ARCHIVE (restore --project-id control-plane ではありません)"
         }
       }
     },
     "new": {
       "domain": {
         "requires": {
-          "986b78": "新規ドメインには --ip A.B.C.D が必要です（プレースホルダのデフォルトなし）\n"
+          "986b78": "新しいドメインには --ip A.B.C.D が必要です (プレースホルダーのデフォルトはありません)"
         }
       }
     },
     "import-sync": {
       "prefers": {
         "fleet": {
-          "4d7590": "import-sync は fleet の clusterSync ペイロードを優先。または --file snapshot.json\n"
+          "4d7590": "import-sync はフリートのClusterSyncペイロードを優先します。または --file snapshot.json"
         }
       }
     },
     "security": {
       "control": {
         "plane": {
-          "f59a63": "セキュリティ: コントロールプレーンが公開バインドされています（0.0.0.0/::）。127.0.0.1 + リバースプロキシ / UFW を推奨。\n"
+          "f59a63": "セキュリティ: パブリックにバインドされたコントロール プレーン (0.0.0.0/::)。 127.0.0.1 + リバース プロキシ / UFW を優先します。"
         }
       }
     }
@@ -1121,42 +1121,42 @@
       "email": {
         "sub": {
           "sub": {
-            "e37257": "Unknown email sub: {{sub}}\n: ysk - serverメールヘルプを実行する"
+            "e37257": "不明な電子メールサブアドレス: {{sub}}\n実行: ysk-server email help"
           }
         }
       },
       "cron": {
         "sub": {
           "sub": {
-            "e1a9ed": "Unknown cron sub: {{sub}}\n実行： ysk - server cron help"
+            "e1a9ed": "不明な cron サブ: {{sub}}\n実行: ysk-server cron help"
           }
         }
       },
       "files": {
         "sub": {
           "sub": {
-            "07ad7e": "UNKNOWN FILES SUB: {{sub}}\n: ysk - server files helpを実行します。"
+            "07ad7e": "不明なファイルのサブ: {{sub}}\n実行: ysk-server ファイルのヘルプ"
           }
         }
       },
       "store": {
         "sub": {
           "sub": {
-            "b7a083": "Unknown store sub: {{sub}}\n: ysk - server storeヘルプを実行する"
+            "b7a083": "不明なストアサブ: {{sub}}\n実行: ysk-server ストア ヘルプ"
           }
         }
       },
       "cdn": {
         "subcommand": {
           "sub": {
-            "76664f": "不明な cdn サブコマンド: {{sub}}\n実行: ysk-server cdn help\n"
+            "76664f": "不明な cdn サブコマンド: {{sub}}\n実行: ysk-server cdn help"
           }
         }
       },
       "backup": {
         "subcommand": {
           "sub": {
-            "4092ad": "不明な backup サブコマンド: {{sub}}\n実行: ysk-server backup help\n"
+            "4092ad": "不明なバックアップ サブコマンド: {{sub}}\n実行: ysk-server バックアップ ヘルプ"
           }
         }
       }
@@ -1164,19 +1164,19 @@
   },
   "setup": {
     "dryRunOk": "{{product}} セットアップの予行運転 OK",
-    "dryRunNext": "設定を書き込みデータベースを初期化するには --dry-run なしで再実行してください",
-    "weakPassword": "管理者パスワードが弱い、またはデフォルトです。強力な --admin-password を指定してください（最低8文字、「admin」や一般的なデフォルト不可）。ローカル開発のみ YSK_ALLOW_INSECURE_DEFAULTS=1 を設定できます。",
+    "dryRunNext": "--dry-run を指定せずに再実行して、構成を書き込み、データベースを初期化します",
+    "weakPassword": "管理者パスワードが弱いかデフォルトです。強力な --admin-password (\"admin\"/common のデフォルトではなく、最小 8) を渡すか、ローカル開発のみに YSK_ALLOW_INSECURE_DEFAULTS=1 を設定します。",
     "weakPasswordShort": "弱いまたはデフォルトの管理者パスワードが拒否されました",
-    "nextStart": "起動（API + Web UI）: {{cli}} serve --config {{configPath}}",
-    "nextOpen": "Http ://⟦ 0⟧:⟦ 1⟧/を開き、⟦2としてログインします⟧",
+    "nextStart": "開始 (API + Web UI): {{cli}}serve --config {{configPath}}",
+    "nextOpen": "http://{{host}}:{{port}}/ を開き、{{user}} としてログインします",
     "nextUnit": "Systemd ユニット テンプレート: {{unitPath}}",
-    "nextInstall": "ユニットをインストール（root + YSK_EXECUTE）: {{cli}} system unit-install --enable --data-dir {{dataDir}}",
-    "nextExecute": "本番ホストの変更には YSK_EXECUTE=1 と root が必要です",
-    "nextGolive": "本番投入: docs/deploy/go-live.md + ysk-server readiness --json",
-    "secPassword": "セキュリティ: 管理パスワードを直ちに変更してください（ブートストラップで弱い／デフォルトのパスワードが使用されています）",
-    "sec2fa": "セキュリティ：セキュリティ→アカウントで管理者2 FAを有効にする",
-    "secListen": "セキュリティ: すべてのインターフェースで待ち受け中 — ファイアウォール／リバースプロキシの背後に置いてください。管理は 127.0.0.1 + SSH トンネルを推奨",
-    "ok": "{{product}}セットアップが完了しました（データベースが初期化されました）",
-    "okInsecure": "{{product}} のセットアップが完了しました（データベース初期化済み）[不安全なブートストラップ — パスワードを変更してください]"
+    "nextInstall": "ユニットのインストール (root + YSK_EXECUTE): {{cli}} system unit-install --enable --data-dir {{dataDir}}",
+    "nextExecute": "本番ホストの突然変異にはYSK_EXECUTE=1とrootが必要です",
+    "nextGolive": "ゴーライブ: docs/deploy/go-live.md + ysk-server readiness --json",
+    "secPassword": "セキュリティ: 管理者パスワードをすぐに変更します (ブートストラップでは弱い/デフォルトのパスワードが使用されました)",
+    "sec2fa": "セキュリティ: [セキュリティ] → [アカウント] で管理者 2FA を有効にします。",
+    "secListen": "セキュリティ: すべてのインターフェイスをリッスンします。ファイアウォール/リバース プロキシの内側に配置します。管理者には 127.0.0.1 + SSH トンネルを優先します",
+    "ok": "{{product}} セットアップ完了 (データベース初期化)",
+    "okInsecure": "{{product}} セットアップが完了しました (データベースが初期化されました) [INSECURE BOOTSTRAP — パスワードの変更]"
   }
 }

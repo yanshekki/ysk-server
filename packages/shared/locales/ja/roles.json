@@ -1,6 +1,6 @@
 {
   "admin": "管理者",
-  "operator": "オペレーター",
-  "viewer": "ビューア",
-  "agent": "エージェント"
+  "operator": "オペレータ",
+  "viewer": "閲覧者",
+  "agent": "媒介業者"
 }

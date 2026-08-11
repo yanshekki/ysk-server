@@ -2,65 +2,26 @@
   "recent": "حالیہ آڈٹ",
   "lastN": "آخری {{n}}",
   "actions": {
-    "protection.change": "تحفظ کی ترتیبات تبدیل ہوئیں",
-    "auth.locale": "UI زبان تبدیل ہوئی",
+    "protection.change": "تحفظ کی ترتیبات تبدیل کر دی گئیں۔",
+    "auth.locale": "UI کی زبان بدل گئی۔",
     "auth.login": "سائن ان",
-    "auth.logout": "سائن آؤٹ",
-    "system.firewall.allow_port": "فائر وال پورٹ اجازت",
-    "system.firewall.deny": "فائر وال IP انکار",
-    "system.firewall.apply": "فائر وال لاگو",
-    "project.deploy": "پروجیکٹ ڈیپلائے",
-    "project.create": "پروجیکٹ بنایا گیا",
-    "project.delete": "پروجیکٹ حذف",
-    "ssl.request": "SSL درخواست",
+    "auth.logout": "سائن آؤٹ ہو گیا۔",
+    "system.firewall.allow_port": "فائر وال پورٹ کی اجازت دیتا ہے۔",
+    "system.firewall.deny": "فائر وال آئی پی سے انکار کرتا ہے۔",
+    "system.firewall.apply": "فائر وال کا اطلاق ہوتا ہے۔",
+    "project.deploy": "پروجیکٹ کی تعیناتی۔",
+    "project.create": "پروجیکٹ بنایا",
+    "project.delete": "پروجیکٹ حذف کر دیا گیا۔",
+    "ssl.request": "SSL کی درخواست",
     "ssl.upload": "SSL اپ لوڈ",
-    "system.firewall.enable": "فائر وال فعال/غیر فعال",
-    "system.firewall.delete_rule": "فائر وال قاعدہ حذف",
-    "system.firewall.delete_deny": "مستقل انکار شدہ IP ہٹائیں",
-    "db.adminer.apply": "DB براؤزر پروجیکٹ",
-    "project.goLive": "پروجیکٹ گو-لائیو",
-    "project.publish": "Nginx شائع کریں",
-    "project.suspend": "پروجیکٹ معطل",
-    "software.install": "سافٹ ویئر انسٹال",
-    "software.update": "سافٹ ویئر اپ ڈیٹ",
-    "protection": {
-      "change": "Protection settings changed"
-    },
-    "auth": {
-      "locale": "UI language changed",
-      "login": "Signed in",
-      "logout": "Signed out"
-    },
-    "system": {
-      "firewall": {
-        "allow_port": "Firewall allow port",
-        "deny": "Firewall deny IP",
-        "apply": "Firewall apply",
-        "enable": "Firewall enable/disable",
-        "delete_rule": "Delete firewall rule",
-        "delete_deny": "Remove permanent deny IP"
-      }
-    },
-    "project": {
-      "deploy": "Project deploy",
-      "create": "Project created",
-      "delete": "Project deleted",
-      "goLive": "Project go-live",
-      "publish": "Publish Nginx",
-      "suspend": "Suspend project"
-    },
-    "ssl": {
-      "request": "SSL request",
-      "upload": "SSL upload"
-    },
-    "db": {
-      "adminer": {
-        "apply": "DB browser project"
-      }
-    },
-    "software": {
-      "install": "Install software",
-      "update": "Update software"
-    }
+    "system.firewall.enable": "فائر وال کو فعال/غیر فعال کریں۔",
+    "system.firewall.delete_rule": "فائر وال اصول کو حذف کریں۔",
+    "system.firewall.delete_deny": "مستقل انکار IP کو ہٹا دیں۔",
+    "db.adminer.apply": "ڈی بی براؤزر پروجیکٹ",
+    "project.goLive": "پروجیکٹ گو لائیو",
+    "project.publish": "Nginx شائع کریں۔",
+    "project.suspend": "منصوبے کو معطل کریں۔",
+    "software.install": "سافٹ ویئر انسٹال کریں۔",
+    "software.update": "سافٹ ویئر کو اپ ڈیٹ کریں۔"
   }
 }

@@ -1,14 +1,14 @@
 {
-  "titleDefault": "Perangkat lunak yang diperlukan belum terinstal",
+  "titleDefault": "Perangkat lunak yang diperlukan tidak diinstal",
   "missing": "Hilang: {{names}}",
   "nameSep": ", ",
   "installOneClick": "Instal sekarang",
-  "installing": "Menginstal…",
-  "reprobe": "Periksa ulang",
-  "close": "Tutup",
+  "installing": "Memasang…",
+  "reprobe": "Periksa kembali",
+  "close": "Menutup",
   "resultTitle": "Hasil instalasi",
-  "probeFailed": "Probe gagal",
-  "installIncomplete": "Instalasi tidak lengkap",
-  "installedOne": "{{name}} terinstal",
-  "allInstalled": "Perangkat lunak yang diperlukan sudah terinstal"
+  "probeFailed": "Penyelidikan gagal",
+  "installIncomplete": "Penginstalan tidak lengkap",
+  "installedOne": "Dipasang {{name}}",
+  "allInstalled": "Perangkat lunak yang diperlukan diinstal"
 }

@@ -1,7 +1,7 @@
 {
   "kindInstall": "安裝",
   "kindUninstall": "解除安裝",
-  "dockBusy": "{{kind}} · {{title}}",
+  "dockBusy": "{{種類}} · {{標題}}",
   "dockFail": "失敗 · {{title}}",
   "dockDone": "完成 · {{title}}",
   "minimize": "縮小",

@@ -1,37 +1,37 @@
 {
   "blocked": {
-    "needExecute": "호스트 실행이 꺼져 있어 패널에서 이 작업을 완료할 수 없음",
-    "needExecuteShort": "호스트 실행이 활성화되지 않음",
-    "needExecuteBlocked": "차단됨: 호스트 실행이 꺼져 있음",
-    "needRoot": "root 권한 필요",
-    "needExecuteRoot": "YSK_EXECUTE=1 및 root 필요",
+    "needExecute": "호스트 실행이 꺼져 있습니다. 이 작업은 패널에서 완료할 수 없습니다.",
+    "needExecuteShort": "호스트 실행이 활성화되지 않았습니다.",
+    "needExecuteBlocked": "차단됨: 호스트 실행이 꺼져 있습니다.",
+    "needRoot": "루트 권한이 필요합니다",
+    "needExecuteRoot": "YSK_EXECUTE=1 및 루트가 필요합니다.",
     "needExecuteYsk": "YSK_EXECUTE=1 필요",
-    "writeOutsideDataDir": "쓰기 차단: 호스트 실행이 꺼져 있고 경로가 패널 데이터 디렉터리 밖임",
-    "nginxReload": "Nginx를 다시 로드할 수 없음: 호스트 실행 필요",
-    "signal": "시그널을 보낼 수 없음: 호스트 실행 필요(YSK_EXECUTE)",
-    "signalNote": "실제 kill에는 YSK_EXECUTE=1이 필요함",
-    "renice": "renice 불가: 호스트 실행 필요(YSK_EXECUTE)",
-    "install": "호스트 실행이 꺼져 있어 패널에서 설치를 완료할 수 없음",
-    "update": "호스트 실행이 꺼져 있어 패널에서 업데이트를 완료할 수 없음",
-    "panel": "관리 패널에서 이 작업을 완료할 수 없음"
+    "writeOutsideDataDir": "쓰기 차단됨: 호스트 실행이 꺼져 있고 경로가 패널 데이터 디렉터리 외부에 있습니다.",
+    "nginxReload": "Nginx를 다시 로드할 수 없습니다: 호스트 실행이 필요합니다.",
+    "signal": "신호를 보낼 수 없습니다: 호스트 실행이 필요합니다(YSK_EXECUTE).",
+    "signalNote": "실제 킬을 위해서는 YSK_EXECUTE=1이 필요합니다.",
+    "renice": "거부할 수 없음: 호스트 실행이 필요함(YSK_EXECUTE)",
+    "install": "호스트 실행이 꺼져 있습니다. 패널에서 설치를 완료할 수 없습니다.",
+    "update": "호스트 실행이 꺼져 있습니다. 패널에서 업데이트를 완료할 수 없습니다.",
+    "panel": "관리 패널에서 이 작업을 완료할 수 없습니다."
   },
   "honesty": {
-    "blockedNotOk": "정직성 수정: blocked는 ok=true일 수 없음",
-    "blockedNotApplied": "정직성 수정: blocked는 apply_status=applied일 수 없음",
-    "okFalseNotApplied": "정직성 수정: ok=false는 apply_status=applied일 수 없음"
+    "blockedNotOk": "정직한 수정: 차단할 수 없음=true",
+    "blockedNotApplied": "정직한 수정: 차단할 수 없습니다. apply_status=적용",
+    "okFalseNotApplied": "정직성 수정: ok=false는 apply_status=적용될 수 없습니다."
   },
   "status": {
     "applied": "상태: 적용됨",
     "failed": "상태: 실패",
-    "written": "상태: 기록됨",
+    "written": "상태: 작성됨",
     "blocked": "상태: 차단됨"
   },
   "notes": {
-    "writtenSettings": "설정이 기록됨",
-    "completed": "완료됨",
+    "writtenSettings": "기록된 설정",
+    "completed": "완전한",
     "partialSuccess": "작업이 부분적으로만 성공함",
     "notInstalled": "미설치",
-    "running": "실행 중",
+    "running": "달리기",
     "stopped": "중지됨",
     "unknown": "알 수 없음"
   }

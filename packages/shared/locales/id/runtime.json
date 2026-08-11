@@ -1,181 +1,181 @@
 {
-  "probed": "Sudah diprobe",
-  "notProbed": "Belum diprobe",
-  "probe": "Probe",
-  "read": "Baca",
-  "targetVersion": "Versi target",
-  "nodeMissing": "Node.js tidak terpasang",
-  "probeResult": "Hasil probe",
+  "probed": "Diselidiki",
+  "notProbed": "Tidak diselidiki",
+  "probe": "Menguji",
+  "read": "Membaca",
+  "targetVersion": "Versi sasaran",
+  "nodeMissing": "Node.js tidak diinstal",
+  "probeResult": "Hasil penyelidikan",
   "readonly": "Hanya baca",
-  "installNode": "Pasang Node.js",
-  "needExecuteAdmin": "Memerlukan hak perubahan sistem dan admin",
-  "nodeMajor": "Versi major Node",
-  "nodeMajorHint": "LTS biasanya 20 atau 22; sesuaikan dengan runtime proyek",
-  "installedNode": "Node {{version}} terpasang",
-  "installPm2": "Pasang PM2",
-  "installPm2Desc": "Pasang sekali klik npm install -g pm2 (process manager). Memerlukan Node.js terlebih dahulu.",
-  "installPm2Btn": "Pasang PM2",
-  "reinstallPm2": "Pasang ulang PM2",
+  "installNode": "Instal Node.js",
+  "needExecuteAdmin": "Membutuhkan hak perubahan sistem dan admin",
+  "nodeMajor": "Versi utama simpul",
+  "nodeMajorHint": "LTS sering kali 20 atau 22; selaras dengan runtime proyek",
+  "installedNode": "Node Terpasang {{version}}",
+  "installPm2": "Instal PM2",
+  "installPm2Desc": "Sekali klik npm install -g pm2 (manajer proses). Membutuhkan Node.js terlebih dahulu.",
+  "installPm2Btn": "Instal PM2",
+  "reinstallPm2": "Instal ulang PM2",
   "installedPm2": "PM2 terpasang",
   "pm2Status": "Status PM2",
   "pm2Ready": "Siap",
-  "pm2MissingShort": "Belum terpasang",
-  "pm2NeedNodeFirst": "Pasang Node.js terlebih dahulu, lalu PM2.",
+  "pm2MissingShort": "Tidak dipasang",
+  "pm2NeedNodeFirst": "Instal Node.js terlebih dahulu, lalu PM2.",
   "pm2InstallHint": "Menjalankan npm -g sebagai root dengan hak perubahan sistem;",
   "pm2ReadyHint": "PM2 ada di PATH; proyek dapat menggunakan mode proses PM2.",
-  "opsResult": "Hasil ops",
-  "unlimited": "Tidak terbatas",
-  "zeroUnlimited": "0 = tanpa batas",
+  "opsResult": "Hasil operasi",
+  "unlimited": "Tak terbatas",
+  "zeroUnlimited": "0 = tidak terbatas",
   "m24": "24m",
-  "h1": "1h",
+  "h1": "1 jam",
   "d1": "1d",
   "d7": "7d",
   "phpIniLoadFailed": "Gagal memuat php.ini",
-  "loaded": "Dimuat",
+  "loaded": "Sarat",
   "default": "Bawaan",
-  "phpMissing": "PHP belum terpasang",
+  "phpMissing": "PHP tidak diinstal",
   "overview": "Ringkasan",
   "fpmSites": "FPM / situs",
-  "tools": "Alat",
+  "tools": "Peralatan",
   "about": "Tentang",
-  "installPhp": "Pasang PHP",
+  "installPhp": "Instal PHP",
   "versionAlreadyInstalled": "Versi {{version}} sudah ada di host",
-  "installedVersionBtn": "{{version}} terpasang",
-  "newerVersionAvailable": "Saat ini {{current}}; yang lebih baru didukung: {{newer}} (pilih untuk memasang)",
+  "installedVersionBtn": "Dipasang {{version}}",
+  "newerVersionAvailable": "Saat ini {{current}}; yang lebih baru didukung: {{newer}} (pilih untuk menginstal)",
   "switchToNewer": "Pilih {{version}}",
   "installedVersionsHint": "Terdeteksi: {{list}}",
-  "phpInstallHint": "Memerlukan hak perubahan sistem dan admin;",
-  "phpVersion": "Versi PHP",
-  "phpExtHint": "Pilih ekstensi yang akan dipasang",
+  "phpInstallHint": "Membutuhkan hak perubahan sistem dan admin;",
+  "phpVersion": "versi PHP",
+  "phpExtHint": "Pilih ekstensi untuk dipasang",
   "phpExtSelect": "Ekstensi PHP",
-  "phpExtSelectHint": "Paket dipasang sebagai php{{version}}-…;",
+  "phpExtSelectHint": "Paket diinstal sebagai php{{version}}-…;",
   "phpExtRequired": "Wajib (inti)",
-  "phpExtRecommended": "Set yang direkomendasikan",
+  "phpExtRecommended": "Kumpulan yang direkomendasikan",
   "phpExtSelectAll": "Pilih semua ekstensi",
   "phpExtCoreOnly": "Hanya inti",
-  "phpExtSearch": "Cari ekstensi (mysql, gd, redis…)",
+  "phpExtSearch": "Ekstensi pencarian (mysql, gd, redis…)",
   "phpExtEmpty": "Tidak ada ekstensi yang cocok",
-  "pluginsSelect": "Alat / plugin umum",
-  "pluginsSelectHint": "Pilih untuk dipasang bersama runtime (mis. PM2 untuk Node, Poetry untuk Python)",
-  "pluginsSearch": "Cari alat (pm2, poetry, maven…)",
+  "pluginsSelect": "Alat/plugin umum",
+  "pluginsSelectHint": "Pilih untuk menginstal dengan runtime (misalnya PM2 untuk Node, Puisi untuk Python)",
+  "pluginsSearch": "Alat pencarian (pm2, puisi, pakar…)",
   "pluginsEmpty": "Tidak ada alat yang cocok",
-  "pluginsRecommended": "Set yang direkomendasikan",
+  "pluginsRecommended": "Kumpulan yang direkomendasikan",
   "pluginsSelectAll": "Pilih semua yang tersedia",
   "pluginsNone": "Tidak ada alat pendamping",
-  "pluginsInstallNote": "Pilih alat lalu Pasang yang dipilih. Pemasangan runtime pertama kali dapat menyertakan alat; jika runtime sudah ada, gunakan hanya tombol di atas.",
-  "installPluginsOnly": "Pasang alat terpilih ({{version}} sudah ada)",
-  "installExtOnly": "Pasang ekstensi terpilih (PHP {{version}} sudah ada)",
-  "pluginAlreadyOnHost": "sudah ada di host",
-  "installAddonsOnly": "Pasang add-on terpilih ({{version}} sudah ada)",
-  "remoteNewerHint": "Terpasang {{current}} · terbaru upstream {{remote}}{{source}}",
-  "installedPhp": "PHP {{version}} terpasang",
+  "pluginsInstallNote": "Pilih alat lalu Instal yang dipilih. Penginstalan runtime pertama kali dapat mencakup alat; jika runtime ada, gunakan saja tombol di atas.",
+  "installPluginsOnly": "Instal alat yang dipilih ({{version}} sudah ada)",
+  "installExtOnly": "Instal ekstensi yang dipilih (ada PHP {{version}})",
+  "pluginAlreadyOnHost": "sudah menjadi tuan rumah",
+  "installAddonsOnly": "Instal add-on yang dipilih ({{version}} ada)",
+  "remoteNewerHint": "Terpasang {{current}} · upstream terbaru {{remote}}{{source}}",
+  "installedPhp": "Menginstal PHP {{version}}",
   "nextSteps": "Berikutnya",
-  "suggestedFlow": "Alur yang disarankan",
-  "globalPhpIni": "php.ini global",
+  "suggestedFlow": "Aliran yang disarankan",
+  "globalPhpIni": "Global php.ini",
   "globalPhpIniDesc": "Satu pengaturan per baris",
-  "managePath": "Path manajemen",
+  "managePath": "Jalur manajemen",
   "loading": "Memuat",
   "cannotLoadSettings": "Tidak dapat memuat tabel pengaturan",
-  "reloadFailed": "Muat ulang gagal",
+  "reloadFailed": "Gagal memuat ulang",
   "sensitive": "Pengaturan sensitif — hati-hati",
-  "on": "Aktif",
-  "off": "Nonaktif",
-  "customNumber": "Nomor kustom",
+  "on": "Pada",
+  "off": "Mati",
+  "customNumber": "Nomor khusus",
   "customExample": "Kustom, mis. 768M",
-  "advancedExtra": "Lanjutan: kunci ekstra dan raw",
-  "advancedExtraDesc": "Direktif di luar katalog; satu key=value per baris; raw ditambahkan ke akhir ini",
-  "extraDirectives": "Direktif ekstra",
-  "extraDirectivesHint": "Satu key=value per baris (kunci yang belum ada di atas)",
-  "rawAppend": "Tambahkan raw ke akhir ini",
+  "advancedExtra": "Lanjutan: kunci ekstra dan mentah",
+  "advancedExtraDesc": "Petunjuk tidak ada dalam katalog; satu kunci=nilai per baris; mentah ditambahkan ke ekor ini",
+  "extraDirectives": "Arahan ekstra",
+  "extraDirectivesHint": "Satu kunci=nilai per baris (kunci belum ada di atas)",
+  "rawAppend": "Tambahkan mentah ke akhir ini",
   "phpIniSaved": "php.ini disimpan",
   "appliedSystem": "Diterapkan ke sistem",
   "demoVhost": "Alat sistem: demo vhost / pool",
-  "demoVhostDesc": "Lanjutan/debug; situs harian gunakan Projects → Deploy",
+  "demoVhostDesc": "Tingkat lanjut/debug; situs harian menggunakan Proyek → Deploy",
   "domain": "Domain",
-  "vhostServerName": "Virtual host server_name",
-  "poolName": "Nama pool",
-  "poolNameHint": "Id diketik manual (demo); path proyek memakai user ysks_*",
+  "vhostServerName": "Nama_server host virtual",
+  "poolName": "Nama kolam",
+  "poolNameHint": "ID yang diketik tangan (demo); jalur proyek menggunakan pengguna ysks_*",
   "enableReload": "Aktifkan dan muat ulang layanan",
-  "enableReloadHint": "Perlu hak ubah sistem; off = hanya manajemen tulis",
+  "enableReloadHint": "Memerlukan hak perubahan sistem; off = manajemen tulis saja",
   "applyFailed": "Penerapan gagal",
-  "phpVhostApplied": "PHP vhost / pool diterapkan",
-  "composerTools": "Composer / WP-CLI / modul",
-  "composerToolsDesc": "Probe langsung alat PATH dan php -m (hanya baca)",
-  "toolsProbed": "Alat yang diprobe",
+  "phpVhostApplied": "PHP vhost/kumpulan diterapkan",
+  "composerTools": "Komposer / WP-CLI / modul",
+  "composerToolsDesc": "Pemeriksaan langsung alat PATH dan php -m (hanya baca)",
+  "toolsProbed": "Alat diperiksa",
   "notFound": "Tidak ditemukan",
   "available": "Tersedia",
   "moduleCount": "Modul",
   "installNodeV": "Instal Node {{v}}",
   "installPhpV": "Instal PHP {{v}}",
   "installPythonV": "Instal Python {{v}}",
-  "installGoV": "Instal Go {{v}}",
-  "installRustV": "Instal Rust {{v}}",
-  "pythonMissing": "Python belum terpasang",
-  "goMissing": "Go belum terpasang",
-  "rustMissing": "Rust/cargo belum terpasang",
+  "installGoV": "Instal Buka {{v}}",
+  "installRustV": "Instal Karat {{v}}",
+  "pythonMissing": "Python tidak diinstal",
+  "goMissing": "Go tidak diinstal",
+  "rustMissing": "Karat/kargo tidak dipasang",
   "tuneLoadFailed": "Gagal memuat penyetelan",
   "availableCount": "{{n}} tersedia",
   "notDetected": "Tidak terdeteksi",
   "target": "Target",
-  "tune": "Setel",
-  "loadedShort": "Dimuat",
-  "host": "Host",
-  "tabOverviewInstall": "Ringkasan / instal",
+  "tune": "Lagu",
+  "loadedShort": "Sarat",
+  "host": "Tuan rumah",
+  "tabOverviewInstall": "Ringkasan",
   "tabTune": "Penyetelan",
-  "probeReadonlyInstall": "Hanya baca · probe lagi setelah instal",
-  "hostDefault": "Default host",
+  "probeReadonlyInstall": "Read-only · selidiki lagi setelah instalasi",
+  "hostDefault": "Default tuan rumah",
   "panelSupport": "Dukungan panel",
   "ready": "Siap",
   "notDetectedYet": "Belum terdeteksi",
-  "install": "Instal",
-  "installHint": "Perlu hak ubah sistem dan admin; menginstal toolchain ≠ proyek menjadi publik",
+  "install": "Memasang",
+  "installHint": "Membutuhkan hak perubahan sistem dan admin; menginstal proyek toolchain ≠ bersifat publik",
   "panelTune": "Penyetelan panel",
-  "panelTuneDesc": "Manajemen tulis; injeksi env saat deploy",
-  "bindVersion": "Kunci versi",
+  "panelTuneDesc": "Manajemen penulisan; menyuntikkan env saat diterapkan",
+  "bindVersion": "Versi pin",
   "onePerRow": "Satu pengaturan per baris",
   "zeroAll": "0 = semua",
-  "custom": "Kustom",
-  "extraEnv": "Variabel lingkungan ekstra",
-  "extraEnvHint": "Satu KEY=value per baris",
-  "customEnv": "Env kustom",
-  "envPreview": "Pratinjau env",
-  "envPreviewDesc": "Hasil gabungan setelah simpan / muat terakhir",
+  "custom": "Kebiasaan",
+  "extraEnv": "Variabel lingkungan tambahan",
+  "extraEnvHint": "Satu KEY=nilai per baris",
+  "customEnv": "lingkungan khusus",
+  "envPreview": "Pratinjau lingkungan",
+  "envPreviewDesc": "Hasil penggabungan setelah penyimpanan/pemuatan terakhir",
   "unsupported": "Tidak didukung",
-  "tuneSaved": "Tuning disimpan",
-  "nodeDetectedHint": "Node terdeteksi di host; instal ulang mengikuti hak akses dan dapat menimpa.",
-  "nodeProbeAfter": "Setelah instal, probe ulang untuk mengonfirmasi PATH dan versi.",
+  "tuneSaved": "Penyetelan disimpan",
+  "nodeDetectedHint": "Node terdeteksi pada host; instal ulang mengikuti hak istimewa dan dapat menimpa.",
+  "nodeProbeAfter": "Setelah instalasi, selidiki ulang untuk mengonfirmasi PATH dan versi.",
   "installNodeVBtn": "Instal Node {{version}}",
   "installPhpVBtn": "Instal PHP {{version}}",
-  "phpIniSteps1": "Rancang nilai global di tab php.ini lalu simpan",
-  "phpIniSteps2": "Opsional: Terapkan ke sistem (menulis /etc/php/…/conf.d, perlu root)",
-  "phpIniSteps3": "Deploy proyek menyuntikkan ini gabungan sebagai php_admin_* pada pool FPM",
-  "phpIniSteps4": "Proyek dapat menimpa kunci individual (Proyek → Deploy)",
-  "phpIniNote": "Perubahan disimpan ke dataDir panel dulu; Terapkan ke sistem menyalin ke /etc/php dan memuat ulang FPM. Pool proyek menyuntikkan php_admin_value saat deploy.",
+  "phpIniSteps1": "Rancang nilai global pada tab php.ini dan simpan",
+  "phpIniSteps2": "Opsional: Terapkan ke sistem (tulis /etc/php/…/conf.d, perlu root)",
+  "phpIniSteps3": "Penyebaran proyek menyuntikkan ini sebagai php_admin_* pada kumpulan FPM",
+  "phpIniSteps4": "Proyek dapat mengganti kunci individual (Proyek → Deploy)",
+  "phpIniNote": "Perubahan disimpan ke panel dataDir terlebih dahulu; Terapkan ke salinan sistem ke /etc/php dan muat ulang FPM. Kumpulan proyek menyuntikkan php_admin_value saat diterapkan.",
   "phpIniLoading": "Memuat formulir php.ini…",
   "phpIniEmpty": "Katalog kosong — muat ulang atau pastikan API aktif.",
   "reloadForm": "Muat ulang formulir",
   "savePhpIni": "Simpan php.ini",
-  "prodUseProjects": "Produksi sebaiknya memakai Projects",
-  "prodPathDesc": ": buat proyek PHP → deploy/terapkan FPM (pool = pengguna Linux proyek + home terisolasi)",
+  "prodUseProjects": "Produksi harus menggunakan Proyek",
+  "prodPathDesc": ": membuat proyek PHP → menyebarkan/menerapkan FPM (kumpulan = proyek pengguna Linux + rumah terisolasi)",
   "systemDemo": "demo/alat tingkat sistem",
-  "demoNotBind": "(nama pool diketik manual) dan tidak mengikat isolasi proyek secara otomatis. php.ini global ada di tab php.ini.",
-  "applyOkWritten": "Terapkan sukses = file tertulis. Lebih baik deploy proyek agar User=pengguna Linux proyek.",
-  "applyPhpVhost": "Terapkan vhost / pool PHP",
-  "reprobeTools": "Probe ulang alat",
-  "pressReprobe": "Tekan Probe ulang alat untuk memuat",
+  "demoNotBind": "(nama kumpulan yang diketik tangan) dan tidak mengikat isolasi proyek secara otomatis. Global php.ini ada di tab php.ini.",
+  "applyOkWritten": "Terapkan sukses = file ditulis. Lebih suka penerapan proyek jadi Pengguna = pengguna proyek Linux.",
+  "applyPhpVhost": "Terapkan PHP vhost / pool",
+  "reprobeTools": "Alat pemeriksaan ulang",
+  "pressReprobe": "Tekan Alat pemeriksaan ulang untuk memuat",
   "installNodeLabel": "Instal Node {{v}}",
   "installPhpLabel": "Instal PHP {{v}}",
   "installPythonLabel": "Instal Python {{v}}",
-  "installGoLabel": "Instal Go {{v}}",
-  "installRustLabel": "Instal Rust {{v}}",
-  "readShort": "Baca",
+  "installGoLabel": "Instal Buka {{v}}",
+  "installRustLabel": "Instal Karat {{v}}",
+  "readShort": "Membaca",
   "pressReprobeHost": "Tekan Probe ulang untuk memuat matriks versi host",
-  "installScriptNote": "Menulis skrip instal; hanya berjalan dengan hak akses. Tuning ada di tab Tuning; deploy ulang proyek untuk perubahan proses.",
-  "envNote": "Node: max-old-space-size digabung ke NODE_OPTIONS. Go/Python/Rust memakai variabel lingkungan resmi.",
-  "saveTune": "Simpan tuning",
-  "pressReprobeLoad": "Tekan Probe ulang alat untuk memuat",
-  "installJavaLabel": "Instal / perbarui OpenJDK",
-  "installKotlinLabel": "Instal / perbarui Kotlin",
+  "installScriptNote": "Menulis skrip instalasi; hanya berjalan dengan hak istimewa. Penyetelan ada di tab Penyetelan; memindahkan proyek untuk perubahan proses.",
+  "envNote": "Node: max-old-space-size digabungkan menjadi NODE_OPTIONS. Go/Python/Rust menggunakan env vars resmi.",
+  "saveTune": "Simpan penyetelan",
+  "pressReprobeLoad": "Tekan Alat pemeriksaan ulang untuk memuat",
+  "installJavaLabel": "Instal/perbarui OpenJDK",
+  "installKotlinLabel": "Instal/perbarui Kotlin",
   "installBunLabel": "Instal / perbarui Bun",
   "javaMissing": "Java (OpenJDK) tidak terdeteksi",
   "kotlinMissing": "Kompiler Kotlin tidak terdeteksi",
@@ -183,31 +183,31 @@
   "phpIniCatalog": {
     "groups": {
       "resource": {
-        "title": "Batas sumber daya",
-        "description": "Batas memori, waktu eksekusi, dan input"
+        "title": "Batasan sumber daya",
+        "description": "Memori, waktu eksekusi, dan batas input"
       },
       "upload": {
-        "title": "Unggah & POST",
-        "description": "Unggah file dan ukuran body POST"
+        "title": "Unggah & POSTING",
+        "description": "Unggah file dan ukuran isi POST"
       },
       "session": {
-        "title": "Sesi",
+        "title": "Sidang",
         "description": "Penyimpanan sesi dan cookie"
       },
       "error": {
-        "title": "Error & logging",
-        "description": "Tampilkan error, logging, dan tingkat pelaporan"
+        "title": "Kesalahan & pencatatan",
+        "description": "Menampilkan kesalahan, pencatatan log, dan tingkat pelaporan"
       },
       "opcache": {
-        "title": "OPcache",
-        "description": "Cache bytecode"
+        "title": "cache op",
+        "description": "Cache kode byte"
       },
       "security": {
-        "title": "Keamanan & path",
-        "description": "File remote, eksposur, dan fungsi yang dinonaktifkan"
+        "title": "Keamanan & jalur",
+        "description": "File jarak jauh, eksposur, dan fungsi yang dinonaktifkan"
       },
       "locale": {
-        "title": "Zona waktu & charset"
+        "title": "Zona waktu & rangkaian karakter"
       },
       "misc": {
         "title": "Pengaturan umum lainnya"
@@ -216,70 +216,70 @@
     "fields": {
       "memory_limit": {
         "label": "Batas memori",
-        "hint": "mis. 128M, 256M, 512M, -1 (tanpa batas)"
+        "hint": "misalnya 128M, 256M, 512M, -1 (tidak terbatas)"
       },
       "max_execution_time": {
-        "label": "Waktu eksekusi maks",
-        "hint": "Detik; 0 = tanpa batas (CLI)"
+        "label": "Waktu eksekusi maksimal",
+        "hint": "Detik; 0 = tidak terbatas (CLI)"
       },
       "max_input_time": {
-        "label": "Waktu input maks",
-        "hint": "Detik; waktu maks untuk mengurai permintaan"
+        "label": "Waktu masukan maksimal",
+        "hint": "Detik; waktu maksimal untuk mengurai permintaan"
       },
       "max_input_vars": {
-        "label": "Variabel input maks",
-        "hint": "Batas variabel $_GET / $_POST / $_COOKIE"
+        "label": "Variabel masukan maksimal",
+        "hint": "Batas untuk variabel $_GET / $_POST / $_COOKIE"
       },
       "max_input_nesting_level": {
-        "label": "Tingkat nesting input maks"
+        "label": "Tingkat bersarang masukan maksimal"
       },
       "file_uploads": {
-        "label": "Izinkan unggah file"
+        "label": "Izinkan pengunggahan file"
       },
       "upload_max_filesize": {
-        "label": "Ukuran file unggah maks"
+        "label": "Ukuran file unggahan maksimal"
       },
       "post_max_size": {
-        "label": "Ukuran POST maks",
-        "hint": "Harus ≥ ukuran file unggah maks"
+        "label": "Ukuran POSTING maksimal",
+        "hint": "Harus berukuran ≥ maks ukuran file unggahan"
       },
       "max_file_uploads": {
-        "label": "File maks per permintaan"
+        "label": "File maksimal per permintaan"
       },
       "session_save_handler": {
-        "label": "Handler simpan sesi"
+        "label": "Pengendali penyimpanan sesi"
       },
       "session_gc_maxlifetime": {
-        "label": "Masa hidup sesi (detik)",
+        "label": "Seumur hidup sesi (detik)",
         "hint": "Detik"
       },
       "session_cookie_httponly": {
-        "label": "Cookie HttpOnly"
+        "label": "Hanya Http Cookie"
       },
       "session_cookie_secure": {
-        "label": "Cookie Secure (hanya HTTPS)",
+        "label": "Cookie Aman (hanya HTTPS)",
         "hint": "Direkomendasikan untuk situs HTTPS"
       },
       "session_use_strict_mode": {
-        "label": "Mode ketat sesi"
+        "label": "Mode sesi ketat"
       },
       "display_errors": {
-        "label": "Tampilkan error (di halaman)",
-        "hint": "Nonaktifkan di production"
+        "label": "Kesalahan tampilan (di halaman)",
+        "hint": "Nonaktifkan dalam produksi"
       },
       "display_startup_errors": {
-        "label": "Tampilkan error startup"
+        "label": "Tampilkan kesalahan startup"
       },
       "log_errors": {
-        "label": "Catat error"
+        "label": "Kesalahan pencatatan"
       },
       "error_reporting": {
-        "label": "Tingkat pelaporan error",
+        "label": "Tingkat pelaporan kesalahan",
         "hint": "Atau bilangan bulat seperti 32767"
       },
       "error_log": {
-        "label": "Path log error",
-        "hint": "Kosong = default sistem; path absolut diizinkan"
+        "label": "Jalur log kesalahan",
+        "hint": "Kosong = default sistem; jalur absolut diperbolehkan"
       },
       "opcache_enable": {
         "label": "Aktifkan OPcache"
@@ -289,178 +289,221 @@
       },
       "opcache_memory_consumption": {
         "label": "Memori OPcache (MB)",
-        "hint": "Unit: MB"
+        "hint": "Satuan: MB"
       },
       "opcache_interned_strings_buffer": {
-        "label": "Buffer string interned (MB)"
+        "label": "Buffer string yang diinternir (MB)"
       },
       "opcache_max_accelerated_files": {
-        "label": "File terakselerasi maks"
+        "label": "File yang dipercepat maksimal"
       },
       "opcache_validate_timestamps": {
-        "label": "Validasi timestamp",
-        "hint": "Di production Anda dapat menonaktifkan dan memuat ulang secara manual"
+        "label": "Validasi stempel waktu",
+        "hint": "Dalam produksi Anda dapat menonaktifkan dan memuat ulang secara manual"
       },
       "opcache_revalidate_freq": {
-        "label": "Frekuensi revalidasi (detik)"
+        "label": "Validasi ulang frekuensi (detik)"
       },
       "allow_url_fopen": {
-        "label": "Izinkan URL fopen"
+        "label": "Izinkan URL dibuka"
       },
       "allow_url_include": {
-        "label": "Izinkan URL include"
+        "label": "Izinkan penyertaan URL"
       },
       "expose_php": {
-        "label": "Ekspos header versi PHP"
+        "label": "Buka header versi PHP"
       },
       "open_basedir": {
-        "label": "Pembatasan path open_basedir",
-        "hint": "Kosong = tanpa batas; pisahkan path dengan :"
+        "label": "pembatasan jalur open_basedir",
+        "hint": "Kosong = tidak ada batas; jalur terpisah dengan:"
       },
       "disable_functions": {
-        "label": "Fungsi dinonaktifkan",
+        "label": "Fungsi yang dinonaktifkan",
         "hint": "Dipisahkan koma; terlalu ketat dapat merusak paket"
       },
       "date_timezone": {
         "label": "Zona waktu"
       },
       "default_charset": {
-        "label": "Charset default"
+        "label": "Rangkaian karakter bawaan"
       },
       "short_open_tag": {
-        "label": "Izinkan short open tags (<?)"
+        "label": "Izinkan tag terbuka pendek (<?)"
       },
       "realpath_cache_size": {
-        "label": "Ukuran cache realpath"
+        "label": "Ukuran cache jalur nyata"
       },
       "realpath_cache_ttl": {
-        "label": "TTL cache realpath (detik)"
+        "label": "TTL cache jalur nyata (detik)"
       },
       "cgi_fix_redirect": {
-        "label": "Perbaikan redirect path CGI"
+        "label": "Pengalihan jalur perbaikan CGI"
       }
     },
     "options": {
       "sessionFiles": "File",
-      "sessionRedis": "Redis",
-      "sessionMemcached": "Memcached",
-      "errorReportingProd": "Production (E_ALL dikurangi deprecated/strict)",
+      "sessionRedis": "ulang",
+      "sessionMemcached": "Memcache",
+      "errorReportingProd": "Produksi (E_ALL dikurangi usang/ketat)",
       "errorReportingAll": "Semuanya (E_ALL)",
-      "errorReportingQuiet": "Lebih sunyi (tanpa NOTICE/DEPRECATED)",
-      "errorReportingMinimal": "Hanya error / peringatan / parse",
+      "errorReportingQuiet": "Lebih tenang (tidak ada PEMBERITAHUAN/DIHAPUSKAN)",
+      "errorReportingMinimal": "Kesalahan / peringatan / parsing saja",
       "errorReportingOff": "Mati (0)",
-      "openBasedirNone": "Tanpa batasan (kosong)",
+      "openBasedirNone": "Tidak ada batasan (kosong)",
       "openBasedirVarWww": "/var/www",
       "openBasedirHome": "/home",
       "openBasedirWwwTmp": "/var/www dan /tmp",
       "errorLogDefault": "Default sistem (kosong)",
       "errorLogPhp": "/var/log/php/error.log",
-      "errorLogFpm": "Path log FPM",
+      "errorLogFpm": "Jalur log FPM",
       "errorLogSyslog": "syslog"
     },
     "disableFn": {
       "groups": {
         "process": "Eksekusi proses",
         "dynamic": "Pemuatan dinamis",
-        "info": "Pengungkapan informasi",
-        "filesystem": "Filesystem",
+        "info": "Keterbukaan informasi",
+        "filesystem": "Sistem file",
         "network": "Jaringan / lainnya"
       },
-      "extraHint": "Tidak di katalog (sudah ada di host)",
-      "customPlaceholder": "Nama fungsi lain…",
-      "searchPlaceholder": "Cari fungsi…",
-      "emptyText": "Tidak ada yang cocok"
+      "extraHint": "Tidak ada dalam katalog (ada host)",
+      "customPlaceholder": "Nama fungsi lainnya…",
+      "searchPlaceholder": "Fungsi pencarian…",
+      "emptyText": "Tidak ada kecocokan"
     }
   },
-  "pluginsAvailableTitle": "Tersedia untuk diinstal",
-  "pluginsInstalledTitle": "Terpasang di host",
-  "pluginsInstalledHint": "Terdeteksi di PATH; dikecualikan dari pilihan instal. Uninstall bersifat best-effort.",
-  "pluginsAllInstalled": "Semua tool di katalog sudah ada di host ini.",
-  "pluginStatusInstalled": "Terinstal",
-  "pluginUninstall": "Uninstall",
-  "pluginUninstallConfirmTitle": "Copot alat?",
-  "pluginUninstallConfirm": "Hapus \"{{name}}\" dari host ini (via npm/apt/pip sesuai yang berlaku). Hentikan layanan yang bergantung padanya terlebih dahulu.",
-  "pluginUninstalled": "{{name}} berhasil di-uninstall",
-  "pluginUninstallFailed": "Gagal uninstall {{name}}",
-  "pluginUninstallBlocked": "Panel tidak dapat uninstall (perlu root + EXECUTE)",
+  "pluginsAvailableTitle": "Tersedia untuk dipasang",
+  "pluginsInstalledTitle": "Diinstal di host",
+  "pluginsInstalledHint": "Terdeteksi di PATH; dikecualikan dari pilihan pemasangan. Menghapus instalasi adalah upaya terbaik.",
+  "pluginsAllInstalled": "Semua alat katalog sudah ada di host ini.",
+  "pluginStatusInstalled": "Dipasang",
+  "pluginUninstall": "Copot pemasangan",
+  "pluginUninstallConfirmTitle": "Copot pemasangan alat?",
+  "pluginUninstallConfirm": "Hapus \"{{name}}\" dari host ini (melalui npm/apt/pip sebagaimana berlaku). Hentikan layanan yang bergantung padanya terlebih dahulu.",
+  "pluginUninstalled": "Dicopot pemasangannya {{name}}",
+  "pluginUninstallFailed": "Gagal mencopot pemasangan {{name}}",
+  "pluginUninstallBlocked": "Panel tidak dapat di-uninstall (membutuhkan root + EXECUTE)",
   "phpExtAlreadyOnHost": "Ekstensi terpasang",
   "pluginsInstallSelected": "Instal yang dipilih ({{n}})",
-  "pluginInstallOk": "{{n}} tool berhasil diinstal",
-  "pluginInstallFailed": "Instal tool gagal",
-  "phpExtUninstallHint": "Uninstall ekstensi opsional (apt remove; jangan FPM/CLI)",
-  "phpExtUninstallConfirmTitle": "Uninstall ekstensi PHP?",
-  "phpExtUninstallConfirm": "Akan apt remove “{{pkg}}” ({{name}}). Core FPM/CLI tidak pernah dihapus.",
+  "pluginInstallOk": "Terpasang {{n}} alat",
+  "pluginInstallFailed": "Pemasangan alat gagal",
+  "phpExtUninstallHint": "Copot pemasangan ekstensi opsional (apt delete; jangan pernah FPM/CLI)",
+  "phpExtUninstallConfirmTitle": "Copot pemasangan ekstensi PHP?",
+  "phpExtUninstallConfirm": "Akan mungkin menghapus “{{pkg}}” ({{name}}). FPM/CLI Inti tidak pernah dihapus.",
   "phpExtOpsTitle": "Hasil operasi ekstensi",
-  "pluginsOpsTitle": "Hasil operasi tool",
-  "pluginBatchUninstall": "Uninstall yang dipilih ({{n}})",
-  "pluginBatchUninstallConfirm": "Uninstall {{n}} tool terpilih?",
-  "pluginBatchUninstalled": "{{n}} tool berhasil di-uninstall",
-  "pluginBatchLabel": "tool terpilih",
-  "addonsInstallAbove": "Gunakan “Instal yang dipilih…” di atas untuk tool/ekstensi. Tombol ini hanya menginstal/mengonfirmasi versi runtime.",
-  "phpExtInstallSelected": "Instal ekstensi terpilih ({{n}})",
-  "phpExtInstallNote": "Pilih ekstensi lalu Instal yang dipilih. PHP pertama kali gunakan Instal PHP di bawah (core+ext); jika sudah terpasang hanya tombol ekstensi yang ditampilkan.",
-  "phpExtInstallNoteInstalled": "Pilih ekstensi lalu Instal yang dipilih. Versi ini sudah ada di host — tidak ada reinstal runtime.",
-  "phpExtInstallNoteFirst": "PHP {{version}} belum terpasang: pilih ekstensi lalu gunakan Instal PHP {{version}} di bawah (satu tombol instal, core+ekstensi).",
-  "installPhpWithExt": "Instal PHP {{version}} (dengan ekstensi terpilih)",
-  "installLogTitle": "Log instal (live)",
-  "installLogStreaming": "Streaming…",
+  "pluginsOpsTitle": "Hasil operasi alat",
+  "pluginBatchUninstall": "Copot pemasangan yang dipilih ({{n}})",
+  "pluginBatchUninstallConfirm": "Copot pemasangan {{n}} alat yang dipilih?",
+  "pluginBatchUninstalled": "Alat {{n}} yang telah dicopot pemasangannya",
+  "pluginBatchLabel": "alat yang dipilih",
+  "addonsInstallAbove": "Gunakan “Instal yang dipilih…” di atas untuk alat/ekstensi. Tombol ini hanya menginstal/mengonfirmasi versi runtime.",
+  "phpExtInstallSelected": "Instal ekstensi yang dipilih ({{n}})",
+  "phpExtInstallNote": "Pilih ekstensi lalu Instal yang dipilih. PHP pertama kali menggunakan Instal PHP di bawah ini (core+ext); ketika dipasang hanya tombol ekstensi yang ditampilkan.",
+  "phpExtInstallNoteInstalled": "Pilih ekstensi lalu Instal yang dipilih. Versi ini sudah ada di host — tidak perlu menginstal ulang runtime.",
+  "phpExtInstallNoteFirst": "PHP {{version}} tidak diinstal: pilih ekstensi lalu gunakan Instal PHP {{version}} di bawah (satu tombol instal, inti+ekstensi).",
+  "installPhpWithExt": "Instal PHP {{version}} (dengan ekstensi yang dipilih)",
+  "installLogTitle": "Instal log (langsung)",
+  "installLogStreaming": "Mengalir…",
   "installLogDone": "Selesai",
-  "installLogWaiting": "Menunggu output server…",
-  "activeDefault": "default",
-  "switchDefaultBtn": "Ganti default ke {{version}}",
-  "switchDefaultHint": "Versi ini terpasang tetapi bukan default aktif",
-  "installedNotActive": "{{version}} terpasang (bukan default)",
-  "multiVersionHint": "Go/Rust menyimpan beberapa versi: Pasang yang hilang, lalu Switch default untuk PATH",
+  "installLogWaiting": "Menunggu keluaran server…",
+  "activeDefault": "bawaan",
+  "switchDefaultBtn": "Setel default host ke {{version}}",
+  "switchDefaultHint": "Versi ini diinstal tetapi bukan versi default yang aktif",
+  "installedNotActive": "{{version}} diinstal (bukan default)",
+  "multiVersionHint": "Go/Rust simpan beberapa versi: Instal yang hilang, lalu Ganti default untuk PATH",
   "tabProcesses": "Proses",
   "pm2": {
-    "title": "Armada PM2",
-    "desc": "Tampilan hanya-baca pm2 jlist (PM2_HOME pengguna panel). SSE langsung menyegarkan setiap 2 dtk.",
-    "live": "Live",
+    "title": "armada PM2",
+    "desc": "Tampilan hanya baca dari pm2 jlist (pengguna panel PM2_HOME). SSE langsung diperbarui setiap 2 detik.",
+    "live": "Hidup",
     "installed": "PM2 terpasang",
     "version": "versi pm2",
-    "path": "path pm2",
+    "path": "jalur pm2",
     "counts": "Proses",
-    "countsValue": "{{n}} total · {{run}} online · {{stop}} dihentikan · {{err}} error",
+    "countsValue": "{{n}} total · {{run}} online · {{stop}} terhenti · {{err}} error",
     "updatedAt": "Penyegaran terakhir",
     "notInstalled": "PM2 tidak ada di PATH.",
-    "installHint": "Pasang plugin pendamping di Overview",
+    "installHint": "Instal plugin pendamping di Ikhtisar",
     "tableTitle": "Daftar proses",
     "yskOnly": "Hanya aplikasi YSK (ysk-*)",
     "filterPh": "Filter nama / skrip / pid…",
     "emptyTitle": "PM2 tidak tersedia",
-    "emptyDesc": "Pasang plugin pm2 untuk Node, lalu segarkan.",
+    "emptyDesc": "Instal plugin pm2 untuk Node, lalu refresh.",
     "noApps": "Tidak ada proses",
     "noAppsDesc": "Tidak ada aplikasi PM2 untuk pengguna panel",
-    "streamLog": "Log tick langsung",
-    "streamLogDesc": "Satu baris per tick SSE (bukan stdout proses).",
+    "streamLog": "Log centang langsung",
+    "streamLogDesc": "Satu baris per centang SSE (bukan proses stdout).",
     "col": {
       "name": "Nama",
       "status": "Status",
-      "mem": "Memori",
-      "restarts": "Restart",
-      "uptime": "Uptime",
+      "mem": "Ingatan",
+      "restarts": "Mulai ulang",
+      "uptime": "Waktu aktif",
       "mode": "Mode",
-      "script": "Skrip",
-      "interpreter": "Interpreter",
+      "script": "Naskah",
+      "interpreter": "Penerjemah",
       "user": "Pengguna",
-      "unit": "Unit",
-      "runtime": "Runtime"
+      "unit": "Satuan",
+      "runtime": "Waktu proses"
     },
     "projectsTitle": "Proses proyek YSK",
-    "projectsDesc": "Unit systemd untuk proyek panel (path deploy default — bukan PM2).",
-    "projectsCount": "Proyek YSK",
+    "projectsDesc": "unit systemd untuk proyek panel (jalur penerapan default — bukan PM2).",
+    "projectsCount": "proyek YSK",
     "noProjects": "Tidak ada proyek",
-    "noProjectsDesc": "Tidak ada proyek node/bun di panel, atau pengguna OS belum diprovision.",
-    "pm2OnlyDesc": "Hanya aplikasi yang dijalankan dengan PM2 di bawah pengguna panel. Deploy systemd muncul di atas."
+    "noProjectsDesc": "Tidak ada proyek node/bun di panel, atau pengguna OS tidak tersedia.",
+    "pm2OnlyDesc": "Hanya aplikasi yang dimulai dengan PM2 di bawah panel pengguna. penerapan systemd muncul di atas."
   },
-  "recordedInstalled": "Tercatat {{v}}",
-  "remoteSourceSuffix": " ({{source}})",
-  "nodePathYskMissingTitle": "Path Node terkelola belum siap",
-  "nodePathYskMissing": "Node terkelola YSK untuk versi {{version}} belum siap. Probe ulang atau pasang ulang.",
-  "nodePathUnsafeTitle": "Path Node tidak aman",
-  "nodePathUnsafe": "Path {{path}} di luar pohon terkelola; deploy proyek mungkin gagal.",
-  "recordedButProbeEmpty": "Panel mencatat instalasi {{v}}, tetapi probe host tidak menemukan biner. Belum terpasang — probe ulang atau pasang ulang.",
+  "recordedInstalled": "Direkam {{v}}",
+  "remoteSourceSuffix": "({{source}})",
+  "nodePathYskMissingTitle": "Jalur Node Terkelola belum siap",
+  "nodePathYskMissing": "Node yang dikelola YSK untuk versi {{version}} belum siap. Periksa ulang atau instal ulang.",
+  "nodePathUnsafeTitle": "Jalur node tidak aman",
+  "nodePathUnsafe": "Jalur {{path}} berada di luar pohon yang dikelola; penerapan proyek mungkin gagal.",
+  "recordedButProbeEmpty": "Panel mencatat pemasangan {{v}}, tetapi pemeriksaan host tidak menemukan biner. Tidak diinstal — selidiki ulang atau instal ulang.",
   "tabTuning": "Penyetelan",
-  "versionPlaceholder": "Terbaru，",
-  "pluginsBundleWithRuntime": "Tools「Install runtime」Pasang（Pasang）。"
+  "versionPlaceholder": "Terbaru,",
+  "pluginsBundleWithRuntime": "Alat 「Waktu proses instalasi」 Instal （Instal）。",
+  "tabSoftware": "Perangkat lunak",
+  "overviewSoftwareHint": "Instal versi, setel default host, dan hapus instalasi dari",
+  "versionReadyTitle": "{{name}} {{version}} siap",
+  "versionReadyHint": "Anda dapat mengatur host default atau menghapus instalannya dari tab ini.",
+  "softwareVersionTitle": "Versi {{version}}",
+  "setHostDefault": "Tetapkan sebagai default host",
+  "alreadyHostDefault": "{{version}} adalah default tuan rumah",
+  "setHostDefaultConfirmTitle": "Setel default host ke {{version}}?",
+  "setHostDefaultConfirm": "CLI sistem (node/go/…) akan menunjuk ke {{version}}. Proyek yang menyematkan versi tidak berubah.",
+  "hostDefaultUnsupported": "Runtime ini tidak mendukung peralihan default host di panel. Gunakan pin pemasangan atau pin tingkat proyek.",
+  "versionInventory": "Inventaris versi",
+  "versionInventoryDesc": "Semua versi yang didukung panel. Pilih baris untuk diinstal atau ditetapkan sebagai default.",
+  "selectToInstall": "Memilih",
+  "advancedFeatureUninstall": "Lanjutan: hapus seluruh tumpukan {{name}}…",
+  "advancedFeatureUninstallHint": "Menghapus semua versi {{name}} yang dikelola oleh panel (dan pendamping seperti PM2 untuk Node), dengan pratinjau dampak dan konfirmasi ganda. Lebih suka menghapus satu versi di atas jika memungkinkan.",
+  "probeReadonly": "Pemeriksaan host hanya-baca",
+  "uninstallVersion": "Copot pemasangan {{version}}",
+  "uninstallVersionTitle": "Copot pemasangan {{version}}?",
+  "uninstallVersionConfirm": "Hapus {{name}} {{version}} yang dikelola dari host ini (jalur instalasi YSK atau rantai alat Rustup). Jika ini adalah default host, symlink CLI untuk runtime tersebut akan dihapus. Proyek yang menyematkan versi lain tidak berubah.",
+  "uninstallVersionDone": "Dicopot pemasangannya {{version}}",
+  "uninstallVersionUnsupported": "Pencopotan pemasangan per versi belum tersedia untuk runtime ini.",
+  "setPanelDefault": "Tetapkan sebagai panel default",
+  "alreadyPanelDefault": "Default panel · {{version}}",
+  "panelDefaultSaved": "Default panel disetel ke {{version}}",
+  "panelDefaultHint": "Proyek baru lebih memilih panel default {{version}} (host CLI mungkin berbeda).",
+  "panelDefaultExplain": "Panel default = versi pilihan untuk situs/proyek baru. Host default = sistem CLI (php/python/node…).",
+  "stackReadyTitle": "{{name}} tumpukan siap",
+  "softwareIntro": "Kelola versi yang terinstal, host CLI default, dan versi pilihan untuk proyek baru.",
+  "panelDefaultLabel": "Standar panel",
+  "panelDefaultNone": "Tidak disetel",
+  "versionsTitle": "Versi",
+  "versionsDesc": "Pilih versi. Instal, setel host CLI, atau setel default panel dari baris.",
+  "roleHost": "Tuan rumah",
+  "rolePanel": "Panel",
+  "rowUninstall": "Hapus versi ini",
+  "moreActions": "Lebih banyak tindakan",
+  "selectedVersion": "Dipilih · {{version}}",
+  "selectedInstalledDesc": "Alat pendamping di bawah. Hapus versi ini hanya jika Anda tidak lagi membutuhkannya.",
+  "selectedMissingDesc": "Instal versi ini di host. Alat pendamping dapat ditambahkan setelah instalasi.",
+  "path": "Jalur",
+  "fullVersion": "Versi lengkap",
+  "useListForDefaults": "Untuk mengubah default host atau panel, atau menghapus versi ini, gunakan daftar di atas.",
+  "alreadyHostDefaultShort": "Default tuan rumah"
 }

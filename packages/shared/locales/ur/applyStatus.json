@@ -1,11 +1,11 @@
 {
   "draft": "مسودہ",
-  "written": "لکھا گیا (پینل ڈیٹا)",
-  "planned": "جاری",
-  "applied": "host پر لاگو",
+  "written": "تحریری (پینل ڈیٹا)",
+  "planned": "جاری ہے۔",
+  "applied": "میزبان پر اپلائی کیا گیا۔",
   "failed": "ناکام",
-  "pendingExecute": "host پر عملدرآمد درکار",
-  "uploaded": "اپ لوڈ شدہ",
-  "issued": "جاری کردہ",
-  "missing": "فائل غائب"
+  "pendingExecute": "میزبان کو انجام دینے کی ضرورت ہے۔",
+  "uploaded": "اپ لوڈ کیا گیا",
+  "issued": "جاری",
+  "missing": "فائل غائب ہے۔"
 }

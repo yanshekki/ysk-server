@@ -15,7 +15,7 @@
   "tabs": {
     "bans": "Liste des bannissements",
     "whitelist": "Liste blanche",
-    "jails": "Jails",
+    "jails": "Prisons",
     "policy": "Politique",
     "service": "Service",
     "about": "À propos"
@@ -60,7 +60,7 @@
   "customExample2h": "Personnalisé, ex. 2h",
   "customExample15m": "Personnalisé, ex. 15m",
   "customMaxretry": "Personnalisé 1–50",
-  "min": "{{n}} min",
+  "min": "{{n}} minutes",
   "hour": "{{n}} h",
   "week": "{{n}} sem",
   "enableJailsHint": "Activer les jails (cocher puis appliquer) :",

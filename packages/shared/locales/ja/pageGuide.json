@@ -4,8 +4,8 @@
   "eyebrow": "説明",
   "canDoTitle": "できること",
   "workflowTitle": "推奨フロー",
-  "notesTitle": "注意事項",
+  "notesTitle": "注",
   "cliTitle": "CLI クイックリファレンス",
-  "cliFoot": "全フラグは ysk-server <command> --help を実行するかドキュメントを参照してください。",
-  "relatedTitle": "関連している"
+  "cliFoot": "完全なフラグについては、ysk-server <command> --help を実行するか、ドキュメントを参照してください。",
+  "relatedTitle": "関連"
 }

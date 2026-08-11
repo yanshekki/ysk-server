@@ -1,11 +1,11 @@
 {
-  "missing": "이 페이지에 대한 도움말 콘텐츠가 아직 없습니다.",
+  "missing": "이 페이지에는 아직 도움말 콘텐츠가 없습니다.",
   "missingTitle": "가이드 없음",
-  "eyebrow": "정보",
-  "canDoTitle": "할 수 있는 작업",
-  "workflowTitle": "권장 흐름",
-  "notesTitle": "참고",
+  "eyebrow": "설명",
+  "canDoTitle": "당신이 할 수 있는 일",
+  "workflowTitle": "제안된 흐름",
+  "notesTitle": "메모",
   "cliTitle": "CLI 빠른 참조",
-  "cliFoot": "전체 플래그는 ysk-server <command> --help를 실행하거나 문서를 참고하세요.",
-  "relatedTitle": "관련"
+  "cliFoot": "전체 플래그를 보려면 ysk-server <command> --help를 실행하거나 문서를 참조하세요.",
+  "relatedTitle": "관련된"
 }

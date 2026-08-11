@@ -1,11 +1,11 @@
 {
-  "missing": "Belum ada konten bantuan untuk halaman ini.",
+  "missing": "Belum ada konten bantuan yang tersedia untuk halaman ini.",
   "missingTitle": "Tidak ada panduan",
   "eyebrow": "Tentang",
-  "canDoTitle": "Yang dapat Anda lakukan",
-  "workflowTitle": "Alur yang disarankan",
+  "canDoTitle": "Apa yang bisa Anda lakukan",
+  "workflowTitle": "Aliran yang disarankan",
   "notesTitle": "Catatan",
   "cliTitle": "Referensi cepat CLI",
-  "cliFoot": "Untuk flag lengkap jalankan ysk-server <command> --help atau lihat dokumentasi.",
+  "cliFoot": "Untuk flag lengkap, jalankan ysk-server <command> --help atau lihat dokumen.",
   "relatedTitle": "Terkait"
 }

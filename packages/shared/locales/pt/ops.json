@@ -1,38 +1,38 @@
 {
   "blocked": {
-    "needExecute": "A execução no anfitrião está desligada; esta ação não pode concluir a partir do painel",
-    "needExecuteShort": "A execução no anfitrião não está ativada",
-    "needExecuteBlocked": "Bloqueado: a execução no anfitrião está desligada",
+    "needExecute": "A execução do host está desativada; esta ação não pode terminar no painel",
+    "needExecuteShort": "A execução do host não está habilitada",
+    "needExecuteBlocked": "Bloqueado: a execução do host está desativada",
     "needRoot": "Privilégios de root necessários",
     "needExecuteRoot": "Requer YSK_EXECUTE=1 e root",
     "needExecuteYsk": "Requer YSK_EXECUTE=1",
-    "writeOutsideDataDir": "Escrita bloqueada: a execução no anfitrião está desligada e o caminho está fora do diretório de dados do painel",
-    "nginxReload": "Não é possível recarregar o Nginx: é necessária a execução no anfitrião",
-    "signal": "Não é possível enviar sinal: é necessária a execução no anfitrião (YSK_EXECUTE)",
-    "signalNote": "YSK_EXECUTE=1 é necessário para um kill real",
-    "renice": "Não é possível renice: é necessária a execução no anfitrião (YSK_EXECUTE)",
-    "install": "A execução no anfitrião está desligada; a instalação não pode concluir a partir do painel",
-    "update": "A execução no anfitrião está desligada; a atualização não pode concluir a partir do painel",
-    "panel": "Não é possível concluir isto a partir do painel de gestão"
+    "writeOutsideDataDir": "Gravação bloqueada: a execução do host está desativada e o caminho está fora do diretório de dados do painel",
+    "nginxReload": "Não é possível recarregar o Nginx: execução do host necessária",
+    "signal": "Não é possível enviar sinal: execução do host necessária (YSK_EXECUTE)",
+    "signalNote": "YSK_EXECUTE=1 é necessário para uma morte real",
+    "renice": "Não é possível renovar: execução do host necessária (YSK_EXECUTE)",
+    "install": "A execução do host está desativada; a instalação não pode ser concluída no painel",
+    "update": "A execução do host está desativada; a atualização não pode terminar no painel",
+    "panel": "Não é possível concluir isso no painel de gerenciamento"
   },
   "honesty": {
-    "blockedNotOk": "Correção de honestidade: blocked não pode ser ok=true",
-    "blockedNotApplied": "Correção de honestidade: blocked não pode ser apply_status=applied",
+    "blockedNotOk": "Correção de honestidade: bloqueado não pode ser ok = verdadeiro",
+    "blockedNotApplied": "Correção de honestidade: bloqueado não pode ser apply_status=applied",
     "okFalseNotApplied": "Correção de honestidade: ok=false não pode ser apply_status=applied"
   },
   "status": {
-    "applied": "Estado: aplicado",
+    "applied": "Status: aplicado",
     "failed": "Estado: falhou",
     "written": "Estado: escrito",
     "blocked": "Estado: bloqueado"
   },
   "notes": {
-    "writtenSettings": "Definições gravadas",
+    "writtenSettings": "Configurações escritas",
     "completed": "Concluído",
-    "partialSuccess": "A operação só foi parcialmente bem-sucedida",
+    "partialSuccess": "Operação apenas parcialmente bem-sucedida",
     "notInstalled": "Não instalado",
-    "running": "Em execução",
-    "stopped": "Parado",
+    "running": "Correndo",
+    "stopped": "Parou",
     "unknown": "Desconhecido"
   }
 }

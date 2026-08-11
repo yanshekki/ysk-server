@@ -1,6 +1,6 @@
 {
   "admin": "관리자",
-  "operator": "운영자",
+  "operator": "연산자",
   "viewer": "뷰어",
-  "agent": "에이전트"
+  "agent": "대리인"
 }

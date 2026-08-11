@@ -1,5 +1,5 @@
 {
-  "permissions": "Permissions",
+  "permissions": "Autorisations",
   "permissionsDesc": "Ajouter ou retirer des capacités par rôle. Valeurs d’usine avec restauration en un clic.",
   "rolePolicy": "Politique de rôle",
   "dirty": "Personnalisé",
@@ -79,8 +79,8 @@
     "settingsSystem": "Paramètres système",
     "auditExport": "Export d'audit",
     "securityApiKeysAdmin": "Administration des clés API",
-    "networkBrowse": "Navigation via l’hôte",
-    "networkVnc": "VNC remote desktop"
+    "networkBrowse": "Navigation Web via l'hôte",
+    "networkVnc": "Bureau à distance VNC"
   },
   "aboutRoles": "Rôles (valeurs d'usine)",
   "aboutRolesBody": "Les rôles définissent les capacités par défaut ; les utilisateurs peuvent en remplacer certaines individuellement.",

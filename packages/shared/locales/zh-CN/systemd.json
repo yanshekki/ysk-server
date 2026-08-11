@@ -85,7 +85,7 @@
   "fromSystemd": "systemd 回报",
   "pid": "PID {{pid}}",
   "nextAction": "建议下一步",
-  "controlRunningHint": "systemctl is-active = active",
+  "controlRunningHint": "systemctl is-active = 活动",
   "aboutPolicyTitle": "套用政策",
   "aboutPolicySub": "写模板与安装到系统是两步；装完仍可重跑，不代表未完成。",
   "policyInstallFull": "安装并启用：复制到 /etc/systemd/system、daemon-reload、enable --now。需 root + EXECUTE。",

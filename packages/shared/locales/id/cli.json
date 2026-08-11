@@ -1,18 +1,18 @@
 {
-  "unknownCommand": "Perintah tidak dikenal: {{command}}\nJalankan `{{cli}} help`",
-  "usagePrefix": "Pemakaian:",
+  "unknownCommand": "Perintah tidak diketahui: {{command}}\nJalankan `{{cli}} bantuan`",
+  "usagePrefix": "Penggunaan:",
   "security": {
-    "help": "Pemakaian: ysk-server security status\n       ysk-server security sessions list|revoke|revoke-others [--user U]\n       ysk-server security api-keys list|create|delete …",
-    "sessionsHelp": "Pemakaian: ysk-server security sessions list [--user U]\n       ysk-server security sessions revoke --id PREFIX [--user U]\n       ysk-server security sessions revoke-others [--user U] [--keep-token T]",
-    "apiKeysHelp": "Pemakaian: ysk-server security api-keys list\n       ysk-server security api-keys create --name N [--user U] [--scope full|read]\n       ysk-server security api-keys delete --id KEY_ID",
-    "noUser": "Pengguna tidak ditemukan. Buat admin dulu atau berikan --user <name|id>",
+    "help": "Penggunaan: status keamanan server ysk\n       daftar sesi keamanan server ysk|cabut|cabut-yang lain [--pengguna U]\n       daftar kunci api keamanan ysk-server|buat|hapus …",
+    "sessionsHelp": "Penggunaan: daftar sesi keamanan server ysk [--pengguna U]\n       sesi keamanan ysk-server dicabut --id PREFIX [--user U]\n       sesi keamanan server ysk mencabut yang lain [--pengguna U] [--keep-token T]",
+    "apiKeysHelp": "Penggunaan: daftar kunci api keamanan server ysk\n       kunci api keamanan server ysk buat --nama N [--pengguna U] [--lingkup penuh|baca]\n       kunci api keamanan server ysk hapus --id KEY_ID",
+    "noUser": "Tidak ada pengguna yang ditemukan. Buat admin terlebih dahulu atau berikan --user <name|id>",
     "tokenOnce": "token ditampilkan sekali — simpan dengan aman",
-    "sessionRevokeUsage": "Pemakaian: ysk-server security sessions revoke --id <sessionIdPrefix> [--user U]",
-    "apiKeyDeleteUsage": "Pemakaian: ysk-server security api-keys delete --id KEY_ID"
+    "sessionRevokeUsage": "Penggunaan: sesi keamanan server ysk dicabut --id <sessionIdPrefix> [--user U]",
+    "apiKeyDeleteUsage": "Penggunaan: kunci api keamanan server ysk hapus --id KEY_ID"
   },
   "help": {
-    "blurb": "CLI control plane — utamakan --json untuk agen AI.\nDocs: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json",
-    "main": "{{product}} ({{cli}}) v{{version}}\n\nCLI control plane — utamakan --json untuk agen AI.\nDocs: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json\n\nPemakaian:\n  {{cli}} <command> [options]\n\nPerintah:\n  setup                 Init dataDir + admin\n  update                Cek/terapkan self-update\n  serve                 HTTP API + Web UI\n  system unit-install   Pasang ysk-server.service [--enable]\n  tools                 Daftar tools; tools run --tool <name> [--dry-run]\n  ask                   NL → rencana AI [--execute]\n  projects              list|get|create|deploy|stop|health|backup|template\n  backup                all|list|status|restore|delete|schedule|control-plane|settings|restic\n  templates             Template aplikasi\n  hosting               pembantu nginx|dns|db|firewall\n  dns                   zone|zones (alias AI → hosting dns-*)\n  logs                  sources|query|journal|overview\n  host                  overview|metrics (hanya baca)\n  nginx                 status|list|test|sync\n  ssl                   list|get (sertifikat)\n  db-cluster            list|get|create|plan (HA plan-first)\n  ssh-key               list|create|import|public|export|install|delete (brankas identitas SSH)\n  ssh-2fa               list|enroll|confirm|install|pam|retire (TOTP login SSH ≠ 2FA panel)\n  services              Matriks layanan host (probe systemctl)\n  defense | protection  status|ban|unban|whitelist\n  security              status|sessions|api-keys (bendera 2FA · cabut sesi · kunci API)\n  cdn                   nodes|sites|render|apply|purge|probe|dashboard|health-loop|from-project\n  agents                runtimes|fleet list|commands|register (panel + edge)\n  agent run             Poller armada keluar (eksperimental)\n  store                 status|export|import|migrate (backend dokumen json|sqlite|postgres)\n  files                 list|read|write|mkdir|rm|stat|rename|copy|move|chmod|trash|shares (sandbox)\n  cron                  list|create|delete|enable|disable|run|install|status\n  email                 domains|mailboxes|deliverability|bootstrap|dns (setara panel)\n  health                Snapshot mode lokal atau --url http://host:port/health\n  readiness | doctor    Kesiapan produksi (jujur)\n  migrate               inventory|host|post|status|resume (migrasi host penuh)\n  version | help\n\nGlobal:\n  --json                stdout JSON (AI)\n  --data-dir PATH\n  --config PATH\n  --help | --version\n\nKeluar: 0 ok · 1 error · 2 validation · 3 blocked · 4 not found · 5 host error\n\nKeamanan:\n  Operasi berbahaya default ke dry-run (rencana saja).\n  Berikan --execute (alias --apply) + env YSK_EXECUTE=1 untuk mengubah host.\n\nContoh:\n  {{cli}} readiness --json\n  {{cli}} host --json\n  {{cli}} nginx status --json\n  {{cli}} ssl list --json\n  {{cli}} projects get --id UUID --json\n  {{cli}} defense ban --ip 1.2.3.4 --json          # rencana dry-run\n  {{cli}} projects list --json\n  {{cli}} logs query --source journal: --lines 100 --json\n  {{cli}} tools --json"
+    "blurb": "CLI bidang kendali — pilih --json untuk agen AI.\nDokumen: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json",
+    "main": "{{product}} ({{cli}}) v{{version}}\n\nCLI bidang kendali — pilih --json untuk agen AI.\nDokumen: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json\n\nPenggunaan:\n  {{cli}} <perintah> [pilihan]\n\nPerintah:\n  pengaturan Init dataDir + admin\n  perbarui Pembaruan mandiri, periksa/terapkan\n  melayani HTTP API + Web UI\n  instalasi unit sistem Instal ysk-server.service [--enable]\n  alat Daftar alat; alat dijalankan --alat <nama> [--dry-run]\n  tanya NL → rencana AI [--eksekusi]\n  daftar proyek|dapatkan|membuat|menyebarkan|menghentikan|kesehatan|cadangan|templat\n  cadangan semua|daftar|status|pulihkan|hapus|jadwal|bidang kendali|pengaturan|istirahat\n  templat Templat aplikasi\n  hosting nginx|dns|db|pembantu firewall\n  zona dns|zona (alias AI → hosting dns-*)\n  sumber log|kueri|jurnal|ikhtisar\n  ikhtisar host|metrik (hanya baca)\n  nginx status|daftar|uji|sinkronisasi\n  daftar ssl|dapatkan (sertifikat)\n  daftar db-cluster|dapatkan|buat|rencana (rencana HA-pertama)\n  ssh-key list|buat|impor|publik|ekspor|instal|hapus (gudang identitas SSH)\n  ssh-2fa list|enroll|confirm|install|pam|retire (SSH login TOTP ≠ panel 2FA)\n  layanan Matriks layanan host (probe systemctl)\n  pertahanan | status perlindungan|larangan|batalkan pelarangan|daftar putih\n  status keamanan|sesi|api-keys (bendera 2FA · pencabutan sesi · kunci API)\n  node cdn|situs|render|terapkan|purge|probe|dasbor|loop kesehatan|dari-proyek\n  runtime agen|daftar armada|perintah|daftar (panel + tepi)\n  agen menjalankan poller armada keluar (eksperimental)\n  status penyimpanan|ekspor|impor|migrasi (json|sqlite|backend dokumen postgres)\n  daftar file|baca|tulis|mkdir|rm|stat|ganti nama|salin|pindahkan|chmod|sampah|berbagi (kotak pasir)\n  cron list|buat|hapus|aktifkan|nonaktifkan|jalankan|instal|status\n  domain email|kotak surat|keterkiriman|bootstrap|dns (paritas panel)\n  kesehatan Snapshot mode lokal atau --url http://host:port/health\n  kesiapan | dokter Kesiapan produksi (jujur)\n  migrasi inventaris|host|posting|status|resume (migrasi host penuh)\n  versi | bantuan\n\nDunia:\n  --json JSON stdout (AI)\n  --data-dir JALUR\n  --config JALUR\n  --bantuan | --versi\n\nKeluar: 0 ok · 1 kesalahan · 2 validasi · 3 diblokir · 4 tidak ditemukan · 5 kesalahan host\n\nKeamanan:\n  Operasi berbahaya secara default adalah uji coba (hanya paket).\n  Lewati --execute (alias --apply) + env YSK_EXECUTE=1 untuk mengubah host.\n\nContoh:\n  {{cli}} kesiapan --json\n  {{cli}} tuan rumah --json\n  {{cli}} status nginx --json\n  {{cli}} daftar ssl --json\n  {{cli}} proyek mendapatkan --id UUID --json\n  {{cli}} larangan pertahanan --ip 1.2.3.4 --json # rencana uji coba\n  {{cli}} daftar proyek --json\n  {{cli}} mencatat kueri --jurnal sumber: --baris 100 --json\n  {{cli}} alat --json"
   },
   "usage": {
     "tools": {
@@ -20,7 +20,7 @@
         "--tool": {
           "name": {
             "--arg": {
-              "cd327c": "Pemakaian: ysk-server tools run --tool <name> [--arg key=val] [--dry-run]\n"
+              "cd327c": "Penggunaan: alat ysk-server dijalankan --tool <nama> [--arg key=val] [--dry-run]"
             }
           }
         }
@@ -31,14 +31,14 @@
         "list": {
           "create": {
             "get": {
-              "b94a62": "Pemakaian: ysk-server email domains list|create|get …\n"
+              "b94a62": "Penggunaan: daftar domain email server ysk|buat|dapatkan …"
             }
           }
         },
         "create": {
           "--domain": {
             "example": {
-              "bd4036": "Pemakaian: ysk-server email domains create --domain example.com --ip A.B.C.D\n"
+              "bd4036": "Penggunaan: domain email server ysk dibuat --domain example.com --ip A.B.C.D"
             }
           }
         }
@@ -46,13 +46,13 @@
       "mailboxes": {
         "list": {
           "create": {
-            "42b26c": "Pemakaian: ysk-server email mailboxes list|create …\n"
+            "42b26c": "Penggunaan: daftar kotak surat email ysk-server|buat …"
           }
         },
         "create": {
           "--domain": {
             "example": {
-              "7227f3": "Pemakaian: ysk-server email mailboxes create --domain example.com --local user [--password P]\n"
+              "7227f3": "Penggunaan: kotak surat email server ysk dibuat --domain example.com --pengguna lokal [--kata sandi P]"
             }
           }
         }
@@ -61,7 +61,7 @@
         "--domain": {
           "example": {
             "com": {
-              "26b806": "Pemakaian: ysk-server email dns --domain example.com\n"
+              "26b806": "Penggunaan: ysk-server email dns --domain example.com"
             }
           }
         }
@@ -70,7 +70,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "73dad0": "Pemakaian: ysk-server email <sub> [--data-dir PATH] [--json]\n  domains list|create|get [--q TEXT]\n    create --domain example.com --ip A.B.C.D\n    get --domain example.com | --id UUID\n  mailboxes list|create [--domain D | --id domainId]\n    create --domain D --local user [--password P]\n  deliverability --domain D | --id UUID\n  deliverability-overview\n  bootstrap --domain D --ip A.B.C.D [--install]\n  dns --domain D | --id UUID     # Bundel DNS untuk panel\nJuga: hosting email-apply|email-mailbox|email-deliverability (alias)\n"
+              "73dad0": "Penggunaan: email server ysk <sub> [--data-dir PATH] [--json]\n  daftar domain|buat|dapatkan [--q TEKS]\n    buat --domain example.com --ip A.B.C.D\n    dapatkan --domain example.com | --id UUID\n  daftar kotak surat|buat [--domain D | --id domainId]\n    buat --domain D --pengguna lokal [--kata sandi P]\n  keterkiriman --domain D | --id UUID\n  ikhtisar keterkiriman\n  bootstrap --domain D --ip ABCD [--install]\n  dns --domain D | --id UUID # Paket DNS untuk panel\nJuga: hosting email-apply|email-mailbox|email-deliverability (alias)"
             }
           }
         }
@@ -79,7 +79,7 @@
         "--domain": {
           "example": {
             "com": {
-              "b0dff0": "Pemakaian: ysk-server email deliverability --domain example.com\n"
+              "b0dff0": "Penggunaan: kemampuan pengiriman email server ysk --domain example.com"
             }
           }
         }
@@ -88,7 +88,7 @@
         "--domain": {
           "example": {
             "com": {
-              "affc8d": "Pemakaian: ysk-server email bootstrap --domain example.com --ip 1.2.3.4 [--install]\n"
+              "affc8d": "Penggunaan: ysk-server email bootstrap --domain example.com --ip 1.2.3.4 [--install]"
             }
           }
         }
@@ -99,7 +99,7 @@
         "--id": {
           "job": {
             "id": {
-              "f6aafe": "Pemakaian: ysk-server cron delete --id JOB_ID\n"
+              "f6aafe": "Penggunaan: ysk-server cron delete --id JOB_ID"
             }
           }
         }
@@ -108,14 +108,14 @@
         "--id": {
           "job": {
             "id": {
-              "99cfdf": "Pemakaian: ysk-server cron {{sub}} --id JOB_ID\n"
+              "99cfdf": "Penggunaan: ysk-server cron {{sub}} --id JOB_ID"
             }
           }
         },
         "--data-dir": {
           "path": {
             "--json": {
-              "0349e6": "Pemakaian: ysk-server cron <sub> [--data-dir PATH] [--json]\n  list [--project-id ID] [--q TEXT]\n  create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n  delete --id JOB_ID\n  enable|disable --id JOB_ID\n  run --id JOB_ID              # jalankan sekarang (perlu YSK_EXECUTE=1)\n  install                     # muat crontab terkelola (perlu EXECUTE)\n  status                      # probe file terkelola vs crontab host\nKejujuran: install diblokir tanpa YSK_EXECUTE=1 (file tetap ditulis).\n"
+              "0349e6": "Penggunaan: ysk-server cron <sub> [--data-dir PATH] [--json]\n  daftar [--ID proyek-id] [--q TEKS]\n  buat --jadwal \"0 3 * * *\" --perintah CMD [--ID proyek-id] [--pengguna USER]\n  hapus --id JOB_ID\n  aktifkan|nonaktifkan --id JOB_ID\n  run --id JOB_ID # run-now (membutuhkan YSK_EXECUTE=1)\n  instal # muat crontab terkelola (perlu EXECUTE)\n  status # pemeriksaan file yang dikelola vs host crontab\nKejujuran: instalasi diblokir tanpa YSK_EXECUTE=1 (file masih tertulis)."
             }
           }
         }
@@ -124,7 +124,7 @@
         "--id": {
           "job": {
             "id": {
-              "a0a97f": "Pemakaian: ysk-server cron run --id JOB_ID\n"
+              "a0a97f": "Penggunaan: ysk-server cron dijalankan --id JOB_ID"
             }
           }
         }
@@ -133,7 +133,7 @@
         "--schedule": {
           "0": {
             "3": {
-              "9a8328": "Pemakaian: ysk-server cron create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n"
+              "9a8328": "Penggunaan: ysk-server cron create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]"
             }
           }
         }
@@ -143,21 +143,21 @@
       "stat": {
         "--path": {
           "rel": {
-            "17c8f2": "Pemakaian: ysk-server files stat --path REL\n"
+            "17c8f2": "Penggunaan: stat file server ysk --path REL"
           }
         }
       },
       "read": {
         "--path": {
           "rel": {
-            "e35f8d": "Pemakaian: ysk-server files read --path REL\n"
+            "e35f8d": "Penggunaan: file server ysk dibaca --path REL"
           }
         }
       },
       "mkdir": {
         "--path": {
           "rel": {
-            "ae0438": "Pemakaian: ysk-server files mkdir --path REL\n"
+            "ae0438": "Penggunaan: file server ysk mkdir --path REL"
           }
         }
       },
@@ -165,7 +165,7 @@
         "--path": {
           "rel": {
             "--permanent": {
-              "fe2051": "Pemakaian: ysk-server files rm --path REL [--permanent]\n"
+              "fe2051": "Penggunaan: file ysk-server rm --path REL [--permanent]"
             }
           }
         }
@@ -174,7 +174,7 @@
         "--from": {
           "rel": {
             "--to": {
-              "35a260": "Pemakaian: ysk-server files rename --from REL --to REL\n"
+              "35a260": "Penggunaan: ganti nama file ysk-server --dari REL --menjadi REL"
             }
           }
         }
@@ -183,7 +183,7 @@
         "--from": {
           "rel": {
             "--to": {
-              "5337f4": "Pemakaian: ysk-server files copy --from REL --to REL\n"
+              "5337f4": "Penggunaan: salinan file ysk-server --dari REL --ke REL"
             }
           }
         }
@@ -192,7 +192,7 @@
         "--from": {
           "rel": {
             "--to": {
-              "75cf5d": "Pemakaian: ysk-server files move --from REL --to REL\n"
+              "75cf5d": "Penggunaan: file server ysk dipindahkan --dari REL --ke REL"
             }
           }
         }
@@ -201,7 +201,7 @@
         "--path": {
           "rel": {
             "--mode": {
-              "39f983": "Pemakaian: ysk-server files chmod --path REL --mode 644\n"
+              "39f983": "Penggunaan: file server ysk chmod --path REL --mode 644"
             }
           }
         }
@@ -210,28 +210,28 @@
         "restore": {
           "--id": {
             "trash": {
-              "c89ce9": "Pemakaian: ysk-server files trash restore --id TRASH_ID\n"
+              "c89ce9": "Penggunaan: pemulihan sampah file server ysk --id TRASH_ID"
             }
           }
         },
         "list": {
           "restore": {
             "purge": {
-              "ef063d": "Pemakaian: ysk-server files trash list|restore|purge\n"
+              "ef063d": "Penggunaan: daftar sampah file server ysk|pemulihan|pembersihan"
             }
           }
         }
       },
       "shares": {
         "list": {
-          "ac342c": "Pemakaian: ysk-server files shares list\n"
+          "ac342c": "Penggunaan: daftar berbagi file ysk-server"
         }
       },
       "webdav": {
         "status": {
           "token": {
             "disable": {
-              "f8e94b": "Pemakaian: ysk-server files webdav status|token|disable\n"
+              "f8e94b": "Penggunaan: file server ysk status webdav|token|nonaktifkan"
             }
           }
         }
@@ -240,7 +240,7 @@
         "--root": {
           "public": {
             "project": {
-              "42ebd4": "Pemakaian: ysk-server files <sub> [--root public|project:ID] [--data-dir PATH] [--json]\n  list   [--path DIR] [--q TEXT] [--sort name|size|mtime] [--order asc|desc]\n  stat   --path REL\n  read   --path REL\n  write  --path REL --content TEXT | --file LOCAL\n  mkdir  --path REL\n  rm     --path REL [--permanent]\n  rename --from REL --to REL\n  copy   --from REL --to REL\n  move   --from REL --to REL\n  chmod  --path REL --mode 644\n  trash  list|restore|purge [--id TRASH_ID]\n  shares list\n  favorites list\n  upload --dir REL --file LOCAL [--file LOCAL2…]\n  webdav status|token|disable\nSandbox: hanya root file publik atau home proyek (dibatasi path).\n"
+              "42ebd4": "Penggunaan: file server ysk <sub> [--root public|project:ID] [--data-dir PATH] [--json]\n  daftar [--path DIR] [--q TEKS] [--urutkan nama|ukuran|waktu] [--order asc|desc]\n  stat --jalur REL\n  baca --jalur REL\n  tulis --path REL --content TEKS | --file LOKAL\n  mkdir --jalur REL\n  rm --jalur REL [--permanen]\n  ganti nama --dari REL --menjadi REL\n  salin --dari REL --ke REL\n  pindahkan --dari REL --ke REL\n  chmod --jalur REL --mode 644\n  daftar sampah|pulihkan|pembersihan [--id TRASH_ID]\n  daftar saham\n  daftar favorit\n  unggah --dir REL --file LOKAL [--file LOCAL2…]\n  status webdav|token|nonaktifkan\nSandbox: hanya root file publik atau proyek rumah (jalur terbatas)."
             }
           }
         }
@@ -249,7 +249,7 @@
         "--path": {
           "rel": {
             "--content": {
-              "0addb1": "Pemakaian: ysk-server files write --path REL --content TEXT | --file LOCAL\n"
+              "0addb1": "Penggunaan: file ysk-server tulis --path REL --content TEXT | --file LOKAL"
             }
           }
         }
@@ -258,7 +258,7 @@
         "--dir": {
           "rel": {
             "--file": {
-              "f8c3bf": "Pemakaian: ysk-server files upload --dir REL --file LOCAL [--file LOCAL2…]\n"
+              "f8c3bf": "Penggunaan: unggah file ysk-server --dir REL --file LOCAL [--file LOCAL2…]"
             }
           }
         }
@@ -269,7 +269,7 @@
         "--in": {
           "file": {
             "json": {
-              "5b6fdd": "Pemakaian: ysk-server store import --in FILE.json\n"
+              "5b6fdd": "Penggunaan: impor penyimpanan server-ysk --di FILE.json"
             }
           }
         }
@@ -278,7 +278,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "d580e4": "Pemakaian: ysk-server store <sub> [--data-dir PATH] [--json]\n  status                         Tampilkan jenis backend + jumlah\n  export --out FILE.json         Dump snapshot dokumen\n  import --in FILE.json          Timpa snapshot dari file\n  migrate --to sqlite|json [--out PATH]\n    Salin store saat ini ke file backend lain\nEnv: YSK_STORE=json|sqlite|postgres  YSK_DATABASE_URL=postgres://…\nKejujuran: backend blob dokumen (belum skema relasional penuh).\n"
+              "d580e4": "Penggunaan: penyimpanan server ysk <sub> [--data-dir PATH] [--json]\n  status Tampilkan jenis + jumlah backend\n  ekspor --out FILE.json Dump cuplikan dokumen\n  import --in FILE.json Timpa snapshot dari file\n  migrasi --ke sqlite|json [--out PATH]\n    Salin penyimpanan saat ini ke file backend lain\nEnv: YSK_STORE=json|sqlite|postgres YSK_DATABASE_URL=postgres://…\nKejujuran: backend gumpalan dokumen (belum skema relasional penuh)."
             }
           }
         }
@@ -287,7 +287,7 @@
         "--to": {
           "json": {
             "sqlite": {
-              "1c52a3": "Pemakaian: ysk-server store migrate --to json|sqlite [--out PATH]\n  (postgres: ekspor JSON lalu impor di bawah YSK_DATABASE_URL)\n"
+              "1c52a3": "Penggunaan: penyimpanan server-ysk bermigrasi --ke json|sqlite [--out PATH]\n  (postgres: ekspor JSON lalu impor di bawah YSK_DATABASE_URL)"
             }
           }
         }
@@ -298,28 +298,28 @@
         "delete": {
           "--id": {
             "node": {
-              "0c6a1e": "Pemakaian: ysk-server cdn nodes delete --id NODE_ID\n"
+              "0c6a1e": "Penggunaan: node cdn ysk-server menghapus --id NODE_ID"
             }
           }
         },
         "drain": {
           "--id": {
             "node": {
-              "a8aa81": "Pemakaian: ysk-server cdn nodes drain --id NODE_ID [--off]\n"
+              "a8aa81": "Penggunaan: node cdn ysk-server menguras --id NODE_ID [--off]"
             }
           }
         },
         "list": {
           "upsert": {
             "delete": {
-              "52549e": "Pemakaian: ysk-server cdn nodes list|upsert|delete|probe|drain …\n"
+              "52549e": "Penggunaan: daftar node cdn ysk-server|upsert|hapus|probe|kuras …"
             }
           }
         },
         "upsert": {
           "--name": {
             "name": {
-              "8f6f39": "Pemakaian: ysk-server cdn nodes upsert --name NAME [--id ID] [--base-url U] [--fleet-agent-id S] [--ssh-host H] [--region R]\n"
+              "8f6f39": "Penggunaan: ysk-server cdn node upsert --name NAME [--id ID] [--base-url U] [--fleet-agent-id S] [--ssh-host H] [--region R]"
             }
           }
         }
@@ -328,28 +328,28 @@
         "get": {
           "--id": {
             "site": {
-              "3c3c35": "Pemakaian: ysk-server cdn sites get --id SITE_ID\n"
+              "3c3c35": "Penggunaan: situs cdn server ysk mendapatkan --id SITE_ID"
             }
           }
         },
         "delete": {
           "--id": {
             "site": {
-              "51ef8f": "Pemakaian: ysk-server cdn sites delete --id SITE_ID\n"
+              "51ef8f": "Penggunaan: situs cdn server ysk menghapus --id SITE_ID"
             }
           }
         },
         "list": {
           "get": {
             "upsert": {
-              "609da6": "Pemakaian: ysk-server cdn sites list|get|upsert|delete …\n"
+              "609da6": "Penggunaan: daftar situs cdn ysk-server|dapatkan|upsert|hapus …"
             }
           }
         },
         "upsert": {
           "--name": {
             "n": {
-              "6ebb75": "Pemakaian: ysk-server cdn sites upsert --name N --domains a.com,b.com [--edge-id ID]… [--origin-url U] [--origin-project ID]\n"
+              "6ebb75": "Penggunaan: situs cdn server ysk upsert --name N --domains a.com,b.com [--edge-id ID]… [--origin-url U] [--origin-project ID]"
             }
           }
         }
@@ -358,7 +358,7 @@
         "--site-id": {
           "id": {
             "--dry-run": {
-              "2149eb": "Pemakaian: ysk-server cdn render --site-id ID [--dry-run]\n"
+              "2149eb": "Penggunaan: ysk-server cdn render --site-id ID [--dry-run]"
             }
           }
         }
@@ -367,7 +367,7 @@
         "--site-id": {
           "id": {
             "--edge-id": {
-              "a527b3": "Pemakaian: ysk-server cdn apply --site-id ID [--edge-id EDGE]\n"
+              "a527b3": "Penggunaan: ysk-server cdn apply --site-id ID [--edge-id EDGE]"
             }
           }
         }
@@ -376,7 +376,7 @@
         "--site-id": {
           "id": {
             "--edge-id": {
-              "bc08ec": "Pemakaian: ysk-server cdn purge --site-id ID [--edge-id EDGE]\n"
+              "bc08ec": "Penggunaan: ysk-server cdn purge --site-id ID [--edge-id EDGE]"
             }
           }
         }
@@ -385,7 +385,7 @@
         "--site-id": {
           "id": {
             "--apply-zone": {
-              "343068": "Pemakaian: ysk-server cdn dns-sync --site-id ID [--apply-zone]\n"
+              "343068": "Penggunaan: ysk-server cdn dns-sync --site-id ID [--apply-zone]"
             }
           }
         }
@@ -394,7 +394,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "092842": "Pemakaian: ysk-server cdn <sub> [--data-dir PATH] [--json]\n  nodes list|upsert|delete|probe|drain\n  sites list|upsert|delete|get\n  render --site-id ID [--dry-run]\n  apply  --site-id ID [--edge-id ID]   # fan-out (antrean fleet ok tanpa EXECUTE)\n  purge  --site-id ID [--edge-id ID]\n  dns-sync --site-id ID [--apply-zone]\n  probe | dashboard | health-loop [--apply-zone]\n  from-project --project-id ID [--edge-id ID…]\nKejujuran: apply_status written/queued ≠ nginx edge diterapkan sampai agent ack / EXECUTE reload.\n"
+              "092842": "Penggunaan: ysk-server cdn <sub> [--data-dir PATH] [--json]\n  daftar node|upsert|hapus|probe|kuras\n  daftar situs|masukkan|hapus|dapatkan\n  render --ID-situs ID [--dry-run]\n  apply --site-id ID [--edge-id ID] # fan-out (antrian armada oke tanpa EXECUTE)\n  pembersihan --ID-situs ID [--ID-edge-ID]\n  sinkronisasi dns --ID situs-ID [--apply-zone]\n  menyelidiki | dasbor | lingkaran kesehatan [--apply-zone]\n  dari-proyek --ID-proyek ID [--ID-tepi ID…]\nKejujuran: apply_status ditulis/antri ≠ edge nginx diterapkan sampai agen ack / EXECUTE memuat ulang."
             }
           }
         }
@@ -403,7 +403,7 @@
         "--project-id": {
           "id": {
             "--edge-id": {
-              "a96f42": "Pemakaian: ysk-server cdn from-project --project-id ID [--edge-id ID]…\n"
+              "a96f42": "Penggunaan: ysk-server cdn dari-proyek --ID proyek-id [--ID tepi-id]…"
             }
           }
         }
@@ -414,21 +414,21 @@
         "remove": {
           "--session": {
             "session": {
-              "1827fe": "Pemakaian: ysk-server agents fleet remove --session SESSION_ID\n"
+              "1827fe": "Penggunaan: armada agen server ysk menghapus --session SESSION_ID"
             }
           }
         },
         "register": {
           "--id": {
             "agent": {
-              "209b2d": "Pemakaian: ysk-server agents fleet register --id AGENT_ID [--group g] [--edge]\n"
+              "209b2d": "Penggunaan: daftar armada agen server ysk --id AGENT_ID [--group g] [--edge]"
             }
           }
         },
         "commands": {
           "--session": {
             "session": {
-              "f8067c": "Pemakaian: ysk-server agents fleet commands --session SESSION_ID\n"
+              "f8067c": "Penggunaan: perintah armada agen server ysk --session SESSION_ID"
             }
           }
         }
@@ -437,7 +437,7 @@
         "--id": {
           "agent": {
             "id": {
-              "3c4477": "Pemakaian: ysk-server agents register --id AGENT_ID [--group g]\n"
+              "3c4477": "Penggunaan: agen server ysk mendaftar --id AGENT_ID [--group g]"
             }
           }
         }
@@ -446,7 +446,7 @@
         "--session": {
           "session": {
             "id": {
-              "e620d2": "Pemakaian: ysk-server agents commands --session SESSION_ID\n"
+              "e620d2": "Penggunaan: perintah agen server ysk --session SESSION_ID"
             }
           }
         }
@@ -455,7 +455,7 @@
         "probe": {
           "fleet": {
             "list": {
-              "261fa4": "Pemakaian: ysk-server agents [runtimes|probe|fleet list|fleet register|fleet commands|register|commands]\n"
+              "261fa4": "Penggunaan: agen server ysk [runtime|probe|daftar armada|daftar armada|perintah armada|daftar|perintah]"
             }
           }
         }
@@ -466,7 +466,7 @@
         "--control-plane": {
           "url": {
             "--id": {
-              "cfefbe": "Pemakaian: ysk-server agent run --control-plane URL --id AGENT_ID [--group g]\n"
+              "cfefbe": "Penggunaan: agen server ysk dijalankan --control-plane URL --id AGENT_ID [--group g]"
             }
           }
         }
@@ -476,7 +476,7 @@
       "check": {
         "system": {
           "info": {
-            "b0c781": "Pemakaian: ysk-server ask \"check system info\"\n"
+            "b0c781": "Penggunaan: ysk-server bertanya \"periksa info sistem\""
           }
         }
       }
@@ -486,7 +486,7 @@
         "--project-id": {
           "id": {
             "--name": {
-              "d66c29": "Pemakaian: ysk-server backup delete --project-id ID --name ARCHIVE\n"
+              "d66c29": "Penggunaan: cadangan ysk-server hapus --project-id ID --name ARCHIVE"
             }
           }
         }
@@ -495,14 +495,14 @@
         "list": {
           "run": {
             "restore": {
-              "10402b": "Pemakaian: ysk-server backup restic list|run|restore …\n"
+              "10402b": "Penggunaan: daftar sisa cadangan server ysk|jalankan|pulihkan …"
             }
           }
         },
         "restore": {
           "--project-id": {
             "id": {
-              "a8f133": "Pemakaian: ysk-server backup restic restore --project-id ID --snapshot SNAP [--dry-run] [--overwrite-home --confirm PHRASE]\n"
+              "a8f133": "Penggunaan: pemulihan restic cadangan ysk-server --project-id ID --snapshot SNAP [--dry-run] [--overwrite-home --confirm PHRASE]"
             }
           }
         }
@@ -511,7 +511,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "777243": "Pemakaian: ysk-server backup <sub> [--data-dir PATH] [--json]\n  all                         Cadangkan semua home proyek (+ sisi remote/restic bila dikonfigurasi)\n  list [--project-id ID] [--q TEXT]\n  status                      Jalankan terakhir + probe jadwal\n  restore --project-id ID --name ARCHIVE [--mode full|web|dry-run]\n  delete  --project-id ID --name ARCHIVE\n  schedule [--cron \"0 3 * * *\"] [--install]\n  control-plane               Snapshot ysk.json + config.json\n  control-plane-restore --name ARCHIVE [--mode dry-run|full] [--confirm RESTORE-CONTROL-PLANE]\n  settings [get|set]          Remote / exclusions / restic\n    set --remote-kind local|sftp|s3 --remote-path P [--remote-host H] …\n    set --exclude a,b,c | --exclusions-file FILE\n    set --restic-enable --restic-password P [--restic-repo PATH]\n    set --from-json FILE      # patch penuh {remote?,exclusions?,restic?}\n  restic list|run|restore     Pembantu restic inkremental\n"
+              "777243": "Penggunaan: cadangan server ysk <sub> [--data-dir PATH] [--json]\n  semua Cadangkan semua rumah proyek (+ sisi jarak jauh/diam saat dikonfigurasi)\n  daftar [--ID proyek-id] [--q TEKS]\n  status Terakhir dijalankan + pemeriksaan jadwal\n  pulihkan --project-id ID --name ARCHIVE [--mode penuh|web|dry-run]\n  hapus --project-id ID --name ARCHIVE\n  jadwal [--cron \"0 3 * * *\"] [--install]\n  Cuplikan bidang kontrol ysk.json + config.json\n  control-plane-restore --name ARCHIVE [--mode dry-run|penuh] [--confirm RESTORE-CONTROL-PLANE]\n  pengaturan [dapatkan|set] Jarak jauh / pengecualian / istirahat\n    set --remote-kind local|sftp|s3 --remote-path P [--remote-host H] …\n    mengatur --mengecualikan a,b,c | --pengecualian-file FILE\n    setel --restic-enable --restic-password P [--restic-repo PATH]\n    set --from-json FILE # patch lengkap {jarak jauh?,pengecualian?,istirahat?}\n  restic list|run|restore Pembantu restic tambahan"
             }
           }
         }
@@ -520,7 +520,7 @@
         "--name": {
           "archive": {
             "--mode": {
-              "316a76": "Pemakaian: ysk-server backup control-plane-restore --name ARCHIVE [--mode dry-run|full] [--confirm RESTORE-CONTROL-PLANE]\n"
+              "316a76": "Penggunaan: ysk-server backup control-plane-restore --name ARCHIVE [--mode dry-run|full] [--confirm RESTORE-CONTROL-PLANE]"
             }
           }
         }
@@ -529,7 +529,7 @@
         "--project-id": {
           "id": {
             "--name": {
-              "bc7041": "Pemakaian: ysk-server backup restore --project-id ID --name ARCHIVE [--mode full|web|dry-run]\n"
+              "bc7041": "Penggunaan: pemulihan cadangan ysk-server --project-id ID --name ARCHIVE [--mode penuh|web|dry-run]"
             }
           }
         }
@@ -539,7 +539,7 @@
       "list": {
         "--q": {
           "text": {
-            "b8e16b": "Pemakaian: ysk-server packages list [--q text]\n"
+            "b8e16b": "Penggunaan: daftar paket ysk-server [--q text]"
           }
         }
       }
@@ -548,21 +548,21 @@
       "stop": {
         "--id": {
           "projectid": {
-            "b15409": "Pemakaian: ysk-server projects stop --id <projectId>\n"
+            "b15409": "Penggunaan: proyek server ysk berhenti --id <projectId>"
           }
         }
       },
       "backup": {
         "--id": {
           "projectid": {
-            "e62846": "Pemakaian: ysk-server projects backup --id <projectId>\n"
+            "e62846": "Penggunaan: cadangan proyek ysk-server --id <projectId>"
           }
         }
       },
       "health": {
         "--id": {
           "projectid": {
-            "e816ec": "Pemakaian: ysk-server projects health --id <projectId>\n"
+            "e816ec": "Penggunaan: kesehatan proyek ysk-server --id <projectId>"
           }
         }
       },
@@ -570,21 +570,21 @@
         "provision": {
           "--id": {
             "projectid": {
-              "5aff44": "Pemakaian: ysk-server projects isolation provision --id <projectId>\n       ysk-server projects isolation provision-all [--limit 20]\n"
+              "5aff44": "Penggunaan: penyediaan isolasi proyek ysk-server --id <projectId>\n       ysk-server proyek isolasi penyediaan-semua [--batas 20]"
             }
           }
         },
         "backfill-owners": {
           "--owner-user-id": {
             "id": {
-              "8691da": "Pemakaian: ysk-server projects isolation backfill-owners --owner-user-id <id>\n"
+              "8691da": "Penggunaan: ysk-server memproyeksikan isolasi backfill-owners --owner-user-id <id>"
             }
           }
         },
         "list": {
           "provision": {
             "provision-all": {
-              "8e9da3": "Pemakaian: ysk-server projects isolation list|provision|provision-all|backfill-owners\n"
+              "8e9da3": "Penggunaan: daftar isolasi proyek ysk-server|provision|provision-all|backfill-owners"
             }
           }
         }
@@ -593,7 +593,7 @@
         "--id": {
           "projectid": {
             "name": {
-              "b0d532": "Pemakaian: ysk-server projects get --id <projectId|name> [--json]\n"
+              "b0d532": "Penggunaan: proyek server ysk dapatkan --id <projectId|name> [--json]"
             }
           }
         }
@@ -602,7 +602,7 @@
         "--name": {
           "name": {
             "--domain": {
-              "66e857": "Pemakaian: ysk-server projects create --name <name> [--domain d] [--runtime node|php|static|python|go|rust] [--template id]\n"
+              "66e857": "Penggunaan: proyek server ysk dibuat --name <name> [--domain d] [--runtime node|php|static|python|go|rust] [--template id]"
             }
           }
         }
@@ -611,7 +611,7 @@
         "--id": {
           "projectid": {
             "--entry": {
-              "339111": "Pemakaian: ysk-server projects deploy --id <projectId> [--entry f] [--port N] [--fpm|--builtin] [--reload]\n"
+              "339111": "Penggunaan: penerapan proyek server ysk --id <projectId> [--entry f] [--port N] [--fpm|--builtin] [--reload]"
             }
           }
         }
@@ -620,7 +620,7 @@
         "--id": {
           "id": {
             "--git-url": {
-              "a513f5": "Pemakaian: ysk-server projects git-deploy --id ID [--git-url URL] [--branch main] [--no-redeploy] [--depth 1] [--entry f]\n"
+              "a513f5": "Penggunaan: proyek server ysk git-deploy --id ID [--git-url URL] [--branch main] [--no-redeploy] [--kedalaman 1] [--entry f]"
             }
           }
         }
@@ -629,7 +629,7 @@
         "--id": {
           "projectid": {
             "--template": {
-              "591ce4": "Pemakaian: ysk-server projects template --id <projectId> --template <id> [--force]\n"
+              "591ce4": "Penggunaan: templat proyek ysk-server --id <projectId> --template <id> [--force]"
             }
           }
         }
@@ -638,7 +638,7 @@
         "get": {
           "create": {
             "deploy": {
-              "253b48": "Pemakaian: ysk-server projects list|get|create|deploy|git-deploy|stop|backup|template|health [options]\n  deploy --id UUID [--entry f] [--port N] [--fpm|--builtin] [--reload]\n  git-deploy --id UUID [--git-url URL] [--branch B] [--no-redeploy]\n"
+              "253b48": "Penggunaan: daftar proyek ysk-server|get|create|deploy|git-deploy|stop|backup|template|health [opsi]\n  menyebarkan --id UUID [--entri f] [--port N] [--fpm|--builtin] [--reload]\n  git-deploy --id UUID [--git-url URL] [--cabang B] [--tidak ada penerapan ulang]"
             }
           }
         }
@@ -649,240 +649,240 @@
         "db-cluster": {
           "get": {
             "--id": {
-              "00f803": "Pemakaian: {{CLI_NAME}} db-cluster get --id UUID [--json]\n"
+              "00f803": "Penggunaan: {{CLI_NAME}} db-cluster get --id UUID [--json]"
             }
           },
           "plan": {
             "--id": {
-              "483f52": "Pemakaian: {{CLI_NAME}} db-cluster plan --id UUID [--json]\n"
+              "483f52": "Penggunaan: {{CLI_NAME}} rencana db-cluster --id UUID [--json]"
             }
           },
           "artifacts": {
             "--id": {
-              "6b33c4": "Pemakaian: {{CLI_NAME}} db-cluster artifacts --id UUID [--json]\n"
+              "6b33c4": "Penggunaan: {{CLI_NAME}} artefak db-cluster --id UUID [--json]"
             }
           },
           "bundle": {
             "--id": {
-              "94ed27": "Pemakaian: {{CLI_NAME}} db-cluster bundle --id UUID [--json]\n"
+              "94ed27": "Penggunaan: {{CLI_NAME}} bundel db-cluster --id UUID [--json]"
             }
           },
           "delete": {
             "--id": {
-              "3de0e4": "Pemakaian: {{CLI_NAME}} db-cluster delete --id UUID [--json]\n"
+              "3de0e4": "Penggunaan: {{CLI_NAME}} db-cluster delete --id UUID [--json]"
             }
           },
           "create": {
             "--name": {
-              "e3b733": "Pemakaian: {{CLI_NAME}} db-cluster create --name N --engine mariadb --kind mariadb-galera --member HOST=role[:access] ...\n"
+              "e3b733": "Penggunaan: {{CLI_NAME}} db-cluster create --name N --engine mariadb --kind mariadb-galera --member HOST=role[:access] ..."
             }
           },
           "apply": {
             "--id": {
-              "4cddb8": "Pemakaian: {{CLI_NAME}} db-cluster apply --id UUID [--execute] [--bootstrap] [--json]\n"
+              "4cddb8": "Penggunaan: {{CLI_NAME}} db-cluster apply --id UUID [--execute] [--bootstrap] [--json]"
             }
           },
           "probe": {
             "--id": {
-              "22870c": "Pemakaian: {{CLI_NAME}} db-cluster probe --id UUID [--peers] [--json]\n"
+              "22870c": "Penggunaan: {{CLI_NAME}} pemeriksaan db-cluster --id UUID [--peers] [--json]"
             }
           },
           "install-peers": {
             "--id": {
-              "600b02": "Pemakaian: {{CLI_NAME}} db-cluster install-peers --id UUID [--execute] [--no-restart] [--identity ID] [--json]\n"
+              "600b02": "Penggunaan: {{CLI_NAME}} db-cluster install-peers --id UUID [--execute] [--no-restart] [--identity ID] [--json]"
             }
           },
           "push": {
             "--id": {
-              "697080": "Pemakaian: {{CLI_NAME}} db-cluster push --id UUID [--member ID] [--identity ID] [--execute] [--json]\n"
+              "697080": "Penggunaan: {{CLI_NAME}} db-cluster push --id UUID [--ID anggota] [--ID identitas] [--eksekusi] [--json]"
             }
           },
           "fleet": {
             "--id": {
-              "239462": "Pemakaian: {{CLI_NAME}} db-cluster fleet --id UUID [--op apply|probe|plan] [--execute] [--edge-execute] [--json]\n"
+              "239462": "Penggunaan: {{CLI_NAME}} armada db-cluster --id UUID [--op apply|probe|plan] [--execute] [--edge-execute] [--json]"
             }
           },
           "list": {
             "get": {
-              "3b9cfa": "Pemakaian: {{CLI_NAME}} db-cluster list|get|create|plan|apply|probe|install-peers|artifacts|bundle|push|fleet|overview|delete [--peers] [--execute] [--json]\n"
+              "3b9cfa": "Penggunaan: {{CLI_NAME}} daftar db-cluster|dapatkan|membuat|rencana|menerapkan|menyelidiki|menginstal-rekan|artefak|bundel|push|armada|ikhtisar|hapus [--peers] [--eksekusi] [--json]"
             }
           }
         },
         "ssh-key": {
           "get": {
             "--id": {
-              "292716": "Pemakaian: {{CLI_NAME}} ssh-key get --id UUID [--json]\n"
+              "292716": "Penggunaan: {{CLI_NAME}} ssh-key get --id UUID [--json]"
             }
           },
           "public": {
             "--id": {
-              "525d7d": "Pemakaian: {{CLI_NAME}} ssh-key public --id UUID\n"
+              "525d7d": "Penggunaan: {{CLI_NAME}} ssh-key public --id UUID"
             }
           },
           "export": {
             "--id": {
-              "0a6d81": "Pemakaian: {{CLI_NAME}} ssh-key export --id UUID [--out PATH] [--json]\n"
+              "0a6d81": "Penggunaan: {{CLI_NAME}} ssh-key ekspor --id UUID [--out PATH] [--json]"
             }
           },
           "delete": {
             "--id": {
-              "a6e2f2": "Pemakaian: {{CLI_NAME}} ssh-key delete --id UUID [--json]\n"
+              "a6e2f2": "Penggunaan: {{CLI_NAME}} ssh-key delete --id UUID [--json]"
             }
           },
           "create": {
             "--name": {
-              "8b1d79": "Pemakaian: {{CLI_NAME}} ssh-key create --name N [--algo ed25519|rsa-4096] [--purpose user|panel|unbound] [--project ID] [--user U] [--home PATH] [--reveal] [--json]\n"
+              "8b1d79": "Penggunaan: {{CLI_NAME}} ssh-key create --name N [--algo ed25519|rsa-4096] [--tujuan pengguna|panel|tidak terikat] [--ID proyek] [--pengguna U] [--home PATH] [--reveal] [--json]"
             }
           },
           "import": {
             "--name": {
-              "6eb800": "Pemakaian: {{CLI_NAME}} ssh-key import --name N --file PATH [--purpose panel|user] [--json]\n"
+              "6eb800": "Penggunaan: {{CLI_NAME}} ssh-key import --name N --file PATH [--panel tujuan|pengguna] [--json]"
             }
           },
           "install": {
             "--id": {
-              "b99c56": "Pemakaian: {{CLI_NAME}} ssh-key install --id UUID [--execute] [--json]\n"
+              "b99c56": "Penggunaan: {{CLI_NAME}} ssh-key install --id UUID [--execute] [--json]"
             }
           },
           "test": {
             "--id": {
-              "e1aed3": "Pemakaian: {{CLI_NAME}} ssh-key test --id UUID --target user@host[:port] [--execute] [--json]\n"
+              "e1aed3": "Penggunaan: {{CLI_NAME}} tes ssh-key --id UUID --target pengguna@host[:port] [--execute] [--json]"
             }
           },
           "rotate": {
             "--id": {
-              "9c3224": "Pemakaian: {{CLI_NAME}} ssh-key rotate --id UUID [--reveal] [--json]\n"
+              "9c3224": "Penggunaan: {{CLI_NAME}} ssh-key memutar --id UUID [--reveal] [--json]"
             }
           },
           "authorize-self": {
             "--id": {
-              "b7ea2e": "Pemakaian: {{CLI_NAME}} ssh-key authorize-self --id UUID [--json]\n"
+              "b7ea2e": "Penggunaan: {{CLI_NAME}} ssh-key authorize-self --id UUID [--json]"
             }
           },
           "uninstall": {
             "--id": {
-              "afcba0": "Pemakaian: {{CLI_NAME}} ssh-key uninstall --id UUID [--execute] [--json]\n"
+              "afcba0": "Penggunaan: {{CLI_NAME}} ssh-key uninstall --id UUID [--execute] [--json]"
             }
           },
           "list": {
             "get": {
-              "2c92c6": "Pemakaian: {{CLI_NAME}} ssh-key list|get|create|import|public|export|install|test|rotate|authorize-self|uninstall|delete [--json]\n"
+              "2c92c6": "Penggunaan: {{CLI_NAME}} ssh-key list|get|create|import|public|export|install|test|rotate|authorize-self|uninstall|delete [--json]"
             }
           }
         },
         "ssh-2fa": {
           "reveal": {
             "--id": {
-              "a6c27f": "Pemakaian: {{CLI_NAME}} ssh-2fa reveal --id UUID [--json]\n"
+              "a6c27f": "Penggunaan: {{CLI_NAME}} ssh-2fa mengungkapkan --id UUID [--json]"
             }
           },
           "retire": {
             "--id": {
-              "6e1fa3": "Pemakaian: {{CLI_NAME}} ssh-2fa retire --id UUID [--json]\n"
+              "6e1fa3": "Penggunaan: {{CLI_NAME}} ssh-2fa pensiun --id UUID [--json]"
             }
           },
           "enroll": {
             "--user": {
-              "081432": "Pemakaian: {{CLI_NAME}} ssh-2fa enroll --user LINUX|--project ID [--home PATH] [--from-panel] [--json]\n"
+              "081432": "Penggunaan: {{CLI_NAME}} ssh-2fa daftarkan --pengguna LINUX|--ID proyek [--home PATH] [--from-panel] [--json]"
             }
           },
           "confirm": {
             "--id": {
-              "9ee8a2": "Pemakaian: {{CLI_NAME}} ssh-2fa confirm --id UUID --code 123456 [--json]\n"
+              "9ee8a2": "Penggunaan: {{CLI_NAME}} ssh-2fa konfirmasi --id UUID --kode 123456 [--json]"
             }
           },
           "install": {
             "--id": {
-              "dace06": "Pemakaian: {{CLI_NAME}} ssh-2fa install --id UUID [--execute] [--json]\n"
+              "dace06": "Penggunaan: {{CLI_NAME}} ssh-2fa install --id UUID [--execute] [--json]"
             }
           },
           "uninstall": {
             "--id": {
-              "0bb464": "Pemakaian: {{CLI_NAME}} ssh-2fa uninstall --id UUID [--execute] [--json]\n"
+              "0bb464": "Penggunaan: {{CLI_NAME}} ssh-2fa uninstall --id UUID [--execute] [--json]"
             }
           },
           "list": {
             "enroll": {
-              "802ed0": "Pemakaian: {{CLI_NAME}} ssh-2fa list|enroll|confirm|install|uninstall|pam|reveal|retire [--json]\n"
+              "802ed0": "Penggunaan: {{CLI_NAME}} daftar ssh-2fa|daftarkan|konfirmasi|instal|uninstall|pam|ungkapkan|pensiunkan [--json]"
             }
           }
         },
         "ssl": {
           "list": {
             "get": {
-              "79c232": "Pemakaian: {{CLI_NAME}} ssl list|get --domain X [--json]\n"
+              "79c232": "Penggunaan: {{CLI_NAME}} daftar ssl|dapatkan --domain X [--json]"
             }
           },
           "get": {
             "--domain": {
-              "91c444": "Pemakaian: {{CLI_NAME}} ssl get --domain example.com [--json]\n"
+              "91c444": "Penggunaan: {{CLI_NAME}} ssl get --domain example.com [--json]"
             }
           }
         },
         "dns": {
           "zone": {
             "--zone": {
-              "ad30fa": "Pemakaian: {{CLI_NAME}} dns zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n"
+              "ad30fa": "Penggunaan: {{CLI_NAME}} zona dns --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validasi] [--reload]"
             }
           },
           "zones": {
             "zone": {
-              "5b8bda": "Pemakaian: {{CLI_NAME}} dns zones|zone --zone X --ip A.B.C.D [--ipv6 …] [--json]\n"
+              "5b8bda": "Penggunaan: {{CLI_NAME}} zona dns|zona --zona X --ip A.B.C.D [--ipv6 …] [--json]"
             }
           }
         },
         "nginx": {
           "status": {
             "list": {
-              "d67a16": "Pemakaian: {{CLI_NAME}} nginx status|list|test|sync [--execute] [--json]\n"
+              "d67a16": "Penggunaan: {{CLI_NAME}} status nginx|daftar|uji|sinkronisasi [--eksekusi] [--json]"
             }
           }
         },
         "host": {
           "overview": {
             "metrics": {
-              "93c828": "Pemakaian: {{CLI_NAME}} host overview|metrics|network [--path /] [--json]\n"
+              "93c828": "Penggunaan: {{CLI_NAME}} ikhtisar host|metrik|jaringan [--path /] [--json]"
             }
           }
         },
         "logs": {
           "sources": {
             "overview": {
-              "79058c": "Pemakaian: {{CLI_NAME}} logs sources|overview|units|journal|query [--source id] [--json]\n"
+              "79058c": "Penggunaan: {{CLI_NAME}} log sumber|ikhtisar|unit|jurnal|kueri [--source id] [--json]"
             }
           }
         },
         "services": {
           "sub": {
             "--unit": {
-              "4fe3fa": "Pemakaian: {{CLI_NAME}} services {{sub}} --unit <systemd-unit> [--execute] [--json]\n"
+              "4fe3fa": "Penggunaan: {{CLI_NAME}} layanan {{sub}} --unit <systemd-unit> [--execute] [--json]"
             }
           },
           "matrix": {
             "start": {
-              "4f3a35": "Pemakaian: {{CLI_NAME}} services matrix|start|stop|restart|reload --unit NAME [--execute] [--json]\n"
+              "4f3a35": "Penggunaan: {{CLI_NAME}} matriks layanan|mulai|berhenti|mulai ulang|muat ulang --unit NAME [--execute] [--json]"
             }
           }
         },
         "defense": {
           "ban": {
             "--ip": {
-              "cc22de": "Pemakaian: {{CLI_NAME}} defense ban --ip <ip> [--method fail2ban|ufw|both] [--reason t] [--execute]\n"
+              "cc22de": "Penggunaan: {{CLI_NAME}} larangan pertahanan --ip <ip> [--metode fail2ban|ufw|keduanya] [--alasan t] [--eksekusi]"
             }
           },
           "unban": {
             "--ip": {
-              "46aa23": "Pemakaian: {{CLI_NAME}} defense unban --ip <ip> [--method fail2ban|ufw|both] [--execute]\n"
+              "46aa23": "Penggunaan: {{CLI_NAME}} pertahanan unban --ip <ip> [--method fail2ban|ufw|keduanya] [--execute]"
             }
           },
           "whitelist": {
             "--action": {
-              "c1cbdf": "Pemakaian: {{CLI_NAME}} defense whitelist --action list|add|remove [--ip IP]\n"
+              "c1cbdf": "Penggunaan: {{CLI_NAME}} daftar putih pertahanan --daftar tindakan|tambahkan|hapus [--ip IP]"
             }
           },
           "status": {
             "bans": {
-              "a8d96b": "Pemakaian: {{CLI_NAME}} defense status|bans|suspects|ban|unban|whitelist|stack-apply|fail2ban|firewall|timeline|presets [--json]\n` +\n          `  bans [--q text] [--source fail2ban|panel|ufw|auto]\n` +\n          `  suspects [--q text]\n` +\n          `  stack-apply [--execute]   # UFW + fail2ban + preset aktif\n` +\n          `  fail2ban | firewall       # probe mendalam (jujur)\n` +\n          `  timeline [--limit N] [--q text]\n` +\n          `  presets                   # daftar + activePreset\n"
+              "a8d96b": "Penggunaan: {{CLI_NAME}} status pertahanan|larangan|tersangka|larangan|batalkan pelarangan|daftar putih|stack-apply|fail2ban|firewall|timeline|preset [--json]\n` +\n          ` melarang [--q teks] [--sumber fail2ban|panel|ufw|auto]\n` +\n          ` tersangka [--q teks]\n` +\n          ` stack-apply [--execute] # UFW + fail2ban + preset saat ini\n` +\n          `gagal2ban | firewall # probe mendalam (jujur)\n` +\n          ` garis waktu [--batas N] [--q teks]\n` +\n          ` preset # daftar + Preset aktif"
             }
           }
         }
@@ -893,7 +893,7 @@
         "--enable": {
           "--data-dir": {
             "path": {
-              "33daa1": "Pemakaian: ysk-server system unit-install [--enable] [--data-dir PATH]\n"
+              "33daa1": "Penggunaan: instalasi unit sistem ysk-server [--enable] [--data-dir PATH]"
             }
           }
         }
@@ -904,7 +904,7 @@
         "--username": {
           "u": {
             "--password": {
-              "7145c7": "Pemakaian: ysk-server users create --username <u> --password <p> [--role operator|viewer|admin] [--package-id id]\n"
+              "7145c7": "Penggunaan: pengguna server ysk membuat --username <u> --password <p> [--role operator|viewer|admin] [--package-id id]"
             }
           }
         }
@@ -913,7 +913,7 @@
         "--q": {
           "text": {
             "--role": {
-              "544685": "Pemakaian: ysk-server users list [--q text] [--role admin|operator|viewer]\n       ysk-server users create --username u --password p [--role operator]\n"
+              "544685": "Penggunaan: daftar pengguna server ysk [--q teks] [--peran admin|operator|penampil]\n       pengguna server ysk membuat --nama pengguna u --kata sandi p [--operator peran]"
             }
           }
         }
@@ -922,7 +922,7 @@
     "rbac": {
       "list": {
         "policies": {
-          "330ade": "Pemakaian: ysk-server rbac list|policies\n       ysk-server rbac show --role operator\n       ysk-server rbac audit   # matriks sampel route→cap\n"
+          "330ade": "Penggunaan: daftar rbac server ysk|kebijakan\n       ysk-server rbac tampilkan --operator peran\n       audit rbac ysk-server # rute→cap matriks sampel"
         }
       }
     },
@@ -931,7 +931,7 @@
         "--db": {
           "name": {
             "--user": {
-              "2c8889": "Pemakaian: ysk-server hosting postgres-provision --db NAME --user U --password P(min8) [--execute]\n  Default dry-run (tanpa ubah host). Gunakan --execute + YSK_EXECUTE=1 untuk menerapkan.\n"
+              "2c8889": "Penggunaan: ysk-server hosting postgres-provision --db NAME --user U --password P(min8) [--execute]\n  Uji coba default (tidak ada perubahan host). Lewati --execute + YSK_EXECUTE=1 untuk mendaftar."
             }
           }
         }
@@ -940,7 +940,7 @@
         "--db": {
           "name": {
             "--user": {
-              "fc25aa": "Pemakaian: ysk-server hosting mysql-provision --db NAME --user U --password P(min8) [--execute]\n  Default dry-run (tanpa ubah host). Gunakan --execute + YSK_EXECUTE=1 untuk menerapkan.\n"
+              "fc25aa": "Penggunaan: ysk-server hosting mysql-provision --db NAME --user U --password P(min8) [--execute]\n  Uji coba default (tidak ada perubahan host). Lewati --execute + YSK_EXECUTE=1 untuk mendaftar."
             }
           }
         }
@@ -949,7 +949,7 @@
         "--zone": {
           "example": {
             "com": {
-              "bdaa0d": "Pemakaian: ysk-server hosting dns-zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n"
+              "bdaa0d": "Penggunaan: ysk-server hosting dns-zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validasi] [--reload]"
             }
           }
         }
@@ -958,7 +958,7 @@
         "--zone": {
           "example": {
             "com": {
-              "dba49c": "Pemakaian: ysk-server hosting powerdns-load --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--load|--execute]\n"
+              "dba49c": "Penggunaan: ysk-server hosting powerdns-load --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--load|--execute]"
             }
           }
         }
@@ -967,7 +967,7 @@
         "--domain": {
           "example": {
             "com": {
-              "37d350": "Pemakaian: ysk-server hosting email-apply --domain example.com [--install|--execute]\n"
+              "37d350": "Penggunaan: ysk-server hosting email-apply --domain example.com [--install|--execute]"
             }
           }
         }
@@ -976,7 +976,7 @@
         "--domain": {
           "x": {
             "--local": {
-              "3d9be3": "Pemakaian: ysk-server hosting email-mailbox --domain X --local user [--password P] [--ip A.B.C.D]\n"
+              "3d9be3": "Penggunaan: ysk-server hosting email-kotak surat --domain X --pengguna lokal [--kata sandi P] [--ip A.B.C.D]"
             }
           }
         }
@@ -985,7 +985,7 @@
         "--domain": {
           "files": {
             "example": {
-              "284a7c": "Pemakaian: ysk-server hosting ftps-apply --domain files.example.com [--install|--execute]\n"
+              "284a7c": "Penggunaan: ysk-server hosting ftps-apply --domain files.example.com [--install|--execute]"
             }
           }
         }
@@ -994,7 +994,7 @@
         "--domain": {
           "webmail": {
             "example": {
-              "2ad5b5": "Pemakaian: ysk-server hosting webmail-apply --domain webmail.example.com [--download]\n"
+              "2ad5b5": "Penggunaan: ysk-server hosting webmail-apply --domain webmail.example.com [--download]"
             }
           }
         }
@@ -1003,7 +1003,7 @@
         "--domain": {
           "files": {
             "example": {
-              "0e9013": "Pemakaian: ysk-server hosting public-files --domain files.example.com [--reload]\n"
+              "0e9013": "Penggunaan: ysk-server hosting file publik --domain files.example.com [--reload]"
             }
           }
         }
@@ -1012,7 +1012,7 @@
         "--domain": {
           "example": {
             "com": {
-              "8774a4": "Pemakaian: ysk-server hosting email-deliverability --domain example.com\n       ysk-server hosting email-deliverability --id <domainId>\n"
+              "8774a4": "Penggunaan: ysk-server hosting pengiriman email --domain example.com\n       ysk-server hosting kemampuan pengiriman email --id <domainId>"
             }
           }
         }
@@ -1021,7 +1021,7 @@
         "--domain": {
           "example": {
             "com": {
-              "796da5": "Pemakaian: ysk-server hosting email-bootstrap --domain example.com --ip 1.2.3.4 [--admin postmaster] [--password P] [--install]\n"
+              "796da5": "Penggunaan: ysk-server hosting email-bootstrap --domain example.com --ip 1.2.3.4 [--admin postmaster] [--password P] [--install]"
             }
           }
         }
@@ -1032,7 +1032,7 @@
         "--job": {
           "id": {
             "--data-dir": {
-              "6a73cd": "Pemakaian: ysk-server migrate post --job <id> --data-dir PATH --execute\n"
+              "6a73cd": "Penggunaan: ysk-server migrasi posting --pekerjaan <id> --data-dir PATH --execute"
             }
           }
         }
@@ -1041,77 +1041,77 @@
         "--target": {
           "root": {
             "new": {
-              "3e94a2": "Pemakaian: ysk-server migrate host --target root@NEW_IP [--identity-file PATH|--identity-id ID] [--password] --execute --data-dir PATH\n"
+              "3e94a2": "Penggunaan: ysk-server migrasi host --target root@NEW_IP [--identity-file PATH|--identity-id ID] [--password] --execute --data-dir PATH"
             }
           }
         }
       }
     },
     "x": {
-      "972912": "Pemakaian:\n  ysk-server migrate inventory [--data-dir PATH] --json\n  ysk-server migrate host --target root@IP [--identity-file PATH|--identity-id ID|--password PW] --execute [--maintenance] [--force-wipe-target]\n  ysk-server migrate post --job ID --data-dir PATH --execute   # di target\n  ysk-server migrate status [--job ID]\n  ysk-server migrate resume --job ID --execute\n"
+      "972912": "Penggunaan:\n  ysk-server memigrasi inventaris [--data-dir PATH] --json\n  ysk-server migrasi host --target root@IP [--identity-file PATH|--identity-id ID|--password PW] --execute [--maintenance] [--force-wipe-target]\n  ysk-server migrasi posting --job ID --data-dir PATH --execute # sesuai target\n  status migrasi server ysk [--ID pekerjaan]\n  ysk-server migrasi melanjutkan --ID pekerjaan --eksekusi"
     },
-    "hostingHelp": "Pemakaian: ysk-server hosting <sub>\n  Operasi berbahaya default dry-run; tambahkan --execute (+ YSK_EXECUTE=1) untuk menerapkan\n  nginx | nginx-sync [--execute]\n  redis-provision | postgres-provision | mysql-provision [--execute]\n  dns-zone --zone X --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n  dns-zones | powerdns-status | powerdns-install [--install|--execute]\n  powerdns-load --zone X --ip A.B.C.D [--load|--execute]\n  email-apply --domain X [--install|--execute]\n  email-mailbox --domain X --local user [--password P] [--ip A.B.C.D] [--system]\n  ftps-apply --domain X [--install|--execute]\n  runtimes | runtime-install --kind node|php|python|go|rust --version V [--install|--execute]\n  dovecot-passdb --domain X | --all\n  webmail-apply --domain webmail.example.com [--download]\n  public-files --domain files.example.com [--reload]\n  email-bootstrap --domain example.com --ip A.B.C.D [--install|--execute]\n  email-deliverability --domain example.com   # paket PTR/DNSBL/warmup (jujur)\n  firewall-apply [--smtp] [--execute]\n",
-    "logsQuery": "Pemakaian: {{CLI_NAME}} logs query --source <id> [--lines N] [--grep G] [--since 1h] [--priority err]\n  contoh source: journal:  journal:nginx.service  file:syslog  project:<uuid>\n  {{CLI_NAME}} logs sources --json\n  {{CLI_NAME}} logs journal [--unit nginx.service] --json\n"
+    "hostingHelp": "Penggunaan: hosting server ysk <sub>\n  Uji coba default operasi berbahaya; tambahkan --execute (+ YSK_EXECUTE=1) untuk diterapkan\n  nginx | sinkronisasi nginx [--eksekusi]\n  ketentuan redis | ketentuan postgres | ketentuan mysql [--eksekusi]\n  dns-zone --zone X --ip A.B.C.D [--ipv6 X:X::X] [--validasi] [--reload]\n  zona-dns | status powerdns | powerdns-install [--install|--eksekusi]\n  powerdns-load --zone X --ip ABCD [--load|--execute]\n  lamaran email --domain X [--install|--eksekusi]\n  email-kotak surat --domain X --pengguna lokal [--kata sandi P] [--ip A.B.C.D] [--sistem]\n  ftps-apply --domain X [--install|--eksekusi]\n  waktu proses | runtime-install --kind node|php|python|go|rust --version V [--install|--execute]\n  tempat perlindungan merpati-passdb --domain X | --semua\n  webmail-apply --domain webmail.example.com [--unduh]\n  file publik --file domain.example.com [--reload]\n  email-bootstrap --domain example.com --ip A.B.C.D [--install|--execute]\n  email-deliverability --domain example.com # PTR/DNSBL/paket pemanasan (jujur)\n  penerapan firewall [--smtp] [--eksekusi]",
+    "logsQuery": "Penggunaan: {{CLI_NAME}} kueri log --source <id> [--lines N] [--grep G] [--since 1h] [--priority err]\n  contoh sumber: jurnal: jurnal:nginx.service file:syslog project:<uuid>\n  {{CLI_NAME}} mencatat sumber --json\n  {{CLI_NAME}} log jurnal [--unit nginx.service] --json"
   },
   "msg": {
     "domain": {
       "missing": {
         "pass": {
-          "5be09b": "Domain belum ada — berikan --ip untuk membuat domain terlebih dahulu\n"
+          "5be09b": "Domain hilang — berikan --ip untuk membuat domain terlebih dahulu"
         }
       }
     },
     "--root": {
       "must": {
         "be": {
-          "a84834": "--root harus public atau project:<id>\n"
+          "a84834": "--root harus bersifat publik atau proyek:<id>"
         }
       }
     },
     "need": {
       "--content": {
         "or": {
-          "4d7001": "Perlu --content atau --file\n"
+          "4d7001": "Perlu --content atau --file"
         }
       },
       "at": {
         "least": {
-          "7d311a": "Perlu setidaknya satu --member HOST[=role][:access]\n"
+          "7d311a": "Membutuhkan setidaknya satu --member HOST[=role][:access]"
         }
       }
     },
     "action": {
       "must": {
         "be": {
-          "ba14c1": "action harus list|add|remove\n"
+          "ba14c1": "tindakan harus daftar|tambah|hapus"
         }
       }
     },
     "use": {
       "ysk-server": {
         "backup": {
-          "ca67f4": "Gunakan: ysk-server backup control-plane-restore --name ARCHIVE (bukan restore --project-id control-plane)\n"
+          "ca67f4": "Gunakan: ysk-server backup control-plane-restore --name ARCHIVE (bukan pemulihan --project-id control-plane)"
         }
       }
     },
     "new": {
       "domain": {
         "requires": {
-          "986b78": "Domain baru memerlukan --ip A.B.C.D (tanpa default placeholder)\n"
+          "986b78": "Domain baru memerlukan --ip A.B.C.D (tidak ada default placeholder)"
         }
       }
     },
     "import-sync": {
       "prefers": {
         "fleet": {
-          "4d7590": "import-sync lebih memilih payload fleet clusterSync; atau --file snapshot.json\n"
+          "4d7590": "import-sync lebih memilih muatan clusterSync armada; atau --file snapshot.json"
         }
       }
     },
     "security": {
       "control": {
         "plane": {
-          "f59a63": "KEAMANAN: control plane terikat secara publik (0.0.0.0/::). Lebih baik 127.0.0.1 + reverse proxy / UFW.\n"
+          "f59a63": "KEAMANAN: bidang kontrol terikat secara publik (0.0.0.0/::). Lebih suka 127.0.0.1 + proksi terbalik / UFW."
         }
       }
     }
@@ -1121,62 +1121,62 @@
       "email": {
         "sub": {
           "sub": {
-            "e37257": "Sub email tidak dikenal: {{sub}}\nJalankan: ysk-server email help\n"
+            "e37257": "Sub email tidak dikenal: {{sub}}\nJalankan: bantuan email ysk-server"
           }
         }
       },
       "cron": {
         "sub": {
           "sub": {
-            "e1a9ed": "Sub cron tidak dikenal: {{sub}}\nJalankan: ysk-server cron help\n"
+            "e1a9ed": "Sub cron tidak dikenal: {{sub}}\nJalankan: bantuan cron ysk-server"
           }
         }
       },
       "files": {
         "sub": {
           "sub": {
-            "07ad7e": "Sub files tidak dikenal: {{sub}}\nJalankan: ysk-server files help\n"
+            "07ad7e": "Sub file tidak dikenal: {{sub}}\nJalankan: bantuan file ysk-server"
           }
         }
       },
       "store": {
         "sub": {
           "sub": {
-            "b7a083": "Sub store tidak dikenal: {{sub}}\nJalankan: ysk-server store help\n"
+            "b7a083": "Sub toko tidak dikenal: {{sub}}\nJalankan: bantuan toko ysk-server"
           }
         }
       },
       "cdn": {
         "subcommand": {
           "sub": {
-            "76664f": "Subperintah cdn tidak dikenal: {{sub}}\nJalankan: ysk-server cdn help\n"
+            "76664f": "Subperintah cdn tidak diketahui: {{sub}}\nJalankan: bantuan cdn ysk-server"
           }
         }
       },
       "backup": {
         "subcommand": {
           "sub": {
-            "4092ad": "Subperintah backup tidak dikenal: {{sub}}\nJalankan: ysk-server backup help\n"
+            "4092ad": "Subperintah cadangan tidak diketahui: {{sub}}\nJalankan: bantuan cadangan ysk-server"
           }
         }
       }
     }
   },
   "setup": {
-    "dryRunOk": "Setup {{product}} dry-run OK",
-    "dryRunNext": "Jalankan ulang tanpa --dry-run untuk menulis konfigurasi dan menginisialisasi database",
-    "weakPassword": "Kata sandi admin lemah atau default. Berikan --admin-password yang kuat (min 8, bukan \"admin\"/default umum), atau set YSK_ALLOW_INSECURE_DEFAULTS=1 hanya untuk dev lokal.",
-    "weakPasswordShort": "Kata sandi admin lemah atau default ditolak",
-    "nextStart": "Mulai (API + Web UI): {{cli}} serve --config {{configPath}}",
-    "nextOpen": "Buka http://{{host}}:{{port}}/ dan masuk sebagai {{user}}",
-    "nextUnit": "Template unit systemd: {{unitPath}}",
-    "nextInstall": "Pasang unit (root + YSK_EXECUTE): {{cli}} system unit-install --enable --data-dir {{dataDir}}",
+    "dryRunOk": "{{product}} pengaturan uji coba OK",
+    "dryRunNext": "Jalankan kembali tanpa --dry-run untuk menulis konfigurasi dan menginisialisasi database",
+    "weakPassword": "Kata sandi admin lemah atau default. Berikan --admin-password yang kuat (min 8, bukan \"admin\"/default umum), atau setel YSK_ALLOW_INSECURE_DEFAULTS=1 hanya untuk pengembang lokal.",
+    "weakPasswordShort": "Kata sandi admin yang lemah atau default ditolak",
+    "nextStart": "Mulai (API + UI Web): {{cli}} serve --config {{configPath}}",
+    "nextOpen": "Buka http://{{host}}:{{port}}/ dan login sebagai {{user}}",
+    "nextUnit": "Templat unit sistem: {{unitPath}}",
+    "nextInstall": "Instal unit (root + YSK_EXECUTE): {{cli}} instalasi unit sistem --enable --data-dir {{dataDir}}",
     "nextExecute": "Mutasi host produksi memerlukan YSK_EXECUTE=1 dan root",
-    "nextGolive": "Go-live: docs/deploy/go-live.md + ysk-server readiness --json",
-    "secPassword": "KEAMANAN: segera ganti kata sandi admin (bootstrap memakai kata sandi lemah/default)",
-    "sec2fa": "KEAMANAN: aktifkan 2FA admin di Keamanan → Akun",
-    "secListen": "KEAMANAN: mendengarkan di semua antarmuka — letakkan di balik firewall / reverse proxy; lebih baik 127.0.0.1 + tunnel SSH untuk admin",
-    "ok": "Setup {{product}} selesai (database diinisialisasi)",
-    "okInsecure": "Setup {{product}} selesai (database diinisialisasi) [BOOTSTRAP TIDAK AMAN — ganti kata sandi]"
+    "nextGolive": "Tayangkan: docs/deploy/go-live.md + kesiapan ysk-server --json",
+    "secPassword": "KEAMANAN: segera ubah kata sandi admin (bootstrap menggunakan kata sandi yang lemah/default)",
+    "sec2fa": "KEAMANAN: aktifkan admin 2FA di bawah Keamanan → Akun",
+    "secListen": "KEAMANAN: mendengarkan di semua antarmuka — letakkan di belakang firewall / proxy terbalik; lebih suka 127.0.0.1 + terowongan SSH untuk admin",
+    "ok": "{{product}} penyiapan selesai (database diinisialisasi)",
+    "okInsecure": "{{product}} setup selesai (database diinisialisasi) [INSECURE BOOTSTRAP — ubah kata sandi]"
   }
 }

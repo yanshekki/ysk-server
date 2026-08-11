@@ -10,7 +10,7 @@
     },
     "ftps": {
       "label": "Web + FTPS",
-      "short": "21 + PASV 30000–30100"
+      "short": "21 + PASV 30 000–30 100"
     }
   },
   "appliedProfile": "Profil appliqué : {{label}}",

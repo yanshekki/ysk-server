@@ -1,12 +1,12 @@
 {
   "searchPlaceholder": "検索…",
-  "searchAria": "検索リスト",
-  "clearSearch": "検索をクリア",
+  "searchAria": "一覧を検索",
+  "clearSearch": "検索履歴を消去",
   "clearAll": "フィルターをクリアする",
   "resultCount": "{{count}} 結果",
   "showingOf": "{{total}}中{{shown}}を表示中",
   "activeFilters": "{{count}} フィルターが有効です",
-  "noResults": "一致しません",
+  "noResults": "該当するものがありません",
   "noResultsHint": "別のキーワードを試すか、フィルターをクリアしてください。",
   "searching": "検索中…"
 }

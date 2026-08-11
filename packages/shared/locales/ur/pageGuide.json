@@ -1,11 +1,11 @@
 {
-  "missing": "اس صفحے کے لیے ابھی کوئی مدد مواد دستیاب نہیں۔",
-  "missingTitle": "کوئی گائیڈ نہیں",
-  "eyebrow": "بارے میں",
+  "missing": "اس صفحہ کے لیے ابھی تک کوئی امدادی مواد دستیاب نہیں ہے۔",
+  "missingTitle": "کوئی گائیڈ نہیں۔",
+  "eyebrow": "کے بارے میں",
   "canDoTitle": "آپ کیا کر سکتے ہیں",
   "workflowTitle": "تجویز کردہ بہاؤ",
   "notesTitle": "نوٹس",
   "cliTitle": "CLI فوری حوالہ",
-  "cliFoot": "مکمل فلیگز کے لیے ysk-server <command> --help چلائیں یا دستاویزات دیکھیں۔",
+  "cliFoot": "مکمل جھنڈوں کے لیے ysk-server <command> --help چلائیں یا دستاویزات دیکھیں۔",
   "relatedTitle": "متعلقہ"
 }

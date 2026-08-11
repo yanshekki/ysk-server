@@ -4,28 +4,28 @@
     "description": "읽기 전용 호스트 인벤토리"
   },
   "nginx-health": {
-    "name": "Nginx 상태 검사",
+    "name": "Nginx 상태 확인",
     "description": "nginx 서비스 상태 확인"
   },
   "nginx-restart": {
-    "name": "Nginx 재시작(고위험)",
-    "description": "승인 후 nginx 재시작"
+    "name": "Nginx 다시 시작(위험 높음)",
+    "description": "승인 후 nginx 다시 시작"
   },
   "local-llm-ops-only": {
-    "name": "로컬 LLM 운영 전용",
-    "description": "보호 모드에서의 비상 검색"
+    "name": "로컬 LLM 작업만 해당",
+    "description": "보호 모드에서 긴급 검색"
   },
   "disk-pressure": {
-    "name": "디스크 압박 검사",
+    "name": "디스크 압력 점검",
     "description": "df를 통한 읽기 전용 디스크 사용량"
   },
   "mail-stack-status": {
     "name": "메일 스택 상태",
-    "description": "postfix + dovecot 유닛 확인"
+    "description": "접미사 + 비둘기장 단위 확인"
   },
   "security-units": {
     "name": "보안 유닛",
-    "description": "fail2ban + sshd 상태 (읽기 전용)"
+    "description": "Fail2ban + sshd 상태(읽기 전용)"
   },
   "web-stack-status": {
     "name": "웹 스택 상태",
@@ -36,12 +36,12 @@
     "description": "보호에 안전한 사실만"
   },
   "backup-health": {
-    "name": "백업 준비 상태",
-    "description": "백업 윈도우 전 디스크 확인 + 프로세스 목록"
+    "name": "백업 준비",
+    "description": "백업 창 전에 디스크 확인 + 프로세스 나열"
   },
   "db-stack-status": {
     "name": "데이터베이스 스택 상태",
-    "description": "mysql/mariadb/redis/postgres 유닛"
+    "description": "mysql/mariadb/redis/postgres 단위"
   },
   "ssl-nginx-check": {
     "name": "SSL + Nginx 확인",

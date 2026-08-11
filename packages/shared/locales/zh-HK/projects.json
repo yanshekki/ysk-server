@@ -140,7 +140,7 @@
   "sectionGitDesc": "從 Git 拉取程式碼並重新部署",
   "sectionEnv": "環境變數",
   "sectionEnvDesc": "以 金鑰=value 寫入專案 .env",
-  "gitUrl": "Git URL",
+  "gitUrl": "git 網址",
   "gitDeploy": "Git 部署",
   "envFile": "環境檔（.env）",
   "saveEnv": "儲存環境變數",
@@ -152,7 +152,7 @@
   "sectionLimits": "CPU / 記憶體",
   "sectionLimitsDesc": "系統服務 資源限制；需重新 Deploy 才套用 服務單元",
   "quotaMb": "配額（MiB）",
-  "memoryMax": "MemoryMax",
+  "memoryMax": "最大記憶體",
   "cpuQuota": "CPU 配額 %",
   "setQuota": "設定配額",
   "setResources": "儲存資源限制",
@@ -506,7 +506,7 @@
     "node": "Node.js",
     "static": "靜態",
     "python": "Python",
-    "go": "Go",
+    "go": "去",
     "rust": "Rust",
     "java": "Java",
     "kotlin": "Kotlin",
@@ -523,7 +523,7 @@
   "railBun": "Bun 進程",
   "deployProcessManager": "進程管理",
   "deployProcessManagerSystemd": "systemd（推薦）",
-  "deployProcessManagerPm2": "PM2",
+  "deployProcessManagerPm2": "顆粒物",
   "proc_restart": "重啟",
   "proc_stop": "停止",
   "proc_reload": "重新載入",
@@ -556,5 +556,5 @@
   "deleteRemoveFilesDesc": "取消勾選則只從面板移除，檔案與系統用戶保留",
   "deleteTypeNameHint": "請輸入「{{v0}}」",
   "deleteDnsWarn": "共享 DNS zone / 郵箱 domain 不會自動刪除。",
-  "manageInNginx": "喺 Nginx 管理"
+  "manageInNginx": "在 Nginx 管理"
 }

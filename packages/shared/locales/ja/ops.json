@@ -1,24 +1,24 @@
 {
   "blocked": {
-    "needExecute": "ホスト execute がオフのため、この操作はパネルから完了できません",
+    "needExecute": "ホストの実行はオフです。このアクションはパネルから終了できません",
     "needExecuteShort": "ホスト実行が有効になっていません",
     "needExecuteBlocked": "ブロック済み: ホストの実行がオフになっています",
     "needRoot": "root権限が必要です",
     "needExecuteRoot": "YSK_EXECUTE=1 および root が必要です",
     "needExecuteYsk": "YSK_EXECUTE=1が必要です",
-    "writeOutsideDataDir": "書き込みブロック: ホスト execute がオフで、パスがパネルデータディレクトリ外です",
+    "writeOutsideDataDir": "書き込みがブロックされました: ホストの実行がオフで、パスがパネル データ ディレクトリの外にあります",
     "nginxReload": "Nginx をリロードできません: ホストの実行が必要です",
-    "signal": "シグナルを送信できません: ホスト execute が必要です（YSK_EXECUTE）",
+    "signal": "シグナルを送信できません: ホストの実行が必要です (YSK_EXECUTE)",
     "signalNote": "実際のキルにはYSK_EXECUTE=1が必要です",
-    "renice": "Reniceできません：ホスト実行が必要です（ YSK_EXECUTE ）",
-    "install": "ホスト execute がオフのため、インストールはパネルから完了できません",
-    "update": "ホスト execute がオフのため、更新はパネルから完了できません",
-    "panel": "管理パネルからはこれを完了できません"
+    "renice": "再実行できません: ホストの実行が必要です (YSK_EXECUTE)",
+    "install": "ホストの実行はオフです。パネルからインストールを完了できません",
+    "update": "ホストの実行はオフです。パネルからアップデートを完了できません",
+    "panel": "管理パネルからこれを完了できません"
   },
   "honesty": {
     "blockedNotOk": "正直な修正: ブロックを ok=true にすることはできません",
-    "blockedNotApplied": "正直な修正：ブロックされたものは適用できません_ステータス=適用されました",
-    "okFalseNotApplied": "正直な修正： ok = false cannot be apply_status = applied"
+    "blockedNotApplied": "正直な修正: ブロックされたものは apply_status=applied にできません",
+    "okFalseNotApplied": "正直な修正: ok=false を apply_status=applied にすることはできません"
   },
   "status": {
     "applied": "ステータス: 適用済み",
@@ -32,7 +32,7 @@
     "partialSuccess": "操作は部分的にのみ成功しました",
     "notInstalled": "未インストール",
     "running": "ランニング",
-    "stopped": "停止しました",
+    "stopped": "中止中",
     "unknown": "不明"
   }
 }

@@ -1,185 +1,185 @@
 {
-  "probed": "Sondeado",
-  "notProbed": "No sondeado",
-  "probe": "Sondear",
-  "read": "Lectura",
-  "targetVersion": "Versión objetivo",
+  "probed": "sondeado",
+  "notProbed": "No investigado",
+  "probe": "Sonda",
+  "read": "Leer",
+  "targetVersion": "Versión de destino",
   "nodeMissing": "Node.js no está instalado",
-  "probeResult": "Resultado del sondeo",
-  "readonly": "Solo lectura",
+  "probeResult": "Resultado de la sonda",
+  "readonly": "Sólo lectura",
   "installNode": "Instalar Node.js",
-  "needExecuteAdmin": "Requiere permisos de cambio del sistema y administrador",
-  "nodeMajor": "Versión mayor de Node",
-  "nodeMajorHint": "LTS suele ser 20 o 22; alinear con el runtime del proyecto",
-  "installedNode": "Node {{version}} instalado",
+  "needExecuteAdmin": "Necesita derechos de cambio de sistema y administrador.",
+  "nodeMajor": "Versión principal del nodo",
+  "nodeMajorHint": "LTS suele ser 20 o 22; alinearse con el tiempo de ejecución del proyecto",
+  "installedNode": "Nodo instalado {{version}}",
   "installPm2": "Instalar PM2",
-  "installPm2Desc": "Instalación con un clic de npm install -g pm2 (gestor de procesos). Requiere Node.js primero.",
+  "installPm2Desc": "npm install -g pm2 con un clic (administrador de procesos). Requiere Node.js primero.",
   "installPm2Btn": "Instalar PM2",
-  "reinstallPm2": "Reinstalar PM2",
+  "reinstallPm2": "Reinstale PM2",
   "installedPm2": "PM2 instalado",
   "pm2Status": "Estado de PM2",
   "pm2Ready": "Listo",
   "pm2MissingShort": "No instalado",
-  "pm2NeedNodeFirst": "Instale Node.js primero y después PM2.",
-  "pm2InstallHint": "Ejecuta npm -g como root con permisos de cambio del sistema;",
-  "pm2ReadyHint": "PM2 está en el PATH; los proyectos pueden usar el modo de proceso PM2.",
-  "opsResult": "Resultado de operaciones",
+  "pm2NeedNodeFirst": "Instale Node.js primero, luego PM2.",
+  "pm2InstallHint": "Ejecuta npm -g como root con derechos de cambio de sistema;",
+  "pm2ReadyHint": "PM2 está en RUTA; Los proyectos pueden utilizar el modo de proceso PM2.",
+  "opsResult": "resultado de operaciones",
   "unlimited": "Ilimitado",
   "zeroUnlimited": "0 = ilimitado",
   "m24": "24m",
-  "h1": "1h",
+  "h1": "1 hora",
   "d1": "1d",
   "d7": "7d",
-  "phpIniLoadFailed": "Error al cargar php.ini",
+  "phpIniLoadFailed": "No se pudo cargar php.ini",
   "loaded": "Cargado",
-  "default": "Predeterminado",
+  "default": "Por defecto",
   "phpMissing": "PHP no está instalado",
-  "overview": "Resumen",
-  "fpmSites": "FPM / sitios",
+  "overview": "Descripción general",
+  "fpmSites": "FPM/sitios",
   "tools": "Herramientas",
   "about": "Acerca de",
   "installPhp": "Instalar PHP",
   "versionAlreadyInstalled": "La versión {{version}} ya está en el host",
-  "installedVersionBtn": "{{version}} instalado",
-  "newerVersionAvailable": "Actual {{current}}; más reciente admitida: {{newer}} (seleccione para instalar)",
-  "switchToNewer": "Seleccionar {{version}}",
+  "installedVersionBtn": "Instalado {{version}}",
+  "newerVersionAvailable": "Actual {{current}}; más reciente compatible: {{newer}} (seleccione para instalar)",
+  "switchToNewer": "Seleccione {{version}}",
   "installedVersionsHint": "Detectado: {{list}}",
-  "phpInstallHint": "Requiere permisos de cambio del sistema y administrador;",
-  "phpVersion": "Versión de PHP",
-  "phpExtHint": "Elija las extensiones a instalar",
+  "phpInstallHint": "Necesita derechos de cambio de sistema y administrador;",
+  "phpVersion": "versión PHP",
+  "phpExtHint": "Elija extensiones para instalar",
   "phpExtSelect": "Extensiones PHP",
   "phpExtSelectHint": "Los paquetes se instalan como php{{version}}-…;",
-  "phpExtRequired": "Obligatorias (núcleo)",
+  "phpExtRequired": "Requerido (núcleo)",
   "phpExtRecommended": "Conjunto recomendado",
   "phpExtSelectAll": "Seleccionar todas las extensiones",
   "phpExtCoreOnly": "Solo núcleo",
-  "phpExtSearch": "Buscar extensiones (mysql, gd, redis…)",
+  "phpExtSearch": "Extensiones de búsqueda (mysql, gd, redis…)",
   "phpExtEmpty": "No hay extensiones coincidentes",
-  "pluginsSelect": "Herramientas / plugins comunes",
-  "pluginsSelectHint": "Seleccione para instalar con el runtime (p. ej. PM2 para Node, Poetry para Python)",
-  "pluginsSearch": "Buscar herramientas (pm2, poetry, maven…)",
+  "pluginsSelect": "Herramientas/complementos comunes",
+  "pluginsSelectHint": "Seleccione instalar con el tiempo de ejecución (por ejemplo, PM2 para Node, Poetry para Python)",
+  "pluginsSearch": "Herramientas de búsqueda (pm2, poesía, maven…)",
   "pluginsEmpty": "No hay herramientas coincidentes",
   "pluginsRecommended": "Conjunto recomendado",
-  "pluginsSelectAll": "Seleccionar todas las disponibles",
-  "pluginsNone": "No hay herramientas complementarias",
-  "pluginsInstallNote": "Seleccione herramientas y luego Instalar seleccionadas. La instalación inicial del runtime puede incluir herramientas; si el runtime ya está presente, use solo el botón de arriba.",
-  "installPluginsOnly": "Instalar herramientas seleccionadas ({{version}} ya presente)",
+  "pluginsSelectAll": "Seleccionar todo disponible",
+  "pluginsNone": "Sin herramientas complementarias",
+  "pluginsInstallNote": "Seleccione las herramientas y luego Instalar seleccionadas. La instalación en tiempo de ejecución por primera vez puede incluir herramientas; si el tiempo de ejecución está presente, utilice únicamente el botón de arriba.",
+  "installPluginsOnly": "Instalar herramientas seleccionadas ({{version}} ya presentes)",
   "installExtOnly": "Instalar extensiones seleccionadas (PHP {{version}} presente)",
-  "pluginAlreadyOnHost": "ya en el host",
+  "pluginAlreadyOnHost": "ya en el anfitrión",
   "installAddonsOnly": "Instalar complementos seleccionados ({{version}} presente)",
-  "remoteNewerHint": "Instalado {{current}} · última upstream {{remote}}{{source}}",
-  "installedPhp": "PHP {{version}} instalado",
-  "nextSteps": "Siguiente",
+  "remoteNewerHint": "Instalado {{current}} · upstream más reciente {{remote}}{{source}}",
+  "installedPhp": "PHP instalado {{version}}",
+  "nextSteps": "Próximo",
   "suggestedFlow": "Flujo sugerido",
   "globalPhpIni": "php.ini global",
-  "globalPhpIniDesc": "Un ajuste por fila",
+  "globalPhpIniDesc": "Una configuración por fila",
   "managePath": "Ruta de gestión",
   "loading": "Cargando",
-  "cannotLoadSettings": "No se puede cargar la tabla de ajustes",
-  "reloadFailed": "Error al recargar",
-  "sensitive": "Ajuste sensible — precaución",
-  "on": "Activado",
-  "off": "Desactivado",
+  "cannotLoadSettings": "No se puede cargar la tabla de configuración",
+  "reloadFailed": "Recarga fallida",
+  "sensitive": "Configuración sensible: cuidado",
+  "on": "En",
+  "off": "Apagado",
   "customNumber": "Número personalizado",
-  "customExample": "Personalizado, p. ej. 768M",
+  "customExample": "Personalizado, p.e. 768M",
   "advancedExtra": "Avanzado: claves extra y raw",
-  "advancedExtraDesc": "Directivas fuera del catálogo; una clave=valor por línea; raw se añade al final del ini",
-  "extraDirectives": "Directivas extra",
-  "extraDirectivesHint": "Una clave=valor por línea (claves no listadas arriba)",
-  "rawAppend": "Añadir raw al final del ini",
+  "advancedExtraDesc": "Directivas no en catálogo; una clave=valor por línea; raw se agrega a la cola inicial",
+  "extraDirectives": "Directivas adicionales",
+  "extraDirectivesHint": "Una clave = valor por línea (las claves aún no están arriba)",
+  "rawAppend": "Agregar raw al final de ini",
   "phpIniSaved": "php.ini guardado",
   "appliedSystem": "Aplicado al sistema",
-  "demoVhost": "Herramientas del sistema: vhost / pool de demostración",
-  "demoVhostDesc": "Avanzado/depuración; los sitios cotidianos usan Proyectos → Desplegar",
+  "demoVhost": "Herramientas del sistema: demostración vhost / pool",
+  "demoVhostDesc": "Avanzado/depuración; Los sitios diarios utilizan Proyectos → Implementar.",
   "domain": "Dominio",
-  "vhostServerName": "server_name del virtual host",
-  "poolName": "Nombre del pool",
-  "poolNameHint": "Id escrito a mano (demo); las rutas de proyecto usan usuarios ysks_*",
-  "enableReload": "Activar y recargar servicios",
-  "enableReloadHint": "Requiere permisos de cambio del sistema; desactivado = solo gestión de escritura",
-  "applyFailed": "Aplicación fallida",
-  "phpVhostApplied": "vhost / pool de PHP aplicado",
-  "composerTools": "Composer / WP-CLI / módulos",
+  "vhostServerName": "nombre_servidor del host virtual",
+  "poolName": "Nombre de la piscina",
+  "poolNameHint": "Identificación escrita a mano (demostración); las rutas del proyecto utilizan usuarios ysks_*",
+  "enableReload": "Habilitar y recargar servicios",
+  "enableReloadHint": "Necesita derechos de cambio de sistema; off = solo gestión de escritura",
+  "applyFailed": "No se pudo aplicar",
+  "phpVhostApplied": "PHP vhost/grupo aplicado",
+  "composerTools": "Compositor / WP-CLI / módulos",
   "composerToolsDesc": "Sondeo en vivo de herramientas PATH y php -m (solo lectura)",
   "toolsProbed": "Herramientas sondeadas",
-  "notFound": "No encontrado",
+  "notFound": "Extraviado",
   "available": "Disponible",
   "moduleCount": "Módulos",
-  "installNodeV": "Instalar Node {{v}}",
+  "installNodeV": "Instalar nodo {{v}}",
   "installPhpV": "Instalar PHP {{v}}",
   "installPythonV": "Instalar Python {{v}}",
-  "installGoV": "Instalar Go {{v}}",
+  "installGoV": "Instalar Ir {{v}}",
   "installRustV": "Instalar Rust {{v}}",
   "pythonMissing": "Python no está instalado",
-  "goMissing": "Go no está instalado",
-  "rustMissing": "Rust/cargo no está instalado",
-  "tuneLoadFailed": "Error al cargar el ajuste",
-  "availableCount": "{{n}} disponibles",
+  "goMissing": "Ir no está instalado",
+  "rustMissing": "Óxido/carga no instalada",
+  "tuneLoadFailed": "No se pudo cargar el ajuste",
+  "availableCount": "{{n}} disponible",
   "notDetected": "No detectado",
-  "target": "Destino",
-  "tune": "Ajustar",
+  "target": "Objetivo",
+  "tune": "Melodía",
   "loadedShort": "Cargado",
-  "host": "Host",
-  "tabOverviewInstall": "Resumen / instalar",
-  "tabTune": "Ajuste",
-  "probeReadonlyInstall": "Solo lectura · sondear de nuevo tras instalar",
-  "hostDefault": "Predeterminado del host",
-  "panelSupport": "Soporte del panel",
+  "host": "Anfitrión",
+  "tabOverviewInstall": "Descripción general",
+  "tabTune": "Sintonización",
+  "probeReadonlyInstall": "Sólo lectura · sondear nuevamente después de la instalación",
+  "hostDefault": "Valor predeterminado del host",
+  "panelSupport": "Soporte de paneles",
   "ready": "Listo",
   "notDetectedYet": "Aún no detectado",
   "install": "Instalar",
-  "installHint": "Requiere permisos de cambio del sistema y admin; instalar la toolchain ≠ el proyecto es público",
-  "panelTune": "Ajuste del panel",
-  "panelTuneDesc": "Gestión de escritura; inyectar env al desplegar",
-  "bindVersion": "Fijar versión",
-  "onePerRow": "Un ajuste por fila",
+  "installHint": "Necesita derechos de cambio de sistema y administrador; instalar la cadena de herramientas ≠ el proyecto es público",
+  "panelTune": "Ajuste de paneles",
+  "panelTuneDesc": "Gestión de escritura; inyectar env en la implementación",
+  "bindVersion": "Versión de pasador",
+  "onePerRow": "Una configuración por fila",
   "zeroAll": "0 = todos",
-  "custom": "Personalizado",
-  "extraEnv": "Variables de entorno extra",
-  "extraEnvHint": "Una KEY=value por línea",
-  "customEnv": "Env personalizado",
-  "envPreview": "Vista previa de env",
-  "envPreviewDesc": "Resultado fusionado tras guardar / última carga",
+  "custom": "Costumbre",
+  "extraEnv": "Variables de entorno adicionales",
+  "extraEnvHint": "Una CLAVE = valor por línea",
+  "customEnv": "entorno personalizado",
+  "envPreview": "Vista previa del entorno",
+  "envPreviewDesc": "Resultado combinado después de guardar/última carga",
   "unsupported": "No compatible",
-  "tuneSaved": "Ajuste guardado",
-  "nodeDetectedHint": "Node detectado en el host; la reinstalación depende de privilegios y puede sobrescribir.",
-  "nodeProbeAfter": "Tras la instalación, vuelva a sondear para confirmar PATH y versión.",
-  "installNodeVBtn": "Instalar Node {{version}}",
+  "tuneSaved": "Afinación guardada",
+  "nodeDetectedHint": "Nodo detectado en el host; La reinstalación sigue los privilegios y puede sobrescribirlos.",
+  "nodeProbeAfter": "Después de la instalación, vuelva a sondear para confirmar la RUTA y la versión.",
+  "installNodeVBtn": "Instalar nodo {{version}}",
   "installPhpVBtn": "Instalar PHP {{version}}",
-  "phpIniSteps1": "Diseñe los valores globales en la pestaña php.ini y guarde",
-  "phpIniSteps2": "Opcional: Aplicar al sistema (escribe en /etc/php/…/conf.d, requiere root)",
-  "phpIniSteps3": "El despliegue del proyecto inyecta el ini fusionado como php_admin_* en el pool FPM",
-  "phpIniSteps4": "Los proyectos pueden sobrescribir claves individuales (Proyecto → Desplegar)",
-  "phpIniNote": "Los cambios se guardan primero en dataDir del panel; Aplicar al sistema copia a /etc/php y recarga FPM. Los pools de proyecto inyectan php_admin_value al desplegar.",
+  "phpIniSteps1": "Diseñe valores globales en la pestaña php.ini y guárdelos",
+  "phpIniSteps2": "Opcional: Aplicar al sistema (escribe /etc/php/…/conf.d, necesita root)",
+  "phpIniSteps3": "La implementación del proyecto inyecta ini combinado como php_admin_* en el grupo de FPM",
+  "phpIniSteps4": "Los proyectos pueden anular claves individuales (Proyecto → Implementar)",
+  "phpIniNote": "Los cambios se guardan primero en el directorio de datos del panel; Aplicar a las copias del sistema a /etc/php y recarga FPM. Los grupos de proyectos inyectan php_admin_value durante la implementación.",
   "phpIniLoading": "Cargando formulario php.ini…",
-  "phpIniEmpty": "Catálogo vacío — recargue o asegúrese de que la API esté activa.",
+  "phpIniEmpty": "Catálogo vacío: recarga o asegúrate de que la API esté activa.",
   "reloadForm": "Recargar formulario",
   "savePhpIni": "Guardar php.ini",
-  "prodUseProjects": "En producción debe usar Proyectos",
-  "prodPathDesc": ": cree un proyecto PHP → despliegue/aplique FPM (pool = usuario Linux del proyecto + home aislado)",
-  "systemDemo": "demo/herramientas a nivel de sistema",
-  "demoNotBind": "(nombre de pool escrito a mano) y no vincula automáticamente el aislamiento del proyecto. El php.ini global está en la pestaña php.ini.",
-  "applyOkWritten": "Aplicar con éxito = archivos escritos. Prefiera el despliegue del proyecto para que User=usuario Linux del proyecto.",
-  "applyPhpVhost": "Aplicar vhost / pool PHP",
-  "reprobeTools": "Volver a sondear herramientas",
-  "pressReprobe": "Pulse Volver a sondear herramientas para cargar",
-  "installNodeLabel": "Instalar Node {{v}}",
+  "prodUseProjects": "La producción debe utilizar Proyectos.",
+  "prodPathDesc": ": crear proyecto PHP → implementar/aplicar FPM (grupo = proyecto usuario de Linux + hogar aislado)",
+  "systemDemo": "demostración/herramientas a nivel de sistema",
+  "demoNotBind": "(nombre del grupo escrito a mano) y no vincula automáticamente el aislamiento del proyecto. php.ini global está en la pestaña php.ini.",
+  "applyOkWritten": "Aplicar con éxito = archivos escritos. Prefiera la implementación del proyecto para que Usuario = usuario de Linux del proyecto.",
+  "applyPhpVhost": "Aplicar PHP vhost/pool",
+  "reprobeTools": "Herramientas para volver a sondear",
+  "pressReprobe": "Presione Herramientas para volver a sondear para cargar",
+  "installNodeLabel": "Instalar nodo {{v}}",
   "installPhpLabel": "Instalar PHP {{v}}",
   "installPythonLabel": "Instalar Python {{v}}",
-  "installGoLabel": "Instalar Go {{v}}",
+  "installGoLabel": "Instalar Ir {{v}}",
   "installRustLabel": "Instalar Rust {{v}}",
-  "readShort": "Lectura",
-  "pressReprobeHost": "Pulse Volver a sondear para cargar la matriz de versiones del host",
-  "installScriptNote": "Escribe el script de instalación; solo se ejecuta con privilegios. El ajuste está en la pestaña Ajuste; vuelva a desplegar proyectos para cambios de proceso.",
-  "envNote": "Node: max-old-space-size se fusiona en NODE_OPTIONS. Go/Python/Rust usan variables de entorno oficiales.",
-  "saveTune": "Guardar ajuste",
-  "pressReprobeLoad": "Pulse Volver a sondear herramientas para cargar",
-  "installJavaLabel": "Instalar / actualizar OpenJDK",
-  "installKotlinLabel": "Instalar / actualizar Kotlin",
-  "installBunLabel": "Instalar / actualizar Bun",
+  "readShort": "Leer",
+  "pressReprobeHost": "Presione Volver a sondear para cargar la matriz de la versión del host",
+  "installScriptNote": "Escribe el script de instalación; se ejecuta sólo con privilegios. La sintonización está en la pestaña Sintonización; Redistribuir proyectos para cambios de proceso.",
+  "envNote": "Nodo: max-old-space-size se fusiona con NODE_OPTIONS. Go/Python/Rust utiliza variables de entorno oficiales.",
+  "saveTune": "Guardar sintonización",
+  "pressReprobeLoad": "Presione Herramientas para volver a sondear para cargar",
+  "installJavaLabel": "Instalar/actualizar OpenJDK",
+  "installKotlinLabel": "Instalar/actualizar Kotlin",
+  "installBunLabel": "Instalar/actualizar Bun",
   "javaMissing": "Java (OpenJDK) no detectado",
   "kotlinMissing": "Compilador Kotlin no detectado",
-  "bunMissing": "Bun no detectado",
+  "bunMissing": "Bollo no detectado",
   "phpIniCatalog": {
     "groups": {
       "resource": {
@@ -187,8 +187,8 @@
         "description": "Memoria, tiempo de ejecución y límites de entrada"
       },
       "upload": {
-        "title": "Carga y POST",
-        "description": "Subidas de archivos y tamaño del cuerpo POST"
+        "title": "Cargar y publicar",
+        "description": "Cargas de archivos y tamaño del cuerpo de la POST"
       },
       "session": {
         "title": "Sesión",
@@ -196,130 +196,130 @@
       },
       "error": {
         "title": "Errores y registro",
-        "description": "Mostrar errores, registro y nivel de informe"
+        "description": "Mostrar errores, registros y nivel de informes"
       },
       "opcache": {
         "title": "OPcache",
-        "description": "Caché de bytecode"
+        "description": "Caché de código de bytes"
       },
       "security": {
-        "title": "Seguridad y rutas",
-        "description": "Archivos remotos, exposición y funciones deshabilitadas"
+        "title": "Seguridad y caminos",
+        "description": "Archivos remotos, exposición y funciones deshabilitadas."
       },
       "locale": {
         "title": "Zona horaria y juego de caracteres"
       },
       "misc": {
-        "title": "Otros ajustes comunes"
+        "title": "Otras configuraciones comunes"
       }
     },
     "fields": {
       "memory_limit": {
         "label": "Límite de memoria",
-        "hint": "p. ej. 128M, 256M, 512M, -1 (ilimitado)"
+        "hint": "p.ej. 128M, 256M, 512M, -1 (ilimitado)"
       },
       "max_execution_time": {
         "label": "Tiempo máximo de ejecución",
-        "hint": "Segundos; 0 = ilimitado (CLI)"
+        "hint": "Artículos de segunda clase; 0 = ilimitado (CLI)"
       },
       "max_input_time": {
         "label": "Tiempo máximo de entrada",
-        "hint": "Segundos; tiempo máximo para analizar la petición"
+        "hint": "Artículos de segunda clase; tiempo máximo para analizar la solicitud"
       },
       "max_input_vars": {
-        "label": "Máximo de variables de entrada",
+        "label": "Variables de entrada máximas",
         "hint": "Límite para variables $_GET / $_POST / $_COOKIE"
       },
       "max_input_nesting_level": {
-        "label": "Nivel máximo de anidación de entrada"
+        "label": "Nivel máximo de anidamiento de entrada"
       },
       "file_uploads": {
-        "label": "Permitir subida de archivos"
+        "label": "Permitir carga de archivos"
       },
       "upload_max_filesize": {
-        "label": "Tamaño máximo de archivo subido"
+        "label": "Tamaño máximo de archivo de carga"
       },
       "post_max_size": {
-        "label": "Tamaño máximo de POST",
-        "hint": "Debe ser ≥ al tamaño máximo de archivo subido"
+        "label": "Tamaño máximo de publicación",
+        "hint": "Debe ser ≥ tamaño máximo de archivo de carga"
       },
       "max_file_uploads": {
-        "label": "Máximo de archivos por petición"
+        "label": "Archivos máximos por solicitud"
       },
       "session_save_handler": {
-        "label": "Manejador de guardado de sesión"
+        "label": "Controlador de guardado de sesión"
       },
       "session_gc_maxlifetime": {
         "label": "Duración de la sesión (segundos)",
-        "hint": "Segundos"
+        "hint": "Artículos de segunda clase"
       },
       "session_cookie_httponly": {
         "label": "Cookie HttpOnly"
       },
       "session_cookie_secure": {
-        "label": "Cookie Secure (solo HTTPS)",
+        "label": "Cookie segura (solo HTTPS)",
         "hint": "Recomendado para sitios HTTPS"
       },
       "session_use_strict_mode": {
         "label": "Modo estricto de sesión"
       },
       "display_errors": {
-        "label": "Mostrar errores (en la página)",
-        "hint": "Desactivar en producción"
+        "label": "Errores de visualización (en la página)",
+        "hint": "Deshabilitar en producción"
       },
       "display_startup_errors": {
-        "label": "Mostrar errores de arranque"
+        "label": "Mostrar errores de inicio"
       },
       "log_errors": {
-        "label": "Registrar errores"
+        "label": "Errores de registro"
       },
       "error_reporting": {
         "label": "Nivel de informe de errores",
-        "hint": "O un entero como 32767"
+        "hint": "O un número entero como 32767"
       },
       "error_log": {
         "label": "Ruta del registro de errores",
-        "hint": "Vacío = predeterminado del sistema; se permite ruta absoluta"
+        "hint": "Vacío = valor predeterminado del sistema; ruta absoluta permitida"
       },
       "opcache_enable": {
-        "label": "Activar OPcache"
+        "label": "Habilitar OPcache"
       },
       "opcache_enable_cli": {
-        "label": "Activar OPcache para CLI"
+        "label": "Habilitar OPcache para CLI"
       },
       "opcache_memory_consumption": {
-        "label": "Memoria de OPcache (MB)",
+        "label": "Memoria OPcache (MB)",
         "hint": "Unidad: MB"
       },
       "opcache_interned_strings_buffer": {
         "label": "Búfer de cadenas internadas (MB)"
       },
       "opcache_max_accelerated_files": {
-        "label": "Máximo de archivos acelerados"
+        "label": "Archivos acelerados al máximo"
       },
       "opcache_validate_timestamps": {
         "label": "Validar marcas de tiempo",
-        "hint": "En producción puede desactivarlo y recargar manualmente"
+        "hint": "En producción, puede desactivar y recargar manualmente."
       },
       "opcache_revalidate_freq": {
-        "label": "Frecuencia de revalidación (segundos)"
+        "label": "Frecuencia de revalidar (segundos)"
       },
       "allow_url_fopen": {
-        "label": "Permitir URL fopen"
+        "label": "Permitir apertura de URL"
       },
       "allow_url_include": {
-        "label": "Permitir URL include"
+        "label": "Permitir incluir URL"
       },
       "expose_php": {
-        "label": "Exponer cabecera de versión de PHP"
+        "label": "Exponer el encabezado de la versión de PHP"
       },
       "open_basedir": {
-        "label": "Restricción de ruta open_basedir",
-        "hint": "Vacío = sin límite; separe las rutas con :"
+        "label": "restricción de ruta open_basedir",
+        "hint": "Vacío = sin límite; caminos separados con:"
       },
       "disable_functions": {
         "label": "Funciones deshabilitadas",
-        "hint": "Separadas por comas; un valor demasiado estricto puede romper paquetes"
+        "hint": "Separados por comas; demasiado estricto puede romper los paquetes"
       },
       "date_timezone": {
         "label": "Zona horaria"
@@ -328,35 +328,35 @@
         "label": "Juego de caracteres predeterminado"
       },
       "short_open_tag": {
-        "label": "Permitir etiquetas de apertura cortas (<?)"
+        "label": "Permitir etiquetas abiertas cortas (<?)"
       },
       "realpath_cache_size": {
-        "label": "Tamaño de la caché realpath"
+        "label": "Tamaño de caché de ruta real"
       },
       "realpath_cache_ttl": {
-        "label": "TTL de la caché realpath (segundos)"
+        "label": "TTL de caché de Realpath (segundos)"
       },
       "cgi_fix_redirect": {
-        "label": "Corrección de redirección de ruta CGI"
+        "label": "Redirección de ruta de corrección CGI"
       }
     },
     "options": {
       "sessionFiles": "Archivos",
       "sessionRedis": "Redis",
       "sessionMemcached": "Memcached",
-      "errorReportingProd": "Producción (E_ALL menos deprecated/strict)",
+      "errorReportingProd": "Producción (E_ALL menos obsoleto/estricto)",
       "errorReportingAll": "Todo (E_ALL)",
-      "errorReportingQuiet": "Más silencioso (sin NOTICE/DEPRECATED)",
-      "errorReportingMinimal": "Solo errores / avisos / análisis",
-      "errorReportingOff": "Desactivado (0)",
-      "openBasedirNone": "Sin restricción (vacío)",
+      "errorReportingQuiet": "Más silencioso (sin AVISO/OBSECUTIVO)",
+      "errorReportingMinimal": "Errores/advertencias/solo análisis",
+      "errorReportingOff": "Apagado (0)",
+      "openBasedirNone": "Sin restricciones (vacío)",
       "openBasedirVarWww": "/var/www",
       "openBasedirHome": "/home",
       "openBasedirWwwTmp": "/var/www y /tmp",
-      "errorLogDefault": "Predeterminado del sistema (vacío)",
+      "errorLogDefault": "Valor predeterminado del sistema (vacío)",
       "errorLogPhp": "/var/log/php/error.log",
-      "errorLogFpm": "Ruta del registro FPM",
-      "errorLogSyslog": "syslog"
+      "errorLogFpm": "Ruta de registro de FPM",
+      "errorLogSyslog": "registro del sistema"
     },
     "disableFn": {
       "groups": {
@@ -364,103 +364,146 @@
         "dynamic": "Carga dinámica",
         "info": "Divulgación de información",
         "filesystem": "Sistema de archivos",
-        "network": "Red / otros"
+        "network": "Red / otro"
       },
-      "extraHint": "No está en el catálogo (ya existe en el host)",
+      "extraHint": "No en el catálogo (host existente)",
       "customPlaceholder": "Otro nombre de función…",
-      "searchPlaceholder": "Buscar funciones…",
-      "emptyText": "Sin coincidencias"
+      "searchPlaceholder": "Funciones de búsqueda…",
+      "emptyText": "No hay coincidencias"
     }
   },
-  "pluginsAvailableTitle": "Disponibles para instalar",
-  "pluginsInstalledTitle": "Instalados en el host",
-  "pluginsInstalledHint": "Detectado en PATH; excluido de la selección de instalación. La desinstalación es a mejor esfuerzo.",
+  "pluginsAvailableTitle": "Disponible para instalar",
+  "pluginsInstalledTitle": "Instalado en el host",
+  "pluginsInstalledHint": "Detectado en RUTA; excluido de la selección de instalación. Desinstalar es el mejor esfuerzo.",
   "pluginsAllInstalled": "Todas las herramientas del catálogo ya están en este host.",
   "pluginStatusInstalled": "Instalado",
   "pluginUninstall": "Desinstalar",
   "pluginUninstallConfirmTitle": "¿Desinstalar herramienta?",
-  "pluginUninstallConfirm": "Eliminar \"{{name}}\" de este host (mediante npm/apt/pip según corresponda). Detenga primero los servicios que dependan de ella.",
+  "pluginUninstallConfirm": "Elimine \"{{name}}\" de este host (a través de npm/apt/pip, según corresponda). Detenga los servicios que dependen de él primero.",
   "pluginUninstalled": "Desinstalado {{name}}",
-  "pluginUninstallFailed": "Error al desinstalar {{name}}",
-  "pluginUninstallBlocked": "El panel no puede desinstalar (se necesita root + EXECUTE)",
+  "pluginUninstallFailed": "No se pudo desinstalar {{name}}",
+  "pluginUninstallBlocked": "El panel no se puede desinstalar (necesita root + EJECUTAR)",
   "phpExtAlreadyOnHost": "Extensiones instaladas",
-  "pluginsInstallSelected": "Instalar seleccionadas ({{n}})",
+  "pluginsInstallSelected": "Instalar seleccionado ({{n}})",
   "pluginInstallOk": "{{n}} herramienta(s) instalada(s)",
   "pluginInstallFailed": "Error al instalar la herramienta",
   "phpExtUninstallHint": "Desinstalar extensiones opcionales (apt remove; nunca FPM/CLI)",
-  "phpExtUninstallConfirmTitle": "¿Desinstalar extensión PHP?",
-  "phpExtUninstallConfirm": "Se ejecutará apt remove “{{pkg}}” ({{name}}). El núcleo FPM/CLI nunca se elimina.",
-  "phpExtOpsTitle": "Resultado de operaciones de extensiones",
+  "phpExtUninstallConfirmTitle": "¿Desinstalar la extensión PHP?",
+  "phpExtUninstallConfirm": "Probablemente eliminará “{{pkg}}” ({{name}}). Core FPM/CLI nunca se elimina.",
+  "phpExtOpsTitle": "Resultado de las operaciones de extensión",
   "pluginsOpsTitle": "Resultado de operaciones de herramientas",
-  "pluginBatchUninstall": "Desinstalar seleccionadas ({{n}})",
+  "pluginBatchUninstall": "Desinstalar seleccionado ({{n}})",
   "pluginBatchUninstallConfirm": "¿Desinstalar {{n}} herramientas seleccionadas?",
-  "pluginBatchUninstalled": "{{n}} herramienta(s) desinstalada(s)",
+  "pluginBatchUninstalled": "Herramientas {{n}} desinstaladas",
   "pluginBatchLabel": "herramientas seleccionadas",
-  "addonsInstallAbove": "Use “Instalar seleccionadas…” arriba para herramientas/extensiones. Este botón solo instala/confirma la versión del runtime.",
+  "addonsInstallAbove": "Utilice \"Instalar seleccionado...\" arriba para herramientas/extensiones. Este botón solo instala/confirma la versión del tiempo de ejecución.",
   "phpExtInstallSelected": "Instalar extensiones seleccionadas ({{n}})",
-  "phpExtInstallNote": "Seleccione extensiones y luego Instalar seleccionadas. La primera vez con PHP use Instalar PHP abajo (núcleo+ext); cuando ya esté instalado solo se muestra el botón de extensiones.",
-  "phpExtInstallNoteInstalled": "Seleccione extensiones y luego Instalar seleccionadas. Esta versión ya está en el host: no hay reinstalación del runtime.",
-  "phpExtInstallNoteFirst": "PHP {{version}} no está instalado: seleccione extensiones y use Instalar PHP {{version}} abajo (un solo botón de instalación, núcleo+extensiones).",
-  "installPhpWithExt": "Instalar PHP {{version}} (con las extensiones seleccionadas)",
+  "phpExtInstallNote": "Seleccione las extensiones y luego Instalar seleccionadas. PHP por primera vez utiliza Instalar PHP a continuación (core+ext); cuando está instalado, solo se muestra el botón de extensiones.",
+  "phpExtInstallNoteInstalled": "Seleccione las extensiones y luego Instalar seleccionadas. Esta versión ya está en el host; no es necesario reinstalar el tiempo de ejecución.",
+  "phpExtInstallNoteFirst": "PHP {{version}} no está instalado: seleccione extensiones y luego use Instalar PHP {{version}} a continuación (un botón de instalación, núcleo+extensiones).",
+  "installPhpWithExt": "Instalar PHP {{version}} (con extensiones seleccionadas)",
   "installLogTitle": "Registro de instalación (en vivo)",
-  "installLogStreaming": "Transmitiendo…",
+  "installLogStreaming": "Transmisión…",
   "installLogDone": "Finalizado",
-  "installLogWaiting": "Esperando salida del servidor…",
-  "activeDefault": "predeterminado",
-  "switchDefaultBtn": "Cambiar predeterminado a {{version}}",
-  "switchDefaultHint": "Esta versión está instalada pero no es el predeterminado activo",
+  "installLogWaiting": "Esperando la salida del servidor...",
+  "activeDefault": "por defecto",
+  "switchDefaultBtn": "Establecer el host predeterminado en {{version}}",
+  "switchDefaultHint": "Esta versión está instalada pero no es la predeterminada activa.",
   "installedNotActive": "{{version}} instalado (no predeterminado)",
-  "multiVersionHint": "Go/Rust conservan varias versiones: instala las que falten y luego cambia la predeterminada para PATH",
+  "multiVersionHint": "Go/Rust mantiene múltiples versiones: instale las que faltan, luego cambie el valor predeterminado por PATH",
   "tabProcesses": "Procesos",
   "pm2": {
-    "title": "Flota PM2",
-    "desc": "Vista de solo lectura de pm2 jlist (PM2_HOME del usuario del panel). Actualización SSE en vivo cada 2 s.",
-    "live": "En vivo",
+    "title": "flota PM2",
+    "desc": "Vista de solo lectura de pm2 jlist (usuario del panel PM2_HOME). Live SSE se actualiza cada 2 segundos.",
+    "live": "Vivir",
     "installed": "PM2 instalado",
-    "version": "versión de pm2",
-    "path": "ruta de pm2",
+    "version": "versión pm2",
+    "path": "ruta pm2",
     "counts": "Procesos",
-    "countsValue": "{{n}} en total · {{run}} en línea · {{stop}} detenidos · {{err}} con error",
+    "countsValue": "{{n}} total · {{run}} en línea · {{stop}} detenido · {{err}} con error",
     "updatedAt": "Última actualización",
-    "notInstalled": "PM2 no está en el PATH.",
-    "installHint": "Instala el plugin complementario en Overview",
+    "notInstalled": "PM2 no está en PATH.",
+    "installHint": "Instale el complemento complementario en Descripción general",
     "tableTitle": "Lista de procesos",
-    "yskOnly": "Solo apps YSK (ysk-*)",
-    "filterPh": "Filtrar nombre / script / pid…",
+    "yskOnly": "Solo aplicaciones YSK (ysk-*)",
+    "filterPh": "Nombre del filtro/script/pid…",
     "emptyTitle": "PM2 no disponible",
-    "emptyDesc": "Instala el plugin pm2 para Node y luego actualiza.",
+    "emptyDesc": "Instale el complemento pm2 para Node y luego actualice.",
     "noApps": "Sin procesos",
-    "noAppsDesc": "No hay apps PM2 para el usuario del panel",
+    "noAppsDesc": "No hay aplicaciones PM2 para el usuario del panel",
     "streamLog": "Registro de ticks en vivo",
-    "streamLogDesc": "Una línea por tick SSE (no es la salida stdout del proceso).",
+    "streamLogDesc": "Una línea por tick SSE (no procesa la salida estándar).",
     "col": {
       "name": "Nombre",
       "status": "Estado",
       "mem": "Memoria",
-      "restarts": "Reinicios",
-      "uptime": "Tiempo de actividad",
+      "restarts": "Se reinicia",
+      "uptime": "tiempo de actividad",
       "mode": "Modo",
-      "script": "Script",
+      "script": "Guion",
       "interpreter": "Intérprete",
       "user": "Usuario",
       "unit": "Unidad",
-      "runtime": "Runtime"
+      "runtime": "Tiempo de ejecución"
     },
-    "projectsTitle": "Procesos de proyectos YSK",
-    "projectsDesc": "Unidades systemd de los proyectos del panel (ruta de despliegue predeterminada — no PM2).",
+    "projectsTitle": "Procesos del proyecto YSK",
+    "projectsDesc": "unidades systemd para proyectos de panel (ruta de implementación predeterminada, no PM2).",
     "projectsCount": "Proyectos YSK",
     "noProjects": "Sin proyectos",
-    "noProjectsDesc": "No hay proyectos node/bun en el panel, o el usuario del SO no está provisionado.",
-    "pm2OnlyDesc": "Solo apps iniciadas con PM2 bajo el usuario del panel. Los despliegues systemd aparecen arriba."
+    "noProjectsDesc": "No hay proyectos de nodo/bun en el panel o usuario del sistema operativo no aprovisionado.",
+    "pm2OnlyDesc": "Solo las aplicaciones iniciadas con PM2 bajo el usuario del panel. Las implementaciones de systemd aparecen arriba."
   },
-  "recordedInstalled": "Registrado {{v}}",
-  "remoteSourceSuffix": " ({{source}})",
-  "nodePathYskMissingTitle": "Ruta de Node gestionada no lista",
-  "nodePathYskMissing": "Node gestionado por YSK para la versión {{version}} no está listo. Vuelve a sondear o reinstala.",
-  "nodePathUnsafeTitle": "La ruta de Node no es segura",
-  "nodePathUnsafe": "La ruta {{path}} está fuera del árbol gestionado; los despliegues del proyecto pueden fallar.",
-  "recordedButProbeEmpty": "El panel registró la instalación {{v}}, pero el sondeo del host no encontró el binario. No instalado — vuelve a sondear o reinstala.",
-  "tabTuning": "Ajuste",
-  "versionPlaceholder": "Más reciente，",
-  "pluginsBundleWithRuntime": "Herramientas「Install runtime」Instalar（Install）。"
+  "recordedInstalled": "Grabado {{v}}",
+  "remoteSourceSuffix": "({{source}})",
+  "nodePathYskMissingTitle": "La ruta del nodo administrado no está lista",
+  "nodePathYskMissing": "El nodo administrado por YSK para la versión {{version}} no está listo. Vuelva a sondear o reinstale.",
+  "nodePathUnsafeTitle": "La ruta del nodo no es segura",
+  "nodePathUnsafe": "La ruta {{path}} está fuera del árbol administrado; Las implementaciones del proyecto pueden fallar.",
+  "recordedButProbeEmpty": "El panel registró la instalación {{v}}, pero la sonda del host no encontró ningún binario. No instalado: vuelva a probar o reinstale.",
+  "tabTuning": "Sintonización",
+  "versionPlaceholder": "El último,",
+  "pluginsBundleWithRuntime": "Herramientas「Instalar tiempo de ejecución」Instalar（Instalar）。",
+  "tabSoftware": "Software",
+  "overviewSoftwareHint": "Instale versiones, establezca el host predeterminado y desinstale del",
+  "versionReadyTitle": "{{name}} {{version}} está listo",
+  "versionReadyHint": "Puede configurar el host predeterminado o desinstalarlo desde esta pestaña.",
+  "softwareVersionTitle": "Versión {{version}}",
+  "setHostDefault": "Establecer como host predeterminado",
+  "alreadyHostDefault": "{{version}} es el valor predeterminado del host",
+  "setHostDefaultConfirmTitle": "¿Establecer el host predeterminado en {{version}}?",
+  "setHostDefaultConfirm": "La CLI del sistema (nodo/go/…) apuntará a {{version}}. Los proyectos que fijan una versión no se modifican.",
+  "hostDefaultUnsupported": "Este tiempo de ejecución no admite el cambio de host predeterminado en el panel. Utilice un pin de instalación o de nivel de proyecto.",
+  "versionInventory": "Inventario de versiones",
+  "versionInventoryDesc": "Todas las versiones compatibles con paneles. Seleccione una fila para instalar o configurar como predeterminada.",
+  "selectToInstall": "Seleccionar",
+  "advancedFeatureUninstall": "Avanzado: eliminar toda la pila {{name}}...",
+  "advancedFeatureUninstallHint": "Elimina todas las versiones {{name}} administradas por el panel (y acompañantes como PM2 para Node), con vista previa de impacto y doble confirmación. Prefiere eliminar las versiones individuales anteriores cuando sea posible.",
+  "probeReadonly": "Sonda de solo lectura del host",
+  "uninstallVersion": "Desinstalar {{version}}",
+  "uninstallVersionTitle": "¿Desinstalar {{version}}?",
+  "uninstallVersionConfirm": "Elimine el {{name}} {{version}} administrado de este host (ruta de instalación de YSK o cadena de herramientas de oxidación). Si era el valor predeterminado del host, se borrarán los enlaces simbólicos de CLI para ese tiempo de ejecución. Los proyectos que fijan otra versión no se modifican.",
+  "uninstallVersionDone": "Desinstalado {{version}}",
+  "uninstallVersionUnsupported": "La desinstalación por versión aún no está disponible para este motor de ejecución.",
+  "setPanelDefault": "Establecer como panel predeterminado",
+  "alreadyPanelDefault": "Valor predeterminado del panel · {{version}}",
+  "panelDefaultSaved": "El valor predeterminado del panel es {{version}}",
+  "panelDefaultHint": "Los proyectos nuevos prefieren el panel predeterminado {{version}} (la CLI del host puede diferir).",
+  "panelDefaultExplain": "Valor predeterminado del panel = versión preferida para nuevos sitios/proyectos. Valor predeterminado del host = CLI del sistema (php/python/node…).",
+  "stackReadyTitle": "{{name}} pila lista",
+  "softwareIntro": "Administre las versiones instaladas, la CLI predeterminada del host y la versión preferida para nuevos proyectos.",
+  "panelDefaultLabel": "Valor predeterminado del panel",
+  "panelDefaultNone": "No establecido",
+  "versionsTitle": "Versiones",
+  "versionsDesc": "Seleccione una versión. Instale, configure la CLI del host o configure el panel predeterminado desde la fila.",
+  "roleHost": "Anfitrión",
+  "rolePanel": "Panel",
+  "rowUninstall": "Eliminar esta versión",
+  "moreActions": "Más acciones",
+  "selectedVersion": "Seleccionado · {{version}}",
+  "selectedInstalledDesc": "Herramientas complementarias a continuación. Elimine esta versión solo si ya no la necesita.",
+  "selectedMissingDesc": "Instale esta versión en el host. Se pueden agregar herramientas complementarias después de la instalación.",
+  "path": "Camino",
+  "fullVersion": "Versión completa",
+  "useListForDefaults": "Para cambiar el valor predeterminado del host o del panel, o eliminar esta versión, utilice la lista anterior.",
+  "alreadyHostDefaultShort": "Valor predeterminado del host"
 }

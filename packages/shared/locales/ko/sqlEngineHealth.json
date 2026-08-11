@@ -1,31 +1,31 @@
 {
   "finding": {
-    "package_missing": "{{flavor}}용 서버 패키지가 설치되어 있지 않습니다.",
-    "client_missing": "SQL 클라이언트 도구가 설치되어 있지 않습니다.",
-    "frozen_marker": "Debian 동결 마커가 있습니다(모드: {{mode}}). 해제될 때까지 데몬 시작이 차단됩니다.",
-    "datadir_uninitialized": "데이터 디렉터리에 시스템 카탈로그가 없습니다 — 초기화가 필요합니다.",
-    "config_flavor_mismatch": "my.cnf가 {{flavor}}에 잘못된 엔진을 가리킵니다({{path}}).",
-    "residual_foreign_plugins": "다른 SQL 엔진의 잔여 설정/플러그인이 이 데몬을 충돌시킬 수 있습니다.",
-    "unit_failed": "서비스 유닛 {{unit}}이(가) 실패 상태입니다.",
-    "unit_not_active": "서비스 유닛 {{unit}}이(가) {{active}} 상태입니다(active 아님).",
-    "port_conflict": "이 엔진이 중지된 상태에서 포트 3306이 사용 중입니다(충돌 가능)."
+    "package_missing": "{{flavor}}용 서버 패키지가 설치되지 않았습니다.",
+    "client_missing": "SQL 클라이언트 도구가 설치되지 않았습니다.",
+    "frozen_marker": "Debian 정지 마커가 있습니다(모드: {{mode}}). 데몬 시작은 릴리스될 때까지 차단됩니다.",
+    "datadir_uninitialized": "데이터 디렉토리에는 시스템 카탈로그가 없습니다. 초기화가 필요합니다.",
+    "config_flavor_mismatch": "my.cnf는 {{flavor}}({{path}})에 대한 잘못된 엔진을 가리킵니다.",
+    "residual_foreign_plugins": "다른 SQL 엔진의 잔여 구성/플러그인으로 인해 이 데몬이 중단될 수 있습니다.",
+    "unit_failed": "서비스 단위 {{unit}}에 오류가 발생했습니다.",
+    "unit_not_active": "서비스 단위 {{unit}}는 {{active}}(비활성)입니다.",
+    "port_conflict": "이 엔진이 작동 중지된 동안 포트 3306이 사용 중입니다(충돌 가능성)."
   },
   "action": {
-    "stop_unit": "서비스 유닛 중지",
+    "stop_unit": "서비스 장치 중지",
     "clear_frozen": "동결 마커 지우기",
     "sanitize_config": "my.cnf 정렬 및 외부 엔진 플러그인 비활성화",
     "init_datadir": "빈 데이터 디렉터리 초기화",
-    "reset_failed": "실패한 유닛 상태 재설정",
-    "enable_unit": "부팅 시 서비스 사용",
+    "reset_failed": "실패한 장치 상태 재설정",
+    "enable_unit": "부팅 시 서비스 활성화",
     "start_unit": "서비스 시작",
-    "verify_active": "서비스가 active인지 확인"
+    "verify_active": "서비스가 활성 상태인지 확인"
   },
   "note": {
-    "alreadyHealthy": "SQL 엔진이 이미 정상입니다 — 복구가 필요 없습니다.",
-    "needsConfirm": "복구에 확인이 필요합니다({{count}}단계: {{findings}}).",
-    "installPackageFirst": "먼저 {{flavor}} 서버 패키지를 설치한 다음 복구하세요.",
+    "alreadyHealthy": "SQL 엔진은 이미 정상입니다. 복구가 필요하지 않습니다.",
+    "needsConfirm": "수리에 대한 확인이 필요합니다({{count}} 단계: {{findings}}).",
+    "installPackageFirst": "{{flavor}} 서버 패키지를 먼저 설치한 후 복구하세요.",
     "stepFailed": "복구 단계 {{action}} 실패: {{detail}}",
-    "repairOk": "복구 완료 — {{unit}}이(가) active입니다.",
-    "repairIncomplete": "복구가 끝났지만 유닛이 여전히 {{active}}입니다."
+    "repairOk": "수리 완료 — {{unit}}가 활성화되었습니다.",
+    "repairIncomplete": "수리가 완료되었지만 장치는 여전히 {{active}}입니다."
   }
 }

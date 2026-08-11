@@ -123,8 +123,8 @@
   "installIncomplete": "安裝未完成",
   "badgeDryRun": "計劃模式（預覽試行）",
   "badgeBlocked": "已阻擋",
-  "labelStderr": "stderr",
-  "labelAckCli": "ack + CLI JSON",
+  "labelStderr": "標準錯誤",
+  "labelAckCli": "確認 + CLI JSON",
   "labelStdoutBody": "命令列 標準輸出內容",
   "resultOuterHint": "外層結果為命令列 --json 的標準輸出。"
 }

@@ -27,7 +27,7 @@
   "node": "Node.js",
   "php": "PHP",
   "python": "Python",
-  "go": "Go",
+  "go": "去",
   "rust": "Rust",
   "protection": "防护中心",
   "firewall": "防火墙",
@@ -53,11 +53,11 @@
     "runtimes": "运行环境",
     "security": "安全",
     "system": "系统",
-    "ai": "AI"
+    "ai": "人工智能"
   },
   "java": "Java",
   "kotlin": "Kotlin",
-  "bun": "Bun",
+  "bun": "包子",
   "software": "软件中心",
   "terminal": "终端",
   "hostBrowse": "主機瀏覽",

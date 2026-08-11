@@ -16,7 +16,7 @@
   "normal": "OK",
   "disk": "Disque",
   "alerts": "Alertes",
-  "auto5s": "Auto 5s",
+  "auto5s": "Automatique 5s",
   "hostSettings": "Paramètres de l'hôte",
   "loading": "Chargement des métriques…",
   "tabs": {
@@ -98,7 +98,7 @@
   "selectAllAria": "Sélectionner tous les filtrés",
   "selectPidAria": "Sélectionner le PID {{pid}}",
   "controlPlane": "Plan de contrôle",
-  "detailShort": "Info",
+  "detailShort": "Informations",
   "procUnavailable": "Impossible d’obtenir les processus",
   "noProcData": "Aucune donnée de processus pour l’instant",
   "noProcFilter": "Aucun processus ne correspond aux filtres",

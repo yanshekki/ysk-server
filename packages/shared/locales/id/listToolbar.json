@@ -1,12 +1,12 @@
 {
-  "searchPlaceholder": "Cari…",
-  "searchAria": "Cari daftar",
+  "searchPlaceholder": "Mencari…",
+  "searchAria": "Daftar pencarian",
   "clearSearch": "Hapus pencarian",
   "clearAll": "Hapus filter",
   "resultCount": "{{count}} hasil",
   "showingOf": "Menampilkan {{shown}} dari {{total}}",
   "activeFilters": "{{count}} filter aktif",
-  "noResults": "Tidak ada yang cocok",
+  "noResults": "Tidak ada kecocokan",
   "noResultsHint": "Coba kata kunci lain atau hapus filter.",
   "searching": "Mencari…"
 }

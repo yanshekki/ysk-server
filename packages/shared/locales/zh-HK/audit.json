@@ -22,45 +22,6 @@
     "project.publish": "發佈 Nginx",
     "project.suspend": "暫停專案",
     "software.install": "安裝軟件",
-    "software.update": "更新軟件",
-    "protection": {
-      "change": "防護設定已變更"
-    },
-    "auth": {
-      "locale": "UI language changed",
-      "login": "已登入",
-      "logout": "已登出"
-    },
-    "system": {
-      "firewall": {
-        "allow_port": "防火牆允許埠",
-        "deny": "防火牆拒絕 IP",
-        "apply": "套用防火牆",
-        "enable": "啟用／停用防火牆",
-        "delete_rule": "刪除防火牆規則",
-        "delete_deny": "移除永久拒絕 IP"
-      }
-    },
-    "project": {
-      "deploy": "專案部署",
-      "create": "已建立專案",
-      "delete": "已刪除專案",
-      "goLive": "專案上線",
-      "publish": "發佈 Nginx",
-      "suspend": "暫停專案"
-    },
-    "ssl": {
-      "request": "SSL request",
-      "upload": "SSL upload"
-    },
-    "db": {
-      "adminer": {
-        "apply": "資料庫瀏覽器專案"
-      }
-    },
-    "software": {
-      "install": "安裝軟件",
-      "update": "更新軟件"
-    }
+    "software.update": "更新軟件"
   }
 }

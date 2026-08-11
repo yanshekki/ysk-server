@@ -3584,8 +3584,7 @@
       "ports": "Open ports",
       "deny": "Permanent deny IP",
       "profiles": "Profiles",
-      "about": "About",
-      "services": "Services"
+      "about": "About"
     },
     "currentRules": "Current rules",
     "rulesSourceHint": "UFW numbered rules (ufw status numbered)",
@@ -3634,19 +3633,7 @@
     "applyToSystem": "Apply to system",
     "deletedRule": "Deleted #{{n}}",
     "deleteRuleTitle": "Delete rule #{{n}}?",
-    "deleteRuleDesc": "Removes that UFW rule number (needs system-change permission).",
-    "servicesTitle": "Managed services",
-    "servicesHint": "Desired network exposure for YSK services. Opening a service syncs these rules automatically.",
-    "servicesEmpty": "No service exposure data yet",
-    "servicesEmptyDesc": "Start a managed service (web, FTPS, VPN, DB…) to populate this list.",
-    "servicesManualHint": "Manual port chips are under the Ports tab — prefer managing access here so rules stay tagged (ysk-svc).",
-    "portsManualHint": "Advanced manual rules. Prefer the Services tab for managed software.",
-    "colService": "Service",
-    "colMode": "Mode",
-    "colPorts": "Ports",
-    "colSync": "Status",
-    "synced": "Synced",
-    "syncNow": "Sync"
+    "deleteRuleDesc": "Removes that UFW rule number (needs system-change permission)."
   },
   "ftp": {
     "title": "FTPS accounts",
@@ -7459,6 +7446,29 @@
       "already": "{{port}}/{{proto}}{{from}}: already allowed",
       "partial": "Partial: {{ok}} ok, {{fail}} failed",
       "fromLabel": " from {{from}}"
+    },
+    "firewallDeleteByComment": {
+      "removed": "Removed {{n}} firewall rule(s) matching {{prefix}}",
+      "none": "No firewall rules matched {{prefix}}"
+    },
+    "serviceExposure": {
+      "needsDecision": "{{service}}: confirm whether to expose this service on the network",
+      "private": "{{service}}: kept private (no public firewall allow)",
+      "restrictedEmpty": "Restricted mode needs at least one allowed IP/CIDR",
+      "badCountry": "Invalid country code: {{cc}}",
+      "zoneDownloadFail": "Country zone download failed for {{cc}}: {{detail}}",
+      "zoneEmpty": "Country zone for {{cc}} is empty",
+      "zoneDownloaded": "Downloaded {{n}} CIDRs for {{cc}}",
+      "zoneMissing": "No zone file for {{cc}} — place under geoip/country-zones or allow download",
+      "zoneCidrCap": "Country CIDR list capped at {{n}} entries",
+      "geoNeedExecute": "Country allowlist needs YSK_EXECUTE",
+      "geoNeedRoot": "Country allowlist needs root",
+      "geoNoCidrs": "No country CIDRs loaded — cannot apply geo allowlist",
+      "ipsetMissing": "ipset not installed — country allowlist skipped",
+      "ipsetApplyFail": "ipset/iptables apply failed: {{detail}}",
+      "ipsetApplied": "Country allowlist set {{set}} ({{countries}}, {{n}} CIDRs)",
+      "ipsetCleared": "Cleared country ipset {{set}}",
+      "geoBestEffort": "Country filtering is best-effort (ipset); cloud security groups are separate"
     },
     "goLive": {
       "deployIncomplete": "goLive: deploy incomplete",
@@ -11615,36 +11625,5 @@
       "customCidr": "CIDR",
       "addCidr": "Add"
     }
-  },
-  "serviceExposure": {
-    "title": "Network access",
-    "manage": "Manage access",
-    "manageTitle": "Service network access",
-    "manageDesc": "Control how {{service}} is reachable on the host firewall.",
-    "mode": "Access mode",
-    "modePrivate": "Local only",
-    "modePublic": "Public",
-    "modeRestricted": "Restricted",
-    "summaryPrivate": "Not open on the public firewall.",
-    "summaryPublic": "Open · {{ports}}",
-    "summaryRestricted": "Restricted · {{count}} source(s)",
-    "outOfSync": "Out of sync",
-    "firewallLink": "Firewall",
-    "portsLabel": "Ports",
-    "allowFrom": "Allowed sources (IP / CIDR)",
-    "hintPrivate": "Service may still listen on localhost; no public UFW allow rules.",
-    "hintPublic": "Warning: opens this port to the whole Internet. Prefer restricted for databases.",
-    "hintRestricted": "Comma-separated IPs or CIDRs. Only these sources may connect.",
-    "restrictedNeedIp": "Add at least one IP or CIDR for restricted mode.",
-    "privateStartTitle": "Expose {{service}} on the network?",
-    "confirmAndStart": "Confirm and start",
-    "summaryFirewallOff": "Host firewall: {{detail}} — rules not enforced until UFW is active.",
-    "ufwMissing": "UFW not installed",
-    "ufwInactive": "inactive",
-    "firewallOff": "Firewall off",
-    "restrictedNeedSource": "Add at least one IP/CIDR or country code for restricted mode.",
-    "allowCountries": "Allowed countries (ISO)",
-    "hintCountries": "L2 best-effort via ipset + country zone CIDRs. Requires root, EXECUTE, and ipset. Cloud security groups are separate.",
-    "cloudSgNote": "Host firewall only — cloud security groups (AWS/GCP/Azure) are not changed."
   }
 }

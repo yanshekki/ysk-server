@@ -1,12 +1,12 @@
 {
-  "searchPlaceholder": "تلاش…",
-  "searchAria": "تلاش فہرست",
-  "clearSearch": "تلاش صاف کریں",
-  "clearAll": "فلٹرز صاف کریں",
+  "searchPlaceholder": "تلاش کریں…",
+  "searchAria": "فہرست تلاش کریں۔",
+  "clearSearch": "تلاش صاف کریں۔",
+  "clearAll": "فلٹرز صاف کریں۔",
   "resultCount": "{{count}} نتائج",
-  "showingOf": "{{total}} میں سے {{shown}} دکھائے جا رہے ہیں",
-  "activeFilters": "{{count}} فلٹرز فعال",
-  "noResults": "کوئی مماثلت نہیں",
-  "noResultsHint": "دوسرا کلیدی لفظ آزمائیں یا فلٹرز صاف کریں۔",
-  "searching": "تلاش ہو رہی ہے…"
+  "showingOf": "{{total}} میں سے {{shown}} دکھا رہا ہے",
+  "activeFilters": "{{count}} فلٹرز فعال ہیں۔",
+  "noResults": "کوئی میچ نہیں",
+  "noResultsHint": "کوئی دوسرا کلیدی لفظ آزمائیں یا فلٹرز صاف کریں۔",
+  "searching": "تلاش کر رہا ہے…"
 }

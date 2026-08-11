@@ -1,31 +1,31 @@
 {
   "finding": {
-    "package_missing": "{{flavor}} کا سرور پیکیج انسٹال نہیں ہے۔",
+    "package_missing": "{{flavor}} کے لیے سرور پیکج انسٹال نہیں ہے۔",
     "client_missing": "SQL کلائنٹ ٹولز انسٹال نہیں ہیں۔",
-    "frozen_marker": "Debian فریز مارکر موجود ہے (موڈ: {{mode}})۔ رہائی تک ڈیمون شروع بلاک ہے۔",
-    "datadir_uninitialized": "ڈیٹا ڈائریکٹری میں سسٹم کیٹلاگ نہیں — ابتدائی کاری درکار ہے۔",
-    "config_flavor_mismatch": "my.cnf {{flavor}} کے لیے غلط انجن کی طرف اشارہ کرتا ہے ({{path}})۔",
-    "residual_foreign_plugins": "دوسرے SQL انجن کی باقی کنفیگ/پلگ انز اس ڈیمون کو کریش کر سکتی ہیں۔",
-    "unit_failed": "سروس یونٹ {{unit}} فیل ہے۔",
+    "frozen_marker": "ڈیبین منجمد مارکر موجود ہے (موڈ: {{mode}})۔ ڈیمون اسٹارٹ جاری ہونے تک مسدود ہے۔",
+    "datadir_uninitialized": "ڈیٹا ڈائرکٹری کا کوئی سسٹم کیٹلاگ نہیں ہے - ابتداء کی ضرورت ہے۔",
+    "config_flavor_mismatch": "my.cnf {{flavor}} ({{path}}) کے لیے غلط انجن کی طرف اشارہ کرتا ہے۔",
+    "residual_foreign_plugins": "دوسرے SQL انجن سے بقایا کنفیگریشن/پلگ ان اس ڈیمون کو کریش کر سکتے ہیں۔",
+    "unit_failed": "سروس یونٹ {{unit}} ناکام ہو گیا ہے۔",
     "unit_not_active": "سروس یونٹ {{unit}} {{active}} ہے (فعال نہیں)۔",
-    "port_conflict": "پورٹ 3306 استعمال میں ہے جبکہ یہ انجن بند ہے (ممکنہ تصادم)۔"
+    "port_conflict": "پورٹ 3306 استعمال میں ہے جبکہ یہ انجن بند ہے (ممکنہ تنازعہ)۔"
   },
   "action": {
-    "stop_unit": "سروس یونٹ بند کریں",
-    "clear_frozen": "فریز مارکر صاف کریں",
-    "sanitize_config": "my.cnf درست کریں اور غیر ملکی انجن پلگ انز غیر فعال کریں",
-    "init_datadir": "خالی ڈیٹا ڈائریکٹری ابتدائی کاری کریں",
-    "reset_failed": "فیل یونٹ حالت ری سیٹ کریں",
-    "enable_unit": "بوٹ پر سروس فعال کریں",
-    "start_unit": "سروس شروع کریں",
-    "verify_active": "تصدیق کریں کہ سروس فعال ہے"
+    "stop_unit": "سروس یونٹ کو روکیں۔",
+    "clear_frozen": "منجمد مارکر صاف کریں۔",
+    "sanitize_config": "my.cnf کو سیدھ میں رکھیں اور غیر ملکی انجن پلگ ان کو غیر فعال کریں۔",
+    "init_datadir": "خالی ڈیٹا ڈائرکٹری شروع کریں۔",
+    "reset_failed": "ناکام یونٹ حالت کو دوبارہ ترتیب دیں۔",
+    "enable_unit": "بوٹ پر سروس کو فعال کریں۔",
+    "start_unit": "سروس شروع کریں۔",
+    "verify_active": "تصدیق کریں کہ سروس فعال ہے۔"
   },
   "note": {
-    "alreadyHealthy": "SQL انجن پہلے سے صحت مند — مرمت درکار نہیں۔",
-    "needsConfirm": "مرمت کی تصدیق درکار ({{count}} مراحل: {{findings}})۔",
-    "installPackageFirst": "پہلے {{flavor}} سرور پیکیج انسٹال کریں، پھر مرمت کریں۔",
-    "stepFailed": "مرمت مرحلہ {{action}} ناکام: {{detail}}",
+    "alreadyHealthy": "SQL انجن پہلے سے ہی صحت مند ہے - کوئی مرمت کی ضرورت نہیں ہے۔",
+    "needsConfirm": "مرمت کی تصدیق کی ضرورت ہے ({{count}} مراحل: {{findings}})۔",
+    "installPackageFirst": "پہلے {{flavor}} سرور پیکج انسٹال کریں، پھر مرمت کریں۔",
+    "stepFailed": "مرمت کا مرحلہ {{action}} ناکام ہو گیا: {{detail}}",
     "repairOk": "مرمت مکمل — {{unit}} فعال ہے۔",
-    "repairIncomplete": "مرمت ختم ہوئی لیکن یونٹ اب بھی {{active}} ہے۔"
+    "repairIncomplete": "مرمت مکمل ہو گئی لیکن یونٹ ابھی بھی {{active}} ہے۔"
   }
 }

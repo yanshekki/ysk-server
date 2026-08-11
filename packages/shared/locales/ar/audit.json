@@ -1,66 +1,27 @@
 {
-  "recent": "تدقيق حديث",
+  "recent": "التدقيق الأخير",
   "lastN": "آخر {{n}}",
   "actions": {
     "protection.change": "تم تغيير إعدادات الحماية",
-    "auth.locale": "تم تغيير لغة الواجهة",
+    "auth.locale": "تغيرت لغة واجهة المستخدم",
     "auth.login": "تم تسجيل الدخول",
     "auth.logout": "تم تسجيل الخروج",
-    "system.firewall.allow_port": "جدار الحماية: السماح بمنفذ",
-    "system.firewall.deny": "جدار الحماية: حظر IP",
+    "system.firewall.allow_port": "جدار الحماية يسمح بالمنفذ",
+    "system.firewall.deny": "جدار الحماية ينكر IP",
     "system.firewall.apply": "تطبيق جدار الحماية",
     "project.deploy": "نشر المشروع",
     "project.create": "تم إنشاء المشروع",
     "project.delete": "تم حذف المشروع",
-    "ssl.request": "طلب SSL",
-    "ssl.upload": "رفع SSL",
-    "system.firewall.enable": "تفعيل/تعطيل جدار الحماية",
+    "ssl.request": "طلب طبقة المقابس الآمنة",
+    "ssl.upload": "تحميل SSL",
+    "system.firewall.enable": "تمكين/تعطيل جدار الحماية",
     "system.firewall.delete_rule": "حذف قاعدة جدار الحماية",
-    "system.firewall.delete_deny": "إزالة حظر IP الدائم",
+    "system.firewall.delete_deny": "إزالة IP الرفض الدائم",
     "db.adminer.apply": "مشروع متصفح قاعدة البيانات",
-    "project.goLive": "إطلاق المشروع",
-    "project.publish": "نشر Nginx",
+    "project.goLive": "بدء تشغيل المشروع",
+    "project.publish": "نشر نجينكس",
     "project.suspend": "تعليق المشروع",
-    "software.install": "تثبيت البرمجيات",
-    "software.update": "تحديث البرمجيات",
-    "protection": {
-      "change": "Protection settings changed"
-    },
-    "auth": {
-      "locale": "UI language changed",
-      "login": "Signed in",
-      "logout": "Signed out"
-    },
-    "system": {
-      "firewall": {
-        "allow_port": "Firewall allow port",
-        "deny": "Firewall deny IP",
-        "apply": "Firewall apply",
-        "enable": "Firewall enable/disable",
-        "delete_rule": "Delete firewall rule",
-        "delete_deny": "Remove permanent deny IP"
-      }
-    },
-    "project": {
-      "deploy": "Project deploy",
-      "create": "Project created",
-      "delete": "Project deleted",
-      "goLive": "Project go-live",
-      "publish": "Publish Nginx",
-      "suspend": "Suspend project"
-    },
-    "ssl": {
-      "request": "SSL request",
-      "upload": "SSL upload"
-    },
-    "db": {
-      "adminer": {
-        "apply": "DB browser project"
-      }
-    },
-    "software": {
-      "install": "Install software",
-      "update": "Update software"
-    }
+    "software.install": "تثبيت البرنامج",
+    "software.update": "تحديث البرنامج"
   }
 }

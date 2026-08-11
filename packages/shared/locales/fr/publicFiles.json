@@ -12,7 +12,7 @@
   "siteSettings": "Paramètres du site",
   "siteSettingsDesc": "Écrit la conf gérée ; peut recharger Nginx à l’application (accessible uniquement après application)",
   "serverNameHint": "Nginx server_name, ex. files.example.com",
-  "quotaMiB": "Quota (MiB)",
+  "quotaMiB": "Quota (Mio)",
   "quotaHint": "Facultatif ; limite la taille du répertoire public",
   "unlimited": "Illimité",
   "applyHint": "L’application écrit uniquement la configuration ;",

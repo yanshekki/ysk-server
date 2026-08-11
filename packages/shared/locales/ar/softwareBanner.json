@@ -1,14 +1,14 @@
 {
-  "titleDefault": "البرمجيات المطلوبة غير مثبتة",
+  "titleDefault": "لم يتم تثبيت البرامج المطلوبة",
   "missing": "مفقود: {{names}}",
   "nameSep": ", ",
-  "installOneClick": "تثبيت الآن",
+  "installOneClick": "التثبيت الآن",
   "installing": "جارٍ التثبيت…",
-  "reprobe": "إعادة الفحص",
-  "close": "إغلاق",
-  "resultTitle": "نتيجة التثبيت",
-  "probeFailed": "فشل الفحص",
+  "reprobe": "أعد الفحص",
+  "close": "يغلق",
+  "resultTitle": "تثبيت النتيجة",
+  "probeFailed": "فشل التحقيق",
   "installIncomplete": "التثبيت غير مكتمل",
-  "installedOne": "تم تثبيت {{name}}",
-  "allInstalled": "تم تثبيت البرمجيات المطلوبة"
+  "installedOne": "تم التثبيت {{name}}",
+  "allInstalled": "البرامج المطلوبة مثبتة"
 }

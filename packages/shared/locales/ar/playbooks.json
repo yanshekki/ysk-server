@@ -1,19 +1,19 @@
 {
   "discover-host": {
     "name": "اكتشاف المضيف",
-    "description": "جرد المضيف للقراءة فقط"
+    "description": "مخزون المضيف للقراءة فقط"
   },
   "nginx-health": {
-    "name": "فحص صحة Nginx",
-    "description": "فحص حالة خدمة nginx"
+    "name": "فحص صحة إنجينكس",
+    "description": "تحقق من حالة خدمة nginx"
   },
   "nginx-restart": {
-    "name": "إعادة تشغيل Nginx (مخاطرة عالية)",
-    "description": "إعادة تشغيل nginx بعد الموافقة"
+    "name": "إعادة تشغيل Nginx (خطورة عالية)",
+    "description": "أعد تشغيل nginx بعد الموافقة"
   },
   "local-llm-ops-only": {
     "name": "عمليات LLM المحلية فقط",
-    "description": "اكتشاف طارئ تحت وضع الحماية"
+    "description": "اكتشاف الطوارئ تحت وضع الحماية"
   },
   "disk-pressure": {
     "name": "فحص ضغط القرص",
@@ -21,30 +21,30 @@
   },
   "mail-stack-status": {
     "name": "حالة مكدس البريد",
-    "description": "فحص وحدات postfix + dovecot"
+    "description": "تحقق من وحدات postfix + dovecot"
   },
   "security-units": {
-    "name": "وحدات الأمان",
-    "description": "حالة fail2ban + sshd (قراءة فقط)"
+    "name": "وحدات الأمن",
+    "description": "حالة Fail2ban + sshd (للقراءة فقط)"
   },
   "web-stack-status": {
     "name": "حالة مكدس الويب",
-    "description": "فحص nginx + php-fpm"
+    "description": "مسبار nginx + php-fpm"
   },
   "emergency-read-only": {
-    "name": "مسح طارئ للقراءة فقط",
-    "description": "حقائق آمنة لوضع الحماية فقط"
+    "name": "عملية المسح للقراءة فقط في حالات الطوارئ",
+    "description": "الحقائق الآمنة للحماية فقط"
   },
   "backup-health": {
-    "name": "جاهزية النسخ الاحتياطي",
-    "description": "فحص القرص + سرد العمليات قبل نافذة النسخ الاحتياطي"
+    "name": "الاستعداد للنسخ الاحتياطي",
+    "description": "تحقق من عمليات القرص + القائمة قبل نافذة النسخ الاحتياطي"
   },
   "db-stack-status": {
-    "name": "حالة مكدس قواعد البيانات",
+    "name": "حالة مكدس قاعدة البيانات",
     "description": "وحدات mysql/mariadb/redis/postgres"
   },
   "ssl-nginx-check": {
     "name": "فحص SSL + Nginx",
-    "description": "حالة nginx قبل عمليات الشهادات"
+    "description": "حالة nginx قبل عمليات cert"
   }
 }

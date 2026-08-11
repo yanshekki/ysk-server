@@ -89,11 +89,12 @@
   "itemDataDirOtherR": "建议 dataDir chmod 750，避免其他用户读取控制平面 JSON",
   "itemRustToolchain": "Rust 工具链",
   "itemWebBuildFix": "按「立即修复」构建 Web 界面（本机需有 monorepo），或执行：pnpm --filter @ysk/web build",
+  "itemWebBuildManual": "本机无 monorepo／无已打包 SPA，无法一键修复。请在有源码的机器执行 pnpm --filter @ysk/web build，再将 apps/web/dist/* 复制到 dataDir/web（例如 /var/lib/ysk-server/web），或设置 YSK_WEB_ROOT 后重启控制面。",
   "itemStateStore": "控制平面状态存储",
   "itemStateStoreSqliteHint": "可选：YSK_STORE=sqlite 使用 WAL document store",
   "itemBackupFreshness": "最近完整备份",
   "itemBackupNone": "未记录 last_backup_run — 请执行 backup all 或设置排程",
-  "itemBackupFix": "ysk-server backup all · backup schedule --install",
+  "itemBackupFix": "ysk-server 全部备份 · 备份计划 --install",
   "itemFleetSessions": "Fleet agent 会话",
   "itemFleetNone": "单机可选；多边缘需 agent run + heartbeat",
   "itemFleetNoHb": "已注册但无 heartbeat — 请启动边缘 agent",
@@ -106,6 +107,5 @@
   "fixNow": "立即修复",
   "fixFailed": "修复失败",
   "fixDone": "已修复 dataDir 权限（chmod 750）",
-  "fixDoneWebUi": "已构建／安装 Web 界面",
-  "itemWebBuildManual": "本机无 monorepo／无已打包 SPA，无法一键修复。请在有源码的机器执行 pnpm --filter @ysk/web build，再将 apps/web/dist/* 复制到 dataDir/web（例如 /var/lib/ysk-server/web），或设置 YSK_WEB_ROOT 后重启控制面。"
+  "fixDoneWebUi": "已构建／安装 Web 界面"
 }

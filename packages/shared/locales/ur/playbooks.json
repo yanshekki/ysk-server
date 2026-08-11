@@ -1,50 +1,50 @@
 {
   "discover-host": {
-    "name": "ہوسٹ دریافت",
-    "description": "صرف پڑھنے والا ہوسٹ انوینٹری"
+    "name": "میزبان دریافت",
+    "description": "صرف پڑھنے کے لیے میزبان انوینٹری"
   },
   "nginx-health": {
-    "name": "Nginx ہیلتھ چیک",
-    "description": "nginx سروس کی حیثیت چیک کریں"
+    "name": "Nginx صحت کی جانچ",
+    "description": "nginx سروس کی حیثیت کو چیک کریں۔"
   },
   "nginx-restart": {
-    "name": "Nginx ری سٹارٹ (اعلیٰ خطرہ)",
-    "description": "منظوری کے بعد nginx دوبارہ شروع کریں"
+    "name": "Nginx دوبارہ شروع کریں (زیادہ خطرہ)",
+    "description": "منظوری کے بعد nginx کو دوبارہ شروع کریں۔"
   },
   "local-llm-ops-only": {
-    "name": "صرف مقامی LLM آپریشنز",
-    "description": "حفاظتی موڈ کے تحت ایمرجنسی دریافت"
+    "name": "صرف مقامی ایل ایل ایم آپریشنز",
+    "description": "تحفظ کے موڈ کے تحت ہنگامی دریافت"
   },
   "disk-pressure": {
-    "name": "ڈسک پریشر چیک",
-    "description": "df کے ذریعے صرف پڑھنے والا ڈسک استعمال"
+    "name": "ڈسک کے دباؤ کی جانچ",
+    "description": "df کے ذریعے صرف پڑھنے کے لیے ڈسک کا استعمال"
   },
   "mail-stack-status": {
     "name": "میل اسٹیک کی حیثیت",
-    "description": "postfix + dovecot یونٹس چیک کریں"
+    "description": "پوسٹ فکس + ڈوکوٹ یونٹس کو چیک کریں۔"
   },
   "security-units": {
     "name": "سیکیورٹی یونٹس",
-    "description": "fail2ban + sshd حیثیت (صرف پڑھنے والا)"
+    "description": "fail2ban + sshd حیثیت (صرف پڑھنے کے لیے)"
   },
   "web-stack-status": {
     "name": "ویب اسٹیک کی حیثیت",
-    "description": "nginx + php-fpm پروب"
+    "description": "nginx + php-fpm تحقیقات"
   },
   "emergency-read-only": {
-    "name": "ایمرجنسی صرف پڑھنے والا سویپ",
-    "description": "صرف حفاظتی طور پر محفوظ حقائق"
+    "name": "ہنگامی طور پر صرف پڑھنے کے لیے جھاڑو",
+    "description": "صرف تحفظ کے لیے محفوظ حقائق"
   },
   "backup-health": {
     "name": "بیک اپ کی تیاری",
-    "description": "بیک اپ ونڈو سے پہلے ڈسک چیک کریں + عمل کی فہرست"
+    "description": "بیک اپ ونڈو سے پہلے ڈسک + فہرست کے عمل کو چیک کریں۔"
   },
   "db-stack-status": {
-    "name": "ڈیٹابیس اسٹیک کی حیثیت",
-    "description": "mysql/mariadb/redis/postgres units"
+    "name": "ڈیٹا بیس اسٹیک کی حیثیت",
+    "description": "mysql/mariadb/redis/postgres یونٹس"
   },
   "ssl-nginx-check": {
-    "name": "SSL + Nginx چیک",
-    "description": "سرٹیفکیٹ آپریشنز سے پہلے nginx حیثیت"
+    "name": "SSL + Nginx چیک کریں۔",
+    "description": "سرٹیفکیٹ آپریشن سے پہلے nginx کی حیثیت"
   }
 }

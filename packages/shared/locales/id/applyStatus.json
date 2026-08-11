@@ -2,10 +2,10 @@
   "draft": "Draf",
   "written": "Tertulis (data panel)",
   "planned": "Sedang berlangsung",
-  "applied": "Diterapkan di host",
+  "applied": "Diterapkan pada tuan rumah",
   "failed": "Gagal",
-  "pendingExecute": "Perlu eksekusi host",
+  "pendingExecute": "Membutuhkan eksekusi host",
   "uploaded": "Diunggah",
   "issued": "Diterbitkan",
-  "missing": "File hilang"
+  "missing": "Berkas hilang"
 }

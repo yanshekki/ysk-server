@@ -1,6 +1,6 @@
 {
   "confirmDefault": "নিশ্চিত করুন",
-  "cancelDefault": "বাতিল",
+  "cancelDefault": "বাতিল করুন",
   "severity": {
     "consequencesTitle": "এটি করবে:",
     "typeToConfirm": "নিশ্চিত করতে \"{{text}}\" টাইপ করুন"

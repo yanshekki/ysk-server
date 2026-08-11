@@ -16,7 +16,7 @@
   "liveN": "{{count}} en ligne",
   "registeredOnly": "Enregistré uniquement",
   "awaitProbe": "En attente de sondage",
-  "runtimes": "Runtimes",
+  "runtimes": "Durées d'exécution",
   "running": "En cours",
   "liveAgents": "Agents en ligne",
   "fleet": "Flotte",
@@ -100,11 +100,11 @@
   "deleteTitlePlain": "Supprimer l'agent ?",
   "deleteDesc": "L'historique des commandes associées sera également supprimé.",
   "fact": {
-    "kind": "Type",
+    "kind": "Taper",
     "name": "Nom",
     "status": "Statut",
     "unitActive": "Service",
-    "unitName": "Unit",
+    "unitName": "Unité",
     "pathExists": "Le chemin existe",
     "installPath": "Chemin d'installation"
   },
@@ -121,10 +121,10 @@
   "writeFailed": "Échec de l'écriture",
   "installedMsg": "{{kind}} installé",
   "installIncomplete": "Installation incomplète",
-  "badgeDryRun": "dry-run",
+  "badgeDryRun": "essai à sec",
   "badgeBlocked": "bloqué",
   "labelStderr": "stderr",
-  "labelAckCli": "ack + CLI JSON",
+  "labelAckCli": "accusé de réception + CLI JSON",
   "labelStdoutBody": "Corps stdout CLI",
   "resultOuterHint": "Le résultat externe est la sortie stdout de CLI --json."
 }

@@ -54,7 +54,7 @@
   "criticalCount": "· 嚴重 {{count}}",
   "warnCount": "· 警告 {{count}}",
   "applyAuditBadge": "套用 audit · 成功 {{ok}} · warn {{warn}} · bad {{bad}}",
-  "executeBadge": "EXECUTE {{state}}",
+  "executeBadge": "執行{{狀態}}",
   "executeLabel": "系統變更",
   "go": "前往",
   "open": "開啟",
@@ -107,5 +107,5 @@
   "noNotifs": "暫無通知",
   "noNotifsDesc": "系統告警與待辦會顯示於此",
   "applyAuditTitle": "套用狀態審計",
-  "applyAuditDesc": "ok {{ok}} · warn {{warn}} · bad {{bad}}"
+  "applyAuditDesc": "好的 {{ok}} · 警告 {{warn}} · 不好 {{bad}}"
 }

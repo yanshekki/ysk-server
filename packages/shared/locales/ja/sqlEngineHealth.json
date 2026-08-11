@@ -2,13 +2,13 @@
   "finding": {
     "package_missing": "{{flavor}} のサーバー パッケージがインストールされていません。",
     "client_missing": "SQL クライアント ツールがインストールされていません。",
-    "frozen_marker": "Debian フリーズマーカーが存在します（mode: {{mode}}）。解除されるまでデーモン起動はブロックされます。",
-    "datadir_uninitialized": "データディレクトリにシステムカタログがありません — 初期化が必要です。",
-    "config_flavor_mismatch": "my.cnf が {{flavor}} 向けに誤ったエンジンを指しています（{{path}}）。",
-    "residual_foreign_plugins": "他方の SQL エンジンの残留設定/プラグインにより、このデーモンがクラッシュする可能性があります。",
+    "frozen_marker": "Debian フリーズ マーカーが存在します (モード: {{mode}})。デーモンの起動は解放されるまでブロックされます。",
+    "datadir_uninitialized": "データ ディレクトリにはシステム カタログがありません。初期化が必要です。",
+    "config_flavor_mismatch": "my.cnf は、{{flavor}} ({{path}}) の間違ったエンジンを指しています。",
+    "residual_foreign_plugins": "他の SQL エンジンの残りの設定/プラグインにより、このデーモンがクラッシュする可能性があります。",
     "unit_failed": "サービスユニット {{unit}} に障害が発生しました。",
-    "unit_not_active": "サービスユニット{{unit}}は{{active}} （非アクティブ）です。",
-    "port_conflict": "このエンジンが停止中でもポート 3306 が使用中です（競合の可能性）。"
+    "unit_not_active": "サービスユニット {{unit}} は {{active}} (非アクティブ) です。",
+    "port_conflict": "このエンジンが停止している間、ポート 3306 が使用されます (競合の可能性があります)。"
   },
   "action": {
     "stop_unit": "サービスユニットの停止",
@@ -22,8 +22,8 @@
   },
   "note": {
     "alreadyHealthy": "SQL エンジンはすでに正常であるため、修復する必要はありません。",
-    "needsConfirm": "修復には確認が必要です（{{count}} ステップ: {{findings}}）。",
-    "installPackageFirst": "最初に{{flavor}}サーバーパッケージをインストールしてから、修復します。",
+    "needsConfirm": "修理には確認が必要です ({{count}} ステップ: {{findings}})。",
+    "installPackageFirst": "まず{{flavor}} サーバーパッケージをインストールしてから修復してください。",
     "stepFailed": "修復ステップ {{action}} が失敗しました: {{detail}}",
     "repairOk": "修復が完了しました — {{unit}} がアクティブです。",
     "repairIncomplete": "修理は完了しましたが、ユニットはまだ {{active}} です。"

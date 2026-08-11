@@ -1,18 +1,18 @@
 {
-  "unknownCommand": "알 수 없는 명령: {{command}}\n`{{cli}} help`를 실행하세요",
-  "usagePrefix": "사용법:",
+  "unknownCommand": "알 수 없는 명령: {{command}}\n`{{cli}} 도움말`을 실행하세요.",
+  "usagePrefix": "용법:",
   "security": {
-    "help": "사용법: ysk-server security status\n       ysk-server security sessions list|revoke|revoke-others [--user U]\n       ysk-server security api-keys list|create|delete …",
-    "sessionsHelp": "사용법: ysk-server security sessions list [--user U]\n       ysk-server security sessions revoke --id PREFIX [--user U]\n       ysk-server security sessions revoke-others [--user U] [--keep-token T]",
-    "apiKeysHelp": "사용법: ysk-server security api-keys list\n       ysk-server security api-keys create --name N [--user U] [--scope full|read]\n       ysk-server security api-keys delete --id KEY_ID",
-    "noUser": "사용자를 찾을 수 없습니다. 관리자를 먼저 생성하거나 --user <name|id>를 지정하세요",
-    "tokenOnce": "토큰은 한 번만 표시됩니다 — 안전하게 보관하세요",
-    "sessionRevokeUsage": "사용법: ysk-server security sessions revoke --id <sessionIdPrefix> [--user U]",
+    "help": "사용법: ysk-server 보안 상태\n       ysk-server 보안 세션 목록|revoke|revoke-others [--user U]\n       ysk-server 보안 API 키 목록|생성|삭제 …",
+    "sessionsHelp": "사용법: ysk-server 보안 세션 목록 [--user U]\n       ysk-server 보안 세션은 --id PREFIX [--user U]를 취소합니다.\n       ysk-server 보안 세션 revoke-others [--user U] [--keep-token T]",
+    "apiKeysHelp": "사용법: ysk-server 보안 API 키 목록\n       ysk-server security api-keys create --name N [--user U] [--scope full|read]\n       ysk-server 보안 API-키 삭제 --id KEY_ID",
+    "noUser": "사용자를 찾을 수 없습니다. 먼저 관리자를 생성하거나 --user <name|id>를 전달하세요.",
+    "tokenOnce": "한 번 표시된 토큰 — 안전하게 보관",
+    "sessionRevokeUsage": "사용법: ysk-server 보안 세션은 --id <sessionIdPrefix> [--user U]를 취소합니다.",
     "apiKeyDeleteUsage": "사용법: ysk-server security api-keys delete --id KEY_ID"
   },
   "help": {
-    "blurb": "컨트롤 플레인 CLI — AI 에이전트는 --json을 권장합니다.\n문서: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json",
-    "main": "{{product}} ({{cli}}) v{{version}}\n\n컨트롤 플레인 CLI — AI 에이전트는 --json을 권장합니다.\n문서: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json\n\n사용법:\n  {{cli}} <command> [options]\n\n명령:\n  setup                 dataDir + admin 초기화\n  update                자체 업데이트 확인/적용\n  serve                 HTTP API + Web UI\n  system unit-install   ysk-server.service 설치 [--enable]\n  tools                 도구 목록; tools run --tool <name> [--dry-run]\n  ask                   자연어 → AI 계획 [--execute]\n  projects              list|get|create|deploy|stop|health|backup|template\n  backup                all|list|status|restore|delete|schedule|control-plane|settings|restic\n  templates             앱 템플릿\n  hosting               nginx|dns|db|firewall 헬퍼\n  dns                   zone|zones (AI 별칭 → hosting dns-*)\n  logs                  sources|query|journal|overview\n  host                  overview|metrics (읽기 전용)\n  nginx                 status|list|test|sync\n  ssl                   list|get (인증서)\n  db-cluster            list|get|create|plan (HA plan-first)\n  ssh-key               list|create|import|public|export|install|delete (SSH identity vault)\n  ssh-2fa               list|enroll|confirm|install|pam|retire (SSH 로그인 TOTP ≠ 패널 2FA)\n  services              호스트 서비스 매트릭스 (systemctl probe)\n  defense | protection  status|ban|unban|whitelist\n  security              status|sessions|api-keys (2FA 플래그 · 세션 취소 · API 키)\n  cdn                   nodes|sites|render|apply|purge|probe|dashboard|health-loop|from-project\n  agents                runtimes|fleet list|commands|register (panel + edge)\n  agent run             아웃바운드 플릿 폴러 (experimental)\n  store                 status|export|import|migrate (json|sqlite|postgres document backends)\n  files                 list|read|write|mkdir|rm|stat|rename|copy|move|chmod|trash|shares (sandbox)\n  cron                  list|create|delete|enable|disable|run|install|status\n  email                 domains|mailboxes|deliverability|bootstrap|dns (panel parity)\n  health                로컬 모드 스냅샷 또는 --url http://host:port/health\n  readiness | doctor    프로덕션 준비 상태 (정직 보고)\n  migrate               inventory|host|post|status|resume (전체 호스트 마이그레이션)\n  version | help\n\n전역:\n  --json                JSON stdout (AI)\n  --data-dir PATH\n  --config PATH\n  --help | --version\n\n종료 코드: 0 ok · 1 error · 2 validation · 3 blocked · 4 not found · 5 host error\n\n안전:\n  위험 작업은 기본 dry-run(계획만)입니다.\n  호스트를 변경하려면 --execute(별칭 --apply) + 환경 변수 YSK_EXECUTE=1을 사용하세요.\n\n예:\n  {{cli}} readiness --json\n  {{cli}} host --json\n  {{cli}} nginx status --json\n  {{cli}} ssl list --json\n  {{cli}} projects get --id UUID --json\n  {{cli}} defense ban --ip 1.2.3.4 --json          # dry-run 계획\n  {{cli}} projects list --json\n  {{cli}} logs query --source journal: --lines 100 --json\n  {{cli}} tools --json"
+    "blurb": "제어 플레인 CLI - AI 에이전트의 경우 --json을 선호합니다.\n문서: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json",
+    "main": "{{product}} ({{cli}}) v{{version}}\n\n제어 플레인 CLI - AI 에이전트의 경우 --json을 선호합니다.\n문서: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json\n\n사용법:\n  {{cli}} <명령어> [옵션]\n\n명령:\n  초기화 dataDir + 관리자 설정\n  업데이트 자체 업데이트 확인/적용\n  HTTP API + 웹 UI 제공\n  시스템 장치 설치 ysk-server.service 설치 [--enable]\n  도구 목록 도구; tools run --tool <이름> [--dry-run]\n  NL에게 물어보기 → AI 계획 [--execute]\n  프로젝트 목록|가져오기|생성|배포|중지|상태|백업|템플릿\n  모두 백업|목록|상태|복원|삭제|일정|제어판|설정|restic\n  템플릿 앱 템플릿\n  nginx|dns|db|방화벽 도우미 호스팅\n  dns zone|zones (AI 별칭 → 호스팅 dns-*)\n  로그 소스|쿼리|저널|개요\n  호스트 개요|메트릭(읽기 전용)\n  nginx 상태|목록|테스트|동기화\n  SSL 목록|가져오기(인증서)\n  db-cluster list|get|create|plan(HA 계획 우선)\n  ssh-key list|create|import|public|export|install|delete(SSH ID 저장소)\n  ssh-2fa list|enroll|confirm|install|pam|retire (SSH 로그인 TOTP ≠ 패널 2FA)\n  서비스 호스트 서비스 매트릭스(systemctl 프로브)\n  방어 | 보호 상태|금지|금지 해제|허용 목록\n  보안 상태|세션|api-keys(2FA 플래그 · 세션 취소 · API 키)\n  CDN 노드|사이트|렌더링|적용|퍼지|프로브|대시보드|상태 루프|프로젝트에서\n  에이전트 런타임|플릿 목록|명령|등록(패널 + 에지)\n  에이전트 실행 아웃바운드 플릿 폴러(실험적)\n  저장소 상태|내보내기|가져오기|마이그레이션 (json|sqlite|postgres 문서 백엔드)\n  파일 목록|읽기|쓰기|mkdir|rm|stat|이름 바꾸기|복사|이동|chmod|trash|공유(샌드박스)\n  cron 목록|생성|삭제|활성화|비활성화|실행|설치|상태\n  이메일 도메인|사서함|배달성|부트스트랩|dns(패널 패리티)\n  health 로컬 모드 스냅샷 또는 --url http://host:port/health\n  준비 | 의사 생산 준비 상태 (솔직함)\n  마이그레이션 인벤토리|호스트|게시|상태|이력서(전체 호스트 마이그레이션)\n  버전 | 도움\n\n글로벌:\n  --json JSON 표준 출력(AI)\n  --data-dir 경로\n  --config 경로\n  --도움말 | --버전\n\n종료: 0 확인 · 오류 1개 · 유효성 검사 2개 · 차단 3개 · 찾을 수 없음 4개 · 호스트 오류 5개\n\n안전:\n  위험한 작업은 기본적으로 시험 실행됩니다(계획에만 해당).\n  호스트를 변경하려면 --execute(별칭 --apply) + env YSK_EXECUTE=1을 전달합니다.\n\n예:\n  {{cli}} 준비 상태 --json\n  {{cli}} 호스트 --json\n  {{cli}} nginx 상태 --json\n  {{cli}} SSL 목록 --json\n  {{cli}} 프로젝트는 --id UUID --json을 얻습니다.\n  {{cli}} 방어 금지 --ip 1.2.3.4 --json # 테스트 실행 계획\n  {{cli}} 프로젝트 목록 --json\n  {{cli}} 로그 쿼리 --source 저널: --lines 100 --json\n  {{cli}} 도구 --json"
   },
   "usage": {
     "tools": {
@@ -20,7 +20,7 @@
         "--tool": {
           "name": {
             "--arg": {
-              "cd327c": "사용법: ysk-server tools run --tool <name> [--arg key=val] [--dry-run]\n"
+              "cd327c": "사용법: ysk-server tools run --tool <name> [--arg key=val] [--dry-run]"
             }
           }
         }
@@ -31,14 +31,14 @@
         "list": {
           "create": {
             "get": {
-              "b94a62": "사용법: ysk-server email domains list|create|get …\n"
+              "b94a62": "사용법: ysk-server 이메일 도메인 목록|생성|get …"
             }
           }
         },
         "create": {
           "--domain": {
             "example": {
-              "bd4036": "사용법: ysk-server email domains create --domain example.com --ip A.B.C.D\n"
+              "bd4036": "사용법: ysk-server 이메일 도메인 create --domain example.com --ip A.B.C.D"
             }
           }
         }
@@ -46,13 +46,13 @@
       "mailboxes": {
         "list": {
           "create": {
-            "42b26c": "사용법: ysk-server email mailboxes list|create …\n"
+            "42b26c": "사용법: ysk-server 이메일 사서함 목록|생성 …"
           }
         },
         "create": {
           "--domain": {
             "example": {
-              "7227f3": "사용법: ysk-server email mailboxes create --domain example.com --local user [--password P]\n"
+              "7227f3": "사용법: ysk-server 이메일 사서함 create --domain example.com --local user [--password P]"
             }
           }
         }
@@ -61,7 +61,7 @@
         "--domain": {
           "example": {
             "com": {
-              "26b806": "사용법: ysk-server email dns --domain example.com\n"
+              "26b806": "사용법: ysk-server 이메일 dns --domain example.com"
             }
           }
         }
@@ -70,7 +70,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "73dad0": "사용법: ysk-server email <sub> [--data-dir PATH] [--json]\n  domains list|create|get [--q TEXT]\n    create --domain example.com --ip A.B.C.D\n    get --domain example.com | --id UUID\n  mailboxes list|create [--domain D | --id domainId]\n    create --domain D --local user [--password P]\n  deliverability --domain D | --id UUID\n  deliverability-overview\n  bootstrap --domain D --ip A.B.C.D [--install]\n  dns --domain D | --id UUID     # 패널용 DNS 번들\n또한: hosting email-apply|email-mailbox|email-deliverability (별칭)\n"
+              "73dad0": "사용법: ysk-server 이메일 <sub> [--data-dir PATH] [--json]\n  도메인 목록|생성|가져오기 [--q TEXT]\n    --domain example.com --ip A.B.C.D 만들기\n    --domain example.com 받기 | --id UUID\n  사서함 목록|생성 [--도메인 D | --id 도메인 ID]\n    create --domain D --local user [--password P]\n  배달 가능성 --도메인 D | --id UUID\n  배달 가능성 개요\n  bootstrap --domain D --ip A.B.C.D [--install]\n  dns --도메인 D | --id UUID # 패널용 DNS 번들\n또한: 호스팅 email-apply|email-mailbox|email-deliverability(별칭)"
             }
           }
         }
@@ -79,7 +79,7 @@
         "--domain": {
           "example": {
             "com": {
-              "b0dff0": "사용법: ysk-server email deliverability --domain example.com\n"
+              "b0dff0": "사용법: ysk-server 이메일 전달 가능성 --domain example.com"
             }
           }
         }
@@ -88,7 +88,7 @@
         "--domain": {
           "example": {
             "com": {
-              "affc8d": "사용법: ysk-server email bootstrap --domain example.com --ip 1.2.3.4 [--install]\n"
+              "affc8d": "사용법: ysk-server 이메일 부트스트랩 --domain example.com --ip 1.2.3.4 [--install]"
             }
           }
         }
@@ -99,7 +99,7 @@
         "--id": {
           "job": {
             "id": {
-              "f6aafe": "사용법: ysk-server cron delete --id JOB_ID\n"
+              "f6aafe": "사용법: ysk-server cron delete --id JOB_ID"
             }
           }
         }
@@ -108,14 +108,14 @@
         "--id": {
           "job": {
             "id": {
-              "99cfdf": "사용법: ysk-server cron {{sub}} --id JOB_ID\n"
+              "99cfdf": "사용법: ysk-server cron {{sub}} --id JOB_ID"
             }
           }
         },
         "--data-dir": {
           "path": {
             "--json": {
-              "0349e6": "사용법: ysk-server cron <sub> [--data-dir PATH] [--json]\n  list [--project-id ID] [--q TEXT]\n  create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n  delete --id JOB_ID\n  enable|disable --id JOB_ID\n  run --id JOB_ID              # 즉시 실행 (YSK_EXECUTE=1 필요)\n  install                     # 관리 crontab 로드 (EXECUTE 필요)\n  status                      # 관리 파일 vs 호스트 crontab 검사\n정직성: YSK_EXECUTE=1 없으면 install 차단됨 (파일은 여전히 기록됨).\n"
+              "0349e6": "사용법: ysk-server cron <sub> [--data-dir PATH] [--json]\n  목록 [--프로젝트-id ID] [--q TEXT]\n  create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n  삭제 --id JOB_ID\n  활성화|비활성화 --id JOB_ID\n  run --id JOB_ID # 지금 실행(YSK_EXECUTE=1 필요)\n  설치 # 관리형 crontab 로드(EXECUTE 필요)\n  상태 # 관리 파일과 호스트 crontab을 조사합니다.\n정직: YSK_EXECUTE=1 없이 설치가 차단되었습니다(파일은 계속 기록됨)."
             }
           }
         }
@@ -124,7 +124,7 @@
         "--id": {
           "job": {
             "id": {
-              "a0a97f": "사용법: ysk-server cron run --id JOB_ID\n"
+              "a0a97f": "사용법: ysk-server cron run --id JOB_ID"
             }
           }
         }
@@ -133,7 +133,7 @@
         "--schedule": {
           "0": {
             "3": {
-              "9a8328": "사용법: ysk-server cron create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n"
+              "9a8328": "사용법: ysk-server cron create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]"
             }
           }
         }
@@ -143,21 +143,21 @@
       "stat": {
         "--path": {
           "rel": {
-            "17c8f2": "사용법: ysk-server files stat --path REL\n"
+            "17c8f2": "사용법: ysk-server 파일 stat --path REL"
           }
         }
       },
       "read": {
         "--path": {
           "rel": {
-            "e35f8d": "사용법: ysk-server files read --path REL\n"
+            "e35f8d": "사용법: ysk-server 파일 읽기 --path REL"
           }
         }
       },
       "mkdir": {
         "--path": {
           "rel": {
-            "ae0438": "사용법: ysk-server files mkdir --path REL\n"
+            "ae0438": "사용법: ysk-server 파일 mkdir --path REL"
           }
         }
       },
@@ -165,7 +165,7 @@
         "--path": {
           "rel": {
             "--permanent": {
-              "fe2051": "사용법: ysk-server files rm --path REL [--permanent]\n"
+              "fe2051": "사용법: ysk-server 파일 rm --path REL [--permanent]"
             }
           }
         }
@@ -174,7 +174,7 @@
         "--from": {
           "rel": {
             "--to": {
-              "35a260": "사용법: ysk-server files rename --from REL --to REL\n"
+              "35a260": "사용법: ysk-server 파일 이름 바꾸기 --REL에서 --REL로"
             }
           }
         }
@@ -183,7 +183,7 @@
         "--from": {
           "rel": {
             "--to": {
-              "5337f4": "사용법: ysk-server files copy --from REL --to REL\n"
+              "5337f4": "사용법: ysk-server 파일 복사 --REL에서 --REL로"
             }
           }
         }
@@ -192,7 +192,7 @@
         "--from": {
           "rel": {
             "--to": {
-              "75cf5d": "사용법: ysk-server files move --from REL --to REL\n"
+              "75cf5d": "사용법: ysk-server 파일 이동 --REL에서 --REL로"
             }
           }
         }
@@ -201,7 +201,7 @@
         "--path": {
           "rel": {
             "--mode": {
-              "39f983": "사용법: ysk-server files chmod --path REL --mode 644\n"
+              "39f983": "사용법: ysk-server 파일 chmod --path REL --mode 644"
             }
           }
         }
@@ -210,28 +210,28 @@
         "restore": {
           "--id": {
             "trash": {
-              "c89ce9": "사용법: ysk-server files trash restore --id TRASH_ID\n"
+              "c89ce9": "사용법: ysk-server 파일 휴지통 복원 --id TRASH_ID"
             }
           }
         },
         "list": {
           "restore": {
             "purge": {
-              "ef063d": "사용법: ysk-server files trash list|restore|purge\n"
+              "ef063d": "사용법: ysk-server 파일 휴지통 목록|복원|제거"
             }
           }
         }
       },
       "shares": {
         "list": {
-          "ac342c": "사용법: ysk-server files shares list\n"
+          "ac342c": "사용법: ysk-server 파일 공유 목록"
         }
       },
       "webdav": {
         "status": {
           "token": {
             "disable": {
-              "f8e94b": "사용법: ysk-server files webdav status|token|disable\n"
+              "f8e94b": "사용법: ysk-server files webdav status|token|disable"
             }
           }
         }
@@ -240,7 +240,7 @@
         "--root": {
           "public": {
             "project": {
-              "42ebd4": "사용법: ysk-server files <sub> [--root public|project:ID] [--data-dir PATH] [--json]\n  list   [--path DIR] [--q TEXT] [--sort name|size|mtime] [--order asc|desc]\n  stat   --path REL\n  read   --path REL\n  write  --path REL --content TEXT | --file LOCAL\n  mkdir  --path REL\n  rm     --path REL [--permanent]\n  rename --from REL --to REL\n  copy   --from REL --to REL\n  move   --from REL --to REL\n  chmod  --path REL --mode 644\n  trash  list|restore|purge [--id TRASH_ID]\n  shares list\n  favorites list\n  upload --dir REL --file LOCAL [--file LOCAL2…]\n  webdav status|token|disable\n샌드박스: public 파일 루트 또는 프로젝트 홈만 (경로 제한).\n"
+              "42ebd4": "사용법: ysk-server 파일 <sub> [--root public|project:ID] [--data-dir PATH] [--json]\n  목록 [--path DIR] [--q TEXT] [--정렬 이름|크기|mtime] [--order asc|desc]\n  통계 --경로 REL\n  읽기 --path REL\n  --path REL --content TEXT 쓰기 | --파일 로컬\n  mkdir --path REL\n  rm --path REL [--영구]\n  이름 바꾸기 --REL에서 --REL로\n  복사 --REL에서 --REL로\n  이동 --REL에서 --REL로\n  chmod --path REL --mode 644\n  휴지통 목록|복원|삭제 [--id TRASH_ID]\n  공유 목록\n  즐겨찾기 목록\n  업로드 --dir REL --file LOCAL [--file LOCAL2…]\n  webdav 상태|토큰|비활성화\n샌드박스: 공개 파일 루트 또는 프로젝트 홈만(경로 제한)"
             }
           }
         }
@@ -249,7 +249,7 @@
         "--path": {
           "rel": {
             "--content": {
-              "0addb1": "사용법: ysk-server files write --path REL --content TEXT | --file LOCAL\n"
+              "0addb1": "사용법: ysk-server 파일 쓰기 --path REL --content TEXT | --파일 로컬"
             }
           }
         }
@@ -258,7 +258,7 @@
         "--dir": {
           "rel": {
             "--file": {
-              "f8c3bf": "사용법: ysk-server files upload --dir REL --file LOCAL [--file LOCAL2…]\n"
+              "f8c3bf": "사용법: ysk-server 파일 업로드 --dir REL --file LOCAL [--file LOCAL2…]"
             }
           }
         }
@@ -269,7 +269,7 @@
         "--in": {
           "file": {
             "json": {
-              "5b6fdd": "사용법: ysk-server store import --in FILE.json\n"
+              "5b6fdd": "사용법: ysk-server store import --in FILE.json"
             }
           }
         }
@@ -278,7 +278,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "d580e4": "사용법: ysk-server store <sub> [--data-dir PATH] [--json]\n  status                         백엔드 종류 + 개수 표시\n  export --out FILE.json         문서 스냅샷 덤프\n  import --in FILE.json          파일에서 스냅샷 덮어쓰기\n  migrate --to sqlite|json [--out PATH]\n    현재 스토어를 다른 백엔드 파일로 복사\n환경 변수: YSK_STORE=json|sqlite|postgres  YSK_DATABASE_URL=postgres://…\n정직성: document-blob 백엔드(아직 완전한 관계형 스키마 아님).\n"
+              "d580e4": "사용법: ysk-server store <sub> [--data-dir PATH] [--json]\n  상태 백엔드 종류 + 개수 표시\n  내보내기 --out FILE.json 덤프 문서 스냅샷\n  import --in FILE.json 파일의 스냅샷 덮어쓰기\n  마이그레이션 --to sqlite|json [--out PATH]\n    현재 저장소를 다른 백엔드 파일에 복사\nEnv: YSK_STORE=json|sqlite|postgres YSK_DATABASE_URL=postgres://…\n정직: 문서-BLOB 백엔드(아직 완전한 관계형 스키마는 아님)."
             }
           }
         }
@@ -287,7 +287,7 @@
         "--to": {
           "json": {
             "sqlite": {
-              "1c52a3": "사용법: ysk-server store migrate --to json|sqlite [--out PATH]\n  (postgres: JSON으로 export한 뒤 YSK_DATABASE_URL 아래에서 import)\n"
+              "1c52a3": "사용법: ysk-server store migration --to json|sqlite [--out PATH]\n  (postgres: JSON을 내보낸 후 YSK_DATABASE_URL로 가져오기)"
             }
           }
         }
@@ -298,28 +298,28 @@
         "delete": {
           "--id": {
             "node": {
-              "0c6a1e": "사용법: ysk-server cdn nodes delete --id NODE_ID\n"
+              "0c6a1e": "사용법: ysk-server cdn 노드 삭제 --id NODE_ID"
             }
           }
         },
         "drain": {
           "--id": {
             "node": {
-              "a8aa81": "사용법: ysk-server cdn nodes drain --id NODE_ID [--off]\n"
+              "a8aa81": "사용법: ysk-server cdn 노드 배수 --id NODE_ID [--off]"
             }
           }
         },
         "list": {
           "upsert": {
             "delete": {
-              "52549e": "사용법: ysk-server cdn nodes list|upsert|delete|probe|drain …\n"
+              "52549e": "사용법: ysk-server cdn 노드 목록|upsert|삭제|프로브|드레인 …"
             }
           }
         },
         "upsert": {
           "--name": {
             "name": {
-              "8f6f39": "사용법: ysk-server cdn nodes upsert --name NAME [--id ID] [--base-url U] [--fleet-agent-id S] [--ssh-host H] [--region R]\n"
+              "8f6f39": "사용법: ysk-server cdn 노드 upsert --name NAME [--id ID] [--base-url U] [--fleet-agent-id S] [--ssh-host H] [--region R]"
             }
           }
         }
@@ -328,28 +328,28 @@
         "get": {
           "--id": {
             "site": {
-              "3c3c35": "사용법: ysk-server cdn sites get --id SITE_ID\n"
+              "3c3c35": "사용법: ysk-server cdn 사이트는 --id SITE_ID를 얻습니다."
             }
           }
         },
         "delete": {
           "--id": {
             "site": {
-              "51ef8f": "사용법: ysk-server cdn sites delete --id SITE_ID\n"
+              "51ef8f": "사용법: ysk-server cdn 사이트 삭제 --id SITE_ID"
             }
           }
         },
         "list": {
           "get": {
             "upsert": {
-              "609da6": "사용법: ysk-server cdn sites list|get|upsert|delete …\n"
+              "609da6": "사용법: ysk-server CDN 사이트 목록|get|upsert|삭제 …"
             }
           }
         },
         "upsert": {
           "--name": {
             "n": {
-              "6ebb75": "사용법: ysk-server cdn sites upsert --name N --domains a.com,b.com [--edge-id ID]… [--origin-url U] [--origin-project ID]\n"
+              "6ebb75": "사용법: ysk-server cdn 사이트 upsert --name N --domains a.com,b.com [--edge-id ID]… [--origin-url U] [--origin-project ID]"
             }
           }
         }
@@ -358,7 +358,7 @@
         "--site-id": {
           "id": {
             "--dry-run": {
-              "2149eb": "사용법: ysk-server cdn render --site-id ID [--dry-run]\n"
+              "2149eb": "사용법: ysk-server cdn render --site-id ID [--dry-run]"
             }
           }
         }
@@ -367,7 +367,7 @@
         "--site-id": {
           "id": {
             "--edge-id": {
-              "a527b3": "사용법: ysk-server cdn apply --site-id ID [--edge-id EDGE]\n"
+              "a527b3": "사용법: ysk-server cdn apply --site-id ID [--edge-id EDGE]"
             }
           }
         }
@@ -376,7 +376,7 @@
         "--site-id": {
           "id": {
             "--edge-id": {
-              "bc08ec": "사용법: ysk-server cdn purge --site-id ID [--edge-id EDGE]\n"
+              "bc08ec": "사용법: ysk-server cdn purge --site-id ID [--edge-id EDGE]"
             }
           }
         }
@@ -385,7 +385,7 @@
         "--site-id": {
           "id": {
             "--apply-zone": {
-              "343068": "사용법: ysk-server cdn dns-sync --site-id ID [--apply-zone]\n"
+              "343068": "사용법: ysk-server cdn dns-sync --site-id ID [--apply-zone]"
             }
           }
         }
@@ -394,7 +394,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "092842": "사용법: ysk-server cdn <sub> [--data-dir PATH] [--json]\n  nodes list|upsert|delete|probe|drain\n  sites list|upsert|delete|get\n  render --site-id ID [--dry-run]\n  apply  --site-id ID [--edge-id ID]   # 팬아웃 (EXECUTE 없이 fleet 큐 가능)\n  purge  --site-id ID [--edge-id ID]\n  dns-sync --site-id ID [--apply-zone]\n  probe | dashboard | health-loop [--apply-zone]\n  from-project --project-id ID [--edge-id ID…]\n참고: apply_status가 written/queued여도 agent ack / EXECUTE reload 전까지 edge nginx에 적용된 것이 아닙니다.\n"
+              "092842": "사용법: ysk-server cdn <sub> [--data-dir PATH] [--json]\n  노드 목록|upsert|삭제|프로브|드레인\n  사이트 목록|업서트|삭제|가져오기\n  렌더링 --site-id ID [--dry-run]\n  --site-id ID 적용 [--edge-id ID] # 팬아웃(EXECUTE 없이 플릿 대기열 확인)\n  purge --site-id ID [--edge-id ID]\n  dns-sync --site-id ID [--apply-zone]\n  프로브 | 대시보드 | 건강 루프 [--적용 영역]\n  from-project --project-id ID [--edge-id ID…]\n정직성: Apply_status 작성/대기 중 ≠ 에이전트 승인/EXECUTE 다시 로드까지 Edge nginx가 적용됩니다."
             }
           }
         }
@@ -403,7 +403,7 @@
         "--project-id": {
           "id": {
             "--edge-id": {
-              "a96f42": "사용법: ysk-server cdn from-project --project-id ID [--edge-id ID]…\n"
+              "a96f42": "사용법: ysk-server cdn from-project --project-id ID [--edge-id ID]..."
             }
           }
         }
@@ -414,21 +414,21 @@
         "remove": {
           "--session": {
             "session": {
-              "1827fe": "사용법: ysk-server agents fleet remove --session SESSION_ID\n"
+              "1827fe": "사용법: ysk-server 에이전트 플릿 제거 --session SESSION_ID"
             }
           }
         },
         "register": {
           "--id": {
             "agent": {
-              "209b2d": "사용법: ysk-server agents fleet register --id AGENT_ID [--group g] [--edge]\n"
+              "209b2d": "사용법: ysk-server 에이전트 플릿 레지스터 --id AGENT_ID [--group g] [--edge]"
             }
           }
         },
         "commands": {
           "--session": {
             "session": {
-              "f8067c": "사용법: ysk-server agents fleet commands --session SESSION_ID\n"
+              "f8067c": "사용법: ysk-server 에이전트 함대 명령 --session SESSION_ID"
             }
           }
         }
@@ -437,7 +437,7 @@
         "--id": {
           "agent": {
             "id": {
-              "3c4477": "사용법: ysk-server agents register --id AGENT_ID [--group g]\n"
+              "3c4477": "사용법: ysk-server 에이전트는 --id AGENT_ID [--group g]를 등록합니다."
             }
           }
         }
@@ -446,7 +446,7 @@
         "--session": {
           "session": {
             "id": {
-              "e620d2": "사용법: ysk-server agents commands --session SESSION_ID\n"
+              "e620d2": "사용법: ysk-server 에이전트 명령 --session SESSION_ID"
             }
           }
         }
@@ -455,7 +455,7 @@
         "probe": {
           "fleet": {
             "list": {
-              "261fa4": "사용법: ysk-server agents [runtimes|probe|fleet list|fleet register|fleet commands|register|commands]\n"
+              "261fa4": "사용법: ysk-server 에이전트 [런타임|프로브|플릿 목록|플릿 등록|플릿 명령|등록|명령]"
             }
           }
         }
@@ -466,7 +466,7 @@
         "--control-plane": {
           "url": {
             "--id": {
-              "cfefbe": "사용법: ysk-server agent run --control-plane URL --id AGENT_ID [--group g]\n"
+              "cfefbe": "사용법: ysk-server 에이전트 실행 --control-plane URL --id AGENT_ID [--group g]"
             }
           }
         }
@@ -476,7 +476,7 @@
       "check": {
         "system": {
           "info": {
-            "b0c781": "사용법: ysk-server ask \"check system info\"\n"
+            "b0c781": "사용법: ysk-server에서 \"시스템 정보 확인\"을 요청합니다."
           }
         }
       }
@@ -486,7 +486,7 @@
         "--project-id": {
           "id": {
             "--name": {
-              "d66c29": "사용법: ysk-server backup delete --project-id ID --name ARCHIVE\n"
+              "d66c29": "사용법: ysk-server 백업 삭제 --project-id ID --name ARCHIVE"
             }
           }
         }
@@ -495,14 +495,14 @@
         "list": {
           "run": {
             "restore": {
-              "10402b": "사용법: ysk-server backup restic list|run|restore …\n"
+              "10402b": "사용법: ysk-server 백업 나머지 목록|실행|복원 …"
             }
           }
         },
         "restore": {
           "--project-id": {
             "id": {
-              "a8f133": "사용법: ysk-server backup restic restore --project-id ID --snapshot SNAP [--dry-run] [--overwrite-home --confirm PHRASE]\n"
+              "a8f133": "사용법: ysk-server 백업 복원 복원 --project-id ID --snapshot SNAP [--dry-run] [--overwrite-home --confirm PHRASE]"
             }
           }
         }
@@ -511,7 +511,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "777243": "사용법: ysk-server backup <sub> [--data-dir PATH] [--json]\n  all                         모든 프로젝트 홈 백업 (+ 구성 시 remote/restic 병행)\n  list [--project-id ID] [--q TEXT]\n  status                      마지막 실행 + 스케줄 프로브\n  restore --project-id ID --name ARCHIVE [--mode full|web|dry-run]\n  delete  --project-id ID --name ARCHIVE\n  schedule [--cron \"0 3 * * *\"] [--install]\n  control-plane               ysk.json + config.json 스냅샷\n  control-plane-restore --name ARCHIVE [--mode dry-run|full] [--confirm RESTORE-CONTROL-PLANE]\n  settings [get|set]          Remote / 제외 목록 / restic\n    set --remote-kind local|sftp|s3 --remote-path P [--remote-host H] …\n    set --exclude a,b,c | --exclusions-file FILE\n    set --restic-enable --restic-password P [--restic-repo PATH]\n    set --from-json FILE      # 전체 패치 {remote?,exclusions?,restic?}\n  restic list|run|restore     증분 restic 헬퍼\n"
+              "777243": "사용법: ysk-server 백업 <sub> [--data-dir PATH] [--json]\n  all 모든 프로젝트 홈 백업(+ 구성 시 원격/휴지 측)\n  목록 [--프로젝트-id ID] [--q TEXT]\n  상태 마지막 실행 + 예약 프로브\n  복원 --project-id ID --name ARCHIVE [--mode full|web|dry-run]\n  삭제 --프로젝트 ID ID --name ARCHIVE\n  일정 [--cron \"0 3 * * *\"] [--install]\n  제어 평면 스냅샷 ysk.json + config.json\n  control-plane-restore --name ARCHIVE [--mode dry-run|full] [--확인 RESTORE-CONTROL-PLANE]\n  설정 [get|set] 원격 / 제외 / 나머지\n    set --remote-kind local|sftp|s3 --remote-path P [--remote-host H] …\n    설정 --exclude a,b,c | --제외 파일 FILE\n    set --restic-enable --restic-password P [--restic-repo PATH]\n    set --from-json FILE # 전체 패치 {remote?,exclusions?,restic?}\n  Restic list|run|restore 증분 Restic 도우미"
             }
           }
         }
@@ -520,7 +520,7 @@
         "--name": {
           "archive": {
             "--mode": {
-              "316a76": "사용법: ysk-server backup control-plane-restore --name ARCHIVE [--mode dry-run|full] [--confirm RESTORE-CONTROL-PLANE]\n"
+              "316a76": "사용법: ysk-server backup control-plane-restore --name ARCHIVE [--mode dry-run|full] [--confirm RESTORE-CONTROL-PLANE]"
             }
           }
         }
@@ -529,7 +529,7 @@
         "--project-id": {
           "id": {
             "--name": {
-              "bc7041": "사용법: ysk-server backup restore --project-id ID --name ARCHIVE [--mode full|web|dry-run]\n"
+              "bc7041": "사용법: ysk-server 백업 복원 --project-id ID --name ARCHIVE [--mode full|web|dry-run]"
             }
           }
         }
@@ -539,7 +539,7 @@
       "list": {
         "--q": {
           "text": {
-            "b8e16b": "사용법: ysk-server packages list [--q text]\n"
+            "b8e16b": "사용법: ysk-server 패키지 목록 [--q text]"
           }
         }
       }
@@ -548,21 +548,21 @@
       "stop": {
         "--id": {
           "projectid": {
-            "b15409": "사용법: ysk-server projects stop --id <projectId>\n"
+            "b15409": "사용법: ysk-server projects stop --id <projectId>"
           }
         }
       },
       "backup": {
         "--id": {
           "projectid": {
-            "e62846": "사용법: ysk-server projects backup --id <projectId>\n"
+            "e62846": "사용법: ysk-server projects backup --id <projectId>"
           }
         }
       },
       "health": {
         "--id": {
           "projectid": {
-            "e816ec": "사용법: ysk-server projects health --id <projectId>\n"
+            "e816ec": "사용법: ysk-server projects health --id <projectId>"
           }
         }
       },
@@ -570,21 +570,21 @@
         "provision": {
           "--id": {
             "projectid": {
-              "5aff44": "사용법: ysk-server projects isolation provision --id <projectId>\n       ysk-server projects isolation provision-all [--limit 20]\n"
+              "5aff44": "사용법: ysk-server 프로젝트 격리 프로비저닝 --id <projectId>\n       ysk-server 프로젝트 격리 프로비저닝-all [--limit 20]"
             }
           }
         },
         "backfill-owners": {
           "--owner-user-id": {
             "id": {
-              "8691da": "사용법: ysk-server projects isolation backfill-owners --owner-user-id <id>\n"
+              "8691da": "사용법: ysk-server 프로젝트 격리 backfill-owners --owner-user-id <id>"
             }
           }
         },
         "list": {
           "provision": {
             "provision-all": {
-              "8e9da3": "사용법: ysk-server projects isolation list|provision|provision-all|backfill-owners\n"
+              "8e9da3": "사용법: ysk-server 프로젝트 격리 목록|provision|provision-all|backfill-owners"
             }
           }
         }
@@ -593,7 +593,7 @@
         "--id": {
           "projectid": {
             "name": {
-              "b0d532": "사용법: ysk-server projects get --id <projectId|name> [--json]\n"
+              "b0d532": "사용법: ysk-server 프로젝트 get --id <projectId|name> [--json]"
             }
           }
         }
@@ -602,7 +602,7 @@
         "--name": {
           "name": {
             "--domain": {
-              "66e857": "사용법: ysk-server projects create --name <name> [--domain d] [--runtime node|php|static|python|go|rust] [--template id]\n"
+              "66e857": "사용법: ysk-server 프로젝트 create --name <name> [--domain d] [--runtime node|php|static|python|go|rust] [--template id]"
             }
           }
         }
@@ -611,7 +611,7 @@
         "--id": {
           "projectid": {
             "--entry": {
-              "339111": "사용법: ysk-server projects deploy --id <projectId> [--entry f] [--port N] [--fpm|--builtin] [--reload]\n"
+              "339111": "사용법: ysk-server 프로젝트 배포 --id <projectId> [--entry f] [--port N] [--fpm|--builtin] [--reload]"
             }
           }
         }
@@ -620,7 +620,7 @@
         "--id": {
           "id": {
             "--git-url": {
-              "a513f5": "사용법: ysk-server projects git-deploy --id ID [--git-url URL] [--branch main] [--no-redeploy] [--depth 1] [--entry f]\n"
+              "a513f5": "사용법: ysk-server 프로젝트 git-deploy --id ID [--git-url URL] [--branch main] [--no-redeploy] [--깊이 1] [--entry f]"
             }
           }
         }
@@ -629,7 +629,7 @@
         "--id": {
           "projectid": {
             "--template": {
-              "591ce4": "사용법: ysk-server projects template --id <projectId> --template <id> [--force]\n"
+              "591ce4": "사용법: ysk-server 프로젝트 템플릿 --id <projectId> --template <id> [--force]"
             }
           }
         }
@@ -638,7 +638,7 @@
         "get": {
           "create": {
             "deploy": {
-              "253b48": "사용법: ysk-server projects list|get|create|deploy|git-deploy|stop|backup|template|health [options]\n  deploy --id UUID [--entry f] [--port N] [--fpm|--builtin] [--reload]\n  git-deploy --id UUID [--git-url URL] [--branch B] [--no-redeploy]\n"
+              "253b48": "사용법: ysk-server 프로젝트 목록|get|create|deploy|git-deploy|stop|backup|template|health [옵션]\n  배포 --id UUID [--entry f] [--port N] [--fpm|--builtin] [--reload]\n  git-deploy --id UUID [--git-url URL] [--branch B] [--no-redeploy]"
             }
           }
         }
@@ -649,240 +649,240 @@
         "db-cluster": {
           "get": {
             "--id": {
-              "00f803": "사용법: {{CLI_NAME}} db-cluster get --id UUID [--json]\n"
+              "00f803": "사용법: {{CLI_NAME}} db-cluster get --id UUID [--json]"
             }
           },
           "plan": {
             "--id": {
-              "483f52": "사용법: {{CLI_NAME}} db-cluster plan --id UUID [--json]\n"
+              "483f52": "사용법: {{CLI_NAME}} db-cluster plan --id UUID [--json]"
             }
           },
           "artifacts": {
             "--id": {
-              "6b33c4": "사용법: {{CLI_NAME}} db-cluster artifacts --id UUID [--json]\n"
+              "6b33c4": "사용법: {{CLI_NAME}} db-cluster 아티팩트 --id UUID [--json]"
             }
           },
           "bundle": {
             "--id": {
-              "94ed27": "사용법: {{CLI_NAME}} db-cluster bundle --id UUID [--json]\n"
+              "94ed27": "사용법: {{CLI_NAME}} db-cluster Bundle --id UUID [--json]"
             }
           },
           "delete": {
             "--id": {
-              "3de0e4": "사용법: {{CLI_NAME}} db-cluster delete --id UUID [--json]\n"
+              "3de0e4": "사용법: {{CLI_NAME}} db-cluster delete --id UUID [--json]"
             }
           },
           "create": {
             "--name": {
-              "e3b733": "사용법: {{CLI_NAME}} db-cluster create --name N --engine mariadb --kind mariadb-galera --member HOST=role[:access] ...\n"
+              "e3b733": "사용법: {{CLI_NAME}} db-cluster create --name N --engine mariadb --kind mariadb-galera --member HOST=role[:access] ..."
             }
           },
           "apply": {
             "--id": {
-              "4cddb8": "사용법: {{CLI_NAME}} db-cluster apply --id UUID [--execute] [--bootstrap] [--json]\n"
+              "4cddb8": "사용법: {{CLI_NAME}} db-cluster apply --id UUID [--execute] [--bootstrap] [--json]"
             }
           },
           "probe": {
             "--id": {
-              "22870c": "사용법: {{CLI_NAME}} db-cluster probe --id UUID [--peers] [--json]\n"
+              "22870c": "사용법: {{CLI_NAME}} db-cluster 프로브 --id UUID [--peers] [--json]"
             }
           },
           "install-peers": {
             "--id": {
-              "600b02": "사용법: {{CLI_NAME}} db-cluster install-peers --id UUID [--execute] [--no-restart] [--identity ID] [--json]\n"
+              "600b02": "사용법: {{CLI_NAME}} db-cluster install-peers --id UUID [--execute] [--no-restart] [--identity ID] [--json]"
             }
           },
           "push": {
             "--id": {
-              "697080": "사용법: {{CLI_NAME}} db-cluster push --id UUID [--member ID] [--identity ID] [--execute] [--json]\n"
+              "697080": "사용법: {{CLI_NAME}} db-cluster push --id UUID [--member ID] [--identity ID] [--execute] [--json]"
             }
           },
           "fleet": {
             "--id": {
-              "239462": "사용법: {{CLI_NAME}} db-cluster fleet --id UUID [--op apply|probe|plan] [--execute] [--edge-execute] [--json]\n"
+              "239462": "사용법: {{CLI_NAME}} db-cluster 함대 --id UUID [--op apply|probe|plan] [--execute] [--edge-execute] [--json]"
             }
           },
           "list": {
             "get": {
-              "3b9cfa": "사용법: {{CLI_NAME}} db-cluster list|get|create|plan|apply|probe|install-peers|artifacts|bundle|push|fleet|overview|delete [--peers] [--execute] [--json]\n"
+              "3b9cfa": "사용법: {{CLI_NAME}} db-cluster list|get|create|plan|apply|probe|install-peers|artifacts|bundle|push|fleet|overview|delete [--peers] [--execute] [--json]"
             }
           }
         },
         "ssh-key": {
           "get": {
             "--id": {
-              "292716": "사용법: {{CLI_NAME}} ssh-key get --id UUID [--json]\n"
+              "292716": "사용법: {{CLI_NAME}} ssh-key get --id UUID [--json]"
             }
           },
           "public": {
             "--id": {
-              "525d7d": "사용법: {{CLI_NAME}} ssh-key public --id UUID\n"
+              "525d7d": "사용법: {{CLI_NAME}} ssh-key public --id UUID"
             }
           },
           "export": {
             "--id": {
-              "0a6d81": "사용법: {{CLI_NAME}} ssh-key export --id UUID [--out PATH] [--json]\n"
+              "0a6d81": "사용법: {{CLI_NAME}} ssh-key 내보내기 --id UUID [--out PATH] [--json]"
             }
           },
           "delete": {
             "--id": {
-              "a6e2f2": "사용법: {{CLI_NAME}} ssh-key delete --id UUID [--json]\n"
+              "a6e2f2": "사용법: {{CLI_NAME}} ssh-key delete --id UUID [--json]"
             }
           },
           "create": {
             "--name": {
-              "8b1d79": "사용법: {{CLI_NAME}} ssh-key create --name N [--algo ed25519|rsa-4096] [--purpose user|panel|unbound] [--project ID] [--user U] [--home PATH] [--reveal] [--json]\n"
+              "8b1d79": "사용법: {{CLI_NAME}} ssh-key create --name N [--algo ed25519|rsa-4096] [--목적 사용자|패널|unbound] [--프로젝트 ID] [--user U] [--home PATH] [--reveal] [--json]"
             }
           },
           "import": {
             "--name": {
-              "6eb800": "사용법: {{CLI_NAME}} ssh-key import --name N --file PATH [--purpose panel|user] [--json]\n"
+              "6eb800": "사용법: {{CLI_NAME}} ssh-key import --name N --file PATH [--목적 패널|사용자] [--json]"
             }
           },
           "install": {
             "--id": {
-              "b99c56": "사용법: {{CLI_NAME}} ssh-key install --id UUID [--execute] [--json]\n"
+              "b99c56": "사용법: {{CLI_NAME}} ssh-key install --id UUID [--execute] [--json]"
             }
           },
           "test": {
             "--id": {
-              "e1aed3": "사용법: {{CLI_NAME}} ssh-key test --id UUID --target user@host[:port] [--execute] [--json]\n"
+              "e1aed3": "사용법: {{CLI_NAME}} ssh-key test --id UUID --target user@host[:port] [--execute] [--json]"
             }
           },
           "rotate": {
             "--id": {
-              "9c3224": "사용법: {{CLI_NAME}} ssh-key rotate --id UUID [--reveal] [--json]\n"
+              "9c3224": "사용법: {{CLI_NAME}} ssh-key 회전 --id UUID [--reveal] [--json]"
             }
           },
           "authorize-self": {
             "--id": {
-              "b7ea2e": "사용법: {{CLI_NAME}} ssh-key authorize-self --id UUID [--json]\n"
+              "b7ea2e": "사용법: {{CLI_NAME}} ssh-key Authorize-self --id UUID [--json]"
             }
           },
           "uninstall": {
             "--id": {
-              "afcba0": "사용법: {{CLI_NAME}} ssh-key uninstall --id UUID [--execute] [--json]\n"
+              "afcba0": "사용법: {{CLI_NAME}} ssh-key uninstall --id UUID [--execute] [--json]"
             }
           },
           "list": {
             "get": {
-              "2c92c6": "사용법: {{CLI_NAME}} ssh-key list|get|create|import|public|export|install|test|rotate|authorize-self|uninstall|delete [--json]\n"
+              "2c92c6": "사용법: {{CLI_NAME}} ssh-key list|get|create|import|public|export|install|test|rotate|authorize-self|uninstall|delete [--json]"
             }
           }
         },
         "ssh-2fa": {
           "reveal": {
             "--id": {
-              "a6c27f": "사용법: {{CLI_NAME}} ssh-2fa reveal --id UUID [--json]\n"
+              "a6c27f": "사용법: {{CLI_NAME}} ssh-2fa 공개 --id UUID [--json]"
             }
           },
           "retire": {
             "--id": {
-              "6e1fa3": "사용법: {{CLI_NAME}} ssh-2fa retire --id UUID [--json]\n"
+              "6e1fa3": "사용법: {{CLI_NAME}} ssh-2fa 은퇴 --id UUID [--json]"
             }
           },
           "enroll": {
             "--user": {
-              "081432": "사용법: {{CLI_NAME}} ssh-2fa enroll --user LINUX|--project ID [--home PATH] [--from-panel] [--json]\n"
+              "081432": "사용법: {{CLI_NAME}} ssh-2faregister --user LINUX|--프로젝트 ID [--home PATH] [--from-panel] [--json]"
             }
           },
           "confirm": {
             "--id": {
-              "9ee8a2": "사용법: {{CLI_NAME}} ssh-2fa confirm --id UUID --code 123456 [--json]\n"
+              "9ee8a2": "사용법: {{CLI_NAME}} ssh-2fa verify --id UUID --code 123456 [--json]"
             }
           },
           "install": {
             "--id": {
-              "dace06": "사용법: {{CLI_NAME}} ssh-2fa install --id UUID [--execute] [--json]\n"
+              "dace06": "사용법: {{CLI_NAME}} ssh-2fa install --id UUID [--execute] [--json]"
             }
           },
           "uninstall": {
             "--id": {
-              "0bb464": "사용법: {{CLI_NAME}} ssh-2fa uninstall --id UUID [--execute] [--json]\n"
+              "0bb464": "사용법: {{CLI_NAME}} ssh-2fa uninstall --id UUID [--execute] [--json]"
             }
           },
           "list": {
             "enroll": {
-              "802ed0": "사용법: {{CLI_NAME}} ssh-2fa list|enroll|confirm|install|uninstall|pam|reveal|retire [--json]\n"
+              "802ed0": "사용법: {{CLI_NAME}} ssh-2fa list|enroll|confirm|install|uninstall|pam|reveal|retire [--json]"
             }
           }
         },
         "ssl": {
           "list": {
             "get": {
-              "79c232": "사용법: {{CLI_NAME}} ssl list|get --domain X [--json]\n"
+              "79c232": "사용법: {{CLI_NAME}} ssl list|get --domain X [--json]"
             }
           },
           "get": {
             "--domain": {
-              "91c444": "사용법: {{CLI_NAME}} ssl get --domain example.com [--json]\n"
+              "91c444": "사용법: {{CLI_NAME}} ssl get --domain example.com [--json]"
             }
           }
         },
         "dns": {
           "zone": {
             "--zone": {
-              "ad30fa": "사용법: {{CLI_NAME}} dns zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n"
+              "ad30fa": "사용법: {{CLI_NAME}} dns zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]"
             }
           },
           "zones": {
             "zone": {
-              "5b8bda": "사용법: {{CLI_NAME}} dns zones|zone --zone X --ip A.B.C.D [--ipv6 …] [--json]\n"
+              "5b8bda": "사용법: {{CLI_NAME}} dns zones|zone --zone X --ip A.B.C.D [--ipv6 …] [--json]"
             }
           }
         },
         "nginx": {
           "status": {
             "list": {
-              "d67a16": "사용법: {{CLI_NAME}} nginx status|list|test|sync [--execute] [--json]\n"
+              "d67a16": "사용법: {{CLI_NAME}} nginx status|list|test|sync [--execute] [--json]"
             }
           }
         },
         "host": {
           "overview": {
             "metrics": {
-              "93c828": "사용법: {{CLI_NAME}} host overview|metrics|network [--path /] [--json]\n"
+              "93c828": "사용법: {{CLI_NAME}} 호스트 개요|메트릭|네트워크 [--path /] [--json]"
             }
           }
         },
         "logs": {
           "sources": {
             "overview": {
-              "79058c": "사용법: {{CLI_NAME}} logs sources|overview|units|journal|query [--source id] [--json]\n"
+              "79058c": "사용법: {{CLI_NAME}} 로그 소스|개요|단위|저널|쿼리 [--소스 ID] [--json]"
             }
           }
         },
         "services": {
           "sub": {
             "--unit": {
-              "4fe3fa": "사용법: {{CLI_NAME}} services {{sub}} --unit <systemd-unit> [--execute] [--json]\n"
+              "4fe3fa": "사용법: {{CLI_NAME}} 서비스 {{sub}} --unit <systemd-unit> [--execute] [--json]"
             }
           },
           "matrix": {
             "start": {
-              "4f3a35": "사용법: {{CLI_NAME}} services matrix|start|stop|restart|reload --unit NAME [--execute] [--json]\n"
+              "4f3a35": "사용법: {{CLI_NAME}} 서비스 매트릭스|start|stop|restart|reload --unit NAME [--execute] [--json]"
             }
           }
         },
         "defense": {
           "ban": {
             "--ip": {
-              "cc22de": "사용법: {{CLI_NAME}} defense ban --ip <ip> [--method fail2ban|ufw|both] [--reason t] [--execute]\n"
+              "cc22de": "사용법: {{CLI_NAME}} 방어 금지 --ip <ip> [--method 실패2ban|ufw|둘 다] [--reason t] [--execute]"
             }
           },
           "unban": {
             "--ip": {
-              "46aa23": "사용법: {{CLI_NAME}} defense unban --ip <ip> [--method fail2ban|ufw|both] [--execute]\n"
+              "46aa23": "사용법: {{CLI_NAME}} defence unban --ip <ip> [--method 실패2ban|ufw|둘 다] [--execute]"
             }
           },
           "whitelist": {
             "--action": {
-              "c1cbdf": "사용법: {{CLI_NAME}} defense whitelist --action list|add|remove [--ip IP]\n"
+              "c1cbdf": "사용법: {{CLI_NAME}} 방어 화이트리스트 --action list|추가|제거 [--ip IP]"
             }
           },
           "status": {
             "bans": {
-              "a8d96b": "사용법: {{CLI_NAME}} defense status|bans|suspects|ban|unban|whitelist|stack-apply|fail2ban|firewall|timeline|presets [--json]\n` +\n          `  bans [--q text] [--source fail2ban|panel|ufw|auto]\n` +\n          `  suspects [--q text]\n` +\n          `  stack-apply [--execute]   # UFW + fail2ban + 현재 preset\n` +\n          `  fail2ban | firewall       # 심층 프로브 (정직 보고)\n` +\n          `  timeline [--limit N] [--q text]\n` +\n          `  presets                   # 목록 + activePreset\n"
+              "a8d96b": "사용법: {{CLI_NAME}} 방어 상태|bans|suspects|ban|unban|whitelist|stack-apply|fail2ban|firewall|timeline|presets [--json]\n` +\n          ` 금지 [--q 텍스트] [--source 실패2ban|패널|ufw|자동]\n` +\n          ` 용의자 [--q 텍스트]\n` +\n          ` stack-apply [--execute] # UFW + Fail2ban + 현재 프리셋\n` +\n          ` 실패2반 | 방화벽 # 심층 조사(정직)\n` +\n          ` 타임라인 [--limit N] [--q 텍스트]\n` +\n          ` 사전 설정 # 목록 + activePreset"
             }
           }
         }
@@ -893,7 +893,7 @@
         "--enable": {
           "--data-dir": {
             "path": {
-              "33daa1": "사용법: ysk-server system unit-install [--enable] [--data-dir PATH]\n"
+              "33daa1": "사용법: ysk-server 시스템 장치-설치 [--enable] [--data-dir PATH]"
             }
           }
         }
@@ -904,7 +904,7 @@
         "--username": {
           "u": {
             "--password": {
-              "7145c7": "사용법: ysk-server users create --username <u> --password <p> [--role operator|viewer|admin] [--package-id id]\n"
+              "7145c7": "사용법: ysk-server 사용자는 --username <u> --password <p> [--role Operator|viewer|admin] [--package-id id]를 만듭니다."
             }
           }
         }
@@ -913,7 +913,7 @@
         "--q": {
           "text": {
             "--role": {
-              "544685": "사용법: ysk-server users list [--q text] [--role admin|operator|viewer]\n       ysk-server users create --username u --password p [--role operator]\n"
+              "544685": "사용법: ysk-server 사용자 목록 [--q text] [--role admin|operator|viewer]\n       ysk-server 사용자는 --username u --password p [--role 연산자]를 생성합니다."
             }
           }
         }
@@ -922,7 +922,7 @@
     "rbac": {
       "list": {
         "policies": {
-          "330ade": "사용법: ysk-server rbac list|policies\n       ysk-server rbac show --role operator\n       ysk-server rbac audit   # route→cap 샘플 매트릭스\n"
+          "330ade": "사용법: ysk-server rbac list|policies\n       ysk-server rbac show --role 연산자\n       ysk-server rbac audit # 경로 → 캡 샘플 매트릭스"
         }
       }
     },
@@ -931,7 +931,7 @@
         "--db": {
           "name": {
             "--user": {
-              "2c8889": "사용법: ysk-server hosting postgres-provision --db NAME --user U --password P(min8) [--execute]\n  기본값은 dry-run(호스트 변경 없음). 적용하려면 --execute + YSK_EXECUTE=1 을 전달하세요.\n"
+              "2c8889": "사용법: postgres-provision --db NAME --user U --password P(min8) [--execute]를 호스팅하는 ysk-server\n  기본 테스트 실행(호스트 변경 없음) --execute + YSK_EXECUTE=1을 전달하여 적용합니다."
             }
           }
         }
@@ -940,7 +940,7 @@
         "--db": {
           "name": {
             "--user": {
-              "fc25aa": "사용법: ysk-server hosting mysql-provision --db NAME --user U --password P(min8) [--execute]\n  기본값은 dry-run(호스트 변경 없음). 적용하려면 --execute + YSK_EXECUTE=1 을 전달하세요.\n"
+              "fc25aa": "사용법: mysql-provision --db NAME --user U --password P(min8) [--execute]를 호스팅하는 ysk-server\n  기본 테스트 실행(호스트 변경 없음) --execute + YSK_EXECUTE=1을 전달하여 적용합니다."
             }
           }
         }
@@ -949,7 +949,7 @@
         "--zone": {
           "example": {
             "com": {
-              "bdaa0d": "사용법: ysk-server hosting dns-zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n"
+              "bdaa0d": "사용법: dns-zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]를 호스팅하는 ysk-server"
             }
           }
         }
@@ -958,7 +958,7 @@
         "--zone": {
           "example": {
             "com": {
-              "dba49c": "사용법: ysk-server hosting powerdns-load --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--load|--execute]\n"
+              "dba49c": "사용법: ysk-server 호스팅 powerdns-load --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--load|--execute]"
             }
           }
         }
@@ -967,7 +967,7 @@
         "--domain": {
           "example": {
             "com": {
-              "37d350": "사용법: ysk-server hosting email-apply --domain example.com [--install|--execute]\n"
+              "37d350": "사용법: ysk-server 호스팅 email-apply --domain example.com [--install|--execute]"
             }
           }
         }
@@ -976,7 +976,7 @@
         "--domain": {
           "x": {
             "--local": {
-              "3d9be3": "사용법: ysk-server hosting email-mailbox --domain X --local user [--password P] [--ip A.B.C.D]\n"
+              "3d9be3": "사용법: ysk-server 호스팅 email-mailbox --domain X --local user [--password P] [--ip A.B.C.D]"
             }
           }
         }
@@ -985,7 +985,7 @@
         "--domain": {
           "files": {
             "example": {
-              "284a7c": "사용법: ysk-server hosting ftps-apply --domain files.example.com [--install|--execute]\n"
+              "284a7c": "사용법: ftps-apply --domain files.example.com을 호스팅하는 ysk-server [--install|--execute]"
             }
           }
         }
@@ -994,7 +994,7 @@
         "--domain": {
           "webmail": {
             "example": {
-              "2ad5b5": "사용법: ysk-server hosting webmail-apply --domain webmail.example.com [--download]\n"
+              "2ad5b5": "사용법: ysk-server 호스팅 webmail-apply --domain webmail.example.com [--download]"
             }
           }
         }
@@ -1003,7 +1003,7 @@
         "--domain": {
           "files": {
             "example": {
-              "0e9013": "사용법: ysk-server hosting public-files --domain files.example.com [--reload]\n"
+              "0e9013": "사용법: 공개 파일을 호스팅하는 ysk-server --domain files.example.com [--reload]"
             }
           }
         }
@@ -1012,7 +1012,7 @@
         "--domain": {
           "example": {
             "com": {
-              "8774a4": "사용법: ysk-server hosting email-deliverability --domain example.com\n       ysk-server hosting email-deliverability --id <domainId>\n"
+              "8774a4": "사용법: ysk-server 호스팅 email-deliverability --domain example.com\n       ysk-server 호스팅 email-deliverability --id <domainId>"
             }
           }
         }
@@ -1021,7 +1021,7 @@
         "--domain": {
           "example": {
             "com": {
-              "796da5": "사용법: ysk-server hosting email-bootstrap --domain example.com --ip 1.2.3.4 [--admin postmaster] [--password P] [--install]\n"
+              "796da5": "사용법: ysk-server 호스팅 email-bootstrap --domain example.com --ip 1.2.3.4 [--admin postmaster] [--password P] [--install]"
             }
           }
         }
@@ -1032,7 +1032,7 @@
         "--job": {
           "id": {
             "--data-dir": {
-              "6a73cd": "사용법: ysk-server migrate post --job <id> --data-dir PATH --execute\n"
+              "6a73cd": "사용법: ysk-server migration post --job <id> --data-dir PATH --execute"
             }
           }
         }
@@ -1041,77 +1041,77 @@
         "--target": {
           "root": {
             "new": {
-              "3e94a2": "사용법: ysk-server migrate host --target root@NEW_IP [--identity-file PATH|--identity-id ID] [--password] --execute --data-dir PATH\n"
+              "3e94a2": "사용법: ysk-server 마이그레이션 호스트 --target root@NEW_IP [--identity-file PATH|--identity-id ID] [--password] --execute --data-dir PATH"
             }
           }
         }
       }
     },
     "x": {
-      "972912": "사용법:\n  ysk-server migrate inventory [--data-dir PATH] --json\n  ysk-server migrate host --target root@IP [--identity-file PATH|--identity-id ID|--password PW] --execute [--maintenance] [--force-wipe-target]\n  ysk-server migrate post --job ID --data-dir PATH --execute   # 대상 호스트에서\n  ysk-server migrate status [--job ID]\n  ysk-server migrate resume --job ID --execute\n"
+      "972912": "사용법:\n  ysk-server 인벤토리 마이그레이션 [--data-dir PATH] --json\n  ysk-server 마이그레이션 호스트 --target root@IP [--identity-file PATH|--identity-id ID|--password PW] --execute [--maintenance] [--force-wipe-target]\n  ysk-server 마이그레이션 post --job ID --data-dir PATH --execute # 대상에서\n  ysk-server 마이그레이션 상태 [--작업 ID]\n  ysk-server 마이그레이션 이력서 --작업 ID --execute"
     },
-    "hostingHelp": "사용법: ysk-server hosting <sub>\n  위험 작업은 기본 dry-run; 적용하려면 --execute (+ YSK_EXECUTE=1) 추가\n  nginx | nginx-sync [--execute]\n  redis-provision | postgres-provision | mysql-provision [--execute]\n  dns-zone --zone X --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n  dns-zones | powerdns-status | powerdns-install [--install|--execute]\n  powerdns-load --zone X --ip A.B.C.D [--load|--execute]\n  email-apply --domain X [--install|--execute]\n  email-mailbox --domain X --local user [--password P] [--ip A.B.C.D] [--system]\n  ftps-apply --domain X [--install|--execute]\n  runtimes | runtime-install --kind node|php|python|go|rust --version V [--install|--execute]\n  dovecot-passdb --domain X | --all\n  webmail-apply --domain webmail.example.com [--download]\n  public-files --domain files.example.com [--reload]\n  email-bootstrap --domain example.com --ip A.B.C.D [--install|--execute]\n  email-deliverability --domain example.com   # PTR/DNSBL/warmup 팩 (정직 보고)\n  firewall-apply [--smtp] [--execute]\n",
-    "logsQuery": "사용법: {{CLI_NAME}} logs query --source <id> [--lines N] [--grep G] [--since 1h] [--priority err]\n  source 예: journal:  journal:nginx.service  file:syslog  project:<uuid>\n  {{CLI_NAME}} logs sources --json\n  {{CLI_NAME}} logs journal [--unit nginx.service] --json\n"
+    "hostingHelp": "사용법: ysk-server 호스팅 <sub>\n  위험한 작전의 기본 테스트 실행; 적용하려면 --execute(+ YSK_EXECUTE=1)를 추가하세요.\n  엔진엑스 | nginx-sync [--실행]\n  redis 제공 | postgres 제공 | mysql-provision [--실행]\n  dns-zone --zone X --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n  DNS 영역 | powerdns 상태 | powerdns-install [--install|--실행]\n  powerdns-load --zone X --ip A.B.C.D [--load|--execute]\n  이메일 적용 --domain X [--install|--execute]\n  email-mailbox --domain X --local user [--password P] [--ip A.B.C.D] [--system]\n  ftps-apply --domain X [--install|--execute]\n  런타임 | 런타임 설치 --kind node|php|python|go|rust --version V [--install|--execute]\n  dovecot-passdb --domain X | --모두\n  webmail-apply --domain webmail.example.com [--다운로드]\n  공개 파일 --domain files.example.com [--reload]\n  email-bootstrap --domain example.com --ip A.B.C.D [--install|--execute]\n  email-deliverability --domain example.com # PTR/DNSBL/웜업 팩(정직)\n  방화벽 적용 [--smtp] [--실행]",
+    "logsQuery": "사용법: {{CLI_NAME}} 로그 쿼리 --source <id> [--lines N] [--grep G] [--since 1h] [--priority err]\n  소스 예: 저널: 저널:nginx.service 파일:syslog 프로젝트:<uuid>\n  {{CLI_NAME}} 로그 소스 --json\n  {{CLI_NAME}} 로그 저널 [--unit nginx.service] --json"
   },
   "msg": {
     "domain": {
       "missing": {
         "pass": {
-          "5be09b": "도메인이 없습니다 — 먼저 생성하려면 --ip 를 전달하세요\n"
+          "5be09b": "도메인 누락 - 먼저 도메인을 생성하려면 --ip를 전달하세요."
         }
       }
     },
     "--root": {
       "must": {
         "be": {
-          "a84834": "--root 는 public 또는 project:<id> 여야 합니다\n"
+          "a84834": "--root는 공개이거나 project:<id>여야 합니다."
         }
       }
     },
     "need": {
       "--content": {
         "or": {
-          "4d7001": "--content 또는 --file 이 필요합니다\n"
+          "4d7001": "--content 또는 --file 필요"
         }
       },
       "at": {
         "least": {
-          "7d311a": "--member HOST[=role][:access] 가 하나 이상 필요합니다\n"
+          "7d311a": "최소한 하나의 --member HOST[=role][:access]가 필요합니다."
         }
       }
     },
     "action": {
       "must": {
         "be": {
-          "ba14c1": "action 은 list|add|remove 여야 합니다\n"
+          "ba14c1": "작업은 목록|추가|제거여야 합니다."
         }
       }
     },
     "use": {
       "ysk-server": {
         "backup": {
-          "ca67f4": "사용: ysk-server backup control-plane-restore --name ARCHIVE (restore --project-id control-plane 아님)\n"
+          "ca67f4": "사용: ysk-server backup control-plane-restore --name ARCHIVE(restore --project-id control-plane 아님)"
         }
       }
     },
     "new": {
       "domain": {
         "requires": {
-          "986b78": "새 도메인은 --ip A.B.C.D 필요 (플레이스홀더 기본값 없음)\n"
+          "986b78": "새 도메인에는 --ip A.B.C.D가 필요합니다(자리 표시자 기본값 없음)."
         }
       }
     },
     "import-sync": {
       "prefers": {
         "fleet": {
-          "4d7590": "import-sync는 fleet clusterSync 페이로드 우선; 또는 --file snapshot.json\n"
+          "4d7590": "import-sync는 Fleet ClusterSync 페이로드를 선호합니다. 또는 --file snapshot.json"
         }
       }
     },
     "security": {
       "control": {
         "plane": {
-          "f59a63": "보안: 컨트롤 플레인이 공개 바인딩됨(0.0.0.0/::). 127.0.0.1 + 리버스 프록시 / UFW 권장.\n"
+          "f59a63": "보안: 공개적으로 바인딩된 제어 평면(0.0.0.0/::). 127.0.0.1 + 역방향 프록시/UFW를 선호합니다."
         }
       }
     }
@@ -1121,62 +1121,62 @@
       "email": {
         "sub": {
           "sub": {
-            "e37257": "알 수 없는 email 하위 명령: {{sub}}\n실행: ysk-server email help\n"
+            "e37257": "알 수 없는 이메일 하위: {{sub}}\n실행: ysk-server 이메일 도움말"
           }
         }
       },
       "cron": {
         "sub": {
           "sub": {
-            "e1a9ed": "알 수 없는 cron 하위 명령: {{sub}}\n실행: ysk-server cron help\n"
+            "e1a9ed": "알 수 없는 크론 하위: {{sub}}\n실행: ysk-server cron help"
           }
         }
       },
       "files": {
         "sub": {
           "sub": {
-            "07ad7e": "알 수 없는 files 하위 명령: {{sub}}\n실행: ysk-server files help\n"
+            "07ad7e": "알 수 없는 파일 하위: {{sub}}\n실행: ysk-server 파일 도움말"
           }
         }
       },
       "store": {
         "sub": {
           "sub": {
-            "b7a083": "알 수 없는 store 하위 명령: {{sub}}\n실행: ysk-server store help\n"
+            "b7a083": "알 수 없는 매장 하위: {{sub}}\n실행: ysk-server store help"
           }
         }
       },
       "cdn": {
         "subcommand": {
           "sub": {
-            "76664f": "알 수 없는 cdn 하위 명령: {{sub}}\n실행: ysk-server cdn help\n"
+            "76664f": "알 수 없는 cdn 하위 명령: {{sub}}\n실행: ysk-server cdn help"
           }
         }
       },
       "backup": {
         "subcommand": {
           "sub": {
-            "4092ad": "알 수 없는 backup 하위 명령: {{sub}}\n실행: ysk-server backup help\n"
+            "4092ad": "알 수 없는 백업 하위 명령: {{sub}}\n실행: ysk-server 백업 도움말"
           }
         }
       }
     }
   },
   "setup": {
-    "dryRunOk": "{{product}} 설정 dry-run 정상",
-    "dryRunNext": "설정을 쓰고 데이터베이스를 초기화하려면 --dry-run 없이 다시 실행",
-    "weakPassword": "관리자 비밀번호가 약하거나 기본값입니다. 강력한 --admin-password를 지정하세요(최소 8자, \"admin\"/흔한 기본값 제외). 로컬 개발 전용으로만 YSK_ALLOW_INSECURE_DEFAULTS=1을 설정할 수 있습니다.",
-    "weakPasswordShort": "약하거나 기본값인 관리자 비밀번호 거부됨",
-    "nextStart": "시작(API + Web UI): {{cli}} serve --config {{configPath}}",
-    "nextOpen": "http://{{host}}:{{port}}/ 을 열고 {{user}}(으)로 로그인",
-    "nextUnit": "Systemd 유닛 템플릿: {{unitPath}}",
-    "nextInstall": "유닛 설치(root + YSK_EXECUTE): {{cli}} system unit-install --enable --data-dir {{dataDir}}",
-    "nextExecute": "프로덕션 호스트 변경에는 YSK_EXECUTE=1 및 root 필요",
-    "nextGolive": "가동: docs/deploy/go-live.md + ysk-server readiness --json",
-    "secPassword": "보안: 관리자 비밀번호를 즉시 변경하세요(부트스트랩에 약하거나 기본 비밀번호 사용됨)",
-    "sec2fa": "보안: 보안 → 계정에서 관리자 2FA를 사용 설정하세요",
-    "secListen": "보안: 모든 인터페이스에서 수신 중 — 방화벽/리버스 프록시 뒤에 두세요. 관리용으로는 127.0.0.1 + SSH 터널 권장",
-    "ok": "{{product}} 설정 완료(데이터베이스 초기화됨)",
-    "okInsecure": "{{product}} 설정 완료(데이터베이스 초기화됨) [불안전한 부트스트랩 — 비밀번호 변경]"
+    "dryRunOk": "{{product}} 설정 테스트 실행 OK",
+    "dryRunNext": "구성을 작성하고 데이터베이스를 초기화하려면 --dry-run 없이 다시 실행하세요.",
+    "weakPassword": "관리자 비밀번호가 취약하거나 기본값입니다. 강력한 --admin-password(최소 8, \"admin\"/공통 기본값 아님)를 전달하거나 로컬 개발자에 대해서만 YSK_ALLOW_INSECURE_DEFAULTS=1을 설정하세요.",
+    "weakPasswordShort": "취약하거나 기본 관리자 비밀번호가 거부됨",
+    "nextStart": "시작(API + 웹 UI): {{cli}} 서브 --config {{configPath}}",
+    "nextOpen": "http://{{host}}:{{port}}/을 열고 {{user}}로 로그인하세요.",
+    "nextUnit": "시스템 단위 템플릿: {{unitPath}}",
+    "nextInstall": "설치 단위(루트 + YSK_EXECUTE): {{cli}} system unit-install --enable --data-dir {{dataDir}}",
+    "nextExecute": "프로덕션 호스트 돌연변이에는 YSK_EXECUTE=1 및 루트가 필요합니다.",
+    "nextGolive": "라이브 시작: docs/deploy/go-live.md + ysk-server 준비 --json",
+    "secPassword": "보안: 즉시 관리자 비밀번호 변경(부트스트랩이 취약한/기본 비밀번호를 사용함)",
+    "sec2fa": "보안: 보안 → 계정에서 관리자 2FA를 활성화하세요.",
+    "secListen": "보안: 모든 인터페이스에서 수신 대기 - 방화벽/역방향 프록시 뒤에 배치됩니다. 관리자용 127.0.0.1 + SSH 터널 선호",
+    "ok": "{{product}} 설정 완료(데이터베이스 초기화)",
+    "okInsecure": "{{product}} 설정 완료(데이터베이스 초기화) [INSECURE BOOTSTRAP — 비밀번호 변경]"
   }
 }

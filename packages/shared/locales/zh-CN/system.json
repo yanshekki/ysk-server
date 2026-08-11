@@ -82,7 +82,7 @@
   "timeNtp": "时间与 NTP",
   "clockStatus": "系统时钟状态",
   "local": "本机",
-  "utc": "UTC",
+  "utc": "世界标准时间",
   "source": "来源",
   "ntpService": "NTP 服务",
   "ntpServiceActive": "运行中",

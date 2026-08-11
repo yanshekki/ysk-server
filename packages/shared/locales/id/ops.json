@@ -1,38 +1,38 @@
 {
   "blocked": {
-    "needExecute": "Host execute nonaktif; aksi ini tidak dapat diselesaikan dari panel",
-    "needExecuteShort": "Host execute tidak diaktifkan",
-    "needExecuteBlocked": "Diblokir: host execute nonaktif",
-    "needRoot": "Diperlukan hak root",
-    "needExecuteRoot": "Memerlukan YSK_EXECUTE=1 dan root",
-    "needExecuteYsk": "Memerlukan YSK_EXECUTE=1",
-    "writeOutsideDataDir": "Penulisan diblokir: host execute nonaktif dan path di luar direktori data panel",
-    "nginxReload": "Tidak dapat memuat ulang Nginx: host execute diperlukan",
-    "signal": "Tidak dapat mengirim sinyal: host execute diperlukan (YSK_EXECUTE)",
-    "signalNote": "YSK_EXECUTE=1 diperlukan untuk kill yang sesungguhnya",
-    "renice": "Tidak dapat renice: host execute diperlukan (YSK_EXECUTE)",
-    "install": "Host execute nonaktif; instalasi tidak dapat diselesaikan dari panel",
-    "update": "Host execute nonaktif; pembaruan tidak dapat diselesaikan dari panel",
+    "needExecute": "Eksekusi host tidak aktif; tindakan ini tidak dapat diselesaikan dari panel",
+    "needExecuteShort": "Eksekusi host tidak diaktifkan",
+    "needExecuteBlocked": "Diblokir: eksekusi host tidak aktif",
+    "needRoot": "Hak istimewa root diperlukan",
+    "needExecuteRoot": "Membutuhkan YSK_EXECUTE=1 dan root",
+    "needExecuteYsk": "Membutuhkan YSK_EXECUTE=1",
+    "writeOutsideDataDir": "Penulisan diblokir: eksekusi host tidak aktif dan jalur berada di luar direktori data panel",
+    "nginxReload": "Tidak dapat memuat ulang Nginx: diperlukan eksekusi host",
+    "signal": "Tidak dapat mengirim sinyal: diperlukan eksekusi host (YSK_EXECUTE)",
+    "signalNote": "YSK_EXECUTE=1 diperlukan untuk pembunuhan sesungguhnya",
+    "renice": "Tidak dapat membatalkan: diperlukan eksekusi host (YSK_EXECUTE)",
+    "install": "Eksekusi host tidak aktif; instalasi tidak dapat diselesaikan dari panel",
+    "update": "Eksekusi host tidak aktif; pembaruan tidak dapat diselesaikan dari panel",
     "panel": "Tidak dapat menyelesaikan ini dari panel manajemen"
   },
   "honesty": {
-    "blockedNotOk": "Perbaikan kejujuran: blocked tidak boleh ok=true",
-    "blockedNotApplied": "Perbaikan kejujuran: blocked tidak boleh apply_status=applied",
-    "okFalseNotApplied": "Perbaikan kejujuran: ok=false tidak boleh apply_status=applied"
+    "blockedNotOk": "Perbaikan kejujuran: diblokir tidak bisa oke = benar",
+    "blockedNotApplied": "Perbaikan kejujuran: diblokir tidak dapat apply_status=diterapkan",
+    "okFalseNotApplied": "Perbaikan kejujuran: ok=false tidak dapat apply_status=diterapkan"
   },
   "status": {
     "applied": "Status: diterapkan",
     "failed": "Status: gagal",
-    "written": "Status: ditulis",
+    "written": "Status: tertulis",
     "blocked": "Status: diblokir"
   },
   "notes": {
     "writtenSettings": "Pengaturan ditulis",
     "completed": "Selesai",
     "partialSuccess": "Operasi hanya berhasil sebagian",
-    "notInstalled": "Belum terpasang",
-    "running": "Berjalan",
+    "notInstalled": "Tidak dipasang",
+    "running": "Berlari",
     "stopped": "Berhenti",
-    "unknown": "Tidak diketahui"
+    "unknown": "Tidak dikenal"
   }
 }

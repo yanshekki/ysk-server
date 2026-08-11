@@ -1,14 +1,14 @@
 {
-  "titleDefault": "필수 소프트웨어가 설치되어 있지 않습니다",
-  "missing": "누락: {{names}}",
+  "titleDefault": "필수 소프트웨어가 설치되지 않았습니다.",
+  "missing": "누락됨: {{names}}",
   "nameSep": ", ",
   "installOneClick": "지금 설치",
   "installing": "설치 중…",
-  "reprobe": "다시 확인",
+  "reprobe": "재확인",
   "close": "닫기",
   "resultTitle": "설치 결과",
   "probeFailed": "프로브 실패",
-  "installIncomplete": "설치 미완료",
-  "installedOne": "{{name}} 설치됨",
+  "installIncomplete": "설치가 완료되지 않았습니다.",
+  "installedOne": "설치됨 {{name}}",
   "allInstalled": "필수 소프트웨어 설치됨"
 }

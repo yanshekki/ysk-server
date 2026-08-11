@@ -1,50 +1,50 @@
 {
   "discover-host": {
-    "name": "Host discovery",
-    "description": "केवल-पढ़ने योग्य होस्ट इन्वेंटरी"
+    "name": "मेज़बान खोज",
+    "description": "केवल पढ़ने योग्य होस्ट सूची"
   },
   "nginx-health": {
-    "name": "Nginx स्वास्थ्य जाँच",
-    "description": "nginx सेवा स्थिति जाँचें"
+    "name": "Nginx स्वास्थ्य जांच",
+    "description": "nginx सेवा स्थिति की जाँच करें"
   },
   "nginx-restart": {
-    "name": "Nginx पुनः आरंभ (उच्च जोखिम)",
-    "description": "अनुमोदन के बाद nginx पुनः आरंभ करें"
+    "name": "Nginx पुनरारंभ (उच्च जोखिम)",
+    "description": "अनुमोदन के बाद nginx को पुनरारंभ करें"
   },
   "local-llm-ops-only": {
-    "name": "केवल स्थानीय LLM संचालन",
-    "description": "सुरक्षा मोड में आपातकालीन खोज"
+    "name": "केवल स्थानीय एलएलएम ऑप्स",
+    "description": "सुरक्षा मोड के तहत आपातकालीन खोज"
   },
   "disk-pressure": {
-    "name": "डिस्क दबाव जाँच",
-    "description": "df के माध्यम से केवल-पढ़ने योग्य डिस्क उपयोग"
+    "name": "डिस्क दबाव की जाँच",
+    "description": "डीएफ के माध्यम से केवल पढ़ने योग्य डिस्क उपयोग"
   },
   "mail-stack-status": {
     "name": "मेल स्टैक स्थिति",
-    "description": "postfix + dovecot यूनिट जाँचें"
+    "description": "पोस्टफ़िक्स + डवकॉट इकाइयों की जाँच करें"
   },
   "security-units": {
-    "name": "सुरक्षा यूनिट",
-    "description": "fail2ban + sshd स्थिति (केवल-पढ़ने योग्य)"
+    "name": "सुरक्षा इकाइयाँ",
+    "description": "फ़ेल2बैन + एसएसएचडी स्थिति (केवल पढ़ने के लिए)"
   },
   "web-stack-status": {
     "name": "वेब स्टैक स्थिति",
     "description": "nginx + php-fpm जांच"
   },
   "emergency-read-only": {
-    "name": "आपातकालीन केवल-पढ़ने योग्य स्वीप",
+    "name": "आपातकालीन रीड-ओनली स्वीप",
     "description": "केवल सुरक्षा-सुरक्षित तथ्य"
   },
   "backup-health": {
-    "name": "बैकअप तैयारी",
-    "description": "बैकअप विंडो से पहले डिस्क जाँचें + प्रक्रियाएँ सूचीबद्ध करें"
+    "name": "बैकअप तत्परता",
+    "description": "बैकअप विंडो से पहले डिस्क + सूची प्रक्रियाओं की जाँच करें"
   },
   "db-stack-status": {
     "name": "डेटाबेस स्टैक स्थिति",
-    "description": "mysql/mariadb/redis/postgres units"
+    "description": "mysql/mariadb/redis/postgres इकाइयाँ"
   },
   "ssl-nginx-check": {
-    "name": "SSL + Nginx जाँच",
-    "description": "cert ops से पहले nginx स्थिति"
+    "name": "एसएसएल + नग्नेक्स जांच",
+    "description": "प्रमाणपत्र ऑप्स से पहले nginx स्थिति"
   }
 }

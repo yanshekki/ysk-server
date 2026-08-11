@@ -1,38 +1,38 @@
 {
   "blocked": {
-    "needExecute": "تنفيذ المضيف معطّل؛ لا يمكن إكمال هذا الإجراء من اللوحة",
-    "needExecuteShort": "تنفيذ المضيف غير مفعّل",
-    "needExecuteBlocked": "محظور: تنفيذ المضيف معطّل",
-    "needRoot": "مطلوب صلاحيات root",
-    "needExecuteRoot": "يتطلب YSK_EXECUTE=1 وroot",
+    "needExecute": "تنفيذ المضيف متوقف؛ لا يمكن إنهاء هذا الإجراء من اللوحة",
+    "needExecuteShort": "لم يتم تمكين تنفيذ المضيف",
+    "needExecuteBlocked": "محظور: تنفيذ المضيف متوقف",
+    "needRoot": "امتيازات الجذر المطلوبة",
+    "needExecuteRoot": "يتطلب YSK_EXECUTE=1 والجذر",
     "needExecuteYsk": "يتطلب YSK_EXECUTE=1",
-    "writeOutsideDataDir": "الكتابة محظورة: تنفيذ المضيف معطّل والمسار خارج دليل بيانات اللوحة",
-    "nginxReload": "تعذّر إعادة تحميل Nginx: تنفيذ المضيف مطلوب",
-    "signal": "تعذّر إرسال الإشارة: تنفيذ المضيف مطلوب (YSK_EXECUTE)",
-    "signalNote": "YSK_EXECUTE=1 مطلوب لإيقاف حقيقي للعملية",
-    "renice": "تعذّر renice: تنفيذ المضيف مطلوب (YSK_EXECUTE)",
-    "install": "تنفيذ المضيف معطّل؛ لا يمكن إكمال التثبيت من اللوحة",
-    "update": "تنفيذ المضيف معطّل؛ لا يمكن إكمال التحديث من اللوحة",
+    "writeOutsideDataDir": "الكتابة محظورة: تنفيذ المضيف متوقف والمسار خارج دليل بيانات اللوحة",
+    "nginxReload": "لا يمكن إعادة تحميل Nginx: يلزم تنفيذ المضيف",
+    "signal": "لا يمكن إرسال الإشارة: يلزم تنفيذ المضيف (YSK_EXECUTE)",
+    "signalNote": "YSK_EXECUTE=1 مطلوب للقتل الحقيقي",
+    "renice": "لا يمكن التراجع: تنفيذ المضيف مطلوب (YSK_EXECUTE)",
+    "install": "تنفيذ المضيف متوقف؛ لا يمكن إنهاء التثبيت من اللوحة",
+    "update": "تنفيذ المضيف متوقف؛ لا يمكن إنهاء التحديث من اللوحة",
     "panel": "لا يمكن إكمال هذا من لوحة الإدارة"
   },
   "honesty": {
-    "blockedNotOk": "تصحيح صدق: المحظور لا يمكن أن يكون ok=true",
-    "blockedNotApplied": "تصحيح صدق: المحظور لا يمكن أن يكون apply_status=applied",
-    "okFalseNotApplied": "تصحيح صدق: ok=false لا يمكن أن يكون apply_status=applied"
+    "blockedNotOk": "إصلاح الصدق: لا يمكن أن يكون الحظر على ما يرام = صحيح",
+    "blockedNotApplied": "إصلاح الصدق: لا يمكن تطبيق الحظر على application_status=applied",
+    "okFalseNotApplied": "إصلاح الصدق: حسنًا = خطأ لا يمكن تطبيقه على حالة التطبيق = مطبق"
   },
   "status": {
-    "applied": "الحالة: مُطبَّق",
-    "failed": "الحالة: فشل",
-    "written": "الحالة: مكتوب",
+    "applied": "الحالة: مطبق",
+    "failed": "الحالة: فاشلة",
+    "written": "الحالة : مكتوب",
     "blocked": "الحالة: محظور"
   },
   "notes": {
-    "writtenSettings": "تم حفظ الإعدادات",
+    "writtenSettings": "الاعدادات مكتوبة",
     "completed": "مكتمل",
-    "partialSuccess": "نجحت العملية جزئياً فقط",
-    "notInstalled": "غير مثبّت",
-    "running": "قيد التشغيل",
-    "stopped": "متوقف",
-    "unknown": "غير معروف"
+    "partialSuccess": "نجحت العملية جزئيًا فقط",
+    "notInstalled": "غير مثبت",
+    "running": "جري",
+    "stopped": "توقف",
+    "unknown": "مجهول"
   }
 }

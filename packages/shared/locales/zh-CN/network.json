@@ -130,13 +130,13 @@
       "none": "无（直连源站）",
       "cloudflare": "Cloudflare",
       "fastly": "Fastly",
-      "bunny": "Bunny CDN",
-      "cloudfront": "AWS CloudFront",
-      "azure_frontdoor": "Azure Front Door",
-      "gcore": "Gcore CDN",
+      "bunny": "兔子CDN",
+      "cloudfront": "AWS 云前",
+      "azure_frontdoor": "蔚蓝前门",
+      "gcore": "国核CDN",
       "custom": "自定义代理"
     }
   },
-  "linkUp": "Up",
+  "linkUp": "向上",
   "linkDown": "断开"
 }

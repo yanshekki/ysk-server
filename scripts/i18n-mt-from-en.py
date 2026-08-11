@@ -37,6 +37,8 @@ LANG_MAP = {
     "pt": ("en-GB", "pt-PT"),
     "id": ("en-GB", "id-ID"),
     "ur": ("en-GB", "ur-PK"),
+    "zh-CN": ("en-GB", "zh-CN"),
+    "zh-HK": ("en-GB", "zh-TW"),  # traditional via zh-TW target
 }
 
 # High-frequency UI glossary (overrides MT for short labels)
@@ -248,23 +250,27 @@ def map_tree(obj, cache: dict[str, str], gloss: dict[str, str]):
 
 
 def translate_one(pair: tuple[str, str], s: str) -> str:
-    from deep_translator import MyMemoryTranslator
+    from deep_translator import GoogleTranslator
 
     protected, holders = protect(s)
     if not protected.strip():
         return s
-    # MyMemory free tier is sensitive — pace hard
-    time.sleep(0.25)
-    src, dst = pair
+    # Google free tier — light pacing
+    time.sleep(0.08)
+    _src, dst = pair
+    g_dst = dst.split('-')[0]
+    # Google uses zh-CN / zh-TW full codes
+    if dst.startswith('zh-'):
+        g_dst = dst
     for attempt in range(1, 4):
         try:
-            translator = MyMemoryTranslator(source=src, target=dst)
-            out = translator.translate(protected[:480])  # API length limit
+            translator = GoogleTranslator(source='en', target=g_dst)
+            out = translator.translate(protected[:4500])
             if out is None or not str(out).strip():
-                raise RuntimeError("empty translation")
+                raise RuntimeError('empty translation')
             return restore(str(out), holders)
         except Exception:
-            time.sleep(min(3 * attempt, 15))
+            time.sleep(min(2 * attempt, 10))
     return s
 
 

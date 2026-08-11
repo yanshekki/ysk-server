@@ -54,7 +54,7 @@
   "phase": "Phase",
   "target": "Cible",
   "updated": "Mis à jour",
-  "notes": "Notes",
+  "notes": "Remarques",
   "noJobs": "Aucune tâche de migration pour l’instant",
   "noJobsHint": "Les tâches apparaissent après un dry-run ou une migration complète dans l’assistant.",
   "confirmTitle": "Confirmer la migration complète de l’hôte",

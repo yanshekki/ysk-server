@@ -1,32 +1,32 @@
 {
   "sw": {
-    "vsftpd": "vsftpd (FTPS)",
+    "vsftpd": "vsftpd(FTPS)",
     "db_util": "db-util (FTP 사용자 DB)",
-    "nginx": "Nginx",
-    "certbot": "Certbot (Let's Encrypt)",
+    "nginx": "엔진스",
+    "certbot": "Certbot(암호화하자)",
     "mysql_client": "MySQL/MariaDB 클라이언트",
     "mysql_server": "MySQL 서버",
-    "mariadb_server": "MariaDB 서버",
+    "mariadb_server": "마리아DB 서버",
     "postgresql_client": "PostgreSQL 클라이언트",
     "postgresql": "PostgreSQL 서버",
-    "redis_tools": "Redis 클라이언트",
-    "redis_server": "Redis 서버",
+    "redis_tools": "레디스 클라이언트",
+    "redis_server": "레디스 서버",
     "ufw": "UFW 방화벽",
-    "fail2ban": "fail2ban",
-    "postfix": "Postfix",
-    "dovecot": "Dovecot",
-    "opendkim": "OpenDKIM",
-    "pdns_server": "PowerDNS",
-    "git": "Git",
+    "fail2ban": "실패2금지",
+    "postfix": "접미사",
+    "dovecot": "비둘기장",
+    "opendkim": "오픈DKIM",
+    "pdns_server": "파워DNS",
+    "git": "힘내",
     "node": "Node.js",
     "php": "PHP",
-    "python": "Python 3",
-    "go": "Go",
-    "rust": "Rust (cargo)",
-    "chromium": "Chromium / Chrome"
+    "python": "파이썬 3",
+    "go": "가다",
+    "rust": "러스트(화물)",
+    "chromium": "크롬 / 크롬"
   },
   "php": {
     "session": "세션",
-    "opcache": "OPcache"
+    "opcache": "OP캐시"
   }
 }

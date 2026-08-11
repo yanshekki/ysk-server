@@ -1,9 +1,9 @@
 {
   "sw": {
     "vsftpd": "vsftpd (FTPS)",
-    "db_util": "db-util (BD de utilizadores FTP)",
+    "db_util": "db-util (banco de dados de usuário FTP)",
     "nginx": "Nginx",
-    "certbot": "Certbot (Let's Encrypt)",
+    "certbot": "Certbot (vamos criptografar)",
     "mysql_client": "Cliente MySQL/MariaDB",
     "mysql_server": "Servidor MySQL",
     "mariadb_server": "Servidor MariaDB",
@@ -13,17 +13,17 @@
     "redis_server": "Servidor Redis",
     "ufw": "Firewall UFW",
     "fail2ban": "fail2ban",
-    "postfix": "Postfix",
-    "dovecot": "Dovecot",
+    "postfix": "Pós-fixo",
+    "dovecot": "Pombal",
     "opendkim": "OpenDKIM",
     "pdns_server": "PowerDNS",
     "git": "Git",
     "node": "Node.js",
     "php": "PHP",
-    "python": "Python 3",
-    "go": "Go",
-    "rust": "Rust (cargo)",
-    "chromium": "Chromium / Chrome"
+    "python": "Pitão 3",
+    "go": "Ir",
+    "rust": "Ferrugem (carga)",
+    "chromium": "Cromo / Cromo"
   },
   "php": {
     "session": "Sessão",

@@ -1,14 +1,14 @@
 {
-  "title": "Iniciar sessão no YSK Server",
+  "title": "Faça login no servidor YSK",
   "subtitle": "Consola do servidor",
-  "username": "Nome de utilizador",
-  "password": "Palavra-passe",
-  "submit": "Iniciar sessão",
-  "failed": "Falha ao iniciar sessão. Verifique o nome de utilizador ou a palavra-passe.",
+  "username": "Nome de usuário",
+  "password": "Senha",
+  "submit": "Entrar",
+  "failed": "Falha no login. Verifique o nome de usuário ou a senha.",
   "footer": "Um produto da YSK Limited",
-  "totpRequired": "A 2FA está ativada nesta conta. Introduza o código de 6 dígitos.",
+  "totpRequired": "2FA está habilitado para esta conta. Digite o código de 6 dígitos.",
   "totpLabel": "Código de autenticação",
-  "totpHint": "Código de 6 dígitos da sua aplicação autenticadora",
-  "submitting": "A iniciar sessão…",
-  "sessionExpired": "Sessão expirada; inicie sessão novamente"
+  "totpHint": "Código de 6 dígitos do seu aplicativo autenticador",
+  "submitting": "Fazendo login…",
+  "sessionExpired": "Sessão expirada; faça login novamente"
 }

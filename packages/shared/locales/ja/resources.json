@@ -1,7 +1,7 @@
 {
-  "created": "作成されました",
-  "updated": "更新されました",
-  "deleted": "削除されました",
+  "created": "作成済み",
+  "updated": "更新済",
+  "deleted": "削除された",
   "applyDone": "申し込み完了",
   "applyIncomplete": "申請が完了していません"
 }

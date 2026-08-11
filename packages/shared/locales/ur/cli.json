@@ -1,18 +1,18 @@
 {
-  "unknownCommand": "نامعلوم کمانڈ: {{command}}\n`{{cli}} help` چلائیں",
+  "unknownCommand": "نامعلوم کمانڈ: {{command}}\n`{{cli}} مدد` چلائیں۔",
   "usagePrefix": "استعمال:",
   "security": {
-    "help": "استعمال: ysk-server security status\n       ysk-server security sessions list|revoke|revoke-others [--user U]\n       ysk-server security api-keys list|create|delete …",
-    "sessionsHelp": "استعمال: ysk-server security sessions list [--user U]\n       ysk-server security sessions revoke --id PREFIX [--user U]\n       ysk-server security sessions revoke-others [--user U] [--keep-token T]",
-    "apiKeysHelp": "استعمال: ysk-server security api-keys list\n       ysk-server security api-keys create --name N [--user U] [--scope full|read]\n       ysk-server security api-keys delete --id KEY_ID",
-    "noUser": "کوئی صارف نہیں ملا۔ پہلے admin بنائیں یا --user <name|id> دیں",
-    "tokenOnce": "ٹوکن ایک بار دکھایا جاتا ہے — محفوظ رکھیں",
-    "sessionRevokeUsage": "استعمال: ysk-server security sessions revoke --id <sessionIdPrefix> [--user U]",
-    "apiKeyDeleteUsage": "استعمال: ysk-server security api-keys delete --id KEY_ID"
+    "help": "استعمال: ysk-سرور سیکیورٹی کی حیثیت\n       ysk-سرور سیکیورٹی سیشنز کی فہرست|منسوخ کریں\n       ysk-server سیکیورٹی api-keys کی فہرست | بنائیں | حذف کریں ...",
+    "sessionsHelp": "استعمال: ysk-سرور سیکیورٹی سیشنز کی فہرست [---user U]\n       ysk-سرور سیکیورٹی سیشن منسوخ کر دیتے ہیں --id PREFIX [--user U]\n       ysk-سرور سیکیورٹی سیشنز منسوخ کر دیتے ہیں--دوسروں کو [--user U] [-keep-token T]",
+    "apiKeysHelp": "استعمال: ysk-server security api-keys کی فہرست\n       ysk-server سیکیورٹی api-keys تخلیق کرتی ہیں --name N [--user U] [-scope full|read]\n       ysk-سرور سیکیورٹی API-کیز --id KEY_ID کو حذف کرتی ہیں۔",
+    "noUser": "کوئی صارف نہیں ملا۔ پہلے ایڈمن بنائیں یا پاس کریں --user <name|id>",
+    "tokenOnce": "ٹوکن ایک بار دکھایا گیا - محفوظ طریقے سے اسٹور کریں۔",
+    "sessionRevokeUsage": "استعمال: ysk-سرور سیکیورٹی سیشن منسوخ --id <sessionIdPrefix> [--user U]",
+    "apiKeyDeleteUsage": "استعمال: ysk-server security api-keys حذف --id KEY_ID"
   },
   "help": {
-    "blurb": "کنٹرول پلین CLI — AI ایجنٹس کے لیے --json ترجیح دیں۔\nدستاویزات: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json",
-    "main": "{{product}} ({{cli}}) v{{version}}\n\nکنٹرول پلین CLI — AI ایجنٹس کے لیے --json ترجیح دیں۔\nدستاویزات: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json\n\nاستعمال:\n  {{cli}} <command> [options]\n\nکمانڈز:\n  setup                 dataDir + admin شروع کریں\n  update                خود کار اپڈیٹ چیک/لاگو\n  serve                 HTTP API + Web UI\n  system unit-install   ysk-server.service انسٹال [--enable]\n  tools                 ٹولز کی فہرست؛ tools run --tool <name> [--dry-run]\n  ask                   NL → AI پلان [--execute]\n  projects              list|get|create|deploy|stop|health|backup|template\n  backup                all|list|status|restore|delete|schedule|control-plane|settings|restic\n  templates             ایپ ٹیمپلیٹس\n  hosting               nginx|dns|db|firewall مددگار\n  dns                   zone|zones (AI alias → hosting dns-*)\n  logs                  sources|query|journal|overview\n  host                  overview|metrics (صرف پڑھنے کے لیے)\n  nginx                 status|list|test|sync\n  ssl                   list|get (سرٹیفکیٹس)\n  db-cluster            list|get|create|plan (HA plan-first)\n  ssh-key               list|create|import|public|export|install|delete (SSH identity vault)\n  ssh-2fa               list|enroll|confirm|install|pam|retire (SSH login TOTP ≠ panel 2FA)\n  services              میزبان سروس میٹرکس (systemctl probe)\n  defense | protection  status|ban|unban|whitelist\n  security              status|sessions|api-keys (2FA flags · session revoke · API keys)\n  cdn                   nodes|sites|render|apply|purge|probe|dashboard|health-loop|from-project\n  agents                runtimes|fleet list|commands|register (panel + edge)\n  agent run             آؤٹ باؤنڈ فلیٹ پولر (تجرباتی)\n  store                 status|export|import|migrate (json|sqlite|postgres document backends)\n  files                 list|read|write|mkdir|rm|stat|rename|copy|move|chmod|trash|shares (sandbox)\n  cron                  list|create|delete|enable|disable|run|install|status\n  email                 domains|mailboxes|deliverability|bootstrap|dns (panel parity)\n  health                مقامی موڈ اسنیپ شاٹ یا --url http://host:port/health\n  readiness | doctor    پروڈکشن تیاری (ایماندار)\n  migrate               inventory|host|post|status|resume (مکمل میزبان منتقل)\n  version | help\n\nعالمی:\n  --json                JSON stdout (AI)\n  --data-dir PATH\n  --config PATH\n  --help | --version\n\nخروج: 0 ok · 1 error · 2 validation · 3 blocked · 4 not found · 5 host error\n\nحفاظت:\n  خطرناک آپریشنز ڈیفالٹ dry-run (صرف پلان)۔\n  میزبان تبدیل کرنے کے لیے --execute (alias --apply) + env YSK_EXECUTE=1 دیں۔\n\nمثالیں:\n  {{cli}} readiness --json\n  {{cli}} host --json\n  {{cli}} nginx status --json\n  {{cli}} ssl list --json\n  {{cli}} projects get --id UUID --json\n  {{cli}} defense ban --ip 1.2.3.4 --json          # dry-run plan\n  {{cli}} projects list --json\n  {{cli}} logs query --source journal: --lines 100 --json\n  {{cli}} tools --json"
+    "blurb": "کنٹرول طیارہ CLI — AI ایجنٹوں کے لیے --json کو ترجیح دیں۔\nدستاویزات: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json",
+    "main": "{{product}} ({{cli}}) v{{version}}\n\nکنٹرول طیارہ CLI — AI ایجنٹوں کے لیے --json کو ترجیح دیں۔\nدستاویزات: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json\n\nاستعمال:\n  {{cli}} <command> [اختیارات]\n\nاحکام:\n  سیٹ اپ Init dataDir + admin\n  خود اپ ڈیٹ چیک اپ ڈیٹ کریں / اپلائی کریں۔\n  HTTP API + ویب UI کی خدمت کریں۔\n  سسٹم یونٹ-انسٹال انسٹال کریں ysk-server.service [-enable]\n  اوزار فہرست کے اوزار؛ ٹولز رن --tool <name> [-dry-run]\n  NL → AI پلان سے پوچھیں [--execute]\n  منصوبوں کی فہرست|حاصل کریں|تخلیق کریں|تعینات کریں|روکیں|صحت\n  بیک اپ آل|لسٹ|سٹیٹس|ریسٹور|ڈیلیٹ|شیڈیول\n  ٹیمپلیٹس ایپ ٹیمپلیٹس\n  ہوسٹنگ nginx|dns|db|فائر وال مددگار\n  dns زون|زونز (AI عرف → hosting dns-*)\n  لاگز ذرائع| استفسار| جرنل| جائزہ\n  میزبان کا جائزہ|میٹرکس (صرف پڑھنے کے لیے)\n  nginx اسٹیٹس|لسٹ|ٹیسٹ|sync\n  ایس ایس ایل فہرست | حاصل کریں (سرٹیفکیٹ)\n  ڈی بی کلسٹر لسٹ|گیٹ|بنائیں|پلان (HA پلان فرسٹ\n  ssh-key فہرست | تخلیق کریں | درآمد | عوامی | برآمد | انسٹال کریں\n  ssh-2fa فہرست|اندراج|تصدیق|انسٹال کریں\n  سروسز ہوسٹ سروس میٹرکس (سسٹم سی ٹی ایل پروب)\n  دفاع | تحفظ کی حیثیت|پابندی|غیر پابندی|وائٹ لسٹ\n  سیکیورٹی کی حیثیت | سیشنز\n  سی ڈی این نوڈس|سائٹس|رینڈر|اپلائی کریں|پرج\n  ایجنٹوں کے رن ٹائمز | فلیٹ لسٹ | کمانڈز | رجسٹر (پینل + ایج)\n  ایجنٹ رن آؤٹ باؤنڈ فلیٹ پولر (تجرباتی)\n  سٹور کی حیثیت | برآمد | درآمد | منتقلی (json|sqlite\n  فائلوں کی فہرست|پڑھیں|لکھیں|mkdir|rm|stat|نام تبدیل کریں|کاپی|منتقل کریں\n  cron فہرست|تخلیق کریں|حذف کریں|فعال کریں\n  ای میل ڈومینز | میل باکسز | ڈیلیوری ایبلٹی | بوٹسٹریپ | ڈی این ایس\n  ہیلتھ لوکل موڈ سنیپ شاٹ یا --url http://host:port/health\n  تیاری | ڈاکٹر کی پیداوار کی تیاری (ایماندار)\n  انوینٹری منتقل کریں | میزبان | پوسٹ | اسٹیٹس | دوبارہ شروع کریں\n  ورژن | مدد\n\nعالمی:\n  --json JSON stdout (AI)\n  --data-dir PATH\n  --config PATH\n  --مدد | --ورژن\n\nباہر نکلیں: 0 ٹھیک ہے · 1 غلطی · 2 توثیق · 3 مسدود · 4 نہیں ملا · 5 میزبان کی خرابی\n\nحفاظت:\n  ڈرائی رن کے لیے ڈیفالٹ خطرناک آپریشنز (صرف منصوبہ)۔\n  پاس کریں --execute (عرف --apply) + env YSK_EXECUTE=1 میزبان کو تبدیل کرنے کے لیے۔\n\nمثالیں:\n  {{cli}} تیاری --json\n  {{cli}} میزبان --json\n  {{cli}} nginx اسٹیٹس --json\n  {{cli}} ssl فہرست --json\n  {{cli}} منصوبوں کو --id UUID --json ملتا ہے۔\n  {{cli}} دفاعی پابندی --ip 1.2.3.4 --json # ڈرائی رن پلان\n  {{cli}} منصوبوں کی فہرست --json\n  {{cli}} لاگز استفسار --source journal: --lines 100 --json\n  {{cli}} ٹولز --json"
   },
   "usage": {
     "tools": {
@@ -20,7 +20,7 @@
         "--tool": {
           "name": {
             "--arg": {
-              "cd327c": "استعمال: ysk-server tools run --tool <name> [--arg key=val] [--dry-run]\n"
+              "cd327c": "استعمال: ysk-server ٹولز رن --tool <name> [-arg key=val] [-dry-run]"
             }
           }
         }
@@ -31,14 +31,14 @@
         "list": {
           "create": {
             "get": {
-              "b94a62": "استعمال: ysk-server email domains list|create|get …\n"
+              "b94a62": "استعمال: ysk-server ای میل ڈومینز کی فہرست | بنائیں | حاصل کریں …"
             }
           }
         },
         "create": {
           "--domain": {
             "example": {
-              "bd4036": "استعمال: ysk-server email domains create --domain example.com --ip A.B.C.D\n"
+              "bd4036": "استعمال: ysk-server ای میل ڈومینز --domain example.com --ip A.B.C.D بناتے ہیں"
             }
           }
         }
@@ -46,13 +46,13 @@
       "mailboxes": {
         "list": {
           "create": {
-            "42b26c": "استعمال: ysk-server email mailboxes list|create …\n"
+            "42b26c": "استعمال: ysk-server ای میل میل باکسز کی فہرست | تخلیق کریں …"
           }
         },
         "create": {
           "--domain": {
             "example": {
-              "7227f3": "استعمال: ysk-server email mailboxes create --domain example.com --local user [--password P]\n"
+              "7227f3": "استعمال: ysk-server ای میل میل باکسز --domain example.com --local user [--password P] بناتے ہیں"
             }
           }
         }
@@ -61,7 +61,7 @@
         "--domain": {
           "example": {
             "com": {
-              "26b806": "استعمال: ysk-server email dns --domain example.com\n"
+              "26b806": "استعمال: ysk-server ای میل dns --domain example.com"
             }
           }
         }
@@ -70,7 +70,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "73dad0": "استعمال: ysk-server email <sub> [--data-dir PATH] [--json]\n  domains list|create|get [--q TEXT]\n    create --domain example.com --ip A.B.C.D\n    get --domain example.com | --id UUID\n  mailboxes list|create [--domain D | --id domainId]\n    create --domain D --local user [--password P]\n  deliverability --domain D | --id UUID\n  deliverability-overview\n  bootstrap --domain D --ip A.B.C.D [--install]\n  dns --domain D | --id UUID     # DNS bundle for panel\nAlso: hosting email-apply|email-mailbox|email-deliverability (aliases)\n"
+              "73dad0": "استعمال: ysk-server ای میل <sub> [-data-dir PATH] [-json]\n  ڈومینز کی فہرست|بنائیں|حاصل کریں [--q TEXT]\n    تخلیق کریں --domain example.com --ip A.B.C.D\n    حاصل کریں --domain example.com | --id UUID\n  میل باکسز کی فہرست|بنائیں [--ڈومین D | --id domainId]\n    --domain D --local user [--password P] بنائیں\n  ڈیلیوریبلٹی --ڈومین ڈی | --id UUID\n  ڈیلیوریبلٹی کا جائزہ\n  bootstrap --domain D --ip A.B.C.D [-install]\n  dns --domain D | --id UUID # پینل کے لیے DNS بنڈل\nنیز: ہوسٹنگ ای میل اپلائی|ای میل میل باکس|ای میل ڈیلیوریبلٹی (عرف)"
             }
           }
         }
@@ -79,7 +79,7 @@
         "--domain": {
           "example": {
             "com": {
-              "b0dff0": "استعمال: ysk-server email deliverability --domain example.com\n"
+              "b0dff0": "استعمال: ysk-server ای میل ڈیلیوریبلٹی --domain example.com"
             }
           }
         }
@@ -88,7 +88,7 @@
         "--domain": {
           "example": {
             "com": {
-              "affc8d": "استعمال: ysk-server email bootstrap --domain example.com --ip 1.2.3.4 [--install]\n"
+              "affc8d": "استعمال: ysk-server ای میل بوٹسٹریپ --domain example.com --ip 1.2.3.4 [-install]"
             }
           }
         }
@@ -99,7 +99,7 @@
         "--id": {
           "job": {
             "id": {
-              "f6aafe": "استعمال: ysk-server cron delete --id JOB_ID\n"
+              "f6aafe": "استعمال: ysk-server cron حذف --id JOB_ID"
             }
           }
         }
@@ -108,14 +108,14 @@
         "--id": {
           "job": {
             "id": {
-              "99cfdf": "استعمال: ysk-server cron {{sub}} --id JOB_ID\n"
+              "99cfdf": "استعمال: ysk-server cron {{sub}} --id JOB_ID"
             }
           }
         },
         "--data-dir": {
           "path": {
             "--json": {
-              "0349e6": "استعمال: ysk-server cron <sub> [--data-dir PATH] [--json]\n  list [--project-id ID] [--q TEXT]\n  create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n  delete --id JOB_ID\n  enable|disable --id JOB_ID\n  run --id JOB_ID              # فوری چلائیں (YSK_EXECUTE=1 درکار)\n  install                     # منظم crontab لوڈ (EXECUTE درکار)\n  status                      # منظم فائل بمقابلہ میزبان crontab جانچیں\nایمانداری: YSK_EXECUTE=1 کے بغیر install مسدود (فائل پھر بھی لکھی جاتی ہے)۔\n"
+              "0349e6": "استعمال: ysk-server cron <sub> [-data-dir PATH] [-json]\n  فہرست [--project-id ID] [-q TEXT]\n  بنائیں --شیڈیول \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n  --id JOB_ID کو حذف کریں۔\n  فعال | غیر فعال --id JOB_ID\n  چلائیں --id JOB_ID # ابھی چلائیں (YSK_EXECUTE=1 کی ضرورت ہے)\n  # لوڈ مینیجڈ کرونٹاب انسٹال کریں (عمل کی ضرورت ہے)\n  اسٹیٹس # پروب مینیجڈ فائل بمقابلہ میزبان کرونٹاب\nایمانداری: YSK_EXECUTE=1 کے بغیر انسٹال بلاک (فائل اب بھی لکھی ہوئی ہے)۔"
             }
           }
         }
@@ -124,7 +124,7 @@
         "--id": {
           "job": {
             "id": {
-              "a0a97f": "استعمال: ysk-server cron run --id JOB_ID\n"
+              "a0a97f": "استعمال: ysk-server cron run --id JOB_ID"
             }
           }
         }
@@ -133,7 +133,7 @@
         "--schedule": {
           "0": {
             "3": {
-              "9a8328": "استعمال: ysk-server cron create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]\n"
+              "9a8328": "استعمال: ysk-server cron create --schedule \"0 3 * * *\" --command CMD [--project-id ID] [--user USER]"
             }
           }
         }
@@ -143,21 +143,21 @@
       "stat": {
         "--path": {
           "rel": {
-            "17c8f2": "استعمال: ysk-server files stat --path REL\n"
+            "17c8f2": "استعمال: ysk-server فائلیں stat --path REL"
           }
         }
       },
       "read": {
         "--path": {
           "rel": {
-            "e35f8d": "استعمال: ysk-server files read --path REL\n"
+            "e35f8d": "استعمال: ysk-server فائلیں --path REL پڑھتی ہیں۔"
           }
         }
       },
       "mkdir": {
         "--path": {
           "rel": {
-            "ae0438": "استعمال: ysk-server files mkdir --path REL\n"
+            "ae0438": "استعمال: ysk-server فائلیں mkdir --path REL"
           }
         }
       },
@@ -165,7 +165,7 @@
         "--path": {
           "rel": {
             "--permanent": {
-              "fe2051": "استعمال: ysk-server files rm --path REL [--permanent]\n"
+              "fe2051": "استعمال: ysk-server فائلیں rm --path REL [--- مستقل]"
             }
           }
         }
@@ -174,7 +174,7 @@
         "--from": {
           "rel": {
             "--to": {
-              "35a260": "استعمال: ysk-server files rename --from REL --to REL\n"
+              "35a260": "استعمال: ysk-server فائلوں کا نام تبدیل کریں --REL سے --REL میں"
             }
           }
         }
@@ -183,7 +183,7 @@
         "--from": {
           "rel": {
             "--to": {
-              "5337f4": "استعمال: ysk-server files copy --from REL --to REL\n"
+              "5337f4": "استعمال: ysk-سرور فائلیں --REL سے --REL تک کاپی کرتی ہیں۔"
             }
           }
         }
@@ -192,7 +192,7 @@
         "--from": {
           "rel": {
             "--to": {
-              "75cf5d": "استعمال: ysk-server files move --from REL --to REL\n"
+              "75cf5d": "استعمال: ysk-server فائلیں -- REL -- سے REL میں منتقل ہوتی ہیں۔"
             }
           }
         }
@@ -201,7 +201,7 @@
         "--path": {
           "rel": {
             "--mode": {
-              "39f983": "استعمال: ysk-server files chmod --path REL --mode 644\n"
+              "39f983": "استعمال: ysk-server فائلیں chmod --path REL --mode 644"
             }
           }
         }
@@ -210,28 +210,28 @@
         "restore": {
           "--id": {
             "trash": {
-              "c89ce9": "استعمال: ysk-server files trash restore --id TRASH_ID\n"
+              "c89ce9": "استعمال: ysk-server فائلیں کوڑے دان کی بحالی --id TRASH_ID"
             }
           }
         },
         "list": {
           "restore": {
             "purge": {
-              "ef063d": "استعمال: ysk-server files trash list|restore|purge\n"
+              "ef063d": "استعمال: ysk-server فائلوں کو کوڑے دان کی فہرست | بحال کریں | صاف کریں۔"
             }
           }
         }
       },
       "shares": {
         "list": {
-          "ac342c": "استعمال: ysk-server files shares list\n"
+          "ac342c": "استعمال: ysk-server فائلوں کی فہرست شیئر کرتا ہے۔"
         }
       },
       "webdav": {
         "status": {
           "token": {
             "disable": {
-              "f8e94b": "استعمال: ysk-server files webdav status|token|disable\n"
+              "f8e94b": "استعمال: ysk-server فائلیں webdav اسٹیٹس|ٹوکن|غیر فعال"
             }
           }
         }
@@ -240,7 +240,7 @@
         "--root": {
           "public": {
             "project": {
-              "42ebd4": "استعمال: ysk-server files <sub> [--root public|project:ID] [--data-dir PATH] [--json]\n  list   [--path DIR] [--q TEXT] [--sort name|size|mtime] [--order asc|desc]\n  stat   --path REL\n  read   --path REL\n  write  --path REL --content TEXT | --file LOCAL\n  mkdir  --path REL\n  rm     --path REL [--permanent]\n  rename --from REL --to REL\n  copy   --from REL --to REL\n  move   --from REL --to REL\n  chmod  --path REL --mode 644\n  trash  list|restore|purge [--id TRASH_ID]\n  shares list\n  favorites list\n  upload --dir REL --file LOCAL [--file LOCAL2…]\n  webdav status|token|disable\nسینڈ باکس: صرف public فائلز روٹ یا پروجیکٹ ہوم (path-constrained)۔\n"
+              "42ebd4": "استعمال: ysk-server فائلیں <sub> [--root public|project:ID] [-data-dir PATH] [--json]\n  فہرست [--path DIR] [-q TEXT] [--سانٹ نام|سائز|mtime] [--order asc|desc]\n  stat --path REL\n  --path REL پڑھیں\n  لکھیں --path REL --content TEXT | --فائل LOCAL\n  mkdir --path REL\n  rm --path REL [---مستقل]\n  نام تبدیل کریں --REL سے --REL میں\n  کاپی -- سے REL -- REL تک\n  -- REL سے -- REL میں منتقل کریں۔\n  chmod --path REL --mode 644\n  ردی کی ٹوکری کی فہرست | بحال کریں\n  حصص کی فہرست\n  پسندیدہ فہرست\n  اپ لوڈ --dir REL --file LOCAL [-file LOCAL2...]\n  webdav حیثیت|ٹوکن|غیر فعال\nسینڈ باکس: صرف عوامی فائلیں روٹ یا پروجیکٹ ہوم (راستہ محدود)۔"
             }
           }
         }
@@ -249,7 +249,7 @@
         "--path": {
           "rel": {
             "--content": {
-              "0addb1": "استعمال: ysk-server files write --path REL --content TEXT | --file LOCAL\n"
+              "0addb1": "استعمال: ysk-server فائلیں --path REL --content TEXT | لکھتی ہیں۔ --فائل LOCAL"
             }
           }
         }
@@ -258,7 +258,7 @@
         "--dir": {
           "rel": {
             "--file": {
-              "f8c3bf": "استعمال: ysk-server files upload --dir REL --file LOCAL [--file LOCAL2…]\n"
+              "f8c3bf": "استعمال: ysk-server فائلیں اپ لوڈ --dir REL --file LOCAL [-file LOCAL2…]"
             }
           }
         }
@@ -269,7 +269,7 @@
         "--in": {
           "file": {
             "json": {
-              "5b6fdd": "استعمال: ysk-server store import --in FILE.json\n"
+              "5b6fdd": "استعمال: ysk-server store import --in FILE.json"
             }
           }
         }
@@ -278,7 +278,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "d580e4": "استعمال: ysk-server store <sub> [--data-dir PATH] [--json]\n  status                         بیک اینڈ قسم + شمار دکھائیں\n  export --out FILE.json         دستاویز اسنیپ شاٹ ڈمپ\n  import --in FILE.json          فائل سے اسنیپ شاٹ اوور رائٹ\n  migrate --to sqlite|json [--out PATH]\n    موجودہ اسٹور کو دوسرے بیک اینڈ فائل میں کاپی کریں\nEnv: YSK_STORE=json|sqlite|postgres  YSK_DATABASE_URL=postgres://…\nایمانداری: document-blob بیک اینڈز (ابھی مکمل relational schema نہیں)۔\n"
+              "d580e4": "استعمال: ysk-server اسٹور <sub> [-data-dir PATH] [-json]\n  اسٹیٹس بیک اینڈ قسم + شمار دکھائیں۔\n  برآمد کریں --out FILE.json ڈمپ دستاویز کا سنیپ شاٹ\n  import --in FILE.json فائل سے سنیپ شاٹ کو اوور رائٹ کریں۔\n  منتقل کریں --to sqlite|json [--out PATH]\n    موجودہ اسٹور کو کسی اور بیک اینڈ فائل میں کاپی کریں۔\nEnv: YSK_STORE=json|sqlite|postgres YSK_DATABASE_URL=postgres://…\nایمانداری: دستاویز بلاب بیک اینڈز (ابھی تک مکمل رشتہ دار اسکیما نہیں)۔"
             }
           }
         }
@@ -287,7 +287,7 @@
         "--to": {
           "json": {
             "sqlite": {
-              "1c52a3": "استعمال: ysk-server store migrate --to json|sqlite [--out PATH]\n  (postgres: JSON ایکسپورٹ پھر YSK_DATABASE_URL کے تحت امپورٹ)\n"
+              "1c52a3": "استعمال: ysk-server store migrate --to json|sqlite [--out PATH]\n  (پوسٹگریس: JSON برآمد کریں پھر YSK_DATABASE_URL کے تحت درآمد کریں)"
             }
           }
         }
@@ -298,28 +298,28 @@
         "delete": {
           "--id": {
             "node": {
-              "0c6a1e": "استعمال: ysk-server cdn nodes delete --id NODE_ID\n"
+              "0c6a1e": "استعمال: ysk-server cdn نوڈس حذف --id NODE_ID"
             }
           }
         },
         "drain": {
           "--id": {
             "node": {
-              "a8aa81": "استعمال: ysk-server cdn nodes drain --id NODE_ID [--off]\n"
+              "a8aa81": "استعمال: ysk-server cdn نوڈس ڈرین --id NODE_ID [--off]"
             }
           }
         },
         "list": {
           "upsert": {
             "delete": {
-              "52549e": "استعمال: ysk-server cdn nodes list|upsert|delete|probe|drain …\n"
+              "52549e": "استعمال: ysk-server cdn nodes list|upsert|delete|probe|drain …"
             }
           }
         },
         "upsert": {
           "--name": {
             "name": {
-              "8f6f39": "استعمال: ysk-server cdn nodes upsert --name NAME [--id ID] [--base-url U] [--fleet-agent-id S] [--ssh-host H] [--region R]\n"
+              "8f6f39": "استعمال: ysk-server cdn nodes upsert --name NAME [-id ID] [-base-url U] [-fleet-agent-id S] [-ssh-host H] [--علاقہ R]"
             }
           }
         }
@@ -328,28 +328,28 @@
         "get": {
           "--id": {
             "site": {
-              "3c3c35": "استعمال: ysk-server cdn sites get --id SITE_ID\n"
+              "3c3c35": "استعمال: ysk-server cdn سائٹس کو --id SITE_ID ملتا ہے۔"
             }
           }
         },
         "delete": {
           "--id": {
             "site": {
-              "51ef8f": "استعمال: ysk-server cdn sites delete --id SITE_ID\n"
+              "51ef8f": "استعمال: ysk-server cdn سائٹس --id SITE_ID کو حذف کرتی ہیں۔"
             }
           }
         },
         "list": {
           "get": {
             "upsert": {
-              "609da6": "استعمال: ysk-server cdn sites list|get|upsert|delete …\n"
+              "609da6": "استعمال: ysk-server cdn سائٹس کی فہرست|get|upsert|delete …"
             }
           }
         },
         "upsert": {
           "--name": {
             "n": {
-              "6ebb75": "استعمال: ysk-server cdn sites upsert --name N --domains a.com,b.com [--edge-id ID]… [--origin-url U] [--origin-project ID]\n"
+              "6ebb75": "استعمال: ysk-server cdn sites upsert --name N --domains a.com,b.com [--edge-id ID]… [--origin-url U] [--origin-project ID]"
             }
           }
         }
@@ -358,7 +358,7 @@
         "--site-id": {
           "id": {
             "--dry-run": {
-              "2149eb": "استعمال: ysk-server cdn render --site-id ID [--dry-run]\n"
+              "2149eb": "استعمال: ysk-server cdn render --site-id ID [-dry-run]"
             }
           }
         }
@@ -367,7 +367,7 @@
         "--site-id": {
           "id": {
             "--edge-id": {
-              "a527b3": "استعمال: ysk-server cdn apply --site-id ID [--edge-id EDGE]\n"
+              "a527b3": "استعمال: ysk-server cdn apply --site-id ID [-edge-id EDGE]"
             }
           }
         }
@@ -376,7 +376,7 @@
         "--site-id": {
           "id": {
             "--edge-id": {
-              "bc08ec": "استعمال: ysk-server cdn purge --site-id ID [--edge-id EDGE]\n"
+              "bc08ec": "استعمال: ysk-server cdn purge --site-id ID [-edge-id EDGE]"
             }
           }
         }
@@ -385,7 +385,7 @@
         "--site-id": {
           "id": {
             "--apply-zone": {
-              "343068": "استعمال: ysk-server cdn dns-sync --site-id ID [--apply-zone]\n"
+              "343068": "استعمال: ysk-server cdn dns-sync --site-id ID [-apply-zone]"
             }
           }
         }
@@ -394,7 +394,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "092842": "استعمال: ysk-server cdn <sub> [--data-dir PATH] [--json]\n  nodes list|upsert|delete|probe|drain\n  sites list|upsert|delete|get\n  render --site-id ID [--dry-run]\n  apply  --site-id ID [--edge-id ID]   # fan-out (بغیر EXECUTE کے fleet queue ٹھیک)\n  purge  --site-id ID [--edge-id ID]\n  dns-sync --site-id ID [--apply-zone]\n  probe | dashboard | health-loop [--apply-zone]\n  from-project --project-id ID [--edge-id ID…]\nایمانداری: apply_status written/queued ≠ edge nginx applied جب تک agent ack / EXECUTE reload نہ ہو۔\n"
+              "092842": "استعمال: ysk-server cdn <sub> [-data-dir PATH] [-json]\n  نوڈس کی فہرست|اپسرٹ|ڈیلیٹ|پروب|ڈرین\n  سائٹس کی فہرست | upsert | حذف کریں | حاصل کریں۔\n  رینڈر --site-id ID [-dry-run]\n  لاگو کریں --site-id ID [--edge-id ID] # فین آؤٹ (فلیٹ قطار ٹھیک ہے بغیر عمل کے)\n  صاف کریں --site-id ID [-edge-id ID]\n  dns-sync --site-id ID [---apply-zone]\n  تحقیقات | ڈیش بورڈ | ہیلتھ لوپ [---لاگو زون]\n  from-project --project-id ID [-edge-id ID…]\nدیانتداری: اپلائی_سٹیٹس لکھا ہوا/قطار بند ≠ ایج nginx اس وقت تک لاگو ہوتا ہے جب تک کہ ایجنٹ AC/EXECUTE دوبارہ لوڈ نہ ہو۔"
             }
           }
         }
@@ -403,7 +403,7 @@
         "--project-id": {
           "id": {
             "--edge-id": {
-              "a96f42": "استعمال: ysk-server cdn from-project --project-id ID [--edge-id ID]…\n"
+              "a96f42": "استعمال: ysk-server cdn from-project --project-id ID [-edge-id ID]…"
             }
           }
         }
@@ -414,21 +414,21 @@
         "remove": {
           "--session": {
             "session": {
-              "1827fe": "استعمال: ysk-server agents fleet remove --session SESSION_ID\n"
+              "1827fe": "استعمال: ysk-server ایجنٹوں نے --session SESSION_ID کو ہٹا دیا۔"
             }
           }
         },
         "register": {
           "--id": {
             "agent": {
-              "209b2d": "استعمال: ysk-server agents fleet register --id AGENT_ID [--group g] [--edge]\n"
+              "209b2d": "استعمال: ysk-server ایجنٹس فلیٹ رجسٹر --id AGENT_ID [-گروپ جی] [--edge]"
             }
           }
         },
         "commands": {
           "--session": {
             "session": {
-              "f8067c": "استعمال: ysk-server agents fleet commands --session SESSION_ID\n"
+              "f8067c": "استعمال: ysk-server agents fleet commands --session SESSION_ID"
             }
           }
         }
@@ -437,7 +437,7 @@
         "--id": {
           "agent": {
             "id": {
-              "3c4477": "استعمال: ysk-server agents register --id AGENT_ID [--group g]\n"
+              "3c4477": "استعمال: ysk-سرور ایجنٹ رجسٹر --id AGENT_ID [-گروپ جی]"
             }
           }
         }
@@ -446,7 +446,7 @@
         "--session": {
           "session": {
             "id": {
-              "e620d2": "استعمال: ysk-server agents commands --session SESSION_ID\n"
+              "e620d2": "استعمال: ysk-server ایجنٹس کمانڈز --session SESSION_ID"
             }
           }
         }
@@ -455,7 +455,7 @@
         "probe": {
           "fleet": {
             "list": {
-              "261fa4": "استعمال: ysk-server agents [runtimes|probe|fleet list|fleet register|fleet commands|register|commands]\n"
+              "261fa4": "استعمال: ysk-server ایجنٹس [رن ٹائمز"
             }
           }
         }
@@ -466,7 +466,7 @@
         "--control-plane": {
           "url": {
             "--id": {
-              "cfefbe": "استعمال: ysk-server agent run --control-plane URL --id AGENT_ID [--group g]\n"
+              "cfefbe": "استعمال: ysk-server ایجنٹ رن --control-plane URL --id AGENT_ID [--گروپ جی]"
             }
           }
         }
@@ -476,7 +476,7 @@
       "check": {
         "system": {
           "info": {
-            "b0c781": "استعمال: ysk-server ask \"check system info\"\n"
+            "b0c781": "استعمال: ysk-server پوچھیں \"سسٹم کی معلومات چیک کریں\""
           }
         }
       }
@@ -486,7 +486,7 @@
         "--project-id": {
           "id": {
             "--name": {
-              "d66c29": "استعمال: ysk-server backup delete --project-id ID --name ARCHIVE\n"
+              "d66c29": "استعمال: ysk-سرور بیک اپ حذف کریں --project-id ID --name ARCHIVE"
             }
           }
         }
@@ -495,14 +495,14 @@
         "list": {
           "run": {
             "restore": {
-              "10402b": "استعمال: ysk-server backup restic list|run|restore …\n"
+              "10402b": "استعمال: ysk-server backup restic list|run|restore …"
             }
           }
         },
         "restore": {
           "--project-id": {
             "id": {
-              "a8f133": "استعمال: ysk-server backup restic restore --project-id ID --snapshot SNAP [--dry-run] [--overwrite-home --confirm PHRASE]\n"
+              "a8f133": "استعمال: ysk-server backup restic restore --project-id ID --snapshot SNAP [-dry-run] [-overwrite-home --confirm PHRASE]"
             }
           }
         }
@@ -511,7 +511,7 @@
         "--data-dir": {
           "path": {
             "--json": {
-              "777243": "استعمال: ysk-server backup <sub> [--data-dir PATH] [--json]\n  all                         تمام project homes کا بیک اپ (+ remote/restic سائیڈ جب کنفیگر ہو)\n  list [--project-id ID] [--q TEXT]\n  status                      آخری رن + شیڈول probe\n  restore --project-id ID --name ARCHIVE [--mode full|web|dry-run]\n  delete  --project-id ID --name ARCHIVE\n  schedule [--cron \"0 3 * * *\"] [--install]\n  control-plane               ysk.json + config.json کا snapshot\n  control-plane-restore --name ARCHIVE [--mode dry-run|full] [--confirm RESTORE-CONTROL-PLANE]\n  settings [get|set]          Remote / exclusions / restic\n    set --remote-kind local|sftp|s3 --remote-path P [--remote-host H] …\n    set --exclude a,b,c | --exclusions-file FILE\n    set --restic-enable --restic-password P [--restic-repo PATH]\n    set --from-json FILE      # مکمل patch {remote?,exclusions?,restic?}\n  restic list|run|restore     Incremental restic helpers\n"
+              "777243": "استعمال: ysk-server بیک اپ <sub> [-data-dir PATH] [-json]\n  تمام پروجیکٹ ہومز کا بیک اپ لیں (+ کنفیگر ہونے پر ریموٹ/ریسٹک سائیڈ)\n  فہرست [--project-id ID] [-q TEXT]\n  حالت آخری رن + شیڈول کی تحقیقات\n  بحال کریں --project-id ID --name ARCHIVE [-mode full|web|dry-run]\n  حذف کریں --project-id ID --name ARCHIVE\n  شیڈول [--cron \"0 3 * * *\"] [-install]\n  control-plane Snapshot ysk.json + config.json\n  control-plane-restore --name ARCHIVE [--mode dry-run|full] [-Restore-CONTROL-PLANE کی تصدیق کریں]\n  ترتیبات [get|set] ریموٹ / اخراج / آرام دہ\n    سیٹ --remote-kind local|sftp|s3 --remote-path P [--remote-host H] …\n    سیٹ -- exclude a,b,c | --exclusions-file FILE\n    سیٹ کریں --restic-enable --restic-password P [-restic-repo PATH]\n    سیٹ --from-json FILE # مکمل پیچ {ریموٹ؟، exclusions؟،restic؟}\n  ریسٹک لسٹ|رن|بحال کریں انکریمنٹل ریسٹک مددگار"
             }
           }
         }
@@ -520,7 +520,7 @@
         "--name": {
           "archive": {
             "--mode": {
-              "316a76": "استعمال: ysk-server backup control-plane-restore --name ARCHIVE [--mode dry-run|full] [--confirm RESTORE-CONTROL-PLANE]\n"
+              "316a76": "استعمال: ysk-server backup control-plane-restore --name archive [--mode dry-run|full] [-Restore-CONTROL-PLANE کی تصدیق کریں]"
             }
           }
         }
@@ -529,7 +529,7 @@
         "--project-id": {
           "id": {
             "--name": {
-              "bc7041": "استعمال: ysk-server backup restore --project-id ID --name ARCHIVE [--mode full|web|dry-run]\n"
+              "bc7041": "استعمال: ysk-server بیک اپ بحال --project-id ID --name ARCHIVE [--mode full|web|dry-run]"
             }
           }
         }
@@ -539,7 +539,7 @@
       "list": {
         "--q": {
           "text": {
-            "b8e16b": "استعمال: ysk-server packages list [--q text]\n"
+            "b8e16b": "استعمال: ysk-server پیکجوں کی فہرست [-q text]"
           }
         }
       }
@@ -548,21 +548,21 @@
       "stop": {
         "--id": {
           "projectid": {
-            "b15409": "استعمال: ysk-server projects stop --id <projectId>\n"
+            "b15409": "استعمال: ysk-server پروجیکٹ رک جاتے ہیں --id <projectId>"
           }
         }
       },
       "backup": {
         "--id": {
           "projectid": {
-            "e62846": "استعمال: ysk-server projects backup --id <projectId>\n"
+            "e62846": "استعمال: ysk-server پروجیکٹس بیک اپ --id <projectId>"
           }
         }
       },
       "health": {
         "--id": {
           "projectid": {
-            "e816ec": "استعمال: ysk-server projects health --id <projectId>\n"
+            "e816ec": "استعمال: ysk-server پراجیکٹس ہیلتھ --id <projectId>"
           }
         }
       },
@@ -570,21 +570,21 @@
         "provision": {
           "--id": {
             "projectid": {
-              "5aff44": "استعمال: ysk-server projects isolation provision --id <projectId>\n       ysk-server projects isolation provision-all [--limit 20]\n"
+              "5aff44": "استعمال: ysk-server پروجیکٹس آئسولیشن پروویژن --id <projectId>\n       ysk-server پروجیکٹس تنہائی کی فراہمی - تمام [-حد 20]"
             }
           }
         },
         "backfill-owners": {
           "--owner-user-id": {
             "id": {
-              "8691da": "استعمال: ysk-server projects isolation backfill-owners --owner-user-id <id>\n"
+              "8691da": "استعمال: ysk-server پروجیکٹس تنہائی backfill-owners --owner-user-id <id>"
             }
           }
         },
         "list": {
           "provision": {
             "provision-all": {
-              "8e9da3": "استعمال: ysk-server projects isolation list|provision|provision-all|backfill-owners\n"
+              "8e9da3": "استعمال: ysk-server منصوبوں کی تنہائی کی فہرست|provision|provision-all|backfill-owners"
             }
           }
         }
@@ -593,7 +593,7 @@
         "--id": {
           "projectid": {
             "name": {
-              "b0d532": "استعمال: ysk-server projects get --id <projectId|name> [--json]\n"
+              "b0d532": "استعمال: ysk-server منصوبوں کو --id <projectId|name> [--json] ملتا ہے"
             }
           }
         }
@@ -602,7 +602,7 @@
         "--name": {
           "name": {
             "--domain": {
-              "66e857": "استعمال: ysk-server projects create --name <name> [--domain d] [--runtime node|php|static|python|go|rust] [--template id]\n"
+              "66e857": "استعمال: ysk-server پروجیکٹس تخلیق کرتے ہیں --name <name> [--domain d] [-runtime node|php|static|python|go|rust] [-template id]"
             }
           }
         }
@@ -611,7 +611,7 @@
         "--id": {
           "projectid": {
             "--entry": {
-              "339111": "استعمال: ysk-server projects deploy --id <projectId> [--entry f] [--port N] [--fpm|--builtin] [--reload]\n"
+              "339111": "استعمال: ysk-server پروجیکٹس --id <projectId> [-entry f] [--port N] [--fpm|--builtin] [--دوبارہ لوڈ کریں]"
             }
           }
         }
@@ -620,7 +620,7 @@
         "--id": {
           "id": {
             "--git-url": {
-              "a513f5": "استعمال: ysk-server projects git-deploy --id ID [--git-url URL] [--branch main] [--no-redeploy] [--depth 1] [--entry f]\n"
+              "a513f5": "استعمال: ysk-server پروجیکٹس git-deploy --id ID [-git-url URL] [-branch main] [-no-redeploy] [--depth 1] [-entry f]"
             }
           }
         }
@@ -629,7 +629,7 @@
         "--id": {
           "projectid": {
             "--template": {
-              "591ce4": "استعمال: ysk-server projects template --id <projectId> --template <id> [--force]\n"
+              "591ce4": "استعمال: ysk-server پروجیکٹ ٹیمپلیٹ --id <projectId> --template <id> [-force]"
             }
           }
         }
@@ -638,7 +638,7 @@
         "get": {
           "create": {
             "deploy": {
-              "253b48": "استعمال: ysk-server projects list|get|create|deploy|git-deploy|stop|backup|template|health [options]\n  deploy --id UUID [--entry f] [--port N] [--fpm|--builtin] [--reload]\n  git-deploy --id UUID [--git-url URL] [--branch B] [--no-redeploy]\n"
+              "253b48": "استعمال: ysk-server پروجیکٹس کی فہرست|get|create|deploy|git-deploy|stop|backup|template|health [اختیارات]\n  تعینات کریں --id UUID [-entry f] [--port N] [-fpm|--builtin] [--دوبارہ لوڈ کریں]\n  git-deploy --id UUID [--git-url URL] [-branch B] [--no-redeploy]"
             }
           }
         }
@@ -649,240 +649,240 @@
         "db-cluster": {
           "get": {
             "--id": {
-              "00f803": "استعمال: {{CLI_NAME}} db-cluster get --id UUID [--json]\n"
+              "00f803": "استعمال: {{CLI_NAME}} db-cluster get --id UUID [-json]"
             }
           },
           "plan": {
             "--id": {
-              "483f52": "استعمال: {{CLI_NAME}} db-cluster plan --id UUID [--json]\n"
+              "483f52": "استعمال: {{CLI_NAME}} db-cluster plan --id UUID [-json]"
             }
           },
           "artifacts": {
             "--id": {
-              "6b33c4": "استعمال: {{CLI_NAME}} db-cluster artifacts --id UUID [--json]\n"
+              "6b33c4": "استعمال: {{CLI_NAME}} db-cluster artifacts --id UUID [-json]"
             }
           },
           "bundle": {
             "--id": {
-              "94ed27": "استعمال: {{CLI_NAME}} db-cluster bundle --id UUID [--json]\n"
+              "94ed27": "استعمال: {{CLI_NAME}} db-cluster bundle --id UUID [-json]"
             }
           },
           "delete": {
             "--id": {
-              "3de0e4": "استعمال: {{CLI_NAME}} db-cluster delete --id UUID [--json]\n"
+              "3de0e4": "استعمال: {{CLI_NAME}} db-cluster delete --id UUID [-json]"
             }
           },
           "create": {
             "--name": {
-              "e3b733": "استعمال: {{CLI_NAME}} db-cluster create --name N --engine mariadb --kind mariadb-galera --member HOST=role[:access] ...\n"
+              "e3b733": "استعمال: {{CLI_NAME}} db-cluster create --name N --engine mariadb --kind mariadb-galera --member HOST=role[:access]..."
             }
           },
           "apply": {
             "--id": {
-              "4cddb8": "استعمال: {{CLI_NAME}} db-cluster apply --id UUID [--execute] [--bootstrap] [--json]\n"
+              "4cddb8": "استعمال: {{CLI_NAME}} db-cluster apply --id UUID [--execute] [--bootstrap] [--json]"
             }
           },
           "probe": {
             "--id": {
-              "22870c": "استعمال: {{CLI_NAME}} db-cluster probe --id UUID [--peers] [--json]\n"
+              "22870c": "استعمال: {{CLI_NAME}} db-cluster probe --id UUID [--peers] [-json]"
             }
           },
           "install-peers": {
             "--id": {
-              "600b02": "استعمال: {{CLI_NAME}} db-cluster install-peers --id UUID [--execute] [--no-restart] [--identity ID] [--json]\n"
+              "600b02": "استعمال: {{CLI_NAME}} db-cluster install-peers --id UUID [--execute] [--no-restart] [--identity ID] [--json]"
             }
           },
           "push": {
             "--id": {
-              "697080": "استعمال: {{CLI_NAME}} db-cluster push --id UUID [--member ID] [--identity ID] [--execute] [--json]\n"
+              "697080": "استعمال: {{CLI_NAME}} db-cluster push --id UUID [--member ID] [-identity ID] [--execute] [-json]"
             }
           },
           "fleet": {
             "--id": {
-              "239462": "استعمال: {{CLI_NAME}} db-cluster fleet --id UUID [--op apply|probe|plan] [--execute] [--edge-execute] [--json]\n"
+              "239462": "استعمال: {{CLI_NAME}} db-cluster fleet --id UUID [--op apply|probe|plan] [--execute] [-edge-execute] [--json]"
             }
           },
           "list": {
             "get": {
-              "3b9cfa": "استعمال: {{CLI_NAME}} db-cluster list|get|create|plan|apply|probe|install-peers|artifacts|bundle|push|fleet|overview|delete [--peers] [--execute] [--json]\n"
+              "3b9cfa": "استعمال: {{CLI_NAME}} db-cluster list|get|create|plan|apply|probe|install-peers|artifacts|bundle|push|fleet|overview|delete [--peers] [--execute] [--json]"
             }
           }
         },
         "ssh-key": {
           "get": {
             "--id": {
-              "292716": "استعمال: {{CLI_NAME}} ssh-key get --id UUID [--json]\n"
+              "292716": "استعمال: {{CLI_NAME}} ssh-key get --id UUID [-json]"
             }
           },
           "public": {
             "--id": {
-              "525d7d": "استعمال: {{CLI_NAME}} ssh-key public --id UUID\n"
+              "525d7d": "استعمال: {{CLI_NAME}} ssh-key عوامی --id UUID"
             }
           },
           "export": {
             "--id": {
-              "0a6d81": "استعمال: {{CLI_NAME}} ssh-key export --id UUID [--out PATH] [--json]\n"
+              "0a6d81": "استعمال: {{CLI_NAME}} ssh-key برآمد --id UUID [--out PATH] [-json]"
             }
           },
           "delete": {
             "--id": {
-              "a6e2f2": "استعمال: {{CLI_NAME}} ssh-key delete --id UUID [--json]\n"
+              "a6e2f2": "استعمال: {{CLI_NAME}} ssh-key حذف کریں --id UUID [-json]"
             }
           },
           "create": {
             "--name": {
-              "8b1d79": "استعمال: {{CLI_NAME}} ssh-key create --name N [--algo ed25519|rsa-4096] [--purpose user|panel|unbound] [--project ID] [--user U] [--home PATH] [--reveal] [--json]\n"
+              "8b1d79": "استعمال: {{CLI_NAME}} ssh-key بنائیں --name N [--algo ed25519|rsa-4096] [--purpose user|panel|unbound] [--project ID] [--user U] [--home PATH] [-- انکشاف] [--json]"
             }
           },
           "import": {
             "--name": {
-              "6eb800": "استعمال: {{CLI_NAME}} ssh-key import --name N --file PATH [--purpose panel|user] [--json]\n"
+              "6eb800": "استعمال: {{CLI_NAME}} ssh-key درآمد --name N --file PATH [--purpose panel|user] [--json]"
             }
           },
           "install": {
             "--id": {
-              "b99c56": "استعمال: {{CLI_NAME}} ssh-key install --id UUID [--execute] [--json]\n"
+              "b99c56": "استعمال: {{CLI_NAME}} ssh-key install --id UUID [--execute] [-json]"
             }
           },
           "test": {
             "--id": {
-              "e1aed3": "استعمال: {{CLI_NAME}} ssh-key test --id UUID --target user@host[:port] [--execute] [--json]\n"
+              "e1aed3": "استعمال: {{CLI_NAME}} ssh-key ٹیسٹ --id UUID --target user@host[:port] [--execute] [--json]"
             }
           },
           "rotate": {
             "--id": {
-              "9c3224": "استعمال: {{CLI_NAME}} ssh-key rotate --id UUID [--reveal] [--json]\n"
+              "9c3224": "استعمال: {{CLI_NAME}} ssh-key rotate --id UUID [--ظاہر] [--json]"
             }
           },
           "authorize-self": {
             "--id": {
-              "b7ea2e": "استعمال: {{CLI_NAME}} ssh-key authorize-self --id UUID [--json]\n"
+              "b7ea2e": "استعمال: {{CLI_NAME}} ssh-key authorize-self --id UUID [-json]"
             }
           },
           "uninstall": {
             "--id": {
-              "afcba0": "استعمال: {{CLI_NAME}} ssh-key uninstall --id UUID [--execute] [--json]\n"
+              "afcba0": "استعمال: {{CLI_NAME}} ssh-key uninstall --id UUID [--execute] [-json]"
             }
           },
           "list": {
             "get": {
-              "2c92c6": "استعمال: {{CLI_NAME}} ssh-key list|get|create|import|public|export|install|test|rotate|authorize-self|uninstall|delete [--json]\n"
+              "2c92c6": "استعمال: {{CLI_NAME}} ssh-key list|get|create|import|public|export|install|test|rotate|authorize-self|uninstall|delete [--json]"
             }
           }
         },
         "ssh-2fa": {
           "reveal": {
             "--id": {
-              "a6c27f": "استعمال: {{CLI_NAME}} ssh-2fa reveal --id UUID [--json]\n"
+              "a6c27f": "استعمال: {{CLI_NAME}} ssh-2fa ظاہر --id UUID [-json]"
             }
           },
           "retire": {
             "--id": {
-              "6e1fa3": "استعمال: {{CLI_NAME}} ssh-2fa retire --id UUID [--json]\n"
+              "6e1fa3": "استعمال: {{CLI_NAME}} ssh-2fa ریٹائر --id UUID [-json]"
             }
           },
           "enroll": {
             "--user": {
-              "081432": "استعمال: {{CLI_NAME}} ssh-2fa enroll --user LINUX|--project ID [--home PATH] [--from-panel] [--json]\n"
+              "081432": "استعمال: {{CLI_NAME}} ssh-2fa اندراج کریں --user LINUX|--project ID [--home PATH] [--from-panel] [--json]"
             }
           },
           "confirm": {
             "--id": {
-              "9ee8a2": "استعمال: {{CLI_NAME}} ssh-2fa confirm --id UUID --code 123456 [--json]\n"
+              "9ee8a2": "استعمال: {{CLI_NAME}} ssh-2fa تصدیق --id UUID --code 123456 [-json]"
             }
           },
           "install": {
             "--id": {
-              "dace06": "استعمال: {{CLI_NAME}} ssh-2fa install --id UUID [--execute] [--json]\n"
+              "dace06": "استعمال: {{CLI_NAME}} ssh-2fa install --id UUID [--execute] [-json]"
             }
           },
           "uninstall": {
             "--id": {
-              "0bb464": "استعمال: {{CLI_NAME}} ssh-2fa uninstall --id UUID [--execute] [--json]\n"
+              "0bb464": "استعمال: {{CLI_NAME}} ssh-2fa uninstall --id UUID [--execute] [-json]"
             }
           },
           "list": {
             "enroll": {
-              "802ed0": "استعمال: {{CLI_NAME}} ssh-2fa list|enroll|confirm|install|uninstall|pam|reveal|retire [--json]\n"
+              "802ed0": "استعمال: {{CLI_NAME}} ssh-2fa list|inroll|confirm|install|uninstall|pam|reveal|retire [--json]"
             }
           }
         },
         "ssl": {
           "list": {
             "get": {
-              "79c232": "استعمال: {{CLI_NAME}} ssl list|get --domain X [--json]\n"
+              "79c232": "استعمال: {{CLI_NAME}} ssl فہرست|get --domain X [--json]"
             }
           },
           "get": {
             "--domain": {
-              "91c444": "استعمال: {{CLI_NAME}} ssl get --domain example.com [--json]\n"
+              "91c444": "استعمال: {{CLI_NAME}} ssl get --domain example.com [-json]"
             }
           }
         },
         "dns": {
           "zone": {
             "--zone": {
-              "ad30fa": "استعمال: {{CLI_NAME}} dns zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n"
+              "ad30fa": "استعمال: {{CLI_NAME}} dns زون --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]"
             }
           },
           "zones": {
             "zone": {
-              "5b8bda": "استعمال: {{CLI_NAME}} dns zones|zone --zone X --ip A.B.C.D [--ipv6 …] [--json]\n"
+              "5b8bda": "استعمال: {{CLI_NAME}} dns زونز|zone --zone X --ip A.B.C.D [--ipv6 …] [--json]"
             }
           }
         },
         "nginx": {
           "status": {
             "list": {
-              "d67a16": "استعمال: {{CLI_NAME}} nginx status|list|test|sync [--execute] [--json]\n"
+              "d67a16": "استعمال: {{CLI_NAME}} nginx اسٹیٹس|list|test|sync [--execute] [--json]"
             }
           }
         },
         "host": {
           "overview": {
             "metrics": {
-              "93c828": "استعمال: {{CLI_NAME}} host overview|metrics|network [--path /] [--json]\n"
+              "93c828": "استعمال: {{CLI_NAME}} میزبان جائزہ|میٹرکس|نیٹ ورک [--path /] [--json]"
             }
           }
         },
         "logs": {
           "sources": {
             "overview": {
-              "79058c": "استعمال: {{CLI_NAME}} logs sources|overview|units|journal|query [--source id] [--json]\n"
+              "79058c": "استعمال: {{CLI_NAME}} لاگ ماخذ | جائزہ | یونٹس | جرنل"
             }
           }
         },
         "services": {
           "sub": {
             "--unit": {
-              "4fe3fa": "استعمال: {{CLI_NAME}} services {{sub}} --unit <systemd-unit> [--execute] [--json]\n"
+              "4fe3fa": "استعمال: {{CLI_NAME}} سروسز {{sub}} --unit <systemd-unit> [--execute] [--json]"
             }
           },
           "matrix": {
             "start": {
-              "4f3a35": "استعمال: {{CLI_NAME}} services matrix|start|stop|restart|reload --unit NAME [--execute] [--json]\n"
+              "4f3a35": "استعمال: {{CLI_NAME}} سروسز میٹرکس|اسٹارٹ|سٹاپ|دوبارہ شروع کریں"
             }
           }
         },
         "defense": {
           "ban": {
             "--ip": {
-              "cc22de": "استعمال: {{CLI_NAME}} defense ban --ip <ip> [--method fail2ban|ufw|both] [--reason t] [--execute]\n"
+              "cc22de": "استعمال: {{CLI_NAME}} دفاعی پابندی --ip <ip> [--method fail2ban|ufw|both] [--reason t] [--execute]"
             }
           },
           "unban": {
             "--ip": {
-              "46aa23": "استعمال: {{CLI_NAME}} defense unban --ip <ip> [--method fail2ban|ufw|both] [--execute]\n"
+              "46aa23": "استعمال: {{CLI_NAME}} دفاعی پابندی --ip <ip> [--method fail2ban|ufw|both] [--execute]"
             }
           },
           "whitelist": {
             "--action": {
-              "c1cbdf": "استعمال: {{CLI_NAME}} defense whitelist --action list|add|remove [--ip IP]\n"
+              "c1cbdf": "استعمال: {{CLI_NAME}} دفاعی وائٹ لسٹ --action list|add|remove [--ip IP]"
             }
           },
           "status": {
             "bans": {
-              "a8d96b": "استعمال: {{CLI_NAME}} defense status|bans|suspects|ban|unban|whitelist|stack-apply|fail2ban|firewall|timeline|presets [--json]\n` +\n          `  bans [--q text] [--source fail2ban|panel|ufw|auto]\n` +\n          `  suspects [--q text]\n` +\n          `  stack-apply [--execute]   # UFW + fail2ban + موجودہ preset\n` +\n          `  fail2ban | firewall       # گہری جانچ (ایماندار)\n` +\n          `  timeline [--limit N] [--q text]\n` +\n          `  presets                   # فہرست + activePreset\n"
+              "a8d96b": "استعمال: {{CLI_NAME}} دفاعی حیثیت|پابندی|مشتبہ افراد|پابندی\n` +\n          ` پابندی [-q text] [-source fail2ban|panel|ufw|auto]\n` +\n          ` مشتبہ [-q متن]\n` +\n          ` stack-apply [-execute] # UFW + fail2ban + موجودہ پیش سیٹ\n` +\n          `fail2ban | فائر وال # گہری تحقیقات (ایماندار)\n` +\n          ` ٹائم لائن [-حد N] [-q متن]\n` +\n          ` presets # list + activePreset"
             }
           }
         }
@@ -893,7 +893,7 @@
         "--enable": {
           "--data-dir": {
             "path": {
-              "33daa1": "استعمال: ysk-server system unit-install [--enable] [--data-dir PATH]\n"
+              "33daa1": "استعمال: ysk-سرور سسٹم یونٹ-انسٹال [--enable] [-data-dir PATH]"
             }
           }
         }
@@ -904,7 +904,7 @@
         "--username": {
           "u": {
             "--password": {
-              "7145c7": "استعمال: ysk-server users create --username <u> --password <p> [--role operator|viewer|admin] [--package-id id]\n"
+              "7145c7": "استعمال: ysk-server کے صارفین --username <u> --password <p> [--role operator|viewer|admin] [--package-id id] بناتے ہیں۔"
             }
           }
         }
@@ -913,7 +913,7 @@
         "--q": {
           "text": {
             "--role": {
-              "544685": "استعمال: ysk-server users list [--q text] [--role admin|operator|viewer]\n       ysk-server users create --username u --password p [--role operator]\n"
+              "544685": "استعمال: ysk-server صارفین کی فہرست [-q text] [--role admin|operator|viewer]\n       ysk-server کے صارفین --username u --password p [--role operator] بناتے ہیں"
             }
           }
         }
@@ -922,7 +922,7 @@
     "rbac": {
       "list": {
         "policies": {
-          "330ade": "استعمال: ysk-server rbac list|policies\n       ysk-server rbac show --role operator\n       ysk-server rbac audit   # route→cap نمونہ میٹرکس\n"
+          "330ade": "استعمال: ysk-server rbac فہرست|پالیسی\n       ysk-server rbac شو --role آپریٹر\n       ysk-server rbac آڈٹ # روٹ→ کیپ نمونہ میٹرکس"
         }
       }
     },
@@ -931,7 +931,7 @@
         "--db": {
           "name": {
             "--user": {
-              "2c8889": "استعمال: ysk-server hosting postgres-provision --db NAME --user U --password P(min8) [--execute]\n  طے شدہ dry-run (کوئی میزبان تبدیلی نہیں)۔ لاگو کرنے کے لیے --execute + YSK_EXECUTE=1 دیں۔\n"
+              "2c8889": "استعمال: ysk-server hosting postgres-provision --db NAME --user U --password P(min8) [--execute]\n  ڈیفالٹ ڈرائی رن (کوئی میزبان تبدیلی نہیں)۔ لاگو کرنے کے لیے --execute + YSK_EXECUTE=1 پاس کریں۔"
             }
           }
         }
@@ -940,7 +940,7 @@
         "--db": {
           "name": {
             "--user": {
-              "fc25aa": "استعمال: ysk-server hosting mysql-provision --db NAME --user U --password P(min8) [--execute]\n  طے شدہ dry-run (کوئی میزبان تبدیلی نہیں)۔ لاگو کرنے کے لیے --execute + YSK_EXECUTE=1 دیں۔\n"
+              "fc25aa": "استعمال: ysk-server hosting mysql-provision --db NAME --user U --password P(min8) [--execute]\n  ڈیفالٹ ڈرائی رن (کوئی میزبان تبدیلی نہیں)۔ لاگو کرنے کے لیے --execute + YSK_EXECUTE=1 پاس کریں۔"
             }
           }
         }
@@ -949,7 +949,7 @@
         "--zone": {
           "example": {
             "com": {
-              "bdaa0d": "استعمال: ysk-server hosting dns-zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n"
+              "bdaa0d": "استعمال: ysk-server hosting dns-zone --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]"
             }
           }
         }
@@ -958,7 +958,7 @@
         "--zone": {
           "example": {
             "com": {
-              "dba49c": "استعمال: ysk-server hosting powerdns-load --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--load|--execute]\n"
+              "dba49c": "استعمال: ysk-server hosting powerdns-load --zone example.com --ip A.B.C.D [--ipv6 X:X::X] [--load|--execute]"
             }
           }
         }
@@ -967,7 +967,7 @@
         "--domain": {
           "example": {
             "com": {
-              "37d350": "استعمال: ysk-server hosting email-apply --domain example.com [--install|--execute]\n"
+              "37d350": "استعمال: ysk-server hosting email-apply --domain example.com [--install|--execute]"
             }
           }
         }
@@ -976,7 +976,7 @@
         "--domain": {
           "x": {
             "--local": {
-              "3d9be3": "استعمال: ysk-server hosting email-mailbox --domain X --local user [--password P] [--ip A.B.C.D]\n"
+              "3d9be3": "استعمال: ysk-server hosting email-mailbox --domain X --local user [--password P] [-ip A.B.C.D]"
             }
           }
         }
@@ -985,7 +985,7 @@
         "--domain": {
           "files": {
             "example": {
-              "284a7c": "استعمال: ysk-server hosting ftps-apply --domain files.example.com [--install|--execute]\n"
+              "284a7c": "استعمال: ysk-server hosting ftps-apply --domain files.example.com [--install|--execute]"
             }
           }
         }
@@ -994,7 +994,7 @@
         "--domain": {
           "webmail": {
             "example": {
-              "2ad5b5": "استعمال: ysk-server hosting webmail-apply --domain webmail.example.com [--download]\n"
+              "2ad5b5": "استعمال: ysk-server ہوسٹنگ ویب میل-apply --domain webmail.example.com [--ڈاؤن لوڈ]"
             }
           }
         }
@@ -1003,7 +1003,7 @@
         "--domain": {
           "files": {
             "example": {
-              "0e9013": "استعمال: ysk-server hosting public-files --domain files.example.com [--reload]\n"
+              "0e9013": "استعمال: ysk-server عوامی فائلوں کی میزبانی کرتا ہے --domain files.example.com [--reload]"
             }
           }
         }
@@ -1012,7 +1012,7 @@
         "--domain": {
           "example": {
             "com": {
-              "8774a4": "استعمال: ysk-server hosting email-deliverability --domain example.com\n       ysk-server hosting email-deliverability --id <domainId>\n"
+              "8774a4": "استعمال: ysk-server hosting email-deliverability --domain example.com\n       ysk-server ہوسٹنگ ای میل ڈیلیوریبلٹی --id <domainId>"
             }
           }
         }
@@ -1021,7 +1021,7 @@
         "--domain": {
           "example": {
             "com": {
-              "796da5": "استعمال: ysk-server hosting email-bootstrap --domain example.com --ip 1.2.3.4 [--admin postmaster] [--password P] [--install]\n"
+              "796da5": "استعمال: ysk-server hosting email-bootstrap --domain example.com --ip 1.2.3.4 [-admin postmaster] [--password P] [--install]"
             }
           }
         }
@@ -1032,7 +1032,7 @@
         "--job": {
           "id": {
             "--data-dir": {
-              "6a73cd": "استعمال: ysk-server migrate post --job <id> --data-dir PATH --execute\n"
+              "6a73cd": "استعمال: ysk-server کی منتقلی پوسٹ --job <id> --data-dir PATH --execute"
             }
           }
         }
@@ -1041,77 +1041,77 @@
         "--target": {
           "root": {
             "new": {
-              "3e94a2": "استعمال: ysk-server migrate host --target root@NEW_IP [--identity-file PATH|--identity-id ID] [--password] --execute --data-dir PATH\n"
+              "3e94a2": "استعمال: ysk-server migrate host --target root@NEW_IP [--identity-file PATH|--identity-id ID] [--password] --execute --data-dir PATH"
             }
           }
         }
       }
     },
     "x": {
-      "972912": "استعمال:\n  ysk-server migrate inventory [--data-dir PATH] --json\n  ysk-server migrate host --target root@IP [--identity-file PATH|--identity-id ID|--password PW] --execute [--maintenance] [--force-wipe-target]\n  ysk-server migrate post --job ID --data-dir PATH --execute   # ہدف پر\n  ysk-server migrate status [--job ID]\n  ysk-server migrate resume --job ID --execute\n"
+      "972912": "استعمال:\n  ysk-سرور منتقلی انوینٹری [-data-dir PATH] --json\n  ysk-server ہجرت میزبان --target root@IP [--identity-file PATH|--identity-id ID|--password PW] --execute [--maintenance] [-force-wipe-target]\n  ysk-سرور کی منتقلی پوسٹ -- جاب ID -- ڈیٹا ڈائر PATH -- ایگزیکٹ # ہدف پر\n  ysk-سرور کی منتقلی کی حیثیت [-جاب ID]\n  ysk-server migrate resume --job ID --execute"
     },
-    "hostingHelp": "استعمال: ysk-server hosting <sub>\n  خطرناک آپریشنز طے شدہ dry-run؛ لاگو کرنے کے لیے --execute (+ YSK_EXECUTE=1) شامل کریں\n  nginx | nginx-sync [--execute]\n  redis-provision | postgres-provision | mysql-provision [--execute]\n  dns-zone --zone X --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n  dns-zones | powerdns-status | powerdns-install [--install|--execute]\n  powerdns-load --zone X --ip A.B.C.D [--load|--execute]\n  email-apply --domain X [--install|--execute]\n  email-mailbox --domain X --local user [--password P] [--ip A.B.C.D] [--system]\n  ftps-apply --domain X [--install|--execute]\n  runtimes | runtime-install --kind node|php|python|go|rust --version V [--install|--execute]\n  dovecot-passdb --domain X | --all\n  webmail-apply --domain webmail.example.com [--download]\n  public-files --domain files.example.com [--reload]\n  email-bootstrap --domain example.com --ip A.B.C.D [--install|--execute]\n  email-deliverability --domain example.com   # PTR/DNSBL/warmup پیک (ایماندار)\n  firewall-apply [--smtp] [--execute]\n",
-    "logsQuery": "استعمال: {{CLI_NAME}} logs query --source <id> [--lines N] [--grep G] [--since 1h] [--priority err]\n  source کی مثالیں: journal:  journal:nginx.service  file:syslog  project:<uuid>\n  {{CLI_NAME}} logs sources --json\n  {{CLI_NAME}} logs journal [--unit nginx.service] --json\n"
+    "hostingHelp": "استعمال: ysk-server ہوسٹنگ <sub>\n  خطرناک آپریشن ڈیفالٹ ڈرائی رن؛ لاگو کرنے کے لیے --execute (+ YSK_EXECUTE=1) شامل کریں۔\n  nginx | nginx-sync [--- execute]\n  redis-provision | postgres-provision | mysql-provision [--execute]\n  dns-zone --zone X --ip A.B.C.D [--ipv6 X:X::X] [--تصدیق کریں] [--دوبارہ لوڈ کریں]\n  dns-zones | powerdns-status | powerdns-install [-install|-execute]\n  powerdns-load --zone X --ip A.B.C.D [--load|--execute]\n  email-apply --domain X [-install|-execute]\n  email-mailbox --domain X --local user [--password P] [-ip A.B.C.D] [--سسٹم]\n  ftps-apply --domain X [-install|--execute]\n  رن ٹائمز | runtime-install --kind node|php|python|go|rust --version V [--install|--execute]\n  dovecot-passdb --domain X | --تمام\n  webmail-apply --domain webmail.example.com [--ڈاؤن لوڈ]\n  public-files --domain files.example.com [--دوبارہ لوڈ]\n  email-bootstrap --domain example.com --ip A.B.C.D [-install|--execute]\n  email-deliverability --domain example.com # PTR/DNSBL/warmup پیک (ایماندار)\n  firewall-apply [-smtp] [-execute]",
+    "logsQuery": "استعمال: {{CLI_NAME}} لاگز استفسار --source <id> [-لائنز N] [--grep G] [--سے 1h] [-priority error]\n  ماخذ کی مثالیں: journal: journal:nginx.service فائل:syslog پروجیکٹ:<uuid>\n  {{CLI_NAME}} لاگز ذرائع --json\n  {{CLI_NAME}} لاگز جرنل [-unit nginx.service] --json"
   },
   "msg": {
     "domain": {
       "missing": {
         "pass": {
-          "5be09b": "ڈومین موجود نہیں — پہلے ڈومین بنانے کے لیے --ip دیں\n"
+          "5be09b": "ڈومین غائب ہے - پہلے ڈومین بنانے کے لیے --ip پاس کریں۔"
         }
       }
     },
     "--root": {
       "must": {
         "be": {
-          "a84834": "--root لازمی public یا project:<id> ہو\n"
+          "a84834": "--root عوامی یا پروجیکٹ ہونا چاہیے:<id>"
         }
       }
     },
     "need": {
       "--content": {
         "or": {
-          "4d7001": "ضرورت ہے --content یا --file\n"
+          "4d7001": "--content یا --file کی ضرورت ہے۔"
         }
       },
       "at": {
         "least": {
-          "7d311a": "کم از کم ایک --member HOST[=role][:access] درکار ہے\n"
+          "7d311a": "کم از کم ایک --رکن HOST کی ضرورت ہے[=کردار][:رسائی]"
         }
       }
     },
     "action": {
       "must": {
         "be": {
-          "ba14c1": "action لازمی list|add|remove ہو\n"
+          "ba14c1": "کارروائی کی فہرست ہونی چاہیے|شامل کریں|ہٹائیں"
         }
       }
     },
     "use": {
       "ysk-server": {
         "backup": {
-          "ca67f4": "استعمال: ysk-server backup control-plane-restore --name ARCHIVE (restore --project-id control-plane نہیں)\n"
+          "ca67f4": "استعمال کریں: ysk-server backup control-plane-restore --name ARCHIVE (بحالی نہیں --project-id control-plane)"
         }
       }
     },
     "new": {
       "domain": {
         "requires": {
-          "986b78": "نئے ڈومین کے لیے --ip A.B.C.D درکار ہے (placeholder ڈیفالٹ نہیں)\n"
+          "986b78": "نئے ڈومین کو --ip A.B.C.D کی ضرورت ہے (کوئی پلیس ہولڈر ڈیفالٹ نہیں)"
         }
       }
     },
     "import-sync": {
       "prefers": {
         "fleet": {
-          "4d7590": "import-sync fleet clusterSync payload کو ترجیح دیتا ہے؛ یا --file snapshot.json\n"
+          "4d7590": "import-sync fleet clusterSync پے لوڈ کو ترجیح دیتا ہے۔ یا --file snapshot.json"
         }
       }
     },
     "security": {
       "control": {
         "plane": {
-          "f59a63": "سیکیورٹی: کنٹرول پلین عوامی طور پر باؤنڈ (0.0.0.0/::)۔ 127.0.0.1 + reverse proxy / UFW ترجیح دیں۔\n"
+          "f59a63": "سیکورٹی: ہوائی جہاز کو عوامی طور پر کنٹرول کریں (0.0.0.0/::)۔ 127.0.0.1 + ریورس پراکسی / UFW کو ترجیح دیں۔"
         }
       }
     }
@@ -1121,62 +1121,62 @@
       "email": {
         "sub": {
           "sub": {
-            "e37257": "نامعلوم email sub: {{sub}}\nچلائیں: ysk-server email help\n"
+            "e37257": "نامعلوم ای میل ذیلی: {{sub}}\nچلائیں: ysk-server ای میل مدد"
           }
         }
       },
       "cron": {
         "sub": {
           "sub": {
-            "e1a9ed": "نامعلوم cron sub: {{sub}}\nچلائیں: ysk-server cron help\n"
+            "e1a9ed": "نامعلوم کرون ذیلی: {{sub}}\nچلائیں: ysk-server cron مدد"
           }
         }
       },
       "files": {
         "sub": {
           "sub": {
-            "07ad7e": "نامعلوم files sub: {{sub}}\nچلائیں: ysk-server files help\n"
+            "07ad7e": "نامعلوم فائلز ذیلی: {{sub}}\nچلائیں: ysk-server فائلوں کی مدد"
           }
         }
       },
       "store": {
         "sub": {
           "sub": {
-            "b7a083": "نامعلوم store sub: {{sub}}\nچلائیں: ysk-server store help\n"
+            "b7a083": "نامعلوم اسٹور ذیلی: {{sub}}\nچلائیں: ysk-server اسٹور مدد"
           }
         }
       },
       "cdn": {
         "subcommand": {
           "sub": {
-            "76664f": "نامعلوم cdn subcommand: {{sub}}\nچلائیں: ysk-server cdn help\n"
+            "76664f": "نامعلوم cdn ذیلی کمانڈ: {{sub}}\nچلائیں: ysk-server cdn مدد"
           }
         }
       },
       "backup": {
         "subcommand": {
           "sub": {
-            "4092ad": "نامعلوم backup subcommand: {{sub}}\nچلائیں: ysk-server backup help\n"
+            "4092ad": "نامعلوم بیک اپ ذیلی کمانڈ: {{sub}}\nچلائیں: ysk-server بیک اپ مدد"
           }
         }
       }
     }
   },
   "setup": {
-    "dryRunOk": "{{product}} سیٹ اپ dry-run ٹھیک",
-    "dryRunNext": "کنفگ لکھنے اور ڈیٹابیس شروع کرنے کے لیے بغیر --dry-run دوبارہ چلائیں",
-    "weakPassword": "ایڈمن پاس ورڈ کمزور یا ڈیفالٹ ہے۔ مضبوط --admin-password دیں (کم از کم 8، \"admin\"/عام ڈیفالٹ نہیں)، یا صرف لوکل ڈیو کے لیے YSK_ALLOW_INSECURE_DEFAULTS=1 سیٹ کریں۔",
-    "weakPasswordShort": "کمزور یا ڈیفالٹ ایڈمن پاس ورڈ مسترد",
-    "nextStart": "شروع (API + Web UI): {{cli}} serve --config {{configPath}}",
-    "nextOpen": "http://{{host}}:{{port}}/ کھولیں اور {{user}} کے طور پر لاگ ان کریں",
-    "nextUnit": "Systemd یونٹ ٹیمپلیٹ: {{unitPath}}",
-    "nextInstall": "یونٹ انسٹال (root + YSK_EXECUTE): {{cli}} system unit-install --enable --data-dir {{dataDir}}",
-    "nextExecute": "پروڈکشن ہوسٹ تبدیلیوں کے لیے YSK_EXECUTE=1 اور root درکار",
-    "nextGolive": "Go-live: docs/deploy/go-live.md + ysk-server readiness --json",
-    "secPassword": "سیکیورٹی: ایڈمن پاس ورڈ فوراً تبدیل کریں (bootstrap نے کمزور/ڈیفالٹ پاس ورڈ استعمال کیا)",
-    "sec2fa": "سیکیورٹی: Security → Account کے تحت ایڈمن 2FA فعال کریں",
-    "secListen": "سیکیورٹی: تمام انٹرفیس پر سن رہا ہے — فائر وال / reverse proxy کے پیچھے رکھیں؛ ایڈمن کے لیے 127.0.0.1 + SSH tunnel ترجیح دیں",
-    "ok": "{{product}} سیٹ اپ مکمل (ڈیٹابیس شروع ہو گیا)",
-    "okInsecure": "{{product}} سیٹ اپ مکمل (ڈیٹابیس شروع ہو گیا) [غیر محفوظ BOOTSTRAP — پاس ورڈ تبدیل کریں]"
+    "dryRunOk": "{{product}} سیٹ اپ ڈرائی رن ٹھیک ہے۔",
+    "dryRunNext": "ترتیب لکھنے اور ڈیٹا بیس کو شروع کرنے کے لیے --dry-run کے بغیر دوبارہ چلائیں۔",
+    "weakPassword": "ایڈمن پاس ورڈ کمزور یا ڈیفالٹ ہے۔ ایک مضبوط --admin-پاس ورڈ پاس کریں (کم سے کم 8، \"ایڈمن\"/عام ڈیفالٹس نہیں)، یا صرف مقامی ڈیو کے لیے YSK_ALLOW_INSECURE_DEFAULTS=1 سیٹ کریں۔",
+    "weakPasswordShort": "کمزور یا ڈیفالٹ ایڈمن پاس ورڈ مسترد کر دیا گیا۔",
+    "nextStart": "شروع کریں (API + Web UI): {{cli}} serve --config {{configPath}}",
+    "nextOpen": "http://{{host}}:{{port}}/ کھولیں اور {{user}} کے بطور لاگ ان کریں۔",
+    "nextUnit": "سسٹمڈ یونٹ ٹیمپلیٹ: {{unitPath}}",
+    "nextInstall": "یونٹ انسٹال کریں (روٹ + YSK_EXECUTE): {{cli}} system unit-install --enable --data-dir {{dataDir}}",
+    "nextExecute": "پروڈکشن ہوسٹ میوٹیشنز کے لیے YSK_EXECUTE=1 اور روٹ کی ضرورت ہوتی ہے۔",
+    "nextGolive": "گو لائیو: docs/deploy/go-live.md + ysk-server کی تیاری --json",
+    "secPassword": "سیکیورٹی: ایڈمن پاس ورڈ کو فوری طور پر تبدیل کریں (بوٹسٹریپ نے کمزور/ڈیفالٹ پاس ورڈ استعمال کیا ہے)",
+    "sec2fa": "سیکیورٹی: سیکیورٹی → اکاؤنٹ کے تحت ایڈمن 2FA کو فعال کریں۔",
+    "secListen": "سیکیورٹی: تمام انٹرفیس پر سننا - فائر وال / ریورس پراکسی کے پیچھے رکھنا؛ ایڈمن کے لیے 127.0.0.1 + SSH ٹنل کو ترجیح دیں۔",
+    "ok": "{{product}} سیٹ اپ مکمل ہو گیا (ڈیٹا بیس شروع کیا گیا)",
+    "okInsecure": "{{product}} سیٹ اپ مکمل ہو گیا (ڈیٹا بیس کا آغاز) [غیر محفوظ بوٹسٹریپ — پاس ورڈ تبدیل کریں]"
   }
 }

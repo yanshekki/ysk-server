@@ -1,11 +1,11 @@
 {
   "recent": "最近の監査",
-  "lastN": "最後 {{n}}",
+  "lastN": "最後 : {{n}}",
   "actions": {
     "protection.change": "保護設定が変更されました",
     "auth.locale": "UI言語が変更されました",
-    "auth.login": "サインインしました",
-    "auth.logout": "サインアウトしました",
+    "auth.login": "サインインされています",
+    "auth.logout": "ログアウトしました",
     "system.firewall.allow_port": "ファイアウォールの許可ポート",
     "system.firewall.deny": "ファイアウォール拒否IP",
     "system.firewall.apply": "ファイアウォール適用",
@@ -16,51 +16,12 @@
     "ssl.upload": "SSLアップロード",
     "system.firewall.enable": "ファイアウォールの有効化/無効化",
     "system.firewall.delete_rule": "ファイアウォールルールの削除",
-    "system.firewall.delete_deny": "永続的な拒否 IP を削除する",
+    "system.firewall.delete_deny": "永久拒否 IP を削除する",
     "db.adminer.apply": "DBブラウザプロジェクト",
     "project.goLive": "プロジェクトの稼働開始",
     "project.publish": "Nginxを公開する",
     "project.suspend": "プロジェクトを一時停止する",
     "software.install": "ソフトウェアのインストール",
-    "software.update": "ソフトウェアをアップデートする",
-    "protection": {
-      "change": "Protection settings changed"
-    },
-    "auth": {
-      "locale": "UI language changed",
-      "login": "Signed in",
-      "logout": "Signed out"
-    },
-    "system": {
-      "firewall": {
-        "allow_port": "Firewall allow port",
-        "deny": "Firewall deny IP",
-        "apply": "Firewall apply",
-        "enable": "Firewall enable/disable",
-        "delete_rule": "Delete firewall rule",
-        "delete_deny": "Remove permanent deny IP"
-      }
-    },
-    "project": {
-      "deploy": "Project deploy",
-      "create": "Project created",
-      "delete": "Project deleted",
-      "goLive": "Project go-live",
-      "publish": "Publish Nginx",
-      "suspend": "Suspend project"
-    },
-    "ssl": {
-      "request": "SSL request",
-      "upload": "SSL upload"
-    },
-    "db": {
-      "adminer": {
-        "apply": "DB browser project"
-      }
-    },
-    "software": {
-      "install": "Install software",
-      "update": "Update software"
-    }
+    "software.update": "ソフトウェアをアップデートする"
   }
 }

@@ -1,14 +1,14 @@
 {
-  "titleDefault": "প্রয়োজনীয় সফটওয়্যার ইনস্টল নেই",
+  "titleDefault": "প্রয়োজনীয় সফ্টওয়্যার ইনস্টল করা নেই",
   "missing": "অনুপস্থিত: {{names}}",
   "nameSep": ", ",
-  "installOneClick": "এখন ইনস্টল করুন",
-  "installing": "ইনস্টল হচ্ছে…",
-  "reprobe": "পুনরায় পরীক্ষা",
+  "installOneClick": "এখন ইন্সটল করুন",
+  "installing": "ইনস্টল করা হচ্ছে...",
+  "reprobe": "পুনরায় চেক করুন",
   "close": "বন্ধ",
-  "resultTitle": "ইনস্টল ফলাফল",
-  "probeFailed": "প্রোব ব্যর্থ",
-  "installIncomplete": "ইনস্টল অসম্পূর্ণ",
-  "installedOne": "ইনস্টল হয়েছে {{name}}",
-  "allInstalled": "প্রয়োজনীয় সফটওয়্যার ইনস্টল হয়েছে"
+  "resultTitle": "ফলাফল ইনস্টল করুন",
+  "probeFailed": "তদন্ত ব্যর্থ হয়েছে",
+  "installIncomplete": "অসম্পূর্ণ ইনস্টল করুন",
+  "installedOne": "ইনস্টল করা হয়েছে {{name}}",
+  "allInstalled": "প্রয়োজনীয় সফটওয়্যার ইনস্টল করা"
 }

@@ -4,8 +4,8 @@
   "planned": "En curso",
   "applied": "Aplicado en el host",
   "failed": "Fallido",
-  "pendingExecute": "Requiere ejecución en el host",
-  "uploaded": "Subido",
+  "pendingExecute": "Necesita ejecución del host",
+  "uploaded": "subido",
   "issued": "Emitido",
   "missing": "Falta el archivo"
 }

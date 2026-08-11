@@ -2,10 +2,10 @@
   "missing": "Aún no hay contenido de ayuda disponible para esta página.",
   "missingTitle": "Sin guía",
   "eyebrow": "Acerca de",
-  "canDoTitle": "Qué puede hacer",
+  "canDoTitle": "que puedes hacer",
   "workflowTitle": "Flujo sugerido",
   "notesTitle": "Notas",
   "cliTitle": "Referencia rápida de CLI",
-  "cliFoot": "Para ver todos los flags ejecute ysk-server <command> --help o consulte la documentación.",
+  "cliFoot": "Para obtener indicadores completos, ejecute ysk-server <command> --help o consulte los documentos.",
   "relatedTitle": "Relacionado"
 }

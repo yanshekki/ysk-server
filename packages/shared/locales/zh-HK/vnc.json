@@ -3,7 +3,7 @@
   "result": "VNC 操作結果",
   "installed": "已安裝",
   "notInstalled": "未安裝",
-  "stackBins": "{{bins}}",
+  "stackBins": "{{垃圾箱}}",
   "stackMissing": "未安裝",
   "executeOn": "YSK_EXECUTE 已啟用",
   "executeOff": "YSK_EXECUTE 未啟用",
@@ -42,6 +42,7 @@
     "error": "連線失敗",
     "idle": "閒置",
     "closed": "已關閉",
+    "minting_state": "準備中",
     "reconnect": "重新連線",
     "disconnect": "斷線",
     "fullscreen": "全螢幕",
@@ -113,7 +114,6 @@
     "recordSaved": "已下載錄影",
     "recordFailed": "錄影失敗",
     "recordUnsupported": "此瀏覽器不支援 canvas 錄影",
-    "minting_state": "準備中",
     "connectingHint": "正在開啟通往桌面的安全通道…",
     "reconnectHint": "請按「重新連線」再試，或檢查遠端主機與埠號。"
   },
@@ -146,7 +146,7 @@
   "bind": {
     "localhost": "僅本機（noVNC／隧道）",
     "all": "全部介面（直連 RFB — 需開防火牆）",
-    "localhostShort": "localhost",
+    "localhostShort": "本機",
     "allShort": "0.0.0.0"
   },
   "accountListTitle": "VNC 帳號（{{count}}）",

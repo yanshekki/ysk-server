@@ -4,10 +4,10 @@
   "nameSep": ", ",
   "installOneClick": "今すぐインストール",
   "installing": "インストール中…",
-  "reprobe": "再確認",
+  "reprobe": "再チェック",
   "close": "閉じる",
   "resultTitle": "インストール結果",
-  "probeFailed": "プローブが失敗しました",
+  "probeFailed": "プローブに失敗しました",
   "installIncomplete": "インストールが不完全",
   "installedOne": "インストールされました {{name}}",
   "allInstalled": "必要なソフトウェアがインストールされている"

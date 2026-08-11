@@ -84,7 +84,7 @@
   "thresholdAlerts": "閾值告警",
   "alertsOkTitle": "目前正常",
   "alertsOkDesc": "沒有記憶體／負載／磁碟閾值告警。",
-  "cpu": "CPU",
+  "cpu": "中央處理器",
   "command": "指令",
   "user": "用戶",
   "clearSelection": "清除選取",

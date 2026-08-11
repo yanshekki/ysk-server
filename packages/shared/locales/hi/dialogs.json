@@ -1,8 +1,8 @@
 {
-  "confirmDefault": "पुष्टि करें",
-  "cancelDefault": "रद्द करें",
+  "confirmDefault": "पुष्टि करना",
+  "cancelDefault": "रद्द करना",
   "severity": {
     "consequencesTitle": "यह करेगा:",
-    "typeToConfirm": "पुष्टि के लिए \"{{text}}\" टाइप करें"
+    "typeToConfirm": "पुष्टि करने के लिए \"{{text}}\" टाइप करें"
   }
 }

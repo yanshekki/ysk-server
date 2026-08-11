@@ -1,7 +1,7 @@
 {
-  "YSK_UNAUTHORIZED": "無許可",
-  "YSK_FORBIDDEN": "禁断",
-  "YSK_NOT_FOUND": "見つかりません",
+  "YSK_UNAUTHORIZED": "未認証",
+  "YSK_FORBIDDEN": "禁止データ",
+  "YSK_NOT_FOUND": "不明",
   "YSK_VALIDATION": "無効な入力",
   "YSK_ALLOWLIST_DENIED": "許可リストに載っていない",
   "YSK_APPROVAL_REQUIRED": "承認が必要です",
@@ -22,12 +22,12 @@
     "rateLimited": "サインイン試行が多すぎます。後でもう一度試してください",
     "badCredentials": "ユーザー名またはパスワードが間違っています",
     "accountSuspended": "アカウントが停止されました",
-    "adminTotpStrict": "管理者は 2FA を必須（厳格）にする必要があります。登録済みアカウントを使うか厳格モードを無効化してください。",
+    "adminTotpStrict": "管理者は 2FA (厳密) を有効にする必要があります。登録済みのアカウントを使用するか、厳密モードを無効にします。",
     "totpReplay": "コードはすでに使用されています。次の期間を待ちます",
     "totpRequired": "有効な認証コードが必要です",
-    "mustEnrollTotp": "管理者ポリシー：今すぐ二要素認証を有効にする",
+    "mustEnrollTotp": "管理ポリシー: 今すぐ 2 要素認証を有効にする",
     "userNotFound": "ユーザーが見つかりません",
-    "totpSetupNeedReauth": "2FA の有効化にはパスワード（または直近の step-up コード）が必要です",
+    "totpSetupNeedReauth": "2FA を有効にするには、パスワード (または最近のステップアップ コード) が必要です",
     "totpBeginFirst": "最初に 2FA セットアップを開始します",
     "totpInvalid": "無効な認証コードです",
     "stepUpRequired": "このアクションには新しい認証コードが必要です",
@@ -49,8 +49,8 @@
     "jsonInvalid": "無効な JSON",
     "internal": "内部エラー"
   },
-  "YSK_HOST_BROWSE_SSRF": "ホストブラウズはセキュリティポリシーによりブロックされました",
-  "YSK_HOST_BROWSE_SESSION": "ホストブラウズセッションが見つからないか期限切れです",
-  "YSK_HOST_BROWSE_UPSTREAM": "ホストブラウズのアップストリーム取得に失敗しました",
-  "YSK_HOST_BROWSE_NEED_CHROME": "リアルブラウザエンジンにはホスト上の Chrome/Chromium が必要です"
+  "YSK_HOST_BROWSE_SSRF": "ホストの参照がセキュリティ ポリシーによってブロックされている",
+  "YSK_HOST_BROWSE_SESSION": "ホストの参照セッションが見つからないか、期限切れになっています",
+  "YSK_HOST_BROWSE_UPSTREAM": "ホストのブラウズアップストリームフェッチに失敗しました",
+  "YSK_HOST_BROWSE_NEED_CHROME": "実際のブラウザ エンジンにはホスト上に Chrome/Chromium が必要です"
 }

@@ -9,7 +9,7 @@
       "short": "另開 25/465/587/993"
     },
     "ftps": {
-      "label": "Web + FTPS",
+      "label": "網絡+FTPS",
       "short": "21 + PASV 30000–30100"
     }
   },

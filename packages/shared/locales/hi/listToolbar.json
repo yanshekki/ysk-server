@@ -1,12 +1,12 @@
 {
-  "searchPlaceholder": "खोजें…",
-  "searchAria": "सूची खोजें",
-  "clearSearch": "खोज साफ़ करें",
+  "searchPlaceholder": "खोजना…",
+  "searchAria": "खोज सूची",
+  "clearSearch": "स्पष्ट खोज",
   "clearAll": "फ़िल्टर साफ़ करें",
   "resultCount": "{{count}} परिणाम",
-  "showingOf": "{{total}} में से {{shown}} दिखा रहे हैं",
+  "showingOf": "{{total}} में से {{shown}} दिखा रहा हूँ",
   "activeFilters": "{{count}} फ़िल्टर सक्रिय",
   "noResults": "कोई मेल नहीं",
   "noResultsHint": "कोई अन्य कीवर्ड आज़माएँ या फ़िल्टर साफ़ करें।",
-  "searching": "खोज रहे हैं…"
+  "searching": "खोज रहे हैं..."
 }

@@ -1,14 +1,14 @@
 {
-  "titleDefault": "ضروری سافٹ ویئر انسٹال نہیں ہے",
+  "titleDefault": "مطلوبہ سافٹ ویئر انسٹال نہیں ہے۔",
   "missing": "غائب: {{names}}",
   "nameSep": ", ",
-  "installOneClick": "ابھی انسٹال کریں",
+  "installOneClick": "ابھی انسٹال کریں۔",
   "installing": "انسٹال ہو رہا ہے…",
-  "reprobe": "دوبارہ چیک",
-  "close": "بند کریں",
-  "resultTitle": "انسٹال نتیجہ",
-  "probeFailed": "جانچ ناکام",
-  "installIncomplete": "انسٹال نامکمل",
-  "installedOne": "{{name}} انسٹال ہو گیا",
-  "allInstalled": "ضروری سافٹ ویئر انسٹال ہو گیا"
+  "reprobe": "دوبارہ چیک کریں۔",
+  "close": "بند",
+  "resultTitle": "نتیجہ انسٹال کریں۔",
+  "probeFailed": "تحقیقات ناکام ہوگئی",
+  "installIncomplete": "نامکمل انسٹال کریں۔",
+  "installedOne": "انسٹال ہوا {{name}}",
+  "allInstalled": "مطلوبہ سافٹ ویئر انسٹال ہے۔"
 }

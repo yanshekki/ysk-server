@@ -1,38 +1,38 @@
 {
   "blocked": {
-    "needExecute": "Host execute বন্ধ; এই অ্যাকশন প্যানেল থেকে শেষ করা যায় না",
-    "needExecuteShort": "Host execute সক্রিয় নয়",
-    "needExecuteBlocked": "ব্লকড: host execute বন্ধ",
-    "needRoot": "Root সুবিধা প্রয়োজন",
-    "needExecuteRoot": "YSK_EXECUTE=1 এবং root প্রয়োজন",
+    "needExecute": "হোস্ট এক্সিকিউট বন্ধ আছে; এই ক্রিয়াটি প্যানেল থেকে শেষ করা যাবে না",
+    "needExecuteShort": "হোস্ট এক্সিকিউট সক্ষম করা নেই",
+    "needExecuteBlocked": "অবরুদ্ধ: হোস্ট এক্সিকিউট বন্ধ",
+    "needRoot": "রুট বিশেষাধিকার প্রয়োজন",
+    "needExecuteRoot": "YSK_EXECUTE=1 এবং রুট প্রয়োজন",
     "needExecuteYsk": "YSK_EXECUTE=1 প্রয়োজন",
-    "writeOutsideDataDir": "লেখা ব্লকড: host execute বন্ধ এবং path প্যানেল ডেটা ডিরেক্টরির বাইরে",
-    "nginxReload": "Nginx রিলোড করা যায়নি: host execute প্রয়োজন",
-    "signal": "সিগন্যাল পাঠানো যায়নি: host execute প্রয়োজন (YSK_EXECUTE)",
-    "signalNote": "প্রকৃত kill-এর জন্য YSK_EXECUTE=1 প্রয়োজন",
-    "renice": "renice করা যায়নি: host execute প্রয়োজন (YSK_EXECUTE)",
-    "install": "Host execute বন্ধ; ইনস্টল প্যানেল থেকে শেষ করা যায় না",
-    "update": "Host execute বন্ধ; আপডেট প্যানেল থেকে শেষ করা যায় না",
-    "panel": "ম্যানেজমেন্ট প্যানেল থেকে এটি সম্পূর্ণ করা যায় না"
+    "writeOutsideDataDir": "রাইট ব্লকড: হোস্ট এক্সিকিউট বন্ধ এবং পাথ প্যানেল ডেটা ডিরেক্টরির বাইরে",
+    "nginxReload": "Nginx পুনরায় লোড করা যাবে না: হোস্ট এক্সিকিউট প্রয়োজন",
+    "signal": "সংকেত পাঠাতে পারে না: হোস্ট এক্সিকিউট প্রয়োজন (YSK_EXECUTE)",
+    "signalNote": "একটি বাস্তব হত্যার জন্য YSK_EXECUTE=1 প্রয়োজন",
+    "renice": "রিনিস করা যাবে না: হোস্ট এক্সিকিউট প্রয়োজন (YSK_EXECUTE)",
+    "install": "হোস্ট এক্সিকিউট বন্ধ আছে; প্যানেল থেকে ইনস্টল শেষ করা যাবে না",
+    "update": "হোস্ট এক্সিকিউট বন্ধ আছে; প্যানেল থেকে আপডেট শেষ করা যাবে না",
+    "panel": "ম্যানেজমেন্ট প্যানেল থেকে এটি সম্পূর্ণ করা যাবে না"
   },
   "honesty": {
-    "blockedNotOk": "Honesty fix: blocked ok=true হতে পারে না",
-    "blockedNotApplied": "Honesty fix: blocked apply_status=applied হতে পারে না",
-    "okFalseNotApplied": "Honesty fix: ok=false apply_status=applied হতে পারে না"
+    "blockedNotOk": "সততা সংশোধন: ব্লক করা ঠিক = সত্য হতে পারে না",
+    "blockedNotApplied": "সততা সংশোধন: ব্লক করা যাবে না apply_status=প্রয়োগ করা",
+    "okFalseNotApplied": "সততা সংশোধন: ok=false apply_status=প্রয়োগ করা যাবে না"
   },
   "status": {
-    "applied": "স্ট্যাটাস: প্রয়োগ করা হয়েছে",
-    "failed": "স্ট্যাটাস: ব্যর্থ",
-    "written": "স্ট্যাটাস: লেখা হয়েছে",
-    "blocked": "স্ট্যাটাস: blocked"
+    "applied": "স্থিতি: প্রয়োগ করা হয়েছে",
+    "failed": "স্থিতি: ব্যর্থ হয়েছে",
+    "written": "অবস্থা: লিখিত",
+    "blocked": "স্থিতি: অবরুদ্ধ"
   },
   "notes": {
-    "writtenSettings": "সেটিংস লেখা হয়েছে",
+    "writtenSettings": "সেটিংস লেখা",
     "completed": "সম্পন্ন",
-    "partialSuccess": "অপারেশন কেবল আংশিকভাবে সফল হয়েছে",
-    "notInstalled": "ইনস্টল নেই",
-    "running": "চলছে",
-    "stopped": "বন্ধ",
+    "partialSuccess": "অপারেশন শুধুমাত্র আংশিক সফল হয়েছে",
+    "notInstalled": "ইনস্টল করা হয়নি",
+    "running": "চলমান",
+    "stopped": "থেমে গেল",
     "unknown": "অজানা"
   }
 }

@@ -1,31 +1,31 @@
 {
   "finding": {
-    "package_missing": "حزمة الخادم لـ {{flavor}} غير مثبتة.",
-    "client_missing": "أدوات عميل SQL غير مثبتة.",
-    "frozen_marker": "علامة تجميد Debian موجودة (الوضع: {{mode}}). بدء الخدمة محظور حتى رفع التجميد.",
-    "datadir_uninitialized": "دليل البيانات لا يحتوي على كتالوج النظام — يحتاج إلى تهيئة.",
-    "config_flavor_mismatch": "my.cnf يشير إلى المحرك الخطأ لـ {{flavor}} ({{path}}).",
-    "residual_foreign_plugins": "الإعدادات/الإضافات المتبقية من محرك SQL الآخر قد تُسقط هذه الخدمة.",
+    "package_missing": "لم يتم تثبيت حزمة الخادم لـ {{flavor}}.",
+    "client_missing": "لم يتم تثبيت أدوات عميل SQL.",
+    "frozen_marker": "علامة تجميد دبيان موجودة (الوضع: {{mode}}). تم حظر بداية البرنامج الخفي حتى يتم إصداره.",
+    "datadir_uninitialized": "لا يحتوي دليل البيانات على كتالوج النظام — يحتاج إلى التهيئة.",
+    "config_flavor_mismatch": "يشير my.cnf إلى المحرك الخطأ لـ {{flavor}} ({{path}}).",
+    "residual_foreign_plugins": "يمكن أن يؤدي التكوين/المكونات الإضافية المتبقية من محرك SQL الآخر إلى تعطل هذا البرنامج الخفي.",
     "unit_failed": "وحدة الخدمة {{unit}} فاشلة.",
-    "unit_not_active": "وحدة الخدمة {{unit}} في حالة {{active}} (غير نشطة).",
-    "port_conflict": "المنفذ 3306 مستخدم بينما هذا المحرك متوقف (تعارض محتمل)."
+    "unit_not_active": "وحدة الخدمة {{unit}} هي {{active}} (غير نشطة).",
+    "port_conflict": "المنفذ 3306 قيد الاستخدام أثناء توقف هذا المحرك (تعارض محتمل)."
   },
   "action": {
     "stop_unit": "إيقاف وحدة الخدمة",
-    "clear_frozen": "مسح علامة التجميد",
-    "sanitize_config": "مواءمة my.cnf وتعطيل إضافات المحرك الأجنبي",
-    "init_datadir": "تهيئة دليل بيانات فارغ",
+    "clear_frozen": "علامة تجميد واضحة",
+    "sanitize_config": "قم بمحاذاة my.cnf وتعطيل المكونات الإضافية للمحركات الأجنبية",
+    "init_datadir": "تهيئة دليل البيانات الفارغة",
     "reset_failed": "إعادة تعيين حالة الوحدة الفاشلة",
-    "enable_unit": "تمكين الخدمة عند الإقلاع",
-    "start_unit": "بدء الخدمة",
+    "enable_unit": "تمكين الخدمة عند التمهيد",
+    "start_unit": "ابدأ الخدمة",
     "verify_active": "التحقق من أن الخدمة نشطة"
   },
   "note": {
-    "alreadyHealthy": "محرك SQL سليم بالفعل — لا حاجة للإصلاح.",
-    "needsConfirm": "الإصلاح يحتاج تأكيدًا ({{count}} خطوات: {{findings}}).",
-    "installPackageFirst": "ثبّت حزمة خادم {{flavor}} أولًا، ثم أصلح.",
-    "stepFailed": "فشلت خطوة الإصلاح {{action}}: {{detail}}",
-    "repairOk": "اكتمل الإصلاح — {{unit}} نشطة.",
-    "repairIncomplete": "انتهى الإصلاح لكن الوحدة ما زالت {{active}}."
+    "alreadyHealthy": "محرك SQL سليم بالفعل - لا حاجة للإصلاح.",
+    "needsConfirm": "الإصلاح يحتاج إلى تأكيد ({{count}} الخطوات: {{findings}}).",
+    "installPackageFirst": "قم بتثبيت حزمة الخادم {{flavor}} أولاً، ثم قم بالإصلاح.",
+    "stepFailed": "خطوة الإصلاح {{action}} فشلت: {{detail}}",
+    "repairOk": "اكتمل الإصلاح — {{unit}} نشط.",
+    "repairIncomplete": "تم الانتهاء من الإصلاح ولكن الوحدة لا تزال {{active}}."
   }
 }

@@ -2,65 +2,26 @@
   "recent": "Audit terbaru",
   "lastN": "Terakhir {{n}}",
   "actions": {
-    "protection.change": "Pengaturan proteksi diubah",
-    "auth.locale": "Bahasa UI diubah",
+    "protection.change": "Pengaturan perlindungan diubah",
+    "auth.locale": "Bahasa UI berubah",
     "auth.login": "Masuk",
     "auth.logout": "Keluar",
-    "system.firewall.allow_port": "Firewall izinkan port",
-    "system.firewall.deny": "Firewall tolak IP",
-    "system.firewall.apply": "Terapkan firewall",
-    "project.deploy": "Deploy proyek",
+    "system.firewall.allow_port": "Firewall mengizinkan port",
+    "system.firewall.deny": "Firewall menolak IP",
+    "system.firewall.apply": "Firewall berlaku",
+    "project.deploy": "Penyebaran proyek",
     "project.create": "Proyek dibuat",
     "project.delete": "Proyek dihapus",
-    "ssl.request": "Permintaan SSL",
-    "ssl.upload": "Unggah SSL",
-    "system.firewall.enable": "Aktifkan/nonaktifkan firewall",
+    "ssl.request": "permintaan SSL",
+    "ssl.upload": "Unggahan SSL",
+    "system.firewall.enable": "Mengaktifkan/menonaktifkan firewall",
     "system.firewall.delete_rule": "Hapus aturan firewall",
-    "system.firewall.delete_deny": "Hapus penolakan IP permanen",
-    "db.adminer.apply": "Proyek browser DB",
-    "project.goLive": "Proyek go-live",
+    "system.firewall.delete_deny": "Hapus IP penolakan permanen",
+    "db.adminer.apply": "Proyek peramban DB",
+    "project.goLive": "Proyek ditayangkan",
     "project.publish": "Publikasikan Nginx",
     "project.suspend": "Tangguhkan proyek",
     "software.install": "Instal perangkat lunak",
-    "software.update": "Perbarui perangkat lunak",
-    "protection": {
-      "change": "Protection settings changed"
-    },
-    "auth": {
-      "locale": "UI language changed",
-      "login": "Signed in",
-      "logout": "Signed out"
-    },
-    "system": {
-      "firewall": {
-        "allow_port": "Firewall allow port",
-        "deny": "Firewall deny IP",
-        "apply": "Firewall apply",
-        "enable": "Firewall enable/disable",
-        "delete_rule": "Delete firewall rule",
-        "delete_deny": "Remove permanent deny IP"
-      }
-    },
-    "project": {
-      "deploy": "Project deploy",
-      "create": "Project created",
-      "delete": "Project deleted",
-      "goLive": "Project go-live",
-      "publish": "Publish Nginx",
-      "suspend": "Suspend project"
-    },
-    "ssl": {
-      "request": "SSL request",
-      "upload": "SSL upload"
-    },
-    "db": {
-      "adminer": {
-        "apply": "DB browser project"
-      }
-    },
-    "software": {
-      "install": "Install software",
-      "update": "Update software"
-    }
+    "software.update": "Perbarui perangkat lunak"
   }
 }

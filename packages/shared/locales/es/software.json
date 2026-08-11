@@ -1,122 +1,122 @@
 {
   "title": "Software",
-  "desc": "Todo el software gestionado: estado de instalación, salud del servicio, versiones más recientes y enlaces para usar en proyectos.",
+  "desc": "Todo el software administrado: estado de instalación, estado del servicio, versiones más recientes y enlaces para usar en proyectos.",
   "tabs": {
-    "overview": "Resumen",
+    "overview": "Descripción general",
     "runtimes": "Tiempos de ejecución",
     "databases": "Bases de datos",
-    "edge": "Dominios y edge",
+    "edge": "Dominios y borde",
     "mailFiles": "Correo y archivos",
-    "host": "Servicios del host"
+    "host": "Servicios de anfitrión"
   },
   "stat": {
-    "catalog": "Elementos del catálogo",
+    "catalog": "Artículos del catálogo",
     "runtimesInstalled": "Tiempos de ejecución instalados",
-    "updates": "Actualizaciones / ampliables",
-    "attention": "Requiere atención"
+    "updates": "Actualizaciones / ampliable",
+    "attention": "necesita atencion"
   },
-  "quickTitle": "Accesos directos",
-  "quickDesc": "Ir a una sección o a herramientas del host",
+  "quickTitle": "Atajos",
+  "quickDesc": "Saltar a una sección o alojar herramientas",
   "updatesTitle": "Actualizaciones y versiones instalables",
-  "updatesDesc": "Pins más recientes de upstream o del panel. Instale y luego seleccione el runtime en un proyecto.",
+  "updatesDesc": "Pines de panel o aguas arriba más nuevos. Instale, luego seleccione el tiempo de ejecución en un proyecto.",
   "allSoftware": "Todo el software",
   "status": {
     "unknown": "—",
     "installed": "Instalado",
     "notInstalled": "No instalado",
-    "running": "En ejecución",
+    "running": "Correr",
     "missing": "No detectado",
     "failed": "Fallido",
-    "stopped": "Detenido"
+    "stopped": "Interrumpido"
   },
   "badge": {
     "update": "Actualización disponible",
-    "upToDate": "Actualizado"
+    "upToDate": "A hoy"
   },
   "meta": {
     "installed": "Instalado: {{list}}",
     "default": "Predeterminado {{v}}",
-    "remote": "Upstream ~{{v}}",
-    "openManage": "Abra la página de gestión para instalar o configurar",
-    "aptCurrentLatest": "Instalado {{v}} · el repo está al día",
+    "remote": "Corriente arriba ~{{v}}",
+    "openManage": "Abra la página de administración para instalar o configurar",
+    "aptCurrentLatest": "Instalado {{v}} · el repositorio es el más reciente",
     "aptVersion": "Instalado {{v}}",
     "aptUpgrade": "{{from}} → {{to}} disponible",
     "aptUpgradeMulti": "{{n}} paquetes actualizables: {{list}}",
-    "aptNotInstalled": "Paquete no instalado (abra la página de gestión para instalar)",
+    "aptNotInstalled": "Paquete no instalado (abra la página de administración para instalarlo)",
     "hostUpgradable": "~{{n}} paquetes actualizables en el host",
-    "checking": "Comprobando versiones… o abra la página de gestión"
+    "checking": "Comprobando versiones... o abrir la página de administración"
   },
   "action": {
-    "manage": "Gestionar",
-    "useInProject": "Usar en el proyecto",
-    "useInProjectTitle": "Abra proyectos para establecer este runtime",
+    "manage": "Administrar",
+    "useInProject": "Uso en proyecto",
+    "useInProjectTitle": "Abrir proyectos para configurar este tiempo de ejecución",
     "update": "Actualizar",
     "updateTitle": "Instalar o cambiar a {{v}}",
     "updateTo": "Actualizar a {{v}}",
     "installVersion": "Instalar {{v}}",
-    "applyAptTitle": "Confirmar actualización de {{pkg}}",
+    "applyAptTitle": "Confirmar actualización {{pkg}}",
     "updateN": "Actualizar {{n}} elementos",
     "installTitle": "Instalar {{list}}",
     "install": "Instalar",
-    "updateAptTitle": "Abrir Actualizaciones de {{pkg}}"
+    "updateAptTitle": "Actualizaciones abiertas para {{pkg}}"
   },
   "apply": {
-    "blockedShort": "Bloqueado",
+    "blockedShort": "Obstruido",
     "failedShort": "Fallido",
-    "failed": "Error en la actualización",
-    "blocked": "Bloqueado",
+    "failed": "La actualización falló",
+    "blocked": "Obstruido",
     "confirm": "Confirmar actualización",
     "confirmTitle": "¿Confirmar actualización de software?",
-    "confirmBody": "Actualizar {{pkg}}: {{from}} → {{to}}. Requiere permisos de cambio del sistema.",
+    "confirmBody": "Actualización {{pkg}}: {{from}} → {{to}}. Necesita derechos de cambio de sistema.",
     "ok": "Aplicado {{pkg}}",
-    "progress": "Actualizando {{n}}/{{total}}: {{pkg}}",
+    "progress": "Actualización {{n}}/{{total}}: {{pkg}}",
     "okMulti": "Actualizado: {{list}}",
     "okMultiTitle": "{{label}} actualizado",
     "partial": "Éxito parcial",
     "partialTitle": "Algunas actualizaciones fallaron",
-    "failedTitle": "Falló la actualización de {{label}}",
+    "failedTitle": "{{label}} error en la actualización",
     "progressDetail": "{{from}} → {{to}}",
-    "confirmBodyMulti": "Actualizar {{label}}: {{list}}"
+    "confirmBodyMulti": "Actualización {{label}}: {{list}}"
   },
   "version": {
     "loading": "Cargando versiones…",
     "installed": "Instalado",
-    "latest": "Más reciente",
-    "upToDate": "Actualizado / repo al día",
-    "refresh": "Volver a comprobar la última",
+    "latest": "El último",
+    "upToDate": "Actualizado / repositorio más reciente",
+    "refresh": "Vuelva a comprobar lo último",
     "pick": "Elegir versión",
-    "noTarget": "Sin destino de actualización",
-    "needRuntimePage": "Instale esta versión en la página del runtime",
-    "noAptCandidate": "Sin versión candidata de apt"
+    "noTarget": "Sin objetivo de actualización",
+    "needRuntimePage": "Instale esta versión en la página de tiempo de ejecución",
+    "noAptCandidate": "No hay versión candidata apta"
   },
   "install": {
     "progress": "Instalando: {{list}}…",
     "progressHint": "Puede tardar uno o dos minutos",
-    "blockedTitle": "No se pudo instalar {{label}}",
+    "blockedTitle": "{{label}} no se pudo instalar",
     "ok": "Instalación en cola: {{list}}",
-    "okTitle": "{{label}} instalado / en cola",
-    "failedTitle": "Falló la instalación de {{label}}",
-    "confirmTitle": "¿Confirmar instalación de software?",
-    "confirmBody": "Instalar {{label}}: {{list}}. Requiere permisos de cambio del sistema.",
+    "okTitle": "{{label}} instalado/en cola",
+    "failedTitle": "{{label}} la instalación falló",
+    "confirmTitle": "¿Confirmar la instalación del software?",
+    "confirmBody": "Instalar {{label}}: {{list}}. Necesita derechos de cambio de sistema.",
     "confirm": "Confirmar instalación"
   },
   "runtime": {
     "installing": "Instalando/actualizando {{kind}} {{v}}…",
     "installingHint": "Puede tardar uno o dos minutos",
-    "blockedTitle": "No se pudo instalar {{kind}} {{v}}",
+    "blockedTitle": "{{kind}} {{v}} no se pudo instalar",
     "installed": "Instalado/actualizado {{kind}} {{v}}",
-    "installedDetail": "Seleccionar esta versión en un proyecto",
-    "failedTitle": "Falló la instalación de {{kind}} {{v}}",
+    "installedDetail": "Seleccione esta versión en un proyecto",
+    "failedTitle": "{{kind}} {{v}} instalación fallida",
     "installingShort": "Instalando…"
   },
-  "aptSummaryTitle": "Actualizaciones del repositorio disponibles",
-  "aptSummaryDesc": "Los contadores del catálogo y de paquetes del host son independientes; aplique desde Actualizaciones o una tarjeta.",
+  "aptSummaryTitle": "Actualizaciones de repositorio disponibles",
+  "aptSummaryDesc": "Los recuentos de paquetes de host y catálogo están separados; aplicar desde Actualizaciones o una tarjeta.",
   "aptSummary": {
     "catalog": "Catálogo {{n}}",
-    "host": "Paquetes del host {{n}}",
-    "openUpdates": "Abrir actualizaciones"
+    "host": "Paquetes de alojamiento {{n}}",
+    "openUpdates": "Actualizaciones abiertas"
   },
   "navBadgeTitle": "Actualizaciones del catálogo: {{n}}",
-  "projectHint": "Runtime {{runtime}} precargado — crear un proyecto",
-  "projectHintWithVersion": "Runtime {{runtime}} {{version}} precargado — crear un proyecto"
+  "projectHint": "Tiempo de ejecución {{runtime}} precargado: crea un proyecto",
+  "projectHintWithVersion": "Tiempo de ejecución {{runtime}} {{version}} precargado: crea un proyecto"
 }

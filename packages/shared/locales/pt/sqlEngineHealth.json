@@ -1,31 +1,31 @@
 {
   "finding": {
-    "package_missing": "O pacote de servidor para {{flavor}} não está instalado.",
-    "client_missing": "As ferramentas de cliente SQL não estão instaladas.",
-    "frozen_marker": "Marcador de congelamento Debian presente (modo: {{mode}}). O arranque do daemon está bloqueado até ser libertado.",
-    "datadir_uninitialized": "O diretório de dados não tem catálogo de sistema — precisa de inicialização.",
-    "config_flavor_mismatch": "my.cnf aponta para o motor errado para {{flavor}} ({{path}}).",
-    "residual_foreign_plugins": "Configuração/plugins residuais do outro motor SQL podem fazer este daemon falhar.",
-    "unit_failed": "A unidade de serviço {{unit}} está em falha.",
-    "unit_not_active": "A unidade de serviço {{unit}} está {{active}} (não ativa).",
-    "port_conflict": "A porta 3306 está em uso enquanto este motor está parado (possível conflito)."
+    "package_missing": "O pacote do servidor para {{flavor}} não está instalado.",
+    "client_missing": "As ferramentas cliente SQL não estão instaladas.",
+    "frozen_marker": "Marcador de congelamento do Debian presente (modo: {{mode}}). O início do daemon é bloqueado até ser liberado.",
+    "datadir_uninitialized": "O diretório de dados não possui catálogo de sistema – precisa de inicialização.",
+    "config_flavor_mismatch": "my.cnf aponta para o mecanismo errado para {{flavor}} ({{path}}).",
+    "residual_foreign_plugins": "Configurações/plugins residuais de outro mecanismo SQL podem travar este daemon.",
+    "unit_failed": "A unidade de serviço {{unit}} falhou.",
+    "unit_not_active": "A unidade de serviço {{unit}} é {{active}} (não ativa).",
+    "port_conflict": "A porta 3306 está em uso enquanto este mecanismo está inativo (possível conflito)."
   },
   "action": {
-    "stop_unit": "Parar unidade de serviço",
+    "stop_unit": "Pare a unidade de serviço",
     "clear_frozen": "Limpar marcador de congelamento",
-    "sanitize_config": "Alinhar my.cnf e desativar plugins do motor estrangeiro",
-    "init_datadir": "Inicializar diretório de dados vazio",
-    "reset_failed": "Repor estado da unidade em falha",
-    "enable_unit": "Ativar serviço no arranque",
+    "sanitize_config": "Alinhe my.cnf e desative plug-ins de mecanismos externos",
+    "init_datadir": "Inicialize o diretório de dados vazio",
+    "reset_failed": "Redefinir o estado da unidade com falha",
+    "enable_unit": "Habilitar serviço na inicialização",
     "start_unit": "Iniciar serviço",
-    "verify_active": "Verificar se o serviço está ativo"
+    "verify_active": "Verifique se o serviço está ativo"
   },
   "note": {
-    "alreadyHealthy": "Motor SQL já saudável — não é necessária reparação.",
-    "needsConfirm": "A reparação precisa de confirmação ({{count}} passos: {{findings}}).",
-    "installPackageFirst": "Instale primeiro o pacote de servidor {{flavor}} e depois repare.",
-    "stepFailed": "O passo de reparação {{action}} falhou: {{detail}}",
-    "repairOk": "Reparação concluída — {{unit}} está ativo.",
-    "repairIncomplete": "Reparação terminada mas a unidade ainda está {{active}}."
+    "alreadyHealthy": "Mecanismo SQL já íntegro — nenhum reparo é necessário.",
+    "needsConfirm": "O reparo precisa de confirmação ({{count}} etapas: {{findings}}).",
+    "installPackageFirst": "Instale o pacote do servidor {{flavor}} primeiro e depois repare.",
+    "stepFailed": "Etapa de reparo {{action}} falhou: {{detail}}",
+    "repairOk": "Reparo concluído — {{unit}} está ativo.",
+    "repairIncomplete": "O reparo foi concluído, mas a unidade ainda está {{active}}."
   }
 }

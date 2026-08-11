@@ -75,7 +75,7 @@
     "partial": "部分成功",
     "partialTitle": "部分更新失敗",
     "failedTitle": "{{label}} 更新失敗",
-    "progressDetail": "{{from}} → {{to}}",
+    "progressDetail": "{{從}} → {{到}}",
     "confirmBodyMulti": "將更新 {{label}}：{{list}}"
   },
   "version": {

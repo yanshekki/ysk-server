@@ -1,19 +1,19 @@
 {
   "finding": {
-    "package_missing": "Paket server untuk {{flavor}} belum terinstal.",
-    "client_missing": "Alat klien SQL belum terinstal.",
-    "frozen_marker": "Penanda freeze Debian ada (mode: {{mode}}). Start daemon diblokir hingga dilepas.",
-    "datadir_uninitialized": "Direktori data tidak memiliki katalog sistem — perlu inisialisasi.",
-    "config_flavor_mismatch": "my.cnf mengarah ke engine yang salah untuk {{flavor}} ({{path}}).",
-    "residual_foreign_plugins": "Sisa konfigurasi/plugin dari engine SQL lain dapat membuat daemon ini crash.",
+    "package_missing": "Paket server untuk {{flavor}} tidak diinstal.",
+    "client_missing": "Alat klien SQL tidak diinstal.",
+    "frozen_marker": "Penanda pembekuan Debian hadir (mode: {{mode}}). Daemon start diblokir hingga dirilis.",
+    "datadir_uninitialized": "Direktori data tidak memiliki katalog sistem — memerlukan inisialisasi.",
+    "config_flavor_mismatch": "my.cnf menunjuk ke mesin yang salah untuk {{flavor}} ({{path}}).",
+    "residual_foreign_plugins": "Konfigurasi/plugin sisa dari mesin SQL lain dapat membuat daemon ini mogok.",
     "unit_failed": "Unit layanan {{unit}} gagal.",
-    "unit_not_active": "Unit layanan {{unit}} berstatus {{active}} (tidak aktif).",
-    "port_conflict": "Port 3306 sedang digunakan sementara engine ini mati (kemungkinan konflik)."
+    "unit_not_active": "Unit layanan {{unit}} adalah {{active}} (tidak aktif).",
+    "port_conflict": "Port 3306 digunakan saat mesin ini mati (kemungkinan konflik)."
   },
   "action": {
     "stop_unit": "Hentikan unit layanan",
-    "clear_frozen": "Hapus penanda freeze",
-    "sanitize_config": "Sesuaikan my.cnf dan nonaktifkan plugin engine asing",
+    "clear_frozen": "Hapus penanda pembekuan",
+    "sanitize_config": "Sejajarkan my.cnf dan nonaktifkan plugin mesin asing",
     "init_datadir": "Inisialisasi direktori data kosong",
     "reset_failed": "Reset status unit yang gagal",
     "enable_unit": "Aktifkan layanan saat boot",
@@ -21,7 +21,7 @@
     "verify_active": "Verifikasi layanan aktif"
   },
   "note": {
-    "alreadyHealthy": "Engine SQL sudah sehat — tidak perlu perbaikan.",
+    "alreadyHealthy": "Mesin SQL sudah sehat — tidak perlu perbaikan.",
     "needsConfirm": "Perbaikan memerlukan konfirmasi ({{count}} langkah: {{findings}}).",
     "installPackageFirst": "Instal paket server {{flavor}} terlebih dahulu, lalu perbaiki.",
     "stepFailed": "Langkah perbaikan {{action}} gagal: {{detail}}",

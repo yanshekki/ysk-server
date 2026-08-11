@@ -1,11 +1,11 @@
 {
   "draft": "초안",
-  "written": "작성됨 (패널 데이터)",
-  "planned": "진행 중",
+  "written": "작성(패널 데이터)",
+  "planned": "진행중",
   "applied": "호스트에 적용됨",
-  "failed": "실패",
+  "failed": "실패한",
   "pendingExecute": "호스트 실행 필요",
   "uploaded": "업로드됨",
   "issued": "발급됨",
-  "missing": "파일 없음"
+  "missing": "파일 누락"
 }

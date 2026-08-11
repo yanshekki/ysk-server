@@ -1,50 +1,50 @@
 {
   "discover-host": {
-    "name": "Host ডিসকভারি",
-    "description": "রিড-অনলি host ইনভেন্টরি"
+    "name": "হোস্ট আবিষ্কার",
+    "description": "শুধুমাত্র পাঠযোগ্য হোস্ট ইনভেন্টরি"
   },
   "nginx-health": {
-    "name": "Nginx হেলথ চেক",
-    "description": "nginx সার্ভিসের স্ট্যাটাস পরীক্ষা করুন"
+    "name": "Nginx স্বাস্থ্য পরীক্ষা",
+    "description": "nginx পরিষেবার স্থিতি পরীক্ষা করুন"
   },
   "nginx-restart": {
-    "name": "Nginx রিস্টার্ট (উচ্চ ঝুঁকি)",
-    "description": "অনুমোদনের পর nginx রিস্টার্ট করুন"
+    "name": "Nginx পুনরায় চালু করুন (উচ্চ ঝুঁকি)",
+    "description": "অনুমোদনের পরে nginx পুনরায় চালু করুন"
   },
   "local-llm-ops-only": {
-    "name": "শুধুমাত্র লোকাল LLM অপস",
-    "description": "সুরক্ষা মোডে জরুরি ডিসকভারি"
+    "name": "শুধুমাত্র স্থানীয় এলএলএম অপারেশন",
+    "description": "সুরক্ষা মোড অধীনে জরুরী আবিষ্কার"
   },
   "disk-pressure": {
     "name": "ডিস্ক চাপ পরীক্ষা",
-    "description": "df দিয়ে শুধুমাত্র-পঠন ডিস্ক ব্যবহার"
+    "description": "df এর মাধ্যমে শুধুমাত্র পাঠযোগ্য ডিস্ক ব্যবহার"
   },
   "mail-stack-status": {
-    "name": "মেইল স্ট্যাক স্ট্যাটাস",
-    "description": "postfix + dovecot ইউনিট পরীক্ষা করুন"
+    "name": "মেল স্ট্যাক অবস্থা",
+    "description": "পোস্টফিক্স + ডভকোট ইউনিট পরীক্ষা করুন"
   },
   "security-units": {
-    "name": "সিকিউরিটি ইউনিট",
-    "description": "fail2ban + sshd স্ট্যাটাস (শুধুমাত্র-পঠন)"
+    "name": "নিরাপত্তা ইউনিট",
+    "description": "fail2ban + sshd স্ট্যাটাস (শুধু পড়ার জন্য)"
   },
   "web-stack-status": {
     "name": "ওয়েব স্ট্যাক স্ট্যাটাস",
     "description": "nginx + php-fpm প্রোব"
   },
   "emergency-read-only": {
-    "name": "জরুরি শুধুমাত্র-পঠন স্ক্যান",
+    "name": "ইমার্জেন্সি রিড-ওনলি সুইপ",
     "description": "শুধুমাত্র সুরক্ষা-নিরাপদ তথ্য"
   },
   "backup-health": {
     "name": "ব্যাকআপ প্রস্তুতি",
-    "description": "ব্যাকআপ উইন্ডোর আগে ডিস্ক পরীক্ষা + প্রসেস তালিকা"
+    "description": "ব্যাকআপ উইন্ডোর আগে ডিস্ক + তালিকা প্রক্রিয়া চেক করুন"
   },
   "db-stack-status": {
-    "name": "ডেটাবেস স্ট্যাক স্ট্যাটাস",
+    "name": "ডাটাবেস স্ট্যাকের অবস্থা",
     "description": "mysql/mariadb/redis/postgres ইউনিট"
   },
   "ssl-nginx-check": {
-    "name": "SSL + Nginx পরীক্ষা",
-    "description": "সার্ট অপসের আগে nginx স্ট্যাটাস"
+    "name": "SSL + Nginx চেক",
+    "description": "শংসাপত্র অপারেশনের আগে nginx স্থিতি"
   }
 }

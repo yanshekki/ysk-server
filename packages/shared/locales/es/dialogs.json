@@ -2,7 +2,7 @@
   "confirmDefault": "Confirmar",
   "cancelDefault": "Cancelar",
   "severity": {
-    "consequencesTitle": "Esto hará:",
-    "typeToConfirm": "Escriba \"{{text}}\" para confirmar"
+    "consequencesTitle": "Esto:",
+    "typeToConfirm": "Escribe \"{{text}}\" para confirmar"
   }
 }

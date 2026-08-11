@@ -1,13 +1,13 @@
 {
   "titleDefault": "El software requerido no está instalado",
-  "missing": "Falta: {{names}}",
+  "missing": "Desaparecido: {{names}}",
   "nameSep": ", ",
   "installOneClick": "Instalar ahora",
   "installing": "Instalando…",
-  "reprobe": "Volver a comprobar",
-  "close": "Cerrar",
-  "resultTitle": "Resultado de la instalación",
-  "probeFailed": "Error en el sondeo",
+  "reprobe": "Vuelva a comprobar",
+  "close": "Cerca",
+  "resultTitle": "Resultado de instalación",
+  "probeFailed": "Sonda fallida",
   "installIncomplete": "Instalación incompleta",
   "installedOne": "Instalado {{name}}",
   "allInstalled": "Software requerido instalado"

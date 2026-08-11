@@ -1,38 +1,38 @@
 {
   "blocked": {
-    "needExecute": "ہوسٹ ایکزیکیوٹ بند ہے؛ یہ عمل پینل سے مکمل نہیں ہو سکتا",
-    "needExecuteShort": "ہوسٹ ایکزیکیوٹ فعال نہیں ہے",
-    "needExecuteBlocked": "مسدود: ہوسٹ ایکزیکیوٹ بند ہے",
-    "needRoot": "روٹ مراعات درکار ہیں",
-    "needExecuteRoot": "YSK_EXECUTE=1 اور root درکار ہیں",
-    "needExecuteYsk": "YSK_EXECUTE=1 درکار ہے",
-    "writeOutsideDataDir": "لکھنا مسدود: ہوسٹ ایکزیکیوٹ بند ہے اور پاتھ پینل ڈیٹا ڈائریکٹری سے باہر ہے",
-    "nginxReload": "Nginx دوبارہ لوڈ نہیں کر سکتے: ہوسٹ ایکزیکیوٹ درکار",
-    "signal": "سگنل نہیں بھیج سکتے: ہوسٹ ایکزیکیوٹ درکار (YSK_EXECUTE)",
-    "signalNote": "اصلی kill کے لیے YSK_EXECUTE=1 درکار ہے",
-    "renice": "renice نہیں کر سکتے: ہوسٹ ایکزیکیوٹ درکار (YSK_EXECUTE)",
-    "install": "ہوسٹ ایکزیکیوٹ بند ہے؛ انسٹال پینل سے مکمل نہیں ہو سکتا",
-    "update": "ہوسٹ ایکزیکیوٹ بند ہے؛ اپ ڈیٹ پینل سے مکمل نہیں ہو سکتا",
-    "panel": "یہ انتظامی پینل سے مکمل نہیں کر سکتے"
+    "needExecute": "میزبان عمل بند ہے؛ یہ عمل پینل سے ختم نہیں ہو سکتا",
+    "needExecuteShort": "میزبان پر عمل درآمد فعال نہیں ہے۔",
+    "needExecuteBlocked": "مسدود: میزبان عمل بند ہے۔",
+    "needRoot": "روٹ مراعات درکار ہیں۔",
+    "needExecuteRoot": "YSK_EXECUTE=1 اور روٹ کی ضرورت ہے۔",
+    "needExecuteYsk": "YSK_EXECUTE=1 درکار ہے۔",
+    "writeOutsideDataDir": "Write blocked: host execute بند ہے اور پاتھ پینل ڈیٹا ڈائرکٹری سے باہر ہے۔",
+    "nginxReload": "Nginx کو دوبارہ لوڈ نہیں کیا جا سکتا: میزبان عمل درکار ہے۔",
+    "signal": "سگنل نہیں بھیج سکتے: میزبان عمل درکار ہے (YSK_EXECUTE)",
+    "signalNote": "YSK_EXECUTE=1 حقیقی قتل کے لیے درکار ہے۔",
+    "renice": "رینس نہیں کیا جا سکتا: میزبان عمل درکار ہے (YSK_EXECUTE)",
+    "install": "میزبان عمل بند ہے؛ انسٹال پینل سے ختم نہیں ہو سکتا",
+    "update": "میزبان عمل بند ہے؛ اپ ڈیٹ پینل سے ختم نہیں ہو سکتا",
+    "panel": "انتظامی پینل سے اسے مکمل نہیں کیا جا سکتا"
   },
   "honesty": {
-    "blockedNotOk": "Honesty fix: blocked کو ok=true نہیں ہو سکتا",
-    "blockedNotApplied": "Honesty fix: blocked کو apply_status=applied نہیں ہو سکتا",
-    "okFalseNotApplied": "Honesty fix: ok=false کو apply_status=applied نہیں ہو سکتا"
+    "blockedNotOk": "دیانتداری سے طے کریں: مسدود ٹھیک = سچ نہیں ہوسکتا",
+    "blockedNotApplied": "دیانتداری درست کریں: مسدود نہیں کیا جا سکتا apply_status=applied",
+    "okFalseNotApplied": "دیانتداری درست کریں: ok=false apply_status=applied نہیں کیا جا سکتا"
   },
   "status": {
     "applied": "حیثیت: لاگو",
     "failed": "حیثیت: ناکام",
-    "written": "حیثیت: لکھا گیا",
+    "written": "حیثیت: لکھا ہوا",
     "blocked": "حیثیت: مسدود"
   },
   "notes": {
-    "writtenSettings": "ترتیبات محفوظ ہو گئیں",
+    "writtenSettings": "سیٹنگز لکھی ہیں۔",
     "completed": "مکمل",
-    "partialSuccess": "عمل صرف جزوی طور پر کامیاب ہوا",
-    "notInstalled": "انسٹال نہیں",
-    "running": "چل رہا ہے",
-    "stopped": "بند",
+    "partialSuccess": "آپریشن صرف جزوی طور پر کامیاب رہا۔",
+    "notInstalled": "انسٹال نہیں ہے۔",
+    "running": "چل رہا ہے۔",
+    "stopped": "رک گیا۔",
     "unknown": "نامعلوم"
   }
 }

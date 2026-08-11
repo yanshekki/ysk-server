@@ -1,38 +1,38 @@
 {
   "blocked": {
-    "needExecute": "Host execute बंद है; यह क्रिया पैनल से पूर्ण नहीं हो सकती",
-    "needExecuteShort": "Host execute सक्षम नहीं है",
-    "needExecuteBlocked": "अवरुद्ध: host execute बंद है",
-    "needRoot": "Root विशेषाधिकार आवश्यक",
-    "needExecuteRoot": "YSK_EXECUTE=1 और root आवश्यक",
-    "needExecuteYsk": "YSK_EXECUTE=1 आवश्यक",
-    "writeOutsideDataDir": "लेखन अवरुद्ध: host execute बंद है और पथ पैनल data directory के बाहर है",
-    "nginxReload": "Nginx रीलोड नहीं हो सकता: host execute आवश्यक",
-    "signal": "सिग्नल नहीं भेजा जा सकता: host execute आवश्यक (YSK_EXECUTE)",
-    "signalNote": "वास्तविक kill के लिए YSK_EXECUTE=1 आवश्यक है",
-    "renice": "renice नहीं हो सकता: host execute आवश्यक (YSK_EXECUTE)",
-    "install": "Host execute बंद है; स्थापना पैनल से पूर्ण नहीं हो सकती",
-    "update": "Host execute बंद है; अपडेट पैनल से पूर्ण नहीं हो सकता",
-    "panel": "प्रबंधन पैनल से यह पूर्ण नहीं किया जा सकता"
+    "needExecute": "होस्ट निष्पादन बंद है; यह क्रिया पैनल से समाप्त नहीं हो सकती",
+    "needExecuteShort": "होस्ट निष्पादन सक्षम नहीं है",
+    "needExecuteBlocked": "अवरुद्ध: होस्ट निष्पादन बंद है",
+    "needRoot": "रूट विशेषाधिकार आवश्यक",
+    "needExecuteRoot": "YSK_EXECUTE=1 और रूट की आवश्यकता है",
+    "needExecuteYsk": "YSK_EXECUTE=1 की आवश्यकता है",
+    "writeOutsideDataDir": "लिखें अवरुद्ध: होस्ट निष्पादन बंद है और पथ पैनल डेटा निर्देशिका के बाहर है",
+    "nginxReload": "Nginx को पुनः लोड नहीं किया जा सकता: होस्ट निष्पादन आवश्यक है",
+    "signal": "सिग्नल नहीं भेज सकता: होस्ट निष्पादन आवश्यक है (YSK_EXECUTE)",
+    "signalNote": "वास्तविक हत्या के लिए YSK_EXECUTE=1 आवश्यक है",
+    "renice": "त्याग नहीं किया जा सकता: होस्ट निष्पादन आवश्यक है (YSK_EXECUTE)",
+    "install": "होस्ट निष्पादन बंद है; पैनल से इंस्टॉल समाप्त नहीं हो सकता",
+    "update": "होस्ट निष्पादन बंद है; अद्यतन पैनल से समाप्त नहीं हो सकता",
+    "panel": "इसे प्रबंधन पैनल से पूरा नहीं किया जा सकता"
   },
   "honesty": {
-    "blockedNotOk": "Honesty fix: blocked को ok=true नहीं माना जा सकता",
-    "blockedNotApplied": "Honesty fix: blocked को apply_status=applied नहीं माना जा सकता",
-    "okFalseNotApplied": "Honesty fix: ok=false को apply_status=applied नहीं माना जा सकता"
+    "blockedNotOk": "ईमानदारी से समाधान: अवरोधित करना ठीक=सत्य नहीं हो सकता",
+    "blockedNotApplied": "ईमानदारी से समाधान: अवरुद्ध को apply_status=लागू नहीं किया जा सकता",
+    "okFalseNotApplied": "ईमानदारी समाधान: ठीक=झूठा लागू_स्टेटस=लागू नहीं किया जा सकता"
   },
   "status": {
     "applied": "स्थिति: लागू",
     "failed": "स्थिति: विफल",
-    "written": "स्थिति: लिखा गया",
+    "written": "स्थिति: लिखित",
     "blocked": "स्थिति: अवरुद्ध"
   },
   "notes": {
     "writtenSettings": "सेटिंग्स लिखी गईं",
-    "completed": "पूर्ण",
-    "partialSuccess": "ऑपरेशन केवल आंशिक रूप से सफल हुआ",
-    "notInstalled": "इंस्टॉल नहीं",
-    "running": "चल रहा है",
-    "stopped": "रोका गया",
+    "completed": "पुरा होना।",
+    "partialSuccess": "ऑपरेशन आंशिक रूप से ही सफल हुआ",
+    "notInstalled": "स्थापित नहीं हे",
+    "running": "दौड़ना",
+    "stopped": "रुक गया",
     "unknown": "अज्ञात"
   }
 }
