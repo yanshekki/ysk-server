@@ -1577,7 +1577,16 @@ export async function switchRuntimeDefault(input: {
   const rootOn = input.host.isRoot();
   const can = execOn && rootOn;
 
-  const switchable: RuntimeKind[] = ['go', 'rust', 'node', 'bun', 'php', 'python'];
+  const switchable: RuntimeKind[] = [
+    'go',
+    'rust',
+    'node',
+    'bun',
+    'php',
+    'python',
+    'java',
+    'kotlin',
+  ];
   if (!switchable.includes(input.kind)) {
     return {
       ok: false,
@@ -1718,6 +1727,54 @@ export async function switchRuntimeDefault(input: {
       '',
     ].join('\n');
     notes.push(`Switch host Python CLI → ${plan.version}`);
+  } else if (input.kind === 'java') {
+    const plan = selectJavaRuntime(input.version);
+    script = [
+      'set -euo pipefail',
+      `VER=${JSON.stringify(plan.version)}`,
+      'BIN=""',
+      'for c in \\',
+      '  "/usr/lib/jvm/java-${VER}-openjdk-amd64/bin/java" \\',
+      '  "/usr/lib/jvm/java-${VER}-openjdk-arm64/bin/java" \\',
+      '  "/usr/lib/jvm/java-${VER}-openjdk/bin/java" \\',
+      '  "/usr/local/ysk/java/${VER}/bin/java"; do',
+      '  if [ -x "$c" ]; then BIN="$c"; break; fi',
+      'done',
+      'if [ -z "$BIN" ]; then echo "Java $VER not found under JVM paths — install first" >&2; exit 2; fi',
+      'HOME_JVM=$(dirname "$(dirname "$BIN")")',
+      'mkdir -p /usr/local/bin',
+      'ln -sfn "$BIN" /usr/local/bin/java',
+      'if [ -x "$HOME_JVM/bin/javac" ]; then ln -sfn "$HOME_JVM/bin/javac" /usr/local/bin/javac; fi',
+      'if command -v update-java-alternatives >/dev/null 2>&1; then',
+      '  update-java-alternatives -s "java-1.${VER}.0-openjdk-amd64" 2>/dev/null \\',
+      '    || update-java-alternatives -s "java-${VER}-openjdk-amd64" 2>/dev/null \\',
+      '    || true',
+      'fi',
+      'echo "YSK_JAVA_ACTIVE=$VER"',
+      '"$BIN" -version 2>&1 | head -1',
+      'readlink -f /usr/local/bin/java || true',
+      '',
+    ].join('\n');
+    notes.push(`Switch host Java CLI → ${plan.version}`);
+  } else if (input.kind === 'kotlin') {
+    const plan = selectKotlinRuntime(input.version);
+    script = [
+      'set -euo pipefail',
+      `VER=${JSON.stringify(plan.version)}`,
+      'BIN=""',
+      'if [ -x "/usr/local/ysk/kotlin/bin/kotlinc" ]; then BIN=/usr/local/ysk/kotlin/bin/kotlinc; fi',
+      'if [ -z "$BIN" ] && [ -x "/usr/local/ysk/kotlin/$VER/bin/kotlinc" ]; then BIN="/usr/local/ysk/kotlin/$VER/bin/kotlinc"; fi',
+      'if [ -z "$BIN" ]; then echo "Kotlin $VER not found under /usr/local/ysk/kotlin — install first" >&2; exit 2; fi',
+      'KHOME=$(dirname "$(dirname "$BIN")")',
+      'mkdir -p /usr/local/bin',
+      'ln -sfn "$BIN" /usr/local/bin/kotlinc',
+      'if [ -x "$KHOME/bin/kotlin" ]; then ln -sfn "$KHOME/bin/kotlin" /usr/local/bin/kotlin; fi',
+      'echo "YSK_KOTLIN_ACTIVE=$VER"',
+      '"$BIN" -version 2>&1 | head -1 || true',
+      'readlink -f /usr/local/bin/kotlinc || true',
+      '',
+    ].join('\n');
+    notes.push(`Switch host Kotlin CLI → ${plan.version}`);
   } else if (input.kind === 'bun') {
     const plan = selectBunRuntime(input.version);
     script = [

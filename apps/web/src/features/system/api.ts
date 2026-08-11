@@ -512,7 +512,15 @@ export const systemApi = {
     ),
   /** Switch active host default (go/rust/node/bun; no reinstall) */
   runtimeSwitch: (body: {
-    kind: 'go' | 'rust' | 'node' | 'bun' | 'php' | 'python' | 'java' | 'kotlin';
+    kind:
+      | 'go'
+      | 'rust'
+      | 'node'
+      | 'bun'
+      | 'php'
+      | 'python'
+      | 'java'
+      | 'kotlin';
     version: string;
   }) =>
     api.requestRawAllowStatus('/api/v1/hosting/runtimes/switch', {
@@ -522,7 +530,15 @@ export const systemApi = {
     }),
   /** Remove one managed runtime version (ysk path / rustup toolchain) */
   runtimeUninstall: (body: {
-    kind: 'go' | 'rust' | 'node' | 'bun' | 'php' | 'python' | 'java' | 'kotlin';
+    kind:
+      | 'go'
+      | 'rust'
+      | 'node'
+      | 'bun'
+      | 'php'
+      | 'python'
+      | 'java'
+      | 'kotlin';
     version: string;
   }) =>
     api.requestRawAllowStatus('/api/v1/hosting/runtimes/uninstall', {

@@ -383,7 +383,15 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
     (targetVersion: string) =>
       void run(async () => {
         const r = await systemApi.runtimeSwitch({
-          kind: kind as 'go' | 'rust' | 'node' | 'bun' | 'php' | 'python',
+          kind: kind as
+            | 'go'
+            | 'rust'
+            | 'node'
+            | 'bun'
+            | 'php'
+            | 'python'
+            | 'java'
+            | 'kotlin',
           version: targetVersion,
         });
         await refresh();

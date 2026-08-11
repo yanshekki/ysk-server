@@ -26,13 +26,19 @@ function mockHost(
 }
 
 describe('switchRuntimeDefault', () => {
-  it('refuses kinds without host-default switch', async () => {
+  it('switches java when jvm binary exists (script path)', async () => {
     const r = await switchRuntimeDefault({
-      host: mockHost(() => ({})),
+      host: mockHost((argv) => {
+        if (argv[0] === 'bash') {
+          return { exitCode: 0, stdout: 'YSK_JAVA_ACTIVE=21\nopenjdk version 21\n' };
+        }
+        return {};
+      }),
       kind: 'java',
       version: '21',
     });
-    expect(r.ok).toBe(false);
+    expect(r.ok).toBe(true);
+    expect(r.notes.some((n) => /21|YSK_JAVA/i.test(n))).toBe(true);
   });
 
   it('switches node symlink when installed under ysk path', async () => {

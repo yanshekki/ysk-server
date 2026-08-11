@@ -34,7 +34,9 @@ export function supportsHostDefault(kind: string): boolean {
     kind === 'node' ||
     kind === 'bun' ||
     kind === 'php' ||
-    kind === 'python'
+    kind === 'python' ||
+    kind === 'java' ||
+    kind === 'kotlin'
   );
 }
 
