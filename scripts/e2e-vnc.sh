@@ -13,8 +13,9 @@ test -f docs/features/vnc-ZH.md || fail "missing vnc-ZH.md"
 grep -q 'TigerVNC' docs/features/vnc.md || fail "EN missing TigerVNC"
 grep -q 'noVNC' docs/features/vnc.md || fail "EN missing noVNC"
 grep -q 'yskvnc_' docs/features/vnc.md || fail "EN missing linux user prefix"
+grep -q 'Open in browser' docs/features/vnc.md || fail "EN missing Open in browser"
 grep -q 'Linux 用戶' docs/features/vnc-ZH.md || fail "ZH missing Linux 用戶"
-grep -q '經 server' docs/features/vnc-ZH.md || fail "ZH missing 經 server"
+grep -q '在瀏覽器開啟' docs/features/vnc-ZH.md || fail "ZH missing 在瀏覽器開啟"
 grep -q '客戶端' docs/features/vnc-ZH.md || fail "ZH missing 客戶端"
 
 log "Source surface…"
@@ -40,8 +41,32 @@ grep -q 'prepareBrowserSession' packages/core/src/hosting/vnc/service.ts || fail
 grep -q 'createVncShareLink' packages/core/src/hosting/vnc/share-links.ts || fail "createVncShareLink"
 grep -q 'clipboardPasteFrom' apps/web/src/features/vnc/VncViewer.tsx || fail "clipboard UI"
 grep -q 'openInBrowser' apps/web/src/pages/features/VncPage.tsx || fail "openInBrowser CTA"
+grep -q 'toggleRecording\|MediaRecorder' apps/web/src/features/vnc/VncViewer.tsx || fail "record UI"
+grep -q 'takeScreenshot\|toDataURL' apps/web/src/features/vnc/VncViewer.tsx || fail "screenshot UI"
+grep -q 'createShare\|shareLink' apps/web/src/pages/features/VncPage.tsx apps/web/src/features/vnc/VncViewer.tsx || fail "share UI"
+grep -q 'vnc-session-tabs' apps/web/src/pages/features/VncPage.tsx || fail "multi-session tabs"
+grep -q 'Open in browser' docs/features/vnc.md || fail "docs EN open in browser"
+grep -q '在瀏覽器開啟' docs/features/vnc-ZH.md || fail "docs ZH open in browser"
+grep -q '/vnc-share' docs/features/vnc.md || fail "docs share path"
+test -f packages/core/src/hosting/vnc/browser-session.flow.test.ts || fail "flow test file"
 
 log "Unit tests…"
 pnpm --filter @ysk/core exec vitest run src/hosting/vnc
+
+log "Locale CTA smoke (not still English on major keys)…"
+node -e "
+const fs=require('fs');
+const en=JSON.parse(fs.readFileSync('packages/shared/locales/en/vnc.json','utf8'));
+for (const loc of fs.readdirSync('packages/shared/locales')) {
+  const p='packages/shared/locales/'+loc+'/vnc.json';
+  if (!fs.existsSync(p) || loc==='en') continue;
+  const j=JSON.parse(fs.readFileSync(p,'utf8'));
+  if (j.openInBrowser === en.openInBrowser) {
+    console.error('FAIL still EN openInBrowser', loc);
+    process.exit(1);
+  }
+}
+console.log('locale CTAs localized');
+"
 
 log "PASS e2e-vnc gate."
