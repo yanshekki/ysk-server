@@ -23,20 +23,15 @@ import {
   FormLayout,
   MultiCheckSelect,
   OpsResultPanel,
-  InstallStreamPanel,
   PresetChips,
   SegRadio,
-  SoftwareInstallBanner,
   PageTabs } from '../../shared/components/ui';
 import type { OpsResultLike, MultiCheckOption, InstallStreamLine } from '../../shared/components/ui';
 import { getServerContext, setServerContext } from '../../shared/stores/server-context';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
-import {
-  resolveRuntimeInstallState,
-  versionChipLabel } from '../../features/runtimes/install-state';
-import { RuntimeInstallActions } from '../../features/runtimes/RuntimeInstallActions';
-import { supportsHostDefault } from '../../features/runtimes/install-state';
+import { resolveRuntimeInstallState } from '../../features/runtimes/install-state';
+import { RuntimeSoftwarePanel } from '../../features/runtimes/RuntimeSoftwarePanel';
 import { api } from '../../shared/services/api';
 import { toast } from '../../shared/stores/toast-store';
 import { usePageTab } from '../../shared/hooks/usePageTab';
@@ -222,6 +217,9 @@ export function PhpRuntimePage() {
   const [extUninstallBusy, setExtUninstallBusy] = useState(false);
   const [confirmExtUninstall, setConfirmExtUninstall] = useState<PhpExtRow | null>(null);
   const [confirmPhpUninstall, setConfirmPhpUninstall] = useState(false);
+  const [uninstallTarget, setUninstallTarget] = useState<string | null>(null);
+  const [hostDefaultConfirm, setHostDefaultConfirm] = useState<string | null>(null);
+  const [panelDefault, setPanelDefault] = useState<string | null>(null);
   const [extOps, setExtOps] = useState<OpsResultLike | null>(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
   const [installLog, setInstallLog] = useState<InstallStreamLine[]>([]);
@@ -285,7 +283,10 @@ export function PhpRuntimePage() {
 
   const refresh = useCallback(async () => {
     try {
-      setProbe((await systemApi.runtimes()) as Record<string, unknown>);
+      const r = (await systemApi.runtimes()) as Record<string, unknown>;
+      setProbe(r);
+      const pd = r.panelDefaults as Record<string, string> | undefined;
+      if (pd?.php) setPanelDefault(String(pd.php));
     } catch {
       /* optional */
     }
@@ -529,447 +530,382 @@ export function PhpRuntimePage() {
         ) : null}
 
         {tab === 'software' ? (
-          <div className="tab-panel">
-            {phpInstallState.selectedInstalled ? (
-              <Alert variant="info">
-                <strong>
-                  {t('runtime.versionReadyTitle', {
-                    name: 'PHP',
-                    version,
-                  })}
-                </strong>{' '}
-                {t('runtime.versionReadyHint')}
-              </Alert>
-            ) : null}
-            <Card>
-              <CardSection title={t('runtime.installPhp')} description={t('runtime.phpInstallHint')}>
-                <FormLayout columns={2}>
-                  <Field label={t('runtime.phpVersion')} htmlFor="php-ver" flush required>
-                    {phpVersionOptions.length <= 8 ? (
-                      <SegRadio
-                        name="php-ver"
-                        aria-label={t('runtime.phpVersion')}
-                        value={version}
-                        onChange={setVersion}
-                        options={phpVersionOptions.map((v) => ({
-                          value: v,
-                          label: versionChipLabel(v, phpInstallState.installedVersions) }))}
-                      />
-                    ) : (
-                      <select
-                        id="php-ver"
-                        value={version}
-                        onChange={bindInput(setVersion)}
-                      >
-                        {phpVersionOptions.map((v) => (
-                          <option key={v} value={v}>
-                            {versionChipLabel(v, phpInstallState.installedVersions)}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                  </Field>
-                </FormLayout>
-                {requiredExtLabels ? (
-                  <p className="muted u-text-sm u-mb-2">
-                    <strong>{t('runtime.phpExtRequired')}：</strong>
-                    {requiredExtLabels}
-                  </p>
-                ) : null}
-                {installedOptionalExt.length > 0 ? (
-                  <div className="runtime-plugins__installed u-mb-3">
-                    <Field
-                      label={t('runtime.phpExtAlreadyOnHost')}
-                      htmlFor="php-ext-installed"
-                      flush
-                      hint={t('runtime.phpExtUninstallHint', { })}
-                    >
-                      <ul className="runtime-plugins__list" id="php-ext-installed">
-                        {installedOptionalExt.map((e) => (
-                          <li key={e.id} className="runtime-plugins__row">
-                            <div className="runtime-plugins__meta">
-                              <span className="runtime-plugins__name">{e.label}</span>
-                              <Badge tone="ok">{t('runtime.pluginStatusInstalled')}</Badge>
-                              <code className="runtime-plugins__hint muted u-text-sm">
-                                {e.package}
-                              </code>
-                            </div>
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              disabled={busy || extUninstallBusy}
-                              loading={
-                                extUninstallBusy && confirmExtUninstall?.id === e.id
-                              }
-                              onClick={() => setConfirmExtUninstall(e)}
-                            >
-                              {t('runtime.pluginUninstall')}
-                            </Button>
-                          </li>
-                        ))}
-                      </ul>
-                    </Field>
-                  </div>
-                ) : null}
-                <Field
-                  label={t('runtime.phpExtSelect')}
-                  htmlFor="php-ext"
-                  flush
-                  hint={t('runtime.phpExtSelectHint', { version })}
-                >
-                  <MultiCheckSelect
-                    id="php-ext"
-                    options={extOptions}
-                    value={extSelected.filter((id) => selectableExtIds.includes(id))}
-                    onChange={onExtChange}
-                    searchPlaceholder={t('runtime.phpExtSearch')}
-                    emptyText={t('runtime.phpExtEmpty')}
-                    maxVisible={200}
-                    showSelectAll
-                    listSize="lg"
-                    listMaxHeight="28rem"
-                  />
-                </Field>
-                <FormActions>
-                  {/*
-                    Single primary CTA:
-                    - PHP already on host → install selected extensions only
-                    - PHP missing → first-time install is RuntimeInstallActions below (core+ext)
-                    Never two primary buttons that both call runtimeInstall.
-                  */}
-                  {phpInstallState.selectedInstalled ? (
-                    <Button
-                      variant="primary"
-                      size="md"
-                      disabled={
-                        busy ||
-                        extUninstallBusy ||
-                        extSelected.filter((id) => selectableExtIds.includes(id)).length === 0
-                      }
-                      loading={busy}
-                      onClick={() => {
-                        const optional = extSelected.filter((id) =>
-                          selectableExtIds.includes(id),
-                        );
-                        void run(async () => {
-                          const required = extCatalog
-                            .filter((e) => e.required)
-                            .map((e) => e.id);
-                          setInstallLog([]);
-                          const r = await systemApi.runtimeInstallStream(
-                            {
-                              kind: 'php',
-                              version,
-                              install: true,
-                              extensions: [...new Set([...required, ...optional])] },
-                            {
-                              onLog: (line) =>
-                                setInstallLog((prev) => [...prev.slice(-1999), line]) },
-                          );
-                          setExtCatalog((prev) =>
-                            prev.map((e) =>
-                              optional.includes(e.id) ? { ...e, installed: true } : e,
-                            ),
-                          );
-                          await refresh();
-                          await loadExtensions(version, {
-                            bust: true,
-                            optimisticInstalled: optional });
-                          return r as OpsResultLike;
-                        }, t('runtime.phpExtInstallSelected', {
-                          n: optional.length }));
-                      }}
-                    >
-                      {t('runtime.phpExtInstallSelected', {
-                        n: extSelected.filter((id) => selectableExtIds.includes(id)).length })}
-                    </Button>
+          <>
+            <RuntimeSoftwarePanel
+              kind="php"
+              title="PHP"
+              bannerTitle={t('runtime.phpMissing')}
+              version={version}
+              onVersionChange={setVersion}
+              supported={
+                phpVersionOptions.length ? phpVersionOptions : version ? [version] : []
+              }
+              available={phpInstallState.installedVersions}
+              hostRaw={hostPhp}
+              hostDisplay={hostPhp || '—'}
+              items={
+                (
+                  (probe?.probe as Record<string, unknown> | undefined)?.php as
+                    | Array<Record<string, unknown>>
+                    | undefined
+                ) ?? []
+              }
+              multiVersion={false}
+              panelDefault={panelDefault}
+              busy={busy}
+              showPlugins={false}
+              installLog={installLog}
+              installLabel={t('runtime.installPhpWithExt', {
+                version,
+                n: extSelected.filter((id) => selectableExtIds.includes(id)).length,
+              })}
+              onInstall={(v) => {
+                const ver = v || version;
+                if (v) setVersion(v);
+                void run(async () => {
+                  const optional = extSelected.filter((id) =>
+                    selectableExtIds.includes(id),
+                  );
+                  const required = extCatalog.filter((e) => e.required).map((e) => e.id);
+                  setInstallLog([]);
+                  const r = await systemApi.runtimeInstallStream(
+                    {
+                      kind: 'php',
+                      version: ver,
+                      install: true,
+                      extensions: [
+                        ...new Set([
+                          ...required,
+                          ...(optional.length ? optional : extDefaults),
+                        ]),
+                      ],
+                    },
+                    {
+                      onLog: (line) =>
+                        setInstallLog((prev) => [...prev.slice(-1999), line]),
+                    },
+                  );
+                  await refresh();
+                  await loadExtensions(ver, { bust: true });
+                  return r as OpsResultLike;
+                }, t('runtime.installedPhp', { version: ver }));
+              }}
+              onSetHostDefault={(v) => {
+                setVersion(v);
+                setHostDefaultConfirm(v);
+              }}
+              onSetPanelDefault={(v) =>
+                void run(async () => {
+                  await systemApi.setRuntimePanelDefault({ kind: 'php', version: v });
+                  setPanelDefault(v);
+                  return {
+                    ok: true,
+                    notes: [t('runtime.panelDefaultSaved', { version: v })],
+                  } as OpsResultLike;
+                }, t('runtime.panelDefaultSaved', { version: v }))
+              }
+              onUninstallVersion={(v) => {
+                setUninstallTarget(v);
+                setConfirmPhpUninstall(true);
+              }}
+              onReprobe={() => {
+                setError(null);
+                setMsg(null);
+                void run(async () => {
+                  await refresh();
+                  return { ok: true, notes: [t('common.probed')] } as OpsResultLike;
+                }, t('common.probed'));
+              }}
+              detailExtra={
+                <div className="u-mt-3">
+                  {requiredExtLabels ? (
+                    <p className="muted u-text-sm u-mb-2">
+                      <strong>{t('runtime.phpExtRequired')}：</strong>
+                      {requiredExtLabels}
+                    </p>
                   ) : null}
-                  <Button
-                    variant="secondary"
-                    size="md"
-                    disabled={busy || !extDefaults.length}
-                    onClick={() => setExtSelected([...extDefaults])}
+                  {installedOptionalExt.length > 0 ? (
+                    <div className="runtime-plugins__installed u-mb-3">
+                      <Field
+                        label={t('runtime.phpExtAlreadyOnHost')}
+                        htmlFor="php-ext-installed"
+                        flush
+                        hint={t('runtime.phpExtUninstallHint')}
+                      >
+                        <ul className="runtime-plugins__list" id="php-ext-installed">
+                          {installedOptionalExt.map((e) => (
+                            <li key={e.id} className="runtime-plugins__row">
+                              <div className="runtime-plugins__meta">
+                                <span className="runtime-plugins__name">{e.label}</span>
+                                <Badge tone="ok">
+                                  {t('runtime.pluginStatusInstalled')}
+                                </Badge>
+                                <code className="runtime-plugins__hint muted u-text-sm">
+                                  {e.package}
+                                </code>
+                              </div>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                disabled={busy || extUninstallBusy}
+                                loading={
+                                  extUninstallBusy && confirmExtUninstall?.id === e.id
+                                }
+                                onClick={() => setConfirmExtUninstall(e)}
+                              >
+                                {t('runtime.pluginUninstall')}
+                              </Button>
+                            </li>
+                          ))}
+                        </ul>
+                      </Field>
+                    </div>
+                  ) : null}
+                  <Field
+                    label={t('runtime.phpExtSelect')}
+                    htmlFor="php-ext"
+                    flush
+                    hint={t('runtime.phpExtSelectHint', { version })}
                   >
-                    {t('runtime.phpExtRecommended')}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="md"
-                    disabled={busy || !selectableExtIds.length}
-                    onClick={() => {
-                      const required = extCatalog.filter((e) => e.required).map((e) => e.id);
-                      setExtSelected([...new Set([...required, ...selectableExtIds])]);
-                    }}
-                  >
-                    {t('runtime.phpExtSelectAll')}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="md"
-                    disabled={busy}
-                    onClick={() =>
-                      setExtSelected(extCatalog.filter((e) => e.required).map((e) => e.id))
-                    }
-                  >
-                    {t('runtime.phpExtCoreOnly')}
-                  </Button>
-                </FormActions>
-                <FormHint>
-                  {phpInstallState.selectedInstalled
-                    ? t('runtime.phpExtInstallNoteInstalled', { })
-                    : t('runtime.phpExtInstallNoteFirst', {
-                        version })}
-                </FormHint>
-                {/* Runtime install only when pin not on host (or user picks a newer pin). */}
-                {!phpInstallState.selectedInstalled ? (
-                  <RuntimeInstallActions
-                    installState={phpInstallState}
-                    version={version}
-                    busy={busy}
-                    installLabel={t('runtime.installPhpWithExt', {
-                      version,
-                      n: extSelected.filter((id) => selectableExtIds.includes(id)).length })}
-                    onSelectNewer={setVersion}
-                    extraHints={<FormHint>{t('runtime.phpExtHint')}</FormHint>}
-                    onInstall={() =>
-                      void run(async () => {
-                        const optional = extSelected.filter((id) =>
-                          selectableExtIds.includes(id),
-                        );
+                    <MultiCheckSelect
+                      id="php-ext"
+                      options={extOptions}
+                      value={extSelected.filter((id) => selectableExtIds.includes(id))}
+                      onChange={onExtChange}
+                      searchPlaceholder={t('runtime.phpExtSearch')}
+                      emptyText={t('runtime.phpExtEmpty')}
+                      maxVisible={200}
+                      showSelectAll
+                      listSize="lg"
+                      listMaxHeight="28rem"
+                    />
+                  </Field>
+                  <FormActions>
+                    {phpInstallState.selectedInstalled ? (
+                      <Button
+                        variant="secondary"
+                        size="md"
+                        disabled={
+                          busy ||
+                          extUninstallBusy ||
+                          extSelected.filter((id) => selectableExtIds.includes(id))
+                            .length === 0
+                        }
+                        loading={busy}
+                        onClick={() => {
+                          const optional = extSelected.filter((id) =>
+                            selectableExtIds.includes(id),
+                          );
+                          void run(async () => {
+                            const required = extCatalog
+                              .filter((e) => e.required)
+                              .map((e) => e.id);
+                            setInstallLog([]);
+                            const r = await systemApi.runtimeInstallStream(
+                              {
+                                kind: 'php',
+                                version,
+                                install: true,
+                                extensions: [...new Set([...required, ...optional])],
+                              },
+                              {
+                                onLog: (line) =>
+                                  setInstallLog((prev) => [...prev.slice(-1999), line]),
+                              },
+                            );
+                            await refresh();
+                            await loadExtensions(version, {
+                              bust: true,
+                              optimisticInstalled: optional,
+                            });
+                            return r as OpsResultLike;
+                          }, t('runtime.phpExtInstallSelected', { n: optional.length }));
+                        }}
+                      >
+                        {t('runtime.phpExtInstallSelected', {
+                          n: extSelected.filter((id) => selectableExtIds.includes(id))
+                            .length,
+                        })}
+                      </Button>
+                    ) : null}
+                    <Button
+                      variant="ghost"
+                      size="md"
+                      disabled={busy || !extDefaults.length}
+                      onClick={() => setExtSelected([...extDefaults])}
+                    >
+                      {t('runtime.phpExtRecommended')}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="md"
+                      disabled={busy || !selectableExtIds.length}
+                      onClick={() => {
                         const required = extCatalog
                           .filter((e) => e.required)
                           .map((e) => e.id);
-                        setInstallLog([]);
-                        const r = await systemApi.runtimeInstallStream(
-                          {
-                            kind: 'php',
-                            version,
-                            install: true,
-                            extensions: [
-                              ...new Set([
-                                ...required,
-                                ...(optional.length ? optional : extDefaults),
-                              ]),
-                            ] },
-                          {
-                            onLog: (line) =>
-                              setInstallLog((prev) => [...prev.slice(-1999), line]) },
-                        );
-                        await refresh();
-                        await loadExtensions(version, { bust: true });
-                        return r as OpsResultLike;
-                      }, t('runtime.installedPhp', { version }))
-                    }
-                  />
-                ) : phpInstallState.newerAvailable.length > 0 ? (
-                  <FormHint>
-                    {t('runtime.newerVersionAvailable', {
-                      current: phpInstallState.newestInstalled ?? version,
-                      newer: phpInstallState.newerAvailable.join(', ') })}
-                  </FormHint>
-                ) : null}
-                <FormActions>
-                  <Button
-                    variant="secondary"
-                    size="md"
-                    loading={busy}
-                    onClick={() =>
-                      void run(async () => {
-                        await systemApi.setRuntimePanelDefault({
-                          kind: 'php',
-                          version,
-                        });
-                        return {
-                          ok: true,
-                          notes: [t('runtime.panelDefaultSaved', { version })],
-                        } as OpsResultLike;
-                      }, t('runtime.panelDefaultSaved', { version }))
-                    }
-                  >
-                    {t('runtime.setPanelDefault')}
-                  </Button>
-                  {supportsHostDefault('php') && phpInstallState.selectedInstalled ? (
+                        setExtSelected([...new Set([...required, ...selectableExtIds])]);
+                      }}
+                    >
+                      {t('runtime.phpExtSelectAll')}
+                    </Button>
                     <Button
-                      variant="secondary"
+                      variant="ghost"
                       size="md"
-                      loading={busy}
-                      disabled={phpInstallState.selectedActive}
+                      disabled={busy}
                       onClick={() =>
-                        void run(async () => {
-                          const r = await systemApi.runtimeSwitch({
-                            kind: 'php',
-                            version,
-                          });
-                          await refresh();
-                          return r as OpsResultLike;
-                        }, t('runtime.switchDefaultBtn', { version }))
+                        setExtSelected(
+                          extCatalog.filter((e) => e.required).map((e) => e.id),
+                        )
                       }
                     >
-                      {phpInstallState.selectedActive
-                        ? t('runtime.alreadyHostDefault', { version })
-                        : t('runtime.setHostDefault')}
-                    </Button>
-                  ) : null}
-                </FormActions>
-                <FormHint>{t('runtime.panelDefaultExplain')}</FormHint>
-                {phpInstallState.selectedInstalled ? (
-                  <FormActions>
-                    <Button
-                      variant="danger"
-                      size="md"
-                      loading={busy}
-                      onClick={() => setConfirmPhpUninstall(true)}
-                    >
-                      {t('runtime.uninstallVersion', { version })}
+                      {t('runtime.phpExtCoreOnly')}
                     </Button>
                   </FormActions>
-                ) : null}
-                <ConfirmDialog
-                  open={confirmPhpUninstall}
-                  title={t('runtime.uninstallVersionTitle', { version })}
-                  description={t('runtime.uninstallVersionConfirm', {
+                  <FormHint>
+                    {phpInstallState.selectedInstalled
+                      ? t('runtime.phpExtInstallNoteInstalled')
+                      : t('runtime.phpExtInstallNoteFirst', { version })}
+                  </FormHint>
+                  {extOps ? (
+                    <div className="u-mt-3">
+                      <OpsResultPanel title={t('runtime.phpExtOpsTitle')} result={extOps} />
+                    </div>
+                  ) : null}
+                </div>
+              }
+            />
+            <ConfirmDialog
+              open={confirmPhpUninstall}
+              title={t('runtime.uninstallVersionTitle', {
+                version: uninstallTarget || version,
+              })}
+              description={t('runtime.uninstallVersionConfirm', {
+                version: uninstallTarget || version,
+                name: 'PHP',
+              })}
+              confirmLabel={t('runtime.uninstallVersion', {
+                version: uninstallTarget || version,
+              })}
+              cancelLabel={t('common.cancel')}
+              severity="destructive"
+              danger
+              busy={busy}
+              onClose={() => {
+                setConfirmPhpUninstall(false);
+                setUninstallTarget(null);
+              }}
+              onConfirm={() => {
+                const ver = uninstallTarget || version;
+                setConfirmPhpUninstall(false);
+                setUninstallTarget(null);
+                void run(async () => {
+                  const r = await systemApi.runtimeUninstall({
+                    kind: 'php',
+                    version: ver,
+                  });
+                  await refresh();
+                  await loadExtensions(ver, { bust: true }).catch(() => undefined);
+                  return r as OpsResultLike;
+                }, t('runtime.uninstallVersionDone', { version: ver }));
+              }}
+            />
+            <ConfirmDialog
+              open={Boolean(hostDefaultConfirm)}
+              title={t('runtime.setHostDefaultConfirmTitle', {
+                version: hostDefaultConfirm || version,
+              })}
+              description={t('runtime.setHostDefaultConfirm', {
+                version: hostDefaultConfirm || version,
+              })}
+              confirmLabel={t('runtime.setHostDefault')}
+              cancelLabel={t('common.cancel')}
+              busy={busy}
+              onClose={() => setHostDefaultConfirm(null)}
+              onConfirm={() => {
+                const ver = hostDefaultConfirm || version;
+                setHostDefaultConfirm(null);
+                void run(async () => {
+                  const r = await systemApi.runtimeSwitch({ kind: 'php', version: ver });
+                  await refresh();
+                  return r as OpsResultLike;
+                }, t('runtime.switchDefaultBtn', { version: ver }));
+              }}
+            />
+            <ConfirmDialog
+              open={Boolean(confirmExtUninstall)}
+              title={t('runtime.phpExtUninstallConfirmTitle')}
+              description={
+                confirmExtUninstall
+                  ? t('runtime.phpExtUninstallConfirm', {
+                      name: confirmExtUninstall.label,
+                      pkg: confirmExtUninstall.package,
+                    })
+                  : ''
+              }
+              confirmLabel={t('runtime.pluginUninstall')}
+              cancelLabel={t('common.cancel')}
+              danger
+              busy={extUninstallBusy}
+              onConfirm={() => {
+                if (!confirmExtUninstall) return;
+                const row = confirmExtUninstall;
+                setExtUninstallBusy(true);
+                void systemApi
+                  .phpExtensionsUninstall({
                     version,
-                    name: 'PHP',
-                  })}
-                  confirmLabel={t('runtime.uninstallVersion', { version })}
-                  cancelLabel={t('common.cancel')}
-                  severity="destructive"
-                  danger
-                  busy={busy}
-                  onClose={() => setConfirmPhpUninstall(false)}
-                  onConfirm={() => {
-                    setConfirmPhpUninstall(false);
-                    void run(async () => {
-                      const r = await systemApi.runtimeUninstall({
-                        kind: 'php',
-                        version,
-                      });
-                      await refresh();
-                      await loadExtensions(version, { bust: true }).catch(
-                        () => undefined,
+                    extensions: [row.id],
+                  })
+                  .then((r) => {
+                    const body = r as {
+                      ok?: boolean;
+                      notes?: string[];
+                      blocked?: boolean;
+                      blockMessage?: string;
+                    };
+                    setExtOps({
+                      ok: body.ok !== false && !body.blocked,
+                      notes: body.notes,
+                      blocked: body.blocked,
+                      blockMessage: body.blockMessage,
+                    });
+                    if (body.blocked) {
+                      toast.warn(
+                        body.blockMessage ??
+                          body.notes?.[0] ??
+                          t('runtime.pluginUninstallBlocked'),
                       );
-                      return r as OpsResultLike;
-                    }, t('runtime.uninstallVersionDone', { version }));
-                  }}
-                />
-                <InstallStreamPanel lines={installLog} busy={busy} />
-                {extOps ? (
-                  <div className="u-mt-3">
-                    <OpsResultPanel title={t('runtime.phpExtOpsTitle')} result={extOps} />
-                  </div>
-                ) : null}
-                <ConfirmDialog
-                  open={Boolean(confirmExtUninstall)}
-                  title={t('runtime.phpExtUninstallConfirmTitle')}
-                  description={
-                    confirmExtUninstall
-                      ? t('runtime.phpExtUninstallConfirm', {
-                          name: confirmExtUninstall.label,
-                          pkg: confirmExtUninstall.package })
-                      : ''
-                  }
-                  confirmLabel={t('runtime.pluginUninstall')}
-                  cancelLabel={t('common.cancel')}
-                  danger
-                  busy={extUninstallBusy}
-                  onConfirm={() => {
-                    if (!confirmExtUninstall) return;
-                    const row = confirmExtUninstall;
-                    setExtUninstallBusy(true);
-                    void systemApi
-                      .phpExtensionsUninstall({
-                        version,
-                        extensions: [row.id] })
-                      .then((r) => {
-                        const body = r as {
-                          ok?: boolean;
-                          notes?: string[];
-                          blocked?: boolean;
-                          blockMessage?: string;
-                        };
-                        setExtOps({
-                          ok: body.ok !== false && !body.blocked,
-                          notes: body.notes,
-                          blocked: body.blocked,
-                          blockMessage: body.blockMessage });
-                        if (body.blocked) {
-                          toast.warn(body.blockMessage ?? body.notes?.[0] ?? t('runtime.pluginUninstallBlocked'));
-                        } else if (body.ok === false) {
-                          toast.error(body.notes?.[0] ?? t('runtime.pluginUninstallFailed', { name: row.label }));
-                        } else {
-                          toast.ok(t('runtime.pluginUninstalled', { name: row.label }));
-                        }
-                        if (body.ok !== false && !body.blocked) {
-                          setExtCatalog((prev) =>
-                            prev.map((e) =>
-                              e.id === row.id ? { ...e, installed: false } : e,
-                            ),
-                          );
-                        }
-                        return loadExtensions(version, { bust: true });
-                      })
-                      .catch((e: Error) => {
-                        toast.error(e.message);
-                        setExtOps({ ok: false, notes: [e.message] });
-                      })
-                      .finally(() => {
-                        setExtUninstallBusy(false);
-                        setConfirmExtUninstall(null);
-                      });
-                  }}
-                  onClose={() => {
-                    if (!extUninstallBusy) setConfirmExtUninstall(null);
-                  }}
-                />
-              </CardSection>
-            </Card>
-
-            {probe ? (
-              <Card>
-                <CardSection title={t('runtime.probeResult')} description={t('runtime.readonly')}>
-                  <DescriptionList
-                    columns={2}
-                    items={Object.entries(probe)
-                      .filter(([, v]) => v == null || typeof v !== 'object')
-                      .slice(0, 16)
-                      .map(([k, v]) => ({ label: k, value: String(v) }))}
-                  />
-                </CardSection>
-              </Card>
-            ) : null}
-
-            <Card>
-              <CardSection title={t('security.ssh.nextStep')} description={t('runtime.suggestedFlow')}>
-                <ol className="list-plain list-spaced">
-                  <li>
-                    {t('runtime.phpIniSteps1')}
-                  </li>
-                  <li>
-                    {t('runtime.phpIniSteps2')}
-                  </li>
-                  <li>
-                    {t('runtime.phpIniSteps3')}
-                  </li>
-                  <li>{t('runtime.phpIniSteps4')}</li>
-                </ol>
-              </CardSection>
-            </Card>
-
-            <details className="u-mt-3 runtime-advanced-stack">
-              <summary className="muted u-text-sm">
-                {t('runtime.advancedFeatureUninstall')}
-              </summary>
-              <p className="muted u-text-sm u-mt-2 u-mb-3">
-                {t('runtime.advancedFeatureUninstallHint', { name: 'PHP' })}
-              </p>
-              <SoftwareInstallBanner
-                feature="php"
-                title={t('runtime.phpMissing')}
-                readyTitle={t('runtime.stackReadyTitle', { name: 'PHP' })}
-                onInstalled={() => void refresh()}
-              />
-            </details>
-          </div>
+                    } else if (body.ok === false) {
+                      toast.error(
+                        body.notes?.[0] ??
+                          t('runtime.pluginUninstallFailed', { name: row.label }),
+                      );
+                    } else {
+                      toast.ok(t('runtime.pluginUninstalled', { name: row.label }));
+                    }
+                    if (body.ok !== false && !body.blocked) {
+                      setExtCatalog((prev) =>
+                        prev.map((e) =>
+                          e.id === row.id ? { ...e, installed: false } : e,
+                        ),
+                      );
+                    }
+                    return loadExtensions(version, { bust: true });
+                  })
+                  .catch((e: Error) => {
+                    toast.error(e.message);
+                    setExtOps({ ok: false, notes: [e.message] });
+                  })
+                  .finally(() => {
+                    setExtUninstallBusy(false);
+                    setConfirmExtUninstall(null);
+                  });
+              }}
+              onClose={() => {
+                if (!extUninstallBusy) setConfirmExtUninstall(null);
+              }}
+            />
+          </>
         ) : null}
 
         {tab === 'ini' ? (

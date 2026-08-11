@@ -11,7 +11,6 @@ import {
   CardSection,
   DescriptionList,
   EmptyState,
-  FormActions,
   FormHint,
   InstallStreamPanel,
   SoftwareInstallBanner,
@@ -49,9 +48,11 @@ export type RuntimeSoftwarePanelProps = {
   multiVersion: boolean;
   panelDefault: string | null;
   busy?: boolean;
-  plugins: string[];
-  onPluginsChange: (v: string[]) => void;
-  pluginsRefreshToken: number;
+  plugins?: string[];
+  onPluginsChange?: (v: string[]) => void;
+  pluginsRefreshToken?: number;
+  /** Companion tools field (Node etc.). Off for PHP (uses detailExtra extensions). */
+  showPlugins?: boolean;
   installLog: InstallStreamLine[];
   installLabel: string;
   /** Install currently selected version (caller should use arg if provided) */
@@ -102,9 +103,10 @@ export function RuntimeSoftwarePanel(props: RuntimeSoftwarePanelProps) {
     items,
     panelDefault,
     busy,
-    plugins,
+    plugins = [],
     onPluginsChange,
-    pluginsRefreshToken,
+    pluginsRefreshToken = 0,
+    showPlugins = true,
     installLog,
     installLabel,
     onInstall,
@@ -344,33 +346,37 @@ export function RuntimeSoftwarePanel(props: RuntimeSoftwarePanelProps) {
           {detailExtra}
           {!selected.selectedInstalled ? (
             <>
-              <RuntimePluginsField
-                kind={kind}
-                value={plugins}
-                onChange={onPluginsChange}
-                disabled={busy}
-                refreshToken={pluginsRefreshToken}
-                showInstallButton={false}
-              />
+              {showPlugins && onPluginsChange ? (
+                <RuntimePluginsField
+                  kind={kind}
+                  value={plugins}
+                  onChange={onPluginsChange}
+                  disabled={busy}
+                  refreshToken={pluginsRefreshToken}
+                  showInstallButton={false}
+                />
+              ) : null}
               <RuntimeInstallActions
                 installState={selected}
                 version={version}
                 busy={busy}
                 installLabel={installLabel}
-                onInstall={onInstall}
+                onInstall={() => onInstall()}
               />
               <InstallStreamPanel lines={installLog} busy={busy} />
             </>
           ) : (
             <>
-              <RuntimePluginsField
-                kind={kind}
-                value={plugins}
-                onChange={onPluginsChange}
-                disabled={busy}
-                refreshToken={pluginsRefreshToken}
-                showInstallButton
-              />
+              {showPlugins && onPluginsChange ? (
+                <RuntimePluginsField
+                  kind={kind}
+                  value={plugins}
+                  onChange={onPluginsChange}
+                  disabled={busy}
+                  refreshToken={pluginsRefreshToken}
+                  showInstallButton
+                />
+              ) : null}
               <p className="muted u-text-sm u-mt-2">{t('runtime.useListForDefaults')}</p>
             </>
           )}
