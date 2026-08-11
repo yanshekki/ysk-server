@@ -228,7 +228,7 @@ async function removeOneSoftware(
           './runtime-probe.js'
         );
         const probe = await probeRuntimes(host, {});
-        const items = (probe as Record<string, unknown>)[kind];
+        const items = (probe as unknown as Record<string, unknown>)[kind];
         const list = Array.isArray(items) ? items : [];
         const versions = [
           ...new Set(
