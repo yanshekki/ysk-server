@@ -332,12 +332,12 @@ export function VpnPage() {
   })();
 
   const renderServerPanel = (engine: VpnEngineTab) => (
-    <div className="stack">
+    <div className="stack vpn-tab-section">
       {engine === 'outline' ? (
         <Alert variant="info">{t('vpn.ssHonestUi')}</Alert>
       ) : null}
 
-      <section className="stack" aria-label={t('vpn.serverSettings')}>
+      <section className="stack vpn-server-settings" aria-label={t('vpn.serverSettings')}>
         <FormLayout columns={2}>
           <Field label={portLabel} htmlFor={`vpn-port-${engine}`} flush>
             <input
@@ -577,6 +577,7 @@ export function VpnPage() {
         active={tab}
         onChange={(id) => setTab(id as TabId)}
       >
+        <div className="stack vpn-tab-body">
         {error ? <Alert variant="error">{error}</Alert> : null}
         {lastOps ? (
           <OpsResultPanel
@@ -591,7 +592,7 @@ export function VpnPage() {
         {tab === 'outline' ? renderServerPanel('outline') : null}
 
         {tab === 'software' ? (
-          <div className="stack">
+          <div className="stack vpn-tab-section">
             <Alert variant="info">{t('vpn.softwareIntro')}</Alert>
             <div className="vpn-software-stack">
               <section className="vpn-software-card" aria-label="WireGuard">
@@ -635,7 +636,7 @@ export function VpnPage() {
         ) : null}
 
         {tab === 'client' ? (
-          <div className="stack">
+          <div className="stack vpn-tab-section">
             <Alert variant="info">{t('vpn.clientIntro')}</Alert>
 
             <DataTable
@@ -749,6 +750,7 @@ export function VpnPage() {
         ) : null}
 
         {tab === 'about' ? <PageGuide guideId="vpn" /> : null}
+        </div>
       </PageTabs>
 
       {/* Config / QR modal — high-contrast conf + QR plate */}

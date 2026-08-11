@@ -161,7 +161,11 @@
 
 .tabs__panel {
   min-width: 0;
-  padding-top: var(--space-1);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-stack);
+  padding-top: var(--space-tab-panel);
+  padding-bottom: var(--space-4);
 }
 
 /* Tab panel body: consistent stack inside feature tabs */
