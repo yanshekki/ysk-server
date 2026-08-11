@@ -147,5 +147,21 @@
   "batchRescanned": "হোস্ট প্যাকেজ অবস্থা পুনরায় স্ক্যান হয়েছে",
   "applyLogTitle": "আপডেট（）",
   "navBadgeTitle": "আপগ্রেডযোগ্য প্যাকেজ: {{n}}",
-  "aboutPolicySub": "স্ক্যান, প্রয়োগ, সুবিধা এবং OSV সীমা। স্ক্যান মানে আপগ্রেড নয়।"
+  "aboutPolicySub": "স্ক্যান, প্রয়োগ, সুবিধা এবং OSV সীমা। স্ক্যান মানে আপগ্রেড নয়।",
+  "tabOverview": "Overview",
+  "overviewHint": "Server scans packages on a schedule. Install software on each feature page; this page only checks and applies upgrades.",
+  "overviewStale": "Scan data is outdated. Run a scan or wait for the next automatic check.",
+  "nextScan": "Next scan",
+  "autoScan": "Auto scan",
+  "autoScanEnable": "Enable automatic package scan",
+  "scanInterval": "Scan interval",
+  "interval6h": "Every 6 hours",
+  "interval12h": "Every 12 hours",
+  "interval24h": "Every 24 hours",
+  "interval48h": "Every 48 hours",
+  "scheduleSaved": "Scan schedule saved",
+  "scanNow": "Scan now",
+  "viewUpgradable": "View upgradable",
+  "installElsewhere": "To install packages (Nginx, PHP, databases…), open the matching feature page — not this hub.",
+  "status": "Status"
 }

@@ -147,5 +147,21 @@
   "batchRescanned": "호스트 패키지 상태 재스캔됨",
   "applyLogTitle": "업데이트（）",
   "navBadgeTitle": "업그레이드 가능 패키지: {{n}}",
-  "aboutPolicySub": "스캔, 적용, 권한 및 OSV 경계. 스캔은 업그레이드와 같지 않습니다."
+  "aboutPolicySub": "스캔, 적용, 권한 및 OSV 경계. 스캔은 업그레이드와 같지 않습니다.",
+  "tabOverview": "Overview",
+  "overviewHint": "Server scans packages on a schedule. Install software on each feature page; this page only checks and applies upgrades.",
+  "overviewStale": "Scan data is outdated. Run a scan or wait for the next automatic check.",
+  "nextScan": "Next scan",
+  "autoScan": "Auto scan",
+  "autoScanEnable": "Enable automatic package scan",
+  "scanInterval": "Scan interval",
+  "interval6h": "Every 6 hours",
+  "interval12h": "Every 12 hours",
+  "interval24h": "Every 24 hours",
+  "interval48h": "Every 48 hours",
+  "scheduleSaved": "Scan schedule saved",
+  "scanNow": "Scan now",
+  "viewUpgradable": "View upgradable",
+  "installElsewhere": "To install packages (Nginx, PHP, databases…), open the matching feature page — not this hub.",
+  "status": "Status"
 }

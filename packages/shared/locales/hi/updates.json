@@ -147,5 +147,21 @@
   "batchRescanned": "होस्ट पैकेज स्थिति पुनः स्कैन",
   "applyLogTitle": "अपडेट（）",
   "navBadgeTitle": "अपग्रेड योग्य पैकेज: {{n}}",
-  "aboutPolicySub": "स्कैन, लागू, विशेषाधिकार और OSV सीमाएँ। स्कैन अपग्रेड के समान नहीं है।"
+  "aboutPolicySub": "स्कैन, लागू, विशेषाधिकार और OSV सीमाएँ। स्कैन अपग्रेड के समान नहीं है।",
+  "tabOverview": "Overview",
+  "overviewHint": "Server scans packages on a schedule. Install software on each feature page; this page only checks and applies upgrades.",
+  "overviewStale": "Scan data is outdated. Run a scan or wait for the next automatic check.",
+  "nextScan": "Next scan",
+  "autoScan": "Auto scan",
+  "autoScanEnable": "Enable automatic package scan",
+  "scanInterval": "Scan interval",
+  "interval6h": "Every 6 hours",
+  "interval12h": "Every 12 hours",
+  "interval24h": "Every 24 hours",
+  "interval48h": "Every 48 hours",
+  "scheduleSaved": "Scan schedule saved",
+  "scanNow": "Scan now",
+  "viewUpgradable": "View upgradable",
+  "installElsewhere": "To install packages (Nginx, PHP, databases…), open the matching feature page — not this hub.",
+  "status": "Status"
 }
