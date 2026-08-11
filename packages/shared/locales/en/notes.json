@@ -2851,6 +2851,7 @@
     "passwordUpdated": "Password updated for {{name}}",
     "passwordMetaOnly": "Password stored as meta only until system apply",
     "xstartupWrittenOnly": "xstartup not written to home (need root + YSK_EXECUTE)",
+    "xstartupWriteFailed": "Failed to write ~/.vnc/xstartup ({{detail}}). Need root + YSK_EXECUTE.",
     "xstartupFailed": "VNC xstartup/desktop failed on display :{{display}} ({{detail}}). Prefer XFCE profile or install a terminal.",
     "xstartupWritten": "Wrote {{path}}",
     "sessionStartBlocked": "Cannot start VNC session without root + YSK_EXECUTE",
@@ -2895,7 +2896,8 @@
     "clientDownBlocked": "Cannot disconnect without root + YSK_EXECUTE",
     "clientDown": "Disconnected client {{name}}",
     "clientDeleted": "Client profile deleted",
-    "sessionStartCwd": "VNC start failed: working directory not accessible to the session user (display :{{display}}). Fixed by starting from HOME."
+    "sessionStartCwd": "VNC start failed: working directory not accessible to the session user (display :{{display}}). Fixed by starting from HOME.",
+    "xstartupWriteFailed": "Failed to write ~/.vnc/xstartup ({{detail}}). Need root + YSK_EXECUTE."
   },
   "apache": {
     "needServerName": "Server name required",

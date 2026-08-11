@@ -148,7 +148,7 @@ export async function writeXstartupFile(input: {
   const { host, linuxUser, home, desktop } = input;
   if (!host.executeEnabled() || !host.isRoot()) {
     notes.push(tl('notes.vnc.xstartupWrittenOnly'));
-    return { ok: true, notes };
+    return { ok: false, notes };
   }
   const body = buildXstartup(desktop);
   const path = `${home.replace(/\/$/, '')}/.vnc/xstartup`;
@@ -159,12 +159,14 @@ export async function writeXstartupFile(input: {
     `echo ${shellQuote(b64)} | base64 -d > ${shellQuote(path)}`,
     `chmod 755 ${shellQuote(path)}`,
     `chown -R ${shellQuote(linuxUser)}:${shellQuote(linuxUser)} ${shellQuote(home + '/.vnc')}`,
+    // Verify script is executable and non-empty (every host)
+    `test -s ${shellQuote(path)} && test -x ${shellQuote(path)}`,
   ].join(' && ');
   const r = await host.runCommand(['bash', '-c', script], { timeoutMs: 10_000 });
   if (r.exitCode !== 0) {
     notes.push(
-      tl('notes.vnc.xstartupFailed', {
-        detail: (r.stderr || r.stdout || '').slice(0, 160),
+      tl('notes.vnc.xstartupWriteFailed', {
+        detail: (r.stderr || r.stdout || 'write failed').slice(0, 160),
       }),
     );
     return { ok: false, notes };
@@ -380,18 +382,25 @@ export async function startVncSession(input: {
   }
 
   const localhostFlag = rfbBind === 'localhost' ? 'yes' : 'no';
-  // Absolute path + cd $HOME: runuser inherits control-plane cwd (often /root/...)
-  // which TigerVNC/perl cannot access as the VNC user → false "missing" failures.
+  // Absolute path + force HOME from passwd (never inherit control-plane cwd under /root)
   const inner = [
+    `HOME=$(getent passwd ${shellQuote(linuxUser)} | cut -d: -f6)`,
+    'HOME="${HOME:-/tmp}"',
+    'export HOME',
     'cd "$HOME" || cd /tmp || true',
-    'export HOME="${HOME:-/tmp}"',
-    [shellQuote(bin), `:${display}`, `-geometry ${geometry}`, `-depth ${depth}`, `-localhost ${localhostFlag}`].join(
-      ' ',
-    ),
+    'export USER=' + shellQuote(linuxUser),
+    'export LOGNAME=' + shellQuote(linuxUser),
+    [
+      shellQuote(bin),
+      `:${display}`,
+      `-geometry ${geometry}`,
+      `-depth ${depth}`,
+      `-localhost ${localhostFlag}`,
+    ].join(' '),
   ].join('; ');
 
   const runStart = async (): Promise<{ exitCode: number; detail: string }> => {
-    // bash -c (not -lc): avoid profile; HOME still set by runuser -u
+    // bash -c (not -lc): avoid profile; set HOME explicitly above
     const script = `if command -v runuser >/dev/null 2>&1; then runuser -u ${shellQuote(linuxUser)} -- bash -c ${shellQuote(inner)}; else su -s /bin/bash ${shellQuote(linuxUser)} -c ${shellQuote(inner)}; fi`;
     const r = await host.runCommand(['bash', '-c', script], { timeoutMs: 45_000 });
     return {
@@ -435,8 +444,14 @@ export async function startVncSession(input: {
     return { ok: false, notes, running: false };
   }
 
-  // Brief settle for RFB bind
-  const running = await probeSessionRunning(host, display);
+  // Settle: X may bind RFB a moment after process fork (every host)
+  let running = await probeSessionRunning(host, display);
+  if (!running) {
+    for (let i = 0; i < 8 && !running; i++) {
+      await host.runCommand(['bash', '-c', 'sleep 0.35'], { timeoutMs: 2_000 });
+      running = await probeSessionRunning(host, display);
+    }
+  }
   notes.push(
     tl('notes.vnc.sessionStarted', {
       user: linuxUser,

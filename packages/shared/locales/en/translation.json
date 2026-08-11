@@ -7546,6 +7546,7 @@
       "passwordUpdated": "Password updated for {{name}}",
       "passwordMetaOnly": "Password stored as meta only until system apply",
       "xstartupWrittenOnly": "xstartup not written to home (need root + YSK_EXECUTE)",
+      "xstartupWriteFailed": "Failed to write ~/.vnc/xstartup ({{detail}}). Need root + YSK_EXECUTE.",
       "xstartupFailed": "VNC xstartup/desktop failed on display :{{display}} ({{detail}}). Prefer XFCE profile or install a terminal.",
       "xstartupWritten": "Wrote {{path}}",
       "sessionStartBlocked": "Cannot start VNC session without root + YSK_EXECUTE",

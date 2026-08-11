@@ -471,6 +471,16 @@ export class VncService {
       }),
     );
 
+    // Under EXECUTE on every host, xstartup must be on disk or session start is doomed
+    if (!xs.ok && this.host.executeEnabled() && this.host.isRoot()) {
+      return {
+        ok: false,
+        notes,
+        account: toSummary(rec, await this.resolveStatus(rec)),
+        written: [this.accountsPath()],
+      };
+    }
+
     let blocked = Boolean(userR.blocked);
     let requiresExecute = userR.requiresExecute;
     let requiresRoot = userR.requiresRoot;
@@ -483,6 +493,7 @@ export class VncService {
         geometry: rec.geometry,
         depth: rec.depth,
         rfbBind: rec.rfbBind,
+        home,
       });
       notes.push(...st.notes);
       if (st.blocked) {

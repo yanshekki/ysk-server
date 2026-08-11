@@ -25,7 +25,7 @@ import { DEFAULT_VPN_LAN_CIDRS } from './types.js';
 import {
   buildVpnNatShell,
   needsInternetNat,
-  normalizeCidrList,
+  normalizeVpnCidrList,
   parseAccessMode,
 } from './access-mode.js';
 
@@ -135,8 +135,8 @@ export async function ensureOpenVpnServer(
       endpoint: input.endpoint?.trim() || '',
       dns: input.dns?.trim() || '1.1.1.1',
       accessMode: parseAccessMode(input.accessMode ?? 'full'),
-      lanCidrs: normalizeCidrList(input.lanCidrs ?? [...DEFAULT_VPN_LAN_CIDRS]),
-      customCidrs: normalizeCidrList(input.customCidrs ?? []),
+      lanCidrs: normalizeVpnCidrList(input.lanCidrs ?? [...DEFAULT_VPN_LAN_CIDRS]),
+      customCidrs: normalizeVpnCidrList(input.customCidrs ?? []),
       peers: [],
       updatedAt: new Date().toISOString(),
     };
@@ -146,8 +146,8 @@ export async function ensureOpenVpnServer(
     if (input.endpoint != null) state.endpoint = input.endpoint.trim();
     if (input.dns != null) state.dns = input.dns.trim() || state.dns;
     if (input.accessMode != null) state.accessMode = parseAccessMode(input.accessMode);
-    if (input.lanCidrs != null) state.lanCidrs = normalizeCidrList(input.lanCidrs);
-    if (input.customCidrs != null) state.customCidrs = normalizeCidrList(input.customCidrs);
+    if (input.lanCidrs != null) state.lanCidrs = normalizeVpnCidrList(input.lanCidrs);
+    if (input.customCidrs != null) state.customCidrs = normalizeVpnCidrList(input.customCidrs);
     if (!state.accessMode) state.accessMode = 'full';
     if (!state.lanCidrs?.length) state.lanCidrs = [...DEFAULT_VPN_LAN_CIDRS];
   }
@@ -190,8 +190,8 @@ export async function ensureOpenVpnServer(
   saveOvpnServer(dataDir, state);
 
   const accessMode = parseAccessMode(state.accessMode ?? 'full');
-  const lanCidrs = normalizeCidrList(state.lanCidrs ?? [...DEFAULT_VPN_LAN_CIDRS]);
-  const customCidrs = normalizeCidrList(state.customCidrs ?? []);
+  const lanCidrs = normalizeVpnCidrList(state.lanCidrs ?? [...DEFAULT_VPN_LAN_CIDRS]);
+  const customCidrs = normalizeVpnCidrList(state.customCidrs ?? []);
   const confBody = buildOpenVpnServerConf({
     port: state.listenPort,
     proto: state.proto,

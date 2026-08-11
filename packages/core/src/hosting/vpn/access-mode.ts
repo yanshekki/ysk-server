@@ -12,7 +12,7 @@ export function parseAccessMode(raw: unknown): VpnAccessMode {
   return 'full';
 }
 
-export function normalizeCidrList(raw: unknown): string[] {
+export function normalizeVpnCidrList(raw: unknown): string[] {
   if (!Array.isArray(raw)) return [];
   const out: string[] = [];
   for (const x of raw) {
@@ -50,11 +50,11 @@ export function wgClientAllowedIps(
   const vpnNet = opts?.vpnNet ?? '10.66.66.0/24';
   if (mode === 'full') return '0.0.0.0/0, ::/0';
   if (mode === 'custom') {
-    const list = normalizeCidrList(opts?.customCidrs ?? []);
+    const list = normalizeVpnCidrList(opts?.customCidrs ?? []);
     return list.length ? list.join(', ') : vpnNet;
   }
   // lan
-  const lan = normalizeCidrList(opts?.lanCidrs ?? [...DEFAULT_VPN_LAN_CIDRS]);
+  const lan = normalizeVpnCidrList(opts?.lanCidrs ?? [...DEFAULT_VPN_LAN_CIDRS]);
   const parts = [vpnNet, ...lan];
   return [...new Set(parts)].join(', ');
 }
@@ -75,8 +75,8 @@ export function ovpnAccessPushLines(
 
   const cidrs =
     mode === 'custom'
-      ? normalizeCidrList(opts?.customCidrs ?? [])
-      : normalizeCidrList(opts?.lanCidrs ?? [...DEFAULT_VPN_LAN_CIDRS]);
+      ? normalizeVpnCidrList(opts?.customCidrs ?? [])
+      : normalizeVpnCidrList(opts?.lanCidrs ?? [...DEFAULT_VPN_LAN_CIDRS]);
   for (const c of cidrs) {
     if (c === vpnCidr) continue;
     const p = cidrToOvpnRoutePush(c);

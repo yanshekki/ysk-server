@@ -3,7 +3,7 @@ import {
   buildVpnNatShell,
   cidrToOvpnRoutePush,
   needsInternetNat,
-  normalizeCidrList,
+  normalizeVpnCidrList,
   ovpnAccessPushLines,
   parseAccessMode,
   wgClientAllowedIps,
@@ -21,11 +21,11 @@ describe('vpn access-mode', () => {
   });
 
   it('normalizes CIDR lists', () => {
-    expect(normalizeCidrList(['10.0.0.0/8', 'bad', '10.0.0.0/8', '192.168.1.0/24'])).toEqual([
+    expect(normalizeVpnCidrList(['10.0.0.0/8', 'bad', '10.0.0.0/8', '192.168.1.0/24'])).toEqual([
       '10.0.0.0/8',
       '192.168.1.0/24',
     ]);
-    expect(normalizeCidrList(null)).toEqual([]);
+    expect(normalizeVpnCidrList(null)).toEqual([]);
   });
 
   it('converts CIDR to OpenVPN route push', () => {

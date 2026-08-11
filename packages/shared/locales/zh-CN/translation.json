@@ -7629,7 +7629,8 @@
       "clientDownBlocked": "无权限断开（需 root + YSK_EXECUTE）",
       "clientDown": "已断开客户端 {{name}}",
       "clientDeleted": "已删除客户端配置",
-      "sessionStartCwd": "VNC 启动失败：工作目录会话用户无权访问（display :{{display}}）。已改为从 HOME 启动。"
+      "sessionStartCwd": "VNC 启动失败：工作目录会话用户无权访问（display :{{display}}）。已改为从 HOME 启动。",
+      "xstartupWriteFailed": "Failed to write ~/.vnc/xstartup ({{detail}}). Need root + YSK_EXECUTE."
     },
     "apache": {
       "needServerName": "需要域名",

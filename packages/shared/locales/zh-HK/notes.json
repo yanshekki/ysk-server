@@ -2895,7 +2895,8 @@
     "clientDownBlocked": "無權限斷線（需 root + YSK_EXECUTE）",
     "clientDown": "已斷開客戶端 {{name}}",
     "clientDeleted": "已刪除客戶端設定",
-    "sessionStartCwd": "VNC 啟動失敗：工作目錄 VNC 用戶無權限（display :{{display}}）。已改為由 HOME 啟動。"
+    "sessionStartCwd": "VNC 啟動失敗：工作目錄 VNC 用戶無權限（display :{{display}}）。已改為由 HOME 啟動。",
+    "xstartupWriteFailed": "Failed to write ~/.vnc/xstartup ({{detail}}). Need root + YSK_EXECUTE."
   },
   "apache": {
     "needServerName": "需要域名",

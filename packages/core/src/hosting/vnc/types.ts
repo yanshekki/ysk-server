@@ -71,7 +71,7 @@ export type VncOverviewStatus = {
 };
 
 export const DEFAULT_VNC_SETTINGS: VncSettings = {
-  defaultDesktop: 'minimal',
+  defaultDesktop: 'xfce',
   defaultGeometry: '1920x1080',
   defaultDepth: 24,
   defaultRfbBind: 'localhost',

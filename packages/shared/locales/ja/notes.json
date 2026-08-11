@@ -2884,7 +2884,8 @@
     "clientDownBlocked": "root + YSK_EXECUTE なしでは切断できません",
     "clientDown": "クライアント {{name}} を切断しました",
     "clientDeleted": "クライアントプロファイルを削除しました",
-    "sessionStartCwd": "VNC start failed: working directory not accessible to the session user (display :{{display}}). Fixed by starting from HOME."
+    "sessionStartCwd": "VNC start failed: working directory not accessible to the session user (display :{{display}}). Fixed by starting from HOME.",
+    "xstartupWriteFailed": "Failed to write ~/.vnc/xstartup ({{detail}}). Need root + YSK_EXECUTE."
   },
   "apache": {
     "needServerName": "Server name required",
