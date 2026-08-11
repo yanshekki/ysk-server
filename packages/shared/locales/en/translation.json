@@ -11345,7 +11345,10 @@
     "clientPasswordHint": "Used when you open the browser viewer. Leave empty to type it each time.",
     "clientRememberPassword": "Store password on this server for next open",
     "clientRememberPasswordWarn": "Password is stored in panel dataDir (readable by root). Prefer typing each time on shared hosts.",
-    "stackMissingShort": "Not installed"
+    "stackMissingShort": "Not installed",
+    "editClientTitle": "Edit remote client",
+    "editClientDesc": "Update path, hosts, and optional stored password.",
+    "clientUpdated": "Client profile updated"
   },
   "vpn": {
     "pageDesc": "VPN server & client",

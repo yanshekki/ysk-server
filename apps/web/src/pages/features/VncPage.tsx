@@ -72,8 +72,9 @@ export function VncPage() {
   const [lastOps, setLastOps] = useState<OpsResultLike | null>(null);
   const [page, setPage] = useState(0);
 
-  // Client create form
+  // Client create / edit form
   const [clientOpen, setClientOpen] = useState(false);
+  const [clientEditId, setClientEditId] = useState<string | null>(null);
   const [clName, setClName] = useState('');
   const [clHost, setClHost] = useState('');
   const [clPort, setClPort] = useState(5901);
@@ -719,6 +720,27 @@ export function VncPage() {
                   ) : null}
                   <Button
                     size="sm"
+                    variant="secondary"
+                    onClick={() => {
+                      setClientEditId(c.id);
+                      setClName(c.name);
+                      setClHost(c.host);
+                      setClPort(c.port);
+                      setClPath(
+                        c.path === 'server_proxy'
+                          ? 'server_proxy'
+                          : 'user_reachable',
+                      );
+                      setClConnectHost(c.connectHost ?? '');
+                      setClPassword('');
+                      setClRememberPass(false);
+                      setClientOpen(true);
+                    }}
+                  >
+                    {t('common.edit')}
+                  </Button>
+                  <Button
+                    size="sm"
                     variant="danger"
                     loading={busy}
                     onClick={() =>
@@ -1160,16 +1182,27 @@ export function VncPage() {
 
       <Modal
         open={clientOpen}
-        onClose={() => !busy && setClientOpen(false)}
-        title={t('vnc.addClientTitle')}
-        description={t('vnc.addClientDesc')}
+        onClose={() => {
+          if (busy) return;
+          setClientOpen(false);
+          setClientEditId(null);
+        }}
+        title={
+          clientEditId ? t('vnc.editClientTitle') : t('vnc.addClientTitle')
+        }
+        description={
+          clientEditId ? t('vnc.editClientDesc') : t('vnc.addClientDesc')
+        }
         footer={
           <>
             <Button
               variant="secondary"
               size="md"
               disabled={busy}
-              onClick={() => setClientOpen(false)}
+              onClick={() => {
+                setClientOpen(false);
+                setClientEditId(null);
+              }}
             >
               {t('common.cancel')}
             </Button>
@@ -1183,24 +1216,41 @@ export function VncPage() {
                   return;
                 }
                 setBusy(true);
-                void vncApi
-                  .createClientProfile({
-                    name: clName.trim(),
-                    host: clHost.trim(),
-                    port: clPort,
-                    path: clPath,
-                    connectHost:
-                      clPath === 'server_proxy' && clConnectHost.trim()
-                        ? clConnectHost.trim()
-                        : undefined,
-                    password:
-                      clRememberPass && clPassword.trim()
-                        ? clPassword
-                        : undefined,
-                  })
+                const connectHostVal =
+                  clPath === 'server_proxy' && clConnectHost.trim()
+                    ? clConnectHost.trim()
+                    : null;
+                const password =
+                  clRememberPass && clPassword.trim()
+                    ? clPassword
+                    : undefined;
+                const req = clientEditId
+                  ? vncApi.updateClientProfile(clientEditId, {
+                      name: clName.trim(),
+                      host: clHost.trim(),
+                      port: clPort,
+                      path: clPath,
+                      // null clears override; user_reachable never stores connectHost
+                      connectHost: connectHostVal,
+                      password: password ?? undefined,
+                    })
+                  : vncApi.createClientProfile({
+                      name: clName.trim(),
+                      host: clHost.trim(),
+                      port: clPort,
+                      path: clPath,
+                      connectHost: connectHostVal || undefined,
+                      password,
+                    });
+                void req
                   .then(async () => {
-                    notifyOk(t('vnc.clientCreated'));
+                    notifyOk(
+                      clientEditId
+                        ? t('vnc.clientUpdated')
+                        : t('vnc.clientCreated'),
+                    );
                     setClientOpen(false);
+                    setClientEditId(null);
                     setClPassword('');
                     setClRememberPass(false);
                     setClConnectHost('');
@@ -1212,7 +1262,7 @@ export function VncPage() {
                   .finally(() => setBusy(false));
               }}
             >
-              {t('vnc.addClient')}
+              {clientEditId ? t('common.save') : t('vnc.addClient')}
             </Button>
           </>
         }

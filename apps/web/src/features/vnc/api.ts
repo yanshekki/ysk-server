@@ -211,6 +211,22 @@ export const vncApi = {
       '/api/v1/vnc/client/profiles',
       { method: 'POST', body: JSON.stringify(body) },
     ),
+  updateClientProfile: (
+    id: string,
+    body: {
+      name?: string;
+      host?: string;
+      port?: number;
+      path?: VncConnectPath;
+      connectHost?: string | null;
+      password?: string | null;
+      autostart?: boolean;
+    },
+  ) =>
+    api.requestRaw<{ ok: boolean; profile: VncClientProfile }>(
+      `/api/v1/vnc/client/profiles/${encodeURIComponent(id)}`,
+      { method: 'PATCH', body: JSON.stringify(body) },
+    ),
   clientUp: (id: string, path?: VncConnectPath) =>
     api.requestRawAllowStatus<VncOpsResult & { profile?: VncClientProfile }>(
       `/api/v1/vnc/client/profiles/${encodeURIComponent(id)}/up`,

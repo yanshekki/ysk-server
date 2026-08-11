@@ -56,6 +56,8 @@ grep -q 'resolveClientRfbHost' packages/core/src/hosting/vnc/types.ts || fail "r
 grep -q 'connectHost' packages/core/src/hosting/vnc/client-profiles.ts || fail "profiles connectHost"
 grep -q 'connectHost' apps/server/src/routes/vnc.ts || fail "routes connectHost"
 grep -q 'connectHost' apps/web/src/pages/features/VncPage.tsx || fail "UI connectHost"
+grep -q 'updateClientProfile' apps/web/src/features/vnc/api.ts || fail "API updateClientProfile"
+grep -q 'setClientEditId\|clientEditId' apps/web/src/pages/features/VncPage.tsx || fail "UI edit client"
 grep -q 'probeRfbTcp\|rfb-probe' packages/core/src/hosting/vnc/service.ts packages/core/src/hosting/vnc/*.ts || fail "RFB probe surface"
 test -f packages/core/src/hosting/vnc/browser-session.flow.test.ts || fail "flow test file"
 

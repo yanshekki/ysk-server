@@ -11384,7 +11384,10 @@
     "clientPasswordHint": "使用「在瀏覽器開啟」時會帶入。留空則每次輸入。",
     "clientRememberPassword": "將密碼儲存在此伺服器，供下次開啟使用",
     "clientRememberPasswordWarn": "密碼會寫入面板 dataDir（root 可讀）。共用主機建議每次手動輸入。",
-    "stackMissingShort": "未安裝"
+    "stackMissingShort": "未安裝",
+    "editClientTitle": "編輯遠端客戶端",
+    "editClientDesc": "更新連線路徑、主機與可選已存密碼。",
+    "clientUpdated": "已更新客戶端設定"
   },
   "vpn": {
     "pageDesc": "VPN 伺服器／客戶端",
