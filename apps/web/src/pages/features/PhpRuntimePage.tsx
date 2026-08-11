@@ -26,7 +26,6 @@ import {
   InstallStreamPanel,
   PresetChips,
   SegRadio,
-  SoftwareInstallBanner,
   PageTabs } from '../../shared/components/ui';
 import type { OpsResultLike, MultiCheckOption, InstallStreamLine } from '../../shared/components/ui';
 import { getServerContext, setServerContext } from '../../shared/stores/server-context';
@@ -194,7 +193,7 @@ type IniCatalogGroup = {
   }>;
 };
 
-const PHP_TABS = ['overview', 'ini', 'site', 'tools', 'about'] as const;
+const PHP_TABS = ['overview', 'software', 'ini', 'site', 'tools', 'about'] as const;
 
 export function PhpRuntimePage() {
   const { t } = useTranslation();
@@ -254,6 +253,11 @@ export function PhpRuntimePage() {
     setVersion(pickSupportedVersion(raw, phpCandidates, raw));
   }, [searchParams, phpCandidates]);
 
+  const hostPhp = useMemo(() => {
+    const p = (probe?.probe as Record<string, unknown> | undefined) ?? undefined;
+    return p?.hostPhp != null ? String(p.hostPhp) : '';
+  }, [probe]);
+
   const phpInstallState = useMemo(() => {
     const p = (probe?.probe as Record<string, unknown> | undefined) ?? undefined;
     const supported =
@@ -262,7 +266,6 @@ export function PhpRuntimePage() {
         : (probe?.supported as Record<string, string[]> | undefined)?.php ?? [];
     const items = (p?.php as Array<Record<string, unknown>> | undefined) ?? [];
     const available = items.filter((i) => i.available).map((i) => String(i.version));
-    const hostPhp = p?.hostPhp != null ? String(p.hostPhp) : null;
     return resolveRuntimeInstallState({
       selectedVersion: version,
       supportedVersions: supported.length ? supported : version ? [version] : [],
@@ -270,9 +273,12 @@ export function PhpRuntimePage() {
       probeItems: items.map((i) => ({
         version: i.version != null ? String(i.version) : undefined,
         available: Boolean(i.available),
-        versionOutput: i.versionOutput != null ? String(i.versionOutput) : undefined })),
-      hostDefault: hostPhp });
-  }, [probe, version, phpCandidates]);
+        versionOutput: i.versionOutput != null ? String(i.versionOutput) : undefined,
+      })),
+      hostDefault: hostPhp || null,
+      kind: 'php',
+    });
+  }, [probe, version, phpCandidates, hostPhp]);
 
   const refresh = useCallback(async () => {
     try {
@@ -464,15 +470,14 @@ export function PhpRuntimePage() {
         </Button>
       }
     >
-      <SoftwareInstallBanner feature="php" title={t('runtime.phpMissing')} />
       {error ? <Alert variant="error">{error}</Alert> : null}
       <PageTabs
         tabs={[
           { id: 'overview', label: t('runtime.overview') },
+          { id: 'software', label: t('runtime.tabSoftware') },
           { id: 'ini', label: 'php.ini' },
           { id: 'site', label: t('runtime.fpmSites') },
           { id: 'tools', label: t('runtime.tools') },
-        
           { id: 'about', label: t('common.about') },
         ]}
         active={tab}
@@ -481,6 +486,58 @@ export function PhpRuntimePage() {
       >
         {tab === 'overview' ? (
           <div className="tab-panel">
+            <Card>
+              <CardSection
+                title={t('runtime.probeResult')}
+                description={t('runtime.probeReadonly')}
+              >
+                <DescriptionList
+                  columns={2}
+                  items={[
+                    {
+                      label: t('runtime.hostDefault'),
+                      value: hostPhp || '—',
+                    },
+                    {
+                      label: t('runtime.phpVersion'),
+                      value: version,
+                    },
+                    {
+                      label: t('ssl.status.ready'),
+                      value: phpInstallState.installedVersions.length
+                        ? phpInstallState.installedVersions.join(', ')
+                        : t('runtime.notDetectedYet'),
+                    },
+                  ]}
+                />
+                <FormHint>
+                  {t('runtime.overviewSoftwareHint')}{' '}
+                  <button
+                    type="button"
+                    className="linkish"
+                    onClick={() => setTab('software')}
+                  >
+                    {t('runtime.tabSoftware')}
+                  </button>
+                </FormHint>
+              </CardSection>
+            </Card>
+          </div>
+        ) : null}
+
+        {tab === 'software' ? (
+          <div className="tab-panel">
+            {phpInstallState.selectedInstalled ? (
+              <Alert variant="info">
+                <strong>
+                  {t('runtime.versionReadyTitle', {
+                    name: 'PHP',
+                    version,
+                  })}
+                </strong>{' '}
+                {t('runtime.versionReadyHint')}
+              </Alert>
+            ) : null}
             <Card>
               <CardSection title={t('runtime.installPhp')} description={t('runtime.phpInstallHint')}>
                 <FormLayout columns={2}>

@@ -21,7 +21,6 @@ import {
   Modal,
   OpsResultPanel,
   PresetChips,
-  SoftwareInstallBanner,
   SplitPanel } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import {
@@ -329,11 +328,6 @@ export function RedisPage() {
     >
       <WithPageGuide guideId="redis">
 
-      <SoftwareInstallBanner
-        feature="redis"
-        title={t('redis.softwareMissing')}
-        onInstalled={() => void refreshSvc()}
-      />
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error ? <Alert variant="error">{error}</Alert> : null}
       {!online ? (

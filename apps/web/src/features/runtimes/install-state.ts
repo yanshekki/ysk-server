@@ -20,11 +20,16 @@ export type RuntimeInstallState = {
   /** Install primary button should be disabled */
   installDisabled: boolean;
   /**
-   * Selected is installed but not active — show "switch default" (Go multi-dir / rustup).
+   * Selected is installed but not active — show "set host default".
    * Install stays disabled; switch re-points default without reinstall.
    */
   canSwitch: boolean;
 };
+
+/** Kinds that support panel-driven host default (symlink / rustup). */
+export function supportsHostDefault(kind: string): boolean {
+  return kind === 'go' || kind === 'rust' || kind === 'node' || kind === 'bun';
+}
 
 /** Compare dotted/numeric runtime versions; `latest`/`stable` sort as highest. */
 export function compareRuntimeVersions(a: string, b: string): number {
@@ -134,10 +139,13 @@ export function resolveRuntimeInstallState(input: {
    * only probe.available counts (multi-version model).
    */
   multiVersion?: boolean;
+  /** Runtime kind — enables host-default switch CTA for node/bun/go/rust */
+  kind?: string;
 }): RuntimeInstallState {
   const supported = (input.supportedVersions ?? []).map(String).filter(Boolean);
   const selected = String(input.selectedVersion ?? '');
   const multi = Boolean(input.multiVersion);
+  const hostDefaultSwitchable = supportsHostDefault(input.kind ?? '');
 
   const fromProbe = new Set<string>();
   for (const v of input.availableVersions ?? []) {
@@ -181,12 +189,15 @@ export function resolveRuntimeInstallState(input: {
     fromProbe.has(selected) ||
     [...fromProbe].some((p) => pinMatch(p, selected));
 
-  const selectedActive = (input.probeItems ?? []).some(
+  const selectedActiveFromProbe = (input.probeItems ?? []).some(
     (i) =>
       i.available &&
       i.active &&
       pinMatch(String(i.version ?? ''), selected),
   );
+  // Fallback: host PATH default matches selected (node/php/python often lack active flags)
+  const selectedActive =
+    selectedActiveFromProbe || hostSatisfiesTarget(input.hostDefault, selected);
 
   const anyInstalled = installedVersions.length > 0 || Boolean(input.hostDefault?.trim());
 
@@ -204,8 +215,9 @@ export function resolveRuntimeInstallState(input: {
       )
     : [];
 
-  // Go/Rust: installed but not active → switch; Node/PHP: installDisabled when installed
-  const canSwitch = multi && selectedInstalled && !selectedActive;
+  // Host-default switch when installed but not active (go/rust via multiVersion; node/bun via kind)
+  const canSwitch =
+    (hostDefaultSwitchable || multi) && selectedInstalled && !selectedActive;
   const installDisabled = selectedInstalled;
 
   return {

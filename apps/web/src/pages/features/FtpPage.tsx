@@ -223,12 +223,6 @@ export function FtpPage() {
         ],
       }}
     >
-      <SoftwareInstallBanner
-        feature="ftp"
-        title={t('ftp.softwareMissing')}
-        onInstalled={() => void loadServiceStatus()}
-      />
-
       {crud.error || keyErr ? (
         <Alert variant="error">{crud.error ?? keyErr}</Alert>
       ) : null}
@@ -549,6 +543,11 @@ export function FtpPage() {
 
         {tab === 'stack' ? (
           <div className="tab-panel stack">
+            <SoftwareInstallBanner
+              feature="ftp"
+              title={t('ftp.softwareMissing')}
+              onInstalled={() => void loadServiceStatus()}
+            />
             <SoftwareVersionBar softwareId="vsftpd" />
           </div>
         ) : null}

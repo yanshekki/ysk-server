@@ -70,8 +70,7 @@ export function RuntimeInstallActions({
         </Button>
         {canSwitch ? (
           <Button variant="secondary" size="md" loading={busy} onClick={onSwitch}>
-            {t('runtime.switchDefaultBtn', {
-              version })}
+            {t('runtime.setHostDefault')}
           </Button>
         ) : null}
         {installState.newerAvailable[0] && already && onSelectNewer ? (

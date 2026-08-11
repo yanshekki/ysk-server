@@ -182,14 +182,23 @@ export async function handleHostingRuntimesInstallRoutes(
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as {
-          kind?: 'go' | 'rust';
+          kind?: 'go' | 'rust' | 'node' | 'bun' | 'php' | 'python' | 'java' | 'kotlin';
           version?: string;
         };
         const { switchRuntimeDefault } = await import('@ysk/core');
+        const kind = data.kind ?? 'go';
+        const fallback =
+          kind === 'rust'
+            ? 'stable'
+            : kind === 'node'
+              ? '20'
+              : kind === 'bun'
+                ? 'latest'
+                : '1.22';
         const result = await switchRuntimeDefault({
           host: ctx.host,
-          kind: data.kind ?? 'go',
-          version: data.version ?? (data.kind === 'rust' ? 'stable' : '1.22'),
+          kind,
+          version: data.version ?? fallback,
         });
         ctx.audit.append({
           actor: user.username,

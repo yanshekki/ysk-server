@@ -21,7 +21,7 @@ import {
   InstallStreamPanel,
   PresetChips,
   SegRadio,
-  SoftwareInstallBanner,
+  ConfirmDialog,
   PageTabs,
   buttonClassName } from '../../shared/components/ui';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -33,6 +33,7 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../../shared/lib/i18n';
 import {
   resolveRuntimeInstallState,
+  supportsHostDefault,
   versionChipLabel } from '../../features/runtimes/install-state';
 import { RuntimePluginsField } from '../../features/runtimes/RuntimePluginsField';
 import { RuntimeInstallActions } from '../../features/runtimes/RuntimeInstallActions';
@@ -102,8 +103,8 @@ const META: Record<
     installLabelKey: 'runtime.installBunLabel',
     bannerTitle: i18n.t('runtime.bunMissing') } };
 
-const RT_TABS_BASE = ['overview', 'tuning', 'about'] as const;
-const RT_TABS_PROCESS = ['overview', 'processes', 'tuning', 'about'] as const;
+const RT_TABS_BASE = ['overview', 'software', 'tuning', 'about'] as const;
+const RT_TABS_PROCESS = ['overview', 'software', 'processes', 'tuning', 'about'] as const;
 
 export function runtimeTabsForKind(kind: HostingRuntimeKind): readonly string[] {
   return kind === 'node' || kind === 'bun' ? RT_TABS_PROCESS : RT_TABS_BASE;
@@ -343,6 +344,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
   }, [kind, probeData.hostRaw, probeData.available.length]);
 
   const multiVersion = kind === 'go' || kind === 'rust';
+  const hostDefaultOk = supportsHostDefault(kind);
   /** Control-plane pin only — never treat as "installed" without probe. */
   const recordedPin =
     versionStatus?.currentVersion != null
@@ -363,8 +365,26 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
         active: Boolean(i.active),
         versionOutput: i.versionOutput != null ? String(i.versionOutput) : undefined })),
       hostDefault: probeData.hostRaw || null,
-      multiVersion });
-  }, [version, probeData, multiVersion]);
+      multiVersion,
+      kind,
+    });
+  }, [version, probeData, multiVersion, kind]);
+
+  const [defaultConfirmOpen, setDefaultConfirmOpen] = useState(false);
+
+  const runSwitchDefault = useCallback(
+    (targetVersion: string) =>
+      void run(async () => {
+        const r = await systemApi.runtimeSwitch({
+          kind: kind as 'go' | 'rust' | 'node' | 'bun',
+          version: targetVersion,
+        });
+        await refresh();
+        setPluginsRefreshToken((n) => n + 1);
+        return r as OpsResultLike;
+      }, t('runtime.switchDefaultBtn', { version: targetVersion })),
+    [kind, run, refresh, t],
+  );
 
   const parseExtraEnv = (): Record<string, string> => {
     const out: Record<string, string> = {};
@@ -430,7 +450,6 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
         </>
       }
     >
-      <SoftwareInstallBanner feature={kind} title={meta.bannerTitle} />
       {error ? <Alert variant="error">{error}</Alert> : null}
       {nodePathSafety?.kind === 'unsafe' ? (
         <Alert variant="warn">
@@ -451,7 +470,8 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
       ) : null}
       <PageTabs
         tabs={[
-          { id: 'overview', label: t('runtime.tabOverviewInstall') },
+          { id: 'overview', label: t('runtime.overview') },
+          { id: 'software', label: t('runtime.tabSoftware') },
           ...(kind === 'node' || kind === 'bun'
             ? [{ id: 'processes', label: t('runtime.tabProcesses') }]
             : []),
@@ -470,18 +490,19 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
         {tab === 'overview' ? (
           <div className="tab-panel">
             <Card>
-              <CardSection title={t('runtime.probeResult')} description={t('runtime.probeReadonlyInstall')}>
+              <CardSection title={t('runtime.probeResult')} description={t('runtime.probeReadonly')}>
                 <DescriptionList
                   columns={2}
                   items={[
                     { label: t('runtime.hostDefault'), value: probeData.host },
                     {
                       label: t('runtime.panelSupport'),
-                      value: probeData.supported.join(', ') },
+                      value: probeData.supported.join(', ') || '—',
+                    },
                     {
                       label: t('ssl.status.ready'),
                       value: probeData.available.length ? (
-                        <span /* was action-bar */>
+                        <span>
                           {probeData.available.map((v) => (
                             <Badge key={v} tone="ok">
                               {v}
@@ -490,7 +511,8 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                         </span>
                       ) : (
                         t('runtime.notDetectedYet')
-                      ) },
+                      ),
+                    },
                   ]}
                 />
                 {probeData.items.length > 0 ? (
@@ -501,10 +523,15 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                         <Badge tone={i.available ? 'ok' : 'neutral'}>
                           {i.available ? t('common.available') : t('runtime.notFound')}
                         </Badge>
-                        {i.available && i.active ? (
-                          <Badge tone="ok">
-                            {t('runtime.activeDefault')}
-                          </Badge>
+                        {i.available &&
+                        (i.active ||
+                          (probeData.hostRaw &&
+                            String(i.versionOutput || i.version).includes(
+                              String(i.version),
+                            ) &&
+                            installState.selectedActive &&
+                            String(i.version) === version)) ? (
+                          <Badge tone="ok">{t('runtime.activeDefault')}</Badge>
                         ) : null}
                         {i.resolvedPath ? (
                           <span className="muted u-text-sm"> · {String(i.resolvedPath)}</span>
@@ -518,12 +545,37 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                 ) : (
                   <p className="muted u-mt-2">{t('runtime.pressReprobeHost')}</p>
                 )}
+                <FormHint>
+                  {t('runtime.overviewSoftwareHint')}{' '}
+                  <button
+                    type="button"
+                    className="linkish"
+                    onClick={() => setTab('software')}
+                  >
+                    {t('runtime.tabSoftware')}
+                  </button>
+                </FormHint>
               </CardSection>
             </Card>
+          </div>
+        ) : null}
 
+        {tab === 'software' ? (
+          <div className="tab-panel">
+            {installState.selectedInstalled ? (
+              <Alert variant="info">
+                <strong>
+                  {t('runtime.versionReadyTitle', {
+                    name: meta.title,
+                    version,
+                  })}
+                </strong>{' '}
+                {t('runtime.versionReadyHint')}
+              </Alert>
+            ) : null}
             <Card>
               <CardSection
-                title={t('common.install')}
+                title={t('runtime.softwareVersionTitle', { version })}
                 description={t('runtime.installHint')}
               >
                 <FormLayout columns={2}>
@@ -614,7 +666,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                   // Only one primary install CTA: plugins when runtime already on host
                   showInstallButton={installState.selectedInstalled}
                 />
-                {!installState.selectedInstalled || multiVersion ? (
+                {!installState.selectedInstalled || hostDefaultOk ? (
                   <RuntimeInstallActions
                     installState={installState}
                     version={version}
@@ -622,23 +674,13 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                     installLabel={t(meta.installLabelKey, { v: version })}
                     onSelectNewer={setVersion}
                     onSwitch={
-                      multiVersion
-                        ? () =>
-                            void run(async () => {
-                              const r = await systemApi.runtimeSwitch({
-                                kind: kind as 'go' | 'rust',
-                                version });
-                              await refresh();
-                              setPluginsRefreshToken((n) => n + 1);
-                              return r as OpsResultLike;
-                            }, t('runtime.switchDefaultBtn', { version }))
+                      hostDefaultOk && installState.canSwitch
+                        ? () => setDefaultConfirmOpen(true)
                         : undefined
                     }
                     extraHints={
-                      multiVersion ? (
-                        <FormHint>
-                          {t('runtime.multiVersionHint', { })}
-                        </FormHint>
+                      hostDefaultOk ? (
+                        <FormHint>{t('runtime.multiVersionHint')}</FormHint>
                       ) : installState.newerAvailable.length === 0 ? (
                         <FormHint>{t('runtime.installScriptNote')}</FormHint>
                       ) : null
@@ -651,10 +693,12 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                             kind,
                             version,
                             install: true,
-                            plugins },
+                            plugins,
+                          },
                           {
                             onLog: (line) =>
-                              setInstallLog((prev) => [...prev.slice(-1999), line]) },
+                              setInstallLog((prev) => [...prev.slice(-1999), line]),
+                          },
                         );
                         await refresh();
                         setPluginsRefreshToken((n) => n + 1);
@@ -663,9 +707,136 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                     }
                   />
                 ) : null}
+                {installState.selectedInstalled &&
+                hostDefaultOk &&
+                installState.selectedActive ? (
+                  <FormHint>
+                    <Badge tone="ok">{t('runtime.alreadyHostDefault', { version })}</Badge>
+                  </FormHint>
+                ) : null}
+                {!hostDefaultOk ? (
+                  <FormHint>{t('runtime.hostDefaultUnsupported')}</FormHint>
+                ) : null}
                 <InstallStreamPanel lines={installLog} busy={busy} />
               </CardSection>
             </Card>
+
+            <Card>
+              <CardSection
+                title={t('runtime.versionInventory')}
+                description={t('runtime.versionInventoryDesc')}
+              >
+                {probeData.supported.length === 0 ? (
+                  <p className="muted">{t('runtime.pressReprobeHost')}</p>
+                ) : (
+                  <div className="table-wrap">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>{t('runtime.targetVersion')}</th>
+                          <th>{t('common.status')}</th>
+                          <th>{t('runtime.hostDefault')}</th>
+                          <th>{t('common.actions')}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {probeData.supported.map((v) => {
+                          const rowState = resolveRuntimeInstallState({
+                            selectedVersion: v,
+                            supportedVersions: probeData.supported,
+                            availableVersions: probeData.available,
+                            probeItems: probeData.items.map((i) => ({
+                              version:
+                                i.version != null ? String(i.version) : undefined,
+                              available: Boolean(i.available),
+                              active: Boolean(i.active),
+                              versionOutput:
+                                i.versionOutput != null
+                                  ? String(i.versionOutput)
+                                  : undefined,
+                            })),
+                            hostDefault: probeData.hostRaw || null,
+                            multiVersion,
+                            kind,
+                          });
+                          return (
+                            <tr
+                              key={v}
+                              className={v === version ? 'is-selected' : undefined}
+                            >
+                              <td>
+                                <button
+                                  type="button"
+                                  className="linkish"
+                                  onClick={() => setVersion(v)}
+                                >
+                                  <strong>{v}</strong>
+                                </button>
+                              </td>
+                              <td>
+                                <Badge
+                                  tone={rowState.selectedInstalled ? 'ok' : 'neutral'}
+                                >
+                                  {rowState.selectedInstalled
+                                    ? t('common.installed')
+                                    : t('common.notInstalled')}
+                                </Badge>
+                              </td>
+                              <td>
+                                {rowState.selectedActive ? (
+                                  <Badge tone="ok">{t('runtime.activeDefault')}</Badge>
+                                ) : (
+                                  '—'
+                                )}
+                              </td>
+                              <td>
+                                <span className="action-bar action-bar--sm">
+                                  {!rowState.selectedInstalled ? (
+                                    <Button
+                                      variant="secondary"
+                                      size="sm"
+                                      onClick={() => {
+                                        setVersion(v);
+                                      }}
+                                    >
+                                      {t('runtime.selectToInstall')}
+                                    </Button>
+                                  ) : null}
+                                  {hostDefaultOk &&
+                                  rowState.selectedInstalled &&
+                                  !rowState.selectedActive ? (
+                                    <Button
+                                      variant="primary"
+                                      size="sm"
+                                      loading={busy}
+                                      onClick={() => {
+                                        setVersion(v);
+                                        setDefaultConfirmOpen(true);
+                                      }}
+                                    >
+                                      {t('runtime.setHostDefault')}
+                                    </Button>
+                                  ) : null}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardSection>
+            </Card>
+
+            <details className="u-mt-3">
+              <summary className="muted u-text-sm">
+                {t('runtime.advancedFeatureUninstall')}
+              </summary>
+              <p className="muted u-text-sm u-mt-2">
+                {t('runtime.advancedFeatureUninstallHint', { name: meta.title })}
+              </p>
+            </details>
           </div>
         ) : null}
 
@@ -916,6 +1087,21 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
       </PageTabs>
 
       <OpsResultPanel title={t('systemd.opsResult')} result={result} message={msg} busy={busy} />
+
+      <ConfirmDialog
+        open={defaultConfirmOpen}
+        onClose={() => setDefaultConfirmOpen(false)}
+        onConfirm={() => {
+          setDefaultConfirmOpen(false);
+          runSwitchDefault(version);
+        }}
+        title={t('runtime.setHostDefaultConfirmTitle', { version })}
+        description={t('runtime.setHostDefaultConfirm', { version })}
+        severity="standard"
+        confirmLabel={t('runtime.setHostDefault')}
+        cancelLabel={t('common.cancel')}
+        busy={busy}
+      />
     </FeaturePageLayout>
   );
 }

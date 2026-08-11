@@ -510,8 +510,11 @@ export const systemApi = {
     import('../runtimes/stream-runtime-install').then((m) =>
       m.streamRuntimeInstall(body, opts),
     ),
-  /** Switch active default for multi-version Go / Rust (no reinstall) */
-  runtimeSwitch: (body: { kind: 'go' | 'rust'; version: string }) =>
+  /** Switch active host default (go/rust/node/bun; no reinstall) */
+  runtimeSwitch: (body: {
+    kind: 'go' | 'rust' | 'node' | 'bun' | 'php' | 'python' | 'java' | 'kotlin';
+    version: string;
+  }) =>
     api.requestRawAllowStatus('/api/v1/hosting/runtimes/switch', {
       method: 'POST',
       body: JSON.stringify(body),

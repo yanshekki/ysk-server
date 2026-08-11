@@ -1559,10 +1559,12 @@ export type RuntimeSwitchResult = {
 };
 
 /**
- * Switch the **active** default for multi-version runtimes without reinstalling.
- * - go: retarget /usr/local/bin/go → /usr/local/ysk/go/<minor>/bin/go
- * - rust: rustup default <toolchain> (+ refresh cargo/rustc symlinks)
- * Other kinds: refused (use install path).
+ * Switch the **active** host default without reinstalling.
+ * - go: retarget /usr/local/bin/go → /usr/local/ysk/go/<v>/bin/go
+ * - rust: rustup default <toolchain>
+ * - node: retarget /usr/local/bin/node|npm|npx → /usr/local/ysk/node/<major>/bin/*
+ * - bun: retarget /usr/local/bin/bun → /usr/local/ysk/bun/<v>/bin/bun (managed layout)
+ * Other kinds: refused (install per version only).
  */
 export async function switchRuntimeDefault(input: {
   host: HostExecutor;
@@ -1575,13 +1577,14 @@ export async function switchRuntimeDefault(input: {
   const rootOn = input.host.isRoot();
   const can = execOn && rootOn;
 
-  if (input.kind !== 'go' && input.kind !== 'rust') {
+  const switchable: RuntimeKind[] = ['go', 'rust', 'node', 'bun'];
+  if (!switchable.includes(input.kind)) {
     return {
       ok: false,
       kind: input.kind,
       version: input.version,
       notes: [
-        'Switch is only supported for Go (multi-dir) and Rust (rustup toolchains). Install other runtimes per version.',
+        `Host default switch is not supported for ${input.kind}. Install a version, or use project-level pin.`,
       ],
       commandResults,
       requiresExecute: !execOn,
@@ -1623,7 +1626,7 @@ export async function switchRuntimeDefault(input: {
       '',
     ].join('\n');
     notes.push(`Switch active Go symlink → ${plan.version}`);
-  } else {
+  } else if (input.kind === 'rust') {
     const plan = selectRustRuntime(input.version);
     const tc = plan.version === 'stable' ? 'stable' : plan.version;
     script = [
@@ -1656,6 +1659,50 @@ export async function switchRuntimeDefault(input: {
       '',
     ].join('\n');
     notes.push(`Switch rustup default → ${tc}`);
+  } else if (input.kind === 'node') {
+    const plan = selectNodeRuntime(input.version);
+    script = [
+      'set -euo pipefail',
+      `MAJOR=${JSON.stringify(plan.version)}`,
+      'DEST="/usr/local/ysk/node/$MAJOR"',
+      'if [ ! -x "$DEST/bin/node" ]; then',
+      '  echo "Node $MAJOR not installed at $DEST — install first" >&2',
+      '  exit 2',
+      'fi',
+      'mkdir -p /usr/local/bin',
+      'ln -sfn "$DEST/bin/node" /usr/local/bin/node',
+      'if [ -x "$DEST/bin/npm" ]; then ln -sfn "$DEST/bin/npm" /usr/local/bin/npm; fi',
+      'if [ -x "$DEST/bin/npx" ]; then ln -sfn "$DEST/bin/npx" /usr/local/bin/npx; fi',
+      'echo "YSK_NODE_ACTIVE=$MAJOR"',
+      '"$DEST/bin/node" -v',
+      'readlink -f /usr/local/bin/node || true',
+      '',
+    ].join('\n');
+    notes.push(`Switch active Node symlink → ${plan.version}`);
+  } else {
+    // bun
+    const plan = selectBunRuntime(input.version);
+    script = [
+      'set -euo pipefail',
+      `VER=${JSON.stringify(plan.version)}`,
+      'DEST="/usr/local/ysk/bun/$VER"',
+      'if [ ! -x "$DEST/bin/bun" ] && [ ! -x "/usr/local/ysk/bun/bin/bun" ]; then',
+      '  # also accept single-dir layout',
+      '  if [ -x /usr/local/bin/bun ]; then DEST_BIN=/usr/local/bin/bun; else',
+      '    echo "Bun $VER not installed under /usr/local/ysk/bun — install first" >&2',
+      '    exit 2',
+      '  fi',
+      'else',
+      '  if [ -x "$DEST/bin/bun" ]; then DEST_BIN="$DEST/bin/bun"; else DEST_BIN=/usr/local/ysk/bun/bin/bun; fi',
+      'fi',
+      'mkdir -p /usr/local/bin',
+      'ln -sfn "$DEST_BIN" /usr/local/bin/bun',
+      'echo "YSK_BUN_ACTIVE=$VER"',
+      '"$DEST_BIN" --version || true',
+      'readlink -f /usr/local/bin/bun || true',
+      '',
+    ].join('\n');
+    notes.push(`Switch active Bun symlink → ${plan.version}`);
   }
 
   const r = await input.host.runCommand(['bash', '-c', script], { timeoutMs: 120_000 });

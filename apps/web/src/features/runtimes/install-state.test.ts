@@ -61,6 +61,7 @@ describe('runtime install-state', () => {
       selectedVersion: '1.78',
       supportedVersions: ['stable', '1.78', '1.81'],
       multiVersion: true,
+      kind: 'rust',
       hostDefault: 'cargo 1.97.1 (c980f4866 2026-06-30)',
       probeItems: [
         { version: 'stable', available: true, active: true, versionOutput: 'cargo 1.97.1' },
@@ -73,6 +74,23 @@ describe('runtime install-state', () => {
     expect(st.selectedActive).toBe(false);
     expect(st.canSwitch).toBe(true);
     expect(st.installDisabled).toBe(true);
+  });
+
+  it('node: can set host default when installed major is not PATH default', () => {
+    const st = resolveRuntimeInstallState({
+      selectedVersion: '20',
+      supportedVersions: ['20', '22', '24'],
+      kind: 'node',
+      hostDefault: 'v24.19.0',
+      availableVersions: ['20', '24'],
+      probeItems: [
+        { version: '20', available: true, versionOutput: 'v20.18.0' },
+        { version: '24', available: true, versionOutput: 'v24.19.0' },
+      ],
+    });
+    expect(st.selectedInstalled).toBe(true);
+    expect(st.selectedActive).toBe(false);
+    expect(st.canSwitch).toBe(true);
   });
 
   it('go: full patch target matches probe minor (1.26.5 ↔ 1.26)', () => {

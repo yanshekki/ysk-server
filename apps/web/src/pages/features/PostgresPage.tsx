@@ -22,7 +22,6 @@ import {
   Modal,
   OpsResultPanel,
   ServerListFilters,
-  SoftwareInstallBanner,
   FormHint,
   CheckboxField } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
@@ -145,7 +144,6 @@ export function PostgresPage() {
     >
       <WithPageGuide guideId="postgres">
 
-      <SoftwareInstallBanner feature="postgres" title={t('db.pgSoftwareMissing')} />
       {error ? <Alert variant="error">{error}</Alert> : null}
       <Card>
         <CardSection title={t('db.serviceOverview')} description={t('db.readonlyProbe')}>

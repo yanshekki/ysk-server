@@ -27,7 +27,6 @@ import {
   CheckboxField,
   SegRadio,
   ServerListFilters,
-  SoftwareInstallBanner,
   buttonClassName } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
@@ -384,11 +383,6 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
         </ActionBar>
       }
     >
-      <SoftwareInstallBanner
-        feature={engine === 'mysql' ? 'mysql' : 'mariadb'}
-        title={t('db.softwareMissing', { engine: title })}
-        onInstalled={() => void refreshSvc()}
-      />
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error ? <Alert variant="error">{error}</Alert> : null}
       <Card>

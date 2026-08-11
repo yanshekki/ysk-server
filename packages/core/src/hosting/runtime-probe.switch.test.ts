@@ -26,13 +26,31 @@ function mockHost(
 }
 
 describe('switchRuntimeDefault', () => {
-  it('refuses non go/rust', async () => {
+  it('refuses kinds without host-default switch', async () => {
     const r = await switchRuntimeDefault({
       host: mockHost(() => ({})),
+      kind: 'php',
+      version: '8.2',
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it('switches node symlink when installed under ysk path', async () => {
+    const r = await switchRuntimeDefault({
+      host: mockHost((argv) => {
+        if (argv[0] === 'bash') {
+          return {
+            exitCode: 0,
+            stdout: 'YSK_NODE_ACTIVE=20\nv20.18.0\n',
+          };
+        }
+        return {};
+      }),
       kind: 'node',
       version: '20',
     });
-    expect(r.ok).toBe(false);
+    expect(r.ok).toBe(true);
+    expect(r.notes.some((n) => /20|YSK_NODE/i.test(n))).toBe(true);
   });
 
   it('blocks without execute', async () => {
