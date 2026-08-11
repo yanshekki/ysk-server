@@ -11165,7 +11165,10 @@
       "errTimeoutGeneric": "連線逾時 — 請檢查網絡同防火牆。",
       "errDns": "解唔到主機名「{{host}}」。",
       "errDnsGeneric": "主機名解唔到。",
-      "errNet": "到唔到 {{host}}:{{port}} 嘅網絡。"
+      "errNet": "到唔到 {{host}}:{{port}} 嘅網絡。",
+      "reconnecting": "連線中斷 — 自動重連（{{n}}/{{max}}）…",
+      "idleHint": "一段時間冇操作。遠端可能已鎖屏；郁吓滑鼠或重新連線。",
+      "idleDismiss": "仲喺度"
     },
     "installHint": "TigerVNC → noVNC；XFCE 可選",
     "needTigerVnc": "需 TigerVNC",

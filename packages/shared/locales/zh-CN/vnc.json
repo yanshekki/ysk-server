@@ -75,7 +75,10 @@
     "errTimeoutGeneric": "连接超时 — 请检查网络和防火墙。",
     "errDns": "无法解析主机名「{{host}}」。",
     "errDnsGeneric": "主机名无法解析。",
-    "errNet": "无法到达 {{host}}:{{port}}。"
+    "errNet": "无法到达 {{host}}:{{port}}。",
+    "reconnecting": "连接中断 — 自动重连（{{n}}/{{max}}）…",
+    "idleHint": "一段时间无操作。远程可能已锁屏；移动鼠标或重新连接。",
+    "idleDismiss": "仍在"
   },
   "installHint": "TigerVNC → noVNC；XFCE 可选",
   "needTigerVnc": "需 TigerVNC",

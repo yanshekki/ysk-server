@@ -103,8 +103,16 @@ export function VncViewer({ target, createSession, onClose }: Props) {
   const [remoteClip, setRemoteClip] = useState('');
   const [clipOpen, setClipOpen] = useState(false);
   const [localClipDraft, setLocalClipDraft] = useState('');
+  const autoRetryRef = useRef(0);
+  const userClosedRef = useRef(false);
+  const lastActivityRef = useRef(Date.now());
+  const [idleHint, setIdleHint] = useState(false);
+  const MAX_AUTO_RETRY = 2;
+  const IDLE_HINT_MS = 15 * 60_000;
 
   const disconnect = useCallback(() => {
+    userClosedRef.current = true;
+    autoRetryRef.current = 0;
     try {
       rfbRef.current?.disconnect();
     } catch {
@@ -113,12 +121,18 @@ export function VncViewer({ target, createSession, onClose }: Props) {
     rfbRef.current = null;
     setState('closed');
     setStatusText(t('vnc.viewer.disconnected'));
+    setIdleHint(false);
   }, [t]);
 
-  const connect = useCallback(async () => {
+  const connect = useCallback(async (opts?: { isAuto?: boolean }) => {
     if (!screenRef.current) return;
+    if (!opts?.isAuto) {
+      userClosedRef.current = false;
+      autoRetryRef.current = 0;
+    }
     setError(null);
     setNeedPassword(false);
+    setIdleHint(false);
     setState('minting');
     setStatusText(t('vnc.viewer.minting'));
     try {
@@ -146,25 +160,45 @@ export function VncViewer({ target, createSession, onClose }: Props) {
       rfb.compressionLevel = qp.compression;
 
       rfb.addEventListener('connect', () => {
+        userClosedRef.current = false;
+        autoRetryRef.current = 0;
+        lastActivityRef.current = Date.now();
         setState('connected');
         setStatusText(t('vnc.viewer.connected'));
         setNeedPassword(false);
+        setIdleHint(false);
       });
       rfb.addEventListener('disconnect', (ev: Event) => {
         const detail = (
           ev as CustomEvent<{ clean?: boolean; reason?: string }>
         ).detail;
         const clean = Boolean(detail?.clean);
-        setState(clean ? 'closed' : 'error');
-        if (clean) {
-          setStatusText(t('vnc.viewer.disconnected'));
-        } else {
-          const reason = detail?.reason || '';
-          const msg = friendlyFailMessage(t, reason) || t('vnc.viewer.error');
-          setStatusText(t('vnc.viewer.error'));
-          setError(msg);
-        }
         rfbRef.current = null;
+        if (userClosedRef.current || clean) {
+          setState('closed');
+          setStatusText(t('vnc.viewer.disconnected'));
+          return;
+        }
+        // Unclean drop — auto-retry a few times
+        if (autoRetryRef.current < MAX_AUTO_RETRY) {
+          autoRetryRef.current += 1;
+          setState('connecting');
+          setStatusText(
+            t('vnc.viewer.reconnecting', {
+              n: String(autoRetryRef.current),
+              max: String(MAX_AUTO_RETRY),
+            }),
+          );
+          window.setTimeout(() => {
+            if (!userClosedRef.current) void connect({ isAuto: true });
+          }, 1500 * autoRetryRef.current);
+          return;
+        }
+        setState('error');
+        const reason = detail?.reason || '';
+        const msg = friendlyFailMessage(t, reason) || t('vnc.viewer.error');
+        setStatusText(t('vnc.viewer.error'));
+        setError(msg);
       });
       rfb.addEventListener('credentialsrequired', () => {
         setNeedPassword(true);
@@ -217,8 +251,11 @@ export function VncViewer({ target, createSession, onClose }: Props) {
   }, [createSession, password, qualityPreset, scale, t, target]);
 
   useEffect(() => {
+    userClosedRef.current = false;
+    autoRetryRef.current = 0;
     void connect();
     return () => {
+      userClosedRef.current = true;
       try {
         rfbRef.current?.disconnect();
       } catch {
@@ -243,6 +280,21 @@ export function VncViewer({ target, createSession, onClose }: Props) {
     rfbRef.current.qualityLevel = qp.quality;
     rfbRef.current.compressionLevel = qp.compression;
   }, [qualityPreset]);
+
+  // Idle hint: after long silence while connected (activity = last clipboard / reconnect)
+  useEffect(() => {
+    if (state !== 'connected') {
+      setIdleHint(false);
+      return;
+    }
+    lastActivityRef.current = Date.now();
+    const id = window.setInterval(() => {
+      if (Date.now() - lastActivityRef.current >= IDLE_HINT_MS) {
+        setIdleHint(true);
+      }
+    }, 60_000);
+    return () => window.clearInterval(id);
+  }, [state]);
 
   const sendPassword = () => {
     if (!rfbRef.current || !password) return;
@@ -334,7 +386,15 @@ export function VncViewer({ target, createSession, onClose }: Props) {
           <Badge tone={tone}>{statusText || t(`vnc.viewer.${state}`, { defaultValue: state })}</Badge>
         </div>
         <ActionBar>
-          <Button size="sm" variant="secondary" onClick={() => void connect()}>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => {
+              lastActivityRef.current = Date.now();
+              setIdleHint(false);
+              void connect();
+            }}
+          >
             {t('vnc.viewer.reconnect')}
           </Button>
           <Button
@@ -448,6 +508,22 @@ export function VncViewer({ target, createSession, onClose }: Props) {
               {t('vnc.viewer.clipboardCopy')}
             </Button>
           </div>
+        </div>
+      ) : null}
+
+      {idleHint && state === 'connected' ? (
+        <div className="vnc-viewer__banner">
+          <p className="u-text-sm u-mb-0">{t('vnc.viewer.idleHint')}</p>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              lastActivityRef.current = Date.now();
+              setIdleHint(false);
+            }}
+          >
+            {t('vnc.viewer.idleDismiss')}
+          </Button>
         </div>
       ) : null}
 

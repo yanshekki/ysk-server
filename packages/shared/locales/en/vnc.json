@@ -76,7 +76,10 @@
     "errTimeoutGeneric": "Connection timed out — check network and firewall.",
     "errDns": "Cannot resolve host name «{{host}}».",
     "errDnsGeneric": "Host name could not be resolved.",
-    "errNet": "Network unreachable for {{host}}:{{port}}."
+    "errNet": "Network unreachable for {{host}}:{{port}}.",
+    "reconnecting": "Connection dropped — reconnecting ({{n}}/{{max}})…",
+    "idleHint": "Session has been idle for a while. The remote desktop may lock; move the mouse or reconnect if needed.",
+    "idleDismiss": "Still here"
   },
   "installHint": "TigerVNC → noVNC; XFCE optional",
   "needTigerVnc": "TigerVNC required",

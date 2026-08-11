@@ -307,13 +307,23 @@ export function VncPage() {
                   key: 'status',
                   header: t('vnc.colStatus'),
                   nowrap: true,
-                  render: (a) => (
-                    <Badge tone={accountStatusTone(a.status)}>
-                      {t(`vnc.accountStatus.${a.status}`, {
-                        defaultValue: a.status,
-                      })}
-                    </Badge>
-                  ),
+                  render: (a) => {
+                    const viewing =
+                      viewerTarget?.kind === 'account' &&
+                      viewerTarget.id === a.id;
+                    if (viewing) {
+                      return (
+                        <Badge tone="ok">{t('vnc.clientStatus.viewing')}</Badge>
+                      );
+                    }
+                    return (
+                      <Badge tone={accountStatusTone(a.status)}>
+                        {t(`vnc.accountStatus.${a.status}`, {
+                          defaultValue: a.status,
+                        })}
+                      </Badge>
+                    );
+                  },
                 },
                 {
                   key: 'desktop',
