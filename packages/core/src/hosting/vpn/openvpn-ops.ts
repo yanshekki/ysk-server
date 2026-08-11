@@ -28,6 +28,12 @@ import {
   normalizeVpnCidrList,
   parseAccessMode,
 } from './access-mode.js';
+import {
+  applyOvpnRemote,
+  formatVpnEndpoint,
+  guessPublicEndpoint,
+  parseVpnEndpoint,
+} from './endpoint.js';
 
 export type OvpnServerState = {
   listenPort: number;
@@ -152,6 +158,22 @@ export async function ensureOpenVpnServer(
     if (!state.lanCidrs?.length) state.lanCidrs = [...DEFAULT_VPN_LAN_CIDRS];
   }
 
+  // Normalize / autofill public endpoint (reject "51820:1194" style typos)
+  let ep = parseVpnEndpoint(state.endpoint, state.listenPort);
+  if (!ep.ok) {
+    const guessed = await guessPublicEndpoint(host, state.listenPort);
+    if (guessed) {
+      state.endpoint = guessed;
+      ep = parseVpnEndpoint(state.endpoint, state.listenPort);
+      notes.push(tl('notes.vpn.endpointAutofilled', { endpoint: state.endpoint }));
+    } else {
+      state.endpoint = '';
+      notes.push(tl('notes.vpn.setEndpointHint'));
+    }
+  } else {
+    state.endpoint = formatVpnEndpoint(ep.host, ep.port) || `${ep.host}:${ep.port}`;
+  }
+
   const caKey = join(pki, 'private', 'ca.key');
   const caCrt = join(pki, 'ca.crt');
   const srvKey = join(pki, 'private', 'server.key');
@@ -188,6 +210,12 @@ export async function ensureOpenVpnServer(
   }
 
   saveOvpnServer(dataDir, state);
+
+  // Rewrite client .ovpn remote lines so download/QR never keep a bad host
+  const rewritten = rewriteAllOvpnClientRemotes(dataDir);
+  if (rewritten > 0) {
+    notes.push(tl('notes.vpn.ovpnClientsRewritten', { n: String(rewritten) }));
+  }
 
   const accessMode = parseAccessMode(state.accessMode ?? 'full');
   const lanCidrs = normalizeVpnCidrList(state.lanCidrs ?? [...DEFAULT_VPN_LAN_CIDRS]);
@@ -374,10 +402,10 @@ export async function addOvpnPeer(
     'utf8',
   );
 
-  const remoteHost = (state.endpoint.split(':')[0] || 'YOUR_PUBLIC_IP').trim();
+  const ep = parseVpnEndpoint(state.endpoint, state.listenPort);
   const config = buildOpenVpnClientOvpn({
-    remote: remoteHost,
-    port: state.listenPort,
+    remote: ep.host,
+    port: ep.port,
     proto: state.proto,
     caCrt: readFileSync(caCrt, 'utf8'),
     clientCrt: readFileSync(clientCrt, 'utf8'),
@@ -399,9 +427,34 @@ export async function addOvpnPeer(
     config,
     notes: [
       tl('notes.vpn.peerCreated', { name }),
-      !state.endpoint ? tl('notes.vpn.setEndpointHint') : '',
+      !ep.ok ? tl('notes.vpn.setEndpointHint') : '',
     ].filter(Boolean),
   };
+}
+
+/** Re-apply current server endpoint to every stored .ovpn (download / QR source). */
+export function rewriteAllOvpnClientRemotes(dataDir: string): number {
+  const state = loadOvpnServer(dataDir);
+  if (!state) return 0;
+  const ep = parseVpnEndpoint(state.endpoint, state.listenPort);
+  const clientsDir = join(ovpnServerDir(dataDir), 'clients');
+  if (!existsSync(clientsDir)) return 0;
+  let n = 0;
+  for (const peer of state.peers) {
+    const path = join(clientsDir, `${peer.id}.ovpn`);
+    if (!existsSync(path)) continue;
+    try {
+      const prev = readFileSync(path, 'utf8');
+      const next = applyOvpnRemote(prev, ep.host, ep.port);
+      if (next !== prev) {
+        writeFileSync(path, next, 'utf8');
+        n++;
+      }
+    } catch {
+      /* skip */
+    }
+  }
+  return n;
 }
 
 export function getOvpnPeerConfig(
@@ -419,7 +472,13 @@ export function getOvpnPeerConfig(
   } catch {
     /* */
   }
-  return { config: readFileSync(ovpn, 'utf8'), filename: `${name}.ovpn` };
+  const raw = readFileSync(ovpn, 'utf8');
+  const state = loadOvpnServer(dataDir);
+  const port = state?.listenPort ?? 1194;
+  const ep = parseVpnEndpoint(state?.endpoint, port);
+  // Always emit live endpoint — never serve stale remote 51820 …
+  const config = applyOvpnRemote(raw, ep.host, ep.port);
+  return { config, filename: `${name}.ovpn` };
 }
 
 export async function deleteOvpnPeer(

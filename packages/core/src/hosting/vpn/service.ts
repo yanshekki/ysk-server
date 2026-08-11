@@ -64,6 +64,11 @@ import {
   parseAccessMode,
   wgClientAllowedIps,
 } from './access-mode.js';
+import {
+  formatVpnEndpoint,
+  guessPublicEndpoint,
+  parseVpnEndpoint,
+} from './endpoint.js';
 
 type WgServerState = {
   privateKey: string;
@@ -251,9 +256,26 @@ export class VpnService {
       },
     ];
 
+    // Prefer any valid host:port (reject stale "51820:1194" typos in hint)
+    const candidates = [
+      wgState?.endpoint,
+      loadOvpnServer(this.dataDir)?.endpoint,
+      loadSsServer(this.dataDir)?.endpoint,
+    ];
+    let endpointHint: string | null = null;
+    for (const c of candidates) {
+      const raw = (c || '').trim();
+      if (!raw) continue;
+      const p = parseVpnEndpoint(raw, 1);
+      if (p.ok) {
+        endpointHint = formatVpnEndpoint(p.host, p.port) || `${p.host}:${p.port}`;
+        break;
+      }
+    }
+
     return {
       engines,
-      endpointHint: wgState?.endpoint || null,
+      endpointHint,
       executeEnabled: this.host.executeEnabled(),
       isRoot: this.host.isRoot(),
     };
@@ -359,6 +381,23 @@ export class VpnService {
       if (input.lanCidrs != null) state.lanCidrs = normalizeVpnCidrList(input.lanCidrs);
       if (input.customCidrs != null) state.customCidrs = normalizeVpnCidrList(input.customCidrs);
       if (!state.accessMode) state.accessMode = 'full';
+    }
+
+    // Normalize / autofill public endpoint (reject "51820:1194" style typos)
+    let ep = parseVpnEndpoint(state.endpoint, state.listenPort);
+    if (!ep.ok) {
+      const guessed = await guessPublicEndpoint(this.host, state.listenPort);
+      if (guessed) {
+        state.endpoint = guessed;
+        ep = parseVpnEndpoint(state.endpoint, state.listenPort);
+        notes.push(tl('notes.vpn.endpointAutofilled', { endpoint: state.endpoint }));
+      } else {
+        state.endpoint = '';
+        notes.push(tl('notes.vpn.setEndpointHint'));
+      }
+    } else {
+      state.endpoint =
+        formatVpnEndpoint(ep.host, ep.port) || `${ep.host}:${ep.port}`;
     }
 
     this.saveWgServer(state);
@@ -530,9 +569,10 @@ export class VpnService {
       customCidrs: state.customCidrs,
     });
 
-    const endpoint =
-      state.endpoint ||
-      (await this.guessEndpoint(state.listenPort));
+    const ep = parseVpnEndpoint(state.endpoint, state.listenPort);
+    const endpoint = ep.ok
+      ? `${ep.host}:${ep.port}`
+      : (await this.guessEndpoint(state.listenPort));
 
     const config = buildClientConf({
       privateKey: peer.privateKey,
@@ -560,7 +600,7 @@ export class VpnService {
       notes: [
         tl('notes.vpn.peerCreated', { name }),
         ...reapply.notes,
-        !state.endpoint ? tl('notes.vpn.setEndpointHint') : '',
+        !ep.ok && !state.endpoint ? tl('notes.vpn.setEndpointHint') : '',
       ].filter(Boolean),
     };
   }
@@ -574,7 +614,10 @@ export class VpnService {
     if (!state) return null;
     const peer = state.peers.find((p) => p.id === peerId);
     if (!peer) return null;
-    const endpoint = state.endpoint || `YOUR_PUBLIC_IP:${state.listenPort}`;
+    const ep = parseVpnEndpoint(state.endpoint, state.listenPort);
+    const endpoint = ep.ok
+      ? `${ep.host}:${ep.port}`
+      : `YOUR_PUBLIC_IP:${state.listenPort}`;
     const config = buildClientConf({
       privateKey: peer.privateKey,
       address: peer.address,

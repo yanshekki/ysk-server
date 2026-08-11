@@ -39,6 +39,7 @@ import {
   type VpnStatusResponse,
 } from '../../features/vpn/api';
 import {
+  buildEndpoint,
   confDownloadName,
   defaultPortForEngine,
   detectClientEngine,
@@ -159,7 +160,13 @@ export function VpnPage() {
       const s = await vpnApi.status();
       setStatus(s);
       setEndpoint((prev) => {
-        if (prev.trim()) return prev;
+        const prevHost = hostFromEndpoint(prev, '');
+        // Drop invalid digit-only host typos (e.g. 51820:1194)
+        if (prev.trim() && !prevHost) {
+          const hint = (s.endpointHint || '').trim();
+          return hint || '';
+        }
+        if (prevHost) return prev;
         const hint = (s.endpointHint || '').trim();
         if (!hint) return prev;
         // If hint has no port, attach default WG port
@@ -574,7 +581,13 @@ export function VpnPage() {
                   vpnApi.ensureServer({
                     engine,
                     listenPort,
-                    endpoint: endpoint || undefined,
+                    // Never send digit-only host typos like "51820:1194"
+                    endpoint: (() => {
+                      const h = hostFromEndpoint(endpoint, '');
+                      return h
+                        ? buildEndpoint(h, listenPort) || undefined
+                        : undefined;
+                    })(),
                     proto: engine === 'openvpn' ? ovpnProto : undefined,
                     accessMode:
                       engine === 'openvpn' || engine === 'wireguard'

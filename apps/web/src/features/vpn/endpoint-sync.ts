@@ -28,19 +28,24 @@ export function hostFromEndpoint(endpoint: string, fallbackHost = ''): string {
   if (!e) return fallbackHost;
   if (e.startsWith('[')) {
     const m = e.match(/^(\[[^\]]+\])(?::\d+)?$/);
-    return m?.[1] ?? e;
+    const h = m?.[1] ?? e;
+    // bare numeric inside brackets is still weird — keep fallback if empty
+    return h || fallbackHost;
   }
   const lastColon = e.lastIndexOf(':');
+  let host = e;
   if (lastColon > 0 && /^\d+$/.test(e.slice(lastColon + 1))) {
-    return e.slice(0, lastColon) || fallbackHost;
+    host = e.slice(0, lastColon);
   }
-  return e;
+  // Reject "51820:1194" / bare port as host — never treat digits-only as hostname
+  if (!host || /^\d+$/.test(host)) return fallbackHost;
+  return host;
 }
 
-/** host:port; empty host → just port string for placeholder recovery. */
+/** host:port; never emit digit-only host typos like "51820:1194". */
 export function buildEndpoint(host: string, port: number): string {
   const h = host.trim();
-  if (!h) return String(port);
+  if (!h || /^\d+$/.test(h)) return '';
   return `${h}:${port}`;
 }
 

@@ -26,6 +26,15 @@ describe('vpn endpoint-sync', () => {
     expect(buildEndpoint('vpn.example.com', 1194)).toBe('vpn.example.com:1194');
   });
 
+  it('rejects digit-only host typos like 51820:1194', () => {
+    expect(hostFromEndpoint('51820:1194', '')).toBe('');
+    expect(hostFromEndpoint('51820:1194', 'fallback.example')).toBe(
+      'fallback.example',
+    );
+    expect(buildEndpoint('51820', 1194)).toBe('');
+    expect(syncEndpointPort('51820:1194', 1194, '1.2.3.4')).toBe('1.2.3.4:1194');
+  });
+
   it('default ports', () => {
     expect(defaultPortForEngine('wireguard')).toBe(51820);
     expect(defaultPortForEngine('openvpn', 'udp')).toBe(1194);

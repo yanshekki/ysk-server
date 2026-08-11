@@ -10,6 +10,11 @@ import { tl } from '@ysk/shared';
 import type { HostExecutor } from '../../host/executor.js';
 import type { VpnServerPeer } from './types.js';
 import { sanitizePeerName } from './wireguard-conf.js';
+import {
+  formatVpnEndpoint,
+  guessPublicEndpoint,
+  parseVpnEndpoint,
+} from './endpoint.js';
 
 export type SsServerState = {
   listenPort: number;
@@ -71,36 +76,12 @@ export function buildSsUri(input: {
   return `ss://${b64}@${input.host}:${input.port}${tag}`;
 }
 
-/**
- * Parse panel "公開端點" host[:port].
- * Rejects mistakes like "51820:8388" (WG port used as host).
- */
+/** Alias kept for SS call sites / tests */
 export function parseSsEndpoint(
   endpoint: string | undefined | null,
   listenPort: number,
-): { host: string; port: number; ok: boolean } {
-  const raw = (endpoint || '').trim();
-  if (!raw) return { host: 'YOUR_PUBLIC_IP', port: listenPort, ok: false };
-  // [ipv6]:port
-  const v6 = raw.match(/^\[([^\]]+)\](?::(\d+))?$/);
-  if (v6) {
-    return { host: v6[1], port: v6[2] ? Number(v6[2]) : listenPort, ok: true };
-  }
-  const parts = raw.split(':');
-  if (parts.length === 1) {
-    const h = parts[0].trim();
-    const ok = !/^\d+$/.test(h);
-    return { host: ok ? h : 'YOUR_PUBLIC_IP', port: listenPort, ok };
-  }
-  // host:port — last segment port
-  const portStr = parts[parts.length - 1];
-  const host = parts.slice(0, -1).join(':').trim();
-  const port = /^\d+$/.test(portStr) ? Number(portStr) : listenPort;
-  // "51820:8388" → host is digits only → invalid
-  if (!host || /^\d+$/.test(host)) {
-    return { host: 'YOUR_PUBLIC_IP', port: listenPort, ok: false };
-  }
-  return { host, port: Number.isFinite(port) ? port : listenPort, ok: true };
+) {
+  return parseVpnEndpoint(endpoint, listenPort);
 }
 
 export function listSsPeers(dataDir: string): VpnServerPeer[] {
@@ -119,21 +100,7 @@ export function listSsPeers(dataDir: string): VpnServerPeer[] {
 
 /** Best-effort public IP:port for QR / mobile clients (every install host). */
 export async function guessSsEndpoint(host: HostExecutor, port: number): Promise<string> {
-  try {
-    const r = await host.runCommand(
-      [
-        'bash',
-        '-c',
-        'curl -4 -fsS --max-time 3 https://ifconfig.me/ip 2>/dev/null || curl -4 -fsS --max-time 3 https://api.ipify.org 2>/dev/null || curl -4 -fsS --max-time 3 https://icanhazip.com 2>/dev/null || true',
-      ],
-      { timeoutMs: 10_000 },
-    );
-    const ip = (r.stdout || '').trim().split(/\s+/)[0] || '';
-    if (ip && /^\d+\.\d+\.\d+\.\d+$/.test(ip)) return `${ip}:${port}`;
-  } catch {
-    /* */
-  }
-  return '';
+  return guessPublicEndpoint(host, port);
 }
 
 /** Rewrite all peer ss:// files from current server.json (after endpoint/password change). */
@@ -214,13 +181,14 @@ export async function ensureSsServer(
     if (guessed) {
       state.endpoint = guessed;
       ep = parseSsEndpoint(state.endpoint, state.listenPort);
-      notes.push(tl('notes.vpn.ssEndpointAutofilled', { endpoint: state.endpoint }));
+      notes.push(tl('notes.vpn.endpointAutofilled', { endpoint: state.endpoint }));
     } else {
       notes.push(tl('notes.vpn.setEndpointHint'));
     }
   } else {
     // Canonical host:port form
-    state.endpoint = `${ep.host}:${ep.port}`;
+    state.endpoint =
+      formatVpnEndpoint(ep.host, ep.port) || `${ep.host}:${ep.port}`;
   }
   saveSsServer(dataDir, state);
 
