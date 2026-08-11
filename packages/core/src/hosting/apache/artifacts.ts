@@ -3,7 +3,7 @@
  */
 
 import { existsSync, readdirSync, readFileSync, unlinkSync } from 'node:fs';
-import { basename, join } from 'node:path';
+import { join } from 'node:path';
 import type { HostExecutor } from '../../host/executor.js';
 import { tl } from '@ysk/shared';
 import {
