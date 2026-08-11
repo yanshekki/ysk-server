@@ -26,7 +26,7 @@ export async function lookupDns(input: {
   host?: HostExecutor;
   name: string;
   type?: DnsLookupType;
-  /** e.g. 127.0.0.1 or 84.32.34.14 — dig @server */
+  /** e.g. 127.0.0.1 or 203.0.113.10 — dig @server (TEST-NET-3 doc IP) */
   server?: string;
 }): Promise<DnsLookupResult> {
   const name = input.name.trim().replace(/\.$/, '');
