@@ -11146,7 +11146,14 @@
       "screenshot": "Screenshot",
       "screenshotSaved": "Screenshot downloaded",
       "screenshotFailed": "Could not capture screenshot",
-      "screenshotNoCanvas": "Display not ready for screenshot"
+      "screenshotNoCanvas": "Display not ready for screenshot",
+      "record": "Record",
+      "recordStop": "Stop rec",
+      "recordHint": "Record desktop to WebM (max 60s)",
+      "recordStarted": "Recording… click Stop rec or wait 60s",
+      "recordSaved": "Recording downloaded",
+      "recordFailed": "Could not record",
+      "recordUnsupported": "This browser cannot record the canvas"
     },
     "installHint": "TigerVNC → noVNC; XFCE optional",
     "needTigerVnc": "TigerVNC required",

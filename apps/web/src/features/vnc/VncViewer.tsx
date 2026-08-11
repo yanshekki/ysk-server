@@ -114,8 +114,12 @@ export function VncViewer({ target, createSession, onClose, onShare }: Props) {
   const userClosedRef = useRef(false);
   const lastActivityRef = useRef(Date.now());
   const [idleHint, setIdleHint] = useState(false);
+  const mediaRecRef = useRef<MediaRecorder | null>(null);
+  const recChunksRef = useRef<Blob[]>([]);
+  const [recording, setRecording] = useState(false);
   const MAX_AUTO_RETRY = 2;
   const IDLE_HINT_MS = 15 * 60_000;
+  const MAX_REC_MS = 60_000;
 
   const disconnect = useCallback(() => {
     userClosedRef.current = true;
@@ -370,12 +374,18 @@ export function VncViewer({ target, createSession, onClose, onShare }: Props) {
     }
   };
 
+  const canvasEl = (): HTMLCanvasElement | null => {
+    const root = screenRef.current;
+    if (!root) return null;
+    const canvas = root.querySelector('canvas');
+    return canvas instanceof HTMLCanvasElement ? canvas : null;
+  };
+
   /** Capture current RFB canvas as PNG download. */
   const takeScreenshot = () => {
-    const root = screenRef.current;
-    if (!root || state !== 'connected') return;
-    const canvas = root.querySelector('canvas');
-    if (!canvas || !(canvas instanceof HTMLCanvasElement)) {
+    if (state !== 'connected') return;
+    const canvas = canvasEl();
+    if (!canvas) {
       notifyWarn(t('vnc.viewer.screenshotNoCanvas'));
       return;
     }
@@ -391,6 +401,99 @@ export function VncViewer({ target, createSession, onClose, onShare }: Props) {
       notifyWarn(t('vnc.viewer.screenshotFailed'));
     }
   };
+
+  const stopRecording = useCallback(() => {
+    const rec = mediaRecRef.current;
+    if (!rec) return;
+    try {
+      if (rec.state !== 'inactive') rec.stop();
+    } catch {
+      /* */
+    }
+  }, []);
+
+  /** Record canvas stream to WebM (max ~60s). */
+  const toggleRecording = () => {
+    if (recording) {
+      stopRecording();
+      return;
+    }
+    if (state !== 'connected') return;
+    const canvas = canvasEl();
+    if (!canvas || typeof canvas.captureStream !== 'function') {
+      notifyWarn(t('vnc.viewer.recordUnsupported'));
+      return;
+    }
+    try {
+      const stream = canvas.captureStream(15);
+      const mime =
+        MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+          ? 'video/webm;codecs=vp9'
+          : MediaRecorder.isTypeSupported('video/webm')
+            ? 'video/webm'
+            : '';
+      if (!mime || typeof MediaRecorder === 'undefined') {
+        notifyWarn(t('vnc.viewer.recordUnsupported'));
+        return;
+      }
+      recChunksRef.current = [];
+      const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 2_500_000 });
+      mediaRecRef.current = rec;
+      rec.ondataavailable = (ev) => {
+        if (ev.data.size > 0) recChunksRef.current.push(ev.data);
+      };
+      rec.onstop = () => {
+        setRecording(false);
+        mediaRecRef.current = null;
+        const blob = new Blob(recChunksRef.current, { type: mime.split(';')[0] || 'video/webm' });
+        recChunksRef.current = [];
+        if (blob.size < 1) {
+          notifyWarn(t('vnc.viewer.recordFailed'));
+          return;
+        }
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const safe = target.label.replace(/[^\w.-]+/g, '_').slice(0, 40) || 'vnc';
+        a.href = url;
+        a.download = `${safe}-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.webm`;
+        a.click();
+        URL.revokeObjectURL(url);
+        notifyOk(t('vnc.viewer.recordSaved'));
+        try {
+          stream.getTracks().forEach((tr) => tr.stop());
+        } catch {
+          /* */
+        }
+      };
+      rec.onerror = () => {
+        setRecording(false);
+        mediaRecRef.current = null;
+        notifyWarn(t('vnc.viewer.recordFailed'));
+      };
+      rec.start(500);
+      setRecording(true);
+      notifyOk(t('vnc.viewer.recordStarted'));
+      window.setTimeout(() => {
+        if (mediaRecRef.current === rec && rec.state !== 'inactive') {
+          stopRecording();
+        }
+      }, MAX_REC_MS);
+    } catch {
+      notifyWarn(t('vnc.viewer.recordFailed'));
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      try {
+        if (mediaRecRef.current && mediaRecRef.current.state !== 'inactive') {
+          mediaRecRef.current.stop();
+        }
+      } catch {
+        /* */
+      }
+    };
+  }, []);
 
   const tone =
     state === 'connected'
@@ -449,6 +552,15 @@ export function VncViewer({ target, createSession, onClose, onShare }: Props) {
             title={t('vnc.viewer.screenshot')}
           >
             {t('vnc.viewer.screenshot')}
+          </Button>
+          <Button
+            size="sm"
+            variant={recording ? 'danger' : 'secondary'}
+            onClick={toggleRecording}
+            disabled={state !== 'connected' && !recording}
+            title={t('vnc.viewer.recordHint')}
+          >
+            {recording ? t('vnc.viewer.recordStop') : t('vnc.viewer.record')}
           </Button>
           <Button
             size="sm"
