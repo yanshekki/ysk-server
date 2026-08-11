@@ -723,11 +723,13 @@ export function VpnPage() {
         {tab === 'about' ? <PageGuide guideId="vpn" /> : null}
       </PageTabs>
 
-      {/* Config / QR modal */}
+      {/* Config / QR modal — high-contrast conf + QR plate */}
       <Modal
         open={cfgOpen}
         onClose={() => setCfgOpen(false)}
         title={t('vpn.qrTitle', { name: cfgLabel })}
+        size="lg"
+        className="vpn-cfg-modal"
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setCfgOpen(false)}>
@@ -758,21 +760,33 @@ export function VpnPage() {
           </>
         }
       >
-        <div className="stack">
+        <div className="vpn-cfg">
           {cfgQr ? (
-            <>
-              <img src={cfgQr} alt="QR" width={280} height={280} />
-              <p className="muted u-text-xs">
+            <div className="vpn-cfg__qr-wrap">
+              <div className="vpn-cfg__qr-plate">
+                <img src={cfgQr} alt="" width={240} height={240} />
+              </div>
+              <p className="vpn-cfg__hint">
                 {cfgEngine === 'outline' ? t('vpn.qrHintSs') : t('vpn.qrHintWg')}
               </p>
-            </>
+            </div>
           ) : null}
-          <details open={!cfgQr}>
-            <summary>{t('vpn.showConf')}</summary>
-            <pre className="vpn-conf__pre" style={{ maxHeight: 240, overflow: 'auto' }}>
+
+          <div className="vpn-cfg__section">
+            <div className="vpn-cfg__section-head">
+              <h4 className="vpn-cfg__section-title">{t('vpn.showConf')}</h4>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => void copyText(cfgText)}
+              >
+                {t('vpn.copyConf')}
+              </Button>
+            </div>
+            <pre className="vpn-conf__pre" tabIndex={0}>
               {cfgText}
             </pre>
-          </details>
+          </div>
         </div>
       </Modal>
 
