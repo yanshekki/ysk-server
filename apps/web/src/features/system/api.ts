@@ -530,6 +530,15 @@ export const systemApi = {
       body: JSON.stringify(body),
       allowStatuses: [403, 422],
     }),
+  runtimePanelDefaults: () =>
+    api.requestRaw<{ ok: boolean; defaults: Record<string, string> }>(
+      '/api/v1/hosting/runtimes/panel-defaults',
+    ),
+  setRuntimePanelDefault: (body: { kind: string; version: string }) =>
+    api.requestRaw<{ ok: boolean; defaults: Record<string, string> }>(
+      '/api/v1/hosting/runtimes/panel-defaults',
+      { method: 'PUT', body: JSON.stringify(body) },
+    ),
   runtimePlugins: (kind: string, opts?: { bust?: boolean }) => {
     const q = new URLSearchParams({ kind });
     if (opts?.bust) q.set('_', String(Date.now()));

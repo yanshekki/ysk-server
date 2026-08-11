@@ -35,6 +35,7 @@ import {
   resolveRuntimeInstallState,
   versionChipLabel } from '../../features/runtimes/install-state';
 import { RuntimeInstallActions } from '../../features/runtimes/RuntimeInstallActions';
+import { supportsHostDefault } from '../../features/runtimes/install-state';
 import { api } from '../../shared/services/api';
 import { toast } from '../../shared/stores/toast-store';
 import { usePageTab } from '../../shared/hooks/usePageTab';
@@ -765,6 +766,50 @@ export function PhpRuntimePage() {
                       newer: phpInstallState.newerAvailable.join(', ') })}
                   </FormHint>
                 ) : null}
+                <FormActions>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    loading={busy}
+                    onClick={() =>
+                      void run(async () => {
+                        await systemApi.setRuntimePanelDefault({
+                          kind: 'php',
+                          version,
+                        });
+                        return {
+                          ok: true,
+                          notes: [t('runtime.panelDefaultSaved', { version })],
+                        } as OpsResultLike;
+                      }, t('runtime.panelDefaultSaved', { version }))
+                    }
+                  >
+                    {t('runtime.setPanelDefault')}
+                  </Button>
+                  {supportsHostDefault('php') && phpInstallState.selectedInstalled ? (
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      loading={busy}
+                      disabled={phpInstallState.selectedActive}
+                      onClick={() =>
+                        void run(async () => {
+                          const r = await systemApi.runtimeSwitch({
+                            kind: 'php',
+                            version,
+                          });
+                          await refresh();
+                          return r as OpsResultLike;
+                        }, t('runtime.switchDefaultBtn', { version }))
+                      }
+                    >
+                      {phpInstallState.selectedActive
+                        ? t('runtime.alreadyHostDefault', { version })
+                        : t('runtime.setHostDefault')}
+                    </Button>
+                  ) : null}
+                </FormActions>
+                <FormHint>{t('runtime.panelDefaultExplain')}</FormHint>
                 <InstallStreamPanel lines={installLog} busy={busy} />
                 {extOps ? (
                   <div className="u-mt-3">

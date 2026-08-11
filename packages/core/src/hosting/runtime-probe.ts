@@ -1577,7 +1577,7 @@ export async function switchRuntimeDefault(input: {
   const rootOn = input.host.isRoot();
   const can = execOn && rootOn;
 
-  const switchable: RuntimeKind[] = ['go', 'rust', 'node', 'bun'];
+  const switchable: RuntimeKind[] = ['go', 'rust', 'node', 'bun', 'php', 'python'];
   if (!switchable.includes(input.kind)) {
     return {
       ok: false,
@@ -1679,8 +1679,46 @@ export async function switchRuntimeDefault(input: {
       '',
     ].join('\n');
     notes.push(`Switch active Node symlink → ${plan.version}`);
-  } else {
-    // bun
+  } else if (input.kind === 'php') {
+    const plan = selectPhpRuntime(input.version);
+    script = [
+      'set -euo pipefail',
+      `VER=${JSON.stringify(plan.version)}`,
+      'BIN=""',
+      'if [ -x "/usr/bin/php$VER" ]; then BIN="/usr/bin/php$VER"; fi',
+      'if [ -z "$BIN" ] && [ -x "/usr/local/bin/php$VER" ]; then BIN="/usr/local/bin/php$VER"; fi',
+      'if [ -z "$BIN" ]; then echo "php$VER not found — install PHP $VER first" >&2; exit 2; fi',
+      'mkdir -p /usr/local/bin',
+      'ln -sfn "$BIN" /usr/local/bin/php',
+      'if command -v update-alternatives >/dev/null 2>&1 && [ -x /usr/bin/php ]; then',
+      '  update-alternatives --set php "$BIN" 2>/dev/null || true',
+      'fi',
+      'echo "YSK_PHP_ACTIVE=$VER"',
+      '"$BIN" -v | head -1',
+      'readlink -f /usr/local/bin/php || true',
+      '',
+    ].join('\n');
+    notes.push(`Switch host PHP CLI → ${plan.version}`);
+  } else if (input.kind === 'python') {
+    const plan = selectPythonRuntime(input.version);
+    script = [
+      'set -euo pipefail',
+      `VER=${JSON.stringify(plan.version)}`,
+      'BIN=""',
+      'if [ -x "/usr/bin/python$VER" ]; then BIN="/usr/bin/python$VER"; fi',
+      'if [ -z "$BIN" ] && [ -x "/usr/local/bin/python$VER" ]; then BIN="/usr/local/bin/python$VER"; fi',
+      'if [ -z "$BIN" ] && [ -x "/usr/local/ysk/python/$VER/bin/python$VER" ]; then BIN="/usr/local/ysk/python/$VER/bin/python$VER"; fi',
+      'if [ -z "$BIN" ]; then echo "python$VER not found — install Python $VER first" >&2; exit 2; fi',
+      'mkdir -p /usr/local/bin',
+      'ln -sfn "$BIN" /usr/local/bin/python3',
+      'ln -sfn "$BIN" /usr/local/bin/python 2>/dev/null || true',
+      'echo "YSK_PYTHON_ACTIVE=$VER"',
+      '"$BIN" --version',
+      'readlink -f /usr/local/bin/python3 || true',
+      '',
+    ].join('\n');
+    notes.push(`Switch host Python CLI → ${plan.version}`);
+  } else if (input.kind === 'bun') {
     const plan = selectBunRuntime(input.version);
     script = [
       'set -euo pipefail',

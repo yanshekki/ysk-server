@@ -230,10 +230,12 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
     try {
       const r = (await systemApi.runtimes()) as Record<string, unknown>;
       setProbe(r);
+      const pd = r.panelDefaults as Record<string, string> | undefined;
+      if (pd && pd[kind]) setPanelDefault(String(pd[kind]));
     } catch {
       /* optional */
     }
-  }, []);
+  }, [kind]);
 
   const loadTuning = useCallback(async () => {
     if (!isTuningKind(kind)) return;
@@ -375,12 +377,13 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
   const [defaultConfirmOpen, setDefaultConfirmOpen] = useState(false);
   const [uninstallConfirmOpen, setUninstallConfirmOpen] = useState(false);
   const [uninstallTarget, setUninstallTarget] = useState<string | null>(null);
+  const [panelDefault, setPanelDefault] = useState<string | null>(null);
 
   const runSwitchDefault = useCallback(
     (targetVersion: string) =>
       void run(async () => {
         const r = await systemApi.runtimeSwitch({
-          kind: kind as 'go' | 'rust' | 'node' | 'bun',
+          kind: kind as 'go' | 'rust' | 'node' | 'bun' | 'php' | 'python',
           version: targetVersion,
         });
         await refresh();
@@ -388,6 +391,22 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
         return r as OpsResultLike;
       }, t('runtime.switchDefaultBtn', { version: targetVersion })),
     [kind, run, refresh, t],
+  );
+
+  const runSetPanelDefault = useCallback(
+    (targetVersion: string) =>
+      void run(async () => {
+        const r = await systemApi.setRuntimePanelDefault({
+          kind,
+          version: targetVersion,
+        });
+        setPanelDefault(targetVersion);
+        return {
+          ok: Boolean(r.ok),
+          notes: [t('runtime.panelDefaultSaved', { version: targetVersion })],
+        } as OpsResultLike;
+      }, t('runtime.panelDefaultSaved', { version: targetVersion })),
+    [kind, run, t],
   );
 
   const runUninstallVersion = useCallback(
@@ -735,8 +754,19 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                 {!hostDefaultOk ? (
                   <FormHint>{t('runtime.hostDefaultUnsupported')}</FormHint>
                 ) : null}
-                {versionUninstallOk && installState.selectedInstalled ? (
-                  <FormActions>
+                <FormActions>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    loading={busy}
+                    disabled={panelDefault === version}
+                    onClick={() => runSetPanelDefault(version)}
+                  >
+                    {panelDefault === version
+                      ? t('runtime.alreadyPanelDefault', { version })
+                      : t('runtime.setPanelDefault')}
+                  </Button>
+                  {versionUninstallOk && installState.selectedInstalled ? (
                     <Button
                       variant="danger"
                       size="md"
@@ -748,8 +778,15 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                     >
                       {t('runtime.uninstallVersion', { version })}
                     </Button>
-                  </FormActions>
-                ) : null}
+                  ) : null}
+                </FormActions>
+                {panelDefault ? (
+                  <FormHint>
+                    {t('runtime.panelDefaultHint', { version: panelDefault })}
+                  </FormHint>
+                ) : (
+                  <FormHint>{t('runtime.panelDefaultExplain')}</FormHint>
+                )}
                 {!versionUninstallOk ? (
                   <FormHint>{t('runtime.uninstallVersionUnsupported')}</FormHint>
                 ) : null}

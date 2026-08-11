@@ -29,8 +29,8 @@ describe('switchRuntimeDefault', () => {
   it('refuses kinds without host-default switch', async () => {
     const r = await switchRuntimeDefault({
       host: mockHost(() => ({})),
-      kind: 'php',
-      version: '8.2',
+      kind: 'java',
+      version: '21',
     });
     expect(r.ok).toBe(false);
   });

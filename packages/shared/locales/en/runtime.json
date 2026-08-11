@@ -483,5 +483,10 @@
   "uninstallVersionTitle": "Uninstall {{version}}?",
   "uninstallVersionConfirm": "Remove managed {{name}} {{version}} from this host (YSK install path or rustup toolchain). If it was the host default, CLI symlinks for that runtime will be cleared. Projects that pin another version are unchanged.",
   "uninstallVersionDone": "Uninstalled {{version}}",
-  "uninstallVersionUnsupported": "Per-version uninstall is not available for this runtime yet."
+  "uninstallVersionUnsupported": "Per-version uninstall is not available for this runtime yet.",
+  "setPanelDefault": "Set as panel default",
+  "alreadyPanelDefault": "Panel default · {{version}}",
+  "panelDefaultSaved": "Panel default set to {{version}}",
+  "panelDefaultHint": "New projects prefer panel default {{version}} (host CLI may differ).",
+  "panelDefaultExplain": "Panel default = preferred version for new sites/projects. Host default = system CLI (php/python/node…)."
 }

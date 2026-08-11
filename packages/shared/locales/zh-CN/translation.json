@@ -9554,7 +9554,12 @@
     "uninstallVersionTitle": "卸载 {{version}}？",
     "uninstallVersionConfirm": "将移除此主机上面板管理的 {{name}} {{version}}（YSK 安装目录或 rustup toolchain）。若为主机默认，会清除对应 CLI 符号链接。已钉其他版本的项目不受影响。",
     "uninstallVersionDone": "已卸载 {{version}}",
-    "uninstallVersionUnsupported": "此运行时暂不支持按版本卸载。"
+    "uninstallVersionUnsupported": "此运行时暂不支持按版本卸载。",
+    "setPanelDefault": "设为面板默认",
+    "alreadyPanelDefault": "面板默认 · {{version}}",
+    "panelDefaultSaved": "已将面板默认设为 {{version}}",
+    "panelDefaultHint": "新建项目会优先使用面板默认 {{version}}（主机 CLI 可能不同）。",
+    "panelDefaultExplain": "面板默认 = 新建站点／项目首选版本。主机默认 = 系统 CLI（php／python／node…）。"
   },
   "security": {
     "title": "安全与审批",

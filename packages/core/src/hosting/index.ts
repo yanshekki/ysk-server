@@ -48,6 +48,7 @@ export * from './dns-health.js';
 export * from './powerdns-apply.js';
 export * from './apply-honesty.js';
 export * from './runtime-probe.js';
+export * from './runtime-panel-defaults.js';
 export * from './production-readiness.js';
 export * from './datadir-perms.js';
 export * from './web-ui-build.js';

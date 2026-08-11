@@ -483,5 +483,10 @@
   "uninstallVersionTitle": "解除安裝 {{version}}？",
   "uninstallVersionConfirm": "將移除此主機上面板管理嘅 {{name}} {{version}}（YSK 安裝目錄或 rustup toolchain）。若係主機預設，會清除對應 CLI 符號連結。已釘其他版本嘅專案不受影響。",
   "uninstallVersionDone": "已解除安裝 {{version}}",
-  "uninstallVersionUnsupported": "此執行環境暫不支援按版本解除安裝。"
+  "uninstallVersionUnsupported": "此執行環境暫不支援按版本解除安裝。",
+  "setPanelDefault": "設為面板預設",
+  "alreadyPanelDefault": "面板預設 · {{version}}",
+  "panelDefaultSaved": "已將面板預設設為 {{version}}",
+  "panelDefaultHint": "新建專案會優先使用面板預設 {{version}}（主機 CLI 可能不同）。",
+  "panelDefaultExplain": "面板預設 = 新建站點／專案首選版本。主機預設 = 系統 CLI（php／python／node…）。"
 }

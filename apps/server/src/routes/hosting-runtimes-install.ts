@@ -34,7 +34,43 @@ export async function handleHostingRuntimesInstallRoutes(
         ctx.auth.authenticate(getBearer(req));
         const supported = listSupportedRuntimes();
         const probe = await probeRuntimes(ctx.host, { dataDir: ctx.dataDir });
-        sendJson(res, 200, { supported, probe });
+        const { loadPanelRuntimeDefaults } = await import('@ysk/core');
+        const panelDefaults = loadPanelRuntimeDefaults(ctx.dataDir);
+        sendJson(res, 200, { supported, probe, panelDefaults });
+        return true;
+      }
+      if (method === 'GET' && url.pathname === '/api/v1/hosting/runtimes/panel-defaults') {
+        ctx.auth.authenticate(getBearer(req));
+        const { loadPanelRuntimeDefaults } = await import('@ysk/core');
+        sendJson(res, 200, {
+          ok: true,
+          defaults: loadPanelRuntimeDefaults(ctx.dataDir),
+        });
+        return true;
+      }
+      if (method === 'PUT' && url.pathname === '/api/v1/hosting/runtimes/panel-defaults') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { kind?: string; version?: string };
+        const kind = String(data.kind ?? '').trim();
+        const version = String(data.version ?? '').trim();
+        if (!kind || !version) {
+          sendJson(res, 400, { ok: false, notes: ['kind and version required'] });
+          return true;
+        }
+        const { savePanelRuntimeDefault } = await import('@ysk/core');
+        const defaults = savePanelRuntimeDefault(
+          ctx.dataDir,
+          kind as 'node' | 'php' | 'python' | 'go' | 'rust' | 'java' | 'kotlin' | 'bun',
+          version,
+        );
+        ctx.audit.append({
+          actor: user.username,
+          action: 'hosting.runtime.panelDefault',
+          detail: { kind, version },
+          ok: true,
+        });
+        sendJson(res, 200, { ok: true, defaults });
         return true;
       }
       if (method === 'POST' && url.pathname === '/api/v1/hosting/runtimes/install') {

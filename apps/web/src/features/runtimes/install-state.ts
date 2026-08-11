@@ -26,9 +26,16 @@ export type RuntimeInstallState = {
   canSwitch: boolean;
 };
 
-/** Kinds that support panel-driven host default (symlink / rustup). */
+/** Kinds that support panel-driven host default (symlink / rustup / alternatives). */
 export function supportsHostDefault(kind: string): boolean {
-  return kind === 'go' || kind === 'rust' || kind === 'node' || kind === 'bun';
+  return (
+    kind === 'go' ||
+    kind === 'rust' ||
+    kind === 'node' ||
+    kind === 'bun' ||
+    kind === 'php' ||
+    kind === 'python'
+  );
 }
 
 /** Kinds that support removing one managed version from the panel. */
