@@ -14,7 +14,7 @@ import {
 import { authStore } from '../shared/stores/auth-store';
 
 import { RedisPage } from './features/RedisPage';
-import { FtpsServicePage } from './features/FtpsServicePage';
+import { FtpPage } from './features/FtpPage';
 import { ServicesPage } from './features/ServicesPage';
 import { Fail2banPage } from './features/Fail2banPage';
 import { FirewallPage } from './features/FirewallPage';
@@ -198,7 +198,7 @@ describe('functions-wave deep interactions', () => {
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
   });
 
-  it('FtpsServicePage tabs forms apply save', async () => {
+  it('FtpPage service tab forms apply save', async () => {
     const user = userEvent.setup();
     installFetchMock([
       softwareReadyRoute(),
@@ -207,7 +207,8 @@ describe('functions-wave deep interactions', () => {
         match: (url) =>
           url.includes('/system/ftps') ||
           url.includes('/api/v1/system/software') ||
-          url.includes('ftp'),
+          url.includes('ftp') ||
+          url.includes('sftp'),
         handler: (url, init) => {
           const method = (init?.method ?? 'GET').toUpperCase();
           if (method !== 'GET') return honesty();
@@ -238,19 +239,39 @@ describe('functions-wave deep interactions', () => {
               status: {
                 installed: true,
                 active: 'active',
-                accountCount: 2 } };
+                accountCount: 2,
+                confManaged: '',
+                confSystemExists: true,
+                settings: {
+                  listen: true,
+                  listenPort: 21,
+                  sslEnable: true,
+                  forceSsl: true,
+                  sslDomain: 'example.com',
+                  pasvMin: 30000,
+                  pasvMax: 30100,
+                  writeEnable: true,
+                  chrootLocalUser: true,
+                  allowWriteableChroot: true,
+                  banner: 'YSK FTPS',
+                  guestUsername: 'ftp',
+                },
+              },
+            };
+          }
+          if (url.includes('/sftp/keys') || url.includes('ftp/accounts')) {
+            return { items: [], total: 0 };
           }
           return honesty();
         } },
     ]);
-    renderAt('/ftp/service', <FtpsServicePage />);
+    renderAt('/ftp?tab=service', <FtpPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
     await clickAllTabs(user);
-    // network tab fields
-    const netTab = screen
+    const serviceTab = screen
       .queryAllByRole('tab')
-      .find((t) => /network/i.test(t.textContent ?? ''));
-    if (netTab) await user.click(netTab);
+      .find((t) => /vsftpd|service|服務|服务/i.test(t.textContent ?? ''));
+    if (serviceTab) await user.click(serviceTab);
     setVal('banner', 'Hello FTPS');
     setVal('pasvAddress', '203.0.113.10');
     await clickNamed(user, /21|2121|990|30000|30100|save|apply|restart|ipv4|ipv6/i, 12);

@@ -12,10 +12,16 @@ describe('isNavActive', () => {
     expect(isNavActive('/projects', '/projects/p1')).toBe(true);
   });
   it('prefers longer sibling path', () => {
-    // /ftp/service should not activate /ftp when /ftp/service is a nav path
-    expect(isNavActive('/ftp', '/ftp/service')).toBe(false);
-    expect(isNavActive('/ftp/service', '/ftp/service')).toBe(true);
-    expect(isNavActive('/ftp/service', '/ftp/service/extra')).toBe(true);
+    // mysql resource vs mysql/service — longer sibling wins
+    expect(isNavActive('/databases/mysql', '/databases/mysql/service')).toBe(false);
+    expect(isNavActive('/databases/mysql/service', '/databases/mysql/service')).toBe(
+      true,
+    );
+    expect(
+      isNavActive('/databases/mysql/service', '/databases/mysql/service/extra'),
+    ).toBe(true);
+    // FTP is a single nav entry — nested leftover path still highlights /ftp
+    expect(isNavActive('/ftp', '/ftp/service')).toBe(true);
   });
   it('unrelated', () => {
     expect(isNavActive('/dns', '/email')).toBe(false);

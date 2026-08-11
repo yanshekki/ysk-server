@@ -204,7 +204,7 @@
 
 ---
 
-## H — FTP `/ftp`, `/ftp/service`
+## H — FTP `/ftp` (service merged; `/ftp/service` → redirect)
 
 | ID | Feature | H | D | YSK | Pri |
 |----|---------|---|---|-----|-----|

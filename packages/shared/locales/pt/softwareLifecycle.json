@@ -25,6 +25,7 @@
   "confirmUninstall": "Confirm uninstall",
   "protected": "Protected",
   "readyHint": "Required software is installed. You can uninstall from here if needed.",
+  "readyTitle": "Software pronto",
   "jobInProgress": "Another install/uninstall is already running",
   "uninstallDone": "Uninstall finished",
   "uninstallFailed": "Uninstall failed",

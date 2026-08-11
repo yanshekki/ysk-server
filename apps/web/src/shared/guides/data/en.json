@@ -247,14 +247,18 @@
   },
   "ftp": {
     "id": "ftp",
-    "title": "FTP accounts",
-    "summary": "Create FTP / SFTP login accounts bound to home directories.",
+    "title": "FTPS",
+    "summary": "Manage FTPS accounts, SFTP keys, and vsftpd service settings in one place.",
     "canDo": [
       "Account CRUD：Create, disable, and delete FTP users.",
       "Home directory：Confine each account to a specified path.",
       "Let designers upload static files",
       "Temporary contractor accounts",
-      "Confirm the FTPS service is installed and running"
+      "Confirm the FTPS service is installed and running",
+      "Install and start FTPS",
+      "Apply config and restart",
+      "Open listen + PASV ports via panel firewall",
+      "Set public PASV IP and TLS domain"
     ],
     "notes": [
       "Plain FTP is insecure; prefer FTPS / SFTP",
@@ -262,12 +266,12 @@
     ],
     "related": [
       {
-        "label": "FTPS service",
-        "to": "/ftp/service"
-      },
-      {
         "label": "Files",
         "to": "/files"
+      },
+      {
+        "label": "Protection center",
+        "to": "/protection"
       }
     ],
     "workflow": [
@@ -290,17 +294,18 @@
       "Set public PASV IP and TLS domain"
     ],
     "notes": [
+      "Merged into /ftp (service tab).",
       "Open firewall ports from Overview (needs root + EXECUTE) — do not SSH to run ufw",
       "Set PASV public IP under Network if behind NAT",
       "Cloud security groups must still allow the same TCP ports if used"
     ],
     "related": [
       {
-        "label": "FTP accounts",
+        "label": "FTPS",
         "to": "/ftp"
       },
       {
-        "label": "Protection center",
+        "label": "Protection",
         "to": "/protection"
       }
     ],

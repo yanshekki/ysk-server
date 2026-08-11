@@ -35,7 +35,6 @@ import { DnsPage } from './features/DnsPage';
 import { Fail2banPage } from './features/Fail2banPage';
 import { FirewallPage } from './features/FirewallPage';
 import { FtpPage } from './features/FtpPage';
-import { FtpsServicePage } from './features/FtpsServicePage';
 import {
   GoRuntimePage,
   NodeRuntimePage as GenericNodeRuntimePage,
@@ -1973,12 +1972,6 @@ const smokeCases: SmokeCase[] = [
   { name: 'Fail2banPage', path: '/fail2ban', el: <Fail2banPage />, heading: /fail2ban/i, clickTabs: true },
   { name: 'FirewallPage', path: '/firewall', el: <FirewallPage />, heading: /firewall/i, clickTabs: true },
   { name: 'FtpPage', path: '/ftp', el: <FtpPage />, heading: /ftp/i, clickTabs: true },
-  {
-    name: 'FtpsServicePage',
-    path: '/ftp/service',
-    el: <FtpsServicePage />,
-    heading: /ftp|vsftpd|service/i,
-    clickTabs: true },
   {
     name: 'GenericNodeRuntimePage',
     path: '/runtimes/node',

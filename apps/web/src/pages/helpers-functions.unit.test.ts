@@ -18,7 +18,7 @@ import {
 } from './features/FirewallPage';
 import { enabledLabel, actionLabel, toneFor } from './features/ServicesPage';
 import { applyLabel } from './EmailPage';
-import { statusLabel as ftpsStatusLabel } from './features/FtpsServicePage';
+import { statusLabel as ftpsStatusLabel } from '../features/ftp';
 import {
   taskTone,
   statusLabel as aiStatusLabel,

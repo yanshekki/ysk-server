@@ -21,7 +21,7 @@
 | 檔案 | `/files` | 檔案管理員 | G |
 | 檔案 | `/files/public` | 公用檔案 nginx | G |
 | 檔案 | `/ftp` | FTP 帳戶 | H |
-| 檔案 | `/ftp/service` | FTPS 服務主控台 | H |
+| 檔案 | `/ftp` | FTPS（帳戶 + 服務） | H |
 | 資料庫 | `/databases/mysql` | MySQL data | I |
 | 資料庫 | `/databases/mysql/service` | MySQL service | I |
 | 資料庫 | `/databases/mariadb` | MariaDB data | I |
@@ -148,7 +148,7 @@
 
 ---
 
-### `/ftp` + `/ftp/service`
+### `/ftp` (accounts + service; `/ftp/service` redirects)
 
 | 頁面 | 操作 |
 |------|---------|

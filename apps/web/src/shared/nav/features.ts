@@ -35,7 +35,6 @@ export const FEATURE_SECTIONS: FeatureSection[] = [
       { to: '/files', key: 'files', icon: '▤' },
       { to: '/files/public', key: 'publicFiles', icon: '📁' },
       { to: '/ftp', key: 'ftp', icon: '⇄' },
-      { to: '/ftp/service', key: 'ftpService', icon: '⚙' },
     ],
   },
   {

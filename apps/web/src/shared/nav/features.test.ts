@@ -15,6 +15,14 @@ describe('FEATURE_SECTIONS', () => {
     expect(tiles.some((i) => i.to === '/updates' && i.key === 'updates')).toBe(true);
   });
 
+  it('has single FTPS nav entry (accounts + service merged)', () => {
+    const tiles = allFeatureTiles();
+    expect(tiles.filter((i) => i.to === '/ftp' || i.key === 'ftp').length).toBe(1);
+    expect(tiles.some((i) => i.to === '/ftp/service' || i.key === 'ftpService')).toBe(
+      false,
+    );
+  });
+
   it('every item has to, key, icon', () => {
     for (const section of FEATURE_SECTIONS) {
       expect(section.sectionKey).toBeTruthy();

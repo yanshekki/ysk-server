@@ -25,6 +25,7 @@
   "confirmUninstall": "确认卸载",
   "protected": "受保护",
   "readyHint": "所需软件已安装。如有需要可在此卸载。",
+  "readyTitle": "所需软件已就绪",
   "jobInProgress": "已有安装／卸载进行中",
   "uninstallDone": "卸载完成",
   "uninstallFailed": "卸载失败",

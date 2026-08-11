@@ -247,14 +247,18 @@
   },
   "ftp": {
     "id": "ftp",
-    "title": "FTP 账户",
-    "summary": "为用户创建 FTP／SFTP 登入账户与家目录绑定。",
+    "title": "FTPS",
+    "summary": "在同一页管理 FTPS 账户、SFTP 公钥与 vsftpd 服务设置。",
     "canDo": [
       "账户 CRUD：创建、停用、删除 FTP 用户。",
       "家目录：限制账户只能存取指定路径。",
       "给设计师上传静态档",
       "臨时外包账号",
-      "先确认 FTPS 服务已安装启动"
+      "先确认 FTPS 服务已安装启动",
+      "安装并启动 FTPS",
+      "套用配置并重启",
+      "在面板开放 listen／PASV 端口",
+      "设置 PASV 公网 IP 与 TLS 域名"
     ],
     "notes": [
       "明文 FTP 不安全，建议 FTPS／SFTP",
@@ -262,12 +266,12 @@
     ],
     "related": [
       {
-        "label": "FTPS 服务",
-        "to": "/ftp/service"
-      },
-      {
         "label": "文件",
         "to": "/files"
+      },
+      {
+        "label": "防护中心",
+        "to": "/protection"
       }
     ],
     "workflow": [
@@ -290,13 +294,14 @@
       "设置 PASV 公网 IP 与 TLS 域名"
     ],
     "notes": [
+      "已合并至 /ftp（服务分页）。",
       "概览可「开防火墙端口」（需 root + EXECUTE），无需 SSH 执行 ufw",
       "NAT 环境请到网络填写 PASV 公网 IP",
       "若使用云安全组，需同样放行 TCP 端口"
     ],
     "related": [
       {
-        "label": "FTP 账户",
+        "label": "FTPS",
         "to": "/ftp"
       },
       {

@@ -53,7 +53,6 @@ function renderShell(initial = '/', user?: { username: string; roles: string[]; 
           <Route path="projects/:id" element={<div data-testid="page">project-detail</div>} />
           <Route path="security" element={<div data-testid="page">security</div>} />
           <Route path="ftp" element={<div data-testid="page">ftp</div>} />
-          <Route path="ftp/service" element={<div data-testid="page">ftp-service</div>} />
           <Route path="login" element={<div data-testid="page">login</div>} />
         </Route>
       </Routes>
@@ -67,23 +66,18 @@ describe('AppShell full interactions', () => {
     authStore.clear();
   });
 
-  it('navigates via sidebar links and marks nested ftp/service active correctly', async () => {
+  it('navigates via sidebar links from ftp to projects', async () => {
     const user = userEvent.setup();
     installFetchMock(shellRoutes());
     renderShell('/ftp');
 
     expect(screen.getByTestId('page')).toHaveTextContent('ftp');
 
-    // click ftp service sibling
-    const serviceLink = screen.getAllByRole('link').find((a) =>
-      /ftp\/service|service|vsftpd/i.test(a.getAttribute('href') ?? a.textContent ?? ''),
+    // single FTPS nav entry
+    const ftpLink = screen.getAllByRole('link').find((a) =>
+      (a.getAttribute('href') ?? '') === '/ftp',
     );
-    if (serviceLink) {
-      await user.click(serviceLink);
-      await waitFor(() => {
-        expect(screen.getByTestId('page').textContent).toMatch(/ftp-service|ftp/i);
-      });
-    }
+    expect(ftpLink).toBeTruthy();
 
     // projects link
     const projects = screen.getAllByRole('link').find((a) =>

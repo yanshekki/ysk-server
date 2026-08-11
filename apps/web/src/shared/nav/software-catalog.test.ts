@@ -67,7 +67,7 @@ describe('software-catalog', () => {
       ssl: ['certbot'],
       nginx: ['nginx'],
       email: ['postfix', 'dovecot'],
-      ftpService: ['vsftpd'],
+      ftp: ['vsftpd'],
       protection: ['ufw', 'fail2ban'],
     };
     for (const [id, softwareIds] of Object.entries(expected)) {

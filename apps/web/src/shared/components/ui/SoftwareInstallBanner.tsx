@@ -19,7 +19,10 @@ export interface SoftwareInstallBannerProps {
   feature: string;
   onInstalled?: () => void;
   autoHideWhenReady?: boolean;
+  /** Title when software is missing / not ready */
   title?: string;
+  /** Title when ready strip is shown (defaults to softwareLifecycle.readyTitle) */
+  readyTitle?: string;
   compact?: boolean;
 }
 
@@ -28,6 +31,7 @@ export function SoftwareInstallBanner({
   onInstalled,
   autoHideWhenReady = true,
   title,
+  readyTitle,
 }: SoftwareInstallBannerProps) {
   const { t } = useTranslation();
   const stream = useOpsStreamOptional();
@@ -225,7 +229,7 @@ export function SoftwareInstallBanner({
           <div className="software-install-banner__row">
             <div className="software-install-banner__text">
               <h3 className="software-install-banner__title">
-                {title ?? t('softwareBanner.titleDefault')}
+                {readyTitle ?? t('softwareLifecycle.readyTitle')}
               </h3>
               <p className="software-install-banner__desc muted">
                 {t('softwareLifecycle.readyHint')}

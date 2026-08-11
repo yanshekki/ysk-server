@@ -1,11 +1,8 @@
 /**
- * FTPS accounts — tabbed UX: {i18n.t('ftp.accountsList')} | SFTP 公鑰
- * List-first; create/edit always in Modal (no huge empty forms).
+ * FTPS — unified page: accounts | SFTP keys | service | software | about
  */
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import i18n from '../../shared/lib/i18n';
-import { Link } from 'react-router-dom';
 import {
   PageGuide,
   ActionBar,
@@ -22,11 +19,24 @@ import {
   Modal,
   ServerListFilters,
   SoftwareInstallBanner,
+  SoftwareVersionBar,
   PageTabs,
-  FormHint } from '../../shared/components/ui';
+  FormHint,
+} from '../../shared/components/ui';
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
-import { ftpApi, type SelectOption } from '../../features/ftp';
+import {
+  accountPillTone,
+  buildFtpAccountBody,
+  countApplyStatus,
+  filterSftpKeys,
+  formatSftpKeyTime,
+  ftpApi,
+  parseSshPubkeyMeta,
+  statusLabel,
+  type FtpsStatus,
+  type SelectOption,
+} from '../../features/ftp';
 import { api } from '../../shared/services/api';
 import { toast } from '../../shared/stores/toast-store';
 import { usePageTab } from '../../shared/hooks/usePageTab';
@@ -37,6 +47,7 @@ import {
   bindRemoveIf,
   bindSet,
 } from '../bind-handlers';
+import { FtpServicePanel } from './FtpServicePanel';
 
 type SftpKey = {
   id: string;
@@ -46,72 +57,17 @@ type SftpKey = {
   created_at: string;
 };
 
-/** Parse SSH public key line → algorithm + short preview (for list UI). */
-export function parseSshPubkeyMeta(publicKey: string): {
-  algo: string;
-  preview: string;
-  comment: string;
-} {
-  const parts = String(publicKey || '')
-    .trim()
-    .split(/\s+/);
-  const algo = parts[0] && /^ssh-|^ecdsa-|^sk-/.test(parts[0]) ? parts[0] : 'ssh';
-  const body = parts[1] ?? String(publicKey || '').trim();
-  const comment = parts.slice(2).join(' ').trim();
-  const preview =
-    body.length > 40 ? `${body.slice(0, 20)}…${body.slice(-12)}` : body || '—';
-  return { algo, preview, comment };
-}
+// Re-export helpers for unit tests that imported from this module
+export {
+  parseSshPubkeyMeta,
+  filterSftpKeys,
+  formatSftpKeyTime,
+  countApplyStatus,
+  accountPillTone,
+  buildFtpAccountBody,
+} from '../../features/ftp';
 
-export function filterSftpKeys(
-  keys: SftpKey[],
-  usernameFilter: string,
-): SftpKey[] {
-  const u = usernameFilter.trim();
-  if (!u) return keys;
-  return keys.filter((k) => k.username === u);
-}
-
-export function formatSftpKeyTime(iso: string): string {
-  const s = String(iso || '');
-  if (!s) return '—';
-  return s.slice(0, 19).replace('T', ' ');
-}
-
-const FTP_TABS = ['accounts', 'sftp', 'about'] as const;
-
-export function countApplyStatus(
-  items: Array<Record<string, unknown>>,
-): { applied: number; draft: number } {
-  const applied = items.filter((r) => String(r.apply_status) === 'applied')
-    .length;
-  return { applied, draft: items.length - applied };
-}
-
-export function accountPillTone(
-  total: number,
-  draft: number,
-): 'ok' | 'warn' {
-  return draft > 0 ? 'warn' : total ? 'ok' : 'warn';
-}
-
-export function buildFtpAccountBody(input: {
-  username: string;
-  password: string;
-  homePath: string;
-  domain: string;
-}): {
-  username: string;
-  password_plain?: string;
-  homePath?: string;
-  domain?: string;
-} {
-  return {
-    username: input.username,
-    password_plain: input.password || undefined,
-    homePath: input.homePath || undefined,
-    domain: input.domain || undefined };
-}
+const FTP_TABS = ['accounts', 'sftp', 'service', 'stack', 'about'] as const;
 
 export function FtpPage() {
   const { t } = useTranslation();
@@ -138,6 +94,7 @@ export function FtpPage() {
   }, []);
   const [keyErr, setKeyErr] = useState<string | null>(null);
   const [delKeyId, setDelKeyId] = useState<string | null>(null);
+  const [serviceStatus, setServiceStatus] = useState<FtpsStatus | null>(null);
 
   const loadOptions = useCallback(async (user?: string) => {
     try {
@@ -148,7 +105,7 @@ export function FtpPage() {
     } catch {
       setDomains([]);
       setHomes([]);
-      return { domains: [], homes: [] };
+      return { domains: [] as SelectOption[], homes: [] as SelectOption[] };
     }
   }, []);
 
@@ -157,10 +114,20 @@ export function FtpPage() {
     setSftpKeys(r.items ?? []);
   }, []);
 
+  const loadServiceStatus = useCallback(async () => {
+    try {
+      const s = await ftpApi.settings();
+      setServiceStatus({ ...s.status, settings: s.settings });
+    } catch {
+      /* optional KPI — service tab loads full settings */
+    }
+  }, []);
+
   useEffect(() => {
     void loadOptions();
     void refreshKeys().catch(() => undefined);
-  }, [loadOptions, refreshKeys]);
+    void loadServiceStatus();
+  }, [loadOptions, refreshKeys, loadServiceStatus]);
 
   useEffect(() => {
     if (!open) return;
@@ -218,36 +185,49 @@ export function FtpPage() {
     [crud.items],
   );
 
+  const st = statusLabel(serviceStatus, t);
+
   return (
     <FeaturePageLayout
-      title={t('nav.ftp', { defaultValue: t('nav.ftp') })}
+      title={t('nav.ftp')}
+      showCapability={false}
       status={{
         pill: {
-          label: t('ftp.accountsCount', { count: crud.items.length }),
-          tone: accountPillTone(crud.items.length, draft) },
+          label: st.text,
+          tone: st.tone === 'neutral' ? 'warn' : st.tone,
+        },
         items: [
-          { label: t('ftp.accounts'), value: crud.items.length },
+          {
+            label: t('ftp.accounts'),
+            value: crud.items.length,
+            tone: accountPillTone(crud.items.length, draft),
+          },
           {
             label: t('common.applied'),
             value: applied,
-            tone: applied > 0 ? 'ok' : 'neutral' },
+            tone: applied > 0 ? 'ok' : 'neutral',
+          },
           {
             label: t('ftp.pendingApply'),
             value: draft,
-            tone: draft > 0 ? 'warn' : 'ok' },
+            tone: draft > 0 ? 'warn' : 'ok',
+          },
           { label: t('ftp.sftpKeys'), value: sftpKeys.length },
-        ] }}
-      actions={
-        <ActionBar>
-          <Link to="/ftp/service">
-            <Button variant="secondary" size="sm">
-              {t('nav.ftpService')}
-            </Button>
-          </Link>
-        </ActionBar>
-      }
+          {
+            label: t('common.port'),
+            value:
+              serviceStatus?.settings?.listenPort != null
+                ? String(serviceStatus.settings.listenPort)
+                : '—',
+          },
+        ],
+      }}
     >
-      <SoftwareInstallBanner feature="ftp" title={t('ftp.softwareMissing')} />
+      <SoftwareInstallBanner
+        feature="ftp"
+        title={t('ftp.softwareMissing')}
+        onInstalled={() => void loadServiceStatus()}
+      />
 
       {crud.error || keyErr ? (
         <Alert variant="error">{crud.error ?? keyErr}</Alert>
@@ -269,12 +249,18 @@ export function FtpPage() {
           {
             id: 'accounts',
             label: t('ftp.ftpAccounts'),
-            badge: crud.items.length || undefined },
+            badge: crud.items.length || undefined,
+          },
           {
             id: 'sftp',
             label: t('ftp.sftpPubkeys'),
-            badge: sftpKeys.length || undefined },
-        
+            badge: sftpKeys.length || undefined,
+          },
+          {
+            id: 'service',
+            label: t('ftp.serviceTitle'),
+          },
+          { id: 'stack', label: t('tabs.stack') },
           { id: 'about', label: t('common.about') },
         ]}
         active={tab}
@@ -287,10 +273,7 @@ export function FtpPage() {
               <div className="card__header card__header--pad">
                 <div>
                   <h2 className="card__title">{t('ftp.accountsList')}</h2>
-                  <p className="card__desc u-mb-0">
-                    {t('ftp.accountsListDesc')}{' '}
-                    <Link to="/ftp/service">{t('nav.ftpService')}</Link>{t('ftp.startService')}
-                  </p>
+                  <p className="card__desc u-mb-0">{t('ftp.accountsListDesc')}</p>
                 </div>
                 <Button variant="primary" size="sm" onClick={openCreate}>
                   {t('ftp.createAccountPlus')}
@@ -320,7 +303,8 @@ export function FtpPage() {
                     {
                       key: 'user',
                       header: t('common.username'),
-                      render: (r) => <strong>{String(r.username)}</strong> },
+                      render: (r) => <strong>{String(r.username)}</strong>,
+                    },
                     {
                       key: 'home',
                       header: t('ftp.homeDir'),
@@ -328,17 +312,20 @@ export function FtpPage() {
                         <span className="u-break-all muted u-text-sm">
                           {String(r.homePath ?? '—')}
                         </span>
-                      ) },
+                      ),
+                    },
                     {
                       key: 'domain',
                       header: t('runtime.domain'),
-                      render: (r) => String(r.domain ?? '—') },
+                      render: (r) => String(r.domain ?? '—'),
+                    },
                     {
                       key: 'status',
                       header: t('common.status'),
                       render: (r) => (
                         <ResourceStatusBadge status={String(r.apply_status)} />
-                      ) },
+                      ),
+                    },
                   ]}
                   rows={crud.items}
                   rowActions={(r) => (
@@ -391,9 +378,7 @@ export function FtpPage() {
             </Card>
 
             {crud.items.length > 0 ? (
-              <p className="muted u-text-sm">
-                {t('ftp.applyHint')}
-              </p>
+              <p className="muted u-text-sm">{t('ftp.applyHint')}</p>
             ) : null}
           </div>
         ) : null}
@@ -501,11 +486,20 @@ export function FtpPage() {
                           <li key={k.id} className="sftp-key-row">
                             <div className="sftp-key-row__main">
                               <div className="sftp-key-row__top">
-                                <Badge tone="info">{meta.algo.replace(/^ssh-/, '')}</Badge>
-                                <strong className="sftp-key-row__user">{k.username}</strong>
-                                <span className="sftp-key-row__note muted">{label}</span>
+                                <Badge tone="info">
+                                  {meta.algo.replace(/^ssh-/, '')}
+                                </Badge>
+                                <strong className="sftp-key-row__user">
+                                  {k.username}
+                                </strong>
+                                <span className="sftp-key-row__note muted">
+                                  {label}
+                                </span>
                               </div>
-                              <code className="sftp-key-row__preview" title={k.publicKey}>
+                              <code
+                                className="sftp-key-row__preview"
+                                title={k.publicKey}
+                              >
                                 {meta.preview}
                               </code>
                               <time
@@ -539,18 +533,29 @@ export function FtpPage() {
                 <summary>{t('ftp.sftpTechSummary')}</summary>
                 <p className="muted u-text-sm u-mb-0">
                   {t('ftp.sftpTechNote')}{' '}
-                  <code className="inline">dataDir/ftps/ssh/&lt;user&gt;/authorized_keys</code>
+                  <code className="inline">
+                    dataDir/ftps/ssh/&lt;user&gt;/authorized_keys
+                  </code>
                   {t('ftp.sshdMatchNote')}
                 </p>
               </details>
             </Card>
           </div>
         ) : null}
-      
+
+        {tab === 'service' ? (
+          <FtpServicePanel onStatusChange={setServiceStatus} />
+        ) : null}
+
+        {tab === 'stack' ? (
+          <div className="tab-panel stack">
+            <SoftwareVersionBar softwareId="vsftpd" />
+          </div>
+        ) : null}
+
         {tab === 'about' ? <PageGuide guideId="ftp" /> : null}
       </PageTabs>
 
-      {/* Create / edit account */}
       <Modal
         open={open}
         onClose={bindSet(setOpen, false)}
@@ -561,7 +566,13 @@ export function FtpPage() {
             <Button variant="secondary" size="md" onClick={bindSet(setOpen, false)}>
               {t('common.cancel')}
             </Button>
-            <Button type="submit" form="ftp-f" variant="primary" size="md" loading={crud.busy}>
+            <Button
+              type="submit"
+              form="ftp-f"
+              variant="primary"
+              size="md"
+              loading={crud.busy}
+            >
               {t('common.save')}
             </Button>
           </>
@@ -626,7 +637,9 @@ export function FtpPage() {
                     </option>
                   ))}
                   {domain && !domains.some((d) => d.value === domain) ? (
-                    <option value={domain}>{t('ftp.currentDomain', { domain })}</option>
+                    <option value={domain}>
+                      {t('ftp.currentDomain', { domain })}
+                    </option>
                   ) : null}
                 </select>
               ) : (
@@ -660,14 +673,17 @@ export function FtpPage() {
                   </option>
                 ))}
                 {homePath && !homes.some((h) => h.value === homePath) ? (
-                  <option value={homePath}>{t('ftp.currentHome', { path: homePath })}</option>
+                  <option value={homePath}>
+                    {t('ftp.currentHome', { path: homePath })}
+                  </option>
                 ) : null}
               </select>
             </Field>
           </FormLayout>
           {homePath ? (
             <FormHint>
-              {t('ftp.fullPath')}<code className="inline">{homePath}</code>
+              {t('ftp.fullPath')}
+              <code className="inline">{homePath}</code>
             </FormHint>
           ) : (
             <FormHint>{t('ftp.emptyHomes')}</FormHint>
@@ -675,7 +691,6 @@ export function FtpPage() {
         </form>
       </Modal>
 
-      {/* Add SFTP key */}
       <Modal
         open={keyOpen}
         onClose={bindSet(setKeyOpen, false)}
@@ -683,7 +698,11 @@ export function FtpPage() {
         description={t('ftp.addPubkeyDesc')}
         footer={
           <>
-            <Button variant="secondary" size="md" onClick={bindSet(setKeyOpen, false)}>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={bindSet(setKeyOpen, false)}
+            >
               {t('common.cancel')}
             </Button>
             <Button
@@ -695,12 +714,17 @@ export function FtpPage() {
                 setKeyErr(null);
                 setKeyMsg(null);
                 void api
-                  .requestRaw<{ ok: boolean; notes?: string[] }>('/api/v1/sftp/keys', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                      username: keyUser,
-                      publicKey: keyPub,
-                      comment: keyComment || undefined }) })
+                  .requestRaw<{ ok: boolean; notes?: string[] }>(
+                    '/api/v1/sftp/keys',
+                    {
+                      method: 'POST',
+                      body: JSON.stringify({
+                        username: keyUser,
+                        publicKey: keyPub,
+                        comment: keyComment || undefined,
+                      }),
+                    },
+                  )
                   .then((r) => {
                     setKeyMsg(r.notes?.join('；') ?? t('ftp.pubkeyAdded'));
                     setKeyOpen(false);
@@ -750,7 +774,12 @@ export function FtpPage() {
               />
             )}
           </Field>
-          <Field label={t('common.notes')} htmlFor="sk-cmt" flush hint={t('ftp.noteHint')}>
+          <Field
+            label={t('common.notes')}
+            htmlFor="sk-cmt"
+            flush
+            hint={t('ftp.noteHint')}
+          >
             <input
               id="sk-cmt"
               value={keyComment}

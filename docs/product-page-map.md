@@ -21,7 +21,7 @@ See also: [`product-feature-matrix.md`](./product-feature-matrix.md).
 | Files | `/files` | File manager | G |
 | Files | `/files/public` | Public files nginx | G |
 | Files | `/ftp` | FTP accounts | H |
-| Files | `/ftp/service` | FTPS service console | H |
+| Files | `/ftp` | FTPS (accounts + service) | H |
 | Databases | `/databases/mysql` | MySQL data | I |
 | Databases | `/databases/mysql/service` | MySQL service | I |
 | Databases | `/databases/mariadb` | MariaDB data | I |
@@ -148,7 +148,7 @@ See also: [`product-feature-matrix.md`](./product-feature-matrix.md).
 
 ---
 
-### `/ftp` + `/ftp/service`
+### `/ftp` (accounts + service; `/ftp/service` redirects)
 
 | Page | Actions |
 |------|---------|

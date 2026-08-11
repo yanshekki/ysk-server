@@ -252,13 +252,6 @@ export const SOFTWARE_CARDS: SoftwareCardDef[] = [
     to: '/ftp',
     navKey: 'ftp',
     icon: '⇄',
-  },
-  {
-    id: 'ftpService',
-    tab: 'mail-files',
-    to: '/ftp/service',
-    navKey: 'ftpService',
-    icon: '⚙',
     matrixIds: ['vsftpd'],
     softwareIds: ['vsftpd'],
   },

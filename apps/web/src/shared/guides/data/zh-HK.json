@@ -247,14 +247,18 @@
   },
   "ftp": {
     "id": "ftp",
-    "title": "FTP 帳戶",
-    "summary": "為使用者建立 FTP／SFTP 登入帳戶與家目錄綁定。",
+    "title": "FTPS",
+    "summary": "喺同一頁管理 FTPS 帳戶、SFTP 公鑰與 vsftpd 服務設定。",
     "canDo": [
       "帳戶 CRUD：建立、停用、刪除 FTP 使用者。",
       "家目錄：限制帳戶只能存取指定路徑。",
       "給設計師上傳靜態檔",
       "臨時外包帳號",
-      "先確認 FTPS 服務已安裝啟動"
+      "先確認 FTPS 服務已安裝啟動",
+      "安裝並啟動 FTPS",
+      "套用設定並重啟",
+      "喺面板開 listen／PASV 埠",
+      "設定 PASV 公網 IP 與 TLS 域名"
     ],
     "notes": [
       "明文 FTP 不安全，建議 FTPS／SFTP",
@@ -262,12 +266,12 @@
     ],
     "related": [
       {
-        "label": "FTPS 服務",
-        "to": "/ftp/service"
-      },
-      {
         "label": "檔案",
         "to": "/files"
+      },
+      {
+        "label": "防護中心",
+        "to": "/protection"
       }
     ],
     "workflow": [
@@ -290,13 +294,14 @@
       "設定 PASV 公網 IP 與 TLS 域名"
     ],
     "notes": [
+      "已合併至 /ftp（服務分頁）。",
       "概覽可「開防火牆埠」（需 root + EXECUTE），唔使 SSH 跑 ufw",
       "NAT 環境請到網絡填 PASV 公網 IP",
       "若用雲安全組，需同樣放行 TCP 埠"
     ],
     "related": [
       {
-        "label": "FTP 帳戶",
+        "label": "FTPS",
         "to": "/ftp"
       },
       {

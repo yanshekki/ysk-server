@@ -17,12 +17,12 @@ import {
   type LocaleCode,
 } from '../../shared/lib/i18n';
 
-/** All nav paths — used so /ftp does not stay active on /ftp/service */
+/** All nav paths — used so parent routes do not stay active on longer sibling paths (e.g. mysql vs mysql/service). */
 const NAV_PATHS = FEATURE_SECTIONS.flatMap((s) => s.items.map((i) => i.to));
 
 /**
  * Active only for exact match, or for nested routes when no longer sibling nav path matches.
- * Prevents both「FTPS 帳戶」and「vsftpd 服務」highlighting on /ftp/service.
+ * Example: `/databases/mysql` must not highlight when on `/databases/mysql/service`.
  */
 export function isNavActive(to: string, pathname: string): boolean {
   if (to === '/') return pathname === '/';

@@ -96,9 +96,6 @@ const CdnPage = lazy(() =>
 const FtpPage = lazy(() =>
   import('../pages/features/FtpPage').then((m) => ({ default: m.FtpPage })),
 );
-const FtpsServicePage = lazy(() =>
-  import('../pages/features/FtpsServicePage').then((m) => ({ default: m.FtpsServicePage })),
-);
 const FirewallPage = lazy(() =>
   import('../pages/features/FirewallPage').then((m) => ({ default: m.FirewallPage })),
 );
@@ -317,13 +314,10 @@ export function App() {
                 </Lazy>
               }
             />
+            {/* Merged into /ftp?tab=service */}
             <Route
               path="ftp/service"
-              element={
-                <Lazy>
-                  <FtpsServicePage />
-                </Lazy>
-              }
+              element={<Navigate to="/ftp?tab=service" replace />}
             />
             <Route
               path="dns"

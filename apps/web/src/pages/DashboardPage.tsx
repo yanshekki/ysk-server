@@ -45,7 +45,6 @@ const KEY_TO_FEATURE: Record<string, string> = {
   ssl: 'ssl',
   dns: 'dns',
   ftp: 'ftp',
-  ftpService: 'ftp',
   mysql: 'mysql',
   mysqlService: 'mysql',
   mariadb: 'mariadb',
