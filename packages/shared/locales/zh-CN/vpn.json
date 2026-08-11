@@ -115,5 +115,17 @@
   "engineAuto": "自动检测",
   "refresh": "刷新",
   "dnsOptional": "DNS（可选）",
-  "serverSettings": "服务器设置"
+  "serverSettings": "服务器设置",
+  "access": {
+    "label": "客户端流量",
+    "full": "全网上网",
+    "lan": "只连区域",
+    "custom": "自定义路由",
+    "fullHint": "客户端上网都经本服务器（会开 NAT）。应用后请重连客户端。",
+    "lanHint": "仅可达 VPN／所选内网；不改客户端本身上网。应用后请重连。",
+    "customHint": "仅将填写的网段进入 tunnel。应用后请重连。",
+    "lanCidrs": "区域网段",
+    "customCidr": "CIDR",
+    "addCidr": "添加"
+  }
 }

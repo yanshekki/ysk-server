@@ -20,13 +20,24 @@ import {
   openVpnClientUnitName,
 } from './openvpn-conf.js';
 import { sanitizePeerName } from './wireguard-conf.js';
-import type { VpnServerPeer } from './types.js';
+import type { VpnAccessMode, VpnServerPeer } from './types.js';
+import { DEFAULT_VPN_LAN_CIDRS } from './types.js';
+import {
+  buildVpnNatShell,
+  needsInternetNat,
+  normalizeCidrList,
+  parseAccessMode,
+} from './access-mode.js';
 
 export type OvpnServerState = {
   listenPort: number;
   proto: 'udp' | 'tcp';
   endpoint: string;
   dns: string;
+  /** Client traffic policy */
+  accessMode?: VpnAccessMode;
+  lanCidrs?: string[];
+  customCidrs?: string[];
   peers: Array<{
     id: string;
     name: string;
@@ -87,7 +98,15 @@ export function listOvpnPeers(dataDir: string): VpnServerPeer[] {
 export async function ensureOpenVpnServer(
   host: HostExecutor,
   dataDir: string,
-  input: { listenPort?: number; proto?: 'udp' | 'tcp'; endpoint?: string; dns?: string },
+  input: {
+    listenPort?: number;
+    proto?: 'udp' | 'tcp';
+    endpoint?: string;
+    dns?: string;
+    accessMode?: VpnAccessMode;
+    lanCidrs?: string[];
+    customCidrs?: string[];
+  },
 ): Promise<{ ok: boolean; notes: string[]; blocked?: boolean; requiresExecute?: boolean }> {
   const notes: string[] = [];
   if (!host.executeEnabled() || !host.isRoot()) {
@@ -115,6 +134,9 @@ export async function ensureOpenVpnServer(
       proto: input.proto === 'tcp' ? 'tcp' : 'udp',
       endpoint: input.endpoint?.trim() || '',
       dns: input.dns?.trim() || '1.1.1.1',
+      accessMode: parseAccessMode(input.accessMode ?? 'full'),
+      lanCidrs: normalizeCidrList(input.lanCidrs ?? [...DEFAULT_VPN_LAN_CIDRS]),
+      customCidrs: normalizeCidrList(input.customCidrs ?? []),
       peers: [],
       updatedAt: new Date().toISOString(),
     };
@@ -123,6 +145,11 @@ export async function ensureOpenVpnServer(
     if (input.proto) state.proto = input.proto;
     if (input.endpoint != null) state.endpoint = input.endpoint.trim();
     if (input.dns != null) state.dns = input.dns.trim() || state.dns;
+    if (input.accessMode != null) state.accessMode = parseAccessMode(input.accessMode);
+    if (input.lanCidrs != null) state.lanCidrs = normalizeCidrList(input.lanCidrs);
+    if (input.customCidrs != null) state.customCidrs = normalizeCidrList(input.customCidrs);
+    if (!state.accessMode) state.accessMode = 'full';
+    if (!state.lanCidrs?.length) state.lanCidrs = [...DEFAULT_VPN_LAN_CIDRS];
   }
 
   const caKey = join(pki, 'private', 'ca.key');
@@ -162,6 +189,9 @@ export async function ensureOpenVpnServer(
 
   saveOvpnServer(dataDir, state);
 
+  const accessMode = parseAccessMode(state.accessMode ?? 'full');
+  const lanCidrs = normalizeCidrList(state.lanCidrs ?? [...DEFAULT_VPN_LAN_CIDRS]);
+  const customCidrs = normalizeCidrList(state.customCidrs ?? []);
   const confBody = buildOpenVpnServerConf({
     port: state.listenPort,
     proto: state.proto,
@@ -173,6 +203,17 @@ export async function ensureOpenVpnServer(
     taPath: ta,
     ccdDir: join(dir, 'ccd'),
     statusPath: '/run/openvpn-server/ysk-status.log',
+    accessMode,
+    lanCidrs,
+    customCidrs,
+  });
+  const enableNat = needsInternetNat(accessMode, customCidrs);
+  const natShell = buildVpnNatShell({
+    sourceCidr: '10.8.0.0/24',
+    tunnelIfaceHint: 'tun0',
+    enableNat,
+    lanCidrs,
+    mark: 'YSK-VPN-OVPN',
   });
   // Prefer /etc/openvpn/server/ysk.conf (Debian openvpn-server@.service)
   const confPath = '/etc/openvpn/server/ysk.conf';
@@ -192,8 +233,8 @@ export async function ensureOpenVpnServer(
         confBody,
         'YSKOVPN',
         'chmod 600 /etc/openvpn/server/ysk.conf',
-        // enable IP forward best-effort
-        'sysctl -w net.ipv4.ip_forward=1 >/dev/null 2>&1 || true',
+        // access mode: IP forward + NAT / LAN forward
+        natShell,
         // unit name varies: openvpn-server@ysk or openvpn@server
         'if systemctl list-unit-files | grep -q openvpn-server@.service; then',
         '  systemctl enable openvpn-server@ysk 2>/dev/null || true',
@@ -225,6 +266,12 @@ export async function ensureOpenVpnServer(
       proto: state.proto,
     }),
   );
+  if (enableNat) {
+    notes.push(tl('notes.vpn.accessFullNat'));
+  } else {
+    notes.push(tl('notes.vpn.accessLanOnly'));
+  }
+  notes.push(tl('notes.vpn.accessReconnectHint'));
   return { ok: true, notes };
 }
 

@@ -115,5 +115,17 @@
   "engineAuto": "自動偵測",
   "refresh": "重新整理",
   "dnsOptional": "DNS（可選）",
-  "serverSettings": "伺服器設定"
+  "serverSettings": "伺服器設定",
+  "access": {
+    "label": "客戶端流量",
+    "full": "全網上網",
+    "lan": "只連區域",
+    "custom": "自訂路由",
+    "fullHint": "客戶端上網都經呢部伺服器（會開 NAT）。套用後請重連客戶端。",
+    "lanHint": "只可達 VPN／所選內網；唔改客戶端本身上網。套用後請重連。",
+    "customHint": "只將你填嘅網段入 tunnel。套用後請重連。",
+    "lanCidrs": "區域網段",
+    "customCidr": "CIDR",
+    "addCidr": "加入"
+  }
 }

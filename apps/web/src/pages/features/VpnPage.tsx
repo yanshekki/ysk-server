@@ -113,6 +113,14 @@ export function VpnPage() {
   const [endpoint, setEndpoint] = useState('');
   const [listenPort, setListenPort] = useState(51820);
   const [ovpnProto, setOvpnProto] = useState<'udp' | 'tcp'>('udp');
+  const [accessMode, setAccessMode] = useState<'full' | 'lan' | 'custom'>('full');
+  const [lanCidrs, setLanCidrs] = useState<string[]>([
+    '10.0.0.0/8',
+    '172.16.0.0/12',
+    '192.168.0.0/16',
+  ]);
+  const [customCidrInput, setCustomCidrInput] = useState('');
+  const [customCidrs, setCustomCidrs] = useState<string[]>([]);
   const [peerName, setPeerName] = useState('');
 
   // QR / conf modal
@@ -473,6 +481,88 @@ export function VpnPage() {
           </div>
         ) : null}
 
+        {engine === 'openvpn' || engine === 'wireguard' ? (
+          <div className="stack vpn-access-block">
+            <Field label={t('vpn.access.label')} htmlFor={`vpn-access-${engine}`} flush>
+              <SegRadio
+                name={`vpn-access-${engine}`}
+                aria-label={t('vpn.access.label')}
+                value={accessMode}
+                onChange={(v) => setAccessMode(v as 'full' | 'lan' | 'custom')}
+                options={[
+                  { value: 'full', label: t('vpn.access.full') },
+                  { value: 'lan', label: t('vpn.access.lan') },
+                  { value: 'custom', label: t('vpn.access.custom') },
+                ]}
+              />
+            </Field>
+            <p className="muted u-text-xs vpn-access-hint">
+              {accessMode === 'full'
+                ? t('vpn.access.fullHint')
+                : accessMode === 'lan'
+                  ? t('vpn.access.lanHint')
+                  : t('vpn.access.customHint')}
+            </p>
+            {accessMode === 'lan' ? (
+              <div className="u-flex-gap u-flex-wrap" role="group" aria-label={t('vpn.access.lanCidrs')}>
+                {['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16'].map((c) => {
+                  const on = lanCidrs.includes(c);
+                  return (
+                    <Button
+                      key={c}
+                      size="sm"
+                      variant={on ? 'primary' : 'ghost'}
+                      onClick={() =>
+                        setLanCidrs((prev) =>
+                          on ? prev.filter((x) => x !== c) : [...prev, c],
+                        )
+                      }
+                    >
+                      {c}
+                    </Button>
+                  );
+                })}
+              </div>
+            ) : null}
+            {accessMode === 'custom' ? (
+              <div className="u-flex-gap u-flex-wrap" style={{ alignItems: 'center' }}>
+                <input
+                  className="u-input"
+                  style={{ maxWidth: 200 }}
+                  value={customCidrInput}
+                  onChange={(e) => setCustomCidrInput(e.target.value)}
+                  placeholder="192.168.1.0/24"
+                  aria-label={t('vpn.access.customCidr')}
+                />
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => {
+                    const c = customCidrInput.trim();
+                    if (!/^(\d{1,3}\.){3}\d{1,3}\/\d{1,2}$/.test(c)) return;
+                    setCustomCidrs((prev) =>
+                      prev.includes(c) ? prev : [...prev, c],
+                    );
+                    setCustomCidrInput('');
+                  }}
+                >
+                  {t('vpn.access.addCidr')}
+                </Button>
+                {customCidrs.map((c) => (
+                  <Button
+                    key={c}
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setCustomCidrs((p) => p.filter((x) => x !== c))}
+                  >
+                    {c} ×
+                  </Button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+
         <ActionBar>
           <Button
             variant="primary"
@@ -486,6 +576,20 @@ export function VpnPage() {
                     listenPort,
                     endpoint: endpoint || undefined,
                     proto: engine === 'openvpn' ? ovpnProto : undefined,
+                    accessMode:
+                      engine === 'openvpn' || engine === 'wireguard'
+                        ? accessMode
+                        : undefined,
+                    lanCidrs:
+                      (engine === 'openvpn' || engine === 'wireguard') &&
+                      accessMode === 'lan'
+                        ? lanCidrs
+                        : undefined,
+                    customCidrs:
+                      (engine === 'openvpn' || engine === 'wireguard') &&
+                      accessMode === 'custom'
+                        ? customCidrs
+                        : undefined,
                   }),
                 { openConfig: false },
               )

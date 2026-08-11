@@ -2817,7 +2817,10 @@
     "ssPackageYielded": "已停用并屏蔽 Debian 默认 shadowsocks-libev（仅本机），以便 YSK 在本机绑定公开 {{port}}。",
     "ssEndpointAutofilled": "公开端点已设为 {{endpoint}}。",
     "ssClientsRewritten": "已按当前端点/密码重写 {{n}} 个客户端 ss://。",
-    "ssUfwOpened": "已开放 UFW {{port}}/tcp+udp（若已安装 ufw）。"
+    "ssUfwOpened": "已开放 UFW {{port}}/tcp+udp（若已安装 ufw）。",
+    "accessFullNat": "已开全网上网（IP 转发 + NAT）",
+    "accessLanOnly": "已设只连区域（无外网 NAT）",
+    "accessReconnectHint": "已连接的客户端请断开再连，才会使用新路由"
   },
   "vnc": {
     "needInstall": "请安装 {{stack}}",

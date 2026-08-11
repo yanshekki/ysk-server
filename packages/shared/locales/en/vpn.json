@@ -115,5 +115,17 @@
   "engineAuto": "Auto-detect",
   "refresh": "Refresh",
   "dnsOptional": "DNS (optional)",
-  "serverSettings": "Server settings"
+  "serverSettings": "Server settings",
+  "access": {
+    "label": "Client traffic",
+    "full": "Full internet",
+    "lan": "LAN only",
+    "custom": "Custom routes",
+    "fullHint": "All client traffic goes via this server (enables NAT). Reconnect clients after apply.",
+    "lanHint": "Only VPN + selected private nets; client keeps its own internet. Reconnect after apply.",
+    "customHint": "Only the CIDRs you list enter the tunnel. Reconnect after apply.",
+    "lanCidrs": "LAN networks",
+    "customCidr": "CIDR",
+    "addCidr": "Add"
+  }
 }

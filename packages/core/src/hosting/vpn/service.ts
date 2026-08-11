@@ -56,6 +56,14 @@ import {
   type RatePrevSample,
   type VpnMonitorSnapshot,
 } from './monitor.js';
+import type { VpnAccessMode } from './types.js';
+import { DEFAULT_VPN_LAN_CIDRS } from './types.js';
+import {
+  needsInternetNat,
+  normalizeCidrList,
+  parseAccessMode,
+  wgClientAllowedIps,
+} from './access-mode.js';
 
 type WgServerState = {
   privateKey: string;
@@ -64,6 +72,9 @@ type WgServerState = {
   listenPort: number;
   endpoint: string;
   dns: string;
+  accessMode?: VpnAccessMode;
+  lanCidrs?: string[];
+  customCidrs?: string[];
   peers: Array<{
     id: string;
     name: string;
@@ -303,6 +314,9 @@ export class VpnService {
     listenPort?: number;
     endpoint?: string;
     dns?: string;
+    accessMode?: VpnAccessMode;
+    lanCidrs?: string[];
+    customCidrs?: string[];
   }): Promise<{ ok: boolean; notes: string[]; blocked?: boolean; requiresExecute?: boolean }> {
     const notes: string[] = [];
     if (!this.host.executeEnabled() || !this.host.isRoot()) {
@@ -330,6 +344,9 @@ export class VpnService {
         listenPort: input.listenPort ?? 51820,
         endpoint: input.endpoint?.trim() || '',
         dns: input.dns?.trim() || '1.1.1.1',
+        accessMode: parseAccessMode(input.accessMode ?? 'full'),
+        lanCidrs: normalizeCidrList(input.lanCidrs ?? [...DEFAULT_VPN_LAN_CIDRS]),
+        customCidrs: normalizeCidrList(input.customCidrs ?? []),
         peers: [],
         updatedAt: new Date().toISOString(),
       };
@@ -338,9 +355,17 @@ export class VpnService {
       if (input.listenPort) state.listenPort = input.listenPort;
       if (input.endpoint != null) state.endpoint = input.endpoint.trim();
       if (input.dns != null) state.dns = input.dns.trim() || state.dns;
+      if (input.accessMode != null) state.accessMode = parseAccessMode(input.accessMode);
+      if (input.lanCidrs != null) state.lanCidrs = normalizeCidrList(input.lanCidrs);
+      if (input.customCidrs != null) state.customCidrs = normalizeCidrList(input.customCidrs);
+      if (!state.accessMode) state.accessMode = 'full';
     }
 
     this.saveWgServer(state);
+    const accessMode = parseAccessMode(state.accessMode ?? 'full');
+    const lanCidrs = normalizeCidrList(state.lanCidrs ?? [...DEFAULT_VPN_LAN_CIDRS]);
+    const customCidrs = normalizeCidrList(state.customCidrs ?? []);
+    const enableNat = needsInternetNat(accessMode, customCidrs);
     const conf = buildServerConf({
       privateKey: state.privateKey,
       address: state.address,
@@ -351,17 +376,16 @@ export class VpnService {
         name: p.name,
       })),
     });
-    // PostUp NAT — best-effort common path
-    const withNat =
-      conf.replace(
-        'SaveConfig = false\n',
-        [
-          'SaveConfig = false',
-          'PostUp = sysctl -w net.ipv4.ip_forward=1; iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o $(ip route | awk \'/default/{print $5; exit}\') -j MASQUERADE',
-          'PostDown = iptables -D FORWARD -i wg0 -j ACCEPT 2>/dev/null; iptables -t nat -D POSTROUTING -o $(ip route | awk \'/default/{print $5; exit}\') -j MASQUERADE 2>/dev/null',
-          '',
-        ].join('\n'),
-      );
+    const postUp = enableNat
+      ? 'PostUp = sysctl -w net.ipv4.ip_forward=1; iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -s 10.66.66.0/24 -o $(ip route | awk \'/default/{print $5; exit}\') -j MASQUERADE'
+      : 'PostUp = sysctl -w net.ipv4.ip_forward=1';
+    const postDown = enableNat
+      ? 'PostDown = iptables -D FORWARD -i wg0 -j ACCEPT 2>/dev/null; iptables -t nat -D POSTROUTING -s 10.66.66.0/24 -o $(ip route | awk \'/default/{print $5; exit}\') -j MASQUERADE 2>/dev/null'
+      : 'PostDown = true';
+    const withNat = conf.replace(
+      'SaveConfig = false\n',
+      ['SaveConfig = false', postUp, postDown, ''].join('\n'),
+    );
 
     const confPath = '/etc/wireguard/wg0.conf';
     const write = await this.host.runCommand(
@@ -389,6 +413,8 @@ export class VpnService {
       return { ok: false, notes };
     }
     notes.push(tl('notes.vpn.serverActive', { port: String(state.listenPort) }));
+    notes.push(enableNat ? tl('notes.vpn.accessFullNat') : tl('notes.vpn.accessLanOnly'));
+    notes.push(tl('notes.vpn.accessReconnectHint'));
     return { ok: true, notes };
   }
 
@@ -413,6 +439,9 @@ export class VpnService {
     endpoint?: string;
     dns?: string;
     proto?: 'udp' | 'tcp';
+    accessMode?: import('./types.js').VpnAccessMode;
+    lanCidrs?: string[];
+    customCidrs?: string[];
   }): Promise<{ ok: boolean; notes: string[]; blocked?: boolean; requiresExecute?: boolean }> {
     const engine = input.engine ?? 'wireguard';
     if (engine === 'openvpn') {
@@ -421,6 +450,9 @@ export class VpnService {
         proto: input.proto,
         endpoint: input.endpoint,
         dns: input.dns,
+        accessMode: input.accessMode,
+        lanCidrs: input.lanCidrs,
+        customCidrs: input.customCidrs,
       });
     }
     if (engine === 'outline') {
@@ -433,6 +465,9 @@ export class VpnService {
       listenPort: input.listenPort,
       endpoint: input.endpoint,
       dns: input.dns,
+      accessMode: input.accessMode,
+      lanCidrs: input.lanCidrs,
+      customCidrs: input.customCidrs,
     });
   }
 
@@ -491,6 +526,9 @@ export class VpnService {
       listenPort: state.listenPort,
       endpoint: state.endpoint,
       dns: state.dns,
+      accessMode: state.accessMode,
+      lanCidrs: state.lanCidrs,
+      customCidrs: state.customCidrs,
     });
 
     const endpoint =
@@ -503,6 +541,10 @@ export class VpnService {
       dns: state.dns,
       serverPublicKey: state.publicKey,
       endpoint,
+      allowedIps: wgClientAllowedIps(parseAccessMode(state.accessMode ?? 'full'), {
+        lanCidrs: state.lanCidrs,
+        customCidrs: state.customCidrs,
+      }),
     });
 
     return {
@@ -540,6 +582,10 @@ export class VpnService {
       dns: state.dns,
       serverPublicKey: state.publicKey,
       endpoint,
+      allowedIps: wgClientAllowedIps(parseAccessMode(state.accessMode ?? 'full'), {
+        lanCidrs: state.lanCidrs,
+        customCidrs: state.customCidrs,
+      }),
     });
     return { config, filename: `${peer.name}.conf` };
   }

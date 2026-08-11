@@ -6,6 +6,21 @@ export type VpnEngineId = 'wireguard' | 'openvpn' | 'outline';
 
 export type VpnPortProto = 'udp' | 'tcp' | 'both';
 
+/**
+ * How client traffic is routed after connect.
+ * - full: all internet via VPN (NAT on server)
+ * - lan: only VPN + listed private/LAN CIDRs (split tunnel)
+ * - custom: only listed CIDRs
+ */
+export type VpnAccessMode = 'full' | 'lan' | 'custom';
+
+/** Default LAN presets for "lan" mode UI / conf */
+export const DEFAULT_VPN_LAN_CIDRS = [
+  '10.0.0.0/8',
+  '172.16.0.0/12',
+  '192.168.0.0/16',
+] as const;
+
 export type VpnEngineStatus = {
   engine: VpnEngineId;
   title: string;

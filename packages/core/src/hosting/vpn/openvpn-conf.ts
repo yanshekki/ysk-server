@@ -2,6 +2,9 @@
  * Pure OpenVPN conf builders (no host I/O).
  */
 
+import type { VpnAccessMode } from './types.js';
+import { ovpnAccessPushLines } from './access-mode.js';
+
 export function buildOpenVpnServerConf(input: {
   port: number;
   proto: 'udp' | 'tcp';
@@ -15,12 +18,21 @@ export function buildOpenVpnServerConf(input: {
   ccdDir: string;
   /** status file for live CLIENT_LIST monitor (status-version 2) */
   statusPath?: string;
+  accessMode?: VpnAccessMode;
+  lanCidrs?: string[];
+  customCidrs?: string[];
 }): string {
   const net = input.serverNet ?? '10.8.0.0 255.255.255.0';
   const dns = input.dns ?? '1.1.1.1';
-  // RuntimeDirectory of openvpn-server@ is writable by the daemon user
   const statusPath = input.statusPath ?? '/run/openvpn-server/ysk-status.log';
-  return [
+  const mode = input.accessMode ?? 'full';
+  const accessPushes = ovpnAccessPushLines(mode, {
+    lanCidrs: input.lanCidrs,
+    customCidrs: input.customCidrs,
+    vpnNetCidr: '10.8.0.0/24',
+  });
+
+  const lines = [
     '# YSK-managed OpenVPN server',
     `port ${input.port}`,
     `proto ${input.proto}`,
@@ -41,10 +53,14 @@ export function buildOpenVpnServerConf(input: {
     'verb 3',
     `status ${statusPath} 5`,
     'status-version 2',
-    `push "dhcp-option DNS ${dns}"`,
-    'push "redirect-gateway def1 bypass-dhcp"',
-    '',
-  ].join('\n');
+    // access mode pushes
+    ...accessPushes,
+  ];
+  if (mode === 'full') {
+    lines.push(`push "dhcp-option DNS ${dns}"`);
+  }
+  lines.push('');
+  return lines.join('\n');
 }
 
 export function buildOpenVpnClientOvpn(input: {

@@ -130,6 +130,9 @@ export const vpnApi = {
     endpoint?: string;
     dns?: string;
     proto?: 'udp' | 'tcp';
+    accessMode?: 'full' | 'lan' | 'custom';
+    lanCidrs?: string[];
+    customCidrs?: string[];
   }) =>
     api.requestRaw<{
       ok: boolean;

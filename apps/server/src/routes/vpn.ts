@@ -86,6 +86,9 @@ export async function handleVpnRoutes(
         endpoint?: string;
         dns?: string;
         proto?: string;
+        accessMode?: string;
+        lanCidrs?: string[];
+        customCidrs?: string[];
       };
       const engine = parseEngine(data.engine);
       const result = await vpn.ensureServer({
@@ -94,6 +97,12 @@ export async function handleVpnRoutes(
         endpoint: data.endpoint,
         dns: data.dns,
         proto: data.proto === 'tcp' ? 'tcp' : 'udp',
+        accessMode:
+          data.accessMode === 'lan' || data.accessMode === 'custom' || data.accessMode === 'full'
+            ? data.accessMode
+            : undefined,
+        lanCidrs: data.lanCidrs,
+        customCidrs: data.customCidrs,
       });
       ctx.audit.append({
         actor: user.username,

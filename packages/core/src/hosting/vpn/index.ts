@@ -1,5 +1,6 @@
 export * from './types.js';
 export * from './ports.js';
+export * from './access-mode.js';
 export * from './wireguard-conf.js';
 export * from './openvpn-conf.js';
 export * from './openvpn-ops.js';
