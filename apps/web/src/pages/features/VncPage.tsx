@@ -311,12 +311,6 @@ export function VncPage() {
                   </div>
                 );
               })}
-              <span className="vnc-session-tabs__meta muted u-text-xs">
-                {t('vnc.viewer.sessionCount', {
-                  n: String(viewerSessions.length),
-                  max: String(MAX_VIEWER_SESSIONS),
-                })}
-              </span>
             </div>
             {viewerSessions.map((s) => {
               const key = viewerKey(s);

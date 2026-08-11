@@ -292,11 +292,6 @@
   background: rgba(192, 57, 43, 0.08);
 }
 
-.vnc-session-tabs__meta {
-  margin-left: auto;
-  padding: 0 var(--space-2);
-}
-
 .u-hidden {
   display: none !important;
 }
