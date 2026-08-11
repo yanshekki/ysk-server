@@ -45,13 +45,16 @@
     "cliMissing": "未安装 redis-cli"
   },
   "nginx": {
-    "reloaded": "已重载 Nginx",
+    "reloaded": "nginx 已 reload",
     "configOk": "Nginx 配置检查通过",
     "reloadExit": "Nginx reload 结束码={{code}}",
     "managedDir": "管理配置目录：{{path}}",
     "includeHint": "在 Nginx 加入：include {{path}}/*.conf;",
     "removedOrphan": "已删除幽灵 Nginx conf {{path}}",
-    "orphanCleanupFailed": "清理幽灵 Nginx conf 失败：{{detail}}"
+    "orphanCleanupFailed": "清理幽灵 Nginx conf 失败：{{detail}}",
+    "settingsWritten": "已写入 Nginx 全局 snippet",
+    "settingsNeedExecute": "应用需 YSK_EXECUTE",
+    "reloadFailed": "nginx reload 失败"
   },
   "ssl": {
     "requestCert": "申请证书"

@@ -4663,7 +4663,26 @@
     "sourceProject": "專案",
     "sourceStandalone": "獨立",
     "colSource": "來源",
-    "filterProject": "已按專案篩選"
+    "filterProject": "已按專案篩選",
+    "globalSettings": "全域設定",
+    "siteSettings": "站點設定",
+    "saveApply": "儲存並套用",
+    "settingsSaved": "已儲存",
+    "setGzip": "Gzip",
+    "setShowVersion": "顯示版本號",
+    "setShowVersionDesc": "關 = server_tokens off",
+    "setHttp2": "HTTP/2（SSL）",
+    "setBody": "Body 上限",
+    "setKeepalive": "Keepalive",
+    "setAccessLog": "Access log",
+    "logOn": "開",
+    "logBuffered": "緩衝",
+    "logOff": "關",
+    "setForceHttps": "強制 HTTPS",
+    "setHsts": "HSTS",
+    "setCfRealIp": "Cloudflare Real IP",
+    "setIndexes": "目錄列表",
+    "bodyInherit": "跟隨全域"
   },
   "notes": {
     "notFound": "找不到",
@@ -4712,13 +4731,16 @@
       "cliMissing": "未安裝 redis-cli"
     },
     "nginx": {
-      "reloaded": "已重載 Nginx",
+      "reloaded": "nginx 已 reload",
       "configOk": "Nginx 設定檢查通過",
       "reloadExit": "Nginx 重新載入 結束碼={{code}}",
       "managedDir": "管理設定目錄：{{path}}",
       "includeHint": "於 Nginx 加入：include {{path}}/*.conf;",
       "removedOrphan": "已刪除幽靈 Nginx conf {{path}}",
-      "orphanCleanupFailed": "清理幽靈 Nginx conf 失敗：{{detail}}"
+      "orphanCleanupFailed": "清理幽靈 Nginx conf 失敗：{{detail}}",
+      "settingsWritten": "已寫入 Nginx 全域 snippet",
+      "settingsNeedExecute": "套用需 YSK_EXECUTE",
+      "reloadFailed": "nginx reload 失敗"
     },
     "ssl": {
       "requestCert": "申請憑證"

@@ -45,13 +45,16 @@
     "cliMissing": "redis-cli غير مثبّت"
   },
   "nginx": {
-    "reloaded": "أُعيد تحميل Nginx",
+    "reloaded": "nginx reloaded",
     "configOk": "فحص إعدادات Nginx ناجح",
     "reloadExit": "رمز خروج إعادة تحميل Nginx={{code}}",
     "managedDir": "مجلد الإعدادات المُدارة: {{path}}",
     "includeHint": "في nginx: include {{path}}/*.conf;",
     "removedOrphan": "Removed orphan nginx conf {{path}}",
-    "orphanCleanupFailed": "Orphan nginx cleanup failed: {{detail}}"
+    "orphanCleanupFailed": "Orphan nginx cleanup failed: {{detail}}",
+    "settingsWritten": "Nginx global snippet written",
+    "settingsNeedExecute": "Apply needs YSK_EXECUTE",
+    "reloadFailed": "nginx reload failed"
   },
   "ssl": {
     "requestCert": "طلب شهادة"

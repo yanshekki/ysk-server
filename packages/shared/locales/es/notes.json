@@ -45,13 +45,16 @@
     "cliMissing": "redis-cli no está instalado"
   },
   "nginx": {
-    "reloaded": "Nginx recargado",
+    "reloaded": "nginx reloaded",
     "configOk": "Comprobación de configuración de Nginx superada",
     "reloadExit": "Código de salida de recarga de Nginx={{code}}",
     "managedDir": "Directorio de configuración gestionado: {{path}}",
     "includeHint": "En nginx: include {{path}}/*.conf;",
     "removedOrphan": "Eliminada conf huérfana de nginx {{path}}",
-    "orphanCleanupFailed": "Falló la limpieza de conf huérfana de nginx: {{detail}}"
+    "orphanCleanupFailed": "Falló la limpieza de conf huérfana de nginx: {{detail}}",
+    "settingsWritten": "Nginx global snippet written",
+    "settingsNeedExecute": "Apply needs YSK_EXECUTE",
+    "reloadFailed": "nginx reload failed"
   },
   "ssl": {
     "requestCert": "Solicitar certificado"

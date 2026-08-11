@@ -4663,7 +4663,26 @@
     "sourceProject": "Project",
     "sourceStandalone": "Standalone",
     "colSource": "Source",
-    "filterProject": "Filtered by project"
+    "filterProject": "Filtered by project",
+    "globalSettings": "Global settings",
+    "siteSettings": "Site settings",
+    "saveApply": "Save & apply",
+    "settingsSaved": "Saved",
+    "setGzip": "Gzip",
+    "setShowVersion": "Show server version",
+    "setShowVersionDesc": "Off = server_tokens off",
+    "setHttp2": "HTTP/2 (SSL)",
+    "setBody": "Max body",
+    "setKeepalive": "Keepalive",
+    "setAccessLog": "Access log",
+    "logOn": "On",
+    "logBuffered": "Buffered",
+    "logOff": "Off",
+    "setForceHttps": "Force HTTPS",
+    "setHsts": "HSTS",
+    "setCfRealIp": "Cloudflare Real IP",
+    "setIndexes": "Directory listing",
+    "bodyInherit": "Global"
   },
   "notes": {
     "notFound": "見つかりません",
@@ -4712,13 +4731,16 @@
       "cliMissing": "redis-cli がインストールされていません"
     },
     "nginx": {
-      "reloaded": "Nginxがリロードされました",
+      "reloaded": "nginx reloaded",
       "configOk": "Nginx 構成チェックに合格しました",
       "reloadExit": "Nginx リロード終了コード={{code}}",
       "managedDir": "管理対象構成ディレクトリ: {{path}}",
       "includeHint": "nginx の場合: {{path}}/*.conf をインクルードします。",
       "removedOrphan": "孤立した nginx 設定 {{path}} を削除しました",
-      "orphanCleanupFailed": "孤立 nginx のクリーンアップに失敗しました: {{detail}}"
+      "orphanCleanupFailed": "孤立 nginx のクリーンアップに失敗しました: {{detail}}",
+      "settingsWritten": "Nginx global snippet written",
+      "settingsNeedExecute": "Apply needs YSK_EXECUTE",
+      "reloadFailed": "nginx reload failed"
     },
     "ssl": {
       "requestCert": "証明書を要求する"

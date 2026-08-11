@@ -23,6 +23,29 @@ export type NginxSiteRow = {
   port?: number | null;
 };
 
+export type NginxBodySize = '1m' | '10m' | '50m' | '100m' | '500m';
+export type NginxKeepalive = '15' | '65' | '120';
+export type NginxAccessLog = 'off' | 'on' | 'buffered';
+
+export type NginxGlobalSettings = {
+  gzip: boolean;
+  serverTokens: boolean;
+  clientMaxBody: NginxBodySize;
+  keepalive: NginxKeepalive;
+  http2: boolean;
+  accessLog: NginxAccessLog;
+};
+
+export type NginxSiteSettingsPatch = {
+  ssl?: boolean;
+  forceHttps?: boolean;
+  hsts?: boolean;
+  clientMaxBody?: NginxBodySize | 'inherit';
+  cloudflareRealIp?: boolean;
+  indexes?: boolean;
+  websocket?: boolean;
+};
+
 export const nginxHostingApi = {
   listSites: (params?: { q?: string; source?: string; projectId?: string }) => {
     const sp = new URLSearchParams();
@@ -46,5 +69,32 @@ export const nginxHostingApi = {
   siteConf: (id: string) =>
     api.requestRaw<{ path: string | null; content: string }>(
       `/api/v1/hosting/nginx/sites/${encodeURIComponent(id)}/conf`,
+    ),
+  getSettings: () =>
+    api.requestRaw<{ settings: NginxGlobalSettings }>(
+      '/api/v1/hosting/nginx/settings',
+    ),
+  patchSettings: (body: Partial<NginxGlobalSettings>) =>
+    api.requestRaw<{ ok: boolean; settings: NginxGlobalSettings }>(
+      '/api/v1/hosting/nginx/settings',
+      { method: 'PATCH', body: JSON.stringify(body) },
+    ),
+  applySettings: (body?: Partial<NginxGlobalSettings>) =>
+    api.requestRawAllowStatus<Record<string, unknown>>(
+      '/api/v1/hosting/nginx/settings/apply',
+      {
+        method: 'POST',
+        body: JSON.stringify(body ?? {}),
+        allowStatuses: [403, 422],
+      },
+    ),
+  patchSiteSettings: (id: string, body: NginxSiteSettingsPatch) =>
+    api.requestRawAllowStatus<Record<string, unknown>>(
+      `/api/v1/hosting/nginx/sites/${encodeURIComponent(id)}/settings`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+        allowStatuses: [403, 422],
+      },
     ),
 };

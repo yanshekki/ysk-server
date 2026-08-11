@@ -45,13 +45,16 @@
     "cliMissing": "redis-cli इंस्टॉल नहीं है"
   },
   "nginx": {
-    "reloaded": "Nginx रीलोड हो गया",
+    "reloaded": "nginx reloaded",
     "configOk": "Nginx कॉन्फ़िग जाँच पास हुई",
     "reloadExit": "Nginx रीलोड exit code={{code}}",
     "managedDir": "प्रबंधित कॉन्फ़िग डिर: {{path}}",
     "includeHint": "nginx में: include {{path}}/*.conf;",
     "removedOrphan": "Removed orphan nginx conf {{path}}",
-    "orphanCleanupFailed": "Orphan nginx cleanup failed: {{detail}}"
+    "orphanCleanupFailed": "Orphan nginx cleanup failed: {{detail}}",
+    "settingsWritten": "Nginx global snippet written",
+    "settingsNeedExecute": "Apply needs YSK_EXECUTE",
+    "reloadFailed": "nginx reload failed"
   },
   "ssl": {
     "requestCert": "प्रमाणपत्र अनुरोध करें"

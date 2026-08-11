@@ -27,9 +27,19 @@ import {
 } from '../../shared/components/ui';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import { systemApi } from '../../features/system';
-import { nginxHostingApi, type NginxSiteRow } from '../../features/nginx/api';
+import {
+  nginxHostingApi,
+  type NginxAccessLog,
+  type NginxBodySize,
+  type NginxGlobalSettings,
+  type NginxKeepalive,
+  type NginxSiteRow,
+} from '../../features/nginx/api';
 import { bindSet } from '../bind-handlers';
 import { notifyOk, notifyWarn } from '../../shared/lib/notify';
+
+const BODY_OPTS: NginxBodySize[] = ['1m', '10m', '50m', '100m', '500m'];
+const KA_OPTS: NginxKeepalive[] = ['15', '65', '120'];
 
 export function NginxPage() {
   const { t } = useTranslation();
@@ -67,6 +77,24 @@ export function NginxPage() {
   const [upstream, setUpstream] = useState('http://127.0.0.1:3000');
   const [root, setRoot] = useState('');
   const [ssl, setSsl] = useState(false);
+
+  // Global settings
+  const [globalOpen, setGlobalOpen] = useState(false);
+  const [gGzip, setGGzip] = useState(true);
+  const [gTokens, setGTokens] = useState(false);
+  const [gBody, setGBody] = useState<NginxBodySize>('10m');
+  const [gKa, setGKa] = useState<NginxKeepalive>('65');
+  const [gHttp2, setGHttp2] = useState(true);
+  const [gLog, setGLog] = useState<NginxAccessLog>('on');
+
+  // Site settings
+  const [siteCfg, setSiteCfg] = useState<NginxSiteRow | null>(null);
+  const [sSsl, setSSsl] = useState(false);
+  const [sForce, setSForce] = useState(false);
+  const [sHsts, setSHsts] = useState(false);
+  const [sBody, setSBody] = useState<NginxBodySize | 'inherit'>('inherit');
+  const [sCf, setSCf] = useState(false);
+  const [sIdx, setSIdx] = useState(false);
 
   const refresh = useCallback(async () => {
     setListBusy(true);
@@ -183,6 +211,83 @@ export function NginxPage() {
     return null;
   }, [projectFilter, t]);
 
+  const openGlobal = async () => {
+    try {
+      const r = await nginxHostingApi.getSettings();
+      const s = r.settings;
+      setGGzip(s.gzip);
+      setGTokens(s.serverTokens);
+      setGBody(s.clientMaxBody);
+      setGKa(s.keepalive);
+      setGHttp2(s.http2);
+      setGLog(s.accessLog);
+      setGlobalOpen(true);
+    } catch (e) {
+      notifyWarn(e instanceof Error ? e.message : t('common.loadFailed'));
+    }
+  };
+
+  const openSiteSettings = (row: NginxSiteRow) => {
+    setSiteCfg(row);
+    setSSsl(row.ssl);
+    setSForce(Boolean(row.forceHttps));
+    setSHsts(Boolean(row.hsts));
+    setSBody('inherit');
+    setSCf(false);
+    setSIdx(false);
+  };
+
+  const saveGlobal = async (apply: boolean) => {
+    setOpsBusy(true);
+    try {
+      const body: Partial<NginxGlobalSettings> = {
+        gzip: gGzip,
+        serverTokens: gTokens,
+        clientMaxBody: gBody,
+        keepalive: gKa,
+        http2: gHttp2,
+        accessLog: gLog,
+      };
+      if (apply) {
+        const r = await nginxHostingApi.applySettings(body);
+        if (r.ok) notifyOk(String((r.notes as string[] | undefined)?.[0] ?? t('common.completed')));
+        else notifyWarn(String((r.notes as string[] | undefined)?.[0] ?? t('common.opFailed')));
+      } else {
+        await nginxHostingApi.patchSettings(body);
+        notifyOk(t('nginx.settingsSaved'));
+      }
+      setGlobalOpen(false);
+    } catch (e) {
+      notifyWarn(e instanceof Error ? e.message : t('common.opFailed'));
+    } finally {
+      setOpsBusy(false);
+    }
+  };
+
+  const saveSiteSettings = async () => {
+    if (!siteCfg) return;
+    setOpsBusy(true);
+    try {
+      const r = await nginxHostingApi.patchSiteSettings(siteCfg.id, {
+        ssl: sSsl,
+        forceHttps: sForce,
+        hsts: sHsts,
+        clientMaxBody: sBody,
+        cloudflareRealIp: sCf,
+        indexes: sIdx,
+      });
+      if (r.ok !== false)
+        notifyOk(String((r.notes as string[] | undefined)?.[0] ?? t('common.completed')));
+      else notifyWarn(String((r.notes as string[] | undefined)?.[0] ?? t('common.opFailed')));
+      setSiteCfg(null);
+      await refresh();
+    } catch (e) {
+      notifyWarn(e instanceof Error ? e.message : t('common.opFailed'));
+    } finally {
+      setOpsBusy(false);
+    }
+  };
+
   return (
     <FeaturePageLayout
       title={t('nav.nginx')}
@@ -197,6 +302,9 @@ export function NginxPage() {
         <ActionBar>
           <Button variant="secondary" size="sm" loading={listBusy} onClick={() => void refresh()}>
             {t('common.refresh')}
+          </Button>
+          <Button variant="secondary" size="sm" onClick={() => void openGlobal()}>
+            {t('nginx.globalSettings')}
           </Button>
           <Button
             variant="secondary"
@@ -320,6 +428,9 @@ export function NginxPage() {
                 onClick={() => void onApply(r)}
               >
                 {t('nginx.applyToSystem')}
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => openSiteSettings(r)}>
+                {t('nginx.siteSettings')}
               </Button>
               <Button
                 variant="secondary"
@@ -453,6 +564,121 @@ export function NginxPage() {
           danger
           busy={busy}
         />
+
+        <Modal
+          open={globalOpen}
+          onClose={() => !opsBusy && setGlobalOpen(false)}
+          title={t('nginx.globalSettings')}
+          footer={
+            <>
+              <Button variant="secondary" size="md" disabled={opsBusy} onClick={() => setGlobalOpen(false)}>
+                {t('common.cancel')}
+              </Button>
+              <Button variant="secondary" size="md" loading={opsBusy} onClick={() => void saveGlobal(false)}>
+                {t('common.save')}
+              </Button>
+              <Button variant="primary" size="md" loading={opsBusy} onClick={() => void saveGlobal(true)}>
+                {t('nginx.saveApply')}
+              </Button>
+            </>
+          }
+        >
+          <div className="stack">
+            <CheckboxField id="g-gzip" label={t('nginx.setGzip')} checked={gGzip} onChange={setGGzip} />
+            <CheckboxField
+              id="g-tok"
+              label={t('nginx.setShowVersion')}
+              description={t('nginx.setShowVersionDesc')}
+              checked={gTokens}
+              onChange={setGTokens}
+            />
+            <CheckboxField id="g-h2" label={t('nginx.setHttp2')} checked={gHttp2} onChange={setGHttp2} />
+            <Field label={t('nginx.setBody')} htmlFor="g-body" flush>
+              <SegRadio
+                name="g-body"
+                aria-label={t('nginx.setBody')}
+                value={gBody}
+                onChange={(v) => setGBody(v as NginxBodySize)}
+                options={BODY_OPTS.map((v) => ({ value: v, label: v }))}
+              />
+            </Field>
+            <Field label={t('nginx.setKeepalive')} htmlFor="g-ka" flush>
+              <SegRadio
+                name="g-ka"
+                aria-label={t('nginx.setKeepalive')}
+                value={gKa}
+                onChange={(v) => setGKa(v as NginxKeepalive)}
+                options={KA_OPTS.map((v) => ({ value: v, label: `${v}s` }))}
+              />
+            </Field>
+            <Field label={t('nginx.setAccessLog')} htmlFor="g-log" flush>
+              <SegRadio
+                name="g-log"
+                aria-label={t('nginx.setAccessLog')}
+                value={gLog}
+                onChange={(v) => setGLog(v as NginxAccessLog)}
+                options={[
+                  { value: 'on', label: t('nginx.logOn') },
+                  { value: 'buffered', label: t('nginx.logBuffered') },
+                  { value: 'off', label: t('nginx.logOff') },
+                ]}
+              />
+            </Field>
+          </div>
+        </Modal>
+
+        <Modal
+          open={Boolean(siteCfg)}
+          onClose={() => !opsBusy && setSiteCfg(null)}
+          title={t('nginx.siteSettings')}
+          description={siteCfg?.serverName}
+          footer={
+            <>
+              <Button variant="secondary" size="md" disabled={opsBusy} onClick={() => setSiteCfg(null)}>
+                {t('common.cancel')}
+              </Button>
+              <Button variant="primary" size="md" loading={opsBusy} onClick={() => void saveSiteSettings()}>
+                {t('nginx.saveApply')}
+              </Button>
+            </>
+          }
+        >
+          <div className="stack">
+            <CheckboxField id="s-ssl" label={t('nginx.sslLabel')} checked={sSsl} onChange={setSSsl} />
+            <CheckboxField
+              id="s-force"
+              label={t('nginx.setForceHttps')}
+              checked={sForce}
+              onChange={setSForce}
+              disabled={!sSsl}
+            />
+            <CheckboxField
+              id="s-hsts"
+              label={t('nginx.setHsts')}
+              checked={sHsts}
+              onChange={setSHsts}
+              disabled={!sSsl}
+            />
+            {siteCfg?.kind === 'proxy' ? (
+              <CheckboxField id="s-cf" label={t('nginx.setCfRealIp')} checked={sCf} onChange={setSCf} />
+            ) : null}
+            {siteCfg?.kind === 'static' ? (
+              <CheckboxField id="s-idx" label={t('nginx.setIndexes')} checked={sIdx} onChange={setSIdx} />
+            ) : null}
+            <Field label={t('nginx.setBody')} htmlFor="s-body" flush>
+              <SegRadio
+                name="s-body"
+                aria-label={t('nginx.setBody')}
+                value={sBody}
+                onChange={(v) => setSBody(v as NginxBodySize | 'inherit')}
+                options={[
+                  { value: 'inherit', label: t('nginx.bodyInherit') },
+                  ...BODY_OPTS.map((v) => ({ value: v, label: v })),
+                ]}
+              />
+            </Field>
+          </div>
+        </Modal>
       </WithPageGuide>
     </FeaturePageLayout>
   );

@@ -4663,7 +4663,26 @@
     "sourceProject": "项目",
     "sourceStandalone": "独立",
     "colSource": "来源",
-    "filterProject": "已按项目筛选"
+    "filterProject": "已按项目筛选",
+    "globalSettings": "全局设置",
+    "siteSettings": "站点设置",
+    "saveApply": "保存并应用",
+    "settingsSaved": "已保存",
+    "setGzip": "Gzip",
+    "setShowVersion": "显示版本号",
+    "setShowVersionDesc": "关 = server_tokens off",
+    "setHttp2": "HTTP/2（SSL）",
+    "setBody": "Body 上限",
+    "setKeepalive": "Keepalive",
+    "setAccessLog": "Access log",
+    "logOn": "开",
+    "logBuffered": "缓冲",
+    "logOff": "关",
+    "setForceHttps": "强制 HTTPS",
+    "setHsts": "HSTS",
+    "setCfRealIp": "Cloudflare Real IP",
+    "setIndexes": "目录列表",
+    "bodyInherit": "跟随全局"
   },
   "notes": {
     "notFound": "找不到",
@@ -4712,13 +4731,16 @@
       "cliMissing": "未安装 redis-cli"
     },
     "nginx": {
-      "reloaded": "已重载 Nginx",
+      "reloaded": "nginx 已 reload",
       "configOk": "Nginx 配置检查通过",
       "reloadExit": "Nginx reload 结束码={{code}}",
       "managedDir": "管理配置目录：{{path}}",
       "includeHint": "在 Nginx 加入：include {{path}}/*.conf;",
       "removedOrphan": "已删除幽灵 Nginx conf {{path}}",
-      "orphanCleanupFailed": "清理幽灵 Nginx conf 失败：{{detail}}"
+      "orphanCleanupFailed": "清理幽灵 Nginx conf 失败：{{detail}}",
+      "settingsWritten": "已写入 Nginx 全局 snippet",
+      "settingsNeedExecute": "应用需 YSK_EXECUTE",
+      "reloadFailed": "nginx reload 失败"
     },
     "ssl": {
       "requestCert": "申请证书"

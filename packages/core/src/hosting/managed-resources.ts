@@ -139,24 +139,49 @@ export async function applyManagedNginxSite(
   mkdirSync(dir, { recursive: true });
   const slug = serverName.replace(/[^a-zA-Z0-9._-]/g, '_') || id.slice(0, 8);
   const confPath = join(dir, `ysk_site_${slug}.conf`);
+  const forceHttps = Boolean(site.forceHttps ?? site.force_https);
+  const hsts = Boolean(site.hsts);
+  const bodySize =
+    site.clientMaxBody && site.clientMaxBody !== 'inherit'
+      ? String(site.clientMaxBody)
+      : undefined;
+  const extraBody = bodySize ? `  client_max_body_size ${bodySize};\n` : '';
+  const indexes = site.indexes === true;
   let conf = '';
   if (kind === 'static') {
     conf = renderNginxStatic({
       serverName,
       docRoot: String(site.root ?? join(dataDir, 'www', slug)),
-      ssl: Boolean(site.ssl) });
+      ssl: Boolean(site.ssl),
+      forceHttps,
+      hsts,
+    });
   } else if (kind === 'php') {
     conf = renderNginxPhpFpm({
       serverName,
       docRoot: String(site.root ?? join(dataDir, 'www', slug)),
       fpmSocket: String(site.socket ?? '/run/php/php8.2-fpm.sock'),
-      ssl: Boolean(site.ssl) });
+      ssl: Boolean(site.ssl),
+      forceHttps,
+      hsts,
+    });
   } else {
     conf = renderNginxProxy({
       serverName,
       upstream: String(site.upstream ?? 'http://127.0.0.1:3000'),
       ssl: Boolean(site.ssl),
-      cloudflareRealIp: Boolean(site.cloudflareRealIp ?? false) });
+      cloudflareRealIp: Boolean(site.cloudflareRealIp ?? false),
+      forceHttps,
+      hsts,
+    });
+  }
+  // Inject site-level body size / autoindex after server_name line
+  if (extraBody || indexes) {
+    conf = conf.replace(
+      /server_name\s+[^;]+;/,
+      (m) =>
+        `${m}\n${extraBody}${indexes ? '  autoindex on;\n' : ''}`,
+    );
   }
   writeFileSync(confPath, conf, 'utf8');
   const notes: string[] = [tl('notes.tpl.wroteManaged', { path: confPath })];

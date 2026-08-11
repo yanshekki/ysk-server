@@ -9,6 +9,10 @@ import {
   readNginxSiteConf,
   applyManagedNginxSite,
   getResource,
+  updateResource,
+  loadNginxSettings,
+  saveNginxSettings,
+  applyNginxSettings,
   applyPublicFileServer,
   planFirewall,
   planPublicFileServer,
@@ -130,6 +134,106 @@ export async function handleHostingInfraServicesRoutes(
           path,
           content: readNginxSiteConf(path),
         });
+        return true;
+      }
+      if (method === 'GET' && url.pathname === '/api/v1/hosting/nginx/settings') {
+        ctx.auth.authenticate(getBearer(req));
+        sendJson(res, 200, { settings: loadNginxSettings(ctx.dataDir) });
+        return true;
+      }
+      if (method === 'PATCH' && url.pathname === '/api/v1/hosting/nginx/settings') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as Record<string, unknown>;
+        const settings = saveNginxSettings(ctx.dataDir, data as never);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'nginx.settings.patch',
+          detail: { keys: Object.keys(data) },
+          ok: true,
+        });
+        sendJson(res, 200, { ok: true, settings });
+        return true;
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/hosting/nginx/settings/apply') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as Record<string, unknown>;
+        const result = await applyNginxSettings({
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          patch: Object.keys(data).length ? (data as never) : undefined,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'nginx.settings.apply',
+          detail: { ok: result.ok },
+          ok: result.ok,
+        });
+        sendOpsResult(res, {
+          ...result,
+          apply_status: result.blocked
+            ? 'blocked'
+            : result.ok
+              ? 'applied'
+              : 'failed',
+        });
+        return true;
+      }
+      // Site advanced settings (standalone resource or project:id)
+      const siteSettingsMatch = url.pathname.match(
+        /^\/api\/v1\/hosting\/nginx\/sites\/([^/]+)\/settings$/,
+      );
+      if (method === 'PATCH' && siteSettingsMatch) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const rawId = decodeURIComponent(siteSettingsMatch[1] ?? '');
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          ssl?: boolean;
+          forceHttps?: boolean;
+          hsts?: boolean;
+          clientMaxBody?: string;
+          cloudflareRealIp?: boolean;
+          indexes?: boolean;
+          websocket?: boolean;
+        };
+        if (rawId.startsWith('project:')) {
+          const projectId = rawId.slice('project:'.length);
+          const result = await ctx.projectOps.publishNginx(projectId, {
+            actor: user.username,
+            ssl: data.ssl,
+            forceHttps: data.forceHttps,
+            hsts: data.hsts,
+          });
+          ctx.audit.append({
+            actor: user.username,
+            action: 'nginx.site.settings',
+            resource: rawId,
+            ok: Boolean(result.ok),
+          });
+          sendOpsResult(res, result);
+          return true;
+        }
+        updateResource(ctx.db, 'nginx_sites', rawId, {
+          ssl: data.ssl,
+          forceHttps: data.forceHttps,
+          hsts: data.hsts,
+          clientMaxBody: data.clientMaxBody,
+          cloudflareRealIp: data.cloudflareRealIp,
+          indexes: data.indexes,
+          websocket: data.websocket,
+        });
+        const result = await applyManagedNginxSite(ctx.db, ctx.dataDir, rawId, {
+          host: ctx.host,
+          execute: true,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'nginx.site.settings',
+          resource: rawId,
+          ok: result.ok,
+        });
+        sendOpsResult(res, result);
         return true;
       }
       if (method === 'POST' && url.pathname === '/api/v1/hosting/nginx/sync') {

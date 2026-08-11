@@ -45,13 +45,16 @@
     "cliMissing": "redis-cli انسٹال نہیں"
   },
   "nginx": {
-    "reloaded": "Nginx دوبارہ لوڈ ہو گیا",
+    "reloaded": "nginx reloaded",
     "configOk": "Nginx کنفیگ چیک کامیاب",
     "reloadExit": "Nginx ری لوڈ exit code={{code}}",
     "managedDir": "مینیجڈ کنفیگ ڈائریکٹری: {{path}}",
     "includeHint": "nginx میں: include {{path}}/*.conf;",
     "removedOrphan": "Removed orphan nginx conf {{path}}",
-    "orphanCleanupFailed": "Orphan nginx cleanup failed: {{detail}}"
+    "orphanCleanupFailed": "Orphan nginx cleanup failed: {{detail}}",
+    "settingsWritten": "Nginx global snippet written",
+    "settingsNeedExecute": "Apply needs YSK_EXECUTE",
+    "reloadFailed": "nginx reload failed"
   },
   "ssl": {
     "requestCert": "سرٹیفکیٹ درخواست کریں"

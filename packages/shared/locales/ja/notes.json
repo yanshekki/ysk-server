@@ -45,13 +45,16 @@
     "cliMissing": "redis-cli がインストールされていません"
   },
   "nginx": {
-    "reloaded": "Nginxがリロードされました",
+    "reloaded": "nginx reloaded",
     "configOk": "Nginx 構成チェックに合格しました",
     "reloadExit": "Nginx リロード終了コード={{code}}",
     "managedDir": "管理対象構成ディレクトリ: {{path}}",
     "includeHint": "nginx の場合: {{path}}/*.conf をインクルードします。",
     "removedOrphan": "孤立した nginx 設定 {{path}} を削除しました",
-    "orphanCleanupFailed": "孤立 nginx のクリーンアップに失敗しました: {{detail}}"
+    "orphanCleanupFailed": "孤立 nginx のクリーンアップに失敗しました: {{detail}}",
+    "settingsWritten": "Nginx global snippet written",
+    "settingsNeedExecute": "Apply needs YSK_EXECUTE",
+    "reloadFailed": "nginx reload failed"
   },
   "ssl": {
     "requestCert": "証明書を要求する"

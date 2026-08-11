@@ -45,13 +45,16 @@
     "cliMissing": "redis-cli tidak terpasang"
   },
   "nginx": {
-    "reloaded": "Nginx dimuat ulang",
+    "reloaded": "nginx reloaded",
     "configOk": "Pemeriksaan konfigurasi Nginx berhasil",
     "reloadExit": "Kode keluar reload Nginx={{code}}",
     "managedDir": "Direktori konfigurasi terkelola: {{path}}",
     "includeHint": "Di nginx: include {{path}}/*.conf;",
     "removedOrphan": "Removed orphan nginx conf {{path}}",
-    "orphanCleanupFailed": "Orphan nginx cleanup failed: {{detail}}"
+    "orphanCleanupFailed": "Orphan nginx cleanup failed: {{detail}}",
+    "settingsWritten": "Nginx global snippet written",
+    "settingsNeedExecute": "Apply needs YSK_EXECUTE",
+    "reloadFailed": "nginx reload failed"
   },
   "ssl": {
     "requestCert": "Minta sertifikat"

@@ -4663,7 +4663,26 @@
     "sourceProject": "Project",
     "sourceStandalone": "Standalone",
     "colSource": "Source",
-    "filterProject": "Filtered by project"
+    "filterProject": "Filtered by project",
+    "globalSettings": "Global settings",
+    "siteSettings": "Site settings",
+    "saveApply": "Save & apply",
+    "settingsSaved": "Saved",
+    "setGzip": "Gzip",
+    "setShowVersion": "Show server version",
+    "setShowVersionDesc": "Off = server_tokens off",
+    "setHttp2": "HTTP/2 (SSL)",
+    "setBody": "Max body",
+    "setKeepalive": "Keepalive",
+    "setAccessLog": "Access log",
+    "logOn": "On",
+    "logBuffered": "Buffered",
+    "logOff": "Off",
+    "setForceHttps": "Force HTTPS",
+    "setHsts": "HSTS",
+    "setCfRealIp": "Cloudflare Real IP",
+    "setIndexes": "Directory listing",
+    "bodyInherit": "Global"
   },
   "notes": {
     "notFound": "Tidak ditemukan",
@@ -4712,13 +4731,16 @@
       "cliMissing": "redis-cli tidak terpasang"
     },
     "nginx": {
-      "reloaded": "Nginx dimuat ulang",
+      "reloaded": "nginx reloaded",
       "configOk": "Pemeriksaan konfigurasi Nginx berhasil",
       "reloadExit": "Kode keluar reload Nginx={{code}}",
       "managedDir": "Direktori konfigurasi terkelola: {{path}}",
       "includeHint": "Di nginx: include {{path}}/*.conf;",
       "removedOrphan": "Removed orphan nginx conf {{path}}",
-      "orphanCleanupFailed": "Orphan nginx cleanup failed: {{detail}}"
+      "orphanCleanupFailed": "Orphan nginx cleanup failed: {{detail}}",
+      "settingsWritten": "Nginx global snippet written",
+      "settingsNeedExecute": "Apply needs YSK_EXECUTE",
+      "reloadFailed": "nginx reload failed"
     },
     "ssl": {
       "requestCert": "Minta sertifikat"
