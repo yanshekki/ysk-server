@@ -4,16 +4,75 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>YSK Server | YSK Limited</title>
-    <meta name="description" content="YSK Server — AI-secure Linux server manager by YSK Limited" />
+    <meta
+      name="description"
+      content="YSK Server — AI-secure Linux server manager by YSK Limited"
+    />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!-- System fonts first; optional web fonts must not block first paint -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
     />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
+    <style>
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: #0b1220;
+        color: #e8eefc;
+        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      }
+      #ysk-boot {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        z-index: 99999;
+        background: #0b1220;
+      }
+      #ysk-boot .box {
+        text-align: center;
+        padding: 1.5rem;
+      }
+      #ysk-boot .spin {
+        width: 36px;
+        height: 36px;
+        margin: 0 auto 1rem;
+        border: 3px solid #24314d;
+        border-top-color: #5b8cff;
+        border-radius: 50%;
+        animation: yskspin 0.8s linear infinite;
+      }
+      #ysk-boot p {
+        margin: 0;
+        opacity: 0.75;
+        font-size: 0.95rem;
+      }
+      @keyframes yskspin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
   </head>
   <body>
+    <div id="ysk-boot" aria-live="polite">
+      <div class="box">
+        <div class="spin" aria-hidden="true"></div>
+        <p>Loading YSK Server…</p>
+      </div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

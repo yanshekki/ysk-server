@@ -1,8 +1,7 @@
 /**
- * Web i18n — loads catalogs from @ysk/shared/locales (single source of truth).
- * Default: zh-HK (香港書面語). Aliases zh-TW → zh-HK via normalizeLocale.
- * Tier-1: zh-HK, zh-CN, en (quality bar).
- * Tier-2: ja, ko, hi, es, ar, fr, bn, pt, id, ur (full catalogs; ar/ur RTL).
+ * Web i18n — catalogs from @ysk/shared/locales (SSOT).
+ * Tier-1 defaults: zh-HK / zh-CN / en.
+ * Other locales load on demand (keeps main bundle small; avoids blank-page wait).
  */
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
@@ -15,37 +14,64 @@ import {
   type LocaleCode,
 } from '@ysk/shared';
 
-import zhHK from '@ysk/shared/locales/zh-HK/translation.json';
-import zhCN from '@ysk/shared/locales/zh-CN/translation.json';
-import en from '@ysk/shared/locales/en/translation.json';
-import ja from '@ysk/shared/locales/ja/translation.json';
-import ko from '@ysk/shared/locales/ko/translation.json';
-import hi from '@ysk/shared/locales/hi/translation.json';
-import es from '@ysk/shared/locales/es/translation.json';
-import ar from '@ysk/shared/locales/ar/translation.json';
-import fr from '@ysk/shared/locales/fr/translation.json';
-import bn from '@ysk/shared/locales/bn/translation.json';
-import pt from '@ysk/shared/locales/pt/translation.json';
-import id from '@ysk/shared/locales/id/translation.json';
-import ur from '@ysk/shared/locales/ur/translation.json';
+type Catalog = Record<string, unknown>;
 
-const resources = {
-  'zh-HK': { translation: zhHK },
-  'zh-CN': { translation: zhCN },
-  en: { translation: en },
-  ja: { translation: ja },
-  ko: { translation: ko },
-  hi: { translation: hi },
-  es: { translation: es },
-  ar: { translation: ar },
-  fr: { translation: fr },
-  bn: { translation: bn },
-  pt: { translation: pt },
-  id: { translation: id },
-  ur: { translation: ur },
-  /** Compat: historical locale code */
-  'zh-TW': { translation: zhHK },
-} as const;
+/** Dynamic import map — each locale becomes its own Vite chunk. */
+const CATALOG_LOADERS: Record<string, () => Promise<{ default: Catalog }>> = {
+  en: () => import('@ysk/shared/locales/en/translation.json'),
+  'zh-HK': () => import('@ysk/shared/locales/zh-HK/translation.json'),
+  'zh-CN': () => import('@ysk/shared/locales/zh-CN/translation.json'),
+  ja: () => import('@ysk/shared/locales/ja/translation.json'),
+  ko: () => import('@ysk/shared/locales/ko/translation.json'),
+  hi: () => import('@ysk/shared/locales/hi/translation.json'),
+  es: () => import('@ysk/shared/locales/es/translation.json'),
+  ar: () => import('@ysk/shared/locales/ar/translation.json'),
+  fr: () => import('@ysk/shared/locales/fr/translation.json'),
+  bn: () => import('@ysk/shared/locales/bn/translation.json'),
+  pt: () => import('@ysk/shared/locales/pt/translation.json'),
+  id: () => import('@ysk/shared/locales/id/translation.json'),
+  ur: () => import('@ysk/shared/locales/ur/translation.json'),
+};
+
+const loading = new Map<string, Promise<void>>();
+
+function catalogKey(code: string): string {
+  const n = String(normalizeLocale(code));
+  // historical alias still used in storage / Accept-Language
+  if (n === 'zh-TW' || code === 'zh-TW') return 'zh-HK';
+  return n;
+}
+
+/** Ensure a locale catalog is registered (idempotent). */
+export async function ensureLocaleLoaded(lng: string): Promise<void> {
+  const key = catalogKey(lng);
+  if (i18n.hasResourceBundle(key, 'translation')) {
+    if ((lng === 'zh-TW' || String(normalizeLocale(lng)) === 'zh-TW') && !i18n.hasResourceBundle('zh-TW', 'translation')) {
+      const bundle = i18n.getResourceBundle(key, 'translation') as Catalog;
+      i18n.addResourceBundle('zh-TW', 'translation', bundle, true, true);
+    }
+    return;
+  }
+  const existing = loading.get(key);
+  if (existing) {
+    await existing;
+    return;
+  }
+  const loader = CATALOG_LOADERS[key] ?? CATALOG_LOADERS.en!;
+  const p = loader()
+    .then((mod) => {
+      const data = mod.default ?? mod;
+      i18n.addResourceBundle(key, 'translation', data, true, true);
+      if (key === 'zh-HK') {
+        i18n.addResourceBundle('zh-TW', 'translation', data, true, true);
+      }
+    })
+    .finally(() => {
+      loading.delete(key);
+    });
+  loading.set(key, p);
+  await p;
+}
 
 function detectInitialLng(): LocaleCode {
   try {
@@ -71,35 +97,55 @@ export function applyDocumentLocale(lng: string): void {
   root.dataset.rtl = isRtlLocale(code) ? 'true' : 'false';
 }
 
-void i18n.use(initReactI18next).init({
-  resources,
-  lng: detectInitialLng(),
-  fallbackLng: {
-    'zh-TW': ['zh-HK', 'en'],
-    'zh-HK': ['en'],
-    'zh-CN': ['zh-HK', 'en'],
-    ja: ['en'],
-    ko: ['en'],
-    hi: ['en'],
-    es: ['en'],
-    ar: ['en'],
-    fr: ['en'],
-    bn: ['en'],
-    pt: ['en'],
-    id: ['en'],
-    ur: ['en'],
-    default: ['en'],
-  },
-  supportedLngs: [...LOCALES, 'zh-TW'],
-  interpolation: { escapeValue: false },
-  returnNull: false,
-});
+let bootstrapped = false;
 
-applyDocumentLocale(i18n.language);
+/**
+ * Call once before first React render.
+ * Loads en (fallback) + initial locale only — not all 13 catalogs.
+ */
+export async function bootstrapI18n(): Promise<void> {
+  if (bootstrapped) return;
+  const lng = detectInitialLng();
 
-i18n.on('languageChanged', (lng) => {
-  applyDocumentLocale(lng);
-});
+  if (!i18n.isInitialized) {
+    await i18n.use(initReactI18next).init({
+      resources: {},
+      lng,
+      fallbackLng: {
+        'zh-TW': ['zh-HK', 'en'],
+        'zh-HK': ['en'],
+        'zh-CN': ['zh-HK', 'en'],
+        ja: ['en'],
+        ko: ['en'],
+        hi: ['en'],
+        es: ['en'],
+        ar: ['en'],
+        fr: ['en'],
+        bn: ['en'],
+        pt: ['en'],
+        id: ['en'],
+        ur: ['en'],
+        default: ['en'],
+      },
+      supportedLngs: [...LOCALES, 'zh-TW'],
+      partialBundledLanguages: true,
+      interpolation: { escapeValue: false },
+      returnNull: false,
+      initImmediate: false,
+    });
+  }
+
+  // Always load English fallback + chosen locale in parallel
+  await Promise.all([ensureLocaleLoaded('en'), ensureLocaleLoaded(lng)]);
+  if (i18n.language !== lng) {
+    await i18n.changeLanguage(lng);
+  }
+  applyDocumentLocale(i18n.language);
+  i18n.on('languageChanged', (code) => {
+    applyDocumentLocale(code);
+  });
+  bootstrapped = true;
+}
 
 /**
  * Persist + normalize language changes (localStorage + i18next).
@@ -107,8 +153,12 @@ i18n.on('languageChanged', (lng) => {
  */
 export function setAppLocale(lng: string, opts?: { syncServer?: boolean }): void {
   const code = normalizeLocale(lng);
-  void i18n.changeLanguage(code);
-  applyDocumentLocale(code);
+  void (async () => {
+    await ensureLocaleLoaded(code);
+    await ensureLocaleLoaded('en');
+    await i18n.changeLanguage(code);
+    applyDocumentLocale(code);
+  })();
   try {
     localStorage.setItem('ysk.locale', code);
   } catch {
@@ -116,10 +166,7 @@ export function setAppLocale(lng: string, opts?: { syncServer?: boolean }): void
   }
   if (opts?.syncServer === false) return;
 
-  void Promise.all([
-    import('../stores/auth-store'),
-    import('../services/api'),
-  ])
+  void Promise.all([import('../stores/auth-store'), import('../services/api')])
     .then(([{ authStore }, { api }]) => {
       if (!authStore.isAuthenticated()) return;
       return api.setLocale(code).then((r) => {
