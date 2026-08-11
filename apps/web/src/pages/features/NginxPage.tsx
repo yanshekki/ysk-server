@@ -334,7 +334,7 @@ export function NginxPage() {
         guideId="nginx"
         stackContent={
           <>
-            <SoftwareInstallBanner feature="nginx" title={t('nginx.notInstalled')} />
+            <SoftwareInstallBanner feature="nginx" title={t('nginx.notInstalled')} showReadyActions={false} />
             <SoftwareVersionBar softwareId="nginx" />
           </>
         }

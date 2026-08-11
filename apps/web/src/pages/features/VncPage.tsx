@@ -756,14 +756,14 @@ export function VncPage() {
         {tab === 'install' ? (
           <div className="stack">
             <Alert variant="info">{t('vnc.installHint')}</Alert>
-            <SoftwareInstallBanner feature="tigervnc" title={t('vnc.needTigerVnc')} />
+            <SoftwareInstallBanner feature="tigervnc" title={t('vnc.needTigerVnc')} showReadyActions={false} />
             <SoftwareVersionBar softwareId="tigervnc" />
-            <SoftwareInstallBanner feature="novnc" title={t('vnc.needNovnc')} />
+            <SoftwareInstallBanner feature="novnc" title={t('vnc.needNovnc')} showReadyActions={false} />
             <SoftwareVersionBar softwareId="novnc" />
-            <SoftwareInstallBanner feature="vnc" title={t('vnc.needXfce')} />
+            <SoftwareInstallBanner feature="vnc" title={t('vnc.needXfce')} showReadyActions={false} />
             <SoftwareVersionBar softwareId="vnc-desktop-xfce" />
             <Alert variant="info">{t('vnc.viewerStackOptional')}</Alert>
-            <SoftwareInstallBanner feature="vnc" title={t('vnc.needViewerOptional')} />
+            <SoftwareInstallBanner feature="vnc" title={t('vnc.needViewerOptional')} showReadyActions={false} />
             <SoftwareVersionBar softwareId="tigervnc-viewer" />
           </div>
         ) : null}

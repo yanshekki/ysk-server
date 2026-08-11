@@ -748,7 +748,7 @@ export function FirewallPage() {
 
         {tab === 'stack' ? (
           <div className="tab-panel stack">
-            <SoftwareInstallBanner feature="firewall" title={t('firewall.notInstalled')} />
+            <SoftwareInstallBanner feature="firewall" title={t('firewall.notInstalled')} showReadyActions={false} />
             <SoftwareVersionBar softwareId="ufw" />
           </div>
         ) : null}

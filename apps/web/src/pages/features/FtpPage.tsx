@@ -547,6 +547,7 @@ export function FtpPage() {
               feature="ftp"
               title={t('ftp.softwareMissing')}
               onInstalled={() => void loadServiceStatus()}
+              showReadyActions={false}
             />
             <SoftwareVersionBar softwareId="vsftpd" />
           </div>

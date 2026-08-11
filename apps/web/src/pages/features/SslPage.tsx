@@ -213,7 +213,7 @@ export function SslPage() {
         guideId="ssl"
         stackContent={
           <>
-            <SoftwareInstallBanner feature="ssl" title={t('ssl.certbotNotInstalled')} />
+            <SoftwareInstallBanner feature="ssl" title={t('ssl.certbotNotInstalled')} showReadyActions={false} />
             <SoftwareVersionBar softwareId="certbot" />
           </>
         }

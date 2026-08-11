@@ -345,7 +345,7 @@ export function ApachePage() {
         guideId="apache"
         stackContent={
           <>
-            <SoftwareInstallBanner feature="apache" title={t('apache.notInstalled')} />
+            <SoftwareInstallBanner feature="apache" title={t('apache.notInstalled')} showReadyActions={false} />
             <SoftwareVersionBar softwareId="apache2" />
           </>
         }

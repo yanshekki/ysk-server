@@ -592,6 +592,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
                 title: console?.title ?? engine,
               })}
               onInstalled={() => void refresh()}
+              showReadyActions={false}
             />
             <SoftwareVersionBar
               softwareId={

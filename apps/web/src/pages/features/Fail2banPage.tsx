@@ -747,7 +747,7 @@ export function Fail2banPage() {
 
         {tab === 'stack' ? (
           <div className="tab-panel stack">
-            <SoftwareInstallBanner feature="fail2ban" title={t('fail2ban.notInstalled')} />
+            <SoftwareInstallBanner feature="fail2ban" title={t('fail2ban.notInstalled')} showReadyActions={false} />
             <SoftwareVersionBar softwareId="fail2ban" />
           </div>
         ) : null}

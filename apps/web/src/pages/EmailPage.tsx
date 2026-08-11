@@ -706,7 +706,7 @@ export function EmailPage() {
 
         {tab === 'stack' ? (
           <div className="tab-panel mail-panel stack">
-            <SoftwareInstallBanner feature="email" title={t('email.softwareNeeded')} />
+            <SoftwareInstallBanner feature="email" title={t('email.softwareNeeded')} showReadyActions={false} />
             <SoftwareVersionBar softwareId="postfix" title="Postfix" />
             <SoftwareVersionBar softwareId="dovecot" title="Dovecot" />
             <SoftwareVersionBar softwareId="opendkim" title="OpenDKIM" />

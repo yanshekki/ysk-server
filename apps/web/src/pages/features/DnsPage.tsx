@@ -1601,7 +1601,7 @@ export function DnsPage() {
       
         {tab === 'stack' ? (
           <div className="tab-panel stack">
-            <SoftwareInstallBanner feature="dns" title={t('dns.notInstalled')} />
+            <SoftwareInstallBanner feature="dns" title={t('dns.notInstalled')} showReadyActions={false} />
             <SoftwareVersionBar softwareId="pdns-server" />
           </div>
         ) : null}

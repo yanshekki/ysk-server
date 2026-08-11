@@ -1542,7 +1542,7 @@ export function HostBrowsePage() {
               onInstalled={() => {
                 void loadCapsAndSettings();
               }}
-            />
+              showReadyActions={false} />
             <SoftwareVersionBar softwareId="chromium" />
             <Alert variant="info">{t('hostBrowse.softwareHint')}</Alert>
           </div>

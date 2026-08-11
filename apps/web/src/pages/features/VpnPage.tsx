@@ -1036,7 +1036,7 @@ export function VpnPage() {
                     <Badge tone="warn">{t('vpn.notInstalled')}</Badge>
                   )}
                 </div>
-                <SoftwareInstallBanner feature="wireguard" title={t('vpn.needWireGuard')} />
+                <SoftwareInstallBanner feature="wireguard" title={t('vpn.needWireGuard')} showReadyActions={false} />
                 <SoftwareVersionBar softwareId="wireguard" />
               </section>
               <section className="vpn-software-card" aria-label="OpenVPN">
@@ -1048,7 +1048,7 @@ export function VpnPage() {
                     <Badge tone="warn">{t('vpn.notInstalled')}</Badge>
                   )}
                 </div>
-                <SoftwareInstallBanner feature="openvpn" title={t('vpn.needOpenVpn')} />
+                <SoftwareInstallBanner feature="openvpn" title={t('vpn.needOpenVpn')} showReadyActions={false} />
                 <SoftwareVersionBar softwareId="openvpn" />
               </section>
               <section className="vpn-software-card" aria-label="Shadowsocks">
@@ -1060,7 +1060,7 @@ export function VpnPage() {
                     <Badge tone="warn">{t('vpn.notInstalled')}</Badge>
                   )}
                 </div>
-                <SoftwareInstallBanner feature="outline" title={t('vpn.needSs')} />
+                <SoftwareInstallBanner feature="outline" title={t('vpn.needSs')} showReadyActions={false} />
                 <SoftwareVersionBar softwareId="shadowsocks" />
               </section>
             </div>

@@ -25,6 +25,12 @@ export interface SoftwareInstallBannerProps {
   readyTitle?: string;
   /** Uninstall dialog title (defaults to title / readyTitle — not the "not installed" copy) */
   uninstallTitle?: string;
+  /**
+   * When false and software is ready, hide the ready strip entirely
+   * (use when SoftwareVersionBar below already has uninstall / recheck).
+   * Default true keeps lifecycle ready actions when banner is standalone.
+   */
+  showReadyActions?: boolean;
   compact?: boolean;
 }
 
@@ -35,6 +41,7 @@ export function SoftwareInstallBanner({
   title,
   readyTitle,
   uninstallTitle,
+  showReadyActions = true,
 }: SoftwareInstallBannerProps) {
   const { t } = useTranslation();
   const stream = useOpsStreamOptional();
@@ -223,9 +230,9 @@ export function SoftwareInstallBanner({
     }
   };
 
-  // Compact ready strip — still show uninstall
+  // Ready: either hide (VersionBar owns actions) or compact uninstall strip
   if (autoHideWhenReady && ready && !error && !lastResult && !switchOpen) {
-    if (!installedAny) return null;
+    if (!installedAny || !showReadyActions) return null;
     return (
       <div className="software-install-banner software-install-banner--ready">
         <div className="software-install-banner__alert" role="status">
