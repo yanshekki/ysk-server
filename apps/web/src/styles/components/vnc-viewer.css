@@ -64,6 +64,32 @@
   min-width: 12rem;
 }
 
+.vnc-viewer__clip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.vnc-viewer__clip-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.vnc-viewer__clip-row .field,
+.vnc-viewer__clip-row [class*='Field'] {
+  flex: 1 1 16rem;
+}
+
+.vnc-viewer__clip-ta {
+  width: 100%;
+  min-height: 3rem;
+  resize: vertical;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: var(--text-xs);
+}
+
 .vnc-viewer__screen {
   flex: 1 1 auto;
   min-height: 0;

@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import RFB from '@novnc/novnc';
 import { ActionBar, Badge, Button, Field } from '../../shared/components/ui';
+import { notifyOk, notifyWarn } from '../../shared/lib/notify';
 
 export type VncViewerTarget = {
   kind: 'account' | 'client';
@@ -44,6 +45,10 @@ export function VncViewer({ target, createSession, onClose }: Props) {
   const [needPassword, setNeedPassword] = useState(false);
   const [scale, setScale] = useState(true);
   const [statusText, setStatusText] = useState('');
+  /** Last text received from remote (ServerCutText) */
+  const [remoteClip, setRemoteClip] = useState('');
+  const [clipOpen, setClipOpen] = useState(false);
+  const [localClipDraft, setLocalClipDraft] = useState('');
 
   const disconnect = useCallback(() => {
     try {
@@ -107,6 +112,26 @@ export function VncViewer({ target, createSession, onClose }: Props) {
         setError(detail?.reason || t('vnc.viewer.securityFailure'));
         setState('error');
       });
+      // Remote → browser clipboard
+      rfb.addEventListener('clipboard', (ev: Event) => {
+        const text = (ev as CustomEvent<{ text?: string }>).detail?.text ?? '';
+        if (!text) return;
+        setRemoteClip(text);
+        void (async () => {
+          try {
+            if (navigator.clipboard?.writeText) {
+              await navigator.clipboard.writeText(text);
+              notifyOk(t('vnc.viewer.clipboardFromRemote'));
+            } else {
+              setClipOpen(true);
+              notifyOk(t('vnc.viewer.clipboardFromRemoteManual'));
+            }
+          } catch {
+            setClipOpen(true);
+            notifyWarn(t('vnc.viewer.clipboardFromRemoteManual'));
+          }
+        })();
+      });
 
       rfbRef.current = rfb;
       if (sess.password || password) {
@@ -165,6 +190,46 @@ export function VncViewer({ target, createSession, onClose }: Props) {
     }
   };
 
+  /** Browser clipboard → remote (paste into VNC session). */
+  const pasteLocalToRemote = async () => {
+    if (!rfbRef.current || state !== 'connected') return;
+    try {
+      let text = localClipDraft;
+      if (!text && navigator.clipboard?.readText) {
+        text = await navigator.clipboard.readText();
+      }
+      if (!text?.trim()) {
+        notifyWarn(t('vnc.viewer.clipboardEmpty'));
+        setClipOpen(true);
+        return;
+      }
+      rfbRef.current.clipboardPasteFrom(text);
+      setLocalClipDraft(text);
+      notifyOk(t('vnc.viewer.clipboardToRemote'));
+    } catch {
+      notifyWarn(t('vnc.viewer.clipboardReadDenied'));
+      setClipOpen(true);
+    }
+  };
+
+  const copyRemoteToLocal = async () => {
+    if (!remoteClip) {
+      notifyWarn(t('vnc.viewer.clipboardNoRemote'));
+      return;
+    }
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(remoteClip);
+        notifyOk(t('vnc.viewer.clipboardCopiedLocal'));
+      } else {
+        setClipOpen(true);
+      }
+    } catch {
+      setClipOpen(true);
+      notifyWarn(t('vnc.viewer.clipboardFromRemoteManual'));
+    }
+  };
+
   const tone =
     state === 'connected'
       ? 'ok'
@@ -217,6 +282,23 @@ export function VncViewer({ target, createSession, onClose }: Props) {
           >
             {t('vnc.viewer.cad')}
           </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => void pasteLocalToRemote()}
+            disabled={state !== 'connected'}
+            title={t('vnc.viewer.clipboardToRemoteHint')}
+          >
+            {t('vnc.viewer.clipboardPaste')}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setClipOpen((o) => !o)}
+            disabled={state !== 'connected' && !remoteClip}
+          >
+            {t('vnc.viewer.clipboardPanel')}
+          </Button>
           <Button size="sm" variant="ghost" onClick={disconnect}>
             {t('vnc.viewer.disconnect')}
           </Button>
@@ -225,6 +307,52 @@ export function VncViewer({ target, createSession, onClose }: Props) {
           </Button>
         </ActionBar>
       </div>
+
+      {clipOpen ? (
+        <div className="vnc-viewer__banner vnc-viewer__clip">
+          <p className="muted u-text-xs u-mb-0">{t('vnc.viewer.clipboardHint')}</p>
+          <div className="vnc-viewer__clip-row">
+            <Field label={t('vnc.viewer.clipboardLocal')} htmlFor="vnc-clip-local" flush>
+              <textarea
+                id="vnc-clip-local"
+                className="u-input vnc-viewer__clip-ta"
+                rows={2}
+                value={localClipDraft}
+                onChange={(e) => setLocalClipDraft(e.target.value)}
+                placeholder={t('vnc.viewer.clipboardLocalPh')}
+              />
+            </Field>
+            <Button
+              size="sm"
+              variant="primary"
+              disabled={state !== 'connected'}
+              onClick={() => void pasteLocalToRemote()}
+            >
+              {t('vnc.viewer.clipboardSend')}
+            </Button>
+          </div>
+          <div className="vnc-viewer__clip-row">
+            <Field label={t('vnc.viewer.clipboardRemote')} htmlFor="vnc-clip-remote" flush>
+              <textarea
+                id="vnc-clip-remote"
+                className="u-input vnc-viewer__clip-ta"
+                rows={2}
+                readOnly
+                value={remoteClip}
+                placeholder={t('vnc.viewer.clipboardRemotePh')}
+              />
+            </Field>
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={!remoteClip}
+              onClick={() => void copyRemoteToLocal()}
+            >
+              {t('vnc.viewer.clipboardCopy')}
+            </Button>
+          </div>
+        </div>
+      ) : null}
 
       {needPassword || error ? (
         <div className="vnc-viewer__banner">

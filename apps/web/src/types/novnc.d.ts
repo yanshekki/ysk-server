@@ -21,6 +21,8 @@ declare module '@novnc/novnc' {
       target?: string;
     }): void;
     sendCtrlAltDel(): void;
+    /** Send local text to remote clipboard (ClientCutText / extended clipboard). */
+    clipboardPasteFrom(text: string): void;
     focus(): void;
     blur(): void;
     addEventListener(type: string, listener: (ev: Event) => void): void;
