@@ -2822,7 +2822,8 @@
     "ovpnClientsRewritten": "已更新 {{n}} 个 OpenVPN 客户端配置的 remote（下载/QR 会用新地址）。",
     "accessFullNat": "已开全网上网（IP 转发 + NAT）",
     "accessLanOnly": "已设只连区域（无外网 NAT）",
-    "accessReconnectHint": "已连接的客户端请断开再连，才会使用新路由"
+    "accessReconnectHint": "已连接的客户端请断开再连，才会使用新路由",
+    "ovpnNatDurable": "OpenVPN NAT/forward installed for reboot (systemd ExecStartPost)."
   },
   "vnc": {
     "needInstall": "请安装 {{stack}}",

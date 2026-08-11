@@ -7517,7 +7517,8 @@
       "ovpnClientsRewritten": "Updated remote= in {{n}} OpenVPN client profile(s) for download/QR.",
       "accessFullNat": "Full internet enabled (IP forward + NAT)",
       "accessLanOnly": "LAN-only mode (no internet NAT)",
-      "accessReconnectHint": "Already-connected clients must reconnect to pick up new routes"
+      "accessReconnectHint": "Already-connected clients must reconnect to pick up new routes",
+      "ovpnNatDurable": "OpenVPN NAT/forward installed for reboot (systemd ExecStartPost)."
     },
     "vnc": {
       "needInstall": "Install {{stack}}",

@@ -7556,7 +7556,8 @@
       "ovpnClientsRewritten": "已更新 {{n}} 個 OpenVPN 客戶端設定嘅 remote（下載／QR 會用新地址）。",
       "accessFullNat": "已開全網上網（IP 轉發 + NAT）",
       "accessLanOnly": "已設只連區域（無外網 NAT）",
-      "accessReconnectHint": "已連線嘅客戶端請斷線再連，先會用新路由"
+      "accessReconnectHint": "已連線嘅客戶端請斷線再連，先會用新路由",
+      "ovpnNatDurable": "OpenVPN NAT/forward installed for reboot (systemd ExecStartPost)."
     },
     "vnc": {
       "needInstall": "請安裝 {{stack}}",

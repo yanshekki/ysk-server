@@ -2822,7 +2822,8 @@
     "ovpnClientsRewritten": "Updated remote= in {{n}} OpenVPN client profile(s) for download/QR.",
     "accessFullNat": "Full internet enabled (IP forward + NAT)",
     "accessLanOnly": "LAN-only mode (no internet NAT)",
-    "accessReconnectHint": "Already-connected clients must reconnect to pick up new routes"
+    "accessReconnectHint": "Already-connected clients must reconnect to pick up new routes",
+    "ovpnNatDurable": "OpenVPN NAT/forward installed for reboot (systemd ExecStartPost)."
   },
   "vnc": {
     "needInstall": "Install {{stack}}",
@@ -2898,8 +2899,7 @@
     "clientDownBlocked": "Cannot disconnect without root + YSK_EXECUTE",
     "clientDown": "Disconnected client {{name}}",
     "clientDeleted": "Client profile deleted",
-    "sessionStartCwd": "VNC start failed: working directory not accessible to the session user (display :{{display}}). Fixed by starting from HOME.",
-    "xstartupWriteFailed": "Failed to write ~/.vnc/xstartup ({{detail}}). Need root + YSK_EXECUTE."
+    "sessionStartCwd": "VNC start failed: working directory not accessible to the session user (display :{{display}}). Fixed by starting from HOME."
   },
   "apache": {
     "needServerName": "Server name required",

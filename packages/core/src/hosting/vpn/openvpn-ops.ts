@@ -245,12 +245,14 @@ export async function ensureOpenVpnServer(
   });
   // Prefer /etc/openvpn/server/ysk.conf (Debian openvpn-server@.service)
   const confPath = '/etc/openvpn/server/ysk.conf';
+  const natScriptPath = '/usr/local/lib/ysk-server/vpn-nat-ovpn.sh';
   const apply = await host.runCommand(
     [
       'bash',
       '-c',
       [
-        'mkdir -p /etc/openvpn/server /var/log/openvpn /run/openvpn-server',
+        'mkdir -p /etc/openvpn/server /var/log/openvpn /run/openvpn-server /usr/local/lib/ysk-server',
+        'mkdir -p /etc/systemd/system/openvpn-server@ysk.service.d /etc/systemd/system/openvpn@ysk.service.d',
         // Status file must be writable by openvpn (nobody) — prepare before start
         'touch /run/openvpn-server/ysk-status.log /var/log/openvpn/ysk-status.log 2>/dev/null || true',
         'chown nobody:nogroup /run/openvpn-server /run/openvpn-server/ysk-status.log 2>/dev/null || true',
@@ -261,11 +263,30 @@ export async function ensureOpenVpnServer(
         confBody,
         'YSKOVPN',
         'chmod 600 /etc/openvpn/server/ysk.conf',
+        // Durable NAT/forward script — every host, reboot-safe via systemd ExecStartPost
+        `cat > ${JSON.stringify(natScriptPath)} <<'YSKNAT'`,
+        '#!/bin/bash',
+        '# YSK-managed OpenVPN NAT/forward (regenerated on VPN apply)',
+        'set +e',
+        'sleep 0.4',
+        natShell,
+        'YSKNAT',
+        `chmod 755 ${JSON.stringify(natScriptPath)}`,
+        // Drop-in: re-apply after openvpn starts (tun up) on every boot/restart
+        `cat > /etc/systemd/system/openvpn-server@ysk.service.d/ysk-nat.conf <<'EOF'`,
+        '[Service]',
+        'ExecStartPost=/usr/local/lib/ysk-server/vpn-nat-ovpn.sh',
+        'EOF',
+        `cat > /etc/systemd/system/openvpn@ysk.service.d/ysk-nat.conf <<'EOF'`,
+        '[Service]',
+        'ExecStartPost=/usr/local/lib/ysk-server/vpn-nat-ovpn.sh',
+        'EOF',
+        'systemctl daemon-reload',
         // unit name varies: openvpn-server@ysk or openvpn@server
-        'if systemctl list-unit-files | grep -q openvpn-server@.service; then',
+        'if systemctl list-unit-files 2>/dev/null | grep -q openvpn-server@.service; then',
         '  systemctl enable openvpn-server@ysk 2>/dev/null || true',
         '  systemctl restart openvpn-server@ysk',
-        'elif systemctl list-unit-files | grep -q "openvpn@.service"; then',
+        'elif systemctl list-unit-files 2>/dev/null | grep -q "openvpn@.service"; then',
         '  # Legacy openvpn@ cannot use /run/openvpn-server — patch conf status path',
         `  sed -i 's|/run/openvpn-server/ysk-status.log|/var/log/openvpn/ysk-status.log|g' ${JSON.stringify(confPath)}`,
         '  ln -sfn /etc/openvpn/server/ysk.conf /etc/openvpn/ysk.conf 2>/dev/null || cp /etc/openvpn/server/ysk.conf /etc/openvpn/ysk.conf',
@@ -274,9 +295,11 @@ export async function ensureOpenVpnServer(
         'else',
         '  openvpn --config /etc/openvpn/server/ysk.conf --daemon ysk-openvpn',
         'fi',
-        // NAT/forward AFTER tun is up so iface detection is correct (every host)
+        // Immediate apply (also covers non-systemd path)
         'sleep 0.6',
-        natShell,
+        JSON.stringify(natScriptPath),
+        // Verify tun0 forward exists before UFW reject (product health)
+        'iptables -S FORWARD 2>/dev/null | grep -q "YSK-VPN-OVPN" || { echo "YSK-VPN: FORWARD mark missing after NAT apply" >&2; iptables -L FORWARD -n | head -15 >&2; exit 1; }',
       ].join('\n'),
     ],
     { timeoutMs: 60_000 },
@@ -300,6 +323,7 @@ export async function ensureOpenVpnServer(
   } else {
     notes.push(tl('notes.vpn.accessLanOnly'));
   }
+  notes.push(tl('notes.vpn.ovpnNatDurable'));
   notes.push(tl('notes.vpn.accessReconnectHint'));
   return { ok: true, notes };
 }

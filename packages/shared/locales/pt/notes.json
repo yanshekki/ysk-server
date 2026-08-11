@@ -2817,7 +2817,8 @@
     "ssPackageYielded": "Stopped/masked Debian shadowsocks-libev default unit so YSK can bind public {{port}} on this host.",
     "ssEndpointAutofilled": "Public endpoint set to {{endpoint}}.",
     "ssClientsRewritten": "Regenerated {{n}} client ss:// URI(s) for current endpoint/password.",
-    "ssUfwOpened": "Opened UFW {{port}}/tcp+udp for Shadowsocks (if ufw installed)."
+    "ssUfwOpened": "Opened UFW {{port}}/tcp+udp for Shadowsocks (if ufw installed).",
+    "ovpnNatDurable": "OpenVPN NAT/forward installed for reboot (systemd ExecStartPost)."
   },
   "vnc": {
     "needInstall": "Install {{stack}}",
