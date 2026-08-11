@@ -8,6 +8,10 @@ import {
   collectCatalogSoftwareUpgrades,
   adviseInventory,
   lookupOsvVulns,
+  buildUpdatesSummary,
+  normalizeUpdatesScanSettings,
+  DEFAULT_UPDATES_SCAN,
+  checkSelfUpdate,
 } from '@ysk/core';
 import type { AppContext } from '../app-context.js';
 import { listWithQuery } from '../http/list-response.js';
@@ -75,6 +79,21 @@ function filterInventoryAdvice(inv: InvRow[], advice: InvRow[], url: URL) {
 }
 
 
+function persistUpdatesSummary(ctx: AppContext) {
+  const scanCfg = normalizeUpdatesScanSettings(
+    ctx.settings.getJson('updates_scan_settings') ?? DEFAULT_UPDATES_SCAN,
+  );
+  const job = ctx.scheduler.list().find((j) => j.id === 'updates.scan');
+  const summary = buildUpdatesSummary({
+    lastInventory: ctx.settings.getJson('last_inventory'),
+    lastSelf: ctx.settings.getJson('last_self_update'),
+    scanSettings: scanCfg,
+    nextScanAt: job?.nextRunAt ?? null,
+  });
+  ctx.settings.setJson('updates_summary', summary);
+  return summary;
+}
+
 export async function handleUpdatesInventoryRoutes(
   ctx: AppContext,
   req: IncomingMessage,
@@ -82,6 +101,62 @@ export async function handleUpdatesInventoryRoutes(
   url: URL,
   method: string,
 ): Promise<boolean> {
+      if (method === 'GET' && url.pathname === '/api/v1/updates/summary') {
+        ctx.auth.authenticate(getBearer(req));
+        const summary = persistUpdatesSummary(ctx);
+        sendJson(res, 200, { ok: true, ...summary });
+        return true;
+      }
+
+      if (method === 'GET' && url.pathname === '/api/v1/updates/scan-settings') {
+        ctx.auth.authenticate(getBearer(req));
+        const settings = normalizeUpdatesScanSettings(
+          ctx.settings.getJson('updates_scan_settings') ?? DEFAULT_UPDATES_SCAN,
+        );
+        const job = ctx.scheduler.list().find((j) => j.id === 'updates.scan');
+        sendJson(res, 200, {
+          ok: true,
+          settings,
+          job: job
+            ? {
+                id: job.id,
+                intervalMs: job.intervalMs,
+                lastRunAt: job.lastRunAt ?? null,
+                nextRunAt: job.nextRunAt ?? null,
+                running: job.running,
+              }
+            : null,
+        });
+        return true;
+      }
+
+      if (method === 'PATCH' && url.pathname === '/api/v1/updates/scan-settings') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          enabled?: boolean;
+          intervalMs?: number;
+        };
+        const prev = normalizeUpdatesScanSettings(
+          ctx.settings.getJson('updates_scan_settings') ?? DEFAULT_UPDATES_SCAN,
+        );
+        const next = normalizeUpdatesScanSettings({
+          enabled: data.enabled !== undefined ? data.enabled : prev.enabled,
+          intervalMs:
+            data.intervalMs !== undefined ? data.intervalMs : prev.intervalMs,
+        });
+        ctx.settings.setJson('updates_scan_settings', next);
+        persistUpdatesSummary(ctx);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'update.scan.settings',
+          detail: next,
+          ok: true,
+        });
+        sendJson(res, 200, { ok: true, settings: next });
+        return true;
+      }
+
       if (method === 'GET' && url.pathname === '/api/v1/updates/inventory') {
         ctx.auth.authenticate(getBearer(req));
         const cached = url.searchParams.get('cached') === '1';
@@ -120,7 +195,9 @@ export async function handleUpdatesInventoryRoutes(
           items: inv.slice(0, 120),
           advice: advice.slice(0, 120),
           catalogSoftware: catalogSoftware.slice(0, 80),
+          stale: false,
         });
+        persistUpdatesSummary(ctx);
         const filtered = filterInventoryAdvice(
           inv as unknown as InvRow[],
           advice as unknown as InvRow[],
@@ -175,7 +252,24 @@ export async function handleUpdatesInventoryRoutes(
           items: inv.slice(0, 120),
           advice: advice.slice(0, 120),
           catalogSoftware: catalogSoftware.slice(0, 80),
+          stale: false,
         });
+        // Refresh panel status into cache (best-effort) so summary badge stays honest
+        try {
+          const status = await checkSelfUpdate({ currentVersion: VERSION });
+          ctx.settings.setJson('last_self_update', {
+            currentVersion: status.currentVersion,
+            latestVersion: status.latestVersion,
+            updateAvailable: status.updateAvailable,
+            lastCheckAt: status.lastCheckAt,
+            channel: status.channel,
+            ok: status.ok,
+            checked: status.checked,
+          });
+        } catch {
+          /* keep previous last_self_update */
+        }
+        const summary = persistUpdatesSummary(ctx);
         ctx.audit.append({
           actor: user.username,
           action: 'update.inventory.refresh',
@@ -183,6 +277,7 @@ export async function handleUpdatesInventoryRoutes(
             count: inv.length,
             upgradable: meta.upgradableCount,
             catalogUpgradable: catalogSoftware.filter((c) => c.upgradable).length,
+            badgeCount: summary.badgeCount,
             osv: Boolean(data.osv),
             notes: meta.notes,
           },
@@ -193,14 +288,24 @@ export async function handleUpdatesInventoryRoutes(
           advice,
           catalogSoftware,
           meta,
+          summary,
           collectedAt: new Date().toISOString(),
         });
         return true;
       }
       if (method === 'GET' && url.pathname === '/api/v1/updates/self') {
         ctx.auth.authenticate(getBearer(req));
-        const { checkSelfUpdate } = await import('@ysk/core');
         const status = await checkSelfUpdate({ currentVersion: VERSION });
+        ctx.settings.setJson('last_self_update', {
+          currentVersion: status.currentVersion,
+          latestVersion: status.latestVersion,
+          updateAvailable: status.updateAvailable,
+          lastCheckAt: status.lastCheckAt,
+          channel: status.channel,
+          ok: status.ok,
+          checked: status.checked,
+        });
+        persistUpdatesSummary(ctx);
         // Flatten for panel: never pretend latest=current without a real channel check
         sendOpsResult(res, {
           currentVersion: status.currentVersion,

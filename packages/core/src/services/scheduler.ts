@@ -67,12 +67,15 @@ export class Scheduler {
     id: string,
     getIntervalMs: () => number,
     fn: () => void | Promise<void>,
-    opts?: { runImmediately?: boolean },
+    opts?: { runImmediately?: boolean; /** Max interval clamp (default 7d; was 10m). */ maxIntervalMs?: number },
   ): void {
     this.stop(id);
     this.dynamicFns.set(id, { fn, getIntervalMs });
+    const maxMs = opts?.maxIntervalMs ?? 7 * 24 * 60 * 60_000;
+    const clamp = (raw: number) =>
+      Math.max(5_000, Math.min(maxMs, Number.isFinite(raw) && raw > 0 ? raw : 120_000));
     const arm = (runNow: boolean) => {
-      const ms = Math.max(5_000, Math.min(600_000, getIntervalMs() || 120_000));
+      const ms = clamp(getIntervalMs() || 120_000);
       const job: ScheduledJob = {
         id,
         intervalMs: ms,
@@ -96,7 +99,7 @@ export class Scheduler {
         } finally {
           j.running = false;
           // re-arm with latest interval
-          const nextMs = Math.max(5_000, Math.min(600_000, getIntervalMs() || 120_000));
+          const nextMs = clamp(getIntervalMs() || 120_000);
           j.intervalMs = nextMs;
           j.nextRunAt = new Date(Date.now() + nextMs).toISOString();
           const old = this.timers.get(id);

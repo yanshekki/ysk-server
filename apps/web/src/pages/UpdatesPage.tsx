@@ -5,7 +5,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useUpdates } from '../features/updates';
+import { useUpdates, updatesApi } from '../features/updates';
 import type { AdviceRow } from '../features/updates';
 import {
   PageGuide,
@@ -29,7 +29,7 @@ import { useCapabilities } from '../shared/hooks/useCapabilities';
 import { humanizeOperatorNote } from '../shared/lib/operator-messages';
 import { bindAllOrValue, bindCall1, bindCall2, bindCloseIfIdle, bindInput, bindSet, bindValueSet, bindVoid } from './bind-handlers';
 
-const UPD_TABS = ['packages', 'panel', 'schedule', 'about'] as const;
+const UPD_TABS = ['overview', 'packages', 'panel', 'schedule', 'about'] as const;
 type RiskFilter = 'all' | 'upgradable' | 'high' | 'medium' | 'low' | 'approval';
 
 export function riskTone(risk?: string): 'ok' | 'warn' | 'danger' | 'info' | 'neutral' {
@@ -183,8 +183,23 @@ export function UpdatesPage() {
     applyPackage,
     applyPackages } = useUpdates();
 
-  const [tab, setTab] = usePageTab(UPD_TABS, 'packages');
+  const [tab, setTab] = usePageTab(UPD_TABS, 'overview');
   const [riskFilter, setRiskFilter] = useState<RiskFilter>('all');
+  const [summary, setSummary] = useState<{
+    lastScanAt?: string | null;
+    nextScanAt?: string | null;
+    autoScanEnabled?: boolean;
+    intervalMs?: number;
+    packagesUpgradable?: number;
+    packagesHighRisk?: number;
+    panelUpdateAvailable?: boolean;
+    panelCurrent?: string;
+    panelLatest?: string;
+    badgeCount?: number;
+    stale?: boolean;
+  } | null>(null);
+  const [scanEnabled, setScanEnabled] = useState(true);
+  const [scanIntervalMs, setScanIntervalMs] = useState(24 * 60 * 60_000);
   const [searchParams] = useSearchParams();
   const qFromUrl = (searchParams.get('q') ?? '').trim();
   const [q, setQ] = useState(qFromUrl);
@@ -198,15 +213,40 @@ export function UpdatesPage() {
   /** Soft-cancel sequential fallback between packages */
   const [batchAbort, setBatchAbort] = useState<AbortController | null>(null);
 
-  // Deep-link from software hub: /updates?q=nginx
+  // Deep-link: /updates?q=nginx → packages tab + search
   useEffect(() => {
     if (qFromUrl && qFromUrl !== q) {
       setQ(qFromUrl);
       setDebouncedQ(qFromUrl);
+      setTab('packages');
     }
     // Only re-sync when URL q changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [qFromUrl]);
+
+  const refreshSummary = async () => {
+    try {
+      const s = await updatesApi.summary();
+      setSummary(s);
+      if (typeof s.autoScanEnabled === 'boolean') setScanEnabled(s.autoScanEnabled);
+      if (typeof s.intervalMs === 'number') setScanIntervalMs(s.intervalMs);
+    } catch {
+      /* optional */
+    }
+  };
+
+  useEffect(() => {
+    void refreshSummary();
+    void updatesApi
+      .scanSettings()
+      .then((r) => {
+        if (r.settings) {
+          setScanEnabled(r.settings.enabled);
+          setScanIntervalMs(r.settings.intervalMs);
+        }
+      })
+      .catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     const t = window.setTimeout(() => setDebouncedQ(q.trim()), 300);
@@ -447,6 +487,10 @@ export function UpdatesPage() {
       <PageTabs
         tabs={[
           {
+            id: 'overview',
+            label: t('updates.tabOverview'),
+            badge: summary?.badgeCount || undefined },
+          {
             id: 'packages',
             label: t('updates.tabInventory'),
             badge: inventory.length || undefined },
@@ -457,13 +501,112 @@ export function UpdatesPage() {
           {
             id: 'schedule',
             label: t('updates.schedule'),
-            badge: jobs.length || undefined },
+            badge: summary?.autoScanEnabled === false ? t('updates.disabled') : undefined },
           { id: 'about', label: t('common.about') },
         ]}
         active={tab}
         onChange={setTab}
         variant="scroll"
       >
+        {tab === 'overview' ? (
+          <div className="tab-panel stack">
+            <Alert variant={summary?.stale ? 'warn' : 'info'}>
+              {summary?.stale
+                ? t('updates.overviewStale')
+                : t('updates.overviewHint')}
+            </Alert>
+            <InfoCardGrid>
+              <InfoCard
+                title={t('updates.lastScan')}
+                facts={[
+                  {
+                    label: t('updates.lastScan'),
+                    value: relTime(summary?.lastScanAt ?? lastAt, t),
+                  },
+                  {
+                    label: t('updates.nextScan'),
+                    value: summary?.nextScanAt
+                      ? new Date(summary.nextScanAt).toLocaleString()
+                      : '—',
+                  },
+                  {
+                    label: t('updates.autoScan'),
+                    value: summary?.autoScanEnabled === false
+                      ? t('updates.disabled')
+                      : t('updates.enabled'),
+                  },
+                ]}
+              />
+              <InfoCard
+                title={t('updates.packages')}
+                facts={[
+                  {
+                    label: t('updates.upgradable'),
+                    value: String(
+                      summary?.packagesUpgradable ?? upgradableCount ?? 0,
+                    ),
+                  },
+                  {
+                    label: t('updates.highRisk'),
+                    value: String(summary?.packagesHighRisk ?? highRisk ?? 0),
+                  },
+                ]}
+              />
+              <InfoCard
+                title={t('updates.panel')}
+                facts={[
+                  {
+                    label: t('updates.selfCurrent'),
+                    value: summary?.panelCurrent ?? selfVersion,
+                  },
+                  {
+                    label: t('updates.selfLatest'),
+                    value: summary?.panelLatest ?? selfLatest,
+                  },
+                  {
+                    label: t('updates.status'),
+                    value: summary?.panelUpdateAvailable || selfAvailable
+                      ? t('updates.selfAvailable')
+                      : t('updates.selfUpToDate'),
+                  },
+                ]}
+              />
+            </InfoCardGrid>
+            <ActionBar>
+              <Button
+                variant="primary"
+                size="md"
+                loading={busy}
+                onClick={() => {
+                  void load(true, false).then(() => refreshSummary());
+                }}
+              >
+                {t('updates.scanNow')}
+              </Button>
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={() => {
+                  setRiskFilter('upgradable');
+                  setTab('packages');
+                }}
+              >
+                {t('updates.viewUpgradable')}
+              </Button>
+              {(summary?.panelUpdateAvailable || selfAvailable) && (
+                <Button
+                  variant="secondary"
+                  size="md"
+                  onClick={() => setTab('panel')}
+                >
+                  {t('updates.tabSelf')}
+                </Button>
+              )}
+            </ActionBar>
+            <p className="muted u-text-sm">{t('updates.installElsewhere')}</p>
+          </div>
+        ) : null}
+
         {tab === 'packages' ? (
           <div className="tab-panel stack">
             {batchProgress || applyLog.length > 0 ? (
@@ -866,7 +1009,62 @@ export function UpdatesPage() {
         ) : null}
 
         {tab === 'schedule' ? (
-          <div className="tab-panel">
+          <div className="tab-panel stack">
+            <section className="upd-panel" aria-labelledby="upd-scan-sched">
+              <header className="upd-panel__head">
+                <div>
+                  <h3 id="upd-scan-sched" className="upd-panel__title">
+                    {t('updates.scheduleTitle')}
+                  </h3>
+                  <p className="upd-panel__sub">{t('updates.scheduleDesc')}</p>
+                </div>
+              </header>
+              <div className="stack u-gap-3">
+                <label className="u-flex u-items-center u-gap-2">
+                  <input
+                    type="checkbox"
+                    checked={scanEnabled}
+                    onChange={(e) => setScanEnabled(e.target.checked)}
+                  />
+                  <span>{t('updates.autoScanEnable')}</span>
+                </label>
+                <label className="stack u-gap-1">
+                  <span className="muted u-text-sm">{t('updates.scanInterval')}</span>
+                  <select
+                    value={String(scanIntervalMs)}
+                    onChange={(e) => setScanIntervalMs(Number(e.target.value))}
+                    className="u-input"
+                    style={{ maxWidth: 280 }}
+                  >
+                    <option value={String(6 * 60 * 60_000)}>{t('updates.interval6h')}</option>
+                    <option value={String(12 * 60 * 60_000)}>{t('updates.interval12h')}</option>
+                    <option value={String(24 * 60 * 60_000)}>{t('updates.interval24h')}</option>
+                    <option value={String(48 * 60 * 60_000)}>{t('updates.interval48h')}</option>
+                  </select>
+                </label>
+                <ActionBar>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    loading={busy}
+                    onClick={() => {
+                      void updatesApi
+                        .patchScanSettings({
+                          enabled: scanEnabled,
+                          intervalMs: scanIntervalMs,
+                        })
+                        .then(() => {
+                          setMsg(t('updates.scheduleSaved'));
+                          return refreshSummary();
+                        })
+                        .catch((e: Error) => setMsg(e.message));
+                    }}
+                  >
+                    {t('updates.saveSchedule')}
+                  </Button>
+                </ActionBar>
+              </div>
+            </section>
             <section className="data-table">
               <header className="data-table__head">
                 <div className="data-table__head-text">

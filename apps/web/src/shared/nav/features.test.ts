@@ -9,11 +9,10 @@ describe('FEATURE_SECTIONS', () => {
     );
   });
 
-  it('includes software hub entry', () => {
-    const overview = FEATURE_SECTIONS.find((s) => s.sectionKey === 'overview');
-    expect(overview?.items.some((i) => i.to === '/software' && i.key === 'software')).toBe(
-      true,
-    );
+  it('has no software hub nav entry (merged into updates)', () => {
+    const tiles = allFeatureTiles();
+    expect(tiles.some((i) => i.to === '/software' || i.key === 'software')).toBe(false);
+    expect(tiles.some((i) => i.to === '/updates' && i.key === 'updates')).toBe(true);
   });
 
   it('every item has to, key, icon', () => {

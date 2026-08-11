@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import { useSoftwareNavBadges } from './useSoftwareNavBadges';
+import { useUpdatesNavBadge } from './useUpdatesNavBadge';
 
 vi.mock('../../features/updates', () => ({
   updatesApi: {
@@ -10,11 +10,11 @@ vi.mock('../../features/updates', () => ({
 
 import { updatesApi } from '../../features/updates';
 
-describe('useSoftwareNavBadges (alias of useUpdatesNavBadge)', () => {
+describe('useUpdatesNavBadge', () => {
   beforeEach(() => {
     vi.mocked(updatesApi.summary).mockResolvedValue({
-      badgeCount: 4,
-      stale: true,
+      badgeCount: 5,
+      stale: false,
     });
   });
 
@@ -22,11 +22,11 @@ describe('useSoftwareNavBadges (alias of useUpdatesNavBadge)', () => {
     vi.clearAllMocks();
   });
 
-  it('exposes summary badge count', async () => {
-    const { result } = renderHook(() => useSoftwareNavBadges());
+  it('loads badge count from summary', async () => {
+    const { result } = renderHook(() => useUpdatesNavBadge());
     await waitFor(() => {
-      expect(result.current.count).toBe(4);
-      expect(result.current.stale).toBe(true);
+      expect(result.current.count).toBe(5);
+      expect(result.current.stale).toBe(false);
     });
   });
 });

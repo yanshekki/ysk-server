@@ -199,4 +199,37 @@ export const updatesApi = {
     ),
   scheduler: () =>
     api.requestRaw<{ jobs: Array<Record<string, unknown>> }>('/api/v1/scheduler'),
+  /** Lightweight badge + overview snapshot (cached). */
+  summary: () =>
+    api.requestRaw<{
+      ok?: boolean;
+      lastScanAt?: string | null;
+      nextScanAt?: string | null;
+      autoScanEnabled?: boolean;
+      intervalMs?: number;
+      packagesUpgradable?: number;
+      packagesHighRisk?: number;
+      panelUpdateAvailable?: boolean;
+      panelCurrent?: string;
+      panelLatest?: string;
+      badgeCount?: number;
+      stale?: boolean;
+    }>('/api/v1/updates/summary'),
+  scanSettings: () =>
+    api.requestRaw<{
+      ok?: boolean;
+      settings: { enabled: boolean; intervalMs: number };
+      job?: {
+        id: string;
+        intervalMs: number;
+        lastRunAt?: string | null;
+        nextRunAt?: string | null;
+        running?: boolean;
+      } | null;
+    }>('/api/v1/updates/scan-settings'),
+  patchScanSettings: (body: { enabled?: boolean; intervalMs?: number }) =>
+    api.requestRaw<{ ok: boolean; settings: { enabled: boolean; intervalMs: number } }>(
+      '/api/v1/updates/scan-settings',
+      { method: 'PATCH', body: JSON.stringify(body) },
+    ),
 };

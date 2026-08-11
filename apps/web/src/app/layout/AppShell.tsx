@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { canSeeFeature } from '@ysk/shared';
 import { useAuth } from '../../shared/hooks/useAuth';
 import { useCapabilities } from '../../shared/hooks/useCapabilities';
-import { useSoftwareNavBadges } from '../../shared/hooks/useSoftwareNavBadges';
+import { useUpdatesNavBadge } from '../../shared/hooks/useUpdatesNavBadge';
 import { FEATURE_SECTIONS } from '../../shared/nav/features';
 import { api } from '../../shared/services/api';
 import { buttonClassName, ToastViewport } from '../../shared/components/ui';
@@ -50,7 +50,7 @@ export function AppShell() {
   >([]);
 
   const isAdmin = Boolean(user?.roles?.includes('admin'));
-  const navBadges = useSoftwareNavBadges();
+  const updatesBadge = useUpdatesNavBadge();
   const navSections = useMemo(
     () =>
       FEATURE_SECTIONS.map((section) => ({
@@ -62,8 +62,7 @@ export function AppShell() {
   );
 
   function navBadgeFor(to: string): number | undefined {
-    if (to === '/software' && navBadges.software > 0) return navBadges.software;
-    if (to === '/updates' && navBadges.updates > 0) return navBadges.updates;
+    if (to === '/updates' && updatesBadge.count > 0) return updatesBadge.count;
     return undefined;
   }
 
@@ -133,13 +132,7 @@ export function AppShell() {
                     {badgeN != null ? (
                       <span
                         className="shell__link-badge"
-                        title={
-                          item.to === '/software'
-                            ? t('software.navBadgeTitle', {
-                                n: badgeN })
-                            : t('updates.navBadgeTitle', {
-                                n: badgeN })
-                        }
+                        title={t('updates.navBadgeTitle', { n: badgeN })}
                       >
                         {badgeN > 99 ? '99+' : badgeN}
                       </span>

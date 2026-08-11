@@ -26,6 +26,10 @@ import {
   Scheduler,
   collectInventory,
   adviseInventory,
+  buildUpdatesSummary,
+  normalizeUpdatesScanSettings,
+  DEFAULT_UPDATES_SCAN,
+  checkSelfUpdate,
   createDefaultAllowlist,
   echoTransport,
   evaluateProtection,
@@ -309,33 +313,91 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
       },
       { runImmediately: process.env.YSK_PROBE_ON_START === '1' },
     );
-    scheduler.every(
-      'daily-inventory',
-      24 * 60 * 60_000,
-      async () => {
+    // Automatic updates scan (packages + panel self-check). Interval from settings.
+    // Does NOT apt-upgrade — scan + cache only.
+    const runUpdatesScan = async () => {
+      const scanCfg = normalizeUpdatesScanSettings(
+        settings.getJson('updates_scan_settings') ?? DEFAULT_UPDATES_SCAN,
+      );
+      if (!scanCfg.enabled) return;
+      try {
+        const { items: inv, meta } = await collectInventory(host);
+        const advice = adviseInventory(inv);
+        const at = new Date().toISOString();
+        settings.setJson('last_inventory', {
+          at,
+          count: inv.length,
+          upgradable: meta.upgradableCount,
+          meta,
+          sample: inv.slice(0, 40),
+          items: inv.slice(0, 120),
+          advice: advice.slice(0, 120),
+          stale: false,
+        });
+        let lastSelf: Record<string, unknown> | null = null;
         try {
-          const { items: inv, meta } = await collectInventory(host);
-          const advice = adviseInventory(inv);
-          settings.setJson('last_inventory', {
-            at: new Date().toISOString(),
+          const { VERSION } = await import('./version.js');
+          const status = await checkSelfUpdate({ currentVersion: VERSION });
+          lastSelf = {
+            currentVersion: status.currentVersion,
+            latestVersion: status.latestVersion,
+            updateAvailable: status.updateAvailable,
+            lastCheckAt: status.lastCheckAt,
+            channel: status.channel,
+            ok: status.ok,
+            checked: status.checked,
+          };
+          settings.setJson('last_self_update', lastSelf);
+        } catch {
+          lastSelf = settings.getJson<Record<string, unknown>>('last_self_update');
+        }
+        const job = scheduler.list().find((j) => j.id === 'updates.scan');
+        const summary = buildUpdatesSummary({
+          lastInventory: settings.getJson('last_inventory'),
+          lastSelf,
+          scanSettings: scanCfg,
+          nextScanAt: job?.nextRunAt ?? null,
+        });
+        settings.setJson('updates_summary', summary);
+        audit.append({
+          actor: 'system',
+          action: 'update.scan.scheduled',
+          detail: {
             count: inv.length,
             upgradable: meta.upgradableCount,
-            meta,
-            sample: inv.slice(0, 40),
-            items: inv.slice(0, 120),
-            advice: advice.slice(0, 120),
-          });
-          audit.append({
-            actor: 'system',
-            action: 'update.inventory.scheduled',
-            detail: { count: inv.length, upgradable: meta.upgradableCount },
-            ok: true,
-          });
-        } catch {
-          /* ignore */
+            badgeCount: summary.badgeCount,
+            panelUpdateAvailable: summary.panelUpdateAvailable,
+          },
+          ok: true,
+        });
+      } catch {
+        /* ignore — next interval retries */
+      }
+    };
+
+    scheduler.everyDynamic(
+      'updates.scan',
+      () => {
+        const scanCfg = normalizeUpdatesScanSettings(
+          settings.getJson('updates_scan_settings') ?? DEFAULT_UPDATES_SCAN,
+        );
+        if (!scanCfg.enabled) {
+          // Park when disabled (5 min re-check of settings)
+          return 5 * 60_000;
         }
+        const envMs = Number(process.env.YSK_UPDATES_SCAN_INTERVAL_MS ?? '');
+        if (Number.isFinite(envMs) && envMs >= 5_000) return envMs;
+        return scanCfg.intervalMs;
       },
-      { runImmediately: process.env.YSK_INVENTORY_ON_START === '1' },
+      async () => {
+        await runUpdatesScan();
+      },
+      {
+        runImmediately:
+          process.env.YSK_INVENTORY_ON_START === '1' ||
+          process.env.YSK_UPDATES_SCAN_ON_START === '1',
+        maxIntervalMs: 7 * 24 * 60 * 60_000,
+      },
     );
 
     // Daily project backups (interval overridable for tests)
