@@ -352,7 +352,7 @@ export class VncService {
     const r = await openUfwTcpPort({
       host: this.host,
       port: rec.rfbPort,
-      comment: `ysk-vnc-${rec.display}`,
+      comment: `ysk-svc:vnc:${id.slice(0, 24)}`,
     });
     return {
       ok: r.ok || Boolean(r.blocked),

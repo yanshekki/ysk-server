@@ -92,6 +92,30 @@ export async function handleSystemRedisRoutes(
   if (method === 'POST' && url.pathname === '/api/v1/system/db/redis/start') {
     const user = ctx.auth.authenticate(getBearer(req));
     const result = await startRedisService(ctx.host);
+    if (result.ok) {
+      try {
+        const { syncServiceExposure, dbPortBindings } = await import('@ysk/core');
+        const exp = await syncServiceExposure({
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          serviceId: 'redis',
+          ports: dbPortBindings('redis'),
+          reason: 'start',
+          requireDecision: true,
+        });
+        if (exp.notes?.length) {
+          (result as { notes?: string[] }).notes = [
+            ...((result as { notes?: string[] }).notes ?? []),
+            ...exp.notes.slice(0, 4),
+          ];
+        }
+        if (exp.needsExposureDecision) {
+          (result as { needsExposureDecision?: boolean }).needsExposureDecision = true;
+        }
+      } catch {
+        /* non-fatal */
+      }
+    }
     ctx.audit.append({
       actor: user.username,
       action: 'system.db.redis.start',

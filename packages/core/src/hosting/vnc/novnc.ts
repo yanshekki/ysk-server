@@ -326,19 +326,22 @@ export async function openUfwTcpPort(input: {
     notes.push(tl('notes.vnc.firewallNeedRoot'));
     return { ok: false, notes, blocked: true };
   }
-  const comment = input.comment ?? 'ysk-vnc';
-  const r = await input.host.runCommand(
-    ['bash', '-c', `ufw allow ${port}/tcp comment ${shellQuote(comment)}`],
-    { timeoutMs: 30_000 },
-  );
-  if (r.exitCode !== 0) {
+  const comment = input.comment ?? 'ysk-svc:vnc:listen';
+  // Prefer shared UFW helper (comment-tagged, honest blocked)
+  const { firewallAllowPort } = await import('../firewall-ops.js');
+  const r = await firewallAllowPort(input.host, port, 'tcp', undefined, comment);
+  if (!r.ok) {
     notes.push(
-      tl('notes.vnc.firewallFailed', {
-        detail: (r.stderr || r.stdout || '').slice(0, 160),
-      }),
+      ...(r.notes?.length
+        ? r.notes
+        : [
+            tl('notes.vnc.firewallFailed', {
+              detail: 'ufw allow failed',
+            }),
+          ]),
     );
-    return { ok: false, notes };
+    return { ok: false, notes, blocked: r.blocked, requiresExecute: r.blocked };
   }
-  notes.push(tl('notes.vnc.firewallOpened', { port: String(port) }));
-  return { ok: true, notes };
+  notes.push(...(r.notes ?? []), tl('notes.vnc.firewallOpened', { port: String(port) }));
+  return { ok: true, notes, blocked: r.blocked };
 }
