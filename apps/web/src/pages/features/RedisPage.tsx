@@ -29,6 +29,11 @@ import {
   type RedisKeyView,
   type RedisServiceStatus } from '../../features/redis';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
+import {
+  ServiceAccessStrip,
+  ServiceExposureDialog,
+  usePrivateStartGate,
+} from '../../features/network/service-exposure';
 import { bindSet, bindInput, bindCall1 } from '../bind-handlers';
 
 export function formatTtl(
@@ -124,6 +129,7 @@ export function RedisPage() {
   const [newTtl, setNewTtl] = useState('');
   const [delKey, setDelKey] = useState<string | null>(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
+  const startGate = usePrivateStartGate('redis');
 
   const refreshSvc = useCallback(async () => {
     setLoadError(null);

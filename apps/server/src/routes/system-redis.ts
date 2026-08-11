@@ -91,6 +91,11 @@ export async function handleSystemRedisRoutes(
   }
   if (method === 'POST' && url.pathname === '/api/v1/system/db/redis/start') {
     const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as {
+      exposureDecision?: 'keep-private' | 'public' | 'restricted';
+      allowFrom?: string[];
+    };
     const result = await startRedisService(ctx.host);
     if (result.ok) {
       try {
@@ -101,6 +106,8 @@ export async function handleSystemRedisRoutes(
           serviceId: 'redis',
           ports: dbPortBindings('redis'),
           reason: 'start',
+          exposureDecision: data.exposureDecision,
+          allowFrom: data.allowFrom,
           requireDecision: true,
         });
         if (exp.notes?.length) {

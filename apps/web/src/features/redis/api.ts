@@ -13,10 +13,20 @@ export const redisApi = {
       method: 'POST',
       body: '{}',
     }),
-  start: () =>
+  start: (exposure?: {
+    exposureDecision?: 'keep-private' | 'public' | 'restricted';
+    allowFrom?: string[];
+  }) =>
     api.requestRaw<Record<string, unknown>>('/api/v1/system/db/redis/start', {
       method: 'POST',
-      body: '{}',
+      body: JSON.stringify({
+        ...(exposure?.exposureDecision
+          ? {
+              exposureDecision: exposure.exposureDecision,
+              allowFrom: exposure.allowFrom,
+            }
+          : {}),
+      }),
     }),
   keys: (opts: { db?: number; pattern?: string; count?: number }) => {
     const q = new URLSearchParams();
