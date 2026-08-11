@@ -11,6 +11,17 @@ describe('classifyVncStartFailure', () => {
     expect(n.toLowerCase()).toMatch(/tigervnc|vncserver|install/i);
   });
 
+  it('does not claim missing when xstartup/xterm fails', () => {
+    const n = classifyVncStartFailure({
+      display: 1,
+      port: 5901,
+      detail:
+        "Session startup via '/home/u/.vnc/xstartup' exited with status 126!\nexec: xterm: Permission denied",
+    });
+    expect(n.toLowerCase()).not.toMatch(/tigervncserver\/vncserver|未安裝 tiger/i);
+    expect(n.toLowerCase()).toMatch(/xstartup|desktop|xfce|terminal/i);
+  });
+
   it('maps password errors', () => {
     const n = classifyVncStartFailure({
       display: 1,

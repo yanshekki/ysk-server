@@ -2851,7 +2851,7 @@
     "passwordUpdated": "已更新 {{name}} 嘅密碼",
     "passwordMetaOnly": "密碼暫只記中繼資料，待系統套用",
     "xstartupWrittenOnly": "未寫入 xstartup 到 home（需 root + YSK_EXECUTE）",
-    "xstartupFailed": "寫入 xstartup 失敗：{{detail}}",
+    "xstartupFailed": "VNC xstartup／桌面啟動失敗（display :{{display}}，{{detail}}）。可改 XFCE 設定檔，或安裝 xfce4-terminal／xterm。",
     "xstartupWritten": "已寫入 {{path}}",
     "sessionStartBlocked": "無權限啟動 VNC session（需 root + YSK_EXECUTE）",
     "sessionStartFailed": "啟動 display :{{display}} 失敗：{{detail}}",
@@ -2894,7 +2894,8 @@
     "clientNeedViewer": "直連路徑請安裝 TigerVNC viewer",
     "clientDownBlocked": "無權限斷線（需 root + YSK_EXECUTE）",
     "clientDown": "已斷開客戶端 {{name}}",
-    "clientDeleted": "已刪除客戶端設定"
+    "clientDeleted": "已刪除客戶端設定",
+    "sessionStartCwd": "VNC 啟動失敗：工作目錄 VNC 用戶無權限（display :{{display}}）。已改為由 HOME 啟動。"
   },
   "apache": {
     "needServerName": "需要域名",

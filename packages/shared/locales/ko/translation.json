@@ -7617,7 +7617,8 @@
       "clientNeedViewer": "직접 클라이언트 경로를 위해 TigerVNC viewer 설치",
       "clientDownBlocked": "root + YSK_EXECUTE 없이 연결 해제할 수 없음",
       "clientDown": "클라이언트 {{name}} 연결 해제됨",
-      "clientDeleted": "클라이언트 프로필 삭제됨"
+      "clientDeleted": "클라이언트 프로필 삭제됨",
+      "sessionStartCwd": "VNC start failed: working directory not accessible to the session user (display :{{display}}). Fixed by starting from HOME."
     },
     "apache": {
       "needServerName": "Server name required",

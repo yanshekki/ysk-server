@@ -2883,7 +2883,8 @@
     "clientNeedViewer": "Instalar el visor TigerVNC para la ruta directa del cliente",
     "clientDownBlocked": "No se puede desconectar sin root + YSK_EXECUTE",
     "clientDown": "Cliente {{name}} desconectado",
-    "clientDeleted": "Perfil de cliente eliminado"
+    "clientDeleted": "Perfil de cliente eliminado",
+    "sessionStartCwd": "VNC start failed: working directory not accessible to the session user (display :{{display}}). Fixed by starting from HOME."
   },
   "apache": {
     "needServerName": "Server name required",

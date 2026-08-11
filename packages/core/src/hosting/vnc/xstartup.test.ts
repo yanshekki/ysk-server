@@ -8,11 +8,13 @@ describe('buildXstartup', () => {
     expect(s.startsWith('#!/bin/sh')).toBe(true);
   });
 
-  it('minimal uses xterm', () => {
-    expect(buildXstartup('minimal')).toContain('xterm');
+  it('minimal keeps X alive without requiring xterm only', () => {
+    const s = buildXstartup('minimal');
+    expect(s).toMatch(/startxfce4|xterm|sleep 86400/);
   });
 
-  it('none still provides a fallback shell', () => {
-    expect(buildXstartup('none')).toContain('xterm');
+  it('none still provides a keep-alive fallback', () => {
+    const s = buildXstartup('none');
+    expect(s).toContain('sleep 86400');
   });
 });

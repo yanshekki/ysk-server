@@ -2851,7 +2851,7 @@
     "passwordUpdated": "Password updated for {{name}}",
     "passwordMetaOnly": "Password stored as meta only until system apply",
     "xstartupWrittenOnly": "xstartup not written to home (need root + YSK_EXECUTE)",
-    "xstartupFailed": "Failed to write xstartup: {{detail}}",
+    "xstartupFailed": "VNC xstartup/desktop failed on display :{{display}} ({{detail}}). Prefer XFCE profile or install a terminal.",
     "xstartupWritten": "Wrote {{path}}",
     "sessionStartBlocked": "Cannot start VNC session without root + YSK_EXECUTE",
     "sessionStartFailed": "Failed to start display :{{display}}: {{detail}}",
@@ -2894,7 +2894,8 @@
     "clientNeedViewer": "Install TigerVNC viewer for direct client path",
     "clientDownBlocked": "Cannot disconnect without root + YSK_EXECUTE",
     "clientDown": "Disconnected client {{name}}",
-    "clientDeleted": "Client profile deleted"
+    "clientDeleted": "Client profile deleted",
+    "sessionStartCwd": "VNC start failed: working directory not accessible to the session user (display :{{display}}). Fixed by starting from HOME."
   },
   "apache": {
     "needServerName": "Server name required",

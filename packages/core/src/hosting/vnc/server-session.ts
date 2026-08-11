@@ -216,7 +216,31 @@ export function classifyVncStartFailure(input: {
   detail: string;
 }): string {
   const d = input.detail.toLowerCase();
-  if (/vncserver missing|not found|no such file/i.test(input.detail) || d.includes('command not found')) {
+  // Session script / desktop failures first (do NOT claim TigerVNC is missing)
+  if (
+    /xstartup|session startup via|x session exited|status 126|status 127/i.test(d) ||
+    /exec:\s*\S+:\s*permission denied/i.test(d) ||
+    /exec:\s*xterm/i.test(d)
+  ) {
+    return tl('notes.vnc.xstartupFailed', {
+      display: String(input.display),
+      detail: input.detail
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean)
+        .find((l) => /xstartup|xterm|startxfce|permission|status/i.test(l))
+        ?.slice(0, 140) || 'xstartup',
+    });
+  }
+  if (/cannot stat initial working directory|initial working directory/i.test(d)) {
+    return tl('notes.vnc.sessionStartCwd', { display: String(input.display) });
+  }
+  // Only when the wrapper binary itself is missing
+  if (
+    /vncserver missing/i.test(input.detail) ||
+    (/\b(tigervncserver|vncserver)\b.*\b(not found|no such file)\b/i.test(input.detail) ||
+      /\bcommand not found\b.*\b(tigervncserver|vncserver)\b/i.test(d))
+  ) {
     return tl('notes.vnc.vncserverMissing');
   }
   if (
@@ -241,7 +265,6 @@ export function classifyVncStartFailure(input: {
       display: String(input.display),
     });
   }
-  // Keep short: prefer first line of detail without flooding UI
   const short = input.detail
     .split('\n')
     .map((l) => l.trim())
@@ -357,17 +380,19 @@ export async function startVncSession(input: {
   }
 
   const localhostFlag = rfbBind === 'localhost' ? 'yes' : 'no';
-  // Absolute path so runuser login shell does not depend on user PATH
+  // Absolute path + cd $HOME: runuser inherits control-plane cwd (often /root/...)
+  // which TigerVNC/perl cannot access as the VNC user → false "missing" failures.
   const inner = [
-    bin,
-    `:${display}`,
-    `-geometry ${geometry}`,
-    `-depth ${depth}`,
-    `-localhost ${localhostFlag}`,
-  ].join(' ');
+    'cd "$HOME" || cd /tmp || true',
+    'export HOME="${HOME:-/tmp}"',
+    [shellQuote(bin), `:${display}`, `-geometry ${geometry}`, `-depth ${depth}`, `-localhost ${localhostFlag}`].join(
+      ' ',
+    ),
+  ].join('; ');
 
   const runStart = async (): Promise<{ exitCode: number; detail: string }> => {
-    const script = `if command -v runuser >/dev/null 2>&1; then runuser -u ${shellQuote(linuxUser)} -- bash -lc ${shellQuote(inner)}; else su - ${shellQuote(linuxUser)} -c ${shellQuote(inner)}; fi`;
+    // bash -c (not -lc): avoid profile; HOME still set by runuser -u
+    const script = `if command -v runuser >/dev/null 2>&1; then runuser -u ${shellQuote(linuxUser)} -- bash -c ${shellQuote(inner)}; else su -s /bin/bash ${shellQuote(linuxUser)} -c ${shellQuote(inner)}; fi`;
     const r = await host.runCommand(['bash', '-c', script], { timeoutMs: 45_000 });
     return {
       exitCode: r.exitCode,
