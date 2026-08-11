@@ -59,7 +59,13 @@
     "clipboardEmpty": "Nothing to paste — copy text first or type below",
     "clipboardReadDenied": "Browser blocked clipboard read — paste into the panel and Send",
     "clipboardNoRemote": "No text received from remote yet",
-    "clipboardCopiedLocal": "Copied to this browser"
+    "clipboardCopiedLocal": "Copied to this browser",
+    "quality": "Quality",
+    "qualityHint": "Image quality vs bandwidth (JPEG / compression)",
+    "qualityLow": "Low (save data)",
+    "qualityBalanced": "Balanced",
+    "qualityHigh": "High",
+    "qualityMax": "Max quality"
   },
   "installHint": "TigerVNC → noVNC; XFCE optional",
   "needTigerVnc": "TigerVNC required",

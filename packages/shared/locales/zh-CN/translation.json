@@ -11148,7 +11148,13 @@
       "clipboardEmpty": "没有可粘贴内容 — 请先复制，或在下方输入",
       "clipboardReadDenied": "浏览器拒绝读取剪贴板 — 请粘贴到面板再发送",
       "clipboardNoRemote": "远程尚未发送文字",
-      "clipboardCopiedLocal": "已复制到本浏览器"
+      "clipboardCopiedLocal": "已复制到本浏览器",
+      "quality": "画质",
+      "qualityHint": "画质 vs 流量（JPEG／压缩）",
+      "qualityLow": "低（省流量）",
+      "qualityBalanced": "平衡",
+      "qualityHigh": "高",
+      "qualityMax": "最高画质"
     },
     "installHint": "TigerVNC → noVNC；XFCE 可选",
     "needTigerVnc": "需 TigerVNC",

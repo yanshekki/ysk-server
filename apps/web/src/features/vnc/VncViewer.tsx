@@ -17,6 +17,19 @@ export type VncViewerTarget = {
 
 type ConnState = 'idle' | 'minting' | 'connecting' | 'connected' | 'error' | 'closed';
 
+/** noVNC qualityLevel 0–9 / compressionLevel 0–9 presets */
+type QualityPreset = 'low' | 'balanced' | 'high' | 'max';
+
+const QUALITY_PRESETS: Record<
+  QualityPreset,
+  { quality: number; compression: number }
+> = {
+  low: { quality: 2, compression: 9 },
+  balanced: { quality: 6, compression: 2 },
+  high: { quality: 8, compression: 1 },
+  max: { quality: 9, compression: 0 },
+};
+
 type Props = {
   target: VncViewerTarget;
   /** Create session → ticket + optional stored password */
@@ -44,6 +57,7 @@ export function VncViewer({ target, createSession, onClose }: Props) {
   const [password, setPassword] = useState('');
   const [needPassword, setNeedPassword] = useState(false);
   const [scale, setScale] = useState(true);
+  const [qualityPreset, setQualityPreset] = useState<QualityPreset>('balanced');
   const [statusText, setStatusText] = useState('');
   /** Last text received from remote (ServerCutText) */
   const [remoteClip, setRemoteClip] = useState('');
@@ -86,6 +100,9 @@ export function VncViewer({ target, createSession, onClose }: Props) {
       rfb.resizeSession = false;
       rfb.clipViewport = !scale;
       rfb.background = 'rgb(12, 15, 20)';
+      const qp = QUALITY_PRESETS[qualityPreset];
+      rfb.qualityLevel = qp.quality;
+      rfb.compressionLevel = qp.compression;
 
       rfb.addEventListener('connect', () => {
         setState('connected');
@@ -142,7 +159,7 @@ export function VncViewer({ target, createSession, onClose }: Props) {
       setError(e instanceof Error ? e.message : t('vnc.viewer.error'));
       setStatusText(t('vnc.viewer.error'));
     }
-  }, [createSession, password, scale, t, target]);
+  }, [createSession, password, qualityPreset, scale, t, target]);
 
   useEffect(() => {
     void connect();
@@ -164,6 +181,13 @@ export function VncViewer({ target, createSession, onClose }: Props) {
       rfbRef.current.clipViewport = !scale;
     }
   }, [scale]);
+
+  useEffect(() => {
+    if (!rfbRef.current) return;
+    const qp = QUALITY_PRESETS[qualityPreset];
+    rfbRef.current.qualityLevel = qp.quality;
+    rfbRef.current.compressionLevel = qp.compression;
+  }, [qualityPreset]);
 
   const sendPassword = () => {
     if (!rfbRef.current || !password) return;
@@ -266,6 +290,24 @@ export function VncViewer({ target, createSession, onClose }: Props) {
           >
             {scale ? t('vnc.viewer.fit') : t('vnc.viewer.oneToOne')}
           </Button>
+          <label className="vnc-viewer__quality">
+            <span className="u-sr-only">{t('vnc.viewer.quality')}</span>
+            <select
+              className="u-input vnc-viewer__quality-select"
+              value={qualityPreset}
+              disabled={state !== 'connected'}
+              onChange={(e) =>
+                setQualityPreset(e.target.value as QualityPreset)
+              }
+              aria-label={t('vnc.viewer.quality')}
+              title={t('vnc.viewer.qualityHint')}
+            >
+              <option value="low">{t('vnc.viewer.qualityLow')}</option>
+              <option value="balanced">{t('vnc.viewer.qualityBalanced')}</option>
+              <option value="high">{t('vnc.viewer.qualityHigh')}</option>
+              <option value="max">{t('vnc.viewer.qualityMax')}</option>
+            </select>
+          </label>
           <Button
             size="sm"
             variant="secondary"

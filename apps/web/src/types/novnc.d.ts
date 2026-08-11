@@ -14,6 +14,10 @@ declare module '@novnc/novnc' {
     resizeSession: boolean;
     background: string;
     viewOnly: boolean;
+    /** JPEG quality 0–9 (higher = better) */
+    qualityLevel: number;
+    /** Compression 0–9 (higher = more compress / lower bandwidth) */
+    compressionLevel: number;
     disconnect(): void;
     sendCredentials(credentials: {
       password?: string;

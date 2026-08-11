@@ -58,7 +58,13 @@
     "clipboardEmpty": "冇嘢可貼 — 請先複製，或喺下面輸入",
     "clipboardReadDenied": "瀏覽器唔畀讀剪貼簿 — 請貼到面板再送出",
     "clipboardNoRemote": "遠端尚未送來文字",
-    "clipboardCopiedLocal": "已複製到呢個瀏覽器"
+    "clipboardCopiedLocal": "已複製到呢個瀏覽器",
+    "quality": "畫質",
+    "qualityHint": "畫質 vs 流量（JPEG／壓縮）",
+    "qualityLow": "低（慳流量）",
+    "qualityBalanced": "平衡",
+    "qualityHigh": "高",
+    "qualityMax": "最高畫質"
   },
   "installHint": "TigerVNC → noVNC；XFCE 可選",
   "needTigerVnc": "需 TigerVNC",

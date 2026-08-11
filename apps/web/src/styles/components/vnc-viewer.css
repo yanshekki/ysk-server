@@ -44,6 +44,19 @@
   font-size: var(--text-sm);
 }
 
+.vnc-viewer__quality {
+  display: inline-flex;
+  align-items: center;
+}
+
+.vnc-viewer__quality-select {
+  min-width: 7.5rem;
+  max-width: 11rem;
+  height: 2rem;
+  padding: 0 var(--space-2);
+  font-size: var(--text-xs);
+}
+
 .vnc-viewer__banner {
   flex: 0 0 auto;
   padding: var(--space-2) var(--space-3);
