@@ -220,7 +220,13 @@ export function VncPage() {
         onChange={(id) => setTab(id as (typeof TABS)[number])}
       >
         {error ? <Alert variant="error">{error}</Alert> : null}
-        {lastOps ? <OpsResultPanel title={t('vnc.result')} result={lastOps} /> : null}
+        {lastOps ? (
+          <OpsResultPanel
+            title={t('vnc.result')}
+            result={lastOps}
+            defaultShowTechnical={!lastOps.ok || Boolean(lastOps.blocked)}
+          />
+        ) : null}
 
         {tab === 'accounts' ? (
           <div className="stack">

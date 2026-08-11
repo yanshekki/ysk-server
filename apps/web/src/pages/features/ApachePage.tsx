@@ -2,6 +2,7 @@
  * Apache — sites + global/site settings (mirrors Nginx page, concise).
  */
 import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   WithPageGuide,
@@ -20,6 +21,7 @@ import {
   SoftwareVersionBar,
   CheckboxField,
   SegRadio,
+  buttonClassName,
 } from '../../shared/components/ui';
 import {
   apacheApi,
@@ -27,16 +29,23 @@ import {
   type ApacheGlobalSettings,
   type ApacheSite,
   type ApacheSiteKind,
+  type ApacheSiteSource,
 } from '../../features/apache/api';
 import { notifyOk, notifyWarn } from '../../shared/lib/notify';
 
 const BODY_OPTS: ApacheBodySize[] = ['1m', '10m', '50m', '100m', '500m'];
+
+function isStandalone(s: ApacheSite): boolean {
+  return !s.source || s.source === 'standalone';
+}
 
 export function ApachePage() {
   const { t } = useTranslation();
   const [sites, setSites] = useState<ApacheSite[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [q, setQ] = useState('');
+  const [source, setSource] = useState<'all' | ApacheSiteSource>('all');
   const [createOpen, setCreateOpen] = useState(false);
   const [edit, setEdit] = useState<ApacheSite | null>(null);
   const [delId, setDelId] = useState<string | null>(null);
@@ -64,12 +73,15 @@ export function ApachePage() {
   const refresh = useCallback(async () => {
     setError(null);
     try {
-      const r = await apacheApi.listSites();
+      const r = await apacheApi.listSites({
+        q: q.trim() || undefined,
+        source: source === 'all' ? undefined : source,
+      });
       setSites(r.items ?? []);
     } catch (e) {
       setError(e instanceof Error ? e.message : t('common.loadFailed'));
     }
-  }, [t]);
+  }, [t, q, source]);
 
   useEffect(() => {
     void refresh();
@@ -258,6 +270,29 @@ export function ApachePage() {
       >
         {error ? <Alert variant="error">{error}</Alert> : null}
 
+        <div className="u-flex u-gap-2 u-mb-3 u-flex-wrap" style={{ alignItems: 'center' }}>
+          <input
+            type="search"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder={t('common.search')}
+            className="u-input"
+            style={{ maxWidth: 220 }}
+          />
+          <SegRadio
+            name="ap-src"
+            aria-label={t('apache.filterSource')}
+            value={source}
+            onChange={(v) => setSource(v as 'all' | ApacheSiteSource)}
+            options={[
+              { value: 'all', label: t('apache.sourceAll') },
+              { value: 'project', label: t('apache.sourceProject') },
+              { value: 'standalone', label: t('apache.sourceStandalone') },
+              { value: 'artifact', label: t('apache.sourceArtifact') },
+            ]}
+          />
+        </div>
+
         <DataTable
           rowKey={(r) => r.id}
           title={t('apache.listTitle', { count: sites.length })}
@@ -266,6 +301,24 @@ export function ApachePage() {
               key: 'server',
               header: t('apache.colServerName'),
               render: (r) => <code className="inline">{r.serverName}</code>,
+            },
+            {
+              key: 'source',
+              header: t('apache.colSource'),
+              nowrap: true,
+              render: (r) =>
+                r.source === 'project' ? (
+                  <Link
+                    to={`/projects/${r.projectId}`}
+                    className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+                  >
+                    {r.projectName ?? t('apache.sourceProject')}
+                  </Link>
+                ) : r.source === 'artifact' ? (
+                  <Badge tone="warn">{t('apache.sourceArtifact')}</Badge>
+                ) : (
+                  <Badge tone="neutral">{t('apache.sourceStandalone')}</Badge>
+                ),
             },
             {
               key: 'kind',
@@ -277,7 +330,8 @@ export function ApachePage() {
               header: t('apache.colTarget'),
               render: (r) => (
                 <code className="inline">
-                  {r.kind === 'proxy' ? r.upstream ?? '—' : r.root ?? '—'}
+                  {r.target ??
+                    (r.kind === 'proxy' ? r.upstream ?? '—' : r.root ?? '—')}
                 </code>
               ),
             },
@@ -293,7 +347,13 @@ export function ApachePage() {
               header: t('apache.colStatus'),
               nowrap: true,
               render: (r) => (
-                <Badge tone={r.apply_status === 'applied' ? 'ok' : 'warn'}>
+                <Badge
+                  tone={
+                    r.apply_status === 'applied' || r.apply_status === 'written'
+                      ? 'ok'
+                      : 'warn'
+                  }
+                >
                   {r.apply_status || 'draft'}
                 </Badge>
               ),
@@ -303,29 +363,47 @@ export function ApachePage() {
           empty={<EmptyState title={t('apache.emptyTitle')} />}
           rowActions={(r) => (
             <ActionBar>
-              <Button variant="primary" size="sm" loading={busy} onClick={() => void onApply(r.id)}>
-                {t('apache.apply')}
-              </Button>
-              <Button variant="secondary" size="sm" onClick={() => openSiteSettings(r)}>
-                {t('apache.siteSettings')}
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  setEdit(r);
-                  setServerName(r.serverName);
-                  setKind(r.kind);
-                  setUpstream(r.upstream || 'http://127.0.0.1:3000');
-                  setRoot(r.root || '');
-                  setSsl(Boolean(r.ssl));
-                }}
-              >
-                {t('common.edit')}
-              </Button>
-              <Button variant="danger" size="sm" onClick={() => setDelId(r.id)}>
-                {t('common.delete')}
-              </Button>
+              {r.source !== 'artifact' ? (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  loading={busy}
+                  onClick={() => void onApply(r.id)}
+                >
+                  {t('apache.apply')}
+                </Button>
+              ) : null}
+              {isStandalone(r) ? (
+                <>
+                  <Button variant="secondary" size="sm" onClick={() => openSiteSettings(r)}>
+                    {t('apache.siteSettings')}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      setEdit(r);
+                      setServerName(r.serverName);
+                      setKind(r.kind);
+                      setUpstream(r.upstream || 'http://127.0.0.1:3000');
+                      setRoot(r.root || '');
+                      setSsl(Boolean(r.ssl));
+                    }}
+                  >
+                    {t('common.edit')}
+                  </Button>
+                  <Button variant="danger" size="sm" onClick={() => setDelId(r.id)}>
+                    {t('common.delete')}
+                  </Button>
+                </>
+              ) : r.source === 'project' && r.projectId ? (
+                <Link
+                  to={`/projects/${r.projectId}`}
+                  className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+                >
+                  {t('apache.openProject')}
+                </Link>
+              ) : null}
             </ActionBar>
           )}
         />

@@ -36,5 +36,12 @@
   "setForceHttps": "Force HTTPS",
   "setHsts": "HSTS",
   "setIndexes": "Directory listing",
-  "bodyInherit": "Global"
+  "bodyInherit": "Global",
+  "colSource": "Source",
+  "filterSource": "Source filter",
+  "sourceAll": "All",
+  "sourceProject": "Project",
+  "sourceStandalone": "Standalone",
+  "sourceArtifact": "On disk",
+  "openProject": "Open project"
 }

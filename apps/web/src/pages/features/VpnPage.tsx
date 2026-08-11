@@ -1,21 +1,25 @@
 /**
- * VPN — server (issue clients + QR) and client (import + connect).
+ * VPN — per-engine server tabs (WG / OpenVPN / SS) + local client + about.
+ * Port changes keep public endpoint host:port in sync.
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import QRCode from 'qrcode';
 import {
+  ActionBar,
   Alert,
   Badge,
   Button,
+  DataTable,
   EmptyState,
   FeaturePageLayout,
   Field,
-  FormActions,
   FormLayout,
+  Modal,
   OpsResultPanel,
   PageGuide,
   PageTabs,
+  SegRadio,
   SoftwareInstallBanner,
   SoftwareVersionBar,
   type OpsResultLike,
@@ -26,46 +30,98 @@ import { notifyOk, notifyWarn } from '../../shared/lib/notify';
 import {
   vpnApi,
   type VpnClientProfile,
+  type VpnEngineId,
+  type VpnEngineStatus,
   type VpnPortPreset,
   type VpnServerPeer,
   type VpnStatusResponse,
 } from '../../features/vpn/api';
+import {
+  confDownloadName,
+  defaultPortForEngine,
+  detectClientEngine,
+  firewallProtoForEngine,
+  hostFromEndpoint,
+  syncEndpointPort,
+  type VpnEngineTab,
+} from '../../features/vpn/endpoint-sync';
 
-const TABS = ['server', 'client', 'install', 'about'] as const;
+const TABS = ['wireguard', 'openvpn', 'outline', 'client', 'about'] as const;
+type TabId = (typeof TABS)[number];
+
+function isServerTab(t: TabId): t is VpnEngineTab {
+  return t === 'wireguard' || t === 'openvpn' || t === 'outline';
+}
+
+function engineStatus(
+  status: VpnStatusResponse | null,
+  engine: VpnEngineId,
+): VpnEngineStatus | undefined {
+  return status?.engines.find((e) => e.engine === engine);
+}
+
+function formatWhen(iso?: string): string {
+  if (!iso) return '—';
+  try {
+    return new Date(iso).toLocaleString();
+  } catch {
+    return iso.slice(0, 16);
+  }
+}
 
 export function VpnPage() {
   const { t } = useTranslation();
-  const [tab, setTab] = usePageTab(TABS, 'server');
+  const [tab, setTab] = usePageTab(TABS, 'wireguard');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<VpnStatusResponse | null>(null);
   const [lastOps, setLastOps] = useState<OpsResultLike | null>(null);
 
-  // Server form
-  const [serverEngine, setServerEngine] = useState<
-    'wireguard' | 'openvpn' | 'outline'
-  >('wireguard');
+  // Shared server form (values follow active engine tab)
   const [endpoint, setEndpoint] = useState('');
   const [listenPort, setListenPort] = useState(51820);
   const [ovpnProto, setOvpnProto] = useState<'udp' | 'tcp'>('udp');
   const [peerName, setPeerName] = useState('');
-  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
-  const [qrLabel, setQrLabel] = useState('');
-  const [lastConfig, setLastConfig] = useState<string | null>(null);
 
-  // Client form
+  // QR / conf modal
+  const [cfgOpen, setCfgOpen] = useState(false);
+  const [cfgLabel, setCfgLabel] = useState('');
+  const [cfgText, setCfgText] = useState('');
+  const [cfgQr, setCfgQr] = useState<string | null>(null);
+  const [cfgEngine, setCfgEngine] = useState<VpnEngineTab>('wireguard');
+
+  // Client import modal
+  const [importOpen, setImportOpen] = useState(false);
   const [importName, setImportName] = useState('');
   const [importConf, setImportConf] = useState('');
-  const [clientEngine, setClientEngine] = useState<'wireguard' | 'openvpn' | 'auto'>('auto');
+  const [clientEngine, setClientEngine] = useState<'wireguard' | 'openvpn' | 'auto'>(
+    'auto',
+  );
+
+  const hintHost = useMemo(() => {
+    const h = status?.endpointHint ?? '';
+    return hostFromEndpoint(h, h) || '';
+  }, [status?.endpointHint]);
+
+  const activeEngine: VpnEngineTab = isServerTab(tab as TabId)
+    ? (tab as VpnEngineTab)
+    : 'wireguard';
 
   const load = useCallback(async () => {
     setError(null);
     try {
       const s = await vpnApi.status();
       setStatus(s);
-      if (s.endpointHint) setEndpoint((e) => e || s.endpointHint || '');
-      const wg = s.engines.find((e) => e.engine === 'wireguard');
-      if (wg?.serverPort) setListenPort(wg.serverPort);
+      setEndpoint((prev) => {
+        if (prev.trim()) return prev;
+        const hint = (s.endpointHint || '').trim();
+        if (!hint) return prev;
+        // If hint has no port, attach default WG port
+        if (!/:\d+$/.test(hint) && !hint.startsWith('[')) {
+          return `${hint}:51820`;
+        }
+        return hint;
+      });
     } catch (e) {
       setError(e instanceof Error ? e.message : t('common.loadFailed'));
     }
@@ -75,12 +131,81 @@ export function VpnPage() {
     void load();
   }, [load]);
 
-  const peers: VpnServerPeer[] = (status?.serverPeers ?? []).filter(
-    (p) => p.engine === serverEngine,
+  // Engine tab switch (or first status load): port defaults + endpoint :port sync
+  const statusReady = Boolean(status);
+  useEffect(() => {
+    if (!isServerTab(tab as TabId)) return;
+    const eng = tab as VpnEngineTab;
+    const st = engineStatus(status, eng);
+    const nextPort =
+      st?.serverPort && st.serverPort > 0
+        ? st.serverPort
+        : defaultPortForEngine(eng, ovpnProto);
+    setListenPort(nextPort);
+    if (st?.serverProto === 'tcp' || st?.serverProto === 'udp') {
+      setOvpnProto(st.serverProto);
+    }
+    setEndpoint((prev) => syncEndpointPort(prev, nextPort, hintHost));
+    // statusReady: re-run once when status first arrives; not on every refresh
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, statusReady, hintHost]);
+
+  const setPort = (port: number, proto?: 'udp' | 'tcp') => {
+    const p = Number.isFinite(port) && port > 0 && port < 65536 ? Math.floor(port) : listenPort;
+    setListenPort(p);
+    if (proto) setOvpnProto(proto);
+    setEndpoint((prev) => syncEndpointPort(prev, p, hintHost));
+  };
+
+  const peers: VpnServerPeer[] = useMemo(
+    () =>
+      (status?.serverPeers ?? []).filter((p) =>
+        isServerTab(tab as TabId) ? p.engine === tab : false,
+      ),
+    [status?.serverPeers, tab],
   );
+
   const profiles: VpnClientProfile[] = status?.clientProfiles ?? [];
-  const presets: VpnPortPreset[] =
-    status?.portPresets?.filter((p) => p.engine === serverEngine) ?? [];
+  const presets: VpnPortPreset[] = useMemo(
+    () =>
+      (status?.portPresets ?? []).filter((p) =>
+        isServerTab(tab as TabId) ? p.engine === tab : false,
+      ),
+    [status?.portPresets, tab],
+  );
+
+  const engSt = isServerTab(tab as TabId)
+    ? engineStatus(status, tab as VpnEngineId)
+    : undefined;
+
+  const fwProto = firewallProtoForEngine(
+    isServerTab(tab as TabId) ? (tab as VpnEngineTab) : 'wireguard',
+    ovpnProto,
+  );
+
+  const openConfigModal = async (
+    engine: VpnEngineTab,
+    name: string,
+    text: string,
+  ) => {
+    setCfgEngine(engine);
+    setCfgLabel(name);
+    setCfgText(text);
+    setCfgQr(null);
+    setCfgOpen(true);
+    if (engine === 'wireguard' || engine === 'outline') {
+      try {
+        const url = await QRCode.toDataURL(text, {
+          errorCorrectionLevel: 'M',
+          margin: 1,
+          width: 280,
+        });
+        setCfgQr(url);
+      } catch {
+        setCfgQr(null);
+      }
+    }
+  };
 
   const runOps = async (
     fn: () => Promise<{
@@ -91,6 +216,7 @@ export function VpnPage() {
       config?: string;
       peer?: VpnServerPeer;
     }>,
+    opts?: { openConfig?: boolean; engine?: VpnEngineTab },
   ) => {
     setBusy(true);
     setError(null);
@@ -104,414 +230,643 @@ export function VpnPage() {
       });
       if (r.ok) notifyOk(r.notes?.[0] || t('common.completed'));
       else notifyWarn(r.notes?.[0] || t('common.opFailed'));
-      if (r.config) {
-        setLastConfig(r.config);
-        setQrLabel(r.peer?.name || 'client');
-        try {
-          const url = await QRCode.toDataURL(r.config, {
-            errorCorrectionLevel: 'M',
-            margin: 1,
-            width: 280,
-          });
-          setQrDataUrl(url);
-        } catch {
-          setQrDataUrl(null);
-        }
+      if (r.config && opts?.openConfig !== false) {
+        await openConfigModal(
+          opts?.engine ?? activeEngine,
+          r.peer?.name || 'client',
+          r.config,
+        );
       }
       await load();
+      return r;
     } catch (e) {
       setError(e instanceof Error ? e.message : t('common.loadFailed'));
+      return null;
     } finally {
       setBusy(false);
     }
   };
 
+  const downloadPeer = (p: VpnServerPeer) => {
+    const eng = p.engine as VpnEngineTab;
+    void api
+      .downloadAuthenticated(
+        vpnApi.peerConfigPath(p.id),
+        confDownloadName(eng, p.name),
+      )
+      .then(() => notifyOk(t('vpn.downloaded')))
+      .catch((e) =>
+        setError(e instanceof Error ? e.message : t('common.loadFailed')),
+      );
+  };
+
+  const showPeerQr = async (p: VpnServerPeer) => {
+    try {
+      const text = await vpnApi.peerConfigText(p.id);
+      await openConfigModal(p.engine as VpnEngineTab, p.name, text);
+      notifyOk(t('vpn.qrReady'));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('common.loadFailed'));
+    }
+  };
+
+  const copyText = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      notifyOk(t('vpn.copied'));
+    } catch {
+      notifyWarn(t('common.opFailed'));
+    }
+  };
+
+  const peersTitleKey =
+    tab === 'openvpn'
+      ? 'vpn.peersTitleOvpn'
+      : tab === 'outline'
+        ? 'vpn.peersTitleSs'
+        : 'vpn.peersTitleWg';
+
+  const addPeerLabel =
+    tab === 'openvpn'
+      ? t('vpn.addPeerOvpn')
+      : tab === 'outline'
+        ? t('vpn.addPeerSs')
+        : t('vpn.addPeerWg');
+
+  const portLabel =
+    tab === 'openvpn'
+      ? ovpnProto === 'tcp'
+        ? t('vpn.listenPortTcp')
+        : t('vpn.listenPortUdp')
+      : tab === 'wireguard'
+        ? t('vpn.listenPortUdp')
+        : t('vpn.listenPort');
+
+  const statusPill = (() => {
+    if (!isServerTab(tab as TabId)) {
+      const up = profiles.filter((p) => p.status === 'up').length;
+      return {
+        label: t('vpn.engineSummaryClient', {
+          count: profiles.length,
+          up,
+        }),
+        tone: (up > 0 ? 'ok' : profiles.length ? 'warn' : 'neutral') as
+          | 'ok'
+          | 'warn'
+          | 'neutral',
+      };
+    }
+    const up = Boolean(engSt?.serverActive);
+    return {
+      label: t('vpn.statusLine', {
+        state: up ? t('vpn.serverUp') : t('vpn.serverDown'),
+        port: listenPort,
+        proto: fwProto === 'both' ? 'tcp+udp' : fwProto,
+        peers: peers.length,
+      }),
+      tone: (up ? 'ok' : engSt?.installed ? 'warn' : 'neutral') as
+        | 'ok'
+        | 'warn'
+        | 'neutral',
+    };
+  })();
+
+  const renderServerPanel = (engine: VpnEngineTab) => (
+    <div className="stack">
+      {engine === 'wireguard' ? (
+        <>
+          <SoftwareInstallBanner feature="wireguard" title={t('vpn.needWireGuard')} />
+          <SoftwareVersionBar softwareId="wireguard" />
+        </>
+      ) : engine === 'openvpn' ? (
+        <>
+          <SoftwareInstallBanner feature="openvpn" title={t('vpn.needOpenVpn')} />
+          <SoftwareVersionBar softwareId="openvpn" />
+        </>
+      ) : (
+        <>
+          <SoftwareInstallBanner feature="outline" title={t('vpn.needSs')} />
+          <SoftwareVersionBar softwareId="shadowsocks" />
+          <Alert variant="info">{t('vpn.ssHonestUi')}</Alert>
+        </>
+      )}
+
+      <section className="stack" aria-label={t('vpn.serverSettings')}>
+        <FormLayout columns={2}>
+          <Field label={portLabel} htmlFor={`vpn-port-${engine}`} flush>
+            <input
+              id={`vpn-port-${engine}`}
+              type="number"
+              min={1}
+              max={65535}
+              value={listenPort}
+              onChange={(e) => setPort(Number(e.target.value) || listenPort)}
+            />
+          </Field>
+          {engine === 'openvpn' ? (
+            <Field label={t('vpn.proto')} htmlFor="vpn-proto" flush>
+              <SegRadio
+                name="vpn-proto"
+                aria-label={t('vpn.proto')}
+                value={ovpnProto}
+                onChange={(v) => {
+                  const proto = v as 'udp' | 'tcp';
+                  setOvpnProto(proto);
+                  // Suggest conventional port when switching proto
+                  const suggested = defaultPortForEngine('openvpn', proto);
+                  setPort(suggested, proto);
+                }}
+                options={[
+                  { value: 'udp', label: t('vpn.protoUdp') },
+                  { value: 'tcp', label: t('vpn.protoTcp') },
+                ]}
+              />
+            </Field>
+          ) : null}
+          <Field
+            label={t('vpn.endpoint')}
+            htmlFor={`vpn-endpoint-${engine}`}
+            hint={t('vpn.endpointHint')}
+            fullWidth
+            flush
+          >
+            <input
+              id={`vpn-endpoint-${engine}`}
+              type="text"
+              value={endpoint}
+              onChange={(e) => setEndpoint(e.target.value)}
+              placeholder={`vpn.example.com:${listenPort}`}
+              autoComplete="off"
+            />
+          </Field>
+        </FormLayout>
+
+        {presets.length > 0 ? (
+          <div className="u-flex-gap u-flex-wrap" role="group" aria-label={t('vpn.presets')}>
+            {presets.map((p) => (
+              <Button
+                key={`${p.port}-${p.proto}`}
+                size="sm"
+                variant={
+                  listenPort === p.port &&
+                  (engine !== 'openvpn' ||
+                    p.proto === 'both' ||
+                    p.proto === ovpnProto)
+                    ? 'primary'
+                    : 'ghost'
+                }
+                onClick={() => {
+                  const proto =
+                    p.proto === 'tcp' || p.proto === 'udp' ? p.proto : undefined;
+                  setPort(p.port, proto);
+                }}
+              >
+                {p.label}
+              </Button>
+            ))}
+          </div>
+        ) : null}
+
+        <ActionBar>
+          <Button
+            variant="primary"
+            size="sm"
+            loading={busy}
+            onClick={() =>
+              void runOps(
+                () =>
+                  vpnApi.ensureServer({
+                    engine,
+                    listenPort,
+                    endpoint: endpoint || undefined,
+                    proto: engine === 'openvpn' ? ovpnProto : undefined,
+                  }),
+                { openConfig: false },
+              )
+            }
+          >
+            {t('vpn.ensureServer')}
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            loading={busy}
+            onClick={() =>
+              void runOps(
+                () =>
+                  vpnApi.openFirewall({
+                    port: listenPort,
+                    proto: fwProto,
+                  }),
+                { openConfig: false },
+              )
+            }
+          >
+            {t('vpn.openFirewall', {
+              port: listenPort,
+              proto: fwProto === 'both' ? 'tcp+udp' : fwProto,
+            })}
+          </Button>
+          <Button variant="ghost" size="sm" loading={busy} onClick={() => void load()}>
+            {t('vpn.refresh')}
+          </Button>
+        </ActionBar>
+      </section>
+
+      <DataTable
+        rowKey={(r) => r.id}
+        title={t(peersTitleKey)}
+        description={t('vpn.noPeersHint')}
+        toolbar={
+          <ActionBar>
+            <input
+              className="u-input"
+              style={{ maxWidth: 160 }}
+              value={peerName}
+              onChange={(e) => setPeerName(e.target.value)}
+              placeholder={t('vpn.peerNamePlaceholder')}
+              aria-label={t('vpn.peerName')}
+            />
+            <Button
+              variant="primary"
+              size="sm"
+              loading={busy}
+              disabled={!peerName.trim()}
+              onClick={() => {
+                const name = peerName.trim();
+                void runOps(
+                  () => vpnApi.addPeer({ name, engine }),
+                  { openConfig: true, engine },
+                ).then((r) => {
+                  if (r?.ok) setPeerName('');
+                });
+              }}
+            >
+              {addPeerLabel}
+            </Button>
+          </ActionBar>
+        }
+        columns={[
+          {
+            key: 'name',
+            header: t('vpn.colName'),
+            render: (r) => <strong>{r.name}</strong>,
+          },
+          {
+            key: 'addr',
+            header: t('vpn.colAddress'),
+            render: (r) => <code className="inline">{r.address || '—'}</code>,
+          },
+          {
+            key: 'created',
+            header: t('vpn.colCreated'),
+            nowrap: true,
+            render: (r) => (
+              <span className="muted u-text-xs">{formatWhen(r.createdAt)}</span>
+            ),
+          },
+        ]}
+        rows={peers}
+        empty={<EmptyState title={t('vpn.noPeers')} description={t('vpn.noPeersHint')} />}
+        rowActions={(r) => (
+          <ActionBar>
+            <Button size="sm" variant="secondary" onClick={() => downloadPeer(r)}>
+              {t('vpn.downloadKey')}
+            </Button>
+            {engine === 'wireguard' || engine === 'outline' ? (
+              <Button size="sm" variant="ghost" onClick={() => void showPeerQr(r)}>
+                {t('vpn.showQr')}
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() =>
+                  void vpnApi
+                    .peerConfigText(r.id)
+                    .then((text) => openConfigModal('openvpn', r.name, text))
+                    .catch((e) =>
+                      setError(
+                        e instanceof Error ? e.message : t('common.loadFailed'),
+                      ),
+                    )
+                }
+              >
+                {t('vpn.showConf')}
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="danger"
+              loading={busy}
+              onClick={() =>
+                void runOps(() => vpnApi.deletePeer(r.id), { openConfig: false })
+              }
+            >
+              {t('common.delete')}
+            </Button>
+          </ActionBar>
+        )}
+      />
+    </div>
+  );
+
+  const clientUpCount = profiles.filter((p) => p.status === 'up').length;
+
   return (
-    <FeaturePageLayout title={t('nav.vpn')} subtitle={t('vpn.pageDesc')}>
+    <FeaturePageLayout
+      title={t('nav.vpn')}
+      subtitle={t('vpn.pageDesc')}
+      status={{ pill: statusPill }}
+      actions={
+        <ActionBar>
+          <Button variant="secondary" size="sm" loading={busy} onClick={() => void load()}>
+            {t('vpn.refresh')}
+          </Button>
+        </ActionBar>
+      }
+    >
       <PageTabs
         tabs={TABS.map((id) => ({ id, label: t(`vpn.tab.${id}`) }))}
         active={tab}
-        onChange={(id) => setTab(id as (typeof TABS)[number])}
+        onChange={(id) => setTab(id as TabId)}
       >
         {error ? <Alert variant="error">{error}</Alert> : null}
         {lastOps ? (
-          <OpsResultPanel title={t('vpn.result')} result={lastOps} />
+          <OpsResultPanel
+            title={t('vpn.result')}
+            result={lastOps}
+            defaultShowTechnical={!lastOps.ok || Boolean(lastOps.blocked)}
+          />
         ) : null}
 
-        {tab === 'server' ? (
-          <div className="stack">
-            {serverEngine === 'wireguard' ? (
-              <>
-                <SoftwareInstallBanner feature="wireguard" title={t('vpn.needWireGuard')} />
-                <SoftwareVersionBar softwareId="wireguard" />
-              </>
-            ) : serverEngine === 'openvpn' ? (
-              <>
-                <SoftwareInstallBanner feature="openvpn" title={t('vpn.needOpenVpn')} />
-                <SoftwareVersionBar softwareId="openvpn" />
-              </>
-            ) : (
-              <>
-                <SoftwareInstallBanner feature="outline" title={t('vpn.needSs')} />
-                <SoftwareVersionBar softwareId="shadowsocks" />
-                <Alert variant="info">{t('vpn.ssHonestUi')}</Alert>
-              </>
-            )}
-
-            <FormLayout>
-              <Field label={t('vpn.serverEngine')} htmlFor="vpn-srv-eng">
-                <select
-                  id="vpn-srv-eng"
-                  value={serverEngine}
-                  onChange={(e) => {
-                    const eng = e.target.value as 'wireguard' | 'openvpn' | 'outline';
-                    setServerEngine(eng);
-                    setListenPort(
-                      eng === 'openvpn' ? 1194 : eng === 'outline' ? 8388 : 51820,
-                    );
-                    setOvpnProto('udp');
-                  }}
-                >
-                  <option value="wireguard">WireGuard</option>
-                  <option value="openvpn">OpenVPN</option>
-                  <option value="outline">Shadowsocks (ss://)</option>
-                </select>
-              </Field>
-              <Field label={t('vpn.listenPort')} htmlFor="vpn-port">
-                <input
-                  id="vpn-port"
-                  type="number"
-                  min={1}
-                  max={65535}
-                  value={listenPort}
-                  onChange={(e) => setListenPort(Number(e.target.value) || 51820)}
-                />
-              </Field>
-              <div className="u-flex-gap u-flex-wrap">
-                {presets.map((p) => (
-                  <Button
-                    key={`${p.port}-${p.proto}`}
-                    size="sm"
-                    variant={listenPort === p.port ? 'primary' : 'ghost'}
-                    onClick={() => {
-                      setListenPort(p.port);
-                      if (p.proto === 'tcp' || p.proto === 'udp') setOvpnProto(p.proto);
-                    }}
-                  >
-                    {p.label}
-                  </Button>
-                ))}
-              </div>
-              {serverEngine === 'openvpn' ? (
-                <Field label={t('vpn.proto')} htmlFor="vpn-proto">
-                  <select
-                    id="vpn-proto"
-                    value={ovpnProto}
-                    onChange={(e) => setOvpnProto(e.target.value as 'udp' | 'tcp')}
-                  >
-                    <option value="udp">UDP</option>
-                    <option value="tcp">TCP</option>
-                  </select>
-                </Field>
-              ) : null}
-              <Field
-                label={t('vpn.endpoint')}
-                htmlFor="vpn-endpoint"
-                hint={t('vpn.endpointHint')}
-              >
-                <input
-                  id="vpn-endpoint"
-                  type="text"
-                  value={endpoint}
-                  onChange={(e) => setEndpoint(e.target.value)}
-                  placeholder="vpn.example.com:51820"
-                  autoComplete="off"
-                />
-              </Field>
-              <FormActions>
-                <Button
-                  loading={busy}
-                  onClick={() =>
-                    void runOps(() =>
-                      vpnApi.ensureServer({
-                        engine: serverEngine,
-                        listenPort,
-                        endpoint: endpoint || undefined,
-                        proto: serverEngine === 'openvpn' ? ovpnProto : undefined,
-                      }),
-                    )
-                  }
-                >
-                  {t('vpn.ensureServer')}
-                </Button>
-                <Button
-                  variant="secondary"
-                  loading={busy}
-                  onClick={() =>
-                    void runOps(() =>
-                      vpnApi.openFirewall({
-                        port: listenPort,
-                        proto:
-                          serverEngine === 'outline'
-                            ? 'both'
-                            : serverEngine === 'openvpn'
-                              ? ovpnProto
-                              : 'udp',
-                      }),
-                    )
-                  }
-                >
-                  {t('vpn.openFirewall', { port: listenPort })}
-                </Button>
-              </FormActions>
-            </FormLayout>
-
-            <h3 className="u-text-md">{t('vpn.peersTitle')}</h3>
-            <FormLayout>
-              <Field label={t('vpn.peerName')} htmlFor="vpn-peer-name">
-                <input
-                  id="vpn-peer-name"
-                  type="text"
-                  value={peerName}
-                  onChange={(e) => setPeerName(e.target.value)}
-                  placeholder="phone"
-                />
-              </Field>
-              <FormActions>
-                <Button
-                  loading={busy}
-                  disabled={!peerName.trim()}
-                  onClick={() =>
-                    void runOps(() =>
-                      vpnApi.addPeer({
-                        name: peerName.trim(),
-                        engine: serverEngine,
-                      }),
-                    )
-                  }
-                >
-                  {t('vpn.addPeer')}
-                </Button>
-              </FormActions>
-            </FormLayout>
-
-            {peers.length === 0 ? (
-              <EmptyState title={t('vpn.noPeers')} description={t('vpn.noPeersHint')} />
-            ) : (
-              <ul className="vpn-list">
-                {peers.map((p) => (
-                  <li key={p.id} className="vpn-list__item">
-                    <div>
-                      <strong>{p.name}</strong>
-                      <span className="muted u-text-xs"> · {p.address}</span>
-                    </div>
-                    <div className="u-flex-gap">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => {
-                          void api
-                            .downloadAuthenticated(
-                              vpnApi.peerConfigPath(p.id),
-                              p.engine === 'openvpn'
-                                ? `${p.name}.ovpn`
-                                : `${p.name}.conf`,
-                            )
-                            .then(() => notifyOk(t('vpn.downloaded')))
-                            .catch((e) =>
-                              setError(
-                                e instanceof Error ? e.message : t('common.loadFailed'),
-                              ),
-                            );
-                        }}
-                      >
-                        {t('vpn.downloadKey')}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => {
-                          void (async () => {
-                            try {
-                              const text = await vpnApi.peerConfigText(p.id);
-                              setLastConfig(text);
-                              setQrLabel(p.name);
-                              const url = await QRCode.toDataURL(text, {
-                                errorCorrectionLevel: 'M',
-                                margin: 1,
-                                width: 280,
-                              });
-                              setQrDataUrl(url);
-                              notifyOk(t('vpn.qrReady'));
-                            } catch (e) {
-                              setError(
-                                e instanceof Error ? e.message : t('common.loadFailed'),
-                              );
-                            }
-                          })();
-                        }}
-                      >
-                        {t('vpn.showQr')}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() =>
-                          void runOps(() => vpnApi.deletePeer(p.id))
-                        }
-                      >
-                        {t('common.delete')}
-                      </Button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            {qrDataUrl ? (
-              <div className="vpn-qr">
-                <h3 className="u-text-md">{t('vpn.qrTitle', { name: qrLabel })}</h3>
-                <img src={qrDataUrl} alt="WireGuard QR" width={280} height={280} />
-                <p className="muted u-text-xs">{t('vpn.qrHint')}</p>
-              </div>
-            ) : null}
-            {lastConfig ? (
-              <details className="vpn-conf">
-                <summary>{t('vpn.showConf')}</summary>
-                <pre className="vpn-conf__pre">{lastConfig}</pre>
-              </details>
-            ) : null}
-          </div>
-        ) : null}
+        {tab === 'wireguard' ? renderServerPanel('wireguard') : null}
+        {tab === 'openvpn' ? renderServerPanel('openvpn') : null}
+        {tab === 'outline' ? renderServerPanel('outline') : null}
 
         {tab === 'client' ? (
           <div className="stack">
             <SoftwareInstallBanner feature="wireguard" title={t('vpn.needWireGuard')} />
             <SoftwareInstallBanner feature="openvpn" title={t('vpn.needOpenVpn')} />
             <Alert variant="info">{t('vpn.clientIntro')}</Alert>
-            <FormLayout>
-              <Field label={t('vpn.clientEngine')} htmlFor="vpn-cli-eng">
-                <select
-                  id="vpn-cli-eng"
-                  value={clientEngine}
-                  onChange={(e) =>
-                    setClientEngine(e.target.value as 'wireguard' | 'openvpn' | 'auto')
-                  }
-                >
-                  <option value="auto">{t('vpn.engineAuto')}</option>
-                  <option value="wireguard">WireGuard</option>
-                  <option value="openvpn">OpenVPN</option>
-                </select>
-              </Field>
-              <Field label={t('vpn.profileName')} htmlFor="vpn-import-name">
-                <input
-                  id="vpn-import-name"
-                  type="text"
-                  value={importName}
-                  onChange={(e) => setImportName(e.target.value)}
-                  placeholder="office"
-                />
-              </Field>
-              <Field label={t('vpn.pasteConf')} htmlFor="vpn-import-conf">
-                <textarea
-                  id="vpn-import-conf"
-                  rows={8}
-                  value={importConf}
-                  onChange={(e) => setImportConf(e.target.value)}
-                  placeholder="[Interface] / client + remote …"
-                  spellCheck={false}
-                  className="vpn-textarea"
-                />
-              </Field>
-              <FormActions>
-                <Button
-                  loading={busy}
-                  disabled={!importName.trim() || !importConf.trim()}
-                  onClick={() =>
-                    void runOps(() =>
-                      vpnApi.importClient({
-                        name: importName.trim(),
-                        conf: importConf,
-                        engine:
-                          clientEngine === 'auto' ? undefined : clientEngine,
-                      }),
-                    )
-                  }
-                >
-                  {t('vpn.importProfile')}
-                </Button>
-              </FormActions>
-            </FormLayout>
 
-            {profiles.length === 0 ? (
-              <EmptyState
-                title={t('vpn.noProfiles')}
-                description={t('vpn.noProfilesHint')}
-              />
-            ) : (
-              <ul className="vpn-list">
-                {profiles.map((p) => (
-                  <li key={p.id} className="vpn-list__item">
-                    <div>
-                      <strong>{p.name}</strong>
-                      <span className="muted u-text-xs"> · {p.iface}</span>
-                      <Badge
-                        tone={
-                          p.status === 'up'
-                            ? 'ok'
-                            : p.status === 'down'
-                              ? 'neutral'
-                              : 'warn'
-                        }
-                      >
-                        {p.status}
-                      </Badge>
-                    </div>
-                    <div className="u-flex-gap">
-                      <Button
-                        size="sm"
-                        onClick={() => void runOps(() => vpnApi.clientUp(p.id))}
-                        disabled={busy || p.status === 'up'}
-                      >
-                        {t('vpn.connect')}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => void runOps(() => vpnApi.clientDown(p.id))}
-                        disabled={busy}
-                      >
-                        {t('vpn.disconnect')}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => void runOps(() => vpnApi.deleteClient(p.id))}
-                      >
-                        {t('common.delete')}
-                      </Button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        ) : null}
-
-        {tab === 'install' ? (
-          <div className="stack">
-            <SoftwareInstallBanner feature="wireguard" title={t('vpn.needWireGuard')} />
-            <SoftwareVersionBar softwareId="wireguard" />
-            <SoftwareInstallBanner feature="openvpn" title={t('vpn.needOpenVpn')} />
-            <SoftwareVersionBar softwareId="openvpn" />
-            <SoftwareInstallBanner feature="outline" title={t('vpn.needSs')} />
-            <SoftwareVersionBar softwareId="shadowsocks" />
-            <Alert variant="info">{t('vpn.installNote')}</Alert>
+            <DataTable
+              rowKey={(r) => r.id}
+              title={t('vpn.engineSummaryClient', {
+                count: profiles.length,
+                up: clientUpCount,
+              })}
+              toolbar={
+                <ActionBar>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => {
+                      setImportName('');
+                      setImportConf('');
+                      setClientEngine('auto');
+                      setImportOpen(true);
+                    }}
+                  >
+                    {t('vpn.importOpen')}
+                  </Button>
+                </ActionBar>
+              }
+              columns={[
+                {
+                  key: 'name',
+                  header: t('vpn.colName'),
+                  render: (r) => <strong>{r.name}</strong>,
+                },
+                {
+                  key: 'engine',
+                  header: t('vpn.colEngine'),
+                  nowrap: true,
+                  render: (r) => <Badge tone="neutral">{r.engine}</Badge>,
+                },
+                {
+                  key: 'iface',
+                  header: t('vpn.colIface'),
+                  render: (r) => <code className="inline">{r.iface}</code>,
+                },
+                {
+                  key: 'status',
+                  header: t('vpn.colStatus'),
+                  nowrap: true,
+                  render: (r) => (
+                    <Badge
+                      tone={
+                        r.status === 'up'
+                          ? 'ok'
+                          : r.status === 'down'
+                            ? 'neutral'
+                            : 'warn'
+                      }
+                    >
+                      {r.status}
+                    </Badge>
+                  ),
+                },
+              ]}
+              rows={profiles}
+              empty={
+                <EmptyState
+                  title={t('vpn.noProfiles')}
+                  description={t('vpn.noProfilesHint')}
+                />
+              }
+              rowActions={(r) => (
+                <ActionBar>
+                  <Button
+                    size="sm"
+                    variant="primary"
+                    loading={busy}
+                    disabled={r.status === 'up'}
+                    onClick={() =>
+                      void runOps(() => vpnApi.clientUp(r.id), {
+                        openConfig: false,
+                      })
+                    }
+                  >
+                    {t('vpn.connect')}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    loading={busy}
+                    onClick={() =>
+                      void runOps(() => vpnApi.clientDown(r.id), {
+                        openConfig: false,
+                      })
+                    }
+                  >
+                    {t('vpn.disconnect')}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="danger"
+                    loading={busy}
+                    onClick={() =>
+                      void runOps(() => vpnApi.deleteClient(r.id), {
+                        openConfig: false,
+                      })
+                    }
+                  >
+                    {t('common.delete')}
+                  </Button>
+                </ActionBar>
+              )}
+            />
           </div>
         ) : null}
 
         {tab === 'about' ? <PageGuide guideId="vpn" /> : null}
       </PageTabs>
+
+      {/* Config / QR modal */}
+      <Modal
+        open={cfgOpen}
+        onClose={() => setCfgOpen(false)}
+        title={t('vpn.qrTitle', { name: cfgLabel })}
+        footer={
+          <>
+            <Button variant="secondary" size="md" onClick={() => setCfgOpen(false)}>
+              {t('vpn.close')}
+            </Button>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => void copyText(cfgText)}
+            >
+              {t('vpn.copyConf')}
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => {
+                const blob = new Blob([cfgText], { type: 'text/plain' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = confDownloadName(cfgEngine, cfgLabel);
+                a.click();
+                URL.revokeObjectURL(a.href);
+                notifyOk(t('vpn.downloaded'));
+              }}
+            >
+              {t('vpn.downloadKey')}
+            </Button>
+          </>
+        }
+      >
+        <div className="stack">
+          {cfgQr ? (
+            <>
+              <img src={cfgQr} alt="QR" width={280} height={280} />
+              <p className="muted u-text-xs">
+                {cfgEngine === 'outline' ? t('vpn.qrHintSs') : t('vpn.qrHintWg')}
+              </p>
+            </>
+          ) : null}
+          <details open={!cfgQr}>
+            <summary>{t('vpn.showConf')}</summary>
+            <pre className="vpn-conf__pre" style={{ maxHeight: 240, overflow: 'auto' }}>
+              {cfgText}
+            </pre>
+          </details>
+        </div>
+      </Modal>
+
+      {/* Import client modal */}
+      <Modal
+        open={importOpen}
+        onClose={() => !busy && setImportOpen(false)}
+        title={t('vpn.importOpen')}
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => setImportOpen(false)}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              loading={busy}
+              disabled={!importName.trim() || !importConf.trim()}
+              onClick={() => {
+                const detected =
+                  clientEngine === 'auto'
+                    ? detectClientEngine(importConf)
+                    : clientEngine;
+                void runOps(
+                  () =>
+                    vpnApi.importClient({
+                      name: importName.trim(),
+                      conf: importConf,
+                      engine: detected,
+                    }),
+                  { openConfig: false },
+                ).then((r) => {
+                  if (r?.ok) setImportOpen(false);
+                });
+              }}
+            >
+              {t('vpn.importProfile')}
+            </Button>
+          </>
+        }
+      >
+        <FormLayout columns={1}>
+          <Field label={t('vpn.profileName')} htmlFor="vpn-import-name" flush required>
+            <input
+              id="vpn-import-name"
+              value={importName}
+              onChange={(e) => setImportName(e.target.value)}
+              placeholder="office"
+            />
+          </Field>
+          <Field label={t('vpn.clientEngine')} htmlFor="vpn-cli-eng" flush>
+            <SegRadio
+              name="vpn-cli-eng"
+              aria-label={t('vpn.clientEngine')}
+              value={clientEngine}
+              onChange={(v) =>
+                setClientEngine(v as 'wireguard' | 'openvpn' | 'auto')
+              }
+              options={[
+                { value: 'auto', label: t('vpn.engineAuto') },
+                { value: 'wireguard', label: 'WireGuard' },
+                { value: 'openvpn', label: 'OpenVPN' },
+              ]}
+            />
+          </Field>
+          <Field label={t('vpn.pasteConf')} htmlFor="vpn-import-conf" flush required>
+            <textarea
+              id="vpn-import-conf"
+              rows={10}
+              value={importConf}
+              onChange={(e) => {
+                setImportConf(e.target.value);
+                if (!importName.trim()) {
+                  // soft suggest name from first non-empty line comment
+                  const line = e.target.value
+                    .split('\n')
+                    .map((l) => l.trim())
+                    .find((l) => l && !l.startsWith('#'));
+                  if (line && line.length < 40) {
+                    /* keep empty — user types name */
+                  }
+                }
+              }}
+              placeholder="[Interface] …  /  client + remote …"
+              spellCheck={false}
+              className="vpn-textarea"
+            />
+          </Field>
+        </FormLayout>
+      </Modal>
     </FeaturePageLayout>
   );
 }

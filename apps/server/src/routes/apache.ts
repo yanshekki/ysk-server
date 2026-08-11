@@ -3,7 +3,9 @@
  */
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { join } from 'node:path';
 import {
+  listMergedApacheSites,
   listApacheSites,
   createApacheSite,
   updateApacheSite,
@@ -12,6 +14,10 @@ import {
   loadApacheSettings,
   saveApacheSettings,
   applyApacheSettings,
+  applyPhpHosting,
+  resolveProjectDocRoot,
+  readApacheSiteConf,
+  type ApacheSiteRow,
 } from '@ysk/core';
 import { ErrorCodes } from '@ysk/shared';
 import type { AppContext } from '../app-context.js';
@@ -29,7 +35,27 @@ export async function handleApacheRoutes(
   try {
     if (method === 'GET' && url.pathname === '/api/v1/hosting/apache/sites') {
       ctx.auth.authenticate(getBearer(req));
-      sendJson(res, 200, { items: listApacheSites(ctx.dataDir) });
+      const projects = ctx.projects.list().map((p) => ({ ...p }) as Record<string, unknown>);
+      const items = listMergedApacheSites({ dataDir: ctx.dataDir, projects });
+      const q = (url.searchParams.get('q') ?? '').trim().toLowerCase();
+      const source = url.searchParams.get('source');
+      const projectId = url.searchParams.get('projectId');
+      let filtered: ApacheSiteRow[] = items;
+      if (source === 'project' || source === 'standalone' || source === 'artifact') {
+        filtered = filtered.filter((r: ApacheSiteRow) => r.source === source);
+      }
+      if (projectId) {
+        filtered = filtered.filter((r: ApacheSiteRow) => r.projectId === projectId);
+      }
+      if (q) {
+        filtered = filtered.filter(
+          (r: ApacheSiteRow) =>
+            r.serverName.toLowerCase().includes(q) ||
+            (r.projectName ?? '').toLowerCase().includes(q) ||
+            r.target.toLowerCase().includes(q),
+        );
+      }
+      sendJson(res, 200, { items: filtered, total: filtered.length });
       return true;
     }
 
@@ -106,13 +132,47 @@ export async function handleApacheRoutes(
     }
 
     const siteMatch = url.pathname.match(
-      /^\/api\/v1\/hosting\/apache\/sites\/([^/]+)(?:\/(apply|settings))?$/,
+      /^\/api\/v1\/hosting\/apache\/sites\/([^/]+)(?:\/(apply|settings|conf))?$/,
     );
     if (siteMatch) {
       const id = decodeURIComponent(siteMatch[1] ?? '');
       const action = siteMatch[2];
 
+      if (method === 'GET' && action === 'conf') {
+        ctx.auth.authenticate(getBearer(req));
+        if (id.startsWith('project:')) {
+          const projectId = id.slice('project:'.length);
+          const project = ctx.projects.get(projectId);
+          const linuxUser = project?.linuxUser ?? '';
+          const path = linuxUser
+            ? join(ctx.dataDir, 'apache', 'sites', `ysk-${linuxUser}.conf`)
+            : null;
+          sendJson(res, 200, { path, content: readApacheSiteConf(path) });
+          return true;
+        }
+        if (id.startsWith('artifact:')) {
+          const file = id.slice('artifact:'.length).replace(/[/\\]/g, '');
+          const path = join(ctx.dataDir, 'apache', 'sites', file);
+          sendJson(res, 200, { path, content: readApacheSiteConf(path) });
+          return true;
+        }
+        const rec = listApacheSites(ctx.dataDir).find((s) => s.id === id);
+        sendJson(res, 200, {
+          path: rec?.confPath ?? null,
+          content: readApacheSiteConf(rec?.confPath),
+        });
+        return true;
+      }
+
       if (method === 'PATCH' && !action) {
+        if (id.startsWith('project:') || id.startsWith('artifact:')) {
+          sendJson(res, 400, {
+            ok: false,
+            code: ErrorCodes.VALIDATION,
+            message: 'Project/artifact Apache sites are managed via the project',
+          });
+          return true;
+        }
         ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as Record<string, unknown>;
@@ -122,6 +182,14 @@ export async function handleApacheRoutes(
       }
 
       if (method === 'DELETE' && !action) {
+        if (id.startsWith('project:') || id.startsWith('artifact:')) {
+          sendJson(res, 400, {
+            ok: false,
+            code: ErrorCodes.VALIDATION,
+            message: 'Project/artifact Apache sites cannot be deleted here',
+          });
+          return true;
+        }
         const user = ctx.auth.authenticate(getBearer(req));
         const ok = deleteApacheSite(ctx.dataDir, id);
         ctx.audit.append({
@@ -137,6 +205,60 @@ export async function handleApacheRoutes(
 
       if (method === 'POST' && action === 'apply') {
         const user = ctx.auth.authenticate(getBearer(req));
+        if (id.startsWith('project:')) {
+          const projectId = id.slice('project:'.length);
+          const row = ctx.projects.get(projectId);
+          if (!row || row.runtime !== 'php') {
+            sendJson(res, 404, {
+              ok: false,
+              code: ErrorCodes.NOT_FOUND,
+              message: 'PHP project not found',
+            });
+            return true;
+          }
+          const domain = row.domain ?? `${row.linuxUser}.local`;
+          const aliases = (row.domainAliases || [])
+            .map((a: string) => String(a).trim())
+            .filter(Boolean);
+          const docRoot = resolveProjectDocRoot({
+            home_dir: row.homeDir,
+            doc_root: row.docRoot,
+          } as Parameters<typeof resolveProjectDocRoot>[0]);
+          const result = await applyPhpHosting({
+            dataDir: ctx.dataDir,
+            domain,
+            serverAliases: aliases,
+            docRoot,
+            phpVersion: row.runtimeVersion || '8.2',
+            poolName: row.linuxUser,
+            host: ctx.host,
+            enableSite: true,
+          });
+          ctx.audit.append({
+            actor: user.username,
+            action: 'apache.site.apply',
+            resource: id,
+            detail: { ok: result.ok, projectId },
+            ok: result.ok,
+          });
+          sendOpsResult(res, {
+            ...result,
+            apply_status: result.ok
+              ? result.siteEnabled
+                ? 'applied'
+                : 'written'
+              : 'failed',
+          });
+          return true;
+        }
+        if (id.startsWith('artifact:')) {
+          sendJson(res, 400, {
+            ok: false,
+            code: ErrorCodes.VALIDATION,
+            message: 'Artifact conf — re-apply from project or recreate standalone site',
+          });
+          return true;
+        }
         const result = await applyApacheSite({
           dataDir: ctx.dataDir,
           host: ctx.host,
@@ -161,6 +283,14 @@ export async function handleApacheRoutes(
       }
 
       if (method === 'PATCH' && action === 'settings') {
+        if (id.startsWith('project:') || id.startsWith('artifact:')) {
+          sendJson(res, 400, {
+            ok: false,
+            code: ErrorCodes.VALIDATION,
+            message: 'Project Apache settings are managed via the project',
+          });
+          return true;
+        }
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as Record<string, unknown>;

@@ -610,12 +610,12 @@ export class VncService {
 
   async startAccount(id: string): Promise<VncOpsResult> {
     const rec = this.getAccountOrThrow(id);
-    const notes: string[] = [];
+    const prepNotes: string[] = [];
 
     // Ensure user if not provisioned
     if (!rec.osProvisioned) {
       const userR = await ensureLinuxUser(this.host, rec.linuxUser);
-      notes.push(...userR.notes);
+      prepNotes.push(...userR.notes);
       if (userR.provisioned) {
         const items = this.loadAccountsRaw();
         const idx = items.findIndex((a) => a.id === id);
@@ -626,7 +626,25 @@ export class VncService {
         };
         this.saveAccounts(items);
         rec.osProvisioned = true;
+      } else if (userR.blocked) {
+        return {
+          ok: false,
+          notes: prepNotes,
+          blocked: true,
+          requiresExecute: userR.requiresExecute,
+          requiresRoot: userR.requiresRoot,
+          account: toSummary(rec, await this.resolveStatus(rec)),
+        };
       }
+    }
+
+    // Control-plane: no password ever set → fail before shell noise
+    if (!rec.hasPassword) {
+      return {
+        ok: false,
+        notes: [tl('notes.vnc.needPasswordBeforeStart'), ...prepNotes],
+        account: toSummary(rec, await this.resolveStatus(rec)),
+      };
     }
 
     const home = `/home/${rec.linuxUser}`;
@@ -636,7 +654,13 @@ export class VncService {
       home,
       desktop: rec.desktop,
     });
-    notes.push(...xs.notes);
+    if (!xs.ok) {
+      return {
+        ok: false,
+        notes: [...xs.notes, ...prepNotes],
+        account: toSummary(rec, await this.resolveStatus(rec)),
+      };
+    }
 
     const st = await startVncSession({
       host: this.host,
@@ -645,11 +669,25 @@ export class VncService {
       geometry: rec.geometry,
       depth: rec.depth,
       rfbBind: rec.rfbBind,
+      home,
+      requirePassword: true,
     });
-    notes.push(...st.notes);
+
+    // Failure: lead with start error (not "wrote xstartup") so OpsResult shows it primary
+    if (!st.ok && !st.blocked) {
+      return {
+        ok: false,
+        notes: [...st.notes, ...prepNotes],
+        blocked: st.blocked,
+        requiresExecute: st.requiresExecute,
+        requiresRoot: st.requiresRoot,
+        account: toSummary(rec, await this.resolveStatus(rec)),
+      };
+    }
+
     return {
       ok: st.ok || Boolean(st.blocked),
-      notes,
+      notes: [...st.notes, ...xs.notes, ...prepNotes],
       blocked: st.blocked,
       requiresExecute: st.requiresExecute,
       requiresRoot: st.requiresRoot,
