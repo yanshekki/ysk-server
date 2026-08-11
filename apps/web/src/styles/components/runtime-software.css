@@ -1,0 +1,214 @@
+/* Runtime software tab — clean version-first UX */
+
+.runtime-software {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.runtime-software__status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md, 10px);
+  background: var(--surface-2, #f4f6f9);
+  border: 1px solid var(--border-subtle, rgba(0, 0, 0, 0.06));
+}
+
+.runtime-software__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+}
+
+.runtime-software__chip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 7rem;
+}
+
+.runtime-software__chip-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text-muted, #6b7280);
+  text-transform: none;
+}
+
+.runtime-software__chip-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text, #111827);
+  font-variant-numeric: tabular-nums;
+}
+
+.runtime-software__hint {
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* Version rows */
+.runtime-version-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.runtime-version-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-md, 10px);
+  border: 1px solid transparent;
+  background: var(--surface-1, #fff);
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.runtime-version-row:hover {
+  background: var(--surface-2, #f8fafc);
+  border-color: var(--border-subtle, rgba(0, 0, 0, 0.06));
+}
+
+.runtime-version-row--selected {
+  background: var(--brand-soft, #eef4ff);
+  border-color: var(--brand-border, rgba(59, 130, 246, 0.35));
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.08);
+}
+
+.runtime-version-row:focus-visible {
+  outline: 2px solid var(--brand, #3b82f6);
+  outline-offset: 2px;
+}
+
+.runtime-version-row__main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  min-width: 0;
+}
+
+.runtime-version-row__ver {
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+  min-width: 2.25rem;
+}
+
+.runtime-version-row__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.runtime-version-row__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: auto;
+}
+
+.runtime-version-row__quiet {
+  padding: 0 0.25rem;
+}
+
+/* Row overflow menu */
+.runtime-row-menu {
+  position: relative;
+}
+
+.runtime-row-menu__sum {
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+  padding: 0.25rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle, rgba(0, 0, 0, 0.1));
+  background: var(--surface-1, #fff);
+  color: var(--text-muted, #6b7280);
+  font-size: 0.85rem;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+}
+
+.runtime-row-menu__sum::-webkit-details-marker {
+  display: none;
+}
+
+.runtime-row-menu__sum:hover {
+  background: var(--surface-2, #f4f6f9);
+  color: var(--text, #111);
+}
+
+.runtime-row-menu[open] .runtime-row-menu__sum {
+  border-color: var(--brand-border, rgba(59, 130, 246, 0.4));
+  color: var(--text, #111);
+}
+
+.runtime-row-menu__panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 20;
+  min-width: 10.5rem;
+  padding: 0.35rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle, rgba(0, 0, 0, 0.1));
+  background: var(--surface-1, #fff);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+}
+
+.runtime-row-menu__item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  padding: 0.45rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  color: var(--text, #111);
+  cursor: pointer;
+}
+
+.runtime-row-menu__item:hover {
+  background: var(--surface-2, #f4f6f9);
+}
+
+.runtime-row-menu__item--danger {
+  color: var(--danger, #dc2626);
+}
+
+.runtime-row-menu__item--danger:hover {
+  background: rgba(220, 38, 38, 0.08);
+}
+
+.runtime-advanced-stack {
+  margin-top: 0.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md, 10px);
+  border: 1px dashed var(--border-subtle, rgba(0, 0, 0, 0.12));
+  background: var(--surface-1, #fff);
+}
+
+.runtime-advanced-stack__sum {
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--text-muted, #6b7280);
+  font-weight: 500;
+}
+
+.runtime-advanced-stack__sum:hover {
+  color: var(--text, #111);
+}

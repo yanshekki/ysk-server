@@ -18,11 +18,9 @@ import {
   FormHint,
   FormLayout,
   OpsResultPanel,
-  InstallStreamPanel,
   PresetChips,
   SegRadio,
   ConfirmDialog,
-  SoftwareInstallBanner,
   PageTabs,
   buttonClassName } from '../../shared/components/ui';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -32,15 +30,10 @@ import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../shared/lib/i18n';
-import {
-  resolveRuntimeInstallState,
-  supportsHostDefault,
-  supportsVersionUninstall,
-  versionChipLabel } from '../../features/runtimes/install-state';
-import { RuntimePluginsField } from '../../features/runtimes/RuntimePluginsField';
-import { RuntimeInstallActions } from '../../features/runtimes/RuntimeInstallActions';
+import { hostSatisfiesTarget } from '../../features/runtimes/install-state';
 import { RuntimePm2Panel } from '../../features/runtimes/RuntimePm2Panel';
-import { bindSet, bindInput } from '../bind-handlers';
+import { RuntimeSoftwarePanel } from '../../features/runtimes/RuntimeSoftwarePanel';
+import { bindInput } from '../bind-handlers';
 
 export type HostingRuntimeKind =
   | 'node'
@@ -348,8 +341,6 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
   }, [kind, probeData.hostRaw, probeData.available.length]);
 
   const multiVersion = kind === 'go' || kind === 'rust';
-  const hostDefaultOk = supportsHostDefault(kind);
-  const versionUninstallOk = supportsVersionUninstall(kind);
   /** Control-plane pin only — never treat as "installed" without probe. */
   const recordedPin =
     versionStatus?.currentVersion != null
@@ -357,23 +348,6 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
       : '';
   const recordedButProbeEmpty =
     Boolean(recordedPin) && probeData.available.length === 0;
-
-  const installState = useMemo(() => {
-    // Installed = host probe only (same as PHP/Go). softwareVersions is not proof.
-    return resolveRuntimeInstallState({
-      selectedVersion: version,
-      supportedVersions: probeData.supported,
-      availableVersions: probeData.available,
-      probeItems: probeData.items.map((i) => ({
-        version: i.version != null ? String(i.version) : undefined,
-        available: Boolean(i.available),
-        active: Boolean(i.active),
-        versionOutput: i.versionOutput != null ? String(i.versionOutput) : undefined })),
-      hostDefault: probeData.hostRaw || null,
-      multiVersion,
-      kind,
-    });
-  }, [version, probeData, multiVersion, kind]);
 
   const [defaultConfirmOpen, setDefaultConfirmOpen] = useState(false);
   const [uninstallConfirmOpen, setUninstallConfirmOpen] = useState(false);
@@ -422,7 +396,15 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
     (targetVersion: string) =>
       void run(async () => {
         const r = await systemApi.runtimeUninstall({
-          kind: kind as 'go' | 'rust' | 'node' | 'bun',
+          kind: kind as
+            | 'go'
+            | 'rust'
+            | 'node'
+            | 'bun'
+            | 'php'
+            | 'python'
+            | 'java'
+            | 'kotlin',
           version: targetVersion,
         });
         await refresh();
@@ -430,6 +412,32 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
         return r as OpsResultLike;
       }, t('runtime.uninstallVersionDone', { version: targetVersion })),
     [kind, run, refresh, t],
+  );
+
+  const runInstallVersion = useCallback(
+    (targetVersion?: string) => {
+      const ver = targetVersion || version;
+      if (targetVersion) setVersion(targetVersion);
+      void run(async () => {
+        setInstallLog([]);
+        const r = await systemApi.runtimeInstallStream(
+          {
+            kind,
+            version: ver,
+            install: true,
+            plugins,
+          },
+          {
+            onLog: (line) =>
+              setInstallLog((prev) => [...prev.slice(-1999), line]),
+          },
+        );
+        await refresh();
+        setPluginsRefreshToken((n) => n + 1);
+        return r as OpsResultLike;
+      }, t(meta.installLabelKey, { v: ver }));
+    },
+    [kind, version, plugins, run, refresh, t, meta.installLabelKey],
   );
 
   const parseExtraEnv = (): Record<string, string> => {
@@ -571,12 +579,10 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                         </Badge>
                         {i.available &&
                         (i.active ||
-                          (probeData.hostRaw &&
-                            String(i.versionOutput || i.version).includes(
-                              String(i.version),
-                            ) &&
-                            installState.selectedActive &&
-                            String(i.version) === version)) ? (
+                          hostSatisfiesTarget(
+                            probeData.hostRaw,
+                            String(i.version ?? ''),
+                          )) ? (
                           <Badge tone="ok">{t('runtime.activeDefault')}</Badge>
                         ) : null}
                         {i.resolvedPath ? (
@@ -607,339 +613,67 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
         ) : null}
 
         {tab === 'software' ? (
-          <div className="tab-panel">
-            {installState.selectedInstalled ? (
-              <Alert variant="info">
-                <strong>
-                  {t('runtime.versionReadyTitle', {
-                    name: meta.title,
-                    version,
+          <RuntimeSoftwarePanel
+            kind={kind}
+            title={meta.title}
+            bannerTitle={meta.bannerTitle}
+            version={version}
+            onVersionChange={setVersion}
+            supported={
+              probeData.supported.length
+                ? probeData.supported
+                : version
+                  ? [version]
+                  : []
+            }
+            available={probeData.available}
+            hostRaw={probeData.hostRaw}
+            hostDisplay={probeData.host}
+            items={probeData.items}
+            multiVersion={multiVersion}
+            panelDefault={panelDefault}
+            busy={busy}
+            plugins={plugins}
+            onPluginsChange={setPlugins}
+            pluginsRefreshToken={pluginsRefreshToken}
+            installLog={installLog}
+            installLabel={t(meta.installLabelKey, { v: version })}
+            onInstall={runInstallVersion}
+            onSetHostDefault={(v) => {
+              setVersion(v);
+              setDefaultConfirmOpen(true);
+            }}
+            onSetPanelDefault={runSetPanelDefault}
+            onUninstallVersion={(v) => {
+              setUninstallTarget(v);
+              setUninstallConfirmOpen(true);
+            }}
+            onReprobe={() => {
+              setError(null);
+              setMsg(null);
+              void run(async () => {
+                const r = (await systemApi.runtimes()) as Record<string, unknown>;
+                setProbe(r);
+                return { ok: true, notes: [t('common.probed')] } as OpsResultLike;
+              }, t('common.probed'));
+            }}
+            remoteHint={
+              versionStatus?.latestVersion ? (
+                <FormHint>
+                  {t('runtime.remoteNewerHint', {
+                    remote: versionStatus.latestVersion,
+                    current: probeData.available.join(', ') || probeData.hostRaw || '—',
+                    panel: probeData.available.join(', ') || probeData.hostRaw || '—',
+                    source: versionStatus.source
+                      ? t('runtime.remoteSourceSuffix', {
+                          source: versionStatus.source,
+                        })
+                      : '',
                   })}
-                </strong>{' '}
-                {t('runtime.versionReadyHint')}
-              </Alert>
-            ) : null}
-            <Card>
-              <CardSection
-                title={t('runtime.softwareVersionTitle', { version })}
-                description={t('runtime.installHint')}
-              >
-                <FormLayout columns={2}>
-                  <Field
-                    label={t('runtime.targetVersion')}
-                    htmlFor={`rt-${kind}-ver`}
-                    flush
-                    required
-                    hint={
-                      installState.installedVersions.length
-                        ? t('runtime.installedVersionsHint', {
-                            list: installState.installedVersions.join(', ') })
-                        : t('runtime.installScriptNote')
-                    }
-                  >
-                    {(() => {
-                      const vers = probeData.supported.length
-                        ? probeData.supported
-                        : version
-                          ? [version]
-                          : [];
-                      if (!vers.length) {
-                        return (
-                          <input
-                            id={`rt-${kind}-ver`}
-                            value={version}
-                            onChange={bindInput(setVersion)}
-                            placeholder={t('runtime.versionPlaceholder', { })}
-                          />
-                        );
-                      }
-                      if (vers.length <= 8) {
-                        return (
-                          <SegRadio
-                            name={`rt-${kind}-ver`}
-                            aria-label={t('runtime.targetVersion')}
-                            value={version}
-                            onChange={setVersion}
-                            options={vers.map((v) => ({
-                              value: v,
-                              label: versionChipLabel(v, installState.installedVersions) }))}
-                          />
-                        );
-                      }
-                      return (
-                        <select
-                          id={`rt-${kind}-ver`}
-                          value={version}
-                          onChange={bindInput(setVersion)}
-                        >
-                          {vers.map((v) => (
-                            <option key={v} value={v}>
-                              {versionChipLabel(v, installState.installedVersions)}
-                            </option>
-                          ))}
-                        </select>
-                      );
-                    })()}
-                  </Field>
-                </FormLayout>
-                {versionStatus?.latestVersion ? (
-                  <FormHint>
-                    {t('runtime.remoteNewerHint', {
-                      remote: versionStatus.latestVersion,
-                      // Probed installs only — never softwareVersions.currentVersion as "installed"
-                      current:
-                        installState.installedVersions.join(', ') ||
-                        (probeData.hostRaw ? probeData.hostRaw : '—'),
-                      panel:
-                        installState.installedVersions.join(', ') ||
-                        (probeData.hostRaw ? probeData.hostRaw : '—'),
-                      source: versionStatus.source
-                        ? t('runtime.remoteSourceSuffix', {
-                            source: versionStatus.source })
-                        : '' })}
-                  </FormHint>
-                ) : versionStatus?.notes?.length ? (
-                  <FormHint>
-                    {versionStatus.notes.slice(0, 2).join(' · ')}
-                  </FormHint>
-                ) : null}
-                <RuntimePluginsField
-                  kind={kind}
-                  value={plugins}
-                  onChange={setPlugins}
-                  disabled={busy}
-                  refreshToken={pluginsRefreshToken}
-                  // Only one primary install CTA: plugins when runtime already on host
-                  showInstallButton={installState.selectedInstalled}
-                />
-                {!installState.selectedInstalled || hostDefaultOk ? (
-                  <RuntimeInstallActions
-                    installState={installState}
-                    version={version}
-                    busy={busy}
-                    installLabel={t(meta.installLabelKey, { v: version })}
-                    onSelectNewer={setVersion}
-                    onSwitch={
-                      hostDefaultOk && installState.canSwitch
-                        ? () => setDefaultConfirmOpen(true)
-                        : undefined
-                    }
-                    extraHints={
-                      hostDefaultOk ? (
-                        <FormHint>{t('runtime.multiVersionHint')}</FormHint>
-                      ) : installState.newerAvailable.length === 0 ? (
-                        <FormHint>{t('runtime.installScriptNote')}</FormHint>
-                      ) : null
-                    }
-                    onInstall={() =>
-                      void run(async () => {
-                        setInstallLog([]);
-                        const r = await systemApi.runtimeInstallStream(
-                          {
-                            kind,
-                            version,
-                            install: true,
-                            plugins,
-                          },
-                          {
-                            onLog: (line) =>
-                              setInstallLog((prev) => [...prev.slice(-1999), line]),
-                          },
-                        );
-                        await refresh();
-                        setPluginsRefreshToken((n) => n + 1);
-                        return r as OpsResultLike;
-                      }, t(meta.installLabelKey, { v: version }))
-                    }
-                  />
-                ) : null}
-                {installState.selectedInstalled &&
-                hostDefaultOk &&
-                installState.selectedActive ? (
-                  <FormHint>
-                    <Badge tone="ok">{t('runtime.alreadyHostDefault', { version })}</Badge>
-                  </FormHint>
-                ) : null}
-                {!hostDefaultOk ? (
-                  <FormHint>{t('runtime.hostDefaultUnsupported')}</FormHint>
-                ) : null}
-                <FormActions>
-                  <Button
-                    variant="secondary"
-                    size="md"
-                    loading={busy}
-                    disabled={panelDefault === version}
-                    onClick={() => runSetPanelDefault(version)}
-                  >
-                    {panelDefault === version
-                      ? t('runtime.alreadyPanelDefault', { version })
-                      : t('runtime.setPanelDefault')}
-                  </Button>
-                  {versionUninstallOk && installState.selectedInstalled ? (
-                    <Button
-                      variant="danger"
-                      size="md"
-                      loading={busy}
-                      onClick={() => {
-                        setUninstallTarget(version);
-                        setUninstallConfirmOpen(true);
-                      }}
-                    >
-                      {t('runtime.uninstallVersion', { version })}
-                    </Button>
-                  ) : null}
-                </FormActions>
-                {panelDefault ? (
-                  <FormHint>
-                    {t('runtime.panelDefaultHint', { version: panelDefault })}
-                  </FormHint>
-                ) : (
-                  <FormHint>{t('runtime.panelDefaultExplain')}</FormHint>
-                )}
-                {!versionUninstallOk ? (
-                  <FormHint>{t('runtime.uninstallVersionUnsupported')}</FormHint>
-                ) : null}
-                <InstallStreamPanel lines={installLog} busy={busy} />
-              </CardSection>
-            </Card>
-
-            <Card>
-              <CardSection
-                title={t('runtime.versionInventory')}
-                description={t('runtime.versionInventoryDesc')}
-              >
-                {probeData.supported.length === 0 ? (
-                  <p className="muted">{t('runtime.pressReprobeHost')}</p>
-                ) : (
-                  <div className="table-wrap">
-                    <table className="data-table">
-                      <thead>
-                        <tr>
-                          <th>{t('runtime.targetVersion')}</th>
-                          <th>{t('common.status')}</th>
-                          <th>{t('runtime.hostDefault')}</th>
-                          <th>{t('common.actions')}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {probeData.supported.map((v) => {
-                          const rowState = resolveRuntimeInstallState({
-                            selectedVersion: v,
-                            supportedVersions: probeData.supported,
-                            availableVersions: probeData.available,
-                            probeItems: probeData.items.map((i) => ({
-                              version:
-                                i.version != null ? String(i.version) : undefined,
-                              available: Boolean(i.available),
-                              active: Boolean(i.active),
-                              versionOutput:
-                                i.versionOutput != null
-                                  ? String(i.versionOutput)
-                                  : undefined,
-                            })),
-                            hostDefault: probeData.hostRaw || null,
-                            multiVersion,
-                            kind,
-                          });
-                          return (
-                            <tr
-                              key={v}
-                              className={v === version ? 'is-selected' : undefined}
-                            >
-                              <td>
-                                <button
-                                  type="button"
-                                  className="linkish"
-                                  onClick={() => setVersion(v)}
-                                >
-                                  <strong>{v}</strong>
-                                </button>
-                              </td>
-                              <td>
-                                <Badge
-                                  tone={rowState.selectedInstalled ? 'ok' : 'neutral'}
-                                >
-                                  {rowState.selectedInstalled
-                                    ? t('common.installed')
-                                    : t('common.notInstalled')}
-                                </Badge>
-                              </td>
-                              <td>
-                                {rowState.selectedActive ? (
-                                  <Badge tone="ok">{t('runtime.activeDefault')}</Badge>
-                                ) : (
-                                  '—'
-                                )}
-                              </td>
-                              <td>
-                                <span className="action-bar action-bar--sm">
-                                  {!rowState.selectedInstalled ? (
-                                    <Button
-                                      variant="secondary"
-                                      size="sm"
-                                      onClick={() => {
-                                        setVersion(v);
-                                      }}
-                                    >
-                                      {t('runtime.selectToInstall')}
-                                    </Button>
-                                  ) : null}
-                                  {hostDefaultOk &&
-                                  rowState.selectedInstalled &&
-                                  !rowState.selectedActive ? (
-                                    <Button
-                                      variant="primary"
-                                      size="sm"
-                                      loading={busy}
-                                      onClick={() => {
-                                        setVersion(v);
-                                        setDefaultConfirmOpen(true);
-                                      }}
-                                    >
-                                      {t('runtime.setHostDefault')}
-                                    </Button>
-                                  ) : null}
-                                  {versionUninstallOk && rowState.selectedInstalled ? (
-                                    <Button
-                                      variant="danger"
-                                      size="sm"
-                                      loading={busy}
-                                      onClick={() => {
-                                        setVersion(v);
-                                        setUninstallTarget(v);
-                                        setUninstallConfirmOpen(true);
-                                      }}
-                                    >
-                                      {t('common.delete')}
-                                    </Button>
-                                  ) : null}
-                                </span>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </CardSection>
-            </Card>
-
-            <details className="u-mt-3 runtime-advanced-stack">
-              <summary className="muted u-text-sm">
-                {t('runtime.advancedFeatureUninstall')}
-              </summary>
-              <p className="muted u-text-sm u-mt-2 u-mb-3">
-                {t('runtime.advancedFeatureUninstallHint', { name: meta.title })}
-              </p>
-              <SoftwareInstallBanner
-                feature={kind}
-                title={meta.bannerTitle}
-                readyTitle={t('runtime.stackReadyTitle', { name: meta.title })}
-                onInstalled={() => void refresh()}
-              />
-            </details>
-          </div>
+                </FormHint>
+              ) : null
+            }
+          />
         ) : null}
 
         {tab === 'tuning' ? (
