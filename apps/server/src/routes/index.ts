@@ -64,6 +64,7 @@ export { handleFilesWriteRoutes } from './files-write.js';
 export { handleFirewallFail2banRoutes } from './firewall-fail2ban.js';
 export { handleFirewallRoutes } from './firewall.js';
 export { handleFirewallUfwRoutes } from './firewall-ufw.js';
+export { handleServiceExposureRoutes } from './service-exposure.js';
 export { handleHostingDnsPowerdnsRoutes } from './hosting-dns-powerdns.js';
 export { handleHostingDnsZonesRoutes } from './hosting-dns-zones.js';
 export { handleHostingInfraDnsRoutes } from './hosting-infra-dns.js';

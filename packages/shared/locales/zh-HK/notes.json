@@ -2733,6 +2733,15 @@
     "partial": "部分成功：{{ok}} 成功、{{fail}} 失敗",
     "fromLabel": "（來源 {{from}}）"
   },
+  "firewallDeleteByComment": {
+    "removed": "已移除 {{n}} 條符合 {{prefix}} 的防火牆規則",
+    "none": "沒有符合 {{prefix}} 的防火牆規則"
+  },
+  "serviceExposure": {
+    "needsDecision": "{{service}}：請確認是否對外開放此服務",
+    "private": "{{service}}：保持僅本機（未開公網埠）",
+    "restrictedEmpty": "受限模式需要至少一個允許的 IP／網段"
+  },
   "goLive": {
     "deployIncomplete": "上線：部署未完成",
     "deployFailed": "上線部署失敗：{{detail}}",

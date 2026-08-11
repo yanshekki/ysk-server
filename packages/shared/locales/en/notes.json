@@ -2733,6 +2733,15 @@
     "partial": "Partial: {{ok}} ok, {{fail}} failed",
     "fromLabel": " from {{from}}"
   },
+  "firewallDeleteByComment": {
+    "removed": "Removed {{n}} firewall rule(s) matching {{prefix}}",
+    "none": "No firewall rules matched {{prefix}}"
+  },
+  "serviceExposure": {
+    "needsDecision": "{{service}}: confirm whether to expose this service on the network",
+    "private": "{{service}}: kept private (no public firewall allow)",
+    "restrictedEmpty": "Restricted mode needs at least one allowed IP/CIDR"
+  },
   "goLive": {
     "deployIncomplete": "goLive: deploy incomplete",
     "deployFailed": "goLive deploy failed: {{detail}}",
