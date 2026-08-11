@@ -379,7 +379,6 @@ export function VncPage() {
 
         {tab === 'accounts' ? (
           <div className="stack">
-            <SoftwareInstallBanner feature="tigervnc" title={t('vnc.needTigerVnc')} />
             <DataTable
               rowKey={(a) => a.id}
               title={t('vnc.accountListTitle', { count: accounts.length })}
@@ -582,7 +581,6 @@ export function VncPage() {
 
         {tab === 'client' ? (
           <div className="stack">
-            <SoftwareInstallBanner feature="vnc" title={t('vnc.needViewerOrNovnc')} />
             <Alert variant="info">{t('vnc.clientPathHint')}</Alert>
             <Alert variant="info">{t('vnc.clientPathCompare')}</Alert>
             <DataTable
