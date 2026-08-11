@@ -31,6 +31,11 @@ export function supportsHostDefault(kind: string): boolean {
   return kind === 'go' || kind === 'rust' || kind === 'node' || kind === 'bun';
 }
 
+/** Kinds that support removing one managed version from the panel. */
+export function supportsVersionUninstall(kind: string): boolean {
+  return kind === 'go' || kind === 'rust' || kind === 'node' || kind === 'bun';
+}
+
 /** Compare dotted/numeric runtime versions; `latest`/`stable` sort as highest. */
 export function compareRuntimeVersions(a: string, b: string): number {
   const na = normalizeToken(a);

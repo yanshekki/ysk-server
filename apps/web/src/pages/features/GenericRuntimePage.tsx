@@ -34,6 +34,7 @@ import i18n from '../../shared/lib/i18n';
 import {
   resolveRuntimeInstallState,
   supportsHostDefault,
+  supportsVersionUninstall,
   versionChipLabel } from '../../features/runtimes/install-state';
 import { RuntimePluginsField } from '../../features/runtimes/RuntimePluginsField';
 import { RuntimeInstallActions } from '../../features/runtimes/RuntimeInstallActions';
@@ -345,6 +346,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
 
   const multiVersion = kind === 'go' || kind === 'rust';
   const hostDefaultOk = supportsHostDefault(kind);
+  const versionUninstallOk = supportsVersionUninstall(kind);
   /** Control-plane pin only — never treat as "installed" without probe. */
   const recordedPin =
     versionStatus?.currentVersion != null
@@ -371,6 +373,8 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
   }, [version, probeData, multiVersion, kind]);
 
   const [defaultConfirmOpen, setDefaultConfirmOpen] = useState(false);
+  const [uninstallConfirmOpen, setUninstallConfirmOpen] = useState(false);
+  const [uninstallTarget, setUninstallTarget] = useState<string | null>(null);
 
   const runSwitchDefault = useCallback(
     (targetVersion: string) =>
@@ -383,6 +387,20 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
         setPluginsRefreshToken((n) => n + 1);
         return r as OpsResultLike;
       }, t('runtime.switchDefaultBtn', { version: targetVersion })),
+    [kind, run, refresh, t],
+  );
+
+  const runUninstallVersion = useCallback(
+    (targetVersion: string) =>
+      void run(async () => {
+        const r = await systemApi.runtimeUninstall({
+          kind: kind as 'go' | 'rust' | 'node' | 'bun',
+          version: targetVersion,
+        });
+        await refresh();
+        setPluginsRefreshToken((n) => n + 1);
+        return r as OpsResultLike;
+      }, t('runtime.uninstallVersionDone', { version: targetVersion })),
     [kind, run, refresh, t],
   );
 
@@ -717,6 +735,24 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                 {!hostDefaultOk ? (
                   <FormHint>{t('runtime.hostDefaultUnsupported')}</FormHint>
                 ) : null}
+                {versionUninstallOk && installState.selectedInstalled ? (
+                  <FormActions>
+                    <Button
+                      variant="danger"
+                      size="md"
+                      loading={busy}
+                      onClick={() => {
+                        setUninstallTarget(version);
+                        setUninstallConfirmOpen(true);
+                      }}
+                    >
+                      {t('runtime.uninstallVersion', { version })}
+                    </Button>
+                  </FormActions>
+                ) : null}
+                {!versionUninstallOk ? (
+                  <FormHint>{t('runtime.uninstallVersionUnsupported')}</FormHint>
+                ) : null}
                 <InstallStreamPanel lines={installLog} busy={busy} />
               </CardSection>
             </Card>
@@ -815,6 +851,20 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                                       }}
                                     >
                                       {t('runtime.setHostDefault')}
+                                    </Button>
+                                  ) : null}
+                                  {versionUninstallOk && rowState.selectedInstalled ? (
+                                    <Button
+                                      variant="danger"
+                                      size="sm"
+                                      loading={busy}
+                                      onClick={() => {
+                                        setVersion(v);
+                                        setUninstallTarget(v);
+                                        setUninstallConfirmOpen(true);
+                                      }}
+                                    >
+                                      {t('common.delete')}
                                     </Button>
                                   ) : null}
                                 </span>
@@ -1100,6 +1150,34 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
         severity="standard"
         confirmLabel={t('runtime.setHostDefault')}
         cancelLabel={t('common.cancel')}
+        busy={busy}
+      />
+
+      <ConfirmDialog
+        open={uninstallConfirmOpen}
+        onClose={() => {
+          setUninstallConfirmOpen(false);
+          setUninstallTarget(null);
+        }}
+        onConfirm={() => {
+          const v = uninstallTarget || version;
+          setUninstallConfirmOpen(false);
+          setUninstallTarget(null);
+          runUninstallVersion(v);
+        }}
+        title={t('runtime.uninstallVersionTitle', {
+          version: uninstallTarget || version,
+        })}
+        description={t('runtime.uninstallVersionConfirm', {
+          version: uninstallTarget || version,
+          name: meta.title,
+        })}
+        severity="destructive"
+        confirmLabel={t('runtime.uninstallVersion', {
+          version: uninstallTarget || version,
+        })}
+        cancelLabel={t('common.cancel')}
+        danger
         busy={busy}
       />
     </FeaturePageLayout>

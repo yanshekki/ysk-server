@@ -9549,7 +9549,12 @@
     "selectToInstall": "選取",
     "advancedFeatureUninstall": "進階：解除整個執行環境堆疊…",
     "advancedFeatureUninstallHint": "{{name}} 的 feature 級解除安裝將於後續完善；建議先移除上方未用版本。",
-    "probeReadonly": "主機探測（唯讀）"
+    "probeReadonly": "主機探測（唯讀）",
+    "uninstallVersion": "解除安裝 {{version}}",
+    "uninstallVersionTitle": "解除安裝 {{version}}？",
+    "uninstallVersionConfirm": "將移除此主機上面板管理嘅 {{name}} {{version}}（YSK 安裝目錄或 rustup toolchain）。若係主機預設，會清除對應 CLI 符號連結。已釘其他版本嘅專案不受影響。",
+    "uninstallVersionDone": "已解除安裝 {{version}}",
+    "uninstallVersionUnsupported": "此執行環境暫不支援按版本解除安裝。"
   },
   "security": {
     "title": "帳號安全",

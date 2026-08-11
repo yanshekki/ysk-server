@@ -9549,7 +9549,12 @@
     "selectToInstall": "选取",
     "advancedFeatureUninstall": "高级：卸载整个运行时堆栈…",
     "advancedFeatureUninstallHint": "{{name}} 的 feature 级卸载将于后续完善；建议先移除上方未用版本。",
-    "probeReadonly": "主机探测（只读）"
+    "probeReadonly": "主机探测（只读）",
+    "uninstallVersion": "卸载 {{version}}",
+    "uninstallVersionTitle": "卸载 {{version}}？",
+    "uninstallVersionConfirm": "将移除此主机上面板管理的 {{name}} {{version}}（YSK 安装目录或 rustup toolchain）。若为主机默认，会清除对应 CLI 符号链接。已钉其他版本的项目不受影响。",
+    "uninstallVersionDone": "已卸载 {{version}}",
+    "uninstallVersionUnsupported": "此运行时暂不支持按版本卸载。"
   },
   "security": {
     "title": "安全与审批",

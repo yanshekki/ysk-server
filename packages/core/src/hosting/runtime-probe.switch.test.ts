@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { HostExecutor, RunResult } from '../host/executor.js';
-import { switchRuntimeDefault } from './runtime-probe.js';
+import { switchRuntimeDefault, uninstallRuntimeVersion } from './runtime-probe.js';
 
 function empty(extra?: Partial<RunResult>): RunResult {
   return { stdout: '', stderr: '', exitCode: 0, argv: [], dryRun: false, ...extra };
@@ -76,5 +76,44 @@ describe('switchRuntimeDefault', () => {
     });
     expect(r.ok).toBe(true);
     expect(r.notes.some((n) => /1\.22|YSK_GO_ACTIVE/i.test(n))).toBe(true);
+  });
+});
+
+describe('uninstallRuntimeVersion', () => {
+  it('refuses php', async () => {
+    const r = await uninstallRuntimeVersion({
+      host: mockHost(() => ({})),
+      kind: 'php',
+      version: '8.2',
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it('blocks without execute', async () => {
+    const r = await uninstallRuntimeVersion({
+      host: mockHost(() => ({}), { execute: false }),
+      kind: 'node',
+      version: '20',
+    });
+    expect(r.ok).toBe(false);
+    expect(r.blocked).toBe(true);
+  });
+
+  it('removes managed node dir', async () => {
+    const r = await uninstallRuntimeVersion({
+      host: mockHost((argv) => {
+        if (argv[0] === 'bash') {
+          return {
+            exitCode: 0,
+            stdout: 'YSK_NODE_REMOVED=20\nYSK_REMOVED_PATH=/usr/local/ysk/node/20\n',
+          };
+        }
+        return {};
+      }),
+      kind: 'node',
+      version: '20',
+    });
+    expect(r.ok).toBe(true);
+    expect(r.removedPath).toMatch(/node\/20/);
   });
 });

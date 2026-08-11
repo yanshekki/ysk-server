@@ -214,6 +214,41 @@ export async function handleHostingRuntimesInstallRoutes(
         sendOpsResult(res, result);
         return true;
       }
+      if (method === 'POST' && url.pathname === '/api/v1/hosting/runtimes/uninstall') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as {
+          kind?: 'go' | 'rust' | 'node' | 'bun' | 'php' | 'python' | 'java' | 'kotlin';
+          version?: string;
+        };
+        const { uninstallRuntimeVersion } = await import('@ysk/core');
+        const kind = data.kind ?? 'node';
+        const version = String(data.version ?? '').trim();
+        if (!version) {
+          sendJson(res, 400, { ok: false, notes: ['version required'] });
+          return true;
+        }
+        const result = await uninstallRuntimeVersion({
+          host: ctx.host,
+          kind,
+          version,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'hosting.runtime.uninstall',
+          detail: {
+            kind: result.kind,
+            version: result.version,
+            ok: result.ok,
+            blocked: Boolean(result.blocked),
+            removedPath: result.removedPath,
+            clearedHostDefault: result.clearedHostDefault,
+          },
+          ok: result.ok,
+        });
+        sendOpsResult(res, result);
+        return true;
+      }
 
   return false;
 }

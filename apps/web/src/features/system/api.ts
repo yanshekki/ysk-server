@@ -520,6 +520,16 @@ export const systemApi = {
       body: JSON.stringify(body),
       allowStatuses: [403, 422],
     }),
+  /** Remove one managed runtime version (ysk path / rustup toolchain) */
+  runtimeUninstall: (body: {
+    kind: 'go' | 'rust' | 'node' | 'bun' | 'php' | 'python' | 'java' | 'kotlin';
+    version: string;
+  }) =>
+    api.requestRawAllowStatus('/api/v1/hosting/runtimes/uninstall', {
+      method: 'POST',
+      body: JSON.stringify(body),
+      allowStatuses: [403, 422],
+    }),
   runtimePlugins: (kind: string, opts?: { bust?: boolean }) => {
     const q = new URLSearchParams({ kind });
     if (opts?.bust) q.set('_', String(Date.now()));

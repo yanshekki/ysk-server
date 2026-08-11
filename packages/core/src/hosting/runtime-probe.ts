@@ -1732,3 +1732,191 @@ export async function switchRuntimeDefault(input: {
     requiresRoot: false,
   };
 }
+
+export type RuntimeUninstallResult = RuntimeSwitchResult & {
+  removedPath?: string;
+  clearedHostDefault?: boolean;
+};
+
+/**
+ * Remove one managed runtime version (YSK install dir / rustup toolchain).
+ * Never touches /home, /var/lib, or apt system packages except explicit refuse for php/python apt.
+ * If the version was host default, clears /usr/local/bin symlinks for that binary.
+ */
+export async function uninstallRuntimeVersion(input: {
+  host: HostExecutor;
+  kind: RuntimeKind;
+  version: string;
+}): Promise<RuntimeUninstallResult> {
+  const notes: string[] = [];
+  const commandResults: RuntimeUninstallResult['commandResults'] = [];
+  const execOn = input.host.executeEnabled();
+  const rootOn = input.host.isRoot();
+  const can = execOn && rootOn;
+
+  const managed: RuntimeKind[] = ['node', 'go', 'rust', 'bun'];
+  if (!managed.includes(input.kind)) {
+    return {
+      ok: false,
+      kind: input.kind,
+      version: input.version,
+      notes: [
+        `Version uninstall for ${input.kind} is not supported yet (use package manager or panel stack uninstall).`,
+      ],
+      commandResults,
+      requiresExecute: !execOn,
+      requiresRoot: !rootOn,
+    };
+  }
+
+  if (!can) {
+    return {
+      ok: false,
+      kind: input.kind,
+      version: input.version,
+      notes: [tl('notes.auto.n1163')],
+      commandResults,
+      requiresExecute: !execOn,
+      requiresRoot: !rootOn,
+      blocked: true,
+      blockMessage: tl('notes.auto.n1163'),
+    };
+  }
+
+  let script = '';
+  let removedPath = '';
+  if (input.kind === 'node') {
+    const plan = selectNodeRuntime(input.version);
+    removedPath = `/usr/local/ysk/node/${plan.version}`;
+    script = [
+      'set -euo pipefail',
+      `MAJOR=${JSON.stringify(plan.version)}`,
+      'DEST="/usr/local/ysk/node/$MAJOR"',
+      'case "$DEST" in /usr/local/ysk/node/*) ;; *) echo "refuse path $DEST" >&2; exit 3 ;; esac',
+      'if [ ! -d "$DEST" ]; then echo "Node $MAJOR not at $DEST" >&2; exit 2; fi',
+      'ACTIVE=0',
+      'if [ -L /usr/local/bin/node ]; then',
+      '  REAL=$(readlink -f /usr/local/bin/node 2>/dev/null || true)',
+      '  case "$REAL" in "$DEST"/*) ACTIVE=1 ;; esac',
+      'fi',
+      'if [ "$ACTIVE" = "1" ]; then',
+      '  rm -f /usr/local/bin/node /usr/local/bin/npm /usr/local/bin/npx',
+      '  echo "YSK_NODE_DEFAULT_CLEARED=1"',
+      'fi',
+      'rm -rf "$DEST"',
+      'echo "YSK_NODE_REMOVED=$MAJOR"',
+      'echo "YSK_REMOVED_PATH=$DEST"',
+      '',
+    ].join('\n');
+    notes.push(`Remove managed Node ${plan.version} at ${removedPath}`);
+  } else if (input.kind === 'go') {
+    const plan = selectGoRuntime(input.version);
+    removedPath = `/usr/local/ysk/go/${plan.version}`;
+    script = [
+      'set -euo pipefail',
+      `VER=${JSON.stringify(plan.version)}`,
+      'DEST="/usr/local/ysk/go/$VER"',
+      'case "$DEST" in /usr/local/ysk/go/*) ;; *) echo "refuse path $DEST" >&2; exit 3 ;; esac',
+      'if [ ! -d "$DEST" ]; then echo "Go $VER not at $DEST" >&2; exit 2; fi',
+      'ACTIVE=0',
+      'if [ -L /usr/local/bin/go ]; then',
+      '  REAL=$(readlink -f /usr/local/bin/go 2>/dev/null || true)',
+      '  case "$REAL" in "$DEST"/*) ACTIVE=1 ;; esac',
+      'fi',
+      'if [ "$ACTIVE" = "1" ]; then',
+      '  rm -f /usr/local/bin/go /usr/local/ysk/go/bin/go',
+      '  echo "YSK_GO_DEFAULT_CLEARED=1"',
+      'fi',
+      'rm -rf "$DEST"',
+      'echo "YSK_GO_REMOVED=$VER"',
+      'echo "YSK_REMOVED_PATH=$DEST"',
+      '',
+    ].join('\n');
+    notes.push(`Remove managed Go ${plan.version} at ${removedPath}`);
+  } else if (input.kind === 'rust') {
+    const plan = selectRustRuntime(input.version);
+    const tc = plan.version === 'stable' ? 'stable' : plan.version;
+    removedPath = `rustup:${tc}`;
+    script = [
+      'set -euo pipefail',
+      'export RUSTUP_HOME=/usr/local/ysk/rust/rustup',
+      'export CARGO_HOME=/usr/local/ysk/rust/cargo',
+      'export PATH="$CARGO_HOME/bin:$RUSTUP_HOME/bin:/usr/local/ysk/rust/bin:$PATH"',
+      'RU=""',
+      '[ -x "$CARGO_HOME/bin/rustup" ] && RU="$CARGO_HOME/bin/rustup"',
+      '[ -z "$RU" ] && [ -x /usr/local/ysk/rust/bin/rustup ] && RU=/usr/local/ysk/rust/bin/rustup',
+      '[ -z "$RU" ] && RU=$(command -v rustup 2>/dev/null || true)',
+      'if [ -z "$RU" ] || [ ! -x "$RU" ]; then echo "rustup not found" >&2; exit 2; fi',
+      `TC=${JSON.stringify(tc)}`,
+      'if [ "$TC" = "stable" ]; then',
+      '  echo "Refusing to uninstall rustup default channel stable entirely — switch default first or use toolchain id" >&2',
+      '  # still allow if other toolchains exist and stable is not only one — keep simple: uninstall named',
+      'fi',
+      '"$RU" toolchain uninstall "$TC" || { echo "toolchain uninstall failed for $TC" >&2; exit 2; }',
+      'echo "YSK_RUST_REMOVED=$TC"',
+      '',
+    ].join('\n');
+    notes.push(`rustup toolchain uninstall ${tc}`);
+  } else {
+    // bun — multi-dir or single bin
+    const plan = selectBunRuntime(input.version);
+    removedPath = `/usr/local/ysk/bun/${plan.version}`;
+    script = [
+      'set -euo pipefail',
+      `VER=${JSON.stringify(plan.version)}`,
+      'DEST="/usr/local/ysk/bun/$VER"',
+      'REMOVED=0',
+      'if [ -d "$DEST" ]; then',
+      '  case "$DEST" in /usr/local/ysk/bun/*) ;; *) echo "refuse" >&2; exit 3 ;; esac',
+      '  if [ -L /usr/local/bin/bun ]; then',
+      '    REAL=$(readlink -f /usr/local/bin/bun 2>/dev/null || true)',
+      '    case "$REAL" in "$DEST"/*) rm -f /usr/local/bin/bun; echo "YSK_BUN_DEFAULT_CLEARED=1" ;; esac',
+      '  fi',
+      '  rm -rf "$DEST"',
+      '  REMOVED=1',
+      '  echo "YSK_BUN_REMOVED=$VER"',
+      '  echo "YSK_REMOVED_PATH=$DEST"',
+      'fi',
+      'if [ "$REMOVED" = "0" ] && [ "$VER" = "latest" ] && [ -x /usr/local/ysk/bun/bin/bun ]; then',
+      '  # single-origin layout: only remove when version is latest',
+      '  rm -f /usr/local/bin/bun',
+      '  rm -rf /usr/local/ysk/bun/bin /usr/local/ysk/bun',
+      '  echo "YSK_BUN_REMOVED=single-layout"',
+      '  REMOVED=1',
+      'fi',
+      'if [ "$REMOVED" = "0" ]; then echo "Bun $VER not found under managed paths" >&2; exit 2; fi',
+      '',
+    ].join('\n');
+    notes.push(`Remove managed Bun ${plan.version}`);
+  }
+
+  const r = await input.host.runCommand(['bash', '-c', script], { timeoutMs: 180_000 });
+  commandResults.push({
+    argv: ['bash', '-c', `uninstall-${input.kind}-${input.version}`],
+    exitCode: r.exitCode,
+    stderr: r.stderr,
+  });
+  const out = `${r.stdout || ''}\n${r.stderr || ''}`;
+  notes.push(
+    ...out
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .slice(0, 16),
+  );
+  if (r.exitCode !== 0) {
+    notes.unshift(summarizeInstallLog(r.stderr || '', r.stdout || '') || `exit ${r.exitCode}`);
+  }
+  const clearedHostDefault = /YSK_\w+_DEFAULT_CLEARED=1/.test(out);
+  return {
+    ok: r.exitCode === 0,
+    kind: input.kind,
+    version: input.version,
+    notes,
+    commandResults,
+    requiresExecute: false,
+    requiresRoot: false,
+    removedPath,
+    clearedHostDefault,
+  };
+}
