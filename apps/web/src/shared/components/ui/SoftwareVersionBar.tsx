@@ -1,15 +1,18 @@
 /**
- * In-page software version status + update action (apt or runtime).
+ * In-page software version status + update / uninstall actions.
  * Versions come from GET /system/software/versions — never hardcode pins here.
  */
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { systemApi } from '../../../features/system';
 import { updatesApi } from '../../../features/updates';
+import { softwareApi } from '../../../features/software/api';
 import { toast } from '../../stores/toast-store';
+import { useOpsStreamOptional } from '../../ops-stream/OpsStreamContext';
 import { Badge } from './Badge';
 import { Button } from './Button';
 import { ConfirmDialog } from './ConfirmDialog';
+import { SoftwareUninstallDialog } from './SoftwareUninstallDialog';
 
 export type SoftwareVersionBarProps = {
   /** Probe / catalog id: nginx, mysql-server, node, go, … */
@@ -18,6 +21,8 @@ export type SoftwareVersionBarProps = {
   title?: string;
   /** Prefer runtime install callback when updateKind=runtime */
   onRuntimeInstall?: (version: string) => void | Promise<void>;
+  /** Show uninstall control when installed (default true). */
+  allowUninstall?: boolean;
   className?: string;
 };
 
@@ -37,12 +42,15 @@ export function SoftwareVersionBar({
   softwareId,
   title,
   onRuntimeInstall,
+  allowUninstall = true,
   className }: SoftwareVersionBarProps) {
   const { t } = useTranslation();
+  const stream = useOpsStreamOptional();
   const [st, setSt] = useState<Status | null>(null);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState('');
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [uninstallOpen, setUninstallOpen] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(
@@ -127,6 +135,58 @@ export function SoftwareVersionBar({
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t('common.loadFailed'));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function runUninstall(opts: {
+    dataPolicy: 'keep' | 'purge';
+    confirmPhrase: string;
+  }) {
+    if (stream?.isBusy) {
+      toast.error(t('softwareLifecycle.jobInProgress'));
+      return;
+    }
+    const label = title?.trim() || st?.packageName || softwareId;
+    const jobId = stream
+      ? stream.begin({ kind: 'uninstall', title: label })
+      : '';
+    setBusy(true);
+    try {
+      const { ops } = await softwareApi.uninstallStream(
+        {
+          ids: [softwareId],
+          dataPolicy: opts.dataPolicy,
+          confirmPhrase: opts.confirmPhrase,
+        },
+        {
+          onLog: (line) => {
+            if (jobId && stream) stream.appendLog(jobId, line);
+          },
+        },
+      );
+      if (stream && jobId) {
+        stream.finish(jobId, {
+          ok: ops.ok !== false && !ops.blocked,
+          error: ops.blockMessage,
+        });
+      }
+      if (ops.ok && !ops.blocked) {
+        toast.ok(ops.notes?.[0] ?? t('softwareLifecycle.uninstallDone'));
+        setUninstallOpen(false);
+        await load(true);
+      } else {
+        toast.error(
+          ops.blockMessage ||
+            ops.notes?.[0] ||
+            t('softwareLifecycle.uninstallFailed'),
+        );
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : t('common.opFailed');
+      if (stream && jobId) stream.finish(jobId, { ok: false, error: msg });
+      toast.error(msg);
     } finally {
       setBusy(false);
     }
@@ -227,6 +287,16 @@ export function SoftwareVersionBar({
                   v: selected || st.latestVersion })}
           </Button>
         ) : null}
+        {allowUninstall && st.installed ? (
+          <Button
+            variant="danger"
+            size="sm"
+            disabled={busy || stream?.isBusy}
+            onClick={() => setUninstallOpen(true)}
+          >
+            {t('softwareLifecycle.uninstall')}
+          </Button>
+        ) : null}
       </div>
 
       <ConfirmDialog
@@ -241,6 +311,15 @@ export function SoftwareVersionBar({
         busy={busy}
         danger
         confirmLabel={t('software.apply.confirm')}
+      />
+
+      <SoftwareUninstallDialog
+        open={uninstallOpen}
+        ids={[softwareId]}
+        title={displayName}
+        busy={busy}
+        onClose={() => !busy && setUninstallOpen(false)}
+        onConfirm={runUninstall}
       />
     </div>
   );
