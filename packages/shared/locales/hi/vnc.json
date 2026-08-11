@@ -16,7 +16,7 @@
   "goInstall": "Install",
   "accountsEmptyTitle": "No accounts",
   "accountsEmptyDesc": "Create an account to start",
-  "clientPathHint": "अनुशंसित: ब्राउज़र में खोलें। होस्ट व्यूअर इस सर्वर पर vncviewer चलाता है।",
+  "clientPathHint": "Both paths open VNC in the browser. They differ by target semantics and copy (both still TCP-proxy via the panel).",
   "clientEmptyTitle": "No clients",
   "clientEmptyDesc": "Add remote host:port",
   "installHint": "TigerVNC → noVNC; XFCE optional",
