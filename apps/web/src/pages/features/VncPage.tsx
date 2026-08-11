@@ -80,8 +80,48 @@ export function VncPage() {
   const [clPath, setClPath] = useState<VncConnectPath>('via_server');
   const [clPassword, setClPassword] = useState('');
   const [clRememberPass, setClRememberPass] = useState(false);
-  /** In-browser RFB viewer (panel WS proxy) */
-  const [viewerTarget, setViewerTarget] = useState<VncViewerTarget | null>(null);
+  /** Multi-session in-browser RFB viewers (panel WS proxy) */
+  const [viewerSessions, setViewerSessions] = useState<VncViewerTarget[]>([]);
+  const [viewerActiveKey, setViewerActiveKey] = useState<string | null>(null);
+  const MAX_VIEWER_SESSIONS = 4;
+
+  const viewerKey = (t: VncViewerTarget) => `${t.kind}:${t.id}`;
+
+  const openViewer = useCallback(
+    (target: VncViewerTarget) => {
+      const key = viewerKey(target);
+      setViewerSessions((prev) => {
+        if (prev.some((s) => viewerKey(s) === key)) return prev;
+        if (prev.length >= MAX_VIEWER_SESSIONS) {
+          notifyWarn(
+            t('vnc.viewer.sessionLimit', { max: String(MAX_VIEWER_SESSIONS) }),
+          );
+          return prev;
+        }
+        return [...prev, target];
+      });
+      setViewerActiveKey(key);
+    },
+    [t],
+  );
+
+  const closeViewerSession = useCallback((key: string) => {
+    setViewerSessions((prev) => {
+      const next = prev.filter((s) => viewerKey(s) !== key);
+      setViewerActiveKey((cur) => {
+        if (cur !== key) return cur;
+        const last = next[next.length - 1];
+        return last ? viewerKey(last) : null;
+      });
+      return next;
+    });
+  }, []);
+
+  const isViewing = useCallback(
+    (kind: 'account' | 'client', id: string) =>
+      viewerSessions.some((s) => s.kind === kind && s.id === id),
+    [viewerSessions],
+  );
 
   // Settings form
   const [desktop, setDesktop] = useState<VncDesktopProfile>('xfce');
@@ -236,28 +276,81 @@ export function VncPage() {
           />
         ) : null}
 
-        {viewerTarget ? (
+        {viewerSessions.length > 0 ? (
           <div className="vnc-viewer-panel">
-            <VncViewer
-              target={viewerTarget}
-              createSession={async (tgt) => {
-                const r = await vncApi.createSession({
-                  kind: tgt.kind,
-                  id: tgt.id,
-                });
-                if (!r.ok || !r.wsPath) {
-                  throw new Error(
-                    r.notes?.[0] || r.message || t('vnc.viewer.error'),
-                  );
-                }
-                return {
-                  wsPath: r.wsPath,
-                  password: r.password,
-                  notes: r.notes,
-                };
-              }}
-              onClose={() => setViewerTarget(null)}
-            />
+            <div className="vnc-session-tabs" role="tablist" aria-label={t('vnc.viewer.sessions')}>
+              {viewerSessions.map((s) => {
+                const key = viewerKey(s);
+                const active = key === viewerActiveKey;
+                return (
+                  <div
+                    key={key}
+                    className={`vnc-session-tab ${active ? 'is-active' : ''}`}
+                    role="presentation"
+                  >
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={active}
+                      className="vnc-session-tab__btn"
+                      onClick={() => setViewerActiveKey(key)}
+                    >
+                      {s.label}
+                      {s.subtitle ? (
+                        <span className="muted u-text-xs"> · {s.subtitle}</span>
+                      ) : null}
+                    </button>
+                    <button
+                      type="button"
+                      className="vnc-session-tab__close"
+                      aria-label={t('vnc.viewer.closeSession', { name: s.label })}
+                      onClick={() => closeViewerSession(key)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                );
+              })}
+              <span className="vnc-session-tabs__meta muted u-text-xs">
+                {t('vnc.viewer.sessionCount', {
+                  n: String(viewerSessions.length),
+                  max: String(MAX_VIEWER_SESSIONS),
+                })}
+              </span>
+            </div>
+            {viewerSessions.map((s) => {
+              const key = viewerKey(s);
+              const active = key === viewerActiveKey;
+              return (
+                <div
+                  key={key}
+                  className={active ? undefined : 'u-hidden'}
+                  hidden={!active}
+                  role="tabpanel"
+                >
+                  <VncViewer
+                    target={s}
+                    createSession={async (tgt) => {
+                      const r = await vncApi.createSession({
+                        kind: tgt.kind,
+                        id: tgt.id,
+                      });
+                      if (!r.ok || !r.wsPath) {
+                        throw new Error(
+                          r.notes?.[0] || r.message || t('vnc.viewer.error'),
+                        );
+                      }
+                      return {
+                        wsPath: r.wsPath,
+                        password: r.password,
+                        notes: r.notes,
+                      };
+                    }}
+                    onClose={() => closeViewerSession(key)}
+                  />
+                </div>
+              );
+            })}
           </div>
         ) : null}
 
@@ -310,10 +403,7 @@ export function VncPage() {
                   header: t('vnc.colStatus'),
                   nowrap: true,
                   render: (a) => {
-                    const viewing =
-                      viewerTarget?.kind === 'account' &&
-                      viewerTarget.id === a.id;
-                    if (viewing) {
+                    if (isViewing('account', a.id)) {
                       return (
                         <Badge tone="ok">{t('vnc.clientStatus.viewing')}</Badge>
                       );
@@ -355,7 +445,7 @@ export function VncPage() {
                     size="sm"
                     variant="primary"
                     onClick={() =>
-                      setViewerTarget({
+                      openViewer({
                         kind: 'account',
                         id: a.id,
                         label: a.name,
@@ -531,10 +621,7 @@ export function VncPage() {
                   header: t('vnc.colStatus'),
                   nowrap: true,
                   render: (c) => {
-                    const viewing =
-                      viewerTarget?.kind === 'client' &&
-                      viewerTarget.id === c.id;
-                    if (viewing) {
+                    if (isViewing('client', c.id)) {
                       return (
                         <Badge tone="ok">{t('vnc.clientStatus.viewing')}</Badge>
                       );
@@ -562,7 +649,7 @@ export function VncPage() {
                     size="sm"
                     variant="primary"
                     onClick={() =>
-                      setViewerTarget({
+                      openViewer({
                         kind: 'client',
                         id: c.id,
                         label: c.name,
@@ -1181,7 +1268,7 @@ export function VncPage() {
                   const a = connTarget;
                   setConnTarget(null);
                   setConnInfo(null);
-                  setViewerTarget({
+                  openViewer({
                     kind: 'account',
                     id: a.id,
                     label: a.name,
@@ -1227,7 +1314,7 @@ export function VncPage() {
                     const a = connTarget!;
                     setConnTarget(null);
                     setConnInfo(null);
-                    setViewerTarget({
+                    openViewer({
                       kind: 'account',
                       id: a.id,
                       label: a.name,

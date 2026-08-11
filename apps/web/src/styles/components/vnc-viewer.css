@@ -126,3 +126,73 @@
 .vnc-viewer-panel {
   margin-top: var(--space-3);
 }
+
+.vnc-session-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+  padding: var(--space-1);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--surface-elevated, var(--bg-elevated, rgba(0, 0, 0, 0.03)));
+}
+
+.vnc-session-tab {
+  display: inline-flex;
+  align-items: stretch;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  overflow: hidden;
+  background: transparent;
+}
+
+.vnc-session-tab.is-active {
+  border-color: var(--border-color);
+  background: var(--bg, #fff);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.vnc-session-tab__btn {
+  border: 0;
+  background: transparent;
+  padding: 0.35rem 0.6rem;
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  color: var(--text);
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vnc-session-tab__close {
+  border: 0;
+  border-left: 1px solid transparent;
+  background: transparent;
+  padding: 0 0.45rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.vnc-session-tab.is-active .vnc-session-tab__close {
+  border-left-color: var(--border-color);
+}
+
+.vnc-session-tab__close:hover {
+  color: var(--danger, #c0392b);
+  background: rgba(192, 57, 43, 0.08);
+}
+
+.vnc-session-tabs__meta {
+  margin-left: auto;
+  padding: 0 var(--space-2);
+}
+
+.u-hidden {
+  display: none !important;
+}

@@ -11130,7 +11130,11 @@
       "errNet": "Network unreachable for {{host}}:{{port}}.",
       "reconnecting": "Connection dropped — reconnecting ({{n}}/{{max}})…",
       "idleHint": "Session has been idle for a while. The remote desktop may lock; move the mouse or reconnect if needed.",
-      "idleDismiss": "Still here"
+      "idleDismiss": "Still here",
+      "sessions": "Open VNC sessions",
+      "sessionCount": "{{n}} / {{max}} sessions",
+      "sessionLimit": "At most {{max}} VNC sessions at once — close one first.",
+      "closeSession": "Close session {{name}}"
     },
     "installHint": "TigerVNC → noVNC; XFCE optional",
     "needTigerVnc": "TigerVNC required",

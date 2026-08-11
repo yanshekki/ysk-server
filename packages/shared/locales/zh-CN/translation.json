@@ -11168,7 +11168,11 @@
       "errNet": "无法到达 {{host}}:{{port}}。",
       "reconnecting": "连接中断 — 自动重连（{{n}}/{{max}}）…",
       "idleHint": "一段时间无操作。远程可能已锁屏；移动鼠标或重新连接。",
-      "idleDismiss": "仍在"
+      "idleDismiss": "仍在",
+      "sessions": "已开 VNC 会话",
+      "sessionCount": "{{n}} / {{max}} 个会话",
+      "sessionLimit": "最多同时 {{max}} 个 VNC — 请先关闭一个。",
+      "closeSession": "关闭会话 {{name}}"
     },
     "installHint": "TigerVNC → noVNC；XFCE 可选",
     "needTigerVnc": "需 TigerVNC",
