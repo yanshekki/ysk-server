@@ -11641,5 +11641,28 @@
       "customCidr": "CIDR",
       "addCidr": "加入"
     }
+  },
+  "serviceExposure": {
+    "title": "網絡存取",
+    "manage": "管理存取",
+    "manageTitle": "服務網絡存取",
+    "manageDesc": "控制 {{service}} 在主機防火牆的可達性。",
+    "mode": "存取模式",
+    "modePrivate": "僅本機",
+    "modePublic": "公網",
+    "modeRestricted": "受限",
+    "summaryPrivate": "未對外開放防火牆埠。",
+    "summaryPublic": "公網開放 · {{ports}}",
+    "summaryRestricted": "受限 · {{count}} 個來源",
+    "outOfSync": "未同步",
+    "firewallLink": "防火牆",
+    "portsLabel": "埠",
+    "allowFrom": "允許來源（IP／網段）",
+    "hintPrivate": "服務仍可本機監聽；不會寫入公網 UFW 允許規則。",
+    "hintPublic": "警告：對整個互聯網開放此埠。資料庫請優先用受限模式。",
+    "hintRestricted": "逗號分隔 IP 或 CIDR；僅允許這些來源連線。",
+    "restrictedNeedIp": "受限模式請至少加入一個 IP 或網段。",
+    "privateStartTitle": "要對外開放 {{service}} 嗎？",
+    "confirmAndStart": "確認並啟動"
   }
 }

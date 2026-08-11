@@ -732,14 +732,6 @@ export async function applyFtpsService(input: {
       status: 'ok',
       detail: chownNotes.slice(0, 3).join('；') || tl('notes.auto.n0010') });
 
-    // Prompt operator to open ports — never auto-mutate UFW from FTPS apply
-    notes.push(...ftpsFirewallReminderNotes(settings));
-    steps.push({
-      name: tl('notes.ftp.openPortsStep'),
-      status: 'ok',
-      detail: ftpsFirewallPortSpecs(settings).join(', '),
-    });
-
     const en = await input.host.runCommand(['systemctl', 'enable', '--now', 'vsftpd'], {
       timeoutMs: 60_000 });
     commandResults.push({
@@ -760,6 +752,32 @@ export async function applyFtpsService(input: {
       name: tl('notes.ftp.startVsftpd'),
       status: svcOk ? 'ok' : 'failed',
       detail: active || en.stderr || rel.stderr });
+
+    // Auto-sync firewall ports (ysk-svc:vsftpd:*) — replace manual open-port CTA
+    try {
+      const { syncServiceExposure, ftpsPortBindings } = await import('./service-exposure/index.js');
+      const exp = await syncServiceExposure({
+        host: input.host,
+        dataDir: input.dataDir,
+        serviceId: 'vsftpd',
+        ports: ftpsPortBindings(settings),
+        reason: 'port-change',
+        requireDecision: false,
+      });
+      notes.push(...exp.notes.slice(0, 6));
+      steps.push({
+        name: tl('notes.ftp.openPortsStep'),
+        status: exp.blocked ? 'blocked' : exp.ok ? 'ok' : 'failed',
+        detail: ftpsFirewallPortSpecs(settings).join(', '),
+      });
+    } catch {
+      notes.push(...ftpsFirewallReminderNotes(settings));
+      steps.push({
+        name: tl('notes.ftp.openPortsStep'),
+        status: 'ok',
+        detail: ftpsFirewallPortSpecs(settings).join(', '),
+      });
+    }
 
     // Auth works only when conf + PAM + userdb are all in place; vsftpd up alone is not enough.
     const pamOk = cpPam.exitCode === 0;
@@ -800,7 +818,6 @@ export async function applyFtpsService(input: {
 
   // applySystem false: config only
   notes.push(tl('notes.auto.n0734'));
-  notes.push(...ftpsFirewallReminderNotes(settings));
   return {
     ok: true,
     executed: false,

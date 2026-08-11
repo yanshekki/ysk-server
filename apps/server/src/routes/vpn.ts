@@ -104,6 +104,32 @@ export async function handleVpnRoutes(
         lanCidrs: data.lanCidrs,
         customCidrs: data.customCidrs,
       });
+      const notes = [...(result.notes ?? [])];
+      // Auto-open VPN listen port via service exposure (ysk-svc)
+      if (result.ok && data.listenPort) {
+        try {
+          const { syncServiceExposure, vpnPortBindings } = await import('@ysk/core');
+          const proto =
+            engine === 'openvpn'
+              ? data.proto === 'tcp'
+                ? 'tcp'
+                : 'udp'
+              : engine === 'outline'
+                ? 'tcp'
+                : 'udp';
+          const exp = await syncServiceExposure({
+            host: ctx.host,
+            dataDir: ctx.dataDir,
+            serviceId: engine,
+            ports: vpnPortBindings(Number(data.listenPort), proto),
+            reason: 'start',
+            requireDecision: false,
+          });
+          notes.push(...exp.notes.slice(0, 4));
+        } catch {
+          /* non-fatal */
+        }
+      }
       ctx.audit.append({
         actor: user.username,
         action: 'vpn.server.ensure',
@@ -115,7 +141,7 @@ export async function handleVpnRoutes(
         apply_status: result.ok ? 'applied' : result.blocked ? 'blocked' : 'failed',
         blocked: result.blocked,
         requiresExecute: result.requiresExecute,
-        notes: result.notes,
+        notes,
       });
       return true;
     }
@@ -304,11 +330,13 @@ export async function handleVpnRoutes(
     }
 
     if (method === 'POST' && url.pathname === '/api/v1/vpn/firewall/open') {
+      // Compatibility shim → service exposure sync (ysk-svc comments)
       requireCap(ctx, user, 'firewall.edit');
       const raw = await readBody(req);
       const data = JSON.parse(raw || '{}') as {
         port?: number;
         proto?: string;
+        engine?: string;
       };
       const port = Number(data.port);
       if (!Number.isInteger(port) || port < 1 || port > 65535) {
@@ -316,39 +344,27 @@ export async function handleVpnRoutes(
         return true;
       }
       const proto = normalizeProto(data.proto);
-      if (!ctx.host.executeEnabled()) {
-        sendOpsResult(res, {
-          ok: false,
-          blocked: true,
-          requiresExecute: true,
-          apply_status: 'blocked',
-          notes: ['Opening ports requires YSK_EXECUTE'],
-        });
-        return true;
-      }
-      const cmds: string[] = [];
-      if (proto === 'udp' || proto === 'both') {
-        cmds.push(`ufw allow ${port}/udp comment 'ysk-vpn'`);
-      }
-      if (proto === 'tcp' || proto === 'both') {
-        cmds.push(`ufw allow ${port}/tcp comment 'ysk-vpn'`);
-      }
-      const r = await ctx.host.runCommand(['bash', '-c', cmds.join(' && ')], {
-        timeoutMs: 30_000,
+      const engine = parseEngine(data.engine) || 'wireguard';
+      const { syncServiceExposure, vpnPortBindings } = await import('@ysk/core');
+      const exp = await syncServiceExposure({
+        host: ctx.host,
+        dataDir: ctx.dataDir,
+        serviceId: engine,
+        ports: vpnPortBindings(port, proto === 'both' ? 'both' : proto === 'tcp' ? 'tcp' : 'udp'),
+        reason: 'manual',
+        requireDecision: false,
       });
-      const ok = r.exitCode === 0;
       ctx.audit.append({
         actor: user.username,
         action: 'vpn.firewall.open',
-        detail: { port, proto, ok },
-        ok,
+        detail: { port, proto, engine, ok: exp.ok },
+        ok: exp.ok,
       });
       sendOpsResult(res, {
-        ok,
-        apply_status: ok ? 'applied' : 'failed',
-        notes: ok
-          ? [`Opened ${port}/${proto === 'both' ? 'tcp+udp' : proto}`]
-          : [(r.stderr || r.stdout || 'ufw failed').slice(0, 200)],
+        ok: exp.ok,
+        apply_status: exp.blocked ? 'blocked' : exp.ok ? 'applied' : 'failed',
+        blocked: exp.blocked,
+        notes: exp.notes,
       });
       return true;
     }

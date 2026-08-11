@@ -22,6 +22,12 @@ import {
   listManagedServiceRules,
 } from './sync.js';
 import {
+  engineToServiceId,
+  ftpsPortBindings,
+  vpnPortBindings,
+  dbPortBindings,
+} from './ports.js';
+import {
   parseUfwNumbered,
   extractUfwComment,
   firewallAllowPort,
@@ -63,6 +69,15 @@ describe('service-exposure shared helpers', () => {
     expect(defaultExposureMode('nginx')).toBe('public');
     expect(defaultPortsForService('vsftpd').some((p) => p.port === '21')).toBe(true);
     expect(defaultPortsForService('mysql')[0]?.port).toBe('3306');
+  });
+
+  it('port adapters map engines and ranges', () => {
+    expect(engineToServiceId('postgres')).toBe('postgresql');
+    expect(ftpsPortBindings({ listenPort: 21, pasvMin: 30000, pasvMax: 30100 }).map((p) => p.port)).toEqual(
+      ['21', '30000:30100', '990'],
+    );
+    expect(vpnPortBindings(51820, 'udp')[0]?.port).toBe('51820');
+    expect(dbPortBindings('mysql', { port: '3307' })[0]?.port).toBe('3307');
   });
 });
 

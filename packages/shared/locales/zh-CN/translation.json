@@ -11641,5 +11641,28 @@
       "customCidr": "CIDR",
       "addCidr": "添加"
     }
+  },
+  "serviceExposure": {
+    "title": "网络访问",
+    "manage": "管理访问",
+    "manageTitle": "服务网络访问",
+    "manageDesc": "控制 {{service}} 在主机防火墙的可达性。",
+    "mode": "访问模式",
+    "modePrivate": "仅本机",
+    "modePublic": "公网",
+    "modeRestricted": "受限",
+    "summaryPrivate": "未对外开放防火墙端口。",
+    "summaryPublic": "公网开放 · {{ports}}",
+    "summaryRestricted": "受限 · {{count}} 个来源",
+    "outOfSync": "未同步",
+    "firewallLink": "防火墙",
+    "portsLabel": "端口",
+    "allowFrom": "允许来源（IP／网段）",
+    "hintPrivate": "服务仍可本机监听；不会写入公网 UFW 允许规则。",
+    "hintPublic": "警告：对整个互联网开放此端口。数据库请优先用受限模式。",
+    "hintRestricted": "逗号分隔 IP 或 CIDR；仅允许这些来源连接。",
+    "restrictedNeedIp": "受限模式请至少加入一个 IP 或网段。",
+    "privateStartTitle": "要对外开放 {{service}} 吗？",
+    "confirmAndStart": "确认并启动"
   }
 }

@@ -29,6 +29,68 @@
 }
 
 /* Direct content children: no utility margin fighting the flex gap */
+/* —— Service network access strip (auto firewall ports) —— */
+.service-access-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 8px);
+  background: var(--bg-elevated, var(--bg-card, #fff));
+}
+
+.service-access-strip--compact {
+  padding: var(--space-2) var(--space-3);
+}
+
+.service-access-strip__body {
+  min-width: 0;
+  flex: 1;
+}
+
+.service-access-strip__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+.service-access-strip__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-sub);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.service-access-strip__summary {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.service-access-strip__err {
+  margin: var(--space-1) 0 0;
+  font-size: 0.85rem;
+  color: var(--danger, #b91c1c);
+}
+
+.service-access-strip__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.service-access-strip__warn {
+  color: var(--warn, #b45309);
+}
+
 .section-block > .summary-strip,
 .section-block > .action-bar,
 .section-block > .data-table,

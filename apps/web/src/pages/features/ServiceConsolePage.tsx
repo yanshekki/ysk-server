@@ -33,9 +33,20 @@ import {
   type ServiceConsole } from '../../features/db-service/console-api';
 import { DbClusterPanel } from '../../features/db-service/DbClusterPanel';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
+import {
+  ServiceAccessStrip,
+  ServiceExposureDialog,
+  usePrivateStartGate,
+} from '../../features/network/service-exposure';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../shared/lib/i18n';
 import { bindSet, bindVoid, bindCall1 } from '../bind-handlers';
+
+/** Console engine → exposure service id */
+function exposureServiceId(engine: DbServiceEngine): string {
+  if (engine === 'postgres') return 'postgresql';
+  return engine;
+}
 
 const DATA_LINK: Record<DbServiceEngine, { path: string; label: string }> = {
   redis: { path: '/databases/redis', label: i18n.t('db.console.dataBrowse') },
@@ -131,6 +142,8 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
   const link = DATA_LINK[engine];
+  const svcId = exposureServiceId(engine);
+  const startGate = usePrivateStartGate(svcId);
 
   const refresh = useCallback(async () => {
     setLoadError(null);
@@ -175,10 +188,22 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
     ];
   }, [console]);
 
-  async function doLifecycle(action: string) {
+  async function doLifecycle(
+    action: string,
+    exposure?: {
+      exposureDecision?: 'keep-private' | 'public' | 'restricted';
+      allowFrom?: string[];
+    },
+  ) {
+    if (action === 'start' || action === 'restart') {
+      if (!exposure?.exposureDecision) {
+        const gate = await startGate.prepareStart();
+        if (!gate.proceed) return;
+      }
+    }
     await run(async () => {
       try {
-        const r = await consoleApi.lifecycle(engine, action);
+        const r = await consoleApi.lifecycle(engine, action, exposure);
         await refresh();
         return r as unknown as OpsResultLike;
       } catch (e) {
@@ -567,12 +592,32 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
                   </Button>
                 </div>
               )}
+              <div className="u-mt-3">
+                <ServiceAccessStrip serviceId={svcId} />
+              </div>
               <p className="muted u-text-sm u-mt-3">
                 {t('db.console.needRights')}
               </p>
             </CardSection>
           </Card>
         ) : null}
+
+        <ServiceExposureDialog
+          open={startGate.pending}
+          onClose={startGate.dismiss}
+          serviceId={svcId}
+          initial={startGate.status}
+          title={t('serviceExposure.privateStartTitle', { service: console?.title ?? engine })}
+          confirmLabel={t('serviceExposure.confirmAndStart')}
+          decisionOnly
+          onSaved={async (decision) => {
+            startGate.dismiss();
+            await doLifecycle('start', {
+              exposureDecision: decision.exposureDecision,
+              allowFrom: decision.allowFrom,
+            });
+          }}
+        />
 
         {tab === 'cluster' ? <DbClusterPanel engine={engine} /> : null}
 

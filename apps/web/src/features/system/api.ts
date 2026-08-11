@@ -114,6 +114,64 @@ export const systemApi = {
         hint?: string;
       }>;
     }>('/api/v1/system/firewall/service-ports'),
+
+  /** Service network exposure (desired + live UFW ysk-svc rules) */
+  serviceExposureGet: (serviceId: string) =>
+    api.requestRaw<{
+      ok: boolean;
+      serviceId: string;
+      desired: {
+        serviceId: string;
+        mode: 'private' | 'public' | 'restricted';
+        ports: Array<{ role: string; port: string; proto: string }>;
+        allowFrom?: string[];
+        decided?: boolean;
+        updatedAt: string;
+      };
+      liveRules: Array<{ num?: number; comment?: string; raw: string }>;
+      inSync: boolean;
+      defaultMode: 'private' | 'public' | 'restricted';
+    }>(`/api/v1/system/network/service-exposure/${encodeURIComponent(serviceId)}`),
+
+  serviceExposureList: () =>
+    api.requestRaw<{ ok: boolean; items: Array<Record<string, unknown>> }>(
+      '/api/v1/system/network/service-exposure',
+    ),
+
+  serviceExposurePut: (
+    serviceId: string,
+    body: {
+      mode?: 'private' | 'public' | 'restricted';
+      ports?: Array<{ role: string; port: string; proto?: string }>;
+      allowFrom?: string[];
+      sync?: boolean;
+    },
+  ) =>
+    api.requestRaw(`/api/v1/system/network/service-exposure/${encodeURIComponent(serviceId)}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+
+  serviceExposureSync: (body: {
+    serviceId: string;
+    ports?: Array<{ role: string; port: string; proto?: string }>;
+    reason?: 'start' | 'apply' | 'port-change' | 'manual' | 'stop';
+    exposureDecision?: 'keep-private' | 'public' | 'restricted';
+    allowFrom?: string[];
+    requireDecision?: boolean;
+  }) =>
+    api.requestRaw<{
+      ok?: boolean;
+      notes?: string[];
+      blocked?: boolean;
+      needsExposureDecision?: boolean;
+      desired?: Record<string, unknown>;
+      applied?: unknown[];
+      removed?: number;
+    }>('/api/v1/system/network/service-exposure/sync', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
   fail2banStatus: () =>
     api.requestRaw<Fail2banStatusDto>('/api/v1/system/fail2ban/status'),
   fail2banApply: (body: {

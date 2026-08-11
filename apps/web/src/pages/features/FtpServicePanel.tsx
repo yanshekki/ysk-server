@@ -30,7 +30,7 @@ import {
 } from '../../features/ftp';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { softwareApi } from '../../features/software';
-import { systemApi } from '../../features/system';
+import { ServiceAccessStrip } from '../../features/network/service-exposure';
 import { sanitizeOperatorNotes } from '../../shared/lib/operator-messages';
 
 export type FtpServicePanelProps = {
@@ -120,31 +120,15 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
     }, t('ftp.settingsApplied'));
   }
 
-  async function onOpenFirewallPorts() {
-    await run(async () => {
-      const notes: string[] = [];
-      let ok = true;
-      for (const port of openPorts) {
-        const r = (await systemApi.firewallAllowPort(port, 'tcp')) as {
-          ok?: boolean;
-          notes?: string[];
-          blockMessage?: string;
-        };
-        if (r.notes?.length) notes.push(...r.notes.map(String));
-        if (r.ok === false) {
-          ok = false;
-          if (r.blockMessage) notes.push(r.blockMessage);
-        }
-      }
-      return {
-        ok,
-        notes: notes.length
-          ? notes
-          : [t('ftp.firewallPortsApplied', { ports: openPorts.join(', ') })],
-        blockMessage: ok ? undefined : notes[0],
-      } satisfies OpsResultLike;
-    }, t('ftp.firewallPortsApplied', { ports: openPorts.join(', ') }));
-  }
+  const ftpsBindings = useMemo(
+    () =>
+      openPorts.map((port, i) => ({
+        role: i === 0 ? 'ftp' : i === 1 ? 'ftps-pasv' : 'ftps-implicit',
+        port,
+        proto: 'tcp' as const,
+      })),
+    [openPorts],
+  );
 
   const st = statusLabel(status, t);
   const installed = Boolean(status?.installed);
@@ -221,14 +205,6 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
               variant="secondary"
               size="md"
               loading={busy}
-              onClick={() => void onOpenFirewallPorts()}
-            >
-              {t('ftp.openFirewallPorts')}
-            </Button>
-            <Button
-              variant="secondary"
-              size="md"
-              loading={busy}
               onClick={() => {
                 setError(null);
                 setMsg(null);
@@ -237,6 +213,9 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
             >
               {t('common.refresh')}
             </Button>
+          </div>
+          <div className="u-mt-3">
+            <ServiceAccessStrip serviceId="vsftpd" ports={ftpsBindings} />
           </div>
         </CardSection>
       </Card>

@@ -11602,5 +11602,28 @@
       "customCidr": "CIDR",
       "addCidr": "Add"
     }
+  },
+  "serviceExposure": {
+    "title": "Network access",
+    "manage": "Manage access",
+    "manageTitle": "Service network access",
+    "manageDesc": "Control how {{service}} is reachable on the host firewall.",
+    "mode": "Access mode",
+    "modePrivate": "Local only",
+    "modePublic": "Public",
+    "modeRestricted": "Restricted",
+    "summaryPrivate": "Not open on the public firewall.",
+    "summaryPublic": "Open · {{ports}}",
+    "summaryRestricted": "Restricted · {{count}} source(s)",
+    "outOfSync": "Out of sync",
+    "firewallLink": "Firewall",
+    "portsLabel": "Ports",
+    "allowFrom": "Allowed sources (IP / CIDR)",
+    "hintPrivate": "Service may still listen on localhost; no public UFW allow rules.",
+    "hintPublic": "Warning: opens this port to the whole Internet. Prefer restricted for databases.",
+    "hintRestricted": "Comma-separated IPs or CIDRs. Only these sources may connect.",
+    "restrictedNeedIp": "Add at least one IP or CIDR for restricted mode.",
+    "privateStartTitle": "Expose {{service}} on the network?",
+    "confirmAndStart": "Confirm and start"
   }
 }

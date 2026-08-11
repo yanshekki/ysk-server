@@ -21,10 +21,25 @@ export const consoleApi = {
       method: 'POST',
       body: JSON.stringify({ changes }),
     }),
-  lifecycle: (engine: DbServiceEngine, action: string) =>
+  lifecycle: (
+    engine: DbServiceEngine,
+    action: string,
+    exposure?: {
+      exposureDecision?: 'keep-private' | 'public' | 'restricted';
+      allowFrom?: string[];
+    },
+  ) =>
     api.requestRaw<Record<string, unknown>>(`/api/v1/system/db/${engine}/lifecycle`, {
       method: 'POST',
-      body: JSON.stringify({ action }),
+      body: JSON.stringify({
+        action,
+        ...(exposure?.exposureDecision
+          ? {
+              exposureDecision: exposure.exposureDecision,
+              allowFrom: exposure.allowFrom,
+            }
+          : {}),
+      }),
     }),
   install: (engine: DbServiceEngine) =>
     api.requestRaw<Record<string, unknown>>(`/api/v1/system/db/${engine}/install`, {

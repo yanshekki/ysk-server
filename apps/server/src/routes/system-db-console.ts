@@ -39,11 +39,31 @@ export async function handleSystemDbConsoleRoutes(
     const engine = url.pathname.split('/')[5] as 'mysql' | 'mariadb' | 'postgres' | 'redis';
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { changes?: Record<string, string> };
+    const changes = data.changes ?? {};
     const result = await applyConsoleSettings({
       host: ctx.host,
       engine,
-      changes: data.changes ?? {},
+      changes,
     });
+    // Port change → migrate firewall rules for this service
+    if (result.ok && Object.keys(changes).some((k) => /port/i.test(k))) {
+      try {
+        const { syncServiceExposure, engineToServiceId, dbPortBindings } = await import(
+          '@ysk/core'
+        );
+        const exp = await syncServiceExposure({
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          serviceId: engineToServiceId(engine),
+          ports: dbPortBindings(engine, changes),
+          reason: 'port-change',
+          requireDecision: false,
+        });
+        if (exp.notes.length) result.notes.push(...exp.notes.slice(0, 4));
+      } catch {
+        /* non-fatal */
+      }
+    }
     ctx.audit.append({
       actor: user.username,
       action: `system.db.${engine}.console.apply`,
@@ -57,9 +77,42 @@ export async function handleSystemDbConsoleRoutes(
     const user = ctx.auth.authenticate(getBearer(req));
     const engine = url.pathname.split('/')[5] as 'mysql' | 'mariadb' | 'postgres' | 'redis';
     const raw = await readBody(req);
-    const data = JSON.parse(raw || '{}') as { action?: string };
+    const data = JSON.parse(raw || '{}') as {
+      action?: string;
+      /** Private services: decision before/with start */
+      exposureDecision?: 'keep-private' | 'public' | 'restricted';
+      allowFrom?: string[];
+    };
     const action = data.action as 'start' | 'stop' | 'restart' | 'reload' | 'enable' | 'disable';
     const result = await lifecycleService(ctx.host, engine, action);
+    // Auto firewall sync after lifecycle (private DBs stay closed unless decided)
+    if (result.ok && (action === 'start' || action === 'stop' || action === 'restart')) {
+      try {
+        const { syncServiceExposure, engineToServiceId, dbPortBindings } = await import(
+          '@ysk/core'
+        );
+        const reason = action === 'stop' ? 'stop' : 'start';
+        const exp = await syncServiceExposure({
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          serviceId: engineToServiceId(engine),
+          ports: dbPortBindings(engine),
+          reason,
+          exposureDecision: data.exposureDecision,
+          allowFrom: data.allowFrom,
+          requireDecision: action === 'start' || action === 'restart',
+        });
+        if (exp.notes.length) result.notes.push(...exp.notes.slice(0, 4));
+        if (exp.needsExposureDecision) {
+          (result as { needsExposureDecision?: boolean }).needsExposureDecision = true;
+        }
+        if (exp.blocked) {
+          result.notes.push(...(exp.notes ?? []).slice(0, 2));
+        }
+      } catch {
+        /* non-fatal */
+      }
+    }
     ctx.audit.append({
       actor: user.username,
       action: `system.db.${engine}.lifecycle`,

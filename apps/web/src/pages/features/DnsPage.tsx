@@ -33,7 +33,7 @@ import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import type { ResourceRow } from '../../features/resources/api';
 import { api } from '../../shared/services/api';
 import { authStore } from '../../shared/stores/auth-store';
-import { systemApi } from '../../features/system';
+import { ServiceAccessStrip } from '../../features/network/service-exposure';
 import { toast } from '../../shared/stores/toast-store';
 import { bindCall1, bindCloseIfIdle, bindConfirmThen, bindFormSubmit, bindInput, bindRemoveIf, bindSelect, bindSet, bindSet2, bindSet3, bindValueSet, bindVoid, bindVoidCall2 } from '../bind-handlers';
 
@@ -422,7 +422,6 @@ export function DnsPage() {
   const [tab, setTab] = usePageTab(DNS_TABS, 'zones');
   const [health, setHealth] = useState<DnsHealth | null>(null);
   const [healthBusy, setHealthBusy] = useState(false);
-  const [fwBusy, setFwBusy] = useState(false);
   const [pdnsHealBusy, setPdnsHealBusy] = useState(false);
   const [lookupServer, setLookupServer] = useState('127.0.0.1');
 
@@ -1434,32 +1433,18 @@ export function DnsPage() {
                     >
                       {t('dns.healthHealPdns')}
                     </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      loading={fwBusy}
-                      disabled={Boolean(health.listenUdp53 && health.listenTcp53)}
-                      onClick={() => {
-                        setFwBusy(true);
-                        void systemApi
-                          .firewallAllowPort(53, 'both')
-                          .then((r) => {
-                            const ok = (r as { ok?: boolean }).ok !== false;
-                            if (ok) toast.ok(t('dns.healthOpened53'));
-                            else
-                              toast.error(
-                                (r as { notes?: string[] }).notes?.[0] ??
-                                  t('dns.healthOpen53Failed'),
-                              );
-                            return refreshHealth();
-                          })
-                          .catch((e: Error) => toast.error(e.message))
-                          .finally(() => setFwBusy(false));
-                      }}
-                    >
-                      {t('dns.healthOpen53')}
-                    </Button>
                   </FormActions>
+                  <div className="u-mt-3">
+                    <ServiceAccessStrip
+                      serviceId="pdns"
+                      ports={[
+                        { role: 'dns-udp', port: '53', proto: 'udp' },
+                        { role: 'dns-tcp', port: '53', proto: 'tcp' },
+                      ]}
+                      compact
+                      onUpdated={() => void refreshHealth()}
+                    />
+                  </div>
                 </CardSection>
               </Card>
             ) : (

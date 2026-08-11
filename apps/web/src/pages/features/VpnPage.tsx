@@ -48,6 +48,7 @@ import {
   syncEndpointPort,
   type VpnEngineTab,
 } from '../../features/vpn/endpoint-sync';
+import { ServiceAccessStrip } from '../../features/network/service-exposure';
 import {
   formatVpnBytes,
   formatVpnRate,
@@ -610,30 +611,23 @@ export function VpnPage() {
           >
             {t('vpn.ensureServer')}
           </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            loading={busy}
-            onClick={() =>
-              void runOps(
-                () =>
-                  vpnApi.openFirewall({
-                    port: listenPort,
-                    proto: fwProto,
-                  }),
-                { openConfig: false },
-              )
-            }
-          >
-            {t('vpn.openFirewall', {
-              port: listenPort,
-              proto: fwProto === 'both' ? 'tcp+udp' : fwProto,
-            })}
-          </Button>
           <Button variant="ghost" size="sm" loading={busy} onClick={() => void load()}>
             {t('vpn.refresh')}
           </Button>
         </ActionBar>
+        <div className="u-mt-3">
+          <ServiceAccessStrip
+            serviceId={engine}
+            ports={[
+              {
+                role: 'listen',
+                port: String(listenPort),
+                proto: fwProto === 'both' ? 'both' : fwProto,
+              },
+            ]}
+            compact
+          />
+        </div>
       </section>
 
       <DataTable
