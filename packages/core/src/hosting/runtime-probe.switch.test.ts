@@ -86,13 +86,18 @@ describe('switchRuntimeDefault', () => {
 });
 
 describe('uninstallRuntimeVersion', () => {
-  it('refuses java uninstall', async () => {
+  it('uninstalls java openjdk packages', async () => {
     const r = await uninstallRuntimeVersion({
-      host: mockHost(() => ({})),
+      host: mockHost((argv) => {
+        if (argv[0] === 'bash') {
+          return { exitCode: 0, stdout: 'YSK_JAVA_REMOVED=21\n' };
+        }
+        return {};
+      }),
       kind: 'java',
       version: '21',
     });
-    expect(r.ok).toBe(false);
+    expect(r.ok).toBe(true);
   });
 
   it('uninstalls php version packages', async () => {

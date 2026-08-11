@@ -514,7 +514,6 @@ export function EmailDomainPage() {
         backTo="/email"
         backLabel={t('email.backToList')}
       >
-        <SoftwareInstallBanner feature="email" title={t('email.softwareNeeded')} />
         <Alert variant="error">
           {error ?? t('email.notFound')}
         </Alert>

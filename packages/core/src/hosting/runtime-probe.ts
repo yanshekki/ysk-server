@@ -1849,7 +1849,16 @@ export async function uninstallRuntimeVersion(input: {
   const rootOn = input.host.isRoot();
   const can = execOn && rootOn;
 
-  const managed: RuntimeKind[] = ['node', 'go', 'rust', 'bun', 'php', 'python'];
+  const managed: RuntimeKind[] = [
+    'node',
+    'go',
+    'rust',
+    'bun',
+    'php',
+    'python',
+    'java',
+    'kotlin',
+  ];
   if (!managed.includes(input.kind)) {
     return {
       ok: false,
@@ -2007,6 +2016,58 @@ export async function uninstallRuntimeVersion(input: {
       '',
     ].join('\n');
     notes.push(`Remove managed/apt Python ${plan.version}`);
+  } else if (input.kind === 'java') {
+    const plan = selectJavaRuntime(input.version);
+    removedPath = `apt:openjdk-${plan.version}`;
+    script = [
+      'set -euo pipefail',
+      'export DEBIAN_FRONTEND=noninteractive',
+      `VER=${JSON.stringify(plan.version)}`,
+      'case "$VER" in',
+      "  ''|*[!0-9]*) echo \"invalid Java major $VER\" >&2; exit 3 ;;",
+      'esac',
+      'PKGS=""',
+      'for p in "openjdk-${VER}-jdk" "openjdk-${VER}-jdk-headless" "openjdk-${VER}-jre" "openjdk-${VER}-jre-headless"; do',
+      '  if dpkg-query -W "$p" >/dev/null 2>&1; then PKGS="$PKGS $p"; fi',
+      'done',
+      'if [ -z "$PKGS" ]; then echo "No openjdk-$VER packages installed" >&2; exit 2; fi',
+      'echo "YSK_JAVA_PACKAGES=$PKGS"',
+      'apt-get remove -y $PKGS',
+      'if [ -L /usr/local/bin/java ]; then',
+      '  REAL=$(readlink -f /usr/local/bin/java 2>/dev/null || true)',
+      '  case "$REAL" in *java-"$VER"*|*java-${VER}-*) rm -f /usr/local/bin/java /usr/local/bin/javac; echo "YSK_JAVA_DEFAULT_CLEARED=1" ;; esac',
+      'fi',
+      'echo "YSK_JAVA_REMOVED=$VER"',
+      '',
+    ].join('\n');
+    notes.push(`apt remove openjdk-${plan.version}-* packages`);
+  } else if (input.kind === 'kotlin') {
+    const plan = selectKotlinRuntime(input.version);
+    removedPath = '/usr/local/ysk/kotlin';
+    script = [
+      'set -euo pipefail',
+      `VER=${JSON.stringify(plan.version)}`,
+      'REMOVED=0',
+      'if [ -d "/usr/local/ysk/kotlin/$VER" ]; then',
+      '  rm -rf "/usr/local/ysk/kotlin/$VER"',
+      '  REMOVED=1',
+      '  echo "YSK_KOTLIN_REMOVED_DIR=$VER"',
+      'fi',
+      'if [ -d /usr/local/ysk/kotlin ] && [ -x /usr/local/ysk/kotlin/bin/kotlinc ]; then',
+      '  # single-layout install — only remove when version matches installed marker or latest',
+      '  CUR=$(/usr/local/ysk/kotlin/bin/kotlinc -version 2>&1 | grep -oE "[0-9]+\\.[0-9]+(\\.[0-9]+)?" | head -1 || true)',
+      '  if [ -n "$CUR" ] && { [ "$CUR" = "$VER" ] || [ "$VER" = "latest" ]; }; then',
+      '    rm -f /usr/local/bin/kotlinc /usr/local/bin/kotlin',
+      '    rm -rf /usr/local/ysk/kotlin',
+      '    REMOVED=1',
+      '    echo "YSK_KOTLIN_REMOVED_SINGLE=$VER"',
+      '  fi',
+      'fi',
+      'if [ "$REMOVED" = "0" ]; then echo "Kotlin $VER not found under managed paths" >&2; exit 2; fi',
+      'echo "YSK_KOTLIN_REMOVED=$VER"',
+      '',
+    ].join('\n');
+    notes.push(`Remove managed Kotlin ${plan.version}`);
   } else {
     // bun — multi-dir or single bin
     const plan = selectBunRuntime(input.version);
