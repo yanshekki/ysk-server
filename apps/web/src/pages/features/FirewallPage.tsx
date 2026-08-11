@@ -25,6 +25,7 @@ import {
   PresetChips,
   SegRadio,
   SoftwareInstallBanner,
+  SoftwareVersionBar,
   PageTabs,
   ConfirmDialog,
   ServerListFilters } from '../../shared/components/ui';
@@ -35,7 +36,7 @@ import { usePageTab } from '../../shared/hooks/usePageTab';
 import { useCapabilities } from '../../shared/hooks/useCapabilities';
 import { bindSet, bindInput, bindCheck, bindCall1 } from '../bind-handlers';
 
-const FW_TABS = ['rules', 'ports', 'deny', 'profiles', 'about'] as const;
+const FW_TABS = ['rules', 'ports', 'deny', 'profiles', 'stack', 'about'] as const;
 
 type FwStatus = Awaited<ReturnType<typeof systemApi.firewallStatus>>;
 
@@ -353,8 +354,6 @@ export function FirewallPage() {
         </div>
       }
     >
-      <SoftwareInstallBanner feature="firewall" title={t('firewall.notInstalled')} />
-
       <div className="stack-role">
         <Alert variant="info">
           <strong>{t('firewall.toolHintPrefix')}</strong> {t('firewall.toolHintBody')}{' '}
@@ -382,6 +381,7 @@ export function FirewallPage() {
             label: t('firewall.tabs.deny'),
             badge: status?.denyFromIps?.length || undefined },
           { id: 'profiles', label: t('firewall.tabs.profiles') },
+          { id: 'stack', label: t('tabs.stack') },
           { id: 'about', label: t('firewall.tabs.about') },
         ]}
         active={tab}
@@ -743,6 +743,13 @@ export function FirewallPage() {
                 </Button>
               </FormActions>
             </div>
+          </div>
+        ) : null}
+
+        {tab === 'stack' ? (
+          <div className="tab-panel stack">
+            <SoftwareInstallBanner feature="firewall" title={t('firewall.notInstalled')} />
+            <SoftwareVersionBar softwareId="ufw" />
           </div>
         ) : null}
 

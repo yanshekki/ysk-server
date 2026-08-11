@@ -534,6 +534,7 @@ export function EmailDomainPage() {
     { id: 'relay', label: t('email.tabRelay') },
     { id: 'sieve', label: t('email.tabSieve') },
     { id: 'advanced', label: t('email.tabAdvanced') },
+    { id: 'stack', label: t('tabs.stack') },
     { id: 'about', label: t('common.about') },
   ];
 
@@ -596,8 +597,6 @@ export function EmailDomainPage() {
         </ActionBar>
       }
     >
-      <SoftwareInstallBanner feature="email" title={t('email.softwareNeeded')} />
-
       <PageTabs tabs={tabs} active={tab} onChange={setTab} variant="scroll">
         {tab === 'dns' ? (
           <Card>
@@ -1877,6 +1876,12 @@ export function EmailDomainPage() {
           </div>
         ) : null}
       
+        {tab === 'stack' ? (
+          <div className="tab-panel stack">
+            <SoftwareInstallBanner feature="email" title={t('email.softwareNeeded')} />
+          </div>
+        ) : null}
+
         {tab === 'about' ? <PageGuide guideId="emailDomain" /> : null}
       </PageTabs>
 

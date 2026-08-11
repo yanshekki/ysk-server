@@ -24,6 +24,7 @@ import {
   PresetChips,
   SegRadio,
   SoftwareInstallBanner,
+  SoftwareVersionBar,
   PageTabs } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
@@ -40,7 +41,7 @@ import {
   bindApiRefresh2,
   bindClipboard } from '../bind-handlers';
 
-const F2B_TABS = ['bans', 'whitelist', 'jails', 'policy', 'service', 'about'] as const;
+const F2B_TABS = ['bans', 'whitelist', 'jails', 'policy', 'service', 'stack', 'about'] as const;
 
 type F2bStatus = Awaited<ReturnType<typeof systemApi.fail2banStatus>>;
 
@@ -208,8 +209,6 @@ export function Fail2banPage() {
         </div>
       }
     >
-      <SoftwareInstallBanner feature="fail2ban" title={t('fail2ban.notInstalled')} />
-
       <Alert variant="info">
         <strong>{t('fail2ban.toolHintPrefix')}</strong> {t('fail2ban.toolHintBody')}
         <strong>{t('fail2ban.toolHintTemp')}</strong> {t('fail2ban.toolHintBody2')}{' '}
@@ -236,6 +235,7 @@ export function Fail2banPage() {
             badge: status?.jails?.length || undefined },
           { id: 'policy', label: t('fail2ban.tabs.policy') },
           { id: 'service', label: t('fail2ban.tabs.service') },
+          { id: 'stack', label: t('tabs.stack') },
           { id: 'about', label: t('fail2ban.tabs.about') },
         ]}
         active={tab}
@@ -742,6 +742,13 @@ export function Fail2banPage() {
                 {t('fail2ban.serviceHintSuffix')}
               </FormHint>
             </div>
+          </div>
+        ) : null}
+
+        {tab === 'stack' ? (
+          <div className="tab-panel stack">
+            <SoftwareInstallBanner feature="fail2ban" title={t('fail2ban.notInstalled')} />
+            <SoftwareVersionBar softwareId="fail2ban" />
           </div>
         ) : null}
 
