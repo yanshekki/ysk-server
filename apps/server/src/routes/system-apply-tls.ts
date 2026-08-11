@@ -42,6 +42,22 @@ export async function handleSystemApplyTlsRoutes(
       host: ctx.host,
       installPackages: data.installPackages,
     });
+    // Auto-open mail ports (postfix + dovecot) via service exposure
+    if (result.ok) {
+      try {
+        const { syncMailServiceExposure } = await import('@ysk/core');
+        const exp = await syncMailServiceExposure({
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          reason: data.installPackages ? 'start' : 'apply',
+        });
+        if (exp.notes.length) {
+          result.notes = [...(result.notes ?? []), ...exp.notes.slice(0, 4)];
+        }
+      } catch {
+        /* non-fatal */
+      }
+    }
     // Write-back apply status onto matching email domain record (durable)
     const applyStatus = {
       status: result.ok ? 'applied' : 'failed',

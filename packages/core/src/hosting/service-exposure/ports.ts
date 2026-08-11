@@ -54,6 +54,61 @@ export function dnsPortBindings(): ServicePortBinding[] {
   ];
 }
 
+/** Postfix public mail ports. */
+export function postfixPortBindings(): ServicePortBinding[] {
+  const defaults = defaultPortsForService('postfix');
+  return defaults.length
+    ? defaults
+    : [
+        { role: 'smtp', port: '25', proto: 'tcp' },
+        { role: 'smtps', port: '465', proto: 'tcp' },
+        { role: 'submission', port: '587', proto: 'tcp' },
+      ];
+}
+
+/** Dovecot IMAP/POP public ports. */
+export function dovecotPortBindings(): ServicePortBinding[] {
+  const defaults = defaultPortsForService('dovecot');
+  return defaults.length
+    ? defaults
+    : [
+        { role: 'imap', port: '143', proto: 'tcp' },
+        { role: 'imaps', port: '993', proto: 'tcp' },
+        { role: 'pop3', port: '110', proto: 'tcp' },
+        { role: 'pop3s', port: '995', proto: 'tcp' },
+      ];
+}
+
+/** Sync both MTA + MDA after email stack apply. */
+export async function syncMailServiceExposure(input: {
+  host: import('../../host/executor.js').HostExecutor;
+  dataDir: string;
+  reason?: 'start' | 'apply' | 'port-change' | 'manual' | 'stop';
+}): Promise<{ notes: string[]; ok: boolean; blocked?: boolean }> {
+  const { syncServiceExposure } = await import('./sync.js');
+  const reason = input.reason ?? 'apply';
+  const notes: string[] = [];
+  let ok = true;
+  let blocked = false;
+  for (const [serviceId, ports] of [
+    ['postfix', postfixPortBindings()] as const,
+    ['dovecot', dovecotPortBindings()] as const,
+  ]) {
+    const exp = await syncServiceExposure({
+      host: input.host,
+      dataDir: input.dataDir,
+      serviceId,
+      ports: [...ports],
+      reason,
+      requireDecision: false,
+    });
+    notes.push(...exp.notes.slice(0, 3));
+    if (!exp.ok) ok = false;
+    if (exp.blocked) blocked = true;
+  }
+  return { notes, ok, blocked };
+}
+
 /** Port from console apply changes if present, else catalog defaults. */
 export function dbPortBindings(
   engine: string,

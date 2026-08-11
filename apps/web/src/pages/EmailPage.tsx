@@ -47,6 +47,7 @@ import {
   bindSeq,
   bindSet,
   bindVoid } from './bind-handlers';
+import { ServiceAccessStrip } from '../features/network/service-exposure';
 
 function asOps(r: Record<string, unknown> | null): OpsResultLike | null {
   if (!r) return null;
@@ -707,6 +708,27 @@ export function EmailPage() {
         {tab === 'stack' ? (
           <div className="tab-panel mail-panel stack">
             <SoftwareInstallBanner feature="email" title={t('email.softwareNeeded')} showReadyActions={false} />
+            <div className="u-mb-3" style={{ display: 'grid', gap: '0.75rem' }}>
+              <ServiceAccessStrip
+                serviceId="postfix"
+                ports={[
+                  { role: 'smtp', port: '25', proto: 'tcp' },
+                  { role: 'smtps', port: '465', proto: 'tcp' },
+                  { role: 'submission', port: '587', proto: 'tcp' },
+                ]}
+                compact
+              />
+              <ServiceAccessStrip
+                serviceId="dovecot"
+                ports={[
+                  { role: 'imap', port: '143', proto: 'tcp' },
+                  { role: 'imaps', port: '993', proto: 'tcp' },
+                  { role: 'pop3', port: '110', proto: 'tcp' },
+                  { role: 'pop3s', port: '995', proto: 'tcp' },
+                ]}
+                compact
+              />
+            </div>
             <SoftwareVersionBar softwareId="postfix" title="Postfix" />
             <SoftwareVersionBar softwareId="dovecot" title="Dovecot" />
             <SoftwareVersionBar softwareId="opendkim" title="OpenDKIM" />

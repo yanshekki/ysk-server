@@ -26,6 +26,8 @@ import {
   ftpsPortBindings,
   vpnPortBindings,
   dbPortBindings,
+  postfixPortBindings,
+  dovecotPortBindings,
 } from './ports.js';
 import {
   parseUfwNumbered,
@@ -78,6 +80,8 @@ describe('service-exposure shared helpers', () => {
     );
     expect(vpnPortBindings(51820, 'udp')[0]?.port).toBe('51820');
     expect(dbPortBindings('mysql', { port: '3307' })[0]?.port).toBe('3307');
+    expect(postfixPortBindings().some((p) => p.port === '25')).toBe(true);
+    expect(dovecotPortBindings().some((p) => p.port === '993')).toBe(true);
   });
 });
 
