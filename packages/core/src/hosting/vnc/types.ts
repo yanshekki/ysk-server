@@ -2,7 +2,15 @@
  * VNC control plane types — multi-account server + client dual path.
  */
 
-export type VncDesktopProfile = 'xfce' | 'minimal' | 'none';
+/** Session desktop: full XFCE or terminal-only. */
+export type VncDesktopProfile = 'xfce' | 'terminal';
+
+/** Map stored/legacy values (minimal, none) onto current profiles. */
+export function normalizeVncDesktopProfile(raw: unknown): VncDesktopProfile {
+  const s = String(raw ?? '').toLowerCase().trim();
+  if (s === 'xfce') return 'xfce';
+  return 'terminal';
+}
 
 export type VncRfbBind = 'localhost' | 'all';
 

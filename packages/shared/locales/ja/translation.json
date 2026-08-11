@@ -11117,9 +11117,8 @@
       "about": "説明"
     },
     "desktop": {
-      "minimal": "最小構成（軽量）",
       "xfce": "XFCE（フルデスクトップ）",
-      "none": "なし（カスタム xstartup）"
+      "terminal": "Terminal"
     },
     "bind": {
       "localhost": "ローカルホストのみ（noVNC / トンネル）",

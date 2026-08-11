@@ -11179,9 +11179,8 @@
       "about": "说明"
     },
     "desktop": {
-      "minimal": "最小（轻量）",
       "xfce": "XFCE（完整桌面）",
-      "none": "无（自定义 xstartup）"
+      "terminal": "终端"
     },
     "bind": {
       "localhost": "仅本机（noVNC／隧道）",

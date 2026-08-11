@@ -42,9 +42,8 @@
     "about": "정보"
   },
   "desktop": {
-    "minimal": "최소 (라이트)",
     "xfce": "XFCE (전체 데스크톱)",
-    "none": "없음 (사용자 지정 xstartup)"
+    "terminal": "Terminal"
   },
   "bind": {
     "localhost": "로컬호스트만 (noVNC / 터널)",

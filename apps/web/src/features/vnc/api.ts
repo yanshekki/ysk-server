@@ -3,7 +3,7 @@
  */
 import { api } from '../../shared/services/api';
 
-export type VncDesktopProfile = 'xfce' | 'minimal' | 'none';
+export type VncDesktopProfile = 'xfce' | 'terminal';
 export type VncRfbBind = 'localhost' | 'all';
 export type VncConnectPath = 'via_server' | 'direct';
 export type VncStackId = 'tigervnc' | 'novnc' | 'xfce' | 'viewer';

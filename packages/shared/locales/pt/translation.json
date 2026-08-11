@@ -11117,9 +11117,8 @@
       "about": "About"
     },
     "desktop": {
-      "minimal": "Minimal (light)",
       "xfce": "XFCE (full desktop)",
-      "none": "None (custom xstartup)"
+      "terminal": "Terminal"
     },
     "bind": {
       "localhost": "Localhost only (noVNC / tunnel)",

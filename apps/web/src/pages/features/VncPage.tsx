@@ -82,7 +82,7 @@ export function VncPage() {
   const [viewerTarget, setViewerTarget] = useState<VncViewerTarget | null>(null);
 
   // Settings form
-  const [desktop, setDesktop] = useState<VncDesktopProfile>('minimal');
+  const [desktop, setDesktop] = useState<VncDesktopProfile>('xfce');
   const [geometry, setGeometry] = useState('1920x1080');
   const [depth, setDepth] = useState(24);
   const [rfbBind, setRfbBind] = useState<VncRfbBind>('localhost');
@@ -93,7 +93,7 @@ export function VncPage() {
   const [cName, setCName] = useState('');
   const [cPass, setCPass] = useState('');
   const [cPass2, setCPass2] = useState('');
-  const [cDesktop, setCDesktop] = useState<VncDesktopProfile>('minimal');
+  const [cDesktop, setCDesktop] = useState<VncDesktopProfile>('xfce');
   const [cGeo, setCGeo] = useState('1920x1080');
   const [cDepth, setCDepth] = useState(24);
   const [cBind, setCBind] = useState<VncRfbBind>('localhost');
@@ -102,7 +102,7 @@ export function VncPage() {
   // Edit modal
   const [edit, setEdit] = useState<VncAccountSummary | null>(null);
   const [eName, setEName] = useState('');
-  const [eDesktop, setEDesktop] = useState<VncDesktopProfile>('minimal');
+  const [eDesktop, setEDesktop] = useState<VncDesktopProfile>('xfce');
   const [eGeo, setEGeo] = useState('1920x1080');
   const [eDepth, setEDepth] = useState(24);
   const [eBind, setEBind] = useState<VncRfbBind>('localhost');
@@ -609,9 +609,8 @@ export function VncPage() {
                   value={desktop}
                   onChange={(e) => setDesktop(e.target.value as VncDesktopProfile)}
                 >
-                  <option value="minimal">{t('vnc.desktop.minimal')}</option>
                   <option value="xfce">{t('vnc.desktop.xfce')}</option>
-                  <option value="none">{t('vnc.desktop.none')}</option>
+                  <option value="terminal">{t('vnc.desktop.terminal')}</option>
                 </select>
               </Field>
               <Field label={t('vnc.defaultGeometry')} htmlFor="vnc-geo" flush>
@@ -763,9 +762,8 @@ export function VncPage() {
               value={cDesktop}
               onChange={(e) => setCDesktop(e.target.value as VncDesktopProfile)}
             >
-              <option value="minimal">{t('vnc.desktop.minimal')}</option>
               <option value="xfce">{t('vnc.desktop.xfce')}</option>
-              <option value="none">{t('vnc.desktop.none')}</option>
+              <option value="terminal">{t('vnc.desktop.terminal')}</option>
             </select>
           </Field>
           <Field label={t('vnc.defaultGeometry')} htmlFor="c-geo" flush>
@@ -866,9 +864,8 @@ export function VncPage() {
               value={eDesktop}
               onChange={(e) => setEDesktop(e.target.value as VncDesktopProfile)}
             >
-              <option value="minimal">{t('vnc.desktop.minimal')}</option>
               <option value="xfce">{t('vnc.desktop.xfce')}</option>
-              <option value="none">{t('vnc.desktop.none')}</option>
+              <option value="terminal">{t('vnc.desktop.terminal')}</option>
             </select>
           </Field>
           <Field label={t('vnc.defaultGeometry')} htmlFor="e-geo" flush>

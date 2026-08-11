@@ -16,7 +16,7 @@ describe('VncService accounts (no execute)', () => {
     const created = await svc.createAccount({
       name: 'Alice Desk',
       password: 'secret99',
-      desktop: 'minimal',
+      desktop: 'terminal',
     });
     expect(created.ok).toBe(true);
     expect(created.blocked).toBe(true);

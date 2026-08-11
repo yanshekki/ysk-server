@@ -41,6 +41,7 @@ import {
 import type { VncSessionKind } from './session-ticket.js';
 import {
   DEFAULT_VNC_SETTINGS,
+  normalizeVncDesktopProfile,
   type VncAccountSummary,
   type VncClientProfile,
   type VncConnectPath,
@@ -150,7 +151,9 @@ export class VncService {
     if (!existsSync(p)) return { ...DEFAULT_VNC_SETTINGS };
     try {
       const raw = JSON.parse(readFileSync(p, 'utf8')) as Partial<VncSettings>;
-      return { ...DEFAULT_VNC_SETTINGS, ...raw };
+      const merged = { ...DEFAULT_VNC_SETTINGS, ...raw };
+      merged.defaultDesktop = normalizeVncDesktopProfile(merged.defaultDesktop);
+      return merged;
     } catch {
       return { ...DEFAULT_VNC_SETTINGS };
     }
@@ -159,6 +162,7 @@ export class VncService {
   saveSettings(patch: Partial<VncSettings>): VncSettings {
     this.ensureDir();
     const next = { ...this.loadSettings(), ...patch };
+    next.defaultDesktop = normalizeVncDesktopProfile(next.defaultDesktop);
     writeFileSync(this.settingsPath(), JSON.stringify(next, null, 2) + '\n', 'utf8');
     return next;
   }
@@ -171,7 +175,11 @@ export class VncService {
       const raw = JSON.parse(readFileSync(p, 'utf8')) as {
         items?: VncAccountRecord[];
       };
-      return Array.isArray(raw.items) ? raw.items : [];
+      const items = Array.isArray(raw.items) ? raw.items : [];
+      return items.map((a) => ({
+        ...a,
+        desktop: normalizeVncDesktopProfile(a.desktop),
+      }));
     } catch {
       return [];
     }
@@ -409,7 +417,7 @@ export class VncService {
       });
     }
     const depth = input.depth ?? settings.defaultDepth;
-    const desktop = input.desktop ?? settings.defaultDesktop;
+    const desktop = normalizeVncDesktopProfile(input.desktop ?? settings.defaultDesktop);
     const rfbBind = input.rfbBind ?? settings.defaultRfbBind;
     const autostart = input.autostart ?? settings.defaultAutostart;
     const now = new Date().toISOString();
@@ -559,12 +567,8 @@ export class VncService {
       rec.rfbBind = patch.rfbBind;
     }
     if (typeof patch.autostart === 'boolean') rec.autostart = patch.autostart;
-    if (
-      patch.desktop === 'xfce' ||
-      patch.desktop === 'minimal' ||
-      patch.desktop === 'none'
-    ) {
-      rec.desktop = patch.desktop;
+    if (patch.desktop != null) {
+      rec.desktop = normalizeVncDesktopProfile(patch.desktop);
       const home = `/home/${rec.linuxUser}`;
       const xs = await writeXstartupFile({
         host: this.host,
