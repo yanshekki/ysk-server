@@ -173,7 +173,13 @@
     "installedSpec": "Installed {{title}}",
     "installPkg": "Install {{p}}",
     "npmGlobal": "npm install -g {{pkgs}}",
-    "needNodeForNpm": "node/npm not found — install Node.js before {{title}}"
+    "needNodeForNpm": "node/npm not found — install Node.js before {{title}}",
+    "uninstallNoTargets": "No software selected for uninstall",
+    "uninstallNothingInstalled": "Nothing installed for the selected scope",
+    "uninstallProtected": "Skipped protected components: {{ids}}",
+    "uninstallConfirmMismatch": "Confirmation phrase does not match",
+    "uninstallOk": "Uninstalled {{n}} component(s)",
+    "uninstallPartial": "Uninstall finished with errors — check steps"
   },
   "php": {
     "aptPackages": "Will install {{count}} packages: {{list}}"

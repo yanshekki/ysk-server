@@ -235,6 +235,7 @@ export function useFeatureSoftware(feature: string) {
     missing,
     ready,
     busy,
+    setBusy,
     error,
     msg,
     setMsg,

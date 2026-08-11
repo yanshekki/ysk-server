@@ -14,6 +14,8 @@ import {
   resolveSoftwareVersionStatus,
   resolveSoftwareVersionBatch,
   listVersionDiscoveryIds,
+  previewSoftwareUninstall,
+  uninstallSoftware,
 } from '@ysk/core';
 import type { AppContext } from '../app-context.js';
 import {
@@ -22,6 +24,44 @@ import {
   sendJson,
   sendOpsResult,
 } from '../http/util.js';
+
+function wantsSse(
+  req: IncomingMessage,
+  url: URL,
+  data: { stream?: boolean },
+): boolean {
+  return (
+    Boolean(data.stream) ||
+    String(req.headers.accept || '').includes('text/event-stream') ||
+    url.searchParams.get('stream') === '1'
+  );
+}
+
+function beginSse(res: ServerResponse, tag: string) {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream; charset=utf-8',
+    'Cache-Control': 'no-cache, no-transform',
+    Connection: 'keep-alive',
+    'X-Accel-Buffering': 'no',
+  });
+  res.write(`: ${tag}\n\n`);
+  let closed = false;
+  const send = (event: string, payload: unknown) => {
+    if (closed || res.writableEnded) return;
+    try {
+      res.write(`event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`);
+    } catch {
+      closed = true;
+    }
+  };
+  return {
+    send,
+    close: () => {
+      closed = true;
+    },
+    isClosed: () => closed,
+  };
+}
 
 export async function handleSoftwareCatalogRoutes(
   ctx: AppContext,
@@ -116,31 +156,155 @@ export async function handleSoftwareCatalogRoutes(
     return true;
   }
 
+  if (method === 'POST' && url.pathname === '/api/v1/system/software/uninstall-preview') {
+    ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as {
+      ids?: string[];
+      feature?: string;
+      dataPolicy?: 'keep' | 'purge';
+    };
+    const preview = await previewSoftwareUninstall({
+      host: ctx.host,
+      feature: data.feature,
+      ids: data.ids,
+      dataPolicy: data.dataPolicy,
+    });
+    sendJson(res, 200, preview);
+    return true;
+  }
+
+  if (method === 'POST' && url.pathname === '/api/v1/system/software/uninstall') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as {
+      ids?: string[];
+      feature?: string;
+      dataPolicy?: 'keep' | 'purge';
+      confirmPhrase?: string;
+      stream?: boolean;
+    };
+    const stream = wantsSse(req, url, data);
+
+    const run = async (hooks?: {
+      onLog?: (stream: 'stdout' | 'stderr' | 'status', line: string) => void;
+    }) => {
+      const result = await uninstallSoftware({
+        host: ctx.host,
+        feature: data.feature,
+        ids: data.ids,
+        dataPolicy: data.dataPolicy,
+        confirmPhrase: data.confirmPhrase,
+        onLog: hooks?.onLog,
+      });
+      ctx.audit.append({
+        actor: user.username,
+        action: 'system.software.uninstall',
+        detail: {
+          feature: data.feature,
+          ids: data.ids,
+          dataPolicy: data.dataPolicy,
+          ok: result.ok,
+        },
+        ok: result.ok,
+      });
+      return result;
+    };
+
+    if (stream) {
+      const sse = beginSse(res, 'ysk-software-uninstall-stream');
+      req.on('close', () => sse.close());
+      try {
+        const result = await run({
+          onLog: (streamName, line) => {
+            sse.send('log', { stream: streamName, line, at: new Date().toISOString() });
+          },
+        });
+        sse.send('result', result);
+      } catch (e) {
+        sse.send('result', {
+          ok: false,
+          notes: [e instanceof Error ? e.message : String(e)],
+        });
+      }
+      res.end();
+      return true;
+    }
+
+    const result = await run();
+    sendOpsResult(res, result);
+    return true;
+  }
+
   if (method === 'POST' && url.pathname === '/api/v1/system/software/install') {
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
-    const data = JSON.parse(raw || '{}') as { ids?: string[]; feature?: string };
-    let result: Record<string, unknown>;
-    if (data.feature) {
-      result = (await installForFeature({
-        host: ctx.host,
-        feature: data.feature,
-        dataDir: ctx.dataDir,
-      })) as unknown as Record<string, unknown>;
-    } else {
-      const ids = data.ids ?? [];
-      result = (await installSoftwareBatch({
-        host: ctx.host,
-        ids,
-        dataDir: ctx.dataDir,
-      })) as unknown as Record<string, unknown>;
+    const data = JSON.parse(raw || '{}') as {
+      ids?: string[];
+      feature?: string;
+      stream?: boolean;
+    };
+    const stream = wantsSse(req, url, data);
+
+    const run = async (hooks?: {
+      onLog?: (stream: 'stdout' | 'stderr' | 'status', line: string) => void;
+    }) => {
+      hooks?.onLog?.('status', 'install start');
+      let result: Record<string, unknown>;
+      if (data.feature) {
+        hooks?.onLog?.('status', `feature=${data.feature}`);
+        result = (await installForFeature({
+          host: ctx.host,
+          feature: data.feature,
+          dataDir: ctx.dataDir,
+        })) as unknown as Record<string, unknown>;
+      } else {
+        const ids = data.ids ?? [];
+        hooks?.onLog?.('status', `ids=${ids.join(',')}`);
+        result = (await installSoftwareBatch({
+          host: ctx.host,
+          ids,
+          dataDir: ctx.dataDir,
+        })) as unknown as Record<string, unknown>;
+      }
+      const notes = Array.isArray(result.notes) ? result.notes.map(String) : [];
+      for (const n of notes.slice(0, 30)) {
+        hooks?.onLog?.('stdout', n);
+      }
+      hooks?.onLog?.(
+        'status',
+        result.ok ? 'install done' : 'install finished with errors',
+      );
+      ctx.audit.append({
+        actor: user.username,
+        action: 'system.software.install',
+        detail: { feature: data.feature, ids: data.ids, ok: result.ok },
+        ok: Boolean(result.ok),
+      });
+      return result;
+    };
+
+    if (stream) {
+      const sse = beginSse(res, 'ysk-software-install-stream');
+      req.on('close', () => sse.close());
+      try {
+        const result = await run({
+          onLog: (streamName, line) => {
+            sse.send('log', { stream: streamName, line, at: new Date().toISOString() });
+          },
+        });
+        sse.send('result', result);
+      } catch (e) {
+        sse.send('result', {
+          ok: false,
+          notes: [e instanceof Error ? e.message : String(e)],
+        });
+      }
+      res.end();
+      return true;
     }
-    ctx.audit.append({
-      actor: user.username,
-      action: 'system.software.install',
-      detail: { feature: data.feature, ids: data.ids, ok: result.ok },
-      ok: Boolean(result.ok),
-    });
+
+    const result = await run();
     sendOpsResult(res, result);
     return true;
   }
@@ -161,6 +325,57 @@ export async function handleSoftwareCatalogRoutes(
       ok: result.ok,
     });
     sendOpsResult(res, result);
+    return true;
+  }
+
+  if (method === 'POST' && url.pathname.match(/^\/api\/v1\/system\/software\/[^/]+\/uninstall$/)) {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const id = url.pathname.split('/')[5];
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as {
+      dataPolicy?: 'keep' | 'purge';
+      confirmPhrase?: string;
+      stream?: boolean;
+    };
+    const stream = wantsSse(req, url, data);
+    const run = async (hooks?: {
+      onLog?: (stream: 'stdout' | 'stderr' | 'status', line: string) => void;
+    }) => {
+      const result = await uninstallSoftware({
+        host: ctx.host,
+        ids: id ? [id] : [],
+        dataPolicy: data.dataPolicy,
+        confirmPhrase: data.confirmPhrase,
+        onLog: hooks?.onLog,
+      });
+      ctx.audit.append({
+        actor: user.username,
+        action: 'system.software.uninstall.one',
+        detail: { id, ok: result.ok },
+        ok: result.ok,
+      });
+      return result;
+    };
+    if (stream) {
+      const sse = beginSse(res, 'ysk-software-uninstall-one-stream');
+      req.on('close', () => sse.close());
+      try {
+        const result = await run({
+          onLog: (streamName, line) => {
+            sse.send('log', { stream: streamName, line, at: new Date().toISOString() });
+          },
+        });
+        sse.send('result', result);
+      } catch (e) {
+        sse.send('result', {
+          ok: false,
+          notes: [e instanceof Error ? e.message : String(e)],
+        });
+      }
+      res.end();
+      return true;
+    }
+    sendOpsResult(res, await run());
     return true;
   }
 

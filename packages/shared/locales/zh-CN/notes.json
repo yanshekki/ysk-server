@@ -173,7 +173,13 @@
     "installedSpec": "已安装 {{title}}",
     "installPkg": "安装 {{p}}",
     "npmGlobal": "npm install -g {{pkgs}}",
-    "needNodeForNpm": "未找到 node／npm — 请先安装 Node.js 再安装 {{title}}"
+    "needNodeForNpm": "未找到 node／npm — 请先安装 Node.js 再安装 {{title}}",
+    "uninstallNoTargets": "未选择要卸载的软件",
+    "uninstallNothingInstalled": "所选范围内没有已安装项目",
+    "uninstallProtected": "已跳过受保护组件：{{ids}}",
+    "uninstallConfirmMismatch": "确认短语不匹配",
+    "uninstallOk": "已卸载 {{n}} 个组件",
+    "uninstallPartial": "卸载完成但有错误 — 请查看步骤"
   },
   "php": {
     "aptPackages": "将安装 {{count}} 个软件包：{{list}}"

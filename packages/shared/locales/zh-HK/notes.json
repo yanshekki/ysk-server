@@ -173,7 +173,13 @@
     "installedSpec": "已安裝 {{title}}",
     "installPkg": "安裝 {{p}}",
     "npmGlobal": "npm install -g {{pkgs}}",
-    "needNodeForNpm": "未找到 node／npm — 請先安裝 Node.js 再安裝 {{title}}"
+    "needNodeForNpm": "未找到 node／npm — 請先安裝 Node.js 再安裝 {{title}}",
+    "uninstallNoTargets": "未選擇要解除安裝的軟件",
+    "uninstallNothingInstalled": "所選範圍內沒有已安裝項目",
+    "uninstallProtected": "已略過受保護元件：{{ids}}",
+    "uninstallConfirmMismatch": "確認短語不相符",
+    "uninstallOk": "已解除安裝 {{n}} 個元件",
+    "uninstallPartial": "解除安裝完成但有錯誤 — 請查看步驟"
   },
   "php": {
     "aptPackages": "將安裝 {{count}} 個套件：{{list}}"

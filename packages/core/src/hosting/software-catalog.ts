@@ -108,6 +108,17 @@ export interface SoftwareSpec {
   installer?: RuntimeInstaller;
   /** Default runtime version when installer is runtime-* */
   runtimeVersion?: string;
+  /**
+   * Data/config paths removable only under uninstall dataPolicy=purge
+   * (must pass isPurgePathAllowed at runtime).
+   */
+  dataPaths?: string[];
+  /**
+   * i18n keys under softwareLifecycle.impact.* describing user-facing impact.
+   */
+  impactKeys?: string[];
+  /** Refuse panel one-click uninstall (control-plane critical). */
+  uninstallProtected?: boolean;
 }
 
 /** Resolve display title under current request locale. */
@@ -130,7 +141,8 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     bins: ['vsftpd'],
     aptPackages: ['vsftpd'],
     units: ['vsftpd'],
-    features: ['ftp'] },
+    features: ['ftp'],
+    impactKeys: ['ftp'] },
   {
     id: 'db-util',
     title: 'db-util (FTP user DB)',
@@ -144,6 +156,8 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     bins: ['nginx'],
     aptPackages: ['nginx'],
     units: ['nginx'],
+    dataPaths: ['/var/cache/nginx', '/var/log/nginx'],
+    impactKeys: ['sitesDown', 'reverseProxy'],
     features: ['nginx'] },
   {
     id: 'apache2',
@@ -151,6 +165,8 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     bins: ['apache2', 'apache2ctl', 'httpd'],
     aptPackages: ['apache2'],
     units: ['apache2', 'httpd'],
+    dataPaths: ['/var/log/apache2', '/var/log/httpd'],
+    impactKeys: ['phpBackend', 'sitesDown'],
     features: ['apache'] },
   {
     id: 'certbot',
@@ -173,7 +189,9 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     bins: ['mysqld'],
     aptPackages: ['mysql-server'],
     units: ['mysql'],
-    features: ['mysql'] },
+    features: ['mysql'],
+    dataPaths: ['/var/lib/mysql'],
+    impactKeys: ['database', 'dataLossPurge'] },
   {
     id: 'mariadb-server',
     title: 'MariaDB server',
@@ -182,7 +200,9 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     bins: ['mariadbd', 'mysqld'],
     aptPackages: ['mariadb-server'],
     units: ['mariadb'],
-    features: ['mariadb'] },
+    features: ['mariadb'],
+    dataPaths: ['/var/lib/mysql'],
+    impactKeys: ['database', 'dataLossPurge'] },
   {
     id: 'postgresql-client',
     title: 'PostgreSQL client',
@@ -197,7 +217,9 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     bins: ['postgres'],
     aptPackages: ['postgresql'],
     units: ['postgresql'],
-    features: ['postgres'] },
+    features: ['postgres'],
+    dataPaths: ['/var/lib/postgresql'],
+    impactKeys: ['database', 'dataLossPurge'] },
   {
     id: 'redis-tools',
     title: 'Redis client',
@@ -212,49 +234,59 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     bins: ['redis-server'],
     aptPackages: ['redis-server'],
     units: ['redis-server'],
-    features: ['redis'] },
+    features: ['redis'],
+    dataPaths: ['/var/lib/redis'],
+    impactKeys: ['cache'] },
   {
     id: 'ufw',
     title: 'UFW firewall',
     titleKey: 'notes.auto.n0017',
     bins: ['ufw'],
     aptPackages: ['ufw'],
-    features: ['firewall'] },
+    features: ['firewall'],
+    impactKeys: ['firewall'] },
   {
     id: 'fail2ban',
     title: 'fail2ban',
     bins: ['fail2ban-client'],
     aptPackages: ['fail2ban'],
     units: ['fail2ban'],
-    features: ['fail2ban'] },
+    features: ['fail2ban'],
+    impactKeys: ['intrusion'] },
   {
     id: 'postfix',
     title: 'Postfix',
     bins: ['postfix'],
     aptPackages: ['postfix'],
     units: ['postfix'],
-    features: ['email'] },
+    features: ['email'],
+    dataPaths: ['/var/spool/postfix'],
+    impactKeys: ['mailOutbound', 'mailQueue'] },
   {
     id: 'dovecot',
     title: 'Dovecot',
     bins: ['dovecot'],
     aptPackages: ['dovecot-core', 'dovecot-imapd'],
     units: ['dovecot'],
-    features: ['email'] },
+    features: ['email'],
+    dataPaths: ['/var/mail'],
+    impactKeys: ['mailInbound'] },
   {
     id: 'opendkim',
     title: 'OpenDKIM',
     bins: ['opendkim'],
     aptPackages: ['opendkim', 'opendkim-tools'],
     units: ['opendkim'],
-    features: ['email'] },
+    features: ['email'],
+    impactKeys: ['mailDkim'] },
   {
     id: 'pdns-server',
     title: 'PowerDNS',
     bins: ['pdns_server', 'pdnsutil'],
     aptPackages: ['pdns-server', 'pdns-backend-bind'],
     units: ['pdns'],
-    features: ['dns'] },
+    features: ['dns'],
+    impactKeys: ['dns'] },
   {
     id: 'git',
     title: 'Git',
@@ -345,7 +377,9 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     ],
     // Prefer distro chromium; Ubuntu may use chromium-browser transitional package
     aptPackages: ['chromium'],
-    features: ['hostBrowse'] },
+    features: ['hostBrowse'],
+    uninstallProtected: true,
+    impactKeys: ['controlPlane'] },
   {
     id: 'wireguard',
     title: 'WireGuard',

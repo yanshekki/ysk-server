@@ -107,6 +107,80 @@ export const softwareApi = {
       body: JSON.stringify({ feature }),
       allowStatuses: [403, 422],
     }),
+  installFeatureStream: (
+    feature: string,
+    opts?: {
+      onLog?: (line: {
+        stream: 'stdout' | 'stderr' | 'status';
+        line: string;
+      }) => void;
+      signal?: AbortSignal;
+    },
+  ) =>
+    import('../runtimes/stream-sse').then(async (m) => {
+      const { ops, raw } = await m.postSseJson(
+        '/api/v1/system/software/install',
+        { feature, stream: true },
+        opts,
+      );
+      return { ops, raw };
+    }),
+  uninstallPreview: (body: {
+    feature?: string;
+    ids?: string[];
+    dataPolicy?: 'keep' | 'purge';
+  }) =>
+    api.requestRaw<{
+      ok: boolean;
+      targets: Array<{
+        id: string;
+        title: string;
+        installed: boolean;
+        packages: string[];
+        units: string[];
+        dataPaths: string[];
+        impactKeys: string[];
+        protected: boolean;
+      }>;
+      summary: {
+        packageCount: number;
+        unitCount: number;
+        installedCount: number;
+        willStopServices: boolean;
+        willTouchData: boolean;
+      };
+      warningKeys: string[];
+      confirmPhrase: string;
+      notes?: string[];
+      blocked?: boolean;
+      blockMessage?: string;
+    }>('/api/v1/system/software/uninstall-preview', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  uninstallStream: (
+    body: {
+      feature?: string;
+      ids?: string[];
+      dataPolicy?: 'keep' | 'purge';
+      confirmPhrase: string;
+    },
+    opts?: {
+      onLog?: (line: {
+        stream: 'stdout' | 'stderr' | 'status';
+        line: string;
+      }) => void;
+      signal?: AbortSignal;
+    },
+  ) =>
+    import('../runtimes/stream-sse').then(async (m) => {
+      const { ops, raw } = await m.postSseJson(
+        '/api/v1/system/software/uninstall',
+        { ...body, stream: true },
+        opts,
+      );
+      return { ops, raw };
+    }),
 
   /** Preview MySQL ↔ MariaDB exclusive switch (no mutation) */
   sqlEngineSwitchPreview: (target: 'mysql' | 'mariadb') =>

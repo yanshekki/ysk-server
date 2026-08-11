@@ -6,6 +6,8 @@ import { RequireCapability } from './layout/RequireCapability';
 import { GuestOnly } from './layout/GuestOnly';
 import { ErrorBoundary } from '../shared/components/ErrorBoundary';
 import { ToastViewport } from '../shared/components/ui';
+import { OpsStreamProvider } from '../shared/ops-stream/OpsStreamContext';
+import { OpsStreamDock } from '../shared/ops-stream/OpsStreamDock';
 
 /** Lightweight fallback while route chunks load */
 export function RouteFallback() {
@@ -198,9 +200,11 @@ export function Lazy({ children }: { children: ReactNode }) {
 export function App() {
   return (
     <ErrorBoundary>
+      <OpsStreamProvider>
       <BrowserRouter>
         {/* Global toast: login + authenticated shell */}
         <ToastViewport />
+        <OpsStreamDock />
         <Routes>
           <Route
             path="/login"
@@ -641,6 +645,7 @@ export function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
+      </OpsStreamProvider>
     </ErrorBoundary>
   );
 }
