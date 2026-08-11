@@ -3623,7 +3623,8 @@
       "ports": "开端口",
       "deny": "永久拒 IP",
       "profiles": "配置档",
-      "about": "说明"
+      "about": "说明",
+      "services": "服务"
     },
     "currentRules": "当前规则",
     "rulesSourceHint": "UFW 编号规则（ufw status numbered）",
@@ -3672,7 +3673,19 @@
     "applyToSystem": "套用到系统",
     "deletedRule": "已删 #{{n}}",
     "deleteRuleTitle": "删规则 #{{n}}？",
-    "deleteRuleDesc": "将从 UFW 移除该规则编号（需系统变更权限）。"
+    "deleteRuleDesc": "将从 UFW 移除该规则编号（需系统变更权限）。",
+    "servicesTitle": "托管服务端口",
+    "servicesHint": "YSK 托管服务的期望网络暴露。启动服务时会自动同步这些规则。",
+    "servicesEmpty": "尚无服务暴露数据",
+    "servicesEmptyDesc": "启动托管服务（Web、FTPS、VPN、数据库…）后会出现在此列表。",
+    "servicesManualHint": "手动开端口 chips 在「端口」分页 — 建议在此管理，规则会带 ysk-svc 标记。",
+    "portsManualHint": "高级手动规则。托管软件请优先用「服务」分页。",
+    "colService": "服务",
+    "colMode": "模式",
+    "colPorts": "端口",
+    "colSync": "状态",
+    "synced": "已同步",
+    "syncNow": "立即同步"
   },
   "ftp": {
     "title": "FTPS 账户",

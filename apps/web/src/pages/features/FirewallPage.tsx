@@ -35,8 +35,9 @@ import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { useCapabilities } from '../../shared/hooks/useCapabilities';
 import { bindSet, bindInput, bindCheck, bindCall1 } from '../bind-handlers';
+import { FirewallServicesPanel } from './FirewallServicesPanel';
 
-const FW_TABS = ['rules', 'ports', 'deny', 'profiles', 'stack', 'about'] as const;
+const FW_TABS = ['services', 'rules', 'ports', 'deny', 'profiles', 'stack', 'about'] as const;
 
 type FwStatus = Awaited<ReturnType<typeof systemApi.firewallStatus>>;
 
@@ -212,7 +213,7 @@ export function FirewallPage() {
   const { can } = useCapabilities();
   const canEdit = can('firewall.edit');
   const canFlush = can('firewall.flush');
-  const [tab, setTab] = usePageTab(FW_TABS, 'rules');
+  const [tab, setTab] = usePageTab(FW_TABS, 'services');
   const [status, setStatus] = useState<FwStatus | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [extraPorts, setExtraPorts] = useState('21,30000:30100');
@@ -371,6 +372,7 @@ export function FirewallPage() {
 
       <PageTabs
         tabs={[
+          { id: 'services', label: t('firewall.tabs.services') },
           {
             id: 'rules',
             label: t('firewall.tabs.rules'),
@@ -388,6 +390,10 @@ export function FirewallPage() {
         onChange={setTab}
         variant="scroll"
       >
+        {tab === 'services' ? (
+          <FirewallServicesPanel canEdit={canEdit} />
+        ) : null}
+
         {tab === 'rules' ? (
           <div className="tab-panel def-panel">
             <div className="def-panel-card">
@@ -476,6 +482,7 @@ export function FirewallPage() {
             <div className="def-panel-card">
               <div className="def-section-head">
                 <h3 className="def-section-head__title">{t('firewall.allowPortTitle')}</h3>
+                <span className="muted u-text-sm">{t('firewall.portsManualHint')}</span>
               </div>
               <FormLayout columns={2}>
                 <Field label={t('firewall.protocol')} htmlFor="fw-proto" flush>
