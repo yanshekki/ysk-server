@@ -351,6 +351,20 @@ export function ApachePage() {
         }
       >
         {error ? <Alert variant="error">{error}</Alert> : null}
+        {hasConflictArtifacts ? (
+          <Alert variant="warn">
+            <div className="u-flex u-flex-wrap u-gap-2 u-items-center">
+              <span>{t('apache.conflictHint')}</span>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setCleanupOpen(true)}
+              >
+                {t('apache.cleanupConflicts')}
+              </Button>
+            </div>
+          </Alert>
+        ) : null}
 
         <div className="u-flex u-gap-2 u-mb-3 u-flex-wrap" style={{ alignItems: 'center' }}>
           <input
