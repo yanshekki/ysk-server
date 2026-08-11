@@ -2826,6 +2826,8 @@
     "ovpnNatDurable": "OpenVPN NAT/forward installed for reboot (systemd ExecStartPost)."
   },
   "vnc": {
+    "viewerNeedExecute": "要喺瀏覽器開本機 VNC 桌面，需要 root + YSK_EXECUTE",
+    "browserSessionReady": "瀏覽器 VNC 工作階段已就緒：{{name}}",
     "needInstall": "請安裝 {{stack}}",
     "needExecute": "未啟用 YSK_EXECUTE — 無法安裝套件或建立 Linux 用戶。",
     "needRoot": "非 root — 無法 useradd 或套用 vncserver。",

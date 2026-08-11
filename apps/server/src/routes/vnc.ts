@@ -35,6 +35,74 @@ export async function handleVncRoutes(
   const vnc = createVncService(ctx.dataDir, ctx.host);
 
   try {
+    /**
+     * Browser VNC session — prepare RFB target + one-time WS ticket.
+     * Client connects to /api/v1/vnc/ws?ticket=… (binary RFB pipe).
+     */
+    if (method === 'POST' && url.pathname === '/api/v1/vnc/sessions') {
+      const raw = await readBody(req);
+      const data = JSON.parse(raw || '{}') as {
+        kind?: string;
+        id?: string;
+      };
+      const kind = data.kind === 'client' ? 'client' : data.kind === 'account' ? 'account' : null;
+      const id = String(data.id ?? '').trim();
+      if (!kind || !id) {
+        sendJson(res, 400, {
+          ok: false,
+          code: ErrorCodes.VALIDATION,
+          message: 'kind (account|client) and id required',
+        });
+        return true;
+      }
+      const prepared = await vnc.prepareBrowserSession({ kind, id });
+      if (!prepared.ok || !prepared.rfbHost || !prepared.rfbPort) {
+        sendOpsResult(res, {
+          ok: false,
+          notes: prepared.notes,
+          blocked: prepared.blocked,
+          requiresExecute: prepared.requiresExecute,
+          apply_status: prepared.blocked ? 'blocked' : 'failed',
+        });
+        return true;
+      }
+      const ticketRec = ctx.vncSessionTickets.issue({
+        actor: user.username,
+        actorUserId: user.id,
+        kind,
+        targetId: id,
+        label: prepared.label || id,
+        rfbHost: prepared.rfbHost,
+        rfbPort: prepared.rfbPort,
+      });
+      ctx.audit.append({
+        actor: user.username,
+        action: 'vnc.session.create',
+        resource: `${kind}:${id}`,
+        ok: true,
+        detail: { label: prepared.label, port: prepared.rfbPort },
+      });
+      sendJson(res, 200, {
+        ok: true,
+        ticket: ticketRec.ticket,
+        sessionId: ticketRec.sessionId,
+        wsPath: `/api/v1/vnc/ws?ticket=${encodeURIComponent(ticketRec.ticket)}`,
+        expiresAt: new Date(ticketRec.expiresAt).toISOString(),
+        target: {
+          kind,
+          id,
+          label: prepared.label,
+          host: prepared.rfbHost,
+          port: prepared.rfbPort,
+        },
+        /** Present when client profile stored a password (same auth as profile CRUD). */
+        password: prepared.passwordHint || undefined,
+        hasStoredPassword: Boolean(prepared.passwordHint),
+        notes: prepared.notes,
+      });
+      return true;
+    }
+
     if (method === 'GET' && url.pathname === '/api/v1/vnc/status') {
       const status = await vnc.status();
       sendJson(res, 200, { ok: true, ...status });

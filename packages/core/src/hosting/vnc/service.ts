@@ -34,9 +34,11 @@ import {
   clientUp,
   createClientProfile,
   deleteClientProfile,
+  getClientProfileRecord,
   listClientProfilesPublic,
   updateClientProfile,
 } from './client-profiles.js';
+import type { VncSessionKind } from './session-ticket.js';
 import {
   DEFAULT_VNC_SETTINGS,
   type VncAccountSummary,
@@ -844,6 +846,85 @@ export class VncService {
 
   listClientProfiles(): VncClientProfile[] {
     return listClientProfilesPublic(this.dataDir);
+  }
+
+  /**
+   * Resolve RFB target for an in-browser VNC session (panel WS will TCP-proxy).
+   * Account: ensure desktop is running on localhost RFB.
+   * Client: connect outbound from this host to profile host:port.
+   */
+  async prepareBrowserSession(input: {
+    kind: VncSessionKind;
+    id: string;
+  }): Promise<{
+    ok: boolean;
+    notes: string[];
+    blocked?: boolean;
+    requiresExecute?: boolean;
+    label?: string;
+    rfbHost?: string;
+    rfbPort?: number;
+    /** Optional stored RFB password (client profiles only; never for accounts) */
+    passwordHint?: string;
+  }> {
+    const notes: string[] = [];
+    if (input.kind === 'account') {
+      const rec = this.getAccountOrThrow(input.id);
+      const status = await this.resolveStatus(rec);
+      if (status !== 'running') {
+        if (!this.host.executeEnabled() || !this.host.isRoot()) {
+          notes.push(tl('notes.vnc.viewerNeedExecute'));
+          return {
+            ok: false,
+            notes,
+            blocked: true,
+            requiresExecute: !this.host.executeEnabled(),
+          };
+        }
+        const start = await this.startAccount(rec.id);
+        notes.push(...start.notes);
+        if (!start.ok && !start.blocked) {
+          return { ok: false, notes };
+        }
+        if (start.blocked) {
+          return {
+            ok: false,
+            notes,
+            blocked: true,
+            requiresExecute: start.requiresExecute,
+          };
+        }
+      }
+      notes.push(tl('notes.vnc.browserSessionReady', { name: rec.name }));
+      return {
+        ok: true,
+        notes,
+        label: rec.name,
+        rfbHost: '127.0.0.1',
+        rfbPort: rec.rfbPort,
+      };
+    }
+
+    // client outbound
+    const cl = getClientProfileRecord(this.dataDir, input.id);
+    if (!cl) {
+      throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.vnc.clientNotFound'), {
+        httpStatus: 404,
+      });
+    }
+    notes.push(
+      tl('notes.vnc.browserSessionReady', {
+        name: `${cl.name} (${cl.host}:${cl.port})`,
+      }),
+    );
+    return {
+      ok: true,
+      notes,
+      label: cl.name,
+      rfbHost: cl.host,
+      rfbPort: cl.port,
+      passwordHint: cl.password || undefined,
+    };
   }
 
   createClientProfile(input: {

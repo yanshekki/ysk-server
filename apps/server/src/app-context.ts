@@ -35,6 +35,7 @@ import {
   backupAllProjects,
   checkIpDnsbl,
   createTerminalTicketStore,
+  createVncSessionTicketStore,
   HostBrowseService,
   createHostBrowseLiveTicketStore,
   type Allowlist,
@@ -42,6 +43,7 @@ import {
   type HostExecutor,
   type ProtectionState,
   type TerminalTicketStore,
+  type VncSessionTicketStore,
   type YskConfig,
   type YskDatabase,
 } from '@ysk/core';
@@ -77,6 +79,8 @@ export interface AppContext {
   webRoot?: string;
   /** One-time tickets for browser terminal WebSocket */
   terminalTickets: TerminalTicketStore;
+  /** One-time tickets for browser VNC (RFB) WebSocket proxy */
+  vncSessionTickets: VncSessionTicketStore;
   /** Host-mediated proxy browser (privacy egress) */
   hostBrowse: HostBrowseService;
   /** One-time tickets for host-browse live screencast WS */
@@ -200,6 +204,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
     dataDir,
     webRoot: opts.webRoot,
     terminalTickets: createTerminalTicketStore(),
+    vncSessionTickets: createVncSessionTicketStore(),
     hostBrowse: new HostBrowseService(
       {
         /* env defaults; panel settings overlay via getPanelConfig */

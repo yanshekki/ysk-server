@@ -6,4 +6,5 @@ export * from './passwd.js';
 export * from './server-session.js';
 export * from './novnc.js';
 export * from './client-profiles.js';
+export * from './session-ticket.js';
 export * from './service.js';

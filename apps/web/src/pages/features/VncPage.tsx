@@ -35,6 +35,10 @@ import {
   type VncOpsResult,
   type VncRfbBind,
 } from '../../features/vnc/api';
+import {
+  VncViewer,
+  type VncViewerTarget,
+} from '../../features/vnc/VncViewer';
 
 const TABS = ['accounts', 'client', 'install', 'settings', 'about'] as const;
 const PAGE_SIZE = 10;
@@ -74,6 +78,8 @@ export function VncPage() {
   const [clHost, setClHost] = useState('');
   const [clPort, setClPort] = useState(5901);
   const [clPath, setClPath] = useState<VncConnectPath>('via_server');
+  /** In-browser RFB viewer (panel WS proxy) */
+  const [viewerTarget, setViewerTarget] = useState<VncViewerTarget | null>(null);
 
   // Settings form
   const [desktop, setDesktop] = useState<VncDesktopProfile>('minimal');
@@ -228,6 +234,31 @@ export function VncPage() {
           />
         ) : null}
 
+        {viewerTarget ? (
+          <div className="vnc-viewer-panel">
+            <VncViewer
+              target={viewerTarget}
+              createSession={async (tgt) => {
+                const r = await vncApi.createSession({
+                  kind: tgt.kind,
+                  id: tgt.id,
+                });
+                if (!r.ok || !r.wsPath) {
+                  throw new Error(
+                    r.notes?.[0] || r.message || t('vnc.viewer.error'),
+                  );
+                }
+                return {
+                  wsPath: r.wsPath,
+                  password: r.password,
+                  notes: r.notes,
+                };
+              }}
+              onClose={() => setViewerTarget(null)}
+            />
+          </div>
+        ) : null}
+
         {tab === 'accounts' ? (
           <div className="stack">
             <SoftwareInstallBanner feature="tigervnc" title={t('vnc.needTigerVnc')} />
@@ -308,6 +339,20 @@ export function VncPage() {
               }
               rowActions={(a) => (
                 <ActionBar>
+                  <Button
+                    size="sm"
+                    variant="primary"
+                    onClick={() =>
+                      setViewerTarget({
+                        kind: 'account',
+                        id: a.id,
+                        label: a.name,
+                        subtitle: `:${a.display} · ${a.rfbPort}`,
+                      })
+                    }
+                  >
+                    {t('vnc.openInBrowser')}
+                  </Button>
                   {a.status === 'running' ? (
                     <Button
                       size="sm"
@@ -320,7 +365,7 @@ export function VncPage() {
                   ) : (
                     <Button
                       size="sm"
-                      variant="primary"
+                      variant="secondary"
                       loading={busy}
                       onClick={() => void runOps(() => vncApi.startAccount(a.id))}
                     >
@@ -329,7 +374,7 @@ export function VncPage() {
                   )}
                   <Button
                     size="sm"
-                    variant="secondary"
+                    variant="ghost"
                     loading={busy}
                     onClick={() => {
                       setBusy(true);
@@ -464,8 +509,8 @@ export function VncPage() {
                   nowrap: true,
                   render: (c) =>
                     c.path === 'direct'
-                      ? t('vnc.pathDirectShort')
-                      : t('vnc.pathViaServerShort'),
+                      ? t('vnc.pathHostViewer')
+                      : t('vnc.pathBrowser'),
                 },
                 {
                   key: 'status',
@@ -489,6 +534,20 @@ export function VncPage() {
               }
               rowActions={(c) => (
                 <ActionBar>
+                  <Button
+                    size="sm"
+                    variant="primary"
+                    onClick={() =>
+                      setViewerTarget({
+                        kind: 'client',
+                        id: c.id,
+                        label: c.name,
+                        subtitle: `${c.host}:${c.port}`,
+                      })
+                    }
+                  >
+                    {t('vnc.openInBrowser')}
+                  </Button>
                   {c.status === 'up' ? (
                     <Button
                       size="sm"
@@ -498,16 +557,18 @@ export function VncPage() {
                     >
                       {t('vnc.disconnect')}
                     </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="primary"
-                      loading={busy}
-                      onClick={() => void runOps(() => vncApi.clientUp(c.id, c.path))}
-                    >
-                      {t('vnc.connect')}
-                    </Button>
-                  )}
+                  ) : null}
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    loading={busy}
+                    onClick={() =>
+                      void runOps(() => vncApi.clientUp(c.id, 'direct'))
+                    }
+                    title={t('vnc.pathHostViewer')}
+                  >
+                    {t('vnc.hostViewer')}
+                  </Button>
                   <Button
                     size="sm"
                     variant="danger"

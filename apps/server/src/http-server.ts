@@ -62,6 +62,7 @@ import { handleVncRoutes } from './routes/vnc.js';
 import { handleApacheRoutes } from './routes/apache.js';
 import { attachTerminalWebSocket } from './terminal/ws-handler.js';
 import { attachHostBrowseWebSocket } from './host-browse/ws-handler.js';
+import { attachVncWebSocket } from './vnc/ws-handler.js';
 
 export type ControlPlaneServer = HttpServer | HttpsServer;
 
@@ -218,9 +219,10 @@ export function createControlPlaneServer(ctx: AppContext): CreateServerResult {
     }
     server = createNodeHttpServer(handler);
   }
-  // Interactive browser terminal (WebSocket upgrade)
+  // Interactive browser terminal / VNC / host-browse (WebSocket upgrade)
   attachTerminalWebSocket(server, ctx, ctx.terminalTickets);
   attachHostBrowseWebSocket(server, ctx, ctx.hostBrowseLiveTickets);
+  attachVncWebSocket(server, ctx, ctx.vncSessionTickets);
   return { server, https };
 }
 
@@ -302,10 +304,11 @@ export async function listenControlPlane(
     : attachRequestHandler(ctx, resolveWebRoot(ctx.webRoot));
 
   const httpServer = createNodeHttpServer(httpHandler);
-  // Full-API dual HTTP (no redirect) needs the same terminal WS upgrade as primary.
+  // Full-API dual HTTP (no redirect) needs the same terminal/VNC WS upgrade as primary.
   if (!redirect) {
     attachTerminalWebSocket(httpServer, ctx, ctx.terminalTickets);
     attachHostBrowseWebSocket(httpServer, ctx, ctx.hostBrowseLiveTickets);
+    attachVncWebSocket(httpServer, ctx, ctx.vncSessionTickets);
   }
   try {
     await listen(httpServer, host, wantHttp);

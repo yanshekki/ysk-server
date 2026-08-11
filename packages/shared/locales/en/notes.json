@@ -2830,6 +2830,8 @@
     "needExecute": "YSK_EXECUTE is disabled — cannot install packages or provision Linux users.",
     "needRoot": "Not running as root — system useradd and vncserver apply are blocked.",
     "novncAssetsOnly": "noVNC web assets found; websockify binary still missing.",
+    "viewerNeedExecute": "Starting a local VNC desktop for browser view needs root + YSK_EXECUTE",
+    "browserSessionReady": "Browser VNC session ready: {{name}}",
     "accountNotFound": "VNC account not found",
     "accountExists": "A VNC account with this name or Linux user already exists",
     "accountCreated": "Created VNC account {{name}} ({{user}}, display :{{display}})",

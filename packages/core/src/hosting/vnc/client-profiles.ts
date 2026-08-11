@@ -78,6 +78,13 @@ export function listClientProfilesPublic(dataDir: string): VncClientProfile[] {
   return loadClientProfiles(dataDir).map(toPublic);
 }
 
+export function getClientProfileRecord(
+  dataDir: string,
+  id: string,
+): VncClientRecord | null {
+  return loadClientProfiles(dataDir).find((x) => x.id === id) ?? null;
+}
+
 export function createClientProfile(
   dataDir: string,
   input: {

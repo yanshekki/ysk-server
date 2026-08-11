@@ -1,0 +1,89 @@
+/* In-panel VNC (noVNC) viewer — browser RFB client */
+
+.vnc-viewer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 28rem;
+  height: min(72vh, 52rem);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: #0c0f14;
+  overflow: hidden;
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.28),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.vnc-viewer.is-connected {
+  border-color: rgba(126, 231, 135, 0.35);
+}
+
+.vnc-viewer.is-connecting {
+  border-color: rgba(210, 153, 34, 0.4);
+}
+
+.vnc-viewer__toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.vnc-viewer__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text);
+  font-size: var(--text-sm);
+}
+
+.vnc-viewer__banner {
+  flex: 0 0 auto;
+  padding: var(--space-2) var(--space-3);
+  background: rgba(210, 153, 34, 0.08);
+  border-bottom: 1px solid rgba(210, 153, 34, 0.2);
+  color: var(--text);
+}
+
+.vnc-viewer__pass {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.vnc-viewer__pass .u-input {
+  min-width: 12rem;
+}
+
+.vnc-viewer__screen {
+  flex: 1 1 auto;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+  background: #0c0f14;
+}
+
+/* noVNC injects a canvas container */
+.vnc-viewer__screen > div {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.vnc-viewer:fullscreen {
+  height: 100vh;
+  min-height: 100vh;
+  border-radius: 0;
+}
+
+.vnc-viewer-panel {
+  margin-top: var(--space-3);
+}

@@ -216,6 +216,32 @@ export const vncApi = {
         allowStatuses: [403, 422],
       },
     ),
+  /** Mint browser VNC session ticket (WS RFB proxy). */
+  createSession: (body: { kind: 'account' | 'client'; id: string }) =>
+    api.requestRawAllowStatus<{
+      ok: boolean;
+      ticket?: string;
+      sessionId?: string;
+      wsPath?: string;
+      expiresAt?: string;
+      target?: {
+        kind: string;
+        id: string;
+        label?: string;
+        host?: string;
+        port?: number;
+      };
+      password?: string;
+      hasStoredPassword?: boolean;
+      notes?: string[];
+      blocked?: boolean;
+      requiresExecute?: boolean;
+      message?: string;
+    }>('/api/v1/vnc/sessions', {
+      method: 'POST',
+      body: JSON.stringify(body),
+      allowStatuses: [403, 422],
+    }),
   clientDown: (id: string) =>
     api.requestRawAllowStatus<VncOpsResult & { profile?: VncClientProfile }>(
       `/api/v1/vnc/client/profiles/${encodeURIComponent(id)}/down`,

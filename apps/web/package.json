@@ -17,6 +17,7 @@
     "about-tab:check": "node ./scripts/about-tab-check.mjs"
   },
   "dependencies": {
+    "@novnc/novnc": "^1.7.0",
     "@simplewebauthn/browser": "^13.3.0",
     "@xterm/addon-fit": "^0.11.0",
     "@xterm/addon-web-links": "^0.12.0",
