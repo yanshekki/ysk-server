@@ -21,6 +21,8 @@ describe('openvpn-conf pure helpers', () => {
     expect(c).toContain('port 1194');
     expect(c).toContain('proto udp');
     expect(c).toContain('server 10.8.0.0');
+    expect(c).toContain('status-version 2');
+    expect(c).toContain('ysk-status.log');
   });
 
   it('builds inline ovpn client', () => {

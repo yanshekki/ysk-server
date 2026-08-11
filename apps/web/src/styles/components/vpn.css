@@ -177,6 +177,43 @@ html.dark .vpn-cfg__qr-wrap {
   outline-offset: 1px;
 }
 
+/* —— Monitor tab —— */
+.vpn-monitor-kpis {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+}
+
+.vpn-monitor-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 10px);
+  background: var(--bg-elevated, #fff);
+}
+
+.vpn-monitor-kpi__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+}
+
+.vpn-monitor-kpi__line {
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--text-main, #0f172a);
+}
+
+.vpn-monitor-kpi__note {
+  margin: 0.25rem 0 0;
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--text-sub, #64748b);
+  line-height: 1.35;
+}
+
 /* —— Software check / update tab —— */
 .vpn-software-stack {
   display: flex;

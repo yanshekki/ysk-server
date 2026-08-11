@@ -32,7 +32,9 @@ import {
   type VpnClientProfile,
   type VpnEngineId,
   type VpnEngineStatus,
+  type VpnMonitorResponse,
   type VpnPortPreset,
+  type VpnPresence,
   type VpnServerPeer,
   type VpnStatusResponse,
 } from '../../features/vpn/api';
@@ -45,9 +47,39 @@ import {
   syncEndpointPort,
   type VpnEngineTab,
 } from '../../features/vpn/endpoint-sync';
+import {
+  formatVpnBytes,
+  formatVpnRate,
+  formatVpnWhen,
+} from '../../features/vpn/format';
 
-const TABS = ['wireguard', 'openvpn', 'outline', 'client', 'software', 'about'] as const;
+const TABS = [
+  'wireguard',
+  'openvpn',
+  'outline',
+  'client',
+  'monitor',
+  'software',
+  'about',
+] as const;
 type TabId = (typeof TABS)[number];
+
+const MONITOR_POLL_MS = 3000;
+
+function presenceTone(
+  p: VpnPresence,
+): 'ok' | 'warn' | 'neutral' | 'danger' {
+  if (p === 'online') return 'ok';
+  if (p === 'idle') return 'warn';
+  if (p === 'offline' || p === 'never') return 'neutral';
+  return 'neutral';
+}
+
+function engineLabel(e: VpnEngineId): string {
+  if (e === 'openvpn') return 'OpenVPN';
+  if (e === 'outline') return 'Shadowsocks';
+  return 'WireGuard';
+}
 
 function isServerTab(t: TabId): t is VpnEngineTab {
   return t === 'wireguard' || t === 'openvpn' || t === 'outline';
@@ -98,6 +130,12 @@ export function VpnPage() {
     'auto',
   );
 
+  // Monitor
+  const [monitor, setMonitor] = useState<VpnMonitorResponse | null>(null);
+  const [monFilter, setMonFilter] = useState<'all' | 'online' | 'offline'>('all');
+  const [monEngine, setMonEngine] = useState<'all' | VpnEngineId>('all');
+  const [monBusy, setMonBusy] = useState(false);
+
   const hintHost = useMemo(() => {
     const h = status?.endpointHint ?? '';
     return hostFromEndpoint(h, h) || '';
@@ -130,6 +168,28 @@ export function VpnPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const loadMonitor = useCallback(async () => {
+    try {
+      setMonBusy(true);
+      const m = await vpnApi.monitor();
+      setMonitor(m);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('common.loadFailed'));
+    } finally {
+      setMonBusy(false);
+    }
+  }, [t]);
+
+  // Poll while Monitor tab is active and page visible
+  useEffect(() => {
+    if (tab !== 'monitor') return;
+    void loadMonitor();
+    const id = window.setInterval(() => {
+      if (document.visibilityState === 'visible') void loadMonitor();
+    }, MONITOR_POLL_MS);
+    return () => window.clearInterval(id);
+  }, [tab, loadMonitor]);
 
   // Engine tab switch (or first status load): port defaults + endpoint :port sync
   const statusReady = Boolean(status);
@@ -590,6 +650,243 @@ export function VpnPage() {
         {tab === 'wireguard' ? renderServerPanel('wireguard') : null}
         {tab === 'openvpn' ? renderServerPanel('openvpn') : null}
         {tab === 'outline' ? renderServerPanel('outline') : null}
+
+        {tab === 'monitor' ? (
+          <div className="stack vpn-tab-section">
+            {monitor?.blocked || monitor?.requiresExecute || monitor?.requiresRoot ? (
+              <Alert variant="warn">
+                {monitor.notes?.[0] || t('vpn.monitor.needLive')}
+              </Alert>
+            ) : null}
+            {monitor?.notes
+              ?.filter((n) => !/need root|YSK_EXECUTE|Live metrics/i.test(n))
+              .slice(0, 3)
+              .map((n) => (
+                <Alert key={n} variant="info">
+                  {n}
+                </Alert>
+              ))}
+
+            <div className="vpn-monitor-kpis">
+              {(monitor?.engines ?? []).map((e) => (
+                <div key={e.engine} className="vpn-monitor-kpi">
+                  <div className="vpn-monitor-kpi__head">
+                    <strong>{engineLabel(e.engine)}</strong>
+                    <Badge tone={e.serverActive ? 'ok' : 'warn'}>
+                      {e.serverActive ? t('vpn.serverUp') : t('vpn.serverDown')}
+                    </Badge>
+                  </div>
+                  <div className="vpn-monitor-kpi__line">
+                    {t('vpn.monitor.onlineOf', {
+                      online: e.onlineCount,
+                      total: e.peerCount,
+                    })}
+                  </div>
+                  <div className="vpn-monitor-kpi__line muted">
+                    ↓ {formatVpnBytes(e.transferRx)} · ↑ {formatVpnBytes(e.transferTx)}
+                  </div>
+                  <div className="vpn-monitor-kpi__line">
+                    ↓ {formatVpnRate(e.rxRateBps)} · ↑ {formatVpnRate(e.txRateBps)}
+                  </div>
+                  {e.notes?.[0] ? (
+                    <p className="vpn-monitor-kpi__note">{e.notes[0]}</p>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+
+            <div className="u-flex-gap u-flex-wrap" style={{ alignItems: 'center' }}>
+              <Badge tone="ok">{t('vpn.monitor.autoRefresh')}</Badge>
+              <SegRadio
+                name="mon-eng"
+                aria-label={t('vpn.monitor.filterEngine')}
+                value={monEngine}
+                onChange={(v) => setMonEngine(v as 'all' | VpnEngineId)}
+                options={[
+                  { value: 'all', label: t('vpn.monitor.engineAll') },
+                  { value: 'wireguard', label: 'WireGuard' },
+                  { value: 'openvpn', label: 'OpenVPN' },
+                  { value: 'outline', label: 'SS' },
+                ]}
+              />
+              <SegRadio
+                name="mon-pres"
+                aria-label={t('vpn.monitor.filterPresence')}
+                value={monFilter}
+                onChange={(v) => setMonFilter(v as 'all' | 'online' | 'offline')}
+                options={[
+                  { value: 'all', label: t('vpn.monitor.presenceAll') },
+                  { value: 'online', label: t('vpn.monitor.presenceOnline') },
+                  { value: 'offline', label: t('vpn.monitor.presenceOffline') },
+                ]}
+              />
+              <Button
+                size="sm"
+                variant="secondary"
+                loading={monBusy}
+                onClick={() => void loadMonitor()}
+              >
+                {t('vpn.refresh')}
+              </Button>
+              {monitor?.sampledAt ? (
+                <span className="muted u-text-xs">
+                  {t('vpn.monitor.sampledAt', {
+                    when: formatVpnWhen(monitor.sampledAt),
+                  })}
+                </span>
+              ) : null}
+            </div>
+
+            <DataTable
+              rowKey={(r) => r.id}
+              title={t('vpn.monitor.peersTitle', {
+                count: (monitor?.peers ?? []).filter((p) => {
+                  if (monEngine !== 'all' && p.engine !== monEngine) return false;
+                  if (monFilter === 'online') return p.online;
+                  if (monFilter === 'offline') return !p.online;
+                  return true;
+                }).length,
+              })}
+              columns={[
+                {
+                  key: 'name',
+                  header: t('vpn.colName'),
+                  render: (r) => <strong>{r.name}</strong>,
+                },
+                {
+                  key: 'engine',
+                  header: t('vpn.colEngine'),
+                  nowrap: true,
+                  render: (r) => (
+                    <Badge tone="neutral">{engineLabel(r.engine)}</Badge>
+                  ),
+                },
+                {
+                  key: 'addr',
+                  header: t('vpn.colAddress'),
+                  render: (r) => <code className="inline">{r.address}</code>,
+                },
+                {
+                  key: 'ep',
+                  header: t('vpn.monitor.colEndpoint'),
+                  render: (r) => (
+                    <code className="inline">{r.endpoint || '—'}</code>
+                  ),
+                },
+                {
+                  key: 'pres',
+                  header: t('vpn.colStatus'),
+                  nowrap: true,
+                  render: (r) => (
+                    <Badge tone={presenceTone(r.presence)}>
+                      {t(`vpn.monitor.presence.${r.presence}`)}
+                    </Badge>
+                  ),
+                },
+                {
+                  key: 'seen',
+                  header: t('vpn.monitor.colLastSeen'),
+                  nowrap: true,
+                  render: (r) => (
+                    <span className="muted u-text-xs">
+                      {formatVpnWhen(r.lastHandshakeAt || r.connectedSince)}
+                    </span>
+                  ),
+                },
+                {
+                  key: 'rx',
+                  header: t('vpn.monitor.colRx'),
+                  nowrap: true,
+                  render: (r) => formatVpnBytes(r.transferRx),
+                },
+                {
+                  key: 'tx',
+                  header: t('vpn.monitor.colTx'),
+                  nowrap: true,
+                  render: (r) => formatVpnBytes(r.transferTx),
+                },
+                {
+                  key: 'rxr',
+                  header: t('vpn.monitor.colRxRate'),
+                  nowrap: true,
+                  render: (r) => formatVpnRate(r.rxRateBps),
+                },
+                {
+                  key: 'txr',
+                  header: t('vpn.monitor.colTxRate'),
+                  nowrap: true,
+                  render: (r) => formatVpnRate(r.txRateBps),
+                },
+              ]}
+              rows={(monitor?.peers ?? []).filter((p) => {
+                if (monEngine !== 'all' && p.engine !== monEngine) return false;
+                if (monFilter === 'online') return p.online;
+                if (monFilter === 'offline') return !p.online;
+                return true;
+              })}
+              empty={
+                <EmptyState
+                  title={t('vpn.monitor.emptyPeers')}
+                  description={t('vpn.monitor.emptyPeersHint')}
+                />
+              }
+            />
+
+            {(monitor?.localClients?.length ?? 0) > 0 ? (
+              <DataTable
+                rowKey={(r) => r.id}
+                title={t('vpn.monitor.localTitle')}
+                columns={[
+                  {
+                    key: 'name',
+                    header: t('vpn.colName'),
+                    render: (r) => <strong>{r.name}</strong>,
+                  },
+                  {
+                    key: 'engine',
+                    header: t('vpn.colEngine'),
+                    render: (r) => engineLabel(r.engine),
+                  },
+                  {
+                    key: 'st',
+                    header: t('vpn.colStatus'),
+                    render: (r) => (
+                      <Badge tone={r.status === 'up' ? 'ok' : 'neutral'}>
+                        {r.status}
+                      </Badge>
+                    ),
+                  },
+                  {
+                    key: 'if',
+                    header: t('vpn.colIface'),
+                    render: (r) => <code className="inline">{r.iface}</code>,
+                  },
+                  {
+                    key: 'rx',
+                    header: t('vpn.monitor.colRx'),
+                    render: (r) => formatVpnBytes(r.transferRx),
+                  },
+                  {
+                    key: 'tx',
+                    header: t('vpn.monitor.colTx'),
+                    render: (r) => formatVpnBytes(r.transferTx),
+                  },
+                  {
+                    key: 'rxr',
+                    header: t('vpn.monitor.colRxRate'),
+                    render: (r) => formatVpnRate(r.rxRateBps),
+                  },
+                  {
+                    key: 'txr',
+                    header: t('vpn.monitor.colTxRate'),
+                    render: (r) => formatVpnRate(r.txRateBps),
+                  },
+                ]}
+                rows={monitor?.localClients ?? []}
+              />
+            ) : null}
+          </div>
+        ) : null}
 
         {tab === 'software' ? (
           <div className="stack vpn-tab-section">

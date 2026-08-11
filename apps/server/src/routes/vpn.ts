@@ -61,6 +61,17 @@ export async function handleVpnRoutes(
       return true;
     }
 
+    if (method === 'GET' && url.pathname === '/api/v1/vpn/monitor') {
+      const engRaw = url.searchParams.get('engine');
+      const engine =
+        engRaw === 'wireguard' || engRaw === 'openvpn' || engRaw === 'outline'
+          ? engRaw
+          : undefined;
+      const snap = await vpn.monitor(engine ? { engine } : undefined);
+      sendJson(res, 200, { ok: true, ...snap });
+      return true;
+    }
+
     if (method === 'GET' && url.pathname === '/api/v1/vpn/ports') {
       const engine = parseEngine(url.searchParams.get('engine'));
       sendJson(res, 200, { ok: true, presets: vpn.portPresets(engine) });

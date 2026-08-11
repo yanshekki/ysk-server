@@ -13,9 +13,12 @@ export function buildOpenVpnServerConf(input: {
   dhPath: string;
   taPath: string;
   ccdDir: string;
+  /** status file for live CLIENT_LIST monitor (status-version 2) */
+  statusPath?: string;
 }): string {
   const net = input.serverNet ?? '10.8.0.0 255.255.255.0';
   const dns = input.dns ?? '1.1.1.1';
+  const statusPath = input.statusPath ?? '/var/log/openvpn/ysk-status.log';
   return [
     '# YSK-managed OpenVPN server',
     `port ${input.port}`,
@@ -35,6 +38,8 @@ export function buildOpenVpnServerConf(input: {
     'user nobody',
     'group nogroup',
     'verb 3',
+    `status ${statusPath} 5`,
+    'status-version 2',
     `push "dhcp-option DNS ${dns}"`,
     'push "redirect-gateway def1 bypass-dhcp"',
     '',

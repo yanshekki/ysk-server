@@ -172,6 +172,7 @@ export async function ensureOpenVpnServer(
     dhPath: dh,
     taPath: ta,
     ccdDir: join(dir, 'ccd'),
+    statusPath: '/var/log/openvpn/ysk-status.log',
   });
   // Prefer /etc/openvpn/server/ysk.conf (Debian openvpn-server@.service)
   const confPath = '/etc/openvpn/server/ysk.conf';

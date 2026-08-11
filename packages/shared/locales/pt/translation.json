@@ -11199,7 +11199,8 @@
       "wireguard": "WireGuard",
       "openvpn": "OpenVPN",
       "outline": "Shadowsocks",
-      "software": "Software"
+      "software": "Software",
+      "monitor": "Monitor"
     },
     "installed": "Installed",
     "notInstalled": "Not installed",
@@ -11273,6 +11274,35 @@
     "protoTcp": "TCP",
     "listenPortUdp": "Listen port (UDP)",
     "listenPortTcp": "Listen port (TCP)",
-    "softwareIntro": "Install or update VPN engines here."
+    "softwareIntro": "Install or update VPN engines here.",
+    "monitor": {
+      "needLive": "Live metrics need root + YSK_EXECUTE",
+      "autoRefresh": "Auto 3s",
+      "filterEngine": "Engine",
+      "filterPresence": "Presence",
+      "engineAll": "All",
+      "presenceAll": "All",
+      "presenceOnline": "Online",
+      "presenceOffline": "Offline",
+      "onlineOf": "Online {{online}} / {{total}}",
+      "peersTitle": "Peers ({{count}})",
+      "localTitle": "Local outbound",
+      "colEndpoint": "Remote",
+      "colLastSeen": "Last seen",
+      "colRx": "↓ Total",
+      "colTx": "↑ Total",
+      "colRxRate": "↓ Rate",
+      "colTxRate": "↑ Rate",
+      "sampledAt": "Sampled {{when}}",
+      "emptyPeers": "No peers",
+      "emptyPeersHint": "Add peers or clear filters",
+      "presence": {
+        "online": "Online",
+        "idle": "Idle",
+        "offline": "Offline",
+        "never": "Never",
+        "unknown": "Unknown"
+      }
+    }
   }
 }

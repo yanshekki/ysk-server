@@ -57,8 +57,72 @@ export type VpnStatusResponse = {
   portPresets: VpnPortPreset[];
 };
 
+export type VpnPresence = 'online' | 'idle' | 'offline' | 'never' | 'unknown';
+
+export type VpnMonitorPeer = {
+  id: string;
+  name: string;
+  engine: VpnEngineId;
+  address: string;
+  publicKey: string;
+  endpoint: string | null;
+  online: boolean;
+  presence: VpnPresence;
+  lastHandshakeAt: string | null;
+  transferRx: number | null;
+  transferTx: number | null;
+  rxRateBps: number | null;
+  txRateBps: number | null;
+  connectedSince: string | null;
+};
+
+export type VpnMonitorEngine = {
+  engine: VpnEngineId;
+  serverActive: boolean;
+  onlineCount: number;
+  peerCount: number;
+  transferRx: number | null;
+  transferTx: number | null;
+  rxRateBps: number | null;
+  txRateBps: number | null;
+  notes: string[];
+};
+
+export type VpnMonitorLocalClient = {
+  id: string;
+  name: string;
+  engine: VpnEngineId;
+  iface: string;
+  status: 'up' | 'down' | 'unknown';
+  transferRx: number | null;
+  transferTx: number | null;
+  rxRateBps: number | null;
+  txRateBps: number | null;
+};
+
+export type VpnMonitorResponse = {
+  ok: boolean;
+  sampledAt: string;
+  engines: VpnMonitorEngine[];
+  peers: VpnMonitorPeer[];
+  localClients: VpnMonitorLocalClient[];
+  blocked?: boolean;
+  requiresExecute?: boolean;
+  requiresRoot?: boolean;
+  notes?: string[];
+};
+
 export const vpnApi = {
   status: () => api.requestRaw<VpnStatusResponse>('/api/v1/vpn/status'),
+
+  monitor: (params?: { engine?: VpnEngineId }) => {
+    const sp = new URLSearchParams();
+    if (params?.engine) sp.set('engine', params.engine);
+    const qs = sp.toString();
+    return api.requestRaw<VpnMonitorResponse>(
+      `/api/v1/vpn/monitor${qs ? `?${qs}` : ''}`,
+    );
+  },
 
   ensureServer: (body: {
     engine?: VpnEngineId;

@@ -51,6 +51,11 @@ import {
   listSsPeers,
   loadSsServer,
 } from './outline-ops.js';
+import {
+  buildMonitorSnapshot,
+  type RatePrevSample,
+  type VpnMonitorSnapshot,
+} from './monitor.js';
 
 type WgServerState = {
   privateKey: string;
@@ -105,6 +110,9 @@ async function genWgKeypair(
 }
 
 export class VpnService {
+  /** Previous monitor sample for rate derivation (in-process). */
+  private monitorPrev: RatePrevSample | null = null;
+
   constructor(
     private readonly dataDir: string,
     private readonly host: HostExecutor,
@@ -243,6 +251,48 @@ export class VpnService {
   portPresets(engine?: VpnEngineId) {
     if (engine) return presetsForEngine(engine);
     return [...presetsForEngine('wireguard'), ...presetsForEngine('openvpn'), ...presetsForEngine('outline')];
+  }
+
+  /**
+   * Live monitor snapshot: who is online, transfer, rates (3s poll-friendly).
+   */
+  async monitor(opts?: { engine?: VpnEngineId }): Promise<VpnMonitorSnapshot> {
+    const controlPeers = [
+      ...this.listServerPeers('wireguard'),
+      ...this.listServerPeers('openvpn'),
+      ...this.listServerPeers('outline'),
+    ].map((p) => ({
+      id: p.id,
+      name: p.name,
+      engine: p.engine,
+      address: p.address,
+      publicKey: p.publicKey ?? '',
+    }));
+    const controlClients = this.listClientProfiles().map((c) => ({
+      id: c.id,
+      name: c.name,
+      engine: c.engine,
+      iface: c.iface,
+      status: c.status,
+    }));
+    const { snapshot, nextPrev } = await buildMonitorSnapshot({
+      host: this.host,
+      dataDir: this.dataDir,
+      controlPeers,
+      controlClients,
+      prev: this.monitorPrev,
+    });
+    this.monitorPrev = nextPrev;
+
+    if (opts?.engine) {
+      return {
+        ...snapshot,
+        engines: snapshot.engines.filter((e) => e.engine === opts.engine),
+        peers: snapshot.peers.filter((p) => p.engine === opts.engine),
+        localClients: snapshot.localClients.filter((c) => c.engine === opts.engine),
+      };
+    }
+    return snapshot;
   }
 
   /**
