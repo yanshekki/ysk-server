@@ -115,8 +115,8 @@ async function acceptVncClient(
       }
     }
   });
-  tcp.on('error', () => cleanup(rec.sessionId, 1011, 'tcp error'));
-  tcp.on('close', () => cleanup(rec.sessionId, 1000, 'tcp closed'));
+  tcp.on('error', () => cleanup(rec.sessionId, 1011, 'tcp_error'));
+  tcp.on('close', () => cleanup(rec.sessionId, 1000, 'tcp_closed'));
 
   ws.on('message', (data, isBinary) => {
     live.lastActivity = Date.now();
@@ -130,11 +130,16 @@ async function acceptVncClient(
       }
       if (!tcp.destroyed) tcp.write(buf);
     } catch {
-      cleanup(rec.sessionId, 1011, 'write failed');
+      cleanup(rec.sessionId, 1011, 'write_failed');
     }
   });
-  ws.on('close', () => cleanup(rec.sessionId, 1000, 'ws closed'));
-  ws.on('error', () => cleanup(rec.sessionId, 1011, 'ws error'));
+  ws.on('close', () => cleanup(rec.sessionId, 1000, 'ws_closed'));
+  ws.on('error', () => cleanup(rec.sessionId, 1011, 'ws_error'));
+}
+
+/** Test/ops helper — how many live browser VNC pipes are open. */
+export function vncLiveSessionCount(): number {
+  return liveBySession.size;
 }
 
 function openTcp(host: string, port: number): Promise<NetSocket> {

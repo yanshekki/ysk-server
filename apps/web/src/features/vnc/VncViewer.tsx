@@ -112,7 +112,8 @@ export function VncViewer({ target, createSession, onClose }: Props) {
     }
     rfbRef.current = null;
     setState('closed');
-  }, []);
+    setStatusText(t('vnc.viewer.disconnected'));
+  }, [t]);
 
   const connect = useCallback(async () => {
     if (!screenRef.current) return;

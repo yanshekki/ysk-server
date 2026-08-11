@@ -11198,7 +11198,8 @@
       "up": "Connected",
       "down": "Disconnected",
       "unknown": "Unknown",
-      "error": "Error"
+      "error": "Error",
+      "viewing": "Viewing in browser"
     },
     "accountPager": "Account pages",
     "prevPage": "Previous",

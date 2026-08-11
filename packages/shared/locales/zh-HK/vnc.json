@@ -146,7 +146,8 @@
     "up": "已連線",
     "down": "已斷線",
     "unknown": "未知",
-    "error": "錯誤"
+    "error": "錯誤",
+    "viewing": "瀏覽器觀看中"
   },
   "accountPager": "帳號分頁",
   "prevPage": "上一頁",

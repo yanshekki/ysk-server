@@ -516,13 +516,23 @@ export function VncPage() {
                   key: 'status',
                   header: t('vnc.colStatus'),
                   nowrap: true,
-                  render: (c) => (
-                    <Badge tone={c.status === 'up' ? 'ok' : 'neutral'}>
-                      {t(`vnc.clientStatus.${c.status}`, {
-                        defaultValue: c.status,
-                      })}
-                    </Badge>
-                  ),
+                  render: (c) => {
+                    const viewing =
+                      viewerTarget?.kind === 'client' &&
+                      viewerTarget.id === c.id;
+                    if (viewing) {
+                      return (
+                        <Badge tone="ok">{t('vnc.clientStatus.viewing')}</Badge>
+                      );
+                    }
+                    return (
+                      <Badge tone={c.status === 'up' ? 'ok' : 'neutral'}>
+                        {t(`vnc.clientStatus.${c.status}`, {
+                          defaultValue: c.status,
+                        })}
+                      </Badge>
+                    );
+                  },
                 },
               ]}
               rows={clients}
