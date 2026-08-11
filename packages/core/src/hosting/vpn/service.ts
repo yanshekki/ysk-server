@@ -30,6 +30,10 @@ import {
   sanitizePeerName,
 } from './wireguard-conf.js';
 import {
+  buildVpnClientProtectScript,
+  injectWgClientHostProtection,
+} from './client-conf-protect.js';
+import {
   addOvpnPeer,
   deleteOvpnPeer,
   ensureOpenVpnServer,
@@ -827,12 +831,28 @@ export class VpnService {
       return { ok: true, notes: [tl('notes.vpn.clientUp', { name: meta.name }), ...r.notes] };
     }
     const dest = `/etc/wireguard/${meta.iface}.conf`;
+    const rawConf = readFileSync(confSrc, 'utf8');
+    const prepared = injectWgClientHostProtection(rawConf);
+    const notes: string[] = [];
+    if (prepared.fullTunnel) {
+      notes.push(tl('notes.vpn.clientFullTunnelProtect'));
+    }
+    // Persist protect hooks into stored profile (multi-host apply path)
+    writeFileSync(confSrc, prepared.conf, 'utf8');
     const script = [
+      'mkdir -p /usr/local/lib/ysk-server /etc/wireguard',
+      `cat > /usr/local/lib/ysk-server/vpn-client-protect.sh <<'YSKCP'`,
+      buildVpnClientProtectScript().trimEnd(),
+      'YSKCP',
+      'chmod 755 /usr/local/lib/ysk-server/vpn-client-protect.sh',
       `cp ${JSON.stringify(confSrc)} ${JSON.stringify(dest)}`,
       `chmod 600 ${JSON.stringify(dest)}`,
       `wg-quick down ${JSON.stringify(meta.iface)} 2>/dev/null || true`,
       `wg-quick up ${JSON.stringify(meta.iface)}`,
-    ].join(' && ');
+      prepared.fullTunnel
+        ? '/usr/local/lib/ysk-server/vpn-client-protect.sh up || true'
+        : 'true',
+    ].join('\n');
     const r = await this.host.runCommand(['bash', '-c', script], { timeoutMs: 45_000 });
     if (r.exitCode !== 0) {
       return {
@@ -850,7 +870,11 @@ export class VpnService {
         { timeoutMs: 15_000 },
       );
     }
-    return { ok: true, notes: [tl('notes.vpn.clientUp', { name: meta.name })] };
+    notes.unshift(tl('notes.vpn.clientUp', { name: meta.name }));
+    if (prepared.fullTunnel) {
+      notes.push(tl('notes.vpn.clientFullTunnelHint'));
+    }
+    return { ok: true, notes };
   }
 
   async clientDown(profileId: string): Promise<{ ok: boolean; notes: string[] }> {

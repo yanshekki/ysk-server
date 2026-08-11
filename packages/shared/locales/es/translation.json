@@ -7552,7 +7552,9 @@
       "ssEndpointAutofilled": "Public endpoint set to {{endpoint}}.",
       "ssClientsRewritten": "Regenerated {{n}} client ss:// URI(s) for current endpoint/password.",
       "ssUfwOpened": "Opened UFW {{port}}/tcp+udp for Shadowsocks (if ufw installed).",
-      "ovpnNatDurable": "OpenVPN NAT/forward installed for reboot (systemd ExecStartPost)."
+      "ovpnNatDurable": "OpenVPN NAT/forward installed for reboot (systemd ExecStartPost).",
+      "clientFullTunnelProtect": "Full-tunnel client detected (AllowedIPs 0.0.0.0/0). Applied host protect so panel/SSH replies stay on the LAN NIC.",
+      "clientFullTunnelHint": "Tip: for split access only, set AllowedIPs to VPN/LAN CIDRs (not 0.0.0.0/0) in the conf, then reconnect."
     },
     "vnc": {
       "needInstall": "Instalar {{stack}}",

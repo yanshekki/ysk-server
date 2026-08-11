@@ -2823,7 +2823,9 @@
     "accessFullNat": "已开全网上网（IP 转发 + NAT）",
     "accessLanOnly": "已设只连区域（无外网 NAT）",
     "accessReconnectHint": "已连接的客户端请断开再连，才会使用新路由",
-    "ovpnNatDurable": "OpenVPN NAT/forward installed for reboot (systemd ExecStartPost)."
+    "ovpnNatDurable": "OpenVPN NAT/forward installed for reboot (systemd ExecStartPost).",
+    "clientFullTunnelProtect": "Full-tunnel client detected (AllowedIPs 0.0.0.0/0). Applied host protect so panel/SSH replies stay on the LAN NIC.",
+    "clientFullTunnelHint": "Tip: for split access only, set AllowedIPs to VPN/LAN CIDRs (not 0.0.0.0/0) in the conf, then reconnect."
   },
   "vnc": {
     "viewerNeedExecute": "要在浏览器打开本机 VNC 桌面，需要 root 并启用 YSK_EXECUTE",

@@ -2823,7 +2823,9 @@
     "accessFullNat": "Full internet enabled (IP forward + NAT)",
     "accessLanOnly": "LAN-only mode (no internet NAT)",
     "accessReconnectHint": "Already-connected clients must reconnect to pick up new routes",
-    "ovpnNatDurable": "OpenVPN NAT/forward installed for reboot (systemd ExecStartPost)."
+    "ovpnNatDurable": "OpenVPN NAT/forward installed for reboot (systemd ExecStartPost).",
+    "clientFullTunnelProtect": "Full-tunnel client detected (AllowedIPs 0.0.0.0/0). Applied host protect so panel/SSH replies stay on the LAN NIC.",
+    "clientFullTunnelHint": "Tip: for split access only, set AllowedIPs to VPN/LAN CIDRs (not 0.0.0.0/0) in the conf, then reconnect."
   },
   "vnc": {
     "needInstall": "Install {{stack}}",
