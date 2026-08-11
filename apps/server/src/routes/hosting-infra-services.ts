@@ -164,6 +164,31 @@ export async function handleHostingInfraServicesRoutes(
           host: ctx.host,
           patch: Object.keys(data).length ? (data as never) : undefined,
         });
+        // Auto-open 80/443 when nginx settings apply succeeds
+        if (result.ok && !result.blocked) {
+          try {
+            const { syncServiceExposure } = await import('@ysk/core');
+            const exp = await syncServiceExposure({
+              host: ctx.host,
+              dataDir: ctx.dataDir,
+              serviceId: 'nginx',
+              ports: [
+                { role: 'http', port: '80', proto: 'tcp' },
+                { role: 'https', port: '443', proto: 'tcp' },
+              ],
+              reason: 'apply',
+              requireDecision: false,
+            });
+            if (exp.notes?.length) {
+              (result as { notes?: string[] }).notes = [
+                ...((result as { notes?: string[] }).notes ?? []),
+                ...exp.notes.slice(0, 3),
+              ];
+            }
+          } catch {
+            /* non-fatal */
+          }
+        }
         ctx.audit.append({
           actor: user.username,
           action: 'nginx.settings.apply',

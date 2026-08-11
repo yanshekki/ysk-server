@@ -37,6 +37,7 @@ import {
 } from '../../features/nginx/api';
 import { bindSet } from '../bind-handlers';
 import { notifyOk, notifyWarn } from '../../shared/lib/notify';
+import { ServiceAccessStrip } from '../../features/network/service-exposure';
 
 const BODY_OPTS: NginxBodySize[] = ['1m', '10m', '50m', '100m', '500m'];
 const KA_OPTS: NginxKeepalive[] = ['15', '65', '120'];
@@ -342,6 +343,17 @@ export function NginxPage() {
         {crudError ? <Alert variant="error">{crudError}</Alert> : null}
         {listErr ? <Alert variant="error">{listErr}</Alert> : null}
         {filteredHint ? <Alert variant="info">{filteredHint}</Alert> : null}
+
+        <div className="u-mb-3">
+          <ServiceAccessStrip
+            serviceId="nginx"
+            ports={[
+              { role: 'http', port: '80', proto: 'tcp' },
+              { role: 'https', port: '443', proto: 'tcp' },
+            ]}
+            compact
+          />
+        </div>
 
         <div className="u-flex-gap u-flex-wrap u-mb-3">
           <input
