@@ -16,7 +16,7 @@
   "kindPhp": "PHP-FPM",
   "colTarget": "Upstream / root",
   "colStatus": "حیثیت",
-  "emptyTitle": "ابھی کوئی Nginx سائٹس نہیں",
+  "emptyTitle": "No sites",
   "emptyDesc": "فہرست کے ٹول بار میں “Create site” استعمال کریں؛ پھر Apply",
   "applyTitle": "پینل ڈیٹا لکھیں اور sync + nginx -t + reload آزمائیں",
   "applyToSystem": "سسٹم پر سنک کریں",
@@ -54,5 +54,12 @@
   "pageOf": "صفحہ {{page}} / {{total}} · {{count}}",
   "projectConfEmpty": "(خالی conf فائل)",
   "projectConfReadFail": "پروجیکٹ conf پڑھنے میں ناکام",
-  "projectPreviewPath": "{{path}}"
+  "projectPreviewPath": "{{path}}",
+  "pageDesc": "Nginx sites",
+  "filterSource": "Source",
+  "sourceAll": "All",
+  "sourceProject": "Project",
+  "sourceStandalone": "Standalone",
+  "colSource": "Source",
+  "filterProject": "Filtered by project"
 }

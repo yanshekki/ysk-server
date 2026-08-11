@@ -4579,7 +4579,7 @@
     "kindPhp": "PHP-FPM",
     "colTarget": "Upstream / root",
     "colStatus": "Status",
-    "emptyTitle": "No Nginx sites yet",
+    "emptyTitle": "No sites",
     "emptyDesc": "Use “Create site” in the list toolbar; then Apply",
     "applyTitle": "Write panel data and try sync + nginx -t + reload",
     "applyToSystem": "Sync to system",
@@ -4617,7 +4617,14 @@
     "pageOf": "Page {{page}} / {{total}} · {{count}}",
     "projectConfEmpty": "(empty conf file)",
     "projectConfReadFail": "Failed to read project conf",
-    "projectPreviewPath": "{{path}}"
+    "projectPreviewPath": "{{path}}",
+    "pageDesc": "Nginx sites",
+    "filterSource": "Source",
+    "sourceAll": "All",
+    "sourceProject": "Project",
+    "sourceStandalone": "Standalone",
+    "colSource": "Source",
+    "filterProject": "Filtered by project"
   },
   "notes": {
     "notFound": "Not found",
@@ -8182,7 +8189,8 @@
     "deleteWillDb": "…",
     "deleteRemoveFilesDesc": "Cancel，",
     "deleteTypeNameHint": "「{{v0}}」",
-    "deleteDnsWarn": "DNS zone / domain 。"
+    "deleteDnsWarn": "DNS zone / domain 。",
+    "manageInNginx": "Manage in Nginx"
   },
   "protection": {
     "levels": {

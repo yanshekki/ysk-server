@@ -16,7 +16,7 @@
   "kindPhp": "PHP - FPM",
   "colTarget": "上流/ルート",
   "colStatus": "状態",
-  "emptyTitle": "Nginx サイトはまだありません",
+  "emptyTitle": "No sites",
   "emptyDesc": "リストツールバーの[サイトの作成]を使用し、[適用]をクリックします。",
   "applyTitle": "パネルデータを書き込み、sync + nginx - t + reloadを試してください",
   "applyToSystem": "システムと同期する",
@@ -54,5 +54,12 @@
   "pageOf": "ページ {{page}} / {{total}} · {{count}}",
   "projectConfEmpty": "(空のconfファイル)",
   "projectConfReadFail": "プロジェクト設定の読み取りに失敗しました",
-  "projectPreviewPath": "{{path}}"
+  "projectPreviewPath": "{{path}}",
+  "pageDesc": "Nginx sites",
+  "filterSource": "Source",
+  "sourceAll": "All",
+  "sourceProject": "Project",
+  "sourceStandalone": "Standalone",
+  "colSource": "Source",
+  "filterProject": "Filtered by project"
 }

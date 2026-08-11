@@ -6,7 +6,7 @@
   "projectSitesHint": "專案站點（受管 conf）同獨立站點分開列出。改專案 Nginx 請到專案 → 網絡。",
   "purgeCache": "清除 Cache + 重新載入",
   "notInstalled": "Nginx 尚未安裝",
-  "listTitle": "站點列表 ({{count}})",
+  "listTitle": "站點（{{count}}）",
   "listDesc": "建立後請再按「套用」同步到系統",
   "createSite": "+ 建立站點",
   "colServerName": "伺服器名稱",
@@ -16,7 +16,7 @@
   "kindPhp": "PHP-FPM",
   "colTarget": "上游／根目錄",
   "colStatus": "狀態",
-  "emptyTitle": "尚未有 Nginx 站點",
+  "emptyTitle": "未有站點",
   "emptyDesc": "用列表右上角「建立站點」新增；建立後請再按「套用」",
   "applyTitle": "寫入管理檔並嘗試同步到系統 + nginx -t + 重新載入",
   "applyToSystem": "同步到系統",
@@ -54,5 +54,12 @@
   "pageOf": "第 {{page}} / {{total}} 頁 · 共 {{count}}",
   "projectConfEmpty": "（設定檔空白）",
   "projectConfReadFail": "讀取專案 conf 失敗",
-  "projectPreviewPath": "{{path}}"
+  "projectPreviewPath": "{{path}}",
+  "pageDesc": "Nginx 站點",
+  "filterSource": "來源",
+  "sourceAll": "全部",
+  "sourceProject": "專案",
+  "sourceStandalone": "獨立",
+  "colSource": "來源",
+  "filterProject": "已按專案篩選"
 }

@@ -5,6 +5,10 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import {
   listManagedNginxConfs,
+  listMergedNginxSites,
+  readNginxSiteConf,
+  applyManagedNginxSite,
+  getResource,
   applyPublicFileServer,
   planFirewall,
   planPublicFileServer,
@@ -35,6 +39,96 @@ export async function handleHostingInfraServicesRoutes(
         sendJson(res, 200, {
           files: listManagedNginxConfs(ctx.dataDir),
           dataDir: ctx.dataDir,
+        });
+        return true;
+      }
+      if (method === 'GET' && url.pathname === '/api/v1/hosting/nginx/sites') {
+        ctx.auth.authenticate(getBearer(req));
+        const projects = ctx.projects.list().map((p) => ({ ...p }) as Record<string, unknown>);
+        const items = listMergedNginxSites({ db: ctx.db, projects });
+        const q = (url.searchParams.get('q') ?? '').trim().toLowerCase();
+        const source = url.searchParams.get('source');
+        const projectId = url.searchParams.get('projectId');
+        let filtered = items;
+        if (source === 'project' || source === 'standalone') {
+          filtered = filtered.filter((r) => r.source === source);
+        }
+        if (projectId) {
+          filtered = filtered.filter((r) => r.projectId === projectId);
+        }
+        if (q) {
+          filtered = filtered.filter(
+            (r) =>
+              r.serverName.toLowerCase().includes(q) ||
+              (r.projectName ?? '').toLowerCase().includes(q) ||
+              r.target.toLowerCase().includes(q),
+          );
+        }
+        sendJson(res, 200, { items: filtered, total: filtered.length });
+        return true;
+      }
+      // Apply: project:ID or standalone resource uuid
+      const applyMatch = url.pathname.match(
+        /^\/api\/v1\/hosting\/nginx\/sites\/([^/]+)\/apply$/,
+      );
+      if (method === 'POST' && applyMatch) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const rawId = decodeURIComponent(applyMatch[1] ?? '');
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { ssl?: boolean };
+        if (rawId.startsWith('project:')) {
+          const projectId = rawId.slice('project:'.length);
+          const result = await ctx.projectOps.publishNginx(projectId, {
+            ssl: Boolean(data.ssl),
+            actor: user.username,
+          });
+          ctx.audit.append({
+            actor: user.username,
+            action: 'nginx.site.apply',
+            resource: rawId,
+            detail: { ssl: data.ssl, ok: result.ok },
+            ok: Boolean(result.ok),
+          });
+          sendOpsResult(res, result);
+          return true;
+        }
+        const result = await applyManagedNginxSite(ctx.db, ctx.dataDir, rawId, {
+          host: ctx.host,
+          execute: true,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'nginx.site.apply',
+          resource: rawId,
+          detail: { ok: result.ok },
+          ok: result.ok,
+        });
+        sendOpsResult(res, result);
+        return true;
+      }
+      const confMatch = url.pathname.match(
+        /^\/api\/v1\/hosting\/nginx\/sites\/([^/]+)\/conf$/,
+      );
+      if (method === 'GET' && confMatch) {
+        ctx.auth.authenticate(getBearer(req));
+        const rawId = decodeURIComponent(confMatch[1] ?? '');
+        if (rawId.startsWith('project:')) {
+          const projectId = rawId.slice('project:'.length);
+          const project = ctx.projects.get(projectId);
+          const path =
+            (project as { nginxConfigPath?: string } | null)?.nginxConfigPath ??
+            null;
+          sendJson(res, 200, {
+            path,
+            content: readNginxSiteConf(path),
+          });
+          return true;
+        }
+        const site = getResource(ctx.db, 'nginx_sites', rawId);
+        const path = site ? String(site.confPath ?? '') || null : null;
+        sendJson(res, 200, {
+          path,
+          content: readNginxSiteConf(path),
         });
         return true;
       }

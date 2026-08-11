@@ -16,7 +16,7 @@
   "kindPhp": "PHP-FPM",
   "colTarget": "업스트림 / 루트",
   "colStatus": "상태",
-  "emptyTitle": "Nginx 사이트가 아직 없습니다",
+  "emptyTitle": "No sites",
   "emptyDesc": "목록 도구 모음에서 “사이트 만들기”를 사용한 뒤 적용하세요",
   "applyTitle": "패널 데이터를 기록하고 동기화 + nginx -t + reload를 시도합니다",
   "applyToSystem": "시스템에 동기화",
@@ -54,5 +54,12 @@
   "pageOf": "{{page}} / {{total}} 페이지 · {{count}}",
   "projectConfEmpty": "(빈 conf 파일)",
   "projectConfReadFail": "프로젝트 conf 읽기 실패",
-  "projectPreviewPath": "{{path}}"
+  "projectPreviewPath": "{{path}}",
+  "pageDesc": "Nginx sites",
+  "filterSource": "Source",
+  "sourceAll": "All",
+  "sourceProject": "Project",
+  "sourceStandalone": "Standalone",
+  "colSource": "Source",
+  "filterProject": "Filtered by project"
 }

@@ -555,5 +555,6 @@
   "deleteWillDb": "…",
   "deleteRemoveFilesDesc": "إلغاء،",
   "deleteTypeNameHint": "「{{v0}}」",
-  "deleteDnsWarn": "منطقة DNS / النطاق 。"
+  "deleteDnsWarn": "منطقة DNS / النطاق 。",
+  "manageInNginx": "Manage in Nginx"
 }

@@ -16,7 +16,7 @@
   "kindPhp": "PHP-FPM",
   "colTarget": "المنبع / الجذر",
   "colStatus": "الحالة",
-  "emptyTitle": "لا توجد مواقع Nginx بعد",
+  "emptyTitle": "No sites",
   "emptyDesc": "استخدم «إنشاء موقع» في شريط أدوات القائمة؛ ثم طبّق",
   "applyTitle": "اكتب بيانات اللوحة وجرّب المزامنة + nginx -t + إعادة التحميل",
   "applyToSystem": "مزامنة إلى النظام",
@@ -54,5 +54,12 @@
   "pageOf": "صفحة {{page}} / {{total}} · {{count}}",
   "projectConfEmpty": "(ملف conf فارغ)",
   "projectConfReadFail": "فشل قراءة conf المشروع",
-  "projectPreviewPath": "{{path}}"
+  "projectPreviewPath": "{{path}}",
+  "pageDesc": "Nginx sites",
+  "filterSource": "Source",
+  "sourceAll": "All",
+  "sourceProject": "Project",
+  "sourceStandalone": "Standalone",
+  "colSource": "Source",
+  "filterProject": "Filtered by project"
 }

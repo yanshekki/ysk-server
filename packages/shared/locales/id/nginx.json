@@ -16,7 +16,7 @@
   "kindPhp": "PHP-FPM",
   "colTarget": "Upstream / root",
   "colStatus": "Status",
-  "emptyTitle": "Belum ada situs Nginx",
+  "emptyTitle": "No sites",
   "emptyDesc": "Gunakan “Create site” di bilah alat daftar; lalu Apply",
   "applyTitle": "Tulis data panel lalu coba sync + nginx -t + reload",
   "applyToSystem": "Sinkronkan ke sistem",
@@ -54,5 +54,12 @@
   "pageOf": "Halaman {{page}} / {{total}} · {{count}}",
   "projectConfEmpty": "(file conf kosong)",
   "projectConfReadFail": "Gagal membaca conf proyek",
-  "projectPreviewPath": "{{path}}"
+  "projectPreviewPath": "{{path}}",
+  "pageDesc": "Nginx sites",
+  "filterSource": "Source",
+  "sourceAll": "All",
+  "sourceProject": "Project",
+  "sourceStandalone": "Standalone",
+  "colSource": "Source",
+  "filterProject": "Filtered by project"
 }

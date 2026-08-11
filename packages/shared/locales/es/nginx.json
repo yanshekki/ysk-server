@@ -16,7 +16,7 @@
   "kindPhp": "PHP-FPM",
   "colTarget": "Upstream / raíz",
   "colStatus": "Estado",
-  "emptyTitle": "Aún no hay sitios de Nginx",
+  "emptyTitle": "No sites",
   "emptyDesc": "Use «Crear sitio» en la barra de herramientas de la lista; luego Aplicar",
   "applyTitle": "Escribir datos del panel e intentar sync + nginx -t + reload",
   "applyToSystem": "Sincronizar con el sistema",
@@ -54,5 +54,12 @@
   "pageOf": "Página {{page}} / {{total}} · {{count}}",
   "projectConfEmpty": "(archivo conf vacío)",
   "projectConfReadFail": "Error al leer la conf del proyecto",
-  "projectPreviewPath": "{{path}}"
+  "projectPreviewPath": "{{path}}",
+  "pageDesc": "Nginx sites",
+  "filterSource": "Source",
+  "sourceAll": "All",
+  "sourceProject": "Project",
+  "sourceStandalone": "Standalone",
+  "colSource": "Source",
+  "filterProject": "Filtered by project"
 }

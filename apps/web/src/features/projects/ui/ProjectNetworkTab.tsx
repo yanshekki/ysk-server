@@ -1,7 +1,7 @@
 /**
- * Project network / edge — domains, HTTPS, port, single publish strip.
+ * Project network — domain / port meta. Nginx edge ops live on /nginx.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import type { ProjectDto, OpsApplyResultDto } from '@ysk/shared';
@@ -13,26 +13,19 @@ import {
   CardSection,
   CheckboxField,
   Field,
-  FormActions,
-  FormHint,
   FormLayout,
-  PresetChips } from '../../../shared/components/ui';
+  PresetChips,
+  buttonClassName,
+} from '../../../shared/components/ui';
 import { projectsApi } from '../api';
-import { sslApi } from '../../ssl/api';
-import { bindInput, bindCall1, bindCall2 } from '../../../pages/bind-handlers';
-
-function parseAliasesSafe(text: string): string[] {
-  return text
-    .split(/[\n,]+/)
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
+import { bindInput } from '../../../pages/bind-handlers';
 
 export interface ProjectNetworkTabProps {
   project: ProjectDto;
   busy?: boolean;
-  onPublish: () => void;
-  onPublishSsl: () => void;
+  /** @deprecated edge publish moved to /nginx — kept optional for callers */
+  onPublish?: () => void;
+  onPublishSsl?: () => void;
   onSaved?: () => void | Promise<void>;
   onOpsResult?: (result: OpsApplyResultDto | null, message?: string) => void;
 }
@@ -79,8 +72,6 @@ function upstreamLabel(project: ProjectDto): string {
 export function ProjectNetworkTab({
   project,
   busy,
-  onPublish,
-  onPublishSsl,
   onSaved,
   onOpsResult }: ProjectNetworkTabProps) {
   const { t } = useTranslation();
@@ -100,9 +91,6 @@ export function ProjectNetworkTab({
     project.realIpProvider ?? 'inherit',
   );
   const [saving, setSaving] = useState(false);
-  const [confPreview, setConfPreview] = useState<string | null>(null);
-  /** Domain has fullchain+privkey on disk (managed / LE / store) */
-  const [sslReady, setSslReady] = useState<boolean | null>(null);
 
   useEffect(() => {
     setDomain(project.domain ?? '');
@@ -129,48 +117,6 @@ export function ProjectNetworkTab({
     project.realIpProvider,
   ]);
 
-  // Refresh cert readiness when domain (or aliases) change
-  const domainKey = useMemo(
-    () =>
-      [domain.trim().toLowerCase(), ...parseAliasesSafe(aliasesText)]
-        .filter(Boolean)
-        .join('|'),
-    [domain, aliasesText],
-  );
-
-  useEffect(() => {
-    let cancelled = false;
-    const primary = domain.trim().toLowerCase();
-    if (!primary) {
-      setSslReady(false);
-      return;
-    }
-    setSslReady(null);
-    void (async () => {
-      try {
-        const res = await sslApi.list();
-        const items = res.items ?? [];
-        const names = new Set(
-          [primary, ...parseAliasesSafe(aliasesText).map((a) => a.toLowerCase())].filter(Boolean),
-        );
-        const hit = items.some(
-          (c) =>
-            names.has(String(c.domain || '').toLowerCase()) &&
-            (c.files_exist === true ||
-              String(c.status || '').toLowerCase() === 'issued' ||
-              String(c.status || '').toLowerCase() === 'ready'),
-        );
-        if (!cancelled) setSslReady(hit);
-      } catch {
-        // If list fails, leave null → buttons stay gated (safer than enabling blind SSL)
-        if (!cancelled) setSslReady(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [domainKey, aliasesText]);
-
   function parseAliases(): string[] {
     return aliasesText
       .split(/[\n,]+/)
@@ -186,18 +132,11 @@ export function ProjectNetworkTab({
     return Math.floor(n);
   }
 
-  async function saveNetwork(publish: boolean, ssl?: boolean) {
-    if (ssl && !sslReady) {
-      onOpsResult?.(
-        null,
-        t('projects.sslRequiredFirst', { }),
-      );
-      return;
-    }
+  async function saveNetwork() {
     setSaving(true);
     try {
       const portVal = preferredPortPayload();
-      const res = await projectsApi.updateNetwork(project.id, {
+      await projectsApi.updateNetwork(project.id, {
         domain: domain.trim() || undefined,
         domainAliases: parseAliases(),
         forceHttps,
@@ -210,13 +149,9 @@ export function ProjectNetworkTab({
         preferredPort: portVal === undefined ? undefined : portVal,
         realIpProvider:
           realIpProvider === 'inherit' ? null : realIpProvider || null,
-        publish,
-        ssl });
-      if (res.publish) {
-        onOpsResult?.(res.publish, publish ? t('projects.netSavedPublished') : undefined);
-      } else {
-        onOpsResult?.(null, t('projects.netSavedOnly'));
-      }
+        publish: false,
+      });
+      onOpsResult?.(null, t('projects.netSavedOnly'));
       await onSaved?.();
     } catch (e) {
       onOpsResult?.(null, e instanceof Error ? e.message : t('common.saveFailed'));
@@ -227,8 +162,6 @@ export function ProjectNetworkTab({
 
   const localBusy = busy || saving;
   const suspended = project.status === 'suspended';
-  const hasDomain = Boolean(domain.trim());
-  const canSsl = hasDomain && sslReady === true;
   const showPort =
     project.runtime !== 'static' &&
     !(project.runtime === 'php' && !project.port);
@@ -250,17 +183,15 @@ export function ProjectNetworkTab({
                 {upstreamLabel(project)}
               </code>
             </Field>
-            <Field label={t('common.domain')} htmlFor="net-dom-ro" flush>
-              <code id="net-dom-ro" className="inline">
-                {project.domain || '—'}
-              </code>
-            </Field>
-            <Field label={t('projects.nginxManageFile', { defaultValue: 'Conf' })} htmlFor="net-path" flush>
-              <code id="net-path" className="inline">
-                {project.nginxConfigPath || '—'}
-              </code>
-            </Field>
           </FormLayout>
+          <ActionBar className="u-mt-3">
+            <Link
+              to={`/nginx?projectId=${encodeURIComponent(project.id)}`}
+              className={buttonClassName({ variant: 'primary', size: 'md' })}
+            >
+              {t('projects.manageInNginx')}
+            </Link>
+          </ActionBar>
         </CardSection>
       </Card>
 
@@ -451,183 +382,17 @@ export function ProjectNetworkTab({
         </Card>
       )}
 
-      <Card>
-        <CardSection title={t('projects.netPublishTitle')}>
-          <div className="stack" style={{ gap: '0.85rem' }}>
-            {/* Primary: save meta + edge without SSL */}
-            <div>
-              <div className="u-text-muted u-text-sm u-mb-1">
-                {t('projects.netPublishPrimary')}
-              </div>
-              <ActionBar size="md" wrap aria-label={t('projects.netPublishPrimary')}>
-                <Button
-                  variant="secondary"
-                  size="md"
-                  loading={localBusy}
-                  disabled={suspended}
-                  onClick={bindCall1(saveNetwork, false)}
-                >
-                  {t('common.save')}
-                </Button>
-                <Button
-                  variant="primary"
-                  size="md"
-                  loading={localBusy}
-                  disabled={suspended || !hasDomain}
-                  onClick={bindCall2(saveNetwork, true, false)}
-                >
-                  {t('projects.savePublishNginx')}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="md"
-                  loading={localBusy}
-                  disabled={suspended || !hasDomain}
-                  onClick={onPublish}
-                >
-                  {t('projects.publishNginx')}
-                </Button>
-              </ActionBar>
-            </div>
-
-            {/* SSL row — gated until cert exists */}
-            <div>
-              <div className="u-text-muted u-text-sm u-mb-1">
-                {t('projects.netPublishSsl', { defaultValue: 'HTTPS / SSL' })}
-              </div>
-              {!canSsl && hasDomain ? (
-                <Alert variant="warn" className="u-mb-2">
-                  {t('projects.sslGateHint', { })}{' '}
-                  <Link to="/ssl">{t('nav.ssl')}</Link>{' '}
-                  {t('projects.sslGateHint2', { })}
-                  {sslReady === null
-                    ? ` (${t('common.checking')})`
-                    : ''}
-                </Alert>
-              ) : null}
-              {!hasDomain ? (
-                <div className="u-mb-2">
-                  <FormHint>
-                    {t('projects.sslNeedDomain', { })}
-                  </FormHint>
-                </div>
-              ) : null}
-              <ActionBar size="md" wrap aria-label={t('projects.netPublishSsl', { defaultValue: 'HTTPS / SSL' })}>
-                <Button
-                  variant="secondary"
-                  size="md"
-                  loading={localBusy}
-                  disabled={suspended || !canSsl}
-                  title={
-                    !canSsl
-                      ? t('projects.sslRequiredFirst', { })
-                      : undefined
-                  }
-                  onClick={bindCall2(saveNetwork, true, true)}
-                >
-                  {t('projects.savePublishSsl')}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="md"
-                  loading={localBusy}
-                  disabled={suspended || !canSsl}
-                  title={
-                    !canSsl
-                      ? t('projects.sslRequiredFirst', { })
-                      : undefined
-                  }
-                  onClick={() => {
-                    if (!canSsl) {
-                      onOpsResult?.(
-                        null,
-                        t('projects.sslRequiredFirst', { }),
-                      );
-                      return;
-                    }
-                    onPublishSsl();
-                  }}
-                >
-                  {t('projects.publishNginxSsl')}
-                </Button>
-              </ActionBar>
-            </div>
-
-            {/* Maintenance */}
-            <div>
-              <div className="u-text-muted u-text-sm u-mb-1">
-                {t('projects.netPublishMaint')}
-              </div>
-              <ActionBar size="md" wrap aria-label={t('projects.netPublishMaint')}>
-                <Button
-                  variant="ghost"
-                  size="md"
-                  loading={localBusy}
-                  disabled={suspended}
-                  onClick={() => {
-                    setSaving(true);
-                    void projectsApi
-                      .purgeCache(project.id)
-                      .then((r) => {
-                        onOpsResult?.(
-                          {
-                            ok: r.ok,
-                            notes: r.notes ?? [],
-                            projectId: project.id,
-                            processStatus: 'stopped',
-                            listening: false } as OpsApplyResultDto,
-                          r.ok
-                            ? t('projects.netPurgeOk')
-                            : r.notes?.join('；') ?? t('projects.netPurgeFailed'),
-                        );
-                      })
-                      .catch((e: Error) => onOpsResult?.(null, e.message))
-                      .finally(() => setSaving(false));
-                  }}
-                >
-                  {t('projects.purgeNginxCache')}
-                </Button>
-              </ActionBar>
-            </div>
-          </div>
-        </CardSection>
-      </Card>
-
-      {project.nginxConfigPath ? (
-        <Card>
-          <CardSection title={t('projects.netConfPreview', { defaultValue: 'Conf' })}>
-            <FormActions>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setConfPreview((p) => (p != null ? null : ''));
-                  if (confPreview != null) return;
-                  void projectsApi
-                    .nginxConf?.(project.id)
-                    .then((r) => setConfPreview(r.content ?? r.conf ?? ''))
-                    .catch(() =>
-                      setConfPreview(
-                        project.nginxConfigPath
-                          ? `# ${project.nginxConfigPath}\n# preview API unavailable — open file on host`
-                          : '',
-                      ),
-                    );
-                }}
-              >
-                {confPreview != null
-                  ? t('common.hide')
-                  : t('common.show')}
-              </Button>
-            </FormActions>
-            {confPreview != null ? (
-              <pre className="code-block u-mt-2" style={{ maxHeight: 320, overflow: 'auto' }}>
-                {confPreview || '—'}
-              </pre>
-            ) : null}
-          </CardSection>
-        </Card>
-      ) : null}
+      <ActionBar>
+        <Button
+          variant="primary"
+          size="md"
+          loading={localBusy}
+          disabled={suspended}
+          onClick={() => void saveNetwork()}
+        >
+          {t('common.save')}
+        </Button>
+      </ActionBar>
     </div>
   );
 }

@@ -16,7 +16,7 @@
   "kindPhp": "PHP-FPM",
   "colTarget": "আপস্ট্রিম / রুট",
   "colStatus": "স্ট্যাটাস",
-  "emptyTitle": "এখনও কোনো Nginx সাইট নেই",
+  "emptyTitle": "No sites",
   "emptyDesc": "তালিকার টুলবারে “সাইট তৈরি” ব্যবহার করুন; তারপর Apply",
   "applyTitle": "প্যানেল ডেটা লিখে sync + nginx -t + reload চেষ্টা করুন",
   "applyToSystem": "সিস্টেমে সিঙ্ক করুন",
@@ -54,5 +54,12 @@
   "pageOf": "পৃষ্ঠা {{page}} / {{total}} · {{count}}",
   "projectConfEmpty": "(খালি conf ফাইল)",
   "projectConfReadFail": "প্রজেক্ট conf পড়তে ব্যর্থ",
-  "projectPreviewPath": "{{path}}"
+  "projectPreviewPath": "{{path}}",
+  "pageDesc": "Nginx sites",
+  "filterSource": "Source",
+  "sourceAll": "All",
+  "sourceProject": "Project",
+  "sourceStandalone": "Standalone",
+  "colSource": "Source",
+  "filterProject": "Filtered by project"
 }

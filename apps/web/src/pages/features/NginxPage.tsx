@@ -1,7 +1,9 @@
+/**
+ * Nginx — single table for project + standalone sites (SSOT).
+ */
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
-import type { ProjectDto } from '@ysk/shared';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   WithPageGuide,
   DataTable,
@@ -16,184 +18,184 @@ import {
   FormLayout,
   LogViewer,
   Modal,
-  ServerListFilters,
   SoftwareInstallBanner,
   SoftwareVersionBar,
   FormHint,
   CheckboxField,
   SegRadio,
-  buttonClassName } from '../../shared/components/ui';
-import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
+  buttonClassName,
+} from '../../shared/components/ui';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
-import type { ResourceRow } from '../../features/resources/api';
 import { systemApi } from '../../features/system';
-import { projectsApi } from '../../features/projects/api';
-import { bindSet, bindCall1 } from '../bind-handlers';
-
-const PROJECT_PAGE_SIZE = 5;
-
-type ProjectConfPreview = { projectId: string; name: string; path: string | null; content: string };
-
-/** Projects that have (or may have) panel-managed Nginx conf. */
-export function projectNginxRows(projects: ProjectDto[]): ProjectDto[] {
-  return projects.filter(
-    (p) => Boolean(p.nginxConfigPath?.trim()) || Boolean(p.domain?.trim()),
-  );
-}
+import { nginxHostingApi, type NginxSiteRow } from '../../features/nginx/api';
+import { bindSet } from '../bind-handlers';
+import { notifyOk, notifyWarn } from '../../shared/lib/notify';
 
 export function NginxPage() {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+  const projectFilter = searchParams.get('projectId') ?? '';
   const {
-    items,
-    error,
-    busy,
-    msg,
-    setMsg,
+    items: standalone,
+    error: crudError,
+    busy: crudBusy,
     create,
     update,
     remove,
-    apply,
-    q,
-    setQ,
-    searching,
-    listLoading,
-    total,
-    activeFilterCount,
-    clearSearch } = useResourceCrud('nginx/sites');
+    apply: applyStandalone,
+  } = useResourceCrud('nginx/sites');
+
+  const [sites, setSites] = useState<NginxSiteRow[]>([]);
+  const [listErr, setListErr] = useState<string | null>(null);
+  const [listBusy, setListBusy] = useState(false);
+  const [q, setQ] = useState('');
+  const [source, setSource] = useState<'all' | 'project' | 'standalone'>('all');
   const [purgeBusy, setPurgeBusy] = useState(false);
-  const [purgeMsg, setPurgeMsg] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
-  const [edit, setEdit] = useState<ResourceRow | null>(null);
+  const [edit, setEdit] = useState<NginxSiteRow | null>(null);
   const [delId, setDelId] = useState<string | null>(null);
-  const [projects, setProjects] = useState<ProjectDto[]>([]);
-  const [projLoadErr, setProjLoadErr] = useState<string | null>(null);
-  const [projPage, setProjPage] = useState(0);
-  const [projPreview, setProjPreview] = useState<ProjectConfPreview | null>(null);
-  const [projPreviewBusy, setProjPreviewBusy] = useState(false);
+  const [preview, setPreview] = useState<{
+    title: string;
+    path: string | null;
+    content: string;
+  } | null>(null);
+  const [previewBusy, setPreviewBusy] = useState(false);
+  const [opsBusy, setOpsBusy] = useState(false);
 
-  const refreshProjects = useCallback(async () => {
-    setProjLoadErr(null);
-    try {
-      const r = await projectsApi.list();
-      setProjects(r.items ?? []);
-      setProjPage(0);
-    } catch (e) {
-      setProjLoadErr(e instanceof Error ? e.message : t('common.loadFailed'));
-    }
-  }, [t]);
-
-  useEffect(() => {
-    void refreshProjects();
-  }, [refreshProjects]);
-
-  const projectSites = useMemo(() => projectNginxRows(projects), [projects]);
-  const projPageCount = Math.max(1, Math.ceil(projectSites.length / PROJECT_PAGE_SIZE));
-  const projPageSafe = Math.min(projPage, projPageCount - 1);
-  const projectPageItems = useMemo(() => {
-    const start = projPageSafe * PROJECT_PAGE_SIZE;
-    return projectSites.slice(start, start + PROJECT_PAGE_SIZE);
-  }, [projectSites, projPageSafe]);
-
-  const openProjectPreview = useCallback(
-    async (p: ProjectDto) => {
-      setProjPreviewBusy(true);
-      try {
-        const r = await projectsApi.nginxConf(p.id);
-        const content = String(r.content ?? r.conf ?? '');
-        setProjPreview({
-          projectId: p.id,
-          name: p.name,
-          path: r.path ?? p.nginxConfigPath ?? null,
-          content: content || t('nginx.projectConfEmpty'),
-        });
-      } catch (e) {
-        setProjLoadErr(e instanceof Error ? e.message : t('nginx.projectConfReadFail'));
-      } finally {
-        setProjPreviewBusy(false);
-      }
-    },
-    [t],
-  );
   const [serverName, setServerName] = useState('');
   const [kind, setKind] = useState<'proxy' | 'static' | 'php'>('proxy');
   const [upstream, setUpstream] = useState('http://127.0.0.1:3000');
   const [root, setRoot] = useState('');
   const [ssl, setSsl] = useState(false);
 
-  function resetForm() {
+  const refresh = useCallback(async () => {
+    setListBusy(true);
+    setListErr(null);
+    try {
+      const r = await nginxHostingApi.listSites({
+        q: q.trim() || undefined,
+        source: source === 'all' ? undefined : source,
+        projectId: projectFilter || undefined,
+      });
+      setSites(r.items ?? []);
+    } catch (e) {
+      setListErr(e instanceof Error ? e.message : t('common.loadFailed'));
+    } finally {
+      setListBusy(false);
+    }
+  }, [q, source, projectFilter, t]);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh, standalone.length]);
+
+  const busy = crudBusy || opsBusy || listBusy;
+
+  const openCreate = () => {
     setServerName('');
     setKind('proxy');
     setUpstream('http://127.0.0.1:3000');
     setRoot('');
     setSsl(false);
-  }
+    setCreateOpen(true);
+  };
 
-  async function onCreate(e: FormEvent) {
+  const openEditStandalone = (row: NginxSiteRow) => {
+    if (row.source !== 'standalone') return;
+    setEdit(row);
+    setServerName(row.serverName === '—' ? '' : row.serverName);
+    setKind(row.kind);
+    setUpstream(row.kind === 'proxy' ? row.target : 'http://127.0.0.1:3000');
+    setRoot(row.kind !== 'proxy' ? row.target : '');
+    setSsl(row.ssl);
+  };
+
+  const onCreate = async (e: FormEvent) => {
     e.preventDefault();
     await create({
-      serverName,
+      serverName: serverName.trim(),
       kind,
       upstream: kind === 'proxy' ? upstream : undefined,
-      root: kind !== 'proxy' ? root || undefined : undefined,
-      ssl });
+      root: kind !== 'proxy' ? root : undefined,
+      ssl,
+    });
     setCreateOpen(false);
-    resetForm();
-  }
+    await refresh();
+  };
 
-  async function onEdit(e: FormEvent) {
+  const onEdit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!edit) return;
+    if (!edit || edit.source !== 'standalone') return;
     await update(edit.id, {
-      serverName,
+      serverName: serverName.trim(),
       kind,
       upstream: kind === 'proxy' ? upstream : undefined,
-      root: kind !== 'proxy' ? root || undefined : undefined,
-      ssl });
+      root: kind !== 'proxy' ? root : undefined,
+      ssl,
+    });
     setEdit(null);
-    resetForm();
-  }
+    await refresh();
+  };
 
-  function openEdit(row: ResourceRow) {
-    setEdit(row);
-    setServerName(String(row.serverName ?? ''));
-    setKind((row.kind as 'proxy' | 'static' | 'php') || 'proxy');
-    setUpstream(String(row.upstream ?? 'http://127.0.0.1:3000'));
-    setRoot(String(row.root ?? ''));
-    setSsl(Boolean(row.ssl));
-  }
+  const onApply = async (row: NginxSiteRow) => {
+    setOpsBusy(true);
+    try {
+      if (row.source === 'project') {
+        const r = await nginxHostingApi.applySite(row.id, { ssl: row.ssl });
+        if (r.ok) notifyOk(String((r.notes as string[] | undefined)?.[0] ?? t('common.completed')));
+        else notifyWarn(String((r.notes as string[] | undefined)?.[0] ?? t('common.opFailed')));
+      } else {
+        await applyStandalone(row.id);
+      }
+      await refresh();
+    } catch (err) {
+      notifyWarn(err instanceof Error ? err.message : t('common.opFailed'));
+    } finally {
+      setOpsBusy(false);
+    }
+  };
 
-  function kindLabel(k: string): string {
+  const onPreview = async (row: NginxSiteRow) => {
+    setPreviewBusy(true);
+    try {
+      const r = await nginxHostingApi.siteConf(row.id);
+      setPreview({
+        title: row.serverName,
+        path: r.path,
+        content: r.content || t('nginx.projectConfEmpty'),
+      });
+    } catch (e) {
+      setListErr(e instanceof Error ? e.message : t('nginx.projectConfReadFail'));
+    } finally {
+      setPreviewBusy(false);
+    }
+  };
+
+  const kindLabel = (k: string) => {
     if (k === 'proxy') return t('nginx.kindProxy');
     if (k === 'static') return t('nginx.kindStatic');
     if (k === 'php') return t('nginx.kindPhp');
     return k;
-  }
+  };
+
+  const filteredHint = useMemo(() => {
+    if (projectFilter) return t('nginx.filterProject');
+    return null;
+  }, [projectFilter, t]);
 
   return (
     <FeaturePageLayout
       title={t('nav.nginx')}
+      subtitle={t('nginx.pageDesc')}
       status={{
         pill: {
-          label: t('nginx.pillSites', {
-            count: items.length + projectSites.length,
-          }),
-          tone: items.length || projectSites.length ? 'ok' : 'warn' },
-        items: [
-          { label: t('nginx.statSites'), value: items.length },
-          {
-            label: t('nginx.statProjectSites'),
-            value: projectSites.length,
-          },
-          {
-            label: t('nginx.kindProxy'),
-            value: items.filter((r) => r.kind === 'proxy').length },
-          {
-            label: t('nginx.statSslFlag'),
-            value: items.filter((r) => r.ssl).length },
-        ] }}
+          label: t('nginx.pillSites', { count: sites.length }),
+          tone: sites.length ? 'ok' : 'warn',
+        },
+      }}
       actions={
         <ActionBar>
-          <Button variant="secondary" size="sm" onClick={() => void refreshProjects()}>
+          <Button variant="secondary" size="sm" loading={listBusy} onClick={() => void refresh()}>
             {t('common.refresh')}
           </Button>
           <Button
@@ -202,20 +204,21 @@ export function NginxPage() {
             loading={purgeBusy}
             onClick={() => {
               setPurgeBusy(true);
-              setPurgeMsg(null);
               void systemApi
                 .nginxPurgeCache()
                 .then((r) => {
                   const notes = (r as { notes?: string[] }).notes;
-                  setPurgeMsg(notes?.[0] ?? t('nginx.purgeOk'));
+                  notifyOk(notes?.[0] ?? t('nginx.purgeOk'));
                 })
-                .catch((e: Error) => setPurgeMsg(e.message))
+                .catch((e: Error) => notifyWarn(e.message))
                 .finally(() => setPurgeBusy(false));
             }}
           >
             {t('nginx.purgeCache')}
           </Button>
-
+          <Button variant="primary" size="sm" onClick={openCreate}>
+            {t('nginx.createSite')}
+          </Button>
         </ActionBar>
       }
     >
@@ -228,198 +231,85 @@ export function NginxPage() {
           </>
         }
       >
-        {error ? <Alert variant="error">{error}</Alert> : null}
-        {projLoadErr ? <Alert variant="error">{projLoadErr}</Alert> : null}
-        {purgeMsg ? <Alert variant="info">{purgeMsg}</Alert> : null}
+        {crudError ? <Alert variant="error">{crudError}</Alert> : null}
+        {listErr ? <Alert variant="error">{listErr}</Alert> : null}
+        {filteredHint ? <Alert variant="info">{filteredHint}</Alert> : null}
+
+        <div className="u-flex-gap u-flex-wrap u-mb-3">
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder={t('common.search')}
+            className="u-input"
+            style={{ maxWidth: 220 }}
+          />
+          <SegRadio
+            name="ngx-src"
+            aria-label={t('nginx.filterSource')}
+            value={source}
+            onChange={(v) => setSource(v as 'all' | 'project' | 'standalone')}
+            options={[
+              { value: 'all', label: t('nginx.sourceAll') },
+              { value: 'project', label: t('nginx.sourceProject') },
+              { value: 'standalone', label: t('nginx.sourceStandalone') },
+            ]}
+          />
+        </div>
 
         <DataTable
-          rowKey={(p) => p.id}
-          title={t('nginx.projectListTitle', { count: projectSites.length })}
+          rowKey={(r) => r.id}
+          title={t('nginx.listTitle', { count: sites.length })}
           columns={[
             {
-              key: 'name',
-              header: t('nginx.colProject'),
-              render: (p) => (
-                <Link
-                  to={`/projects/${p.id}`}
-                  className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-                >
-                  <strong>{p.name}</strong>
-                </Link>
-              ),
-            },
-            {
-              key: 'domain',
+              key: 'server',
               header: t('nginx.colServerName'),
-              render: (p) => <code className="inline">{p.domain || '—'}</code>,
+              render: (r) => <code className="inline">{r.serverName}</code>,
             },
             {
-              key: 'runtime',
-              header: t('nginx.colRuntime'),
-              render: (p) => p.runtime || '—',
-            },
-            {
-              key: 'conf',
-              header: t('nginx.colConf'),
-              render: (p) =>
-                p.nginxConfigPath ? (
-                  <Badge tone="ok">{t('nginx.confWritten')}</Badge>
+              key: 'source',
+              header: t('nginx.colSource'),
+              nowrap: true,
+              render: (r) =>
+                r.source === 'project' ? (
+                  <Link
+                    to={`/projects/${r.projectId}`}
+                    className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+                  >
+                    {r.projectName ?? t('nginx.sourceProject')}
+                  </Link>
                 ) : (
-                  <Badge tone="warn">{t('nginx.confMissing')}</Badge>
+                  <Badge tone="neutral">{t('nginx.sourceStandalone')}</Badge>
                 ),
             },
             {
-              key: 'port',
-              header: t('common.port'),
-              render: (p) => (p.port != null ? String(p.port) : '—'),
-            },
-          ]}
-          rows={projectPageItems}
-          empty={<EmptyState title={t('nginx.projectEmptyTitle')} />}
-          rowActions={(p) => (
-            <ActionBar>
-              <Button
-                variant="secondary"
-                size="sm"
-                loading={projPreviewBusy}
-                disabled={!p.nginxConfigPath}
-                onClick={() => void openProjectPreview(p)}
-              >
-                {t('nginx.preview')}
-              </Button>
-              <Link
-                to={`/projects/${p.id}?tab=network`}
-                className={buttonClassName({ variant: 'primary', size: 'sm' })}
-              >
-                {t('nginx.openProject')}
-              </Link>
-            </ActionBar>
-          )}
-        />
-        {projectSites.length > PROJECT_PAGE_SIZE ? (
-          <div className="sys-conf-pager" role="navigation" aria-label={t('nginx.projectPager')}>
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled={projPageSafe <= 0}
-              onClick={() => setProjPage((p) => Math.max(0, p - 1))}
-            >
-              {t('nginx.prevPage')}
-            </Button>
-            <span className="sys-conf-pager__meta">
-              {t('nginx.pageOf', {
-                page: projPageSafe + 1,
-                total: projPageCount,
-                count: projectSites.length,
-              })}
-            </span>
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled={projPageSafe >= projPageCount - 1}
-              onClick={() => setProjPage((p) => Math.min(projPageCount - 1, p + 1))}
-            >
-              {t('nginx.nextPage')}
-            </Button>
-          </div>
-        ) : null}
-
-        <Modal
-          open={Boolean(projPreview)}
-          onClose={() => {
-            if (!projPreviewBusy) setProjPreview(null);
-          }}
-          title={projPreview?.name ?? t('nginx.preview')}
-          description={
-            projPreview?.path
-              ? t('nginx.projectPreviewPath', { path: projPreview.path })
-              : undefined
-          }
-          size="xl"
-          footer={
-            <>
-              {projPreview ? (
-                <Link
-                  to={`/projects/${projPreview.projectId}?tab=network`}
-                  className={buttonClassName({ variant: 'primary', size: 'md' })}
-                >
-                  {t('nginx.openProject')}
-                </Link>
-              ) : null}
-              <Button variant="secondary" size="md" onClick={() => setProjPreview(null)}>
-                {t('common.close')}
-              </Button>
-            </>
-          }
-        >
-          {projPreview ? (
-            <LogViewer
-              text={projPreview.content}
-              highlight={false}
-              linkIps={false}
-              maxHeight={480}
-            />
-          ) : null}
-        </Modal>
-
-        <DataTable
-          rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
-          title={t('nginx.listTitle', { count: total })}
-          toolbar={
-            <ActionBar>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => {
-                  resetForm();
-                  setCreateOpen(true);
-                }}
-              >
-                {t('nginx.createSite')}
-              </Button>
-            </ActionBar>
-          }
-          filters={
-            <ServerListFilters
-              q={q}
-              setQ={setQ}
-              searching={searching}
-              loading={listLoading}
-              total={total}
-              shown={items.length}
-              activeFilterCount={activeFilterCount}
-              clear={clearSearch}
-            />
-          }
-          columns={[
-            {
-              key: 'serverName',
-              header: t('nginx.colServerName'),
-              render: (r) => <strong>{String(r.serverName ?? '—')}</strong> },
-            {
               key: 'kind',
               header: t('nginx.colKind'),
-              render: (r) => kindLabel(String(r.kind ?? 'proxy')) },
+              render: (r) => kindLabel(r.kind),
+            },
             {
               key: 'target',
               header: t('nginx.colTarget'),
-              render: (r) => (
-                <code className="inline u-break-all">
-                  {String(r.upstream ?? r.root ?? '—')}
-                </code>
-              ) },
+              render: (r) => <code className="inline">{r.target}</code>,
+            },
             {
               key: 'ssl',
               header: 'SSL',
-              render: (r) => (r.ssl ? t('common.yes') : t('common.no')) },
+              nowrap: true,
+              render: (r) =>
+                r.ssl ? <Badge tone="ok">SSL</Badge> : <span className="muted">—</span>,
+            },
             {
               key: 'status',
               header: t('nginx.colStatus'),
+              nowrap: true,
               render: (r) => (
-                <ResourceStatusBadge status={String(r.apply_status)} />
-              ) },
+                <Badge tone={r.confPath || r.apply_status === 'applied' ? 'ok' : 'warn'}>
+                  {r.apply_status || (r.confPath ? 'written' : 'draft')}
+                </Badge>
+              ),
+            },
           ]}
-          rows={items}
+          rows={sites}
           empty={<EmptyState title={t('nginx.emptyTitle')} />}
           rowActions={(r) => (
             <ActionBar>
@@ -427,30 +317,62 @@ export function NginxPage() {
                 variant="primary"
                 size="sm"
                 loading={busy}
-                onClick={bindCall1(apply, r.id)}
-                title={t('nginx.applyTitle')}
+                onClick={() => void onApply(r)}
               >
                 {t('nginx.applyToSystem')}
               </Button>
               <Button
                 variant="secondary"
                 size="sm"
-                loading={busy}
-                onClick={bindCall1(openEdit, r)}
+                loading={previewBusy}
+                onClick={() => void onPreview(r)}
               >
-                {t('common.edit')}
+                {t('nginx.preview')}
               </Button>
-              <Button
-                variant="danger"
-                size="sm"
-                loading={busy}
-                onClick={bindSet(setDelId, r.id)}
-              >
-                {t('common.delete')}
-              </Button>
+              {r.source === 'standalone' ? (
+                <>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => openEditStandalone(r)}
+                  >
+                    {t('common.edit')}
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    loading={busy}
+                    onClick={() => setDelId(r.id)}
+                  >
+                    {t('common.delete')}
+                  </Button>
+                </>
+              ) : (
+                <Link
+                  to={`/projects/${r.projectId}?tab=network`}
+                  className={buttonClassName({ variant: 'ghost', size: 'sm' })}
+                >
+                  {t('nginx.openProject')}
+                </Link>
+              )}
             </ActionBar>
           )}
         />
+
+        <Modal
+          open={Boolean(preview)}
+          onClose={() => setPreview(null)}
+          title={preview?.title ?? t('nginx.preview')}
+          description={preview?.path ?? undefined}
+          size="xl"
+          footer={
+            <Button variant="secondary" size="md" onClick={() => setPreview(null)}>
+              {t('common.close')}
+            </Button>
+          }
+        >
+          <LogViewer content={preview?.content ?? ''} maxHeight={420} />
+        </Modal>
 
         <Modal
           open={createOpen}
@@ -458,20 +380,10 @@ export function NginxPage() {
           title={t('nginx.createTitle')}
           footer={
             <>
-              <Button
-                variant="secondary"
-                size="md"
-                onClick={bindSet(setCreateOpen, false)}
-              >
+              <Button variant="secondary" size="md" onClick={bindSet(setCreateOpen, false)}>
                 {t('common.cancel')}
               </Button>
-              <Button
-                type="submit"
-                form="ngx-create"
-                variant="primary"
-                size="md"
-                loading={busy}
-              >
+              <Button type="submit" form="ngx-create" variant="primary" size="md" loading={busy}>
                 {t('common.create')}
               </Button>
             </>
@@ -502,13 +414,7 @@ export function NginxPage() {
               <Button variant="secondary" size="md" onClick={bindSet(setEdit, null)}>
                 {t('common.cancel')}
               </Button>
-              <Button
-                type="submit"
-                form="ngx-edit"
-                variant="primary"
-                size="md"
-                loading={busy}
-              >
+              <Button type="submit" form="ngx-edit" variant="primary" size="md" loading={busy}>
                 {t('common.save')}
               </Button>
             </>
@@ -534,7 +440,11 @@ export function NginxPage() {
           open={Boolean(delId)}
           onClose={bindSet(setDelId, null)}
           onConfirm={() => {
-            if (delId) void remove(delId).then(() => setDelId(null));
+            if (delId)
+              void remove(delId).then(() => {
+                setDelId(null);
+                void refresh();
+              });
           }}
           title={t('nginx.deleteTitle')}
           description={t('nginx.deleteDesc')}
@@ -564,13 +474,7 @@ function SiteForm(props: {
   return (
     <div className="feature-form">
       <FormLayout columns={2}>
-        <Field
-          label={t('nginx.colServerName')}
-          htmlFor="sn"
-          flush
-          required
-          hint={t('nginx.serverNameHint')}
-        >
+        <Field label={t('nginx.colServerName')} htmlFor="sn" flush required>
           <input
             id="sn"
             value={props.serverName}
@@ -594,13 +498,7 @@ function SiteForm(props: {
           />
         </Field>
         {props.kind === 'proxy' ? (
-          <Field
-            label={t('nginx.upstreamLabel')}
-            htmlFor="up"
-            fullWidth
-            flush
-            hint={t('nginx.upstreamHint')}
-          >
+          <Field label={t('nginx.upstreamLabel')} htmlFor="up" fullWidth flush>
             <input
               id="up"
               value={props.upstream}
@@ -610,15 +508,7 @@ function SiteForm(props: {
             />
           </Field>
         ) : (
-          <Field
-            label={t('nginx.rootLabel')}
-            htmlFor="rt"
-            fullWidth
-            flush
-            hint={
-              props.kind === 'php' ? t('nginx.rootHintPhp') : t('nginx.rootHintStatic')
-            }
-          >
+          <Field label={t('nginx.rootLabel')} htmlFor="rt" fullWidth flush>
             <input
               id="rt"
               value={props.root}
@@ -633,7 +523,6 @@ function SiteForm(props: {
         <CheckboxField
           id="ngx-ssl"
           label={t('nginx.sslLabel')}
-          description={t('nginx.sslDesc')}
           checked={props.ssl}
           onChange={props.setSsl}
         />

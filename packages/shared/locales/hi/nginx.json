@@ -16,7 +16,7 @@
   "kindPhp": "PHP-FPM",
   "colTarget": "अपस्ट्रीम / रूट",
   "colStatus": "स्थिति",
-  "emptyTitle": "अभी कोई Nginx साइट नहीं",
+  "emptyTitle": "No sites",
   "emptyDesc": "सूची टूलबार में “साइट बनाएँ” उपयोग करें; फिर लागू करें",
   "applyTitle": "पैनल डेटा लिखें और sync + nginx -t + reload आज़माएँ",
   "applyToSystem": "सिस्टम से सिंक करें",
@@ -54,5 +54,12 @@
   "pageOf": "पृष्ठ {{page}} / {{total}} · {{count}}",
   "projectConfEmpty": "(खाली conf फ़ाइल)",
   "projectConfReadFail": "प्रोजेक्ट conf पढ़ने में विफल",
-  "projectPreviewPath": "{{path}}"
+  "projectPreviewPath": "{{path}}",
+  "pageDesc": "Nginx sites",
+  "filterSource": "Source",
+  "sourceAll": "All",
+  "sourceProject": "Project",
+  "sourceStandalone": "Standalone",
+  "colSource": "Source",
+  "filterProject": "Filtered by project"
 }
