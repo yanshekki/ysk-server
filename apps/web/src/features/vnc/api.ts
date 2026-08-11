@@ -189,6 +189,10 @@ export const vncApi = {
       `/api/v1/vnc/accounts/${encodeURIComponent(id)}/novnc/stop`,
       { method: 'POST', body: '{}', allowStatuses: [403, 422] },
     ),
+  /**
+   * @deprecated Prefer auto-open on start (rfbBind=all) + ServiceAccessStrip.
+   * Kept as compatibility ensure for direct RFB after public bind.
+   */
   openFirewall: (id: string) =>
     api.requestRawAllowStatus<VncOpsResult>(
       `/api/v1/vnc/accounts/${encodeURIComponent(id)}/firewall`,

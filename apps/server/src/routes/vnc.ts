@@ -507,18 +507,24 @@ export async function handleVncRoutes(
         return true;
       }
 
+      // Compat ensure: public RFB ports also auto-open on startAccount (ysk-svc:vnc-*)
       if (method === 'POST' && action === 'firewall') {
         requireCap(ctx, user, 'firewall.edit');
         const result = await vnc.openFirewallForAccount(accountId);
-        ctx.audit.append({actor: user.username,
+        const notes = [
+          ...(result.notes ?? []),
+          'Prefer ServiceAccessStrip / auto-open on start (rfbBind=all).',
+        ];
+        ctx.audit.append({
+          actor: user.username,
           action: 'vnc.firewall.account',
           resource: accountId,
           ok: result.ok,
-          detail: {},
+          detail: { legacy: true },
         });
         sendOpsResult(res, {
           ok: result.ok,
-          notes: result.notes,
+          notes,
           blocked: result.blocked,
           requiresExecute: result.requiresExecute,
           account: result.account,
