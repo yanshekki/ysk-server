@@ -42,7 +42,7 @@ Desktop profiles per account: **minimal** · **xfce** · **none**.
 4. Up to **4** concurrent sessions (tab strip)
 5. **Share link** (view-only, ~1h): copy URL → guest opens `/vnc-share/:token`
 
-**Client outbound:** the **control-plane host** must be able to TCP-connect to the remote `host:port` (firewall on the remote side).
+**Client outbound:** the **control-plane host** must be able to TCP-connect to the resolved RFB target — remote `host:port`, or **Connect host** when path is **Via server proxy** (firewall on the remote side).
 
 ## Server workflow
 
@@ -56,9 +56,20 @@ Desktop profiles per account: **minimal** · **xfce** · **none**.
 ## Client workflow
 
 1. **Client** tab → add remote `host:port` and choose a path (**both open VNC in the browser**):
-   - **User-reachable endpoint** (default): public hostnames / targets as configured
-   - **Via server proxy**: LAN or targets only this control-plane host can reach; traffic egresses via the server network
-2. **Open in browser**
+   - **User-reachable endpoint** (default): public hostnames / targets as configured; panel TCP uses **Remote host**
+   - **Via server proxy**: traffic egresses via the control-plane network; optional **Connect host** overrides the TCP target (e.g. display `vnc.example.com` but open `10.0.0.9:5901` on the LAN)
+2. Before minting a browser ticket the panel **probes RFB TCP** to the resolved host (display host, or Connect host when set under server proxy)
+3. **Open in browser**
+
+### Dual path + Connect host
+
+| Field | Role |
+|-------|------|
+| Remote host | Label / default target shown in the UI |
+| Path | `user_reachable` \| `server_proxy` (browser only; no host-side `vncviewer`) |
+| Connect host | Optional; **server_proxy only**. Control plane opens TCP here when set; leave empty to use Remote host |
+
+API: `POST/PATCH /api/v1/vnc/client/profiles` accept `connectHost`. Public list hides secrets but still returns `connectHost` for operators.
 
 ## Safety
 
