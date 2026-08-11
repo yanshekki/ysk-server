@@ -1115,137 +1115,190 @@ export function VncPage() {
         }
         size="lg"
         footer={
-          <Button
-            variant="secondary"
-            size="md"
-            onClick={() => {
-              setConnTarget(null);
-              setConnInfo(null);
-            }}
-          >
-            {t('common.close')}
-          </Button>
+          <ActionBar>
+            {connTarget ? (
+              <Button
+                variant="primary"
+                size="md"
+                onClick={() => {
+                  const a = connTarget;
+                  setConnTarget(null);
+                  setConnInfo(null);
+                  setViewerTarget({
+                    kind: 'account',
+                    id: a.id,
+                    label: a.name,
+                    subtitle: `:${a.display} · ${a.rfbPort}`,
+                  });
+                }}
+              >
+                {t('vnc.openInBrowser')}
+              </Button>
+            ) : null}
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => {
+                setConnTarget(null);
+                setConnInfo(null);
+              }}
+            >
+              {t('common.close')}
+            </Button>
+          </ActionBar>
         }
       >
         {!connInfo ? (
           <LoadingBlock />
         ) : (
           <div className="stack">
-            <Alert variant="info">{t('vnc.connectionPathsHint')}</Alert>
+            <Alert variant="info">{t('vnc.connectionBrowserHint')}</Alert>
 
             <section className="stack">
               <h4 className="u-m-0">
-                {t('vnc.pathViaServer')}{' '}
+                {t('vnc.openInBrowser')}{' '}
                 <Badge tone="ok">{t('vnc.recommended')}</Badge>
               </h4>
               <p className="muted u-text-sm u-mb-0">
-                {connInfo.connection.viaServer.notes.join(' · ')}
-              </p>
-              <ActionBar>
-                {connInfo.connection.viaServer.available ? (
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    loading={busy}
-                    onClick={() =>
-                      void runOps(() => vncApi.stopNovnc(connTarget!.id)).then(
-                        async () => {
-                          if (connTarget) {
-                            setConnInfo(await vncApi.getConnection(connTarget.id));
-                          }
-                        },
-                      )
-                    }
-                  >
-                    {t('vnc.stopNovnc')}
-                  </Button>
-                ) : (
-                  <Button
-                    size="sm"
-                    variant="primary"
-                    loading={busy}
-                    onClick={() =>
-                      void runOps(() => vncApi.startNovnc(connTarget!.id)).then(
-                        async () => {
-                          if (connTarget) {
-                            setConnInfo(await vncApi.getConnection(connTarget.id));
-                          }
-                        },
-                      )
-                    }
-                  >
-                    {t('vnc.startNovnc')}
-                  </Button>
-                )}
-                {connInfo.connection.viaServer.localUrl ? (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      void navigator.clipboard.writeText(
-                        connInfo.connection.viaServer.localUrl!,
-                      );
-                      notifyOk(t('vnc.copied'));
-                    }}
-                  >
-                    {t('vnc.copyNovncUrl')}
-                  </Button>
-                ) : null}
-              </ActionBar>
-              {connInfo.connection.viaServer.localUrl ? (
-                <p className="u-mb-0">
-                  <code className="inline">
-                    {connInfo.connection.viaServer.localUrl}
-                  </code>
-                </p>
-              ) : null}
-              {connInfo.connection.viaServer.ticketPath ? (
-                <p className="muted u-text-sm u-mb-0">
-                  {t('vnc.ticketPath')}:{' '}
-                  <code className="inline">
-                    {connInfo.connection.viaServer.ticketPath}
-                  </code>
-                </p>
-              ) : null}
-            </section>
-
-            <section className="stack">
-              <h4 className="u-m-0">{t('vnc.pathDirect')}</h4>
-              <p className="muted u-text-sm u-mb-0">
-                {connInfo.connection.direct.notes.join(' · ')}
-              </p>
-              <p className="u-mb-0">
-                <strong>{t('vnc.directAddress')}:</strong>{' '}
-                <code className="inline">{connInfo.connection.direct.address}</code>
+                {t('vnc.connectionBrowserDesc')}
               </p>
               <ActionBar>
                 <Button
                   size="sm"
-                  variant="ghost"
+                  variant="primary"
                   onClick={() => {
-                    void navigator.clipboard.writeText(
-                      connInfo.connection.direct.address,
-                    );
-                    notifyOk(t('vnc.copied'));
+                    const a = connTarget!;
+                    setConnTarget(null);
+                    setConnInfo(null);
+                    setViewerTarget({
+                      kind: 'account',
+                      id: a.id,
+                      label: a.name,
+                      subtitle: `:${a.display} · ${a.rfbPort}`,
+                    });
                   }}
                 >
-                  {t('vnc.copyAddress')}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  loading={busy}
-                  onClick={() =>
-                    void runOps(() => vncApi.openFirewall(connTarget!.id))
-                  }
-                >
-                  {t('vnc.openFirewall')}
+                  {t('vnc.openInBrowser')}
                 </Button>
               </ActionBar>
-              {connInfo.connection.direct.bind === 'localhost' ? (
-                <Alert variant="warn">{t('vnc.directLocalhostWarn')}</Alert>
-              ) : null}
             </section>
+
+            <details className="vnc-conn-advanced">
+              <summary className="u-text-sm">{t('vnc.connectionAdvanced')}</summary>
+              <div className="stack u-mt-2">
+                <section className="stack">
+                  <h4 className="u-m-0">{t('vnc.pathViaServerLegacy')}</h4>
+                  <p className="muted u-text-sm u-mb-0">
+                    {t('vnc.pathViaServerLegacyHint')}
+                  </p>
+                  <p className="muted u-text-sm u-mb-0">
+                    {connInfo.connection.viaServer.notes.join(' · ')}
+                  </p>
+                  <ActionBar>
+                    {connInfo.connection.viaServer.available ? (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        loading={busy}
+                        onClick={() =>
+                          void runOps(() =>
+                            vncApi.stopNovnc(connTarget!.id),
+                          ).then(async () => {
+                            if (connTarget) {
+                              setConnInfo(
+                                await vncApi.getConnection(connTarget.id),
+                              );
+                            }
+                          })
+                        }
+                      >
+                        {t('vnc.stopNovnc')}
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        loading={busy}
+                        onClick={() =>
+                          void runOps(() =>
+                            vncApi.startNovnc(connTarget!.id),
+                          ).then(async () => {
+                            if (connTarget) {
+                              setConnInfo(
+                                await vncApi.getConnection(connTarget.id),
+                              );
+                            }
+                          })
+                        }
+                      >
+                        {t('vnc.startNovnc')}
+                      </Button>
+                    )}
+                    {connInfo.connection.viaServer.localUrl ? (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          void navigator.clipboard.writeText(
+                            connInfo.connection.viaServer.localUrl!,
+                          );
+                          notifyOk(t('vnc.copied'));
+                        }}
+                      >
+                        {t('vnc.copyNovncUrl')}
+                      </Button>
+                    ) : null}
+                  </ActionBar>
+                  {connInfo.connection.viaServer.localUrl ? (
+                    <p className="u-mb-0">
+                      <code className="inline">
+                        {connInfo.connection.viaServer.localUrl}
+                      </code>
+                    </p>
+                  ) : null}
+                </section>
+
+                <section className="stack">
+                  <h4 className="u-m-0">{t('vnc.pathDirect')}</h4>
+                  <p className="muted u-text-sm u-mb-0">
+                    {connInfo.connection.direct.notes.join(' · ')}
+                  </p>
+                  <p className="u-mb-0">
+                    <strong>{t('vnc.directAddress')}:</strong>{' '}
+                    <code className="inline">
+                      {connInfo.connection.direct.address}
+                    </code>
+                  </p>
+                  <ActionBar>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        void navigator.clipboard.writeText(
+                          connInfo.connection.direct.address,
+                        );
+                        notifyOk(t('vnc.copied'));
+                      }}
+                    >
+                      {t('vnc.copyAddress')}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      loading={busy}
+                      onClick={() =>
+                        void runOps(() => vncApi.openFirewall(connTarget!.id))
+                      }
+                    >
+                      {t('vnc.openFirewall')}
+                    </Button>
+                  </ActionBar>
+                  {connInfo.connection.direct.bind === 'localhost' ? (
+                    <Alert variant="warn">{t('vnc.directLocalhostWarn')}</Alert>
+                  ) : null}
+                </section>
+              </div>
+            </details>
           </div>
         )}
       </Modal>
