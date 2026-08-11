@@ -657,6 +657,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                 return { ok: true, notes: [t('common.probed')] } as OpsResultLike;
               }, t('common.probed'));
             }}
+            onStackLifecycleDone={() => void refresh()}
             remoteHint={
               versionStatus?.latestVersion ? (
                 <FormHint>

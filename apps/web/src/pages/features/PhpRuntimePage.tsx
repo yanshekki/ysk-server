@@ -616,6 +616,7 @@ export function PhpRuntimePage() {
                   return { ok: true, notes: [t('common.probed')] } as OpsResultLike;
                 }, t('common.probed'));
               }}
+              onStackLifecycleDone={() => void refresh()}
               detailExtra={
                 <div className="u-mt-3">
                   {requiredExtLabels ? (

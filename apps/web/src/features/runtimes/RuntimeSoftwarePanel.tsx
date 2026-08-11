@@ -61,6 +61,8 @@ export type RuntimeSoftwarePanelProps = {
   onSetPanelDefault: (v: string) => void;
   onUninstallVersion: (v: string) => void;
   onReprobe?: () => void;
+  /** After stack lifecycle install/uninstall (feature banner) */
+  onStackLifecycleDone?: () => void;
   /** Extra content under selected version (e.g. PHP extensions) */
   detailExtra?: ReactNode;
   remoteHint?: ReactNode;
