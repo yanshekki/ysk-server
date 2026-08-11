@@ -87,12 +87,13 @@ export function ovpnAccessPushLines(
 
 /**
  * Idempotent iptables NAT + forward for VPN clients.
+ * Works with UFW DEFAULT_FORWARD_POLICY=DROP by inserting at top of FORWARD.
  * comment mark YSK-VPN for cleanup.
  */
 export function buildVpnNatShell(input: {
   /** e.g. 10.8.0.0/24 or 10.66.66.0/24 */
   sourceCidr: string;
-  /** tun0 / wg0 — used for FORWARD -i */
+  /** tun0 / wg0 — preferred tunnel interface name */
   tunnelIfaceHint: string;
   enableNat: boolean;
   /** optional LAN destinations for lan mode forward only */
@@ -101,8 +102,16 @@ export function buildVpnNatShell(input: {
 }): string {
   const src = input.sourceCidr;
   const mark = input.mark.replace(/[^A-Za-z0-9_-]/g, '') || 'YSK-VPN';
+  const hint = input.tunnelIfaceHint.replace(/[^A-Za-z0-9_.-]/g, '') || 'tun0';
   const wan = `WAN=$(ip route 2>/dev/null | awk '/default/{print $5; exit}')`;
-  const tun = `TUN=$(ip -br link 2>/dev/null | awk '/^${input.tunnelIfaceHint}|^tun|^wg/{print $1; exit}' | head -1); [ -z "$TUN" ] && TUN=${JSON.stringify(input.tunnelIfaceHint)}`;
+  // Prefer exact iface (tun0 / wg0). Never let broad /^wg/ steal OpenVPN's TUN.
+  const tun = [
+    `HINT=${JSON.stringify(hint)}`,
+    'if [ -n "$HINT" ] && ip link show "$HINT" >/dev/null 2>&1; then TUN="$HINT"',
+    `elif [ "$HINT" = "tun0" ] && TUN=$(ip -br link 2>/dev/null | awk '/^tun[0-9]/{print $1; exit}'); [ -n "$TUN" ]; then :`,
+    `elif [ "$HINT" = "wg0" ] && TUN=$(ip -br link 2>/dev/null | awk '/^wg[0-9]/{print $1; exit}'); [ -n "$TUN" ]; then :`,
+    'else TUN="$HINT"; fi',
+  ].join('\n');
 
   const lines = [
     'set +e',
@@ -111,26 +120,32 @@ export function buildVpnNatShell(input: {
     tun,
     'if [ -z "$WAN" ]; then echo "YSK-VPN: no default WAN iface"; exit 0; fi',
     // cleanup old marked rules (best-effort)
-    `iptables-save 2>/dev/null | grep -F ${JSON.stringify(mark)} | sed 's/^-A /iptables -D /' | sh 2>/dev/null || true`,
+    `iptables-save 2>/dev/null | grep -F ${JSON.stringify(mark)} | sed 's/^-A /iptables -D /' | while read -r _cmd; do eval "$_cmd" 2>/dev/null || true; done`,
+    // Also strip any previous accidental mis-tagged lines for this source
+    `iptables-save -t filter 2>/dev/null | grep -F ${JSON.stringify(mark)} | sed 's/^-A /iptables -D /' | while read -r _cmd; do eval "$_cmd" 2>/dev/null || true; done`,
   ];
 
   if (input.enableNat) {
+    // -I 1: must sit BEFORE ufw-before-forward / ufw-reject-forward (policy DROP)
     lines.push(
-      `iptables -C FORWARD -i "$TUN" -j ACCEPT -m comment --comment ${JSON.stringify(mark)} 2>/dev/null || iptables -A FORWARD -i "$TUN" -j ACCEPT -m comment --comment ${JSON.stringify(mark)} 2>/dev/null || iptables -A FORWARD -i "$TUN" -j ACCEPT`,
-      `iptables -C FORWARD -o "$TUN" -m state --state RELATED,ESTABLISHED -j ACCEPT -m comment --comment ${JSON.stringify(mark)} 2>/dev/null || iptables -A FORWARD -o "$TUN" -m state --state RELATED,ESTABLISHED -j ACCEPT -m comment --comment ${JSON.stringify(mark)} 2>/dev/null || iptables -A FORWARD -o "$TUN" -m state --state RELATED,ESTABLISHED -j ACCEPT`,
-      `iptables -t nat -C POSTROUTING -s ${JSON.stringify(src)} -o "$WAN" -j MASQUERADE -m comment --comment ${JSON.stringify(mark)} 2>/dev/null || iptables -t nat -A POSTROUTING -s ${JSON.stringify(src)} -o "$WAN" -j MASQUERADE -m comment --comment ${JSON.stringify(mark)} 2>/dev/null || iptables -t nat -A POSTROUTING -s ${JSON.stringify(src)} -o "$WAN" -j MASQUERADE`,
+      `iptables -C FORWARD -i "$TUN" -j ACCEPT -m comment --comment ${JSON.stringify(mark)} 2>/dev/null || iptables -I FORWARD 1 -i "$TUN" -j ACCEPT -m comment --comment ${JSON.stringify(mark)}`,
+      `iptables -C FORWARD -o "$TUN" -m state --state RELATED,ESTABLISHED -j ACCEPT -m comment --comment ${JSON.stringify(mark)} 2>/dev/null || iptables -I FORWARD 1 -o "$TUN" -m state --state RELATED,ESTABLISHED -j ACCEPT -m comment --comment ${JSON.stringify(mark)}`,
+      `iptables -C FORWARD -i "$TUN" -o "$WAN" -j ACCEPT -m comment --comment ${JSON.stringify(mark)} 2>/dev/null || iptables -I FORWARD 1 -i "$TUN" -o "$WAN" -j ACCEPT -m comment --comment ${JSON.stringify(mark)}`,
+      `iptables -C FORWARD -i "$WAN" -o "$TUN" -m state --state RELATED,ESTABLISHED -j ACCEPT -m comment --comment ${JSON.stringify(mark)} 2>/dev/null || iptables -I FORWARD 1 -i "$WAN" -o "$TUN" -m state --state RELATED,ESTABLISHED -j ACCEPT -m comment --comment ${JSON.stringify(mark)}`,
+      `iptables -t nat -C POSTROUTING -s ${JSON.stringify(src)} -o "$WAN" -j MASQUERADE -m comment --comment ${JSON.stringify(mark)} 2>/dev/null || iptables -t nat -A POSTROUTING -s ${JSON.stringify(src)} -o "$WAN" -j MASQUERADE -m comment --comment ${JSON.stringify(mark)}`,
+      // UFW route (multi-host with ufw active) — ignore if ufw absent
+      `if command -v ufw >/dev/null 2>&1 && ufw status 2>/dev/null | grep -qi active; then ufw route allow in on "$TUN" out on "$WAN" 2>/dev/null || true; ufw route allow in on "$WAN" out on "$TUN" 2>/dev/null || true; fi`,
       'echo "YSK-VPN: full NAT applied iface=$TUN wan=$WAN src=' + src + '"',
     );
   } else {
-    // lan: allow forward from tunnel to listed nets only; no default MASQUERADE
     const lans = input.lanCidrs?.length ? input.lanCidrs : [...DEFAULT_VPN_LAN_CIDRS];
     for (const lan of lans) {
       lines.push(
-        `iptables -C FORWARD -s ${JSON.stringify(src)} -d ${JSON.stringify(lan)} -j ACCEPT -m comment --comment ${JSON.stringify(mark)} 2>/dev/null || iptables -A FORWARD -s ${JSON.stringify(src)} -d ${JSON.stringify(lan)} -j ACCEPT -m comment --comment ${JSON.stringify(mark)} 2>/dev/null || true`,
+        `iptables -C FORWARD -s ${JSON.stringify(src)} -d ${JSON.stringify(lan)} -j ACCEPT -m comment --comment ${JSON.stringify(mark)} 2>/dev/null || iptables -I FORWARD 1 -s ${JSON.stringify(src)} -d ${JSON.stringify(lan)} -j ACCEPT -m comment --comment ${JSON.stringify(mark)}`,
       );
     }
     lines.push(
-      `iptables -C FORWARD -d ${JSON.stringify(src)} -m state --state RELATED,ESTABLISHED -j ACCEPT -m comment --comment ${JSON.stringify(mark)} 2>/dev/null || iptables -A FORWARD -d ${JSON.stringify(src)} -m state --state RELATED,ESTABLISHED -j ACCEPT -m comment --comment ${JSON.stringify(mark)} 2>/dev/null || true`,
+      `iptables -C FORWARD -d ${JSON.stringify(src)} -m state --state RELATED,ESTABLISHED -j ACCEPT -m comment --comment ${JSON.stringify(mark)} 2>/dev/null || iptables -I FORWARD 1 -d ${JSON.stringify(src)} -m state --state RELATED,ESTABLISHED -j ACCEPT -m comment --comment ${JSON.stringify(mark)}`,
       'echo "YSK-VPN: lan forward only (no internet NAT)"',
     );
   }

@@ -82,6 +82,8 @@ describe('vpn access-mode', () => {
     expect(full).toContain('ip_forward');
     expect(full).toContain('MASQUERADE');
     expect(full).toContain('YSK-VPN-OVPN');
+    expect(full).toContain('-I FORWARD');
+    expect(full).toMatch(/HINT=.*tun0|tun0/);
 
     const lan = buildVpnNatShell({
       sourceCidr: '10.8.0.0/24',

@@ -415,10 +415,10 @@ export class VpnService {
       })),
     });
     const postUp = enableNat
-      ? 'PostUp = sysctl -w net.ipv4.ip_forward=1; iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -s 10.66.66.0/24 -o $(ip route | awk \'/default/{print $5; exit}\') -j MASQUERADE'
+      ? 'PostUp = sysctl -w net.ipv4.ip_forward=1; iptables -C FORWARD -i wg0 -j ACCEPT -m comment --comment YSK-VPN-WG 2>/dev/null || iptables -I FORWARD 1 -i wg0 -j ACCEPT -m comment --comment YSK-VPN-WG; iptables -C FORWARD -o wg0 -m state --state RELATED,ESTABLISHED -j ACCEPT -m comment --comment YSK-VPN-WG 2>/dev/null || iptables -I FORWARD 1 -o wg0 -m state --state RELATED,ESTABLISHED -j ACCEPT -m comment --comment YSK-VPN-WG; iptables -t nat -C POSTROUTING -s 10.66.66.0/24 -o $(ip route | awk \'/default/{print $5; exit}\') -j MASQUERADE -m comment --comment YSK-VPN-WG 2>/dev/null || iptables -t nat -A POSTROUTING -s 10.66.66.0/24 -o $(ip route | awk \'/default/{print $5; exit}\') -j MASQUERADE -m comment --comment YSK-VPN-WG'
       : 'PostUp = sysctl -w net.ipv4.ip_forward=1';
     const postDown = enableNat
-      ? 'PostDown = iptables -D FORWARD -i wg0 -j ACCEPT 2>/dev/null; iptables -t nat -D POSTROUTING -s 10.66.66.0/24 -o $(ip route | awk \'/default/{print $5; exit}\') -j MASQUERADE 2>/dev/null'
+      ? 'PostDown = iptables -D FORWARD -i wg0 -j ACCEPT -m comment --comment YSK-VPN-WG 2>/dev/null; iptables -D FORWARD -o wg0 -m state --state RELATED,ESTABLISHED -j ACCEPT -m comment --comment YSK-VPN-WG 2>/dev/null; iptables -t nat -D POSTROUTING -s 10.66.66.0/24 -o $(ip route | awk \'/default/{print $5; exit}\') -j MASQUERADE -m comment --comment YSK-VPN-WG 2>/dev/null; true'
       : 'PostDown = true';
     const withNat = conf.replace(
       'SaveConfig = false\n',

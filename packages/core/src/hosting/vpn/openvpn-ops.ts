@@ -261,8 +261,6 @@ export async function ensureOpenVpnServer(
         confBody,
         'YSKOVPN',
         'chmod 600 /etc/openvpn/server/ysk.conf',
-        // access mode: IP forward + NAT / LAN forward
-        natShell,
         // unit name varies: openvpn-server@ysk or openvpn@server
         'if systemctl list-unit-files | grep -q openvpn-server@.service; then',
         '  systemctl enable openvpn-server@ysk 2>/dev/null || true',
@@ -276,6 +274,9 @@ export async function ensureOpenVpnServer(
         'else',
         '  openvpn --config /etc/openvpn/server/ysk.conf --daemon ysk-openvpn',
         'fi',
+        // NAT/forward AFTER tun is up so iface detection is correct (every host)
+        'sleep 0.6',
+        natShell,
       ].join('\n'),
     ],
     { timeoutMs: 60_000 },
