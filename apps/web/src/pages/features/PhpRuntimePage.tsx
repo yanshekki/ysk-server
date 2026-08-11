@@ -810,6 +810,30 @@ export function PhpRuntimePage() {
                   ) : null}
                 </FormActions>
                 <FormHint>{t('runtime.panelDefaultExplain')}</FormHint>
+                {phpInstallState.selectedInstalled ? (
+                  <FormActions>
+                    <Button
+                      variant="danger"
+                      size="md"
+                      loading={busy}
+                      onClick={() =>
+                        void run(async () => {
+                          const r = await systemApi.runtimeUninstall({
+                            kind: 'php',
+                            version,
+                          });
+                          await refresh();
+                          await loadExtensions(version, { bust: true }).catch(
+                            () => undefined,
+                          );
+                          return r as OpsResultLike;
+                        }, t('runtime.uninstallVersionDone', { version }))
+                      }
+                    >
+                      {t('runtime.uninstallVersion', { version })}
+                    </Button>
+                  </FormActions>
+                ) : null}
                 <InstallStreamPanel lines={installLog} busy={busy} />
                 {extOps ? (
                   <div className="u-mt-3">

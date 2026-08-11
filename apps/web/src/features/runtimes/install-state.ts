@@ -40,7 +40,14 @@ export function supportsHostDefault(kind: string): boolean {
 
 /** Kinds that support removing one managed version from the panel. */
 export function supportsVersionUninstall(kind: string): boolean {
-  return kind === 'go' || kind === 'rust' || kind === 'node' || kind === 'bun';
+  return (
+    kind === 'go' ||
+    kind === 'rust' ||
+    kind === 'node' ||
+    kind === 'bun' ||
+    kind === 'php' ||
+    kind === 'python'
+  );
 }
 
 /** Compare dotted/numeric runtime versions; `latest`/`stable` sort as highest. */

@@ -80,13 +80,27 @@ describe('switchRuntimeDefault', () => {
 });
 
 describe('uninstallRuntimeVersion', () => {
-  it('refuses php', async () => {
+  it('refuses java uninstall', async () => {
     const r = await uninstallRuntimeVersion({
       host: mockHost(() => ({})),
+      kind: 'java',
+      version: '21',
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it('uninstalls php version packages', async () => {
+    const r = await uninstallRuntimeVersion({
+      host: mockHost((argv) => {
+        if (argv[0] === 'bash') {
+          return { exitCode: 0, stdout: 'YSK_PHP_REMOVED=8.2\n' };
+        }
+        return {};
+      }),
       kind: 'php',
       version: '8.2',
     });
-    expect(r.ok).toBe(false);
+    expect(r.ok).toBe(true);
   });
 
   it('blocks without execute', async () => {

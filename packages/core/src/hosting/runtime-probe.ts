@@ -1792,7 +1792,7 @@ export async function uninstallRuntimeVersion(input: {
   const rootOn = input.host.isRoot();
   const can = execOn && rootOn;
 
-  const managed: RuntimeKind[] = ['node', 'go', 'rust', 'bun'];
+  const managed: RuntimeKind[] = ['node', 'go', 'rust', 'bun', 'php', 'python'];
   if (!managed.includes(input.kind)) {
     return {
       ok: false,
@@ -1895,6 +1895,61 @@ export async function uninstallRuntimeVersion(input: {
       '',
     ].join('\n');
     notes.push(`rustup toolchain uninstall ${tc}`);
+  } else if (input.kind === 'php') {
+    const plan = selectPhpRuntime(input.version);
+    removedPath = `apt:php${plan.version}`;
+    script = [
+      'set -euo pipefail',
+      'export DEBIAN_FRONTEND=noninteractive',
+      `VER=${JSON.stringify(plan.version)}`,
+      'case "$VER" in',
+      "  ''|*[!0-9.]*) echo \"invalid PHP version $VER\" >&2; exit 3 ;;",
+      'esac',
+      'PKGS=$(dpkg-query -W -f=\'${Package}\\n\' "php${VER}-*" 2>/dev/null | head -80 || true)',
+      'if [ -z "$PKGS" ]; then',
+      '  echo "No dpkg packages matching php${VER}-* — nothing to remove" >&2',
+      '  exit 2',
+      'fi',
+      'echo "YSK_PHP_PACKAGES=$PKGS"',
+      '# remove versioned packages only (never plain "php")',
+      'echo "$PKGS" | xargs -r apt-get remove -y',
+      'if [ -L /usr/local/bin/php ]; then',
+      '  REAL=$(readlink -f /usr/local/bin/php 2>/dev/null || true)',
+      '  case "$REAL" in *php"$VER"*) rm -f /usr/local/bin/php; echo "YSK_PHP_DEFAULT_CLEARED=1" ;; esac',
+      'fi',
+      'echo "YSK_PHP_REMOVED=$VER"',
+      '',
+    ].join('\n');
+    notes.push(`apt remove php${plan.version}-* packages`);
+  } else if (input.kind === 'python') {
+    const plan = selectPythonRuntime(input.version);
+    removedPath = `/usr/local/ysk/python/${plan.version}`;
+    script = [
+      'set -euo pipefail',
+      'export DEBIAN_FRONTEND=noninteractive',
+      `VER=${JSON.stringify(plan.version)}`,
+      'REMOVED=0',
+      'DEST="/usr/local/ysk/python/$VER"',
+      'if [ -d "$DEST" ]; then',
+      '  case "$DEST" in /usr/local/ysk/python/*) ;; *) echo refuse >&2; exit 3 ;; esac',
+      '  if [ -L /usr/local/bin/python3 ]; then',
+      '    REAL=$(readlink -f /usr/local/bin/python3 2>/dev/null || true)',
+      '    case "$REAL" in "$DEST"/*) rm -f /usr/local/bin/python3 /usr/local/bin/python; echo "YSK_PYTHON_DEFAULT_CLEARED=1" ;; esac',
+      '  fi',
+      '  rm -rf "$DEST"',
+      '  REMOVED=1',
+      '  echo "YSK_PYTHON_REMOVED_YSK=$VER"',
+      'fi',
+      '# deadsnakes / system versioned binary only — do not purge unversioned python3',
+      'if dpkg-query -W "python${VER}" >/dev/null 2>&1 || dpkg-query -W "python${VER}-minimal" >/dev/null 2>&1; then',
+      '  apt-get remove -y "python${VER}" "python${VER}-minimal" "python${VER}-dev" "python${VER}-venv" 2>/dev/null || true',
+      '  REMOVED=1',
+      '  echo "YSK_PYTHON_REMOVED_APT=$VER"',
+      'fi',
+      'if [ "$REMOVED" = "0" ]; then echo "Python $VER not found under managed paths or apt" >&2; exit 2; fi',
+      '',
+    ].join('\n');
+    notes.push(`Remove managed/apt Python ${plan.version}`);
   } else {
     // bun — multi-dir or single bin
     const plan = selectBunRuntime(input.version);
