@@ -30,6 +30,7 @@ type ExposureItem = {
     mode: ExposureMode;
     ports: Array<{ role: string; port: string; proto?: string }>;
     allowFrom?: string[];
+    allowCountries?: string[];
     decided?: boolean;
     updatedAt?: string;
   };
@@ -68,6 +69,7 @@ export function FirewallServicesPanel(props: {
   const [edit, setEdit] = useState<ExposureItem | null>(null);
   const [mode, setMode] = useState<ExposureMode>('private');
   const [allowRaw, setAllowRaw] = useState('');
+  const [countriesRaw, setCountriesRaw] = useState('');
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const setBusyBoth = useCallback(
@@ -119,6 +121,7 @@ export function FirewallServicesPanel(props: {
     setEdit(it);
     setMode(it.desired?.mode ?? it.defaultMode ?? 'public');
     setAllowRaw((it.desired?.allowFrom ?? []).join(', '));
+    setCountriesRaw((it.desired?.allowCountries ?? []).join(', '));
     setSaveError(null);
     if (it.serviceId) {
       const next = new URLSearchParams(searchParams);
@@ -150,8 +153,12 @@ export function FirewallServicesPanel(props: {
       .split(/[\s,;]+/)
       .map((s) => s.trim())
       .filter(Boolean);
-    if (mode === 'restricted' && allowFrom.length === 0) {
-      setSaveError(t('serviceExposure.restrictedNeedIp'));
+    const allowCountries = countriesRaw
+      .split(/[\s,;]+/)
+      .map((s) => s.trim().toUpperCase())
+      .filter((s) => /^[A-Z]{2}$/.test(s));
+    if (mode === 'restricted' && allowFrom.length === 0 && allowCountries.length === 0) {
+      setSaveError(t('serviceExposure.restrictedNeedSource'));
       return;
     }
     setBusyBoth(true);
@@ -160,6 +167,7 @@ export function FirewallServicesPanel(props: {
       await systemApi.serviceExposurePut(edit.serviceId, {
         mode,
         allowFrom: mode === 'restricted' ? allowFrom : [],
+        allowCountries: mode === 'restricted' ? allowCountries : [],
         ports: edit.desired?.ports?.length
           ? edit.desired.ports
           : edit.catalogPorts,
@@ -330,7 +338,7 @@ export function FirewallServicesPanel(props: {
               <FormHint>{t('serviceExposure.hintPrivate')}</FormHint>
             ) : null}
             {mode === 'restricted' ? (
-              <div className="u-mt-3">
+              <div className="u-mt-3" style={{ display: 'grid', gap: '0.75rem' }}>
                 <Field label={t('serviceExposure.allowFrom')} htmlFor="fw-svc-allow" flush>
                   <input
                     id="fw-svc-allow"
@@ -340,6 +348,16 @@ export function FirewallServicesPanel(props: {
                     placeholder="203.0.113.10, 10.0.0.0/8"
                   />
                   <FormHint>{t('serviceExposure.hintRestricted')}</FormHint>
+                </Field>
+                <Field label={t('serviceExposure.allowCountries')} htmlFor="fw-svc-cc" flush>
+                  <input
+                    id="fw-svc-cc"
+                    className="u-input"
+                    value={countriesRaw}
+                    onChange={(e) => setCountriesRaw(e.target.value)}
+                    placeholder="HK, CN, US"
+                  />
+                  <FormHint>{t('serviceExposure.hintCountries')}</FormHint>
                 </Field>
               </div>
             ) : null}

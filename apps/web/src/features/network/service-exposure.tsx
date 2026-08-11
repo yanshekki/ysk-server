@@ -30,6 +30,7 @@ export type ExposureStatus = {
   mode: ExposureMode;
   ports: ServicePortBinding[];
   allowFrom: string[];
+  allowCountries: string[];
   decided: boolean;
   inSync: boolean;
   defaultMode: ExposureMode;
@@ -45,6 +46,7 @@ function emptyStatus(serviceId: string): ExposureStatus {
     mode: 'public',
     ports: [],
     allowFrom: [],
+    allowCountries: [],
     decided: false,
     inSync: true,
     defaultMode: 'public',
@@ -54,12 +56,19 @@ function emptyStatus(serviceId: string): ExposureStatus {
 
 export async function fetchExposureStatus(serviceId: string): Promise<ExposureStatus> {
   const r = await systemApi.serviceExposureGet(serviceId);
-  const d = r.desired;
+  const d = r.desired as {
+    mode?: ExposureMode;
+    ports?: ServicePortBinding[];
+    allowFrom?: string[];
+    allowCountries?: string[];
+    decided?: boolean;
+  };
   return {
     serviceId,
     mode: d?.mode ?? 'public',
     ports: (d?.ports ?? []) as ServicePortBinding[],
     allowFrom: d?.allowFrom ?? [],
+    allowCountries: d?.allowCountries ?? [],
     decided: Boolean(d?.decided),
     inSync: Boolean(r.inSync),
     defaultMode: r.defaultMode ?? 'public',
@@ -176,6 +185,9 @@ export function ServiceAccessStrip({
             {fwOff ? <Badge tone="warn">{t('serviceExposure.firewallOff')}</Badge> : null}
           </div>
           <p className="service-access-strip__summary muted">{summary}</p>
+          <p className="service-access-strip__summary muted u-text-sm">
+            {t('serviceExposure.cloudSgNote')}
+          </p>
           {loadError ? <p className="service-access-strip__err">{loadError}</p> : null}
         </div>
         <div className="service-access-strip__actions">
@@ -226,11 +238,27 @@ export type ServiceExposureDialogProps = {
   onSaved?: (decision: {
     mode: ExposureMode;
     allowFrom: string[];
+    allowCountries: string[];
     exposureDecision: 'keep-private' | 'public' | 'restricted';
   }) => void | Promise<void>;
   /** When true, only returns decision without PUT (parent will start+sync) */
   decisionOnly?: boolean;
 };
+
+const COMMON_COUNTRIES = [
+  'HK',
+  'CN',
+  'TW',
+  'JP',
+  'KR',
+  'SG',
+  'US',
+  'GB',
+  'DE',
+  'AU',
+  'CA',
+  'IN',
+];
 
 export function ServiceExposureDialog({
   open,
@@ -246,6 +274,7 @@ export function ServiceExposureDialog({
   const { t } = useTranslation();
   const [mode, setMode] = useState<ExposureMode>('private');
   const [allowRaw, setAllowRaw] = useState('');
+  const [countriesRaw, setCountriesRaw] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -254,6 +283,7 @@ export function ServiceExposureDialog({
     const m = initial?.mode ?? initial?.defaultMode ?? 'private';
     setMode(m === 'public' || m === 'restricted' || m === 'private' ? m : 'private');
     setAllowRaw((initial?.allowFrom ?? []).join(', '));
+    setCountriesRaw((initial?.allowCountries ?? []).join(', '));
     setError(null);
   }, [open, initial]);
 
@@ -265,13 +295,22 @@ export function ServiceExposureDialog({
       .slice(0, 64);
   }
 
+  function parseCountries(): string[] {
+    return countriesRaw
+      .split(/[\s,;]+/)
+      .map((s) => s.trim().toUpperCase())
+      .filter((s) => /^[A-Z]{2}$/.test(s))
+      .slice(0, 32);
+  }
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
     setError(null);
     const allowFrom = parseAllowFrom();
-    if (mode === 'restricted' && allowFrom.length === 0) {
-      setError(t('serviceExposure.restrictedNeedIp'));
+    const allowCountries = parseCountries();
+    if (mode === 'restricted' && allowFrom.length === 0 && allowCountries.length === 0) {
+      setError(t('serviceExposure.restrictedNeedSource'));
       setBusy(false);
       return;
     }
@@ -283,10 +322,11 @@ export function ServiceExposureDialog({
           mode,
           ports,
           allowFrom: mode === 'restricted' ? allowFrom : [],
+          allowCountries: mode === 'restricted' ? allowCountries : [],
           sync: true,
         });
       }
-      await onSaved?.({ mode, allowFrom, exposureDecision });
+      await onSaved?.({ mode, allowFrom, allowCountries, exposureDecision });
       if (!onSaved) onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : t('common.opFailed'));
@@ -355,7 +395,7 @@ export function ServiceExposureDialog({
           <p className="form-hint service-access-strip__warn">{t('serviceExposure.hintPublic')}</p>
         ) : null}
         {mode === 'restricted' ? (
-          <div className="u-mt-3">
+          <div className="u-mt-3" style={{ display: 'grid', gap: '0.75rem' }}>
             <Field label={t('serviceExposure.allowFrom')} htmlFor="exp-allow" flush>
               <input
                 id="exp-allow"
@@ -366,6 +406,37 @@ export function ServiceExposureDialog({
                 aria-label={t('serviceExposure.allowFrom')}
               />
               <FormHint>{t('serviceExposure.hintRestricted')}</FormHint>
+            </Field>
+            <Field label={t('serviceExposure.allowCountries')} htmlFor="exp-cc" flush>
+              <input
+                id="exp-cc"
+                className="u-input"
+                value={countriesRaw}
+                onChange={(e) => setCountriesRaw(e.target.value)}
+                placeholder="HK, CN, US"
+                aria-label={t('serviceExposure.allowCountries')}
+              />
+              <FormHint>{t('serviceExposure.hintCountries')}</FormHint>
+              <div className="u-flex u-flex-wrap u-gap-1 u-mt-2">
+                {COMMON_COUNTRIES.map((cc) => (
+                  <button
+                    key={cc}
+                    type="button"
+                    className="btn btn--ghost btn--md"
+                    style={{ minHeight: 32, padding: '0 0.5rem', fontSize: '0.8rem' }}
+                    onClick={() => {
+                      const cur = parseCountries();
+                      if (cur.includes(cc)) {
+                        setCountriesRaw(cur.filter((c) => c !== cc).join(', '));
+                      } else {
+                        setCountriesRaw([...cur, cc].join(', '));
+                      }
+                    }}
+                  >
+                    {cc}
+                  </button>
+                ))}
+              </div>
             </Field>
           </div>
         ) : null}

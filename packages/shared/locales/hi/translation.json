@@ -11556,6 +11556,10 @@
     "summaryFirewallOff": "Host firewall: {{detail}} — rules not enforced until UFW is active.",
     "ufwMissing": "UFW not installed",
     "ufwInactive": "inactive",
-    "firewallOff": "Firewall off"
+    "firewallOff": "Firewall off",
+    "restrictedNeedSource": "Add at least one IP/CIDR or country code for restricted mode.",
+    "allowCountries": "Allowed countries (ISO)",
+    "hintCountries": "L2 best-effort via ipset + country zone CIDRs. Requires root, EXECUTE, and ipset. Cloud security groups are separate.",
+    "cloudSgNote": "Host firewall only — cloud security groups (AWS/GCP/Azure) are not changed."
   }
 }

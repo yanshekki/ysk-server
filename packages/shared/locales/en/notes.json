@@ -2740,7 +2740,21 @@
   "serviceExposure": {
     "needsDecision": "{{service}}: confirm whether to expose this service on the network",
     "private": "{{service}}: kept private (no public firewall allow)",
-    "restrictedEmpty": "Restricted mode needs at least one allowed IP/CIDR"
+    "restrictedEmpty": "Restricted mode needs at least one allowed IP/CIDR",
+    "badCountry": "Invalid country code: {{cc}}",
+    "zoneDownloadFail": "Country zone download failed for {{cc}}: {{detail}}",
+    "zoneEmpty": "Country zone for {{cc}} is empty",
+    "zoneDownloaded": "Downloaded {{n}} CIDRs for {{cc}}",
+    "zoneMissing": "No zone file for {{cc}} — place under geoip/country-zones or allow download",
+    "zoneCidrCap": "Country CIDR list capped at {{n}} entries",
+    "geoNeedExecute": "Country allowlist needs YSK_EXECUTE",
+    "geoNeedRoot": "Country allowlist needs root",
+    "geoNoCidrs": "No country CIDRs loaded — cannot apply geo allowlist",
+    "ipsetMissing": "ipset not installed — country allowlist skipped",
+    "ipsetApplyFail": "ipset/iptables apply failed: {{detail}}",
+    "ipsetApplied": "Country allowlist set {{set}} ({{countries}}, {{n}} CIDRs)",
+    "ipsetCleared": "Cleared country ipset {{set}}",
+    "geoBestEffort": "Country filtering is best-effort (ipset); cloud security groups are separate"
   },
   "goLive": {
     "deployIncomplete": "goLive: deploy incomplete",

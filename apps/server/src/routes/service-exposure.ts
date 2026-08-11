@@ -66,6 +66,7 @@ export async function handleServiceExposureRoutes(
       mode?: 'private' | 'public' | 'restricted';
       ports?: Array<{ role: string; port: string; proto?: string }>;
       allowFrom?: string[];
+      /** L2 ISO country codes */
       allowCountries?: string[];
       sync?: boolean;
     };
@@ -104,6 +105,7 @@ export async function handleServiceExposureRoutes(
       reason?: 'start' | 'apply' | 'port-change' | 'manual' | 'stop';
       exposureDecision?: 'keep-private' | 'public' | 'restricted';
       allowFrom?: string[];
+      allowCountries?: string[];
       requireDecision?: boolean;
     };
     const serviceId = String(data.serviceId ?? '').trim();
@@ -120,6 +122,7 @@ export async function handleServiceExposureRoutes(
       reason: data.reason ?? 'manual',
       exposureDecision: data.exposureDecision,
       allowFrom: data.allowFrom,
+      allowCountries: data.allowCountries,
       requireDecision: data.requireDecision,
     });
     ctx.audit.append({

@@ -2740,7 +2740,21 @@
   "serviceExposure": {
     "needsDecision": "{{service}}：请确认是否对外暴露此服务",
     "private": "{{service}}：保持仅本机（未开放公网端口）",
-    "restrictedEmpty": "受限模式需要至少一个允许的 IP／网段"
+    "restrictedEmpty": "受限模式需要至少一个允许的 IP／网段",
+    "badCountry": "无效国家代码：{{cc}}",
+    "zoneDownloadFail": "下载 {{cc}} 国家网段失败：{{detail}}",
+    "zoneEmpty": "{{cc}} 国家网段文件为空",
+    "zoneDownloaded": "已下载 {{cc}} 共 {{n}} 个 CIDR",
+    "zoneMissing": "缺少 {{cc}} 网段文件 — 请放到 geoip/country-zones 或允许下载",
+    "zoneCidrCap": "国家 CIDR 已上限至 {{n}} 条",
+    "geoNeedExecute": "国家允许列表需要 YSK_EXECUTE",
+    "geoNeedRoot": "国家允许列表需要 root",
+    "geoNoCidrs": "未加载任何国家 CIDR — 无法应用地区限制",
+    "ipsetMissing": "未安装 ipset — 已跳过国家允许列表",
+    "ipsetApplyFail": "ipset／iptables 应用失败：{{detail}}",
+    "ipsetApplied": "已应用国家允许集合 {{set}}（{{countries}}，{{n}} 个 CIDR）",
+    "ipsetCleared": "已清除国家 ipset {{set}}",
+    "geoBestEffort": "国家过滤为 best-effort（ipset）；云安全组须另行设置"
   },
   "goLive": {
     "deployIncomplete": "上线：部署未完成",

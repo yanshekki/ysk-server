@@ -39,6 +39,8 @@ export type SyncServiceExposureInput = {
   /** When start + private default needs user choice */
   exposureDecision?: ExposureDecision;
   allowFrom?: string[];
+  /** L2 ISO country codes for restricted mode (ipset best-effort) */
+  allowCountries?: string[];
   /**
    * When true on start with undecided private: return needsExposureDecision
    * without mutating. Default true.
@@ -72,19 +74,23 @@ function expandProtos(proto: ServicePortBinding['proto']): Array<'tcp' | 'udp'> 
   return [proto === 'udp' ? 'udp' : 'tcp'];
 }
 
-/** Build target rule set from desired mode + ports. */
+/** Build target UFW rule set from desired mode + ports (+ IP sources). Country geo is separate (ipset). */
 export function buildTargetRules(desired: ServiceExposureDesired): AppliedRule[] {
   if (desired.mode === 'private') return [];
 
   const out: AppliedRule[] = [];
+  const countries = desired.allowCountries?.length ?? 0;
   const sources =
     desired.mode === 'restricted'
       ? (desired.allowFrom ?? []).map((s) => normalizeIpOrCidr(s)).filter(Boolean) as string[]
       : [undefined];
 
+  // Restricted with only countries (no IPs): no public UFW allow — geo ipset handles allowlist
   if (desired.mode === 'restricted' && sources.length === 0) {
     return [];
   }
+  // Restricted with countries + IPs: UFW allowFrom only (geo is additive via ipset)
+  void countries;
 
   for (const binding of desired.ports) {
     for (const p of expandProtos(binding.proto)) {
@@ -151,10 +157,15 @@ export async function syncServiceExposure(
       };
     } else if (input.exposureDecision === 'restricted') {
       const allowFrom = normalizeAllowFrom(input.allowFrom ?? desired.allowFrom ?? []);
+      const { normalizeCountries } = await import('./geo-countries.js');
+      const allowCountries = normalizeCountries(
+        input.allowCountries ?? desired.allowCountries ?? [],
+      );
       desired = {
         ...desired,
         mode: 'restricted',
         allowFrom,
+        allowCountries: allowCountries.length ? allowCountries : undefined,
         decided: true,
         updatedAt: new Date().toISOString(),
       };
@@ -163,6 +174,15 @@ export async function syncServiceExposure(
     desired = {
       ...desired,
       allowFrom: normalizeAllowFrom(input.allowFrom),
+      updatedAt: new Date().toISOString(),
+    };
+  }
+  if (input.allowCountries && (input.reason === 'manual' || input.exposureDecision === 'restricted')) {
+    const { normalizeCountries } = await import('./geo-countries.js');
+    const allowCountries = normalizeCountries(input.allowCountries);
+    desired = {
+      ...desired,
+      allowCountries: allowCountries.length ? allowCountries : undefined,
       updatedAt: new Date().toISOString(),
     };
   }
@@ -208,10 +228,17 @@ export async function syncServiceExposure(
 
   const prefix = yskSvcCommentPrefix(serviceId);
 
-  // stop: only remove rules
+  // stop: only remove rules + country ipset
   if (input.reason === 'stop') {
     const del = await firewallDeleteByComment(input.host, prefix);
     notes.push(...del.notes);
+    try {
+      const { clearCountryIpset } = await import('./geo-countries.js');
+      const clr = await clearCountryIpset({ host: input.host, serviceId });
+      notes.push(...clr.notes);
+    } catch {
+      /* non-fatal */
+    }
     return {
       ok: del.ok || del.removed >= 0,
       serviceId,
@@ -236,6 +263,15 @@ export async function syncServiceExposure(
       notes,
       blocked: true,
     };
+  }
+
+  // Clear previous geo ipset before re-apply (private/public/restricted rebuild)
+  try {
+    const { clearCountryIpset } = await import('./geo-countries.js');
+    const clr = await clearCountryIpset({ host: input.host, serviceId });
+    notes.push(...clr.notes);
+  } catch {
+    /* non-fatal */
   }
 
   const targets = buildTargetRules(desired);
@@ -267,9 +303,51 @@ export async function syncServiceExposure(
     }
   }
 
+  // L2: country allowlist via ipset (restricted only)
+  if (desired.mode === 'restricted' && (desired.allowCountries?.length ?? 0) > 0) {
+    try {
+      const { applyCountryIpsetAllow } = await import('./geo-countries.js');
+      const geoPorts: Array<{ port: string; proto: 'tcp' | 'udp' }> = [];
+      for (const b of desired.ports) {
+        for (const p of expandProtos(b.proto)) {
+          geoPorts.push({ port: b.port, proto: p });
+        }
+      }
+      const geo = await applyCountryIpsetAllow({
+        host: input.host,
+        dataDir: input.dataDir,
+        serviceId,
+        countries: desired.allowCountries ?? [],
+        ports: geoPorts,
+        fetchZones: true,
+      });
+      notes.push(...geo.notes.slice(0, 8));
+      if (geo.blocked) {
+        return {
+          ok: false,
+          serviceId,
+          desired,
+          applied,
+          removed: del.removed,
+          notes,
+          blocked: true,
+        };
+      }
+      if (!geo.ok) fail += 1;
+    } catch (e) {
+      notes.push(
+        e instanceof Error ? e.message.slice(0, 160) : tl('notes.serviceExposure.geoNoCidrs'),
+      );
+    }
+  }
+
   if (desired.mode === 'private') {
     notes.push(tl('notes.serviceExposure.private', { service: serviceId }));
-  } else if (desired.mode === 'restricted' && targets.length === 0) {
+  } else if (
+    desired.mode === 'restricted' &&
+    targets.length === 0 &&
+    !(desired.allowCountries?.length)
+  ) {
     notes.push(tl('notes.serviceExposure.restrictedEmpty'));
   }
 
@@ -406,6 +484,7 @@ export async function putServiceExposure(input: {
           ? 'restricted'
           : 'public',
     allowFrom: desired.allowFrom,
+    allowCountries: desired.allowCountries,
     requireDecision: false,
   });
 }

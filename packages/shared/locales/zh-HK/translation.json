@@ -11680,6 +11680,10 @@
     "summaryFirewallOff": "主機防火牆：{{detail}} — UFW 未啟用時規則唔會生效。",
     "ufwMissing": "未安裝 UFW",
     "ufwInactive": "已關閉",
-    "firewallOff": "防火牆關閉"
+    "firewallOff": "防火牆關閉",
+    "restrictedNeedSource": "受限模式請至少加入 IP／網段或國家代碼。",
+    "allowCountries": "允許國家（ISO）",
+    "hintCountries": "L2 best-effort：ipset + 國家網段。需 root、EXECUTE、ipset。雲安全組須另行設定。",
+    "cloudSgNote": "僅主機防火牆 — 唔會改雲安全組（AWS／GCP／Azure）。"
   }
 }

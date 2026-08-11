@@ -149,6 +149,7 @@ export const systemApi = {
       mode?: 'private' | 'public' | 'restricted';
       ports?: Array<{ role: string; port: string; proto?: string }>;
       allowFrom?: string[];
+      allowCountries?: string[];
       sync?: boolean;
     },
   ) =>
@@ -163,6 +164,7 @@ export const systemApi = {
     reason?: 'start' | 'apply' | 'port-change' | 'manual' | 'stop';
     exposureDecision?: 'keep-private' | 'public' | 'restricted';
     allowFrom?: string[];
+    allowCountries?: string[];
     requireDecision?: boolean;
   }) =>
     api.requestRaw<{
