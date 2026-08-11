@@ -71,6 +71,38 @@ export function buildSsUri(input: {
   return `ss://${b64}@${input.host}:${input.port}${tag}`;
 }
 
+/**
+ * Parse panel "公開端點" host[:port].
+ * Rejects mistakes like "51820:8388" (WG port used as host).
+ */
+export function parseSsEndpoint(
+  endpoint: string | undefined | null,
+  listenPort: number,
+): { host: string; port: number; ok: boolean } {
+  const raw = (endpoint || '').trim();
+  if (!raw) return { host: 'YOUR_PUBLIC_IP', port: listenPort, ok: false };
+  // [ipv6]:port
+  const v6 = raw.match(/^\[([^\]]+)\](?::(\d+))?$/);
+  if (v6) {
+    return { host: v6[1], port: v6[2] ? Number(v6[2]) : listenPort, ok: true };
+  }
+  const parts = raw.split(':');
+  if (parts.length === 1) {
+    const h = parts[0].trim();
+    const ok = !/^\d+$/.test(h);
+    return { host: ok ? h : 'YOUR_PUBLIC_IP', port: listenPort, ok };
+  }
+  // host:port — last segment port
+  const portStr = parts[parts.length - 1];
+  const host = parts.slice(0, -1).join(':').trim();
+  const port = /^\d+$/.test(portStr) ? Number(portStr) : listenPort;
+  // "51820:8388" → host is digits only → invalid
+  if (!host || /^\d+$/.test(host)) {
+    return { host: 'YOUR_PUBLIC_IP', port: listenPort, ok: false };
+  }
+  return { host, port: Number.isFinite(port) ? port : listenPort, ok: true };
+}
+
 export function listSsPeers(dataDir: string): VpnServerPeer[] {
   const state = loadSsServer(dataDir);
   if (!state) return [];
@@ -130,7 +162,7 @@ export async function ensureSsServer(
   const confPath = '/etc/shadowsocks-libev/ysk.json';
   const conf = JSON.stringify(
     {
-      server: ['0.0.0.0'],
+      server: ['0.0.0.0', '::0'],
       server_port: state.listenPort,
       password: state.password,
       method: state.method,
@@ -152,21 +184,32 @@ export async function ensureSsServer(
         conf,
         'YSKSS',
         'chmod 600 /etc/shadowsocks-libev/ysk.json',
-        // unit may be shadowsocks-libev@ysk or custom
+        // Package default unit binds 127.0.0.1 and steals the port — must yield to YSK
+        'systemctl stop shadowsocks-libev.service 2>/dev/null || true',
+        'systemctl disable shadowsocks-libev.service 2>/dev/null || true',
+        'systemctl stop shadowsocks-libev@*.service 2>/dev/null || true',
+        'pkill -x ss-server 2>/dev/null || true',
+        'sleep 0.3',
         `cat > /etc/systemd/system/ysk-ss-server.service <<'EOF'`,
         '[Unit]',
         'Description=YSK Shadowsocks server',
         'After=network-online.target',
+        'Conflicts=shadowsocks-libev.service',
         '[Service]',
         'Type=simple',
         'ExecStart=/usr/bin/ss-server -c /etc/shadowsocks-libev/ysk.json',
         'Restart=on-failure',
+        'RestartSec=2',
+        'LimitNOFILE=65535',
         '[Install]',
         'WantedBy=multi-user.target',
         'EOF',
         'systemctl daemon-reload',
         'systemctl enable ysk-ss-server 2>/dev/null || true',
+        'systemctl reset-failed ysk-ss-server 2>/dev/null || true',
         'systemctl restart ysk-ss-server',
+        // Verify public bind (not loopback-only)
+        `ss -lntu | grep -E ':${state.listenPort}\\b' | grep -vqE '127\\.0\\.0\\.1|\\[::1\\]' || { echo 'SS not bound on public interface' >&2; exit 1; }`,
       ].join('\n'),
     ],
     { timeoutMs: 45_000 },
@@ -206,12 +249,12 @@ export async function addSsPeer(
   state.peers.push({ id, name, createdAt: new Date().toISOString() });
   saveSsServer(dataDir, state);
 
-  const hostPart = (state.endpoint.split(':')[0] || 'YOUR_PUBLIC_IP').trim();
+  const ep = parseSsEndpoint(state.endpoint, state.listenPort);
   const uri = buildSsUri({
     method: state.method,
     password: state.password,
-    host: hostPart,
-    port: state.listenPort,
+    host: ep.host,
+    port: ep.port,
     name,
   });
   mkdirSync(join(ssServerDir(dataDir), 'clients'), { recursive: true });
@@ -231,7 +274,7 @@ export async function addSsPeer(
     notes: [
       tl('notes.vpn.peerCreated', { name }),
       tl('notes.vpn.ssSharedPassword'),
-      !state.endpoint ? tl('notes.vpn.setEndpointHint') : '',
+      !ep.ok ? tl('notes.vpn.setEndpointHint') : '',
     ].filter(Boolean),
   };
 }
@@ -247,12 +290,12 @@ export function getSsPeerConfig(
     if (!state) return null;
     const peer = state.peers.find((x) => x.id === peerId);
     if (!peer) return null;
-    const hostPart = (state.endpoint.split(':')[0] || 'YOUR_PUBLIC_IP').trim();
+    const ep = parseSsEndpoint(state.endpoint, state.listenPort);
     const uri = buildSsUri({
       method: state.method,
       password: state.password,
-      host: hostPart,
-      port: state.listenPort,
+      host: ep.host,
+      port: ep.port,
       name: peer.name,
     });
     return { config: uri + '\n', filename: `${peer.name}.txt` };
