@@ -32,6 +32,7 @@ import {
   type ApacheSiteSource,
 } from '../../features/apache/api';
 import { notifyOk, notifyWarn } from '../../shared/lib/notify';
+import { ServiceAccessStrip } from '../../features/network/service-exposure';
 
 const BODY_OPTS: ApacheBodySize[] = ['1m', '10m', '50m', '100m', '500m'];
 
@@ -365,6 +366,17 @@ export function ApachePage() {
             </div>
           </Alert>
         ) : null}
+
+        <div className="u-mb-3">
+          <ServiceAccessStrip
+            serviceId="apache"
+            ports={[
+              { role: 'http', port: '80', proto: 'tcp' },
+              { role: 'https', port: '443', proto: 'tcp' },
+            ]}
+            compact
+          />
+        </div>
 
         <div className="u-flex u-gap-2 u-mb-3 u-flex-wrap" style={{ alignItems: 'center' }}>
           <input

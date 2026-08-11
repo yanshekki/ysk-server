@@ -150,6 +150,30 @@ export async function handleApacheRoutes(
         patch: Object.keys(data).length ? (data as never) : undefined,
         projects,
       });
+      if (result.ok && !result.blocked) {
+        try {
+          const { syncServiceExposure } = await import('@ysk/core');
+          const exp = await syncServiceExposure({
+            host: ctx.host,
+            dataDir: ctx.dataDir,
+            serviceId: 'apache',
+            ports: [
+              { role: 'http', port: '80', proto: 'tcp' },
+              { role: 'https', port: '443', proto: 'tcp' },
+            ],
+            reason: 'apply',
+            requireDecision: false,
+          });
+          if (exp.notes?.length) {
+            (result as { notes?: string[] }).notes = [
+              ...((result as { notes?: string[] }).notes ?? []),
+              ...exp.notes.slice(0, 3),
+            ];
+          }
+        } catch {
+          /* non-fatal */
+        }
+      }
       ctx.audit.append({
         actor: user.username,
         action: 'apache.settings.apply',

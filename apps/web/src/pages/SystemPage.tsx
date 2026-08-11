@@ -28,6 +28,7 @@ import { api } from '../shared/services/api';
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { toast } from '../shared/stores/toast-store';
 import { bindSet, bindInput, bindVoid } from './bind-handlers';
+import { ServiceAccessStrip } from '../features/network/service-exposure';
 
 const SYS_TABS = ['host', 'export', 'about'] as const;
 
@@ -674,6 +675,13 @@ export function SystemPage() {
                         </ul>
                       ) : null}
                       <p className="form-hint u-mt-2">{t('system.panelTls.firewallHint')}</p>
+                      <div className="u-mt-2 u-mb-2">
+                        <ServiceAccessStrip
+                          serviceId="ysk-server"
+                          ports={[{ role: 'panel', port: '9287', proto: 'tcp' }]}
+                          compact
+                        />
+                      </div>
                       <label className="checkbox-field u-mt-2">
                         <input
                           type="checkbox"

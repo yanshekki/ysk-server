@@ -103,6 +103,27 @@ export async function handleSshSftpRoutes(
           chroot: data.chroot,
           installSystem: data.installSystem !== false,
         });
+        if (r.ok) {
+          try {
+            const { syncServiceExposure } = await import('@ysk/core');
+            const exp = await syncServiceExposure({
+              host: ctx.host,
+              dataDir: ctx.dataDir,
+              serviceId: 'sshd',
+              ports: [{ role: 'ssh', port: '22', proto: 'tcp' }],
+              reason: 'apply',
+              requireDecision: false,
+            });
+            if (exp.notes?.length) {
+              (r as { notes?: string[] }).notes = [
+                ...((r as { notes?: string[] }).notes ?? []),
+                ...exp.notes.slice(0, 2),
+              ];
+            }
+          } catch {
+            /* non-fatal */
+          }
+        }
         ctx.audit.append({
           actor: user.username,
           action: 'sftp.sshd_snippet.apply',

@@ -9,6 +9,7 @@ import {
   FormActions,
   FormHint } from '../../../shared/components/ui';
 import { sshApi } from './api';
+import { ServiceAccessStrip } from '../../network/service-exposure';
 
 type Props = {
   onFlash: (tone: 'ok' | 'error', text: string) => void;
@@ -35,6 +36,12 @@ export function SshdPanel({ onFlash }: Props) {
   return (
     <div className="stack-gap">
       {err ? <Alert variant="error">{err}</Alert> : null}
+
+      <ServiceAccessStrip
+        serviceId="sshd"
+        ports={[{ role: 'ssh', port: '22', proto: 'tcp' }]}
+        compact
+      />
 
       <Card>
         <CardSection
