@@ -29,6 +29,11 @@ import { ResourceStatusBadge } from '../../shared/components/resource/ResourceSt
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import { consoleApi, type ServiceConsole } from '../../features/db-service/console-api';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
+import {
+  ServiceAccessStrip,
+  ServiceExposureDialog,
+  usePrivateStartGate,
+} from '../../features/network/service-exposure';
 import { bindSet, bindInput } from '../bind-handlers';
 
 export function PostgresPage() {
@@ -43,6 +48,7 @@ export function PostgresPage() {
   const [password, setPassword] = useState('');
   const [createUser, setCreateUser] = useState(true);
   const { busy: actBusy, error: actError, result, msg, run, setMsg, setError } = useFeatureAction();
+  const startGate = usePrivateStartGate('postgresql');
 
   const refreshSvc = useCallback(async () => {
     setLoadError(null);
@@ -71,10 +77,17 @@ export function PostgresPage() {
   }
 
 
-  async function onStart() {
+  async function onStart(exposure?: {
+    exposureDecision?: 'keep-private' | 'public' | 'restricted';
+    allowFrom?: string[];
+  }) {
+    if (!exposure?.exposureDecision) {
+      const gate = await startGate.prepareStart();
+      if (!gate.proceed) return;
+    }
     await run(async () => {
       try {
-        const r = await consoleApi.lifecycle('postgres', 'start');
+        const r = await consoleApi.lifecycle('postgres', 'start', exposure);
         await refreshSvc();
         return r as unknown as OpsResultLike;
       } catch (err) {
@@ -175,7 +188,7 @@ export function PostgresPage() {
                 {t('db.installPgBanner')}
               </p>
             ) : !running ? (
-              <Button variant="primary" size="md" loading={busy} onClick={onStart}>
+              <Button variant="primary" size="md" loading={busy} onClick={() => void onStart()}>
                 {t('fail2ban.startService')}
               </Button>
             ) : (
@@ -186,8 +199,30 @@ export function PostgresPage() {
               </Link>
             )}
           </div>
+          {installed ? (
+            <div className="u-mt-3">
+              <ServiceAccessStrip serviceId="postgresql" compact />
+            </div>
+          ) : null}
         </CardSection>
       </Card>
+
+      <ServiceExposureDialog
+        open={startGate.pending}
+        onClose={startGate.dismiss}
+        serviceId="postgresql"
+        initial={startGate.status}
+        title={t('serviceExposure.privateStartTitle', { service: 'PostgreSQL' })}
+        confirmLabel={t('serviceExposure.confirmAndStart')}
+        decisionOnly
+        onSaved={async (decision) => {
+          startGate.dismiss();
+          await onStart({
+            exposureDecision: decision.exposureDecision,
+            allowFrom: decision.allowFrom,
+          });
+        }}
+      />
 
       <OpsResultPanel title={t('systemd.opsResult')} result={result} message={msg} busy={busy} />
 

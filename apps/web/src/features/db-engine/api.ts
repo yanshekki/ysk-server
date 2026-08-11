@@ -14,10 +14,23 @@ export const dbEngineApi = {
       method: 'POST',
       body: '{}',
     }),
-  start: (engine: DbEngineKind) =>
+  start: (
+    engine: DbEngineKind,
+    exposure?: {
+      exposureDecision?: 'keep-private' | 'public' | 'restricted';
+      allowFrom?: string[];
+    },
+  ) =>
     api.requestRaw<Record<string, unknown>>(`/api/v1/system/db/${engine}/start`, {
       method: 'POST',
-      body: '{}',
+      body: JSON.stringify({
+        ...(exposure?.exposureDecision
+          ? {
+              exposureDecision: exposure.exposureDecision,
+              allowFrom: exposure.allowFrom,
+            }
+          : {}),
+      }),
     }),
   /** Confirm-clear Debian FROZEN + re-init empty datadir + start */
   unfreeze: (engine: DbEngineKind, confirm: boolean) =>

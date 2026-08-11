@@ -149,7 +149,40 @@ export async function handleSystemDbSqlRoutes(
   if (method === 'POST' && url.pathname.match(/^\/api\/v1\/system\/db\/(mysql|mariadb)\/start$/)) {
     const user = ctx.auth.authenticate(getBearer(req));
     const engine = url.pathname.split('/')[5] as 'mysql' | 'mariadb';
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as {
+      exposureDecision?: 'keep-private' | 'public' | 'restricted';
+      allowFrom?: string[];
+    };
     const result = await startDbEngine({ host: ctx.host, engine });
+    if (result.ok) {
+      try {
+        const { syncServiceExposure, engineToServiceId, dbPortBindings } = await import(
+          '@ysk/core'
+        );
+        const exp = await syncServiceExposure({
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          serviceId: engineToServiceId(engine),
+          ports: dbPortBindings(engine),
+          reason: 'start',
+          exposureDecision: data.exposureDecision,
+          allowFrom: data.allowFrom,
+          requireDecision: true,
+        });
+        if (exp.notes?.length) {
+          (result as { notes?: string[] }).notes = [
+            ...((result as { notes?: string[] }).notes ?? []),
+            ...exp.notes.slice(0, 4),
+          ];
+        }
+        if (exp.needsExposureDecision) {
+          (result as { needsExposureDecision?: boolean }).needsExposureDecision = true;
+        }
+      } catch {
+        /* non-fatal */
+      }
+    }
     ctx.audit.append({
       actor: user.username,
       action: `system.db.${engine}.start`,

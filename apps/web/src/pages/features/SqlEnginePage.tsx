@@ -38,6 +38,11 @@ import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { api } from '../../shared/services/api';
 import { useTranslation } from 'react-i18next';
 import { looksLikeBlockedMessage } from '../../shared/lib/operator-messages';
+import {
+  ServiceAccessStrip,
+  ServiceExposureDialog,
+  usePrivateStartGate,
+} from '../../features/network/service-exposure';
 import { bindCall1, bindCloseIfIdle, bindFormSubmit, bindInput, bindRemoveIf, bindSet, bindValueSet, bindVoid, bindVoidCall2 } from '../bind-handlers';
 
 export function serviceLabel(s: DbEngineStatus | null, t: (key: string, opts?: Record<string, unknown>) => string): {
@@ -106,6 +111,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const { busy: actBusy, error: actError, result, msg, run, setMsg, setError } =
     useFeatureAction();
+  const startGate = usePrivateStartGate(engine);
 
   const [tab, setTab] = useState('databases');
   const [createOpen, setCreateOpen] = useState(false);
@@ -171,10 +177,17 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
   }, [refreshSvc, refreshExtras]);
 
 
-  async function onStart() {
+  async function onStart(exposure?: {
+    exposureDecision?: 'keep-private' | 'public' | 'restricted';
+    allowFrom?: string[];
+  }) {
+    if (!exposure?.exposureDecision) {
+      const gate = await startGate.prepareStart();
+      if (!gate.proceed) return;
+    }
     await run(async () => {
       try {
-        const r = await dbEngineApi.start(engine);
+        const r = await dbEngineApi.start(engine, exposure);
         await refreshSvc();
         return r as unknown as OpsResultLike;
       } catch (e) {
@@ -433,7 +446,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                 >
                   {t('db.unfreezeBtn')}
                 </Button>
-                <Button variant="primary" size="md" loading={busy} onClick={onStart}>
+                <Button variant="primary" size="md" loading={busy} onClick={() => void onStart()}>
                   {t('db.startAfterUnfreeze')}
                 </Button>
               </div>
@@ -464,8 +477,30 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               </Link>
             ) : null}
           </div>
+          {installed ? (
+            <div className="u-mt-3">
+              <ServiceAccessStrip serviceId={engine} compact />
+            </div>
+          ) : null}
         </CardSection>
       </Card>
+
+      <ServiceExposureDialog
+        open={startGate.pending}
+        onClose={startGate.dismiss}
+        serviceId={engine}
+        initial={startGate.status}
+        title={t('serviceExposure.privateStartTitle', { service: title })}
+        confirmLabel={t('serviceExposure.confirmAndStart')}
+        decisionOnly
+        onSaved={async (decision) => {
+          startGate.dismiss();
+          await onStart({
+            exposureDecision: decision.exposureDecision,
+            allowFrom: decision.allowFrom,
+          });
+        }}
+      />
 
       <ConfirmDialog
         open={unfreezeOpen}
