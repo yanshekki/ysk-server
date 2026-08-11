@@ -352,7 +352,7 @@ export class VncService {
     const r = await openUfwTcpPort({
       host: this.host,
       port: rec.rfbPort,
-      comment: `ysk-svc:vnc:${id.slice(0, 24)}`,
+      comment: `ysk-svc:vnc-${id.slice(0, 12)}:rfb`,
     });
     return {
       ok: r.ok || Boolean(r.blocked),
@@ -721,9 +721,21 @@ export class VncService {
       };
     }
 
+    const notes = [...st.notes, ...xs.notes, ...prepNotes];
+    // Public RFB bind → auto open host firewall (ysk-svc:vnc-<id>:rfb)
+    if (st.ok && rec.rfbBind === 'all') {
+      const sid = `vnc-${id.slice(0, 12)}`;
+      const fw = await openUfwTcpPort({
+        host: this.host,
+        port: rec.rfbPort,
+        comment: `ysk-svc:${sid}:rfb`,
+      });
+      notes.push(...fw.notes);
+    }
+
     return {
       ok: st.ok || Boolean(st.blocked),
-      notes: [...st.notes, ...xs.notes, ...prepNotes],
+      notes,
       blocked: st.blocked,
       requiresExecute: st.requiresExecute,
       requiresRoot: st.requiresRoot,
@@ -738,9 +750,21 @@ export class VncService {
       linuxUser: rec.linuxUser,
       display: rec.display,
     });
+    const notes = [...st.notes];
+    // Drop managed VNC firewall rules for this account
+    try {
+      const { firewallDeleteByComment } = await import('../firewall-ops.js');
+      const del = await firewallDeleteByComment(
+        this.host,
+        `ysk-svc:vnc-${id.slice(0, 12)}:`,
+      );
+      if (del.removed > 0) notes.push(...del.notes.slice(0, 2));
+    } catch {
+      /* non-fatal */
+    }
     return {
       ok: st.ok || Boolean(st.blocked),
-      notes: st.notes,
+      notes,
       blocked: st.blocked,
       requiresExecute: st.requiresExecute,
       account: toSummary(rec, await this.resolveStatus(rec)),

@@ -267,6 +267,7 @@ export function buildConnectionPayload(input: {
   if (input.rfbBind === 'localhost') {
     directNotes.push(tl('notes.vnc.directNeedsAllBind'));
   } else {
+    // Host firewall is auto-synced on start (ysk-svc:vnc:…); UI shows access strip
     directNotes.push(tl('notes.vnc.directOpenFirewall', { port: String(input.rfbPort) }));
   }
 

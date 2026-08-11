@@ -39,6 +39,7 @@ import {
   VncViewer,
   type VncViewerTarget,
 } from '../../features/vnc/VncViewer';
+import { ServiceAccessStrip } from '../../features/network/service-exposure';
 
 const TABS = ['accounts', 'client', 'install', 'settings', 'about'] as const;
 const PAGE_SIZE = 10;
@@ -1546,19 +1547,23 @@ export function VncPage() {
                     >
                       {t('vnc.copyAddress')}
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      loading={busy}
-                      onClick={() =>
-                        void runOps(() => vncApi.openFirewall(connTarget!.id))
-                      }
-                    >
-                      {t('vnc.openFirewall')}
-                    </Button>
                   </ActionBar>
                   {connInfo.connection.direct.bind === 'localhost' ? (
                     <Alert variant="warn">{t('vnc.directLocalhostWarn')}</Alert>
+                  ) : connTarget ? (
+                    <div className="u-mt-2">
+                      <ServiceAccessStrip
+                        serviceId={`vnc-${connTarget.id.slice(0, 12)}`}
+                        ports={[
+                          {
+                            role: 'rfb',
+                            port: String(connInfo.connection.direct.port),
+                            proto: 'tcp',
+                          },
+                        ]}
+                        compact
+                      />
+                    </div>
                   ) : null}
                 </section>
               </div>
