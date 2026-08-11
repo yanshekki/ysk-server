@@ -3,7 +3,13 @@
  */
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { createVncService, normalizeVncDesktopProfile } from '@ysk/core';
+import {
+  createVncService,
+  createVncShareLink,
+  getVncShareLink,
+  normalizeVncDesktopProfile,
+  revokeVncShareLink,
+} from '@ysk/core';
 import { ErrorCodes } from '@ysk/shared';
 import type { AppContext } from '../app-context.js';
 import { getBearer, readBody, sendJson, sendOpsResult } from '../http/util.js';
@@ -17,6 +23,94 @@ export async function handleVncRoutes(
   method: string,
 ): Promise<boolean> {
   if (!url.pathname.startsWith('/api/v1/vnc')) return false;
+
+  // ── Public share-link redeem (no panel login) ─────────────────
+  const shareSessionMatch = url.pathname.match(
+    /^\/api\/v1\/vnc\/share\/([^/]+)\/session$/,
+  );
+  if (method === 'POST' && shareSessionMatch) {
+    try {
+      const token = decodeURIComponent(shareSessionMatch[1] ?? '');
+      const share = getVncShareLink(ctx.dataDir, token);
+      if (!share) {
+        sendJson(res, 404, {
+          ok: false,
+          code: ErrorCodes.NOT_FOUND,
+          message: 'share link expired or missing',
+        });
+        return true;
+      }
+      const vnc = createVncService(ctx.dataDir, ctx.host);
+      const prepared = await vnc.prepareBrowserSession({
+        kind: share.kind,
+        id: share.targetId,
+      });
+      if (!prepared.ok || !prepared.rfbHost || !prepared.rfbPort) {
+        sendOpsResult(res, {
+          ok: false,
+          notes: prepared.notes,
+          blocked: prepared.blocked,
+          requiresExecute: prepared.requiresExecute,
+          apply_status: prepared.blocked ? 'blocked' : 'failed',
+        });
+        return true;
+      }
+      const ticketRec = ctx.vncSessionTickets.issue({
+        actor: `share:${share.createdBy}`,
+        kind: share.kind,
+        targetId: share.targetId,
+        label: share.label,
+        rfbHost: prepared.rfbHost,
+        rfbPort: prepared.rfbPort,
+        viewOnly: share.viewOnly,
+      });
+      sendJson(res, 200, {
+        ok: true,
+        ticket: ticketRec.ticket,
+        sessionId: ticketRec.sessionId,
+        wsPath: `/api/v1/vnc/ws?ticket=${encodeURIComponent(ticketRec.ticket)}`,
+        expiresAt: new Date(ticketRec.expiresAt).toISOString(),
+        viewOnly: share.viewOnly,
+        target: {
+          kind: share.kind,
+          id: share.targetId,
+          label: share.label,
+        },
+        shareExpiresAt: new Date(share.expiresAt).toISOString(),
+        notes: prepared.notes,
+      });
+    } catch (e) {
+      const err = e as { httpStatus?: number; code?: string; message?: string };
+      sendJson(res, err.httpStatus ?? 500, {
+        ok: false,
+        code: err.code ?? ErrorCodes.INTERNAL,
+        message: err.message ?? 'share session failed',
+      });
+    }
+    return true;
+  }
+
+  const shareInfoMatch = url.pathname.match(/^\/api\/v1\/vnc\/share\/([^/]+)$/);
+  if (method === 'GET' && shareInfoMatch && !shareInfoMatch[1]?.includes('/')) {
+    const token = decodeURIComponent(shareInfoMatch[1] ?? '');
+    const share = getVncShareLink(ctx.dataDir, token);
+    if (!share) {
+      sendJson(res, 404, {
+        ok: false,
+        code: ErrorCodes.NOT_FOUND,
+        message: 'share link expired or missing',
+      });
+      return true;
+    }
+    sendJson(res, 200, {
+      ok: true,
+      label: share.label,
+      viewOnly: share.viewOnly,
+      kind: share.kind,
+      expiresAt: new Date(share.expiresAt).toISOString(),
+    });
+    return true;
+  }
 
   let user: ReturnType<AppContext['auth']['authenticate']>;
   try {
@@ -35,6 +129,91 @@ export async function handleVncRoutes(
   const vnc = createVncService(ctx.dataDir, ctx.host);
 
   try {
+    /** Create a shareable view link (default view-only, 1h). */
+    if (method === 'POST' && url.pathname === '/api/v1/vnc/share') {
+      const raw = await readBody(req);
+      const data = JSON.parse(raw || '{}') as {
+        kind?: string;
+        id?: string;
+        viewOnly?: boolean;
+        ttlMinutes?: number;
+      };
+      const kind =
+        data.kind === 'client'
+          ? 'client'
+          : data.kind === 'account'
+            ? 'account'
+            : null;
+      const id = String(data.id ?? '').trim();
+      if (!kind || !id) {
+        sendJson(res, 400, {
+          ok: false,
+          code: ErrorCodes.VALIDATION,
+          message: 'kind and id required',
+        });
+        return true;
+      }
+      const prepared = await vnc.prepareBrowserSession({ kind, id });
+      if (!prepared.ok) {
+        sendOpsResult(res, {
+          ok: false,
+          notes: prepared.notes,
+          blocked: prepared.blocked,
+          requiresExecute: prepared.requiresExecute,
+          apply_status: prepared.blocked ? 'blocked' : 'failed',
+        });
+        return true;
+      }
+      const ttlMinutes = Number(data.ttlMinutes);
+      const ttlMs =
+        Number.isFinite(ttlMinutes) && ttlMinutes > 0
+          ? ttlMinutes * 60_000
+          : undefined;
+      const share = createVncShareLink({
+        dataDir: ctx.dataDir,
+        kind,
+        targetId: id,
+        label: prepared.label || id,
+        createdBy: user.username,
+        viewOnly: data.viewOnly !== false,
+        ttlMs,
+      });
+      ctx.audit.append({
+        actor: user.username,
+        action: 'vnc.share.create',
+        resource: `${kind}:${id}`,
+        ok: true,
+        detail: { viewOnly: share.viewOnly, expiresAt: share.expiresAt },
+      });
+      const path = `/vnc?share=${encodeURIComponent(share.token)}`;
+      sendJson(res, 200, {
+        ok: true,
+        token: share.token,
+        path,
+        viewOnly: share.viewOnly,
+        expiresAt: new Date(share.expiresAt).toISOString(),
+        label: share.label,
+      });
+      return true;
+    }
+
+    if (method === 'DELETE') {
+      const rev = url.pathname.match(/^\/api\/v1\/vnc\/share\/([^/]+)$/);
+      if (rev) {
+        const token = decodeURIComponent(rev[1] ?? '');
+        const ok = revokeVncShareLink(ctx.dataDir, token);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'vnc.share.revoke',
+          resource: token.slice(0, 8),
+          ok,
+          detail: {},
+        });
+        sendJson(res, 200, { ok });
+        return true;
+      }
+    }
+
     /**
      * Browser VNC session — prepare RFB target + one-time WS ticket.
      * Client connects to /api/v1/vnc/ws?ticket=… (binary RFB pipe).

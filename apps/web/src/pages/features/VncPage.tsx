@@ -346,6 +346,33 @@ export function VncPage() {
                         notes: r.notes,
                       };
                     }}
+                    onShare={async (tgt) => {
+                      try {
+                        const r = await vncApi.createShare({
+                          kind: tgt.kind,
+                          id: tgt.id,
+                          viewOnly: true,
+                          ttlMinutes: 60,
+                        });
+                        if (!r.ok || !r.token) {
+                          notifyWarn(
+                            r.notes?.[0] || r.message || t('vnc.viewer.shareFailed'),
+                          );
+                          return;
+                        }
+                        const url = `${window.location.origin}/vnc-share/${encodeURIComponent(r.token)}`;
+                        try {
+                          await navigator.clipboard.writeText(url);
+                          notifyOk(t('vnc.viewer.shareCopied'));
+                        } catch {
+                          notifyOk(url);
+                        }
+                      } catch (e) {
+                        notifyWarn(
+                          e instanceof Error ? e.message : t('vnc.viewer.shareFailed'),
+                        );
+                      }
+                    }}
                     onClose={() => closeViewerSession(key)}
                   />
                 </div>

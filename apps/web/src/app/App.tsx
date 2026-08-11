@@ -45,6 +45,9 @@ const FilesPage = lazy(() =>
 const PublicSharePage = lazy(() =>
   import('../pages/PublicSharePage').then((m) => ({ default: m.PublicSharePage })),
 );
+const VncSharePage = lazy(() =>
+  import('../pages/features/VncSharePage').then((m) => ({ default: m.VncSharePage })),
+);
 const SystemPage = lazy(() =>
   import('../pages/SystemPage').then((m) => ({ default: m.SystemPage })),
 );
@@ -215,6 +218,15 @@ export function App() {
             element={
               <Lazy>
                 <PublicSharePage />
+              </Lazy>
+            }
+          />
+          {/* Public VNC view share — no panel session */}
+          <Route
+            path="/vnc-share/:token"
+            element={
+              <Lazy>
+                <VncSharePage />
               </Lazy>
             }
           />

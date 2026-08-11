@@ -242,6 +242,55 @@ export const vncApi = {
       body: JSON.stringify(body),
       allowStatuses: [403, 422],
     }),
+  /** Create shareable view link (default view-only). */
+  createShare: (body: {
+    kind: 'account' | 'client';
+    id: string;
+    viewOnly?: boolean;
+    ttlMinutes?: number;
+  }) =>
+    api.requestRawAllowStatus<{
+      ok: boolean;
+      token?: string;
+      path?: string;
+      viewOnly?: boolean;
+      expiresAt?: string;
+      label?: string;
+      notes?: string[];
+      message?: string;
+    }>('/api/v1/vnc/share', {
+      method: 'POST',
+      body: JSON.stringify(body),
+      allowStatuses: [403, 422],
+    }),
+  /** Public: open session from share token (no panel login). */
+  shareSession: (token: string) =>
+    api.requestRawAllowStatus<{
+      ok: boolean;
+      ticket?: string;
+      wsPath?: string;
+      viewOnly?: boolean;
+      target?: { kind: string; id: string; label?: string };
+      shareExpiresAt?: string;
+      notes?: string[];
+      message?: string;
+    }>(`/api/v1/vnc/share/${encodeURIComponent(token)}/session`, {
+      method: 'POST',
+      body: '{}',
+      allowStatuses: [403, 404, 422],
+    }),
+  shareInfo: (token: string) =>
+    api.requestRawAllowStatus<{
+      ok: boolean;
+      label?: string;
+      viewOnly?: boolean;
+      kind?: string;
+      expiresAt?: string;
+      message?: string;
+    }>(`/api/v1/vnc/share/${encodeURIComponent(token)}`, {
+      method: 'GET',
+      allowStatuses: [404],
+    }),
   clientDown: (id: string) =>
     api.requestRawAllowStatus<VncOpsResult & { profile?: VncClientProfile }>(
       `/api/v1/vnc/client/profiles/${encodeURIComponent(id)}/down`,

@@ -83,7 +83,15 @@
     "sessions": "Open VNC sessions",
     "sessionCount": "{{n}} / {{max}} sessions",
     "sessionLimit": "At most {{max}} VNC sessions at once — close one first.",
-    "closeSession": "Close session {{name}}"
+    "closeSession": "Close session {{name}}",
+    "shareLink": "Share link",
+    "shareCopied": "View-only share link copied (valid ~1 hour)",
+    "shareFailed": "Could not create share link",
+    "shareTitle": "Shared VNC view",
+    "shareGuest": "Shared desktop",
+    "shareMissing": "Missing share token",
+    "shareExpired": "This share link is invalid or has expired",
+    "viewOnlyBadge": "View only"
   },
   "installHint": "TigerVNC → noVNC; XFCE optional",
   "needTigerVnc": "TigerVNC required",

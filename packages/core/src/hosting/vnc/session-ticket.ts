@@ -19,6 +19,8 @@ export type VncSessionTicketRecord = {
   /** RFB host reachable from the control plane process */
   rfbHost: string;
   rfbPort: number;
+  /** When true, browser RFB should be view-only (share links). */
+  viewOnly?: boolean;
   createdAt: number;
   expiresAt: number;
   consumed: boolean;
@@ -64,6 +66,7 @@ export function createVncSessionTicketStore(opts?: {
         label: input.label,
         rfbHost: input.rfbHost,
         rfbPort: input.rfbPort,
+        viewOnly: Boolean(input.viewOnly),
         createdAt: now,
         expiresAt: now + (input.ttlMs ?? ttlDefault),
         consumed: false,

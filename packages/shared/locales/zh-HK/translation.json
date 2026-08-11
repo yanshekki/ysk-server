@@ -11172,7 +11172,15 @@
       "sessions": "已開 VNC 工作階段",
       "sessionCount": "{{n}} / {{max}} 個工作階段",
       "sessionLimit": "最多同時 {{max}} 個 VNC — 請先關閉一個。",
-      "closeSession": "關閉工作階段 {{name}}"
+      "closeSession": "關閉工作階段 {{name}}",
+      "shareLink": "分享連結",
+      "shareCopied": "已複製只讀分享連結（約 1 小時有效）",
+      "shareFailed": "建立分享連結失敗",
+      "shareTitle": "VNC 分享檢視",
+      "shareGuest": "分享桌面",
+      "shareMissing": "缺少分享 token",
+      "shareExpired": "呢個分享連結無效或已過期",
+      "viewOnlyBadge": "只讀"
     },
     "installHint": "TigerVNC → noVNC；XFCE 可選",
     "needTigerVnc": "需 TigerVNC",

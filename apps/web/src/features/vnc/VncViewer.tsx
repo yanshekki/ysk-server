@@ -13,6 +13,10 @@ export type VncViewerTarget = {
   id: string;
   label: string;
   subtitle?: string;
+  /** Force view-only RFB (share links). */
+  viewOnly?: boolean;
+  /** When set, session is opened via public share redeem (no panel password). */
+  shareToken?: string;
 };
 
 type ConnState = 'idle' | 'minting' | 'connecting' | 'connected' | 'error' | 'closed';
@@ -37,8 +41,11 @@ type Props = {
     wsPath: string;
     password?: string;
     notes?: string[];
+    viewOnly?: boolean;
   }>;
   onClose: () => void;
+  /** Optional: create share link for this target (panel users only) */
+  onShare?: (target: VncViewerTarget) => void | Promise<void>;
 };
 
 function wsUrlFromPath(wsPath: string): string {
@@ -87,7 +94,7 @@ function friendlyFailMessage(
   return s.length > 160 ? `${s.slice(0, 160)}…` : s;
 }
 
-export function VncViewer({ target, createSession, onClose }: Props) {
+export function VncViewer({ target, createSession, onClose, onShare }: Props) {
   const { t } = useTranslation();
   const screenRef = useRef<HTMLDivElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -148,9 +155,11 @@ export function VncViewer({ target, createSession, onClose }: Props) {
       setState('connecting');
       setStatusText(t('vnc.viewer.connecting'));
       const url = wsUrlFromPath(sess.wsPath);
+      const viewOnly = Boolean(target.viewOnly || sess.viewOnly);
       const rfb = new RFB(screenRef.current, url, {
         credentials: sess.password || password ? { password: sess.password || password } : undefined,
       });
+      rfb.viewOnly = viewOnly;
       rfb.scaleViewport = scale;
       rfb.resizeSession = false;
       rfb.clipViewport = !scale;
@@ -384,6 +393,9 @@ export function VncViewer({ target, createSession, onClose }: Props) {
             <span className="muted u-text-xs"> · {target.subtitle}</span>
           ) : null}
           <Badge tone={tone}>{statusText || t(`vnc.viewer.${state}`, { defaultValue: state })}</Badge>
+          {target.viewOnly || target.shareToken ? (
+            <Badge tone="warn">{t('vnc.viewer.viewOnlyBadge')}</Badge>
+          ) : null}
         </div>
         <ActionBar>
           <Button
@@ -397,6 +409,16 @@ export function VncViewer({ target, createSession, onClose }: Props) {
           >
             {t('vnc.viewer.reconnect')}
           </Button>
+          {onShare && !target.shareToken ? (
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => void onShare(target)}
+              disabled={state !== 'connected'}
+            >
+              {t('vnc.viewer.shareLink')}
+            </Button>
+          ) : null}
           <Button
             size="sm"
             variant="secondary"
@@ -435,7 +457,7 @@ export function VncViewer({ target, createSession, onClose }: Props) {
             size="sm"
             variant="secondary"
             onClick={() => rfbRef.current?.sendCtrlAltDel()}
-            disabled={state !== 'connected'}
+            disabled={state !== 'connected' || Boolean(target.viewOnly || target.shareToken)}
           >
             {t('vnc.viewer.cad')}
           </Button>
@@ -443,7 +465,9 @@ export function VncViewer({ target, createSession, onClose }: Props) {
             size="sm"
             variant="secondary"
             onClick={() => void pasteLocalToRemote()}
-            disabled={state !== 'connected'}
+            disabled={
+              state !== 'connected' || Boolean(target.viewOnly || target.shareToken)
+            }
             title={t('vnc.viewer.clipboardToRemoteHint')}
           >
             {t('vnc.viewer.clipboardPaste')}
