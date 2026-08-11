@@ -64,8 +64,11 @@ export type UninstallResult = {
   statuses: SoftwareStatus[];
 };
 
-/** Reserved: control-plane binaries never removed via feature uninstall. */
-const PROTECTED_IDS = new Set<string>([]);
+/**
+ * Never one-click uninstall these catalog ids (shared host tools / control plane).
+ * Git is required by deploy, clone, and panel ops — never remove with a runtime stack.
+ */
+const PROTECTED_IDS = new Set<string>(['git']);
 
 function essentialPkgs(): Set<string> {
   return new Set(['sudo', 'bash', 'coreutils', 'apt', 'dpkg', 'libc6']);

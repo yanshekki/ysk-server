@@ -373,6 +373,7 @@ export function RuntimeSoftwarePanel(props: RuntimeSoftwarePanelProps) {
           feature={kind}
           title={bannerTitle}
           readyTitle={t('runtime.stackReadyTitle', { name: title })}
+          uninstallTitle={title}
           onInstalled={onStackLifecycleDone}
         />
       </details>

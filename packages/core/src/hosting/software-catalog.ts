@@ -292,7 +292,12 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     title: 'Git',
     bins: ['git'],
     aptPackages: ['git'],
-    features: ['git', 'all'] },
+    // 'all' = included in full-catalog install only — never auto-attached to
+    // every feature uninstall via listSoftwareForFeature(feature).
+    features: ['git', 'all'],
+    uninstallProtected: true,
+    impactKeys: ['controlPlane'],
+  },
   {
     id: 'node',
     title: 'Node.js',
@@ -465,9 +470,15 @@ export function getSoftware(id: string): SoftwareSpec | undefined {
   return SOFTWARE_CATALOG.find((s) => s.id === id);
 }
 
+/**
+ * Software tied to a panel feature.
+ * Specs tagged with features:['all'] are only returned when feature is exactly
+ * 'all' (full inventory / full-stack install) — never when filtering a single
+ * feature such as 'python' or 'nginx' (so git is not uninstalled with Python).
+ */
 export function listSoftwareForFeature(feature: string): SoftwareSpec[] {
   if (feature === 'all' || !feature) return [...SOFTWARE_CATALOG];
-  return SOFTWARE_CATALOG.filter(
-    (s) => s.features.includes(feature as FeatureSoftwareKey) || s.features.includes('all'),
+  return SOFTWARE_CATALOG.filter((s) =>
+    s.features.includes(feature as FeatureSoftwareKey),
   );
 }

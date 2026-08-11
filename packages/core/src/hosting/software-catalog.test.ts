@@ -32,6 +32,16 @@ describe('software-catalog', () => {
     expect(browse.some((s) => s.id === 'chromium')).toBe(true);
   });
 
+  it('does not attach git (features:all) to every feature uninstall list', () => {
+    for (const feature of ['python', 'node', 'php', 'nginx', 'email', 'ftp']) {
+      const list = listSoftwareForFeature(feature);
+      expect(list.some((s) => s.id === 'git')).toBe(false);
+    }
+    // full catalog still includes git
+    expect(listSoftwareForFeature('all').some((s) => s.id === 'git')).toBe(true);
+    expect(getSoftware('git')?.uninstallProtected).toBe(true);
+  });
+
   it('resolveSoftwareTitle never returns empty for catalog entries', () => {
     for (const s of SOFTWARE_CATALOG.slice(0, 15)) {
       const title = resolveSoftwareTitle(s);

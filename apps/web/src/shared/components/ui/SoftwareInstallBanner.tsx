@@ -23,6 +23,8 @@ export interface SoftwareInstallBannerProps {
   title?: string;
   /** Title when ready strip is shown (defaults to softwareLifecycle.readyTitle) */
   readyTitle?: string;
+  /** Uninstall dialog title (defaults to title / readyTitle — not the "not installed" copy) */
+  uninstallTitle?: string;
   compact?: boolean;
 }
 
@@ -32,6 +34,7 @@ export function SoftwareInstallBanner({
   autoHideWhenReady = true,
   title,
   readyTitle,
+  uninstallTitle,
 }: SoftwareInstallBannerProps) {
   const { t } = useTranslation();
   const stream = useOpsStreamOptional();
@@ -258,7 +261,7 @@ export function SoftwareInstallBanner({
         <SoftwareUninstallDialog
           open={uninstallOpen}
           feature={feature}
-          title={title}
+          title={uninstallTitle ?? readyTitle ?? title}
           busy={uninstallBusy}
           onClose={() => !uninstallBusy && setUninstallOpen(false)}
           onConfirm={runUninstall}
@@ -357,7 +360,7 @@ export function SoftwareInstallBanner({
       <SoftwareUninstallDialog
         open={uninstallOpen}
         feature={feature}
-        title={title}
+        title={uninstallTitle ?? readyTitle ?? title}
         busy={uninstallBusy}
         onClose={() => !uninstallBusy && setUninstallOpen(false)}
         onConfirm={runUninstall}
