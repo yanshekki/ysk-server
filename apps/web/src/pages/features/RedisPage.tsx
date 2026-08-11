@@ -176,10 +176,17 @@ export function RedisPage() {
     }, t('redis.installedOk'));
   }
 
-  async function onStart() {
+  async function onStart(exposure?: {
+    exposureDecision?: 'keep-private' | 'public' | 'restricted';
+    allowFrom?: string[];
+  }) {
+    if (!exposure?.exposureDecision) {
+      const gate = await startGate.prepareStart();
+      if (!gate.proceed) return;
+    }
     await run(async () => {
       try {
-        const r = await redisApi.start();
+        const r = await redisApi.start(exposure);
         await refreshSvc();
         return r as unknown as OpsResultLike;
       } catch (e) {
@@ -336,6 +343,29 @@ export function RedisPage() {
 
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error ? <Alert variant="error">{error}</Alert> : null}
+      <div className="u-mb-3">
+        <ServiceAccessStrip
+          serviceId="redis"
+          ports={[{ role: 'listen', port: '6379', proto: 'tcp' }]}
+          compact
+        />
+      </div>
+      <ServiceExposureDialog
+        open={startGate.pending}
+        onClose={startGate.dismiss}
+        serviceId="redis"
+        initial={startGate.status}
+        title={t('serviceExposure.privateStartTitle', { service: 'Redis' })}
+        confirmLabel={t('serviceExposure.confirmAndStart')}
+        decisionOnly
+        onSaved={async (decision) => {
+          startGate.dismiss();
+          await onStart({
+            exposureDecision: decision.exposureDecision,
+            allowFrom: decision.allowFrom,
+          });
+        }}
+      />
       {!online ? (
         <EmptyState
           title={t('redis.notConnectedTitle')}
