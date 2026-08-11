@@ -220,6 +220,7 @@ export function PhpRuntimePage() {
   const [extDefaults, setExtDefaults] = useState<string[]>([]);
   const [extUninstallBusy, setExtUninstallBusy] = useState(false);
   const [confirmExtUninstall, setConfirmExtUninstall] = useState<PhpExtRow | null>(null);
+  const [confirmPhpUninstall, setConfirmPhpUninstall] = useState(false);
   const [extOps, setExtOps] = useState<OpsResultLike | null>(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
   const [installLog, setInstallLog] = useState<InstallStreamLine[]>([]);
@@ -816,24 +817,40 @@ export function PhpRuntimePage() {
                       variant="danger"
                       size="md"
                       loading={busy}
-                      onClick={() =>
-                        void run(async () => {
-                          const r = await systemApi.runtimeUninstall({
-                            kind: 'php',
-                            version,
-                          });
-                          await refresh();
-                          await loadExtensions(version, { bust: true }).catch(
-                            () => undefined,
-                          );
-                          return r as OpsResultLike;
-                        }, t('runtime.uninstallVersionDone', { version }))
-                      }
+                      onClick={() => setConfirmPhpUninstall(true)}
                     >
                       {t('runtime.uninstallVersion', { version })}
                     </Button>
                   </FormActions>
                 ) : null}
+                <ConfirmDialog
+                  open={confirmPhpUninstall}
+                  title={t('runtime.uninstallVersionTitle', { version })}
+                  description={t('runtime.uninstallVersionConfirm', {
+                    version,
+                    name: 'PHP',
+                  })}
+                  confirmLabel={t('runtime.uninstallVersion', { version })}
+                  cancelLabel={t('common.cancel')}
+                  severity="destructive"
+                  danger
+                  busy={busy}
+                  onClose={() => setConfirmPhpUninstall(false)}
+                  onConfirm={() => {
+                    setConfirmPhpUninstall(false);
+                    void run(async () => {
+                      const r = await systemApi.runtimeUninstall({
+                        kind: 'php',
+                        version,
+                      });
+                      await refresh();
+                      await loadExtensions(version, { bust: true }).catch(
+                        () => undefined,
+                      );
+                      return r as OpsResultLike;
+                    }, t('runtime.uninstallVersionDone', { version }));
+                  }}
+                />
                 <InstallStreamPanel lines={installLog} busy={busy} />
                 {extOps ? (
                   <div className="u-mt-3">
