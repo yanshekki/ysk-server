@@ -26,4 +26,12 @@ describe('outline/ss helpers', () => {
   it('parseSsEndpoint rejects WG-port-as-host typo', () => {
     expect(parseSsEndpoint('51820:8388', 8388).ok).toBe(false);
   });
+
+  it('parseSsEndpoint accepts bare hostname', () => {
+    expect(parseSsEndpoint('vpn.example.com', 8388)).toEqual({
+      host: 'vpn.example.com',
+      port: 8388,
+      ok: true,
+    });
+  });
 });

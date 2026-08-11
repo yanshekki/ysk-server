@@ -117,6 +117,55 @@ export function listSsPeers(dataDir: string): VpnServerPeer[] {
   }));
 }
 
+/** Best-effort public IP:port for QR / mobile clients (every install host). */
+export async function guessSsEndpoint(host: HostExecutor, port: number): Promise<string> {
+  try {
+    const r = await host.runCommand(
+      [
+        'bash',
+        '-c',
+        'curl -4 -fsS --max-time 3 https://ifconfig.me/ip 2>/dev/null || curl -4 -fsS --max-time 3 https://api.ipify.org 2>/dev/null || curl -4 -fsS --max-time 3 https://icanhazip.com 2>/dev/null || true',
+      ],
+      { timeoutMs: 10_000 },
+    );
+    const ip = (r.stdout || '').trim().split(/\s+/)[0] || '';
+    if (ip && /^\d+\.\d+\.\d+\.\d+$/.test(ip)) return `${ip}:${port}`;
+  } catch {
+    /* */
+  }
+  return '';
+}
+
+/** Rewrite all peer ss:// files from current server.json (after endpoint/password change). */
+export function rewriteAllSsClientUris(dataDir: string): number {
+  const state = loadSsServer(dataDir);
+  if (!state) return 0;
+  const ep = parseSsEndpoint(state.endpoint, state.listenPort);
+  const dir = join(ssServerDir(dataDir), 'clients');
+  mkdirSync(dir, { recursive: true });
+  let n = 0;
+  for (const peer of state.peers) {
+    const uri = buildSsUri({
+      method: state.method,
+      password: state.password,
+      host: ep.host,
+      port: ep.port,
+      name: peer.name,
+    });
+    writeFileSync(join(dir, `${peer.id}.txt`), uri + '\n', 'utf8');
+    n++;
+  }
+  return n;
+}
+
+/**
+ * Install/start YSK Shadowsocks on THIS host (portable to every ysk-server box):
+ * - yield Debian package default unit (localhost bind steals the port)
+ * - bind 0.0.0.0 (+ ::) for mobile clients
+ * - open UFW tcp+udp
+ * - autofill public endpoint when missing/invalid
+ * - regenerate client ss:// URIs
+ */
 export async function ensureSsServer(
   host: HostExecutor,
   dataDir: string,
@@ -131,12 +180,11 @@ export async function ensureSsServer(
       notes: [tl('notes.vpn.needExecuteServer')],
     };
   }
-  // Debian: ss-server from shadowsocks-libev
   if (!(await binExists(host, 'ss-server'))) {
     return {
       ok: false,
       notes: [
-        tl('notes.vpn.needInstall', { engine: 'Shadowsocks (ss-server)' }),
+        tl('notes.vpn.needInstall', { engine: 'Shadowsocks (ss-server / shadowsocks-libev)' }),
         tl('notes.vpn.ssHonest'),
       ],
     };
@@ -148,14 +196,31 @@ export async function ensureSsServer(
       listenPort: input.listenPort ?? 8388,
       method: METHOD,
       password: randomPassword(),
-      endpoint: input.endpoint?.trim() || '',
+      endpoint: '',
       peers: [],
       updatedAt: new Date().toISOString(),
     };
     notes.push(tl('notes.vpn.ssKeysCreated'));
+  }
+  if (input.listenPort) state.listenPort = input.listenPort;
+  if (input.endpoint != null && String(input.endpoint).trim()) {
+    state.endpoint = String(input.endpoint).trim();
+  }
+
+  // Normalize / autofill public endpoint (reject "51820:8388" style typos)
+  let ep = parseSsEndpoint(state.endpoint, state.listenPort);
+  if (!ep.ok) {
+    const guessed = await guessSsEndpoint(host, state.listenPort);
+    if (guessed) {
+      state.endpoint = guessed;
+      ep = parseSsEndpoint(state.endpoint, state.listenPort);
+      notes.push(tl('notes.vpn.ssEndpointAutofilled', { endpoint: state.endpoint }));
+    } else {
+      notes.push(tl('notes.vpn.setEndpointHint'));
+    }
   } else {
-    if (input.listenPort) state.listenPort = input.listenPort;
-    if (input.endpoint != null) state.endpoint = input.endpoint.trim();
+    // Canonical host:port form
+    state.endpoint = `${ep.host}:${ep.port}`;
   }
   saveSsServer(dataDir, state);
 
@@ -174,26 +239,32 @@ export async function ensureSsServer(
     2,
   );
 
+  const port = state.listenPort;
   const apply = await host.runCommand(
     [
       'bash',
       '-c',
       [
+        'set -e',
         'mkdir -p /etc/shadowsocks-libev',
         `cat > ${JSON.stringify(confPath)} <<'YSKSS'`,
         conf,
         'YSKSS',
         'chmod 600 /etc/shadowsocks-libev/ysk.json',
-        // Package default unit binds 127.0.0.1 and steals the port — must yield to YSK
+        // Package default unit binds 127.0.0.1 and steals the port on every host
         'systemctl stop shadowsocks-libev.service 2>/dev/null || true',
         'systemctl disable shadowsocks-libev.service 2>/dev/null || true',
         'systemctl stop shadowsocks-libev@*.service 2>/dev/null || true',
+        // Mask so apt/reboot cannot revive localhost-only instance
+        'ln -sfn /dev/null /etc/systemd/system/shadowsocks-libev.service',
         'pkill -x ss-server 2>/dev/null || true',
-        'sleep 0.3',
+        'sleep 0.4',
         `cat > /etc/systemd/system/ysk-ss-server.service <<'EOF'`,
         '[Unit]',
-        'Description=YSK Shadowsocks server',
+        'Description=YSK Shadowsocks server (public bind)',
+        'Documentation=https://github.com/yanshekki/ysk-server',
         'After=network-online.target',
+        'Wants=network-online.target',
         'Conflicts=shadowsocks-libev.service',
         '[Service]',
         'Type=simple',
@@ -205,25 +276,39 @@ export async function ensureSsServer(
         'WantedBy=multi-user.target',
         'EOF',
         'systemctl daemon-reload',
-        'systemctl enable ysk-ss-server 2>/dev/null || true',
-        'systemctl reset-failed ysk-ss-server 2>/dev/null || true',
-        'systemctl restart ysk-ss-server',
-        // Verify public bind (not loopback-only)
-        `ss -lntu | grep -E ':${state.listenPort}\\b' | grep -vqE '127\\.0\\.0\\.1|\\[::1\\]' || { echo 'SS not bound on public interface' >&2; exit 1; }`,
+        'systemctl enable ysk-ss-server.service 2>/dev/null || true',
+        'systemctl reset-failed ysk-ss-server.service 2>/dev/null || true',
+        'systemctl restart ysk-ss-server.service',
+        'sleep 0.5',
+        // Must be publicly reachable — fail apply if only loopback
+        `ss -lntu | grep -E ':${port}\\b' | grep -vqE '127\\.0\\.0\\.1|\\[::1\\]' || { echo 'SS not bound on public interface (0.0.0.0)' >&2; ss -lntu | grep ${port} || true; exit 1; }`,
+        // UFW: tcp+udp (best-effort if ufw present)
+        `if command -v ufw >/dev/null 2>&1; then ufw allow ${port}/tcp comment 'ysk-vpn-ss' 2>/dev/null || true; ufw allow ${port}/udp comment 'ysk-vpn-ss' 2>/dev/null || true; fi`,
       ].join('\n'),
     ],
-    { timeoutMs: 45_000 },
+    { timeoutMs: 60_000 },
   );
   if (apply.exitCode !== 0) {
     notes.push(
       tl('notes.vpn.applyFailed', {
-        detail: (apply.stderr || apply.stdout || '').slice(0, 240),
+        detail: (apply.stderr || apply.stdout || '').slice(0, 320),
       }),
     );
     return { ok: false, notes };
   }
-  notes.push(tl('notes.vpn.ssServerActive', { port: String(state.listenPort) }));
+
+  notes.push(tl('notes.vpn.ssPackageYielded', { port: String(port) }));
+  notes.push(tl('notes.vpn.ssServerActive', { port: String(port) }));
+  notes.push(tl('notes.vpn.ssUfwOpened', { port: String(port) }));
+
+  const rewritten = rewriteAllSsClientUris(dataDir);
+  if (rewritten > 0) {
+    notes.push(tl('notes.vpn.ssClientsRewritten', { n: String(rewritten) }));
+  }
   notes.push(tl('notes.vpn.ssHonest'));
+  if (!parseSsEndpoint(state.endpoint, state.listenPort).ok) {
+    notes.push(tl('notes.vpn.setEndpointHint'));
+  }
   return { ok: true, notes };
 }
 
@@ -283,28 +368,26 @@ export function getSsPeerConfig(
   dataDir: string,
   peerId: string,
 ): { config: string; filename: string } | null {
-  const p = join(ssServerDir(dataDir), 'clients', `${peerId}.txt`);
-  if (!existsSync(p)) {
-    // regenerate from server state + peer name
-    const state = loadSsServer(dataDir);
-    if (!state) return null;
-    const peer = state.peers.find((x) => x.id === peerId);
-    if (!peer) return null;
-    const ep = parseSsEndpoint(state.endpoint, state.listenPort);
-    const uri = buildSsUri({
-      method: state.method,
-      password: state.password,
-      host: ep.host,
-      port: ep.port,
-      name: peer.name,
-    });
-    return { config: uri + '\n', filename: `${peer.name}.txt` };
-  }
-  let name = peerId;
   const state = loadSsServer(dataDir);
-  const peer = state?.peers.find((x) => x.id === peerId);
-  if (peer) name = peer.name;
-  return { config: readFileSync(p, 'utf8'), filename: `${name}.txt` };
+  if (!state) return null;
+  const peer = state.peers.find((x) => x.id === peerId);
+  if (!peer) return null;
+  // Always regenerate from current server.json (endpoint/password may have changed)
+  const ep = parseSsEndpoint(state.endpoint, state.listenPort);
+  const uri = buildSsUri({
+    method: state.method,
+    password: state.password,
+    host: ep.host,
+    port: ep.port,
+    name: peer.name,
+  });
+  try {
+    mkdirSync(join(ssServerDir(dataDir), 'clients'), { recursive: true });
+    writeFileSync(join(ssServerDir(dataDir), 'clients', `${peerId}.txt`), uri + '\n', 'utf8');
+  } catch {
+    /* best-effort cache */
+  }
+  return { config: uri + '\n', filename: `${peer.name}.txt` };
 }
 
 export async function deleteSsPeer(

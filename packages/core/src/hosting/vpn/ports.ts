@@ -25,8 +25,8 @@ export const VPN_PORT_PRESETS: readonly VpnPortPreset[] = [
   {
     engine: 'outline',
     port: 8388,
-    proto: 'tcp',
-    label: 'Outline/SS 8388/tcp',
+    proto: 'both',
+    label: 'Outline/SS 8388/tcp+udp',
     recommended: true,
   },
 ] as const;

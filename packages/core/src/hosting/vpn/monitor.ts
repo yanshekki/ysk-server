@@ -377,7 +377,8 @@ export async function probeServerActive(
     [
       'bash',
       '-c',
-      'systemctl is-active --quiet shadowsocks-libev 2>/dev/null || systemctl is-active --quiet ss-server 2>/dev/null || pgrep -x ss-server >/dev/null',
+      // YSK unit = healthy. Do NOT treat package shadowsocks-libev (often localhost-only) as up.
+      "systemctl is-active --quiet ysk-ss-server.service 2>/dev/null || systemctl is-active --quiet ysk-ss-server 2>/dev/null || { pgrep -x ss-server >/dev/null 2>&1 && ss -lntup 2>/dev/null | grep -F ss-server | grep -vqE '127\\.0\\.0\\.1|\\[::1\\]'; }",
     ],
     { timeoutMs: 8_000 },
   );

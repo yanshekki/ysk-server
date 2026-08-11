@@ -7547,7 +7547,11 @@
       "ssHonest": "shadowsocks-libev の ss-server を使用します — 完全な Outline Manager ではありません。",
       "ssKeysCreated": "Shadowsocks サーバーのパスワードを生成しました。",
       "ssServerActive": "Shadowsocks サーバーを適用しました（ポート {{port}}）。",
-      "ssSharedPassword": "すべての ss:// ラベルは同一のサーバーパスワードを共有します（サーバーを再適用してローテーション）。"
+      "ssSharedPassword": "すべての ss:// ラベルは同一のサーバーパスワードを共有します（サーバーを再適用してローテーション）。",
+      "ssPackageYielded": "Stopped/masked Debian shadowsocks-libev default unit so YSK can bind public {{port}} on this host.",
+      "ssEndpointAutofilled": "Public endpoint set to {{endpoint}}.",
+      "ssClientsRewritten": "Regenerated {{n}} client ss:// URI(s) for current endpoint/password.",
+      "ssUfwOpened": "Opened UFW {{port}}/tcp+udp for Shadowsocks (if ufw installed)."
     },
     "vnc": {
       "needInstall": "{{stack}} をインストール",
