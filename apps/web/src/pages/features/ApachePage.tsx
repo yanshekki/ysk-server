@@ -497,8 +497,26 @@ export function ApachePage() {
                   </Button>
                 </>
               ) : null}
+              {r.source === 'project' ? (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  loading={busy}
+                  onClick={() => void onPreviewConf(r)}
+                >
+                  {t('apache.previewConf')}
+                </Button>
+              ) : null}
               {isStandalone(r) ? (
                 <>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={busy}
+                    onClick={() => void onPreviewConf(r)}
+                  >
+                    {t('apache.previewConf')}
+                  </Button>
                   <Button variant="secondary" size="sm" onClick={() => openSiteSettings(r)}>
                     {t('apache.siteSettings')}
                   </Button>
