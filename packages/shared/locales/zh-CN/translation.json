@@ -11184,7 +11184,8 @@
       "screenshot": "截图",
       "screenshotSaved": "已下载截图",
       "screenshotFailed": "截图失败",
-      "screenshotNoCanvas": "画面未就绪，无法截图"
+      "screenshotNoCanvas": "画面未就绪，无法截图",
+      "minting_state": "Preparing"
     },
     "installHint": "TigerVNC → noVNC；XFCE 可选",
     "needTigerVnc": "需 TigerVNC",
