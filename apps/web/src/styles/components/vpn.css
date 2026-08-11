@@ -218,26 +218,29 @@ html.dark .vpn-cfg__qr-wrap {
   color: var(--text-sub, #64748b);
 }
 
-/* Single-row filter bar inside DataTable toolbar */
+/* Single-row filter bar (DataTable filters slot) — never stack refresh under chips */
 .vpn-monitor-bar {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 0.4rem 0.55rem;
   width: 100%;
   min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
 
 /* SegRadio defaults to width:100% — force inline chips here */
 .vpn-monitor-bar .seg-radios {
   width: auto;
-  flex: 0 1 auto;
-  max-width: 100%;
+  flex: 0 0 auto;
+  max-width: none;
 }
 
 .vpn-monitor-bar__spacer {
-  flex: 1 1 0.5rem;
-  min-width: 0.25rem;
+  flex: 1 1 auto;
+  min-width: 0.5rem;
 }
 
 .vpn-monitor-bar__live {
@@ -246,6 +249,12 @@ html.dark .vpn-cfg__qr-wrap {
   gap: 0.3rem;
   font-size: var(--text-xs, 0.75rem);
   color: var(--text-sub, #64748b);
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.vpn-monitor-bar > .btn {
+  flex: 0 0 auto;
   white-space: nowrap;
 }
 
@@ -256,6 +265,23 @@ html.dark .vpn-cfg__qr-wrap {
   background: var(--color-success, #16a34a);
   box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.18);
   flex-shrink: 0;
+}
+
+.vpn-monitor-bar__dot.is-busy,
+.vpn-monitor-bar--busy .vpn-monitor-bar__dot {
+  animation: vpn-monitor-pulse 0.9s ease-in-out infinite;
+}
+
+@keyframes vpn-monitor-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.85);
+  }
 }
 
 /* —— Software check / update tab —— */

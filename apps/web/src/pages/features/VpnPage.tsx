@@ -698,8 +698,10 @@ export function VpnPage() {
                   return true;
                 }).length,
               })}
-              toolbar={
-                <div className="vpn-monitor-bar">
+              filters={
+                <div
+                  className={`vpn-monitor-bar${monBusy ? ' vpn-monitor-bar--busy' : ''}`}
+                >
                   <SegRadio
                     name="mon-eng"
                     size="sm"
@@ -725,21 +727,28 @@ export function VpnPage() {
                       { value: 'offline', label: t('vpn.monitor.presenceOffline') },
                     ]}
                   />
-                  <span className="vpn-monitor-bar__spacer" />
-                  <span className="vpn-monitor-bar__live" title={t('vpn.monitor.autoRefresh')}>
-                    <span className="vpn-monitor-bar__dot" aria-hidden />
+                  <span className="vpn-monitor-bar__spacer" aria-hidden />
+                  <span
+                    className="vpn-monitor-bar__live"
+                    title={t('vpn.monitor.autoRefresh')}
+                  >
+                    <span
+                      className={`vpn-monitor-bar__dot${monBusy ? ' is-busy' : ''}`}
+                      aria-hidden
+                    />
                     {t('vpn.monitor.autoRefresh')}
                     {monitor?.sampledAt ? (
                       <span className="muted">
-                        {' '}
-                        · {formatVpnWhen(monitor.sampledAt)}
+                        {' · '}
+                        {formatVpnWhen(monitor.sampledAt)}
                       </span>
                     ) : null}
                   </span>
+                  {/* Keep label fixed — never swap to「處理中」on a new line */}
                   <Button
                     size="sm"
                     variant="ghost"
-                    loading={monBusy}
+                    disabled={monBusy}
                     onClick={() => void loadMonitor()}
                   >
                     {t('vpn.refresh')}
