@@ -95,7 +95,14 @@
     "screenshotSaved": "已下载截图",
     "screenshotFailed": "截图失败",
     "screenshotNoCanvas": "画面未就绪，无法截图",
-    "minting_state": "Preparing"
+    "record": "录屏",
+    "recordStop": "停止录屏",
+    "recordHint": "录制桌面为 WebM（最长 60 秒）",
+    "recordStarted": "录屏中… 点「停止录屏」或等待 60 秒",
+    "recordSaved": "已下载录屏",
+    "recordFailed": "录屏失败",
+    "recordUnsupported": "此浏览器不支持 canvas 录屏",
+    "minting_state": "准备中"
   },
   "installHint": "TigerVNC → noVNC；XFCE 可选",
   "needTigerVnc": "需 TigerVNC",
