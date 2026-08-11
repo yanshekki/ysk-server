@@ -78,9 +78,10 @@ async function acceptVncClient(
   try {
     tcp = await openTcp(rec.rfbHost, rec.rfbPort);
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
+    const code = classifyTcpError(e, rec.rfbHost, rec.rfbPort);
     try {
-      ws.close(4502, msg.slice(0, 120));
+      // reason is visible to browser CloseEvent.reason (≤123 UTF-8 bytes)
+      ws.close(4502, code);
     } catch {
       /* */
     }
@@ -144,10 +145,29 @@ function openTcp(host: string, port: number): Promise<NetSocket> {
     });
     sock.setTimeout(CONNECT_TIMEOUT_MS, () => {
       sock.destroy();
-      reject(new Error(`RFB connect timeout ${host}:${port}`));
+      reject(Object.assign(new Error(`timeout ${host}:${port}`), { code: 'ETIMEDOUT' }));
     });
     sock.on('error', (err) => reject(err));
   });
+}
+
+/** Stable short codes for browser i18n mapping (ws close reason). */
+function classifyTcpError(e: unknown, host: string, port: number): string {
+  const err = e as NodeJS.ErrnoException;
+  const code = String(err?.code || '');
+  if (code === 'ECONNREFUSED' || /refused/i.test(err?.message || '')) {
+    return `rfb_refused:${host}:${port}`.slice(0, 120);
+  }
+  if (code === 'ETIMEDOUT' || code === 'EHOSTUNREACH' || /timeout/i.test(err?.message || '')) {
+    return `rfb_timeout:${host}:${port}`.slice(0, 120);
+  }
+  if (code === 'ENOTFOUND' || code === 'EAI_AGAIN') {
+    return `rfb_dns:${host}`.slice(0, 120);
+  }
+  if (code === 'ENETUNREACH') {
+    return `rfb_net:${host}:${port}`.slice(0, 120);
+  }
+  return `rfb_error:${(err?.message || 'unknown').slice(0, 80)}`;
 }
 
 function cleanup(sessionId: string, code: number, reason: string): void {

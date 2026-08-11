@@ -47,6 +47,46 @@ function wsUrlFromPath(wsPath: string): string {
   return u.toString();
 }
 
+/** Map server WS close reason / API errors to user-facing copy. */
+function friendlyFailMessage(
+  t: (key: string, opts?: Record<string, string>) => string,
+  raw: string,
+): string {
+  const s = (raw || '').trim();
+  if (!s) return t('vnc.viewer.error');
+  if (/blocked|YSK_EXECUTE|requiresExecute|viewerNeedExecute/i.test(s)) {
+    return t('vnc.viewer.errNeedExecute');
+  }
+  if (/ticket|unauthorized|4401|expired/i.test(s)) {
+    return t('vnc.viewer.errTicket');
+  }
+  if (/busy|4429|too many/i.test(s)) {
+    return t('vnc.viewer.errBusy');
+  }
+  const refused = s.match(/^rfb_refused:(.+):(\d+)/);
+  if (refused) {
+    return t('vnc.viewer.errRefused', { host: refused[1]!, port: refused[2]! });
+  }
+  const timeout = s.match(/^rfb_timeout:(.+):(\d+)/);
+  if (timeout) {
+    return t('vnc.viewer.errTimeout', { host: timeout[1]!, port: timeout[2]! });
+  }
+  const dns = s.match(/^rfb_dns:(.+)/);
+  if (dns) {
+    return t('vnc.viewer.errDns', { host: dns[1]! });
+  }
+  const net = s.match(/^rfb_net:(.+):(\d+)/);
+  if (net) {
+    return t('vnc.viewer.errNet', { host: net[1]!, port: net[2]! });
+  }
+  if (/ECONNREFUSED|refused/i.test(s)) return t('vnc.viewer.errRefusedGeneric');
+  if (/ETIMEDOUT|timeout/i.test(s)) return t('vnc.viewer.errTimeoutGeneric');
+  if (/ENOTFOUND|getaddrinfo/i.test(s)) return t('vnc.viewer.errDnsGeneric');
+  if (/auth|password|security/i.test(s)) return t('vnc.viewer.securityFailure');
+  // Keep short technical detail as secondary line when no map
+  return s.length > 160 ? `${s.slice(0, 160)}…` : s;
+}
+
 export function VncViewer({ target, createSession, onClose }: Props) {
   const { t } = useTranslation();
   const screenRef = useRef<HTMLDivElement>(null);
@@ -110,24 +150,37 @@ export function VncViewer({ target, createSession, onClose }: Props) {
         setNeedPassword(false);
       });
       rfb.addEventListener('disconnect', (ev: Event) => {
-        const detail = (ev as CustomEvent<{ clean?: boolean }>).detail;
-        setState(detail?.clean ? 'closed' : 'error');
-        setStatusText(
-          detail?.clean
-            ? t('vnc.viewer.disconnected')
-            : t('vnc.viewer.error'),
-        );
+        const detail = (
+          ev as CustomEvent<{ clean?: boolean; reason?: string }>
+        ).detail;
+        const clean = Boolean(detail?.clean);
+        setState(clean ? 'closed' : 'error');
+        if (clean) {
+          setStatusText(t('vnc.viewer.disconnected'));
+        } else {
+          const reason = detail?.reason || '';
+          const msg = friendlyFailMessage(t, reason) || t('vnc.viewer.error');
+          setStatusText(t('vnc.viewer.error'));
+          setError(msg);
+        }
         rfbRef.current = null;
       });
       rfb.addEventListener('credentialsrequired', () => {
         setNeedPassword(true);
         setState('connecting');
         setStatusText(t('vnc.viewer.passwordPrompt'));
+        setError(t('vnc.viewer.passwordPromptHint'));
       });
       rfb.addEventListener('securityfailure', (ev: Event) => {
         const detail = (ev as CustomEvent<{ status?: number; reason?: string }>).detail;
-        setError(detail?.reason || t('vnc.viewer.securityFailure'));
+        setError(
+          friendlyFailMessage(
+            t,
+            detail?.reason || t('vnc.viewer.securityFailure'),
+          ),
+        );
         setState('error');
+        setStatusText(t('vnc.viewer.securityFailure'));
       });
       // Remote → browser clipboard
       rfb.addEventListener('clipboard', (ev: Event) => {
@@ -156,7 +209,8 @@ export function VncViewer({ target, createSession, onClose }: Props) {
       }
     } catch (e) {
       setState('error');
-      setError(e instanceof Error ? e.message : t('vnc.viewer.error'));
+      const raw = e instanceof Error ? e.message : String(e);
+      setError(friendlyFailMessage(t, raw));
       setStatusText(t('vnc.viewer.error'));
     }
   }, [createSession, password, qualityPreset, scale, t, target]);
