@@ -21,7 +21,7 @@ export interface YskConfig {
   tlsEnabled?: boolean;
   tlsCertPath?: string;
   tlsKeyPath?: string;
-  /** Domain used for panel LE / URL hints (e.g. hermes.ysk.hk) */
+  /** Domain used for panel LE / URL hints (e.g. demo.ysk.hk) */
   panelDomain?: string;
   /**
    * When TLS is on, also bind plain HTTP on this port (default listenPort-1 if > 1024).

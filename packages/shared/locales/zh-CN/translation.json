@@ -10308,7 +10308,7 @@
       "title": "面板 HTTPS",
       "sub": "控制面（ysk-server）以 TLS 监听 listenPort；WebAuthn／Passkey 需要 HTTPS",
       "domain": "面板域名",
-      "domainHint": "用于申请／绑定证书，例如 hermes.ysk.hk",
+      "domainHint": "用于申请／绑定证书，例如 demo.ysk.hk",
       "email": "Let’s Encrypt 邮箱",
       "status": "状态",
       "enabled": "配置已开 TLS",

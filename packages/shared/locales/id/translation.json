@@ -10302,7 +10302,7 @@
       "title": "HTTPS panel",
       "sub": "Control plane (ysk-server) melayani TLS di listenPort; WebAuthn/Passkeys membutuhkan HTTPS",
       "domain": "Domain panel",
-      "domainHint": "Digunakan untuk penerbitan/bind sertifikat, mis. hermes.ysk.hk",
+      "domainHint": "Digunakan untuk penerbitan/bind sertifikat, mis. demo.ysk.hk",
       "email": "Email Let’s Encrypt",
       "status": "Status",
       "enabled": "TLS diaktifkan di config",

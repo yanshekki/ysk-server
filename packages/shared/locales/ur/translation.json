@@ -10302,7 +10302,7 @@
       "title": "پینل HTTPS",
       "sub": "کنٹرول پلین (ysk-server) listenPort پر TLS فراہم کرتا ہے؛ WebAuthn/Passkeys کو HTTPS درکار",
       "domain": "پینل ڈومین",
-      "domainHint": "سرٹیفکیٹ اجراء/بائنڈ کے لیے، مثلاً hermes.ysk.hk",
+      "domainHint": "سرٹیفکیٹ اجراء/بائنڈ کے لیے، مثلاً demo.ysk.hk",
       "email": "Let’s Encrypt ای میل",
       "status": "حیثیت",
       "enabled": "config میں TLS فعال",

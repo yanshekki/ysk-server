@@ -10302,7 +10302,7 @@
       "title": "पैनल HTTPS",
       "sub": "कंट्रोल प्लेन (ysk-server) listenPort पर TLS प्रदान करता है; WebAuthn/Passkeys को HTTPS की आवश्यकता है",
       "domain": "पैनल डोमेन",
-      "domainHint": "प्रमाणपत्र जारी/बाइंड के लिए उपयोग, उदा. hermes.ysk.hk",
+      "domainHint": "प्रमाणपत्र जारी/बाइंड के लिए उपयोग, उदा. demo.ysk.hk",
       "email": "Let’s Encrypt ईमेल",
       "status": "स्थिति",
       "enabled": "config में TLS सक्षम",

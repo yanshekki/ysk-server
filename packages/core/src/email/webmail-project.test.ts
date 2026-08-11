@@ -316,15 +316,15 @@ describe('webmail-project helpers', () => {
   });
 
   it('resolves mail endpoints from webmail2 host and mailDomain', () => {
-    expect(stripWebmailHostnamePrefix('webmail2.hermes.ysk.hk')).toBe('hermes.ysk.hk');
-    expect(defaultImapHostForWebmail('webmail2.hermes.ysk.hk')).toBe('mail.hermes.ysk.hk');
-    expect(defaultImapHostForWebmail('hermes.ysk.hk')).toBe('mail.hermes.ysk.hk');
+    expect(stripWebmailHostnamePrefix('webmail2.demo.ysk.hk')).toBe('demo.ysk.hk');
+    expect(defaultImapHostForWebmail('webmail2.demo.ysk.hk')).toBe('mail.demo.ysk.hk');
+    expect(defaultImapHostForWebmail('demo.ysk.hk')).toBe('mail.demo.ysk.hk');
     const ep = resolveWebmailMailEndpoints({
-      webmailDomain: 'webmail.hermes.ysk.hk',
-      mailDomain: 'hermes.ysk.hk',
+      webmailDomain: 'webmail.demo.ysk.hk',
+      mailDomain: 'demo.ysk.hk',
     });
-    expect(ep.mailDomain).toBe('hermes.ysk.hk');
-    expect(ep.imapHost).toBe('mail.hermes.ysk.hk');
-    expect(ep.smtpHost).toBe('mail.hermes.ysk.hk');
+    expect(ep.mailDomain).toBe('demo.ysk.hk');
+    expect(ep.imapHost).toBe('mail.demo.ysk.hk');
+    expect(ep.smtpHost).toBe('mail.demo.ysk.hk');
   });
 });

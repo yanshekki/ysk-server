@@ -10302,7 +10302,7 @@
       "title": "패널 HTTPS",
       "sub": "컨트롤 플레인(ysk-server)이 listenPort에서 TLS 제공; WebAuthn/Passkeys는 HTTPS 필요",
       "domain": "패널 도메인",
-      "domainHint": "인증서 발급/바인딩에 사용, 예: hermes.ysk.hk",
+      "domainHint": "인증서 발급/바인딩에 사용, 예: demo.ysk.hk",
       "email": "Let’s Encrypt 이메일",
       "status": "상태",
       "enabled": "설정에서 TLS 사용",

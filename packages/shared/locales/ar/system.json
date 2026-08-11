@@ -41,7 +41,7 @@
     "title": "HTTPS اللوحة",
     "sub": "مستوى التحكم (ysk-server) يقدّم TLS على listenPort؛ WebAuthn/Passkeys تحتاج HTTPS",
     "domain": "نطاق اللوحة",
-    "domainHint": "يُستخدم لإصدار/ربط الشهادة، مثل hermes.ysk.hk",
+    "domainHint": "يُستخدم لإصدار/ربط الشهادة، مثل demo.ysk.hk",
     "email": "بريد Let’s Encrypt الإلكتروني",
     "status": "الحالة",
     "enabled": "TLS مفعّل في الإعدادات",

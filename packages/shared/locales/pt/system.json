@@ -41,7 +41,7 @@
     "title": "HTTPS do painel",
     "sub": "O plano de controlo (ysk-server) serve TLS em listenPort; WebAuthn/Passkeys precisam de HTTPS",
     "domain": "Domínio do painel",
-    "domainHint": "Usado para emissão/associação de certificado, ex. hermes.ysk.hk",
+    "domainHint": "Usado para emissão/associação de certificado, ex. demo.ysk.hk",
     "email": "E-mail Let’s Encrypt",
     "status": "Estado",
     "enabled": "TLS ativado na configuração",

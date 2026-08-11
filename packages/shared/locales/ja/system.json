@@ -41,7 +41,7 @@
     "title": "パネルHTTPS",
     "sub": "コントロールプレーン（ysk-server）は listenPort で TLS を提供。WebAuthn/Passkeys には HTTPS が必要",
     "domain": "パネルドメイン",
-    "domainHint": "証明書の発行/バインドに使用されます（例： hermes.ysk.hk ）",
+    "domainHint": "証明書の発行/バインドに使用されます（例： demo.ysk.hk ）",
     "email": "メールを暗号化しましょう",
     "status": "状態",
     "enabled": "構成でTLSが有効になっている",

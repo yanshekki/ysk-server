@@ -10,14 +10,14 @@ import {
 
 describe('vpn endpoint-sync', () => {
   it('rewrites port keeping host', () => {
-    expect(syncEndpointPort('hermes.ysk.hk:51820', 51821, 'x')).toBe(
-      'hermes.ysk.hk:51821',
+    expect(syncEndpointPort('demo.ysk.hk:51820', 51821, 'x')).toBe(
+      'demo.ysk.hk:51821',
     );
   });
 
   it('uses fallback when empty', () => {
-    expect(syncEndpointPort('', 51820, 'hermes.ysk.hk')).toBe(
-      'hermes.ysk.hk:51820',
+    expect(syncEndpointPort('', 51820, 'demo.ysk.hk')).toBe(
+      'demo.ysk.hk:51820',
     );
   });
 

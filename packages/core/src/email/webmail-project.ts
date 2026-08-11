@@ -598,7 +598,7 @@ async function installSnappyMail(input: {
   mkdirSync(tmpDir, { recursive: true });
   // Official release may be: flat index.php, snappymail-X/, or public_html/.
   // Prefer public_html when present — root index.php is often only a stub that says
-  // "point HTTP server to /public_html" (what operators saw on webmail.hermes.ysk.hk).
+  // "point HTTP server to /public_html" (what operators saw on webmail.demo.ysk.hk).
   const script = [
     `set -euo pipefail`,
     `curl -fsSL ${JSON.stringify(SNAPPYMAIL_URL)} -o ${JSON.stringify(tmp)}`,
