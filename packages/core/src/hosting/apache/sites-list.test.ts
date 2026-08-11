@@ -74,6 +74,36 @@ DocumentRoot /var/www/orphan
     expect(rows.filter((r) => r.confPath?.endsWith('ysk-phpuser.conf'))).toHaveLength(1);
     expect(rows.some((r) => r.id === 'artifact:orphan.conf')).toBe(true);
 
+    // Same ServerName as project → conflict on both project + artifact
+    writeFileSync(
+      join(sitesDir, 'stale-app.conf'),
+      `ServerName app.example.com
+DocumentRoot /var/www/stale
+`,
+      'utf8',
+    );
+    const withClash = listMergedApacheSites({
+      dataDir: dir,
+      projects: [
+        {
+          id: 'p1',
+          name: 'PHP App',
+          domain: 'app.example.com',
+          runtime: 'php',
+          linux_user: 'phpuser',
+          home_dir: '/home/phpuser',
+          doc_root: 'app/public',
+        },
+      ],
+    });
+    const clashRows = withClash.filter((r) => r.serverName === 'app.example.com');
+    expect(clashRows.length).toBeGreaterThanOrEqual(2);
+    expect(clashRows.every((r) => r.conflict === true)).toBe(true);
+    expect(withClash.find((r) => r.id === 'artifact:stale-app.conf')?.owned).toBe(
+      false,
+    );
+    expect(withClash.find((r) => r.id === 'project:p1')?.owned).toBe(true);
+
     rmSync(dir, { recursive: true, force: true });
   });
 

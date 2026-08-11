@@ -87,6 +87,8 @@ export async function applyApacheSettings(opts: {
   dataDir: string;
   host: HostExecutor;
   patch?: Partial<ApacheGlobalSettings>;
+  /** PHP projects (for owned conf basenames). */
+  projects?: Array<Record<string, unknown>>;
 }): Promise<{
   ok: boolean;
   settings: ApacheGlobalSettings;
@@ -115,7 +117,16 @@ export async function applyApacheSettings(opts: {
     };
   }
   const { syncApacheConfigs } = await import('./sync.js');
-  const sync = await syncApacheConfigs({ dataDir: opts.dataDir, host: opts.host });
+  const { listOwnedApacheConfBasenames } = await import('./sites-list.js');
+  const onlyBasenames = listOwnedApacheConfBasenames({
+    dataDir: opts.dataDir,
+    projects: opts.projects ?? [],
+  });
+  const sync = await syncApacheConfigs({
+    dataDir: opts.dataDir,
+    host: opts.host,
+    onlyBasenames,
+  });
   notes.push(...sync.notes.slice(0, 4));
   return {
     ok: sync.ok,

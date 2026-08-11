@@ -43,5 +43,15 @@
   "setForceHttps": "強制 HTTPS",
   "setHsts": "HSTS",
   "setIndexes": "目錄列表",
-  "bodyInherit": "跟隨全域"
+  "bodyInherit": "跟隨全域",
+  "conflict": "域名衝突",
+  "conflictHint": "同一域名有多個來源。請保留專案／獨立站列，並移除磁碟殘留。",
+  "removeArtifact": "移除殘留",
+  "removeArtifactTitle": "移除殘留 conf？",
+  "removeArtifactDesc": "刪除此未認領的 Apache conf（面板 dataDir），並在可能時停用系統副本。不會刪除專案。",
+  "previewConf": "預覽 conf",
+  "cleanupConflicts": "清理衝突殘留",
+  "cleanupConflictsTitle": "清理全部衝突殘留？",
+  "cleanupConflictsDesc": "移除所有與專案或獨立站 ServerName 衝突的磁碟 conf。專案列會保留。",
+  "artifactRemovedOk": "已移除殘留 conf"
 }

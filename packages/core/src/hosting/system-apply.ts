@@ -394,6 +394,8 @@ export async function applyPhpHosting(input: {
   poolName: string;
   host: HostExecutor;
   enableSite?: boolean;
+  /** Project list for owned-conf checks when retiring orphans. */
+  projects?: Array<Record<string, unknown>>;
 }): Promise<
   ApplyResult & {
     siteEnabled: boolean;
@@ -428,6 +430,22 @@ export async function applyPhpHosting(input: {
     `Apache backend ${bind}:${port} (Nginx proxies; FPM sock)`,
     `binary ${rt.binaryPath}`,
   ];
+  // Retire orphan dataDir confs with the same ServerName (not owned by other projects).
+  try {
+    const { retireOrphanApacheConfsForDomain } = await import('./apache/artifacts.js');
+    const retired = await retireOrphanApacheConfsForDomain({
+      dataDir: input.dataDir,
+      host: input.host,
+      domain: input.domain,
+      keepBasename: `ysk-${input.poolName}.conf`,
+      projects: input.projects ?? [],
+    });
+    notes.push(...retired.notes.slice(0, 6));
+  } catch (e) {
+    notes.push(
+      `orphan retire skipped: ${e instanceof Error ? e.message : String(e)}`,
+    );
+  }
   const commands: string[][] = [];
   if (input.enableSite) {
     // Ensure Apache listens only on backend (not public :80)

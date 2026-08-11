@@ -4,7 +4,7 @@
 
 import { randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { ErrorCodes, YskError, tl } from '@ysk/shared';
 import type { HostExecutor } from '../../host/executor.js';
 import { renderApacheSite } from './render-site.js';
@@ -168,7 +168,20 @@ export async function applyApacheSite(opts: {
     };
   }
 
-  const sync = await syncApacheConfigs({ dataDir: opts.dataDir, host: opts.host });
+  // Standalone apply: only push this site's conf (+ other standalone records),
+  // never unclaimed orphan artifacts (ServerName clash risk).
+  const onlyBasenames = new Set<string>([basename(confPath)]);
+  for (const s of listApacheSites(opts.dataDir)) {
+    if (s.confPath) {
+      const b = basename(s.confPath);
+      if (b.endsWith('.conf')) onlyBasenames.add(b);
+    }
+  }
+  const sync = await syncApacheConfigs({
+    dataDir: opts.dataDir,
+    host: opts.host,
+    onlyBasenames,
+  });
   notes.push(...sync.notes.slice(0, 5));
   const final = updateApacheSite(opts.dataDir, rec.id, {
     confPath,

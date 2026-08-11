@@ -69,6 +69,13 @@ export function ApachePage() {
   const [sHsts, setSHsts] = useState(false);
   const [sBody, setSBody] = useState<ApacheBodySize | 'inherit'>('inherit');
   const [sIdx, setSIdx] = useState(false);
+  const [artifactDelId, setArtifactDelId] = useState<string | null>(null);
+  const [cleanupOpen, setCleanupOpen] = useState(false);
+  const [preview, setPreview] = useState<{
+    title: string;
+    path: string | null;
+    content: string;
+  } | null>(null);
 
   const refresh = useCallback(async () => {
     setError(null);
@@ -205,6 +212,72 @@ export function ApachePage() {
     setSIdx(Boolean(s.indexes));
   };
 
+  const onPreviewConf = async (s: ApacheSite) => {
+    setBusy(true);
+    try {
+      const r = await apacheApi.getConf(s.id);
+      setPreview({
+        title: s.serverName,
+        path: r.path,
+        content: r.content || '—',
+      });
+    } catch (e) {
+      notifyWarn(e instanceof Error ? e.message : t('common.loadFailed'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onRemoveArtifact = async (id: string) => {
+    setBusy(true);
+    try {
+      const r = await apacheApi.removeArtifact(id);
+      if (r.ok !== false) {
+        notifyOk(
+          String(
+            (r.notes as string[] | undefined)?.[0] ?? t('apache.artifactRemovedOk'),
+          ),
+        );
+      } else {
+        notifyWarn(
+          String((r.notes as string[] | undefined)?.[0] ?? t('common.opFailed')),
+        );
+      }
+      setArtifactDelId(null);
+      await refresh();
+    } catch (e) {
+      notifyWarn(e instanceof Error ? e.message : t('common.opFailed'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onCleanupConflicts = async () => {
+    setBusy(true);
+    try {
+      const r = await apacheApi.cleanupConflicts();
+      if (r.ok !== false) {
+        notifyOk(
+          String((r.notes as string[] | undefined)?.[0] ?? t('common.completed')),
+        );
+      } else {
+        notifyWarn(
+          String((r.notes as string[] | undefined)?.[0] ?? t('common.opFailed')),
+        );
+      }
+      setCleanupOpen(false);
+      await refresh();
+    } catch (e) {
+      notifyWarn(e instanceof Error ? e.message : t('common.opFailed'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const hasConflictArtifacts = sites.some(
+    (s) => s.conflict && s.source === 'artifact',
+  );
+
   const saveSiteSettings = async () => {
     if (!siteCfg) return;
     setBusy(true);
@@ -250,6 +323,15 @@ export function ApachePage() {
           <Button variant="secondary" size="sm" onClick={() => void refresh()}>
             {t('common.refresh')}
           </Button>
+          {hasConflictArtifacts ? (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setCleanupOpen(true)}
+            >
+              {t('apache.cleanupConflicts')}
+            </Button>
+          ) : null}
           <Button variant="secondary" size="sm" onClick={() => void openGlobal()}>
             {t('apache.globalSettings')}
           </Button>
@@ -300,7 +382,16 @@ export function ApachePage() {
             {
               key: 'server',
               header: t('apache.colServerName'),
-              render: (r) => <code className="inline">{r.serverName}</code>,
+              render: (r) => (
+                <span className="u-flex u-items-center u-gap-2 u-flex-wrap">
+                  <code className="inline">{r.serverName}</code>
+                  {r.conflict ? (
+                    <span title={t('apache.conflictHint')}>
+                      <Badge tone="danger">{t('apache.conflict')}</Badge>
+                    </span>
+                  ) : null}
+                </span>
+              ),
             },
             {
               key: 'source',
@@ -372,6 +463,25 @@ export function ApachePage() {
                 >
                   {t('apache.apply')}
                 </Button>
+              ) : null}
+              {r.source === 'artifact' ? (
+                <>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={busy}
+                    onClick={() => void onPreviewConf(r)}
+                  >
+                    {t('apache.previewConf')}
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => setArtifactDelId(r.id)}
+                  >
+                    {t('apache.removeArtifact')}
+                  </Button>
+                </>
               ) : null}
               {isStandalone(r) ? (
                 <>
@@ -620,6 +730,51 @@ export function ApachePage() {
           danger
           busy={busy}
         />
+
+        <ConfirmDialog
+          open={Boolean(artifactDelId)}
+          onClose={() => setArtifactDelId(null)}
+          onConfirm={() => {
+            if (!artifactDelId) return;
+            void onRemoveArtifact(artifactDelId);
+          }}
+          title={t('apache.removeArtifactTitle')}
+          description={t('apache.removeArtifactDesc')}
+          confirmLabel={t('apache.removeArtifact')}
+          danger
+          busy={busy}
+        />
+
+        <ConfirmDialog
+          open={cleanupOpen}
+          onClose={() => setCleanupOpen(false)}
+          onConfirm={() => void onCleanupConflicts()}
+          title={t('apache.cleanupConflictsTitle')}
+          description={t('apache.cleanupConflictsDesc')}
+          confirmLabel={t('apache.cleanupConflicts')}
+          danger
+          busy={busy}
+        />
+
+        <Modal
+          open={Boolean(preview)}
+          onClose={() => setPreview(null)}
+          title={preview?.title ?? t('apache.previewConf')}
+          description={preview?.path ?? undefined}
+          size="xl"
+          footer={
+            <Button variant="secondary" size="md" onClick={() => setPreview(null)}>
+              {t('common.close')}
+            </Button>
+          }
+        >
+          <pre
+            className="u-code-block"
+            style={{ maxHeight: '60vh', overflow: 'auto', fontSize: 12 }}
+          >
+            {preview?.content ?? ''}
+          </pre>
+        </Modal>
       </WithPageGuide>
     </FeaturePageLayout>
   );

@@ -2934,6 +2934,19 @@
     "configOk": "configtest OK",
     "configFailed": "configtest failed: {{detail}}",
     "reloaded": "Apache reloaded",
-    "reloadFailed": "Reload failed"
+    "reloadFailed": "Reload failed",
+    "skippedOrphans": "Skipped {{count}} orphan conf(s) (not owned)",
+    "artifactInvalid": "Invalid artifact conf name",
+    "artifactOwned": "Conf {{file}} is owned by a project or standalone site",
+    "artifactNotFound": "Artifact conf not found: {{file}}",
+    "artifactRemoveFailed": "Failed to remove {{file}}: {{detail}}",
+    "artifactRemoved": "Removed orphan conf {{file}}",
+    "artifactSystemPending": "DataDir cleaned; system Apache twin needs YSK_EXECUTE/root to disable",
+    "artifactSystemDisabled": "Disabled system site {{site}}",
+    "artifactSystemFailed": "System disable failed: {{detail}}",
+    "conflictProjectsOnly": "Domain {{name}} is claimed by multiple projects — change a project domain",
+    "cleanupNothing": "No conflicting artifact confs to remove",
+    "conflictOwnedKeep": "Kept owned conf {{file}} (also ServerName {{domain}})",
+    "retiredOrphan": "Retired orphan conf {{file}} (ServerName clash with {{domain}})"
   }
 }

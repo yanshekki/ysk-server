@@ -17,6 +17,8 @@ import {
   applyPhpHosting,
   resolveProjectDocRoot,
   readApacheSiteConf,
+  removeApacheArtifact,
+  cleanupApacheServerNameConflicts,
   type ApacheSiteRow,
 } from '@ysk/core';
 import { ErrorCodes } from '@ysk/shared';
@@ -109,14 +111,44 @@ export async function handleApacheRoutes(
       return true;
     }
 
+    if (
+      method === 'POST' &&
+      url.pathname === '/api/v1/hosting/apache/sites/cleanup-conflicts'
+    ) {
+      const user = ctx.auth.authenticate(getBearer(req));
+      const projects = ctx.projects.list().map((p) => ({ ...p }) as Record<string, unknown>);
+      const result = await cleanupApacheServerNameConflicts({
+        dataDir: ctx.dataDir,
+        host: ctx.host,
+        projects,
+      });
+      ctx.audit.append({
+        actor: user.username,
+        action: 'apache.sites.cleanup_conflicts',
+        detail: { ok: result.ok, removed: result.removed },
+        ok: result.ok,
+      });
+      sendOpsResult(res, {
+        ...result,
+        apply_status: result.blocked
+          ? 'blocked'
+          : result.ok
+            ? 'applied'
+            : 'failed',
+      });
+      return true;
+    }
+
     if (method === 'POST' && url.pathname === '/api/v1/hosting/apache/settings/apply') {
       const user = ctx.auth.authenticate(getBearer(req));
       const raw = await readBody(req);
       const data = JSON.parse(raw || '{}') as Record<string, unknown>;
+      const projects = ctx.projects.list().map((p) => ({ ...p }) as Record<string, unknown>);
       const result = await applyApacheSettings({
         dataDir: ctx.dataDir,
         host: ctx.host,
         patch: Object.keys(data).length ? (data as never) : undefined,
+        projects,
       });
       ctx.audit.append({
         actor: user.username,
@@ -182,11 +214,54 @@ export async function handleApacheRoutes(
       }
 
       if (method === 'DELETE' && !action) {
-        if (id.startsWith('project:') || id.startsWith('artifact:')) {
+        if (id.startsWith('project:')) {
           sendJson(res, 400, {
             ok: false,
             code: ErrorCodes.VALIDATION,
-            message: 'Project/artifact Apache sites cannot be deleted here',
+            message: 'Project Apache sites are managed via the project',
+          });
+          return true;
+        }
+        if (id.startsWith('artifact:')) {
+          const user = ctx.auth.authenticate(getBearer(req));
+          const projects = ctx.projects
+            .list()
+            .map((p) => ({ ...p }) as Record<string, unknown>);
+          const result = await removeApacheArtifact({
+            dataDir: ctx.dataDir,
+            host: ctx.host,
+            fileOrId: id,
+            projects,
+          });
+          ctx.audit.append({
+            actor: user.username,
+            action: 'apache.artifact.remove',
+            resource: id,
+            detail: { ok: result.ok, removed: result.removed, code: result.code },
+            ok: result.ok,
+          });
+          if (!result.ok) {
+            const status =
+              result.code === 'not_found'
+                ? 404
+                : result.code === 'owned' || result.code === 'invalid'
+                  ? 409
+                  : 400;
+            sendJson(res, status, {
+              ok: false,
+              code: ErrorCodes.VALIDATION,
+              message: result.notes[0] ?? 'remove failed',
+              notes: result.notes,
+            });
+            return true;
+          }
+          sendOpsResult(res, {
+            ...result,
+            apply_status: result.blocked
+              ? 'blocked'
+              : result.ok
+                ? 'applied'
+                : 'failed',
           });
           return true;
         }
@@ -224,6 +299,9 @@ export async function handleApacheRoutes(
             home_dir: row.homeDir,
             doc_root: row.docRoot,
           } as Parameters<typeof resolveProjectDocRoot>[0]);
+          const projects = ctx.projects
+            .list()
+            .map((p) => ({ ...p }) as Record<string, unknown>);
           const result = await applyPhpHosting({
             dataDir: ctx.dataDir,
             domain,
@@ -233,6 +311,7 @@ export async function handleApacheRoutes(
             poolName: row.linuxUser,
             host: ctx.host,
             enableSite: true,
+            projects,
           });
           ctx.audit.append({
             actor: user.username,

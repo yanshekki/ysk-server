@@ -11,6 +11,12 @@ export async function syncApacheConfigs(opts: {
   dataDir: string;
   host: HostExecutor;
   dryRun?: boolean;
+  /**
+   * When set, only these basenames under apache/sites are pushed to the system.
+   * Orphan / artifact confs must not be enabled (ServerName clash risk).
+   * When omitted, all `*.conf` are synced (legacy); prefer passing owned set.
+   */
+  onlyBasenames?: Iterable<string>;
 }): Promise<{
   ok: boolean;
   notes: string[];
@@ -18,15 +24,25 @@ export async function syncApacheConfigs(opts: {
   blocked?: boolean;
   requiresExecute?: boolean;
   tested?: boolean;
+  skippedOrphans?: number;
 }> {
   const sourceDir = join(opts.dataDir, 'apache', 'sites');
   const confd = join(opts.dataDir, 'apache', 'conf.d');
   mkdirSync(sourceDir, { recursive: true });
   mkdirSync(confd, { recursive: true });
   const notes = [tl('notes.apache.managedDir', { path: sourceDir })];
-  const files = existsSync(sourceDir)
+  const allFiles = existsSync(sourceDir)
     ? readdirSync(sourceDir).filter((f) => f.endsWith('.conf'))
     : [];
+  const allow =
+    opts.onlyBasenames != null ? new Set(opts.onlyBasenames) : null;
+  const files = allow
+    ? allFiles.filter((f) => allow.has(f))
+    : allFiles;
+  const skippedOrphans = allow ? allFiles.length - files.length : 0;
+  if (skippedOrphans > 0) {
+    notes.push(tl('notes.apache.skippedOrphans', { count: skippedOrphans }));
+  }
   const globals = existsSync(confd)
     ? readdirSync(confd).filter((f) => f.endsWith('.conf'))
     : [];
@@ -43,6 +59,7 @@ export async function syncApacheConfigs(opts: {
       copied: [],
       blocked: !opts.host.executeEnabled(),
       requiresExecute: !opts.host.executeEnabled(),
+      skippedOrphans,
     };
   }
 
@@ -136,7 +153,7 @@ export async function syncApacheConfigs(opts: {
         }),
   );
   if (!tested) {
-    return { ok: false, notes, copied, tested: false };
+    return { ok: false, notes, copied, tested: false, skippedOrphans };
   }
 
   const unit = isDebian ? 'apache2' : 'httpd';
@@ -146,7 +163,13 @@ export async function syncApacheConfigs(opts: {
   if (rel.exitCode === 0) notes.push(tl('notes.apache.reloaded'));
   else notes.push(tl('notes.apache.reloadFailed'));
 
-  return { ok: rel.exitCode === 0, notes, copied, tested: true };
+  return {
+    ok: rel.exitCode === 0,
+    notes,
+    copied,
+    tested: true,
+    skippedOrphans,
+  };
 }
 
 async function binOk(host: HostExecutor, bin: string): Promise<boolean> {

@@ -2934,6 +2934,19 @@
     "configOk": "configtest 通过",
     "configFailed": "configtest 失败：{{detail}}",
     "reloaded": "Apache 已 reload",
-    "reloadFailed": "reload 失败"
+    "reloadFailed": "reload 失败",
+    "skippedOrphans": "已跳过 {{count}} 个未认领 conf",
+    "artifactInvalid": "无效的残留 conf 名称",
+    "artifactOwned": "conf {{file}} 归项目或独立站所有",
+    "artifactNotFound": "找不到残留 conf：{{file}}",
+    "artifactRemoveFailed": "无法删除 {{file}}：{{detail}}",
+    "artifactRemoved": "已删除残留 conf {{file}}",
+    "artifactSystemPending": "已清理 dataDir；系统 Apache 副本需 YSK_EXECUTE/root 才能停用",
+    "artifactSystemDisabled": "已停用系统站点 {{site}}",
+    "artifactSystemFailed": "系统停用失败：{{detail}}",
+    "conflictProjectsOnly": "域名 {{name}} 被多个项目占用 — 请修改其中一个项目域名",
+    "cleanupNothing": "没有可清理的冲突残留 conf",
+    "conflictOwnedKeep": "保留已拥有 conf {{file}}（同域名 {{domain}}）",
+    "retiredOrphan": "已退役残留 conf {{file}}（与 {{domain}} 域名冲突）"
   }
 }

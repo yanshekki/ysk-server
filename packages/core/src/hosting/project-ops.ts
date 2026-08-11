@@ -1684,7 +1684,9 @@ export class ProjectOpsService {
       phpVersion,
       poolName: row.linux_user,
       host: this.host,
-      enableSite: canProd || opts.enableApache === true });
+      enableSite: canProd || opts.enableApache === true,
+      projects: this.projects.list().map((p) => ({ ...p }) as Record<string, unknown>),
+    });
     await chownProjectHome(this.host, row, notes);
     // Re-apply ysk-web so Apache/www-data can read DocumentRoot after chown
     const wg = await applyProjectWebGroupAccess({

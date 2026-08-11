@@ -32,6 +32,12 @@ export type ApacheSiteRow = {
   apply_status?: string | null;
   linuxUser?: string | null;
   phpVersion?: string | null;
+  /** True when source is project or standalone (SSOT). Artifact is never owned. */
+  owned?: boolean;
+  /** True when another row shares the same ServerName (case-insensitive). */
+  conflict?: boolean;
+  /** Other row ids that share ServerName when conflict. */
+  conflictPeers?: string[];
 };
 
 function projectDocRoot(p: Record<string, unknown>): string {
@@ -45,11 +51,11 @@ function projectDocRoot(p: Record<string, unknown>): string {
   return String(p.docRoot ?? p.doc_root ?? '—');
 }
 
-function confPathForLinuxUser(dataDir: string, linuxUser: string): string {
+export function confPathForLinuxUser(dataDir: string, linuxUser: string): string {
   return join(dataDir, 'apache', 'sites', `ysk-${linuxUser}.conf`);
 }
 
-function parseServerNameFromConf(content: string): string | null {
+export function parseServerNameFromConf(content: string): string | null {
   const m = content.match(/^\s*ServerName\s+(\S+)/im);
   return m?.[1]?.trim() || null;
 }
@@ -57,6 +63,46 @@ function parseServerNameFromConf(content: string): string | null {
 function parseDocRootFromConf(content: string): string | null {
   const m = content.match(/^\s*DocumentRoot\s+(\S+)/im);
   return m?.[1]?.trim() || null;
+}
+
+/** Basenames under apache/sites that are SSOT-owned (safe to sync to system). */
+export function listOwnedApacheConfBasenames(input: {
+  dataDir: string;
+  projects: Array<Record<string, unknown>>;
+}): Set<string> {
+  const owned = new Set<string>();
+  for (const p of input.projects) {
+    const runtime = String(p.runtime ?? '').toLowerCase();
+    if (runtime !== 'php') continue;
+    const linuxUser = String(p.linux_user ?? p.linuxUser ?? '').trim();
+    if (linuxUser) owned.add(`ysk-${linuxUser}.conf`);
+  }
+  for (const s of listApacheSites(input.dataDir)) {
+    if (!s.confPath) continue;
+    const base = s.confPath.split(/[/\\]/).pop();
+    if (base?.endsWith('.conf')) owned.add(base);
+  }
+  return owned;
+}
+
+function annotateConflicts(rows: ApacheSiteRow[]): ApacheSiteRow[] {
+  const byName = new Map<string, ApacheSiteRow[]>();
+  for (const r of rows) {
+    const key = r.serverName.trim().toLowerCase();
+    if (!key || key === '—') continue;
+    const list = byName.get(key) ?? [];
+    list.push(r);
+    byName.set(key, list);
+  }
+  for (const group of byName.values()) {
+    if (group.length < 2) continue;
+    const ids = group.map((g) => g.id);
+    for (const g of group) {
+      g.conflict = true;
+      g.conflictPeers = ids.filter((id) => id !== g.id);
+    }
+  }
+  return rows;
 }
 
 /**
@@ -98,6 +144,8 @@ export function listMergedApacheSites(input: {
       apply_status: confExists ? 'written' : 'draft',
       linuxUser: linuxUser || null,
       phpVersion: (p.runtime_version ?? p.runtimeVersion) as string | null,
+      owned: true,
+      conflict: false,
     });
   }
 
@@ -122,6 +170,8 @@ export function listMergedApacheSites(input: {
       indexes: s.indexes,
       confPath: s.confPath ?? null,
       apply_status: s.apply_status ?? null,
+      owned: true,
+      conflict: false,
     });
   }
 
@@ -156,6 +206,8 @@ export function listMergedApacheSites(input: {
         target: root ?? '—',
         confPath,
         apply_status: 'written',
+        owned: false,
+        conflict: false,
       });
     }
   }
@@ -163,7 +215,7 @@ export function listMergedApacheSites(input: {
   rows.sort((a, b) =>
     a.serverName.localeCompare(b.serverName, undefined, { sensitivity: 'base' }),
   );
-  return rows;
+  return annotateConflicts(rows);
 }
 
 export function readApacheSiteConf(confPath: string | null | undefined): string {

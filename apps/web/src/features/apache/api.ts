@@ -26,6 +26,9 @@ export type ApacheSite = {
   apply_status?: string | null;
   linuxUser?: string | null;
   phpVersion?: string | null;
+  owned?: boolean;
+  conflict?: boolean;
+  conflictPeers?: string[];
 };
 
 export type ApacheGlobalSettings = {
@@ -100,5 +103,16 @@ export const apacheApi = {
         body: JSON.stringify(body ?? {}),
         allowStatuses: [403, 422],
       },
+    ),
+  /** Remove unclaimed disk conf (artifact:*). */
+  removeArtifact: (id: string) =>
+    api.requestRawAllowStatus<Record<string, unknown>>(
+      `/api/v1/hosting/apache/sites/${encodeURIComponent(id)}`,
+      { method: 'DELETE', allowStatuses: [403, 404, 409, 422] },
+    ),
+  cleanupConflicts: () =>
+    api.requestRawAllowStatus<Record<string, unknown>>(
+      '/api/v1/hosting/apache/sites/cleanup-conflicts',
+      { method: 'POST', body: '{}', allowStatuses: [403, 422] },
     ),
 };

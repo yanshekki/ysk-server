@@ -43,5 +43,15 @@
   "setForceHttps": "Force HTTPS",
   "setHsts": "HSTS",
   "setIndexes": "Directory listing",
-  "bodyInherit": "Global"
+  "bodyInherit": "Global",
+  "conflict": "Name conflict",
+  "conflictHint": "Same ServerName has multiple sources. Keep the project/standalone row and remove disk orphans.",
+  "removeArtifact": "Remove residual",
+  "removeArtifactTitle": "Remove residual conf?",
+  "removeArtifactDesc": "Delete this unclaimed Apache conf from the panel data directory and disable the system twin when possible. Does not delete the project.",
+  "previewConf": "Preview conf",
+  "cleanupConflicts": "Clean conflict residuals",
+  "cleanupConflictsTitle": "Clean all conflict residuals?",
+  "cleanupConflictsDesc": "Remove every on-disk artifact conf that conflicts with a project or standalone ServerName. Project rows are kept.",
+  "artifactRemovedOk": "Residual conf removed"
 }
