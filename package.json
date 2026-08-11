@@ -45,6 +45,7 @@
     "e2e:vpn": "bash scripts/e2e-vpn.sh",
     "e2e:vnc": "bash scripts/e2e-vnc.sh",
     "e2e:updates": "bash scripts/e2e-updates.sh",
+    "e2e:software-lifecycle": "bash scripts/e2e-software-lifecycle.sh",
     "i18n:check-no-uiinline-default": "node ./scripts/i18n-no-uiinline-default.mjs",
     "e2e:web-servers": "bash scripts/e2e-web-servers.sh"
   },
