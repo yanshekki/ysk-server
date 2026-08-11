@@ -10,9 +10,19 @@ export default defineConfig({
   resolve: {
     conditions: ['browser', 'import', 'module', 'default'],
   },
+  // @novnc/novnc 1.7 uses top-level await — need modern target
+  build: {
+    target: 'es2022',
+  },
+  esbuild: {
+    target: 'es2022',
+  },
   optimizeDeps: {
     // Re-bundle workspace shared when its dist changes
     exclude: [],
+    esbuildOptions: {
+      target: 'es2022',
+    },
   },
   server: {
     // 4-digit; avoid common Vite 5173 / other tools
