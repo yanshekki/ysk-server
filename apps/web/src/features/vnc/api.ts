@@ -51,6 +51,8 @@ export type VncClientProfile = {
   host: string;
   port: number;
   path: VncConnectPath;
+  /** server_proxy: optional internal TCP host */
+  connectHost?: string | null;
   status: string;
   autostart: boolean;
   createdAt: string;
@@ -201,6 +203,7 @@ export const vncApi = {
     host: string;
     port: number;
     path?: VncConnectPath;
+    connectHost?: string;
     password?: string;
     autostart?: boolean;
   }) =>

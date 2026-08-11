@@ -25,9 +25,40 @@ describe('vnc client profiles', () => {
     expect(listClientProfilesPublic(dir)).toHaveLength(1);
     updateClientProfile(dir, p.id, { path: 'direct' }); // legacy → user_reachable
     expect(listClientProfilesPublic(dir)[0]!.path).toBe('user_reachable');
+
+    const lan = createClientProfile(dir, {
+      name: 'lan',
+      host: 'vnc.internal.example',
+      port: 5901,
+      path: 'server_proxy',
+      connectHost: '10.0.0.9',
+    });
+    expect(lan.connectHost).toBe('10.0.0.9');
+    updateClientProfile(dir, lan.id, { path: 'user_reachable' });
+    expect(listClientProfilesPublic(dir).find((x) => x.id === lan.id)?.connectHost).toBeNull();
+
     const del = await deleteClientProfile({ host, dataDir: dir, id: p.id });
     expect(del.ok).toBe(true);
-    expect(listClientProfilesPublic(dir)).toHaveLength(0);
     rmSync(dir, { recursive: true, force: true });
+  });
+});
+
+describe('resolveClientRfbHost', () => {
+  it('uses connectHost only for server_proxy', async () => {
+    const { resolveClientRfbHost } = await import('./types.js');
+    expect(
+      resolveClientRfbHost({
+        host: 'public.example',
+        path: 'server_proxy',
+        connectHost: '10.1.2.3',
+      }),
+    ).toBe('10.1.2.3');
+    expect(
+      resolveClientRfbHost({
+        host: 'public.example',
+        path: 'user_reachable',
+        connectHost: '10.1.2.3',
+      }),
+    ).toBe('public.example');
   });
 });

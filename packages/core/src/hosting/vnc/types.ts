@@ -61,13 +61,31 @@ export type VncAccountSummary = {
 export type VncClientProfile = {
   id: string;
   name: string;
+  /** Display / default connect host (public hostname or IP). */
   host: string;
   port: number;
   path: VncConnectPath;
+  /**
+   * Optional TCP target when path is server_proxy (e.g. LAN IP only the
+   * control plane can reach). Empty = use host.
+   */
+  connectHost?: string | null;
   status: 'up' | 'down' | 'unknown' | 'error';
   autostart: boolean;
   createdAt: string;
 };
+
+/** Host the panel opens TCP to for browser VNC proxy. */
+export function resolveClientRfbHost(profile: {
+  host: string;
+  path?: VncConnectPath | string;
+  connectHost?: string | null;
+}): string {
+  const path = normalizeVncConnectPath(profile.path);
+  const override = String(profile.connectHost ?? '').trim();
+  if (path === 'server_proxy' && override) return override;
+  return String(profile.host ?? '').trim();
+}
 
 export type VncSettings = {
   defaultDesktop: VncDesktopProfile;

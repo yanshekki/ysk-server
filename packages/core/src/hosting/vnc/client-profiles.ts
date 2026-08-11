@@ -24,6 +24,8 @@ export type VncClientRecord = {
   host: string;
   port: number;
   path: VncConnectPath;
+  /** LAN / internal host for server_proxy TCP (optional). */
+  connectHost?: string;
   /** Optional password stored only when user opted in; prefer empty */
   password?: string;
   autostart: boolean;
@@ -67,12 +69,16 @@ function saveClientProfiles(dataDir: string, items: VncClientRecord[]): void {
 }
 
 function toPublic(r: VncClientRecord): VncClientProfile {
+  const path = normalizeVncConnectPath(r.path);
+  const connectHost = String(r.connectHost ?? '').trim();
   return {
     id: r.id,
     name: r.name,
     host: r.host,
     port: r.port,
-    path: normalizeVncConnectPath(r.path),
+    path,
+    connectHost:
+      path === 'server_proxy' && connectHost ? connectHost : null,
     status: r.status,
     autostart: r.autostart,
     createdAt: r.createdAt,
@@ -97,6 +103,8 @@ export function createClientProfile(
     host: string;
     port: number;
     path?: VncConnectPath;
+    /** server_proxy only: internal TCP host */
+    connectHost?: string;
     password?: string;
     autostart?: boolean;
   },
@@ -114,6 +122,8 @@ export function createClientProfile(
       httpStatus: 400,
     });
   }
+  const path = normalizeVncConnectPath(input.path ?? 'user_reachable');
+  const connectHost = String(input.connectHost ?? '').trim();
   const items = loadClientProfiles(dataDir);
   const now = new Date().toISOString();
   const rec: VncClientRecord = {
@@ -121,7 +131,9 @@ export function createClientProfile(
     name,
     host,
     port,
-    path: normalizeVncConnectPath(input.path ?? 'user_reachable'),
+    path,
+    connectHost:
+      path === 'server_proxy' && connectHost ? connectHost : undefined,
     password: input.password || undefined,
     autostart: Boolean(input.autostart),
     status: 'down',
@@ -141,6 +153,7 @@ export function updateClientProfile(
     host?: string;
     port?: number;
     path?: VncConnectPath;
+    connectHost?: string | null;
     autostart?: boolean;
     password?: string | null;
   },
@@ -165,6 +178,15 @@ export function updateClientProfile(
     rec.port = port;
   }
   if (patch.path != null) rec.path = normalizeVncConnectPath(patch.path);
+  if (patch.connectHost !== undefined) {
+    const ch = String(patch.connectHost ?? '').trim();
+    if (ch) rec.connectHost = ch;
+    else delete rec.connectHost;
+  }
+  // user_reachable ignores internal override
+  if (normalizeVncConnectPath(rec.path) !== 'server_proxy') {
+    delete rec.connectHost;
+  }
   if (typeof patch.autostart === 'boolean') rec.autostart = patch.autostart;
   if (patch.password === null) delete rec.password;
   else if (typeof patch.password === 'string' && patch.password) {

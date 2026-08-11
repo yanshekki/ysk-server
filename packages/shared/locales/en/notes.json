@@ -2846,6 +2846,8 @@
     "probeInvalid": "Invalid VNC target {{host}}:{{port}}",
     "probeHintUserReachable": "Path is “user-reachable”: this panel must still open TCP to the public host (browser cannot speak RFB alone).",
     "probeHintServerProxy": "Path is “server proxy”: the target must be reachable from this control-plane host’s network.",
+    "connectHostOverride": "Server proxy: display host {{display}}, TCP connects to {{connect}}",
+    "probeConnectHostHint": "Display target {{display}}, probe/connect address {{connect}} (connect-host override).",
     "accountNotFound": "VNC account not found",
     "accountExists": "A VNC account with this name or Linux user already exists",
     "accountCreated": "Created VNC account {{name}} ({{user}}, display :{{display}})",

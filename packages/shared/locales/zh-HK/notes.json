@@ -2842,6 +2842,8 @@
     "probeInvalid": "無效的 VNC 目標 {{host}}:{{port}}",
     "probeHintUserReachable": "路徑為「經用戶可達端點」：面板仍須對該公網主機開啟 TCP（瀏覽器本身不能直接使用 RFB）。",
     "probeHintServerProxy": "路徑為「經伺服器代理」：目標必須可從此控制面伺服器的網絡連上。",
+    "connectHostOverride": "伺服器代理：顯示主機 {{display}}，實際 TCP 連至 {{connect}}",
+    "probeConnectHostHint": "顯示目標為 {{display}}，探測／連線位址為 {{connect}}（連線主機覆寫）。",
     "needInstall": "請安裝 {{stack}}",
     "needExecute": "未啟用 YSK_EXECUTE — 無法安裝套件或建立 Linux 用戶。",
     "needRoot": "非 root — 無法 useradd 或套用 vncserver。",

@@ -676,6 +676,7 @@ export async function handleVncRoutes(
         host?: string;
         port?: number;
         path?: string;
+        connectHost?: string;
         password?: string;
         autostart?: boolean;
       };
@@ -684,6 +685,7 @@ export async function handleVncRoutes(
         host: data.host ?? '',
         port: Number(data.port),
         path: data.path != null ? normalizeVncConnectPath(data.path) : 'user_reachable',
+        connectHost: data.connectHost,
         password: data.password,
         autostart: data.autostart,
       });
@@ -711,6 +713,7 @@ export async function handleVncRoutes(
           host?: string;
           port?: number;
           path?: string;
+          connectHost?: string | null;
           autostart?: boolean;
           password?: string | null;
         };
@@ -719,6 +722,7 @@ export async function handleVncRoutes(
           host: data.host,
           port: data.port,
           path: data.path != null ? normalizeVncConnectPath(data.path) : undefined,
+          connectHost: data.connectHost,
           autostart: data.autostart,
           password: data.password,
         });

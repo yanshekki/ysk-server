@@ -78,6 +78,7 @@ export function VncPage() {
   const [clHost, setClHost] = useState('');
   const [clPort, setClPort] = useState(5901);
   const [clPath, setClPath] = useState<VncConnectPath>('user_reachable');
+  const [clConnectHost, setClConnectHost] = useState('');
   const [clPassword, setClPassword] = useState('');
   const [clRememberPass, setClRememberPass] = useState(false);
   /** Multi-session in-browser RFB viewers (panel WS proxy) */
@@ -597,6 +598,7 @@ export function VncPage() {
                       setClHost('');
                       setClPort(5901);
                       setClPath('user_reachable');
+                      setClConnectHost('');
                       setClPassword('');
                       setClRememberPass(false);
                       setClientOpen(true);
@@ -626,6 +628,12 @@ export function VncPage() {
                   render: (c) => (
                     <code className="inline">
                       {c.host}:{c.port}
+                      {c.path === 'server_proxy' && c.connectHost ? (
+                        <span className="muted">
+                          {' '}
+                          → {c.connectHost}:{c.port}
+                        </span>
+                      ) : null}
                     </code>
                   ),
                 },
@@ -1181,6 +1189,10 @@ export function VncPage() {
                     host: clHost.trim(),
                     port: clPort,
                     path: clPath,
+                    connectHost:
+                      clPath === 'server_proxy' && clConnectHost.trim()
+                        ? clConnectHost.trim()
+                        : undefined,
                     password:
                       clRememberPass && clPassword.trim()
                         ? clPassword
@@ -1191,6 +1203,7 @@ export function VncPage() {
                     setClientOpen(false);
                     setClPassword('');
                     setClRememberPass(false);
+                    setClConnectHost('');
                     await load();
                   })
                   .catch((e) =>
@@ -1256,6 +1269,22 @@ export function VncPage() {
               <option value="server_proxy">{t('vnc.pathServerProxy')}</option>
             </select>
           </Field>
+          {clPath === 'server_proxy' ? (
+            <Field
+              label={t('vnc.connectHost')}
+              htmlFor="cl-connect-host"
+              hint={t('vnc.connectHostHint')}
+              flush
+            >
+              <input
+                id="cl-connect-host"
+                value={clConnectHost}
+                onChange={(e) => setClConnectHost(e.target.value)}
+                placeholder="10.0.0.9"
+                autoComplete="off"
+              />
+            </Field>
+          ) : null}
           <Field
             label={t('vnc.clientPasswordOptional')}
             htmlFor="cl-pass"

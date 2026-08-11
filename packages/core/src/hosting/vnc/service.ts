@@ -40,6 +40,7 @@ import {
 } from './client-profiles.js';
 import type { VncSessionKind } from './session-ticket.js';
 import { probeResultNote, probeRfbTcp } from './rfb-probe.js';
+import { resolveClientRfbHost } from './types.js';
 import {
   DEFAULT_VNC_SETTINGS,
   normalizeVncDesktopProfile,
@@ -919,10 +920,12 @@ export class VncService {
     }
     const pathMode =
       cl.path === 'server_proxy' ? 'server_proxy' : 'user_reachable';
-    const target = `${cl.host}:${cl.port}`;
+    const rfbHost = resolveClientRfbHost(cl);
+    const displayTarget = `${cl.host}:${cl.port}`;
+    const connectTarget = `${rfbHost}:${cl.port}`;
 
     // Preflight: can this control plane open TCP to the RFB target?
-    const probe = await probeRfbTcp(cl.host, cl.port);
+    const probe = await probeRfbTcp(rfbHost, cl.port);
     if (!probe.ok) {
       notes.push(probeResultNote(probe));
       notes.push(
@@ -930,31 +933,47 @@ export class VncService {
           ? tl('notes.vnc.probeHintServerProxy')
           : tl('notes.vnc.probeHintUserReachable'),
       );
+      if (pathMode === 'server_proxy' && rfbHost !== cl.host) {
+        notes.push(
+          tl('notes.vnc.probeConnectHostHint', {
+            display: displayTarget,
+            connect: connectTarget,
+          }),
+        );
+      }
       return { ok: false, notes };
     }
 
     notes.push(
       tl('notes.vnc.browserSessionReady', {
-        name: `${cl.name} (${target})`,
+        name: `${cl.name} (${displayTarget})`,
       }),
     );
     notes.push(
       pathMode === 'server_proxy'
         ? tl('notes.vnc.clientPathServerProxy', {
             name: cl.name,
-            target,
+            target: connectTarget,
           })
         : tl('notes.vnc.clientPathUserReachable', {
             name: cl.name,
-            target,
+            target: displayTarget,
           }),
     );
-    notes.push(tl('notes.vnc.probeOk', { target }));
+    if (pathMode === 'server_proxy' && rfbHost !== cl.host) {
+      notes.push(
+        tl('notes.vnc.connectHostOverride', {
+          display: cl.host,
+          connect: rfbHost,
+        }),
+      );
+    }
+    notes.push(tl('notes.vnc.probeOk', { target: connectTarget }));
     return {
       ok: true,
       notes,
       label: cl.name,
-      rfbHost: cl.host,
+      rfbHost,
       rfbPort: cl.port,
       passwordHint: cl.password || undefined,
     };
@@ -965,6 +984,7 @@ export class VncService {
     host: string;
     port: number;
     path?: VncConnectPath;
+    connectHost?: string;
     password?: string;
     autostart?: boolean;
   }): VncClientProfile {
@@ -978,6 +998,7 @@ export class VncService {
       host?: string;
       port?: number;
       path?: VncConnectPath;
+      connectHost?: string | null;
       autostart?: boolean;
       password?: string | null;
     },
