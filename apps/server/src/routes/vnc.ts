@@ -3,7 +3,7 @@
  */
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { createVncService } from '@ysk/core';
+import { createVncService, normalizeVncDesktopProfile } from '@ysk/core';
 import { ErrorCodes } from '@ysk/shared';
 import type { AppContext } from '../app-context.js';
 import { getBearer, readBody, sendJson, sendOpsResult } from '../http/util.js';
@@ -119,10 +119,8 @@ export async function handleVncRoutes(
       const data = JSON.parse(raw || '{}') as Record<string, unknown>;
       const settings = vnc.saveSettings({
         defaultDesktop:
-          data.defaultDesktop === 'xfce' ||
-          data.defaultDesktop === 'minimal' ||
-          data.defaultDesktop === 'none'
-            ? data.defaultDesktop
+          data.defaultDesktop != null
+            ? normalizeVncDesktopProfile(data.defaultDesktop)
             : undefined,
         defaultGeometry:
           typeof data.defaultGeometry === 'string' ? data.defaultGeometry : undefined,
@@ -167,9 +165,7 @@ export async function handleVncRoutes(
         name: data.name ?? '',
         password: data.password,
         desktop:
-          data.desktop === 'xfce' || data.desktop === 'minimal' || data.desktop === 'none'
-            ? data.desktop
-            : undefined,
+          data.desktop != null ? normalizeVncDesktopProfile(data.desktop) : undefined,
         geometry: data.geometry,
         depth: data.depth,
         rfbBind:
@@ -368,11 +364,7 @@ export async function handleVncRoutes(
         const result = await vnc.updateAccount(accountId, {
           name: data.name,
           desktop:
-            data.desktop === 'xfce' ||
-            data.desktop === 'minimal' ||
-            data.desktop === 'none'
-              ? data.desktop
-              : undefined,
+            data.desktop != null ? normalizeVncDesktopProfile(data.desktop) : undefined,
           geometry: data.geometry,
           depth: data.depth,
           rfbBind:
