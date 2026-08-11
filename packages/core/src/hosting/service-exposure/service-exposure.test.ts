@@ -28,6 +28,7 @@ import {
   dbPortBindings,
   postfixPortBindings,
   dovecotPortBindings,
+  unitToExposureService,
 } from './ports.js';
 import {
   parseUfwNumbered,
@@ -82,6 +83,9 @@ describe('service-exposure shared helpers', () => {
     expect(dbPortBindings('mysql', { port: '3307' })[0]?.port).toBe('3307');
     expect(postfixPortBindings().some((p) => p.port === '25')).toBe(true);
     expect(dovecotPortBindings().some((p) => p.port === '993')).toBe(true);
+    expect(unitToExposureService('nginx.service')?.serviceId).toBe('nginx');
+    expect(unitToExposureService('redis-server')?.serviceId).toBe('redis');
+    expect(unitToExposureService('unknown-unit')).toBeNull();
   });
 });
 

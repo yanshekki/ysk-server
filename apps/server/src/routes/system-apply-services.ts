@@ -74,6 +74,32 @@ export async function handleSystemApplyServicesRoutes(
       return true;
     }
     const result = await lifecycleServiceUnit(ctx.host, data.unit, data.action);
+    // Reclaim / re-apply ysk-svc firewall rules when unit lifecycle changes
+    if (
+      result.ok &&
+      (data.action === 'stop' || data.action === 'start' || data.action === 'restart')
+    ) {
+      try {
+        const { syncServiceExposure, unitToExposureService } = await import('@ysk/core');
+        const mapped = unitToExposureService(data.unit!);
+        if (mapped) {
+          const reason = data.action === 'stop' ? 'stop' : 'start';
+          const exp = await syncServiceExposure({
+            host: ctx.host,
+            dataDir: ctx.dataDir,
+            serviceId: mapped.serviceId,
+            ports: mapped.ports,
+            reason,
+            requireDecision: false,
+          });
+          if (exp.notes?.length) {
+            result.notes = [...(result.notes ?? []), ...exp.notes.slice(0, 3)];
+          }
+        }
+      } catch {
+        /* non-fatal */
+      }
+    }
     ctx.audit.append({
       actor: user.username,
       action: 'system.services.lifecycle',

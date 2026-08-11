@@ -131,3 +131,62 @@ function fallbackPort(serviceId: string): string {
   if (serviceId === 'redis') return '6379';
   return '3306';
 }
+
+/**
+ * Map systemd unit → exposure serviceId (+ optional ports).
+ * Used when Services page starts/stops units so ysk-svc rules follow lifecycle.
+ */
+export function unitToExposureService(unit: string): {
+  serviceId: string;
+  ports?: ServicePortBinding[];
+} | null {
+  const base = String(unit ?? '')
+    .trim()
+    .replace(/\.service$/i, '')
+    .toLowerCase();
+  if (!base) return null;
+  if (base === 'vsftpd') return { serviceId: 'vsftpd', ports: ftpsPortBindings({}) };
+  if (base === 'nginx') {
+    return {
+      serviceId: 'nginx',
+      ports: [
+        { role: 'http', port: '80', proto: 'tcp' },
+        { role: 'https', port: '443', proto: 'tcp' },
+      ],
+    };
+  }
+  if (base === 'apache2' || base === 'httpd') {
+    return {
+      serviceId: 'apache',
+      ports: [
+        { role: 'http', port: '80', proto: 'tcp' },
+        { role: 'https', port: '443', proto: 'tcp' },
+      ],
+    };
+  }
+  if (base === 'postfix') return { serviceId: 'postfix', ports: postfixPortBindings() };
+  if (base === 'dovecot') return { serviceId: 'dovecot', ports: dovecotPortBindings() };
+  if (base === 'pdns' || base === 'pdns-recursor') {
+    return { serviceId: 'pdns', ports: dnsPortBindings() };
+  }
+  if (base === 'mysql' || base === 'mysqld') {
+    return { serviceId: 'mysql', ports: dbPortBindings('mysql') };
+  }
+  if (base === 'mariadb') return { serviceId: 'mariadb', ports: dbPortBindings('mariadb') };
+  if (base === 'postgresql' || base.startsWith('postgresql@')) {
+    return { serviceId: 'postgresql', ports: dbPortBindings('postgres') };
+  }
+  if (base === 'redis' || base === 'redis-server') {
+    return { serviceId: 'redis', ports: dbPortBindings('redis') };
+  }
+  if (base === 'sshd' || base === 'ssh') {
+    return { serviceId: 'sshd', ports: [{ role: 'ssh', port: '22', proto: 'tcp' }] };
+  }
+  if (base === 'wg-quick' || base.startsWith('wg-quick@') || base === 'wireguard') {
+    return { serviceId: 'wireguard' };
+  }
+  if (base === 'openvpn' || base.startsWith('openvpn@')) {
+    return { serviceId: 'openvpn' };
+  }
+  return null;
+}
