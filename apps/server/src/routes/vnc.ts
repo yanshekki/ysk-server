@@ -7,6 +7,7 @@ import {
   createVncService,
   createVncShareLink,
   getVncShareLink,
+  normalizeVncConnectPath,
   normalizeVncDesktopProfile,
   revokeVncShareLink,
 } from '@ysk/core';
@@ -682,12 +683,7 @@ export async function handleVncRoutes(
         name: data.name ?? '',
         host: data.host ?? '',
         port: Number(data.port),
-        path:
-          data.path === 'server_proxy' ||
-          data.path === 'via_server' ||
-          data.path === 'proxy'
-            ? 'server_proxy'
-            : 'user_reachable',
+        path: data.path != null ? normalizeVncConnectPath(data.path) : 'user_reachable',
         password: data.password,
         autostart: data.autostart,
       });
@@ -722,14 +718,7 @@ export async function handleVncRoutes(
           name: data.name,
           host: data.host,
           port: data.port,
-          path:
-            data.path === 'server_proxy' ||
-            data.path === 'user_reachable' ||
-            data.path === 'via_server' ||
-            data.path === 'direct' ||
-            data.path === 'proxy'
-              ? data.path
-              : undefined,
+          path: data.path != null ? normalizeVncConnectPath(data.path) : undefined,
           autostart: data.autostart,
           password: data.password,
         });
@@ -758,13 +747,7 @@ export async function handleVncRoutes(
         const data = JSON.parse(raw || '{}') as { path?: string };
         const result = await vnc.clientUp(
           clientId,
-          data.path === 'server_proxy' ||
-            data.path === 'user_reachable' ||
-            data.path === 'via_server' ||
-            data.path === 'direct' ||
-            data.path === 'proxy'
-            ? data.path
-            : undefined,
+          data.path != null ? normalizeVncConnectPath(data.path) : undefined,
         );
         ctx.audit.append({actor: user.username,
           action: 'vnc.client.up',

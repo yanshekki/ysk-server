@@ -2819,21 +2819,13 @@
     "ssClientsRewritten": "已按而家端點／密碼重寫 {{n}} 個用戶 ss://。",
     "ssUfwOpened": "已開 UFW {{port}}/tcp+udp（若已裝 ufw）。",
     "endpointAutofilled": "公開端點已設為 {{endpoint}}。",
-<<<<<<< HEAD
     "ovpnClientsRewritten": "已更新 {{n}} 個 OpenVPN 客戶端設定的 remote（下載／QR 會使用新地址）。",
     "accessFullNat": "已啟用全網上網（IP 轉發 + NAT）",
     "accessLanOnly": "已設定為僅連區域（無外網 NAT）",
     "accessReconnectHint": "已連線的客戶端請斷線後再連，才會使用新路由",
-    "ovpnNatDurable": "OpenVPN NAT/forward installed for reboot (systemd ExecStartPost)."
-=======
-    "ovpnClientsRewritten": "已更新 {{n}} 個 OpenVPN 客戶端設定嘅 remote（下載／QR 會用新地址）。",
-    "accessFullNat": "已開全網上網（IP 轉發 + NAT）",
-    "accessLanOnly": "已設只連區域（無外網 NAT）",
-    "accessReconnectHint": "已連線嘅客戶端請斷線再連，先會用新路由",
     "ovpnNatDurable": "OpenVPN NAT/forward installed for reboot (systemd ExecStartPost).",
-    "clientFullTunnelProtect": "Full-tunnel client detected (AllowedIPs 0.0.0.0/0). Applied host protect so panel/SSH replies stay on the LAN NIC.",
+    "clientFullTunnelProtect": "Detected full-tunnel client (AllowedIPs 0.0.0.0/0). Host protect applied so panel/SSH replies stay on LAN NIC.",
     "clientFullTunnelHint": "Tip: for split access only, set AllowedIPs to VPN/LAN CIDRs (not 0.0.0.0/0) in the conf, then reconnect."
->>>>>>> a3935450 (fix(vpn/client): full-tunnel outbound keeps panel reachable)
   },
   "vnc": {
     "viewerNeedExecute": "要在瀏覽器開啟本機 VNC 桌面，需要 root 並啟用 YSK_EXECUTE",
