@@ -582,6 +582,7 @@ export function VncPage() {
           <div className="stack">
             <SoftwareInstallBanner feature="vnc" title={t('vnc.needViewerOrNovnc')} />
             <Alert variant="info">{t('vnc.clientPathHint')}</Alert>
+            <Alert variant="info">{t('vnc.clientPathCompare')}</Alert>
             <DataTable
               rowKey={(c) => c.id}
               title={t('vnc.clientListTitle', { count: clients.length })}
@@ -632,10 +633,20 @@ export function VncPage() {
                   key: 'path',
                   header: t('vnc.clientPath'),
                   nowrap: true,
-                  render: (c) =>
-                    c.path === 'server_proxy'
-                      ? t('vnc.pathServerProxy')
-                      : t('vnc.pathUserReachable'),
+                  render: (c) => {
+                    const proxy = c.path === 'server_proxy';
+                    return (
+                      <Badge tone={proxy ? 'warn' : 'ok'} title={
+                        proxy
+                          ? t('vnc.pathServerProxyHint')
+                          : t('vnc.pathUserReachableHint')
+                      }>
+                        {proxy
+                          ? t('vnc.pathServerProxyShort')
+                          : t('vnc.pathUserReachableShort')}
+                      </Badge>
+                    );
+                  },
                 },
                 {
                   key: 'status',
@@ -674,7 +685,11 @@ export function VncPage() {
                         kind: 'client',
                         id: c.id,
                         label: c.name,
-                        subtitle: `${c.host}:${c.port}`,
+                        subtitle: `${c.host}:${c.port} · ${
+                          c.path === 'server_proxy'
+                            ? t('vnc.pathServerProxyShort')
+                            : t('vnc.pathUserReachableShort')
+                        }`,
                       })
                     }
                   >
@@ -715,7 +730,8 @@ export function VncPage() {
             <SoftwareVersionBar softwareId="novnc" />
             <SoftwareInstallBanner feature="vnc" title={t('vnc.needXfce')} />
             <SoftwareVersionBar softwareId="vnc-desktop-xfce" />
-            <SoftwareInstallBanner feature="vnc" title={t('vnc.needViewer')} />
+            <Alert variant="info">{t('vnc.viewerStackOptional')}</Alert>
+            <SoftwareInstallBanner feature="vnc" title={t('vnc.needViewerOptional')} />
             <SoftwareVersionBar softwareId="tigervnc-viewer" />
           </div>
         ) : null}
