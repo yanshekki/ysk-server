@@ -349,7 +349,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
           };
           settings.setJson('last_self_update', lastSelf);
         } catch {
-          lastSelf = settings.getJson<Record<string, unknown>>('last_self_update');
+          lastSelf = settings.getJson<Record<string, unknown>>('last_self_update') ?? null;
         }
         const job = scheduler.list().find((j) => j.id === 'updates.scan');
         const summary = buildUpdatesSummary({
