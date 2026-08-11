@@ -177,41 +177,85 @@ html.dark .vpn-cfg__qr-wrap {
   outline-offset: 1px;
 }
 
-/* —— Monitor tab —— */
-.vpn-monitor-kpis {
-  display: grid;
-  gap: 0.75rem;
-  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
-}
+/* —— Monitor tab (compact) —— */
 
-.vpn-monitor-kpi {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  padding: 0.85rem 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md, 10px);
-  background: var(--bg-elevated, #fff);
-}
-
-.vpn-monitor-kpi__head {
+/* One horizontal strip of engine pills — not tall KPI cards */
+.vpn-monitor-strip {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.35rem;
+  align-items: stretch;
+  gap: 0.4rem 0.5rem;
+  min-width: 0;
 }
 
-.vpn-monitor-kpi__line {
-  font-size: var(--text-sm, 0.875rem);
+.vpn-monitor-strip__item {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.45rem;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--bg-elevated, #fff);
+  font-size: var(--text-xs, 0.75rem);
+  line-height: 1.3;
+  min-width: 0;
+}
+
+.vpn-monitor-strip__name {
+  font-weight: 700;
   color: var(--text-main, #0f172a);
 }
 
-.vpn-monitor-kpi__note {
-  margin: 0.25rem 0 0;
+.vpn-monitor-strip__meta {
+  color: var(--text-main, #0f172a);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.vpn-monitor-strip__meta.muted,
+.vpn-monitor-strip__meta.muted {
+  color: var(--text-sub, #64748b);
+}
+
+/* Single-row filter bar inside DataTable toolbar */
+.vpn-monitor-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.55rem;
+  width: 100%;
+  min-width: 0;
+}
+
+/* SegRadio defaults to width:100% — force inline chips here */
+.vpn-monitor-bar .seg-radios {
+  width: auto;
+  flex: 0 1 auto;
+  max-width: 100%;
+}
+
+.vpn-monitor-bar__spacer {
+  flex: 1 1 0.5rem;
+  min-width: 0.25rem;
+}
+
+.vpn-monitor-bar__live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   font-size: var(--text-xs, 0.75rem);
   color: var(--text-sub, #64748b);
-  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.vpn-monitor-bar__dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--color-success, #16a34a);
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.18);
+  flex-shrink: 0;
 }
 
 /* —— Software check / update tab —— */

@@ -667,74 +667,25 @@ export function VpnPage() {
                 </Alert>
               ))}
 
-            <div className="vpn-monitor-kpis">
+            {/* Compact status strip — one line per engine, not tall cards */}
+            <div className="vpn-monitor-strip" role="status">
               {(monitor?.engines ?? []).map((e) => (
-                <div key={e.engine} className="vpn-monitor-kpi">
-                  <div className="vpn-monitor-kpi__head">
-                    <strong>{engineLabel(e.engine)}</strong>
-                    <Badge tone={e.serverActive ? 'ok' : 'warn'}>
-                      {e.serverActive ? t('vpn.serverUp') : t('vpn.serverDown')}
-                    </Badge>
-                  </div>
-                  <div className="vpn-monitor-kpi__line">
-                    {t('vpn.monitor.onlineOf', {
-                      online: e.onlineCount,
-                      total: e.peerCount,
-                    })}
-                  </div>
-                  <div className="vpn-monitor-kpi__line muted">
-                    ↓ {formatVpnBytes(e.transferRx)} · ↑ {formatVpnBytes(e.transferTx)}
-                  </div>
-                  <div className="vpn-monitor-kpi__line">
-                    ↓ {formatVpnRate(e.rxRateBps)} · ↑ {formatVpnRate(e.txRateBps)}
-                  </div>
-                  {e.notes?.[0] ? (
-                    <p className="vpn-monitor-kpi__note">{e.notes[0]}</p>
-                  ) : null}
+                <div key={e.engine} className="vpn-monitor-strip__item">
+                  <span className="vpn-monitor-strip__name">{engineLabel(e.engine)}</span>
+                  <Badge tone={e.serverActive ? 'ok' : 'warn'}>
+                    {e.serverActive ? t('vpn.serverUp') : t('vpn.serverDown')}
+                  </Badge>
+                  <span className="vpn-monitor-strip__meta">
+                    {e.onlineCount}/{e.peerCount}
+                  </span>
+                  <span className="vpn-monitor-strip__meta muted">
+                    ↓{formatVpnBytes(e.transferRx)} ↑{formatVpnBytes(e.transferTx)}
+                  </span>
+                  <span className="vpn-monitor-strip__meta">
+                    ↓{formatVpnRate(e.rxRateBps)} ↑{formatVpnRate(e.txRateBps)}
+                  </span>
                 </div>
               ))}
-            </div>
-
-            <div className="u-flex-gap u-flex-wrap" style={{ alignItems: 'center' }}>
-              <Badge tone="ok">{t('vpn.monitor.autoRefresh')}</Badge>
-              <SegRadio
-                name="mon-eng"
-                aria-label={t('vpn.monitor.filterEngine')}
-                value={monEngine}
-                onChange={(v) => setMonEngine(v as 'all' | VpnEngineId)}
-                options={[
-                  { value: 'all', label: t('vpn.monitor.engineAll') },
-                  { value: 'wireguard', label: 'WireGuard' },
-                  { value: 'openvpn', label: 'OpenVPN' },
-                  { value: 'outline', label: 'SS' },
-                ]}
-              />
-              <SegRadio
-                name="mon-pres"
-                aria-label={t('vpn.monitor.filterPresence')}
-                value={monFilter}
-                onChange={(v) => setMonFilter(v as 'all' | 'online' | 'offline')}
-                options={[
-                  { value: 'all', label: t('vpn.monitor.presenceAll') },
-                  { value: 'online', label: t('vpn.monitor.presenceOnline') },
-                  { value: 'offline', label: t('vpn.monitor.presenceOffline') },
-                ]}
-              />
-              <Button
-                size="sm"
-                variant="secondary"
-                loading={monBusy}
-                onClick={() => void loadMonitor()}
-              >
-                {t('vpn.refresh')}
-              </Button>
-              {monitor?.sampledAt ? (
-                <span className="muted u-text-xs">
-                  {t('vpn.monitor.sampledAt', {
-                    when: formatVpnWhen(monitor.sampledAt),
-                  })}
-                </span>
-              ) : null}
             </div>
 
             <DataTable
@@ -747,6 +698,54 @@ export function VpnPage() {
                   return true;
                 }).length,
               })}
+              toolbar={
+                <div className="vpn-monitor-bar">
+                  <SegRadio
+                    name="mon-eng"
+                    size="sm"
+                    aria-label={t('vpn.monitor.filterEngine')}
+                    value={monEngine}
+                    onChange={(v) => setMonEngine(v as 'all' | VpnEngineId)}
+                    options={[
+                      { value: 'all', label: t('vpn.monitor.engineAll') },
+                      { value: 'wireguard', label: 'WG' },
+                      { value: 'openvpn', label: 'OVPN' },
+                      { value: 'outline', label: 'SS' },
+                    ]}
+                  />
+                  <SegRadio
+                    name="mon-pres"
+                    size="sm"
+                    aria-label={t('vpn.monitor.filterPresence')}
+                    value={monFilter}
+                    onChange={(v) => setMonFilter(v as 'all' | 'online' | 'offline')}
+                    options={[
+                      { value: 'all', label: t('vpn.monitor.presenceAll') },
+                      { value: 'online', label: t('vpn.monitor.presenceOnline') },
+                      { value: 'offline', label: t('vpn.monitor.presenceOffline') },
+                    ]}
+                  />
+                  <span className="vpn-monitor-bar__spacer" />
+                  <span className="vpn-monitor-bar__live" title={t('vpn.monitor.autoRefresh')}>
+                    <span className="vpn-monitor-bar__dot" aria-hidden />
+                    {t('vpn.monitor.autoRefresh')}
+                    {monitor?.sampledAt ? (
+                      <span className="muted">
+                        {' '}
+                        · {formatVpnWhen(monitor.sampledAt)}
+                      </span>
+                    ) : null}
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    loading={monBusy}
+                    onClick={() => void loadMonitor()}
+                  >
+                    {t('vpn.refresh')}
+                  </Button>
+                </div>
+              }
               columns={[
                 {
                   key: 'name',
