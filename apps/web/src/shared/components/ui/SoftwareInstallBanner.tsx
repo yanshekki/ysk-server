@@ -9,7 +9,10 @@ import { softwareApi } from '../../../features/software/api';
 import { OpsResultPanel, type OpsResultLike } from './OpsResultPanel';
 import { SqlEngineSwitchDialog } from './SqlEngineSwitchDialog';
 import { SoftwareUninstallDialog } from './SoftwareUninstallDialog';
-import { useOpsStreamOptional } from '../../ops-stream/OpsStreamContext';
+import {
+  isAbortError,
+  useOpsStreamOptional,
+} from '../../ops-stream/OpsStreamContext';
 import { toast } from '../../stores/toast-store';
 
 export interface SoftwareInstallBannerProps {
@@ -72,7 +75,7 @@ export function SoftwareInstallBanner({
     }
     const label = title ?? t('softwareBanner.titleDefault');
     if (stream) {
-      const jobId = stream.begin({
+      const { id: jobId, signal } = stream.begin({
         kind: 'install',
         title: label,
       });
@@ -80,22 +83,50 @@ export function SoftwareInstallBanner({
       try {
         const { ops } = await softwareApi.installFeatureStream(feature, {
           onLog: (line) => stream.appendLog(jobId, line),
+          signal,
         });
-        stream.finish(jobId, {
-          ok: ops.ok !== false && !ops.blocked,
-          error: ops.blockMessage,
-        });
-        if (ops.ok && !ops.blocked) {
-          toast.ok(ops.notes?.[0] ?? t('softwareBanner.installOk', { defaultValue: 'Installed' }));
-          onInstalled?.();
+        if (signal.aborted) {
+          stream.finish(jobId, {
+            ok: false,
+            cancelled: true,
+            error: t('softwareLifecycle.cancelHint'),
+          });
+          toast.error(t('softwareLifecycle.cancelledToast'));
           await refresh();
         } else {
-          setError(ops.blockMessage || ops.notes?.[0] || t('softwareBanner.installIncomplete'));
+          stream.finish(jobId, {
+            ok: ops.ok !== false && !ops.blocked,
+            error: ops.blockMessage,
+          });
+          if (ops.ok && !ops.blocked) {
+            toast.ok(
+              ops.notes?.[0] ??
+                t('softwareBanner.installOk', { defaultValue: 'Installed' }),
+            );
+            onInstalled?.();
+            await refresh();
+          } else {
+            setError(
+              ops.blockMessage ||
+                ops.notes?.[0] ||
+                t('softwareBanner.installIncomplete'),
+            );
+          }
         }
       } catch (e) {
-        const msg = e instanceof Error ? e.message : t('common.opFailed');
-        stream.finish(jobId, { ok: false, error: msg });
-        setError(msg);
+        if (isAbortError(e) || signal.aborted) {
+          stream.finish(jobId, {
+            ok: false,
+            cancelled: true,
+            error: t('softwareLifecycle.cancelHint'),
+          });
+          toast.error(t('softwareLifecycle.cancelledToast'));
+          await refresh();
+        } else {
+          const msg = e instanceof Error ? e.message : t('common.opFailed');
+          stream.finish(jobId, { ok: false, error: msg });
+          setError(msg);
+        }
       } finally {
         setBusy(false);
       }
@@ -114,9 +145,11 @@ export function SoftwareInstallBanner({
       return;
     }
     const label = title ?? feature;
-    const jobId = stream
+    const started = stream
       ? stream.begin({ kind: 'uninstall', title: label })
-      : '';
+      : null;
+    const jobId = started?.id ?? '';
+    const signal = started?.signal;
     setUninstallBusy(true);
     try {
       const { ops } = await softwareApi.uninstallStream(
@@ -129,27 +162,55 @@ export function SoftwareInstallBanner({
           onLog: (line) => {
             if (jobId && stream) stream.appendLog(jobId, line);
           },
+          signal,
         },
       );
       if (stream && jobId) {
-        stream.finish(jobId, {
-          ok: ops.ok !== false && !ops.blocked,
-          error: ops.blockMessage,
-        });
+        if (signal?.aborted) {
+          stream.finish(jobId, {
+            ok: false,
+            cancelled: true,
+            error: t('softwareLifecycle.cancelHint'),
+          });
+          toast.error(t('softwareLifecycle.cancelledToast'));
+        } else {
+          stream.finish(jobId, {
+            ok: ops.ok !== false && !ops.blocked,
+            error: ops.blockMessage,
+          });
+        }
       }
-      if (ops.ok && !ops.blocked) {
+      if (signal?.aborted) {
+        setUninstallOpen(false);
+        await refresh();
+      } else if (ops.ok && !ops.blocked) {
         toast.ok(ops.notes?.[0] ?? t('softwareLifecycle.uninstallDone'));
         setUninstallOpen(false);
         await refresh();
       } else {
         toast.error(
-          ops.blockMessage || ops.notes?.[0] || t('softwareLifecycle.uninstallFailed'),
+          ops.blockMessage ||
+            ops.notes?.[0] ||
+            t('softwareLifecycle.uninstallFailed'),
         );
       }
     } catch (e) {
-      const msg = e instanceof Error ? e.message : t('common.opFailed');
-      if (stream && jobId) stream.finish(jobId, { ok: false, error: msg });
-      toast.error(msg);
+      if (isAbortError(e) || signal?.aborted) {
+        if (stream && jobId) {
+          stream.finish(jobId, {
+            ok: false,
+            cancelled: true,
+            error: t('softwareLifecycle.cancelHint'),
+          });
+        }
+        toast.error(t('softwareLifecycle.cancelledToast'));
+        setUninstallOpen(false);
+        await refresh();
+      } else {
+        const msg = e instanceof Error ? e.message : t('common.opFailed');
+        if (stream && jobId) stream.finish(jobId, { ok: false, error: msg });
+        toast.error(msg);
+      }
     } finally {
       setUninstallBusy(false);
     }

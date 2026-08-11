@@ -8,7 +8,10 @@ import { systemApi } from '../../../features/system';
 import { updatesApi } from '../../../features/updates';
 import { softwareApi } from '../../../features/software/api';
 import { toast } from '../../stores/toast-store';
-import { useOpsStreamOptional } from '../../ops-stream/OpsStreamContext';
+import {
+  isAbortError,
+  useOpsStreamOptional,
+} from '../../ops-stream/OpsStreamContext';
 import { Badge } from './Badge';
 import { Button } from './Button';
 import { ConfirmDialog } from './ConfirmDialog';
@@ -149,9 +152,11 @@ export function SoftwareVersionBar({
       return;
     }
     const label = title?.trim() || st?.packageName || softwareId;
-    const jobId = stream
+    const started = stream
       ? stream.begin({ kind: 'uninstall', title: label })
-      : '';
+      : null;
+    const jobId = started?.id ?? '';
+    const signal = started?.signal;
     setBusy(true);
     try {
       const { ops } = await softwareApi.uninstallStream(
@@ -164,15 +169,28 @@ export function SoftwareVersionBar({
           onLog: (line) => {
             if (jobId && stream) stream.appendLog(jobId, line);
           },
+          signal,
         },
       );
       if (stream && jobId) {
-        stream.finish(jobId, {
-          ok: ops.ok !== false && !ops.blocked,
-          error: ops.blockMessage,
-        });
+        if (signal?.aborted) {
+          stream.finish(jobId, {
+            ok: false,
+            cancelled: true,
+            error: t('softwareLifecycle.cancelHint'),
+          });
+          toast.error(t('softwareLifecycle.cancelledToast'));
+        } else {
+          stream.finish(jobId, {
+            ok: ops.ok !== false && !ops.blocked,
+            error: ops.blockMessage,
+          });
+        }
       }
-      if (ops.ok && !ops.blocked) {
+      if (signal?.aborted) {
+        setUninstallOpen(false);
+        await load(true);
+      } else if (ops.ok && !ops.blocked) {
         toast.ok(ops.notes?.[0] ?? t('softwareLifecycle.uninstallDone'));
         setUninstallOpen(false);
         await load(true);
@@ -184,9 +202,22 @@ export function SoftwareVersionBar({
         );
       }
     } catch (e) {
-      const msg = e instanceof Error ? e.message : t('common.opFailed');
-      if (stream && jobId) stream.finish(jobId, { ok: false, error: msg });
-      toast.error(msg);
+      if (isAbortError(e) || signal?.aborted) {
+        if (stream && jobId) {
+          stream.finish(jobId, {
+            ok: false,
+            cancelled: true,
+            error: t('softwareLifecycle.cancelHint'),
+          });
+        }
+        toast.error(t('softwareLifecycle.cancelledToast'));
+        setUninstallOpen(false);
+        await load(true);
+      } else {
+        const msg = e instanceof Error ? e.message : t('common.opFailed');
+        if (stream && jobId) stream.finish(jobId, { ok: false, error: msg });
+        toast.error(msg);
+      }
     } finally {
       setBusy(false);
     }

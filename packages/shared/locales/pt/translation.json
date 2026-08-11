@@ -10086,7 +10086,13 @@
       "generic": "Related services may stop",
       "purgeData": "Data paths will be deleted",
       "protectedSkipped": "Protected components are skipped"
-    }
+    },
+    "requestCancel": "Request cancel",
+    "cancelling": "Cancelling…",
+    "dockCancelling": "Cancelling · {{title}}",
+    "dockCancelled": "Cancelled · {{title}}",
+    "cancelHint": "Cancel requested. The client stopped listening; the host may finish the current apt/step. Re-probe status after a moment.",
+    "cancelledToast": "Operation cancelled (client stopped streaming)"
   },
   "sqlEngineHealth": {
     "finding": {

@@ -49,5 +49,11 @@
     "generic": "相關服务可能停止",
     "purgeData": "将删除資料路径",
     "protectedSkipped": "受保护元件會跳过"
-  }
+  },
+  "requestCancel": "请求取消",
+  "cancelling": "取消中…",
+  "dockCancelling": "取消中 · {{title}}",
+  "dockCancelled": "已取消 · {{title}}",
+  "cancelHint": "已请求取消。浏览器已停止接收日志；主机可能仍会完成当前的 apt／步骤。请稍后重新探测状态。",
+  "cancelledToast": "已取消操作（客户端已停止串流）"
 }

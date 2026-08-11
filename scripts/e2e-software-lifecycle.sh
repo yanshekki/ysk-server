@@ -36,6 +36,8 @@ grep -q 'SoftwareUninstallDialog' apps/web/src/shared/components/ui/SoftwareVers
 grep -q 'OpsStreamProvider' apps/web/src/app/App.tsx || fail "provider"
 grep -q 'OpsStreamDock' apps/web/src/app/App.tsx || fail "dock mount"
 grep -q 'ops-stream-dock--mini\|minimize' apps/web/src/shared/ops-stream/OpsStreamDock.tsx || fail "minimize"
+grep -q 'requestCancel' apps/web/src/shared/ops-stream/OpsStreamContext.tsx apps/web/src/shared/ops-stream/OpsStreamDock.tsx || fail "requestCancel"
+grep -q 'AbortController\|AbortSignal' apps/web/src/shared/ops-stream/OpsStreamContext.tsx || fail "abort controller"
 grep -q 'confirmPhrase\|UNINSTALL' apps/web/src/shared/components/ui/SoftwareUninstallDialog.tsx || fail "double confirm phrase"
 grep -q 'ackLabel\|softwareLifecycle.ack' apps/web/src/shared/components/ui/SoftwareUninstallDialog.tsx \
   || grep -q 'ack' apps/web/src/shared/components/ui/SoftwareUninstallDialog.tsx || fail "ack checkbox"

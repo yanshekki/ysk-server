@@ -8,7 +8,14 @@ import { useOpsStream } from './OpsStreamContext';
 
 export function OpsStreamDock() {
   const { t } = useTranslation();
-  const { job, minimized, setMinimized, dismiss } = useOpsStream();
+  const {
+    job,
+    minimized,
+    setMinimized,
+    dismiss,
+    requestCancel,
+    isCancelRequested,
+  } = useOpsStream();
 
   if (!job) return null;
 
@@ -17,21 +24,36 @@ export function OpsStreamDock() {
       ? t('softwareLifecycle.kindUninstall')
       : t('softwareLifecycle.kindInstall');
 
+  const statusClass = job.busy
+    ? ' is-busy'
+    : job.cancelled
+      ? ' is-cancel'
+      : job.ok === false
+        ? ' is-fail'
+        : ' is-ok';
+
   if (minimized) {
     return (
       <button
         type="button"
-        className={`ops-stream-dock ops-stream-dock--mini${job.busy ? ' is-busy' : job.ok === false ? ' is-fail' : ' is-ok'}`}
+        className={`ops-stream-dock ops-stream-dock--mini${statusClass}`}
         onClick={() => setMinimized(false)}
         title={job.title}
       >
         <span className="ops-stream-dock__mini-dot" aria-hidden />
         <span className="ops-stream-dock__mini-text">
           {job.busy
-            ? t('softwareLifecycle.dockBusy', { kind: kindLabel, title: job.title })
-            : job.ok === false
-              ? t('softwareLifecycle.dockFail', { title: job.title })
-              : t('softwareLifecycle.dockDone', { title: job.title })}
+            ? isCancelRequested
+              ? t('softwareLifecycle.dockCancelling', { title: job.title })
+              : t('softwareLifecycle.dockBusy', {
+                  kind: kindLabel,
+                  title: job.title,
+                })
+            : job.cancelled
+              ? t('softwareLifecycle.dockCancelled', { title: job.title })
+              : job.ok === false
+                ? t('softwareLifecycle.dockFail', { title: job.title })
+                : t('softwareLifecycle.dockDone', { title: job.title })}
         </span>
       </button>
     );
@@ -39,7 +61,7 @@ export function OpsStreamDock() {
 
   return (
     <div
-      className={`ops-stream-dock ops-stream-dock--panel${job.busy ? ' is-busy' : job.ok === false ? ' is-fail' : ' is-ok'}`}
+      className={`ops-stream-dock ops-stream-dock--panel${statusClass}`}
       role="dialog"
       aria-label={job.title}
     >
@@ -49,6 +71,18 @@ export function OpsStreamDock() {
           <strong className="ops-stream-dock__title">{job.title}</strong>
         </div>
         <div className="ops-stream-dock__actions">
+          {job.busy ? (
+            <button
+              type="button"
+              className={buttonClassName({ variant: 'secondary', size: 'sm' })}
+              disabled={isCancelRequested}
+              onClick={() => requestCancel()}
+            >
+              {isCancelRequested
+                ? t('softwareLifecycle.cancelling')
+                : t('softwareLifecycle.requestCancel')}
+            </button>
+          ) : null}
           <button
             type="button"
             className={buttonClassName({ variant: 'ghost', size: 'sm' })}
@@ -75,6 +109,11 @@ export function OpsStreamDock() {
       {job.error ? (
         <p className="ops-stream-dock__error" role="alert">
           {job.error}
+        </p>
+      ) : null}
+      {job.cancelled && !job.busy ? (
+        <p className="ops-stream-dock__hint muted" role="status">
+          {t('softwareLifecycle.cancelHint')}
         </p>
       ) : null}
     </div>

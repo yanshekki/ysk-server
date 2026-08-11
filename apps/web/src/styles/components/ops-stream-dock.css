@@ -32,6 +32,20 @@
   border-color: rgba(16, 185, 129, 0.4);
 }
 
+.ops-stream-dock--panel.is-cancel:not(.is-busy) {
+  border-color: rgba(245, 158, 11, 0.5);
+}
+
+.ops-stream-dock--mini.is-cancel .ops-stream-dock__mini-dot {
+  background: #f59e0b;
+}
+
+.ops-stream-dock__hint {
+  margin: 0;
+  padding: 0.35rem 0.85rem 0.75rem;
+  font-size: 0.78rem;
+}
+
 .ops-stream-dock__head {
   display: flex;
   align-items: flex-start;
