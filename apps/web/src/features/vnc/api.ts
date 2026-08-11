@@ -5,7 +5,8 @@ import { api } from '../../shared/services/api';
 
 export type VncDesktopProfile = 'xfce' | 'terminal';
 export type VncRfbBind = 'localhost' | 'all';
-export type VncConnectPath = 'via_server' | 'direct';
+/** Both open in browser via panel RFB proxy (not host vncviewer). */
+export type VncConnectPath = 'user_reachable' | 'server_proxy';
 export type VncStackId = 'tigervnc' | 'novnc' | 'xfce' | 'viewer';
 
 export type VncStackStatus = {

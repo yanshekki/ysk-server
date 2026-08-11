@@ -77,7 +77,7 @@ export function VncPage() {
   const [clName, setClName] = useState('');
   const [clHost, setClHost] = useState('');
   const [clPort, setClPort] = useState(5901);
-  const [clPath, setClPath] = useState<VncConnectPath>('via_server');
+  const [clPath, setClPath] = useState<VncConnectPath>('user_reachable');
   const [clPassword, setClPassword] = useState('');
   const [clRememberPass, setClRememberPass] = useState(false);
   /** Multi-session in-browser RFB viewers (panel WS proxy) */
@@ -595,7 +595,7 @@ export function VncPage() {
                       setClName('');
                       setClHost('');
                       setClPort(5901);
-                      setClPath('via_server');
+                      setClPath('user_reachable');
                       setClPassword('');
                       setClRememberPass(false);
                       setClientOpen(true);
@@ -633,9 +633,9 @@ export function VncPage() {
                   header: t('vnc.clientPath'),
                   nowrap: true,
                   render: (c) =>
-                    c.path === 'direct'
-                      ? t('vnc.pathHostViewer')
-                      : t('vnc.pathBrowser'),
+                    c.path === 'server_proxy'
+                      ? t('vnc.pathServerProxy')
+                      : t('vnc.pathUserReachable'),
                 },
                 {
                   key: 'status',
@@ -690,17 +690,6 @@ export function VncPage() {
                       {t('vnc.disconnect')}
                     </Button>
                   ) : null}
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    loading={busy}
-                    onClick={() =>
-                      void runOps(() => vncApi.clientUp(c.id, 'direct'))
-                    }
-                    title={t('vnc.pathHostViewer')}
-                  >
-                    {t('vnc.hostViewer')}
-                  </Button>
                   <Button
                     size="sm"
                     variant="danger"
@@ -1222,16 +1211,29 @@ export function VncPage() {
               onChange={(e) => setClPort(Number(e.target.value) || 5901)}
             />
           </Field>
-          <Field label={t('vnc.clientPath')} htmlFor="cl-path" flush>
+          <Field
+            label={t('vnc.clientPath')}
+            htmlFor="cl-path"
+            hint={
+              clPath === 'server_proxy'
+                ? t('vnc.pathServerProxyHint')
+                : t('vnc.pathUserReachableHint')
+            }
+            flush
+          >
             <select
               id="cl-path"
               value={clPath}
               onChange={(e) =>
-                setClPath(e.target.value === 'direct' ? 'direct' : 'via_server')
+                setClPath(
+                  e.target.value === 'server_proxy'
+                    ? 'server_proxy'
+                    : 'user_reachable',
+                )
               }
             >
-              <option value="via_server">{t('vnc.pathBrowser')}</option>
-              <option value="direct">{t('vnc.pathHostViewer')}</option>
+              <option value="user_reachable">{t('vnc.pathUserReachable')}</option>
+              <option value="server_proxy">{t('vnc.pathServerProxy')}</option>
             </select>
           </Field>
           <Field

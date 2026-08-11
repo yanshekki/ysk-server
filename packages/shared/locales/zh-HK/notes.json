@@ -2828,6 +2828,9 @@
   "vnc": {
     "viewerNeedExecute": "要在瀏覽器開啟本機 VNC 桌面，需要 root 並啟用 YSK_EXECUTE",
     "browserSessionReady": "瀏覽器 VNC 工作階段已就緒：{{name}}",
+    "clientPathUserReachable": "路徑：經用戶可達端點 — {{name}} → {{target}}（瀏覽器經面板轉發）",
+    "clientPathServerProxy": "路徑：經伺服器代理 — {{name}} → {{target}}（經本機伺服器網絡轉發）",
+    "clientOpenInBrowserHint": "請在客戶端列表按「在瀏覽器開啟」以使用內嵌 VNC",
     "needInstall": "請安裝 {{stack}}",
     "needExecute": "未啟用 YSK_EXECUTE — 無法安裝套件或建立 Linux 用戶。",
     "needRoot": "非 root — 無法 useradd 或套用 vncserver。",

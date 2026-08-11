@@ -11291,7 +11291,9 @@
       "recordStarted": "جارٍ التسجيل… أوقف أو انتظر 60 ث",
       "recordSaved": "تم تنزيل التسجيل",
       "recordFailed": "فشل التسجيل",
-      "recordUnsupported": "هذا المتصفح لا يسجّل اللوحة"
+      "recordUnsupported": "هذا المتصفح لا يسجّل اللوحة",
+      "connectingHint": "Opening a secure tunnel to the desktop…",
+      "reconnectHint": "Press Reconnect to try again, or check the remote host and port."
     },
     "connectionBrowserHint": "موصى به: افتح سطح المكتب داخل هذه اللوحة (بدون نفق SSH).",
     "connectionBrowserDesc": "يشغّل جلسة VNC عند الحاجة ويفتح العارض المدمج (لوحة مفاتيح، فأرة، حافظة).",
@@ -11301,7 +11303,11 @@
     "clientPasswordOptional": "كلمة مرور VNC (اختياري)",
     "clientPasswordHint": "تُستخدم عند فتح العارض. اتركها فارغة لإدخالها كل مرة.",
     "clientRememberPassword": "حفظ كلمة المرور على هذا الخادم",
-    "clientRememberPasswordWarn": "تُخزَّن كلمة المرور في dataDir للوحة (قابلة للقراءة من root). على المضيفات المشتركة أدخلها كل مرة."
+    "clientRememberPasswordWarn": "تُخزَّن كلمة المرور في dataDir للوحة (قابلة للقراءة من root). على المضيفات المشتركة أدخلها كل مرة.",
+    "pathUserReachable": "User-reachable endpoint",
+    "pathServerProxy": "Via server proxy",
+    "pathUserReachableHint": "For public hostnames or targets reachable as the user configured (e.g. example.com:5901). Browser reaches them through the panel.",
+    "pathServerProxyHint": "For LAN or targets only the control-plane server can reach. Traffic is proxied via this server’s network to the VNC host."
   },
   "vpn": {
     "pageDesc": "VPN server & client",

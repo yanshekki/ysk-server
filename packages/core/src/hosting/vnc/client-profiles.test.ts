@@ -18,12 +18,13 @@ describe('vnc client profiles', () => {
       name: 'office',
       host: '10.0.0.9',
       port: 5901,
-      path: 'via_server',
+      path: 'via_server', // legacy → server_proxy
     });
     expect(p.name).toBe('office');
+    expect(p.path).toBe('server_proxy');
     expect(listClientProfilesPublic(dir)).toHaveLength(1);
-    updateClientProfile(dir, p.id, { path: 'direct' });
-    expect(listClientProfilesPublic(dir)[0].path).toBe('direct');
+    updateClientProfile(dir, p.id, { path: 'direct' }); // legacy → user_reachable
+    expect(listClientProfilesPublic(dir)[0]!.path).toBe('user_reachable');
     const del = await deleteClientProfile({ host, dataDir: dir, id: p.id });
     expect(del.ok).toBe(true);
     expect(listClientProfilesPublic(dir)).toHaveLength(0);

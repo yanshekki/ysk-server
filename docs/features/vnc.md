@@ -55,9 +55,10 @@ Desktop profiles per account: **minimal** · **xfce** · **none**.
 
 ## Client workflow
 
-1. **Client** tab → add remote `host:port` (optional stored password with explicit warning)
-2. **Open in browser** (recommended)
-3. Optional: **Host viewer** (runs `vncviewer` on this server)
+1. **Client** tab → add remote `host:port` and choose a path (**both open VNC in the browser**):
+   - **User-reachable endpoint** (default): public hostnames / targets as configured
+   - **Via server proxy**: LAN or targets only this control-plane host can reach; traffic egresses via the server network
+2. **Open in browser**
 
 ## Safety
 

@@ -1,5 +1,7 @@
 /**
- * Outbound VNC client profiles — via_server (noVNC proxy) or direct vncviewer.
+ * Outbound VNC client profiles — both paths open in the browser via panel RFB proxy.
+ * - user_reachable: public / user-side targets
+ * - server_proxy: egress via control-plane network (LAN / server-reachable)
  */
 
 import { randomUUID } from 'node:crypto';
@@ -12,10 +14,9 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 import type { HostExecutor } from '../../host/executor.js';
-import { shellQuote } from '../project-user-run.js';
 import { ErrorCodes, YskError, tl } from '@ysk/shared';
 import type { VncClientProfile, VncConnectPath } from './types.js';
-import { novncPortForDisplay } from './ports.js';
+import { normalizeVncConnectPath } from './types.js';
 
 export type VncClientRecord = {
   id: string;
@@ -46,7 +47,11 @@ export function loadClientProfiles(dataDir: string): VncClientRecord[] {
   if (!existsSync(p)) return [];
   try {
     const raw = JSON.parse(readFileSync(p, 'utf8')) as { items?: VncClientRecord[] };
-    return Array.isArray(raw.items) ? raw.items : [];
+    const items = Array.isArray(raw.items) ? raw.items : [];
+    return items.map((r) => ({
+      ...r,
+      path: normalizeVncConnectPath(r.path),
+    }));
   } catch {
     return [];
   }
@@ -67,7 +72,7 @@ function toPublic(r: VncClientRecord): VncClientProfile {
     name: r.name,
     host: r.host,
     port: r.port,
-    path: r.path,
+    path: normalizeVncConnectPath(r.path),
     status: r.status,
     autostart: r.autostart,
     createdAt: r.createdAt,
@@ -116,7 +121,7 @@ export function createClientProfile(
     name,
     host,
     port,
-    path: input.path === 'direct' ? 'direct' : 'via_server',
+    path: normalizeVncConnectPath(input.path ?? 'user_reachable'),
     password: input.password || undefined,
     autostart: Boolean(input.autostart),
     status: 'down',
@@ -159,7 +164,7 @@ export function updateClientProfile(
     }
     rec.port = port;
   }
-  if (patch.path === 'direct' || patch.path === 'via_server') rec.path = patch.path;
+  if (patch.path != null) rec.path = normalizeVncConnectPath(patch.path);
   if (typeof patch.autostart === 'boolean') rec.autostart = patch.autostart;
   if (patch.password === null) delete rec.password;
   else if (typeof patch.password === 'string' && patch.password) {
@@ -192,106 +197,55 @@ export async function clientUp(input: {
     });
   }
   const rec = { ...items[idx] };
-  const pathMode = input.path ?? rec.path;
+  const pathMode = normalizeVncConnectPath(input.path ?? rec.path);
 
-  if (!input.host.executeEnabled() || !input.host.isRoot()) {
-    notes.push(tl('notes.vnc.clientUpBlocked'));
-    return {
-      ok: false,
-      notes,
-      blocked: true,
-      requiresExecute: !input.host.executeEnabled(),
-      profile: toPublic(rec),
-    };
-  }
-
-  if (pathMode === 'via_server') {
-    // Pick a free-ish local noVNC port from a high range keyed by id hash
-    const localHttp =
-      rec.localHttpPort ??
-      6100 + (parseInt(rec.id.replace(/\D/g, '').slice(0, 4) || '1', 10) % 500);
-    const web = existsSync('/usr/share/novnc') ? '--web /usr/share/novnc' : '';
-    const script = [
-      `command -v websockify >/dev/null 2>&1 || { echo 'websockify missing'; exit 127; }`,
-      `nohup websockify ${web} 127.0.0.1:${localHttp} ${shellQuote(rec.host)}:${rec.port} >/tmp/ysk-vnc-client-${rec.id.slice(0, 8)}.log 2>&1 & echo $!`,
-    ].join(' && ');
-    const r = await input.host.runCommand(['bash', '-c', script], {
-      timeoutMs: 15_000,
-    });
-    if (r.exitCode !== 0) {
-      notes.push(
-        tl('notes.vnc.clientUpFailed', {
-          detail: (r.stderr || r.stdout || '').slice(0, 200),
-        }),
-      );
-      rec.status = 'error';
-      items[idx] = rec;
-      saveClientProfiles(input.dataDir, items);
-      return { ok: false, notes, profile: toPublic(rec) };
-    }
-    rec.pid = Number(r.stdout.trim().split('\n').pop()) || undefined;
-    rec.localHttpPort = localHttp;
-    rec.path = 'via_server';
-    rec.status = 'up';
-    rec.updatedAt = new Date().toISOString();
-    items[idx] = rec;
-    saveClientProfiles(input.dataDir, items);
-    notes.push(
-      tl('notes.vnc.clientViaServerUp', {
-        name: rec.name,
-        url: `http://127.0.0.1:${localHttp}/vnc.html?host=127.0.0.1&port=${localHttp}`,
-      }),
-    );
-    return { ok: true, notes, profile: toPublic(rec) };
-  }
-
-  // direct — vncviewer
-  const viewer =
-    (await cmdExists(input.host, 'vncviewer')) ||
-    (await cmdExists(input.host, 'xtigervncviewer'));
-  if (!viewer) {
-    notes.push(tl('notes.vnc.clientNeedViewer'));
-    return { ok: false, notes, profile: toPublic(rec) };
-  }
-  const target = `${rec.host}::${rec.port}`;
-  // TigerVNC often uses host:display or host::port
-  const script = `nohup ${viewer} ${shellQuote(rec.host + '::' + rec.port)} >/tmp/ysk-vncviewer-${rec.id.slice(0, 8)}.log 2>&1 & echo $!`;
-  const r = await input.host.runCommand(['bash', '-c', script], {
-    timeoutMs: 15_000,
-  });
-  if (r.exitCode !== 0) {
-    notes.push(
-      tl('notes.vnc.clientUpFailed', {
-        detail: (r.stderr || r.stdout || '').slice(0, 200),
-      }),
-    );
-    rec.status = 'error';
-    items[idx] = rec;
-    saveClientProfiles(input.dataDir, items);
-    return { ok: false, notes, profile: toPublic(rec) };
-  }
-  rec.pid = Number(r.stdout.trim().split('\n').pop()) || undefined;
-  rec.path = 'direct';
+  // Both paths use the in-browser VNC client (panel RFB proxy). Persist path intent only.
+  rec.path = pathMode;
   rec.status = 'up';
   rec.updatedAt = new Date().toISOString();
+  // Stop any legacy websockify/vncviewer leftover from older builds
+  if (
+    (rec.pid || rec.localHttpPort) &&
+    input.host.executeEnabled() &&
+    input.host.isRoot()
+  ) {
+    try {
+      if (rec.pid) {
+        await input.host.runCommand(
+          ['bash', '-c', `kill ${rec.pid} 2>/dev/null || true`],
+          { timeoutMs: 5_000 },
+        );
+      }
+      if (rec.localHttpPort) {
+        await input.host.runCommand(
+          [
+            'bash',
+            '-c',
+            `pkill -f 'websockify.*${rec.localHttpPort}' 2>/dev/null || true`,
+          ],
+          { timeoutMs: 5_000 },
+        );
+      }
+    } catch {
+      /* */
+    }
+  }
+  rec.pid = undefined;
   items[idx] = rec;
   saveClientProfiles(input.dataDir, items);
-  notes.push(tl('notes.vnc.clientDirectUp', { name: rec.name, target }));
+  notes.push(
+    pathMode === 'server_proxy'
+      ? tl('notes.vnc.clientPathServerProxy', {
+          name: rec.name,
+          target: `${rec.host}:${rec.port}`,
+        })
+      : tl('notes.vnc.clientPathUserReachable', {
+          name: rec.name,
+          target: `${rec.host}:${rec.port}`,
+        }),
+  );
+  notes.push(tl('notes.vnc.clientOpenInBrowserHint'));
   return { ok: true, notes, profile: toPublic(rec) };
-}
-
-async function cmdExists(host: HostExecutor, bin: string): Promise<string | null> {
-  try {
-    const r = await host.runCommand(
-      ['bash', '-c', `command -v ${bin} 2>/dev/null || true`],
-      { timeoutMs: 5_000 },
-    );
-    const line = r.stdout.trim().split('\n').find(Boolean);
-    return line || null;
-  } catch {
-    if (existsSync(`/usr/bin/${bin}`)) return `/usr/bin/${bin}`;
-    return null;
-  }
 }
 
 export async function clientDown(input: {
@@ -374,6 +328,3 @@ export async function deleteClientProfile(input: {
   notes.push(tl('notes.vnc.clientDeleted'));
   return { ok: true, notes };
 }
-
-// silence unused import if tree-shaken weirdly
-void novncPortForDisplay;

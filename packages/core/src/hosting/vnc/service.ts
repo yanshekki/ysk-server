@@ -916,10 +916,23 @@ export class VncService {
         httpStatus: 404,
       });
     }
+    const pathMode =
+      cl.path === 'server_proxy' ? 'server_proxy' : 'user_reachable';
     notes.push(
       tl('notes.vnc.browserSessionReady', {
         name: `${cl.name} (${cl.host}:${cl.port})`,
       }),
+    );
+    notes.push(
+      pathMode === 'server_proxy'
+        ? tl('notes.vnc.clientPathServerProxy', {
+            name: cl.name,
+            target: `${cl.host}:${cl.port}`,
+          })
+        : tl('notes.vnc.clientPathUserReachable', {
+            name: cl.name,
+            target: `${cl.host}:${cl.port}`,
+          }),
     );
     return {
       ok: true,

@@ -216,7 +216,9 @@
     "recordStarted": "রেকর্ডিং… থামান বা ৬০ সেকেন্ড অপেক্ষা",
     "recordSaved": "রেকর্ডিং ডাউনলোড",
     "recordFailed": "রেকর্ড ব্যর্থ",
-    "recordUnsupported": "এই ব্রাউজার canvas রেকর্ড করতে পারে না"
+    "recordUnsupported": "এই ব্রাউজার canvas রেকর্ড করতে পারে না",
+    "connectingHint": "Opening a secure tunnel to the desktop…",
+    "reconnectHint": "Press Reconnect to try again, or check the remote host and port."
   },
   "connectionBrowserHint": "সুপারিশ: এই প্যানেলে ডেস্কটপ খুলুন (SSH টানেল লাগে না)।",
   "connectionBrowserDesc": "প্রয়োজনে VNC সেশন শুরু করে ইন-প্যানেল ভিউয়ার খোলে (কীবোর্ড, মাউস, ক্লিপবোর্ড)।",
@@ -226,5 +228,9 @@
   "clientPasswordOptional": "VNC পাসওয়ার্ড (ঐচ্ছিক)",
   "clientPasswordHint": "ভিউয়ার খোলার সময় ব্যবহৃত। প্রতিবার টাইপ করতে খালি রাখুন।",
   "clientRememberPassword": "এই সার্ভারে পাসওয়ার্ড সংরক্ষণ",
-  "clientRememberPasswordWarn": "পাসওয়ার্ড প্যানেল dataDir-এ থাকে (root পড়তে পারে)। শেয়ার্ড হোস্টে প্রতিবার টাইপ করুন।"
+  "clientRememberPasswordWarn": "পাসওয়ার্ড প্যানেল dataDir-এ থাকে (root পড়তে পারে)। শেয়ার্ড হোস্টে প্রতিবার টাইপ করুন।",
+  "pathUserReachable": "User-reachable endpoint",
+  "pathServerProxy": "Via server proxy",
+  "pathUserReachableHint": "For public hostnames or targets reachable as the user configured (e.g. example.com:5901). Browser reaches them through the panel.",
+  "pathServerProxyHint": "For LAN or targets only the control-plane server can reach. Traffic is proxied via this server’s network to the VNC host."
 }

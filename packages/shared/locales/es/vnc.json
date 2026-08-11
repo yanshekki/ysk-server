@@ -216,7 +216,9 @@
     "recordStarted": "Grabando… Detener o esperar 60 s",
     "recordSaved": "Grabación descargada",
     "recordFailed": "Error al grabar",
-    "recordUnsupported": "Este navegador no puede grabar el canvas"
+    "recordUnsupported": "Este navegador no puede grabar el canvas",
+    "connectingHint": "Opening a secure tunnel to the desktop…",
+    "reconnectHint": "Press Reconnect to try again, or check the remote host and port."
   },
   "connectionBrowserHint": "Recomendado: abrir el escritorio en este panel (sin túnel SSH).",
   "connectionBrowserDesc": "Inicia la sesión VNC si hace falta y abre el visor integrado (teclado, ratón, portapapeles).",
@@ -226,5 +228,9 @@
   "clientPasswordOptional": "Contraseña VNC (opcional)",
   "clientPasswordHint": "Se usa al abrir el visor. Déjela vacía para escribirla cada vez.",
   "clientRememberPassword": "Guardar la contraseña en este servidor",
-  "clientRememberPasswordWarn": "La contraseña se guarda en dataDir del panel (legible por root). En hosts compartidos, escríbala cada vez."
+  "clientRememberPasswordWarn": "La contraseña se guarda en dataDir del panel (legible por root). En hosts compartidos, escríbala cada vez.",
+  "pathUserReachable": "User-reachable endpoint",
+  "pathServerProxy": "Via server proxy",
+  "pathUserReachableHint": "For public hostnames or targets reachable as the user configured (e.g. example.com:5901). Browser reaches them through the panel.",
+  "pathServerProxyHint": "For LAN or targets only the control-plane server can reach. Traffic is proxied via this server’s network to the VNC host."
 }

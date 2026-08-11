@@ -216,7 +216,9 @@
     "recordStarted": "녹화 중… 「녹화 중지」 또는 60초 대기",
     "recordSaved": "녹화 다운로드됨",
     "recordFailed": "녹화 실패",
-    "recordUnsupported": "이 브라우저는 canvas 녹화를 지원하지 않음"
+    "recordUnsupported": "이 브라우저는 canvas 녹화를 지원하지 않음",
+    "connectingHint": "Opening a secure tunnel to the desktop…",
+    "reconnectHint": "Press Reconnect to try again, or check the remote host and port."
   },
   "connectionBrowserHint": "권장: 이 패널 안에서 데스크톱을 엽니다(SSH 터널 불필요).",
   "connectionBrowserDesc": "필요 시 VNC를 시작하고 패널에서 키보드/마우스/클립보드를 사용합니다.",
@@ -226,5 +228,9 @@
   "clientPasswordOptional": "VNC 비밀번호(선택)",
   "clientPasswordHint": "브라우저 뷰어를 열 때 사용. 비우면 매번 입력.",
   "clientRememberPassword": "이 서버에 비밀번호 저장 후 다음에 사용",
-  "clientRememberPasswordWarn": "비밀번호는 패널 dataDir에 저장됩니다(root 읽기 가능). 공용 호스트에서는 매번 입력을 권장."
+  "clientRememberPasswordWarn": "비밀번호는 패널 dataDir에 저장됩니다(root 읽기 가능). 공용 호스트에서는 매번 입력을 권장.",
+  "pathUserReachable": "User-reachable endpoint",
+  "pathServerProxy": "Via server proxy",
+  "pathUserReachableHint": "For public hostnames or targets reachable as the user configured (e.g. example.com:5901). Browser reaches them through the panel.",
+  "pathServerProxyHint": "For LAN or targets only the control-plane server can reach. Traffic is proxied via this server’s network to the VNC host."
 }

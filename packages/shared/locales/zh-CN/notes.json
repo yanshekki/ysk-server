@@ -2826,8 +2826,11 @@
     "ovpnNatDurable": "OpenVPN NAT/forward installed for reboot (systemd ExecStartPost)."
   },
   "vnc": {
-    "viewerNeedExecute": "要在浏览器打开本机 VNC 桌面，需要 root + YSK_EXECUTE",
+    "viewerNeedExecute": "要在浏览器打开本机 VNC 桌面，需要 root 并启用 YSK_EXECUTE",
     "browserSessionReady": "浏览器 VNC 会话已就绪：{{name}}",
+    "clientPathUserReachable": "路径：经用户可达端点 — {{name}} → {{target}}（浏览器经面板转发）",
+    "clientPathServerProxy": "路径：经服务器代理 — {{name}} → {{target}}（经本机服务器网络转发）",
+    "clientOpenInBrowserHint": "请在客户端列表点击「在浏览器打开」以使用内嵌 VNC",
     "needInstall": "请安装 {{stack}}",
     "needExecute": "未启用 YSK_EXECUTE — 无法安装软件包或创建 Linux 用户。",
     "needRoot": "非 root — 无法 useradd 或应用 vncserver。",

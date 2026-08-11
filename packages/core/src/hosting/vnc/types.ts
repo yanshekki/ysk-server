@@ -14,7 +14,21 @@ export function normalizeVncDesktopProfile(raw: unknown): VncDesktopProfile {
 
 export type VncRfbBind = 'localhost' | 'all';
 
-export type VncConnectPath = 'via_server' | 'direct';
+/**
+ * Outbound client path — both are browser VNC (panel RFB proxy).
+ * - user_reachable: public / user-side target (default), e.g. hostname:5901
+ * - server_proxy: emphasize egress from control-plane network (LAN / server-only targets)
+ *
+ * Legacy: via_server → server_proxy, direct → user_reachable (direct no longer means vncviewer).
+ */
+export type VncConnectPath = 'user_reachable' | 'server_proxy';
+
+export function normalizeVncConnectPath(raw: unknown): VncConnectPath {
+  const s = String(raw ?? '').toLowerCase().trim();
+  if (s === 'server_proxy' || s === 'via_server' || s === 'proxy') return 'server_proxy';
+  // direct | user_reachable | browser | default
+  return 'user_reachable';
+}
 
 export type VncStackId = 'tigervnc' | 'novnc' | 'xfce' | 'viewer';
 

@@ -216,7 +216,9 @@
     "recordStarted": "Merekam… Berhenti atau tunggu 60 dtk",
     "recordSaved": "Rekaman diunduh",
     "recordFailed": "Gagal merekam",
-    "recordUnsupported": "Peramban ini tidak merekam canvas"
+    "recordUnsupported": "Peramban ini tidak merekam canvas",
+    "connectingHint": "Opening a secure tunnel to the desktop…",
+    "reconnectHint": "Press Reconnect to try again, or check the remote host and port."
   },
   "connectionBrowserHint": "Disarankan: buka desktop di dalam panel ini (tanpa terowongan SSH).",
   "connectionBrowserDesc": "Memulai sesi VNC bila perlu dan membuka penampil terintegrasi (keyboard, mouse, papan klip).",
@@ -226,5 +228,9 @@
   "clientPasswordOptional": "Kata sandi VNC (opsional)",
   "clientPasswordHint": "Dipakai saat membuka penampil. Kosongkan agar mengetik setiap kali.",
   "clientRememberPassword": "Simpan kata sandi di server ini",
-  "clientRememberPasswordWarn": "Kata sandi disimpan di dataDir panel (bisa dibaca root). Di host bersama, ketik setiap kali."
+  "clientRememberPasswordWarn": "Kata sandi disimpan di dataDir panel (bisa dibaca root). Di host bersama, ketik setiap kali.",
+  "pathUserReachable": "User-reachable endpoint",
+  "pathServerProxy": "Via server proxy",
+  "pathUserReachableHint": "For public hostnames or targets reachable as the user configured (e.g. example.com:5901). Browser reaches them through the panel.",
+  "pathServerProxyHint": "For LAN or targets only the control-plane server can reach. Traffic is proxied via this server’s network to the VNC host."
 }

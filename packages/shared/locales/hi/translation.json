@@ -11291,7 +11291,9 @@
       "recordStarted": "रिकॉर्डिंग… रोकें या 60 सेकंड प्रतीक्षा",
       "recordSaved": "रिकॉर्डिंग डाउनलोड",
       "recordFailed": "रिकॉर्ड विफल",
-      "recordUnsupported": "यह ब्राउज़र canvas रिकॉर्ड नहीं कर सकता"
+      "recordUnsupported": "यह ब्राउज़र canvas रिकॉर्ड नहीं कर सकता",
+      "connectingHint": "Opening a secure tunnel to the desktop…",
+      "reconnectHint": "Press Reconnect to try again, or check the remote host and port."
     },
     "connectionBrowserHint": "अनुशंसित: इस पैनल में डेस्कटॉप खोलें (SSH टनल की ज़रूरत नहीं)।",
     "connectionBrowserDesc": "ज़रूरत पड़ने पर VNC सत्र शुरू करता है और इन-पैनल व्यूअर खोलता है (कीबोर्ड, माउस, क्लिपबोर्ड)।",
@@ -11301,7 +11303,11 @@
     "clientPasswordOptional": "VNC पासवर्ड (वैकल्पिक)",
     "clientPasswordHint": "व्यूअर खोलते समय उपयोग। हर बार टाइप करने के लिए खाली छोड़ें।",
     "clientRememberPassword": "इस सर्वर पर पासवर्ड सहेजें",
-    "clientRememberPasswordWarn": "पासवर्ड पैनल dataDir में रहता है (root पढ़ सकता है)। साझा होस्ट पर हर बार टाइप करें।"
+    "clientRememberPasswordWarn": "पासवर्ड पैनल dataDir में रहता है (root पढ़ सकता है)। साझा होस्ट पर हर बार टाइप करें।",
+    "pathUserReachable": "User-reachable endpoint",
+    "pathServerProxy": "Via server proxy",
+    "pathUserReachableHint": "For public hostnames or targets reachable as the user configured (e.g. example.com:5901). Browser reaches them through the panel.",
+    "pathServerProxyHint": "For LAN or targets only the control-plane server can reach. Traffic is proxied via this server’s network to the VNC host."
   },
   "vpn": {
     "pageDesc": "VPN server & client",

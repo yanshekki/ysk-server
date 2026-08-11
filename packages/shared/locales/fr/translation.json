@@ -11291,7 +11291,9 @@
       "recordStarted": "Enregistrement… Arrêter ou attendre 60 s",
       "recordSaved": "Enregistrement téléchargé",
       "recordFailed": "Échec de l’enregistrement",
-      "recordUnsupported": "Ce navigateur ne peut pas enregistrer le canevas"
+      "recordUnsupported": "Ce navigateur ne peut pas enregistrer le canevas",
+      "connectingHint": "Opening a secure tunnel to the desktop…",
+      "reconnectHint": "Press Reconnect to try again, or check the remote host and port."
     },
     "connectionBrowserHint": "Recommandé : ouvrir le bureau dans ce panneau (pas de tunnel SSH).",
     "connectionBrowserDesc": "Démarre la session VNC si besoin et ouvre le visualiseur intégré (clavier, souris, presse-papiers).",
@@ -11301,7 +11303,11 @@
     "clientPasswordOptional": "Mot de passe VNC (optionnel)",
     "clientPasswordHint": "Utilisé à l’ouverture du visualiseur. Laissez vide pour saisir à chaque fois.",
     "clientRememberPassword": "Enregistrer le mot de passe sur ce serveur",
-    "clientRememberPasswordWarn": "Le mot de passe est stocké dans dataDir du panneau (lisible par root). Sur hôte partagé, saisissez-le à chaque fois."
+    "clientRememberPasswordWarn": "Le mot de passe est stocké dans dataDir du panneau (lisible par root). Sur hôte partagé, saisissez-le à chaque fois.",
+    "pathUserReachable": "User-reachable endpoint",
+    "pathServerProxy": "Via server proxy",
+    "pathUserReachableHint": "For public hostnames or targets reachable as the user configured (e.g. example.com:5901). Browser reaches them through the panel.",
+    "pathServerProxyHint": "For LAN or targets only the control-plane server can reach. Traffic is proxied via this server’s network to the VNC host."
   },
   "vpn": {
     "pageDesc": "VPN server & client",

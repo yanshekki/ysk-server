@@ -11291,7 +11291,9 @@
       "recordStarted": "録画中… 「録画停止」または60秒待機",
       "recordSaved": "録画をダウンロードしました",
       "recordFailed": "録画に失敗",
-      "recordUnsupported": "このブラウザは canvas 録画に非対応"
+      "recordUnsupported": "このブラウザは canvas 録画に非対応",
+      "connectingHint": "Opening a secure tunnel to the desktop…",
+      "reconnectHint": "Press Reconnect to try again, or check the remote host and port."
     },
     "connectionBrowserHint": "推奨：このパネル内でデスクトップを開きます（SSHトンネル不要）。",
     "connectionBrowserDesc": "必要なら VNC を起動し、パネル内でキーボード／マウス／クリップボードを使えます。",
@@ -11301,7 +11303,11 @@
     "clientPasswordOptional": "VNC パスワード（任意）",
     "clientPasswordHint": "ブラウザビューアを開くときに使用。空なら毎回入力。",
     "clientRememberPassword": "このサーバーにパスワードを保存して次回利用",
-    "clientRememberPasswordWarn": "パスワードはパネル dataDir に保存されます（root が読めます）。共有ホストでは毎回入力を推奨。"
+    "clientRememberPasswordWarn": "パスワードはパネル dataDir に保存されます（root が読めます）。共有ホストでは毎回入力を推奨。",
+    "pathUserReachable": "User-reachable endpoint",
+    "pathServerProxy": "Via server proxy",
+    "pathUserReachableHint": "For public hostnames or targets reachable as the user configured (e.g. example.com:5901). Browser reaches them through the panel.",
+    "pathServerProxyHint": "For LAN or targets only the control-plane server can reach. Traffic is proxied via this server’s network to the VNC host."
   },
   "vpn": {
     "pageDesc": "VPN サーバー＆クライアント",

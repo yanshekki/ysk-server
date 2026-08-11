@@ -216,7 +216,9 @@
     "recordStarted": "ریکارڈنگ… روکیں یا 60 سیکنڈ انتظار",
     "recordSaved": "ریکارڈنگ ڈاؤن لوڈ",
     "recordFailed": "ریکارڈ ناکام",
-    "recordUnsupported": "یہ براؤزر canvas ریکارڈ نہیں کر سکتا"
+    "recordUnsupported": "یہ براؤزر canvas ریکارڈ نہیں کر سکتا",
+    "connectingHint": "Opening a secure tunnel to the desktop…",
+    "reconnectHint": "Press Reconnect to try again, or check the remote host and port."
   },
   "connectionBrowserHint": "تجویز: اس پینل میں ڈیسکٹاپ کھولیں (SSH سرنگ کی ضرورت نہیں)۔",
   "connectionBrowserDesc": "ضرورت پڑنے پر VNC سیشن شروع کرتا ہے اور ان-پینل ویوئر کھولتا ہے (کی بورڈ، ماؤس، کلپ بورڈ)۔",
@@ -226,5 +228,9 @@
   "clientPasswordOptional": "VNC پاس ورڈ (اختیاری)",
   "clientPasswordHint": "ویوئر کھولتے وقت استعمال۔ ہر بار ٹائپ کرنے کے لیے خالی رکھیں۔",
   "clientRememberPassword": "اس سرور پر پاس ورڈ محفوظ کریں",
-  "clientRememberPasswordWarn": "پاس ورڈ پینل dataDir میں رہتا ہے (root پڑھ سکتا ہے)۔ مشترکہ ہوسٹ پر ہر بار ٹائپ کریں۔"
+  "clientRememberPasswordWarn": "پاس ورڈ پینل dataDir میں رہتا ہے (root پڑھ سکتا ہے)۔ مشترکہ ہوسٹ پر ہر بار ٹائپ کریں۔",
+  "pathUserReachable": "User-reachable endpoint",
+  "pathServerProxy": "Via server proxy",
+  "pathUserReachableHint": "For public hostnames or targets reachable as the user configured (e.g. example.com:5901). Browser reaches them through the panel.",
+  "pathServerProxyHint": "For LAN or targets only the control-plane server can reach. Traffic is proxied via this server’s network to the VNC host."
 }
