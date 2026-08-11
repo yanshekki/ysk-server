@@ -43,6 +43,27 @@ export async function handleHostingDnsPowerdnsRoutes(
       install: data.install,
       localAddress: data.localAddress,
     });
+    if (result.ok && data.install) {
+      try {
+        const { syncServiceExposure, dnsPortBindings } = await import('@ysk/core');
+        const exp = await syncServiceExposure({
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          serviceId: 'pdns',
+          ports: dnsPortBindings(),
+          reason: 'start',
+          requireDecision: false,
+        });
+        if (exp.notes?.length) {
+          (result as { notes?: string[] }).notes = [
+            ...((result as { notes?: string[] }).notes ?? []),
+            ...exp.notes.slice(0, 3),
+          ];
+        }
+      } catch {
+        /* non-fatal */
+      }
+    }
     ctx.audit.append({
       actor: user.username,
       action: 'dns.powerdns.install',
@@ -66,6 +87,27 @@ export async function handleHostingDnsPowerdnsRoutes(
       dataDir: ctx.dataDir,
       resyncZones: data.resyncZones,
     });
+    if (result.ok) {
+      try {
+        const { syncServiceExposure, dnsPortBindings } = await import('@ysk/core');
+        const exp = await syncServiceExposure({
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          serviceId: 'pdns',
+          ports: dnsPortBindings(),
+          reason: 'start',
+          requireDecision: false,
+        });
+        if (exp.notes?.length) {
+          (result as { notes?: string[] }).notes = [
+            ...((result as { notes?: string[] }).notes ?? []),
+            ...exp.notes.slice(0, 3),
+          ];
+        }
+      } catch {
+        /* non-fatal */
+      }
+    }
     ctx.audit.append({
       actor: user.username,
       action: 'dns.powerdns.heal',
