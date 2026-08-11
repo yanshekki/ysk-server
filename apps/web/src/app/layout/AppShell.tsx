@@ -5,6 +5,7 @@ import { canSeeFeature } from '@ysk/shared';
 import { useAuth } from '../../shared/hooks/useAuth';
 import { useCapabilities } from '../../shared/hooks/useCapabilities';
 import { useUpdatesNavBadge } from '../../shared/hooks/useUpdatesNavBadge';
+import { useNavBookmarks } from '../../shared/hooks/useNavBookmarks';
 import { FEATURE_SECTIONS } from '../../shared/nav/features';
 import { api } from '../../shared/services/api';
 import { buttonClassName, ToastViewport } from '../../shared/components/ui';
@@ -51,6 +52,7 @@ export function AppShell() {
 
   const isAdmin = Boolean(user?.roles?.includes('admin'));
   const updatesBadge = useUpdatesNavBadge();
+  const { bookmarks } = useNavBookmarks();
   const navSections = useMemo(
     () =>
       FEATURE_SECTIONS.map((section) => ({
@@ -113,31 +115,84 @@ export function AppShell() {
               ) : null}
               {section.items.map((item) => {
                 const badgeN = navBadgeFor(item.to);
+                const showProjectPins =
+                  item.to === '/projects' && bookmarks.projects.length > 0;
+                const showEmailPins =
+                  item.to === '/email' && bookmarks.emailDomains.length > 0;
                 return (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    end={item.to === '/'}
-                    className={() =>
-                      `shell__link${isNavActive(item.to, location.pathname) ? ' active' : ''}`
-                    }
-                    onClick={() => setOpen(false)}
-                  >
-                    <span className="shell__link-icon" aria-hidden>
-                      {item.icon}
-                    </span>
-                    <span className="shell__link-label">
-                      {t(`nav.${item.key}`, { defaultValue: item.key })}
-                    </span>
-                    {badgeN != null ? (
-                      <span
-                        className="shell__link-badge"
-                        title={t('updates.navBadgeTitle', { n: badgeN })}
-                      >
-                        {badgeN > 99 ? '99+' : badgeN}
+                  <div key={item.to} className="shell__nav-item">
+                    <NavLink
+                      to={item.to}
+                      end={item.to === '/'}
+                      className={() =>
+                        `shell__link${isNavActive(item.to, location.pathname) ? ' active' : ''}`
+                      }
+                      onClick={() => setOpen(false)}
+                    >
+                      <span className="shell__link-icon" aria-hidden>
+                        {item.icon}
                       </span>
+                      <span className="shell__link-label">
+                        {t(`nav.${item.key}`, { defaultValue: item.key })}
+                      </span>
+                      {badgeN != null ? (
+                        <span
+                          className="shell__link-badge"
+                          title={t('updates.navBadgeTitle', { n: badgeN })}
+                        >
+                          {badgeN > 99 ? '99+' : badgeN}
+                        </span>
+                      ) : null}
+                    </NavLink>
+                    {showProjectPins ? (
+                      <div
+                        className="shell__nav-sub"
+                        aria-label={t('nav.bookmarkedProjects')}
+                      >
+                        {bookmarks.projects.map((p) => (
+                          <NavLink
+                            key={p.id}
+                            to={`/projects/${p.id}`}
+                            className={({ isActive }) =>
+                              `shell__link shell__link--sub${isActive ? ' active' : ''}`
+                            }
+                            onClick={() => setOpen(false)}
+                            title={p.domain || p.label}
+                          >
+                            <span className="shell__link-icon" aria-hidden>
+                              ★
+                            </span>
+                            <span className="shell__link-label">
+                              {p.domain || p.label}
+                            </span>
+                          </NavLink>
+                        ))}
+                      </div>
                     ) : null}
-                  </NavLink>
+                    {showEmailPins ? (
+                      <div
+                        className="shell__nav-sub"
+                        aria-label={t('nav.bookmarkedEmailDomains')}
+                      >
+                        {bookmarks.emailDomains.map((e) => (
+                          <NavLink
+                            key={e.id}
+                            to={`/email/domains/${encodeURIComponent(e.id)}`}
+                            className={({ isActive }) =>
+                              `shell__link shell__link--sub${isActive ? ' active' : ''}`
+                            }
+                            onClick={() => setOpen(false)}
+                            title={e.domain}
+                          >
+                            <span className="shell__link-icon" aria-hidden>
+                              ★
+                            </span>
+                            <span className="shell__link-label">{e.domain}</span>
+                          </NavLink>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
                 );
               })}
             </div>

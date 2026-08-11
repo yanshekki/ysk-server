@@ -100,6 +100,40 @@
   background: rgba(245, 158, 11, 0.28);
 }
 
+.shell__nav-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.shell__nav-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  margin: 0 0 0.15rem 0.35rem;
+  padding-left: 0.35rem;
+  border-left: 2px solid rgba(59, 130, 246, 0.18);
+}
+
+.shell__link--sub {
+  padding: 0.4rem 0.65rem 0.4rem 0.55rem;
+  font-size: 0.8rem;
+  font-weight: 550;
+  color: var(--text-muted);
+}
+
+.shell__link--sub .shell__link-icon {
+  width: 1rem;
+  font-size: 0.75rem;
+  color: #b45309;
+  opacity: 1;
+}
+
+.shell__link--sub:hover,
+.shell__link--sub.active {
+  color: var(--brand-blue);
+}
+
 .shell__footer {
   padding: 0.85rem var(--space-4) 1.15rem;
   border-top: 1px solid var(--border-color);

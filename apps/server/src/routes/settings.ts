@@ -9,6 +9,60 @@ import {
   readBody,
   sendJson } from '../http/util.js';
 
+export type NavBookmarkProject = {
+  id: string;
+  label: string;
+  domain?: string;
+};
+export type NavBookmarkEmail = {
+  id: string;
+  domain: string;
+};
+export type NavBookmarksState = {
+  projects: NavBookmarkProject[];
+  emailDomains: NavBookmarkEmail[];
+};
+
+function emptyNavBookmarks(): NavBookmarksState {
+  return { projects: [], emailDomains: [] };
+}
+
+function navBookmarksKey(username: string): string {
+  return `nav_bookmarks:${username || 'default'}`;
+}
+
+function sanitizeNavBookmarks(raw: unknown): NavBookmarksState {
+  const o = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+  const projects: NavBookmarkProject[] = [];
+  const emailDomains: NavBookmarkEmail[] = [];
+  if (Array.isArray(o.projects)) {
+    for (const p of o.projects) {
+      if (!p || typeof p !== 'object') continue;
+      const r = p as Record<string, unknown>;
+      const id = String(r.id ?? '').trim();
+      if (!id) continue;
+      projects.push({
+        id,
+        label: String(r.label ?? r.domain ?? id).trim() || id,
+        domain: r.domain != null ? String(r.domain).trim() : undefined,
+      });
+      if (projects.length >= 30) break;
+    }
+  }
+  if (Array.isArray(o.emailDomains)) {
+    for (const e of o.emailDomains) {
+      if (!e || typeof e !== 'object') continue;
+      const r = e as Record<string, unknown>;
+      const id = String(r.id ?? r.domain ?? '').trim();
+      const domain = String(r.domain ?? r.id ?? '').trim();
+      if (!id || !domain) continue;
+      emailDomains.push({ id, domain });
+      if (emailDomains.length >= 30) break;
+    }
+  }
+  return { projects, emailDomains };
+}
+
 export async function handleSettingsRoutes(
   ctx: AppContext,
   req: IncomingMessage,
@@ -16,6 +70,81 @@ export async function handleSettingsRoutes(
   url: URL,
   method: string,
 ): Promise<boolean> {
+      // —— Sidebar bookmarks: projects + email domains ——
+      if (method === 'GET' && url.pathname === '/api/v1/nav/bookmarks') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = ctx.settings.getJson(navBookmarksKey(user.username));
+        sendJson(res, 200, { ok: true, bookmarks: sanitizeNavBookmarks(raw) });
+        return true;
+      }
+      if (method === 'PUT' && url.pathname === '/api/v1/nav/bookmarks') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const body = JSON.parse((await readBody(req)) || '{}') as {
+          bookmarks?: unknown;
+        };
+        const next = sanitizeNavBookmarks(body.bookmarks ?? emptyNavBookmarks());
+        ctx.settings.setJson(navBookmarksKey(user.username), next);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'nav.bookmarks.put',
+          detail: {
+            projects: next.projects.length,
+            emailDomains: next.emailDomains.length,
+          },
+          ok: true,
+        });
+        sendJson(res, 200, { ok: true, bookmarks: next });
+        return true;
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/nav/bookmarks/toggle') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const body = JSON.parse((await readBody(req)) || '{}') as {
+          kind?: string;
+          id?: string;
+          label?: string;
+          domain?: string;
+        };
+        const kind = body.kind === 'email' ? 'email' : body.kind === 'project' ? 'project' : '';
+        const id = String(body.id ?? '').trim();
+        if (!kind || !id) {
+          sendJson(res, 400, { ok: false, message: 'kind and id required' });
+          return true;
+        }
+        const cur = sanitizeNavBookmarks(
+          ctx.settings.getJson(navBookmarksKey(user.username)),
+        );
+        let bookmarked = false;
+        if (kind === 'project') {
+          const i = cur.projects.findIndex((p) => p.id === id);
+          if (i >= 0) {
+            cur.projects.splice(i, 1);
+            bookmarked = false;
+          } else {
+            cur.projects.unshift({
+              id,
+              label: String(body.label ?? body.domain ?? id).trim() || id,
+              domain: body.domain != null ? String(body.domain).trim() : undefined,
+            });
+            cur.projects = cur.projects.slice(0, 30);
+            bookmarked = true;
+          }
+        } else {
+          const i = cur.emailDomains.findIndex((e) => e.id === id || e.domain === id);
+          if (i >= 0) {
+            cur.emailDomains.splice(i, 1);
+            bookmarked = false;
+          } else {
+            const domain = String(body.domain ?? body.label ?? id).trim() || id;
+            cur.emailDomains.unshift({ id, domain });
+            cur.emailDomains = cur.emailDomains.slice(0, 30);
+            bookmarked = true;
+          }
+        }
+        ctx.settings.setJson(navBookmarksKey(user.username), cur);
+        sendJson(res, 200, { ok: true, bookmarked, bookmarks: cur });
+        return true;
+      }
+
       if (method === 'GET' && url.pathname === '/api/v1/settings/security') {
         const user = ctx.auth.authenticate(getBearer(req));
         const { requireCap } = await import('../http/rbac-guard.js');

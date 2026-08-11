@@ -35,6 +35,7 @@ import { notifyError, notifyOk, notifyWarn } from '../shared/lib/notify';
 import { getServerContext, setServerContext } from '../shared/stores/server-context';
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { useServerList } from '../shared/hooks/useServerList';
+import { useNavBookmarks } from '../shared/hooks/useNavBookmarks';
 import {
   bindCall1,
   bindCloseIfIdle,
@@ -230,6 +231,11 @@ export function EmailPage() {
   const applied = countAppliedDomains(items, facets);
   const healthy = countHealthyDomains(items);
   const draft = countDraftDomains(items, facets);
+  const {
+    isEmailBookmarked,
+    toggleEmail,
+    bookmarks: navBookmarks,
+  } = useNavBookmarks();
 
   async function onCreate(e: FormEvent) {
     e.preventDefault();
@@ -466,33 +472,73 @@ export function EmailPage() {
                   : t('email.emptyCreateHint')
               }
             >
+              {navBookmarks.emailDomains.length > 0 ? (
+                <Alert variant="info">
+                  <span className="u-text-sm">
+                    {t('nav.bookmarkedEmailDomains')}:{' '}
+                    {navBookmarks.emailDomains.map((e) => e.domain).join(' · ')}
+                  </span>
+                </Alert>
+              ) : null}
               <div className="list-panel mail-domain-list" role="list">
                 {items.map((d) => {
                   const st = applyLabel(d.apply_status, t);
+                  const pinned = isEmailBookmarked(d.id);
                   return (
-                    <Link
-                      key={d.id}
-                      to={`/email/domains/${d.id}`}
-                      className="list-row mail-domain-row"
-                    >
-                      <div className="list-row__main">
+                    <div key={d.id} className="list-row mail-domain-row">
+                      <Link
+                        to={`/email/domains/${d.id}`}
+                        className="list-row__main"
+                      >
                         <div className="list-row__title">
                           <span className="mail-domain-name">{d.domain}</span>
                           <Badge tone={st.tone}>{st.text}</Badge>
+                          {pinned ? (
+                            <span title={t('nav.bookmarkPinned')}>
+                              <Badge tone="warn">★</Badge>
+                            </span>
+                          ) : null}
                         </div>
                         <div className="list-row__meta">
                           <span>IP {d.server_ip || '—'}</span>
                         </div>
-                      </div>
+                      </Link>
                       <div className="list-row__side">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          title={pinned ? t('nav.unbookmark') : t('nav.bookmark')}
+                          aria-label={
+                            pinned ? t('nav.unbookmark') : t('nav.bookmark')
+                          }
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            void toggleEmail({ id: d.id, domain: d.domain })
+                              .then((on) =>
+                                notifyOk(
+                                  on
+                                    ? t('nav.bookmarkAdded')
+                                    : t('nav.bookmarkRemoved'),
+                                ),
+                              )
+                              .catch((err: Error) => notifyWarn(err.message));
+                          }}
+                        >
+                          {pinned ? '★' : '☆'}
+                        </Button>
                         <Badge tone={d.health_score >= 80 ? 'ok' : 'warn'}>
                           {d.health_score}/100
                         </Badge>
-                        <span className="list-row__chevron" aria-hidden>
+                        <Link
+                          to={`/email/domains/${d.id}`}
+                          className="list-row__chevron"
+                          aria-hidden
+                        >
                           ›
-                        </span>
+                        </Link>
                       </div>
-                    </Link>
+                    </div>
                   );
                 })}
               </div>

@@ -64,5 +64,12 @@
   "cdn": "CDN",
   "vpn": "VPN",
   "vnc": "VNC",
-  "apache": "Apache"
+  "apache": "Apache",
+  "bookmarkedProjects": "已釘選專案",
+  "bookmarkedEmailDomains": "已釘選域名",
+  "bookmark": "釘到側欄",
+  "unbookmark": "取消側欄釘選",
+  "bookmarkPinned": "已釘選",
+  "bookmarkAdded": "已釘到側欄",
+  "bookmarkRemoved": "已從側欄移除"
 }

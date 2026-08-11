@@ -64,5 +64,12 @@
   "cdn": "CDN",
   "vpn": "VPN",
   "vnc": "VNC",
-  "apache": "Apache"
+  "apache": "Apache",
+  "bookmarkedProjects": "Bookmarked projects",
+  "bookmarkedEmailDomains": "Bookmarked domains",
+  "bookmark": "Pin to sidebar",
+  "unbookmark": "Unpin from sidebar",
+  "bookmarkPinned": "Pinned",
+  "bookmarkAdded": "Pinned to sidebar",
+  "bookmarkRemoved": "Removed from sidebar"
 }
