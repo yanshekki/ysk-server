@@ -17,29 +17,81 @@ export const VNCSERVER_BIN_CANDIDATES = [
   'vncserver',
 ] as const;
 
+/** Absolute paths shipped by Ubuntu/Debian tigervnc-standalone-server. */
+export const VNCSERVER_ABSOLUTE_PATHS = [
+  '/usr/bin/tigervncserver',
+  '/usr/bin/vncserver',
+  '/usr/local/bin/tigervncserver',
+  '/usr/local/bin/vncserver',
+  '/bin/tigervncserver',
+  '/bin/vncserver',
+] as const;
+
+const XSERVER_BINS = ['Xtigervnc', 'Xvnc', 'x0vncserver'] as const;
+const XSERVER_ABS = [
+  '/usr/bin/Xtigervnc',
+  '/usr/bin/Xvnc',
+  '/usr/bin/x0vncserver',
+] as const;
+
+async function hostFileExecutable(
+  host: HostExecutor,
+  path: string,
+): Promise<boolean> {
+  try {
+    if (host.pathExists(path)) return true;
+  } catch {
+    /* */
+  }
+  // `test` is always allowed without YSK_EXECUTE (read-only simple bin)
+  try {
+    const r = await host.runCommand(['test', '-x', path], { timeoutMs: 3_000 });
+    return r.exitCode === 0;
+  } catch {
+    return false;
+  }
+}
+
 /**
- * Resolve absolute path to TigerVNC server wrapper (not bare Xvnc).
- * Uses shared resolveBin PATH so it matches install / version probes.
+ * Resolve absolute path to TigerVNC *wrapper* (tigervncserver / vncserver).
+ * Prefer filesystem probes — do not depend on login-shell PATH.
  */
 export async function resolveVncserverBin(
   host: HostExecutor,
 ): Promise<string | null> {
+  // 1) Well-known absolute paths first (Ubuntu package layout)
+  for (const p of VNCSERVER_ABSOLUTE_PATHS) {
+    if (await hostFileExecutable(host, p)) return p;
+  }
+  // 2) Shared PATH probe (same as software catalog)
   for (const name of VNCSERVER_BIN_CANDIDATES) {
     const path = await resolveBin(host, name);
-    if (path) return path;
+    if (path && (await hostFileExecutable(host, path))) return path;
   }
-  // Absolute fallbacks (some hosts strip PATH in non-login shell)
-  for (const p of [
-    '/usr/bin/tigervncserver',
-    '/usr/bin/vncserver',
-    '/usr/local/bin/tigervncserver',
-    '/usr/local/bin/vncserver',
-  ]) {
-    try {
-      if (host.pathExists(p)) return p;
-    } catch {
-      /* */
+  // 3) dpkg file list when package is installed (dpkg-query is read-only allowlisted)
+  try {
+    const st = await host.runCommand(
+      [
+        'bash',
+        '-c',
+        "dpkg-query -W -f='${Status}' tigervnc-standalone-server 2>/dev/null || true",
+      ],
+      { timeoutMs: 5_000 },
+    );
+    if (/install ok installed/i.test(st.stdout || '')) {
+      const list = await host.runCommand(
+        [
+          'bash',
+          '-c',
+          "dpkg-query -L tigervnc-standalone-server 2>/dev/null | grep -E '/(tigervncserver|vncserver)$' | head -1 || true",
+        ],
+        { timeoutMs: 5_000 },
+      );
+      const p = (list.stdout || '').trim().split('\n').filter(Boolean).pop();
+      if (p && p.startsWith('/') && (await hostFileExecutable(host, p))) return p;
     }
+  } catch {
+    /* */
   }
   return null;
 }
@@ -49,18 +101,40 @@ export async function isTigerVncInstalled(host: HostExecutor): Promise<{
   installed: boolean;
   serverBin: string | null;
   found: string[];
+  packageInstalled: boolean;
 }> {
   const found: string[] = [];
   const serverBin = await resolveVncserverBin(host);
   if (serverBin) found.push(serverBin);
-  for (const name of ['Xtigervnc', 'Xvnc', 'x0vncserver'] as const) {
-    const p = await resolveBin(host, name);
-    if (p) found.push(p);
+
+  for (const p of XSERVER_ABS) {
+    if (await hostFileExecutable(host, p)) found.push(p);
   }
+  for (const name of XSERVER_BINS) {
+    const p = await resolveBin(host, name);
+    if (p && !found.includes(p)) found.push(p);
+  }
+
+  let packageInstalled = false;
+  try {
+    const r = await host.runCommand(
+      [
+        'bash',
+        '-c',
+        "dpkg-query -W -f='${Status}' tigervnc-standalone-server 2>/dev/null || true",
+      ],
+      { timeoutMs: 5_000 },
+    );
+    packageInstalled = /install ok installed/i.test(r.stdout || '');
+  } catch {
+    /* */
+  }
+
   return {
-    installed: Boolean(serverBin) || found.some((f) => /Xtigervnc|Xvnc/.test(f)),
+    installed: Boolean(serverBin) || found.length > 0 || packageInstalled,
     serverBin,
     found,
+    packageInstalled,
   };
 }
 
@@ -238,16 +312,28 @@ export async function startVncSession(input: {
   }
 
   const probe = await isTigerVncInstalled(host);
-  const bin = probe.serverBin;
+  let bin = probe.serverBin;
+  // Last resort: package reports installed → use Debian/Ubuntu default path
+  if (!bin && probe.packageInstalled) {
+    for (const p of VNCSERVER_ABSOLUTE_PATHS) {
+      if (await hostFileExecutable(host, p)) {
+        bin = p;
+        break;
+      }
+    }
+    if (!bin) bin = '/usr/bin/tigervncserver';
+  }
   if (!bin) {
-    // Package may show as installed (Xvnc) without wrapper — still honest
     notes.push(tl('notes.vnc.vncserverMissing'));
     if (probe.found.length) {
       notes.push(
         tl('notes.vnc.vncserverWrapperMissing', {
-          found: probe.found.map((p) => p.split('/').pop()).join(', '),
+          found: probe.found.map((p) => p.split('/').pop() || p).join(', '),
         }),
       );
+    }
+    if (probe.packageInstalled) {
+      notes.push(tl('notes.vnc.vncPackageWithoutBin'));
     }
     return { ok: false, notes, running: false };
   }

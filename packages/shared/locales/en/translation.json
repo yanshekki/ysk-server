@@ -7548,6 +7548,7 @@
       "sessionAlreadyRunning": "VNC already running for {{user}} on :{{display}} (port {{port}})",
       "vncserverMissing": "TigerVNC server wrapper (tigervncserver/vncserver) is not installed — use the Install tab",
       "vncserverWrapperMissing": "Found {{found}} but no tigervncserver/vncserver wrapper — reinstall tigervnc-standalone-server",
+      "vncPackageWithoutBin": "Package tigervnc-standalone-server is installed but the start script is missing — reinstall the package",
       "needPasswordBeforeStart": "Set a VNC password (≥6 chars) before starting",
       "displayPortBusy": "Display :{{display}} → port {{port}} is already in use — stop the other session or pick another display",
       "sessionStartPermission": "Permission denied starting display :{{display}}",

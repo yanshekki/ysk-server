@@ -604,6 +604,13 @@ function isReadOnlyShellScript(argv: string[]): boolean {
   if (/\bapt\s+list\b/.test(s) || /\bapt-cache\b/.test(s) || /\bdpkg-query\b/.test(s)) {
     return true;
   }
+  // Binary presence probes (software / VNC / catalog) — no side effects
+  if (
+    (/\bcommand\s+-v\b/.test(s) || /\btype\s+-[aP]\b/.test(s) || /\bwhich\s+\S+/.test(s)) &&
+    !/\bapt(-get)?\s+(install|remove|purge)/.test(s)
+  ) {
+    return true;
+  }
   // Disk usage probes (quota)
   if (/\bdu\s+(-[a-zA-Z]*k|-sk|-sb)\b/.test(s) || /\bdu\s+-[a-zA-Z]*\b/.test(s)) {
     return true;

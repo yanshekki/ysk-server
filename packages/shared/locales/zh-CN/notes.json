@@ -2853,6 +2853,7 @@
     "sessionAlreadyRunning": "{{user}} 的 VNC 已在运行（:{{display}} / 端口 {{port}}）",
     "vncserverMissing": "未安装 TigerVNC 启动程序（tigervncserver／vncserver）— 请到「安装」页安装",
     "vncserverWrapperMissing": "检测到 {{found}}，但缺少 tigervncserver／vncserver 包装脚本 — 请重装 tigervnc-standalone-server",
+    "vncPackageWithoutBin": "软件包 tigervnc-standalone-server 已装但找不到启动脚本 — 请重装该包",
     "needPasswordBeforeStart": "请先设置 VNC 密码（至少 6 个字符）再启动",
     "displayPortBusy": "Display :{{display}} → 端口 {{port}} 已被占用 — 请先停止其他 session 或改用其他 display",
     "sessionStartPermission": "启动 display :{{display}} 权限被拒",
