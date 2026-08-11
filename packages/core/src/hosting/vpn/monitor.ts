@@ -172,7 +172,7 @@ export function parseOvpnStatus(text: string): OvpnStatusClient[] {
   return out;
 }
 
-export function openVpnStatusPath(dataDir: string): string {
+export function openVpnStatusPath(_dataDir: string): string {
   // Prefer runtime path OpenVPN (nobody) can write under /var/log/openvpn
   return '/var/log/openvpn/ysk-status.log';
 }
