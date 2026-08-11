@@ -26,6 +26,7 @@ import {
   InstallStreamPanel,
   PresetChips,
   SegRadio,
+  SoftwareInstallBanner,
   PageTabs } from '../../shared/components/ui';
 import type { OpsResultLike, MultiCheckOption, InstallStreamLine } from '../../shared/components/ui';
 import { getServerContext, setServerContext } from '../../shared/stores/server-context';
@@ -953,6 +954,21 @@ export function PhpRuntimePage() {
                 </ol>
               </CardSection>
             </Card>
+
+            <details className="u-mt-3 runtime-advanced-stack">
+              <summary className="muted u-text-sm">
+                {t('runtime.advancedFeatureUninstall')}
+              </summary>
+              <p className="muted u-text-sm u-mt-2 u-mb-3">
+                {t('runtime.advancedFeatureUninstallHint', { name: 'PHP' })}
+              </p>
+              <SoftwareInstallBanner
+                feature="php"
+                title={t('runtime.phpMissing')}
+                readyTitle={t('runtime.stackReadyTitle', { name: 'PHP' })}
+                onInstalled={() => void refresh()}
+              />
+            </details>
           </div>
         ) : null}
 

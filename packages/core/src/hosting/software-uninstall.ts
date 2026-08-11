@@ -64,7 +64,8 @@ export type UninstallResult = {
   statuses: SoftwareStatus[];
 };
 
-const PROTECTED_IDS = new Set(['node']); // panel runtime — refuse one-click
+/** Reserved: control-plane binaries never removed via feature uninstall. */
+const PROTECTED_IDS = new Set<string>([]);
 
 function essentialPkgs(): Set<string> {
   return new Set(['sudo', 'bash', 'coreutils', 'apt', 'dpkg', 'libc6']);
@@ -208,18 +209,91 @@ async function removeOneSoftware(
     emit(`stopped ${u}`);
   }
 
-  // Runtime installers: do not wipe toolchains aggressively under keep
+  // Runtime installers: remove every probed version via uninstallRuntimeVersion
   if (spec.installer && spec.installer.startsWith('runtime-')) {
+    const kindMap: Record<string, string> = {
+      'runtime-node': 'node',
+      'runtime-php': 'php',
+      'runtime-python': 'python',
+      'runtime-go': 'go',
+      'runtime-rust': 'rust',
+      'runtime-java': 'java',
+      'runtime-kotlin': 'kotlin',
+      'runtime-bun': 'bun',
+    };
+    const kind = kindMap[spec.installer];
+    if (kind) {
+      try {
+        const { probeRuntimes, uninstallRuntimeVersion } = await import(
+          './runtime-probe.js'
+        );
+        const probe = await probeRuntimes(host, {});
+        const items = (probe as Record<string, unknown>)[kind];
+        const list = Array.isArray(items) ? items : [];
+        const versions = [
+          ...new Set(
+            list
+              .filter((i) => i && typeof i === 'object' && (i as { available?: boolean }).available)
+              .map((i) => String((i as { version?: string }).version ?? '').trim())
+              .filter(Boolean),
+          ),
+        ];
+        // Fallback to catalog pin when probe empty but binary present
+        if (!versions.length && spec.runtimeVersion) {
+          versions.push(String(spec.runtimeVersion));
+        }
+        emit(`runtime ${kind}: uninstall versions ${versions.join(', ') || '—'}`);
+        for (const ver of versions) {
+          const ur = await uninstallRuntimeVersion({
+            host,
+            kind: kind as 'node' | 'php' | 'python' | 'go' | 'rust' | 'java' | 'kotlin' | 'bun',
+            version: ver,
+          });
+          steps.push({
+            name: `${id}:version:${ver}`,
+            status: ur.ok ? 'ok' : ur.blocked ? 'skipped' : 'failed',
+            detail: (ur.notes ?? []).slice(0, 3).join(' · ') || ver,
+          });
+          for (const n of (ur.notes ?? []).slice(0, 6)) emit(n);
+        }
+        if (!versions.length) {
+          steps.push({
+            name: id,
+            status: 'ok',
+            detail: 'runtime: no versions probed',
+          });
+        }
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        steps.push({ name: id, status: 'failed', detail: msg.slice(0, 200) });
+        emit(`runtime uninstall error: ${msg}`, 'stderr');
+      }
+    }
+    // Still try apt if listed below
+  }
+
+  if (spec.installer === 'npm-global' && (spec.npmPackages ?? []).length) {
+    const pkgs = (spec.npmPackages ?? []).map((p) => JSON.stringify(p)).join(' ');
+    emit(`npm uninstall -g ${pkgs}`);
+    const r = await host.runCommand(
+      [
+        'bash',
+        '-c',
+        `if command -v npm >/dev/null 2>&1; then npm uninstall -g ${pkgs} 2>&1; else echo "npm missing" >&2; exit 2; fi`,
+      ],
+      { timeoutMs: 180_000 },
+    );
+    const out = (r.stdout || r.stderr || '').trim();
+    if (out) {
+      for (const line of out.split('\n').slice(-20)) {
+        log?.(r.exitCode === 0 ? 'stdout' : 'stderr', line);
+      }
+    }
     steps.push({
-      name: id,
-      status: 'ok',
-      detail:
-        dataPolicy === 'purge'
-          ? 'runtime: packages only if apt-listed; project homes kept'
-          : 'runtime: stop only / no apt remove for multi-version runtimes',
+      name: `${id}:npm`,
+      status: r.exitCode === 0 ? 'ok' : 'failed',
+      detail: out.slice(0, 200) || 'npm-global',
     });
-    emit(`runtime ${id}: ${dataPolicy}`);
-    // Still try apt if listed
   }
 
   const essential = essentialPkgs();

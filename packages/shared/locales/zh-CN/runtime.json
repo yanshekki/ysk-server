@@ -476,8 +476,8 @@
   "versionInventory": "版本库",
   "versionInventoryDesc": "面板支持的全部版本。点选行可安装或设为默认。",
   "selectToInstall": "选取",
-  "advancedFeatureUninstall": "高级：卸载整个运行时堆栈…",
-  "advancedFeatureUninstallHint": "{{name}} 的 feature 级卸载将于后续完善；建议先移除上方未用版本。",
+  "advancedFeatureUninstall": "高级：整个运行时堆栈（生命周期）…",
+  "advancedFeatureUninstallHint": "将卸载面板管理的全部 {{name}} 版本（Node 会连同 PM2 等配套），有影响预览与双重确认。可先用上方按版本卸载。",
   "probeReadonly": "主机探测（只读）",
   "uninstallVersion": "卸载 {{version}}",
   "uninstallVersionTitle": "卸载 {{version}}？",
@@ -488,5 +488,6 @@
   "alreadyPanelDefault": "面板默认 · {{version}}",
   "panelDefaultSaved": "已将面板默认设为 {{version}}",
   "panelDefaultHint": "新建项目会优先使用面板默认 {{version}}（主机 CLI 可能不同）。",
-  "panelDefaultExplain": "面板默认 = 新建站点／项目首选版本。主机默认 = 系统 CLI（php／python／node…）。"
+  "panelDefaultExplain": "面板默认 = 新建站点／项目首选版本。主机默认 = 系统 CLI（php／python／node…）。",
+  "stackReadyTitle": "{{name}} 堆栈已就绪"
 }

@@ -9508,8 +9508,8 @@
     "versionInventory": "Version inventory",
     "versionInventoryDesc": "All panel-supported versions. Select a row to install or set as default.",
     "selectToInstall": "Select",
-    "advancedFeatureUninstall": "Advanced: remove entire runtime stack…",
-    "advancedFeatureUninstallHint": "Feature-level uninstall for {{name}} is available after stack cleanup lands; prefer removing unused versions above.",
+    "advancedFeatureUninstall": "Advanced: entire runtime stack (lifecycle)…",
+    "advancedFeatureUninstallHint": "Removes all {{name}} versions managed by the panel (and companions like PM2 for Node), with impact preview and double confirm. Prefer removing single versions above when possible.",
     "probeReadonly": "Read-only probe of the host",
     "uninstallVersion": "Uninstall {{version}}",
     "uninstallVersionTitle": "Uninstall {{version}}?",
@@ -9520,7 +9520,8 @@
     "alreadyPanelDefault": "Panel default · {{version}}",
     "panelDefaultSaved": "Panel default set to {{version}}",
     "panelDefaultHint": "New projects prefer panel default {{version}} (host CLI may differ).",
-    "panelDefaultExplain": "Panel default = preferred version for new sites/projects. Host default = system CLI (php/python/node…)."
+    "panelDefaultExplain": "Panel default = preferred version for new sites/projects. Host default = system CLI (php/python/node…).",
+    "stackReadyTitle": "{{name}} stack ready"
   },
   "security": {
     "title": "Security & Approvals",
@@ -10143,7 +10144,8 @@
       "controlPlane": "Control plane runtime (protected)",
       "generic": "Related services may stop",
       "purgeData": "Data paths will be deleted",
-      "protectedSkipped": "Protected components are skipped"
+      "protectedSkipped": "Protected components are skipped",
+      "runtimeStack": "All panel-managed versions of this runtime will be removed"
     },
     "requestCancel": "Request cancel",
     "cancelling": "Cancelling…",

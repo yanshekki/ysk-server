@@ -555,5 +555,7 @@ export function isPurgePathAllowed(p: string): boolean {
   if (p === '/etc/letsencrypt' || p.startsWith('/etc/letsencrypt/')) return true;
   if (p === '/usr/local/cargo' || p.startsWith('/usr/local/cargo/')) return true;
   if (p === '/usr/local/rustup' || p.startsWith('/usr/local/rustup/')) return true;
+  // YSK managed runtime trees only (never bare /usr/local/ysk)
+  if (p.startsWith('/usr/local/ysk/') && p.length > '/usr/local/ysk/'.length) return true;
   return false;
 }

@@ -49,7 +49,8 @@
     "controlPlane": "控制面 runtime（受保护）",
     "generic": "相關服务可能停止",
     "purgeData": "将删除資料路径",
-    "protectedSkipped": "受保护元件會跳过"
+    "protectedSkipped": "受保护元件會跳过",
+    "runtimeStack": "将移除此运行时面板管理的全部版本"
   },
   "requestCancel": "请求取消",
   "cancelling": "取消中…",

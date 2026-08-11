@@ -22,6 +22,7 @@ import {
   PresetChips,
   SegRadio,
   ConfirmDialog,
+  SoftwareInstallBanner,
   PageTabs,
   buttonClassName } from '../../shared/components/ui';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -924,13 +925,19 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
               </CardSection>
             </Card>
 
-            <details className="u-mt-3">
+            <details className="u-mt-3 runtime-advanced-stack">
               <summary className="muted u-text-sm">
                 {t('runtime.advancedFeatureUninstall')}
               </summary>
-              <p className="muted u-text-sm u-mt-2">
+              <p className="muted u-text-sm u-mt-2 u-mb-3">
                 {t('runtime.advancedFeatureUninstallHint', { name: meta.title })}
               </p>
+              <SoftwareInstallBanner
+                feature={kind}
+                title={meta.bannerTitle}
+                readyTitle={t('runtime.stackReadyTitle', { name: meta.title })}
+                onInstalled={() => void refresh()}
+              />
             </details>
           </div>
         ) : null}

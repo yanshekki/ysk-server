@@ -9547,8 +9547,8 @@
     "versionInventory": "版本庫",
     "versionInventoryDesc": "面板支援的全部版本。點選列可安裝或設為預設。",
     "selectToInstall": "選取",
-    "advancedFeatureUninstall": "進階：解除整個執行環境堆疊…",
-    "advancedFeatureUninstallHint": "{{name}} 的 feature 級解除安裝將於後續完善；建議先移除上方未用版本。",
+    "advancedFeatureUninstall": "進階：整個執行環境堆疊（生命週期）…",
+    "advancedFeatureUninstallHint": "會解除面板管理嘅全部 {{name}} 版本（Node 會連 PM2 等配套），有影響預覽同雙重確認。可先用上方按版本解除。",
     "probeReadonly": "主機探測（唯讀）",
     "uninstallVersion": "解除安裝 {{version}}",
     "uninstallVersionTitle": "解除安裝 {{version}}？",
@@ -9559,7 +9559,8 @@
     "alreadyPanelDefault": "面板預設 · {{version}}",
     "panelDefaultSaved": "已將面板預設設為 {{version}}",
     "panelDefaultHint": "新建專案會優先使用面板預設 {{version}}（主機 CLI 可能不同）。",
-    "panelDefaultExplain": "面板預設 = 新建站點／專案首選版本。主機預設 = 系統 CLI（php／python／node…）。"
+    "panelDefaultExplain": "面板預設 = 新建站點／專案首選版本。主機預設 = 系統 CLI（php／python／node…）。",
+    "stackReadyTitle": "{{name}} 堆疊已就緒"
   },
   "security": {
     "title": "帳號安全",
@@ -10182,7 +10183,8 @@
       "controlPlane": "控制面 runtime（受保護）",
       "generic": "相關服務可能停止",
       "purgeData": "將刪除資料路徑",
-      "protectedSkipped": "受保護元件會略過"
+      "protectedSkipped": "受保護元件會略過",
+      "runtimeStack": "將移除面板管理嘅此執行環境全部版本"
     },
     "requestCancel": "請求取消",
     "cancelling": "取消中…",
