@@ -1,14 +1,30 @@
-/* In-panel VNC (noVNC) viewer — browser RFB client */
+/* In-panel VNC (noVNC) viewer — browser RFB client
+ * Chrome uses a forced dark shell with light text so light-theme tokens
+ * (dark --text / muted) never render black-on-black.
+ */
 
 .vnc-viewer {
+  --vnc-fg: #f2f4f8;
+  --vnc-fg-muted: #b8c0cc;
+  --vnc-chrome: #161b22;
+  --vnc-chrome-border: rgba(255, 255, 255, 0.12);
+  --vnc-screen: #0c0f14;
+  --vnc-warn-bg: #3d2e0a;
+  --vnc-warn-fg: #ffe8a3;
+  --vnc-warn-border: #c9a227;
+  --vnc-err-bg: #3a1218;
+  --vnc-err-fg: #ffc9c9;
+  --vnc-err-border: #e85d6a;
+
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: 0;
   min-height: 28rem;
   height: min(72vh, 52rem);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--vnc-chrome-border);
   border-radius: var(--radius-md);
-  background: #0c0f14;
+  background: var(--vnc-screen);
+  color: var(--vnc-fg);
   overflow: hidden;
   box-shadow:
     0 8px 28px rgba(0, 0, 0, 0.28),
@@ -16,11 +32,15 @@
 }
 
 .vnc-viewer.is-connected {
-  border-color: rgba(126, 231, 135, 0.35);
+  border-color: rgba(126, 231, 135, 0.45);
 }
 
 .vnc-viewer.is-connecting {
-  border-color: rgba(210, 153, 34, 0.4);
+  border-color: rgba(240, 180, 60, 0.55);
+}
+
+.vnc-viewer.is-error {
+  border-color: rgba(232, 93, 106, 0.55);
 }
 
 .vnc-viewer__toolbar {
@@ -31,8 +51,9 @@
   justify-content: space-between;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
-  background: rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--vnc-chrome);
+  border-bottom: 1px solid var(--vnc-chrome-border);
+  color: var(--vnc-fg);
 }
 
 .vnc-viewer__title {
@@ -40,8 +61,19 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
-  color: var(--text);
+  color: var(--vnc-fg);
   font-size: var(--text-sm);
+}
+
+.vnc-viewer__title strong {
+  color: var(--vnc-fg);
+  font-weight: 650;
+}
+
+.vnc-viewer__title .muted,
+.vnc-viewer__toolbar .muted {
+  color: var(--vnc-fg-muted) !important;
+  opacity: 1;
 }
 
 .vnc-viewer__quality {
@@ -55,14 +87,37 @@
   height: 2rem;
   padding: 0 var(--space-2);
   font-size: var(--text-xs);
+  color: var(--vnc-fg);
+  background: #0f1419;
+  border: 1px solid var(--vnc-chrome-border);
+  border-radius: var(--radius-sm);
 }
 
 .vnc-viewer__banner {
   flex: 0 0 auto;
   padding: var(--space-2) var(--space-3);
-  background: rgba(210, 153, 34, 0.08);
-  border-bottom: 1px solid rgba(210, 153, 34, 0.2);
-  color: var(--text);
+  background: var(--vnc-warn-bg);
+  border-bottom: 1px solid var(--vnc-warn-border);
+  color: var(--vnc-warn-fg);
+  font-size: var(--text-sm);
+  font-weight: 550;
+}
+
+.vnc-viewer__banner p,
+.vnc-viewer__banner .u-text-sm {
+  color: inherit !important;
+  margin: 0;
+}
+
+.vnc-viewer__banner.is-error {
+  background: var(--vnc-err-bg);
+  border-bottom-color: var(--vnc-err-border);
+  color: var(--vnc-err-fg);
+}
+
+.vnc-viewer__banner .field label,
+.vnc-viewer__banner label {
+  color: inherit;
 }
 
 .vnc-viewer__pass {
@@ -103,18 +158,67 @@
   font-size: var(--text-xs);
 }
 
+.vnc-viewer__screen-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--vnc-screen);
+}
+
 .vnc-viewer__screen {
   flex: 1 1 auto;
   min-height: 0;
   position: relative;
   overflow: hidden;
-  background: #0c0f14;
+  background: var(--vnc-screen);
 }
 
 /* noVNC injects a canvas container */
 .vnc-viewer__screen > div {
   width: 100% !important;
   height: 100% !important;
+}
+
+/* Empty / failed state placeholder — high contrast on black screen */
+.vnc-viewer__empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  text-align: center;
+  pointer-events: none;
+  z-index: 2;
+  color: var(--vnc-fg-muted);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(22, 27, 34, 0.92) 0%,
+    rgba(12, 15, 20, 0.96) 70%
+  );
+}
+
+.vnc-viewer__empty-title {
+  font-size: var(--text-base);
+  font-weight: 650;
+  color: var(--vnc-fg);
+}
+
+.vnc-viewer__empty-detail {
+  max-width: 36rem;
+  font-size: var(--text-sm);
+  line-height: 1.45;
+  color: var(--vnc-fg-muted);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.vnc-viewer.is-error .vnc-viewer__empty-title {
+  color: var(--vnc-err-fg);
 }
 
 .vnc-viewer:fullscreen {

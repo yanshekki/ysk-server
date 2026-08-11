@@ -506,9 +506,14 @@ export function VncViewer({ target, createSession, onClose, onShare }: Props) {
 
   return (
     <div
-      className={`vnc-viewer ${state === 'connected' ? 'is-connected' : ''} ${
-        state === 'connecting' || state === 'minting' ? 'is-connecting' : ''
-      }`}
+      className={[
+        'vnc-viewer',
+        state === 'connected' ? 'is-connected' : '',
+        state === 'connecting' || state === 'minting' ? 'is-connecting' : '',
+        state === 'error' ? 'is-error' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
       ref={wrapRef}
     >
       <div className="vnc-viewer__toolbar">
@@ -695,8 +700,14 @@ export function VncViewer({ target, createSession, onClose, onShare }: Props) {
       ) : null}
 
       {needPassword || error ? (
-        <div className="vnc-viewer__banner">
-          {error ? <p className="u-text-sm u-mb-0" role="alert">{error}</p> : null}
+        <div
+          className={`vnc-viewer__banner ${error && !needPassword ? 'is-error' : ''}`}
+        >
+          {error ? (
+            <p className="u-text-sm u-mb-0" role="alert">
+              {error}
+            </p>
+          ) : null}
           {needPassword ? (
             <div className="vnc-viewer__pass">
               <Field label={t('vnc.viewer.password')} htmlFor="vnc-viewer-pass" flush>
@@ -720,12 +731,32 @@ export function VncViewer({ target, createSession, onClose, onShare }: Props) {
         </div>
       ) : null}
 
-      <div
-        className="vnc-viewer__screen"
-        ref={screenRef}
-        role="application"
-        aria-label={t('vnc.viewer.canvasLabel', { name: target.label })}
-      />
+      <div className="vnc-viewer__screen-wrap">
+        <div
+          className="vnc-viewer__screen"
+          ref={screenRef}
+          role="application"
+          aria-label={t('vnc.viewer.canvasLabel', { name: target.label })}
+        />
+        {state !== 'connected' ? (
+          <div className="vnc-viewer__empty" aria-live="polite">
+            <div className="vnc-viewer__empty-title">
+              {statusText || t(`vnc.viewer.${state}`, { defaultValue: state })}
+            </div>
+            {error ? (
+              <div className="vnc-viewer__empty-detail">{error}</div>
+            ) : state === 'connecting' || state === 'minting' ? (
+              <div className="vnc-viewer__empty-detail">
+                {t('vnc.viewer.connectingHint')}
+              </div>
+            ) : (
+              <div className="vnc-viewer__empty-detail">
+                {t('vnc.viewer.reconnectHint')}
+              </div>
+            )}
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }

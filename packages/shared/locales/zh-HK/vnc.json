@@ -102,7 +102,9 @@
     "recordSaved": "已下載錄影",
     "recordFailed": "錄影失敗",
     "recordUnsupported": "呢個瀏覽器唔支援 canvas 錄影",
-    "minting_state": "準備中"
+    "minting_state": "準備中",
+    "connectingHint": "正喺開安全通道去桌面…",
+    "reconnectHint": "按「重新連線」再試，或檢查遠端主機同埠號。"
   },
   "installHint": "TigerVNC → noVNC；XFCE 可選",
   "needTigerVnc": "需 TigerVNC",

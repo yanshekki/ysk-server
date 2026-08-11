@@ -11192,7 +11192,9 @@
       "recordSaved": "已下载录屏",
       "recordFailed": "录屏失败",
       "recordUnsupported": "此浏览器不支持 canvas 录屏",
-      "minting_state": "准备中"
+      "minting_state": "准备中",
+      "connectingHint": "正在打开到桌面的安全通道…",
+      "reconnectHint": "点「重新连接」再试，或检查远程主机与端口。"
     },
     "installHint": "TigerVNC → noVNC；XFCE 可选",
     "needTigerVnc": "需 TigerVNC",

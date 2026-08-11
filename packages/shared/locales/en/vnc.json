@@ -102,7 +102,9 @@
     "recordStarted": "Recording… click Stop rec or wait 60s",
     "recordSaved": "Recording downloaded",
     "recordFailed": "Could not record",
-    "recordUnsupported": "This browser cannot record the canvas"
+    "recordUnsupported": "This browser cannot record the canvas",
+    "connectingHint": "Opening a secure tunnel to the desktop…",
+    "reconnectHint": "Press Reconnect to try again, or check the remote host and port."
   },
   "installHint": "TigerVNC → noVNC; XFCE optional",
   "needTigerVnc": "TigerVNC required",
