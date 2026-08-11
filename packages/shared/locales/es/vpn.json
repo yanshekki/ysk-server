@@ -114,5 +114,11 @@
       "never": "Never",
       "unknown": "Unknown"
     }
+  },
+  "clientStatus": {
+    "up": "Connected",
+    "down": "Disconnected",
+    "unknown": "Unknown",
+    "error": "Error"
   }
 }

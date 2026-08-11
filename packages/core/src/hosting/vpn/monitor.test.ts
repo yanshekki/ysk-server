@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  matchOvpnControlPeer,
   parseOvpnStatus,
   parseWgDump,
   presenceFromHandshake,
@@ -49,6 +50,63 @@ describe('parseOvpnStatus', () => {
     expect(rows[0].bytesReceived).toBe(500);
     expect(rows[0].bytesSent).toBe(600);
     expect(rows[0].connectedSinceUnix).toBe(1700000000);
+  });
+
+  it('parses status-version 1 client list', () => {
+    const text = [
+      'OpenVPN CLIENT LIST',
+      'Updated,Thu Jan 1 00:00:00 2024',
+      'Common Name,Real Address,Bytes Received,Bytes Sent,Connected Since',
+      'ki-honor,127.0.0.1:1194,100,200,Thu Jan 1 00:00:00 2024',
+      'ROUTING TABLE',
+      'END',
+    ].join('\n');
+    const rows = parseOvpnStatus(text);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].commonName).toBe('ki-honor');
+    expect(rows[0].bytesReceived).toBe(100);
+  });
+});
+
+describe('matchOvpnControlPeer', () => {
+  it('matches by CN and virtual IP', () => {
+    const peers = [
+      {
+        id: '1',
+        name: 'ki-honor',
+        engine: 'openvpn' as const,
+        address: '10.8.0.2/32',
+        publicKey: '',
+      },
+    ];
+    expect(
+      matchOvpnControlPeer(
+        {
+          commonName: 'ki-honor',
+          realAddress: '1.1.1.1:1',
+          virtualAddress: '10.8.0.2',
+          bytesReceived: 0,
+          bytesSent: 0,
+          connectedSinceUnix: 0,
+          connectedSince: null,
+        },
+        peers,
+      )?.id,
+    ).toBe('1');
+    expect(
+      matchOvpnControlPeer(
+        {
+          commonName: 'other',
+          realAddress: '',
+          virtualAddress: '10.8.0.2',
+          bytesReceived: 0,
+          bytesSent: 0,
+          connectedSinceUnix: 0,
+          connectedSince: null,
+        },
+        peers,
+      )?.id,
+    ).toBe('1');
   });
 });
 

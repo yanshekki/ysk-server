@@ -172,7 +172,7 @@ export async function ensureOpenVpnServer(
     dhPath: dh,
     taPath: ta,
     ccdDir: join(dir, 'ccd'),
-    statusPath: '/var/log/openvpn/ysk-status.log',
+    statusPath: '/run/openvpn-server/ysk-status.log',
   });
   // Prefer /etc/openvpn/server/ysk.conf (Debian openvpn-server@.service)
   const confPath = '/etc/openvpn/server/ysk.conf';
@@ -181,7 +181,13 @@ export async function ensureOpenVpnServer(
       'bash',
       '-c',
       [
-        'mkdir -p /etc/openvpn/server /var/log/openvpn',
+        'mkdir -p /etc/openvpn/server /var/log/openvpn /run/openvpn-server',
+        // Status file must be writable by openvpn (nobody) — prepare before start
+        'touch /run/openvpn-server/ysk-status.log /var/log/openvpn/ysk-status.log 2>/dev/null || true',
+        'chown nobody:nogroup /run/openvpn-server /run/openvpn-server/ysk-status.log 2>/dev/null || true',
+        'chown nobody:nogroup /var/log/openvpn /var/log/openvpn/ysk-status.log 2>/dev/null || true',
+        'chmod 755 /run/openvpn-server /var/log/openvpn 2>/dev/null || true',
+        'chmod 644 /run/openvpn-server/ysk-status.log /var/log/openvpn/ysk-status.log 2>/dev/null || true',
         `cat > ${JSON.stringify(confPath)} <<'YSKOVPN'`,
         confBody,
         'YSKOVPN',
@@ -193,6 +199,8 @@ export async function ensureOpenVpnServer(
         '  systemctl enable openvpn-server@ysk 2>/dev/null || true',
         '  systemctl restart openvpn-server@ysk',
         'elif systemctl list-unit-files | grep -q "openvpn@.service"; then',
+        '  # Legacy openvpn@ cannot use /run/openvpn-server — patch conf status path',
+        `  sed -i 's|/run/openvpn-server/ysk-status.log|/var/log/openvpn/ysk-status.log|g' ${JSON.stringify(confPath)}`,
         '  ln -sfn /etc/openvpn/server/ysk.conf /etc/openvpn/ysk.conf 2>/dev/null || cp /etc/openvpn/server/ysk.conf /etc/openvpn/ysk.conf',
         '  systemctl enable openvpn@ysk 2>/dev/null || true',
         '  systemctl restart openvpn@ysk',

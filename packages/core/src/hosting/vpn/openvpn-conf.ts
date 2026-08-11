@@ -18,7 +18,8 @@ export function buildOpenVpnServerConf(input: {
 }): string {
   const net = input.serverNet ?? '10.8.0.0 255.255.255.0';
   const dns = input.dns ?? '1.1.1.1';
-  const statusPath = input.statusPath ?? '/var/log/openvpn/ysk-status.log';
+  // RuntimeDirectory of openvpn-server@ is writable by the daemon user
+  const statusPath = input.statusPath ?? '/run/openvpn-server/ysk-status.log';
   return [
     '# YSK-managed OpenVPN server',
     `port ${input.port}`,

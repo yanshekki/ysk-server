@@ -141,45 +141,105 @@ export type OvpnStatusClient = {
   connectedSince: string | null;
 };
 
-/** Parse OpenVPN status-version 2 (and tolerate v3 CLIENT_LIST rows). */
+/** Parse OpenVPN status-version 2/3 CLIENT_LIST and legacy status-version 1 client table. */
 export function parseOvpnStatus(text: string): OvpnStatusClient[] {
   const out: OvpnStatusClient[] = [];
-  for (const line of text.split('\n')) {
+  const lines = text.split('\n');
+  let inV1Clients = false;
+
+  for (const line of lines) {
     const t = line.trim();
-    if (!t.startsWith('CLIENT_LIST,')) continue;
-    // CLIENT_LIST,Common Name,Real Address,Virtual Address,Virtual IPv6,Bytes Received,Bytes Sent,Connected Since,Connected Since (time_t),...
-    const parts = t.split(',');
-    if (parts.length < 9) continue;
-    const cn = parts[1] ?? '';
-    if (!cn || cn === 'UNDEF') continue;
-    const bytesRecv = Number(parts[5] ?? 0);
-    const bytesSent = Number(parts[6] ?? 0);
-    const sinceStr = parts[7] ?? '';
-    const sinceUnix = Number(parts[8] ?? 0);
-    out.push({
-      commonName: cn,
-      realAddress: parts[2] ?? '',
-      virtualAddress: parts[3] ?? '',
-      bytesReceived: Number.isFinite(bytesRecv) ? bytesRecv : 0,
-      bytesSent: Number.isFinite(bytesSent) ? bytesSent : 0,
-      connectedSinceUnix: Number.isFinite(sinceUnix) ? sinceUnix : 0,
-      connectedSince:
-        Number.isFinite(sinceUnix) && sinceUnix > 0
-          ? new Date(sinceUnix * 1000).toISOString()
-          : sinceStr || null,
-    });
+    if (!t) continue;
+
+    // —— status-version 2/3 ——
+    if (t.startsWith('CLIENT_LIST,')) {
+      // CLIENT_LIST,Common Name,Real Address,Virtual Address,Virtual IPv6,Bytes Received,Bytes Sent,Connected Since,Connected Since (time_t),...
+      const parts = t.split(',');
+      if (parts.length < 9) continue;
+      const cn = parts[1] ?? '';
+      if (!cn || cn === 'UNDEF' || cn === 'Common Name') continue;
+      const bytesRecv = Number(parts[5] ?? 0);
+      const bytesSent = Number(parts[6] ?? 0);
+      const sinceStr = parts[7] ?? '';
+      const sinceUnix = Number(parts[8] ?? 0);
+      out.push({
+        commonName: cn,
+        realAddress: parts[2] ?? '',
+        virtualAddress: parts[3] ?? '',
+        bytesReceived: Number.isFinite(bytesRecv) ? bytesRecv : 0,
+        bytesSent: Number.isFinite(bytesSent) ? bytesSent : 0,
+        connectedSinceUnix: Number.isFinite(sinceUnix) ? sinceUnix : 0,
+        connectedSince:
+          Number.isFinite(sinceUnix) && sinceUnix > 0
+            ? new Date(sinceUnix * 1000).toISOString()
+            : sinceStr || null,
+      });
+      continue;
+    }
+
+    // —— status-version 1 ——
+    if (/^OpenVPN CLIENT LIST/i.test(t)) {
+      inV1Clients = true;
+      continue;
+    }
+    if (inV1Clients) {
+      if (/^ROUTING TABLE/i.test(t) || /^GLOBAL STATS/i.test(t) || t === 'END') {
+        inV1Clients = false;
+        continue;
+      }
+      if (/^Updated,/i.test(t) || /^Common Name,/i.test(t)) continue;
+      // Common Name,Real Address,Bytes Received,Bytes Sent,Connected Since
+      const parts = t.split(',');
+      if (parts.length < 5) continue;
+      const cn = parts[0] ?? '';
+      if (!cn || cn === 'UNDEF') continue;
+      const bytesRecv = Number(parts[2] ?? 0);
+      const bytesSent = Number(parts[3] ?? 0);
+      const sinceStr = parts.slice(4).join(',');
+      out.push({
+        commonName: cn,
+        realAddress: parts[1] ?? '',
+        virtualAddress: '',
+        bytesReceived: Number.isFinite(bytesRecv) ? bytesRecv : 0,
+        bytesSent: Number.isFinite(bytesSent) ? bytesSent : 0,
+        connectedSinceUnix: 0,
+        connectedSince: sinceStr || null,
+      });
+    }
   }
   return out;
 }
 
+/** Primary status path written by openvpn (RuntimeDirectory is writable by the unit). */
 export function openVpnStatusPath(_dataDir: string): string {
-  // Prefer runtime path OpenVPN (nobody) can write under /var/log/openvpn
-  return '/var/log/openvpn/ysk-status.log';
+  return '/run/openvpn-server/ysk-status.log';
+}
+
+/** Fallbacks when unit layout differs (openvpn@ / daemon). */
+export function openVpnStatusCandidates(dataDir: string): string[] {
+  return [
+    '/run/openvpn-server/ysk-status.log',
+    '/run/openvpn-server/status-ysk.log',
+    '/run/openvpn-server/status.log',
+    '/var/log/openvpn/ysk-status.log',
+    '/var/run/openvpn-server/ysk-status.log',
+    join(dataDir, 'vpn', 'openvpn', 'status.log'),
+  ];
 }
 
 /** dataDir mirror path (optional read fallback) */
 export function openVpnStatusPathLocal(dataDir: string): string {
   return join(dataDir, 'vpn', 'openvpn', 'status.log');
+}
+
+/** Normalize tunnel IP for matching (strip /32, spaces). */
+export function normalizeTunnelIp(addr: string | undefined | null): string {
+  if (!addr) return '';
+  return String(addr)
+    .trim()
+    .split('/')[0]
+    ?.split(' ')[0]
+    ?.toLowerCase() ?? '';
 }
 
 export type RatePrevSample = {
@@ -242,35 +302,48 @@ export async function readOvpnStatusFile(
   host: HostExecutor,
   dataDir: string,
 ): Promise<string> {
-  const primary = openVpnStatusPath(dataDir);
-  const local = openVpnStatusPathLocal(dataDir);
-  // Prefer host read (may be root)
+  const paths = openVpnStatusCandidates(dataDir);
   if (host.executeEnabled()) {
-    const r = await host.runCommand(
-      [
-        'bash',
-        '-c',
-        `cat ${JSON.stringify(primary)} 2>/dev/null || cat ${JSON.stringify(local)} 2>/dev/null || true`,
-      ],
-      { timeoutMs: 8_000 },
-    );
+    // First non-empty readable status file
+    const script = paths
+      .map(
+        (p) =>
+          `if [ -s ${JSON.stringify(p)} ]; then cat ${JSON.stringify(p)}; exit 0; fi`,
+      )
+      .join('\n');
+    const r = await host.runCommand(['bash', '-c', `${script}\ntrue`], {
+      timeoutMs: 8_000,
+    });
     if (r.stdout?.trim()) return r.stdout;
   }
-  if (existsSync(primary)) {
+  for (const p of paths) {
+    if (!existsSync(p)) continue;
     try {
-      return readFileSync(primary, 'utf8');
-    } catch {
-      /* */
-    }
-  }
-  if (existsSync(local)) {
-    try {
-      return readFileSync(local, 'utf8');
+      const t = readFileSync(p, 'utf8');
+      if (t.trim()) return t;
     } catch {
       /* */
     }
   }
   return '';
+}
+
+/** Match control-plane peer to OpenVPN status client by CN or virtual IP. */
+export function matchOvpnControlPeer(
+  client: OvpnStatusClient,
+  controlPeers: ControlPlanePeer[],
+): ControlPlanePeer | undefined {
+  const cn = client.commonName.trim().toLowerCase();
+  const vip = normalizeTunnelIp(client.virtualAddress);
+  const byCn = controlPeers.find((p) => p.name.trim().toLowerCase() === cn);
+  if (byCn) return byCn;
+  if (vip) {
+    const byIp = controlPeers.find(
+      (p) => normalizeTunnelIp(p.address) === vip,
+    );
+    if (byIp) return byIp;
+  }
+  return undefined;
 }
 
 export async function probeServerActive(
@@ -421,8 +494,7 @@ export async function buildMonitorSnapshot(input: {
     }
   }
   const ovpnCp = input.controlPeers.filter((p) => p.engine === 'openvpn');
-  const ovpnByName = new Map(ovpnCp.map((p) => [p.name, p]));
-  const matchedOvpn = new Set<string>();
+  const matchedOvpnIds = new Set<string>();
   let ovpnRx = 0;
   let ovpnTx = 0;
   let ovpnOnline = 0;
@@ -431,8 +503,8 @@ export async function buildMonitorSnapshot(input: {
     ovpnOnline += 1;
     ovpnRx += c.bytesReceived;
     ovpnTx += c.bytesSent;
-    const cp = ovpnByName.get(c.commonName);
-    matchedOvpn.add(c.commonName);
+    const cp = matchOvpnControlPeer(c, ovpnCp);
+    if (cp) matchedOvpnIds.add(cp.id);
     const id = cp?.id ?? `ovpn-live:${c.commonName}`;
     const key = `peer:${id}`;
     byKey[key] = { rx: c.bytesReceived, tx: c.bytesSent };
@@ -455,7 +527,7 @@ export async function buildMonitorSnapshot(input: {
     });
   }
   for (const cp of ovpnCp) {
-    if (matchedOvpn.has(cp.name)) continue;
+    if (matchedOvpnIds.has(cp.id)) continue;
     peers.push({
       id: cp.id,
       name: cp.name,

@@ -109,10 +109,10 @@ async function genWgKeypair(
   return { privateKey, publicKey: pub.stdout.trim() };
 }
 
-export class VpnService {
-  /** Previous monitor sample for rate derivation (in-process). */
-  private monitorPrev: RatePrevSample | null = null;
+/** Process-wide rate samples — VpnService is constructed per HTTP request. */
+const MONITOR_RATE_CACHE = new Map<string, RatePrevSample>();
 
+export class VpnService {
   constructor(
     private readonly dataDir: string,
     private readonly host: HostExecutor,
@@ -275,14 +275,15 @@ export class VpnService {
       iface: c.iface,
       status: c.status,
     }));
+    const cacheKey = this.dataDir;
     const { snapshot, nextPrev } = await buildMonitorSnapshot({
       host: this.host,
       dataDir: this.dataDir,
       controlPeers,
       controlClients,
-      prev: this.monitorPrev,
+      prev: MONITOR_RATE_CACHE.get(cacheKey) ?? null,
     });
-    this.monitorPrev = nextPrev;
+    MONITOR_RATE_CACHE.set(cacheKey, nextPrev);
 
     if (opts?.engine) {
       return {

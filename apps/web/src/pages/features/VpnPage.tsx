@@ -850,8 +850,18 @@ export function VpnPage() {
                     key: 'st',
                     header: t('vpn.colStatus'),
                     render: (r) => (
-                      <Badge tone={r.status === 'up' ? 'ok' : 'neutral'}>
-                        {r.status}
+                      <Badge
+                        tone={
+                          r.status === 'up'
+                            ? 'ok'
+                            : r.status === 'down'
+                              ? 'neutral'
+                              : 'warn'
+                        }
+                      >
+                        {t(`vpn.clientStatus.${r.status}`, {
+                          defaultValue: r.status,
+                        })}
                       </Badge>
                     ),
                   },
@@ -988,7 +998,9 @@ export function VpnPage() {
                             : 'warn'
                       }
                     >
-                      {r.status}
+                      {t(`vpn.clientStatus.${r.status}`, {
+                        defaultValue: r.status,
+                      })}
                     </Badge>
                   ),
                 },

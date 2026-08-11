@@ -104,6 +104,12 @@
   "noProfilesHint": "粘贴 WireGuard 或 OpenVPN 客户端 conf",
   "connect": "连接",
   "disconnect": "断开",
+  "clientStatus": {
+    "up": "已连接",
+    "down": "已断开",
+    "unknown": "未知",
+    "error": "错误"
+  },
   "result": "结果",
   "clientEngine": "类型",
   "engineAuto": "自动检测",

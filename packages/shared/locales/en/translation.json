@@ -11260,6 +11260,12 @@
     "noProfilesHint": "Import WireGuard or OpenVPN client conf",
     "connect": "Connect",
     "disconnect": "Disconnect",
+    "clientStatus": {
+      "up": "Connected",
+      "down": "Disconnected",
+      "unknown": "Unknown",
+      "error": "Error"
+    },
     "result": "Result",
     "clientEngine": "Type",
     "engineAuto": "Auto-detect",
