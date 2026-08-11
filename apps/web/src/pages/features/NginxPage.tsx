@@ -482,7 +482,7 @@ export function NginxPage() {
             </Button>
           }
         >
-          <LogViewer content={preview?.content ?? ''} maxHeight={420} />
+          <LogViewer text={preview?.content ?? ''} maxHeight={420} />
         </Modal>
 
         <Modal
