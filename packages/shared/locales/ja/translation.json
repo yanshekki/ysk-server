@@ -11185,7 +11185,20 @@
     "connect": "接続する",
     "clientNeedFields": "名前とホストは必須です",
     "clientCreated": "クライアントプロファイルを作成しました",
-    "stackMissingShort": "未インストール"
+    "stackMissingShort": "未インストール",
+    "accountStatus": {
+      "running": "Running",
+      "stopped": "Stopped",
+      "failed": "Failed",
+      "written": "Written",
+      "unknown": "Unknown"
+    },
+    "clientStatus": {
+      "up": "Connected",
+      "down": "Disconnected",
+      "unknown": "Unknown",
+      "error": "Error"
+    }
   },
   "vpn": {
     "pageDesc": "VPN サーバー＆クライアント",

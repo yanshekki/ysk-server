@@ -78,6 +78,19 @@
   "colStatus": "狀態",
   "colDesktop": "桌面",
   "colBind": "RFB 監聽",
+  "accountStatus": {
+    "running": "運行中",
+    "stopped": "已停止",
+    "failed": "失敗",
+    "written": "已寫入",
+    "unknown": "未知"
+  },
+  "clientStatus": {
+    "up": "已連線",
+    "down": "已斷線",
+    "unknown": "未知",
+    "error": "錯誤"
+  },
   "accountPager": "帳號分頁",
   "prevPage": "上一頁",
   "nextPage": "下一頁",

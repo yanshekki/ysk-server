@@ -11185,7 +11185,20 @@
     "connect": "연결",
     "clientNeedFields": "이름과 호스트는 필수입니다",
     "clientCreated": "클라이언트 프로필이 생성되었습니다",
-    "stackMissingShort": "미설치"
+    "stackMissingShort": "미설치",
+    "accountStatus": {
+      "running": "Running",
+      "stopped": "Stopped",
+      "failed": "Failed",
+      "written": "Written",
+      "unknown": "Unknown"
+    },
+    "clientStatus": {
+      "up": "Connected",
+      "down": "Disconnected",
+      "unknown": "Unknown",
+      "error": "Error"
+    }
   },
   "vpn": {
     "pageDesc": "VPN 서버 및 클라이언트",

@@ -11192,7 +11192,20 @@
     "connect": "连接",
     "clientNeedFields": "名称与主机必填",
     "clientCreated": "已创建客户端配置",
-    "stackMissingShort": "未安装"
+    "stackMissingShort": "未安装",
+    "accountStatus": {
+      "running": "运行中",
+      "stopped": "已停止",
+      "failed": "失败",
+      "written": "已写入",
+      "unknown": "未知"
+    },
+    "clientStatus": {
+      "up": "已连接",
+      "down": "已断开",
+      "unknown": "未知",
+      "error": "错误"
+    }
   },
   "vpn": {
     "pageDesc": "VPN 服务器／客户端",

@@ -119,5 +119,18 @@
   "connect": "Connect",
   "clientNeedFields": "Name and host are required",
   "clientCreated": "Client profile created",
-  "stackMissingShort": "Not installed"
+  "stackMissingShort": "Not installed",
+  "accountStatus": {
+    "running": "Running",
+    "stopped": "Stopped",
+    "failed": "Failed",
+    "written": "Written",
+    "unknown": "Unknown"
+  },
+  "clientStatus": {
+    "up": "Connected",
+    "down": "Disconnected",
+    "unknown": "Unknown",
+    "error": "Error"
+  }
 }

@@ -78,6 +78,19 @@
   "colStatus": "Status",
   "colDesktop": "Desktop",
   "colBind": "RFB bind",
+  "accountStatus": {
+    "running": "Running",
+    "stopped": "Stopped",
+    "failed": "Failed",
+    "written": "Written",
+    "unknown": "Unknown"
+  },
+  "clientStatus": {
+    "up": "Connected",
+    "down": "Disconnected",
+    "unknown": "Unknown",
+    "error": "Error"
+  },
   "accountPager": "Account pages",
   "prevPage": "Previous",
   "nextPage": "Next",

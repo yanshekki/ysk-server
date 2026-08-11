@@ -277,7 +277,11 @@ export function VncPage() {
                   header: t('vnc.colStatus'),
                   nowrap: true,
                   render: (a) => (
-                    <Badge tone={accountStatusTone(a.status)}>{a.status}</Badge>
+                    <Badge tone={accountStatusTone(a.status)}>
+                      {t(`vnc.accountStatus.${a.status}`, {
+                        defaultValue: a.status,
+                      })}
+                    </Badge>
                   ),
                 },
                 {
@@ -469,7 +473,9 @@ export function VncPage() {
                   nowrap: true,
                   render: (c) => (
                     <Badge tone={c.status === 'up' ? 'ok' : 'neutral'}>
-                      {c.status}
+                      {t(`vnc.clientStatus.${c.status}`, {
+                        defaultValue: c.status,
+                      })}
                     </Badge>
                   ),
                 },
