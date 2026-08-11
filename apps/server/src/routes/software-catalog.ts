@@ -252,24 +252,20 @@ export async function handleSoftwareCatalogRoutes(
       hooks?.onLog?.('status', 'install start');
       let result: Record<string, unknown>;
       if (data.feature) {
-        hooks?.onLog?.('status', `feature=${data.feature}`);
         result = (await installForFeature({
           host: ctx.host,
           feature: data.feature,
           dataDir: ctx.dataDir,
+          onLog: hooks?.onLog,
         })) as unknown as Record<string, unknown>;
       } else {
         const ids = data.ids ?? [];
-        hooks?.onLog?.('status', `ids=${ids.join(',')}`);
         result = (await installSoftwareBatch({
           host: ctx.host,
           ids,
           dataDir: ctx.dataDir,
+          onLog: hooks?.onLog,
         })) as unknown as Record<string, unknown>;
-      }
-      const notes = Array.isArray(result.notes) ? result.notes.map(String) : [];
-      for (const n of notes.slice(0, 30)) {
-        hooks?.onLog?.('stdout', n);
       }
       hooks?.onLog?.(
         'status',

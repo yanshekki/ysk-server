@@ -104,7 +104,16 @@ export async function installSoftware(input: {
    * Without it, installing mysql-server while MariaDB is present (or reverse) is refused.
    */
   exclusiveSwitchAuth?: ExclusiveSwitchAuth;
+  /** Live log sink for SSE UIs */
+  onLog?: (stream: 'stdout' | 'stderr' | 'status', line: string) => void;
 }): Promise<SoftwareInstallResult> {
+  const log = (
+    stream: 'stdout' | 'stderr' | 'status',
+    line: string,
+  ) => {
+    const t = String(line ?? '').trim();
+    if (t) input.onLog?.(stream, t);
+  };
   const spec = getSoftware(input.id);
   if (!spec) {
     return {
@@ -205,6 +214,7 @@ export async function installSoftware(input: {
     const blockReason: BlockReason = !input.host.executeEnabled() ? 'no_execute' : 'no_root';
     const blockMessage = panelBlockMessage(blockReason);
     notes.push(blockMessage);
+    log('stderr', blockMessage);
     steps.push({ name: tl('notes.auto.n0487'), status: 'blocked', detail: blockMessage });
     return {
       ok: false,
@@ -219,6 +229,8 @@ export async function installSoftware(input: {
       steps,
       status: before };
   }
+
+  log('status', `install ${spec.id} (${resolveSoftwareTitle(spec)})`);
 
   // npm -g installers (PM2, etc.) — requires node/npm already on PATH
   if (spec.installer === 'npm-global') {
@@ -256,8 +268,16 @@ export async function installSoftware(input: {
         status: before,
       };
     }
-    const cmd = ['bash', '-c', `npm install -g ${pkgs.map((p) => JSON.stringify(p)).join(' ')}`];
+    const cmd = [
+      'bash',
+      '-c',
+      `npm install -g ${pkgs.map((p) => JSON.stringify(p)).join(' ')} 2>&1`,
+    ];
+    log('status', `npm install -g ${pkgs.join(' ')}`);
     const r = await input.host.runCommand(cmd, { timeoutMs: 300_000 });
+    for (const line of (r.stdout || r.stderr || '').split('\n').slice(-50)) {
+      log(r.exitCode === 0 ? 'stdout' : 'stderr', line);
+    }
     const status = await probeSoftware(input.host, spec);
     const ok = r.exitCode === 0 && status.installed;
     steps.push({
@@ -330,12 +350,14 @@ export async function installSoftware(input: {
       bun: 'latest',
     };
     const version = spec.runtimeVersion ?? defaultVer[kind] ?? 'latest';
+    log('status', `runtime install ${kind}@${version}`);
     const r = await planOrInstallRuntime({
       host: input.host,
       dataDir: input.dataDir,
       kind,
       version,
       install: true });
+    for (const n of r.notes ?? []) log(r.ok ? 'stdout' : 'stderr', n);
     const status = await probeSoftware(input.host, spec);
     return {
       ok: r.ok && status.installed,
@@ -360,6 +382,7 @@ export async function installSoftware(input: {
   const pkgs = spec.aptPackages.filter(Boolean);
   if (!pkgs.length) {
     notes.push(tl('notes.auto.n1041'));
+    log('stderr', tl('notes.auto.n1041'));
     return {
       ok: false,
       executed: false,
@@ -373,10 +396,14 @@ export async function installSoftware(input: {
 
   const now = Date.now();
   if (now - lastAptUpdateMs > APT_UPDATE_MS) {
+    log('status', 'apt-get update');
     const up = await input.host.runCommand(
-      ['bash', '-c', 'export DEBIAN_FRONTEND=noninteractive; apt-get update -qq'],
+      ['bash', '-c', 'export DEBIAN_FRONTEND=noninteractive; apt-get update -qq 2>&1'],
       { timeoutMs: 180_000 },
     );
+    for (const line of (up.stdout || up.stderr || '').split('\n').slice(-20)) {
+      log(up.exitCode === 0 ? 'stdout' : 'stderr', line);
+    }
     steps.push({
       name: tl('notes.apt.updateIndex'),
       status: up.exitCode === 0 ? 'ok' : 'failed',
@@ -384,29 +411,40 @@ export async function installSoftware(input: {
     if (up.exitCode === 0) lastAptUpdateMs = now;
   } else {
     steps.push({ name: tl('notes.apt.updateIndex'), status: 'skipped', detail: tl('notes.tpl.recentlyUpdated') });
+    log('status', 'apt update skipped (recent)');
   }
 
   // Postfix: seed debconf so postinst creates main.cf (never "No configuration")
   if (spec.id === 'postfix') {
     try {
       const { preseedPostfixDebconf } = await import('./postfix-bootstrap.js');
-      notes.push(...(await preseedPostfixDebconf(input.host)));
+      const pre = await preseedPostfixDebconf(input.host);
+      notes.push(...pre);
+      for (const n of pre) log('status', n);
     } catch {
       /* best-effort */
     }
   }
 
   // Try packages one-by-one groups: first package set as OR — install all listed, ignore individual fails partially
-  const installCmd = `export DEBIAN_FRONTEND=noninteractive; apt-get install -y ${pkgs.map((p) => JSON.stringify(p)).join(' ')}`;
+  log('status', `apt-get install -y ${pkgs.join(' ')}`);
+  const installCmd = `export DEBIAN_FRONTEND=noninteractive; apt-get install -y ${pkgs.map((p) => JSON.stringify(p)).join(' ')} 2>&1`;
   const inst = await input.host.runCommand(['bash', '-c', installCmd], { timeoutMs: 600_000 });
+  for (const line of (inst.stdout || inst.stderr || '').split('\n').slice(-80)) {
+    log(inst.exitCode === 0 ? 'stdout' : 'stderr', line);
+  }
   // mysql-client OR mariadb-client: if full fail, try each
   let installOk = inst.exitCode === 0;
   if (!installOk && pkgs.length > 1) {
     for (const p of pkgs) {
+      log('status', `retry apt install ${p}`);
       const one = await input.host.runCommand(
-        ['bash', '-c', `export DEBIAN_FRONTEND=noninteractive; apt-get install -y ${JSON.stringify(p)}`],
+        ['bash', '-c', `export DEBIAN_FRONTEND=noninteractive; apt-get install -y ${JSON.stringify(p)} 2>&1`],
         { timeoutMs: 300_000 },
       );
+      for (const line of (one.stdout || one.stderr || '').split('\n').slice(-30)) {
+        log(one.exitCode === 0 ? 'stdout' : 'stderr', line);
+      }
       if (one.exitCode === 0) {
         installOk = true;
         steps.push({ name: tl('notes.software.installPkg', { p }), status: 'ok' });
@@ -448,11 +486,16 @@ export async function installSoftware(input: {
       }
     }
     for (const u of spec.units) {
+      log('status', `systemctl enable --now ${u}`);
       const en = await input.host.runCommand(['systemctl', 'enable', '--now', u], {
         timeoutMs: 60_000 });
       let waited = await waitUnitActive(input.host, u, {
         timeoutMs: u === 'mysql' || u === 'mariadb' ? 120_000 : 60_000,
       });
+      log(
+        waited.ok ? 'stdout' : 'stderr',
+        waited.ok ? `${u} active` : `${u} not active: ${waited.active || en.stderr}`,
+      );
       // MySQL/MariaDB: Debian FROZEN after engine switch — package OK but daemon blocked
       if (!waited.ok && (u === 'mysql' || u === 'mariadb' || u === 'mysqld')) {
         try {
@@ -611,6 +654,7 @@ export async function installSoftwareBatch(input: {
   host: HostExecutor;
   ids: string[];
   dataDir?: string;
+  onLog?: (stream: 'stdout' | 'stderr' | 'status', line: string) => void;
 }): Promise<{
   ok: boolean;
   blocked?: boolean;
@@ -620,8 +664,15 @@ export async function installSoftwareBatch(input: {
 }> {
   const results: SoftwareInstallResult[] = [];
   for (const id of input.ids) {
+    input.onLog?.('status', `— component ${id}`);
     results.push(
-      await installSoftware({ host: input.host, id, dataDir: input.dataDir, enableUnits: true }),
+      await installSoftware({
+        host: input.host,
+        id,
+        dataDir: input.dataDir,
+        enableUnits: true,
+        onLog: input.onLog,
+      }),
     );
   }
   const ok = results.every((r) => r.ok);
@@ -643,6 +694,7 @@ export async function installForFeature(input: {
   dataDir?: string;
   /** only missing (default true) */
   onlyMissing?: boolean;
+  onLog?: (stream: 'stdout' | 'stderr' | 'status', line: string) => void;
 }): Promise<{
   ok: boolean;
   blocked?: boolean;
@@ -654,21 +706,26 @@ export async function installForFeature(input: {
   switchTarget?: 'mysql' | 'mariadb';
   blockedByExclusive?: string;
 }> {
+  input.onLog?.('status', `probe feature=${input.feature}`);
   const probed = await probeAllSoftware(input.host, input.feature);
   const missing = probed.filter((p) => !p.installed);
   const ids =
     input.onlyMissing === false ? probed.map((p) => p.id) : missing.map((p) => p.id);
   if (!ids.length) {
+    input.onLog?.('status', 'nothing missing');
     return {
       ok: true,
       results: [],
       missingBefore: [],
       notes: [tl('notes.auto.n0841')] };
   }
+  input.onLog?.('status', `install ids=${ids.join(',')}`);
   const batch = await installSoftwareBatch({
     host: input.host,
     ids,
-    dataDir: input.dataDir });
+    dataDir: input.dataDir,
+    onLog: input.onLog,
+  });
   const switchHit = batch.results.find((r) => r.code === 'needs_exclusive_switch');
   return {
     ok: batch.ok,
