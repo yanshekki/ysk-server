@@ -2,6 +2,7 @@ import { tl } from '@ysk/shared';
 /**
  * Mail queue list / flush via postqueue/postsuper when available.
  * Honest: blocked without execute; never fakes success.
+ * Auto-heals common Postfix install gaps when execute is on.
  */
 
 import type { HostExecutor } from '../host/executor.js';
@@ -13,6 +14,50 @@ export interface MailQueueResult {
   requiresExecute: boolean;
   blocked?: boolean;
   flushed?: number;
+}
+
+function needsPostfixQueueHeal(out: string): boolean {
+  return (
+    /setgid_group/i.test(out) ||
+    /Mail system is down/i.test(out) ||
+    /showq/i.test(out) ||
+    /malformed showq/i.test(out) ||
+    /open directory hold/i.test(out) ||
+    /scan_dir_push/i.test(out) ||
+    /No such file or directory/i.test(out)
+  );
+}
+
+function classifyQueueError(out: string): string {
+  if (/setgid_group/i.test(out)) return tl('notes.email.postqueueSetgidBroken');
+  if (/Mail system is down|showq|malformed showq/i.test(out)) {
+    return tl('notes.email.postqueueMailDown');
+  }
+  if (/open directory hold|scan_dir_push/i.test(out)) {
+    return tl('notes.email.postqueueSpoolMissing');
+  }
+  return tl('notes.auto.n0386');
+}
+
+async function tryHealPostfixQueue(
+  host: HostExecutor,
+  out: string,
+): Promise<{ notes: string[]; healed: boolean }> {
+  if (!host.executeEnabled() || !needsPostfixQueueHeal(out)) {
+    return { notes: [], healed: false };
+  }
+  try {
+    const { ensurePostfixRuntimeForQueue } = await import(
+      '../hosting/postfix-bootstrap.js'
+    );
+    const heal = await ensurePostfixRuntimeForQueue(host);
+    return { notes: heal.notes.slice(0, 6), healed: true };
+  } catch (e) {
+    return {
+      notes: [e instanceof Error ? e.message : String(e)],
+      healed: false,
+    };
+  }
 }
 
 export async function listMailQueue(host: HostExecutor): Promise<MailQueueResult> {
@@ -27,13 +72,11 @@ export async function listMailQueue(host: HostExecutor): Promise<MailQueueResult
   }
   const { shellBinExists, binPresent } = await import('../hosting/software-probe/index.js');
   if (!(await binPresent(host, 'postqueue'))) {
-    const rEmpty = { stdout: 'NO_POSTQUEUE', stderr: '', exitCode: 1 };
-    const out0 = rEmpty.stdout;
     return {
       ok: false,
       requiresExecute: false,
       items: [],
-      notes: [tl('notes.auto.n0386'), out0.slice(0, 500)],
+      notes: [tl('notes.auto.n0386'), 'NO_POSTQUEUE'],
     };
   }
   const runPostqueue = async () =>
@@ -48,67 +91,45 @@ export async function listMailQueue(host: HostExecutor): Promise<MailQueueResult
 
   let r = await runPostqueue();
   let out = (r.stdout || r.stderr || '').trim();
+  const healNotes: string[] = [];
 
-  // Common broken install: setgid_group empty in main.cf
   if (
-    /setgid_group/i.test(out) &&
-    /bad string length|fatal/i.test(out) &&
-    host.executeEnabled()
+    (out.includes('NO_POSTQUEUE') || r.exitCode !== 0 || needsPostfixQueueHeal(out)) &&
+    needsPostfixQueueHeal(out)
   ) {
-    try {
-      const { ensurePostfixSetgidGroup } = await import(
-        '../hosting/postfix-bootstrap.js'
-      );
-      const heal = await ensurePostfixSetgidGroup(host);
+    const heal = await tryHealPostfixQueue(host, out);
+    healNotes.push(...heal.notes);
+    if (heal.healed) {
       r = await runPostqueue();
       out = (r.stdout || r.stderr || '').trim();
-      if (heal.fixed && (r.exitCode === 0 || /Mail queue is empty/i.test(out))) {
-        // continue into success path below
-      } else if (heal.fixed || heal.notes.length) {
-        // still failing after heal — fall through to error with heal notes
-        if (out.includes('NO_POSTQUEUE') || r.exitCode !== 0) {
-          return {
-            ok: false,
-            requiresExecute: false,
-            items: [],
-            notes: [
-              tl('notes.email.postqueueSetgidBroken'),
-              ...heal.notes.slice(0, 3),
-              out.slice(0, 400),
-            ],
-          };
-        }
-      }
-    } catch (e) {
-      return {
-        ok: false,
-        requiresExecute: false,
-        items: [],
-        notes: [
-          tl('notes.email.postqueueSetgidBroken'),
-          e instanceof Error ? e.message : String(e),
-          out.slice(0, 400),
-        ],
-      };
     }
   }
 
   if (out.includes('NO_POSTQUEUE') || r.exitCode !== 0) {
-    const setgidHint = /setgid_group/i.test(out);
+    // After heal still down — empty queue while mail is down is still not "ok"
+    // unless postqueue truly succeeds with empty message
+    if (/Mail queue is empty|queue is empty/i.test(out) && r.exitCode === 0) {
+      return {
+        ok: true,
+        requiresExecute: false,
+        items: [],
+        notes: [tl('notes.auto.n0535'), ...healNotes.slice(0, 2)],
+      };
+    }
     return {
       ok: false,
       requiresExecute: false,
       items: [],
-      notes: [
-        setgidHint
-          ? tl('notes.email.postqueueSetgidBroken')
-          : tl('notes.auto.n0386'),
-        out.slice(0, 500),
-      ],
+      notes: [classifyQueueError(out), ...healNotes.slice(0, 3), out.slice(0, 500)],
     };
   }
   if (/Mail queue is empty|queue is empty/i.test(out)) {
-    return { ok: true, requiresExecute: false, items: [], notes: [tl('notes.auto.n0535')] };
+    return {
+      ok: true,
+      requiresExecute: false,
+      items: [],
+      notes: [tl('notes.auto.n0535'), ...healNotes.slice(0, 2)],
+    };
   }
   const items: Array<{ id: string; raw: string }> = [];
   for (const line of out.split('\n')) {
@@ -119,7 +140,10 @@ export async function listMailQueue(host: HostExecutor): Promise<MailQueueResult
     ok: true,
     requiresExecute: false,
     items,
-    notes: [tl('notes.auto.t0079', { v0: (items.length) })],
+    notes: [
+      tl('notes.auto.t0079', { v0: items.length }),
+      ...healNotes.slice(0, 2),
+    ],
   };
 }
 
@@ -136,28 +160,76 @@ export async function flushMailQueue(
       notes: [tl('notes.auto.n1175')],
     };
   }
+
+  const runFlush = async (): Promise<{ exitCode: number; out: string }> => {
+    if (opts?.all) {
+      const r = await host.runCommand(['bash', '-c', 'postsuper -d ALL 2>&1'], {
+        timeoutMs: 30_000,
+      });
+      return {
+        exitCode: r.exitCode,
+        out: (r.stdout || r.stderr || '').trim(),
+      };
+    }
+    if (opts?.id) {
+      const id = opts.id.replace(/[^A-Za-z0-9]/g, '');
+      const r = await host.runCommand(
+        ['bash', '-c', `postsuper -d ${JSON.stringify(id)} 2>&1`],
+        { timeoutMs: 15_000 },
+      );
+      return {
+        exitCode: r.exitCode,
+        out: (r.stdout || r.stderr || '').trim(),
+      };
+    }
+    return { exitCode: 1, out: '' };
+  };
+
+  if (!opts?.all && !opts?.id) {
+    return { ok: false, requiresExecute: false, items: [], notes: [tl('notes.auto.n1561')] };
+  }
+
+  let { exitCode, out } = await runFlush();
+  const healNotes: string[] = [];
+
+  if (exitCode !== 0 && needsPostfixQueueHeal(out)) {
+    const heal = await tryHealPostfixQueue(host, out);
+    healNotes.push(...heal.notes);
+    if (heal.healed) {
+      ({ exitCode, out } = await runFlush());
+    }
+  }
+
   if (opts?.all) {
-    const r = await host.runCommand(['postsuper', '-d', 'ALL'], { timeoutMs: 30_000 });
     return {
-      ok: r.exitCode === 0,
+      ok: exitCode === 0,
       requiresExecute: false,
       items: [],
-      flushed: r.exitCode === 0 ? -1 : 0,
-      notes: [
-        r.exitCode === 0 ? tl('notes.auto.n0786') : tl('notes.auto.t0080', { v0: (r.stderr || r.stdout) }),
-      ],
+      flushed: exitCode === 0 ? -1 : 0,
+      notes:
+        exitCode === 0
+          ? [tl('notes.auto.n0786'), ...healNotes.slice(0, 2)]
+          : [
+              tl('notes.auto.t0080', { v0: out || 'postsuper failed' }),
+              ...healNotes.slice(0, 3),
+              classifyQueueError(out),
+            ],
     };
   }
-  if (opts?.id) {
-    const id = opts.id.replace(/[^A-Za-z0-9]/g, '');
-    const r = await host.runCommand(['postsuper', '-d', id], { timeoutMs: 15_000 });
-    return {
-      ok: r.exitCode === 0,
-      requiresExecute: false,
-      items: [],
-      flushed: r.exitCode === 0 ? 1 : 0,
-      notes: [r.exitCode === 0 ? tl('notes.tpl.deleted', { name: id }) : tl('notes.tpl.failedColon', { detail: r.stderr || r.stdout })],
-    };
-  }
-  return { ok: false, requiresExecute: false, items: [], notes: [tl('notes.auto.n1561')] };
+
+  const id = String(opts?.id ?? '').replace(/[^A-Za-z0-9]/g, '');
+  return {
+    ok: exitCode === 0,
+    requiresExecute: false,
+    items: [],
+    flushed: exitCode === 0 ? 1 : 0,
+    notes:
+      exitCode === 0
+        ? [tl('notes.tpl.deleted', { name: id }), ...healNotes.slice(0, 2)]
+        : [
+            tl('notes.tpl.failedColon', { detail: out || 'postsuper failed' }),
+            ...healNotes.slice(0, 3),
+            classifyQueueError(out),
+          ],
+  };
 }

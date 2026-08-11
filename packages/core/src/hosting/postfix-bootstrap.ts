@@ -173,3 +173,91 @@ export async function preparePostfixForStart(host: HostExecutor): Promise<{
   }
   return { ok: true, notes };
 }
+
+/**
+ * Heal queue tooling when Postfix is installed but not ready:
+ * - empty setgid_group
+ * - missing spool dirs (hold/incoming/…) → postsuper/postqueue fail
+ * - master/showq down → "Mail system is down"
+ *
+ * Creates queue tree via `postfix check`, then enables/starts unit.
+ */
+export async function ensurePostfixRuntimeForQueue(
+  host: HostExecutor,
+): Promise<{ ok: boolean; notes: string[]; started: boolean }> {
+  const notes: string[] = [];
+  if (!host.executeEnabled()) {
+    return {
+      ok: false,
+      started: false,
+      notes: ['postfix queue heal needs YSK_EXECUTE'],
+    };
+  }
+
+  try {
+    const main = await ensurePostfixMainCf(host);
+    notes.push(...main.notes);
+    // Continue even if main.cf missing — start may still clarify failure notes
+  } catch (e) {
+    notes.push(
+      `main.cf ensure: ${e instanceof Error ? e.message : String(e)}`,
+    );
+  }
+
+  try {
+    const gid = await ensurePostfixSetgidGroup(host);
+    notes.push(...gid.notes);
+  } catch (e) {
+    notes.push(
+      `setgid_group: ${e instanceof Error ? e.message : String(e)}`,
+    );
+  }
+
+  // Create missing queue subdirs (hold, deferred, …) and fix ownership
+  const check = await host.runCommand(
+    [
+      'bash',
+      '-c',
+      [
+        'set +e',
+        'QD="$(postconf -h queue_directory 2>/dev/null || echo /var/spool/postfix)"',
+        'QD="${QD:-/var/spool/postfix}"',
+        'mkdir -p "$QD"',
+        'for d in active bounce corrupt defer deferred flush hold incoming maildrop private public saved trace; do',
+        '  mkdir -p "$QD/$d"',
+        'done',
+        'postfix set-permissions 2>/dev/null || true',
+        'postfix check 2>&1 | tail -30',
+        'exit 0',
+      ].join('\n'),
+    ],
+    { timeoutMs: 45_000 },
+  );
+  const checkOut = (check.stdout || check.stderr || '').trim();
+  if (checkOut) notes.push(`postfix check: ${checkOut.slice(0, 240)}`);
+  else notes.push('postfix spool dirs ensured');
+
+  let started = false;
+  const st = await host.runCommand(
+    [
+      'bash',
+      '-c',
+      [
+        'set +e',
+        'systemctl enable postfix 2>/dev/null || true',
+        'systemctl start postfix 2>/dev/null || postfix start 2>/dev/null || true',
+        'systemctl is-active postfix 2>/dev/null || echo inactive',
+      ].join('\n'),
+    ],
+    { timeoutMs: 45_000 },
+  );
+  const active = (st.stdout || st.stderr || '').trim().split('\n').pop() || '';
+  if (active === 'active' || active === 'running') {
+    started = true;
+    notes.push('postfix service active');
+  } else {
+    notes.push(`postfix service state: ${active || 'unknown'}`);
+  }
+
+  return { ok: true, started, notes };
+}

@@ -4912,7 +4912,9 @@
       "dovecotApplyFailed": "套用 Dovecot 虚拟邮箱认证失败：{{detail}}",
       "dovecotApplyOk": "已安装 Dovecot 虚拟邮箱认证（{{conf}}，{{count}} 个域名）",
       "dovecotPassdbWrittenNeedApply": "已写入 passwd-file（dataDir）— 需 EXECUTE+root 套用到 Dovecot 才可登录",
-      "postqueueSetgidBroken": "Postfix 队列工具失败：main.cf 中 setgid_group 为空。应设为 postdrop（有 YSK_EXECUTE 时面板会尝试自动修复）。"
+      "postqueueSetgidBroken": "Postfix 队列工具失败：main.cf 中 setgid_group 为空。应设为 postdrop（有 YSK_EXECUTE 时面板会尝试自动修复）。",
+      "postqueueMailDown": "Postfix 未运行（showq 不可用）。有 YSK_EXECUTE 时面板会尝试启动 — 请检查软件分页或 systemctl status postfix。",
+      "postqueueSpoolMissing": "Postfix 队列目录缺失（例如 hold/）。有 YSK_EXECUTE 时面板会尝试创建 spool 并启动 Postfix。"
     },
     "agents": {
       "sessionNotFound": "找不到 session：{{sessionId}}"

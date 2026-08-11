@@ -4873,7 +4873,9 @@
       "dovecotApplyFailed": "Dovecot virtual auth apply failed: {{detail}}",
       "dovecotApplyOk": "Dovecot virtual auth installed ({{conf}}, {{count}} domain snippet(s))",
       "dovecotPassdbWrittenNeedApply": "Passwd-file written under dataDir — run apply (EXECUTE+root) so Dovecot loads it",
-      "postqueueSetgidBroken": "Postfix queue tools failed: setgid_group is empty in main.cf. Set setgid_group=postdrop (panel tries to fix when YSK_EXECUTE is on)."
+      "postqueueSetgidBroken": "Postfix queue tools failed: setgid_group is empty in main.cf. Set setgid_group=postdrop (panel tries to fix when YSK_EXECUTE is on).",
+      "postqueueMailDown": "Postfix is not running (showq unavailable). Panel tried to start it when YSK_EXECUTE is on — check the Software tab / systemctl status postfix.",
+      "postqueueSpoolMissing": "Postfix queue directories are missing (e.g. hold/). Panel tried to create the spool tree and start Postfix when YSK_EXECUTE is on."
     },
     "agents": {
       "sessionNotFound": "Session not found: {{sessionId}}"

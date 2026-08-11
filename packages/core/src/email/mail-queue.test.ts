@@ -71,6 +71,78 @@ describe('mail-queue', () => {
     expect(all.ok).toBe(true);
   });
 
+  it('heals when mail system is down then lists empty queue', async () => {
+    let started = false;
+    const h: HostExecutor = {
+      executeEnabled: () => true,
+      isRoot: () => true,
+      pathExists: (p) =>
+        p.includes('postfix') || p.includes('postqueue') || p.includes('/var/spool'),
+      readFile: async () => '',
+      listDir: async () => [],
+      writeFile: async () => undefined,
+      deletePath: async () => undefined,
+      mkdirp: async () => undefined,
+      sysInfo: async () => ({}),
+      serviceStatus: async () => ({
+        stdout: '',
+        stderr: '',
+        exitCode: 0,
+        argv: [],
+        dryRun: false,
+      }),
+      runCommand: async (argv) => {
+        const s = argv.join(' ');
+        if (s.includes('command -v') && s.includes('postqueue') && !s.includes('postqueue -p')) {
+          return {
+            stdout: '/usr/sbin/postqueue\n',
+            stderr: '',
+            exitCode: 0,
+            argv,
+            dryRun: false,
+          };
+        }
+        if (s.includes('postqueue -p') || (s.includes('postqueue') && s.includes('then'))) {
+          if (!started) {
+            return {
+              stdout:
+                'postqueue: warning: Mail system is down -- accessing queue directly (Connect to the Postfix showq service: No such file or directory)\npostqueue: fatal: malformed showq server response\n',
+              stderr: '',
+              exitCode: 1,
+              argv,
+              dryRun: false,
+            };
+          }
+          return {
+            stdout: 'Mail queue is empty\n',
+            stderr: '',
+            exitCode: 0,
+            argv,
+            dryRun: false,
+          };
+        }
+        if (
+          s.includes('systemctl') ||
+          s.includes('postfix start') ||
+          s.includes('is-active') ||
+          s.includes('mkdir') ||
+          s.includes('postfix check') ||
+          s.includes('set-permissions')
+        ) {
+          started = true;
+          return { stdout: 'active\n', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        if (s.includes('setgid_group') || s.includes('queue_directory')) {
+          return { stdout: 'postdrop\n', stderr: '', exitCode: 0, argv, dryRun: false };
+        }
+        return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+      },
+    };
+    const r = await listMailQueue(h);
+    expect(r.ok).toBe(true);
+    expect(r.items).toHaveLength(0);
+  });
+
   it('repairs empty setgid_group then lists queue', async () => {
     let fixed = false;
     const h = host(true, (argv) => {
