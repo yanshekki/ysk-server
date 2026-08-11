@@ -56,7 +56,8 @@ export async function handleApacheRoutes(
         action: 'apache.site.create',
         resource: item.id,
         ok: true,
-      });
+      detail: {},
+    });
       sendJson(res, 201, { item });
       return true;
     }
@@ -76,7 +77,8 @@ export async function handleApacheRoutes(
         actor: user.username,
         action: 'apache.settings.patch',
         ok: true,
-      });
+      detail: {},
+    });
       sendJson(res, 200, { ok: true, settings });
       return true;
     }
@@ -94,7 +96,8 @@ export async function handleApacheRoutes(
         actor: user.username,
         action: 'apache.settings.apply',
         ok: result.ok,
-      });
+      detail: {},
+    });
       sendOpsResult(res, {
         ...result,
         apply_status: result.blocked ? 'blocked' : result.ok ? 'applied' : 'failed',
@@ -126,7 +129,8 @@ export async function handleApacheRoutes(
           action: 'apache.site.delete',
           resource: id,
           ok,
-        });
+      detail: {},
+    });
         sendJson(res, ok ? 200 : 404, { ok });
         return true;
       }
@@ -143,7 +147,8 @@ export async function handleApacheRoutes(
           action: 'apache.site.apply',
           resource: id,
           ok: result.ok,
-        });
+      detail: {},
+    });
         sendOpsResult(res, {
           ...result,
           apply_status: result.blocked
@@ -170,7 +175,8 @@ export async function handleApacheRoutes(
           action: 'apache.site.settings',
           resource: id,
           ok: result.ok,
-        });
+      detail: {},
+    });
         sendOpsResult(res, {
           ...result,
           apply_status: result.blocked

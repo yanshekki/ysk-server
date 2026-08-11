@@ -210,7 +210,8 @@ export async function handleHostingInfraServicesRoutes(
             action: 'nginx.site.settings',
             resource: rawId,
             ok: Boolean(result.ok),
-          });
+      detail: {},
+    });
           sendOpsResult(res, result);
           return true;
         }
@@ -232,7 +233,8 @@ export async function handleHostingInfraServicesRoutes(
           action: 'nginx.site.settings',
           resource: rawId,
           ok: result.ok,
-        });
+      detail: {},
+    });
         sendOpsResult(res, result);
         return true;
       }
