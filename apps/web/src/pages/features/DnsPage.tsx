@@ -1349,10 +1349,10 @@ export function DnsPage() {
               <Card>
                 <CardSection title={t('dns.healthTitle')}>
                   <div className="u-flex u-flex-wrap u-gap-2 u-mb-3">
-                    <Badge tone={toneBadge(health.states.service)}>
+                    <Badge tone={toneBadge(health.states?.service)}>
                       {t('dns.stateService')}: {health.unitActive ? health.unit : '—'}
                     </Badge>
-                    <Badge tone={toneBadge(health.states.listen)}>
+                    <Badge tone={toneBadge(health.states?.listen)}>
                       {t('dns.stateListen')}:{' '}
                       {health.listenUdp53 || health.listenTcp53
                         ? `53 ${health.listenUdp53 ? 'UDP' : ''}${
@@ -1360,7 +1360,7 @@ export function DnsPage() {
                           }${health.listenTcp53 ? 'TCP' : ''}`
                         : t('dns.healthPortClosed')}
                     </Badge>
-                    <Badge tone={toneBadge(health.states.answering)}>
+                    <Badge tone={toneBadge(health.states?.answering)}>
                       {t('dns.stateAnswering')}:{' '}
                       {health.answeringLocalA === true
                         ? `A ${health.digAAnswers?.[0] ?? 'OK'}`

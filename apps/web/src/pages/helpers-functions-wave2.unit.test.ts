@@ -186,14 +186,14 @@ describe('ProjectDetailPage wave2 helpers', () => {
         showResourcesTab: true,
         showLogsTab: true,
       }),
-    ).toEqual(['overview', 'app', 'network', 'isolation', 'more']);
+    ).toEqual(['overview', 'app', 'network', 'isolation', 'more', 'about']);
     expect(
       projectTabIds({
         showDeployTab: false,
         showResourcesTab: false,
         showLogsTab: false,
       }),
-    ).toEqual(['overview', 'network', 'more']);
+    ).toEqual(['overview', 'network', 'more', 'about']);
   });
 
   it('resolveActiveTab', () => {

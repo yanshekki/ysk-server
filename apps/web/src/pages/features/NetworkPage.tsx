@@ -1114,14 +1114,14 @@ export function NetworkPage() {
                     items={[
                       {
                         label: t('network.realip.lastRefresh'),
-                        value: realIp?.config.lastRefreshAt || '—',
+                        value: realIp?.config?.lastRefreshAt || '—',
                       },
                       {
                         label: t('network.realip.active'),
-                        value: realIp?.config.defaultProvider
+                        value: realIp?.config?.defaultProvider
                           ? realIpProviderLabel(
-                              realIp.config.defaultProvider,
-                              realIp.config.defaultProvider,
+                              realIp?.config?.defaultProvider,
+                              realIp?.config?.defaultProvider,
                               t,
                             )
                           : '—',
