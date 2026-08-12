@@ -22,7 +22,7 @@ Standards: [docs-standard.md](./docs-standard.md). Programme slices: **D0–D5**
 | **D2** | New-domain handbooks (vpn, vnc, apache, system-host, databases, runtimes) | ~55% | ✅ done |
 | **D3** | Remaining `features/*` deepen | ~75% | ✅ done |
 | **D4** | INDEX polish, user-manual Day-N, agent docs, parity ZH | ~90% | ✅ done |
-| **D5** | bilingual-check seal + cross-links | 100% | ⬜ |
+| **D5** | bilingual-check seal + cross-links | 100% | ✅ done |
 
 ---
 

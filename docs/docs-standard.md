@@ -137,9 +137,8 @@ Global flags and exit codes live only in `cli/overview.md` (reference points the
 ```bash
 node scripts/cli-panel-parity.mjs      # code panel↔CLI (should stay sealed)
 node scripts/docs-bilingual-check.mjs  # EN/ZH structure
+pnpm docs:check                        # bilingual + cli parity
 ```
-
-Optional: `pnpm docs:check` (when wired in package.json).
 
 ---
 

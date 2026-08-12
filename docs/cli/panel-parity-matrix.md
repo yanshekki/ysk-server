@@ -1,6 +1,6 @@
 # Panel ↔ CLI parity matrix
 
-> Language: English | [中文](./parity-ZH.md)  
+> Language: English | [中文](./panel-parity-matrix-ZH.md)  
 > **Status: SEALED (C7)** — all production panel gaps closed (panel-only UX rows remain ⚠️).  
 > Machine inventory: [parity-inventory.json](./parity-inventory.json) · regenerate: `node scripts/cli-panel-parity.mjs`
 

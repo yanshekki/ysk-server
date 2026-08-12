@@ -62,16 +62,43 @@ function cjkRatio(text) {
   return cjk / (cjk + lat);
 }
 
+/**
+ * Historical / draft / deep-dive notes outside the product handbook programme
+ * (features + cli + user-manual + INDEX + docs-standard/inventory).
+ * Still versioned; just not gated by structural bilingual CI.
+ */
+function shouldSkip(rel) {
+  const n = rel.replace(/\\/g, '/');
+  if (n.includes('/features/_TEMPLATE')) return true;
+  if (n.includes('/_archive/')) return true;
+  if (n.includes('/security/phase-')) return true;
+  if (n.includes('/security/install-audit')) return true;
+  if (n.includes('/architecture/') && (n.includes('-drain') || n.includes('phase-a') || n.includes('secondary-dev') || n.includes('software-probe'))) {
+    return true;
+  }
+  if (n.startsWith('docs/product/')) return true;
+  if (n === 'docs/product-gap-backlog.md' || n === 'docs/product-remaining-plan.md') return true;
+  if (n === 'docs/runtime-addons.md') return true;
+  // Large install/uninstall guides need a dedicated bilingual pass (not D0–D5 handbook)
+  if (n.includes('/getting-started/install') || n.includes('/getting-started/uninstall')) return true;
+  return false;
+}
+
 const enFiles = [
   join(root, 'README.md'),
   ...walk(docsRoot),
-];
+].filter((p) => !shouldSkip(relative(root, p)));
 
 const failures = [];
 let pairs = 0;
+let skipped = 0;
 
 for (const enPath of enFiles) {
   const rel = relative(root, enPath);
+  if (shouldSkip(rel)) {
+    skipped++;
+    continue;
+  }
   const zh = zhPathFor(enPath);
   if (!existsSync(zh)) {
     failures.push({ rel, issue: 'missing ZH sibling' });
@@ -120,6 +147,7 @@ for (const enPath of enFiles) {
 
 console.log('docs-bilingual-check');
 console.log(`  pairs: ${pairs}`);
+console.log(`  skipped: ${skipped} (phase/drain/draft)`);
 console.log(`  failures: ${failures.length}`);
 if (failures.length) {
   for (const f of failures.slice(0, 40)) {

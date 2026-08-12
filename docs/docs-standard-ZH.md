@@ -137,9 +137,8 @@ cli-panel-parity.mjs  →  parity-inventory.json  →  panel-parity-matrix.md
 ```bash
 node scripts/cli-panel-parity.mjs      # 程式面板↔CLI（應維持封板）
 node scripts/docs-bilingual-check.mjs  # 文件雙語結構
+pnpm docs:check                        # 雙語 + cli 對等
 ```
-
-可選：`pnpm docs:check`（接線後）。
 
 ---
 
