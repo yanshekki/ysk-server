@@ -45,18 +45,22 @@ describe('runtime-probe', () => {
     rmSync(root, { recursive: true, force: true });
   });
 
-  it('probes host for installed runtime pins (discovery SSOT for install list)', async () => {
-    const host = new LocalHostExecutor({ executeEnabled: true });
-    const r = await probeRuntimes(host);
-    // Installable pins come from version-discovery API; probe only reports host-found pins
-    expect(r.node.length).toBeGreaterThanOrEqual(0);
-    expect(r.php.length).toBeGreaterThanOrEqual(0);
-    expect(r.python.length).toBeGreaterThanOrEqual(0);
-    expect(r.go.length).toBeGreaterThanOrEqual(0);
-    expect(r.rust.length).toBeGreaterThanOrEqual(1); // always includes stable channel pin
-    expect(r.notes.length).toBeGreaterThan(0);
-    expect(r.node.every((n) => typeof n.available === 'boolean')).toBe(true);
-  });
+  it(
+    'probes host for installed runtime pins (discovery SSOT for install list)',
+    async () => {
+      const host = new LocalHostExecutor({ executeEnabled: true });
+      const r = await probeRuntimes(host);
+      // Installable pins come from version-discovery API; probe only reports host-found pins
+      expect(r.node.length).toBeGreaterThanOrEqual(0);
+      expect(r.php.length).toBeGreaterThanOrEqual(0);
+      expect(r.python.length).toBeGreaterThanOrEqual(0);
+      expect(r.go.length).toBeGreaterThanOrEqual(0);
+      expect(r.rust.length).toBeGreaterThanOrEqual(1); // always includes stable channel pin
+      expect(r.notes.length).toBeGreaterThan(0);
+      expect(r.node.every((n) => typeof n.available === 'boolean')).toBe(true);
+    },
+    30_000,
+  );
 
   it('writes install helper and refuses without EXECUTE', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-rt-'));

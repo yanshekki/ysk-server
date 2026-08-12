@@ -467,6 +467,10 @@ function isReadOnlyArgv(argv: string[]): boolean {
     'postgres',
     'openssl',
     'journalctl',
+    'kotlin',
+    'kotlinc',
+    'javac',
+    'java',
   ]);
   if (versionBins.has(bin)) {
     const sub = argv[1] ?? '';
@@ -475,6 +479,8 @@ function isReadOnlyArgv(argv: string[]): boolean {
       sub === '-V' ||
       sub === '--version' ||
       sub === 'version' ||
+      sub === '-version' ||
+      argv.includes('-version') ||
       (bin === 'java' && (sub === '-version' || argv.includes('-version')))
     ) {
       return true;
