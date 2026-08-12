@@ -1,31 +1,44 @@
 /**
  * Load / toggle sidebar bookmarks (projects + email domains).
+ * Backed by navBookmarksStore so AppShell + pages share one list and
+ * re-render immediately when any surface toggles a pin.
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import {
   navBookmarksApi,
   type NavBookmarks,
 } from '../../features/nav-bookmarks/api';
-
-const empty: NavBookmarks = { projects: [], emailDomains: [] };
+import {
+  EMPTY_NAV_BOOKMARKS,
+  navBookmarksStore,
+} from '../stores/nav-bookmarks-store';
 
 export function useNavBookmarks() {
-  const [bookmarks, setBookmarks] = useState<NavBookmarks>(empty);
-  const [loaded, setLoaded] = useState(false);
+  const bookmarks = useSyncExternalStore(
+    (onStoreChange) => navBookmarksStore.subscribe(onStoreChange),
+    () => navBookmarksStore.get(),
+    () => EMPTY_NAV_BOOKMARKS,
+  );
+  const loaded = useSyncExternalStore(
+    (onStoreChange) => navBookmarksStore.subscribe(onStoreChange),
+    () => navBookmarksStore.isLoaded(),
+    () => false,
+  );
 
   const refresh = useCallback(async () => {
     try {
       const r = await navBookmarksApi.get();
-      setBookmarks(r.bookmarks ?? empty);
+      navBookmarksStore.set(r.bookmarks ?? EMPTY_NAV_BOOKMARKS);
     } catch {
-      /* keep last */
-    } finally {
-      setLoaded(true);
+      navBookmarksStore.markLoaded();
     }
   }, []);
 
   useEffect(() => {
-    void refresh();
+    // One shared load: skip if another consumer already loaded
+    if (!navBookmarksStore.isLoaded()) {
+      void refresh();
+    }
   }, [refresh]);
 
   const isProjectBookmarked = useCallback(
@@ -47,7 +60,7 @@ export function useNavBookmarks() {
         label: input.label,
         domain: input.domain,
       });
-      setBookmarks(r.bookmarks ?? empty);
+      navBookmarksStore.set(r.bookmarks ?? EMPTY_NAV_BOOKMARKS);
       return Boolean(r.bookmarked);
     },
     [],
@@ -61,7 +74,7 @@ export function useNavBookmarks() {
         domain: input.domain,
         label: input.domain,
       });
-      setBookmarks(r.bookmarks ?? empty);
+      navBookmarksStore.set(r.bookmarks ?? EMPTY_NAV_BOOKMARKS);
       return Boolean(r.bookmarked);
     },
     [],
@@ -77,3 +90,5 @@ export function useNavBookmarks() {
     toggleEmail,
   };
 }
+
+export type { NavBookmarks };
