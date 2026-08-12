@@ -7,6 +7,7 @@ import {
   stopBtTrackerService,
   loadBtTrackerSettings,
   patchBtTrackerSettings,
+  btTrackerPortBindings,
   listBtTrackerTorrents,
   collectBtShareStats,
   getFileShareById,
@@ -15,6 +16,8 @@ import {
   restoreBtSharesOnBoot,
   listTorrentJobs,
   getTorrentJob,
+  syncServiceExposure,
+  upsertDesired,
 } from '@ysk/core';
 import type { AppContext } from '../app-context.js';
 import type { CliHelpers } from './cmd-vpn.js';
@@ -59,7 +62,14 @@ export async function runBtTrackerCommand(
       if (h.hasFlag(args, '--autostart')) patch.autostart = true;
       if (h.hasFlag(args, '--no-autostart')) patch.autostart = false;
       const settings = patchBtTrackerSettings(ctx.dataDir, patch as never);
-      h.printJson({ ok: true, settings });
+      const ports = btTrackerPortBindings(settings);
+      try {
+        // Settings alone only store desired ports; start/stop own UFW open/close
+        upsertDesired(ctx.dataDir, 'bt-tracker', { ports });
+      } catch {
+        /* non-fatal */
+      }
+      h.printJson({ ok: true, settings, ports });
       return 0;
     }
     process.stderr.write(
@@ -86,12 +96,42 @@ export async function runBtTrackerCommand(
       host: ctx.host,
       preferDetached: true,
     });
+    if (r.ok) {
+      try {
+        const settings = loadBtTrackerSettings(ctx.dataDir);
+        await syncServiceExposure({
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          serviceId: 'bt-tracker',
+          ports: btTrackerPortBindings(settings),
+          reason: 'start',
+          requireDecision: false,
+        });
+      } catch {
+        /* non-fatal */
+      }
+    }
     h.printJson(r);
     return h.exitFromResult(r);
   }
 
   if (sub === 'stop') {
     const r = await stopBtTrackerService({ dataDir: ctx.dataDir });
+    if (r.ok) {
+      try {
+        const settings = loadBtTrackerSettings(ctx.dataDir);
+        await syncServiceExposure({
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+          serviceId: 'bt-tracker',
+          ports: btTrackerPortBindings(settings),
+          reason: 'stop',
+          requireDecision: false,
+        });
+      } catch {
+        /* non-fatal */
+      }
+    }
     h.printJson(r);
     return r.ok ? 0 : 1;
   }

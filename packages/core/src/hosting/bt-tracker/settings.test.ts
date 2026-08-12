@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import {
   buildAnnounceList,
+  btTrackerPortBindings,
   loadBtTrackerSettings,
   normalizeBtTrackerSettings,
   saveBtTrackerSettings,
@@ -59,5 +60,26 @@ describe('bt-tracker settings', () => {
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+
+  it('builds exposure bindings for HTTP (+ optional UDP)', () => {
+    const httpOnly = btTrackerPortBindings({
+      ...DEFAULT_BT_TRACKER_SETTINGS,
+      httpPort: 8000,
+      udpPort: 0,
+    });
+    expect(httpOnly).toEqual([
+      { role: 'http', port: '8000', proto: 'tcp' },
+    ]);
+
+    const withUdp = btTrackerPortBindings({
+      ...DEFAULT_BT_TRACKER_SETTINGS,
+      httpPort: 8000,
+      udpPort: 6969,
+    });
+    expect(withUdp).toEqual([
+      { role: 'http', port: '8000', proto: 'tcp' },
+      { role: 'udp-announce', port: '6969', proto: 'udp' },
+    ]);
   });
 });

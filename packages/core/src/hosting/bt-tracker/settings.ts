@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import {
   DEFAULT_BT_TRACKER_SETTINGS,
   type BtTrackerSettings,
+  type ServicePortBinding,
 } from '@ysk/shared';
 
 function settingsPath(dataDir: string): string {
@@ -81,4 +82,24 @@ export function buildAnnounceList(
     urls.push(`udp://${host}:${settings.udpPort}`);
   }
   return urls;
+}
+
+/**
+ * Firewall / service-exposure bindings for the tracker.
+ * HTTP (and WS on same TCP port) always; UDP only when udpPort > 0.
+ */
+export function btTrackerPortBindings(
+  settings: Pick<BtTrackerSettings, 'httpPort' | 'udpPort'>,
+): ServicePortBinding[] {
+  const ports: ServicePortBinding[] = [
+    { role: 'http', port: String(settings.httpPort), proto: 'tcp' },
+  ];
+  if (settings.udpPort > 0) {
+    ports.push({
+      role: 'udp-announce',
+      port: String(settings.udpPort),
+      proto: 'udp',
+    });
+  }
+  return ports;
 }

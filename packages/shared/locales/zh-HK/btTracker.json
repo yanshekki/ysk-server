@@ -105,6 +105,7 @@
   "protoWs": "WS",
   "protoUdp": "UDP",
   "saveOk": "設定已儲存",
+  "saveOkRestart": "設定已儲存 — 請先停止再啟動 Tracker，HTTP／UDP 監聽埠先會生效。",
   "startedOk": "Tracker 已啟動",
   "stoppedOk": "Tracker 已停止",
   "restoredOk": "重新做種完成",

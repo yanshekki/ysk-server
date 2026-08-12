@@ -105,6 +105,7 @@
   "protoWs": "WS",
   "protoUdp": "UDP",
   "saveOk": "Settings saved",
+  "saveOkRestart": "Settings saved — stop then start the tracker so HTTP/UDP listen ports take effect.",
   "startedOk": "Tracker started",
   "stoppedOk": "Tracker stopped",
   "restoredOk": "Re-seed finished",

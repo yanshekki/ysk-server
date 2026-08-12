@@ -657,7 +657,11 @@ export function BtTrackerPage() {
                     seederPortMax: Number(draft.seederPortMax) || 6889,
                   };
                   const r = await btTrackerApi.saveSettings(body);
-                  setMsg(t('btTracker.saveOk'));
+                  setMsg(
+                    r.restartRequired
+                      ? t('btTracker.saveOkRestart')
+                      : t('btTracker.saveOk'),
+                  );
                   await refresh();
                   return r;
                 });

@@ -18,10 +18,15 @@ export const btTrackerApi = {
     ),
 
   saveSettings: (body: Partial<BtTrackerSettings>) =>
-    api.requestRaw<{ ok: boolean; settings: BtTrackerSettings }>(
-      '/api/v1/system/bt-tracker/settings',
-      { method: 'PATCH', body: JSON.stringify(body) },
-    ),
+    api.requestRaw<{
+      ok: boolean;
+      settings: BtTrackerSettings;
+      restartRequired?: boolean;
+      notes?: string[];
+    }>('/api/v1/system/bt-tracker/settings', {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
 
   start: () =>
     api.requestRaw<Record<string, unknown>>('/api/v1/system/bt-tracker/start', {

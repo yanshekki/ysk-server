@@ -21,13 +21,25 @@ type TrackerSwarm = {
   peers?: { keys?: string[]; length?: number };
 };
 
+/** bittorrent-tracker Server.listen accepts number or { http, udp } */
+type TrackerListenPort =
+  | number
+  | {
+      http?: number;
+      udp?: number;
+    };
+
 type TrackerServer = {
   http?: { address?: () => { port: number } | string | null; close: (cb?: () => void) => void };
   udp?: { close: (cb?: () => void) => void };
   ws?: { close: (cb?: () => void) => void };
   close: (cb?: (err?: Error) => void) => void;
   on: (ev: string, fn: (...args: unknown[]) => void) => void;
-  listen: (port: number, host?: string | (() => void), cb?: () => void) => void;
+  listen: (
+    port: TrackerListenPort,
+    host?: string | (() => void),
+    cb?: () => void,
+  ) => void;
   /** Live swarms from bittorrent-tracker */
   torrents?: Record<string, TrackerSwarm>;
 };
@@ -199,11 +211,21 @@ export async function startBtTracker(input: {
       server.on('error', finish);
       server.on('listening', () => finish());
       try {
-        // Must call as method (this-binding) — detached listen loses _listenCalled
-        if (settings.listenHost && settings.listenHost !== '0.0.0.0') {
-          server.listen(settings.httpPort, settings.listenHost, () => finish());
+        // Must call as method (this-binding) — detached listen loses _listenCalled.
+        // bittorrent-tracker: number binds HTTP+UDP to the *same* port; use
+        // { http, udp } when UDP announce port differs (or is explicitly set).
+        const listenPort: TrackerListenPort =
+          settings.udpPort > 0
+            ? { http: settings.httpPort, udp: settings.udpPort }
+            : settings.httpPort;
+        const host =
+          settings.listenHost && settings.listenHost !== '0.0.0.0'
+            ? settings.listenHost
+            : undefined;
+        if (host) {
+          server.listen(listenPort, host, () => finish());
         } else {
-          server.listen(settings.httpPort, () => finish());
+          server.listen(listenPort, () => finish());
         }
       } catch (e) {
         finish(e);

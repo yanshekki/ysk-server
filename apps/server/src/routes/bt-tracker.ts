@@ -11,6 +11,8 @@ import {
   listBtTrackerTorrentsAsync,
   loadBtTrackerSettings,
   patchBtTrackerSettings,
+  btTrackerPortBindings,
+  isBtTrackerRunning,
   createShareTorrent,
   seedShare,
   stopSeed,
@@ -25,6 +27,7 @@ import {
   publicFilesRoot,
   FileManager,
   syncServiceExposure,
+  upsertDesired,
   restoreBtSharesOnBoot,
   listTorrentJobs,
   getTorrentJob,
@@ -76,13 +79,38 @@ export async function handleBtTrackerRoutes(
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as Record<string, unknown>;
         const settings = patchBtTrackerSettings(ctx.dataDir, data as never);
+        const ports = btTrackerPortBindings(settings);
+        const wasRunning = isBtTrackerRunning();
+        // Persist desired ports only. Live listen + UFW open/close are owned by
+        // start (bind + open) and stop (close sockets + remove UFW rules).
+        // Changing ports while running needs a restart to re-bind.
+        try {
+          upsertDesired(ctx.dataDir, 'bt-tracker', { ports });
+        } catch {
+          /* non-fatal */
+        }
         ctx.audit.append({
           actor: user.username,
           action: 'bt_tracker.settings',
-          detail: { keys: Object.keys(data) },
+          detail: {
+            keys: Object.keys(data),
+            httpPort: settings.httpPort,
+            udpPort: settings.udpPort,
+            running: wasRunning,
+          },
           ok: true,
         });
-        sendJson(res, 200, { ok: true, settings });
+        sendJson(res, 200, {
+          ok: true,
+          settings,
+          ports,
+          restartRequired: wasRunning,
+          notes: wasRunning
+            ? [
+                'Ports saved. Restart the tracker so HTTP/UDP listen sockets pick up the new ports.',
+              ]
+            : undefined,
+        });
         return true;
       }
       if (method === 'POST' && url.pathname === `${BASE}/start`) {
@@ -95,9 +123,7 @@ export async function handleBtTrackerRoutes(
               host: ctx.host,
               dataDir: ctx.dataDir,
               serviceId: 'bt-tracker',
-              ports: [
-                { role: 'http', port: String(settings.httpPort), proto: 'tcp' },
-              ],
+              ports: btTrackerPortBindings(settings),
               reason: 'start',
               requireDecision: false,
             });
@@ -117,6 +143,21 @@ export async function handleBtTrackerRoutes(
       if (method === 'POST' && url.pathname === `${BASE}/stop`) {
         const user = ctx.auth.authenticate(getBearer(req));
         const r = await stopBtTracker();
+        if (r.ok) {
+          try {
+            const settings = loadBtTrackerSettings(ctx.dataDir);
+            await syncServiceExposure({
+              host: ctx.host,
+              dataDir: ctx.dataDir,
+              serviceId: 'bt-tracker',
+              ports: btTrackerPortBindings(settings),
+              reason: 'stop',
+              requireDecision: false,
+            });
+          } catch {
+            /* non-fatal — process sockets already closed */
+          }
+        }
         ctx.audit.append({
           actor: user.username,
           action: 'bt_tracker.stop',
