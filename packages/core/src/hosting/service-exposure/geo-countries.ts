@@ -5,9 +5,9 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 import type { HostExecutor } from '../../host/executor.js';
-import { sanitizeSvcToken } from '@yanshekki/shared';
+import { sanitizeSvcToken } from '@ysk-server/shared';
 
 const MAX_COUNTRIES = 32;
 const MAX_CIDRS_PER_COUNTRY = 4000;

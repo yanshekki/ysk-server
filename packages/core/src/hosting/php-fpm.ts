@@ -1,4 +1,4 @@
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 /**
  * PHP-FPM pool config generation + optional system install.
  */

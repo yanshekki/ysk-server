@@ -1,4 +1,4 @@
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 /**
  * HTTP routes — extracted from http-server (Wave2 R2). Behaviour preserved.
  */
@@ -6,7 +6,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import {
   uploadCertificate,
   listUploadedCertFiles,
-} from '@yanshekki/core';
+} from '@ysk-server/core';
 import type { AppContext } from '../app-context.js';
 import { listWithQuery } from '../http/list-response.js';
 import {
@@ -51,7 +51,7 @@ export async function handleSslRoutes(
       }
       if (method === 'GET' && url.pathname === '/api/v1/ssl/uploaded') {
         ctx.auth.authenticate(getBearer(req));
-        const { listCertificatesView, dedupeCertificatesInStore } = await import('@yanshekki/core');
+        const { listCertificatesView, dedupeCertificatesInStore } = await import('@ysk-server/core');
         dedupeCertificatesInStore(ctx.db);
         sendJson(res, 200, {
           files: listUploadedCertFiles(ctx.dataDir),
@@ -62,7 +62,7 @@ export async function handleSslRoutes(
       }
       if (method === 'GET' && url.pathname === '/api/v1/ssl/certificates') {
         ctx.auth.authenticate(getBearer(req));
-        const { listCertificatesView, dedupeCertificatesInStore } = await import('@yanshekki/core');
+        const { listCertificatesView, dedupeCertificatesInStore } = await import('@ysk-server/core');
         dedupeCertificatesInStore(ctx.db);
         type Cert = { domain?: string; id?: string; issuer?: string; status?: string };
         const all = listCertificatesView(ctx.db, ctx.dataDir) as unknown as Cert[];
@@ -79,7 +79,7 @@ export async function handleSslRoutes(
       }
       if (method === 'GET' && url.pathname === '/api/v1/ssl/bindings') {
         ctx.auth.authenticate(getBearer(req));
-        const { listCertificatesView, dedupeCertificatesInStore } = await import('@yanshekki/core');
+        const { listCertificatesView, dedupeCertificatesInStore } = await import('@ysk-server/core');
         dedupeCertificatesInStore(ctx.db);
         const certs = listCertificatesView(ctx.db, ctx.dataDir);
         const projects = ctx.projects.list();
@@ -110,7 +110,7 @@ export async function handleSslRoutes(
             j.command.includes('letsencrypt') ||
             j.command.includes('ssl'),
         );
-        const { probeSslAutoRenewal } = await import('@yanshekki/core');
+        const { probeSslAutoRenewal } = await import('@ysk-server/core');
         const renewal = await probeSslAutoRenewal({
           host: ctx.host,
           cronJobs,
@@ -132,7 +132,7 @@ export async function handleSslRoutes(
       if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/ssl\/certificates\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         const idOrDomain = decodeURIComponent(url.pathname.split('/').pop() ?? '');
-        const { deleteCertificate } = await import('@yanshekki/core');
+        const { deleteCertificate } = await import('@ysk-server/core');
         const r = deleteCertificate(ctx.db, ctx.dataDir, idOrDomain);
         ctx.audit.append({
           actor: user.username,

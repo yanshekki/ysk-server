@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, afterEach } from 'vitest';
 import { runUpdate } from './update.js';
 import { VERSION } from '../version.js';
-import * as core from '@yanshekki/core';
+import * as core from '@ysk-server/core';
 
 describe('runUpdate', () => {
   afterEach(() => {

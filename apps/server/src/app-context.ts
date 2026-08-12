@@ -50,7 +50,7 @@ import {
   type VncSessionTicketStore,
   type YskConfig,
   type YskDatabase,
-} from '@yanshekki/core';
+} from '@ysk-server/core';
 
 export interface AppContext {
   db: YskDatabase;
@@ -241,7 +241,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
         getDataDir: () => dataDir,
         getLibrary: (userId) => {
           const all =
-            settings.getJson<Record<string, import('@yanshekki/core').BrowseUserLibrary>>(
+            settings.getJson<Record<string, import('@ysk-server/core').BrowseUserLibrary>>(
               'hostBrowseLibraries',
             ) ?? {};
           return (
@@ -256,7 +256,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
         },
         setLibrary: (userId, lib) => {
           const all =
-            settings.getJson<Record<string, import('@yanshekki/core').BrowseUserLibrary>>(
+            settings.getJson<Record<string, import('@ysk-server/core').BrowseUserLibrary>>(
               'hostBrowseLibraries',
             ) ?? {};
           all[userId] = lib;
@@ -453,7 +453,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
       Number(process.env.YSK_TEMP_DB_EXPIRE_MS ?? 60 * 60_000),
       async () => {
         try {
-          const { expireTempDbUsers } = await import('@yanshekki/core');
+          const { expireTempDbUsers } = await import('@ysk-server/core');
           const r = await expireTempDbUsers({
             db,
             host,
@@ -497,7 +497,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
       },
       async () => {
         try {
-          const { runDefenseAutomationTick, loadDefenseAutomation } = await import('@yanshekki/core');
+          const { runDefenseAutomationTick, loadDefenseAutomation } = await import('@ysk-server/core');
           const pol = loadDefenseAutomation(db);
           if (!pol.enabled) return;
           if (!pol.autoBan.enabled && !pol.autoPreset.enabled) return;
@@ -548,7 +548,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
             loadIpAccessPolicy,
             updateGeoipDatabases,
             resetGeoipReaders,
-          } = await import('@yanshekki/core');
+          } = await import('@ysk-server/core');
           const pol = loadIpAccessPolicy(db, dataDir);
           if (pol.autoUpdate === false) return;
           const r = await updateGeoipDatabases(dataDir);
@@ -579,7 +579,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
           const {
             runLogAutoVacuumTick,
             getLogOverview,
-          } = await import('@yanshekki/core');
+          } = await import('@ysk-server/core');
           // refresh disk hint for dashboard notifications
           try {
             const ov = await getLogOverview({ host, dataDir, db });

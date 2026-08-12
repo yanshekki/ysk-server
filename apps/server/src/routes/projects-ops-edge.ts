@@ -92,7 +92,7 @@ export async function handleProjectsOpsEdgeRoutes(
     const id = url.pathname.split('/')[4];
     const proj = ctx.projects.get(id);
     const { collectProjectWebStats, recordProjectDailyStats, readProjectDailyStats } =
-      await import('@yanshekki/core');
+      await import('@ysk-server/core');
     const stats = await collectProjectWebStats({
       host: ctx.host,
       dataDir: ctx.dataDir,

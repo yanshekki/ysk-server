@@ -7,7 +7,7 @@ import type { FileShareRecord } from '../../files/manager.js';
 import { patchFileShare } from '../../files/shares.js';
 import { prepareFileShareBt } from './prepare-share-bt.js';
 import { estimateContentBytes } from './torrent-create.js';
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 
 /** Sync create when content is smaller than this (bytes). */
 export const BT_TORRENT_SYNC_MAX_BYTES = 128 * 1024 * 1024; // 128 MiB

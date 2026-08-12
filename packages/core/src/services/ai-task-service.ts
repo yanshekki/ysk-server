@@ -8,8 +8,8 @@ import type { ApprovalQueue } from '../security/approval.js';
 import type { HostExecutor } from '../host/executor.js';
 import type { AuditRepository } from '../repositories/audit-repo.js';
 import type { ProtectionState } from './protection.js';
-import type { SystemRole } from '@yanshekki/shared';
-import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
+import type { SystemRole } from '@ysk-server/shared';
+import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
 import {
   approveTaskSteps,
   createAiTask,

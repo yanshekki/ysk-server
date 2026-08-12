@@ -1,4 +1,4 @@
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 /**
  * PostgreSQL streaming primary → replica plan (pure).
  */

@@ -3,7 +3,7 @@
  * Extracted from system-migrate-host.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 import type { AppContext } from '../app-context.js';
 import { VERSION } from '../version.js';
 import {
@@ -23,7 +23,7 @@ export async function handleSystemMigrateJobsRoutes(
   // —— Host full migrate (整機遷移) ——
   if (method === 'POST' && url.pathname === '/api/v1/system/migrate/inventory') {
     ctx.auth.authenticate(getBearer(req));
-    const { migrateInventory } = await import('@yanshekki/core');
+    const { migrateInventory } = await import('@ysk-server/core');
     const r = await migrateInventory({
       host: ctx.host,
       db: ctx.db,
@@ -36,7 +36,7 @@ export async function handleSystemMigrateJobsRoutes(
 
   if (method === 'GET' && url.pathname === '/api/v1/system/migrate/jobs') {
     ctx.auth.authenticate(getBearer(req));
-    const { listMigrateJobs } = await import('@yanshekki/core');
+    const { listMigrateJobs } = await import('@ysk-server/core');
     sendJson(res, 200, { ok: true, jobs: listMigrateJobs(ctx.dataDir) });
     return true;
   }
@@ -44,7 +44,7 @@ export async function handleSystemMigrateJobsRoutes(
   if (method === 'GET' && url.pathname.startsWith('/api/v1/system/migrate/jobs/')) {
     ctx.auth.authenticate(getBearer(req));
     const id = url.pathname.split('/').pop() || '';
-    const { loadMigrateJob } = await import('@yanshekki/core');
+    const { loadMigrateJob } = await import('@ysk-server/core');
     const job = loadMigrateJob(ctx.dataDir, id);
     if (!job) {
       sendJson(res, 404, { ok: false, notes: [tl('notes.auto.n0853')] });
@@ -98,7 +98,7 @@ export async function handleSystemMigrateJobsRoutes(
       return true;
     }
 
-    const { runSourceMigrateHost, loadMigrateJob } = await import('@yanshekki/core');
+    const { runSourceMigrateHost, loadMigrateJob } = await import('@ysk-server/core');
     type Auth =
       | { kind: 'identity'; privateKeyPath: string }
       | { kind: 'identityId'; dataDir: string; identityId: string }
@@ -186,7 +186,7 @@ export async function handleSystemMigrateJobsRoutes(
       });
       return true;
     }
-    const { runLocalMigratePost } = await import('@yanshekki/core');
+    const { runLocalMigratePost } = await import('@ysk-server/core');
     const r = await runLocalMigratePost({
       host: ctx.host,
       dataDir: ctx.dataDir,

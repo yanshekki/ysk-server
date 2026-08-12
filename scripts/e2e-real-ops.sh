@@ -27,10 +27,10 @@ if [[ "${YSK_E2E_SKIP_BUILD:-}" == "1" ]]; then
   log "Skipping package builds (YSK_E2E_SKIP_BUILD=1)"
 else
   log "Building packages…"
-  pnpm --filter @yanshekki/shared build
-  pnpm --filter @yanshekki/core build
+  pnpm --filter @ysk-server/shared build
+  pnpm --filter @ysk-server/core build
   pnpm --filter ysk-server build
-  pnpm --filter @yanshekki/web build || log "web build optional for API-only path"
+  pnpm --filter @ysk-server/web build || log "web build optional for API-only path"
 fi
 
 mkdir -p "$DATA_DIR"

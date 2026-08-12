@@ -94,7 +94,7 @@
   "cmdNote": "A execução do agente Edge ysk-server executa CLI JSON localmente (adiciona --json). As alterações no host ainda precisam de YSK_EXECUTE=1 no limite. Veja o código de saída e JSON no histórico.",
   "resultTitle": "Resultado do comando · saída {{code}}",
   "resultTitlePlain": "Resultado do comando",
-  "codeComment": "# Conceito: registrar → loop de pulsação → comandos pull → ack\n# Biblioteca: @yanshekki/core runOutboundAgent/agentCycle",
+  "codeComment": "# Conceito: registrar → loop de pulsação → comandos pull → ack\n# Biblioteca: @ysk-server/core runOutboundAgent/agentCycle",
   "resultOuter": "Exterior: confirmação de borda (exitCode/stderr). Resultado interno:",
   "deleteTitle": "Excluir {{id}}?",
   "deleteTitlePlain": "Excluir agente?",

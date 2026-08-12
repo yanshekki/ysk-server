@@ -1,4 +1,4 @@
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 /**
  * Temporary read-only DB users + remote host registry (control plane).
  */

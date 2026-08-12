@@ -34,7 +34,7 @@ export async function handleDbAccessRoutes(
         // New path: create real project for DB browser
         if (data.asProject === true || data.projectName || data.tool === 'phpmyadmin') {
           const { createDbBrowserProject, normalizeDbBrowserTool, defaultDbBrowserProjectName } =
-            await import('@yanshekki/core');
+            await import('@ysk-server/core');
           const tool = normalizeDbBrowserTool(data.tool);
           const name =
             (data.projectName ?? '').trim() ||
@@ -62,7 +62,7 @@ export async function handleDbAccessRoutes(
           return true;
         }
         // Legacy: managed dataDir adminer + nginx only
-        const { applyAdminer } = await import('@yanshekki/core');
+        const { applyAdminer } = await import('@ysk-server/core');
         const r = await applyAdminer({
           dataDir: ctx.dataDir,
           host: ctx.host,
@@ -83,7 +83,7 @@ export async function handleDbAccessRoutes(
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as { dropSystem?: boolean };
-        const { expireTempDbUsers } = await import('@yanshekki/core');
+        const { expireTempDbUsers } = await import('@ysk-server/core');
         const r = await expireTempDbUsers({
           db: ctx.db,
           host: ctx.host,
@@ -100,7 +100,7 @@ export async function handleDbAccessRoutes(
       }
       if (method === 'GET' && url.pathname === '/api/v1/db/temp-users') {
         ctx.auth.authenticate(getBearer(req));
-        const { listTempDbUsers } = await import('@yanshekki/core');
+        const { listTempDbUsers } = await import('@ysk-server/core');
         sendJson(res, 200, { items: listTempDbUsers(ctx.db) });
         return true;
       }
@@ -114,7 +114,7 @@ export async function handleDbAccessRoutes(
           ttlHours?: number;
           apply?: boolean;
         };
-        const { createTempReadonlyUser } = await import('@yanshekki/core');
+        const { createTempReadonlyUser } = await import('@ysk-server/core');
         const r = await createTempReadonlyUser({
           db: ctx.db,
           host: ctx.host,
@@ -137,7 +137,7 @@ export async function handleDbAccessRoutes(
       }
       if (method === 'GET' && url.pathname === '/api/v1/db/remote-hosts') {
         ctx.auth.authenticate(getBearer(req));
-        const { listRemoteDbHosts } = await import('@yanshekki/core');
+        const { listRemoteDbHosts } = await import('@ysk-server/core');
         sendJson(res, 200, { items: listRemoteDbHosts(ctx.db) });
         return true;
       }
@@ -153,7 +153,7 @@ export async function handleDbAccessRoutes(
           username?: string;
           password?: string;
         };
-        const { upsertRemoteDbHost } = await import('@yanshekki/core');
+        const { upsertRemoteDbHost } = await import('@ysk-server/core');
         const row = upsertRemoteDbHost(ctx.db, {
           id: data.id,
           engine: data.engine ?? 'mysql',
@@ -176,7 +176,7 @@ export async function handleDbAccessRoutes(
       if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/db\/temp-users\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[5];
-        const { revokeTempDbUser } = await import('@yanshekki/core');
+        const { revokeTempDbUser } = await import('@ysk-server/core');
         const r = revokeTempDbUser(ctx.db, id);
         ctx.audit.append({
           actor: user.username,
@@ -190,7 +190,7 @@ export async function handleDbAccessRoutes(
       if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/db\/remote-hosts\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[5];
-        const { deleteRemoteDbHost } = await import('@yanshekki/core');
+        const { deleteRemoteDbHost } = await import('@ysk-server/core');
         const ok = deleteRemoteDbHost(ctx.db, id);
         ctx.audit.append({
           actor: user.username,

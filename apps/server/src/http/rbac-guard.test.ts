@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { YskError } from '@yanshekki/shared';
+import { YskError } from '@ysk-server/shared';
 import type { IncomingMessage } from 'node:http';
 import {
   enforceMutatingRouteCaps,

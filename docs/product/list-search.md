@@ -8,8 +8,8 @@
 
 | Piece | Path |
 |-------|------|
-| Query contract | `@yanshekki/shared` `parseListQuery` / `buildListQueryString` / `ListMeta` |
-| Server filter | `@yanshekki/core` `applyListQuery` · `listWithQuery` (HTTP) |
+| Query contract | `@ysk-server/shared` `parseListQuery` / `buildListQueryString` / `ListMeta` |
+| Server filter | `@ysk-server/core` `applyListQuery` · `listWithQuery` (HTTP) |
 | Web hook | `useServerList` · resource `useResourceCrud` (debounced `q`) |
 | UI | `ListToolbar` · `ServerListFilters` |
 

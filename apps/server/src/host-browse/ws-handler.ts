@@ -6,7 +6,7 @@ import type { Server as HttpServer } from 'node:http';
 import type { Server as HttpsServer } from 'node:https';
 import type { Duplex } from 'node:stream';
 import { WebSocketServer, type WebSocket } from 'ws';
-import type { HostBrowseLiveTicketStore, StreamPresetId } from '@yanshekki/core';
+import type { HostBrowseLiveTicketStore, StreamPresetId } from '@ysk-server/core';
 import type { AppContext } from '../app-context.js';
 
 function sendJson(ws: WebSocket, obj: unknown): void {

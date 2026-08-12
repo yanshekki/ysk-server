@@ -10,7 +10,7 @@ import {
   installServiceEngine,
   previewSqlEngineSwitch,
   switchSqlEngine,
-} from '@yanshekki/core';
+} from '@ysk-server/core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -49,7 +49,7 @@ export async function handleSystemDbConsoleRoutes(
     if (result.ok && Object.keys(changes).some((k) => /port/i.test(k))) {
       try {
         const { syncServiceExposure, engineToServiceId, dbPortBindings } = await import(
-          '@yanshekki/core'
+          '@ysk-server/core'
         );
         const exp = await syncServiceExposure({
           host: ctx.host,
@@ -89,7 +89,7 @@ export async function handleSystemDbConsoleRoutes(
     if (result.ok && (action === 'start' || action === 'stop' || action === 'restart')) {
       try {
         const { syncServiceExposure, engineToServiceId, dbPortBindings } = await import(
-          '@yanshekki/core'
+          '@ysk-server/core'
         );
         const reason = action === 'stop' ? 'stop' : 'start';
         const exp = await syncServiceExposure({

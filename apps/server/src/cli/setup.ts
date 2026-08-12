@@ -14,9 +14,9 @@ import {
   closeDatabase,
   writeControlPlaneSystemdUnit,
   hardenDataDirPerms,
-} from '@yanshekki/core';
-import { CLI_NAME, PRODUCT_NAME, type StructuredResult, tl } from '@yanshekki/shared';
-import { assessPassword, isBootstrapDefaultPassword } from '@yanshekki/core';
+} from '@ysk-server/core';
+import { CLI_NAME, PRODUCT_NAME, type StructuredResult, tl } from '@ysk-server/shared';
+import { assessPassword, isBootstrapDefaultPassword } from '@ysk-server/core';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 

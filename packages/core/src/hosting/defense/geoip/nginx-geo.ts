@@ -1,4 +1,4 @@
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 /**
  * Best-effort nginx geoip2 snippet for managed conf.d.
  * Requires ngx_http_geoip2_module; if absent, notes explain written ≠ applied.

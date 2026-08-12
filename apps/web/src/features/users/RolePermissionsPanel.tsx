@@ -11,7 +11,7 @@ import {
   factoryRolePolicy,
   type CapabilityId,
   type OperationLevel,
-  type SystemRole } from '@yanshekki/shared';
+  type SystemRole } from '@ysk-server/shared';
 import { bindCall1, bindCall2, bindCheck, bindInput, bindValueSet } from '../../pages/bind-handlers';
 import {
   ActionBar,

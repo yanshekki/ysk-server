@@ -9,7 +9,7 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import type { HostManifest } from '@yanshekki/shared';
+import type { HostManifest } from '@ysk-server/shared';
 import {
   createMigrateJob,
   loadMigrateJob,

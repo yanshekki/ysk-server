@@ -1,7 +1,7 @@
 /**
  * Host full-migrate API client.
  */
-import type { MigrateJobDto, OpsResultDto } from '@yanshekki/shared';
+import type { MigrateJobDto, OpsResultDto } from '@ysk-server/shared';
 import { api } from '../../shared/services/api';
 
 /** Panel alias — same shape as shared MigrateJobDto */

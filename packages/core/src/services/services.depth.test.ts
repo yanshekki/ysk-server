@@ -12,7 +12,7 @@ import { AiTaskService } from './ai-task-service.js';
 import { evaluateProtection } from './protection.js';
 import { runProtectionProbes } from './protection-probe.js';
 import { Scheduler } from './scheduler.js';
-import { YskError } from '@yanshekki/shared';
+import { YskError } from '@ysk-server/shared';
 
 describe('services thin paths depth', () => {
   it('Scheduler everyDynamic re-arms and stopAll', async () => {

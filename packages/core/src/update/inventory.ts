@@ -1,4 +1,4 @@
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 /**
  * Package inventory — real host apt/dpkg data.
  * candidateVersion comes from apt-cache policy / apt list --upgradable, never faked to current.
@@ -7,7 +7,7 @@ import { tl } from '@yanshekki/shared';
 import type { HostExecutor } from '../host/executor.js';
 import type { PackageInventoryItem } from './advisor.js';
 import { adviseUpdate } from './advisor.js';
-import type { UpdateItemDto } from '@yanshekki/shared';
+import type { UpdateItemDto } from '@ysk-server/shared';
 import { HostSoftwareProbe } from '../hosting/software-probe/index.js';
 import type { SoftwareUpgradeInfo } from '../hosting/software-probe/index.js';
 

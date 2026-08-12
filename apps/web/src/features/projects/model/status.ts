@@ -1,4 +1,4 @@
-import type { ProjectDto } from '@yanshekki/shared';
+import type { ProjectDto } from '@ysk-server/shared';
 import type { BadgeTone } from '../../../shared/components/ui';
 
 export type ProjectStatusBucket =

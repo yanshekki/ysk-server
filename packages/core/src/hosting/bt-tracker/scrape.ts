@@ -2,7 +2,7 @@
  * HTTP scrape against a BitTorrent tracker (local or remote announce URL).
  * Used when tracker runs detached / off-process so we still get seeders/leechers.
  */
-import type { BtTrackerTorrentRow } from '@yanshekki/shared';
+import type { BtTrackerTorrentRow } from '@ysk-server/shared';
 
 function hexToRawInfoHash(hex: string): Buffer | null {
   const h = String(hex || '')

@@ -3,12 +3,12 @@
  * Extracted from projects-ops-data.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 import {
   listProjectLogs,
   searchProjectLogs,
   tailProjectLog,
-} from '@yanshekki/core';
+} from '@ysk-server/core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -33,7 +33,7 @@ export async function handleProjectsOpsLogsRoutes(
     const files = listProjectLogs(proj.homeDir, {
       extraDirs,
       nameFilter });
-    const { listProjectRelatedLogSources } = await import('@yanshekki/core');
+    const { listProjectRelatedLogSources } = await import('@ysk-server/core');
     const related = listProjectRelatedLogSources({
       projectId: proj.id,
       linuxUser: proj.linuxUser,

@@ -13,7 +13,7 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 import { randomUUID, X509Certificate } from 'node:crypto';
-import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
+import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
 import type { YskDatabase } from '../db/database.js';
 
 export interface StoredCertificate {

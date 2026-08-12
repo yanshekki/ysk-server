@@ -3,7 +3,7 @@
  * Extracted from projects-lifecycle.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -154,7 +154,7 @@ export async function handleProjectsDeployRoutes(
   if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/purge-cache$/)) {
     const user = ctx.auth.authenticate(getBearer(req));
     const id = url.pathname.split('/')[4];
-    const { purgeNginxCache } = await import('@yanshekki/core');
+    const { purgeNginxCache } = await import('@ysk-server/core');
     const r = await purgeNginxCache({ host: ctx.host });
     ctx.audit.append({
       actor: user.username,

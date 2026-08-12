@@ -1,4 +1,4 @@
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 /**
  * UFW deep operations — port policy / permanent deny.
  * Distinct from fail2ban (log-driven temporary bans) and Defense Center (orchestration).
@@ -295,7 +295,7 @@ export async function firewallAllowPort(
   const block = needExec(host);
   if (block) return block;
 
-  const { parsePortSpec, ufwPortTarget } = await import('@yanshekki/shared');
+  const { parsePortSpec, ufwPortTarget } = await import('@ysk-server/shared');
   const raw = typeof port === 'number' ? String(port) : String(port ?? '').trim();
   const spec = parsePortSpec(raw);
   if (!spec) {

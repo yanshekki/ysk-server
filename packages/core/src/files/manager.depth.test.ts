@@ -16,7 +16,7 @@ import {
   publicFilesRoot,
   verifySharePasswordHash,
 } from './manager.js';
-import { YskError } from '@yanshekki/shared';
+import { YskError } from '@ysk-server/shared';
 
 function tmp(): string {
   return mkdtempSync(join(tmpdir(), 'ysk-fmd-'));

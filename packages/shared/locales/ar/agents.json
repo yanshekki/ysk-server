@@ -94,7 +94,7 @@
   "cmdNote": "يقوم تشغيل وكيل خادم Edge ysk بتنفيذ CLI JSON محليًا (يضيف --json). لا تزال تغييرات المضيف بحاجة إلى YSK_EXECUTE=1 على الحافة. راجع رمز الخروج وJSON في التاريخ.",
   "resultTitle": "نتيجة الأمر · الخروج {{code}}",
   "resultTitlePlain": "نتيجة الأمر",
-  "codeComment": "# المفهوم: التسجيل ← حلقة نبضات القلب ← سحب الأوامر ← ack\n# المكتبة: @yanshekki/core runOutboundAgent / agentCycle",
+  "codeComment": "# المفهوم: التسجيل ← حلقة نبضات القلب ← سحب الأوامر ← ack\n# المكتبة: @ysk-server/core runOutboundAgent / agentCycle",
   "resultOuter": "الخارجي: حافة ack (exitCode / stderr). النتيجة الداخلية:",
   "deleteTitle": "حذف {{id}}؟",
   "deleteTitlePlain": "هل تريد حذف الوكيل؟",

@@ -1,4 +1,4 @@
-import type { ProjectDto } from '@yanshekki/shared';
+import type { ProjectDto } from '@ysk-server/shared';
 import type { TFunction } from 'i18next';
 
 export type ProjectRuntime = ProjectDto['runtime'];

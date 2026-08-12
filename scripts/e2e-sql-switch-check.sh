@@ -12,11 +12,11 @@ log() { printf '[e2e-sql-switch] %s\n' "$*"; }
 fail() { printf '[e2e-sql-switch] FAIL: %s\n' "$*" >&2; exit 1; }
 
 log "Build shared + core…"
-pnpm --filter @yanshekki/shared build
-pnpm --filter @yanshekki/core build
+pnpm --filter @ysk-server/shared build
+pnpm --filter @ysk-server/core build
 
 log "Unit tests: sql-engine-switch + mysql-frozen + health…"
-pnpm --filter @yanshekki/core exec vitest run \
+pnpm --filter @ysk-server/core exec vitest run \
   src/hosting/sql-engine-switch/sql-engine-switch.test.ts \
   src/hosting/sql-engine-switch/mysql-frozen.test.ts \
   src/hosting/sql-engine-health \

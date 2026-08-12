@@ -2,7 +2,7 @@ import { describe, expect, it, beforeEach } from 'vitest';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { factoryRolePolicy, hasCapability } from '@yanshekki/shared';
+import { factoryRolePolicy, hasCapability } from '@ysk-server/shared';
 // factoryRolePolicy used for subset-upgrade fixture
 import { openDatabase } from '../db/database.js';
 import { RbacPolicyService } from './rbac-policy.js';

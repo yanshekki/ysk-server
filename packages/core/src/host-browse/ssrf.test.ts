@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ErrorCodes, YskError } from '@yanshekki/shared';
+import { ErrorCodes, YskError } from '@ysk-server/shared';
 import {
   assertHostBrowseTarget,
   isHostAllowedForMode,

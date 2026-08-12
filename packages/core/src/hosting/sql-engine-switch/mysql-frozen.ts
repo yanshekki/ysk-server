@@ -3,7 +3,7 @@
  * See /etc/mysql/FROZEN (often a symlink under /usr/share/mysql/).
  */
 
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 import type { HostExecutor } from '../../host/executor.js';
 
 const FROZEN_PATH = '/etc/mysql/FROZEN';

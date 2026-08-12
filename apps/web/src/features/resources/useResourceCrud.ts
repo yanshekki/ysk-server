@@ -4,7 +4,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { ListMeta } from '@yanshekki/shared';
+import type { ListMeta } from '@ysk-server/shared';
 import { resourcesApi, type ResourceRow } from './api';
 import { sanitizeOperatorNotes } from '../../shared/lib/operator-messages';
 import { toast } from '../../shared/stores/toast-store';

@@ -3,7 +3,7 @@
  * Extracted from backups-core.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 import {
   listBackups,
   filterBackupList,
@@ -11,7 +11,7 @@ import {
   resolveBackupDownloadPath,
   localizeLastBackupRun,
   CONTROL_PLANE_BACKUP_ID,
-} from '@yanshekki/core';
+} from '@ysk-server/core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,

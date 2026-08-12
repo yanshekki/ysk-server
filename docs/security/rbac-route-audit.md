@@ -27,7 +27,7 @@ ysk-server rbac audit --json
 | DELETE | `/api/v1/projects/:id` | project delete cap |
 | POST | `/api/v1/tools/execute` | tools execute cap |
 
-Exact rules live in `@yanshekki/shared` `route-capabilities` and server `rbac-guard`.
+Exact rules live in `@ysk-server/shared` `route-capabilities` and server `rbac-guard`.
 
 ## Related
 

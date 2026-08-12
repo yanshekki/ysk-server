@@ -2,7 +2,7 @@
  * Metrics ops — process signal/renice + SSE stream (Wave AB3).
  * Extracted from metrics.ts. Behaviour preserved.
  */
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { AppContext } from '../app-context.js';
 import { getBearer, readBody, sendJson, sendOpsResult } from '../http/util.js';
@@ -25,7 +25,7 @@ export async function handleMetricsOpsRoutes(
       sendJson(res, 400, { ok: false, message: tl('errors.http.jsonInvalid') });
       return true;
     }
-    const { signalProcess, isProcessSignal } = await import('@yanshekki/core');
+    const { signalProcess, isProcessSignal } = await import('@ysk-server/core');
     const signalRaw = data.signal;
     if (!isProcessSignal(signalRaw)) {
       sendJson(res, 400, {
@@ -77,7 +77,7 @@ export async function handleMetricsOpsRoutes(
       sendJson(res, 400, { ok: false, message: tl('errors.http.jsonInvalid') });
       return true;
     }
-    const { reniceProcess } = await import('@yanshekki/core');
+    const { reniceProcess } = await import('@ysk-server/core');
     const result = await reniceProcess({
       host: ctx.host,
       pid: String(data.pid ?? ''),
@@ -97,7 +97,7 @@ export async function handleMetricsOpsRoutes(
   /** SSE: metrics + processes + top header every interval (batch, not PTY) */
   if (method === 'GET' && url.pathname === '/api/v1/metrics/stream') {
     ctx.auth.authenticate(getBearer(req));
-    const { collectMetricsDeep, collectProcessSnapshot } = await import('@yanshekki/core');
+    const { collectMetricsDeep, collectProcessSnapshot } = await import('@ysk-server/core');
     const intervalSec = Math.max(
       1,
       Math.min(10, Number(url.searchParams.get('interval') || 2)),

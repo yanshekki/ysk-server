@@ -2,7 +2,7 @@
  * Map tool risk / allowlist entry to RBAC operation level.
  */
 
-import type { OperationLevel, RiskTier } from '@yanshekki/shared';
+import type { OperationLevel, RiskTier } from '@ysk-server/shared';
 
 /**
  * Convert a risk tier into the minimum RBAC operation level required.

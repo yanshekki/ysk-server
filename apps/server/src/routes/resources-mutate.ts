@@ -2,7 +2,7 @@
  * Managed resource patch/delete (Wave Z3).
  * Extracted from resources-write.ts. Behaviour preserved.
  */
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import {
   listResources,
@@ -11,7 +11,7 @@ import {
   deleteResource,
   revokeManagedNginxSite,
   type CollectionKey,
-} from '@yanshekki/core';
+} from '@ysk-server/core';
 import type { AppContext } from '../app-context.js';
 import { readBody, sendJson, sendOpsResult } from '../http/util.js';
 import {
@@ -70,7 +70,7 @@ export async function handleResourcesMutateRoutes(
       return true;
     }
     if (key === 'certificates') {
-      const { deleteCertificate } = await import('@yanshekki/core');
+      const { deleteCertificate } = await import('@ysk-server/core');
       const r = deleteCertificate(ctx.db, ctx.dataDir, id);
       sendOpsResult(res, r, { notFound: true });
       return true;
@@ -85,7 +85,7 @@ export async function handleResourcesMutateRoutes(
       // Drop managed zone files + re-sync PowerDNS named.conf (avoid answering deleted zones)
       if (zoneName) {
         try {
-          const { removeManagedDnsZoneFiles, syncPowerDnsBindZones } = await import('@yanshekki/core');
+          const { removeManagedDnsZoneFiles, syncPowerDnsBindZones } = await import('@ysk-server/core');
           const rm = removeManagedDnsZoneFiles(ctx.dataDir, zoneName);
           ctx.audit.append({
             actor: user.username,

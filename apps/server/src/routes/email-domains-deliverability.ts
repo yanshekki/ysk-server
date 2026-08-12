@@ -6,7 +6,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import {
   planEmailWarmup,
   runLiveEmailChecks,
-} from '@yanshekki/core';
+} from '@ysk-server/core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -34,7 +34,7 @@ export async function handleEmailDomainsDeliverabilityRoutes(
     ctx.auth.authenticate(getBearer(req));
     const id = url.pathname.split('/')[5];
     const row = ctx.email.get(id);
-    const { buildDeliverabilityReport } = await import('@yanshekki/core');
+    const { buildDeliverabilityReport } = await import('@ysk-server/core');
     const report = await buildDeliverabilityReport({
       domain: row.domain,
       serverIp: row.server_ip,
@@ -52,7 +52,7 @@ export async function handleEmailDomainsDeliverabilityRoutes(
   }
   if (method === 'GET' && url.pathname === '/api/v1/email/deliverability/overview') {
     ctx.auth.authenticate(getBearer(req));
-    const { buildDeliverabilityReport } = await import('@yanshekki/core');
+    const { buildDeliverabilityReport } = await import('@ysk-server/core');
     const domains = ctx.email.list();
     const items = [];
     for (const d of domains.slice(0, 20)) {
@@ -198,7 +198,7 @@ export async function handleEmailDomainsDeliverabilityRoutes(
         antispam: data.antispam },
       user.username,
     );
-    const { applyMailDomainPolicy } = await import('@yanshekki/core');
+    const { applyMailDomainPolicy } = await import('@ysk-server/core');
     const r = await applyMailDomainPolicy({
       dataDir: ctx.dataDir,
       host: ctx.host,

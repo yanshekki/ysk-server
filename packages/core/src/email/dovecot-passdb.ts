@@ -5,7 +5,7 @@
 
 import { mkdirSync, writeFileSync, existsSync, readdirSync, chmodSync } from 'node:fs';
 import { join } from 'node:path';
-import { ErrorCodes, YskError, tl } from '@yanshekki/shared';
+import { ErrorCodes, YskError, tl } from '@ysk-server/shared';
 import type { YskDatabase } from '../db/database.js';
 import type { HostExecutor } from '../host/executor.js';
 

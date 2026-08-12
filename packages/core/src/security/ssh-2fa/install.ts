@@ -1,4 +1,4 @@
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 /**
  * Write ~/.google_authenticator + plan/apply PAM/sshd notes.
  * Honest: dry-run default; apply needs execute.

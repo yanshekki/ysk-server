@@ -12,7 +12,7 @@ Wave 2 enforced **professional architecture**, **honest ops**, **single product 
 | H1 No `ok && blocked` / false `applied` | `assertHonestOps` + `honesty:lint` + unit tests |
 | H2 Real data only | Product review + e2e:real-ops; fleet notes honest |
 | H3 Single entry | [feature-single-entry.md](./feature-single-entry.md); defense nested routes |
-| H4 DTOs in `@yanshekki/shared` only | Domain modules; web re-exports |
+| H4 DTOs in `@ysk-server/shared` only | Domain modules; web re-exports |
 | H5 UI kit only | `primitives:check` + `chrome:check` + `about-tab:check` |
 | H6 No fluff dual CTAs | R3 nav/link cleanup |
 | H7 No parallel CSS | `styles/components/*` + `css:reuse` in gates |
@@ -22,7 +22,7 @@ Wave 2 enforced **professional architecture**, **honest ops**, **single product 
 | ID | Name | Outcome |
 |----|------|---------|
 | **R0** | Inventory | `review:inventory`, feature map, about-tab gate, CDN/DNS `sendOpsResult` |
-| **R1** | Shared DTO domainization | Domain DTO files in `@yanshekki/shared`; web/core wired |
+| **R1** | Shared DTO domainization | Domain DTO files in `@ysk-server/shared`; web/core wired |
 | **R2** | HTTP routes split | Thin `http-server` + `routes/*` modules |
 | **R3** | Single-entry defense | `/protection/*` tools; legacy redirect; delete `DbServicePage` |
 | **R4** | CDN fleet honesty | Enqueue + agent `cdn.edge.*`; UI field; never fake applied |
@@ -58,7 +58,7 @@ pnpm review:inventory   # read-only debt report
 |----|--------|------------|
 | W2-01 | God-file HTTP | `routes/*` + ~120 LOC dispatcher |
 | W2-03 | Dual defense UIs | Nested under `/protection`; redirects |
-| W2-04 | DTO sprawl | `@yanshekki/shared` domain modules |
+| W2-04 | DTO sprawl | `@ysk-server/shared` domain modules |
 | W2-05 | CDN fleet stub | Real enqueue + agent apply; honest statuses |
 | W2-06 | DbServicePage | Deleted |
 | W2-07 | Dead UI exports | Deleted + CSS cleanup |

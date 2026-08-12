@@ -4,7 +4,7 @@
 
 import { mkdirSync, writeFileSync, existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 import type { HostExecutor } from '../../host/executor.js';
 import { panelBlockMessage } from '../system-apply.js';
 import { installSoftware } from '../software-install.js';

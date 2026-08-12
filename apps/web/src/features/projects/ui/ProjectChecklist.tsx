@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import type { ProjectDto } from '@yanshekki/shared';
+import type { ProjectDto } from '@ysk-server/shared';
 import { buildProjectChecklist } from '../model/status';
 
 export function ProjectChecklist({ project }: { project: ProjectDto }) {

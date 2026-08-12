@@ -5,7 +5,7 @@
 
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
+import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
 import type { HostExecutor } from '../host/executor.js';
 import { renderNginxProxy } from '../hosting/nginx-ssl.js';
 import { writeManagedNginxConf } from '../hosting/nginx-sync.js';

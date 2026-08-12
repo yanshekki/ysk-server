@@ -9,7 +9,7 @@ import {
   fetchGithubPackageJsonVersion,
 } from './self-update-apply.js';
 import type { HostExecutor, RunResult } from '../host/executor.js';
-import { YskError } from '@yanshekki/shared';
+import { YskError } from '@ysk-server/shared';
 
 function empty(extra?: Partial<RunResult>): RunResult {
   return { stdout: '', stderr: '', exitCode: 0, argv: [], dryRun: false, ...extra };

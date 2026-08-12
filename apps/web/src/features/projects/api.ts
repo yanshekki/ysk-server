@@ -1,7 +1,7 @@
 /**
  * Projects feature — API surface (wraps shared services).
  */
-import type { OpsApplyResultDto, ProjectDto } from '@yanshekki/shared';
+import type { OpsApplyResultDto, ProjectDto } from '@ysk-server/shared';
 import { api } from '../../shared/services/api';
 
 export const projectsApi = {

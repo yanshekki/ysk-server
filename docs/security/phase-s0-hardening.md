@@ -21,7 +21,7 @@ Scope: fail-closed host execute gate, path sandbox, tools FS, fleet agent auth, 
 
 ```bash
 cd /home/ki/文件/ysk-server
-pnpm --filter @yanshekki/core exec vitest run \
+pnpm --filter @ysk-server/core exec vitest run \
   src/host/executor.test.ts \
   src/security/tool-executor.test.ts \
   src/agents/fleet.test.ts \

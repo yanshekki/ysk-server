@@ -21,7 +21,7 @@ export async function handleDefenseBanRoutes(
   // —— Defense Center (DDoS / attack protection) ——
   if (method === 'GET' && url.pathname === '/api/v1/defense/status') {
     ctx.auth.authenticate(getBearer(req));
-    const { getDefenseStatus } = await import('@yanshekki/core');
+    const { getDefenseStatus } = await import('@ysk-server/core');
     const status = await getDefenseStatus({
       host: ctx.host,
       db: ctx.db,
@@ -33,7 +33,7 @@ export async function handleDefenseBanRoutes(
   }
   if (method === 'POST' && url.pathname === '/api/v1/defense/probe') {
     const user = ctx.auth.authenticate(getBearer(req));
-    const { getDefenseStatus } = await import('@yanshekki/core');
+    const { getDefenseStatus } = await import('@ysk-server/core');
     await ctx.runAutoProtection();
     const status = await getDefenseStatus({
       host: ctx.host,
@@ -58,7 +58,7 @@ export async function handleDefenseBanRoutes(
       apply?: boolean;
       confirm?: string;
     };
-    const { applyDefensePreset } = await import('@yanshekki/core');
+    const { applyDefensePreset } = await import('@ysk-server/core');
     const preset = (data.preset ?? 'daily') as
       | 'daily'
       | 'hardened'
@@ -83,7 +83,7 @@ export async function handleDefenseBanRoutes(
   }
   if (method === 'GET' && url.pathname === '/api/v1/defense/bans') {
     ctx.auth.authenticate(getBearer(req));
-    const { listDefenseBans } = await import('@yanshekki/core');
+    const { listDefenseBans } = await import('@ysk-server/core');
     const { listWithQuery } = await import('../http/list-response.js');
     const r = await listDefenseBans({ host: ctx.host, db: ctx.db });
     const { items, meta } = listWithQuery(url, r.items, {
@@ -102,7 +102,7 @@ export async function handleDefenseBanRoutes(
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { execute?: boolean };
-    const { applyDefenseStack } = await import('@yanshekki/core');
+    const { applyDefenseStack } = await import('@ysk-server/core');
     const r = await applyDefenseStack({
       host: ctx.host,
       db: ctx.db,
@@ -128,7 +128,7 @@ export async function handleDefenseBanRoutes(
       method?: 'fail2ban' | 'ufw' | 'both';
       jail?: string;
     };
-    const { defenseBanIp } = await import('@yanshekki/core');
+    const { defenseBanIp } = await import('@ysk-server/core');
     const r = await defenseBanIp({
       host: ctx.host,
       db: ctx.db,
@@ -154,7 +154,7 @@ export async function handleDefenseBanRoutes(
       method?: 'fail2ban' | 'ufw' | 'both';
       jail?: string;
     };
-    const { defenseUnbanIp } = await import('@yanshekki/core');
+    const { defenseUnbanIp } = await import('@ysk-server/core');
     const r = await defenseUnbanIp({
       host: ctx.host,
       db: ctx.db,
@@ -174,7 +174,7 @@ export async function handleDefenseBanRoutes(
   if (method === 'GET' && url.pathname === '/api/v1/defense/timeline') {
     ctx.auth.authenticate(getBearer(req));
     const hours = Number(url.searchParams.get('hours') ?? '24') || 24;
-    const { listDefenseTimeline } = await import('@yanshekki/core');
+    const { listDefenseTimeline } = await import('@ysk-server/core');
     const { listWithQuery } = await import('../http/list-response.js');
     const all = listDefenseTimeline(ctx.db, hours);
     const { items, meta } = listWithQuery(
@@ -196,7 +196,7 @@ export async function handleDefenseBanRoutes(
   }
   if (method === 'GET' && url.pathname === '/api/v1/defense/suspects') {
     ctx.auth.authenticate(getBearer(req));
-    const { listSuspectIps } = await import('@yanshekki/core');
+    const { listSuspectIps } = await import('@ysk-server/core');
     const { listWithQuery } = await import('../http/list-response.js');
     const r = await listSuspectIps({ host: ctx.host, db: ctx.db, dataDir: ctx.dataDir });
     const { items, meta } = listWithQuery(url, r.items, {
@@ -213,7 +213,7 @@ export async function handleDefenseBanRoutes(
       reason?: string;
       method?: 'fail2ban' | 'ufw' | 'both';
     };
-    const { defenseBanBatch } = await import('@yanshekki/core');
+    const { defenseBanBatch } = await import('@ysk-server/core');
     const r = await defenseBanBatch({
       host: ctx.host,
       db: ctx.db,

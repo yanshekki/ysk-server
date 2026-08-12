@@ -6,7 +6,7 @@
  *   clients list|import|up|down|delete|autostart
  *   firewall open
  */
-import { createVpnService, parseEngine, syncServiceExposure, vpnPortBindings } from '@yanshekki/core';
+import { createVpnService, parseEngine, syncServiceExposure, vpnPortBindings } from '@ysk-server/core';
 import { readFileSync } from 'node:fs';
 import type { AppContext } from '../app-context.js';
 

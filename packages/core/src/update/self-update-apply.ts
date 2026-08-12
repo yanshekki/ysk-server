@@ -5,7 +5,7 @@
 
 import { planSelfUpdate, compareVersions, isValidSha256 } from './self-update.js';
 import type { HostExecutor } from '../host/executor.js';
-import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
+import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
 import { shellBinExists } from '../hosting/software-probe/index.js';
 
 export interface RegistryVersion {

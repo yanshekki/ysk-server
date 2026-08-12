@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 import { loadBtTrackerSettings } from './settings.js';
 import { isBtTrackerRunning, startBtTracker, stopBtTracker } from './service.js';
 import type { HostExecutor } from '../../host/executor.js';
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 
 function pidPath(dataDir: string): string {
   return join(dataDir, 'bt-tracker', 'tracker.pid');

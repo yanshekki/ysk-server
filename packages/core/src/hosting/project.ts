@@ -7,8 +7,8 @@
  * - One user ↔ one project; names immutable after create
  */
 
-import type { ProjectDto } from '@yanshekki/shared';
-import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
+import type { ProjectDto } from '@ysk-server/shared';
+import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
 
 /** Canonical home directory prefix (trailing path is full project UUID). */
 export const PROJECT_HOME_PREFIX = '/home/ysk-server-';

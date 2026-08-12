@@ -177,7 +177,7 @@ Honest admin view — not marketing. **production** needs root + `YSK_EXECUTE=1`
 | Users/Packages multi-tenant | **out / P2 platform** | 唔計 Admin 100% |
 | **Overall Admin plane** | **100%** | 誠實 written/applied/blocked |
 | **真做合約** | **done** | 禁止 ok+blocked；dryRun 唔抬 ok |
-| **@yanshekki/core tests** | **365+ pass** | 持續綠 |
+| **@ysk-server/core tests** | **365+ pass** | 持續綠 |
 | **Line coverage ≥90%** | **未達（工程債）** | 唔阻擋功能 100% |
 
 ### Explicit out of scope (unchanged)

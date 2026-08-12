@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import type { ProjectDto, OpsApplyResultDto } from '@yanshekki/shared';
+import type { ProjectDto, OpsApplyResultDto } from '@ysk-server/shared';
 import {
   ActionBar,
   Alert,

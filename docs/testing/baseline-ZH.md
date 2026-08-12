@@ -46,8 +46,8 @@ Web branches 門檻為 **84**（殘餘已記錄；monorepo branches 仍 ≥80）
 ## 重新量度
 
 ```bash
-COVERAGE_FLOOR=0 pnpm --filter @yanshekki/shared test:coverage
-COVERAGE_FLOOR=0 pnpm --filter @yanshekki/core test:coverage
+COVERAGE_FLOOR=0 pnpm --filter @ysk-server/shared test:coverage
+COVERAGE_FLOOR=0 pnpm --filter @ysk-server/core test:coverage
 COVERAGE_FLOOR=0 pnpm --filter ysk-server test:coverage
-COVERAGE_FLOOR=0 pnpm --filter @yanshekki/web test:coverage
+COVERAGE_FLOOR=0 pnpm --filter @ysk-server/web test:coverage
 ```

@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   factoryRolePolicy,
   type CapabilityId,
-} from '@yanshekki/shared';
+} from '@ysk-server/shared';
 import { authStore } from '../stores/auth-store';
 import { api } from '../services/api';
 

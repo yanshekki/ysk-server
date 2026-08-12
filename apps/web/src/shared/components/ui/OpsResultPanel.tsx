@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import type { OpsResultDto } from '@yanshekki/shared';
+import type { OpsResultDto } from '@ysk-server/shared';
 import { useTranslation } from 'react-i18next';
 import { ActionBar } from './ActionBar';
 import { Badge } from './Badge';

@@ -1,9 +1,9 @@
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 /**
  * Three-axis RBAC: role × resource scope × operation level.
  */
 
-import type { OperationLevel, ResourceScope, SystemRole } from '@yanshekki/shared';
+import type { OperationLevel, ResourceScope, SystemRole } from '@ysk-server/shared';
 
 /** Privilege rank: higher can do everything lower can */
 const LEVEL_RANK: Record<OperationLevel, number> = {

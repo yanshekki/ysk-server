@@ -20,14 +20,14 @@ export async function handleHostingProcessesRoutes(
       // —— PM2 + YSK project process fleet (Node/Bun Processes tab) ——
       if (method === 'GET' && url.pathname === '/api/v1/hosting/pm2/status') {
         ctx.auth.authenticate(getBearer(req));
-        const { collectPm2Snapshot } = await import('@yanshekki/core');
+        const { collectPm2Snapshot } = await import('@ysk-server/core');
         const snap = await collectPm2Snapshot(ctx.host);
         sendJson(res, 200, snap);
         return true;
       }
       if (method === 'GET' && url.pathname === '/api/v1/hosting/pm2/startup') {
         ctx.auth.authenticate(getBearer(req));
-        const { probePm2Startup } = await import('@yanshekki/core');
+        const { probePm2Startup } = await import('@ysk-server/core');
         sendJson(res, 200, await probePm2Startup(ctx.host));
         return true;
       }
@@ -37,12 +37,12 @@ export async function handleHostingProcessesRoutes(
         const body = JSON.parse(raw || '{}') as { action?: string };
         const action = body.action || 'install';
         if (action === 'save') {
-          const { applyPm2Save } = await import('@yanshekki/core');
+          const { applyPm2Save } = await import('@ysk-server/core');
           sendJson(res, 200, await applyPm2Save(ctx.host));
           return true;
         }
         if (action === 'install') {
-          const { applyPm2StartupInstall } = await import('@yanshekki/core');
+          const { applyPm2StartupInstall } = await import('@ysk-server/core');
           sendJson(res, 200, await applyPm2StartupInstall(ctx.host));
           return true;
         }
@@ -78,7 +78,7 @@ export async function handleHostingProcessesRoutes(
           });
           return true;
         }
-        const { applyPm2AppAction } = await import('@yanshekki/core');
+        const { applyPm2AppAction } = await import('@ysk-server/core');
         const result = await applyPm2AppAction({
           host: ctx.host,
           appName: name,
@@ -90,7 +90,7 @@ export async function handleHostingProcessesRoutes(
       }
       if (method === 'GET' && url.pathname === '/api/v1/hosting/process-fleet') {
         ctx.auth.authenticate(getBearer(req));
-        const { collectProcessFleet } = await import('@yanshekki/core');
+        const { collectProcessFleet } = await import('@ysk-server/core');
         const runtimes = (url.searchParams.get('runtimes') || 'node,bun')
           .split(',')
           .map((s) => s.trim())
@@ -120,7 +120,7 @@ export async function handleHostingProcessesRoutes(
           });
           return true;
         }
-        const { applySystemdProjectAction } = await import('@yanshekki/core');
+        const { applySystemdProjectAction } = await import('@ysk-server/core');
         const result = await applySystemdProjectAction({
           host: ctx.host,
           db: ctx.db,
@@ -136,7 +136,7 @@ export async function handleHostingProcessesRoutes(
           url.pathname === '/api/v1/hosting/process-fleet/stream')
       ) {
         ctx.auth.authenticate(getBearer(req));
-        const { collectProcessFleet } = await import('@yanshekki/core');
+        const { collectProcessFleet } = await import('@ysk-server/core');
         const intervalSec = Math.max(
           1,
           Math.min(10, Number(url.searchParams.get('interval') || 2)),

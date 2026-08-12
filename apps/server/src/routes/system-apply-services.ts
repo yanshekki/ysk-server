@@ -3,14 +3,14 @@
  * Extracted from system-apply.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 import {
   installControlPlaneSystemd,
   probeControlPlaneSystemd,
   getServiceMatrix,
   lifecycleServiceUnit,
   runSelfUpdate,
-} from '@yanshekki/core';
+} from '@ysk-server/core';
 import type { AppContext } from '../app-context.js';
 import { VERSION } from '../version.js';
 import {
@@ -80,7 +80,7 @@ export async function handleSystemApplyServicesRoutes(
       (data.action === 'stop' || data.action === 'start' || data.action === 'restart')
     ) {
       try {
-        const { syncServiceExposure, unitToExposureService } = await import('@yanshekki/core');
+        const { syncServiceExposure, unitToExposureService } = await import('@ysk-server/core');
         const mapped = unitToExposureService(data.unit!);
         if (mapped) {
           const reason = data.action === 'stop' ? 'stop' : 'start';

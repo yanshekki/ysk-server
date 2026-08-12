@@ -1,4 +1,4 @@
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 /**
  * Probe multi-version runtimes on the host + managed install plans.
  * Never fakes install success — package installs need root + YSK_EXECUTE.

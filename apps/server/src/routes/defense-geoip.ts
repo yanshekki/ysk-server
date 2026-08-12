@@ -22,7 +22,7 @@ export async function handleDefenseGeoipRoutes(
   // —— GeoIP / IP 准入（國家·大陸·ASN）——
   if (method === 'GET' && url.pathname === '/api/v1/defense/geoip/status') {
     ctx.auth.authenticate(getBearer(req));
-    const { getGeoipStatus } = await import('@yanshekki/core');
+    const { getGeoipStatus } = await import('@ysk-server/core');
     const status = await getGeoipStatus(ctx.dataDir, ctx.db);
     const job =
       ctx.scheduler.get?.('defense-geoip-update') ??
@@ -43,7 +43,7 @@ export async function handleDefenseGeoipRoutes(
   if (method === 'POST' && url.pathname === '/api/v1/defense/geoip/update') {
     const user = ctx.auth.authenticate(getBearer(req));
     const { updateGeoipDatabases, resetGeoipReaders, getGeoipStatus } = await import(
-      '@yanshekki/core'
+      '@ysk-server/core'
     );
     const r = await updateGeoipDatabases(ctx.dataDir);
     resetGeoipReaders();
@@ -59,7 +59,7 @@ export async function handleDefenseGeoipRoutes(
   }
   if (method === 'GET' && url.pathname === '/api/v1/defense/geoip/policy') {
     ctx.auth.authenticate(getBearer(req));
-    const { loadIpAccessPolicy } = await import('@yanshekki/core');
+    const { loadIpAccessPolicy } = await import('@ysk-server/core');
     sendJson(res, 200, { policy: loadIpAccessPolicy(ctx.db, ctx.dataDir) });
     return true;
   }
@@ -67,7 +67,7 @@ export async function handleDefenseGeoipRoutes(
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as Record<string, unknown>;
-    const { updateIpAccessPolicy, applyIpAccessNginx } = await import('@yanshekki/core');
+    const { updateIpAccessPolicy, applyIpAccessNginx } = await import('@ysk-server/core');
     const policy = updateIpAccessPolicy(ctx.db, ctx.dataDir, data as never);
     let applyNotes: string[] = [];
     if (policy.enforce.nginx) {
@@ -93,7 +93,7 @@ export async function handleDefenseGeoipRoutes(
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { ip?: string };
     const { lookupIpWithPolicy, loadAutoBanPolicy, loadDefenseAutomation } =
-      await import('@yanshekki/core');
+      await import('@ysk-server/core');
     const auto = loadDefenseAutomation(ctx.db);
     const legacy = loadAutoBanPolicy(ctx.db);
     const whitelist = [
@@ -110,7 +110,7 @@ export async function handleDefenseGeoipRoutes(
   }
   if (method === 'POST' && url.pathname === '/api/v1/defense/geoip/apply') {
     const user = ctx.auth.authenticate(getBearer(req));
-    const { applyIpAccessNginx, getGeoipStatus } = await import('@yanshekki/core');
+    const { applyIpAccessNginx, getGeoipStatus } = await import('@ysk-server/core');
     const a = applyIpAccessNginx(ctx.dataDir, ctx.db);
     const status = await getGeoipStatus(ctx.dataDir, ctx.db);
     ctx.audit.append({

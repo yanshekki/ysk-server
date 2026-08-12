@@ -3,7 +3,7 @@
  * Extracted from db-clusters.ts (Wave Q1). Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -21,7 +21,7 @@ export async function handleDbClustersCrudRoutes(
       // —— DB HA clusters ——
       if (method === 'GET' && url.pathname === '/api/v1/db/clusters/overview') {
         ctx.auth.authenticate(getBearer(req));
-        const { listDbClusters, firewallPortsForCluster } = await import('@yanshekki/core');
+        const { listDbClusters, firewallPortsForCluster } = await import('@ysk-server/core');
         const items = listDbClusters(ctx.db);
         sendJson(res, 200, {
           ok: true,
@@ -41,7 +41,7 @@ export async function handleDbClustersCrudRoutes(
       }
       if (method === 'GET' && url.pathname === '/api/v1/db/clusters') {
         ctx.auth.authenticate(getBearer(req));
-        const { listDbClusters } = await import('@yanshekki/core');
+        const { listDbClusters } = await import('@ysk-server/core');
         const engine = url.searchParams.get('engine') as
           | 'mysql'
           | 'mariadb'
@@ -74,7 +74,7 @@ export async function handleDbClustersCrudRoutes(
           }>;
           params?: Record<string, string | number | boolean>;
         };
-        const { createDbCluster } = await import('@yanshekki/core');
+        const { createDbCluster } = await import('@ysk-server/core');
         const cluster = createDbCluster(ctx.db, {
           name: data.name ?? '',
           engine: data.engine ?? 'mariadb',
@@ -95,7 +95,7 @@ export async function handleDbClustersCrudRoutes(
       if (method === 'GET' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+$/)) {
         ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[5];
-        const { getDbCluster, firewallPortsForCluster } = await import('@yanshekki/core');
+        const { getDbCluster, firewallPortsForCluster } = await import('@ysk-server/core');
         const cluster = getDbCluster(ctx.db, id);
         sendJson(res, 200, {
           ok: true,
@@ -121,7 +121,7 @@ export async function handleDbClustersCrudRoutes(
           }>;
           notes?: string[];
         };
-        const { updateDbCluster, firewallPortsForCluster } = await import('@yanshekki/core');
+        const { updateDbCluster, firewallPortsForCluster } = await import('@ysk-server/core');
         const cluster = updateDbCluster(ctx.db, id, {
           name: data.name,
           params: data.params,
@@ -142,7 +142,7 @@ export async function handleDbClustersCrudRoutes(
       if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[5];
-        const { deleteDbCluster } = await import('@yanshekki/core');
+        const { deleteDbCluster } = await import('@ysk-server/core');
         const ok = deleteDbCluster(ctx.db, id);
         ctx.audit.append({
           actor: user.username,

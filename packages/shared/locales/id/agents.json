@@ -94,7 +94,7 @@
   "cmdNote": "Agen server Edge ysk dijalankan mengeksekusi CLI JSON secara lokal (menambahkan --json). Perubahan host masih memerlukan YSK_EXECUTE=1 di edge. Lihat kode keluar dan JSON di Riwayat.",
   "resultTitle": "Hasil perintah · keluar {{code}}",
   "resultTitlePlain": "Hasil perintah",
-  "codeComment": "# Konsep: register → loop detak jantung → perintah tarik → ack\n# Perpustakaan: @yanshekki/core runOutboundAgent / agentCycle",
+  "codeComment": "# Konsep: register → loop detak jantung → perintah tarik → ack\n# Perpustakaan: @ysk-server/core runOutboundAgent / agentCycle",
   "resultOuter": "Luar: edge ack (exitCode / stderr). Hasil batin:",
   "deleteTitle": "Hapus {{id}}?",
   "deleteTitlePlain": "Hapus agen?",

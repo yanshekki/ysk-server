@@ -3,8 +3,8 @@
  * Called after auth+root resolve from files-controller (Wave E2).
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@yanshekki/shared';
-import type { UserDto } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
+import type { UserDto } from '@ysk-server/shared';
 import { join } from 'node:path';
 import {
   FileManager,
@@ -20,7 +20,7 @@ import {
   stopSeed,
   publicFilesRoot,
   getFileShareById,
-} from '@yanshekki/core';
+} from '@ysk-server/core';
 import type { AppContext } from '../app-context.js';
 import { readBody, sendJson, sendOpsResult } from '../http/util.js';
 
@@ -238,7 +238,7 @@ export async function handleFilesMetaSection(
 
   // WebDAV settings (control plane)
   if (method === 'GET' && url.pathname === '/api/v1/files/webdav') {
-    const { getWebDavSettings } = await import('@yanshekki/core');
+    const { getWebDavSettings } = await import('@ysk-server/core');
     const s = getWebDavSettings(ctx.db);
     sendJson(res, 200, {
       enabled: s.enabled,
@@ -248,7 +248,7 @@ export async function handleFilesMetaSection(
     return true;
   }
   if (method === 'POST' && url.pathname === '/api/v1/files/webdav/token') {
-    const { issueWebDavToken } = await import('@yanshekki/core');
+    const { issueWebDavToken } = await import('@ysk-server/core');
     const r = issueWebDavToken(ctx.db);
     ctx.audit.append({
       actor: user.username,
@@ -264,7 +264,7 @@ export async function handleFilesMetaSection(
     return true;
   }
   if (method === 'POST' && url.pathname === '/api/v1/files/webdav/disable') {
-    const { setWebDavSettings } = await import('@yanshekki/core');
+    const { setWebDavSettings } = await import('@ysk-server/core');
     setWebDavSettings(ctx.db, { enabled: false });
     sendJson(res, 200, { ok: true, enabled: false });
     return true;

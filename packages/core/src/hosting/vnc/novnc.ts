@@ -7,7 +7,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { HostExecutor } from '../../host/executor.js';
 import { shellQuote } from '../project-user-run.js';
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 import { novncPortForDisplay, rfbPortForDisplay } from './ports.js';
 
 export type NovncRuntime = {

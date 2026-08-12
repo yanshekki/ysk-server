@@ -11,7 +11,7 @@ import {
   type CapabilityId,
   type RolePolicy,
   type SystemRole,
-} from '@yanshekki/shared';
+} from '@ysk-server/shared';
 
 export interface CapabilityActor {
   id?: string;

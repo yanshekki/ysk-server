@@ -1,4 +1,4 @@
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 /**
  * Adminer (lightweight DB browser) — managed download under dataDir + nginx plan.
  * Honest: download needs EXECUTE+network; system nginx needs root + applySystem.

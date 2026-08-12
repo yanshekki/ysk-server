@@ -34,7 +34,7 @@ export async function handleHostingRuntimesPluginOpsRoutes(
       });
       return true;
     }
-    const { installRuntimePlugins } = await import('@yanshekki/core');
+    const { installRuntimePlugins } = await import('@ysk-server/core');
     const plugins = Array.isArray(data.plugins) ? data.plugins : [];
     const wantStream =
       data.stream === true ||
@@ -153,7 +153,7 @@ export async function handleHostingRuntimesPluginOpsRoutes(
       });
       return true;
     }
-    const { uninstallRuntimePlugins } = await import('@yanshekki/core');
+    const { uninstallRuntimePlugins } = await import('@ysk-server/core');
     const result = await uninstallRuntimePlugins({
       dataDir: ctx.dataDir,
       host: ctx.host,

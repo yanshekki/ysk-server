@@ -1,4 +1,4 @@
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 /**
  * Apply domain rate-limit + antispam flags to managed Postfix/Rspamd configs.
  * When applySystem: write real include snippets under /etc and reload.

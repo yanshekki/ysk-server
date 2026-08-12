@@ -1,4 +1,4 @@
-import type { ProjectDto } from '@yanshekki/shared';
+import type { ProjectDto } from '@ysk-server/shared';
 import { EmptyState } from '../../../shared/components/ui';
 import { ProjectListItem } from './ProjectListItem';
 

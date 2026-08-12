@@ -28,8 +28,8 @@ grep -q 'tabOverview\|scanNow' packages/shared/locales/en/updates.json || fail "
 grep -q 'useUpdatesNavBadge' apps/web/src/app/layout/AppShell.tsx || fail "shell badge"
 
 log "Unit tests…"
-pnpm --filter @yanshekki/core exec vitest run src/update/summary.test.ts
-pnpm --filter @yanshekki/web exec vitest run src/shared/hooks/useUpdatesNavBadge.test.ts src/shared/nav/features.test.ts 2>/dev/null \
+pnpm --filter @ysk-server/core exec vitest run src/update/summary.test.ts
+pnpm --filter @ysk-server/web exec vitest run src/shared/hooks/useUpdatesNavBadge.test.ts src/shared/nav/features.test.ts 2>/dev/null \
   || pnpm --filter web exec vitest run src/shared/hooks/useUpdatesNavBadge.test.ts src/shared/nav/features.test.ts 2>/dev/null \
   || (cd apps/web && pnpm exec vitest run src/shared/hooks/useUpdatesNavBadge.test.ts src/shared/nav/features.test.ts)
 

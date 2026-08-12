@@ -3,7 +3,7 @@
  * Data: ./data/{zh-HK,zh-CN,en}.json (+ Tier-2 when present)
  * Normalizes legacy guide shapes → professional About sections.
  */
-import { normalizeLocale, type LocaleCode } from '@yanshekki/shared';
+import { normalizeLocale, type LocaleCode } from '@ysk-server/shared';
 import type { PageGuideDoc, PageGuideRaw } from './types';
 
 import zhHK from './data/zh-HK.json';

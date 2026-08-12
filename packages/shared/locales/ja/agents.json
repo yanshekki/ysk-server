@@ -94,7 +94,7 @@
   "cmdNote": "Edge ysk-server エージェントの実行は、CLI JSON をローカルで実行します (--json を追加)。ホストの変更には、エッジで YSK_EXECUTE=1 が必要です。 「履歴」の終了コードと JSON を参照してください。",
   "resultTitle": "コマンド結果 · 終了 {{code}}",
   "resultTitlePlain": "コマンド結果",
-  "codeComment": "# 概念: 登録 → ハートビート ループ → プル コマンド → ACK\n# ライブラリ: @yanshekki/core runOutboundAgent / AgentCycle",
+  "codeComment": "# 概念: 登録 → ハートビート ループ → プル コマンド → ACK\n# ライブラリ: @ysk-server/core runOutboundAgent / AgentCycle",
   "resultOuter": "外側: エッジ ACK (exitCode / stderr)。内部結果:",
   "deleteTitle": "{{id}}を削除しますか?",
   "deleteTitlePlain": "エージェントを削除しますか?",

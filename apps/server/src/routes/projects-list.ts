@@ -3,8 +3,8 @@
  * Extracted from projects-catalog.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import type { ProjectDto } from '@yanshekki/shared';
-import { listAppTemplates } from '@yanshekki/core';
+import type { ProjectDto } from '@ysk-server/shared';
+import { listAppTemplates } from '@ysk-server/core';
 import type { AppContext } from '../app-context.js';
 import { listWithQuery } from '../http/list-response.js';
 import { getBearer, sendJson } from '../http/util.js';

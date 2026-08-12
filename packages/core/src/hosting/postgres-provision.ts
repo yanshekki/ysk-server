@@ -4,7 +4,7 @@
  */
 
 import type { HostExecutor } from '../host/executor.js';
-import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
+import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
 import { probeEndpoint } from './db-client.js';
 import { binPresent } from './software-probe/index.js';
 

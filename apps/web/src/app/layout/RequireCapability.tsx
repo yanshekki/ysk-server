@@ -4,7 +4,7 @@
  */
 import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { canAccessPath } from '@yanshekki/shared';
+import { canAccessPath } from '@ysk-server/shared';
 import { useCapabilities } from '../../shared/hooks/useCapabilities';
 import { useAuth } from '../../shared/hooks/useAuth';
 import { LoadingBlock } from '../../shared/components/ui';

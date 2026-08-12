@@ -72,7 +72,7 @@
 | ID | 項 | Status |
 |----|-----|--------|
 | Cov | line coverage → 90% | **done**（lines/statements **≥90.5%**；functions ~97%；branch ~79.6% 達門檻 79） |
-| Shared DTO | ServiceConsole 單共享 type 跨 web/server | **done**（`@yanshekki/shared` `ServiceConsoleDto`） |
+| Shared DTO | ServiceConsole 單共享 type 跨 web/server | **done**（`@ysk-server/shared` `ServiceConsoleDto`） |
 | installCrontab | 寫入可能覆蓋用戶整份 crontab — 警告文案 | **done** | 合併安裝 + 保留非 YSK 行 + 狀態 UI |
 
 ---
@@ -80,7 +80,7 @@
 ## 驗收指令
 
 ```bash
-pnpm --filter @yanshekki/core test:coverage   # Cov
+pnpm --filter @ysk-server/core test:coverage   # Cov
 pnpm e2e:sql-switch                     # S6 碼門禁
 pnpm e2e:sql-switch-live                # S6 Docker 有數據 dump/import
 ```

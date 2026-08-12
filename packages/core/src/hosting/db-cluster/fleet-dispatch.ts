@@ -3,7 +3,7 @@
  * Enqueues { cli: [...] } and/or { clusterSync: {...} } for edge bootstrap.
  */
 
-import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
+import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
 import type { JsonStore } from '../../db/store.js';
 import { getDbCluster, updateDbCluster } from './store.js';
 import type { DbCluster, DbClusterMember } from './types.js';

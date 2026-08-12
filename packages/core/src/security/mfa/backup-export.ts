@@ -1,4 +1,4 @@
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 /**
  * Encrypted break-glass backup of panel 2FA material (operator-held).
  * Format: ysk2fabak:v1:<base64(iv|tag|json)>

@@ -3,7 +3,7 @@
  * Never call tl() at module load (freezes DEFAULT_LOCALE).
  */
 
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 import type { DefenseAction, DefensePreset, DefensePresetId } from './types.js';
 
 type PresetDef = Omit<DefensePreset, 'label' | 'short' | 'bullets'> & {

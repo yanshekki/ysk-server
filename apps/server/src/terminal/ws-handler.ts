@@ -11,7 +11,7 @@ import {
   buildRootSpawnPlan,
   type TerminalSpawnPlan,
   type TerminalTicketStore,
-} from '@yanshekki/core';
+} from '@ysk-server/core';
 import type { AppContext } from '../app-context.js';
 import { openPtySession, type PtySession } from './pty-session.js';
 

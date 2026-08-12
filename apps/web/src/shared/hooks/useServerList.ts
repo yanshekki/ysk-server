@@ -2,7 +2,7 @@
  * Debounced server-backed list fetch with q + dimension filters.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { buildListQueryString, type ListMeta, type ListSortOrder } from '@yanshekki/shared';
+import { buildListQueryString, type ListMeta, type ListSortOrder } from '@ysk-server/shared';
 import { api } from '../services/api';
 
 export type UseServerListOptions = {

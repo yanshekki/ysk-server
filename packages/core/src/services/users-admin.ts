@@ -3,8 +3,8 @@
  */
 
 import { randomBytes, randomUUID } from 'node:crypto';
-import type { SystemRole, UserDto } from '@yanshekki/shared';
-import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
+import type { SystemRole, UserDto } from '@ysk-server/shared';
+import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
 import type { UserRepository } from '../repositories/user-repo.js';
 import type { AuditRepository } from '../repositories/audit-repo.js';
 import type { SessionRepository } from '../repositories/session-repo.js';

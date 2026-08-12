@@ -3,7 +3,7 @@
  */
 
 import type { LlmTransport } from './gateway.js';
-import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
+import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
 
 export const fetchTransport: LlmTransport = {
   async complete(input) {

@@ -8,7 +8,7 @@ import {
   applyPowerDnsZone,
   powerDnsStatus,
   installPowerDnsPackages,
-} from '@yanshekki/core';
+} from '@ysk-server/core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -45,7 +45,7 @@ export async function handleHostingDnsPowerdnsRoutes(
     });
     if (result.ok && data.install) {
       try {
-        const { syncServiceExposure, dnsPortBindings } = await import('@yanshekki/core');
+        const { syncServiceExposure, dnsPortBindings } = await import('@ysk-server/core');
         const exp = await syncServiceExposure({
           host: ctx.host,
           dataDir: ctx.dataDir,
@@ -80,7 +80,7 @@ export async function handleHostingDnsPowerdnsRoutes(
       localAddress?: string;
       resyncZones?: boolean;
     };
-    const { healPowerDnsListener } = await import('@yanshekki/core');
+    const { healPowerDnsListener } = await import('@ysk-server/core');
     const result = await healPowerDnsListener({
       host: ctx.host,
       localAddress: data.localAddress,
@@ -89,7 +89,7 @@ export async function handleHostingDnsPowerdnsRoutes(
     });
     if (result.ok) {
       try {
-        const { syncServiceExposure, dnsPortBindings } = await import('@yanshekki/core');
+        const { syncServiceExposure, dnsPortBindings } = await import('@ysk-server/core');
         const exp = await syncServiceExposure({
           host: ctx.host,
           dataDir: ctx.dataDir,

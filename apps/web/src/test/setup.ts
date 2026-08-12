@@ -1,5 +1,5 @@
 /**
- * Vitest + Testing Library setup for @yanshekki/web.
+ * Vitest + Testing Library setup for @ysk-server/web.
  * Fixed locale en for locale-agnostic assertions.
  */
 import '@testing-library/jest-dom/vitest';

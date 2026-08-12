@@ -10,7 +10,7 @@ import {
   type ApplyStatus,
   type CdnDnsStrategy,
   type CdnNodeDto,
-  type CdnSiteDto,  tl} from '@yanshekki/shared';
+  type CdnSiteDto,  tl} from '@ysk-server/shared';
 import type { JsonStore } from '../../db/store.js';
 import type { HostExecutor } from '../../host/executor.js';
 import {

@@ -1,7 +1,7 @@
 /**
  * Host network interfaces / routes / DNS.
  */
-import type { NetApplyResult, NetworkSnapshot } from '@yanshekki/shared';
+import type { NetApplyResult, NetworkSnapshot } from '@ysk-server/shared';
 import { api } from '../../shared/services/api';
 import { authStore } from '../../shared/stores/auth-store';
 
@@ -11,7 +11,7 @@ export type {
   NetRoute,
   NetworkSnapshot,
   NetApplyResult,
-} from '@yanshekki/shared';
+} from '@ysk-server/shared';
 
 async function opsPost(
   path: string,

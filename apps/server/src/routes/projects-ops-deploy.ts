@@ -3,12 +3,12 @@
  * Extracted from projects-ops-runtime.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 import {
   applyNodeHosting,
   downloadWordpressCore,
   normalizeRuntimeVersion,
-} from '@yanshekki/core';
+} from '@ysk-server/core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -72,7 +72,7 @@ export async function handleProjectsOpsDeployRoutes(
     // Default to full setup path (download + wp-config + chown + checklist)
     const useSetup = data.setup !== false;
     if (useSetup) {
-      const { setupWordpress } = await import('@yanshekki/core');
+      const { setupWordpress } = await import('@ysk-server/core');
       const result = await setupWordpress({
         host: ctx.host,
         homeDir: proj.homeDir,

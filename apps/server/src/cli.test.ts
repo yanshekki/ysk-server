@@ -9,8 +9,8 @@ import { createAppContext, applyProtection, closeAppContext } from './app-contex
 import { createHttpServer, listen } from './http-server.js';
 import { loadConfigFile } from './config-loader.js';
 import { main, exitFromResult, exitFromError, printCliError } from './cli.js';
-import { evaluateProtection } from '@yanshekki/core';
-import { ErrorCodes, YskError } from '@yanshekki/shared';
+import { evaluateProtection } from '@ysk-server/core';
+import { ErrorCodes, YskError } from '@ysk-server/shared';
 
 /** Capture stdout while running main(); restores on exit. */
 async function runMain(

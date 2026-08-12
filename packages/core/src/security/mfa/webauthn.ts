@@ -1,4 +1,4 @@
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 /**
  * WebAuthn / passkey (panel second factor) via @simplewebauthn/server v13.
  */

@@ -10,28 +10,29 @@
 
 Product page: **https://www.npmjs.com/package/ysk-server**
 
-Workspace packages `@yanshekki/shared` and `@yanshekki/core` are **bundled inside** the `ysk-server` tarball (`bundleDependencies`). Installers only need the unscoped package.
+### Monorepo (workspace only)
 
-`@yanshekki/web` stays private; SPA is embedded into `ysk-server` `public/web` at pack time.
+| Package | Role |
+|---------|------|
+| `@ysk-server/shared` | Types / locales |
+| `@ysk-server/core` | Hosting / security logic |
+| `@ysk-server/web` | Panel SPA (private; embedded at pack) |
+| `ysk-server` | Publishable CLI + API |
+
+`@ysk-server/shared` and `@ysk-server/core` are **bundled** into the public `ysk-server` tarball (`bundleDependencies`). Users never install those scopes from the registry — no npm org required.
 
 ## Prerequisites
 
-1. npm user **yanshekki** (or collaborator).
-2. Prefer an **Automation** token in `~/.npmrc`:
-
-```ini
-//registry.npmjs.org/:_authToken=npm_XXXXXXXX
-```
-
-3. `npm whoami` → `yanshekki`
-4. Node ≥ 20, build tools for native addons (`python3`, `make`, `g++`) on install hosts.
+1. npm account that can publish `ysk-server` (e.g. **yanshekki**).
+2. Prefer **Automation** token in `~/.npmrc`.
+3. `npm whoami` works; Node ≥ 20.
 
 ## Publish
 
 ```bash
-# bump version in apps/server/package.json first if needed
+# bump apps/server/package.json version when releasing
 bash scripts/publish-ysk-server-npm.sh           # dry-run
-bash scripts/publish-ysk-server-npm.sh --publish # real publish
+bash scripts/publish-ysk-server-npm.sh --publish
 ```
 
 ## Verify
@@ -42,8 +43,4 @@ npm install -g ysk-server
 ysk-server help
 ```
 
-## Notes
-
-- Versions **1.0.0–1.0.1** may be incomplete; use **≥ 1.0.2**.
-- Do not re-publish the same version number (npm forbids overwrite).
-- After any token leak in chat/logs, **revoke** it on npmjs.com and create a new Automation token.
+Use **≥ 1.0.2** (or the version you just published). Same version cannot be republished.

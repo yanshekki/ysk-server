@@ -19,7 +19,7 @@ import {
   type OperationLevel,
   type RolePolicy,
   type SystemRole,
-} from '@yanshekki/shared';
+} from '@ysk-server/shared';
 import type { YskDatabase } from '../db/database.js';
 import type { StoreUser } from '../db/store.js';
 import type { AuditRepository } from '../repositories/audit-repo.js';

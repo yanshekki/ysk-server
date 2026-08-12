@@ -10,7 +10,7 @@ import {
   applyPowerDnsZone,
   applyCloudflareDns,
   persistDnsZoneApply,
-} from '@yanshekki/core';
+} from '@ysk-server/core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,

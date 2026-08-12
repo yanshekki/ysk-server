@@ -5,7 +5,7 @@
 import { randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { ErrorCodes, YskError, tl } from '@yanshekki/shared';
+import { ErrorCodes, YskError, tl } from '@ysk-server/shared';
 import type { HostExecutor } from '../../host/executor.js';
 import { ensureLinuxUser, removeLinuxUser } from './linux-user.js';
 import { writeVncPassword } from './passwd.js';

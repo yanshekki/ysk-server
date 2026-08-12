@@ -20,7 +20,7 @@ import {
 } from 'node:fs';
 import { dirname } from 'node:path';
 import { createRequire } from 'node:module';
-import { ErrorCodes, YskError } from '@yanshekki/shared';
+import { ErrorCodes, YskError } from '@ysk-server/shared';
 import { JsonStore, type StoreData, type YskDatabase } from './store.js';
 
 export type StoreBackendKind = 'json' | 'sqlite' | 'postgres';

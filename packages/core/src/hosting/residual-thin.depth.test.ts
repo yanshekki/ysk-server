@@ -75,7 +75,7 @@ import {
 } from './managed-resources.js';
 import { applyAdminer } from './adminer.js';
 import { ensureWpConfig, setupWordpress } from './wordpress-setup.js';
-import { YskError } from '@yanshekki/shared';
+import { YskError } from '@ysk-server/shared';
 import type { ProjectRow } from '../repositories/project-repo.js';
 
 function mockHost(opts: {

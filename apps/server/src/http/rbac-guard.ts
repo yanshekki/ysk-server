@@ -5,7 +5,7 @@ import {
   matchMutatingRouteCap,
   type CapabilityId,
   type UserDto,
-} from '@yanshekki/shared';
+} from '@ysk-server/shared';
 import type { AppContext } from '../app-context.js';
 import { getBearer } from './util.js';
 import type { IncomingMessage } from 'node:http';

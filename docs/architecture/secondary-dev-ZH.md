@@ -48,8 +48,8 @@ sendOpsResult(res, r);
 | `requireUser` / `requireUserCap` | `apps/server/src/http/handler.ts` |
 | `sendOpsResult` / `sendError` | `apps/server/src/http/util.ts` |
 | `listWithQuery` | `apps/server/src/http/list-response.ts` |
-| `honestyFromFlags` | `@yanshekki/core` (`apply-honesty`) |
-| `assertSafeOutboundUrl` | `@yanshekki/core` (`net/ssrf`) |
+| `honestyFromFlags` | `@ysk-server/core` (`apply-honesty`) |
+| `assertSafeOutboundUrl` | `@ysk-server/core` (`net/ssrf`) |
 
 ## 用戶 / 套餐路由
 

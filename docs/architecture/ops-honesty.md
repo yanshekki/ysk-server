@@ -6,7 +6,7 @@ YSK never pretends a host change succeeded when it only wrote a plan or a file u
 
 ## Apply status
 
-Canonical types live in `@yanshekki/shared` (`OpsResultDto` / `ApplyStatus`).
+Canonical types live in `@ysk-server/shared` (`OpsResultDto` / `ApplyStatus`).
 
 | Status | Meaning |
 |--------|---------|

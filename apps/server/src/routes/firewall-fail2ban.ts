@@ -3,7 +3,7 @@
  * Extracted from firewall.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { applyFail2ban } from '@yanshekki/core';
+import { applyFail2ban } from '@ysk-server/core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -21,7 +21,7 @@ export async function handleFirewallFail2banRoutes(
 ): Promise<boolean> {
   if (method === 'GET' && url.pathname === '/api/v1/system/fail2ban/status') {
     ctx.auth.authenticate(getBearer(req));
-    const { getFail2banDeepStatus } = await import('@yanshekki/core');
+    const { getFail2banDeepStatus } = await import('@ysk-server/core');
     sendJson(
       res,
       200,
@@ -64,7 +64,7 @@ export async function handleFirewallFail2banRoutes(
     const data = JSON.parse(raw || '{}') as {
       action?: 'start' | 'stop' | 'restart' | 'reload' | 'enable';
     };
-    const { fail2banService } = await import('@yanshekki/core');
+    const { fail2banService } = await import('@ysk-server/core');
     const r = await fail2banService(ctx.host, data.action ?? 'reload');
     ctx.audit.append({
       actor: user.username,
@@ -79,7 +79,7 @@ export async function handleFirewallFail2banRoutes(
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { jail?: string; ip?: string };
-    const { fail2banBanIp } = await import('@yanshekki/core');
+    const { fail2banBanIp } = await import('@ysk-server/core');
     const r = await fail2banBanIp(ctx.host, data.jail ?? 'sshd', data.ip ?? '');
     ctx.audit.append({
       actor: user.username,
@@ -94,7 +94,7 @@ export async function handleFirewallFail2banRoutes(
   if (method === 'GET' && url.pathname === '/api/v1/system/fail2ban/banned') {
     ctx.auth.authenticate(getBearer(req));
     const jail = url.searchParams.get('jail') ?? undefined;
-    const { fail2banBannedIps } = await import('@yanshekki/core');
+    const { fail2banBannedIps } = await import('@ysk-server/core');
     sendJson(res, 200, await fail2banBannedIps(ctx.host, jail || undefined));
     return true;
   }
@@ -102,7 +102,7 @@ export async function handleFirewallFail2banRoutes(
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { jail?: string; ip?: string };
-    const { fail2banUnban } = await import('@yanshekki/core');
+    const { fail2banUnban } = await import('@ysk-server/core');
     const r = await fail2banUnban(ctx.host, data.jail ?? 'sshd', data.ip ?? '');
     ctx.audit.append({
       actor: user.username,
@@ -115,7 +115,7 @@ export async function handleFirewallFail2banRoutes(
   }
   if (method === 'GET' && url.pathname === '/api/v1/system/fail2ban/ignoreip') {
     ctx.auth.authenticate(getBearer(req));
-    const { readIgnoreIpList } = await import('@yanshekki/core');
+    const { readIgnoreIpList } = await import('@ysk-server/core');
     sendJson(res, 200, { items: readIgnoreIpList(ctx.dataDir) });
     return true;
   }
@@ -123,7 +123,7 @@ export async function handleFirewallFail2banRoutes(
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { ip?: string; action?: 'add' | 'remove' };
-    const { fail2banIgnoreIp } = await import('@yanshekki/core');
+    const { fail2banIgnoreIp } = await import('@ysk-server/core');
     const r = await fail2banIgnoreIp(
       ctx.host,
       ctx.dataDir,

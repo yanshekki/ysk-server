@@ -526,7 +526,7 @@ export function FilesPage() {
   const [shareMode, setShareMode] = useState<'direct' | 'bt' | 'both'>('direct');
   const [shareResultMeta, setShareResultMeta] = useState<FileShare | null>(null);
   const [shareBtStats, setShareBtStats] = useState<
-    Record<string, import('@yanshekki/shared').BtShareStats>
+    Record<string, import('@ysk-server/shared').BtShareStats>
   >({});
   const [versionsPath, setVersionsPath] = useState<string | null>(null);
   const [versions, setVersions] = useState<

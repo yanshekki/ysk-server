@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ProjectDto } from '@yanshekki/shared';
+import type { ProjectDto } from '@ysk-server/shared';
 import {
   buildProjectChecklist,
   deriveProjectStatus,

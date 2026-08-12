@@ -1,4 +1,4 @@
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 /**
  * Send signals to host processes (kill) — honest, fail-closed without YSK_EXECUTE.
  * Never pretends success; never signals PID 1 without refusal.

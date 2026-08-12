@@ -3,7 +3,7 @@
  * Never claims global inbox delivery; PTR / Port 25 / reputation stay external.
  */
 
-import { tl, type EmailExternalTodo } from '@yanshekki/shared';
+import { tl, type EmailExternalTodo } from '@ysk-server/shared';
 import { buildExternalTodos } from './dns-records.js';
 import { runLiveEmailChecks, type LiveCheckResult } from './live-checks.js';
 import { planEmailWarmup, type WarmupPlan } from './warmup.js';

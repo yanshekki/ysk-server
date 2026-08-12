@@ -15,7 +15,7 @@ import {
   savePostgresSettings,
   applyPostgresServiceConfig,
   getPostgresServiceView,
-} from '@yanshekki/core';
+} from '@ysk-server/core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -158,7 +158,7 @@ export async function handleSystemDbSqlRoutes(
     if (result.ok) {
       try {
         const { syncServiceExposure, engineToServiceId, dbPortBindings } = await import(
-          '@yanshekki/core'
+          '@ysk-server/core'
         );
         const exp = await syncServiceExposure({
           host: ctx.host,

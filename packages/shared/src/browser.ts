@@ -1,5 +1,5 @@
 /**
- * Browser-safe entry for @yanshekki/shared.
+ * Browser-safe entry for @ysk-server/shared.
  * No node:fs / node:async_hooks — web must import only this surface.
  */
 export * from './types.js';

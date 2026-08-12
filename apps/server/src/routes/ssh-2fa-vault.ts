@@ -3,7 +3,7 @@
  * Extracted from ssh-2fa.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -22,7 +22,7 @@ export async function handleSsh2faVaultRoutes(
   // —— SSH login 2FA (TOTP/PAM; independent of panel operator 2FA) ——
   if (method === 'GET' && url.pathname === '/api/v1/ssh/2fa') {
     ctx.auth.authenticate(getBearer(req));
-    const { listSsh2fa, probeSsh2faHost } = await import('@yanshekki/core');
+    const { listSsh2fa, probeSsh2faHost } = await import('@ysk-server/core');
     const items = listSsh2fa(ctx.dataDir, {
       projectId: url.searchParams.get('projectId') ?? undefined,
       linuxUser: url.searchParams.get('linuxUser') ?? undefined,
@@ -43,7 +43,7 @@ export async function handleSsh2faVaultRoutes(
       /** advanced: copy panel operator secret */
       fromPanel?: boolean;
     };
-    const { enrollSsh2fa } = await import('@yanshekki/core');
+    const { enrollSsh2fa } = await import('@ysk-server/core');
     let secret: string | undefined;
     let fromPanel = false;
     if (data.fromPanel === true) {
@@ -73,7 +73,7 @@ export async function handleSsh2faVaultRoutes(
         });
         return true;
       }
-      const { decryptTotpSecret } = await import('@yanshekki/core');
+      const { decryptTotpSecret } = await import('@ysk-server/core');
       secret = decryptTotpSecret(ctx.dataDir, user.id, me.totp_secret);
       fromPanel = true;
     }
@@ -108,7 +108,7 @@ export async function handleSsh2faVaultRoutes(
     const id = url.pathname.split('/')[5];
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { code?: string };
-    const { confirmSsh2fa } = await import('@yanshekki/core');
+    const { confirmSsh2fa } = await import('@ysk-server/core');
     const r = confirmSsh2fa(ctx.dataDir, id, data.code ?? '');
     ctx.audit.append({
       actor: user.username,
@@ -124,7 +124,7 @@ export async function handleSsh2faVaultRoutes(
     const id = url.pathname.split('/')[5];
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { apply?: boolean };
-    const { installSsh2faFile } = await import('@yanshekki/core');
+    const { installSsh2faFile } = await import('@ysk-server/core');
     const r = await installSsh2faFile({
       dataDir: ctx.dataDir,
       id,
@@ -145,7 +145,7 @@ export async function handleSsh2faVaultRoutes(
     const id = url.pathname.split('/')[5];
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { apply?: boolean };
-    const { uninstallSsh2faFile } = await import('@yanshekki/core');
+    const { uninstallSsh2faFile } = await import('@ysk-server/core');
     const r = await uninstallSsh2faFile({
       dataDir: ctx.dataDir,
       id,
@@ -167,7 +167,7 @@ export async function handleSsh2faVaultRoutes(
       return true;
     }
     const id = url.pathname.split('/')[5];
-    const { revealSsh2faSecret } = await import('@yanshekki/core');
+    const { revealSsh2faSecret } = await import('@ysk-server/core');
     const r = revealSsh2faSecret(ctx.dataDir, id);
     ctx.audit.append({
       actor: user.username,
@@ -181,7 +181,7 @@ export async function handleSsh2faVaultRoutes(
   if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/ssh\/2fa\/[^/]+$/)) {
     const user = ctx.auth.authenticate(getBearer(req));
     const id = url.pathname.split('/')[5];
-    const { retireSsh2fa, uninstallSsh2faFile } = await import('@yanshekki/core');
+    const { retireSsh2fa, uninstallSsh2faFile } = await import('@ysk-server/core');
     if (url.searchParams.get('purgeFile') === '1') {
       await uninstallSsh2faFile({ dataDir: ctx.dataDir, id, apply: true, retire: true });
     } else {

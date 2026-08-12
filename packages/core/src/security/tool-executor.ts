@@ -8,8 +8,8 @@ import type {
   ResourceScope,
   SystemRole,
   ToolCallRequest,
-  ToolCallResult } from '@yanshekki/shared';
-import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
+  ToolCallResult } from '@ysk-server/shared';
+import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
 import { resolve as pathResolve } from 'node:path';
 import type { Allowlist } from './allowlist.js';
 import type { ApprovalQueue } from './approval.js';

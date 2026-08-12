@@ -4,7 +4,7 @@
 
 import type { HostExecutor } from '../../host/executor.js';
 import { shellQuote } from '../project-user-run.js';
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 
 export async function writeVncPassword(input: {
   host: HostExecutor;

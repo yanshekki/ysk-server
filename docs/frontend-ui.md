@@ -6,7 +6,7 @@
 
 - App: `apps/web` (React + TypeScript)
 - Layout: FSD-lite pages + shared UI kit
-- i18n: catalogs from `@yanshekki/shared` (default zh-HK)
+- i18n: catalogs from `@ysk-server/shared` (default zh-HK)
 
 ## Principles
 

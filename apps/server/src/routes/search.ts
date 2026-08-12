@@ -16,7 +16,7 @@ export async function handleSearchRoutes(
   if (method === 'GET' && url.pathname === '/api/v1/search') {
     requireUser(ctx, req);
     const q = url.searchParams.get('q') ?? '';
-    const { globalSearch } = await import('@yanshekki/core');
+    const { globalSearch } = await import('@ysk-server/core');
     sendJson(res, 200, { items: globalSearch(ctx.db, q) });
     return true;
   }

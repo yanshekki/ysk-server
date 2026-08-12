@@ -13,7 +13,7 @@ import {
   readFileSync,
 } from 'node:fs';
 import { join, dirname } from 'node:path';
-import { ErrorCodes, YskError, tl } from '@yanshekki/shared';
+import { ErrorCodes, YskError, tl } from '@ysk-server/shared';
 import type { HostExecutor } from '../host/executor.js';
 import { planPublicFileServer } from './extras.js';
 import { writeManagedNginxConf, syncNginxConfigs } from './nginx-sync.js';

@@ -7,7 +7,7 @@ import {
   listSupportedRuntimes,
   runtimePluginsCatalogWithProbe,
   getRuntimeLatestHint,
-} from '@yanshekki/core';
+} from '@ysk-server/core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -35,7 +35,7 @@ export async function handleHostingRuntimesAddonsRoutes(
       | 'bun';
     const version = url.searchParams.get('version') ?? undefined;
     if (kind === 'php') {
-      const { phpExtensionCatalogWithProbe } = await import('@yanshekki/core');
+      const { phpExtensionCatalogWithProbe } = await import('@ysk-server/core');
       const ext = await phpExtensionCatalogWithProbe(version ?? '8.2', ctx.host);
       sendJson(res, 200, {
         kind: 'php',

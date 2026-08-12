@@ -15,7 +15,7 @@ import {
   loadBtTrackerSettings,
   isBtTrackerRunning,
   resolveTrackerLoopbackHost,
-} from '@yanshekki/core';
+} from '@ysk-server/core';
 import type { AppContext } from '../app-context.js';
 
 export const BT_TRACKER_PUBLIC_PREFIX = '/api/v1/public/bt-tracker';

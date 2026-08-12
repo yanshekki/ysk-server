@@ -22,8 +22,8 @@ export async function handleServiceExposureRoutes(
   // GET all
   if (method === 'GET' && url.pathname === BASE) {
     ctx.auth.authenticate(getBearer(req));
-    const { listDesired, getServiceExposureStatus } = await import('@yanshekki/core');
-    const { YSK_SERVICE_PORTS, defaultPortsForService } = await import('@yanshekki/shared');
+    const { listDesired, getServiceExposureStatus } = await import('@ysk-server/core');
+    const { YSK_SERVICE_PORTS, defaultPortsForService } = await import('@ysk-server/shared');
     const desired = listDesired(ctx.dataDir);
     const known = [...new Set(YSK_SERVICE_PORTS.map((p) => p.service))];
     const items = [];
@@ -51,7 +51,7 @@ export async function handleServiceExposureRoutes(
   if (method === 'GET' && oneMatch) {
     ctx.auth.authenticate(getBearer(req));
     const serviceId = decodeURIComponent(oneMatch[1]!);
-    const { getServiceExposureStatus } = await import('@yanshekki/core');
+    const { getServiceExposureStatus } = await import('@ysk-server/core');
     const st = await getServiceExposureStatus(ctx.host, ctx.dataDir, serviceId);
     sendJson(res, 200, { ok: true, serviceId, ...st });
     return true;
@@ -70,7 +70,7 @@ export async function handleServiceExposureRoutes(
       allowCountries?: string[];
       sync?: boolean;
     };
-    const { putServiceExposure } = await import('@yanshekki/core');
+    const { putServiceExposure } = await import('@ysk-server/core');
     const result = await putServiceExposure({
       host: ctx.host,
       dataDir: ctx.dataDir,
@@ -113,7 +113,7 @@ export async function handleServiceExposureRoutes(
       sendJson(res, 400, { ok: false, notes: ['serviceId required'] });
       return true;
     }
-    const { syncServiceExposure } = await import('@yanshekki/core');
+    const { syncServiceExposure } = await import('@ysk-server/core');
     const result = await syncServiceExposure({
       host: ctx.host,
       dataDir: ctx.dataDir,

@@ -2,9 +2,9 @@
  * File manager authenticated dispatcher (Wave T1).
  * auth+root → read → write → meta
  */
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { FileManager } from '@yanshekki/core';
+import { FileManager } from '@ysk-server/core';
 import type { AppContext } from '../app-context.js';
 import { getBearer, sendJson } from '../http/util.js';
 import { resolveRoot } from './files-shared.js';

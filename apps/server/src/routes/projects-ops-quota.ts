@@ -3,11 +3,11 @@
  * Extracted from projects-ops-data.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 import {
   applyPhpFpmPool,
   createProjectFtpAccount,
-} from '@yanshekki/core';
+} from '@ysk-server/core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -49,7 +49,7 @@ export async function handleProjectsOpsQuotaRoutes(
       proj.linuxUser &&
       result.account?.homePath
     ) {
-      const { chownProjectPath } = await import('@yanshekki/core');
+      const { chownProjectPath } = await import('@ysk-server/core');
       const ch = await chownProjectPath(
         ctx.host,
         {
@@ -117,7 +117,7 @@ export async function handleProjectsOpsQuotaRoutes(
       loadPhpIniSettings,
       loadProjectPhpIni,
       mergePhpIni,
-      renderPhpAdminValueLines } = await import('@yanshekki/core');
+      renderPhpAdminValueLines } = await import('@ysk-server/core');
     const adminValueLines = renderPhpAdminValueLines(
       mergePhpIni(
         loadPhpIniSettings(ctx.dataDir, phpVersion),
@@ -158,7 +158,7 @@ export async function handleProjectsOpsQuotaRoutes(
       mergePhpIni,
       loadPhpIniSettings,
       listPhpIniCatalog,
-      renderPhpAdminValueLines } = await import('@yanshekki/core');
+      renderPhpAdminValueLines } = await import('@ysk-server/core');
     const global = getPhpIni(ctx.dataDir, version);
     const project = loadProjectPhpIni(ctx.dataDir, id, version);
     const effective = mergePhpIni(loadPhpIniSettings(ctx.dataDir, version), project);
@@ -186,7 +186,7 @@ export async function handleProjectsOpsQuotaRoutes(
       extra?: Record<string, string>;
       rawAppend?: string;
     };
-    const { saveProjectPhpIni } = await import('@yanshekki/core');
+    const { saveProjectPhpIni } = await import('@ysk-server/core');
     const result = saveProjectPhpIni(ctx.dataDir, id, {
       version: data.version ?? proj.runtimeVersion ?? '8.2',
       values: data.values ?? {},

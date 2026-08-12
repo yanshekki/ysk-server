@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Publish unscoped **ysk-server** to npmjs.com (yanshekki account).
+# Publish unscoped **ysk-server** to npmjs.com.
 #
-# Workspace packages (@yanshekki/shared, @yanshekki/core) are **bundled** into
-# the tarball so installers do not need those scopes on the public registry.
+# Workspace packages (@ysk-server/shared, @ysk-server/core) are **bundled** into
+# the tarball so installers only need the unscoped product package.
 #
 # Usage:
 #   bash scripts/publish-ysk-server-npm.sh           # pack dry-run
@@ -26,10 +26,10 @@ VERSION="$(node -p "require('./apps/server/package.json').version")"
 log "ysk-server version: $VERSION"
 
 log "build shared → core → server → web…"
-pnpm --filter @yanshekki/shared build
-pnpm --filter @yanshekki/core build
+pnpm --filter @ysk-server/shared build
+pnpm --filter @ysk-server/core build
 pnpm --filter ysk-server build
-pnpm --filter @yanshekki/web build || log "WARN: web build failed"
+pnpm --filter @ysk-server/web build || log "WARN: web build failed"
 
 log "embed web UI…"
 mkdir -p apps/server/public/web
@@ -43,8 +43,9 @@ fi
 
 PACK_DIR="$(mktemp -d)"
 log "pack workspace tarballs → $PACK_DIR"
-pnpm --filter @yanshekki/shared pack --pack-destination "$PACK_DIR"
-pnpm --filter @yanshekki/core pack --pack-destination "$PACK_DIR"
+# pack from package dirs (pnpm --filter … pack --pack-destination is flaky)
+(cd packages/shared && pnpm pack --pack-destination "$PACK_DIR")
+(cd packages/core && pnpm pack --pack-destination "$PACK_DIR")
 
 STAGE="$(mktemp -d)"
 log "stage → $STAGE"
@@ -52,11 +53,20 @@ cp -a apps/server/dist "$STAGE/"
 cp -a apps/server/public "$STAGE/"
 [[ -f apps/server/README.md ]] && cp apps/server/README.md "$STAGE/" || true
 
-mkdir -p "$STAGE/node_modules/@yanshekki"
-tar -xzf "$PACK_DIR"/yanshekki-shared-*.tgz -C "$STAGE/node_modules/@yanshekki"
-mv "$STAGE/node_modules/@yanshekki/package" "$STAGE/node_modules/@yanshekki/shared"
-tar -xzf "$PACK_DIR"/yanshekki-core-*.tgz -C "$STAGE/node_modules/@yanshekki"
-mv "$STAGE/node_modules/@yanshekki/package" "$STAGE/node_modules/@yanshekki/core"
+# tarball names from scoped packages: ysk-server-shared-*.tgz / ysk-server-core-*.tgz
+SHARED_TGZ="$(ls "$PACK_DIR"/ysk-server-shared-*.tgz 2>/dev/null | head -1)"
+CORE_TGZ="$(ls "$PACK_DIR"/ysk-server-core-*.tgz 2>/dev/null | head -1)"
+if [[ -z "${SHARED_TGZ:-}" || -z "${CORE_TGZ:-}" ]]; then
+  log "ERROR: expected pack artifacts under $PACK_DIR:"
+  ls -la "$PACK_DIR" || true
+  exit 1
+fi
+
+mkdir -p "$STAGE/node_modules/@ysk-server"
+tar -xzf "$SHARED_TGZ" -C "$STAGE/node_modules/@ysk-server"
+mv "$STAGE/node_modules/@ysk-server/package" "$STAGE/node_modules/@ysk-server/shared"
+tar -xzf "$CORE_TGZ" -C "$STAGE/node_modules/@ysk-server"
+mv "$STAGE/node_modules/@ysk-server/package" "$STAGE/node_modules/@ysk-server/core"
 
 export STAGE
 node <<'NODE'
@@ -65,20 +75,20 @@ const stage = process.env.STAGE;
 const serverPkg = JSON.parse(fs.readFileSync('apps/server/package.json', 'utf8'));
 const corePkg = JSON.parse(fs.readFileSync('packages/core/package.json', 'utf8'));
 const sharedVer = JSON.parse(
-  fs.readFileSync(stage + '/node_modules/@yanshekki/shared/package.json', 'utf8'),
+  fs.readFileSync(stage + '/node_modules/@ysk-server/shared/package.json', 'utf8'),
 ).version;
 const coreVer = JSON.parse(
-  fs.readFileSync(stage + '/node_modules/@yanshekki/core/package.json', 'utf8'),
+  fs.readFileSync(stage + '/node_modules/@ysk-server/core/package.json', 'utf8'),
 ).version;
 const deps = {};
 for (const src of [corePkg.dependencies || {}, serverPkg.dependencies || {}]) {
   for (const [k, v] of Object.entries(src)) {
-    if (k.startsWith('@yanshekki/') || k.startsWith('@ysk/')) continue;
+    if (k.startsWith('@ysk-server/') || k.startsWith('@yanshekki/') || k.startsWith('@ysk/')) continue;
     deps[k] = v;
   }
 }
-deps['@yanshekki/shared'] = sharedVer;
-deps['@yanshekki/core'] = coreVer;
+deps['@ysk-server/shared'] = sharedVer;
+deps['@ysk-server/core'] = coreVer;
 const out = {
   name: 'ysk-server',
   version: serverPkg.version,
@@ -94,7 +104,7 @@ const out = {
   keywords: serverPkg.keywords,
   publishConfig: { access: 'public' },
   dependencies: deps,
-  bundleDependencies: ['@yanshekki/shared', '@yanshekki/core'],
+  bundleDependencies: ['@ysk-server/shared', '@ysk-server/core'],
 };
 fs.writeFileSync(stage + '/package.json', JSON.stringify(out, null, 2) + '\n');
 console.log('staged', out.name + '@' + out.version, 'bundled', out.bundleDependencies.join(','));

@@ -5,11 +5,11 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import {
   type ResourceScope,
   type SystemRole,
-} from '@yanshekki/shared';
+} from '@ysk-server/shared';
 import {
   checkRbac,
   executeToolCall,
-} from '@yanshekki/core';
+} from '@ysk-server/core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,

@@ -22,7 +22,7 @@ import { LogsPage } from './features/LogsPage';
 import { GenericRuntimePage } from './features/GenericRuntimePage';
 import { RedisPage } from './features/RedisPage';
 import { ProjectDeployTab } from '../features/projects/ui/ProjectDeployTab';
-import type { ProjectDto } from '@yanshekki/shared';
+import type { ProjectDto } from '@ysk-server/shared';
 
 function renderAt(path: string, el: React.ReactElement, routePath = '*') {
   return render(

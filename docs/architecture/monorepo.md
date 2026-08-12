@@ -6,20 +6,20 @@
 ysk-server/
   apps/
     server/     # ysk-server — HTTP API, CLI entry
-    web/        # @yanshekki/web — React panel
+    web/        # @ysk-server/web — React panel
   packages/
-    shared/     # @yanshekki/shared — DTOs, ops, errors, locales
-    core/       # @yanshekki/core — domain logic + host adapter
+    shared/     # @ysk-server/shared — DTOs, ops, errors, locales
+    core/       # @ysk-server/core — domain logic + host adapter
   docs/         # This documentation tree
   scripts/      # gates, i18n, e2e helpers
 ```
 
 | Package | Publish role | Depends on |
 |---------|--------------|------------|
-| `@yanshekki/shared` | Types + i18n | (none internal) |
-| `@yanshekki/core` | Business logic | shared |
+| `@ysk-server/shared` | Types + i18n | (none internal) |
+| `@ysk-server/core` | Business logic | shared |
 | `ysk-server` | Runtime binary | core, shared |
-| `@yanshekki/web` | Static UI build | shared (types/locales) |
+| `@ysk-server/web` | Static UI build | shared (types/locales) |
 
 ## Core folders (high level)
 

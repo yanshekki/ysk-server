@@ -12,7 +12,7 @@ import {
   planAgentInstall,
   probeAgentRuntime,
   renderAgentSystemdUnit,
-} from '@yanshekki/core';
+} from '@ysk-server/core';
 import type { AppContext } from '../app-context.js';
 import { listWithQuery } from '../http/list-response.js';
 import { getBearer, readBody, sendJson, sendOpsResult } from '../http/util.js';

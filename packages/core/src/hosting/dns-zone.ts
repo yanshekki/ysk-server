@@ -12,7 +12,7 @@ import {
   unlinkSync,
 } from 'node:fs';
 import { join } from 'node:path';
-import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
+import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
 import type { HostExecutor } from '../host/executor.js';
 import { ipFamily, isValidIp, normalizeIp } from '../net/ip.js';
 import {

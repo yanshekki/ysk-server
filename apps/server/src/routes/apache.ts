@@ -20,8 +20,8 @@ import {
   removeApacheArtifact,
   cleanupApacheServerNameConflicts,
   type ApacheSiteRow,
-} from '@yanshekki/core';
-import { ErrorCodes } from '@yanshekki/shared';
+} from '@ysk-server/core';
+import { ErrorCodes } from '@ysk-server/shared';
 import type { AppContext } from '../app-context.js';
 import { getBearer, readBody, sendJson, sendOpsResult } from '../http/util.js';
 
@@ -152,7 +152,7 @@ export async function handleApacheRoutes(
       });
       if (result.ok && !result.blocked) {
         try {
-          const { syncServiceExposure } = await import('@yanshekki/core');
+          const { syncServiceExposure } = await import('@ysk-server/core');
           const exp = await syncServiceExposure({
             host: ctx.host,
             dataDir: ctx.dataDir,

@@ -1,4 +1,4 @@
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 /**
  * Real Redis service probe + key browser via redis-cli.
  * Reads work without YSK_EXECUTE when redis is reachable.

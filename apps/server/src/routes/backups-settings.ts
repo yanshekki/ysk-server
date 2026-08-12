@@ -3,7 +3,7 @@
  * Extracted from backups.ts (Wave K2). Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -23,7 +23,7 @@ export async function handleBackupsSettingsRoutes(
         const {
           getBackupRemotePublic,
           getBackupExclusions,
-          getResticSettingsPublic } = await import('@yanshekki/core');
+          getResticSettingsPublic } = await import('@ysk-server/core');
         sendJson(res, 200, {
           remote: getBackupRemotePublic(ctx.db),
           exclusions: getBackupExclusions(ctx.db),
@@ -44,7 +44,7 @@ export async function handleBackupsSettingsRoutes(
           getBackupRemotePublic,
           getBackupExclusions,
           setResticSettings,
-          getResticSettingsPublic } = await import('@yanshekki/core');
+          getResticSettingsPublic } = await import('@ysk-server/core');
         if (data.remote) setBackupRemote(ctx.db, data.remote as never);
         if (data.exclusions) setBackupExclusions(ctx.db, data.exclusions);
         if (data.restic) setResticSettings(ctx.db, data.restic as never);

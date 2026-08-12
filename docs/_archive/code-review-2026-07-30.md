@@ -4,7 +4,7 @@
 
 | 項 | 狀態 |
 |----|------|
-| `@yanshekki/shared` `ApplyStatus` + `OpsResultDto` + `assertHonestOps` | **done** (`ops.ts` + tests) |
+| `@ysk-server/shared` `ApplyStatus` + `OpsResultDto` + `assertHonestOps` | **done** (`ops.ts` + tests) |
 | Core `OpsApplyResult extends OpsResultDto` | **done** |
 | Core `normalizeOpsHonesty` → 轉發 shared | **done** |
 | managed-resources `ApplyStatus` 對齊 shared | **done** |

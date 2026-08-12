@@ -29,7 +29,7 @@ export async function handleEmailWebmailSsoRoutes(
       password?: string;
       webmailBaseUrl?: string;
     };
-    const { issueWebmailSso } = await import('@yanshekki/core');
+    const { issueWebmailSso } = await import('@ysk-server/core');
     const r = issueWebmailSso({
       db: ctx.db,
       email: data.email ?? '',
@@ -51,7 +51,7 @@ export async function handleEmailWebmailSsoRoutes(
   if (method === 'POST' && url.pathname === '/api/v1/email/webmail/sso/consume') {
     // Used by webmail edge / test — token in body; rate-limit guesses
     const { checkRateLimit, recordRateLimitFailure, clearRateLimit, consumeWebmailSso } =
-      await import('@yanshekki/core');
+      await import('@ysk-server/core');
     const ip =
       process.env.YSK_TRUST_PROXY === '1' || process.env.YSK_TRUST_PROXY === 'true'
         ? (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() ||
@@ -88,7 +88,7 @@ export async function handleEmailWebmailSsoRoutes(
   if (method === 'GET' && url.pathname === '/api/v1/email/sieve') {
     ctx.auth.authenticate(getBearer(req));
     const mailbox = url.searchParams.get('mailbox') ?? '';
-    const { listSieveScripts } = await import('@yanshekki/core');
+    const { listSieveScripts } = await import('@ysk-server/core');
     sendJson(res, 200, { items: listSieveScripts(ctx.dataDir, mailbox) });
     return true;
   }
@@ -100,7 +100,7 @@ export async function handleEmailWebmailSsoRoutes(
       name?: string;
       content?: string;
     };
-    const { writeSieveScript } = await import('@yanshekki/core');
+    const { writeSieveScript } = await import('@ysk-server/core');
     const r = writeSieveScript({
       dataDir: ctx.dataDir,
       mailbox: data.mailbox ?? '',
@@ -121,7 +121,7 @@ export async function handleEmailWebmailSsoRoutes(
     const user = ctx.auth.authenticate(getBearer(req));
     const mailbox = url.searchParams.get('mailbox') ?? '';
     const name = url.searchParams.get('name') ?? '';
-    const { deleteSieveScript } = await import('@yanshekki/core');
+    const { deleteSieveScript } = await import('@ysk-server/core');
     const r = deleteSieveScript(ctx.dataDir, mailbox, name);
     ctx.audit.append({
       actor: user.username,
@@ -144,7 +144,7 @@ export async function handleEmailWebmailSsoRoutes(
     const panelBase =
       data.panelBaseUrl || `http://127.0.0.1:${process.env.YSK_PORT || process.env.PORT || 9287}`;
     if (data.enableSystem) {
-      const { enableRoundcubeSsoPlugin } = await import('@yanshekki/core');
+      const { enableRoundcubeSsoPlugin } = await import('@ysk-server/core');
       const r = await enableRoundcubeSsoPlugin({
         dataDir: ctx.dataDir,
         host: ctx.host,
@@ -160,7 +160,7 @@ export async function handleEmailWebmailSsoRoutes(
       sendOpsResult(res, r);
       return true;
     }
-    const { writeRoundcubeSsoPlugin } = await import('@yanshekki/core');
+    const { writeRoundcubeSsoPlugin } = await import('@ysk-server/core');
     const r = writeRoundcubeSsoPlugin({
       dataDir: ctx.dataDir,
       panelBaseUrl: panelBase,

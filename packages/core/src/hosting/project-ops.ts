@@ -15,7 +15,7 @@ import {
   readdirSync,
   statSync } from 'node:fs';
 import { join } from 'node:path';
-import { ErrorCodes, YskError, type OpsResultDto, type ApplyStatus, tl} from '@yanshekki/shared';
+import { ErrorCodes, YskError, type OpsResultDto, type ApplyStatus, tl} from '@ysk-server/shared';
 import type { HostExecutor } from '../host/executor.js';
 import { checkHttp, findFreePort, isPortListening, waitHttpOk } from '../host/health.js';
 import type { ProjectRepository, ProjectRow } from '../repositories/project-repo.js';

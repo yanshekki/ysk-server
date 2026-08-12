@@ -5,10 +5,10 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import {
   CLI_NAME,
   PRODUCT_NAME,
-  type HealthResponse,  tl} from '@yanshekki/shared';
+  type HealthResponse,  tl} from '@ysk-server/shared';
 import {
   assessProductionReadiness,
-} from '@yanshekki/core';
+} from '@ysk-server/core';
 import type { AppContext } from '../app-context.js';
 import { resolveWebRoot } from '../http/static.js';
 import { VERSION } from '../version.js';
@@ -50,7 +50,7 @@ export async function handlePublicRoutes(
           url.pathname === '/autodiscover/autodiscover.xml' ||
           url.pathname.toLowerCase() === '/autodiscover/autodiscover.xml')
       ) {
-        const { renderMozillaAutoconfig, renderOutlookAutodiscover } = await import('@yanshekki/core');
+        const { renderMozillaAutoconfig, renderOutlookAutodiscover } = await import('@ysk-server/core');
         let domain =
           url.searchParams.get('domain')?.trim().toLowerCase() ||
           url.searchParams.get('emailaddress')?.split('@')[1]?.toLowerCase() ||
@@ -168,7 +168,7 @@ export async function handlePublicRoutes(
         ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[5];
         const d = ctx.email.get(id);
-        const { renderMozillaAutoconfig, renderOutlookAutodiscover } = await import('@yanshekki/core');
+        const { renderMozillaAutoconfig, renderOutlookAutodiscover } = await import('@ysk-server/core');
         sendJson(res, 200, {
           domain: d.domain,
           mailHostname: d.mail_hostname,
@@ -201,7 +201,7 @@ export async function handlePublicRoutes(
         const id = url.pathname.split('/')[5];
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as { applyZone?: boolean };
-        const { runCdnSiteHealthLoop } = await import('@yanshekki/core');
+        const { runCdnSiteHealthLoop } = await import('@ysk-server/core');
         const r = await runCdnSiteHealthLoop({
           db: ctx.db,
           dataDir: ctx.dataDir,

@@ -1,4 +1,4 @@
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 /**
  * Defense automation — auto preset escalate/de-escalate + auto-ban (user-tunable).
  * Emergency preset is NEVER applied automatically.

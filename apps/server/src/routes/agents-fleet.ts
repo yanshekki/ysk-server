@@ -3,7 +3,7 @@
  * Extracted from agents.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { ErrorCodes } from '@yanshekki/shared';
+import { ErrorCodes } from '@ysk-server/shared';
 import type { AppContext } from '../app-context.js';
 import { getAgentToken } from '../http/auth-guards.js';
 import { listWithQuery } from '../http/list-response.js';

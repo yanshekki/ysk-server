@@ -256,7 +256,7 @@ embed_web_ui() {
     cp -a "$web_dist"/. "$target"/
     return 0
   fi
-  log "Web UI dist missing — run pnpm --filter @yanshekki/web build (API-only until then)"
+  log "Web UI dist missing — run pnpm --filter @ysk-server/web build (API-only until then)"
 }
 
 # I-07: prefer non-root global npm prefix when possible
@@ -420,13 +420,13 @@ ensure_web_ui() {
     fi
   fi
   phase "web-ui"
-  log "Building @yanshekki/web from $root …"
+  log "Building @ysk-server/web from $root …"
   (
     cd "$root"
     if command -v pnpm >/dev/null 2>&1; then
-      pnpm --filter @yanshekki/web build || log "WARN: web build failed"
+      pnpm --filter @ysk-server/web build || log "WARN: web build failed"
     elif command -v npm >/dev/null 2>&1; then
-      npm run build -w @yanshekki/web || log "WARN: web build failed"
+      npm run build -w @ysk-server/web || log "WARN: web build failed"
     else
       log "WARN: no pnpm/npm — skip web build"
       return 0

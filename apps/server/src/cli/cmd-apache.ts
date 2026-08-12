@@ -21,7 +21,7 @@ import {
   removeApacheArtifact,
   cleanupApacheServerNameConflicts,
   syncServiceExposure,
-} from '@yanshekki/core';
+} from '@ysk-server/core';
 import { join } from 'node:path';
 import type { AppContext } from '../app-context.js';
 import type { CliHelpers } from './cmd-vpn.js';

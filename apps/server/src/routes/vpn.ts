@@ -3,8 +3,8 @@
  */
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { createVpnService, parseEngine, normalizeProto } from '@yanshekki/core';
-import { ErrorCodes } from '@yanshekki/shared';
+import { createVpnService, parseEngine, normalizeProto } from '@ysk-server/core';
+import { ErrorCodes } from '@ysk-server/shared';
 import type { AppContext } from '../app-context.js';
 import { getBearer, readBody, sendJson, sendOpsResult } from '../http/util.js';
 import { requireCap } from '../http/rbac-guard.js';
@@ -108,7 +108,7 @@ export async function handleVpnRoutes(
       // Auto-open VPN listen port via service exposure (ysk-svc)
       if (result.ok && data.listenPort) {
         try {
-          const { syncServiceExposure, vpnPortBindings } = await import('@yanshekki/core');
+          const { syncServiceExposure, vpnPortBindings } = await import('@ysk-server/core');
           const proto =
             engine === 'openvpn'
               ? data.proto === 'tcp'
@@ -345,7 +345,7 @@ export async function handleVpnRoutes(
       }
       const proto = normalizeProto(data.proto);
       const engine = parseEngine(data.engine) || 'wireguard';
-      const { syncServiceExposure, vpnPortBindings } = await import('@yanshekki/core');
+      const { syncServiceExposure, vpnPortBindings } = await import('@ysk-server/core');
       const exp = await syncServiceExposure({
         host: ctx.host,
         dataDir: ctx.dataDir,

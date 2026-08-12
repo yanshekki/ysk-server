@@ -7,7 +7,7 @@ import type { HostExecutor } from '../../host/executor.js';
 import { upsertCdnNode } from './nodes.js';
 import { upsertCdnSite } from './sites.js';
 import { fanOutCdnSite, purgeCdnSite, resolveShieldUpstreamUrl } from './fan-out.js';
-import { YskError } from '@yanshekki/shared';
+import { YskError } from '@ysk-server/shared';
 
 function mockHost(opts?: {
   execute?: boolean;

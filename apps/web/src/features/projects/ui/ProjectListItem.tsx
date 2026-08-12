@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import type { ProjectDto } from '@yanshekki/shared';
+import type { ProjectDto } from '@ysk-server/shared';
 import { Badge, Button } from '../../../shared/components/ui';
 import { useNavBookmarks } from '../../../shared/hooks/useNavBookmarks';
 import { notifyOk, notifyWarn } from '../../../shared/lib/notify';

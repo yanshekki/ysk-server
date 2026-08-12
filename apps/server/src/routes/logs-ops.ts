@@ -2,7 +2,7 @@
  * Log Center ops routes — export, vacuum, settings, bookmarks, logrotate.
  * Extracted from logs.ts (Wave Q3). Behaviour preserved.
  */
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { createReadStream, existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -27,7 +27,7 @@ export async function handleLogsOpsRoutes(
       grep?: string;
       format?: 'text' | 'jsonl';
     };
-    const { exportLogQuery } = await import('@yanshekki/core');
+    const { exportLogQuery } = await import('@ysk-server/core');
     const r = await exportLogQuery({
       host: ctx.host,
       dataDir: ctx.dataDir,
@@ -81,7 +81,7 @@ export async function handleLogsOpsRoutes(
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { mode?: 'time' | 'size'; value?: string };
-    const { vacuumJournal } = await import('@yanshekki/core');
+    const { vacuumJournal } = await import('@ysk-server/core');
     const r = await vacuumJournal(ctx.host, data.mode ?? 'time', data.value ?? '14d');
     ctx.audit.append({
       actor: user.username,
@@ -95,7 +95,7 @@ export async function handleLogsOpsRoutes(
 
   if (method === 'GET' && url.pathname === '/api/v1/logs/settings') {
     ctx.auth.authenticate(getBearer(req));
-    const { loadLogSettings } = await import('@yanshekki/core');
+    const { loadLogSettings } = await import('@ysk-server/core');
     sendJson(res, 200, loadLogSettings(ctx.db));
     return true;
   }
@@ -104,7 +104,7 @@ export async function handleLogsOpsRoutes(
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as Record<string, unknown>;
-    const { saveLogSettings } = await import('@yanshekki/core');
+    const { saveLogSettings } = await import('@ysk-server/core');
     const s = saveLogSettings(ctx.db, data as never);
     ctx.audit.append({
       actor: user.username,
@@ -122,7 +122,7 @@ export async function handleLogsOpsRoutes(
 
   if (method === 'GET' && url.pathname === '/api/v1/logs/bookmarks') {
     ctx.auth.authenticate(getBearer(req));
-    const { loadLogSettings } = await import('@yanshekki/core');
+    const { loadLogSettings } = await import('@ysk-server/core');
     sendJson(res, 200, { items: loadLogSettings(ctx.db).bookmarks });
     return true;
   }
@@ -138,7 +138,7 @@ export async function handleLogsOpsRoutes(
       grep?: string;
       lines?: number;
     };
-    const { addLogBookmark } = await import('@yanshekki/core');
+    const { addLogBookmark } = await import('@ysk-server/core');
     const s = addLogBookmark(ctx.db, {
       name: data.name || 'bookmark',
       source: data.source || '',
@@ -160,7 +160,7 @@ export async function handleLogsOpsRoutes(
   if (method === 'DELETE' && url.pathname.startsWith('/api/v1/logs/bookmarks/')) {
     const user = ctx.auth.authenticate(getBearer(req));
     const id = url.pathname.split('/').pop() || '';
-    const { removeLogBookmark } = await import('@yanshekki/core');
+    const { removeLogBookmark } = await import('@ysk-server/core');
     const s = removeLogBookmark(ctx.db, id);
     ctx.audit.append({
       actor: user.username,
@@ -174,7 +174,7 @@ export async function handleLogsOpsRoutes(
 
   if (method === 'GET' && url.pathname === '/api/v1/logs/logrotate') {
     ctx.auth.authenticate(getBearer(req));
-    const { getLogrotateStatus } = await import('@yanshekki/core');
+    const { getLogrotateStatus } = await import('@ysk-server/core');
     sendJson(res, 200, await getLogrotateStatus(ctx.host));
     return true;
   }

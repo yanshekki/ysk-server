@@ -3,7 +3,7 @@
  * Pure structured tips; no fake "warmed" state without operator action.
  */
 
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 
 export interface WarmupPhase {
   dayFrom: number;

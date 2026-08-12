@@ -25,6 +25,6 @@ grep -q 'Name conflict\|域名衝突\|conflict' docs/features/apache.md docs/fea
 grep -q 'onlyBasenames\|skippedOrphans' packages/core/src/hosting/apache/sync.ts || fail "owned-only sync"
 
 log "Unit…"
-pnpm --filter @yanshekki/core exec vitest run src/hosting/nginx-settings.test.ts src/hosting/nginx-sites-list.test.ts src/hosting/apache
+pnpm --filter @ysk-server/core exec vitest run src/hosting/nginx-settings.test.ts src/hosting/nginx-sites-list.test.ts src/hosting/apache
 
 log "PASS e2e-web-servers"

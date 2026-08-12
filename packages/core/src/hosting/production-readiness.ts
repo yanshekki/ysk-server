@@ -1,4 +1,4 @@
-import { getLocale, tl } from '@yanshekki/shared';
+import { getLocale, tl } from '@ysk-server/shared';
 /**
  * Spec-aligned production readiness probe — honest report, never over-claim.
  * Maps to AI-Secure-Linux-Server-Manager-Spec phases / hosting gates.
@@ -6,7 +6,7 @@ import { getLocale, tl } from '@yanshekki/shared';
 
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import type { ProductionReadinessDto, ReadinessItemDto } from '@yanshekki/shared';
+import type { ProductionReadinessDto, ReadinessItemDto } from '@ysk-server/shared';
 import type { HostExecutor } from '../host/executor.js';
 
 import { probeRuntimes } from './runtime-probe.js';
@@ -16,7 +16,7 @@ import { buildProjectIsolationReadinessItems } from './project-isolation-status.
 import { binPresent } from './software-probe/index.js';
 import { assessWebUiFix } from './web-ui-build.js';
 
-export type { ReadinessLevel } from '@yanshekki/shared';
+export type { ReadinessLevel } from '@ysk-server/shared';
 export type ReadinessItem = ReadinessItemDto;
 
 /** Core report uses required blockers/categories (always filled by assessor). */

@@ -5,8 +5,8 @@
 import { randomUUID } from 'node:crypto';
 import { existsSync, rmSync, writeFileSync, mkdirSync, readFileSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
-import type { ProjectDto } from '@yanshekki/shared';
-import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
+import type { ProjectDto } from '@ysk-server/shared';
+import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
 import {
   isCanonicalProjectHome,
   isSafeProjectHomePath,

@@ -5,7 +5,7 @@
 
 import { chmodSync, existsSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
-import { ErrorCodes, YskError, type ProjectDto, tl } from '@yanshekki/shared';
+import { ErrorCodes, YskError, type ProjectDto, tl } from '@ysk-server/shared';
 import type { HostExecutor } from '../host/executor.js';
 import type { ProjectService } from './project-service.js';
 import type { ProjectOpsService } from './project-ops.js';

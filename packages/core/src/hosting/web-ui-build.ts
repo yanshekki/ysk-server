@@ -285,7 +285,7 @@ export async function ensureWebUiBuilt(input: {
     notes.push(`cwd=${cwd}`);
     notes.push(`dataDir=${dataDir}`);
     notes.push(
-      'Manual: on a machine with source, run: pnpm --filter @yanshekki/web build',
+      'Manual: on a machine with source, run: pnpm --filter @ysk-server/web build',
     );
     notes.push(
       `then: mkdir -p ${join(dataDir, 'web')} && cp -a apps/web/dist/. ${join(dataDir, 'web')}/`,
@@ -310,18 +310,18 @@ export async function ensureWebUiBuilt(input: {
     }
     try {
       if (pnpm) {
-        notes.push('running: pnpm --filter @yanshekki/web build');
+        notes.push('running: pnpm --filter @ysk-server/web build');
         const r = await execFileAsync(
           pnpm,
-          ['--filter', '@yanshekki/web', 'build'],
+          ['--filter', '@ysk-server/web', 'build'],
           { cwd: mono, timeout: 600_000, maxBuffer: 12 * 1024 * 1024 },
         );
         if (String(r.stderr || '').trim()) {
           notes.push(String(r.stderr).slice(-800));
         }
       } else {
-        notes.push('running: npm run build -w @yanshekki/web');
-        await execFileAsync(npm!, ['run', 'build', '-w', '@yanshekki/web'], {
+        notes.push('running: npm run build -w @ysk-server/web');
+        await execFileAsync(npm!, ['run', 'build', '-w', '@ysk-server/web'], {
           cwd: mono,
           timeout: 600_000,
           maxBuffer: 12 * 1024 * 1024,

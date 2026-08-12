@@ -15,8 +15,8 @@ YSK Server 是**單機控制平面**：一部 Linux、多個站點／應用、�
 flowchart TB
   Web[apps/web React UI]
   Server[apps/server HTTP + CLI]
-  Shared["@yanshekki/shared DTO i18n 錯誤"]
-  Core["@yanshekki/core 領域服務"]
+  Shared["@ysk-server/shared DTO i18n 錯誤"]
+  Core["@ysk-server/core 領域服務"]
   Store[(dataDir document store)]
   Host[HostExecutor shell]
 
@@ -30,17 +30,17 @@ flowchart TB
 
 | 層 | 套件／路徑 | 職責 |
 |----|------------|------|
-| 契約 | `@yanshekki/shared` | DTO、ops 型別、錯誤、語言包 |
-| 領域 | `@yanshekki/core` | 架站、郵件、安全、檔案、監控… |
+| 契約 | `@ysk-server/shared` | DTO、ops 型別、錯誤、語言包 |
+| 領域 | `@ysk-server/core` | 架站、郵件、安全、檔案、監控… |
 | 邊界 | `apps/server` | 薄 HTTP 路由 + CLI → core |
 | 介面 | `apps/web` | React 面板；i18n 來自 shared |
 
 ### 依賴規則
 
 ```
-Web / CLI / HTTP  →  @yanshekki/shared（型別 + i18n）
-HTTP / CLI        →  @yanshekki/core
-@yanshekki/core         →  只依賴 @yanshekki/shared
+Web / CLI / HTTP  →  @ysk-server/shared（型別 + i18n）
+HTTP / CLI        →  @ysk-server/core
+@ysk-server/core         →  只依賴 @ysk-server/shared
 ```
 
 業務規則不寫在純 UI 或空殼路由。

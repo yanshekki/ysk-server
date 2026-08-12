@@ -1,10 +1,10 @@
 /**
  * Updates feature — inventory, self-update, scheduler API.
  */
-import type { AdviceRow, InventoryMeta } from '@yanshekki/shared';
+import type { AdviceRow, InventoryMeta } from '@ysk-server/shared';
 import { api } from '../../shared/services/api';
 
-export type { AdviceRow, InventoryMeta } from '@yanshekki/shared';
+export type { AdviceRow, InventoryMeta } from '@ysk-server/shared';
 
 export const updatesApi = {
   inventory: (query?: {

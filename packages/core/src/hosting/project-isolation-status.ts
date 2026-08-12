@@ -1,4 +1,4 @@
-import { getLocale, tl } from '@yanshekki/shared';
+import { getLocale, tl } from '@ysk-server/shared';
 /**
  * Pure helpers: detect legacy isolation layout & build readiness items.
  */

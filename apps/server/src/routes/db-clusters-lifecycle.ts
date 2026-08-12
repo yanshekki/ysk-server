@@ -22,7 +22,7 @@ export async function handleDbClustersLifecycleRoutes(
   if (method === 'POST' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+\/plan$/)) {
     const user = ctx.auth.authenticate(getBearer(req));
     const id = url.pathname.split('/')[5];
-    const { planAndMaterializeDbCluster } = await import('@yanshekki/core');
+    const { planAndMaterializeDbCluster } = await import('@ysk-server/core');
     const { cluster, plan } = planAndMaterializeDbCluster({
       db: ctx.db,
       dataDir: ctx.dataDir,
@@ -49,7 +49,7 @@ export async function handleDbClustersLifecycleRoutes(
       execute?: boolean;
       bootstrap?: boolean;
     };
-    const { applyDbClusterLocal } = await import('@yanshekki/core');
+    const { applyDbClusterLocal } = await import('@ysk-server/core');
     const result = await applyDbClusterLocal({
       db: ctx.db,
       dataDir: ctx.dataDir,
@@ -79,7 +79,7 @@ export async function handleDbClustersLifecycleRoutes(
     const data = JSON.parse(raw || '{}') as { peers?: boolean; identityId?: string };
     const peers =
       data.peers === true || url.searchParams.get('peers') === '1';
-    const { probeDbCluster, probeDbClusterFull } = await import('@yanshekki/core');
+    const { probeDbCluster, probeDbClusterFull } = await import('@ysk-server/core');
     const result = peers
       ? await probeDbClusterFull({
           db: ctx.db,
@@ -114,7 +114,7 @@ export async function handleDbClustersLifecycleRoutes(
       restart?: boolean;
       identityId?: string;
     };
-    const { installDbClusterOnPeers } = await import('@yanshekki/core');
+    const { installDbClusterOnPeers } = await import('@ysk-server/core');
     const result = await installDbClusterOnPeers({
       db: ctx.db,
       dataDir: ctx.dataDir,

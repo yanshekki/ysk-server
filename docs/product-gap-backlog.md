@@ -174,7 +174,7 @@ Honest admin view — not marketing. **production** needs root + `YSK_EXECUTE=1`
 | AI / Agents | **100%†** | playbook／probe；vendor 全自動 fleet install out |
 | Users/Packages multi-tenant | **out / P2 platform** | 唔計 Admin 100% |
 | **Overall Admin plane** | **100%** | `docs/deploy/admin-plane-100.md` · `docs/product-remaining-plan.md` |
-| **@yanshekki/core tests** | **253/253 pass** | 中文化訊息與測試 regex 已對齊 |
+| **@ysk-server/core tests** | **253/253 pass** | 中文化訊息與測試 regex 已對齊 |
 | **Line coverage ≥90%** | **未達（工程債）** | 唔阻擋功能 100%；持續補測 |
 
 \* 國際 inbox 永遠外部（PTR／Port25）。  

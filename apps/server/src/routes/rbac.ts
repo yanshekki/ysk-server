@@ -4,7 +4,7 @@ import {
   YskError,
   type OperationLevel,
   type SystemRole,
-} from '@yanshekki/shared';
+} from '@ysk-server/shared';
 /**
  * RBAC policy admin API — catalog, defaults, role policies, restore.
  */

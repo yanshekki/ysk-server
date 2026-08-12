@@ -1,4 +1,4 @@
-import { tl } from '@yanshekki/shared';
+import { tl } from '@ysk-server/shared';
 /**
  * PM2 process manager artifacts + optional start/stop (Spec § PM2 / fleet).
  * Never fakes success: without YSK_EXECUTE, only writes ecosystem config.
