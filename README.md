@@ -23,6 +23,30 @@
 
 ---
 
+## Screenshots
+
+<p align="center">
+  <img src="docs/assets/screenshots/panel-dashboard-en.jpg" alt="YSK Server dashboard (English)" width="900" />
+</p>
+<p align="center"><em>Dashboard — service health, readiness, security &amp; apply status</em></p>
+
+<p align="center">
+  <img src="docs/assets/screenshots/panel-system-tools-en.jpg" alt="YSK Server system tools (English)" width="900" />
+</p>
+<p align="center"><em>System tools — identity, panel HTTPS, network &amp; storage</em></p>
+
+<p align="center">
+  <img src="docs/assets/screenshots/panel-dashboard-zh-HK.jpg" alt="YSK Server dashboard (zh-HK)" width="900" />
+</p>
+<p align="center"><em>儀表板（繁中香港）</em></p>
+
+<p align="center">
+  <img src="docs/assets/screenshots/panel-system-tools-zh-HK.jpg" alt="YSK Server system tools (zh-HK)" width="900" />
+</p>
+<p align="center"><em>系統工具（繁中香港）</em></p>
+
+---
+
 ## Install (ready to use)
 
 **Ubuntu 22.04 / 24.04** (other Linux: best-effort). Run as **root**:
