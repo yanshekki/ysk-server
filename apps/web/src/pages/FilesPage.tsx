@@ -575,6 +575,31 @@ export function FilesPage() {
     };
   }, [tab, refreshWebdavStatus, setError]);
 
+  /** Poll BT swarm stats while shares tab is open */
+  useEffect(() => {
+    if (tab !== 'shares' && side !== 'shares') return;
+    const ids = shares
+      .filter((s) => (s.downloadModes ?? []).includes('bt') || s.infoHash)
+      .map((s) => s.id)
+      .slice(0, 50);
+    if (!ids.length) return;
+    let cancelled = false;
+    const tick = () => {
+      void filesApi
+        .shareBtStatsBatch(ids)
+        .then((st) => {
+          if (!cancelled) setShareBtStats(st.items ?? {});
+        })
+        .catch(() => undefined);
+    };
+    tick();
+    const timer = window.setInterval(tick, 5_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [tab, side, shares]);
+
   function copyText(label: string, text: string) {
     void navigator.clipboard?.writeText(text).then(
       () => toast.ok(t('files.copiedLabel', { label })),
@@ -1866,17 +1891,44 @@ export function FilesPage() {
                         if (!s.infoHash && !(s.downloadModes ?? []).includes('bt')) {
                           return '—';
                         }
-                        if (!st) {
-                          return s.seedStatus || '…';
-                        }
+                        const status = st?.seedStatus || s.seedStatus || 'pending';
+                        const tone =
+                          status === 'seeding'
+                            ? 'ok'
+                            : status === 'error'
+                              ? 'danger'
+                              : status === 'pending'
+                                ? 'warn'
+                                : 'neutral';
+                        const statusLabel =
+                          status === 'seeding'
+                            ? t('files.btSeeding')
+                            : status === 'pending'
+                              ? t('files.btPending')
+                              : status === 'error'
+                                ? t('files.btError')
+                                : status === 'stopped'
+                                  ? t('files.btStopped')
+                                  : status;
                         return (
-                          <span className="u-text-sm" title={st.infoHash}>
-                            {t('files.btSeeds')}: {st.seeds} · {t('files.btLeechers')}:{' '}
-                            {st.leechers} · ↑
-                            {st.uploadSpeed > 1024
-                              ? `${(st.uploadSpeed / 1024).toFixed(0)}K`
-                              : st.uploadSpeed}
-                          </span>
+                          <div className="u-stack u-gap-xs" title={st?.infoHash || s.infoHash}>
+                            <Badge tone={tone}>{statusLabel}</Badge>
+                            {st ? (
+                              <span className="u-text-sm">
+                                {t('files.btSeeds')}: {st.seeds} · {t('files.btLeechers')}:{' '}
+                                {st.leechers}
+                                {st.uploadSpeed > 0
+                                  ? ` · ↑${
+                                      st.uploadSpeed > 1024
+                                        ? `${(st.uploadSpeed / 1024).toFixed(0)}K`
+                                        : st.uploadSpeed
+                                    }`
+                                  : ''}
+                              </span>
+                            ) : (
+                              <span className="u-text-sm muted">…</span>
+                            )}
+                          </div>
                         );
                       },
                     },
@@ -1904,6 +1956,16 @@ export function FilesPage() {
                           >
                             magnet
                           </Button>
+                        ) : null}
+                        {s.token &&
+                        ((s.downloadModes ?? []).includes('bt') || s.infoHash) ? (
+                          <a
+                            className="btn btn--secondary btn--sm"
+                            href={`/api/v1/public/files/${encodeURIComponent(s.token)}/torrent`}
+                            title={t('files.shareTorrentFile')}
+                          >
+                            .torrent
+                          </a>
                         ) : null}
                         <Button
                           variant="danger"
