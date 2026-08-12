@@ -4179,7 +4179,8 @@
     "newTab": "Nouvel onglet",
     "fullscreen": "Plein écran",
     "mediaNote": "Véritable navigateur : la vidéo est diffusée en streaming ; l'audio n'est pas encore ponté vers le panneau (phase 2).",
-    "isolationNote": "Un vrai navigateur crée un utilisateur Linux éphémère pour Chrome ; quitter la page ou le délai d'inactivité détruit cet utilisateur."
+    "isolationNote": "Un vrai navigateur crée un utilisateur Linux éphémère pour Chrome ; quitter la page ou le délai d'inactivité détruit cet utilisateur.",
+    "resumeHint": "Resume previous session ({{count}} tabs)"
   },
   "listToolbar": {
     "searchPlaceholder": "Rechercher…",

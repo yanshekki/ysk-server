@@ -50,7 +50,7 @@ export function TotpQr({ otpauthUrl, size = 200, className }: TotpQrProps) {
     return (
       <div
         className="totp-qr totp-qr--loading"
-        style={{ width: size, height: size }}
+        style={{ ['--totp-qr-size' as string]: `${size}px` }}
         aria-busy="true"
       >
         <span className="muted u-text-sm">{t('common.loading')}</span>

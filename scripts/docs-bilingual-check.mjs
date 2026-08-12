@@ -38,12 +38,19 @@ function stats(text) {
   const heads = { h1: 0, h2: 0, h3: 0, h4: 0 };
   let fences = 0;
   let tableRows = 0;
+  let inFence = false;
   for (const line of lines) {
+    // Fence toggles first so shell comments (`# …`) inside code are not headings
+    if (/^```/.test(line)) {
+      fences++;
+      inFence = !inFence;
+      continue;
+    }
+    if (inFence) continue;
     if (/^# /.test(line)) heads.h1++;
     else if (/^## /.test(line)) heads.h2++;
     else if (/^### /.test(line)) heads.h3++;
     else if (/^#### /.test(line)) heads.h4++;
-    if (/^```/.test(line)) fences++;
     if (/^\|/.test(line) && !/^\|\s*:?-+:?\s*\|/.test(line)) tableRows++;
   }
   return {

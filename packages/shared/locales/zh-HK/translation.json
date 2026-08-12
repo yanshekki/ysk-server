@@ -3793,8 +3793,8 @@
     "servicesTitle": "受管服務埠",
     "servicesHint": "YSK 管理服務嘅期望網絡暴露。開服務時會自動同步呢啲規則。",
     "servicesEmpty": "尚未有服務暴露資料",
-    "servicesEmptyDesc": "啟動受管服務（Web、FTPS、VPN、資料庫…）後會出現喺此列表。",
-    "servicesManualHint": "手動開埠 chips 喺「埠」分頁 — 建議喺呢度管理，規則會帶 ysk-svc 標記。",
+    "servicesEmptyDesc": "啟動受管服務（Web、FTPS、VPN、資料庫…）後會出現在此列表。",
+    "servicesManualHint": "手動開埠 chips 在「埠」分頁 — 建議在此管理，規則會帶 ysk-svc 標記。",
     "portsManualHint": "進階手動規則。受管軟件請優先用「服務」分頁。",
     "colService": "服務",
     "colMode": "模式",
@@ -4179,7 +4179,8 @@
     "newTab": "新分頁",
     "fullscreen": "全螢幕",
     "mediaNote": "真實瀏覽器：影像經主機串流；音訊尚未橋接至面板（二期）。",
-    "isolationNote": "真實瀏覽器會建立臨時 Linux 用戶隔離 Chrome；離開頁面或逾時會結束並刪除該用戶。"
+    "isolationNote": "真實瀏覽器會建立臨時 Linux 用戶隔離 Chrome；離開頁面或逾時會結束並刪除該用戶。",
+    "resumeHint": "可恢復上次瀏覽（{{count}} 個分頁）"
   },
   "listToolbar": {
     "searchPlaceholder": "搜尋…",
@@ -10184,7 +10185,7 @@
     "summaryPrivate": "未對外開放防火牆埠。",
     "summaryPublic": "公網開放 · {{ports}}",
     "summaryRestricted": "受限 · {{count}} 個來源",
-    "summaryFirewallOff": "主機防火牆：{{detail}} — UFW 未啟用時規則唔會生效。",
+    "summaryFirewallOff": "主機防火牆：{{detail}} — UFW 未啟用時規則不會生效。",
     "outOfSync": "未同步",
     "firewallOff": "防火牆關閉",
     "ufwMissing": "未安裝 UFW",
@@ -10201,7 +10202,7 @@
     "restrictedNeedSource": "受限模式請至少加入 IP／網段或國家代碼。",
     "privateStartTitle": "要對外開放 {{service}} 嗎？",
     "confirmAndStart": "確認並啟動",
-    "cloudSgNote": "僅主機防火牆 — 唔會改雲安全組（AWS／GCP／Azure）。"
+    "cloudSgNote": "僅主機防火牆 — 不會改雲安全組（AWS／GCP／Azure）。"
   },
   "services": {
     "enabledBoot": "自啟",
@@ -10693,8 +10694,8 @@
     "yskNoPrice": "此處不標價 — 請來信，按你環境傾方案。",
     "yskWebsite": "ysk.hk",
     "helpTitle": "遇到問題？",
-    "helpBody": "請來信說明作業系統、安裝 log 路徑、預期同實際結果。每封信都會睇。",
-    "docsHint": "完整文件喺倉庫",
+    "helpBody": "請來信說明作業系統、安裝 log 路徑、預期同實際結果。每封信都會看。",
+    "docsHint": "完整文件在倉庫",
     "donateLinktree": "Linktree",
     "cryptoTitle": "加密貨幣／Web3 地址",
     "cryptoHint": "請只在對應網絡轉帳，轉前再核對地址。",

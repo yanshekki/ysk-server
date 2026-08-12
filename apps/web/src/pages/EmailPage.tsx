@@ -708,7 +708,7 @@ export function EmailPage() {
         {tab === 'stack' ? (
           <div className="tab-panel mail-panel stack">
             <SoftwareInstallBanner feature="email" title={t('email.softwareNeeded')} showReadyActions={false} />
-            <div className="u-mb-3" style={{ display: 'grid', gap: '0.75rem' }}>
+            <div className="u-mb-3 u-stack-form">
               <ServiceAccessStrip
                 serviceId="postfix"
                 ports={[

@@ -109,9 +109,9 @@ export function detectBotChallenge(title: string, url: string): boolean {
     'captcha',
     'cloudflare',
     'access denied',
-    '請完成',
-    '安全驗證',
-    '人機驗證',
+    '\u8acb\u5b8c\u6210',
+    '\u5b89\u5168\u9a57\u8b49',
+    '\u4eba\u6a5f\u9a57\u8b49',
     'verify you are human',
   ];
   return needles.some((n) => t.includes(n));

@@ -16,15 +16,14 @@ permissions:
   contents: read
 
 jobs:
-  ci:
-    name: Build & test
+  gates:
+    name: Gates
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # version comes from package.json "packageManager" — do not set version here
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
@@ -45,6 +44,27 @@ jobs:
 
       - name: Docs bilingual parity
         run: pnpm docs:bilingual
+
+  build-test:
+    name: Build & test
+    needs: gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       # Workspace packages export types from dist/ — build before typecheck
       - name: Build
@@ -76,3 +96,29 @@ jobs:
 
       - name: Real-ops e2e (degraded, non-root)
         run: pnpm e2e:real-ops
+
+  # Known debt: many host scripts still embed raw `command -v`.
+  # Soft job keeps visibility without blocking release CI.
+  probe-ssot:
+    name: Probe SSOT (soft)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: software-probe SSOT
+        run: pnpm probe:ssot

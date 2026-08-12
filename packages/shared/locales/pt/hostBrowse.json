@@ -88,5 +88,6 @@
   "newTab": "Nova guia",
   "fullscreen": "Tela cheia",
   "mediaNote": "Navegador real: o vídeo é transmitido; o áudio ainda não está conectado ao painel (fase 2).",
-  "isolationNote": "Navegador real cria usuário Linux efêmero para Chrome; sair da página ou o tempo limite de inatividade destrói esse usuário."
+  "isolationNote": "Navegador real cria usuário Linux efêmero para Chrome; sair da página ou o tempo limite de inatividade destrói esse usuário.",
+  "resumeHint": "Resume previous session ({{count}} tabs)"
 }

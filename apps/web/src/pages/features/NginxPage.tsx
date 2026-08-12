@@ -360,8 +360,7 @@ export function NginxPage() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={t('common.search')}
-            className="u-input"
-            style={{ maxWidth: 220 }}
+            className="u-input u-w-control-md"
           />
           <SegRadio
             name="ngx-src"

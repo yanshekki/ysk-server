@@ -88,5 +88,6 @@
   "newTab": "New tab",
   "fullscreen": "Fullscreen",
   "mediaNote": "Real browser: video is streamed; audio is not yet bridged to the panel (phase 2).",
-  "isolationNote": "Real browser creates an ephemeral Linux user for Chrome; leaving the page or idle timeout destroys that user."
+  "isolationNote": "Real browser creates an ephemeral Linux user for Chrome; leaving the page or idle timeout destroys that user.",
+  "resumeHint": "Resume previous session ({{count}} tabs)"
 }

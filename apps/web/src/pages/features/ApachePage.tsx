@@ -378,14 +378,13 @@ export function ApachePage() {
           />
         </div>
 
-        <div className="u-flex u-gap-2 u-mb-3 u-flex-wrap" style={{ alignItems: 'center' }}>
+        <div className="u-flex u-gap-2 u-mb-3 u-flex-wrap u-items-center">
           <input
             type="search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={t('common.search')}
-            className="u-input"
-            style={{ maxWidth: 220 }}
+            className="u-input u-w-control-md"
           />
           <SegRadio
             name="ap-src"
@@ -813,8 +812,7 @@ export function ApachePage() {
           }
         >
           <pre
-            className="u-code-block"
-            style={{ maxHeight: '60vh', overflow: 'auto', fontSize: 12 }}
+            className="u-code-block u-scroll-60vh u-text-xs"
           >
             {preview?.content ?? ''}
           </pre>

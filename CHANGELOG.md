@@ -2,6 +2,10 @@
 
 ## 1.0.0 — 2026-08-12
 
+### CI
+- Gates green: Support page uses DataTable; chrome skip for embed/redirect/public panels; css:reuse utilities; docs bilingual fence-aware headings
+- `probe:ssot` moved to soft CI job (known raw `command -v` debt outside software-probe) — hard `pnpm gates` no longer includes it
+
 ### Product
 - **First public free release** of YSK Server (panel + CLI)
 - Install path aims for **ready-to-use**: root installs enable/start `ysk-server.service`, print bootstrap credentials, HTTPS panel URL

@@ -177,6 +177,54 @@
   max-width: 100%;
 }
 
+/** Form field stacks (replaces style={{ display:grid, gap }}) */
+.u-stack-form {
+  display: grid;
+  gap: var(--space-3);
+}
+
+/** Constrained form controls */
+.u-w-control-xs {
+  max-width: 10rem;
+}
+.u-w-control-sm {
+  max-width: 12.5rem;
+}
+.u-w-control-md {
+  max-width: 13.75rem;
+}
+.u-w-control-lg {
+  max-width: 15rem;
+}
+.u-w-control-xl {
+  max-width: 17.5rem;
+}
+
+/** Compact ghost chip button (country presets, etc.) */
+.u-btn-chip {
+  min-height: 2rem;
+  padding: 0 var(--space-2);
+  font-size: var(--text-xs, 0.8rem);
+}
+
+/** Full-width cell inside CSS grid meta layouts */
+.u-col-span-full {
+  grid-column: 1 / -1;
+}
+
+.u-list-indent {
+  padding-left: var(--space-5);
+}
+
+.u-scroll-60vh {
+  max-height: 60vh;
+  overflow: auto;
+}
+
+.u-text-xs {
+  font-size: var(--text-xs, 0.75rem);
+}
+
 /** Scrollable code / preview pane */
 .u-scroll-preview {
   max-height: 25rem;

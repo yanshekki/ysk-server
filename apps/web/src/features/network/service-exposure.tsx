@@ -395,7 +395,7 @@ export function ServiceExposureDialog({
           <p className="form-hint service-access-strip__warn">{t('serviceExposure.hintPublic')}</p>
         ) : null}
         {mode === 'restricted' ? (
-          <div className="u-mt-3" style={{ display: 'grid', gap: '0.75rem' }}>
+          <div className="u-mt-3 u-stack-form">
             <Field label={t('serviceExposure.allowFrom')} htmlFor="exp-allow" flush>
               <input
                 id="exp-allow"
@@ -422,8 +422,7 @@ export function ServiceExposureDialog({
                   <button
                     key={cc}
                     type="button"
-                    className="btn btn--ghost btn--md"
-                    style={{ minHeight: 32, padding: '0 0.5rem', fontSize: '0.8rem' }}
+                    className="btn btn--ghost btn--md u-btn-chip"
                     onClick={() => {
                       const cur = parseCountries();
                       if (cur.includes(cc)) {

@@ -4179,7 +4179,8 @@
     "newTab": "新分頁",
     "fullscreen": "全螢幕",
     "mediaNote": "真實瀏覽器：影像經主機串流；音訊尚未橋接至面板（二期）。",
-    "isolationNote": "真實瀏覽器會建立臨時 Linux 用戶隔離 Chrome；離開頁面或逾時會結束並刪除該用戶。"
+    "isolationNote": "真實瀏覽器會建立臨時 Linux 用戶隔離 Chrome；離開頁面或逾時會結束並刪除該用戶。",
+    "resumeHint": "可恢复上次浏览（{{count}} 个分页）"
   },
   "listToolbar": {
     "searchPlaceholder": "搜索…",

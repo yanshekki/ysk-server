@@ -1033,8 +1033,7 @@ export function UpdatesPage() {
                   <select
                     value={String(scanIntervalMs)}
                     onChange={(e) => setScanIntervalMs(Number(e.target.value))}
-                    className="u-input"
-                    style={{ maxWidth: 280 }}
+                    className="u-input u-w-control-xl"
                   >
                     <option value={String(6 * 60 * 60_000)}>{t('updates.interval6h')}</option>
                     <option value={String(12 * 60 * 60_000)}>{t('updates.interval12h')}</option>

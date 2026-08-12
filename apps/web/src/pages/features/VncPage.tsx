@@ -264,7 +264,23 @@ export function VncPage() {
   };
 
   return (
-    <FeaturePageLayout title={t('nav.vnc')} subtitle={t('vnc.pageDesc')}>
+    <FeaturePageLayout
+      title={t('nav.vnc')}
+      subtitle={t('vnc.pageDesc')}
+      status={{
+        pill: {
+          label: t('nav.vnc'),
+          tone: accounts.some((a) => a.status === 'running') ? 'ok' : 'neutral',
+        },
+        items: [
+          {
+            label: t('vnc.tab.accounts'),
+            value: accounts.length,
+            tone: accounts.length > 0 ? 'ok' : 'neutral',
+          },
+        ],
+      }}
+    >
       <PageTabs
         tabs={TABS.map((id) => ({ id, label: t(`vnc.tab.${id}`) }))}
         active={tab}

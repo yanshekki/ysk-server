@@ -4179,7 +4179,8 @@
     "newTab": "Nueva pestaña",
     "fullscreen": "Pantalla completa",
     "mediaNote": "Navegador real: se transmite vídeo; el audio aún no está puenteado al panel (fase 2).",
-    "isolationNote": "El navegador real crea un usuario efímero de Linux para Chrome; abandonar la página o el tiempo de inactividad destruye a ese usuario."
+    "isolationNote": "El navegador real crea un usuario efímero de Linux para Chrome; abandonar la página o el tiempo de inactividad destruye a ese usuario.",
+    "resumeHint": "Resume previous session ({{count}} tabs)"
   },
   "listToolbar": {
     "searchPlaceholder": "Buscar…",

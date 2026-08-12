@@ -88,5 +88,6 @@
   "newTab": "tab baru",
   "fullscreen": "Layar penuh",
   "mediaNote": "Browser sebenarnya: video dialirkan; audio belum dijembatani ke panel (fase 2).",
-  "isolationNote": "Browser sebenarnya menciptakan pengguna Linux sementara untuk Chrome; meninggalkan halaman atau waktu tunggu menganggur akan menghancurkan pengguna tersebut."
+  "isolationNote": "Browser sebenarnya menciptakan pengguna Linux sementara untuk Chrome; meninggalkan halaman atau waktu tunggu menganggur akan menghancurkan pengguna tersebut.",
+  "resumeHint": "Resume previous session ({{count}} tabs)"
 }

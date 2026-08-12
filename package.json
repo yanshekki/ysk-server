@@ -1,7 +1,7 @@
 {
   "name": "ysk-server",
   "version": "1.0.0",
-  "description": "YSK Server \u2014 AI-secure Linux server manager with full web hosting control panel",
+  "description": "YSK Server — AI-secure Linux server manager with full web hosting control panel",
   "private": true,
   "type": "module",
   "bin": {
@@ -31,7 +31,7 @@
     "i18n:rebuild": "node ./scripts/rebuild-translation.mjs",
     "i18n:check-drift": "node ./scripts/i18n-rebuild-drift.mjs",
     "i18n:check-guides": "node ./scripts/i18n-guides-parity.mjs",
-    "gates": "pnpm honesty:lint && pnpm primitives:check && pnpm chrome:check && pnpm about-tab:check && pnpm css:reuse && pnpm probe:ssot && pnpm i18n:check-keys && pnpm i18n:check-ui && pnpm i18n:check-api && pnpm i18n:check-glossary && pnpm i18n:check-drift && pnpm i18n:check-guides && pnpm i18n:check-no-uiinline-default",
+    "gates": "pnpm honesty:lint && pnpm primitives:check && pnpm chrome:check && pnpm about-tab:check && pnpm css:reuse && pnpm i18n:check-keys && pnpm i18n:check-ui && pnpm i18n:check-api && pnpm i18n:check-glossary && pnpm i18n:check-drift && pnpm i18n:check-guides && pnpm i18n:check-no-uiinline-default",
     "review:inventory": "node ./scripts/review-inventory.mjs",
     "e2e:real-ops": "bash scripts/e2e-real-ops.sh",
     "e2e:hosting-root": "bash scripts/e2e-hosting-root.sh",

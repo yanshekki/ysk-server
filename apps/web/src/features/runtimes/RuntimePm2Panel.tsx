@@ -445,8 +445,7 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
               {t('runtime.pm2.yskOnly')}
             </label>
             <input
-              className="input"
-              style={{ maxWidth: 240 }}
+              className="input u-w-control-lg"
               placeholder={t('runtime.pm2.filterPh')}
               value={q}
               onChange={(e) => setQ(e.target.value)}
@@ -577,7 +576,7 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
       {live && tickLog.length > 0 ? (
         <Card>
           <CardSection title={t('runtime.pm2.streamLog')} description={t('runtime.pm2.streamLogDesc')}>
-            <pre className="code-block u-text-sm" style={{ maxHeight: 160, overflow: 'auto' }}>
+            <pre className="code-block u-text-sm u-scroll-sm">
               {tickLog.join('\n')}
             </pre>
           </CardSection>
@@ -585,7 +584,7 @@ export function RuntimePm2Panel({ runtimes = 'node,bun' }: { runtimes?: string }
       ) : null}
 
       <Modal open={rawApp != null} onClose={() => setRawApp(null)} title={rawApp?.name ?? 'JSON'}>
-        <pre className="code-block u-text-sm" style={{ maxHeight: 420, overflow: 'auto' }}>
+        <pre className="code-block u-text-sm u-scroll-preview">
           {rawApp ? JSON.stringify(rawApp.raw, null, 2) : ''}
         </pre>
       </Modal>

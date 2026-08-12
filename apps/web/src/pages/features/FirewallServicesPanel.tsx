@@ -338,7 +338,7 @@ export function FirewallServicesPanel(props: {
               <FormHint>{t('serviceExposure.hintPrivate')}</FormHint>
             ) : null}
             {mode === 'restricted' ? (
-              <div className="u-mt-3" style={{ display: 'grid', gap: '0.75rem' }}>
+              <div className="u-mt-3 u-stack-form">
                 <Field label={t('serviceExposure.allowFrom')} htmlFor="fw-svc-allow" flush>
                   <input
                     id="fw-svc-allow"

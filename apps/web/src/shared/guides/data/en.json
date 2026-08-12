@@ -254,11 +254,7 @@
       "Home directory：Confine each account to a specified path.",
       "Let designers upload static files",
       "Temporary contractor accounts",
-      "Confirm the FTPS service is installed and running",
-      "Install and start FTPS",
-      "Apply config and restart",
-      "Open listen + PASV ports via panel firewall",
-      "Set public PASV IP and TLS domain"
+      "Confirm the FTPS service is installed and running"
     ],
     "notes": [
       "Plain FTP is insecure; prefer FTPS / SFTP",

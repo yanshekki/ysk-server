@@ -533,10 +533,9 @@ export function VpnPage() {
               </div>
             ) : null}
             {accessMode === 'custom' ? (
-              <div className="u-flex-gap u-flex-wrap" style={{ alignItems: 'center' }}>
+              <div className="u-flex u-gap-2 u-flex-wrap u-items-center">
                 <input
-                  className="u-input"
-                  style={{ maxWidth: 200 }}
+                  className="u-input u-w-control-sm"
                   value={customCidrInput}
                   onChange={(e) => setCustomCidrInput(e.target.value)}
                   placeholder="192.168.1.0/24"
@@ -637,8 +636,7 @@ export function VpnPage() {
         toolbar={
           <ActionBar>
             <input
-              className="u-input"
-              style={{ maxWidth: 160 }}
+              className="u-input u-w-control-xs"
               value={peerName}
               onChange={(e) => setPeerName(e.target.value)}
               placeholder={t('vpn.peerNamePlaceholder')}

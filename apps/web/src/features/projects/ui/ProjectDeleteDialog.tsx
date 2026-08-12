@@ -144,7 +144,7 @@ export function ProjectDeleteDialog({
                 </Badge>
               </span>
             </div>
-            <div className="delete-confirm__meta-cell" style={{ gridColumn: '1 / -1' }}>
+            <div className="delete-confirm__meta-cell u-col-span-full">
               <span className="delete-confirm__meta-lab">home</span>
               <span className="delete-confirm__meta-val">
                 <code className="delete-confirm__code">{project.homeDir}</code>

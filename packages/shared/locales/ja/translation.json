@@ -4179,7 +4179,8 @@
     "newTab": "新規タブ",
     "fullscreen": "フルスクリーン",
     "mediaNote": "実ブラウザ: ビデオはストリーミングされます。オーディオはまだパネルにブリッジされていません (フェーズ 2)。",
-    "isolationNote": "実際のブラウザは Chrome 用の一時的な Linux ユーザーを作成します。ページを離れるか、アイドル タイムアウトが発生すると、そのユーザーは破棄されます。"
+    "isolationNote": "実際のブラウザは Chrome 用の一時的な Linux ユーザーを作成します。ページを離れるか、アイドル タイムアウトが発生すると、そのユーザーは破棄されます。",
+    "resumeHint": "Resume previous session ({{count}} tabs)"
   },
   "listToolbar": {
     "searchPlaceholder": "検索…",

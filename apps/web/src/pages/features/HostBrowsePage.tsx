@@ -1170,7 +1170,6 @@ export function HostBrowsePage() {
                   <Alert variant="info">
                     {t('hostBrowse.resumeHint', {
                       count: resumeSnap.tabs.length,
-                      defaultValue: `可恢復上次瀏覽（${resumeSnap.tabs.length} 個分頁）`,
                     })}
                   </Alert>
                   <div className="hb-resume__btns">

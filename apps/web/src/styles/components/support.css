@@ -1,0 +1,23 @@
+/**
+ * Support / donate page
+ */
+.support-page {
+  max-width: 48rem;
+}
+
+.support-page__prose {
+  line-height: 1.55;
+}
+
+.support-page__list {
+  padding-left: var(--space-5);
+  list-style: disc;
+}
+
+.support-page__code {
+  display: inline-block;
+  padding: 0.2rem 0.45rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle, #f1f5f9);
+  font-size: 0.9em;
+}

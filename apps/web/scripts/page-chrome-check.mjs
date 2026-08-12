@@ -14,7 +14,12 @@ const pagesDir = join(root, 'src', 'pages');
 const SKIP = new Set([
   'LoginPage.tsx',
   'PublicSharePage.tsx', // guest landing — not panel FeaturePageLayout chrome
+  'VncSharePage.tsx', // public share viewer — not panel chrome
   'NodeRuntimePage.tsx', // re-export only → GenericRuntimePage
+  'FtpsServicePage.tsx', // re-export only → FtpPage
+  'SoftwareHubPage.tsx', // Navigate redirect only
+  'FirewallServicesPanel.tsx', // embedded tab panel under Firewall
+  'FtpServicePanel.tsx', // embedded panel under FtpPage
   'CronScheduleBuilder.tsx',
   'MariadbPage.tsx',
   'MariadbServicePage.tsx',

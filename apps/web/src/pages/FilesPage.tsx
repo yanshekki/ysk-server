@@ -2288,7 +2288,7 @@ export function FilesPage() {
                   </div>
                   <div>
                     <h4 className="u-text-sm u-font-bold u-mb-1">rclone</h4>
-                    <pre className="code-block u-text-sm" style={{ margin: 0 }}>
+                    <pre className="code-block u-text-sm u-m-0">
                       {`rclone config
 # type = webdav
 # url  = ${webdavUrl}
@@ -2319,7 +2319,7 @@ export function FilesPage() {
                   </div>
                   <div>
                     <h4 className="u-text-sm u-font-bold u-mb-1">curl</h4>
-                    <pre className="code-block u-text-sm" style={{ margin: 0 }}>
+                    <pre className="code-block u-text-sm u-m-0">
                       {`curl -u 'ysk:TOKEN' -X PROPFIND '${webdavUrl}'`}
                     </pre>
                   </div>
@@ -2329,7 +2329,7 @@ export function FilesPage() {
 
             <Card>
               <CardSection title={t('files.webdavNotesTitle')}>
-                <ul className="muted u-text-sm u-mb-0" style={{ paddingLeft: '1.15rem' }}>
+                <ul className="muted u-text-sm u-mb-0 u-list-indent">
                   <li>{t('files.webdavNote1')}</li>
                   <li>{t('files.webdavNote2')}</li>
                   <li>{t('files.webdavNote3')}</li>

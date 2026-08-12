@@ -10,7 +10,7 @@
   "summaryPrivate": "未對外開放防火牆埠。",
   "summaryPublic": "公網開放 · {{ports}}",
   "summaryRestricted": "受限 · {{count}} 個來源",
-  "summaryFirewallOff": "主機防火牆：{{detail}} — UFW 未啟用時規則唔會生效。",
+  "summaryFirewallOff": "主機防火牆：{{detail}} — UFW 未啟用時規則不會生效。",
   "outOfSync": "未同步",
   "firewallOff": "防火牆關閉",
   "ufwMissing": "未安裝 UFW",
@@ -27,5 +27,5 @@
   "restrictedNeedSource": "受限模式請至少加入 IP／網段或國家代碼。",
   "privateStartTitle": "要對外開放 {{service}} 嗎？",
   "confirmAndStart": "確認並啟動",
-  "cloudSgNote": "僅主機防火牆 — 唔會改雲安全組（AWS／GCP／Azure）。"
+  "cloudSgNote": "僅主機防火牆 — 不會改雲安全組（AWS／GCP／Azure）。"
 }
