@@ -522,6 +522,12 @@ export function FilesPage() {
   const [shareExpirePreset, setShareExpirePreset] = useState('7d');
   const [shareExpireCustom, setShareExpireCustom] = useState('');
   const [shareResultExpires, setShareResultExpires] = useState<string | null>(null);
+  /** direct | bt | both */
+  const [shareMode, setShareMode] = useState<'direct' | 'bt' | 'both'>('direct');
+  const [shareResultMeta, setShareResultMeta] = useState<FileShare | null>(null);
+  const [shareBtStats, setShareBtStats] = useState<
+    Record<string, import('@ysk/shared').BtShareStats>
+  >({});
   const [versionsPath, setVersionsPath] = useState<string | null>(null);
   const [versions, setVersions] = useState<
     Array<{ id: string; path: string; createdAt: string; bytes: number }>
@@ -668,6 +674,18 @@ export function FilesPage() {
       if (side === 'shares') {
         const r = await filesApi.listShares(root);
         setShares(r.items);
+        const btIds = r.items
+          .filter((s) => (s.downloadModes ?? []).includes('bt') || s.infoHash)
+          .map((s) => s.id)
+          .slice(0, 50);
+        if (btIds.length) {
+          try {
+            const st = await filesApi.shareBtStatsBatch(btIds);
+            setShareBtStats(st.items ?? {});
+          } catch {
+            /* optional */
+          }
+        }
         setItems([]);
         return;
       }
@@ -1827,6 +1845,41 @@ export function FilesPage() {
                       header: t('files.colDownloads'),
                       nowrap: true,
                       render: (s) => s.downloadCount },
+                    {
+                      key: 'mode',
+                      header: t('files.shareModeLabel'),
+                      nowrap: true,
+                      render: (s) => {
+                        const modes = s.downloadModes ?? ['direct'];
+                        if (modes.includes('direct') && modes.includes('bt')) {
+                          return t('files.shareModeBoth');
+                        }
+                        if (modes.includes('bt')) return t('files.shareModeBt');
+                        return t('files.shareModeDirect');
+                      },
+                    },
+                    {
+                      key: 'bt',
+                      header: t('files.shareBtStats'),
+                      render: (s) => {
+                        const st = shareBtStats[s.id];
+                        if (!s.infoHash && !(s.downloadModes ?? []).includes('bt')) {
+                          return '—';
+                        }
+                        if (!st) {
+                          return s.seedStatus || '…';
+                        }
+                        return (
+                          <span className="u-text-sm" title={st.infoHash}>
+                            {t('files.btSeeds')}: {st.seeds} · {t('files.btLeechers')}:{' '}
+                            {st.leechers} · ↑
+                            {st.uploadSpeed > 1024
+                              ? `${(st.uploadSpeed / 1024).toFixed(0)}K`
+                              : st.uploadSpeed}
+                          </span>
+                        );
+                      },
+                    },
                   ]}
                   rows={shares}
                   rowKey={(s) => s.id}
@@ -1842,6 +1895,16 @@ export function FilesPage() {
                         >
                           {t('files.copyLink')}
                         </Button>
+                        {s.magnetUri ? (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => copyShareLink(s.magnetUri!)}
+                            title={t('files.shareMagnet')}
+                          >
+                            magnet
+                          </Button>
+                        ) : null}
                         <Button
                           variant="danger"
                           size="sm"
@@ -2450,6 +2513,8 @@ export function FilesPage() {
           setSharePass('');
           setShareResult(null);
           setShareResultExpires(null);
+          setShareResultMeta(null);
+          setShareMode('direct');
           setShareExpirePreset('7d');
           setShareExpireCustom('');
         }}
@@ -2469,6 +2534,7 @@ export function FilesPage() {
                 onClick={() => {
                   setShareResult(null);
                   setShareResultExpires(null);
+                  setShareResultMeta(null);
                   setSharePass('');
                 }}
               >
@@ -2482,6 +2548,8 @@ export function FilesPage() {
                   setSharePass('');
                   setShareResult(null);
                   setShareResultExpires(null);
+                  setShareResultMeta(null);
+                  setShareMode('direct');
                   setShareExpirePreset('7d');
                   setShareExpireCustom('');
                 }}
@@ -2500,6 +2568,7 @@ export function FilesPage() {
                   setSharePass('');
                   setShareResult(null);
                   setShareResultExpires(null);
+                  setShareResultMeta(null);
                 }}
               >
                 {t('common.cancel')}
@@ -2523,6 +2592,7 @@ export function FilesPage() {
                       path: sharePath,
                       password: sharePass || undefined,
                       expiresAt: expiresAt || undefined,
+                      mode: shareMode,
                     });
                     const path =
                       r.share.url ??
@@ -2533,10 +2603,15 @@ export function FilesPage() {
                       ? path
                       : `${window.location.origin}${path}`;
                     setShareResult(url);
+                    setShareResultMeta(r.share);
                     setShareResultExpires(
                       r.share.expiresAt ?? expiresAt ?? null,
                     );
-                    toast.ok(t('files.shareCreatedToast'));
+                    if (r.notes?.length) {
+                      toast.ok(r.notes.slice(0, 2).join(' · '));
+                    } else {
+                      toast.ok(t('files.shareCreatedToast'));
+                    }
                   })
                 }
               >
@@ -2559,6 +2634,32 @@ export function FilesPage() {
                 <code className="fm-share__file-path">{sharePath}</code>
               </div>
             </div>
+            <Field
+              label={t('files.shareModeLabel')}
+              htmlFor="share-mode"
+              flush
+              hint={t('files.shareModeHint')}
+            >
+              <select
+                id="share-mode"
+                className="input"
+                value={shareMode}
+                onChange={(e) =>
+                  setShareMode(e.target.value as 'direct' | 'bt' | 'both')
+                }
+              >
+                <option value="direct">{t('files.shareModeDirect')}</option>
+                <option value="bt">{t('files.shareModeBt')}</option>
+                <option value="both">{t('files.shareModeBoth')}</option>
+              </select>
+            </Field>
+            {shareMode !== 'direct' ? (
+              <FormHint>
+                <Link to="/bt-tracker">{t('files.openBtTracker')}</Link>
+                {' · '}
+                {t('files.shareModeBtBlocked')}
+              </FormHint>
+            ) : null}
             <Field
               label={t('files.passwordOptional')}
               htmlFor="sp"
@@ -2629,6 +2730,9 @@ export function FilesPage() {
               ) : (
                 <Badge tone="neutral">{t('files.shareExpireNever')}</Badge>
               )}
+              {shareResultMeta?.downloadModes?.includes('bt') ? (
+                <Badge tone="info">{t('files.shareModeBt')}</Badge>
+              ) : null}
             </div>
             <label className="fm-share__link-label" htmlFor="fm-share-url">
               {t('files.shareLinkLabel')}
@@ -2666,6 +2770,46 @@ export function FilesPage() {
               </Button>
             </div>
             <p className="fm-share__hint muted">{t('files.shareCopyHint')}</p>
+            {shareResultMeta?.magnetUri ? (
+              <div className="u-mt-3 u-stack u-gap-sm">
+                <label className="fm-share__link-label" htmlFor="fm-share-magnet">
+                  {t('files.shareMagnet')}
+                </label>
+                <div className="fm-share__link-row">
+                  <input
+                    id="fm-share-magnet"
+                    className="fm-share__link-input input"
+                    readOnly
+                    value={shareResultMeta.magnetUri}
+                    onFocus={(e) => e.target.select()}
+                  />
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    onClick={() =>
+                      copyShareLink(shareResultMeta.magnetUri || '')
+                    }
+                  >
+                    {t('common.copy')}
+                  </Button>
+                </div>
+                {shareResultMeta.token ? (
+                  <a
+                    className="btn btn--secondary btn--sm"
+                    href={`/api/v1/public/files/${encodeURIComponent(shareResultMeta.token)}/torrent`}
+                  >
+                    {t('files.shareTorrentFile')}
+                  </a>
+                ) : null}
+                {shareResultMeta.seedStatus ? (
+                  <Badge tone="info">
+                    {t(`files.bt${shareResultMeta.seedStatus === 'seeding' ? 'Seeding' : shareResultMeta.seedStatus === 'pending' ? 'Pending' : shareResultMeta.seedStatus === 'error' ? 'Error' : 'Stopped'}`, {
+                      defaultValue: shareResultMeta.seedStatus,
+                    })}
+                  </Badge>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         )}
       </Modal>

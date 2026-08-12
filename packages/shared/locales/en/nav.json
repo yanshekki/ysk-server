@@ -71,5 +71,6 @@
   "unbookmark": "Unpin from sidebar",
   "bookmarkPinned": "Pinned",
   "bookmarkAdded": "Pinned to sidebar",
-  "bookmarkRemoved": "Removed from sidebar"
+  "bookmarkRemoved": "Removed from sidebar",
+  "btTracker": "BT Tracker"
 }

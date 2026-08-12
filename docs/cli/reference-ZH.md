@@ -132,15 +132,32 @@ ysk-server store status|export|import|migrate --to json|sqlite|postgres …
 ```bash
 ysk-server files list|stat|read|write|mkdir|rm|rename|copy|move|chmod …
 ysk-server files trash list|restore|purge
-ysk-server files shares list|create|delete
+ysk-server files shares list|create|delete|bt-stats
 ysk-server files upload --dir REL --file LOCAL
 ysk-server files webdav status|token|disable
 ```
 
 ```bash
-ysk-server files shares create --path REL [--password …] [--expires ISO] --root public
+ysk-server files shares create --path REL [--mode direct|bt|both] [--password …] [--expires ISO] --root public
+ysk-server files shares bt-stats --id SHARE_ID
 ysk-server files shares delete --id SHARE_ID
 ```
+
+`--mode bt|both` 會產生 `.torrent`、以 WebTorrent 程序內做種，並需要運行中的 Tracker（`bt-tracker start`）。
+
+## bt-tracker
+
+自架 [bittorrent-tracker](https://github.com/webtorrent/bittorrent-tracker)，供檔案分享 magnet／WebTorrent 使用。
+
+```bash
+ysk-server bt-tracker status
+ysk-server bt-tracker settings get|set [--http-port N] [--udp-port N] [--listen-host H] [--public-host H] [--ws|--no-ws] [--autostart|--no-autostart]
+ysk-server bt-tracker start [--execute]
+ysk-server bt-tracker stop
+ysk-server bt-tracker torrents
+```
+
+預設 HTTP／WS 埠 **8000**。請將 `publicAnnounceHost` 設為 peers 可連的主機名。下載者在主機外時，以網絡暴露／防火牆開埠。若啟用 `autostart`，`serve` 啟動時會一併啟動 Tracker。
 
 ## cron
 

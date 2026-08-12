@@ -1,0 +1,235 @@
+/**
+ * BitTorrent tracker service + share BT stats API.
+ */
+import type { IncomingMessage, ServerResponse } from 'node:http';
+import { join } from 'node:path';
+import {
+  getBtTrackerStatus,
+  startBtTracker,
+  stopBtTracker,
+  listBtTrackerTorrents,
+  loadBtTrackerSettings,
+  patchBtTrackerSettings,
+  createShareTorrent,
+  seedShare,
+  stopSeed,
+  collectBtShareStats,
+  getSeedByInfoHash,
+  listFileShares,
+  getFileShareById,
+  patchFileShare,
+  normalizeDownloadModes,
+  createFileShare,
+  publicFilesRoot,
+  FileManager,
+  syncServiceExposure,
+} from '@ysk/core';
+import { ErrorCodes } from '@ysk/shared';
+import type { AppContext } from '../app-context.js';
+import {
+  getBearer,
+  readBody,
+  sendJson,
+  sendOpsResult,
+} from '../http/util.js';
+
+const BASE = '/api/v1/system/bt-tracker';
+
+export async function handleBtTrackerRoutes(
+  ctx: AppContext,
+  req: IncomingMessage,
+  res: ServerResponse,
+  url: URL,
+  method: string,
+): Promise<boolean> {
+  if (!url.pathname.startsWith(BASE) && !url.pathname.startsWith('/api/v1/files/shares')) {
+    return false;
+  }
+
+  // —— Tracker service ——
+  if (url.pathname.startsWith(BASE)) {
+    try {
+      if (method === 'GET' && url.pathname === `${BASE}/status`) {
+        ctx.auth.authenticate(getBearer(req));
+        const st = await getBtTrackerStatus({
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+        });
+        sendJson(res, 200, { ok: true, ...st });
+        return true;
+      }
+      if (method === 'GET' && url.pathname === `${BASE}/settings`) {
+        ctx.auth.authenticate(getBearer(req));
+        sendJson(res, 200, {
+          ok: true,
+          settings: loadBtTrackerSettings(ctx.dataDir),
+        });
+        return true;
+      }
+      if (method === 'PATCH' && url.pathname === `${BASE}/settings`) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as Record<string, unknown>;
+        const settings = patchBtTrackerSettings(ctx.dataDir, data as never);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'bt_tracker.settings',
+          detail: { keys: Object.keys(data) },
+          ok: true,
+        });
+        sendJson(res, 200, { ok: true, settings });
+        return true;
+      }
+      if (method === 'POST' && url.pathname === `${BASE}/start`) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const r = await startBtTracker({ dataDir: ctx.dataDir, host: ctx.host });
+        if (r.ok) {
+          try {
+            const settings = loadBtTrackerSettings(ctx.dataDir);
+            await syncServiceExposure({
+              host: ctx.host,
+              dataDir: ctx.dataDir,
+              serviceId: 'bt-tracker',
+              ports: [
+                { role: 'http', port: String(settings.httpPort), proto: 'tcp' },
+              ],
+              reason: 'start',
+              requireDecision: false,
+            });
+          } catch {
+            /* non-fatal */
+          }
+        }
+        ctx.audit.append({
+          actor: user.username,
+          action: 'bt_tracker.start',
+          detail: { ok: r.ok },
+          ok: r.ok,
+        });
+        sendOpsResult(res, r);
+        return true;
+      }
+      if (method === 'POST' && url.pathname === `${BASE}/stop`) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const r = await stopBtTracker();
+        ctx.audit.append({
+          actor: user.username,
+          action: 'bt_tracker.stop',
+          detail: { ok: r.ok },
+          ok: r.ok,
+        });
+        sendOpsResult(res, r);
+        return true;
+      }
+      if (method === 'GET' && url.pathname === `${BASE}/torrents`) {
+        ctx.auth.authenticate(getBearer(req));
+        const rows = listBtTrackerTorrents();
+        const shares = listFileShares(ctx.db);
+        const byHash = new Map(
+          shares
+            .filter((s) => s.infoHash)
+            .map((s) => [s.infoHash!.toLowerCase(), s]),
+        );
+        const items = rows.map((r) => {
+          const sh = byHash.get(r.infoHash.toLowerCase());
+          const seed = getSeedByInfoHash(r.infoHash);
+          return {
+            ...r,
+            name: r.name || sh?.path.split('/').pop(),
+            shareId: sh?.id,
+            seedStatus: sh?.seedStatus,
+            uploadSpeed: seed
+              ? Number(seed.torrent.uploadSpeed) || 0
+              : undefined,
+            downloadSpeed: seed
+              ? Number(seed.torrent.downloadSpeed) || 0
+              : undefined,
+          };
+        });
+        sendJson(res, 200, { ok: true, items });
+        return true;
+      }
+      return false;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      sendJson(res, 500, { ok: false, code: ErrorCodes.INTERNAL, message: msg });
+      return true;
+    }
+  }
+
+  // —— Share BT stats (authenticated) ——
+  if (method === 'POST' && url.pathname === '/api/v1/files/shares/bt-stats') {
+    ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { ids?: string[] };
+    const ids = Array.isArray(data.ids) ? data.ids.slice(0, 50) : [];
+    const tracker = listBtTrackerTorrents();
+    const tMap = new Map(tracker.map((t) => [t.infoHash.toLowerCase(), t]));
+    const items: Record<string, unknown> = {};
+    for (const id of ids) {
+      const share = getFileShareById(ctx.db, id);
+      if (!share) continue;
+      const tr = share.infoHash ? tMap.get(share.infoHash.toLowerCase()) : undefined;
+      items[share.id] = collectBtShareStats({
+        share,
+        trackerSeeders: tr?.seeders,
+        trackerLeechers: tr?.leechers,
+      });
+    }
+    sendJson(res, 200, { ok: true, items });
+    return true;
+  }
+
+  const statsMatch = url.pathname.match(
+    /^\/api\/v1\/files\/shares\/([^/]+)\/bt-stats$/,
+  );
+  if (method === 'GET' && statsMatch) {
+    ctx.auth.authenticate(getBearer(req));
+    const id = decodeURIComponent(statsMatch[1] ?? '');
+    const share = getFileShareById(ctx.db, id);
+    if (!share) {
+      sendJson(res, 404, { ok: false, code: ErrorCodes.NOT_FOUND });
+      return true;
+    }
+    const tr = share.infoHash
+      ? listBtTrackerTorrents().find(
+          (t) => t.infoHash.toLowerCase() === share.infoHash!.toLowerCase(),
+        )
+      : undefined;
+    sendJson(res, 200, {
+      ok: true,
+      stats: collectBtShareStats({
+        share,
+        trackerSeeders: tr?.seeders,
+        trackerLeechers: tr?.leechers,
+      }),
+    });
+    return true;
+  }
+
+  return false;
+}
+
+/** Resolve absolute content path for a share root+path */
+export function resolveShareContentPath(
+  ctx: AppContext,
+  rootKey: string,
+  relPath: string,
+): string {
+  let root: string;
+  if (rootKey === 'public' || !rootKey) {
+    root = publicFilesRoot(ctx.dataDir);
+  } else if (rootKey.startsWith('project:')) {
+    const projectId = rootKey.slice('project:'.length);
+    const proj = ctx.projects.get(projectId);
+    root = proj.homeDir;
+  } else {
+    root = publicFilesRoot(ctx.dataDir);
+  }
+  const fm = new FileManager(root);
+  // FileManager resolves relative safely
+  const st = fm.stat(relPath);
+  return join(root, st.path || relPath);
+}
+
+export { createShareTorrent, seedShare, stopSeed, patchFileShare, createFileShare, normalizeDownloadModes };

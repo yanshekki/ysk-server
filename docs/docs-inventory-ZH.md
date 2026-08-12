@@ -50,7 +50,8 @@
 |----|------|----------|----------|----------|------|
 | projects | `projects{,-ZH}.md` | `/projects` | `projects` | 🔶 | D3 |
 | email | `email{,-ZH}.md` | `/email` | `email` | 🔶 | D3 |
-| files-ftp | `files-ftp{,-ZH}.md` | `/files`、`/ftp` | `files`、`ftp` | 🔶 | D3 |
+| files-ftp | `files-ftp{,-ZH}.md` | `/files`、`/ftp`、`/bt-tracker` | `files`、`ftp`、`bt-tracker` | ✅ | D3 |
+| bt-tracker | `bt-tracker{,-ZH}.md` | `/bt-tracker` | `bt-tracker` | ✅ | D3 |
 | databases | `databases{,-ZH}.md` | MySQL/Maria/PG/Redis | `db`、`redis`、`db-cluster` | 🔶 | D2 |
 | dns-ssl-nginx | `dns-ssl-nginx{,-ZH}.md` | `/dns`、`/ssl`、`/nginx` | `dns`、`ssl`、`nginx` | 🔶 | D3 |
 | nginx-sites | `nginx-sites{,-ZH}.md` | nginx 站點 UI | `nginx` | 🔶 | D3 |

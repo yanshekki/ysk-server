@@ -129,9 +129,13 @@ export async function handleFilesPublicRoutes(
     return true;
   }
 
-  // Public share download (no session auth; rate-limit password guesses)
+  // Public share download / meta / torrent / bt-stats (no session; rate-limit password guesses)
   if (method === 'GET' && url.pathname.startsWith('/api/v1/public/files/')) {
-    const token = url.pathname.split('/').pop() ?? '';
+    const parts = url.pathname.split('/').filter(Boolean);
+    // public/files/:token[/:action]
+    const tokenIdx = parts.indexOf('files') + 1;
+    const token = parts[tokenIdx] ?? '';
+    const action = parts[tokenIdx + 1]; // torrent | meta | bt-stats | undefined
     const shareRlKey = `${clientIp(req)}:${token.slice(0, 16)}`;
     const shareGate = checkRateLimit('share-auth', shareRlKey, PUBLIC_AUTH_RL);
     if (!shareGate.ok) {
@@ -151,23 +155,105 @@ export async function handleFilesPublicRoutes(
     }
     const share = getShareByToken(ctx.db, token);
     if (!share) {
-      // Count unknown tokens lightly to slow token scanning
       recordRateLimitFailure('share-auth', shareRlKey, PUBLIC_AUTH_RL);
       sendJson(res, 404, { ok: false, message: tl('notes.auto.n0595') });
       return true;
     }
-    // Prefer header (not query — avoids access logs / Referer leak)
     const hdr =
       (typeof req.headers['x-share-password'] === 'string'
         ? req.headers['x-share-password']
         : undefined) ?? undefined;
     const password = hdr ?? url.searchParams.get('password') ?? undefined;
-    if (!verifySharePassword(share, password)) {
+    const needPass = Boolean(share.passwordHash);
+    const authed = verifySharePassword(share, password);
+
+    if (action === 'meta') {
+      const unlocked = !needPass || authed;
+      // Meta without password: only non-sensitive fields; magnet only when unlocked
+      sendJson(res, 200, {
+        ok: true,
+        needPassword: needPass && !authed,
+        name: share.path.split('/').pop(),
+        downloadModes: share.downloadModes ?? ['direct'],
+        hasBt: (share.downloadModes ?? []).includes('bt') || Boolean(share.infoHash),
+        hasDirect: !(share.downloadModes?.length) || share.downloadModes.includes('direct'),
+        seedStatus: share.seedStatus,
+        expiresAt: share.expiresAt,
+        infoHash: unlocked ? share.infoHash : undefined,
+        magnetUri: unlocked ? share.magnetUri : undefined,
+        torrentUrl:
+          unlocked && (share.torrentRelPath || share.infoHash)
+            ? `/api/v1/public/files/${token}/torrent`
+            : undefined,
+      });
+      return true;
+    }
+
+    if (!authed) {
       recordRateLimitFailure('share-auth', shareRlKey, PUBLIC_AUTH_RL);
-      sendJson(res, 401, { ok: false, message: tl('notes.auto.n1577'), needPassword: true });
+      sendJson(res, 401, {
+        ok: false,
+        message: tl('notes.auto.n1577'),
+        needPassword: true,
+      });
       return true;
     }
     clearRateLimit('share-auth', shareRlKey);
+
+    if (action === 'bt-stats') {
+      const {
+        collectBtShareStats,
+        listBtTrackerTorrents,
+      } = await import('@ysk/core');
+      const tr = share.infoHash
+        ? listBtTrackerTorrents().find(
+            (t) => t.infoHash.toLowerCase() === share.infoHash!.toLowerCase(),
+          )
+        : undefined;
+      const stats = collectBtShareStats({
+        share,
+        trackerSeeders: tr?.seeders,
+        trackerLeechers: tr?.leechers,
+      });
+      sendJson(res, 200, { ok: true, stats });
+      return true;
+    }
+
+    if (action === 'torrent') {
+      if (!share.torrentRelPath && !share.infoHash) {
+        sendJson(res, 404, { ok: false, message: 'no torrent' });
+        return true;
+      }
+      const { readFileSync, existsSync } = await import('node:fs');
+      const { join } = await import('node:path');
+      const abs = join(ctx.dataDir, share.torrentRelPath || '');
+      if (!share.torrentRelPath || !existsSync(abs)) {
+        sendJson(res, 404, { ok: false, message: 'torrent missing' });
+        return true;
+      }
+      const buf = readFileSync(abs);
+      const name = `${share.path.split('/').pop() || share.id}.torrent`;
+      res.writeHead(200, {
+        'Content-Type': 'application/x-bittorrent',
+        'Content-Length': buf.length,
+        'Content-Disposition': `attachment; filename="${encodeURIComponent(name)}"`,
+        'Access-Control-Allow-Origin': '*',
+      });
+      res.end(buf);
+      return true;
+    }
+
+    // Direct download (default)
+    const modes = share.downloadModes ?? ['direct'];
+    if (modes.length && !modes.includes('direct') && modes.includes('bt')) {
+      sendJson(res, 400, {
+        ok: false,
+        message: 'direct download disabled; use BT',
+        magnetUri: share.magnetUri,
+        torrentUrl: `/api/v1/public/files/${token}/torrent`,
+      });
+      return true;
+    }
     try {
       const { root } = resolveRoot(ctx, share.root, { skipCap: true });
       const fm = new FileManager(root);
@@ -177,12 +263,14 @@ export async function handleFilesPublicRoutes(
         'Content-Type': file.mime,
         'Content-Length': file.buffer.length,
         'Content-Disposition': `attachment; filename="${encodeURIComponent(file.name)}"`,
-        'Access-Control-Allow-Origin': '*' });
+        'Access-Control-Allow-Origin': '*',
+      });
       res.end(file.buffer);
     } catch (e) {
       sendJson(res, 404, {
         ok: false,
-        message: e instanceof Error ? e.message : tl('notes.notFound') });
+        message: e instanceof Error ? e.message : tl('notes.notFound'),
+      });
     }
     return true;
   }

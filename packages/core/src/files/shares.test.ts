@@ -12,6 +12,7 @@ import {
   bumpShareDownload,
   toggleFavorite,
   listFavorites,
+  normalizeDownloadModes,
 } from './shares.js';
 import { createHash } from 'node:crypto';
 import { hashSharePassword, verifySharePasswordHash } from './manager.js';
@@ -42,6 +43,32 @@ describe('file shares', () => {
       expect(listFavorites(store, 'public')).toHaveLength(1);
       expect(toggleFavorite(store, 'public', 'docs/a.txt').favorited).toBe(false);
       expect(deleteFileShare(store, s.id)).toBe(true);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('normalizes download modes (direct | bt | both)', () => {
+    expect(normalizeDownloadModes(undefined)).toEqual(['direct']);
+    expect(normalizeDownloadModes('bt')).toEqual(['bt']);
+    expect(normalizeDownloadModes('both')).toEqual(['direct', 'bt']);
+    expect(normalizeDownloadModes(['direct', 'bt'])).toEqual(['direct', 'bt']);
+    expect(normalizeDownloadModes('direct|bt')).toEqual(['direct', 'bt']);
+  });
+
+  it('creates BT-mode share with pending seed status', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-shares-bt-'));
+    try {
+      const store = new JsonStore(join(dir, 'db.json'));
+      const s = createFileShare(store, {
+        root: 'public',
+        path: 'big.bin',
+        createdBy: 'admin',
+        downloadModes: ['bt'],
+        seedStatus: 'pending',
+      });
+      expect(s.downloadModes).toEqual(['bt']);
+      expect(s.seedStatus).toBe('pending');
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

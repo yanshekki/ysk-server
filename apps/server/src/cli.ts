@@ -90,6 +90,7 @@ const CLI_COMMANDS = [
   'redis',
   'ftp',
   'runtimes',
+  'bt-tracker',
   'version',
   'help',
 ] as const;
@@ -1102,23 +1103,54 @@ async function mainInner(
           const path = getOpt(args, '--path');
           if (!path?.trim()) {
             process.stderr.write(
-              'Usage: ysk-server files shares create --path REL [--password …] [--expires ISO] --root public|project:ID\n',
+              'Usage: ysk-server files shares create --path REL [--mode direct|bt|both] [--password …] [--expires ISO] --root public|project:ID\n',
             );
             return 2;
           }
           try {
-            const share = createFileShare(ctx.db, {
+            const modeRaw = getOpt(args, '--mode') ?? 'direct';
+            const {
+              normalizeDownloadModes,
+              prepareFileShareBt,
+            } = await import('@ysk/core');
+            const downloadModes = normalizeDownloadModes(
+              modeRaw === 'both' ? ['direct', 'bt'] : modeRaw === 'bt' ? ['bt'] : ['direct'],
+            );
+            const entry = fm.stat(path.trim());
+            let share = createFileShare(ctx.db, {
               root: rootKey,
               path: path.trim(),
               password: getOpt(args, '--password') ?? undefined,
               expiresAt: getOpt(args, '--expires') ?? getOpt(args, '--expires-at') ?? undefined,
               createdBy: 'cli',
+              downloadModes,
+              seedStatus: downloadModes.includes('bt') ? 'pending' : 'none',
             });
+            const notes: string[] = [];
+            if (downloadModes.includes('bt')) {
+              const contentAbs = join(root, entry.path);
+              const prepared = await prepareFileShareBt({
+                dataDir: ctx.dataDir,
+                db: ctx.db,
+                share,
+                contentAbsPath: contentAbs,
+                displayName: entry.name,
+              });
+              share = prepared.share;
+              notes.push(...prepared.notes);
+            }
             printJson({
               ok: true,
               root: rootKey,
-              share,
+              share: {
+                ...share,
+                url: `/share/${share.token}`,
+                torrentUrl: share.torrentRelPath
+                  ? `/api/v1/public/files/${share.token}/torrent`
+                  : undefined,
+              },
               publicPath: `/share/${share.token}`,
+              notes: notes.length ? notes : undefined,
             });
             return 0;
           } catch (e) {
@@ -1128,6 +1160,21 @@ async function mainInner(
             });
             return 1;
           }
+        }
+        if (act === 'bt-stats') {
+          const id = getOpt(args, '--id');
+          if (!id?.trim()) {
+            process.stderr.write('Usage: ysk-server files shares bt-stats --id SHARE_ID\n');
+            return 2;
+          }
+          const { getFileShareById, collectBtShareStats } = await import('@ysk/core');
+          const share = getFileShareById(ctx.db, id.trim());
+          if (!share) {
+            printJson({ ok: false, notes: ['share not found'] });
+            return 4;
+          }
+          printJson({ ok: true, stats: collectBtShareStats({ share }) });
+          return 0;
         }
         if (act === 'delete' || act === 'rm' || act === 'remove') {
           const id = getOpt(args, '--id') ?? getOpt(args, '--token');
@@ -5233,6 +5280,25 @@ async function mainInner(
       webRoot: webRoot ?? undefined });
     const { listenControlPlane } = await import('./http-server.js');
     const dual = await listenControlPlane(ctx, host, port);
+    // BT tracker autostart + re-seed existing file-share torrents (in-process)
+    try {
+      const { restoreBtSharesOnBoot } = await import('@ysk/core');
+      void restoreBtSharesOnBoot({
+        dataDir: ctx.dataDir,
+        db: ctx.db,
+        host: ctx.host,
+      })
+        .then((r) => {
+          if (r.notes.length && !json) {
+            for (const n of r.notes.slice(0, 4)) {
+              process.stdout.write(`[bt-tracker] ${n}\n`);
+            }
+          }
+        })
+        .catch(() => undefined);
+    } catch {
+      /* non-fatal */
+    }
     const scheme = dual.primary.scheme;
     const addr = { host: dual.primary.host, port: dual.primary.port };
     const msg = `${PRODUCT_NAME} listening on ${scheme}://${addr.host}:${addr.port}`;
@@ -5419,7 +5485,8 @@ async function mainInner(
     command === 'db' ||
     command === 'redis' ||
     command === 'ftp' ||
-    command === 'runtimes'
+    command === 'runtimes' ||
+    command === 'bt-tracker'
   ) {
     // Honour --execute together with YSK_EXECUTE for host mutations
     const configPath = getOpt(args, '--config');
@@ -5481,6 +5548,10 @@ async function mainInner(
       if (command === 'ftp') {
         const { runFtpCommand } = await import('./cli/cmd-ftp.js');
         return await runFtpCommand(ctx, args, json, helpers);
+      }
+      if (command === 'bt-tracker') {
+        const { runBtTrackerCommand } = await import('./cli/cmd-bt-tracker.js');
+        return await runBtTrackerCommand(ctx, args, json, helpers);
       }
       if (command === 'runtimes') {
         // Alias → hosting runtimes / runtime-install / switch / uninstall

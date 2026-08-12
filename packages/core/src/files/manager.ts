@@ -557,6 +557,13 @@ export type FileShareRecord = {
   createdAt: string;
   createdBy: string;
   downloadCount: number;
+  /** Default ['direct'] when missing (legacy). */
+  downloadModes?: Array<'direct' | 'bt'>;
+  infoHash?: string;
+  magnetUri?: string;
+  torrentRelPath?: string;
+  seedStatus?: 'none' | 'pending' | 'seeding' | 'stopped' | 'error';
+  seedNotes?: string[];
 };
 
 /**

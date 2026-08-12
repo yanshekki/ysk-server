@@ -71,5 +71,6 @@
   "unbookmark": "사이드바에서 고정 해제",
   "bookmarkPinned": "고정됨",
   "bookmarkAdded": "사이드바에 고정됨",
-  "bookmarkRemoved": "사이드바에서 삭제됨"
+  "bookmarkRemoved": "사이드바에서 삭제됨",
+  "btTracker": "BT Tracker"
 }

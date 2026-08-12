@@ -34,9 +34,13 @@
     "@simplewebauthn/server": "^13.3.2",
     "@ysk/shared": "workspace:*",
     "better-sqlite3": "13.0.1",
+    "bittorrent-tracker": "^11.2.3",
+    "create-torrent": "^6.1.3",
     "maxmind": "^5.0.6",
+    "parse-torrent": "^11.0.24",
     "playwright-core": "^1.62.1",
-    "sql.js": "^1.14.1"
+    "sql.js": "^1.14.1",
+    "webtorrent": "^3.0.21"
   },
   "devDependencies": {
     "@types/better-sqlite3": "7.6.13",

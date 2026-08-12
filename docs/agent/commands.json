@@ -860,14 +860,24 @@
       "name": "vpn monitor",
       "risk": "read",
       "summary": "Live peer/client transfer snapshot",
-      "args": ["--engine"],
+      "args": [
+        "--engine"
+      ],
       "example": "ysk-server vpn monitor --engine wireguard --json"
     },
     {
       "name": "vpn ensure",
       "risk": "write-host",
       "summary": "Ensure VPN server (WireGuard/OpenVPN/Outline)",
-      "args": ["--engine", "--port", "--endpoint", "--dns", "--proto", "--access-mode", "--execute"],
+      "args": [
+        "--engine",
+        "--port",
+        "--endpoint",
+        "--dns",
+        "--proto",
+        "--access-mode",
+        "--execute"
+      ],
       "example": "ysk-server vpn ensure --engine wireguard --execute --json"
     },
     {
@@ -886,7 +896,12 @@
       "name": "vpn firewall open",
       "risk": "write-host",
       "summary": "Open VPN port via service exposure (ysk-svc)",
-      "args": ["--port", "--proto", "--engine", "--execute"],
+      "args": [
+        "--port",
+        "--proto",
+        "--engine",
+        "--execute"
+      ],
       "example": "ysk-server vpn firewall open --port 51820 --proto udp --execute --json"
     },
     {
@@ -1043,7 +1058,7 @@
       "name": "files shares create",
       "risk": "write-panel",
       "summary": "Create public file share link",
-      "example": "ysk-server files shares create --path docs --root public --json"
+      "example": "ysk-server files shares create --path REL [--mode direct|bt|both] --root public --json"
     },
     {
       "name": "email aliases",
@@ -1056,6 +1071,55 @@
       "risk": "write-host",
       "summary": "List or generate DNSSEC keys for a zone",
       "example": "ysk-server dns dnssec list --zone example.com --json"
+    },
+    {
+      "name": "bt-tracker status",
+      "aliases": [
+        "bt-tracker info"
+      ],
+      "risk": "read",
+      "summary": "BitTorrent tracker status, announce URLs, swarm counters",
+      "example": "ysk-server bt-tracker status --json"
+    },
+    {
+      "name": "bt-tracker start",
+      "aliases": [],
+      "risk": "write-host",
+      "summary": "Start in-process bittorrent-tracker (HTTP/WS announce)",
+      "example": "YSK_EXECUTE=1 ysk-server bt-tracker start --execute --json"
+    },
+    {
+      "name": "bt-tracker stop",
+      "aliases": [],
+      "risk": "write-host",
+      "summary": "Stop BitTorrent tracker",
+      "example": "ysk-server bt-tracker stop --json"
+    },
+    {
+      "name": "bt-tracker settings",
+      "aliases": [
+        "bt-tracker settings get",
+        "bt-tracker settings set"
+      ],
+      "risk": "write-panel",
+      "summary": "Get/set tracker ports, public announce host, WS, autostart",
+      "example": "ysk-server bt-tracker settings set --http-port 8000 --public-host example.com --json"
+    },
+    {
+      "name": "bt-tracker torrents",
+      "aliases": [
+        "bt-tracker stats"
+      ],
+      "risk": "read",
+      "summary": "List tracked torrents (seeds/leechers)",
+      "example": "ysk-server bt-tracker torrents --json"
+    },
+    {
+      "name": "files shares bt-stats",
+      "aliases": [],
+      "risk": "read",
+      "summary": "Live BT swarm stats for a file share",
+      "example": "ysk-server files shares bt-stats --id SHARE_ID --json"
     }
   ]
 }

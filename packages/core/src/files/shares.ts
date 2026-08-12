@@ -32,10 +32,20 @@ export function createFileShare(
     password?: string;
     expiresAt?: string;
     createdBy: string;
+    downloadModes?: Array<'direct' | 'bt'>;
+    infoHash?: string;
+    magnetUri?: string;
+    torrentRelPath?: string;
+    seedStatus?: FileShareRecord['seedStatus'];
+    seedNotes?: string[];
   },
 ): FileShareRecord {
   if (!input.path || input.path === '.') {
     throw new YskError(ErrorCodes.VALIDATION, tl('notes.needPath'), { httpStatus: 400 });
+  }
+  const modes = normalizeDownloadModes(input.downloadModes);
+  if (modes.includes('bt') && !input.infoHash && input.seedStatus !== 'pending') {
+    // Allow pending: torrent may be created just after row insert by caller
   }
   const row: FileShareRecord = {
     id: newShareToken().slice(0, 12),
@@ -46,10 +56,59 @@ export function createFileShare(
     expiresAt: input.expiresAt,
     createdAt: new Date().toISOString(),
     createdBy: input.createdBy,
-    downloadCount: 0 };
+    downloadCount: 0,
+    downloadModes: modes,
+    infoHash: input.infoHash,
+    magnetUri: input.magnetUri,
+    torrentRelPath: input.torrentRelPath,
+    seedStatus: input.seedStatus ?? (modes.includes('bt') ? 'pending' : 'none'),
+    seedNotes: input.seedNotes,
+  };
   list(store).unshift(row as unknown as FileShareRecord);
   store.persist();
   return { ...row };
+}
+
+export function normalizeDownloadModes(
+  raw?: Array<'direct' | 'bt'> | string | null,
+): Array<'direct' | 'bt'> {
+  if (!raw) return ['direct'];
+  if (typeof raw === 'string' && raw.trim().toLowerCase() === 'both') {
+    return ['direct', 'bt'];
+  }
+  const list = Array.isArray(raw)
+    ? raw
+    : String(raw)
+        .split(/[|,]/)
+        .map((s) => s.trim().toLowerCase());
+  const out: Array<'direct' | 'bt'> = [];
+  for (const m of list) {
+    if (m === 'both') {
+      if (!out.includes('direct')) out.push('direct');
+      if (!out.includes('bt')) out.push('bt');
+      continue;
+    }
+    if ((m === 'direct' || m === 'bt') && !out.includes(m)) out.push(m);
+  }
+  return out.length ? out : ['direct'];
+}
+
+export function patchFileShare(
+  store: JsonStore,
+  id: string,
+  patch: Partial<FileShareRecord>,
+): FileShareRecord | null {
+  const items = list(store);
+  const row = items.find((s) => s.id === id || s.token === id);
+  if (!row) return null;
+  Object.assign(row, patch, { id: row.id, token: row.token });
+  store.persist();
+  return { ...row };
+}
+
+export function getFileShareById(store: JsonStore, id: string): FileShareRecord | null {
+  const row = list(store).find((s) => s.id === id || s.token === id) ?? null;
+  return row ? { ...row } : null;
 }
 
 export function deleteFileShare(store: JsonStore, id: string): boolean {

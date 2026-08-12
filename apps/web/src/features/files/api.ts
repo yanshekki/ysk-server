@@ -137,12 +137,33 @@ export const filesApi = {
 
   createShare: (
     root: string,
-    body: { path: string; password?: string; expiresAt?: string },
+    body: {
+      path: string;
+      password?: string;
+      expiresAt?: string;
+      /** direct | bt | both — or explicit downloadModes */
+      mode?: 'direct' | 'bt' | 'both';
+      downloadModes?: Array<'direct' | 'bt'>;
+    },
   ) =>
-    api.requestRaw<{ share: FileShare }>(`/api/v1/files/shares?${q(root)}`, {
-      method: 'POST',
-      body: JSON.stringify(body),
-    }),
+    api.requestRaw<{ share: FileShare; notes?: string[]; ok?: boolean }>(
+      `/api/v1/files/shares?${q(root)}`,
+      {
+        method: 'POST',
+        body: JSON.stringify(body),
+      },
+    ),
+
+  shareBtStats: (id: string) =>
+    api.requestRaw<{ ok: boolean; stats: import('@ysk/shared').BtShareStats }>(
+      `/api/v1/files/shares/${encodeURIComponent(id)}/bt-stats`,
+    ),
+
+  shareBtStatsBatch: (ids: string[]) =>
+    api.requestRaw<{ ok: boolean; items: Record<string, import('@ysk/shared').BtShareStats> }>(
+      '/api/v1/files/shares/bt-stats',
+      { method: 'POST', body: JSON.stringify({ ids }) },
+    ),
 
   deleteShare: (root: string, id: string) =>
     api.requestRaw(`/api/v1/files/shares/${encodeURIComponent(id)}?${q(root)}`, {

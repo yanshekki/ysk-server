@@ -4,7 +4,7 @@
 
 ## Purpose
 
-Sandboxed **file manager** (public or project root), **public share links**, **WebDAV**, and **FTPS accounts** / vsftpd service.
+Sandboxed **file manager** (public or project root), **public share links** (direct HTTP and/or **BitTorrent / WebTorrent**), **WebDAV**, and **FTPS accounts** / vsftpd service.
 
 **Non-goals:** Unrestricted host filesystem browse as a remote SSH product; public share landing is panel HTTP (create is CLI/API).
 
@@ -12,9 +12,9 @@ Sandboxed **file manager** (public or project root), **public share links**, **W
 
 | Item | Value |
 |------|--------|
-| Routes | `/files`, `/ftp`, public files hosting |
-| Nav keys | `files`, `publicFiles`, `ftp` |
-| Main actions | CRUD · trash · shares · favorites · WebDAV · FTPS accounts/settings |
+| Routes | `/files`, `/ftp`, `/bt-tracker`, public `/share/:token` |
+| Nav keys | `files`, `publicFiles`, `ftp`, `btTracker` |
+| Main actions | CRUD · trash · shares (mode direct/BT/both) · favorites · WebDAV · FTPS · BT tracker |
 | Capability | Files / FTPS |
 | RBAC | File and FTP operators |
 
@@ -25,12 +25,14 @@ Sandboxed **file manager** (public or project root), **public share links**, **W
 | List/read/write/mkdir/rm/… | `ysk-server files list\|read\|write\|… --root public\|project:ID` | write-panel | |
 | Trash | `ysk-server files trash list\|restore\|purge` | write-panel | |
 | Shares list | `ysk-server files shares list` | read | |
-| Share create/delete | `ysk-server files shares create\|delete` | write-panel | |
+| Share create/delete | `ysk-server files shares create\|delete [--mode direct\|bt\|both]` | write-panel | BT creates `.torrent` + seeder |
+| Share BT stats | `ysk-server files shares bt-stats --id ID` | read | Seeds / peers / speeds |
 | Upload local file | `ysk-server files upload --dir … --file …` | write-panel | |
 | WebDAV | `ysk-server files webdav status\|token\|disable` | write-panel | |
 | FTP status/settings | `ysk-server ftp status\|settings …` | read / write-panel | |
 | FTP accounts CRUD | `ysk-server ftp accounts list\|create\|update\|delete` | write-panel | |
 | FTP apply to host | `ysk-server ftp apply\|accounts apply --execute` | write-host | |
+| BT tracker | `ysk-server bt-tracker status\|start\|stop\|settings\|torrents` | read / write-host | See [bt-tracker.md](./bt-tracker.md) |
 | Public files site | `ysk-server hosting public-files …` | write-host | |
 
 ## CLI quick start
@@ -38,6 +40,8 @@ Sandboxed **file manager** (public or project root), **public share links**, **W
 ```bash
 ysk-server files list --root public --json
 ysk-server files shares create --path docs --root public --json
+ysk-server files shares create --path big.zip --mode both --root public --json
+ysk-server bt-tracker start --execute --json
 ysk-server ftp accounts list --json
 export YSK_EXECUTE=1
 ysk-server ftp apply --execute --json
@@ -48,6 +52,7 @@ ysk-server ftp apply --execute --json
 - File ops are sandboxed to chosen root.  
 - FTPS apply needs EXECUTE + root for vsftpd.  
 - Public `/share/:token` page is UX; **create** is CLI/API.  
+- BT mode needs tracker running for reliable peer discovery; set `publicAnnounceHost` for off-host downloaders.
 
 ## Panel-only ⚠️
 
@@ -58,5 +63,6 @@ ysk-server ftp apply --execute --json
 
 ## Related
 
-- [CLI reference — files / ftp](../cli/reference.md)  
+- [BT Tracker & WebTorrent shares](./bt-tracker.md)  
+- [CLI reference — files / ftp / bt-tracker](../cli/reference.md)  
 - [Panel ↔ CLI matrix](../cli/panel-parity-matrix.md)  

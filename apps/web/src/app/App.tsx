@@ -96,6 +96,9 @@ const CdnPage = lazy(() =>
 const FtpPage = lazy(() =>
   import('../pages/features/FtpPage').then((m) => ({ default: m.FtpPage })),
 );
+const BtTrackerPage = lazy(() =>
+  import('../pages/features/BtTrackerPage').then((m) => ({ default: m.BtTrackerPage })),
+);
 const FirewallPage = lazy(() =>
   import('../pages/features/FirewallPage').then((m) => ({ default: m.FirewallPage })),
 );
@@ -318,6 +321,14 @@ export function App() {
             <Route
               path="ftp/service"
               element={<Navigate to="/ftp?tab=service" replace />}
+            />
+            <Route
+              path="bt-tracker"
+              element={
+                <Lazy>
+                  <BtTrackerPage />
+                </Lazy>
+              }
             />
             <Route
               path="dns"

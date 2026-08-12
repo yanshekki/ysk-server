@@ -50,6 +50,7 @@
 | [features/projects-ZH.md](./features/projects-ZH.md) | 站點／部署／隔離 |
 | [features/email-ZH.md](./features/email-ZH.md) | 郵件與可送達性 |
 | [features/files-ftp-ZH.md](./features/files-ftp-ZH.md) | 檔案、WebDAV、FTPS |
+| [features/bt-tracker-ZH.md](./features/bt-tracker-ZH.md) | BT Tracker 與 WebTorrent 分享 |
 | [features/databases-ZH.md](./features/databases-ZH.md) | MySQL／MariaDB／Postgres／Redis |
 | [features/dns-ssl-nginx-ZH.md](./features/dns-ssl-nginx-ZH.md) | DNS、SSL、Nginx |
 | [features/nginx-sites-ZH.md](./features/nginx-sites-ZH.md) | Nginx 站點控制台 |

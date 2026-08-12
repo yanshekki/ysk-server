@@ -245,6 +245,28 @@ export const YSK_SERVICE_PORTS: ServicePortDef[] = [
     category: 'cache',
     privateRecommended: true,
   },
+
+  // —— BitTorrent tracker (file shares WebTorrent/BT) ——
+  {
+    id: 'bt-tracker-http',
+    port: '8000',
+    proto: 'tcp',
+    label: '8000 BT tracker',
+    service: 'bt-tracker',
+    category: 'other',
+    privateRecommended: true,
+    hint: 'bittorrent-tracker HTTP/WebSocket announce (file share BT)',
+  },
+  {
+    id: 'bt-seeder-peers',
+    port: '6881:6889',
+    proto: 'tcp',
+    label: '6881-6889 BT peers',
+    service: 'bt-seeder',
+    category: 'other',
+    privateRecommended: true,
+    hint: 'WebTorrent/BT seeder peer listen range',
+  },
 ];
 
 /**

@@ -2980,5 +2980,22 @@
     "cleanupNothing": "没有可清理的冲突残留 conf",
     "conflictOwnedKeep": "保留已拥有 conf {{file}}（同域名 {{domain}}）",
     "retiredOrphan": "已退役残留 conf {{file}}（与 {{domain}} 域名冲突）"
+  },
+  "btTracker": {
+    "needExecute": "未启用 YSK_EXECUTE — 启动 Tracker 与对外开放端口需要系统变更权限。",
+    "startWithoutExecute": "在未启用 YSK_EXECUTE 下启动 Tracker — 进程可能可监听，但不会自动开放防火墙。",
+    "alreadyRunning": "BitTorrent Tracker 已在本进程运行。",
+    "notRunning": "BitTorrent Tracker 未运行。",
+    "started": "BitTorrent Tracker 正在端口 {{port}} 监听。",
+    "startFailed": "启动 Tracker 失败：{{detail}}",
+    "stopped": "BitTorrent Tracker 已停止。",
+    "maxSeeds": "已达同时做种上限（{{n}}）。",
+    "seedStarted": "已开始为分享 {{id}} 做种。",
+    "seedStopped": "已停止做种。",
+    "seedPending": "做种尚未就绪 — 请启动 Tracker，并在需要时启用 YSK_EXECUTE。",
+    "notSeeding": "控制平面当前未为该分享做种。",
+    "btNeedsTracker": "BT 分享需要运行中的 Tracker。请打开「文件 → BT Tracker」并启动。",
+    "restoreTrackerFailed": "开机还原时未能启动 BT Tracker",
+    "restoreDone": "BT 还原：已做种 {{seeded}}／{{attempted}}（失败 {{failed}}）"
   }
 }

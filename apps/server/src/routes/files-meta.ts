@@ -5,6 +5,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { tl } from '@ysk/shared';
 import type { UserDto } from '@ysk/shared';
+import { join } from 'node:path';
 import {
   FileManager,
   listFileShares,
@@ -12,6 +13,11 @@ import {
   deleteFileShare,
   listFavorites,
   toggleFavorite,
+  normalizeDownloadModes,
+  prepareFileShareBt,
+  stopSeed,
+  publicFilesRoot,
+  getFileShareById,
 } from '@ysk/core';
 import type { AppContext } from '../app-context.js';
 import { readBody, sendJson, sendOpsResult } from '../http/util.js';
@@ -76,37 +82,91 @@ export async function handleFilesMetaSection(
       path?: string;
       password?: string;
       expiresAt?: string;
+      downloadModes?: Array<'direct' | 'bt'> | string;
+      mode?: string;
     };
     if (!data.path) {
       sendJson(res, 400, { ok: false, message: tl('notes.needPath') });
       return true;
     }
+    const modes = normalizeDownloadModes(
+      data.downloadModes ??
+        (data.mode === 'bt'
+          ? ['bt']
+          : data.mode === 'both'
+            ? ['direct', 'bt']
+            : ['direct']),
+    );
     // ensure file exists
-    fm.stat(data.path);
-    const share = createFileShare(ctx.db, {
+    const entry = fm.stat(data.path);
+    const contentAbs =
+      rootKey === 'public' || !rootKey
+        ? join(publicFilesRoot(ctx.dataDir), entry.path)
+        : join(
+            (() => {
+              const projectId = rootKey.startsWith('project:')
+                ? rootKey.slice('project:'.length)
+                : '';
+              return projectId
+                ? ctx.projects.get(projectId).homeDir
+                : publicFilesRoot(ctx.dataDir);
+            })(),
+            entry.path,
+          );
+
+    let share = createFileShare(ctx.db, {
       root: rootKey,
       path: data.path,
       password: data.password,
       expiresAt: data.expiresAt,
-      createdBy: user.username });
+      createdBy: user.username,
+      downloadModes: modes,
+      seedStatus: modes.includes('bt') ? 'pending' : 'none',
+    });
+
+    const notes: string[] = [];
+    if (modes.includes('bt')) {
+      const prepared = await prepareFileShareBt({
+        dataDir: ctx.dataDir,
+        db: ctx.db,
+        share,
+        contentAbsPath: contentAbs,
+        displayName: entry.name,
+      });
+      share = prepared.share;
+      notes.push(...prepared.notes);
+    }
+
     ctx.audit.append({
       actor: user.username,
       action: 'files.share_create',
       resource: data.path,
-      detail: { id: share.id, token: share.token },
-      ok: true });
+      detail: {
+        id: share.id,
+        token: share.token,
+        downloadModes: modes,
+        infoHash: share.infoHash,
+      },
+      ok: true,
+    });
     sendJson(res, 201, {
+      ok: true,
+      notes,
       share: {
         ...share,
         passwordHash: undefined,
-        // SPA landing (password UI); download still via /api/v1/public/files/:token
         url: `/share/${share.token}`,
+        torrentUrl: share.torrentRelPath
+          ? `/api/v1/public/files/${share.token}/torrent`
+          : undefined,
       },
     });
     return true;
   }
   if (method === 'DELETE' && url.pathname.startsWith('/api/v1/files/shares/')) {
     const id = url.pathname.split('/').pop() ?? '';
+    const existing = getFileShareById(ctx.db, id);
+    if (existing) await stopSeed(existing.id).catch(() => undefined);
     const ok = deleteFileShare(ctx.db, id);
     sendJson(res, ok ? 200 : 404, { ok });
     return true;

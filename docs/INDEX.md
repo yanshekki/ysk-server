@@ -50,6 +50,7 @@
 | [features/projects.md](./features/projects.md) | Sites / deploy / isolation |
 | [features/email.md](./features/email.md) | Mail domains & deliverability |
 | [features/files-ftp.md](./features/files-ftp.md) | Files, WebDAV, FTPS |
+| [features/bt-tracker.md](./features/bt-tracker.md) | BT Tracker & WebTorrent shares |
 | [features/databases.md](./features/databases.md) | MySQL / MariaDB / Postgres / Redis |
 | [features/dns-ssl-nginx.md](./features/dns-ssl-nginx.md) | DNS, SSL, Nginx |
 | [features/nginx-sites.md](./features/nginx-sites.md) | Nginx site console |

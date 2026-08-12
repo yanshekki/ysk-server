@@ -2980,5 +2980,22 @@
     "cleanupNothing": "削除する競合するアーティファクト設定はありません",
     "conflictOwnedKeep": "所有されている conf {{file}} (ServerName {{domain}} も) を保持",
     "retiredOrphan": "廃止された孤立した conf {{file}} (ServerName が {{domain}} と衝突)"
+  },
+  "btTracker": {
+    "needExecute": "YSK_EXECUTE is off — tracker install/start and public ports need system-change permission.",
+    "startWithoutExecute": "Starting tracker without YSK_EXECUTE — listen may work; host firewall will not be opened.",
+    "alreadyRunning": "BitTorrent tracker is already running in this process.",
+    "notRunning": "BitTorrent tracker is not running.",
+    "started": "BitTorrent tracker listening on port {{port}}.",
+    "startFailed": "Failed to start tracker: {{detail}}",
+    "stopped": "BitTorrent tracker stopped.",
+    "maxSeeds": "Maximum concurrent seeds reached ({{n}}).",
+    "seedStarted": "Seeding share {{id}}.",
+    "seedStopped": "Stopped seeding share.",
+    "seedPending": "Seeding not ready yet — start the tracker and ensure YSK_EXECUTE when required.",
+    "notSeeding": "This share is not currently seeded by the control plane.",
+    "btNeedsTracker": "BT share needs a running tracker. Open Files → BT Tracker and start it.",
+    "restoreTrackerFailed": "BT tracker failed to start during boot restore",
+    "restoreDone": "BT restore: seeded {{seeded}}/{{attempted}} (failed {{failed}})"
   }
 }

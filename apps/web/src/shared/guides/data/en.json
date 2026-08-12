@@ -1709,5 +1709,43 @@
     "notes": [
       "Needs YSK_EXECUTE for system apply"
     ]
+  },
+  "btTracker": {
+    "id": "btTracker",
+    "title": "BT Tracker",
+    "summary": "Self-hosted BitTorrent / WebTorrent tracker for file shares. Create .torrent seeds and let guests download via magnet or .torrent.",
+    "canDo": [
+      "Start and stop the in-process tracker",
+      "Set HTTP/WS port and public announce host",
+      "Watch swarm seeds, leechers, and speeds",
+      "Create file shares with direct, BT, or both modes",
+      "Expose tracker ports via Network exposure / firewall chips"
+    ],
+    "workflow": [
+      "Open BT Tracker → set public announce host → Start",
+      "Open ports if downloaders are off-host",
+      "In Files → Share, choose BitTorrent or both",
+      "Copy magnet / .torrent from the share or public page"
+    ],
+    "notes": [
+      "Tracker is bundled Node (not an apt package)",
+      "Empty public host uses 127.0.0.1 — same-host tests only",
+      "BT without a running tracker may fail peer discovery"
+    ],
+    "cliHints": [
+      "ysk-server bt-tracker status --json",
+      "ysk-server bt-tracker start --execute --json",
+      "ysk-server files shares create --path FILE --mode both --root public --json"
+    ],
+    "related": [
+      {
+        "label": "Files",
+        "to": "/files"
+      },
+      {
+        "label": "Network",
+        "to": "/network"
+      }
+    ]
   }
 }

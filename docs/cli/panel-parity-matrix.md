@@ -30,7 +30,9 @@
 | sql-engine-switch | MySQL ↔ MariaDB switch | `db sql-engine …` | ✅ C5 | P1 |
 | redis-keys | Redis key mutations | `redis keys …` | ✅ C5 | P2 |
 | ftp-accounts | FTP account CRUD | `ftp accounts …` | ✅ C6 | P2 |
-| files-shares-create | Create public share | `files shares create` | ✅ C6 | P2 |
+| files-shares-create | Create public share (direct/BT/both) | `files shares create [--mode …]` | ✅ C6 | P2 |
+| files-shares-bt-stats | Share BT swarm stats | `files shares bt-stats --id` | ✅ C6 | P2 |
+| bt-tracker | BT tracker service page | `bt-tracker status\|start\|stop\|settings\|torrents` | ✅ C6 | P2 |
 | email-depth | aliases / queue / relay | `email …` | ✅ C6 | P2 |
 | dns-records | records / dnssec / heal | `dns …` | ✅ C6 | P2 |
 | runtimes-full | java/kotlin/bun + switch | `runtimes …` / `hosting runtime-*` | ✅ C7 | P2 |
@@ -53,7 +55,8 @@
 |--------|------------------|
 | Control plane | `setup` `serve` `readiness` `health` `store` `system unit-install` `update` |
 | Projects | `projects list\|get\|create\|deploy\|stop\|git-deploy\|isolation\|health` |
-| Files | `files list\|read\|write\|mkdir\|rm\|…\|trash\|webdav\|shares list` |
+| Files | `files list\|read\|write\|mkdir\|rm\|…\|trash\|webdav\|shares list\|create\|bt-stats` |
+| BT Tracker | `bt-tracker status\|start\|stop\|settings\|torrents` |
 | Email | `email domains\|mailboxes\|dns\|bootstrap\|deliverability` |
 | Nginx / SSL / DNS zones | `nginx` `ssl` `dns` `hosting …` |
 | Defense | `defense` / `protection` |

@@ -132,15 +132,32 @@ Sandboxed file manager (public or `project:ID` root):
 ```bash
 ysk-server files list|stat|read|write|mkdir|rm|rename|copy|move|chmod …
 ysk-server files trash list|restore|purge
-ysk-server files shares list|create|delete
+ysk-server files shares list|create|delete|bt-stats
 ysk-server files upload --dir REL --file LOCAL
 ysk-server files webdav status|token|disable
 ```
 
 ```bash
-ysk-server files shares create --path REL [--password …] [--expires ISO] --root public
+ysk-server files shares create --path REL [--mode direct|bt|both] [--password …] [--expires ISO] --root public
+ysk-server files shares bt-stats --id SHARE_ID
 ysk-server files shares delete --id SHARE_ID
 ```
+
+`--mode bt|both` creates a `.torrent`, seeds in-process (WebTorrent), and needs a running tracker (`bt-tracker start`).
+
+## bt-tracker
+
+Self-hosted [bittorrent-tracker](https://github.com/webtorrent/bittorrent-tracker) for file-share magnets / WebTorrent.
+
+```bash
+ysk-server bt-tracker status
+ysk-server bt-tracker settings get|set [--http-port N] [--udp-port N] [--listen-host H] [--public-host H] [--ws|--no-ws] [--autostart|--no-autostart]
+ysk-server bt-tracker start [--execute]
+ysk-server bt-tracker stop
+ysk-server bt-tracker torrents
+```
+
+Default HTTP/WS port **8000**. Set `publicAnnounceHost` to a hostname peers can reach. Open the port via Network exposure / firewall when downloaders are off-host. Autostart runs when `serve` starts if `autostart` is enabled.
 
 ## cron
 

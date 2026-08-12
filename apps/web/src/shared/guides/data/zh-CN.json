@@ -1711,5 +1711,43 @@
     "notes": [
       "系统应用需 YSK_EXECUTE"
     ]
+  },
+  "btTracker": {
+    "id": "btTracker",
+    "title": "BT Tracker",
+    "summary": "自建 BitTorrent／WebTorrent Tracker，用于文件分享。生成 .torrent 做种，访客可用 magnet 或 .torrent 下载。",
+    "canDo": [
+      "启动／停止进程内 Tracker",
+      "设置 HTTP／WS 端口与公开 announce 主机",
+      "查看种子、下载者与速度",
+      "创建直接下载、BT 或两者兼有的分享",
+      "通过网络暴露／防火墙芯片开放端口"
+    ],
+    "workflow": [
+      "打开 BT Tracker → 填写公开主机 → 启动",
+      "下载者在主机外时请开端口",
+      "文件 → 分享，选择 BitTorrent 或两者",
+      "在分享结果或公开页复制 magnet／.torrent"
+    ],
+    "notes": [
+      "Tracker 为随产品附带的 Node 服务（非 apt 包）",
+      "公开主机为空则使用 127.0.0.1 — 仅适合同机测试",
+      "未启动 Tracker 时 BT 未必能发现 peers"
+    ],
+    "cliHints": [
+      "ysk-server bt-tracker status --json",
+      "ysk-server bt-tracker start --execute --json",
+      "ysk-server files shares create --path FILE --mode both --root public --json"
+    ],
+    "related": [
+      {
+        "label": "文件",
+        "to": "/files"
+      },
+      {
+        "label": "网络",
+        "to": "/network"
+      }
+    ]
   }
 }

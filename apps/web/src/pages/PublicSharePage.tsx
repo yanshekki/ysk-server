@@ -1,6 +1,6 @@
 /**
- * Public file share landing — guest-first, spacious professional layout.
- * YSK Limited branding (company name → ysk.hk), language switcher, download progress.
+ * Public file share landing — guest-first, direct + BitTorrent download.
+ * YSK Limited branding (company name → ysk.hk), language switcher, download progress, BT stats.
  */
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -10,13 +10,27 @@ import {
   LOCALES,
   normalizeLocale,
   type LocaleCode,
+  type BtShareStats,
 } from '@ysk/shared';
 import { Alert, Button, Field, FormActions } from '../shared/components/ui';
 import { setAppLocale } from '../shared/lib/i18n';
 
 const COMPANY_URL = 'https://ysk.hk/';
 
-type Phase = 'loading' | 'password' | 'downloading' | 'done' | 'error';
+type Phase = 'loading' | 'choose' | 'password' | 'downloading' | 'done' | 'error';
+
+type ShareMeta = {
+  needPassword: boolean;
+  name?: string;
+  downloadModes?: Array<'direct' | 'bt'>;
+  hasBt?: boolean;
+  hasDirect?: boolean;
+  seedStatus?: string;
+  expiresAt?: string;
+  magnetUri?: string;
+  torrentUrl?: string;
+  infoHash?: string;
+};
 
 export function filenameFromDisposition(header: string | null, fallback: string): string {
   if (!header) return fallback;
@@ -36,6 +50,13 @@ export function formatBytes(n: number): string {
   if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
   if (n < 1024 ** 3) return `${(n / (1024 * 1024)).toFixed(1)} MB`;
   return `${(n / 1024 ** 3).toFixed(2)} GB`;
+}
+
+export function formatSpeed(n: number): string {
+  if (!Number.isFinite(n) || n <= 0) return '—';
+  if (n < 1024) return `${Math.round(n)} B/s`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB/s`;
+  return `${(n / (1024 * 1024)).toFixed(2)} MB/s`;
 }
 
 export function progressPercent(received: number, total: number | null): number | null {
@@ -62,7 +83,7 @@ function fileKindIcon(name: string | null): string {
   if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'heic'].includes(ext)) return '🖼️';
   if (['mp3', 'wav', 'flac', 'aac', 'm4a', 'ogg'].includes(ext)) return '🎵';
   if (ext === 'pdf') return '📕';
-  if (['zip', 'tar', 'gz', '7z', 'rar'].includes(ext)) return '📦';
+  if (['zip', 'tar', 'gz', '7z', 'rar', 'torrent'].includes(ext)) return '📦';
   return '📄';
 }
 
@@ -77,6 +98,9 @@ export function PublicSharePage() {
   const [fileName, setFileName] = useState<string | null>(null);
   const [received, setReceived] = useState(0);
   const [total, setTotal] = useState<number | null>(null);
+  const [meta, setMeta] = useState<ShareMeta | null>(null);
+  const [btStats, setBtStats] = useState<BtShareStats | null>(null);
+  const [magnet, setMagnet] = useState<string | null>(null);
 
   const abortRef = useRef<AbortController | null>(null);
   const autoStarted = useRef(false);
@@ -91,6 +115,80 @@ export function PublicSharePage() {
     abortRef.current?.abort();
     abortRef.current = null;
   }, []);
+
+  const passQ = useCallback(
+    (pass?: string) => {
+      const p = pass?.trim() || password.trim();
+      return p ? `?password=${encodeURIComponent(p)}` : '';
+    },
+    [password],
+  );
+
+  const loadMeta = useCallback(async () => {
+    if (!token) {
+      setPhase('error');
+      setError(t('files.publicShareMissing'));
+      return;
+    }
+    try {
+      const res = await fetch(`/api/v1/public/files/${encodeURIComponent(token)}/meta`);
+      if (res.status === 404) {
+        setPhase('error');
+        setError(t('files.publicShareNotFound'));
+        return;
+      }
+      if (!res.ok) {
+        setPhase('error');
+        setError(t('files.publicShareFailed', { status: res.status }));
+        return;
+      }
+      const body = (await res.json()) as ShareMeta & { ok?: boolean };
+      setMeta(body);
+      if (body.name) setFileName(body.name);
+      if (body.magnetUri) setMagnet(body.magnetUri);
+
+      if (body.needPassword) {
+        setPhase('password');
+        return;
+      }
+
+      const hasBt = body.hasBt || (body.downloadModes ?? []).includes('bt');
+      const hasDirect =
+        body.hasDirect !== false &&
+        (!(body.downloadModes?.length) || (body.downloadModes ?? []).includes('direct'));
+
+      if (hasBt && hasDirect) {
+        setPhase('choose');
+        return;
+      }
+      if (hasBt && !hasDirect) {
+        setPhase('choose');
+        return;
+      }
+      // Direct only — auto start download
+      setPhase('loading');
+    } catch (e) {
+      setPhase('error');
+      setError(e instanceof Error ? e.message : t('files.publicShareFailedGeneric'));
+    }
+  }, [t, token]);
+
+  const refreshBtStats = useCallback(
+    async (pass?: string) => {
+      if (!token) return;
+      try {
+        const res = await fetch(
+          `/api/v1/public/files/${encodeURIComponent(token)}/bt-stats${passQ(pass)}`,
+        );
+        if (!res.ok) return;
+        const body = (await res.json()) as { stats?: BtShareStats };
+        if (body.stats) setBtStats(body.stats);
+      } catch {
+        /* optional */
+      }
+    },
+    [passQ, token],
+  );
 
   const tryDownload = useCallback(
     async (pass?: string) => {
@@ -107,12 +205,14 @@ export function PublicSharePage() {
       setError(null);
       setReceived(0);
       setTotal(null);
-      setPhase((p) => (p === 'password' || p === 'done' || p === 'error' ? 'downloading' : 'loading'));
+      setPhase((p) => (p === 'password' || p === 'done' || p === 'error' || p === 'choose' ? 'downloading' : 'loading'));
 
       try {
         const q = pass?.trim()
           ? `?password=${encodeURIComponent(pass.trim())}`
-          : '';
+          : password.trim()
+            ? `?password=${encodeURIComponent(password.trim())}`
+            : '';
         const res = await fetch(`/api/v1/public/files/${encodeURIComponent(token)}${q}`, {
           signal: ac.signal,
         });
@@ -122,7 +222,7 @@ export function PublicSharePage() {
           try {
             const body = (await res.json()) as { needPassword?: boolean; message?: string };
             needPassword = body.needPassword !== false;
-            if (pass?.trim()) {
+            if (pass?.trim() || password.trim()) {
               setError(body.message || t('files.publicShareBadPassword'));
             }
           } catch {
@@ -135,6 +235,22 @@ export function PublicSharePage() {
         if (res.status === 404) {
           setPhase('error');
           setError(t('files.publicShareNotFound'));
+          return;
+        }
+        if (res.status === 400) {
+          try {
+            const body = (await res.json()) as {
+              message?: string;
+              magnetUri?: string;
+              torrentUrl?: string;
+            };
+            if (body.magnetUri) setMagnet(body.magnetUri);
+            setPhase('choose');
+            setError(body.message || null);
+          } catch {
+            setPhase('error');
+            setError(t('files.publicShareFailed', { status: res.status }));
+          }
           return;
         }
         if (!res.ok) {
@@ -193,20 +309,57 @@ export function PublicSharePage() {
         if (abortRef.current === ac) abortRef.current = null;
       }
     },
-    [cancelDownload, t, token],
+    [cancelDownload, password, t, token],
   );
 
   useEffect(() => {
     if (autoStarted.current) return;
     autoStarted.current = true;
-    void tryDownload();
+    void loadMeta().then(() => {
+      /* after meta, auto-download only if direct-only without password */
+    });
     return () => {
       cancelDownload();
     };
-  }, [tryDownload, cancelDownload]);
+  }, [loadMeta, cancelDownload]);
+
+  // Auto-start direct download when meta says direct-only + no password
+  useEffect(() => {
+    if (!meta || meta.needPassword) return;
+    const hasBt = meta.hasBt || (meta.downloadModes ?? []).includes('bt');
+    const hasDirect =
+      meta.hasDirect !== false &&
+      (!(meta.downloadModes?.length) || (meta.downloadModes ?? []).includes('direct'));
+    if (hasDirect && !hasBt && phase === 'loading') {
+      void tryDownload();
+    }
+  }, [meta, phase, tryDownload]);
+
+  // Poll BT stats when BT available
+  useEffect(() => {
+    if (!meta) return;
+    if (!meta.hasBt && !(meta.downloadModes ?? []).includes('bt')) return;
+    if (meta.needPassword && phase === 'password') return;
+    void refreshBtStats();
+    const id = window.setInterval(() => void refreshBtStats(), 5_000);
+    return () => window.clearInterval(id);
+  }, [meta, phase, refreshBtStats]);
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
+    const hasBt = meta?.hasBt || (meta?.downloadModes ?? []).includes('bt');
+    const hasDirect =
+      meta?.hasDirect !== false &&
+      (!(meta?.downloadModes?.length) || (meta?.downloadModes ?? []).includes('direct'));
+    if (hasBt && hasDirect) {
+      setPhase('choose');
+      return;
+    }
+    if (hasBt && !hasDirect) {
+      setPhase('choose');
+      void refreshBtStats(password);
+      return;
+    }
     void tryDownload(password);
   }
 
@@ -232,6 +385,32 @@ export function PublicSharePage() {
 
   const sizeLabel =
     total != null || received > 0 ? formatBytes(total ?? received) : null;
+
+  const torrentHref = token
+    ? `/api/v1/public/files/${encodeURIComponent(token)}/torrent${passQ()}`
+    : '#';
+
+  const BtStatsBlock = btStats ? (
+    <div className="pub-share__bt-stats u-mt-3">
+      <p className="u-text-sm muted">{t('files.btServerStats')}</p>
+      <ul className="u-text-sm u-stack u-gap-xs">
+        <li>
+          {t('files.btSeeds')}: <strong>{btStats.seeds}</strong> · {t('files.btLeechers')}:{' '}
+          <strong>{btStats.leechers}</strong> · {t('files.btPeers')}:{' '}
+          <strong>{btStats.peers}</strong>
+        </li>
+        <li>
+          ↑ {formatSpeed(btStats.uploadSpeed)} · ↓ {formatSpeed(btStats.downloadSpeed)}
+        </li>
+        {btStats.seedStatus ? (
+          <li>
+            {t('files.shareBtStats')}: {btStats.seedStatus}
+            {btStats.localSeeding ? ` (${t('files.btSeeding')})` : ''}
+          </li>
+        ) : null}
+      </ul>
+    </div>
+  ) : null;
 
   return (
     <div className="pub-share">
@@ -340,6 +519,68 @@ export function PublicSharePage() {
             </div>
           ) : null}
 
+          {phase === 'choose' ? (
+            <div className="pub-share__body">
+              <div className="pub-share__file-panel">
+                <div className="pub-share__file-icon" aria-hidden>
+                  {fileKindIcon(fileName || meta?.name || null)}
+                </div>
+                <div className="pub-share__file-meta">
+                  {(fileName || meta?.name) ? (
+                    <p className="pub-share__file">
+                      <strong>{fileName || meta?.name}</strong>
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+              {error ? <Alert variant="error">{error}</Alert> : null}
+              {BtStatsBlock}
+              <FormActions className="pub-share__actions u-stack u-gap-sm">
+                {(meta?.hasDirect !== false &&
+                  (!(meta?.downloadModes?.length) ||
+                    (meta?.downloadModes ?? []).includes('direct'))) ? (
+                  <Button
+                    type="button"
+                    variant="primary"
+                    size="lg"
+                    className="pub-share__cta"
+                    onClick={() => void tryDownload(password || undefined)}
+                  >
+                    {t('files.shareModeDirect')}
+                  </Button>
+                ) : null}
+                {(meta?.hasBt || (meta?.downloadModes ?? []).includes('bt')) ? (
+                  <>
+                    <a
+                      className="btn btn--secondary btn--lg pub-share__cta"
+                      href={torrentHref}
+                    >
+                      {t('files.shareTorrentFile')}
+                    </a>
+                    {(magnet || meta?.magnetUri) ? (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="lg"
+                        onClick={() => {
+                          const m = magnet || meta?.magnetUri || '';
+                          void navigator.clipboard?.writeText(m).then(
+                            () => undefined,
+                            () => undefined,
+                          );
+                          window.location.href = m;
+                        }}
+                      >
+                        {t('files.shareMagnet')}
+                      </Button>
+                    ) : null}
+                    <p className="muted u-text-sm">{t('files.publicShareBt')}</p>
+                  </>
+                ) : null}
+              </FormActions>
+            </div>
+          ) : null}
+
           {phase === 'password' ? (
             <form className="pub-share__body" onSubmit={onSubmit}>
               <Alert variant="info">{t('files.publicShareNeedPassword')}</Alert>
@@ -384,6 +625,7 @@ export function PublicSharePage() {
                 </div>
               </div>
               <p className="muted pub-share__msg">{t('files.publicShareDoneHint')}</p>
+              {BtStatsBlock}
               <FormActions className="pub-share__actions">
                 <Button
                   variant="primary"
