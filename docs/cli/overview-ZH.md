@@ -50,11 +50,16 @@ YSK_LOCALE=zh-CN ysk-server store status --json
 
 | 組 | 命令 |
 |----|------|
-| 生命週期 | `setup` `serve` `update` `system` `version` `help` |
-| 專案 | `projects` `templates` `hosting` `nginx` `ssl` `dns` |
-| 資料 | `backup` `store` `files` `cron` `migrate` |
+| 生命週期 | `setup` `serve` `update` `system` `stack` `version` `help` |
+| 專案 | `projects` `templates` `hosting` `nginx` `ssl` `dns` `apache` `runtimes` |
+| 資料 | `backup` `store` `files` `ftp` `cron` `migrate` `db` `redis` `db-cluster` |
 | 郵件 | `email` |
-| 安全 | `users` `packages` `rbac` `audit` `security` `ssh-key` `ssh-2fa` `defense` `protection` |
+| 安全 | `users` `packages` `rbac` `audit` `security` `ssh-key` `ssh-2fa` `defense` `protection` `vpn` `vnc` |
+| 網絡／系統 | `network` `real-ip` `host` `services` `updates` `software` |
 | 邊緣 | `cdn` `agents` `agent` |
-| 觀測 | `logs` `host` `health` `readiness` `doctor` `services` `db-cluster` |
+| 觀測 | `logs` `health` `readiness` `doctor` |
 | AI | `tools` `ask` |
+
+完整百科：[reference-ZH.md](./reference-ZH.md)。  
+面板對照：[panel-parity-matrix-ZH.md](./panel-parity-matrix-ZH.md)。  
+文件標準：[../docs-standard-ZH.md](../docs-standard-ZH.md)。

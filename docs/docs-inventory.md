@@ -18,7 +18,7 @@ Standards: [docs-standard.md](./docs-standard.md). Programme slices: **D0–D5**
 | Slice | Deliverable | % | Status |
 |-------|-------------|---|--------|
 | **D0** | Standard + template + this inventory + INDEX links | ~10% | ✅ done |
-| **D1** | `cli/overview` + `cli/reference` + `commands.json` | ~35% | ⬜ |
+| **D1** | `cli/overview` + `cli/reference` + `commands.json` | ~35% | ✅ done |
 | **D2** | New-domain handbooks (vpn, vnc, apache, system-host, databases, runtimes) | ~55% | ⬜ |
 | **D3** | Remaining `features/*` deepen | ~75% | ⬜ |
 | **D4** | INDEX polish, user-manual Day-N, agent docs, parity ZH | ~90% | ⬜ |

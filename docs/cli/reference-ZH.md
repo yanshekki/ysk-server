@@ -88,20 +88,20 @@ ysk-server hosting nginx|nginx-sync [--execute]
 ysk-server hosting mysql-provision|postgres-provision|redis-provision [--execute]
 ysk-server hosting dns-zone --zone X --ip A.B.C.D …
 ysk-server hosting email-bootstrap|email-deliverability|email-apply …
-ysk-server hosting ftps-apply|firewall-apply|runtimes|runtime-install …
+ysk-server hosting ftps-apply|firewall-apply|runtimes|runtime-install|runtime-switch|runtime-uninstall …
 ```
 
-完整子命令請執行 `ysk-server hosting`。
+優先使用一級 `runtimes`／`ftp`／`apache`（如適用）。完整子命令請執行 `ysk-server hosting`。
 
 ## nginx | ssl | dns
 
 ```bash
 ysk-server nginx status|list|test|sync [--execute]
-ysk-server ssl list|get …
-ysk-server dns zones|zone --zone X --ip A.B.C.D …
+ysk-server ssl list|get|bootstrap|panel-tls status|enable|disable|issue …
+ysk-server dns zones|zone|dnssec|heal|health|lookup|records …
 ```
 
-`dns` 為 AI 友好別名，指向 hosting DNS 輔助。
+`dns` 涵蓋託管 zone、DNSSEC、PowerDNS heal、lookup／validate。
 
 ## backup
 
@@ -132,9 +132,14 @@ ysk-server store status|export|import|migrate --to json|sqlite|postgres …
 ```bash
 ysk-server files list|stat|read|write|mkdir|rm|rename|copy|move|chmod …
 ysk-server files trash list|restore|purge
-ysk-server files shares list
+ysk-server files shares list|create|delete
 ysk-server files upload --dir REL --file LOCAL
 ysk-server files webdav status|token|disable
+```
+
+```bash
+ysk-server files shares create --path REL [--password …] [--expires ISO] --root public
+ysk-server files shares delete --id SHARE_ID
 ```
 
 ## cron
@@ -150,6 +155,9 @@ ysk-server cron list|create|delete|enable|disable|run|install|status …
 ```bash
 ysk-server email domains list|create|get …
 ysk-server email mailboxes list|create …
+ysk-server email aliases list|create|delete --domain example.com …
+ysk-server email queue list|flush [--all|--id ID] [--execute]
+ysk-server email relay get|apply --host smtp.example.com [--execute]
 ysk-server email deliverability --domain example.com
 ysk-server email bootstrap --domain D --ip A.B.C.D [--install]
 ysk-server email dns --domain D
@@ -231,18 +239,134 @@ ysk-server ask "自然語言" [--execute]
 
 ---
 
+## vpn
+
+控制平面主機上的開源 VPN（WireGuard／OpenVPN／Outline 風格 ss-server）。
+
+| 子命令 | 用途 | 需 `--execute`？ |
+|--------|------|------------------|
+| `status` | 引擎、對等端、客戶端設定檔 | 否 |
+| `monitor` | 即時傳輸快照 | 否 |
+| `presets` | 埠預設 | 否 |
+| `ensure` | 確保伺服器設定 | **是** |
+| `peers list\|add\|delete\|config` | 伺服器對等端 | add/delete **是** |
+| `clients list\|import\|up\|down\|delete\|autostart` | 本機客戶端 | up/down/delete **是** |
+| `firewall open` | 經服務暴露開埠 | **是** |
+
+```bash
+ysk-server vpn status --json
+ysk-server vpn peers list --engine wireguard --json
+ysk-server vpn ensure --engine wireguard --port 51820 --execute --json
+ysk-server vpn peers add --name laptop --execute --json
+ysk-server vpn clients import --name office --file ./wg.conf --json
+```
+
+見 [../features/vpn-ZH.md](../features/vpn-ZH.md)。
+
+## vnc
+
+TigerVNC 帳戶、客戶端設定檔、分享連結、noVNC。**瀏覽器畫布仍為僅面板。**
+
+| 子命令 | 用途 | 需 `--execute`？ |
+|--------|------|------------------|
+| `status`／`settings` | 堆疊與預設 | 設定寫入面板資料 |
+| `accounts list\|create\|update\|password\|start\|stop\|delete` | 帳戶生命週期 | create/start/stop/delete **是** |
+| `connection`／`firewall`／`novnc` | 連線資訊／UFW／noVNC | firewall/novnc **是** |
+| `clients …` | 連出設定檔 | up/down **是** |
+| `share create\|info\|revoke` | 分享連結 | 否（面板儲存） |
+| `session mint` | 供操作員的 RFB 元資料 | 啟動桌面時可能需 execute |
+
+```bash
+ysk-server vnc status --json
+ysk-server vnc accounts list --json
+ysk-server vnc accounts create --name alice --execute --json
+ysk-server vnc share create --id ACCOUNT_ID --json
+```
+
+見 [../features/vnc-ZH.md](../features/vnc-ZH.md)。
+
+## apache
+
+Apache 站點與全域設定（面板唯一入口 `/apache`）。
+
+```bash
+ysk-server apache sites list|create|update|delete|apply|conf|cleanup-conflicts …
+ysk-server apache settings get|set|apply [--execute]
+```
+
+見 [../features/apache-ZH.md](../features/apache-ZH.md)。
+
+## network | real-ip
+
+服務網絡暴露（`ysk-svc` 註解）與 CDN Real-IP 信任。
+
+```bash
+ysk-server network exposure list|get|put|sync --service ID …
+ysk-server real-ip status|set|refresh [--execute]
+```
+
+見 [../features/system-host-ZH.md](../features/system-host-ZH.md)。
+
+## updates | software | stack
+
+```bash
+ysk-server updates inventory|refresh|apply|apply-batch|summary|self …
+ysk-server software list|get|install|uninstall|uninstall-preview|upgrades|versions …
+ysk-server stack plans|bundles|status|install|scan …
+ysk-server update [--check] [--apply]   # 產品本體自我更新
+```
+
+`update` = 產品本體更新；`updates` = 主機套件清冊。見 [../features/system-host-ZH.md](../features/system-host-ZH.md)。
+
+## db | redis | db-cluster
+
+```bash
+ysk-server db status|console|apply|lifecycle|install --engine mysql|mariadb|postgres|redis …
+ysk-server db sql-engine preview|switch --target mysql|mariadb …
+ysk-server redis status|settings|keys|get|set|del|install|start …
+ysk-server db-cluster list|get|create|plan|apply|probe …
+```
+
+見 [../features/databases-ZH.md](../features/databases-ZH.md)。
+
+## ftp
+
+```bash
+ysk-server ftp status|settings|accounts|options|apply …
+ysk-server ftp accounts list|create|update|delete|apply …
+```
+
+見 [../features/files-ftp-ZH.md](../features/files-ftp-ZH.md)。
+
+## runtimes
+
+```bash
+ysk-server runtimes list|install|switch|uninstall --kind node|php|python|go|rust|java|kotlin|bun …
+ysk-server hosting runtime-install|runtime-switch|runtime-uninstall …
+```
+
+引擎含 **java**、**kotlin**、**bun**。見 [../features/runtimes-ZH.md](../features/runtimes-ZH.md)。
+
+---
+
 ## 功能文件對照
 
 | 命令域 | 功能頁 |
 |--------|--------|
 | projects, templates, hosting | [../features/projects-ZH.md](../features/projects-ZH.md) |
 | email | [../features/email-ZH.md](../features/email-ZH.md) |
-| files | [../features/files-ftp-ZH.md](../features/files-ftp-ZH.md) |
+| files, ftp | [../features/files-ftp-ZH.md](../features/files-ftp-ZH.md) |
 | backup, cron | [../features/backups-cron-ZH.md](../features/backups-cron-ZH.md) |
 | security, users, rbac | [../features/security-auth-ZH.md](../features/security-auth-ZH.md) · [../features/users-rbac-ZH.md](../features/users-rbac-ZH.md) |
 | defense | [../features/defense-ZH.md](../features/defense-ZH.md) |
 | cdn, agents | [../features/cdn-agents-ZH.md](../features/cdn-agents-ZH.md) |
 | logs, host | [../features/logs-metrics-ZH.md](../features/logs-metrics-ZH.md) |
+| vpn | [../features/vpn-ZH.md](../features/vpn-ZH.md) |
+| vnc | [../features/vnc-ZH.md](../features/vnc-ZH.md) |
+| apache | [../features/apache-ZH.md](../features/apache-ZH.md) |
+| db, redis, runtimes | [../features/databases-ZH.md](../features/databases-ZH.md) · [../features/runtimes-ZH.md](../features/runtimes-ZH.md) |
+| network, updates, software | [../features/system-host-ZH.md](../features/system-host-ZH.md) |
+| store, readiness | [../architecture/state-store-ZH.md](../architecture/state-store-ZH.md) · [../getting-started/readiness-ZH.md](../getting-started/readiness-ZH.md) |
 
 
 ---

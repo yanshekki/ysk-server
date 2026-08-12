@@ -50,11 +50,16 @@ YSK_LOCALE=zh-CN ysk-server store status --json
 
 | Group | Commands |
 |-------|----------|
-| Lifecycle | `setup` `serve` `update` `system` `version` `help` |
-| Projects | `projects` `templates` `hosting` `nginx` `ssl` `dns` |
-| Data | `backup` `store` `files` `cron` `migrate` |
+| Lifecycle | `setup` `serve` `update` `system` `stack` `version` `help` |
+| Projects | `projects` `templates` `hosting` `nginx` `ssl` `dns` `apache` `runtimes` |
+| Data | `backup` `store` `files` `ftp` `cron` `migrate` `db` `redis` `db-cluster` |
 | Mail | `email` |
-| Security | `users` `packages` `rbac` `audit` `security` `ssh-key` `ssh-2fa` `defense` `protection` |
+| Security | `users` `packages` `rbac` `audit` `security` `ssh-key` `ssh-2fa` `defense` `protection` `vpn` `vnc` |
+| Network / system | `network` `real-ip` `host` `services` `updates` `software` |
 | Edge | `cdn` `agents` `agent` |
-| Observe | `logs` `host` `health` `readiness` `doctor` `services` `db-cluster` |
+| Observe | `logs` `health` `readiness` `doctor` |
 | AI | `tools` `ask` |
+
+Full encyclopedia: [reference.md](./reference.md).  
+Panel mapping: [panel-parity-matrix.md](./panel-parity-matrix.md).  
+Doc standard: [../docs-standard.md](../docs-standard.md).

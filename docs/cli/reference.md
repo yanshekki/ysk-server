@@ -88,20 +88,20 @@ ysk-server hosting nginx|nginx-sync [--execute]
 ysk-server hosting mysql-provision|postgres-provision|redis-provision [--execute]
 ysk-server hosting dns-zone --zone X --ip A.B.C.D …
 ysk-server hosting email-bootstrap|email-deliverability|email-apply …
-ysk-server hosting ftps-apply|firewall-apply|runtimes|runtime-install …
+ysk-server hosting ftps-apply|firewall-apply|runtimes|runtime-install|runtime-switch|runtime-uninstall …
 ```
 
-Run `ysk-server hosting` for full sub list.
+Prefer top-level `runtimes` / `ftp` / `apache` where available. Run `ysk-server hosting` for the full sub list.
 
 ## nginx | ssl | dns
 
 ```bash
 ysk-server nginx status|list|test|sync [--execute]
-ysk-server ssl list|get …
-ysk-server dns zones|zone --zone X --ip A.B.C.D …
+ysk-server ssl list|get|bootstrap|panel-tls status|enable|disable|issue …
+ysk-server dns zones|zone|dnssec|heal|health|lookup|records …
 ```
 
-`dns` is an AI-friendly alias into hosting DNS helpers.
+`dns` covers managed zones, DNSSEC, PowerDNS heal, lookup/validate.
 
 ## backup
 
@@ -132,9 +132,14 @@ Sandboxed file manager (public or `project:ID` root):
 ```bash
 ysk-server files list|stat|read|write|mkdir|rm|rename|copy|move|chmod …
 ysk-server files trash list|restore|purge
-ysk-server files shares list
+ysk-server files shares list|create|delete
 ysk-server files upload --dir REL --file LOCAL
 ysk-server files webdav status|token|disable
+```
+
+```bash
+ysk-server files shares create --path REL [--password …] [--expires ISO] --root public
+ysk-server files shares delete --id SHARE_ID
 ```
 
 ## cron
@@ -150,6 +155,9 @@ Install crontab needs EXECUTE.
 ```bash
 ysk-server email domains list|create|get …
 ysk-server email mailboxes list|create …
+ysk-server email aliases list|create|delete --domain example.com …
+ysk-server email queue list|flush [--all|--id ID] [--execute]
+ysk-server email relay get|apply --host smtp.example.com [--execute]
 ysk-server email deliverability --domain example.com
 ysk-server email bootstrap --domain D --ip A.B.C.D [--install]
 ysk-server email dns --domain D
@@ -231,18 +239,133 @@ Tools respect allowlist + protection mode.
 
 ---
 
+## vpn
+
+Open-source VPN on the control-plane host (WireGuard / OpenVPN / Outline-style ss-server).
+
+| Sub | Purpose | `--execute`? |
+|-----|---------|--------------|
+| `status` | Engines, peers, client profiles | no |
+| `monitor` | Live transfer snapshot | no |
+| `presets` | Port presets | no |
+| `ensure` | Ensure server config | **yes** |
+| `peers list\|add\|delete\|config` | Server peers | add/delete **yes** |
+| `clients list\|import\|up\|down\|delete\|autostart` | Local client profiles | up/down/delete **yes** |
+| `firewall open` | Open port via service exposure | **yes** |
+
+```bash
+ysk-server vpn status --json
+ysk-server vpn peers list --engine wireguard --json
+ysk-server vpn ensure --engine wireguard --port 51820 --execute --json
+ysk-server vpn peers add --name laptop --execute --json
+ysk-server vpn clients import --name office --file ./wg.conf --json
+```
+
+See [../features/vpn.md](../features/vpn.md).
+
+## vnc
+
+TigerVNC accounts, client profiles, share links, noVNC. **Browser canvas remains panel-only.**
+
+| Sub | Purpose | `--execute`? |
+|-----|---------|--------------|
+| `status` / `settings` | Stacks + defaults | set settings = panel data |
+| `accounts list\|create\|update\|password\|start\|stop\|delete` | Account lifecycle | create/start/stop/delete **yes** |
+| `connection` / `firewall` / `novnc` | Connect info / UFW / noVNC | firewall/novnc **yes** |
+| `clients …` | Outbound profiles | up/down **yes** |
+| `share create\|info\|revoke` | Share links | no (panel store) |
+| `session mint` | RFB metadata for operators | may need execute to start desktop |
+
+```bash
+ysk-server vnc status --json
+ysk-server vnc accounts list --json
+ysk-server vnc accounts create --name alice --execute --json
+ysk-server vnc share create --id ACCOUNT_ID --json
+```
+
+See [../features/vnc.md](../features/vnc.md).
+
+## apache
+
+Apache sites + global settings (unique panel entry `/apache`).
+
+```bash
+ysk-server apache sites list|create|update|delete|apply|conf|cleanup-conflicts …
+ysk-server apache settings get|set|apply [--execute]
+```
+
+See [../features/apache.md](../features/apache.md).
+
+## network | real-ip
+
+Service network exposure (`ysk-svc` comments) and CDN real-IP trust.
+
+```bash
+ysk-server network exposure list|get|put|sync --service ID …
+ysk-server real-ip status|set|refresh [--execute]
+```
+
+See [../features/system-host.md](../features/system-host.md).
+
+## updates | software | stack
+
+```bash
+ysk-server updates inventory|refresh|apply|apply-batch|summary|self …
+ysk-server software list|get|install|uninstall|uninstall-preview|upgrades|versions …
+ysk-server stack plans|bundles|status|install|scan …
+ysk-server update [--check] [--apply]   # panel binary self-update
+```
+
+`update` = product self-update; `updates` = host package inventory. See [../features/system-host.md](../features/system-host.md).
+
+## db | redis | db-cluster
+
+```bash
+ysk-server db status|console|apply|lifecycle|install --engine mysql|mariadb|postgres|redis …
+ysk-server db sql-engine preview|switch --target mysql|mariadb …
+ysk-server redis status|settings|keys|get|set|del|install|start …
+ysk-server db-cluster list|get|create|plan|apply|probe …
+```
+
+See [../features/databases.md](../features/databases.md).
+
+## ftp
+
+```bash
+ysk-server ftp status|settings|accounts|options|apply …
+ysk-server ftp accounts list|create|update|delete|apply …
+```
+
+See [../features/files-ftp.md](../features/files-ftp.md).
+
+## runtimes
+
+```bash
+ysk-server runtimes list|install|switch|uninstall --kind node|php|python|go|rust|java|kotlin|bun …
+ysk-server hosting runtime-install|runtime-switch|runtime-uninstall …
+```
+
+Kinds include **java**, **kotlin**, **bun**. See [../features/runtimes.md](../features/runtimes.md).
+
+---
+
 ## Feature docs
 
 | Command area | Feature page |
 |--------------|--------------|
 | projects, templates, hosting | [../features/projects.md](../features/projects.md) |
 | email | [../features/email.md](../features/email.md) |
-| files | [../features/files-ftp.md](../features/files-ftp.md) |
+| files, ftp | [../features/files-ftp.md](../features/files-ftp.md) |
 | backup, cron | [../features/backups-cron.md](../features/backups-cron.md) |
 | security, users, rbac | [../features/security-auth.md](../features/security-auth.md) · [../features/users-rbac.md](../features/users-rbac.md) |
 | defense | [../features/defense.md](../features/defense.md) |
 | cdn, agents | [../features/cdn-agents.md](../features/cdn-agents.md) |
 | logs, host | [../features/logs-metrics.md](../features/logs-metrics.md) |
+| vpn | [../features/vpn.md](../features/vpn.md) |
+| vnc | [../features/vnc.md](../features/vnc.md) |
+| apache | [../features/apache.md](../features/apache.md) |
+| db, redis, runtimes | [../features/databases.md](../features/databases.md) · [../features/runtimes.md](../features/runtimes.md) |
+| network, updates, software | [../features/system-host.md](../features/system-host.md) |
 | store, readiness | [../architecture/state-store.md](../architecture/state-store.md) · [../getting-started/readiness.md](../getting-started/readiness.md) |
 
 

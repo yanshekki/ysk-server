@@ -966,6 +966,96 @@
       "risk": "write-host",
       "summary": "Panel control-plane TLS status/enable/disable/issue",
       "example": "ysk-server ssl panel-tls status --json"
+    },
+    {
+      "name": "updates inventory",
+      "risk": "read",
+      "summary": "Host package inventory + advice",
+      "example": "ysk-server updates inventory --json"
+    },
+    {
+      "name": "updates apply",
+      "risk": "write-host",
+      "summary": "Apply one host package upgrade",
+      "example": "ysk-server updates apply --package NAME --candidate VER --execute --json"
+    },
+    {
+      "name": "software list",
+      "risk": "read",
+      "summary": "Software catalog probe",
+      "example": "ysk-server software list --json"
+    },
+    {
+      "name": "software install",
+      "risk": "write-host",
+      "summary": "Install catalog software by id or feature",
+      "example": "ysk-server software install --id wireguard --execute --json"
+    },
+    {
+      "name": "db status",
+      "risk": "read",
+      "summary": "DB engine status / console snapshot",
+      "example": "ysk-server db status --engine mysql --json"
+    },
+    {
+      "name": "db lifecycle",
+      "risk": "write-host",
+      "summary": "start/stop/restart DB service",
+      "example": "ysk-server db lifecycle --engine redis --action start --execute --json"
+    },
+    {
+      "name": "db sql-engine",
+      "risk": "write-host",
+      "summary": "MySQL↔MariaDB exclusive switch preview/apply",
+      "example": "ysk-server db sql-engine preview --target mariadb --json"
+    },
+    {
+      "name": "redis keys",
+      "risk": "read",
+      "summary": "List Redis keys",
+      "example": "ysk-server redis keys --pattern '*' --json"
+    },
+    {
+      "name": "redis set",
+      "risk": "write-host",
+      "summary": "SET Redis string key",
+      "example": "ysk-server redis set --key k --value v --execute --json"
+    },
+    {
+      "name": "ftp accounts",
+      "risk": "write-panel",
+      "summary": "FTPS account CRUD (+ apply to host)",
+      "example": "ysk-server ftp accounts list --json"
+    },
+    {
+      "name": "runtimes list",
+      "risk": "read",
+      "summary": "Probe supported runtimes including java/kotlin/bun",
+      "example": "ysk-server runtimes list --json"
+    },
+    {
+      "name": "runtimes install",
+      "risk": "write-host",
+      "summary": "Plan/install runtime version",
+      "example": "ysk-server runtimes install --kind java --version 21 --execute --json"
+    },
+    {
+      "name": "files shares create",
+      "risk": "write-panel",
+      "summary": "Create public file share link",
+      "example": "ysk-server files shares create --path docs --root public --json"
+    },
+    {
+      "name": "email aliases",
+      "risk": "write-panel",
+      "summary": "List/create/delete mail aliases",
+      "example": "ysk-server email aliases list --domain example.com --json"
+    },
+    {
+      "name": "dns dnssec",
+      "risk": "write-host",
+      "summary": "List or generate DNSSEC keys for a zone",
+      "example": "ysk-server dns dnssec list --zone example.com --json"
     }
   ]
 }
