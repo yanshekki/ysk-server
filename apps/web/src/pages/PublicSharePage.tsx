@@ -248,6 +248,7 @@ export function PublicSharePage() {
       }
       const body = (await res.json()) as ShareMeta & { ok?: boolean };
       setMeta(body);
+      setError(null);
       if (body.name) setFileName(body.name);
       if (body.magnetUri) setMagnet(body.magnetUri);
 
@@ -261,16 +262,16 @@ export function PublicSharePage() {
         body.hasDirect !== false &&
         (!(body.downloadModes?.length) || (body.downloadModes ?? []).includes('direct'));
 
-      if (hasBt && hasDirect) {
+      // BT only / both → choose (buttons by mode). Direct only → auto download.
+      if (hasBt) {
         setPhase('choose');
         return;
       }
-      if (hasBt && !hasDirect) {
-        setPhase('choose');
+      if (hasDirect) {
+        setPhase('loading');
         return;
       }
-      // Direct only — auto start download
-      setPhase('loading');
+      setPhase('choose');
     } catch (e) {
       setPhase('error');
       setError(e instanceof Error ? e.message : t('files.publicShareFailedGeneric'));
@@ -344,13 +345,20 @@ export function PublicSharePage() {
         if (res.status === 400) {
           try {
             const body = (await res.json()) as {
+              code?: string;
               message?: string;
               magnetUri?: string;
               torrentUrl?: string;
             };
             if (body.magnetUri) setMagnet(body.magnetUri);
+            // BT-only: show BT actions without an error banner
+            if (body.code === 'BT_ONLY' || /direct download disabled/i.test(body.message || '')) {
+              setError(null);
+              setPhase('choose');
+              return;
+            }
             setPhase('choose');
-            setError(body.message || null);
+            setError(body.message || t('files.publicShareFailed', { status: res.status }));
           } catch {
             setPhase('error');
             setError(t('files.publicShareFailed', { status: res.status }));
@@ -505,6 +513,23 @@ export function PublicSharePage() {
     ? `/api/v1/public/files/${encodeURIComponent(token)}/torrent${passQ()}`
     : '#';
 
+  const seedStatusLabel = (status: string | undefined): string => {
+    const s = String(status || '').toLowerCase();
+    if (s === 'seeding') return t('files.btSeeding');
+    if (s === 'pending') return t('files.btPending');
+    if (s === 'stopped') return t('files.btStopped');
+    if (s === 'error') return t('files.btError');
+    if (s === 'none' || !s) return t('files.btNone', { defaultValue: '—' });
+    // already localized or unknown — never dump raw English API codes if we know them
+    return status || '—';
+  };
+
+  const showDirect =
+    meta?.hasDirect !== false &&
+    (!(meta?.downloadModes?.length) || (meta?.downloadModes ?? []).includes('direct'));
+  const showBt =
+    Boolean(meta?.hasBt) || (meta?.downloadModes ?? []).includes('bt');
+
   const BtStatsBlock = btStats ? (
     <div className="pub-share__bt-stats u-mt-3">
       <p className="u-text-sm muted">{t('files.btServerStats')}</p>
@@ -517,10 +542,14 @@ export function PublicSharePage() {
         <li>
           ↑ {formatSpeed(btStats.uploadSpeed)} · ↓ {formatSpeed(btStats.downloadSpeed)}
         </li>
-        {btStats.seedStatus ? (
+        {btStats.seedStatus || btStats.localSeeding ? (
           <li>
-            {t('files.shareBtStats')}: {btStats.seedStatus}
-            {btStats.localSeeding ? ` (${t('files.btSeeding')})` : ''}
+            {t('files.shareSeedStatus')}:{' '}
+            <strong>
+              {seedStatusLabel(
+                btStats.seedStatus || (btStats.localSeeding ? 'seeding' : undefined),
+              )}
+            </strong>
           </li>
         ) : null}
       </ul>
@@ -648,32 +677,40 @@ export function PublicSharePage() {
                   ) : null}
                 </div>
               </div>
-              {error ? <Alert variant="error">{error}</Alert> : null}
+              {/* Mode-driven actions only — no “direct disabled” error noise */}
+              {error && !showBt ? <Alert variant="error">{error}</Alert> : null}
+              {error && showBt && showDirect ? (
+                <Alert variant="error">{error}</Alert>
+              ) : null}
               {BtStatsBlock}
               <FormActions className="pub-share__actions u-stack u-gap-sm">
-                {(meta?.hasDirect !== false &&
-                  (!(meta?.downloadModes?.length) ||
-                    (meta?.downloadModes ?? []).includes('direct'))) ? (
+                {showDirect ? (
                   <Button
                     type="button"
                     variant="primary"
                     size="lg"
                     className="pub-share__cta"
-                    onClick={() => void tryDownload(password || undefined)}
+                    onClick={() => {
+                      setError(null);
+                      void tryDownload(password || undefined);
+                    }}
                   >
-                    {t('files.shareModeDirect')}
+                    {t('files.publicShareDirect')}
                   </Button>
                 ) : null}
-                {(meta?.hasBt || (meta?.downloadModes ?? []).includes('bt')) ? (
+                {showBt ? (
                   <>
                     {(magnet || meta?.magnetUri || meta?.torrentUrl || meta?.infoHash) &&
                     wtSupported ? (
                       <Button
                         type="button"
-                        variant="primary"
+                        variant={showDirect ? 'secondary' : 'primary'}
                         size="lg"
                         className="pub-share__cta"
-                        onClick={() => void tryBtBrowserDownload()}
+                        onClick={() => {
+                          setError(null);
+                          void tryBtBrowserDownload();
+                        }}
                       >
                         {t('files.publicShareBtInBrowser')}
                       </Button>
@@ -701,7 +738,6 @@ export function PublicSharePage() {
                         {t('files.shareMagnet')}
                       </Button>
                     ) : null}
-                    <p className="muted u-text-sm">{t('files.publicShareBt')}</p>
                   </>
                 ) : null}
               </FormActions>

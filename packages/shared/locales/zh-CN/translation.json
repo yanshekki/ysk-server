@@ -3696,7 +3696,8 @@
     "publicShareBtStarting": "正在连接 peers…",
     "publicShareBtFailed": "WebTorrent 失败：{{detail}}",
     "publicShareBtNeedMagnet": "此分享没有 magnet 链接",
-    "publicShareBtUnsupported": "此浏览器无法运行 WebTorrent；请改用 magnet 或 .torrent"
+    "publicShareBtUnsupported": "此浏览器无法运行 WebTorrent；请改用 magnet 或 .torrent",
+    "btNone": "—"
   },
   "firewall": {
     "profiles": {

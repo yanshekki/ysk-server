@@ -300,9 +300,10 @@ export async function handleFilesPublicRoutes(
       } catch {
         /* keep stored */
       }
+      // BT-only share — no English error body; client shows BT actions only
       sendJson(res, 400, {
         ok: false,
-        message: 'direct download disabled; use BT',
+        code: 'BT_ONLY',
         magnetUri,
         torrentUrl: `/api/v1/public/files/${token}/torrent`,
       });

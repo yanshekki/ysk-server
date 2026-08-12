@@ -3696,7 +3696,8 @@
     "publicShareBtStarting": "Connecting to peers…",
     "publicShareBtFailed": "WebTorrent failed: {{detail}}",
     "publicShareBtNeedMagnet": "No magnet URI for this share",
-    "publicShareBtUnsupported": "This browser cannot run WebTorrent; use magnet or .torrent instead"
+    "publicShareBtUnsupported": "This browser cannot run WebTorrent; use magnet or .torrent instead",
+    "btNone": "—"
   },
   "firewall": {
     "profiles": {
