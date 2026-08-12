@@ -1,8 +1,15 @@
 /**
  * Create .torrent files for panel file shares (create-torrent).
+ * Picks piece length from total size for large files/folders.
  */
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, promises as fsp } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  statSync,
+  promises as fsp,
+} from 'node:fs';
 import { dirname, join } from 'node:path';
 import type { BtTrackerSettings } from '@ysk/shared';
 import { buildAnnounceList } from './settings.js';
@@ -15,8 +22,60 @@ export type CreateShareTorrentResult = {
   torrentAbsPath?: string;
   name?: string;
   length?: number;
+  pieceLength?: number;
   notes: string[];
 };
+
+/** Prefer fewer pieces for large trees (create-torrent default is often too small). */
+export function pickPieceLength(totalBytes: number): number {
+  const n = Math.max(0, Number(totalBytes) || 0);
+  // Power-of-two piece sizes (bytes)
+  if (n >= 8 * 1024 ** 3) return 4 * 1024 * 1024; // ≥8 GiB → 4 MiB
+  if (n >= 2 * 1024 ** 3) return 2 * 1024 * 1024; // ≥2 GiB → 2 MiB
+  if (n >= 512 * 1024 * 1024) return 1 * 1024 * 1024; // ≥512 MiB → 1 MiB
+  if (n >= 64 * 1024 * 1024) return 512 * 1024; // ≥64 MiB → 512 KiB
+  if (n >= 8 * 1024 * 1024) return 256 * 1024; // ≥8 MiB → 256 KiB
+  return 16 * 1024; // small files → 16 KiB
+}
+
+/** Best-effort total size for a file or directory (capped walk). */
+export function estimateContentBytes(absPath: string, maxFiles = 50_000): number {
+  try {
+    const st = statSync(absPath);
+    if (st.isFile()) return st.size;
+    if (!st.isDirectory()) return 0;
+  } catch {
+    return 0;
+  }
+  let total = 0;
+  let files = 0;
+  const stack = [absPath];
+  while (stack.length && files < maxFiles) {
+    const dir = stack.pop()!;
+    let entries: string[];
+    try {
+      entries = readdirSync(dir);
+    } catch {
+      continue;
+    }
+    for (const name of entries) {
+      if (name === '.' || name === '..') continue;
+      const p = join(dir, name);
+      try {
+        const st = statSync(p);
+        if (st.isDirectory()) stack.push(p);
+        else if (st.isFile()) {
+          total += st.size;
+          files += 1;
+          if (files >= maxFiles) break;
+        }
+      } catch {
+        /* skip */
+      }
+    }
+  }
+  return total;
+}
 
 export async function createShareTorrent(input: {
   dataDir: string;
@@ -26,6 +85,8 @@ export async function createShareTorrent(input: {
   settings: BtTrackerSettings;
   publicHostHint?: string | null;
   name?: string;
+  /** Override auto piece length */
+  pieceLength?: number;
 }): Promise<CreateShareTorrentResult> {
   const notes: string[] = [];
   if (!existsSync(input.contentAbsPath)) {
@@ -37,6 +98,15 @@ export async function createShareTorrent(input: {
   const rel = join('files', 'torrents', `${input.shareId}.torrent`);
   const abs = join(input.dataDir, rel);
   mkdirSync(dirname(abs), { recursive: true });
+
+  const estimated = estimateContentBytes(input.contentAbsPath);
+  const pieceLength =
+    input.pieceLength && input.pieceLength > 0
+      ? input.pieceLength
+      : pickPieceLength(estimated);
+  if (estimated > 0) {
+    notes.push(`content≈${estimated}B pieceLength=${pieceLength}`);
+  }
 
   try {
     const createTorrent = (await import('create-torrent')).default as (
@@ -53,6 +123,7 @@ export async function createShareTorrent(input: {
           announceList: [announce],
           createdBy: 'YSK Server',
           private: false,
+          pieceLength,
         },
         (err, torrent) => {
           if (err || !torrent) reject(err || new Error('empty torrent'));
@@ -62,15 +133,26 @@ export async function createShareTorrent(input: {
     });
 
     await fsp.writeFile(abs, buf);
-    const parseTorrent = (await import('parse-torrent')).default as (
+    const parseTorrentMod = await import('parse-torrent');
+    const parseTorrent = (parseTorrentMod.default ?? parseTorrentMod) as (
       buf: Buffer,
-    ) => {
-      infoHash?: string | Buffer;
-      name?: string;
-      length?: number;
-      announce?: string[];
-    };
-    const parsed = parseTorrent(buf);
+    ) =>
+      | {
+          infoHash?: string | Buffer;
+          name?: string;
+          length?: number;
+          pieceLength?: number;
+          announce?: string[];
+        }
+      | Promise<{
+          infoHash?: string | Buffer;
+          name?: string;
+          length?: number;
+          pieceLength?: number;
+          announce?: string[];
+        }>;
+    // parse-torrent v11 may return a Promise
+    const parsed = await Promise.resolve(parseTorrent(buf));
     const infoHash = hashToHex(parsed.infoHash);
     if (!infoHash) {
       return { ok: false, notes: ['failed to parse infoHash'], torrentAbsPath: abs };
@@ -85,6 +167,7 @@ export async function createShareTorrent(input: {
       torrentAbsPath: abs,
       name: parsed.name || input.name,
       length: parsed.length,
+      pieceLength: parsed.pieceLength || pieceLength,
       notes,
     };
   } catch (e) {
