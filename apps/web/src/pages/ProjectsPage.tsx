@@ -60,7 +60,6 @@ export function ProjectsPage() {
   const total = list.meta?.total ?? items.length;
   const facets = list.meta?.facets;
   const runtime = list.filters.runtime ?? '';
-  const { bookmarks } = useNavBookmarks();
 
   return (
     <FeaturePageLayout
