@@ -2,7 +2,7 @@
   "sw": {
     "vsftpd": "vsftpd (FTPS)",
     "db_util": "db-util (base de datos de usuario FTP)",
-    "nginx": "nginx",
+    "nginx": "Nginx",
     "certbot": "Certbot (Cifremos)",
     "mysql_client": "Cliente MySQL/MariaDB",
     "mysql_server": "servidor mysql",
@@ -18,11 +18,11 @@
     "opendkim": "AbiertoDKIM",
     "pdns_server": "PowerDNS",
     "git": "git",
-    "node": "Nodo.js",
+    "node": "Node.js",
     "php": "PHP",
-    "python": "Pitón 3",
-    "go": "Ir",
-    "rust": "Óxido (carga)",
+    "python": "Python",
+    "go": "Go",
+    "rust": "Rust",
     "chromium": "Cromo / Cromo"
   },
   "php": {

@@ -20,9 +20,9 @@
     "git": "گٹ",
     "node": "Node.js",
     "php": "PHP",
-    "python": "ازگر 3",
-    "go": "جاؤ",
-    "rust": "مورچا (کارگو)",
+    "python": "Python",
+    "go": "Go",
+    "rust": "Rust",
     "chromium": "کرومیم / کروم"
   },
   "php": {

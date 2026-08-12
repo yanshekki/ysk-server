@@ -52,7 +52,7 @@
     "created": "作成済み",
     "os": "OSユーザー",
     "deploy": "展開する",
-    "nginx": "nginx",
+    "nginx": "Nginx",
     "health": "健康"
   },
   "next": {
@@ -505,12 +505,12 @@
     "php": "PHP",
     "node": "Node.js",
     "static": "静止画",
-    "python": "パイソン",
-    "go": "行く",
-    "rust": "さび病",
-    "java": "ジャワ",
-    "kotlin": "コトリン",
-    "bun": "まとめ髪"
+    "python": "Python",
+    "go": "Go",
+    "rust": "Rust",
+    "java": "Java",
+    "kotlin": "Kotlin",
+    "bun": "Bun"
   },
   "netCacheTitle": "キャッシュ",
   "logsDeepAccess": "ログセンター・アクセス",

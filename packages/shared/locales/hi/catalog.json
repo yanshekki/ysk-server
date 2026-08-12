@@ -2,7 +2,7 @@
   "sw": {
     "vsftpd": "बनामएफटीपीडी (एफटीपीएस)",
     "db_util": "डीबी-उपयोग (एफ़टीपी उपयोगकर्ता डीबी)",
-    "nginx": "nginx",
+    "nginx": "Nginx",
     "certbot": "सर्टिबॉट (आइए एन्क्रिप्ट करें)",
     "mysql_client": "MySQL/MariaDB क्लाइंट",
     "mysql_server": "MySQL सर्वर",
@@ -18,11 +18,11 @@
     "opendkim": "ओपनडीकेआईएम",
     "pdns_server": "पॉवरडीएनएस",
     "git": "गिट",
-    "node": "नोड.जे.एस",
+    "node": "Node.js",
     "php": "PHP",
-    "python": "पायथन 3",
-    "go": "जाना",
-    "rust": "जंग (कार्गो)",
+    "python": "Python",
+    "go": "Go",
+    "rust": "Rust",
     "chromium": "क्रोमियम / क्रोम"
   },
   "php": {

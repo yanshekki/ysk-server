@@ -505,12 +505,12 @@
     "php": "PHP",
     "node": "Node.js",
     "static": "Estático",
-    "python": "Pitão",
-    "go": "Ir",
-    "rust": "Ferrugem",
+    "python": "Python",
+    "go": "Go",
+    "rust": "Rust",
     "java": "Java",
     "kotlin": "Kotlin",
-    "bun": "Pão"
+    "bun": "Bun"
   },
   "netCacheTitle": "Cache",
   "logsDeepAccess": "Centro de registro · acesso",

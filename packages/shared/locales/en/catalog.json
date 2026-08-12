@@ -20,9 +20,9 @@
     "git": "Git",
     "node": "Node.js",
     "php": "PHP",
-    "python": "Python 3",
+    "python": "Python",
     "go": "Go",
-    "rust": "Rust (cargo)",
+    "rust": "Rust",
     "chromium": "Chromium / Chrome"
   },
   "php": {

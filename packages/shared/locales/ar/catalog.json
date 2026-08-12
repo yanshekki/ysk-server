@@ -2,7 +2,7 @@
   "sw": {
     "vsftpd": "vsftpd (FTPS)",
     "db_util": "db-util (قاعدة بيانات مستخدم FTP)",
-    "nginx": "نجينكس",
+    "nginx": "Nginx",
     "certbot": "Certbot (دعونا نقوم بالتشفير)",
     "mysql_client": "عميل MySQL/MariaDB",
     "mysql_server": "خادم ماي إس كيو إل",
@@ -20,9 +20,9 @@
     "git": "بوابة",
     "node": "Node.js",
     "php": "PHP",
-    "python": "بايثون 3",
-    "go": "يذهب",
-    "rust": "الصدأ (البضائع)",
+    "python": "Python",
+    "go": "Go",
+    "rust": "Rust",
     "chromium": "الكروم / الكروم"
   },
   "php": {

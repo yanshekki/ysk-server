@@ -2,7 +2,7 @@
   "sw": {
     "vsftpd": "vsftpd(FTPS)",
     "db_util": "db-util (FTP 사용자 DB)",
-    "nginx": "엔진스",
+    "nginx": "Nginx",
     "certbot": "Certbot(암호화하자)",
     "mysql_client": "MySQL/MariaDB 클라이언트",
     "mysql_server": "MySQL 서버",
@@ -20,9 +20,9 @@
     "git": "힘내",
     "node": "Node.js",
     "php": "PHP",
-    "python": "파이썬 3",
-    "go": "가다",
-    "rust": "러스트(화물)",
+    "python": "Python",
+    "go": "Go",
+    "rust": "Rust",
     "chromium": "크롬 / 크롬"
   },
   "php": {

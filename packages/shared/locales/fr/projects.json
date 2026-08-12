@@ -503,14 +503,14 @@
   "railNode": "Processus Node",
   "runtimeName": {
     "php": "PHP",
-    "node": "Noeud.js",
+    "node": "Node.js",
     "static": "Statique",
     "python": "Python",
-    "go": "Aller",
-    "rust": "Rouiller",
+    "go": "Go",
+    "rust": "Rust",
     "java": "Java",
     "kotlin": "Kotlin",
-    "bun": "Chignon"
+    "bun": "Bun"
   },
   "netCacheTitle": "Cache",
   "logsDeepAccess": "Centre de logs · accès",

@@ -505,12 +505,12 @@
     "php": "PHP",
     "node": "Node.js",
     "static": "Statis",
-    "python": "ular piton",
-    "go": "Pergi",
-    "rust": "Karat",
-    "java": "Jawa",
+    "python": "Python",
+    "go": "Go",
+    "rust": "Rust",
+    "java": "Java",
     "kotlin": "Kotlin",
-    "bun": "Sanggul"
+    "bun": "Bun"
   },
   "netCacheTitle": "Cache",
   "logsDeepAccess": "Pusat log · akses",

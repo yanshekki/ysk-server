@@ -18,11 +18,11 @@
     "opendkim": "OuvrirDKIM",
     "pdns_server": "PowerDNS",
     "git": "Git",
-    "node": "Noeud.js",
+    "node": "Node.js",
     "php": "PHP",
-    "python": "Python3",
-    "go": "Aller",
-    "rust": "Rouille (cargo)",
+    "python": "Python",
+    "go": "Go",
+    "rust": "Rust",
     "chromium": "Chrome / Chrome"
   },
   "php": {

@@ -52,7 +52,7 @@
     "created": "مخلوق",
     "os": "مستخدم نظام التشغيل",
     "deploy": "نشر",
-    "nginx": "نجينكس",
+    "nginx": "Nginx",
     "health": "صحة"
   },
   "next": {
@@ -505,12 +505,12 @@
     "php": "PHP",
     "node": "Node.js",
     "static": "ثابت",
-    "python": "بايثون",
-    "go": "يذهب",
-    "rust": "الصدأ",
-    "java": "جافا",
-    "kotlin": "كوتلين",
-    "bun": "كعكة"
+    "python": "Python",
+    "go": "Go",
+    "rust": "Rust",
+    "java": "Java",
+    "kotlin": "Kotlin",
+    "bun": "Bun"
   },
   "netCacheTitle": "مخبأ",
   "logsDeepAccess": "مركز السجل · الوصول",
