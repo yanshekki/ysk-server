@@ -93,8 +93,10 @@ export YSK_EXECUTE=1   # 真正改主機先要
 
 YSK Server **免費**畀所有人用。如果有幫助：
 
-- 面板 **Support** 頁（`/support`）— Creator 與贊助連結  
-- 需要代管／加固／客製？**YSK Limited** 提供服務（**此處不標價** — 請來信洽談）  
+- 面板 **Support** 頁（`/support`）— Creator、贊助、加密貨幣地址  
+- **[Linktree](https://linktr.ee/yanshekki)** · GitHub Sponsors  
+- Crypto：`yanshekki.eth`（EVM）· `yanshekki.near` · `$yanshekki`（ADA）  
+- 需要代管／加固／客製？**YSK Limited**（**此處不標價** — 請來信洽談）  
 - 問題／回報：**[email@ysk.hk](mailto:email@ysk.hk)**  
 
 ---

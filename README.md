@@ -93,8 +93,10 @@ export YSK_EXECUTE=1   # required for real host mutations
 
 YSK Server is **free** for everyone. If it helps you:
 
-- Open the panel **Support** page (`/support`) for Creator info & donate links  
-- Need hands-on help? **YSK Limited** offers server ops, hardening, and custom integration (**no prices listed here** — contact us)  
+- Panel **Support** page (`/support`) — Creator, donate, crypto handles  
+- **[Linktree](https://linktr.ee/yanshekki)** · GitHub Sponsors  
+- Crypto: `yanshekki.eth` (EVM) · `yanshekki.near` · `$yanshekki` (ADA)  
+- Need hands-on help? **YSK Limited** (**no prices listed here** — contact us)  
 - Bugs / questions: **[email@ysk.hk](mailto:email@ysk.hk)**  
 
 ---

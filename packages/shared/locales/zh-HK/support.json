@@ -17,5 +17,12 @@
   "yskWebsite": "ysk.hk",
   "helpTitle": "遇到問題？",
   "helpBody": "請來信說明作業系統、安裝 log 路徑、預期同實際結果。每封信都會睇。",
-  "docsHint": "完整文件喺倉庫"
+  "docsHint": "完整文件喺倉庫",
+  "donateLinktree": "Linktree",
+  "cryptoTitle": "加密貨幣／Web3 地址",
+  "cryptoHint": "請只在對應網絡轉帳，轉前再核對地址。",
+  "cryptoNetwork": "網絡",
+  "cryptoAddress": "地址",
+  "copy": "複製",
+  "copied": "已複製"
 }

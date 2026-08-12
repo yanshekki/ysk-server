@@ -10694,7 +10694,14 @@
     "yskWebsite": "ysk.hk",
     "helpTitle": "遇到问题？",
     "helpBody": "请来信说明操作系统、安装 log 路径、预期与实际结果。每封信都会看。",
-    "docsHint": "完整文档在仓库"
+    "docsHint": "完整文档在仓库",
+    "donateLinktree": "Linktree",
+    "cryptoTitle": "加密货币／Web3 地址",
+    "cryptoHint": "请只在对应网络转账，转账前请再次核对地址。",
+    "cryptoNetwork": "网络",
+    "cryptoAddress": "地址",
+    "copy": "复制",
+    "copied": "已复制"
   },
   "system": {
     "exportLoadFailed": "加载导出数据失败",

@@ -2,20 +2,37 @@
  * Support / Creator / YSK Limited — free product contact & donate.
  * No pricing. Issues → email@ysk.hk
  */
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FeaturePageLayout, Card, CardSection } from '../../shared/components/ui';
 
 const SUPPORT_EMAIL = 'email@ysk.hk';
 const COMPANY_URL = 'https://ysk.hk/';
-/** Central donate links — edit here only */
+
+/** Central donate links & crypto handles — edit here only */
 const DONATE = {
   github: 'https://github.com/sponsors/yanshekki',
-  // Optional extras; leave empty string to hide
-  other: '' as string,
+  linktree: 'https://linktr.ee/yanshekki',
+  crypto: [
+    { network: 'EVM (ETH/BSC/AVAX)', address: 'yanshekki.eth' },
+    { network: 'NEAR', address: 'yanshekki.near' },
+    { network: 'ADA (Cardano)', address: '$yanshekki' },
+  ] as const,
 };
 
 export function SupportPage() {
   const { t } = useTranslation();
+  const [copied, setCopied] = useState<string | null>(null);
+
+  const copyAddress = useCallback(async (addr: string) => {
+    try {
+      await navigator.clipboard.writeText(addr);
+      setCopied(addr);
+      window.setTimeout(() => setCopied((c) => (c === addr ? null : c)), 1800);
+    } catch {
+      /* ignore — user can select manually */
+    }
+  }, []);
 
   return (
     <FeaturePageLayout
@@ -37,7 +54,7 @@ export function SupportPage() {
             <p className="u-text-sm" style={{ margin: '0 0 0.75rem', lineHeight: 1.55 }}>
               {t('support.donateBody')}
             </p>
-            <div className="u-flex u-flex-wrap u-gap-2">
+            <div className="u-flex u-flex-wrap u-gap-2" style={{ marginBottom: '1rem' }}>
               <a
                 className="btn btn--primary btn--md"
                 href={DONATE.github}
@@ -46,16 +63,114 @@ export function SupportPage() {
               >
                 {t('support.donateGithub')}
               </a>
-              {DONATE.other ? (
-                <a
-                  className="btn btn--secondary btn--md"
-                  href={DONATE.other}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {t('support.donateOther')}
-                </a>
-              ) : null}
+              <a
+                className="btn btn--secondary btn--md"
+                href={DONATE.linktree}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {t('support.donateLinktree')}
+              </a>
+            </div>
+
+            <p className="u-text-sm" style={{ margin: '0 0 0.5rem', fontWeight: 600 }}>
+              {t('support.cryptoTitle')}
+            </p>
+            <p className="u-text-sm muted" style={{ margin: '0 0 0.65rem', lineHeight: 1.5 }}>
+              {t('support.cryptoHint')}
+            </p>
+            <div style={{ overflowX: 'auto' }}>
+              <table
+                className="u-text-sm"
+                style={{
+                  width: '100%',
+                  borderCollapse: 'collapse',
+                  margin: 0,
+                }}
+              >
+                <thead>
+                  <tr>
+                    <th
+                      style={{
+                        textAlign: 'left',
+                        padding: '0.45rem 0.6rem',
+                        borderBottom: '1px solid var(--border, #333)',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {t('support.cryptoNetwork')}
+                    </th>
+                    <th
+                      style={{
+                        textAlign: 'left',
+                        padding: '0.45rem 0.6rem',
+                        borderBottom: '1px solid var(--border, #333)',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {t('support.cryptoAddress')}
+                    </th>
+                    <th
+                      style={{
+                        textAlign: 'right',
+                        padding: '0.45rem 0.6rem',
+                        borderBottom: '1px solid var(--border, #333)',
+                        width: '5.5rem',
+                      }}
+                    />
+                  </tr>
+                </thead>
+                <tbody>
+                  {DONATE.crypto.map((row) => (
+                    <tr key={row.network}>
+                      <td
+                        style={{
+                          padding: '0.5rem 0.6rem',
+                          borderBottom: '1px solid var(--border, #2a2a2a)',
+                          verticalAlign: 'middle',
+                        }}
+                      >
+                        {row.network}
+                      </td>
+                      <td
+                        style={{
+                          padding: '0.5rem 0.6rem',
+                          borderBottom: '1px solid var(--border, #2a2a2a)',
+                          verticalAlign: 'middle',
+                        }}
+                      >
+                        <code
+                          style={{
+                            display: 'inline-block',
+                            padding: '0.2rem 0.45rem',
+                            borderRadius: '0.35rem',
+                            background: 'var(--surface-2, #1e1e24)',
+                            fontSize: '0.9em',
+                          }}
+                        >
+                          {row.address}
+                        </code>
+                      </td>
+                      <td
+                        style={{
+                          padding: '0.5rem 0.6rem',
+                          borderBottom: '1px solid var(--border, #2a2a2a)',
+                          textAlign: 'right',
+                          verticalAlign: 'middle',
+                        }}
+                      >
+                        <button
+                          type="button"
+                          className="btn btn--secondary btn--sm"
+                          onClick={() => void copyAddress(row.address)}
+                        >
+                          {copied === row.address ? t('support.copied') : t('support.copy')}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </CardSection>
         </Card>

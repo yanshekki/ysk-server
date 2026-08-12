@@ -10694,7 +10694,14 @@
     "yskWebsite": "ysk.hk",
     "helpTitle": "Having a problem?",
     "helpBody": "Email us with your OS, install log path, and what you expected vs what happened. We read every message.",
-    "docsHint": "Full documentation lives in the repository under"
+    "docsHint": "Full documentation lives in the repository under",
+    "donateLinktree": "Linktree",
+    "cryptoTitle": "Crypto / web3 handles",
+    "cryptoHint": "Send on the matching network only. Double-check the address before sending.",
+    "cryptoNetwork": "Network",
+    "cryptoAddress": "Address",
+    "copy": "Copy",
+    "copied": "Copied"
   },
   "system": {
     "exportLoadFailed": "निर्यात डेटा लोड करने में विफल",
