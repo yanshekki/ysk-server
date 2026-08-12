@@ -16,6 +16,7 @@ description: >
 - Data directory default: `/var/lib/ysk-server` (root) or `~/.ysk`.
 - **Honesty:** host mutations need **root** (often) + **`YSK_EXECUTE=1`**. Without EXECUTE, commands are dry-run / blocked — never claim success if blocked.
 - Support: **email@ysk.hk** · panel **`/support`**.
+- Donate: [Linktree](https://linktr.ee/yanshekki) · GitHub Sponsors · crypto `yanshekki.eth` (EVM) · `yanshekki.near` · `$yanshekki` (ADA).
 
 ## Install (fresh machine)
 
@@ -33,11 +34,11 @@ After install (root defaults):
 - Credentials: install stdout + `$DATA_DIR/BOOTSTRAP-CREDENTIALS.txt`
 - Then: change password, enable 2FA
 
-Uninstall:
+Uninstall (`--all` removes product CLI/unit unless `--keep-product`):
 
 ```bash
-sudo ./uninstall.sh --all --remove-product --keep-data --yes
-sudo ./uninstall.sh --all --remove-product --purge-data --yes   # wipe data
+sudo ./uninstall.sh --all --keep-data --yes
+sudo ./uninstall.sh --all --purge-data --yes   # wipe registered data
 ```
 
 Docs: `docs/getting-started/install.md`, `uninstall.md`, `docs/INDEX.md`.
@@ -81,7 +82,7 @@ Full command map: **`docs/agent/commands.json`** · **`docs/cli/reference.md`**.
 | `/bt-tracker` | BitTorrent tracker |
 | `/email` | Mail |
 | `/protection` | Host defense |
-| `/support` | Creator · donate · YSK Limited · contact |
+| `/support` | Creator · Linktree/crypto donate · YSK Limited · email@ysk.hk |
 
 ## BT / WebTorrent notes
 

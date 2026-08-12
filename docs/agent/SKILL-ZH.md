@@ -2,13 +2,16 @@
 
 > 語言：中文 | [English](./SKILL.md)
 
-你正在操作 **ysk-server** 單機 Linux 控制平面。
+你正在操作 **ysk-server** **v1.0.0** 免費單機 Linux 控制平面。
+
+**完整 Grok skill：** [`.grok/skills/ysk-server/SKILL.md`](../../.grok/skills/ysk-server/SKILL.md)
 
 ## 必做
 
 - 使用 CLI：`ysk-server <cmd> --json`
 - 危險操作預設 dry-run；真實變更需 `--execute` + `YSK_EXECUTE=1`（常需 root）
 - 參考 `docs/cli/reference-ZH.md`、`docs/agent/commands.json`、`docs/cli/parity-ZH.md`
+- 用戶卡住 → **email@ysk.hk** · 面板 `/support` · [Linktree](https://linktr.ee/yanshekki)
 
 ## 禁止
 

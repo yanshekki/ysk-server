@@ -6,7 +6,7 @@
 - **First public free release** of YSK Server (panel + CLI)
 - Install path aims for **ready-to-use**: root installs enable/start `ysk-server.service`, print bootstrap credentials, HTTPS panel URL
 - Uninstall: `--all` removes product CLI/unit unless `--keep-product`
-- New panel **Support** page (`/support`): Creator, donate, YSK Limited services (no prices), contact **email@ysk.hk**
+- New panel **Support** page (`/support`): Creator, donate (GitHub Sponsors + [Linktree](https://linktr.ee/yanshekki)), crypto handles (`yanshekki.eth` / `yanshekki.near` / `$yanshekki`), YSK Limited services (no prices), contact **email@ysk.hk**
 - Product-oriented README; agent skill at `.grok/skills/ysk-server/SKILL.md`
 - Global search redesigned (pages + resources, grouped UI)
 - BT Tracker / public shares / WebTorrent self-host + tracker proxy (see prior commits)

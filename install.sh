@@ -686,12 +686,14 @@ print_next() {
  Host ops:  export YSK_EXECUTE=1   (and usually root)
 
  Support / Donate / YSK Limited:
-   Panel → Support   or   email@ysk.hk
-   Docs:  docs/INDEX.md · docs/getting-started/install.md
+   Panel → Support (/support)  ·  email@ysk.hk
+   Linktree: https://linktr.ee/yanshekki
+   Crypto:   yanshekki.eth (EVM) · yanshekki.near · \$yanshekki (ADA)
+   Docs:     docs/INDEX.md · docs/getting-started/install.md
 
  Uninstall:
-   ./uninstall.sh --all --remove-product --keep-data --yes
-   ./uninstall.sh --all --remove-product --purge-data --yes
+   ./uninstall.sh --all --keep-data --yes
+   ./uninstall.sh --all --purge-data --yes
 
 ============================================================
 
