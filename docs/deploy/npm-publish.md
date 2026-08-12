@@ -28,3 +28,5 @@ bash scripts/publish-ysk-server-npm.sh --publish
 Order: **shared → core → ysk-server** (server bundles shared+core).
 
 Each package ships a **README.md** for the npm package page.
+
+Bump `version` in `packages/shared`, `packages/core`, and `apps/server` `package.json` before a new release. Verify with `npm view ysk-server version` and `ysk-server help`.
