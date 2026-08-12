@@ -230,8 +230,9 @@ const KNOWN_GAPS = [
   {
     id: 'runtimes-full',
     panel: 'java/kotlin/bun + switch/uninstall',
-    cliNeed: 'hosting runtime-install expand',
-    status: 'partial',
+    cliNeed: 'runtimes',
+    status: 'ok',
+    note: 'C7: runtimes list|install|switch|uninstall (+ hosting runtime-*)',
     priority: 'P2',
   },
   {

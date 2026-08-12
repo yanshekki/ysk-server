@@ -2,7 +2,7 @@
 
 > Language: English | [中文](./parity-ZH.md)
 
-**Status: C6 (2026-08-12).** Through **ftp / files shares / email depth / dns ops**. Remaining: runtimes-full (C7).
+**Status: SEALED C7 (2026-08-12).** All production panel mutation/list surfaces have CLI. Intentional panel-only: terminal PTY, VNC canvas, Host Browse, file preview editor, public share landing.
 
 **Hard rule:** Every production panel capability must have a CLI entry (or an explicit, documented intentional gap). Prefer `--json` for automation.
 
@@ -57,9 +57,9 @@ Machine-readable (partial catalog): [../agent/commands.json](../agent/commands.j
 
 ## Acceptance (reopen)
 
-- [ ] No unmarked production ❌ for Admin panel in-scope features
-- [ ] Primary list/status commands support `--json`
+- [x] No unmarked production ❌ for Admin panel in-scope features
+- [x] Primary list/status commands support `--json`
 - [x] Intentional panel-only UX documented (terminal, noVNC, browse UI, editor)
 - [x] Automated inventory script exists
 
-*Last updated: 2026-08-12 — C5 (~80%).*
+*Last updated: 2026-08-12 — C7 sealed (100%).*

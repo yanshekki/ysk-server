@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-08-12T04:27:14.294Z",
-  "cliCommandsCount": 50,
+  "generatedAt": "2026-08-12T04:29:59.611Z",
+  "cliCommandsCount": 51,
   "cliCommands": [
     "setup",
     "update",
@@ -50,10 +50,11 @@
     "db",
     "redis",
     "ftp",
+    "runtimes",
     "version",
     "help"
   ],
-  "handlersCount": 43,
+  "handlersCount": 44,
   "handlers": [
     "agent",
     "agents",
@@ -80,6 +81,7 @@
     "rbac",
     "real-ip",
     "redis",
+    "runtimes",
     "security",
     "self-update-plan",
     "serve",
@@ -260,11 +262,12 @@
     {
       "id": "runtimes-full",
       "panel": "java/kotlin/bun + switch/uninstall",
-      "cliNeed": "hosting runtime-install expand",
-      "status": "partial",
+      "cliNeed": "runtimes",
+      "status": "ok",
+      "note": "C7: runtimes list|install|switch|uninstall (+ hosting runtime-*)",
       "priority": "P2",
       "cliPresent": true,
-      "resolved": false
+      "resolved": true
     },
     {
       "id": "host-browse",
@@ -306,19 +309,9 @@
       "resolved": true
     }
   ],
-  "openGaps": [
-    {
-      "id": "runtimes-full",
-      "panel": "java/kotlin/bun + switch/uninstall",
-      "cliNeed": "hosting runtime-install expand",
-      "status": "partial",
-      "priority": "P2",
-      "cliPresent": true,
-      "resolved": false
-    }
-  ],
+  "openGaps": [],
   "missingCount": 0,
-  "partialCount": 1,
+  "partialCount": 0,
   "panelOnlyCount": 4,
-  "okCount": 15
+  "okCount": 16
 }

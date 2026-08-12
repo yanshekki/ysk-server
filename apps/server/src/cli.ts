@@ -89,6 +89,7 @@ const CLI_COMMANDS = [
   'db',
   'redis',
   'ftp',
+  'runtimes',
   'version',
   'help',
 ] as const;
@@ -256,13 +257,24 @@ async function mainInner(
   json: boolean,
   command: string | undefined,
 ): Promise<number> {
-  // Global flags must win over default-to-help when only flags are present
-  if (hasFlag(args, '--version') || hasFlag(args, '-V')) {
+  // Global --version / -V only when no command (else --version is a subcommand option, e.g. runtime install)
+  if (
+    !command &&
+    (hasFlag(args, '--version') || hasFlag(args, '-V'))
+  ) {
+    printVersion(json);
+    return 0;
+  }
+  if (command === 'version') {
     printVersion(json);
     return 0;
   }
 
-  if (hasFlag(args, '--help') || hasFlag(args, '-h')) {
+  // Global --help only without a command; `ysk-server <cmd> --help` handled per-command where present
+  if (
+    !command &&
+    (hasFlag(args, '--help') || hasFlag(args, '-h'))
+  ) {
     if (json) {
       printJson({
         ok: true,
@@ -291,11 +303,6 @@ async function mainInner(
     } else {
       printHelp();
     }
-    return 0;
-  }
-
-  if (command === 'version') {
-    printVersion(json);
     return 0;
   }
 
@@ -2907,7 +2914,9 @@ async function mainInner(
       config,
       configPath,
       dataDir: dataDir ?? config?.dataDir,
-      executeEnabled: process.env.YSK_EXECUTE === '1' });
+      executeEnabled:
+        process.env.YSK_EXECUTE === '1' || wantsHostExecute(args),
+    });
     try {
       if (sub === 'nginx' || sub === 'nginx-list') {
         const { listManagedNginxDetailed } = await import('@ysk/core');
@@ -3110,34 +3119,133 @@ async function mainInner(
       }
       if (sub === 'runtimes' || sub === 'runtimes-probe') {
         const { probeRuntimes, listSupportedRuntimes } = await import('@ysk/core');
-        printJson({
-          supported: listSupportedRuntimes(),
-          probe: await probeRuntimes(ctx.host, { dataDir: ctx.dataDir }),
-        });
-        return 0;
+        try {
+          printJson({
+            ok: true,
+            supported: listSupportedRuntimes(),
+            probe: await probeRuntimes(ctx.host, { dataDir: ctx.dataDir }),
+          });
+          return 0;
+        } catch (e) {
+          printJson({
+            ok: true,
+            supported: listSupportedRuntimes(),
+            probe: null,
+            blockedProbe: true,
+            notes: [e instanceof Error ? e.message : String(e)],
+          });
+          return 0;
+        }
       }
       if (sub === 'runtime-install') {
-        const { planOrInstallRuntime } = await import('@ysk/core');
+        const {
+          planOrInstallRuntime,
+          defaultRuntimeVersion,
+        } = await import('@ysk/core');
         const kindRaw = getOpt(args, '--kind') ?? 'node';
+        const allowed = [
+          'node',
+          'php',
+          'python',
+          'go',
+          'rust',
+          'java',
+          'kotlin',
+          'bun',
+        ] as const;
         const kind = (
-          ['node', 'php', 'python', 'go', 'rust'].includes(kindRaw) ? kindRaw : 'node'
-        ) as 'node' | 'php' | 'python' | 'go' | 'rust';
-        const defaultVer =
-          kind === 'php'
-            ? '8.2'
-            : kind === 'python'
-              ? '3.12'
-              : kind === 'go'
-                ? '1.22'
-                : kind === 'rust'
-                  ? 'stable'
-                  : '20';
+          (allowed as readonly string[]).includes(kindRaw) ? kindRaw : 'node'
+        ) as (typeof allowed)[number];
+        const pluginsCsv = getOpt(args, '--plugins');
+        const plugins = pluginsCsv
+          ? pluginsCsv.split(',').map((s) => s.trim()).filter(Boolean)
+          : undefined;
+        const extCsv = getOpt(args, '--extensions');
+        const extensions = extCsv
+          ? extCsv.split(',').map((s) => s.trim()).filter(Boolean)
+          : undefined;
         const result = await planOrInstallRuntime({
           dataDir: ctx.dataDir,
           host: ctx.host,
           kind,
-          version: getOpt(args, '--version') ?? defaultVer,
-          install: hasFlag(args, '--install') || wantsHostExecute(args) });
+          version: getOpt(args, '--version') ?? defaultRuntimeVersion(kind),
+          install: hasFlag(args, '--install') || wantsHostExecute(args),
+          plugins: kind !== 'php' ? plugins : undefined,
+          extensions: kind === 'php' ? extensions : undefined,
+        });
+        printJson(result);
+        return exitFromResult(result);
+      }
+      if (sub === 'runtime-switch') {
+        if (!wantsHostExecute(args)) {
+          printJson({
+            ok: false,
+            blocked: true,
+            dryRun: true,
+            notes: ['Pass --execute to switch the default runtime version on the host.'],
+          });
+          return 3;
+        }
+        const { switchRuntimeDefault, defaultRuntimeVersion } = await import('@ysk/core');
+        const kindRaw = getOpt(args, '--kind') ?? 'node';
+        const allowed = [
+          'node',
+          'php',
+          'python',
+          'go',
+          'rust',
+          'java',
+          'kotlin',
+          'bun',
+        ] as const;
+        const kind = (
+          (allowed as readonly string[]).includes(kindRaw) ? kindRaw : 'node'
+        ) as (typeof allowed)[number];
+        const result = await switchRuntimeDefault({
+          host: ctx.host,
+          kind,
+          version: getOpt(args, '--version') ?? defaultRuntimeVersion(kind),
+        });
+        printJson(result);
+        return exitFromResult(result);
+      }
+      if (sub === 'runtime-uninstall') {
+        if (!wantsHostExecute(args)) {
+          printJson({
+            ok: false,
+            blocked: true,
+            dryRun: true,
+            notes: ['Pass --execute to uninstall a managed runtime version on the host.'],
+          });
+          return 3;
+        }
+        const { uninstallRuntimeVersion } = await import('@ysk/core');
+        const kindRaw = getOpt(args, '--kind') ?? 'node';
+        const version = getOpt(args, '--version');
+        if (!version?.trim()) {
+          process.stderr.write(
+            'Usage: ysk-server hosting runtime-uninstall --kind node|php|…|java|kotlin|bun --version VER --execute\n',
+          );
+          return 2;
+        }
+        const allowed = [
+          'node',
+          'php',
+          'python',
+          'go',
+          'rust',
+          'java',
+          'kotlin',
+          'bun',
+        ] as const;
+        const kind = (
+          (allowed as readonly string[]).includes(kindRaw) ? kindRaw : 'node'
+        ) as (typeof allowed)[number];
+        const result = await uninstallRuntimeVersion({
+          host: ctx.host,
+          kind,
+          version: version.trim(),
+        });
         printJson(result);
         return exitFromResult(result);
       }
@@ -5310,7 +5418,8 @@ async function mainInner(
     command === 'software' ||
     command === 'db' ||
     command === 'redis' ||
-    command === 'ftp'
+    command === 'ftp' ||
+    command === 'runtimes'
   ) {
     // Honour --execute together with YSK_EXECUTE for host mutations
     const configPath = getOpt(args, '--config');
@@ -5372,6 +5481,123 @@ async function mainInner(
       if (command === 'ftp') {
         const { runFtpCommand } = await import('./cli/cmd-ftp.js');
         return await runFtpCommand(ctx, args, json, helpers);
+      }
+      if (command === 'runtimes') {
+        // Alias → hosting runtimes / runtime-install / switch / uninstall
+        const tokens = args.filter((a) => !a.startsWith('-'));
+        const act = tokens[1] ?? 'list';
+        const {
+          probeRuntimes,
+          listSupportedRuntimes,
+          planOrInstallRuntime,
+          defaultRuntimeVersion,
+          switchRuntimeDefault,
+          uninstallRuntimeVersion,
+        } = await import('@ysk/core');
+        const kinds = [
+          'node',
+          'php',
+          'python',
+          'go',
+          'rust',
+          'java',
+          'kotlin',
+          'bun',
+        ] as const;
+        type Kind = (typeof kinds)[number];
+        const parseKind = (raw: string | undefined): Kind =>
+          raw && (kinds as readonly string[]).includes(raw)
+            ? (raw as Kind)
+            : 'node';
+
+        if (act === 'list' || act === 'status' || act === 'probe') {
+          try {
+            printJson({
+              ok: true,
+              supported: listSupportedRuntimes(),
+              probe: await probeRuntimes(ctx.host, { dataDir: ctx.dataDir }),
+            });
+            return 0;
+          } catch (e) {
+            printJson({
+              ok: true,
+              supported: listSupportedRuntimes(),
+              probe: null,
+              blockedProbe: true,
+              notes: [e instanceof Error ? e.message : String(e)],
+            });
+            return 0;
+          }
+        }
+        if (act === 'install') {
+          const kind = parseKind(getOpt(args, '--kind') ?? tokens[2]);
+          const result = await planOrInstallRuntime({
+            dataDir: ctx.dataDir,
+            host: ctx.host,
+            kind,
+            version: getOpt(args, '--version') ?? defaultRuntimeVersion(kind),
+            install: wantsHostExecute(args) || hasFlag(args, '--install'),
+            plugins: getOpt(args, '--plugins')
+              ?.split(',')
+              .map((s) => s.trim())
+              .filter(Boolean),
+            extensions: getOpt(args, '--extensions')
+              ?.split(',')
+              .map((s) => s.trim())
+              .filter(Boolean),
+          });
+          printJson(result);
+          return exitFromResult(result);
+        }
+        if (act === 'switch') {
+          if (!wantsHostExecute(args)) {
+            printJson({
+              ok: false,
+              blocked: true,
+              dryRun: true,
+              notes: ['Pass --execute to switch default runtime version.'],
+            });
+            return 3;
+          }
+          const kind = parseKind(getOpt(args, '--kind') ?? tokens[2]);
+          const result = await switchRuntimeDefault({
+            host: ctx.host,
+            kind,
+            version: getOpt(args, '--version') ?? defaultRuntimeVersion(kind),
+          });
+          printJson(result);
+          return exitFromResult(result);
+        }
+        if (act === 'uninstall' || act === 'remove') {
+          if (!wantsHostExecute(args)) {
+            printJson({
+              ok: false,
+              blocked: true,
+              dryRun: true,
+              notes: ['Pass --execute to uninstall a managed runtime version.'],
+            });
+            return 3;
+          }
+          const kind = parseKind(getOpt(args, '--kind') ?? tokens[2]);
+          const version = getOpt(args, '--version') ?? tokens[3];
+          if (!version?.trim()) {
+            process.stderr.write(
+              'Usage: ysk-server runtimes uninstall --kind KIND --version VER --execute\n',
+            );
+            return 2;
+          }
+          const result = await uninstallRuntimeVersion({
+            host: ctx.host,
+            kind,
+            version: version.trim(),
+          });
+          printJson(result);
+          return exitFromResult(result);
+        }
+        process.stderr.write(
+          'Usage: ysk-server runtimes list|install|switch|uninstall [--kind java|kotlin|bun|…] [--version …] [--execute]\n',
+        );
+        return 2;
       }
       const { runNetworkCommand } = await import('./cli/cmd-network.js');
       return await runNetworkCommand(ctx, args, json, helpers);

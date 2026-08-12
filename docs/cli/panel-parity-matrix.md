@@ -1,7 +1,7 @@
 # Panel ↔ CLI parity matrix
 
 > Language: English | [中文](./parity-ZH.md)  
-> **Status: C2 in progress** — C0 inventory + C2 `vpn`/`vnc` landed.  
+> **Status: SEALED (C7)** — all production panel gaps closed (panel-only UX rows remain ⚠️).  
 > Machine inventory: [parity-inventory.json](./parity-inventory.json) · regenerate: `node scripts/cli-panel-parity.mjs`
 
 **Hard rule:** Every production panel capability must have a CLI entry (or an explicit ⚠️ panel-only row).
@@ -33,7 +33,7 @@
 | files-shares-create | Create public share | `files shares create` | ✅ C6 | P2 |
 | email-depth | aliases / queue / relay | `email …` | ✅ C6 | P2 |
 | dns-records | records / dnssec / heal | `dns …` | ✅ C6 | P2 |
-| runtimes-full | java/kotlin/bun + switch | `hosting runtime-install` expand | ⚠️ partial | P2 |
+| runtimes-full | java/kotlin/bun + switch | `runtimes …` / `hosting runtime-*` | ✅ C7 | P2 |
 
 ## Intentional panel-only (⚠️)
 
@@ -97,4 +97,4 @@ node scripts/cli-panel-parity.mjs --json
 # node scripts/cli-panel-parity.mjs --strict   # fails if any ❌ missing remain
 ```
 
-*Last updated: 2026-08-12 — C5 db + redis (~80%).*
+*Last updated: 2026-08-12 — C7 sealed (100%).*

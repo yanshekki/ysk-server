@@ -2,7 +2,7 @@
 
 > 語系：中文 | [English](./parity.md)
 
-**狀態：C6（2026-08-12）。** 已做到 **ftp／files shares／email／dns**。剩餘：runtimes-full（C7）。
+**狀態：C7 封板（2026-08-12）。** 生產面板 mutation/list 均有 CLI。故意 ⚠️ 僅面板：終端 PTY、VNC 畫布、Host Browse、檔案預覽、公開 share landing。
 
 **硬規則：** 面板每一項生產能力都必須有 CLI 入口（或明確標為 ⚠️ 僅面板 UX）。
 
@@ -25,4 +25,4 @@
 
 瀏覽器終端畫面、in-panel VNC 畫布（CLI 有 `session mint`／`share`／connection 元資料）、Host Browse 畫面、檔案預覽編輯器、公開 share landing。
 
-*最後更新：2026-08-12 — C5（~80%）。*
+*最後更新：2026-08-12 — C7 封板（100%）。*
