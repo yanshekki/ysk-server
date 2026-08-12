@@ -50,13 +50,23 @@ ysk-server files shares bt-stats --id SHARE_ID --json
 
 ## Day-N e2e 檢查清單
 
+自動化 smoke（啟動 Tracker + 真實 `.torrent` + 列表 + `/stats.json`）：
+
+```bash
+pnpm e2e:bt-tracker
+# 或：bash scripts/e2e-bt-tracker.sh
+```
+
+手動：
+
 1. `ysk-server serve`（面板運行）。  
 2. 面板 **BT Tracker** → 設公開主機 → **啟動**（或開 autostart 後重啟 serve）。  
 3. 網絡暴露／防火牆：peers 在主機外時開 **8000**。  
 4. **檔案** → 分享 → 模式 **兩者** → 複製公開連結。  
 5. 開啟 `/share/:token` → **在瀏覽器以 WebTorrent 下載**，或用 magnet／`.torrent`。  
 6. 面板 Torrent 表／分享列表可見種子／peers／速度。  
-7. 重啟 serve → 確認 Tracker 與做種已還原（開機 re-seed）。
+7. 重啟 serve → 確認 Tracker 與做種已還原（開機 re-seed）。  
+8. 大型分享（≥128 MiB）會先回 `seedStatus: pending`，背景佇列建 torrent（`/api/v1/system/bt-tracker/jobs`）。
 
 ## 埠
 

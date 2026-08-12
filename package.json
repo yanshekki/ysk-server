@@ -45,6 +45,7 @@
     "e2e:host-browse": "bash scripts/e2e-host-browse.sh",
     "e2e:vpn": "bash scripts/e2e-vpn.sh",
     "e2e:vnc": "bash scripts/e2e-vnc.sh",
+    "e2e:bt-tracker": "bash scripts/e2e-bt-tracker.sh",
     "e2e:service-exposure": "bash scripts/e2e-service-exposure.sh",
     "e2e:updates": "bash scripts/e2e-updates.sh",
     "e2e:software-lifecycle": "bash scripts/e2e-software-lifecycle.sh",
