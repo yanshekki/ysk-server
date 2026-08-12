@@ -13,7 +13,6 @@ import {
   Card,
   CardSection,
   DataTable,
-  EmptyState,
   FeaturePageLayout,
   Field,
   FormActions,
@@ -297,145 +296,86 @@ export function BtTrackerPage() {
           onChange={(id) => setTab(id as (typeof TABS)[number])}
         >
           {tab === 'overview' ? (
-            <div className="tab-panel u-stack u-gap-md">
-              <div className="bt-hero">
-                <div
-                  className={`bt-hero__main${running ? '' : ' bt-hero__main--down'}`}
-                >
-                  <div className="bt-hero__top">
-                    <div className="bt-hero__identity">
-                      <div className="bt-hero__icon" aria-hidden>
-                        🧲
-                      </div>
-                      <div>
-                        <h2 className="bt-hero__title">
-                          {running ? t('btTracker.heroRunning') : t('btTracker.heroStopped')}
-                        </h2>
-                        <p className="bt-hero__sub">
-                          {running
-                            ? t('btTracker.heroRunningSub')
-                            : t('btTracker.heroStoppedSub')}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge tone={running ? 'ok' : 'warn'}>
-                      {running ? t('btTracker.running') : t('btTracker.stopped')}
-                    </Badge>
-                  </div>
-
-                  <div className="bt-hero__actions">
-                    {!running ? (
-                      <Button variant="primary" size="md" loading={busy} onClick={onStart}>
-                        {t('btTracker.start')}
-                      </Button>
-                    ) : (
-                      <Button variant="danger" size="md" loading={busy} onClick={onStop}>
-                        {t('btTracker.stop')}
-                      </Button>
-                    )}
-                    <Button
-                      variant="secondary"
-                      size="md"
-                      loading={busy}
-                      onClick={onRestore}
-                      title={t('btTracker.restoreSeedsHint')}
-                    >
-                      {t('btTracker.restoreSeeds')}
-                    </Button>
-                    <Link className="btn btn--secondary btn--md" to="/files?tab=shares">
-                      {t('btTracker.openShares')}
-                    </Link>
-                    <Button
-                      variant="ghost"
-                      size="md"
-                      onClick={() => setTab('settings')}
-                    >
-                      {t('btTracker.goSettings')}
-                    </Button>
-                  </div>
-
-                  <div className="bt-hero__meta">
-                    <div className="bt-meta">
-                      <span className="bt-meta__lab">{t('btTracker.port')}</span>
-                      <span className="bt-meta__val">
-                        {status?.settings?.httpPort ?? '—'}
-                      </span>
-                    </div>
-                    <div className="bt-meta">
-                      <span className="bt-meta__lab">{t('btTracker.announceHost')}</span>
-                      <span className="bt-meta__val">
-                        {status?.settings?.publicAnnounceHost || '127.0.0.1'}
-                      </span>
-                    </div>
-                    <div className="bt-meta">
-                      <span className="bt-meta__lab">{t('btTracker.pid')}</span>
-                      <span className="bt-meta__val">{status?.pid ?? '—'}</span>
-                    </div>
-                  </div>
+            <div className="tab-panel bt-overview">
+              <div className="bt-strip">
+                <div className="bt-strip__status">
+                  <Badge tone={running ? 'ok' : 'warn'}>
+                    {running ? t('btTracker.running') : t('btTracker.stopped')}
+                  </Badge>
                 </div>
+                <div className="bt-strip__meta">
+                  <span>
+                    {t('btTracker.port')}{' '}
+                    <strong>{status?.settings?.httpPort ?? '—'}</strong>
+                  </span>
+                  <span>
+                    {t('btTracker.announceHost')}{' '}
+                    <strong>
+                      {status?.settings?.publicAnnounceHost || '127.0.0.1'}
+                    </strong>
+                  </span>
+                  <span>
+                    {t('btTracker.pid')} <strong>{status?.pid ?? '—'}</strong>
+                  </span>
+                </div>
+                <div className="bt-strip__actions">
+                  {!running ? (
+                    <Button variant="primary" size="sm" loading={busy} onClick={onStart}>
+                      {t('btTracker.start')}
+                    </Button>
+                  ) : (
+                    <Button variant="danger" size="sm" loading={busy} onClick={onStop}>
+                      {t('btTracker.stop')}
+                    </Button>
+                  )}
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={busy}
+                    onClick={onRestore}
+                    title={t('btTracker.restoreSeedsHint')}
+                  >
+                    {t('btTracker.restoreSeeds')}
+                  </Button>
+                  <Link className="btn btn--secondary btn--sm" to="/files?tab=shares">
+                    {t('btTracker.openShares')}
+                  </Link>
+                  <Button variant="ghost" size="sm" onClick={() => setTab('settings')}>
+                    {t('btTracker.goSettings')}
+                  </Button>
+                </div>
+              </div>
 
-                <aside className="bt-side">
-                  <h3 className="bt-side__title">{t('btTracker.quickStart')}</h3>
-                  <p className="bt-side__desc">{t('btTracker.quickStartDesc')}</p>
-                  <ol className="bt-steps">
-                    <li
-                      className={`bt-step ${hasPublicHost ? 'bt-step--done' : 'bt-step--todo'}`}
-                    >
-                      <span className="bt-step__n">{hasPublicHost ? '✓' : '1'}</span>
-                      <div className="bt-step__body">
-                        <p className="bt-step__title">{t('btTracker.step1Title')}</p>
-                        <p className="bt-step__hint">{t('btTracker.step1Hint')}</p>
-                      </div>
-                      <Badge tone={hasPublicHost ? 'ok' : 'neutral'}>
-                        {hasPublicHost ? t('btTracker.stepDone') : t('btTracker.stepTodo')}
-                      </Badge>
-                    </li>
-                    <li className={`bt-step ${running ? 'bt-step--done' : 'bt-step--todo'}`}>
-                      <span className="bt-step__n">{running ? '✓' : '2'}</span>
-                      <div className="bt-step__body">
-                        <p className="bt-step__title">{t('btTracker.step2Title')}</p>
-                        <p className="bt-step__hint">{t('btTracker.step2Hint')}</p>
-                      </div>
-                      <Badge tone={running ? 'ok' : 'neutral'}>
-                        {running ? t('btTracker.stepDone') : t('btTracker.stepTodo')}
-                      </Badge>
-                    </li>
-                    <li
-                      className={`bt-step ${torrents.length ? 'bt-step--done' : 'bt-step--todo'}`}
-                    >
-                      <span className="bt-step__n">{torrents.length ? '✓' : '3'}</span>
-                      <div className="bt-step__body">
-                        <p className="bt-step__title">{t('btTracker.step3Title')}</p>
-                        <p className="bt-step__hint">{t('btTracker.step3Hint')}</p>
-                      </div>
-                      <Badge tone={torrents.length ? 'ok' : 'neutral'}>
-                        {torrents.length ? t('btTracker.stepDone') : t('btTracker.stepTodo')}
-                      </Badge>
-                    </li>
-                  </ol>
-                </aside>
+              <div className="bt-chips" aria-label={t('btTracker.quickStart')}>
+                <span className={`bt-chip ${hasPublicHost ? 'bt-chip--ok' : 'bt-chip--todo'}`}>
+                  {hasPublicHost ? '✓' : '1.'} {t('btTracker.step1Title')}
+                </span>
+                <span className={`bt-chip ${running ? 'bt-chip--ok' : 'bt-chip--todo'}`}>
+                  {running ? '✓' : '2.'} {t('btTracker.step2Title')}
+                </span>
+                <span
+                  className={`bt-chip ${torrents.length ? 'bt-chip--ok' : 'bt-chip--todo'}`}
+                >
+                  {torrents.length ? '✓' : '3.'} {t('btTracker.step3Title')}
+                </span>
               </div>
 
               {!status?.executeEnabled ? (
                 <Alert variant="warn">{t('btTracker.needExecute')}</Alert>
               ) : null}
 
-              <Card>
-                <CardSection
-                  title={t('btTracker.exposureTitle')}
-                  description={t('btTracker.applyHint')}
-                >
+              <Card flush>
+                <CardSection title={t('btTracker.exposureTitle')}>
                   <ServiceAccessStrip serviceId="bt-tracker" />
                 </CardSection>
               </Card>
 
-              <Card>
-                <CardSection
-                  title={t('btTracker.announceUrls')}
-                  description={t('btTracker.announceDesc')}
-                >
+              <Card flush>
+                <CardSection title={t('btTracker.announceUrls')}>
                   {announceList.length === 0 ? (
-                    <EmptyState title={t('btTracker.torrentsEmpty')} />
+                    <div className="bt-empty">
+                      <p className="bt-empty__title">{t('btTracker.torrentsEmpty')}</p>
+                    </div>
                   ) : (
                     <div className="bt-announce">
                       {announceList.map((u) => {
@@ -457,7 +397,7 @@ export function BtTrackerPage() {
                               {u}
                             </code>
                             <Button
-                              variant="secondary"
+                              variant="ghost"
                               size="sm"
                               onClick={() => copyText(u)}
                             >
@@ -473,9 +413,8 @@ export function BtTrackerPage() {
 
               {status?.notes?.length ? (
                 <Alert variant="info">
-                  <strong>{t('btTracker.notesTitle')}</strong>
-                  <ul className="u-mt-2">
-                    {status.notes.map((n) => (
+                  <ul>
+                    {status.notes.slice(0, 4).map((n) => (
                       <li key={n}>{n}</li>
                     ))}
                   </ul>
@@ -485,22 +424,10 @@ export function BtTrackerPage() {
           ) : null}
 
           {tab === 'torrents' ? (
-            <div className="tab-panel u-stack u-gap-md">
-              <div className="bt-section-head">
-                <div>
-                  <h2 className="bt-section-head__title">{t('btTracker.torrents')}</h2>
-                  <p className="bt-section-head__desc">{t('btTracker.torrentsDesc')}</p>
-                </div>
-                <span className={`bt-live${running ? ' bt-live--on' : ''}`}>
-                  <span className="bt-live__dot" aria-hidden />
-                  {running ? t('btTracker.live') : t('btTracker.liveOff')}
-                </span>
-              </div>
-
-              <ActionBar>
+            <div className="tab-panel tab-panel--fill">
+              <div className="bt-toolbar">
                 <input
-                  className="input"
-                  style={{ maxWidth: '16rem' }}
+                  className="input bt-toolbar__search"
                   value={torrentQ}
                   onChange={(e) => setTorrentQ(e.target.value)}
                   placeholder={t('btTracker.searchTorrents')}
@@ -517,9 +444,14 @@ export function BtTrackerPage() {
                     { value: 'other', label: t('btTracker.filterOther') },
                   ]}
                 />
+                <span className="bt-toolbar__spacer" />
+                <span className={`bt-live${running ? ' bt-live--on' : ''}`}>
+                  <span className="bt-live__dot" aria-hidden />
+                  {running ? t('btTracker.live') : t('btTracker.liveOff')}
+                </span>
                 <Button
                   variant="secondary"
-                  size="md"
+                  size="sm"
                   disabled={busy}
                   onClick={() =>
                     void btTrackerApi
@@ -530,171 +462,176 @@ export function BtTrackerPage() {
                 >
                   {t('btTracker.refresh')}
                 </Button>
-                <Link className="btn btn--secondary btn--md" to="/files?tab=shares">
+                <Link className="btn btn--secondary btn--sm" to="/files?tab=shares">
                   {t('btTracker.openShares')}
                 </Link>
-              </ActionBar>
+              </div>
 
               {!running ? <Alert variant="warn">{t('btTracker.stopped')}</Alert> : null}
 
               {torrents.length === 0 ? (
-                <EmptyState
-                  title={t('btTracker.torrentsEmpty')}
-                  description={t('btTracker.torrentsEmptyHint')}
-                />
+                <div className="bt-empty">
+                  <p className="bt-empty__title">{t('btTracker.torrentsEmpty')}</p>
+                  <p className="bt-empty__desc">{t('btTracker.torrentsEmptyHint')}</p>
+                </div>
               ) : torrentRows.length === 0 ? (
-                <EmptyState title={t('btTracker.noMatch')} />
+                <div className="bt-empty">
+                  <p className="bt-empty__title">{t('btTracker.noMatch')}</p>
+                </div>
               ) : (
-                <DataTable
-                  columns={[
-                    {
-                      key: 'name',
-                      header: t('btTracker.colName'),
-                      render: (r) => (
-                        <div>
-                          <div className="u-font-medium">
-                            {r.name || shortHash(r.infoHash)}
+                <div className="bt-table-wrap">
+                  <DataTable
+                    columns={[
+                      {
+                        key: 'name',
+                        header: t('btTracker.colName'),
+                        render: (r) => (
+                          <div>
+                            <div>{r.name || shortHash(r.infoHash)}</div>
+                            {r.shareId ? (
+                              <div className="muted u-text-xs">{r.shareId}</div>
+                            ) : null}
                           </div>
-                          {r.shareId ? (
-                            <div className="muted u-text-xs">{r.shareId}</div>
-                          ) : null}
-                        </div>
-                      ),
-                    },
-                    {
-                      key: 'hash',
-                      header: t('btTracker.colHash'),
-                      render: (r) => (
-                        <button
-                          type="button"
-                          className="bt-hash"
-                          title={r.infoHash}
-                          onClick={() => copyText(r.infoHash)}
-                        >
-                          {shortHash(r.infoHash)}
-                        </button>
-                      ),
-                    },
-                    {
-                      key: 'seeds',
-                      header: t('btTracker.colSeeds'),
-                      render: (r) => (
-                        <span className="bt-speed">{r.seeders ?? 0}</span>
-                      ),
-                    },
-                    {
-                      key: 'leechers',
-                      header: t('btTracker.colLeechers'),
-                      render: (r) => (
-                        <span className="bt-speed">{r.leechers ?? 0}</span>
-                      ),
-                    },
-                    {
-                      key: 'status',
-                      header: t('btTracker.colStatus'),
-                      render: (r) => (
-                        <Badge tone={seedStatusTone(r.seedStatus)}>
-                          {seedLabel(r.seedStatus)}
-                        </Badge>
-                      ),
-                    },
-                    {
-                      key: 'up',
-                      header: t('files.btUploadSpeed'),
-                      render: (r) => (
-                        <span className="bt-speed">↑ {formatSpeed(r.uploadSpeed)}</span>
-                      ),
-                    },
-                    {
-                      key: 'down',
-                      header: t('files.btDownloadSpeed'),
-                      render: (r) => (
-                        <span className="bt-speed">↓ {formatSpeed(r.downloadSpeed)}</span>
-                      ),
-                    },
-                  ]}
-                  rows={torrentRows}
-                  rowKey={(r) => r.infoHash}
-                />
+                        ),
+                      },
+                      {
+                        key: 'hash',
+                        header: t('btTracker.colHash'),
+                        render: (r) => (
+                          <button
+                            type="button"
+                            className="bt-hash"
+                            title={r.infoHash}
+                            onClick={() => copyText(r.infoHash)}
+                          >
+                            {shortHash(r.infoHash)}
+                          </button>
+                        ),
+                      },
+                      {
+                        key: 'seeds',
+                        header: t('btTracker.colSeeds'),
+                        render: (r) => (
+                          <span className="bt-speed">{r.seeders ?? 0}</span>
+                        ),
+                      },
+                      {
+                        key: 'leechers',
+                        header: t('btTracker.colLeechers'),
+                        render: (r) => (
+                          <span className="bt-speed">{r.leechers ?? 0}</span>
+                        ),
+                      },
+                      {
+                        key: 'status',
+                        header: t('btTracker.colStatus'),
+                        render: (r) => (
+                          <Badge tone={seedStatusTone(r.seedStatus)}>
+                            {seedLabel(r.seedStatus)}
+                          </Badge>
+                        ),
+                      },
+                      {
+                        key: 'up',
+                        header: t('files.btUploadSpeed'),
+                        render: (r) => (
+                          <span className="bt-speed">↑ {formatSpeed(r.uploadSpeed)}</span>
+                        ),
+                      },
+                      {
+                        key: 'down',
+                        header: t('files.btDownloadSpeed'),
+                        render: (r) => (
+                          <span className="bt-speed">↓ {formatSpeed(r.downloadSpeed)}</span>
+                        ),
+                      },
+                    ]}
+                    rows={torrentRows}
+                    rowKey={(r) => r.infoHash}
+                  />
+                </div>
               )}
             </div>
           ) : null}
 
           {tab === 'jobs' ? (
-            <div className="tab-panel u-stack u-gap-md">
-              <div className="bt-section-head">
-                <div>
-                  <h2 className="bt-section-head__title">{t('btTracker.jobs')}</h2>
-                  <p className="bt-section-head__desc">{t('btTracker.jobsDesc')}</p>
-                </div>
+            <div className="tab-panel tab-panel--fill">
+              <div className="bt-toolbar">
+                <span className="muted u-text-sm">{t('btTracker.jobsDesc')}</span>
+                <span className="bt-toolbar__spacer" />
                 <Button
                   variant="secondary"
-                  size="md"
+                  size="sm"
                   disabled={busy}
                   onClick={() => void refreshJobs()}
                 >
                   {t('btTracker.refreshJobs')}
                 </Button>
+                <Link className="btn btn--secondary btn--sm" to="/files?tab=shares">
+                  {t('btTracker.openShares')}
+                </Link>
               </div>
 
               {jobs.length === 0 ? (
-                <EmptyState
-                  title={t('btTracker.jobsEmpty')}
-                  description={t('btTracker.jobsEmptyHint')}
-                />
+                <div className="bt-empty">
+                  <p className="bt-empty__title">{t('btTracker.jobsEmpty')}</p>
+                  <p className="bt-empty__desc">{t('btTracker.jobsEmptyHint')}</p>
+                </div>
               ) : (
-                <DataTable
-                  columns={[
-                    {
-                      key: 'job',
-                      header: t('btTracker.colJob'),
-                      render: (r) => (
-                        <code className="u-text-sm" title={r.id}>
-                          {r.id.length > 22 ? `${r.id.slice(0, 18)}…` : r.id}
-                        </code>
-                      ),
-                    },
-                    {
-                      key: 'share',
-                      header: t('btTracker.colShare'),
-                      render: (r) => r.shareId,
-                    },
-                    {
-                      key: 'status',
-                      header: t('btTracker.colJobStatus'),
-                      render: (r) => {
-                        const tone =
-                          r.status === 'done'
-                            ? 'ok'
-                            : r.status === 'error'
-                              ? 'danger'
-                              : r.status === 'running'
-                                ? 'info'
-                                : 'warn';
-                        return <Badge tone={tone}>{r.status}</Badge>;
+                <div className="bt-table-wrap">
+                  <DataTable
+                    columns={[
+                      {
+                        key: 'job',
+                        header: t('btTracker.colJob'),
+                        render: (r) => (
+                          <code className="u-text-sm" title={r.id}>
+                            {r.id.length > 22 ? `${r.id.slice(0, 18)}…` : r.id}
+                          </code>
+                        ),
                       },
-                    },
-                    {
-                      key: 'enqueued',
-                      header: t('btTracker.colEnqueued'),
-                      render: (r) =>
-                        r.enqueuedAt
-                          ? new Date(r.enqueuedAt).toLocaleString()
-                          : '—',
-                    },
-                    {
-                      key: 'notes',
-                      header: t('btTracker.colStatus'),
-                      render: (r) => (
-                        <span className="u-text-sm muted">
-                          {(r.notes || []).slice(0, 2).join(' · ') || '—'}
-                        </span>
-                      ),
-                    },
-                  ]}
-                  rows={jobs}
-                  rowKey={(r) => r.id}
-                />
+                      {
+                        key: 'share',
+                        header: t('btTracker.colShare'),
+                        render: (r) => r.shareId,
+                      },
+                      {
+                        key: 'status',
+                        header: t('btTracker.colJobStatus'),
+                        render: (r) => {
+                          const tone =
+                            r.status === 'done'
+                              ? 'ok'
+                              : r.status === 'error'
+                                ? 'danger'
+                                : r.status === 'running'
+                                  ? 'info'
+                                  : 'warn';
+                          return <Badge tone={tone}>{r.status}</Badge>;
+                        },
+                      },
+                      {
+                        key: 'enqueued',
+                        header: t('btTracker.colEnqueued'),
+                        render: (r) =>
+                          r.enqueuedAt
+                            ? new Date(r.enqueuedAt).toLocaleString()
+                            : '—',
+                      },
+                      {
+                        key: 'notes',
+                        header: t('btTracker.colStatus'),
+                        render: (r) => (
+                          <span className="u-text-sm muted">
+                            {(r.notes || []).slice(0, 2).join(' · ') || '—'}
+                          </span>
+                        ),
+                      },
+                    ]}
+                    rows={jobs}
+                    rowKey={(r) => r.id}
+                  />
+                </div>
               )}
             </div>
           ) : null}
