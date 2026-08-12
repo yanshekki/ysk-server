@@ -19,7 +19,7 @@ Standards: [docs-standard.md](./docs-standard.md). Programme slices: **D0–D5**
 |-------|-------------|---|--------|
 | **D0** | Standard + template + this inventory + INDEX links | ~10% | ✅ done |
 | **D1** | `cli/overview` + `cli/reference` + `commands.json` | ~35% | ✅ done |
-| **D2** | New-domain handbooks (vpn, vnc, apache, system-host, databases, runtimes) | ~55% | ⬜ |
+| **D2** | New-domain handbooks (vpn, vnc, apache, system-host, databases, runtimes) | ~55% | ✅ done |
 | **D3** | Remaining `features/*` deepen | ~75% | ⬜ |
 | **D4** | INDEX polish, user-manual Day-N, agent docs, parity ZH | ~90% | ⬜ |
 | **D5** | bilingual-check seal + cross-links | 100% | ⬜ |
@@ -51,11 +51,11 @@ Bold = post-C2 surface that reference still under-documents.
 | projects | `projects{,-ZH}.md` | `/projects` | `projects` | 🔶 | D3 |
 | email | `email{,-ZH}.md` | `/email` | `email` | 🔶 | D3 |
 | files-ftp | `files-ftp{,-ZH}.md` | `/files`, `/ftp` | `files`, `ftp` | 🔶 | D3 |
-| databases | `databases{,-ZH}.md` | MySQL/Maria/PG/Redis | `db`, `redis`, `db-cluster` | 🔶 | D2 |
+| databases | `databases{,-ZH}.md` | MySQL/Maria/PG/Redis | `db`, `redis`, `db-cluster` | ✅ | D2 |
 | dns-ssl-nginx | `dns-ssl-nginx{,-ZH}.md` | `/dns`, `/ssl`, `/nginx` | `dns`, `ssl`, `nginx` | 🔶 | D3 |
 | nginx-sites | `nginx-sites{,-ZH}.md` | nginx sites UI | `nginx` | 🔶 | D3 |
-| apache | `apache{,-ZH}.md` | `/apache` | `apache` | 🔶 thin + colloquial ZH | D2 |
-| runtimes | `runtimes{,-ZH}.md` | runtime pages | `runtimes`, `hosting runtime-*` | 🔶 | D2 |
+| apache | `apache{,-ZH}.md` | `/apache` | `apache` | ✅ | D2 |
+| runtimes | `runtimes{,-ZH}.md` | runtime pages | `runtimes`, `hosting runtime-*` | ✅ | D2 |
 | security-auth | `security-auth{,-ZH}.md` | `/security` | `security`, `ssh-key`, `ssh-2fa` | 🔶 | D3 |
 | defense | `defense{,-ZH}.md` | `/protection` | `defense`, `protection` | 🔶 | D3 |
 | vpn | `vpn{,-ZH}.md` | `/vpn` | `vpn` | 🔶 no CLI matrix | D2 |

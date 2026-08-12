@@ -2,40 +2,68 @@
 
 > Language: English | [中文](./databases-ZH.md)
 
-**Panel routes:** `/databases/mysql|mariadb|postgres|redis` (+ service consoles)  
-**CLI:** `hosting mysql-provision|postgres-provision|redis-provision`, `db-cluster`
+## Purpose
 
-## What it does
+Operate **MySQL / MariaDB / PostgreSQL / Redis** as services and data planes on the control-plane host: install, lifecycle, console settings, exclusive SQL engine switch, Redis key browser, and optional HA cluster planning.
 
-| Engine | Capability |
-|--------|------------|
-| MySQL / MariaDB | Provision plan, users/db rows, service console |
-| PostgreSQL | Provision plan, service status |
-| Redis | Instance plan, PING when tools allow |
-| Cluster | **Plan-first** HA sketches (`db-cluster`) |
+**Non-goals:** Managed cloud DBaaS; silent multi-node cluster formation without plan/apply.
 
-## CLI
+## Panel
+
+| Item | Value |
+|------|--------|
+| Routes | `/databases/mysql`, `/mariadb`, `/postgres`, `/redis` (+ service consoles) |
+| Nav keys | `mysql`, `mariadb`, `postgres`, `redis` (+ service variants) |
+| Main actions | Status · install · start/stop · console apply · SQL switch · Redis keys · clusters |
+| Capability | DB / hosting service capabilities |
+| RBAC | Operators with database service rights |
+
+## Capability matrix
+
+| Panel action | CLI | Risk | Notes |
+|--------------|-----|------|-------|
+| Engine / console status | `ysk-server db status [--engine …] --json` | read | |
+| Service console get | `ysk-server db console --engine … --json` | read | |
+| Console settings apply | `ysk-server db apply --engine … --set k=v --execute` | write-host | |
+| Lifecycle start/stop/… | `ysk-server db lifecycle --engine … --action start --execute` | write-host | |
+| Install engine packages | `ysk-server db install --engine … --execute` | write-host | |
+| SQL engine switch preview | `ysk-server db sql-engine preview --target mariadb --json` | read | MySQL XOR MariaDB |
+| SQL engine switch | `ysk-server db sql-engine switch --target … --confirm … --acknowledge-exclusive --execute` | write-host | destructive exclusive |
+| Redis service status | `ysk-server redis status --json` | read | |
+| Redis settings | `ysk-server redis settings get\|set\|apply` | write-panel / write-host | |
+| Redis keys list/get | `ysk-server redis keys\|get …` | read | |
+| Redis set/del | `ysk-server redis set\|del … --execute` | write-host | |
+| Provision plans | `ysk-server hosting mysql-provision\|postgres-provision\|redis-provision` | write-host | dry-run default |
+| DB cluster fleet | `ysk-server db-cluster list\|plan\|apply …` | write-host | plan-first HA |
+
+## CLI quick start
 
 ```bash
-ysk-server hosting mysql-provision --json
+ysk-server db status --json
+ysk-server db console --engine mysql --json
+ysk-server redis keys --pattern '*' --json
+ysk-server db sql-engine preview --target mariadb --json
+export YSK_EXECUTE=1
+ysk-server db lifecycle --engine redis --action start --execute --json
 ysk-server hosting mysql-provision --execute --json
-ysk-server hosting postgres-provision --execute --json
-ysk-server hosting redis-provision --execute --json
-ysk-server db-cluster list --json
-ysk-server db-cluster plan --json
 ```
 
-## Workflow
-
-1. Probe service / client binaries (`services`, readiness).  
-2. Run provision **dry-run** JSON.  
-3. `--execute` only with EXECUTE (and root when installing packages/units).  
-4. Store credentials from result; restrict panel access.
+Full argv: [../cli/reference.md](../cli/reference.md#db--redis--db-cluster).
 
 ## Honesty
 
-Without EXECUTE, provision refuses live server changes. Cluster modules do not silently form a multi-node cluster.
+- Without EXECUTE, install/lifecycle/apply stay blocked or dry-run.  
+- SQL switch is **exclusive** (MySQL XOR MariaDB); always preview + confirm phrase.  
+- Cluster modules never silently form multi-node clusters.  
+
+## Panel-only ⚠️
+
+| Surface | Rationale |
+|---------|-----------|
+| Rich console form widgets | Same settings available via `db apply --set` |
 
 ## Related
 
-[system-host.md](./system-host.md) · [../cli/reference.md](../cli/reference.md)
+- [Panel ↔ CLI matrix](../cli/panel-parity-matrix.md)  
+- [System & host](./system-host.md)  
+- [CLI reference](../cli/reference.md)  

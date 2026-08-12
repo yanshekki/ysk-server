@@ -1,42 +1,71 @@
 # Apache
 
-> [中文](./apache-ZH.md)
+> Language: English | [中文](./apache-ZH.md)
 
 ## Purpose
 
-Manage **Apache** vhosts and settings on `/apache` (SSOT). Project pages do not publish Apache.
+Manage **Apache** virtual hosts and global settings at `/apache` (single entry). Project pages do not publish Apache.
 
-## UI
+**Non-goals:** Replacing Nginx as the default project edge; dual SSOT for the same site.
 
-- Create site: proxy / static / PHP
-- Apply → configtest + reload (needs `YSK_EXECUTE`)
-- Global settings · site settings (checkboxes / radio chips)
-- **Sources**: project · standalone · **on disk (artifact)** — unclaimed conf under `dataDir/apache/sites`
-- **Name conflict** badge when the same `ServerName` appears more than once
-- Artifact rows: **Preview conf** · **Remove residual** (never edit as a second SSOT)
-- Toolbar **Clean conflict residuals** when any artifact conflicts with an owned row
+## Panel
 
-## SSOT & orphans
+| Item | Value |
+|------|--------|
+| Route | `/apache` |
+| Nav key | `apache` |
+| Main actions | Sites list · create · apply · settings · cleanup conflicts · artifact remove |
+| Capability | Hosting / Apache |
+| RBAC | Hosting operators |
+
+## Capability matrix
+
+| Panel action | CLI | Risk | Notes |
+|--------------|-----|------|-------|
+| List sites (merged) | `ysk-server apache sites list --json` | read | filter `--source` / `--q` |
+| Create standalone site | `ysk-server apache sites create --server-name … --json` | write-panel | |
+| Update site | `ysk-server apache sites update --id … --json` | write-panel | not project/artifact ids |
+| Delete site | `ysk-server apache sites delete --id …` | write-panel | artifacts need execute |
+| Apply site to host | `ysk-server apache sites apply --id … --execute --json` | write-host | |
+| Show conf | `ysk-server apache sites conf --id … --json` | read | |
+| Cleanup ServerName conflicts | `ysk-server apache sites cleanup-conflicts --execute` | write-host | |
+| Settings get/set | `ysk-server apache settings get\|set …` | write-panel | |
+| Settings apply | `ysk-server apache settings apply --execute` | write-host | may sync exposure |
+
+## CLI quick start
+
+```bash
+ysk-server apache sites list --json
+ysk-server apache sites create --server-name app.example.com --kind proxy --upstream 127.0.0.1:3000 --json
+export YSK_EXECUTE=1
+ysk-server apache sites apply --id SITE_ID --execute --json
+ysk-server apache settings get --json
+```
+
+Full argv: [../cli/reference.md](../cli/reference.md#apache).
+
+## Authority model
 
 | Source | Authority | Sync to system |
 |--------|-----------|----------------|
 | Project (PHP) | Project domain + `ysk-{linuxUser}.conf` | Yes (owned) |
 | Standalone | `sites.json` | Yes (owned) |
-| Artifact | Discovery only | **No** (not pushed on sync) |
+| Disk artifact | Discovery only | **No** (not a second SSOT) |
 
-Removing an artifact deletes the managed conf and, with execute/root, disables the system twin (`ysk-{file}`). Applying a PHP project also **retires** other dataDir confs with the same `ServerName` (not owned by another live project).
+## Honesty
 
-## API
+- Apply needs EXECUTE + root for configtest/reload.  
+- **written** conf in dataDir ≠ live Apache until apply succeeds.  
+- Artifact rows are residual discovery; remove with care.  
 
-| Method | Path |
-|--------|------|
-| GET/POST | `/api/v1/hosting/apache/sites` |
-| PATCH/DELETE | `/api/v1/hosting/apache/sites/:id` — `DELETE artifact:…` removes residual |
-| POST | `.../apply` |
-| POST | `/api/v1/hosting/apache/sites/cleanup-conflicts` |
-| GET/PATCH | `/api/v1/hosting/apache/settings` |
-| POST | `.../settings/apply` |
+## Panel-only ⚠️
+
+| Surface | Rationale |
+|---------|-----------|
+| — | None required |
 
 ## Related
 
-- [Nginx](./nginx.md) — reverse proxy SSOT for projects
+- [Nginx sites](./nginx-sites.md) — default project edge  
+- [Panel ↔ CLI matrix](../cli/panel-parity-matrix.md)  
+- [CLI reference — apache](../cli/reference.md#apache)  

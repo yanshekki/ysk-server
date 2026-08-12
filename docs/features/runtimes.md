@@ -2,38 +2,60 @@
 
 > Language: English | [中文](./runtimes-ZH.md)
 
-**Panel routes:** `/runtimes/node`, `/runtimes/php`, …  
-**CLI:** `hosting runtimes`, `hosting runtime-install`
+## Purpose
 
-## What it does
+Probe, install, switch, and uninstall **application runtimes** on the host: Node, PHP, Python, Go, Rust, **Java**, **Kotlin**, **Bun** — including multi-version awareness and optional plugins/extensions.
 
-Probe installed toolchains and produce **install plans**. Multi-version awareness (e.g. Node 18/20/22, PHP 8.x).
+**Non-goals:** “Toolchain installed” alone does not put a project online (still need deploy + edge publish).
 
-| Runtime | Typical probe |
-|---------|----------------|
-| Node | `node`, npm/pnpm, optional PM2 |
-| PHP | `php`, FPM pools |
-| Python / Go / Rust | language binaries / cargo |
+## Panel
 
-## CLI
+| Item | Value |
+|------|--------|
+| Routes | `/runtimes/node`, `/php`, `/python`, `/go`, `/rust`, `/java`, `/kotlin`, `/bun` |
+| Nav keys | `node`, `php`, `python`, `go`, `rust`, `java`, `kotlin`, `bun` |
+| Main actions | Probe · install · switch default · uninstall · plugins / PHP extensions |
+| Capability | Hosting runtime |
+| RBAC | Hosting operators |
+
+## Capability matrix
+
+| Panel action | CLI | Risk | Notes |
+|--------------|-----|------|-------|
+| Probe / list | `ysk-server runtimes list --json` | read | also `hosting runtimes` |
+| Install / plan | `ysk-server runtimes install --kind K --version V [--execute]` | write-host | plan without execute |
+| Switch default | `ysk-server runtimes switch --kind K --version V --execute` | write-host | |
+| Uninstall version | `ysk-server runtimes uninstall --kind K --version V --execute` | write-host | |
+| Hosting aliases | `ysk-server hosting runtime-install\|runtime-switch\|runtime-uninstall` | write-host | same core |
+
+Kinds: `node` · `php` · `python` · `go` · `rust` · `java` · `kotlin` · `bun`.
+
+## CLI quick start
 
 ```bash
-ysk-server hosting runtimes --json
-ysk-server hosting runtime-install --kind node --version 20 --json
-ysk-server hosting runtime-install --kind php --version 8.3 --install --execute
+ysk-server runtimes list --json
+ysk-server runtimes install --kind java --version 21 --json
+export YSK_EXECUTE=1
+ysk-server runtimes install --kind java --version 21 --execute --json
+ysk-server runtimes switch --kind node --version 20 --execute --json
 ```
 
-## Workflow
-
-1. Probe what is already on PATH.  
-2. Review plan (packages, commands).  
-3. `--execute` only with EXECUTE (apt often needs root).  
-4. Re-probe; then deploy projects with that runtime.
+Full argv: [../cli/reference.md](../cli/reference.md#runtimes).
 
 ## Honesty
 
-Install without EXECUTE is blocked. “Toolchain installed” ≠ “project online” (still need deploy + nginx publish).
+- Install without EXECUTE is blocked for live packages.  
+- Switching/uninstalling managed versions may require root.  
+- Deploy projects separately after toolchain is ready.  
+
+## Panel-only ⚠️
+
+| Surface | Rationale |
+|---------|-----------|
+| Live SSE install log terminal | Interactive stream; CLI prints final JSON |
 
 ## Related
 
-[projects.md](./projects.md) · [../cli/reference.md](../cli/reference.md)
+- [Projects](./projects.md)  
+- [Panel ↔ CLI matrix](../cli/panel-parity-matrix.md)  
+- [CLI reference — runtimes](../cli/reference.md#runtimes)  

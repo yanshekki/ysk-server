@@ -1,104 +1,70 @@
-# VNC (server accounts + client)
+# VNC
 
-> Language: English | [繁體中文（香港）](./vnc-ZH.md)
+> Language: English | [中文](./vnc-ZH.md)
 
 ## Purpose
 
-Manage **remote desktop** on the control-plane host:
+Provide **desktop remote access** on the control-plane host: TigerVNC accounts, outbound client profiles, share links, and noVNC helpers.
 
-- **Server accounts** — each account is a dedicated **Linux user** (`yskvnc_*`) with its own TigerVNC display
-- **In-browser VNC client** — **Open in browser** (primary): panel-proxied RFB over WebSocket + noVNC UI (keyboard, mouse, clipboard, quality, screenshot, short recording)
-- **Client profiles** — this host connects **outbound** to a remote `host:port` with the same browser path
-- **Legacy paths** — host-side `vncviewer`, and optional localhost noVNC URL (advanced only)
+**Non-goals:** Replacing a full remote-desktop product; multi-tenant desktop SaaS.
 
-## Stack
-
-| Component | softwareId | Notes |
-|-----------|------------|--------|
-| TigerVNC | `tigervnc` | Multi-user `vncserver` sessions |
-| noVNC (npm `@novnc/novnc`) | — | Embedded in panel; no need to open `127.0.0.1` in the user’s browser |
-| Panel WS RFB proxy | — | `POST /api/v1/vnc/sessions` + `WS /api/v1/vnc/ws?ticket=…` pipes binary RFB via the control plane |
-| websockify / package noVNC | `novnc` | Optional legacy “Start noVNC” on localhost |
-| XFCE (optional) | `vnc-desktop-xfce` | Full desktop profile |
-| Viewer (optional) | `tigervnc-viewer` | Host-side direct client path |
-
-Desktop profiles per account: **minimal** · **xfce** · **none**.
-
-## Routes
+## Panel
 
 | Item | Value |
 |------|--------|
-| UI | `/vnc` |
-| Public share view | `/vnc-share/:token` (no panel login; default **view-only**) |
-| API | `/api/v1/vnc/*` |
-| Capability | `network.vnc` (+ `firewall.edit` to open ports) |
-| Install | Software banners need **root + `YSK_EXECUTE`** |
+| Route | `/vnc` · share landing `/vnc-share/:token` |
+| Nav key | `vnc` |
+| Main areas | Status · Accounts · Clients · Viewer · Share |
+| Capability | VNC hosting capabilities |
+| RBAC | Operators allowed to manage VNC |
 
-## Browser viewer (primary)
+## Capability matrix
 
-1. **Accounts** or **Client** → **Open in browser**
-2. Panel mints a short-lived ticket and connects the browser to RFB through the control plane (works from any browser that can reach the panel — no SSH tunnel for RFB)
-3. Toolbar: reconnect, fit/1:1, quality, fullscreen, Ctrl+Alt+Del, clipboard, share link, screenshot, record (WebM ≤60s)
-4. Up to **4** concurrent sessions (tab strip)
-5. **Share link** (view-only, ~1h): copy URL → guest opens `/vnc-share/:token`
+| Panel action | CLI | Risk | Notes |
+|--------------|-----|------|-------|
+| Stack / status | `ysk-server vnc status --json` | read | |
+| Settings get/set | `ysk-server vnc settings get\|set …` | write-panel | |
+| List accounts | `ysk-server vnc accounts list --json` | read | |
+| Create account | `ysk-server vnc accounts create --name N --execute --json` | write-host | Linux user + VNC |
+| Update / password | `ysk-server vnc accounts update\|password …` | write-host | password needs execute |
+| Start / stop / delete | `ysk-server vnc accounts start\|stop\|delete --id … --execute` | write-host | |
+| Connection info | `ysk-server vnc connection --id … --json` | read | |
+| Firewall open | `ysk-server vnc firewall --id … --execute` | write-host | |
+| noVNC start/stop | `ysk-server vnc novnc start\|stop --id … --execute` | write-host | |
+| Client profiles CRUD | `ysk-server vnc clients …` | write-panel / write-host | up/down host |
+| Share create/info/revoke | `ysk-server vnc share …` | write-panel | |
+| Session mint (metadata) | `ysk-server vnc session mint --id …` | read/write-host | may start desktop |
+| **In-panel RFB canvas** | — | ⚠️ panel-only | Interactive viewer |
 
-**Client outbound:** the **control-plane host** must be able to TCP-connect to the resolved RFB target — remote `host:port`, or **Connect host** when path is **Via server proxy** (firewall on the remote side).
+## CLI quick start
 
-## Server workflow
+```bash
+ysk-server vnc status --json
+ysk-server vnc accounts list --json
+export YSK_EXECUTE=1
+ysk-server vnc accounts create --name alice --password '…' --execute --json
+ysk-server vnc share create --id ACCOUNT_ID --json
+ysk-server vnc session mint --id ACCOUNT_ID --json
+```
 
-1. **Install** tab → TigerVNC
-2. **Settings** → default desktop / geometry / RFB bind (default **localhost**)
-3. **Accounts** → create account (Linux user + display `:N` / port `5900+N`)
-4. Set VNC password → **Start** session (or let **Open in browser** start it)
-5. **Open in browser** (recommended)
-6. **Connect** materials (advanced): legacy noVNC localhost URL, direct RFB + UFW
+Full argv: [../cli/reference.md](../cli/reference.md#vnc).
 
-## Client workflow
+## Honesty
 
-1. **Client** tab → add remote `host:port` and choose a path (**both open VNC in the browser**):
-   - **User-reachable endpoint** (default): public hostnames / targets as configured; panel TCP uses **Remote host**
-   - **Via server proxy**: traffic egresses via the control-plane network; optional **Connect host** overrides the TCP target (e.g. display `vnc.example.com` but open `10.0.0.9:5901` on the LAN)
-2. Before minting a browser ticket the panel **probes RFB TCP** to the resolved host (display host, or Connect host when set under server proxy)
-3. **Open in browser**
+- Account create/start/stop need EXECUTE + root for `useradd` / `vncserver`.  
+- Share links are short-lived tokens; public landing is HTTP UX.  
+- `session mint` returns RFB metadata; it does **not** open a desktop canvas in the terminal.  
 
-### Dual path + Connect host
+## Panel-only ⚠️
 
-| Field | Role |
-|-------|------|
-| Remote host | Label / default target shown in the UI |
-| Path | `user_reachable` \| `server_proxy` (browser only; no host-side `vncviewer`) |
-| Connect host | Optional; **server_proxy only**. Control plane opens TCP here when set; leave empty to use Remote host |
-
-API: `POST/PATCH /api/v1/vnc/client/profiles` accept `connectHost`. Public list hides secrets but still returns `connectHost` for operators.
-
-## Safety
-
-- RFB for local accounts defaults to **localhost**; browser path never exposes RFB on the public internet — only the panel’s authenticated (or share-token) WebSocket
-- Share links default to **view-only** and expire
-- Passwords are not written to audit logs; optional client password storage lives under dataDir (root-readable)
-- Without `YSK_EXECUTE` / root: control-plane meta is written; starting local desktops returns **blocked** honestly
-
-## API (summary)
-
-| Method | Path |
-|--------|------|
-| GET | `/api/v1/vnc/status` |
-| GET/PATCH | `/api/v1/vnc/settings` |
-| GET/POST | `/api/v1/vnc/accounts` |
-| PATCH/DELETE | `/api/v1/vnc/accounts/:id` |
-| POST | `/api/v1/vnc/accounts/:id/start\|stop\|password` |
-| GET | `/api/v1/vnc/accounts/:id/connection` |
-| POST | `/api/v1/vnc/accounts/:id/novnc/start\|stop` (legacy) |
-| POST | `/api/v1/vnc/accounts/:id/firewall` |
-| GET/POST | `/api/v1/vnc/client/profiles` |
-| POST | `/api/v1/vnc/client/profiles/:id/up\|down` |
-| POST | `/api/v1/vnc/sessions` — mint browser ticket |
-| WS | `/api/v1/vnc/ws?ticket=…` — RFB binary proxy |
-| POST | `/api/v1/vnc/share` — create view-only share |
-| GET/POST | `/api/v1/vnc/share/:token` · `…/session` — public redeem |
-| DELETE | `/api/v1/vnc/share/:token` — revoke |
+| Surface | Rationale |
+|---------|-----------|
+| Browser VNC viewer (canvas, clipboard, record) | Interactive WebSocket RFB UI |
+| Public share page interaction | Browser-only redeem flow |
 
 ## Related
 
-- [VPN](./vpn.md) — tunnel first, then VNC
-- Firewall / Protection center — port policy
+- [Panel ↔ CLI matrix](../cli/panel-parity-matrix.md)  
+- [CLI reference — vnc](../cli/reference.md#vnc)  
+- [VPN](./vpn.md)  
+- [Ops honesty](../architecture/ops-honesty.md)  

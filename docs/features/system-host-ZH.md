@@ -1,42 +1,71 @@
 # 系統與主機
 
-> 語言：中文 | [English](./system-host.md)
+> 語言：中文（香港書面語）| [English](./system-host.md)
 
-**面板路由：** `/system`、`/services`、`/updates`、就緒  
-**CLI：** `system`、`services`、`update`、`readiness`、`doctor`、`host`
+## 用途
 
-## 控制平面 unit
+操作 **控制平面主機**：systemd unit、服務矩陣、指標、服務網絡暴露、Real-IP 信任、面板 TLS、主機套件更新與軟件目錄安裝。
+
+**非目標：** 多主機機隊編排（見 CDN／agents）；行銷式「一鍵永久安全」。
+
+## 面板
+
+| 項目 | 值 |
+|------|-----|
+| 路由 | `/system`、`/services`、`/network`、`/updates`、就緒 |
+| 導航鍵 | `services`、`metrics`、`network`、`updates`、`readiness`、`systemd`… |
+| 主要操作 | Unit · 服務 · 暴露 · Real-IP · 面板 TLS · 更新 · 軟件橫幅 |
+| 能力 | 系統／主機／防火牆（視操作） |
+| RBAC | 管理員／系統操作員 |
+
+## 能力對照表
+
+| 面板操作 | CLI | 風險 | 備註 |
+|----------|-----|------|------|
+| 主機總覽／指標 | `ysk-server host overview\|metrics --json` | read | |
+| 服務矩陣 | `ysk-server services … --json` | read | |
+| 控制平面 unit | `ysk-server system unit-install --execute` | write-host | |
+| 服務暴露 list/put/sync | `ysk-server network exposure …` | write-host | `ysk-svc` 規則 |
+| Real-IP 狀態／設定／重新整理 | `ysk-server real-ip status\|set\|refresh` | write-host | refresh 需 execute |
+| 面板 TLS | `ysk-server ssl panel-tls status\|enable\|disable\|issue` | write-host | issue 需 execute |
+| 套件清冊 | `ysk-server updates inventory\|refresh --json` | read | |
+| 套用套件 | `ysk-server updates apply --package … --execute` | write-host | |
+| 軟件目錄 | `ysk-server software list\|install\|uninstall …` | write-host | |
+| 堆疊計劃 | `ysk-server stack plans\|status\|install …` | write-host | |
+| 產品本體更新 | `ysk-server update --check\|--apply` | write-host | 二進位更新 |
+| 就緒／doctor | `ysk-server readiness\|doctor --json` | read | |
+
+## CLI 速查
 
 ```bash
-ysk-server system unit-install --enable --execute
-```
-
-## 服務矩陣
-
-探測 systemctl unit（nginx、db、郵件、fail2ban…）。
-
-```bash
-ysk-server services --json
-```
-
-## 更新
-
-套件庫存／建議／套用計劃（真實 apt 需 EXECUTE）。
-
-```bash
-ysk-server update --check --json
-ysk-server update --apply --execute --json
-```
-
-## 就緒
-
-```bash
+ysk-server host overview --json
+ysk-server network exposure list --json
+ysk-server real-ip status --json
+ysk-server ssl panel-tls status --json
+ysk-server updates inventory --json
+ysk-server software list --json
 ysk-server readiness --json
-ysk-server doctor --json
+export YSK_EXECUTE=1
+ysk-server network exposure sync --service nginx --execute --json
 ```
 
-解讀：`productionReady`、每項 `level`（ready／degraded／missing）、`fixHint`。未達標時 HTTP 可 503，但仍回完整報告。
+完整 argv：[../cli/reference-ZH.md](../cli/reference-ZH.md)。
+
+## 誠實邊界
+
+- 無 EXECUTE 時暴露探測可能降級（仍列出期望狀態）。  
+- **已寫入** 套件計劃 ≠ 已套用 apt。  
+- 就緒可能非零結束，但仍回傳完整 JSON。  
+
+## 僅面板 ⚠️
+
+| 介面 | 理由 |
+|------|------|
+| Host Browse Chromium | 見 [host-browse-ZH.md](./host-browse-ZH.md) |
 
 ## 相關
 
-[../getting-started/readiness-ZH.md](../getting-started/readiness-ZH.md) · [logs-metrics-ZH.md](./logs-metrics-ZH.md)
+- [資料庫](./databases-ZH.md)  
+- [防護](./defense-ZH.md)  
+- [就緒](../getting-started/readiness-ZH.md)  
+- [面板 ↔ CLI 矩陣](../cli/panel-parity-matrix-ZH.md)  
