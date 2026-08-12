@@ -2,7 +2,7 @@
  * Projects list — server-backed search / runtime filter + ListToolbar.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { ProjectDto } from '@ysk/shared';
 import {
@@ -18,10 +18,8 @@ import {
   ListPanel,
   ListToolbar,
   WithPageGuide,
-  buttonClassName,
 } from '../shared/components/ui';
 import { useServerList } from '../shared/hooks/useServerList';
-import { useNavBookmarks } from '../shared/hooks/useNavBookmarks';
 import { toast } from '../shared/stores/toast-store';
 import { bindFilter, bindFormSubmit, bindInput, bindSet, bindValueSet } from './bind-handlers';
 
@@ -102,22 +100,6 @@ export function ProjectsPage() {
     >
       <WithPageGuide guideId="projects">
         {list.error ? <Alert variant="error">{list.error}</Alert> : null}
-        {bookmarks.projects.length > 0 ? (
-          <Alert variant="info">
-            <div className="u-flex u-flex-wrap u-gap-2 u-items-center">
-              <span className="u-text-sm">{t('nav.bookmarkedProjects')}:</span>
-              {bookmarks.projects.map((p) => (
-                <Link
-                  key={p.id}
-                  to={`/projects/${p.id}`}
-                  className={buttonClassName({ variant: 'ghost', size: 'sm' })}
-                >
-                  ★ {p.domain || p.label}
-                </Link>
-              ))}
-            </div>
-          </Alert>
-        ) : null}
 
         <ListPanel
           title={t('nav.projects', { defaultValue: t('common.project') })}

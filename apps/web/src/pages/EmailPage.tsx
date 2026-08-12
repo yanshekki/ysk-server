@@ -232,11 +232,7 @@ export function EmailPage() {
   const applied = countAppliedDomains(items, facets);
   const healthy = countHealthyDomains(items);
   const draft = countDraftDomains(items, facets);
-  const {
-    isEmailBookmarked,
-    toggleEmail,
-    bookmarks: navBookmarks,
-  } = useNavBookmarks();
+  const { isEmailBookmarked, toggleEmail } = useNavBookmarks();
 
   async function onCreate(e: FormEvent) {
     e.preventDefault();
@@ -473,14 +469,6 @@ export function EmailPage() {
                   : t('email.emptyCreateHint')
               }
             >
-              {navBookmarks.emailDomains.length > 0 ? (
-                <Alert variant="info">
-                  <span className="u-text-sm">
-                    {t('nav.bookmarkedEmailDomains')}:{' '}
-                    {navBookmarks.emailDomains.map((e) => e.domain).join(' · ')}
-                  </span>
-                </Alert>
-              ) : null}
               <div className="list-panel mail-domain-list" role="list">
                 {items.map((d) => {
                   const st = applyLabel(d.apply_status, t);
