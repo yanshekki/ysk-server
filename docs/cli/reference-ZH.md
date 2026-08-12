@@ -152,12 +152,13 @@ ysk-server files shares delete --id SHARE_ID
 ```bash
 ysk-server bt-tracker status
 ysk-server bt-tracker settings get|set [--http-port N] [--udp-port N] [--listen-host H] [--public-host H] [--ws|--no-ws] [--autostart|--no-autostart]
-ysk-server bt-tracker start [--execute]
+ysk-server bt-tracker start [--execute]   # CLI 會 spawn detached worker（CLI 結束後仍運行）
 ysk-server bt-tracker stop
 ysk-server bt-tracker torrents
+ysk-server bt-tracker restore             # 重新做種（最好在 serve 進程內）
 ```
 
-預設 HTTP／WS 埠 **8000**。請將 `publicAnnounceHost` 設為 peers 可連的主機名。下載者在主機外時，以網絡暴露／防火牆開埠。若啟用 `autostart`，`serve` 啟動時會一併啟動 Tracker。
+預設 HTTP／WS 埠 **8000**。請將 `publicAnnounceHost` 設為 peers 可連的主機名。下載者在主機外時，以網絡暴露／防火牆開埠。`serve` 啟動時若已開 `autostart` 或存在 BT 分享會自動啟動 Tracker 並 re-seed。面板 Start 用**程序內** Tracker（與做種同進程）；CLI Start 用 **detached worker** + pid 檔。
 
 ## cron
 

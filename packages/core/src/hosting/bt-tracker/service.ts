@@ -51,9 +51,23 @@ export async function getBtTrackerStatus(input: {
   const settings = loadBtTrackerSettings(input.dataDir);
   const notes: string[] = [];
   const installed = true; // bundled dependency
-  const running = isBtTrackerRunning();
+  // Detached worker pid (optional) — dynamic import avoids circular init
+  let detachedPid: number | null = null;
+  let detached = false;
+  try {
+    const proc = await import('./process.js');
+    detached = proc.isDetachedTrackerRunning(input.dataDir);
+    detachedPid = detached ? proc.readTrackerPid(input.dataDir) : null;
+  } catch {
+    /* */
+  }
+  const inProcess = isBtTrackerRunning();
+  const running = inProcess || detached;
   if (!input.host.executeEnabled()) {
     notes.push(tl('notes.btTracker.needExecute'));
+  }
+  if (detached && !inProcess) {
+    notes.push(tl('notes.btTracker.runningDetached', { pid: String(detachedPid || '') }));
   }
   const announceUrls = buildAnnounceList(settings, {
     publicHost: input.publicHostHint || settings.publicAnnounceHost || undefined,
@@ -73,7 +87,7 @@ export async function getBtTrackerStatus(input: {
   return {
     installed,
     running,
-    pid: running ? process.pid : null,
+    pid: inProcess ? process.pid : detachedPid,
     settings,
     announceUrls,
     executeEnabled: input.host.executeEnabled(),

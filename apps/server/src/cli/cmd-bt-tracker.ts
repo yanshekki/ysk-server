@@ -3,8 +3,8 @@
  */
 import {
   getBtTrackerStatus,
-  startBtTracker,
-  stopBtTracker,
+  startBtTrackerService,
+  stopBtTrackerService,
   loadBtTrackerSettings,
   patchBtTrackerSettings,
   listBtTrackerTorrents,
@@ -12,6 +12,7 @@ import {
   getFileShareById,
   listFileShares,
   normalizeDownloadModes,
+  restoreBtSharesOnBoot,
 } from '@ysk/core';
 import type { AppContext } from '../app-context.js';
 import type { CliHelpers } from './cmd-vpn.js';
@@ -73,26 +74,32 @@ export async function runBtTrackerCommand(
         dryRun: true,
         notes: [
           'Pass --execute (and YSK_EXECUTE=1) to start tracker in production.',
-          'Prefer panel Start or enable autostart so the tracker runs inside `ysk-server serve`.',
         ],
       });
       return 3;
     }
-    const r = await startBtTracker({ dataDir: ctx.dataDir, host: ctx.host });
-    // CLI is a short-lived process — tracker dies when this process exits unless serve holds it.
-    // When operators use CLI against a live panel, use the HTTP API / panel UI instead.
-    if (r.ok) {
-      r.notes = [
-        ...(r.notes || []),
-        'Tracker is in-process: keep this process alive, or use panel Start / autostart with `ysk-server serve`.',
-      ];
-    }
+    // CLI prefers detached worker so tracker survives this process
+    const r = await startBtTrackerService({
+      dataDir: ctx.dataDir,
+      host: ctx.host,
+      preferDetached: true,
+    });
     h.printJson(r);
     return h.exitFromResult(r);
   }
 
   if (sub === 'stop') {
-    const r = await stopBtTracker();
+    const r = await stopBtTrackerService({ dataDir: ctx.dataDir });
+    h.printJson(r);
+    return r.ok ? 0 : 1;
+  }
+
+  if (sub === 'restore') {
+    const r = await restoreBtSharesOnBoot({
+      dataDir: ctx.dataDir,
+      db: ctx.db,
+      host: ctx.host,
+    });
     h.printJson(r);
     return r.ok ? 0 : 1;
   }
@@ -103,12 +110,16 @@ export async function runBtTrackerCommand(
       ok: true,
       items,
       meta: { total: items.length },
+      note:
+        items.length === 0
+          ? 'In-process swarm only; detached tracker peers are not listed here'
+          : undefined,
     });
     return 0;
   }
 
   process.stderr.write(
-    'Usage: ysk-server bt-tracker status|start|stop|settings|torrents [--execute] [--json]\n',
+    'Usage: ysk-server bt-tracker status|start|stop|settings|torrents|restore [--execute] [--json]\n',
   );
   return 2;
 }

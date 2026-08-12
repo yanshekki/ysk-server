@@ -152,12 +152,13 @@ Self-hosted [bittorrent-tracker](https://github.com/webtorrent/bittorrent-tracke
 ```bash
 ysk-server bt-tracker status
 ysk-server bt-tracker settings get|set [--http-port N] [--udp-port N] [--listen-host H] [--public-host H] [--ws|--no-ws] [--autostart|--no-autostart]
-ysk-server bt-tracker start [--execute]
+ysk-server bt-tracker start [--execute]   # CLI spawns detached worker (survives CLI exit)
 ysk-server bt-tracker stop
 ysk-server bt-tracker torrents
+ysk-server bt-tracker restore             # re-seed BT shares (best inside serve process)
 ```
 
-Default HTTP/WS port **8000**. Set `publicAnnounceHost` to a hostname peers can reach. Open the port via Network exposure / firewall when downloaders are off-host. Autostart runs when `serve` starts if `autostart` is enabled.
+Default HTTP/WS port **8000**. Set `publicAnnounceHost` to a hostname peers can reach. Open the port via Network exposure / firewall when downloaders are off-host. Autostart + re-seed run when `serve` starts if `autostart` is enabled or BT shares exist. Panel Start uses **in-process** tracker (same process as seeder); CLI Start uses a **detached worker** + pid file.
 
 ## cron
 

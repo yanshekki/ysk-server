@@ -7797,7 +7797,10 @@
       "notSeeding": "控制平面目前未為此外享做種。",
       "btNeedsTracker": "BT 分享需要運行中的 Tracker。請開啟「檔案 → BT Tracker」並啟動。",
       "restoreTrackerFailed": "開機還原時未能啟動 BT Tracker",
-      "restoreDone": "BT 還原：已做種 {{seeded}}／{{attempted}}（失敗 {{failed}}）"
+      "restoreDone": "BT 還原：已做種 {{seeded}}／{{attempted}}（失敗 {{failed}}）",
+      "workerMissing": "找不到 detached worker；已改程序內啟動（隨本進程結束）",
+      "startedDetached": "BT Tracker detached worker 已啟動（pid {{pid}}，埠 {{port}}）",
+      "runningDetached": "Tracker 以 detached worker 運行中（pid {{pid}}）"
     }
   },
   "ops": {
