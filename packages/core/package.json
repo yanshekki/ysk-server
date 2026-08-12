@@ -33,6 +33,7 @@
   "dependencies": {
     "@simplewebauthn/server": "^13.3.2",
     "@ysk/shared": "workspace:*",
+    "bencode": "^4.0.0",
     "better-sqlite3": "13.0.1",
     "bittorrent-tracker": "^11.2.3",
     "create-torrent": "^6.1.3",

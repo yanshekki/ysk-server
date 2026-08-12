@@ -5,3 +5,4 @@ export * from './seeder.js';
 export * from './prepare-share-bt.js';
 export * from './restore-shares.js';
 export * from './process.js';
+export * from './scrape.js';

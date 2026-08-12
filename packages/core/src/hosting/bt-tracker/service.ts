@@ -259,55 +259,61 @@ export async function stopBtTracker(): Promise<{ ok: boolean; notes: string[] }>
   return { ok: true, notes: [tl('notes.btTracker.stopped')] };
 }
 
+type TorrentHint = {
+  infoHash?: string;
+  name?: string;
+  shareId?: string;
+  seedStatus?: string;
+  seeders?: number;
+  leechers?: number;
+};
+
+function mergeTorrentRow(
+  byHash: Map<string, BtTrackerTorrentRow>,
+  row: BtTrackerTorrentRow,
+  preferLive = false,
+): void {
+  const h = row.infoHash.toLowerCase();
+  if (!/^[a-f0-9]{40}$/.test(h)) return;
+  const prev = byHash.get(h);
+  if (!prev) {
+    byHash.set(h, { ...row, infoHash: h });
+    return;
+  }
+  byHash.set(h, {
+    infoHash: h,
+    name: row.name || prev.name,
+    seeders: preferLive ? row.seeders : Math.max(prev.seeders, row.seeders),
+    leechers: preferLive ? row.leechers : Math.max(prev.leechers, row.leechers),
+    completed: row.completed ?? prev.completed,
+    shareId: row.shareId || prev.shareId,
+    seedStatus: row.seedStatus || prev.seedStatus,
+    uploadSpeed: row.uploadSpeed ?? prev.uploadSpeed,
+    downloadSpeed: row.downloadSpeed ?? prev.downloadSpeed,
+  });
+}
+
 /**
  * List tracked torrents — prefers live `server.torrents` swarm counts,
  * falls back to announce-event map, then optional share/seed hints.
  */
 export function listBtTrackerTorrents(opts?: {
   /** Known shares/seeds to surface even before first announce */
-  hints?: Array<{
-    infoHash?: string;
-    name?: string;
-    shareId?: string;
-    seedStatus?: string;
-    seeders?: number;
-    leechers?: number;
-  }>;
+  hints?: TorrentHint[];
 }): BtTrackerTorrentRow[] {
   const byHash = new Map<string, BtTrackerTorrentRow>();
-
-  const put = (row: BtTrackerTorrentRow, preferLive = false) => {
-    const h = row.infoHash.toLowerCase();
-    if (!/^[a-f0-9]{40}$/.test(h)) return;
-    const prev = byHash.get(h);
-    if (!prev) {
-      byHash.set(h, { ...row, infoHash: h });
-      return;
-    }
-    byHash.set(h, {
-      infoHash: h,
-      name: row.name || prev.name,
-      seeders: preferLive ? row.seeders : Math.max(prev.seeders, row.seeders),
-      leechers: preferLive ? row.leechers : Math.max(prev.leechers, row.leechers),
-      completed: row.completed ?? prev.completed,
-      shareId: row.shareId || prev.shareId,
-      seedStatus: row.seedStatus || prev.seedStatus,
-      uploadSpeed: row.uploadSpeed ?? prev.uploadSpeed,
-      downloadSpeed: row.downloadSpeed ?? prev.downloadSpeed,
-    });
-  };
 
   // 1) Live bittorrent-tracker swarms (most accurate)
   if (runtime?.server) {
     for (const row of readServerTorrents(runtime.server)) {
-      put(row, true);
+      mergeTorrentRow(byHash, row, true);
     }
   }
 
   // 2) Event-driven map
   if (runtime) {
     for (const [infoHash, s] of runtime.swarm) {
-      put({
+      mergeTorrentRow(byHash, {
         infoHash,
         seeders: s.complete,
         leechers: s.incomplete,
@@ -319,7 +325,7 @@ export function listBtTrackerTorrents(opts?: {
   // 3) Hints from shares / local seeder
   for (const h of opts?.hints ?? []) {
     if (!h.infoHash) continue;
-    put({
+    mergeTorrentRow(byHash, {
       infoHash: h.infoHash,
       name: h.name,
       seeders: h.seeders ?? 0,
@@ -330,6 +336,48 @@ export function listBtTrackerTorrents(opts?: {
   }
 
   return [...byHash.values()].sort((a, b) => a.infoHash.localeCompare(b.infoHash));
+}
+
+/**
+ * Async list: same as listBtTrackerTorrents, then HTTP scrape when detached
+ * (or when caller forces scrape) to refresh seeders/leechers from tracker.
+ */
+export async function listBtTrackerTorrentsAsync(opts?: {
+  hints?: TorrentHint[];
+  dataDir?: string;
+  /** Force scrape even if in-process (default: only when not in-process) */
+  forceScrape?: boolean;
+}): Promise<BtTrackerTorrentRow[]> {
+  const base = listBtTrackerTorrents({ hints: opts?.hints });
+  const needScrape =
+    opts?.forceScrape || (!isBtTrackerRunning() && Boolean(opts?.dataDir));
+  if (!needScrape || !opts?.dataDir) return base;
+
+  const hashes = [
+    ...new Set(
+      [
+        ...base.map((r) => r.infoHash),
+        ...(opts.hints ?? []).map((h) => h.infoHash || ''),
+      ]
+        .map((h) => h.toLowerCase())
+        .filter((h) => /^[a-f0-9]{40}$/.test(h)),
+    ),
+  ];
+  if (!hashes.length) return base;
+
+  try {
+    const { scrapeLocalHttpPort } = await import('./scrape.js');
+    const settings = loadBtTrackerSettings(opts.dataDir);
+    const scraped = await scrapeLocalHttpPort(settings.httpPort, hashes);
+    if (!scraped.length) return base;
+    const byHash = new Map(base.map((r) => [r.infoHash, r]));
+    for (const s of scraped) {
+      mergeTorrentRow(byHash, s, true);
+    }
+    return [...byHash.values()].sort((a, b) => a.infoHash.localeCompare(b.infoHash));
+  } catch {
+    return base;
+  }
 }
 
 function readServerTorrents(server: TrackerServer): BtTrackerTorrentRow[] {

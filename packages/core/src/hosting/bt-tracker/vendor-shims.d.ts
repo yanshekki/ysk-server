@@ -69,6 +69,13 @@ declare module 'create-torrent' {
   export default createTorrent;
 }
 
+declare module 'bencode' {
+  export function encode(data: unknown): Buffer;
+  export function decode(data: Buffer | Uint8Array): unknown;
+  const bencode: { encode: typeof encode; decode: typeof decode };
+  export default bencode;
+}
+
 declare module 'parse-torrent' {
   type ParsedTorrent = {
     infoHash?: string | Buffer;

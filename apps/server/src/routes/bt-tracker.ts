@@ -8,6 +8,7 @@ import {
   startBtTracker,
   stopBtTracker,
   listBtTrackerTorrents,
+  listBtTrackerTorrentsAsync,
   loadBtTrackerSettings,
   patchBtTrackerSettings,
   createShareTorrent,
@@ -173,7 +174,11 @@ export async function handleBtTrackerRoutes(
             });
           }
         }
-        const rows = listBtTrackerTorrents({ hints });
+        const rows = await listBtTrackerTorrentsAsync({
+          hints,
+          dataDir: ctx.dataDir,
+          forceScrape: false,
+        });
         const byHash = new Map(
           shares
             .filter((s) => s.infoHash)
