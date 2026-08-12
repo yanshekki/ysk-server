@@ -1,9 +1,9 @@
 {
-  "placeholder": "Search pages & resources…",
-  "aria": "Global search",
-  "results": "Search results",
-  "loading": "Searching…",
-  "noResults": "No matches",
+  "placeholder": "पृष्ठ और संसाधन खोजें...",
+  "aria": "वैश्विक खोज",
+  "results": "खोज के परिणाम",
+  "loading": "खोज रहे हैं...",
+  "noResults": "कोई मेल नहीं",
   "kinds": {
     "page": "Pages",
     "project": "Projects",

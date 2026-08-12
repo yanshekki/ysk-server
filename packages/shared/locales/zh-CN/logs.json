@@ -130,6 +130,6 @@
   "groupJournal": "杂志",
   "groupVarLog": "/var/log",
   "prioErr": "错误+",
-  "prioWarn": "warn+",
+  "prioWarn": "警告+",
   "prioInfo": "信息+"
 }

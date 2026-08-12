@@ -1,5 +1,5 @@
 {
-  "title": "BT Tracker",
+  "title": "BT追踪器",
   "sub": "自架 BitTorrent／WebTorrent，供档案分享使用",
   "pageDesc": "以 BitTorrent 为面板档案分享做种。先启動 Tracker、设定公开 announce 主机，再于「档案」建立 BT 分享。",
   "status": "状态",
@@ -114,6 +114,6 @@
   "udpPortSameHttp": "与 HTTP 相同（{{port}}）",
   "udpPortClassic": "6969 · 传统",
   "portSuggest8000": "8000 · 建议",
-  "saveOkRestart": "Saved — restart tracker to apply ports",
+  "saveOkRestart": "已保存 — 重新启动跟踪器以应用端口",
   "announceHostUnset": "—"
 }

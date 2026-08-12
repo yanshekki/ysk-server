@@ -2904,7 +2904,7 @@
     "passwordUpdated": "已更新 {{name}} 嘅密碼",
     "passwordMetaOnly": "密碼暫只記中繼資料，待系統套用",
     "xstartupWrittenOnly": "未寫入 xstartup 到 home（需 root + YSK_EXECUTE）",
-    "xstartupWriteFailed": "Failed to write ~/.vnc/xstartup ({{detail}}). Need root + YSK_EXECUTE.",
+    "xstartupWriteFailed": "無法寫入 ~/.vnc/xstartup ({{detail}})。需要 root + YSK_EXECUTE。",
     "xstartupFailed": "VNC xstartup／桌面啟動失敗（display :{{display}}，{{detail}}）。可改 XFCE 設定檔，或安裝 xfce4-terminal／xterm。",
     "xstartupWritten": "已寫入 {{path}}",
     "sessionStartBlocked": "無權限啟動 VNC session（需 root + YSK_EXECUTE）",

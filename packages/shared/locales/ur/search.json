@@ -1,9 +1,9 @@
 {
-  "placeholder": "Search pages & resources…",
-  "aria": "Global search",
-  "results": "Search results",
-  "loading": "Searching…",
-  "noResults": "No matches",
+  "placeholder": "صفحات اور وسائل تلاش کریں…",
+  "aria": "عالمی تلاش",
+  "results": "تلاش کے نتائج",
+  "loading": "تلاش کر رہا ہے…",
+  "noResults": "کوئی میچ نہیں",
   "kinds": {
     "page": "Pages",
     "project": "Projects",

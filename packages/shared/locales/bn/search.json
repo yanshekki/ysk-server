@@ -1,9 +1,9 @@
 {
-  "placeholder": "Search pages & resources…",
-  "aria": "Global search",
-  "results": "Search results",
-  "loading": "Searching…",
-  "noResults": "No matches",
+  "placeholder": "পৃষ্ঠা এবং সম্পদ অনুসন্ধান করুন...",
+  "aria": "বিশ্বব্যাপী অনুসন্ধান",
+  "results": "অনুসন্ধান ফলাফল",
+  "loading": "অনুসন্ধান করা হচ্ছে...",
+  "noResults": "কোন মিল নেই",
   "kinds": {
     "page": "Pages",
     "project": "Projects",

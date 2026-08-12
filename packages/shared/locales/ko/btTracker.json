@@ -1,5 +1,5 @@
 {
-  "title": "BT Tracker",
+  "title": "블루투스 트래커",
   "sub": "Self-hosted BitTorrent / WebTorrent tracker for file shares",
   "pageDesc": "Seed panel file shares over BitTorrent. Start the tracker, set a public announce host, then create BT shares in Files.",
   "status": "Status",
@@ -114,6 +114,6 @@
   "udpPortSameHttp": "Same as HTTP ({{port}})",
   "udpPortClassic": "6969 · Classic",
   "portSuggest8000": "8000 · Recommended",
-  "saveOkRestart": "Saved — restart tracker to apply ports",
+  "saveOkRestart": "저장됨 - 포트를 적용하려면 트래커를 다시 시작하세요",
   "announceHostUnset": "—"
 }

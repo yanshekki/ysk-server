@@ -1,9 +1,9 @@
 {
-  "placeholder": "Search pages & resources…",
-  "aria": "Global search",
-  "results": "Search results",
-  "loading": "Searching…",
-  "noResults": "No matches",
+  "placeholder": "ページとリソースを検索…",
+  "aria": "グローバル検索",
+  "results": "検索結果",
+  "loading": "検索中…",
+  "noResults": "一致しません",
   "kinds": {
     "page": "Pages",
     "project": "Projects",

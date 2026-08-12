@@ -1,9 +1,9 @@
 {
-  "placeholder": "Search pages & resources…",
-  "aria": "Global search",
-  "results": "Search results",
-  "loading": "Searching…",
-  "noResults": "No matches",
+  "placeholder": "페이지 및 리소스 검색…",
+  "aria": "글로벌 검색",
+  "results": "검색결과",
+  "loading": "수색…",
+  "noResults": "일치하는 항목 없음",
   "kinds": {
     "page": "Pages",
     "project": "Projects",

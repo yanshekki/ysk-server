@@ -37,7 +37,7 @@
   "setHttp2": "HTTP/2",
   "setBody": "Body 上限",
   "setKeepalive": "保活",
-  "setAccessLog": "Access log",
+  "setAccessLog": "访问日志",
   "logOn": "开",
   "logOff": "关",
   "setForceHttps": "强制 HTTPS",

@@ -107,5 +107,5 @@
   "noNotifs": "暂无通知",
   "noNotifsDesc": "系统告警与待办会显示于此",
   "applyAuditTitle": "套用状态审计",
-  "applyAuditDesc": "ok {{ok}} · warn {{warn}} · bad {{bad}}"
+  "applyAuditDesc": "好的 {{ok}} · 警告 {{warn}} · 不好 {{bad}}"
 }

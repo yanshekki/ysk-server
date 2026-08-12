@@ -1,9 +1,9 @@
 {
-  "placeholder": "Search pages & resources…",
-  "aria": "Global search",
-  "results": "Search results",
-  "loading": "Searching…",
-  "noResults": "No matches",
+  "placeholder": "Telusuri halaman & sumber daya…",
+  "aria": "Pencarian global",
+  "results": "Hasil pencarian",
+  "loading": "Mencari…",
+  "noResults": "Tidak ada kecocokan",
   "kinds": {
     "page": "Pages",
     "project": "Projects",

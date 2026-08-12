@@ -1,9 +1,9 @@
 {
-  "placeholder": "Search pages & resources…",
-  "aria": "Global search",
-  "results": "Search results",
-  "loading": "Searching…",
-  "noResults": "No matches",
+  "placeholder": "صفحات البحث والموارد...",
+  "aria": "بحث عالمي",
+  "results": "نتائج البحث",
+  "loading": "البحث…",
+  "noResults": "لا توجد مباريات",
   "kinds": {
     "page": "Pages",
     "project": "Projects",

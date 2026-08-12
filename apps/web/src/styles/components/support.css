@@ -16,8 +16,11 @@
 
 .support-page__code {
   display: inline-block;
-  padding: 0.2rem 0.45rem;
+  padding: 0.25rem 0.5rem;
   border-radius: var(--radius-sm);
   background: var(--bg-subtle, #f1f5f9);
+  color: var(--text-main, #0f172a);
+  border: 1px solid var(--border-color, #e2e8f0);
   font-size: 0.9em;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
 }

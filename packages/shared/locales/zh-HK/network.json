@@ -133,7 +133,7 @@
       "bunny": "兔子CDN",
       "cloudfront": "AWS 雲端前",
       "azure_frontdoor": "蔚藍前門",
-      "gcore": "Gcore CDN",
+      "gcore": "國核CDN",
       "custom": "自訂代理"
     }
   },

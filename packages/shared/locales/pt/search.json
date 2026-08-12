@@ -1,9 +1,9 @@
 {
-  "placeholder": "Search pages & resources…",
-  "aria": "Global search",
-  "results": "Search results",
-  "loading": "Searching…",
-  "noResults": "No matches",
+  "placeholder": "Pesquisar páginas e recursos…",
+  "aria": "Pesquisa global",
+  "results": "Resultados da pesquisa",
+  "loading": "Procurando…",
+  "noResults": "Nenhuma correspondência",
   "kinds": {
     "page": "Pages",
     "project": "Projects",
