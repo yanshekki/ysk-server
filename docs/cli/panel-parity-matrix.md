@@ -20,10 +20,10 @@
 |----|-------|----------|--------|----------|
 | vpn | VPN ensure / peers / clients / monitor / firewall | `vpn …` | ✅ C2 | P0 |
 | vnc | VNC accounts / clients / share / novnc / firewall | `vnc …` | ✅ C2 (browser canvas ⚠️) | P0 |
-| apache | Apache sites / settings | `apache …` | ❌ | P0 |
-| service-exposure | Network service exposure sync | `network exposure …` | ❌ | P0 |
-| real-ip | Real-IP apply | `real-ip …` | ❌ | P1 |
-| panel-tls | Panel TLS status/apply | `ssl panel-tls …` | ⚠️ partial | P1 |
+| apache | Apache sites / settings | `apache …` | ✅ C3 | P0 |
+| service-exposure | Network service exposure sync | `network exposure …` | ✅ C3 | P0 |
+| real-ip | Real-IP apply | `real-ip …` | ✅ C3 | P1 |
+| panel-tls | Panel TLS status/apply | `ssl panel-tls …` | ✅ C3 | P1 |
 | updates-inventory | Updates inventory / package apply | `updates …` | ⚠️ partial (`update` self only) | P1 |
 | software-install | Feature install banners | `software …` | ⚠️ partial (`stack` only) | P1 |
 | db-lifecycle | DB console lifecycle / apply | `db …` | ⚠️ partial | P1 |
@@ -64,6 +64,9 @@
 | Stack | `stack plans\|install\|…` |
 | VPN | `vpn status\|monitor\|ensure\|peers\|clients\|firewall\|presets` |
 | VNC | `vnc status\|settings\|accounts\|clients\|share\|novnc\|session\|firewall` |
+| Apache | `apache sites\|settings …` |
+| Network exposure / Real-IP | `network exposure …` `real-ip …` |
+| Panel TLS | `ssl panel-tls status\|enable\|disable\|issue` |
 | AI | `ask` `tools` |
 
 ---
@@ -92,4 +95,4 @@ node scripts/cli-panel-parity.mjs --json
 # node scripts/cli-panel-parity.mjs --strict   # fails if any ❌ missing remain
 ```
 
-*Last updated: 2026-08-12 — C2 vpn+vnc full panel surface.*
+*Last updated: 2026-08-12 — C3 apache + network exposure + real-ip + panel-tls (~55%).*

@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-08-12T04:09:22.210Z",
-  "cliCommandsCount": 42,
+  "generatedAt": "2026-08-12T04:14:15.230Z",
+  "cliCommandsCount": 45,
   "cliCommands": [
     "setup",
     "update",
@@ -42,13 +42,17 @@
     "migrate",
     "vpn",
     "vnc",
+    "apache",
+    "network",
+    "real-ip",
     "version",
     "help"
   ],
-  "handlersCount": 35,
+  "handlersCount": 38,
   "handlers": [
     "agent",
     "agents",
+    "apache",
     "ask",
     "audit",
     "backup",
@@ -67,6 +71,7 @@
     "packages",
     "projects",
     "rbac",
+    "real-ip",
     "security",
     "self-update-plan",
     "serve",
@@ -81,6 +86,7 @@
     "update",
     "users",
     "version",
+    "vnc",
     "vpn"
   ],
   "navCount": 45,
@@ -95,8 +101,6 @@
     "postgresService",
     "redis",
     "redisService",
-    "apache",
-    "network",
     "updates"
   ],
   "navPanelOnly": [
@@ -128,38 +132,41 @@
       "id": "apache",
       "panel": "Apache sites / settings apply",
       "cliNeed": "apache",
-      "status": "missing",
+      "status": "ok",
+      "note": "C3: sites + settings + apply + cleanup-conflicts",
       "priority": "P0",
-      "cliPresent": false,
-      "resolved": false
+      "cliPresent": true,
+      "resolved": true
     },
     {
       "id": "service-exposure",
       "panel": "Network service exposure sync (ysk-svc)",
-      "cliNeed": "network exposure",
-      "status": "missing",
+      "cliNeed": "network",
+      "status": "ok",
+      "note": "C3: network exposure list|get|put|sync",
       "priority": "P0",
-      "cliPresent": false,
-      "resolved": false
+      "cliPresent": true,
+      "resolved": true
     },
     {
       "id": "real-ip",
       "panel": "Real-IP apply",
       "cliNeed": "real-ip",
-      "status": "missing",
+      "status": "ok",
+      "note": "C3: real-ip status|set|refresh",
       "priority": "P1",
-      "cliPresent": false,
-      "resolved": false
+      "cliPresent": true,
+      "resolved": true
     },
     {
       "id": "panel-tls",
       "panel": "Panel TLS status/apply",
-      "cliNeed": "ssl panel-tls",
-      "status": "partial",
-      "note": "ssl bootstrap only",
+      "cliNeed": "ssl",
+      "status": "ok",
+      "note": "C3: ssl panel-tls status|enable|disable|issue (+ bootstrap)",
       "priority": "P1",
       "cliPresent": true,
-      "resolved": false
+      "resolved": true
     },
     {
       "id": "updates-inventory",
@@ -299,43 +306,6 @@
   ],
   "openGaps": [
     {
-      "id": "apache",
-      "panel": "Apache sites / settings apply",
-      "cliNeed": "apache",
-      "status": "missing",
-      "priority": "P0",
-      "cliPresent": false,
-      "resolved": false
-    },
-    {
-      "id": "service-exposure",
-      "panel": "Network service exposure sync (ysk-svc)",
-      "cliNeed": "network exposure",
-      "status": "missing",
-      "priority": "P0",
-      "cliPresent": false,
-      "resolved": false
-    },
-    {
-      "id": "real-ip",
-      "panel": "Real-IP apply",
-      "cliNeed": "real-ip",
-      "status": "missing",
-      "priority": "P1",
-      "cliPresent": false,
-      "resolved": false
-    },
-    {
-      "id": "panel-tls",
-      "panel": "Panel TLS status/apply",
-      "cliNeed": "ssl panel-tls",
-      "status": "partial",
-      "note": "ssl bootstrap only",
-      "priority": "P1",
-      "cliPresent": true,
-      "resolved": false
-    },
-    {
       "id": "updates-inventory",
       "panel": "Updates inventory / package apply",
       "cliNeed": "updates",
@@ -432,8 +402,8 @@
       "resolved": false
     }
   ],
-  "missingCount": 5,
-  "partialCount": 9,
+  "missingCount": 2,
+  "partialCount": 8,
   "panelOnlyCount": 4,
-  "okCount": 2
+  "okCount": 6
 }

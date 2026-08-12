@@ -936,6 +936,36 @@
       "risk": "write-host",
       "summary": "Open RFB port for account (ysk-svc)",
       "example": "ysk-server vnc firewall --id ACCOUNT_ID --execute --json"
+    },
+    {
+      "name": "apache sites",
+      "risk": "write-host",
+      "summary": "Apache sites list/create/update/delete/apply/conf",
+      "example": "ysk-server apache sites list --json"
+    },
+    {
+      "name": "apache settings",
+      "risk": "write-host",
+      "summary": "Apache global settings get/set/apply",
+      "example": "ysk-server apache settings get --json"
+    },
+    {
+      "name": "network exposure",
+      "risk": "write-host",
+      "summary": "Service exposure (ysk-svc) list/get/put/sync",
+      "example": "ysk-server network exposure list --json"
+    },
+    {
+      "name": "real-ip",
+      "risk": "write-host",
+      "summary": "Real client IP provider config + CIDR refresh",
+      "example": "ysk-server real-ip status --json"
+    },
+    {
+      "name": "ssl panel-tls",
+      "risk": "write-host",
+      "summary": "Panel control-plane TLS status/enable/disable/issue",
+      "example": "ysk-server ssl panel-tls status --json"
     }
   ]
 }

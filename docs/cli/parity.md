@@ -2,7 +2,7 @@
 
 > Language: English | [中文](./parity-ZH.md)
 
-**Status: C2 (2026-08-12).** Phase 4 seal withdrawn. **VPN + VNC CLI** match panel mutation/list surface (browser VNC canvas remains panel-only). Remaining ❌: Apache, service-exposure, and P1–P2 depth gaps.
+**Status: C3 (2026-08-12).** Phase 4 seal withdrawn. **VPN / VNC / Apache / network exposure / real-ip / panel-tls** CLI match panel surfaces. Remaining: updates/software/db/redis/ftp/email/dns/runtime depth (C4–C7).
 
 **Hard rule:** Every production panel capability must have a CLI entry (or an explicit, documented intentional gap). Prefer `--json` for automation.
 
@@ -35,8 +35,9 @@ Machine inventory: **[parity-inventory.json](./parity-inventory.json)** (`node s
 |-------|------------|
 | VPN | `vpn …` ✅ C2 |
 | VNC | `vnc …` ✅ C2 (canvas ⚠️) |
-| Apache | `apache …` |
-| Service network exposure | `network exposure …` |
+| Apache | `apache …` ✅ C3 |
+| Service network exposure | `network exposure …` ✅ C3 |
+| Real-IP / Panel TLS | `real-ip …` / `ssl panel-tls …` ✅ C3 |
 | SQL engine switch | `db sql-engine …` |
 | Redis key browser | `redis …` |
 
@@ -61,4 +62,4 @@ Machine-readable (partial catalog): [../agent/commands.json](../agent/commands.j
 - [x] Intentional panel-only UX documented (terminal, noVNC, browse UI, editor)
 - [x] Automated inventory script exists
 
-*Last updated: 2026-08-12 — C2 vpn+vnc.*
+*Last updated: 2026-08-12 — C3 (~55%).*

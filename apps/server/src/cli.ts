@@ -81,6 +81,9 @@ const CLI_COMMANDS = [
   'migrate',
   'vpn',
   'vnc',
+  'apache',
+  'network',
+  'real-ip',
   'version',
   'help',
 ] as const;
@@ -4031,8 +4034,19 @@ async function mainInner(
         });
         return r.ok ? 0 : 1;
       }
+      if (sub === 'panel-tls' || sub === 'panel') {
+        const helpers = {
+          printJson,
+          getOpt,
+          hasFlag,
+          wantsHostExecute,
+          exitFromResult,
+        };
+        const { runPanelTlsCommand } = await import('./cli/cmd-panel-tls.js');
+        return await runPanelTlsCommand(ctx, args, helpers);
+      }
       process.stderr.write(
-        `${CLI_NAME} ssl list|get|bootstrap [--ip IP] [--dns name] [--force] [--data-dir PATH]\n`,
+        `${CLI_NAME} ssl list|get|bootstrap|panel-tls [--ip IP] [--dns name] [--force] [--data-dir PATH]\n`,
       );
       return 2;
     } finally {
@@ -4959,7 +4973,13 @@ async function mainInner(
     }
   }
 
-  if (command === 'vpn' || command === 'vnc') {
+  if (
+    command === 'vpn' ||
+    command === 'vnc' ||
+    command === 'apache' ||
+    command === 'network' ||
+    command === 'real-ip'
+  ) {
     // Honour --execute together with YSK_EXECUTE for host mutations
     const configPath = getOpt(args, '--config');
     const dataDirOpt = getOpt(args, '--data-dir');
@@ -4989,8 +5009,20 @@ async function mainInner(
         const { runVpnCommand } = await import('./cli/cmd-vpn.js');
         return await runVpnCommand(ctx, args, json, helpers);
       }
-      const { runVncCommand } = await import('./cli/cmd-vnc.js');
-      return await runVncCommand(ctx, args, json, helpers);
+      if (command === 'vnc') {
+        const { runVncCommand } = await import('./cli/cmd-vnc.js');
+        return await runVncCommand(ctx, args, json, helpers);
+      }
+      if (command === 'apache') {
+        const { runApacheCommand } = await import('./cli/cmd-apache.js');
+        return await runApacheCommand(ctx, args, json, helpers);
+      }
+      if (command === 'real-ip') {
+        const { runRealIpCommand } = await import('./cli/cmd-network.js');
+        return await runRealIpCommand(ctx, args, json, helpers);
+      }
+      const { runNetworkCommand } = await import('./cli/cmd-network.js');
+      return await runNetworkCommand(ctx, args, json, helpers);
     } finally {
       closeAppContext(ctx);
     }
