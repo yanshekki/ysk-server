@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-08-12T04:14:15.230Z",
-  "cliCommandsCount": 45,
+  "generatedAt": "2026-08-12T04:17:42.414Z",
+  "cliCommandsCount": 47,
   "cliCommands": [
     "setup",
     "update",
@@ -45,10 +45,12 @@
     "apache",
     "network",
     "real-ip",
+    "updates",
+    "software",
     "version",
     "help"
   ],
-  "handlersCount": 38,
+  "handlersCount": 40,
   "handlers": [
     "agent",
     "agents",
@@ -77,6 +79,7 @@
     "serve",
     "services",
     "setup",
+    "software",
     "ssl",
     "stack",
     "store",
@@ -84,6 +87,7 @@
     "templates",
     "tools",
     "update",
+    "updates",
     "users",
     "version",
     "vnc",
@@ -100,8 +104,7 @@
     "postgres",
     "postgresService",
     "redis",
-    "redisService",
-    "updates"
+    "redisService"
   ],
   "navPanelOnly": [
     "hostBrowse",
@@ -172,21 +175,21 @@
       "id": "updates-inventory",
       "panel": "Updates inventory / package apply",
       "cliNeed": "updates",
-      "status": "partial",
-      "note": "update self only",
+      "status": "ok",
+      "note": "C4: updates inventory|apply|batch (+ update self binary)",
       "priority": "P1",
-      "cliPresent": false,
-      "resolved": false
+      "cliPresent": true,
+      "resolved": true
     },
     {
       "id": "software-install",
       "panel": "Feature software install/uninstall banners",
       "cliNeed": "software",
-      "status": "partial",
-      "note": "stack install only",
+      "status": "ok",
+      "note": "C4: software list|install|uninstall (+ stack plans)",
       "priority": "P1",
-      "cliPresent": false,
-      "resolved": false
+      "cliPresent": true,
+      "resolved": true
     },
     {
       "id": "db-lifecycle",
@@ -306,26 +309,6 @@
   ],
   "openGaps": [
     {
-      "id": "updates-inventory",
-      "panel": "Updates inventory / package apply",
-      "cliNeed": "updates",
-      "status": "partial",
-      "note": "update self only",
-      "priority": "P1",
-      "cliPresent": false,
-      "resolved": false
-    },
-    {
-      "id": "software-install",
-      "panel": "Feature software install/uninstall banners",
-      "cliNeed": "software",
-      "status": "partial",
-      "note": "stack install only",
-      "priority": "P1",
-      "cliPresent": false,
-      "resolved": false
-    },
-    {
       "id": "db-lifecycle",
       "panel": "DB service console lifecycle / apply",
       "cliNeed": "db",
@@ -403,7 +386,7 @@
     }
   ],
   "missingCount": 2,
-  "partialCount": 8,
+  "partialCount": 6,
   "panelOnlyCount": 4,
-  "okCount": 6
+  "okCount": 8
 }

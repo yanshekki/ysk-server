@@ -84,6 +84,8 @@ const CLI_COMMANDS = [
   'apache',
   'network',
   'real-ip',
+  'updates',
+  'software',
   'version',
   'help',
 ] as const;
@@ -4978,7 +4980,9 @@ async function mainInner(
     command === 'vnc' ||
     command === 'apache' ||
     command === 'network' ||
-    command === 'real-ip'
+    command === 'real-ip' ||
+    command === 'updates' ||
+    command === 'software'
   ) {
     // Honour --execute together with YSK_EXECUTE for host mutations
     const configPath = getOpt(args, '--config');
@@ -5020,6 +5024,14 @@ async function mainInner(
       if (command === 'real-ip') {
         const { runRealIpCommand } = await import('./cli/cmd-network.js');
         return await runRealIpCommand(ctx, args, json, helpers);
+      }
+      if (command === 'updates') {
+        const { runUpdatesCommand } = await import('./cli/cmd-updates.js');
+        return await runUpdatesCommand(ctx, args, json, helpers);
+      }
+      if (command === 'software') {
+        const { runSoftwareCommand } = await import('./cli/cmd-software.js');
+        return await runSoftwareCommand(ctx, args, json, helpers);
       }
       const { runNetworkCommand } = await import('./cli/cmd-network.js');
       return await runNetworkCommand(ctx, args, json, helpers);

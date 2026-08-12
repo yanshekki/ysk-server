@@ -2,7 +2,7 @@
 
 > Language: English | [中文](./parity-ZH.md)
 
-**Status: C3 (2026-08-12).** Phase 4 seal withdrawn. **VPN / VNC / Apache / network exposure / real-ip / panel-tls** CLI match panel surfaces. Remaining: updates/software/db/redis/ftp/email/dns/runtime depth (C4–C7).
+**Status: C4 (2026-08-12).** **VPN / VNC / Apache / network / real-ip / panel-tls / updates / software** CLI match panel. Remaining: db/redis/ftp/email/dns/runtime (C5–C7).
 
 **Hard rule:** Every production panel capability must have a CLI entry (or an explicit, documented intentional gap). Prefer `--json` for automation.
 
@@ -62,4 +62,4 @@ Machine-readable (partial catalog): [../agent/commands.json](../agent/commands.j
 - [x] Intentional panel-only UX documented (terminal, noVNC, browse UI, editor)
 - [x] Automated inventory script exists
 
-*Last updated: 2026-08-12 — C3 (~55%).*
+*Last updated: 2026-08-12 — C4 (~70%).*
