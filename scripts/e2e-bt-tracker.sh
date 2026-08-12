@@ -95,6 +95,40 @@ if (!scrapeUrl || !encodeInfoHashQuery(r.infoHash)) {
 }
 console.log('scrape helpers ok');
 
+// multi-file folder torrent
+const tree = join(dataDir, 'files', 'public', 'tree');
+mkdirSync(join(tree, 'nested'), { recursive: true });
+writeFileSync(join(tree, 'a.txt'), 'aaa');
+writeFileSync(join(tree, 'nested', 'b.txt'), 'bbbbbbbb');
+const dirTor = await createShareTorrent({
+  dataDir,
+  contentAbsPath: tree,
+  shareId: 'e2e-dir',
+  settings: {
+    ...DEFAULT_BT_TRACKER_SETTINGS,
+    httpPort: port,
+    publicAnnounceHost: '127.0.0.1',
+  },
+  name: 'tree',
+});
+if (!dirTor.ok || !dirTor.infoHash) {
+  console.error('FAIL dir torrent', dirTor);
+  process.exit(1);
+}
+console.log('dir torrent ok', dirTor.infoHash.slice(0, 12));
+
+// job queue threshold helper
+import {
+  shouldCreateTorrentAsync,
+  BT_TORRENT_SYNC_MAX_BYTES,
+} from './packages/core/dist/hosting/bt-tracker/torrent-jobs.js';
+const gate = shouldCreateTorrentAsync(content);
+if (gate.async !== gate.estimatedBytes >= BT_TORRENT_SYNC_MAX_BYTES) {
+  console.error('FAIL size gate', gate);
+  process.exit(1);
+}
+console.log('size gate ok estimated=', gate.estimatedBytes, 'async=', gate.async);
+
 // hit local tracker HTTP (detached worker)
 try {
   const res = await fetch(`http://127.0.0.1:${port}/stats.json`);
