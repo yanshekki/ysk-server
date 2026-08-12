@@ -34,7 +34,18 @@ import {
 } from '../../features/bt-tracker';
 import { bindInput } from '../bind-handlers';
 
-const TABS = ['overview', 'torrents', 'settings', 'stack', 'about'] as const;
+const TABS = ['overview', 'torrents', 'jobs', 'settings', 'stack', 'about'] as const;
+
+type TorrentJobRow = {
+  id: string;
+  shareId: string;
+  status: string;
+  enqueuedAt: string;
+  startedAt?: string;
+  finishedAt?: string;
+  notes: string[];
+  estimatedBytes?: number;
+};
 
 function formatSpeed(n: number | undefined): string {
   if (n == null || !Number.isFinite(n) || n <= 0) return '—';
@@ -54,39 +65,51 @@ export function BtTrackerPage() {
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
   const [status, setStatus] = useState<BtTrackerStatusDto | null>(null);
   const [torrents, setTorrents] = useState<BtTrackerTorrentRow[]>([]);
+  const [jobs, setJobs] = useState<TorrentJobRow[]>([]);
   const [draft, setDraft] = useState<Partial<BtTrackerSettings>>({});
+
+  const refreshJobs = useCallback(async () => {
+    try {
+      const r = await btTrackerApi.jobs();
+      setJobs((r.items ?? []) as TorrentJobRow[]);
+    } catch {
+      setJobs([]);
+    }
+  }, []);
 
   const refresh = useCallback(async () => {
     setError(null);
     const st = await btTrackerApi.status();
     setStatus(st);
     setDraft(st.settings ?? {});
-    if (st.running) {
-      try {
-        const tr = await btTrackerApi.torrents();
-        setTorrents(tr.items ?? []);
-      } catch {
-        setTorrents([]);
-      }
-    } else {
+    try {
+      const tr = await btTrackerApi.torrents();
+      setTorrents(tr.items ?? []);
+    } catch {
       setTorrents([]);
     }
-  }, [setError]);
+    await refreshJobs();
+  }, [refreshJobs, setError]);
 
   useEffect(() => {
     void refresh().catch((e: Error) => setError(e.message));
   }, [refresh, setError]);
 
   useEffect(() => {
-    if (!status?.running || tab !== 'torrents') return;
+    if (tab !== 'torrents' && tab !== 'jobs') return;
     const id = window.setInterval(() => {
-      void btTrackerApi
-        .torrents()
-        .then((tr) => setTorrents(tr.items ?? []))
-        .catch(() => undefined);
+      if (tab === 'torrents') {
+        void btTrackerApi
+          .torrents()
+          .then((tr) => setTorrents(tr.items ?? []))
+          .catch(() => undefined);
+      }
+      if (tab === 'jobs') {
+        void refreshJobs();
+      }
     }, 5_000);
     return () => window.clearInterval(id);
-  }, [status?.running, tab]);
+  }, [tab, refreshJobs]);
 
   const running = Boolean(status?.running);
   const pill = running
@@ -141,6 +164,11 @@ export function BtTrackerPage() {
             id: 'torrents',
             label: t('btTracker.torrents'),
             badge: torrents.length || undefined,
+          },
+          {
+            id: 'jobs',
+            label: t('btTracker.jobs'),
+            badge: jobs.filter((j) => j.status === 'queued' || j.status === 'running').length || undefined,
           },
           { id: 'settings', label: t('btTracker.settings') },
           { id: 'stack', label: t('btTracker.stackTitle') },
@@ -354,6 +382,74 @@ export function BtTrackerPage() {
                 ]}
                 rows={torrentRows}
                 rowKey={(r) => r.infoHash}
+              />
+            )}
+          </div>
+        ) : null}
+
+        {tab === 'jobs' ? (
+          <div className="tab-panel u-stack u-gap-md">
+            <ActionBar>
+              <Button
+                variant="secondary"
+                size="md"
+                disabled={busy}
+                onClick={() => void refreshJobs()}
+              >
+                {t('btTracker.refreshJobs')}
+              </Button>
+            </ActionBar>
+            <FormHint>{t('btTracker.restoreSeedsHint')}</FormHint>
+            {jobs.length === 0 ? (
+              <EmptyState title={t('btTracker.jobsEmpty')} />
+            ) : (
+              <DataTable
+                columns={[
+                  {
+                    key: 'job',
+                    header: t('btTracker.colJob'),
+                    render: (r) => <code className="u-text-sm">{r.id}</code>,
+                  },
+                  {
+                    key: 'share',
+                    header: t('btTracker.colShare'),
+                    render: (r) => r.shareId,
+                  },
+                  {
+                    key: 'status',
+                    header: t('btTracker.colJobStatus'),
+                    render: (r) => {
+                      const tone =
+                        r.status === 'done'
+                          ? 'ok'
+                          : r.status === 'error'
+                            ? 'danger'
+                            : r.status === 'running'
+                              ? 'info'
+                              : 'warn';
+                      return <Badge tone={tone}>{r.status}</Badge>;
+                    },
+                  },
+                  {
+                    key: 'enqueued',
+                    header: t('btTracker.colEnqueued'),
+                    render: (r) =>
+                      r.enqueuedAt
+                        ? new Date(r.enqueuedAt).toLocaleString()
+                        : '—',
+                  },
+                  {
+                    key: 'notes',
+                    header: t('btTracker.colStatus'),
+                    render: (r) => (
+                      <span className="u-text-sm muted">
+                        {(r.notes || []).slice(0, 2).join(' · ') || '—'}
+                      </span>
+                    ),
+                  },
+                ]}
+                rows={jobs}
+                rowKey={(r) => r.id}
               />
             )}
           </div>

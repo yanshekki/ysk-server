@@ -38,5 +38,12 @@
   "restoreSeeds": "重新做种 BT 分享",
   "restoreSeedsHint": "必要时启动 Tracker，并为仍有磁盘上 .torrent 的分享重新做种。",
   "bundledNote": "随 YSK Server 附带（Node）。无需 apt 安装／卸载 — 以启动／停止管理进程。",
-  "stackTitle": "软件"
+  "stackTitle": "软件",
+  "jobs": "Torrent 任务",
+  "jobsEmpty": "没有后台 torrent 任务",
+  "colJob": "任务",
+  "colShare": "分享",
+  "colJobStatus": "任务状态",
+  "colEnqueued": "入队时间",
+  "refreshJobs": "刷新任务"
 }

@@ -461,7 +461,14 @@
     "restoreSeeds": "Re-seed BT shares",
     "restoreSeedsHint": "Start tracker if needed and re-seed shares that still have a .torrent on disk.",
     "bundledNote": "Bundled with YSK Server (Node). No apt install/uninstall — Start/Stop manages the process.",
-    "stackTitle": "Software"
+    "stackTitle": "Software",
+    "jobs": "Torrent jobs",
+    "jobsEmpty": "No background torrent jobs",
+    "colJob": "Job",
+    "colShare": "Share",
+    "colJobStatus": "Job status",
+    "colEnqueued": "Enqueued",
+    "refreshJobs": "Refresh jobs"
   },
   "catalog": {
     "sw": {

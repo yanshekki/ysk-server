@@ -46,6 +46,33 @@ export const btTrackerApi = {
       body: '{}',
     }),
 
+  jobs: () =>
+    api.requestRaw<{
+      ok: boolean;
+      items: Array<{
+        id: string;
+        shareId: string;
+        status: string;
+        enqueuedAt: string;
+        startedAt?: string;
+        finishedAt?: string;
+        notes: string[];
+        estimatedBytes?: number;
+      }>;
+    }>('/api/v1/system/bt-tracker/jobs'),
+
+  job: (id: string) =>
+    api.requestRaw<{
+      ok: boolean;
+      job: {
+        id: string;
+        shareId: string;
+        status: string;
+        enqueuedAt: string;
+        notes: string[];
+      };
+    }>(`/api/v1/system/bt-tracker/jobs/${encodeURIComponent(id)}`),
+
   shareBtStats: (id: string) =>
     api.requestRaw<{ ok: boolean; stats: BtShareStats }>(
       `/api/v1/files/shares/${encodeURIComponent(id)}/bt-stats`,
