@@ -33,7 +33,30 @@ const CATALOG_LOADERS: Record<string, () => Promise<{ default: Catalog }>> = {
   ur: () => import('@ysk/shared/locales/ur/translation.json'),
 };
 
+/**
+ * Dedicated namespace loaders — always merged after the big catalog.
+ * Prevents raw keys when translation.json is stale (deploy cache / rebuild skip)
+ * or an older chunk was already registered without serviceExposure.
+ */
+const SERVICE_EXPOSURE_LOADERS: Record<string, () => Promise<{ default: Catalog } | Catalog>> = {
+  en: () => import('@ysk/shared/locales/en/serviceExposure.json'),
+  'zh-HK': () => import('@ysk/shared/locales/zh-HK/serviceExposure.json'),
+  'zh-CN': () => import('@ysk/shared/locales/zh-CN/serviceExposure.json'),
+  ja: () => import('@ysk/shared/locales/ja/serviceExposure.json'),
+  ko: () => import('@ysk/shared/locales/ko/serviceExposure.json'),
+  hi: () => import('@ysk/shared/locales/hi/serviceExposure.json'),
+  es: () => import('@ysk/shared/locales/es/serviceExposure.json'),
+  ar: () => import('@ysk/shared/locales/ar/serviceExposure.json'),
+  fr: () => import('@ysk/shared/locales/fr/serviceExposure.json'),
+  bn: () => import('@ysk/shared/locales/bn/serviceExposure.json'),
+  pt: () => import('@ysk/shared/locales/pt/serviceExposure.json'),
+  id: () => import('@ysk/shared/locales/id/serviceExposure.json'),
+  ur: () => import('@ysk/shared/locales/ur/serviceExposure.json'),
+};
+
 const loading = new Map<string, Promise<void>>();
+/** Locales that already received the dedicated serviceExposure merge this session */
+const serviceExposurePatched = new Set<string>();
 
 function catalogKey(code: string): string {
   const n = String(normalizeLocale(code));
@@ -42,10 +65,47 @@ function catalogKey(code: string): string {
   return n;
 }
 
+function asCatalog(mod: { default?: Catalog } | Catalog): Catalog {
+  if (mod && typeof mod === 'object' && 'default' in mod && mod.default) {
+    return mod.default as Catalog;
+  }
+  return mod as Catalog;
+}
+
+/** Merge serviceExposure namespace (overwrite) so UI never shows raw keys. */
+async function patchServiceExposureNs(key: string): Promise<void> {
+  if (serviceExposurePatched.has(key)) return;
+  try {
+    const loader = SERVICE_EXPOSURE_LOADERS[key] ?? SERVICE_EXPOSURE_LOADERS.en!;
+    const mod = await loader();
+    const se = asCatalog(mod);
+    if (!se || typeof se !== 'object') return;
+    i18n.addResourceBundle(key, 'translation', { serviceExposure: se }, true, true);
+    if (key === 'zh-HK') {
+      i18n.addResourceBundle('zh-TW', 'translation', { serviceExposure: se }, true, true);
+    }
+    serviceExposurePatched.add(key);
+  } catch {
+    /* en fallback below */
+    if (key !== 'en') {
+      try {
+        const mod = await SERVICE_EXPOSURE_LOADERS.en!();
+        const se = asCatalog(mod);
+        i18n.addResourceBundle(key, 'translation', { serviceExposure: se }, true, true);
+        serviceExposurePatched.add(key);
+      } catch {
+        /* leave missing — rare */
+      }
+    }
+  }
+}
+
 /** Ensure a locale catalog is registered (idempotent). */
 export async function ensureLocaleLoaded(lng: string): Promise<void> {
   const key = catalogKey(lng);
   if (i18n.hasResourceBundle(key, 'translation')) {
+    // Still patch serviceExposure — catalog may be a cached chunk without it
+    await patchServiceExposureNs(key);
     if ((lng === 'zh-TW' || String(normalizeLocale(lng)) === 'zh-TW') && !i18n.hasResourceBundle('zh-TW', 'translation')) {
       const bundle = i18n.getResourceBundle(key, 'translation') as Catalog;
       i18n.addResourceBundle('zh-TW', 'translation', bundle, true, true);
@@ -55,16 +115,18 @@ export async function ensureLocaleLoaded(lng: string): Promise<void> {
   const existing = loading.get(key);
   if (existing) {
     await existing;
+    await patchServiceExposureNs(key);
     return;
   }
   const loader = CATALOG_LOADERS[key] ?? CATALOG_LOADERS.en!;
   const p = loader()
-    .then((mod) => {
-      const data = mod.default ?? mod;
+    .then(async (mod) => {
+      const data = asCatalog(mod);
       i18n.addResourceBundle(key, 'translation', data, true, true);
       if (key === 'zh-HK') {
         i18n.addResourceBundle('zh-TW', 'translation', data, true, true);
       }
+      await patchServiceExposureNs(key);
     })
     .finally(() => {
       loading.delete(key);
