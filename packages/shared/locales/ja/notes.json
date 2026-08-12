@@ -2999,6 +2999,8 @@
     "restoreDone": "BT restore: seeded {{seeded}}/{{attempted}} (failed {{failed}})",
     "workerMissing": "Detached worker script missing; started in-process (dies with this process)",
     "startedDetached": "BT tracker detached worker started (pid {{pid}}, port {{port}})",
-    "runningDetached": "Tracker running as detached worker (pid {{pid}})"
+    "runningDetached": "Tracker running as detached worker (pid {{pid}})",
+    "jobQueued": "BT torrent creation queued (large share)",
+    "jobRunning": "BT torrent creation running"
   }
 }

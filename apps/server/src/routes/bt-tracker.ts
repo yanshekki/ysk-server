@@ -26,6 +26,8 @@ import {
   FileManager,
   syncServiceExposure,
   restoreBtSharesOnBoot,
+  listTorrentJobs,
+  getTorrentJob,
 } from '@ysk/core';
 import { ErrorCodes } from '@ysk/shared';
 import type { AppContext } from '../app-context.js';
@@ -122,6 +124,22 @@ export async function handleBtTrackerRoutes(
           ok: r.ok,
         });
         sendOpsResult(res, r);
+        return true;
+      }
+      if (method === 'GET' && url.pathname === `${BASE}/jobs`) {
+        ctx.auth.authenticate(getBearer(req));
+        sendJson(res, 200, { ok: true, items: listTorrentJobs() });
+        return true;
+      }
+      if (method === 'GET' && url.pathname.startsWith(`${BASE}/jobs/`)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = decodeURIComponent(url.pathname.slice(`${BASE}/jobs/`.length));
+        const job = getTorrentJob(id);
+        if (!job) {
+          sendJson(res, 404, { ok: false, code: ErrorCodes.NOT_FOUND });
+          return true;
+        }
+        sendJson(res, 200, { ok: true, job });
         return true;
       }
       if (method === 'POST' && url.pathname === `${BASE}/restore`) {

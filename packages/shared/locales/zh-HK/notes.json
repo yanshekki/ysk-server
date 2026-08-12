@@ -2999,6 +2999,8 @@
     "restoreDone": "BT 還原：已做種 {{seeded}}／{{attempted}}（失敗 {{failed}}）",
     "workerMissing": "找不到 detached worker；已改程序內啟動（隨本進程結束）",
     "startedDetached": "BT Tracker detached worker 已啟動（pid {{pid}}，埠 {{port}}）",
-    "runningDetached": "Tracker 以 detached worker 運行中（pid {{pid}}）"
+    "runningDetached": "Tracker 以 detached worker 運行中（pid {{pid}}）",
+    "jobQueued": "BT torrent 建立已排入佇列（大型分享）",
+    "jobRunning": "正在建立 BT torrent"
   }
 }

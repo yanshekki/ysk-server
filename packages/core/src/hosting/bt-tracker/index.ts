@@ -6,3 +6,4 @@ export * from './prepare-share-bt.js';
 export * from './restore-shares.js';
 export * from './process.js';
 export * from './scrape.js';
+export * from './torrent-jobs.js';

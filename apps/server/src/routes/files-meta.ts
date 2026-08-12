@@ -15,6 +15,8 @@ import {
   toggleFavorite,
   normalizeDownloadModes,
   prepareFileShareBt,
+  shouldCreateTorrentAsync,
+  enqueueShareTorrentJob,
   stopSeed,
   publicFilesRoot,
   getFileShareById,
@@ -125,16 +127,32 @@ export async function handleFilesMetaSection(
     });
 
     const notes: string[] = [];
+    let torrentJobId: string | undefined;
     if (modes.includes('bt')) {
-      const prepared = await prepareFileShareBt({
-        dataDir: ctx.dataDir,
-        db: ctx.db,
-        share,
-        contentAbsPath: contentAbs,
-        displayName: entry.name,
-      });
-      share = prepared.share;
-      notes.push(...prepared.notes);
+      const sizeGate = shouldCreateTorrentAsync(contentAbs);
+      if (sizeGate.async) {
+        const job = enqueueShareTorrentJob({
+          dataDir: ctx.dataDir,
+          db: ctx.db,
+          share,
+          contentAbsPath: contentAbs,
+          displayName: entry.name,
+          estimatedBytes: sizeGate.estimatedBytes,
+        });
+        torrentJobId = job.id;
+        notes.push(...job.notes);
+        share = getFileShareById(ctx.db, share.id) ?? share;
+      } else {
+        const prepared = await prepareFileShareBt({
+          dataDir: ctx.dataDir,
+          db: ctx.db,
+          share,
+          contentAbsPath: contentAbs,
+          displayName: entry.name,
+        });
+        share = prepared.share;
+        notes.push(...prepared.notes);
+      }
     }
 
     ctx.audit.append({
@@ -152,6 +170,7 @@ export async function handleFilesMetaSection(
     sendJson(res, 201, {
       ok: true,
       notes,
+      torrentJobId,
       share: {
         ...share,
         passwordHash: undefined,
