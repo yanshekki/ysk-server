@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-08-12T04:17:42.414Z",
-  "cliCommandsCount": 47,
+  "generatedAt": "2026-08-12T04:21:23.380Z",
+  "cliCommandsCount": 49,
   "cliCommands": [
     "setup",
     "update",
@@ -47,10 +47,12 @@
     "real-ip",
     "updates",
     "software",
+    "db",
+    "redis",
     "version",
     "help"
   ],
-  "handlersCount": 40,
+  "handlersCount": 42,
   "handlers": [
     "agent",
     "agents",
@@ -60,6 +62,7 @@
     "backup",
     "cdn",
     "cron",
+    "db",
     "db-cluster",
     "dns",
     "email",
@@ -74,6 +77,7 @@
     "projects",
     "rbac",
     "real-ip",
+    "redis",
     "security",
     "self-update-plan",
     "serve",
@@ -96,15 +100,7 @@
   "navCount": 45,
   "navMissing": [],
   "navPartial": [
-    "ftp",
-    "mysql",
-    "mysqlService",
-    "mariadb",
-    "mariadbService",
-    "postgres",
-    "postgresService",
-    "redis",
-    "redisService"
+    "ftp"
   ],
   "navPanelOnly": [
     "hostBrowse",
@@ -195,29 +191,31 @@
       "id": "db-lifecycle",
       "panel": "DB service console lifecycle / apply",
       "cliNeed": "db",
-      "status": "partial",
-      "note": "provision only via hosting",
+      "status": "ok",
+      "note": "C5: db status|console|apply|lifecycle|install",
       "priority": "P1",
-      "cliPresent": false,
-      "resolved": false
+      "cliPresent": true,
+      "resolved": true
     },
     {
       "id": "sql-engine-switch",
       "panel": "MySQL↔MariaDB engine switch",
-      "cliNeed": "db sql-engine",
-      "status": "missing",
+      "cliNeed": "db",
+      "status": "ok",
+      "note": "C5: db sql-engine preview|switch",
       "priority": "P1",
-      "cliPresent": false,
-      "resolved": false
+      "cliPresent": true,
+      "resolved": true
     },
     {
       "id": "redis-keys",
       "panel": "Redis key browser mutations",
-      "cliNeed": "redis keys",
-      "status": "missing",
+      "cliNeed": "redis",
+      "status": "ok",
+      "note": "C5: redis keys|get|set|del + status/install",
       "priority": "P2",
-      "cliPresent": false,
-      "resolved": false
+      "cliPresent": true,
+      "resolved": true
     },
     {
       "id": "ftp-accounts",
@@ -309,34 +307,6 @@
   ],
   "openGaps": [
     {
-      "id": "db-lifecycle",
-      "panel": "DB service console lifecycle / apply",
-      "cliNeed": "db",
-      "status": "partial",
-      "note": "provision only via hosting",
-      "priority": "P1",
-      "cliPresent": false,
-      "resolved": false
-    },
-    {
-      "id": "sql-engine-switch",
-      "panel": "MySQL↔MariaDB engine switch",
-      "cliNeed": "db sql-engine",
-      "status": "missing",
-      "priority": "P1",
-      "cliPresent": false,
-      "resolved": false
-    },
-    {
-      "id": "redis-keys",
-      "panel": "Redis key browser mutations",
-      "cliNeed": "redis keys",
-      "status": "missing",
-      "priority": "P2",
-      "cliPresent": false,
-      "resolved": false
-    },
-    {
       "id": "ftp-accounts",
       "panel": "FTP account CRUD",
       "cliNeed": "ftp accounts",
@@ -385,8 +355,8 @@
       "resolved": false
     }
   ],
-  "missingCount": 2,
-  "partialCount": 6,
+  "missingCount": 0,
+  "partialCount": 5,
   "panelOnlyCount": 4,
-  "okCount": 8
+  "okCount": 11
 }

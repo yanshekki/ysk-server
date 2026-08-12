@@ -86,6 +86,8 @@ const CLI_COMMANDS = [
   'real-ip',
   'updates',
   'software',
+  'db',
+  'redis',
   'version',
   'help',
 ] as const;
@@ -4982,7 +4984,9 @@ async function mainInner(
     command === 'network' ||
     command === 'real-ip' ||
     command === 'updates' ||
-    command === 'software'
+    command === 'software' ||
+    command === 'db' ||
+    command === 'redis'
   ) {
     // Honour --execute together with YSK_EXECUTE for host mutations
     const configPath = getOpt(args, '--config');
@@ -5032,6 +5036,14 @@ async function mainInner(
       if (command === 'software') {
         const { runSoftwareCommand } = await import('./cli/cmd-software.js');
         return await runSoftwareCommand(ctx, args, json, helpers);
+      }
+      if (command === 'db') {
+        const { runDbCommand } = await import('./cli/cmd-db.js');
+        return await runDbCommand(ctx, args, json, helpers);
+      }
+      if (command === 'redis') {
+        const { runRedisCommand } = await import('./cli/cmd-redis.js');
+        return await runRedisCommand(ctx, args, json, helpers);
       }
       const { runNetworkCommand } = await import('./cli/cmd-network.js');
       return await runNetworkCommand(ctx, args, json, helpers);

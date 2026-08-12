@@ -26,9 +26,9 @@
 | panel-tls | Panel TLS status/apply | `ssl panel-tls …` | ✅ C3 | P1 |
 | updates-inventory | Updates inventory / package apply | `updates …` | ✅ C4 | P1 |
 | software-install | Feature install banners | `software …` | ✅ C4 (+ `stack`) | P1 |
-| db-lifecycle | DB console lifecycle / apply | `db …` | ⚠️ partial | P1 |
-| sql-engine-switch | MySQL ↔ MariaDB switch | `db sql-engine …` | ❌ | P1 |
-| redis-keys | Redis key mutations | `redis keys …` | ❌ | P2 |
+| db-lifecycle | DB console lifecycle / apply | `db …` | ✅ C5 | P1 |
+| sql-engine-switch | MySQL ↔ MariaDB switch | `db sql-engine …` | ✅ C5 | P1 |
+| redis-keys | Redis key mutations | `redis keys …` | ✅ C5 | P2 |
 | ftp-accounts | FTP account CRUD | `ftp accounts …` | ⚠️ partial | P2 |
 | files-shares-create | Create public share | `files shares create` | ⚠️ list only | P2 |
 | email-depth | aliases / queue / relay | `email …` | ⚠️ partial | P2 |
@@ -67,6 +67,8 @@
 | Apache | `apache sites\|settings …` |
 | Network exposure / Real-IP | `network exposure …` `real-ip …` |
 | Panel TLS | `ssl panel-tls status\|enable\|disable\|issue` |
+| Updates / Software | `updates …` `software …` (+ `update` / `stack`) |
+| DB / Redis | `db status\|console\|lifecycle\|sql-engine` `redis keys\|get\|set\|del` |
 | AI | `ask` `tools` |
 
 ---
@@ -95,4 +97,4 @@ node scripts/cli-panel-parity.mjs --json
 # node scripts/cli-panel-parity.mjs --strict   # fails if any ❌ missing remain
 ```
 
-*Last updated: 2026-08-12 — C4 updates + software (~70%).*
+*Last updated: 2026-08-12 — C5 db + redis (~80%).*

@@ -2,7 +2,7 @@
 
 > 語系：中文 | [English](./parity.md)
 
-**狀態：C4（2026-08-12）。** **VPN／VNC／Apache／network／real-ip／panel-tls／updates／software** 已對齊。剩餘：db／redis／ftp／email／dns／runtime（C5–C7）。
+**狀態：C5（2026-08-12）。** 已做到 **db／redis**。剩餘：ftp／files-shares／email／dns／runtime（C6–C7）。
 
 **硬規則：** 面板每一項生產能力都必須有 CLI 入口（或明確標為 ⚠️ 僅面板 UX）。
 
@@ -25,4 +25,4 @@
 
 瀏覽器終端畫面、in-panel VNC 畫布（CLI 有 `session mint`／`share`／connection 元資料）、Host Browse 畫面、檔案預覽編輯器、公開 share landing。
 
-*最後更新：2026-08-12 — C4（~70%）。*
+*最後更新：2026-08-12 — C5（~80%）。*
