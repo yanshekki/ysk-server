@@ -1,7 +1,7 @@
 # Panel ↔ CLI parity matrix
 
 > Language: English | [中文](./parity-ZH.md)  
-> **Status: REOPENED (C0)** — previous Phase 4 seal (2026-08-09) is **obsolete**.  
+> **Status: C2 in progress** — C0 inventory + C2 `vpn`/`vnc` landed.  
 > Machine inventory: [parity-inventory.json](./parity-inventory.json) · regenerate: `node scripts/cli-panel-parity.mjs`
 
 **Hard rule:** Every production panel capability must have a CLI entry (or an explicit ⚠️ panel-only row).
@@ -18,8 +18,8 @@
 
 | ID | Panel | Need CLI | Status | Priority |
 |----|-------|----------|--------|----------|
-| vpn | VPN ensure / peers / monitor | `vpn …` | ❌ | P0 |
-| vnc | VNC accounts / share / firewall | `vnc …` | ❌ | P0 |
+| vpn | VPN ensure / peers / clients / monitor / firewall | `vpn …` | ✅ C2 | P0 |
+| vnc | VNC accounts / clients / share / novnc / firewall | `vnc …` | ✅ C2 (browser canvas ⚠️) | P0 |
 | apache | Apache sites / settings | `apache …` | ❌ | P0 |
 | service-exposure | Network service exposure sync | `network exposure …` | ❌ | P0 |
 | real-ip | Real-IP apply | `real-ip …` | ❌ | P1 |
@@ -43,6 +43,7 @@
 | terminal-pty | Browser terminal | Not a remote SSH product |
 | file-preview-editor | Text/media preview editor | UX-only; use `files read/write` |
 | public-share-landing | `/share/:token` page | Public HTTP; create still needs CLI |
+| vnc-browser-canvas | In-panel noVNC/RFB viewer | Interactive; CLI has `vnc session mint` + `share` + connection metadata |
 
 ---
 
@@ -61,6 +62,8 @@
 | Security identity | `security` `ssh-key` `ssh-2fa` `users` `rbac` |
 | Services / host / logs | `services` `host` `logs` |
 | Stack | `stack plans\|install\|…` |
+| VPN | `vpn status\|monitor\|ensure\|peers\|clients\|firewall\|presets` |
+| VNC | `vnc status\|settings\|accounts\|clients\|share\|novnc\|session\|firewall` |
 | AI | `ask` `tools` |
 
 ---
@@ -89,4 +92,4 @@ node scripts/cli-panel-parity.mjs --json
 # node scripts/cli-panel-parity.mjs --strict   # fails if any ❌ missing remain
 ```
 
-*Last updated: 2026-08-12 — C0 reopen.*
+*Last updated: 2026-08-12 — C2 vpn+vnc full panel surface.*

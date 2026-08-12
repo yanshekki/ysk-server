@@ -109,16 +109,18 @@ const NAV_TO_CLI = {
 const KNOWN_GAPS = [
   {
     id: 'vpn',
-    panel: 'VPN ensure / peers / monitor',
+    panel: 'VPN ensure / peers / clients / monitor / firewall',
     cliNeed: 'vpn',
-    status: 'missing',
+    status: 'ok',
+    note: 'C2: status monitor ensure peers clients firewall presets',
     priority: 'P0',
   },
   {
     id: 'vnc',
-    panel: 'VNC accounts lifecycle / share / firewall',
+    panel: 'VNC accounts / clients / share / novnc / firewall (viewer UI panel-only)',
     cliNeed: 'vnc',
-    status: 'missing',
+    status: 'ok',
+    note: 'C2: full mutation surface; browser canvas ⚠️ panel-only',
     priority: 'P0',
   },
   {
@@ -285,17 +287,18 @@ const navRows = nav.map((item) => {
   return { ...item, status, coveredBy: covered, expected: list };
 });
 
-const gapRows = KNOWN_GAPS.map((g) => ({
-  ...g,
-  cliPresent: g.cliNeed ? cliHas(g.cliNeed) : null,
-  // if marked missing but command already exists, flip to ok
-  resolved:
-    g.status === 'missing' && g.cliNeed && cliHas(g.cliNeed)
+const gapRows = KNOWN_GAPS.map((g) => {
+  const cliPresent = g.cliNeed ? cliHas(g.cliNeed) : null;
+  // Flip missing → ok when top-level CLI command already exists
+  let status = g.status;
+  if (status === 'missing' && g.cliNeed && cliPresent) status = 'ok';
+  if (status === 'ok' && g.cliNeed && cliPresent === false) status = 'missing';
+  const resolved =
+    status === 'ok' || status === 'panel-only'
       ? true
-      : g.status === 'panel-only'
-        ? true
-        : false,
-}));
+      : false;
+  return { ...g, status, cliPresent, resolved };
+});
 
 const summary = {
   generatedAt: new Date().toISOString(),
@@ -312,6 +315,7 @@ const summary = {
   missingCount: gapRows.filter((g) => g.status === 'missing').length,
   partialCount: gapRows.filter((g) => g.status === 'partial').length,
   panelOnlyCount: gapRows.filter((g) => g.status === 'panel-only').length,
+  okCount: gapRows.filter((g) => g.status === 'ok').length,
 };
 
 const outDir = join(root, 'docs/cli');

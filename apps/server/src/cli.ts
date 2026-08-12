@@ -79,6 +79,8 @@ const CLI_COMMANDS = [
   'readiness',
   'doctor',
   'migrate',
+  'vpn',
+  'vnc',
   'version',
   'help',
 ] as const;
@@ -4957,6 +4959,43 @@ async function mainInner(
     }
   }
 
+  if (command === 'vpn' || command === 'vnc') {
+    // Honour --execute together with YSK_EXECUTE for host mutations
+    const configPath = getOpt(args, '--config');
+    const dataDirOpt = getOpt(args, '--data-dir');
+    let config = configPath ? loadConfigFile(configPath) : undefined;
+    if (dataDirOpt) {
+      config = config
+        ? { ...config, dataDir: dataDirOpt }
+        : ({ dataDir: dataDirOpt } as NonNullable<typeof config>);
+    }
+    const ctx = createAppContext({
+      version: VERSION,
+      config,
+      configPath,
+      dataDir: dataDirOpt ?? config?.dataDir,
+      executeEnabled:
+        process.env.YSK_EXECUTE === '1' || wantsHostExecute(args),
+    });
+    try {
+      const helpers = {
+        printJson,
+        getOpt,
+        hasFlag,
+        wantsHostExecute,
+        exitFromResult,
+      };
+      if (command === 'vpn') {
+        const { runVpnCommand } = await import('./cli/cmd-vpn.js');
+        return await runVpnCommand(ctx, args, json, helpers);
+      }
+      const { runVncCommand } = await import('./cli/cmd-vnc.js');
+      return await runVncCommand(ctx, args, json, helpers);
+    } finally {
+      closeAppContext(ctx);
+    }
+  }
+
   process.stderr.write(
     `${tl('cli.unknownCommand', { command, cli: CLI_NAME })}\n`,
   );
@@ -4973,11 +5012,12 @@ const isDirectRun =
 if (isDirectRun) {
   void main(process.argv).then(
     (code) => {
-      if (code !== 0) process.exitCode = code;
+      // Force exit so host probes / open handles cannot hang the process after work is done.
+      process.exit(typeof code === 'number' ? code : 0);
     },
     (err) => {
       const json = process.argv.includes('--json');
-      process.exitCode = printCliError(err, json);
+      process.exit(printCliError(err, json));
     },
   );
 }

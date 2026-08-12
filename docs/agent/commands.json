@@ -849,6 +849,93 @@
       "risk": "read",
       "summary": "Defense event timeline",
       "example": "ysk-server defense timeline --json"
+    },
+    {
+      "name": "vpn status",
+      "risk": "read",
+      "summary": "VPN engines + peers + client profiles overview",
+      "example": "ysk-server vpn status --json"
+    },
+    {
+      "name": "vpn monitor",
+      "risk": "read",
+      "summary": "Live peer/client transfer snapshot",
+      "args": ["--engine"],
+      "example": "ysk-server vpn monitor --engine wireguard --json"
+    },
+    {
+      "name": "vpn ensure",
+      "risk": "write-host",
+      "summary": "Ensure VPN server (WireGuard/OpenVPN/Outline)",
+      "args": ["--engine", "--port", "--endpoint", "--dns", "--proto", "--access-mode", "--execute"],
+      "example": "ysk-server vpn ensure --engine wireguard --execute --json"
+    },
+    {
+      "name": "vpn peers",
+      "risk": "write-host",
+      "summary": "List/add/delete/export server peer configs",
+      "example": "ysk-server vpn peers list --engine wireguard --json"
+    },
+    {
+      "name": "vpn clients",
+      "risk": "write-host",
+      "summary": "Import/up/down/delete local client profiles",
+      "example": "ysk-server vpn clients list --json"
+    },
+    {
+      "name": "vpn firewall open",
+      "risk": "write-host",
+      "summary": "Open VPN port via service exposure (ysk-svc)",
+      "args": ["--port", "--proto", "--engine", "--execute"],
+      "example": "ysk-server vpn firewall open --port 51820 --proto udp --execute --json"
+    },
+    {
+      "name": "vnc status",
+      "risk": "read",
+      "summary": "VNC stacks + accounts + client profiles",
+      "example": "ysk-server vnc status --json"
+    },
+    {
+      "name": "vnc settings",
+      "risk": "write-panel",
+      "summary": "Get/set VNC defaults",
+      "example": "ysk-server vnc settings get --json"
+    },
+    {
+      "name": "vnc accounts",
+      "risk": "write-host",
+      "summary": "Account CRUD + password + start/stop",
+      "example": "ysk-server vnc accounts list --json"
+    },
+    {
+      "name": "vnc clients",
+      "risk": "write-host",
+      "summary": "Outbound VNC client profiles",
+      "example": "ysk-server vnc clients list --json"
+    },
+    {
+      "name": "vnc share",
+      "risk": "write-panel",
+      "summary": "Create/info/revoke browser share links",
+      "example": "ysk-server vnc share create --id ACCOUNT_ID --json"
+    },
+    {
+      "name": "vnc session mint",
+      "risk": "read",
+      "summary": "Prepare RFB target metadata (browser canvas stays panel-only)",
+      "example": "ysk-server vnc session mint --id ACCOUNT_ID --json"
+    },
+    {
+      "name": "vnc novnc",
+      "risk": "write-host",
+      "summary": "Start/stop noVNC for an account",
+      "example": "ysk-server vnc novnc start --id ACCOUNT_ID --execute --json"
+    },
+    {
+      "name": "vnc firewall",
+      "risk": "write-host",
+      "summary": "Open RFB port for account (ysk-svc)",
+      "example": "ysk-server vnc firewall --id ACCOUNT_ID --execute --json"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-08-12T03:53:07.659Z",
-  "cliCommandsCount": 40,
+  "generatedAt": "2026-08-12T04:09:22.210Z",
+  "cliCommandsCount": 42,
   "cliCommands": [
     "setup",
     "update",
@@ -40,10 +40,12 @@
     "readiness",
     "doctor",
     "migrate",
+    "vpn",
+    "vnc",
     "version",
     "help"
   ],
-  "handlersCount": 34,
+  "handlersCount": 35,
   "handlers": [
     "agent",
     "agents",
@@ -78,13 +80,11 @@
     "tools",
     "update",
     "users",
-    "version"
+    "version",
+    "vpn"
   ],
   "navCount": 45,
-  "navMissing": [
-    "vpn",
-    "vnc"
-  ],
+  "navMissing": [],
   "navPartial": [
     "ftp",
     "mysql",
@@ -106,21 +106,23 @@
   "knownGaps": [
     {
       "id": "vpn",
-      "panel": "VPN ensure / peers / monitor",
+      "panel": "VPN ensure / peers / clients / monitor / firewall",
       "cliNeed": "vpn",
-      "status": "missing",
+      "status": "ok",
+      "note": "C2: status monitor ensure peers clients firewall presets",
       "priority": "P0",
-      "cliPresent": false,
-      "resolved": false
+      "cliPresent": true,
+      "resolved": true
     },
     {
       "id": "vnc",
-      "panel": "VNC accounts lifecycle / share / firewall",
+      "panel": "VNC accounts / clients / share / novnc / firewall (viewer UI panel-only)",
       "cliNeed": "vnc",
-      "status": "missing",
+      "status": "ok",
+      "note": "C2: full mutation surface; browser canvas ⚠️ panel-only",
       "priority": "P0",
-      "cliPresent": false,
-      "resolved": false
+      "cliPresent": true,
+      "resolved": true
     },
     {
       "id": "apache",
@@ -297,24 +299,6 @@
   ],
   "openGaps": [
     {
-      "id": "vpn",
-      "panel": "VPN ensure / peers / monitor",
-      "cliNeed": "vpn",
-      "status": "missing",
-      "priority": "P0",
-      "cliPresent": false,
-      "resolved": false
-    },
-    {
-      "id": "vnc",
-      "panel": "VNC accounts lifecycle / share / firewall",
-      "cliNeed": "vnc",
-      "status": "missing",
-      "priority": "P0",
-      "cliPresent": false,
-      "resolved": false
-    },
-    {
       "id": "apache",
       "panel": "Apache sites / settings apply",
       "cliNeed": "apache",
@@ -448,7 +432,8 @@
       "resolved": false
     }
   ],
-  "missingCount": 7,
+  "missingCount": 5,
   "partialCount": 9,
-  "panelOnlyCount": 4
+  "panelOnlyCount": 4,
+  "okCount": 2
 }

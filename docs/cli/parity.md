@@ -2,7 +2,7 @@
 
 > Language: English | [中文](./parity-ZH.md)
 
-**Status: REOPENED (2026-08-12).** The Phase 4 “sealed” note (2026-08-09) is **withdrawn**. New panel surfaces (VPN, VNC, Apache, service-exposure, Updates depth, …) landed without matching CLI.
+**Status: C2 (2026-08-12).** Phase 4 seal withdrawn. **VPN + VNC CLI** match panel mutation/list surface (browser VNC canvas remains panel-only). Remaining ❌: Apache, service-exposure, and P1–P2 depth gaps.
 
 **Hard rule:** Every production panel capability must have a CLI entry (or an explicit, documented intentional gap). Prefer `--json` for automation.
 
@@ -33,8 +33,8 @@ Machine inventory: **[parity-inventory.json](./parity-inventory.json)** (`node s
 
 | Panel | CLI needed |
 |-------|------------|
-| VPN | `vpn …` |
-| VNC | `vnc …` |
+| VPN | `vpn …` ✅ C2 |
+| VNC | `vnc …` ✅ C2 (canvas ⚠️) |
 | Apache | `apache …` |
 | Service network exposure | `network exposure …` |
 | SQL engine switch | `db sql-engine …` |
@@ -61,4 +61,4 @@ Machine-readable (partial catalog): [../agent/commands.json](../agent/commands.j
 - [x] Intentional panel-only UX documented (terminal, noVNC, browse UI, editor)
 - [x] Automated inventory script exists
 
-*Last updated: 2026-08-12 — C0.*
+*Last updated: 2026-08-12 — C2 vpn+vnc.*
