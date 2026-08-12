@@ -96,14 +96,14 @@ describe('torrent-create', () => {
       name: 'clip.mp4',
       settings: {
         ...DEFAULT_BT_TRACKER_SETTINGS,
-        publicAnnounceHost: 'hermes.ysk.hk',
+        publicAnnounceHost: 'tracker.example.test',
         httpPort: 8000,
         udpPort: 6969,
         wsEnabled: true,
       },
     });
-    // tr values are encodeURIComponent'd → hermes.ysk.hk%3A8000
-    expect(rebuilt).toMatch(/hermes\.ysk\.hk(%3A|:)8000/);
+    // tr values are encodeURIComponent'd → tracker.example.test%3A8000
+    expect(rebuilt).toMatch(/tracker\.example\.test(%3A|:)8000/);
     expect(rebuilt).toMatch(/ws(%3A%2F%2F|:\/\/)/);
     const p2 = await Promise.resolve(parseTorrent(rebuilt!));
     expect(String(p2.infoHash).toLowerCase()).toBe(hash);
