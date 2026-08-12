@@ -15,7 +15,8 @@ set -euo pipefail
 
 PRODUCT="YSK Server"
 CLI="ysk-server"
-PKG="ysk-server"
+# Global npm package name (bin remains `ysk-server`)
+PKG="@ysk/server"
 MIN_NODE_MAJOR=20
 NON_INTERACTIVE=0
 RUN_SETUP=1

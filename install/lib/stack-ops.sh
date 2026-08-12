@@ -610,6 +610,8 @@ remove_component() {
   if [[ "$id" == "control-plane-product" ]]; then
     log "  removing ysk-server product bits..."
     if require_cmd npm; then
+      # Prefer scoped publish name; also drop legacy unscoped if present
+      npm uninstall -g "${PKG:-@ysk/server}" 2>/dev/null || true
       npm uninstall -g ysk-server 2>/dev/null || true
     fi
     # shellcheck disable=SC2086
