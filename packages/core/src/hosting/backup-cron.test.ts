@@ -36,7 +36,7 @@ describe('backup + cron', () => {
     const home = join(dir, 'projects', 'ysk_demo');
     mkdirSync(join(home, 'app'), { recursive: true });
     writeFileSync(join(home, 'app', 'hi.txt'), 'hello', 'utf8');
-    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: true });
     const r = await backupProject({
       host,
       dataDir: dir,
@@ -53,7 +53,7 @@ describe('backup + cron', () => {
     const home = join(dir, 'projects', 'p1');
     mkdirSync(join(home, 'app'), { recursive: true });
     writeFileSync(join(home, 'app', 'x.txt'), 'x', 'utf8');
-    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: true });
     const r = await backupAllProjects({
       host,
       dataDir: dir,
@@ -72,7 +72,7 @@ describe('backup + cron', () => {
     const home = join(dir, 'projects', 'p1');
     mkdirSync(join(home, 'app'), { recursive: true });
     writeFileSync(join(home, 'app', 'x.txt'), 'x', 'utf8');
-    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: true });
     const r = await backupAllProjects({
       host,
       dataDir: dir,
@@ -99,7 +99,7 @@ describe('backup + cron', () => {
   it('backupAllProjects fails when an attempted project fails', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-bakhardfail-'));
     dirs.push(dir);
-    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: true });
     // home exists but empty path that tar can still archive — use missing after create fails via bad path
     // Force failure: home is a file not a directory for tar -C logic may still work; use unreadable via host deny
     const home = join(dir, 'projects', 'p1');
@@ -207,7 +207,7 @@ describe('backup-cron depth', () => {
     const home = join(dir, 'projects', 'p1');
     mkdirSync(join(home, 'app'), { recursive: true });
     writeFileSync(join(home, 'app', 'hi.txt'), 'hello', 'utf8');
-    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: true });
     const bak = await backupProject({
       host,
       dataDir: dir,

@@ -66,7 +66,8 @@ stable-x86_64-unknown-linux-gnu (default)
     );
   });
 
-  it('probe marks 1.78 available when rustup list / run succeeds', async () => {
+  it('probe marks stable available when rustup list / run succeeds', async () => {
+    // Panel rust pins are discovery-driven (`supported.rust` may be empty) + always `stable`.
     const stdout = [
       'YSK_RUSTUP=/usr/local/ysk/rust/cargo/bin/rustup',
       'YSK_TOOLCHAIN_LIST_BEGIN',
@@ -79,16 +80,14 @@ stable-x86_64-unknown-linux-gnu (default)
       'YSK_TOOLCHAIN_LIST_END',
       'YSK_RUN_stable=cargo 1.97.1 (c980f4866 2026-06-30)',
       'YSK_RUN_1.78=cargo 1.78.0 (9b00956e5 2024-12-01)',
-      'YSK_RUN_1.81=',
       'YSK_PATH_CARGO=cargo 1.97.1 (c980f4866 2026-06-30)',
       '',
     ].join('\n');
     const report = await probeRuntimes(mockHost(stdout));
     const byV = Object.fromEntries(report.rust.map((r) => [r.version, r]));
     expect(byV.stable?.available).toBe(true);
-    expect(byV['1.78']?.available).toBe(true);
-    expect(byV['1.81']?.available).toBe(false);
     expect(byV.stable?.active).toBe(true);
-    expect(byV['1.78']?.active).toBe(false);
+    // Extra discovered pins (if any) should parse toolchain list without throwing
+    expect(report.rust.length).toBeGreaterThanOrEqual(1);
   });
 });

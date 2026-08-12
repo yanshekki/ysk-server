@@ -10,7 +10,7 @@ describe('EmailService real keygen + persistence', () => {
   it('creates domain with RSA DKIM and MX/SPF/DKIM/DMARC records', () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-mail-'));
     const db = openDatabase(join(dir, 'ysk.json'));
-    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: true });
     const svc = new EmailService(db, host, undefined, dir);
     const created = svc.create({
       domain: 'example.com',
@@ -50,7 +50,7 @@ describe('EmailService real keygen + persistence', () => {
   it('provisions Maildir + virtual map for mailbox', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-mbox-'));
     const db = openDatabase(join(dir, 'ysk.json'));
-    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: true });
     const svc = new EmailService(db, host, undefined, dir);
     const created = svc.create({
       domain: 'mail.test',
@@ -86,7 +86,8 @@ describe('EmailService real keygen + persistence', () => {
     const passwdPath = join(dir, 'email', 'mail.test', 'dovecot', 'passwd');
     expect(existsSync(passwdPath)).toBe(true);
     const passwdBody = readFileSync(passwdPath, 'utf8');
-    expect(passwdBody).toContain('info@mail.test:*:');
+    // SHA512-CRYPT passwd-file (not plaintext *: placeholder)
+    expect(passwdBody).toMatch(/info@mail\.test:\{SHA512-CRYPT\}/);
 
     const reenabled = await svc.updateMailbox(created.domain.id, mbId, {
       actor: 'admin',
@@ -129,7 +130,7 @@ describe('EmailService aliases flags and honesty', () => {
   it('getDnsBundle + markApplyStatus + duplicate domain throws', () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-mail2-'));
     const db = openDatabase(join(dir, 'ysk.json'));
-    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: true });
     const svc = new EmailService(db, host, undefined, dir);
     const created = svc.create({ domain: 'a.test', serverIp: '1.2.3.4', actor: 'a' });
     expect(() => svc.create({ domain: 'a.test', serverIp: '1.2.3.4', actor: 'a' })).toThrow();
@@ -146,7 +147,7 @@ describe('EmailService aliases flags and honesty', () => {
   it('createAlias catchall forward delete and list', () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-alias-'));
     const db = openDatabase(join(dir, 'ysk.json'));
-    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: true });
     const svc = new EmailService(db, host, undefined, dir);
     const created = svc.create({ domain: 'alias.test', serverIp: '10.0.0.2', actor: 'a' });
     const alias = svc.createAlias(created.domain.id, {
@@ -186,7 +187,7 @@ describe('EmailService aliases flags and honesty', () => {
   it('updateDomainMailFlags writes sieve/suspend without system apply', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-flags-'));
     const db = openDatabase(join(dir, 'ysk.json'));
-    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: true });
     const svc = new EmailService(db, host, undefined, dir);
     const created = svc.create({ domain: 'flags.test', serverIp: '10.0.0.3', actor: 'a' });
     await svc.createMailbox(created.domain.id, {
@@ -229,7 +230,7 @@ describe('EmailService aliases flags and honesty', () => {
   it('testSend refuses without YSK_EXECUTE', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-send-'));
     const db = openDatabase(join(dir, 'ysk.json'));
-    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: true });
     const svc = new EmailService(db, host, undefined, dir);
     const created = svc.create({ domain: 'send.test', serverIp: '10.0.0.4', actor: 'a' });
     const r = await svc.testSend(
@@ -246,7 +247,7 @@ describe('EmailService aliases flags and honesty', () => {
   it('createMailbox rejects bad localPart', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-mbad-'));
     const db = openDatabase(join(dir, 'ysk.json'));
-    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: true });
     const svc = new EmailService(db, host, undefined, dir);
     const created = svc.create({ domain: 'bad.test', serverIp: '10.0.0.5', actor: 'a' });
     await expect(
@@ -260,7 +261,7 @@ describe('EmailService aliases flags and honesty', () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-mail-br-'));
     try {
       const db = openDatabase(join(dir, 'ysk.json'));
-      const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+      const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: true });
       // no dataDir → maildir notes path
       const bare = new EmailService(db, host, undefined);
       const created = bare.create({

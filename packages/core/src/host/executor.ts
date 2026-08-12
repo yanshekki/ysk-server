@@ -450,6 +450,8 @@ function isReadOnlyArgv(argv: string[]): boolean {
     'java',
     'go',
     'rustc',
+    'cargo',
+    'rustup',
     'bun',
     'deno',
     'npm',
@@ -463,6 +465,8 @@ function isReadOnlyArgv(argv: string[]): boolean {
     'redis-cli',
     'mysqld',
     'postgres',
+    'openssl',
+    'journalctl',
   ]);
   if (versionBins.has(bin)) {
     const sub = argv[1] ?? '';
@@ -473,6 +477,29 @@ function isReadOnlyArgv(argv: string[]): boolean {
       sub === 'version' ||
       (bin === 'java' && (sub === '-version' || argv.includes('-version')))
     ) {
+      return true;
+    }
+    // rustup list / show / which — inventory only
+    if (bin === 'rustup') {
+      const ro = new Set(['list', 'show', 'which', 'help', '--help', 'toolchain', 'run']);
+      // rustup run 1.78 cargo --version is inventory for probe
+      if (ro.has(sub) || sub === '') return true;
+    }
+    // cargo metadata / --version already; cargo --list
+    if (bin === 'cargo' && (sub === '--list' || sub === 'metadata' || sub === 'help')) return true;
+    // redis-cli INFO / PING
+    if (bin === 'redis-cli') {
+      const rest = argv.slice(1).join(' ').toUpperCase();
+      if (/\b(INFO|PING)\b/.test(rest)) return true;
+    }
+    // journalctl disk-usage / short reads (not vacuum)
+    if (bin === 'journalctl') {
+      const joined = argv.join(' ');
+      if (/vacuum|rotate|--flush/i.test(joined)) return false;
+      return true;
+    }
+    // openssl version | passwd (hash only — no host write)
+    if (bin === 'openssl' && (sub === 'version' || sub === 'passwd' || sub === '--help')) {
       return true;
     }
   }
@@ -632,12 +659,23 @@ function isReadOnlyShellScript(argv: string[]): boolean {
   if (/\btop\s+-b\b/.test(s)) return true;
   if (/\bpostqueue\b/.test(s)) return true;
   if (/\bpostfix\s+check\b/.test(s)) return true;
-  if (/\btest\s+-d\b/.test(s) || /\b\[\s+-d\b/.test(s)) return true;
+  // File/dir existence probes
+  if (/\btest\s+-[efdrwxLsb]\b/.test(s) || /\b\[\s+-[efdrwxLsb]\b/.test(s)) return true;
   if (/\bgrep\b/.test(s) && !/\b-l\b/.test(s)) return true;
   if (/\bsystemctl\s+(is-active|is-enabled|status|show)\b/.test(s)) return true;
   if (/\bservice\s+\S+\s+status\b/.test(s)) return true;
   // Network DNS inventory (resolvectl status | head …)
   if (/\bresolvectl\s+(status|query|dns|domain)\b/.test(s) && !/\b(flush-caches|revert|--set)\b/.test(s)) {
+    return true;
+  }
+
+  // Identity / passwd inventory (project OS user probes)
+  // Note: `getent passwd` is inventory — do not treat as the passwd(1) command.
+  if (
+    /\b(id|getent|groups)\b/.test(s) &&
+    !/\b(useradd|userdel|usermod|chown|chmod)\b/.test(s) &&
+    !/(^|[;&|]\s*)passwd\s/.test(s)
+  ) {
     return true;
   }
 

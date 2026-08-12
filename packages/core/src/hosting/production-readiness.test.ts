@@ -56,6 +56,7 @@ function mockHost(opts?: {
 
 describe('assessProductionReadiness', () => {
   it('reports degraded without EXECUTE/root and lists items', async () => {
+    // ensure host has execute off for degraded path
     const dir = mkdtempSync(join(tmpdir(), 'ysk-ready-'));
     const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
     const r = await assessProductionReadiness({ dataDir: dir, host, product: 'YSK' });

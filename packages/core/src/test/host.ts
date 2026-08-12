@@ -17,7 +17,10 @@ export function makeHost(opts?: {
   const dir = opts?.dir ?? makeTempDir();
   const host = new LocalHostExecutor({
     allowedWriteRoots: [dir],
-    executeEnabled: opts?.executeEnabled ?? false,
+    // Vitest sandboxes need tar/git/run under write roots; honesty tests pass false.
+    executeEnabled:
+      opts?.executeEnabled ??
+      (process.env.VITEST === 'true' || process.env.VITEST === '1'),
   });
   return {
     host,

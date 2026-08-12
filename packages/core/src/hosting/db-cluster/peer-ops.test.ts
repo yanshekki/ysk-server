@@ -385,7 +385,7 @@ describe('installDbClusterOnPeers honesty', () => {
       planAndMaterializeDbCluster({ db, dataDir: dir, clusterId: c.id });
       const host = new LocalHostExecutor({
         allowedWriteRoots: [dir],
-        executeEnabled: false,
+        executeEnabled: true,
       });
       const r = await installDbClusterOnPeers({
         db,

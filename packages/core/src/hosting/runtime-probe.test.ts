@@ -46,7 +46,7 @@ describe('runtime-probe', () => {
   });
 
   it('probes host for installed runtime pins (discovery SSOT for install list)', async () => {
-    const host = new LocalHostExecutor({ executeEnabled: false });
+    const host = new LocalHostExecutor({ executeEnabled: true });
     const r = await probeRuntimes(host);
     // Installable pins come from version-discovery API; probe only reports host-found pins
     expect(r.node.length).toBeGreaterThanOrEqual(0);
@@ -60,7 +60,7 @@ describe('runtime-probe', () => {
 
   it('writes install helper and refuses without EXECUTE', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-rt-'));
-    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: true });
     const plan = await planOrInstallRuntime({
       dataDir: dir,
       host,

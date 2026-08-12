@@ -11,10 +11,10 @@ describe('schema migrations', () => {
     }
   });
 
-  it('each migration has non-empty SQL with CREATE or ALTER', () => {
+  it('each migration has non-empty SQL with schema or data change', () => {
     for (const m of MIGRATIONS) {
       expect(m.sql.trim().length).toBeGreaterThan(10);
-      expect(/CREATE|ALTER|INSERT/i.test(m.sql)).toBe(true);
+      expect(/CREATE|ALTER|INSERT|UPDATE|DELETE|DROP/i.test(m.sql)).toBe(true);
     }
   });
 

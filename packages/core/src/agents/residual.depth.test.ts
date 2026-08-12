@@ -187,7 +187,10 @@ describe('agents residual depth', () => {
 
     const fetchFailHb = vi.fn(async (url: string) => {
       if (String(url).endsWith('/register')) {
-        return { ok: true, json: async () => ({ id: 's1' }) } as Response;
+        return {
+          ok: true,
+          json: async () => ({ id: 's1', token: 'ysk_agent_testtoken_s1' }),
+        } as Response;
       }
       return { ok: false, status: 503 } as Response;
     });
@@ -201,7 +204,10 @@ describe('agents residual depth', () => {
 
     const fetchFailPull = vi.fn(async (url: string) => {
       if (String(url).endsWith('/register')) {
-        return { ok: true, json: async () => ({ id: 's2' }) } as Response;
+        return {
+          ok: true,
+          json: async () => ({ id: 's2', token: 'ysk_agent_testtoken_s2' }),
+        } as Response;
       }
       if (String(url).includes('/heartbeat')) {
         return { ok: true, json: async () => ({}) } as Response;
@@ -219,7 +225,7 @@ describe('agents residual depth', () => {
 
     const fetchDefault = vi.fn(async (url: string, init?: RequestInit) => {
       if (String(url).includes('/register')) {
-        return { ok: true, json: async () => ({ id: 's3' }) } as Response;
+        return { ok: true, json: async () => ({ id: 's3', token: 'ysk_agent_testtoken_s3' }) } as Response;
       }
       if (String(url).includes('/heartbeat')) {
         return { ok: true, json: async () => ({}) } as Response;
@@ -253,7 +259,7 @@ describe('agents residual depth', () => {
 
     const fetchThrow = vi.fn(async (url: string, init?: RequestInit) => {
       if (String(url).includes('/register')) {
-        return { ok: true, json: async () => ({ id: 's4' }) } as Response;
+        return { ok: true, json: async () => ({ id: 's4', token: 'ysk_agent_testtoken_s4' }) } as Response;
       }
       if (String(url).includes('/heartbeat')) {
         return { ok: true, json: async () => ({}) } as Response;
@@ -292,7 +298,7 @@ describe('agents residual depth', () => {
         queueMicrotask(() => ac.abort());
       }
       if (String(url).endsWith('/register')) {
-        return { ok: true, json: async () => ({ id: 'loop' }) } as Response;
+        return { ok: true, json: async () => ({ id: 'loop', token: 'ysk_agent_testtoken_loop' }) } as Response;
       }
       if (String(url).includes('/heartbeat')) {
         return { ok: true, json: async () => ({}) } as Response;

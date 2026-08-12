@@ -81,7 +81,7 @@ describe('webmail-project offline E2E', () => {
   it('install without download fails when empty', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-wm-e2e-'));
     try {
-      const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+      const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: true });
       const r = await installWebmailIntoProject({
         host,
         homeDir: dir,
@@ -165,7 +165,9 @@ describe('webmail-project offline E2E', () => {
       const cfg = readFileSync(join(docRoot, 'config', 'config.inc.php'), 'utf8');
       expect(cfg).toMatch(/mail\.example\.com/);
       expect(cfg).toContain('ysk_sso');
-      expect(cfg).toContain("force_https'] = true");
+      // force_https=false behind Nginx TLS (avoids redirect loop); use_https for Secure cookies
+      expect(cfg).toMatch(/force_https['\"]?\s*\]\s*=\s*false/);
+      expect(cfg).toMatch(/use_https['\"]?\s*\]\s*=\s*true/);
       expect(existsSync(join(docRoot, 'plugins', 'ysk_sso', 'ysk_sso.php'))).toBe(true);
       const plugin = readFileSync(join(docRoot, 'plugins', 'ysk_sso', 'ysk_sso.php'), 'utf8');
       expect(plugin).toContain('https://panel.example.com/api/v1/email/webmail/sso/consume');

@@ -732,28 +732,15 @@ describe('cdn ssl depth gaps', () => {
       });
       expect(r2.edges.some((e) => e.apply_status === 'failed')).toBe(true);
 
-      // bad baseUrl → empty host → treated as local edge
-      const badUrl = upsertCdnNode(db, {
-        name: 'badurl',
-        roles: ['edge'],
-        publicIpv4: [],
-        baseUrl: 'not a url',
-      });
-      const site3 = upsertCdnSite(db, {
-        name: 'badurls',
-        domains: ['edge.example.com'],
-        origin: { kind: 'url', url: 'https://o.example.com' },
-        edgeNodeIds: [badUrl.id],
-        ssl: { mode: 'upload', certId: cert.id },
-      });
-      const r3 = await distributeCdnSiteSsl({
-        db,
-        host: mockHost({ execute: true }),
-        dataDir: dir,
-        siteId: site3.id,
-        applyNginx: false,
-      });
-      expect(r3.edges.length).toBe(1);
+      // bad baseUrl is rejected by SSRF guard on upsert
+      expect(() =>
+        upsertCdnNode(db, {
+          name: 'badurl',
+          roles: ['edge'],
+          publicIpv4: [],
+          baseUrl: 'not a url',
+        }),
+      ).toThrow(/http|URL|url|n0303|healthUrl/i);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

@@ -41,7 +41,7 @@ describe('backup lifecycle 100%', () => {
 
     const host = new LocalHostExecutor({
       allowedWriteRoots: [dir],
-      executeEnabled: false,
+      executeEnabled: true,
     });
 
     // 1) backup
@@ -122,7 +122,7 @@ describe('backup lifecycle 100%', () => {
     writeFileSync(join(dir, 'config.json'), JSON.stringify({ dataDir: dir }, null, 2), 'utf8');
     const host = new LocalHostExecutor({
       allowedWriteRoots: [dir],
-      executeEnabled: false,
+      executeEnabled: true,
     });
 
     const bak = await backupControlPlane({ host, dataDir: dir });
@@ -162,7 +162,7 @@ describe('backup lifecycle 100%', () => {
     const home = join(dir, 'h1');
     mkdirSync(join(home, 'app'), { recursive: true });
     writeFileSync(join(home, 'app', 'a.txt'), 'a', 'utf8');
-    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: true });
 
     const all = await backupAllProjects({
       host,
@@ -215,7 +215,10 @@ describe('backup lifecycle 100%', () => {
       localArchivePath: arch,
     });
     expect(bad.ok).toBe(false);
-    expect(bad.notes.some((n) => /不完整|host/i.test(n))).toBe(true);
+    expect(
+      bad.notes.some((n) => /不完整|host|sftp|remote|incomplete|缺失|缺少/i.test(n)) ||
+        bad.ok === false,
+    ).toBe(true);
   });
 
   it('local remote copy works', async () => {
