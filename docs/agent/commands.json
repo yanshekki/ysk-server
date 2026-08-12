@@ -1120,6 +1120,13 @@
       "risk": "read",
       "summary": "Live BT swarm stats for a file share",
       "example": "ysk-server files shares bt-stats --id SHARE_ID --json"
+    },
+    {
+      "name": "bt-tracker restore",
+      "aliases": [],
+      "risk": "write-panel",
+      "summary": "Re-seed BT file shares and start tracker if needed",
+      "example": "ysk-server bt-tracker restore --json"
     }
   ]
 }
