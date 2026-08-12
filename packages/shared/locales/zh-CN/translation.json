@@ -536,7 +536,9 @@
     "udpPortOff": "0 · 关闭",
     "udpPortSameHttp": "与 HTTP 相同（{{port}}）",
     "udpPortClassic": "6969 · 传统",
-    "portSuggest8000": "8000 · 建议"
+    "portSuggest8000": "8000 · 建议",
+    "saveOkRestart": "Saved — restart tracker to apply ports",
+    "announceHostUnset": "—"
   },
   "catalog": {
     "sw": {
@@ -4651,7 +4653,8 @@
     "bookmarkPinned": "已固定",
     "bookmarkAdded": "已固定到侧栏",
     "bookmarkRemoved": "已从侧栏移除",
-    "btTracker": "BT Tracker"
+    "btTracker": "BT Tracker",
+    "support": "支持"
   },
   "network": {
     "title": "网络接口",
@@ -9751,6 +9754,30 @@
     "useListForDefaults": "要改主机／面板默认或移除此版本，请用上方列表。",
     "alreadyHostDefaultShort": "主机默认"
   },
+  "search": {
+    "placeholder": "搜索页面与资源…",
+    "aria": "全局搜索",
+    "results": "搜尋結果",
+    "loading": "搜索中…",
+    "noResults": "没有匹配项",
+    "kinds": {
+      "page": "页面",
+      "project": "项目",
+      "email": "邮件",
+      "mailbox": "邮箱",
+      "ssl": "SSL",
+      "dns": "DNS",
+      "nginx": "Nginx",
+      "share": "分享",
+      "ftp": "FTP",
+      "mysql": "MySQL",
+      "postgres": "PostgreSQL",
+      "redis": "Redis",
+      "cron": "Cron",
+      "user": "用户",
+      "other": "其他"
+    }
+  },
   "security": {
     "title": "安全与审批",
     "allowlist": "工具 Allowlist（默认只读，高风险需人工批准）",
@@ -10647,6 +10674,27 @@
     "keepData": "保留数据",
     "purgeData": "清除数据",
     "uninstallNow": "立即移除"
+  },
+  "support": {
+    "title": "支持",
+    "sub": "Creator、赞助与 YSK Limited — 免费产品，实在支持",
+    "creatorTitle": "Creator",
+    "creatorBody": "YSK Server 是免费、诚实的单机控制平面，给想自己掌控服务器的人。项目开源维护；你的反馈和 bug 报告很重要。",
+    "donateTitle": "支持／赞助",
+    "donateBody": "如果 YSK Server 帮你省时间，欢迎赞助开发。每一份支持都帮产品继续免费给所有人用。",
+    "donateGithub": "GitHub Sponsors",
+    "donateOther": "其他贊助方式",
+    "yskTitle": "YSK Limited",
+    "yskIntro": "需要超出免费面板的协助？YSK Limited 可以提供：",
+    "yskSvc1": "服务器安装、加固与日常运维",
+    "yskSvc2": "主机栈设计（网站、邮件、DNS、数据库）",
+    "yskSvc3": "迁移、自动化与定制集成",
+    "yskSvc4": "事故处理与上线就绪检查",
+    "yskNoPrice": "此处不标价 — 请来信，按你的环境谈方案。",
+    "yskWebsite": "ysk.hk",
+    "helpTitle": "遇到问题？",
+    "helpBody": "请来信说明操作系统、安装 log 路径、预期与实际结果。每封信都会看。",
+    "docsHint": "完整文档在仓库"
   },
   "system": {
     "exportLoadFailed": "加载导出数据失败",
@@ -11844,30 +11892,6 @@
       "lanCidrs": "区域网段",
       "customCidr": "CIDR",
       "addCidr": "添加"
-    }
-  },
-  "search": {
-    "placeholder": "搜索页面与资源…",
-    "aria": "全局搜索",
-    "results": "搜尋結果",
-    "loading": "搜索中…",
-    "noResults": "没有匹配项",
-    "kinds": {
-      "page": "页面",
-      "project": "项目",
-      "email": "邮件",
-      "mailbox": "邮箱",
-      "ssl": "SSL",
-      "dns": "DNS",
-      "nginx": "Nginx",
-      "share": "分享",
-      "ftp": "FTP",
-      "mysql": "MySQL",
-      "postgres": "PostgreSQL",
-      "redis": "Redis",
-      "cron": "Cron",
-      "user": "用户",
-      "other": "其他"
     }
   }
 }

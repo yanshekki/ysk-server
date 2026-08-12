@@ -113,5 +113,7 @@
   "udpPortOff": "0 · Off",
   "udpPortSameHttp": "Same as HTTP ({{port}})",
   "udpPortClassic": "6969 · Classic",
-  "portSuggest8000": "8000 · Recommended"
+  "portSuggest8000": "8000 · Recommended",
+  "saveOkRestart": "Saved — restart tracker to apply ports",
+  "announceHostUnset": "—"
 }

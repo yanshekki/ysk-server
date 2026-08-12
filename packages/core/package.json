@@ -1,7 +1,7 @@
 {
   "name": "@ysk/core",
-  "version": "0.1.0",
-  "description": "YSK Server core business logic — security, hosting, LLM, update, email",
+  "version": "1.0.0",
+  "description": "YSK Server core business logic \u2014 security, hosting, LLM, update, email",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

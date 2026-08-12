@@ -1,0 +1,21 @@
+{
+  "title": "Support",
+  "sub": "Creator, donate, and YSK Limited — free product, real help",
+  "creatorTitle": "Creator",
+  "creatorBody": "YSK Server is built as a free, honest single-host control plane for operators who want to own their stack. The project is maintained in the open; feedback and bug reports keep it sharp.",
+  "donateTitle": "Support / Donate",
+  "donateBody": "If YSK Server saves you time, consider sponsoring development. Every contribution helps keep the product free for everyone.",
+  "donateGithub": "GitHub Sponsors",
+  "donateOther": "Other ways to give",
+  "yskTitle": "YSK Limited",
+  "yskIntro": "Need hands-on help beyond the free panel? YSK Limited can assist with:",
+  "yskSvc1": "Server setup, hardening, and ongoing ops",
+  "yskSvc2": "Hosting stack design (web, mail, DNS, databases)",
+  "yskSvc3": "Migration, automation, and custom integration",
+  "yskSvc4": "Incident response and production readiness reviews",
+  "yskNoPrice": "No prices listed here — contact us for a conversation that fits your environment.",
+  "yskWebsite": "ysk.hk",
+  "helpTitle": "Having a problem?",
+  "helpBody": "Email us with your OS, install log path, and what you expected vs what happened. We read every message.",
+  "docsHint": "Full documentation lives in the repository under"
+}

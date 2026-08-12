@@ -536,7 +536,9 @@
     "udpPortOff": "0 · Off",
     "udpPortSameHttp": "Same as HTTP ({{port}})",
     "udpPortClassic": "6969 · Classic",
-    "portSuggest8000": "8000 · Recommended"
+    "portSuggest8000": "8000 · Recommended",
+    "saveOkRestart": "Saved — restart tracker to apply ports",
+    "announceHostUnset": "—"
   },
   "catalog": {
     "sw": {
@@ -4651,7 +4653,8 @@
     "bookmarkPinned": "পিন করা হয়েছে",
     "bookmarkAdded": "সাইডবারে পিন করা হয়েছে",
     "bookmarkRemoved": "সাইডবার থেকে সরানো হয়েছে",
-    "btTracker": "BT Tracker"
+    "btTracker": "BT Tracker",
+    "support": "Support"
   },
   "network": {
     "title": "নেটওয়ার্ক ইন্টারফেস",
@@ -9751,6 +9754,30 @@
     "useListForDefaults": "হোস্ট বা প্যানেল ডিফল্ট পরিবর্তন করতে, বা এই সংস্করণটি সরাতে, উপরের তালিকাটি ব্যবহার করুন৷",
     "alreadyHostDefaultShort": "হোস্ট ডিফল্ট"
   },
+  "search": {
+    "placeholder": "Search pages & resources…",
+    "aria": "Global search",
+    "results": "Search results",
+    "loading": "Searching…",
+    "noResults": "No matches",
+    "kinds": {
+      "page": "Pages",
+      "project": "Projects",
+      "email": "Email",
+      "mailbox": "Mailboxes",
+      "ssl": "SSL",
+      "dns": "DNS",
+      "nginx": "Nginx",
+      "share": "Shares",
+      "ftp": "FTP",
+      "mysql": "MySQL",
+      "postgres": "PostgreSQL",
+      "redis": "Redis",
+      "cron": "Cron",
+      "user": "Users",
+      "other": "Other"
+    }
+  },
   "security": {
     "title": "নিরাপত্তা এবং অনুমোদন",
     "allowlist": "টুল অ্যালোলিস্ট (কেবল-পঠনযোগ্য ডিফল্ট; উচ্চ-ঝুঁকির জন্য মানুষের অনুমোদন প্রয়োজন)",
@@ -10647,6 +10674,27 @@
     "keepData": "ডেটা রাখুন",
     "purgeData": "ডেটা পরিষ্কার করুন",
     "uninstallNow": "এখনই আনইনস্টল করুন"
+  },
+  "support": {
+    "title": "Support",
+    "sub": "Creator, donate, and YSK Limited — free product, real help",
+    "creatorTitle": "Creator",
+    "creatorBody": "YSK Server is built as a free, honest single-host control plane for operators who want to own their stack. The project is maintained in the open; feedback and bug reports keep it sharp.",
+    "donateTitle": "Support / Donate",
+    "donateBody": "If YSK Server saves you time, consider sponsoring development. Every contribution helps keep the product free for everyone.",
+    "donateGithub": "GitHub Sponsors",
+    "donateOther": "Other ways to give",
+    "yskTitle": "YSK Limited",
+    "yskIntro": "Need hands-on help beyond the free panel? YSK Limited can assist with:",
+    "yskSvc1": "Server setup, hardening, and ongoing ops",
+    "yskSvc2": "Hosting stack design (web, mail, DNS, databases)",
+    "yskSvc3": "Migration, automation, and custom integration",
+    "yskSvc4": "Incident response and production readiness reviews",
+    "yskNoPrice": "No prices listed here — contact us for a conversation that fits your environment.",
+    "yskWebsite": "ysk.hk",
+    "helpTitle": "Having a problem?",
+    "helpBody": "Email us with your OS, install log path, and what you expected vs what happened. We read every message.",
+    "docsHint": "Full documentation lives in the repository under"
   },
   "system": {
     "exportLoadFailed": "এক্সপোর্ট ডেটা লোড করতে ব্যর্থ হয়েছে৷",
@@ -11844,30 +11892,6 @@
       "lanCidrs": "ল্যান নেটওয়ার্ক",
       "customCidr": "CIDR",
       "addCidr": "যোগ করুন"
-    }
-  },
-  "search": {
-    "placeholder": "Search pages & resources…",
-    "aria": "Global search",
-    "results": "Search results",
-    "loading": "Searching…",
-    "noResults": "No matches",
-    "kinds": {
-      "page": "Pages",
-      "project": "Projects",
-      "email": "Email",
-      "mailbox": "Mailboxes",
-      "ssl": "SSL",
-      "dns": "DNS",
-      "nginx": "Nginx",
-      "share": "Shares",
-      "ftp": "FTP",
-      "mysql": "MySQL",
-      "postgres": "PostgreSQL",
-      "redis": "Redis",
-      "cron": "Cron",
-      "user": "Users",
-      "other": "Other"
     }
   }
 }

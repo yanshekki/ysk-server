@@ -103,10 +103,17 @@ wizard_install_run() {
   echo "Step 5/6 — Data directory for panel state"
   DATA_DIR="$(prompt_line "Data dir" "$DATA_DIR")"
 
-  # Step 6: systemd
+  # Step 6: systemd (product default ON when root — ready to use)
   echo ""
-  echo "Step 6/6 — systemd unit?"
-  if prompt_yn "Write ysk-server systemd unit after setup?" default_n; then
+  echo "Step 6/6 — systemd unit (recommended: enable + start panel)?"
+  local sysd_default=default_y
+  if [[ "$(id -u)" -ne 0 ]]; then
+    sysd_default=default_n
+    echo "  (not root — unit may need sudo later)"
+  fi
+  if [[ "${INSTALL_SYSTEMD_EXPLICIT:-0}" -eq 1 ]]; then
+    : # keep CLI flag
+  elif prompt_yn "Install and start ysk-server.service?" "$sysd_default"; then
     INSTALL_SYSTEMD=1
   else
     INSTALL_SYSTEMD=0

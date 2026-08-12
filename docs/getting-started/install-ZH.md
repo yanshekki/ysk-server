@@ -40,8 +40,13 @@ CLI（可重跑）：
 
 ```bash
 ysk-server ssl bootstrap --data-dir /var/lib/ysk-server --force
+# Root 安裝預設會 enable + start systemd：
+systemctl status ysk-server
+# 手動 serve（若用咗 --no-install-systemd）：
 ysk-server serve --data-dir /var/lib/ysk-server --port 9287
 ```
+
+裝完後，用終端打印嘅面板 URL 登入；帳密喺 `$dataDir/BOOTSTRAP-CREDENTIALS.txt`。登入後請改密碼並開 2FA。支援：**email@ysk.hk** · 面板 `/support`。
 
 ---
 
@@ -61,15 +66,15 @@ sudo ./install.sh
 3. **ClamAV**（有 email）— 可選大型套件
 4. **產品來源** — npm 全域或 `--from-source`
 5. **資料目錄** — 預設 `/var/lib/ysk-server` 或 `~/.ysk`
-6. **systemd** — 可選寫 unit
-7. **確認摘要** → 安裝 → 只驗證已選組件 → 寫 manifest
+6. **systemd** — **root 預設 ON**（enable + start 面板）
+7. **確認摘要** → 安裝 → 驗證 → 寫 manifest → **打印登入憑證**
 
 ---
 
 ## 一鍵／非互動
 
 ```bash
-# 非互動預設 = recommended
+# 非互動預設 = recommended；root 時會裝完即起 ysk-server
 curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --non-interactive
 
 # 全部套餐
@@ -117,7 +122,10 @@ curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.s
 | `--with-mysql-server` | 用 MySQL 代替 MariaDB |
 | `--with-clamav` | email 時一併裝 ClamAV |
 | `--from-source` | 用目前 git 目錄建置 |
-| `--install-systemd` | setup 後寫 unit |
+| `--install-systemd` | setup 後寫 unit（**root 預設已 ON**） |
+| `--no-install-systemd` | 跳過 systemd（之後手動 serve） |
+| `--admin-password PASS` | 初始 admin 密碼（預設隨機強密碼） |
+| `--admin-user NAME` | 初始 admin 用戶名（預設 `admin`） |
 | `--data-dir PATH` | 面板資料 + manifest |
 | `--full`／`--minimal` | 等同對應 plan |
 
@@ -126,11 +134,13 @@ curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.s
 ## 解除安裝
 
 ```bash
-sudo ./uninstall.sh
-sudo ./uninstall.sh --bundles email --keep-data --yes
+# 推薦：卸 stack + 產品 CLI／unit，保留資料
+sudo ./uninstall.sh --all --keep-data --yes
+# 危險：連白名單資料一齊清
+sudo ./uninstall.sh --all --purge-data --yes
 ```
 
-詳見 [uninstall-ZH.md](./uninstall-ZH.md) — 可部份／全部移除，**保留或清除資料**。
+`--all` **預設會移除產品**（CLI + unit），除非加 `--keep-product`。詳見 [uninstall-ZH.md](./uninstall-ZH.md)。
 
 ### CLI（產品已安裝後）
 
@@ -150,8 +160,8 @@ YSK_EXECUTE=1 sudo ysk-server stack uninstall --yes --bundles email --data-dir /
 
 ## 安裝後下一步
 
-1. `ysk-server setup --non-interactive --data-dir /var/lib/ysk-server`
-2. `ysk-server readiness --json`
-3. `ysk-server serve --data-dir /var/lib/ysk-server --port 9287`
-4. 開 Web UI → 登入 → 開 2FA  
-5. 主機變更：`export YSK_EXECUTE=1`
+1. 開終端打印嘅 **`https://<IP>:9287`**（接受自簽警告）
+2. 用 **BOOTSTRAP-CREDENTIALS.txt**（或安裝結尾打印）登入 → 改密碼 → 開 2FA
+3. `ysk-server readiness --json`（可選檢查）
+4. 主機變更：`export YSK_EXECUTE=1`（通常要 root）
+5. 問題／贊助：面板 **`/support`** · **email@ysk.hk**

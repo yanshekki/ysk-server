@@ -1,0 +1,21 @@
+{
+  "title": "支持",
+  "sub": "Creator、贊助與 YSK Limited — 免費產品，實在支援",
+  "creatorTitle": "Creator",
+  "creatorBody": "YSK Server 係免費、誠實嘅單機控制平面，畀想自己掌控伺服器嘅人。項目開源維護；你嘅回饋同 bug 報告好重要。",
+  "donateTitle": "支持／贊助",
+  "donateBody": "如果 YSK Server 幫到你慳時間，歡迎贊助開發。每一份支持都幫產品繼續免費畀所有人用。",
+  "donateGithub": "GitHub Sponsors",
+  "donateOther": "其他贊助方式",
+  "yskTitle": "YSK Limited",
+  "yskIntro": "需要超出免費面板嘅人手協助？YSK Limited 可以提供：",
+  "yskSvc1": "伺服器安裝、加固與日常運維",
+  "yskSvc2": "主機棧設計（網站、電郵、DNS、資料庫）",
+  "yskSvc3": "遷移、自動化與客製整合",
+  "yskSvc4": "事故處理與上線就緒檢查",
+  "yskNoPrice": "此處不標價 — 請來信，按你環境傾方案。",
+  "yskWebsite": "ysk.hk",
+  "helpTitle": "遇到問題？",
+  "helpBody": "請來信說明作業系統、安裝 log 路徑、預期同實際結果。每封信都會睇。",
+  "docsHint": "完整文件喺倉庫"
+}

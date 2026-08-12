@@ -101,6 +101,7 @@ export const FEATURE_SECTIONS: FeatureSection[] = [
       { to: '/system/unit', key: 'systemd', icon: '📦' },
       { to: '/system/readiness', key: 'readiness', icon: '✅' },
       { to: '/system', key: 'systemIndex', icon: '▦' },
+      { to: '/support', key: 'support', icon: '♥' },
     ],
   },
   // AI Tasks / Agents experimental UI removed — operators use CLI + docs

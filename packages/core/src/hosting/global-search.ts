@@ -71,6 +71,7 @@ const PANEL_PAGES: Array<{
   { kind: 'page', id: 'systemd', title: 'Systemd unit', href: '/system/unit', aliases: ['unit install'], section: 'system' },
   { kind: 'page', id: 'readiness', title: 'Readiness', href: '/system/readiness', aliases: ['health', 'gate'], section: 'system' },
   { kind: 'page', id: 'systemIndex', title: 'System', href: '/system', aliases: ['settings', 'panel'], section: 'system' },
+  { kind: 'page', id: 'support', title: 'Support', href: '/support', aliases: ['donate', 'creator', 'ysk', 'help', 'contact'], section: 'system' },
 ];
 
 function matchScore(query: string, ...fields: string[]): number {

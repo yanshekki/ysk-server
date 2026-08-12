@@ -528,6 +528,7 @@
     "protoWs": "WS",
     "protoUdp": "UDP",
     "saveOk": "已儲存",
+    "saveOkRestart": "已儲存 — 請重啟 Tracker 套用埠",
     "startedOk": "已啟動",
     "stoppedOk": "已停止",
     "restoredOk": "重新做種完成",
@@ -537,7 +538,6 @@
     "udpPortSameHttp": "同 HTTP（{{port}}）",
     "udpPortClassic": "6969",
     "portSuggest8000": "8000",
-    "saveOkRestart": "已儲存 — 請重啟 Tracker 套用埠",
     "announceHostUnset": "—"
   },
   "catalog": {
@@ -4653,7 +4653,8 @@
     "bookmarkPinned": "已釘選",
     "bookmarkAdded": "已釘到側欄",
     "bookmarkRemoved": "已從側欄移除",
-    "btTracker": "BT Tracker"
+    "btTracker": "BT Tracker",
+    "support": "支持"
   },
   "network": {
     "title": "網絡介面",
@@ -9753,6 +9754,30 @@
     "useListForDefaults": "要改主機／面板預設或移除此版本，請用上方列表。",
     "alreadyHostDefaultShort": "主機預設"
   },
+  "search": {
+    "placeholder": "搜尋頁面與資源…",
+    "aria": "全域搜尋",
+    "results": "搜尋結果",
+    "loading": "搜尋中…",
+    "noResults": "沒有符合項目",
+    "kinds": {
+      "page": "頁面",
+      "project": "專案",
+      "email": "電郵",
+      "mailbox": "郵箱",
+      "ssl": "SSL",
+      "dns": "DNS",
+      "nginx": "Nginx",
+      "share": "分享",
+      "ftp": "FTP",
+      "mysql": "MySQL",
+      "postgres": "PostgreSQL",
+      "redis": "Redis",
+      "cron": "Cron",
+      "user": "使用者",
+      "other": "其他"
+    }
+  },
   "security": {
     "title": "帳號安全",
     "allowlist": "工具 允許清單",
@@ -10649,6 +10674,27 @@
     "keepData": "保留資料",
     "purgeData": "清除資料",
     "uninstallNow": "立即移除"
+  },
+  "support": {
+    "title": "支持",
+    "sub": "Creator、贊助與 YSK Limited — 免費產品，實在支援",
+    "creatorTitle": "Creator",
+    "creatorBody": "YSK Server 係免費、誠實嘅單機控制平面，畀想自己掌控伺服器嘅人。項目開源維護；你嘅回饋同 bug 報告好重要。",
+    "donateTitle": "支持／贊助",
+    "donateBody": "如果 YSK Server 幫到你慳時間，歡迎贊助開發。每一份支持都幫產品繼續免費畀所有人用。",
+    "donateGithub": "GitHub Sponsors",
+    "donateOther": "其他贊助方式",
+    "yskTitle": "YSK Limited",
+    "yskIntro": "需要超出免費面板嘅人手協助？YSK Limited 可以提供：",
+    "yskSvc1": "伺服器安裝、加固與日常運維",
+    "yskSvc2": "主機棧設計（網站、電郵、DNS、資料庫）",
+    "yskSvc3": "遷移、自動化與客製整合",
+    "yskSvc4": "事故處理與上線就緒檢查",
+    "yskNoPrice": "此處不標價 — 請來信，按你環境傾方案。",
+    "yskWebsite": "ysk.hk",
+    "helpTitle": "遇到問題？",
+    "helpBody": "請來信說明作業系統、安裝 log 路徑、預期同實際結果。每封信都會睇。",
+    "docsHint": "完整文件喺倉庫"
   },
   "system": {
     "exportLoadFailed": "載入匯出資料失敗",
@@ -11846,30 +11892,6 @@
       "lanCidrs": "區域網段",
       "customCidr": "CIDR",
       "addCidr": "加入"
-    }
-  },
-  "search": {
-    "placeholder": "搜尋頁面與資源…",
-    "aria": "全域搜尋",
-    "results": "搜尋結果",
-    "loading": "搜尋中…",
-    "noResults": "沒有符合項目",
-    "kinds": {
-      "page": "頁面",
-      "project": "專案",
-      "email": "電郵",
-      "mailbox": "郵箱",
-      "ssl": "SSL",
-      "dns": "DNS",
-      "nginx": "Nginx",
-      "share": "分享",
-      "ftp": "FTP",
-      "mysql": "MySQL",
-      "postgres": "PostgreSQL",
-      "redis": "Redis",
-      "cron": "Cron",
-      "user": "使用者",
-      "other": "其他"
     }
   }
 }

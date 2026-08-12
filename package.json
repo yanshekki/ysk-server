@@ -1,7 +1,7 @@
 {
   "name": "ysk-server",
-  "version": "0.1.0",
-  "description": "YSK Server — AI-secure Linux server manager with full web hosting control panel",
+  "version": "1.0.0",
+  "description": "YSK Server \u2014 AI-secure Linux server manager with full web hosting control panel",
   "private": true,
   "type": "module",
   "bin": {

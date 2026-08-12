@@ -2,140 +2,121 @@
 
 > Language: English | [中文](./README-ZH.md)
 
-**YSK Server** (`ysk-server`) is a **security-first, single-host Linux control plane** with a web hosting panel and an AI-friendly CLI.
+**Free, open, single-host Linux control plane** — web panel + CLI to manage hosting, files, mail, databases, DNS/SSL, security, and more on **your** VPS or bare metal.
 
-| Item | Value |
-|------|--------|
-| CLI | `ysk-server` |
-| Default UI locale | **zh-HK** (Hong Kong written Chinese), plus zh-CN and en |
-| Spec | [docs/AI-Secure-Linux-Server-Manager-Spec.md](docs/AI-Secure-Linux-Server-Manager-Spec.md) · [docs/INDEX.md](docs/INDEX.md) |
-| Docs index | [docs/INDEX.md](docs/INDEX.md) |
+| | |
+|--|--|
+| **Version** | **1.0.0** |
+| **License** | Free for public use (see repository license) |
+| **CLI** | `ysk-server` |
+| **Default UI locale** | zh-HK · also en, zh-CN, and more |
+| **Support** | [email@ysk.hk](mailto:email@ysk.hk) · Panel **Support** page |
 
-## What it is / is not
+---
 
-| Is | Is not |
-|----|--------|
-| One server you control (VPS / bare metal) | Multi-tenant reseller SaaS |
-| Real host ops when **root** + **`YSK_EXECUTE=1`** | Fake “success” without apply |
-| Panel + HTTP API + CLI (same core) | Full web terminal product |
-| Honest deliverability *checks* for mail | Guaranteed Gmail/Outlook inbox |
+## Why YSK Server?
 
-## Quick start
+- **One server you own** — not multi-tenant SaaS lock-in  
+- **Panel + CLI + API** share the same core (scriptable for humans and AI agents)  
+- **Honest ops** — host changes need **root** + `YSK_EXECUTE=1` (no fake “success”)  
+- **Hosting stack** — projects, Nginx/Apache, SSL, databases, email, FTP, BT shares, defense  
 
-### Production / VPS (plan / bundle wizard)
+---
 
-`install.sh` walks through **plans** (`recommended` / `full` / `minimal` / custom bundles). Non-interactive default is **recommended** (control-plane + web + database + defense). Use `uninstall.sh` for partial/full removal with keep-data or purge-data. See [install.md](docs/getting-started/install.md) · [uninstall.md](docs/getting-started/uninstall.md).
+## Install (ready to use)
+
+**Ubuntu 22.04 / 24.04** (other Linux: best-effort). Run as **root**:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --non-interactive
-# Full stack:  … | bash -s -- --non-interactive --plan full
-# Minimal:     … | bash -s -- --non-interactive --plan minimal
-# Uninstall:   ./uninstall.sh
-ysk-server readiness --json
-ysk-server serve --data-dir /var/lib/ysk-server --port 9287
 ```
 
-### From monorepo (development)
+Or:
 
 ```bash
-pnpm install
-pnpm build
+git clone https://github.com/yanshekki/ysk-server.git
+cd ysk-server
+sudo ./install.sh
+```
+
+After install (root defaults):
+
+1. **systemd** starts `ysk-server`  
+2. Open **`https://<server-ip>:9287`** (accept self-signed cert warning)  
+3. Login with credentials printed at the end of install (also in `$dataDir/BOOTSTRAP-CREDENTIALS.txt`)  
+4. Change password · enable 2FA  
+
+Uninstall:
+
+```bash
+sudo ./uninstall.sh --all --keep-data --yes
+# wipe data too:
+sudo ./uninstall.sh --all --purge-data --yes
+```
+
+Full install options, plans, TLS flags: **[docs/getting-started/install.md](docs/getting-started/install.md)**  
+Uninstall details: **[docs/getting-started/uninstall.md](docs/getting-started/uninstall.md)**
+
+---
+
+## What you get
+
+| Area | Highlights |
+|------|------------|
+| **Sites** | Projects, deploy, isolation |
+| **Files** | Manager, public shares, WebDAV, FTP, **BT Tracker** / WebTorrent |
+| **Mail** | Domains, mailboxes, deliverability checks |
+| **Data** | MySQL / MariaDB / PostgreSQL / Redis |
+| **Edge** | DNS, SSL, Nginx, Apache, CDN agents |
+| **Security** | Protection / defense, SSH/2FA, VPN, VNC |
+| **Ops** | Metrics, logs, terminal, cron, backups, updates |
+
+Everything is documented under **[docs/INDEX.md](docs/INDEX.md)** — start there for feature handbooks, CLI reference, and architecture.
+
+---
+
+## CLI & AI agents
+
+```bash
+ysk-server readiness --json
+ysk-server help --locale en
+export YSK_EXECUTE=1   # required for real host mutations
+```
+
+- [docs/cli/reference.md](docs/cli/reference.md)  
+- [docs/agent/README.md](docs/agent/README.md) · [docs/agent/commands.json](docs/agent/commands.json)  
+- Project skill: [`.grok/skills/ysk-server/SKILL.md`](.grok/skills/ysk-server/SKILL.md)  
+
+---
+
+## Support, donate & professional services
+
+YSK Server is **free** for everyone. If it helps you:
+
+- Open the panel **Support** page (`/support`) for Creator info & donate links  
+- Need hands-on help? **YSK Limited** offers server ops, hardening, and custom integration (**no prices listed here** — contact us)  
+- Bugs / questions: **[email@ysk.hk](mailto:email@ysk.hk)**  
+
+---
+
+## Development (contributors)
+
+```bash
+pnpm install && pnpm build
 pnpm --filter @ysk/server exec node --import tsx/esm src/cli.ts setup --data-dir .ysk --json
 pnpm --filter @ysk/server exec node --import tsx/esm src/cli.ts serve --data-dir .ysk
-# Open http://127.0.0.1:9287/  (build apps/web for UI assets)
-# Or: ./install.sh --from-source
 ```
 
-Production mutations:
-
-```bash
-export YSK_EXECUTE=1   # and run as root for system changes
-ysk-server readiness --data-dir /var/lib/ysk --json
-ysk-server projects deploy --id <UUID> --execute --json
-```
-
-## CLI-first for AI agents
-
-```bash
-ysk-server help --locale en
-ysk-server readiness --json
-ysk-server projects list --json
-ysk-server tools --json
-```
-
-- [docs/cli/reference.md](docs/cli/reference.md) — full command list  
-- [docs/agent/README.md](docs/agent/README.md) · [docs/agent/commands.json](docs/agent/commands.json)  
-- [docs/cli/parity.md](docs/cli/parity.md) — Panel ≡ CLI  
-
-Global: `--json`, `--data-dir`, `--config`, `--locale` / `YSK_LOCALE`, `--execute` (dangerous ops default dry-run).
-
-## Architecture (one glance)
-
-```
-apps/web  ──DTO──►  @ysk/shared
-apps/server (HTTP + CLI)  ──►  @ysk/core  ──►  @ysk/shared
-                                    │
-                              dataDir store (json|sqlite|postgres)
-                              HostExecutor (EXECUTE / root gates)
-```
-
-Details: [docs/architecture/overview.md](docs/architecture/overview.md).
-
-## Feature map
-
-| Domain | Docs |
-|--------|------|
-| Projects / deploy | [features/projects.md](docs/features/projects.md) |
-| Email | [features/email.md](docs/features/email.md) |
-| Files / FTPS | [features/files-ftp.md](docs/features/files-ftp.md) |
-| Databases | [features/databases.md](docs/features/databases.md) |
-| DNS / SSL / Nginx | [features/dns-ssl-nginx.md](docs/features/dns-ssl-nginx.md) |
-| Security / 2FA | [features/security-auth.md](docs/features/security-auth.md) |
-| Defense | [features/defense.md](docs/features/defense.md) |
-| Backups / Cron | [features/backups-cron.md](docs/features/backups-cron.md) |
-| CDN / Agents | [features/cdn-agents.md](docs/features/cdn-agents.md) |
-| … | [docs/INDEX.md](docs/INDEX.md) |
-
-## Honesty rules
-
-1. **Dry-run by default** on host-mutating CLI.  
-2. **`written` ≠ `applied`** — managed files under `dataDir` are not live until EXECUTE applies them.  
-3. **Fail closed** without root/EXECUTE; never report fake applied success.  
-4. **Mail PTR / Port 25 / registrar DNS** remain external — panel cannot “finish” them for you.  
-
-See [docs/architecture/ops-honesty.md](docs/architecture/ops-honesty.md).
-
-## Development gates
-
-```bash
-pnpm gates          # honesty, UI, i18n keys/glossary, …
-pnpm i18n:check-keys && pnpm i18n:check-glossary
-```
-
-## 👤 Creator
-
-**Ki (yanshekki)** — Full-stack developer, quant trader, founder of [YSK Limited](https://ysk.hk/).
-
-🌐 [linktr.ee/yanshekki](https://linktr.ee/yanshekki) · 🏢 [ysk.hk](https://ysk.hk/)
-
-### ☕ Support / Donate
-
-If **YSK Server** saves you time running your own host — security, mail, sites, and honest ops — consider buying me a coffee!
-
-| Network | Address |
-| --- | --- |
-| **EVM** (ETH/BSC/AVAX) | `yanshekki.eth` |
-| **NEAR** | `yanshekki.near` |
-| **ADA** (Cardano) | `$yanshekki` |
+Architecture and contribution details live in **docs/** — not in this README.
 
 ---
 
-## 📄 License
+## Honesty
 
-MIT © Ki (yanshekki)
-
-Repository: https://github.com/yanshekki/ysk-server
+- **Install ≠ full stack “set and forget” for mail/DNS reputation.**  
+- Dangerous host operations are **dry-run by default** until `YSK_EXECUTE=1`.  
+- Self-signed panel cert is for first login; replace with Let’s Encrypt when you have a domain.  
 
 ---
 
-Powered by [YSK Limited](https://ysk.hk/) — Hong Kong Remote Dev Team & Enterprise Solutions
+**YSK Server** · made for operators who want control · [ysk.hk](https://ysk.hk/) · [email@ysk.hk](mailto:email@ysk.hk)

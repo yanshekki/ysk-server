@@ -40,8 +40,13 @@ CLI (re-run anytime):
 
 ```bash
 ysk-server ssl bootstrap --data-dir /var/lib/ysk-server --force
+# Root install enables systemd by default:
+systemctl status ysk-server
+# Manual serve (if --no-install-systemd):
 ysk-server serve --data-dir /var/lib/ysk-server --port 9287
 ```
+
+After install, open the panel URL printed on the console, log in with credentials in `$dataDir/BOOTSTRAP-CREDENTIALS.txt`, then change password and enable 2FA. Support: **email@ysk.hk** · panel `/support`.
 
 ---
 
@@ -60,8 +65,8 @@ Steps:
 3. **ClamAV** (if email) — optional large package
 4. **Product source** — npm global or `--from-source`
 5. **Data directory** — default `/var/lib/ysk-server` (root) or `~/.ysk`
-6. **systemd** — optional unit write
-7. **Confirm summary** → install → verify selected components only → save manifest
+6. **systemd** — **recommended default ON as root** (enable + start panel)
+7. **Confirm summary** → install → verify → save manifest → print login credentials
 
 ---
 
@@ -118,7 +123,10 @@ When stdin is not a TTY (typical `curl|bash`), the installer runs **non-interact
 | `--with-mysql-server` | SQL = MySQL instead of MariaDB |
 | `--with-clamav` | Add ClamAV when email is selected |
 | `--from-source` | `pnpm install && pnpm build` in git checkout |
-| `--install-systemd` | Write unit after setup |
+| `--install-systemd` | Write unit after setup (**default ON as root**) |
+| `--no-install-systemd` | Skip unit (manual serve later) |
+| `--admin-password PASS` | Initial admin password (default: random strong) |
+| `--admin-user NAME` | Initial admin username (default: `admin`) |
 | `--data-dir PATH` | Panel data + manifest location |
 | `--skip-setup` | Packages + product only |
 | `--upgrade` | Reinstall npm `ysk-server` |
@@ -138,11 +146,13 @@ On failure: log path, phase name, and last 40 log lines are printed.
 ## Uninstall
 
 ```bash
-sudo ./uninstall.sh
-sudo ./uninstall.sh --bundles email --keep-data --yes
+# Stack + product CLI/unit; keep data
+sudo ./uninstall.sh --all --keep-data --yes
+# DANGEROUS: also purge whitelisted data
+sudo ./uninstall.sh --all --purge-data --yes
 ```
 
-See [uninstall.md](./uninstall.md) — partial/full removal, **keep-data** vs **purge-data**.
+`--all` removes the product (CLI + unit) unless `--keep-product`. See [uninstall.md](./uninstall.md).
 
 ### CLI (after product is installed)
 
@@ -177,8 +187,8 @@ pnpm install && pnpm build
 
 ## Next steps after install
 
-1. `$CLI setup --non-interactive --data-dir /var/lib/ysk-server`
-2. `$CLI readiness --json`
-3. `$CLI serve --data-dir /var/lib/ysk-server --port 9287`
-4. Open Web UI → login → enable 2FA  
-5. Host mutations: `export YSK_EXECUTE=1`
+1. Open the printed panel URL **`https://<IP>:9287`** (accept self-signed warning)
+2. Login with credentials in **`BOOTSTRAP-CREDENTIALS.txt`** (or printed at install end) → change password → enable 2FA
+3. Optional: `$CLI readiness --json`
+4. Host mutations: `export YSK_EXECUTE=1` (usually as root)
+5. Help / donate: panel **`/support`** · **email@ysk.hk**

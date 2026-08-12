@@ -168,6 +168,9 @@ const TerminalPage = lazy(() =>
 const HostBrowsePage = lazy(() =>
   import('../pages/features/HostBrowsePage').then((m) => ({ default: m.HostBrowsePage })),
 );
+const SupportPage = lazy(() =>
+  import('../pages/features/SupportPage').then((m) => ({ default: m.SupportPage })),
+);
 const VpnPage = lazy(() =>
   import('../pages/features/VpnPage').then((m) => ({ default: m.VpnPage })),
 );
@@ -643,6 +646,14 @@ export function App() {
               element={
                 <Lazy>
                   <UpdatesPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="support"
+              element={
+                <Lazy>
+                  <SupportPage />
                 </Lazy>
               }
             />

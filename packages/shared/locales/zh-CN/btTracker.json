@@ -113,5 +113,7 @@
   "udpPortOff": "0 · 关闭",
   "udpPortSameHttp": "与 HTTP 相同（{{port}}）",
   "udpPortClassic": "6969 · 传统",
-  "portSuggest8000": "8000 · 建议"
+  "portSuggest8000": "8000 · 建议",
+  "saveOkRestart": "Saved — restart tracker to apply ports",
+  "announceHostUnset": "—"
 }

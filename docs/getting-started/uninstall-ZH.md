@@ -40,21 +40,23 @@ sudo ./uninstall.sh --bundles email --keep-data --yes
 # 只移除 nginx + certbot
 sudo ./uninstall.sh --components nginx,certbot --keep-data --yes
 
-# 移除 manifest 內全部組件；保留資料目錄
+# 卸 stack + 產品 CLI／unit；保留資料
+# （--all 預設等同 --remove-product，除非加 --keep-product）
 sudo ./uninstall.sh --all --keep-data --yes
 
-# 危險：purge 套件 + 登記資料路徑
-sudo ./uninstall.sh --all --purge-data --remove-product --yes
+# 危險：purge 套件 + 白名單資料 + 產品
+sudo ./uninstall.sh --all --purge-data --yes
 ```
 
 | 參數 | 含義 |
 |------|------|
-| `--all` | `stack-manifest.json` 內所有組件 |
+| `--all` | `stack-manifest.json` 全部組件 **並** 移除產品 CLI／unit（除非 `--keep-product`） |
 | `--bundles LIST` | 按套餐展開組件（唔動 control-plane 基礎） |
 | `--components LIST` | 明確組件 id |
 | `--keep-data` | `apt remove`；保留資料目錄（預設） |
 | `--purge-data` | `apt purge` + 只刪白名單資料路徑 |
 | `--remove-product` | 移除 npm CLI／unit；purge 時可刪 `dataDir` |
+| `--keep-product` | 配合 `--all`：只卸 stack，保留 CLI／unit |
 | `--yes` | 非互動必須 |
 | `--data-dir PATH` | manifest 位置 |
 

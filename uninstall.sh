@@ -19,6 +19,7 @@ UN_BUNDLES_CSV=""
 UN_COMPONENTS_CSV=""
 DATA_POLICY="keep"
 REMOVE_PRODUCT=0
+KEEP_PRODUCT=0
 UN_ALL=0
 YES=0
 DATA_DIR=""
@@ -46,15 +47,23 @@ Non-interactive:
 
 Options:
   --all                   Remove all components recorded in stack-manifest
+                          (also removes product CLI/unit unless --keep-product)
   --bundles LIST          Remove components belonging to these bundles
   --components LIST       Remove explicit component ids
   --keep-data             apt remove; keep DB/mail/data dirs (default)
   --purge-data            apt purge + delete registered dataPaths
-  --remove-product        Also remove ysk-server npm CLI / unit / optional dataDir
+  --remove-product        Remove ysk-server npm CLI + systemd unit
+  --keep-product          With --all: keep CLI/unit (only remove stack packages)
   --data-dir PATH         Manifest location base (default: /var/lib/ysk-server or ~/.ysk)
   --yes                   Skip final confirmation (required for non-interactive)
   --non-interactive       No prompts (implies need --yes)
   -h, --help              Show help
+
+Recommended full remove (keep panel data):
+  ./uninstall.sh --all --remove-product --keep-data --yes
+
+Recommended full wipe:
+  ./uninstall.sh --all --remove-product --purge-data --yes
 
 Safety:
   - Only packages/paths recorded in manifest (or known component definitions)
@@ -74,6 +83,7 @@ while [[ $# -gt 0 ]]; do
     --keep-data) DATA_POLICY=keep; shift ;;
     --purge-data) DATA_POLICY=purge; shift ;;
     --remove-product) REMOVE_PRODUCT=1; shift ;;
+    --keep-product) KEEP_PRODUCT=1; shift ;;
     --data-dir) DATA_DIR="${2:-}"; shift 2 ;;
     --yes|-y) YES=1; shift ;;
     --non-interactive) NON_INTERACTIVE=1; shift ;;
@@ -84,6 +94,11 @@ done
 
 if [[ "${CI:-}" == "true" || "${CI:-}" == "1" ]]; then
   NON_INTERACTIVE=1
+fi
+
+# --all implies remove product (CLI + unit) unless --keep-product
+if [[ "$UN_ALL" -eq 1 && "$KEEP_PRODUCT" -eq 0 ]]; then
+  REMOVE_PRODUCT=1
 fi
 
 load_libs() {
@@ -195,14 +210,20 @@ main() {
 ============================================================
  $PRODUCT uninstall finished
 ============================================================
- Data policy: $DATA_POLICY
- Log:         ${INSTALL_LOG:-n/a}
- Manifest:    $mpath
- Removed:     ${UN_COMPONENT_LIST[*]}
+ Data policy:    $DATA_POLICY
+ Remove product: $REMOVE_PRODUCT  (CLI + systemd unit)
+ Log:            ${INSTALL_LOG:-n/a}
+ Manifest:       $mpath
+ Stack removed:  ${UN_COMPONENT_LIST[*]:-(none)}
+
+$(if [[ "$DATA_POLICY" == "keep" ]]; then echo " Panel data kept under data dir (if present)."; else echo " Panel data purged where allowed."; fi)
+$(if [[ "$REMOVE_PRODUCT" -eq 1 ]]; then echo " Product CLI/unit should be gone — verify: command -v ysk-server"; fi)
 
  Re-install:
    ./install.sh
    ./install.sh --plan recommended --non-interactive
+
+ Support: email@ysk.hk
 
 EOF
   log "Done — log: $INSTALL_LOG"

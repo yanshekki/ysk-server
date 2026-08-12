@@ -536,7 +536,9 @@
     "udpPortOff": "0 · Off",
     "udpPortSameHttp": "Same as HTTP ({{port}})",
     "udpPortClassic": "6969 · Classic",
-    "portSuggest8000": "8000 · Recommended"
+    "portSuggest8000": "8000 · Recommended",
+    "saveOkRestart": "Saved — restart tracker to apply ports",
+    "announceHostUnset": "—"
   },
   "catalog": {
     "sw": {
@@ -4651,7 +4653,8 @@
     "bookmarkPinned": "Épinglé",
     "bookmarkAdded": "Épinglé sur la barre latérale",
     "bookmarkRemoved": "Supprimé de la barre latérale",
-    "btTracker": "BT Tracker"
+    "btTracker": "BT Tracker",
+    "support": "Support"
   },
   "network": {
     "title": "Interfaces réseau",
@@ -9751,6 +9754,30 @@
     "useListForDefaults": "Pour modifier la valeur par défaut de l'hôte ou du panneau, ou supprimer cette version, utilisez la liste ci-dessus.",
     "alreadyHostDefaultShort": "Défaut de l'hôte"
   },
+  "search": {
+    "placeholder": "Search pages & resources…",
+    "aria": "Global search",
+    "results": "Search results",
+    "loading": "Searching…",
+    "noResults": "No matches",
+    "kinds": {
+      "page": "Pages",
+      "project": "Projects",
+      "email": "Email",
+      "mailbox": "Mailboxes",
+      "ssl": "SSL",
+      "dns": "DNS",
+      "nginx": "Nginx",
+      "share": "Shares",
+      "ftp": "FTP",
+      "mysql": "MySQL",
+      "postgres": "PostgreSQL",
+      "redis": "Redis",
+      "cron": "Cron",
+      "user": "Users",
+      "other": "Other"
+    }
+  },
   "security": {
     "title": "Sécurité et approbations",
     "allowlist": "Liste d’autorisation des outils (lecture seule par défaut ; risque élevé nécessitant une approbation humaine)",
@@ -10647,6 +10674,27 @@
     "keepData": "Conserver les données",
     "purgeData": "Purger les données",
     "uninstallNow": "Désinstaller maintenant"
+  },
+  "support": {
+    "title": "Support",
+    "sub": "Creator, donate, and YSK Limited — free product, real help",
+    "creatorTitle": "Creator",
+    "creatorBody": "YSK Server is built as a free, honest single-host control plane for operators who want to own their stack. The project is maintained in the open; feedback and bug reports keep it sharp.",
+    "donateTitle": "Support / Donate",
+    "donateBody": "If YSK Server saves you time, consider sponsoring development. Every contribution helps keep the product free for everyone.",
+    "donateGithub": "GitHub Sponsors",
+    "donateOther": "Other ways to give",
+    "yskTitle": "YSK Limited",
+    "yskIntro": "Need hands-on help beyond the free panel? YSK Limited can assist with:",
+    "yskSvc1": "Server setup, hardening, and ongoing ops",
+    "yskSvc2": "Hosting stack design (web, mail, DNS, databases)",
+    "yskSvc3": "Migration, automation, and custom integration",
+    "yskSvc4": "Incident response and production readiness reviews",
+    "yskNoPrice": "No prices listed here — contact us for a conversation that fits your environment.",
+    "yskWebsite": "ysk.hk",
+    "helpTitle": "Having a problem?",
+    "helpBody": "Email us with your OS, install log path, and what you expected vs what happened. We read every message.",
+    "docsHint": "Full documentation lives in the repository under"
   },
   "system": {
     "exportLoadFailed": "Échec du chargement des données d'export",
@@ -11844,30 +11892,6 @@
       "lanCidrs": "Réseaux LAN",
       "customCidr": "CIDR",
       "addCidr": "Ajouter"
-    }
-  },
-  "search": {
-    "placeholder": "Search pages & resources…",
-    "aria": "Global search",
-    "results": "Search results",
-    "loading": "Searching…",
-    "noResults": "No matches",
-    "kinds": {
-      "page": "Pages",
-      "project": "Projects",
-      "email": "Email",
-      "mailbox": "Mailboxes",
-      "ssl": "SSL",
-      "dns": "DNS",
-      "nginx": "Nginx",
-      "share": "Shares",
-      "ftp": "FTP",
-      "mysql": "MySQL",
-      "postgres": "PostgreSQL",
-      "redis": "Redis",
-      "cron": "Cron",
-      "user": "Users",
-      "other": "Other"
     }
   }
 }

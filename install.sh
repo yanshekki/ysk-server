@@ -22,7 +22,12 @@ RUN_SETUP=1
 UPGRADE=0
 INSTALL_FROM_SOURCE=0
 INSTALL_SYSTEMD=0
+INSTALL_SYSTEMD_EXPLICIT=0
 WITH_MYSQL_SERVER=0
+ADMIN_USER="admin"
+ADMIN_PASSWORD=""
+CREDENTIALS_FILE=""
+UNIT_ACTIVE=0
 WITH_CLAMAV=0
 PLAN=""
 BUNDLES_CSV=""
@@ -66,10 +71,13 @@ Options:
   --skip-setup            Do not run 'ysk-server setup'
   --upgrade               Reinstall/upgrade npm package
   --from-source           Build from current git checkout
-  --install-systemd       Write systemd unit after setup
+  --install-systemd       Install+enable+start systemd unit (default ON as root)
+  --no-install-systemd    Skip systemd (manual serve)
   --with-mysql-server     Use mysql-server instead of mariadb-server
   --with-clamav           Include ClamAV when email bundle selected
   --data-dir PATH         Panel data directory
+  --admin-password PASS   Initial admin password (default: random strong)
+  --admin-user NAME       Initial admin username (default: admin)
   --full                  Alias for --plan full
   --minimal               Alias for --plan minimal
   --skip-runtimes         Remove 'runtimes' from selected bundles
@@ -94,7 +102,8 @@ while [[ $# -gt 0 ]]; do
     --skip-setup) RUN_SETUP=0; shift ;;
     --upgrade) UPGRADE=1; shift ;;
     --from-source) INSTALL_FROM_SOURCE=1; shift ;;
-    --install-systemd) INSTALL_SYSTEMD=1; shift ;;
+    --install-systemd) INSTALL_SYSTEMD=1; INSTALL_SYSTEMD_EXPLICIT=1; shift ;;
+    --no-install-systemd) INSTALL_SYSTEMD=0; INSTALL_SYSTEMD_EXPLICIT=1; shift ;;
     --with-mysql-server) WITH_MYSQL_SERVER=1; SQL_SERVER=mysql; shift ;;
     --with-clamav) WITH_CLAMAV=1; shift ;;
     --full) PLAN=full; shift ;;
@@ -103,6 +112,8 @@ while [[ $# -gt 0 ]]; do
     --plan) PLAN="${2:-}"; shift 2 ;;
     --bundles) BUNDLES_CSV="${2:-}"; PLAN="${PLAN:-custom}"; shift 2 ;;
     --data-dir) DATA_DIR="${2:-}"; shift 2 ;;
+    --admin-password) ADMIN_PASSWORD="${2:-}"; shift 2 ;;
+    --admin-user) ADMIN_USER="${2:-admin}"; shift 2 ;;
     --skip-wizard) SKIP_WIZARD=1; NON_INTERACTIVE=1; shift ;;
     --bootstrap-tls) BOOTSTRAP_TLS=1; shift ;;
     --no-bootstrap-tls) BOOTSTRAP_TLS=0; shift ;;
@@ -116,6 +127,13 @@ done
 # CI convenience
 if [[ "${CI:-}" == "true" || "${CI:-}" == "1" ]]; then
   NON_INTERACTIVE=1
+fi
+
+# Product default: root installs enable+start systemd (public “ready to use”)
+if [[ "$INSTALL_SYSTEMD_EXPLICIT" -eq 0 ]]; then
+  if [[ "$(id -u)" -eq 0 && "${CI:-}" != "true" && "${CI:-}" != "1" ]]; then
+    INSTALL_SYSTEMD=1
+  fi
 fi
 
 # Load libraries
@@ -451,6 +469,47 @@ harden_data_dir() {
   return 0
 }
 
+gen_admin_password() {
+  if [[ -n "$ADMIN_PASSWORD" ]]; then
+    return 0
+  fi
+  if command -v openssl >/dev/null 2>&1; then
+    ADMIN_PASSWORD="$(openssl rand -base64 18 | tr -d '/+=' | head -c 20)"
+  else
+    ADMIN_PASSWORD="$(head -c 32 /dev/urandom | base64 | tr -d '/+=' | head -c 20)"
+  fi
+  # Ensure meets typical strength rules
+  ADMIN_PASSWORD="Ysk1!${ADMIN_PASSWORD}"
+}
+
+write_credentials_file() {
+  CREDENTIALS_FILE="${DATA_DIR}/BOOTSTRAP-CREDENTIALS.txt"
+  resolve_sudo || true
+  # shellcheck disable=SC2086
+  $SUDO mkdir -p "$DATA_DIR" 2>/dev/null || mkdir -p "$DATA_DIR" 2>/dev/null || true
+  local tmp
+  tmp="$(mktemp)"
+  cat >"$tmp" <<EOF
+YSK Server bootstrap credentials (install-time)
+Created: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+Data dir: $DATA_DIR
+
+  Username: $ADMIN_USER
+  Password: $ADMIN_PASSWORD
+
+Change this password after first login. Enable 2FA.
+Support: email@ysk.hk  ·  Panel: /support
+EOF
+  # shellcheck disable=SC2086
+  if [[ "$(id -u)" -eq 0 ]]; then
+    install -m 600 "$tmp" "$CREDENTIALS_FILE"
+  else
+    cp "$tmp" "$CREDENTIALS_FILE"
+    chmod 600 "$CREDENTIALS_FILE" 2>/dev/null || true
+  fi
+  rm -f "$tmp"
+}
+
 run_setup() {
   phase "setup"
   if [[ "$RUN_SETUP" -ne 1 ]]; then
@@ -464,18 +523,24 @@ run_setup() {
   resolve_sudo || true
   # shellcheck disable=SC2086
   $SUDO mkdir -p "$DATA_DIR" 2>/dev/null || mkdir -p "$DATA_DIR" 2>/dev/null || true
+
+  gen_admin_password
+  write_credentials_file
+
   local setup_cmd=("$CLI" setup --non-interactive --data-dir "$DATA_DIR")
+  setup_cmd+=(--admin-user "$ADMIN_USER")
+  setup_cmd+=(--admin-password "$ADMIN_PASSWORD")
   # IP-first login needs bind-all when TLS bootstrap is on
   if [[ "$BOOTSTRAP_TLS" -eq 1 ]]; then
     setup_cmd+=(--host "${LISTEN_HOST_OVERRIDE:-0.0.0.0}")
   elif [[ -n "$LISTEN_HOST_OVERRIDE" ]]; then
     setup_cmd+=(--host "$LISTEN_HOST_OVERRIDE")
   fi
-  if [[ "$NON_INTERACTIVE" -eq 1 ]]; then
+  if [[ "$NON_INTERACTIVE" -eq 1 ]] || [[ -f "$DATA_DIR/config.json" ]]; then
     setup_cmd+=(--force)
   fi
   if require_cmd "$CLI"; then
-    log "Running: ${setup_cmd[*]}"
+    log "Running setup (admin user=$ADMIN_USER; password in $CREDENTIALS_FILE)"
     if ! "${setup_cmd[@]}"; then
       # I-02: do not swallow total failure when config is missing
       if [[ ! -f "$DATA_DIR/config.json" ]]; then
@@ -542,6 +607,7 @@ run_bootstrap_tls() {
 
 install_systemd_unit() {
   if [[ "$INSTALL_SYSTEMD" -ne 1 ]]; then
+    log "systemd skipped (--no-install-systemd or non-root)"
     return 0
   fi
   phase "systemd"
@@ -549,12 +615,29 @@ install_systemd_unit() {
     log "No CLI for unit-install — skip"
     return 0
   fi
-  log "Writing systemd unit for dataDir=$DATA_DIR"
-  if [[ "$(id -u)" -eq 0 && "${YSK_EXECUTE:-}" == "1" ]]; then
-    YSK_EXECUTE=1 "$CLI" system unit-install --enable --data-dir "$DATA_DIR" || log "unit-install enable failed"
+  log "Installing systemd unit + enable --now (dataDir=$DATA_DIR)"
+  UNIT_ACTIVE=0
+  if [[ "$(id -u)" -eq 0 ]]; then
+    # Install-time is intentional host mutation
+    if YSK_EXECUTE=1 "$CLI" system unit-install --enable --data-dir "$DATA_DIR"; then
+      if systemctl is-active --quiet ysk-server 2>/dev/null; then
+        UNIT_ACTIVE=1
+        log "ysk-server.service is active"
+      else
+        systemctl start ysk-server 2>/dev/null || true
+        if systemctl is-active --quiet ysk-server 2>/dev/null; then
+          UNIT_ACTIVE=1
+          log "ysk-server.service started"
+        else
+          log "WARNING: unit installed but not active — check: systemctl status ysk-server"
+        fi
+      fi
+    else
+      log "WARNING: unit-install failed — start manually: $CLI serve --data-dir $DATA_DIR"
+    fi
   elif require_cmd "$CLI"; then
     "$CLI" system unit-install --data-dir "$DATA_DIR" || true
-    log "Unit written — enable with: YSK_EXECUTE=1 sudo $CLI system unit-install --enable --data-dir $DATA_DIR"
+    log "Unit written (not root) — enable with: sudo YSK_EXECUTE=1 $CLI system unit-install --enable --data-dir $DATA_DIR"
   fi
 }
 
@@ -571,37 +654,46 @@ print_next() {
   if [[ "$BOOTSTRAP_TLS" -ne 1 ]]; then
     panel_url="http://${ip_hint}:9287  (INSECURE — bootstrap TLS disabled)"
   fi
+  local service_line="Manual: $CLI serve --data-dir $DATA_DIR --port 9287"
+  if [[ "$UNIT_ACTIVE" -eq 1 ]]; then
+    service_line="systemd: ysk-server.service is ACTIVE (enable --now done)"
+  elif [[ "$INSTALL_SYSTEMD" -eq 1 ]]; then
+    service_line="systemd unit written — start: sudo systemctl start ysk-server"
+  fi
+
   cat <<EOF
 
 ============================================================
- $PRODUCT installation finished
+ $PRODUCT v1.0.0 — installation finished
 ============================================================
  Plan:     ${PLAN:-custom}
  Bundles:  $BUNDLES_CSV
  Log:      ${INSTALL_LOG:-n/a}
  Manifest: ${MANIFEST_PATH:-n/a}
  Data dir: $DATA_DIR
+ Service:  $service_line
 
- Panel (HTTPS preferred):
+ Panel:
    $panel_url
    Accept the browser warning if using the install-time self-signed cert.
-   After you have a domain: issue Let's Encrypt from panel SSL settings.
 
- Next:
-   1. $CLI serve --data-dir $DATA_DIR --port 9287
-      (or: YSK_EXECUTE=1 $CLI system unit-install --enable --data-dir $DATA_DIR)
-   2. Open Web UI → login → enable 2FA immediately
-   3. $CLI readiness --data-dir $DATA_DIR --json
+ Login (change after first login + enable 2FA):
+   Username: ${ADMIN_USER:-admin}
+   Password: ${ADMIN_PASSWORD:-(see credentials file)}
+   File:     ${CREDENTIALS_FILE:-$DATA_DIR/BOOTSTRAP-CREDENTIALS.txt}
 
- Host mutations need: export YSK_EXECUTE=1  (and often root)
- Open firewall for TCP 9287 if logging in from another machine.
+ Firewall: open TCP 9287 for remote admin access.
+ Host ops:  export YSK_EXECUTE=1   (and usually root)
 
- Uninstall (partial or full):
-   ./uninstall.sh
-   ./uninstall.sh --bundles email --keep-data --yes
-   ./uninstall.sh --all --purge-data --yes
+ Support / Donate / YSK Limited:
+   Panel → Support   or   email@ysk.hk
+   Docs:  docs/INDEX.md · docs/getting-started/install.md
 
- Docs: docs/getting-started/install.md · uninstall.md
+ Uninstall:
+   ./uninstall.sh --all --remove-product --keep-data --yes
+   ./uninstall.sh --all --remove-product --purge-data --yes
+
+============================================================
 
 EOF
 }

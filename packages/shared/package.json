@@ -1,6 +1,6 @@
 {
   "name": "@ysk/shared",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Shared types, DTOs, and interfaces for YSK Server",
   "type": "module",
   "main": "./dist/index.js",

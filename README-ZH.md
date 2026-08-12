@@ -1,141 +1,119 @@
 # YSK Server
 
-> 語言：中文 | [English](./README.md)
+> 語言：中文（香港書面語）| [English](./README.md)
 
-**YSK Server**（`ysk-server`）是以**安全與誠實**為優先的**單機 Linux 控制平面**，附架站面板與適合 AI 的 CLI。
+**免費、開源、單機 Linux 控制平面** — 網頁面板 + CLI，管理你自己 VPS／實體機上的網站、檔案、電郵、資料庫、DNS／SSL、安全防護等。
 
-| 項目 | 說明 |
-|------|------|
-| CLI | `ysk-server` |
-| 預設介面語言 | **zh-HK**，另有 zh-CN、en |
-| 規格 | [docs/AI-Secure-Linux-Server-Manager-Spec.md](docs/AI-Secure-Linux-Server-Manager-Spec.md) |
-| 文件索引 | [docs/INDEX-ZH.md](docs/INDEX-ZH.md) |
+| | |
+|--|--|
+| **版本** | **1.0.0** |
+| **授權** | 免費公開使用（見倉庫授權） |
+| **CLI** | `ysk-server` |
+| **預設介面語系** | 繁中（香港）· 另有 en、簡中等 |
+| **支援** | [email@ysk.hk](mailto:email@ysk.hk) · 面板 **Support** 頁 |
 
-## 是／不是
+---
 
-| 是 | 不是 |
-|----|------|
-| 你掌管的一部伺服器（VPS／實體機） | 多租戶 Reseller SaaS |
-| **root** + **`YSK_EXECUTE=1`** 時可真實改主機 | 未套用卻回報成功 |
-| 面板 + HTTP API + CLI（同一 core） | 完整網頁終端機產品 |
-| 郵件**可送達性檢查**（誠實） | 保證 Gmail／Outlook 進 inbox |
+## 為什麼用 YSK Server？
 
-## 快速上手
+- **伺服器係你自己嘅** — 唔係多租戶 SaaS 鎖死  
+- **面板 + CLI + API** 同一核心（適合人手同 AI agent）  
+- **誠實運維** — 改主機要 **root** + `YSK_EXECUTE=1`（唔會假成功）  
+- **完整主機棧** — 專案、Nginx／Apache、SSL、資料庫、電郵、FTP、BT 分享、防護  
 
-### 生產／VPS（套餐／方案嚮導）
+---
 
-`install.sh` 提供**方案**（`recommended`／`full`／`minimal`／自訂套餐）。非互動預設 **recommended**（控制平面 + web + database + defense）。用 `uninstall.sh` 做部份／全部移除（可保留或清除資料）。詳見 [install-ZH.md](docs/getting-started/install-ZH.md) · [uninstall-ZH.md](docs/getting-started/uninstall-ZH.md)。
+## 安裝（裝完即可用）
+
+建議 **Ubuntu 22.04／24.04**（其他 Linux：盡力支援）。請用 **root**：
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --non-interactive
-# 全裝：… | bash -s -- --non-interactive --plan full
-# 僅控制平面：… | bash -s -- --non-interactive --plan minimal
-# 解除安裝：./uninstall.sh
+```
+
+或：
+
+```bash
+git clone https://github.com/yanshekki/ysk-server.git
+cd ysk-server
+sudo ./install.sh
+```
+
+安裝後（root 預設）：
+
+1. **systemd** 已啟動 `ysk-server`  
+2. 開啟 **`https://<伺服器IP>:9287`**（自簽憑證請於瀏覽器接受警告）  
+3. 用安裝結尾打印嘅帳密登入（亦寫入 `$dataDir/BOOTSTRAP-CREDENTIALS.txt`）  
+4. 改密碼 · 開 2FA  
+
+卸載：
+
+```bash
+sudo ./uninstall.sh --all --keep-data --yes
+# 連資料一併清除：
+sudo ./uninstall.sh --all --purge-data --yes
+```
+
+完整選項： **[docs/getting-started/install-ZH.md](docs/getting-started/install-ZH.md)**  
+卸載說明： **[docs/getting-started/uninstall-ZH.md](docs/getting-started/uninstall-ZH.md)**
+
+---
+
+## 你得到咩
+
+| 範疇 | 重點 |
+|------|------|
+| **網站** | 專案、部署、隔離 |
+| **檔案** | 管理、公開分享、WebDAV、FTP、**BT Tracker**／WebTorrent |
+| **電郵** | 網域、郵箱、投遞檢查 |
+| **資料** | MySQL／MariaDB／PostgreSQL／Redis |
+| **邊緣** | DNS、SSL、Nginx、Apache、CDN agents |
+| **安全** | 防護中心、SSH／2FA、VPN、VNC |
+| **運維** | 指標、日誌、終端、Cron、備份、更新 |
+
+細節全部喺 **[docs/INDEX-ZH.md](docs/INDEX-ZH.md)** — 功能手冊、CLI、架構請去文件。
+
+---
+
+## CLI 與 AI agent
+
+```bash
 ysk-server readiness --json
-ysk-server serve --data-dir /var/lib/ysk-server --port 9287
-```
-
-### monorepo 開發
-
-```bash
-pnpm install
-pnpm build
-pnpm --filter @ysk/server exec node --import tsx/esm src/cli.ts setup --data-dir .ysk --json
-pnpm --filter @ysk/server exec node --import tsx/esm src/cli.ts serve --data-dir .ysk
-# 開啟 http://127.0.0.1:9287/（需建置 apps/web 才有完整 UI）
-# 或：./install.sh --from-source
-```
-
-生產變更：
-
-```bash
-export YSK_EXECUTE=1   # 系統層變更通常要以 root 執行
-ysk-server readiness --data-dir /var/lib/ysk --json
-ysk-server projects deploy --id <UUID> --execute --json
-```
-
-## AI 優先用 CLI
-
-```bash
 ysk-server help --locale zh-HK
-ysk-server readiness --json
-ysk-server projects list --json
-ysk-server tools --json
+export YSK_EXECUTE=1   # 真正改主機先要
 ```
 
-- [docs/cli/reference-ZH.md](docs/cli/reference-ZH.md) — 完整命令  
+- [docs/cli/reference-ZH.md](docs/cli/reference-ZH.md)  
 - [docs/agent/README-ZH.md](docs/agent/README-ZH.md) · [docs/agent/commands.json](docs/agent/commands.json)  
-- [docs/cli/parity-ZH.md](docs/cli/parity-ZH.md) — 面板 ≡ CLI  
+- 專案 skill： [`.grok/skills/ysk-server/SKILL.md`](.grok/skills/ysk-server/SKILL.md)  
 
-全域：`--json`、`--data-dir`、`--config`、`--locale`／`YSK_LOCALE`、`--execute`（危險操作預設 dry-run）。
+---
 
-## 架構一覽
+## 支持、贊助與專業服務
 
-```
-apps/web  ──DTO──►  @ysk/shared
-apps/server (HTTP + CLI)  ──►  @ysk/core  ──►  @ysk/shared
-                                    │
-                              dataDir 狀態庫（json|sqlite|postgres）
-                              HostExecutor（EXECUTE／root 閘門）
-```
+YSK Server **免費**畀所有人用。如果有幫助：
 
-詳見：[docs/architecture/overview-ZH.md](docs/architecture/overview-ZH.md)。
+- 面板 **Support** 頁（`/support`）— Creator 與贊助連結  
+- 需要代管／加固／客製？**YSK Limited** 提供服務（**此處不標價** — 請來信洽談）  
+- 問題／回報：**[email@ysk.hk](mailto:email@ysk.hk)**  
 
-## 功能地圖
+---
 
-| 域 | 文件 |
-|----|------|
-| 專案／部署 | [features/projects-ZH.md](docs/features/projects-ZH.md) |
-| 郵件 | [features/email-ZH.md](docs/features/email-ZH.md) |
-| 檔案／FTPS | [features/files-ftp-ZH.md](docs/features/files-ftp-ZH.md) |
-| 資料庫 | [features/databases-ZH.md](docs/features/databases-ZH.md) |
-| DNS／SSL／Nginx | [features/dns-ssl-nginx-ZH.md](docs/features/dns-ssl-nginx-ZH.md) |
-| 安全／2FA | [features/security-auth-ZH.md](docs/features/security-auth-ZH.md) |
-| 防護 | [features/defense-ZH.md](docs/features/defense-ZH.md) |
-| 備份／Cron | [features/backups-cron-ZH.md](docs/features/backups-cron-ZH.md) |
-| CDN／Agent | [features/cdn-agents-ZH.md](docs/features/cdn-agents-ZH.md) |
-| … | [docs/INDEX-ZH.md](docs/INDEX-ZH.md) |
-
-## 誠實規則
-
-1. 主機變更 CLI **預設 dry-run**。  
-2. **已寫入 ≠ 已套用** — `dataDir` 管理檔未 EXECUTE 前不算上線。  
-3. 無 root／EXECUTE 時 **fail-closed**，絕不假成功。  
-4. **郵件 PTR／Port 25／註冊商 DNS** 屬外部，面板不能代你「完成」。  
-
-見 [docs/architecture/ops-honesty-ZH.md](docs/architecture/ops-honesty-ZH.md)。
-
-## 開發閘門
+## 開發者
 
 ```bash
-pnpm gates
-pnpm i18n:check-keys && pnpm i18n:check-glossary
+pnpm install && pnpm build
+# 詳見 docs/ — 唔喺 README 堆開發流程
 ```
 
-## 👤 作者
+---
 
-**Ki (yanshekki)** — 全端工程師、量化交易者，[YSK Limited](https://ysk.hk/) 創辦人。
+## 誠實說明
 
-🌐 [linktr.ee/yanshekki](https://linktr.ee/yanshekki) · 🏢 [ysk.hk](https://ysk.hk/)
-
-### ☕ 支持／打賞
-
-若 **YSK Server** 幫你慳時間管好主機——安全、郵件、站點同誠實運維——歡迎請我飲杯咖啡！
-
-| 網絡 | 地址 |
-| --- | --- |
-| **EVM** (ETH/BSC/AVAX) | `yanshekki.eth` |
-| **NEAR** | `yanshekki.near` |
-| **ADA** (Cardano) | `$yanshekki` |
+- 安裝 **唔等於** 電郵／DNS 聲譽「一鍵保證入匣」。  
+- 危險主機操作預設 dry-run，直至 `YSK_EXECUTE=1`。  
+- 自簽面板憑證只為首次登入；有域名後請用 Let's Encrypt。  
 
 ---
 
-## 📄 授權
-
-MIT © Ki (yanshekki)
-
-倉庫：https://github.com/yanshekki/ysk-server
-
----
-
-由 [YSK Limited](https://ysk.hk/) 提供支持 — 香港遠程開發團隊與企業解決方案
+**YSK Server** · 畀想自己掌控伺服器嘅人 · [ysk.hk](https://ysk.hk/) · [email@ysk.hk](mailto:email@ysk.hk)

@@ -40,21 +40,23 @@ sudo ./uninstall.sh --bundles email --keep-data --yes
 # Remove only nginx + certbot packages
 sudo ./uninstall.sh --components nginx,certbot --keep-data --yes
 
-# Remove everything YSK recorded; keep data dirs
+# Remove stack + product CLI/unit; keep data dirs
+# (--all implies --remove-product unless --keep-product)
 sudo ./uninstall.sh --all --keep-data --yes
 
-# DANGEROUS: purge packages + registered data paths (+ product if --all)
-sudo ./uninstall.sh --all --purge-data --remove-product --yes
+# DANGEROUS: purge packages + whitelisted data paths + product
+sudo ./uninstall.sh --all --purge-data --yes
 ```
 
 | Flag | Meaning |
 |------|---------|
-| `--all` | Every component in `stack-manifest.json` |
+| `--all` | Every component in `stack-manifest.json` **and** product CLI/unit (unless `--keep-product`) |
 | `--bundles LIST` | Expand bundle ids → components (skips control-plane base bits) |
 | `--components LIST` | Explicit component ids (`nginx`, `mariadb-server`, …) |
 | `--keep-data` | `apt remove`; leave data directories (default) |
 | `--purge-data` | `apt purge` + delete **whitelisted** data paths only |
 | `--remove-product` | npm global `ysk-server`, CLI wrapper, unit; purge may delete `dataDir` |
+| `--keep-product` | With `--all`: remove only stack packages; leave CLI/unit |
 | `--yes` | Required when `--non-interactive` |
 | `--data-dir PATH` | Where to read/write the manifest |
 
