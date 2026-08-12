@@ -13,6 +13,8 @@ import {
   listFileShares,
   normalizeDownloadModes,
   restoreBtSharesOnBoot,
+  listTorrentJobs,
+  getTorrentJob,
 } from '@ysk/core';
 import type { AppContext } from '../app-context.js';
 import type { CliHelpers } from './cmd-vpn.js';
@@ -104,6 +106,22 @@ export async function runBtTrackerCommand(
     return r.ok ? 0 : 1;
   }
 
+  if (sub === 'jobs') {
+    const id = h.getOpt(args, '--id');
+    if (id?.trim()) {
+      const job = getTorrentJob(id.trim());
+      if (!job) {
+        h.printJson({ ok: false, notes: ['job not found'] });
+        return 4;
+      }
+      h.printJson({ ok: true, job });
+      return 0;
+    }
+    const items = listTorrentJobs();
+    h.printJson({ ok: true, items, meta: { total: items.length } });
+    return 0;
+  }
+
   if (sub === 'torrents' || sub === 'stats') {
     const items = listBtTrackerTorrents();
     h.printJson({
@@ -119,7 +137,7 @@ export async function runBtTrackerCommand(
   }
 
   process.stderr.write(
-    'Usage: ysk-server bt-tracker status|start|stop|settings|torrents|restore [--execute] [--json]\n',
+    'Usage: ysk-server bt-tracker status|start|stop|settings|torrents|restore|jobs [--id JOB] [--execute] [--json]\n',
   );
   return 2;
 }

@@ -156,6 +156,7 @@ ysk-server bt-tracker start [--execute]   # CLI spawns detached worker (survives
 ysk-server bt-tracker stop
 ysk-server bt-tracker torrents
 ysk-server bt-tracker restore             # re-seed BT shares (best inside serve process)
+ysk-server bt-tracker jobs [--id JOB_ID]  # background large-share torrent jobs
 ```
 
 Default HTTP/WS port **8000**. Set `publicAnnounceHost` to a hostname peers can reach. Open the port via Network exposure / firewall when downloaders are off-host. Autostart + re-seed run when `serve` starts if `autostart` is enabled or BT shares exist. Panel Start uses **in-process** tracker (same process as seeder); CLI Start uses a **detached worker** + pid file.
