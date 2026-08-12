@@ -112,6 +112,30 @@ pnpm gates          # honesty, UI, i18n keys/glossary, …
 pnpm i18n:check-keys && pnpm i18n:check-glossary
 ```
 
-## License / repo
+## 👤 Creator
 
-MIT-oriented monorepo packages; repository: https://github.com/yanshekki/ysk-server  
+**Ki (yanshekki)** — Full-stack developer, quant trader, founder of [YSK Limited](https://ysk.hk/).
+
+🌐 [linktr.ee/yanshekki](https://linktr.ee/yanshekki) · 🏢 [ysk.hk](https://ysk.hk/)
+
+### ☕ Support / Donate
+
+If **YSK Server** saves you time running your own host — security, mail, sites, and honest ops — consider buying me a coffee!
+
+| Network | Address |
+| --- | --- |
+| **EVM** (ETH/BSC/AVAX) | `yanshekki.eth` |
+| **NEAR** | `yanshekki.near` |
+| **ADA** (Cardano) | `$yanshekki` |
+
+---
+
+## 📄 License
+
+MIT © Ki (yanshekki)
+
+Repository: https://github.com/yanshekki/ysk-server
+
+---
+
+Powered by [YSK Limited](https://ysk.hk/) — Hong Kong Remote Dev Team & Enterprise Solutions

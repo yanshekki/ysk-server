@@ -112,6 +112,30 @@ pnpm gates
 pnpm i18n:check-keys && pnpm i18n:check-glossary
 ```
 
-## 倉庫
+## 👤 作者
 
-https://github.com/yanshekki/ysk-server  
+**Ki (yanshekki)** — 全端工程師、量化交易者，[YSK Limited](https://ysk.hk/) 創辦人。
+
+🌐 [linktr.ee/yanshekki](https://linktr.ee/yanshekki) · 🏢 [ysk.hk](https://ysk.hk/)
+
+### ☕ 支持／打賞
+
+若 **YSK Server** 幫你慳時間管好主機——安全、郵件、站點同誠實運維——歡迎請我飲杯咖啡！
+
+| 網絡 | 地址 |
+| --- | --- |
+| **EVM** (ETH/BSC/AVAX) | `yanshekki.eth` |
+| **NEAR** | `yanshekki.near` |
+| **ADA** (Cardano) | `$yanshekki` |
+
+---
+
+## 📄 授權
+
+MIT © Ki (yanshekki)
+
+倉庫：https://github.com/yanshekki/ysk-server
+
+---
+
+由 [YSK Limited](https://ysk.hk/) 提供支持 — 香港遠程開發團隊與企業解決方案
