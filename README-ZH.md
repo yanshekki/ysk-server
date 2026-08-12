@@ -26,24 +26,14 @@
 ## 截圖
 
 <p align="center">
-  <img src="docs/assets/screenshots/panel-dashboard-zh-HK.jpg" alt="YSK Server 儀表板（繁中香港）" width="900" />
+  <img src="docs/assets/screenshots/panel-dashboard-zh-HK.jpg" alt="YSK Server 儀表板" width="900" />
 </p>
 <p align="center"><em>儀表板 — 服務健康、就緒檢查、安全與套用狀態</em></p>
 
 <p align="center">
-  <img src="docs/assets/screenshots/panel-system-tools-zh-HK.jpg" alt="YSK Server 系統工具（繁中香港）" width="900" />
+  <img src="docs/assets/screenshots/panel-system-tools-zh-HK.jpg" alt="YSK Server 系統工具" width="900" />
 </p>
 <p align="center"><em>系統工具 — 身份、面板 HTTPS、網絡與儲存</em></p>
-
-<p align="center">
-  <img src="docs/assets/screenshots/panel-dashboard-en.jpg" alt="YSK Server dashboard (English)" width="900" />
-</p>
-<p align="center"><em>Dashboard（English）</em></p>
-
-<p align="center">
-  <img src="docs/assets/screenshots/panel-system-tools-en.jpg" alt="YSK Server system tools (English)" width="900" />
-</p>
-<p align="center"><em>System tools（English）</em></p>
 
 ---
 
