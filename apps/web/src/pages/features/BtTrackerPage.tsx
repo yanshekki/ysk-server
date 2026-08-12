@@ -364,14 +364,20 @@ export function BtTrackerPage() {
                 <Alert variant="warn">{t('btTracker.needExecute')}</Alert>
               ) : null}
 
-              <Card flush>
-                <CardSection title={t('btTracker.exposureTitle')}>
+              <Card>
+                <CardSection
+                  title={t('btTracker.exposureTitle')}
+                  description={t('btTracker.applyHint')}
+                >
                   <ServiceAccessStrip serviceId="bt-tracker" />
                 </CardSection>
               </Card>
 
-              <Card flush>
-                <CardSection title={t('btTracker.announceUrls')}>
+              <Card>
+                <CardSection
+                  title={t('btTracker.announceUrls')}
+                  description={t('btTracker.announceDesc')}
+                >
                   {announceList.length === 0 ? (
                     <div className="bt-empty">
                       <p className="bt-empty__title">{t('btTracker.torrentsEmpty')}</p>
@@ -397,7 +403,7 @@ export function BtTrackerPage() {
                               {u}
                             </code>
                             <Button
-                              variant="ghost"
+                              variant="secondary"
                               size="sm"
                               onClick={() => copyText(u)}
                             >
