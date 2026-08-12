@@ -311,7 +311,7 @@
   "publicShareBt": "BitTorrent",
   "openBtTracker": "Open BT Tracker",
   "publicShareBtInBrowser": "Download in browser (WebTorrent)",
-  "publicShareBtProgress": "BT {{pct}}% · peers {{peers}} · ↓ {{down}} · ↑ {{up}}",
+  "publicShareBtProgress": "ダウンロード {{pct}}% · peers {{peers}} · ↓ {{down}} · ↑ {{up}}",
   "publicShareBtStarting": "Connecting to peers…",
   "publicShareBtFailed": "WebTorrent failed: {{detail}}",
   "publicShareBtNeedMagnet": "No magnet URI for this share",

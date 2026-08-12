@@ -3692,7 +3692,7 @@
     "publicShareBt": "BitTorrent",
     "openBtTracker": "打开 BT Tracker",
     "publicShareBtInBrowser": "在浏览器以 WebTorrent 下载",
-    "publicShareBtProgress": "BT {{pct}}% · peers {{peers}} · ↓ {{down}} · ↑ {{up}}",
+    "publicShareBtProgress": "已下载 {{pct}}% · {{peers}} 个 peers · ↓ {{down}} · ↑ {{up}}",
     "publicShareBtStarting": "正在连接 peers…",
     "publicShareBtFailed": "WebTorrent 失败：{{detail}}",
     "publicShareBtNeedMagnet": "此分享没有 magnet 链接",
