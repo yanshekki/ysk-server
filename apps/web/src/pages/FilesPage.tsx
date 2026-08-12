@@ -1866,23 +1866,40 @@ export function FilesPage() {
             <Card>
               <CardSection title={t('files.sharesTitle', { count: shares.length })}>
                 <DataTable
+                  className="fm-share-list"
                   columns={[
                     {
                       key: 'path',
                       header: t('files.colPath'),
-                      render: (s) => (
-                        <code className="inline">{s.path}</code>
-                      ) },
+                      className: 'fm-share-list__col-path',
+                      render: (s) => {
+                        const cleaned = (s.path || '').replace(/\/+$/, '') || '/';
+                        const slash = cleaned.lastIndexOf('/');
+                        const name =
+                          slash >= 0 ? cleaned.slice(slash + 1) || cleaned : cleaned;
+                        const dir = slash > 0 ? cleaned.slice(0, slash) : slash === 0 ? '/' : '';
+                        return (
+                          <div className="fm-share-list__path" title={s.path}>
+                            <span className="fm-share-list__name">{name}</span>
+                            {dir ? (
+                              <span className="fm-share-list__dir muted">{dir}</span>
+                            ) : null}
+                          </div>
+                        );
+                      },
+                    },
                     {
                       key: 'url',
                       header: t('files.colLink'),
+                      className: 'fm-share-list__col-link',
                       render: (s) => {
                         const abs = shareAbsoluteUrl(s);
+                        const short = s.url?.startsWith('http')
+                          ? `/share/${s.token}`
+                          : s.url || `/share/${s.token}`;
                         return (
-                          <div className="fm-share-list__link">
-                            <code className="inline u-break-all" title={abs}>
-                              {abs}
-                            </code>
+                          <div className="fm-share-list__link" title={abs}>
+                            <code className="inline">{short}</code>
                           </div>
                         );
                       },
@@ -1891,6 +1908,7 @@ export function FilesPage() {
                       key: 'expires',
                       header: t('files.colExpires'),
                       nowrap: true,
+                      className: 'fm-share-list__col-meta',
                       render: (s) =>
                         s.expiresAt
                           ? new Date(s.expiresAt).toLocaleString()
@@ -1900,28 +1918,42 @@ export function FilesPage() {
                       key: 'downloads',
                       header: t('files.colDownloads'),
                       nowrap: true,
-                      render: (s) => s.downloadCount },
-                    {
-                      key: 'mode',
-                      header: t('files.shareModeLabel'),
-                      nowrap: true,
-                      render: (s) => {
-                        const modes = s.downloadModes ?? ['direct'];
-                        if (modes.includes('direct') && modes.includes('bt')) {
-                          return t('files.shareModeBoth');
-                        }
-                        if (modes.includes('bt')) return t('files.shareModeBt');
-                        return t('files.shareModeDirect');
-                      },
+                      className: 'fm-share-list__col-num',
+                      render: (s) => s.downloadCount,
                     },
                     {
-                      key: 'bt',
-                      header: t('files.shareBtStats'),
+                      key: 'status',
+                      header: t('files.shareSeedStatus'),
+                      nowrap: true,
+                      className: 'fm-share-list__col-status',
                       render: (s) => {
-                        const st = shareBtStats[s.id];
-                        if (!s.infoHash && !(s.downloadModes ?? []).includes('bt')) {
-                          return '—';
+                        const modes = s.downloadModes ?? ['direct'];
+                        const isBt =
+                          modes.includes('bt') || Boolean(s.infoHash);
+                        let modeShort: string;
+                        let modeFull: string;
+                        if (modes.includes('direct') && modes.includes('bt')) {
+                          modeShort = 'Direct+BT';
+                          modeFull = t('files.shareModeBoth');
+                        } else if (modes.includes('bt')) {
+                          modeShort = 'BT';
+                          modeFull = t('files.shareModeBt');
+                        } else {
+                          modeShort = 'Direct';
+                          modeFull = t('files.shareModeDirect');
                         }
+
+                        if (!isBt) {
+                          return (
+                            <div className="fm-share-list__status" title={modeFull}>
+                              <div className="fm-share-list__status-row">
+                                <Badge tone="neutral">{modeShort}</Badge>
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        const st = shareBtStats[s.id];
                         const status = st?.seedStatus || s.seedStatus || 'pending';
                         const tone =
                           status === 'seeding'
@@ -1941,24 +1973,50 @@ export function FilesPage() {
                                 : status === 'stopped'
                                   ? t('files.btStopped')
                                   : status;
+                        const speed =
+                          st && st.uploadSpeed > 0
+                            ? st.uploadSpeed > 1024
+                              ? `↑${(st.uploadSpeed / 1024).toFixed(0)}K`
+                              : `↑${st.uploadSpeed}`
+                            : '';
+                        const swarm = st
+                          ? `${t('files.btSeeds')} ${st.seeds} · ${t('files.btLeechers')} ${st.leechers}${
+                              speed ? ` · ${speed}` : ''
+                            }`
+                          : '…';
                         return (
-                          <div className="u-stack u-gap-xs" title={st?.infoHash || s.infoHash}>
-                            <Badge tone={tone}>{statusLabel}</Badge>
-                            {st ? (
-                              <span className="u-text-sm">
-                                {t('files.btSeeds')}: {st.seeds} · {t('files.btLeechers')}:{' '}
-                                {st.leechers}
-                                {st.uploadSpeed > 0
-                                  ? ` · ↑${
-                                      st.uploadSpeed > 1024
-                                        ? `${(st.uploadSpeed / 1024).toFixed(0)}K`
-                                        : st.uploadSpeed
-                                    }`
-                                  : ''}
-                              </span>
-                            ) : (
-                              <span className="u-text-sm muted">…</span>
-                            )}
+                          <div
+                            className="fm-share-list__status"
+                            title={[modeFull, st?.infoHash || s.infoHash, swarm]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          >
+                            <div className="fm-share-list__status-row">
+                              <Badge tone="info">{modeShort}</Badge>
+                              <Badge tone={tone}>{statusLabel}</Badge>
+                            </div>
+                            <div className="fm-share-list__status-row fm-share-list__status-row--meta">
+                              <span className="fm-share-list__status-meta">{swarm}</span>
+                              {s.magnetUri ? (
+                                <button
+                                  type="button"
+                                  className="btn btn--link fm-share-list__text-btn"
+                                  onClick={() => copyShareLink(s.magnetUri!)}
+                                  title={t('files.shareMagnet')}
+                                >
+                                  magnet
+                                </button>
+                              ) : null}
+                              {s.token ? (
+                                <a
+                                  className="btn btn--link fm-share-list__text-btn"
+                                  href={`/api/v1/public/files/${encodeURIComponent(s.token)}/torrent`}
+                                  title={t('files.shareTorrentFile')}
+                                >
+                                  .torrent
+                                </a>
+                              ) : null}
+                            </div>
                           </div>
                         );
                       },
@@ -1969,7 +2027,7 @@ export function FilesPage() {
                   rowActions={(s) => {
                     const abs = shareAbsoluteUrl(s);
                     return (
-                      <ActionBar align="end">
+                      <ActionBar align="end" wrap={false} className="fm-share-list__actions">
                         <Button
                           variant="secondary"
                           size="sm"
@@ -1978,26 +2036,6 @@ export function FilesPage() {
                         >
                           {t('files.copyLink')}
                         </Button>
-                        {s.magnetUri ? (
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => copyShareLink(s.magnetUri!)}
-                            title={t('files.shareMagnet')}
-                          >
-                            magnet
-                          </Button>
-                        ) : null}
-                        {s.token &&
-                        ((s.downloadModes ?? []).includes('bt') || s.infoHash) ? (
-                          <a
-                            className="btn btn--secondary btn--sm"
-                            href={`/api/v1/public/files/${encodeURIComponent(s.token)}/torrent`}
-                            title={t('files.shareTorrentFile')}
-                          >
-                            .torrent
-                          </a>
-                        ) : null}
                         <Button
                           variant="danger"
                           size="sm"
@@ -2007,6 +2045,7 @@ export function FilesPage() {
                               await filesApi.deleteShare(root, s.id);
                             }, t('files.unshareDone'))
                           }
+                          title={t('files.unshare')}
                         >
                           {t('files.unshare')}
                         </Button>

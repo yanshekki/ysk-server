@@ -1228,17 +1228,135 @@ input[type='radio'] {
 }
 
 
-/* Share list link cell */
-.fm-share-list__link {
-  max-width: 28rem;
+/* —— Public shares list (dense, single-row cells) —— */
+.fm-share-list .data-table__table {
+  table-layout: fixed;
+  width: 100%;
 }
+
+.fm-share-list__col-path {
+  width: 24%;
+}
+
+.fm-share-list__col-link {
+  width: 16%;
+}
+
+.fm-share-list__col-meta {
+  width: 14%;
+}
+
+.fm-share-list__col-num {
+  width: 7%;
+}
+
+.fm-share-list__col-status {
+  width: 26%;
+}
+
+.fm-share-list .data-table__actions-col,
+.fm-share-list .data-table__actions-cell {
+  width: 13%;
+  white-space: nowrap;
+}
+
+.fm-share-list__path {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.fm-share-list__name {
+  display: block;
+  font-weight: 650;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fm-share-list__dir {
+  display: block;
+  font-size: 0.72rem;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fm-share-list__link {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .fm-share-list__link code {
-  display: inline-block;
+  display: block;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  vertical-align: bottom;
+}
+
+.fm-share-list__status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.fm-share-list__status-row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.fm-share-list__status-row--meta {
+  gap: 0.45rem;
+}
+
+.fm-share-list__status .badge {
+  flex-shrink: 0;
+}
+
+.fm-share-list__status-meta {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.fm-share-list__text-btn {
+  font-size: 0.72rem !important;
+  font-weight: 650 !important;
+  line-height: 1.2 !important;
+  flex-shrink: 0;
+}
+
+.fm-share-list__actions {
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+}
+
+.fm-share-list .data-table__actions-cell .action-bar {
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+}
+
+.fm-share-list .data-table__actions-cell .btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Nested CardSection > DataTable: drop double border/padding clash */
+.card .section-block .fm-share-list.data-table {
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
 }
 
 /* —— File version history modal —— */
