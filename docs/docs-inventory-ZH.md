@@ -17,7 +17,7 @@
 
 | 切片 | 交付 | % | 狀態 |
 |------|------|---|------|
-| **D0** | 標準 + 範本 + 本盤點 + INDEX 連結骨架 | ~10% | 🔶 進行中 |
+| **D0** | 標準 + 範本 + 本盤點 + INDEX 連結骨架 | ~10% | ✅ 完成 |
 | **D1** | `cli/overview` + `cli/reference` + `commands.json` | ~35% | ⬜ |
 | **D2** | 新域手冊（vpn、vnc、apache、system-host、databases、runtimes） | ~55% | ⬜ |
 | **D3** | 其餘 `features/*` 加深 | ~75% | ⬜ |
