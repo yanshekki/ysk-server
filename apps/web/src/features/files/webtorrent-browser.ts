@@ -62,7 +62,12 @@ type WtClient = {
 
 type WtCtor = new (opts?: Record<string, unknown>) => WtClient;
 
-/** Vite emits this as a same-origin /assets/*.js file from our node_modules. */
+/**
+ * Self-hosted browser build from npm `webtorrent/dist/webtorrent.min.js`.
+ * File is **ESM** (`export { default }`) — must use dynamic `import()`, not a
+ * classic `<script>` tag (that caused: Unexpected token 'export').
+ * Vite copies it to same-origin `/assets/webtorrent.min-*.js`.
+ */
 // @ts-expect-error Vite ?url import
 import webtorrentMinUrl from 'webtorrent/dist/webtorrent.min.js?url';
 
@@ -78,45 +83,42 @@ export function isBrowserWebTorrentSupported(): boolean {
   return Boolean(rtc);
 }
 
+function pickCtor(mod: unknown): WtCtor | null {
+  if (!mod) return null;
+  const m = mod as Record<string, unknown>;
+  for (const c of [m.default, m.WebTorrent, m]) {
+    if (typeof c === 'function') {
+      return c as WtCtor;
+    }
+    if (c && typeof c === 'object') {
+      const nested = c as Record<string, unknown>;
+      if (typeof nested.default === 'function') return nested.default as WtCtor;
+      if (typeof nested.WebTorrent === 'function') {
+        return nested.WebTorrent as WtCtor;
+      }
+    }
+  }
+  return null;
+}
+
 /**
- * Load self-hosted WebTorrent UMD build (window.WebTorrent).
- * No third-party CDN — asset is part of the ysk-server web build.
+ * Load self-hosted WebTorrent ESM chunk via dynamic import (same origin).
+ * No third-party CDN.
  */
 async function loadWebTorrentCtor(): Promise<WtCtor> {
   if (!loadPromise) {
     loadPromise = (async () => {
-      const w = window as unknown as { WebTorrent?: WtCtor };
-      if (typeof w.WebTorrent === 'function') {
-        return w.WebTorrent;
+      const url = String(webtorrentMinUrl || '');
+      if (!url) {
+        throw new Error('WebTorrent asset URL missing from build');
       }
-      await new Promise<void>((resolve, reject) => {
-        const existing = document.querySelector(
-          'script[data-ysk-webtorrent="1"]',
-        ) as HTMLScriptElement | null;
-        if (existing) {
-          if (typeof w.WebTorrent === 'function') {
-            resolve();
-            return;
-          }
-          existing.addEventListener('load', () => resolve());
-          existing.addEventListener('error', () =>
-            reject(new Error('WebTorrent script failed')),
-          );
-          return;
-        }
-        const s = document.createElement('script');
-        s.src = webtorrentMinUrl as string;
-        s.async = true;
-        s.dataset.yskWebtorrent = '1';
-        s.onload = () => resolve();
-        s.onerror = () =>
-          reject(new Error('Failed to load self-hosted WebTorrent build'));
-        document.head.appendChild(s);
-      });
-      if (typeof w.WebTorrent !== 'function') {
-        throw new Error('WebTorrent global missing after load');
+      // Dynamic import of the ESM asset (not classic script)
+      const mod = await import(/* @vite-ignore */ url);
+      const Ctor = pickCtor(mod);
+      if (!Ctor) {
+        throw new Error('WebTorrent module has no constructor export');
       }
-      return w.WebTorrent;
+      return Ctor;
     })();
   }
   return loadPromise;
