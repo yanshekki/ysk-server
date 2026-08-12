@@ -81,8 +81,8 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem 0.75rem;
-  padding: 0.55rem 0.75rem;
+  gap: 0.6rem 0.85rem;
+  padding: 0.7rem 1rem;
   background: var(--bg-white);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -125,15 +125,17 @@
 .bt-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem;
+  gap: 0.4rem;
   align-items: center;
+  margin: 0.05rem 0 0.1rem;
+  padding: 0 0.1rem;
 }
 
 .bt-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  padding: 0.2rem 0.5rem;
+  padding: 0.28rem 0.6rem;
   border-radius: 999px;
   border: 1px solid var(--border-light);
   background: var(--bg-subtle, #f8fafc);
@@ -154,34 +156,38 @@
   color: var(--text);
 }
 
-/* Announce: compact rows */
+/* Announce: compact rows with breathing room */
 .bt-announce {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.45rem;
+  margin-top: 0.15rem;
 }
 
 .bt-announce__row {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 0.4rem;
+  column-gap: 0.65rem;
+  row-gap: 0.35rem;
   align-items: center;
-  padding: 0.35rem 0.5rem;
+  min-height: 2.35rem;
+  padding: 0.55rem 0.75rem;
   border: 1px solid var(--border-light);
   border-radius: var(--radius-sm);
   background: var(--bg-white);
 }
 
 .bt-announce__proto {
-  font-size: 0.62rem;
+  font-size: 0.65rem;
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  padding: 0.1rem 0.35rem;
-  border-radius: 0.25rem;
+  padding: 0.18rem 0.4rem;
+  border-radius: 0.3rem;
   background: #eff6ff;
   color: #1d4ed8;
   border: 1px solid rgba(59, 130, 246, 0.25);
+  line-height: 1.2;
 }
 
 .bt-announce__proto--ws {
@@ -197,12 +203,14 @@
 }
 
 .bt-announce__url {
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
   font-family: var(--font-mono, ui-monospace, monospace);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   min-width: 0;
+  padding: 0.15rem 0;
+  line-height: 1.35;
 }
 
 /* Table region grows */
@@ -210,6 +218,7 @@
   flex: 1 1 auto;
   min-height: 10rem;
   overflow: auto;
+  margin-top: 0.25rem;
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
   background: var(--bg-white);
@@ -222,7 +231,7 @@
 
 /* Empty: top-aligned, short — not vertical center of viewport */
 .bt-empty {
-  padding: 0.85rem 0.25rem 0.5rem;
+  padding: 1rem 0.75rem 0.85rem;
   max-width: 32rem;
 }
 
@@ -239,38 +248,64 @@
   line-height: 1.4;
 }
 
-/* Settings: denser cards */
+.bt-empty--compact {
+  padding: 0.35rem 0.15rem 0.15rem;
+}
+
+.bt-empty--compact .bt-empty__desc {
+  margin: 0;
+}
+
+/* Jobs block under swarm table (merged tab) */
+.bt-jobs-block {
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--border-light);
+}
+
+.bt-jobs-block__head {
+  margin-bottom: 0.35rem;
+}
+
+.bt-table-wrap--jobs {
+  min-height: 0;
+  flex: 0 1 auto;
+  max-height: 14rem;
+}
+
+/* Settings cards */
 .bt-settings {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.85rem;
+  padding-bottom: 0.5rem;
 }
 
 .bt-settings__card {
-  padding: 0.75rem 0.9rem;
+  padding: 0.95rem 1.05rem;
   background: var(--bg-white);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
 }
 
 .bt-settings__card-title {
-  margin: 0 0 0.1rem;
+  margin: 0 0 0.2rem;
   font-size: var(--text-sm);
   font-weight: 750;
 }
 
 .bt-settings__card-desc {
-  margin: 0 0 0.65rem;
+  margin: 0 0 0.75rem;
   font-size: var(--text-xs);
   color: var(--text-muted);
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .bt-toggle {
   display: flex;
   align-items: flex-start;
-  gap: 0.5rem;
-  padding: 0.4rem 0.55rem;
+  gap: 0.55rem;
+  padding: 0.5rem 0.65rem;
   border: 1px solid var(--border-light);
   border-radius: var(--radius-sm);
   background: var(--bg-subtle, #f8fafc);
@@ -322,25 +357,48 @@
   white-space: nowrap;
 }
 
-/* Overview stack: tight gaps */
+/* Overview stack: breathe without wasting half the screen */
 .bt-overview {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.9rem;
   min-width: 0;
+  padding: 0.15rem 0 0.75rem;
 }
 
-.bt-overview .card,
+.bt-overview > .card {
+  margin: 0;
+  padding: 0.85rem 1.05rem;
+}
+
 .bt-overview .section-block {
   margin: 0;
+  padding: 0;
 }
 
 .bt-overview .section-block__title {
   font-size: var(--text-sm);
-  margin-bottom: 0.15rem;
+  margin: 0 0 0.35rem;
+  font-weight: 750;
 }
 
 .bt-overview .section-block__desc {
   font-size: var(--text-xs);
-  margin-bottom: 0.45rem;
+  margin: 0 0 0.65rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+/* Service access strip: align with card body */
+.bt-overview .service-access-strip {
+  margin-top: 0.25rem;
+  padding: 0.15rem 0;
+}
+
+.bt-overview .service-access-strip__body {
+  gap: 0.35rem;
+}
+
+.bt-overview .service-access-strip__actions {
+  gap: 0.4rem;
 }

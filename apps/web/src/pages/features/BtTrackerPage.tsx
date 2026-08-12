@@ -36,7 +36,8 @@ import {
 } from '../../features/bt-tracker';
 import { bindInput } from '../bind-handlers';
 
-const TABS = ['overview', 'torrents', 'jobs', 'settings', 'about'] as const;
+/** jobs merged into torrents tab (background create-torrent under swarm list) */
+const TABS = ['overview', 'torrents', 'settings', 'about'] as const;
 
 type TorrentJobRow = {
   id: string;
@@ -117,17 +118,13 @@ export function BtTrackerPage() {
   }, [refresh, setError]);
 
   useEffect(() => {
-    if (tab !== 'torrents' && tab !== 'jobs' && tab !== 'overview') return;
+    if (tab !== 'torrents' && tab !== 'overview') return;
     const id = window.setInterval(() => {
-      if (tab === 'torrents' || tab === 'overview') {
-        void btTrackerApi
-          .torrents()
-          .then((tr) => setTorrents(tr.items ?? []))
-          .catch(() => undefined);
-      }
-      if (tab === 'jobs' || tab === 'overview') {
-        void refreshJobs();
-      }
+      void btTrackerApi
+        .torrents()
+        .then((tr) => setTorrents(tr.items ?? []))
+        .catch(() => undefined);
+      void refreshJobs();
       if (tab === 'overview') {
         void btTrackerApi
           .status()
@@ -282,12 +279,10 @@ export function BtTrackerPage() {
             {
               id: 'torrents',
               label: t('btTracker.tabTorrents'),
-              badge: torrents.length || undefined,
-            },
-            {
-              id: 'jobs',
-              label: t('btTracker.tabJobs'),
-              badge: activeJobs || undefined,
+              badge:
+                (torrents.length || 0) + activeJobs > 0
+                  ? torrents.length + activeJobs
+                  : undefined,
             },
             { id: 'settings', label: t('btTracker.tabSettings') },
             { id: 'about', label: t('btTracker.tabAbout') },
@@ -455,16 +450,22 @@ export function BtTrackerPage() {
                   <span className="bt-live__dot" aria-hidden />
                   {running ? t('btTracker.live') : t('btTracker.liveOff')}
                 </span>
+                {activeJobs > 0 ? (
+                  <Badge tone="warn">
+                    {t('btTracker.statsJobs')}: {activeJobs}
+                  </Badge>
+                ) : null}
                 <Button
                   variant="secondary"
                   size="sm"
                   disabled={busy}
-                  onClick={() =>
+                  onClick={() => {
                     void btTrackerApi
                       .torrents()
                       .then((tr) => setTorrents(tr.items ?? []))
-                      .catch((e: Error) => setError(e.message))
-                  }
+                      .catch((e: Error) => setError(e.message));
+                    void refreshJobs();
+                  }}
                 >
                   {t('btTracker.refresh')}
                 </Button>
@@ -557,88 +558,83 @@ export function BtTrackerPage() {
                   />
                 </div>
               )}
-            </div>
-          ) : null}
 
-          {tab === 'jobs' ? (
-            <div className="tab-panel tab-panel--fill">
-              <div className="bt-toolbar">
-                <span className="muted u-text-sm">{t('btTracker.jobsDesc')}</span>
-                <span className="bt-toolbar__spacer" />
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  disabled={busy}
-                  onClick={() => void refreshJobs()}
-                >
-                  {t('btTracker.refreshJobs')}
-                </Button>
-                <Link className="btn btn--secondary btn--sm" to="/files?tab=shares">
-                  {t('btTracker.openShares')}
-                </Link>
-              </div>
-
-              {jobs.length === 0 ? (
-                <div className="bt-empty">
-                  <p className="bt-empty__title">{t('btTracker.jobsEmpty')}</p>
-                  <p className="bt-empty__desc">{t('btTracker.jobsEmptyHint')}</p>
+              {/* Background create-torrent jobs (merged from former Jobs tab) */}
+              <div className="bt-jobs-block">
+                <div className="bt-toolbar bt-jobs-block__head">
+                  <strong className="u-text-sm">{t('btTracker.jobs')}</strong>
+                  <span className="muted u-text-xs">{t('btTracker.jobsDesc')}</span>
+                  <span className="bt-toolbar__spacer" />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={busy}
+                    onClick={() => void refreshJobs()}
+                  >
+                    {t('btTracker.refreshJobs')}
+                  </Button>
                 </div>
-              ) : (
-                <div className="bt-table-wrap">
-                  <DataTable
-                    columns={[
-                      {
-                        key: 'job',
-                        header: t('btTracker.colJob'),
-                        render: (r) => (
-                          <code className="u-text-sm" title={r.id}>
-                            {r.id.length > 22 ? `${r.id.slice(0, 18)}…` : r.id}
-                          </code>
-                        ),
-                      },
-                      {
-                        key: 'share',
-                        header: t('btTracker.colShare'),
-                        render: (r) => r.shareId,
-                      },
-                      {
-                        key: 'status',
-                        header: t('btTracker.colJobStatus'),
-                        render: (r) => {
-                          const tone =
-                            r.status === 'done'
-                              ? 'ok'
-                              : r.status === 'error'
-                                ? 'danger'
-                                : r.status === 'running'
-                                  ? 'info'
-                                  : 'warn';
-                          return <Badge tone={tone}>{r.status}</Badge>;
+                {jobs.length === 0 ? (
+                  <div className="bt-empty bt-empty--compact">
+                    <p className="bt-empty__desc">{t('btTracker.jobsEmptyHint')}</p>
+                  </div>
+                ) : (
+                  <div className="bt-table-wrap bt-table-wrap--jobs">
+                    <DataTable
+                      columns={[
+                        {
+                          key: 'job',
+                          header: t('btTracker.colJob'),
+                          render: (r) => (
+                            <code className="u-text-sm" title={r.id}>
+                              {r.id.length > 22 ? `${r.id.slice(0, 18)}…` : r.id}
+                            </code>
+                          ),
                         },
-                      },
-                      {
-                        key: 'enqueued',
-                        header: t('btTracker.colEnqueued'),
-                        render: (r) =>
-                          r.enqueuedAt
-                            ? new Date(r.enqueuedAt).toLocaleString()
-                            : '—',
-                      },
-                      {
-                        key: 'notes',
-                        header: t('btTracker.colStatus'),
-                        render: (r) => (
-                          <span className="u-text-sm muted">
-                            {(r.notes || []).slice(0, 2).join(' · ') || '—'}
-                          </span>
-                        ),
-                      },
-                    ]}
-                    rows={jobs}
-                    rowKey={(r) => r.id}
-                  />
-                </div>
-              )}
+                        {
+                          key: 'share',
+                          header: t('btTracker.colShare'),
+                          render: (r) => r.shareId,
+                        },
+                        {
+                          key: 'status',
+                          header: t('btTracker.colJobStatus'),
+                          render: (r) => {
+                            const tone =
+                              r.status === 'done'
+                                ? 'ok'
+                                : r.status === 'error'
+                                  ? 'danger'
+                                  : r.status === 'running'
+                                    ? 'info'
+                                    : 'warn';
+                            return <Badge tone={tone}>{r.status}</Badge>;
+                          },
+                        },
+                        {
+                          key: 'enqueued',
+                          header: t('btTracker.colEnqueued'),
+                          render: (r) =>
+                            r.enqueuedAt
+                              ? new Date(r.enqueuedAt).toLocaleString()
+                              : '—',
+                        },
+                        {
+                          key: 'notes',
+                          header: t('btTracker.colStatus'),
+                          render: (r) => (
+                            <span className="u-text-sm muted">
+                              {(r.notes || []).slice(0, 2).join(' · ') || '—'}
+                            </span>
+                          ),
+                        },
+                      ]}
+                      rows={jobs}
+                      rowKey={(r) => r.id}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           ) : null}
 

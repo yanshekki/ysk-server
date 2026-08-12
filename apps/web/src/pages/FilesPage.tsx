@@ -690,13 +690,14 @@ export function FilesPage() {
   const refresh = useCallback(async () => {
     setError(null);
     try {
-      if (side === 'trash') {
+      // Page tab drives data load (supports deep-link ?tab=shares from BT Tracker)
+      if (tab === 'trash') {
         const r = await filesApi.trash(root);
         setTrash(r.items);
         setItems([]);
         return;
       }
-      if (side === 'shares') {
+      if (tab === 'shares') {
         const r = await filesApi.listShares(root);
         setShares(r.items);
         const btIds = r.items
@@ -710,14 +711,35 @@ export function FilesPage() {
           } catch {
             /* optional */
           }
+        } else {
+          setShareBtStats({});
         }
         setItems([]);
         return;
       }
+      if (tab === 'webdav' || tab === 'about') {
+        return;
+      }
+
+      // Browse tab — sidebar may still request trash/shares views
+      if (side === 'trash') {
+        const r = await filesApi.trash(root);
+        setTrash(r.items);
+        setItems([]);
+        return;
+      }
+      if (side === 'shares') {
+        const r = await filesApi.listShares(root);
+        setShares(r.items);
+        setItems([]);
+        return;
+      }
+
       const r = await filesApi.list(root, path, {
         sort,
         order,
-        q: debouncedQuery || undefined });
+        q: debouncedQuery || undefined,
+      });
       let list = r.items;
       if (side === 'favorites') {
         list = list.filter((i) => i.favorite);
@@ -728,7 +750,7 @@ export function FilesPage() {
     } catch (e) {
       setError(e instanceof Error ? e.message : t('common.loadFailed'));
     }
-  }, [root, path, sort, order, debouncedQuery, side, t]);
+  }, [root, path, sort, order, debouncedQuery, side, tab, t]);
 
   useEffect(() => {
     const tmr = window.setTimeout(() => setDebouncedQuery(query.trim()), 300);
@@ -746,13 +768,22 @@ export function FilesPage() {
       .catch(() => setProjects([]));
   }, []);
 
+  // Keep sidebar `side` aligned when landing via ?tab=shares|trash
+  useEffect(() => {
+    if (tab === 'shares' && side !== 'shares') setSide('shares');
+    else if (tab === 'trash' && side !== 'trash') setSide('trash');
+  }, [tab, side]);
+
   // Honor ?root=public|project:<id> once on mount
   useEffect(() => {
     const q = searchParams.get('root');
     if (q) {
       setRoot(q);
       setPath('.');
-      setSide('all');
+      const tabQ = searchParams.get('tab');
+      if (tabQ !== 'shares' && tabQ !== 'trash') {
+        setSide('all');
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
