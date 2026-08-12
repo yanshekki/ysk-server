@@ -63,25 +63,93 @@ function clampPort(n: unknown, fallback: number): number {
   return v;
 }
 
-/** Build announce URL list for create-torrent / magnet. */
+/**
+ * Host clients see in magnet / announce URLs — always from panel settings.
+ * Order: explicit override → publicAnnounceHost → listenHost (if not 0.0.0.0).
+ * Never invent a random hostname; empty string means “not configured yet”.
+ */
+export function resolveAnnounceHost(
+  settings: Pick<BtTrackerSettings, 'publicAnnounceHost' | 'listenHost'>,
+  opts?: { publicHost?: string | null },
+): string {
+  const pick = (raw: string | undefined | null): string => {
+    const s = String(raw || '')
+      .trim()
+      .replace(/^https?:\/\//i, '')
+      .replace(/\/$/, '')
+      .split('/')[0]
+      ?.trim();
+    if (!s) return '';
+    // strip accidental path / trailing junk
+    return s.replace(/:\d+$/, (m) => m); // keep host:port if operator put it in publicAnnounceHost
+  };
+
+  const fromOpt = pick(opts?.publicHost);
+  if (fromOpt) return fromOpt;
+
+  const fromPublic = pick(settings.publicAnnounceHost);
+  if (fromPublic) return fromPublic;
+
+  const listen = pick(settings.listenHost);
+  if (listen && listen !== '0.0.0.0' && listen !== '::' && listen !== '[::]') {
+    return listen;
+  }
+  return '';
+}
+
+/**
+ * Loopback host for process-local access to the tracker (proxy / scrape / seeder).
+ * Uses listenHost when bound to a specific address; else 127.0.0.1.
+ */
+export function resolveTrackerLoopbackHost(
+  settings: Pick<BtTrackerSettings, 'listenHost'>,
+): string {
+  const h = String(settings.listenHost || '').trim();
+  if (h && h !== '0.0.0.0' && h !== '::' && h !== '[::]') return h;
+  return '127.0.0.1';
+}
+
+/** Build announce URL list for create-torrent / magnet — panel ports + host only. */
 export function buildAnnounceList(
   settings: BtTrackerSettings,
   opts?: { publicHost?: string },
 ): string[] {
-  const host =
-    (opts?.publicHost || settings.publicAnnounceHost || '127.0.0.1')
-      .replace(/^https?:\/\//, '')
-      .replace(/\/$/, '')
-      .split('/')[0] || '127.0.0.1';
-  const port = settings.httpPort;
-  const urls = [`http://${host}:${port}/announce`];
+  const host = resolveAnnounceHost(settings, opts);
+  if (!host) {
+    // Operator has not set public announce host yet — no fake 127.0.0.1 in magnets
+    return [];
+  }
+  // publicAnnounceHost may already include :port (e.g. host:8000)
+  const hostHasPort = /:\d+$/.test(host);
+  const httpHost = hostHasPort ? host : `${host}:${settings.httpPort}`;
+  const urls = [`http://${httpHost}/announce`];
   if (settings.wsEnabled) {
-    urls.push(`ws://${host}:${port}`);
+    urls.push(`ws://${httpHost}`);
   }
   if (settings.udpPort > 0) {
-    urls.push(`udp://${host}:${settings.udpPort}`);
+    const udpHost = hostHasPort
+      ? host.replace(/:\d+$/, `:${settings.udpPort}`)
+      : `${host}:${settings.udpPort}`;
+    urls.push(`udp://${udpHost}`);
   }
   return urls;
+}
+
+/** Announce list for the in-process seeder: panel public URLs + local bind. */
+export function buildSeederAnnounceList(settings: BtTrackerSettings): string[] {
+  const publicUrls = buildAnnounceList(settings);
+  const loop = resolveTrackerLoopbackHost(settings);
+  const local: string[] = [
+    `http://${loop}:${settings.httpPort}/announce`,
+  ];
+  if (settings.wsEnabled) {
+    local.push(`ws://${loop}:${settings.httpPort}`);
+  }
+  const out: string[] = [];
+  for (const u of [...publicUrls, ...local]) {
+    if (u && !out.includes(u)) out.push(u);
+  }
+  return out;
 }
 
 /**

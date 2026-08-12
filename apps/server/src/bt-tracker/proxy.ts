@@ -11,17 +11,31 @@ import type { Server as HttpsServer } from 'node:https';
 import { request as httpRequest } from 'node:http';
 import type { Duplex } from 'node:stream';
 import { WebSocketServer, WebSocket } from 'ws';
-import { loadBtTrackerSettings, isBtTrackerRunning } from '@ysk/core';
+import {
+  loadBtTrackerSettings,
+  isBtTrackerRunning,
+  resolveTrackerLoopbackHost,
+} from '@ysk/core';
 import type { AppContext } from '../app-context.js';
 
 export const BT_TRACKER_PUBLIC_PREFIX = '/api/v1/public/bt-tracker';
 
-function trackerPort(ctx: AppContext): number {
+function trackerSettings(ctx: AppContext) {
   try {
-    return loadBtTrackerSettings(ctx.dataDir).httpPort || 8000;
+    return loadBtTrackerSettings(ctx.dataDir);
   } catch {
-    return 8000;
+    return null;
   }
+}
+
+function trackerPort(ctx: AppContext): number {
+  return trackerSettings(ctx)?.httpPort || 8000;
+}
+
+/** Upstream host for process-local proxy — panel listenHost, not a fake public IP. */
+function trackerUpstreamHost(ctx: AppContext): string {
+  const s = trackerSettings(ctx);
+  return s ? resolveTrackerLoopbackHost(s) : '127.0.0.1';
 }
 
 /** HTTP reverse proxy (announce / scrape / stats). */
@@ -48,14 +62,15 @@ export async function handleBtTrackerPublicProxy(
   }
 
   const port = trackerPort(ctx);
+  const upstreamHost = trackerUpstreamHost(ctx);
   const rest = url.pathname.slice(BT_TRACKER_PUBLIC_PREFIX.length) || '/';
   const targetPath = rest.startsWith('/') ? rest : `/${rest}`;
-  const targetUrl = `http://127.0.0.1:${port}${targetPath}${url.search}`;
+  const targetUrl = `http://${upstreamHost}:${port}${targetPath}${url.search}`;
 
   await new Promise<void>((resolve) => {
     const headers: Record<string, string | string[] | undefined> = {
       ...req.headers,
-      host: `127.0.0.1:${port}`,
+      host: `${upstreamHost}:${port}`,
     };
     // Avoid hop-by-hop
     delete headers['connection'];
@@ -140,8 +155,9 @@ export function attachBtTrackerWebSocketProxy(
       }
 
       const port = trackerPort(ctx);
+      const upstreamHost = trackerUpstreamHost(ctx);
       wss.handleUpgrade(req, socket as Duplex, head, (clientWs) => {
-        const upstream = new WebSocket(`ws://127.0.0.1:${port}/`);
+        const upstream = new WebSocket(`ws://${upstreamHost}:${port}/`);
 
         const closeBoth = () => {
           try {
@@ -192,10 +208,14 @@ export function attachBtTrackerWebSocketProxy(
   });
 }
 
-/** Browser-facing tracker announce URLs (same-origin, works on HTTPS). */
+/**
+ * Browser-facing tracker announce URLs.
+ * Prefer same-origin panel proxy (HTTPS-safe). Host comes from the request
+ * (panel already reachable as hermes.ysk.hk:9287 etc.) — not a hard-coded IP.
+ */
 export function browserTrackerAnnounceUrls(reqHost: string, isHttps: boolean): string[] {
-  const host = (reqHost || '').split(',')[0]?.trim() || '127.0.0.1';
-  // Strip default ports noise but keep non-default (e.g. :9287)
+  const host = (reqHost || '').split(',')[0]?.trim();
+  if (!host) return [];
   const scheme = isHttps ? 'wss' : 'ws';
   return [`${scheme}://${host}${BT_TRACKER_PUBLIC_PREFIX}`];
 }

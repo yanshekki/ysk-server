@@ -114,5 +114,6 @@
   "udpPortOff": "0 · 關閉",
   "udpPortSameHttp": "與 HTTP 相同（{{port}}）",
   "udpPortClassic": "6969 · 傳統",
-  "portSuggest8000": "8000 · 建議"
+  "portSuggest8000": "8000 · 建議",
+  "announceHostUnset": "未設定公開 announce 主機"
 }

@@ -6,7 +6,7 @@ import { dirname } from 'node:path';
 import type { BtShareStats } from '@ysk/shared';
 import { tl } from '@ysk/shared';
 import type { FileShareRecord } from '../../files/manager.js';
-import { loadBtTrackerSettings } from './settings.js';
+import { buildSeederAnnounceList, loadBtTrackerSettings } from './settings.js';
 
 type SeedEntry = {
   shareId: string;
@@ -98,20 +98,8 @@ export async function seedShare(input: {
   }
   try {
     const c = await ensureClient();
-    // Always announce to the local tracker (and public list) so browser peers
-    // that join via the same-origin WS proxy discover this seeder.
-    const localHttp = `http://127.0.0.1:${settings.httpPort}/announce`;
-    const localWs = `ws://127.0.0.1:${settings.httpPort}`;
-    const announce = [
-      localHttp,
-      localWs,
-      ...(settings.publicAnnounceHost
-        ? [
-            `http://${settings.publicAnnounceHost.replace(/^https?:\/\//, '').split('/')[0]}:${settings.httpPort}/announce`,
-            `ws://${settings.publicAnnounceHost.replace(/^https?:\/\//, '').split('/')[0]}:${settings.httpPort}`,
-          ]
-        : []),
-    ];
+    // Panel public announce host + ports first; loopback only as process-local extra
+    const announce = buildSeederAnnounceList(settings);
     const torrent = await new Promise<SeedEntry['torrent']>((resolve, reject) => {
       const t = c.add(
         input.torrentAbsPath,

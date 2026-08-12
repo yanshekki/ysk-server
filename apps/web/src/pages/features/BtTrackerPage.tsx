@@ -307,7 +307,10 @@ export function BtTrackerPage() {
                   <span>
                     {t('btTracker.announceHost')}{' '}
                     <strong>
-                      {status?.settings?.publicAnnounceHost || '127.0.0.1'}
+                      {status?.settings?.publicAnnounceHost?.trim() ||
+                        t('btTracker.announceHostUnset', {
+                          defaultValue: '—',
+                        })}
                     </strong>
                   </span>
                   <span>

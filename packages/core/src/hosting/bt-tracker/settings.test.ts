@@ -4,9 +4,11 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import {
   buildAnnounceList,
+  buildSeederAnnounceList,
   btTrackerPortBindings,
   loadBtTrackerSettings,
   normalizeBtTrackerSettings,
+  resolveAnnounceHost,
   saveBtTrackerSettings,
 } from './settings.js';
 import { DEFAULT_BT_TRACKER_SETTINGS } from '@ysk/shared';
@@ -27,7 +29,22 @@ describe('bt-tracker settings', () => {
     expect(n.seederPortMax).toBe(n.seederPortMin);
   });
 
-  it('builds announce list with ws and optional udp', () => {
+  it('builds announce list from panel public host + ports (no fake 127.0.0.1)', () => {
+    const fromPanel = buildAnnounceList({
+      ...DEFAULT_BT_TRACKER_SETTINGS,
+      httpPort: 8000,
+      udpPort: 6969,
+      wsEnabled: true,
+      publicAnnounceHost: 'tracker.example.test',
+      listenHost: '0.0.0.0',
+    });
+    expect(fromPanel).toEqual([
+      'http://tracker.example.test:8000/announce',
+      'ws://tracker.example.test:8000',
+      'udp://tracker.example.test:6969',
+    ]);
+    expect(fromPanel.join(' ')).not.toContain('127.0.0.1');
+
     const httpOnly = buildAnnounceList(
       { ...DEFAULT_BT_TRACKER_SETTINGS, httpPort: 8000, wsEnabled: true, udpPort: 0 },
       { publicHost: 'example.com' },
@@ -41,6 +58,34 @@ describe('bt-tracker settings', () => {
     );
     expect(withUdp.some((u) => u.startsWith('udp://'))).toBe(true);
     expect(withUdp.some((u) => u.startsWith('ws://'))).toBe(false);
+
+    // Unset public host + bind-all → empty (do not invent 127.0.0.1 in magnets)
+    expect(
+      buildAnnounceList({
+        ...DEFAULT_BT_TRACKER_SETTINGS,
+        publicAnnounceHost: '',
+        listenHost: '0.0.0.0',
+      }),
+    ).toEqual([]);
+
+    expect(
+      resolveAnnounceHost({
+        publicAnnounceHost: '  tracker.example.test ',
+        listenHost: '0.0.0.0',
+      }),
+    ).toBe('tracker.example.test');
+  });
+
+  it('seeder announce prefers panel public host, loopback is secondary only', () => {
+    const list = buildSeederAnnounceList({
+      ...DEFAULT_BT_TRACKER_SETTINGS,
+      httpPort: 8000,
+      wsEnabled: true,
+      publicAnnounceHost: 'tracker.example.test',
+      listenHost: '0.0.0.0',
+    });
+    expect(list[0]).toContain('tracker.example.test:8000');
+    expect(list.some((u) => u.includes('127.0.0.1'))).toBe(true);
   });
 
   it('persists settings under dataDir', () => {
