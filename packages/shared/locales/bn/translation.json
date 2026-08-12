@@ -11845,5 +11845,29 @@
       "customCidr": "CIDR",
       "addCidr": "যোগ করুন"
     }
+  },
+  "search": {
+    "placeholder": "Search pages & resources…",
+    "aria": "Global search",
+    "results": "Search results",
+    "loading": "Searching…",
+    "noResults": "No matches",
+    "kinds": {
+      "page": "Pages",
+      "project": "Projects",
+      "email": "Email",
+      "mailbox": "Mailboxes",
+      "ssl": "SSL",
+      "dns": "DNS",
+      "nginx": "Nginx",
+      "share": "Shares",
+      "ftp": "FTP",
+      "mysql": "MySQL",
+      "postgres": "PostgreSQL",
+      "redis": "Redis",
+      "cron": "Cron",
+      "user": "Users",
+      "other": "Other"
+    }
   }
 }

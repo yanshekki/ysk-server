@@ -1,0 +1,24 @@
+{
+  "placeholder": "搜索页面与资源…",
+  "aria": "全局搜索",
+  "results": "搜尋結果",
+  "loading": "搜索中…",
+  "noResults": "没有匹配项",
+  "kinds": {
+    "page": "页面",
+    "project": "项目",
+    "email": "邮件",
+    "mailbox": "邮箱",
+    "ssl": "SSL",
+    "dns": "DNS",
+    "nginx": "Nginx",
+    "share": "分享",
+    "ftp": "FTP",
+    "mysql": "MySQL",
+    "postgres": "PostgreSQL",
+    "redis": "Redis",
+    "cron": "Cron",
+    "user": "用户",
+    "other": "其他"
+  }
+}

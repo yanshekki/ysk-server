@@ -3,11 +3,11 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { JsonStore } from '../db/store.js';
-import { globalSearch } from './global-search.js';
+import { globalSearch, listSearchablePages } from './global-search.js';
 import type { YskDatabase } from '../db/database.js';
 
 describe('globalSearch', () => {
-  it('finds projects users email ftp ssl dns', () => {
+  it('finds projects users email ftp ssl dns pages', () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-search-'));
     try {
       const store = new JsonStore(join(dir, 'db.json'));
@@ -45,18 +45,44 @@ describe('globalSearch', () => {
       (store.snapshot as { dns_zones?: unknown[] }).dns_zones = [
         { id: 'z1', zone: 'acme.test' },
       ];
+      store.snapshot.file_shares = [
+        { id: 's1', path: '/public/acme-video.mp4', token: 'tok1' },
+      ] as never;
+      store.snapshot.nginx_sites = [{ id: 'n1', name: 'acme-site', domain: 'acme.test' }] as never;
       store.persist();
       const db = store as unknown as YskDatabase;
       expect(globalSearch(db, '')).toEqual([]);
+
       const hits = globalSearch(db, 'acme');
       expect(hits.some((h) => h.kind === 'project')).toBe(true);
       expect(hits.some((h) => h.kind === 'email')).toBe(true);
       expect(hits.some((h) => h.kind === 'ssl')).toBe(true);
       expect(hits.some((h) => h.kind === 'dns')).toBe(true);
       expect(hits.some((h) => h.kind === 'ftp')).toBe(true);
+      expect(hits.some((h) => h.kind === 'nginx')).toBe(true);
+      expect(hits.some((h) => h.kind === 'share')).toBe(true);
+
       expect(globalSearch(db, 'alice').some((h) => h.kind === 'user')).toBe(true);
+
+      // Page index: BT tracker aliases
+      const bt = globalSearch(db, 'webtorrent');
+      expect(bt.some((h) => h.kind === 'page' && h.href === '/bt-tracker')).toBe(true);
+
+      const sslPage = globalSearch(db, 'certificate');
+      expect(sslPage.some((h) => h.kind === 'page' && h.href === '/ssl')).toBe(true);
+
+      // Ranking: exact page title high
+      const projects = globalSearch(db, 'projects');
+      expect(projects[0]?.kind).toBe('page');
+      expect(projects[0]?.href).toBe('/projects');
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+
+  it('lists searchable pages catalog', () => {
+    const pages = listSearchablePages();
+    expect(pages.some((p) => p.href === '/bt-tracker')).toBe(true);
+    expect(pages.length).toBeGreaterThan(20);
   });
 });

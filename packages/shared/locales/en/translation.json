@@ -1896,7 +1896,7 @@
     "languageNative": "English",
     "language": "Language",
     "switchLanguage": "Switch language",
-    "searchGlobal": "Search…",
+    "searchGlobal": "Search pages & resources…",
     "menu": "Menu",
     "processing": "Working…",
     "retry": "Retry",
@@ -11846,6 +11846,30 @@
       "lanCidrs": "LAN networks",
       "customCidr": "CIDR",
       "addCidr": "Add"
+    }
+  },
+  "search": {
+    "placeholder": "Search pages & resources…",
+    "aria": "Global search",
+    "results": "Search results",
+    "loading": "Searching…",
+    "noResults": "No matches",
+    "kinds": {
+      "page": "Pages",
+      "project": "Projects",
+      "email": "Email",
+      "mailbox": "Mailboxes",
+      "ssl": "SSL",
+      "dns": "DNS",
+      "nginx": "Nginx",
+      "share": "Shares",
+      "ftp": "FTP",
+      "mysql": "MySQL",
+      "postgres": "PostgreSQL",
+      "redis": "Redis",
+      "cron": "Cron",
+      "user": "Users",
+      "other": "Other"
     }
   }
 }

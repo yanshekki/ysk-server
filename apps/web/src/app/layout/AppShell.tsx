@@ -1,4 +1,4 @@
-import { useId, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { canSeeFeature } from '@ysk/shared';
@@ -7,8 +7,8 @@ import { useCapabilities } from '../../shared/hooks/useCapabilities';
 import { useUpdatesNavBadge } from '../../shared/hooks/useUpdatesNavBadge';
 import { useNavBookmarks } from '../../shared/hooks/useNavBookmarks';
 import { FEATURE_SECTIONS } from '../../shared/nav/features';
-import { api } from '../../shared/services/api';
 import { buttonClassName, ToastViewport } from '../../shared/components/ui';
+import { GlobalSearch } from '../../shared/components/GlobalSearch';
 import {
   LOCALES,
   LOCALE_LABELS,
@@ -43,12 +43,7 @@ export function AppShell() {
   const { capabilities } = useCapabilities();
   const navigate = useNavigate();
   const location = useLocation();
-  const globalSearchId = useId();
   const [open, setOpen] = useState(false);
-  const [searchQ, setSearchQ] = useState('');
-  const [searchHits, setSearchHits] = useState<
-    Array<{ kind: string; title: string; subtitle?: string; href: string }>
-  >([]);
 
   const isAdmin = Boolean(user?.roles?.includes('admin'));
   const updatesBadge = useUpdatesNavBadge();
@@ -71,22 +66,6 @@ export function AppShell() {
   async function onLogout() {
     await logout();
     navigate('/login', { replace: true });
-  }
-
-  async function onSearch(q: string) {
-    setSearchQ(q);
-    if (q.trim().length < 1) {
-      setSearchHits([]);
-      return;
-    }
-    try {
-      const r = await api.requestRaw<{
-        items: Array<{ kind: string; title: string; subtitle?: string; href: string }>;
-      }>(`/api/v1/search?q=${encodeURIComponent(q.trim())}`);
-      setSearchHits(r.items ?? []);
-    } catch {
-      setSearchHits([]);
-    }
   }
 
   const primaryRole = user?.roles?.[0];
@@ -219,43 +198,8 @@ export function AppShell() {
           >
             ☰
           </button>
-          <div className="shell__search shell-search">
-            <input
-              id={globalSearchId}
-              name="global-search"
-              type="search"
-              placeholder={t('common.searchGlobal')}
-              value={searchQ}
-              onChange={(e) => void onSearch(e.target.value)}
-              aria-label={t('common.searchGlobal')}
-              className="shell-search__input"
-              autoComplete="off"
-            />
-            {searchHits.length > 0 ? (
-              <div className="card shell-search__menu">
-                <ul className="list-plain shell-search__list">
-                  {searchHits.map((h, i) => (
-                    <li key={`${h.kind}-${h.href}-${i}`}>
-                      <button
-                        type="button"
-                        className={`${buttonClassName({ variant: 'ghost', size: 'sm' })} shell-search__item`}
-                        onClick={() => {
-                          setSearchHits([]);
-                          setSearchQ('');
-                          navigate(h.href);
-                        }}
-                      >
-                        <span className="badge">{h.kind}</span>{' '}
-                        {h.title}
-                        {h.subtitle ? (
-                          <span className="muted u-text-sm"> · {h.subtitle}</span>
-                        ) : null}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
+          <div className="shell__search">
+            <GlobalSearch />
           </div>
           <label className="shell__lang">
             <select

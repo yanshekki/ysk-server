@@ -1896,7 +1896,7 @@
     "languageNative": "繁體中文",
     "language": "語言",
     "switchLanguage": "切換語言",
-    "searchGlobal": "全域搜尋…",
+    "searchGlobal": "搜尋頁面與資源…",
     "menu": "選單",
     "processing": "處理中…",
     "retry": "再試",
@@ -11846,6 +11846,30 @@
       "lanCidrs": "區域網段",
       "customCidr": "CIDR",
       "addCidr": "加入"
+    }
+  },
+  "search": {
+    "placeholder": "搜尋頁面與資源…",
+    "aria": "全域搜尋",
+    "results": "搜尋結果",
+    "loading": "搜尋中…",
+    "noResults": "沒有符合項目",
+    "kinds": {
+      "page": "頁面",
+      "project": "專案",
+      "email": "電郵",
+      "mailbox": "郵箱",
+      "ssl": "SSL",
+      "dns": "DNS",
+      "nginx": "Nginx",
+      "share": "分享",
+      "ftp": "FTP",
+      "mysql": "MySQL",
+      "postgres": "PostgreSQL",
+      "redis": "Redis",
+      "cron": "Cron",
+      "user": "使用者",
+      "other": "其他"
     }
   }
 }

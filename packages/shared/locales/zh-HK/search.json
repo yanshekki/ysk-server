@@ -1,0 +1,24 @@
+{
+  "placeholder": "搜尋頁面與資源…",
+  "aria": "全域搜尋",
+  "results": "搜尋結果",
+  "loading": "搜尋中…",
+  "noResults": "沒有符合項目",
+  "kinds": {
+    "page": "頁面",
+    "project": "專案",
+    "email": "電郵",
+    "mailbox": "郵箱",
+    "ssl": "SSL",
+    "dns": "DNS",
+    "nginx": "Nginx",
+    "share": "分享",
+    "ftp": "FTP",
+    "mysql": "MySQL",
+    "postgres": "PostgreSQL",
+    "redis": "Redis",
+    "cron": "Cron",
+    "user": "使用者",
+    "other": "其他"
+  }
+}
