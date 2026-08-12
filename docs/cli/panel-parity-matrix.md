@@ -56,7 +56,7 @@
 | Control plane | `setup` `serve` `readiness` `health` `store` `system unit-install` `update` |
 | Projects | `projects list\|get\|create\|deploy\|stop\|git-deploy\|isolation\|health` |
 | Files | `files list\|read\|write\|mkdir\|rm\|…\|trash\|webdav\|shares list\|create\|bt-stats` |
-| BT Tracker | `bt-tracker status\|start\|stop\|settings\|torrents` |
+| BT Tracker | `bt-tracker status\|start\|stop\|settings\|torrents\|restore\|jobs` |
 | Email | `email domains\|mailboxes\|dns\|bootstrap\|deliverability` |
 | Nginx / SSL / DNS zones | `nginx` `ssl` `dns` `hosting …` |
 | Defense | `defense` / `protection` |
