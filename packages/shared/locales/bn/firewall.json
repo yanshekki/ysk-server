@@ -36,7 +36,8 @@
     "ports": "পোর্ট খুলুন",
     "deny": "স্থায়ী অস্বীকার আইপি",
     "profiles": "প্রোফাইল",
-    "about": "সম্পর্কে"
+    "about": "সম্পর্কে",
+    "services": "Services"
   },
   "currentRules": "বর্তমান নিয়ম",
   "rulesSourceHint": "UFW সংখ্যাযুক্ত নিয়ম (ufw স্ট্যাটাস নম্বরযুক্ত)",
@@ -85,5 +86,17 @@
   "applyToSystem": "সিস্টেমে আবেদন করুন",
   "deletedRule": "মুছে ফেলা হয়েছে #{{n}}",
   "deleteRuleTitle": "নিয়ম #{{n}} মুছবেন?",
-  "deleteRuleDesc": "UFW নিয়ম নম্বর সরিয়ে দেয় (সিস্টেম-পরিবর্তনের অনুমতি প্রয়োজন)।"
+  "deleteRuleDesc": "UFW নিয়ম নম্বর সরিয়ে দেয় (সিস্টেম-পরিবর্তনের অনুমতি প্রয়োজন)।",
+  "servicesTitle": "Managed services",
+  "servicesHint": "Desired network exposure for YSK services. Opening a service syncs these rules automatically.",
+  "servicesEmpty": "No service exposure data yet",
+  "servicesEmptyDesc": "Start a managed service (web, FTPS, VPN, DB…) to populate this list.",
+  "servicesManualHint": "Manual port chips are under the Ports tab — prefer managing access here so rules stay tagged (ysk-svc).",
+  "portsManualHint": "Advanced manual rules. Prefer the Services tab for managed software.",
+  "colService": "Service",
+  "colMode": "Mode",
+  "colPorts": "Ports",
+  "colSync": "Status",
+  "synced": "Synced",
+  "syncNow": "Sync"
 }

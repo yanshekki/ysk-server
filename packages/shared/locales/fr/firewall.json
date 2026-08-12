@@ -36,7 +36,8 @@
     "ports": "Ports ouverts",
     "deny": "IP en refus permanent",
     "profiles": "Profils",
-    "about": "À propos"
+    "about": "À propos",
+    "services": "Services"
   },
   "currentRules": "Règles actuelles",
   "rulesSourceHint": "Règles UFW numérotées (ufw status numbered)",
@@ -85,5 +86,17 @@
   "applyToSystem": "Appliquer au système",
   "deletedRule": "Supprimé #{{n}}",
   "deleteRuleTitle": "Supprimer la règle #{{n}} ?",
-  "deleteRuleDesc": "Supprime ce numéro de règle UFW (nécessite la permission system-change)."
+  "deleteRuleDesc": "Supprime ce numéro de règle UFW (nécessite la permission system-change).",
+  "servicesTitle": "Managed services",
+  "servicesHint": "Desired network exposure for YSK services. Opening a service syncs these rules automatically.",
+  "servicesEmpty": "No service exposure data yet",
+  "servicesEmptyDesc": "Start a managed service (web, FTPS, VPN, DB…) to populate this list.",
+  "servicesManualHint": "Manual port chips are under the Ports tab — prefer managing access here so rules stay tagged (ysk-svc).",
+  "portsManualHint": "Advanced manual rules. Prefer the Services tab for managed software.",
+  "colService": "Service",
+  "colMode": "Mode",
+  "colPorts": "Ports",
+  "colSync": "Status",
+  "synced": "Synced",
+  "syncNow": "Sync"
 }

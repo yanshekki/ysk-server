@@ -36,7 +36,8 @@
     "ports": "열린 포트",
     "deny": "IP 영구 거부",
     "profiles": "프로필",
-    "about": "설명"
+    "about": "설명",
+    "services": "Services"
   },
   "currentRules": "현재 규칙",
   "rulesSourceHint": "UFW 번호가 매겨진 규칙(ufw 상태 번호가 매겨짐)",
@@ -85,5 +86,17 @@
   "applyToSystem": "시스템에 적용",
   "deletedRule": "#{{n}} 삭제됨",
   "deleteRuleTitle": "규칙 #{{n}}을 삭제하시겠습니까?",
-  "deleteRuleDesc": "해당 UFW 규칙 번호를 제거합니다(시스템 변경 권한이 필요함)."
+  "deleteRuleDesc": "해당 UFW 규칙 번호를 제거합니다(시스템 변경 권한이 필요함).",
+  "servicesTitle": "Managed services",
+  "servicesHint": "Desired network exposure for YSK services. Opening a service syncs these rules automatically.",
+  "servicesEmpty": "No service exposure data yet",
+  "servicesEmptyDesc": "Start a managed service (web, FTPS, VPN, DB…) to populate this list.",
+  "servicesManualHint": "Manual port chips are under the Ports tab — prefer managing access here so rules stay tagged (ysk-svc).",
+  "portsManualHint": "Advanced manual rules. Prefer the Services tab for managed software.",
+  "colService": "Service",
+  "colMode": "Mode",
+  "colPorts": "Ports",
+  "colSync": "Status",
+  "synced": "Synced",
+  "syncNow": "Sync"
 }

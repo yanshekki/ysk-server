@@ -36,7 +36,8 @@
     "ports": "बंदरगाह खोलें",
     "deny": "आईपी ​​को स्थायी रूप से अस्वीकार करें",
     "profiles": "प्रोफाइल",
-    "about": "के बारे में"
+    "about": "के बारे में",
+    "services": "Services"
   },
   "currentRules": "वर्तमान नियम",
   "rulesSourceHint": "UFW क्रमांकित नियम (ufw स्थिति क्रमांकित)",
@@ -85,5 +86,17 @@
   "applyToSystem": "सिस्टम पर लागू करें",
   "deletedRule": "हटा दिया गया #{{n}}",
   "deleteRuleTitle": "नियम #{{n}} हटाएं?",
-  "deleteRuleDesc": "उस UFW नियम संख्या को हटा देता है (सिस्टम-परिवर्तन की अनुमति की आवश्यकता है)।"
+  "deleteRuleDesc": "उस UFW नियम संख्या को हटा देता है (सिस्टम-परिवर्तन की अनुमति की आवश्यकता है)।",
+  "servicesTitle": "Managed services",
+  "servicesHint": "Desired network exposure for YSK services. Opening a service syncs these rules automatically.",
+  "servicesEmpty": "No service exposure data yet",
+  "servicesEmptyDesc": "Start a managed service (web, FTPS, VPN, DB…) to populate this list.",
+  "servicesManualHint": "Manual port chips are under the Ports tab — prefer managing access here so rules stay tagged (ysk-svc).",
+  "portsManualHint": "Advanced manual rules. Prefer the Services tab for managed software.",
+  "colService": "Service",
+  "colMode": "Mode",
+  "colPorts": "Ports",
+  "colSync": "Status",
+  "synced": "Synced",
+  "syncNow": "Sync"
 }

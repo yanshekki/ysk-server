@@ -36,7 +36,8 @@
     "ports": "Buka port",
     "deny": "IP penolakan permanen",
     "profiles": "Profil",
-    "about": "Tentang"
+    "about": "Tentang",
+    "services": "Services"
   },
   "currentRules": "Aturan saat ini",
   "rulesSourceHint": "Aturan bernomor UFW (status ufw bernomor)",
@@ -85,5 +86,17 @@
   "applyToSystem": "Terapkan ke sistem",
   "deletedRule": "Dihapus #{{n}}",
   "deleteRuleTitle": "Hapus aturan #{{n}}?",
-  "deleteRuleDesc": "Menghapus nomor aturan UFW (membutuhkan izin perubahan sistem)."
+  "deleteRuleDesc": "Menghapus nomor aturan UFW (membutuhkan izin perubahan sistem).",
+  "servicesTitle": "Managed services",
+  "servicesHint": "Desired network exposure for YSK services. Opening a service syncs these rules automatically.",
+  "servicesEmpty": "No service exposure data yet",
+  "servicesEmptyDesc": "Start a managed service (web, FTPS, VPN, DB…) to populate this list.",
+  "servicesManualHint": "Manual port chips are under the Ports tab — prefer managing access here so rules stay tagged (ysk-svc).",
+  "portsManualHint": "Advanced manual rules. Prefer the Services tab for managed software.",
+  "colService": "Service",
+  "colMode": "Mode",
+  "colPorts": "Ports",
+  "colSync": "Status",
+  "synced": "Synced",
+  "syncNow": "Sync"
 }
