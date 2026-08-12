@@ -72,7 +72,7 @@ pnpm e2e:sql-switch-live   # Docker：MySQL 建庫寫入 → dump → MariaDB im
 
 驗收內容：
 
-- `@ysk-server/core`：`sql-engine-switch` + `mysql-frozen` + `sql-engine-health` 單元測試
+- `ysk-server-core`：`sql-engine-switch` + `mysql-frozen` + `sql-engine-health` 單元測試
 - shared DTO：`needs_exclusive_switch` / `healthFindings` 等欄位仍在
 - core export：`previewSqlEngineSwitch`、`diagnoseSqlEngine`、`planRepairFromFindings`、`recoverMysqlAfterEngineSwitch`…
 - 本 checklist 檔存在且含 FROZEN／反向／通過標準章節

@@ -94,7 +94,7 @@
   "cmdNote": "Edge ysk-server ایجنٹ رن CLI JSON کو مقامی طور پر چلاتا ہے ( --json شامل کرتا ہے)۔ میزبان تبدیلیوں کو ابھی بھی کنارے پر YSK_EXECUTE=1 کی ضرورت ہے۔ تاریخ میں ایگزٹ کوڈ اور JSON دیکھیں۔",
   "resultTitle": "کمانڈ کا نتیجہ · باہر نکلیں {{code}}",
   "resultTitlePlain": "کمانڈ کا نتیجہ",
-  "codeComment": "# تصور: رجسٹر → ہارٹ بیٹ لوپ → پل کمانڈز → ack\n# لائبریری: @ysk-server/core runOutboundAgent/agentCycle",
+  "codeComment": "# تصور: رجسٹر → ہارٹ بیٹ لوپ → پل کمانڈز → ack\n# لائبریری: ysk-server-core runOutboundAgent/agentCycle",
   "resultOuter": "بیرونی: کنارے ack (exitCode / stderr)۔ اندرونی نتیجہ:",
   "deleteTitle": "{{id}} حذف کریں؟",
   "deleteTitlePlain": "ایجنٹ کو حذف کریں؟",

@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * fail2ban deep operations — log-driven temporary bans / jails.
  * Distinct from UFW (port policy) and Defense Center (attack orchestration).

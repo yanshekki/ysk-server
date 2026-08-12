@@ -4,8 +4,8 @@
  */
 import type { IncomingMessage } from 'node:http';
 import { join } from 'node:path';
-import { publicFilesRoot, chownProjectPath } from '@ysk-server/core';
-import type { UserDto } from '@ysk-server/shared';
+import { publicFilesRoot, chownProjectPath } from 'ysk-server-core';
+import type { UserDto } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
 import { requireCap } from '../http/rbac-guard.js';
 

@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * Per-runtime tuning catalogs + JSON persistence for Node/Python/Go/Rust.
  * Applied as Environment= on systemd unit / deploy env.

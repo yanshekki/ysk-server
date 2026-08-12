@@ -1,7 +1,7 @@
 {
-  "name": "@ysk-server/core",
+  "name": "ysk-server-core",
   "version": "1.0.0",
-  "description": "YSK Server core business logic \u2014 security, hosting, LLM, update, email",
+  "description": "YSK Server core business logic — security, hosting, LLM, update, email",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -12,7 +12,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "publishConfig": {
     "access": "public"
@@ -32,7 +33,7 @@
   },
   "dependencies": {
     "@simplewebauthn/server": "^13.3.2",
-    "@ysk-server/shared": "workspace:*",
+    "ysk-server-shared": "workspace:*",
     "bencode": "^4.0.0",
     "better-sqlite3": "13.0.1",
     "bittorrent-tracker": "^11.2.3",

@@ -1,5 +1,5 @@
 /**
- * Web i18n — catalogs from @ysk-server/shared/locales (SSOT).
+ * Web i18n — catalogs from ysk-server-shared/locales (SSOT).
  * Tier-1 defaults: zh-HK / zh-CN / en.
  * Other locales load on demand (keeps main bundle small; avoids blank-page wait).
  */
@@ -12,25 +12,25 @@ import {
   isRtlLocale,
   normalizeLocale,
   type LocaleCode,
-} from '@ysk-server/shared';
+} from 'ysk-server-shared';
 
 type Catalog = Record<string, unknown>;
 
 /** Dynamic import map — each locale becomes its own Vite chunk. */
 const CATALOG_LOADERS: Record<string, () => Promise<{ default: Catalog }>> = {
-  en: () => import('@ysk-server/shared/locales/en/translation.json'),
-  'zh-HK': () => import('@ysk-server/shared/locales/zh-HK/translation.json'),
-  'zh-CN': () => import('@ysk-server/shared/locales/zh-CN/translation.json'),
-  ja: () => import('@ysk-server/shared/locales/ja/translation.json'),
-  ko: () => import('@ysk-server/shared/locales/ko/translation.json'),
-  hi: () => import('@ysk-server/shared/locales/hi/translation.json'),
-  es: () => import('@ysk-server/shared/locales/es/translation.json'),
-  ar: () => import('@ysk-server/shared/locales/ar/translation.json'),
-  fr: () => import('@ysk-server/shared/locales/fr/translation.json'),
-  bn: () => import('@ysk-server/shared/locales/bn/translation.json'),
-  pt: () => import('@ysk-server/shared/locales/pt/translation.json'),
-  id: () => import('@ysk-server/shared/locales/id/translation.json'),
-  ur: () => import('@ysk-server/shared/locales/ur/translation.json'),
+  en: () => import('ysk-server-shared/locales/en/translation.json'),
+  'zh-HK': () => import('ysk-server-shared/locales/zh-HK/translation.json'),
+  'zh-CN': () => import('ysk-server-shared/locales/zh-CN/translation.json'),
+  ja: () => import('ysk-server-shared/locales/ja/translation.json'),
+  ko: () => import('ysk-server-shared/locales/ko/translation.json'),
+  hi: () => import('ysk-server-shared/locales/hi/translation.json'),
+  es: () => import('ysk-server-shared/locales/es/translation.json'),
+  ar: () => import('ysk-server-shared/locales/ar/translation.json'),
+  fr: () => import('ysk-server-shared/locales/fr/translation.json'),
+  bn: () => import('ysk-server-shared/locales/bn/translation.json'),
+  pt: () => import('ysk-server-shared/locales/pt/translation.json'),
+  id: () => import('ysk-server-shared/locales/id/translation.json'),
+  ur: () => import('ysk-server-shared/locales/ur/translation.json'),
 };
 
 /**
@@ -39,19 +39,19 @@ const CATALOG_LOADERS: Record<string, () => Promise<{ default: Catalog }>> = {
  * or an older chunk was already registered without serviceExposure.
  */
 const SERVICE_EXPOSURE_LOADERS: Record<string, () => Promise<{ default: Catalog } | Catalog>> = {
-  en: () => import('@ysk-server/shared/locales/en/serviceExposure.json'),
-  'zh-HK': () => import('@ysk-server/shared/locales/zh-HK/serviceExposure.json'),
-  'zh-CN': () => import('@ysk-server/shared/locales/zh-CN/serviceExposure.json'),
-  ja: () => import('@ysk-server/shared/locales/ja/serviceExposure.json'),
-  ko: () => import('@ysk-server/shared/locales/ko/serviceExposure.json'),
-  hi: () => import('@ysk-server/shared/locales/hi/serviceExposure.json'),
-  es: () => import('@ysk-server/shared/locales/es/serviceExposure.json'),
-  ar: () => import('@ysk-server/shared/locales/ar/serviceExposure.json'),
-  fr: () => import('@ysk-server/shared/locales/fr/serviceExposure.json'),
-  bn: () => import('@ysk-server/shared/locales/bn/serviceExposure.json'),
-  pt: () => import('@ysk-server/shared/locales/pt/serviceExposure.json'),
-  id: () => import('@ysk-server/shared/locales/id/serviceExposure.json'),
-  ur: () => import('@ysk-server/shared/locales/ur/serviceExposure.json'),
+  en: () => import('ysk-server-shared/locales/en/serviceExposure.json'),
+  'zh-HK': () => import('ysk-server-shared/locales/zh-HK/serviceExposure.json'),
+  'zh-CN': () => import('ysk-server-shared/locales/zh-CN/serviceExposure.json'),
+  ja: () => import('ysk-server-shared/locales/ja/serviceExposure.json'),
+  ko: () => import('ysk-server-shared/locales/ko/serviceExposure.json'),
+  hi: () => import('ysk-server-shared/locales/hi/serviceExposure.json'),
+  es: () => import('ysk-server-shared/locales/es/serviceExposure.json'),
+  ar: () => import('ysk-server-shared/locales/ar/serviceExposure.json'),
+  fr: () => import('ysk-server-shared/locales/fr/serviceExposure.json'),
+  bn: () => import('ysk-server-shared/locales/bn/serviceExposure.json'),
+  pt: () => import('ysk-server-shared/locales/pt/serviceExposure.json'),
+  id: () => import('ysk-server-shared/locales/id/serviceExposure.json'),
+  ur: () => import('ysk-server-shared/locales/ur/serviceExposure.json'),
 };
 
 const loading = new Map<string, Promise<void>>();

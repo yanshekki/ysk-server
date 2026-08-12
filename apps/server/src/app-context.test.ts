@@ -8,7 +8,7 @@ import {
   applyProtection,
   type AppContext,
 } from './app-context.js';
-import { evaluateProtection } from '@ysk-server/core';
+import { evaluateProtection } from 'ysk-server-core';
 import { VERSION } from './version.js';
 
 describe('app-context helpers', () => {

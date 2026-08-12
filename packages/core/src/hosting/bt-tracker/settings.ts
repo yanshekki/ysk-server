@@ -7,7 +7,7 @@ import {
   DEFAULT_BT_TRACKER_SETTINGS,
   type BtTrackerSettings,
   type ServicePortBinding,
-} from '@ysk-server/shared';
+} from 'ysk-server-shared';
 
 function settingsPath(dataDir: string): string {
   return join(dataDir, 'bt-tracker', 'settings.json');

@@ -2,9 +2,9 @@
  * MySQL / MariaDB engine status + install + start
  */
 import { api } from '../../shared/services/api';
-import type { DbEngineKind, DbEngineStatus } from '@ysk-server/shared';
+import type { DbEngineKind, DbEngineStatus } from 'ysk-server-shared';
 
-export type { DbEngineKind, DbEngineStatus } from '@ysk-server/shared';
+export type { DbEngineKind, DbEngineStatus } from 'ysk-server-shared';
 
 export const dbEngineApi = {
   status: (engine: DbEngineKind) =>

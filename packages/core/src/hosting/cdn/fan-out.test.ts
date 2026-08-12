@@ -12,7 +12,7 @@ import {
   purgeCdnSite,
   resolveShieldUpstreamUrl,
 } from './fan-out.js';
-import type { CdnNodeDto, CdnSiteDto } from '@ysk-server/shared';
+import type { CdnNodeDto, CdnSiteDto } from 'ysk-server-shared';
 
 function mockHost(opts?: {
   execute?: boolean;

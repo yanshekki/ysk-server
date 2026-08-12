@@ -1,7 +1,7 @@
 /**
  * Pure helpers for FTPS accounts + vsftpd service UI.
  */
-import type { FtpsSettings, FtpsStatus } from '@ysk-server/shared';
+import type { FtpsSettings, FtpsStatus } from 'ysk-server-shared';
 
 /** TCP ports/ranges for panel firewall apply (listen + PASV + 990). */
 export function ftpsOpenPortList(

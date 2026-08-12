@@ -1,11 +1,11 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * Apply agent runtime install plan under EXECUTE policy (never fake success).
  */
 
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import type { AgentRuntimeKind } from '@ysk-server/shared';
+import type { AgentRuntimeKind } from 'ysk-server-shared';
 import type { HostExecutor } from '../host/executor.js';
 import { planAgentInstall, parseAgentKind } from './runtime.js';
 import { renderAgentSystemdUnit, probeAgentRuntime, resolveAgentBinary } from './probe.js';

@@ -71,7 +71,7 @@ for (const p of apis
 push('');
 
 // Shared exports
-push('## @ysk-server/shared type|interface exports');
+push('## ysk-server-shared type|interface exports');
 const shared = walk(join(root, 'packages/shared/src'), (p) => p.endsWith('.ts') && !p.includes('.test.'));
 let sharedN = 0;
 for (const p of shared) {

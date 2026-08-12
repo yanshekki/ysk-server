@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { assertSafeOutboundUrl, isBlockedSsrfHost } from './ssrf.js';
-import { YskError } from '@ysk-server/shared';
+import { YskError } from 'ysk-server-shared';
 
 describe('ssrf guards', () => {
   it('strict policy blocks RFC1918 and metadata', () => {

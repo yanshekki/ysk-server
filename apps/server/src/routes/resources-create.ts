@@ -2,13 +2,13 @@
  * Managed resource create (Wave Z3).
  * Extracted from resources-write.ts. Behaviour preserved.
  */
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import {
   createResource,
   seedDnsZoneRecords,
   type CollectionKey,
-} from '@ysk-server/core';
+} from 'ysk-server-core';
 import type { AppContext } from '../app-context.js';
 import { readBody, sendJson } from '../http/util.js';
 import {

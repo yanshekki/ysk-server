@@ -9,7 +9,7 @@ import {
   YskError,
   type CdnNodeDto,
   type CdnNodeRole,
-  type CdnNodeStatus,  tl} from '@ysk-server/shared';
+  type CdnNodeStatus,  tl} from 'ysk-server-shared';
 import type { JsonStore } from '../../db/store.js';
 import { probeTcp } from '../../email/live-checks.js';
 import { assertSafeOutboundUrl } from '../../net/ssrf.js';

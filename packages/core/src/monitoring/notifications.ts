@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * Aggregate panel notifications for dashboard (honest, derived from live state).
  */

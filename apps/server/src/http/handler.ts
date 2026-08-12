@@ -2,7 +2,7 @@
  * Thin auth helpers for route modules — secondary features should use these.
  */
 import type { IncomingMessage } from 'node:http';
-import type { CapabilityId, UserDto } from '@ysk-server/shared';
+import type { CapabilityId, UserDto } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
 import { requireCap } from './rbac-guard.js';
 import { getBearer } from './util.js';

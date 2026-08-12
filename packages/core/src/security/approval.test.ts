@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ApprovalQueue } from './approval.js';
-import { ErrorCodes, YskError } from '@ysk-server/shared';
+import { ErrorCodes, YskError } from 'ysk-server-shared';
 
 describe('ApprovalQueue', () => {
   it('requires approval before high-risk execute', () => {

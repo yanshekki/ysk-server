@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * Probe + one-click install for catalog software (panel only).
  */

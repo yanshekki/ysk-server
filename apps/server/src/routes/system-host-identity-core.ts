@@ -3,7 +3,7 @@
  * Extracted from system-host-identity.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -20,13 +20,13 @@ export async function handleSystemHostIdentityCoreRoutes(
 ): Promise<boolean> {
   if (method === 'GET' && url.pathname === '/api/v1/system/host') {
     ctx.auth.authenticate(getBearer(req));
-    const { collectHostOverview } = await import('@ysk-server/core');
+    const { collectHostOverview } = await import('ysk-server-core');
     sendJson(res, 200, await collectHostOverview(ctx.host));
     return true;
   }
   if (method === 'GET' && url.pathname === '/api/v1/system/host-identity') {
     ctx.auth.authenticate(getBearer(req));
-    const { collectHostOverview } = await import('@ysk-server/core');
+    const { collectHostOverview } = await import('ysk-server-core');
     const o = await collectHostOverview(ctx.host);
     sendJson(res, 200, {
       hostname: o.identity.hostname,
@@ -40,7 +40,7 @@ export async function handleSystemHostIdentityCoreRoutes(
   if (method === 'GET' && url.pathname === '/api/v1/system/timezones') {
     ctx.auth.authenticate(getBearer(req));
     const { listHostTimezones, mergeTimezoneOptions, collectHostOverview } = await import(
-      '@ysk-server/core'
+      'ysk-server-core'
     );
     const listed = await listHostTimezones(ctx.host);
     let current: string | null = null;
@@ -76,7 +76,7 @@ export async function handleSystemHostIdentityCoreRoutes(
     }
     let anyFail = false;
     if (data.hostname?.trim()) {
-      const { setStaticHostname } = await import('@ysk-server/core');
+      const { setStaticHostname } = await import('ysk-server-core');
       const r = await setStaticHostname(ctx.host, data.hostname.trim());
       if (r.ok) {
         notes.push(tl('system.identitySetHostname', { name: data.hostname.trim() }));
@@ -87,7 +87,7 @@ export async function handleSystemHostIdentityCoreRoutes(
     }
     // Always allow setting/clearing pretty (display) name when key is present
     if (data.prettyHostname !== undefined) {
-      const { setPrettyHostname } = await import('@ysk-server/core');
+      const { setPrettyHostname } = await import('ysk-server-core');
       const pretty = String(data.prettyHostname ?? '').trim();
       const r = await setPrettyHostname(ctx.host, pretty);
       if (r.ok) {
@@ -103,7 +103,7 @@ export async function handleSystemHostIdentityCoreRoutes(
     }
     if (data.timezone?.trim()) {
       const tz = data.timezone.trim();
-      const { isValidTimezoneId, listHostTimezones } = await import('@ysk-server/core');
+      const { isValidTimezoneId, listHostTimezones } = await import('ysk-server-core');
       if (!isValidTimezoneId(tz)) {
         anyFail = true;
         notes.push(tl('notes.auto.t0797', { v0: 'invalid timezone id' }));

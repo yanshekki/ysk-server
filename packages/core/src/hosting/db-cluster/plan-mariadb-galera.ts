@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * MariaDB Galera plan + conf render (pure; never mutates host).
  */

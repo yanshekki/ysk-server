@@ -19,7 +19,7 @@ export async function handleProjectsIsolationRoutes(
 ): Promise<boolean> {
   if (method === 'GET' && url.pathname === '/api/v1/projects/isolation') {
     ctx.auth.authenticate(getBearer(req));
-    const { listIsolationReport } = await import('@ysk-server/core');
+    const { listIsolationReport } = await import('ysk-server-core');
     const snaps = ctx.projects.list().map((p) => ({
       id: p.id,
       name: p.name,
@@ -41,7 +41,7 @@ export async function handleProjectsIsolationRoutes(
       projectIds?: string[];
     };
     const ownerUserId = data.ownerUserId ?? user.id;
-    const { backfillProjectOwners } = await import('@ysk-server/core');
+    const { backfillProjectOwners } = await import('ysk-server-core');
     const r = backfillProjectOwners(ctx.db, ownerUserId, {
       projectIds: data.projectIds,
       onlyUnowned: true,

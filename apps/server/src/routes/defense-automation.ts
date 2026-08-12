@@ -3,7 +3,7 @@
  * Extracted from defense-ops.ts (Wave P2). Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -21,7 +21,7 @@ export async function handleDefenseAutomationRoutes(
 ): Promise<boolean> {
   if (method === 'GET' && url.pathname === '/api/v1/defense/auto-ban') {
     ctx.auth.authenticate(getBearer(req));
-    const { loadAutoBanPolicy, countAutoBansLastHour } = await import('@ysk-server/core');
+    const { loadAutoBanPolicy, countAutoBansLastHour } = await import('ysk-server-core');
     const policy = loadAutoBanPolicy(ctx.db);
     sendJson(res, 200, {
       ...policy,
@@ -33,7 +33,7 @@ export async function handleDefenseAutomationRoutes(
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as Record<string, unknown>;
-    const { updateAutoBanPolicy, countAutoBansLastHour } = await import('@ysk-server/core');
+    const { updateAutoBanPolicy, countAutoBansLastHour } = await import('ysk-server-core');
     const policy = updateAutoBanPolicy(ctx.db, {
       enabled: data.enabled as boolean | undefined,
       mode: data.mode as 'off' | 'soft' | 'normal' | 'aggressive' | undefined,
@@ -65,7 +65,7 @@ export async function handleDefenseAutomationRoutes(
       updateDefenseAutomation,
       loadDefenseAutomation,
       syncWhitelistToFail2banIgnore,
-    } = await import('@ysk-server/core');
+    } = await import('ysk-server-core');
     const cur = loadAutoBanPolicy(ctx.db);
     const ip = (data.ip ?? '').trim();
     if (!ip) {
@@ -103,7 +103,7 @@ export async function handleDefenseAutomationRoutes(
   }
   if (method === 'POST' && url.pathname === '/api/v1/defense/auto-ban/tick') {
     const user = ctx.auth.authenticate(getBearer(req));
-    const { runDefenseAutomationTick } = await import('@ysk-server/core');
+    const { runDefenseAutomationTick } = await import('ysk-server-core');
     const r = await runDefenseAutomationTick({
       host: ctx.host,
       db: ctx.db,
@@ -131,7 +131,7 @@ export async function handleDefenseAutomationRoutes(
       getAutomationMechanismRows,
       countAutoBansLastHour,
       loadAutoBanPolicy,
-    } = await import('@ysk-server/core');
+    } = await import('ysk-server-core');
     const automation = loadDefenseAutomation(ctx.db);
     const legacy = loadAutoBanPolicy(ctx.db);
     const job = ctx.scheduler.get?.('defense-auto-ban') ??
@@ -154,7 +154,7 @@ export async function handleDefenseAutomationRoutes(
   }
   if (method === 'GET' && url.pathname === '/api/v1/defense/intel') {
     ctx.auth.authenticate(getBearer(req));
-    const { collectTopIps, listVhostDefenseMarkers } = await import('@ysk-server/core');
+    const { collectTopIps, listVhostDefenseMarkers } = await import('ysk-server-core');
     const top = collectTopIps(ctx.dataDir, 40);
     const vhosts = listVhostDefenseMarkers(ctx.dataDir);
     sendJson(res, 200, {
@@ -179,7 +179,7 @@ export async function handleDefenseAutomationRoutes(
       enableCloudflareUnderAttack,
       disableCloudflareUnderAttack,
       loadDefenseAutomation,
-    } = await import('@ysk-server/core');
+    } = await import('ysk-server-core');
     const auto = loadDefenseAutomation(ctx.db);
     const zones =
       data.zones?.length ? data.zones : auto.cloudflare.zones;
@@ -211,7 +211,7 @@ export async function handleDefenseAutomationRoutes(
       updateDefenseAutomation,
       getAutomationMechanismRows,
       syncWhitelistToFail2banIgnore,
-    } = await import('@ysk-server/core');
+    } = await import('ysk-server-core');
     const automation = updateDefenseAutomation(ctx.db, data as never);
     if (automation.autoBan.syncFail2banIgnoreip) {
       try {

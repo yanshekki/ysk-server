@@ -22,7 +22,7 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
+import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
 import type { HostExecutor } from '../host/executor.js';
 import { listManagedDnsZones, writeManagedDnsZone } from './dns-zone.js';
 import { resolveBin, shellBinExists } from './software-probe/index.js';

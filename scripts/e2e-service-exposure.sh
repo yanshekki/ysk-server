@@ -6,12 +6,12 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
 echo "== service-exposure: build shared + core =="
-pnpm --filter @ysk-server/shared build
-pnpm --filter @ysk-server/core build
+pnpm --filter ysk-server-shared build
+pnpm --filter ysk-server-core build
 
 echo "== service-exposure: unit tests =="
-pnpm --filter @ysk-server/core test -- src/hosting/service-exposure/
-pnpm --filter @ysk-server/shared test -- src/service-exposure.test.ts
+pnpm --filter ysk-server-core test -- src/hosting/service-exposure/
+pnpm --filter ysk-server-shared test -- src/service-exposure.test.ts
 
 echo "== service-exposure: smoke OK =="
 echo "Note: live UFW/ipset apply is covered by unit mocks; run on a root host with YSK_EXECUTE for full ops."

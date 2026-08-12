@@ -6,7 +6,7 @@
 
 | Goal | Rule |
 |------|------|
-| Coverage | **Each package** ≥ **90%** lines + functions + statements (`@ysk-server/shared` locked; core/server/web floor rises as tests land) |
+| Coverage | **Each package** ≥ **90%** lines + functions + statements (`ysk-server-shared` locked; core/server/web floor rises as tests land) |
 | Exports | Every runtime export has a test reference, or an entry in [coverage-exceptions.json](./coverage-exceptions.json) |
 | Honesty | Tests must catch fake success (`ok && blocked`, `applied` without host success) |
 | Web | Vitest + React Testing Library + happy-dom; mock `fetch` fixtures only — never mock away honesty |
@@ -24,9 +24,9 @@ pnpm test:exports:strict  # fail on unexplained exports
 Per package:
 
 ```bash
-pnpm --filter @ysk-server/shared test:coverage
-COVERAGE_FLOOR=90 pnpm --filter @ysk-server/shared test:coverage
-COVERAGE_FLOOR=0  pnpm --filter @ysk-server/core test:coverage   # baseline while climbing
+pnpm --filter ysk-server-shared test:coverage
+COVERAGE_FLOOR=90 pnpm --filter ysk-server-shared test:coverage
+COVERAGE_FLOOR=0  pnpm --filter ysk-server-core test:coverage   # baseline while climbing
 ```
 
 ## Honesty doctrine

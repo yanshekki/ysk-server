@@ -26,7 +26,7 @@
 
 - 安全相關定向套件（必須全綠）：
   ```bash
-  pnpm --filter @ysk-server/core exec vitest run \
+  pnpm --filter ysk-server-core exec vitest run \
     src/files/manager.test.ts \
     src/files/manager.depth.test.ts \
     src/files/webdav.test.ts \
@@ -35,7 +35,7 @@
   ```
 - `pnpm chrome:check`／i18n 閘門（11 語言 key 對齊）
 - shared：`normalizeLocale` Tier-2 + RTL 單測
-- 完整 `@ysk-server/core` 套件可能含無關環境 flaky；Phase 7 驗收以以上安全檔案集為準。
+- 完整 `ysk-server-core` 套件可能含無關環境 flaky；Phase 7 驗收以以上安全檔案集為準。
 
 ## 相關
 

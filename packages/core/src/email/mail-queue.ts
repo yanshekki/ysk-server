@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * Mail queue list / flush via postqueue/postsuper when available.
  * Honest: blocked without execute; never fakes success.

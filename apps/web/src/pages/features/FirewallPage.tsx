@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
   listFirewallPortChips,
-  parsePortChipValue } from '@ysk-server/shared';
+  parsePortChipValue } from 'ysk-server-shared';
 import {
   PageGuide,
   ActionBar,
@@ -47,7 +47,7 @@ const PROFILE_DEFS = [
   { id: 'ftps' as const, allowSmtp: false, extra: '21,30000:30100' },
 ];
 
-/** YSK service ports for open-port chips (SSOT from @ysk-server/shared). */
+/** YSK service ports for open-port chips (SSOT from ysk-server-shared). */
 const SERVICE_PORT_CHIPS = listFirewallPortChips();
 
 /**

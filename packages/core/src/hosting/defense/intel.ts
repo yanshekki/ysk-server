@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * Defense intel — top IPs, vhosts with rate-limit markers, richer log sources.
  */

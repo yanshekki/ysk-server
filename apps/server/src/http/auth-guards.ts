@@ -2,7 +2,7 @@
  * HTTP auth hardening: must-change-password + API-key read-only + agent token helper.
  */
 import type { IncomingMessage } from 'node:http';
-import { ErrorCodes, yskError } from '@ysk-server/shared';
+import { ErrorCodes, yskError } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
 import { getBearer } from './util.js';
 

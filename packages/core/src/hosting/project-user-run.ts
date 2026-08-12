@@ -7,7 +7,7 @@
 import { spawn, type ChildProcess, type SpawnOptions } from 'node:child_process';
 import type { HostExecutor } from '../host/executor.js';
 import type { ProjectRow } from '../repositories/project-repo.js';
-import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
+import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
 
 export type IsolationMode = 'isolated' | 'degraded';
 

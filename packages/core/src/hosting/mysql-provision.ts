@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * Real MySQL/MariaDB provision via mysql CLI when available.
  * Never reports ok=true for skipped system mutations.

@@ -2,7 +2,7 @@
  * Host network routes + DNS (Wave Y2).
  * Extracted from network.ts. Behaviour preserved.
  */
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { AppContext } from '../app-context.js';
 import { getBearer, sendJson, sendOpsResult } from '../http/util.js';
@@ -18,7 +18,7 @@ export async function handleNetworkRoutingRoutes(
   // Routes
   if (method === 'GET' && url.pathname === '/api/v1/network/routes') {
     ctx.auth.authenticate(getBearer(req));
-    const { collectNetworkSnapshot } = await import('@ysk-server/core');
+    const { collectNetworkSnapshot } = await import('ysk-server-core');
     const snap = await collectNetworkSnapshot(ctx.host);
     sendJson(res, 200, {
       ok: true,
@@ -39,7 +39,7 @@ export async function handleNetworkRoutingRoutes(
       sendJson(res, 400, { ok: false, message: tl('errors.http.jsonInvalid') });
       return true;
     }
-    const { networkAddRoute, networkDelRoute } = await import('@ysk-server/core');
+    const { networkAddRoute, networkDelRoute } = await import('ysk-server-core');
     const body = {
       host: ctx.host,
       dst: String(data.dst ?? 'default'),
@@ -69,7 +69,7 @@ export async function handleNetworkRoutingRoutes(
   // DNS get
   if (method === 'GET' && url.pathname === '/api/v1/network/dns') {
     ctx.auth.authenticate(getBearer(req));
-    const { collectNetworkSnapshot } = await import('@ysk-server/core');
+    const { collectNetworkSnapshot } = await import('ysk-server-core');
     const snap = await collectNetworkSnapshot(ctx.host);
     sendJson(res, 200, { ok: true, dns: snap.dns, caps: snap.caps });
     return true;
@@ -83,7 +83,7 @@ export async function handleNetworkRoutingRoutes(
       sendJson(res, 400, { ok: false, message: tl('errors.http.jsonInvalid') });
       return true;
     }
-    const { networkSetDns } = await import('@ysk-server/core');
+    const { networkSetDns } = await import('ysk-server-core');
     const nameservers = Array.isArray(data.nameservers)
       ? data.nameservers.map(String)
       : typeof data.nameservers === 'string'
@@ -131,7 +131,7 @@ export async function handleNetworkRoutingRoutes(
       sendJson(res, 400, { ok: false, message: tl('errors.http.jsonInvalid') });
       return true;
     }
-    const { networkTestDns } = await import('@ysk-server/core');
+    const { networkTestDns } = await import('ysk-server-core');
     const result = await networkTestDns({
       host: ctx.host,
       name: typeof data.name === 'string' ? data.name : 'example.com',

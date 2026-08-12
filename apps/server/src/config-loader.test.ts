@@ -3,7 +3,7 @@ import { writeFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { loadConfigFile } from './config-loader.js';
-import { YskError, ErrorCodes } from '@ysk-server/shared';
+import { YskError, ErrorCodes } from 'ysk-server-shared';
 
 describe('loadConfigFile', () => {
   it('throws on empty path', () => {

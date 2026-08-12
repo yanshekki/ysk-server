@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * Restic-class incremental backup under dataDir (fail-closed, honest notes).
  */

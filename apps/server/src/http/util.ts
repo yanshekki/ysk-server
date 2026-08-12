@@ -10,7 +10,7 @@ import {
   tl,
   type LocaleCode,
   type OpsResultInput,
-} from '@ysk-server/shared';
+} from 'ysk-server-shared';
 
 export function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {

@@ -2,7 +2,7 @@
  * DNS tools — checklist / health / lookup / validate / DNSSEC (Wave X2).
  * Extracted from dns.ts. Behaviour preserved.
  */
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { AppContext } from '../app-context.js';
 import {
@@ -27,7 +27,7 @@ export async function handleDnsToolsRoutes(
       sendJson(res, 400, { ok: false, message: tl('notes.auto.n0259') });
       return true;
     }
-    const { buildExternalTodos } = await import('@ysk-server/core');
+    const { buildExternalTodos } = await import('ysk-server-core');
     const mailHostname =
       ctx.email.list().find((d) => d.domain === domain)?.mail_hostname || `mail.${domain}`;
     const items = buildExternalTodos({
@@ -46,7 +46,7 @@ export async function handleDnsToolsRoutes(
   if (method === 'GET' && url.pathname === '/api/v1/dns/health') {
     ctx.auth.authenticate(getBearer(req));
     const digName = (url.searchParams.get('name') ?? '').trim() || undefined;
-    const { probeDnsServiceHealth } = await import('@ysk-server/core');
+    const { probeDnsServiceHealth } = await import('ysk-server-core');
     const r = await probeDnsServiceHealth({
       dataDir: ctx.dataDir,
       host: ctx.host,
@@ -62,7 +62,7 @@ export async function handleDnsToolsRoutes(
       name?: string;
       type?: string;
     };
-    const { digLocalAuthoritative } = await import('@ysk-server/core');
+    const { digLocalAuthoritative } = await import('ysk-server-core');
     const r = await digLocalAuthoritative({
       host: ctx.host,
       name: data.name ?? '',
@@ -85,7 +85,7 @@ export async function handleDnsToolsRoutes(
       type?: 'A' | 'AAAA' | 'MX' | 'TXT' | 'CNAME' | 'NS';
       server?: string;
     };
-    const { lookupDns } = await import('@ysk-server/core');
+    const { lookupDns } = await import('ysk-server-core');
     const r = await lookupDns({
       host: ctx.host,
       name: data.name ?? '',
@@ -101,7 +101,7 @@ export async function handleDnsToolsRoutes(
     const data = JSON.parse(raw || '{}') as {
       records?: Array<{ type: string; name: string; value: string; ttl?: number }>;
     };
-    const { validateDnsRecordSet, hasDnsErrors } = await import('@ysk-server/core');
+    const { validateDnsRecordSet, hasDnsErrors } = await import('ysk-server-core');
     const issues = validateDnsRecordSet(data.records ?? []);
     sendJson(res, 200, {
       ok: !hasDnsErrors(issues),
@@ -118,7 +118,7 @@ export async function handleDnsToolsRoutes(
   if (method === 'POST' && url.pathname.match(/^\/api\/v1\/dns\/zones\/[^/]+\/dnssec$/)) {
     const user = ctx.auth.authenticate(getBearer(req));
     const zone = decodeURIComponent(url.pathname.split('/')[5] ?? '');
-    const { generateDnssecKeys } = await import('@ysk-server/core');
+    const { generateDnssecKeys } = await import('ysk-server-core');
     const r = await generateDnssecKeys({
       dataDir: ctx.dataDir,
       zone,
@@ -137,7 +137,7 @@ export async function handleDnsToolsRoutes(
   if (method === 'GET' && url.pathname.match(/^\/api\/v1\/dns\/zones\/[^/]+\/dnssec$/)) {
     ctx.auth.authenticate(getBearer(req));
     const zone = decodeURIComponent(url.pathname.split('/')[5] ?? '');
-    const { listDnssecMaterial } = await import('@ysk-server/core');
+    const { listDnssecMaterial } = await import('ysk-server-core');
     sendJson(res, 200, listDnssecMaterial(ctx.dataDir, zone));
     return true;
   }

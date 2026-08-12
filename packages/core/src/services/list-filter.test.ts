@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseListQuery } from '@ysk-server/shared';
+import { parseListQuery } from 'ysk-server-shared';
 import { applyListQuery } from './list-filter.js';
 
 type Row = {

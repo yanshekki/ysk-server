@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * SSH 2FA registry under dataDir/secrets/ssh/ssh-2fa.json
  */

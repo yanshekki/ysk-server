@@ -2,7 +2,7 @@
  * MySQL/MariaDB + Redis management plans (pure orchestration).
  */
 
-import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
+import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
 
 export interface DatabasePlan {
   kind: 'mysql' | 'mariadb' | 'redis';

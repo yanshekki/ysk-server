@@ -9,7 +9,7 @@ import {
   OPERATION_LEVELS,
   type CapabilityId,
   type OperationLevel,
-  type SystemRole } from '@ysk-server/shared';
+  type SystemRole } from 'ysk-server-shared';
 import {
   ActionBar,
   Alert,

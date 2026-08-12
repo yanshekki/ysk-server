@@ -5,8 +5,8 @@
 import { generateKeyPairSync, randomUUID } from 'node:crypto';
 import { mkdirSync, writeFileSync, unlinkSync, existsSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
-import type { EmailDnsRecord, EmailExternalTodo, EmailHealthReport } from '@ysk-server/shared';
-import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
+import type { EmailDnsRecord, EmailExternalTodo, EmailHealthReport } from 'ysk-server-shared';
+import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
 import {
   buildExternalTodos,
   planEmailStackInstall,

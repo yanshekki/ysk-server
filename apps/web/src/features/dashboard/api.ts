@@ -1,7 +1,7 @@
 /**
  * Dashboard feature — summary + host metrics API.
  */
-import type { HealthResponse } from '@ysk-server/shared';
+import type { HealthResponse } from 'ysk-server-shared';
 import { api } from '../../shared/services/api';
 
 export const dashboardApi = {

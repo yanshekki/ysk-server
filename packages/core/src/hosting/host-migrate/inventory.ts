@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * Build complete HostManifest from control-plane store + disk facts.
  * Read-only; no host mutation.
@@ -15,7 +15,7 @@ import type {
   HostManifestProject,
   HostManifestRedis,
   MigrateDbEngine,
-} from '@ysk-server/shared';
+} from 'ysk-server-shared';
 import type { JsonStore } from '../../db/store.js';
 import type { HostExecutor } from '../../host/executor.js';
 import { listSoftwareForFeature, type FeatureSoftwareKey } from '../software-catalog.js';

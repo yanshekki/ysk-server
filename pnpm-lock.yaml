@@ -10,10 +10,10 @@ importers:
 
   apps/server:
     dependencies:
-      '@ysk-server/core':
+      'ysk-server-core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@ysk-server/shared':
+      'ysk-server-shared':
         specifier: workspace:*
         version: link:../../packages/shared
       node-pty:
@@ -59,7 +59,7 @@ importers:
       '@xterm/xterm':
         specifier: ^6.0.0
         version: 6.0.0
-      '@ysk-server/shared':
+      'ysk-server-shared':
         specifier: workspace:*
         version: link:../../packages/shared
       i18next:
@@ -126,7 +126,7 @@ importers:
       '@simplewebauthn/server':
         specifier: ^13.3.2
         version: 13.3.2
-      '@ysk-server/shared':
+      'ysk-server-shared':
         specifier: workspace:*
         version: link:../shared
       bencode:

@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * Apply local cluster conf (honest).
  * Default execute=false → dataDir artifacts only (written).

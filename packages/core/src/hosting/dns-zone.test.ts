@@ -3,7 +3,7 @@ import { mkdtempSync, existsSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { LocalHostExecutor } from '../host/executor.js';
-import { YskError } from '@ysk-server/shared';
+import { YskError } from 'ysk-server-shared';
 import {
   listManagedDnsZones,
   renderBindZoneFile,

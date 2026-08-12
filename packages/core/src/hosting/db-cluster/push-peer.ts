@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * Peer distribution: list/bundle artifacts + scp push (honest).
  * scp only with execute=true + YSK_EXECUTE; never claims peer reloaded.

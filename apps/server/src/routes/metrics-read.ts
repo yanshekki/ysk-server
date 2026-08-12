@@ -15,7 +15,7 @@ export async function handleMetricsReadRoutes(
 ): Promise<boolean> {
   if (method === 'GET' && url.pathname === '/api/v1/metrics') {
     ctx.auth.authenticate(getBearer(req));
-    const { collectMetricsDeep } = await import('@ysk-server/core');
+    const { collectMetricsDeep } = await import('ysk-server-core');
     const m = await collectMetricsDeep(ctx.host);
     sendJson(res, 200, m);
     return true;
@@ -24,7 +24,7 @@ export async function handleMetricsReadRoutes(
   /** Per-project disk usage (real du on home_dir) */
   if (method === 'GET' && url.pathname === '/api/v1/metrics/projects') {
     ctx.auth.authenticate(getBearer(req));
-    const { collectProjectsDiskUsage } = await import('@ysk-server/core');
+    const { collectProjectsDiskUsage } = await import('ysk-server-core');
     const projects = ctx.projects.list().map((p) => ({
       id: p.id,
       name: p.name,
@@ -44,7 +44,7 @@ export async function handleMetricsReadRoutes(
 
   if (method === 'GET' && url.pathname === '/api/v1/metrics/processes') {
     ctx.auth.authenticate(getBearer(req));
-    const { collectProcessSnapshot } = await import('@ysk-server/core');
+    const { collectProcessSnapshot } = await import('ysk-server-core');
     const sortRaw = url.searchParams.get('sort') || 'cpu';
     const sort =
       sortRaw === 'mem' || sortRaw === 'time' || sortRaw === 'pid'
@@ -66,7 +66,7 @@ export async function handleMetricsReadRoutes(
   /** Standalone top header (load/tasks/cpu/mem) */
   if (method === 'GET' && url.pathname === '/api/v1/metrics/top') {
     ctx.auth.authenticate(getBearer(req));
-    const { collectTopHeader } = await import('@ysk-server/core');
+    const { collectTopHeader } = await import('ysk-server-core');
     const header = await collectTopHeader(ctx.host);
     sendOpsResult(res, header);
     return true;
@@ -78,7 +78,7 @@ export async function handleMetricsReadRoutes(
   );
   if (method === 'GET' && detailMatch) {
     ctx.auth.authenticate(getBearer(req));
-    const { collectProcessDetail } = await import('@ysk-server/core');
+    const { collectProcessDetail } = await import('ysk-server-core');
     const detail = await collectProcessDetail(ctx.host, detailMatch[1]);
     sendOpsResult(res, detail);
     return true;

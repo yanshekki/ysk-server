@@ -10,7 +10,7 @@ import {
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import type { HostExecutor, RunResult } from '../../host/executor.js';
-import type { HostManifest } from '@ysk-server/shared';
+import type { HostManifest } from 'ysk-server-shared';
 import { JsonStore } from '../../db/store.js';
 import { createMigrateJob } from './job-store.js';
 import {

@@ -3,7 +3,7 @@
  */
 
 import { randomUUID } from 'node:crypto';
-import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
+import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
 
 export interface PlaybookStep {
   tool: string;

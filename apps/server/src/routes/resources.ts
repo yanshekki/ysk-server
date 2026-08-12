@@ -2,7 +2,7 @@
  * Managed resource routes dispatcher (Wave S1).
  * Path-gated: auth + parse → crud → apply
  */
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { AppContext } from '../app-context.js';
 import { getBearer, sendJson } from '../http/util.js';

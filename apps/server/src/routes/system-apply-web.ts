@@ -6,7 +6,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import {
   applyPhpHosting,
   applyNginxSite,
-} from '@ysk-server/core';
+} from 'ysk-server-core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -53,7 +53,7 @@ export async function handleSystemApplyWebRoutes(
 
   if (method === 'POST' && url.pathname === '/api/v1/system/nginx/purge-cache') {
     const user = ctx.auth.authenticate(getBearer(req));
-    const { purgeNginxCache } = await import('@ysk-server/core');
+    const { purgeNginxCache } = await import('ysk-server-core');
     const r = await purgeNginxCache({ host: ctx.host });
     ctx.audit.append({
       actor: user.username,

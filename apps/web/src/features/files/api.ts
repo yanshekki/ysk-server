@@ -1,10 +1,10 @@
 /**
  * Files feature — ownCloud-style sandboxed API client.
  */
-import type { FileEntry, TrashEntry, FileShare } from '@ysk-server/shared';
+import type { FileEntry, TrashEntry, FileShare } from 'ysk-server-shared';
 import { api } from '../../shared/services/api';
 
-export type { FileEntry, TrashEntry, FileShare } from '@ysk-server/shared';
+export type { FileEntry, TrashEntry, FileShare } from 'ysk-server-shared';
 
 function q(root: string, extra: Record<string, string | undefined> = {}) {
   const p = new URLSearchParams({ root });
@@ -155,12 +155,12 @@ export const filesApi = {
     ),
 
   shareBtStats: (id: string) =>
-    api.requestRaw<{ ok: boolean; stats: import('@ysk-server/shared').BtShareStats }>(
+    api.requestRaw<{ ok: boolean; stats: import('ysk-server-shared').BtShareStats }>(
       `/api/v1/files/shares/${encodeURIComponent(id)}/bt-stats`,
     ),
 
   shareBtStatsBatch: (ids: string[]) =>
-    api.requestRaw<{ ok: boolean; items: Record<string, import('@ysk-server/shared').BtShareStats> }>(
+    api.requestRaw<{ ok: boolean; items: Record<string, import('ysk-server-shared').BtShareStats> }>(
       '/api/v1/files/shares/bt-stats',
       { method: 'POST', body: JSON.stringify({ ids }) },
     ),

@@ -1,11 +1,11 @@
 /**
  * FTPS accounts + vsftpd service API
  */
-import type { FtpsSettings, FtpsStatus, SelectOption } from '@ysk-server/shared';
+import type { FtpsSettings, FtpsStatus, SelectOption } from 'ysk-server-shared';
 import { api } from '../../shared/services/api';
 import { resourcesApi } from '../resources/api';
 
-export type { FtpsSettings, FtpsStatus, SelectOption } from '@ysk-server/shared';
+export type { FtpsSettings, FtpsStatus, SelectOption } from 'ysk-server-shared';
 
 export const ftpApi = {
   accounts: {

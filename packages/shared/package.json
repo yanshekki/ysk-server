@@ -1,5 +1,5 @@
 {
-  "name": "@ysk-server/shared",
+  "name": "ysk-server-shared",
   "version": "1.0.0",
   "description": "Shared types, DTOs, and interfaces for YSK Server",
   "type": "module",
@@ -16,7 +16,8 @@
   },
   "files": [
     "dist",
-    "locales"
+    "locales",
+    "README.md"
   ],
   "sideEffects": false,
   "publishConfig": {

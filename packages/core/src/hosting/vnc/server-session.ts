@@ -4,7 +4,7 @@
 
 import type { HostExecutor } from '../../host/executor.js';
 import { shellQuote } from '../project-user-run.js';
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 import { resolveBin } from '../software-probe/resolve-bin.js';
 import type { VncRfbBind } from './types.js';
 import { buildXstartup } from './xstartup.js';

@@ -29,7 +29,7 @@ Scope: SQL injection, cron injection, project file access, session storage, prox
 
 ```bash
 cd /home/ki/文件/ysk-server
-pnpm --filter @ysk-server/core exec vitest run \
+pnpm --filter ysk-server-core exec vitest run \
   src/hosting/db-client.test.ts \
   src/hosting/extras.test.ts \
   src/files/manager.test.ts \

@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * Route cluster planning by kind; write artifacts under dataDir (optional).
  */

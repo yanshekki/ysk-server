@@ -2,13 +2,13 @@
  * Managed resource list/get (Wave U1).
  * Extracted from resources-crud.ts. Behaviour preserved.
  */
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import {
   listResources,
   getResource,
   type CollectionKey,
-} from '@ysk-server/core';
+} from 'ysk-server-core';
 import type { AppContext } from '../app-context.js';
 import { sendJson } from '../http/util.js';
 import { redactResourceSecrets } from './resources-shared.js';
@@ -29,7 +29,7 @@ export async function handleResourcesReadRoutes(
   if (method === 'GET' && !id) {
     // SSL: never expose raw multi-row junk — use disk+store view
     if (key === 'certificates') {
-      const { listCertificatesView, dedupeCertificatesInStore } = await import('@ysk-server/core');
+      const { listCertificatesView, dedupeCertificatesInStore } = await import('ysk-server-core');
       dedupeCertificatesInStore(ctx.db);
       sendJson(res, 200, { items: listCertificatesView(ctx.db, ctx.dataDir) });
       return true;

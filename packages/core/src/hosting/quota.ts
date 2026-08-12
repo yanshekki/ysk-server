@@ -4,7 +4,7 @@
 
 import { existsSync } from 'node:fs';
 import type { HostExecutor } from '../host/executor.js';
-import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
+import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
 
 export interface QuotaStatus {
   projectId: string;

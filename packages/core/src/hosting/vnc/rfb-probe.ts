@@ -3,7 +3,7 @@
  */
 
 import { connect as netConnect } from 'node:net';
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 
 export type RfbProbeResult =
   | { ok: true }

@@ -1,5 +1,5 @@
 import { describe, expect, it, afterEach } from 'vitest';
-import { generateTotpCode } from '@ysk-server/core';
+import { generateTotpCode } from 'ysk-server-core';
 import { startTestServer, apiJson, type TestServer } from '../test/harness.js';
 
 const ADMIN_PASSWORD = 'TestPass-Strong-99!';

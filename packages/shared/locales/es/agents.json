@@ -94,7 +94,7 @@
   "cmdNote": "La ejecución del agente Edge ysk-server ejecuta CLI JSON localmente (agrega --json). Los cambios de host aún necesitan YSK_EXECUTE=1 en el borde. Ver código de salida y JSON en Historial.",
   "resultTitle": "Resultado del comando · salir {{code}}",
   "resultTitlePlain": "Resultado del comando",
-  "codeComment": "# Concepto: registro → bucle de latidos → extracción de comandos → reconocimiento\n# Biblioteca: @ysk-server/core runOutboundAgent / agentCycle",
+  "codeComment": "# Concepto: registro → bucle de latidos → extracción de comandos → reconocimiento\n# Biblioteca: ysk-server-core runOutboundAgent / agentCycle",
   "resultOuter": "Exterior: reconocimiento de borde (código de salida/stderr). Resultado interno:",
   "deleteTitle": "¿Eliminar {{id}}?",
   "deleteTitlePlain": "¿Eliminar agente?",

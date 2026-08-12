@@ -4,7 +4,7 @@
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { randomUUID } from 'node:crypto';
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -35,7 +35,7 @@ export async function handleUpdatesApplySingleRoutes(
       confirmHighRisk?: boolean;
       stream?: boolean;
     };
-    const { applyPackageUpdate, planUpdateExecution, adviseUpdate } = await import('@ysk-server/core');
+    const { applyPackageUpdate, planUpdateExecution, adviseUpdate } = await import('ysk-server-core');
     if (
       !data.candidateVersion ||
       !data.packageName ||

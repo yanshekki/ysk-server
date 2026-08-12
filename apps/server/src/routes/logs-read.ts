@@ -2,7 +2,7 @@
  * Log Center read/query routes — overview, sources, journal, query, stream, projects.
  * Extracted from logs.ts (Wave Q3). Behaviour preserved.
  */
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { join } from 'node:path';
 import type { AppContext } from '../app-context.js';
@@ -18,7 +18,7 @@ export async function handleLogsReadRoutes(
   if (method === 'GET' && url.pathname === '/api/v1/logs/overview') {
     ctx.auth.authenticate(getBearer(req));
     try {
-      const { getLogOverview } = await import('@ysk-server/core');
+      const { getLogOverview } = await import('ysk-server-core');
       sendJson(
         res,
         200,
@@ -48,7 +48,7 @@ export async function handleLogsReadRoutes(
   if (method === 'GET' && url.pathname === '/api/v1/logs/sources') {
     ctx.auth.authenticate(getBearer(req));
     try {
-      const { listSourceStatuses, loadLogSettings } = await import('@ysk-server/core');
+      const { listSourceStatuses, loadLogSettings } = await import('ysk-server-core');
       const settings = loadLogSettings(ctx.db);
       sendJson(res, 200, {
         items: listSourceStatuses({
@@ -69,7 +69,7 @@ export async function handleLogsReadRoutes(
   if (method === 'GET' && url.pathname === '/api/v1/logs/journal/units') {
     ctx.auth.authenticate(getBearer(req));
     try {
-      const { listJournalUnits } = await import('@ysk-server/core');
+      const { listJournalUnits } = await import('ysk-server-core');
       sendJson(res, 200, await listJournalUnits(ctx.host));
     } catch (e) {
       sendJson(res, 200, {
@@ -82,7 +82,7 @@ export async function handleLogsReadRoutes(
 
   if (method === 'GET' && url.pathname === '/api/v1/logs/journal/query') {
     ctx.auth.authenticate(getBearer(req));
-    const { queryLogSource } = await import('@ysk-server/core');
+    const { queryLogSource } = await import('ysk-server-core');
     const unit = url.searchParams.get('unit') || '';
     const source = unit ? `journal:${unit}` : 'journal:';
     const r = await queryLogSource({
@@ -101,7 +101,7 @@ export async function handleLogsReadRoutes(
 
   if (method === 'GET' && url.pathname === '/api/v1/logs/query') {
     ctx.auth.authenticate(getBearer(req));
-    const { queryLogSource } = await import('@ysk-server/core');
+    const { queryLogSource } = await import('ysk-server-core');
     const source = url.searchParams.get('source') || '';
     const r = await queryLogSource({
       host: ctx.host,
@@ -120,7 +120,7 @@ export async function handleLogsReadRoutes(
   /** SSE follow stream — polls query; max ~10 min then closes */
   if (method === 'GET' && url.pathname === '/api/v1/logs/stream') {
     ctx.auth.authenticate(getBearer(req));
-    const { queryLogSource, loadLogSettings } = await import('@ysk-server/core');
+    const { queryLogSource, loadLogSettings } = await import('ysk-server-core');
     const source = url.searchParams.get('source') || '';
     if (!source) {
       sendJson(res, 400, { ok: false, notes: [tl('notes.auto.n1571')] });
@@ -211,7 +211,7 @@ export async function handleLogsReadRoutes(
 
   if (method === 'GET' && url.pathname === '/api/v1/logs/projects') {
     ctx.auth.authenticate(getBearer(req));
-    const { listProjectLogIndex } = await import('@ysk-server/core');
+    const { listProjectLogIndex } = await import('ysk-server-core');
     sendJson(res, 200, {
       items: listProjectLogIndex(ctx.db, { dataDir: ctx.dataDir }),
     });

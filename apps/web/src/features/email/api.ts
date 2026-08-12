@@ -1,10 +1,10 @@
 /**
  * Email feature — API surface.
  */
-import type { EmailDomain, EmailBundle } from '@ysk-server/shared';
+import type { EmailDomain, EmailBundle } from 'ysk-server-shared';
 import { api } from '../../shared/services/api';
 
-export type { EmailDomain, EmailBundle } from '@ysk-server/shared';
+export type { EmailDomain, EmailBundle } from 'ysk-server-shared';
 
 export const emailApi = {
   list: () => api.requestRaw<{ items: EmailDomain[] }>('/api/v1/email/domains'),

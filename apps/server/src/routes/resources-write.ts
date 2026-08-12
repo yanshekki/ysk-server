@@ -3,7 +3,7 @@
  * create → mutate
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import type { CollectionKey } from '@ysk-server/core';
+import type { CollectionKey } from 'ysk-server-core';
 import type { AppContext } from '../app-context.js';
 import { handleResourcesCreateRoutes } from './resources-create.js';
 import { handleResourcesMutateRoutes } from './resources-mutate.js';

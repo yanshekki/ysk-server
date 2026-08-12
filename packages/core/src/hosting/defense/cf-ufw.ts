@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * UFW "Cloudflare only" profile — origin only accepts CF edge ranges + SSH.
  * Static lists from https://www.cloudflare.com/ips-v4 and ips-v6 (refresh periodically).

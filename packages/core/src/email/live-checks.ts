@@ -4,7 +4,7 @@
 
 import { resolveMx, resolveTxt, reverse } from 'node:dns/promises';
 import { createConnection } from 'node:net';
-import { tl, type EmailHealthReport } from '@ysk-server/shared';
+import { tl, type EmailHealthReport } from 'ysk-server-shared';
 import { scoreEmailHealth } from './dns-records.js';
 import { checkIpDnsbl, type DnsblReport } from './dnsbl.js';
 

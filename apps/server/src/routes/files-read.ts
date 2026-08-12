@@ -3,8 +3,8 @@
  * Extracted from files.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@ysk-server/shared';
-import { listFavorites, type FileManager } from '@ysk-server/core';
+import { tl } from 'ysk-server-shared';
+import { listFavorites, type FileManager } from 'ysk-server-core';
 import type { AppContext } from '../app-context.js';
 import { sendJson } from '../http/util.js';
 

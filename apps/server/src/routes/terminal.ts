@@ -8,8 +8,8 @@ import {
   buildRootSpawnPlan,
   listTerminalTargets,
   type TerminalTicketStore,
-} from '@ysk-server/core';
-import { tl, YskError } from '@ysk-server/shared';
+} from 'ysk-server-core';
+import { tl, YskError } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
 import { getBearer, readBody, sendJson } from '../http/util.js';
 

@@ -13,7 +13,7 @@ import {
   createVncShareLink,
   getVncShareLink,
   revokeVncShareLink,
-} from '@ysk-server/core';
+} from 'ysk-server-core';
 import type { AppContext } from '../app-context.js';
 import type { CliHelpers } from './cmd-vpn.js';
 

@@ -62,7 +62,7 @@ grep -q 'probeRfbTcp\|rfb-probe' packages/core/src/hosting/vnc/service.ts packag
 test -f packages/core/src/hosting/vnc/browser-session.flow.test.ts || fail "flow test file"
 
 log "Unit tests…"
-pnpm --filter @ysk-server/core exec vitest run src/hosting/vnc
+pnpm --filter ysk-server-core exec vitest run src/hosting/vnc
 
 log "Locale CTA smoke (not still English on major keys)…"
 node -e "

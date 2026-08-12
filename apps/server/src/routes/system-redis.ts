@@ -14,7 +14,7 @@ import {
   saveRedisSettings,
   applyRedisServiceConfig,
   getRedisServiceView,
-} from '@ysk-server/core';
+} from 'ysk-server-core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -99,7 +99,7 @@ export async function handleSystemRedisRoutes(
     const result = await startRedisService(ctx.host);
     if (result.ok) {
       try {
-        const { syncServiceExposure, dbPortBindings } = await import('@ysk-server/core');
+        const { syncServiceExposure, dbPortBindings } = await import('ysk-server-core');
         const exp = await syncServiceExposure({
           host: ctx.host,
           dataDir: ctx.dataDir,

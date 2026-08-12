@@ -3,7 +3,7 @@
  * Shares apt remove/purge patterns with stack uninstall.
  */
 
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 import type { HostExecutor } from '../host/executor.js';
 import {
   getSoftware,

@@ -5,8 +5,8 @@
 
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import type { HostManifest, MigrateJobDto, OpsResultDto } from '@ysk-server/shared';
-import { assertHonestOps, tl} from '@ysk-server/shared';
+import type { HostManifest, MigrateJobDto, OpsResultDto } from 'ysk-server-shared';
+import { assertHonestOps, tl} from 'ysk-server-shared';
 import type { HostExecutor } from '../../host/executor.js';
 import type { JsonStore } from '../../db/store.js';
 import { CronJobService } from '../backup-cron.js';

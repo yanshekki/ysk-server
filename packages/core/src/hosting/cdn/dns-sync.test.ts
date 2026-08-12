@@ -16,7 +16,7 @@ import {
   syncCdnSiteDns,
   listCdnManagedDnsRecords,
 } from './dns-sync.js';
-import type { CdnSiteDto } from '@ysk-server/shared';
+import type { CdnSiteDto } from 'ysk-server-shared';
 
 describe('cdn dns-sync (PR-C4/C5)', () => {
   it('relativeDnsName maps apex and sub', () => {

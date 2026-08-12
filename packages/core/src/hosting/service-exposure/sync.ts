@@ -2,7 +2,7 @@
  * Sync desired service exposure → UFW rules (ysk-svc comments).
  */
 
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 import {
   defaultExposureMode,
   defaultPortsForService,
@@ -13,7 +13,7 @@ import {
   type ServiceExposureDesired,
   type ServicePortBinding,
   type SyncReason,
-} from '@ysk-server/shared';
+} from 'ysk-server-shared';
 import type { HostExecutor } from '../../host/executor.js';
 import { normalizeIpOrCidr } from '../../net/ip.js';
 import {
@@ -402,7 +402,7 @@ export async function getServiceExposureStatus(
   desired: ServiceExposureDesired;
   liveRules: Awaited<ReturnType<typeof listManagedServiceRules>>;
   inSync: boolean;
-  defaultMode: import('@ysk-server/shared').ExposureMode;
+  defaultMode: import('ysk-server-shared').ExposureMode;
   /** Host UFW / firewall probe for honest UI */
   firewall?: {
     installed: boolean;

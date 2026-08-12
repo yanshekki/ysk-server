@@ -27,7 +27,7 @@ export async function handleSystemDbDumpRoutes(
       username?: string;
       password?: string;
     };
-    const { dumpSqlDatabase } = await import('@ysk-server/core');
+    const { dumpSqlDatabase } = await import('ysk-server-core');
     const r = await dumpSqlDatabase({
       host: ctx.host,
       dataDir: ctx.dataDir,
@@ -47,7 +47,7 @@ export async function handleSystemDbDumpRoutes(
   }
   if (method === 'GET' && url.pathname === '/api/v1/system/db/dumps') {
     ctx.auth.authenticate(getBearer(req));
-    const { listSqlDumps } = await import('@ysk-server/core');
+    const { listSqlDumps } = await import('ysk-server-core');
     const engine = url.searchParams.get('engine') as 'mysql' | 'mariadb' | 'postgres' | null;
     sendJson(res, 200, { items: listSqlDumps(ctx.dataDir, engine || undefined) });
     return true;
@@ -63,7 +63,7 @@ export async function handleSystemDbDumpRoutes(
       username?: string;
       password?: string;
     };
-    const { importSqlDatabase, listSqlDumps } = await import('@ysk-server/core');
+    const { importSqlDatabase, listSqlDumps } = await import('ysk-server-core');
     let sqlPath = data.sqlPath ?? '';
     if (!sqlPath && data.name) {
       const found = listSqlDumps(ctx.dataDir, data.engine).find((d) => d.name === data.name);

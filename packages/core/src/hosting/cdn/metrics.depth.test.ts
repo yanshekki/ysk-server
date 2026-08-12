@@ -35,7 +35,7 @@ function mockHost(opts: {
   };
 }
 
-function siteStub(id: string, name = id): import('@ysk-server/shared').CdnSiteDto {
+function siteStub(id: string, name = id): import('ysk-server-shared').CdnSiteDto {
   return {
     id,
     name,

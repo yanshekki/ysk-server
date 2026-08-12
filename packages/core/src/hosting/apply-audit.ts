@@ -6,10 +6,10 @@
 import {
   assertHonestOps,
   type OpsResultDto,
-  type OpsResultInput,  tl} from '@ysk-server/shared';
+  type OpsResultInput,  tl} from 'ysk-server-shared';
 import type { YskDatabase } from '../db/database.js';
 
-/** @deprecated import assertHonestOps from @ysk-server/shared */
+/** @deprecated import assertHonestOps from ysk-server-shared */
 /** Re-export honesty layer helper for apply paths (SSOT with apply-honesty.ts). */
 export { honestyFromFlags, type HonestyLayer } from './apply-honesty.js';
 

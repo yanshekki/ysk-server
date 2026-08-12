@@ -4,7 +4,7 @@
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { randomUUID } from 'node:crypto';
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -36,7 +36,7 @@ export async function handleUpdatesApplyBatchRoutes(
       confirmHighRisk?: boolean;
       stream?: boolean;
     };
-    const { applyPackageUpdateBatch, adviseUpdate } = await import('@ysk-server/core');
+    const { applyPackageUpdateBatch, adviseUpdate } = await import('ysk-server-core');
     type BatchRow = {
       packageName: string;
       currentVersion: string;

@@ -3,14 +3,14 @@
  * Call after transfer completed and process runs against target dataDir.
  */
 
-import type { HostManifest, MigrateJobDto, OpsResultDto } from '@ysk-server/shared';
-import { assertHonestOps, tl} from '@ysk-server/shared';
+import type { HostManifest, MigrateJobDto, OpsResultDto } from 'ysk-server-shared';
+import { assertHonestOps, tl} from 'ysk-server-shared';
 import type { HostExecutor } from '../../host/executor.js';
 import type { JsonStore } from '../../db/store.js';
 import { restoreOnHost, type RestoreResult } from './restore.js';
 import { reapplyOnHost, type ReapplyResult } from './reapply.js';
 import { verifyOnHost, type VerifyResult } from './verify.js';
-import type { HostManifestDatabase } from '@ysk-server/shared';
+import type { HostManifestDatabase } from 'ysk-server-shared';
 
 export type PostTransferResult = OpsResultDto & {
   restore?: RestoreResult;

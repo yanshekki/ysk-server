@@ -3,7 +3,7 @@
  */
 
 import type { JsonStore } from '../db/store.js';
-import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
+import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
 import {
   hashSharePassword,
   newShareToken,

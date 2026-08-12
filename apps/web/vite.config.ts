@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   /**
-   * Prefer package.json "browser" / "import" conditions so @ysk-server/shared
+   * Prefer package.json "browser" / "import" conditions so ysk-server-shared
    * resolves to dist/browser.js (no node:fs / async_hooks).
    */
   resolve: {

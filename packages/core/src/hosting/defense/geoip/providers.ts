@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * GeoIP / ASN database providers — free-tier max = city lite (region + city).
  */

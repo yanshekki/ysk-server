@@ -6,8 +6,8 @@
 import { existsSync, mkdirSync, statSync, copyFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import type { HostExecutor } from '../../host/executor.js';
-import type { OpsResultDto } from '@ysk-server/shared';
-import { assertHonestOps, tl} from '@ysk-server/shared';
+import type { OpsResultDto } from 'ysk-server-shared';
+import { assertHonestOps, tl} from 'ysk-server-shared';
 
 export type RedisDumpResult = OpsResultDto & {
   path?: string;

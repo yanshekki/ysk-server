@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * PHP ini settings: load/save managed files, render drop-in + FPM php_admin_value.
  */

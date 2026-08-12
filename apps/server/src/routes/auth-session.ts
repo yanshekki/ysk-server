@@ -3,7 +3,7 @@
  * Extracted from auth.ts (Wave L3). Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { YskError } from '@ysk-server/shared';
+import { YskError } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -144,7 +144,7 @@ export async function handleAuthSessionRoutes(
       }
       if (method === 'GET' && url.pathname === '/api/v1/auth/api-keys') {
         const user = ctx.auth.authenticate(getBearer(req));
-        const { listApiKeys } = await import('@ysk-server/core');
+        const { listApiKeys } = await import('ysk-server-core');
         // Own keys only (admins do not see others' secrets here — use users admin later)
         sendJson(res, 200, { items: listApiKeys(ctx.db, user.id) });
         return true;
@@ -171,7 +171,7 @@ export async function handleAuthSessionRoutes(
           }
           throw e;
         }
-        const { createApiKey } = await import('@ysk-server/core');
+        const { createApiKey } = await import('ysk-server-core');
         const created = createApiKey(ctx.db, {
           name: data.name ?? 'api-key',
           userId: user.id,
@@ -203,7 +203,7 @@ export async function handleAuthSessionRoutes(
       if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/auth\/api-keys\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[5] ?? '';
-        const { deleteApiKey } = await import('@ysk-server/core');
+        const { deleteApiKey } = await import('ysk-server-core');
         const ok = deleteApiKey(ctx.db, id, { ownerUserId: user.id });
         ctx.audit.append({
           actor: user.username,

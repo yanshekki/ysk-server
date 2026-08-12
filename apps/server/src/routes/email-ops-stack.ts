@@ -8,7 +8,7 @@ import {
   bootstrapEmailServer,
   applySmtpRelay,
   loadSmtpRelaySettings,
-} from '@ysk-server/core';
+} from 'ysk-server-core';
 import type { AppContext } from '../app-context.js';
 import { listWithQuery } from '../http/list-response.js';
 import {
@@ -72,7 +72,7 @@ export async function handleEmailOpsStackRoutes(
   }
   if (method === 'GET' && url.pathname === '/api/v1/email/queue') {
     ctx.auth.authenticate(getBearer(req));
-    const { listMailQueue } = await import('@ysk-server/core');
+    const { listMailQueue } = await import('ysk-server-core');
     sendJson(res, 200, await listMailQueue(ctx.host));
     return true;
   }
@@ -80,7 +80,7 @@ export async function handleEmailOpsStackRoutes(
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { id?: string; all?: boolean };
-    const { flushMailQueue } = await import('@ysk-server/core');
+    const { flushMailQueue } = await import('ysk-server-core');
     const r = await flushMailQueue(ctx.host, data);
     ctx.audit.append({
       actor: user.username,
@@ -134,7 +134,7 @@ export async function handleEmailOpsStackRoutes(
       mailHost?: string;
       applyDovecot?: boolean;
     };
-    const { applyMailTlsPaths } = await import('@ysk-server/core');
+    const { applyMailTlsPaths } = await import('ysk-server-core');
     const result = await applyMailTlsPaths({
       host: ctx.host,
       domain: data.domain ?? '',

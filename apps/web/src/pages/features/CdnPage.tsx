@@ -48,7 +48,7 @@ import type {
   CdnNodeDto,
   CdnNodeRole,
   CdnSiteDto,
-  CdnSiteMode } from '@ysk-server/shared';
+  CdnSiteMode } from 'ysk-server-shared';
 
 const TABS = ['nodes', 'sites', 'dashboard', 'about'] as const;
 

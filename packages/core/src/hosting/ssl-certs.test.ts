@@ -20,7 +20,7 @@ import {
   parseCertExpiryFromPath,
   readCertSnippet,
 } from './ssl-certs.js';
-import { YskError } from '@ysk-server/shared';
+import { YskError } from 'ysk-server-shared';
 
 const SAMPLE_CERT = `-----BEGIN CERTIFICATE-----
 MIIBkTCB+wIJAKHBfP8rX0example

@@ -4,7 +4,7 @@
 
 import type { HostExecutor } from '../../host/executor.js';
 import { shellQuote } from '../project-user-run.js';
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 
 export type LinuxUserProbe = {
   exists: boolean;

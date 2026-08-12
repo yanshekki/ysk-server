@@ -3,8 +3,8 @@
  * Default posture: read-only; destructive tools require explicit listing + approval.
  */
 
-import type { RiskTier } from '@ysk-server/shared';
-import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
+import type { RiskTier } from 'ysk-server-shared';
+import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
 
 export interface AllowlistEntry {
   tool: string;

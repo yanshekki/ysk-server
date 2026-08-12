@@ -21,8 +21,8 @@ import type {
   MigrateJobTarget,
   MigratePhase,
   OpsResultDto,
-} from '@ysk-server/shared';
-import { assertHonestOps } from '@ysk-server/shared';
+} from 'ysk-server-shared';
+import { assertHonestOps } from 'ysk-server-shared';
 import { migrateJobDir } from './types.js';
 
 function atomicWriteJson(path: string, data: unknown): void {

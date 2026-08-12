@@ -22,7 +22,7 @@ import {
   provisionMysqlDatabase,
   provisionRedisBinding,
   provisionPostgresDatabase,
-} from '@ysk-server/core';
+} from 'ysk-server-core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -167,7 +167,7 @@ export async function handleHostingInfraServicesRoutes(
         // Auto-open 80/443 when nginx settings apply succeeds
         if (result.ok && !result.blocked) {
           try {
-            const { syncServiceExposure } = await import('@ysk-server/core');
+            const { syncServiceExposure } = await import('ysk-server-core');
             const exp = await syncServiceExposure({
               host: ctx.host,
               dataDir: ctx.dataDir,
@@ -338,7 +338,7 @@ export async function handleHostingInfraServicesRoutes(
       }
       if (method === 'GET' && url.pathname === '/api/v1/hosting/files/status') {
         ctx.auth.authenticate(getBearer(req));
-        const { probePublicFileServer } = await import('@ysk-server/core');
+        const { probePublicFileServer } = await import('ysk-server-core');
         sendJson(res, 200, probePublicFileServer({ dataDir: ctx.dataDir, host: ctx.host }));
         return true;
       }

@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * Control-plane export + rebuild managed nginx confs from store (fail-closed).
  */

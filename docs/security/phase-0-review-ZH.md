@@ -24,5 +24,5 @@
 
 ## 驗證
 
-- `@ysk-server/core` 檔案管理與 webdav 單元測試已更新並通過。
+- `ysk-server-core` 檔案管理與 webdav 單元測試已更新並通過。
 EOF

@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * Install / uninstall identity private keys to Linux user home or panel secrets path.
  * Honest: dry-run default; apply needs root + YSK_EXECUTE via HostExecutor.

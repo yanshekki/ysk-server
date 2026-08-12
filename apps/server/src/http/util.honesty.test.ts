@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { EventEmitter } from 'node:events';
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { YskError, ErrorCodes } from '@ysk-server/shared';
+import { YskError, ErrorCodes } from 'ysk-server-shared';
 import {
   looksLikeOpsResult,
   statusFromOpsResult,
@@ -13,7 +13,7 @@ import {
   sendError,
   readBody,
 } from './util.js';
-import { assertHonestOps } from '@ysk-server/shared';
+import { assertHonestOps } from 'ysk-server-shared';
 
 function mockRes(): ServerResponse & {
   statusCode: number;

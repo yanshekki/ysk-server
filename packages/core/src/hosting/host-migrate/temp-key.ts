@@ -13,8 +13,8 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 import type { HostExecutor } from '../../host/executor.js';
-import type { OpsResultDto } from '@ysk-server/shared';
-import { assertHonestOps, tl} from '@ysk-server/shared';
+import type { OpsResultDto } from 'ysk-server-shared';
+import { assertHonestOps, tl} from 'ysk-server-shared';
 import { generateSshKeyPair } from '../../security/ssh-identity/generate.js';
 import { migrateJobDir } from './types.js';
 import {

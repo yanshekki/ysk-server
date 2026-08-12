@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * Apply domain suspend + vacation artifacts to host (Postfix / Dovecot).
  * Never fakes applied without successful host commands.

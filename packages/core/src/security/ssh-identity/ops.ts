@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * Identity ops: test connectivity, rotate, authorize-self (public → authorized_keys).
  * Outbound helpers for ssh/scp with -i.

@@ -8,7 +8,7 @@ import {
   type BtTrackerStatus,
   type BtTrackerTorrentRow,
   tl,
-} from '@ysk-server/shared';
+} from 'ysk-server-shared';
 import {
   buildAnnounceList,
   loadBtTrackerSettings,

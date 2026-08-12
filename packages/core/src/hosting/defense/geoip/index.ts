@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 export * from './types.js';
 export * from './providers.js';
 export * from './downloader.js';

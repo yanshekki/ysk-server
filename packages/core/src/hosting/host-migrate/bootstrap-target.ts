@@ -3,8 +3,8 @@
  * Does not claim services are production-ready (that is reapply/verify).
  */
 
-import type { HostManifest, MigrateJobDto, OpsResultDto } from '@ysk-server/shared';
-import { assertHonestOps, tl} from '@ysk-server/shared';
+import type { HostManifest, MigrateJobDto, OpsResultDto } from 'ysk-server-shared';
+import { assertHonestOps, tl} from 'ysk-server-shared';
 import type { HostExecutor } from '../../host/executor.js';
 import { getSoftware, SOFTWARE_CATALOG } from '../software-catalog.js';
 import {

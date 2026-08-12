@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * CDN status dashboard + cache hit-rate estimate (PR-C5).
  * Hit-rate is honest: sample nginx access logs when available; else unknown.
@@ -6,7 +6,7 @@ import { tl } from '@ysk-server/shared';
 
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import type { ApplyStatus, CdnNodeDto, CdnSiteDto } from '@ysk-server/shared';
+import type { ApplyStatus, CdnNodeDto, CdnSiteDto } from 'ysk-server-shared';
 import type { JsonStore } from '../../db/store.js';
 import type { HostExecutor } from '../../host/executor.js';
 import { listCdnNodes } from './nodes.js';

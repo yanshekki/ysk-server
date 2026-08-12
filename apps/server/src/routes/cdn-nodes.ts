@@ -3,7 +3,7 @@
  * Extracted from cdn.ts (Wave K3). Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 import { listWithQuery } from '../http/list-response.js';
 import type { AppContext } from '../app-context.js';
 import {
@@ -23,7 +23,7 @@ export async function handleCdnNodesRoutes(
       // —— CDN nodes (PR-C1): registry + probe + drain ——
       if (method === 'GET' && url.pathname === '/api/v1/cdn/nodes') {
         ctx.auth.authenticate(getBearer(req));
-        const { listCdnNodes } = await import('@ysk-server/core');
+        const { listCdnNodes } = await import('ysk-server-core');
         type Node = {
           name?: string;
           id?: string;
@@ -48,7 +48,7 @@ export async function handleCdnNodesRoutes(
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as Record<string, unknown>;
-        const { upsertCdnNode } = await import('@ysk-server/core');
+        const { upsertCdnNode } = await import('ysk-server-core');
         const node = upsertCdnNode(ctx.db, {
           id: typeof data.id === 'string' ? data.id : undefined,
           name: String(data.name ?? ''),
@@ -99,7 +99,7 @@ export async function handleCdnNodesRoutes(
       }
       if (method === 'POST' && url.pathname === '/api/v1/cdn/nodes/probe-all') {
         const user = ctx.auth.authenticate(getBearer(req));
-        const { probeAllCdnNodes } = await import('@ysk-server/core');
+        const { probeAllCdnNodes } = await import('ysk-server-core');
         const r = await probeAllCdnNodes(ctx.db);
         ctx.audit.append({
           actor: user.username,
@@ -113,7 +113,7 @@ export async function handleCdnNodesRoutes(
       if (method === 'GET' && url.pathname.match(/^\/api\/v1\/cdn\/nodes\/[^/]+$/)) {
         ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[5];
-        const { getCdnNode } = await import('@ysk-server/core');
+        const { getCdnNode } = await import('ysk-server-core');
         const node = getCdnNode(ctx.db, id);
         if (!node) {
           sendJson(res, 404, { ok: false, notes: [tl('notes.auto.n0866')] });
@@ -125,7 +125,7 @@ export async function handleCdnNodesRoutes(
       if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/cdn\/nodes\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[5];
-        const { deleteCdnNode } = await import('@ysk-server/core');
+        const { deleteCdnNode } = await import('ysk-server-core');
         const ok = deleteCdnNode(ctx.db, id);
         ctx.audit.append({
           actor: user.username,
@@ -139,7 +139,7 @@ export async function handleCdnNodesRoutes(
       if (method === 'POST' && url.pathname.match(/^\/api\/v1\/cdn\/nodes\/[^/]+\/probe$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[5];
-        const { probeCdnNode } = await import('@ysk-server/core');
+        const { probeCdnNode } = await import('ysk-server-core');
         const r = await probeCdnNode(ctx.db, id);
         ctx.audit.append({
           actor: user.username,
@@ -155,7 +155,7 @@ export async function handleCdnNodesRoutes(
         const id = url.pathname.split('/')[5];
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as { draining?: boolean };
-        const { setCdnNodeDrain } = await import('@ysk-server/core');
+        const { setCdnNodeDrain } = await import('ysk-server-core');
         const node = setCdnNodeDrain(ctx.db, id, data.draining !== false);
         ctx.audit.append({
           actor: user.username,

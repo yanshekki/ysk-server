@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * Roundcube SSO plugin skeleton + optional system symlink into Roundcube plugins/.
  */

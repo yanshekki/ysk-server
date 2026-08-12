@@ -52,9 +52,9 @@ else
 fi
 
 if [[ "$PUBLISH" -eq 1 ]]; then
-  log "PUBLISH MODE — @ysk-server/shared → @ysk-server/core → ysk-server"
-  pnpm --filter @ysk-server/shared publish --access public --no-git-checks
-  pnpm --filter @ysk-server/core publish --access public --no-git-checks
+  log "PUBLISH MODE — ysk-server-shared → ysk-server-core → ysk-server"
+  pnpm --filter ysk-server-shared publish --access public --no-git-checks
+  pnpm --filter ysk-server-core publish --access public --no-git-checks
   pnpm --filter ysk-server publish --access public --no-git-checks
   log "published"
   log "Install: npm install -g ysk-server"

@@ -6,7 +6,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { HostExecutor } from '../host/executor.js';
 import { syncNginxConfigs } from './nginx-sync.js';
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 
 export type NginxBodySize = '1m' | '10m' | '50m' | '100m' | '500m';
 export type NginxKeepalive = '15' | '65' | '120';

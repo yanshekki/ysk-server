@@ -4,7 +4,7 @@
  */
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { EmailDomain } from '@ysk-server/shared';
+import type { EmailDomain } from 'ysk-server-shared';
 import {
   Alert,
   Badge,

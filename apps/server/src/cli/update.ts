@@ -2,8 +2,8 @@
  * ysk-server update — check npm registry + optional apply.
  */
 
-import { planSelfUpdate, runSelfUpdate, LocalHostExecutor } from '@ysk-server/core';
-import { PRODUCT_NAME, type StructuredResult, tl} from '@ysk-server/shared';
+import { planSelfUpdate, runSelfUpdate, LocalHostExecutor } from 'ysk-server-core';
+import { PRODUCT_NAME, type StructuredResult, tl} from 'ysk-server-shared';
 import { VERSION } from '../version.js';
 
 export async function runUpdate(opts: {

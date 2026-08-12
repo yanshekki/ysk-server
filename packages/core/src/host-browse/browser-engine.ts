@@ -3,7 +3,7 @@
  * Screencast (CDP) + mouse/keyboard for real browsing feel.
  */
 
-import { ErrorCodes, YskError } from '@ysk-server/shared';
+import { ErrorCodes, YskError } from 'ysk-server-shared';
 import { probeChrome } from './chrome-probe.js';
 import { assertHostBrowseTarget } from './ssrf.js';
 import type { HostBrowseMode, HostBrowsePolicy } from './types.js';

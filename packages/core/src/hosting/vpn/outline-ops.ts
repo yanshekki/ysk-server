@@ -6,7 +6,7 @@
 import { randomBytes } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 import type { HostExecutor } from '../../host/executor.js';
 import type { VpnServerPeer } from './types.js';
 import { sanitizePeerName } from './wireguard-conf.js';

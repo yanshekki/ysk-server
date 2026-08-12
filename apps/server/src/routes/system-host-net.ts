@@ -11,7 +11,7 @@ import {
   probeFtpsStatus,
   listFtpHomeOptions,
   listFtpDomainOptions,
-} from '@ysk-server/core';
+} from 'ysk-server-core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -34,7 +34,7 @@ export async function handleSystemHostNetRoutes(
       loadRealIpConfig,
       listRealIpProviders,
       realIpProviderSummary,
-    } = await import('@ysk-server/core');
+    } = await import('ysk-server-core');
     const config = loadRealIpConfig(ctx.dataDir);
     sendJson(res, 200, {
       config,
@@ -53,7 +53,7 @@ export async function handleSystemHostNetRoutes(
     ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
     const body = JSON.parse(raw || '{}') as Record<string, unknown>;
-    const { patchRealIpConfig, applyRealIpArtifacts } = await import('@ysk-server/core');
+    const { patchRealIpConfig, applyRealIpArtifacts } = await import('ysk-server-core');
     const config = patchRealIpConfig(ctx.dataDir, {
       defaultProvider: body.defaultProvider as never,
       trustMode: body.trustMode as never,
@@ -76,7 +76,7 @@ export async function handleSystemHostNetRoutes(
   }
   if (method === 'POST' && url.pathname === '/api/v1/system/real-ip/refresh') {
     ctx.auth.authenticate(getBearer(req));
-    const { refreshRealIpCidrs, applyRealIpArtifacts } = await import('@ysk-server/core');
+    const { refreshRealIpCidrs, applyRealIpArtifacts } = await import('ysk-server-core');
     const r = await refreshRealIpCidrs({ dataDir: ctx.dataDir, host: ctx.host });
     const art = await applyRealIpArtifacts({ dataDir: ctx.dataDir });
     sendOpsResult(res, {

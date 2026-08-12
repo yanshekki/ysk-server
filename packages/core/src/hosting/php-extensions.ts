@@ -513,7 +513,7 @@ export async function uninstallPhpExtensions(input: {
   version?: string;
   extensions: string[];
 }): Promise<PhpExtensionUninstallResult> {
-  const { tl } = await import('@ysk-server/shared');
+  const { tl } = await import('ysk-server-shared');
   const ver =
     input.version?.match(/^(\d+\.\d+)/)?.[1] || defaultRuntimeVersion('php');
   const requested = [...new Set((input.extensions ?? []).filter(Boolean))];

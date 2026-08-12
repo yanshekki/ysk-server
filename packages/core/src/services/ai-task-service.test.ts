@@ -10,7 +10,7 @@ import { AuditRepository } from '../repositories/audit-repo.js';
 import { LlmGateway, echoTransport } from '../llm/gateway.js';
 import { AiTaskService } from './ai-task-service.js';
 import { evaluateProtection } from './protection.js';
-import { YskError } from '@ysk-server/shared';
+import { YskError } from 'ysk-server-shared';
 
 describe('AiTaskService', () => {
   function makeService(dir: string) {

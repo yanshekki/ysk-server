@@ -2,7 +2,7 @@
  * Remote Agent outbound communication path (control-plane side).
  */
 
-import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
+import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
 import { randomUUID } from 'node:crypto';
 
 export interface AgentSession {

@@ -5,7 +5,7 @@ import {
   startPlaybookRun,
   BUILTIN_PLAYBOOKS,
 } from './playbooks.js';
-import { YskError } from '@ysk-server/shared';
+import { YskError } from 'ysk-server-shared';
 
 describe('playbooks', () => {
   it('lists builtin playbooks with steps', () => {

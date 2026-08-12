@@ -15,7 +15,7 @@ import {
   selectPhpRuntime,
 } from './runtime.js';
 import { planFirewall } from './extras.js';
-import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
+import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
 import { HostSoftwareProbe, shellEnsureAptPackage } from './software-probe/index.js';
 
 export type BlockReason =

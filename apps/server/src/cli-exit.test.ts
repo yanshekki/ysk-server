@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { exitFromResult, exitFromError, printCliError } from './cli.js';
-import { YskError, ErrorCodes } from '@ysk-server/shared';
+import { YskError, ErrorCodes } from 'ysk-server-shared';
 
 describe('CLI exit mapping', () => {
   it('exitFromResult maps honesty shapes', () => {

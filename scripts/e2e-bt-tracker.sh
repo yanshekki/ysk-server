@@ -8,8 +8,8 @@ cd "$ROOT"
 CLI="${CLI:-node apps/server/dist/cli.js}"
 if [[ ! -f apps/server/dist/cli.js ]]; then
   echo "Building server…"
-  pnpm --filter @ysk-server/shared build
-  pnpm --filter @ysk-server/core build
+  pnpm --filter ysk-server-shared build
+  pnpm --filter ysk-server-core build
   pnpm --filter ysk-server build
 fi
 

@@ -10,7 +10,7 @@ import {
   statSync,
   lstatSync } from 'node:fs';
 import { join, relative, sep, normalize } from 'node:path';
-import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
+import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
 import { tailFileLines } from './log-center/file-tail.js';
 
 const MAX_DEPTH = 4;

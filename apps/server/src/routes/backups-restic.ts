@@ -3,7 +3,7 @@
  * Extracted from backups.ts (Wave K2). Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -21,7 +21,7 @@ export async function handleBackupsResticRoutes(
 ): Promise<boolean> {
       if (method === 'POST' && url.pathname === '/api/v1/backups/restic/run') {
         const user = ctx.auth.authenticate(getBearer(req));
-        const { resticBackupProject, getResticSettings } = await import('@ysk-server/core');
+        const { resticBackupProject, getResticSettings } = await import('ysk-server-core');
         const rs = getResticSettings(ctx.db);
         if (!rs.enabled) {
           sendJson(res, 422, {
@@ -77,7 +77,7 @@ export async function handleBackupsResticRoutes(
       if (method === 'GET' && url.pathname === '/api/v1/backups/restic/snapshots') {
         ctx.auth.authenticate(getBearer(req));
         const projectId = url.searchParams.get('projectId') ?? undefined;
-        const { listResticSnapshots } = await import('@ysk-server/core');
+        const { listResticSnapshots } = await import('ysk-server-core');
         const r = await listResticSnapshots({
           host: ctx.host,
           db: ctx.db,
@@ -102,7 +102,7 @@ export async function handleBackupsResticRoutes(
           sendJson(res, 404, { ok: false, notes: [tl('notes.auto.n0687')] });
           return true;
         }
-        const { resticRestoreProject } = await import('@ysk-server/core');
+        const { resticRestoreProject } = await import('ysk-server-core');
         const r = await resticRestoreProject({
           host: ctx.host,
           db: ctx.db,

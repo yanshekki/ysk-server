@@ -3,8 +3,8 @@
  */
 
 import { existsSync, readFileSync } from 'node:fs';
-import { parseConfig, type YskConfig } from '@ysk-server/core';
-import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
+import { parseConfig, type YskConfig } from 'ysk-server-core';
+import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
 
 /**
  * Load and parse a YSK config file path produced by `ysk-server setup`.

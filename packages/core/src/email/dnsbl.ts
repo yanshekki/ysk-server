@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * Multi-list DNSBL (blacklist) checks for outbound mail IP reputation (Spec §5.4 D).
  */

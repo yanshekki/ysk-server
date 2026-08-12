@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * SQL dump export/import for MySQL/MariaDB/Postgres — honest fail-closed.
  */

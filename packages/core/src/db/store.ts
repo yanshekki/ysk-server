@@ -13,7 +13,7 @@ import type {
   RiskTier,
   OperationLevel,
   HostingRuntime,
-} from '@ysk-server/shared';
+} from 'ysk-server-shared';
 
 export interface StoreUser {
   id: string;

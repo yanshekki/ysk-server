@@ -94,7 +94,7 @@
   "cmdNote": "এজ ysk-সার্ভার এজেন্ট রান স্থানীয়ভাবে CLI JSON চালায় ( --json যোগ করে)। হোস্ট পরিবর্তনের এখনও প্রান্তে YSK_EXECUTE=1 প্রয়োজন। ইতিহাসে প্রস্থান কোড এবং JSON দেখুন।",
   "resultTitle": "কমান্ডের ফলাফল · প্রস্থান {{code}}",
   "resultTitlePlain": "কমান্ড ফলাফল",
-  "codeComment": "# ধারণা: রেজিস্টার → হার্টবিট লুপ → পুল কমান্ড → ack\n# লাইব্রেরি: @ysk-server/core runOutboundAgent/agentCycle",
+  "codeComment": "# ধারণা: রেজিস্টার → হার্টবিট লুপ → পুল কমান্ড → ack\n# লাইব্রেরি: ysk-server-core runOutboundAgent/agentCycle",
   "resultOuter": "বাইরের: প্রান্ত ack (exitCode/stderr)। অভ্যন্তরীণ ফলাফল:",
   "deleteTitle": "{{id}} মুছবেন?",
   "deleteTitlePlain": "এজেন্ট মুছে ফেলবেন?",

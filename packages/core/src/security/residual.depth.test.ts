@@ -9,7 +9,7 @@ import { checkRbac, roleCan } from './rbac.js';
 import { createDefaultAllowlist } from './allowlist.js';
 import { executeToolCall } from './tool-executor.js';
 import type { HostExecutor, RunResult } from '../host/executor.js';
-import { ErrorCodes, YskError } from '@ysk-server/shared';
+import { ErrorCodes, YskError } from 'ysk-server-shared';
 
 function mockHost(opts?: {
   execute?: boolean;

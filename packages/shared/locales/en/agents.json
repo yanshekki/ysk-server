@@ -94,7 +94,7 @@
   "cmdNote": "Edge ysk-server agent run executes CLI JSON locally (adds --json). Host changes still need YSK_EXECUTE=1 on the edge. See exit code and JSON in History.",
   "resultTitle": "Command result · exit {{code}}",
   "resultTitlePlain": "Command result",
-  "codeComment": "# Concept: register → heartbeat loop → pull commands → ack\n# Library: @ysk-server/core runOutboundAgent / agentCycle",
+  "codeComment": "# Concept: register → heartbeat loop → pull commands → ack\n# Library: ysk-server-core runOutboundAgent / agentCycle",
   "resultOuter": "Outer: edge ack (exitCode / stderr). Inner result:",
   "deleteTitle": "Delete {{id}}?",
   "deleteTitlePlain": "Delete agent?",

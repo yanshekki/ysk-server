@@ -6,7 +6,7 @@
 
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { ErrorCodes, YskError, tl, type HostingRuntime } from '@ysk-server/shared';
+import { ErrorCodes, YskError, tl, type HostingRuntime } from 'ysk-server-shared';
 import { defaultRuntimeVersion } from './runtime.js';
 
 /** Canonical template ids (one per runtime). */

@@ -19,7 +19,7 @@ import {
 import { join, resolve, relative, dirname, basename, extname, sep } from 'node:path';
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
+import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
 import { listFileVersions, restoreFileVersion, snapshotFileVersion } from './versions.js';
 
 export interface FileEntry {

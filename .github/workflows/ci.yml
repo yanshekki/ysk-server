@@ -79,11 +79,11 @@ jobs:
       # Coverage floors drift with feature growth; report but do not block release CI.
       # Unit tests above are the hard gate. Re-lock floors in a dedicated coverage PR.
       - name: Shared coverage (report)
-        run: pnpm --filter @ysk-server/shared test:coverage
+        run: pnpm --filter ysk-server-shared test:coverage
         continue-on-error: true
 
       - name: Core coverage (report)
-        run: pnpm --filter @ysk-server/core test:coverage
+        run: pnpm --filter ysk-server-core test:coverage
         continue-on-error: true
 
       - name: Server coverage (report)
@@ -91,7 +91,7 @@ jobs:
         continue-on-error: true
 
       - name: Web coverage (report)
-        run: pnpm --filter @ysk-server/web test:coverage
+        run: pnpm --filter ysk-server-web test:coverage
         continue-on-error: true
 
       - name: Coverage aggregate + export report

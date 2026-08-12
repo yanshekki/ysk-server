@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Publish unscoped **ysk-server** to npmjs.com.
-#
-# Workspace packages (@ysk-server/shared, @ysk-server/core) are **bundled** into
-# the tarball so installers only need the unscoped product package.
+# Publish YSK Server packages to npmjs.com (unscoped, no org required):
+#   1) ysk-server-shared
+#   2) ysk-server-core
+#   3) ysk-server  (product CLI + panel; bundles shared+core)
 #
 # Usage:
-#   bash scripts/publish-ysk-server-npm.sh           # pack dry-run
+#   bash scripts/publish-ysk-server-npm.sh           # dry-run pack
 #   bash scripts/publish-ysk-server-npm.sh --publish  # real publish
 
 set -euo pipefail
@@ -22,14 +22,24 @@ if ! npm whoami &>/dev/null; then
 fi
 log "npm user: $(npm whoami)"
 
-VERSION="$(node -p "require('./apps/server/package.json').version")"
-log "ysk-server version: $VERSION"
+SERVER_VER="$(node -p "require('./apps/server/package.json').version")"
+SHARED_VER="$(node -p "require('./packages/shared/package.json').version")"
+CORE_VER="$(node -p "require('./packages/core/package.json').version")"
+log "versions: shared=$SHARED_VER core=$CORE_VER server=$SERVER_VER"
+
+# Ensure package READMEs exist (npm page content)
+for f in packages/shared/README.md packages/core/README.md apps/server/README.md; do
+  if [[ ! -f "$f" ]]; then
+    log "ERROR: missing $f"
+    exit 1
+  fi
+done
 
 log "build shared → core → server → web…"
-pnpm --filter @ysk-server/shared build
-pnpm --filter @ysk-server/core build
+pnpm --filter ysk-server-shared build
+pnpm --filter ysk-server-core build
 pnpm --filter ysk-server build
-pnpm --filter @ysk-server/web build || log "WARN: web build failed"
+pnpm --filter ysk-server-web build || log "WARN: web build failed"
 
 log "embed web UI…"
 mkdir -p apps/server/public/web
@@ -41,54 +51,55 @@ else
   log "WARNING: no apps/web/dist — API-only pack"
 fi
 
+if [[ "$PUBLISH" -eq 1 ]]; then
+  log "PUBLISH ysk-server-shared@$SHARED_VER…"
+  (cd packages/shared && npm publish --access public)
+
+  log "PUBLISH ysk-server-core@$CORE_VER…"
+  (cd packages/core && npm publish --access public)
+else
+  log "dry-run: would publish ysk-server-shared + ysk-server-core"
+  (cd packages/shared && npm publish --access public --dry-run 2>&1 | tail -8)
+  (cd packages/core && npm publish --access public --dry-run 2>&1 | tail -8)
+fi
+
+# Stage product package with bundled libs + README
 PACK_DIR="$(mktemp -d)"
-log "pack workspace tarballs → $PACK_DIR"
-# pack from package dirs (pnpm --filter … pack --pack-destination is flaky)
+STAGE="$(mktemp -d)"
+log "stage product → $STAGE"
 (cd packages/shared && pnpm pack --pack-destination "$PACK_DIR")
 (cd packages/core && pnpm pack --pack-destination "$PACK_DIR")
 
-STAGE="$(mktemp -d)"
-log "stage → $STAGE"
 cp -a apps/server/dist "$STAGE/"
 cp -a apps/server/public "$STAGE/"
-[[ -f apps/server/README.md ]] && cp apps/server/README.md "$STAGE/" || true
+cp -a apps/server/README.md "$STAGE/README.md"
+test -f "$STAGE/README.md"
 
-# tarball names from scoped packages: ysk-server-shared-*.tgz / ysk-server-core-*.tgz
-SHARED_TGZ="$(ls "$PACK_DIR"/ysk-server-shared-*.tgz 2>/dev/null | head -1)"
-CORE_TGZ="$(ls "$PACK_DIR"/ysk-server-core-*.tgz 2>/dev/null | head -1)"
-if [[ -z "${SHARED_TGZ:-}" || -z "${CORE_TGZ:-}" ]]; then
-  log "ERROR: expected pack artifacts under $PACK_DIR:"
-  ls -la "$PACK_DIR" || true
-  exit 1
-fi
+mkdir -p "$STAGE/node_modules"
+# extract packed libs as node_modules/ysk-server-shared|core
+SHARED_TGZ="$(ls "$PACK_DIR"/ysk-server-shared-*.tgz | head -1)"
+CORE_TGZ="$(ls "$PACK_DIR"/ysk-server-core-*.tgz | head -1)"
+tar -xzf "$SHARED_TGZ" -C "$STAGE/node_modules"
+mv "$STAGE/node_modules/package" "$STAGE/node_modules/ysk-server-shared"
+tar -xzf "$CORE_TGZ" -C "$STAGE/node_modules"
+mv "$STAGE/node_modules/package" "$STAGE/node_modules/ysk-server-core"
 
-mkdir -p "$STAGE/node_modules/@ysk-server"
-tar -xzf "$SHARED_TGZ" -C "$STAGE/node_modules/@ysk-server"
-mv "$STAGE/node_modules/@ysk-server/package" "$STAGE/node_modules/@ysk-server/shared"
-tar -xzf "$CORE_TGZ" -C "$STAGE/node_modules/@ysk-server"
-mv "$STAGE/node_modules/@ysk-server/package" "$STAGE/node_modules/@ysk-server/core"
-
-export STAGE
+export STAGE SHARED_VER CORE_VER
 node <<'NODE'
 const fs = require('fs');
 const stage = process.env.STAGE;
 const serverPkg = JSON.parse(fs.readFileSync('apps/server/package.json', 'utf8'));
 const corePkg = JSON.parse(fs.readFileSync('packages/core/package.json', 'utf8'));
-const sharedVer = JSON.parse(
-  fs.readFileSync(stage + '/node_modules/@ysk-server/shared/package.json', 'utf8'),
-).version;
-const coreVer = JSON.parse(
-  fs.readFileSync(stage + '/node_modules/@ysk-server/core/package.json', 'utf8'),
-).version;
 const deps = {};
 for (const src of [corePkg.dependencies || {}, serverPkg.dependencies || {}]) {
   for (const [k, v] of Object.entries(src)) {
-    if (k.startsWith('@ysk-server/') || k.startsWith('@yanshekki/') || k.startsWith('@ysk/')) continue;
+    if (k === 'ysk-server-shared' || k === 'ysk-server-core') continue;
+    if (k.startsWith('workspace:')) continue;
     deps[k] = v;
   }
 }
-deps['@ysk-server/shared'] = sharedVer;
-deps['@ysk-server/core'] = coreVer;
+deps['ysk-server-shared'] = process.env.SHARED_VER;
+deps['ysk-server-core'] = process.env.CORE_VER;
 const out = {
   name: 'ysk-server',
   version: serverPkg.version,
@@ -102,21 +113,28 @@ const out = {
   repository: serverPkg.repository,
   license: serverPkg.license || 'MIT',
   keywords: serverPkg.keywords,
+  homepage: 'https://github.com/yanshekki/ysk-server#readme',
+  bugs: { url: 'https://github.com/yanshekki/ysk-server/issues' },
   publishConfig: { access: 'public' },
   dependencies: deps,
-  bundleDependencies: ['@ysk-server/shared', '@ysk-server/core'],
+  bundleDependencies: ['ysk-server-shared', 'ysk-server-core'],
 };
 fs.writeFileSync(stage + '/package.json', JSON.stringify(out, null, 2) + '\n');
-console.log('staged', out.name + '@' + out.version, 'bundled', out.bundleDependencies.join(','));
+console.log('staged', out.name + '@' + out.version);
+// sanity: README present
+if (!fs.existsSync(stage + '/README.md')) throw new Error('README missing in stage');
 NODE
 
 if [[ "$PUBLISH" -eq 1 ]]; then
-  log "PUBLISH ysk-server@$VERSION…"
+  log "PUBLISH ysk-server@$SERVER_VER…"
   (cd "$STAGE" && npm publish --access public)
-  log "done — https://www.npmjs.com/package/ysk-server"
-  log "install: npm install -g ysk-server@$VERSION"
+  log "done"
+  log "  https://www.npmjs.com/package/ysk-server"
+  log "  https://www.npmjs.com/package/ysk-server-shared"
+  log "  https://www.npmjs.com/package/ysk-server-core"
+  log "install: npm install -g ysk-server@$SERVER_VER"
 else
-  log "dry-run pack…"
-  (cd "$STAGE" && npm pack --dry-run 2>&1 | tail -25)
+  log "dry-run pack ysk-server…"
+  (cd "$STAGE" && npm pack --dry-run 2>&1 | grep -E 'README|package size|total files|Bundled|name:|version:' | head -20)
   log "To publish: bash scripts/publish-ysk-server-npm.sh --publish"
 fi

@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * Fail2ban jail / filter snippets for panel login + sshd (honest: written under dataDir).
  */

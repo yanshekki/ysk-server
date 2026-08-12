@@ -3,7 +3,7 @@
  * Extracted from cdn-sites.ts (Wave O3). Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 import { listWithQuery } from '../http/list-response.js';
 import type { AppContext } from '../app-context.js';
 import {
@@ -23,7 +23,7 @@ export async function handleCdnSitesCrudRoutes(
       // —— CDN sites (PR-C2): policy + edge nginx render (written, not fan-out) ——
       if (method === 'GET' && url.pathname === '/api/v1/cdn/sites') {
         ctx.auth.authenticate(getBearer(req));
-        const { listCdnSites } = await import('@ysk-server/core');
+        const { listCdnSites } = await import('ysk-server-core');
         type Site = {
           id?: string;
           name?: string;
@@ -45,7 +45,7 @@ export async function handleCdnSitesCrudRoutes(
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as Record<string, unknown>;
-        const { upsertCdnSite } = await import('@ysk-server/core');
+        const { upsertCdnSite } = await import('ysk-server-core');
         const domainsRaw = data.domains;
         const domains = Array.isArray(domainsRaw)
           ? (domainsRaw as string[])
@@ -135,14 +135,14 @@ export async function handleCdnSitesCrudRoutes(
           return true;
         }
         const proj = ctx.projects.get(data.projectId);
-        const { enableCdnFromProject } = await import('@ysk-server/core');
+        const { enableCdnFromProject } = await import('ysk-server-core');
         const r = enableCdnFromProject({
           db: ctx.db,
           project: proj,
           edgeNodeIds: data.edgeNodeIds,
           originShieldNodeId: data.originShieldNodeId,
-          strategy: data.strategy as import('@ysk-server/shared').CdnDnsStrategy | undefined,
-          mode: data.mode as import('@ysk-server/shared').CdnSiteMode | undefined,
+          strategy: data.strategy as import('ysk-server-shared').CdnDnsStrategy | undefined,
+          mode: data.mode as import('ysk-server-shared').CdnSiteMode | undefined,
           geoMap: data.geoMap,
           geoSubdomains: data.geoSubdomains,
           name: data.name,
@@ -165,7 +165,7 @@ export async function handleCdnSitesCrudRoutes(
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as { applyZone?: boolean };
-        const { runAllCdnSitesHealthLoop } = await import('@ysk-server/core');
+        const { runAllCdnSitesHealthLoop } = await import('ysk-server-core');
         const r = await runAllCdnSitesHealthLoop({
           db: ctx.db,
           dataDir: ctx.dataDir,
@@ -183,7 +183,7 @@ export async function handleCdnSitesCrudRoutes(
       }
       if (method === 'GET' && url.pathname === '/api/v1/cdn/dashboard') {
         ctx.auth.authenticate(getBearer(req));
-        const { collectCdnDashboard } = await import('@ysk-server/core');
+        const { collectCdnDashboard } = await import('ysk-server-core');
         const dash = await collectCdnDashboard({
           db: ctx.db,
           dataDir: ctx.dataDir,
@@ -195,7 +195,7 @@ export async function handleCdnSitesCrudRoutes(
       if (method === 'GET' && url.pathname.match(/^\/api\/v1\/cdn\/sites\/[^/]+$/)) {
         ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[5];
-        const { getCdnSite, readCdnSiteRenderedConf } = await import('@ysk-server/core');
+        const { getCdnSite, readCdnSiteRenderedConf } = await import('ysk-server-core');
         const site = getCdnSite(ctx.db, id);
         if (!site) {
           sendJson(res, 404, { ok: false, notes: [tl('notes.auto.n0024')] });
@@ -208,7 +208,7 @@ export async function handleCdnSitesCrudRoutes(
       if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/cdn\/sites\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[5];
-        const { deleteCdnSite } = await import('@ysk-server/core');
+        const { deleteCdnSite } = await import('ysk-server-core');
         const ok = deleteCdnSite(ctx.db, id);
         ctx.audit.append({
           actor: user.username,

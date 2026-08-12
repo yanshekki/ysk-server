@@ -1,10 +1,10 @@
 /**
  * Unified one-click software install API + stack plan wizard
  */
-import type { SoftwareStatus, SoftwareInstallResult } from '@ysk-server/shared';
+import type { SoftwareStatus, SoftwareInstallResult } from 'ysk-server-shared';
 import { api } from '../../shared/services/api';
 
-export type { SoftwareStatus, SoftwareInstallResult } from '@ysk-server/shared';
+export type { SoftwareStatus, SoftwareInstallResult } from 'ysk-server-shared';
 
 export type StackPlan = {
   id: string;

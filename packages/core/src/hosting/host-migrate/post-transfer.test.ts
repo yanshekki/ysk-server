@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import type { HostExecutor, RunResult } from '../../host/executor.js';
-import type { HostManifest, MigrateJobDto } from '@ysk-server/shared';
+import type { HostManifest, MigrateJobDto } from 'ysk-server-shared';
 import type { JsonStore } from '../../db/store.js';
 import { runPostTransferOnHost } from './post-transfer.js';
 

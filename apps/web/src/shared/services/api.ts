@@ -2,7 +2,7 @@
  * All backend calls go through this shared services layer.
  */
 
-import type { AuthLoginResponse, HealthResponse, OpsApplyResultDto, ProjectDto } from '@ysk-server/shared';
+import type { AuthLoginResponse, HealthResponse, OpsApplyResultDto, ProjectDto } from 'ysk-server-shared';
 import i18n from '../lib/i18n';
 import { authStore } from '../stores/auth-store';
 

@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * MySQL vs MariaDB engine probe / install / start — panel only.
  * Presence/version always via HostSoftwareProbe (never ad-hoc command -v).

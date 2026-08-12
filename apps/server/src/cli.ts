@@ -11,7 +11,7 @@ import {
   localeFromEnv,
   normalizeLocale,
   runWithLocaleAsync,
-  type StructuredResult,  tl} from '@ysk-server/shared';
+  type StructuredResult,  tl} from 'ysk-server-shared';
 import {
   createDefaultAllowlist,
   installControlPlaneSystemd,
@@ -24,7 +24,7 @@ import {
   uninstallStack,
   scanStack,
   expandComponents,
-} from '@ysk-server/core';
+} from 'ysk-server-core';
 import { createAppContext, closeAppContext } from './app-context.js';
 
 import { runSetup } from './cli/setup.js';
@@ -363,7 +363,7 @@ async function mainInner(
         if (eq > 0) toolArgs[p.slice(0, eq)] = p.slice(eq + 1);
       }
       const { createAppContext, closeAppContext } = await import('./app-context.js');
-      const { executeToolCall } = await import('@ysk-server/core');
+      const { executeToolCall } = await import('ysk-server-core');
       const configPath = getOpt(args, '--config');
       const config = configPath ? (await import('./config-loader.js')).loadConfigFile(configPath) : undefined;
       const ctx = createAppContext({ version: VERSION, config, configPath });
@@ -519,7 +519,7 @@ async function mainInner(
 
       if (sub === 'deliverability' || sub === 'deliverability-overview') {
         if (sub === 'deliverability-overview' || hasFlag(args, '--overview')) {
-          const { buildDeliverabilityReport } = await import('@ysk-server/core');
+          const { buildDeliverabilityReport } = await import('ysk-server-core');
           const domains = ctx.email.list();
           const items = [];
           for (const d of domains.slice(0, 20)) {
@@ -547,7 +547,7 @@ async function mainInner(
           process.stderr.write(`${tl('cli.usage.email.deliverability.--domain.example.com.b0dff0')}\n`);
           return 2;
         }
-        const { buildDeliverabilityReport } = await import('@ysk-server/core');
+        const { buildDeliverabilityReport } = await import('ysk-server-core');
         const report = await buildDeliverabilityReport({
           domain: row.domain,
           serverIp: row.server_ip,
@@ -561,7 +561,7 @@ async function mainInner(
       }
 
       if (sub === 'bootstrap') {
-        const { bootstrapEmailServer } = await import('@ysk-server/core');
+        const { bootstrapEmailServer } = await import('ysk-server-core');
         const domain = getOpt(args, '--domain');
         const serverIp = getOpt(args, '--ip');
         if (!domain || !serverIp) {
@@ -666,7 +666,7 @@ async function mainInner(
 
       if (sub === 'queue') {
         const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
-        const { listMailQueue, flushMailQueue } = await import('@ysk-server/core');
+        const { listMailQueue, flushMailQueue } = await import('ysk-server-core');
         if (act === 'list' || act === 'status') {
           printJson({ ...(await listMailQueue(ctx.host)), ok: true });
           return 0;
@@ -694,7 +694,7 @@ async function mainInner(
 
       if (sub === 'relay') {
         const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'get';
-        const { applySmtpRelay, loadSmtpRelaySettings } = await import('@ysk-server/core');
+        const { applySmtpRelay, loadSmtpRelaySettings } = await import('ysk-server-core');
         if (act === 'get' || act === 'status' || act === 'show') {
           const stored = ctx.settings.get('email.smtp_relay');
           printJson({
@@ -885,7 +885,7 @@ async function mainInner(
       getWebDavSettings,
       issueWebDavToken,
       setWebDavSettings,
-    } = await import('@ysk-server/core');
+    } = await import('ysk-server-core');
     const ctx = openCliContext(args);
     try {
       if (sub === 'help' || sub === '--help') {
@@ -1112,7 +1112,7 @@ async function mainInner(
             const {
               normalizeDownloadModes,
               prepareFileShareBt,
-            } = await import('@ysk-server/core');
+            } = await import('ysk-server-core');
             const downloadModes = normalizeDownloadModes(
               modeRaw === 'both' ? ['direct', 'bt'] : modeRaw === 'bt' ? ['bt'] : ['direct'],
             );
@@ -1167,7 +1167,7 @@ async function mainInner(
             process.stderr.write('Usage: ysk-server files shares bt-stats --id SHARE_ID\n');
             return 2;
           }
-          const { getFileShareById, collectBtShareStats } = await import('@ysk-server/core');
+          const { getFileShareById, collectBtShareStats } = await import('ysk-server-core');
           const share = getFileShareById(ctx.db, id.trim());
           if (!share) {
             printJson({ ok: false, notes: ['share not found'] });
@@ -1290,7 +1290,7 @@ async function mainInner(
       storeStatus,
       openDocumentStoreSync,
       resolveStoreBackend,
-    } = await import('@ysk-server/core');
+    } = await import('ysk-server-core');
     const ctx = openCliContext(args);
     try {
       if (sub === 'status') {
@@ -1381,7 +1381,7 @@ async function mainInner(
         runAllCdnSitesHealthLoop,
         enableCdnFromProject,
         syncCdnSiteDns,
-      } = await import('@ysk-server/core');
+      } = await import('ysk-server-core');
 
       if (sub === 'help' || sub === '--help') {
         process.stderr.write(`${tl('cli.usage.cdn.sub.--data-dir.path.--json.092842')}\n`);
@@ -1499,7 +1499,7 @@ async function mainInner(
               : originUrl
                 ? { kind: 'url', url: originUrl }
                 : undefined,
-            mode: getOpt(args, '--mode') as import('@ysk-server/shared').CdnSiteMode | undefined,
+            mode: getOpt(args, '--mode') as import('ysk-server-shared').CdnSiteMode | undefined,
           });
           printJson({ ok: true, site });
           return 0;
@@ -1745,7 +1745,7 @@ async function mainInner(
         config = config ? { ...config, dataDir } : ({ dataDir } as NonNullable<typeof config>);
       }
       const { createAppContext, closeAppContext } = await import('./app-context.js');
-      const { probeAllAgentRuntimes } = await import('@ysk-server/core');
+      const { probeAllAgentRuntimes } = await import('ysk-server-core');
       const ctx = createAppContext({
         version: VERSION,
         config,
@@ -1779,7 +1779,7 @@ async function mainInner(
     const agentId = getOpt(args, '--id') ?? `agent-${process.pid}`;
     const group = getOpt(args, '--group');
     const intervalMs = Number(getOpt(args, '--interval') ?? 5000);
-    const { runOutboundAgent } = await import('@ysk-server/core');
+    const { runOutboundAgent } = await import('ysk-server-core');
     process.stdout.write(
       `YSK outbound agent ${agentId} → ${controlPlane} (interval ${intervalMs}ms)\n`,
     );
@@ -1811,7 +1811,7 @@ async function mainInner(
           payload?.op === 'cdn.edge.purge'
         ) {
           const { isCdnFleetPayload, runCdnFleetPayload } = await import(
-            '@ysk-server/core'
+            'ysk-server-core'
           );
           if (!isCdnFleetPayload(payload)) {
             return {
@@ -1842,7 +1842,7 @@ async function mainInner(
         }
         // Fleet cluster sync: upsert registry + plan on edge
         if (payload?.op === 'clusterSync' && payload.cluster) {
-          const { importDbClusterSync } = await import('@ysk-server/core');
+          const { importDbClusterSync } = await import('ysk-server-core');
           const dataDir =
             getOpt(args, '--data-dir') ??
             process.env.YSK_DATA_DIR ??
@@ -1856,7 +1856,7 @@ async function mainInner(
             const r = importDbClusterSync({
               db: ctxSync.db,
               dataDir: ctxSync.dataDir,
-              cluster: payload.cluster as import('@ysk-server/core').DbCluster });
+              cluster: payload.cluster as import('ysk-server-core').DbCluster });
             return {
               ok: r.ok,
               exitCode: r.ok ? 0 : 1,
@@ -1939,7 +1939,7 @@ async function mainInner(
   }
 
   if (command === 'templates') {
-    const { listAppTemplates } = await import('@ysk-server/core');
+    const { listAppTemplates } = await import('ysk-server-core');
     printJson({ ok: true, items: listAppTemplates() });
     return 0;
   }
@@ -1974,7 +1974,7 @@ async function mainInner(
       pushBackupRemote,
       localizeLastBackupRun,
       CONTROL_PLANE_BACKUP_ID,
-    } = await import('@ysk-server/core');
+    } = await import('ysk-server-core');
     const ctx = createAppContext({
       version: VERSION,
       config,
@@ -2408,8 +2408,8 @@ async function mainInner(
       config = config ? { ...config, dataDir } : ({ dataDir } as NonNullable<typeof config>);
     }
     const { createAppContext, closeAppContext } = await import('./app-context.js');
-    const { applyListQuery } = await import('@ysk-server/core');
-    const { parseListQuery } = await import('@ysk-server/shared');
+    const { applyListQuery } = await import('ysk-server-core');
+    const { parseListQuery } = await import('ysk-server-shared');
     const ctx = createAppContext({
       version: VERSION,
       config,
@@ -2498,7 +2498,7 @@ async function mainInner(
         }
         if (sub === 'audit' || sub === 'routes') {
           const { matchMutatingRouteCap, MUTATING_ROUTE_CAP_RULES } = await import(
-            '@ysk-server/shared'
+            'ysk-server-shared'
           );
           const samples: Array<{ method: string; path: string; cap: string | null }> = [
             ['POST', '/api/v1/users'],
@@ -2631,7 +2631,7 @@ async function mainInner(
 
         if (sub === 'api-keys' || sub === 'api-key' || sub === 'apikeys') {
           const action = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
-          const { listApiKeys, createApiKey, deleteApiKey } = await import('@ysk-server/core');
+          const { listApiKeys, createApiKey, deleteApiKey } = await import('ysk-server-core');
           if (action === 'list') {
             const items = listApiKeys(ctx.db);
             printJson({ ok: true, items });
@@ -2724,7 +2724,7 @@ async function mainInner(
       }
       if (sub === 'isolation') {
         const action = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
-        const { listIsolationReport, backfillProjectOwners } = await import('@ysk-server/core');
+        const { listIsolationReport, backfillProjectOwners } = await import('ysk-server-core');
         if (action === 'list' || action === 'status') {
           const snaps = ctx.projects.list().map((p) => ({
             id: p.id,
@@ -2955,7 +2955,7 @@ async function mainInner(
       powerDnsStatus,
       installPowerDnsPackages,
       applyEmailStack,
-      applyFirewall } = await import('@ysk-server/core');
+      applyFirewall } = await import('ysk-server-core');
     const ctx = createAppContext({
       version: VERSION,
       config,
@@ -2966,7 +2966,7 @@ async function mainInner(
     });
     try {
       if (sub === 'nginx' || sub === 'nginx-list') {
-        const { listManagedNginxDetailed } = await import('@ysk-server/core');
+        const { listManagedNginxDetailed } = await import('ysk-server-core');
         printJson({
           ok: true,
           files: listManagedNginxConfs(ctx.dataDir),
@@ -3150,7 +3150,7 @@ async function mainInner(
         return exitFromResult(result);
       }
       if (sub === 'ftps-apply') {
-        const { applyFtps } = await import('@ysk-server/core');
+        const { applyFtps } = await import('ysk-server-core');
         const domain = getOpt(args, '--domain');
         if (!domain) {
           process.stderr.write(`${tl('cli.usage.hosting.ftps-apply.--domain.files.example.284a7c')}\n`);
@@ -3165,7 +3165,7 @@ async function mainInner(
         return exitFromResult(result);
       }
       if (sub === 'runtimes' || sub === 'runtimes-probe') {
-        const { probeRuntimes, listSupportedRuntimes } = await import('@ysk-server/core');
+        const { probeRuntimes, listSupportedRuntimes } = await import('ysk-server-core');
         try {
           printJson({
             ok: true,
@@ -3188,7 +3188,7 @@ async function mainInner(
         const {
           planOrInstallRuntime,
           defaultRuntimeVersion,
-        } = await import('@ysk-server/core');
+        } = await import('ysk-server-core');
         const kindRaw = getOpt(args, '--kind') ?? 'node';
         const allowed = [
           'node',
@@ -3233,7 +3233,7 @@ async function mainInner(
           });
           return 3;
         }
-        const { switchRuntimeDefault, defaultRuntimeVersion } = await import('@ysk-server/core');
+        const { switchRuntimeDefault, defaultRuntimeVersion } = await import('ysk-server-core');
         const kindRaw = getOpt(args, '--kind') ?? 'node';
         const allowed = [
           'node',
@@ -3266,7 +3266,7 @@ async function mainInner(
           });
           return 3;
         }
-        const { uninstallRuntimeVersion } = await import('@ysk-server/core');
+        const { uninstallRuntimeVersion } = await import('ysk-server-core');
         const kindRaw = getOpt(args, '--kind') ?? 'node';
         const version = getOpt(args, '--version');
         if (!version?.trim()) {
@@ -3297,7 +3297,7 @@ async function mainInner(
         return exitFromResult(result);
       }
       if (sub === 'dovecot-passdb') {
-        const { writeDovecotPassdb, writeAllDovecotPassdbs } = await import('@ysk-server/core');
+        const { writeDovecotPassdb, writeAllDovecotPassdbs } = await import('ysk-server-core');
         const domain = getOpt(args, '--domain');
         if (!domain || hasFlag(args, '--all')) {
           printJson(writeAllDovecotPassdbs({ dataDir: ctx.dataDir, db: ctx.db }));
@@ -3309,7 +3309,7 @@ async function mainInner(
         return 0;
       }
       if (sub === 'webmail-apply') {
-        const { applyWebmail } = await import('@ysk-server/core');
+        const { applyWebmail } = await import('ysk-server-core');
         const domain = getOpt(args, '--domain');
         if (!domain) {
           process.stderr.write(`${tl('cli.usage.hosting.webmail-apply.--domain.webmail.example.2ad5b5')}\n`);
@@ -3327,7 +3327,7 @@ async function mainInner(
         return exitFromResult(result);
       }
       if (sub === 'public-files') {
-        const { applyPublicFileServer } = await import('@ysk-server/core');
+        const { applyPublicFileServer } = await import('ysk-server-core');
         const domain = getOpt(args, '--domain');
         if (!domain) {
           process.stderr.write(`${tl('cli.usage.hosting.public-files.--domain.files.example.0e9013')}\n`);
@@ -3354,7 +3354,7 @@ async function mainInner(
           process.stderr.write(`${tl('cli.usage.hosting.email-deliverability.--domain.example.com.8774a4')}\n`);
           return 2;
         }
-        const { buildDeliverabilityReport } = await import('@ysk-server/core');
+        const { buildDeliverabilityReport } = await import('ysk-server-core');
         const report = await buildDeliverabilityReport({
           domain: row.domain,
           serverIp: row.server_ip,
@@ -3367,7 +3367,7 @@ async function mainInner(
         return report.panelReady ? 0 : 1;
       }
       if (sub === 'email-bootstrap') {
-        const { bootstrapEmailServer } = await import('@ysk-server/core');
+        const { bootstrapEmailServer } = await import('ysk-server-core');
         const domain = getOpt(args, '--domain');
         const serverIp = getOpt(args, '--ip');
         if (!domain || !serverIp) {
@@ -3433,7 +3433,7 @@ async function mainInner(
       lookupDns,
       validateDnsRecordSet,
       hasDnsErrors,
-    } = await import('@ysk-server/core');
+    } = await import('ysk-server-core');
     const ctx = openCliContext(args);
     try {
       if (sub === 'zones' || sub === 'list') {
@@ -3612,7 +3612,7 @@ async function mainInner(
       dispatchDbClusterFleet,
       installDbClusterOnPeers,
       firewallPortsForCluster,
-      importDbClusterSync } = await import('@ysk-server/core');
+      importDbClusterSync } = await import('ysk-server-core');
     const ctx = openCliContext(args);
     try {
       if (sub === 'list' || sub === 'ls') {
@@ -3801,7 +3801,7 @@ async function mainInner(
           process.stderr.write(`${tl('cli.msg.import-sync.prefers.fleet.4d7590')}\n`);
           return 2;
         }
-        const data = JSON.parse(raw) as { cluster?: import('@ysk-server/core').DbCluster };
+        const data = JSON.parse(raw) as { cluster?: import('ysk-server-core').DbCluster };
         if (!data.cluster) {
           printJson({ ok: false, notes: ['need { cluster }'] });
           return 2;
@@ -3919,7 +3919,7 @@ async function mainInner(
       exportSshIdentityPrivate,
       deleteSshIdentity,
       installSshIdentity,
-      uninstallSshIdentity } = await import('@ysk-server/core');
+      uninstallSshIdentity } = await import('ysk-server-core');
     const ctx = openCliContext(args);
     try {
       if (sub === 'list' || sub === 'ls') {
@@ -4118,7 +4118,7 @@ async function mainInner(
           process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.test.--id.e1aed3', { CLI_NAME })}\n`);
           return 2;
         }
-        const { testSshIdentity } = await import('@ysk-server/core');
+        const { testSshIdentity } = await import('ysk-server-core');
         const r = await testSshIdentity({
           dataDir: ctx.dataDir,
           id,
@@ -4135,7 +4135,7 @@ async function mainInner(
           process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.rotate.--id.9c3224', { CLI_NAME })}\n`);
           return 2;
         }
-        const { rotateSshIdentity } = await import('@ysk-server/core');
+        const { rotateSshIdentity } = await import('ysk-server-core');
         const r = rotateSshIdentity({
           dataDir: ctx.dataDir,
           id,
@@ -4150,7 +4150,7 @@ async function mainInner(
           process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.authorize-self.--id.b7ea2e', { CLI_NAME })}\n`);
           return 2;
         }
-        const { authorizeSelfSshIdentity } = await import('@ysk-server/core');
+        const { authorizeSelfSshIdentity } = await import('ysk-server-core');
         const r = await authorizeSelfSshIdentity({
           dataDir: ctx.dataDir,
           db: ctx.db,
@@ -4210,7 +4210,7 @@ async function mainInner(
       buildPamSshSnippet,
       buildSshdTotpHints,
       probeSsh2faHost,
-      revealSsh2faSecret } = await import('@ysk-server/core');
+      revealSsh2faSecret } = await import('ysk-server-core');
     const ctx = openCliContext(args);
     try {
       if (sub === 'list' || sub === 'ls') {
@@ -4351,7 +4351,7 @@ async function mainInner(
       getServiceMatrix,
       listManagedNginxConfs,
       listManagedNginxDetailed,
-      syncNginxConfigs } = await import('@ysk-server/core');
+      syncNginxConfigs } = await import('ysk-server-core');
     const ctx = openCliContext(args);
     try {
       if (sub === 'list' || sub === 'confs') {
@@ -4364,7 +4364,7 @@ async function mainInner(
       }
       if (sub === 'test' || sub === 'check') {
         {
-          const { binPresent } = await import('@ysk-server/core');
+          const { binPresent } = await import('ysk-server-core');
           if (!(await binPresent(ctx.host, 'nginx'))) {
             printJson({
               ok: false,
@@ -4453,7 +4453,7 @@ async function mainInner(
   /** SSL certificates list/get — read-only */
   if (command === 'ssl') {
     const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'list';
-    const { listCertificatesView, dedupeCertificatesInStore } = await import('@ysk-server/core');
+    const { listCertificatesView, dedupeCertificatesInStore } = await import('ysk-server-core');
     const ctx = openCliContext(args);
     try {
       dedupeCertificatesInStore(ctx.db);
@@ -4491,7 +4491,7 @@ async function mainInner(
         return 0;
       }
       if (sub === 'bootstrap' || sub === 'bootstrap-tls') {
-        const { ensureBootstrapPanelTls } = await import('@ysk-server/core');
+        const { ensureBootstrapPanelTls } = await import('ysk-server-core');
         const force = hasFlag(args, '--force');
         const ipOpt = getOpt(args, '--ip');
         const ips = ipOpt
@@ -4539,7 +4539,7 @@ async function mainInner(
   /** Host overview / metrics — read-only, AI-friendly */
   if (command === 'host') {
     const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'overview';
-    const { collectHostOverview, collectMetrics } = await import('@ysk-server/core');
+    const { collectHostOverview, collectMetrics } = await import('ysk-server-core');
     const ctx = openCliContext(args);
     try {
       if (sub === 'overview' || sub === 'status' || sub === 'info') {
@@ -4588,7 +4588,7 @@ async function mainInner(
       listSourceStatuses,
       getLogOverview,
       loadLogSettings,
-      listJournalUnits } = await import('@ysk-server/core');
+      listJournalUnits } = await import('ysk-server-core');
     const ctx = openCliContext(args);
     try {
       if (sub === 'sources' || sub === 'list') {
@@ -4661,7 +4661,7 @@ async function mainInner(
 
   if (command === 'services') {
     const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'matrix';
-    const { getServiceMatrix, lifecycleServiceUnit } = await import('@ysk-server/core');
+    const { getServiceMatrix, lifecycleServiceUnit } = await import('ysk-server-core');
     const ctx = openCliContext(args);
     try {
       if (sub === 'matrix' || sub === 'list' || sub === 'status') {
@@ -4706,7 +4706,7 @@ async function mainInner(
       defenseUnbanIp,
       loadAutoBanPolicy,
       updateAutoBanPolicy,
-      probeFirewallDeep } = await import('@ysk-server/core');
+      probeFirewallDeep } = await import('ysk-server-core');
     const ctx = openCliContext(args);
     try {
       if (sub === 'status') {
@@ -4729,8 +4729,8 @@ async function mainInner(
         return 0;
       }
       if (sub === 'bans' || sub === 'list-bans') {
-        const { listDefenseBans, applyListQuery } = await import('@ysk-server/core');
-        const { parseListQuery } = await import('@ysk-server/shared');
+        const { listDefenseBans, applyListQuery } = await import('ysk-server-core');
+        const { parseListQuery } = await import('ysk-server-shared');
         const r = await listDefenseBans({ host: ctx.host, db: ctx.db });
         const q = getOpt(args, '--q') ?? '';
         const url = new URL('http://local/');
@@ -4748,8 +4748,8 @@ async function mainInner(
         return 0;
       }
       if (sub === 'suspects') {
-        const { listSuspectIps, applyListQuery } = await import('@ysk-server/core');
-        const { parseListQuery } = await import('@ysk-server/shared');
+        const { listSuspectIps, applyListQuery } = await import('ysk-server-core');
+        const { parseListQuery } = await import('ysk-server-shared');
         const r = await listSuspectIps({
           host: ctx.host,
           db: ctx.db,
@@ -4766,7 +4766,7 @@ async function mainInner(
         return 0;
       }
       if (sub === 'stack-apply' || sub === 'apply-stack') {
-        const { applyDefenseStack } = await import('@ysk-server/core');
+        const { applyDefenseStack } = await import('ysk-server-core');
         const r = await applyDefenseStack({
           host: ctx.host,
           db: ctx.db,
@@ -4846,7 +4846,7 @@ async function mainInner(
         return 0;
       }
       if (sub === 'fail2ban' || sub === 'f2b') {
-        const { getFail2banDeepStatus } = await import('@ysk-server/core');
+        const { getFail2banDeepStatus } = await import('ysk-server-core');
         const r = await getFail2banDeepStatus({ host: ctx.host, dataDir: ctx.dataDir });
         printJson({ ok: true, ...r });
         return 0;
@@ -4865,7 +4865,7 @@ async function mainInner(
         return 0;
       }
       if (sub === 'timeline') {
-        const { listDefenseTimeline } = await import('@ysk-server/core');
+        const { listDefenseTimeline } = await import('ysk-server-core');
         const hours = Number(getOpt(args, '--hours') ?? 24);
         let items = listDefenseTimeline(ctx.db, Number.isFinite(hours) ? hours : 24);
         const q = (getOpt(args, '--q') ?? '').trim().toLowerCase();
@@ -4883,7 +4883,7 @@ async function mainInner(
         return 0;
       }
       if (sub === 'presets') {
-        const { listDefensePresets, getDefenseStatus } = await import('@ysk-server/core');
+        const { listDefensePresets, getDefenseStatus } = await import('ysk-server-core');
         const status = await getDefenseStatus({
           host: ctx.host,
           db: ctx.db,
@@ -4924,7 +4924,7 @@ async function mainInner(
       runSourceMigrateHost,
       runLocalMigratePost,
       loadMigrateJob,
-      listMigrateJobs } = await import('@ysk-server/core');
+      listMigrateJobs } = await import('ysk-server-core');
     const ctx = createAppContext({
       version: VERSION,
       config,
@@ -5282,7 +5282,7 @@ async function mainInner(
     const dual = await listenControlPlane(ctx, host, port);
     // BT tracker autostart + re-seed existing file-share torrents (in-process)
     try {
-      const { restoreBtSharesOnBoot } = await import('@ysk-server/core');
+      const { restoreBtSharesOnBoot } = await import('ysk-server-core');
       void restoreBtSharesOnBoot({
         dataDir: ctx.dataDir,
         db: ctx.db,
@@ -5422,7 +5422,7 @@ async function mainInner(
   }
 
   if (command === 'readiness' || command === 'doctor') {
-    const { assessProductionReadiness, storeStatus } = await import('@ysk-server/core');
+    const { assessProductionReadiness, storeStatus } = await import('ysk-server-core');
     const dataDir = getOpt(args, '--data-dir') ?? join(process.cwd(), '.ysk');
     const ctx = createAppContext({
       version: VERSION,
@@ -5564,7 +5564,7 @@ async function mainInner(
           defaultRuntimeVersion,
           switchRuntimeDefault,
           uninstallRuntimeVersion,
-        } = await import('@ysk-server/core');
+        } = await import('ysk-server-core');
         const kinds = [
           'node',
           'php',

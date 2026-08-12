@@ -48,6 +48,6 @@ test -f packages/shared/locales/zh-HK/softwareLifecycle.json || fail "zh-HK soft
 grep -q 'confirmUninstall' packages/shared/locales/zh-HK/softwareLifecycle.json || fail "zh-HK confirm"
 
 log "Unit tests…"
-pnpm --filter @ysk-server/core exec vitest run src/hosting/software-uninstall.test.ts src/hosting/software-install.test.ts
+pnpm --filter ysk-server-core exec vitest run src/hosting/software-uninstall.test.ts src/hosting/software-install.test.ts
 
 log "PASS e2e-software-lifecycle gate."

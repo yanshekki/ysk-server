@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * Lightweight web access stats from managed nginx access logs (honest sample).
  */

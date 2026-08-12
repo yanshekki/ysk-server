@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * Download GeoIP MMDB files into dataDir/geoip with fail-soft (keep old on error).
  * Supports gzip (.mmdb.gz) for DB-IP City Lite.

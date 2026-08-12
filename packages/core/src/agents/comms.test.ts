@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AgentComms } from './comms.js';
-import { YskError } from '@ysk-server/shared';
+import { YskError } from 'ysk-server-shared';
 
 describe('AgentComms', () => {
   it('registers, heartbeats, enqueues, lists', () => {

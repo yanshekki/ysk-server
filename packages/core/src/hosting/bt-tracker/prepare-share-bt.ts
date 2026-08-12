@@ -8,7 +8,7 @@ import { isBtTrackerRunning } from './service.js';
 import { loadBtTrackerSettings } from './settings.js';
 import { createShareTorrent } from './torrent-create.js';
 import { seedShare } from './seeder.js';
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 
 export async function prepareFileShareBt(input: {
   dataDir: string;

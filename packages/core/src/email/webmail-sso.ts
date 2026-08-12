@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * Webmail SSO — one-time panel tokens for Roundcube-style login handoff.
  * Does not claim Roundcube is configured; token is panel-issued for reverse-proxy auth.

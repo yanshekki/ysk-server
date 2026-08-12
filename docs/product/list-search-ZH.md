@@ -8,8 +8,8 @@
 
 | 部件 | 路徑 |
 |------|------|
-| 查詢契約 | `@ysk-server/shared` `parseListQuery`／`buildListQueryString`／`ListMeta` |
-| 伺服器篩選 | `@ysk-server/core` `applyListQuery` · `listWithQuery`（HTTP） |
+| 查詢契約 | `ysk-server-shared` `parseListQuery`／`buildListQueryString`／`ListMeta` |
+| 伺服器篩選 | `ysk-server-core` `applyListQuery` · `listWithQuery`（HTTP） |
 | Web hook | `useServerList` · resource `useResourceCrud`（debounced `q`） |
 | UI | `ListToolbar` · `ServerListFilters` |
 

@@ -4,7 +4,7 @@
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 import type { HostExecutor } from '../host/executor.js';
 import { listManagedDnsZones } from './dns-zone.js';
 

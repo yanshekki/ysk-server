@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * Host metrics snapshot for dashboard / predictive thresholds.
  * Disk mounts and process lists use real host commands (honest, no fake rows).
@@ -7,7 +7,7 @@ import { tl } from '@ysk-server/shared';
 import { cpus, freemem, loadavg, totalmem, uptime } from 'node:os';
 import { readFileSync, existsSync } from 'node:fs';
 import fs from 'node:fs';
-import type { DiskMountDto, MetricsSnapshotDto } from '@ysk-server/shared';
+import type { DiskMountDto, MetricsSnapshotDto } from 'ysk-server-shared';
 import type { HostExecutor } from '../host/executor.js';
 
 export type DiskMount = DiskMountDto;

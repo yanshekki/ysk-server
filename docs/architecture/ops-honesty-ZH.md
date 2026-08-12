@@ -6,7 +6,7 @@ YSK **不會**在只寫了計劃或 `dataDir` 檔案時，假裝主機變更已�
 
 ## 套用狀態
 
-規範型別在 `@ysk-server/shared`（`OpsResultDto`／`ApplyStatus`）。
+規範型別在 `ysk-server-shared`（`OpsResultDto`／`ApplyStatus`）。
 
 | 狀態 | 含義 |
 |------|------|

@@ -23,10 +23,10 @@ mkdir -p "$DATA_DIR"
 export YSK_ADMIN_PASSWORD="${YSK_ADMIN_PASSWORD:-admin-root-e2e}"
 
 log "Build…"
-pnpm --filter @ysk-server/shared build
-pnpm --filter @ysk-server/core build
+pnpm --filter ysk-server-shared build
+pnpm --filter ysk-server-core build
 pnpm --filter ysk-server build
-pnpm --filter @ysk-server/web build || true
+pnpm --filter ysk-server-web build || true
 
 log "Setup dataDir=$DATA_DIR"
 node apps/server/dist/cli.js setup --data-dir "$DATA_DIR" --non-interactive --force

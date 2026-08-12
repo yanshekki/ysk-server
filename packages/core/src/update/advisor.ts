@@ -2,8 +2,8 @@
  * Intelligent software update & vulnerability advice (structured, pure logic).
  */
 
-import type { RiskTier, UpdateAdvice, UpdateItemDto } from '@ysk-server/shared';
-import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
+import type { RiskTier, UpdateAdvice, UpdateItemDto } from 'ysk-server-shared';
+import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
 
 export interface PackageInventoryItem {
   packageName: string;

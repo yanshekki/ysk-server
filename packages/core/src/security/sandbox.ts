@@ -2,7 +2,7 @@
  * Kernel Sandbox policy planner — pure orchestration (no real nsenter/seccomp apply here).
  */
 
-import { ErrorCodes, YskError, tl} from '@ysk-server/shared';
+import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
 
 export interface SandboxPolicy {
   /** Linux user the process should run as */

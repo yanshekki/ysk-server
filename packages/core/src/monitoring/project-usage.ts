@@ -1,4 +1,4 @@
-import { tl } from '@ysk-server/shared';
+import { tl } from 'ysk-server-shared';
 /**
  * Per-project disk usage for metrics panel (real `du`, reuses quota helpers).
  */

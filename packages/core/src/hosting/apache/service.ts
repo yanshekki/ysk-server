@@ -5,7 +5,7 @@
 import { randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs';
 import { basename, join } from 'node:path';
-import { ErrorCodes, YskError, tl } from '@ysk-server/shared';
+import { ErrorCodes, YskError, tl } from 'ysk-server-shared';
 import type { HostExecutor } from '../../host/executor.js';
 import { renderApacheSite } from './render-site.js';
 import { syncApacheConfigs } from './sync.js';
