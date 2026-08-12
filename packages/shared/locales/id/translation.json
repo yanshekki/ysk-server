@@ -530,7 +530,13 @@
     "saveOk": "Settings saved",
     "startedOk": "Tracker started",
     "stoppedOk": "Tracker stopped",
-    "restoredOk": "Re-seed finished"
+    "restoredOk": "Re-seed finished",
+    "httpPortHint": "Default 8000 (YSK catalog / firewall chip). Open TCP if peers are off-host.",
+    "udpPortHint": "Optional classic UDP announce. 0 = off (browser WebTorrent uses HTTP/WS). Prefer 6969 or the same port as HTTP if you open UDP on the firewall.",
+    "udpPortOff": "0 · Off",
+    "udpPortSameHttp": "Same as HTTP ({{port}})",
+    "udpPortClassic": "6969 · Classic",
+    "portSuggest8000": "8000 · Recommended"
   },
   "catalog": {
     "sw": {

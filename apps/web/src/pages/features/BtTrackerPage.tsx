@@ -21,6 +21,7 @@ import {
   OpsResultPanel,
   PageGuide,
   PageTabs,
+  PresetChips,
   SegRadio,
   type OpsResultLike,
 } from '../../shared/components/ui';
@@ -666,7 +667,13 @@ export function BtTrackerPage() {
                 <h3 className="bt-settings__card-title">{t('btTracker.networkCard')}</h3>
                 <p className="bt-settings__card-desc">{t('btTracker.networkCardDesc')}</p>
                 <FormLayout columns={2}>
-                  <Field label={t('btTracker.httpPort')} htmlFor="bt-http" flush required>
+                  <Field
+                    label={t('btTracker.httpPort')}
+                    htmlFor="bt-http"
+                    flush
+                    required
+                    hint={t('btTracker.httpPortHint')}
+                  >
                     <input
                       id="bt-http"
                       type="number"
@@ -676,8 +683,24 @@ export function BtTrackerPage() {
                       value={draft.httpPort ?? 8000}
                       onChange={(e) => patchDraft('httpPort', Number(e.target.value))}
                     />
+                    <div className="u-mt-2">
+                      <PresetChips
+                        options={[
+                          { value: '8000', label: t('btTracker.portSuggest8000') },
+                          { value: '6881', label: '6881' },
+                          { value: '2710', label: '2710' },
+                        ]}
+                        value={String(draft.httpPort ?? 8000)}
+                        onChange={(v) => patchDraft('httpPort', Number(v) || 8000)}
+                      />
+                    </div>
                   </Field>
-                  <Field label={t('btTracker.udpPort')} htmlFor="bt-udp" flush>
+                  <Field
+                    label={t('btTracker.udpPort')}
+                    htmlFor="bt-udp"
+                    flush
+                    hint={t('btTracker.udpPortHint')}
+                  >
                     <input
                       id="bt-udp"
                       type="number"
@@ -687,6 +710,23 @@ export function BtTrackerPage() {
                       value={draft.udpPort ?? 0}
                       onChange={(e) => patchDraft('udpPort', Number(e.target.value))}
                     />
+                    <div className="u-mt-2">
+                      <PresetChips
+                        options={[
+                          { value: '0', label: t('btTracker.udpPortOff') },
+                          {
+                            value: String(draft.httpPort || 8000),
+                            label: t('btTracker.udpPortSameHttp', {
+                              port: String(draft.httpPort || 8000),
+                            }),
+                          },
+                          { value: '6969', label: t('btTracker.udpPortClassic') },
+                          { value: '8000', label: '8000' },
+                        ]}
+                        value={String(draft.udpPort ?? 0)}
+                        onChange={(v) => patchDraft('udpPort', Number(v) || 0)}
+                      />
+                    </div>
                   </Field>
                   <Field label={t('btTracker.listenHost')} htmlFor="bt-host" flush>
                     <input

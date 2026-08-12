@@ -530,7 +530,13 @@
     "saveOk": "設定已儲存",
     "startedOk": "Tracker 已啟動",
     "stoppedOk": "Tracker 已停止",
-    "restoredOk": "重新做種完成"
+    "restoredOk": "重新做種完成",
+    "httpPortHint": "預設 8000（YSK 防火牆芯片）。Peers 在主機外時請開 TCP。",
+    "udpPortHint": "可選傳統 UDP announce。0 = 關閉（瀏覽器 WebTorrent 用 HTTP／WS 即可）。若要開 UDP，建議 6969，或與 HTTP 同一埠並在防火牆放行。",
+    "udpPortOff": "0 · 關閉",
+    "udpPortSameHttp": "與 HTTP 相同（{{port}}）",
+    "udpPortClassic": "6969 · 傳統",
+    "portSuggest8000": "8000 · 建議"
   },
   "catalog": {
     "sw": {
