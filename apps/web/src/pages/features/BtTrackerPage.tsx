@@ -34,7 +34,7 @@ import {
 } from '../../features/bt-tracker';
 import { bindInput } from '../bind-handlers';
 
-const TABS = ['overview', 'torrents', 'settings', 'about'] as const;
+const TABS = ['overview', 'torrents', 'settings', 'stack', 'about'] as const;
 
 function formatSpeed(n: number | undefined): string {
   if (n == null || !Number.isFinite(n) || n <= 0) return '—';
@@ -143,6 +143,7 @@ export function BtTrackerPage() {
             badge: torrents.length || undefined,
           },
           { id: 'settings', label: t('btTracker.settings') },
+          { id: 'stack', label: t('btTracker.stackTitle') },
           { id: 'about', label: t('common.about', { defaultValue: 'About' }) },
         ]}
         active={tab}
@@ -192,6 +193,22 @@ export function BtTrackerPage() {
                   {t('btTracker.stop')}
                 </Button>
               )}
+              <Button
+                variant="secondary"
+                size="md"
+                loading={busy}
+                title={t('btTracker.restoreSeedsHint')}
+                onClick={() =>
+                  void run(async () => {
+                    const r = await btTrackerApi.restore();
+                    setMsg(t('btTracker.restoreSeeds'));
+                    await refresh();
+                    return r;
+                  })
+                }
+              >
+                {t('btTracker.restoreSeeds')}
+              </Button>
               <Link className="btn btn--secondary btn--md" to="/files?tab=shares">
                 {t('btTracker.openShares')}
               </Link>
@@ -202,6 +219,7 @@ export function BtTrackerPage() {
             {!status?.executeEnabled ? (
               <Alert variant="warn">{t('btTracker.needExecute')}</Alert>
             ) : null}
+            <Alert variant="info">{t('btTracker.bundledNote')}</Alert>
 
             <FormLayout columns={2}>
               <Field label={t('btTracker.status')} htmlFor="bt-st" flush>
@@ -474,6 +492,78 @@ export function BtTrackerPage() {
               </Button>
             </FormActions>
           </form>
+        ) : null}
+
+        {tab === 'stack' ? (
+          <div className="tab-panel u-stack u-gap-md">
+            <Alert variant="info">{t('btTracker.bundledNote')}</Alert>
+            <FormLayout columns={2}>
+              <Field label={t('btTracker.installed')} htmlFor="bt-stack-inst" flush>
+                <div id="bt-stack-inst">
+                  <Badge tone="ok">{t('btTracker.installed')}</Badge>
+                </div>
+              </Field>
+              <Field label={t('btTracker.status')} htmlFor="bt-stack-st" flush>
+                <div id="bt-stack-st">
+                  <Badge tone={running ? 'ok' : 'warn'}>
+                    {running ? t('btTracker.running') : t('btTracker.stopped')}
+                  </Badge>
+                </div>
+              </Field>
+            </FormLayout>
+            <FormHint>{t('btTracker.restoreSeedsHint')}</FormHint>
+            <ActionBar>
+              <Button
+                variant="primary"
+                size="md"
+                loading={busy}
+                onClick={() =>
+                  void run(async () => {
+                    const r = await btTrackerApi.restore();
+                    setMsg(t('btTracker.restoreSeeds'));
+                    await refresh();
+                    return r;
+                  })
+                }
+              >
+                {t('btTracker.restoreSeeds')}
+              </Button>
+              {!running ? (
+                <Button
+                  variant="secondary"
+                  size="md"
+                  loading={busy}
+                  onClick={() =>
+                    void run(async () => {
+                      const r = await btTrackerApi.start();
+                      await refresh();
+                      return r;
+                    })
+                  }
+                >
+                  {t('btTracker.start')}
+                </Button>
+              ) : (
+                <Button
+                  variant="danger"
+                  size="md"
+                  loading={busy}
+                  onClick={() =>
+                    void run(async () => {
+                      const r = await btTrackerApi.stop();
+                      await refresh();
+                      return r;
+                    })
+                  }
+                >
+                  {t('btTracker.stop')}
+                </Button>
+              )}
+            </ActionBar>
+            <p className="muted u-text-sm">
+              bittorrent-tracker · webtorrent · create-torrent (npm, bundled)
+            </p>
+          </div>
         ) : null}
 
         {tab === 'about' ? <PageGuide guideId="btTracker" /> : null}

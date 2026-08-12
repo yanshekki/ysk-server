@@ -34,5 +34,9 @@
   "openShares": "檔案分享",
   "needExecute": "請啟用系統變更權限（YSK_EXECUTE）以開埠並在生產環境做種。",
   "guideTitle": "這是什麼？",
-  "guideBody": "建立 BT 檔案分享時，YSK 會產生 .torrent、自行做種，並透過此 Tracker 交換 peers。下載者在主機外時請開放對應埠。"
+  "guideBody": "建立 BT 檔案分享時，YSK 會產生 .torrent、自行做種，並透過此 Tracker 交換 peers。下載者在主機外時請開放對應埠。",
+  "restoreSeeds": "重新做種 BT 分享",
+  "restoreSeedsHint": "必要時啟動 Tracker，並為仍有磁碟上 .torrent 的分享重新做種。",
+  "bundledNote": "隨 YSK Server 附帶（Node）。無需 apt 安裝／卸載 — 以啟動／停止管理進程。",
+  "stackTitle": "軟件"
 }

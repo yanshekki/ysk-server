@@ -23,10 +23,11 @@ Self-hosted **BitTorrent tracker** ([bittorrent-tracker](https://github.com/webt
 | Panel action | CLI | Risk | Notes |
 |--------------|-----|------|-------|
 | Status / announce URLs | `ysk-server bt-tracker status` | read | Bundled dependency — always “installed” |
-| Start / stop tracker | `ysk-server bt-tracker start\|stop [--execute]` | write-host | Opens listen port in-process |
+| Start / stop tracker | `ysk-server bt-tracker start\|stop [--execute]` | write-host | Panel in-process; CLI detached worker |
+| Re-seed shares | `ysk-server bt-tracker restore` / panel **Re-seed** | write-panel | Also runs on `serve` boot |
 | Settings (ports, public host, WS, autostart) | `ysk-server bt-tracker settings get\|set …` | write-panel | Firewall open is separate (exposure / UFW) |
-| Torrents / swarm table | `ysk-server bt-tracker torrents` | read | Merged with local seeder speeds |
-| Create BT share | `ysk-server files shares create --mode bt\|both --path …` | write-panel | Builds `.torrent` + seeds |
+| Torrents / swarm table | `ysk-server bt-tracker torrents` | read | Live swarm + share/seeder hints |
+| Create BT share | `ysk-server files shares create --mode bt\|both --path …` | write-panel | Builds `.torrent` + seeds; piece length auto-scales |
 | Share BT stats | `ysk-server files shares bt-stats --id ID` | read | Seeds / leechers / speeds |
 
 ## CLI quick start

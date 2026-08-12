@@ -40,6 +40,12 @@ export const btTrackerApi = {
       '/api/v1/system/bt-tracker/torrents',
     ),
 
+  restore: () =>
+    api.requestRaw<Record<string, unknown>>('/api/v1/system/bt-tracker/restore', {
+      method: 'POST',
+      body: '{}',
+    }),
+
   shareBtStats: (id: string) =>
     api.requestRaw<{ ok: boolean; stats: BtShareStats }>(
       `/api/v1/files/shares/${encodeURIComponent(id)}/bt-stats`,

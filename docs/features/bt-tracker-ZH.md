@@ -23,10 +23,11 @@
 | 面板操作 | CLI | 風險 | 備註 |
 |----------|-----|------|------|
 | 狀態／announce 網址 | `ysk-server bt-tracker status` | read | 依賴隨產品附帶 — 永遠「已安裝」 |
-| 啟動／停止 Tracker | `ysk-server bt-tracker start\|stop [--execute]` | write-host | 程序內監聽埠 |
+| 啟動／停止 Tracker | `ysk-server bt-tracker start\|stop [--execute]` | write-host | 面板程序內；CLI detached worker |
+| 重新做種 | `ysk-server bt-tracker restore`／面板 **重新做種** | write-panel | `serve` 開機亦會執行 |
 | 設定（埠、公開主機、WS、自動啟動） | `ysk-server bt-tracker settings get\|set …` | write-panel | 開防火牆屬另一步（暴露／UFW） |
-| Torrent／swarm 表 | `ysk-server bt-tracker torrents` | read | 合併本機做種速度 |
-| 建立 BT 分享 | `ysk-server files shares create --mode bt\|both --path …` | write-panel | 產生 `.torrent` 並做種 |
+| Torrent／swarm 表 | `ysk-server bt-tracker torrents` | read | 即時 swarm + 分享／做種提示 |
+| 建立 BT 分享 | `ysk-server files shares create --mode bt\|both --path …` | write-panel | 產生 `.torrent` 並做種；piece 長度自動放大 |
 | 分享 BT 統計 | `ysk-server files shares bt-stats --id ID` | read | 種子／下載者／速度 |
 
 ## CLI 速查

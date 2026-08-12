@@ -34,5 +34,9 @@
   "openShares": "File shares",
   "needExecute": "Enable system-change permission (YSK_EXECUTE) to open ports and run production seeds.",
   "guideTitle": "What is this?",
-  "guideBody": "When you create a BT file share, YSK builds a .torrent, seeds it, and announces peers via this tracker. Open the port if downloaders are off-host."
+  "guideBody": "When you create a BT file share, YSK builds a .torrent, seeds it, and announces peers via this tracker. Open the port if downloaders are off-host.",
+  "restoreSeeds": "Re-seed BT shares",
+  "restoreSeedsHint": "Start tracker if needed and re-seed shares that still have a .torrent on disk.",
+  "bundledNote": "Bundled with YSK Server (Node). No apt install/uninstall — Start/Stop manages the process.",
+  "stackTitle": "Software"
 }

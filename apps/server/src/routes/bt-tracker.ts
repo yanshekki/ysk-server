@@ -24,6 +24,7 @@ import {
   publicFilesRoot,
   FileManager,
   syncServiceExposure,
+  restoreBtSharesOnBoot,
 } from '@ysk/core';
 import { ErrorCodes } from '@ysk/shared';
 import type { AppContext } from '../app-context.js';
@@ -120,6 +121,27 @@ export async function handleBtTrackerRoutes(
           ok: r.ok,
         });
         sendOpsResult(res, r);
+        return true;
+      }
+      if (method === 'POST' && url.pathname === `${BASE}/restore`) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const r = await restoreBtSharesOnBoot({
+          dataDir: ctx.dataDir,
+          db: ctx.db,
+          host: ctx.host,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'bt_tracker.restore',
+          detail: {
+            ok: r.ok,
+            seeded: r.seeded,
+            attempted: r.attempted,
+            failed: r.failed,
+          },
+          ok: r.ok,
+        });
+        sendJson(res, 200, r);
         return true;
       }
       if (method === 'GET' && url.pathname === `${BASE}/torrents`) {
