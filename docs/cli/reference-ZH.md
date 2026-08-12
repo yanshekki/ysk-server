@@ -143,23 +143,37 @@ ysk-server files shares bt-stats --id SHARE_ID
 ysk-server files shares delete --id SHARE_ID
 ```
 
-`--mode bt|both` 會產生 `.torrent`、以 WebTorrent 程序內做種，並需要運行中的 Tracker（`bt-tracker start`）。
+`--mode bt|both` 會產生 `.torrent`、以 WebTorrent 程序內做種，並需要運行中的 Tracker（`bt-tracker start`）。公開 `/share/:token` 按模式顯示 **直接下載** 及／或 **BT**（不會再彈英文 “direct disabled”）。瀏覽器 WebTorrent 用面板 **自帶** 資源，並經同源 Tracker 代理（`/api/v1/public/bt-tracker`）。
 
 ## bt-tracker
 
 自架 [bittorrent-tracker](https://github.com/webtorrent/bittorrent-tracker)，供檔案分享 magnet／WebTorrent 使用。
 
 ```bash
-ysk-server bt-tracker status
-ysk-server bt-tracker settings get|set [--http-port N] [--udp-port N] [--listen-host H] [--public-host H] [--ws|--no-ws] [--autostart|--no-autostart]
-ysk-server bt-tracker start [--execute]   # CLI 會 spawn detached worker（CLI 結束後仍運行）
-ysk-server bt-tracker stop
-ysk-server bt-tracker torrents
-ysk-server bt-tracker restore             # 重新做種（最好在 serve 進程內）
-ysk-server bt-tracker jobs [--id JOB_ID]  # 大型分享背景 torrent 任務
+ysk-server bt-tracker status|info
+ysk-server bt-tracker settings get|show
+ysk-server bt-tracker settings set|patch \
+  [--http-port N] [--udp-port N] [--listen-host H] [--public-host H] \
+  [--ws|--no-ws] [--autostart|--no-autostart]
+ysk-server bt-tracker start [--execute]   # detached worker + pid（CLI 結束後仍運行）
+ysk-server bt-tracker stop                # 同時清除 ysk-svc:bt-tracker UFW 規則
+ysk-server bt-tracker torrents|stats      # 即時 swarm（優先程序內）
+ysk-server bt-tracker restore             # 重新做種（必要時啟動 Tracker）
+ysk-server bt-tracker jobs [--id JOB_ID]  # 大型分享建 torrent 佇列
 ```
 
-預設 HTTP／WS 埠 **8000**。請將 `publicAnnounceHost` 設為 peers 可連的主機名。下載者在主機外時，以網絡暴露／防火牆開埠。`serve` 啟動時若已開 `autostart` 或存在 BT 分享會自動啟動 Tracker 並 re-seed。面板 Start 用**程序內** Tracker（與做種同進程）；CLI Start 用 **detached worker** + pid 檔。
+| 主題 | 行為 |
+|------|------|
+| 預設埠 | HTTP／WS **8000**；UDP 可選（如 6969） |
+| 公開主機 | `settings set --public-host` → magnet／announce。**空白 ⇒ 不寫公開 tracker URL**（不再假 `127.0.0.1`） |
+| 啟動 | Detached worker；**`syncServiceExposure` reason=start**（HTTP + 已設 UDP） |
+| 停止 | 停進程；**exposure reason=stop** |
+| 停止時改設定 | 只更新 JSON + 期望埠 |
+| 運行中改埠 | 可寫入，但要 **重啟 Tracker** 才 re-bind |
+| 瀏覽器訪客 | 同源 **`wss?://面板/api/v1/public/bt-tracker`** 代理到本機 Tracker（HTTPS 安全） |
+| serve 開機 | autostart 或已有 BT 分享 → `restoreBtSharesOnBoot` |
+
+面板 Start 使用 **serve 程序內** Tracker（與做種同進程）。詳見 [features/bt-tracker-ZH.md](../features/bt-tracker-ZH.md)。
 
 ## cron
 

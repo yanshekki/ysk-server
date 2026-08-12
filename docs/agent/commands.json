@@ -1085,14 +1085,14 @@
       "name": "bt-tracker start",
       "aliases": [],
       "risk": "write-host",
-      "summary": "Start in-process bittorrent-tracker (HTTP/WS announce)",
+      "summary": "Start tracker (CLI: detached worker). Syncs UFW ysk-svc:bt-tracker ports (HTTP + optional UDP)",
       "example": "YSK_EXECUTE=1 ysk-server bt-tracker start --execute --json"
     },
     {
       "name": "bt-tracker stop",
       "aliases": [],
       "risk": "write-host",
-      "summary": "Stop BitTorrent tracker",
+      "summary": "Stop tracker and remove ysk-svc:bt-tracker firewall rules",
       "example": "ysk-server bt-tracker stop --json"
     },
     {
@@ -1102,8 +1102,8 @@
         "bt-tracker settings set"
       ],
       "risk": "write-panel",
-      "summary": "Get/set tracker ports, public announce host, WS, autostart",
-      "example": "ysk-server bt-tracker settings set --http-port 8000 --public-host example.com --json"
+      "summary": "Get/set ports, public host, WS, autostart. Empty public host ⇒ no magnet trackers. Restart if already running to re-bind",
+      "example": "ysk-server bt-tracker settings set --http-port 8000 --udp-port 6969 --public-host example.com --ws --json"
     },
     {
       "name": "bt-tracker torrents",
@@ -1111,7 +1111,7 @@
         "bt-tracker stats"
       ],
       "risk": "read",
-      "summary": "List tracked torrents (seeds/leechers)",
+      "summary": "List tracked torrents (seeds/leechers); prefer live in-process swarm",
       "example": "ysk-server bt-tracker torrents --json"
     },
     {

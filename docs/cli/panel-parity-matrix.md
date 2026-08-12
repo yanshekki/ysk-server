@@ -32,7 +32,7 @@
 | ftp-accounts | FTP account CRUD | `ftp accounts …` | ✅ C6 | P2 |
 | files-shares-create | Create public share (direct/BT/both) | `files shares create [--mode …]` | ✅ C6 | P2 |
 | files-shares-bt-stats | Share BT swarm stats | `files shares bt-stats --id` | ✅ C6 | P2 |
-| bt-tracker | BT tracker service page | `bt-tracker status\|start\|stop\|settings\|torrents` | ✅ C6 | P2 |
+| bt-tracker | BT tracker service page | `bt-tracker status\|start\|stop\|settings\|torrents\|restore\|jobs` | ✅ C6 | P2 |
 | email-depth | aliases / queue / relay | `email …` | ✅ C6 | P2 |
 | dns-records | records / dnssec / heal | `dns …` | ✅ C6 | P2 |
 | runtimes-full | java/kotlin/bun + switch | `runtimes …` / `hosting runtime-*` | ✅ C7 | P2 |

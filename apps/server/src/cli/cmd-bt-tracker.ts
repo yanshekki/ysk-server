@@ -73,7 +73,7 @@ export async function runBtTrackerCommand(
       return 0;
     }
     process.stderr.write(
-      'Usage: ysk-server bt-tracker settings get|set [--http-port N] [--public-host H]\n',
+      'Usage: ysk-server bt-tracker settings get|set [--http-port N] [--udp-port N] [--listen-host H] [--public-host H] [--ws|--no-ws] [--autostart|--no-autostart]\n',
     );
     return 2;
   }
@@ -177,7 +177,9 @@ export async function runBtTrackerCommand(
   }
 
   process.stderr.write(
-    'Usage: ysk-server bt-tracker status|start|stop|settings|torrents|restore|jobs [--id JOB] [--execute] [--json]\n',
+    'Usage: ysk-server bt-tracker status|start|stop|settings|torrents|restore|jobs [--id JOB] [--execute] [--json]\n' +
+      '  settings set: --http-port --udp-port --listen-host --public-host --ws|--no-ws --autostart|--no-autostart\n' +
+      '  start/stop sync UFW ysk-svc:bt-tracker ports; public host empty ⇒ no magnet trackers\n',
   );
   return 2;
 }

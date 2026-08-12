@@ -143,23 +143,37 @@ ysk-server files shares bt-stats --id SHARE_ID
 ysk-server files shares delete --id SHARE_ID
 ```
 
-`--mode bt|both` creates a `.torrent`, seeds in-process (WebTorrent), and needs a running tracker (`bt-tracker start`).
+`--mode bt|both` creates a `.torrent`, seeds in-process (WebTorrent), and needs a running tracker (`bt-tracker start`). Public `/share/:token` shows **direct** and/or **BT** actions by mode (no English “direct disabled” banner). Browser WebTorrent uses a **self-hosted** panel asset and same-origin tracker proxy (`/api/v1/public/bt-tracker`).
 
 ## bt-tracker
 
 Self-hosted [bittorrent-tracker](https://github.com/webtorrent/bittorrent-tracker) for file-share magnets / WebTorrent.
 
 ```bash
-ysk-server bt-tracker status
-ysk-server bt-tracker settings get|set [--http-port N] [--udp-port N] [--listen-host H] [--public-host H] [--ws|--no-ws] [--autostart|--no-autostart]
-ysk-server bt-tracker start [--execute]   # CLI spawns detached worker (survives CLI exit)
-ysk-server bt-tracker stop
-ysk-server bt-tracker torrents
-ysk-server bt-tracker restore             # re-seed BT shares (best inside serve process)
-ysk-server bt-tracker jobs [--id JOB_ID]  # background large-share torrent jobs
+ysk-server bt-tracker status|info
+ysk-server bt-tracker settings get|show
+ysk-server bt-tracker settings set|patch \
+  [--http-port N] [--udp-port N] [--listen-host H] [--public-host H] \
+  [--ws|--no-ws] [--autostart|--no-autostart]
+ysk-server bt-tracker start [--execute]   # detached worker + pid (survives CLI exit)
+ysk-server bt-tracker stop                # also clears ysk-svc:bt-tracker UFW rules
+ysk-server bt-tracker torrents|stats      # live swarm (in-process preferred)
+ysk-server bt-tracker restore             # re-seed BT shares (+ start tracker if needed)
+ysk-server bt-tracker jobs [--id JOB_ID]  # large-share create-torrent queue
 ```
 
-Default HTTP/WS port **8000**. Set `publicAnnounceHost` to a hostname peers can reach. Open the port via Network exposure / firewall when downloaders are off-host. Autostart + re-seed run when `serve` starts if `autostart` is enabled or BT shares exist. Panel Start uses **in-process** tracker (same process as seeder); CLI Start uses a **detached worker** + pid file.
+| Topic | Behaviour |
+|-------|-----------|
+| Default port | HTTP/WS **8000**; optional UDP (e.g. 6969) |
+| Public host | `settings set --public-host` → magnets/announce. **Empty ⇒ no public tracker URLs** (not `127.0.0.1`) |
+| Start | Detached worker; **`syncServiceExposure` reason=start** (desired ports HTTP + UDP if set) |
+| Stop | Kill worker/in-process; **exposure reason=stop** |
+| Settings while stopped | Updates JSON + desired port list only |
+| Settings while running | Same, but **restart tracker** to re-bind listen ports |
+| Browser guests | Same-origin **`wss?://panel/api/v1/public/bt-tracker`** proxies to local tracker (HTTPS-safe) |
+| Serve boot | Autostart and/or existing BT shares → `restoreBtSharesOnBoot` |
+
+Panel Start keeps the tracker **in the serve process** (same seeder). See [features/bt-tracker.md](../features/bt-tracker.md).
 
 ## cron
 

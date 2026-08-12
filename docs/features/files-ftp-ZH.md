@@ -32,7 +32,7 @@
 | FTP 狀態／設定 | `ysk-server ftp status\|settings …` | read／write-panel | |
 | FTP 帳戶 CRUD | `ysk-server ftp accounts list\|create\|update\|delete` | write-panel | |
 | FTP 套用主機 | `ysk-server ftp apply\|accounts apply --execute` | write-host | |
-| BT Tracker | `ysk-server bt-tracker status\|start\|stop\|settings\|torrents` | read／write-host | 見 [bt-tracker-ZH.md](./bt-tracker-ZH.md) |
+| BT Tracker | `ysk-server bt-tracker status\|start\|stop\|settings\|torrents\|restore\|jobs` | read／write-host | 見 [bt-tracker-ZH.md](./bt-tracker-ZH.md) |
 | 公開檔案站 | `ysk-server hosting public-files …` | write-host | |
 
 ## CLI 速查
@@ -52,7 +52,7 @@ ysk-server ftp apply --execute --json
 - 檔案操作受限於所選 root。  
 - FTPS 套用需 EXECUTE + root（vsftpd）。  
 - 公開 `/share/:token` 頁為 UX；**建立**屬 CLI／API。  
-- BT 模式需 Tracker 運行才可靠發現 peers；對外分享請設定 `publicAnnounceHost`。
+- BT 模式需 Tracker 運行才可靠發現 peers；對外分享請設定 `publicAnnounceHost`。瀏覽器 WebTorrent 經同源 Tracker 代理（`/api/v1/public/bt-tracker`），使用面板 build 自帶資源（非第三方 CDN）。
 
 ## 僅面板 ⚠️
 

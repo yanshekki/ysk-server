@@ -4,98 +4,97 @@
 
 ## 用途
 
-自架 **BitTorrent Tracker**（[bittorrent-tracker](https://github.com/webtorrent/bittorrent-tracker)）與 **程序內 WebTorrent 做種**，讓檔案分享可選 **直接 HTTP 下載**、**BT／WebTorrent** 或 **兩者皆有**。每個分享會產生 `.torrent`，經面板 Tracker 交換 peers，並在面板與公開 `/share/:token` 頁顯示即時 swarm 數據。
+自架 **BitTorrent Tracker**（[bittorrent-tracker](https://github.com/webtorrent/bittorrent-tracker)）與 **程序內 WebTorrent 做種**，讓檔案分享可選 **直接 HTTP**、**BT／WebTorrent** 或 **兩者**。BT 分享會產生 `.torrent` 與 magnet；面板 seeder 向本機 Tracker announce；訪客用公開分享頁或外部客戶端。
 
-**非目標：** 對外開放任意第三方 torrent 的公開 Tracker；僅 DHT、無本機 Tracker 的分享；取代商用 CDN。
+**非目標：** 對外開放任意第三方 torrent 的公開 Tracker；僅 DHT 主路徑；取代 CDN。
 
 ## 面板
 
 | 項目 | 值 |
 |------|-----|
 | 路由 | `/bt-tracker` |
-| 相關 | `/files`（分享對話框模式 + BT 統計）、公開 `/share/:token` |
-| 導航鍵 | `btTracker` |
-| 主要分頁 | 概覽 · Torrent 列表 · 設定 · 關於 |
-| 能力 | 檔案／系統（與檔案同一控制平面） |
+| 相關 | `/files`（分享模式 + BT 欄）、公開 `/share/:token` |
+| 分頁 | 概覽 · Torrent（有任務時顯示 Jobs）· 設定 · 關於 |
+| 能力 | 檔案／系統控制平面 |
 
 ## 能力對照表
 
 | 面板操作 | CLI | 風險 | 備註 |
 |----------|-----|------|------|
-| 狀態／announce 網址 | `ysk-server bt-tracker status` | read | 依賴隨產品附帶 — 永遠「已安裝」 |
-| 啟動／停止 Tracker | `ysk-server bt-tracker start\|stop [--execute]` | write-host | 面板程序內；CLI detached worker |
-| 重新做種 | `ysk-server bt-tracker restore`／面板 **重新做種** | write-panel | `serve` 開機亦會執行 |
-| 設定（埠、公開主機、WS、自動啟動） | `ysk-server bt-tracker settings get\|set …` | write-panel | 開防火牆屬另一步（暴露／UFW） |
-| Torrent／swarm 表 | `ysk-server bt-tracker torrents` | read | 即時 swarm + 分享／做種提示 |
-| 建立 BT 分享 | `ysk-server files shares create --mode bt\|both --path …` | write-panel | 產生 `.torrent` 並做種；piece 長度自動放大 |
+| 狀態／announce | `ysk-server bt-tracker status` | read | 隨產品附帶 |
+| 啟動／停止 | `ysk-server bt-tracker start\|stop [--execute]` | write-host | 面板：程序內。CLI start：detached worker + pid。**啟動**會同步 UFW 期望埠；**停止**會清掉 `ysk-svc:bt-tracker:*` |
+| 設定 | `ysk-server bt-tracker settings get\|set …` | write-panel | 寫入 JSON + 期望暴露埠。**運行中改埠需重啟** |
+| 重新做種 | `ysk-server bt-tracker restore` | write-panel | `serve` 開機亦會 |
+| Swarm 表 | `ysk-server bt-tracker torrents` | read | 優先程序內即時 swarm |
+| 任務 | `ysk-server bt-tracker jobs [--id ID]` | read | 大型分享建 torrent 佇列 |
+| 建立 BT 分享 | `ysk-server files shares create --mode bt\|both …` | write-panel | `.torrent` + 做種 |
 | 分享 BT 統計 | `ysk-server files shares bt-stats --id ID` | read | 種子／下載者／速度 |
 
 ## CLI 速查
 
 ```bash
-# 設定 peers 會連線的公開 announce 主機
-ysk-server bt-tracker settings set --http-port 8000 --public-host example.com --json
+ysk-server bt-tracker settings set \
+  --http-port 8000 --udp-port 6969 \
+  --public-host example.com --ws --autostart --json
 
-# 啟動 Tracker（生產環境建議 EXECUTE）
 export YSK_EXECUTE=1
 ysk-server bt-tracker start --execute --json
 
-# 同時提供直接下載 + BT
 ysk-server files shares create --path big.zip --mode both --root public --json
 
-# 即時統計
 ysk-server bt-tracker torrents --json
 ysk-server files shares bt-stats --id SHARE_ID --json
+ysk-server bt-tracker jobs --json
 ```
 
-## Day-N e2e 檢查清單
+## Day-N 檢查清單
 
-自動化 smoke（啟動 Tracker + 真實 `.torrent` + 列表 + `/stats.json`）：
+自動化：
 
 ```bash
 pnpm e2e:bt-tracker
-# 或：bash scripts/e2e-bt-tracker.sh
 ```
 
 手動：
 
-1. `ysk-server serve`（面板運行）。  
-2. 面板 **BT Tracker** → 設公開主機 → **啟動**（或開 autostart 後重啟 serve）。  
-3. 網絡暴露／防火牆：peers 在主機外時開 **8000**。  
-4. **檔案** → 分享 → 模式 **兩者** → 複製公開連結。  
-5. 開啟 `/share/:token` → **在瀏覽器以 WebTorrent 下載**，或用 magnet／`.torrent`。  
-6. 面板 Torrent 表／分享列表可見種子／peers／速度。  
-7. 重啟 serve → 確認 Tracker 與做種已還原（開機 re-seed）。  
-8. 大型分享（≥128 MiB）會先回 `seedStatus: pending`，背景佇列建 torrent（`/api/v1/system/bt-tracker/jobs`）。
+1. `ysk-server serve`  
+2. BT Tracker → 設 **公開主機** 與埠 → **啟動**（或 autostart）  
+3. **網絡存取**：訪客在主機外時勿長期「僅本機」；放行 **8000/tcp**（若開 UDP 一併放行）  
+4. 檔案 → 分享 → **BT** 或 **兩者**  
+5. 開啟 `/share/:token` → 瀏覽器 WebTorrent／magnet／`.torrent`  
+6. Torrent 分頁確認 swarm；大檔可能短暫出現背景任務  
 
-## 埠
+## 埠與 announce
 
-| 埠 | 角色 |
-|----|------|
-| **8000**（預設） | HTTP + WebSocket announce（`/announce`，瀏覽器 WebTorrent 用 WS） |
-| UDP（可選，預設關閉） | 傳統 UDP Tracker |
-| **6881–6889** | 做種 peer 監聽範圍（防火牆芯片目錄） |
+| 埠／路徑 | 角色 |
+|----------|------|
+| **8000**（預設） | Tracker HTTP + WS |
+| UDP（可選，如 **6969**） | 傳統 UDP announce |
+| **6881–6889** | 做種 peer 監聽範圍 |
+| **`/api/v1/public/bt-tracker`** | **同源 WS／HTTP 代理**到本機 Tracker（HTTPS 分享頁必須用；否則 `ws://:8000` 會被 mixed content 擋） |
 
-請在 BT Tracker 頁用 **網絡暴露**／防火牆芯片（`8000 BT tracker`、`6881-6889 BT peers`）。下載者在公網時才考慮公開模式。
+- Magnet／announce **只用**面板 `publicAnnounceHost` + 埠。  
+- **未設公開主機**時 magnet **不**再硬塞 `127.0.0.1`。  
+- Seeder 只向本機 Tracker **announce 一次**（避免種子數永遠顯示 2）。  
+- 瀏覽器 WebTorrent 使用面板 build **自帶** `webtorrent.min.js`（非第三方 CDN），並強制 `announce` 走同源代理。
 
 ## 誠實邊界
 
-- Tracker 為控制平面（`ysk-server serve`）**程序內 Node 服務**，非獨立 apt 套件。  
-- **面板啟動／停止**與 **autostart** 會隨面板進程常駐。一次性 CLI `bt-tracker start` 只在該 CLI 進程期間有效 — 生產請用面板或 `autostart`。  
-- **`ysk-server serve` 開機**時會執行 `restoreBtSharesOnBoot`：若已開 `autostart` 或存在 BT 分享則啟動 Tracker，並為仍有磁碟上 `.torrent` 的分享重新做種（跳過 `seedStatus: stopped`）。  
-- 未啟動 Tracker 時仍可寫出 `.torrent`，但 peers 未必能互相發現。  
-- `publicAnnounceHost` 空白時 magnet 使用 `127.0.0.1` — 僅適合同機測試。  
-- 生產環境建議 EXECUTE；本機 listen 有時仍可不經 EXECUTE 成功。
+- Tracker 是控制平面／worker 內的 **Node 進程**，不是 apt 套件。  
+- 面板 Start 與 `serve` 同進程；CLI Start 偏好 **detached worker**。  
+- `serve` 開機會 `restoreBtSharesOnBoot`（autostart 或已有 BT 分享）。  
+- Tracker 未運行仍可能寫出 `.torrent`，但 peer 發現差。  
+- 運行中改埠要 **先停再開**。  
 
 ## 僅面板 ⚠️
 
 | 介面 | 理由 |
 |------|------|
-| 公開分享 BT UI（magnet／.torrent／統計） | 訪客 HTTP |
-| 瀏覽器 WebTorrent 下載 | 訪客按需從 CDN 載入 WebTorrent；伺服器仍會做種 |
+| 公開分享 UX（模式掣、進度、統計） | 訪客 HTTP |
+| 瀏覽器 WebTorrent | 訪客；資源由面板 build，Tracker 走同源代理 |
 
 ## 相關
 
 - [檔案與 FTP](./files-ftp-ZH.md)  
-- [CLI 參考 — files／bt-tracker](../cli/reference-ZH.md)  
-- [WebTorrent](https://github.com/webtorrent/webtorrent) · [webtorrent-cli](https://github.com/webtorrent/webtorrent-cli) · [bittorrent-tracker](https://github.com/webtorrent/bittorrent-tracker)  
+- [CLI 參考](../cli/reference-ZH.md)  
+- [WebTorrent](https://github.com/webtorrent/webtorrent) · [bittorrent-tracker](https://github.com/webtorrent/bittorrent-tracker)

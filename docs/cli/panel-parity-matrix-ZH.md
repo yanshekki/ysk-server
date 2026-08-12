@@ -32,7 +32,7 @@
 | ftp-accounts | FTP 帳戶 CRUD | `ftp accounts …` | ✅ C6 | P2 |
 | files-shares-create | 建立公開分享（直接／BT／兩者） | `files shares create [--mode …]` | ✅ C6 | P2 |
 | files-shares-bt-stats | 分享 BT swarm 統計 | `files shares bt-stats --id` | ✅ C6 | P2 |
-| bt-tracker | BT Tracker 服務頁 | `bt-tracker status\|start\|stop\|settings\|torrents` | ✅ C6 | P2 |
+| bt-tracker | BT Tracker 服務頁 | `bt-tracker status\|start\|stop\|settings\|torrents\|restore\|jobs` | ✅ C6 | P2 |
 | email-depth | 別名／佇列／中繼 | `email …` | ✅ C6 | P2 |
 | dns-records | 記錄／dnssec／heal | `dns …` | ✅ C6 | P2 |
 | runtimes-full | java/kotlin/bun + 切換 | `runtimes …`／`hosting runtime-*` | ✅ C7 | P2 |
@@ -56,7 +56,7 @@
 | 控制平面 | `setup` `serve` `readiness` `health` `store` `system unit-install` `update` |
 | 專案 | `projects list\|get\|create\|deploy\|stop\|git-deploy\|isolation\|health` |
 | 檔案 | `files list\|read\|write\|mkdir\|rm\|…\|trash\|webdav\|shares list\|create\|bt-stats` |
-| BT Tracker | `bt-tracker status\|start\|stop\|settings\|torrents` |
+| BT Tracker | `bt-tracker status\|start\|stop\|settings\|torrents\|restore\|jobs` |
 | 郵件 | `email domains\|mailboxes\|dns\|bootstrap\|deliverability` |
 | Nginx／SSL／DNS 區域 | `nginx` `ssl` `dns` `hosting …` |
 | 防護 | `defense`／`protection` |

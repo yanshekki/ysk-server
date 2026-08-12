@@ -32,7 +32,7 @@ Sandboxed **file manager** (public or project root), **public share links** (dir
 | FTP status/settings | `ysk-server ftp status\|settings …` | read / write-panel | |
 | FTP accounts CRUD | `ysk-server ftp accounts list\|create\|update\|delete` | write-panel | |
 | FTP apply to host | `ysk-server ftp apply\|accounts apply --execute` | write-host | |
-| BT tracker | `ysk-server bt-tracker status\|start\|stop\|settings\|torrents` | read / write-host | See [bt-tracker.md](./bt-tracker.md) |
+| BT tracker | `ysk-server bt-tracker status\|start\|stop\|settings\|torrents\|restore\|jobs` | read / write-host | See [bt-tracker.md](./bt-tracker.md) |
 | Public files site | `ysk-server hosting public-files …` | write-host | |
 
 ## CLI quick start
@@ -52,7 +52,7 @@ ysk-server ftp apply --execute --json
 - File ops are sandboxed to chosen root.  
 - FTPS apply needs EXECUTE + root for vsftpd.  
 - Public `/share/:token` page is UX; **create** is CLI/API.  
-- BT mode needs tracker running for reliable peer discovery; set `publicAnnounceHost` for off-host downloaders.
+- BT mode needs tracker running for peer discovery; set `publicAnnounceHost` for off-host magnets. Browser WebTorrent uses a same-origin tracker proxy (`/api/v1/public/bt-tracker`) and a panel-built WebTorrent asset (not a public CDN).
 
 ## Panel-only ⚠️
 
