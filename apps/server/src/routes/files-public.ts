@@ -188,6 +188,24 @@ export async function handleFilesPublicRoutes(
       } else if (unlocked) {
         magnetUri = share.magnetUri;
       }
+      // Same-origin tracker for HTTPS share pages (mixed-content safe)
+      let trackerWsUrl: string | undefined;
+      let announce: string[] | undefined;
+      if (unlocked && (share.infoHash || (share.downloadModes ?? []).includes('bt'))) {
+        try {
+          const { browserTrackerAnnounceUrls } = await import(
+            '../bt-tracker/proxy.js'
+          );
+          const hostHdr = String(req.headers.host || '').trim();
+          const isHttps =
+            Boolean((req.socket as { encrypted?: boolean })?.encrypted) ||
+            String(req.headers['x-forwarded-proto'] || '').includes('https');
+          announce = browserTrackerAnnounceUrls(hostHdr, isHttps);
+          trackerWsUrl = announce[0];
+        } catch {
+          /* optional */
+        }
+      }
       // Meta without password: only non-sensitive fields; magnet only when unlocked
       sendJson(res, 200, {
         ok: true,
@@ -204,6 +222,9 @@ export async function handleFilesPublicRoutes(
           unlocked && (share.torrentRelPath || share.infoHash)
             ? `/api/v1/public/files/${token}/torrent`
             : undefined,
+        /** Browser WebTorrent must use this (same-origin wss/ws proxy) */
+        trackerWsUrl,
+        announce,
       });
       return true;
     }

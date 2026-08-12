@@ -35,6 +35,9 @@ type ShareMeta = {
   magnetUri?: string;
   torrentUrl?: string;
   infoHash?: string;
+  /** Same-origin WebSocket tracker proxy (browser WebTorrent) */
+  trackerWsUrl?: string;
+  announce?: string[];
 };
 
 export function filenameFromDisposition(header: string | null, fallback: string): string {
@@ -152,11 +155,17 @@ export function PublicSharePage() {
     setPhase('downloading');
     setFileName(meta?.name || fileName || t('files.publicShareDefaultName'));
     try {
-      // Prefer absolute .torrent so client uses server tracker announce list;
-      // magnet is fallback (normalized for parse-torrent).
+      // Prefer absolute .torrent + same-origin tracker proxy (HTTPS-safe).
+      const announce =
+        meta?.announce?.length
+          ? meta.announce
+          : meta?.trackerWsUrl
+            ? [meta.trackerWsUrl]
+            : undefined;
       const r = await downloadWithBrowserWebTorrent({
         magnetOrTorrent: m,
         torrentUrl: torrentAbs || undefined,
+        announce,
         signal: ac.signal,
         onProgress: (p) => {
           setBtProgress(p);
@@ -201,9 +210,11 @@ export function PublicSharePage() {
     cancelDownload,
     fileName,
     magnet,
+    meta?.announce,
     meta?.magnetUri,
     meta?.name,
     meta?.torrentUrl,
+    meta?.trackerWsUrl,
     t,
     token,
     wtSupported,

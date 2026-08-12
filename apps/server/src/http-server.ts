@@ -63,6 +63,10 @@ import { handleApacheRoutes } from './routes/apache.js';
 import { attachTerminalWebSocket } from './terminal/ws-handler.js';
 import { attachHostBrowseWebSocket } from './host-browse/ws-handler.js';
 import { attachVncWebSocket } from './vnc/ws-handler.js';
+import {
+  attachBtTrackerWebSocketProxy,
+  handleBtTrackerPublicProxy,
+} from './bt-tracker/proxy.js';
 
 export type ControlPlaneServer = HttpServer | HttpsServer;
 
@@ -95,6 +99,9 @@ function attachRequestHandler(ctx: AppContext, webRoot: string | null) {
         enforceApiKeyReadOnly(ctx, req, method, url.pathname);
         // Bootstrap weak password: force change before other APIs
         enforceMustChangePassword(ctx, req, method, url.pathname);
+
+        // Public BT tracker proxy (browser WebTorrent — same-origin WS/HTTP)
+        if (await handleBtTrackerPublicProxy(ctx, req, res, url)) return;
 
         // Modular controllers first (WebDAV needs OPTIONS/PROPFIND — Wave E1 public first)
         if (await handleFilesPublicRoutes(ctx, req, res, url, method)) return;
@@ -227,6 +234,8 @@ export function createControlPlaneServer(ctx: AppContext): CreateServerResult {
   attachTerminalWebSocket(server, ctx, ctx.terminalTickets);
   attachHostBrowseWebSocket(server, ctx, ctx.hostBrowseLiveTickets);
   attachVncWebSocket(server, ctx, ctx.vncSessionTickets);
+  // Browser WebTorrent peer discovery via same-origin tracker proxy
+  attachBtTrackerWebSocketProxy(server, ctx);
   return { server, https };
 }
 
@@ -313,6 +322,7 @@ export async function listenControlPlane(
     attachTerminalWebSocket(httpServer, ctx, ctx.terminalTickets);
     attachHostBrowseWebSocket(httpServer, ctx, ctx.hostBrowseLiveTickets);
     attachVncWebSocket(httpServer, ctx, ctx.vncSessionTickets);
+    attachBtTrackerWebSocketProxy(httpServer, ctx);
   }
   try {
     await listen(httpServer, host, wantHttp);

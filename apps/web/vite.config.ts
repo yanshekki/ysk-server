@@ -13,6 +13,8 @@ export default defineConfig({
   // @novnc/novnc 1.7 uses top-level await — need modern target
   build: {
     target: 'es2022',
+    // Self-hosted webtorrent.min.js lands under assets/ (no CDN)
+    assetsInlineLimit: 0,
   },
   esbuild: {
     target: 'es2022',
@@ -20,6 +22,7 @@ export default defineConfig({
   optimizeDeps: {
     // Re-bundle workspace shared when its dist changes
     exclude: [],
+    // Pre-bundle webtorrent only if imported as module; we use dist min via ?url
     esbuildOptions: {
       target: 'es2022',
     },

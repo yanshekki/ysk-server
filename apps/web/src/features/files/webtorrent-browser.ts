@@ -1,10 +1,12 @@
 /**
  * Browser WebTorrent client for public share BT downloads.
- * Loaded on demand from CDN (keeps main bundle small; no Node polyfill build).
  *
- * WebTorrent 2.x browser File API:
- *   await file.blob()  /  await file.arrayBuffer()
- * (callback-style getBlob is gone — that caused "getBlob is not a function")
+ * Self-hosted: loads the official browser build shipped with the `webtorrent`
+ * npm package (vite copies it into our assets — no esm.sh / CDN).
+ *
+ * Tracker: pass same-origin `wss://panel/api/v1/public/bt-tracker` via
+ * `announce` so HTTPS pages can discover the panel seeder (mixed-content
+ * blocks raw ws://:8000).
  */
 
 export type BrowserBtProgress = {
@@ -28,10 +30,8 @@ type WtFile = {
   name: string;
   length: number;
   select?: () => void;
-  /** WebTorrent 2.x */
   blob?: (opts?: unknown) => Promise<Blob>;
   arrayBuffer?: (opts?: unknown) => Promise<ArrayBuffer>;
-  /** Legacy callback API (older builds) */
   getBlob?: (cb: (err: Error | null, blob?: Blob) => void) => void;
   getBlobURL?: (cb: (err: Error | null, url?: string) => void) => void;
 };
@@ -60,15 +60,13 @@ type WtClient = {
   destroy: (cb?: (err?: Error) => void) => void;
 };
 
-/** Prefer jsDelivr UMD-style browser build for stable `new WebTorrent()`. */
-const CDN_CANDIDATES = [
-  'https://esm.sh/webtorrent@2.5.1/dist/webtorrent.min.js?bundle',
-  'https://esm.sh/webtorrent@2.8.4?bundle',
-  'https://cdn.jsdelivr.net/npm/webtorrent@2.5.1/webtorrent.min.js/+esm',
-] as const;
+type WtCtor = new (opts?: Record<string, unknown>) => WtClient;
 
-let clientPromise: Promise<new (opts?: Record<string, unknown>) => WtClient> | null =
-  null;
+/** Vite emits this as a same-origin /assets/*.js file from our node_modules. */
+// @ts-expect-error Vite ?url import
+import webtorrentMinUrl from 'webtorrent/dist/webtorrent.min.js?url';
+
+let loadPromise: Promise<WtCtor> | null = null;
 
 export function isBrowserWebTorrentSupported(): boolean {
   if (typeof window === 'undefined') return false;
@@ -80,55 +78,48 @@ export function isBrowserWebTorrentSupported(): boolean {
   return Boolean(rtc);
 }
 
-function pickCtor(mod: unknown): (new (opts?: Record<string, unknown>) => WtClient) | null {
-  if (!mod) return null;
-  const m = mod as Record<string, unknown>;
-  const candidates: unknown[] = [
-    m.default,
-    m.WebTorrent,
-    m,
-    // esm.sh sometimes nests: { default: { default: Ctor } }
-    (m.default as Record<string, unknown> | undefined)?.default,
-    (m.default as Record<string, unknown> | undefined)?.WebTorrent,
-  ];
-  for (const c of candidates) {
-    if (typeof c === 'function') {
-      try {
-        // Must be constructable with `new`
-        const proto = (c as { prototype?: unknown }).prototype;
-        if (proto && typeof proto === 'object') {
-          return c as new (opts?: Record<string, unknown>) => WtClient;
-        }
-      } catch {
-        /* try next */
+/**
+ * Load self-hosted WebTorrent UMD build (window.WebTorrent).
+ * No third-party CDN — asset is part of the ysk-server web build.
+ */
+async function loadWebTorrentCtor(): Promise<WtCtor> {
+  if (!loadPromise) {
+    loadPromise = (async () => {
+      const w = window as unknown as { WebTorrent?: WtCtor };
+      if (typeof w.WebTorrent === 'function') {
+        return w.WebTorrent;
       }
-    }
-  }
-  return null;
-}
-
-async function loadWebTorrentCtor(): Promise<
-  new (opts?: Record<string, unknown>) => WtClient
-> {
-  if (!clientPromise) {
-    clientPromise = (async () => {
-      let lastErr: unknown;
-      for (const url of CDN_CANDIDATES) {
-        try {
-          const mod = await import(/* @vite-ignore */ url);
-          const Ctor = pickCtor(mod);
-          if (Ctor) return Ctor;
-          lastErr = new Error(`no constructor in ${url}`);
-        } catch (e) {
-          lastErr = e;
+      await new Promise<void>((resolve, reject) => {
+        const existing = document.querySelector(
+          'script[data-ysk-webtorrent="1"]',
+        ) as HTMLScriptElement | null;
+        if (existing) {
+          if (typeof w.WebTorrent === 'function') {
+            resolve();
+            return;
+          }
+          existing.addEventListener('load', () => resolve());
+          existing.addEventListener('error', () =>
+            reject(new Error('WebTorrent script failed')),
+          );
+          return;
         }
+        const s = document.createElement('script');
+        s.src = webtorrentMinUrl as string;
+        s.async = true;
+        s.dataset.yskWebtorrent = '1';
+        s.onload = () => resolve();
+        s.onerror = () =>
+          reject(new Error('Failed to load self-hosted WebTorrent build'));
+        document.head.appendChild(s);
+      });
+      if (typeof w.WebTorrent !== 'function') {
+        throw new Error('WebTorrent global missing after load');
       }
-      const msg =
-        lastErr instanceof Error ? lastErr.message : String(lastErr ?? 'unknown');
-      throw new Error(`WebTorrent load failed: ${msg.slice(0, 160)}`);
+      return w.WebTorrent;
     })();
   }
-  return clientPromise;
+  return loadPromise;
 }
 
 /**
@@ -172,8 +163,14 @@ export function normalizeMagnetUri(raw: string): string {
   return `magnet:?${parts.join('&')}`;
 }
 
+/** Same-origin tracker URL for the current page (wss on HTTPS). */
+export function defaultBrowserTrackerAnnounce(): string[] {
+  if (typeof window === 'undefined') return [];
+  const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+  return [`${scheme}://${window.location.host}/api/v1/public/bt-tracker`];
+}
+
 async function fileToBlob(file: WtFile): Promise<Blob> {
-  // WebTorrent 2.x preferred
   if (typeof file.blob === 'function') {
     return file.blob();
   }
@@ -181,7 +178,6 @@ async function fileToBlob(file: WtFile): Promise<Blob> {
     const ab = await file.arrayBuffer();
     return new Blob([ab]);
   }
-  // Legacy callback getBlob
   if (typeof file.getBlob === 'function') {
     return new Promise<Blob>((resolve, reject) => {
       file.getBlob!((err, b) => {
@@ -190,7 +186,6 @@ async function fileToBlob(file: WtFile): Promise<Blob> {
       });
     });
   }
-  // Legacy getBlobURL → fetch
   if (typeof file.getBlobURL === 'function') {
     const url = await new Promise<string>((resolve, reject) => {
       file.getBlobURL!((err, u) => {
@@ -205,72 +200,16 @@ async function fileToBlob(file: WtFile): Promise<Blob> {
   throw new Error('WebTorrent file has no blob/arrayBuffer API');
 }
 
-function waitTorrentReady(torrent: WtTorrent, timeoutMs: number): Promise<void> {
-  if (torrent.files?.length) return Promise.resolve();
-  return new Promise((resolve, reject) => {
-    const t = setTimeout(() => {
-      cleanup();
-      reject(new Error('timeout waiting for torrent metadata'));
-    }, timeoutMs);
-    const onReady = () => {
-      cleanup();
-      resolve();
-    };
-    const onError = (e: unknown) => {
-      cleanup();
-      reject(e instanceof Error ? e : new Error(String(e)));
-    };
-    const cleanup = () => {
-      clearTimeout(t);
-    };
-    torrent.once?.('ready', onReady);
-    torrent.once?.('metadata', onReady);
-    torrent.on('error', onError);
-    // Poll in case events already fired
-    const poll = setInterval(() => {
-      if (torrent.files?.length) {
-        clearInterval(poll);
-        cleanup();
-        resolve();
-      }
-    }, 200);
-    setTimeout(() => clearInterval(poll), timeoutMs + 50);
-  });
-}
-
-function waitTorrentDone(torrent: WtTorrent, timeoutMs: number): Promise<void> {
-  if (torrent.done || torrent.progress >= 1) return Promise.resolve();
-  return new Promise((resolve, reject) => {
-    const t = setTimeout(() => {
-      // Partial download may still yield blob for small files; don't hard-fail
-      resolve();
-    }, timeoutMs);
-    const onDone = () => {
-      clearTimeout(t);
-      resolve();
-    };
-    const onError = (e: unknown) => {
-      clearTimeout(t);
-      reject(e instanceof Error ? e : new Error(String(e)));
-    };
-    torrent.once?.('done', onDone);
-    torrent.on('error', onError);
-  });
-}
-
 /**
- * Download first file of a magnet (or torrent URL) via browser WebTorrent.
- * Prefer absolute .torrent HTTP URL when available (metadata + trackers without DHT).
+ * Download first file via browser WebTorrent using **our** tracker proxy.
  */
 export async function downloadWithBrowserWebTorrent(input: {
   magnetOrTorrent: string;
-  /** Preferred: absolute URL to .torrent (uses server trackers in the file) */
   torrentUrl?: string;
   onProgress?: (p: BrowserBtProgress) => void;
   signal?: AbortSignal;
-  /** Prefer largest file when multi-file torrent */
   preferLargest?: boolean;
-  /** Extra announce trackers (e.g. ws://host:port) when magnet lacks them */
+  /** Same-origin tracker(s); defaults to /api/v1/public/bt-tracker */
   announce?: string[];
 }): Promise<BrowserBtResult> {
   const notes: string[] = [];
@@ -284,6 +223,9 @@ export async function downloadWithBrowserWebTorrent(input: {
   if (!torrentId) {
     return { ok: false, notes: ['empty magnet'] };
   }
+
+  const announce =
+    input.announce?.length ? input.announce : defaultBrowserTrackerAnnounce();
 
   let client: WtClient | null = null;
   let torrent: WtTorrent | null = null;
@@ -319,13 +261,8 @@ export async function downloadWithBrowserWebTorrent(input: {
 
   try {
     const WebTorrent = await loadWebTorrentCtor();
-    // Always `new` — fixes "Class constructor cannot be invoked without 'new'"
     client = new WebTorrent({ utp: false });
-
-    const addOpts: Record<string, unknown> = {};
-    if (input.announce?.length) {
-      addOpts.announce = input.announce;
-    }
+    notes.push(`tracker=${announce.join(',') || 'none'}`);
 
     torrent = await new Promise<WtTorrent>((resolve, reject) => {
       let settled = false;
@@ -340,15 +277,18 @@ export async function downloadWithBrowserWebTorrent(input: {
         reject(e instanceof Error ? e : new Error(String(e)));
       };
       try {
-        const t = client!.add(torrentId, addOpts, (ready) => {
-          finish(ready || t);
-        });
+        // Force our self-hosted tracker (same-origin proxy) so browser
+        // discovers the panel seeder — ignores broken/external tr= in magnet.
+        const t = client!.add(
+          torrentId,
+          { announce },
+          (ready) => finish(ready || t),
+        );
         t.on('error', fail);
         t.on('ready', () => finish(t));
-        // metadata may arrive without ready callback on some builds
         setTimeout(() => {
           if (t.files?.length) finish(t);
-        }, 30_000);
+        }, 45_000);
       } catch (e) {
         fail(e);
       }
@@ -359,12 +299,10 @@ export async function downloadWithBrowserWebTorrent(input: {
       return { ok: false, notes: ['aborted'] };
     }
 
-    await waitTorrentReady(torrent, 60_000);
-
     const files = torrent.files || [];
     if (!files.length) {
       cleanup();
-      return { ok: false, notes: ['no files in torrent'] };
+      return { ok: false, notes: ['no files in torrent (metadata timeout?)'] };
     }
     let file = files[0]!;
     if (input.preferLargest !== false && files.length > 1) {
@@ -389,8 +327,22 @@ export async function downloadWithBrowserWebTorrent(input: {
       });
     }, 500);
 
-    // Wait for content (or timeout — blob() may still stream remaining pieces)
-    await waitTorrentDone(torrent, 10 * 60_000);
+    // Wait for download complete (or long timeout)
+    await new Promise<void>((resolve) => {
+      if (torrent!.done || torrent!.progress >= 1) {
+        resolve();
+        return;
+      }
+      const t = setTimeout(() => resolve(), 10 * 60_000);
+      torrent!.once?.('done', () => {
+        clearTimeout(t);
+        resolve();
+      });
+      torrent!.on('error', () => {
+        clearTimeout(t);
+        resolve();
+      });
+    });
 
     if (input.signal?.aborted) {
       cleanup();
@@ -421,6 +373,6 @@ export async function downloadWithBrowserWebTorrent(input: {
     cleanup();
     input.signal?.removeEventListener('abort', onAbort);
     const msg = e instanceof Error ? e.message : String(e);
-    return { ok: false, notes: [msg.slice(0, 240)] };
+    return { ok: false, notes: [...notes, msg.slice(0, 240)] };
   }
 }
