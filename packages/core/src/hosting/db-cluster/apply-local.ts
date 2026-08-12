@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Apply local cluster conf (honest).
  * Default execute=false → dataDir artifacts only (written).

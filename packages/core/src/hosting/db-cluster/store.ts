@@ -3,7 +3,7 @@
  */
 
 import { randomUUID } from 'node:crypto';
-import { ErrorCodes, YskError, tl} from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
 import type { JsonStore } from '../../db/store.js';
 import type {
   CreateDbClusterInput,

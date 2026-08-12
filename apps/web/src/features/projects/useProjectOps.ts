@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { OpsApplyResultDto } from '@ysk/shared';
+import type { OpsApplyResultDto } from '@yanshekki/shared';
 import { projectsApi } from './api';
 import { formatOpsMessage, parseEnvText, type ProjectOpsAction } from './model/ops';
 import { toast } from '../../shared/stores/toast-store';

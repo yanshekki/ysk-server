@@ -15,7 +15,7 @@ import type {
   MetricsStreamTickDto,
   ProjectDiskUsageRowDto,
   ProjectsDiskUsageSnapshotDto,
-} from '@ysk/shared';
+} from '@yanshekki/shared';
 import { api } from '../../shared/services/api';
 import { authStore } from '../../shared/stores/auth-store';
 import i18n from '../../shared/lib/i18n';
@@ -29,7 +29,7 @@ export type {
   ProcessRow,
   ProcessSnapshot,
   ProcessSignal,
-} from '@ysk/shared';
+} from '@yanshekki/shared';
 
 export type SignalProcessResult = SignalProcessResultDto;
 export type ProcessDetail = ProcessDetailDto;

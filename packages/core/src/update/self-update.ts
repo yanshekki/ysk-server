@@ -2,8 +2,8 @@
  * Self-update: check, verify, migrate, rollback, audit.
  */
 
-import type { SelfUpdateStatus } from '@ysk/shared';
-import { ErrorCodes, YskError, tl} from '@ysk/shared';
+import type { SelfUpdateStatus } from '@yanshekki/shared';
+import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
 
 export interface VersionInfo {
   current: string;

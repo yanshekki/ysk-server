@@ -4,7 +4,7 @@
  */
 
 import type { YskDatabase } from '../db/database.js';
-import { ErrorCodes, YskError, tl } from '@ysk/shared';
+import { ErrorCodes, YskError, tl } from '@yanshekki/shared';
 
 export type PackageUsage = {
   scope: 'user' | 'host';

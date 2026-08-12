@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Redis provision: probe + optional CONFIG for project DB index.
  * Never fake success when execute requested without redis-cli / EXECUTE.

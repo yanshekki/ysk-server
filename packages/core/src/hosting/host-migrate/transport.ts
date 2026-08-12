@@ -5,8 +5,8 @@
 
 import { existsSync } from 'node:fs';
 import type { HostExecutor, RunResult } from '../../host/executor.js';
-import type { OpsResultDto } from '@ysk/shared';
-import { assertHonestOps, tl} from '@ysk/shared';
+import type { OpsResultDto } from '@yanshekki/shared';
+import { assertHonestOps, tl} from '@yanshekki/shared';
 import {
   buildIdentityFileOpts,
   parseSshTarget,

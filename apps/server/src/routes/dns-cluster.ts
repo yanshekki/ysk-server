@@ -20,7 +20,7 @@ export async function handleDnsClusterRoutes(
 ): Promise<boolean> {
   if (method === 'GET' && url.pathname === '/api/v1/dns/cluster/peers') {
     ctx.auth.authenticate(getBearer(req));
-    const { listDnsClusterPeers } = await import('@ysk/core');
+    const { listDnsClusterPeers } = await import('@yanshekki/core');
     sendJson(res, 200, { items: listDnsClusterPeers(ctx.db) });
     return true;
   }
@@ -36,7 +36,7 @@ export async function handleDnsClusterRoutes(
       id?: string;
       sshIdentityId?: string;
     };
-    const { upsertDnsClusterPeer } = await import('@ysk/core');
+    const { upsertDnsClusterPeer } = await import('@yanshekki/core');
     const peer = upsertDnsClusterPeer(ctx.db, {
       id: data.id,
       host: data.host ?? '',
@@ -65,7 +65,7 @@ export async function handleDnsClusterRoutes(
       reload?: boolean;
       probeAfter?: boolean;
     };
-    const { pushDnsZonesToCluster } = await import('@ysk/core');
+    const { pushDnsZonesToCluster } = await import('@yanshekki/core');
     const r = await pushDnsZonesToCluster({
       db: ctx.db,
       host: ctx.host,
@@ -92,7 +92,7 @@ export async function handleDnsClusterRoutes(
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { peerId?: string };
-    const { reloadDnsClusterPeers } = await import('@ysk/core');
+    const { reloadDnsClusterPeers } = await import('@yanshekki/core');
     const r = await reloadDnsClusterPeers({
       db: ctx.db,
       host: ctx.host,
@@ -116,7 +116,7 @@ export async function handleDnsClusterRoutes(
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { peerId?: string };
-    const { probeDnsClusterPeers } = await import('@ysk/core');
+    const { probeDnsClusterPeers } = await import('@yanshekki/core');
     const r = await probeDnsClusterPeers({
       db: ctx.db,
       host: ctx.host,
@@ -139,7 +139,7 @@ export async function handleDnsClusterRoutes(
   if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/dns\/cluster\/peers\/[^/]+$/)) {
     const user = ctx.auth.authenticate(getBearer(req));
     const id = url.pathname.split('/')[6];
-    const { deleteDnsClusterPeer } = await import('@ysk/core');
+    const { deleteDnsClusterPeer } = await import('@yanshekki/core');
     const ok = deleteDnsClusterPeer(ctx.db, id);
     ctx.audit.append({
       actor: user.username,

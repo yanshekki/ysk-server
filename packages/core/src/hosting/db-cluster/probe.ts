@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Probe DB cluster health (local node first). Honest — never invent healthy.
  */

@@ -3,7 +3,7 @@
  * Extracted from system-host-identity.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -22,7 +22,7 @@ export async function handleSystemHostPanelRoutes(
   // —— Panel control-plane TLS (HTTPS on listenPort) ——
   if (method === 'GET' && url.pathname === '/api/v1/system/panel-tls') {
     ctx.auth.authenticate(getBearer(req));
-    const { getPanelTlsStatus } = await import('@ysk/core');
+    const { getPanelTlsStatus } = await import('@yanshekki/core');
     const encrypted = Boolean(
       (req.socket as { encrypted?: boolean }).encrypted,
     );
@@ -45,7 +45,7 @@ export async function handleSystemHostPanelRoutes(
       restart?: boolean;
     };
     const { enablePanelTls, tryRestartPanelService, getPanelTlsStatus } =
-      await import('@ysk/core');
+      await import('@yanshekki/core');
     if (!ctx.configPath) {
       sendJson(res, 422, {
         ok: false,
@@ -91,7 +91,7 @@ export async function handleSystemHostPanelRoutes(
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { restart?: boolean };
-    const { disablePanelTls, tryRestartPanelService } = await import('@ysk/core');
+    const { disablePanelTls, tryRestartPanelService } = await import('@yanshekki/core');
     if (!ctx.configPath) {
       sendJson(res, 422, {
         ok: false,
@@ -125,7 +125,7 @@ export async function handleSystemHostPanelRoutes(
       email?: string;
       restart?: boolean;
     };
-    const { issueAndEnablePanelTls, tryRestartPanelService } = await import('@ysk/core');
+    const { issueAndEnablePanelTls, tryRestartPanelService } = await import('@yanshekki/core');
     if (!ctx.configPath) {
       sendJson(res, 422, {
         ok: false,
@@ -169,7 +169,7 @@ export async function handleSystemHostPanelRoutes(
   }
   if (method === 'POST' && url.pathname === '/api/v1/system/host/ntp-sync') {
     const user = ctx.auth.authenticate(getBearer(req));
-    const { enableHostNtp } = await import('@ysk/core');
+    const { enableHostNtp } = await import('@yanshekki/core');
     const r = await enableHostNtp(ctx.host);
     ctx.audit.append({
       actor: user.username,
@@ -201,7 +201,7 @@ export async function handleSystemHostPanelRoutes(
       sendJson(res, 400, { ok: false, notes: [tl('notes.auto.n0217')] });
       return true;
     }
-    const { hostPowerAction } = await import('@ysk/core');
+    const { hostPowerAction } = await import('@yanshekki/core');
     const r = await hostPowerAction({
       host: ctx.host,
       action,

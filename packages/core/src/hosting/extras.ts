@@ -2,7 +2,7 @@
  * Phase 3 hosting remainder: File Server, FTPS, DNS, Firewall, cron, logs, backup, monitoring.
  */
 
-import { ErrorCodes, YskError, tl} from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
 
 export interface FileServerPlan {
   publicRoot: string;

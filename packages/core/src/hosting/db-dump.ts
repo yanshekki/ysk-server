@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * SQL dump export/import for MySQL/MariaDB/Postgres — honest fail-closed.
  */

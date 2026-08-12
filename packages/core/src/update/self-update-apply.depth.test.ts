@@ -9,7 +9,7 @@ import {
   fetchGithubPackageJsonVersion,
 } from './self-update-apply.js';
 import type { HostExecutor, RunResult } from '../host/executor.js';
-import { YskError } from '@ysk/shared';
+import { YskError } from '@yanshekki/shared';
 
 function empty(extra?: Partial<RunResult>): RunResult {
   return { stdout: '', stderr: '', exitCode: 0, argv: [], dryRun: false, ...extra };
@@ -103,7 +103,7 @@ describe('self-update-apply depth', () => {
       if (u.includes('raw.githubusercontent.com')) {
         return {
           ok: true,
-          json: async () => ({ version: '0.9.1', name: '@ysk/server' }),
+          json: async () => ({ version: '0.9.1', name: 'ysk-server' }),
         } as Response;
       }
       return { ok: false, status: 404, json: async () => ({}) } as Response;

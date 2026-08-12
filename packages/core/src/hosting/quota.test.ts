@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { LocalHostExecutor } from '../host/executor.js';
 import { assertQuotaMb, checkProjectQuota, measureDirBytes } from './quota.js';
-import { YskError } from '@ysk/shared';
+import { YskError } from '@yanshekki/shared';
 
 describe('quota', () => {
   it('measures dir and checks soft quota', async () => {

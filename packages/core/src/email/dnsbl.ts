@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Multi-list DNSBL (blacklist) checks for outbound mail IP reputation (Spec §5.4 D).
  */

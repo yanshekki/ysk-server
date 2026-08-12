@@ -194,7 +194,7 @@ export function MigrateHostPage() {
             <span className="u-block u-mt-2 muted u-text-sm">
               {t('migrate.restartApiHint')}
               <code>ysk-server serve</code> /{' '}
-              <code>pnpm --filter @ysk/server dev</code>
+              <code>pnpm --filter ysk-server dev</code>
               {t('migrate.afterRestart')}
             </span>
           ) : null}

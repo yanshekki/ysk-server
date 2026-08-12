@@ -8,7 +8,7 @@ import {
   applyProtection,
   type AppContext,
 } from './app-context.js';
-import { evaluateProtection } from '@ysk/core';
+import { evaluateProtection } from '@yanshekki/core';
 import { VERSION } from './version.js';
 
 describe('app-context helpers', () => {

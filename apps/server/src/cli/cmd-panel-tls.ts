@@ -9,7 +9,7 @@ import {
   disablePanelTls,
   issueAndEnablePanelTls,
   tryRestartPanelService,
-} from '@ysk/core';
+} from '@yanshekki/core';
 import type { AppContext } from '../app-context.js';
 import type { CliHelpers } from './cmd-vpn.js';
 

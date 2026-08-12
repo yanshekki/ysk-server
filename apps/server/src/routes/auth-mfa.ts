@@ -3,7 +3,7 @@
  * Extracted from auth.ts (Wave L3). Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { YskError } from '@ysk/shared';
+import { YskError } from '@yanshekki/shared';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -76,7 +76,7 @@ export async function handleAuthMfaRoutes(
       // —— WebAuthn passkeys ——
       if (method === 'GET' && url.pathname === '/api/v1/auth/webauthn/credentials') {
         const user = ctx.auth.authenticate(getBearer(req));
-        const { listWebAuthnCredentials } = await import('@ysk/core');
+        const { listWebAuthnCredentials } = await import('@yanshekki/core');
         sendJson(res, 200, {
           ok: true,
           items: listWebAuthnCredentials(ctx.db, user.id),
@@ -86,7 +86,7 @@ export async function handleAuthMfaRoutes(
       if (method === 'POST' && url.pathname === '/api/v1/auth/webauthn/register/begin') {
         const user = ctx.auth.authenticate(getBearer(req));
         const origin = String(req.headers.origin ?? '');
-        const { beginWebAuthnRegistration } = await import('@ysk/core');
+        const { beginWebAuthnRegistration } = await import('@yanshekki/core');
         const options = await beginWebAuthnRegistration({
           db: ctx.db,
           userId: user.id,
@@ -103,7 +103,7 @@ export async function handleAuthMfaRoutes(
           response?: unknown;
           name?: string;
         };
-        const { finishWebAuthnRegistration } = await import('@ysk/core');
+        const { finishWebAuthnRegistration } = await import('@yanshekki/core');
         const r = await finishWebAuthnRegistration({
           db: ctx.db,
           userId: user.id,
@@ -122,7 +122,7 @@ export async function handleAuthMfaRoutes(
       }
       if (method === 'POST' && url.pathname === '/api/v1/auth/webauthn/authenticate/begin') {
         const user = ctx.auth.authenticate(getBearer(req));
-        const { beginWebAuthnAuthentication } = await import('@ysk/core');
+        const { beginWebAuthnAuthentication } = await import('@yanshekki/core');
         const r = await beginWebAuthnAuthentication({
           db: ctx.db,
           userId: user.id,
@@ -135,7 +135,7 @@ export async function handleAuthMfaRoutes(
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as { response?: unknown };
-        const { finishWebAuthnAuthentication, markTotpStepUp } = await import('@ysk/core');
+        const { finishWebAuthnAuthentication, markTotpStepUp } = await import('@yanshekki/core');
         const r = await finishWebAuthnAuthentication({
           db: ctx.db,
           userId: user.id,
@@ -155,7 +155,7 @@ export async function handleAuthMfaRoutes(
       // —— Remember device ——
       if (method === 'GET' && url.pathname === '/api/v1/auth/devices') {
         const user = ctx.auth.authenticate(getBearer(req));
-        const { listRememberDevices } = await import('@ysk/core');
+        const { listRememberDevices } = await import('@yanshekki/core');
         sendJson(res, 200, {
           ok: true,
           items: listRememberDevices(ctx.db, user.id),
@@ -164,7 +164,7 @@ export async function handleAuthMfaRoutes(
       }
       if (method === 'DELETE' && url.pathname === '/api/v1/auth/devices') {
         const user = ctx.auth.authenticate(getBearer(req));
-        const { revokeAllRememberDevices } = await import('@ysk/core');
+        const { revokeAllRememberDevices } = await import('@yanshekki/core');
         const n = revokeAllRememberDevices(ctx.db, user.id);
         sendJson(res, 200, { ok: true, revoked: n });
         return true;
@@ -193,7 +193,7 @@ export async function handleAuthMfaRoutes(
           sendJson(res, 404, { ok: false });
           return true;
         }
-        const { exportTotpBackup } = await import('@ysk/core');
+        const { exportTotpBackup } = await import('@yanshekki/core');
         const r = exportTotpBackup({ dataDir: ctx.dataDir, user: row });
         ctx.audit.append({
           actor: user.username,
@@ -208,7 +208,7 @@ export async function handleAuthMfaRoutes(
       if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/auth\/webauthn\/credentials\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[6] ?? '';
-        const { deleteWebAuthnCredential } = await import('@ysk/core');
+        const { deleteWebAuthnCredential } = await import('@yanshekki/core');
         const ok = deleteWebAuthnCredential(ctx.db, user.id, id);
         sendJson(res, ok ? 200 : 404, { ok });
         return true;
@@ -217,7 +217,7 @@ export async function handleAuthMfaRoutes(
       if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/auth\/devices\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[5] ?? '';
-        const { revokeRememberDevice } = await import('@ysk/core');
+        const { revokeRememberDevice } = await import('@yanshekki/core');
         const ok = revokeRememberDevice(ctx.db, user.id, id);
         sendJson(res, ok ? 200 : 404, { ok });
         return true;

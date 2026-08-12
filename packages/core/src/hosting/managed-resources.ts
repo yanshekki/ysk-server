@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Control-plane resource registries — list/create/update/delete entities
  * before optional system apply. Never fakes system success.
@@ -7,7 +7,7 @@ import { tl } from '@ysk/shared';
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, writeFileSync, unlinkSync, existsSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
-import type { ApplyStatus as SharedApplyStatus } from '@ysk/shared';
+import type { ApplyStatus as SharedApplyStatus } from '@yanshekki/shared';
 import type { JsonStore } from '../db/store.js';
 import { renderNginxProxy, renderNginxStatic, renderNginxPhpFpm } from './nginx-ssl.js';
 import { writeManagedDnsZone } from './dns-zone.js';
@@ -18,9 +18,9 @@ import { provisionRedisBinding } from './redis-provision.js';
 import type { HostExecutor } from '../host/executor.js';
 
 /**
- * Resource apply honesty (subset of @ysk/shared ApplyStatus):
+ * Resource apply honesty (subset of @yanshekki/shared ApplyStatus):
  * draft | written | planned | pending_execute | applied | failed
- * Prefer importing ApplyStatus from @ysk/shared in new code.
+ * Prefer importing ApplyStatus from @yanshekki/shared in new code.
  */
 export type ApplyStatus = Extract<
   SharedApplyStatus,

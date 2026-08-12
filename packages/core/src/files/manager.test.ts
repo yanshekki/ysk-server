@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { FileManager, publicFilesRoot } from './manager.js';
-import { YskError } from '@ysk/shared';
+import { YskError } from '@yanshekki/shared';
 
 describe('FileManager sandbox', () => {
   it('lists, writes, reads, and blocks path escape', () => {

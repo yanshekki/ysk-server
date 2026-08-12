@@ -5,7 +5,7 @@ import {
   requireEnum,
   requireString,
 } from './validate.js';
-import { YskError } from '@ysk/shared';
+import { YskError } from '@yanshekki/shared';
 
 describe('http validate helpers', () => {
   it('requireString trims and enforces min', () => {

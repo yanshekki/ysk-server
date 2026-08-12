@@ -16,7 +16,7 @@ set -euo pipefail
 PRODUCT="YSK Server"
 CLI="ysk-server"
 # Global npm package name (bin remains `ysk-server`)
-PKG="@ysk/server"
+PKG="ysk-server"
 MIN_NODE_MAJOR=20
 NON_INTERACTIVE=0
 RUN_SETUP=1
@@ -256,7 +256,7 @@ embed_web_ui() {
     cp -a "$web_dist"/. "$target"/
     return 0
   fi
-  log "Web UI dist missing — run pnpm --filter @ysk/web build (API-only until then)"
+  log "Web UI dist missing — run pnpm --filter @yanshekki/web build (API-only until then)"
 }
 
 # I-07: prefer non-root global npm prefix when possible
@@ -420,13 +420,13 @@ ensure_web_ui() {
     fi
   fi
   phase "web-ui"
-  log "Building @ysk/web from $root …"
+  log "Building @yanshekki/web from $root …"
   (
     cd "$root"
     if command -v pnpm >/dev/null 2>&1; then
-      pnpm --filter @ysk/web build || log "WARN: web build failed"
+      pnpm --filter @yanshekki/web build || log "WARN: web build failed"
     elif command -v npm >/dev/null 2>&1; then
-      npm run build -w @ysk/web || log "WARN: web build failed"
+      npm run build -w @yanshekki/web || log "WARN: web build failed"
     else
       log "WARN: no pnpm/npm — skip web build"
       return 0

@@ -7,7 +7,7 @@ import type {
   FirewallStatusDto,
   Fail2banStatusDto,
   ServiceMatrixDto,
-} from '@ysk/shared';
+} from '@yanshekki/shared';
 import { api } from '../../shared/services/api';
 import i18n from '../../shared/lib/i18n';
 
@@ -19,7 +19,7 @@ export type {
   FirewallStatusDto,
   Fail2banStatusDto,
   ServiceMatrixDto,
-} from '@ysk/shared';
+} from '@yanshekki/shared';
 
 export const systemApi = {
   post: <T = Record<string, unknown>>(path: string, body: unknown) =>

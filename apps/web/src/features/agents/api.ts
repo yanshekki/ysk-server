@@ -1,10 +1,10 @@
 /**
  * Agents feature — fleet + runtime probe/install API.
  */
-import type { FleetAgent, FleetCommand, RuntimeProbe } from '@ysk/shared';
+import type { FleetAgent, FleetCommand, RuntimeProbe } from '@yanshekki/shared';
 import { api } from '../../shared/services/api';
 
-export type { FleetAgentStatus, FleetAgent, FleetCommand, RuntimeProbe } from '@ysk/shared';
+export type { FleetAgentStatus, FleetAgent, FleetCommand, RuntimeProbe } from '@yanshekki/shared';
 
 export const agentsApi = {
   listFleet: () => api.requestRaw<{ items: FleetAgent[] }>('/api/v1/fleet/agents'),

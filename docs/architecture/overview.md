@@ -15,8 +15,8 @@ YSK Server is a **single-host control plane**: one Linux machine, many sites/app
 flowchart TB
   Web[apps/web React UI]
   Server[apps/server HTTP + CLI]
-  Shared["@ysk/shared DTOs i18n errors"]
-  Core["@ysk/core domain services"]
+  Shared["@yanshekki/shared DTOs i18n errors"]
+  Core["@yanshekki/core domain services"]
   Store[(dataDir document store)]
   Host[HostExecutor shell]
 
@@ -30,17 +30,17 @@ flowchart TB
 
 | Layer | Package / path | Role |
 |-------|----------------|------|
-| Contracts | `@ysk/shared` | DTOs, ops types, errors, i18n catalogs |
-| Domain | `@ysk/core` | hosting, email, security, files, monitoring… |
+| Contracts | `@yanshekki/shared` | DTOs, ops types, errors, i18n catalogs |
+| Domain | `@yanshekki/core` | hosting, email, security, files, monitoring… |
 | Edge | `apps/server` | Thin HTTP routes + CLI → core |
 | UI | `apps/web` | React panel; i18n from shared locales |
 
 ### Dependency rule
 
 ```
-Web / CLI / HTTP  →  @ysk/shared (types + i18n)
-HTTP / CLI        →  @ysk/core
-@ysk/core         →  @ysk/shared only
+Web / CLI / HTTP  →  @yanshekki/shared (types + i18n)
+HTTP / CLI        →  @yanshekki/core
+@yanshekki/core         →  @yanshekki/shared only
 ```
 
 No business rules inside pure UI or route shells.

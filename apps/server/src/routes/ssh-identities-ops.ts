@@ -22,7 +22,7 @@ export async function handleSshIdentitiesOpsRoutes(
     const id = url.pathname.split('/')[5];
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { apply?: boolean };
-    const { installSshIdentity } = await import('@ysk/core');
+    const { installSshIdentity } = await import('@yanshekki/core');
     const r = await installSshIdentity({
       dataDir: ctx.dataDir,
       id,
@@ -47,7 +47,7 @@ export async function handleSshIdentitiesOpsRoutes(
     const id = url.pathname.split('/')[5];
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { apply?: boolean; purgeFiles?: boolean };
-    const { uninstallSshIdentity } = await import('@ysk/core');
+    const { uninstallSshIdentity } = await import('@yanshekki/core');
     const r = await uninstallSshIdentity({
       dataDir: ctx.dataDir,
       id,
@@ -67,7 +67,7 @@ export async function handleSshIdentitiesOpsRoutes(
     const id = url.pathname.split('/')[5];
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { target?: string; apply?: boolean };
-    const { testSshIdentity } = await import('@ysk/core');
+    const { testSshIdentity } = await import('@yanshekki/core');
     const r = await testSshIdentity({
       dataDir: ctx.dataDir,
       id,
@@ -93,7 +93,7 @@ export async function handleSshIdentitiesOpsRoutes(
     const id = url.pathname.split('/')[5];
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { revealPrivate?: boolean };
-    const { rotateSshIdentity } = await import('@ysk/core');
+    const { rotateSshIdentity } = await import('@yanshekki/core');
     const r = rotateSshIdentity({
       dataDir: ctx.dataDir,
       id,
@@ -114,7 +114,7 @@ export async function handleSshIdentitiesOpsRoutes(
   if (method === 'POST' && url.pathname.match(/^\/api\/v1\/ssh\/identities\/[^/]+\/authorize-self$/)) {
     const user = ctx.auth.authenticate(getBearer(req));
     const id = url.pathname.split('/')[5];
-    const { authorizeSelfSshIdentity } = await import('@ysk/core');
+    const { authorizeSelfSshIdentity } = await import('@yanshekki/core');
     const r = await authorizeSelfSshIdentity({
       dataDir: ctx.dataDir,
       db: ctx.db,

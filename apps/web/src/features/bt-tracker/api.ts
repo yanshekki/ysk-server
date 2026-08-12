@@ -1,7 +1,7 @@
 /**
  * BitTorrent tracker service API (file-share WebTorrent/BT).
  */
-import type { BtTrackerSettings, BtTrackerStatus, BtTrackerTorrentRow, BtShareStats } from '@ysk/shared';
+import type { BtTrackerSettings, BtTrackerStatus, BtTrackerTorrentRow, BtShareStats } from '@yanshekki/shared';
 import { api } from '../../shared/services/api';
 
 export type { BtTrackerSettings, BtTrackerStatus, BtTrackerTorrentRow, BtShareStats };

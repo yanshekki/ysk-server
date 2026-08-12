@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { DEFAULT_BT_TRACKER_SETTINGS } from '@ysk/shared';
+import { DEFAULT_BT_TRACKER_SETTINGS } from '@yanshekki/shared';
 import {
   buildMagnetUri,
   createShareTorrent,

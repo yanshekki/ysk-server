@@ -29,7 +29,7 @@ export async function handleCdnSitesEdgeOpsRoutes(
       dryRun?: boolean;
       projectOriginUrl?: string;
     };
-    const { applyCdnSiteEdgeRender } = await import('@ysk/core');
+    const { applyCdnSiteEdgeRender } = await import('@yanshekki/core');
     const r = await applyCdnSiteEdgeRender({
       db: ctx.db,
       dataDir: ctx.dataDir,
@@ -62,7 +62,7 @@ export async function handleCdnSitesEdgeOpsRoutes(
       skipDraining?: boolean;
       projectOriginUrl?: string;
     };
-    const { fanOutCdnSite } = await import('@ysk/core');
+    const { fanOutCdnSite } = await import('@yanshekki/core');
     const r = await fanOutCdnSite({
       db: ctx.db,
       host: ctx.host,
@@ -95,7 +95,7 @@ export async function handleCdnSitesEdgeOpsRoutes(
       edgeNodeId?: string;
       skipDraining?: boolean;
     };
-    const { purgeCdnSite } = await import('@ysk/core');
+    const { purgeCdnSite } = await import('@yanshekki/core');
     const r = await purgeCdnSite({
       db: ctx.db,
       host: ctx.host,
@@ -127,7 +127,7 @@ export async function handleCdnSitesEdgeOpsRoutes(
       probeFirst?: boolean;
       applyZone?: boolean;
     };
-    const { syncCdnSiteDns } = await import('@ysk/core');
+    const { syncCdnSiteDns } = await import('@yanshekki/core');
     const r = await syncCdnSiteDns({
       db: ctx.db,
       dataDir: ctx.dataDir,
@@ -154,7 +154,7 @@ export async function handleCdnSitesEdgeOpsRoutes(
   ) {
     ctx.auth.authenticate(getBearer(req));
     const id = url.pathname.split('/')[5];
-    const { listCdnManagedDnsRecords } = await import('@ysk/core');
+    const { listCdnManagedDnsRecords } = await import('@yanshekki/core');
     sendJson(res, 200, {
       items: listCdnManagedDnsRecords(ctx.db, id) });
     return true;

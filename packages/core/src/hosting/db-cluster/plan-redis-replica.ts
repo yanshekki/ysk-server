@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Redis replica (+ optional Sentinel plan) — pure planners.
  */

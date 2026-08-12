@@ -3,8 +3,8 @@
  * Install commands must not mask failure with `|| true`.
  */
 
-import type { AgentRuntimeDto, AgentRuntimeKind } from '@ysk/shared';
-import { ErrorCodes, YskError, tl} from '@ysk/shared';
+import type { AgentRuntimeDto, AgentRuntimeKind } from '@yanshekki/shared';
+import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
 
 export type AgentCatalogEntry = {
   name: string;

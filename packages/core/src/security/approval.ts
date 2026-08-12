@@ -2,8 +2,8 @@
  * Human-in-the-loop approval queue — persisted via ApprovalRepository when provided.
  */
 
-import type { ApprovalStatus, RiskTier } from '@ysk/shared';
-import { ErrorCodes, YskError, tl} from '@ysk/shared';
+import type { ApprovalStatus, RiskTier } from '@yanshekki/shared';
+import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
 import { randomUUID } from 'node:crypto';
 import type { ApprovalRepository, ApprovalRow } from '../repositories/approval-repo.js';
 

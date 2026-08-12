@@ -7,7 +7,7 @@ import {
   yskSvcCommentPrefix,
   defaultExposureMode,
   defaultPortsForService,
-} from '@ysk/shared';
+} from '@yanshekki/shared';
 import type { HostExecutor, RunResult } from '../../host/executor.js';
 import {
   loadExposureStore,

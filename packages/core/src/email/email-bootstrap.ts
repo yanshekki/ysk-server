@@ -18,7 +18,7 @@ import {
   type WebmailTool,
 } from './webmail-project.js';
 import { applySmtpRelay } from './relay.js';
-import { ErrorCodes, YskError, tl } from '@ysk/shared';
+import { ErrorCodes, YskError, tl } from '@yanshekki/shared';
 import type { ProjectService } from '../hosting/project-service.js';
 import type { ProjectOpsService } from '../hosting/project-ops.js';
 

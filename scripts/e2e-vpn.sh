@@ -38,6 +38,6 @@ grep -q 'redirect-gateway\|AllowedIPs' packages/core/src/hosting/vpn/access-mode
 grep -q 'accessMode\|access_mode' apps/web/src/pages/features/VpnPage.tsx apps/server/src/routes/vpn.ts || fail "UI/API accessMode"
 
 log "Unit tests…"
-pnpm --filter @ysk/core exec vitest run src/hosting/vpn
+pnpm --filter @yanshekki/core exec vitest run src/hosting/vpn
 
 log "PASS e2e-vpn gate."

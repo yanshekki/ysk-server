@@ -4,7 +4,7 @@
 
 import { mkdirSync, writeFileSync, readFileSync, existsSync, readdirSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
-import { ErrorCodes, YskError, tl} from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
 
 export type SieveScript = {
   mailbox: string;

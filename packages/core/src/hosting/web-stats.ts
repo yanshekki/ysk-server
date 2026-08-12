@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Lightweight web access stats from managed nginx access logs (honest sample).
  */

@@ -10,8 +10,8 @@ import {
   normalizeVncConnectPath,
   normalizeVncDesktopProfile,
   revokeVncShareLink,
-} from '@ysk/core';
-import { ErrorCodes } from '@ysk/shared';
+} from '@yanshekki/core';
+import { ErrorCodes } from '@yanshekki/shared';
 import type { AppContext } from '../app-context.js';
 import { getBearer, readBody, sendJson, sendOpsResult } from '../http/util.js';
 import { requireCap } from '../http/rbac-guard.js';
@@ -382,7 +382,7 @@ export async function handleVncRoutes(
     // Short-lived noVNC view ticket info (authenticated)
     const viewMatch = url.pathname.match(/^\/api\/v1\/vnc\/view\/([^/]+)$/);
     if (method === 'GET' && viewMatch) {
-      const { consumeViewTicket } = await import('@ysk/core');
+      const { consumeViewTicket } = await import('@yanshekki/core');
       const ticket = consumeViewTicket(ctx.dataDir, decodeURIComponent(viewMatch[1] ?? ''));
       if (!ticket) {
         sendJson(res, 404, {
@@ -422,7 +422,7 @@ export async function handleVncRoutes(
         });
         return true;
       }
-      const { openUfwTcpPort } = await import('@ysk/core');
+      const { openUfwTcpPort } = await import('@yanshekki/core');
       const result = await openUfwTcpPort({
         host: ctx.host,
         port,

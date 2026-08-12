@@ -3,11 +3,11 @@
  * Extracted from email-ops.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 import {
   checkIpDnsbl,
   planEmailWarmup,
-} from '@ysk/core';
+} from '@yanshekki/core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -26,7 +26,7 @@ export async function handleEmailOpsDnsblRoutes(
     ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { ips?: string[] };
-    const { checkMultipleIpsDnsbl } = await import('@ysk/core');
+    const { checkMultipleIpsDnsbl } = await import('@yanshekki/core');
     const r = await checkMultipleIpsDnsbl(data.ips ?? []);
     sendJson(res, 200, r);
     return true;

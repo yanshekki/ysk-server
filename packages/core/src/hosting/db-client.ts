@@ -2,7 +2,7 @@
  * MySQL / Redis connection probes and SQL plan execution hooks.
  */
 
-import { ErrorCodes, YskError, tl} from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
 import net from 'node:net';
 
 export interface DbEndpoint {

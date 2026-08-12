@@ -455,7 +455,7 @@
     "n0237": "chown membutuhkan YSK_EXECUTE + root",
     "n0238": "klon (perancah / rintisan YSK)",
     "n0239": "cluster_size Tidak Diketahui atau 0",
-    "n0240": "perintah ysk-server / @ysk/server",
+    "n0240": "perintah ysk-server / ysk-server",
     "n0241": "file bidang kendali selesai",
     "n0242": "cwd bisa",
     "n0243": "dataDir",

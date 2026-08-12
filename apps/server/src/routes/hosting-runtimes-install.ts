@@ -8,7 +8,7 @@ import {
   planOrInstallRuntime,
   listSupportedRuntimes,
   defaultRuntimeVersion,
-} from '@ysk/core';
+} from '@yanshekki/core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -26,7 +26,7 @@ export async function handleHostingRuntimesInstallRoutes(
 ): Promise<boolean> {
       if (method === 'GET' && url.pathname === '/api/v1/runtimes/tools') {
         ctx.auth.authenticate(getBearer(req));
-        const { probeRuntimeTools } = await import('@ysk/core');
+        const { probeRuntimeTools } = await import('@yanshekki/core');
         sendJson(res, 200, await probeRuntimeTools(ctx.host));
         return true;
       }
@@ -34,14 +34,14 @@ export async function handleHostingRuntimesInstallRoutes(
         ctx.auth.authenticate(getBearer(req));
         const supported = listSupportedRuntimes();
         const probe = await probeRuntimes(ctx.host, { dataDir: ctx.dataDir });
-        const { loadPanelRuntimeDefaults } = await import('@ysk/core');
+        const { loadPanelRuntimeDefaults } = await import('@yanshekki/core');
         const panelDefaults = loadPanelRuntimeDefaults(ctx.dataDir);
         sendJson(res, 200, { supported, probe, panelDefaults });
         return true;
       }
       if (method === 'GET' && url.pathname === '/api/v1/hosting/runtimes/panel-defaults') {
         ctx.auth.authenticate(getBearer(req));
-        const { loadPanelRuntimeDefaults } = await import('@ysk/core');
+        const { loadPanelRuntimeDefaults } = await import('@yanshekki/core');
         sendJson(res, 200, {
           ok: true,
           defaults: loadPanelRuntimeDefaults(ctx.dataDir),
@@ -58,7 +58,7 @@ export async function handleHostingRuntimesInstallRoutes(
           sendJson(res, 400, { ok: false, notes: ['kind and version required'] });
           return true;
         }
-        const { savePanelRuntimeDefault } = await import('@ysk/core');
+        const { savePanelRuntimeDefault } = await import('@yanshekki/core');
         const defaults = savePanelRuntimeDefault(
           ctx.dataDir,
           kind as 'node' | 'php' | 'python' | 'go' | 'rust' | 'java' | 'kotlin' | 'bun',
@@ -221,7 +221,7 @@ export async function handleHostingRuntimesInstallRoutes(
           kind?: 'go' | 'rust' | 'node' | 'bun' | 'php' | 'python' | 'java' | 'kotlin';
           version?: string;
         };
-        const { switchRuntimeDefault } = await import('@ysk/core');
+        const { switchRuntimeDefault } = await import('@yanshekki/core');
         const kind = data.kind ?? 'go';
         const fallback =
           kind === 'rust'
@@ -257,7 +257,7 @@ export async function handleHostingRuntimesInstallRoutes(
           kind?: 'go' | 'rust' | 'node' | 'bun' | 'php' | 'python' | 'java' | 'kotlin';
           version?: string;
         };
-        const { uninstallRuntimeVersion } = await import('@ysk/core');
+        const { uninstallRuntimeVersion } = await import('@yanshekki/core');
         const kind = data.kind ?? 'node';
         const version = String(data.version ?? '').trim();
         if (!version) {

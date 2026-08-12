@@ -8,10 +8,10 @@ import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const packages = [
-  ['@ysk/shared', 'packages/shared/coverage/coverage-summary.json'],
-  ['@ysk/core', 'packages/core/coverage/coverage-summary.json'],
-  ['@ysk/server', 'apps/server/coverage/coverage-summary.json'],
-  ['@ysk/web', 'apps/web/coverage/coverage-summary.json'],
+  ['@yanshekki/shared', 'packages/shared/coverage/coverage-summary.json'],
+  ['@yanshekki/core', 'packages/core/coverage/coverage-summary.json'],
+  ['ysk-server', 'apps/server/coverage/coverage-summary.json'],
+  ['@yanshekki/web', 'apps/web/coverage/coverage-summary.json'],
 ];
 
 const rows = [];

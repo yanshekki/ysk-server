@@ -46,8 +46,8 @@ Web functions recovered after theater-hammer removal via bind-handlers factories
 ## Remeasure
 
 ```bash
-COVERAGE_FLOOR=0 pnpm --filter @ysk/shared test:coverage
-COVERAGE_FLOOR=0 pnpm --filter @ysk/core test:coverage
-COVERAGE_FLOOR=0 pnpm --filter @ysk/server test:coverage
-COVERAGE_FLOOR=0 pnpm --filter @ysk/web test:coverage
+COVERAGE_FLOOR=0 pnpm --filter @yanshekki/shared test:coverage
+COVERAGE_FLOOR=0 pnpm --filter @yanshekki/core test:coverage
+COVERAGE_FLOOR=0 pnpm --filter ysk-server test:coverage
+COVERAGE_FLOOR=0 pnpm --filter @yanshekki/web test:coverage
 ```

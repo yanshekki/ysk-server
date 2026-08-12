@@ -1,5 +1,5 @@
 {
-  "name": "@ysk/shared",
+  "name": "@yanshekki/shared",
   "version": "1.0.0",
   "description": "Shared types, DTOs, and interfaces for YSK Server",
   "type": "module",

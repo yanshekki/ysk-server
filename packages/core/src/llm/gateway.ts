@@ -3,8 +3,8 @@
  * All model outputs are marked untrusted and must never be executed directly.
  */
 
-import type { LlmChatRequest, LlmChatResponse } from '@ysk/shared';
-import { ErrorCodes, YskError, tl} from '@ysk/shared';
+import type { LlmChatRequest, LlmChatResponse } from '@yanshekki/shared';
+import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
 import { randomUUID } from 'node:crypto';
 import type { ProtectionState } from '../services/protection.js';
 

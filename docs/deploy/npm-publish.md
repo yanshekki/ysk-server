@@ -2,109 +2,48 @@
 
 > Language: English | [中文](./npm-publish-ZH.md)
 
-Publish public packages from this monorepo to [npmjs.com](https://www.npmjs.com/):
+## Public package
 
 | Package | Role | Install |
 |---------|------|---------|
-| `@ysk/shared` | Types / locales | dependency |
-| `@ysk/core` | Hosting / security logic | dependency |
-| `@ysk/server` | Control plane API + **CLI bin `ysk-server`** | `npm install -g @ysk/server` |
+| **`ysk-server`** | Control plane API + CLI bin `ysk-server` | `npm install -g ysk-server` |
 
-`@ysk/web` stays private (SPA is embedded into `@ysk/server` `public/web` at pack time).
+Product page: **https://www.npmjs.com/package/ysk-server**
+
+Workspace packages `@yanshekki/shared` and `@yanshekki/core` are **bundled inside** the `ysk-server` tarball (`bundleDependencies`). Installers only need the unscoped package.
+
+`@yanshekki/web` stays private; SPA is embedded into `ysk-server` `public/web` at pack time.
 
 ## Prerequisites
 
-1. **npm account** with 2FA enabled (required for publish).
-2. **Access to the `@ysk` scope** — create a free organization once:
-   - Browser: https://www.npmjs.com/org/create → name `ysk` → public packages
-   - Or after login: ensure you can publish scoped public packages under `@ysk/*`
-3. **Automation token** (recommended for CI / headless):
-   - https://www.npmjs.com/settings/~/tokens → **Generate New Token** → **Automation**
-   - Save to `~/.npmrc`:
+1. npm user **yanshekki** (or collaborator).
+2. Prefer an **Automation** token in `~/.npmrc`:
 
 ```ini
 //registry.npmjs.org/:_authToken=npm_XXXXXXXX
 ```
 
-4. Verify:
+3. `npm whoami` → `yanshekki`
+4. Node ≥ 20, build tools for native addons (`python3`, `make`, `g++`) on install hosts.
+
+## Publish
 
 ```bash
-npm whoami
-# expect your npm username
+# bump version in apps/server/package.json first if needed
+bash scripts/publish-ysk-server-npm.sh           # dry-run
+bash scripts/publish-ysk-server-npm.sh --publish # real publish
 ```
 
-5. Node ≥ 20, pnpm 9+, clean tree preferred.
-
-## One-shot (recommended)
-
-Dry-run (build, gates, tests, pack — no registry write):
+## Verify
 
 ```bash
-bash scripts/prepare-release.sh
+npm view ysk-server version
+npm install -g ysk-server
+ysk-server help
 ```
 
-Real publish (same pipeline + `pnpm publish`):
+## Notes
 
-```bash
-bash scripts/prepare-release.sh --publish
-```
-
-Order is fixed: **shared → core → server**.
-
-## Manual publish
-
-```bash
-pnpm install --frozen-lockfile
-pnpm gates
-pnpm typecheck
-pnpm build
-
-# Embed web UI into the server package
-mkdir -p apps/server/public/web
-rm -rf apps/server/public/web/*
-cp -a apps/web/dist/. apps/server/public/web/
-
-pnpm --filter @ysk/shared publish --access public
-pnpm --filter @ysk/core publish --access public
-pnpm --filter @ysk/server publish --access public
-```
-
-`workspace:*` dependencies are rewritten to real versions by pnpm on publish.
-
-## Verify after publish
-
-```bash
-npm view @ysk/server version
-npm view @ysk/server bin
-npm install -g @ysk/server
-ysk-server --help
-```
-
-Product installer:
-
-```bash
-# install.sh uses PKG=@ysk/server (CLI name remains ysk-server)
-curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --non-interactive
-```
-
-## Version bumps
-
-Bump `version` in lockstep for packages you publish (today all at `1.0.0`):
-
-- `packages/shared/package.json`
-- `packages/core/package.json`
-- `apps/server/package.json`
-
-Root `package.json` is **private** and is not published.
-
-## Troubleshooting
-
-| Symptom | Fix |
-|---------|-----|
-| `401 Unauthorized` on `npm whoami` | Replace expired token; re-login |
-| `402` / no permission for `@ysk/*` | Create org `ysk` and add your user as owner |
-| `403` two-factor | Use an **Automation** token, or complete OTP for publish |
-| Pack missing panel UI | Ensure `apps/web/dist` exists before embed step |
-| Native build fails on install | Host needs build tools (`python3`, `make`, `g++`) for `better-sqlite3` / `node-pty` |
-
-Self-hosted git deploy does not require npm publish.
+- Versions **1.0.0–1.0.1** may be incomplete; use **≥ 1.0.2**.
+- Do not re-publish the same version number (npm forbids overwrite).
+- After any token leak in chat/logs, **revoke** it on npmjs.com and create a new Automation token.

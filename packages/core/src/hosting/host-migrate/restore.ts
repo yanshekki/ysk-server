@@ -15,8 +15,8 @@ import type {
   HostManifestRedis,
   MigrateJobDto,
   OpsResultDto,
-} from '@ysk/shared';
-import { assertHonestOps, tl} from '@ysk/shared';
+} from '@yanshekki/shared';
+import { assertHonestOps, tl} from '@yanshekki/shared';
 import type { HostExecutor } from '../../host/executor.js';
 import type { JsonStore } from '../../db/store.js';
 import { importSqlDatabase } from '../db-dump.js';

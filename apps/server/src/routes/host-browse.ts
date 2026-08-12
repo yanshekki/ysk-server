@@ -3,7 +3,7 @@
  */
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError } from '@yanshekki/shared';
 import type { AppContext } from '../app-context.js';
 import { getBearer, readBody, sendJson } from '../http/util.js';
 import { requireCap } from '../http/rbac-guard.js';

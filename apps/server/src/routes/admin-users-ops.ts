@@ -3,7 +3,7 @@
  * Extracted from admin-users.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { YskError } from '@ysk/shared';
+import { YskError } from '@yanshekki/shared';
 import type { AppContext } from '../app-context.js';
 import { requireUserCap } from '../http/handler.js';
 import { requireCap } from '../http/rbac-guard.js';

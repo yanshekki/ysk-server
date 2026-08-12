@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Mutate host network (ip addr / link / route / DNS) — fail-closed without YSK_EXECUTE + root.
  */

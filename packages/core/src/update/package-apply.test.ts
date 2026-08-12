@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { applyPackageUpdate, applyPackageUpdateBatch } from './package-apply.js';
 import { adviseUpdate } from './advisor.js';
 import type { HostExecutor, RunResult } from '../host/executor.js';
-import type { UpdateItemDto } from '@ysk/shared';
+import type { UpdateItemDto } from '@yanshekki/shared';
 
 function mockHost(opts: {
   execute?: boolean;

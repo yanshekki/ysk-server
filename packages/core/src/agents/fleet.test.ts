@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { openDatabase, closeDatabase } from '../db/database.js';
 import { FleetService } from './fleet.js';
-import { YskError } from '@ysk/shared';
+import { YskError } from '@yanshekki/shared';
 
 describe('FleetService', () => {
   it('registers (panel), lists, heartbeat, enqueue, pull, ack, remove', () => {

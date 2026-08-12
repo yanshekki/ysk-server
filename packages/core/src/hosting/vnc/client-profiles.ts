@@ -14,7 +14,7 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 import type { HostExecutor } from '../../host/executor.js';
-import { ErrorCodes, YskError, tl } from '@ysk/shared';
+import { ErrorCodes, YskError, tl } from '@yanshekki/shared';
 import type { VncClientProfile, VncConnectPath } from './types.js';
 import { normalizeVncConnectPath } from './types.js';
 

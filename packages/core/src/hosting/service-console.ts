@@ -2,7 +2,7 @@ import {
   tl,
   type ServiceConsoleDto,
   type ServiceConsoleLifecycleAction,
-} from '@ysk/shared';
+} from '@yanshekki/shared';
 /**
  * Professional DB service console: lifecycle + categorized settings + live values.
  */
@@ -20,7 +20,7 @@ import {
 import { installSoftware } from './software-install.js';
 import { HostSoftwareProbe, binPresent } from './software-probe/index.js';
 
-/** @deprecated Prefer ServiceConsoleLifecycleAction from @ysk/shared */
+/** @deprecated Prefer ServiceConsoleLifecycleAction from @yanshekki/shared */
 export type LifecycleAction = ServiceConsoleLifecycleAction;
 
 export interface ConsoleSettingRow extends SettingDef {

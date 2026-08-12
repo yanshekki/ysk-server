@@ -5,8 +5,8 @@
 
 import { existsSync, statfsSync } from 'node:fs';
 import type { HostExecutor } from '../../host/executor.js';
-import type { HostManifest, OpsResultDto } from '@ysk/shared';
-import { assertHonestOps, tl} from '@ysk/shared';
+import type { HostManifest, OpsResultDto } from '@yanshekki/shared';
+import { assertHonestOps, tl} from '@yanshekki/shared';
 import {
   type MigrateSshAuth,
   type MigrateSshEndpoint,

@@ -120,7 +120,7 @@ export async function handleCronRoutes(
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as { enabled?: boolean };
         if (typeof data.enabled !== 'boolean') {
-          const { tl } = await import('@ysk/shared');
+          const { tl } = await import('@yanshekki/shared');
           sendJson(res, 400, {
             ok: false,
             code: 'YSK_VALIDATION',
@@ -130,7 +130,7 @@ export async function handleCronRoutes(
         }
         const job = ctx.cron.setEnabled(id, data.enabled);
         if (!job) {
-          const { tl } = await import('@ysk/shared');
+          const { tl } = await import('@yanshekki/shared');
           sendJson(res, 404, {
             ok: false,
             code: 'YSK_NOT_FOUND',

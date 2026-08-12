@@ -8,7 +8,7 @@
 **驗收：**
 
 ```bash
-pnpm --filter @ysk/core exec vitest run   # 253 tests pass
+pnpm --filter @yanshekki/core exec vitest run   # 253 tests pass
 ysk-server readiness --data-dir … --json
 ```
 
@@ -38,7 +38,7 @@ ysk-server readiness --data-dir … --json
 | **防護中心**（自動化／CF／誠實 apply） | **done** |
 | **日誌中心**（journal／allowlist／書籤／SSE／vacuum） | **done** |
 | Apply 誠實 written≠applied | **done** |
-| **@ysk/core 測試全綠（中文化訊息）** | **done** 253/253 |
+| **@yanshekki/core 測試全綠（中文化訊息）** | **done** 253/253 |
 
 ---
 

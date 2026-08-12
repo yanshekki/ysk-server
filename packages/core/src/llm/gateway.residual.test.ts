@@ -5,7 +5,7 @@ import {
   nullTransport,
 } from './gateway.js';
 import { evaluateProtection } from '../services/protection.js';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError } from '@yanshekki/shared';
 
 describe('LlmGateway residual', () => {
   it('nullTransport fails closed', async () => {

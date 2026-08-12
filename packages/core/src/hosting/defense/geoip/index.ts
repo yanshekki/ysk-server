@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 export * from './types.js';
 export * from './providers.js';
 export * from './downloader.js';

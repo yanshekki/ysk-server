@@ -3,7 +3,7 @@
  * Extracted from projects-catalog.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -35,7 +35,7 @@ export async function handleProjectsCreateRoutes(
       dbName?: string;
       templateId?: string;
     };
-    const { runCreateWizard } = await import('@ysk/core');
+    const { runCreateWizard } = await import('@yanshekki/core');
     const r = await runCreateWizard({
       db: ctx.db,
       host: ctx.host,
@@ -89,10 +89,10 @@ export async function handleProjectsCreateRoutes(
       serverIp?: string;
       serverIpv6?: string;
     };
-    const { assertCanCreateProject } = await import('@ysk/core');
+    const { assertCanCreateProject } = await import('@yanshekki/core');
     assertCanCreateProject(ctx.db, user.id);
     const runtime = data.runtime ?? 'node';
-    const { defaultRuntimeVersion, normalizeRuntimeVersion } = await import('@ysk/core');
+    const { defaultRuntimeVersion, normalizeRuntimeVersion } = await import('@yanshekki/core');
     const created = await ctx.projects.create({
       name: data.name ?? '',
       domain: data.domain,
@@ -139,7 +139,7 @@ export async function handleProjectsCreateRoutes(
     const serverIpv6 = data.serverIpv6?.trim() || undefined;
     if (domain && data.createDnsZone) {
       try {
-        const { createResource, seedDnsZoneRecords } = await import('@ysk/core');
+        const { createResource, seedDnsZoneRecords } = await import('@yanshekki/core');
         const zoneRow = createResource(ctx.db, 'dns_zones', {
           zone: domain,
           serverIp,

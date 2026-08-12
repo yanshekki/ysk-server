@@ -1,4 +1,4 @@
-import type { SystemRole } from '@ysk/shared';
+import type { SystemRole } from '@yanshekki/shared';
 import type { YskDatabase } from '../db/database.js';
 import type { StoreUser } from '../db/store.js';
 

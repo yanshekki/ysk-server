@@ -6,7 +6,7 @@
 
 | 目標 | 規則 |
 |------|------|
-| 覆蓋率 | **每個 package** lines + functions + statements **≥ 90%**（`@ysk/shared` 已鎖定；core／server／web 隨測試補上提高 floor） |
+| 覆蓋率 | **每個 package** lines + functions + statements **≥ 90%**（`@yanshekki/shared` 已鎖定；core／server／web 隨測試補上提高 floor） |
 | Export | 每個 runtime export 須有測試引用，或登記於 [coverage-exceptions.json](./coverage-exceptions.json) |
 | 誠實 | 測試必須能抓假成功（`ok && blocked`、`applied` 但無主機成功） |
 | Web | Vitest + React Testing Library + happy-dom；只 mock `fetch` fixture — **不可** mock 掉誠實層 |
@@ -24,9 +24,9 @@ pnpm test:exports:strict
 單 package：
 
 ```bash
-pnpm --filter @ysk/shared test:coverage
-COVERAGE_FLOOR=90 pnpm --filter @ysk/shared test:coverage
-COVERAGE_FLOOR=0  pnpm --filter @ysk/core test:coverage
+pnpm --filter @yanshekki/shared test:coverage
+COVERAGE_FLOOR=90 pnpm --filter @yanshekki/shared test:coverage
+COVERAGE_FLOOR=0  pnpm --filter @yanshekki/core test:coverage
 ```
 
 ## 誠實教條

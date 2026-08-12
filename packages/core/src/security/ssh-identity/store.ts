@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * SSH identity vault store under dataDir/secrets/ssh/identities.json
  */

@@ -1,1 +1,1 @@
-export { ErrorCodes, YskError } from '@ysk/shared';
+export { ErrorCodes, YskError } from '@yanshekki/shared';

@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Host service matrix — real systemctl probes for known panel services.
  * Used by /services page (not a fake protection-only probe).

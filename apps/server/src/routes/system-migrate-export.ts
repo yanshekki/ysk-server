@@ -3,7 +3,7 @@
  * Extracted from system-migrate.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -23,20 +23,20 @@ export async function handleSystemMigrateExportRoutes(
   // Must live here: handleSystemRoutes is invoked before inline http-server routes.
   if (method === 'GET' && url.pathname === '/api/v1/system/export') {
     ctx.auth.authenticate(getBearer(req));
-    const { exportControlPlaneSnapshot } = await import('@ysk/core');
+    const { exportControlPlaneSnapshot } = await import('@yanshekki/core');
     sendJson(res, 200, exportControlPlaneSnapshot(ctx.db));
     return true;
   }
   if (method === 'GET' && url.pathname === '/api/v1/system/exports') {
     ctx.auth.authenticate(getBearer(req));
-    const { listControlPlaneExports } = await import('@ysk/core');
+    const { listControlPlaneExports } = await import('@yanshekki/core');
     sendJson(res, 200, { items: listControlPlaneExports(ctx.dataDir) });
     return true;
   }
   if (method === 'GET' && url.pathname.startsWith('/api/v1/system/exports/')) {
     ctx.auth.authenticate(getBearer(req));
     const name = decodeURIComponent(url.pathname.split('/').pop() || '');
-    const { resolveExportFile } = await import('@ysk/core');
+    const { resolveExportFile } = await import('@yanshekki/core');
     const { createReadStream, existsSync } = await import('node:fs');
     const r = resolveExportFile(ctx.dataDir, name);
     if (!r.ok || !existsSync(r.path)) {
@@ -52,7 +52,7 @@ export async function handleSystemMigrateExportRoutes(
   }
   if (method === 'GET' && url.pathname === '/api/v1/system/managed-nginx') {
     ctx.auth.authenticate(getBearer(req));
-    const { listManagedNginxDetailed } = await import('@ysk/core');
+    const { listManagedNginxDetailed } = await import('@yanshekki/core');
     const { listWithQuery } = await import('../http/list-response.js');
     const all = listManagedNginxDetailed(ctx.dataDir) as Array<Record<string, unknown>>;
     const { items, meta } = listWithQuery(url, all, {
@@ -68,7 +68,7 @@ export async function handleSystemMigrateExportRoutes(
   if (method === 'GET' && url.pathname.startsWith('/api/v1/system/managed-nginx/')) {
     ctx.auth.authenticate(getBearer(req));
     const name = decodeURIComponent(url.pathname.split('/').pop() || '');
-    const { readManagedNginxConf } = await import('@ysk/core');
+    const { readManagedNginxConf } = await import('@yanshekki/core');
     const r = readManagedNginxConf(ctx.dataDir, name);
     sendOpsResult(res, r, { notFound: true });
     return true;
@@ -81,7 +81,7 @@ export async function handleSystemMigrateExportRoutes(
       writeExport?: boolean;
       dryRun?: boolean;
     };
-    const { rebuildManagedConfigs } = await import('@ysk/core');
+    const { rebuildManagedConfigs } = await import('@yanshekki/core');
     const r = await rebuildManagedConfigs({
       dataDir: ctx.dataDir,
       host: ctx.host,

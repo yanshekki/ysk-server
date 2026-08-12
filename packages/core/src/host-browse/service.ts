@@ -2,7 +2,7 @@
  * HostBrowseService — proxy (HTTP rewrite) + browser (Chromium) engines.
  */
 
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError } from '@yanshekki/shared';
 import { BrowserEngine } from './browser-engine.js';
 import { probeChrome } from './chrome-probe.js';
 import { buildOutboundHeaders, filterResponseMetaHeaders } from './headers.js';

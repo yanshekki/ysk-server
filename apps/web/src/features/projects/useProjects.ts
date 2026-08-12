@@ -2,7 +2,7 @@
  * Projects feature — list/create/refresh hook.
  */
 import { useCallback, useEffect, useState } from 'react';
-import type { ProjectDto } from '@ysk/shared';
+import type { ProjectDto } from '@yanshekki/shared';
 import { projectsApi } from './api';
 
 export function useProjects() {

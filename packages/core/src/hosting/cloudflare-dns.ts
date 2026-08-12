@@ -4,7 +4,7 @@
  * Never fakes success without a token or when API fails.
  */
 
-import { ErrorCodes, YskError, tl} from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
 import { planDnsZone, type DnsRecordPlan } from './extras.js';
 import type { YskDatabase } from '../db/database.js';
 

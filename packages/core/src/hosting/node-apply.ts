@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Apply Node.js hosting artifacts under dataDir (real files).
  */

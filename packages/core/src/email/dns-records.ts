@@ -2,8 +2,8 @@
  * Professional Email Server — DNS record generation + external checklist + health scoring.
  */
 
-import type { EmailDnsRecord, EmailExternalTodo, EmailHealthReport } from '@ysk/shared';
-import { ErrorCodes, YskError, tl} from '@ysk/shared';
+import type { EmailDnsRecord, EmailExternalTodo, EmailHealthReport } from '@yanshekki/shared';
+import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
 
 export interface EmailDomainInput {
   domain: string;

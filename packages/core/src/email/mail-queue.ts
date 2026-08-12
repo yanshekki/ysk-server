@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Mail queue list / flush via postqueue/postsuper when available.
  * Honest: blocked without execute; never fakes success.

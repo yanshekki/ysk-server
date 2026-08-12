@@ -8,7 +8,7 @@
  * 3. throw YskError → sendError (or let outer catch)
  */
 import type { IncomingMessage } from 'node:http';
-import { ErrorCodes, yskError } from '@ysk/shared';
+import { ErrorCodes, yskError } from '@yanshekki/shared';
 import { readBody } from './util.js';
 
 export type JsonObject = Record<string, unknown>;

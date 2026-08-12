@@ -753,7 +753,7 @@ export async function installRuntimePlugins(input: {
 }): Promise<RuntimePluginInstallResult> {
   const { join } = await import('node:path');
   const { mkdirSync, writeFileSync } = await import('node:fs');
-  const { tl } = await import('@ysk/shared');
+  const { tl } = await import('@yanshekki/shared');
 
   const built = buildRuntimePluginScriptLines(input.kind, input.plugins);
   const notes: string[] = [];
@@ -854,7 +854,7 @@ export async function uninstallRuntimePlugins(input: {
 }): Promise<RuntimePluginUninstallResult> {
   const { join } = await import('node:path');
   const { mkdirSync, writeFileSync } = await import('node:fs');
-  const { tl } = await import('@ysk/shared');
+  const { tl } = await import('@yanshekki/shared');
 
   const built = buildRuntimePluginUninstallScriptLines(input.kind, input.plugins);
   const notes: string[] = [];

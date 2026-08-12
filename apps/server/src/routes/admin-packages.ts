@@ -3,7 +3,7 @@
  * Extracted from admin.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { hostPackageUsage, userPackageUsage } from '@ysk/core';
+import { hostPackageUsage, userPackageUsage } from '@yanshekki/core';
 import type { AppContext } from '../app-context.js';
 import { requireUserCap } from '../http/handler.js';
 import { listWithQuery } from '../http/list-response.js';

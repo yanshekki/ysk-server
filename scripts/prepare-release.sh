@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Build, test, pack @ysk/server for release review.
+# Build, test, pack ysk-server for release review / npm publish.
 # Usage:
 #   bash scripts/prepare-release.sh
-#   bash scripts/prepare-release.sh --publish   # real npm publish (requires login + intent)
+#   bash scripts/publish-ysk-server-npm.sh --publish   # real npm publish (requires login)
 
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -40,8 +40,8 @@ pnpm test
 log "e2e real-ops…"
 pnpm e2e:real-ops
 
-log "pack @ysk/server…"
-pnpm --filter @ysk/server pack
+log "pack ysk-server…"
+pnpm --filter ysk-server pack
 PACK=$(ls -t apps/server/ysk-server-*.tgz 2>/dev/null | head -1 || ls -t ysk-server-*.tgz 2>/dev/null | head -1 || true)
 if [[ -n "${PACK:-}" ]]; then
   log "pack artifact: $PACK"
@@ -52,13 +52,13 @@ else
 fi
 
 if [[ "$PUBLISH" -eq 1 ]]; then
-  log "PUBLISH MODE — publishing @ysk/shared, @ysk/core, @ysk/server"
-  log "Ensure package.json workspace: deps are publish-safe"
-  pnpm --filter @ysk/shared publish --access public
-  pnpm --filter @ysk/core publish --access public
-  pnpm --filter @ysk/server publish --access public
+  log "PUBLISH MODE — @yanshekki/shared → @yanshekki/core → ysk-server"
+  pnpm --filter @yanshekki/shared publish --access public --no-git-checks
+  pnpm --filter @yanshekki/core publish --access public --no-git-checks
+  pnpm --filter ysk-server publish --access public --no-git-checks
   log "published"
+  log "Install: npm install -g ysk-server"
 else
-  log "Dry-run complete. To publish: bash scripts/prepare-release.sh --publish"
+  log "Dry-run complete. To publish: bash scripts/publish-ysk-server-npm.sh --publish"
   log "See docs/deploy/npm-publish.md"
 fi

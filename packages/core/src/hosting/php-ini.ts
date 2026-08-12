@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * PHP ini settings: load/save managed files, render drop-in + FPM php_admin_value.
  */

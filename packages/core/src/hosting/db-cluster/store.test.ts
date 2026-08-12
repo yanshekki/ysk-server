@@ -11,7 +11,7 @@ import {
   deleteDbCluster,
   setDbClusterStatus,
 } from './store.js';
-import { YskError } from '@ysk/shared';
+import { YskError } from '@yanshekki/shared';
 
 function tempDb(): { db: JsonStore; cleanup: () => void } {
   const dir = mkdtempSync(join(tmpdir(), 'ysk-dbc-'));

@@ -1,8 +1,8 @@
 /**
  * Resolve ServicePortBinding lists for managed services.
  */
-import type { ServicePortBinding } from '@ysk/shared';
-import { defaultPortsForService } from '@ysk/shared';
+import type { ServicePortBinding } from '@yanshekki/shared';
+import { defaultPortsForService } from '@yanshekki/shared';
 
 /** DB console engine → YSK service id (catalog / comments). */
 export function engineToServiceId(engine: string): string {

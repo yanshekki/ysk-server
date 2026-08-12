@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Managed service settings for Redis / MySQL / MariaDB / PostgreSQL.
  * Panel save + apply (conf write + restart when permitted).

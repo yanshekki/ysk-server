@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Defense intel — top IPs, vhosts with rate-limit markers, richer log sources.
  */

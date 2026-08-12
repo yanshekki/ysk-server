@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Process table snapshot — real `ps` + top-style header (honest, no fake rows).
  */
@@ -7,7 +7,7 @@ import type {
   ProcessRowDto,
   ProcessSnapshotDto,
   ProcessSort,
-} from '@ysk/shared';
+} from '@yanshekki/shared';
 import type { HostExecutor } from '../host/executor.js';
 import { collectTopHeader } from './top-snapshot.js';
 

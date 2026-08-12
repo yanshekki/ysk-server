@@ -23,7 +23,7 @@ import {
   upsertLetsEncryptRecord,
 } from './ssl-certs.js';
 import { panelBlockMessage } from './system-apply.js';
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 
 /** Bootstrap self-signed materials for first IP login (under dataDir). */
 export function panelBootstrapTlsDir(dataDir: string): string {

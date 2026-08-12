@@ -2,7 +2,7 @@
  * Software catalog probe / versions / install (Wave U2).
  * Extracted from software.ts. Behaviour preserved.
  */
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import {
   probeAllSoftware,
@@ -16,7 +16,7 @@ import {
   listVersionDiscoveryIds,
   previewSoftwareUninstall,
   uninstallSoftware,
-} from '@ysk/core';
+} from '@yanshekki/core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,

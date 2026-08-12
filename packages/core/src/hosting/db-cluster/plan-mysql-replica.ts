@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * MySQL async primary → replica plan (pure; never mutates host).
  */

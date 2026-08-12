@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Generate sshd_config Match snippet so project Linux users can SFTP
  * with authorized_keys under their home (isolation).

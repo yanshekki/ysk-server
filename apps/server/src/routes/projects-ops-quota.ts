@@ -3,11 +3,11 @@
  * Extracted from projects-ops-data.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 import {
   applyPhpFpmPool,
   createProjectFtpAccount,
-} from '@ysk/core';
+} from '@yanshekki/core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -49,7 +49,7 @@ export async function handleProjectsOpsQuotaRoutes(
       proj.linuxUser &&
       result.account?.homePath
     ) {
-      const { chownProjectPath } = await import('@ysk/core');
+      const { chownProjectPath } = await import('@yanshekki/core');
       const ch = await chownProjectPath(
         ctx.host,
         {
@@ -117,7 +117,7 @@ export async function handleProjectsOpsQuotaRoutes(
       loadPhpIniSettings,
       loadProjectPhpIni,
       mergePhpIni,
-      renderPhpAdminValueLines } = await import('@ysk/core');
+      renderPhpAdminValueLines } = await import('@yanshekki/core');
     const adminValueLines = renderPhpAdminValueLines(
       mergePhpIni(
         loadPhpIniSettings(ctx.dataDir, phpVersion),
@@ -158,7 +158,7 @@ export async function handleProjectsOpsQuotaRoutes(
       mergePhpIni,
       loadPhpIniSettings,
       listPhpIniCatalog,
-      renderPhpAdminValueLines } = await import('@ysk/core');
+      renderPhpAdminValueLines } = await import('@yanshekki/core');
     const global = getPhpIni(ctx.dataDir, version);
     const project = loadProjectPhpIni(ctx.dataDir, id, version);
     const effective = mergePhpIni(loadPhpIniSettings(ctx.dataDir, version), project);
@@ -186,7 +186,7 @@ export async function handleProjectsOpsQuotaRoutes(
       extra?: Record<string, string>;
       rawAppend?: string;
     };
-    const { saveProjectPhpIni } = await import('@ysk/core');
+    const { saveProjectPhpIni } = await import('@yanshekki/core');
     const result = saveProjectPhpIni(ctx.dataDir, id, {
       version: data.version ?? proj.runtimeVersion ?? '8.2',
       values: data.values ?? {},

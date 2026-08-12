@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * MySQL vs MariaDB engine probe / install / start — panel only.
  * Presence/version always via HostSoftwareProbe (never ad-hoc command -v).

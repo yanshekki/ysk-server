@@ -5,7 +5,7 @@
 
 import { planSelfUpdate, compareVersions, isValidSha256 } from './self-update.js';
 import type { HostExecutor } from '../host/executor.js';
-import { ErrorCodes, YskError, tl} from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
 import { shellBinExists } from '../hosting/software-probe/index.js';
 
 export interface RegistryVersion {
@@ -34,7 +34,7 @@ export type SelfUpdateCheckResult = {
 
 const DEFAULT_NPM_CANDIDATES = [
   process.env.YSK_NPM_PACKAGE,
-  '@ysk/server',
+  'ysk-server',
   'ysk-server',
 ].filter((x): x is string => Boolean(x && x.trim()));
 
@@ -470,7 +470,7 @@ export async function runSelfUpdate(input: {
     input.packageName ||
     registry?.packageName ||
     process.env.YSK_NPM_PACKAGE ||
-    '@ysk/server';
+    'ysk-server';
 
   if (!check.checked) {
     return {
@@ -505,7 +505,7 @@ export async function runSelfUpdate(input: {
             ? registry.packageName
             : pkgName.startsWith('@') || !pkgName.includes('/')
               ? pkgName
-              : '@ysk/server';
+              : 'ysk-server';
         const pkg = `${installName}@${latest}`;
         const r = await input.host.runCommand(['npm', 'install', '-g', pkg], {
           timeoutMs: 300_000,

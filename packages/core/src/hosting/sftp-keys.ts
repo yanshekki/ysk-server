@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * SSH public keys for SFTP — managed copy under dataDir + optional project home .ssh
  * When projectId/homeDir/linuxUser provided, keys land in project isolation home.

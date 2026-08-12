@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Cloudflare Under Attack / security level API (Phase B).
  * Uses CF_API_TOKEN — fail-closed when missing or API fails.

@@ -455,7 +455,7 @@
     "n0237": "chown nécessite YSK_EXECUTE + root",
     "n0238": "clone (scaffold / stub YSK)",
     "n0239": "cluster_size Inconnu ou 0",
-    "n0240": "commande ysk-server / @ysk/server",
+    "n0240": "commande ysk-server / ysk-server",
     "n0241": "fichier control plane terminé",
     "n0242": "cwd possible",
     "n0243": "dataDir",

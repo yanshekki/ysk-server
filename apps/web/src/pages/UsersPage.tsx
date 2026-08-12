@@ -11,7 +11,7 @@ import {
   factoryRolePolicy,
   type CapabilityId,
   type OperationLevel,
-  type SystemRole } from '@ysk/shared';
+  type SystemRole } from '@yanshekki/shared';
 import { useCapabilities } from '../shared/hooks/useCapabilities';
 import { useServerList } from '../shared/hooks/useServerList';
 import { toast } from '../shared/stores/toast-store';

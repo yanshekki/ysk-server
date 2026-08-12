@@ -3,9 +3,9 @@
  * Extracted from files-write.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@ysk/shared';
-import type { UserDto } from '@ysk/shared';
-import type { FileManager } from '@ysk/core';
+import { tl } from '@yanshekki/shared';
+import type { UserDto } from '@yanshekki/shared';
+import type { FileManager } from '@yanshekki/core';
 import type { AppContext } from '../app-context.js';
 import { readBody, sendJson } from '../http/util.js';
 import { chownProjectRels } from './files-shared.js';

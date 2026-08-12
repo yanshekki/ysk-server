@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Send signals to host processes (kill) — honest, fail-closed without YSK_EXECUTE.
  * Never pretends success; never signals PID 1 without refusal.
@@ -63,7 +63,7 @@ function looksLikeControlPlane(cmd: string): boolean {
   const c = cmd.toLowerCase();
   return (
     c.includes('ysk-server') ||
-    c.includes('@ysk/server') ||
+    c.includes('ysk-server') ||
     /\/ysk-server(\s|$)/.test(c) ||
     /node.*apps\/server/.test(c)
   );

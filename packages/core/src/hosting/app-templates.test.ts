@@ -9,7 +9,7 @@ import {
   getAppTemplate,
   resolveAppTemplateId,
 } from './app-templates.js';
-import { YskError } from '@ysk/shared';
+import { YskError } from '@yanshekki/shared';
 
 describe('app templates', () => {
   it('lists exactly one Hello World template per runtime', () => {

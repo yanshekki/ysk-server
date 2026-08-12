@@ -27,7 +27,7 @@ Completes the S0–S2 security program foundation with reusable HTTP contracts a
 ```bash
 cd /home/ki/文件/ysk-server
 node apps/server/scripts/honesty-lint.mjs
-pnpm --filter @ysk/server exec vitest run src/http/validate.test.ts
-pnpm --filter @ysk/server exec vitest run src/routes/misc.test.ts -t 'users PATCH'
-pnpm --filter @ysk/core exec vitest run src/hosting/apply-honesty.test.ts
+pnpm --filter ysk-server exec vitest run src/http/validate.test.ts
+pnpm --filter ysk-server exec vitest run src/routes/misc.test.ts -t 'users PATCH'
+pnpm --filter @yanshekki/core exec vitest run src/hosting/apply-honesty.test.ts
 ```

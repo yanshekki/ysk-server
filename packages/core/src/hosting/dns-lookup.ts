@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * DNS lookup tools for panel (dig-like via system dig or node dns).
  * Honest: reports tool + raw answers; never fakes records.

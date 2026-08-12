@@ -11,7 +11,7 @@ import {
   promises as fsp,
 } from 'node:fs';
 import { dirname, join } from 'node:path';
-import type { BtTrackerSettings } from '@ysk/shared';
+import type { BtTrackerSettings } from '@yanshekki/shared';
 import { buildAnnounceList } from './settings.js';
 
 export type CreateShareTorrentResult = {

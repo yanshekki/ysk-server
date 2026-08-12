@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Peer probe (SSH) + remote conf install/restart after scp.
  * Fixed argv templates only; honest status aggregation.

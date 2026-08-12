@@ -10,8 +10,8 @@ import type {
   MigrateJobDto,
   MigrateJobVerify,
   OpsResultDto,
-} from '@ysk/shared';
-import { assertHonestOps, tl} from '@ysk/shared';
+} from '@yanshekki/shared';
+import { assertHonestOps, tl} from '@yanshekki/shared';
 import type { HostExecutor } from '../../host/executor.js';
 import type { JsonStore } from '../../db/store.js';
 import { assessProductionReadiness } from '../production-readiness.js';

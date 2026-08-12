@@ -6,7 +6,7 @@
 
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { ErrorCodes, YskError, tl } from '@ysk/shared';
+import { ErrorCodes, YskError, tl } from '@yanshekki/shared';
 
 export type RuntimeKind = 'node' | 'php' | 'python' | 'go' | 'rust' | 'java' | 'kotlin' | 'bun';
 

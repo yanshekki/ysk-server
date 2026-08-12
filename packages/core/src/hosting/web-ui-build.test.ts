@@ -46,7 +46,7 @@ describe('web-ui-build', () => {
     mkdirSync(join(root, 'apps/web'), { recursive: true });
     mkdirSync(join(root, 'apps/web/dist'), { recursive: true });
     writeFileSync(join(root, 'pnpm-workspace.yaml'), 'packages:\n  - apps/*\n');
-    writeFileSync(join(root, 'apps/web/package.json'), '{"name":"@ysk/web"}');
+    writeFileSync(join(root, 'apps/web/package.json'), '{"name":"@yanshekki/web"}');
     writeFileSync(join(root, 'apps/web/dist/index.html'), '<html>ui</html>');
     mkdirSync(data, { recursive: true });
 

@@ -13,7 +13,7 @@ import {
 } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
-import { ErrorCodes, YskError, type ProjectDto, tl } from '@ysk/shared';
+import { ErrorCodes, YskError, type ProjectDto, tl } from '@yanshekki/shared';
 import type { HostExecutor } from '../host/executor.js';
 import type { ProjectService } from '../hosting/project-service.js';
 import type { ProjectOpsService } from '../hosting/project-ops.js';

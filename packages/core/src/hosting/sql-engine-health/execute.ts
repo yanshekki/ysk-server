@@ -2,7 +2,7 @@
  * Execute a SQL engine repair plan produced by diagnose + planRepairFromFindings.
  */
 
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 import type { HostExecutor } from '../../host/executor.js';
 import { panelBlockMessage } from '../system-apply.js';
 import {

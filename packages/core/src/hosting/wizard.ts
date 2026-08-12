@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * One-click create wizard: project + optional DNS zone + mail domain + MySQL DB.
  * Honest notes for each step; partial success is reported per-step.

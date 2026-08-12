@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Offline MMDB lookup — sapics / IPinfo Lite / DB-IP City Lite.
  */

@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Unified host overview for System → 主機 tab (read-mostly, fail-soft).
  */
@@ -17,7 +17,7 @@ import {
 } from 'node:os';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { HostOverviewDto } from '@ysk/shared';
+import type { HostOverviewDto } from '@yanshekki/shared';
 import type { HostExecutor } from './executor.js';
 
 export type HostOverview = HostOverviewDto;

@@ -3,7 +3,7 @@
  * Extracted from files-controller (Wave E1). Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 import {
   FileManager,
   getShareByToken,
@@ -12,7 +12,7 @@ import {
   checkRateLimit,
   recordRateLimitFailure,
   clearRateLimit,
-} from '@ysk/core';
+} from '@yanshekki/core';
 import type { AppContext } from '../app-context.js';
 import { sendJson } from '../http/util.js';
 import {
@@ -36,7 +36,7 @@ export async function handleFilesPublicRoutes(
       buildPropfindResponse,
       publicFilesRoot,
       FileManager,
-    } = await import('@ysk/core');
+    } = await import('@yanshekki/core');
     const settings = getWebDavSettings(ctx.db);
     if (!settings.enabled) {
       sendJson(res, 503, { ok: false, message: tl('notes.auto.n0206') });
@@ -175,7 +175,7 @@ export async function handleFilesPublicRoutes(
       if (unlocked && share.infoHash) {
         try {
           const { loadBtTrackerSettings, rebuildShareMagnetUri } = await import(
-            '@ysk/core'
+            '@yanshekki/core'
           );
           magnetUri = rebuildShareMagnetUri({
             infoHash: share.infoHash,
@@ -244,7 +244,7 @@ export async function handleFilesPublicRoutes(
       const {
         collectBtShareStats,
         listBtTrackerTorrents,
-      } = await import('@ysk/core');
+      } = await import('@yanshekki/core');
       const tr = share.infoHash
         ? listBtTrackerTorrents().find(
             (t) => t.infoHash.toLowerCase() === share.infoHash!.toLowerCase(),
@@ -289,7 +289,7 @@ export async function handleFilesPublicRoutes(
       let magnetUri = share.magnetUri;
       try {
         const { loadBtTrackerSettings, rebuildShareMagnetUri } = await import(
-          '@ysk/core'
+          '@yanshekki/core'
         );
         magnetUri =
           rebuildShareMagnetUri({

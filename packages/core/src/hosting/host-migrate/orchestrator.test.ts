@@ -7,7 +7,7 @@ import {
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import type { HostExecutor, RunResult } from '../../host/executor.js';
-import type { HostManifest } from '@ysk/shared';
+import type { HostManifest } from '@yanshekki/shared';
 import { JsonStore } from '../../db/store.js';
 import { createMigrateJob, attachManifest } from './job-store.js';
 import {

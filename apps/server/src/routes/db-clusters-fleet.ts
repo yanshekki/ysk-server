@@ -21,7 +21,7 @@ export async function handleDbClustersFleetRoutes(
   if (method === 'GET' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+\/artifacts$/)) {
     ctx.auth.authenticate(getBearer(req));
     const id = url.pathname.split('/')[5];
-    const { listDbClusterArtifacts } = await import('@ysk/core');
+    const { listDbClusterArtifacts } = await import('@yanshekki/core');
     const r = listDbClusterArtifacts({
       db: ctx.db,
       dataDir: ctx.dataDir,
@@ -39,7 +39,7 @@ export async function handleDbClustersFleetRoutes(
   if (method === 'POST' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+\/bundle$/)) {
     const user = ctx.auth.authenticate(getBearer(req));
     const id = url.pathname.split('/')[5];
-    const { bundleDbClusterArtifacts } = await import('@ysk/core');
+    const { bundleDbClusterArtifacts } = await import('@yanshekki/core');
     const r = bundleDbClusterArtifacts({
       db: ctx.db,
       dataDir: ctx.dataDir,
@@ -56,7 +56,7 @@ export async function handleDbClustersFleetRoutes(
   if (method === 'GET' && url.pathname.match(/^\/api\/v1\/db\/clusters\/[^/]+\/bundle\/download$/)) {
     ctx.auth.authenticate(getBearer(req));
     const id = url.pathname.split('/')[5];
-    const { bundleDbClusterArtifacts } = await import('@ysk/core');
+    const { bundleDbClusterArtifacts } = await import('@yanshekki/core');
     const r = bundleDbClusterArtifacts({
       db: ctx.db,
       dataDir: ctx.dataDir,
@@ -89,7 +89,7 @@ export async function handleDbClustersFleetRoutes(
       memberId?: string;
       identityId?: string;
     };
-    const { pushDbClusterToPeers } = await import('@ysk/core');
+    const { pushDbClusterToPeers } = await import('@yanshekki/core');
     const result = await pushDbClusterToPeers({
       db: ctx.db,
       dataDir: ctx.dataDir,
@@ -122,7 +122,7 @@ export async function handleDbClustersFleetRoutes(
       op?: 'apply' | 'probe' | 'plan' | 'sync';
       edgeExecute?: boolean;
     };
-    const { dispatchDbClusterFleet } = await import('@ysk/core');
+    const { dispatchDbClusterFleet } = await import('@yanshekki/core');
     const result = dispatchDbClusterFleet({
       db: ctx.db,
       clusterId: id,

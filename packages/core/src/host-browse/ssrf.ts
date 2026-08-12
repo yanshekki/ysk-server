@@ -5,7 +5,7 @@
 
 import { promises as dns } from 'node:dns';
 import { isIP } from 'node:net';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError } from '@yanshekki/shared';
 import {
   isBlockedSsrfHost,
   isMetadataOrLoopbackHost,

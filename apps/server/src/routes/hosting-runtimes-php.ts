@@ -3,7 +3,7 @@
  * Extracted from hosting-runtimes.ts (Wave N2). Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -23,7 +23,7 @@ export async function handleHostingRuntimesPhpRoutes(
       if (method === 'GET' && url.pathname === '/api/v1/hosting/php/extensions') {
         ctx.auth.authenticate(getBearer(req));
         const version = url.searchParams.get('version') ?? '8.2';
-        const { phpExtensionCatalogWithProbe } = await import('@ysk/core');
+        const { phpExtensionCatalogWithProbe } = await import('@yanshekki/core');
         sendJson(res, 200, await phpExtensionCatalogWithProbe(version, ctx.host));
         return true;
       }
@@ -34,7 +34,7 @@ export async function handleHostingRuntimesPhpRoutes(
           version?: string;
           extensions?: string[];
         };
-        const { uninstallPhpExtensions } = await import('@ysk/core');
+        const { uninstallPhpExtensions } = await import('@yanshekki/core');
         const result = await uninstallPhpExtensions({
           host: ctx.host,
           version: data.version ?? '8.2',
@@ -57,7 +57,7 @@ export async function handleHostingRuntimesPhpRoutes(
       // —— Global PHP php.ini (panel-managed) ——
       if (method === 'GET' && url.pathname === '/api/v1/hosting/php/ini') {
         ctx.auth.authenticate(getBearer(req));
-        const { getPhpIni } = await import('@ysk/core');
+        const { getPhpIni } = await import('@yanshekki/core');
         const version = url.searchParams.get('version') ?? '8.2';
         sendJson(res, 200, getPhpIni(ctx.dataDir, version));
         return true;
@@ -71,7 +71,7 @@ export async function handleHostingRuntimesPhpRoutes(
           extra?: Record<string, string>;
           rawAppend?: string;
         };
-        const { savePhpIniSettings } = await import('@ysk/core');
+        const { savePhpIniSettings } = await import('@yanshekki/core');
         const result = savePhpIniSettings(ctx.dataDir, {
           version: data.version ?? '8.2',
           values: data.values ?? {},
@@ -100,7 +100,7 @@ export async function handleHostingRuntimesPhpRoutes(
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as { version?: string };
-        const { applyPhpIniSystem } = await import('@ysk/core');
+        const { applyPhpIniSystem } = await import('@yanshekki/core');
         const result = await applyPhpIniSystem({
           dataDir: ctx.dataDir,
           version: data.version ?? '8.2',
@@ -125,7 +125,7 @@ export async function handleHostingRuntimesPhpRoutes(
         const {
           loadRuntimeTuning,
           listTuningCatalog,
-          tuningToEnv } = await import('@ysk/core');
+          tuningToEnv } = await import('@yanshekki/core');
         const settings = loadRuntimeTuning(ctx.dataDir, kind, version);
         sendJson(res, 200, {
           kind,
@@ -151,7 +151,7 @@ export async function handleHostingRuntimesPhpRoutes(
           values?: Record<string, string | number | boolean>;
           env?: Record<string, string>;
         };
-        const { saveRuntimeTuning, tuningToEnv, listTuningCatalog } = await import('@ysk/core');
+        const { saveRuntimeTuning, tuningToEnv, listTuningCatalog } = await import('@yanshekki/core');
         const result = saveRuntimeTuning(ctx.dataDir, {
           kind,
           version: data.version ?? 'default',

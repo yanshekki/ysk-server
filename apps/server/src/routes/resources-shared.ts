@@ -5,7 +5,7 @@ import {
   hashFtpPassword,
   isCryptPasswordHash,
   type CollectionKey,
-} from '@ysk/core';
+} from '@yanshekki/core';
 
 /** Never return secrets to the panel list/detail API. */
 export function redactResourceSecrets(

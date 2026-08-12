@@ -4,7 +4,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import type { ProjectDto } from '@ysk/shared';
+import type { ProjectDto } from '@yanshekki/shared';
 import {
   ProjectCreateModal,
   ProjectList,

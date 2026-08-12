@@ -3,7 +3,7 @@
  * Extracted from ssh.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -22,7 +22,7 @@ export async function handleSshSftpRoutes(
       if (method === 'GET' && url.pathname === '/api/v1/sftp/keys') {
         ctx.auth.authenticate(getBearer(req));
         const username = url.searchParams.get('username') ?? undefined;
-        const { listSftpKeys } = await import('@ysk/core');
+        const { listSftpKeys } = await import('@yanshekki/core');
         sendJson(res, 200, { items: listSftpKeys(ctx.db, username || undefined) });
         return true;
       }
@@ -35,7 +35,7 @@ export async function handleSshSftpRoutes(
           comment?: string;
           projectId?: string;
         };
-        const { addSftpKey, chownSftpProjectKeys } = await import('@ysk/core');
+        const { addSftpKey, chownSftpProjectKeys } = await import('@yanshekki/core');
         let linuxUser: string | undefined;
         let homeDir: string | undefined;
         let username = data.username ?? '';
@@ -76,7 +76,7 @@ export async function handleSshSftpRoutes(
       }
       if (method === 'GET' && url.pathname === '/api/v1/sftp/sshd-snippet') {
         ctx.auth.authenticate(getBearer(req));
-        const { buildSshdSftpSnippet } = await import('@ysk/core');
+        const { buildSshdSftpSnippet } = await import('@yanshekki/core');
         const chroot = url.searchParams.get('chroot') === '1';
         const snippet = buildSshdSftpSnippet({ chroot });
         sendJson(res, 200, {
@@ -95,7 +95,7 @@ export async function handleSshSftpRoutes(
           chroot?: boolean;
           installSystem?: boolean;
         };
-        const { applySshdSftpSnippet } = await import('@ysk/core');
+        const { applySshdSftpSnippet } = await import('@yanshekki/core');
         const r = await applySshdSftpSnippet({
           dataDir: ctx.dataDir,
           host: ctx.host,
@@ -105,7 +105,7 @@ export async function handleSshSftpRoutes(
         });
         if (r.ok) {
           try {
-            const { syncServiceExposure } = await import('@ysk/core');
+            const { syncServiceExposure } = await import('@yanshekki/core');
             const exp = await syncServiceExposure({
               host: ctx.host,
               dataDir: ctx.dataDir,
@@ -136,7 +136,7 @@ export async function handleSshSftpRoutes(
       if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/sftp\/keys\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[5];
-        const { removeSftpKey } = await import('@ysk/core');
+        const { removeSftpKey } = await import('@yanshekki/core');
         const r = removeSftpKey(ctx.db, ctx.dataDir, id);
         ctx.audit.append({
           actor: user.username,

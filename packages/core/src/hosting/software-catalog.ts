@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Single catalog of host software required by admin features.
  * Panel installs via software-install.ts — never user CLI.

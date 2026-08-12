@@ -15,7 +15,7 @@ import {
   runAllCdnSitesHealthLoop,
   listCdnManagedDnsRecords,
 } from './dns-sync.js';
-import type { CdnSiteDto, CdnNodeDto } from '@ysk/shared';
+import type { CdnSiteDto, CdnNodeDto } from '@yanshekki/shared';
 
 function edge(
   id: string,

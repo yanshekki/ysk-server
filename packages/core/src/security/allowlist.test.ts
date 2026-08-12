@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createDefaultAllowlist } from './allowlist.js';
-import { ErrorCodes, YskError } from '@ysk/shared';
+import { ErrorCodes, YskError } from '@yanshekki/shared';
 
 describe('Allowlist', () => {
   const allowlist = createDefaultAllowlist();

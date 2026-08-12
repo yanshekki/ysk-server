@@ -1,11 +1,11 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Apply agent runtime install plan under EXECUTE policy (never fake success).
  */
 
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import type { AgentRuntimeKind } from '@ysk/shared';
+import type { AgentRuntimeKind } from '@yanshekki/shared';
 import type { HostExecutor } from '../host/executor.js';
 import { planAgentInstall, parseAgentKind } from './runtime.js';
 import { renderAgentSystemdUnit, probeAgentRuntime, resolveAgentBinary } from './probe.js';

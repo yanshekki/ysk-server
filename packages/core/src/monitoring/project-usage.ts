@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Per-project disk usage for metrics panel (real `du`, reuses quota helpers).
  */

@@ -10,7 +10,7 @@ import type { Server as HttpsServer } from 'node:https';
 import { connect as netConnect, type Socket as NetSocket } from 'node:net';
 import type { Duplex } from 'node:stream';
 import { WebSocketServer, type WebSocket } from 'ws';
-import type { VncSessionTicketStore } from '@ysk/core';
+import type { VncSessionTicketStore } from '@yanshekki/core';
 import type { AppContext } from '../app-context.js';
 
 const MAX_SESSIONS = 16;

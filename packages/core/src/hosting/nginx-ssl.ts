@@ -2,8 +2,8 @@
  * Nginx reverse proxy + Let’s Encrypt SSL config generation.
  */
 
-import type { NginxProxyConfig, SslCertPlan } from '@ysk/shared';
-import { ErrorCodes, YskError, tl } from '@ysk/shared';
+import type { NginxProxyConfig, SslCertPlan } from '@yanshekki/shared';
+import { ErrorCodes, YskError, tl } from '@yanshekki/shared';
 import {
   renderNginxRealIpBlock,
   type RealIpHostConfig,

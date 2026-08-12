@@ -31,8 +31,8 @@ import {
   restoreBtSharesOnBoot,
   listTorrentJobs,
   getTorrentJob,
-} from '@ysk/core';
-import { ErrorCodes } from '@ysk/shared';
+} from '@yanshekki/core';
+import { ErrorCodes } from '@yanshekki/shared';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,

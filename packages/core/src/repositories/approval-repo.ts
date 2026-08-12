@@ -1,4 +1,4 @@
-import type { ApprovalStatus } from '@ysk/shared';
+import type { ApprovalStatus } from '@yanshekki/shared';
 import type { YskDatabase } from '../db/database.js';
 import type { StoreApproval } from '../db/store.js';
 

@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Per-sender (envelope from domain) rate policy via Postfix check_policy_service.
  * Generates a small Python3 policy daemon + master.cf / main.cf hooks.

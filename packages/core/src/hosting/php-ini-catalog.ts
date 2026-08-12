@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 import { FALLBACK_TIMEZONES } from '../host/timezones.js';
 import {
   PHP_DISABLE_FUNCTIONS_DEFAULT,

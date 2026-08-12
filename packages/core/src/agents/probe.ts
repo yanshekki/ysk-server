@@ -1,9 +1,9 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Probe managed AI agent runtimes on disk + systemd (real host truth).
  */
 
-import type { AgentRuntimeDto, AgentRuntimeKind } from '@ysk/shared';
+import type { AgentRuntimeDto, AgentRuntimeKind } from '@yanshekki/shared';
 import type { HostExecutor } from '../host/executor.js';
 import { listAgentRuntimes, parseAgentKind, planAgentInstall } from './runtime.js';
 import { resolveBin } from '../hosting/software-probe/index.js';

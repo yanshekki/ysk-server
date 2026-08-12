@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Optional WordPress core download into project public/ (Spec one-click apps).
  * Requires network + host tools; never fakes success without YSK_EXECUTE.

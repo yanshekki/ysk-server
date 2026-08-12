@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Aggregate panel notifications for dashboard (honest, derived from live state).
  */

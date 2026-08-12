@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * SSH 2FA registry under dataDir/secrets/ssh/ssh-2fa.json
  */

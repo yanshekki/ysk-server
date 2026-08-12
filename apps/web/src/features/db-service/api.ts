@@ -8,9 +8,9 @@ export type {
   RedisServiceSettings,
   SqlServiceSettings,
   PostgresServiceSettings,
-} from '@ysk/shared';
+} from '@yanshekki/shared';
 
-import type { DbServiceEngine } from '@ysk/shared';
+import type { DbServiceEngine } from '@yanshekki/shared';
 
 function base(engine: DbServiceEngine) {
   return `/api/v1/system/db/${engine}`;

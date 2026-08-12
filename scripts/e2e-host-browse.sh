@@ -56,7 +56,7 @@ grep -q 'openTab' packages/core/src/host-browse/service.ts \
   || fail "service openTab missing"
 
 log "Running host-browse unit tests…"
-pnpm --filter @ysk/core exec vitest run src/host-browse
+pnpm --filter @yanshekki/core exec vitest run src/host-browse
 
 log "PASS host-browse e2e gate (unit + docs + surface)."
 log "Optional live Chrome: open /browse with engine=browser and panel audioBridge."

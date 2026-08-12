@@ -4,8 +4,8 @@
  */
 
 import { randomUUID } from 'node:crypto';
-import type { RiskTier } from '@ysk/shared';
-import { ErrorCodes, YskError, tl} from '@ysk/shared';
+import type { RiskTier } from '@yanshekki/shared';
+import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
 import type { Allowlist } from '../security/allowlist.js';
 import type { LlmGateway } from '../llm/gateway.js';
 

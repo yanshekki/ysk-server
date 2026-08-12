@@ -4,7 +4,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../../shared/lib/i18n';
-import type { ProjectDto } from '@ysk/shared';
+import type { ProjectDto } from '@yanshekki/shared';
 import {
   ActionBar,
   Badge,

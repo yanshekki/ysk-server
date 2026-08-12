@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * GeoIP / ASN database providers — free-tier max = city lite (region + city).
  */

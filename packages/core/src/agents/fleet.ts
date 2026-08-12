@@ -4,7 +4,7 @@
  */
 
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
-import { ErrorCodes, YskError, tl} from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
 import type { YskDatabase } from '../db/database.js';
 
 export type FleetAgentStatus = 'registered' | 'connected' | 'stale' | 'disconnected';

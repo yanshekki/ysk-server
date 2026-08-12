@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Live OS-user probe + apply Linux/systemd limits for a project.
  * Honest: applied only with root + YSK_EXECUTE; else written/blocked notes.

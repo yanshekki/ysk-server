@@ -4,11 +4,11 @@ import type {
   ServiceConsoleDto,
   ServiceConsoleCategoryDto,
   ServiceConsoleSettingDto,
-} from '@ysk/shared';
+} from '@yanshekki/shared';
 
-/** @deprecated Prefer ServiceConsoleDto from @ysk/shared */
+/** @deprecated Prefer ServiceConsoleDto from @yanshekki/shared */
 export type ConsoleSetting = ServiceConsoleSettingDto;
-/** @deprecated Prefer ServiceConsoleCategoryDto from @ysk/shared */
+/** @deprecated Prefer ServiceConsoleCategoryDto from @yanshekki/shared */
 export type ConsoleCategory = ServiceConsoleCategoryDto;
 /** SSOT: shared ServiceConsoleDto */
 export type ServiceConsole = ServiceConsoleDto;

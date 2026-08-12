@@ -21,8 +21,8 @@ import type {
   MigrateJobTarget,
   MigratePhase,
   OpsResultDto,
-} from '@ysk/shared';
-import { assertHonestOps } from '@ysk/shared';
+} from '@yanshekki/shared';
+import { assertHonestOps } from '@yanshekki/shared';
 import { migrateJobDir } from './types.js';
 
 function atomicWriteJson(path: string, data: unknown): void {

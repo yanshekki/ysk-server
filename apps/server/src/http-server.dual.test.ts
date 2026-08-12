@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import type { AppContext } from './app-context.js';
 import { listenControlPlane } from './http-server.js';
-import type { YskConfig } from '@ysk/core';
+import type { YskConfig } from '@yanshekki/core';
 
 const closers: Array<() => void> = [];
 

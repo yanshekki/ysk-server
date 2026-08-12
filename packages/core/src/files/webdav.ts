@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Minimal WebDAV settings + PROPFIND XML helpers (managed under panel).
  * Real PROPFIND/PUT handlers live in server controller; this is control-plane config.

@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Real MySQL/MariaDB provision via mysql CLI when available.
  * Never reports ok=true for skipped system mutations.

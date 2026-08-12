@@ -1,10 +1,10 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Structured top(1)-style host header — honest /proc samples (no fake PTY).
  * Per-CPU deltas match SSH top press "1".
  */
 
-import type { CpuTimesPctDto, TopHeaderDto } from '@ysk/shared';
+import type { CpuTimesPctDto, TopHeaderDto } from '@yanshekki/shared';
 import type { HostExecutor } from '../host/executor.js';
 
 export type CpuTimesPct = CpuTimesPctDto;

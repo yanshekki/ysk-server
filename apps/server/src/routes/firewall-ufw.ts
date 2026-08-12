@@ -3,7 +3,7 @@
  * Extracted from firewall.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { applyFirewall } from '@ysk/core';
+import { applyFirewall } from '@yanshekki/core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -21,7 +21,7 @@ export async function handleFirewallUfwRoutes(
 ): Promise<boolean> {
   if (method === 'GET' && url.pathname === '/api/v1/system/firewall/status') {
     ctx.auth.authenticate(getBearer(req));
-    const { probeFirewallDeep } = await import('@ysk/core');
+    const { probeFirewallDeep } = await import('@yanshekki/core');
     const st = (await probeFirewallDeep(ctx.host)) as Record<string, unknown>;
     const q = (url.searchParams.get('q') ?? '').trim();
     if (q && Array.isArray(st.numberedRules)) {
@@ -73,7 +73,7 @@ export async function handleFirewallUfwRoutes(
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { enabled?: boolean };
-    const { firewallSetEnabled } = await import('@ysk/core');
+    const { firewallSetEnabled } = await import('@yanshekki/core');
     const r = await firewallSetEnabled(ctx.host, data.enabled !== false);
     ctx.audit.append({
       actor: user.username,
@@ -88,7 +88,7 @@ export async function handleFirewallUfwRoutes(
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { ip?: string };
-    const { firewallDenyIp } = await import('@ysk/core');
+    const { firewallDenyIp } = await import('@yanshekki/core');
     const r = await firewallDenyIp(ctx.host, data.ip ?? '');
     ctx.audit.append({
       actor: user.username,
@@ -103,7 +103,7 @@ export async function handleFirewallUfwRoutes(
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { ip?: string };
-    const { firewallDeleteDenyIp } = await import('@ysk/core');
+    const { firewallDeleteDenyIp } = await import('@yanshekki/core');
     const r = await firewallDeleteDenyIp(ctx.host, data.ip ?? '');
     ctx.audit.append({
       actor: user.username,
@@ -118,7 +118,7 @@ export async function handleFirewallUfwRoutes(
     const user = ctx.auth.authenticate(getBearer(req));
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { num?: number };
-    const { firewallDeleteRuleNumber } = await import('@ysk/core');
+    const { firewallDeleteRuleNumber } = await import('@yanshekki/core');
     const r = await firewallDeleteRuleNumber(ctx.host, Number(data.num));
     ctx.audit.append({
       actor: user.username,
@@ -131,7 +131,7 @@ export async function handleFirewallUfwRoutes(
   }
   if (method === 'GET' && url.pathname === '/api/v1/system/firewall/service-ports') {
     ctx.auth.authenticate(getBearer(req));
-    const { listFirewallPortChips, YSK_SERVICE_PORTS } = await import('@ysk/shared');
+    const { listFirewallPortChips, YSK_SERVICE_PORTS } = await import('@yanshekki/shared');
     sendJson(res, 200, {
       ok: true,
       chips: listFirewallPortChips(),
@@ -149,7 +149,7 @@ export async function handleFirewallUfwRoutes(
       /** Optional source IP or CIDR — port only open to this source */
       from?: string;
     };
-    const { firewallAllowPort } = await import('@ysk/core');
+    const { firewallAllowPort } = await import('@yanshekki/core');
     // number | "80" | "30000:30100" | "53/udp" (proto from body wins if set)
     const portArg =
       typeof data.port === 'number'

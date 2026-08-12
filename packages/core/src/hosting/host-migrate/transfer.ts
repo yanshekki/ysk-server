@@ -6,8 +6,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
-import type { HostManifest, MigrateJobDto, OpsResultDto } from '@ysk/shared';
-import { assertHonestOps, tl} from '@ysk/shared';
+import type { HostManifest, MigrateJobDto, OpsResultDto } from '@yanshekki/shared';
+import { assertHonestOps, tl} from '@yanshekki/shared';
 import type { HostExecutor } from '../../host/executor.js';
 import {
   appendMigrateStep,

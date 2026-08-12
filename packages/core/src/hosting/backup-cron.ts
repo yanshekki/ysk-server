@@ -12,7 +12,7 @@ import {
   unlinkSync } from 'node:fs';
 import { join, resolve, sep } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { ErrorCodes, YskError, tl} from '@ysk/shared';
+import { ErrorCodes, YskError, tl} from '@yanshekki/shared';
 import type { HostExecutor } from '../host/executor.js';
 import type { YskDatabase } from '../db/database.js';
 import { planCronJob } from './extras.js';

@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Per-runtime tuning catalogs + JSON persistence for Node/Python/Go/Rust.
  * Applied as Environment= on systemd unit / deploy env.

@@ -5,13 +5,13 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { randomUUID } from 'node:crypto';
 import {
   type SystemRole,
-} from '@ysk/shared';
+} from '@yanshekki/shared';
 import {
   getPlaybook,
   listPlaybooks,
   startPlaybookRun,
   buildRcaReport,
-} from '@ysk/core';
+} from '@yanshekki/core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,

@@ -1,7 +1,7 @@
 /**
  * Turn certbot / ACME stderr into an operator-facing reason (i18n keys under ssl.*).
  */
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 
 export type LeFailureKind =
   | 'nxdomain'

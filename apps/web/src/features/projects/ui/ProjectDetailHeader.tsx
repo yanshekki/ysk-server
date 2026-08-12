@@ -2,7 +2,7 @@
  * Primary action bar only — page title/back live in FeaturePageLayout (no duplicate header).
  */
 import { useTranslation } from 'react-i18next';
-import type { ProjectDto } from '@ysk/shared';
+import type { ProjectDto } from '@yanshekki/shared';
 import { getProjectUiProfile } from '../model/runtime-ui';
 import { ActionBar, Button } from '../../../shared/components/ui';
 

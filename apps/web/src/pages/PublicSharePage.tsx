@@ -11,7 +11,7 @@ import {
   normalizeLocale,
   type LocaleCode,
   type BtShareStats,
-} from '@ysk/shared';
+} from '@yanshekki/shared';
 import { Alert, Button, Field, FormActions } from '../shared/components/ui';
 import { setAppLocale } from '../shared/lib/i18n';
 import {

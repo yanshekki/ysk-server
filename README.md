@@ -48,7 +48,7 @@ curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.s
 Or from npm (CLI bin: `ysk-server`):
 
 ```bash
-npm install -g @ysk/server
+npm install -g ysk-server
 ysk-server setup
 ysk-server serve
 ```
@@ -127,8 +127,8 @@ YSK Server is **free** for everyone. If it helps you:
 
 ```bash
 pnpm install && pnpm build
-pnpm --filter @ysk/server exec node --import tsx/esm src/cli.ts setup --data-dir .ysk --json
-pnpm --filter @ysk/server exec node --import tsx/esm src/cli.ts serve --data-dir .ysk
+pnpm --filter ysk-server exec node --import tsx/esm src/cli.ts setup --data-dir .ysk --json
+pnpm --filter ysk-server exec node --import tsx/esm src/cli.ts serve --data-dir .ysk
 ```
 
 Architecture and contribution details live in **docs/** — not in this README.

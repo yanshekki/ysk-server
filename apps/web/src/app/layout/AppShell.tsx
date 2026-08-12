@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { canSeeFeature } from '@ysk/shared';
+import { canSeeFeature } from '@yanshekki/shared';
 import { useAuth } from '../../shared/hooks/useAuth';
 import { useCapabilities } from '../../shared/hooks/useCapabilities';
 import { useUpdatesNavBadge } from '../../shared/hooks/useUpdatesNavBadge';

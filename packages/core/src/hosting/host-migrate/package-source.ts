@@ -20,15 +20,15 @@ import type {
   HostManifestDatabase,
   HostManifestRedis,
   OpsResultDto,
-} from '@ysk/shared';
-import { assertHonestOps, tl} from '@ysk/shared';
+} from '@yanshekki/shared';
+import { assertHonestOps, tl} from '@yanshekki/shared';
 import type { HostExecutor } from '../../host/executor.js';
 import type { JsonStore } from '../../db/store.js';
 import { dumpSqlDatabase } from '../db-dump.js';
 import { dumpRedisRdb } from './redis-dump.js';
 import { migrateJobDir } from './types.js';
 import { appendMigrateStep, attachManifest, setMigratePhase } from './job-store.js';
-import type { MigrateJobDto } from '@ysk/shared';
+import type { MigrateJobDto } from '@yanshekki/shared';
 
 export type PackageItemResult = {
   kind: 'sql' | 'redis' | 'quiesce' | 'fingerprint';

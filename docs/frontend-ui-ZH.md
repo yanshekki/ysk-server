@@ -6,7 +6,7 @@
 
 - 應用：`apps/web`（React + TypeScript）
 - 佈局：FSD-lite 頁面 + shared UI 套件
-- i18n：`@ysk/shared` 語言包（預設 zh-HK）
+- i18n：`@yanshekki/shared` 語言包（預設 zh-HK）
 
 ## 原則
 

@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import type { HostExecutor, RunResult } from '../../host/executor.js';
-import type { HostManifest } from '@ysk/shared';
+import type { HostManifest } from '@yanshekki/shared';
 import { preflightSource, preflightTarget, formatBytes } from './preflight.js';
 
 function empty(): RunResult {

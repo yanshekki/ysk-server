@@ -3,7 +3,7 @@
  * Fail closed for private / link-local / metadata targets unless explicitly allowed.
  */
 
-import { ErrorCodes, YskError, tl } from '@ysk/shared';
+import { ErrorCodes, YskError, tl } from '@yanshekki/shared';
 import { isIP } from 'node:net';
 
 const BLOCKED_HOSTNAMES = new Set([

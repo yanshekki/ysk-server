@@ -9,7 +9,7 @@ import {
   OPERATION_LEVELS,
   type CapabilityId,
   type OperationLevel,
-  type SystemRole } from '@ysk/shared';
+  type SystemRole } from '@yanshekki/shared';
 import {
   ActionBar,
   Alert,

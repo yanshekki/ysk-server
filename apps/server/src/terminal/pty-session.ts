@@ -3,7 +3,7 @@
  */
 
 import type { IPty } from 'node-pty';
-import type { TerminalSpawnPlan } from '@ysk/core';
+import type { TerminalSpawnPlan } from '@yanshekki/core';
 
 export type PtySession = {
   id: string;

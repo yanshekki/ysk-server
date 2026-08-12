@@ -7,7 +7,7 @@ import {
   commandRequiresExecute,
   pathUnderRoot,
 } from './executor.js';
-import { YskError } from '@ysk/shared';
+import { YskError } from '@yanshekki/shared';
 
 describe('LocalHostExecutor', () => {
   it('allows managed writes and blocks mutating commands without EXECUTE', async () => {

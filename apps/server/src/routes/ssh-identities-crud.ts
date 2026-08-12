@@ -3,7 +3,7 @@
  * Extracted from ssh-identities.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { YskError, tl } from '@ysk/shared';
+import { YskError, tl } from '@yanshekki/shared';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -22,7 +22,7 @@ export async function handleSshIdentitiesCrudRoutes(
   // —— SSH identity vault (outbound private keys; distinct from sftp authorized_keys) ——
   if (method === 'GET' && url.pathname === '/api/v1/ssh/identities') {
     ctx.auth.authenticate(getBearer(req));
-    const { listSshIdentities } = await import('@ysk/core');
+    const { listSshIdentities } = await import('@yanshekki/core');
     const purposeRaw = url.searchParams.get('purpose') ?? undefined;
     const purpose =
       purposeRaw === 'user_outbound' ||
@@ -52,7 +52,7 @@ export async function handleSshIdentitiesCrudRoutes(
       revealPrivate?: boolean;
       install?: boolean;
     };
-    const { createSshIdentity, installSshIdentity } = await import('@ysk/core');
+    const { createSshIdentity, installSshIdentity } = await import('@yanshekki/core');
     const r = createSshIdentity(
       ctx.dataDir,
       {
@@ -102,7 +102,7 @@ export async function handleSshIdentitiesCrudRoutes(
       purpose?: 'user_outbound' | 'panel_outbound' | 'unbound';
       binding?: { projectId?: string; linuxUser?: string; homeDir?: string };
     };
-    const { importSshIdentity } = await import('@ysk/core');
+    const { importSshIdentity } = await import('@yanshekki/core');
     const r = importSshIdentity(
       ctx.dataDir,
       {
@@ -132,7 +132,7 @@ export async function handleSshIdentitiesCrudRoutes(
   if (method === 'GET' && url.pathname.match(/^\/api\/v1\/ssh\/identities\/[^/]+\/public$/)) {
     ctx.auth.authenticate(getBearer(req));
     const id = url.pathname.split('/')[5];
-    const { getSshIdentity } = await import('@ysk/core');
+    const { getSshIdentity } = await import('@yanshekki/core');
     const identity = getSshIdentity(ctx.dataDir, id);
     if (!identity) {
       sendJson(res, 404, { ok: false, message: tl('notes.ssh.identityNotFound') });
@@ -168,7 +168,7 @@ export async function handleSshIdentitiesCrudRoutes(
       throw e;
     }
     const id = url.pathname.split('/')[5];
-    const { exportSshIdentityPrivate } = await import('@ysk/core');
+    const { exportSshIdentityPrivate } = await import('@yanshekki/core');
     const r = exportSshIdentityPrivate(ctx.dataDir, id);
     ctx.audit.append({
       actor: user.username,
@@ -182,7 +182,7 @@ export async function handleSshIdentitiesCrudRoutes(
   if (method === 'GET' && url.pathname.match(/^\/api\/v1\/ssh\/identities\/[^/]+$/)) {
     ctx.auth.authenticate(getBearer(req));
     const id = url.pathname.split('/')[5];
-    const { getSshIdentity } = await import('@ysk/core');
+    const { getSshIdentity } = await import('@yanshekki/core');
     const identity = getSshIdentity(ctx.dataDir, id);
     if (!identity) {
       sendJson(res, 404, { ok: false, message: tl('notes.ssh.identityNotFound') });
@@ -195,7 +195,7 @@ export async function handleSshIdentitiesCrudRoutes(
     const user = ctx.auth.authenticate(getBearer(req));
     const id = url.pathname.split('/')[5];
     const purgeDisk = url.searchParams.get('purgeDisk') === '1';
-    const { deleteSshIdentity, uninstallSshIdentity } = await import('@ysk/core');
+    const { deleteSshIdentity, uninstallSshIdentity } = await import('@yanshekki/core');
     if (purgeDisk) {
       await uninstallSshIdentity({
         dataDir: ctx.dataDir,

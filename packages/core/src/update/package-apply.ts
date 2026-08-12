@@ -1,11 +1,11 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Apply apt package upgrade from panel — fail-closed, honest notes.
  */
 
 import type { HostExecutor } from '../host/executor.js';
 import { withHostMutatingJob } from '../host/host-job.js';
-import type { UpdateItemDto } from '@ysk/shared';
+import type { UpdateItemDto } from '@yanshekki/shared';
 import { planUpdateExecution } from './advisor.js';
 
 export async function applyPackageUpdate(input: {

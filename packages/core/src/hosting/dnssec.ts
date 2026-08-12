@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * DNSSEC key material + optional zone signing under dataDir — honest, not auto-publish DS.
  */

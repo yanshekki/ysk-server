@@ -57,10 +57,10 @@ export function webUiIndexCandidates(dataDir: string, cwd = process.cwd()): stri
     /* */
   }
 
-  // Common global npm layouts for @ysk/server
+  // Common global npm layouts for ysk-server
   for (const base of [
-    '/usr/lib/node_modules/@ysk/server/public/web/index.html',
-    '/usr/local/lib/node_modules/@ysk/server/public/web/index.html',
+    '/usr/lib/node_modules/ysk-server/public/web/index.html',
+    '/usr/local/lib/node_modules/ysk-server/public/web/index.html',
     '/usr/lib/node_modules/ysk-server/public/web/index.html',
     '/usr/local/lib/node_modules/ysk-server/public/web/index.html',
   ]) {
@@ -183,7 +183,7 @@ async function whichBin(bin: string): Promise<string | null> {
   }
 }
 
-/** npm root -g /@ysk/server/public/web when global package embeds SPA */
+/** npm root -g /ysk-server/public/web when global package embeds SPA */
 async function findGlobalNpmPackagedWeb(): Promise<string | null> {
   const npm = await whichBin('npm');
   if (!npm) return null;
@@ -195,7 +195,7 @@ async function findGlobalNpmPackagedWeb(): Promise<string | null> {
     const root = String(r.stdout || '').trim();
     if (!root) return null;
     for (const rel of [
-      '@ysk/server/public/web/index.html',
+      'ysk-server/public/web/index.html',
       'ysk-server/public/web/index.html',
     ]) {
       const idx = join(root, rel);
@@ -285,7 +285,7 @@ export async function ensureWebUiBuilt(input: {
     notes.push(`cwd=${cwd}`);
     notes.push(`dataDir=${dataDir}`);
     notes.push(
-      'Manual: on a machine with source, run: pnpm --filter @ysk/web build',
+      'Manual: on a machine with source, run: pnpm --filter @yanshekki/web build',
     );
     notes.push(
       `then: mkdir -p ${join(dataDir, 'web')} && cp -a apps/web/dist/. ${join(dataDir, 'web')}/`,
@@ -310,18 +310,18 @@ export async function ensureWebUiBuilt(input: {
     }
     try {
       if (pnpm) {
-        notes.push('running: pnpm --filter @ysk/web build');
+        notes.push('running: pnpm --filter @yanshekki/web build');
         const r = await execFileAsync(
           pnpm,
-          ['--filter', '@ysk/web', 'build'],
+          ['--filter', '@yanshekki/web', 'build'],
           { cwd: mono, timeout: 600_000, maxBuffer: 12 * 1024 * 1024 },
         );
         if (String(r.stderr || '').trim()) {
           notes.push(String(r.stderr).slice(-800));
         }
       } else {
-        notes.push('running: npm run build -w @ysk/web');
-        await execFileAsync(npm!, ['run', 'build', '-w', '@ysk/web'], {
+        notes.push('running: npm run build -w @yanshekki/web');
+        await execFileAsync(npm!, ['run', 'build', '-w', '@yanshekki/web'], {
           cwd: mono,
           timeout: 600_000,
           maxBuffer: 12 * 1024 * 1024,

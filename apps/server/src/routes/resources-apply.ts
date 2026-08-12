@@ -2,7 +2,7 @@
  * Managed resource apply actions (Wave S1).
  * Extracted from resources.ts. Behaviour preserved.
  */
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import {
   applyManagedNginxSite,
@@ -11,7 +11,7 @@ import {
   applyRedisInstance,
   applyDnsZone,
   type CollectionKey,
-} from '@ysk/core';
+} from '@yanshekki/core';
 import type { AppContext } from '../app-context.js';
 import { readBody, sendJson, sendOpsResult } from '../http/util.js';
 
@@ -66,7 +66,7 @@ export async function handleResourcesApplyRoutes(
       return true;
     }
     if (key === 'ftp_accounts') {
-      const { applyFtpAccountReal } = await import('@ysk/core');
+      const { applyFtpAccountReal } = await import('@yanshekki/core');
       const r = await applyFtpAccountReal({
         db: ctx.db,
         dataDir: ctx.dataDir,

@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Collect host network snapshot via iproute2 + resolv (honest).
  */

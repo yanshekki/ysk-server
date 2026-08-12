@@ -16,7 +16,7 @@ import {
   applyCdnSiteEdgeRender,
   readCdnSiteRenderedConf,
 } from './edge-render.js';
-import type { CdnSiteDto } from '@ysk/shared';
+import type { CdnSiteDto } from '@yanshekki/shared';
 
 function baseSite(over: Partial<CdnSiteDto> = {}): CdnSiteDto {
   return {

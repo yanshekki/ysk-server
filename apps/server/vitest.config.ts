@@ -1,6 +1,6 @@
 import { defineConfig } from 'vitest/config';
 
-/** COVERAGE_FLOOR: locked at 90% line coverage for @ysk/server. */
+/** COVERAGE_FLOOR: locked at 90% line coverage for ysk-server. */
 const floor = Number(process.env.COVERAGE_FLOOR ?? '90');
 
 export default defineConfig({

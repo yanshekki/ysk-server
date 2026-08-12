@@ -3,7 +3,7 @@
  * Extracted from ssh-2fa.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { YskError, tl } from '@ysk/shared';
+import { YskError, tl } from '@yanshekki/shared';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -22,7 +22,7 @@ export async function handleSsh2faHostRoutes(
   if (method === 'GET' && url.pathname === '/api/v1/ssh/2fa/pam-snippet') {
     ctx.auth.authenticate(getBearer(req));
     const { buildPamSshSnippet, buildSshdTotpHints, listSsh2fa, planSsh2faStrictSnippet } =
-      await import('@ysk/core');
+      await import('@yanshekki/core');
     const written = listSsh2fa(ctx.dataDir)
       .filter((i) => i.status === 'file_written')
       .map((i) => i.linuxUser);
@@ -75,7 +75,7 @@ export async function handleSsh2faHostRoutes(
       }
       throw e;
     }
-    const { listSsh2fa, applySshdStrictSnippet } = await import('@ysk/core');
+    const { listSsh2fa, applySshdStrictSnippet } = await import('@yanshekki/core');
     const written = listSsh2fa(ctx.dataDir)
       .filter((i) => i.status === 'file_written')
       .map((i) => i.linuxUser);
@@ -98,7 +98,7 @@ export async function handleSsh2faHostRoutes(
   }
   if (method === 'GET' && url.pathname === '/api/v1/security/fail2ban-snippets') {
     ctx.auth.authenticate(getBearer(req));
-    const { writeFail2banSnippets } = await import('@ysk/core');
+    const { writeFail2banSnippets } = await import('@yanshekki/core');
     sendJson(res, 200, writeFail2banSnippets(ctx.dataDir));
     return true;
   }

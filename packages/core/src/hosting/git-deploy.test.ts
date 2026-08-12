@@ -12,7 +12,7 @@ import { tmpdir } from 'node:os';
 import { LocalHostExecutor } from '../host/executor.js';
 import { assertGitUrl, gitSync, isYskScaffoldAppDir } from './git-deploy.js';
 import { scaffoldAppTemplate } from './app-templates.js';
-import { YskError } from '@ysk/shared';
+import { YskError } from '@yanshekki/shared';
 
 describe('assertGitUrl', () => {
   it('accepts https, git@, file://, and absolute local paths', () => {

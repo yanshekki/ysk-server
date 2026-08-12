@@ -24,7 +24,7 @@ import {
   edgeSslPaths,
   edgeCertDir,
 } from './ssl.js';
-import type { CdnSiteDto } from '@ysk/shared';
+import type { CdnSiteDto } from '@yanshekki/shared';
 
 // Same minimal PEMs as ssl-certs.test (regex-only validation)
 const SAMPLE_CERT = `-----BEGIN CERTIFICATE-----

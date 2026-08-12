@@ -3,7 +3,7 @@
  * Does not run certbot — only applies paths when files already exist (D7 polish).
  */
 
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 import type { HostExecutor } from '../host/executor.js';
 import { panelBlockMessage } from '../hosting/system-apply.js';
 

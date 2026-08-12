@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { echoTransport, LlmGateway } from './gateway.js';
 import { evaluateProtection } from '../services/protection.js';
-import { ErrorCodes } from '@ysk/shared';
+import { ErrorCodes } from '@yanshekki/shared';
 
 describe('LlmGateway', () => {
   it('marks all model output as untrusted', async () => {

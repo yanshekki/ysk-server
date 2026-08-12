@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * One-click WordPress path: download core + write wp-config from env + chown + checklist.
  * Honest: download needs EXECUTE+network; DB provision is separate step.

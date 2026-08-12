@@ -6,7 +6,7 @@
 目標：新機 **只換公網 IP**，其餘域名／帳號／路徑／專案 id 不變。
 
 > **實作狀態（2026-07-30）**  
-> - ✅ **PR1**：`HostManifest` 盤點 + job 持久化（`@ysk/shared` + `host-migrate`）  
+> - ✅ **PR1**：`HostManifest` 盤點 + job 持久化（`@yanshekki/shared` + `host-migrate`）  
 > - ✅ **PR2**：SSH/rsync transport、臨時金鑰、來源/目標 preflight  
 > - ✅ **PR3**：package — quiesce、全量 SQL dump、Redis RDB、fingerprints  
 > - ✅ **PR4**：transfer rsync + target bootstrap（minimal → transfer → full）  

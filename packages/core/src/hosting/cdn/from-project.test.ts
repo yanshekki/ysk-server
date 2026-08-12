@@ -9,10 +9,10 @@ import {
   enableCdnFromProject,
   projectOriginUrl,
 } from './from-project.js';
-import type { ProjectDto } from '@ysk/shared';
+import type { ProjectDto } from '@yanshekki/shared';
 import { selectGeoEdges } from './dns-sync.js';
 import type { CdnHealthyEdge } from './dns-sync.js';
-import type { CdnSiteDto } from '@ysk/shared';
+import type { CdnSiteDto } from '@yanshekki/shared';
 
 const baseProject = (over: Partial<ProjectDto> = {}): ProjectDto => ({
   id: 'proj-1',

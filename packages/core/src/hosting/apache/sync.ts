@@ -5,7 +5,7 @@
 import { copyFileSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { HostExecutor } from '../../host/executor.js';
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 
 export async function syncApacheConfigs(opts: {
   dataDir: string;

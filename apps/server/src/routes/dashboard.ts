@@ -2,7 +2,7 @@
  * Dashboard summary, notifications, apply-audit — extracted from misc residual.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { loadSmtpRelaySettings, probeAllAgentRuntimes } from '@ysk/core';
+import { loadSmtpRelaySettings, probeAllAgentRuntimes } from '@yanshekki/core';
 import type { AppContext } from '../app-context.js';
 import { requireUser } from '../http/handler.js';
 import { sendJson } from '../http/util.js';
@@ -58,7 +58,7 @@ export async function handleDashboardRoutes(
   }
   if (method === 'GET' && url.pathname === '/api/v1/notifications') {
     requireUser(ctx, req);
-    const { collectNotifications } = await import('@ysk/core');
+    const { collectNotifications } = await import('@yanshekki/core');
     const r = await collectNotifications({
       db: ctx.db,
       host: ctx.host,
@@ -72,7 +72,7 @@ export async function handleDashboardRoutes(
   }
   if (method === 'GET' && url.pathname === '/api/v1/system/apply-audit') {
     requireUser(ctx, req);
-    const { auditApplyStatuses } = await import('@ysk/core');
+    const { auditApplyStatuses } = await import('@yanshekki/core');
     sendJson(res, 200, auditApplyStatuses(ctx.db));
     return true;
   }

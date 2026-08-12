@@ -24,5 +24,5 @@
 
 ## 驗證
 
-- `@ysk/core` 檔案管理與 webdav 單元測試已更新並通過。
+- `@yanshekki/core` 檔案管理與 webdav 單元測試已更新並通過。
 EOF

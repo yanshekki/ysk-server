@@ -2,8 +2,8 @@
  * Server-side list filter / sort / page helper.
  * Pure functions — used by HTTP list routes.
  */
-import type { ListMeta, ListQuery, ListResponse } from '@ysk/shared';
-import { emptyListMeta } from '@ysk/shared';
+import type { ListMeta, ListQuery, ListResponse } from '@yanshekki/shared';
+import { emptyListMeta } from '@yanshekki/shared';
 
 export type ListMatchers<T> = {
   /** Fields to match against q (case-insensitive substring) */

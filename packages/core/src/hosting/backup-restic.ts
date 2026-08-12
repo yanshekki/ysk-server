@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Restic-class incremental backup under dataDir (fail-closed, honest notes).
  */

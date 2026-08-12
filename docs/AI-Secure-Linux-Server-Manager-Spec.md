@@ -105,7 +105,7 @@ src/
 
 #### A. Final install path (Node.js already present)
 
-- Support global install via `npm install -g @ysk/server` (or final package name)
+- Support global install via `npm install -g ysk-server` (or final package name)
 - After install, `ysk-server setup` initializes the control plane and required deps
 
 #### B. Fresh Ubuntu Server bootstrap (no Node.js)

@@ -3,7 +3,7 @@
  * Extracted from email-domains-ops.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { writeDovecotPassdb } from '@ysk/core';
+import { writeDovecotPassdb } from '@yanshekki/core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,

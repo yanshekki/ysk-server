@@ -12,7 +12,7 @@ import {
   normalizeUpdatesScanSettings,
   DEFAULT_UPDATES_SCAN,
   checkSelfUpdate,
-} from '@ysk/core';
+} from '@yanshekki/core';
 import type { AppContext } from '../app-context.js';
 import { listWithQuery } from '../http/list-response.js';
 import { VERSION } from '../version.js';

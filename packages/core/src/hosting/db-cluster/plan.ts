@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Route cluster planning by kind; write artifacts under dataDir (optional).
  */

@@ -27,7 +27,7 @@ ysk-server rbac audit --json
 | DELETE | `/api/v1/projects/:id` | 專案刪除能力 |
 | POST | `/api/v1/tools/execute` | 工具執行能力 |
 
-精確規則在 `@ysk/shared` 的 `route-capabilities` 與 server `rbac-guard`。
+精確規則在 `@yanshekki/shared` 的 `route-capabilities` 與 server `rbac-guard`。
 
 ## 相關
 

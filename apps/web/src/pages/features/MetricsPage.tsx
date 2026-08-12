@@ -422,7 +422,7 @@ export function MetricsPage() {
     const c = r.command.toLowerCase();
     return (
       c.includes('ysk-server') ||
-      c.includes('@ysk/server') ||
+      c.includes('ysk-server') ||
       /node.*apps\/server/.test(c)
     );
   }, []);

@@ -103,7 +103,7 @@ src/
 ### 2.3 一鍵安裝與更新
 
 #### A. 最終正式安裝方式（有 Node.js 環境後）
-- 支援以 `npm install -g @ysk/server`（或最終包名）方式全域安裝
+- 支援以 `npm install -g ysk-server`（或最終包名）方式全域安裝
 - 安裝後提供 `ysk-server setup` 一鍵初始化整個控制平面與必要依賴
 
 #### B. 全新 Ubuntu Server 快速引導安裝（無 Node.js 時）

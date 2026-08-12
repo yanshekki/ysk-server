@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Password hashes for mailboxes / Dovecot passdb.
  * Prefer SHA512-CRYPT ({SHA512-CRYPT}) via openssl when available;

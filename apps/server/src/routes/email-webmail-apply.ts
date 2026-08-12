@@ -3,7 +3,7 @@
  * Extracted from email-webmail.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { applyWebmail } from '@ysk/core';
+import { applyWebmail } from '@yanshekki/core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -52,7 +52,7 @@ export async function handleEmailWebmailApplyRoutes(
         normalizeWebmailTool,
         defaultWebmailProjectName,
         defaultWebmailHostname,
-      } = await import('@ysk/core');
+      } = await import('@yanshekki/core');
       const tool = normalizeWebmailTool(data.tool);
       const domain =
         (data.domain ?? '').trim() ||

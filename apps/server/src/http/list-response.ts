@@ -1,8 +1,8 @@
 /**
  * Thin helper: parse ListQuery + apply text (and optional) matchers → sendJson shape.
  */
-import { applyListQuery, type ListMatchers } from '@ysk/core';
-import { parseListQuery, type ParseListQueryOptions } from '@ysk/shared';
+import { applyListQuery, type ListMatchers } from '@yanshekki/core';
+import { parseListQuery, type ParseListQueryOptions } from '@yanshekki/shared';
 
 export function listWithQuery<T>(
   url: URL,

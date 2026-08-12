@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Generate nginx limit_req / limit_conn drop-in for defense presets.
  * Zones → http conf.d; server limits → .inc + inject into managed vhosts.

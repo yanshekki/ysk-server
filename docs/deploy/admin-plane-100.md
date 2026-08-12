@@ -46,6 +46,6 @@
 ## 驗收
 
 ```bash
-pnpm --filter @ysk/core exec vitest run src/hosting src/monitoring
+pnpm --filter @yanshekki/core exec vitest run src/hosting src/monitoring
 ysk-server readiness --data-dir … --json
 ```

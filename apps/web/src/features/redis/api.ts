@@ -1,10 +1,10 @@
 /**
  * Redis service + key browser API
  */
-import type { RedisServiceStatus, RedisKeyListItem, RedisKeyView } from '@ysk/shared';
+import type { RedisServiceStatus, RedisKeyListItem, RedisKeyView } from '@yanshekki/shared';
 import { api } from '../../shared/services/api';
 
-export type { RedisServiceStatus, RedisKeyListItem, RedisKeyView } from '@ysk/shared';
+export type { RedisServiceStatus, RedisKeyListItem, RedisKeyView } from '@yanshekki/shared';
 
 export const redisApi = {
   status: () => api.requestRaw<RedisServiceStatus>('/api/v1/system/db/redis/status'),

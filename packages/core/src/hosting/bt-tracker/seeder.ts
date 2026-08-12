@@ -3,8 +3,8 @@
  */
 import { existsSync, statSync } from 'node:fs';
 import { dirname } from 'node:path';
-import type { BtShareStats } from '@ysk/shared';
-import { tl } from '@ysk/shared';
+import type { BtShareStats } from '@yanshekki/shared';
+import { tl } from '@yanshekki/shared';
 import type { FileShareRecord } from '../../files/manager.js';
 import { buildSeederAnnounceList, loadBtTrackerSettings } from './settings.js';
 

@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Nginx/static readability: shared system group so www-data can read project homes
  * without world-readable 755.

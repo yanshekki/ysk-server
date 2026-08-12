@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Host power actions (reboot / poweroff / cancel) — fail-closed.
  * Uses `shutdown` so cancel works; never bare `reboot` without policy.

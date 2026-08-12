@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { YskError } from '@ysk/shared';
+import { YskError } from '@yanshekki/shared';
 import {
   actorCan,
   effectiveCapsFor,

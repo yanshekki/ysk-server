@@ -1,10 +1,10 @@
 /**
  * Email feature — API surface.
  */
-import type { EmailDomain, EmailBundle } from '@ysk/shared';
+import type { EmailDomain, EmailBundle } from '@yanshekki/shared';
 import { api } from '../../shared/services/api';
 
-export type { EmailDomain, EmailBundle } from '@ysk/shared';
+export type { EmailDomain, EmailBundle } from '@yanshekki/shared';
 
 export const emailApi = {
   list: () => api.requestRaw<{ items: EmailDomain[] }>('/api/v1/email/domains'),

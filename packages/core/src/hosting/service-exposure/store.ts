@@ -14,7 +14,7 @@ import {
   type ServiceExposureDesired,
   type ServiceExposureStore,
   type ServicePortBinding,
-} from '@ysk/shared';
+} from '@yanshekki/shared';
 import { normalizeIpOrCidr } from '../../net/ip.js';
 
 function storePath(dataDir: string): string {

@@ -48,7 +48,7 @@ import type {
   CdnNodeDto,
   CdnNodeRole,
   CdnSiteDto,
-  CdnSiteMode } from '@ysk/shared';
+  CdnSiteMode } from '@yanshekki/shared';
 
 const TABS = ['nodes', 'sites', 'dashboard', 'about'] as const;
 

@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Optional DNS cluster: peer list + scp zone files + remote nameserver reload/probe.
  * Honesty: scp written ≠ reloaded; reload ok only when remote command succeeds.
@@ -6,7 +6,7 @@ import { tl } from '@ysk/shared';
 
 import type { JsonStore } from '../db/store.js';
 import type { HostExecutor } from '../host/executor.js';
-import type { ApplyStatus } from '@ysk/shared';
+import type { ApplyStatus } from '@yanshekki/shared';
 import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';

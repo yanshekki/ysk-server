@@ -35,8 +35,8 @@ sendOpsResult(res, await someCoreApply({ name, actor: user.username }));
 | Auth + cap | `apps/server/src/http/handler.ts` |
 | Ops HTTP status | `sendOpsResult` in `http/util.ts` |
 | List/search | `http/list-response.ts` |
-| Honesty layer flags | `honestyFromFlags` from `@ysk/core` |
-| SSRF | `assertSafeOutboundUrl` from `@ysk/core` |
+| Honesty layer flags | `honestyFromFlags` from `@yanshekki/core` |
+| SSRF | `assertSafeOutboundUrl` from `@yanshekki/core` |
 
 ## Domain ownership
 

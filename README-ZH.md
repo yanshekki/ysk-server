@@ -48,7 +48,7 @@ curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.s
 或從 npm（CLI 命令：`ysk-server`）：
 
 ```bash
-npm install -g @ysk/server
+npm install -g ysk-server
 ysk-server setup
 ysk-server serve
 ```

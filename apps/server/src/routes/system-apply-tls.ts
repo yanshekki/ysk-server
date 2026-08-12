@@ -10,7 +10,7 @@ import {
   listCertificatesView,
   dedupeCertificatesInStore,
   deleteCertificate,
-} from '@ysk/core';
+} from '@yanshekki/core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -45,7 +45,7 @@ export async function handleSystemApplyTlsRoutes(
     // Auto-open mail ports (postfix + dovecot) via service exposure
     if (result.ok) {
       try {
-        const { syncMailServiceExposure } = await import('@ysk/core');
+        const { syncMailServiceExposure } = await import('@yanshekki/core');
         const exp = await syncMailServiceExposure({
           host: ctx.host,
           dataDir: ctx.dataDir,

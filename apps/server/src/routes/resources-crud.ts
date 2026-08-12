@@ -3,7 +3,7 @@
  * read → write
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import type { CollectionKey } from '@ysk/core';
+import type { CollectionKey } from '@yanshekki/core';
 import type { AppContext } from '../app-context.js';
 import { handleResourcesReadRoutes } from './resources-read.js';
 import { handleResourcesWriteRoutes } from './resources-write.js';

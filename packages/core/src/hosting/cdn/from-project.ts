@@ -8,7 +8,7 @@ import {
   YskError,
   type CdnDnsStrategy,
   type CdnSiteDto,
-  type ProjectDto,  tl} from '@ysk/shared';
+  type ProjectDto,  tl} from '@yanshekki/shared';
 import type { JsonStore } from '../../db/store.js';
 import { listCdnNodes } from './nodes.js';
 import { listCdnSites, upsertCdnSite } from './sites.js';

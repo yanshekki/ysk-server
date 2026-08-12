@@ -1,9 +1,9 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Offline / Protection Mode for network disruption and DDoS degradation.
  */
 
-import type { ProtectionMode } from '@ysk/shared';
+import type { ProtectionMode } from '@yanshekki/shared';
 
 export interface ProtectionState {
   mode: ProtectionMode;

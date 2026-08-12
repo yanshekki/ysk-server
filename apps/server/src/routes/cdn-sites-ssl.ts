@@ -29,7 +29,7 @@ export async function handleCdnSitesSslRoutes(
       edgeNodeId?: string;
       skipDraining?: boolean;
     };
-    const { distributeCdnSiteSsl } = await import('@ysk/core');
+    const { distributeCdnSiteSsl } = await import('@yanshekki/core');
     const r = await distributeCdnSiteSsl({
       db: ctx.db,
       host: ctx.host,
@@ -63,7 +63,7 @@ export async function handleCdnSitesSslRoutes(
       run?: boolean;
       distribute?: boolean;
     };
-    const { issueCdnSiteLetsEncrypt } = await import('@ysk/core');
+    const { issueCdnSiteLetsEncrypt } = await import('@yanshekki/core');
     const r = await issueCdnSiteLetsEncrypt({
       db: ctx.db,
       host: ctx.host,
@@ -91,7 +91,7 @@ export async function handleCdnSitesSslRoutes(
   ) {
     const user = ctx.auth.authenticate(getBearer(req));
     const id = url.pathname.split('/')[5];
-    const { prepareCdnSiteAcme } = await import('@ysk/core');
+    const { prepareCdnSiteAcme } = await import('@yanshekki/core');
     const r = await prepareCdnSiteAcme({
       db: ctx.db,
       host: ctx.host,

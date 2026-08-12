@@ -3,7 +3,7 @@
  */
 
 import { connect as netConnect } from 'node:net';
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 
 export type RfbProbeResult =
   | { ok: true }

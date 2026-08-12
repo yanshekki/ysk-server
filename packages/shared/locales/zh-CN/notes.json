@@ -455,7 +455,7 @@
     "n0237": "chown 需要 YSK_EXECUTE + root",
     "n0238": "clone 前已清除佔位應用檔（YSK scaffold / stub）",
     "n0239": "cluster_size 未知或 0",
-    "n0240": "command 含 ysk-server / @ysk/server 特徵",
+    "n0240": "command 含 ysk-server / ysk-server 特徵",
     "n0241": "control plane 文件不完整",
     "n0242": "cwd 不可讀",
     "n0243": "dataDir 不存在",

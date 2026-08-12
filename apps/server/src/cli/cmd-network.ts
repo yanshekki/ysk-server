@@ -15,8 +15,8 @@ import {
   patchRealIpConfig,
   applyRealIpArtifacts,
   refreshRealIpCidrs,
-} from '@ysk/core';
-import { YSK_SERVICE_PORTS, defaultPortsForService } from '@ysk/shared';
+} from '@yanshekki/core';
+import { YSK_SERVICE_PORTS, defaultPortsForService } from '@yanshekki/shared';
 import type { AppContext } from '../app-context.js';
 import type { CliHelpers } from './cmd-vpn.js';
 
@@ -45,7 +45,7 @@ async function safeExposureStatus(
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     if (notes.length < 3) notes.push(msg.slice(0, 200));
-    const { ensureDesired, loadExposureStore } = await import('@ysk/core');
+    const { ensureDesired, loadExposureStore } = await import('@yanshekki/core');
     const store = loadExposureStore(ctx.dataDir);
     const desired = ensureDesired(store, serviceId);
     return {

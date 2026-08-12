@@ -14,9 +14,9 @@ export type {
   MigrateJobTarget,
   MigrateJobVerify,
   MigrateDbEngine,
-} from '@ysk/shared';
+} from '@yanshekki/shared';
 
-export { MIGRATE_PHASES, isMigratePhase } from '@ysk/shared';
+export { MIGRATE_PHASES, isMigratePhase } from '@yanshekki/shared';
 
 /** Job root under dataDir */
 export function migrateJobDir(dataDir: string, jobId: string): string {

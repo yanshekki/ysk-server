@@ -1,4 +1,4 @@
-import type { OpsApplyResultDto } from '@ysk/shared';
+import type { OpsApplyResultDto } from '@yanshekki/shared';
 import type { TFunction } from 'i18next';
 import { humanizeOperatorNote, sanitizeOperatorNotes } from '../../../shared/lib/operator-messages';
 

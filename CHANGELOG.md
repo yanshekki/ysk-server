@@ -56,7 +56,7 @@
 - **HostSoftwareProbe**: single class for presence / version / upgrade; MySQL vs MariaDB exclusive; service-console, db-engine, probeSoftware, stack, service-matrix, redis, FTPS, UFW/fail2ban, restic, PowerDNS, pm2; `pnpm probe:ssot` in gates
 - **install redesign**: plan/bundle wizard (`recommended` / `full` / `minimal` / custom); SSOT `deploy/stack/{bundles,components}.json`; `stack-manifest.json`; non-interactive default **recommended** (not full)
 - **uninstall.sh**: partial or full removal by bundle/component; `--keep-data` (default) vs `--purge-data`; product removal optional; install/uninstall logs under `/var/log/ysk-server/` or `~/.ysk/logs/`
-- **stack core + CLI + API + Web**: `@ysk/core` `hosting/stack/*`; `ysk-server stack plans|status|scan|expand|install|uninstall`; REST `/api/v1/system/stack/*`; Services page **Stack** tab wizard
+- **stack core + CLI + API + Web**: `@yanshekki/core` `hosting/stack/*`; `ysk-server stack plans|status|scan|expand|install|uninstall`; REST `/api/v1/system/stack/*`; Services page **Stack** tab wizard
 - **software probe**: `binExists` expands PATH + absolute sbin/bin paths; mysql-client accepts `mysql`|`mariadb`, mariadb-server accepts `mariadbd`|`mysqld`
 
 ## 0.1.0 (in progress — honest status)
@@ -70,7 +70,7 @@ Full-system coding review stack **R0–R7** (see [docs/architecture/code-review-
 
 **Architecture & contracts**
 
-- `@ysk/shared` domain DTO modules: metrics, network, system, databases, ftp, files, email-domain, fleet, software, ssl, updates, ai — web `features/*/api.ts` re-exports; core metrics/readiness/host overview align
+- `@yanshekki/shared` domain DTO modules: metrics, network, system, databases, ftp, files, email-domain, fleet, software, ssl, updates, ai — web `features/*/api.ts` re-exports; core metrics/readiness/host overview align
 - HTTP: `http-server.ts` reduced to ~120 LOC dispatcher; domain handlers under `apps/server/src/routes/*` (+ existing `controllers/*`)
 - Inventory: `pnpm review:inventory`; feature single-entry map in `docs/architecture/feature-single-entry.md`
 
@@ -116,7 +116,7 @@ See [docs/i18n.md](./docs/i18n.md).
 
 ### Implemented (usable)
 
-- Monorepo: `@ysk/shared`, `@ysk/core`, `@ysk/server`, `@ysk/web`
+- Monorepo: `@yanshekki/shared`, `@yanshekki/core`, `ysk-server`, `@yanshekki/web`
 - Auth, Allowlist, Approval, Audit, RBAC hooks, Protection probes + scheduler
 - Projects: disk homes, deploy Node/PHP (health), git deploy, env, backup, logs, quota, resources
 - **Node deploy modes**: systemd → PM2 → pidfile (ecosystem always written; no fake PM2 success)

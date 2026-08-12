@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Real FTPS (vsftpd) control plane: settings, conf generation, virtual users, status, apply.
  * Panel-only execution — never asks the user to run CLI.

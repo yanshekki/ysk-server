@@ -3,13 +3,13 @@
  * Extracted from backups-core.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 import {
   backupAllProjects,
   backupControlPlane,
   restoreControlPlaneBackup,
   restoreProjectBackup,
-} from '@ysk/core';
+} from '@yanshekki/core';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -81,7 +81,7 @@ export async function handleBackupsRunRoutes(
     const user = ctx.auth.authenticate(getBearer(req));
     const projects = ctx.db.snapshot.projects;
     const { getBackupExclusions, pushBackupRemote, resticBackupProject, getResticSettings } =
-      await import('@ysk/core');
+      await import('@yanshekki/core');
     const excludes = getBackupExclusions(ctx.db);
     const r = await backupAllProjects({
       host: ctx.host,

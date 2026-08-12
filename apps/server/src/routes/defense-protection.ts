@@ -4,12 +4,12 @@
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { randomUUID } from 'node:crypto';
-import { type SystemRole } from '@ysk/shared';
+import { type SystemRole } from '@yanshekki/shared';
 import {
   evaluateProtection,
   runProtectionProbes,
   getPlaybook,
-} from '@ysk/core';
+} from '@yanshekki/core';
 import { applyProtection, type AppContext } from '../app-context.js';
 import {
   getBearer,

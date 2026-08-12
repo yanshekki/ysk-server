@@ -26,7 +26,7 @@ Scope: re-pass after Tier-2 i18n, CLI parity, About UX, and public share / WebDA
 
 - Targeted security suite (must be green):
   ```bash
-  pnpm --filter @ysk/core exec vitest run \
+  pnpm --filter @yanshekki/core exec vitest run \
     src/files/manager.test.ts \
     src/files/manager.depth.test.ts \
     src/files/webdav.test.ts \
@@ -35,7 +35,7 @@ Scope: re-pass after Tier-2 i18n, CLI parity, About UX, and public share / WebDA
   ```
 - `pnpm chrome:check` / i18n gates (11 locales × key parity)
 - Shared unit tests for `normalizeLocale` Tier-2 + RTL
-- Full `@ysk/core` suite may include unrelated host/env flakes; Phase 7 acceptance is the security file set above.
+- Full `@yanshekki/core` suite may include unrelated host/env flakes; Phase 7 acceptance is the security file set above.
 
 ## Related
 

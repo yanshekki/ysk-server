@@ -1,4 +1,4 @@
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 /**
  * Runtime tooling probes: composer, wp-cli, php modules.
  */

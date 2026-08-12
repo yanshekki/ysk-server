@@ -12,7 +12,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 import type { HostExecutor } from '../../host/executor.js';
 import { defaultPortForEngine, presetsForEngine } from './ports.js';
 import type {

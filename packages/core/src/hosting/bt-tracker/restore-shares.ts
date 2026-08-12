@@ -12,7 +12,7 @@ import { projectHomeDir } from '../project.js';
 import { loadBtTrackerSettings } from './settings.js';
 import { isBtTrackerRunning, startBtTracker } from './service.js';
 import { seedShare } from './seeder.js';
-import { tl } from '@ysk/shared';
+import { tl } from '@yanshekki/shared';
 
 export type RestoreBtSharesResult = {
   ok: boolean;

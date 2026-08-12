@@ -6,8 +6,8 @@
 
 import { createServer as createNodeHttpServer, type Server as HttpServer } from 'node:http';
 import { createServer as createNodeHttpsServer, type Server as HttpsServer } from 'node:https';
-import { runWithLocaleAsync, tl } from '@ysk/shared';
-import { loadPanelTlsOptions } from '@ysk/core';
+import { runWithLocaleAsync, tl } from '@yanshekki/shared';
+import { loadPanelTlsOptions } from '@yanshekki/core';
 import type { AppContext } from './app-context.js';
 import {
   localeFromRequest,
@@ -284,7 +284,7 @@ export async function listenControlPlane(
     return { https, primary, servers };
   }
 
-  const { defaultHttpListenPort } = await import('@ysk/core');
+  const { defaultHttpListenPort } = await import('@yanshekki/core');
   // When primary used ephemeral 0, pick another free port (0) for dual HTTP
   const wantHttp =
     ctx.config.httpListenPort ??

@@ -7,8 +7,8 @@
  * - Step-up verification for sensitive ops
  */
 
-import type { AuthLoginRequest, AuthLoginResponse, UserDto } from '@ysk/shared';
-import { ErrorCodes, yskError, tl, normalizeLocale } from '@ysk/shared';
+import type { AuthLoginRequest, AuthLoginResponse, UserDto } from '@yanshekki/shared';
+import { ErrorCodes, yskError, tl, normalizeLocale } from '@yanshekki/shared';
 import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import type { UserRepository } from '../repositories/user-repo.js';
 import type { SessionRepository } from '../repositories/session-repo.js';

@@ -1,6 +1,6 @@
 {
-  "name": "@ysk/server",
-  "version": "1.0.0",
+  "name": "ysk-server",
+  "version": "1.0.2",
   "description": "YSK Server control plane HTTP API and CLI (ysk-server)",
   "type": "module",
   "bin": {
@@ -44,8 +44,8 @@
     "prepack": "pnpm run build"
   },
   "dependencies": {
-    "@ysk/core": "workspace:*",
-    "@ysk/shared": "workspace:*",
+    "@yanshekki/core": "workspace:*",
+    "@yanshekki/shared": "workspace:*",
     "node-pty": "^1.1.0",
     "ws": "^8.21.3"
   },

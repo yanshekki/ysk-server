@@ -4,8 +4,8 @@
  */
 import type { IncomingMessage } from 'node:http';
 import { join } from 'node:path';
-import { publicFilesRoot, chownProjectPath } from '@ysk/core';
-import type { UserDto } from '@ysk/shared';
+import { publicFilesRoot, chownProjectPath } from '@yanshekki/core';
+import type { UserDto } from '@yanshekki/shared';
 import type { AppContext } from '../app-context.js';
 import { requireCap } from '../http/rbac-guard.js';
 

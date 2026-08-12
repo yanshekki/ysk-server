@@ -2,7 +2,7 @@
  * HTTP routes — extracted from http-server (Wave2 R2). Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { YskError } from '@ysk/shared';
+import { YskError } from '@yanshekki/shared';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,

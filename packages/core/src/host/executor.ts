@@ -17,7 +17,7 @@ import {
 import { cpus, freemem, loadavg, totalmem, uptime, hostname, platform, arch, release } from 'node:os';
 import { resolve as pathResolve, sep as pathSep } from 'node:path';
 import { promisify } from 'node:util';
-import { ErrorCodes, YskError, yskError, tl } from '@ysk/shared';
+import { ErrorCodes, YskError, yskError, tl } from '@yanshekki/shared';
 
 const execFileAsync = promisify(execFile);
 

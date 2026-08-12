@@ -2,7 +2,7 @@
  * Configuration load / validate for YSK Server control plane.
  */
 
-import { ErrorCodes, YskError, type SetupConfigDto, tl} from '@ysk/shared';
+import { ErrorCodes, YskError, type SetupConfigDto, tl} from '@yanshekki/shared';
 
 export interface YskConfig {
   version: number;

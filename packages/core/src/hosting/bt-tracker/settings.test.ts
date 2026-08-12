@@ -11,7 +11,7 @@ import {
   resolveAnnounceHost,
   saveBtTrackerSettings,
 } from './settings.js';
-import { DEFAULT_BT_TRACKER_SETTINGS } from '@ysk/shared';
+import { DEFAULT_BT_TRACKER_SETTINGS } from '@yanshekki/shared';
 
 describe('bt-tracker settings', () => {
   it('normalizes ports and maxSeeds', () => {
