@@ -47,6 +47,16 @@ ysk-server bt-tracker torrents --json
 ysk-server files shares bt-stats --id SHARE_ID --json
 ```
 
+## Day-N e2e checklist
+
+1. `ysk-server serve` (panel up).  
+2. Panel **BT Tracker** → set public host → **Start** (or enable autostart, restart serve).  
+3. Network exposure / firewall: open **8000** if peers are off-host.  
+4. **Files** → share a file → mode **both** → copy public link.  
+5. Open `/share/:token` → **Download in browser (WebTorrent)** or magnet / `.torrent`.  
+6. Panel torrent table / share list shows seeds / peers / speeds.  
+7. Restart serve → confirm tracker + seeder restore (boot re-seed).
+
 ## Ports
 
 | Port | Role |

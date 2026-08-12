@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-08-12T05:02:02.018Z",
-  "cliCommandsCount": 51,
+  "generatedAt": "2026-08-12T08:44:23.855Z",
+  "cliCommandsCount": 52,
   "cliCommands": [
     "setup",
     "update",
@@ -51,10 +51,11 @@
     "redis",
     "ftp",
     "runtimes",
+    "bt-tracker",
     "version",
     "help"
   ],
-  "handlersCount": 44,
+  "handlersCount": 45,
   "handlers": [
     "agent",
     "agents",
@@ -62,6 +63,7 @@
     "ask",
     "audit",
     "backup",
+    "bt-tracker",
     "cdn",
     "cron",
     "db",
@@ -101,7 +103,7 @@
     "vnc",
     "vpn"
   ],
-  "navCount": 45,
+  "navCount": 46,
   "navMissing": [],
   "navPartial": [],
   "navPanelOnly": [
@@ -231,10 +233,30 @@
     },
     {
       "id": "files-shares-create",
-      "panel": "Public file share create",
+      "panel": "Public file share create (direct|bt|both)",
       "cliNeed": "files",
       "status": "ok",
-      "note": "C6: files shares list|create|delete",
+      "note": "C6: files shares list|create|delete|bt-stats --mode direct|bt|both",
+      "priority": "P2",
+      "cliPresent": true,
+      "resolved": true
+    },
+    {
+      "id": "files-shares-bt-stats",
+      "panel": "File share BT swarm stats",
+      "cliNeed": "files",
+      "status": "ok",
+      "note": "C6: files shares bt-stats --id",
+      "priority": "P2",
+      "cliPresent": true,
+      "resolved": true
+    },
+    {
+      "id": "bt-tracker",
+      "panel": "BT Tracker service page (WebTorrent file shares)",
+      "cliNeed": "bt-tracker",
+      "status": "ok",
+      "note": "C6: bt-tracker status|start|stop|settings|torrents; serve boot re-seed",
       "priority": "P2",
       "cliPresent": true,
       "resolved": true
@@ -313,5 +335,5 @@
   "missingCount": 0,
   "partialCount": 0,
   "panelOnlyCount": 4,
-  "okCount": 16
+  "okCount": 18
 }

@@ -47,6 +47,16 @@ ysk-server bt-tracker torrents --json
 ysk-server files shares bt-stats --id SHARE_ID --json
 ```
 
+## Day-N e2e 檢查清單
+
+1. `ysk-server serve`（面板運行）。  
+2. 面板 **BT Tracker** → 設公開主機 → **啟動**（或開 autostart 後重啟 serve）。  
+3. 網絡暴露／防火牆：peers 在主機外時開 **8000**。  
+4. **檔案** → 分享 → 模式 **兩者** → 複製公開連結。  
+5. 開啟 `/share/:token` → **在瀏覽器以 WebTorrent 下載**，或用 magnet／`.torrent`。  
+6. 面板 Torrent 表／分享列表可見種子／peers／速度。  
+7. 重啟 serve → 確認 Tracker 與做種已還原（開機 re-seed）。
+
 ## 埠
 
 | 埠 | 角色 |
