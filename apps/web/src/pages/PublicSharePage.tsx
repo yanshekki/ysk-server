@@ -130,7 +130,12 @@ export function PublicSharePage() {
 
   const tryBtBrowserDownload = useCallback(async () => {
     const m = magnet || meta?.magnetUri || '';
-    if (!m) {
+    const torrentPath = meta?.torrentUrl || (token ? `/api/v1/public/files/${encodeURIComponent(token)}/torrent` : '');
+    const torrentAbs =
+      torrentPath && typeof window !== 'undefined'
+        ? new URL(torrentPath, window.location.origin).href
+        : torrentPath;
+    if (!m && !torrentAbs) {
       setError(t('files.publicShareBtNeedMagnet'));
       return;
     }
@@ -147,8 +152,11 @@ export function PublicSharePage() {
     setPhase('downloading');
     setFileName(meta?.name || fileName || t('files.publicShareDefaultName'));
     try {
+      // Prefer absolute .torrent so client uses server tracker announce list;
+      // magnet is fallback (normalized for parse-torrent).
       const r = await downloadWithBrowserWebTorrent({
         magnetOrTorrent: m,
+        torrentUrl: torrentAbs || undefined,
         signal: ac.signal,
         onProgress: (p) => {
           setBtProgress(p);
@@ -195,7 +203,9 @@ export function PublicSharePage() {
     magnet,
     meta?.magnetUri,
     meta?.name,
+    meta?.torrentUrl,
     t,
+    token,
     wtSupported,
   ]);
 
@@ -645,7 +655,8 @@ export function PublicSharePage() {
                 ) : null}
                 {(meta?.hasBt || (meta?.downloadModes ?? []).includes('bt')) ? (
                   <>
-                    {(magnet || meta?.magnetUri) && wtSupported ? (
+                    {(magnet || meta?.magnetUri || meta?.torrentUrl || meta?.infoHash) &&
+                    wtSupported ? (
                       <Button
                         type="button"
                         variant="primary"

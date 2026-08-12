@@ -169,6 +169,25 @@ export async function handleFilesPublicRoutes(
 
     if (action === 'meta') {
       const unlocked = !needPass || authed;
+      // Always rebuild magnet from live tracker settings so browser WebTorrent
+      // gets a parseable URI + current announce host (fixes legacy bad magnets).
+      let magnetUri: string | undefined;
+      if (unlocked && share.infoHash) {
+        try {
+          const { loadBtTrackerSettings, rebuildShareMagnetUri } = await import(
+            '@ysk/core'
+          );
+          magnetUri = rebuildShareMagnetUri({
+            infoHash: share.infoHash,
+            name: share.path.split('/').pop(),
+            settings: loadBtTrackerSettings(ctx.dataDir),
+          });
+        } catch {
+          magnetUri = share.magnetUri;
+        }
+      } else if (unlocked) {
+        magnetUri = share.magnetUri;
+      }
       // Meta without password: only non-sensitive fields; magnet only when unlocked
       sendJson(res, 200, {
         ok: true,
@@ -180,7 +199,7 @@ export async function handleFilesPublicRoutes(
         seedStatus: share.seedStatus,
         expiresAt: share.expiresAt,
         infoHash: unlocked ? share.infoHash : undefined,
-        magnetUri: unlocked ? share.magnetUri : undefined,
+        magnetUri,
         torrentUrl:
           unlocked && (share.torrentRelPath || share.infoHash)
             ? `/api/v1/public/files/${token}/torrent`
@@ -246,10 +265,24 @@ export async function handleFilesPublicRoutes(
     // Direct download (default)
     const modes = share.downloadModes ?? ['direct'];
     if (modes.length && !modes.includes('direct') && modes.includes('bt')) {
+      let magnetUri = share.magnetUri;
+      try {
+        const { loadBtTrackerSettings, rebuildShareMagnetUri } = await import(
+          '@ysk/core'
+        );
+        magnetUri =
+          rebuildShareMagnetUri({
+            infoHash: share.infoHash,
+            name: share.path.split('/').pop(),
+            settings: loadBtTrackerSettings(ctx.dataDir),
+          }) || magnetUri;
+      } catch {
+        /* keep stored */
+      }
       sendJson(res, 400, {
         ok: false,
         message: 'direct download disabled; use BT',
-        magnetUri: share.magnetUri,
+        magnetUri,
         torrentUrl: `/api/v1/public/files/${token}/torrent`,
       });
       return true;

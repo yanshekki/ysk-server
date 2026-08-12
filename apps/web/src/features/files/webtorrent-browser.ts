@@ -79,21 +79,70 @@ async function loadWebTorrentCtor(): Promise<new () => WtClient> {
 }
 
 /**
+ * Normalize magnet so parse-torrent / WebTorrent accept it.
+ * Legacy magnets used URLSearchParams which encoded `xt=urn%3Abtih%3A…` — invalid.
+ */
+export function normalizeMagnetUri(raw: string): string {
+  const s = String(raw || '').trim();
+  if (!s) return '';
+  if (/^[a-f0-9]{40}$/i.test(s)) return s.toLowerCase();
+  if (!s.toLowerCase().startsWith('magnet:')) return s;
+
+  // Already has a good xt form
+  if (/[?&]xt=urn:btih:[a-f0-9]{40}\b/i.test(s) || /[?&]xt=urn:btih:[a-z2-7]{32}\b/i.test(s)) {
+    return s;
+  }
+
+  // Recover hash from percent-encoded xt=urn%3Abtih%3A…
+  const m =
+    /[?&]xt=urn%3Abtih%3A([a-f0-9]{40})/i.exec(s) ||
+    /[?&]xt=urn%3Abtih%3A([a-z2-7]{32})/i.exec(s) ||
+    /[?&]xt=urn:btih:([a-f0-9]{40})/i.exec(s) ||
+    /[?&]xt=urn:btih:([a-z2-7]{32})/i.exec(s);
+  if (!m?.[1]) return s;
+
+  const hash = m[1].toLowerCase();
+  const parts = [`xt=urn:btih:${hash}`];
+
+  try {
+    const q = s.includes('?') ? s.slice(s.indexOf('?') + 1) : '';
+    const params = new URLSearchParams(q);
+    const dn = params.get('dn');
+    if (dn) parts.push(`dn=${encodeURIComponent(dn)}`);
+    for (const tr of params.getAll('tr')) {
+      if (tr) parts.push(`tr=${encodeURIComponent(tr)}`);
+    }
+  } catch {
+    /* keep minimal magnet */
+  }
+  return `magnet:?${parts.join('&')}`;
+}
+
+/**
  * Download first file of a magnet (or torrent URL) via browser WebTorrent.
- * Caller should destroy via returned `abort`.
+ * Prefer absolute .torrent HTTP URL when available (metadata + trackers without DHT).
  */
 export async function downloadWithBrowserWebTorrent(input: {
   magnetOrTorrent: string;
+  /** Preferred: absolute URL to .torrent (uses server trackers in the file) */
+  torrentUrl?: string;
   onProgress?: (p: BrowserBtProgress) => void;
   signal?: AbortSignal;
   /** Prefer largest file when multi-file torrent */
   preferLargest?: boolean;
+  /** Extra announce trackers (e.g. ws://host:port) when magnet lacks them */
+  announce?: string[];
 }): Promise<BrowserBtResult> {
   const notes: string[] = [];
   if (!isBrowserWebTorrentSupported()) {
     return { ok: false, notes: ['webrtc unsupported'] };
   }
-  if (!input.magnetOrTorrent?.trim()) {
+
+  const magnet = normalizeMagnetUri(input.magnetOrTorrent);
+  const torrentUrl = String(input.torrentUrl || '').trim();
+  // Prefer .torrent file (has full metadata + announce list from our tracker)
+  const torrentId = torrentUrl || magnet;
+  if (!torrentId) {
     return { ok: false, notes: ['empty magnet'] };
   }
 
@@ -132,8 +181,12 @@ export async function downloadWithBrowserWebTorrent(input: {
   try {
     const WebTorrent = await loadWebTorrentCtor();
     client = new WebTorrent();
+    const addOpts: Record<string, unknown> = {};
+    if (input.announce?.length) {
+      addOpts.announce = input.announce;
+    }
     torrent = await new Promise<WtTorrent>((resolve, reject) => {
-      const t = client!.add(input.magnetOrTorrent, {}, (ready) => {
+      const t = client!.add(torrentId, addOpts, (ready) => {
         resolve(ready || t);
       });
       t.on('error', (e: unknown) => {

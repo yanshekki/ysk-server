@@ -157,7 +157,7 @@ export async function createShareTorrent(input: {
     if (!infoHash) {
       return { ok: false, notes: ['failed to parse infoHash'], torrentAbsPath: abs };
     }
-    const magnetUri = buildMagnet(infoHash, parsed.name || input.name, announce);
+    const magnetUri = buildMagnetUri(infoHash, parsed.name || input.name, announce);
     notes.push(`torrent written ${rel}`);
     return {
       ok: true,
@@ -189,16 +189,53 @@ function hashToHex(h: unknown): string | undefined {
   }
 }
 
-function buildMagnet(
+/**
+ * Build a parse-torrent / WebTorrent-compatible magnet URI.
+ *
+ * Do **not** use URLSearchParams for the whole query: it percent-encodes
+ * `xt=urn:btih:…` → `xt=urn%3Abtih%3A…`, which parse-torrent rejects as
+ * "Invalid torrent identifier". Keep `xt` literal; encode `dn` / `tr` only.
+ */
+export function buildMagnetUri(
   infoHash: string,
   name: string | undefined,
   announce: string[],
 ): string {
-  const params = new URLSearchParams();
-  params.set('xt', `urn:btih:${infoHash}`);
-  if (name) params.set('dn', name);
-  for (const a of announce) params.append('tr', a);
-  return `magnet:?${params.toString()}`;
+  const hash = String(infoHash || '')
+    .trim()
+    .toLowerCase()
+    .replace(/^urn:btih:/i, '');
+  if (!/^[a-f0-9]{40}$/.test(hash) && !/^[a-z2-7]{32}$/i.test(hash)) {
+    return '';
+  }
+  const parts = [`xt=urn:btih:${hash}`];
+  if (name?.trim()) {
+    // encodeURIComponent uses %20 (not +) — required by magnet parsers
+    parts.push(`dn=${encodeURIComponent(name.trim())}`);
+  }
+  for (const a of announce) {
+    const tr = String(a || '').trim();
+    if (tr) parts.push(`tr=${encodeURIComponent(tr)}`);
+  }
+  return `magnet:?${parts.join('&')}`;
+}
+
+/** Rebuild magnet from infoHash + current tracker announce list (fixes stored bad magnets). */
+export function rebuildShareMagnetUri(input: {
+  infoHash?: string | null;
+  name?: string | null;
+  settings: BtTrackerSettings;
+  publicHostHint?: string | null;
+}): string | undefined {
+  const hash = String(input.infoHash || '')
+    .trim()
+    .toLowerCase();
+  if (!/^[a-f0-9]{40}$/.test(hash)) return undefined;
+  const announce = buildAnnounceList(input.settings, {
+    publicHost: input.publicHostHint || undefined,
+  });
+  const m = buildMagnetUri(hash, input.name || undefined, announce);
+  return m || undefined;
 }
 
 export function torrentsDir(dataDir: string): string {

@@ -4,9 +4,11 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { DEFAULT_BT_TRACKER_SETTINGS } from '@ysk/shared';
 import {
+  buildMagnetUri,
   createShareTorrent,
   estimateContentBytes,
   pickPieceLength,
+  rebuildShareMagnetUri,
 } from './torrent-create.js';
 
 describe('torrent-create', () => {
@@ -58,6 +60,54 @@ describe('torrent-create', () => {
       rmSync(dataDir, { recursive: true, force: true });
     }
   }, 30_000);
+
+  it('builds magnets parse-torrent accepts (not URLSearchParams-encoded xt)', async () => {
+    const hash = 'a'.repeat(40);
+    const broken = (() => {
+      const p = new URLSearchParams();
+      p.set('xt', `urn:btih:${hash}`);
+      p.set('dn', 'test file.mp4');
+      p.append('tr', 'ws://tracker.example:8000');
+      return `magnet:?${p.toString()}`;
+    })();
+    // Document the bug we fixed
+    expect(broken).toContain('urn%3Abtih%3A');
+
+    const good = buildMagnetUri(hash, 'test file.mp4', [
+      'ws://tracker.example:8000',
+      'http://tracker.example:8000/announce',
+    ]);
+    expect(good).toContain('xt=urn:btih:' + hash);
+    expect(good).not.toContain('urn%3Abtih%3A');
+    expect(good).toContain('tr=' + encodeURIComponent('ws://tracker.example:8000'));
+
+    const parseTorrentMod = await import('parse-torrent');
+    const parseTorrent = (parseTorrentMod.default ?? parseTorrentMod) as (
+      x: string,
+    ) => { infoHash?: string } | Promise<{ infoHash?: string }>;
+    await expect(Promise.resolve(parseTorrent(broken))).rejects.toThrow(
+      /Invalid torrent identifier/i,
+    );
+    const parsed = await Promise.resolve(parseTorrent(good));
+    expect(String(parsed.infoHash).toLowerCase()).toBe(hash);
+
+    const rebuilt = rebuildShareMagnetUri({
+      infoHash: hash,
+      name: 'clip.mp4',
+      settings: {
+        ...DEFAULT_BT_TRACKER_SETTINGS,
+        publicAnnounceHost: 'hermes.ysk.hk',
+        httpPort: 8000,
+        udpPort: 6969,
+        wsEnabled: true,
+      },
+    });
+    // tr values are encodeURIComponent'd → hermes.ysk.hk%3A8000
+    expect(rebuilt).toMatch(/hermes\.ysk\.hk(%3A|:)8000/);
+    expect(rebuilt).toMatch(/ws(%3A%2F%2F|:\/\/)/);
+    const p2 = await Promise.resolve(parseTorrent(rebuilt!));
+    expect(String(p2.infoHash).toLowerCase()).toBe(hash);
+  });
 
   it('creates a .torrent for a small directory tree', async () => {
     const dataDir = mkdtempSync(join(tmpdir(), 'ysk-bt-dir-'));
