@@ -135,21 +135,19 @@ export function buildAnnounceList(
   return urls;
 }
 
-/** Announce list for the in-process seeder: panel public URLs + local bind. */
+/**
+ * Announce list for the in-process seeder.
+ *
+ * **Only one** tracker URL — bittorrent-tracker keys HTTP peers by ip:port and
+ * WS peers by peer_id. Announcing HTTP + WS (or public + loopback) registers
+ * the same seeder twice → UI always shows 種子=2.
+ *
+ * Browser clients still join via the same-origin WS proxy into this process;
+ * they share the same swarm as this single HTTP announce.
+ */
 export function buildSeederAnnounceList(settings: BtTrackerSettings): string[] {
-  const publicUrls = buildAnnounceList(settings);
   const loop = resolveTrackerLoopbackHost(settings);
-  const local: string[] = [
-    `http://${loop}:${settings.httpPort}/announce`,
-  ];
-  if (settings.wsEnabled) {
-    local.push(`ws://${loop}:${settings.httpPort}`);
-  }
-  const out: string[] = [];
-  for (const u of [...publicUrls, ...local]) {
-    if (u && !out.includes(u)) out.push(u);
-  }
-  return out;
+  return [`http://${loop}:${settings.httpPort}/announce`];
 }
 
 /**

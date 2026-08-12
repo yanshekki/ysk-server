@@ -177,27 +177,44 @@ export async function startBtTracker(input: {
     server.on('start', () => {
       /* listening */
     });
-    server.on('complete', (...args: unknown[]) => {
-      const addr = (args[0] ?? {}) as { infoHash?: string };
+    // Prefer absolute swarm sizes from the tracker, never `complete += 1`
+    // (re-announce / multi-transport was inflating 種子 to 2+).
+    const syncSwarmFromEvent = (addr: {
+      infoHash?: string;
+      complete?: number;
+      incomplete?: number;
+    }) => {
       const h = normalizeHash(addr?.infoHash);
       if (!h) return;
       const cur = swarm.get(h) ?? { complete: 0, incomplete: 0 };
-      cur.complete += 1;
+      if (typeof addr.complete === 'number') {
+        cur.complete = Math.max(0, addr.complete);
+      }
+      if (typeof addr.incomplete === 'number') {
+        cur.incomplete = Math.max(0, addr.incomplete);
+      }
+      // Live server.torrents is authoritative when present
+      const live = runtime?.server?.torrents?.[h] ?? runtime?.server?.torrents?.[h.toUpperCase()];
+      if (live && typeof live === 'object') {
+        if (typeof live.complete === 'number') cur.complete = live.complete;
+        if (typeof live.incomplete === 'number') cur.incomplete = live.incomplete;
+      }
       swarm.set(h, cur);
-    });
-    server.on('update', (...args: unknown[]) => {
-      const addr = (args[0] ?? {}) as {
+    };
+    server.on('complete', (...args: unknown[]) => {
+      syncSwarmFromEvent((args[0] ?? {}) as {
         infoHash?: string;
         complete?: number;
         incomplete?: number;
-      };
+      });
+    });
+    server.on('update', (...args: unknown[]) => {
       announces += 1;
-      const h = normalizeHash(addr?.infoHash);
-      if (!h) return;
-      const cur = swarm.get(h) ?? { complete: 0, incomplete: 0 };
-      if (typeof addr.complete === 'number') cur.complete = addr.complete;
-      if (typeof addr.incomplete === 'number') cur.incomplete = addr.incomplete;
-      swarm.set(h, cur);
+      syncSwarmFromEvent((args[0] ?? {}) as {
+        infoHash?: string;
+        complete?: number;
+        incomplete?: number;
+      });
     });
 
     await new Promise<void>((resolve, reject) => {
@@ -409,8 +426,28 @@ function readServerTorrents(server: TrackerServer): BtTrackerTorrentRow[] {
   for (const [rawHash, swarm] of Object.entries(map)) {
     const h = normalizeHash(rawHash);
     if (!h) continue;
-    const complete = Number(swarm?.complete) || 0;
-    const incomplete = Number(swarm?.incomplete) || 0;
+    // Prefer counting live peers by complete flag when LRU peers is available —
+    // more accurate than complete/incomplete counters after multi-announce.
+    let complete = Number(swarm?.complete) || 0;
+    let incomplete = Number(swarm?.incomplete) || 0;
+    const peers = swarm?.peers as
+      | { keys?: string[]; peek?: (id: string) => { complete?: boolean } | null }
+      | undefined;
+    if (peers && typeof peers.peek === 'function' && Array.isArray(peers.keys)) {
+      let c = 0;
+      let i = 0;
+      for (const id of peers.keys) {
+        const p = peers.peek(id);
+        if (!p) continue;
+        if (p.complete) c += 1;
+        else i += 1;
+      }
+      // Only trust peer walk when we saw anyone (empty keys → fall back to counters)
+      if (c + i > 0) {
+        complete = c;
+        incomplete = i;
+      }
+    }
     out.push({
       infoHash: h,
       seeders: complete,

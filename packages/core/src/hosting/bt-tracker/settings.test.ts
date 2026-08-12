@@ -76,7 +76,7 @@ describe('bt-tracker settings', () => {
     ).toBe('tracker.example.test');
   });
 
-  it('seeder announce prefers panel public host, loopback is secondary only', () => {
+  it('seeder announce is a single local URL (avoid double seed count)', () => {
     const list = buildSeederAnnounceList({
       ...DEFAULT_BT_TRACKER_SETTINGS,
       httpPort: 8000,
@@ -84,8 +84,9 @@ describe('bt-tracker settings', () => {
       publicAnnounceHost: 'tracker.example.test',
       listenHost: '0.0.0.0',
     });
-    expect(list[0]).toContain('tracker.example.test:8000');
-    expect(list.some((u) => u.includes('127.0.0.1'))).toBe(true);
+    // Exactly one announce — HTTP+WS dual-register was showing 種子=2 forever
+    expect(list).toHaveLength(1);
+    expect(list[0]).toBe('http://127.0.0.1:8000/announce');
   });
 
   it('persists settings under dataDir', () => {
