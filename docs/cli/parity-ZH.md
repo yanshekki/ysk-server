@@ -2,7 +2,7 @@
 
 > 語系：中文 | [English](./parity.md)
 
-**狀態：C5（2026-08-12）。** 已做到 **db／redis**。剩餘：ftp／files-shares／email／dns／runtime（C6–C7）。
+**狀態：C6（2026-08-12）。** 已做到 **ftp／files shares／email／dns**。剩餘：runtimes-full（C7）。
 
 **硬規則：** 面板每一項生產能力都必須有 CLI 入口（或明確標為 ⚠️ 僅面板 UX）。
 

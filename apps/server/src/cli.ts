@@ -88,6 +88,7 @@ const CLI_COMMANDS = [
   'software',
   'db',
   'redis',
+  'ftp',
   'version',
   'help',
 ] as const;
@@ -589,6 +590,146 @@ async function mainInner(
         return 0;
       }
 
+      if (sub === 'aliases' || sub === 'alias') {
+        const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
+        const row = resolveDomain();
+        if (!row) {
+          process.stderr.write(
+            'Usage: ysk-server email aliases list|create|delete --domain example.com …\n',
+          );
+          return 2;
+        }
+        if (act === 'list') {
+          printJson({
+            ok: true,
+            domainId: row.id,
+            items: ctx.email.listAliases(row.id),
+          });
+          return 0;
+        }
+        if (act === 'create' || act === 'add') {
+          const typeRaw = getOpt(args, '--type') ?? 'alias';
+          const type =
+            typeRaw === 'forward' || typeRaw === 'catchall' ? typeRaw : 'alias';
+          const destCsv = getOpt(args, '--to') ?? getOpt(args, '--destinations') ?? '';
+          const destinations = destCsv.split(',').map((s) => s.trim()).filter(Boolean);
+          try {
+            const result = ctx.email.createAlias(row.id, {
+              type,
+              localPart: getOpt(args, '--local') ?? getOpt(args, '--user') ?? undefined,
+              destinations,
+              actor: 'cli',
+            });
+            printJson(result);
+            return result.ok ? 0 : 1;
+          } catch (e) {
+            printJson({
+              ok: false,
+              notes: [e instanceof Error ? e.message : String(e)],
+            });
+            return 1;
+          }
+        }
+        if (act === 'delete' || act === 'rm') {
+          const id = getOpt(args, '--id') ?? getOpt(args, '--alias-id');
+          if (!id?.trim()) {
+            process.stderr.write(
+              'Usage: ysk-server email aliases delete --domain example.com --id ALIAS_ID\n',
+            );
+            return 2;
+          }
+          try {
+            const result = ctx.email.deleteAlias(row.id, id.trim(), 'cli');
+            printJson(result);
+            return result.ok ? 0 : 1;
+          } catch (e) {
+            printJson({
+              ok: false,
+              notes: [e instanceof Error ? e.message : String(e)],
+            });
+            return 4;
+          }
+        }
+        process.stderr.write(
+          'Usage: ysk-server email aliases list|create|delete --domain … [--local …] [--to dest@…]\n',
+        );
+        return 2;
+      }
+
+      if (sub === 'queue') {
+        const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
+        const { listMailQueue, flushMailQueue } = await import('@ysk/core');
+        if (act === 'list' || act === 'status') {
+          printJson({ ...(await listMailQueue(ctx.host)), ok: true });
+          return 0;
+        }
+        if (act === 'flush') {
+          if (!wantsHostExecute(args)) {
+            printJson({
+              ok: false,
+              blocked: true,
+              dryRun: true,
+              notes: ['Pass --execute to flush the mail queue on the host.'],
+            });
+            return 3;
+          }
+          const r = await flushMailQueue(ctx.host, {
+            id: getOpt(args, '--id'),
+            all: hasFlag(args, '--all') || !getOpt(args, '--id'),
+          });
+          printJson(r);
+          return exitFromResult(r);
+        }
+        process.stderr.write('Usage: ysk-server email queue list|flush [--all|--id ID] [--execute]\n');
+        return 2;
+      }
+
+      if (sub === 'relay') {
+        const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'get';
+        const { applySmtpRelay, loadSmtpRelaySettings } = await import('@ysk/core');
+        if (act === 'get' || act === 'status' || act === 'show') {
+          const stored = ctx.settings.get('email.smtp_relay');
+          printJson({
+            ok: true,
+            settings: stored ? JSON.parse(stored) : null,
+            files: loadSmtpRelaySettings(ctx.dataDir),
+          });
+          return 0;
+        }
+        if (act === 'set' || act === 'apply') {
+          const hostName = getOpt(args, '--host') ?? getOpt(args, '--relay-host');
+          if (!hostName?.trim()) {
+            process.stderr.write(
+              'Usage: ysk-server email relay apply --host smtp.example.com [--port 587] [--user …] [--password …] [--execute]\n',
+            );
+            return 2;
+          }
+          const result = await applySmtpRelay({
+            dataDir: ctx.dataDir,
+            host: ctx.host,
+            relay: {
+              host: hostName.trim(),
+              port: Number(getOpt(args, '--port') ?? 587),
+              username: getOpt(args, '--user') ?? getOpt(args, '--username'),
+              password: getOpt(args, '--password'),
+              security:
+                (getOpt(args, '--security') as 'none' | 'starttls' | 'tls' | undefined) ??
+                'starttls',
+              domain: getOpt(args, '--domain'),
+            },
+            applySystem: wantsHostExecute(args),
+            db: ctx.db,
+            actor: 'cli',
+          });
+          printJson(result);
+          return exitFromResult(result);
+        }
+        process.stderr.write(
+          'Usage: ysk-server email relay get|apply --host … [--port 587] [--execute]\n',
+        );
+        return 2;
+      }
+
       process.stderr.write(`${tl('cli.err.unknown.email.sub.sub.e37257', { sub })}\n`);
       return 2;
     } finally {
@@ -729,6 +870,8 @@ async function mainInner(
       FileManager,
       publicFilesRoot,
       listFileShares,
+      createFileShare,
+      deleteFileShare,
       listFavorites,
       chownProjectPath,
       getWebDavSettings,
@@ -948,7 +1091,50 @@ async function mainInner(
           printJson({ ok: true, root: rootKey, items: listFileShares(ctx.db, rootKey) });
           return 0;
         }
-        process.stderr.write(`${tl('cli.usage.files.shares.list.ac342c')}\n`);
+        if (act === 'create' || act === 'add') {
+          const path = getOpt(args, '--path');
+          if (!path?.trim()) {
+            process.stderr.write(
+              'Usage: ysk-server files shares create --path REL [--password …] [--expires ISO] --root public|project:ID\n',
+            );
+            return 2;
+          }
+          try {
+            const share = createFileShare(ctx.db, {
+              root: rootKey,
+              path: path.trim(),
+              password: getOpt(args, '--password') ?? undefined,
+              expiresAt: getOpt(args, '--expires') ?? getOpt(args, '--expires-at') ?? undefined,
+              createdBy: 'cli',
+            });
+            printJson({
+              ok: true,
+              root: rootKey,
+              share,
+              publicPath: `/share/${share.token}`,
+            });
+            return 0;
+          } catch (e) {
+            printJson({
+              ok: false,
+              notes: [e instanceof Error ? e.message : String(e)],
+            });
+            return 1;
+          }
+        }
+        if (act === 'delete' || act === 'rm' || act === 'remove') {
+          const id = getOpt(args, '--id') ?? getOpt(args, '--token');
+          if (!id?.trim()) {
+            process.stderr.write('Usage: ysk-server files shares delete --id SHARE_ID\n');
+            return 2;
+          }
+          const ok = deleteFileShare(ctx.db, id.trim());
+          printJson({ ok, root: rootKey });
+          return ok ? 0 : 4;
+        }
+        process.stderr.write(
+          'Usage: ysk-server files shares list|create|delete [--path …] [--id …]\n',
+        );
         return 2;
       }
 
@@ -3082,7 +3268,17 @@ async function mainInner(
   /** Top-level DNS alias for AI agents → hosting dns-zone / dns-zones */
   if (command === 'dns') {
     const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'zones';
-    const { writeManagedDnsZone, listManagedDnsZones } = await import('@ysk/core');
+    const {
+      writeManagedDnsZone,
+      listManagedDnsZones,
+      generateDnssecKeys,
+      listDnssecMaterial,
+      healPowerDnsListener,
+      probeDnsServiceHealth,
+      lookupDns,
+      validateDnsRecordSet,
+      hasDnsErrors,
+    } = await import('@ysk/core');
     const ctx = openCliContext(args);
     try {
       if (sub === 'zones' || sub === 'list') {
@@ -3109,7 +3305,134 @@ async function mainInner(
         printJson(result);
         return exitFromResult(result);
       }
-      process.stderr.write(`${tl('cli.usage.cli.name.dns.zones.zone.5b8bda', { CLI_NAME })}\n`);
+      if (sub === 'dnssec') {
+        const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
+        const zone = getOpt(args, '--zone') ?? args.filter((a) => !a.startsWith('-')).slice(3)[0];
+        if (!zone?.trim()) {
+          process.stderr.write(
+            'Usage: ysk-server dns dnssec list|generate --zone example.com [--execute]\n',
+          );
+          return 2;
+        }
+        if (act === 'list' || act === 'get' || act === 'show') {
+          printJson({ ok: true, ...listDnssecMaterial(ctx.dataDir, zone.trim()) });
+          return 0;
+        }
+        if (act === 'generate' || act === 'create' || act === 'sign') {
+          if (!wantsHostExecute(args)) {
+            printJson({
+              ok: false,
+              blocked: true,
+              dryRun: true,
+              notes: ['Pass --execute to run dnssec-keygen on the host.'],
+            });
+            return 3;
+          }
+          const r = await generateDnssecKeys({
+            dataDir: ctx.dataDir,
+            zone: zone.trim(),
+            host: ctx.host,
+          });
+          printJson(r);
+          return exitFromResult(r);
+        }
+        process.stderr.write(
+          'Usage: ysk-server dns dnssec list|generate --zone example.com [--execute]\n',
+        );
+        return 2;
+      }
+      if (sub === 'heal') {
+        if (!wantsHostExecute(args)) {
+          printJson({
+            ok: false,
+            blocked: true,
+            dryRun: true,
+            notes: ['Pass --execute to heal PowerDNS listener on the host.'],
+          });
+          return 3;
+        }
+        const r = await healPowerDnsListener({
+          host: ctx.host,
+          dataDir: ctx.dataDir,
+        });
+        printJson(r);
+        return exitFromResult(r);
+      }
+      if (sub === 'health') {
+        const r = await probeDnsServiceHealth({
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          digName: getOpt(args, '--name') ?? undefined,
+        });
+        printJson({ ...r, ok: true });
+        return 0;
+      }
+      if (sub === 'lookup') {
+        const name = getOpt(args, '--name') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
+        if (!name?.trim()) {
+          process.stderr.write(
+            'Usage: ysk-server dns lookup --name example.com [--type A|MX|TXT|…] [--server 1.1.1.1]\n',
+          );
+          return 2;
+        }
+        const r = await lookupDns({
+          host: ctx.host,
+          name: name.trim(),
+          type: (getOpt(args, '--type') as 'A' | 'AAAA' | 'MX' | 'TXT' | 'CNAME' | 'NS' | undefined) ?? 'A',
+          server: getOpt(args, '--server'),
+        });
+        printJson(r);
+        return r.ok ? 0 : 1;
+      }
+      if (sub === 'records' || sub === 'validate') {
+        // Validate record set from --json file or inline JSON
+        const jsonPath = getOpt(args, '--file');
+        const jsonInline = getOpt(args, '--json-records') ?? getOpt(args, '--records');
+        let records: Array<{ type: string; name: string; value: string; ttl?: number }> = [];
+        if (jsonPath) {
+          try {
+            const { readFileSync } = await import('node:fs');
+            records = JSON.parse(readFileSync(jsonPath, 'utf8')) as typeof records;
+          } catch (e) {
+            printJson({
+              ok: false,
+              notes: [e instanceof Error ? e.message : String(e)],
+            });
+            return 1;
+          }
+        } else if (jsonInline) {
+          try {
+            records = JSON.parse(jsonInline) as typeof records;
+          } catch {
+            process.stderr.write('--records must be JSON array\n');
+            return 2;
+          }
+        } else if (sub === 'records') {
+          // Managed zones are written as whole zone files — list zones as record source
+          printJson({
+            ok: true,
+            notes: [
+              'Managed DNS uses zone files (dns zones|zone). Use dns records --records JSON to validate, or dns dnssec / heal / lookup for ops.',
+            ],
+            zones: listManagedDnsZones(ctx.dataDir),
+          });
+          return 0;
+        }
+        const issues = validateDnsRecordSet(records);
+        printJson({
+          ok: !hasDnsErrors(issues),
+          issues,
+          notes: hasDnsErrors(issues)
+            ? ['DNS record set has errors']
+            : issues.length
+              ? ['warnings only']
+              : ['valid'],
+        });
+        return hasDnsErrors(issues) ? 1 : 0;
+      }
+      process.stderr.write(
+        `${CLI_NAME} dns zones|zone|dnssec|heal|health|lookup|records [--zone …] [--execute]\n`,
+      );
       return 2;
     } finally {
       closeAppContext(ctx);
@@ -4986,7 +5309,8 @@ async function mainInner(
     command === 'updates' ||
     command === 'software' ||
     command === 'db' ||
-    command === 'redis'
+    command === 'redis' ||
+    command === 'ftp'
   ) {
     // Honour --execute together with YSK_EXECUTE for host mutations
     const configPath = getOpt(args, '--config');
@@ -5044,6 +5368,10 @@ async function mainInner(
       if (command === 'redis') {
         const { runRedisCommand } = await import('./cli/cmd-redis.js');
         return await runRedisCommand(ctx, args, json, helpers);
+      }
+      if (command === 'ftp') {
+        const { runFtpCommand } = await import('./cli/cmd-ftp.js');
+        return await runFtpCommand(ctx, args, json, helpers);
       }
       const { runNetworkCommand } = await import('./cli/cmd-network.js');
       return await runNetworkCommand(ctx, args, json, helpers);

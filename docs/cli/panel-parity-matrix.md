@@ -29,10 +29,10 @@
 | db-lifecycle | DB console lifecycle / apply | `db …` | ✅ C5 | P1 |
 | sql-engine-switch | MySQL ↔ MariaDB switch | `db sql-engine …` | ✅ C5 | P1 |
 | redis-keys | Redis key mutations | `redis keys …` | ✅ C5 | P2 |
-| ftp-accounts | FTP account CRUD | `ftp accounts …` | ⚠️ partial | P2 |
-| files-shares-create | Create public share | `files shares create` | ⚠️ list only | P2 |
-| email-depth | aliases / queue / relay | `email …` | ⚠️ partial | P2 |
-| dns-records | records / dnssec / heal | `dns …` | ⚠️ zones only | P2 |
+| ftp-accounts | FTP account CRUD | `ftp accounts …` | ✅ C6 | P2 |
+| files-shares-create | Create public share | `files shares create` | ✅ C6 | P2 |
+| email-depth | aliases / queue / relay | `email …` | ✅ C6 | P2 |
+| dns-records | records / dnssec / heal | `dns …` | ✅ C6 | P2 |
 | runtimes-full | java/kotlin/bun + switch | `hosting runtime-install` expand | ⚠️ partial | P2 |
 
 ## Intentional panel-only (⚠️)

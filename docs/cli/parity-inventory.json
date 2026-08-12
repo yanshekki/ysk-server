@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-08-12T04:21:23.380Z",
-  "cliCommandsCount": 49,
+  "generatedAt": "2026-08-12T04:27:14.294Z",
+  "cliCommandsCount": 50,
   "cliCommands": [
     "setup",
     "update",
@@ -49,10 +49,11 @@
     "software",
     "db",
     "redis",
+    "ftp",
     "version",
     "help"
   ],
-  "handlersCount": 42,
+  "handlersCount": 43,
   "handlers": [
     "agent",
     "agents",
@@ -67,6 +68,7 @@
     "dns",
     "email",
     "files",
+    "ftp",
     "health",
     "host",
     "hosting",
@@ -99,9 +101,7 @@
   ],
   "navCount": 45,
   "navMissing": [],
-  "navPartial": [
-    "ftp"
-  ],
+  "navPartial": [],
   "navPanelOnly": [
     "hostBrowse",
     "terminal"
@@ -220,41 +220,42 @@
     {
       "id": "ftp-accounts",
       "panel": "FTP account CRUD",
-      "cliNeed": "ftp accounts",
-      "status": "partial",
-      "note": "ftps-apply only",
+      "cliNeed": "ftp",
+      "status": "ok",
+      "note": "C6: ftp accounts + settings + apply",
       "priority": "P2",
-      "cliPresent": false,
-      "resolved": false
+      "cliPresent": true,
+      "resolved": true
     },
     {
       "id": "files-shares-create",
       "panel": "Public file share create",
-      "cliNeed": "files shares create",
-      "status": "partial",
-      "note": "list only",
+      "cliNeed": "files",
+      "status": "ok",
+      "note": "C6: files shares list|create|delete",
       "priority": "P2",
       "cliPresent": true,
-      "resolved": false
+      "resolved": true
     },
     {
       "id": "email-depth",
       "panel": "Email aliases / queue / relay",
-      "cliNeed": "email aliases|queue|relay",
-      "status": "partial",
+      "cliNeed": "email",
+      "status": "ok",
+      "note": "C6: email aliases|queue|relay",
       "priority": "P2",
       "cliPresent": true,
-      "resolved": false
+      "resolved": true
     },
     {
       "id": "dns-records",
-      "panel": "DNS records CRUD / dnssec / heal",
-      "cliNeed": "dns records|dnssec|heal",
-      "status": "partial",
-      "note": "zones only",
+      "panel": "DNS records / dnssec / heal",
+      "cliNeed": "dns",
+      "status": "ok",
+      "note": "C6: dns dnssec|heal|health|lookup|records validate (+ zones)",
       "priority": "P2",
       "cliPresent": true,
-      "resolved": false
+      "resolved": true
     },
     {
       "id": "runtimes-full",
@@ -307,45 +308,6 @@
   ],
   "openGaps": [
     {
-      "id": "ftp-accounts",
-      "panel": "FTP account CRUD",
-      "cliNeed": "ftp accounts",
-      "status": "partial",
-      "note": "ftps-apply only",
-      "priority": "P2",
-      "cliPresent": false,
-      "resolved": false
-    },
-    {
-      "id": "files-shares-create",
-      "panel": "Public file share create",
-      "cliNeed": "files shares create",
-      "status": "partial",
-      "note": "list only",
-      "priority": "P2",
-      "cliPresent": true,
-      "resolved": false
-    },
-    {
-      "id": "email-depth",
-      "panel": "Email aliases / queue / relay",
-      "cliNeed": "email aliases|queue|relay",
-      "status": "partial",
-      "priority": "P2",
-      "cliPresent": true,
-      "resolved": false
-    },
-    {
-      "id": "dns-records",
-      "panel": "DNS records CRUD / dnssec / heal",
-      "cliNeed": "dns records|dnssec|heal",
-      "status": "partial",
-      "note": "zones only",
-      "priority": "P2",
-      "cliPresent": true,
-      "resolved": false
-    },
-    {
       "id": "runtimes-full",
       "panel": "java/kotlin/bun + switch/uninstall",
       "cliNeed": "hosting runtime-install expand",
@@ -356,7 +318,7 @@
     }
   ],
   "missingCount": 0,
-  "partialCount": 5,
+  "partialCount": 1,
   "panelOnlyCount": 4,
-  "okCount": 11
+  "okCount": 15
 }

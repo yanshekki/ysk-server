@@ -2,7 +2,7 @@
 
 > Language: English | [中文](./parity-ZH.md)
 
-**Status: C5 (2026-08-12).** Through **db / redis**. Remaining: ftp/files-shares/email/dns/runtime (C6–C7).
+**Status: C6 (2026-08-12).** Through **ftp / files shares / email depth / dns ops**. Remaining: runtimes-full (C7).
 
 **Hard rule:** Every production panel capability must have a CLI entry (or an explicit, documented intentional gap). Prefer `--json` for automation.
 
