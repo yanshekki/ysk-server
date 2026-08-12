@@ -14,6 +14,11 @@ import {
 } from '@ysk/shared';
 import { Alert, Button, Field, FormActions } from '../shared/components/ui';
 import { setAppLocale } from '../shared/lib/i18n';
+import {
+  downloadWithBrowserWebTorrent,
+  isBrowserWebTorrentSupported,
+  type BrowserBtProgress,
+} from '../features/files/webtorrent-browser';
 
 const COMPANY_URL = 'https://ysk.hk/';
 
@@ -101,9 +106,13 @@ export function PublicSharePage() {
   const [meta, setMeta] = useState<ShareMeta | null>(null);
   const [btStats, setBtStats] = useState<BtShareStats | null>(null);
   const [magnet, setMagnet] = useState<string | null>(null);
+  const [btProgress, setBtProgress] = useState<BrowserBtProgress | null>(null);
+  const [btDownloading, setBtDownloading] = useState(false);
 
   const abortRef = useRef<AbortController | null>(null);
+  const btAbortRef = useRef<AbortController | null>(null);
   const autoStarted = useRef(false);
+  const wtSupported = isBrowserWebTorrentSupported();
 
   const locale = normalizeLocale(i18n.language);
   const pct = progressPercent(received, total);
@@ -114,7 +123,81 @@ export function PublicSharePage() {
   const cancelDownload = useCallback(() => {
     abortRef.current?.abort();
     abortRef.current = null;
+    btAbortRef.current?.abort();
+    btAbortRef.current = null;
+    setBtDownloading(false);
   }, []);
+
+  const tryBtBrowserDownload = useCallback(async () => {
+    const m = magnet || meta?.magnetUri || '';
+    if (!m) {
+      setError(t('files.publicShareBtNeedMagnet'));
+      return;
+    }
+    if (!wtSupported) {
+      setError(t('files.publicShareBtUnsupported'));
+      return;
+    }
+    cancelDownload();
+    const ac = new AbortController();
+    btAbortRef.current = ac;
+    setError(null);
+    setBtProgress(null);
+    setBtDownloading(true);
+    setPhase('downloading');
+    setFileName(meta?.name || fileName || t('files.publicShareDefaultName'));
+    try {
+      const r = await downloadWithBrowserWebTorrent({
+        magnetOrTorrent: m,
+        signal: ac.signal,
+        onProgress: (p) => {
+          setBtProgress(p);
+          setReceived(p.downloaded);
+          setTotal(p.length > 0 ? p.length : null);
+          if (p.name) setFileName(p.name);
+        },
+      });
+      if (ac.signal.aborted) {
+        setPhase('error');
+        setError(t('files.publicShareCancelled'));
+        return;
+      }
+      if (!r.ok || !r.blob) {
+        setPhase('choose');
+        setError(
+          t('files.publicShareBtFailed', {
+            detail: r.notes[0] || 'unknown',
+          }),
+        );
+        return;
+      }
+      triggerBlobDownload(r.blob, r.name || fileName || 'download');
+      setPhase('done');
+    } catch (e) {
+      if (e instanceof DOMException && e.name === 'AbortError') {
+        setPhase('error');
+        setError(t('files.publicShareCancelled'));
+        return;
+      }
+      setPhase('choose');
+      setError(
+        t('files.publicShareBtFailed', {
+          detail: e instanceof Error ? e.message : String(e),
+        }),
+      );
+    } finally {
+      setBtDownloading(false);
+      if (btAbortRef.current === ac) btAbortRef.current = null;
+    }
+  }, [
+    cancelDownload,
+    fileName,
+    magnet,
+    meta?.magnetUri,
+    meta?.name,
+    t,
+    wtSupported,
+  ]);
 
   const passQ = useCallback(
     (pass?: string) => {
@@ -368,6 +451,17 @@ export function PublicSharePage() {
   }
 
   const progressLabel = useMemo(() => {
+    if (btDownloading && btProgress) {
+      return t('files.publicShareBtProgress', {
+        pct: Math.round((btProgress.progress || 0) * 100),
+        peers: btProgress.peers,
+        down: formatSpeed(btProgress.downloadSpeed),
+        up: formatSpeed(btProgress.uploadSpeed),
+      });
+    }
+    if (btDownloading && !btProgress) {
+      return t('files.publicShareBtStarting');
+    }
     if (pct != null && total != null) {
       return t('files.publicShareProgress', {
         loaded: formatBytes(received),
@@ -381,7 +475,7 @@ export function PublicSharePage() {
       });
     }
     return t('files.publicShareWait');
-  }, [pct, received, t, total]);
+  }, [btDownloading, btProgress, pct, received, t, total]);
 
   const sizeLabel =
     total != null || received > 0 ? formatBytes(total ?? received) : null;
@@ -551,6 +645,17 @@ export function PublicSharePage() {
                 ) : null}
                 {(meta?.hasBt || (meta?.downloadModes ?? []).includes('bt')) ? (
                   <>
+                    {(magnet || meta?.magnetUri) && wtSupported ? (
+                      <Button
+                        type="button"
+                        variant="primary"
+                        size="lg"
+                        className="pub-share__cta"
+                        onClick={() => void tryBtBrowserDownload()}
+                      >
+                        {t('files.publicShareBtInBrowser')}
+                      </Button>
+                    ) : null}
                     <a
                       className="btn btn--secondary btn--lg pub-share__cta"
                       href={torrentHref}

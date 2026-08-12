@@ -71,7 +71,7 @@ Use **Network exposure** on the BT Tracker page / firewall chips (`8000 BT track
 | Surface | Rationale |
 |---------|-----------|
 | Public share BT UI (magnet / .torrent / stats) | Guest HTTP |
-| Browser WebTorrent client | Optional client-side; server seeds regardless |
+| Browser WebTorrent download | Guest loads WebTorrent from CDN on demand; server still seeds |
 
 ## Related
 

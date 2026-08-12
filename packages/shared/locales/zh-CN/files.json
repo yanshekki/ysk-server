@@ -309,5 +309,11 @@
   "publicShareMethod": "请选择下载方式",
   "publicShareDirect": "直接下载",
   "publicShareBt": "BitTorrent",
-  "openBtTracker": "打开 BT Tracker"
+  "openBtTracker": "打开 BT Tracker",
+  "publicShareBtInBrowser": "在浏览器以 WebTorrent 下载",
+  "publicShareBtProgress": "BT {{pct}}% · peers {{peers}} · ↓ {{down}} · ↑ {{up}}",
+  "publicShareBtStarting": "正在连接 peers…",
+  "publicShareBtFailed": "WebTorrent 失败：{{detail}}",
+  "publicShareBtNeedMagnet": "此分享没有 magnet 链接",
+  "publicShareBtUnsupported": "此浏览器无法运行 WebTorrent；请改用 magnet 或 .torrent"
 }

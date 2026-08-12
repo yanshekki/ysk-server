@@ -71,7 +71,7 @@ ysk-server files shares bt-stats --id SHARE_ID --json
 | 介面 | 理由 |
 |------|------|
 | 公開分享 BT UI（magnet／.torrent／統計） | 訪客 HTTP |
-| 瀏覽器 WebTorrent 客戶端 | 可選客戶端；伺服器仍會做種 |
+| 瀏覽器 WebTorrent 下載 | 訪客按需從 CDN 載入 WebTorrent；伺服器仍會做種 |
 
 ## 相關
 

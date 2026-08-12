@@ -309,5 +309,11 @@
   "publicShareMethod": "How do you want to download?",
   "publicShareDirect": "Direct download",
   "publicShareBt": "BitTorrent",
-  "openBtTracker": "Open BT Tracker"
+  "openBtTracker": "Open BT Tracker",
+  "publicShareBtInBrowser": "Download in browser (WebTorrent)",
+  "publicShareBtProgress": "BT {{pct}}% · peers {{peers}} · ↓ {{down}} · ↑ {{up}}",
+  "publicShareBtStarting": "Connecting to peers…",
+  "publicShareBtFailed": "WebTorrent failed: {{detail}}",
+  "publicShareBtNeedMagnet": "No magnet URI for this share",
+  "publicShareBtUnsupported": "This browser cannot run WebTorrent; use magnet or .torrent instead"
 }
