@@ -29,34 +29,46 @@
 }
 
 /* Direct content children: no utility margin fighting the flex gap */
-/* —— Service network access strip (auto firewall ports) —— */
+/* —— Service network access strip (auto firewall ports) ——
+ * Shared chrome for every page. Do NOT zero horizontal padding in page CSS.
+ */
 .service-access-strip {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
+  column-gap: var(--space-4);
+  row-gap: var(--space-3);
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  /* Real inset — never override to 0 horizontal in feature pages */
+  padding: 0.75rem 1rem;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md, 8px);
   background: var(--bg-elevated, var(--bg-card, #fff));
 }
 
 .service-access-strip--compact {
-  padding: var(--space-2) var(--space-3);
+  padding: 0.55rem 0.75rem;
+  column-gap: var(--space-3);
+  row-gap: var(--space-2);
 }
 
 .service-access-strip__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
   min-width: 0;
-  flex: 1;
+  flex: 1 1 16rem;
 }
 
 .service-access-strip__meta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2);
-  margin-bottom: var(--space-1);
+  gap: 0.4rem 0.5rem;
+  margin: 0;
 }
 
 .service-access-strip__label {
@@ -69,12 +81,13 @@
 
 .service-access-strip__summary {
   margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.4;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  max-width: 44rem;
 }
 
 .service-access-strip__err {
-  margin: var(--space-1) 0 0;
+  margin: 0;
   font-size: 0.85rem;
   color: var(--danger, #b91c1c);
 }
@@ -83,12 +96,24 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2);
+  gap: 0.5rem;
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding: 0.1rem 0;
+}
+
+.service-access-strip__actions .btn {
   flex-shrink: 0;
 }
 
 .service-access-strip__warn {
   color: var(--warn, #b45309);
+}
+
+/* Nested in Card / CardSection: keep strip padding; only kill outer margin fight */
+.section-block > .service-access-strip,
+.card > .service-access-strip {
+  margin: 0;
 }
 
 .section-block > .summary-strip,
@@ -99,7 +124,8 @@
 .section-block > .ops-result,
 .section-block > .form-layout,
 .section-block > .mail-probe,
-.section-block > .mail-messages {
+.section-block > .mail-messages,
+.section-block > .service-access-strip {
   margin-top: 0;
   margin-bottom: 0;
 }

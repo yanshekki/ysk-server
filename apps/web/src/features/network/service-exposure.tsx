@@ -199,7 +199,7 @@ export function ServiceAccessStrip({
           >
             {t('serviceExposure.manage')}
           </Button>
-          <Link className="u-text-sm" to="/firewall?tab=services">
+          <Link className="btn btn--secondary btn--sm" to="/firewall?tab=services">
             {t('serviceExposure.firewallLink')}
           </Link>
         </div>
