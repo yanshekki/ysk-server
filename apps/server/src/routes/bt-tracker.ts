@@ -15,6 +15,7 @@ import {
   stopSeed,
   collectBtShareStats,
   getSeedByInfoHash,
+  listLocalSeeds,
   listFileShares,
   getFileShareById,
   patchFileShare,
@@ -123,8 +124,34 @@ export async function handleBtTrackerRoutes(
       }
       if (method === 'GET' && url.pathname === `${BASE}/torrents`) {
         ctx.auth.authenticate(getBearer(req));
-        const rows = listBtTrackerTorrents();
         const shares = listFileShares(ctx.db);
+        const hints = shares
+          .filter((s) => s.infoHash)
+          .map((s) => {
+            const seed = getSeedByInfoHash(s.infoHash!);
+            return {
+              infoHash: s.infoHash,
+              name: s.path.split('/').pop(),
+              shareId: s.id,
+              seedStatus: s.seedStatus,
+              seeders: seed ? 1 : 0,
+              leechers: 0,
+            };
+          });
+        // also surface in-memory seeds without share row
+        for (const seed of listLocalSeeds()) {
+          if (!hints.some((h) => h.infoHash?.toLowerCase() === seed.infoHash)) {
+            hints.push({
+              infoHash: seed.infoHash,
+              name: seed.torrent.name,
+              shareId: seed.shareId,
+              seedStatus: 'seeding',
+              seeders: 1,
+              leechers: 0,
+            });
+          }
+        }
+        const rows = listBtTrackerTorrents({ hints });
         const byHash = new Map(
           shares
             .filter((s) => s.infoHash)
@@ -135,9 +162,9 @@ export async function handleBtTrackerRoutes(
           const seed = getSeedByInfoHash(r.infoHash);
           return {
             ...r,
-            name: r.name || sh?.path.split('/').pop(),
-            shareId: sh?.id,
-            seedStatus: sh?.seedStatus,
+            name: r.name || sh?.path.split('/').pop() || seed?.torrent.name,
+            shareId: r.shareId || sh?.id || seed?.shareId,
+            seedStatus: r.seedStatus || sh?.seedStatus || (seed ? 'seeding' : undefined),
             uploadSpeed: seed
               ? Number(seed.torrent.uploadSpeed) || 0
               : undefined,

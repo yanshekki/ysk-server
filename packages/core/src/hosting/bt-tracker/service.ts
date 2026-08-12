@@ -15,6 +15,12 @@ import {
   saveBtTrackerSettings,
 } from './settings.js';
 
+type TrackerSwarm = {
+  complete?: number;
+  incomplete?: number;
+  peers?: { keys?: string[]; length?: number };
+};
+
 type TrackerServer = {
   http?: { address?: () => { port: number } | string | null; close: (cb?: () => void) => void };
   udp?: { close: (cb?: () => void) => void };
@@ -22,6 +28,8 @@ type TrackerServer = {
   close: (cb?: (err?: Error) => void) => void;
   on: (ev: string, fn: (...args: unknown[]) => void) => void;
   listen: (port: number, host?: string | (() => void), cb?: () => void) => void;
+  /** Live swarms from bittorrent-tracker */
+  torrents?: Record<string, TrackerSwarm>;
 };
 
 type Runtime = {
@@ -74,15 +82,34 @@ export async function getBtTrackerStatus(input: {
   });
   let stats: BtTrackerStatus['stats'];
   if (runtime) {
-    let peers = 0;
-    for (const s of runtime.swarm.values()) {
-      peers += s.complete + s.incomplete;
+    const fromServer = readServerTorrents(runtime.server);
+    if (fromServer.length) {
+      let peers = 0;
+      for (const r of fromServer) peers += r.seeders + r.leechers;
+      stats = {
+        torrents: fromServer.length,
+        peers,
+        announces: runtime.announces,
+      };
+    } else {
+      let peers = 0;
+      for (const s of runtime.swarm.values()) {
+        peers += s.complete + s.incomplete;
+      }
+      stats = {
+        torrents: runtime.swarm.size,
+        peers,
+        announces: runtime.announces,
+      };
     }
-    stats = {
-      torrents: runtime.swarm.size,
-      peers,
-      announces: runtime.announces,
-    };
+  } else if (detached) {
+    // Aggregate scrape from local tracker HTTP when detached
+    try {
+      const scraped = await scrapeLocalTrackerStats(settings.httpPort);
+      if (scraped) stats = scraped;
+    } catch {
+      /* optional */
+    }
   }
   return {
     installed,
@@ -232,18 +259,123 @@ export async function stopBtTracker(): Promise<{ ok: boolean; notes: string[] }>
   return { ok: true, notes: [tl('notes.btTracker.stopped')] };
 }
 
-export function listBtTrackerTorrents(): BtTrackerTorrentRow[] {
-  if (!runtime) return [];
+/**
+ * List tracked torrents — prefers live `server.torrents` swarm counts,
+ * falls back to announce-event map, then optional share/seed hints.
+ */
+export function listBtTrackerTorrents(opts?: {
+  /** Known shares/seeds to surface even before first announce */
+  hints?: Array<{
+    infoHash?: string;
+    name?: string;
+    shareId?: string;
+    seedStatus?: string;
+    seeders?: number;
+    leechers?: number;
+  }>;
+}): BtTrackerTorrentRow[] {
+  const byHash = new Map<string, BtTrackerTorrentRow>();
+
+  const put = (row: BtTrackerTorrentRow, preferLive = false) => {
+    const h = row.infoHash.toLowerCase();
+    if (!/^[a-f0-9]{40}$/.test(h)) return;
+    const prev = byHash.get(h);
+    if (!prev) {
+      byHash.set(h, { ...row, infoHash: h });
+      return;
+    }
+    byHash.set(h, {
+      infoHash: h,
+      name: row.name || prev.name,
+      seeders: preferLive ? row.seeders : Math.max(prev.seeders, row.seeders),
+      leechers: preferLive ? row.leechers : Math.max(prev.leechers, row.leechers),
+      completed: row.completed ?? prev.completed,
+      shareId: row.shareId || prev.shareId,
+      seedStatus: row.seedStatus || prev.seedStatus,
+      uploadSpeed: row.uploadSpeed ?? prev.uploadSpeed,
+      downloadSpeed: row.downloadSpeed ?? prev.downloadSpeed,
+    });
+  };
+
+  // 1) Live bittorrent-tracker swarms (most accurate)
+  if (runtime?.server) {
+    for (const row of readServerTorrents(runtime.server)) {
+      put(row, true);
+    }
+  }
+
+  // 2) Event-driven map
+  if (runtime) {
+    for (const [infoHash, s] of runtime.swarm) {
+      put({
+        infoHash,
+        seeders: s.complete,
+        leechers: s.incomplete,
+        name: s.name,
+      });
+    }
+  }
+
+  // 3) Hints from shares / local seeder
+  for (const h of opts?.hints ?? []) {
+    if (!h.infoHash) continue;
+    put({
+      infoHash: h.infoHash,
+      name: h.name,
+      seeders: h.seeders ?? 0,
+      leechers: h.leechers ?? 0,
+      shareId: h.shareId,
+      seedStatus: h.seedStatus,
+    });
+  }
+
+  return [...byHash.values()].sort((a, b) => a.infoHash.localeCompare(b.infoHash));
+}
+
+function readServerTorrents(server: TrackerServer): BtTrackerTorrentRow[] {
+  const map = server.torrents;
+  if (!map || typeof map !== 'object') return [];
   const out: BtTrackerTorrentRow[] = [];
-  for (const [infoHash, s] of runtime.swarm) {
+  for (const [rawHash, swarm] of Object.entries(map)) {
+    const h = normalizeHash(rawHash);
+    if (!h) continue;
+    const complete = Number(swarm?.complete) || 0;
+    const incomplete = Number(swarm?.incomplete) || 0;
     out.push({
-      infoHash,
-      seeders: s.complete,
-      leechers: s.incomplete,
-      name: s.name,
+      infoHash: h,
+      seeders: complete,
+      leechers: incomplete,
     });
   }
   return out;
+}
+
+/** HTTP GET localhost /stats.json for detached tracker aggregate stats */
+async function scrapeLocalTrackerStats(
+  httpPort: number,
+): Promise<BtTrackerStatus['stats'] | undefined> {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 1_500);
+  try {
+    const res = await fetch(`http://127.0.0.1:${httpPort}/stats.json`, {
+      signal: ctrl.signal,
+    });
+    if (!res.ok) return undefined;
+    const j = (await res.json()) as {
+      torrents?: number;
+      peersAll?: number;
+      peersSeederOnly?: number;
+      peersLeecherOnly?: number;
+    };
+    return {
+      torrents: Number(j.torrents) || 0,
+      peers: Number(j.peersAll) || 0,
+    };
+  } catch {
+    return undefined;
+  } finally {
+    clearTimeout(t);
+  }
 }
 
 export function patchBtTrackerSettings(
