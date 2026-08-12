@@ -16,7 +16,6 @@ import {
   FeaturePageLayout,
   Field,
   FormActions,
-  FormHint,
   FormLayout,
   OpsResultPanel,
   PageGuide,
@@ -214,7 +213,7 @@ export function BtTrackerPage() {
   return (
     <FeaturePageLayout
       title={t('nav.btTracker')}
-      subtitle={t('btTracker.pageDesc')}
+      subtitle={t('btTracker.sub')}
       showCapability={false}
       status={{
         pill: {
@@ -347,15 +346,15 @@ export function BtTrackerPage() {
 
               <div className="bt-chips" aria-label={t('btTracker.quickStart')}>
                 <span className={`bt-chip ${hasPublicHost ? 'bt-chip--ok' : 'bt-chip--todo'}`}>
-                  {hasPublicHost ? '✓' : '1.'} {t('btTracker.step1Title')}
+                  {hasPublicHost ? '✓' : '1'} {t('btTracker.step1Title')}
                 </span>
                 <span className={`bt-chip ${running ? 'bt-chip--ok' : 'bt-chip--todo'}`}>
-                  {running ? '✓' : '2.'} {t('btTracker.step2Title')}
+                  {running ? '✓' : '2'} {t('btTracker.step2Title')}
                 </span>
                 <span
                   className={`bt-chip ${torrents.length ? 'bt-chip--ok' : 'bt-chip--todo'}`}
                 >
-                  {torrents.length ? '✓' : '3.'} {t('btTracker.step3Title')}
+                  {torrents.length ? '✓' : '3'} {t('btTracker.step3Title')}
                 </span>
               </div>
 
@@ -364,23 +363,15 @@ export function BtTrackerPage() {
               ) : null}
 
               <Card>
-                <CardSection
-                  title={t('btTracker.exposureTitle')}
-                  description={t('btTracker.applyHint')}
-                >
-                  <ServiceAccessStrip serviceId="bt-tracker" />
+                <CardSection title={t('btTracker.exposureTitle')}>
+                  <ServiceAccessStrip serviceId="bt-tracker" compact />
                 </CardSection>
               </Card>
 
               <Card>
-                <CardSection
-                  title={t('btTracker.announceUrls')}
-                  description={t('btTracker.announceDesc')}
-                >
+                <CardSection title={t('btTracker.announceUrls')}>
                   {announceList.length === 0 ? (
-                    <div className="bt-empty">
-                      <p className="bt-empty__title">{t('btTracker.torrentsEmpty')}</p>
-                    </div>
+                    <p className="muted u-text-sm">{t('btTracker.announceHostUnset')}</p>
                   ) : (
                     <div className="bt-announce">
                       {announceList.map((u) => {
@@ -415,16 +406,6 @@ export function BtTrackerPage() {
                   )}
                 </CardSection>
               </Card>
-
-              {status?.notes?.length ? (
-                <Alert variant="info">
-                  <ul>
-                    {status.notes.slice(0, 4).map((n) => (
-                      <li key={n}>{n}</li>
-                    ))}
-                  </ul>
-                </Alert>
-              ) : null}
             </div>
           ) : null}
 
@@ -481,12 +462,12 @@ export function BtTrackerPage() {
               {!running ? <Alert variant="warn">{t('btTracker.stopped')}</Alert> : null}
 
               {torrents.length === 0 ? (
-                <div className="bt-empty">
+                <div className="bt-empty bt-empty--compact">
                   <p className="bt-empty__title">{t('btTracker.torrentsEmpty')}</p>
                   <p className="bt-empty__desc">{t('btTracker.torrentsEmptyHint')}</p>
                 </div>
               ) : torrentRows.length === 0 ? (
-                <div className="bt-empty">
+                <div className="bt-empty bt-empty--compact">
                   <p className="bt-empty__title">{t('btTracker.noMatch')}</p>
                 </div>
               ) : (
@@ -563,26 +544,23 @@ export function BtTrackerPage() {
                 </div>
               )}
 
-              {/* Background create-torrent jobs (merged from former Jobs tab) */}
-              <div className="bt-jobs-block">
-                <div className="bt-toolbar bt-jobs-block__head">
-                  <strong className="u-text-sm">{t('btTracker.jobs')}</strong>
-                  <span className="muted u-text-xs">{t('btTracker.jobsDesc')}</span>
-                  <span className="bt-toolbar__spacer" />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    disabled={busy}
-                    onClick={() => void refreshJobs()}
-                  >
-                    {t('btTracker.refreshJobs')}
-                  </Button>
-                </div>
-                {jobs.length === 0 ? (
-                  <div className="bt-empty bt-empty--compact">
-                    <p className="bt-empty__desc">{t('btTracker.jobsEmptyHint')}</p>
+              {/* Jobs only when non-empty — no empty-state essay */}
+              {jobs.length > 0 ? (
+                <div className="bt-jobs-block">
+                  <div className="bt-toolbar bt-jobs-block__head">
+                    <strong className="u-text-sm">
+                      {t('btTracker.jobs')} ({jobs.length})
+                    </strong>
+                    <span className="bt-toolbar__spacer" />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={busy}
+                      onClick={() => void refreshJobs()}
+                    >
+                      {t('btTracker.refreshJobs')}
+                    </Button>
                   </div>
-                ) : (
                   <div className="bt-table-wrap bt-table-wrap--jobs">
                     <DataTable
                       columns={[
@@ -623,22 +601,13 @@ export function BtTrackerPage() {
                               ? new Date(r.enqueuedAt).toLocaleString()
                               : '—',
                         },
-                        {
-                          key: 'notes',
-                          header: t('btTracker.colStatus'),
-                          render: (r) => (
-                            <span className="u-text-sm muted">
-                              {(r.notes || []).slice(0, 2).join(' · ') || '—'}
-                            </span>
-                          ),
-                        },
                       ]}
                       rows={jobs}
                       rowKey={(r) => r.id}
                     />
                   </div>
-                )}
-              </div>
+                </div>
+              ) : null}
             </div>
           ) : null}
 
@@ -672,15 +641,8 @@ export function BtTrackerPage() {
             >
               <div className="bt-settings__card">
                 <h3 className="bt-settings__card-title">{t('btTracker.networkCard')}</h3>
-                <p className="bt-settings__card-desc">{t('btTracker.networkCardDesc')}</p>
                 <FormLayout columns={2}>
-                  <Field
-                    label={t('btTracker.httpPort')}
-                    htmlFor="bt-http"
-                    flush
-                    required
-                    hint={t('btTracker.httpPortHint')}
-                  >
+                  <Field label={t('btTracker.httpPort')} htmlFor="bt-http" flush required>
                     <input
                       id="bt-http"
                       type="number"
@@ -702,12 +664,7 @@ export function BtTrackerPage() {
                       />
                     </div>
                   </Field>
-                  <Field
-                    label={t('btTracker.udpPort')}
-                    htmlFor="bt-udp"
-                    flush
-                    hint={t('btTracker.udpPortHint')}
-                  >
+                  <Field label={t('btTracker.udpPort')} htmlFor="bt-udp" flush>
                     <input
                       id="bt-udp"
                       type="number"
@@ -743,12 +700,7 @@ export function BtTrackerPage() {
                       onChange={bindInput((v) => patchDraft('listenHost', v))}
                     />
                   </Field>
-                  <Field
-                    label={t('btTracker.publicAnnounceHost')}
-                    htmlFor="bt-pub"
-                    flush
-                    hint={t('btTracker.publicAnnounceHostHint')}
-                  >
+                  <Field label={t('btTracker.publicAnnounceHost')} htmlFor="bt-pub" flush>
                     <input
                       id="bt-pub"
                       className="input"
@@ -757,24 +709,20 @@ export function BtTrackerPage() {
                       placeholder="example.com"
                     />
                   </Field>
-                  <label className="bt-toggle" htmlFor="bt-ws">
+                  <label className="bt-toggle bt-toggle--compact" htmlFor="bt-ws">
                     <input
                       id="bt-ws"
                       type="checkbox"
                       checked={draft.wsEnabled !== false}
                       onChange={(e) => patchDraft('wsEnabled', e.target.checked)}
                     />
-                    <span className="bt-toggle__text">
-                      <span className="bt-toggle__lab">{t('btTracker.wsEnabled')}</span>
-                      <span className="bt-toggle__hint">{t('btTracker.wsEnabledHint')}</span>
-                    </span>
+                    <span className="bt-toggle__lab">{t('btTracker.wsEnabled')}</span>
                   </label>
                 </FormLayout>
               </div>
 
               <div className="bt-settings__card">
                 <h3 className="bt-settings__card-title">{t('btTracker.seederCard')}</h3>
-                <p className="bt-settings__card-desc">{t('btTracker.seederCardDesc')}</p>
                 <FormLayout columns={2}>
                   <Field label={t('btTracker.maxSeeds')} htmlFor="bt-max" flush>
                     <input
@@ -787,12 +735,7 @@ export function BtTrackerPage() {
                       onChange={(e) => patchDraft('maxSeeds', Number(e.target.value))}
                     />
                   </Field>
-                  <Field
-                    label={t('btTracker.seederPorts')}
-                    htmlFor="bt-smin"
-                    flush
-                    hint={t('btTracker.seederPortsHint')}
-                  >
+                  <Field label={t('btTracker.seederPorts')} htmlFor="bt-smin" flush>
                     <div className="u-flex u-gap-sm u-items-center">
                       <input
                         id="bt-smin"
@@ -824,23 +767,15 @@ export function BtTrackerPage() {
 
               <div className="bt-settings__card">
                 <h3 className="bt-settings__card-title">{t('btTracker.lifecycleCard')}</h3>
-                <p className="bt-settings__card-desc">{t('btTracker.lifecycleCardDesc')}</p>
-                <FormLayout columns={1}>
-                  <label className="bt-toggle" htmlFor="bt-auto">
-                    <input
-                      id="bt-auto"
-                      type="checkbox"
-                      checked={Boolean(draft.autostart)}
-                      onChange={(e) => patchDraft('autostart', e.target.checked)}
-                    />
-                    <span className="bt-toggle__text">
-                      <span className="bt-toggle__lab">{t('btTracker.autostart')}</span>
-                      <span className="bt-toggle__hint">{t('btTracker.autostartHint')}</span>
-                    </span>
-                  </label>
-                  <Alert variant="info">{t('btTracker.bundledNote')}</Alert>
-                  <FormHint>{t('btTracker.applyHint')}</FormHint>
-                </FormLayout>
+                <label className="bt-toggle bt-toggle--compact" htmlFor="bt-auto">
+                  <input
+                    id="bt-auto"
+                    type="checkbox"
+                    checked={Boolean(draft.autostart)}
+                    onChange={(e) => patchDraft('autostart', e.target.checked)}
+                  />
+                  <span className="bt-toggle__lab">{t('btTracker.autostart')}</span>
+                </label>
               </div>
 
               <FormActions>
