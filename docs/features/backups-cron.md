@@ -2,49 +2,54 @@
 
 > Language: English | [中文](./backups-cron-ZH.md)
 
-**Panel routes:** `/backups`, `/cron`  
-**CLI:** `backup`, `cron`
+## Purpose
 
-## Backups
+**Control-plane and host backup** jobs (including restic helpers) and **managed cron** entries.
 
-| Capability | Notes |
-|------------|--------|
-| Project tar | Per-project archives under dataDir |
-| Control-plane | Store snapshot / control-plane pack |
-| Schedule | Install system schedule (EXECUTE) |
-| Remote / restic | Settings + restic helpers when configured |
-| Restore | Explicit restore paths (review before execute) |
+**Non-goals:** Infinite retention without storage limits; silent backup “success” without EXECUTE.
+
+## Panel
+
+| Item | Value |
+|------|--------|
+| Routes | `/backups`, `/cron` |
+| Nav keys | `backups`, `cron` |
+| Main actions | Backup list/run/restore · schedule · restic · cron CRUD/install |
+| Capability | Backup / cron |
+| RBAC | Operators |
+
+## Capability matrix
+
+| Panel action | CLI | Risk | Notes |
+|--------------|-----|------|-------|
+| Backup list/status/all | `ysk-server backup list\|status\|all` | write-host | all may need execute |
+| Restore / delete | `ysk-server backup restore\|delete` | write-host | |
+| Schedule install | `ysk-server backup schedule --install --execute` | write-host | |
+| Restic helpers | `ysk-server backup restic …` | write-host | |
+| Cron list/create/… | `ysk-server cron list\|create\|…` | write-panel | |
+| Cron install to host | `ysk-server cron install --execute` | write-host | |
+
+## CLI quick start
 
 ```bash
-ysk-server backup list --q demo --json
-ysk-server backup status --json
-ysk-server backup all --json
-ysk-server backup control-plane --json
-ysk-server backup schedule --install --execute
-ysk-server backup settings get --json
-ysk-server backup restic …          # when remote restic configured
-ysk-server backup restore …         # follow CLI help; dry-run first
-```
-
-## Cron
-
-Managed jobs in the control plane + optional **crontab install**.
-
-```bash
+ysk-server backup list --json
 ysk-server cron list --json
-ysk-server cron create --schedule "0 3 * * *" --command "ysk-server backup all" --json
-ysk-server cron enable --id JOB --json
-ysk-server cron run --id JOB --json
-ysk-server cron install --execute   # write user crontab (EXECUTE)
-ysk-server cron status --json
+export YSK_EXECUTE=1
+ysk-server backup schedule --install --execute --json
+ysk-server cron install --execute --json
 ```
 
 ## Honesty
 
-- `schedule --install` / `cron install` need EXECUTE (often root for system crontab).  
-- Backup files under dataDir ≠ offsite success until remote/restic confirms.  
-- Restore is destructive: confirm target paths.
+- Schedule/install without EXECUTE is blocked.  
+- Backup “written” path ≠ verified offsite copy.  
+
+## Panel-only ⚠️
+
+| Surface | Rationale |
+|---------|-----------|
+| — | None |
 
 ## Related
 
-[../deploy/backup.md](../deploy/backup.md) · [../cli/reference.md](../cli/reference.md)
+- [Deploy backup](../deploy/backup.md)  

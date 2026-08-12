@@ -1,48 +1,55 @@
-# 專案與部署
+# 專案
 
-> 語言：中文 | [English](./projects.md)
+> 語言：中文（香港書面語）| [English](./projects.md)
 
-**面板路由：** `/projects`、`/projects/:id`  
-**CLI：** `projects`、`templates`、`hosting`、`nginx`
+## 用途
 
-## 功能
+主機上一等公民 **站點**：建立、部署、停止、健康、git 部署、OS 隔離與範本 — 多 runtime（Node／PHP／static／…）。
 
-一部主機跑多個站點。每專案有 runtime、域名、home／linux 用戶（已 provision 時）、env、日誌與部署路徑。
+**非目標：** 多租戶 Reseller 層級；專案 UI 不發佈 Apache（請用 `/apache`）。
 
-| Runtime | 部署路徑 |
-|---------|----------|
-| Node | systemd unit → PM2 → pidfile 後備 |
-| PHP | PHP-FPM + nginx，或降級 `php -S` |
-| static | nginx `root` + try_files |
+## 面板
 
-## 面板流程
+| 項目 | 值 |
+|------|-----|
+| 路由 | `/projects`、`/projects/:id` |
+| 導航鍵 | `projects` |
+| 主要操作 | 列表 · 建立 · 部署 · 停止 · 健康 · git · 隔離 · 範本 |
+| 能力 | 專案 |
+| RBAC | 專案操作員 |
 
-1. 建立專案（名稱、域名、runtime）。  
-2. **網絡**分頁：域名、發布 nginx（可選 SSL）。  
-3. **部署**：啟動行程／FPM／static。  
-4. 按需 Git 部署或上傳檔案。  
-5. 隔離：就緒後 provision OS 用戶。  
+## 能力對照表
 
-## CLI
+| 面板操作 | CLI | 風險 | 備註 |
+|----------|-----|------|------|
+| 列表／查詢 | `ysk-server projects list\|get` | read | |
+| 建立 | `ysk-server projects create …` | write-panel | |
+| 部署／停止／健康 | `ysk-server projects deploy\|stop\|health` | write-host | deploy 需 execute |
+| Git 部署 | `ysk-server projects git-deploy …` | write-host | |
+| 隔離 | `ysk-server projects isolation …` | write-host | |
+| 範本 | `ysk-server templates list\|apply` | write-panel | |
+
+## CLI 速查
 
 ```bash
 ysk-server projects list --json
-ysk-server projects create --name demo --domain demo.local --runtime node
+ysk-server projects create --name demo --domain demo.example.com --runtime node --json
+export YSK_EXECUTE=1
 ysk-server projects deploy --id UUID --execute --json
-ysk-server projects git-deploy --id UUID --ref main --execute
-ysk-server projects isolation list
-ysk-server projects isolation provision --id UUID
-ysk-server templates list
 ```
 
 ## 誠實邊界
 
-| 無 EXECUTE／root | 有 EXECUTE + root |
-|------------------|-------------------|
-| dataDir unit／ecosystem **已寫入** | 可裝 systemd、真實行程 |
-| dataDir 內 nginx conf | 可 reload 系統 conf.d |
-| health 可能失敗 | 真實監聽 + health |
+- 無 EXECUTE 時部署僅為計劃。  
+- 啟用 systemd unit 常需 root。  
+- 已部署 ≠ 已對外發佈（仍需 nginx／ssl 套用）。  
+
+## 僅面板 ⚠️
+
+| 介面 | 理由 |
+|------|------|
+| — | 無 |
 
 ## 相關
 
-[dns-ssl-nginx-ZH.md](./dns-ssl-nginx-ZH.md) · [runtimes-ZH.md](./runtimes-ZH.md) · [../deploy/isolation-ZH.md](../deploy/isolation-ZH.md) · [../cli/reference-ZH.md](../cli/reference-ZH.md)
+- [執行環境](./runtimes-ZH.md) · [Nginx](./dns-ssl-nginx-ZH.md) · [CLI 參考](../cli/reference-ZH.md)  

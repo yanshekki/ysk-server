@@ -1,31 +1,53 @@
-# Defense center
+# Defense & protection
 
 > Language: English | [中文](./defense-ZH.md)
 
-**Panel routes:** `/protection`, `/firewall`, `/fail2ban`  
-**CLI:** `defense` / `protection`
+## Purpose
 
-## What it does
+Host **firewall / fail2ban / Defense Center** operations with honest blocked states when EXECUTE is off.
 
-Unified host defense: UFW script generation, fail2ban jails, ban/unban/whitelist, presets, timeline, optional Cloudflare helpers.
+**Non-goals:** Guaranteed zero intrusion; geo/IP policy still depends on host tools.
 
-## CLI
+## Panel
+
+| Item | Value |
+|------|--------|
+| Route | `/protection` |
+| Nav key | `protection` |
+| Main actions | Status · firewall · fail2ban · ban/unban · presets · timeline |
+| Capability | Defense |
+| RBAC | Security operators |
+
+## Capability matrix
+
+| Panel action | CLI | Risk | Notes |
+|--------------|-----|------|-------|
+| Status / stack | `ysk-server defense status --json` | read | `protection` alias |
+| Firewall / fail2ban deep | `ysk-server defense firewall\|fail2ban` | read | |
+| Ban / unban / whitelist | `ysk-server defense ban\|unban\|… --execute` | write-host | |
+| Presets / timeline | `ysk-server defense presets\|timeline` | read | |
+| Stack apply | `ysk-server defense stack-apply --execute` | write-host | |
+
+## CLI quick start
 
 ```bash
 ysk-server defense status --json
-ysk-server defense firewall --json
 ysk-server defense fail2ban --json
-ysk-server defense ban --ip 1.2.3.4 --json          # dry-run plan by default
+export YSK_EXECUTE=1
 ysk-server defense ban --ip 1.2.3.4 --execute --json
-ysk-server defense presets --json
-ysk-server defense timeline --json
-ysk-server defense stack-apply --execute --json
 ```
 
 ## Honesty
 
-Without `YSK_EXECUTE=1` (and often root), actions stay **blocked** or only write managed files under dataDir. Never reports live firewall success when blocked.
+- Live UFW/fail2ban mutations need EXECUTE + root.  
+- Fail-closed without tools is correct, not a silent success.  
+
+## Panel-only ⚠️
+
+| Surface | Rationale |
+|---------|-----------|
+| — | None |
 
 ## Related
 
-[../deploy/defense.md](../deploy/defense.md) · [../cli/reference.md](../cli/reference.md)
+- [Security auth](./security-auth.md) · [System host](./system-host.md)  

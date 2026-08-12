@@ -1,36 +1,62 @@
-# Files & FTPS
+# Files, WebDAV & FTP
 
 > Language: English | [中文](./files-ftp-ZH.md)
 
-**Panel routes:** `/files`, `/files/public`, `/ftp`, `/ftp/service`  
-**CLI:** `files`, `hosting ftps-apply`
+## Purpose
 
-## File manager
+Sandboxed **file manager** (public or project root), **public share links**, **WebDAV**, and **FTPS accounts** / vsftpd service.
 
-Sandbox roots: public files and/or `project:ID`. Operations: list, stat, read, write, mkdir, rm, rename, copy, move, chmod, multi-upload, trash, shares, WebDAV token.
+**Non-goals:** Unrestricted host filesystem browse as a remote SSH product; public share landing is panel HTTP (create is CLI/API).
+
+## Panel
+
+| Item | Value |
+|------|--------|
+| Routes | `/files`, `/ftp`, public files hosting |
+| Nav keys | `files`, `publicFiles`, `ftp` |
+| Main actions | CRUD · trash · shares · favorites · WebDAV · FTPS accounts/settings |
+| Capability | Files / FTPS |
+| RBAC | File and FTP operators |
+
+## Capability matrix
+
+| Panel action | CLI | Risk | Notes |
+|--------------|-----|------|-------|
+| List/read/write/mkdir/rm/… | `ysk-server files list\|read\|write\|… --root public\|project:ID` | write-panel | |
+| Trash | `ysk-server files trash list\|restore\|purge` | write-panel | |
+| Shares list | `ysk-server files shares list` | read | |
+| Share create/delete | `ysk-server files shares create\|delete` | write-panel | |
+| Upload local file | `ysk-server files upload --dir … --file …` | write-panel | |
+| WebDAV | `ysk-server files webdav status\|token\|disable` | write-panel | |
+| FTP status/settings | `ysk-server ftp status\|settings …` | read / write-panel | |
+| FTP accounts CRUD | `ysk-server ftp accounts list\|create\|update\|delete` | write-panel | |
+| FTP apply to host | `ysk-server ftp apply\|accounts apply --execute` | write-host | |
+| Public files site | `ysk-server hosting public-files …` | write-host | |
+
+## CLI quick start
 
 ```bash
-ysk-server files list --root project:UUID --path public --json
-ysk-server files read --root project:UUID --path public/index.html --json
-ysk-server files write --root project:UUID --path public/hi.txt --content hello
-ysk-server files trash list --json
-ysk-server files webdav token --json
-ysk-server files upload --dir public --file ./local.zip
-```
-
-## FTPS
-
-vsftpd managed config under dataDir; project FTP accounts; install/apply needs EXECUTE+root for system service.
-
-```bash
-ysk-server hosting ftps-apply --domain files.example.com --json
-ysk-server hosting ftps-apply --domain files.example.com --install --execute
+ysk-server files list --root public --json
+ysk-server files shares create --path docs --root public --json
+ysk-server ftp accounts list --json
+export YSK_EXECUTE=1
+ysk-server ftp apply --execute --json
 ```
 
 ## Honesty
 
-File ops never escape configured roots. System vsftpd without EXECUTE stays plan/written only.
+- File ops are sandboxed to chosen root.  
+- FTPS apply needs EXECUTE + root for vsftpd.  
+- Public `/share/:token` page is UX; **create** is CLI/API.  
+
+## Panel-only ⚠️
+
+| Surface | Rationale |
+|---------|-----------|
+| In-browser preview editor | Use `files read/write` |
+| Public share landing page | Public HTTP |
 
 ## Related
 
-[projects.md](./projects.md) · [../cli/reference.md](../cli/reference.md)
+- [CLI reference — files / ftp](../cli/reference.md)  
+- [Panel ↔ CLI matrix](../cli/panel-parity-matrix.md)  

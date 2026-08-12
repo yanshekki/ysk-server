@@ -1,38 +1,54 @@
 # 安全與認證
 
-> 語言：中文 | [English](./security-auth.md)
+> 語言：中文（香港書面語）| [English](./security-auth.md)
 
-**面板路由：** `/security`  
-**CLI：** `security`、`users`、`audit`、`ssh-key`、`ssh-2fa`、`rbac`
+## 用途
 
-## 功能
+面板 **登入安全**：工作階段、API 金鑰、面板 2FA、審計軌跡；與 **SSH** 身分及 SSH 2FA 分離。
 
-| 主題 | 能力 |
-|------|------|
-| 登入 | 工作階段、閒置／絕對時限 |
-| 2FA | 面板 TOTP、復原碼、WebAuthn |
-| API 金鑰 | `ysk_*`（建立時只顯示一次） |
-| 管理員旗標 | require_admin_totp／strict |
-| 審計 | 近期操作 |
-| SSH | 身分庫 + **獨立** SSH 登入 TOTP |
+**非目標：** 在受管輔助之外完全取代 OS PAM。
 
-## CLI
+## 面板
+
+| 項目 | 值 |
+|------|-----|
+| 路由 | `/security` |
+| 導航鍵 | `security` |
+| 主要操作 | 狀態 · 工作階段 · API 金鑰 · 2FA · 審計 |
+| 能力 | 安全 |
+| RBAC | 管理員 |
+
+## 能力對照表
+
+| 面板操作 | CLI | 風險 | 備註 |
+|----------|-----|------|------|
+| 安全狀態 | `ysk-server security status --json` | read | |
+| 工作階段 | `ysk-server security sessions list\|revoke…` | write-panel | |
+| API 金鑰 | `ysk-server security api-keys …` | write-panel | token 僅一次 |
+| 審計 | `ysk-server audit --json` | read | |
+| SSH 金鑰 | `ysk-server ssh-key …` | write-host | install 需 execute |
+| SSH 2FA | `ysk-server ssh-2fa …` | write-host | ≠ 面板 TOTP |
+
+## CLI 速查
 
 ```bash
 ysk-server security status --json
-ysk-server security sessions list --user admin
-ysk-server security sessions revoke --id PREFIX --user admin
-ysk-server security api-keys create --name ci --scope read --json
-ysk-server users list --q admin
-ysk-server audit --limit 50 --q login
-ysk-server ssh-2fa list
-ysk-server rbac audit
+ysk-server security sessions list --json
+ysk-server ssh-key list --json
+ysk-server audit --limit 50 --json
 ```
 
 ## 誠實邊界
 
-SSH 2FA 密鑰 ≠ 面板 TOTP。破門需主機主控台 — 見 [../security/2fa-break-glass-ZH.md](../security/2fa-break-glass-ZH.md)。
+- SSH TOTP ≠ 面板 TOTP。  
+- 主機安裝路徑需 EXECUTE + root。  
+
+## 僅面板 ⚠️
+
+| 介面 | 理由 |
+|------|------|
+| TOTP QR 註冊 UI | 互動；可用 CLI 確認（若已暴露） |
 
 ## 相關
 
-[../security/overview-ZH.md](../security/overview-ZH.md) · [users-rbac-ZH.md](./users-rbac-ZH.md)
+- [用戶與 RBAC](./users-rbac-ZH.md) · [安全總覽](../security/overview-ZH.md)  

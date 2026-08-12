@@ -2,37 +2,53 @@
 
 > Language: English | [中文](./security-auth-ZH.md)
 
-**Panel route:** `/security`  
-**CLI:** `security`, `users`, `audit`, `ssh-key`, `ssh-2fa`, `rbac`
+## Purpose
 
-## What it does
+Panel **login security**: sessions, API keys, panel 2FA, audit trail; separate from **SSH** identity and SSH 2FA.
 
-| Topic | Capability |
-|-------|------------|
-| Login | Sessions, idle/absolute limits |
-| 2FA | Panel TOTP, recovery codes, WebAuthn paths |
-| API keys | `ysk_*` tokens (shown once) |
-| Admin flags | require_admin_totp / strict |
-| Audit | Recent operator actions |
-| SSH | Identity vault + **separate** SSH login TOTP |
+**Non-goals:** Replacing OS PAM entirely outside managed helpers.
 
-## CLI
+## Panel
+
+| Item | Value |
+|------|--------|
+| Route | `/security` |
+| Nav key | `security` |
+| Main actions | Status · sessions · API keys · 2FA · audit |
+| Capability | Security |
+| RBAC | Admins |
+
+## Capability matrix
+
+| Panel action | CLI | Risk | Notes |
+|--------------|-----|------|-------|
+| Security status | `ysk-server security status --json` | read | |
+| Sessions | `ysk-server security sessions list\|revoke…` | write-panel | |
+| API keys | `ysk-server security api-keys …` | write-panel | token once |
+| Audit | `ysk-server audit --json` | read | |
+| SSH keys | `ysk-server ssh-key …` | write-host | install needs execute |
+| SSH 2FA | `ysk-server ssh-2fa …` | write-host | ≠ panel TOTP |
+
+## CLI quick start
 
 ```bash
 ysk-server security status --json
-ysk-server security sessions list --user admin
-ysk-server security sessions revoke --id PREFIX --user admin
-ysk-server security api-keys create --name ci --scope read --json
-ysk-server users list --q admin
-ysk-server audit --limit 50 --q login
-ysk-server ssh-2fa list
-ysk-server rbac audit
+ysk-server security sessions list --json
+ysk-server ssh-key list --json
+ysk-server audit --limit 50 --json
 ```
 
 ## Honesty
 
-SSH 2FA secrets ≠ panel TOTP. Break-glass needs host console access — see [../security/2fa-break-glass.md](../security/2fa-break-glass.md).
+- SSH TOTP ≠ panel TOTP.  
+- Host install paths need EXECUTE + root.  
+
+## Panel-only ⚠️
+
+| Surface | Rationale |
+|---------|-----------|
+| TOTP QR enrollment UI | Interactive; confirm via CLI where exposed |
 
 ## Related
 
-[../security/overview.md](../security/overview.md) · [users-rbac.md](./users-rbac.md)
+- [Users & RBAC](./users-rbac.md) · [Security overview](../security/overview.md)  

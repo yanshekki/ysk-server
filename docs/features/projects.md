@@ -1,48 +1,55 @@
-# Projects & deploy
+# Projects
 
 > Language: English | [中文](./projects-ZH.md)
 
-**Panel routes:** `/projects`, `/projects/:id`  
-**CLI:** `projects`, `templates`, `hosting`, `nginx`
+## Purpose
 
-## What it does
+First-class **sites** on the host: create, deploy, stop, health, git deploy, OS isolation, and templates — multi-runtime (Node/PHP/static/…).
 
-Create and run multiple sites on one host. Each project has runtime, domain, home/linux user (when provisioned), env, logs, and deploy path.
+**Non-goals:** Multi-tenant reseller hierarchy; project UI does not publish Apache (use `/apache`).
 
-| Runtime | Deploy path |
-|---------|-------------|
-| Node | systemd unit → PM2 → pidfile fallback |
-| PHP | PHP-FPM + nginx, or `php -S` degraded |
-| static | nginx `root` + try_files |
+## Panel
 
-## Panel workflow
+| Item | Value |
+|------|--------|
+| Routes | `/projects`, `/projects/:id` |
+| Nav key | `projects` |
+| Main actions | List · create · deploy · stop · health · git · isolation · templates |
+| Capability | Projects |
+| RBAC | Project operators |
 
-1. Create project (name, domain, runtime).  
-2. **Network** tab: domain, publish nginx (optional SSL).  
-3. **Deploy**: start process / FPM / static.  
-4. Git deploy or file upload as needed.  
-5. Isolation: provision OS user when ready.
+## Capability matrix
 
-## CLI
+| Panel action | CLI | Risk | Notes |
+|--------------|-----|------|-------|
+| List / get | `ysk-server projects list\|get` | read | |
+| Create | `ysk-server projects create …` | write-panel | |
+| Deploy / stop / health | `ysk-server projects deploy\|stop\|health` | write-host | deploy needs execute |
+| Git deploy | `ysk-server projects git-deploy …` | write-host | |
+| Isolation | `ysk-server projects isolation …` | write-host | |
+| Templates | `ysk-server templates list\|apply` | write-panel | |
+
+## CLI quick start
 
 ```bash
 ysk-server projects list --json
-ysk-server projects create --name demo --domain demo.local --runtime node
+ysk-server projects create --name demo --domain demo.example.com --runtime node --json
+export YSK_EXECUTE=1
 ysk-server projects deploy --id UUID --execute --json
-ysk-server projects git-deploy --id UUID --ref main --execute
-ysk-server projects isolation list
-ysk-server projects isolation provision --id UUID
-ysk-server templates list
 ```
 
 ## Honesty
 
-| Without EXECUTE / root | With EXECUTE + root |
-|------------------------|---------------------|
-| dataDir unit/ecosystem **written** | systemd install, live process |
-| nginx conf under dataDir | system conf.d reload possible |
-| health may fail | real listen + health |
+- Deploy without EXECUTE is plan-only.  
+- Systemd unit enable often needs root.  
+- Deployed ≠ publicly published until nginx/ssl apply.  
+
+## Panel-only ⚠️
+
+| Surface | Rationale |
+|---------|-----------|
+| — | None required |
 
 ## Related
 
-[dns-ssl-nginx.md](./dns-ssl-nginx.md) · [runtimes.md](./runtimes.md) · [../deploy/isolation.md](../deploy/isolation.md) · [../cli/reference.md](../cli/reference.md)
+- [Runtimes](./runtimes.md) · [Nginx](./dns-ssl-nginx.md) · [CLI reference](../cli/reference.md)  

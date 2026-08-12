@@ -1,36 +1,62 @@
-# 檔案與 FTPS
+# 檔案、WebDAV 與 FTP
 
-> 語言：中文 | [English](./files-ftp.md)
+> 語言：中文（香港書面語）| [English](./files-ftp.md)
 
-**面板路由：** `/files`、`/files/public`、`/ftp`、`/ftp/service`  
-**CLI：** `files`、`hosting ftps-apply`
+## 用途
 
-## 檔案管理
+沙箱 **檔案管理**（public 或專案根）、**公開分享連結**、**WebDAV**，以及 **FTPS 帳戶**／vsftpd 服務。
 
-沙箱根：公用檔案及／或 `project:ID`。操作：list、stat、read、write、mkdir、rm、rename、copy、move、chmod、多檔上傳、垃圾桶、分享、WebDAV token。
+**非目標：** 以遠端 SSH 產品方式瀏覽整機檔案系統；公開 share 落地頁屬面板 HTTP（建立仍用 CLI／API）。
+
+## 面板
+
+| 項目 | 值 |
+|------|-----|
+| 路由 | `/files`、`/ftp`、公開檔案站 |
+| 導航鍵 | `files`、`publicFiles`、`ftp` |
+| 主要操作 | CRUD · 回收桶 · 分享 · 收藏 · WebDAV · FTPS 帳戶／設定 |
+| 能力 | 檔案／FTPS |
+| RBAC | 檔案與 FTP 操作員 |
+
+## 能力對照表
+
+| 面板操作 | CLI | 風險 | 備註 |
+|----------|-----|------|------|
+| 列表／讀寫／mkdir／rm… | `ysk-server files list\|read\|write\|… --root public\|project:ID` | write-panel | |
+| 回收桶 | `ysk-server files trash list\|restore\|purge` | write-panel | |
+| 分享列表 | `ysk-server files shares list` | read | |
+| 分享建立／刪除 | `ysk-server files shares create\|delete` | write-panel | |
+| 上載本機檔 | `ysk-server files upload --dir … --file …` | write-panel | |
+| WebDAV | `ysk-server files webdav status\|token\|disable` | write-panel | |
+| FTP 狀態／設定 | `ysk-server ftp status\|settings …` | read／write-panel | |
+| FTP 帳戶 CRUD | `ysk-server ftp accounts list\|create\|update\|delete` | write-panel | |
+| FTP 套用主機 | `ysk-server ftp apply\|accounts apply --execute` | write-host | |
+| 公開檔案站 | `ysk-server hosting public-files …` | write-host | |
+
+## CLI 速查
 
 ```bash
-ysk-server files list --root project:UUID --path public --json
-ysk-server files read --root project:UUID --path public/index.html --json
-ysk-server files write --root project:UUID --path public/hi.txt --content hello
-ysk-server files trash list --json
-ysk-server files webdav token --json
-ysk-server files upload --dir public --file ./local.zip
-```
-
-## FTPS
-
-dataDir 內 vsftpd 管理設定；專案 FTP 帳戶；系統服務安裝／套用需 EXECUTE+root。
-
-```bash
-ysk-server hosting ftps-apply --domain files.example.com --json
-ysk-server hosting ftps-apply --domain files.example.com --install --execute
+ysk-server files list --root public --json
+ysk-server files shares create --path docs --root public --json
+ysk-server ftp accounts list --json
+export YSK_EXECUTE=1
+ysk-server ftp apply --execute --json
 ```
 
 ## 誠實邊界
 
-檔案操作不離開設定根路徑。無 EXECUTE 時系統 vsftpd 只停留計劃／written。
+- 檔案操作受限於所選 root。  
+- FTPS 套用需 EXECUTE + root（vsftpd）。  
+- 公開 `/share/:token` 頁為 UX；**建立**屬 CLI／API。  
+
+## 僅面板 ⚠️
+
+| 介面 | 理由 |
+|------|------|
+| 瀏覽器內預覽編輯器 | 使用 `files read/write` |
+| 公開分享落地頁 | 公開 HTTP |
 
 ## 相關
 
-[projects-ZH.md](./projects-ZH.md) · [../cli/reference-ZH.md](../cli/reference-ZH.md)
+- [CLI 參考 — files／ftp](../cli/reference-ZH.md)  
+- [面板 ↔ CLI 矩陣](../cli/panel-parity-matrix-ZH.md)  

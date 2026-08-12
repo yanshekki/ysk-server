@@ -1,50 +1,55 @@
 # 備份與 Cron
 
-> 語言：中文 | [English](./backups-cron.md)
+> 語言：中文（香港書面語）| [English](./backups-cron.md)
 
-**面板路由：** `/backups`、`/cron`  
-**CLI：** `backup`、`cron`
+## 用途
 
-## 備份
+**控制平面與主機備份**作業（含 restic 輔助）與 **受管 cron** 項目。
 
-| 能力 | 說明 |
-|------|------|
-| 專案 tar | dataDir 下每專案封存 |
-| 控制平面 | store 快照／控制平面包 |
-| 排程 | 安裝系統排程（EXECUTE） |
-| 遠端／restic | 設定後可用 restic 輔助 |
-| 還原 | 明確還原路徑（執行前覆核） |
+**非目標：** 無儲存上限的無限保留；無 EXECUTE 時靜默宣稱備份成功。
+
+## 面板
+
+| 項目 | 值 |
+|------|-----|
+| 路由 | `/backups`、`/cron` |
+| 導航鍵 | `backups`、`cron` |
+| 主要操作 | 備份列表／執行／還原 · 排程 · restic · cron CRUD／安裝 |
+| 能力 | 備份／cron |
+| RBAC | 操作員 |
+
+## 能力對照表
+
+| 面板操作 | CLI | 風險 | 備註 |
+|----------|-----|------|------|
+| 備份列表／狀態／全部 | `ysk-server backup list\|status\|all` | write-host | all 可能需 execute |
+| 還原／刪除 | `ysk-server backup restore\|delete` | write-host | |
+| 排程安裝 | `ysk-server backup schedule --install --execute` | write-host | |
+| Restic 輔助 | `ysk-server backup restic …` | write-host | |
+| Cron 列表／建立… | `ysk-server cron list\|create\|…` | write-panel | |
+| Cron 安裝至主機 | `ysk-server cron install --execute` | write-host | |
+
+## CLI 速查
 
 ```bash
-ysk-server backup list --q demo --json
-ysk-server backup status --json
-ysk-server backup all --json
-ysk-server backup control-plane --json
-ysk-server backup schedule --install --execute
-ysk-server backup settings get --json
-ysk-server backup restic …
-ysk-server backup restore …         # 先看 help；先 dry-run
-```
-
-## Cron
-
-控制平面託管工作 + 可選 **crontab 安裝**。
-
-```bash
+ysk-server backup list --json
 ysk-server cron list --json
-ysk-server cron create --schedule "0 3 * * *" --command "ysk-server backup all" --json
-ysk-server cron enable --id JOB --json
-ysk-server cron run --id JOB --json
-ysk-server cron install --execute
-ysk-server cron status --json
+export YSK_EXECUTE=1
+ysk-server backup schedule --install --execute --json
+ysk-server cron install --execute --json
 ```
 
 ## 誠實邊界
 
-- `schedule --install`／`cron install` 需 EXECUTE（系統 crontab 常需 root）。  
-- dataDir 內備份檔 ≠ 異地成功，直至遠端／restic 確認。  
-- 還原具破壞性：確認目標路徑。  
+- 無 EXECUTE 時排程／安裝會被阻擋。  
+- 備份「已寫入」路徑 ≠ 已驗證異地副本。  
+
+## 僅面板 ⚠️
+
+| 介面 | 理由 |
+|------|------|
+| — | 無 |
 
 ## 相關
 
-[../deploy/backup-ZH.md](../deploy/backup-ZH.md) · [../cli/reference-ZH.md](../cli/reference-ZH.md)
+- [部署備份](../deploy/backup-ZH.md)  

@@ -20,7 +20,7 @@ Standards: [docs-standard.md](./docs-standard.md). Programme slices: **D0–D5**
 | **D0** | Standard + template + this inventory + INDEX links | ~10% | ✅ done |
 | **D1** | `cli/overview` + `cli/reference` + `commands.json` | ~35% | ✅ done |
 | **D2** | New-domain handbooks (vpn, vnc, apache, system-host, databases, runtimes) | ~55% | ✅ done |
-| **D3** | Remaining `features/*` deepen | ~75% | ⬜ |
+| **D3** | Remaining `features/*` deepen | ~75% | ✅ done |
 | **D4** | INDEX polish, user-manual Day-N, agent docs, parity ZH | ~90% | ⬜ |
 | **D5** | bilingual-check seal + cross-links | 100% | ⬜ |
 
@@ -58,10 +58,10 @@ Bold = post-C2 surface that reference still under-documents.
 | runtimes | `runtimes{,-ZH}.md` | runtime pages | `runtimes`, `hosting runtime-*` | ✅ | D2 |
 | security-auth | `security-auth{,-ZH}.md` | `/security` | `security`, `ssh-key`, `ssh-2fa` | 🔶 | D3 |
 | defense | `defense{,-ZH}.md` | `/protection` | `defense`, `protection` | 🔶 | D3 |
-| vpn | `vpn{,-ZH}.md` | `/vpn` | `vpn` | 🔶 no CLI matrix | D2 |
-| vnc | `vnc{,-ZH}.md` | `/vnc` | `vnc` | 🔶 incomplete CLI | D2 |
+| vpn | `vpn{,-ZH}.md` | `/vpn` | `vpn` | ✅ | D2 |
+| vnc | `vnc{,-ZH}.md` | `/vnc` | `vnc` | ✅ | D2 |
 | users-rbac | `users-rbac{,-ZH}.md` | `/users` | `users`, `packages`, `rbac` | 🔶 | D3 |
-| system-host | `system-host{,-ZH}.md` | system, network, updates | `host`, `network`, `real-ip`, `updates`, `software`, `ssl panel-tls` | 🔶 | D2 |
+| system-host | `system-host{,-ZH}.md` | system, network, updates | `host`, `network`, `real-ip`, `updates`, `software`, `ssl panel-tls` | ✅ | D2 |
 | backups-cron | `backups-cron{,-ZH}.md` | backups, cron | `backup`, `cron` | 🔶 | D3 |
 | logs-metrics | `logs-metrics{,-ZH}.md` | logs, metrics | `logs`, `host` | 🔶 | D3 |
 | cdn-agents | `cdn-agents{,-ZH}.md` | CDN, agents | `cdn`, `agents` | 🔶 | D3 |

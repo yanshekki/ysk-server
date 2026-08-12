@@ -1,38 +1,49 @@
-# 用戶、方案、RBAC
+# 用戶、方案與 RBAC
 
-> 語言：中文 | [English](./users-rbac.md)
+> 語言：中文（香港書面語）| [English](./users-rbac.md)
 
-**面板路由：** `/users`  
-**CLI：** `users`、`packages`、`rbac`
+## 用途
 
-## 用戶與方案
+控制平面 **用戶**、**方案（packages）** 與 **RBAC** 政策檢視。
 
-| 概念 | 含義 |
-|------|------|
-| 用戶 | 面板操作員（admin／operator／viewer…） |
-| 方案 | 配額範本（多為**主機範圍**總量） |
-| 覆寫 | 每用戶 capability 授予／撤銷 |
+**非目標：** 完整多租戶 Reseller 樹（產品以管理員優先）。
+
+## 面板
+
+| 項目 | 值 |
+|------|-----|
+| 路由 | `/users` |
+| 導航鍵 | `users` |
+| 主要操作 | 用戶 CRUD · 方案 · 角色矩陣 |
+| 能力 | 管理用戶／方案／rbac |
+| RBAC | 管理員 |
+
+## 能力對照表
+
+| 面板操作 | CLI | 風險 | 備註 |
+|----------|-----|------|------|
+| 用戶列表／建立 | `ysk-server users list\|create …` | write-panel | |
+| 方案列表 | `ysk-server packages list` | read | |
+| RBAC 列表／顯示／審計 | `ysk-server rbac list\|show\|audit` | read | |
+
+## CLI 速查
 
 ```bash
-ysk-server users list --role admin --json
-ysk-server users create --username ops --password '…' --role operator --json
+ysk-server users list --json
 ysk-server packages list --json
-```
-
-## RBAC
-
-角色 factory 政策 + 有效 capability。變更 API 路由對應 capability（fail-closed）。
-
-```bash
 ysk-server rbac list --json
-ysk-server rbac show --role operator --json
-ysk-server rbac audit --json
 ```
 
 ## 誠實邊界
 
-admin 系統角色不能被髒政策剝光關鍵特權。方案配額不是完整多租戶隔離。
+- 面板 packages 為控制平面方案，不是 apt 套件（見 `updates`／`software`）。  
+
+## 僅面板 ⚠️
+
+| 介面 | 理由 |
+|------|------|
+| — | 無 |
 
 ## 相關
 
-[security-auth-ZH.md](./security-auth-ZH.md) · [../security/rbac-route-audit-ZH.md](../security/rbac-route-audit-ZH.md)
+- [安全認證](./security-auth-ZH.md)  

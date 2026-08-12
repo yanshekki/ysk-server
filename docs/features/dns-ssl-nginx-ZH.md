@@ -1,49 +1,62 @@
-# DNS、SSL、Nginx
+# DNS、SSL 與 Nginx
 
-> 語言：中文 | [English](./dns-ssl-nginx.md)
+> 語言：中文（香港書面語）| [English](./dns-ssl-nginx.md)
 
-**面板路由：** `/dns`、`/ssl`、`/nginx`  
-**CLI：** `dns`、`ssl`、`nginx`、`hosting dns-*|powerdns-*`
+## 用途
 
-## DNS
+管理 **DNS 區域**（已寫入 vs 線上）、**TLS 憑證**，以及作為預設專案邊緣的 **Nginx** — 含 DNSSEC 輔助、PowerDNS heal 與憑證清冊。
 
-- dataDir 託管 zone 檔  
-- 可選 PowerDNS 輔助／Cloudflare 套用（需 token）  
-- 工具存在時可驗證  
+**非目標：** 代管外部 DNS 供應商帳號；僅寫入 zone 檔並非公開權威，直至套用／reload 成功。
+
+## 面板
+
+| 項目 | 值 |
+|------|-----|
+| 路由 | `/dns`、`/ssl`、`/nginx` |
+| 導航鍵 | `dns`、`ssl`、`nginx` |
+| 主要操作 | 區域 · 記錄驗證 · DNSSEC · heal · 憑證 · nginx 狀態／同步 |
+| 能力 | DNS／SSL／Nginx |
+| RBAC | 託管操作員 |
+
+## 能力對照表
+
+| 面板操作 | CLI | 風險 | 備註 |
+|----------|-----|------|------|
+| 列表／寫入區域 | `ysk-server dns zones\|zone …` | write-host | zone 寫入可能 reload |
+| DNSSEC 列表／產生 | `ysk-server dns dnssec list\|generate --zone …` | write-host | generate 需 execute |
+| Heal PowerDNS | `ysk-server dns heal --execute` | write-host | |
+| DNS 健康／查詢 | `ysk-server dns health\|lookup …` | read | |
+| 驗證記錄集 | `ysk-server dns records --records '[]'` | read | |
+| SSL 列表／查詢 | `ysk-server ssl list\|get --domain …` | read | |
+| Bootstrap／面板 TLS | `ysk-server ssl bootstrap\|panel-tls …` | write-host | |
+| Nginx 狀態／列表／測試／同步 | `ysk-server nginx status\|list\|test\|sync` | write-host | sync |
+
+## CLI 速查
 
 ```bash
 ysk-server dns zones --json
-ysk-server dns zone --zone example.com --ip A.B.C.D --json
-ysk-server hosting powerdns-status --json
-```
-
-## SSL
-
-- 憑證列表、綁定、到期感知  
-- 上傳 PEM 或 Let’s Encrypt 相關路徑  
-- 無真實憑證 + nginx 發布前不宣稱公開 HTTPS  
-
-```bash
+ysk-server dns health --json
 ysk-server ssl list --json
-ysk-server ssl get --id … --json
-```
-
-## Nginx
-
-- 每專案／託管 conf 在 dataDir  
-- EXECUTE+root 時可 `test`／`sync` 到系統 conf.d  
-
-```bash
 ysk-server nginx status --json
-ysk-server nginx list --json
-ysk-server nginx test --json
+export YSK_EXECUTE=1
 ysk-server nginx sync --execute --json
+ysk-server dns dnssec generate --zone example.com --execute --json
 ```
 
 ## 誠實邊界
 
-dataDir **已寫入** conf ≠ 已上線 vhost，直至 sync／reload 成功。註冊商 DNS 屬外部。
+- 資料目錄中 **已寫入** zone ≠ 公眾解析真相。  
+- LE 簽發需外網 + EXECUTE。  
+- Nginx 同步在 `--execute` 前為試跑。  
+
+## 僅面板 ⚠️
+
+| 介面 | 理由 |
+|------|------|
+| — | 無 |
 
 ## 相關
 
-[projects-ZH.md](./projects-ZH.md) · [../cli/reference-ZH.md](../cli/reference-ZH.md)
+- [Nginx 站點](./nginx-sites-ZH.md)  
+- [Apache](./apache-ZH.md)  
+- [CLI 參考](../cli/reference-ZH.md)  

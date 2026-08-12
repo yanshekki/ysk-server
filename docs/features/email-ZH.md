@@ -1,41 +1,59 @@
-# 郵件
+# 電子郵件
 
-> 語言：中文 | [English](./email.md)
+> 語言：中文（香港書面語）| [English](./email.md)
 
-**面板路由：** `/email`、`/email/domains/:id`  
-**CLI：** `email`、`hosting email-*`
+## 用途
 
-## 功能
+在主機操作 **郵件網域與信箱**（Postfix／Dovecot 路徑）、DNS 套件、可送達性探測、別名、佇列與可選 SMTP 中繼。
 
-| 區 | 能力 |
-|----|------|
-| 域名 | DKIM 素材、DNS 建議記錄 |
-| 信箱 | dataDir 下 Maildir + maps |
-| 可送達性 | 即時 MX／SPF／DKIM／DMARC／PTR／Port25／DNSBL |
-| 中繼 | Port 25 被封時 SMTP 中繼 |
-| 暖機 | 分階段寄信指引 |
-| Webmail | Roundcube 計劃／安裝輔助 |
+**非目標：** 保證全球 inbox 送達；PTR 與 Port 25 屬外部。
 
-## CLI
+## 面板
+
+| 項目 | 值 |
+|------|-----|
+| 路由 | `/email`、網域詳情 |
+| 導航鍵 | `email` |
+| 主要操作 | 網域 · 信箱 · DNS · 可送達性 · 別名 · 佇列 · 中繼 · 網頁郵件 |
+| 能力 | 郵件 |
+| RBAC | 郵件操作員 |
+
+## 能力對照表
+
+| 面板操作 | CLI | 風險 | 備註 |
+|----------|-----|------|------|
+| 網域列表／建立／查詢 | `ysk-server email domains …` | write-panel | |
+| 信箱列表／建立 | `ysk-server email mailboxes …` | write-panel／write-host | 系統用戶可選 |
+| DNS 套件 | `ysk-server email dns --domain …` | read | |
+| 可送達性 | `ysk-server email deliverability --domain …` | read | 誠實評分 |
+| 引導安裝堆疊 | `ysk-server email bootstrap … [--install]` | write-host | |
+| 別名 CRUD | `ysk-server email aliases list\|create\|delete` | write-panel | |
+| 佇列列表／清空 | `ysk-server email queue list\|flush --execute` | write-host | flush |
+| 中繼讀取／套用 | `ysk-server email relay get\|apply --host …` | write-host | execute 時套用系統 |
+
+## CLI 速查
 
 ```bash
-ysk-server email domains list|create --domain example.com --ip A.B.C.D
-ysk-server email mailboxes create --domain example.com --local app
+ysk-server email domains list --json
 ysk-server email deliverability --domain example.com --json
-ysk-server email bootstrap --domain example.com --ip A.B.C.D
-ysk-server email dns --domain example.com
+ysk-server email aliases list --domain example.com --json
+ysk-server email queue list --json
+ysk-server email relay get --json
 ```
-
-## 操作員外部步驟
-
-1. 在**域名商／權威 DNS** 發布 MX／TXT。  
-2. 在 VPS 主控台設 **PTR** 對齊郵件主機名。  
-3. **解封 Port 25** 或設定中繼。  
 
 ## 誠實邊界
 
-面板**從不**保證 Gmail／Outlook inbox。PTR 與 Port 25 不由 YSK 控制。
+- 可送達性從不宣稱全球 inbox 成功。  
+- PTR／Port 25／黑名單需外部處理。  
+- 佇列清空與系統郵件套件需 EXECUTE。  
+
+## 僅面板 ⚠️
+
+| 介面 | 理由 |
+|------|------|
+| 網頁郵件 UI／SSO 瀏覽器流程 | 互動；可用 CLI 引導 |
 
 ## 相關
 
-[../email/deliverability-ZH.md](../email/deliverability-ZH.md) · [../cli/reference-ZH.md](../cli/reference-ZH.md)
+- [郵件可送達性](../email/deliverability-ZH.md)  
+- [CLI 參考 — email](../cli/reference-ZH.md)  

@@ -1,38 +1,50 @@
-# AI tools & playbooks
+# AI tools & ask
 
 > Language: English | [中文](./ai-tools-ZH.md)
 
-**Panel routes:** `/ai`, tools / allowlist UI  
-**CLI:** `tools`, `ask`
+## Purpose
 
-## What it does
+**Allowlisted tools** and natural-language `ask` that still respect protection mode and dry-run defaults.
 
-| Piece | Role |
-|-------|------|
-| Tool catalog | Allowlisted host/control-plane tools |
-| `tools run` | Execute one tool with args (dry-run default for risky) |
-| `ask` | Natural language → planned tool steps |
-| Playbooks | Built-in emergency/ops sequences |
-| Protection mode | Restricts tools when defense posture requires |
+**Non-goals:** Unrestricted shell as the agent; bypassing EXECUTE.
 
-## CLI
+## Panel
+
+| Item | Value |
+|------|--------|
+| Route | AI / tools surfaces |
+| Nav key | (tools / ask entry points) |
+| Main actions | Tool catalog · run · ask |
+| Capability | AI tools |
+| RBAC | Operators with tool allowlist |
+
+## Capability matrix
+
+| Panel action | CLI | Risk | Notes |
+|--------------|-----|------|-------|
+| List tools | `ysk-server tools --json` | read | |
+| Run tool | `ysk-server tools run --tool NAME …` | write-host | needs execute for host tools |
+| Natural language | `ysk-server ask "…"` | varies | still gated |
+
+## CLI quick start
 
 ```bash
 ysk-server tools --json
-ysk-server tools run --tool sys.info --json
-ysk-server tools run --tool service.status --arg name=nginx --json
-ysk-server ask "check nginx and disk" --json
-ysk-server ask "restart nginx" --execute --json   # only after reviewing plan
+ysk-server tools run --tool NAME --arg k=v --json
+ysk-server ask "list projects" --json
 ```
 
-## Agent rules
+## Honesty
 
-1. Prefer CLI + `--json` over experimental fleet UI.  
-2. Read `blocked` / `notes` / allowlist denials.  
-3. Never claim applied when dry-run.  
+- Tools respect allowlist + protection.  
+- Prefer CLI + `--json` for agents.  
 
-See [../agent/README.md](../agent/README.md) · [../agent/commands.json](../agent/commands.json).
+## Panel-only ⚠️
+
+| Surface | Rationale |
+|---------|-----------|
+| Chat chrome | Same tools via CLI |
 
 ## Related
 
-[../cli/reference.md](../cli/reference.md) · [defense.md](./defense.md)
+- [Agent README](../agent/README.md)  

@@ -1,38 +1,49 @@
-# Users, packages, RBAC
+# Users, packages & RBAC
 
 > Language: English | [中文](./users-rbac-ZH.md)
 
-**Panel route:** `/users`  
-**CLI:** `users`, `packages`, `rbac`
+## Purpose
 
-## Users & packages
+Control-plane **users**, **packages** (plans), and **RBAC** policy inspection.
 
-| Concept | Meaning |
-|---------|---------|
-| Users | Panel operators (admin / operator / viewer / …) |
-| Packages | Quota templates (often **host-scoped** totals) |
-| Overrides | Per-user capability grants/revokes |
+**Non-goals:** Full multi-tenant reseller tree (admin-first product).
+
+## Panel
+
+| Item | Value |
+|------|--------|
+| Route | `/users` |
+| Nav key | `users` |
+| Main actions | Users CRUD · packages · role matrix |
+| Capability | Admin users / packages / rbac |
+| RBAC | Admins |
+
+## Capability matrix
+
+| Panel action | CLI | Risk | Notes |
+|--------------|-----|------|-------|
+| Users list/create | `ysk-server users list\|create …` | write-panel | |
+| Packages list | `ysk-server packages list` | read | |
+| RBAC list/show/audit | `ysk-server rbac list\|show\|audit` | read | |
+
+## CLI quick start
 
 ```bash
-ysk-server users list --role admin --json
-ysk-server users create --username ops --password '…' --role operator --json
+ysk-server users list --json
 ysk-server packages list --json
-```
-
-## RBAC
-
-Role factory policies + effective capabilities. Mutating API routes map to capabilities (fail-closed).
-
-```bash
 ysk-server rbac list --json
-ysk-server rbac show --role operator --json
-ysk-server rbac audit --json
 ```
 
 ## Honesty
 
-Admin system role cannot be stripped of critical privileges by dirty policy. Package quotas are not full multi-tenant isolation.
+- Panel packages are control-plane plans, not apt packages (`updates` / `software`).  
+
+## Panel-only ⚠️
+
+| Surface | Rationale |
+|---------|-----------|
+| — | None |
 
 ## Related
 
-[security-auth.md](./security-auth.md) · [../security/rbac-route-audit.md](../security/rbac-route-audit.md)
+- [Security auth](./security-auth.md)  

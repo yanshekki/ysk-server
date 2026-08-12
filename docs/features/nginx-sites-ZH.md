@@ -1,16 +1,52 @@
 # Nginx 站點
 
-> [English](./nginx-sites.md)
+> 語言：中文（香港書面語）| [English](./nginx-sites.md)
 
 ## 用途
 
-Nginx **唯一入口** `/nginx`：專案站 + 獨立站同一張表。套用、預覽、全域／站點設定都喺呢度。
+Nginx 作為專案 **預設邊緣**：狀態探測、受管 conf 清冊、設定測試，以及同步至系統 conf.d。
 
-## 專案網絡
+**非目標：** 完整視覺站點建構器；由專案頁雙重發佈 Apache。
 
-專案 → 網絡：只改域名／埠。**喺 Nginx 管理** 去套用。
+## 面板
 
-## 設定
+| 項目 | 值 |
+|------|-----|
+| 路由 | `/nginx` |
+| 導航鍵 | `nginx` |
+| 主要操作 | 狀態 · conf 列表 · 測試 · 同步 |
+| 能力 | Nginx |
+| RBAC | 託管操作員 |
 
-- **全域**：gzip、版本號、body 上限、keepalive、access log  
-- **站點**：SSL、強制 HTTPS、HSTS、body、CF Real IP、目錄列表  
+## 能力對照表
+
+| 面板操作 | CLI | 風險 | 備註 |
+|----------|-----|------|------|
+| 狀態／總覽 | `ysk-server nginx status --json` | read | 有 binary 時含 nginx -t |
+| 列出受管 conf | `ysk-server nginx list --json` | read | |
+| 設定測試 | `ysk-server nginx test --json` | read | |
+| 同步至主機 | `ysk-server nginx sync --execute --json` | write-host | |
+
+## CLI 速查
+
+```bash
+ysk-server nginx status --json
+ysk-server nginx list --json
+export YSK_EXECUTE=1
+ysk-server nginx sync --execute --json
+```
+
+## 誠實邊界
+
+- 同步在 `--execute` 前為試跑。  
+- `nginx -t` 失敗則不可誠實宣稱「已套用」。  
+
+## 僅面板 ⚠️
+
+| 介面 | 理由 |
+|------|------|
+| — | 無 |
+
+## 相關
+
+- [DNS／SSL／Nginx](./dns-ssl-nginx-ZH.md) · [專案](./projects-ZH.md)  

@@ -1,31 +1,53 @@
-# 防護中心
+# 防護與 Protection
 
-> 語言：中文 | [English](./defense.md)
+> 語言：中文（香港書面語）| [English](./defense.md)
 
-**面板路由：** `/protection`、`/firewall`、`/fail2ban`  
-**CLI：** `defense`／`protection`
+## 用途
 
-## 功能
+主機 **防火牆／fail2ban／防護中心** 操作；無 EXECUTE 時以誠實阻擋狀態回報。
 
-統一主機防護：UFW 腳本、fail2ban jail、ban／unban／白名單、檔位、時間線、可選 Cloudflare 輔助。
+**非目標：** 保證零入侵；地理／IP 策略仍依賴主機工具。
 
-## CLI
+## 面板
+
+| 項目 | 值 |
+|------|-----|
+| 路由 | `/protection` |
+| 導航鍵 | `protection` |
+| 主要操作 | 狀態 · 防火牆 · fail2ban · 封鎖／解封 · 預設 · 時間線 |
+| 能力 | 防護 |
+| RBAC | 安全操作員 |
+
+## 能力對照表
+
+| 面板操作 | CLI | 風險 | 備註 |
+|----------|-----|------|------|
+| 狀態／堆疊 | `ysk-server defense status --json` | read | `protection` 別名 |
+| 防火牆／fail2ban 深度 | `ysk-server defense firewall\|fail2ban` | read | |
+| 封鎖／解封／白名單 | `ysk-server defense ban\|unban\|… --execute` | write-host | |
+| 預設／時間線 | `ysk-server defense presets\|timeline` | read | |
+| 堆疊套用 | `ysk-server defense stack-apply --execute` | write-host | |
+
+## CLI 速查
 
 ```bash
 ysk-server defense status --json
-ysk-server defense firewall --json
 ysk-server defense fail2ban --json
-ysk-server defense ban --ip 1.2.3.4 --json          # 預設 dry-run
+export YSK_EXECUTE=1
 ysk-server defense ban --ip 1.2.3.4 --execute --json
-ysk-server defense presets --json
-ysk-server defense timeline --json
-ysk-server defense stack-apply --execute --json
 ```
 
 ## 誠實邊界
 
-無 `YSK_EXECUTE=1`（常需 root）時動作會 **blocked** 或只寫 dataDir 管理檔。被擋時絕不報防火牆已上線成功。
+- 線上 UFW／fail2ban 變更需 EXECUTE + root。  
+- 無工具時 fail-closed 屬正確，而非靜默成功。  
+
+## 僅面板 ⚠️
+
+| 介面 | 理由 |
+|------|------|
+| — | 無 |
 
 ## 相關
 
-[../deploy/defense-ZH.md](../deploy/defense-ZH.md) · [../cli/reference-ZH.md](../cli/reference-ZH.md)
+- [安全認證](./security-auth-ZH.md) · [系統主機](./system-host-ZH.md)  
