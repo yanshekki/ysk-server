@@ -17,7 +17,17 @@ ysk-server projects list --json
 ysk-server tools --json
 ysk-server defense status --json
 ysk-server email deliverability --domain example.com --json
+ysk-server vpn status --json
+ysk-server vnc status --json
+ysk-server apache sites list --json
+ysk-server network exposure list --json
+ysk-server db status --json
+ysk-server redis keys --json
+ysk-server updates inventory --json
+ysk-server runtimes list --json
 ```
+
+完整目錄：[commands.json](./commands.json) · [../cli/reference-ZH.md](../cli/reference-ZH.md)。
 
 ## 技能貼入
 

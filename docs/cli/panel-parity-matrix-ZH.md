@@ -1,108 +1,100 @@
-# 面板 ↔ CLI 對等
+# 面板 ↔ CLI 對等矩陣
 
-> 語言：中文 | [English](./parity.md)
+> 語言：中文（香港書面語）| [English](./panel-parity-matrix.md)  
+> **狀態：已封板（C7）** — 生產面板缺口已關閉（僅面板 UX 列維持 ⚠️）。  
+> 機器盤點：[parity-inventory.json](./parity-inventory.json) · 重新產生：`node scripts/cli-panel-parity.mjs`
 
-**硬規則：** 面板有嘅生產能力，CLI 必須有入口（或明文標註「僅面板」）。自動化優先 `--json`。
+**硬規則：** 每一項生產面板能力都必須有 CLI 入口（或明確標為 ⚠️ 僅面板）。
 
 | 標記 | 含義 |
 |------|------|
 | ✅ | CLI 可用 |
-| ⚠️ | 部分／需 flag／有意僅面板（已說明） |
-| ❌ | 面板有、CLI 缺（**不可無標記上線**） |
+| ⚠️ | 部分／刻意僅面板（須有說明） |
+| ❌ | 面板有、CLI 缺 — **必須實作** |
 
 ---
 
-## 控制平面
+## 生產缺口（優先序）
 
-| 面板 / API | CLI | 狀態 |
-|-------------|-----|------|
-| 初始化／管理員 | `ysk-server setup` | ✅ |
-| 啟動 API+UI | `ysk-server serve` | ✅ |
-| 就緒／doctor | `readiness` · `doctor` | ✅ |
-| 健康 | `health [--url]` | ✅ |
-| 系統單元安裝 | `system unit-install` | ✅ |
-| 文件庫 | `store status\|export\|import\|migrate` | ✅ |
-| 自我更新 | `update` | ✅ |
+| ID | 面板 | 需要 CLI | 狀態 | 優先 |
+|----|------|----------|------|------|
+| vpn | VPN ensure／peers／clients／monitor／firewall | `vpn …` | ✅ C2 | P0 |
+| vnc | VNC accounts／clients／share／novnc／firewall | `vnc …` | ✅ C2（瀏覽器畫布 ⚠️） | P0 |
+| apache | Apache 站點／設定 | `apache …` | ✅ C3 | P0 |
+| service-exposure | 服務網絡暴露同步 | `network exposure …` | ✅ C3 | P0 |
+| real-ip | Real-IP 套用 | `real-ip …` | ✅ C3 | P1 |
+| panel-tls | 面板 TLS 狀態／套用 | `ssl panel-tls …` | ✅ C3 | P1 |
+| updates-inventory | 更新清冊／套件套用 | `updates …` | ✅ C4 | P1 |
+| software-install | 功能軟件安裝橫幅 | `software …` | ✅ C4（+ `stack`） | P1 |
+| db-lifecycle | DB 主控台生命週期／套用 | `db …` | ✅ C5 | P1 |
+| sql-engine-switch | MySQL ↔ MariaDB 切換 | `db sql-engine …` | ✅ C5 | P1 |
+| redis-keys | Redis 鍵變更 | `redis keys …` | ✅ C5 | P2 |
+| ftp-accounts | FTP 帳戶 CRUD | `ftp accounts …` | ✅ C6 | P2 |
+| files-shares-create | 建立公開分享 | `files shares create` | ✅ C6 | P2 |
+| email-depth | 別名／佇列／中繼 | `email …` | ✅ C6 | P2 |
+| dns-records | 記錄／dnssec／heal | `dns …` | ✅ C6 | P2 |
+| runtimes-full | java/kotlin/bun + 切換 | `runtimes …`／`hosting runtime-*` | ✅ C7 | P2 |
 
-## 專案／站點
+## 刻意僅面板（⚠️）
 
-| 面板 | CLI | 狀態 |
-|-------|-----|------|
-| 專案列表／建立／詳情 | `projects list\|get\|create` | ✅ |
-| 部署／停止／健康 | `projects deploy\|stop\|health` | ✅ |
-| Git 部署 | `projects git-deploy` | ✅ |
-| 隔離／資源 | `projects isolation …` | ✅ |
-| 範本 | `templates list\|apply` | ✅ |
-| Nginx | `nginx status\|list\|test\|sync` | ✅ |
-| SSL | `ssl list\|get` | ✅ |
-| 日誌 | `logs sources\|query\|journal` | ✅ |
-
-## 檔案／公開／FTP／WebDAV
-
-| 面板 | CLI | 狀態 |
-|-------|-----|------|
-| 檔案 CRUD | `files list\|read\|write\|mkdir\|rm\|…` | ✅ |
-| 上載 | `files upload` | ✅ |
-| 回收桶 | `files trash …` | ✅ |
-| 公開分享列表 | `files shares list` | ✅ |
-| WebDAV | `files webdav status\|token\|disable` | ✅ |
-| 公開檔案站 | `hosting public-files --domain …` | ✅ |
-| FTPS | `hosting ftps-apply` | ✅ |
-| 瀏覽器編輯器／媒體預覽 | *（僅面板 UX）* | ⚠️ 有意 |
-| 公開分享落地頁 | *（HTTP 公開 API；建立走面板／API）* | ⚠️ 有意 |
-
-## 郵件／DNS／CDN
-
-| 面板 | CLI | 狀態 |
-|-------|-----|------|
-| 域名／信箱／DNS bundle | `email domains\|mailboxes\|dns\|bootstrap` | ✅ |
-| 送達檢查 | `email deliverability` | ✅ |
-| 網頁電郵（全域） | `hosting webmail-apply --domain …` | ✅ |
-| DNS zone | `dns zone\|zones` | ✅ |
-| CDN | `cdn nodes\|sites\|apply\|…` | ✅ |
-
-## 安全／防護／系統
-
-| 面板 | CLI | 狀態 |
-|-------|-----|------|
-| 工作階段／API 金鑰／2FA | `security status\|sessions\|api-keys` | ✅ |
-| 用戶／RBAC | `users` · `packages` · `rbac` | ✅ |
-| SSH 金鑰／SSH 2FA | `ssh-key` · `ssh-2fa` | ✅ |
-| 防火牆／fail2ban／防護 | `defense …` · `hosting firewall-apply` | ✅ |
-| 指標／網絡／主機 | `host overview\|metrics\|network` | ✅ |
-| 服務矩陣 | `services` | ✅ |
-| 定時工作 | `cron …` | ✅ |
-| 備份 | `backup …` | ✅ |
-| 遷移 | `migrate …` | ✅ |
-| 瀏覽器終端 | *（僅面板 PTY）* | ⚠️ 有意 |
-
-## 人工智能（無面板入口）
-
-| 能力 | CLI | 狀態 |
-|------|-----|------|
-| 自然語言 → 計劃 | `ask` | ✅ |
-| 工具允許清單 | `tools` · `tools run` | ✅ |
-| 機群／運行時 | `agents` · `agent run` | ✅ |
+| ID | 面板 | 理由 |
+|----|------|------|
+| host-browse | Host Browse Chromium UI | 互動瀏覽器面 |
+| terminal-pty | 瀏覽器終端 | 非遠端 SSH 產品 |
+| file-preview-editor | 文字／媒體預覽編輯器 | 僅 UX；用 `files read/write` |
+| public-share-landing | `/share/:token` 頁 | 公開 HTTP；建立仍需 CLI |
+| vnc-browser-canvas | 面板內 noVNC／RFB 檢視器 | 互動；CLI 有 `vnc session mint` + `share` + connection 元資料 |
 
 ---
 
-## 如何查用法
+## 已覆蓋域（高層 ✅）
+
+| 域 | CLI 入口 |
+|----|----------|
+| 控制平面 | `setup` `serve` `readiness` `health` `store` `system unit-install` `update` |
+| 專案 | `projects list\|get\|create\|deploy\|stop\|git-deploy\|isolation\|health` |
+| 檔案 | `files list\|read\|write\|mkdir\|rm\|…\|trash\|webdav\|shares list` |
+| 郵件 | `email domains\|mailboxes\|dns\|bootstrap\|deliverability` |
+| Nginx／SSL／DNS 區域 | `nginx` `ssl` `dns` `hosting …` |
+| 防護 | `defense`／`protection` |
+| CDN／agents／db-cluster | `cdn` `agents` `db-cluster` |
+| Cron／備份／遷移 | `cron` `backup` `migrate` |
+| 安全身分 | `security` `ssh-key` `ssh-2fa` `users` `rbac` |
+| 服務／主機／日誌 | `services` `host` `logs` |
+| 堆疊 | `stack plans\|install\|…` |
+| VPN | `vpn status\|monitor\|ensure\|peers\|clients\|firewall\|presets` |
+| VNC | `vnc status\|settings\|accounts\|clients\|share\|novnc\|session\|firewall` |
+| Apache | `apache sites\|settings …` |
+| 網絡暴露／Real-IP | `network exposure …` `real-ip …` |
+| 面板 TLS | `ssl panel-tls status\|enable\|disable\|issue` |
+| 更新／軟件 | `updates …` `software …`（+ `update`／`stack`） |
+| DB／Redis | `db status\|console\|lifecycle\|sql-engine` `redis keys\|get\|set\|del` |
+| AI | `ask` `tools` |
+
+---
+
+## 實作軌跡
+
+| 切片 | 交付 | 目標 % |
+|------|------|--------|
+| **C0** | 本矩陣 + `scripts/cli-panel-parity.mjs` | ~10% |
+| **C1** | CLI 模組骨架 | ~20% |
+| **C2** | `vpn` + `vnc` | ~40% |
+| **C3** | `apache` + `network exposure` + real-ip + panel-tls | ~55% |
+| **C4** | `updates` + `software` | ~70% |
+| **C5** | `db` 深度 + redis keys | ~80% |
+| **C6** | files/email/dns/ftp 缺口 | ~90% |
+| **C7** | runtimes 全量 + 封板 + smoke | 100% |
+
+---
+
+## 重新產生盤點
 
 ```bash
-ysk-server --help
-ysk-server help [--locale zh-HK|zh-CN|en]
-ysk-server files
-ysk-server email
-ysk-server readiness --json
+node scripts/cli-panel-parity.mjs
+node scripts/cli-panel-parity.mjs --json
+# optional CI later:
+# node scripts/cli-panel-parity.mjs --strict   # fails if any ❌ missing remain
 ```
 
-機器可讀命令表：[../agent/commands.json](../agent/commands.json)。
-
-## 驗收
-
-- [x] 生產面板 in-scope 無未標註 ❌
-- [x] 主要 list／status 支援 `--json`
-- [x] Files WebDAV + shares 已列入
-- [x] 僅面板 UX 以 ⚠️ 標註理由
-
-*最後更新：2026-08-09 — Phase 4。*
+*最後更新：2026-08-12 — C7 封板（100%）。*

@@ -13,7 +13,8 @@
 | ❌ | Panel has it, CLI missing (**must not ship unmarked**) |
 
 Full gap table + track: **[panel-parity-matrix.md](./panel-parity-matrix.md)**  
-Machine inventory: **[parity-inventory.json](./parity-inventory.json)** (`node scripts/cli-panel-parity.mjs`)
+Machine inventory: **[parity-inventory.json](./parity-inventory.json)** (`node scripts/cli-panel-parity.mjs`)  
+Feature handbooks: **[../docs-inventory.md](../docs-inventory.md)** · **[../docs-standard.md](../docs-standard.md)**
 
 ---
 
@@ -27,21 +28,28 @@ Machine inventory: **[parity-inventory.json](./parity-inventory.json)** (`node s
 | Health | `health [--url]` | ✅ |
 | System unit install | `system unit-install` | ✅ |
 | Document store | `store status\|export\|import\|migrate` | ✅ |
-| Self-update | `update` | ⚠️ partial (host package inventory still ❌ → `updates`) |
+| Self-update | `update` | ✅ |
+| Host package inventory | `updates …` | ✅ |
+| Software catalog | `software …` · `stack …` | ✅ |
 
-## High-priority open ❌
+## High-priority surfaces (sealed)
 
-| Panel | CLI needed |
-|-------|------------|
-| VPN | `vpn …` ✅ C2 |
-| VNC | `vnc …` ✅ C2 (canvas ⚠️) |
-| Apache | `apache …` ✅ C3 |
-| Service network exposure | `network exposure …` ✅ C3 |
-| Real-IP / Panel TLS | `real-ip …` / `ssl panel-tls …` ✅ C3 |
-| SQL engine switch | `db sql-engine …` |
-| Redis key browser | `redis …` |
+| Panel | CLI | Status |
+|-------|-----|--------|
+| VPN | `vpn …` | ✅ C2 |
+| VNC | `vnc …` (canvas ⚠️) | ✅ C2 |
+| Apache | `apache …` | ✅ C3 |
+| Service network exposure | `network exposure …` | ✅ C3 |
+| Real-IP / Panel TLS | `real-ip …` / `ssl panel-tls …` | ✅ C3 |
+| DB lifecycle / SQL switch | `db …` / `db sql-engine …` | ✅ C5 |
+| Redis keys | `redis …` | ✅ C5 |
+| FTP accounts | `ftp …` | ✅ C6 |
+| File shares create | `files shares create` | ✅ C6 |
+| Email aliases / queue / relay | `email aliases\|queue\|relay` | ✅ C6 |
+| DNS dnssec / heal | `dns dnssec\|heal\|…` | ✅ C6 |
+| Runtimes java/kotlin/bun | `runtimes …` | ✅ C7 |
 
-See matrix for P1–P2 partials and panel-only ⚠️ rows.
+See matrix for panel-only ⚠️ rows.
 
 ---
 
@@ -53,13 +61,14 @@ ysk-server help [--locale zh-HK|zh-CN|en]
 node scripts/cli-panel-parity.mjs
 ```
 
-Machine-readable (partial catalog): [../agent/commands.json](../agent/commands.json) — will grow with C2+.
+Machine-readable catalog: [../agent/commands.json](../agent/commands.json).
 
-## Acceptance (reopen)
+## Acceptance
 
-- [x] No unmarked production ❌ for Admin panel in-scope features
-- [x] Primary list/status commands support `--json`
-- [x] Intentional panel-only UX documented (terminal, noVNC, browse UI, editor)
-- [x] Automated inventory script exists
+- [x] No unmarked production ❌ for Admin panel in-scope features  
+- [x] Primary list/status commands support `--json`  
+- [x] Intentional panel-only UX documented  
+- [x] Automated inventory script exists  
+- [x] Bilingual feature handbooks programme (D0–D5)  
 
-*Last updated: 2026-08-12 — C7 sealed (100%).*
+*Last updated: 2026-08-12 — docs D4.*

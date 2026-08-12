@@ -21,7 +21,7 @@
 | **D1** | `cli/overview` + `cli/reference` + `commands.json` | ~35% | ✅ 完成 |
 | **D2** | 新域手冊（vpn、vnc、apache、system-host、databases、runtimes） | ~55% | ✅ 完成 |
 | **D3** | 其餘 `features/*` 加深 | ~75% | ✅ 完成 |
-| **D4** | INDEX、操作員手冊 Day-N、agent、parity 中文對齊 | ~90% | ⬜ |
+| **D4** | INDEX、操作員手冊 Day-N、agent、parity 中文對齊 | ~90% | ✅ 完成 |
 | **D5** | bilingual-check 封板 + 交叉連結 | 100% | ⬜ |
 
 ---
