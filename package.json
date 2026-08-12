@@ -48,7 +48,8 @@
     "e2e:updates": "bash scripts/e2e-updates.sh",
     "e2e:software-lifecycle": "bash scripts/e2e-software-lifecycle.sh",
     "i18n:check-no-uiinline-default": "node ./scripts/i18n-no-uiinline-default.mjs",
-    "e2e:web-servers": "bash scripts/e2e-web-servers.sh"
+    "e2e:web-servers": "bash scripts/e2e-web-servers.sh",
+    "cli:parity": "node ./scripts/cli-panel-parity.mjs"
   },
   "engines": {
     "node": ">=20"

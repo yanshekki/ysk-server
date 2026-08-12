@@ -1,108 +1,92 @@
-# Panel ↔ CLI parity
+# Panel ↔ CLI parity matrix
 
-> Language: English | [中文](./parity-ZH.md)
+> Language: English | [中文](./parity-ZH.md)  
+> **Status: REOPENED (C0)** — previous Phase 4 seal (2026-08-09) is **obsolete**.  
+> Machine inventory: [parity-inventory.json](./parity-inventory.json) · regenerate: `node scripts/cli-panel-parity.mjs`
 
-**Hard rule:** Every production panel capability must have a CLI entry (or an explicit, documented intentional gap). Prefer `--json` for automation.
+**Hard rule:** Every production panel capability must have a CLI entry (or an explicit ⚠️ panel-only row).
 
 | Mark | Meaning |
 |------|---------|
 | ✅ | CLI available |
-| ⚠️ | Partial / needs flags / intentional panel-only with note |
-| ❌ | Panel has it, CLI missing (**must not ship unmarked**) |
+| ⚠️ | Partial / intentional panel-only (must have note) |
+| ❌ | Panel has it, CLI missing — **must implement** |
 
 ---
 
-## Control plane
+## Open production gaps (priority)
 
-| Panel / API | CLI | Status |
-|-------------|-----|--------|
-| Setup / first admin | `ysk-server setup` | ✅ |
-| Serve API+UI | `ysk-server serve` | ✅ |
-| Readiness / doctor | `readiness` · `doctor` | ✅ |
-| Health | `health [--url]` | ✅ |
-| System unit install | `system unit-install` | ✅ |
-| Document store | `store status\|export\|import\|migrate` | ✅ |
-| Self-update | `update` | ✅ |
+| ID | Panel | Need CLI | Status | Priority |
+|----|-------|----------|--------|----------|
+| vpn | VPN ensure / peers / monitor | `vpn …` | ❌ | P0 |
+| vnc | VNC accounts / share / firewall | `vnc …` | ❌ | P0 |
+| apache | Apache sites / settings | `apache …` | ❌ | P0 |
+| service-exposure | Network service exposure sync | `network exposure …` | ❌ | P0 |
+| real-ip | Real-IP apply | `real-ip …` | ❌ | P1 |
+| panel-tls | Panel TLS status/apply | `ssl panel-tls …` | ⚠️ partial | P1 |
+| updates-inventory | Updates inventory / package apply | `updates …` | ⚠️ partial (`update` self only) | P1 |
+| software-install | Feature install banners | `software …` | ⚠️ partial (`stack` only) | P1 |
+| db-lifecycle | DB console lifecycle / apply | `db …` | ⚠️ partial | P1 |
+| sql-engine-switch | MySQL ↔ MariaDB switch | `db sql-engine …` | ❌ | P1 |
+| redis-keys | Redis key mutations | `redis keys …` | ❌ | P2 |
+| ftp-accounts | FTP account CRUD | `ftp accounts …` | ⚠️ partial | P2 |
+| files-shares-create | Create public share | `files shares create` | ⚠️ list only | P2 |
+| email-depth | aliases / queue / relay | `email …` | ⚠️ partial | P2 |
+| dns-records | records / dnssec / heal | `dns …` | ⚠️ zones only | P2 |
+| runtimes-full | java/kotlin/bun + switch | `hosting runtime-install` expand | ⚠️ partial | P2 |
 
-## Projects / sites
+## Intentional panel-only (⚠️)
 
-| Panel | CLI | Status |
-|-------|-----|--------|
-| Projects list/create/detail | `projects list\|get\|create` | ✅ |
-| Deploy / stop / health | `projects deploy\|stop\|health` | ✅ |
-| Git deploy | `projects git-deploy` | ✅ |
-| Isolation / resources | `projects isolation …` | ✅ |
-| Templates | `templates list\|apply` | ✅ |
-| Nginx publish / status | `nginx status\|list\|test\|sync` · hosting | ✅ |
-| SSL | `ssl list\|get` | ✅ |
-| Logs | `logs sources\|query\|journal` | ✅ |
-
-## Files / public / FTP / WebDAV
-
-| Panel | CLI | Status |
-|-------|-----|--------|
-| File browser CRUD | `files list\|read\|write\|mkdir\|rm\|stat\|rename\|copy\|move\|chmod` | ✅ |
-| Upload | `files upload` | ✅ |
-| Trash | `files trash list\|restore\|purge` | ✅ |
-| Public shares list | `files shares list` | ✅ |
-| WebDAV enable/token/disable | `files webdav status\|token\|disable` | ✅ |
-| Public-files site | `hosting public-files --domain …` | ✅ |
-| FTPS accounts / service | `hosting ftps-apply` | ✅ |
-| Browser text editor / media preview | *(panel UX only)* | ⚠️ intentional UI |
-| Public share landing `/share/:token` | *(HTTP public API; create via panel/API)* | ⚠️ panel create + public GET |
-
-## Email / DNS / CDN
-
-| Panel | CLI | Status |
-|-------|-----|--------|
-| Domains / mailboxes / DNS bundle | `email domains\|mailboxes\|dns\|bootstrap` | ✅ |
-| Deliverability | `email deliverability` | ✅ |
-| Webmail install (global) | `hosting webmail-apply --domain webmail.example.com` | ✅ |
-| DNS zones | `dns zone\|zones` · hosting | ✅ |
-| CDN nodes/sites | `cdn nodes\|sites\|apply\|…` | ✅ |
-
-## Security / defense / system
-
-| Panel | CLI | Status |
-|-------|-----|--------|
-| Sessions / API keys / 2FA flags | `security status\|sessions\|api-keys` | ✅ |
-| Users / RBAC | `users` · `packages` · `rbac` | ✅ |
-| SSH keys / SSH 2FA | `ssh-key` · `ssh-2fa` | ✅ |
-| Firewall / fail2ban / protection | `defense …` · `hosting firewall-apply` | ✅ |
-| Metrics / network / host | `host overview\|metrics\|network` | ✅ |
-| Services matrix | `services` | ✅ |
-| Cron | `cron list\|create\|install\|status` | ✅ |
-| Backups | `backup list\|status\|all\|schedule\|…` | ✅ |
-| Migrate | `migrate inventory\|host\|status\|…` | ✅ |
-| Browser terminal (PTY) | *(panel only; no remote SSH)* | ⚠️ intentional UI |
-
-## AI / agents (no panel chrome)
-
-| Surface | CLI | Status |
-|---------|-----|--------|
-| NL → plan | `ask` | ✅ |
-| Tools allowlist run | `tools` · `tools run` | ✅ |
-| Fleet / runtimes | `agents` · `agent run` | ✅ |
+| ID | Panel | Rationale |
+|----|-------|-----------|
+| host-browse | Host Browse Chromium UI | Interactive browser surface; optional session list later |
+| terminal-pty | Browser terminal | Not a remote SSH product |
+| file-preview-editor | Text/media preview editor | UX-only; use `files read/write` |
+| public-share-landing | `/share/:token` page | Public HTTP; create still needs CLI |
 
 ---
 
-## Help discovery
+## Covered domains (high level ✅)
+
+| Domain | CLI entry points |
+|--------|------------------|
+| Control plane | `setup` `serve` `readiness` `health` `store` `system unit-install` `update` |
+| Projects | `projects list\|get\|create\|deploy\|stop\|git-deploy\|isolation\|health` |
+| Files | `files list\|read\|write\|mkdir\|rm\|…\|trash\|webdav\|shares list` |
+| Email | `email domains\|mailboxes\|dns\|bootstrap\|deliverability` |
+| Nginx / SSL / DNS zones | `nginx` `ssl` `dns` `hosting …` |
+| Defense | `defense` / `protection` |
+| CDN / agents / db-cluster | `cdn` `agents` `db-cluster` |
+| Cron / backup / migrate | `cron` `backup` `migrate` |
+| Security identity | `security` `ssh-key` `ssh-2fa` `users` `rbac` |
+| Services / host / logs | `services` `host` `logs` |
+| Stack | `stack plans\|install\|…` |
+| AI | `ask` `tools` |
+
+---
+
+## Implementation track
+
+| Slice | Deliverable | Target % |
+|-------|-------------|----------|
+| **C0** | This matrix + `scripts/cli-panel-parity.mjs` | ~10% |
+| **C1** | CLI module skeleton | ~20% |
+| **C2** | `vpn` + `vnc` | ~40% |
+| **C3** | `apache` + `network exposure` + real-ip + panel-tls | ~55% |
+| **C4** | `updates` + `software` | ~70% |
+| **C5** | `db` depth + redis keys | ~80% |
+| **C6** | files/email/dns/ftp gaps | ~90% |
+| **C7** | runtimes full + seal + smoke | 100% |
+
+---
+
+## Regenerate inventory
 
 ```bash
-ysk-server --help
-ysk-server help [--locale zh-HK|zh-CN|en]
-ysk-server files          # usage for files + webdav + shares
-ysk-server email          # usage for mail domain ops
-ysk-server readiness --json
+node scripts/cli-panel-parity.mjs
+node scripts/cli-panel-parity.mjs --json
+# optional CI later:
+# node scripts/cli-panel-parity.mjs --strict   # fails if any ❌ missing remain
 ```
 
-Machine-readable command list: [../agent/commands.json](../agent/commands.json).
-
-## Acceptance
-
-- [x] No unmarked production ❌ for Admin panel in-scope features
-- [x] Primary list/status commands support `--json`
-- [x] Files WebDAV + shares documented
-- [x] Panel-only UX (editor, terminal, share landing) marked ⚠️ with rationale
-
-*Last updated: 2026-08-09 — Phase 4 seal.*
+*Last updated: 2026-08-12 — C0 reopen.*
