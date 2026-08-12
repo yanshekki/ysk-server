@@ -634,7 +634,22 @@ function isReadOnlyShellScript(argv: string[]): boolean {
   if (/\b(curl|wget)\b/.test(s) && /\s-\w*o\b|\s--output\b/.test(s)) return false;
 
   // Allow pure inventory / probe helpers used by panel without EXECUTE
-  if (/\bapt\s+list\b/.test(s) || /\bapt-cache\b/.test(s) || /\bdpkg-query\b/.test(s)) {
+  if (
+    /\bapt\s+list\b/.test(s) ||
+    /\bapt-cache\b/.test(s) ||
+    /\bdpkg-query\b/.test(s) ||
+    /\bdpkg\s+-l\b/.test(s) ||
+    /\bdpkg\s+--get-selections\b/.test(s)
+  ) {
+    return true;
+  }
+  // Version inventory via shell (mysql --version, mysqld --version, …)
+  if (
+    /\b(mysql|mysqld|mariadb|mariadbd|postgres|psql|redis-cli|nginx|apache2|httpd)\b[^\n;|&]*--version\b/.test(
+      s,
+    ) ||
+    /\b(mysql|mysqld|mariadb|mariadbd)\b[^\n;|&]*\s-V\b/.test(s)
+  ) {
     return true;
   }
   // Binary presence probes (software / VNC / catalog) — no side effects
