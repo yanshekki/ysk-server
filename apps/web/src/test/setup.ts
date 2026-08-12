@@ -5,15 +5,17 @@
 import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
 import { afterEach, beforeAll, vi } from 'vitest';
-import i18n from '../shared/lib/i18n';
+import i18n, { bootstrapI18n } from '../shared/lib/i18n';
 
 beforeAll(async () => {
-  await i18n.changeLanguage('en');
   try {
     localStorage.setItem('ysk.locale', 'en');
   } catch {
     /* ignore */
   }
+  // Must init i18next (services.languageUtils) before changeLanguage
+  await bootstrapI18n();
+  await i18n.changeLanguage('en');
   // Safety net: never open real network for non-API absolute URLs (iframe/preview hosts).
   const realFetch = globalThis.fetch?.bind(globalThis);
   vi.stubGlobal(
