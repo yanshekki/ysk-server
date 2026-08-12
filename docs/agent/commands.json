@@ -1127,6 +1127,13 @@
       "risk": "write-panel",
       "summary": "Re-seed BT file shares and start tracker if needed",
       "example": "ysk-server bt-tracker restore --json"
+    },
+    {
+      "name": "bt-tracker jobs",
+      "aliases": [],
+      "risk": "read",
+      "summary": "List or get background large-share torrent jobs",
+      "example": "ysk-server bt-tracker jobs [--id JOB] --json"
     }
   ]
 }
