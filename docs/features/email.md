@@ -29,7 +29,7 @@ Operate **mail domains and mailboxes** on the host (Postfix/Dovecot stack paths)
 | Bootstrap stack | `ysk-server email bootstrap … [--install]` | write-host | |
 | Aliases CRUD | `ysk-server email aliases list\|create\|delete` | write-panel | `--type catchall` |
 | Autoreply / catch-all flags | `ysk-server email flags --domain …` | write-panel | Draft sieve; `--execute` to apply |
-| Queue list/flush | `ysk-server email queue list\|flush --execute` | write-host | flush |
+| Queue list/flush | `ysk-server email queue list\|flush` | read / write-host | List is a read probe; flush needs `--execute` |
 | Relay get/apply | `ysk-server email relay get\|apply --host …` | write-host | applySystem with execute |
 
 ## CLI quick start
@@ -46,7 +46,7 @@ ysk-server email relay get --json
 
 - Deliverability never claims global inbox success.  
 - PTR / Port 25 / blacklists require external action.  
-- Queue flush and system mail packages need EXECUTE.  
+- Queue list is a read probe. Queue flush and system mail packages need EXECUTE.  
 
 ## Panel-only ⚠️
 

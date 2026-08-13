@@ -47,7 +47,7 @@
   "needExecute": "YSK_EXECUTE کی ضرورت ہے۔",
   "viewQueue": "قطار دیکھیں",
   "flushQueue": "فلش قطار",
-  "queueHint": "مقامی پوسٹ فکس قطار کو پڑھنے کے لیے قطار دیکھیں پر کلک کریں۔",
+  "queueHint": "مقامی Postfix قطار۔ دیکھنا ریڈ پروب ہے؛ خالی کرنے کے لیے YSK_EXECUTE چاہیے۔",
   "deleteThisId": "اس آئی ڈی کو ڈیلیٹ کریں۔",
   "queueEmpty": "کوئی موخر میل نہیں ہے۔",
   "queueEmptyHint": "کوئی موخر کردہ پیغامات نہیں۔",
@@ -474,5 +474,17 @@
   "passwordMismatch": "پاس ورڈز مماثل نہیں ہیں۔",
   "passwordTooShort": "پاس ورڈ کم از کم 8 حروف کا ہونا چاہیے۔",
   "mailboxUpdateNeedField": "نیا پاس ورڈ سیٹ کریں یا اسٹیٹس تبدیل کریں۔",
-  "catchallHint": "نامعلوم لوکل حصے ہدف میل باکس پر جائیں گے۔ لاگو ہونے تک مسودہ۔"
+  "catchallHint": "نامعلوم لوکل حصے ہدف میل باکس پر جائیں گے۔ لاگو ہونے تک مسودہ۔",
+  "queueSearchPh": "ID، بھیجنے والا یا وصول کنندہ تلاش کریں…",
+  "queueId": "قطار ID",
+  "queueSender": "بھیجنے والا",
+  "queueRecipients": "وصول کنندگان",
+  "queueSize": "سائز",
+  "queueReason": "وجہ",
+  "queueActive": "فعال",
+  "queueHeld": "روکا گیا",
+  "queueDeferred": "ملتوی",
+  "deleteQueueTitle": "اس قطار کا پیغام حذف کریں؟",
+  "deleteQueueDesc": "مقامی MTA قطار سے {{id}} ہٹائیں۔ YSK_EXECUTE درکار ہے۔",
+  "openQueuePage": "میل قطار کھولیں"
 }

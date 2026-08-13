@@ -2,7 +2,7 @@
  * Email domain detail — professional console layout (aligned with recent UX).
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   emailApi,
@@ -47,7 +47,7 @@ import {
   bindBusyFlagsUpdate,
   bindBusyListSieve,
   bindBusyLiveReload,
-  bindBusyMailQueue,
+
   bindBusyMap,
   bindBusyMutateList,
   bindBusySet,
@@ -391,7 +391,7 @@ export function EmailDomainPage() {
   const [webmailLog, setWebmailLog] = useState<Record<string, unknown> | null>(null);
   const [bootstrapLog, setBootstrapLog] = useState<Record<string, unknown> | null>(null);
   const [advancedOpsLog, setAdvancedOpsLog] = useState<Record<string, unknown> | null>(null);
-  const [flushQueueOpen, setFlushQueueOpen] = useState(false);
+
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [delMailbox, setDelMailbox] = useState<{
@@ -1841,26 +1841,11 @@ export function EmailDomainPage() {
                   <div className="mail-advanced__tool-block">
                     <h4 className="mail-advanced__tool-label">{t('email.queueTitle')}</h4>
                     <ActionBar size="md">
-                      <Button
-                        variant="secondary"
-                        size="md"
-                        loading={busy}
-                        onClick={bindBusyMailQueue(
-                          withBusy,
-                          () => emailApi.mailQueue(),
-                          setAdvancedOpsLog,
-                        )}
-                      >
-                        {t('email.viewQueue')}
-                      </Button>
-                      <Button
-                        variant="danger"
-                        size="md"
-                        loading={busy}
-                        onClick={bindSet(setFlushQueueOpen, true)}
-                      >
-                        {t('email.flushQueue')}
-                      </Button>
+                      <Link to="/email?tab=queue">
+                        <Button variant="secondary" size="md">
+                          {t('email.openQueuePage')}
+                        </Button>
+                      </Link>
                     </ActionBar>
                   </div>
                   <div className="mail-advanced__tool-block">
@@ -2101,41 +2086,6 @@ export function EmailDomainPage() {
             />
           </Field>
         </FormLayout>
-      </Modal>
-
-      <Modal
-        open={flushQueueOpen}
-        onClose={bindSet(setFlushQueueOpen, false)}
-        title={t('email.flushQueue')}
-        description={t('email.flushQueueConfirm')}
-        footer={
-          <>
-            <Button
-              variant="secondary"
-              size="md"
-              onClick={bindSet(setFlushQueueOpen, false)}
-            >
-              {t('common.cancel')}
-            </Button>
-            <Button
-              variant="danger"
-              size="md"
-              loading={busy}
-              onClick={() => {
-                setFlushQueueOpen(false);
-                bindBusySet(
-                  withBusy,
-                  () => emailApi.flushQueue({ all: true }),
-                  setAdvancedOpsLog,
-                )();
-              }}
-            >
-              {t('email.flushQueue')}
-            </Button>
-          </>
-        }
-      >
-        <p className="muted u-text-sm u-mb-0">{t('email.flushQueueConfirm')}</p>
       </Modal>
 
       <EmailDomainDeleteDialog

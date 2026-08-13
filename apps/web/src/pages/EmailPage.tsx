@@ -19,11 +19,13 @@ import {
   EmptyState,
   FeaturePageLayout,
   Field,
+  FormHint,
   FormLayout,
   ListPanel,
   ListToolbar,
   Modal,
   ConfirmDialog,
+  DataTable,
   OpsResultPanel,
   PageTabs,
   SegRadio,
@@ -37,7 +39,6 @@ import { usePageTab } from '../shared/hooks/usePageTab';
 import { useServerList } from '../shared/hooks/useServerList';
 import { useNavBookmarks } from '../shared/hooks/useNavBookmarks';
 import {
-  bindCall1,
   bindCloseIfIdle,
   bindFilter,
   bindFormSubmit,
@@ -170,9 +171,22 @@ export function EmailPage() {
   const [busy, setBusy] = useState(false);
   const [queueBusy, setQueueBusy] = useState(false);
   const [flushConfirmOpen, setFlushConfirmOpen] = useState(false);
+  const [deleteQueueId, setDeleteQueueId] = useState<string | null>(null);
   const [queueMsg, setQueueMsg] = useState<string | null>(null);
   const [queueOk, setQueueOk] = useState<boolean | null>(null);
-  const [queueItems, setQueueItems] = useState<Array<{ id: string; raw: string }>>([]);
+  const [queueQ, setQueueQ] = useState('');
+  const [queueItems, setQueueItems] = useState<
+    Array<{
+      id: string;
+      raw: string;
+      size?: number;
+      sender?: string;
+      recipients?: string[];
+      time?: string;
+      status?: 'active' | 'held' | 'deferred';
+      reason?: string;
+    }>
+  >([]);
   const [hostIps, setHostIps] = useState<string[]>([]);
 
   // Global webmail (shared by all mail domains)
@@ -266,14 +280,17 @@ export function EmailPage() {
     }
   }
 
-  async function loadQueue() {
+  const loadQueue = useCallback(async () => {
     setQueueBusy(true);
     setQueueMsg(null);
     try {
       const r = await emailApi.mailQueue();
       setQueueItems(r.items ?? []);
       setQueueOk(r.ok !== false && !r.blocked);
-      setQueueMsg((r.notes ?? []).join(' · ') || t('email.queueMsgCount', { count: (r.items ?? []).length }));
+      setQueueMsg(
+        (r.notes ?? []).join(' · ') ||
+          t('email.queueMsgCount', { count: (r.items ?? []).length }),
+      );
     } catch (e) {
       setQueueOk(false);
       setQueueMsg(e instanceof Error ? e.message : t('email.queueLoadFailed'));
@@ -281,6 +298,29 @@ export function EmailPage() {
     } finally {
       setQueueBusy(false);
     }
+  }, [t]);
+
+  useEffect(() => {
+    if (tab !== 'queue') return;
+    void loadQueue();
+  }, [tab, loadQueue]);
+
+  const visibleQueue = useMemo(() => {
+    const q = queueQ.trim().toLowerCase();
+    if (!q) return queueItems;
+    return queueItems.filter((it) =>
+      [it.id, it.sender, it.reason, ...(it.recipients ?? []), it.raw]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+        .includes(q),
+    );
+  }, [queueItems, queueQ]);
+
+  function queueStatusLabel(status?: string): string {
+    if (status === 'active') return t('email.queueActive');
+    if (status === 'held') return t('email.queueHeld');
+    return t('email.queueDeferred');
   }
 
   async function flushAll() {
@@ -642,10 +682,14 @@ export function EmailPage() {
         ) : null}
 
         {tab === 'queue' ? (
-          <div className="tab-panel mail-panel">
-            <div className="mail-card">
-              <div className="mail-card__head">
-                <h3 className="mail-card__title">{t('email.queueLocalTitle')}</h3>
+          <div className="tab-panel">
+            {queueMsg && queueOk === false ? (
+              <Alert variant="error">{queueMsg}</Alert>
+            ) : null}
+            <DataTable
+              title={t('email.queueLocalTitle')}
+              description={t('email.queueHint')}
+              toolbar={
                 <ActionBar size="md">
                   <Button
                     variant="secondary"
@@ -653,43 +697,102 @@ export function EmailPage() {
                     loading={queueBusy}
                     onClick={bindVoid(loadQueue)}
                   >
-                    {t('email.viewQueue')}
+                    {t('common.refresh')}
                   </Button>
                   <Button
                     variant="danger"
                     size="md"
                     loading={queueBusy}
+                    disabled={!queueItems.length}
                     onClick={bindSet(setFlushConfirmOpen, true)}
                   >
                     {t('email.flushQueue')}
                   </Button>
                 </ActionBar>
-              </div>
-
-              {queueMsg && queueOk === false ? (
-                <Alert variant="error">{queueMsg}</Alert>
-              ) : null}
-
-              {queueItems.length > 0 ? (
-                <ul className="mail-queue-list">
-                  {queueItems.slice(0, 50).map((it) => (
-                    <li key={it.id}>
-                      <code className="mail-queue-list__raw">{it.raw}</code>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        loading={queueBusy}
-                        onClick={bindCall1(flushOne, it.id)}
-                      >
-                        {t('email.deleteThisId')}
-                      </Button>
-                    </li>
-                  ))}
-                </ul>
-              ) : queueOk === true ? (
-                <EmptyState title={t('email.queueEmpty')} />
-              ) : null}
-            </div>
+              }
+              filters={
+                <Field label={t('common.search')} htmlFor="mail-queue-q" flush>
+                  <input
+                    id="mail-queue-q"
+                    value={queueQ}
+                    onChange={bindInput(setQueueQ)}
+                    placeholder={t('email.queueSearchPh')}
+                  />
+                </Field>
+              }
+              columns={[
+                {
+                  key: 'id',
+                  header: t('email.queueId'),
+                  nowrap: true,
+                  render: (r) => <code className="inline">{r.id}</code>,
+                },
+                {
+                  key: 'sender',
+                  header: t('email.queueSender'),
+                  render: (r) => r.sender || '—',
+                },
+                {
+                  key: 'to',
+                  header: t('email.queueRecipients'),
+                  render: (r) =>
+                    r.recipients?.length ? r.recipients.join(', ') : '—',
+                },
+                {
+                  key: 'size',
+                  header: t('email.queueSize'),
+                  nowrap: true,
+                  render: (r) => (r.size != null ? String(r.size) : '—'),
+                },
+                {
+                  key: 'status',
+                  header: t('common.status'),
+                  nowrap: true,
+                  render: (r) => (
+                    <Badge>{queueStatusLabel(r.status)}</Badge>
+                  ),
+                },
+                {
+                  key: 'reason',
+                  header: t('email.queueReason'),
+                  render: (r) => (
+                    <span className="muted u-text-sm">{r.reason || '—'}</span>
+                  ),
+                },
+              ]}
+              rows={visibleQueue}
+              rowKey={(r) => r.id}
+              rowActions={(r) => (
+                <ActionBar>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    loading={queueBusy}
+                    onClick={() => setDeleteQueueId(r.id)}
+                  >
+                    {t('email.deleteThisId')}
+                  </Button>
+                </ActionBar>
+              }
+              empty={
+                queueBusy && queueOk === null ? (
+                  <EmptyState title={t('common.loading')} />
+                ) : queueOk === false ? (
+                  <EmptyState
+                    title={t('email.queueLoadFailed')}
+                    description={queueMsg ?? undefined}
+                  />
+                ) : (
+                  <EmptyState
+                    title={t('email.queueEmpty')}
+                    description={t('email.queueEmptyHint')}
+                  />
+                )
+              }
+            />
+            {queueOk === true && queueMsg ? (
+              <FormHint>{queueMsg}</FormHint>
+            ) : null}
           </div>
         ) : null}
 
@@ -829,6 +932,21 @@ export function EmailPage() {
         title={t('email.flushConfirmTitle')}
         description={t('email.flushConfirmDesc')}
         confirmLabel={t('email.flushConfirm')}
+        cancelLabel={t('common.cancel')}
+        danger
+        busy={queueBusy}
+      />
+      <ConfirmDialog
+        open={Boolean(deleteQueueId)}
+        onClose={bindCloseIfIdle(queueBusy, () => setDeleteQueueId(null))}
+        onConfirm={() => {
+          const id = deleteQueueId;
+          setDeleteQueueId(null);
+          if (id) void flushOne(id);
+        }}
+        title={t('email.deleteQueueTitle')}
+        description={t('email.deleteQueueDesc', { id: deleteQueueId ?? '' })}
+        confirmLabel={t('email.deleteThisId')}
         cancelLabel={t('common.cancel')}
         danger
         busy={queueBusy}

@@ -47,7 +47,7 @@
   "needExecute": "Precisa de YSK_EXECUTE",
   "viewQueue": "Ver fila",
   "flushQueue": "Liberar fila",
-  "queueHint": "Clique em Exibir fila para ler a fila local do Postfix",
+  "queueHint": "Fila Postfix local. Ver é sonda de leitura; limpar exige YSK_EXECUTE.",
   "deleteThisId": "Excluir este ID",
   "queueEmpty": "Sem correio diferido",
   "queueEmptyHint": "Nenhuma mensagem adiada",
@@ -474,5 +474,17 @@
   "passwordMismatch": "As senhas não coincidem",
   "passwordTooShort": "A senha deve ter pelo menos 8 caracteres",
   "mailboxUpdateNeedField": "Defina uma nova senha ou altere o status",
-  "catchallHint": "Partes locais desconhecidas vão para a caixa destino. Rascunho até aplicar."
+  "catchallHint": "Partes locais desconhecidas vão para a caixa destino. Rascunho até aplicar.",
+  "queueSearchPh": "Pesquisar ID, remetente ou destinatário…",
+  "queueId": "ID da fila",
+  "queueSender": "Remetente",
+  "queueRecipients": "Destinatários",
+  "queueSize": "Tamanho",
+  "queueReason": "Motivo",
+  "queueActive": "Ativo",
+  "queueHeld": "Retido",
+  "queueDeferred": "Adiado",
+  "deleteQueueTitle": "Eliminar esta mensagem da fila?",
+  "deleteQueueDesc": "Remover {{id}} da fila MTA local. Precisa de YSK_EXECUTE.",
+  "openQueuePage": "Abrir fila de correio"
 }

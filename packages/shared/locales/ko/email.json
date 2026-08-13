@@ -47,7 +47,7 @@
   "needExecute": "YSK_EXECUTE 필요",
   "viewQueue": "대기열 보기",
   "flushQueue": "대기열 플러시",
-  "queueHint": "로컬 Postfix 대기열을 읽으려면 대기열 보기를 클릭하세요.",
+  "queueHint": "로컬 Postfix 큐. 조회는 읽기 탐침이며 비우기는 YSK_EXECUTE가 필요합니다.",
   "deleteThisId": "이 ID 삭제",
   "queueEmpty": "지연된 메일 없음",
   "queueEmptyHint": "지연된 메시지 없음",
@@ -474,5 +474,17 @@
   "passwordMismatch": "비밀번호가 일치하지 않습니다.",
   "passwordTooShort": "비밀번호는 8자 이상이어야 합니다.",
   "mailboxUpdateNeedField": "새 비밀번호를 설정하거나 상태를 변경하세요.",
-  "catchallHint": "정의되지 않은 로컬 부분은 대상 사서함으로 갑니다. 적용 전까지 초안입니다."
+  "catchallHint": "정의되지 않은 로컬 부분은 대상 사서함으로 갑니다. 적용 전까지 초안입니다.",
+  "queueSearchPh": "ID, 보낸 사람, 받는 사람 검색…",
+  "queueId": "큐 ID",
+  "queueSender": "보낸 사람",
+  "queueRecipients": "받는 사람",
+  "queueSize": "크기",
+  "queueReason": "이유",
+  "queueActive": "전송 중",
+  "queueHeld": "보류",
+  "queueDeferred": "지연",
+  "deleteQueueTitle": "이 큐 메일을 삭제할까요?",
+  "deleteQueueDesc": "로컬 MTA 큐에서 {{id}}를 제거합니다. YSK_EXECUTE가 필요합니다.",
+  "openQueuePage": "메일 큐 열기"
 }

@@ -1118,6 +1118,13 @@
       "example": "ysk-server email flags --domain example.com --autoreply --subject Away --json"
     },
     {
+      "name": "email queue",
+      "risk": "read",
+      "summary": "List local Postfix queue (read probe). flush needs --execute",
+      "args": ["list", "flush", "--all", "--id"],
+      "example": "ysk-server email queue list --json"
+    },
+    {
       "name": "dns dnssec",
       "risk": "write-host",
       "summary": "List or generate DNSSEC keys for a zone",

@@ -270,7 +270,16 @@ export const emailApi = {
   mailQueue: () =>
     api.requestRaw<{
       ok: boolean;
-      items: Array<{ id: string; raw: string }>;
+      items: Array<{
+        id: string;
+        raw: string;
+        size?: number;
+        sender?: string;
+        recipients?: string[];
+        time?: string;
+        status?: 'active' | 'held' | 'deferred';
+        reason?: string;
+      }>;
       notes: string[];
       blocked?: boolean;
     }>('/api/v1/email/queue'),

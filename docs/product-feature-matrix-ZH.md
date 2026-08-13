@@ -176,7 +176,7 @@
 | F15 | Black/white lists | — | D | ✗ | P1 |
 | F16 | Sieve filters | H | D | ✗ | P1 |
 | F17 | Autodiscover / autoconfig | — | D | ✗ | P0 |
-| F18 | 郵件 queue view / flush | H | D | △ | P0 |
+| F18 | 郵件 queue view / flush | H | D | ✓ | P0 |
 | F19 | Live deliverability check (MX/PTR/25) | 弱 | 弱 | △ | Better |
 | F20 | One-click mail stack install | H | D | △ | P0 |
 | F21 | 郵件 SSL | 兩 | 兩 | △ | P0 |

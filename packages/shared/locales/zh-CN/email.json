@@ -47,7 +47,7 @@
   "needExecute": "需 YSK_EXECUTE",
   "viewQueue": "查看伫列",
   "flushQueue": "清空伫列",
-  "queueHint": "按“查看伫列”读取本机 Postfix 伫列。无 EXECUTE 或无 postqueue 时会显示失败原因。",
+  "queueHint": "本机 Postfix 队列。查看是读取探测；清空需要 YSK_EXECUTE。",
   "deleteThisId": "删除此 ID",
   "queueEmpty": "无待送邮件",
   "queueEmptyHint": "目前没有待送邮件",
@@ -474,5 +474,17 @@
   "passwordMismatch": "两次密码不一致",
   "passwordTooShort": "密码至少 8 个字符",
   "mailboxUpdateNeedField": "请设置新密码或更改状态",
-  "catchallHint": "未对应的本地部分会送到目标信箱。只写草稿，须套用邮件才生效。"
+  "catchallHint": "未对应的本地部分会送到目标信箱。只写草稿，须套用邮件才生效。",
+  "queueSearchPh": "搜索 ID、发件人或收件人…",
+  "queueId": "队列 ID",
+  "queueSender": "发件人",
+  "queueRecipients": "收件人",
+  "queueSize": "大小",
+  "queueReason": "原因",
+  "queueActive": "传送中",
+  "queueHeld": "已暂停",
+  "queueDeferred": "延迟",
+  "deleteQueueTitle": "删除此队列邮件？",
+  "deleteQueueDesc": "从本机 MTA 队列移除 {{id}}。需要 YSK_EXECUTE。",
+  "openQueuePage": "打开邮件队列"
 }

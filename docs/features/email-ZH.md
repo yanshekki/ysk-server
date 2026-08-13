@@ -29,7 +29,7 @@
 | 引導安裝堆疊 | `ysk-server email bootstrap … [--install]` | write-host | |
 | 別名 CRUD | `ysk-server email aliases list\|create\|delete` | write-panel | `--type catchall` |
 | 自動回覆／Catch-all | `ysk-server email flags --domain …` | write-panel | 草稿 sieve；`--execute` 才套用 |
-| 佇列列表／清空 | `ysk-server email queue list\|flush --execute` | write-host | flush |
+| 佇列列表／清空 | `ysk-server email queue list\|flush` | read／write-host | 列表為讀取探測；清空需 `--execute` |
 | 中繼讀取／套用 | `ysk-server email relay get\|apply --host …` | write-host | execute 時套用系統 |
 
 ## CLI 速查
@@ -46,7 +46,7 @@ ysk-server email relay get --json
 
 - 可送達性從不宣稱全球 inbox 成功。  
 - PTR／Port 25／黑名單需外部處理。  
-- 佇列清空與系統郵件套件需 EXECUTE。  
+- 佇列列表為讀取探測。清空佇列與系統郵件套件需 EXECUTE。  
 
 ## 僅面板 ⚠️
 

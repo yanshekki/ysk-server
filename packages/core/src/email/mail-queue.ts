@@ -7,13 +7,89 @@ import { tl } from 'ysk-server-shared';
 
 import type { HostExecutor } from '../host/executor.js';
 
+export type MailQueueItem = {
+  id: string;
+  raw: string;
+  size?: number;
+  sender?: string;
+  recipients?: string[];
+  time?: string;
+  status?: 'active' | 'held' | 'deferred';
+  reason?: string;
+};
+
 export interface MailQueueResult {
   ok: boolean;
   notes: string[];
-  items: Array<{ id: string; raw: string }>;
+  items: MailQueueItem[];
   requiresExecute: boolean;
   blocked?: boolean;
   flushed?: number;
+}
+
+/** Parse `postqueue -p` into rows. Keeps `id` + `raw` for older clients. */
+export function parsePostqueueOutput(out: string): MailQueueItem[] {
+  const items: MailQueueItem[] = [];
+  let current: MailQueueItem | null = null;
+  const flush = () => {
+    if (current) items.push(current);
+    current = null;
+  };
+
+  for (const line of out.split('\n')) {
+    const trimmed = line.trimEnd();
+    if (
+      !trimmed ||
+      /^-Queue ID-/i.test(trimmed) ||
+      /^--\s+\d/i.test(trimmed) ||
+      /Mail queue is empty|queue is empty/i.test(trimmed)
+    ) {
+      continue;
+    }
+    const idHead = trimmed.match(/^([A-F0-9]{5,})([*!])?(?:\s+|$)(.*)$/i);
+    if (idHead) {
+      flush();
+      const rest = idHead[3]?.trim() ?? '';
+      const sized = rest.match(/^(\d+)\s+(.*)$/);
+      const afterSize = sized ? sized[2]! : rest;
+      const senderMatch = afterSize.match(/(\S+@\S+)\s*$/);
+      const time = senderMatch
+        ? afterSize.slice(0, senderMatch.index).trim()
+        : afterSize.replace(/^\(.*\)$/, '').trim();
+      const flag = idHead[2];
+      current = {
+        id: idHead[1]!,
+        raw: trimmed,
+        size: sized ? Number(sized[1]) : undefined,
+        sender: senderMatch?.[1],
+        recipients: [],
+        time: time || undefined,
+        status:
+          flag === '*'
+            ? 'active'
+            : flag === '!'
+              ? 'held'
+              : /active/i.test(rest)
+                ? 'active'
+                : 'deferred',
+        reason: /^\(.*\)$/.test(rest) ? rest.slice(1, -1) : undefined,
+      };
+      continue;
+    }
+    if (!current) continue;
+    current.raw += `\n${trimmed}`;
+    const reason = trimmed.match(/^\((.+)\)\s*$/);
+    if (reason) {
+      current.reason = reason[1];
+      continue;
+    }
+    const recip = trimmed.trim().match(/^(\S+@\S+)$/);
+    if (recip) {
+      current.recipients = [...(current.recipients ?? []), recip[1]!];
+    }
+  }
+  flush();
+  return items;
 }
 
 function needsPostfixQueueHeal(out: string): boolean {
@@ -61,15 +137,6 @@ async function tryHealPostfixQueue(
 }
 
 export async function listMailQueue(host: HostExecutor): Promise<MailQueueResult> {
-  if (!host.executeEnabled()) {
-    return {
-      ok: false,
-      blocked: true,
-      requiresExecute: true,
-      items: [],
-      notes: [tl('notes.auto.n1186')],
-    };
-  }
   const { shellBinExists, binPresent } = await import('../hosting/software-probe/index.js');
   if (!(await binPresent(host, 'postqueue'))) {
     return {
@@ -131,10 +198,12 @@ export async function listMailQueue(host: HostExecutor): Promise<MailQueueResult
       notes: [tl('notes.auto.n0535'), ...healNotes.slice(0, 2)],
     };
   }
-  const items: Array<{ id: string; raw: string }> = [];
-  for (const line of out.split('\n')) {
-    const m = line.match(/^([A-F0-9]+)\s+/i);
-    if (m) items.push({ id: m[1]!, raw: line.trim() });
+  let items = parsePostqueueOutput(out);
+  if (!items.length) {
+    for (const line of out.split('\n')) {
+      const m = line.match(/^([A-F0-9]+)\s+/i);
+      if (m) items.push({ id: m[1]!, raw: line.trim() });
+    }
   }
   return {
     ok: true,

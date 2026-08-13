@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { listMailQueue, flushMailQueue } from './mail-queue.js';
+import { listMailQueue, flushMailQueue, parsePostqueueOutput } from './mail-queue.js';
 import type { HostExecutor, RunResult } from '../host/executor.js';
 
 function host(exec: boolean, run: (argv: string[]) => RunResult): HostExecutor {
@@ -19,19 +19,45 @@ function host(exec: boolean, run: (argv: string[]) => RunResult): HostExecutor {
 }
 
 describe('mail-queue', () => {
-  it('blocks without EXECUTE', async () => {
-    const h = host(false, () => ({
-      stdout: '',
-      stderr: '',
-      exitCode: 0,
-      argv: [],
-      dryRun: false,
-    }));
+  it('lists without EXECUTE; flush still blocked', async () => {
+    const h = host(false, (argv) => {
+      const s = argv.join(' ');
+      if (s.includes('command -v') && s.includes('postqueue') && !s.includes('postqueue -p')) {
+        return { stdout: '/usr/sbin/postqueue\n', stderr: '', exitCode: 0, argv, dryRun: false };
+      }
+      if (s.includes('postqueue -p') || (s.includes('postqueue') && s.includes('then'))) {
+        return { stdout: 'Mail queue is empty\n', stderr: '', exitCode: 0, argv, dryRun: false };
+      }
+      return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+    });
     const r = await listMailQueue(h);
-    expect(r.blocked).toBe(true);
-    expect(r.requiresExecute).toBe(true);
+    expect(r.blocked).not.toBe(true);
+    expect(r.ok).toBe(true);
+    expect(r.items).toHaveLength(0);
     const f = await flushMailQueue(h, { all: true });
     expect(f.blocked).toBe(true);
+  });
+
+  it('parses postqueue -p sender, size, recipients, reason', () => {
+    const items = parsePostqueueOutput(`
+-Queue ID-  --Size-- ----Arrival Time---- -Sender/Recipient-------
+4F3A2B1C3D*    2345 Tue Aug 13 12:00:01  alice@example.com
+(connect to mx.example.com[1.2.3.4]:25: Connection refused)
+                                         bob@dest.com
+4F3A2B1C3E     8901 Tue Aug 13 12:01:00  carol@example.com
+                                         dave@dest.com
+
+-- 10 Kbytes in 2 Requests.
+`);
+    expect(items).toHaveLength(2);
+    expect(items[0]?.id).toBe('4F3A2B1C3D');
+    expect(items[0]?.size).toBe(2345);
+    expect(items[0]?.sender).toBe('alice@example.com');
+    expect(items[0]?.status).toBe('active');
+    expect(items[0]?.recipients).toEqual(['bob@dest.com']);
+    expect(items[0]?.reason).toMatch(/Connection refused/);
+    expect(items[1]?.sender).toBe('carol@example.com');
+    expect(items[1]?.status).toBe('deferred');
   });
 
   it('parses queue and flushes', async () => {

@@ -47,7 +47,7 @@
   "needExecute": "Necesita YSK_EXECUTE",
   "viewQueue": "Ver cola",
   "flushQueue": "Cola de vaciado",
-  "queueHint": "Haga clic en Ver cola para leer la cola de Postfix local.",
+  "queueHint": "Cola Postfix local. Ver es una sonda de lectura; vaciar requiere YSK_EXECUTE.",
   "deleteThisId": "Eliminar esta identificación",
   "queueEmpty": "Sin correo diferido",
   "queueEmptyHint": "Sin mensajes diferidos",
@@ -474,5 +474,17 @@
   "passwordMismatch": "Las contraseñas no coinciden",
   "passwordTooShort": "La contraseña debe tener al menos 8 caracteres.",
   "mailboxUpdateNeedField": "Establecer una nueva contraseña o cambiar el estado",
-  "catchallHint": "Las partes locales desconocidas van al buzón destino. Borrador hasta aplicar."
+  "catchallHint": "Las partes locales desconocidas van al buzón destino. Borrador hasta aplicar.",
+  "queueSearchPh": "Buscar ID, remitente o destinatario…",
+  "queueId": "ID de cola",
+  "queueSender": "Remitente",
+  "queueRecipients": "Destinatarios",
+  "queueSize": "Tamaño",
+  "queueReason": "Motivo",
+  "queueActive": "Activo",
+  "queueHeld": "Retenido",
+  "queueDeferred": "Diferido",
+  "deleteQueueTitle": "¿Eliminar este mensaje de la cola?",
+  "deleteQueueDesc": "Quitar {{id}} de la cola MTA local. Requiere YSK_EXECUTE.",
+  "openQueuePage": "Abrir cola de correo"
 }

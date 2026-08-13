@@ -50,3 +50,5 @@ Files name collisions: `ifExists=fail|overwrite|rename` on upload/copy/rename (d
 `POST /api/v1/projects/:id/ftp` creates a jailed FTPS account (`homeSubdir` `app`|`root`). CLI: `ysk-server projects ftp` or `ftp accounts create --project`. Apply vsftpd on `/ftp`.
 
 `PATCH /api/v1/email/domains/:id/flags` sets vacation (`autoreply*`) and catch-all. CLI: `ysk-server email flags` / `email aliases create --type catchall`. Draft until `--execute`.
+
+`GET /api/v1/email/queue` is a read probe (`postqueue -p`, parsed rows). `POST /api/v1/email/queue/flush` needs EXECUTE. Panel: `/email?tab=queue`.
