@@ -5,7 +5,7 @@ import { tl } from 'ysk-server-shared';
  */
 
 import { existsSync, mkdirSync, writeFileSync, chmodSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve, sep } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
 import type { HostExecutor } from '../host/executor.js';
@@ -117,6 +117,35 @@ export interface FtpsStatus {
   accountCount: number;
   settings: FtpsSettings;
   lastAppliedAt?: string;
+}
+
+/**
+ * FTP jail must sit under dataDir/ftps/homes or a registered project home.
+ * Rejects /etc, /root, and other host paths.
+ */
+export function isFtpHomeAllowed(
+  dataDir: string,
+  db: JsonStore,
+  homePath: string,
+): boolean {
+  const raw = String(homePath || '').trim();
+  if (!raw || raw.includes('\0')) return false;
+  const abs = resolve(raw);
+  if (abs === '/' || abs === '/etc' || abs === '/root' || abs === '/home') return false;
+  const under = (root: string) => {
+    const r = resolve(root);
+    return abs === r || abs.startsWith(r.endsWith(sep) ? r : r + sep);
+  };
+  if (under(dataDir)) return true;
+  const projects = (db.snapshot.projects ?? []) as Array<{
+    homeDir?: string;
+    home_dir?: string;
+  }>;
+  for (const p of projects) {
+    const h = String(p.homeDir ?? p.home_dir ?? '').trim();
+    if (h && under(h)) return true;
+  }
+  return false;
 }
 
 /**
@@ -445,6 +474,10 @@ export function writeManagedFtpAccounts(input: {
       continue;
     }
     const home = String(a.homePath || join(paths.homes, username));
+    if (!isFtpHomeAllowed(input.dataDir, input.db, home)) {
+      notes.push(tl('notes.auto.t0272'));
+      continue;
+    }
     mkdirSync(home, { recursive: true });
     // crypt hash for pam_userdb. Fresh password_plain wins (create / reset);
     // otherwise reuse stored password_hash. Never leave plaintext after write.
@@ -853,6 +886,9 @@ export async function applyFtpAccountReal(input: {
 
   const paths = ftpsPaths(input.dataDir);
   const home = String(acc.homePath || join(paths.homes, String(acc.username)));
+  if (!isFtpHomeAllowed(input.dataDir, input.db, home)) {
+    return { ok: false, notes: [tl('notes.auto.n0878')] };
+  }
   mkdirSync(home, { recursive: true });
   updateResource(input.db, 'ftp_accounts', input.id, { homePath: home });
 

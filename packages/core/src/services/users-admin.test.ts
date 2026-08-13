@@ -148,6 +148,9 @@ describe('UsersAdminService', () => {
       expect(() =>
         svc.impersonate(u.id, { id: 'admin1', username: 'admin', roles: ['admin'] }),
       ).toThrow();
+      expect(() =>
+        svc.impersonate('admin1', { id: 'admin1', username: 'admin', roles: ['admin'] }),
+      ).toThrow();
 
       // unsuspend then package branches
       svc.updateUser(u.id, { suspended: false }, 'admin');

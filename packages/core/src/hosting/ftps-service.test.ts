@@ -18,6 +18,7 @@ import {
   buildVsftpdConf,
   chownFtpAccountHomes,
   createProjectFtpAccount,
+  isFtpHomeAllowed,
   DEFAULT_FTPS_SETTINGS,
   ftpsPaths,
   hashFtpPassword,
@@ -223,6 +224,9 @@ describe('ftps-service managed write + honesty apply', () => {
     });
     expect(ok.ok).toBe(true);
     expect(ok.account.apply_status).toBe('draft');
+    expect(isFtpHomeAllowed(dir, db, home)).toBe(true);
+    expect(isFtpHomeAllowed(dir, db, '/etc')).toBe(false);
+    expect(isFtpHomeAllowed(dir, db, '/')).toBe(false);
 
     const dup = createProjectFtpAccount(db, {
       projectId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',

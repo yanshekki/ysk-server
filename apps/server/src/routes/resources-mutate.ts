@@ -15,6 +15,7 @@ import {
 import type { AppContext } from '../app-context.js';
 import { readBody, sendJson, sendOpsResult } from '../http/util.js';
 import {
+  clampFtpHomePath,
   normalizeFtpPasswordFields,
   redactResourceSecrets,
 } from './resources-shared.js';
@@ -38,6 +39,13 @@ export async function handleResourcesMutateRoutes(
     delete data.id;
     if (key === 'ftp_accounts') {
       data = normalizeFtpPasswordFields(data);
+      try {
+        data = clampFtpHomePath(data, ctx.dataDir, ctx.db);
+      } catch (e) {
+        const err = e as { httpStatus?: number; message?: string };
+        sendJson(res, err.httpStatus ?? 400, { ok: false, message: err.message });
+        return true;
+      }
     }
     const row = updateResource(ctx.db, key, id, data);
     if (!row) {

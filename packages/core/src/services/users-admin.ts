@@ -159,13 +159,24 @@ export class UsersAdminService {
     if (target.suspended) {
       throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1277'), { httpStatus: 400 });
     }
+    if (target.roles.includes('admin')) {
+      throw new YskError(ErrorCodes.FORBIDDEN, tl('notes.auto.n0561'), {
+        httpStatus: 403,
+        details: { reason: 'cannot_impersonate_admin' },
+      });
+    }
+    if (target.id === actor.id) {
+      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0002'), { httpStatus: 400 });
+    }
     const token = randomBytes(24).toString('hex');
     const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
     this.sessions.insert({
       token,
       user_id: target.id,
       expires_at: expiresAt,
-      created_at: new Date().toISOString() });
+      created_at: new Date().toISOString(),
+      label: `impersonate:${actor.username}`,
+    });
     this.audit?.append({
       actor: actor.username,
       action: 'users.impersonate',

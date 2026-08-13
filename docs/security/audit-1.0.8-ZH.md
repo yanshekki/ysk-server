@@ -43,6 +43,8 @@ WebSocket（要 ticket）：終端、VNC、Host Browse。
 | A08-10 | 高 | IPv6-mapped IMDS／AWS `fd00:ec2::`／阿里雲 `100.100.100.200` 繞過 SSRF | **已修** |
 | A08-11 | 高 | Unzip zip-slip／父層 symlink 逃出 FileManager | **已修** |
 | A08-12 | 高 | 匯入 VPN 客戶端 `PostUp`／OpenVPN `up` 會以 root 執行 | **已修** — 匯入同啟動前剝走 hook |
+| A08-13 | 高 | FTP `homePath` 可設 `/etc` 再 apply mkdir／chroot | **已修** — 只准 dataDir 或專案家目錄 |
+| A08-14 | 高 | 模擬登入可以扮成另一個 **admin** | **已修** — 拒絕 admin 目標 + TOTP step-up |
 
 ## 已接受殘項
 

@@ -186,6 +186,13 @@ export async function runFtpCommand(
         );
         return 2;
       }
+      if (homePath) {
+        const { isFtpHomeAllowed } = await import('ysk-server-core');
+        if (!isFtpHomeAllowed(ctx.dataDir, ctx.db, homePath)) {
+          h.printJson({ ok: false, notes: ['ftp home must be under a project or dataDir/ftps/homes'] });
+          return 2;
+        }
+      }
       const row = createResource(ctx.db, 'ftp_accounts', {
         username: username.trim(),
         password_plain: password,
@@ -208,6 +215,13 @@ export async function runFtpCommand(
       if (h.getOpt(args, '--password') != null) patch.password_plain = h.getOpt(args, '--password');
       if (h.getOpt(args, '--home') != null) patch.homePath = h.getOpt(args, '--home');
       if (h.getOpt(args, '--home-path') != null) patch.homePath = h.getOpt(args, '--home-path');
+      if (typeof patch.homePath === 'string') {
+        const { isFtpHomeAllowed } = await import('ysk-server-core');
+        if (!isFtpHomeAllowed(ctx.dataDir, ctx.db, patch.homePath)) {
+          h.printJson({ ok: false, notes: ['ftp home must be under a project or dataDir/ftps/homes'] });
+          return 2;
+        }
+      }
       if (h.getOpt(args, '--domain') != null) patch.domain = h.getOpt(args, '--domain');
       if (h.getOpt(args, '--username') != null) patch.username = h.getOpt(args, '--username');
       const item = updateResource(ctx.db, 'ftp_accounts', id.trim(), patch);

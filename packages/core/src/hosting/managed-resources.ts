@@ -621,6 +621,10 @@ export function applyFtpAccount(
   const acc = getResource(db, 'ftp_accounts', id);
   if (!acc) return { ok: false, notes: [tl('notes.auto.n0011')] };
   const home = String(acc.homePath ?? join(dataDir, 'ftps', 'homes', String(acc.username)));
+  const absHome = home.startsWith('/') ? home : join(dataDir, home);
+  if (absHome === '/' || absHome === '/etc' || absHome.startsWith('/etc/') || absHome === '/root') {
+    return { ok: false, notes: [tl('notes.auto.n0878')] };
+  }
   mkdirSync(home, { recursive: true });
   const mapPath = join(dataDir, 'ftps', 'virtual_users.map');
   mkdirSync(join(dataDir, 'ftps'), { recursive: true });

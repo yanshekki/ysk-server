@@ -43,6 +43,8 @@ WebSocket (ticket required): terminal, VNC, host-browse.
 | A08-10 | High | IPv6-mapped IMDS / AWS `fd00:ec2::` / Alibaba `100.100.100.200` bypassed SSRF | **Fixed** |
 | A08-11 | High | Unzip zip-slip / parent symlink escape in FileManager | **Fixed** — member list + ancestor realpath |
 | A08-12 | High | Imported VPN client `PostUp` / OpenVPN `up` ran as root via wg-quick | **Fixed** — strip hooks on import and before up |
+| A08-13 | High | FTP `homePath` could be `/etc` then apply mkdir/chroot | **Fixed** — must be under dataDir or a project home |
+| A08-14 | High | Impersonate issued a session as another **admin** | **Fixed** — refuse admin targets + TOTP step-up |
 
 ## Accepted residual
 

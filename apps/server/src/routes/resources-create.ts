@@ -12,6 +12,7 @@ import {
 import type { AppContext } from '../app-context.js';
 import { readBody, sendJson } from '../http/util.js';
 import {
+  clampFtpHomePath,
   normalizeFtpPasswordFields,
   redactResourceSecrets,
 } from './resources-shared.js';
@@ -137,10 +138,19 @@ export async function handleResourcesCreateRoutes(
       return true;
     }
 
-    const createData =
+    let createData =
       key === 'ftp_accounts'
         ? normalizeFtpPasswordFields({ ...data, apply_status: data.apply_status ?? 'draft' })
         : { ...data, apply_status: data.apply_status ?? 'draft' };
+    if (key === 'ftp_accounts') {
+      try {
+        createData = clampFtpHomePath(createData, ctx.dataDir, ctx.db);
+      } catch (e) {
+        const err = e as { httpStatus?: number; message?: string };
+        sendJson(res, err.httpStatus ?? 400, { ok: false, message: err.message });
+        return true;
+      }
+    }
     const row = createResource(ctx.db, key, createData);
     ctx.audit.append({
       actor: user.username,

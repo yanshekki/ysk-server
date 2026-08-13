@@ -4,6 +4,7 @@
 import {
   hashFtpPassword,
   isCryptPasswordHash,
+  isFtpHomeAllowed,
   type CollectionKey,
 } from 'ysk-server-core';
 
@@ -53,6 +54,28 @@ export function normalizeFtpPasswordFields(
     next.password_plain = plain;
   }
   return next;
+}
+
+/** Drop FTP jail paths that are not under dataDir/ftps/homes or a project home. */
+export function clampFtpHomePath(
+  data: Record<string, unknown>,
+  dataDir: string,
+  db: Parameters<typeof isFtpHomeAllowed>[1],
+): Record<string, unknown> {
+  if (data.homePath === undefined && data.home_path === undefined) return data;
+  const home = String(data.homePath ?? data.home_path ?? '').trim();
+  if (!home) {
+    const next = { ...data };
+    delete next.homePath;
+    delete next.home_path;
+    return next;
+  }
+  if (!isFtpHomeAllowed(dataDir, db, home)) {
+    throw Object.assign(new Error('ftp home must be under a project or dataDir/ftps/homes'), {
+      httpStatus: 400,
+    });
+  }
+  return { ...data, homePath: home };
 }
 
 export const RESOURCE_COLLECTIONS: Record<string, CollectionKey> = {

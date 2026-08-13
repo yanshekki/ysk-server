@@ -108,6 +108,21 @@ export async function handleAdminUsersOpsRoutes(
   if (method === 'POST' && url.pathname.match(/^\/api\/v1\/users\/[^/]+\/impersonate$/)) {
     const user = requireUserCap(ctx, req, 'users.impersonate');
     const id = url.pathname.split('/')[4]!;
+    const data = await readJsonBody(req).catch(() => ({}));
+    try {
+      ctx.auth.requireStepUp(user.id, (data as { totp?: string }).totp);
+    } catch (e) {
+      if (e instanceof YskError) {
+        sendJson(res, e.httpStatus || 403, {
+          ok: false,
+          code: e.code,
+          message: e.message,
+          needsStepUp: true,
+        });
+        return true;
+      }
+      throw e;
+    }
     const result = ctx.usersAdmin.impersonate(id, {
       id: user.id,
       username: user.username,
