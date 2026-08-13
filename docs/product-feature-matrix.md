@@ -168,7 +168,7 @@
 | F7 | SPF / DMARC suggested records | 兩 | 兩 | △ | P0 |
 | F8 | Webmail link | 兩 | 兩 | ✓ | P1 |
 | F9 | Webmail SSO | — | D | ✓ | Better |
-| F10 | Anti-spam per domain | H | D | ✗ | P0 |
+| F10 | Anti-spam per domain | H | D | ✓ | P0 |
 | F11 | Anti-virus toggle | H | D | ✗ | P1 |
 | F12 | SMTP relay | H | D | ✓ | P0 |
 | F13 | Outbound rate limit (user/mailbox) | H | D | △ | P0 |

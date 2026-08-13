@@ -189,7 +189,7 @@
   "hourlyMsgCap": "Hourly message cap",
   "hourlyMsgCapHint": "Global uses the minimum across domains",
   "enableAntispam": "Enable antispam mark (Rspamd multimap)",
-  "enableAntispamDesc": "Off marks domain antispam off",
+  "enableAntispamDesc": "Off keeps this domain out of the Rspamd antispam map. Write panel first, then apply to system.",
   "writeControlOnly": "Write panel only",
   "applyToSystemBtn": "Apply to system",
   "dnsblResult": "DNSBL result",

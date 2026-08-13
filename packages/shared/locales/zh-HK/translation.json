@@ -2964,7 +2964,7 @@
     "hourlyMsgCap": "每小時訊息上限",
     "hourlyMsgCapHint": "全域取各域名最小值",
     "enableAntispam": "啟用反垃圾標記（Rspamd multimap）",
-    "enableAntispamDesc": "關則域名標記 antispam off",
+    "enableAntispamDesc": "關閉則此域名不列入 Rspamd 反垃圾對應表。寫入面板後須「套用到系統」才生效。",
     "writeControlOnly": "只寫入控制面",
     "applyToSystemBtn": "套用到系統",
     "dnsblResult": "黑名單（DNSBL）",

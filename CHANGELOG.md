@@ -12,6 +12,7 @@
 - Mail queue: parsed sender/recipients table on `/email?tab=queue`; list is a read probe (flush still needs EXECUTE)
 - Dashboard notification bar + CLI `ysk-server notifications` (`GET /api/v1/notifications`)
 - Remote backup: `backup settings test` / `POST /api/v1/backups/remote/test` probes SFTP/S3/local (EXECUTE for live connect)
+- Per-domain antispam: CLI `email policy` matches panel + `POST /email/domains/:id/policy`
 
 ## 1.0.6 — 2026-08-13
 

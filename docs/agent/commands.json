@@ -1111,7 +1111,7 @@
     {
       "name": "email flags",
       "risk": "write-panel",
-      "summary": "Vacation autoreply and catch-all flags (draft unless --execute)",
+      "summary": "Vacation autoreply, catch-all, and antispam flags (draft unless --execute)",
       "args": [
         "--domain",
         "--autoreply",
@@ -1119,9 +1119,18 @@
         "--subject",
         "--body",
         "--catchall",
-        "--no-catchall"
+        "--no-catchall",
+        "--antispam",
+        "--no-antispam"
       ],
       "example": "ysk-server email flags --domain example.com --autoreply --subject Away --json"
+    },
+    {
+      "name": "email policy",
+      "risk": "write-host",
+      "summary": "Per-domain antispam + outbound rate (Rspamd map; --execute copies to /etc)",
+      "args": ["--domain", "--antispam", "--no-antispam", "--rate"],
+      "example": "ysk-server email policy --domain example.com --antispam --rate 200 --json"
     },
     {
       "name": "email queue",

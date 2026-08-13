@@ -57,7 +57,7 @@ Ship order:
 | F4 | Catch-all | type=catchall | **done** |
 | F5 | Autoreply | domain flags (MTA sieve later) | **done** (flags) |
 | F6–F7 | DKIM/SPF/DMARC complete panel | existing DNS tab | partial |
-| F10 | Antispam per domain toggle | flag field | partial |
+| F10 | Antispam per domain toggle | flag + Rspamd map + `email policy` | **done** |
 | F13 | Outbound rate limits | flag field | partial |
 | F17 | Autodiscover/autoconfig endpoints | public XML + domain panel | **done** |
 | F18 | Mail queue list + flush | postqueue UI list + flush | **done** |

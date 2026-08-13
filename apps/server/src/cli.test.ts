@@ -1460,6 +1460,25 @@ describe('CLI deep coverage climb', () => {
     expect(flagged.ok).toBe(true);
     expect(flagged.domain?.autoreply_enabled).toBe(true);
     expect(flagged.domain?.catchall_address).toBe('info@cli-mail.test');
+
+    const policyGet = await cli('email', 'policy', '--domain', 'cli-mail.test');
+    expect(policyGet.code).toBe(0);
+    const policySet = await cli(
+      'email',
+      'policy',
+      '--domain',
+      'cli-mail.test',
+      '--antispam',
+      '--rate',
+      '200',
+    );
+    expect(policySet.code).toBe(0);
+    const policyBody = parseJsonOut(policySet.out) as {
+      ok?: boolean;
+      apply_status?: string;
+    };
+    expect(policyBody.ok).toBe(true);
+    expect(policyBody.apply_status).toBe('written');
   }, 60_000);
 
   // ── dns / db-cluster ────────────────────────────────────────────────

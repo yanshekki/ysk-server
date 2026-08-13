@@ -194,7 +194,8 @@ Install crontab needs EXECUTE.
 ysk-server email domains list|create|get …
 ysk-server email mailboxes list|create …
 ysk-server email aliases list|create|delete --domain example.com [--type alias|forward|catchall]
-ysk-server email flags --domain example.com [--autoreply|--no-autoreply] [--catchall addr]
+ysk-server email flags --domain example.com [--autoreply|--no-autoreply] [--catchall addr] [--antispam]
+ysk-server email policy --domain example.com [--antispam|--no-antispam] [--rate N] [--execute]
 ysk-server email queue list|flush [--all|--id ID] [--execute]
 ysk-server email relay get|apply --host smtp.example.com [--execute]
 ysk-server email deliverability --domain example.com

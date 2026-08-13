@@ -56,3 +56,5 @@
 `GET /api/v1/notifications` 為儀表板提示條。CLI：`ysk-server notifications`。
 
 `POST /api/v1/backups/remote/test` 探測 SFTP／S3／local 目的地。CLI：`ysk-server backup settings test`。實際探測需 EXECUTE。
+
+`POST /api/v1/email/domains/:id/policy` 設定每域反垃圾與出站限速（Rspamd 對應表）。CLI：`ysk-server email policy`。加 `--execute` 才複製到 `/etc`。

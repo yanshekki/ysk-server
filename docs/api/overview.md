@@ -56,3 +56,5 @@ Files name collisions: `ifExists=fail|overwrite|rename` on upload/copy/rename (d
 `GET /api/v1/notifications` is the dashboard alert bar. CLI: `ysk-server notifications`.
 
 `POST /api/v1/backups/remote/test` probes SFTP/S3/local destination. CLI: `ysk-server backup settings test`. Live probe needs EXECUTE.
+
+`POST /api/v1/email/domains/:id/policy` sets per-domain antispam + outbound rate (Rspamd map). CLI: `ysk-server email policy`. `--execute` copies into `/etc`.

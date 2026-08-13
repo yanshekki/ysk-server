@@ -693,7 +693,7 @@ async function mainInner(
         const row = resolveDomain();
         if (!row) {
           process.stderr.write(
-            'Usage: ysk-server email flags --domain example.com [--autoreply|--no-autoreply] [--subject …] [--body …] [--catchall addr|--no-catchall] [--execute]\n',
+            'Usage: ysk-server email flags --domain example.com [--autoreply|--no-autoreply] [--subject …] [--body …] [--catchall addr|--no-catchall] [--antispam|--no-antispam] [--execute]\n',
           );
           return 2;
         }
@@ -702,6 +702,7 @@ async function mainInner(
           autoreplyEnabled?: boolean;
           autoreplySubject?: string;
           autoreplyBody?: string;
+          antispam?: boolean;
           applySystem?: boolean;
         } = {};
         if (hasFlag(args, '--autoreply') || hasFlag(args, '--autoreply-on')) {
@@ -717,17 +718,26 @@ async function mainInner(
         if (hasFlag(args, '--no-catchall')) patch.catchallAddress = null;
         const catchall = getOpt(args, '--catchall');
         if (catchall != null) patch.catchallAddress = catchall;
+        if (hasFlag(args, '--antispam') || hasFlag(args, '--antispam-on')) {
+          patch.antispam = true;
+        }
+        if (hasFlag(args, '--no-antispam') || hasFlag(args, '--antispam-off')) {
+          patch.antispam = false;
+        }
         const mutating =
           patch.autoreplyEnabled !== undefined ||
           patch.autoreplySubject !== undefined ||
           patch.autoreplyBody !== undefined ||
-          patch.catchallAddress !== undefined;
+          patch.catchallAddress !== undefined ||
+          patch.antispam !== undefined;
         if (!mutating) {
           const rec = row as typeof row & {
             catchall_address?: string;
             autoreply_enabled?: boolean;
             autoreply_subject?: string;
             autoreply_body?: string;
+            antispam?: boolean;
+            rate_limit_per_hour?: number | null;
           };
           printJson({
             ok: true,
@@ -737,12 +747,66 @@ async function mainInner(
               autoreplyEnabled: Boolean(rec.autoreply_enabled),
               autoreplySubject: rec.autoreply_subject ?? '',
               autoreplyBody: rec.autoreply_body ?? '',
+              antispam: Boolean(rec.antispam),
+              rateLimitPerHour: rec.rate_limit_per_hour ?? null,
             },
           });
           return 0;
         }
         patch.applySystem = wantsHostExecute(args);
         const result = await ctx.email.updateDomainMailFlags(row.id, patch, 'cli');
+        printJson(result);
+        return exitFromResult(result);
+      }
+
+      if (sub === 'policy') {
+        const row = resolveDomain();
+        if (!row) {
+          process.stderr.write(
+            'Usage: ysk-server email policy --domain example.com [--antispam|--no-antispam] [--rate N] [--execute]\n',
+          );
+          return 2;
+        }
+        const rec = row as typeof row & {
+          antispam?: boolean;
+          rate_limit_per_hour?: number | null;
+        };
+        const antispamOn = hasFlag(args, '--antispam') || hasFlag(args, '--antispam-on');
+        const antispamOff = hasFlag(args, '--no-antispam') || hasFlag(args, '--antispam-off');
+        const rateRaw = getOpt(args, '--rate');
+        const mutating = antispamOn || antispamOff || rateRaw != null;
+        if (!mutating) {
+          printJson({
+            ok: true,
+            domain: rec.domain,
+            policy: {
+              antispam: Boolean(rec.antispam),
+              rateLimitPerHour: rec.rate_limit_per_hour ?? null,
+            },
+          });
+          return 0;
+        }
+        const antispam = antispamOn ? true : antispamOff ? false : Boolean(rec.antispam);
+        const rateLimitPerHour =
+          rateRaw != null
+            ? Number(rateRaw) > 0
+              ? Number(rateRaw)
+              : null
+            : (rec.rate_limit_per_hour ?? null);
+        await ctx.email.updateDomainMailFlags(
+          rec.id,
+          { antispam, rateLimitPerHour },
+          'cli',
+        );
+        const { applyMailDomainPolicy } = await import('ysk-server-core');
+        const result = await applyMailDomainPolicy({
+          dataDir: ctx.dataDir,
+          host: ctx.host,
+          domain: rec.domain,
+          rateLimitPerHour,
+          antispam,
+          applySystem: wantsHostExecute(args),
+        });
         printJson(result);
         return exitFromResult(result);
       }

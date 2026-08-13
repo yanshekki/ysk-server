@@ -1781,6 +1781,7 @@ export function EmailDomainPage() {
                     <CheckboxField
                       id="policy-spam"
                       label={t('email.enableAntispam')}
+                      description={t('email.enableAntispamDesc')}
                       checked={policyAntispam}
                       onChange={setPolicyAntispam}
                       disabled={busy}
