@@ -11,6 +11,7 @@ import {
   pushBackupRemote,
   setBackupExclusions,
   setBackupRemote,
+  testBackupRemote,
 } from './backup-remote.js';
 
 const cleanups: Array<() => void> = [];
@@ -245,5 +246,45 @@ describe('pushBackupRemote honesty', () => {
     });
     expect(r.ok).toBe(true);
     expect(calls.some((a) => a[0] === 'scp' && a.includes('2222'))).toBe(true);
+  });
+});
+
+describe('testBackupRemote', () => {
+  it('rejects disabled or incomplete settings', async () => {
+    const { host, db } = setup(false);
+    const off = await testBackupRemote({ host, db });
+    expect(off.ok).toBe(false);
+    setBackupRemote(db, { enabled: true, kind: 'sftp', host: '', username: '', path: '' });
+    const incomplete = await testBackupRemote({ host, db });
+    expect(incomplete.ok).toBe(false);
+    expect(incomplete.kind).toBe('sftp');
+  });
+
+  it('blocks live probe without EXECUTE', async () => {
+    const { host, db } = setup(false);
+    setBackupRemote(db, {
+      enabled: true,
+      kind: 'sftp',
+      host: 'backup.example.com',
+      username: 'ysk',
+      path: '/backups',
+    });
+    const r = await testBackupRemote({ host, db });
+    expect(r.ok).toBe(false);
+    expect(r.blocked).toBe(true);
+    expect(r.requiresExecute).toBe(true);
+  });
+
+  it('probes local path when execute is on', async () => {
+    const { db, dir } = setup(true);
+    const dest = join(dir, 'mirror');
+    setBackupRemote(db, { enabled: true, kind: 'local', path: dest });
+    const host = mockHost({
+      executeEnabled: true,
+      run: () => ({ exitCode: 0 }),
+    });
+    const r = await testBackupRemote({ host, db });
+    expect(r.ok).toBe(true);
+    expect(r.kind).toBe('local');
   });
 });

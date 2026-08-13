@@ -1022,7 +1022,7 @@ export function BackupsPage() {
                           placeholder="my-bucket/ysk"
                         />
                       </Field>
-                      <Field label={t('dns.tabs.zones')} htmlFor="bk-s3r" flush>
+                      <Field label={t('backups.region')} htmlFor="bk-s3r" flush>
                         <input
                           id="bk-s3r"
                           value={remote.s3Region ?? ''}
@@ -1181,6 +1181,27 @@ export function BackupsPage() {
                     onClick={bindVoid(saveSettings)}
                   >
                     {t('backups.saveAll')}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    loading={busy}
+                    disabled={!remote.enabled}
+                    onClick={() =>
+                      void run(async () => {
+                        try {
+                          return (await api.requestRaw('/api/v1/backups/remote/test', {
+                            method: 'POST',
+                            body: '{}',
+                          })) as OpsResultLike;
+                        } catch (e) {
+                          const m = e instanceof Error ? e.message : t('backups.testRemoteFailed');
+                          return { ok: false, notes: [m], blockMessage: m };
+                        }
+                      }, t('backups.testRemoteDone'))
+                    }
+                  >
+                    {t('backups.testRemote')}
                   </Button>
                 </FormActions>
             </section>

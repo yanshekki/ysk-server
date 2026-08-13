@@ -54,3 +54,5 @@ Files name collisions: `ifExists=fail|overwrite|rename` on upload/copy/rename (d
 `GET /api/v1/email/queue` is a read probe (`postqueue -p`, parsed rows). `POST /api/v1/email/queue/flush` needs EXECUTE. Panel: `/email?tab=queue`.
 
 `GET /api/v1/notifications` is the dashboard alert bar. CLI: `ysk-server notifications`.
+
+`POST /api/v1/backups/remote/test` probes SFTP/S3/local destination. CLI: `ysk-server backup settings test`. Live probe needs EXECUTE.

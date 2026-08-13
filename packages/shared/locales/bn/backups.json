@@ -129,5 +129,8 @@
   "remotePushSub": "স্থানীয় টার সফল হওয়ার পরে, SFTP, স্থানীয় পথ, বা S3-এ চাপুন৷",
   "accessKey": "অ্যাক্সেস কী",
   "secretKey": "গোপন কী",
-  "overwriteConfirmHint": "ওভাররাইট নিশ্চিত করতে ওভাররাইট টাইপ করুন"
+  "overwriteConfirmHint": "ওভাররাইট নিশ্চিত করতে ওভাররাইট টাইপ করুন",
+  "testRemote": "গন্তব্য পরীক্ষা",
+  "testRemoteDone": "রিমোট প্রোব শেষ",
+  "testRemoteFailed": "রিমোট প্রোব ব্যর্থ"
 }

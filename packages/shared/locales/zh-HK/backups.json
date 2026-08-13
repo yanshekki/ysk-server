@@ -129,5 +129,8 @@
   "remotePushSub": "本地 封存 成功後可推送到 SFTP、本機路徑或 S3",
   "accessKey": "存取金鑰",
   "secretKey": "密鑰",
-  "overwriteConfirmHint": "輸入 OVERWRITE 確認覆寫"
+  "overwriteConfirmHint": "輸入 OVERWRITE 確認覆寫",
+  "testRemote": "測試目的地",
+  "testRemoteDone": "遠端探測完成",
+  "testRemoteFailed": "遠端探測失敗"
 }

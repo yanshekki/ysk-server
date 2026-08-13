@@ -419,7 +419,10 @@
     "remotePushSub": "Después de que el tar local tenga éxito, envíelo a SFTP, ruta local o S3.",
     "accessKey": "Clave de acceso",
     "secretKey": "clave secreta",
-    "overwriteConfirmHint": "Escriba OVERWRITE para confirmar la sobrescritura."
+    "overwriteConfirmHint": "Escriba OVERWRITE para confirmar la sobrescritura.",
+    "testRemote": "Probar destino",
+    "testRemoteDone": "Sonda remota finalizada",
+    "testRemoteFailed": "Sonda remota fallida"
   },
   "btTracker": {
     "title": "Rastreador BT",

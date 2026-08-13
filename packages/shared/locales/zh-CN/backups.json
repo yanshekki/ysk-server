@@ -129,5 +129,8 @@
   "remotePushSub": "本地 tar 成功后可推送到 SFTP、本机路径或 S3",
   "accessKey": "访问密钥",
   "secretKey": "密钥",
-  "overwriteConfirmHint": "输入 OVERWRITE 确认覆盖"
+  "overwriteConfirmHint": "输入 OVERWRITE 确认覆盖",
+  "testRemote": "测试目的地",
+  "testRemoteDone": "远端探测完成",
+  "testRemoteFailed": "远端探测失败"
 }

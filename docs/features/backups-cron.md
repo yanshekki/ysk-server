@@ -26,6 +26,7 @@
 | Restore / delete | `ysk-server backup restore\|delete` | write-host | |
 | Schedule install | `ysk-server backup schedule --install --execute` | write-host | |
 | Restic helpers | `ysk-server backup restic …` | write-host | |
+| Remote dest (SFTP/S3/local) | `ysk-server backup settings get\|set\|test` | write-host | Test needs `--execute` |
 | Cron list/create/… | `ysk-server cron list\|create\|…` | write-panel | |
 | Cron install to host | `ysk-server cron install --execute` | write-host | |
 

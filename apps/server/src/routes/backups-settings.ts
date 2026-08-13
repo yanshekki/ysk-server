@@ -9,6 +9,7 @@ import {
   getBearer,
   readBody,
   sendJson,
+  sendOpsResult,
 } from '../http/util.js';
 
 export async function handleBackupsSettingsRoutes(
@@ -61,6 +62,23 @@ export async function handleBackupsSettingsRoutes(
           remote: getBackupRemotePublic(ctx.db),
           exclusions: getBackupExclusions(ctx.db),
           restic: getResticSettingsPublic(ctx.db) });
+        return true;
+      }
+      if (method === 'POST' && url.pathname === '/api/v1/backups/remote/test') {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const { testBackupRemote } = await import('ysk-server-core');
+        const result = await testBackupRemote({
+          host: ctx.host,
+          db: ctx.db,
+          dataDir: ctx.dataDir,
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'backup.remote.test',
+          detail: { kind: result.kind, blocked: result.blocked },
+          ok: result.ok,
+        });
+        sendOpsResult(res, result);
         return true;
       }
       if (method === 'POST' && url.pathname === '/api/v1/backups/schedule') {

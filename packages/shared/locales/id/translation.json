@@ -419,7 +419,10 @@
     "remotePushSub": "Setelah tar lokal berhasil, dorong ke SFTP, jalur lokal, atau S3",
     "accessKey": "Kunci Akses",
     "secretKey": "Kunci Rahasia",
-    "overwriteConfirmHint": "Ketik OVERWRITE untuk mengonfirmasi penimpaan"
+    "overwriteConfirmHint": "Ketik OVERWRITE untuk mengonfirmasi penimpaan",
+    "testRemote": "Uji tujuan",
+    "testRemoteDone": "Probe jarak jauh selesai",
+    "testRemoteFailed": "Probe jarak jauh gagal"
   },
   "btTracker": {
     "title": "Pelacak BT",

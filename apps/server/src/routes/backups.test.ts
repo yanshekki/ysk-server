@@ -60,6 +60,29 @@ describe('backups routes (HTTP)', () => {
     expect(body.exclusions).toContain('node_modules');
   });
 
+  it('remote test without EXECUTE is honest', async () => {
+    ts = await startTestServer();
+    await apiJson(ts, 'POST', '/api/v1/backups/settings', {
+      remote: {
+        enabled: true,
+        kind: 'sftp',
+        host: 'backup.example.com',
+        username: 'ysk',
+        path: '/backups/ysk',
+      },
+    });
+    const res = await apiJson(ts, 'POST', '/api/v1/backups/remote/test', {});
+    expect(res.status).toBeLessThan(500);
+    const body = res.body as {
+      ok?: boolean;
+      blocked?: boolean;
+      requiresExecute?: boolean;
+    };
+    expect(body.ok === true && body.blocked === true).toBe(false);
+    expect(body.ok).toBe(false);
+    expect(body.blocked === true || body.requiresExecute === true).toBe(true);
+  });
+
   it('rejects unauthenticated settings mutation', async () => {
     ts = await startTestServer();
     const res = await apiJson(

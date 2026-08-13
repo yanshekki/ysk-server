@@ -1569,6 +1569,9 @@ describe('CLI deep coverage climb', () => {
     );
     expect(set.code).toBe(0);
 
+    const remoteTest = await cli('backup', 'settings', 'test');
+    expect([0, 1, 3]).toContain(remoteTest.code);
+
     const schedule = await cli('backup', 'schedule', '--cron', '0 4 * * *');
     expect(schedule.code).toBe(0);
 

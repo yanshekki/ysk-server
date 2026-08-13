@@ -98,7 +98,7 @@ export const MUTATING_ROUTE_CAP_RULES: readonly RouteCapRule[] = [
   },
   {
     methods: ['POST'],
-    pattern: /^\/api\/v1\/backups\/(run-all|restic\/run|schedule|control-plane)$/,
+    pattern: /^\/api\/v1\/backups\/(run-all|restic\/run|schedule|control-plane|remote\/test)$/,
     cap: 'backups.run',
   },
   { methods: ['POST'], pattern: /^\/api\/v1\/backups\/settings$/, cap: 'backups.run' },

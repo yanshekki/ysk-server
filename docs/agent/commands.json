@@ -569,9 +569,9 @@
     },
     {
       "name": "backup settings",
-      "risk": "read",
-      "summary": "Show remote/exclusions/restic settings (public)",
-      "example": "ysk-server backup settings --json"
+      "risk": "write-panel",
+      "summary": "Get/set/test remote SFTP|S3|local, exclusions, restic (test needs --execute)",
+      "example": "ysk-server backup settings test --json"
     },
     {
       "name": "backup restic list",

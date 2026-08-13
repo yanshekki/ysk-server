@@ -129,5 +129,8 @@
   "remotePushSub": "로컬 tar가 성공한 후 SFTP, 로컬 경로 또는 S3로 푸시합니다.",
   "accessKey": "액세스 키",
   "secretKey": "비밀키",
-  "overwriteConfirmHint": "덮어쓰기를 확인하려면 OVERWRITE를 입력하세요."
+  "overwriteConfirmHint": "덮어쓰기를 확인하려면 OVERWRITE를 입력하세요.",
+  "testRemote": "대상 테스트",
+  "testRemoteDone": "원격 탐침 완료",
+  "testRemoteFailed": "원격 탐침 실패"
 }

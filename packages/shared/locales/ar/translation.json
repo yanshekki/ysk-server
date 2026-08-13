@@ -419,7 +419,10 @@
     "remotePushSub": "بعد نجاح القطران المحلي، انتقل إلى SFTP أو المسار المحلي أو S3",
     "accessKey": "مفتاح الوصول",
     "secretKey": "المفتاح السري",
-    "overwriteConfirmHint": "اكتب OVERWRITE لتأكيد الكتابة الفوقية"
+    "overwriteConfirmHint": "اكتب OVERWRITE لتأكيد الكتابة الفوقية",
+    "testRemote": "اختبار الوجهة",
+    "testRemoteDone": "اكتمل فحص الوجهة",
+    "testRemoteFailed": "فشل فحص الوجهة"
   },
   "btTracker": {
     "title": "جهاز تعقب بي تي",

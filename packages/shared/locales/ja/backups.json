@@ -129,5 +129,8 @@
   "remotePushSub": "ローカル tar が成功したら、SFTP、ローカル パス、または S3 にプッシュします。",
   "accessKey": "アクセスキー",
   "secretKey": "シークレットキー",
-  "overwriteConfirmHint": "上書きを確認するには「OVERWRITE」と入力します。"
+  "overwriteConfirmHint": "上書きを確認するには「OVERWRITE」と入力します。",
+  "testRemote": "送信先をテスト",
+  "testRemoteDone": "リモート検査が完了",
+  "testRemoteFailed": "リモート検査に失敗"
 }

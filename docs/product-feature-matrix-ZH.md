@@ -274,8 +274,8 @@ Each engine: **data page** + **service page**.
 | L3 | Download backup | 兩 | 兩 | △ | P0 |
 | L4 | Restore full / selective (web/db/mail/dns) | 兩 | 兩 | △ | P0 |
 | L5 | Exclusion lists | H | D | ✗ | P1 |
-| L6 | Remote storage (S3/SFTP/…) | H | D | ✗ | P0 |
-| L7 | Incremental (restic/borg-class) | H | D | ✗ | P1 |
+| L6 | Remote storage (S3/SFTP/…) | H | D | ✓ | P0 |
+| L7 | Incremental (restic/borg-class) | H | D | ✓ | P1 |
 | L8 | Import migrations (cPanel/DA) | H | D | ✗ | P2 |
 | L9 | Backup failure alerts | 弱 | 弱 | ✗ | Better |
 | L10 | Restore dry-run + honest result | 弱 | 弱 | △ | Better |

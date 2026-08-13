@@ -26,6 +26,7 @@
 | 還原／刪除 | `ysk-server backup restore\|delete` | write-host | |
 | 排程安裝 | `ysk-server backup schedule --install --execute` | write-host | |
 | Restic 輔助 | `ysk-server backup restic …` | write-host | |
+| 遠端目的地（SFTP／S3／local） | `ysk-server backup settings get\|set\|test` | write-host | 探測需 `--execute` |
 | Cron 列表／建立… | `ysk-server cron list\|create\|…` | write-panel | |
 | Cron 安裝至主機 | `ysk-server cron install --execute` | write-host | |
 

@@ -419,7 +419,10 @@
     "remotePushSub": "स्थानीय टार सफल होने के बाद, एसएफटीपी, स्थानीय पथ, या एस3 पर पुश करें",
     "accessKey": "प्रवेश की चाबी",
     "secretKey": "गुप्त कुंजी",
-    "overwriteConfirmHint": "ओवरराइट की पुष्टि करने के लिए ओवरराइट टाइप करें"
+    "overwriteConfirmHint": "ओवरराइट की पुष्टि करने के लिए ओवरराइट टाइप करें",
+    "testRemote": "गंतव्य जाँचें",
+    "testRemoteDone": "रिमोट जांच पूरी",
+    "testRemoteFailed": "रिमोट जांच असफल"
   },
   "btTracker": {
     "title": "बीटी ट्रैकर",

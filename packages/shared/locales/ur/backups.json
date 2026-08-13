@@ -129,5 +129,8 @@
   "remotePushSub": "مقامی ٹار کے کامیاب ہونے کے بعد، SFTP، لوکل پاتھ، یا S3 پر دھکیلیں۔",
   "accessKey": "رسائی کی کلید",
   "secretKey": "خفیہ کلید",
-  "overwriteConfirmHint": "اوور رائٹ کی تصدیق کرنے کے لیے اوور رائٹ ٹائپ کریں۔"
+  "overwriteConfirmHint": "اوور رائٹ کی تصدیق کرنے کے لیے اوور رائٹ ٹائپ کریں۔",
+  "testRemote": "منزل جانچیں",
+  "testRemoteDone": "ریموٹ پروب مکمل",
+  "testRemoteFailed": "ریموٹ پروب ناکام"
 }

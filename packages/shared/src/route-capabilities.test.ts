@@ -9,6 +9,9 @@ import {
 describe('matchMutatingRouteCap', () => {
   it('gates restore as backups.restore (not mere run)', () => {
     expect(matchMutatingRouteCap('POST', '/api/v1/backups/restore')).toBe('backups.restore');
+    expect(matchMutatingRouteCap('POST', '/api/v1/backups/remote/test')).toBe(
+      'backups.run',
+    );
     expect(matchMutatingRouteCap('POST', '/api/v1/backups/restic/restore')).toBe(
       'backups.restore',
     );

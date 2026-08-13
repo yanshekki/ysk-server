@@ -54,3 +54,5 @@
 `GET /api/v1/email/queue` 為讀取探測（`postqueue -p`，已解析列）。`POST /api/v1/email/queue/flush` 需 EXECUTE。面板：`/email?tab=queue`。
 
 `GET /api/v1/notifications` 為儀表板提示條。CLI：`ysk-server notifications`。
+
+`POST /api/v1/backups/remote/test` 探測 SFTP／S3／local 目的地。CLI：`ysk-server backup settings test`。實際探測需 EXECUTE。

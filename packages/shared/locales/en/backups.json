@@ -129,5 +129,8 @@
   "remotePushSub": "After local tar succeeds, push to SFTP, local path, or S3",
   "accessKey": "Access Key",
   "secretKey": "Secret Key",
-  "overwriteConfirmHint": "Type OVERWRITE to confirm overwrite"
+  "overwriteConfirmHint": "Type OVERWRITE to confirm overwrite",
+  "testRemote": "Test destination",
+  "testRemoteDone": "Remote probe finished",
+  "testRemoteFailed": "Remote probe failed"
 }

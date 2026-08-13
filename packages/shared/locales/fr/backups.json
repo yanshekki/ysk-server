@@ -129,5 +129,8 @@
   "remotePushSub": "Après succès du tar local, envoyer vers SFTP, chemin local ou S3",
   "accessKey": "Clé d'accès",
   "secretKey": "Clé secrète",
-  "overwriteConfirmHint": "Tapez OVERWRITE pour confirmer l'écrasement"
+  "overwriteConfirmHint": "Tapez OVERWRITE pour confirmer l'écrasement",
+  "testRemote": "Tester la destination",
+  "testRemoteDone": "Sonde distante terminée",
+  "testRemoteFailed": "Sonde distante échouée"
 }

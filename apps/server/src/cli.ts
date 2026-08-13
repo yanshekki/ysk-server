@@ -2096,6 +2096,7 @@ async function mainInner(
       listResticSnapshots,
       resticRestoreProject,
       pushBackupRemote,
+      testBackupRemote,
       localizeLastBackupRun,
       CONTROL_PLANE_BACKUP_ID,
     } = await import('ysk-server-core');
@@ -2184,6 +2185,12 @@ async function mainInner(
               remotePatch.port = Number(getOpt(args, '--remote-port'));
             if (getOpt(args, '--s3-bucket')) remotePatch.s3Bucket = getOpt(args, '--s3-bucket');
             if (getOpt(args, '--s3-region')) remotePatch.s3Region = getOpt(args, '--s3-region');
+            if (getOpt(args, '--s3-endpoint'))
+              remotePatch.s3Endpoint = getOpt(args, '--s3-endpoint');
+            if (getOpt(args, '--s3-access-key'))
+              remotePatch.awsAccessKeyId = getOpt(args, '--s3-access-key');
+            if (getOpt(args, '--s3-secret'))
+              remotePatch.awsSecretAccessKey = getOpt(args, '--s3-secret');
             if (Object.keys(remotePatch).length) setBackupRemote(ctx.db, remotePatch as never);
 
             const excl =
@@ -2223,6 +2230,15 @@ async function mainInner(
             notes: ['settings saved (secrets masked in response)'],
           });
           return 0;
+        }
+        if (act === 'test') {
+          const result = await testBackupRemote({
+            host: ctx.host,
+            db: ctx.db,
+            dataDir: ctx.dataDir,
+          });
+          printJson(result);
+          return result.ok ? 0 : result.blocked ? 3 : 1;
         }
         // default: get (back-compat: `backup settings` alone)
         printJson({
