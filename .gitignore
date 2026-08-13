@@ -38,3 +38,4 @@ tmp/
 
 # Server-generated public assets (if present)
 apps/server/public/
+__pycache__/
