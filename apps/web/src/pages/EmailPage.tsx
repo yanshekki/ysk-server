@@ -773,7 +773,7 @@ export function EmailPage() {
                     {t('email.deleteThisId')}
                   </Button>
                 </ActionBar>
-              }
+              )}
               empty={
                 queueBusy && queueOk === null ? (
                   <EmptyState title={t('common.loading')} />
