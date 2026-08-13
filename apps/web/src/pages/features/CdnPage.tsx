@@ -954,6 +954,7 @@ export function CdnPage() {
                 {
                   key: 'actions',
                   header: '',
+                  mobile: 'actions',
                   render: (n) => (
                     <ActionBar>
                       <Button
@@ -1120,6 +1121,7 @@ export function CdnPage() {
                 {
                   key: 'actions',
                   header: '',
+                  mobile: 'actions',
                   render: (s) => (
                     <ActionBar>
                       <Button

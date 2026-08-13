@@ -104,6 +104,7 @@ export function SupportPage() {
                   key: 'copy',
                   header: '',
                   nowrap: true,
+                  mobile: 'actions',
                   render: (row) => (
                     <Button
                       type="button"

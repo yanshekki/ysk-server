@@ -484,7 +484,6 @@ export function FilesPage() {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [rowMenu, setRowMenu] = useState<string | null>(null);
   const [projects, setProjects] = useState<Array<{ id: string; name: string }>>([]);
   const [error, setErrorRaw] = useState<string | null>(null);
   const setError = useCallback((text: string | null) => {
@@ -1638,17 +1637,6 @@ export function FilesPage() {
                     rows={items}
                     rowKey={(e) => e.path}
                     rowActions={(e) => (
-                      <details
-                        className="fm-row-menu"
-                        open={rowMenu === e.path}
-                        onToggle={(ev) => {
-                          const next = (ev.currentTarget as HTMLDetailsElement).open;
-                          setRowMenu(next ? e.path : null);
-                        }}
-                      >
-                        <summary className="fm-row-menu__sum" aria-label={t('common.actions')}>
-                          ⋯
-                        </summary>
                       <ActionBar align="end">
                         {e.type === 'file' &&
                         ['image', 'video', 'audio', 'text', 'pdf'].includes(
@@ -1729,7 +1717,6 @@ export function FilesPage() {
                           {t('files.delete')}
                         </Button>
                       </ActionBar>
-                      </details>
                     )}
                     empty={
                       <EmptyState
@@ -1926,6 +1913,7 @@ export function FilesPage() {
                     {
                       key: 'name',
                       header: t('files.colName'),
+                      mobile: 'lead',
                       render: (t) => (
                         <>
                           {iconFor(t)} {t.name}
@@ -1934,6 +1922,7 @@ export function FilesPage() {
                     {
                       key: 'path',
                       header: t('files.colOrigPath'),
+                      mobile: 'meta',
                       render: (t) => (
                         <code className="inline">{t.originalPath}</code>
                       ) },
@@ -1942,6 +1931,7 @@ export function FilesPage() {
                       header: t('files.colDeletedAt'),
                       className: 'muted',
                       nowrap: true,
+                      mobile: 'meta',
                       render: (t) =>
                         (t.deletedAt ?? '').slice(0, 19).replace('T', ' ') || '—' },
                   ]}
@@ -1993,6 +1983,7 @@ export function FilesPage() {
                       key: 'path',
                       header: t('files.colPath'),
                       className: 'fm-share-list__col-path',
+                      mobile: 'lead',
                       render: (s) => {
                         const cleaned = (s.path || '').replace(/\/+$/, '') || '/';
                         const slash = cleaned.lastIndexOf('/');
@@ -2013,6 +2004,7 @@ export function FilesPage() {
                       key: 'url',
                       header: t('files.colLink'),
                       className: 'fm-share-list__col-link',
+                      mobile: 'meta',
                       render: (s) => {
                         const abs = shareAbsoluteUrl(s);
                         const short = s.url?.startsWith('http')
@@ -2030,6 +2022,7 @@ export function FilesPage() {
                       header: t('files.colExpires'),
                       nowrap: true,
                       className: 'fm-share-list__col-meta',
+                      mobile: 'meta',
                       render: (s) =>
                         s.expiresAt
                           ? new Date(s.expiresAt).toLocaleString()
@@ -2040,6 +2033,7 @@ export function FilesPage() {
                       header: t('files.colDownloads'),
                       nowrap: true,
                       className: 'fm-share-list__col-num',
+                      mobile: 'meta',
                       render: (s) => s.downloadCount,
                     },
                     {
@@ -2047,6 +2041,7 @@ export function FilesPage() {
                       header: t('files.shareSeedStatus'),
                       nowrap: true,
                       className: 'fm-share-list__col-status',
+                      mobile: 'meta',
                       render: (s) => {
                         const modes = s.downloadModes ?? ['direct'];
                         const isBt =

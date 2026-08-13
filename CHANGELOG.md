@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.15 — 2026-08-13
+
+### UI
+- DataTable is one layout everywhere: desktop keeps a real table; ≤720px is a list of cards (title wraps, facts wrap) plus a ⋯ menu for row actions
+- Files shares / browse / trash, Updates, CDN, Support, and Metrics process lists use the same primitive (no per-page table hacks)
+
 ## 1.0.14 — 2026-08-13
 
 ### Fix

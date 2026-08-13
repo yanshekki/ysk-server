@@ -970,6 +970,7 @@ export function MetricsPage() {
                       ),
                       className: 'data-table__check',
                       nowrap: true,
+                      mobile: 'check',
                       render: (r) => (
                         <input
                           type="checkbox"
@@ -982,6 +983,7 @@ export function MetricsPage() {
                       key: 'pid',
                       header: 'PID',
                       nowrap: true,
+                      mobile: 'meta',
                       render: (r) => (
                         <button
                           type="button"
@@ -995,29 +997,34 @@ export function MetricsPage() {
                       key: 'user',
                       header: 'USER',
                       nowrap: true,
+                      mobile: 'meta',
                       render: (r) => r.user },
                     {
                       key: 'pr',
                       header: 'PR',
                       className: 'u-num muted',
                       nowrap: true,
+                      mobile: 'hide',
                       render: (r) => r.pr ?? '—' },
                     {
                       key: 'ni',
                       header: 'NI',
                       className: 'u-num muted',
                       nowrap: true,
+                      mobile: 'hide',
                       render: (r) => (r.ni != null ? r.ni : '—') },
                     {
                       key: 'res',
                       header: 'RES',
                       className: 'u-num',
                       nowrap: true,
+                      mobile: 'hide',
                       render: (r) => formatRes(r.resKiB) },
                     {
                       key: 'state',
                       header: 'S',
                       nowrap: true,
+                      mobile: 'hide',
                       render: (r) => (
                         <code className="met-state">{r.state?.[0] ?? '—'}</code>
                       ) },
@@ -1026,6 +1033,7 @@ export function MetricsPage() {
                       header: '%CPU',
                       className: 'u-num',
                       nowrap: true,
+                      mobile: 'meta',
                       render: (r) => (
                         <span className={r.cpu >= 20 ? 'met-hot' : undefined}>
                           {r.cpu.toFixed(1)}
@@ -1036,17 +1044,20 @@ export function MetricsPage() {
                       header: '%MEM',
                       className: 'u-num',
                       nowrap: true,
+                      mobile: 'meta',
                       render: (r) => r.mem.toFixed(1) },
                     {
                       key: 'time',
                       header: 'TIME+',
                       className: 'data-table__etime',
                       nowrap: true,
+                      mobile: 'hide',
                       render: (r) => r.timePlus ?? r.etime ?? '—' },
                     {
                       key: 'cmd',
                       header: 'COMMAND',
                       className: 'data-table__cmd',
+                      mobile: 'lead',
                       render: (r) => (
                         <span title={r.command}>
                           {r.command}
@@ -1332,6 +1343,7 @@ export function MetricsPage() {
                     {
                       key: 'bar',
                       header: '',
+                      mobile: 'hide',
                       render: (m) => {
                         const pct = Math.round(m.usedRatio * 100);
                         return (
