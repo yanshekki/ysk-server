@@ -3,7 +3,7 @@
 > 語言：中文 | [English](./product-feature-matrix.md)
 
 **狀態:** 產品契約（準則來源）  
-**重計：** 2026-08-13 — 標記對齊已發布 1.0.7（zip／WebDAV／版本／操作員 2FA／用戶先前誤標 ✗）。  
+**重計：** 2026-08-13 — 標記對齊已發布 1.0.8（Waves A–C 封口；無剩餘 P0 ✗）。  
 **研究基礎：** Hestia Control Panel v1.9.x（文件 + UI + 524 個 `v-*` CLI）與 DirectAdmin（官方文件：獨特功能、託管服務、垃圾郵件、備份、MSS、CustomBuild）— 2026-07。  
 **Rule:** UI never markets competitors. Buttons = 真實操作 or preset deep-links only.
 

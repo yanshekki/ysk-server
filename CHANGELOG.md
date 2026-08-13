@@ -1,11 +1,9 @@
 # Changelog
 
-## 1.0.7 — 2026-08-13
+## 1.0.8 — 2026-08-13
 
 ### Control plane
-- CLI `files --if-exists` matches panel/API name-collision policy (default fail)
-- CLI `updates hub` matches panel `/updates` `collectUpdateHub` entries
-- Three-way inventory gate: `node scripts/cli-panel-parity.mjs --strict`
+- Wave A: system fonts (no runtime CDN), boot i18n, mobile-friendly shell
 - `projects create --create-dns --create-mail` matches panel checkboxes and API `createDnsZone` / `createMailDomain`
 - Project FTP: CLI `projects ftp` / `ftp accounts create --project` matches `POST /api/v1/projects/:id/ftp`; panel `/ftp?project=`
 - Email vacation / catch-all: CLI `email flags` matches panel aliases + `PATCH /email/domains/:id/flags`
@@ -15,6 +13,13 @@
 - Per-domain antispam: CLI `email policy` matches panel + `POST /email/domains/:id/policy`
 - Panel-user 2FA: `requireUserTotp` + CLI `users totp` / `users totp-clear`
 - Feature matrix sealed against shipped Waves A–C (no remaining P0 ✗)
+
+## 1.0.7 — 2026-08-13
+
+### Control plane
+- CLI `files --if-exists` matches panel/API name-collision policy (default fail)
+- CLI `updates hub` matches panel `/updates` `collectUpdateHub` entries
+- Three-way inventory gate: `node scripts/cli-panel-parity.mjs --strict`
 
 ## 1.0.6 — 2026-08-13
 
