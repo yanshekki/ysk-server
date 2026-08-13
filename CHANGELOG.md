@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.9 — 2026-08-13
+
+### Security
+- Live audit remediations (A08-1–A08-21): public health/readiness subset, TOTP enroll enforced, backup SSRF, fail-closed bash probes
+- Host Browse `chromePath` allowlist; VNC IMDS blocked; public VNC share rate-limited
+- OpenVPN hooks stripped again on client up; VPN `listenPort` coerced before shell use
+- FTP jail under dataDir/project home; impersonate cannot target admin
+- DB/Redis console GET requires write/control cap; WebDAV PROPFIND/PUT capped
+- Zip-slip / mapped IMDS / IPv6 metadata aliases closed
+
 ## 1.0.8 — 2026-08-13
 
 ### Control plane

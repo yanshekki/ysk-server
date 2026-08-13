@@ -3,7 +3,7 @@
 > Language: English | [中文](./product-feature-matrix-ZH.md)
 
 **Status:** product contract (source of truth)  
-**Rescored:** 2026-08-13 — seal after Waves A–C for **1.0.8**. Marks match shipped code (panel + CLI + API), not marketing.
+**Rescored:** 2026-08-13 — seal after Waves A–C; **1.0.9** ships the 1.0.8 security audit remediations. Marks match shipped code (panel + CLI + API), not marketing.
 **Research basis:** Hestia Control Panel v1.9.x (docs + UI pages + 524 `v-*` CLI) and DirectAdmin (official docs: unique features, hosting services, spam, backup, MSS, CustomBuild) — 2026-07.  
 **Rule:** UI never markets competitors. Buttons = real ops or preset deep-links only.
 
