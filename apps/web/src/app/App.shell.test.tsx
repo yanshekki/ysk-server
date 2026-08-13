@@ -119,8 +119,12 @@ describe('AppShell', () => {
     expect(header?.querySelector('.shell__search')).toBeTruthy();
     expect(header?.querySelector('.shell__account-bar')).toBeNull();
     expect(header?.querySelector('.shell__lang')).toBeNull();
-    expect(document.querySelector('.shell__account-drawer .shell__lang')).toBeTruthy();
-    expect(document.querySelector('.shell__account-drawer .shell__user')?.textContent).toMatch(/admin/i);
+    const drawer = document.querySelector('.shell__account-drawer');
+    const nav = document.querySelector('.shell__nav');
+    expect(drawer?.querySelector('.shell__lang')).toBeTruthy();
+    expect(drawer?.querySelector('.shell__account-name')?.textContent).toMatch(/admin/i);
+    expect(drawer?.querySelector('.shell__account-role')?.textContent).toMatch(/管理員|admin|Admin/i);
+    expect(nav && drawer ? nav.compareDocumentPosition(drawer) & Node.DOCUMENT_POSITION_FOLLOWING : 0).toBeTruthy();
   });
 });
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.17 — 2026-08-13
+
+### UI
+- Mobile drawer: language / account / logout sit at the bottom as a compact dock (nav stays on top)
+
 ## 1.0.16 — 2026-08-13
 
 ### Install

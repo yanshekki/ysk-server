@@ -126,9 +126,6 @@ export function AppShell() {
           <img src="/logo.svg" alt="YSK Limited" width={32} height={32} />
           <span className="gradient-text">YSK Server</span>
         </div>
-        {compactChrome ? (
-          <div className="shell__account-drawer">{accountControls}</div>
-        ) : null}
         <nav className="shell__nav" aria-label="Main">
           {navSections.map((section) => (
             <div key={section.sectionKey} className="shell__nav-section">
@@ -223,6 +220,42 @@ export function AppShell() {
             </div>
           ))}
         </nav>
+        {compactChrome ? (
+          <div className="shell__account-drawer">
+            <div className="shell__account-id">
+              <span className="shell__account-name">{user?.username ?? '—'}</span>
+              {roleLabel && roleLabel !== user?.username ? (
+                <span className="shell__account-role">{roleLabel}</span>
+              ) : null}
+            </div>
+            <div className="shell__account-tools">
+              <label className="shell__lang">
+                <select
+                  className="shell__lang-select"
+                  value={locale}
+                  onChange={(e) =>
+                    setAppLocale(e.target.value as LocaleCode, { syncServer: true })
+                  }
+                  title={t('common.switchLanguage', { defaultValue: 'Switch language' })}
+                  aria-label={t('common.language', { defaultValue: 'Language' })}
+                >
+                  {LOCALES.map((code) => (
+                    <option key={code} value={code}>
+                      {LOCALE_LABELS[code]}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                type="button"
+                className={`${buttonClassName({ variant: 'ghost', size: 'sm' })} shell__account-logout`}
+                onClick={onLogout}
+              >
+                {t('nav.logout')}
+              </button>
+            </div>
+          </div>
+        ) : null}
         <div className="shell__footer">
           <p className="shell__powered">
             {t('files.publicSharePoweredPrefix', { defaultValue: 'Powered by ' })}

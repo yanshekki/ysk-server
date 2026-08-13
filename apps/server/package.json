@@ -1,6 +1,6 @@
 {
   "name": "ysk-server",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "description": "YSK Server control plane HTTP API and CLI (ysk-server)",
   "type": "module",
   "bin": {

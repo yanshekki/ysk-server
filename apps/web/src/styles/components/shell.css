@@ -141,6 +141,11 @@
   color: var(--text-muted);
 }
 
+.shell__account-drawer + .shell__footer {
+  border-top: none;
+  padding-top: 0.4rem;
+}
+
 /* Same pattern as public share footer: 「由 YSK Limited 提供」 */
 .shell__powered {
   margin: 0;
@@ -244,11 +249,44 @@
 }
 
 .shell__account-drawer {
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
-  padding: 0.85rem 1rem 1rem;
-  border-bottom: 1px solid var(--border-color);
+  gap: 0.55rem;
+  padding: 0.7rem 0.9rem 0.65rem;
+  border-top: 1px solid var(--border-light);
+  background: var(--bg-subtle, #f8fafc);
+}
+
+.shell__account-id {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  min-width: 0;
+}
+
+.shell__account-name {
+  font-size: 0.88rem;
+  font-weight: 750;
+  color: var(--text-main);
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shell__account-role {
+  font-size: 0.7rem;
+  font-weight: 650;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+
+.shell__account-tools {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.45rem;
+  align-items: center;
 }
 
 .shell__account-drawer .shell__lang,
@@ -257,17 +295,15 @@
   width: 100%;
   min-width: 0;
   max-width: none;
-  height: var(--control-height);
+  height: 2.25rem;
+  font-size: 0.8rem;
 }
 
-.shell__account-drawer .shell__user {
-  max-width: none;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-}
-
-.shell__account-drawer .btn {
-  width: 100%;
+.shell__account-logout {
+  height: 2.25rem;
+  padding: 0 0.8rem;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* —— Login (shared brand surface) —— */
