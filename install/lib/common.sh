@@ -172,13 +172,15 @@ apt_update() {
 apt_install_core() {
   if [[ $# -eq 0 ]]; then return 0; fi
   log "apt install (required): $*"
+  # Allow downgrades: sury/PPA meta packages can resolve to an older default series
+  # than already-held phpX.Y-* packages; without this, upgrade aborts mid-stack.
   # shellcheck disable=SC2086
-  if ! $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y "$@"; then
+  if ! $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-downgrades "$@"; then
     local pkg failed=0
     for pkg in "$@"; do
       log "  retry single: $pkg"
       # shellcheck disable=SC2086
-      if $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y "$pkg"; then
+      if $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-downgrades "$pkg"; then
         log "  + $pkg OK"
       else
         record_hard_fail "required package failed: $pkg"
@@ -196,7 +198,7 @@ apt_install_optional() {
   for pkg in "$@"; do
     log "apt install (optional): $pkg"
     # shellcheck disable=SC2086
-    if $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y "$pkg"; then
+    if $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-downgrades "$pkg"; then
       log "  + $pkg (optional OK)"
     else
       warn "optional package unavailable: $pkg"
