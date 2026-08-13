@@ -51,12 +51,25 @@ else
   log "WARNING: no apps/web/dist — API-only pack"
 fi
 
-if [[ "$PUBLISH" -eq 1 ]]; then
-  log "PUBLISH ysk-server-shared@$SHARED_VER…"
-  (cd packages/shared && npm publish --access public)
+npm_version_exists() {
+  local name="$1" ver="$2"
+  npm view "${name}@${ver}" version &>/dev/null
+}
 
-  log "PUBLISH ysk-server-core@$CORE_VER…"
-  (cd packages/core && npm publish --access public)
+if [[ "$PUBLISH" -eq 1 ]]; then
+  if npm_version_exists ysk-server-shared "$SHARED_VER"; then
+    log "skip ysk-server-shared@$SHARED_VER (already on npm)"
+  else
+    log "PUBLISH ysk-server-shared@$SHARED_VER…"
+    (cd packages/shared && npm publish --access public)
+  fi
+
+  if npm_version_exists ysk-server-core "$CORE_VER"; then
+    log "skip ysk-server-core@$CORE_VER (already on npm)"
+  else
+    log "PUBLISH ysk-server-core@$CORE_VER…"
+    (cd packages/core && npm publish --access public)
+  fi
 else
   log "dry-run: would publish ysk-server-shared + ysk-server-core"
   (cd packages/shared && npm publish --access public --dry-run 2>&1 | tail -8)

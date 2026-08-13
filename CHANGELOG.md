@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.6 — 2026-08-13
+
+### Files
+- Desktop-style name conflict on drop, copy, move, and rename (skip / keep both / replace / merge folders / apply to all)
+
 ## 1.0.0 — 2026-08-12
 
 ### CI
