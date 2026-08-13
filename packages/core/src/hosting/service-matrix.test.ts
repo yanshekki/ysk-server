@@ -35,6 +35,11 @@ describe('service-matrix', () => {
     const h = host({ execute: false, root: false });
     const m = await getServiceMatrix(h);
     expect(m.items.length).toBeGreaterThan(5);
+    expect(m.items.some((i) => i.id === 'apache')).toBe(true);
+    expect(m.items.some((i) => i.id === 'pdns')).toBe(true);
+    expect(m.items.some((i) => i.id === 'opendkim')).toBe(true);
+    expect(m.items.some((i) => i.id === 'sshd')).toBe(true);
+    expect(m.items.some((i) => i.id === 'wireguard')).toBe(true);
     expect(m.executeEnabled).toBe(false);
     const life = await lifecycleServiceUnit(h, 'nginx.service', 'restart');
     expect(life.blocked || life.ok === false).toBe(true);

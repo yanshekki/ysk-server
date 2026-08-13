@@ -29,6 +29,7 @@
 | 即時監控 | `ysk-server vpn monitor [--engine …] --json` | read | |
 | 埠預設 | `ysk-server vpn presets --json` | read | |
 | 確保／套用伺服器 | `ysk-server vpn ensure --engine … [--port …] --execute --json` | write-host | |
+| 停止伺服器 | `ysk-server vpn stop --engine … --execute --json` | write-host | |
 | 列出伺服器對等端 | `ysk-server vpn peers list --engine … --json` | read | |
 | 新增對等端 | `ysk-server vpn peers add --name NAME --execute --json` | write-host | |
 | 刪除對等端 | `ysk-server vpn peers delete --id ID --execute --json` | write-host | |
@@ -46,6 +47,7 @@ ysk-server vpn status --json
 ysk-server vpn peers list --engine wireguard --json
 export YSK_EXECUTE=1
 ysk-server vpn ensure --engine wireguard --port 51820 --execute --json
+ysk-server vpn stop --engine wireguard --execute --json
 ysk-server vpn peers add --name phone --execute --json
 ysk-server vpn peers config --id PEER_ID --out ./peer.conf
 ```

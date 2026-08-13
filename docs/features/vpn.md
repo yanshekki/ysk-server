@@ -29,6 +29,7 @@ Manage **open-source VPN** on the control-plane host:
 | Live monitor | `ysk-server vpn monitor [--engine …] --json` | read | |
 | Port presets | `ysk-server vpn presets --json` | read | |
 | Ensure / apply server | `ysk-server vpn ensure --engine … [--port …] --execute --json` | write-host | |
+| Stop server | `ysk-server vpn stop --engine … --execute --json` | write-host | |
 | List server peers | `ysk-server vpn peers list --engine … --json` | read | |
 | Add peer | `ysk-server vpn peers add --name NAME --execute --json` | write-host | |
 | Delete peer | `ysk-server vpn peers delete --id ID --execute --json` | write-host | |
@@ -46,6 +47,7 @@ ysk-server vpn status --json
 ysk-server vpn peers list --engine wireguard --json
 export YSK_EXECUTE=1
 ysk-server vpn ensure --engine wireguard --port 51820 --execute --json
+ysk-server vpn stop --engine wireguard --execute --json
 ysk-server vpn peers add --name phone --execute --json
 ysk-server vpn peers config --id PEER_ID --out ./peer.conf
 ```

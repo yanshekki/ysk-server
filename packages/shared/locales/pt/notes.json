@@ -2865,7 +2865,9 @@
     "accessReconnectHint": "Clientes já conectados devem se reconectar para escolher novas rotas",
     "ovpnNatDurable": "OpenVPN NAT/forward instalado para reinicialização (systemd ExecStartPost).",
     "clientFullTunnelProtect": "Cliente de túnel completo detectado (AllowedIPs 0.0.0.0/0). Proteção de host aplicada para que as respostas do painel/SSH permaneçam na NIC da LAN.",
-    "clientFullTunnelHint": "Dica: apenas para acesso dividido, defina AllowedIPs como CIDRs VPN/LAN (não 0.0.0.0/0) no conf e reconecte."
+    "clientFullTunnelHint": "Dica: apenas para acesso dividido, defina AllowedIPs como CIDRs VPN/LAN (não 0.0.0.0/0) no conf e reconecte.",
+    "serverStopped": "{{engine}} server stopped.",
+    "serverStopFailed": "Could not stop {{engine}} server: {{detail}}"
   },
   "vnc": {
     "needInstall": "Instalar {{stack}}",

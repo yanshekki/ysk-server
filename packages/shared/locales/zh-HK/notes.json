@@ -2827,6 +2827,8 @@
     "openvpnComing": "OpenVPN 完整流程將於後續版本提供。",
     "outlineComing": "Outline／Shadowsocks 將於後續版本提供。",
     "needExecuteServer": "VPN 伺服器設定需 root 與 YSK_EXECUTE=1。",
+    "serverStopped": "已停止 {{engine}} 伺服器。",
+    "serverStopFailed": "無法停止 {{engine}} 伺服器：{{detail}}",
     "needExecuteClient": "VPN 客戶端連線需 root 與 YSK_EXECUTE=1。",
     "keygenFailed": "WireGuard 金鑰產生失敗（是否已安裝 wg？）。",
     "serverKeysCreated": "已建立 WireGuard 伺服器金鑰。",

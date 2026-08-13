@@ -18,6 +18,7 @@ import {
   buttonClassName } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
+import { ServiceLifecycleBar } from '../../features/system/ServiceLifecycleBar';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { bindSet, bindCall1 } from '../bind-handlers';
@@ -264,6 +265,18 @@ export function SystemdUnitPage() {
           <Link to="/services" className={buttonClassName({ variant: 'ghost', size: 'sm' })}>
             {t('system.scServices')}
           </Link>
+          {status?.systemUnitExists ? (
+            <ServiceLifecycleBar
+              unit="ysk-server"
+              label="YSK Server"
+              installed
+              running={running}
+              danger="panel"
+              actions={['start', 'stop', 'restart']}
+              size="sm"
+              onDone={refresh}
+            />
+          ) : null}
         </ActionBar>
       }
     >

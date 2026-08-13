@@ -2865,7 +2865,9 @@
     "accessReconnectHint": "पहले से जुड़े हुए ग्राहकों को नए मार्ग चुनने के लिए फिर से जुड़ना होगा",
     "ovpnNatDurable": "रीबूट के लिए OpenVPN NAT/फ़ॉरवर्ड स्थापित किया गया (systemd ExecStartPost)।",
     "clientFullTunnelProtect": "पूर्ण-सुरंग क्लाइंट का पता चला (अनुमतIPs 0.0.0.0/0)। एप्लाइड होस्ट प्रोटेक्ट ताकि पैनल/एसएसएच उत्तर लैन एनआईसी पर बने रहें।",
-    "clientFullTunnelHint": "युक्ति: केवल स्प्लिट एक्सेस के लिए, कॉन्फ़ में अनुमत आईपी को वीपीएन/लैन सीआईडीआर (0.0.0.0/0 नहीं) पर सेट करें, फिर पुनः कनेक्ट करें।"
+    "clientFullTunnelHint": "युक्ति: केवल स्प्लिट एक्सेस के लिए, कॉन्फ़ में अनुमत आईपी को वीपीएन/लैन सीआईडीआर (0.0.0.0/0 नहीं) पर सेट करें, फिर पुनः कनेक्ट करें।",
+    "serverStopped": "{{engine}} server stopped.",
+    "serverStopFailed": "Could not stop {{engine}} server: {{detail}}"
   },
   "vnc": {
     "needInstall": "इंस्टॉल करें {{stack}}",

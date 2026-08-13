@@ -10,6 +10,7 @@ import {
   FormHint } from '../../../shared/components/ui';
 import { sshApi } from './api';
 import { ServiceAccessStrip } from '../../network/service-exposure';
+import { ServiceLifecycleBar } from '../../system/ServiceLifecycleBar';
 
 type Props = {
   onFlash: (tone: 'ok' | 'error', text: string) => void;
@@ -41,6 +42,14 @@ export function SshdPanel({ onFlash }: Props) {
         serviceId="sshd"
         ports={[{ role: 'ssh', port: '22', proto: 'tcp' }]}
         compact
+      />
+      <ServiceLifecycleBar
+        unit="ssh"
+        matrixId="sshd"
+        label="sshd"
+        danger="sshd"
+        actions={['start', 'stop', 'restart', 'reload']}
+        size="sm"
       />
 
       <Card>

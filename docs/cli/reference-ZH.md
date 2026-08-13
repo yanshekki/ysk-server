@@ -302,6 +302,7 @@ ysk-server ask "自然語言" [--execute]
 | `monitor` | 即時傳輸快照 | 否 |
 | `presets` | 埠預設 | 否 |
 | `ensure` | 確保伺服器設定 | **是** |
+| `stop` | 停止 VPN 伺服器單元 | **是** |
 | `peers list\|add\|delete\|config` | 伺服器對等端 | add/delete **是** |
 | `clients list\|import\|up\|down\|delete\|autostart` | 本機客戶端 | up/down/delete **是** |
 | `firewall open` | 經服務暴露開埠 | **是** |
@@ -310,6 +311,7 @@ ysk-server ask "自然語言" [--execute]
 ysk-server vpn status --json
 ysk-server vpn peers list --engine wireguard --json
 ysk-server vpn ensure --engine wireguard --port 51820 --execute --json
+ysk-server vpn stop --engine wireguard --execute --json
 ysk-server vpn peers add --name laptop --execute --json
 ysk-server vpn clients import --name office --file ./wg.conf --json
 ```

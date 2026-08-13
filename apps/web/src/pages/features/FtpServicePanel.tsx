@@ -29,6 +29,7 @@ import {
   type FtpsStatus,
 } from '../../features/ftp';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
+import { ServiceLifecycleBar } from '../../features/system/ServiceLifecycleBar';
 import { softwareApi } from '../../features/software';
 import { ServiceAccessStrip } from '../../features/network/service-exposure';
 import { sanitizeOperatorNotes } from '../../shared/lib/operator-messages';
@@ -213,6 +214,17 @@ export function FtpServicePanel({ onStatusChange }: FtpServicePanelProps) {
             >
               {t('common.refresh')}
             </Button>
+            {installed ? (
+              <ServiceLifecycleBar
+                unit="vsftpd"
+                label="vsftpd"
+                installed={installed}
+                running={running}
+                actions={['stop']}
+                size="md"
+                onDone={refresh}
+              />
+            ) : null}
           </div>
           <div className="u-mt-3">
             <ServiceAccessStrip serviceId="vsftpd" ports={ftpsBindings} />

@@ -2865,7 +2865,9 @@
     "accessReconnectHint": "ইতিমধ্যে-সংযুক্ত ক্লায়েন্টদের অবশ্যই নতুন রুট নিতে পুনরায় সংযোগ করতে হবে",
     "ovpnNatDurable": "OpenVPN NAT/forward পুনরায় বুট করার জন্য ইনস্টল করা হয়েছে (systemd ExecStartPost)।",
     "clientFullTunnelProtect": "সম্পূর্ণ-টানেল ক্লায়েন্ট সনাক্ত করা হয়েছে (AllowedIPs 0.0.0.0/0)। প্রয়োগকৃত হোস্ট সুরক্ষা তাই প্যানেল/SSH উত্তরগুলি LAN NIC-তে থাকে।",
-    "clientFullTunnelHint": "টিপ: শুধুমাত্র বিভক্ত অ্যাক্সেসের জন্য, conf-এ VPN/LAN CIDRs (0.0.0.0/0 নয়) এ AllowedIPs সেট করুন, তারপর পুনরায় সংযোগ করুন৷"
+    "clientFullTunnelHint": "টিপ: শুধুমাত্র বিভক্ত অ্যাক্সেসের জন্য, conf-এ VPN/LAN CIDRs (0.0.0.0/0 নয়) এ AllowedIPs সেট করুন, তারপর পুনরায় সংযোগ করুন৷",
+    "serverStopped": "{{engine}} server stopped.",
+    "serverStopFailed": "Could not stop {{engine}} server: {{detail}}"
   },
   "vnc": {
     "needInstall": "{{stack}} ইনস্টল করুন",

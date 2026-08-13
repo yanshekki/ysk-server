@@ -2865,7 +2865,9 @@
     "accessReconnectHint": "يجب على العملاء المتصلين بالفعل إعادة الاتصال لالتقاط مسارات جديدة",
     "ovpnNatDurable": "تم تثبيت OpenVPN NAT/forward لإعادة التشغيل (systemd ExecStartPost).",
     "clientFullTunnelProtect": "تم اكتشاف عميل النفق الكامل (AllowedIPs 0.0.0.0/0). يتم تطبيق حماية المضيف بحيث تظل ردود اللوحة/SSH على LAN NIC.",
-    "clientFullTunnelHint": "نصيحة: للوصول المقسم فقط، قم بتعيين عناوين IP المسموح بها على VPN/LAN CIDRs (وليس 0.0.0.0/0) في ملف conf، ثم أعد الاتصال."
+    "clientFullTunnelHint": "نصيحة: للوصول المقسم فقط، قم بتعيين عناوين IP المسموح بها على VPN/LAN CIDRs (وليس 0.0.0.0/0) في ملف conf، ثم أعد الاتصال.",
+    "serverStopped": "{{engine}} server stopped.",
+    "serverStopFailed": "Could not stop {{engine}} server: {{detail}}"
   },
   "vnc": {
     "needInstall": "تثبيت {{stack}}",

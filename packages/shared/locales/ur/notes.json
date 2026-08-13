@@ -2865,7 +2865,9 @@
     "accessReconnectHint": "پہلے سے جڑے ہوئے کلائنٹس کو نئے راستے لینے کے لیے دوبارہ جڑنا ہوگا۔",
     "ovpnNatDurable": "اوپن وی پی این این اے ٹی/فارورڈ ریبوٹ کے لیے انسٹال ہوا (سسٹمڈ ExecStartPost)۔",
     "clientFullTunnelProtect": "مکمل ٹنل کلائنٹ کا پتہ چلا (AllowedIPs 0.0.0.0/0)۔ اپلائیڈ ہوسٹ پروٹیکٹ کریں تاکہ پینل/SSH جوابات LAN NIC پر رہیں۔",
-    "clientFullTunnelHint": "اشارہ: صرف تقسیم تک رسائی کے لیے، conf میں AllowedIPs کو VPN/LAN CIDRs (0.0.0.0/0 نہیں) پر سیٹ کریں، پھر دوبارہ جڑیں۔"
+    "clientFullTunnelHint": "اشارہ: صرف تقسیم تک رسائی کے لیے، conf میں AllowedIPs کو VPN/LAN CIDRs (0.0.0.0/0 نہیں) پر سیٹ کریں، پھر دوبارہ جڑیں۔",
+    "serverStopped": "{{engine}} server stopped.",
+    "serverStopFailed": "Could not stop {{engine}} server: {{detail}}"
   },
   "vnc": {
     "needInstall": "{{stack}} انسٹال کریں",

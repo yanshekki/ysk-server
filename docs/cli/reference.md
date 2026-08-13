@@ -302,6 +302,7 @@ Open-source VPN on the control-plane host (WireGuard / OpenVPN / Outline-style s
 | `monitor` | Live transfer snapshot | no |
 | `presets` | Port presets | no |
 | `ensure` | Ensure server config | **yes** |
+| `stop` | Stop VPN server unit | **yes** |
 | `peers list\|add\|delete\|config` | Server peers | add/delete **yes** |
 | `clients list\|import\|up\|down\|delete\|autostart` | Local client profiles | up/down/delete **yes** |
 | `firewall open` | Open port via service exposure | **yes** |
@@ -310,6 +311,7 @@ Open-source VPN on the control-plane host (WireGuard / OpenVPN / Outline-style s
 ysk-server vpn status --json
 ysk-server vpn peers list --engine wireguard --json
 ysk-server vpn ensure --engine wireguard --port 51820 --execute --json
+ysk-server vpn stop --engine wireguard --execute --json
 ysk-server vpn peers add --name laptop --execute --json
 ysk-server vpn clients import --name office --file ./wg.conf --json
 ```

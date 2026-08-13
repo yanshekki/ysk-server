@@ -27,6 +27,7 @@ import {
 } from '../../shared/components/ui';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
 import { systemApi } from '../../features/system';
+import { ServiceLifecycleBar } from '../../features/system/ServiceLifecycleBar';
 import {
   nginxHostingApi,
   type NginxAccessLog,
@@ -352,6 +353,15 @@ export function NginxPage() {
               { role: 'https', port: '443', proto: 'tcp' },
             ]}
             compact
+          />
+          <ServiceLifecycleBar
+            unit="nginx"
+            label="Nginx"
+            danger="edge"
+            actions={['start', 'stop', 'restart', 'reload']}
+            size="sm"
+            className="u-mt-3"
+            onDone={() => void refresh()}
           />
         </div>
 

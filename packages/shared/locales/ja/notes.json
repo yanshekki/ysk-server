@@ -2865,7 +2865,9 @@
     "accessReconnectHint": "すでに接続されているクライアントは、新しいルートを選択するために再接続する必要があります",
     "ovpnNatDurable": "再起動用に OpenVPN NAT/フォワードがインストールされています (systemd ExecStartPost)。",
     "clientFullTunnelProtect": "フルトンネル クライアントが検出されました (AllowedIPs 0.0.0.0/0)。ホスト保護を適用したため、パネル/SSH 応答は LAN NIC 上に留まります。",
-    "clientFullTunnelHint": "ヒント: 分割アクセスのみの場合は、conf でAllowedIPs を VPN/LAN CIDR (0.0.0.0/0 ではない) に設定してから、再接続します。"
+    "clientFullTunnelHint": "ヒント: 分割アクセスのみの場合は、conf でAllowedIPs を VPN/LAN CIDR (0.0.0.0/0 ではない) に設定してから、再接続します。",
+    "serverStopped": "{{engine}} server stopped.",
+    "serverStopFailed": "Could not stop {{engine}} server: {{detail}}"
   },
   "vnc": {
     "needInstall": "{{stack}}をインストール",

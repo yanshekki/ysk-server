@@ -522,6 +522,62 @@ export class VpnService {
     });
   }
 
+  async stopServer(input: {
+    engine?: VpnEngineId;
+  }): Promise<{
+    ok: boolean;
+    notes: string[];
+    blocked?: boolean;
+    requiresExecute?: boolean;
+  }> {
+    const engine = input.engine ?? 'wireguard';
+    if (!this.host.executeEnabled() || !this.host.isRoot()) {
+      return {
+        ok: false,
+        blocked: true,
+        requiresExecute: !this.host.executeEnabled(),
+        notes: [tl('notes.vpn.needExecuteServer')],
+      };
+    }
+    const units =
+      engine === 'openvpn'
+        ? ['openvpn-server@ysk', 'openvpn@ysk']
+        : engine === 'outline'
+          ? ['ysk-ss-server']
+          : ['wg-quick@wg0'];
+    const notes: string[] = [];
+    let stoppedOrIdle = false;
+    for (const unit of units) {
+      const active = await this.host.runCommand(['systemctl', 'is-active', '--quiet', unit], {
+        timeoutMs: 8_000,
+      });
+      if (active.exitCode !== 0) {
+        stoppedOrIdle = true;
+        continue;
+      }
+      const r = await this.host.runCommand(['systemctl', 'stop', unit], { timeoutMs: 30_000 });
+      notes.push(`systemctl stop ${unit} exit=${r.exitCode}`);
+      if (r.exitCode === 0) stoppedOrIdle = true;
+    }
+    if (engine === 'wireguard') {
+      await this.host.runCommand(['bash', '-c', 'wg-quick down wg0 2>/dev/null || true'], {
+        timeoutMs: 20_000,
+      });
+    }
+    if (!stoppedOrIdle) {
+      return {
+        ok: false,
+        notes: [
+          tl('notes.vpn.serverStopFailed', {
+            engine,
+            detail: notes.join('; ') || 'no unit',
+          }),
+        ],
+      };
+    }
+    return { ok: true, notes: [tl('notes.vpn.serverStopped', { engine }), ...notes] };
+  }
+
   async addServerPeer(input: {
     name: string;
     engine?: VpnEngineId;

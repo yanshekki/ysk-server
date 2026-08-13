@@ -39,6 +39,7 @@ const CATALOG: Array<{
   softwareProbeId?: string;
 }> = [
   { id: 'nginx', label: 'Nginx', unit: 'nginx', href: '/nginx', categoryKey: 'notes.auto.n1318', softwareProbeId: 'nginx', bins: ['nginx'] },
+  { id: 'apache', label: 'Apache', unit: 'apache2', href: '/apache', categoryKey: 'notes.auto.n1318', softwareProbeId: 'apache2', bins: ['apache2', 'httpd'] },
   {
     id: 'mysql',
     label: 'MySQL',
@@ -96,6 +97,12 @@ const CATALOG: Array<{
   },
   { id: 'postfix', label: 'Postfix', unit: 'postfix', href: '/email', categoryKey: 'notes.readiness.email', softwareProbeId: 'postfix', bins: ['postfix'] },
   { id: 'dovecot', label: 'Dovecot', unit: 'dovecot', href: '/email', categoryKey: 'notes.readiness.email', softwareProbeId: 'dovecot', bins: ['dovecot'] },
+  { id: 'opendkim', label: 'OpenDKIM', unit: 'opendkim', href: '/email', categoryKey: 'notes.readiness.email', softwareProbeId: 'opendkim', bins: ['opendkim'] },
+  { id: 'pdns', label: 'PowerDNS', unit: 'pdns', href: '/dns', categoryKey: 'notes.auto.n1318', softwareProbeId: 'pdns-server', bins: ['pdns_server'] },
+  { id: 'sshd', label: 'sshd', unit: 'ssh', href: '/security', categoryKey: 'notes.readiness.security', bins: ['sshd'] },
+  { id: 'wireguard', label: 'WireGuard', unit: 'wg-quick@wg0', href: '/vpn', categoryKey: 'notes.readiness.security', softwareProbeId: 'wireguard', bins: ['wg', 'wg-quick'] },
+  { id: 'openvpn', label: 'OpenVPN', unit: 'openvpn-server@ysk', href: '/vpn', categoryKey: 'notes.readiness.security', softwareProbeId: 'openvpn', bins: ['openvpn'] },
+  { id: 'outline', label: 'Shadowsocks', unit: 'ysk-ss-server', href: '/vpn', categoryKey: 'notes.readiness.security', softwareProbeId: 'shadowsocks', bins: ['ss-server'] },
   { id: 'php-fpm', label: 'PHP-FPM', unit: 'php8.2-fpm', href: '/runtimes/php', categoryKey: 'notes.auto.n0018', softwareProbeId: 'php', bins: ['php-fpm8.2', 'php-fpm', 'php'] },
   { id: 'java', label: 'Java', unit: '', href: '/runtimes/java', categoryKey: 'notes.cat.runtime', softwareProbeId: 'java', bins: ['java', 'javac'] },
   { id: 'kotlin', label: 'Kotlin', unit: '', href: '/runtimes/kotlin', categoryKey: 'notes.cat.runtime', softwareProbeId: 'kotlin', bins: ['kotlin', 'kotlinc'] },
@@ -161,7 +168,11 @@ const UNIT_ALIASES: Record<string, string[]> = {
   mysql: ['mysql', 'mysqld'],
   redis: ['redis-server', 'redis'],
   postgres: ['postgresql', 'postgresql@16-main', 'postgresql@15-main', 'postgresql@14-main'],
-  'php-fpm': ['php8.3-fpm', 'php8.2-fpm', 'php8.1-fpm', 'php-fpm'] };
+  'php-fpm': ['php8.3-fpm', 'php8.2-fpm', 'php8.1-fpm', 'php-fpm'],
+  apache: ['apache2', 'httpd'],
+  sshd: ['ssh', 'sshd'],
+  openvpn: ['openvpn-server@ysk', 'openvpn@ysk'],
+};
 
 export async function getServiceMatrix(host: HostExecutor): Promise<{
   items: ServiceMatrixItem[];

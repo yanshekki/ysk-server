@@ -124,6 +124,19 @@ export async function runVpnCommand(
     return h.exitFromResult(r);
   }
 
+  if (sub === 'stop') {
+    const blocked = needExecute(
+      h,
+      args,
+      'Plan only: pass --execute (and YSK_EXECUTE=1) to stop the VPN server on the host.',
+    );
+    if (blocked !== null) return blocked;
+    const engine = parseEngine(h.getOpt(args, '--engine') ?? 'wireguard');
+    const r = await vpn.stopServer({ engine });
+    h.printJson(r);
+    return h.exitFromResult(r);
+  }
+
   if (sub === 'peers' || sub === 'server-clients' || sub === 'server-peers') {
     const action = tokens[2] ?? 'list';
     const engine = parseEngine(h.getOpt(args, '--engine') ?? 'wireguard');
@@ -355,7 +368,7 @@ export async function runVpnCommand(
   }
 
   process.stderr.write(
-    'Usage: ysk-server vpn status|monitor|ensure|presets|peers|clients|firewall [--execute] [--json]\n',
+    'Usage: ysk-server vpn status|monitor|ensure|stop|presets|peers|clients|firewall [--execute] [--json]\n',
   );
   return 2;
 }

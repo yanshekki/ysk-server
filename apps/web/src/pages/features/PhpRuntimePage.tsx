@@ -30,6 +30,7 @@ import type { OpsResultLike, MultiCheckOption } from '../../shared/components/ui
 import { useOpsStreamOptional } from '../../shared/ops-stream/OpsStreamContext';
 import { getServerContext, setServerContext } from '../../shared/stores/server-context';
 import { systemApi } from '../../features/system';
+import { ServiceLifecycleBar } from '../../features/system/ServiceLifecycleBar';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { resolveRuntimeInstallState } from '../../features/runtimes/install-state';
 import { RuntimeSoftwarePanel } from '../../features/runtimes/RuntimeSoftwarePanel';
@@ -525,6 +526,14 @@ export function PhpRuntimePage() {
                     {t('runtime.tabSoftware')}
                   </button>
                 </FormHint>
+                <ServiceLifecycleBar
+                  matrixId="php-fpm"
+                  unit="php8.2-fpm"
+                  label="PHP-FPM"
+                  actions={['start', 'stop', 'restart', 'reload']}
+                  size="sm"
+                  className="u-mt-3"
+                />
               </CardSection>
             </Card>
           </div>

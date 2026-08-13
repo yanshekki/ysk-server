@@ -33,6 +33,7 @@ import {
 } from '../../features/apache/api';
 import { notifyOk, notifyWarn } from '../../shared/lib/notify';
 import { ServiceAccessStrip } from '../../features/network/service-exposure';
+import { ServiceLifecycleBar } from '../../features/system/ServiceLifecycleBar';
 
 const BODY_OPTS: ApacheBodySize[] = ['1m', '10m', '50m', '100m', '500m'];
 
@@ -375,6 +376,16 @@ export function ApachePage() {
               { role: 'https', port: '443', proto: 'tcp' },
             ]}
             compact
+          />
+          <ServiceLifecycleBar
+            unit="apache2"
+            matrixId="apache"
+            label="Apache"
+            danger="edge"
+            actions={['start', 'stop', 'restart', 'reload']}
+            size="sm"
+            className="u-mt-3"
+            onDone={() => void refresh()}
           />
         </div>
 

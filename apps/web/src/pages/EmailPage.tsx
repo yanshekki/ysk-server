@@ -49,6 +49,7 @@ import {
   bindSet,
   bindVoid } from './bind-handlers';
 import { ServiceAccessStrip } from '../features/network/service-exposure';
+import { ServiceLifecycleBar } from '../features/system/ServiceLifecycleBar';
 
 function asOps(r: Record<string, unknown> | null): OpsResultLike | null {
   if (!r) return null;
@@ -821,8 +822,29 @@ export function EmailPage() {
               />
             </div>
             <SoftwareVersionBar softwareId="postfix" title="Postfix" />
+            <ServiceLifecycleBar
+              unit="postfix"
+              label="Postfix"
+              actions={['start', 'stop', 'restart', 'reload']}
+              size="sm"
+              className="u-mb-3"
+            />
             <SoftwareVersionBar softwareId="dovecot" title="Dovecot" />
+            <ServiceLifecycleBar
+              unit="dovecot"
+              label="Dovecot"
+              actions={['start', 'stop', 'restart', 'reload']}
+              size="sm"
+              className="u-mb-3"
+            />
             <SoftwareVersionBar softwareId="opendkim" title="OpenDKIM" />
+            <ServiceLifecycleBar
+              unit="opendkim"
+              label="OpenDKIM"
+              actions={['start', 'stop', 'restart']}
+              size="sm"
+              className="u-mb-3"
+            />
           </div>
         ) : null}
 

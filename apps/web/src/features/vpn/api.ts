@@ -124,6 +124,17 @@ export const vpnApi = {
     );
   },
 
+  stopServer: (body: { engine?: VpnEngineId }) =>
+    api.requestRaw<{
+      ok: boolean;
+      notes?: string[];
+      blocked?: boolean;
+      requiresExecute?: boolean;
+    }>('/api/v1/vpn/server/stop', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
   ensureServer: (body: {
     engine?: VpnEngineId;
     listenPort?: number;

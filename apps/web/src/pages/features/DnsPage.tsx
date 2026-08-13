@@ -34,6 +34,7 @@ import type { ResourceRow } from '../../features/resources/api';
 import { api } from '../../shared/services/api';
 import { authStore } from '../../shared/stores/auth-store';
 import { ServiceAccessStrip } from '../../features/network/service-exposure';
+import { ServiceLifecycleBar } from '../../features/system/ServiceLifecycleBar';
 import { toast } from '../../shared/stores/toast-store';
 import { bindCall1, bindCloseIfIdle, bindConfirmThen, bindFormSubmit, bindInput, bindRemoveIf, bindSelect, bindSet, bindSet2, bindSet3, bindValueSet, bindVoid, bindVoidCall2 } from '../bind-handlers';
 
@@ -1443,6 +1444,15 @@ export function DnsPage() {
                       ]}
                       compact
                       onUpdated={() => void refreshHealth()}
+                    />
+                    <ServiceLifecycleBar
+                      unit="pdns"
+                      label="PowerDNS"
+                      running={health?.unitActive}
+                      actions={['start', 'stop', 'restart', 'reload']}
+                      size="sm"
+                      className="u-mt-3"
+                      onDone={() => void refreshHealth()}
                     />
                   </div>
                 </CardSection>

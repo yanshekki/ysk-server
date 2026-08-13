@@ -916,6 +916,16 @@
       "example": "ysk-server vpn ensure --engine wireguard --execute --json"
     },
     {
+      "name": "vpn stop",
+      "risk": "write-host",
+      "summary": "Stop VPN server (WireGuard/OpenVPN/Outline)",
+      "args": [
+        "--engine",
+        "--execute"
+      ],
+      "example": "ysk-server vpn stop --engine wireguard --execute --json"
+    },
+    {
       "name": "vpn peers",
       "risk": "write-host",
       "summary": "List/add/delete/export server peer configs",

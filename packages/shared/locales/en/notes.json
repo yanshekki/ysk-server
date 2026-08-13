@@ -2827,6 +2827,8 @@
     "openvpnComing": "OpenVPN full path is staged for the next release.",
     "outlineComing": "Outline / Shadowsocks is staged for a later release.",
     "needExecuteServer": "VPN server setup requires root and YSK_EXECUTE=1.",
+    "serverStopped": "{{engine}} server stopped.",
+    "serverStopFailed": "Could not stop {{engine}} server: {{detail}}",
     "needExecuteClient": "VPN client connect requires root and YSK_EXECUTE=1.",
     "keygenFailed": "WireGuard key generation failed (is wg installed?).",
     "serverKeysCreated": "WireGuard server keys created.",

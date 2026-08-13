@@ -49,6 +49,7 @@ import {
   type VpnEngineTab,
 } from '../../features/vpn/endpoint-sync';
 import { ServiceAccessStrip } from '../../features/network/service-exposure';
+import { ServiceLifecycleBar } from '../../features/system/ServiceLifecycleBar';
 import {
   formatVpnBytes,
   formatVpnRate,
@@ -613,6 +614,25 @@ export function VpnPage() {
           <Button variant="ghost" size="sm" loading={busy} onClick={() => void load()}>
             {t('vpn.refresh')}
           </Button>
+          <ServiceLifecycleBar
+            unit={
+              engine === 'openvpn'
+                ? 'openvpn-server@ysk'
+                : engine === 'outline'
+                  ? 'ysk-ss-server'
+                  : 'wg-quick@wg0'
+            }
+            label={engineLabel(engine)}
+            installed={Boolean(engineStatus(status, engine)?.installed)}
+            running={Boolean(engineStatus(status, engine)?.serverActive)}
+            actions={['stop']}
+            size="sm"
+            onAction={(action) => {
+              if (action !== 'stop') return Promise.resolve({ ok: true });
+              return vpnApi.stopServer({ engine });
+            }}
+            onDone={() => void load()}
+          />
         </ActionBar>
         <div className="u-mt-3">
           <ServiceAccessStrip

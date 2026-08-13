@@ -2865,7 +2865,9 @@
     "accessReconnectHint": "已连接的客户端请断开再连，才会使用新路由",
     "ovpnNatDurable": "安装 OpenVPN NAT/转发以便重新启动 (systemd ExecStartPost)。",
     "clientFullTunnelProtect": "检测到全隧道客户端 (AllowedIPs 0.0.0.0/0)。应用主机保护，以便面板/SSH 回复保留在 LAN NIC 上。",
-    "clientFullTunnelHint": "提示：仅对于分割访问，请在conf中将AllowedIPs设置为VPN/LAN CIDR（而不是0.0.0.0/0），然后重新连接。"
+    "clientFullTunnelHint": "提示：仅对于分割访问，请在conf中将AllowedIPs设置为VPN/LAN CIDR（而不是0.0.0.0/0），然后重新连接。",
+    "serverStopped": "已停止 {{engine}} 伺服器。",
+    "serverStopFailed": "無法停止 {{engine}} 伺服器：{{detail}}"
   },
   "vnc": {
     "needInstall": "请安装 {{stack}}",

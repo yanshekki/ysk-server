@@ -146,6 +146,27 @@ export async function handleVpnRoutes(
       return true;
     }
 
+    if (method === 'POST' && url.pathname === '/api/v1/vpn/server/stop') {
+      const raw = await readBody(req);
+      const data = JSON.parse(raw || '{}') as { engine?: string };
+      const engine = parseEngine(data.engine);
+      const result = await vpn.stopServer({ engine });
+      ctx.audit.append({
+        actor: user.username,
+        action: 'vpn.server.stop',
+        detail: { engine, ok: result.ok },
+        ok: result.ok,
+      });
+      sendOpsResult(res, {
+        ok: result.ok,
+        apply_status: result.ok ? 'applied' : result.blocked ? 'blocked' : 'failed',
+        blocked: result.blocked,
+        requiresExecute: result.requiresExecute,
+        notes: result.notes,
+      });
+      return true;
+    }
+
     if (method === 'GET' && url.pathname === '/api/v1/vpn/server/clients') {
       const eng = parseEngine(url.searchParams.get('engine'));
       const peers =
