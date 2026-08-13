@@ -260,6 +260,29 @@ describe('testBackupRemote', () => {
     expect(incomplete.kind).toBe('sftp');
   });
 
+  it('rejects metadata / loopback SFTP host and IMDS S3 endpoint', async () => {
+    const { host, db } = setup(true);
+    setBackupRemote(db, {
+      enabled: true,
+      kind: 'sftp',
+      host: '169.254.169.254',
+      username: 'ysk',
+      path: '/backups',
+    });
+    const sftp = await testBackupRemote({ host, db });
+    expect(sftp.ok).toBe(false);
+    expect(sftp.blocked).not.toBe(true);
+    setBackupRemote(db, {
+      enabled: true,
+      kind: 's3',
+      s3Bucket: 'ysk-backups',
+      s3Endpoint: 'http://169.254.169.254/latest/meta-data',
+    });
+    const s3 = await testBackupRemote({ host, db });
+    expect(s3.ok).toBe(false);
+    expect(s3.kind).toBe('s3');
+  });
+
   it('blocks live probe without EXECUTE', async () => {
     const { host, db } = setup(false);
     setBackupRemote(db, {

@@ -282,8 +282,10 @@ export function PublicSharePage() {
     async (pass?: string) => {
       if (!token) return;
       try {
+        const hdrPass = pass?.trim() || password.trim();
         const res = await fetch(
-          `/api/v1/public/files/${encodeURIComponent(token)}/bt-stats${passQ(pass)}`,
+          `/api/v1/public/files/${encodeURIComponent(token)}/bt-stats`,
+          hdrPass ? { headers: { 'X-Share-Password': hdrPass } } : undefined,
         );
         if (!res.ok) return;
         const body = (await res.json()) as { stats?: BtShareStats };
@@ -292,7 +294,7 @@ export function PublicSharePage() {
         /* optional */
       }
     },
-    [passQ, token],
+    [password, token],
   );
 
   const tryDownload = useCallback(
@@ -313,13 +315,10 @@ export function PublicSharePage() {
       setPhase((p) => (p === 'password' || p === 'done' || p === 'error' || p === 'choose' ? 'downloading' : 'loading'));
 
       try {
-        const q = pass?.trim()
-          ? `?password=${encodeURIComponent(pass.trim())}`
-          : password.trim()
-            ? `?password=${encodeURIComponent(password.trim())}`
-            : '';
-        const res = await fetch(`/api/v1/public/files/${encodeURIComponent(token)}${q}`, {
+        const hdrPass = pass?.trim() || password.trim();
+        const res = await fetch(`/api/v1/public/files/${encodeURIComponent(token)}`, {
           signal: ac.signal,
+          headers: hdrPass ? { 'X-Share-Password': hdrPass } : undefined,
         });
 
         if (res.status === 401) {

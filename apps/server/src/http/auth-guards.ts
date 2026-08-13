@@ -17,6 +17,14 @@ const MUST_CHANGE_ALLOW = [
   '/api/v1/health',
 ];
 
+/** Paths allowed while policy requires TOTP enrollment. */
+const MUST_ENROLL_TOTP_ALLOW = [
+  ...MUST_CHANGE_ALLOW,
+  '/api/v1/auth/totp',
+  '/api/v1/auth/webauthn/register',
+  '/api/v1/status',
+];
+
 function isMustChangeAllowed(pathname: string): boolean {
   return MUST_CHANGE_ALLOW.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
@@ -55,6 +63,46 @@ export function enforceMustChangePassword(
       throw e;
     }
     // ignore other auth errors — route handlers authenticate again
+  }
+}
+
+function isMustEnrollAllowed(pathname: string): boolean {
+  return MUST_ENROLL_TOTP_ALLOW.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+}
+
+/**
+ * When requireUserTotp / requireAdminTotp is on, block APIs until the user enrolls.
+ */
+export function enforceMustEnrollTotp(
+  ctx: AppContext,
+  req: IncomingMessage,
+  _method: string,
+  pathname: string,
+): void {
+  if (!pathname.startsWith('/api/v1/')) return;
+  if (isMustEnrollAllowed(pathname)) return;
+  const token = getBearer(req);
+  if (!token) return;
+  try {
+    const user = ctx.auth.authenticate(token);
+    if (ctx.auth.userMustEnrollTotp(user)) {
+      throw yskError(ErrorCodes.FORBIDDEN, {
+        httpStatus: 403,
+        messageKey: 'errors.auth.mustEnrollTotp',
+        details: { mustEnrollTotp: true },
+      });
+    }
+  } catch (e) {
+    if (
+      e &&
+      typeof e === 'object' &&
+      'httpStatus' in e &&
+      (e as { httpStatus?: number }).httpStatus === 403 &&
+      'details' in e &&
+      (e as { details?: { mustEnrollTotp?: boolean } }).details?.mustEnrollTotp
+    ) {
+      throw e;
+    }
   }
 }
 

@@ -163,7 +163,10 @@ export async function handleFilesPublicRoutes(
       (typeof req.headers['x-share-password'] === 'string'
         ? req.headers['x-share-password']
         : undefined) ?? undefined;
-    const password = hdr ?? url.searchParams.get('password') ?? undefined;
+    // Query password only on file/torrent GET (browser <a href>). JSON uses header.
+    const queryOk = !action || action === 'download' || action === 'torrent';
+    const queryPass = queryOk ? (url.searchParams.get('password') ?? undefined) : undefined;
+    const password = hdr ?? queryPass;
     const needPass = Boolean(share.passwordHash);
     const authed = verifySharePassword(share, password);
 

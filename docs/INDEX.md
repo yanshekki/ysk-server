@@ -80,6 +80,7 @@
 | [deploy/real-ops.md](./deploy/real-ops.md) | Real vs degraded |
 | [deploy/isolation.md](./deploy/isolation.md) | Project OS isolation |
 | [security/overview.md](./security/overview.md) | Security model |
+| [security/audit-1.0.8.md](./security/audit-1.0.8.md) | 1.0.8 security audit |
 | [security/2fa.md](./security/2fa.md) | Panel & SSH 2FA |
 | [security/ssh.md](./security/ssh.md) | SSH identities |
 | [api/overview.md](./api/overview.md) | HTTP API map |
@@ -115,3 +116,4 @@
 - Host mutations default **dry-run** until `--execute` and `YSK_EXECUTE=1` (often root).
 - [Security Phase 0](security/phase-0-review.md)
 - [Security Phase 7](security/phase-7-review.md)
+- [Security audit 1.0.8](security/audit-1.0.8.md)

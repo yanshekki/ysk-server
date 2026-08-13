@@ -24,11 +24,20 @@ describe('public routes (HTTP)', () => {
     };
     expect(body.product).toBeTruthy();
     expect(body.version).toBeTruthy();
+    // Unauthenticated health must not leak execute/root (anti-recon)
+    expect(body.executeEnabled).toBeUndefined();
+    expect(body.isRoot).toBeUndefined();
+    expect(body.mode).toBeUndefined();
+  });
+
+  it('authenticated health includes execute/root honesty fields', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'GET', '/api/v1/health');
+    expect(res.status).toBe(200);
+    const body = res.body as { executeEnabled?: boolean; isRoot?: boolean; mode?: string };
     expect(typeof body.executeEnabled).toBe('boolean');
-    // Honesty: without root+execute, mode is degraded not production_capable
-    if (!body.executeEnabled || !body.isRoot) {
-      expect(body.mode).toBe('degraded');
-    }
+    expect(typeof body.isRoot).toBe('boolean');
+    expect(body.mode === 'degraded' || body.mode === 'production_capable').toBe(true);
   });
 
   it('status is public when unauthenticated (no host secrets)', async () => {
@@ -58,8 +67,15 @@ describe('public routes (HTTP)', () => {
     });
     // 200 when production ready, 503 when not — both valid honest outcomes
     expect([200, 503]).toContain(res.status);
-    const body = res.body as { productionReady?: boolean; notes?: string[] };
+    const body = res.body as {
+      productionReady?: boolean;
+      notes?: string[];
+      items?: unknown;
+      blockers?: unknown;
+    };
     expect(typeof body.productionReady).toBe('boolean');
+    expect(body.items).toBeUndefined();
+    expect(body.blockers).toBeUndefined();
   });
 
   it('project health requires auth', async () => {

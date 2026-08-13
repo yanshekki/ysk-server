@@ -7,6 +7,7 @@ import type { JsonStore } from '../db/store.js';
 import type { HostExecutor } from '../host/executor.js';
 import { existsSync } from 'node:fs';
 import { shellBinExists } from './software-probe/index.js';
+import { assertSafeOutboundUrl, isMetadataOrLoopbackHost } from '../net/ssrf.js';
 
 export type BackupRemoteSettings = {
   enabled: boolean;
@@ -112,6 +113,19 @@ export async function testBackupRemote(input: {
   if (remote.kind === 'local' && !(remote.path || '').trim()) {
     return { ok: false, notes: [tl('notes.auto.n1474')], kind: remote.kind };
   }
+  if (remote.kind === 'sftp' && remote.host && isMetadataOrLoopbackHost(remote.host)) {
+    return { ok: false, kind: 'sftp', notes: [tl('notes.auto.n0303')] };
+  }
+  if (remote.kind === 's3' && remote.s3Endpoint?.trim()) {
+    try {
+      assertSafeOutboundUrl(remote.s3Endpoint.trim(), {
+        field: 's3Endpoint',
+        policy: 'strict',
+      });
+    } catch {
+      return { ok: false, kind: 's3', notes: [tl('notes.auto.n0303')] };
+    }
+  }
   if (!input.host.executeEnabled()) {
     return {
       ok: false,
@@ -189,7 +203,7 @@ export async function testBackupRemote(input: {
       [
         'bash',
         '-c',
-        `if ${shellBinExists('sshpass')}; then sshpass -p ${JSON.stringify(remote.password)} ssh -o StrictHostKeyChecking=no -o ConnectTimeout=8 -p ${port} ${JSON.stringify(spec)} true; else echo NEED_SSHPASS; fi`,
+        `if ${shellBinExists('sshpass')}; then sshpass -p ${JSON.stringify(remote.password)} ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=8 -p ${port} ${JSON.stringify(spec)} true; else echo NEED_SSHPASS; fi`,
       ],
       { timeoutMs: 20_000 },
     );
@@ -211,7 +225,7 @@ export async function testBackupRemote(input: {
     [
       'ssh',
       '-o',
-      'StrictHostKeyChecking=no',
+      'StrictHostKeyChecking=accept-new',
       '-o',
       'BatchMode=yes',
       '-o',
@@ -252,6 +266,19 @@ export async function pushBackupRemote(input: {
   }
   if (!existsSync(input.localArchivePath)) {
     return { ok: false, notes: [tl('notes.auto.n0990')] };
+  }
+  if (remote.kind === 'sftp' && remote.host && isMetadataOrLoopbackHost(remote.host)) {
+    return { ok: false, notes: [tl('notes.auto.n0303')] };
+  }
+  if (remote.kind === 's3' && remote.s3Endpoint?.trim()) {
+    try {
+      assertSafeOutboundUrl(remote.s3Endpoint.trim(), {
+        field: 's3Endpoint',
+        policy: 'strict',
+      });
+    } catch {
+      return { ok: false, notes: [tl('notes.auto.n0303')] };
+    }
   }
   if (!input.host.executeEnabled()) {
     return {
@@ -318,7 +345,7 @@ export async function pushBackupRemote(input: {
       [
         'bash',
         '-c',
-        `if ${shellBinExists('sshpass')}; then sshpass -p ${JSON.stringify(remote.password)} scp -o StrictHostKeyChecking=no -P ${port} ${JSON.stringify(input.localArchivePath)} ${JSON.stringify(dest)}; else echo NEED_SSHPASS; fi`,
+        `if ${shellBinExists('sshpass')}; then sshpass -p ${JSON.stringify(remote.password)} scp -o StrictHostKeyChecking=accept-new -P ${port} ${JSON.stringify(input.localArchivePath)} ${JSON.stringify(dest)}; else echo NEED_SSHPASS; fi`,
       ],
       { timeoutMs: 180_000 },
     );
@@ -338,7 +365,7 @@ export async function pushBackupRemote(input: {
     [
       'scp',
       '-o',
-      'StrictHostKeyChecking=no',
+      'StrictHostKeyChecking=accept-new',
       '-o',
       'BatchMode=yes',
       '-P',

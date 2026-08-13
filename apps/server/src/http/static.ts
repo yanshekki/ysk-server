@@ -101,6 +101,8 @@ function sendFile(res: ServerResponse, path: string, headOnly: boolean): void {
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'SAMEORIGIN',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'Content-Security-Policy':
+      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' ws: wss:; font-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'",
   });
   if (headOnly) {
     res.end();

@@ -46,7 +46,11 @@ export function LoginPage() {
     setError(null);
     setLoading(true);
     try {
-      await login(username, password, totp || undefined);
+      const res = await login(username, password, totp || undefined);
+      if (res.mustEnrollTotp) {
+        nav('/security', { replace: true });
+        return;
+      }
       nav(from === '/login' ? '/' : from, { replace: true });
     } catch (err) {
       const msg = err instanceof Error ? err.message : t('login.failed');

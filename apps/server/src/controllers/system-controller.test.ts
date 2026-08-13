@@ -26,7 +26,7 @@ describe('health / system / protection (HTTP)', () => {
       };
       expect(body.status === 'ok' || body.status === 'degraded').toBe(true);
       expect(body.version).toBeTruthy();
-      expect(typeof body.executeEnabled).toBe('boolean');
+      expect(body.executeEnabled).toBeUndefined();
     }
   });
 

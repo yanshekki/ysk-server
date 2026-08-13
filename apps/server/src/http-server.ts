@@ -16,7 +16,11 @@ import {
   sendJson,
 } from './http/util.js';
 import { enforceMutatingRouteCaps } from './http/rbac-guard.js';
-import { enforceApiKeyReadOnly, enforceMustChangePassword } from './http/auth-guards.js';
+import {
+  enforceApiKeyReadOnly,
+  enforceMustChangePassword,
+  enforceMustEnrollTotp,
+} from './http/auth-guards.js';
 import { resolveWebRoot, tryServeStatic } from './http/static.js';
 import { handleFilesRoutes } from './controllers/files-controller.js';
 import { handleSystemRoutes } from './controllers/system-controller.js';
@@ -99,6 +103,8 @@ function attachRequestHandler(ctx: AppContext, webRoot: string | null) {
         enforceApiKeyReadOnly(ctx, req, method, url.pathname);
         // Bootstrap weak password: force change before other APIs
         enforceMustChangePassword(ctx, req, method, url.pathname);
+        // Policy: all users / admins must enroll TOTP before other APIs
+        enforceMustEnrollTotp(ctx, req, method, url.pathname);
 
         // Public BT tracker proxy (browser WebTorrent — same-origin WS/HTTP)
         if (await handleBtTrackerPublicProxy(ctx, req, res, url)) return;

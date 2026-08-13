@@ -29,6 +29,7 @@ export function securityHeaders(): Record<string, string> {
     'Referrer-Policy': 'no-referrer',
     'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
     'Cache-Control': 'no-store',
+    'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
   };
   // CORS: same-origin panel needs no *; set YSK_CORS_ORIGIN for split-origin dev only
   const cors = process.env.YSK_CORS_ORIGIN?.trim();

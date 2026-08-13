@@ -80,6 +80,7 @@
 | [deploy/real-ops-ZH.md](./deploy/real-ops-ZH.md) | 真實套用與降級 |
 | [deploy/isolation-ZH.md](./deploy/isolation-ZH.md) | 專案 OS 隔離 |
 | [security/overview-ZH.md](./security/overview-ZH.md) | 安全模型 |
+| [security/audit-1.0.8-ZH.md](./security/audit-1.0.8-ZH.md) | 1.0.8 安全審計 |
 | [security/2fa-ZH.md](./security/2fa-ZH.md) | 面板與 SSH 2FA |
 | [security/ssh-ZH.md](./security/ssh-ZH.md) | SSH 身分 |
 | [api/overview-ZH.md](./api/overview-ZH.md) | HTTP API 地圖 |
@@ -114,3 +115,4 @@
 - AI 優先用 **CLI + `--json`**。  
 - 主機變更預設 **dry-run**，直至 `--execute` 且 `YSK_EXECUTE=1`（通常需 root）。
 - [安全 Phase 0](security/phase-0-review-ZH.md)
+- [安全審計 1.0.8](security/audit-1.0.8-ZH.md)

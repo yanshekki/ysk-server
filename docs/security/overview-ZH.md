@@ -23,7 +23,7 @@ YSK Server 是**單機**控制平面。安全模型對主機變更 **fail-closed
 - **公開檔案分享** — token 連結；可選密碼（`scrypt` 加鹽；舊 SHA-256 仍可驗證）；可到期；認證限流
 - **WebDAV** — Basic `ysk` + 一次性權杖；停用即撤銷；認證限流
 
-覆核：[phase-0-review-ZH.md](./phase-0-review-ZH.md) · [phase-7-review-ZH.md](./phase-7-review-ZH.md)
+覆核：[phase-0-review-ZH.md](./phase-0-review-ZH.md) · [phase-7-review-ZH.md](./phase-7-review-ZH.md) · [audit-1.0.8-ZH.md](./audit-1.0.8-ZH.md)
 
 ## CLI
 

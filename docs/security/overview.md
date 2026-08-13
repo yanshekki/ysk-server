@@ -23,7 +23,7 @@ YSK Server is a **single-host** control plane. Security is fail-closed for host 
 - **Public file shares** — token URL; optional password (`scrypt` salted; legacy SHA-256 accepted); expiry; auth rate-limited
 - **WebDAV** — Basic `ysk` + one-time token; disable revokes access; auth rate-limited
 
-Reviews: [phase-0-review.md](./phase-0-review.md) · [phase-7-review.md](./phase-7-review.md)
+Reviews: [phase-0-review.md](./phase-0-review.md) · [phase-7-review.md](./phase-7-review.md) · [audit-1.0.8.md](./audit-1.0.8.md)
 
 ## CLI
 

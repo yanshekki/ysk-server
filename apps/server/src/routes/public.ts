@@ -30,16 +30,25 @@ export async function handlePublicRoutes(
       if (method === 'GET' && (url.pathname === '/health' || url.pathname === '/api/v1/health')) {
         const executeEnabled = ctx.host.executeEnabled();
         const isRoot = ctx.host.isRoot();
+        let authed = false;
+        try {
+          ctx.auth.authenticate(getBearer(req));
+          authed = true;
+        } catch {
+          /* public liveness only */
+        }
         const body: HealthResponse = {
           status: ctx.protection.mode === 'normal' ? 'ok' : 'degraded',
           product: PRODUCT_NAME,
           version: ctx.version || VERSION,
           protectionMode: ctx.protection.mode,
           timestamp: new Date().toISOString(),
-          executeEnabled,
-          isRoot,
-          mode: executeEnabled && isRoot ? 'production_capable' : 'degraded',
         };
+        if (authed) {
+          body.executeEnabled = executeEnabled;
+          body.isRoot = isRoot;
+          body.mode = executeEnabled && isRoot ? 'production_capable' : 'degraded';
+        }
         sendJson(res, 200, body);
         return true;
       }
@@ -131,19 +140,22 @@ export async function handlePublicRoutes(
         return true;
       }
       if (method === 'GET' && url.pathname === '/api/v1/readiness') {
-        // Public-ish for install probes; still auth optional for detail
+        let authed = false;
         try {
           ctx.auth.authenticate(getBearer(req));
+          authed = true;
         } catch {
-          /* allow unauthenticated summary for health gates */
+          /* install probe: boolean only, no host inventory */
         }
-        const projects = ctx.projects.list().map((p) => ({
-          id: p.id,
-          name: p.name,
-          linuxUser: p.linuxUser,
-          homeDir: p.homeDir,
-          osProvisioned: Boolean(p.osProvisioned),
-        }));
+        const projects = authed
+          ? ctx.projects.list().map((p) => ({
+              id: p.id,
+              name: p.name,
+              linuxUser: p.linuxUser,
+              homeDir: p.homeDir,
+              osProvisioned: Boolean(p.osProvisioned),
+            }))
+          : [];
         const report = await assessProductionReadiness({
           dataDir: ctx.dataDir,
           host: ctx.host,
@@ -151,6 +163,15 @@ export async function handlePublicRoutes(
           version: VERSION,
           projects,
         });
+        if (!authed) {
+          sendJson(res, report.productionReady ? 200 : 503, {
+            ok: report.productionReady,
+            productionReady: report.productionReady,
+            product: PRODUCT_NAME,
+            version: VERSION,
+          });
+          return true;
+        }
         sendJson(res, report.productionReady ? 200 : 503, report);
         return true;
       }
