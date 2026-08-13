@@ -58,15 +58,26 @@ describe('updates routes (HTTP)', () => {
     'returns inventory when authenticated (cached path)',
     async () => {
       ts = await startTestServer();
-      // Apt inventory can be slow on CI; only assert HTTP shape
+      stubHostInventory(ts);
+      ts.ctx.settings.setJson('last_inventory', {
+        at: new Date().toISOString(),
+        count: 1,
+        upgradable: 0,
+        meta: { upgradableCount: 0 },
+        sample: [{ name: 'bash', version: '5.0' }],
+        items: [
+          { name: 'bash', version: '5.0', packageName: 'bash', upgradable: false },
+        ],
+        advice: [],
+        stale: false,
+      });
       const res = await apiJson(ts, 'GET', '/api/v1/updates/inventory?cached=1');
-      expect([200, 202, 503]).toContain(res.status);
-      if (res.status === 200) {
-        const body = res.body as { inventory?: unknown[] };
-        expect(Array.isArray(body.inventory) || body.inventory === undefined).toBe(true);
-      }
+      expect(res.status).toBe(200);
+      const body = res.body as { inventory?: unknown[]; cached?: boolean };
+      expect(body.cached).toBe(true);
+      expect(Array.isArray(body.inventory)).toBe(true);
     },
-    60_000,
+    30_000,
   );
 
   it('apply update without candidate is blocked honestly', async () => {
