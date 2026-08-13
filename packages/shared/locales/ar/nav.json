@@ -31,7 +31,7 @@
   "rust": "Rust",
   "protection": "مركز الدفاع",
   "firewall": "جدار الحماية",
-  "fail2ban": "Fail2ban",
+  "fail2ban": "fail2ban",
   "users": "المستخدمون والحزم",
   "services": "خدمات",
   "metrics": "المقاييس",
@@ -72,6 +72,6 @@
   "bookmarkPinned": "مثبت",
   "bookmarkAdded": "مثبت في الشريط الجانبي",
   "bookmarkRemoved": "تمت الإزالة من الشريط الجانبي",
-  "btTracker": "جهاز تعقب بي تي",
+  "btTracker": "BT Tracker",
   "support": "Support"
 }

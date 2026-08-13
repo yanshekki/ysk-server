@@ -104,7 +104,7 @@
   "revokedAllDevices": "Semua perangkat tepercaya dicabut",
   "export2faBackup": "Ekspor cadangan terenkripsi 2FA",
   "fail2banSnippetMsg": "Cuplikan fail2ban: {{written}} — {{notes}}",
-  "generateFail2ban": "Hasilkan cuplikan Fail2ban",
+  "generatefail2ban": "Hasilkan cuplikan fail2ban",
   "adminPolicyTitle": "Kebijakan Admin 2FA",
   "adminPolicyDesc": "",
   "requireAdmin2fa": "Membutuhkan admin 2FA",

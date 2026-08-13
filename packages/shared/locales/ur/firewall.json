@@ -29,7 +29,7 @@
   "notInstalled": "UFW انسٹال نہیں ہے۔",
   "toolHintPrefix": "بنیادی اوزار:",
   "toolHintBody": "UFW = بندرگاہیں / مستقل قواعد · حملے کے ردعمل اور خودکار پابندی کے استعمال کے لیے",
-  "toolHintFail2ban": "fail2ban = عارضی لاگ پر مبنی پابندی",
+  "toolHintfail2ban": "fail2ban = عارضی لاگ پر مبنی پابندی",
   "executeOffHint": "سسٹم کی تبدیلیاں بند ہیں - حیثیت پڑھنے کے قابل ہے۔",
   "tabs": {
     "rules": "قواعد",

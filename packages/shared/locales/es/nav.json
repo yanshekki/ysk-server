@@ -31,7 +31,7 @@
   "rust": "Rust",
   "protection": "Centro de defensa",
   "firewall": "Cortafuegos",
-  "fail2ban": "falla2ban",
+  "fail2ban": "fail2ban",
   "users": "Usuarios y paquetes",
   "services": "Servicios",
   "metrics": "Métrica",
@@ -72,6 +72,6 @@
   "bookmarkPinned": "Fijado",
   "bookmarkAdded": "Fijado en la barra lateral",
   "bookmarkRemoved": "Eliminado de la barra lateral",
-  "btTracker": "Rastreador BT",
+  "btTracker": "BT Tracker",
   "support": "Support"
 }

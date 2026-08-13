@@ -31,7 +31,7 @@
   "rust": "Rust",
   "protection": "방어센터",
   "firewall": "방화벽",
-  "fail2ban": "실패2금지",
+  "fail2ban": "fail2ban",
   "users": "사용자 및 패키지",
   "services": "서비스",
   "metrics": "측정항목",
@@ -72,6 +72,6 @@
   "bookmarkPinned": "고정됨",
   "bookmarkAdded": "사이드바에 고정됨",
   "bookmarkRemoved": "사이드바에서 삭제됨",
-  "btTracker": "블루투스 트래커",
+  "btTracker": "BT Tracker",
   "support": "Support"
 }

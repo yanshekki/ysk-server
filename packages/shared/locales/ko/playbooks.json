@@ -25,7 +25,7 @@
   },
   "security-units": {
     "name": "보안 유닛",
-    "description": "Fail2ban + sshd 상태(읽기 전용)"
+    "description": "fail2ban + sshd 상태(읽기 전용)"
   },
   "web-stack-status": {
     "name": "웹 스택 상태",

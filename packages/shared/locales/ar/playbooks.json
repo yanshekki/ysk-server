@@ -25,7 +25,7 @@
   },
   "security-units": {
     "name": "وحدات الأمن",
-    "description": "حالة Fail2ban + sshd (للقراءة فقط)"
+    "description": "حالة fail2ban + sshd (للقراءة فقط)"
   },
   "web-stack-status": {
     "name": "حالة مكدس الويب",

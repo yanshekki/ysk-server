@@ -187,7 +187,7 @@
         "description": "メモリ、実行時間、入力制限"
       },
       "upload": {
-        "title": "アップロードと投稿",
+        "title": "アップロードとPostfix",
         "description": "ファイルのアップロードと POST 本文のサイズ"
       },
       "session": {

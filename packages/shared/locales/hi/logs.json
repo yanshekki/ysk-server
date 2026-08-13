@@ -123,7 +123,7 @@
   "logrotateLabel": "लॉगरोटेट",
   "srcNginx": "nginx",
   "srcSsh": "एसएसएच",
-  "srcFail2ban": "फ़ैल2बैन",
+  "srcfail2ban": "फ़ैल2बैन",
   "srcAuthLog": "auth.log",
   "srcNginxError": "nginx त्रुटि",
   "srcLetsEncrypt": "letsencrypt",

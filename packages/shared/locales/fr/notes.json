@@ -2690,7 +2690,7 @@
     "noParen": "(aucun)",
     "keepOldDb": "(ancienne BD conservée)",
     "ufwNotDetected": "UFW non détecté sur cet hôte",
-    "fail2banStartHint": "Démarrez-le sur la page Fail2ban",
+    "fail2banStartHint": "Démarrez-le sur la page fail2ban",
     "hasExecuteNotRoot": "EXECUTE est activé mais le processus n'est pas root",
     "notRootTarget": "Pas root (useradd/apt cibles seront bloqués)",
     "reapplyDone": "étapes clés de réapplication terminées",

@@ -1,14 +1,14 @@
 {
-  "title": "Se connecter à YSK Server",
+  "title": "Connexion à YSK Server",
   "subtitle": "Console serveur",
-  "username": "Nom d'utilisateur",
+  "username": "Nom d’utilisateur",
   "password": "Mot de passe",
   "submit": "Se connecter",
-  "failed": "Échec de la connexion. Vérifiez le nom d'utilisateur ou le mot de passe.",
+  "failed": "Échec de la connexion. Vérifiez le nom d’utilisateur ou le mot de passe.",
   "footer": "Un produit de YSK Limited",
   "totpRequired": "La 2FA est activée pour ce compte. Saisissez le code à 6 chiffres.",
-  "totpLabel": "Code d'authentification",
-  "totpHint": "Code à 6 chiffres de votre application d'authentification",
+  "totpLabel": "Code d’authentification",
+  "totpHint": "Code à 6 chiffres de votre application d’authentification",
   "submitting": "Connexion…",
   "sessionExpired": "Session expirée ; reconnectez-vous"
 }

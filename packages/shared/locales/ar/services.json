@@ -32,7 +32,7 @@
   "controlPage": "صفحة التحكم",
   "manageRuntime": "التثبيت / التحديث",
   "protectionTitle": "مسبار الحماية",
-  "protectionSub": "للقراءة فقط؛ لا يغير جدار الحماية / Fail2ban",
+  "protectionSub": "للقراءة فقط؛ لا يغير جدار الحماية / fail2ban",
   "protectionDoneNote": "انتهى مسبار الحماية",
   "probeDone": "اكتمل التحقيق",
   "runProtection": "تشغيل مسبار الحماية",

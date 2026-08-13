@@ -30,7 +30,7 @@
   "note": {
     "notApplied": "호스트에 적용되지 않음(루트 + YSK_EXECUTE=1 필요) - 패널 설정에 저장됨",
     "nginxWritten": "Nginx 속도 제한 패널 파일 작성",
-    "f2bWritten": "Fail2ban 패널 설정을 작성했습니다."
+    "f2bWritten": "fail2ban 패널 설정을 작성했습니다."
   },
   "rel": {
     "justNow": "방금",
@@ -129,7 +129,7 @@
   "signalDdos": "DDoS 휴리스틱",
   "signalTcp": "TCP 연결",
   "signalUfwOff": "UFW 꺼짐",
-  "signalF2bBans": "Fail2ban 금지 횟수",
+  "signalF2bBans": "fail2ban 금지 횟수",
   "weightHint": "{{label}} 가중치 0–3",
   "detected": "(감지됨)",
   "notSet": "(설정되지 않음)",
@@ -289,13 +289,13 @@
   "alreadyBanned": "금지됨",
   "whitelist": "화이트리스트",
   "bansWorkflow": "대응: 용의자 목록 → 금지/금지 해제. 감옥 정책, IP 무시, 서비스 수명 주기:",
-  "f2bTool": "Fail2ban 도구",
+  "f2bTool": "fail2ban 도구",
   "noSecondJail": "(여기에는 두 번째 감옥 편집자가 없습니다).",
   "autoBanWhitelistTitle": "자동 차단 허용 목록",
   "autoBanWhitelistDesc": "보호 자동 차단 예외(fail2banignoreip 동기화)",
   "ignoreipWhitelist": "IP 허용 목록 무시",
   "notSetSuggestAdmin": "설정되지 않음(관리자 IP 추가)",
-  "moreItems": "… {{n}} 더보기 · Fail2ban 허용 목록 참조",
+  "moreItems": "… {{n}} 더보기 · fail2ban 허용 목록 참조",
   "add": "추가하다",
   "manualBanTitle": "수동 차단",
   "methodFollows": "방법은 위의 선택을 따릅니다(fail2ban / UFW).",

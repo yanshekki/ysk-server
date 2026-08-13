@@ -29,7 +29,7 @@
   "notInstalled": "UFW não está instalado",
   "toolHintPrefix": "Ferramentas subjacentes:",
   "toolHintBody": "UFW = portas/regras permanentes · para resposta a ataques e uso de banimento automático",
-  "toolHintFail2ban": "fail2ban = banimentos temporários baseados em log",
+  "toolHintfail2ban": "fail2ban = banimentos temporários baseados em log",
   "executeOffHint": "O sistema é desligado — o status é legível;",
   "tabs": {
     "rules": "Regras",

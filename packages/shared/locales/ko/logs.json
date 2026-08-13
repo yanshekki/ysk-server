@@ -123,7 +123,7 @@
   "logrotateLabel": "로그로테이션",
   "srcNginx": "nginx",
   "srcSsh": "SSH",
-  "srcFail2ban": "실패2금지",
+  "srcfail2ban": "실패2금지",
   "srcAuthLog": "auth.log",
   "srcNginxError": "nginx 오류",
   "srcLetsEncrypt": "암호화하자",

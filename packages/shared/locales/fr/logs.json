@@ -123,7 +123,7 @@
   "logrotateLabel": "logrotation",
   "srcNginx": "nginx",
   "srcSsh": "chut",
-  "srcFail2ban": "échec2ban",
+  "srcfail2ban": "échec2ban",
   "srcAuthLog": "auth.log",
   "srcNginxError": "erreur nginx",
   "srcLetsEncrypt": "chiffrons",

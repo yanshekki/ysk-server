@@ -1,32 +1,32 @@
 {
   "sw": {
     "vsftpd": "vsftpd (FTPS)",
-    "db_util": "db-util (FTP ユーザー DB)",
+    "db_util": "db-util (FTP user DB)",
     "nginx": "Nginx",
-    "certbot": "証明書ボット (Let's Encrypt)",
-    "mysql_client": "MySQL/MariaDB クライアント",
-    "mysql_server": "MySQL サーバー",
-    "mariadb_server": "MariaDBサーバー",
-    "postgresql_client": "PostgreSQLクライアント",
-    "postgresql": "PostgreSQLサーバー",
-    "redis_tools": "Redisクライアント",
-    "redis_server": "Redisサーバー",
-    "ufw": "UFWファイアウォール",
-    "fail2ban": "fail 2 ban",
-    "postfix": "投稿",
-    "dovecot": "ダブコット",
+    "certbot": "Certbot (Let's Encrypt)",
+    "mysql_client": "MySQL/MariaDB client",
+    "mysql_server": "MySQL server",
+    "mariadb_server": "MariaDB server",
+    "postgresql_client": "PostgreSQL client",
+    "postgresql": "PostgreSQL server",
+    "redis_tools": "Redis client",
+    "redis_server": "Redis server",
+    "ufw": "UFW firewall",
+    "fail2ban": "fail2ban",
+    "postfix": "Postfix",
+    "dovecot": "Dovecot",
     "opendkim": "OpenDKIM",
-    "pdns_server": "パワーDNS",
-    "git": "git",
+    "pdns_server": "PowerDNS",
+    "git": "Git",
     "node": "Node.js",
     "php": "PHP",
     "python": "Python",
     "go": "Go",
     "rust": "Rust",
-    "chromium": "クロム / クロム"
+    "chromium": "Chromium / Chrome"
   },
   "php": {
     "session": "セッション",
-    "opcache": "OPキャッシュ"
+    "opcache": "OPcache"
   }
 }

@@ -25,7 +25,7 @@ const CACHE_DIR = path.join(ROOT, '.cache/i18n-llm');
 
 const SKIP_NS = new Set(['translation.json']);
 const BRAND_RE =
-  /^(YSK Server|ysk-server|YSK|OpenClaw|Hermes|IonClaw|SnappyMail|Roundcube|Postfix|Dovecot|OpenDKIM|PowerDNS|fail2ban|Node\.js|Python( 3)?|OPcache|Memcached|Cloudflare|Fastly|Bunny CDN|AWS CloudFront|Azure Front Door|Gcore CDN|DNSSEC|DKIM( TXT)?|DMARC( TXT)?|DNSBL|FTPS|WebAuthn|Passkey( \/ WebAuthn)?|macOS Finder|Windows|Journal|systemd|Cron|Rust|Java|Kotlin|Nginx|Apache|MySQL|MariaDB|PostgreSQL|Redis|Docker|Linux|Ubuntu|Debian|UFW|SSO|FPM|CLI|API|JSON|XML|CSV|HTML|CSS|JS|UI|SSH|FTP|CDN|VPN|VNC|SQL|PHP|TLS|SSL|HTTP|HTTPS|OK|ID|IP|URL)$/i;
+  /^(YSK Limited|YSK Server|ysk-server|YSK|OpenClaw|Hermes|IonClaw|SnappyMail|Roundcube|Postfix|Dovecot|OpenDKIM|PowerDNS|fail2ban|Node\.js|Python( 3)?|OPcache|Memcached|Cloudflare|Fastly|Bunny CDN|AWS CloudFront|Azure Front Door|Gcore CDN|DNSSEC|DKIM( TXT)?|DMARC( TXT)?|DNSBL|FTPS|WebAuthn|Passkey( \/ WebAuthn)?|macOS Finder|Windows|Journal|systemd|Cron|Rust|Java|Kotlin|Bun|Nginx|Apache|MySQL|MariaDB|PostgreSQL|Redis|Docker|Linux|Ubuntu|Debian|UFW|SSO|FPM|CLI|API|JSON|XML|CSV|HTML|CSS|JS|UI|SSH|FTP|CDN|VPN|VNC|SQL|PHP|TLS|SSL|HTTP|HTTPS|OK|ID|IP|URL|Git|Go|Chromium( \/ Chrome)?|TigerVNC|noVNC|WireGuard|OpenVPN|Shadowsocks|PM2)$/i;
 
 const LANG_NAME = {
   ja: 'Japanese',
@@ -268,7 +268,7 @@ HARD RULES:
 1. Return ONLY a valid JSON array (no markdown fences, no commentary).
 2. Array length MUST equal input length. Each element: {"i": <number>, "tr": "<translation>"}.
 3. Preserve EVERY {{placeholder}} and %s/%d token EXACTLY (same spelling).
-4. Keep brand tokens as-is inside sentences: YSK Server, ysk-server, YSK, OpenClaw, Hermes, IonClaw, Nginx, Dovecot, Postfix, Roundcube, SnappyMail.
+4. Keep brand/company/software tokens as-is (never transliterate): YSK Limited, YSK Server, ysk-server, YSK, Nginx, Apache, MySQL, MariaDB, PostgreSQL, Redis, Node.js, PHP, Python, Go, Rust, Java, Kotlin, Bun, Postfix, Dovecot, OpenDKIM, PowerDNS, fail2ban, Certbot, Chromium, Chrome, systemd, Git.
 5. Keep pure code tokens as-is: file paths, CLI flags (--foo), unit names, bare hostnames.
 6. Tone: professional ops console — concise, not marketing.
 7. Keep punctuation style appropriate for ${langName}; preserve leading/trailing spaces if present.

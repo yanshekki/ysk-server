@@ -29,7 +29,7 @@
   "notInstalled": "UFW no está instalado",
   "toolHintPrefix": "Herramientas subyacentes:",
   "toolHintBody": "UFW = puertos/reglas permanentes · para respuesta a ataques y uso de prohibición automática",
-  "toolHintFail2ban": "fail2ban = prohibiciones temporales basadas en registros",
+  "toolHintfail2ban": "fail2ban = prohibiciones temporales basadas en registros",
   "executeOffHint": "El sistema se apaga: el estado es legible;",
   "tabs": {
     "rules": "Normas",

@@ -29,7 +29,7 @@
   "notInstalled": "UFW 尚未安装",
   "toolHintPrefix": "底层工具：",
   "toolHintBody": "UFW = 端口／永久规则 · 攻击应变与自动 ban 请用",
-  "toolHintFail2ban": "fail2ban = 日志临时 ban",
+  "toolHintfail2ban": "fail2ban = 日志临时 ban",
   "executeOffHint": "系统变更未开 — 可看状态，改规则需 root + YSK_EXECUTE=1",
   "tabs": {
     "rules": "规则表",

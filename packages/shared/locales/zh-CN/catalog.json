@@ -17,7 +17,7 @@
     "dovecot": "Dovecot",
     "opendkim": "OpenDKIM",
     "pdns_server": "PowerDNS",
-    "git": "git",
+    "git": "Git",
     "node": "Node.js",
     "php": "PHP",
     "python": "Python",

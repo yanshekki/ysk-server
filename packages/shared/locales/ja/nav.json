@@ -31,7 +31,7 @@
   "rust": "Rust",
   "protection": "防衛センター",
   "firewall": "ファイアウォール",
-  "fail2ban": "fail 2 ban",
+  "fail2ban": "fail2ban",
   "users": "ユーザーとパッケージ",
   "services": "サービス",
   "metrics": "統計",
@@ -41,7 +41,7 @@
   "backups": "バックアップ",
   "migrate": "ホストの移行",
   "systemd": "systemd",
-  "readiness": "用意周到",
+  "readiness": "準備状況",
   "systemIndex": "システム ツール",
   "sections": {
     "overview": "概要",
@@ -50,7 +50,7 @@
     "files": "ファイルとFTP",
     "databases": "データベース",
     "dnsSsl": "DNSとSSL",
-    "runtimes": "runtimes",
+    "runtimes": "ランタイム",
     "security": "セキュリティ",
     "system": "システム",
     "ai": "AI"
@@ -72,6 +72,6 @@
   "bookmarkPinned": "ピン留めされている",
   "bookmarkAdded": "サイドバーに固定",
   "bookmarkRemoved": "サイドバーから削除されました",
-  "btTracker": "BTトラッカー",
-  "support": "Support"
+  "btTracker": "BT Tracker",
+  "support": "サポート"
 }

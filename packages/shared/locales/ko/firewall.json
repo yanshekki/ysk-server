@@ -29,7 +29,7 @@
   "notInstalled": "UFW가 설치되지 않았습니다",
   "toolHintPrefix": "기본 도구:",
   "toolHintBody": "UFW = 포트/영구 규칙 · 공격 대응 및 자동 금지 사용",
-  "toolHintFail2ban": "failure2ban = 임시 로그 기반 금지",
+  "toolHintfail2ban": "failure2ban = 임시 로그 기반 금지",
   "executeOffHint": "시스템 변경 꺼짐 — 상태를 읽을 수 있습니다.",
   "tabs": {
     "rules": "규칙",
@@ -67,7 +67,7 @@
   "allowThisPort": "이 포트를 허용하세요",
   "allowPortHint": "웹 호스트의 경우 22/80/443을 유지합니다.",
   "denyTitle": "IP 영구 거부",
-  "denySub": "UFW DENY · 일시적인 Fail2ban 금지와는 다름",
+  "denySub": "UFW DENY · 일시적인 fail2ban 금지와는 다름",
   "denyPlaceholder": "거부할 IPv4 또는 IPv6",
   "deniedOk": "영구적으로 거부됨",
   "removedDeny": "거부가 삭제되었습니다.",

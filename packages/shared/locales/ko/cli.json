@@ -882,7 +882,7 @@
           },
           "status": {
             "bans": {
-              "a8d96b": "사용법: {{CLI_NAME}} 방어 상태|bans|suspects|ban|unban|whitelist|stack-apply|fail2ban|firewall|timeline|presets [--json]\n` +\n          ` 금지 [--q 텍스트] [--source 실패2ban|패널|ufw|자동]\n` +\n          ` 용의자 [--q 텍스트]\n` +\n          ` stack-apply [--execute] # UFW + Fail2ban + 현재 프리셋\n` +\n          ` 실패2반 | 방화벽 # 심층 조사(정직)\n` +\n          ` 타임라인 [--limit N] [--q 텍스트]\n` +\n          ` 사전 설정 # 목록 + activePreset"
+              "a8d96b": "사용법: {{CLI_NAME}} 방어 상태|bans|suspects|ban|unban|whitelist|stack-apply|fail2ban|firewall|timeline|presets [--json]\n` +\n          ` 금지 [--q 텍스트] [--source 실패2ban|패널|ufw|자동]\n` +\n          ` 용의자 [--q 텍스트]\n` +\n          ` stack-apply [--execute] # UFW + fail2ban + 현재 프리셋\n` +\n          ` 실패2반 | 방화벽 # 심층 조사(정직)\n` +\n          ` 타임라인 [--limit N] [--q 텍스트]\n` +\n          ` 사전 설정 # 목록 + activePreset"
             }
           }
         }

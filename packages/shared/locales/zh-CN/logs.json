@@ -123,7 +123,7 @@
   "logrotateLabel": "logrotate",
   "srcNginx": "nginx",
   "srcSsh": "ssh",
-  "srcFail2ban": "fail2ban",
+  "srcfail2ban": "fail2ban",
   "srcAuthLog": "验证日志",
   "srcNginxError": "nginx 错误",
   "srcLetsEncrypt": "让我们加密",

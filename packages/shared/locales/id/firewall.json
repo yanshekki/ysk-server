@@ -29,7 +29,7 @@
   "notInstalled": "UFW tidak diinstal",
   "toolHintPrefix": "Alat yang mendasari:",
   "toolHintBody": "UFW = port / aturan permanen · untuk respon serangan dan penggunaan larangan otomatis",
-  "toolHintFail2ban": "fail2ban = larangan sementara berbasis log",
+  "toolHintfail2ban": "fail2ban = larangan sementara berbasis log",
   "executeOffHint": "Sistem berubah nonaktif — status dapat dibaca;",
   "tabs": {
     "rules": "Aturan",

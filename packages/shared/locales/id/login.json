@@ -1,14 +1,14 @@
 {
-  "title": "Masuk ke Server YSK",
+  "title": "Masuk ke YSK Server",
   "subtitle": "Konsol server",
-  "username": "Nama belakang",
+  "username": "Nama pengguna",
   "password": "Kata sandi",
   "submit": "Masuk",
   "failed": "Gagal masuk. Periksa nama pengguna atau kata sandi.",
-  "footer": "Produk YSK Limited",
-  "totpRequired": "2FA diaktifkan untuk akun ini. Masukkan kode 6 digit.",
-  "totpLabel": "Kode otentikasi",
-  "totpHint": "Kode 6 digit dari aplikasi autentikator Anda",
-  "submitting": "Masuk…",
+  "footer": "Produk dari YSK Limited",
+  "totpRequired": "2FA aktif untuk akun ini. Masukkan kode 6 digit.",
+  "totpLabel": "Kode autentikasi",
+  "totpHint": "Kode 6 digit dari aplikasi autentikator",
+  "submitting": "Sedang masuk…",
   "sessionExpired": "Sesi berakhir; masuk lagi"
 }

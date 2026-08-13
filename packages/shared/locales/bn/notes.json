@@ -2690,7 +2690,7 @@
     "noParen": "(কোনও)",
     "keepOldDb": "(পুরানো ডিবি রাখা)",
     "ufwNotDetected": "এই হোস্টে UFW সনাক্ত করা যায়নি",
-    "fail2banStartHint": "এটি Fail2ban পৃষ্ঠায় শুরু করুন",
+    "fail2banStartHint": "এটি fail2ban পৃষ্ঠায় শুরু করুন",
     "hasExecuteNotRoot": "EXECUTE চালু আছে কিন্তু প্রক্রিয়া রুট নয়",
     "notRootTarget": "রুট নয় (টার্গেট useradd/apt ব্লক করা হবে)",
     "reapplyDone": "মূল পদক্ষেপগুলি পুনরায় প্রয়োগ করুন",

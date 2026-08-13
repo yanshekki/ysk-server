@@ -29,7 +29,7 @@
   "notInstalled": "UFWがインストールされていない",
   "toolHintPrefix": "基礎となるツール:",
   "toolHintBody": "UFW = ポート / 恒久的なルール · 攻撃への対応と自動禁止の使用用",
-  "toolHintFail2ban": "failed2ban = 一時的なログベースの禁止",
+  "toolHintfail2ban": "failed2ban = 一時的なログベースの禁止",
   "executeOffHint": "システムがオフになります - ステータスは読み取り可能です。",
   "tabs": {
     "rules": "ルール",

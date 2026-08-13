@@ -29,7 +29,7 @@
   "notInstalled": "UFW n’est pas installé",
   "toolHintPrefix": "Outils sous-jacents :",
   "toolHintBody": "UFW = ports / règles permanentes · pour la réponse aux attaques et le bannissement auto, utilisez",
-  "toolHintFail2ban": "fail2ban = bannissements temporaires basés sur les journaux",
+  "toolHintfail2ban": "fail2ban = bannissements temporaires basés sur les journaux",
   "executeOffHint": "Modifications système désactivées — le statut est lisible ;",
   "tabs": {
     "rules": "Règles",

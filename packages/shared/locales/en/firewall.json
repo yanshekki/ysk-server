@@ -29,7 +29,7 @@
   "notInstalled": "UFW is not installed",
   "toolHintPrefix": "Underlying tools:",
   "toolHintBody": "UFW = ports / permanent rules · for attack response and auto-ban use",
-  "toolHintFail2ban": "fail2ban = temporary log-based bans",
+  "toolHintfail2ban": "fail2ban = temporary log-based bans",
   "executeOffHint": "System changes off — status is readable;",
   "tabs": {
     "rules": "Rules",

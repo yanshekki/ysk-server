@@ -559,7 +559,7 @@
       "dovecot": "Dovecot",
       "opendkim": "OpenDKIM",
       "pdns_server": "PowerDNS",
-      "git": "git",
+      "git": "Git",
       "node": "Node.js",
       "php": "PHP",
       "python": "Python",
@@ -3732,7 +3732,7 @@
     "notInstalled": "UFW 尚未安裝",
     "toolHintPrefix": "底層工具：",
     "toolHintBody": "UFW = 埠／永久規則 · 攻擊應變與自動 封鎖 請用",
-    "toolHintFail2ban": "fail2ban = 日誌臨時 封鎖",
+    "toolHintfail2ban": "fail2ban = 日誌臨時 封鎖",
     "executeOffHint": "系統變更未開 — 可看狀態，改規則需 管理員權限與系統變更權限已開啟",
     "tabs": {
       "rules": "規則表",
@@ -4233,7 +4233,7 @@
     "banIpTitle": "到防護中心 封鎖 {{ip}}"
   },
   "login": {
-    "title": "登入 YSK 伺服器",
+    "title": "登入 YSK Server",
     "subtitle": "伺服器控制台",
     "username": "用戶名",
     "password": "密碼",
@@ -4371,7 +4371,7 @@
     "logrotateLabel": "對數旋轉",
     "srcNginx": "nginx",
     "srcSsh": "ssh",
-    "srcFail2ban": "fail2ban",
+    "srcfail2ban": "fail2ban",
     "srcAuthLog": "驗證日誌",
     "srcNginxError": "nginx 錯誤",
     "srcLetsEncrypt": "讓我們加密",
@@ -4689,7 +4689,7 @@
     "bookmarkPinned": "已釘選",
     "bookmarkAdded": "已釘到側欄",
     "bookmarkRemoved": "已從側欄移除",
-    "btTracker": "BT追蹤器",
+    "btTracker": "BT Tracker",
     "support": "支持"
   },
   "network": {
@@ -9919,8 +9919,8 @@
     "revokeAllDevices": "撤銷全部裝置",
     "revokedAllDevices": "已撤銷全部信任裝置",
     "export2faBackup": "匯出 雙重驗證 加密備份",
-    "fail2banSnippetMsg": "Fail2ban 片段：{{已寫入}} — {{notes}}",
-    "generateFail2ban": "產生 Fail2ban 片段",
+    "fail2banSnippetMsg": "fail2ban 片段：{{已寫入}} — {{notes}}",
+    "generatefail2ban": "產生 fail2ban 片段",
     "adminPolicyTitle": "管理員 2FA 政策",
     "adminPolicyDesc": "",
     "requireAdmin2fa": "要求管理員啟用 2FA",

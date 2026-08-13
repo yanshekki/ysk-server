@@ -1,32 +1,32 @@
 {
   "sw": {
     "vsftpd": "vsftpd (FTPS)",
-    "db_util": "db-util (DB pengguna FTP)",
+    "db_util": "db-util (FTP user DB)",
     "nginx": "Nginx",
-    "certbot": "Certbot (Ayo Enkripsi)",
-    "mysql_client": "Klien MySQL/MariaDB",
-    "mysql_server": "server MySQL",
-    "mariadb_server": "server MariaDB",
-    "postgresql_client": "klien PostgreSQL",
-    "postgresql": "Server PostgreSQL",
-    "redis_tools": "Klien Redis",
-    "redis_server": "Server ulang",
-    "ufw": "firewall UFW",
+    "certbot": "Certbot (Let's Encrypt)",
+    "mysql_client": "MySQL/MariaDB client",
+    "mysql_server": "MySQL server",
+    "mariadb_server": "MariaDB server",
+    "postgresql_client": "PostgreSQL client",
+    "postgresql": "PostgreSQL server",
+    "redis_tools": "Redis client",
+    "redis_server": "Redis server",
+    "ufw": "UFW firewall",
     "fail2ban": "fail2ban",
     "postfix": "Postfix",
-    "dovecot": "Tempat perlindungan merpati",
-    "opendkim": "BukaDKIM",
-    "pdns_server": "KekuatanDNS",
+    "dovecot": "Dovecot",
+    "opendkim": "OpenDKIM",
+    "pdns_server": "PowerDNS",
     "git": "Git",
     "node": "Node.js",
     "php": "PHP",
     "python": "Python",
     "go": "Go",
     "rust": "Rust",
-    "chromium": "Kromium / Krom"
+    "chromium": "Chromium / Chrome"
   },
   "php": {
     "session": "Sidang",
-    "opcache": "cache op"
+    "opcache": "OPcache"
   }
 }

@@ -2690,7 +2690,7 @@
     "noParen": "(none)",
     "keepOldDb": "(kept old DB)",
     "ufwNotDetected": "UFW not detected on this host",
-    "fail2banStartHint": "Start it on the Fail2ban page",
+    "fail2banStartHint": "Start it on the fail2ban page",
     "hasExecuteNotRoot": "EXECUTE is on but process is not root",
     "notRootTarget": "Not root (target useradd/apt will be blocked)",
     "reapplyDone": "reapply key steps completed",
