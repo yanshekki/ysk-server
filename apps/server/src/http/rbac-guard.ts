@@ -2,6 +2,7 @@
  * HTTP helpers for capability checks.
  */
 import {
+  matchGetRouteCaps,
   matchMutatingRouteCap,
   type CapabilityId,
   type UserDto,
@@ -99,4 +100,47 @@ export function enforceMutatingRouteCaps(
   if (!cap) return;
   const user = ctx.auth.authenticate(getBearer(req));
   requireCap(ctx, user, cap);
+}
+
+const GET_CAP_SKIP = [
+  '/api/v1/auth',
+  '/api/v1/public',
+  '/api/v1/nav',
+];
+
+function skipGetRouteCaps(pathname: string): boolean {
+  if (
+    pathname === '/api/v1/health' ||
+    pathname === '/api/v1/status' ||
+    pathname === '/api/v1/readiness' ||
+    pathname === '/api/v1/notifications' ||
+    pathname === '/api/v1/search'
+  ) {
+    return true;
+  }
+  if (GET_CAP_SKIP.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+    return true;
+  }
+  if (pathname.startsWith('/api/v1/vnc/share/')) return true;
+  // Agent poller pull (history=1 still gated in the handler)
+  if (/^\/api\/v1\/fleet\/agents\/[^/]+\/commands$/.test(pathname)) return true;
+  return false;
+}
+
+/**
+ * Central GET inventory gate (any-of caps). No-op when no rule or skipped.
+ */
+export function enforceGetRouteCaps(
+  ctx: AppContext,
+  req: IncomingMessage,
+  method: string,
+  pathname: string,
+): void {
+  if ((method ?? 'GET').toUpperCase() !== 'GET') return;
+  if (!pathname.startsWith('/api/v1/')) return;
+  if (skipGetRouteCaps(pathname)) return;
+  const caps = matchGetRouteCaps(pathname);
+  if (!caps?.length) return;
+  const user = ctx.auth.authenticate(getBearer(req));
+  requireAnyCap(ctx, user, caps);
 }

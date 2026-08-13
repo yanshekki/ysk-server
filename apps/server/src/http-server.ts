@@ -15,7 +15,7 @@ import {
   sendError,
   sendJson,
 } from './http/util.js';
-import { enforceMutatingRouteCaps } from './http/rbac-guard.js';
+import { enforceGetRouteCaps, enforceMutatingRouteCaps } from './http/rbac-guard.js';
 import {
   enforceApiKeyReadOnly,
   enforceMustChangePassword,
@@ -99,6 +99,7 @@ function attachRequestHandler(ctx: AppContext, webRoot: string | null) {
 
         // Capability gate for critical mutating APIs (before any domain handler)
         enforceMutatingRouteCaps(ctx, req, method, url.pathname);
+        enforceGetRouteCaps(ctx, req, method, url.pathname);
         // API key scope: read-only keys cannot mutate
         enforceApiKeyReadOnly(ctx, req, method, url.pathname);
         // Bootstrap weak password: force change before other APIs

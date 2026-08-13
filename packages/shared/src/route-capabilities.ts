@@ -383,6 +383,72 @@ export function matchMutatingRouteCap(
 }
 
 /**
+ * Authenticated GET inventory → any-of capabilities (viewer factory read caps).
+ * Unlisted GETs stay session-only. Agent poller / public / self-service skipped in enforce.
+ */
+export type GetRouteCapRule = {
+  pattern: RegExp;
+  caps: readonly CapabilityId[];
+  note?: string;
+};
+
+export const GET_ROUTE_CAP_RULES: readonly GetRouteCapRule[] = [
+  { pattern: /^\/api\/v1\/users(\/|$)/, caps: ['users.manage', 'rbac.policy'] },
+  { pattern: /^\/api\/v1\/rbac(\/|$)/, caps: ['rbac.policy', 'users.manage'] },
+  { pattern: /^\/api\/v1\/audit(\/|$)/, caps: ['audit.export', 'settings.system'] },
+  { pattern: /^\/api\/v1\/email(\/|$)/, caps: ['mail.read', 'mail.write', 'mail.apply'] },
+  { pattern: /^\/api\/v1\/ssl(\/|$)/, caps: ['ssl.read', 'ssl.upload', 'ssl.issue'] },
+  { pattern: /^\/api\/v1\/backups(\/|$)/, caps: ['backups.read', 'backups.run', 'backups.restore'] },
+  { pattern: /^\/api\/v1\/projects(\/|$)/, caps: ['projects.read', 'projects.write'] },
+  { pattern: /^\/api\/v1\/dns(\/|$)/, caps: ['dns.read', 'dns.apply'] },
+  { pattern: /^\/api\/v1\/cdn(\/|$)/, caps: ['projects.read', 'publish.apply'] },
+  { pattern: /^\/api\/v1\/logs(\/|$)/, caps: ['logs.read', 'logs.purge'] },
+  { pattern: /^\/api\/v1\/metrics(\/|$)/, caps: ['metrics.read'] },
+  { pattern: /^\/api\/v1\/updates(\/|$)/, caps: ['updates.read', 'updates.apply'] },
+  { pattern: /^\/api\/v1\/defense(\/|$)/, caps: ['firewall.read', 'firewall.edit', 'firewall.flush'] },
+  {
+    pattern: /^\/api\/v1\/system\/firewall/,
+    caps: ['firewall.read', 'firewall.edit', 'firewall.flush'],
+  },
+  {
+    pattern: /^\/api\/v1\/host-browse(\/|$)/,
+    caps: ['network.browse'],
+  },
+  {
+    pattern: /^\/api\/v1\/terminal(\/|$)/,
+    caps: ['settings.system', 'services.control'],
+  },
+  {
+    pattern: /^\/api\/v1\/ssh(\/|$)/,
+    caps: ['settings.system', 'security.policy', 'backups.run'],
+  },
+  {
+    pattern: /^\/api\/v1\/fleet(\/|$)/,
+    caps: ['services.read', 'services.control', 'settings.system', 'runtime.tuning'],
+  },
+  {
+    pattern: /^\/api\/v1\/settings\/llm$/,
+    caps: ['settings.system'],
+  },
+  {
+    pattern: /^\/api\/v1\/settings\/host-browse$/,
+    caps: ['network.browse'],
+  },
+  {
+    pattern: /^\/api\/v1\/settings\/security$/,
+    caps: ['security.policy', 'users.self'],
+  },
+];
+
+/** Resolve any-of caps for a GET, or null if no inventory rule. */
+export function matchGetRouteCaps(pathname: string): readonly CapabilityId[] | null {
+  for (const rule of GET_ROUTE_CAP_RULES) {
+    if (rule.pattern.test(pathname)) return rule.caps;
+  }
+  return null;
+}
+
+/**
  * Nav / feature key → capabilities required to *see* the item (any-of).
  * Empty / missing → any authenticated user (read surfaces).
  */

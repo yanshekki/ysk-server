@@ -17,6 +17,16 @@ describe('apache', () => {
     expect(c).toContain('a.example.com');
   });
 
+  it('sanitizes injected ServerName', () => {
+    const c = renderApacheSite({
+      serverName: 'evil.com; Include /tmp/x',
+      kind: 'static',
+      root: '/var/www',
+    });
+    expect(c).toContain('ServerName localhost');
+    expect(c).not.toContain('Include /tmp/x');
+  });
+
   it('creates site without execute', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-ap-'));
     const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: false });

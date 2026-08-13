@@ -3,6 +3,7 @@ import {
   canAccessPath,
   canSeeFeature,
   capsRequiredForPath,
+  matchGetRouteCaps,
   matchMutatingRouteCap,
 } from './route-capabilities.js';
 
@@ -48,6 +49,20 @@ describe('matchMutatingRouteCap', () => {
 
   it('ignores GET', () => {
     expect(matchMutatingRouteCap('GET', '/api/v1/backups/restore')).toBe(null);
+  });
+
+  it('matchGetRouteCaps gates inventory prefixes (any-of)', () => {
+    expect(matchGetRouteCaps('/api/v1/email/domains')).toEqual(
+      expect.arrayContaining(['mail.read']),
+    );
+    expect(matchGetRouteCaps('/api/v1/projects')).toEqual(
+      expect.arrayContaining(['projects.read']),
+    );
+    expect(matchGetRouteCaps('/api/v1/ssl/certificates')).toEqual(
+      expect.arrayContaining(['ssl.read']),
+    );
+    expect(matchGetRouteCaps('/api/v1/auth/me')).toBeNull();
+    expect(matchGetRouteCaps('/api/v1/dashboard')).toBeNull();
   });
 
   it('ssl upload is write-low before generic ssl rules', () => {

@@ -160,7 +160,8 @@ export async function handleAgentsFleetRoutes(
     const id = url.pathname.split('/')[5]!;
     const history = url.searchParams.get('history') === '1';
     if (history) {
-      ctx.auth.authenticate(getBearer(req));
+      const user = ctx.auth.authenticate(getBearer(req));
+      requireAnyCap(ctx, user, FLEET_PANEL_CAPS);
       sendJson(res, 200, { items: ctx.fleet.listCommands(id) });
       return true;
     }

@@ -7,6 +7,10 @@
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { ErrorCodes, YskError, tl } from 'ysk-server-shared';
+import {
+  sanitizeNginxServerNameList,
+  sanitizeNginxServerNameToken,
+} from './nginx-ssl.js';
 
 export type RuntimeKind = 'node' | 'php' | 'python' | 'go' | 'rust' | 'java' | 'kotlin' | 'bun';
 
@@ -763,18 +767,19 @@ export function renderPhpVhost(opts: {
 }): string {
   const bind = opts.bind ?? apacheBackendBind();
   const port = opts.port ?? apacheBackendPort();
+  const domain = sanitizeNginxServerNameList(opts.domain);
   const aliasesRaw = Array.isArray(opts.serverAliases)
     ? opts.serverAliases.join(' ')
     : opts.serverAliases || '';
   const aliases = aliasesRaw
     .split(/\s+/)
-    .map((s) => s.trim())
-    .filter((s) => s && s !== opts.domain);
+    .map((s) => sanitizeNginxServerNameToken(s.trim()))
+    .filter((s): s is string => Boolean(s) && s !== domain);
   const aliasLine = aliases.length ? `  ServerAlias ${aliases.join(' ')}\n` : '';
   const sock = `/run/php/php${opts.phpVersion}-fpm-${opts.poolName}.sock`;
   return `# YSK PHP site — Apache backend (Nginx proxies here; FPM handles .php)
 <VirtualHost ${bind}:${port}>
-  ServerName ${opts.domain}
+  ServerName ${domain}
 ${aliasLine}  DocumentRoot ${opts.docRoot}
   DirectoryIndex index.php index.html
   <Directory ${opts.docRoot}>

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { YskError } from 'ysk-server-shared';
 import type { IncomingMessage } from 'node:http';
 import {
+  enforceGetRouteCaps,
   enforceMutatingRouteCaps,
   requireCap,
   requireAnyCap,
@@ -136,6 +137,41 @@ describe('rbac-guard', () => {
     expect(() =>
       enforceMutatingRouteCaps(ctx, mockReq(), 'POST', '/api/v1/projects'),
     ).toThrow(YskError);
+  });
+
+  it('enforceGetRouteCaps is no-op for POST', () => {
+    const auth = vi.fn();
+    const ctx = mockCtx({ authenticate: auth as never });
+    expect(() =>
+      enforceGetRouteCaps(ctx, mockReq(), 'POST', '/api/v1/email/domains'),
+    ).not.toThrow();
+    expect(auth).not.toHaveBeenCalled();
+  });
+
+  it('enforceGetRouteCaps skips auth/me and agent command pull', () => {
+    const auth = vi.fn();
+    const ctx = mockCtx({ authenticate: auth as never });
+    expect(() =>
+      enforceGetRouteCaps(ctx, mockReq(), 'GET', '/api/v1/auth/me'),
+    ).not.toThrow();
+    expect(() =>
+      enforceGetRouteCaps(ctx, mockReq(), 'GET', '/api/v1/fleet/agents/a1/commands'),
+    ).not.toThrow();
+    expect(auth).not.toHaveBeenCalled();
+  });
+
+  it('enforceGetRouteCaps 403 when GET inventory cap missing', () => {
+    const ctx = mockCtx({ caps: ['dashboard.read'] });
+    expect(() =>
+      enforceGetRouteCaps(ctx, mockReq('tok'), 'GET', '/api/v1/email/domains'),
+    ).toThrow(YskError);
+  });
+
+  it('enforceGetRouteCaps allows viewer mail.read on email GET', () => {
+    const ctx = mockCtx({ caps: ['mail.read'] });
+    expect(() =>
+      enforceGetRouteCaps(ctx, mockReq('tok'), 'GET', '/api/v1/email/domains'),
+    ).not.toThrow();
   });
 
   it('enforceMutatingRouteCaps 403 when missing required cap', () => {

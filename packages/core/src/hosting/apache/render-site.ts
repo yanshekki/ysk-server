@@ -3,6 +3,7 @@
  */
 
 import type { ApacheSiteKind } from './types.js';
+import { sanitizeNginxServerNameList } from '../nginx-ssl.js';
 
 export function renderApacheSite(opts: {
   serverName: string;
@@ -16,7 +17,7 @@ export function renderApacheSite(opts: {
   indexes?: boolean;
   fpmSocket?: string;
 }): string {
-  const name = opts.serverName.trim() || 'localhost';
+  const name = sanitizeNginxServerNameList(opts.serverName);
   const body =
     opts.clientMaxBody && opts.clientMaxBody !== 'inherit'
       ? `  LimitRequestBody ${parseBodyBytes(opts.clientMaxBody)}\n`

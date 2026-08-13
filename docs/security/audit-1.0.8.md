@@ -58,6 +58,8 @@ WebSocket (ticket required): terminal, VNC, host-browse.
 | A08-25 | High | `GET /settings/llm` returned stored `apiKey` to any session | **Fixed** — `settings.system` + mask `***` |
 | A08-26 | Medium | SSH identity list/public/get and fleet agent list were any-session GETs | **Fixed** — identity: `settings.system`/`security.policy`/`backups.run`; fleet: `settings.system`/`services.control` |
 | A08-27 | Low | Fleet enroll token compared with `===`; boot splash wrote raw `err.message` to `innerHTML` | **Fixed** — `timingSafeEqual`; HTML-escape boot error |
+| A08-28 | Medium | Inventory GETs (email, projects, SSL, backups, DNS, CDN, logs, users, …) were any-session | **Fixed** — central `GET_ROUTE_CAP_RULES` any-of (viewer read caps still pass; `users.self`-only does not) |
+| A08-29 | High | Apache `ServerName` / PHP vhost interpolated unsanitized names | **Fixed** — same hostname allowlist as nginx |
 
 ## Accepted residual
 
@@ -76,7 +78,7 @@ WebSocket (ticket required): terminal, VNC, host-browse.
 
 ## Reviewed this pass (no extra code change)
 
-Host Browse CDP binds `127.0.0.1` only. Live WS tickets are one-time + TTL. VNC/terminal tickets already consume-once + expire. CDN node health uses `assertSafeOutboundUrl`. Host-migrate temp keys `0600` / dir `0700`. Outline has no script hooks. File editor `highlightToHtml` escapes tokens; other `innerHTML` is VNC canvas clear or escaped boot error. Project OS users are derived from UUID (`ysk-…`), not the project name. Backup GET already masks secrets. Install I-07 still operator-documented (R-5). Public BT tracker WS still proxies loopback only. SQL resource create stays on mutating caps; replica plans use quoted identifiers. npm product pack is `dist` + `public` + README (no extra secrets found).
+Host Browse CDP binds `127.0.0.1` only. Live WS tickets are one-time + TTL. VNC/terminal tickets already consume-once + expire. CDN node health uses `assertSafeOutboundUrl`. Host-migrate temp keys `0600` / dir `0700`. Outline has no script hooks. File editor `highlightToHtml` escapes tokens; other `innerHTML` is VNC canvas clear or escaped boot error. Project OS users are derived from UUID (`ysk-…`), not the project name. Backup GET already masks secrets. Mailbox list strips hashes. Resource list redacts passwords. SQL provision validates identifiers + escapes passwords. Install I-07 still operator-documented (R-5). Public BT tracker WS still proxies loopback only. npm product pack is `dist` + `public` + README (no extra secrets found). Remaining unlisted GETs (dashboard, search, self-service auth) stay session-only.
 
 ## Re-check of prior phases
 

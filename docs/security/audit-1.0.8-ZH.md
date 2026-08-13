@@ -58,6 +58,8 @@ WebSocket（要 ticket）：終端、VNC、Host Browse。
 | A08-25 | 高 | `GET /settings/llm` 任何工作階段都回存好嘅 `apiKey` | **已修** — 要 `settings.system` + 遮成 `***` |
 | A08-26 | 中 | SSH 身分列表／公鑰／詳情同 Fleet 列表係任何 session 嘅 GET | **已修** — 身分：`settings.system`／`security.policy`／`backups.run`；Fleet：`settings.system`／`services.control` |
 | A08-27 | 低 | Fleet enroll token 用 `===`；開機失敗把 `err.message` 直接寫入 `innerHTML` | **已修** — `timingSafeEqual`；開機錯誤轉義 |
+| A08-28 | 中 | 盤點 GET（電郵、專案、SSL、備份、DNS、CDN、日誌、用戶…）任何 session 都可睇 | **已修** — 中央 `GET_ROUTE_CAP_RULES` 任一 cap（viewer 讀權仍過；只有 `users.self` 唔過） |
+| A08-29 | 高 | Apache `ServerName`／PHP vhost 未淨化就寫入 conf | **已修** — 同 nginx 主機名允許清單 |
 
 ## 已接受殘項
 
@@ -76,7 +78,7 @@ WebSocket（要 ticket）：終端、VNC、Host Browse。
 
 ## 本輪已審、無需再改碼
 
-Host Browse CDP 只綁 `127.0.0.1`。Live WS ticket 一次過＋TTL。VNC／終端 ticket 已 consume-once＋過期。CDN 健康用 `assertSafeOutboundUrl`。遷移臨時金鑰 `0600`／目錄 `0700`。Outline 無 script hook。檔案 highlight 有轉義；其餘 `innerHTML` 係 VNC 清畫面或已轉義開機錯誤。專案 Linux 用戶由 UUID 衍生（`ysk-…`），唔係專案名。備份 GET 已遮秘密。安裝 I-07 仍按文件（R-5）。公開 BT tracker WS 只代理本機。SQL 開庫仍行 mutating cap。npm 產品包係 `dist`＋`public`＋README（未見多餘 secret）。
+Host Browse CDP 只綁 `127.0.0.1`。Live WS ticket 一次過＋TTL。VNC／終端 ticket 已 consume-once＋過期。CDN 健康用 `assertSafeOutboundUrl`。遷移臨時金鑰 `0600`／目錄 `0700`。Outline 無 script hook。檔案 highlight 有轉義；其餘 `innerHTML` 係 VNC 清畫面或已轉義開機錯誤。專案 Linux 用戶由 UUID 衍生（`ysk-…`），唔係專案名。備份 GET 已遮秘密。郵箱列表已剝 hash。資源列表已遮密碼。SQL 開庫校識別字＋轉義密碼。安裝 I-07 仍按文件（R-5）。公開 BT tracker WS 只代理本機。npm 產品包係 `dist`＋`public`＋README。其餘未列 GET（dashboard、搜尋、auth 自助）仍只要求已登入。
 
 ## 先前階段重核
 
