@@ -241,7 +241,7 @@ function copyOverlayTrees(pkgRoot: string, dest: string): void {
   }
 }
 
-function versionFileContains(dest: string, latest: string): boolean {
+export function versionFileContains(dest: string, latest: string): boolean {
   const vf = join(dest, 'dist', 'version.js');
   if (!existsSync(vf)) return false;
   try {

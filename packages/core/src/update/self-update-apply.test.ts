@@ -4,6 +4,8 @@ import {
   checkSelfUpdate,
   detectRunningInstall,
   pickSelfUpdateUserNote,
+  stripNpmNoticeNoise,
+  applyNpmOverlayViaHost,
 } from './self-update-apply.js';
 import { LocalHostExecutor } from '../host/executor.js';
 
@@ -32,6 +34,57 @@ describe('detectRunningInstall / pickSelfUpdateUserNote', () => {
         true,
       ),
     ).toMatch(/找不到|目錄|install directory/i);
+  });
+
+  it('does not toast npm notice tarball listings', () => {
+    const dump =
+      'npm 更新失敗：npm notice npm notice 📦 ysk-server@1.0.15 npm notice Tarball Contents npm notice 2.2kB README.md';
+    expect(
+      pickSelfUpdateUserNote(
+        ['無法寫入執行中安裝目錄 /usr/lib/ysk-server/apps/server', dump],
+        true,
+      ),
+    ).toMatch(/無法寫入|unwritable|目錄/i);
+  });
+});
+
+describe('stripNpmNoticeNoise / host overlay', () => {
+  it('strips npm notice listings', () => {
+    expect(
+      stripNpmNoticeNoise(
+        'npm notice 2.2kB README.md\nnpm notice 22.7kB dist/app-context.js\nEACCES: permission denied',
+      ),
+    ).toBe('EACCES: permission denied');
+  });
+
+  it('host overlay script never runs npm install -g', async () => {
+    let script = '';
+    const host = {
+      executeEnabled: () => true,
+      isRoot: () => true,
+      pathExists: () => true,
+      readFile: async () => '',
+      listDir: async () => [],
+      writeFile: async () => undefined,
+      deletePath: async () => undefined,
+      mkdirp: async () => undefined,
+      sysInfo: async () => ({}),
+      serviceStatus: async () => ({ stdout: '', stderr: '', exitCode: 0, argv: [], dryRun: false }),
+      runCommand: async (argv: string[]) => {
+        script = argv[2] ?? argv.join(' ');
+        return { stdout: '', stderr: 'npm notice 1kB x\ncurl: fail', exitCode: 1, argv, dryRun: false };
+      },
+    };
+    const r = await applyNpmOverlayViaHost({
+      host: host as never,
+      spec: 'ysk-server@1.0.16',
+      destDir: '/tmp/ysk-not-a-real-dest',
+      latest: '1.0.16',
+    });
+    expect(script).not.toMatch(/npm install -g/);
+    expect(r.applied).toBe(false);
+    expect(r.notes.join(' ')).not.toMatch(/npm notice/);
+    expect(r.notes.join(' ')).toMatch(/curl: fail|未能套用|overlay/i);
   });
 });
 

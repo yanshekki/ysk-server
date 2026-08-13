@@ -373,10 +373,11 @@ export function useUpdates() {
       const r = await updatesApi.selfApply();
       const notes = sanitizeOperatorNotes(r.notes);
       const isProbe = (n: string) => /npm 頻道|頻道：|channel：|GitHub release/i.test(n);
+      const isNoticeDump = (n: string) => ((n.match(/npm notice/gi) || []).length >= 2);
       const isFail = (n: string) =>
         /失敗|failed|blocked|EXECUTE|權限|無法|error|incomplete|未套用|系統變更|need execute|找不到|未包含|無法寫入|無法下載/i.test(
           n,
-        );
+        ) && !isNoticeDump(n);
       const toastNote = (failed: boolean, fallback: string) => {
         if (failed && r.blockMessage?.trim()) return r.blockMessage.trim();
         if (failed && r.message?.trim() && !isProbe(r.message)) return r.message.trim();

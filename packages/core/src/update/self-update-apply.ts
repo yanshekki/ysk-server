@@ -10,8 +10,10 @@ import { shellBinExists } from '../hosting/software-probe/index.js';
 import {
   applyNpmOverlayToDest,
   classifyCliPath,
+  isSafeOverlayDest,
   resolveOverlayDest,
   scheduleYskServerRestart,
+  versionFileContains,
 } from './self-update-overlay.js';
 
 export interface RegistryVersion {
@@ -84,7 +86,22 @@ export function detectRunningInstall(cliJsHint?: string): RunningInstall {
   return resolveOverlayDest(cliJsHint || process.argv[1] || '');
 }
 
-/** Prefer the real apply/blocked note — never the npm-channel probe line. */
+/** Drop `npm notice` file listings — they are not the failure. */
+export function stripNpmNoticeNoise(text: string): string {
+  const lines = String(text || '')
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l && !/^npm notice\b/i.test(l) && !/^npm warn\b/i.test(l));
+  return lines.join('\n').trim();
+}
+
+export function isNpmNoticeDump(text: string): boolean {
+  const n = String(text || '');
+  const hits = n.match(/npm notice/gi);
+  return Boolean(hits && hits.length >= 2);
+}
+
+/** Prefer the real apply/blocked note — never the npm-channel probe or notice dump. */
 export function pickSelfUpdateUserNote(
   notes: string[],
   failed = false,
@@ -93,16 +110,17 @@ export function pickSelfUpdateUserNote(
   if (!list.length) return undefined;
   const isProbe = (n: string) =>
     /npm 頻道|頻道：|channel：|channel:|GitHub release：|GitHub release:/i.test(n);
+  const isHint = (n: string) => /install\.sh --upgrade/i.test(n);
   const isFail = (n: string) =>
     /失敗|failed|blocked|EXECUTE|權限|無法|error|incomplete|未套用|系統變更|need execute|no_execute|找不到|未包含|無法寫入|無法下載|目錄/i.test(
       n,
     );
   if (failed) {
-    const fails = list.filter(isFail);
+    const fails = list.filter((n) => isFail(n) && !isProbe(n) && !isNpmNoticeDump(n) && !isHint(n));
     if (fails.length) return fails[fails.length - 1];
   }
-  const meaningful = list.filter((n) => !isProbe(n));
-  return meaningful[meaningful.length - 1] ?? list[list.length - 1];
+  const meaningful = list.filter((n) => !isProbe(n) && !isNpmNoticeDump(n) && !isHint(n));
+  return meaningful[meaningful.length - 1] ?? list.filter((n) => !isNpmNoticeDump(n)).pop() ?? list[list.length - 1];
 }
 
 export function resolveApplyNpmPackage(registryName?: string): string {
@@ -585,7 +603,10 @@ export async function runSelfUpdate(input: {
     );
     const spec = `${installName}@${latest}`;
     const running = detectRunningInstall(input.cliJsHint);
-    const overlayDest = running.packageDir;
+    let overlayDest = running.packageDir;
+    if (!overlayDest || !isSafeOverlayDest(overlayDest)) {
+      overlayDest = resolveOverlayDest(input.cliJsHint).packageDir;
+    }
 
     // Node overlay writes our own package dir — does not require YSK_EXECUTE.
     const overlay = await applyNpmOverlayToDest({
@@ -629,6 +650,11 @@ export async function runSelfUpdate(input: {
         notes.push(...gitResult.notes);
         applied = gitResult.applied;
       }
+    }
+
+    if (!applied && overlayDest && versionFileContains(overlayDest, latest)) {
+      applied = true;
+      notes.push(tl('notes.auto.selfApplied', { v0: spec, v1: overlayDest }));
     }
 
     if (applied) {
@@ -678,6 +704,7 @@ export async function runSelfUpdate(input: {
   }
 
   const applyFailed = input.apply === true && plan.status.updateAvailable && !applied;
+  if (applyFailed) notes.push(tl('notes.auto.selfUpgradeHint'));
   const userNote = pickSelfUpdateUserNote(notes, applyFailed);
   if (applyFailed && userNote) {
     const rest = notes.filter((n) => n !== userNote);
@@ -705,8 +732,9 @@ export async function runSelfUpdate(input: {
 }
 
 /**
- * EXECUTE fallback: `npm pack` + copy via HostExecutor (used by unit tests and
- * when Node overlay has no local artifact).
+ * EXECUTE fallback: fetch official tarball + copy onto the running dest.
+ * Never `npm install -g` — that does not update systemd ExecStart and floods
+ * stderr with `npm notice` file listings that used to become the toast.
  */
 export async function applyNpmOverlayViaHost(input: {
   host: HostExecutor;
@@ -725,57 +753,69 @@ export async function applyNpmOverlayViaHost(input: {
     stdout: string;
     stderr: string;
   }> = [];
-  const dest = String(input.destDir || '').trim();
+  let dest = String(input.destDir || '').trim();
   const spec = input.spec;
   const latest = input.latest.replace(/^v/, '');
+  const tarball = `https://registry.npmjs.org/ysk-server/-/ysk-server-${latest}.tgz`;
 
   const script = [
     'set -euo pipefail',
+    'export NPM_CONFIG_LOGLEVEL=error',
+    'export NPM_CONFIG_FUND=false',
+    'export NPM_CONFIG_AUDIT=false',
     `SPEC=${JSON.stringify(spec)}`,
     `DEST=${JSON.stringify(dest)}`,
     `LATEST=${JSON.stringify(latest)}`,
+    `TB=${JSON.stringify(tarball)}`,
+    'if [ -z "$DEST" ] || [ ! -d "$DEST" ]; then',
+    '  for d in /usr/lib/ysk-server/apps/server /usr/local/lib/ysk-server/apps/server; do',
+    '    if [ -f "$d/dist/cli.js" ]; then DEST="$d"; break; fi',
+    '  done',
+    'fi',
+    'if [ -z "$DEST" ] || [ ! -d "$DEST" ]; then',
+    '  echo "no running install dest" >&2',
+    '  exit 2',
+    'fi',
     'TMP=$(mktemp -d)',
     'trap \'rm -rf "$TMP"\' EXIT',
     'cd "$TMP"',
-    'npm pack "$SPEC"',
-    'tar -xzf ./*.tgz',
+    'if command -v curl >/dev/null 2>&1 && curl -fsSL "$TB" -o pkg.tgz; then',
+    '  :',
+    'else',
+    '  npm pack "$SPEC"',
+    '  mv -f ./*.tgz pkg.tgz',
+    'fi',
+    'test -f pkg.tgz',
+    'tar -xzf pkg.tgz',
     'test -f package/dist/cli.js',
-    'if [ -n "$DEST" ] && [ -d "$DEST" ]; then',
-    '  mkdir -p "$DEST/dist"',
-    '  cp -a package/dist/. "$DEST/dist/"',
-    '  if [ -d package/public ]; then mkdir -p "$DEST/public"; cp -a package/public/. "$DEST/public/"; fi',
-    '  if [ -d package/node_modules ]; then mkdir -p "$DEST/node_modules"; cp -a package/node_modules/. "$DEST/node_modules/"; fi',
-    'fi',
-    'npm install -g "$SPEC"',
-    'VERIFY=""',
-    'if [ -n "$DEST" ] && [ -f "$DEST/dist/version.js" ]; then VERIFY=$(cat "$DEST/dist/version.js"); fi',
-    'GROOT=$(npm root -g 2>/dev/null || true)',
-    'if [ -z "$VERIFY" ] && [ -n "$GROOT" ] && [ -f "$GROOT/ysk-server/dist/version.js" ]; then',
-    '  VERIFY=$(cat "$GROOT/ysk-server/dist/version.js")',
-    'fi',
-    'printf "%s" "$VERIFY"',
-    'echo',
-    'echo "$VERIFY" | grep -F "$LATEST" >/dev/null',
+    'mkdir -p "$DEST/dist"',
+    'cp -a package/dist/. "$DEST/dist/"',
+    'if [ -d package/public ]; then mkdir -p "$DEST/public"; cp -a package/public/. "$DEST/public/"; fi',
+    'if [ -d package/node_modules/ysk-server-core ]; then mkdir -p "$DEST/node_modules"; rm -rf "$DEST/node_modules/ysk-server-core"; cp -a package/node_modules/ysk-server-core "$DEST/node_modules/ysk-server-core"; fi',
+    'if [ -d package/node_modules/ysk-server-shared ]; then mkdir -p "$DEST/node_modules"; rm -rf "$DEST/node_modules/ysk-server-shared"; cp -a package/node_modules/ysk-server-shared "$DEST/node_modules/ysk-server-shared"; fi',
+    'grep -F "$LATEST" "$DEST/dist/version.js" >/dev/null',
+    'echo "$DEST"',
   ].join('\n');
 
   const r = await input.host.runCommand(['bash', '-c', script], { timeoutMs: 300_000 });
   commandResults.push({
-    argv: ['npm-overlay', spec, dest || '(global)'],
+    argv: ['npm-overlay', spec, dest || '(auto)'],
     exitCode: r.exitCode,
     stdout: r.stdout.slice(0, 2000),
-    stderr: r.stderr.slice(0, 2000),
+    stderr: stripNpmNoticeNoise(r.stderr).slice(0, 2000),
   });
-  if (r.exitCode !== 0) {
-    notes.push(tl('notes.auto.t0485', { v0: (r.stderr || r.stdout).slice(0, 400) }));
-    return { applied: false, notes, commandResults };
+  const reported = (r.stdout || '').trim().split('\n').pop() || dest;
+  if (dest && versionFileContains(dest, latest)) {
+    notes.push(tl('notes.auto.selfApplied', { v0: spec, v1: dest }));
+    return { applied: true, notes, commandResults };
   }
-  const out = `${r.stdout || ''} ${r.stderr || ''}`;
-  if (!out.includes(latest)) {
-    notes.push(tl('notes.auto.t0485', { v0: `version ${latest} not in overlay output` }));
-    return { applied: false, notes, commandResults };
+  if (reported && reported !== dest && versionFileContains(reported, latest)) {
+    notes.push(tl('notes.auto.selfApplied', { v0: spec, v1: reported }));
+    return { applied: true, notes, commandResults };
   }
-  notes.push(tl('notes.auto.t0484', { v0: spec }));
-  return { applied: true, notes, commandResults };
+  const cleaned = stripNpmNoticeNoise(r.stderr || r.stdout).slice(0, 240) || `exit ${r.exitCode}`;
+  notes.push(tl('notes.auto.selfOverlayFail', { v0: cleaned }));
+  return { applied: false, notes, commandResults };
 }
 
 export { compareVersions };

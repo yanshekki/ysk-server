@@ -2633,7 +2633,9 @@
     "selfDestUnwritable": "無法寫入執行中安裝目錄 {{v0}}",
     "selfApplied": "已將 {{v0}} 套用到 {{v1}}",
     "selfVerifyFail": "套用後版本檔未包含 {{v0}}",
-    "selfDownloadFail": "無法下載或解壓官方套件 {{v0}}：{{v1}}"
+    "selfDownloadFail": "無法下載或解壓官方套件 {{v0}}：{{v1}}",
+    "selfOverlayFail": "官方套件未能套用到執行中目錄：{{v0}}",
+    "selfUpgradeHint": "面板套用失敗。請以 root 執行：curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade"
   },
   "tpl": {
     "deleted": "已刪除 {{name}}",

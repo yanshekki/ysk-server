@@ -213,33 +213,40 @@ describe('self-update-apply depth', () => {
     expect(r.notes.join(' ')).toMatch(/fetch/i);
   });
 
-  it('runSelfUpdate npm success path', async () => {
+  it('runSelfUpdate npm success path overlays dest without npm install -g', async () => {
     snapEnv();
     delete process.env.YSK_LATEST_VERSION;
-    const host = mockHost({
-      execute: true,
-      run: async (argv) => {
-        const j = argv.join(' ');
-        if (argv[0] === 'bash' || j.includes('npm pack') || argv[0] === 'npm') {
-          return { exitCode: 0, stdout: "export const VERSION = '0.2.0';\n" };
-        }
-        return { exitCode: 0 };
-      },
-    });
-    const r = await runSelfUpdate({
-      currentVersion: '0.1.0',
-      host,
-      apply: true,
-      latestOverride: '0.2.0',
-      packageName: 'ysk-server',
-    });
-    expect(r.checked).toBe(true);
-    expect(r.applied).toBe(true);
-    expect(r.ok).toBe(true);
-    expect(r.updateAvailable).toBe(false);
-    expect(
-      r.commandResults.some((c) => c.argv[0] === 'npm-overlay' || c.argv[0] === 'npm'),
-    ).toBe(true);
+    const { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const root = mkdtempSync(join(tmpdir(), 'ysk-ovl-depth-'));
+    const dest = join(root, 'dest');
+    const unpacked = join(root, 'package');
+    mkdirSync(join(unpacked, 'dist'), { recursive: true });
+    mkdirSync(join(dest, 'dist'), { recursive: true });
+    writeFileSync(join(unpacked, 'dist', 'cli.js'), 'export const cli = true;\n');
+    writeFileSync(join(unpacked, 'dist', 'version.js'), "export const VERSION = '0.2.0';\n");
+    writeFileSync(join(dest, 'dist', 'cli.js'), "export const VERSION = '0.1.0';\n");
+    writeFileSync(join(dest, 'package.json'), JSON.stringify({ name: 'ysk-server', version: '0.1.0' }));
+    try {
+      const host = mockHost({ execute: false });
+      const r = await runSelfUpdate({
+        currentVersion: '0.1.0',
+        host,
+        apply: true,
+        latestOverride: '0.2.0',
+        packageName: 'ysk-server',
+        cliJsHint: join(dest, 'dist', 'cli.js'),
+        unpackedDir: unpacked,
+      });
+      expect(r.checked).toBe(true);
+      expect(r.applied).toBe(true);
+      expect(r.ok).toBe(true);
+      expect(r.updateAvailable).toBe(false);
+      expect(readFileSync(join(dest, 'dist', 'version.js'), 'utf8')).toContain('0.2.0');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 
   it('runSelfUpdate github/env channel uses git apply when npm not preferred', async () => {

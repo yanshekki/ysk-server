@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.16 — 2026-08-13
+
+### Fix
+- Self-update no longer runs `npm install -g` (that dumped `npm notice` tarball listings into the toast and often failed after the dest was already copied)
+- Apply errors strip `npm notice` noise and keep the real failure
+- If dest `version.js` already contains the target version, apply is treated as success and the unit is restarted
+- Failed apply notes include `install.sh --upgrade` as the honest escape hatch
+
 ## 1.0.15 — 2026-08-13
 
 ### UI

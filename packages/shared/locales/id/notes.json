@@ -2633,7 +2633,9 @@
     "selfDestUnwritable": "Cannot write to the running install directory {{v0}}",
     "selfApplied": "Applied {{v0}} onto {{v1}}",
     "selfVerifyFail": "Version file after overlay does not contain {{v0}}",
-    "selfDownloadFail": "Cannot download or unpack official package {{v0}}: {{v1}}"
+    "selfDownloadFail": "Cannot download or unpack official package {{v0}}: {{v1}}",
+    "selfOverlayFail": "Could not overlay the official package onto the running install: {{v0}}",
+    "selfUpgradeHint": "Panel apply failed. As root run: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade"
   },
   "tpl": {
     "deleted": "Dihapus {{name}}",

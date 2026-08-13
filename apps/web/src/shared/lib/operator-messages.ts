@@ -34,6 +34,7 @@ export function isOperatorNoise(text: string): boolean {
   if (/^(CREATE |GRANT |ALTER |DROP )/i.test(t)) return true;
   // Pure path dump
   if (/^\/[\w./-]+$/.test(t) && t.length > 24) return true;
+  if ((t.match(/npm notice/gi) || []).length >= 2) return true;
   return false;
 }
 
