@@ -30,36 +30,47 @@ See also: [`product-feature-matrix.md`](./product-feature-matrix.md).
 | Databases | `/databases/postgres/service` | Postgres service | I |
 | Databases | `/databases/redis` | Redis data | I |
 | Databases | `/databases/redis/service` | Redis service | I |
+| Files | `/bt-tracker` | BT Tracker | G |
 | DNS / SSL | `/dns` | DNS zones | C |
+| DNS / SSL | `/cdn` | CDN / edges | C′ |
 | DNS / SSL | `/ssl` | Certificates | D |
 | DNS / SSL | `/nginx` | Nginx / vhosts | E |
+| DNS / SSL | `/apache` | Apache sites | E |
 | Runtimes | `/runtimes/node` | Node | J |
 | Runtimes | `/runtimes/php` | PHP | J |
+| Runtimes | `/runtimes/python` | Python | J |
+| Runtimes | `/runtimes/go` | Go | J |
+| Runtimes | `/runtimes/rust` | Rust | J |
+| Runtimes | `/runtimes/java` | Java | J |
+| Runtimes | `/runtimes/kotlin` | Kotlin | J |
+| Runtimes | `/runtimes/bun` | Bun | J |
+| Security | `/protection` | Host defense (UFW / fail2ban) | M |
 | Security | `/security` | Allowlist / approvals | R |
-| Security | `/firewall` | Firewall | M |
-| Security | `/fail2ban` | Fail2ban | N |
+| Security | `/vpn` | VPN | |
+| Security | `/vnc` | VNC | |
 | System | `/users` | Users & packages | T |
 | System | `/services` | Service matrix | O |
 | System | `/metrics` | Metrics | P |
-| System | `/browse` | Host Browse (proxy browser) | |
-| System | `/terminal` | Browser terminal |
+| System | `/network` | Service exposure | |
+| System | `/browse` | Host Browse (panel-only) | |
+| System | `/terminal` | Browser terminal (panel-only) |
 | System | `/logs` | Log Center | T |
 | System | `/cron` | Cron | K |
 | System | `/backups` | Backups | L |
-| System | `/updates` | Updates | S |
+| System | `/system/migrate` | Host migrate | |
+| System | `/updates` | Updates hub | S |
 | System | `/system/unit` | Control-plane unit | T |
 | System | `/system/readiness` | Readiness | T |
 | System | `/system` | System index | T |
-| AI | `/ai` | AI tasks | U |
-| AI | `/agents` | Agents | U |
+| System | `/support` | Support (panel-only) | |
 
-**Planned (not routed yet)**
+**Redirects (not sidebar)**
 
-| Route | Page | When |
-|-------|------|------|
-| `/users` | Users | P2 |
-| `/packages` | Packages | P2 |
-| `/account` | Operator account + 2FA | P0 |
+| Route | Goes to |
+|-------|---------|
+| `/firewall` · `/fail2ban` | `/protection/firewall` · `/protection/fail2ban` |
+| `/software` | `/updates` |
+| `/ai` · `/agents` | `/` (CLI-only: `ask` · `agents`) |
 
 ---
 
@@ -195,7 +206,7 @@ See also: [`product-feature-matrix.md`](./product-feature-matrix.md).
 
 ---
 
-### `/runtimes/php` · `/runtimes/node`
+### `/runtimes/*`
 
 | Page | Actions |
 |------|---------|
@@ -220,7 +231,7 @@ See also: [`product-feature-matrix.md`](./product-feature-matrix.md).
 
 ---
 
-### `/firewall` · `/fail2ban`
+### `/protection` · firewall · fail2ban
 
 | Firewall | Fail2ban |
 |----------|----------|
@@ -288,12 +299,12 @@ All **sidebar System** pages share:
 
 ---
 
-### `/ai` · `/agents`
+### CLI-only: `ask` · `agents` (no sidebar)
 
-| Page | Actions |
-|------|---------|
-| AI | run playbook (allowlisted tools only) |
-| Agents | install/status · never bypass approval |
+| Surface | Actions |
+|---------|---------|
+| `ysk-server ask` / `tools` | Allowlisted playbooks — not a panel page (`/ai` redirects home) |
+| `ysk-server agents` | Fleet / install / status — `/agents` redirects home |
 
 ---
 

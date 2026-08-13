@@ -39,7 +39,8 @@
 | [cli/overview-ZH.md](./cli/overview-ZH.md) | 全域旗標、結束碼、語言 |
 | [cli/reference-ZH.md](./cli/reference-ZH.md) | **全部命令** |
 | [cli/parity-ZH.md](./cli/parity-ZH.md) | 面板 ≡ CLI 摘要 |
-| [cli/panel-parity-matrix-ZH.md](./cli/panel-parity-matrix-ZH.md) | 完整缺口矩陣（程式已封板） |
+| [cli/panel-parity-matrix-ZH.md](./cli/panel-parity-matrix-ZH.md) | 缺口矩陣（inventory `--strict`） |
+| [api/overview-ZH.md](./api/overview-ZH.md) | 面板 × CLI × API 分組 |
 | [agent/README-ZH.md](./agent/README-ZH.md) | Agent 規則與 runbook |
 | [agent/commands.json](./agent/commands.json) | 機器可讀目錄 |
 

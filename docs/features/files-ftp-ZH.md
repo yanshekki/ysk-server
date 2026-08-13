@@ -27,7 +27,8 @@
 | 分享列表 | `ysk-server files shares list` | read | |
 | 分享建立／刪除 | `ysk-server files shares create\|delete [--mode direct\|bt\|both]` | write-panel | BT 會產生 `.torrent` 並做種 |
 | 分享 BT 統計 | `ysk-server files shares bt-stats --id ID` | read | 種子／peers／速度 |
-| 上載本機檔 | `ysk-server files upload --dir … --file …` | write-panel | |
+| 上載本機檔 | `ysk-server files upload --dir … --file … [--if-exists fail\|overwrite\|rename]` | write-panel | 預設 **fail**（409）；面板會先詢問 |
+| 複製／移動／重新命名撞名 | `… --if-exists fail\|overwrite\|rename` | write-panel | 與 `POST /api/v1/files/copy` 相同 |
 | WebDAV | `ysk-server files webdav status\|token\|disable` | write-panel | |
 | FTP 狀態／設定 | `ysk-server ftp status\|settings …` | read／write-panel | |
 | FTP 帳戶 CRUD | `ysk-server ftp accounts list\|create\|update\|delete` | write-panel | |
@@ -53,6 +54,7 @@ ysk-server ftp apply --execute --json
 - FTPS 套用需 EXECUTE + root（vsftpd）。  
 - 公開 `/share/:token` 頁為 UX；**建立**屬 CLI／API。  
 - BT 模式需 Tracker 運行才可靠發現 peers；對外分享請設定 `publicAnnounceHost`。瀏覽器 WebTorrent 經同源 Tracker 代理（`/api/v1/public/bt-tracker`），使用面板 build 自帶資源（非第三方 CDN）。
+- 撞名：面板對話（略過／兩者都保留／取代／合併）。CLI／API 預設 `--if-exists fail`。`files write` 仍會覆寫。
 
 ## 僅面板 ⚠️
 
@@ -60,6 +62,7 @@ ysk-server ftp apply --execute --json
 |------|------|
 | 瀏覽器內預覽編輯器 | 使用 `files read/write` |
 | 公開分享落地頁 | 公開 HTTP |
+| 撞名對話介面 | CLI／API 改用 `--if-exists` |
 
 ## 相關
 

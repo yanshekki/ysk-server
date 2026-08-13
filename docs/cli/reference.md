@@ -133,7 +133,9 @@ Sandboxed file manager (public or `project:ID` root):
 ysk-server files list|stat|read|write|mkdir|rm|rename|copy|move|chmod …
 ysk-server files trash list|restore|purge
 ysk-server files shares list|create|delete|bt-stats
-ysk-server files upload --dir REL --file LOCAL
+ysk-server files upload --dir REL --file LOCAL [--if-exists fail|overwrite|rename]
+ysk-server files copy|move|rename --from REL --to REL [--if-exists fail|overwrite|rename]
+ysk-server files mkdir --path REL [--if-exists fail|merge|rename]
 ysk-server files webdav status|token|disable
 ```
 
@@ -142,6 +144,8 @@ ysk-server files shares create --path REL [--mode direct|bt|both] [--password �
 ysk-server files shares bt-stats --id SHARE_ID
 ysk-server files shares delete --id SHARE_ID
 ```
+
+Name collisions: panel asks (skip / keep both / replace / merge). API and CLI default **`--if-exists fail`** (HTTP 409). Use `--if-exists rename` for `name (1).ext`, or `overwrite`. `files write` (editor) still overwrites. Same as `POST /api/v1/files/upload`.
 
 `--mode bt|both` creates a `.torrent`, seeds in-process (WebTorrent), and needs a running tracker (`bt-tracker start`). Public `/share/:token` shows **direct** and/or **BT** actions by mode (no English “direct disabled” banner). Browser WebTorrent uses a **self-hosted** panel asset and same-origin tracker proxy (`/api/v1/public/bt-tracker`).
 
@@ -343,13 +347,14 @@ See [../features/system-host.md](../features/system-host.md).
 ## updates | software | stack
 
 ```bash
+ysk-server updates hub [--refresh-runtimes]
 ysk-server updates inventory|refresh|apply|apply-batch|summary|self …
 ysk-server software list|get|install|uninstall|uninstall-preview|upgrades|versions …
 ysk-server stack plans|bundles|status|install|scan …
-ysk-server update [--check] [--apply]   # panel binary self-update
+ysk-server update [--check] [--apply]   # product npm self-update
 ```
 
-`update` = product self-update; `updates` = host package inventory. See [../features/system-host.md](../features/system-host.md).
+`update` = product binary (`ysk-server` on npm). `updates hub` = same `entries` as panel `/updates` (panel + catalog services + runtimes + remaining apt). `updates inventory` = apt inventory only. See [../features/system-host.md](../features/system-host.md).
 
 ## db | redis | db-cluster
 

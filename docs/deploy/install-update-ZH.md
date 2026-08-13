@@ -14,7 +14,7 @@ ysk-server update --check --json
 
 ## 面板「更新」頁
 
-- **更新**（`/updates`）是套件清點、面板自身更新、掃描排程的唯一入口。
+- **更新**（`/updates`）是全機中心：面板 npm + catalog 服務 + runtime + 其餘 apt。CLI：`ysk-server updates hub --json`（與 `GET /api/v1/updates` 同一套 `entries`）。`ysk-server update` 只負責產品自身更新。
 - 舊「軟件中心」（`/software`）會導向 `/updates`。安裝軟件請到各功能頁。
 - 伺服器工作 `updates.scan` 按可設定間隔（預設 24 小時）執行：只刷新清點與面板檢查，**不會自動 apt upgrade**。
 - 側欄數字來自 `GET /api/v1/updates/summary`（可升級套件數 + 面板更新）。

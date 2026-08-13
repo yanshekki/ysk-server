@@ -2,7 +2,7 @@
 
 > Language: English | [中文](./parity-ZH.md)
 
-**Status: SEALED C7 (2026-08-12).** All production panel mutation/list surfaces have CLI. Intentional panel-only: terminal PTY, VNC canvas, Host Browse, file preview editor, public share landing.
+**Status: gated (not sealed).** Top-level CLI exists for production sidebar domains. Gate: `node scripts/cli-panel-parity.mjs --strict`. Intentional panel-only: terminal PTY, VNC canvas, Host Browse, file preview, public share landing, Support. Files collisions and updates hub: CLI `--if-exists` / `updates hub`.
 
 **Hard rule:** Every production panel capability must have a CLI entry (or an explicit, documented intentional gap). Prefer `--json` for automation.
 
@@ -71,4 +71,4 @@ Machine-readable catalog: [../agent/commands.json](../agent/commands.json).
 - [x] Automated inventory script exists  
 - [x] Bilingual feature handbooks programme (D0–D5)  
 
-*Last updated: 2026-08-12 — docs D4.*
+*Last updated: 2026-08-13 — control-plane inventory gated.*

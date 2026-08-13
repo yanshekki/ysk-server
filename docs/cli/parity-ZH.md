@@ -2,7 +2,7 @@
 
 > 語言：中文（香港書面語）| [English](./parity.md)
 
-**狀態：C7 封板（2026-08-12）。** 生產面板 mutation/list 均有 CLI。刻意僅面板：終端 PTY、VNC 畫布、Host Browse、檔案預覽編輯器、公開 share 落地頁。
+**狀態：有閘（未封）。** 生產側欄域均有頂層 CLI。閘：`node scripts/cli-panel-parity.mjs --strict`。刻意僅面板：終端 PTY、VNC 畫布、Host Browse、檔案預覽、公開分享落地頁、Support。檔案撞名與更新中心：CLI `--if-exists`／`updates hub`。
 
 **硬規則：** 面板每一項生產能力都必須有 CLI 入口（或明確標為 ⚠️ 僅面板 UX）。自動化優先 `--json`。
 
@@ -71,4 +71,4 @@ node scripts/cli-panel-parity.mjs
 - [x] 自動化盤點腳本存在  
 - [x] 雙語功能手冊計劃（D0–D5）  
 
-*最後更新：2026-08-12 — 文件 D4。*
+*最後更新：2026-08-13 — 控制面清單已入閘。*

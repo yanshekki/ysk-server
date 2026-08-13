@@ -28,7 +28,8 @@ Operate the **control-plane host**: systemd unit, service matrix, metrics, netwo
 | Service exposure list/put/sync | `ysk-server network exposure …` | write-host | `ysk-svc` rules |
 | Real-IP status/set/refresh | `ysk-server real-ip status\|set\|refresh` | write-host | refresh needs execute |
 | Panel TLS | `ysk-server ssl panel-tls status\|enable\|disable\|issue` | write-host | issue needs execute |
-| Package inventory | `ysk-server updates inventory\|refresh --json` | read | |
+| Update hub (panel + services + runtimes + apt) | `ysk-server updates hub [--refresh-runtimes] --json` | read | Same `entries` as `GET /api/v1/updates` |
+| Package inventory | `ysk-server updates inventory\|refresh --json` | read | Apt list only |
 | Apply package | `ysk-server updates apply --package … --execute` | write-host | |
 | Software catalog | `ysk-server software list\|install\|uninstall …` | write-host | |
 | Stack plans | `ysk-server stack plans\|status\|install …` | write-host | |
@@ -42,6 +43,7 @@ ysk-server host overview --json
 ysk-server network exposure list --json
 ysk-server real-ip status --json
 ysk-server ssl panel-tls status --json
+ysk-server updates hub --json
 ysk-server updates inventory --json
 ysk-server software list --json
 ysk-server readiness --json

@@ -37,10 +37,12 @@ Do **not** paste full argv encyclopedias into L2. L2 links to L3 for full flag l
 Code (CLI_COMMANDS + routes + FEATURE_SECTIONS)
         │
         ▼
-cli-panel-parity.mjs  →  parity-inventory.json  →  panel-parity-matrix.md
+cli-panel-parity.mjs --strict
+        →  control-plane-inventory.json + parity-inventory.json
         │
-        ├─► features/*     (panel flows + CLI mapping table)
-        ├─► cli/reference* (command encyclopedia)
+        ├─► features/*        (panel flows + CLI mapping)
+        ├─► cli/reference*    (command encyclopedia)
+        ├─► api/overview*     (panel × CLI × API prefix)
         └─► agent/commands.json
 ```
 
@@ -48,8 +50,8 @@ cli-panel-parity.mjs  →  parity-inventory.json  →  panel-parity-matrix.md
 |---------|----------------------|
 | Command exists? | `apps/server/src/cli.ts` `CLI_COMMANDS` + handlers / `cli/cmd-*.ts` |
 | Panel nav item? | `apps/web/src/shared/nav/features.ts` |
-| HTTP surface? | `apps/web/src/features/**/api.ts` + `apps/server/src/routes/*` |
-| Gap status ✅/⚠️/❌ | `docs/cli/panel-parity-matrix.md` + inventory script |
+| HTTP surface? | `apps/server/src/routes/*` + `docs/api/overview.md` |
+| Gap status | inventory `--strict` (gated; not “sealed”) |
 
 ---
 

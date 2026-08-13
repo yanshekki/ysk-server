@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.7 — 2026-08-13
+
+### Control plane
+- CLI `files --if-exists` matches panel/API name-collision policy (default fail)
+- CLI `updates hub` matches panel `/updates` `collectUpdateHub` entries
+- Three-way inventory gate: `node scripts/cli-panel-parity.mjs --strict`
+
 ## 1.0.6 — 2026-08-13
 
 ### Files

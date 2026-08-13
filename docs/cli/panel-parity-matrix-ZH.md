@@ -1,8 +1,8 @@
 # 面板 ↔ CLI 對等矩陣
 
 > 語言：中文（香港書面語）| [English](./panel-parity-matrix.md)  
-> **狀態：已封板（C7）** — 生產面板缺口已關閉（僅面板 UX 列維持 ⚠️）。  
-> 機器盤點：[parity-inventory.json](./parity-inventory.json) · 重新產生：`node scripts/cli-panel-parity.mjs`
+> **狀態：有閘（未封）** — 頂層 CLI 已齊；執行 `node scripts/cli-panel-parity.mjs --strict`。  
+> 清單：[control-plane-inventory.json](./control-plane-inventory.json) · [parity-inventory.json](./parity-inventory.json)
 
 **硬規則：** 每一項生產面板能力都必須有 CLI 入口（或明確標為 ⚠️ 僅面板）。
 
@@ -46,6 +46,7 @@
 | file-preview-editor | 文字／媒體預覽編輯器 | 僅 UX；用 `files read/write` |
 | public-share-landing | `/share/:token` 頁 | 公開 HTTP；建立仍需 CLI |
 | vnc-browser-canvas | 面板內 noVNC／RFB 檢視器 | 互動；CLI 有 `vnc session mint` + `share` + connection 元資料 |
+| support | 支援／捐助／YSK Limited | 靜態頁；無 CLI／API |
 
 ---
 
@@ -100,4 +101,4 @@ node scripts/cli-panel-parity.mjs --json
 # node scripts/cli-panel-parity.mjs --strict   # fails if any ❌ missing remain
 ```
 
-*最後更新：2026-08-12 — C7 封板（100%）。*
+*最後更新：2026-08-13 — 清單已入閘。*

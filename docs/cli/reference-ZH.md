@@ -133,7 +133,9 @@ ysk-server store status|export|import|migrate --to json|sqlite|postgres …
 ysk-server files list|stat|read|write|mkdir|rm|rename|copy|move|chmod …
 ysk-server files trash list|restore|purge
 ysk-server files shares list|create|delete|bt-stats
-ysk-server files upload --dir REL --file LOCAL
+ysk-server files upload --dir REL --file LOCAL [--if-exists fail|overwrite|rename]
+ysk-server files copy|move|rename --from REL --to REL [--if-exists fail|overwrite|rename]
+ysk-server files mkdir --path REL [--if-exists fail|merge|rename]
 ysk-server files webdav status|token|disable
 ```
 
@@ -142,6 +144,8 @@ ysk-server files shares create --path REL [--mode direct|bt|both] [--password �
 ysk-server files shares bt-stats --id SHARE_ID
 ysk-server files shares delete --id SHARE_ID
 ```
+
+撞名：面板會詢問（略過／兩者都保留／取代／合併）。API 與 CLI 預設 **`--if-exists fail`**（HTTP 409）。`--if-exists rename` 會存成 `name (1).ext`；`overwrite` 則覆寫。`files write`（編輯器）仍會覆寫。與 `POST /api/v1/files/upload` 相同。
 
 `--mode bt|both` 會產生 `.torrent`、以 WebTorrent 程序內做種，並需要運行中的 Tracker（`bt-tracker start`）。公開 `/share/:token` 按模式顯示 **直接下載** 及／或 **BT**（不會再彈英文 “direct disabled”）。瀏覽器 WebTorrent 用面板 **自帶** 資源，並經同源 Tracker 代理（`/api/v1/public/bt-tracker`）。
 
@@ -343,13 +347,14 @@ ysk-server real-ip status|set|refresh [--execute]
 ## updates | software | stack
 
 ```bash
+ysk-server updates hub [--refresh-runtimes]
 ysk-server updates inventory|refresh|apply|apply-batch|summary|self …
 ysk-server software list|get|install|uninstall|uninstall-preview|upgrades|versions …
 ysk-server stack plans|bundles|status|install|scan …
-ysk-server update [--check] [--apply]   # 產品本體自我更新
+ysk-server update [--check] [--apply]   # 產品 npm 自身更新
 ```
 
-`update` = 產品本體更新；`updates` = 主機套件清冊。見 [../features/system-host-ZH.md](../features/system-host-ZH.md)。
+`update` = 產品二進位（npm 上的 `ysk-server`）。`updates hub` = 與面板 `/updates` 同一套 `entries`（面板 + catalog 服務 + runtime + 其餘 apt）。`updates inventory` = 僅 apt 清冊。見 [../features/system-host-ZH.md](../features/system-host-ZH.md)。
 
 ## db | redis | db-cluster
 

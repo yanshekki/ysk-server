@@ -14,7 +14,7 @@ See [../getting-started/install.md](../getting-started/install.md).
 
 ## Panel updates UI
 
-- **Updates** (`/updates`) is the single place for package inventory, panel self-update, and scan schedule.
+- **Updates** (`/updates`) is the host-wide hub: panel npm + catalog services + runtimes + remaining apt. CLI: `ysk-server updates hub --json` (same `entries` as `GET /api/v1/updates`). `ysk-server update` is product self-update only.
 - The former **Software hub** (`/software`) redirects to `/updates`. Install software from each feature page.
 - The server runs job `updates.scan` on a configurable interval (default 24h): refresh inventory + panel check only — **no automatic apt upgrade**.
 - Sidebar badge counts pending package upgrades + panel update from `GET /api/v1/updates/summary`.

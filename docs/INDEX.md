@@ -39,7 +39,8 @@
 | [cli/overview.md](./cli/overview.md) | Global flags, exit codes, locale |
 | [cli/reference.md](./cli/reference.md) | **All commands** |
 | [cli/parity.md](./cli/parity.md) | Panel ≡ CLI summary |
-| [cli/panel-parity-matrix.md](./cli/panel-parity-matrix.md) | Full gap matrix (sealed code) |
+| [cli/panel-parity-matrix.md](./cli/panel-parity-matrix.md) | Gap matrix (inventory `--strict`) |
+| [api/overview.md](./api/overview.md) | Panel × CLI × API groups |
 | [agent/README.md](./agent/README.md) | Agent rules + runbooks |
 | [agent/commands.json](./agent/commands.json) | Machine catalog |
 

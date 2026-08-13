@@ -1,11 +1,11 @@
 # YSK Product 頁面 Map (IA)
 
-> 語言：中文 | [English](./product-page-map.md)
+> 語言：香港書面語 | [English](./product-page-map.md)
 
-每個側欄項目對應一個頁面. Every page lists **required tabs** and **allowed actions** (真實操作 or preset deep-links only).  
-禁止跨功能空白跳轉.
+每個側欄項目對應一個頁面。每頁列出必要分頁與允許的操作（真實操作或帶預設查詢的深層連結）。  
+禁止跨功能空白跳轉。
 
-另見: [`product-feature-matrix.md`](./product-feature-matrix.md).
+另見：[`product-feature-matrix-ZH.md`](./product-feature-matrix-ZH.md)。
 
 ---
 
@@ -30,36 +30,47 @@
 | 資料庫 | `/databases/postgres/service` | Postgres service | I |
 | 資料庫 | `/databases/redis` | Redis data | I |
 | 資料庫 | `/databases/redis/service` | Redis service | I |
-| DNS / SSL | `/dns` | DNS zone | C |
+| 檔案 | `/bt-tracker` | BT Tracker | G |
+| DNS / SSL | `/dns` | DNS 區域 | C |
+| DNS / SSL | `/cdn` | CDN／邊緣 | C′ |
 | DNS / SSL | `/ssl` | 憑證 | D |
-| DNS / SSL | `/nginx` | Nginx / vhosts | E |
+| DNS / SSL | `/nginx` | Nginx／虛擬主機 | E |
+| DNS / SSL | `/apache` | Apache 網站 | E |
 | 執行環境 | `/runtimes/node` | Node | J |
 | 執行環境 | `/runtimes/php` | PHP | J |
+| 執行環境 | `/runtimes/python` | Python | J |
+| 執行環境 | `/runtimes/go` | Go | J |
+| 執行環境 | `/runtimes/rust` | Rust | J |
+| 執行環境 | `/runtimes/java` | Java | J |
+| 執行環境 | `/runtimes/kotlin` | Kotlin | J |
+| 執行環境 | `/runtimes/bun` | Bun | J |
+| 安全 | `/protection` | 主機防護（UFW／fail2ban） | M |
 | 安全 | `/security` | 允許清單／審批 | R |
-| 安全 | `/firewall` | 防火牆 | M |
-| 安全 | `/fail2ban` | Fail2ban | N |
-| 系統 | `/users` | Users & packages | T |
+| 安全 | `/vpn` | VPN | |
+| 安全 | `/vnc` | VNC | |
+| 系統 | `/users` | 用戶與套餐 | T |
 | 系統 | `/services` | 服務矩陣 | O |
 | 系統 | `/metrics` | 指標 | P |
-| 系統 | `/browse` | 主機瀏覽（代理瀏覽器） | |
-| 系統 | `/terminal` | 瀏覽器終端機 |
+| 系統 | `/network` | 服務對外曝光 | |
+| 系統 | `/browse` | 主機瀏覽（僅限面板） | |
+| 系統 | `/terminal` | 瀏覽器終端（僅限面板） |
 | 系統 | `/logs` | 日誌中心 | T |
 | 系統 | `/cron` | Cron | K |
 | 系統 | `/backups` | 備份 | L |
-| 系統 | `/updates` | 更新 | S |
-| 系統 | `/system/unit` | 控制平面 unit | T |
+| 系統 | `/system/migrate` | 主機遷移 | |
+| 系統 | `/updates` | 更新中心 | S |
+| 系統 | `/system/unit` | 控制平面單元 | T |
 | 系統 | `/system/readiness` | 就緒 | T |
 | 系統 | `/system` | 系統索引 | T |
-| AI | `/ai` | AI 任務 | U |
-| AI | `/agents` | Agent | U |
+| 系統 | `/support` | 支援（僅限面板） | |
 
-**計劃中（尚未路由）**
+**重新導向（不在側欄）**
 
-| 路由 | 頁面 | 何時 |
-|-------|------|------|
-| `/users` | Users | P2 |
-| `/packages` | Packages | P2 |
-| `/account` | 操作員 account + 2FA | P0 |
+| 路由 | 轉往 |
+|-------|---------|
+| `/firewall` · `/fail2ban` | `/protection/firewall` · `/protection/fail2ban` |
+| `/software` | `/updates` |
+| `/ai` · `/agents` | `/`（僅限 CLI：`ask` · `agents`） |
 
 ---
 
@@ -195,7 +206,7 @@
 
 ---
 
-### `/runtimes/php` · `/runtimes/node`
+### `/runtimes/*`
 
 | 頁面 | 操作 |
 |------|---------|
@@ -220,7 +231,7 @@
 
 ---
 
-### `/firewall` · `/fail2ban`
+### `/protection` · firewall · fail2ban
 
 | 防火牆 | Fail2ban |
 |----------|----------|
@@ -288,12 +299,12 @@ All **sidebar 系統** pages share:
 
 ---
 
-### `/ai` · `/agents`
+### 僅限 CLI：`ask` · `agents`（無側欄）
 
-| 頁面 | 操作 |
-|------|---------|
-| AI | run playbook (allowlisted tools only) |
-| Agent | install/status · never bypass approval |
+| 介面 | 操作 |
+|---------|---------|
+| `ysk-server ask`／`tools` | 允許清單內的劇本；不是面板頁（`/ai` 轉往首頁） |
+| `ysk-server agents` | 機隊／安裝／狀態；`/agents` 轉往首頁 |
 
 ---
 

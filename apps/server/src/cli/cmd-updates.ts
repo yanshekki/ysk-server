@@ -14,6 +14,8 @@ import {
   buildUpdatesSummary,
   normalizeUpdatesScanSettings,
   DEFAULT_UPDATES_SCAN,
+  collectUpdateHub,
+  summarizeHub,
 } from 'ysk-server-core';
 import type { AppContext } from '../app-context.js';
 import type { CliHelpers } from './cmd-vpn.js';
@@ -38,6 +40,30 @@ export async function runUpdatesCommand(
   void _json;
   const tokens = args.filter((a) => !a.startsWith('-'));
   const sub = tokens[1] ?? 'inventory';
+
+  if (sub === 'hub') {
+    try {
+      const r = await collectUpdateHub({
+        host: ctx.host,
+        dataDir: ctx.dataDir,
+        currentPanelVersion: VERSION,
+        refreshRuntimes: h.hasFlag(args, '--refresh-runtimes'),
+      });
+      h.printJson({
+        ok: true,
+        entries: r.entries,
+        inventoryMeta: r.inventoryMeta,
+        summary: summarizeHub(r.entries),
+      });
+      return 0;
+    } catch (e) {
+      h.printJson({
+        ok: false,
+        notes: [e instanceof Error ? e.message : String(e)],
+      });
+      return 1;
+    }
+  }
 
   if (sub === 'inventory' || sub === 'list' || sub === 'status') {
     const cached = h.hasFlag(args, '--cached');
@@ -256,7 +282,7 @@ export async function runUpdatesCommand(
   }
 
   process.stderr.write(
-    'Usage: ysk-server updates inventory|refresh|apply|apply-batch|summary|self [--execute] [--json]\n' +
+    'Usage: ysk-server updates hub|inventory|refresh|apply|apply-batch|summary|self [--refresh-runtimes] [--execute] [--json]\n' +
       'Note: panel self-update binary is also `ysk-server update`.\n',
   );
   return 2;

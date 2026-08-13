@@ -1,6 +1,6 @@
 {
   "product": "ysk-server",
-  "version": "0.1",
+  "version": "1.0.7",
   "exitCodes": {
     "0": "ok",
     "1": "error",
@@ -983,10 +983,30 @@
       "example": "ysk-server ssl panel-tls status --json"
     },
     {
+      "name": "updates hub",
+      "risk": "read",
+      "summary": "Host-wide update hub (panel + services + runtimes + apt)",
+      "args": [
+        "--refresh-runtimes"
+      ],
+      "example": "ysk-server updates hub --json"
+    },
+    {
       "name": "updates inventory",
       "risk": "read",
       "summary": "Host package inventory + advice",
       "example": "ysk-server updates inventory --json"
+    },
+    {
+      "name": "files copy",
+      "risk": "write-panel",
+      "summary": "Copy file or folder; default fail on name collision",
+      "args": [
+        "--from",
+        "--to",
+        "--if-exists"
+      ],
+      "example": "ysk-server files copy --from a.txt --to b.txt --if-exists rename --json"
     },
     {
       "name": "updates apply",

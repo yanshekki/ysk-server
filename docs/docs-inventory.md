@@ -22,7 +22,7 @@ Standards: [docs-standard.md](./docs-standard.md). Programme slices: **D0–D5**
 | **D2** | New-domain handbooks (vpn, vnc, apache, system-host, databases, runtimes) | ~55% | ✅ done |
 | **D3** | Remaining `features/*` deepen | ~75% | ✅ done |
 | **D4** | INDEX polish, user-manual Day-N, agent docs, parity ZH | ~90% | ✅ done |
-| **D5** | bilingual-check seal + cross-links | 100% | ✅ done |
+| **D5** | bilingual-check seal + cross-links | 100% | 🔶 refresh (page map + API catalog 2026-08-13) |
 
 ---
 
@@ -36,7 +36,7 @@ Standards: [docs-standard.md](./docs-standard.md). Programme slices: **D0–D5**
 | `cli/parity{,-ZH}.md` | ZH structure lag | D4 |
 | `cli/panel-parity-matrix{,-ZH}.md` | ZH structure lag | D4 |
 
-### Top-level CLI commands (code SSOT, n=51)
+### Top-level CLI commands (code SSOT, n=52)
 
 `setup` `update` `serve` `system` `stack` `tools` `ask` `projects` `users` `packages` `rbac` `audit` `security` `backup` `templates` `hosting` `dns` `logs` `host` `nginx` `ssl` `db-cluster` `ssh-key` `ssh-2fa` `services` `defense` `protection` `cdn` `agents` `agent` `store` `files` `cron` `email` `health` `readiness` `doctor` `migrate` **`vpn`** **`vnc`** **`apache`** **`network`** **`real-ip`** **`updates`** **`software`** **`db`** **`redis`** **`ftp`** **`runtimes`** `version` `help`
 

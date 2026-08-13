@@ -28,7 +28,8 @@
 | 服務暴露 list/put/sync | `ysk-server network exposure …` | write-host | `ysk-svc` 規則 |
 | Real-IP 狀態／設定／重新整理 | `ysk-server real-ip status\|set\|refresh` | write-host | refresh 需 execute |
 | 面板 TLS | `ysk-server ssl panel-tls status\|enable\|disable\|issue` | write-host | issue 需 execute |
-| 套件清冊 | `ysk-server updates inventory\|refresh --json` | read | |
+| 更新中心（面板 + 服務 + runtime + apt） | `ysk-server updates hub [--refresh-runtimes] --json` | read | 與 `GET /api/v1/updates` 同一套 `entries` |
+| 套件清冊 | `ysk-server updates inventory\|refresh --json` | read | 僅 apt 清單 |
 | 套用套件 | `ysk-server updates apply --package … --execute` | write-host | |
 | 軟件目錄 | `ysk-server software list\|install\|uninstall …` | write-host | |
 | 堆疊計劃 | `ysk-server stack plans\|status\|install …` | write-host | |
@@ -42,6 +43,7 @@ ysk-server host overview --json
 ysk-server network exposure list --json
 ysk-server real-ip status --json
 ysk-server ssl panel-tls status --json
+ysk-server updates hub --json
 ysk-server updates inventory --json
 ysk-server software list --json
 ysk-server readiness --json

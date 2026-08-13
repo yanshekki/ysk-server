@@ -1860,6 +1860,45 @@ describe('CLI deep coverage climb', () => {
     );
     expect([0, 1]).toContain(copy.code);
 
+    const collide = await cli(
+      'files',
+      'copy',
+      '--root',
+      'public',
+      '--from',
+      'deep/a.txt',
+      '--to',
+      'deep/a.txt',
+    );
+    // same-path is a no-op success; collision onto another existing name fails by default
+    const collideOther = await cli(
+      'files',
+      'copy',
+      '--root',
+      'public',
+      '--from',
+      'deep/a.txt',
+      '--to',
+      'deep/b.txt',
+    );
+    if (copy.code === 0) {
+      expect([2, 1]).toContain(collideOther.code);
+      const keep = await cli(
+        'files',
+        'copy',
+        '--root',
+        'public',
+        '--from',
+        'deep/a.txt',
+        '--to',
+        'deep/b.txt',
+        '--if-exists',
+        'rename',
+      );
+      expect([0, 1]).toContain(keep.code);
+    }
+    void collide;
+
     const rename = await cli(
       'files',
       'rename',

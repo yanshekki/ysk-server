@@ -101,6 +101,7 @@ const NAV_TO_CLI = {
   systemd: ['system'],
   readiness: ['readiness', 'doctor'],
   systemIndex: ['host', 'system', 'store'],
+  support: null, // static Support page — no CLI/API mutations
 };
 
 /**
@@ -283,6 +284,98 @@ const KNOWN_GAPS = [
     note: 'create still needs CLI (files shares create)',
     priority: 'P3',
   },
+  {
+    id: 'support',
+    panel: 'Support / donate / YSK Limited',
+    cliNeed: null,
+    status: 'panel-only',
+    note: 'static page; contact email@ysk.hk',
+    priority: 'P3',
+  },
+];
+
+/** Nav key → L2 handbook (null = allowlisted, no handbook required). */
+const NAV_HANDBOOK = {
+  dashboard: 'docs/getting-started/readiness.md',
+  projects: 'docs/features/projects.md',
+  email: 'docs/features/email.md',
+  files: 'docs/features/files-ftp.md',
+  publicFiles: 'docs/features/files-ftp.md',
+  ftp: 'docs/features/files-ftp.md',
+  btTracker: 'docs/features/bt-tracker.md',
+  mysql: 'docs/features/databases.md',
+  mysqlService: 'docs/features/databases.md',
+  mariadb: 'docs/features/databases.md',
+  mariadbService: 'docs/features/databases.md',
+  postgres: 'docs/features/databases.md',
+  postgresService: 'docs/features/databases.md',
+  redis: 'docs/features/databases.md',
+  redisService: 'docs/features/databases.md',
+  dns: 'docs/features/dns-ssl-nginx.md',
+  cdn: 'docs/features/cdn-agents.md',
+  ssl: 'docs/features/dns-ssl-nginx.md',
+  nginx: 'docs/features/nginx-sites.md',
+  apache: 'docs/features/apache.md',
+  node: 'docs/features/runtimes.md',
+  php: 'docs/features/runtimes.md',
+  python: 'docs/features/runtimes.md',
+  go: 'docs/features/runtimes.md',
+  rust: 'docs/features/runtimes.md',
+  java: 'docs/features/runtimes.md',
+  kotlin: 'docs/features/runtimes.md',
+  bun: 'docs/features/runtimes.md',
+  protection: 'docs/features/defense.md',
+  security: 'docs/features/security-auth.md',
+  vpn: 'docs/features/vpn.md',
+  vnc: 'docs/features/vnc.md',
+  users: 'docs/features/users-rbac.md',
+  services: 'docs/features/system-host.md',
+  metrics: 'docs/features/logs-metrics.md',
+  network: 'docs/features/system-host.md',
+  hostBrowse: 'docs/features/host-browse.md',
+  logs: 'docs/features/logs-metrics.md',
+  terminal: null,
+  cron: 'docs/features/backups-cron.md',
+  backups: 'docs/features/backups-cron.md',
+  migrate: 'docs/features/migrate.md',
+  updates: 'docs/features/system-host.md',
+  systemd: 'docs/features/system-host.md',
+  readiness: 'docs/getting-started/readiness.md',
+  systemIndex: 'docs/features/system-host.md',
+  support: null,
+};
+
+/** Panel path × CLI × API prefix (catalog, not OpenAPI). */
+const API_GROUPS = [
+  { id: 'auth', panel: '/login', cli: null, api: '/api/v1/auth', note: 'session; not a sidebar item' },
+  { id: 'projects', panel: '/projects', cli: 'projects', api: '/api/v1/projects' },
+  { id: 'email', panel: '/email', cli: 'email', api: '/api/v1/email' },
+  { id: 'files', panel: '/files', cli: 'files', api: '/api/v1/files' },
+  { id: 'ftp', panel: '/ftp', cli: 'ftp', api: '/api/v1/ftp' },
+  { id: 'bt-tracker', panel: '/bt-tracker', cli: 'bt-tracker', api: '/api/v1/bt-tracker' },
+  { id: 'dns', panel: '/dns', cli: 'dns', api: '/api/v1/dns' },
+  { id: 'ssl', panel: '/ssl', cli: 'ssl', api: '/api/v1/ssl' },
+  { id: 'nginx', panel: '/nginx', cli: 'nginx', api: '/api/v1/nginx' },
+  { id: 'apache', panel: '/apache', cli: 'apache', api: '/api/v1/apache' },
+  { id: 'cdn', panel: '/cdn', cli: 'cdn', api: '/api/v1/cdn' },
+  { id: 'db', panel: '/databases/mysql', cli: 'db', api: '/api/v1/resources' },
+  { id: 'redis', panel: '/databases/redis', cli: 'redis', api: '/api/v1/redis' },
+  { id: 'runtimes', panel: '/runtimes/node', cli: 'runtimes', api: '/api/v1/hosting/runtimes' },
+  { id: 'protection', panel: '/protection', cli: 'defense', api: '/api/v1/defense' },
+  { id: 'security', panel: '/security', cli: 'security', api: '/api/v1/security' },
+  { id: 'vpn', panel: '/vpn', cli: 'vpn', api: '/api/v1/vpn' },
+  { id: 'vnc', panel: '/vnc', cli: 'vnc', api: '/api/v1/vnc' },
+  { id: 'users', panel: '/users', cli: 'users', api: '/api/v1/users' },
+  { id: 'services', panel: '/services', cli: 'services', api: '/api/v1/system' },
+  { id: 'network', panel: '/network', cli: 'network', api: '/api/v1/network' },
+  { id: 'host-browse', panel: '/browse', cli: null, api: '/api/v1/host-browse', note: 'panel-only UX' },
+  { id: 'logs', panel: '/logs', cli: 'logs', api: '/api/v1/logs' },
+  { id: 'cron', panel: '/cron', cli: 'cron', api: '/api/v1/cron' },
+  { id: 'backups', panel: '/backups', cli: 'backup', api: '/api/v1/backups' },
+  { id: 'migrate', panel: '/system/migrate', cli: 'migrate', api: '/api/v1/system/migrate' },
+  { id: 'updates', panel: '/updates', cli: 'updates', api: '/api/v1/updates' },
+  { id: 'readiness', panel: '/system/readiness', cli: 'readiness', api: '/api/v1/readiness' },
+  { id: 'share', panel: '/share/:token', cli: null, api: '/api/v1/public', note: 'public share landing' },
 ];
 
 const cliSrc = read('apps/server/src/cli.ts');
@@ -324,6 +417,33 @@ const gapRows = KNOWN_GAPS.map((g) => {
   return { ...g, status, cliPresent, resolved };
 });
 
+const refMd = read('docs/cli/reference.md');
+const cliMissingFromReference = cliCommands.filter((c) => {
+  if (c === 'doctor') return !/doctor/.test(refMd);
+  return !new RegExp(`(?:ysk-server\\s+${c}\\b|##[^\\n]*\\b${c}\\b)`).test(refMd);
+});
+
+const handbookMissing = nav
+  .map((item) => {
+    const book = Object.prototype.hasOwnProperty.call(NAV_HANDBOOK, item.key)
+      ? NAV_HANDBOOK[item.key]
+      : undefined;
+    if (book === null) return null;
+    if (!book) return { key: item.key, path: null, reason: 'unmapped' };
+    if (!existsSync(join(root, book))) return { key: item.key, path: book, reason: 'missing-file' };
+    return null;
+  })
+  .filter(Boolean);
+
+const apiGroupRows = API_GROUPS.map((g) => ({
+  ...g,
+  cliPresent: g.cli ? cliHas(g.cli) : null,
+}));
+
+const navMissing = navRows.filter((r) => r.status === 'missing').map((r) => r.key);
+const navPartial = navRows.filter((r) => r.status === 'partial').map((r) => r.key);
+const navPanelOnly = navRows.filter((r) => r.status === 'panel-only').map((r) => r.key);
+
 const summary = {
   generatedAt: new Date().toISOString(),
   cliCommandsCount: cliCommands.length,
@@ -331,21 +451,26 @@ const summary = {
   handlersCount: handlers.length,
   handlers,
   navCount: nav.length,
-  navMissing: navRows.filter((r) => r.status === 'missing').map((r) => r.key),
-  navPartial: navRows.filter((r) => r.status === 'partial').map((r) => r.key),
-  navPanelOnly: navRows.filter((r) => r.status === 'panel-only').map((r) => r.key),
+  navMissing,
+  navPartial,
+  navPanelOnly,
   knownGaps: gapRows,
   openGaps: gapRows.filter((g) => g.status === 'missing' || g.status === 'partial'),
   missingCount: gapRows.filter((g) => g.status === 'missing').length,
   partialCount: gapRows.filter((g) => g.status === 'partial').length,
   panelOnlyCount: gapRows.filter((g) => g.status === 'panel-only').length,
   okCount: gapRows.filter((g) => g.status === 'ok').length,
+  cliMissingFromReference,
+  handbookMissing,
+  apiGroups: apiGroupRows,
 };
 
 const outDir = join(root, 'docs/cli');
 if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
 const reportPath = join(outDir, 'parity-inventory.json');
 writeFileSync(reportPath, JSON.stringify(summary, null, 2) + '\n', 'utf8');
+const controlPath = join(outDir, 'control-plane-inventory.json');
+writeFileSync(controlPath, JSON.stringify(summary, null, 2) + '\n', 'utf8');
 
 if (jsonOut) {
   process.stdout.write(JSON.stringify(summary, null, 2) + '\n');
@@ -357,14 +482,30 @@ if (jsonOut) {
   console.log(`  known ❌ missing: ${summary.missingCount}`);
   console.log(`  known ⚠️ partial: ${summary.partialCount}`);
   console.log(`  known panel-only: ${summary.panelOnlyCount}`);
+  console.log(`  nav missing:  ${navMissing.join(', ') || '—'}`);
+  console.log(`  ref missing:  ${cliMissingFromReference.join(', ') || '—'}`);
+  console.log(`  handbook miss:${handbookMissing.length}`);
   console.log('  open gaps:');
   for (const g of summary.openGaps) {
     console.log(`    [${g.priority}] ${g.id}: ${g.panel} → need ${g.cliNeed ?? '—'} (${g.status})`);
   }
   console.log(`  wrote ${reportPath}`);
+  console.log(`  wrote ${controlPath}`);
 }
 
-if (strict && summary.missingCount > 0) {
+const strictFail =
+  summary.missingCount > 0 ||
+  navMissing.length > 0 ||
+  cliMissingFromReference.length > 0 ||
+  handbookMissing.length > 0;
+
+if (strict && strictFail) {
+  console.error('FAIL: unmarked control-plane gaps');
+  if (navMissing.length) console.error('  nav:', navMissing.join(', '));
+  if (cliMissingFromReference.length) {
+    console.error('  not in cli/reference.md:', cliMissingFromReference.join(', '));
+  }
+  if (handbookMissing.length) console.error('  handbook:', JSON.stringify(handbookMissing));
   process.exit(1);
 }
 process.exit(0);

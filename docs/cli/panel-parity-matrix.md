@@ -1,8 +1,8 @@
 # Panel ↔ CLI parity matrix
 
 > Language: English | [中文](./panel-parity-matrix-ZH.md)  
-> **Status: SEALED (C7)** — all production panel gaps closed (panel-only UX rows remain ⚠️).  
-> Machine inventory: [parity-inventory.json](./parity-inventory.json) · regenerate: `node scripts/cli-panel-parity.mjs`
+> **Status: gated (not sealed)** — top-level CLI present; run `node scripts/cli-panel-parity.mjs --strict`.  
+> Inventory: [control-plane-inventory.json](./control-plane-inventory.json) · [parity-inventory.json](./parity-inventory.json)
 
 **Hard rule:** Every production panel capability must have a CLI entry (or an explicit ⚠️ panel-only row).
 
@@ -46,6 +46,7 @@
 | file-preview-editor | Text/media preview editor | UX-only; use `files read/write` |
 | public-share-landing | `/share/:token` page | Public HTTP; create still needs CLI |
 | vnc-browser-canvas | In-panel noVNC/RFB viewer | Interactive; CLI has `vnc session mint` + `share` + connection metadata |
+| support | Support / donate / YSK Limited | Static; no CLI/API |
 
 ---
 
@@ -100,4 +101,4 @@ node scripts/cli-panel-parity.mjs --json
 # node scripts/cli-panel-parity.mjs --strict   # fails if any ❌ missing remain
 ```
 
-*Last updated: 2026-08-12 — C7 sealed (100%).*
+*Last updated: 2026-08-13 — inventory gated.*

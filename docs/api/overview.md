@@ -6,8 +6,41 @@ Base: `/api/v1/…` on the `serve` listener. Auth: `Authorization: Bearer <sessi
 
 Locale: `Accept-Language` or `?locale=`.
 
-Major groups: `/auth`, `/projects`, `/email`, `/files`, `/backups`, `/cron`, `/defense`, `/cdn`, `/agents`, `/readiness`, …
-
 Ops mutations return honest `OpsResultDto` bodies. Prefer CLI for agents.
 
-Full OpenAPI is not published; use panel network tab + route modules under `apps/server/src/routes/`.
+Full OpenAPI is not published. Inventory: `docs/cli/control-plane-inventory.json` (`node scripts/cli-panel-parity.mjs`).
+
+## Groups
+
+| Panel | CLI | API prefix |
+|-------|-----|------------|
+| `/login` | — | `/api/v1/auth` |
+| `/projects` | `projects` | `/api/v1/projects` |
+| `/email` | `email` | `/api/v1/email` |
+| `/files` | `files` | `/api/v1/files` |
+| `/ftp` | `ftp` | `/api/v1/ftp` |
+| `/bt-tracker` | `bt-tracker` | `/api/v1/bt-tracker` |
+| `/dns` | `dns` | `/api/v1/dns` |
+| `/ssl` | `ssl` | `/api/v1/ssl` |
+| `/nginx` | `nginx` | `/api/v1/nginx` |
+| `/apache` | `apache` | `/api/v1/apache` |
+| `/cdn` | `cdn` | `/api/v1/cdn` |
+| `/databases/*` | `db` · `redis` | `/api/v1/resources` · `/api/v1/redis` |
+| `/runtimes/*` | `runtimes` | `/api/v1/hosting/runtimes` |
+| `/protection` | `defense` | `/api/v1/defense` |
+| `/security` | `security` | `/api/v1/security` |
+| `/vpn` | `vpn` | `/api/v1/vpn` |
+| `/vnc` | `vnc` | `/api/v1/vnc` |
+| `/users` | `users` | `/api/v1/users` |
+| `/services` | `services` | `/api/v1/system` |
+| `/network` | `network` | `/api/v1/network` |
+| `/browse` | — (panel-only) | `/api/v1/host-browse` |
+| `/logs` | `logs` | `/api/v1/logs` |
+| `/cron` | `cron` | `/api/v1/cron` |
+| `/backups` | `backup` | `/api/v1/backups` |
+| `/system/migrate` | `migrate` | `/api/v1/system/migrate` |
+| `/updates` | `updates hub` | `/api/v1/updates` |
+| `/system/readiness` | `readiness` | `/api/v1/readiness` |
+| `/share/:token` | — (public) | `/api/v1/public` |
+
+Files name collisions: `ifExists=fail|overwrite|rename` on upload/copy/rename (default **fail**).

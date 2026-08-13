@@ -37,10 +37,12 @@
 程式（CLI_COMMANDS + routes + FEATURE_SECTIONS）
         │
         ▼
-cli-panel-parity.mjs  →  parity-inventory.json  →  panel-parity-matrix.md
+cli-panel-parity.mjs --strict
+        →  control-plane-inventory.json + parity-inventory.json
         │
-        ├─► features/*     （面板流程 + CLI 對照表）
-        ├─► cli/reference* （命令百科）
+        ├─► features/*        （面板流程 + CLI 對照）
+        ├─► cli/reference*    （命令百科）
+        ├─► api/overview*     （面板 × CLI × API 前綴）
         └─► agent/commands.json
 ```
 
@@ -48,8 +50,8 @@ cli-panel-parity.mjs  →  parity-inventory.json  →  panel-parity-matrix.md
 |--------|----------|
 | 命令是否存在？ | `apps/server/src/cli.ts` 的 `CLI_COMMANDS` 與 handlers／`cli/cmd-*.ts` |
 | 面板導航？ | `apps/web/src/shared/nav/features.ts` |
-| HTTP 面？ | `apps/web/src/features/**/api.ts` + `apps/server/src/routes/*` |
-| 缺口狀態 ✅/⚠️/❌ | `docs/cli/panel-parity-matrix.md` + 盤點腳本 |
+| HTTP 面？ | `apps/server/src/routes/*` + `docs/api/overview-ZH.md` |
+| 缺口狀態 | inventory `--strict`（有閘，未封） |
 
 ---
 

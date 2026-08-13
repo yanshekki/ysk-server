@@ -31,7 +31,7 @@
     "i18n:rebuild": "node ./scripts/rebuild-translation.mjs",
     "i18n:check-drift": "node ./scripts/i18n-rebuild-drift.mjs",
     "i18n:check-guides": "node ./scripts/i18n-guides-parity.mjs",
-    "gates": "pnpm honesty:lint && pnpm primitives:check && pnpm chrome:check && pnpm about-tab:check && pnpm css:reuse && pnpm i18n:check-keys && pnpm i18n:check-ui && pnpm i18n:check-api && pnpm i18n:check-glossary && pnpm i18n:check-brand && pnpm i18n:check-drift && pnpm i18n:check-guides && pnpm i18n:check-no-uiinline-default",
+    "gates": "pnpm honesty:lint && pnpm primitives:check && pnpm chrome:check && pnpm about-tab:check && pnpm css:reuse && pnpm i18n:check-keys && pnpm i18n:check-ui && pnpm i18n:check-api && pnpm i18n:check-glossary && pnpm i18n:check-brand && pnpm i18n:check-drift && pnpm i18n:check-guides && pnpm i18n:check-no-uiinline-default && node scripts/cli-panel-parity.mjs --strict",
     "review:inventory": "node ./scripts/review-inventory.mjs",
     "e2e:real-ops": "bash scripts/e2e-real-ops.sh",
     "e2e:hosting-root": "bash scripts/e2e-hosting-root.sh",

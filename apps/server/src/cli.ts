@@ -166,6 +166,15 @@ export function exitFromError(err: unknown): number {
   return 1;
 }
 
+function tryFileOp<T>(fn: () => T): { ok: true; value: T } | { ok: false; code: number } {
+  try {
+    return { ok: true, value: fn() };
+  } catch (e) {
+    printCliError(e, true);
+    return { ok: false, code: exitFromError(e) };
+  }
+}
+
 export function printCliError(err: unknown, json: boolean): number {
   if (err instanceof YskError) {
     if (json) {
@@ -218,6 +227,21 @@ function getOpt(args: string[], name: string): string | undefined {
   const i = args.indexOf(name);
   if (i >= 0 && args[i + 1] && !args[i + 1].startsWith('-')) return args[i + 1];
   return undefined;
+}
+
+/** Default fail — same as HTTP upload / copy / rename. */
+function cliFileIfExists(args: string[]): 'fail' | 'overwrite' | 'rename' | null {
+  const raw = getOpt(args, '--if-exists');
+  if (raw == null || raw === '') return 'fail';
+  if (raw === 'fail' || raw === 'overwrite' || raw === 'rename') return raw;
+  return null;
+}
+
+function cliDirIfExists(args: string[]): 'fail' | 'merge' | 'rename' | null {
+  const raw = getOpt(args, '--if-exists');
+  if (raw == null || raw === '') return 'fail';
+  if (raw === 'fail' || raw === 'merge' || raw === 'rename') return raw;
+  return null;
 }
 
 /**
@@ -998,9 +1022,15 @@ async function mainInner(
           process.stderr.write(`${tl('cli.usage.files.mkdir.--path.rel.ae0438')}\n`);
           return 2;
         }
-        const result = fm.mkdir(path);
-        const own = await maybeChown([path]);
-        printJson({ ok: true, root: rootKey, ...result, ...own });
+        const ifExists = cliDirIfExists(args);
+        if (!ifExists) {
+          process.stderr.write('Usage: ysk-server files mkdir --path REL [--if-exists fail|merge|rename]\n');
+          return 2;
+        }
+        const op = tryFileOp(() => fm.mkdir(path, { ifExists }));
+        if (!op.ok) return op.code;
+        const own = await maybeChown([op.value.path]);
+        printJson({ ok: true, root: rootKey, ...op.value, ...own });
         return 0;
       }
 
@@ -1024,7 +1054,16 @@ async function mainInner(
           process.stderr.write(`${tl('cli.usage.files.rename.--from.rel.--to.35a260')}\n`);
           return 2;
         }
-        const result = fm.rename(from, to, { ifExists: 'overwrite' });
+        const ifExists = cliFileIfExists(args);
+        if (!ifExists) {
+          process.stderr.write(
+            'Usage: ysk-server files rename --from REL --to REL [--if-exists fail|overwrite|rename]\n',
+          );
+          return 2;
+        }
+        const op = tryFileOp(() => fm.rename(from, to, { ifExists }));
+        if (!op.ok) return op.code;
+        const result = op.value;
         const own = await maybeChown([to]);
         printJson({ ok: true, root: rootKey, ...result, ...own });
         return 0;
@@ -1037,7 +1076,16 @@ async function mainInner(
           process.stderr.write(`${tl('cli.usage.files.copy.--from.rel.--to.5337f4')}\n`);
           return 2;
         }
-        const result = fm.copy(from, to, { ifExists: 'overwrite' });
+        const ifExists = cliFileIfExists(args);
+        if (!ifExists) {
+          process.stderr.write(
+            'Usage: ysk-server files copy --from REL --to REL [--if-exists fail|overwrite|rename]\n',
+          );
+          return 2;
+        }
+        const op = tryFileOp(() => fm.copy(from, to, { ifExists }));
+        if (!op.ok) return op.code;
+        const result = op.value;
         const own = await maybeChown([to]);
         printJson({ ok: true, root: rootKey, ...result, ...own });
         return 0;
@@ -1050,7 +1098,16 @@ async function mainInner(
           process.stderr.write(`${tl('cli.usage.files.move.--from.rel.--to.75cf5d')}\n`);
           return 2;
         }
-        const result = fm.move(from, to, { ifExists: 'overwrite' });
+        const ifExists = cliFileIfExists(args);
+        if (!ifExists) {
+          process.stderr.write(
+            'Usage: ysk-server files move --from REL --to REL [--if-exists fail|overwrite|rename]\n',
+          );
+          return 2;
+        }
+        const op = tryFileOp(() => fm.move(from, to, { ifExists }));
+        if (!op.ok) return op.code;
+        const result = op.value;
         const own = await maybeChown([to]);
         printJson({ ok: true, root: rootKey, ...result, ...own });
         return 0;
@@ -1209,6 +1266,13 @@ async function mainInner(
           process.stderr.write(`${tl('cli.usage.files.upload.--dir.rel.--file.f8c3bf')}\n`);
           return 2;
         }
+        const ifExists = cliFileIfExists(args);
+        if (!ifExists) {
+          process.stderr.write(
+            'Usage: ysk-server files upload --dir REL --file LOCAL [--if-exists fail|overwrite|rename]\n',
+          );
+          return 2;
+        }
         const { readFileSync } = await import('node:fs');
         const { basename } = await import('node:path');
         const written: Array<{ path: string; bytes: number }> = [];
@@ -1216,9 +1280,10 @@ async function mainInner(
           const name = basename(local);
           const rel = dir === '.' ? name : `${dir}/${name}`;
           const buf = readFileSync(local);
-          const r = fm.writeBase64(rel, buf.toString('base64'));
-          written.push(r);
-          await maybeChown([rel]);
+          const op = tryFileOp(() => fm.writeBase64(rel, buf.toString('base64'), { ifExists }));
+          if (!op.ok) return op.code;
+          written.push(op.value);
+          await maybeChown([op.value.path]);
         }
         printJson({
           ok: true,

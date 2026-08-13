@@ -27,7 +27,8 @@ Sandboxed **file manager** (public or project root), **public share links** (dir
 | Shares list | `ysk-server files shares list` | read | |
 | Share create/delete | `ysk-server files shares create\|delete [--mode direct\|bt\|both]` | write-panel | BT creates `.torrent` + seeder |
 | Share BT stats | `ysk-server files shares bt-stats --id ID` | read | Seeds / peers / speeds |
-| Upload local file | `ysk-server files upload --dir … --file …` | write-panel | |
+| Upload local file | `ysk-server files upload --dir … --file … [--if-exists fail\|overwrite\|rename]` | write-panel | Default **fail** (409); panel asks first |
+| Copy / move / rename collision | `… --if-exists fail\|overwrite\|rename` | write-panel | Same as `POST /api/v1/files/copy` |
 | WebDAV | `ysk-server files webdav status\|token\|disable` | write-panel | |
 | FTP status/settings | `ysk-server ftp status\|settings …` | read / write-panel | |
 | FTP accounts CRUD | `ysk-server ftp accounts list\|create\|update\|delete` | write-panel | |
@@ -53,6 +54,7 @@ ysk-server ftp apply --execute --json
 - FTPS apply needs EXECUTE + root for vsftpd.  
 - Public `/share/:token` page is UX; **create** is CLI/API.  
 - BT mode needs tracker running for peer discovery; set `publicAnnounceHost` for off-host magnets. Browser WebTorrent uses a same-origin tracker proxy (`/api/v1/public/bt-tracker`) and a panel-built WebTorrent asset (not a public CDN).
+- Name collisions: panel dialog (skip / keep both / replace / merge). CLI/API default `--if-exists fail`. `files write` still overwrites.
 
 ## Panel-only ⚠️
 
@@ -60,6 +62,7 @@ ysk-server ftp apply --execute --json
 |---------|-----------|
 | In-browser preview editor | Use `files read/write` |
 | Public share landing page | Public HTTP |
+| Conflict dialog UX | CLI/API use `--if-exists` instead |
 
 ## Related
 
