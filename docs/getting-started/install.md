@@ -85,6 +85,16 @@ curl -fsSL …/install.sh | bash -s -- --non-interactive --plan full
 
 When stdin is not a TTY (typical `curl|bash`), the installer runs **non-interactive** with plan **`recommended`** unless you pass `--plan` / `--bundles`.
 
+### Upgrade the panel only (do not reinstall SQL)
+
+`--upgrade` overlays the official npm tarball onto the **running** `ExecStart` tree and restarts `ysk-server`. It does **not** apt-install MariaDB/MySQL. Use this when the panel “套用面板更新” button cannot self-heal.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade
+```
+
+If the host already has **MySQL 8** data in `/var/lib/mysql`, never run `--upgrade-stack` / `--plan recommended` expecting MariaDB — that dpkg preinst tries to rename the data dir and fails.
+
 ---
 
 ## Plans
@@ -129,7 +139,8 @@ When stdin is not a TTY (typical `curl|bash`), the installer runs **non-interact
 | `--admin-user NAME` | Initial admin username (default: `admin`) |
 | `--data-dir PATH` | Panel data + manifest location |
 | `--skip-setup` | Packages + product only |
-| `--upgrade` | Reinstall npm `ysk-server` |
+| `--upgrade` | Overlay latest `ysk-server` onto the **running** install (does **not** reinstall MariaDB/MySQL) |
+| `--upgrade-stack` | Also refresh apt stack packages (do not use when MySQL 8 data already lives in `/var/lib/mysql`) |
 | `--full` / `--minimal` | Aliases for `--plan full` / `--plan minimal` |
 | `--skip-runtimes` | Drop `runtimes` from the selection |
 

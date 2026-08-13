@@ -86,6 +86,16 @@ curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.s
 
 `curl|bash` 通常無 TTY → 自動 non-interactive，預設 **`recommended`**（要用全裝請加 `--plan full`）。
 
+### 只升級面板（唔好重裝 SQL）
+
+`--upgrade` 會把官方 npm tarball overlay 到執行中 `ExecStart` 目錄，然後重啟 `ysk-server`。**唔會** apt 安裝 MariaDB／MySQL。面板「套用面板更新」救唔到自己嗰陣用呢條。
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade
+```
+
+主機 `/var/lib/mysql` 已係 **MySQL 8** 資料嘅話，唔好用 `--upgrade-stack` 或預設 `recommended` 去裝 MariaDB——dpkg 會嘗試改名資料目錄然後失敗。
+
 ---
 
 ## 方案（Plans）

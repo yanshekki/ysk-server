@@ -21,6 +21,7 @@ MIN_NODE_MAJOR=20
 NON_INTERACTIVE=0
 RUN_SETUP=1
 UPGRADE=0
+UPGRADE_STACK=0
 INSTALL_FROM_SOURCE=0
 INSTALL_SYSTEMD=0
 INSTALL_SYSTEMD_EXPLICIT=0
@@ -70,7 +71,8 @@ Options:
   --bundles LIST          Comma-separated bundle ids (implies custom)
   --non-interactive       No prompts (CI / cloud-init)
   --skip-setup            Do not run 'ysk-server setup'
-  --upgrade               Reinstall/upgrade npm package
+  --upgrade               Overlay latest ysk-server onto the running install (no apt stack)
+  --upgrade-stack         Also refresh apt stack packages (dangerous if MySQL/MariaDB already live)
   --from-source           Build from current git checkout
   --install-systemd       Install+enable+start systemd unit (default ON as root)
   --no-install-systemd    Skip systemd (manual serve)
@@ -102,6 +104,7 @@ while [[ $# -gt 0 ]]; do
     --non-interactive) NON_INTERACTIVE=1; shift ;;
     --skip-setup) RUN_SETUP=0; shift ;;
     --upgrade) UPGRADE=1; shift ;;
+    --upgrade-stack) UPGRADE=1; UPGRADE_STACK=1; shift ;;
     --from-source) INSTALL_FROM_SOURCE=1; shift ;;
     --install-systemd) INSTALL_SYSTEMD=1; INSTALL_SYSTEMD_EXPLICIT=1; shift ;;
     --no-install-systemd) INSTALL_SYSTEMD=0; INSTALL_SYSTEMD_EXPLICIT=1; shift ;;
@@ -783,8 +786,40 @@ print_next() {
 EOF
 }
 
+# Product-only: npm pack overlay + restart. Never reinstall MariaDB/MySQL.
+upgrade_product_only() {
+  OPERATION=upgrade
+  phase "product-upgrade"
+  log "Product-only upgrade — apt stack is not touched (MySQL/MariaDB data stays)."
+  log "To also refresh apt packages: install.sh --upgrade-stack"
+  ensure_stack_assets
+  manifest_require_jq
+  DATA_DIR="${DATA_DIR:-$(default_data_dir)}"
+  YSK_DATA_DIR="$DATA_DIR"
+  local mpath="${DATA_DIR}/stack-manifest.json"
+  manifest_load "$mpath"
+  install_node_globals || true
+  install_product
+  overlay_npm_onto_running
+  ensure_unit_execute
+  if [[ "$(id -u)" -eq 0 ]] && command -v systemctl >/dev/null 2>&1; then
+    systemctl try-restart ysk-server 2>/dev/null || true
+  fi
+  if [[ ${#HARD_FAILURES[@]} -gt 0 ]]; then
+    err "Upgrade had hard failures — see $INSTALL_LOG"
+    exit 1
+  fi
+  local ver=""
+  ver="$("$CLI" --version 2>/dev/null || true)"
+  log "Upgrade done${ver:+ — $ver} — log: $INSTALL_LOG"
+}
+
 main() {
   setup_logging install "${INSTALL_ARGV[*]:-}"
+  if [[ "$UPGRADE" -eq 1 && "$UPGRADE_STACK" -eq 0 ]]; then
+    upgrade_product_only
+    return 0
+  fi
   OPERATION=install
   ensure_stack_assets
   manifest_require_jq
@@ -801,6 +836,13 @@ main() {
     BUNDLES_CSV="$(printf '%s' "$BUNDLES_CSV" | tr ',' '\n' | grep -v '^runtimes$' | paste -sd, -)"
   fi
 
+  local host_sql=""
+  host_sql="$(detect_host_sql_engine || true)"
+  if [[ -n "$host_sql" && "$host_sql" != "$SQL_SERVER" ]]; then
+    warn "SQL requested=$SQL_SERVER but host already has $host_sql — keeping $host_sql (exclusive /var/lib/mysql)"
+    SQL_SERVER="$host_sql"
+    if [[ "$host_sql" == "mysql" ]]; then WITH_MYSQL_SERVER=1; else WITH_MYSQL_SERVER=0; fi
+  fi
   resolve_components_from_bundles "$BUNDLES_CSV" "$SQL_SERVER" "$WITH_CLAMAV"
   wizard_print_summary
 

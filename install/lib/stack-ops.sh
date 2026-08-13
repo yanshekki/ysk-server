@@ -406,8 +406,59 @@ enable_component_units() {
   return 0
 }
 
+# Host already has one exclusive SQL engine (package or 8.0 datadir).
+# Installing the other would dpkg-fail: mv /var/lib/mysql → /var/lib/mysql-8.0.
+detect_host_sql_engine() {
+  if dpkg-query -W -f='${Status}' mariadb-server 2>/dev/null | grep -q 'install ok installed'; then
+    printf '%s\n' mariadb
+    return 0
+  fi
+  if dpkg-query -W -f='${Status}' mysql-server 2>/dev/null | grep -q 'install ok installed'; then
+    printf '%s\n' mysql
+    return 0
+  fi
+  if [[ -x /usr/sbin/mariadbd ]] || command -v mariadbd >/dev/null 2>&1; then
+    printf '%s\n' mariadb
+    return 0
+  fi
+  if [[ -f /var/lib/mysql/mysql_upgrade_info ]] && grep -qE '^8\.' /var/lib/mysql/mysql_upgrade_info 2>/dev/null; then
+    printf '%s\n' mysql
+    return 0
+  fi
+  if [[ -d /var/lib/mysql/#innodb_redo ]] || [[ -d /var/lib/mysql/\#innodb_redo ]]; then
+    printf '%s\n' mysql
+    return 0
+  fi
+  if [[ -d /var/lib/mysql ]] && [[ -x /usr/sbin/mysqld ]] && [[ ! -x /usr/sbin/mariadbd ]]; then
+    printf '%s\n' mysql
+    return 0
+  fi
+  return 1
+}
+
+# 0 = skipped (peer already present); 1 = proceed with apt
+skip_exclusive_sql_if_peer_present() {
+  local id="$1"
+  local host=""
+  host="$(detect_host_sql_engine || true)"
+  if [[ "$id" == "mariadb-server" && "$host" == "mysql" ]]; then
+    warn "Skip mariadb-server: this host already has MySQL (exclusive /var/lib/mysql). Use --with-mysql-server."
+    SOFT_SKIPS+=("mariadb-server (mysql already present)")
+    return 0
+  fi
+  if [[ "$id" == "mysql-server" && "$host" == "mariadb" ]]; then
+    warn "Skip mysql-server: this host already has MariaDB (exclusive)."
+    SOFT_SKIPS+=("mysql-server (mariadb already present)")
+    return 0
+  fi
+  return 1
+}
+
 install_component_apt() {
   local id="$1"
+  if skip_exclusive_sql_if_peer_present "$id"; then
+    return 0
+  fi
   local pkgs=()
   local opt=()
   local units=()

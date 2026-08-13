@@ -2,6 +2,11 @@
 
 ## 1.0.16 — 2026-08-13
 
+### Install
+- `install.sh --upgrade` overlays the panel only (no apt stack). Do not reinstall MariaDB over a live MySQL 8 `/var/lib/mysql`
+- Full install skips MariaDB if the host already has MySQL (and the reverse)
+- `--upgrade-stack` is the explicit “also refresh apt packages” flag
+
 ### Fix
 - Self-update no longer runs `npm install -g` (that dumped `npm notice` tarball listings into the toast and often failed after the dest was already copied)
 - Apply errors strip `npm notice` noise and keep the real failure
