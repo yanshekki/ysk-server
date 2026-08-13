@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.11 — 2026-08-13
+
+### Panel self-update
+- 「套用面板更新」writes the official npm tarball onto the **running** install (`apps/server` or `ysk-server/`), then restarts `ysk-server.service`
+- No longer depends on `npm install -g` (that path never updates from-source ExecStart)
+- Overlay does not require `YSK_EXECUTE` (authenticated admin, own package files); default systemd unit now sets `Environment=YSK_EXECUTE=1` so other host applies work
+- Apply 422 returns `blockMessage` / `message` as the real failure — never the npm-channel probe line
+- `install.sh` overlays the running tree and patches EXECUTE onto existing units
+
 ## 1.0.10 — 2026-08-13
 
 ### Security

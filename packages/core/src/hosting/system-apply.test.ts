@@ -172,6 +172,7 @@ describe('system-level apply writers', () => {
       });
       expect(existsSync(unit.unitPath)).toBe(true);
       expect(unit.content).toContain('ysk-server');
+      expect(unit.content).toContain('Environment=YSK_EXECUTE=1');
 
       const fw = await applyFirewall({
         host,

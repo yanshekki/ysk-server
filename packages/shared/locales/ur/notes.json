@@ -2628,7 +2628,12 @@
     "t0797": "ٹائم زون ناکام ہو گیا: {{v0}}",
     "tScoreFrom": "سکور={{score}} از={{from}}",
     "appliedTag": "(لاگو)",
-    "writtenTag": "(صرف تحریری)"
+    "writtenTag": "(صرف تحریری)",
+    "selfDestMissing": "Cannot find the running install directory (systemd ExecStart or cli.js)",
+    "selfDestUnwritable": "Cannot write to the running install directory {{v0}}",
+    "selfApplied": "Applied {{v0}} onto {{v1}}",
+    "selfVerifyFail": "Version file after overlay does not contain {{v0}}",
+    "selfDownloadFail": "Cannot download or unpack official package {{v0}}: {{v1}}"
   },
   "tpl": {
     "deleted": "حذف شدہ {{name}}",

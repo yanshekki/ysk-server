@@ -372,15 +372,30 @@ export function useUpdates() {
     try {
       const r = await updatesApi.selfApply();
       const notes = sanitizeOperatorNotes(r.notes);
+      const isProbe = (n: string) => /npm 頻道|頻道：|channel：|GitHub release/i.test(n);
+      const isFail = (n: string) =>
+        /失敗|failed|blocked|EXECUTE|權限|無法|error|incomplete|未套用|系統變更|need execute|找不到|未包含|無法寫入|無法下載/i.test(
+          n,
+        );
+      const toastNote = (failed: boolean, fallback: string) => {
+        if (failed && r.blockMessage?.trim()) return r.blockMessage.trim();
+        if (failed && r.message?.trim() && !isProbe(r.message)) return r.message.trim();
+        if (failed) {
+          const f = notes.filter(isFail);
+          if (f.length) return f[f.length - 1]!;
+        }
+        const meaningful = notes.filter((n) => !isProbe(n));
+        return meaningful[meaningful.length - 1] ?? notes[notes.length - 1] ?? fallback;
+      };
       if (r.ok === false || (r.applied === false && r.ok !== true)) {
         setError(null);
-        toast.error(notes[0] ?? t('updates.updateIncomplete'));
+        toast.error(toastNote(true, t('updates.updateIncomplete')));
       } else if (r.applied) {
         setMsg(null);
-        toast.ok(notes[0] ?? t('updates.appliedUpdate'));
+        toast.ok(toastNote(false, t('updates.appliedUpdate')));
       } else {
         setMsg(null);
-        toast.ok(notes[0] ?? t('updates.selfUpToDate'));
+        toast.ok(toastNote(false, t('updates.selfUpToDate')));
       }
       try {
         const self = await updatesApi.self();

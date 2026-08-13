@@ -63,8 +63,18 @@ function errorMessageFromBody(data: unknown, status: number): string {
     if (typeof o.blockMessage === 'string' && o.blockMessage.trim()) return o.blockMessage;
     if (typeof o.message === 'string' && o.message.trim()) return o.message;
     if (Array.isArray(o.notes) && o.notes.length) {
-      const n = o.notes.map(String).find((x) => x.trim());
-      if (n) return n;
+      const notes = o.notes.map(String).map((x) => x.trim()).filter(Boolean);
+      const isProbe = (n: string) =>
+        /npm 頻道|頻道：|channel：|channel:|GitHub release/i.test(n);
+      const isFail = (n: string) =>
+        /失敗|failed|blocked|EXECUTE|權限|無法|error|incomplete|未套用|系統變更|need execute|找不到|未包含|無法寫入|無法下載/i.test(
+          n,
+        );
+      const fail = notes.filter(isFail);
+      if (fail.length) return fail[fail.length - 1]!;
+      const meaningful = notes.filter((n) => !isProbe(n));
+      if (meaningful.length) return meaningful[meaningful.length - 1]!;
+      if (notes.length) return notes[notes.length - 1]!;
     }
     if (Array.isArray(o.results)) {
       for (const r of o.results) {

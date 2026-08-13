@@ -2628,7 +2628,12 @@
     "t0797": "시간대 실패: {{v0}}",
     "tScoreFrom": "점수={{score}} from={{from}}",
     "appliedTag": "(적용된)",
-    "writtenTag": "(작성만 가능)"
+    "writtenTag": "(작성만 가능)",
+    "selfDestMissing": "Cannot find the running install directory (systemd ExecStart or cli.js)",
+    "selfDestUnwritable": "Cannot write to the running install directory {{v0}}",
+    "selfApplied": "Applied {{v0}} onto {{v1}}",
+    "selfVerifyFail": "Version file after overlay does not contain {{v0}}",
+    "selfDownloadFail": "Cannot download or unpack official package {{v0}}: {{v1}}"
   },
   "tpl": {
     "deleted": "삭제됨 {{name}}",

@@ -1143,6 +1143,7 @@ Type=simple
 User=${user}
 WorkingDirectory=${input.dataDir}
 Environment=NODE_ENV=production
+Environment=YSK_EXECUTE=1
 ExecStart=${node} ${input.cliPath} serve --config ${join(input.dataDir, 'config.json')}
 Restart=on-failure
 RestartSec=5

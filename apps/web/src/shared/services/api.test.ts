@@ -92,6 +92,21 @@ describe('api service layer', () => {
     });
   });
 
+  it('does not toast npm channel probe as the apply error', async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(
+        {
+          notes: ['npm 頻道：ysk-server@1.0.10', '找不到執行中安裝目錄'],
+        },
+        422,
+      ),
+    );
+    await expect(api.requestRaw('/api/v1/updates/self/apply')).rejects.toMatchObject({
+      message: '找不到執行中安裝目錄',
+      status: 422,
+    });
+  });
+
   it('pulls blockMessage from results[] rows', async () => {
     fetchMock.mockResolvedValueOnce(
       jsonResponse({ results: [{ notes: [] }, { blockMessage: 'row blocked' }] }, 400),

@@ -215,10 +215,17 @@ export const updatesApi = {
     }),
   self: () => api.requestRaw<Record<string, unknown>>('/api/v1/updates/self'),
   selfApply: () =>
-    api.requestRaw<{ ok?: boolean; notes?: string[]; applied?: boolean }>(
-      '/api/v1/updates/self/apply',
-      { method: 'POST', body: JSON.stringify({ apply: true }) },
-    ),
+    api.requestRawAllowStatus<{
+      ok?: boolean;
+      notes?: string[];
+      applied?: boolean;
+      blockMessage?: string;
+      message?: string;
+    }>('/api/v1/updates/self/apply', {
+      method: 'POST',
+      body: JSON.stringify({ apply: true }),
+      allowStatuses: [422, 502],
+    }),
   scheduler: () =>
     api.requestRaw<{ jobs: Array<Record<string, unknown>> }>('/api/v1/scheduler'),
   /** Lightweight badge + overview snapshot (cached). */

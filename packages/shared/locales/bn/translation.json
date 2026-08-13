@@ -7601,7 +7601,12 @@
       "t0797": "টাইমজোন ব্যর্থ হয়েছে: {{v0}}",
       "tScoreFrom": "স্কোর={{score}} থেকে={{from}}",
       "appliedTag": "(প্রযোজ্য)",
-      "writtenTag": "(শুধুমাত্র লিখিত)"
+      "writtenTag": "(শুধুমাত্র লিখিত)",
+      "selfDestMissing": "Cannot find the running install directory (systemd ExecStart or cli.js)",
+      "selfDestUnwritable": "Cannot write to the running install directory {{v0}}",
+      "selfApplied": "Applied {{v0}} onto {{v1}}",
+      "selfVerifyFail": "Version file after overlay does not contain {{v0}}",
+      "selfDownloadFail": "Cannot download or unpack official package {{v0}}: {{v1}}"
     },
     "tpl": {
       "deleted": "মুছে ফেলা হয়েছে {{name}}",

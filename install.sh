@@ -325,6 +325,83 @@ install_node_globals() {
   fi
 }
 
+# Overlay official npm tarball onto the running ExecStart tree (from-source
+# installs keep serving apps/server/dist/cli.js — npm i -g alone never updates it).
+overlay_npm_onto_running() {
+  local spec="${PKG}@${YSK_NPM_VERSION:-latest}"
+  local dest=""
+  local unit="/etc/systemd/system/ysk-server.service"
+  local cli=""
+
+  if [[ -f "$unit" ]]; then
+    cli="$(awk '
+      /^ExecStart=/ {
+        n = split($0, a, /[[:space:]]+/)
+        for (i = 1; i <= n; i++) if (a[i] ~ /cli\.(js|cjs|mjs)$/) { print a[i]; exit }
+      }' "$unit")"
+    if [[ -n "$cli" && -f "$cli" ]]; then
+      dest="$(cd "$(dirname "$cli")/.." && pwd)"
+    fi
+  fi
+  if [[ -z "$dest" && -f /usr/lib/ysk-server/apps/server/dist/cli.js ]]; then
+    dest="/usr/lib/ysk-server/apps/server"
+  fi
+  if [[ -z "$dest" ]]; then
+    local groot
+    groot="$(npm root -g 2>/dev/null || true)"
+    if [[ -n "$groot" && -f "$groot/ysk-server/dist/cli.js" ]]; then
+      dest="$groot/ysk-server"
+    fi
+  fi
+  if [[ -z "$dest" || ! -d "$dest" ]]; then
+    log "No running package dir to overlay — npm global install is the product"
+    return 0
+  fi
+
+  local tmp
+  tmp="$(mktemp -d)"
+  log "Overlay $spec onto $dest"
+  if ! (cd "$tmp" && npm pack "$spec"); then
+    log "WARNING: npm pack $spec failed — skip overlay"
+    rm -rf "$tmp"
+    return 0
+  fi
+  tar -xzf "$tmp"/*.tgz -C "$tmp"
+  if [[ ! -f "$tmp/package/dist/cli.js" ]]; then
+    log "WARNING: packed tarball missing dist/cli.js"
+    rm -rf "$tmp"
+    return 0
+  fi
+  mkdir -p "$dest/dist"
+  cp -a "$tmp/package/dist/." "$dest/dist/"
+  if [[ -d "$tmp/package/public" ]]; then
+    mkdir -p "$dest/public"
+    cp -a "$tmp/package/public/." "$dest/public/"
+  fi
+  if [[ -d "$tmp/package/node_modules" ]]; then
+    mkdir -p "$dest/node_modules"
+    cp -a "$tmp/package/node_modules/." "$dest/node_modules/"
+  fi
+  rm -rf "$tmp"
+  log "Overlay complete → $dest"
+}
+
+ensure_unit_execute() {
+  local unit="/etc/systemd/system/ysk-server.service"
+  [[ -f "$unit" ]] || return 0
+  [[ "$(id -u)" -eq 0 ]] || return 0
+  if grep -q '^Environment=YSK_EXECUTE=1' "$unit"; then
+    return 0
+  fi
+  if grep -q '^Environment=NODE_ENV=production' "$unit"; then
+    sed -i '/^Environment=NODE_ENV=production/a Environment=YSK_EXECUTE=1' "$unit"
+  else
+    sed -i '/^\[Service\]/a Environment=YSK_EXECUTE=1' "$unit"
+  fi
+  systemctl daemon-reload 2>/dev/null || true
+  log "Enabled YSK_EXECUTE=1 on $unit"
+}
+
 install_product() {
   phase "product"
   if [[ "$INSTALL_FROM_SOURCE" -eq 1 ]]; then
@@ -736,9 +813,14 @@ main() {
   install_selected_components
   install_node_globals
   install_product
+  overlay_npm_onto_running
   run_setup
   run_bootstrap_tls
   install_systemd_unit
+  ensure_unit_execute
+  if [[ "$(id -u)" -eq 0 ]] && command -v systemctl >/dev/null 2>&1; then
+    systemctl try-restart ysk-server 2>/dev/null || true
+  fi
 
   # verify (skip pure optional soft components that may not exist)
   local verify_list=()

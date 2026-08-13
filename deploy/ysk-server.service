@@ -8,7 +8,7 @@ Type=simple
 User=root
 WorkingDirectory=/var/lib/ysk-server
 Environment=NODE_ENV=production
-# Optional: Environment=YSK_EXECUTE=1
+Environment=YSK_EXECUTE=1
 # Optional: Environment=YSK_PROBE_ON_START=1
 ExecStart=/usr/bin/node /usr/lib/ysk-server/apps/server/dist/cli.js serve --config /var/lib/ysk-server/config.json
 Restart=on-failure

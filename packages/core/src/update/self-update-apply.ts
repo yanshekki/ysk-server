@@ -5,8 +5,14 @@
 
 import { planSelfUpdate, compareVersions, isValidSha256 } from './self-update.js';
 import type { HostExecutor } from '../host/executor.js';
-import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
+import { ErrorCodes, YskError, tl } from 'ysk-server-shared';
 import { shellBinExists } from '../hosting/software-probe/index.js';
+import {
+  applyNpmOverlayToDest,
+  classifyCliPath,
+  resolveOverlayDest,
+  scheduleYskServerRestart,
+} from './self-update-overlay.js';
 
 export interface RegistryVersion {
   latest: string;
@@ -64,6 +70,41 @@ function npmProbeList(preferred?: string): string[] {
 }
 
 /** Apply target: canonical product, never a failed scoped alias. */
+export type RunningInstall = {
+  kind: 'npm-package' | 'monorepo' | 'unknown';
+  cliJs: string;
+  /** Directory that contains this install's package.json (ysk-server). */
+  packageDir: string;
+};
+
+/** Where this process is actually serving from (not `which ysk-server`). */
+export function detectRunningInstall(cliJsHint?: string): RunningInstall {
+  const classified = classifyCliPath(cliJsHint || process.argv[1] || '');
+  if (classified.packageDir) return classified;
+  return resolveOverlayDest(cliJsHint || process.argv[1] || '');
+}
+
+/** Prefer the real apply/blocked note — never the npm-channel probe line. */
+export function pickSelfUpdateUserNote(
+  notes: string[],
+  failed = false,
+): string | undefined {
+  const list = notes.map((n) => String(n).trim()).filter(Boolean);
+  if (!list.length) return undefined;
+  const isProbe = (n: string) =>
+    /npm 頻道|頻道：|channel：|channel:|GitHub release：|GitHub release:/i.test(n);
+  const isFail = (n: string) =>
+    /失敗|failed|blocked|EXECUTE|權限|無法|error|incomplete|未套用|系統變更|need execute|no_execute|找不到|未包含|無法寫入|無法下載|目錄/i.test(
+      n,
+    );
+  if (failed) {
+    const fails = list.filter(isFail);
+    if (fails.length) return fails[fails.length - 1];
+  }
+  const meaningful = list.filter((n) => !isProbe(n));
+  return meaningful[meaningful.length - 1] ?? list[list.length - 1];
+}
+
 export function resolveApplyNpmPackage(registryName?: string): string {
   const env = process.env.YSK_NPM_PACKAGE?.trim();
   if (env) return env;
@@ -472,6 +513,12 @@ export async function runSelfUpdate(input: {
   apply?: boolean;
   latestOverride?: string;
   githubRepo?: string;
+  /** Test/override: treat this path as process.argv[1] */
+  cliJsHint?: string;
+  /** Test/offline: pre-downloaded official tarball */
+  tarballPath?: string;
+  /** Test: already-unpacked npm package directory (contains dist/cli.js) */
+  unpackedDir?: string;
 }): Promise<{
   registry?: RegistryVersion;
   plan: ReturnType<typeof planSelfUpdate>;
@@ -488,6 +535,9 @@ export async function runSelfUpdate(input: {
   channel: string;
   packageName?: string;
   restarted?: boolean;
+  blocked?: boolean;
+  message?: string;
+  blockMessage?: string;
 }> {
   const check = await checkSelfUpdate({
     currentVersion: input.currentVersion,
@@ -529,45 +579,62 @@ export async function runSelfUpdate(input: {
   }
 
   if (input.apply && plan.status.updateAvailable) {
-    if (!input.host.executeEnabled()) {
-      notes.push(tl('ops.blocked.update'));
-    } else {
-      const latest = plan.status.latestVersion ?? registry?.latest ?? '';
-      const preferNpm =
-        registry?.channel === 'npm' ||
-        Boolean(process.env.YSK_NPM_PACKAGE) ||
-        (input.packageName && !input.packageName.includes('/'));
+    const latest = plan.status.latestVersion ?? registry?.latest ?? '';
+    const installName = resolveApplyNpmPackage(
+      registry?.channel === 'npm' ? registry.packageName : pkgName,
+    );
+    const spec = `${installName}@${latest}`;
+    const running = detectRunningInstall(input.cliJsHint);
+    const overlayDest = running.packageDir;
 
-      if (preferNpm && registry?.channel !== 'github') {
-        const installName = resolveApplyNpmPackage(
-          registry?.channel === 'npm' ? registry.packageName : pkgName,
-        );
-        const pkg = `${installName}@${latest}`;
-        const r = await input.host.runCommand(['npm', 'install', '-g', pkg], {
-          timeoutMs: 300_000,
+    // Node overlay writes our own package dir — does not require YSK_EXECUTE.
+    const overlay = await applyNpmOverlayToDest({
+      spec,
+      destDir: overlayDest,
+      latest,
+      tarballUrl: registry?.tarball,
+      tarballPath: input.tarballPath,
+      unpackedDir: input.unpackedDir,
+      shasum: registry?.shasum,
+    });
+    commandResults.push(...overlay.commandResults);
+    notes.push(...overlay.notes);
+    applied = overlay.applied;
+
+    // EXECUTE path: bash npm pack (tests + fallback) then optional git
+    if (!applied && input.host.executeEnabled()) {
+      const bashOverlay = await applyNpmOverlayViaHost({
+        host: input.host,
+        spec,
+        destDir: overlayDest,
+        latest,
+      });
+      commandResults.push(...bashOverlay.commandResults);
+      notes.push(...bashOverlay.notes);
+      applied = bashOverlay.applied;
+    }
+
+    if (!applied && (registry?.channel === 'github' || Boolean(process.env.YSK_SOURCE_ROOT))) {
+      if (!input.host.executeEnabled()) {
+        notes.push(tl('ops.blocked.needExecute'));
+      } else {
+        const gitResult = await applySelfUpdateFromGit({
+          host: input.host,
+          latest,
+          repo: registry?.packageName?.includes('/')
+            ? registry.packageName
+            : process.env.YSK_GITHUB_REPO?.trim() || DEFAULT_GITHUB_REPO,
         });
-        commandResults.push({
-          argv: ['npm', 'install', '-g', pkg],
-          exitCode: r.exitCode,
-          stdout: r.stdout,
-          stderr: r.stderr,
-        });
-        if (r.exitCode !== 0) {
-          notes.push(tl('notes.auto.t0485', { v0: (r.stderr || r.stdout).slice(0, 400) }));
-        } else {
-          const ver = await input.host.runCommand(
-            ['bash', '-c', 'ysk-server --version 2>/dev/null || ysk-server -V 2>/dev/null || true'],
-            { timeoutMs: 15_000 },
-          );
-          commandResults.push({
-            argv: ['ysk-server', '--version'],
-            exitCode: ver.exitCode,
-            stdout: ver.stdout,
-            stderr: ver.stderr,
-          });
-          const out = `${ver.stdout || ''} ${ver.stderr || ''}`;
-          applied = out.includes(latest) || /ysk-server/i.test(out) || r.exitCode === 0;
-          notes.push(tl('notes.auto.t0484', { v0: pkg }));
+        commandResults.push(...gitResult.commandResults);
+        notes.push(...gitResult.notes);
+        applied = gitResult.applied;
+      }
+    }
+
+    if (applied) {
+      restarted = scheduleYskServerRestart();
+      if (input.host.executeEnabled()) {
+        try {
           const rst = await input.host.runCommand(
             [
               'bash',
@@ -582,50 +649,21 @@ export async function runSelfUpdate(input: {
             stdout: rst.stdout,
             stderr: rst.stderr,
           });
-          restarted = rst.exitCode === 0;
-          if (!restarted) notes.push(tl('notes.auto.n1219'));
+          restarted = restarted || rst.exitCode === 0;
+        } catch {
+          /* delayed restart still scheduled */
         }
       }
+      if (!restarted) notes.push(tl('notes.auto.n1219'));
+    }
 
-      // GitHub / source tree path — real git pull + build when YSK_SOURCE_ROOT or cwd is a git repo
-      if (!applied && (registry?.channel === 'github' || registry?.channel === 'env')) {
-        const gitResult = await applySelfUpdateFromGit({
-          host: input.host,
-          latest,
-          repo: registry?.packageName?.includes('/')
-            ? registry.packageName
-            : process.env.YSK_GITHUB_REPO?.trim() || DEFAULT_GITHUB_REPO,
-        });
-        commandResults.push(...gitResult.commandResults);
-        notes.push(...gitResult.notes);
-        applied = gitResult.applied;
-      }
-
-      // Last resort: try npm even on github channel if YSK_NPM_PACKAGE set
-      if (!applied && process.env.YSK_NPM_PACKAGE) {
-        const pkg = `${process.env.YSK_NPM_PACKAGE}@${latest}`;
-        const r = await input.host.runCommand(['npm', 'install', '-g', pkg], {
-          timeoutMs: 300_000,
-        });
-        commandResults.push({
-          argv: ['npm', 'install', '-g', pkg],
-          exitCode: r.exitCode,
-          stdout: r.stdout,
-          stderr: r.stderr,
-        });
-        applied = r.exitCode === 0;
-        notes.push(
-          applied
-            ? tl('notes.auto.t0486', { v0: (pkg) })
-            : tl('notes.auto.t0487', { v0: ((r.stderr || r.stdout).slice(0, 300)) }),
-        );
-      }
-
-      if (!applied) {
-        notes.push(
-          tl('notes.auto.n0973'),
-        );
-      }
+    if (
+      !applied &&
+      !notes.some((n) =>
+        /失敗|failed|找不到|無法|權限|EXECUTE|未包含|未能套用/i.test(n),
+      )
+    ) {
+      notes.push(tl('notes.auto.n0973'));
     }
   }
 
@@ -634,11 +672,18 @@ export async function runSelfUpdate(input: {
     : check.ok;
 
   if (input.apply && plan.status.updateAvailable && !applied) {
-    if (!notes.some((n) => /權限|失敗|failed|GitHub|npm 套件|最新/i.test(n))) {
+    if (!notes.some((n) => /權限|失敗|failed|GitHub|npm 套件|最新|EXECUTE|系統變更|找不到|無法/i.test(n))) {
       notes.push(tl('notes.auto.n0929'));
     }
   }
 
+  const applyFailed = input.apply === true && plan.status.updateAvailable && !applied;
+  const userNote = pickSelfUpdateUserNote(notes, applyFailed);
+  if (applyFailed && userNote) {
+    const rest = notes.filter((n) => n !== userNote);
+    notes.length = 0;
+    notes.push(userNote, ...rest);
+  }
   return {
     registry,
     plan,
@@ -649,11 +694,88 @@ export async function runSelfUpdate(input: {
     notes,
     currentVersion: check.currentVersion,
     latestVersion: check.latestVersion,
-    updateAvailable: plan.status.updateAvailable,
+    updateAvailable: applied ? false : plan.status.updateAvailable,
     channel: check.channel,
     packageName: pkgName,
     restarted,
+    blocked: applyFailed,
+    message: userNote,
+    blockMessage: applyFailed ? userNote : undefined,
   };
+}
+
+/**
+ * EXECUTE fallback: `npm pack` + copy via HostExecutor (used by unit tests and
+ * when Node overlay has no local artifact).
+ */
+export async function applyNpmOverlayViaHost(input: {
+  host: HostExecutor;
+  spec: string;
+  destDir: string;
+  latest: string;
+}): Promise<{
+  applied: boolean;
+  notes: string[];
+  commandResults: Array<{ argv: string[]; exitCode: number; stdout: string; stderr: string }>;
+}> {
+  const notes: string[] = [];
+  const commandResults: Array<{
+    argv: string[];
+    exitCode: number;
+    stdout: string;
+    stderr: string;
+  }> = [];
+  const dest = String(input.destDir || '').trim();
+  const spec = input.spec;
+  const latest = input.latest.replace(/^v/, '');
+
+  const script = [
+    'set -euo pipefail',
+    `SPEC=${JSON.stringify(spec)}`,
+    `DEST=${JSON.stringify(dest)}`,
+    `LATEST=${JSON.stringify(latest)}`,
+    'TMP=$(mktemp -d)',
+    'trap \'rm -rf "$TMP"\' EXIT',
+    'cd "$TMP"',
+    'npm pack "$SPEC"',
+    'tar -xzf ./*.tgz',
+    'test -f package/dist/cli.js',
+    'if [ -n "$DEST" ] && [ -d "$DEST" ]; then',
+    '  mkdir -p "$DEST/dist"',
+    '  cp -a package/dist/. "$DEST/dist/"',
+    '  if [ -d package/public ]; then mkdir -p "$DEST/public"; cp -a package/public/. "$DEST/public/"; fi',
+    '  if [ -d package/node_modules ]; then mkdir -p "$DEST/node_modules"; cp -a package/node_modules/. "$DEST/node_modules/"; fi',
+    'fi',
+    'npm install -g "$SPEC"',
+    'VERIFY=""',
+    'if [ -n "$DEST" ] && [ -f "$DEST/dist/version.js" ]; then VERIFY=$(cat "$DEST/dist/version.js"); fi',
+    'GROOT=$(npm root -g 2>/dev/null || true)',
+    'if [ -z "$VERIFY" ] && [ -n "$GROOT" ] && [ -f "$GROOT/ysk-server/dist/version.js" ]; then',
+    '  VERIFY=$(cat "$GROOT/ysk-server/dist/version.js")',
+    'fi',
+    'printf "%s" "$VERIFY"',
+    'echo',
+    'echo "$VERIFY" | grep -F "$LATEST" >/dev/null',
+  ].join('\n');
+
+  const r = await input.host.runCommand(['bash', '-c', script], { timeoutMs: 300_000 });
+  commandResults.push({
+    argv: ['npm-overlay', spec, dest || '(global)'],
+    exitCode: r.exitCode,
+    stdout: r.stdout.slice(0, 2000),
+    stderr: r.stderr.slice(0, 2000),
+  });
+  if (r.exitCode !== 0) {
+    notes.push(tl('notes.auto.t0485', { v0: (r.stderr || r.stdout).slice(0, 400) }));
+    return { applied: false, notes, commandResults };
+  }
+  const out = `${r.stdout || ''} ${r.stderr || ''}`;
+  if (!out.includes(latest)) {
+    notes.push(tl('notes.auto.t0485', { v0: `version ${latest} not in overlay output` }));
+    return { applied: false, notes, commandResults };
+  }
+  notes.push(tl('notes.auto.t0484', { v0: spec }));
+  return { applied: true, notes, commandResults };
 }
 
 export { compareVersions };

@@ -7601,7 +7601,12 @@
       "t0797": "échec du fuseau horaire : {{v0}}",
       "tScoreFrom": "score={{score}} de={{from}}",
       "appliedTag": " (appliqué)",
-      "writtenTag": " (écrit seulement)"
+      "writtenTag": " (écrit seulement)",
+      "selfDestMissing": "Cannot find the running install directory (systemd ExecStart or cli.js)",
+      "selfDestUnwritable": "Cannot write to the running install directory {{v0}}",
+      "selfApplied": "Applied {{v0}} onto {{v1}}",
+      "selfVerifyFail": "Version file after overlay does not contain {{v0}}",
+      "selfDownloadFail": "Cannot download or unpack official package {{v0}}: {{v1}}"
     },
     "tpl": {
       "deleted": "Supprimé {{name}}",

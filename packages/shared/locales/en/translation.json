@@ -7601,7 +7601,12 @@
       "t0797": "timezone failed: {{v0}}",
       "tScoreFrom": "score={{score}} from={{from}}",
       "appliedTag": " (applied)",
-      "writtenTag": " (written only)"
+      "writtenTag": " (written only)",
+      "selfDestMissing": "Cannot find the running install directory (systemd ExecStart or cli.js)",
+      "selfDestUnwritable": "Cannot write to the running install directory {{v0}}",
+      "selfApplied": "Applied {{v0}} onto {{v1}}",
+      "selfVerifyFail": "Version file after overlay does not contain {{v0}}",
+      "selfDownloadFail": "Cannot download or unpack official package {{v0}}: {{v1}}"
     },
     "tpl": {
       "deleted": "Deleted {{name}}",

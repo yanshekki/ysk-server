@@ -2628,7 +2628,12 @@
     "t0797": "timezone 失敗: {{v0}}",
     "tScoreFrom": "分數={{score}} · 由 {{from}} 切換",
     "appliedTag": "（已套用）",
-    "writtenTag": "（只寫檔）"
+    "writtenTag": "（只寫檔）",
+    "selfDestMissing": "找不到執行中安裝目錄（systemd ExecStart 或執行中 cli.js）",
+    "selfDestUnwritable": "無法寫入執行中安裝目錄 {{v0}}",
+    "selfApplied": "已將 {{v0}} 套用到 {{v1}}",
+    "selfVerifyFail": "套用後版本檔未包含 {{v0}}",
+    "selfDownloadFail": "無法下載或解壓官方套件 {{v0}}：{{v1}}"
   },
   "tpl": {
     "deleted": "已刪除 {{name}}",

@@ -1,6 +1,39 @@
 import { describe, expect, it } from 'vitest';
-import { runSelfUpdate, checkSelfUpdate } from './self-update-apply.js';
+import {
+  runSelfUpdate,
+  checkSelfUpdate,
+  detectRunningInstall,
+  pickSelfUpdateUserNote,
+} from './self-update-apply.js';
 import { LocalHostExecutor } from '../host/executor.js';
+
+describe('detectRunningInstall / pickSelfUpdateUserNote', () => {
+  it('classifies monorepo cli path', () => {
+    const r = detectRunningInstall('/usr/lib/ysk-server/apps/server/dist/cli.js');
+    expect(r.kind).toBe('monorepo');
+    expect(r.packageDir.replace(/\\/g, '/')).toMatch(/apps\/server$/);
+  });
+
+  it('classifies npm pack cli path', () => {
+    const r = detectRunningInstall('/usr/lib/node_modules/ysk-server/dist/cli.js');
+    expect(r.kind).toBe('npm-package');
+  });
+
+  it('does not toast the npm channel probe as the failure', () => {
+    expect(
+      pickSelfUpdateUserNote(
+        ['npm 頻道：ysk-server@1.0.10', 'Host execute is off (YSK_EXECUTE)'],
+        true,
+      ),
+    ).toMatch(/EXECUTE|execute/i);
+    expect(
+      pickSelfUpdateUserNote(
+        ['npm 頻道：ysk-server@1.0.10', '找不到執行中安裝目錄（systemd ExecStart 或執行中 cli.js）'],
+        true,
+      ),
+    ).toMatch(/找不到|目錄|install directory/i);
+  });
+});
 
 describe('runSelfUpdate', () => {
   it('plans without apply when offline override', async () => {
@@ -19,7 +52,7 @@ describe('runSelfUpdate', () => {
     expect(r.plan.steps.length).toBeGreaterThan(0);
   });
 
-  it('skips apply without YSK_EXECUTE', async () => {
+  it('does not claim apply when dest is unknown (no EXECUTE bash fallback)', async () => {
     const host = new LocalHostExecutor({ executeEnabled: false });
     const r = await runSelfUpdate({
       currentVersion: '0.1.0',
@@ -29,7 +62,10 @@ describe('runSelfUpdate', () => {
     });
     expect(r.applied).toBe(false);
     expect(r.ok).toBe(false);
-    expect(r.notes.some((n) => /YSK_EXECUTE|系統變更|權限/i.test(n))).toBe(true);
+    expect(r.blockMessage || r.notes[0]).not.toMatch(/npm 頻道|channel:/i);
+    expect(
+      r.notes.some((n) => /找不到|目錄|dest|install directory|未能套用|失敗|無法/i.test(n)),
+    ).toBe(true);
   });
 
   it('reports ok when already up to date even with apply', async () => {

@@ -219,7 +219,10 @@ describe('self-update-apply depth', () => {
     const host = mockHost({
       execute: true,
       run: async (argv) => {
-        if (argv[0] === 'npm') return { exitCode: 0, stdout: 'added 1 package' };
+        const j = argv.join(' ');
+        if (argv[0] === 'bash' || j.includes('npm pack') || argv[0] === 'npm') {
+          return { exitCode: 0, stdout: "export const VERSION = '0.2.0';\n" };
+        }
         return { exitCode: 0 };
       },
     });
@@ -231,10 +234,12 @@ describe('self-update-apply depth', () => {
       packageName: 'ysk-server',
     });
     expect(r.checked).toBe(true);
-    expect(r.updateAvailable).toBe(true);
     expect(r.applied).toBe(true);
     expect(r.ok).toBe(true);
-    expect(r.commandResults.some((c) => c.argv[0] === 'npm')).toBe(true);
+    expect(r.updateAvailable).toBe(false);
+    expect(
+      r.commandResults.some((c) => c.argv[0] === 'npm-overlay' || c.argv[0] === 'npm'),
+    ).toBe(true);
   });
 
   it('runSelfUpdate github/env channel uses git apply when npm not preferred', async () => {
