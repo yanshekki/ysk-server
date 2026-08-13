@@ -416,13 +416,18 @@ install_product() {
       return 1
     fi
     log "Installing from source: $src_root"
+    # Ensure npm global bin is on PATH after npm i -g pnpm (non-login shells)
+    export PATH="$(npm prefix -g 2>/dev/null)/bin:${PATH:-/usr/bin}"
     if require_cmd pnpm; then
       (cd "$src_root" && pnpm install && pnpm build)
     else
-      (cd "$src_root" && npm install -g pnpm && pnpm install && pnpm build)
+      npm install -g pnpm
+      export PATH="$(npm prefix -g 2>/dev/null)/bin:${PATH:-/usr/bin}"
+      hash -r 2>/dev/null || true
+      (cd "$src_root" && pnpm install && pnpm build)
     fi
     embed_web_ui "$src_root"
-    (cd "$src_root/apps/server" && npm link 2>/dev/null || true)
+    (cd "$src_root/apps/server" && npm link --force 2>/dev/null || true)
     local cli_js="$src_root/apps/server/dist/cli.js"
     if [[ -f "$cli_js" ]]; then
       local wrapper="/usr/local/bin/ysk-server"
