@@ -298,6 +298,7 @@ npm_install_global() {
   elif [[ "$(id -u)" -eq 0 ]]; then
     warn "I-07: installing npm packages as root into system global (set YSK_NPM_PREFIX or YSK_NPM_USER to avoid)"
   fi
+  extra+=(--force)
   if [[ "$(id -u)" -eq 0 && -n "${YSK_NPM_USER:-}" ]] && id "$YSK_NPM_USER" &>/dev/null && [[ -n "$prefix" ]]; then
     # Run as dedicated user when prefix is under their home
     runuser -u "$YSK_NPM_USER" -- npm install -g "${extra[@]}" "$@" 2>/dev/null \
@@ -350,31 +351,60 @@ overlay_npm_onto_running() {
     dest="/usr/lib/ysk-server/apps/server"
   fi
   if [[ -z "$dest" ]]; then
-    local groot
+    local groot node_bin ysk_bin
     groot="$(npm root -g 2>/dev/null || true)"
     if [[ -n "$groot" && -f "$groot/ysk-server/dist/cli.js" ]]; then
       dest="$groot/ysk-server"
     fi
+    if [[ -z "$dest" ]]; then
+      node_bin="$(command -v node 2>/dev/null || true)"
+      if [[ -n "$node_bin" && -f "$(dirname "$node_bin")/../lib/node_modules/ysk-server/dist/cli.js" ]]; then
+        dest="$(cd "$(dirname "$node_bin")/../lib/node_modules/ysk-server" && pwd)"
+      fi
+    fi
+    if [[ -z "$dest" ]]; then
+      ysk_bin="$(command -v ysk-server 2>/dev/null || true)"
+      if [[ -n "$ysk_bin" && -f "$(dirname "$ysk_bin")/../lib/node_modules/ysk-server/dist/cli.js" ]]; then
+        dest="$(cd "$(dirname "$ysk_bin")/../lib/node_modules/ysk-server" && pwd)"
+      fi
+    fi
   fi
   if [[ -z "$dest" || ! -d "$dest" ]]; then
     log "No running package dir to overlay — npm global install is the product"
-    return 0
+    return 2
   fi
 
-  local tmp
+  local tmp latest=""
   tmp="$(mktemp -d)"
   log "Overlay $spec onto $dest"
-  if ! (cd "$tmp" && npm pack "$spec"); then
-    log "WARNING: npm pack $spec failed — skip overlay"
-    rm -rf "$tmp"
-    return 0
+  if ! (cd "$tmp" && npm pack "$spec" >/dev/null); then
+    latest="$(npm view "$PKG" version 2>/dev/null || echo "${YSK_NPM_VERSION:-}")"
+    if [[ -n "$latest" && "$latest" != "latest" ]] && \
+       curl -fsSL "https://registry.npmjs.org/${PKG}/-/${PKG}-${latest}.tgz" -o "$tmp/pkg.tgz"; then
+      log "Fetched tarball via curl (npm pack failed)"
+    else
+      log "WARNING: could not download $spec"
+      rm -rf "$tmp"
+      return 1
+    fi
   fi
-  tar -xzf "$tmp"/*.tgz -C "$tmp"
+  if [[ ! -f "$tmp/pkg.tgz" ]]; then
+    local tgz
+    tgz="$(ls -1 "$tmp"/*.tgz 2>/dev/null | head -1 || true)"
+    [[ -n "$tgz" ]] && mv -f "$tgz" "$tmp/pkg.tgz"
+  fi
+  if [[ ! -f "$tmp/pkg.tgz" ]]; then
+    log "WARNING: no tarball to extract"
+    rm -rf "$tmp"
+    return 1
+  fi
+  tar -xzf "$tmp/pkg.tgz" -C "$tmp"
   if [[ ! -f "$tmp/package/dist/cli.js" ]]; then
     log "WARNING: packed tarball missing dist/cli.js"
     rm -rf "$tmp"
-    return 0
+    return 1
   fi
+  latest="$(node -p "require('$tmp/package/package.json').version" 2>/dev/null || true)"
   mkdir -p "$dest/dist"
   cp -a "$tmp/package/dist/." "$dest/dist/"
   if [[ -d "$tmp/package/public" ]]; then
@@ -386,7 +416,12 @@ overlay_npm_onto_running() {
     cp -a "$tmp/package/node_modules/." "$dest/node_modules/"
   fi
   rm -rf "$tmp"
-  log "Overlay complete → $dest"
+  if [[ -n "$latest" ]] && ! grep -qF "$latest" "$dest/dist/version.js" 2>/dev/null; then
+    log "WARNING: overlay verify failed — $dest/dist/version.js does not contain $latest"
+    return 1
+  fi
+  log "Overlay complete → $dest ($latest)"
+  return 0
 }
 
 ensure_unit_execute() {
@@ -472,9 +507,11 @@ WRAP
   local npm_pkg="${PKG}@${npm_spec}"
   log "npm package: $npm_pkg"
   # I-07: use npm_install_global (prefix / dedicated user when configured)
-  if ! npm_install_global "$npm_pkg" 2>/dev/null; then
-    if ! npm_install_global "$PKG"; then
-      record_hard_fail "Global npm install failed for $PKG (try YSK_NPM_PREFIX=\$HOME/.npm-global)"
+  if ! npm_install_global "$npm_pkg"; then
+    if [[ "$UPGRADE" -eq 1 ]]; then
+      warn "npm install -g $npm_pkg failed (EEXIST/prefix) — overlay will update the running tree"
+    else
+      record_hard_fail "Global npm install failed for $PKG (try YSK_NPM_PREFIX=\$HOME/.npm-global or npm install -g --force)"
       return 1
     fi
   fi
@@ -798,19 +835,32 @@ upgrade_product_only() {
   YSK_DATA_DIR="$DATA_DIR"
   local mpath="${DATA_DIR}/stack-manifest.json"
   manifest_load "$mpath"
-  install_node_globals || true
-  install_product
-  overlay_npm_onto_running
+  # Overlay first: running ExecStart tree (npm i -g EEXIST must not abort).
+  local ov=0
+  overlay_npm_onto_running || ov=$?
+  if [[ "$ov" -ne 0 ]]; then
+    warn "Overlay did not apply (code $ov) — trying npm install -g --force"
+    install_product || true
+    ov=0
+    overlay_npm_onto_running || ov=$?
+  else
+    install_product || true
+  fi
   ensure_unit_execute
   if [[ "$(id -u)" -eq 0 ]] && command -v systemctl >/dev/null 2>&1; then
     systemctl try-restart ysk-server 2>/dev/null || true
+  fi
+  local ver=""
+  ver="$("$CLI" --version 2>/dev/null || true)"
+  if [[ "$ov" -eq 1 ]]; then
+    record_hard_fail "Could not overlay $PKG onto the running install"
+    err "Upgrade had hard failures — see $INSTALL_LOG"
+    exit 1
   fi
   if [[ ${#HARD_FAILURES[@]} -gt 0 ]]; then
     err "Upgrade had hard failures — see $INSTALL_LOG"
     exit 1
   fi
-  local ver=""
-  ver="$("$CLI" --version 2>/dev/null || true)"
   log "Upgrade done${ver:+ — $ver} — log: $INSTALL_LOG"
 }
 
