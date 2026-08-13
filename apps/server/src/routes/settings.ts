@@ -152,6 +152,7 @@ export async function handleSettingsRoutes(
         sendJson(res, 200, {
           ok: true,
           requireAdminTotp: ctx.auth.isAdminTotpRequired(),
+          requireUserTotp: ctx.auth.isUserTotpRequired(),
           requireAdminTotpStrict:
             ctx.db.snapshot.settings['security.require_admin_totp_strict'] === '1' });
         return true;
@@ -163,11 +164,16 @@ export async function handleSettingsRoutes(
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as {
           requireAdminTotp?: boolean;
+          requireUserTotp?: boolean;
           requireAdminTotpStrict?: boolean;
           totp?: string;
         };
         try {
-          if (data.requireAdminTotp === true || data.requireAdminTotpStrict === true) {
+          if (
+            data.requireAdminTotp === true ||
+            data.requireUserTotp === true ||
+            data.requireAdminTotpStrict === true
+          ) {
             ctx.auth.requireStepUp(user.id, data.totp);
           }
         } catch (e) {
@@ -184,6 +190,9 @@ export async function handleSettingsRoutes(
         if (data.requireAdminTotp !== undefined) {
           ctx.auth.setAdminTotpRequired(Boolean(data.requireAdminTotp), user.username);
         }
+        if (data.requireUserTotp !== undefined) {
+          ctx.auth.setUserTotpRequired(Boolean(data.requireUserTotp), user.username);
+        }
         if (data.requireAdminTotpStrict !== undefined) {
           ctx.db.snapshot.settings['security.require_admin_totp_strict'] =
             data.requireAdminTotpStrict ? '1' : '0';
@@ -192,6 +201,7 @@ export async function handleSettingsRoutes(
         sendJson(res, 200, {
           ok: true,
           requireAdminTotp: ctx.auth.isAdminTotpRequired(),
+          requireUserTotp: ctx.auth.isUserTotpRequired(),
           requireAdminTotpStrict:
             ctx.db.snapshot.settings['security.require_admin_totp_strict'] === '1' });
         return true;

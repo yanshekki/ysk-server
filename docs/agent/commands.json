@@ -720,7 +720,19 @@
       "name": "users list",
       "risk": "read",
       "summary": "List panel users",
-      "example": "ysk-server users list --json"
+      "example": "ysk-server users list --totp 0 --json"
+    },
+    {
+      "name": "users totp",
+      "risk": "read",
+      "summary": "Show a panel user's 2FA status (no secrets)",
+      "example": "ysk-server users totp --user NAME --json"
+    },
+    {
+      "name": "users totp-clear",
+      "risk": "write-panel",
+      "summary": "Admin-clear a user's TOTP (confirm username)",
+      "example": "ysk-server users totp-clear --user NAME --confirm-username NAME --json"
     },
     {
       "name": "packages list",

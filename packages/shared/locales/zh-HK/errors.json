@@ -25,7 +25,7 @@
     "adminTotpStrict": "管理員必須先啟用 雙重驗證（strict）。請用已啟用 雙重驗證 的帳號，或關閉 strict 設定。",
     "totpReplay": "驗證碼已使用，請等下一個週期",
     "totpRequired": "需要有效的雙重驗證碼",
-    "mustEnrollTotp": "管理員政策：請立即啟用雙重驗證",
+    "mustEnrollTotp": "政策：請立即啟用雙重驗證",
     "userNotFound": "找不到用戶",
     "totpSetupNeedReauth": "設定 雙重驗證 需要重新輸入密碼（或近期 step-up 驗證碼）",
     "totpBeginFirst": "請先開始設定 雙重驗證",

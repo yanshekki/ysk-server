@@ -390,5 +390,6 @@
   "revokeOthersDesc": "This will end {{count}} other session(s). Your current browser stays signed in.",
   "sessionRevoked": "Session signed out",
   "mySecurityHint": "",
-  "policyTotpHint": "Site policy: each admin must enable their own 2FA (individual QR)"
+  "policyTotpHint": "Site policy: each admin must enable their own 2FA (individual QR)",
+  "requireUser2fa": "Require 2FA for all panel users"
 }

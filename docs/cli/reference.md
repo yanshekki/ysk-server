@@ -208,7 +208,10 @@ PTR / Port 25 remain external. See [../features/email.md](../features/email.md).
 ## users | packages | rbac | audit | security
 
 ```bash
-ysk-server users list|create …
+ysk-server users list [--q TEXT] [--role operator] [--totp 0|1]
+ysk-server users create --username U --password P [--role operator]
+ysk-server users totp --user NAME
+ysk-server users totp-clear --user NAME --confirm-username NAME
 ysk-server packages list
 ysk-server rbac list|show|audit
 ysk-server audit [--q TEXT] [--limit N]

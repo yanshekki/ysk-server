@@ -71,6 +71,36 @@ export class AuthService {
     });
   }
 
+  /** settings key: security.require_user_totp = "1" — all panel users */
+  isUserTotpRequired(): boolean {
+    const v = this.db?.snapshot.settings?.['security.require_user_totp'];
+    return v === '1' || v === 'true' || v === 'yes';
+  }
+
+  setUserTotpRequired(on: boolean, actor?: string): void {
+    if (!this.db) return;
+    this.db.snapshot.settings['security.require_user_totp'] = on ? '1' : '0';
+    this.db.persist();
+    this.audit?.append({
+      actor: actor ?? 'system',
+      action: 'auth.require_user_totp',
+      detail: { on },
+      ok: true,
+    });
+  }
+
+  /** True when policy says this user must enroll TOTP. */
+  userMustEnrollTotp(user: {
+    roles: string[];
+    totp_enabled?: boolean;
+    totpEnabled?: boolean;
+  }): boolean {
+    const enabled = Boolean(user.totp_enabled ?? user.totpEnabled);
+    if (enabled) return false;
+    if (this.isUserTotpRequired()) return true;
+    return this.isAdminTotpRequired() && user.roles.includes('admin');
+  }
+
   /**
    * Bootstrap admin if no users exist (called by setup).
    */
@@ -170,10 +200,7 @@ export class AuthService {
       throw yskError(ErrorCodes.FORBIDDEN, { httpStatus: 403, messageKey: 'errors.auth.accountSuspended' });
     }
 
-    const mustEnrollTotp =
-      this.isAdminTotpRequired() &&
-      user.roles.includes('admin') &&
-      !user.totp_enabled;
+    const mustEnrollTotp = this.userMustEnrollTotp(user);
 
     // Strict: refuse admin session until 2FA enabled (break-glass: clear setting in dataDir)
     const strict =

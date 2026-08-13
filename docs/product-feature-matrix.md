@@ -337,7 +337,7 @@ Each engine: **data page** + **service page**.
 | Q1 | User CRUD | 兩 | 兩 | ✓ | P2 |
 | Q2 | Package quotas | 兩 | 兩 | △ | P2 |
 | Q3 | Impersonate / login-as | H | D | ✓ | P2 |
-| Q4 | 2FA (users) | H | D | ✗ | P0* |
+| Q4 | 2FA (users) | H | D | ✓ | P0* |
 | Q5 | SSH key / shell | H | D | △ | P1 |
 | Q6 | Feature sets (email-only) | — | D | ✗ | P2 |
 | Q7 | Reseller tier | — | D | ✗ | **Out** (not planned) |

@@ -1768,6 +1768,21 @@ describe('CLI deep coverage climb', () => {
       ),
     ).toBe(true);
 
+    const totpOff = await cli('users', 'list', '--totp', '0');
+    expect(totpOff.code).toBe(0);
+    const totpSt = await cli('users', 'totp', '--user', 'cliop');
+    expect(totpSt.code).toBe(0);
+    expect((parseJsonOut(totpSt.out) as { totpEnabled?: boolean }).totpEnabled).toBe(false);
+    const totpClear = await cli(
+      'users',
+      'totp-clear',
+      '--user',
+      'cliop',
+      '--confirm-username',
+      'cliop',
+    );
+    expect(totpClear.code).toBe(0);
+
     const pkg = await cli('packages', 'list', '--q', '');
     expect(pkg.code).toBe(0);
 

@@ -22,7 +22,8 @@
 
 | 面板操作 | CLI | 風險 | 備註 |
 |----------|-----|------|------|
-| 用戶列表／建立 | `ysk-server users list\|create …` | write-panel | |
+| 用戶列表／建立 | `ysk-server users list\|create …` | write-panel | `--totp 0\|1` |
+| 用戶 2FA 狀態／清除 | `ysk-server users totp\|totp-clear --user NAME` | write-panel | 清除需 `--confirm-username` |
 | 方案列表 | `ysk-server packages list` | read | |
 | RBAC 列表／顯示／審計 | `ysk-server rbac list\|show\|audit` | read | |
 

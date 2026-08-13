@@ -390,5 +390,6 @@
   "revokeOthersDesc": "将结束 {{count}} 个其他会话。当前浏览器保持登录。",
   "sessionRevoked": "已登出该会话",
   "mySecurityHint": "",
-  "policyTotpHint": "全站政策：要求 admin 角色各自启用 2FA（每人自己扫码），不是共用同一组验证码。"
+  "policyTotpHint": "全站政策：要求 admin 角色各自启用 2FA（每人自己扫码），不是共用同一组验证码。",
+  "requireUser2fa": "要求所有面板用户启用 2FA"
 }

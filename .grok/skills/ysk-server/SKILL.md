@@ -63,6 +63,7 @@ ysk-server email queue list --json
 ysk-server notifications --json
 ysk-server backup settings test --json
 ysk-server email policy --domain example.com --antispam --json
+ysk-server users totp --user NAME --json
 ysk-server files shares create --path REL --mode both --root public --json
 ysk-server bt-tracker status --json
 ysk-server bt-tracker start --execute --json

@@ -390,5 +390,6 @@
   "revokeOthersDesc": "Ini akan mengakhiri {{count}} sesi lainnya. Browser Anda saat ini tetap masuk.",
   "sessionRevoked": "Sesi keluar",
   "mySecurityHint": "",
-  "policyTotpHint": "Kebijakan situs: setiap admin harus mengaktifkan 2FA (QR individual) mereka sendiri"
+  "policyTotpHint": "Kebijakan situs: setiap admin harus mengaktifkan 2FA (QR individual) mereka sendiri",
+  "requireUser2fa": "Wajibkan 2FA untuk semua pengguna panel"
 }

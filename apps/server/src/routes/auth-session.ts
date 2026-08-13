@@ -97,10 +97,8 @@ export async function handleAuthSessionRoutes(
           },
           capabilities,
           requireAdminTotp: ctx.auth.isAdminTotpRequired(),
-          mustEnrollTotp:
-            ctx.auth.isAdminTotpRequired() &&
-            user.roles.includes('admin') &&
-            !user.totpEnabled,
+          requireUserTotp: ctx.auth.isUserTotpRequired(),
+          mustEnrollTotp: ctx.auth.userMustEnrollTotp(user),
         });
         return true;
       }

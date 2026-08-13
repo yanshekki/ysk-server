@@ -151,6 +151,8 @@ export function runSetup(opts: SetupOptions = {}): StructuredResult<{
     if (!insecure) {
       db.snapshot.settings['security.require_admin_totp'] =
         db.snapshot.settings['security.require_admin_totp'] ?? '0';
+      db.snapshot.settings['security.require_user_totp'] =
+        db.snapshot.settings['security.require_user_totp'] ?? '0';
     } else {
       // Insecure bootstrap: force change + recommend 2FA
       db.snapshot.settings['security.bootstrap_insecure'] = '1';

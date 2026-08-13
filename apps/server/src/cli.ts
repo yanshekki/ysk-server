@@ -2627,16 +2627,19 @@ async function mainInner(
           const all = ctx.usersAdmin.listUsers();
           const q = getOpt(args, '--q') ?? '';
           const role = getOpt(args, '--role');
+          const totp = getOpt(args, '--totp');
           const url = new URL('http://local/');
           if (q) url.searchParams.set('q', q);
           if (role) url.searchParams.set('role', role);
+          if (totp === '0' || totp === '1') url.searchParams.set('totp', totp);
           const query = parseListQuery(url, {
-            enums: { role: ['admin', 'operator', 'viewer', 'agent'] },
+            enums: { role: ['admin', 'operator', 'viewer', 'agent'], totp: ['0', '1'] },
           });
           const { items, meta } = applyListQuery(all, query, {
             text: (u) => [u.username, u.roles.join(' '), u.packageId ?? ''],
             predicates: {
               role: (u, v) => u.roles.includes(v as never),
+              totp: (u, v) => (v === '1' ? Boolean(u.totpEnabled) : !u.totpEnabled),
             },
           });
           printJson({ ok: true, items, meta });
@@ -2661,6 +2664,57 @@ async function mainInner(
             actor: 'cli',
           });
           printJson({ ok: true, user: created });
+          return 0;
+        }
+        if (sub === 'totp' || sub === '2fa') {
+          const name = getOpt(args, '--user') ?? getOpt(args, '--username') ?? getOpt(args, '--id');
+          if (!name) {
+            process.stderr.write(
+              'Usage: ysk-server users totp --user NAME | users totp-clear --user NAME --confirm-username NAME\n',
+            );
+            return 2;
+          }
+          const all = ctx.usersAdmin.listUsers();
+          const target = all.find((u) => u.id === name || u.username === name);
+          if (!target) {
+            printJson({ ok: false, code: 'YSK_NOT_FOUND', message: 'user not found' });
+            return 4;
+          }
+          printJson({ ok: true, user: target.username, ...ctx.auth.userSecuritySummary(target.id) });
+          return 0;
+        }
+        if (sub === 'totp-clear' || sub === '2fa-clear') {
+          const name = getOpt(args, '--user') ?? getOpt(args, '--username') ?? getOpt(args, '--id');
+          const confirm = getOpt(args, '--confirm-username') ?? getOpt(args, '--confirm');
+          if (!name || !confirm) {
+            process.stderr.write(
+              'Usage: ysk-server users totp-clear --user NAME --confirm-username NAME\n',
+            );
+            return 2;
+          }
+          const all = ctx.usersAdmin.listUsers();
+          const target = all.find((u) => u.id === name || u.username === name);
+          if (!target) {
+            printJson({ ok: false, code: 'YSK_NOT_FOUND', message: 'user not found' });
+            return 4;
+          }
+          if (confirm.trim().toLowerCase() !== target.username.toLowerCase()) {
+            printJson({
+              ok: false,
+              code: 'YSK_VALIDATION',
+              message: 'confirmUsername must match target username',
+            });
+            return 2;
+          }
+          const actor =
+            ctx.db.snapshot.users.find((u) => u.roles.includes('admin')) ??
+            ctx.db.snapshot.users[0];
+          if (!actor) {
+            printJson({ ok: false, notes: ['no actor user'] });
+            return 1;
+          }
+          const result = ctx.auth.adminClearUserTotp(actor.id, target.id);
+          printJson({ ok: true, ...result });
           return 0;
         }
         process.stderr.write(`${tl('cli.usage.users.list.--q.text.--role.544685')}\n`);
@@ -2778,14 +2832,19 @@ async function mainInner(
           );
           const requireTotp =
             ctx.db.snapshot.settings?.['security.require_admin_totp'] === '1';
+          const requireUserTotp =
+            ctx.db.snapshot.settings?.['security.require_user_totp'] === '1';
           const strict =
             ctx.db.snapshot.settings?.['security.require_admin_totp_strict'] === '1';
           printJson({
             ok: true,
             requireAdminTotp: requireTotp,
+            requireUserTotp,
             requireAdminTotpStrict: strict,
             adminCount: admins.length,
             adminsWith2fa: admins.filter((u) => u.totpEnabled).length,
+            userCount: users.length,
+            usersWith2fa: users.filter((u) => u.totpEnabled).length,
             mustChangePassword: storeAdmins.filter((u) => u.must_change_password).length,
             listenPublic: ctx.db.snapshot.settings?.['security.listen_public'] === '1',
             bootstrapInsecure:

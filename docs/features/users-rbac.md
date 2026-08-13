@@ -22,7 +22,8 @@ Control-plane **users**, **packages** (plans), and **RBAC** policy inspection.
 
 | Panel action | CLI | Risk | Notes |
 |--------------|-----|------|-------|
-| Users list/create | `ysk-server users list\|create …` | write-panel | |
+| Users list/create | `ysk-server users list\|create …` | write-panel | `--totp 0\|1` |
+| User 2FA status / clear | `ysk-server users totp\|totp-clear --user NAME` | write-panel | Clear needs `--confirm-username` |
 | Packages list | `ysk-server packages list` | read | |
 | RBAC list/show/audit | `ysk-server rbac list\|show\|audit` | read | |
 

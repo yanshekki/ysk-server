@@ -10263,7 +10263,8 @@
     "revokeOthersDesc": "{{count}} 다른 세션이 종료됩니다. 현재 브라우저는 로그인된 상태로 유지됩니다.",
     "sessionRevoked": "세션이 로그아웃되었습니다.",
     "mySecurityHint": "",
-    "policyTotpHint": "사이트 정책: 각 관리자는 자신의 2FA(개별 QR)를 활성화해야 합니다."
+    "policyTotpHint": "사이트 정책: 각 관리자는 자신의 2FA(개별 QR)를 활성화해야 합니다.",
+    "requireUser2fa": "모든 패널 사용자에게 2FA 요구"
   },
   "serviceExposure": {
     "title": "네트워크 접속",

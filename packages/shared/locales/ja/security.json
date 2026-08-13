@@ -390,5 +390,6 @@
   "revokeOthersDesc": "これにより、他のセッション {{count}} が終了します。現在のブラウザはサインインしたままになります。",
   "sessionRevoked": "セッションがサインアウトしました",
   "mySecurityHint": "",
-  "policyTotpHint": "サイト ポリシー: 各管理者は独自の 2FA (個別の QR) を有効にする必要があります。"
+  "policyTotpHint": "サイト ポリシー: 各管理者は独自の 2FA (個別の QR) を有効にする必要があります。",
+  "requireUser2fa": "すべてのパネルユーザーに 2FA を要求"
 }

@@ -28,6 +28,8 @@
 | 審計 | `ysk-server audit --json` | read | |
 | SSH 金鑰 | `ysk-server ssh-key …` | write-host | install 需 execute |
 | SSH 2FA | `ysk-server ssh-2fa …` | write-host | ≠ 面板 TOTP |
+| 面板用戶 2FA 政策 | `ysk-server security status` · `/security` | write-panel | `requireUserTotp` |
+| 用戶 2FA 狀態／清除 | `ysk-server users totp\|totp-clear` | write-panel | |
 
 ## CLI 速查
 

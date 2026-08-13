@@ -286,6 +286,38 @@ describe('auth + protection (persistent)', () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
+  it('require user totp marks operator mustEnrollTotp', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-auth-user-totp-'));
+    const db = openDatabase(join(dir, 't.json'));
+    const users = new UserRepository(db);
+    const auth = new AuthService(
+      users,
+      new SessionRepository(db),
+      new AuditRepository(db),
+      db,
+      dir,
+    );
+    auth.ensureAdmin('admin', 'secret-long-ok5', 'zh-HK');
+    const salt = 'opsalt2';
+    const now = new Date().toISOString();
+    users.insert({
+      id: 'u-op2',
+      username: 'op2',
+      password_hash: hashPassword('password1xx', salt),
+      password_salt: salt,
+      roles: ['operator'],
+      locale: 'en',
+      created_at: now,
+      updated_at: now,
+    });
+    auth.setUserTotpRequired(true, 'admin');
+    expect(auth.isUserTotpRequired()).toBe(true);
+    const login = auth.login({ username: 'op2', password: 'password1xx' });
+    expect(login.mustEnrollTotp).toBe(true);
+    closeDatabase(db);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
   it('adminClearUserTotp clears another user 2FA only (per-user)', () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-auth-clear-totp-'));
     const db = openDatabase(join(dir, 't.json'));

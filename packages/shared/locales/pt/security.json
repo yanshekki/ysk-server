@@ -390,5 +390,6 @@
   "revokeOthersDesc": "Isso encerrará {{count}} outras sessões. Seu navegador atual permanece conectado.",
   "sessionRevoked": "Sessão desconectada",
   "mySecurityHint": "",
-  "policyTotpHint": "Política do site: cada administrador deve habilitar seu próprio 2FA (QR individual)"
+  "policyTotpHint": "Política do site: cada administrador deve habilitar seu próprio 2FA (QR individual)",
+  "requireUser2fa": "Exigir 2FA para todos os utilizadores do painel"
 }

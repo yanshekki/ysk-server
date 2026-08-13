@@ -261,6 +261,7 @@ export function SecurityPage() {
   const [revokeTarget, setRevokeTarget] = useState<SessionRow | null>(null);
   const [revokeOthersOpen, setRevokeOthersOpen] = useState(false);
   const [requireAdminTotp, setRequireAdminTotp] = useState(false);
+  const [requireUserTotp, setRequireUserTotp] = useState(false);
   const [requireStrict, setRequireStrict] = useState(false);
   const [policyTotp, setPolicyTotp] = useState('');
   const [apiKeys, setApiKeys] = useState<
@@ -302,6 +303,7 @@ export function SecurityPage() {
     try {
       const r = await api.getSecuritySettings();
       setRequireAdminTotp(Boolean(r.requireAdminTotp));
+      setRequireUserTotp(Boolean(r.requireUserTotp));
       setRequireStrict(Boolean(r.requireAdminTotpStrict));
     } catch {
       /* non-admin */
@@ -728,6 +730,14 @@ export function SecurityPage() {
                 <label className="ssh-check u-mt-2">
                   <input
                     type="checkbox"
+                    checked={requireUserTotp}
+                    onChange={bindCheck(setRequireUserTotp)}
+                  />
+                  <span>{t('security.requireUser2fa')}</span>
+                </label>
+                <label className="ssh-check u-mt-2">
+                  <input
+                    type="checkbox"
                     checked={requireStrict}
                     onChange={bindCheck(setRequireStrict)}
                   />
@@ -754,6 +764,7 @@ export function SecurityPage() {
                       void api
                         .setSecuritySettings({
                           requireAdminTotp,
+                          requireUserTotp,
                           requireAdminTotpStrict: requireStrict,
                           totp: policyTotp || undefined })
                         .then(() => {

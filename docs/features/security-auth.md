@@ -28,6 +28,8 @@ Panel **login security**: sessions, API keys, panel 2FA, audit trail; separate f
 | Audit | `ysk-server audit --json` | read | |
 | SSH keys | `ysk-server ssh-key …` | write-host | install needs execute |
 | SSH 2FA | `ysk-server ssh-2fa …` | write-host | ≠ panel TOTP |
+| Panel-user 2FA policy | `ysk-server security status` · `/security` | write-panel | `requireUserTotp` |
+| User 2FA status / clear | `ysk-server users totp\|totp-clear` | write-panel | |
 
 ## CLI quick start
 

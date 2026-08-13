@@ -331,17 +331,20 @@ export const api = {
   },
   getSecuritySettings(): Promise<{
     requireAdminTotp: boolean;
+    requireUserTotp: boolean;
     requireAdminTotpStrict: boolean;
   }> {
     return request('/api/v1/settings/security');
   },
   setSecuritySettings(body: {
     requireAdminTotp?: boolean;
+    requireUserTotp?: boolean;
     requireAdminTotpStrict?: boolean;
     totp?: string;
   }): Promise<{
     ok: boolean;
     requireAdminTotp: boolean;
+    requireUserTotp: boolean;
     requireAdminTotpStrict: boolean;
   }> {
     return request('/api/v1/settings/security', {

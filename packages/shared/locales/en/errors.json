@@ -25,7 +25,7 @@
     "adminTotpStrict": "Admins must enable 2FA (strict). Use an enrolled account or disable strict mode.",
     "totpReplay": "Code already used; wait for the next period",
     "totpRequired": "A valid authentication code is required",
-    "mustEnrollTotp": "Admin policy: enable two-factor authentication now",
+    "mustEnrollTotp": "Policy: enable two-factor authentication now",
     "userNotFound": "User not found",
     "totpSetupNeedReauth": "Enabling 2FA requires your password (or a recent step-up code)",
     "totpBeginFirst": "Start 2FA setup first",

@@ -58,3 +58,5 @@ Files name collisions: `ifExists=fail|overwrite|rename` on upload/copy/rename (d
 `POST /api/v1/backups/remote/test` probes SFTP/S3/local destination. CLI: `ysk-server backup settings test`. Live probe needs EXECUTE.
 
 `POST /api/v1/email/domains/:id/policy` sets per-domain antispam + outbound rate (Rspamd map). CLI: `ysk-server email policy`. `--execute` copies into `/etc`.
+
+Panel-user 2FA: `GET/POST /api/v1/settings/security` `requireUserTotp`. CLI: `ysk-server users totp` / `users totp-clear`. Each user enrolls on `/security`.

@@ -89,6 +89,12 @@ describe('settings routes (HTTP)', () => {
     expect(res.status).toBe(200);
     expect((res.body as { ok?: boolean; requireAdminTotp?: boolean }).ok).toBe(true);
     expect((res.body as { requireAdminTotp?: boolean }).requireAdminTotp).toBe(false);
+
+    const userOff = await apiJson(ts, 'POST', '/api/v1/settings/security', {
+      requireUserTotp: false,
+    });
+    expect(userOff.status).toBe(200);
+    expect((userOff.body as { requireUserTotp?: boolean }).requireUserTotp).toBe(false);
   });
 
   it('requireAdminTotp true without step-up is honest fail; strict flag saves', async () => {
