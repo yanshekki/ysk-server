@@ -236,6 +236,40 @@
   display: none;
 }
 
+.shell__account-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+.shell__account-drawer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.shell__account-drawer .shell__lang,
+.shell__account-drawer .shell__lang-select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  height: var(--control-height);
+}
+
+.shell__account-drawer .shell__user {
+  max-width: none;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.shell__account-drawer .btn {
+  width: 100%;
+}
+
 /* —— Login (shared brand surface) —— */
 .login-page {
   min-height: 100vh;
@@ -378,7 +412,8 @@
 
   .shell__top {
     flex-wrap: nowrap;
-    gap: 0.4rem;
+    justify-content: flex-start;
+    gap: 0.5rem;
     height: var(--header-height);
     min-height: var(--header-height);
     padding: 0 0.65rem;
@@ -389,23 +424,8 @@
     min-width: 0;
   }
 
-  .shell__lang {
-    flex-shrink: 0;
-  }
-
-  .shell__lang-select {
-    min-width: 0;
-    max-width: 6.75rem;
-    width: auto;
-    padding: 0 0.3rem;
-  }
-
-  .shell__user {
-    flex-shrink: 0;
-    max-width: 5.5rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .shell__account-bar {
+    display: none;
   }
 
   .shell__content {

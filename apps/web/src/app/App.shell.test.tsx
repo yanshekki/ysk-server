@@ -84,6 +84,44 @@ describe('AppShell', () => {
       });
     }
   });
+
+  it('keeps only menu + search in the compact header', () => {
+    vi.stubGlobal(
+      'matchMedia',
+      (query: string) =>
+        ({
+          matches: String(query).includes('max-width: 900px'),
+          media: query,
+          addEventListener: () => undefined,
+          removeEventListener: () => undefined,
+          addListener: () => undefined,
+          removeListener: () => undefined,
+          dispatchEvent: () => false,
+          onchange: null,
+        }) as MediaQueryList,
+    );
+    installFetchMock([
+      softwareReadyRoute(),
+      { match: /\/api\/v1\/auth\/me/, body: { user: { username: 'admin', roles: ['admin'] }, capabilities: [] } },
+      { match: /.*/, body: { ok: true, items: [] } },
+    ]);
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Routes>
+          <Route element={<AppShell />}>
+            <Route index element={<div>dash-body</div>} />
+          </Route>
+        </Routes>
+      </MemoryRouter>,
+    );
+    const header = document.querySelector('.shell__top');
+    expect(header?.querySelector('.shell__menu-btn')).toBeTruthy();
+    expect(header?.querySelector('.shell__search')).toBeTruthy();
+    expect(header?.querySelector('.shell__account-bar')).toBeNull();
+    expect(header?.querySelector('.shell__lang')).toBeNull();
+    expect(document.querySelector('.shell__account-drawer .shell__lang')).toBeTruthy();
+    expect(document.querySelector('.shell__account-drawer .shell__user')?.textContent).toMatch(/admin/i);
+  });
 });
 
 describe('App routes mount', () => {

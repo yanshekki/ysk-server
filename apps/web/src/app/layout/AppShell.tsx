@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { canSeeFeature } from 'ysk-server-shared';
@@ -44,6 +44,20 @@ export function AppShell() {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const [compactChrome, setCompactChrome] = useState(() =>
+    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      ? window.matchMedia('(max-width: 900px)').matches
+      : false,
+  );
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return;
+    const mq = window.matchMedia('(max-width: 900px)');
+    const apply = () => setCompactChrome(mq.matches);
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, []);
 
   const isAdmin = Boolean(user?.roles?.includes('admin'));
   const updatesBadge = useUpdatesNavBadge();
@@ -74,6 +88,35 @@ export function AppShell() {
     : null;
   const locale = normalizeLocale(i18n.language);
 
+  const accountControls = (
+    <>
+      <label className="shell__lang">
+        <select
+          className="shell__lang-select"
+          value={locale}
+          onChange={(e) => setAppLocale(e.target.value as LocaleCode, { syncServer: true })}
+          title={t('common.switchLanguage', { defaultValue: 'Switch language' })}
+          aria-label={t('common.language', { defaultValue: 'Language' })}
+        >
+          {LOCALES.map((code) => (
+            <option key={code} value={code}>
+              {LOCALE_LABELS[code]}
+            </option>
+          ))}
+        </select>
+      </label>
+      <span className="shell__user">
+        {user?.username ?? '—'}
+        {roleLabel && roleLabel !== user?.username ? (
+          <span className="badge badge--beside">{roleLabel}</span>
+        ) : null}
+      </span>
+      <button type="button" className={buttonClassName({ variant: 'secondary', size: 'sm' })} onClick={onLogout}>
+        {t('nav.logout')}
+      </button>
+    </>
+  );
+
   return (
     <div className="shell">
       <ToastViewport />
@@ -83,6 +126,9 @@ export function AppShell() {
           <img src="/logo.svg" alt="YSK Limited" width={32} height={32} />
           <span className="gradient-text">YSK Server</span>
         </div>
+        {compactChrome ? (
+          <div className="shell__account-drawer">{accountControls}</div>
+        ) : null}
         <nav className="shell__nav" aria-label="Main">
           {navSections.map((section) => (
             <div key={section.sectionKey} className="shell__nav-section">
@@ -201,30 +247,7 @@ export function AppShell() {
           <div className="shell__search">
             <GlobalSearch />
           </div>
-          <label className="shell__lang">
-            <select
-              className="shell__lang-select"
-              value={locale}
-              onChange={(e) => setAppLocale(e.target.value as LocaleCode, { syncServer: true })}
-              title={t('common.switchLanguage', { defaultValue: 'Switch language' })}
-              aria-label={t('common.language', { defaultValue: 'Language' })}
-            >
-              {LOCALES.map((code) => (
-                <option key={code} value={code}>
-                  {LOCALE_LABELS[code]}
-                </option>
-              ))}
-            </select>
-          </label>
-          <span className="shell__user">
-            {user?.username ?? '—'}
-            {roleLabel && roleLabel !== user?.username ? (
-              <span className="badge badge--beside">{roleLabel}</span>
-            ) : null}
-          </span>
-          <button type="button" className={buttonClassName({ variant: 'secondary', size: 'sm' })} onClick={onLogout}>
-            {t('nav.logout')}
-          </button>
+          {!compactChrome ? <div className="shell__account-bar">{accountControls}</div> : null}
         </header>
         <main className="shell__content">
           <Outlet />
