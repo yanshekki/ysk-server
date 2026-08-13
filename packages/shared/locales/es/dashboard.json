@@ -107,5 +107,12 @@
   "noNotifs": "Sin notificaciones",
   "noNotifsDesc": "Las alertas del sistema y todos aparecen aquí.",
   "applyAuditTitle": "Aplicar auditoría de estado",
-  "applyAuditDesc": "ok {{ok}} · advertir {{warn}} · malo {{bad}}"
+  "applyAuditDesc": "ok {{ok}} · advertir {{warn}} · malo {{bad}}",
+  "barTitle": "{{count}} aviso(s) del host",
+  "levelCritical": "Crítico",
+  "levelWarn": "Aviso",
+  "levelInfo": "Info",
+  "colTitle": "Aviso",
+  "colDetail": "Detalle",
+  "colSource": "Origen"
 }

@@ -107,5 +107,12 @@
   "noNotifs": "通知はありません",
   "noNotifsDesc": "システム アラートと Todo がここに表示されます",
   "applyAuditTitle": "ステータス監査の適用",
-  "applyAuditDesc": "わかりました {{ok}} · 警告 {{warn}} · 悪い {{bad}}"
+  "applyAuditDesc": "わかりました {{ok}} · 警告 {{warn}} · 悪い {{bad}}",
+  "barTitle": "ホスト通知 {{count}} 件",
+  "levelCritical": "重大",
+  "levelWarn": "警告",
+  "levelInfo": "情報",
+  "colTitle": "通知",
+  "colDetail": "詳細",
+  "colSource": "出典"
 }

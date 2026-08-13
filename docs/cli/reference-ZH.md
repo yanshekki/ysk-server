@@ -249,12 +249,13 @@ ysk-server agent run --control-plane URL --id AGENT_ID [--group g]
 
 Fleet：已註冊 ≠ 已連線（需 heartbeat）。入隊需 Bearer；公開路徑僅限 poller。
 
-## logs | host | health | readiness | doctor | services | db-cluster
+## logs | host | health | notifications | readiness | doctor | services | db-cluster
 
 ```bash
 ysk-server logs sources|query|journal|overview …
 ysk-server host overview|metrics|network …
 ysk-server health [--url http://host:port/health]
+ysk-server notifications
 ysk-server readiness|doctor [--json]
 ysk-server services …
 ysk-server db-cluster list|get|create|plan …

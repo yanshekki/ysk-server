@@ -107,5 +107,12 @@
   "noNotifs": "알림 없음",
   "noNotifsDesc": "시스템 경고 및 할 일이 여기에 표시됩니다.",
   "applyAuditTitle": "현황 감사 적용",
-  "applyAuditDesc": "알았어 {{ok}} · 경고 {{warn}} · 나쁘다 {{bad}}"
+  "applyAuditDesc": "알았어 {{ok}} · 경고 {{warn}} · 나쁘다 {{bad}}",
+  "barTitle": "호스트 알림 {{count}}건",
+  "levelCritical": "심각",
+  "levelWarn": "경고",
+  "levelInfo": "정보",
+  "colTitle": "알림",
+  "colDetail": "내용",
+  "colSource": "출처"
 }

@@ -107,5 +107,12 @@
   "noNotifs": "Aucune notification",
   "noNotifsDesc": "Les alertes système et les tâches apparaissent ici",
   "applyAuditTitle": "Audit de l’état d’application",
-  "applyAuditDesc": "ok {{ok}} · avert. {{warn}} · erreur {{bad}}"
+  "applyAuditDesc": "ok {{ok}} · avert. {{warn}} · erreur {{bad}}",
+  "barTitle": "{{count}} alerte(s) hôte",
+  "levelCritical": "Critique",
+  "levelWarn": "Avertissement",
+  "levelInfo": "Info",
+  "colTitle": "Alerte",
+  "colDetail": "Détail",
+  "colSource": "Source"
 }

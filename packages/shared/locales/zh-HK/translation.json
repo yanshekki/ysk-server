@@ -2246,7 +2246,14 @@
     "noNotifs": "暫無通知",
     "noNotifsDesc": "系統告警與待辦會顯示於此",
     "applyAuditTitle": "套用狀態審計",
-    "applyAuditDesc": "好的 {{ok}} · 警告 {{warn}} · 不好 {{bad}}"
+    "applyAuditDesc": "好的 {{ok}} · 警告 {{warn}} · 不好 {{bad}}",
+    "barTitle": "{{count}} 則主機提示",
+    "levelCritical": "嚴重",
+    "levelWarn": "警告",
+    "levelInfo": "資訊",
+    "colTitle": "提示",
+    "colDetail": "詳情",
+    "colSource": "來源"
   },
   "dataTable": {
     "empty": "沒有資料",

@@ -2246,7 +2246,14 @@
     "noNotifs": "Sem notificações",
     "noNotifsDesc": "Alertas do sistema e todos aparecem aqui",
     "applyAuditTitle": "Aplicar auditoria de status",
-    "applyAuditDesc": "ok {{ok}} · avisar {{warn}} · ruim {{bad}}"
+    "applyAuditDesc": "ok {{ok}} · avisar {{warn}} · ruim {{bad}}",
+    "barTitle": "{{count}} alerta(s) do host",
+    "levelCritical": "Crítico",
+    "levelWarn": "Aviso",
+    "levelInfo": "Info",
+    "colTitle": "Alerta",
+    "colDetail": "Detalhe",
+    "colSource": "Origem"
   },
   "dataTable": {
     "empty": "Sem dados",

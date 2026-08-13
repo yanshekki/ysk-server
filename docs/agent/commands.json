@@ -25,6 +25,12 @@
   },
   "commands": [
     {
+      "name": "notifications",
+      "risk": "read",
+      "summary": "Dashboard host alerts (same as GET /api/v1/notifications)",
+      "example": "ysk-server notifications --json"
+    },
+    {
       "name": "readiness",
       "aliases": [
         "doctor"

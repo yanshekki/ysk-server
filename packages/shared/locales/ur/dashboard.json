@@ -107,5 +107,12 @@
   "noNotifs": "کوئی اطلاع نہیں۔",
   "noNotifsDesc": "سسٹم الرٹس اور ٹوڈو یہاں ظاہر ہوتے ہیں۔",
   "applyAuditTitle": "اسٹیٹس آڈٹ کا اطلاق کریں۔",
-  "applyAuditDesc": "ٹھیک ہے {{ok}} · تنبیہ {{warn}} · برا {{bad}}"
+  "applyAuditDesc": "ٹھیک ہے {{ok}} · تنبیہ {{warn}} · برا {{bad}}",
+  "barTitle": "{{count}} ہوسٹ الرٹس",
+  "levelCritical": "شدید",
+  "levelWarn": "انتباہ",
+  "levelInfo": "معلومات",
+  "colTitle": "الرٹ",
+  "colDetail": "تفصیل",
+  "colSource": "ماخذ"
 }

@@ -76,6 +76,7 @@ const CLI_COMMANDS = [
   'cron',
   'email',
   'health',
+  'notifications',
   'readiness',
   'doctor',
   'migrate',
@@ -5595,6 +5596,25 @@ async function mainInner(
         ],
       });
       return 0;
+    } finally {
+      closeAppContext(ctx);
+    }
+  }
+
+  if (command === 'notifications') {
+    const ctx = openCliContext(args);
+    try {
+      const { collectNotifications } = await import('ysk-server-core');
+      const r = await collectNotifications({
+        db: ctx.db,
+        host: ctx.host,
+        dataDir: ctx.dataDir,
+        executeEnabled: ctx.host.executeEnabled(),
+        lastBackup: ctx.settings.getJson<Record<string, unknown>>('last_backup_run'),
+        lastDnsbl: ctx.settings.getJson<Record<string, unknown>>('last_dnsbl_run'),
+      });
+      printJson({ ok: true, ...r });
+      return r.counts.critical > 0 ? 1 : 0;
     } finally {
       closeAppContext(ctx);
     }

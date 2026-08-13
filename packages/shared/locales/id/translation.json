@@ -2246,7 +2246,14 @@
     "noNotifs": "Tidak ada pemberitahuan",
     "noNotifsDesc": "Peringatan sistem dan tugas yang harus dilakukan muncul di sini",
     "applyAuditTitle": "Terapkan audit status",
-    "applyAuditDesc": "oke {{ok}} · peringatkan {{warn}} · buruk {{bad}}"
+    "applyAuditDesc": "oke {{ok}} · peringatkan {{warn}} · buruk {{bad}}",
+    "barTitle": "{{count}} peringatan host",
+    "levelCritical": "Kritis",
+    "levelWarn": "Peringatan",
+    "levelInfo": "Info",
+    "colTitle": "Peringatan",
+    "colDetail": "Rincian",
+    "colSource": "Sumber"
   },
   "dataTable": {
     "empty": "Tidak ada data",

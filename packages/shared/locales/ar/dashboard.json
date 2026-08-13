@@ -107,5 +107,12 @@
   "noNotifs": "لا الإخطارات",
   "noNotifsDesc": "تظهر تنبيهات النظام والمهام هنا",
   "applyAuditTitle": "تطبيق تدقيق الحالة",
-  "applyAuditDesc": "حسنًا {{ok}} · تحذير {{warn}} · سيئ {{bad}}"
+  "applyAuditDesc": "حسنًا {{ok}} · تحذير {{warn}} · سيئ {{bad}}",
+  "barTitle": "{{count}} تنبيه على المضيف",
+  "levelCritical": "حرج",
+  "levelWarn": "تحذير",
+  "levelInfo": "معلومة",
+  "colTitle": "تنبيه",
+  "colDetail": "التفاصيل",
+  "colSource": "المصدر"
 }

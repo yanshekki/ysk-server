@@ -21,6 +21,7 @@ import {
   FormLayout,
   LoadingBlock,
   FeaturePageLayout,
+  DataTable,
   PageTabs,
   type FeatureTileBadge,
   FormActions,
@@ -280,6 +281,30 @@ export function DashboardPage() {
     >
       {error ? <Alert variant="error">{error}</Alert> : null}
       {loading ? <LoadingBlock /> : null}
+      {(() => {
+        const urgent = notifications.filter(
+          (n) => n.level === 'critical' || n.level === 'warn',
+        );
+        if (!urgent.length) return null;
+        const first = urgent[0]!;
+        return (
+          <Alert variant={notifCounts.critical > 0 ? 'error' : 'warn'}>
+            <strong>
+              {t('dashboard.barTitle', { count: urgent.length })}
+            </strong>
+            {' · '}
+            {first.title}
+            {first.href ? (
+              <>
+                {' · '}
+                <Link to={first.href}>{t('dashboard.go')}</Link>
+              </>
+            ) : null}
+            {' · '}
+            <Link to="/?tab=notifications">{t('dashboard.notifCenter')}</Link>
+          </Alert>
+        );
+      })()}
 
       <PageTabs
         tabs={[
@@ -417,7 +442,9 @@ export function DashboardPage() {
                           <Badge
                             tone={n.level === 'critical' ? 'danger' : 'warn'}
                           >
-                            {n.level}
+                            {n.level === 'critical'
+                              ? t('dashboard.levelCritical')
+                              : t('dashboard.levelWarn')}
                           </Badge>{' '}
                           <strong>{n.title}</strong>
                           <span className="muted u-text-sm"> — {n.body}</span>
@@ -849,45 +876,74 @@ export function DashboardPage() {
 
         {tab === 'notifications' ? (
           <div className="tab-panel">
-            <Card>
-              <CardSection
-                title={t('dashboard.notifCenterTitle', { count: notifications.length })}
-                description={t('dashboard.notifCenterDesc', {
-                  critical: notifCounts.critical,
-                  warn: notifCounts.warn,
-                  info: notifCounts.info })}
-              >
-                {notifications.length === 0 ? (
-                  <EmptyState title={t('dashboard.noNotifs')} description={t('dashboard.noNotifsDesc')} />
-                ) : (
-                  <ul className="list-plain list-spaced">
-                    {notifications.slice(0, 20).map((n) => (
-                      <li key={n.id}>
-                        <Badge
-                          tone={
-                            n.level === 'critical'
-                              ? 'danger'
-                              : n.level === 'warn'
-                                ? 'warn'
-                                : 'info'
-                          }
-                        >
-                          {n.level}
-                        </Badge>{' '}
-                        <strong>{n.title}</strong>
-                        <span className="muted u-text-sm"> — {n.body}</span>
-                        {n.href ? (
-                          <>
-                            {' '}
-                            <Link to={n.href}>{t('dashboard.go')}</Link>
-                          </>
-                        ) : null}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </CardSection>
-            </Card>
+            <DataTable
+              title={t('dashboard.notifCenterTitle', { count: notifications.length })}
+              description={t('dashboard.notifCenterDesc', {
+                critical: notifCounts.critical,
+                warn: notifCounts.warn,
+                info: notifCounts.info,
+              })}
+              columns={[
+                {
+                  key: 'level',
+                  header: t('common.status'),
+                  nowrap: true,
+                  render: (n) => (
+                    <Badge
+                      tone={
+                        n.level === 'critical'
+                          ? 'danger'
+                          : n.level === 'warn'
+                            ? 'warn'
+                            : 'info'
+                      }
+                    >
+                      {n.level === 'critical'
+                        ? t('dashboard.levelCritical')
+                        : n.level === 'warn'
+                          ? t('dashboard.levelWarn')
+                          : t('dashboard.levelInfo')}
+                    </Badge>
+                  ),
+                },
+                {
+                  key: 'title',
+                  header: t('dashboard.colTitle'),
+                  render: (n) => <strong>{n.title}</strong>,
+                },
+                {
+                  key: 'body',
+                  header: t('dashboard.colDetail'),
+                  render: (n) => (
+                    <span className="muted u-text-sm">{n.body}</span>
+                  ),
+                },
+                {
+                  key: 'source',
+                  header: t('dashboard.colSource'),
+                  nowrap: true,
+                  render: (n) => n.source,
+                },
+              ]}
+              rows={notifications}
+              rowKey={(n) => n.id}
+              rowActions={(n) =>
+                n.href ? (
+                  <Link
+                    to={n.href}
+                    className={buttonClassName({ variant: 'secondary', size: 'sm' })}
+                  >
+                    {t('dashboard.go')}
+                  </Link>
+                ) : null
+              }
+              empty={
+                <EmptyState
+                  title={t('dashboard.noNotifs')}
+                  description={t('dashboard.noNotifsDesc')}
+                />
+              }
+            />
             {applyAudit && (applyAudit.summary.bad > 0 || applyAudit.summary.warn > 0) ? (
               <Card>
                 <CardSection

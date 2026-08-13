@@ -2246,7 +2246,14 @@
     "noNotifs": "No notifications",
     "noNotifsDesc": "System alerts and todos appear here",
     "applyAuditTitle": "Apply status audit",
-    "applyAuditDesc": "ok {{ok}} · warn {{warn}} · bad {{bad}}"
+    "applyAuditDesc": "ok {{ok}} · warn {{warn}} · bad {{bad}}",
+    "barTitle": "{{count}} host alert(s)",
+    "levelCritical": "Critical",
+    "levelWarn": "Warning",
+    "levelInfo": "Info",
+    "colTitle": "Alert",
+    "colDetail": "Detail",
+    "colSource": "Source"
   },
   "dataTable": {
     "empty": "No data",

@@ -249,12 +249,13 @@ ysk-server agent run --control-plane URL --id AGENT_ID [--group g]
 
 Fleet: registered ≠ connected until heartbeat. Enqueue needs Bearer; public poller paths limited.
 
-## logs | host | health | readiness | doctor | services | metrics via host
+## logs | host | health | notifications | readiness | doctor | services | metrics via host
 
 ```bash
 ysk-server logs sources|query|journal|overview …
 ysk-server host overview|metrics|network …
 ysk-server health [--url http://host:port/health]
+ysk-server notifications
 ysk-server readiness|doctor [--json]
 ysk-server services …
 ysk-server db-cluster list|get|create|plan …

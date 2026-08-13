@@ -477,6 +477,30 @@ describe('CLI main paths (read-only / dry, no root)', () => {
     }
   });
 
+  it('notifications lists dashboard alerts', async () => {
+    const dir = setupTmpDataDir();
+    try {
+      const r = await runMain([
+        'node',
+        'ysk-server',
+        'notifications',
+        '--data-dir',
+        dir,
+        '--json',
+      ]);
+      expect([0, 1]).toContain(r.code);
+      const body = parseJsonOut(r.out) as {
+        ok?: boolean;
+        items?: unknown[];
+        counts?: { critical?: number };
+      };
+      expect(body.ok).toBe(true);
+      expect(Array.isArray(body.items)).toBe(true);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it('readiness / doctor with --data-dir --json (exit 0 or 2)', async () => {
     const dir = setupTmpDataDir();
     try {

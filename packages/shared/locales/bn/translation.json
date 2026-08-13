@@ -2246,7 +2246,14 @@
     "noNotifs": "কোন বিজ্ঞপ্তি নেই",
     "noNotifsDesc": "সিস্টেম সতর্কতা এবং করণীয় এখানে প্রদর্শিত হবে",
     "applyAuditTitle": "স্থিতি নিরীক্ষা প্রয়োগ করুন",
-    "applyAuditDesc": "ঠিক আছে {{ok}} · সতর্ক {{warn}} · খারাপ {{bad}}"
+    "applyAuditDesc": "ঠিক আছে {{ok}} · সতর্ক {{warn}} · খারাপ {{bad}}",
+    "barTitle": "{{count}} হোস্ট সতর্কতা",
+    "levelCritical": "গুরুতর",
+    "levelWarn": "সতর্কতা",
+    "levelInfo": "তথ্য",
+    "colTitle": "সতর্কতা",
+    "colDetail": "বিস্তারিত",
+    "colSource": "উৎস"
   },
   "dataTable": {
     "empty": "কোন তথ্য নেই",

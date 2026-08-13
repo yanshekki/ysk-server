@@ -52,3 +52,5 @@ Files name collisions: `ifExists=fail|overwrite|rename` on upload/copy/rename (d
 `PATCH /api/v1/email/domains/:id/flags` sets vacation (`autoreply*`) and catch-all. CLI: `ysk-server email flags` / `email aliases create --type catchall`. Draft until `--execute`.
 
 `GET /api/v1/email/queue` is a read probe (`postqueue -p`, parsed rows). `POST /api/v1/email/queue/flush` needs EXECUTE. Panel: `/email?tab=queue`.
+
+`GET /api/v1/notifications` is the dashboard alert bar. CLI: `ysk-server notifications`.

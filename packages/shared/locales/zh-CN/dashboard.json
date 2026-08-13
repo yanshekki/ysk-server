@@ -107,5 +107,12 @@
   "noNotifs": "暂无通知",
   "noNotifsDesc": "系统告警与待办会显示于此",
   "applyAuditTitle": "套用状态审计",
-  "applyAuditDesc": "好的 {{ok}} · 警告 {{warn}} · 不好 {{bad}}"
+  "applyAuditDesc": "好的 {{ok}} · 警告 {{warn}} · 不好 {{bad}}",
+  "barTitle": "{{count}} 条主机提示",
+  "levelCritical": "严重",
+  "levelWarn": "警告",
+  "levelInfo": "信息",
+  "colTitle": "提示",
+  "colDetail": "详情",
+  "colSource": "来源"
 }

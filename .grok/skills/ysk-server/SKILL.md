@@ -60,6 +60,7 @@ ysk-server projects create --name demo --domain demo.example.com --create-dns --
 ysk-server projects ftp --id UUID --password P --home app --json
 ysk-server email flags --domain example.com --autoreply --subject Away --json
 ysk-server email queue list --json
+ysk-server notifications --json
 ysk-server files shares create --path REL --mode both --root public --json
 ysk-server bt-tracker status --json
 ysk-server bt-tracker start --execute --json

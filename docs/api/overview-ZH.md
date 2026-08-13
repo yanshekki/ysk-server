@@ -52,3 +52,5 @@
 `PATCH /api/v1/email/domains/:id/flags` 設定假期自動回覆（`autoreply*`）與 Catch-all。CLI：`ysk-server email flags`／`email aliases create --type catchall`。未加 `--execute` 只寫草稿。
 
 `GET /api/v1/email/queue` 為讀取探測（`postqueue -p`，已解析列）。`POST /api/v1/email/queue/flush` 需 EXECUTE。面板：`/email?tab=queue`。
+
+`GET /api/v1/notifications` 為儀表板提示條。CLI：`ysk-server notifications`。

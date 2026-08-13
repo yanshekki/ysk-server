@@ -2246,7 +2246,14 @@
     "noNotifs": "कोई सूचना नहीं",
     "noNotifsDesc": "सिस्टम अलर्ट और कार्य यहां दिखाई देते हैं",
     "applyAuditTitle": "स्टेटस ऑडिट लागू करें",
-    "applyAuditDesc": "ठीक है {{ok}} · चेतावनी {{warn}} · ख़राब {{bad}}"
+    "applyAuditDesc": "ठीक है {{ok}} · चेतावनी {{warn}} · ख़राब {{bad}}",
+    "barTitle": "{{count}} होस्ट अलर्ट",
+    "levelCritical": "गंभीर",
+    "levelWarn": "चेतावनी",
+    "levelInfo": "जानकारी",
+    "colTitle": "अलर्ट",
+    "colDetail": "विवरण",
+    "colSource": "स्रोत"
   },
   "dataTable": {
     "empty": "कोई डेटा नहीं",

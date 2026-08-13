@@ -55,7 +55,7 @@ function parseNavFeatures(src) {
  * null = intentional panel-only or covered by another command.
  */
 const NAV_TO_CLI = {
-  dashboard: ['health', 'readiness', 'host'],
+  dashboard: ['health', 'readiness', 'host', 'notifications'],
   projects: ['projects'],
   email: ['email'],
   files: ['files'],
