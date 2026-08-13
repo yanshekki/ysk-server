@@ -96,6 +96,16 @@ describe('pathUnderRoot + commandRequiresExecute', () => {
     expect(commandRequiresExecute(['systemctl', 'is-active', 'ssh'])).toBe(false);
     expect(commandRequiresExecute(['bash', '-c', 'echo hi'])).toBe(false);
     expect(commandRequiresExecute(['bash', '-c', 'rm -rf /'])).toBe(true);
+    expect(commandRequiresExecute(['bash', '-c', 'postqueue -p'])).toBe(false);
+    expect(commandRequiresExecute(['bash', '-c', 'postqueue -p; reboot'])).toBe(true);
+    expect(commandRequiresExecute(['bash', '-c', 'grep x /etc/passwd; reboot'])).toBe(true);
+    expect(
+      commandRequiresExecute([
+        'bash',
+        '-c',
+        'if command -v postqueue >/dev/null 2>&1; then postqueue -p 2>&1; else echo NO_POSTQUEUE; fi',
+      ]),
+    ).toBe(false);
     expect(commandRequiresExecute(['true'])).toBe(false);
     // readiness inventory probes
     expect(commandRequiresExecute(['php', '-v'])).toBe(false);

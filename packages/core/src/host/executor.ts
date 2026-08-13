@@ -617,7 +617,9 @@ function isReadOnlyShellScript(argv: string[]): boolean {
     return false;
   }
   if (
-    /\b(rm|mv|cp|mkdir|useradd|userdel|usermod|chown|chmod|crontab|dd|mkfs|fdisk|parted)\b/.test(s)
+    /\b(rm|mv|cp|mkdir|useradd|userdel|usermod|chown|chmod|crontab|dd|mkfs|fdisk|parted|reboot|shutdown|poweroff|halt|init|ufw|iptables|nft|kill|pkill|killall|postsuper|mount|umount|sysctl)\b/.test(
+      s,
+    )
   ) {
     return false;
   }
@@ -678,8 +680,16 @@ function isReadOnlyShellScript(argv: string[]): boolean {
   // /proc readers
   if (/\/proc\/\d+\//.test(s) && /\b(tr|readlink|ls|wc|head|cat)\b/.test(s)) return true;
   if (/\btop\s+-b\b/.test(s)) return true;
-  if (/\bpostqueue\b/.test(s)) return true;
-  if (/\bpostfix\s+check\b/.test(s)) return true;
+  // postqueue -p only (optional if/command -v wrapper). Never a keyword match.
+  if (
+    /^\s*postqueue\s+-p(\s+2>&1)?\s*$/.test(s) ||
+    (/^\s*if\b[\s\S]*\bpostqueue\s+-p\b[\s\S]*\bfi\s*$/.test(s) &&
+      !/\bpostsuper\b/.test(s) &&
+      !/\b(reboot|shutdown|poweroff)\b/.test(s))
+  ) {
+    return true;
+  }
+  if (/^\s*postfix\s+check\s*$/.test(s)) return true;
   // File/dir existence probes
   if (/\btest\s+-[efdrwxLsb]\b/.test(s) || /\b\[\s+-[efdrwxLsb]\b/.test(s)) return true;
   if (/\bgrep\b/.test(s) && !/\b-l\b/.test(s)) return true;

@@ -38,6 +38,8 @@ WebSocket (ticket required): terminal, VNC, host-browse.
 | A08-5 | High | Backup S3 endpoint / SFTP host could target IMDS / loopback | **Fixed** — `assertSafeOutboundUrl` / `isMetadataOrLoopbackHost` |
 | A08-6 | Medium | Backup SSH used `StrictHostKeyChecking=no` | **Fixed** — `accept-new` |
 | A08-7 | Low | API/SPA missing Content-Security-Policy | **Fixed** — API `default-src 'none'`; SPA self + ws |
+| A08-8 | Critical | `bash -c` with the word `postqueue`/`grep` treated whole script as read-only (`reboot` companion) | **Fixed** — deny power/firewall verbs; postqueue only `-p` / if-wrapper |
+| A08-9 | Medium | Any session could `GET /api/v1/terminal/targets` (linux users + homes) | **Fixed** — `settings.system` or `services.control` |
 
 ## Accepted residual
 

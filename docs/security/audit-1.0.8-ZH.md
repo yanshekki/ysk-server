@@ -38,6 +38,8 @@ WebSocket（要 ticket）：終端、VNC、Host Browse。
 | A08-5 | 高 | 備份 S3 endpoint／SFTP 主機可指向 IMDS／loopback | **已修** |
 | A08-6 | 中 | 備份 SSH 用 `StrictHostKeyChecking=no` | **已修** — `accept-new` |
 | A08-7 | 低 | API／SPA 缺 Content-Security-Policy | **已修** |
+| A08-8 | 危急 | `bash -c` 只要有 `postqueue`／`grep` 就當成段只讀（可夾 `reboot`） | **已修** — 拒絕電源／防火牆動詞；postqueue 只准 `-p`／if 包裝 |
+| A08-9 | 中 | 任何工作階段可 `GET /api/v1/terminal/targets`（Linux 用戶＋家目錄） | **已修** — 要 `settings.system` 或 `services.control` |
 
 ## 已接受殘項
 

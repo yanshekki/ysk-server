@@ -12,6 +12,7 @@ import {
 import { tl, YskError } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
 import { getBearer, readBody, sendJson } from '../http/util.js';
+import { effectiveCaps } from '../http/rbac-guard.js';
 
 export async function handleTerminalRoutes(
   ctx: AppContext,
@@ -24,9 +25,16 @@ export async function handleTerminalRoutes(
   if (!url.pathname.startsWith('/api/v1/terminal')) return false;
 
   if (method === 'GET' && url.pathname === '/api/v1/terminal/targets') {
-    // Auth only — any panel user who can reach the page may list targets.
-    // Opening a session is gated by settings.system + EXECUTE + root.
     const user = ctx.auth.authenticate(getBearer(req));
+    const caps = effectiveCaps(ctx, user);
+    if (!caps.includes('settings.system') && !caps.includes('services.control')) {
+      sendJson(res, 403, {
+        ok: false,
+        code: 'YSK_FORBIDDEN',
+        message: tl('errors.http.forbidden'),
+      });
+      return true;
+    }
     const projects = (ctx.db.snapshot.projects ?? []).map((p) => ({
       id: String(p.id),
       name: String(p.name ?? p.id),
