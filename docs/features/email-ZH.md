@@ -27,7 +27,8 @@
 | DNS 套件 | `ysk-server email dns --domain …` | read | |
 | 可送達性 | `ysk-server email deliverability --domain …` | read | 誠實評分 |
 | 引導安裝堆疊 | `ysk-server email bootstrap … [--install]` | write-host | |
-| 別名 CRUD | `ysk-server email aliases list\|create\|delete` | write-panel | |
+| 別名 CRUD | `ysk-server email aliases list\|create\|delete` | write-panel | `--type catchall` |
+| 自動回覆／Catch-all | `ysk-server email flags --domain …` | write-panel | 草稿 sieve；`--execute` 才套用 |
 | 佇列列表／清空 | `ysk-server email queue list\|flush --execute` | write-host | flush |
 | 中繼讀取／套用 | `ysk-server email relay get\|apply --host …` | write-host | execute 時套用系統 |
 

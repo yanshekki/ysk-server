@@ -1411,6 +1411,31 @@ describe('CLI deep coverage climb', () => {
 
     const help = await cli('email', 'help');
     expect(help.code).toBe(2);
+
+    const flagsGet = await cli('email', 'flags', '--domain', 'cli-mail.test');
+    expect(flagsGet.code).toBe(0);
+
+    const flagsSet = await cli(
+      'email',
+      'flags',
+      '--domain',
+      'cli-mail.test',
+      '--autoreply',
+      '--subject',
+      'Away',
+      '--body',
+      'Back soon',
+      '--catchall',
+      'info@cli-mail.test',
+    );
+    expect(flagsSet.code).toBe(0);
+    const flagged = parseJsonOut(flagsSet.out) as {
+      ok?: boolean;
+      domain?: { autoreply_enabled?: boolean; catchall_address?: string };
+    };
+    expect(flagged.ok).toBe(true);
+    expect(flagged.domain?.autoreply_enabled).toBe(true);
+    expect(flagged.domain?.catchall_address).toBe('info@cli-mail.test');
   }, 60_000);
 
   // ── dns / db-cluster ────────────────────────────────────────────────

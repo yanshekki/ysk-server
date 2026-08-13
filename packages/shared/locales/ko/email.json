@@ -473,5 +473,6 @@
   "mailboxEmptyTitle": "아직 편지함 없음",
   "passwordMismatch": "비밀번호가 일치하지 않습니다.",
   "passwordTooShort": "비밀번호는 8자 이상이어야 합니다.",
-  "mailboxUpdateNeedField": "새 비밀번호를 설정하거나 상태를 변경하세요."
+  "mailboxUpdateNeedField": "새 비밀번호를 설정하거나 상태를 변경하세요.",
+  "catchallHint": "정의되지 않은 로컬 부분은 대상 사서함으로 갑니다. 적용 전까지 초안입니다."
 }

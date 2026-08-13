@@ -27,7 +27,8 @@ Operate **mail domains and mailboxes** on the host (Postfix/Dovecot stack paths)
 | DNS bundle | `ysk-server email dns --domain …` | read | |
 | Deliverability | `ysk-server email deliverability --domain …` | read | honest score |
 | Bootstrap stack | `ysk-server email bootstrap … [--install]` | write-host | |
-| Aliases CRUD | `ysk-server email aliases list\|create\|delete` | write-panel | |
+| Aliases CRUD | `ysk-server email aliases list\|create\|delete` | write-panel | `--type catchall` |
+| Autoreply / catch-all flags | `ysk-server email flags --domain …` | write-panel | Draft sieve; `--execute` to apply |
 | Queue list/flush | `ysk-server email queue list\|flush --execute` | write-host | flush |
 | Relay get/apply | `ysk-server email relay get\|apply --host …` | write-host | applySystem with execute |
 

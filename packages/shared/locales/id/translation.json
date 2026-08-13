@@ -3238,7 +3238,8 @@
     "mailboxEmptyTitle": "Belum ada kotak surat",
     "passwordMismatch": "Kata sandi tidak cocok",
     "passwordTooShort": "Kata sandi minimal harus 8 karakter",
-    "mailboxUpdateNeedField": "Tetapkan kata sandi baru atau ubah status"
+    "mailboxUpdateNeedField": "Tetapkan kata sandi baru atau ubah status",
+    "catchallHint": "Bagian lokal tak dikenal dikirim ke kotak tujuan. Draf sampai diterapkan."
   },
   "errors": {
     "YSK_UNAUTHORIZED": "Tidak sah",

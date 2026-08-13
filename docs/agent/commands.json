@@ -1099,8 +1099,23 @@
     {
       "name": "email aliases",
       "risk": "write-panel",
-      "summary": "List/create/delete mail aliases",
-      "example": "ysk-server email aliases list --domain example.com --json"
+      "summary": "List/create/delete mail aliases (type alias|forward|catchall)",
+      "example": "ysk-server email aliases create --domain example.com --type catchall --to info@example.com --json"
+    },
+    {
+      "name": "email flags",
+      "risk": "write-panel",
+      "summary": "Vacation autoreply and catch-all flags (draft unless --execute)",
+      "args": [
+        "--domain",
+        "--autoreply",
+        "--no-autoreply",
+        "--subject",
+        "--body",
+        "--catchall",
+        "--no-catchall"
+      ],
+      "example": "ysk-server email flags --domain example.com --autoreply --subject Away --json"
     },
     {
       "name": "dns dnssec",

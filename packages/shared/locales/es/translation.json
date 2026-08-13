@@ -3238,7 +3238,8 @@
     "mailboxEmptyTitle": "Aún no hay buzones",
     "passwordMismatch": "Las contraseñas no coinciden",
     "passwordTooShort": "La contraseña debe tener al menos 8 caracteres.",
-    "mailboxUpdateNeedField": "Establecer una nueva contraseña o cambiar el estado"
+    "mailboxUpdateNeedField": "Establecer una nueva contraseña o cambiar el estado",
+    "catchallHint": "Las partes locales desconocidas van al buzón destino. Borrador hasta aplicar."
   },
   "errors": {
     "YSK_UNAUTHORIZED": "No autorizado",

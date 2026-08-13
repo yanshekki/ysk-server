@@ -473,5 +473,6 @@
   "mailboxEmptyTitle": "Pas encore de boîtes aux lettres",
   "passwordMismatch": "Les mots de passe ne correspondent pas",
   "passwordTooShort": "Le mot de passe doit comporter au moins 8 caractères",
-  "mailboxUpdateNeedField": "Définir un nouveau mot de passe ou modifier le statut"
+  "mailboxUpdateNeedField": "Définir un nouveau mot de passe ou modifier le statut",
+  "catchallHint": "Les parties locales inconnues vont à la boîte cible. Brouillon jusqu’à l’application."
 }

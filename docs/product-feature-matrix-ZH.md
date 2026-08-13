@@ -161,9 +161,9 @@
 |----|---------|---|---|-----|-----|
 | F1 | 郵件 domain list CRUD | 兩 | 兩 | ✓ | P0 |
 | F2 | 郵件box CRUD + quota + password | 兩 | 兩 | ✓ | P0 |
-| F3 | Alias / forward | 兩 | 兩 | △ | P0 |
-| F4 | Catch-all | H | D | ✗ | P0 |
-| F5 | Autoreply / vacation | H | D | ✗ | P0 |
+| F3 | Alias / forward | 兩 | 兩 | ✓ | P0 |
+| F4 | Catch-all | H | D | ✓ | P0 |
+| F5 | Autoreply / vacation | H | D | ✓ | P0 |
 | F6 | DKIM generate + DNS display | 兩 | 兩 | △ | P0 |
 | F7 | SPF / DMARC suggested records | 兩 | 兩 | △ | P0 |
 | F8 | Webmail link | 兩 | 兩 | ✓ | P1 |

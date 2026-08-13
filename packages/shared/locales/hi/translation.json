@@ -3238,7 +3238,8 @@
     "mailboxEmptyTitle": "अभी तक कोई मेलबॉक्स नहीं",
     "passwordMismatch": "सांकेतिक शब्द मेल नहीं खाते",
     "passwordTooShort": "पासवर्ड कम से कम 8 वर्णों का होना चाहिए",
-    "mailboxUpdateNeedField": "नया पासवर्ड सेट करें या स्थिति बदलें"
+    "mailboxUpdateNeedField": "नया पासवर्ड सेट करें या स्थिति बदलें",
+    "catchallHint": "अज्ञात लोकल भाग लक्ष्य मेलबॉक्स पर जाएँगे। लागू होने तक ड्राफ्ट।"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "अनधिकृत",

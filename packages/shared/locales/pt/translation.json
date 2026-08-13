@@ -3238,7 +3238,8 @@
     "mailboxEmptyTitle": "Ainda não há caixas de correio",
     "passwordMismatch": "As senhas não coincidem",
     "passwordTooShort": "A senha deve ter pelo menos 8 caracteres",
-    "mailboxUpdateNeedField": "Defina uma nova senha ou altere o status"
+    "mailboxUpdateNeedField": "Defina uma nova senha ou altere o status",
+    "catchallHint": "Partes locais desconhecidas vão para a caixa destino. Rascunho até aplicar."
   },
   "errors": {
     "YSK_UNAUTHORIZED": "Não autorizado",

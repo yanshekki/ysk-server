@@ -473,5 +473,6 @@
   "mailboxEmptyTitle": "まだメールボックスがありません",
   "passwordMismatch": "パスワードが一致しません",
   "passwordTooShort": "パスワードは8文字以上である必要があります",
-  "mailboxUpdateNeedField": "新しいパスワードを設定するか、ステータスを変更します"
+  "mailboxUpdateNeedField": "新しいパスワードを設定するか、ステータスを変更します",
+  "catchallHint": "未定義のローカル部は宛先へ転送。適用するまで下書きです。"
 }

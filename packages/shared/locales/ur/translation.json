@@ -3238,7 +3238,8 @@
     "mailboxEmptyTitle": "ابھی تک کوئی میل باکس نہیں ہے۔",
     "passwordMismatch": "پاس ورڈز مماثل نہیں ہیں۔",
     "passwordTooShort": "پاس ورڈ کم از کم 8 حروف کا ہونا چاہیے۔",
-    "mailboxUpdateNeedField": "نیا پاس ورڈ سیٹ کریں یا اسٹیٹس تبدیل کریں۔"
+    "mailboxUpdateNeedField": "نیا پاس ورڈ سیٹ کریں یا اسٹیٹس تبدیل کریں۔",
+    "catchallHint": "نامعلوم لوکل حصے ہدف میل باکس پر جائیں گے۔ لاگو ہونے تک مسودہ۔"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "غیر مجاز",

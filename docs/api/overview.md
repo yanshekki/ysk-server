@@ -48,3 +48,5 @@ Files name collisions: `ifExists=fail|overwrite|rename` on upload/copy/rename (d
 `POST /api/v1/projects` optional `createDnsZone` / `createMailDomain` (plus `serverIp` / `serverIpv6`) write DNS and mail **drafts**. Same flags on CLI: `--create-dns` / `--create-mail`. Not live authoritative DNS or a provisioned mailbox.
 
 `POST /api/v1/projects/:id/ftp` creates a jailed FTPS account (`homeSubdir` `app`|`root`). CLI: `ysk-server projects ftp` or `ftp accounts create --project`. Apply vsftpd on `/ftp`.
+
+`PATCH /api/v1/email/domains/:id/flags` sets vacation (`autoreply*`) and catch-all. CLI: `ysk-server email flags` / `email aliases create --type catchall`. Draft until `--execute`.

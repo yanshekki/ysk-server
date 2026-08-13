@@ -3238,7 +3238,8 @@
     "mailboxEmptyTitle": "لا توجد صناديق بريد حتى الآن",
     "passwordMismatch": "كلمات المرور غير متطابقة",
     "passwordTooShort": "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل",
-    "mailboxUpdateNeedField": "قم بتعيين كلمة مرور جديدة أو تغيير الحالة"
+    "mailboxUpdateNeedField": "قم بتعيين كلمة مرور جديدة أو تغيير الحالة",
+    "catchallHint": "الأجزاء المحلية غير المعروفة تذهب إلى صندوق الهدف. مسودة حتى التطبيق."
   },
   "errors": {
     "YSK_UNAUTHORIZED": "غير مصرح به",

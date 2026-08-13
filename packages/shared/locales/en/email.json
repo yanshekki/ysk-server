@@ -473,5 +473,6 @@
   "mailboxEmptyTitle": "No mailboxes yet",
   "passwordMismatch": "Passwords do not match",
   "passwordTooShort": "Password must be at least 8 characters",
-  "mailboxUpdateNeedField": "Set a new password or change status"
+  "mailboxUpdateNeedField": "Set a new password or change status",
+  "catchallHint": "Unknown local parts go to the target mailbox. Draft until mail apply."
 }

@@ -48,3 +48,5 @@
 `POST /api/v1/projects` 可選 `createDnsZone`／`createMailDomain`（另加 `serverIp`／`serverIpv6`）只寫 DNS 與郵件**草稿**。CLI 對應 `--create-dns`／`--create-mail`。不等於權威 DNS 已上線，亦不會即時開好郵箱。
 
 `POST /api/v1/projects/:id/ftp` 建立路徑 Jail 的 FTPS 帳戶（`homeSubdir` 為 `app` 或 `root`）。CLI：`ysk-server projects ftp` 或 `ftp accounts create --project`。要套用 vsftpd 請到 `/ftp`。
+
+`PATCH /api/v1/email/domains/:id/flags` 設定假期自動回覆（`autoreply*`）與 Catch-all。CLI：`ysk-server email flags`／`email aliases create --type catchall`。未加 `--execute` 只寫草稿。

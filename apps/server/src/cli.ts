@@ -683,9 +683,67 @@ async function mainInner(
           }
         }
         process.stderr.write(
-          'Usage: ysk-server email aliases list|create|delete --domain … [--local …] [--to dest@…]\n',
+          'Usage: ysk-server email aliases list|create|delete --domain … [--type alias|forward|catchall] [--local …] [--to dest@…]\n',
         );
         return 2;
+      }
+
+      if (sub === 'flags' || sub === 'autoreply') {
+        const row = resolveDomain();
+        if (!row) {
+          process.stderr.write(
+            'Usage: ysk-server email flags --domain example.com [--autoreply|--no-autoreply] [--subject …] [--body …] [--catchall addr|--no-catchall] [--execute]\n',
+          );
+          return 2;
+        }
+        const patch: {
+          catchallAddress?: string | null;
+          autoreplyEnabled?: boolean;
+          autoreplySubject?: string;
+          autoreplyBody?: string;
+          applySystem?: boolean;
+        } = {};
+        if (hasFlag(args, '--autoreply') || hasFlag(args, '--autoreply-on')) {
+          patch.autoreplyEnabled = true;
+        }
+        if (hasFlag(args, '--no-autoreply') || hasFlag(args, '--autoreply-off')) {
+          patch.autoreplyEnabled = false;
+        }
+        const subject = getOpt(args, '--subject');
+        if (subject != null) patch.autoreplySubject = subject;
+        const body = getOpt(args, '--body');
+        if (body != null) patch.autoreplyBody = body;
+        if (hasFlag(args, '--no-catchall')) patch.catchallAddress = null;
+        const catchall = getOpt(args, '--catchall');
+        if (catchall != null) patch.catchallAddress = catchall;
+        const mutating =
+          patch.autoreplyEnabled !== undefined ||
+          patch.autoreplySubject !== undefined ||
+          patch.autoreplyBody !== undefined ||
+          patch.catchallAddress !== undefined;
+        if (!mutating) {
+          const rec = row as typeof row & {
+            catchall_address?: string;
+            autoreply_enabled?: boolean;
+            autoreply_subject?: string;
+            autoreply_body?: string;
+          };
+          printJson({
+            ok: true,
+            domain: rec.domain,
+            flags: {
+              catchallAddress: rec.catchall_address ?? null,
+              autoreplyEnabled: Boolean(rec.autoreply_enabled),
+              autoreplySubject: rec.autoreply_subject ?? '',
+              autoreplyBody: rec.autoreply_body ?? '',
+            },
+          });
+          return 0;
+        }
+        patch.applySystem = wantsHostExecute(args);
+        const result = await ctx.email.updateDomainMailFlags(row.id, patch, 'cli');
+        printJson(result);
+        return exitFromResult(result);
       }
 
       if (sub === 'queue') {

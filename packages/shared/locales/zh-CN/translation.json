@@ -3238,7 +3238,8 @@
     "mailboxEmptyTitle": "尚无邮箱",
     "passwordMismatch": "两次密码不一致",
     "passwordTooShort": "密码至少 8 个字符",
-    "mailboxUpdateNeedField": "请设置新密码或更改状态"
+    "mailboxUpdateNeedField": "请设置新密码或更改状态",
+    "catchallHint": "未对应的本地部分会送到目标信箱。只写草稿，须套用邮件才生效。"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "未授权",

@@ -14,6 +14,9 @@ export interface EmailDomainDto {
   suspended?: boolean;
   status?: string;
   autoreply_enabled?: boolean;
+  autoreply_subject?: string;
+  autoreply_body?: string;
+  catchall_address?: string | null;
   /** Outbound rate limit (msgs/hour); null/omit = use defaults */
   rate_limit_per_hour?: number | null;
   /** Domain antispam flag (Rspamd multimap) */

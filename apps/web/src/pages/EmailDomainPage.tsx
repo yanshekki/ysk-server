@@ -441,6 +441,11 @@ export function EmailDomainPage() {
     if (typeof found.antispam === 'boolean') {
       setPolicyAntispam(found.antispam);
     }
+    if (typeof found.autoreply_enabled === 'boolean') {
+      setAutoreplyOn(found.autoreply_enabled);
+    }
+    if (found.autoreply_subject) setAutoreplySubject(String(found.autoreply_subject));
+    if (found.autoreply_body) setAutoreplyBody(String(found.autoreply_body));
     try {
       setBundle(await emailApi.dns(found.id));
       setMailboxes((await emailApi.listMailboxes(found.id)).items);
@@ -910,7 +915,18 @@ export function EmailDomainPage() {
                       ]}
                     />
                   </Field>
-                  {aliasType !== 'catchall' ? (
+                  {aliasType === 'catchall' ? (
+                    <Field
+                      label={t('email.catchall')}
+                      htmlFor="al-dest-hint"
+                      hint={t('email.catchallHint')}
+                      flush
+                    >
+                      <span id="al-dest-hint" className="muted u-text-sm">
+                        @{domain.domain}
+                      </span>
+                    </Field>
+                  ) : (
                     <Field label={t('email.localPart')} htmlFor="al-local" hint={t('email.localPartHint')} flush>
                       <input
                         id="al-local"
@@ -919,7 +935,7 @@ export function EmailDomainPage() {
                         placeholder="sales"
                       />
                     </Field>
-                  ) : null}
+                  )}
                   <Field
                     label={t('email.targetMailbox')}
                     htmlFor="al-dest"
@@ -992,12 +1008,14 @@ export function EmailDomainPage() {
                   <CheckboxField
                     id="ar-on"
                     label={t('email.enableAutoreply')}
+                    description={t('email.enableAutoreplyDesc')}
                     checked={autoreplyOn}
                     onChange={setAutoreplyOn}
                   />
                   <CheckboxField
                     id="ar-sys"
                     label={t('email.applyToSystem')}
+                    description={t('email.applyToSystemDesc')}
                     checked={flagsApplySystem}
                     onChange={setFlagsApplySystem}
                   />
