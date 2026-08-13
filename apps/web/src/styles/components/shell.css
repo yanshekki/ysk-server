@@ -370,9 +370,46 @@
 
   .shell__menu-btn {
     display: inline-flex;
-    margin-right: auto;
+    margin-right: 0;
     min-height: 2.75rem;
     min-width: 2.75rem;
+    flex-shrink: 0;
+  }
+
+  .shell__top {
+    flex-wrap: nowrap;
+    gap: 0.4rem;
+    height: var(--header-height);
+    min-height: var(--header-height);
+    padding: 0 0.65rem;
+  }
+
+  .shell__search {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .shell__lang {
+    flex-shrink: 0;
+  }
+
+  .shell__lang-select {
+    min-width: 0;
+    max-width: 6.75rem;
+    width: auto;
+    padding: 0 0.3rem;
+  }
+
+  .shell__user {
+    flex-shrink: 0;
+    max-width: 5.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .shell__content {
+    padding: var(--space-page-y) var(--space-page-x);
   }
 
   .shell__backdrop {

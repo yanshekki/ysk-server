@@ -9,6 +9,8 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from './EmptyState';
 
+export type DataColumnMobile = 'lead' | 'meta' | 'hide' | 'check' | 'actions';
+
 export type DataColumn<T> = {
   key: string;
   /** Header cell content (string or e.g. select-all checkbox) */
@@ -17,7 +19,27 @@ export type DataColumn<T> = {
   className?: string;
   /** Prefer nowrap for actions / status */
   nowrap?: boolean;
+  /**
+   * Narrow-viewport role. Default: non-string header → check; first string
+   * header → lead; rest → meta.
+   */
+  mobile?: DataColumnMobile;
 };
+
+function headerLabel(header: ReactNode): string | undefined {
+  return typeof header === 'string' && header.trim() ? header.trim() : undefined;
+}
+
+function resolveMobileRole<T>(
+  columns: DataColumn<T>[],
+  index: number,
+): DataColumnMobile {
+  const col = columns[index]!;
+  if (col.mobile) return col.mobile;
+  if (typeof col.header !== 'string') return 'check';
+  const firstText = columns.findIndex((c) => typeof c.header === 'string');
+  return index === firstText ? 'lead' : 'meta';
+}
 
 export interface DataTableProps<T> {
   columns: DataColumn<T>[];
@@ -86,18 +108,21 @@ export function DataTable<T>({
           <table className="data data-table__table">
             <thead>
               <tr>
-                {columns.map((c) => (
+                {columns.map((c, ci) => (
                   <th
                     key={c.key}
                     className={[c.className, c.nowrap ? 'u-nowrap' : '']
                       .filter(Boolean)
                       .join(' ')}
+                    data-mobile={resolveMobileRole(columns, ci)}
                   >
                     {c.header}
                   </th>
                 ))}
                 {rowActions ? (
-                  <th className="u-nowrap data-table__actions-col">{t('dataTable.actions')}</th>
+                  <th className="u-nowrap data-table__actions-col" data-mobile="actions">
+                    {t('dataTable.actions')}
+                  </th>
                 ) : null}
               </tr>
             </thead>
@@ -107,18 +132,28 @@ export function DataTable<T>({
                   key={rowKey(row, index)}
                   className={rowClassName?.(row, index)}
                 >
-                  {columns.map((c) => (
-                    <td
-                      key={c.key}
-                      className={[c.className, c.nowrap ? 'u-nowrap' : '']
-                        .filter(Boolean)
-                        .join(' ')}
-                    >
-                      {c.render(row)}
-                    </td>
-                  ))}
+                  {columns.map((c, ci) => {
+                    const role = resolveMobileRole(columns, ci);
+                    const label = headerLabel(c.header);
+                    return (
+                      <td
+                        key={c.key}
+                        className={[
+                          c.className,
+                          c.nowrap ? 'u-nowrap' : '',
+                          role === 'actions' ? 'data-table__actions-cell' : '',
+                        ]
+                          .filter(Boolean)
+                          .join(' ')}
+                        data-mobile={role}
+                        {...(label && role === 'meta' ? { 'data-label': label } : {})}
+                      >
+                        {c.render(row)}
+                      </td>
+                    );
+                  })}
                   {rowActions ? (
-                    <td className="u-nowrap data-table__actions-cell">
+                    <td className="u-nowrap data-table__actions-cell" data-mobile="actions">
                       {rowActions(row)}
                     </td>
                   ) : null}

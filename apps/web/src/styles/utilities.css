@@ -311,6 +311,22 @@
   min-width: 12rem;
 }
 
+@media (max-width: 900px) {
+  .shell-search {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .shell-search__kbd {
+    display: none;
+  }
+
+  .shell-search__input {
+    padding-right: 0.75rem;
+  }
+}
+
 .shell-search__field {
   position: relative;
   display: flex;

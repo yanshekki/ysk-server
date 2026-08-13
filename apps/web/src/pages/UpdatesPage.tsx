@@ -660,6 +660,7 @@ export function UpdatesPage() {
                 {
                   key: 'title',
                   header: t('updates.colPackage'),
+                  mobile: 'lead',
                   render: (e) => (
                     <span>
                       {e.title}
@@ -672,17 +673,20 @@ export function UpdatesPage() {
                 {
                   key: 'ver',
                   header: t('updates.colVersion'),
+                  mobile: 'meta',
                   render: (e) =>
                     `${e.currentVersion ?? '—'} → ${e.latestVersion ?? '—'}`,
                 },
                 {
                   key: 'kind',
                   header: t('updates.colAdvice'),
+                  mobile: 'hide',
                   render: (e) => e.kind,
                 },
                 {
                   key: 'act',
                   header: t('common.actions'),
+                  mobile: 'actions',
                   render: (e) => (
                     <ActionBar>
                       {e.applyPath === 'apt' && e.upgradable && canApply ? (
@@ -867,6 +871,7 @@ export function UpdatesPage() {
                 columns={[
                   {
                     key: 'sel',
+                    mobile: 'check',
                     header: (
                       <input
                         type="checkbox"
@@ -896,6 +901,7 @@ export function UpdatesPage() {
                   {
                     key: 'pkg',
                     header: t('updates.colPackage'),
+                    mobile: 'lead',
                     render: (i) => (
                       <div className="upd-pkg-cell">
                         <div className="upd-pkg-cell__title">
@@ -928,6 +934,7 @@ export function UpdatesPage() {
                   {
                     key: 'ver',
                     header: t('updates.colVersion'),
+                    mobile: 'meta',
                     render: (i) => {
                       const cur = i.currentVersion ?? '—';
                       const cand = i.candidateVersion ?? cur;
@@ -951,6 +958,7 @@ export function UpdatesPage() {
                   {
                     key: 'advice',
                     header: t('updates.colAdvice'),
+                    mobile: 'hide',
                     render: (i) => {
                       // Prefer localized advice enum; summary may already be i18n from API
                       const fromEnum = adviceLabel(i.advice, t);
@@ -1062,16 +1070,6 @@ export function UpdatesPage() {
                             label: t('updates.packages'),
                             value: String(selfUpdate.packageName),
                             mono: true as const },
-                        ]
-                      : []),
-                    ...(Array.isArray(selfUpdate.notes) &&
-                    (selfUpdate.notes as string[]).length
-                      ? [
-                          {
-                            label: t('common.about'),
-                            value: humanizeOperatorNote(
-                              String((selfUpdate.notes as string[])[0]),
-                            ) },
                         ]
                       : []),
                     {

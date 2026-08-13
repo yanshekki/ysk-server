@@ -785,6 +785,67 @@
   gap: var(--space-stack);
 }
 
+@media (max-width: 720px) {
+  .page-header__row,
+  .feature-page .page-header__row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+  }
+
+  .page-header__actions,
+  .feature-page .page-header__actions {
+    width: 100%;
+    flex-shrink: 1;
+  }
+
+  .page-header__actions .action-bar,
+  .feature-page .page-header__actions .action-bar,
+  .feature-page .page-header__actions .btn-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+  }
+
+  .page-header__actions .action-bar .btn:last-child,
+  .feature-page .page-header__actions .action-bar .btn:last-child,
+  .feature-page .page-header__actions .btn-row .btn:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .page-status,
+  .feature-page__status {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 0.5rem;
+    padding: 0.65rem 0.75rem;
+    min-height: 0;
+  }
+
+  .page-status__chips {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem 0.75rem;
+    width: 100%;
+  }
+
+  .page-status__chip {
+    min-width: 0;
+  }
+
+  .page-status__chip-val,
+  .page-status__chip .badge {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    white-space: normal;
+  }
+
+  .page-status__grow {
+    display: none;
+  }
+}
+
 /* Children rhythm inside every feature page body */
 .feature-page__body > .software-install-banner,
 .feature-page__body > .alert,

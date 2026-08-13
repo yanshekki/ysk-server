@@ -172,6 +172,10 @@ describe('UI primitives smoke', () => {
     );
     expect(screen.getByText('alpha')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument();
+    const lead = screen.getByText('alpha').closest('td');
+    expect(lead).toHaveAttribute('data-mobile', 'lead');
+    const actions = screen.getByRole('button', { name: 'Edit' }).closest('td');
+    expect(actions).toHaveAttribute('data-mobile', 'actions');
 
     rerender(
       <DataTable

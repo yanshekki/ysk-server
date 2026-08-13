@@ -195,3 +195,9 @@
   margin-bottom: 0;
 }
 
+@media (max-width: 720px) {
+  .tabs__tab {
+    padding: 0.7rem 0.8rem;
+  }
+}
+
