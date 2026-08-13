@@ -424,8 +424,11 @@
     min-width: 0;
   }
 
-  .shell__account-bar {
-    display: none;
+  .shell__account-bar,
+  .shell__top > .shell__lang,
+  .shell__top > .shell__user,
+  .shell__top > .btn:not(.shell__menu-btn) {
+    display: none !important;
   }
 
   .shell__content {

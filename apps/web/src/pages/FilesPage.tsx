@@ -484,6 +484,7 @@ export function FilesPage() {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [rowMenu, setRowMenu] = useState<string | null>(null);
   const [projects, setProjects] = useState<Array<{ id: string; name: string }>>([]);
   const [error, setErrorRaw] = useState<string | null>(null);
   const setError = useCallback((text: string | null) => {
@@ -1230,7 +1231,10 @@ export function FilesPage() {
           { label: t('files.statShares'), value: shares.length },
         ] }}
       actions={<ActionBar>
-          <Link to="/files/public" className={buttonClassName({ variant: 'secondary', size: 'sm' })}>
+          <Link
+            to="/files/public"
+            className={`${buttonClassName({ variant: 'secondary', size: 'sm' })} fm-public-settings`}
+          >
             {t('files.publicSiteSettings')}
           </Link>
           <Button variant="secondary" size="sm" loading={busy} onClick={bindVoid(refresh)}>
@@ -1277,6 +1281,39 @@ export function FilesPage() {
       >
         {tab === 'browse' ? (
           <div className="tab-panel">
+      <div className="fm-mobile-nav">
+        <label className="fm-mobile-nav__field">
+          <span className="fm-mobile-nav__lab">{t('files.spaceLabel')}</span>
+          <select
+            className="input fm-mobile-nav__select"
+            value={root}
+            aria-label={t('files.spaceLabel')}
+            onChange={(e) => changeRoot(e.target.value)}
+          >
+            <option value="public">{t('files.publicFiles')}</option>
+            {projects.map((p) => (
+              <option key={p.id} value={`project:${p.id}`}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="fm-mobile-nav__field">
+          <span className="fm-mobile-nav__lab">{t('files.viewLabel')}</span>
+          <select
+            className="input fm-mobile-nav__select"
+            value={side === 'trash' || side === 'shares' ? 'all' : side}
+            aria-label={t('files.viewLabel')}
+            onChange={(e) => {
+              const next = e.target.value as SideView;
+              bindFilesSide(setSide, setTab, next)();
+            }}
+          >
+            <option value="all">{t('files.allFiles')}</option>
+            <option value="favorites">{t('files.favorites')}</option>
+          </select>
+        </label>
+      </div>
       <div className="fm-layout">
         {/* Sidebar */}
         <aside className="fm-sidebar">
@@ -1552,12 +1589,14 @@ export function FilesPage() {
                   />
                 ) : view === 'list' ? (
                   <DataTable
+                    className="fm-browse-table"
                     columns={[
                       {
                         key: 'select',
                         header: '',
                         className: 'u-nowrap',
                         nowrap: true,
+                        mobile: 'check',
                         render: (e) => (
                           <input
                             type="checkbox"
@@ -1569,6 +1608,7 @@ export function FilesPage() {
                       {
                         key: 'name',
                         header: t('files.colName'),
+                        mobile: 'lead',
                         render: (e) => (
                           <button
                             type="button"
@@ -1583,6 +1623,7 @@ export function FilesPage() {
                         key: 'size',
                         header: t('files.colSize'),
                         nowrap: true,
+                        mobile: 'meta',
                         render: (e) =>
                           e.type === 'dir' ? '—' : formatBytes(e.size) },
                       {
@@ -1590,12 +1631,24 @@ export function FilesPage() {
                         header: t('files.colMtime'),
                         className: 'muted',
                         nowrap: true,
+                        mobile: 'hide',
                         render: (e) =>
                           formatMtimeCell(e.mtime) },
                     ]}
                     rows={items}
                     rowKey={(e) => e.path}
                     rowActions={(e) => (
+                      <details
+                        className="fm-row-menu"
+                        open={rowMenu === e.path}
+                        onToggle={(ev) => {
+                          const next = (ev.currentTarget as HTMLDetailsElement).open;
+                          setRowMenu(next ? e.path : null);
+                        }}
+                      >
+                        <summary className="fm-row-menu__sum" aria-label={t('common.actions')}>
+                          ⋯
+                        </summary>
                       <ActionBar align="end">
                         {e.type === 'file' &&
                         ['image', 'video', 'audio', 'text', 'pdf'].includes(
@@ -1676,6 +1729,7 @@ export function FilesPage() {
                           {t('files.delete')}
                         </Button>
                       </ActionBar>
+                      </details>
                     )}
                     empty={
                       <EmptyState

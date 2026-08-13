@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.13 — 2026-08-13
+
+### UI
+- Mobile header is menu + search only (account/language/logout in the drawer)
+- Files on narrow screens: space/view pickers, compact one-line rows, ⋯ overflow menu (no stacked action cards)
+
 ## 1.0.12 — 2026-08-13
 
 ### Fix
