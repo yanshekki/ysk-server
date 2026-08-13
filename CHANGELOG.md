@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.0.19 — 2026-08-13
+
+### Fix
+- Managed Nginx apply returns `ok: false` on empty/invalid `serverName` (no uncaught throw; no `localhost` fallback). Restores CI `branch-floor80`.
+- `GET /system/software/upgrades` is a read probe: `apt-cache policy` is not blocked by EXECUTE just because the package list includes `ufw`.
+
+### i18n
+- English catalog no longer contains leaked Chinese email strings
+- zh-HK leftover spoken Cantonese converted to Hong Kong written Chinese
+- Filled remaining operator-facing UI strings in ja/ko/es/fr/pt/id/hi/bn/ar/ur
+
+### Docs
+- CLI / API / user-manual: Nginx `server_name` fail-closed
+- Chinese docs: spoken Cantonese → 香港書面語
+
 ## 1.0.18 — 2026-08-13
 
 ### Fix

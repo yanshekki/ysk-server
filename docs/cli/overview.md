@@ -19,6 +19,8 @@
 
 Without `--execute`, host-mutating commands stay **dry-run** (plan only). Still need `YSK_EXECUTE=1` (and often root) for real apply.
 
+Empty or invalid Nginx `server_name` is validation (exit 2 / `ok: false`), not a silent `localhost` write.
+
 ## Exit codes
 
 | Code | Meaning |

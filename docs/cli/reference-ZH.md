@@ -109,6 +109,8 @@ ysk-server ssl list|get|bootstrap|panel-tls status|enable|disable|issue …
 ysk-server dns zones|zone|dnssec|heal|health|lookup|records …
 ```
 
+空的或非法 Nginx `server_name` **會被拒絕**（fail-closed）。套用**不會**退回寫入 `localhost`。面板與 `POST /api/v1` nginx／資源套用同一規則。
+
 `dns` 涵蓋託管 zone、DNSSEC、PowerDNS heal、lookup／validate。
 
 ## backup

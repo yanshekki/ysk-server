@@ -3,7 +3,7 @@
 **更新：** 2026-07-28（Log Center + Defense + core tests 全綠）
 
 **產品定義完成（100%）**＝當初劃定之 Admin 控制面功能集已齊（不含凍結項）。  
-**唔等於** Hestia 全量 · **唔等於** line coverage ≥90%。
+**不等於** Hestia 全量 · **不等於** line coverage ≥90%。
 
 **驗收：**
 
@@ -14,7 +14,7 @@ ysk-server readiness --data-dir … --json
 
 ---
 
-## 凍結（唔做 = 唔計欠債）
+## 凍結（不做 = 不計欠債）
 
 | 項 | 原因 |
 |----|------|
@@ -60,11 +60,11 @@ ysk-server readiness --data-dir … --json
 | AI / Agents | 100%† |
 
 \* Roundcube SSO 需密碼 + 外掛；國際 deliverability 永遠外部。  
-† Playbook 齊；vendor fleet installers 唔計。
+† Playbook 齊；vendor fleet installers 不計。
 
 ---
 
-## 工程債（唔阻擋功能 100%）
+## 工程債（不阻擋功能 100%）
 
 | 項 | 說明 |
 |----|------|
@@ -77,5 +77,5 @@ ysk-server readiness --data-dir … --json
 
 - 按鈕 = 實 ops 或 preset  
 - `written` / `applied` / `blocked` 誠實  
-- 唔寫競品名  
+- 不寫競品名  
 `

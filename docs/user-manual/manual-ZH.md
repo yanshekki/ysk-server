@@ -45,6 +45,7 @@ ysk-server nginx status --json
 ```
 
 於 DNS 供應商發布 A／AAAA。  
+空白或非法的 Nginx `server_name` 會被拒絕（不會退回 `localhost`）。  
 [../features/dns-ssl-nginx-ZH.md](../features/dns-ssl-nginx-ZH.md)
 
 ## 5. 可選郵件

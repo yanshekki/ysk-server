@@ -109,6 +109,8 @@ ysk-server ssl list|get|bootstrap|panel-tls status|enable|disable|issue …
 ysk-server dns zones|zone|dnssec|heal|health|lookup|records …
 ```
 
+Empty or invalid Nginx `server_name` is **rejected** (fail-closed). Apply does **not** write `localhost` as a fallback. Same rule on the panel and `POST /api/v1` nginx/resource apply.
+
 `dns` covers managed zones, DNSSEC, PowerDNS heal, lookup/validate.
 
 ## backup

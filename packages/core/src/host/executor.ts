@@ -616,6 +616,18 @@ function isReadOnlyShellScript(argv: string[]): boolean {
   ) {
     return false;
   }
+  // apt-cache / dpkg inventory may list package names like "ufw" — that is not `ufw enable`.
+  if (
+    (/\bapt-cache\b/.test(s) ||
+      /\bdpkg-query\b/.test(s) ||
+      /\bdpkg\s+-l\b/.test(s) ||
+      /\bdpkg\s+--get-selections\b/.test(s)) &&
+    !/\bsystemctl\s+(enable|start|restart|stop|disable|mask|daemon-reload|reload)\b/.test(s) &&
+    !/\bufw\s+(enable|disable|allow|deny|reset|reload|delete)\b/.test(s) &&
+    !/\b(reboot|shutdown|poweroff|halt)\b/.test(s)
+  ) {
+    return true;
+  }
   if (
     /\b(rm|mv|cp|mkdir|useradd|userdel|usermod|chown|chmod|crontab|dd|mkfs|fdisk|parted|reboot|shutdown|poweroff|halt|init|ufw|iptables|nft|kill|pkill|killall|postsuper|mount|umount|sysctl)\b/.test(
       s,

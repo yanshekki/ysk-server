@@ -30,7 +30,7 @@
 | web-stats 樣本 | ✓ |
 | readiness + admin checklist | ✓ |
 
-## Explicitly out of scope（唔計 100% 缺口）
+## Explicitly out of scope（不計 100% 缺口）
 
 | 項 | 原因 |
 |----|------|

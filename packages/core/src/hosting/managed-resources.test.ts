@@ -108,6 +108,17 @@ describe('managed-resources apply honesty', () => {
     expect(readFileSync(String(p.site?.confPath), 'utf8')).toMatch(/proxy_pass|8080/i);
   });
 
+  it('applyManagedNginxSite rejects empty or invalid serverName', async () => {
+    const { db, dir } = setup();
+    const bad = createResource(db, 'nginx_sites', {
+      serverName: '!!!bad???',
+      kind: 'proxy',
+    });
+    const r = await applyManagedNginxSite(db, dir, String(bad.id), { execute: false });
+    expect(r.ok).toBe(false);
+    expect(r.site?.apply_status).toBe('failed');
+  });
+
   it('revokeManagedNginxSite removes conf file and row', async () => {
     const { db, dir } = setup();
     const site = createResource(db, 'nginx_sites', {

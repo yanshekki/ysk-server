@@ -48,6 +48,11 @@ const FORBIDDEN = [
   { term: '冇', prefer: '沒有' },
   { term: '係咪', prefer: '是否' },
   { term: '做乜', prefer: '為何／做什麼' },
+  { term: '做咩', prefer: '做什麼' },
+  { term: '點解', prefer: '為何／原因' },
+  { term: '呢啲', prefer: '這些' },
+  { term: '嗰啲', prefer: '那些' },
+  { term: '嘅', prefer: '的' },
   { term: '起唔到', prefer: '未能啟動' },
 ];
 

@@ -88,7 +88,7 @@
   "deleteRuleTitle": "刪規則 #{{n}}？",
   "deleteRuleDesc": "將從 UFW 移除該規則編號（需系統變更權限）。",
   "servicesTitle": "受管服務埠",
-  "servicesHint": "YSK 管理服務嘅期望網絡暴露。開服務時會自動同步呢啲規則。",
+  "servicesHint": "YSK 管理服務的預期網絡暴露。開啟服務時會自動同步這些規則。",
   "servicesEmpty": "尚未有服務暴露資料",
   "servicesEmptyDesc": "啟動受管服務（Web、FTPS、VPN、資料庫…）後會出現在此列表。",
   "servicesManualHint": "手動開埠 chips 在「埠」分頁 — 建議在此管理，規則會帶 ysk-svc 標記。",

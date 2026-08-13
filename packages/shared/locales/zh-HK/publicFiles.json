@@ -24,7 +24,7 @@
   "nginxLive": "已在 conf.d",
   "nginxNotLive": "未進 conf.d",
   "openSite": "開啟網站",
-  "notLiveHint": "域名 404 多數係 conf 只寫在 dataDir、未複製到 /etc/nginx/conf.d，或未 reload。請用 root + YSK_EXECUTE 再套用。未發 SSL 前請用 http:// 開啟。",
+  "notLiveHint": "域名 404 多數是 conf 只寫在 dataDir、未複製到 /etc/nginx/conf.d，或未 reload。請用 root + YSK_EXECUTE 再套用。未發 SSL 前請用 http:// 開啟。",
   "diskRoot": "磁碟根目錄",
   "filesInRoot": "項目數",
   "managedConf": "管理 conf",

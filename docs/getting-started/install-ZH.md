@@ -2,7 +2,7 @@
 
 > 語言：中文 | [English](./install.md)
 
-安裝 **YSK Server**（控制平面 CLI `ysk-server`）以及**你揀嘅主機軟件套餐**（網頁、資料庫、郵件、DNS、FTP、防禦、語言工具鏈）。
+安裝 **YSK Server**（控制平面 CLI `ysk-server`）以及**你揀的主機軟件套餐**（網頁、資料庫、郵件、DNS、FTP、防禦、語言工具鏈）。
 
 | 項目 | 說明 |
 |------|------|
@@ -11,9 +11,9 @@
 | 套餐定義 | [`deploy/stack/bundles.json`](../../deploy/stack/bundles.json)、[`components.json`](../../deploy/stack/components.json) |
 | 目標系統 | **Ubuntu 22.04 / 24.04**（Debian 盡力支援） |
 | Node.js | **20+** |
-| 預設方案 | **`recommended`**（唔再默認全裝） |
+| 預設方案 | **`recommended`**（不再默認全裝） |
 
-**誠實原則：** 會裝套件；**多數服務唔會強制啟用**。真正套用仍要 **root** + **`YSK_EXECUTE=1`**。見 [../architecture/ops-honesty-ZH.md](../architecture/ops-honesty-ZH.md)。
+**誠實原則：** 會裝套件；**多數服務不會強制啟用**。真正套用仍要 **root** + **`YSK_EXECUTE=1`**。見 [../architecture/ops-honesty-ZH.md](../architecture/ops-honesty-ZH.md)。
 
 **日誌：** `/var/log/ysk-server/install-*.log`（root）或 `~/.ysk/logs/`。  
 **Manifest：** `$dataDir/stack-manifest.json`（uninstall 靠呢份）。
@@ -23,11 +23,11 @@
 安裝預設會：
 
 1. `ysk-server setup` 並 **`listenHost=0.0.0.0`**
-2. **`ysk-server ssl bootstrap`** — 自簽憑證寫入 `$dataDir/ssl/panel/`（SAN 含 `127.0.0.1`、偵測到嘅主機 IP、`localhost`）
+2. **`ysk-server ssl bootstrap`** — 自簽憑證寫入 `$dataDir/ssl/panel/`（SAN 含 `127.0.0.1`、偵測到的主機 IP、`localhost`）
 3. 設定 **`tlsEnabled` + `tlsHttpsOnly`** — 面板 **只開 HTTPS**，埠 **9287**
 
 請開：`https://<伺服器IP>:9287`，並**接受瀏覽器自簽警告**。  
-之後有域名再喺面板 SSL 換成 Let's Encrypt。
+之後有域名再在面板 SSL 換成 Let's Encrypt。
 
 | 旗標 | 意思 |
 |------|------|
@@ -42,11 +42,11 @@ CLI（可重跑）：
 ysk-server ssl bootstrap --data-dir /var/lib/ysk-server --force
 # Root 安裝預設會 enable + start systemd：
 systemctl status ysk-server
-# 手動 serve（若用咗 --no-install-systemd）：
+# 手動 serve（若已使用 --no-install-systemd）：
 ysk-server serve --data-dir /var/lib/ysk-server --port 9287
 ```
 
-裝完後，用終端打印嘅面板 URL 登入；帳密喺 `$dataDir/BOOTSTRAP-CREDENTIALS.txt`。登入後請改密碼並開 2FA。支援：**email@ysk.hk** · 面板 `/support`。
+裝完後，用終端打印的面板 URL 登入；帳密在 `$dataDir/BOOTSTRAP-CREDENTIALS.txt`。登入後請改密碼並開 2FA。支援：**email@ysk.hk** · 面板 `/support`。
 
 ---
 
@@ -86,15 +86,15 @@ curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.s
 
 `curl|bash` 通常無 TTY → 自動 non-interactive，預設 **`recommended`**（要用全裝請加 `--plan full`）。
 
-### 只升級面板（唔好重裝 SQL）
+### 只升級面板（不要重裝 SQL）
 
-`--upgrade` 會把官方 npm tarball overlay 到執行中 `ExecStart` 目錄，然後重啟 `ysk-server`。**唔會** apt 安裝 MariaDB／MySQL。面板「套用面板更新」救唔到自己嗰陣用呢條。
+`--upgrade` 會把官方 npm tarball overlay 到執行中 `ExecStart` 目錄，然後重啟 `ysk-server`。**不會** apt 安裝 MariaDB／MySQL。面板「套用面板更新」無法自行套用時，請用此命令。
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade
 ```
 
-主機 `/var/lib/mysql` 已係 **MySQL 8** 資料嘅話，唔好用 `--upgrade-stack` 或預設 `recommended` 去裝 MariaDB——dpkg 會嘗試改名資料目錄然後失敗。
+主機 `/var/lib/mysql` 已是 **MySQL 8** 資料的話，不要使用 `--upgrade-stack` 或預設 `recommended` 去裝 MariaDB——dpkg 會嘗試改名資料目錄然後失敗。
 
 ---
 
@@ -128,7 +128,7 @@ curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.s
 |------|------|
 | `--plan NAME` | `minimal`／`recommended`／`full` |
 | `--bundles LIST` | 逗號分隔套餐 id |
-| `--non-interactive` | 唔詢問 |
+| `--non-interactive` | 不詢問 |
 | `--with-mysql-server` | 用 MySQL 代替 MariaDB |
 | `--with-clamav` | email 時一併裝 ClamAV |
 | `--from-source` | 用目前 git 目錄建置 |
@@ -170,7 +170,7 @@ YSK_EXECUTE=1 sudo ysk-server stack uninstall --yes --bundles email --data-dir /
 
 ## 安裝後下一步
 
-1. 開終端打印嘅 **`https://<IP>:9287`**（接受自簽警告）
+1. 開終端打印的 **`https://<IP>:9287`**（接受自簽警告）
 2. 用 **BOOTSTRAP-CREDENTIALS.txt**（或安裝結尾打印）登入 → 改密碼 → 開 2FA
 3. `ysk-server readiness --json`（可選檢查）
 4. 主機變更：`export YSK_EXECUTE=1`（通常要 root）

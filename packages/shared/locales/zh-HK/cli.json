@@ -1064,7 +1064,7 @@
     "--root": {
       "must": {
         "be": {
-          "a84834": "--root 必須係 public 或 project:<id>\n"
+          "a84834": "--root 必須是 public 或 project:<id>\n"
         }
       }
     },
@@ -1083,7 +1083,7 @@
     "action": {
       "must": {
         "be": {
-          "ba14c1": "action 必須係 list|add|remove\n"
+          "ba14c1": "action 必須是 list|add|remove\n"
         }
       }
     },

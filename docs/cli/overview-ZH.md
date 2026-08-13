@@ -19,6 +19,8 @@
 
 未加 `--execute` 時，主機變更類命令維持 **dry-run**。真實套用仍需 `YSK_EXECUTE=1`（常需 root）。
 
+空白或非法的 Nginx `server_name` 屬驗證失敗（結束碼 2／`ok: false`），不會默默寫入 `localhost`。
+
 ## 結束碼
 
 | 碼 | 含義 |

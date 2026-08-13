@@ -44,7 +44,7 @@ mysql -N -e "SELECT COUNT(*) FROM ysk_e2e.t;"
 ## 5. 失敗路徑（可選）
 
 - [ ] 故意錯誤密碼／dump 失敗 → 來源仍運行，無 purge
-- [ ] FROZEN：切換後若 MySQL 起唔到，面板有「解除凍結」／health 修復
+- [ ] FROZEN：切換後若 MySQL 起不到，面板有「解除凍結」／health 修復
 
 ## 6. 反向再切
 

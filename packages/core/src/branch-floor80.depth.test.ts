@@ -762,10 +762,18 @@ describe('managed-resources floor80 edges', () => {
     // missing
     expect((await applyManagedNginxSite(db, dir, 'missing')).ok).toBe(false);
 
-    // empty serverName → slug from id; default proxy kind; no root/socket
-    const site = createResource(db, 'nginx_sites', {
+    // invalid serverName fails closed (no localhost fallback)
+    const bad = createResource(db, 'nginx_sites', {
       serverName: '!!!bad???',
-      // no kind → proxy
+      ssl: true,
+      cloudflareRealIp: true,
+    });
+    const rejected = await applyManagedNginxSite(db, dir, String(bad.id), { execute: false });
+    expect(rejected.ok).toBe(false);
+
+    // default proxy kind; no root/socket
+    const site = createResource(db, 'nginx_sites', {
+      serverName: 'proxy.example',
       ssl: true,
       cloudflareRealIp: true,
     });

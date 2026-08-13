@@ -239,7 +239,7 @@
   "shareExpire30d": "30 日",
   "shareExpireCustom": "自訂…",
   "shareExpireAt": "到期時間",
-  "shareExpireInvalid": "請選擇未來嘅日期時間",
+  "shareExpireInvalid": "請選擇未來的日期時間",
   "shareExpiresAt": "到期 {{at}}",
   "colExpires": "到期",
   "pdfInlineHint": "若瀏覽器未能內嵌顯示 PDF，請下載查看。",

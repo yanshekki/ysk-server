@@ -38,7 +38,7 @@
   "saveThenApply": "儲存後按「套用」寫入 nginx",
   "statProjectSites": "專案",
   "projectListTitle": "專案站點（{{count}}）",
-  "projectListDesc": "由專案 publish／goLive 寫入嘅受管 conf；修改請到專案「網絡」。",
+  "projectListDesc": "由專案 publish／goLive 寫入的受管 conf；修改請到專案「網絡」。",
   "colProject": "專案",
   "colRuntime": "執行環境",
   "colConf": "設定檔",

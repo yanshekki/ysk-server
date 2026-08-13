@@ -23,7 +23,7 @@
 
 ## 殘留
 
-- 舊 HTTP 安裝**唔會**自動升級：請跑 `ysk-server ssl bootstrap --force`
+- 舊 HTTP 安裝**不會**自動升級：請跑 `ysk-server ssl bootstrap --force`
 - 專用 `YSK_NPM_USER` 的完整 systemd 生命週期仍為可選
 
 ## I-07 npm 安裝路徑（已硬化）

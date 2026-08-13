@@ -82,7 +82,7 @@
 - journalctl 固定 argv；unit／grep 消毒；ssh.service ↔ sshd.service fallback  
 - 輸出有行數／字節上限；可選 secret 遮罩  
 - vacuum／自動 vacuum 無 EXECUTE／非 root → blocked（誠實）  
-- SSE／export 下載需 Bearer（唔用 window.open）  
+- SSE／export 下載需 Bearer（不用 window.open）  
 
 ## 分工
 

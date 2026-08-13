@@ -97,6 +97,16 @@ describe('pathUnderRoot + commandRequiresExecute', () => {
     expect(commandRequiresExecute(['bash', '-c', 'echo hi'])).toBe(false);
     expect(commandRequiresExecute(['bash', '-c', 'rm -rf /'])).toBe(true);
     expect(commandRequiresExecute(['bash', '-c', 'postqueue -p'])).toBe(false);
+    expect(
+      commandRequiresExecute([
+        'bash',
+        '-c',
+        'for p in "nginx" "ufw" "fail2ban"; do apt-cache policy "$p"; done',
+      ]),
+    ).toBe(false);
+    expect(
+      commandRequiresExecute(['bash', '-c', 'apt-cache policy ufw; ufw enable']),
+    ).toBe(true);
     expect(commandRequiresExecute(['bash', '-c', 'postqueue -p; reboot'])).toBe(true);
     expect(commandRequiresExecute(['bash', '-c', 'grep x /etc/passwd; reboot'])).toBe(true);
     expect(

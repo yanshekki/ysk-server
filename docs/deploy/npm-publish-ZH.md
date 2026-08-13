@@ -16,8 +16,8 @@
 npm install -g ysk-server
 ```
 
-> 說明：registry **唔用** `@ysk-server/*` 呢類 scope（要建 npm org）。
-> 免費帳號用 **unscoped** 套件名（唔使 org）。
+> 說明：registry **不用** `@ysk-server/*` 呢類 scope（要建 npm org）。
+> 免費帳號用 **unscoped** 套件名（不必 org）。
 
 ## 發布
 
@@ -29,4 +29,4 @@ bash scripts/publish-ysk-server-npm.sh --publish
 
 每個套件都帶 **README.md**，方便 npm 產品頁顯示。
 
-新版本前請 bump `packages/shared`、`packages/core`、`apps/server` 嘅 `package.json` `version`。發布後用 `npm view ysk-server version` 同 `ysk-server help` 驗證。
+新版本前請 bump `packages/shared`、`packages/core`、`apps/server` 的 `package.json` `version`。發布後用 `npm view ysk-server version` 同 `ysk-server help` 驗證。

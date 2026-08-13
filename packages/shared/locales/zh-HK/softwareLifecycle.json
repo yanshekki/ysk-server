@@ -50,7 +50,7 @@
     "generic": "相關服務可能停止",
     "purgeData": "將刪除資料路徑",
     "protectedSkipped": "受保護元件會略過",
-    "runtimeStack": "將移除面板管理嘅此執行環境全部版本"
+    "runtimeStack": "將移除面板管理的此執行環境全部版本"
   },
   "requestCancel": "請求取消",
   "cancelling": "取消中…",

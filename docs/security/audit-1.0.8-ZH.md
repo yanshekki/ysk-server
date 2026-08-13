@@ -33,7 +33,7 @@ WebSocket（要 ticket）：終端、VNC、Host Browse。
 |------|----|------|------|
 | A08-1 | 中 | 未登入 `/health` 洩 `executeEnabled`／`isRoot` | **已修** |
 | A08-2 | 高 | 未登入 `/api/v1/readiness` 跑完整評估並洩專案 `homeDir` | **已修** — 公開探測只回布林 |
-| A08-3 | 高 | `requireUserTotp` 只係提示，未登記仍可用 API | **已修** — `enforceMustEnrollTotp` + 登入轉 `/security` |
+| A08-3 | 高 | `requireUserTotp` 只是提示，未登記仍可用 API | **已修** — `enforceMustEnrollTotp` + 登入轉 `/security` |
 | A08-4 | 中 | 分享密碼出現在 JSON（`meta`／`bt-stats`）查詢字串 | **已修** — query 只限檔案／torrent GET；面板 fetch 用標頭 |
 | A08-5 | 高 | 備份 S3 endpoint／SFTP 主機可指向 IMDS／loopback | **已修** |
 | A08-6 | 中 | 備份 SSH 用 `StrictHostKeyChecking=no` | **已修** — `accept-new` |
@@ -52,33 +52,33 @@ WebSocket（要 ticket）：終端、VNC、Host Browse。
 | A08-19 | 高 | VPN `listenPort` 未強制整數就插入 bash | **已修** — `parseVpnListenPort`／`coerceVpnListenPort` |
 | A08-20 | 中 | 任何已登入工作階段可 `GET` 資料庫／Redis 控制台（含 `requirepass`） | **已修** — 要 `mysql.console.write` **或** `services.control` **或** `settings.system` |
 | A08-21 | 低 | WebDAV PROPFIND 無上限；PUT 無體積上限 | **已修** — 500 項／50 MiB |
-| A08-22 | 高 | LLM 只要 URL 字串有 `localhost` 就 `allowPrivate`（IMDS + `?localhost`） | **已修** — 只睇 hostname；儲存時 `assertSafeOutboundUrl` |
+| A08-22 | 高 | LLM 只要 URL 字串有 `localhost` 就 `allowPrivate`（IMDS + `?localhost`） | **已修** — 只看 hostname；儲存時 `assertSafeOutboundUrl` |
 | A08-23 | 高 | 公開 Autoconfig／Autodiscover 未淨化就把 `domain`／`email` 插入 XML | **已修** — 網域／電郵允許清單 + XML 轉義；非法參數 400 |
 | A08-24 | 高 | Nginx `server_name` 未淨化就寫入 conf | **已修** — 列出同渲染時允許清單 |
-| A08-25 | 高 | `GET /settings/llm` 任何工作階段都回存好嘅 `apiKey` | **已修** — 要 `settings.system` + 遮成 `***` |
-| A08-26 | 中 | SSH 身分列表／公鑰／詳情同 Fleet 列表係任何 session 嘅 GET | **已修** — 身分：`settings.system`／`security.policy`／`backups.run`；Fleet：`settings.system`／`services.control` |
+| A08-25 | 高 | `GET /settings/llm` 任何工作階段都回存好的 `apiKey` | **已修** — 要 `settings.system` + 遮成 `***` |
+| A08-26 | 中 | SSH 身分列表／公鑰／詳情同 Fleet 列表是任何 session 的 GET | **已修** — 身分：`settings.system`／`security.policy`／`backups.run`；Fleet：`settings.system`／`services.control` |
 | A08-27 | 低 | Fleet enroll token 用 `===`；開機失敗把 `err.message` 直接寫入 `innerHTML` | **已修** — `timingSafeEqual`；開機錯誤轉義 |
-| A08-28 | 中 | 盤點 GET（電郵、專案、SSL、備份、DNS、CDN、日誌、用戶…）任何 session 都可睇 | **已修** — 中央 `GET_ROUTE_CAP_RULES` 任一 cap（viewer 讀權仍過；只有 `users.self` 唔過） |
+| A08-28 | 中 | 盤點 GET（電郵、專案、SSL、備份、DNS、CDN、日誌、用戶…）任何 session 都可查看 | **已修** — 中央 `GET_ROUTE_CAP_RULES` 任一 cap（viewer 讀權仍過；只有 `users.self` 不過） |
 | A08-29 | 高 | Apache `ServerName`／PHP vhost 未淨化就寫入 conf | **已修** — 同 nginx 主機名允許清單 |
 
 ## 已接受殘項
 
 | 編號 | 原因／營運控制 |
 |------|----------------|
-| R-1 | `root` + `YSK_EXECUTE=1` 設計上等同一部主機。唔用時關 EXECUTE。 |
+| R-1 | `root` + `YSK_EXECUTE=1` 設計上等同一部主機。不用時關 EXECUTE。 |
 | R-2 | 分享**檔案** GET 仍可用 `?password=`（`<a href>`／torrent）。優先用標頭。存取日誌可能記下密碼。 |
 | R-3 | 密碼式 SFTP 用 `sshpass`（root 可見行程）。優先用 SSH 身分庫。 |
-| R-4 | 第一次 SSH 備份仍係 `accept-new`（TOFU）。正式環境應釘 `known_hosts`。 |
+| R-4 | 第一次 SSH 備份仍是 `accept-new`（TOFU）。正式環境應釘 `known_hosts`。 |
 | R-5 | 安裝 checksum 釘選（I-07）仍按營運文件。 |
-| R-6 | Host Browse `--no-sandbox` 仍係容器營運選項。配合 A08-15，只會啟動允許清單內嘅 Chrome。 |
-| R-7 | `YSK_HOST_BROWSE_CHROME`／`/usr` `/opt/google` `/snap` 以外嘅自訂 Chrome 會被忽略（回落探測）。 |
+| R-6 | Host Browse `--no-sandbox` 仍是容器營運選項。配合 A08-15，只會啟動允許清單內的 Chrome。 |
+| R-7 | `YSK_HOST_BROWSE_CHROME`／`/usr` `/opt/google` `/snap` 以外的自訂 Chrome 會被忽略（回落探測）。 |
 | R-8 | VNC `server_proxy` 仍可連 RFC1918（設計如此）。IMDS 已攔。 |
 | R-9 | 檔案編輯器 `highlightToHtml` 有轉義（已審）。CSP 仍然生效。 |
-| R-10 | `pnpm audit`：Vitest UI／Vite／brace-expansion／nanoid 屬**開發依賴**。間接依賴 `ip@2.0.1`（webtorrent tracker）暫無修補版；我哋 SSRF 用 `net/ssrf.ts`。面板 SPA 用 `BrowserRouter`，唔係 React Router RSC。`react-router-dom` 已升到 `^7.18.2`。 |
+| R-10 | `pnpm audit`：Vitest UI／Vite／brace-expansion／nanoid 屬**開發依賴**。間接依賴 `ip@2.0.1`（webtorrent tracker）暫無修補版；我們的 SSRF 用 `net/ssrf.ts`。面板 SPA 用 `BrowserRouter`，不是 React Router RSC。`react-router-dom` 已升到 `^7.18.2`。 |
 
 ## 本輪已審、無需再改碼
 
-Host Browse CDP 只綁 `127.0.0.1`。Live WS ticket 一次過＋TTL。VNC／終端 ticket 已 consume-once＋過期。CDN 健康用 `assertSafeOutboundUrl`。遷移臨時金鑰 `0600`／目錄 `0700`。Outline 無 script hook。檔案 highlight 有轉義；其餘 `innerHTML` 係 VNC 清畫面或已轉義開機錯誤。專案 Linux 用戶由 UUID 衍生（`ysk-…`），唔係專案名。備份 GET 已遮秘密。郵箱列表已剝 hash。資源列表已遮密碼。SQL 開庫校識別字＋轉義密碼。安裝 I-07 仍按文件（R-5）。公開 BT tracker WS 只代理本機。npm 產品包係 `dist`＋`public`＋README。其餘未列 GET（dashboard、搜尋、auth 自助）仍只要求已登入。
+Host Browse CDP 只綁 `127.0.0.1`。Live WS ticket 一次過＋TTL。VNC／終端 ticket 已 consume-once＋過期。CDN 健康用 `assertSafeOutboundUrl`。遷移臨時金鑰 `0600`／目錄 `0700`。Outline 無 script hook。檔案 highlight 有轉義；其餘 `innerHTML` 是 VNC 清畫面或已轉義開機錯誤。專案 Linux 用戶由 UUID 衍生（`ysk-…`），不是專案名。備份 GET 已遮秘密。郵箱列表已剝 hash。資源列表已遮密碼。SQL 開庫校識別字＋轉義密碼。安裝 I-07 仍按文件（R-5）。公開 BT tracker WS 只代理本機。npm 產品包是 `dist`＋`public`＋README。其餘未列 GET（dashboard、搜尋、auth 自助）仍只要求已登入。
 
 ## 先前階段重核
 

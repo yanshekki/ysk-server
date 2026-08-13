@@ -5,7 +5,7 @@
 > 本頁為對應英文運維文件的香港書面語版；命令與路徑保持原文以便複製。
 
 控制平面狀態（users / projects / settings / audit / sessions / api_keys …）用 **document store**：整份 `StoreData` 快照持久化。  
-**唔**係完整 relational 每表 schema（`schema.ts` 預留下一階段）。
+**不**是完整 relational 每表 schema（`schema.ts` 預留下一階段）。
 
 ## 後端
 
@@ -54,7 +54,7 @@ ysk-server store migrate --to json --out /var/lib/ysk/ysk.json
 | SQLite 實作 | `sql.js` child process（避免 native better-sqlite3 平台 segfault） |
 | Postgres | 需額外套 `pg`；persist 經 child process（較慢）；適合未來 multi-writer 前的實驗 |
 | 多進程寫入 | JSON/SQLite **單 writer**；多實例勿共用 json 檔 |
-| Relational | `schema.ts` 只係預留；**未**實作 ORM / 每表 migration |
+| Relational | `schema.ts` 只是預留；**未**實作 ORM / 每表 migration |
 | Backup | control-plane tar 仍包 `ysk.json`；跨 backend 用 `store export` 最穩 |
 
 ## 遷移建議（json → sqlite）
@@ -83,7 +83,7 @@ document-mode 完成標準：json 預設穩、sqlite 可 migrate、postgres 可�
 
 | 情況 | 做法 |
 |------|------|
-| sqlite 壞 / 打唔開 | 用 mirror `ysk.json` 或 export 還原：`YSK_STORE=json` |
+| sqlite 壞 / 打不開 | 用 mirror `ysk.json` 或 export 還原：`YSK_STORE=json` |
 | import 後 count 0 | 檢查 JSON 是否完整 `StoreData`（有 `users` 陣列） |
 | postgres 連線失敗 | status/readiness fail-closed；回退 json |
 

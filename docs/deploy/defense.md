@@ -77,7 +77,7 @@ Stack apply = UFW plan + fail2ban jails（當前 preset）+ re-apply defense pre
 
 ## 誠實邊界
 
-- L3/L4 純頻寬洪水需上游／CDN scrubbing（面板提供 CF UA，唔替代 scrub）  
+- L3/L4 純頻寬洪水需上游／CDN scrubbing（面板提供 CF UA，不替代 scrub）  
 - 多 CDN 商、fleet 聯防屬範圍外延伸（本版以單機 + CF 為 100% 內範圍）  
 
 ## 環境
@@ -93,8 +93,8 @@ YSK_AUTO_BAN_INTERVAL_MS=120000  # 僅 fallback；優先用面板間隔
 - **庫：** 本地 MMDB，每日自動更新（`defense-geoip-update`）
 - **預設來源：** [sapics/ip-location-db](https://github.com/sapics/ip-location-db) `user-country` + `origin-asn`（PDDL，免 API key）
 - **可選：** `IPINFO_TOKEN` → IPinfo Lite（國家 + 大陸 + ASN 一檔，CC BY-SA）
-- **地區 Phase1：** 大陸（continent），唔係省市
-- **供應商：** ASN（如 AS13335），唔保證等於消費品牌名
-- **執行：** 政策評估 + nginx 片段（需 geoip2 模組）；**唔會**把整國 CIDR bulk 寫入 UFW
+- **地區 Phase1：** 大陸（continent），不是省市
+- **供應商：** ASN（如 AS13335），不保證等於消費品牌名
+- **執行：** 政策評估 + nginx 片段（需 geoip2 模組）；**不會**把整國 CIDR bulk 寫入 UFW
 - **API：** `GET/POST /api/v1/defense/geoip/*`
 - 面板：**防護中心 → IP 准入** tab

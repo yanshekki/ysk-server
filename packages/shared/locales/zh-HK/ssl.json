@@ -38,7 +38,7 @@
   "leFailUnknown": "申請 Let's Encrypt 失敗（{{domain}}）。",
   "leFailUnknownHint": "請開啟 letsencrypt.log 查看詳細錯誤。",
   "leFailRawTail": "技術詳情（摘要）：{{snippet}}",
-  "requestFailedWhy": "點解不得",
+  "requestFailedWhy": "失敗原因",
   "requestFailedNext": "下一步",
   "retryRequest": "重試申請",
   "retryRequestFor": "重試申請 {{domain}}",

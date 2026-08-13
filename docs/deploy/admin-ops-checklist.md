@@ -4,7 +4,7 @@
 
 > **最短路徑：** 見 [go-live.md](./go-live.md)（一頁 go-live）。
 
-YSK 係 **Admin 控制面**。生產能力取決於 **root + `YSK_EXECUTE=1`**。  
+YSK 是 **Admin 控制面**。生產能力取決於 **root + `YSK_EXECUTE=1`**。  
 記住：**寫入管理檔 ≠ 已套用到系統 ≠ 對外可連**。
 
 ## 0b. 安全加固（setup / readiness）
@@ -46,7 +46,7 @@ ysk-server readiness --data-dir /var/lib/ysk-server --json
 - [ ] SSL：LE 或上傳；到期可在 Dashboard 見
 - [ ] PHP：全域 php.ini 已儲存；要系統 conf.d 再「套用到系統」；專案覆寫後重新 FPM／部署
 
-**勿用**「執行環境 → PHP → FPM／站點」當每站主流程（嗰個係系統 demo／工具）。
+**勿用**「執行環境 → PHP → FPM／站點」當每站主流程（嗰個是系統 demo／工具）。
 
 ## 2b. IPv4 + IPv6 雙棧
 
@@ -74,7 +74,7 @@ ysk-server readiness --data-dir /var/lib/ysk-server --json
 
 - [ ] 郵件套用／bootstrap 已跑（EXECUTE）
 - [ ] postfix/dovecot **is-active**
-- [ ] **PTR／Port 25** 由主機商處理（面板唔自動搞 deliverability）
+- [ ] **PTR／Port 25** 由主機商處理（面板不自動搞 deliverability）
 - [ ] 測本地投遞；國際投遞另驗
 
 ## 5. 資料庫
@@ -85,7 +85,7 @@ ysk-server readiness --data-dir /var/lib/ysk-server --json
 
 ## 6. 備份／Cron
 
-- [ ] **備份 → 操作** 跑一次「備份所有專案」（0 專案＝無事可做，唔算失敗）
+- [ ] **備份 → 操作** 跑一次「備份所有專案」（0 專案＝無事可做，不算失敗）
 - [ ] 下載／還原抽測
 - [ ] 「登記每日排程」後到 **Cron → 狀態 → 安裝到系統 crontab**
 - [ ] 確認指令含：`ysk-server backup all --data-dir '…'`
@@ -95,17 +95,17 @@ ysk-server readiness --data-dir /var/lib/ysk-server --json
 
 - [ ] 防火牆／Fail2ban 已套用（EXECUTE）
 - [ ] SFTP：sshd 片段已安裝（若用金鑰登專案用戶）
-- [ ] API keys 僅給自動化；唔入 git
+- [ ] API keys 僅給自動化；不入 git
 
 ## 8. 誠實驗收
 
 ```text
 written  — dataDir 有檔
 applied  — /etc 或 systemctl 已變
-online   — 埠聽緊、HTTP 200、郵件可投
+online   — 埠正在監聽、HTTP 200、郵件可投
 ```
 
-任何一步 notes 寫 blocked／requiresRoot／requiresExecute → **先滿足權限再重試**，唔好當 UI bug。
+任何一步 notes 寫 blocked／requiresRoot／requiresExecute → **先滿足權限再重試**，不要當成 UI bug。
 
 ## 相關
 

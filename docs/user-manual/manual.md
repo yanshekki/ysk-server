@@ -45,6 +45,7 @@ ysk-server nginx status --json
 ```
 
 Publish A/AAAA at your provider.  
+Empty or invalid Nginx `server_name` is rejected (no `localhost` fallback).  
 [../features/dns-ssl-nginx.md](../features/dns-ssl-nginx.md)
 
 ## 5. Optional mail

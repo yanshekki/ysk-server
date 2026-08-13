@@ -2,15 +2,15 @@
 
 > 語言：中文 | [English](./uninstall.md)
 
-以可控方式移除 **YSK Server** 主機堆疊套件（以及可選嘅控制平面產品）。
+以可控方式移除 **YSK Server** 主機堆疊套件（以及可選的控制平面產品）。
 
 | 項目 | 說明 |
 |------|------|
 | 腳本 | 倉庫根目錄 [`uninstall.sh`](../../uninstall.sh) |
-| Manifest | `$dataDir/stack-manifest.json`（YSK 裝過咩） |
+| Manifest | `$dataDir/stack-manifest.json`（YSK 裝過什麼） |
 | 對應 | [`install.sh`](../../install.sh) · [install-ZH.md](./install-ZH.md) |
 
-**誠實原則：** uninstall 只處理 **套件／單元／可選資料路徑**（manifest 有記錄嘅）。唔會聲稱還原所有面板設定檔。除非你刻意要清 DB／郵件資料，否則用 **keep-data**。
+**誠實原則：** uninstall 只處理 **套件／單元／可選資料路徑**（manifest 有記錄的）。不會聲稱還原所有面板設定檔。除非你刻意要清 DB／郵件資料，否則用 **keep-data**。
 
 ---
 
@@ -51,7 +51,7 @@ sudo ./uninstall.sh --all --purge-data --yes
 | 參數 | 含義 |
 |------|------|
 | `--all` | `stack-manifest.json` 全部組件 **並** 移除產品 CLI／unit（除非 `--keep-product`） |
-| `--bundles LIST` | 按套餐展開組件（唔動 control-plane 基礎） |
+| `--bundles LIST` | 按套餐展開組件（不動 control-plane 基礎） |
 | `--components LIST` | 明確組件 id |
 | `--keep-data` | `apt remove`；保留資料目錄（預設） |
 | `--purge-data` | `apt purge` + 只刪白名單資料路徑 |
@@ -69,7 +69,7 @@ sudo ./uninstall.sh --all --purge-data --yes
 | `keep-data` | `apt remove` | stop/disable | **保留** | 保留 |
 | `purge-data` | `apt purge` | stop/disable | **刪除**（白名單） | 僅連 `--remove-product` 先刪 |
 
-**Purge 白名單：** 只接受組件登記且落在 `/var/*`、`/etc/letsencrypt`、`/usr/local/cargo`、`/usr/local/rustup` 嘅路徑。
+**Purge 白名單：** 只接受組件登記且落在 `/var/*`、`/etc/letsencrypt`、`/usr/local/cargo`、`/usr/local/rustup` 的路徑。
 
 ---
 

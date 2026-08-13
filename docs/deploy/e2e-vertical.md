@@ -2,7 +2,7 @@
 
 > Language: English | [中文](./e2e-vertical-ZH.md)
 
-真機可驗證路徑（**唔假成功**）。無 root 必須 PASS；root + `YSK_EXECUTE=1` 為增強。
+真機可驗證路徑（**不假成功**）。無 root 必須 PASS；root + `YSK_EXECUTE=1` 為增強。
 
 ## 一鍵
 
@@ -25,7 +25,7 @@ pnpm e2e:hosting-root
 | **Node** | create → deploy → 真 bind port → curl → health → nginx conf → stop | systemd unit / enable 路徑 |
 | **PHP** | create (wordpress-php) → `deploy-php` `forceBuiltin` → `php -S` listen → curl → stop | FPM pool + OS isolation provision |
 | **Static** | deploy-static + try_files conf | nginx -t / reload |
-| **Email** | domain + mailbox + bootstrap plan + **deliverability**（`deliveryGuaranteed` 永唔因本地 probe 變 true） | package install / postfix apply |
+| **Email** | domain + mailbox + bootstrap plan + **deliverability**（`deliveryGuaranteed` 永不因本地 probe 變 true） | package install / postfix apply |
 | **Backup CLI** | `backup control-plane` / `list` / `status` | schedule `--install` |
 | **CLI email** | `hosting email-deliverability` | — |
 
@@ -58,9 +58,9 @@ ysk-server hosting email-deliverability --domain example.com --json
 
 | 情況 | 期望 |
 |------|------|
-| 無 `php` binary | PHP deploy `ok:false` + notes；E2E **唔當全域 FAIL**（Node/Email 仍要過） |
+| 無 `php` binary | PHP deploy `ok:false` + notes；E2E **不當全域 FAIL**（Node/Email 仍要過） |
 | 無 root / 無 EXECUTE | `degraded: true`；crontab install blocked |
-| Email deliverability | 本地 DNSBL/PTR probe **唔**標 `deliveryGuaranteed: true` |
+| Email deliverability | 本地 DNSBL/PTR probe **不**標 `deliveryGuaranteed: true` |
 | Redis/Postgres provision 無執行權 | `ok:false` 或未 executed — 禁止假 ok |
 
 ## 相關

@@ -6,7 +6,7 @@
 
 | | |
 |--|--|
-| **版本** | **1.0.18** |
+| **版本** | **1.0.19** |
 | **授權** | 免費公開使用（見倉庫授權） |
 | **CLI** | `ysk-server` |
 | **預設介面語系** | 繁中（香港）· 另有 en、簡中等 |
@@ -16,9 +16,9 @@
 
 ## 為什麼用 YSK Server？
 
-- **伺服器係你自己嘅** — 唔係多租戶 SaaS 鎖死  
+- **伺服器屬於你自己** — 不是多租戶 SaaS 鎖死  
 - **面板 + CLI + API** 同一核心（適合人手同 AI agent）  
-- **誠實運維** — 改主機要 **root** + `YSK_EXECUTE=1`（唔會假成功）  
+- **誠實運維** — 改主機要 **root** + `YSK_EXECUTE=1`（不會假成功）  
 - **完整主機棧** — 專案、Nginx／Apache、SSL、資料庫、電郵、FTP、BT 分享、防護  
 
 ---
@@ -65,7 +65,7 @@ sudo ./install.sh
 
 1. **systemd** 已啟動 `ysk-server`  
 2. 開啟 **`https://<伺服器IP>:9287`**（自簽憑證請於瀏覽器接受警告）  
-3. 用安裝結尾打印嘅帳密登入（亦寫入 `$dataDir/BOOTSTRAP-CREDENTIALS.txt`）  
+3. 用安裝結尾打印的帳密登入（亦寫入 `$dataDir/BOOTSTRAP-CREDENTIALS.txt`）  
 4. 改密碼 · 開 2FA  
 
 卸載：
@@ -93,7 +93,7 @@ sudo ./uninstall.sh --all --purge-data --yes
 | **安全** | 防護中心、SSH／2FA、VPN、VNC |
 | **運維** | 指標、日誌、終端、Cron、備份、更新 |
 
-細節全部喺 **[docs/INDEX-ZH.md](docs/INDEX-ZH.md)** — 功能手冊、CLI、架構請去文件。
+細節全部在 **[docs/INDEX-ZH.md](docs/INDEX-ZH.md)** — 功能手冊、CLI、架構請去文件。
 
 ---
 
@@ -127,17 +127,17 @@ YSK Server **免費**畀所有人用。如果有幫助：
 
 ```bash
 pnpm install && pnpm build
-# 詳見 docs/ — 唔喺 README 堆開發流程
+# 詳見 docs/ — 不在 README 堆開發流程
 ```
 
 ---
 
 ## 誠實說明
 
-- 安裝 **唔等於** 電郵／DNS 聲譽「一鍵保證入匣」。  
+- 安裝 **不等於** 電郵／DNS 聲譽「一鍵保證入匣」。  
 - 危險主機操作預設 dry-run，直至 `YSK_EXECUTE=1`。  
 - 自簽面板憑證只為首次登入；有域名後請用 Let's Encrypt。  
 
 ---
 
-**YSK Server** · 畀想自己掌控伺服器嘅人 · [ysk.hk](https://ysk.hk/) · [email@ysk.hk](mailto:email@ysk.hk)
+**YSK Server** · 畀想自己掌控伺服器的人 · [ysk.hk](https://ysk.hk/) · [email@ysk.hk](mailto:email@ysk.hk)

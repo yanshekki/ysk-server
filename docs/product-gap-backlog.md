@@ -164,7 +164,7 @@ Honest admin view — not marketing. **production** needs root + `YSK_EXECUTE=1`
 | Email | **100% in-scope\*** | domain／mailbox／queue／autoconfig／deliverability checklist |
 | Files / FTP / SFTP | **100% in-scope** | chmod／zip／keys |
 | DB | **100% in-scope** | provision 誠實 refuse／execute |
-| Cron / Backup | **100% in-scope** | 排程 install 仍係 ops 步驟 |
+| Cron / Backup | **100% in-scope** | 排程 install 仍是 ops 步驟 |
 | Runtimes | **100% in-scope** | multi-runtime + PHP version |
 | Firewall / F2B / **Defense** | **100% in-scope** | 防護中心 + 自動化；fleet/multi-CDN out |
 | **Log Center** | **100% in-scope** | journal／檔案 allowlist／書籤／SSE／vacuum |
@@ -172,13 +172,13 @@ Honest admin view — not marketing. **production** needs root + `YSK_EXECUTE=1`
 | Security (2FA / API keys / approvals) | **100% in-scope** | |
 | System host identity | **100% in-scope** | hostname／timezone／IPs |
 | AI / Agents | **100%†** | playbook／probe；vendor 全自動 fleet install out |
-| Users/Packages multi-tenant | **out / P2 platform** | 唔計 Admin 100% |
+| Users/Packages multi-tenant | **out / P2 platform** | 不計 Admin 100% |
 | **Overall Admin plane** | **100%** | `docs/deploy/admin-plane-100.md` · `docs/product-remaining-plan.md` |
 | **ysk-server-core tests** | **253/253 pass** | 中文化訊息與測試 regex 已對齊 |
-| **Line coverage ≥90%** | **未達（工程債）** | 唔阻擋功能 100%；持續補測 |
+| **Line coverage ≥90%** | **未達（工程債）** | 不阻擋功能 100%；持續補測 |
 
 \* 國際 inbox 永遠外部（PTR／Port25）。  
-† AI 能力隨模型成長，唔再列功能欠債。
+† AI 能力隨模型成長，不再列功能欠債。
 
 ### Explicit out of scope (unchanged)
 

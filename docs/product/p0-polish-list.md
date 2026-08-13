@@ -1,6 +1,6 @@
 # P0 polish list（對標缺口 + 誠實度收尾）
 
-**用途：** 產品定義 Admin 控制面已齊（見 `product-remaining-plan`），呢份係 **parity / 誠實 / UX polish**，唔係「功能全缺」。  
+**用途：** 產品定義 Admin 控制面已齊（見 `product-remaining-plan`），呢份是 **parity / 誠實 / UX polish**，不是「功能全缺」。  
 **更新：** 2026-08-05（**P0 100%** — Cov / S6 live data path / Shared DTO / 多用戶套餐基礎）
 
 圖例：`open` = 未收尾 · `partial` = 有但未滿 · `done` = 可當 P0 過。

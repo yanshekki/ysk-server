@@ -62,3 +62,5 @@
 面板用戶 2FA：`GET/POST /api/v1/settings/security` 的 `requireUserTotp`。CLI：`ysk-server users totp`／`users totp-clear`。用戶到 `/security` 自行登記。
 
 `GET /api/v1/updates/self` 為面板版本檢查。`POST /api/v1/updates/self/apply` 把官方 npm tarball overlay 到執行中目錄（等同 `ysk-server update --apply`）。套用失敗回 **422**，`blockMessage`／`message` 為真正原因，不會把 `npm notice` 檔案清單當錯誤。覆寫產品自己的檔案不需要 `YSK_EXECUTE`。
+
+Nginx 站點套用（`POST /api/v1` nginx／受管資源）在 `serverName` 空白或非法時 **直接失敗**。回傳 `ok: false` 與驗證訊息，**不會**寫入 `server_name localhost`。CLI：`ysk-server nginx`／`ysk-server hosting nginx`。

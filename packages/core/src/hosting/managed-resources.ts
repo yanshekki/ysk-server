@@ -9,7 +9,12 @@ import { mkdirSync, writeFileSync, unlinkSync, existsSync, rmSync } from 'node:f
 import { join } from 'node:path';
 import type { ApplyStatus as SharedApplyStatus } from 'ysk-server-shared';
 import type { JsonStore } from '../db/store.js';
-import { renderNginxProxy, renderNginxStatic, renderNginxPhpFpm } from './nginx-ssl.js';
+import {
+  renderNginxProxy,
+  renderNginxStatic,
+  renderNginxPhpFpm,
+  requireNginxServerName,
+} from './nginx-ssl.js';
 import { writeManagedDnsZone } from './dns-zone.js';
 import { planDnsZone } from './extras.js';
 import { provisionMysqlDatabase } from './mysql-provision.js';
@@ -133,7 +138,18 @@ export async function applyManagedNginxSite(
 }> {
   const site = getResource(db, 'nginx_sites', id);
   if (!site) return { ok: false, site: null, notes: [tl('notes.auto.n0024')] };
-  const serverName = String(site.serverName ?? '');
+  let serverName: string;
+  try {
+    serverName = requireNginxServerName(String(site.serverName ?? ''));
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    const updated = updateResource(db, 'nginx_sites', id, {
+      apply_status: 'failed',
+      last_apply_at: now(),
+      last_error: msg,
+    });
+    return { ok: false, site: updated, notes: [msg] };
+  }
   const kind = String(site.kind ?? 'proxy') as 'proxy' | 'static' | 'php';
   const dir = join(dataDir, 'nginx', 'conf.d');
   mkdirSync(dir, { recursive: true });

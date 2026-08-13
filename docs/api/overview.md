@@ -62,3 +62,5 @@ Files name collisions: `ifExists=fail|overwrite|rename` on upload/copy/rename (d
 Panel-user 2FA: `GET/POST /api/v1/settings/security` `requireUserTotp`. CLI: `ysk-server users totp` / `users totp-clear`. Each user enrolls on `/security`.
 
 `GET /api/v1/updates/self` is the panel version check. `POST /api/v1/updates/self/apply` overlays the official npm tarball onto the running dest (same as `ysk-server update --apply`). Failed apply returns **422** with `blockMessage` / `message` — never an `npm notice` file listing. Overlay of own package files does not require `YSK_EXECUTE`.
+
+Nginx site apply (`POST /api/v1` nginx / managed resources) **fails closed** on empty or invalid `serverName`. The response is `ok: false` with a validation message — it does not write `server_name localhost`. CLI: `ysk-server nginx` / `ysk-server hosting nginx`.

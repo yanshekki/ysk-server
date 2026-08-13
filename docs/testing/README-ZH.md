@@ -32,9 +32,9 @@ COVERAGE_FLOOR=0  pnpm --filter ysk-server-core test:coverage
 ## 誠實教條
 
 1. 主機路徑優先真 `mkdtemp` + `LocalHostExecutor`。  
-2. 斷言 `ok`、`apply_status`、`requiresExecute`、`blocked`、`notes`，唔好只驗 HTTP 200。  
-3. 斷言結構／錯誤碼，唔綁死單一語言字串。  
-4. 無 EXECUTE／缺 binary 唔可以報 `applied`。  
+2. 斷言 `ok`、`apply_status`、`requiresExecute`、`blocked`、`notes`，不要只驗 HTTP 200。  
+3. 斷言結構／錯誤碼，不綁死單一語言字串。  
+4. 無 EXECUTE／缺 binary 不可以報 `applied`。  
 5. 禁止空測試。  
 
 Server harness：`apps/server/src/test/harness.ts`  

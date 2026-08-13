@@ -2,7 +2,7 @@
 
 ## 問題
 
-MySQL／MariaDB 起唔到，原因可以係組合：
+MySQL／MariaDB 起不到，原因可以是組合：
 
 - Debian **FROZEN**
 - **my.cnf** 仍指向另一引擎
@@ -45,4 +45,4 @@ diagnose → findings[] → repairPlan[] → execute(confirm)
 ## 擴展
 
 新增檢查：在 `diagnose.ts` 加 finding → 在 `planRepairFromFindings` 掛 action。  
-**唔使**再為單一錯誤開專用 API。
+**不必**再為單一錯誤開專用 API。

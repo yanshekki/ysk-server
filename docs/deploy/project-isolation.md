@@ -61,7 +61,7 @@ ysk-server projects isolation provision --id <projectId>
 # 批量 provision（預設最多 20）
 ysk-server projects isolation provision-all --limit 20
 
-# 舊站補 package owner（只改 owner_user_id，唔動 linux user）
+# 舊站補 package owner（只改 owner_user_id，不動 linux user）
 ysk-server projects isolation backfill-owners --owner-user-id <panelUserId>
 ```
 
@@ -94,7 +94,7 @@ Provision 成功時若未設資源限制，會寫入預設：`MemoryMax=512M`、
 | **Cron（專案）** | 指令包 `runuser -u {linuxUser} -- bash -lc '…'` |
 | **SFTP 公鑰** | 可綁 `projectId` → 寫入 `{home}/.ssh/authorized_keys` 並 chown |
 | **sshd 片段** | `GET/POST /api/v1/sftp/sshd-snippet` → Match ysks_*/ysk_* + internal-sftp |
-| **FTPS 密碼** | crypt 雜湊（openssl passwd -6）；唔存 `password_plain` |
+| **FTPS 密碼** | crypt 雜湊（openssl passwd -6）；不存 `password_plain` |
 
 degraded（無 root）時仍可寫控制面，但 **不會假裝** 已對齊 owner。
 

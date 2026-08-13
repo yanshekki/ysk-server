@@ -635,7 +635,7 @@
     "notes": [
       "這是 DNS 級分流 + Nginx 邊緣，不是 Anycast 商業 CDN",
       "套用 edges 成功 ≠ 使用者解析器已看到新 IP（受 TTL 影響）",
-      "Fleet agent 路徑：fan-out 只入佇列；agent 執行後才 nginx reload（睇 Agents 指令紀錄）",
+      "Fleet agent 路徑：fan-out 只入佇列；agent 執行後才 nginx reload（查看 Agents 指令紀錄）",
       "有 SSH 時優先同步 SSH 套用，不會假裝 fleet 已 applied"
     ],
     "related": [
