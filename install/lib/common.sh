@@ -12,10 +12,12 @@ LOG_DIR="${LOG_DIR:-}"
 PHASE="${PHASE:-init}"
 OPERATION="${OPERATION:-install}"
 
-declare -a HARD_FAILURES=()
-declare -a SOFT_SKIPS=()
-declare -a VERIFY_OK=()
-declare -a VERIFY_FAIL=()
+# -g: this file is sourced from load_libs() — without -g the arrays die
+# when that function returns (set -u → HARD_FAILURES: unbound variable).
+declare -ga HARD_FAILURES=()
+declare -ga SOFT_SKIPS=()
+declare -ga VERIFY_OK=()
+declare -ga VERIFY_FAIL=()
 
 log() { printf '[%s] %s\n' "$PRODUCT" "$*"; }
 warn() { printf '[%s] WARN: %s\n' "$PRODUCT" "$*" >&2; }

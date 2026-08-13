@@ -7,6 +7,7 @@
 - Full install skips MariaDB if the host already has MySQL (and the reverse)
 - `--upgrade-stack` is the explicit “also refresh apt packages” flag
 - `--upgrade` overlays first; `npm install -g --force` is best-effort (Hermes/n prefixes used to abort on EEXIST)
+- Installer arrays are `declare -g` so `curl|bash --upgrade` no longer dies on `HARD_FAILURES: unbound variable`
 
 ### Fix
 - Self-update no longer runs `npm install -g` (that dumped `npm notice` tarball listings into the toast and often failed after the dest was already copied)

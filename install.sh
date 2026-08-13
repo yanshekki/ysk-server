@@ -413,7 +413,13 @@ overlay_npm_onto_running() {
   fi
   if [[ -d "$tmp/package/node_modules" ]]; then
     mkdir -p "$dest/node_modules"
-    cp -a "$tmp/package/node_modules/." "$dest/node_modules/"
+    local dep
+    for dep in ysk-server-core ysk-server-shared; do
+      if [[ -d "$tmp/package/node_modules/$dep" ]]; then
+        rm -rf "$dest/node_modules/$dep"
+        cp -a "$tmp/package/node_modules/$dep" "$dest/node_modules/$dep"
+      fi
+    done
   fi
   rm -rf "$tmp"
   if [[ -n "$latest" ]] && ! grep -qF "$latest" "$dest/dist/version.js" 2>/dev/null; then
@@ -843,8 +849,6 @@ upgrade_product_only() {
     install_product || true
     ov=0
     overlay_npm_onto_running || ov=$?
-  else
-    install_product || true
   fi
   ensure_unit_execute
   if [[ "$(id -u)" -eq 0 ]] && command -v systemctl >/dev/null 2>&1; then
@@ -854,14 +858,14 @@ upgrade_product_only() {
   ver="$("$CLI" --version 2>/dev/null || true)"
   if [[ "$ov" -eq 1 ]]; then
     record_hard_fail "Could not overlay $PKG onto the running install"
-    err "Upgrade had hard failures — see $INSTALL_LOG"
+    err "Upgrade had hard failures — see ${INSTALL_LOG:-"(no log)"}"
     exit 1
   fi
-  if [[ ${#HARD_FAILURES[@]} -gt 0 ]]; then
-    err "Upgrade had hard failures — see $INSTALL_LOG"
+  if [[ ${HARD_FAILURES[@]+x} ]] && [[ ${#HARD_FAILURES[@]} -gt 0 ]]; then
+    err "Upgrade had hard failures — see ${INSTALL_LOG:-"(no log)"}"
     exit 1
   fi
-  log "Upgrade done${ver:+ — $ver} — log: $INSTALL_LOG"
+  log "Upgrade done${ver:+ — $ver} — log: ${INSTALL_LOG:-"(no log)"}"
 }
 
 main() {
@@ -934,7 +938,7 @@ main() {
   manifest_save "$mpath"
   print_next
 
-  if [[ ${#HARD_FAILURES[@]} -gt 0 ]]; then
+  if [[ ${HARD_FAILURES[@]+x} ]] && [[ ${#HARD_FAILURES[@]} -gt 0 ]]; then
     err "Completed with hard failures — see $INSTALL_LOG"
     exit 1
   fi
