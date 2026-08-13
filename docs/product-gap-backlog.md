@@ -105,7 +105,7 @@ Ship order:
 | Files | chmod · zip/unzip · search harden (G3/G4/G12) |
 | DB | Full dump/import · Adminer or embedded browser entry (I4/I5) |
 | Email | Deliverability health UX · external todos (F19) |
-| Dashboard | Notification center (A3) · security strip (A5) |
+| Dashboard | Notification center (A3) · security strip (A5) | **done** |
 | Sites | Cache purge · HTTP auth · site redirect (B15–B17) | **done** (network tab + runtime-aware publish) |
 | Nginx | Template gallery · purge (E4/E5) |
 | Fail2ban | Ban list UX · whitelist (N3/N4) |

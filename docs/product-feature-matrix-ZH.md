@@ -44,9 +44,9 @@
 |----|---------|---|---|-----|-----|
 | A1 | 即時服務健康 (web/mail/dns/db) | H | D | △ | P0 |
 | A2 | 資源用量 CPU/RAM/disk/net | H | D | ✓ | P0 |
-| A3 | 通知中心 (backup, cert expiry, approvals) | H | D | ✗ | P1 |
-| A4 | 快速建立精靈 (site/mail/db) | H | D | △ | P1 |
-| A5 | 安全告警 (f2b, disk full) | H | D | △ | P1 |
+| A3 | 通知中心 (backup, cert expiry, approvals) | H | D | ✓ | P1 |
+| A4 | 快速建立精靈 (site/mail/db) | H | D | ✓ | P1 |
+| A5 | 安全告警 (f2b, disk full) | H | D | ✓ | P1 |
 | A6 | 誠實就緒 (executeEnabled/root/mode) | — | — | ✓ | Better |
 
 ---
@@ -57,21 +57,21 @@
 |----|---------|---|---|-----|-----|
 | B1 | 站點列表 + 狀態徽章 | 兩 | 兩 | ✓ | P0 |
 | B2 | 建立站點 (domain + runtime) | 兩 | 兩 | ✓ | P0 |
-| B3 | 刪除／**暫停**站點 | 兩 | 兩 | △ | P0 |
-| B4 | 域名別名 | 兩 | 兩 | △ | P0 |
-| B5 | 子域名 | H | D | ✗ | P0 |
+| B3 | 刪除／**暫停**站點 | 兩 | 兩 | ✓ | P0 |
+| B4 | 域名別名 | 兩 | 兩 | ✓ | P0 |
+| B5 | 子域名 | H | D | ✓ | P0 |
 | B6 | 域名指向／停放 | — | D | ✗ | P1 |
 | B7 | 重新命名域名／搬移路徑 | H | D | △ | P0 |
 | B8 | 自訂文件根 | H | D | △ | P0 |
 | B9 | 綁定 IP／多 IP | 兩 | 兩 | ✗ | P2 |
 | B10 | Nginx 發布 + reload | 兩 | 兩 | ✓ | P0 |
-| B11 | 強制 HTTPS + HSTS | H | D | △ | P0 |
+| B11 | 強制 HTTPS + HSTS | H | D | ✓ | P0 |
 | B12 | Let’s Encrypt (web + mail/webmail) | 兩 | 兩 | △ | P0 |
 | B13 | 上傳憑證 | 兩 | 兩 | ✓ | P0 |
 | B14 | 反向代理／代理範本 | H | D | △ | P0 |
-| B15 | 快取（FastCGI／proxy）+ purge | H | D | ✗ | P1 |
-| B16 | 路徑 HTTP 認證 | H | D | ✗ | P1 |
-| B17 | 整站 301／302 轉向 | H | D | ✗ | P1 |
+| B15 | 快取（FastCGI／proxy）+ purge | H | D | ✓ | P1 |
+| B16 | 路徑 HTTP 認證 | H | D | ✓ | P1 |
+| B17 | 整站 301／302 轉向 | H | D | ✓ | P1 |
 | B18 | 每站 FTP 帳戶 (jailed path) | H | D | ✓ | P0 |
 | B19 | 網站統計 (AWStats-class) | H | D | ✗ | P1 |
 | B20 | 面板內 access／error 日誌 | H | D | △ | P0 |
@@ -95,12 +95,12 @@
 | C2 | Record CRUD (A/AAAA/CNAME/MX/TXT/NS/SRV/CAA) | 兩 | 兩 | ✓ | P0 |
 | C3 | Zone templates (www/mail/ftp/**cdn**) | H | D | ✓ | P0 |
 | C4 | SOA / TTL / NS edit | 兩 | 兩 | △ | P0 |
-| C5 | Write zone + **real named reload status** | H | D | △ | P0 |
+| C5 | Write zone + **real named reload status** | H | D | ✓ | P0 |
 | C6 | DNSSEC keys / sign | H | D | △ | P1 |
 | C7 | DNS cluster push + **remote reload** + peer probe | H | D | ✓ | P2 |
-| C8 | External-DNS “records to add” list | H | D | △ | P0 |
+| C8 | External-DNS “records to add” list | H | D | ✓ | P0 |
 | C9 | Record set validation (CNAME conflict / A format) | — | D | ✓ | Better |
-| C9b | Zone validation (named-checkzone) | — | D | △ | Better |
+| C9b | Zone validation (named-checkzone) | — | D | ✓ | Better |
 | C10 | Zone → SSL LE preset deep-link | — | — | ✓ | Better |
 | C11 | dig / DNS lookup tool (UI + API) | — | D | ✓ | P1 |
 | C12 | CDN-managed RRset (`managedBy=cdn`) | — | — | ✓ | P1 |
@@ -135,11 +135,11 @@
 | D2 | Let’s Encrypt issue / renew | 兩 | 兩 | ✓ | P0 |
 | D3 | Wildcard LE | H | D | ✗ | P1 |
 | D4 | Upload fullchain + privkey | 兩 | 兩 | ✓ | P0 |
-| D5 | Auto-renew cron visibility | 兩 | 兩 | △ | P0 |
-| D6 | Panel hostname SSL | H | D | ✗ | P1 |
+| D5 | Auto-renew cron visibility | 兩 | 兩 | ✓ | P0 |
+| D6 | Panel hostname SSL | H | D | ✓ | P1 |
 | D7 | 郵件 domain SSL | H | D | △ | P0 |
-| D8 | Cert ↔ site binding overview | 兩 | 兩 | △ | P0 |
-| D9 | Expiry alert + one-click renew | 弱 | 弱 | ✗ | Better |
+| D8 | Cert ↔ site binding overview | 兩 | 兩 | ✓ | P0 |
+| D9 | Expiry alert + one-click renew | 弱 | 弱 | ✓ | Better |
 
 ---
 
@@ -175,12 +175,12 @@
 | F14 | RBL / global spam policy | H | D | ✗ | P1 |
 | F15 | Black/white lists | — | D | ✗ | P1 |
 | F16 | Sieve filters | H | D | ✗ | P1 |
-| F17 | Autodiscover / autoconfig | — | D | ✗ | P0 |
+| F17 | Autodiscover / autoconfig | — | D | ✓ | P0 |
 | F18 | 郵件 queue view / flush | H | D | ✓ | P0 |
-| F19 | Live deliverability check (MX/PTR/25) | 弱 | 弱 | △ | Better |
+| F19 | Live deliverability check (MX/PTR/25) | 弱 | 弱 | ✓ | Better |
 | F20 | One-click mail stack install | H | D | △ | P0 |
 | F21 | 郵件 SSL | 兩 | 兩 | △ | P0 |
-| F22 | Suspend domain/mailbox | 兩 | 兩 | ✗ | P0 |
+| F22 | Suspend domain/mailbox | 兩 | 兩 | ✓ | P0 |
 
 **Email domain tabs (required):** DNS · 郵件boxes · Health · Relay · Advanced
 
@@ -215,7 +215,7 @@
 | H4 | FTPS + passive ports | 兩 | 兩 | ✓ | P0 |
 | H5 | Service install/start/stop/reload | 兩 | 兩 | ✓ | P0 |
 | H6 | SFTP keys / jail | H | D | △ | P1 |
-| H7 | Create FTP from project | H | D | ✗ | P0 |
+| H7 | Create FTP from project | H | D | ✓ | P0 |
 
 ---
 
@@ -227,7 +227,7 @@
 | I2 | DB user + grants | 兩 | 兩 | ✓ | P0 |
 | I3 | Change password | 兩 | 兩 | ✓ | P0 |
 | I4 | Dump export / import | 兩 | 兩 | △ | P0 |
-| I5 | Adminer/phpMyAdmin entry or SSO | 兩 | 兩 | ✗ | P1 |
+| I5 | Adminer/phpMyAdmin entry or SSO | 兩 | 兩 | ✓ | P1 |
 | I6 | Remote DB host | H | D | ✗ | P2 |
 | I7 | PostgreSQL parity | H | 弱 | ✓ | Better |
 | I8 | Redis browse + service | — | D | ✓ | Better |
@@ -256,10 +256,10 @@ Each engine: **data page** + **service page**.
 | ID | 功能 | H | D | YSK | Pri |
 |----|---------|---|---|-----|-----|
 | K1 | Cron list CRUD | 兩 | 兩 | ✓ | P0 |
-| K2 | Schedule generator UI | H | D | △ | P0 |
-| K3 | Enable / disable job | H | D | △ | P0 |
+| K2 | Schedule generator UI | H | D | ✓ | P0 |
+| K3 | Enable / disable job | H | D | ✓ | P0 |
 | K4 | Job notifications on/off | H | D | ✗ | P1 |
-| K5 | Run once from UI (test) | 弱 | 弱 | ✗ | Better |
+| K5 | Run once from UI (test) | 弱 | 弱 | ✓ | Better |
 | K6 | Managed file vs system crontab split | 弱 | 弱 | ✓ | Better |
 
 ---
@@ -270,15 +270,15 @@ Each engine: **data page** + **service page**.
 |----|---------|---|---|-----|-----|
 | L0 | Full host migrate (SSH target) | — | — | ✓ | P0 |
 | L1 | Manual backup (project/user) | 兩 | 兩 | ✓ | P0 |
-| L2 | Scheduled backup | 兩 | 兩 | △ | P0 |
-| L3 | Download backup | 兩 | 兩 | △ | P0 |
+| L2 | Scheduled backup | 兩 | 兩 | ✓ | P0 |
+| L3 | Download backup | 兩 | 兩 | ✓ | P0 |
 | L4 | Restore full / selective (web/db/mail/dns) | 兩 | 兩 | △ | P0 |
-| L5 | Exclusion lists | H | D | ✗ | P1 |
+| L5 | Exclusion lists | H | D | ✓ | P1 |
 | L6 | Remote storage (S3/SFTP/…) | H | D | ✓ | P0 |
 | L7 | Incremental (restic/borg-class) | H | D | ✓ | P1 |
 | L8 | Import migrations (cPanel/DA) | H | D | ✗ | P2 |
 | L9 | Backup failure alerts | 弱 | 弱 | ✗ | Better |
-| L10 | Restore dry-run + honest result | 弱 | 弱 | △ | Better |
+| L10 | Restore dry-run + honest result | 弱 | 弱 | ✓ | Better |
 
 ---
 
@@ -341,7 +341,7 @@ Each engine: **data page** + **service page**.
 | Q5 | SSH key / shell | H | D | △ | P1 |
 | Q6 | 功能 sets (email-only) | — | D | ✗ | P2 |
 | Q7 | Reseller tier | — | D | ✗ | **Out** (not planned) |
-| Q8 | API access keys | H | D | △ | P0 |
+| Q8 | API access keys | H | D | ✓ | P0 |
 
 \*2FA for admin operator is P0 even in single-admin mode.
 
@@ -355,7 +355,7 @@ Each engine: **data page** + **service page**.
 | R2 | 2FA | 兩 | 兩 | ✓ | P0 |
 | R3 | Login / audit log | H | D | ✓ | P0 |
 | R4 | Tool allowlist + human approval | — | — | ✓ | Better |
-| R5 | Session / API token management | H | D | △ | P0 |
+| R5 | Session / API token management | H | D | ✓ | P0 |
 
 ---
 
@@ -376,12 +376,12 @@ Each engine: **data page** + **service page**.
 | ID | 功能 | H | D | YSK | Pri |
 |----|---------|---|---|-----|-----|
 | T1 | Hostname / timezone / language | H | D | △ | P0 |
-| T2 | Panel port / SSL | H | D | ✗ | P1 |
+| T2 | Panel port / SSL | H | D | ✓ | P1 |
 | T3 | IP address management | H | D | ✗ | P1 |
 | T4 | 控制平面 systemd unit | 弱 | 弱 | ✓ | Better |
 | T5 | 生產 readiness checks | 弱 | 弱 | ✓ | Better |
-| T6 | Web terminal | H | D | ✗ | Out / optional later |
-| T7 | Global object search | H | D | ✗ | P1 |
+| T6 | Web terminal | H | D | ✓ | Out / optional later |
+| T7 | Global object search | H | D | ✓ | P1 |
 | T8 | Config export / rebuild | H | D | ✗ | P1 |
 
 ---
@@ -393,6 +393,24 @@ Each engine: **data page** + **service page**.
 | U1 | AI 任務 / playbooks | — | — | △ | Better |
 | U2 | Agent install + supervision | — | — | △ | Better |
 | U3 | High-risk ops require approval | — | — | ✓ | Better |
+
+---
+
+## Seal
+
+標記對齊 Waves A–C 之後已出貨的面板、CLI、API。
+
+| YSK | 數量 |
+|-----|-------|
+| ✓ 可用 | 133 |
+| △ 部份／誠實邊界 | 36 |
+| ✗ 未做 | 25 |
+
+**P0 ✗：** 無。
+
+**P0 △**（可用，深度／誠實邊界仍開）：A1 · B7 · B8 · B12 · B14 · B20 · B22 · B26 · C4 · D7 · E2 · F6 · F7 · F13 · F20 · F21 · G12 · I4 · J1 · J2 · L4 · M3 · N3 · N4 · O5 · P3 · T1。
+
+其餘 **✗** 屬 P1／P2／Out（或 Better 加項）。
 
 ---
 

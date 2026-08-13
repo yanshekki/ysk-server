@@ -3,7 +3,7 @@
 > Language: English | [中文](./product-feature-matrix-ZH.md)
 
 **Status:** product contract (source of truth)  
-**Rescored:** 2026-08-13 — marks match shipped 1.0.7 code (zip/WebDAV/versions/operator 2FA/users were stale ✗).  
+**Rescored:** 2026-08-13 — seal after Waves A–C. Marks match shipped code (panel + CLI + API), not marketing.
 **Research basis:** Hestia Control Panel v1.9.x (docs + UI pages + 524 `v-*` CLI) and DirectAdmin (official docs: unique features, hosting services, spam, backup, MSS, CustomBuild) — 2026-07.  
 **Rule:** UI never markets competitors. Buttons = real ops or preset deep-links only.
 
@@ -44,9 +44,9 @@
 |----|---------|---|---|-----|-----|
 | A1 | Live service health (web/mail/dns/db) | H | D | △ | P0 |
 | A2 | Resource usage CPU/RAM/disk/net | H | D | ✓ | P0 |
-| A3 | Notification center (backup, cert expiry, approvals) | H | D | ✗ | P1 |
-| A4 | Quick create wizard (site/mail/db) | H | D | △ | P1 |
-| A5 | Security alerts (f2b, disk full) | H | D | △ | P1 |
+| A3 | Notification center (backup, cert expiry, approvals) | H | D | ✓ | P1 |
+| A4 | Quick create wizard (site/mail/db) | H | D | ✓ | P1 |
+| A5 | Security alerts (f2b, disk full) | H | D | ✓ | P1 |
 | A6 | Honest readiness (executeEnabled/root/mode) | — | — | ✓ | Better |
 
 ---
@@ -57,21 +57,21 @@
 |----|---------|---|---|-----|-----|
 | B1 | Site list + status badges | 兩 | 兩 | ✓ | P0 |
 | B2 | Create site (domain + runtime) | 兩 | 兩 | ✓ | P0 |
-| B3 | Delete / **suspend** site | 兩 | 兩 | △ | P0 |
-| B4 | Domain aliases | 兩 | 兩 | △ | P0 |
-| B5 | Subdomains | H | D | ✗ | P0 |
+| B3 | Delete / **suspend** site | 兩 | 兩 | ✓ | P0 |
+| B4 | Domain aliases | 兩 | 兩 | ✓ | P0 |
+| B5 | Subdomains | H | D | ✓ | P0 |
 | B6 | Domain pointer / parked | — | D | ✗ | P1 |
 | B7 | Rename domain / move path | H | D | △ | P0 |
 | B8 | Custom document root | H | D | △ | P0 |
 | B9 | Bind IP / multi-IP | 兩 | 兩 | ✗ | P2 |
 | B10 | Nginx publish + reload | 兩 | 兩 | ✓ | P0 |
-| B11 | Force HTTPS + HSTS | H | D | △ | P0 |
+| B11 | Force HTTPS + HSTS | H | D | ✓ | P0 |
 | B12 | Let’s Encrypt (web + mail/webmail) | 兩 | 兩 | △ | P0 |
 | B13 | Upload certificate | 兩 | 兩 | ✓ | P0 |
 | B14 | Reverse proxy / proxy templates | H | D | △ | P0 |
-| B15 | Cache (FastCGI/proxy) + purge | H | D | ✗ | P1 |
-| B16 | HTTP auth on path | H | D | ✗ | P1 |
-| B17 | Whole-site 301/302 redirect | H | D | ✗ | P1 |
+| B15 | Cache (FastCGI/proxy) + purge | H | D | ✓ | P1 |
+| B16 | HTTP auth on path | H | D | ✓ | P1 |
+| B17 | Whole-site 301/302 redirect | H | D | ✓ | P1 |
 | B18 | Per-site FTP account (jailed path) | H | D | ✓ | P0 |
 | B19 | Web stats (AWStats-class) | H | D | ✗ | P1 |
 | B20 | Access / error logs in panel | H | D | △ | P0 |
@@ -95,12 +95,12 @@
 | C2 | Record CRUD (A/AAAA/CNAME/MX/TXT/NS/SRV/CAA) | 兩 | 兩 | ✓ | P0 |
 | C3 | Zone templates (www/mail/ftp/**cdn**) | H | D | ✓ | P0 |
 | C4 | SOA / TTL / NS edit | 兩 | 兩 | △ | P0 |
-| C5 | Write zone + **real named reload status** | H | D | △ | P0 |
+| C5 | Write zone + **real named reload status** | H | D | ✓ | P0 |
 | C6 | DNSSEC keys / sign | H | D | △ | P1 |
 | C7 | DNS cluster push + **remote reload** + peer probe | H | D | ✓ | P2 |
-| C8 | External-DNS “records to add” list | H | D | △ | P0 |
+| C8 | External-DNS “records to add” list | H | D | ✓ | P0 |
 | C9 | Record set validation (CNAME conflict / A format) | — | D | ✓ | Better |
-| C9b | Zone validation (named-checkzone) | — | D | △ | Better |
+| C9b | Zone validation (named-checkzone) | — | D | ✓ | Better |
 | C10 | Zone → SSL LE preset deep-link | — | — | ✓ | Better |
 | C11 | dig / DNS lookup tool (UI + API) | — | D | ✓ | P1 |
 | C12 | CDN-managed RRset (`managedBy=cdn`) | — | — | ✓ | P1 |
@@ -135,11 +135,11 @@
 | D2 | Let’s Encrypt issue / renew | 兩 | 兩 | ✓ | P0 |
 | D3 | Wildcard LE | H | D | ✗ | P1 |
 | D4 | Upload fullchain + privkey | 兩 | 兩 | ✓ | P0 |
-| D5 | Auto-renew cron visibility | 兩 | 兩 | △ | P0 |
-| D6 | Panel hostname SSL | H | D | ✗ | P1 |
+| D5 | Auto-renew cron visibility | 兩 | 兩 | ✓ | P0 |
+| D6 | Panel hostname SSL | H | D | ✓ | P1 |
 | D7 | Mail domain SSL | H | D | △ | P0 |
-| D8 | Cert ↔ site binding overview | 兩 | 兩 | △ | P0 |
-| D9 | Expiry alert + one-click renew | 弱 | 弱 | ✗ | Better |
+| D8 | Cert ↔ site binding overview | 兩 | 兩 | ✓ | P0 |
+| D9 | Expiry alert + one-click renew | 弱 | 弱 | ✓ | Better |
 
 ---
 
@@ -175,12 +175,12 @@
 | F14 | RBL / global spam policy | H | D | ✗ | P1 |
 | F15 | Black/white lists | — | D | ✗ | P1 |
 | F16 | Sieve filters | H | D | ✗ | P1 |
-| F17 | Autodiscover / autoconfig | — | D | ✗ | P0 |
+| F17 | Autodiscover / autoconfig | — | D | ✓ | P0 |
 | F18 | Mail queue view / flush | H | D | ✓ | P0 |
-| F19 | Live deliverability check (MX/PTR/25) | 弱 | 弱 | △ | Better |
+| F19 | Live deliverability check (MX/PTR/25) | 弱 | 弱 | ✓ | Better |
 | F20 | One-click mail stack install | H | D | △ | P0 |
 | F21 | Mail SSL | 兩 | 兩 | △ | P0 |
-| F22 | Suspend domain/mailbox | 兩 | 兩 | ✗ | P0 |
+| F22 | Suspend domain/mailbox | 兩 | 兩 | ✓ | P0 |
 
 **Email domain tabs (required):** DNS · Mailboxes · Health · Relay · Advanced
 
@@ -215,7 +215,7 @@
 | H4 | FTPS + passive ports | 兩 | 兩 | ✓ | P0 |
 | H5 | Service install/start/stop/reload | 兩 | 兩 | ✓ | P0 |
 | H6 | SFTP keys / jail | H | D | △ | P1 |
-| H7 | Create FTP from project | H | D | ✗ | P0 |
+| H7 | Create FTP from project | H | D | ✓ | P0 |
 
 ---
 
@@ -227,7 +227,7 @@
 | I2 | DB user + grants | 兩 | 兩 | ✓ | P0 |
 | I3 | Change password | 兩 | 兩 | ✓ | P0 |
 | I4 | Dump export / import | 兩 | 兩 | △ | P0 |
-| I5 | Adminer/phpMyAdmin entry or SSO | 兩 | 兩 | ✗ | P1 |
+| I5 | Adminer/phpMyAdmin entry or SSO | 兩 | 兩 | ✓ | P1 |
 | I6 | Remote DB host | H | D | ✗ | P2 |
 | I7 | PostgreSQL parity | H | 弱 | ✓ | Better |
 | I8 | Redis browse + service | — | D | ✓ | Better |
@@ -256,10 +256,10 @@ Each engine: **data page** + **service page**.
 | ID | Feature | H | D | YSK | Pri |
 |----|---------|---|---|-----|-----|
 | K1 | Cron list CRUD | 兩 | 兩 | ✓ | P0 |
-| K2 | Schedule generator UI | H | D | △ | P0 |
-| K3 | Enable / disable job | H | D | △ | P0 |
+| K2 | Schedule generator UI | H | D | ✓ | P0 |
+| K3 | Enable / disable job | H | D | ✓ | P0 |
 | K4 | Job notifications on/off | H | D | ✗ | P1 |
-| K5 | Run once from UI (test) | 弱 | 弱 | ✗ | Better |
+| K5 | Run once from UI (test) | 弱 | 弱 | ✓ | Better |
 | K6 | Managed file vs system crontab split | 弱 | 弱 | ✓ | Better |
 
 ---
@@ -270,15 +270,15 @@ Each engine: **data page** + **service page**.
 |----|---------|---|---|-----|-----|
 | L0 | Full host migrate (SSH target) | — | — | ✓ | P0 |
 | L1 | Manual backup (project/user) | 兩 | 兩 | ✓ | P0 |
-| L2 | Scheduled backup | 兩 | 兩 | △ | P0 |
-| L3 | Download backup | 兩 | 兩 | △ | P0 |
+| L2 | Scheduled backup | 兩 | 兩 | ✓ | P0 |
+| L3 | Download backup | 兩 | 兩 | ✓ | P0 |
 | L4 | Restore full / selective (web/db/mail/dns) | 兩 | 兩 | △ | P0 |
-| L5 | Exclusion lists | H | D | ✗ | P1 |
+| L5 | Exclusion lists | H | D | ✓ | P1 |
 | L6 | Remote storage (S3/SFTP/…) | H | D | ✓ | P0 |
 | L7 | Incremental (restic/borg-class) | H | D | ✓ | P1 |
 | L8 | Import migrations (cPanel/DA) | H | D | ✗ | P2 |
 | L9 | Backup failure alerts | 弱 | 弱 | ✗ | Better |
-| L10 | Restore dry-run + honest result | 弱 | 弱 | △ | Better |
+| L10 | Restore dry-run + honest result | 弱 | 弱 | ✓ | Better |
 
 ---
 
@@ -341,7 +341,7 @@ Each engine: **data page** + **service page**.
 | Q5 | SSH key / shell | H | D | △ | P1 |
 | Q6 | Feature sets (email-only) | — | D | ✗ | P2 |
 | Q7 | Reseller tier | — | D | ✗ | **Out** (not planned) |
-| Q8 | API access keys | H | D | △ | P0 |
+| Q8 | API access keys | H | D | ✓ | P0 |
 
 \*2FA for admin operator is P0 even in single-admin mode.
 
@@ -355,7 +355,7 @@ Each engine: **data page** + **service page**.
 | R2 | 2FA | 兩 | 兩 | ✓ | P0 |
 | R3 | Login / audit log | H | D | ✓ | P0 |
 | R4 | Tool allowlist + human approval | — | — | ✓ | Better |
-| R5 | Session / API token management | H | D | △ | P0 |
+| R5 | Session / API token management | H | D | ✓ | P0 |
 
 ---
 
@@ -376,12 +376,12 @@ Each engine: **data page** + **service page**.
 | ID | Feature | H | D | YSK | Pri |
 |----|---------|---|---|-----|-----|
 | T1 | Hostname / timezone / language | H | D | △ | P0 |
-| T2 | Panel port / SSL | H | D | ✗ | P1 |
+| T2 | Panel port / SSL | H | D | ✓ | P1 |
 | T3 | IP address management | H | D | ✗ | P1 |
 | T4 | Control-plane systemd unit | 弱 | 弱 | ✓ | Better |
 | T5 | Production readiness checks | 弱 | 弱 | ✓ | Better |
-| T6 | Web terminal | H | D | ✗ | Out / optional later |
-| T7 | Global object search | H | D | ✗ | P1 |
+| T6 | Web terminal | H | D | ✓ | Out / optional later |
+| T7 | Global object search | H | D | ✓ | P1 |
 | T8 | Config export / rebuild | H | D | ✗ | P1 |
 
 ---
@@ -393,6 +393,24 @@ Each engine: **data page** + **service page**.
 | U1 | AI tasks / playbooks | — | — | △ | Better |
 | U2 | Agent install + supervision | — | — | △ | Better |
 | U3 | High-risk ops require approval | — | — | ✓ | Better |
+
+---
+
+## Seal
+
+Marks match shipped panel + CLI + API after Waves A–C.
+
+| YSK | Count |
+|-----|-------|
+| ✓ usable | 133 |
+| △ partial / honesty | 36 |
+| ✗ missing | 25 |
+
+**P0 ✗:** none.
+
+**P0 △** (usable, depth/honesty still open): A1 · B7 · B8 · B12 · B14 · B20 · B22 · B26 · C4 · D7 · E2 · F6 · F7 · F13 · F20 · F21 · G12 · I4 · J1 · J2 · L4 · M3 · N3 · N4 · O5 · P3 · T1.
+
+Remaining **✗** are P1 / P2 / Out (or Better extras).
 
 ---
 
