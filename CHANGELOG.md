@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.14 — 2026-08-13
+
+### Fix
+- SPA CSP allows `blob:` for `media-src` / `frame-src` so Files video/audio/PDF preview is not blocked
+
 ## 1.0.13 — 2026-08-13
 
 ### UI

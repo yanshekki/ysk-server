@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { PassThrough } from 'node:stream';
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { resolveWebRoot, tryServeStatic } from './static.js';
+import { resolveWebRoot, tryServeStatic, SPA_CONTENT_SECURITY_POLICY } from './static.js';
 
 describe('resolveWebRoot', () => {
   const prev = process.env.YSK_WEB_ROOT;
@@ -114,6 +114,9 @@ describe('tryServeStatic', () => {
     expect(tryServeStatic(mockReq('HEAD', '/'), res, '/', webRoot)).toBe(true);
     expect(res.code).toBe(200);
     expect(res.ended).toBe(true);
+    expect(String(res.headers['Content-Security-Policy'])).toContain("media-src 'self' blob:");
+    expect(String(res.headers['Content-Security-Policy'])).toContain("frame-src 'self' blob:");
+    expect(SPA_CONTENT_SECURITY_POLICY).toContain("img-src 'self' data: blob:");
 
     const asset = mockRes();
     expect(

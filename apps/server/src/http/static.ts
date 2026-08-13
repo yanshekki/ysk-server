@@ -7,6 +7,21 @@ import { extname, join, normalize, resolve, sep } from 'node:path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { fileURLToPath } from 'node:url';
 
+/** SPA CSP. File preview uses blob: URLs for video/audio/PDF. */
+export const SPA_CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "media-src 'self' blob:",
+  "frame-src 'self' blob:",
+  "connect-src 'self' ws: wss:",
+  "font-src 'self'",
+  "frame-ancestors 'self'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join('; ');
+
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'application/javascript; charset=utf-8',
@@ -101,8 +116,7 @@ function sendFile(res: ServerResponse, path: string, headOnly: boolean): void {
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'SAMEORIGIN',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
-    'Content-Security-Policy':
-      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' ws: wss:; font-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'",
+    'Content-Security-Policy': SPA_CONTENT_SECURITY_POLICY,
   });
   if (headOnly) {
     res.end();

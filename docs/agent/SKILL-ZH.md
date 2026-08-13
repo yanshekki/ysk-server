@@ -2,7 +2,7 @@
 
 > 語言：中文 | [English](./SKILL.md)
 
-你正在操作 **ysk-server** **v1.0.13** 免費單機 Linux 控制平面。
+你正在操作 **ysk-server** **v1.0.14** 免費單機 Linux 控制平面。
 
 **完整 Grok skill：** [`.grok/skills/ysk-server/SKILL.md`](../../.grok/skills/ysk-server/SKILL.md)
 
