@@ -2,6 +2,8 @@
  * Host-mediated proxy browser — shared types (core).
  */
 
+import { acceptedChromePathOrEmpty } from './chrome-path.js';
+
 export type HostBrowseMode = 'internet' | 'intranet';
 
 /** proxy = HTTP rewrite iframe; browser = host Chromium screencast */
@@ -94,9 +96,9 @@ export function mergeHostBrowsePolicy(
   return {
     ...base,
     chromePath:
-      (panel?.chromePath && panel.chromePath.trim()) ||
-      env.YSK_HOST_BROWSE_CHROME?.trim() ||
-      base.chromePath,
+      acceptedChromePathOrEmpty(panel?.chromePath) ||
+      acceptedChromePathOrEmpty(env.YSK_HOST_BROWSE_CHROME) ||
+      acceptedChromePathOrEmpty(base.chromePath),
     allowLoopback:
       panel?.allowLoopback ??
       (env.YSK_HOST_BROWSE_LOOPBACK === '1' || env.YSK_HOST_BROWSE_LOOPBACK === 'true'

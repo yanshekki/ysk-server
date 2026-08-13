@@ -6,6 +6,7 @@ import { createServer } from 'node:net';
 import { join } from 'node:path';
 import type { HostExecutor } from '../host/executor.js';
 import { probeChrome } from './chrome-probe.js';
+import { acceptedChromePathOrEmpty } from './chrome-path.js';
 
 export type ChromeAsUserHandle = {
   username: string;
@@ -78,7 +79,7 @@ export async function launchChromeAsUser(input: {
   }
 
   const probe = probeChrome(true);
-  const chrome = input.chromePath || probe.path;
+  const chrome = acceptedChromePathOrEmpty(input.chromePath) || probe.path;
   if (!chrome) {
     return { ok: false, notes: [probe.reason || 'Chrome not found'] };
   }

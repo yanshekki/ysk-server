@@ -6,6 +6,7 @@ import {
   checkRateLimit,
   recordRateLimitFailure,
   clearRateLimit,
+  consumeRateWindow,
   _resetRateLimitsForTests,
   persistRateLimits,
   loadRateLimits,
@@ -59,6 +60,20 @@ describe('rate-limit', () => {
     const raw = JSON.parse(readFileSync(join(dir, 'secrets', 'rate-limits.json'), 'utf8'));
     expect(raw['login:dave']).toBeTruthy();
     rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('consumeRateWindow caps requests then recovers', () => {
+    const cfg = { max: 3, windowMs: 1_000 };
+    const t0 = 5_000_000;
+    expect(consumeRateWindow('vnc-share-req', '1.1.1.1', cfg, t0).ok).toBe(true);
+    expect(consumeRateWindow('vnc-share-req', '1.1.1.1', cfg, t0 + 1).ok).toBe(true);
+    expect(consumeRateWindow('vnc-share-req', '1.1.1.1', cfg, t0 + 2).ok).toBe(true);
+    const blocked = consumeRateWindow('vnc-share-req', '1.1.1.1', cfg, t0 + 3);
+    expect(blocked.ok).toBe(false);
+    if (!blocked.ok) expect(blocked.retryAfterSec).toBeGreaterThan(0);
+    expect(consumeRateWindow('vnc-share-req', '1.1.1.1', cfg, t0 + 1_001).ok).toBe(
+      true,
+    );
   });
 
   it('loadRateLimits ignores missing file', () => {

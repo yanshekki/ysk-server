@@ -29,7 +29,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-i18next": "^15.2.0",
-    "react-router-dom": "^7.1.1",
+    "react-router-dom": "^7.18.2",
     "webtorrent": "^2.5.1"
   },
   "devDependencies": {

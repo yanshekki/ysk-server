@@ -4,6 +4,7 @@ import type { IncomingMessage } from 'node:http';
 import {
   enforceMutatingRouteCaps,
   requireCap,
+  requireAnyCap,
   effectiveCaps,
 } from './rbac-guard.js';
 import type { AppContext } from '../app-context.js';
@@ -70,6 +71,15 @@ describe('rbac-guard', () => {
     const ctx = mockCtx({ caps: ['rbac.policy'] });
     const user = { id: 'u1', username: 'admin', roles: ['admin'] as never };
     expect(() => requireCap(ctx, user, 'rbac.policy')).not.toThrow();
+  });
+
+  it('requireAnyCap passes when one listed cap is present', () => {
+    const ctx = mockCtx({ caps: ['services.control'] });
+    const user = { id: 'u1', username: 'op', roles: ['operator'] as never };
+    expect(() =>
+      requireAnyCap(ctx, user, ['mysql.console.write', 'services.control']),
+    ).not.toThrow();
+    expect(() => requireAnyCap(ctx, user, ['mysql.console.write'])).toThrow(YskError);
   });
 
   it('effectiveCaps returns store-backed list', () => {

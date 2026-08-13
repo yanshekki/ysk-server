@@ -40,7 +40,7 @@ import {
 } from './client-profiles.js';
 import type { VncSessionKind } from './session-ticket.js';
 import { probeResultNote, probeRfbTcp } from './rfb-probe.js';
-import { resolveClientRfbHost } from './types.js';
+import { isBlockedVncRfbHost, resolveClientRfbHost } from './types.js';
 import {
   DEFAULT_VNC_SETTINGS,
   normalizeVncDesktopProfile,
@@ -945,6 +945,10 @@ export class VncService {
     const pathMode =
       cl.path === 'server_proxy' ? 'server_proxy' : 'user_reachable';
     const rfbHost = resolveClientRfbHost(cl);
+    if (isBlockedVncRfbHost(rfbHost)) {
+      notes.push(tl('notes.vnc.clientInvalid'));
+      return { ok: false, notes, blocked: true };
+    }
     const displayTarget = `${cl.host}:${cl.port}`;
     const connectTarget = `${rfbHost}:${cl.port}`;
 

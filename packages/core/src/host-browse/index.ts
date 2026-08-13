@@ -6,6 +6,7 @@ export * from './rewrite-html.js';
 export * from './session-store.js';
 export * from './service.js';
 export * from './chrome-probe.js';
+export * from './chrome-path.js';
 export * from './browser-engine.js';
 export * from './live-ticket.js';
 export * from './stream-presets.js';

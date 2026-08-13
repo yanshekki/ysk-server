@@ -4,6 +4,7 @@
  */
 
 import { randomBytes } from 'node:crypto';
+import { coerceVpnListenPort, parseVpnListenPort } from './ports.js';
 import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tl } from 'ysk-server-shared';
@@ -160,7 +161,7 @@ export async function ensureSsServer(
   let state = loadSsServer(dataDir);
   if (!state) {
     state = {
-      listenPort: input.listenPort ?? 8388,
+      listenPort: coerceVpnListenPort(input.listenPort, 8388),
       method: METHOD,
       password: randomPassword(),
       endpoint: '',
@@ -169,7 +170,10 @@ export async function ensureSsServer(
     };
     notes.push(tl('notes.vpn.ssKeysCreated'));
   }
-  if (input.listenPort) state.listenPort = input.listenPort;
+  if (input.listenPort != null) {
+    const p = parseVpnListenPort(input.listenPort);
+    if (p != null) state.listenPort = p;
+  }
   if (input.endpoint != null && String(input.endpoint).trim()) {
     state.endpoint = String(input.endpoint).trim();
   }

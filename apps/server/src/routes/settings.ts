@@ -256,11 +256,12 @@ export async function handleSettingsRoutes(
           panel.safetyLevel === 'standard'
             ? panel.safetyLevel
             : 'standard';
+        const { acceptedChromePathOrEmpty } = await import('ysk-server-core');
         sendJson(res, 200, {
           ok: true,
           settings: {
             engine: panel.engine ?? 'auto',
-            chromePath: panel.chromePath ?? '',
+            chromePath: acceptedChromePathOrEmpty(panel.chromePath) ?? '',
             allowLoopback: Boolean(panel.allowLoopback),
             noSandbox: Boolean(panel.noSandbox),
             safetyLevel,
@@ -317,9 +318,10 @@ export async function handleSettingsRoutes(
             .filter(Boolean)
             .slice(0, 200);
         }
+        const { sanitizeChromePathInput } = await import('ysk-server-core');
         const next = {
           engine,
-          chromePath: String(data.chromePath ?? '').trim(),
+          chromePath: sanitizeChromePathInput(data.chromePath),
           allowLoopback: Boolean(data.allowLoopback),
           noSandbox: Boolean(data.noSandbox),
           safetyLevel,

@@ -46,6 +46,23 @@ function isAlwaysImdsHost(h: string): boolean {
   return false;
 }
 
+/** Cloud IMDS / link-local metadata — not loopback (VNC may target 127.0.0.1). */
+export function isCloudMetadataHost(host: string): boolean {
+  const raw = host.trim().toLowerCase().replace(/^\[|\]$/g, '');
+  const h = canonicalizeSsrfHost(raw);
+  if (!h) return true;
+  if (h === 'metadata.google.internal' || raw === 'metadata.google.internal') return true;
+  if (h === 'metadata' || raw === 'metadata') return true;
+  if (isAlwaysImdsHost(h) || isAlwaysImdsHost(raw)) return true;
+  const p = ipv4Parts(h);
+  if (p) {
+    const [a, b] = p;
+    if (a === 169 && b === 254) return true;
+  }
+  if (isIP(h) === 6 && h.startsWith('fe80')) return true;
+  return false;
+}
+
 /** Cloud metadata + loopback — always dangerous for SSRF. */
 export function isMetadataOrLoopbackHost(host: string): boolean {
   const raw = host.trim().toLowerCase().replace(/^\[|\]$/g, '');
@@ -54,15 +71,11 @@ export function isMetadataOrLoopbackHost(host: string): boolean {
   if (BLOCKED_HOSTNAMES.has(h) || BLOCKED_HOSTNAMES.has(raw)) return true;
   if (h.endsWith('.localhost') || raw.endsWith('.localhost')) return true;
   if (h === '::1' || raw === '::1') return true;
-  if (isAlwaysImdsHost(h) || isAlwaysImdsHost(raw)) return true;
+  if (isCloudMetadataHost(h) || isCloudMetadataHost(raw)) return true;
   const p = ipv4Parts(h);
   if (p) {
-    const [a, b] = p;
+    const [a] = p;
     if (a === 127 || a === 0) return true;
-    if (a === 169 && b === 254) return true; // link-local / IMDS
-  }
-  if (isIP(h) === 6) {
-    if (h.startsWith('fe80')) return true;
   }
   return false;
 }

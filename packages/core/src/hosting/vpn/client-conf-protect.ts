@@ -27,7 +27,7 @@ export function isFullTunnelAllowedIps(text: string): boolean {
 const WG_HOOK_LINE =
   /^\s*(PostUp|PostDown|PreUp|PreDown)\s*=/i;
 const OVPN_HOOK_LINE =
-  /^\s*(up|down|ipchange|route-up|route-pre-down|learn-address|tls-verify|auth-user-pass-verify|client-connect|client-disconnect|plugin|script-security|system)\b/i;
+  /^\s*(up|down|down-pre|up-restart|ipchange|route-up|route-pre-down|learn-address|tls-verify|tls-crypt-v2-verify|auth-user-pass-verify|client-connect|client-disconnect|plugin|script-security|system|management|engine|pkcs11-providers|pkcs11-id|chroot|cd)\b/i;
 
 /** Strip operator-supplied hook scripts so wg-quick / openvpn cannot run attacker commands as root. */
 export function stripImportedVpnHooks(conf: string): { conf: string; stripped: number } {

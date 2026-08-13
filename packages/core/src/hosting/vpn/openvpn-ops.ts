@@ -3,6 +3,8 @@
  */
 
 import { randomBytes } from 'node:crypto';
+import { coerceVpnListenPort, parseVpnListenPort } from './ports.js';
+import { stripImportedVpnHooks } from './client-conf-protect.js';
 import {
   existsSync,
   mkdirSync,
@@ -136,7 +138,7 @@ export async function ensureOpenVpnServer(
   let state = loadOvpnServer(dataDir);
   if (!state) {
     state = {
-      listenPort: input.listenPort ?? 1194,
+      listenPort: coerceVpnListenPort(input.listenPort, 1194),
       proto: input.proto === 'tcp' ? 'tcp' : 'udp',
       endpoint: input.endpoint?.trim() || '',
       dns: input.dns?.trim() || '1.1.1.1',
@@ -147,7 +149,10 @@ export async function ensureOpenVpnServer(
       updatedAt: new Date().toISOString(),
     };
   } else {
-    if (input.listenPort) state.listenPort = input.listenPort;
+    if (input.listenPort != null) {
+      const p = parseVpnListenPort(input.listenPort);
+      if (p != null) state.listenPort = p;
+    }
     if (input.proto) state.proto = input.proto;
     if (input.endpoint != null) state.endpoint = input.endpoint.trim();
     if (input.dns != null) state.dns = input.dns.trim() || state.dns;
@@ -548,6 +553,11 @@ export async function openvpnClientUp(
   confPath: string,
   unitName: string,
 ): Promise<{ ok: boolean; notes: string[] }> {
+  if (existsSync(confPath)) {
+    const cleaned = stripImportedVpnHooks(readFileSync(confPath, 'utf8'));
+    const body = cleaned.conf.endsWith('\n') ? cleaned.conf : `${cleaned.conf}\n`;
+    writeFileSync(confPath, body, 'utf8');
+  }
   const unitFile = `/etc/systemd/system/${unitName}.service`;
   const script = [
     'set -euo pipefail',

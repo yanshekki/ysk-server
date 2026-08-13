@@ -23,6 +23,17 @@ export function requireCap(ctx: AppContext, user: UserDto, cap: CapabilityId): v
   );
 }
 
+/** GET surfaces that any of several read/write caps may open. */
+export function requireAnyCap(
+  ctx: AppContext,
+  user: UserDto,
+  caps: readonly CapabilityId[],
+): void {
+  const have = new Set(effectiveCaps(ctx, user));
+  if (caps.some((c) => have.has(c))) return;
+  requireCap(ctx, user, caps[0]!);
+}
+
 export function effectiveCaps(ctx: AppContext, user: UserDto): string[] {
   const row = ctx.db.snapshot.users.find((u) => u.id === user.id);
   return ctx.rbac.effectiveForUser({

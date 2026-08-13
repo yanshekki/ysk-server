@@ -45,6 +45,13 @@ WebSocket (ticket required): terminal, VNC, host-browse.
 | A08-12 | High | Imported VPN client `PostUp` / OpenVPN `up` ran as root via wg-quick | **Fixed** — strip hooks on import and before up |
 | A08-13 | High | FTP `homePath` could be `/etc` then apply mkdir/chroot | **Fixed** — must be under dataDir or a project home |
 | A08-14 | High | Impersonate issued a session as another **admin** | **Fixed** — refuse admin targets + TOTP step-up |
+| A08-15 | High | Host Browse `chromePath` launched as panel-process `executablePath` with no allowlist | **Fixed** — packaged Chrome/Chromium prefixes + basename only; invalid env/store dropped |
+| A08-16 | High | VNC client `host` / `connectHost` could TCP-proxy to IMDS / link-local metadata | **Fixed** — loopback allowed; IMDS / `metadata` / `fd00:ec2::` / `100.100.100.200` refused |
+| A08-17 | Medium | Public VNC share redeem had no rate limit (ticket flood / token guess) | **Fixed** — 30 req / 15m + 10-fail lockout per IP |
+| A08-18 | High | OpenVPN client `up` copied stored conf without re-stripping hooks | **Fixed** — strip again before systemd copy; extra hook verbs (`down-pre`, `management`, …) |
+| A08-19 | High | VPN `listenPort` interpolated into bash without integer coerce | **Fixed** — `parseVpnListenPort` / `coerceVpnListenPort` |
+| A08-20 | Medium | Any authenticated session could `GET` DB/Redis console live values (`requirepass`) | **Fixed** — `mysql.console.write` **or** `services.control` **or** `settings.system` |
+| A08-21 | Low | WebDAV PROPFIND unbounded listing; PUT unbounded body | **Fixed** — 500 entries / 50 MiB |
 
 ## Accepted residual
 
@@ -55,6 +62,15 @@ WebSocket (ticket required): terminal, VNC, host-browse.
 | R-3 | Password-based SFTP uses `sshpass` (process/env visible to root). Prefer SSH identity vault. |
 | R-4 | First SSH backup still `accept-new` (TOFU). Pin known_hosts for production. |
 | R-5 | Install checksum pin (I-07) remains operator-documented. |
+| R-6 | Host Browse `--no-sandbox` remains an operator setting for containers. Combined with A08-15, only allowlisted Chrome binaries launch. |
+| R-7 | `YSK_HOST_BROWSE_CHROME` / custom Chrome outside `/usr` `/opt/google` `/snap` is ignored (fail closed to probe). |
+| R-8 | VNC `server_proxy` may still reach RFC1918 (intended). IMDS is blocked. |
+| R-9 | File editor `highlightToHtml` escapes tokens (reviewed). CSP still applies. |
+| R-10 | `pnpm audit`: Vitest UI / Vite / brace-expansion / nanoid are **dev**. Transitive `ip@2.0.1` (webtorrent tracker) has no patched release; our SSRF uses `net/ssrf.ts`. Panel SPA uses `BrowserRouter`, not React Router RSC. `react-router-dom` bumped to `^7.18.2`. |
+
+## Reviewed this pass (no extra code change)
+
+Host Browse CDP binds `127.0.0.1` only. `--no-sandbox` remains R-6. CDN node health already uses `assertSafeOutboundUrl` (metadata policy). Host-migrate temp keys stay `0600` under `dataDir/migrate/<job>/ssh` (`0700` dir). Outline has no script hooks; listen port now coerced. File editor `highlightToHtml` escapes every token class. Install I-07 still operator-documented (R-5).
 
 ## Re-check of prior phases
 
@@ -69,5 +85,10 @@ pnpm --filter ysk-server exec vitest run \
   src/controllers/system-controller.test.ts
 pnpm --filter ysk-server-core exec vitest run \
   src/hosting/backup-remote.test.ts \
-  src/net/ssrf.test.ts
+  src/net/ssrf.test.ts \
+  src/host-browse/chrome-path.test.ts \
+  src/hosting/vnc/client-profiles.test.ts \
+  src/hosting/vpn/client-conf-protect.test.ts \
+  src/hosting/vpn/ports.test.ts \
+  src/security/mfa/rate-limit.test.ts
 ```

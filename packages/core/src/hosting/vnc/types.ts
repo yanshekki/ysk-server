@@ -2,6 +2,9 @@
  * VNC control plane types — multi-account server + client dual path.
  */
 
+import { ErrorCodes, YskError, tl } from 'ysk-server-shared';
+import { isCloudMetadataHost } from '../../net/ssrf.js';
+
 /** Session desktop: full XFCE or terminal-only. */
 export type VncDesktopProfile = 'xfce' | 'terminal';
 
@@ -85,6 +88,26 @@ export function resolveClientRfbHost(profile: {
   const override = String(profile.connectHost ?? '').trim();
   if (path === 'server_proxy' && override) return override;
   return String(profile.host ?? '').trim();
+}
+
+/** IMDS / link-local metadata — loopback is allowed (local desktop RFB). */
+export function isBlockedVncRfbHost(host: string): boolean {
+  const raw = String(host ?? '').trim();
+  if (!raw || raw.length > 253) return true;
+  if (/[\0\s/\\]/.test(raw)) return true;
+  const inner = raw.replace(/^\[|\]$/g, '');
+  return isCloudMetadataHost(raw) || isCloudMetadataHost(inner);
+}
+
+export function assertSafeVncRfbHost(host: string, field = 'host'): string {
+  const h = String(host ?? '').trim();
+  if (!h || isBlockedVncRfbHost(h)) {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.vnc.clientInvalid'), {
+      httpStatus: 400,
+      details: { field, reason: 'rfb_host_blocked' },
+    });
+  }
+  return h;
 }
 
 export type VncSettings = {

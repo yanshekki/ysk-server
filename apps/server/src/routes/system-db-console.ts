@@ -18,6 +18,13 @@ import {
   sendJson,
   sendOpsResult,
 } from '../http/util.js';
+import { requireAnyCap } from '../http/rbac-guard.js';
+
+const DB_CONSOLE_READ_CAPS = [
+  'mysql.console.write',
+  'services.control',
+  'settings.system',
+] as const;
 
 export async function handleSystemDbConsoleRoutes(
   ctx: AppContext,
@@ -28,7 +35,8 @@ export async function handleSystemDbConsoleRoutes(
 ): Promise<boolean> {
   // —— Professional service console (all engines) ——
   if (method === 'GET' && url.pathname.match(/^\/api\/v1\/system\/db\/(mysql|mariadb|postgres|redis)\/console$/)) {
-    ctx.auth.authenticate(getBearer(req));
+    const user = ctx.auth.authenticate(getBearer(req));
+    requireAnyCap(ctx, user, DB_CONSOLE_READ_CAPS);
     const engine = url.pathname.split('/')[5] as 'mysql' | 'mariadb' | 'postgres' | 'redis';
     const consoleDto = await getServiceConsole(ctx.host, engine, ctx.db);
     sendJson(res, 200, consoleDto);
@@ -140,7 +148,8 @@ export async function handleSystemDbConsoleRoutes(
   }
   // —— SQL engine exclusive switch (MySQL XOR MariaDB) ——
   if (method === 'GET' && url.pathname === '/api/v1/system/db/sql-engine/switch-preview') {
-    ctx.auth.authenticate(getBearer(req));
+    const user = ctx.auth.authenticate(getBearer(req));
+    requireAnyCap(ctx, user, DB_CONSOLE_READ_CAPS);
     const target = (url.searchParams.get('target') || '') as 'mysql' | 'mariadb';
     if (target !== 'mysql' && target !== 'mariadb') {
       sendJson(res, 400, { ok: false, message: 'target must be mysql|mariadb' });

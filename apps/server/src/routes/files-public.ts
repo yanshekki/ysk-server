@@ -84,10 +84,12 @@ export async function handleFilesPublicRoutes(
       return true;
     }
     const fm = new FileManager(publicFilesRoot(ctx.dataDir));
+    const WEBDAV_PROPFIND_MAX = 500;
+    const WEBDAV_PUT_MAX_BYTES = 50 * 1024 * 1024;
     if (method === 'OPTIONS' || method === 'PROPFIND') {
       const entries =
         method === 'PROPFIND'
-          ? fm.list(rel || '.').map((e) => ({
+          ? fm.list(rel || '.').slice(0, WEBDAV_PROPFIND_MAX).map((e) => ({
               name: e.name,
               href: `/webdav/${e.path}`,
               isDir: e.type === 'dir',
@@ -118,7 +120,19 @@ export async function handleFilesPublicRoutes(
     }
     if (method === 'PUT') {
       const chunks: Buffer[] = [];
-      for await (const c of req) chunks.push(Buffer.isBuffer(c) ? c : Buffer.from(c));
+      let total = 0;
+      for await (const c of req) {
+        const b = Buffer.isBuffer(c) ? c : Buffer.from(c);
+        total += b.length;
+        if (total > WEBDAV_PUT_MAX_BYTES) {
+          sendJson(res, 413, {
+            ok: false,
+            message: tl('notes.auto.t0003', { v0: WEBDAV_PUT_MAX_BYTES }),
+          });
+          return true;
+        }
+        chunks.push(b);
+      }
       const buf = Buffer.concat(chunks);
       fm.writeBase64(rel, buf.toString('base64'));
       res.writeHead(201, { 'Content-Type': 'application/json' });

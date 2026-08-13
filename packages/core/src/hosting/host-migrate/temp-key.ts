@@ -39,7 +39,12 @@ export function createMigrateTempKey(input: {
   jobId: string;
 }): TempKeyMaterial & OpsResultDto {
   const dir = join(migrateJobDir(input.dataDir, input.jobId), 'ssh');
-  mkdirSync(dir, { recursive: true });
+  mkdirSync(dir, { recursive: true, mode: 0o700 });
+  try {
+    chmodSync(dir, 0o700);
+  } catch {
+    /* */
+  }
   try {
     const pair = generateSshKeyPair({
       algorithm: 'ed25519',

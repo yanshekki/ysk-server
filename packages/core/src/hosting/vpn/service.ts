@@ -14,7 +14,12 @@ import {
 import { join } from 'node:path';
 import { tl } from 'ysk-server-shared';
 import type { HostExecutor } from '../../host/executor.js';
-import { defaultPortForEngine, presetsForEngine } from './ports.js';
+import {
+  coerceVpnListenPort,
+  defaultPortForEngine,
+  parseVpnListenPort,
+  presetsForEngine,
+} from './ports.js';
 import type {
   VpnClientProfile,
   VpnEngineId,
@@ -368,7 +373,7 @@ export class VpnService {
         privateKey: kp.privateKey,
         publicKey: kp.publicKey,
         address: '10.66.66.1/24',
-        listenPort: input.listenPort ?? 51820,
+        listenPort: coerceVpnListenPort(input.listenPort, 51820),
         endpoint: input.endpoint?.trim() || '',
         dns: input.dns?.trim() || '1.1.1.1',
         accessMode: parseAccessMode(input.accessMode ?? 'full'),
@@ -379,7 +384,10 @@ export class VpnService {
       };
       notes.push(tl('notes.vpn.serverKeysCreated'));
     } else {
-      if (input.listenPort) state.listenPort = input.listenPort;
+      if (input.listenPort != null) {
+        const p = parseVpnListenPort(input.listenPort);
+        if (p != null) state.listenPort = p;
+      }
       if (input.endpoint != null) state.endpoint = input.endpoint.trim();
       if (input.dns != null) state.dns = input.dns.trim() || state.dns;
       if (input.accessMode != null) state.accessMode = parseAccessMode(input.accessMode);

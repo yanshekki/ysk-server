@@ -54,10 +54,14 @@ describe('client-conf-protect', () => {
     expect(wg.stripped).toBe(1);
     expect(wg.conf).not.toMatch(/PostUp/i);
     expect(wg.conf).toContain('PrivateKey');
-    const ov = stripImportedVpnHooks('client\nremote x 1194\nup /tmp/evil.sh\nscript-security 2\n');
-    expect(ov.stripped).toBe(2);
+    const ov = stripImportedVpnHooks(
+      'client\nremote x 1194\nup /tmp/evil.sh\nscript-security 2\ndown-pre /tmp/d.sh\nmanagement 127.0.0.1 7505\n',
+    );
+    expect(ov.stripped).toBeGreaterThanOrEqual(4);
     expect(ov.conf).not.toMatch(/^\s*up /m);
     expect(ov.conf).not.toMatch(/script-security/i);
+    expect(ov.conf).not.toMatch(/down-pre/i);
+    expect(ov.conf).not.toMatch(/management/i);
   });
 
   it('leaves split tunnel unchanged', () => {

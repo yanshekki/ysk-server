@@ -44,6 +44,29 @@ describe('vnc client profiles', () => {
 });
 
 describe('resolveClientRfbHost', () => {
+  it('rejects IMDS / metadata as RFB target', async () => {
+    const { assertSafeVncRfbHost, isBlockedVncRfbHost } = await import('./types.js');
+    expect(isBlockedVncRfbHost('169.254.169.254')).toBe(true);
+    expect(isBlockedVncRfbHost('metadata.google.internal')).toBe(true);
+    expect(isBlockedVncRfbHost('100.100.100.200')).toBe(true);
+    expect(isBlockedVncRfbHost('fd00:ec2::254')).toBe(true);
+    expect(isBlockedVncRfbHost('127.0.0.1')).toBe(false);
+    expect(isBlockedVncRfbHost('10.0.0.9')).toBe(false);
+    expect(() => assertSafeVncRfbHost('169.254.169.254')).toThrow();
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-vnc-imds-'));
+    try {
+      expect(() =>
+        createClientProfile(dir, {
+          name: 'imds',
+          host: '169.254.169.254',
+          port: 5901,
+        }),
+      ).toThrow();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it('uses connectHost only for server_proxy', async () => {
     const { resolveClientRfbHost } = await import('./types.js');
     expect(

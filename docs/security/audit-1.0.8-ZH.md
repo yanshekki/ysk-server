@@ -45,6 +45,13 @@ WebSocket（要 ticket）：終端、VNC、Host Browse。
 | A08-12 | 高 | 匯入 VPN 客戶端 `PostUp`／OpenVPN `up` 會以 root 執行 | **已修** — 匯入同啟動前剝走 hook |
 | A08-13 | 高 | FTP `homePath` 可設 `/etc` 再 apply mkdir／chroot | **已修** — 只准 dataDir 或專案家目錄 |
 | A08-14 | 高 | 模擬登入可以扮成另一個 **admin** | **已修** — 拒絕 admin 目標 + TOTP step-up |
+| A08-15 | 高 | Host Browse `chromePath` 會當面板行程 `executablePath`，無允許清單 | **已修** — 只准套件路徑＋瀏覽器檔名；無效 env／庫存會丟棄 |
+| A08-16 | 高 | VNC 客戶端 `host`／`connectHost` 可 TCP 代理去 IMDS／link-local | **已修** — 准 loopback；拒 IMDS／`metadata`／`fd00:ec2::`／`100.100.100.200` |
+| A08-17 | 中 | 公開 VNC 分享兌換無限流（可刷 ticket／估 token） | **已修** — 每 IP 15 分鐘 30 次 + 10 次失敗鎖 |
+| A08-18 | 高 | OpenVPN 客戶端啟動只複製庫存 conf，未再剝 hook | **已修** — 複製前再剝；多攔 `down-pre`、`management` 等 |
+| A08-19 | 高 | VPN `listenPort` 未強制整數就插入 bash | **已修** — `parseVpnListenPort`／`coerceVpnListenPort` |
+| A08-20 | 中 | 任何已登入工作階段可 `GET` 資料庫／Redis 控制台（含 `requirepass`） | **已修** — 要 `mysql.console.write` **或** `services.control` **或** `settings.system` |
+| A08-21 | 低 | WebDAV PROPFIND 無上限；PUT 無體積上限 | **已修** — 500 項／50 MiB |
 
 ## 已接受殘項
 
@@ -55,6 +62,15 @@ WebSocket（要 ticket）：終端、VNC、Host Browse。
 | R-3 | 密碼式 SFTP 用 `sshpass`（root 可見行程）。優先用 SSH 身分庫。 |
 | R-4 | 第一次 SSH 備份仍係 `accept-new`（TOFU）。正式環境應釘 `known_hosts`。 |
 | R-5 | 安裝 checksum 釘選（I-07）仍按營運文件。 |
+| R-6 | Host Browse `--no-sandbox` 仍係容器營運選項。配合 A08-15，只會啟動允許清單內嘅 Chrome。 |
+| R-7 | `YSK_HOST_BROWSE_CHROME`／`/usr` `/opt/google` `/snap` 以外嘅自訂 Chrome 會被忽略（回落探測）。 |
+| R-8 | VNC `server_proxy` 仍可連 RFC1918（設計如此）。IMDS 已攔。 |
+| R-9 | 檔案編輯器 `highlightToHtml` 有轉義（已審）。CSP 仍然生效。 |
+| R-10 | `pnpm audit`：Vitest UI／Vite／brace-expansion／nanoid 屬**開發依賴**。間接依賴 `ip@2.0.1`（webtorrent tracker）暫無修補版；我哋 SSRF 用 `net/ssrf.ts`。面板 SPA 用 `BrowserRouter`，唔係 React Router RSC。`react-router-dom` 已升到 `^7.18.2`。 |
+
+## 本輪已審、無需再改碼
+
+Host Browse CDP 只綁 `127.0.0.1`。`--no-sandbox` 仍係 R-6。CDN 節點健康已用 `assertSafeOutboundUrl`（metadata 政策）。主機遷移臨時金鑰仍係 `dataDir/migrate/<job>/ssh` 下 `0600`（目錄 `0700`）。Outline 無 script hook；監聽埠已強制整數。檔案編輯器 `highlightToHtml` 每個 token 都有轉義。安裝 I-07 仍按營運文件（R-5）。
 
 ## 先前階段重核
 
@@ -69,5 +85,10 @@ pnpm --filter ysk-server exec vitest run \
   src/controllers/system-controller.test.ts
 pnpm --filter ysk-server-core exec vitest run \
   src/hosting/backup-remote.test.ts \
-  src/net/ssrf.test.ts
+  src/net/ssrf.test.ts \
+  src/host-browse/chrome-path.test.ts \
+  src/hosting/vnc/client-profiles.test.ts \
+  src/hosting/vpn/client-conf-protect.test.ts \
+  src/hosting/vpn/ports.test.ts \
+  src/security/mfa/rate-limit.test.ts
 ```

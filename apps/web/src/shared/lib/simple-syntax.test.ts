@@ -39,4 +39,14 @@ describe('simple-syntax', () => {
     expect(html).toContain('&lt;script&gt;');
     expect(html).not.toContain('<script>');
   });
+
+  it('escapes markup inside strings and tags', () => {
+    const html = highlightToHtml('const x = "<script>alert(1)</script>";', 'js');
+    expect(html).toContain('&lt;script&gt;');
+    expect(html).not.toMatch(/<script>/i);
+    const html2 = highlightToHtml('<img onerror="x">', 'html');
+    expect(html2).not.toMatch(/<img /i);
+    expect(html2).toContain('&lt;');
+    expect(html2).toContain('tok-tag');
+  });
 });

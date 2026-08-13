@@ -16,7 +16,7 @@ import { join } from 'node:path';
 import type { HostExecutor } from '../../host/executor.js';
 import { ErrorCodes, YskError, tl } from 'ysk-server-shared';
 import type { VncClientProfile, VncConnectPath } from './types.js';
-import { normalizeVncConnectPath } from './types.js';
+import { assertSafeVncRfbHost, normalizeVncConnectPath } from './types.js';
 
 export type VncClientRecord = {
   id: string;
@@ -110,7 +110,7 @@ export function createClientProfile(
   },
 ): VncClientProfile {
   const name = String(input.name ?? '').trim();
-  const host = String(input.host ?? '').trim();
+  const host = assertSafeVncRfbHost(String(input.host ?? '').trim());
   const port = Number(input.port);
   if (!name || !host) {
     throw new YskError(ErrorCodes.VALIDATION, tl('notes.vnc.clientInvalid'), {
@@ -123,7 +123,10 @@ export function createClientProfile(
     });
   }
   const path = normalizeVncConnectPath(input.path ?? 'user_reachable');
-  const connectHost = String(input.connectHost ?? '').trim();
+  const connectHostRaw = String(input.connectHost ?? '').trim();
+  const connectHost = connectHostRaw
+    ? assertSafeVncRfbHost(connectHostRaw, 'connectHost')
+    : '';
   const items = loadClientProfiles(dataDir);
   const now = new Date().toISOString();
   const rec: VncClientRecord = {
@@ -167,7 +170,10 @@ export function updateClientProfile(
   }
   const rec = { ...items[idx] };
   if (patch.name != null) rec.name = String(patch.name).trim() || rec.name;
-  if (patch.host != null) rec.host = String(patch.host).trim() || rec.host;
+  if (patch.host != null) {
+    const h = String(patch.host).trim();
+    if (h) rec.host = assertSafeVncRfbHost(h);
+  }
   if (patch.port != null) {
     const port = Number(patch.port);
     if (!Number.isInteger(port) || port < 1 || port > 65535) {
@@ -180,7 +186,7 @@ export function updateClientProfile(
   if (patch.path != null) rec.path = normalizeVncConnectPath(patch.path);
   if (patch.connectHost !== undefined) {
     const ch = String(patch.connectHost ?? '').trim();
-    if (ch) rec.connectHost = ch;
+    if (ch) rec.connectHost = assertSafeVncRfbHost(ch, 'connectHost');
     else delete rec.connectHost;
   }
   // user_reachable ignores internal override

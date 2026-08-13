@@ -46,6 +46,16 @@ export function isValidVpnPort(port: number): boolean {
   return Number.isInteger(port) && port >= 1 && port <= 65535;
 }
 
+/** Integer 1–65535 only — never interpolate untrusted listenPort into bash. */
+export function parseVpnListenPort(raw: unknown): number | null {
+  const n = typeof raw === 'number' ? raw : Number(String(raw ?? '').trim());
+  return isValidVpnPort(n) ? n : null;
+}
+
+export function coerceVpnListenPort(raw: unknown, fallback: number): number {
+  return parseVpnListenPort(raw) ?? (isValidVpnPort(fallback) ? fallback : 51820);
+}
+
 export function normalizeProto(raw: unknown): VpnPortProto {
   const s = String(raw ?? 'udp').toLowerCase();
   if (s === 'tcp') return 'tcp';

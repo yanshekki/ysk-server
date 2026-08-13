@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { assertSafeOutboundUrl, isBlockedSsrfHost } from './ssrf.js';
+import {
+  assertSafeOutboundUrl,
+  isBlockedSsrfHost,
+  isCloudMetadataHost,
+  isMetadataOrLoopbackHost,
+} from './ssrf.js';
 import { YskError } from 'ysk-server-shared';
 
 describe('ssrf guards', () => {
@@ -16,6 +21,15 @@ describe('ssrf guards', () => {
     expect(isBlockedSsrfHost('10.0.0.5', 'metadata')).toBe(false);
     expect(isBlockedSsrfHost('169.254.169.254', 'metadata')).toBe(true);
     expect(isBlockedSsrfHost('127.0.0.1', 'metadata')).toBe(true);
+  });
+
+  it('isCloudMetadataHost allows loopback (VNC) but blocks IMDS', () => {
+    expect(isCloudMetadataHost('127.0.0.1')).toBe(false);
+    expect(isCloudMetadataHost('localhost')).toBe(false);
+    expect(isCloudMetadataHost('169.254.169.254')).toBe(true);
+    expect(isCloudMetadataHost('metadata.google.internal')).toBe(true);
+    expect(isCloudMetadataHost('100.100.100.200')).toBe(true);
+    expect(isMetadataOrLoopbackHost('127.0.0.1')).toBe(true);
   });
 
   it('assertSafeOutboundUrl allows public https', () => {

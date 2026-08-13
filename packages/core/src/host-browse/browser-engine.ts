@@ -5,6 +5,7 @@
 
 import { ErrorCodes, YskError } from 'ysk-server-shared';
 import { probeChrome } from './chrome-probe.js';
+import { acceptedChromePathOrEmpty } from './chrome-path.js';
 import { assertHostBrowseTarget } from './ssrf.js';
 import type { HostBrowseMode, HostBrowsePolicy } from './types.js';
 import { HOST_BROWSE_DEFAULT_UA } from './types.js';
@@ -145,7 +146,7 @@ export class BrowserEngine {
       const pw = await loadPlaywright();
       const pol = this.policy();
       const probe = probeChrome(true);
-      const path = pol.chromePath || probe.path;
+      const path = acceptedChromePathOrEmpty(pol.chromePath) || probe.path;
       if (!path) {
         throw new YskError(
           ErrorCodes.HOST_BROWSE_NEED_CHROME,

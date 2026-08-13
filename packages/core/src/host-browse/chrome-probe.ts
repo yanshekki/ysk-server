@@ -4,6 +4,7 @@
 
 import { accessSync, constants } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import { isSafeChromePath } from './chrome-path.js';
 
 const CANDIDATES = [
   process.env.YSK_HOST_BROWSE_CHROME,
@@ -47,14 +48,14 @@ export function probeChrome(force = false): ChromeProbe {
   if (cached && !force) return cached;
 
   for (const p of CANDIDATES) {
-    if (p && isExecutable(p)) {
+    if (p && isSafeChromePath(p) && isExecutable(p)) {
       cached = { available: true, path: p };
       return cached;
     }
   }
   for (const cmd of ['google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser']) {
     const p = which(cmd);
-    if (p) {
+    if (p && isSafeChromePath(p)) {
       cached = { available: true, path: p };
       return cached;
     }

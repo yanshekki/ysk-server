@@ -4,17 +4,60 @@
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import {
+  checkRateLimit,
+  consumeRateWindow,
   createVncService,
   createVncShareLink,
   getVncShareLink,
   normalizeVncConnectPath,
   normalizeVncDesktopProfile,
+  recordRateLimitFailure,
   revokeVncShareLink,
 } from 'ysk-server-core';
 import { ErrorCodes } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
 import { getBearer, readBody, sendJson, sendOpsResult } from '../http/util.js';
 import { requireCap } from '../http/rbac-guard.js';
+import { clientIp, PUBLIC_AUTH_RL } from './files-shared.js';
+
+const VNC_SHARE_WINDOW = { max: 30, windowMs: 15 * 60_000 };
+
+function sendVncShareLimited(
+  res: ServerResponse,
+  retryAfterSec: number,
+): void {
+  res.writeHead(429, {
+    'Content-Type': 'application/json',
+    'Retry-After': String(retryAfterSec),
+  });
+  res.end(
+    JSON.stringify({
+      ok: false,
+      code: ErrorCodes.RATE_LIMITED,
+      message: 'too many share-link attempts',
+      retryAfterSec,
+    }),
+  );
+}
+
+/** Failure lockout + request window on public VNC share redeem. */
+function gatePublicVncShare(
+  req: IncomingMessage,
+  res: ServerResponse,
+): boolean {
+  const ip = clientIp(req);
+  const lock = checkRateLimit('vnc-share-auth', ip, PUBLIC_AUTH_RL);
+  if (!lock.ok) {
+    sendVncShareLimited(res, lock.retryAfterSec);
+    return true;
+  }
+  const win = consumeRateWindow('vnc-share-req', ip, VNC_SHARE_WINDOW);
+  if (!win.ok) {
+    sendVncShareLimited(res, win.retryAfterSec);
+    return true;
+  }
+  return false;
+}
 
 export async function handleVncRoutes(
   ctx: AppContext,
@@ -30,10 +73,12 @@ export async function handleVncRoutes(
     /^\/api\/v1\/vnc\/share\/([^/]+)\/session$/,
   );
   if (method === 'POST' && shareSessionMatch) {
+    if (gatePublicVncShare(req, res)) return true;
     try {
       const token = decodeURIComponent(shareSessionMatch[1] ?? '');
       const share = getVncShareLink(ctx.dataDir, token);
       if (!share) {
+        recordRateLimitFailure('vnc-share-auth', clientIp(req), PUBLIC_AUTH_RL);
         sendJson(res, 404, {
           ok: false,
           code: ErrorCodes.NOT_FOUND,
@@ -93,9 +138,11 @@ export async function handleVncRoutes(
 
   const shareInfoMatch = url.pathname.match(/^\/api\/v1\/vnc\/share\/([^/]+)$/);
   if (method === 'GET' && shareInfoMatch && !shareInfoMatch[1]?.includes('/')) {
+    if (gatePublicVncShare(req, res)) return true;
     const token = decodeURIComponent(shareInfoMatch[1] ?? '');
     const share = getVncShareLink(ctx.dataDir, token);
     if (!share) {
+      recordRateLimitFailure('vnc-share-auth', clientIp(req), PUBLIC_AUTH_RL);
       sendJson(res, 404, {
         ok: false,
         code: ErrorCodes.NOT_FOUND,

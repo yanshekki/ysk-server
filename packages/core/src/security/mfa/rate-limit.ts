@@ -56,6 +56,30 @@ export function checkRateLimit(
   return { ok: true };
 }
 
+/** Sliding request window (not lockout) — public share redeem, etc. */
+export function consumeRateWindow(
+  scope: string,
+  id: string,
+  cfg: { max: number; windowMs: number },
+  now = Date.now(),
+): { ok: true; remaining: number } | { ok: false; retryAfterSec: number } {
+  const max = Math.max(1, cfg.max);
+  const windowMs = Math.max(1, cfg.windowMs);
+  const k = keyOf(scope, id);
+  const b = globalMap.get(k) ?? { fails: [] };
+  b.fails = b.fails.filter((t) => now - t < windowMs);
+  if (b.fails.length >= max) {
+    const oldest = b.fails[0] ?? now;
+    return {
+      ok: false,
+      retryAfterSec: Math.max(1, Math.ceil((oldest + windowMs - now) / 1000)),
+    };
+  }
+  b.fails.push(now);
+  globalMap.set(k, b);
+  return { ok: true, remaining: max - b.fails.length };
+}
+
 export function recordRateLimitFailure(
   scope: string,
   id: string,
