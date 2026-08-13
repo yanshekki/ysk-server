@@ -57,5 +57,11 @@
   "dockCancelling": "الإلغاء · {{title}}",
   "dockCancelled": "تم الإلغاء · {{title}}",
   "cancelHint": "إلغاء الطلب. توقف العميل عن الاستماع؛ قد ينهي المضيف الخطوة/الخطوة الحالية. أعد فحص الحالة بعد لحظة.",
-  "cancelledToast": "تم إلغاء العملية (توقف العميل عن التدفق)"
+  "cancelledToast": "تم إلغاء العملية (توقف العميل عن التدفق)",
+  "kindApply": "Apply",
+  "kindScan": "Scan",
+  "kindDeploy": "Deploy",
+  "kindRuntime": "Runtime",
+  "jobDone": "Finished · {{title}}",
+  "jobFailed": "Failed · {{title}}"
 }

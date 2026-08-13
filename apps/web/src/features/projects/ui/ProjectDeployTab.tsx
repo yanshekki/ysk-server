@@ -15,10 +15,9 @@ import {
   Field,
   FormActions,
   FormLayout,
-  InstallStreamPanel,
   PresetChips,
   SegRadio } from '../../../shared/components/ui';
-import type { InstallStreamLine } from '../../../shared/components/ui';
+import { useOpsStreamOptional } from '../../../shared/ops-stream/OpsStreamContext';
 import { formatRuntimeName, getProjectUiProfile } from '../model/runtime-ui';
 import {
   defaultRuntimeInstallVersion,
@@ -136,7 +135,7 @@ export function ProjectDeployTab({
   const [phpIniDisplay, setPhpIniDisplay] = useState<boolean | null>(null);
   const [verBusy, setVerBusy] = useState(false);
   const [chainBusy, setChainBusy] = useState(false);
-  const [installLog, setInstallLog] = useState<InstallStreamLine[]>([]);
+  const stream = useOpsStreamOptional();
   const [versionChoices, setVersionChoices] = useState<string[]>(() =>
     runtimeVersionChoices(project.runtime),
   );
@@ -350,8 +349,11 @@ export function ProjectDeployTab({
       return;
     }
     setChainBusy(true);
-    setInstallLog([]);
     onOpsMessage?.(t('projects.deployInstallingToolchain'));
+    const started = stream?.begin({
+      kind: 'deploy',
+      title: t('projects.deployInstallingToolchain'),
+    });
     try {
       const version =
         rtVer ||
@@ -366,8 +368,19 @@ export function ProjectDeployTab({
           version,
           install: true },
         {
-          onLog: (line) => setInstallLog((prev) => [...prev.slice(-1999), line]) },
+          onLog: (line) => {
+            if (started && stream) stream.appendLog(started.id, line);
+          },
+          signal: started?.signal,
+        },
       );
+      if (started && stream) {
+        stream.finish(started.id, {
+          ok: r.ok !== false && !r.blocked,
+          error: r.blockMessage,
+          toast: false,
+        });
+      }
       const notes = r.notes?.join('；') ?? '';
       if (r.blocked || r.ok === false) {
         onOpsMessage?.(
@@ -381,6 +394,13 @@ export function ProjectDeployTab({
       persist();
       await onDeploy(deployOpts());
     } catch (e) {
+      if (started && stream) {
+        stream.finish(started.id, {
+          ok: false,
+          error: e instanceof Error ? e.message : String(e),
+          toast: false,
+        });
+      }
       onOpsMessage?.(e instanceof Error ? e.message : t('projects.deployToolchainFailed'));
     } finally {
       setChainBusy(false);
@@ -673,9 +693,6 @@ export function ProjectDeployTab({
                   </Button>
                 </ActionBar>
               </div>
-            ) : null}
-            {chainBusy || installLog.length ? (
-              <InstallStreamPanel lines={installLog} busy={chainBusy} />
             ) : null}
           </CardSection>
         </Card>

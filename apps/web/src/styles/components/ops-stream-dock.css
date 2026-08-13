@@ -1,11 +1,26 @@
-/* Global ops stream dock — install / uninstall live log */
+/* Global ops stream dock — live job logs */
 
-.ops-stream-dock {
+.ops-stream-dock-stack {
   position: fixed;
-  z-index: 1200;
+  z-index: 350;
   right: 1.25rem;
   bottom: 1.25rem;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: 0.5rem;
   font-size: 0.875rem;
+  pointer-events: none;
+}
+
+.ops-stream-dock-stack > * {
+  pointer-events: auto;
+}
+
+.ops-stream-dock {
+  position: relative;
+  right: auto;
+  bottom: auto;
 }
 
 .ops-stream-dock--panel {
@@ -140,6 +155,14 @@
   white-space: nowrap;
 }
 
+.ops-stream-dock__mini-time {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.65;
+}
+
 @keyframes ops-stream-pulse {
   0%,
   100% {
@@ -153,12 +176,14 @@
 }
 
 @media (max-width: 640px) {
-  .ops-stream-dock {
+  .ops-stream-dock-stack {
     right: 0.75rem;
     bottom: 0.75rem;
     left: 0.75rem;
+    align-items: stretch;
   }
   .ops-stream-dock--panel {
     width: auto;
+    max-height: 40vh;
   }
 }

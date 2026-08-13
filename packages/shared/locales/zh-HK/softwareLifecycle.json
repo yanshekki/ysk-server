@@ -1,7 +1,7 @@
 {
   "kindInstall": "安裝",
   "kindUninstall": "解除安裝",
-  "dockBusy": "{{種類}} · {{標題}}",
+  "dockBusy": "{{kind}} · {{title}}",
   "dockFail": "失敗 · {{title}}",
   "dockDone": "完成 · {{title}}",
   "minimize": "縮小",
@@ -57,5 +57,11 @@
   "dockCancelling": "取消中 · {{title}}",
   "dockCancelled": "已取消 · {{title}}",
   "cancelHint": "已請求取消。瀏覽器已停止接收日誌；主機可能仍會完成目前的 apt／步驟。請稍後重新探測狀態。",
-  "cancelledToast": "已取消操作（客戶端已停止串流）"
+  "cancelledToast": "已取消操作（客戶端已停止串流）",
+  "kindApply": "套用",
+  "kindScan": "掃描",
+  "kindDeploy": "部署",
+  "kindRuntime": "Runtime",
+  "jobDone": "完成 · {{title}}",
+  "jobFailed": "失敗 · {{title}}"
 }

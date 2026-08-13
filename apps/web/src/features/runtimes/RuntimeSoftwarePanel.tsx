@@ -13,9 +13,7 @@ import {
   EmptyState,
   FormActions,
   FormHint,
-  InstallStreamPanel,
   SoftwareInstallBanner,
-  type InstallStreamLine,
 } from '../../shared/components/ui';
 import {
   hostSatisfiesTarget,
@@ -54,7 +52,6 @@ export type RuntimeSoftwarePanelProps = {
   pluginsRefreshToken?: number;
   /** Companion tools field (Node etc.). Off for PHP (uses detailExtra extensions). */
   showPlugins?: boolean;
-  installLog: InstallStreamLine[];
   installLabel: string;
   /** Install currently selected version (caller should use arg if provided) */
   onInstall: (version?: string) => void;
@@ -110,7 +107,6 @@ export function RuntimeSoftwarePanel(props: RuntimeSoftwarePanelProps) {
     onPluginsChange,
     pluginsRefreshToken = 0,
     showPlugins = true,
-    installLog,
     installLabel,
     onInstall,
     onSetHostDefault,
@@ -330,7 +326,6 @@ export function RuntimeSoftwarePanel(props: RuntimeSoftwarePanelProps) {
                 installLabel={installLabel}
                 onInstall={() => onInstall()}
               />
-              <InstallStreamPanel lines={installLog} busy={busy} />
             </>
           ) : (
             <>

@@ -27,14 +27,16 @@ const DEFAULT_DURATION: Record<ToastVariant, number> = {
   ok: 4000,
   info: 4000,
   warn: 5000,
-  error: 6000,
+  error: 7000,
 };
 
-const MAX_STACK = 5;
+const MAX_STACK = 3;
 
 let toasts: ToastItem[] = [];
 const listeners = new Set<Listener>();
 const timers = new Map<string, ReturnType<typeof setTimeout>>();
+const remaining = new Map<string, number>();
+const startedAt = new Map<string, number>();
 let seq = 0;
 
 function emit() {
@@ -49,12 +51,33 @@ function nextId(): string {
 function scheduleDismiss(id: string, durationMs: number) {
   const existing = timers.get(id);
   if (existing) clearTimeout(existing);
+  remaining.set(id, durationMs);
+  startedAt.set(id, Date.now());
   if (durationMs <= 0) return;
   const handle = setTimeout(() => {
     timers.delete(id);
+    remaining.delete(id);
+    startedAt.delete(id);
     dismiss(id);
   }, durationMs);
   timers.set(id, handle);
+}
+
+function pause(id: string) {
+  const handle = timers.get(id);
+  if (!handle) return;
+  clearTimeout(handle);
+  timers.delete(id);
+  const left = remaining.get(id) ?? 0;
+  const start = startedAt.get(id) ?? Date.now();
+  remaining.set(id, Math.max(400, left - (Date.now() - start)));
+}
+
+function resume(id: string) {
+  if (timers.has(id)) return;
+  const left = remaining.get(id);
+  if (left === undefined) return;
+  scheduleDismiss(id, left);
 }
 
 function push(variant: ToastVariant, message: string, options?: ToastOptions): string {
@@ -94,6 +117,8 @@ function dismiss(id: string) {
     clearTimeout(handle);
     timers.delete(id);
   }
+  remaining.delete(id);
+  startedAt.delete(id);
   const next = toasts.filter((t) => t.id !== id);
   if (next.length === toasts.length) return;
   toasts = next;
@@ -103,6 +128,8 @@ function dismiss(id: string) {
 function clearAll() {
   for (const handle of timers.values()) clearTimeout(handle);
   timers.clear();
+  remaining.clear();
+  startedAt.clear();
   toasts = [];
   emit();
 }
@@ -139,6 +166,12 @@ export const toast = {
   },
   dismiss(id: string): void {
     dismiss(id);
+  },
+  pause(id: string): void {
+    pause(id);
+  },
+  resume(id: string): void {
+    resume(id);
   },
   clear(): void {
     clearAll();

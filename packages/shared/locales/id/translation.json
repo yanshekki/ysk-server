@@ -10539,7 +10539,13 @@
     "dockCancelling": "Membatalkan · {{title}}",
     "dockCancelled": "Dibatalkan · {{title}}",
     "cancelHint": "Pembatalan diminta. Klien berhenti mendengarkan; tuan rumah dapat menyelesaikan apt/langkah saat ini. Selidiki ulang statusnya setelah beberapa saat.",
-    "cancelledToast": "Operasi dibatalkan (klien berhenti streaming)"
+    "cancelledToast": "Operasi dibatalkan (klien berhenti streaming)",
+    "kindApply": "Apply",
+    "kindScan": "Scan",
+    "kindDeploy": "Deploy",
+    "kindRuntime": "Runtime",
+    "jobDone": "Finished · {{title}}",
+    "jobFailed": "Failed · {{title}}"
   },
   "sqlEngineHealth": {
     "finding": {

@@ -26,7 +26,8 @@ import {
   PresetChips,
   SegRadio,
   PageTabs } from '../../shared/components/ui';
-import type { OpsResultLike, MultiCheckOption, InstallStreamLine } from '../../shared/components/ui';
+import type { OpsResultLike, MultiCheckOption } from '../../shared/components/ui';
+import { useOpsStreamOptional } from '../../shared/ops-stream/OpsStreamContext';
 import { getServerContext, setServerContext } from '../../shared/stores/server-context';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
@@ -222,7 +223,7 @@ export function PhpRuntimePage() {
   const [panelDefault, setPanelDefault] = useState<string | null>(null);
   const [extOps, setExtOps] = useState<OpsResultLike | null>(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
-  const [installLog, setInstallLog] = useState<InstallStreamLine[]>([]);
+  const stream = useOpsStreamOptional();
 
   // Dynamic PHP minors from upstream (no hardcoded 8.1/8.2/8.3 chips)
   useEffect(() => {
@@ -554,7 +555,6 @@ export function PhpRuntimePage() {
               panelDefault={panelDefault}
               busy={busy}
               showPlugins={false}
-              installLog={installLog}
               installLabel={t('runtime.installPhpWithExt', {
                 version,
                 n: extSelected.filter((id) => selectableExtIds.includes(id)).length,
@@ -567,7 +567,10 @@ export function PhpRuntimePage() {
                     selectableExtIds.includes(id),
                   );
                   const required = extCatalog.filter((e) => e.required).map((e) => e.id);
-                  setInstallLog([]);
+                  const started = stream?.begin({
+                    kind: 'runtime',
+                    title: t('runtime.installedPhp', { version: ver }),
+                  });
                   const r = await systemApi.runtimeInstallStream(
                     {
                       kind: 'php',
@@ -581,10 +584,19 @@ export function PhpRuntimePage() {
                       ],
                     },
                     {
-                      onLog: (line) =>
-                        setInstallLog((prev) => [...prev.slice(-1999), line]),
+                      onLog: (line) => {
+                        if (started && stream) stream.appendLog(started.id, line);
+                      },
+                      signal: started?.signal,
                     },
                   );
+                  if (started && stream) {
+                    stream.finish(started.id, {
+                      ok: r.ok !== false && !r.blocked,
+                      error: r.blockMessage,
+                      toast: false,
+                    });
+                  }
                   await refresh();
                   await loadExtensions(ver, { bust: true });
                   return r as OpsResultLike;
@@ -701,7 +713,10 @@ export function PhpRuntimePage() {
                             const required = extCatalog
                               .filter((e) => e.required)
                               .map((e) => e.id);
-                            setInstallLog([]);
+                            const started = stream?.begin({
+                              kind: 'runtime',
+                              title: t('runtime.phpExtInstallSelected', { n: optional.length }),
+                            });
                             const r = await systemApi.runtimeInstallStream(
                               {
                                 kind: 'php',
@@ -710,10 +725,19 @@ export function PhpRuntimePage() {
                                 extensions: [...new Set([...required, ...optional])],
                               },
                               {
-                                onLog: (line) =>
-                                  setInstallLog((prev) => [...prev.slice(-1999), line]),
+                                onLog: (line) => {
+                                  if (started && stream) stream.appendLog(started.id, line);
+                                },
+                                signal: started?.signal,
                               },
                             );
+                            if (started && stream) {
+                              stream.finish(started.id, {
+                                ok: r.ok !== false && !r.blocked,
+                                error: r.blockMessage,
+                                toast: false,
+                              });
+                            }
                             await refresh();
                             await loadExtensions(version, {
                               bust: true,

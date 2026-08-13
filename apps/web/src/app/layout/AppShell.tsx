@@ -7,7 +7,7 @@ import { useCapabilities } from '../../shared/hooks/useCapabilities';
 import { useUpdatesNavBadge } from '../../shared/hooks/useUpdatesNavBadge';
 import { useNavBookmarks } from '../../shared/hooks/useNavBookmarks';
 import { FEATURE_SECTIONS } from '../../shared/nav/features';
-import { buttonClassName, ToastViewport } from '../../shared/components/ui';
+import { buttonClassName } from '../../shared/components/ui';
 import { GlobalSearch } from '../../shared/components/GlobalSearch';
 import {
   LOCALES,
@@ -137,7 +137,6 @@ export function AppShell() {
 
   return (
     <div className="shell">
-      <ToastViewport />
       {open && <div className="shell__backdrop" onClick={() => setOpen(false)} aria-hidden />}
       <aside className={`shell__sidebar${open ? ' is-open' : ''}`}>
         <div className="shell__brand">

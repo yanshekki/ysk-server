@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.21 — 2026-08-13
+
+### UI
+- One toast stack (top-right) for operation results; live jobs stream in the bottom-right dock (minimizable, multi-job)
+- Runtime / Updates / deploy logs no longer sit in the page body
+
 ## 1.0.20 — 2026-08-13
 
 ### UI

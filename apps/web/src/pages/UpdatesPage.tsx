@@ -17,16 +17,16 @@ import {
   DataTable,
   EmptyState,
   FeaturePageLayout,
-  InstallStreamPanel,
   InfoCard,
   InfoCardGrid,
   ListToolbar,
   LoadingBlock,
   PageTabs } from '../shared/components/ui';
-import type { InstallStreamLine } from '../shared/components/ui';
 import { usePageTab } from '../shared/hooks/usePageTab';
+import { useOpsStreamOptional } from '../shared/ops-stream/OpsStreamContext';
 import { useCapabilities } from '../shared/hooks/useCapabilities';
 import { humanizeOperatorNote } from '../shared/lib/operator-messages';
+import { toast } from '../shared/stores/toast-store';
 import { bindAllOrValue, bindCall1, bindCall2, bindCloseIfIdle, bindInput, bindSet, bindValueSet, bindVoid } from './bind-handlers';
 
 const UPD_TABS = [
@@ -178,16 +178,14 @@ export function UpdatesPage() {
   const { t } = useTranslation();
   const { can } = useCapabilities();
   const canApply = can('updates.apply');
+  const stream = useOpsStreamOptional();
   const {
     inventory,
     entries,
     selfUpdate,
     lastAt,
     jobs,
-    error,
     busy,
-    msg,
-    setMsg,
     load,
     applySelf,
     applyPackage,
@@ -219,7 +217,6 @@ export function UpdatesPage() {
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(() => new Set());
   const [batchConfirmOpen, setBatchConfirmOpen] = useState(false);
   const [batchProgress, setBatchProgress] = useState<string | null>(null);
-  const [applyLog, setApplyLog] = useState<InstallStreamLine[]>([]);
   /** Soft-cancel sequential fallback between packages */
   const [batchAbort, setBatchAbort] = useState<AbortController | null>(null);
 
@@ -373,7 +370,14 @@ export function UpdatesPage() {
     const rows = [...selectedUpgradable];
     const ac = new AbortController();
     setBatchAbort(ac);
-    setApplyLog([]);
+    const started = stream?.begin({
+      kind: 'apply',
+      title: t('updates.batchProgress', {
+        n: 0,
+        total: rows.length,
+        pkg: rows[0]?.packageName ?? '',
+      }),
+    });
     setBatchProgress(
       t('updates.batchProgress', {
         n: 0,
@@ -384,15 +388,19 @@ export function UpdatesPage() {
       const result = await applyPackages(rows, {
         confirmHighRisk: true,
         quiet: true,
-        signal: ac.signal,
-        onLog: (line) => setApplyLog((prev) => [...prev.slice(-1999), line]),
+        signal: started?.signal ?? ac.signal,
+        onLog: (line) => {
+          if (started && stream) stream.appendLog(started.id, line);
+        },
         onProgress: (n, total, pkg) => {
-          setBatchProgress(
-            t('updates.batchProgress', {
-              n,
-              total,
-              pkg }),
-          );
+          const msg = t('updates.batchProgress', {
+            n,
+            total,
+            pkg });
+          setBatchProgress(msg);
+          if (started && stream) {
+            stream.appendLog(started.id, { stream: 'status', line: msg });
+          }
         } });
       setSelectedKeys(new Set());
       setBatchProgress(
@@ -416,6 +424,19 @@ export function UpdatesPage() {
               t('updates.batchRescanned', { })
             : ''),
       );
+      if (started && stream) {
+        stream.finish(started.id, {
+          ok: result.fail.length === 0,
+          error: result.fail.length
+            ? t('updates.batchPartialFail', {
+                list: result.fail
+                  .slice(0, 5)
+                  .map((f) => `${f.pkg}: ${f.message}`)
+                  .join('；'),
+              })
+            : undefined,
+        });
+      }
       // Do NOT reload cached inventory — applyPackages already rescanned live apt
     } finally {
       setBatchAbort(null);
@@ -493,7 +514,7 @@ export function UpdatesPage() {
         </ActionBar>
       }
     >
-      {error ? <Alert variant="error">{error}</Alert> : null}
+
       <PageTabs
         tabs={[
           {
@@ -730,46 +751,20 @@ export function UpdatesPage() {
         ) : null}
         {tab === 'packages' ? (
           <div className="tab-panel stack">
-            {batchProgress || applyLog.length > 0 ? (
-              <div className="u-mb-3 stack">
-                {batchProgress ? (
-                  <Alert variant={busy ? 'info' : 'ok'}>
-                    <div className="u-flex u-flex-wrap u-gap-2 u-items-center">
-                      <span>{batchProgress}</span>
-                      {busy && batchAbort ? (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => {
-                            batchAbort.abort();
-                            setBatchProgress(
-                              t('updates.batchCancelling', { }),
-                            );
-                          }}
-                        >
-                          {t('updates.batchCancel')}
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setBatchProgress(null);
-                            if (!busy) setApplyLog([]);
-                          }}
-                        >
-                          {t('common.dismiss')}
-                        </Button>
-                      )}
-                    </div>
-                  </Alert>
-                ) : null}
-                <InstallStreamPanel
-                  lines={applyLog}
-                  busy={Boolean(busy && batchProgress)}
-                  title={t('updates.applyLogTitle', { })}
-                />
-              </div>
+            {busy && batchAbort ? (
+              <ActionBar>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    batchAbort.abort();
+                    stream?.requestCancel();
+                    setBatchProgress(t('updates.batchCancelling'));
+                  }}
+                >
+                  {t('updates.batchCancel')}
+                </Button>
+              </ActionBar>
             ) : null}
             {busy && inventory.length === 0 ? (
               <LoadingBlock label={t('updates.scanning')} />
@@ -1168,10 +1163,10 @@ export function UpdatesPage() {
                           intervalMs: scanIntervalMs,
                         })
                         .then(() => {
-                          setMsg(t('updates.scheduleSaved'));
+                          toast.ok(t('updates.scheduleSaved'));
                           return refreshSummary();
                         })
-                        .catch((e: Error) => setMsg(e.message));
+                        .catch((e: Error) => toast.error(e.message));
                     }}
                   >
                     {t('updates.saveSchedule')}

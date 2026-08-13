@@ -178,12 +178,14 @@ export function SoftwareVersionBar({
             ok: false,
             cancelled: true,
             error: t('softwareLifecycle.cancelHint'),
+            toast: false,
           });
           toast.error(t('softwareLifecycle.cancelledToast'));
         } else {
           stream.finish(jobId, {
             ok: ops.ok !== false && !ops.blocked,
             error: ops.blockMessage,
+            toast: false,
           });
         }
       }
@@ -208,6 +210,7 @@ export function SoftwareVersionBar({
             ok: false,
             cancelled: true,
             error: t('softwareLifecycle.cancelHint'),
+            toast: false,
           });
         }
         toast.error(t('softwareLifecycle.cancelledToast'));
@@ -215,7 +218,7 @@ export function SoftwareVersionBar({
         await load(true);
       } else {
         const msg = e instanceof Error ? e.message : t('common.opFailed');
-        if (stream && jobId) stream.finish(jobId, { ok: false, error: msg });
+        if (stream && jobId) stream.finish(jobId, { ok: false, error: msg, toast: false });
         toast.error(msg);
       }
     } finally {

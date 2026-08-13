@@ -57,5 +57,11 @@
   "dockCancelling": "منسوخ ہو رہا ہے · {{title}}",
   "dockCancelled": "منسوخ ہو گیا · {{title}}",
   "cancelHint": "منسوخ کرنے کی درخواست کی گئی۔ موکل نے سننا چھوڑ دیا۔ میزبان موجودہ apt/step کو ختم کر سکتا ہے۔ ایک لمحے کے بعد صورتحال کی دوبارہ جانچ کریں۔",
-  "cancelledToast": "آپریشن منسوخ کر دیا گیا (کلائنٹ نے سلسلہ بند کر دیا)"
+  "cancelledToast": "آپریشن منسوخ کر دیا گیا (کلائنٹ نے سلسلہ بند کر دیا)",
+  "kindApply": "Apply",
+  "kindScan": "Scan",
+  "kindDeploy": "Deploy",
+  "kindRuntime": "Runtime",
+  "jobDone": "Finished · {{title}}",
+  "jobFailed": "Failed · {{title}}"
 }

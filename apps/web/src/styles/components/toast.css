@@ -5,12 +5,18 @@
   position: fixed;
   top: var(--space-4);
   right: var(--space-4);
-  z-index: 300;
+  z-index: 400;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
   width: min(22rem, calc(100vw - 2rem));
   pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  .ysk-toast-viewport {
+    top: 4.25rem;
+  }
 }
 
 .ysk-toast {
@@ -29,18 +35,89 @@
   box-shadow:
     0 4px 6px -1px rgba(15, 23, 42, 0.1),
     0 12px 28px -4px rgba(15, 23, 42, 0.18);
-  animation: ysk-toast-in 0.18s ease-out;
+  position: relative;
+  overflow: hidden;
+  animation: ysk-toast-in 0.2s ease-out;
   isolation: isolate;
 }
 
 @keyframes ysk-toast-in {
   from {
     opacity: 0;
-    transform: translateY(-0.4rem);
+    transform: translateX(0.6rem);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0);
+  }
+}
+
+.ysk-toast__icon {
+  flex-shrink: 0;
+  width: 1.35rem;
+  height: 1.35rem;
+  margin-top: 0.05rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #fff;
+  background: currentColor;
+}
+
+.ysk-toast--ok .ysk-toast__icon {
+  background: #059669;
+  color: #fff;
+}
+.ysk-toast--error .ysk-toast__icon {
+  background: #dc2626;
+  color: #fff;
+}
+.ysk-toast--info .ysk-toast__icon {
+  background: #2563eb;
+  color: #fff;
+}
+.ysk-toast--warn .ysk-toast__icon {
+  background: #d97706;
+  color: #fff;
+}
+
+.ysk-toast__timer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: currentColor;
+  opacity: 0.35;
+  transform-origin: left;
+  animation-name: ysk-toast-timer;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+  animation-duration: 4s;
+}
+
+.ysk-toast--warn .ysk-toast__timer {
+  animation-duration: 5s;
+}
+
+.ysk-toast--error .ysk-toast__timer {
+  animation-duration: 7s;
+}
+
+.ysk-toast:hover .ysk-toast__timer {
+  animation-play-state: paused;
+}
+
+@keyframes ysk-toast-timer {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
   }
 }
 

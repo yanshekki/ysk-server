@@ -10539,7 +10539,13 @@
     "dockCancelling": "Cancelando · {{title}}",
     "dockCancelled": "Cancelado · {{title}}",
     "cancelHint": "Cancelar solicitado. O cliente parou de ouvir; o host pode terminar o apt/step atual. Teste novamente o status após um momento.",
-    "cancelledToast": "Operação cancelada (o cliente interrompeu o streaming)"
+    "cancelledToast": "Operação cancelada (o cliente interrompeu o streaming)",
+    "kindApply": "Apply",
+    "kindScan": "Scan",
+    "kindDeploy": "Deploy",
+    "kindRuntime": "Runtime",
+    "jobDone": "Finished · {{title}}",
+    "jobFailed": "Failed · {{title}}"
   },
   "sqlEngineHealth": {
     "finding": {

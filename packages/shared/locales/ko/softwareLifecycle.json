@@ -57,5 +57,11 @@
   "dockCancelling": "취소 중 · {{title}}",
   "dockCancelled": "취소됨 · {{title}}",
   "cancelHint": "취소를 요청했습니다. 클라이언트가 청취를 중단했습니다. 호스트는 현재 apt/step을 완료할 수 있습니다. 잠시 후 상태를 다시 조사해 보세요.",
-  "cancelledToast": "작업이 취소됨(클라이언트가 스트리밍을 중지함)"
+  "cancelledToast": "작업이 취소됨(클라이언트가 스트리밍을 중지함)",
+  "kindApply": "Apply",
+  "kindScan": "Scan",
+  "kindDeploy": "Deploy",
+  "kindRuntime": "Runtime",
+  "jobDone": "Finished · {{title}}",
+  "jobFailed": "Failed · {{title}}"
 }

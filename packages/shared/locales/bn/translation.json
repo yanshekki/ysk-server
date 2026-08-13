@@ -10539,7 +10539,13 @@
     "dockCancelling": "বাতিল হচ্ছে · {{title}}",
     "dockCancelled": "বাতিল করা হয়েছে · {{title}}",
     "cancelHint": "বাতিল অনুরোধ করা হয়েছে. ক্লায়েন্ট শোনা বন্ধ; হোস্ট বর্তমান apt/পদক্ষেপ শেষ করতে পারে। একটি মুহূর্ত পরে স্থিতি পুনরায় তদন্ত.",
-    "cancelledToast": "অপারেশন বাতিল করা হয়েছে (ক্লায়েন্ট স্ট্রিমিং বন্ধ করেছে)"
+    "cancelledToast": "অপারেশন বাতিল করা হয়েছে (ক্লায়েন্ট স্ট্রিমিং বন্ধ করেছে)",
+    "kindApply": "Apply",
+    "kindScan": "Scan",
+    "kindDeploy": "Deploy",
+    "kindRuntime": "Runtime",
+    "jobDone": "Finished · {{title}}",
+    "jobFailed": "Failed · {{title}}"
   },
   "sqlEngineHealth": {
     "finding": {

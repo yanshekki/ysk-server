@@ -10539,7 +10539,13 @@
     "dockCancelling": "キャンセル中 · {{title}}",
     "dockCancelled": "キャンセルされました · {{title}}",
     "cancelHint": "キャンセルが要求されました。クライアントは聞くのをやめました。ホストは現在の apt/step を終了する可能性があります。しばらくしてからステータスを再調査します。",
-    "cancelledToast": "操作がキャンセルされました (クライアントがストリーミングを停止しました)"
+    "cancelledToast": "操作がキャンセルされました (クライアントがストリーミングを停止しました)",
+    "kindApply": "Apply",
+    "kindScan": "Scan",
+    "kindDeploy": "Deploy",
+    "kindRuntime": "Runtime",
+    "jobDone": "Finished · {{title}}",
+    "jobFailed": "Failed · {{title}}"
   },
   "sqlEngineHealth": {
     "finding": {

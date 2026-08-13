@@ -10539,7 +10539,13 @@
     "dockCancelling": "रद्द किया जा रहा है · {{title}}",
     "dockCancelled": "रद्द किया गया · {{title}}",
     "cancelHint": "रद्द करने का अनुरोध किया गया. ग्राहक ने सुनना बंद कर दिया; होस्ट वर्तमान उपयुक्त/चरण को पूरा कर सकता है। एक क्षण बाद पुनः स्थिति की जाँच करें।",
-    "cancelledToast": "ऑपरेशन रद्द कर दिया गया (क्लाइंट ने स्ट्रीमिंग बंद कर दी)"
+    "cancelledToast": "ऑपरेशन रद्द कर दिया गया (क्लाइंट ने स्ट्रीमिंग बंद कर दी)",
+    "kindApply": "Apply",
+    "kindScan": "Scan",
+    "kindDeploy": "Deploy",
+    "kindRuntime": "Runtime",
+    "jobDone": "Finished · {{title}}",
+    "jobFailed": "Failed · {{title}}"
   },
   "sqlEngineHealth": {
     "finding": {

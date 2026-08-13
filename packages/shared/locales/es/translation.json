@@ -10539,7 +10539,13 @@
     "dockCancelling": "Cancelando · {{title}}",
     "dockCancelled": "Cancelado · {{title}}",
     "cancelHint": "Cancelar solicitado. El cliente dejó de escuchar; el anfitrión puede finalizar el apto/paso actual. Vuelva a sondear el estado después de un momento.",
-    "cancelledToast": "Operación cancelada (el cliente dejó de transmitir)"
+    "cancelledToast": "Operación cancelada (el cliente dejó de transmitir)",
+    "kindApply": "Apply",
+    "kindScan": "Scan",
+    "kindDeploy": "Deploy",
+    "kindRuntime": "Runtime",
+    "jobDone": "Finished · {{title}}",
+    "jobFailed": "Failed · {{title}}"
   },
   "sqlEngineHealth": {
     "finding": {

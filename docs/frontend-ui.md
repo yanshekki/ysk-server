@@ -17,6 +17,7 @@
 5. No runtime CDN: JS, CSS, and fonts ship in the panel build (system fonts).
 6. Lists use the shared `DataTable`: desktop is a real table; ≤720px is cards + a ⋯ action menu.
 7. Mobile header is menu + search only. Language, account, and logout sit at the **bottom** of the drawer.
+8. Operation results use the **top-right toast** (`toast.ok` / `toast.error`). Live streams and long jobs use the **bottom-right dock** (minimizable). Do not embed install logs or one-shot apply errors in the page body.
 
 ## Key routes
 

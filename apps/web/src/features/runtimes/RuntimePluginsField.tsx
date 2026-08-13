@@ -12,10 +12,10 @@ import {
   Field,
   FormActions,
   FormHint,
-  InstallStreamPanel,
   MultiCheckSelect,
   OpsResultPanel } from '../../shared/components/ui';
-import type { InstallStreamLine, MultiCheckOption, OpsResultLike } from '../../shared/components/ui';
+import type { MultiCheckOption, OpsResultLike } from '../../shared/components/ui';
+import { useOpsStreamOptional } from '../../shared/ops-stream/OpsStreamContext';
 import { systemApi } from '../system';
 import { toast } from '../../shared/stores/toast-store';
 
@@ -51,7 +51,7 @@ export function RuntimePluginsField({
   const [loaded, setLoaded] = useState(false);
   const [busyUninstall, setBusyUninstall] = useState(false);
   const [busyInstall, setBusyInstall] = useState(false);
-  const [installLog, setInstallLog] = useState<InstallStreamLine[]>([]);
+  const stream = useOpsStreamOptional();
   const [confirmUninstall, setConfirmUninstall] = useState<RuntimePluginRow | null>(null);
   const [batchUninstall, setBatchUninstall] = useState(false);
   const [uninstallSelected, setUninstallSelected] = useState<string[]>([]);
@@ -199,15 +199,29 @@ export function RuntimePluginsField({
     if (!selectedForInstall.length || !showInstallButton) return;
     const installedNow = [...selectedForInstall];
     setBusyInstall(true);
-    setInstallLog([]);
+    const started = stream?.begin({
+      kind: 'runtime',
+      title: t('runtime.pluginInstallOk', { n: installedNow.length }),
+    });
     try {
       const r = (await systemApi.runtimePluginsInstallStream(
         {
           kind: kindArg,
           plugins: installedNow },
         {
-          onLog: (line) => setInstallLog((prev) => [...prev.slice(-1999), line]) },
+          onLog: (line) => {
+            if (started && stream) stream.appendLog(started.id, line);
+          },
+          signal: started?.signal,
+        },
       )) as { ok?: boolean; notes?: string[]; blocked?: boolean; blockMessage?: string };
+      if (started && stream) {
+        stream.finish(started.id, {
+          ok: r.ok !== false && !r.blocked,
+          error: r.blockMessage,
+          toast: false,
+        });
+      }
       presentOps(
         r,
         t('runtime.pluginInstallOk', { n: installedNow.length }),
@@ -227,6 +241,9 @@ export function RuntimePluginsField({
       }
     } catch (e) {
       const m = e instanceof Error ? e.message : t('runtime.pluginInstallFailed');
+      if (started && stream) {
+        stream.finish(started.id, { ok: false, error: m, toast: false });
+      }
       toast.error(m);
       setOpsResult({ ok: false, notes: [m] });
       await load({ bust: true });
@@ -241,6 +258,7 @@ export function RuntimePluginsField({
     requiredRows,
     selectedForInstall,
     showInstallButton,
+    stream,
     t,
   ]);
 
@@ -433,9 +451,6 @@ export function RuntimePluginsField({
             </Button>
           </FormActions>
           <FormHint>{t('runtime.pluginsInstallNote')}</FormHint>
-          {showInstallButton ? (
-            <InstallStreamPanel lines={installLog} busy={busyInstall} />
-          ) : null}
         </>
       ) : installed.length > 0 ? (
         <FormHint>{t('runtime.pluginsAllInstalled')}</FormHint>

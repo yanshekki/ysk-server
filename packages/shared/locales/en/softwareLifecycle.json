@@ -57,5 +57,11 @@
   "dockCancelling": "Cancelling · {{title}}",
   "dockCancelled": "Cancelled · {{title}}",
   "cancelHint": "Cancel requested. The client stopped listening; the host may finish the current apt/step. Re-probe status after a moment.",
-  "cancelledToast": "Operation cancelled (client stopped streaming)"
+  "cancelledToast": "Operation cancelled (client stopped streaming)",
+  "kindApply": "Apply",
+  "kindScan": "Scan",
+  "kindDeploy": "Deploy",
+  "kindRuntime": "Runtime",
+  "jobDone": "Finished · {{title}}",
+  "jobFailed": "Failed · {{title}}"
 }

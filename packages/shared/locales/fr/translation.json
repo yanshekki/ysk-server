@@ -10539,7 +10539,13 @@
     "dockCancelling": "Annulation · {{title}}",
     "dockCancelled": "Annulé · {{title}}",
     "cancelHint": "Annulation demandée. Le client a arrêté d'écouter ; l'hôte peut terminer l'apt/l'étape en cours. Re-sondez l'état après un moment.",
-    "cancelledToast": "Opération annulée (le client a arrêté la diffusion)"
+    "cancelledToast": "Opération annulée (le client a arrêté la diffusion)",
+    "kindApply": "Apply",
+    "kindScan": "Scan",
+    "kindDeploy": "Deploy",
+    "kindRuntime": "Runtime",
+    "jobDone": "Finished · {{title}}",
+    "jobFailed": "Failed · {{title}}"
   },
   "sqlEngineHealth": {
     "finding": {

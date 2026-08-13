@@ -24,9 +24,10 @@ import {
   PageTabs,
   buttonClassName } from '../../shared/components/ui';
 import { Link, useSearchParams } from 'react-router-dom';
-import type { OpsResultLike, InstallStreamLine } from '../../shared/components/ui';
+import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
+import { useOpsStreamOptional } from '../../shared/ops-stream/OpsStreamContext';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../shared/lib/i18n';
@@ -177,13 +178,12 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
     notes?: string[];
   } | null>(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
-  const [installLog, setInstallLog] = useState<InstallStreamLine[]>([]);
+  const stream = useOpsStreamOptional();
 
   // Reset plugin picks when switching runtime kind
   useEffect(() => {
     setPlugins([]);
     setVersionStatus(null);
-    setInstallLog([]);
   }, [kind]);
 
   // Dynamic upstream versions (no hardcoded chip list)
@@ -419,25 +419,47 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
       const ver = targetVersion || version;
       if (targetVersion) setVersion(targetVersion);
       void run(async () => {
-        setInstallLog([]);
-        const r = await systemApi.runtimeInstallStream(
-          {
-            kind,
-            version: ver,
-            install: true,
-            plugins,
-          },
-          {
-            onLog: (line) =>
-              setInstallLog((prev) => [...prev.slice(-1999), line]),
-          },
-        );
-        await refresh();
-        setPluginsRefreshToken((n) => n + 1);
-        return r as OpsResultLike;
+        const label = t(meta.installLabelKey, { v: ver });
+        const started = stream?.begin({ kind: 'runtime', title: label });
+        try {
+          const r = await systemApi.runtimeInstallStream(
+            {
+              kind,
+              version: ver,
+              install: true,
+              plugins,
+            },
+            {
+              onLog: (line) => {
+                if (started && stream) stream.appendLog(started.id, line);
+              },
+              signal: started?.signal,
+            },
+          );
+          if (started && stream) {
+            stream.finish(started.id, {
+              ok: r.ok !== false && !r.blocked,
+              error: r.blockMessage,
+              toast: false,
+            });
+          }
+          await refresh();
+          setPluginsRefreshToken((n) => n + 1);
+          return r as OpsResultLike;
+        } catch (e) {
+          if (started && stream) {
+            stream.finish(started.id, {
+              ok: false,
+              cancelled: Boolean(started.signal.aborted),
+              error: e instanceof Error ? e.message : String(e),
+              toast: false,
+            });
+          }
+          throw e;
+        }
       }, t(meta.installLabelKey, { v: ver }));
     },
-    [kind, version, plugins, run, refresh, t, meta.installLabelKey],
+    [kind, version, plugins, run, refresh, t, meta.installLabelKey, stream],
   );
 
   const parseExtraEnv = (): Record<string, string> => {
@@ -636,7 +658,6 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
             plugins={plugins}
             onPluginsChange={setPlugins}
             pluginsRefreshToken={pluginsRefreshToken}
-            installLog={installLog}
             installLabel={t(meta.installLabelKey, { v: version })}
             onInstall={runInstallVersion}
             onSetHostDefault={(v) => {

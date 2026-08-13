@@ -13,14 +13,13 @@ describe('toastStore', () => {
   });
 
   it('push ok/error/info/warn with default durations', () => {
-    toast.ok('done');
     toast.error('fail');
     toast.info('note');
     toast.warn('careful');
     const items = toastStore.getToasts();
-    expect(items).toHaveLength(4);
+    expect(items).toHaveLength(3);
     expect(items[0]?.variant).toBe('warn'); // newest first
-    expect(items.find((t) => t.variant === 'ok')?.durationMs).toBe(toastStore.defaults.ok);
+    expect(items.find((t) => t.variant === 'info')?.durationMs).toBe(toastStore.defaults.info);
     expect(items.find((t) => t.variant === 'error')?.durationMs).toBe(
       toastStore.defaults.error,
     );
@@ -42,7 +41,7 @@ describe('toastStore', () => {
 
   it('caps stack at maxStack', () => {
     for (let i = 0; i < 10; i += 1) toast.ok(`m${i}`);
-    expect(toastStore.getToasts()).toHaveLength(toastStore.maxStack);
+    expect(toastStore.getToasts()).toHaveLength(3);
     expect(toastStore.getToasts()[0]?.message).toBe('m9');
   });
 

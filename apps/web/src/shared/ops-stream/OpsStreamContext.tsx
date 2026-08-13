@@ -1,6 +1,6 @@
 /**
- * Global install/uninstall stream dock — expandable or minimized bottom-right.
- * Supports soft cancel via AbortController (client disconnect; server may finish current step).
+ * Global live-job dock — expandable or minimized bottom-right.
+ * Supports several concurrent jobs; one panel expanded at a time.
  */
 import {
   createContext,
@@ -12,8 +12,16 @@ import {
   type ReactNode,
 } from 'react';
 import type { InstallStreamLine } from '../components/ui/InstallStreamPanel';
+import { toast } from '../stores/toast-store';
+import i18n from '../lib/i18n';
 
-export type OpsStreamJobKind = 'install' | 'uninstall';
+export type OpsStreamJobKind =
+  | 'install'
+  | 'uninstall'
+  | 'apply'
+  | 'scan'
+  | 'deploy'
+  | 'runtime';
 
 export type OpsStreamJob = {
   id: string;
@@ -34,24 +42,24 @@ export type OpsStreamBeginResult = {
 };
 
 type OpsStreamCtx = {
+  jobs: OpsStreamJob[];
+  /** Expanded panel job, or most recent if none chosen. */
   job: OpsStreamJob | null;
+  expandedId: string | null;
+  setExpandedId: (id: string | null) => void;
   minimized: boolean;
   setMinimized: (v: boolean) => void;
-  begin: (input: {
-    kind: OpsStreamJobKind;
-    title: string;
-  }) => OpsStreamBeginResult;
+  begin: (input: { kind: OpsStreamJobKind; title: string }) => OpsStreamBeginResult;
   appendLog: (
     id: string,
     line: { stream: 'stdout' | 'stderr' | 'status'; line: string },
   ) => void;
   finish: (
     id: string,
-    result: { ok: boolean; error?: string; cancelled?: boolean },
+    result: { ok: boolean; error?: string; cancelled?: boolean; toast?: boolean },
   ) => void;
-  /** Soft-cancel: abort client stream; log status line. */
-  requestCancel: () => void;
-  dismiss: () => void;
+  requestCancel: (id?: string) => void;
+  dismiss: (id?: string) => void;
   isBusy: boolean;
   isCancelRequested: boolean;
 };
@@ -59,31 +67,28 @@ type OpsStreamCtx = {
 const Ctx = createContext<OpsStreamCtx | null>(null);
 
 export function OpsStreamProvider({ children }: { children: ReactNode }) {
-  const [job, setJob] = useState<OpsStreamJob | null>(null);
+  const [jobs, setJobs] = useState<OpsStreamJob[]>([]);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [minimized, setMinimized] = useState(false);
   const [cancelRequested, setCancelRequested] = useState(false);
-  const abortRef = useRef<AbortController | null>(null);
+  const aborts = useRef(new Map<string, AbortController>());
 
   const begin = useCallback(
     (input: { kind: OpsStreamJobKind; title: string }): OpsStreamBeginResult => {
-      // Abort any previous stray controller
-      try {
-        abortRef.current?.abort();
-      } catch {
-        /* */
-      }
       const ac = new AbortController();
-      abortRef.current = ac;
-      const id = `ops-${Date.now()}`;
+      const id = `ops-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      aborts.current.set(id, ac);
       setCancelRequested(false);
-      setJob({
+      const next: OpsStreamJob = {
         id,
         kind: input.kind,
         title: input.title,
         busy: true,
         lines: [],
         startedAt: Date.now(),
-      });
+      };
+      setJobs((prev) => [...prev.filter((j) => j.busy || j.ok === false), next].slice(-6));
+      setExpandedId(id);
       setMinimized(false);
       return { id, signal: ac.signal };
     },
@@ -92,16 +97,19 @@ export function OpsStreamProvider({ children }: { children: ReactNode }) {
 
   const appendLog = useCallback(
     (id: string, line: { stream: 'stdout' | 'stderr' | 'status'; line: string }) => {
-      setJob((prev) => {
-        if (!prev || prev.id !== id) return prev;
-        return {
-          ...prev,
-          lines: [
-            ...prev.lines.slice(-1999),
-            { ...line, at: new Date().toISOString() },
-          ],
-        };
-      });
+      setJobs((prev) =>
+        prev.map((j) =>
+          j.id !== id
+            ? j
+            : {
+                ...j,
+                lines: [
+                  ...j.lines.slice(-1999),
+                  { ...line, at: new Date().toISOString() },
+                ],
+              },
+        ),
+      );
     },
     [],
   );
@@ -109,59 +117,87 @@ export function OpsStreamProvider({ children }: { children: ReactNode }) {
   const finish = useCallback(
     (
       id: string,
-      result: { ok: boolean; error?: string; cancelled?: boolean },
+      result: { ok: boolean; error?: string; cancelled?: boolean; toast?: boolean },
     ) => {
-      if (abortRef.current) {
-        abortRef.current = null;
-      }
+      aborts.current.delete(id);
       setCancelRequested(false);
-      setJob((prev) => {
-        if (!prev || prev.id !== id) return prev;
-        return {
-          ...prev,
-          busy: false,
-          ok: result.cancelled ? false : result.ok,
-          cancelled: Boolean(result.cancelled),
-          error: result.error,
-          finishedAt: Date.now(),
-        };
-      });
+      let title = '';
+      setJobs((prev) =>
+        prev.map((j) => {
+          if (j.id !== id) return j;
+          title = j.title;
+          return {
+            ...j,
+            busy: false,
+            ok: result.cancelled ? false : result.ok,
+            cancelled: Boolean(result.cancelled),
+            error: result.error,
+            finishedAt: Date.now(),
+          };
+        }),
+      );
+      if (result.toast === false) return;
+      if (result.cancelled) {
+        toast.warn(i18n.t('softwareLifecycle.cancelledToast'));
+      } else if (result.ok) {
+        toast.ok(i18n.t('softwareLifecycle.jobDone', { title }));
+      } else {
+        toast.error(
+          result.error?.trim() || i18n.t('softwareLifecycle.jobFailed', { title }),
+        );
+      }
     },
     [],
   );
 
-  const requestCancel = useCallback(() => {
-    const ac = abortRef.current;
+  const requestCancel = useCallback((id?: string) => {
+    const target = id ?? expandedId;
+    if (!target) return;
+    const ac = aborts.current.get(target);
     if (!ac || ac.signal.aborted) return;
     setCancelRequested(true);
-    setJob((prev) => {
-      if (!prev?.busy) return prev;
-      return {
-        ...prev,
-        lines: [
-          ...prev.lines,
-          {
-            stream: 'status',
-            line: '— cancel requested —',
-            at: new Date().toISOString(),
-          },
-        ],
-      };
-    });
+    setJobs((prev) =>
+      prev.map((j) =>
+        j.id !== target || !j.busy
+          ? j
+          : {
+              ...j,
+              lines: [
+                ...j.lines,
+                {
+                  stream: 'status',
+                  line: '— cancel requested —',
+                  at: new Date().toISOString(),
+                },
+              ],
+            },
+      ),
+    );
     try {
       ac.abort();
     } catch {
       /* */
     }
-  }, []);
+  }, [expandedId]);
 
-  const dismiss = useCallback(() => {
-    setJob((prev) => (prev?.busy ? prev : null));
-  }, []);
+  const dismiss = useCallback((id?: string) => {
+    const target = id ?? expandedId;
+    if (!target) return;
+    setJobs((prev) => prev.filter((j) => j.id !== target || j.busy));
+    setExpandedId((cur) => (cur === target ? null : cur));
+  }, [expandedId]);
+
+  const job = useMemo(() => {
+    if (expandedId) return jobs.find((j) => j.id === expandedId) ?? jobs[jobs.length - 1] ?? null;
+    return jobs.find((j) => j.busy) ?? jobs[jobs.length - 1] ?? null;
+  }, [jobs, expandedId]);
 
   const value = useMemo(
     () => ({
+      jobs,
       job,
+      expandedId: job?.id ?? null,
+      setExpandedId,
       minimized,
       setMinimized,
       begin,
@@ -169,10 +205,11 @@ export function OpsStreamProvider({ children }: { children: ReactNode }) {
       finish,
       requestCancel,
       dismiss,
-      isBusy: Boolean(job?.busy),
+      isBusy: jobs.some((j) => j.busy),
       isCancelRequested: cancelRequested,
     }),
     [
+      jobs,
       job,
       minimized,
       begin,
@@ -195,7 +232,6 @@ export function useOpsStream(): OpsStreamCtx {
   return v;
 }
 
-/** Safe optional hook when provider may be missing in tests */
 export function useOpsStreamOptional(): OpsStreamCtx | null {
   return useContext(Ctx);
 }
