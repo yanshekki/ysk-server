@@ -98,7 +98,8 @@ export function stripNpmNoticeNoise(text: string): string {
 export function isNpmNoticeDump(text: string): boolean {
   const n = String(text || '');
   const hits = n.match(/npm notice/gi);
-  return Boolean(hits && hits.length >= 2);
+  if (hits && hits.length >= 2) return true;
+  return /Tarball Contents/i.test(n) && /npm notice/i.test(n);
 }
 
 /** Prefer the real apply/blocked note — never the npm-channel probe or notice dump. */
@@ -120,7 +121,10 @@ export function pickSelfUpdateUserNote(
     if (fails.length) return fails[fails.length - 1];
   }
   const meaningful = list.filter((n) => !isProbe(n) && !isNpmNoticeDump(n) && !isHint(n));
-  return meaningful[meaningful.length - 1] ?? list.filter((n) => !isNpmNoticeDump(n)).pop() ?? list[list.length - 1];
+  if (meaningful.length) return meaningful[meaningful.length - 1];
+  const hint = list.find(isHint);
+  if (hint) return hint;
+  return failed ? tl('notes.auto.selfUpgradeHint') : undefined;
 }
 
 export function resolveApplyNpmPackage(registryName?: string): string {

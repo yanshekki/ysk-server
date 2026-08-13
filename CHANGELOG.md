@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.20 — 2026-08-13
+
+### UI
+- Do not flash English on 繁體中文: boot loads `search` + `updates`; shell waits for the full catalog
+- Updates header buttons no longer all show 「處理中」during the first inventory fetch
+- Apply toast never shows `npm notice` tarball listings (escape hatch: `install.sh --upgrade`)
+
 ## 1.0.19 — 2026-08-13
 
 ### Fix

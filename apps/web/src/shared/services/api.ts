@@ -73,8 +73,14 @@ function errorMessageFromBody(data: unknown, status: number): string {
         );
       const fail = notes.filter((n) => isFail(n) && !isProbe(n) && !isNoticeDump(n));
       if (fail.length) return fail[fail.length - 1]!;
-      const meaningful = notes.filter((n) => !isProbe(n));
+      const meaningful = notes.filter((n) => !isProbe(n) && !isNoticeDump(n));
       if (meaningful.length) return meaningful[meaningful.length - 1]!;
+      if (notes.some(isNoticeDump)) {
+        return i18n.t('notes.auto.selfUpgradeHint', {
+          defaultValue:
+            'Panel apply failed. As root: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade',
+        });
+      }
       if (notes.length) return notes[notes.length - 1]!;
     }
     if (Array.isArray(o.results)) {

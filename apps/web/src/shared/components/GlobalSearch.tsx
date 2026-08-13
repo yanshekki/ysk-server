@@ -188,14 +188,12 @@ export function GlobalSearch() {
           name="global-search"
           type="search"
           className="shell-search__input input"
-          placeholder={t('search.placeholder', {
-            defaultValue: t('common.searchGlobal', { defaultValue: 'Search…' }),
-          })}
+          placeholder={t('common.searchGlobal')}
           value={q}
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setOpen(true)}
           onKeyDown={onKeyDown}
-          aria-label={t('search.aria', { defaultValue: 'Global search' })}
+          aria-label={t('common.searchGlobal')}
           aria-expanded={showMenu}
           aria-controls={showMenu ? `${inputId}-menu` : undefined}
           aria-autocomplete="list"

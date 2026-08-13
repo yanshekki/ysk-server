@@ -24,7 +24,7 @@ export function useUpdates() {
     listQuery?: { q?: string; risk?: string; upgradable?: string; approval?: string },
   ) => {
     setError(null);
-    setBusy(true);
+    if (refresh) setBusy(true);
     try {
       if (refresh) {
         const inv = await updatesApi.refresh(osv);
@@ -379,14 +379,23 @@ export function useUpdates() {
           n,
         ) && !isNoticeDump(n);
       const toastNote = (failed: boolean, fallback: string) => {
-        if (failed && r.blockMessage?.trim()) return r.blockMessage.trim();
-        if (failed && r.message?.trim() && !isProbe(r.message)) return r.message.trim();
+        const pick = (s?: string) => {
+          const v = String(s || '').trim();
+          if (!v || isProbe(v) || isNoticeDump(v)) return '';
+          return v;
+        };
+        if (failed && pick(r.blockMessage)) return pick(r.blockMessage);
+        if (failed && pick(r.message)) return pick(r.message);
         if (failed) {
           const f = notes.filter(isFail);
           if (f.length) return f[f.length - 1]!;
         }
-        const meaningful = notes.filter((n) => !isProbe(n));
-        return meaningful[meaningful.length - 1] ?? notes[notes.length - 1] ?? fallback;
+        const meaningful = notes.filter((n) => !isProbe(n) && !isNoticeDump(n));
+        if (meaningful.length) return meaningful[meaningful.length - 1]!;
+        if (notes.some(isNoticeDump)) {
+          return t('notes.auto.selfUpgradeHint');
+        }
+        return notes[notes.length - 1] ?? fallback;
       };
       if (r.ok === false || (r.applied === false && r.ok !== true)) {
         setError(null);
@@ -406,7 +415,11 @@ export function useUpdates() {
       }
       return r;
     } catch (e) {
-      const m = e instanceof Error ? e.message : t('updates.updateFailed');
+      const raw = e instanceof Error ? e.message : t('updates.updateFailed');
+      const m =
+        (raw.match(/npm notice/gi) || []).length >= 2 || /Tarball Contents/i.test(raw)
+          ? t('notes.auto.selfUpgradeHint')
+          : raw;
       setError(null);
       toast.error(m);
       throw e;

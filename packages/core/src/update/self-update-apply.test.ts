@@ -45,6 +45,8 @@ describe('detectRunningInstall / pickSelfUpdateUserNote', () => {
         true,
       ),
     ).toMatch(/無法寫入|unwritable|目錄/i);
+    expect(pickSelfUpdateUserNote([dump], true)).toMatch(/install\.sh|--upgrade/);
+    expect(pickSelfUpdateUserNote([dump], true)).not.toMatch(/Tarball Contents/i);
   });
 });
 

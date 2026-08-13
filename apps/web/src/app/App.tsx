@@ -6,15 +6,14 @@ import { RequireCapability } from './layout/RequireCapability';
 import { GuestOnly } from './layout/GuestOnly';
 import { ErrorBoundary } from '../shared/components/ErrorBoundary';
 import { ToastViewport } from '../shared/components/ui';
+import i18n from '../shared/lib/i18n';
 import { OpsStreamProvider } from '../shared/ops-stream/OpsStreamContext';
 import { OpsStreamDock } from '../shared/ops-stream/OpsStreamDock';
 
 /** Lightweight fallback while route chunks load */
 export function RouteFallback() {
   return (
-    <div className="u-pad-panel muted u-text-sm">
-      Loading…
-    </div>
+    <div className="u-pad-panel muted u-text-sm">{i18n.t('common.loading')}</div>
   );
 }
 

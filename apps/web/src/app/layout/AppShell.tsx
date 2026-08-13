@@ -12,6 +12,8 @@ import { GlobalSearch } from '../../shared/components/GlobalSearch';
 import {
   LOCALES,
   LOCALE_LABELS,
+  ensureLocaleLoaded,
+  isFullCatalogReady,
   normalizeLocale,
   setAppLocale,
   type LocaleCode,
@@ -49,6 +51,22 @@ export function AppShell() {
       ? window.matchMedia('(max-width: 900px)').matches
       : false,
   );
+  const [catalogReady, setCatalogReady] = useState(() => isFullCatalogReady(i18n.language));
+
+  useEffect(() => {
+    let cancelled = false;
+    if (isFullCatalogReady(i18n.language)) {
+      setCatalogReady(true);
+      return;
+    }
+    setCatalogReady(false);
+    void ensureLocaleLoaded(i18n.language).then(() => {
+      if (!cancelled) setCatalogReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [i18n.language]);
 
   useEffect(() => {
     if (typeof window.matchMedia !== 'function') return;
@@ -283,7 +301,11 @@ export function AppShell() {
           {!compactChrome ? <div className="shell__account-bar">{accountControls}</div> : null}
         </header>
         <main className="shell__content">
-          <Outlet />
+          {catalogReady ? (
+            <Outlet />
+          ) : (
+            <div className="u-pad-panel muted u-text-sm">{t('common.loading')}</div>
+          )}
         </main>
       </div>
     </div>

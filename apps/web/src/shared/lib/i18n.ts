@@ -70,6 +70,8 @@ const BOOT_NAMESPACES = [
   'roles',
   'tabs',
   'applyStatus',
+  'search',
+  'updates',
 ] as const;
 
 const NS_MODULES = import.meta.glob<{ default: Catalog }>(
@@ -191,6 +193,11 @@ export async function ensureLocaleLoaded(lng: string): Promise<void> {
     });
   loading.set(key, p);
   await p;
+}
+
+/** True after the full translation.json for this locale has been merged. */
+export function isFullCatalogReady(lng?: string): boolean {
+  return fullCatalogLoaded.has(catalogKey(lng || i18n.language || 'en'));
 }
 
 /** Test-only: pretend the full catalog was never merged (boot namespaces may remain). */

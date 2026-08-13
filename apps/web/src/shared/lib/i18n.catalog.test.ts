@@ -16,9 +16,11 @@ describe('i18n full catalog after boot namespaces', () => {
     i18n.removeResourceBundle('zh-HK', 'translation');
     i18n.removeResourceBundle('en', 'translation');
     resetFullCatalogLoadStateForTests();
-    await loadLocaleNamespaces('en', ['common', 'nav']);
-    await loadLocaleNamespaces('zh-HK', ['common', 'nav']);
+    await loadLocaleNamespaces('en', ['common', 'nav', 'search', 'updates']);
+    await loadLocaleNamespaces('zh-HK', ['common', 'nav', 'search', 'updates']);
     expect(i18n.t('nav.readiness', { lng: 'zh-HK' })).not.toBe('nav.readiness');
+    expect(i18n.t('updates.tabOverview', { lng: 'zh-HK' })).toBe('總覽');
+    expect(i18n.t('common.searchGlobal', { lng: 'zh-HK' })).toMatch(/搜尋/);
     expect(i18n.t('readiness.reprobe', { lng: 'zh-HK' })).toBe('readiness.reprobe');
     expect(i18n.t('systemd.installAndEnable', { lng: 'zh-HK' })).toBe(
       'systemd.installAndEnable',
