@@ -257,7 +257,9 @@ describe('SshdPanel deep', () => {
       expect(ta?.value).toMatch(/Match|sftp|loading/i);
     });
 
-    await user.click(screen.getByRole('button', { name: /reload|copy|重新|複製|复制/i }));
+    await user.click(
+      screen.getByRole('button', { name: /reload and copy|重新.*複製|重新.*复制/i }),
+    );
     await waitFor(() => expect(onFlash).toHaveBeenCalled());
 
     await user.click(screen.getByRole('button', { name: /install|system|安裝|安装/i }));
