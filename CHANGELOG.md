@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.12 — 2026-08-13
+
+### Fix
+- Panel no longer stays on boot i18n namespaces: full `translation.json` loads after first paint so pages stop showing raw keys (`readiness.*`, `systemd.*`, …)
+
 ## 1.0.11 — 2026-08-13
 
 ### Panel self-update

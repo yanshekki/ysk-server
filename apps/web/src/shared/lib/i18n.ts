@@ -57,6 +57,8 @@ const SERVICE_EXPOSURE_LOADERS: Record<string, () => Promise<{ default: Catalog 
 const loading = new Map<string, Promise<void>>();
 /** Locales that already received the dedicated serviceExposure merge this session */
 const serviceExposurePatched = new Set<string>();
+/** Locales that have merged the full translation.json (not just boot namespaces). */
+const fullCatalogLoaded = new Set<string>();
 
 /** Shell / login only — first paint must not wait for the 400–900 KB catalog. */
 const BOOT_NAMESPACES = [
@@ -158,8 +160,8 @@ async function patchServiceExposureNs(key: string): Promise<void> {
 /** Ensure a locale catalog is registered (idempotent). */
 export async function ensureLocaleLoaded(lng: string): Promise<void> {
   const key = catalogKey(lng);
-  if (i18n.hasResourceBundle(key, 'translation')) {
-    // Still patch serviceExposure — catalog may be a cached chunk without it
+  // Boot namespaces also register `translation` — do not treat that as the full catalog.
+  if (fullCatalogLoaded.has(key)) {
     await patchServiceExposureNs(key);
     if ((lng === 'zh-TW' || String(normalizeLocale(lng)) === 'zh-TW') && !i18n.hasResourceBundle('zh-TW', 'translation')) {
       const bundle = i18n.getResourceBundle(key, 'translation') as Catalog;
@@ -181,6 +183,7 @@ export async function ensureLocaleLoaded(lng: string): Promise<void> {
       if (key === 'zh-HK') {
         i18n.addResourceBundle('zh-TW', 'translation', data, true, true);
       }
+      fullCatalogLoaded.add(key);
       await patchServiceExposureNs(key);
     })
     .finally(() => {
@@ -188,6 +191,12 @@ export async function ensureLocaleLoaded(lng: string): Promise<void> {
     });
   loading.set(key, p);
   await p;
+}
+
+/** Test-only: pretend the full catalog was never merged (boot namespaces may remain). */
+export function resetFullCatalogLoadStateForTests(): void {
+  fullCatalogLoaded.clear();
+  loading.clear();
 }
 
 function detectInitialLng(): LocaleCode {
