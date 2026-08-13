@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.10 — 2026-08-13
+
+### Security
+- A08-22–A08-29 after the 1.0.8 live audit deep-dive
+- LLM outbound: hostname-only loopback; `GET /settings/llm` masks `apiKey` and requires `settings.system`
+- Public Autoconfig/Autodiscover: domain/email allowlist + XML escape
+- Nginx and Apache `server_name` / `ServerName` token allowlist
+- Central GET inventory gate (`GET_ROUTE_CAP_RULES`) for email, projects, SSL, backups, DNS, CDN, logs, users, fleet, host-browse
+- SSH identity and fleet list/history GETs require a matching read/control cap
+- Fleet enroll `timingSafeEqual`; boot splash HTML-escapes errors
+
 ## 1.0.9 — 2026-08-13
 
 ### Security
