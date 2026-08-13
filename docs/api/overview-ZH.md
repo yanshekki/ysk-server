@@ -44,3 +44,5 @@
 | `/share/:token` | —（公開） | `/api/v1/public` |
 
 檔案撞名：上載／複製／重新命名使用 `ifExists=fail|overwrite|rename`（預設 **fail**）。
+
+`POST /api/v1/projects` 可選 `createDnsZone`／`createMailDomain`（另加 `serverIp`／`serverIpv6`）只寫 DNS 與郵件**草稿**。CLI 對應 `--create-dns`／`--create-mail`。不等於權威 DNS 已上線，亦不會即時開好郵箱。

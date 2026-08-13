@@ -92,6 +92,7 @@ export * from './web-stats.js';
 export * from './apply-audit.js';
 export * from './package-limits.js';
 export * from './wizard.js';
+export * from './project-create-extras.js';
 export * from './defense/index.js';
 export * from './firewall-ops.js';
 export * from './service-exposure/index.js';

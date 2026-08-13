@@ -23,7 +23,7 @@
 | 面板操作 | CLI | 風險 | 備註 |
 |----------|-----|------|------|
 | 列表／查詢 | `ysk-server projects list\|get` | read | |
-| 建立 | `ysk-server projects create …` | write-panel | |
+| 建立 | `ysk-server projects create …` | write-panel | `--create-dns`／`--create-mail` 對齊面板勾選（只寫草稿） |
 | 部署／停止／健康 | `ysk-server projects deploy\|stop\|health` | write-host | deploy 需 execute |
 | Git 部署 | `ysk-server projects git-deploy …` | write-host | |
 | 隔離 | `ysk-server projects isolation …` | write-host | |
@@ -33,7 +33,7 @@
 
 ```bash
 ysk-server projects list --json
-ysk-server projects create --name demo --domain demo.example.com --runtime node --json
+ysk-server projects create --name demo --domain demo.example.com --runtime node --create-dns --create-mail --json
 export YSK_EXECUTE=1
 ysk-server projects deploy --id UUID --execute --json
 ```

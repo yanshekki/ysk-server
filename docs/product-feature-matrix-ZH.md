@@ -81,7 +81,7 @@
 | B24 | 部署／停止／健康／git | 弱 | 弱 | ✓ | Better |
 | B25 | One-click publish Nginx+SSL for this project | 弱 | 弱 | ✓ | Better |
 | B26 | Project quotas (mem/cpu/disk) | H | D | △ | P0 |
-| B27 | Create-time link DNS + mail checkboxes | H | D | ✗ | P0 |
+| B27 | Create-time link DNS + mail checkboxes | H | D | ✓ | P0 |
 
 **專案詳情 tabs (required):** 概覽 · Deploy · Network · Resources · Logs · Advanced
 

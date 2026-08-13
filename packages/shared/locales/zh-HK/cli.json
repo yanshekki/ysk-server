@@ -602,7 +602,7 @@
         "--name": {
           "name": {
             "--domain": {
-              "66e857": "用法： ysk-server 專案 建立 --名稱 <名稱> [--網域 d] [--運行時 node|php|static|python|go|rust] [--template 識別碼]"
+              "66e857": "用法： ysk-server projects create --name <name> [--domain d] [--runtime node|php|static|python|go|rust] [--template id] [--create-dns] [--create-mail] [--server-ip A.B.C.D] [--server-ipv6 ADDR]"
             }
           }
         }

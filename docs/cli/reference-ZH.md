@@ -59,7 +59,7 @@ ysk-server help [--locale zh-HK|zh-CN|en]
 ```bash
 ysk-server projects list
 ysk-server projects get --id UUID
-ysk-server projects create --name NAME --domain D [--runtime node|php|static|…]
+ysk-server projects create --name NAME --domain D [--runtime node|php|static|…] [--create-dns] [--create-mail] [--server-ip A.B.C.D] [--server-ipv6 ADDR]
 ysk-server projects deploy --id UUID [--entry FILE] [--port N] [--fpm] [--execute]
 ysk-server projects stop --id UUID [--execute]
 ysk-server projects health --id UUID

@@ -242,9 +242,8 @@ describe('projects routes (HTTP)', () => {
       extras?: { dnsZoneId?: string; emailDomainId?: string; notes?: string[] };
     };
     expect(body.project?.id).toBeTruthy();
-    // extras may be present when helpers succeed
-    if (body.extras) {
-      expect(Array.isArray(body.extras.notes)).toBe(true);
-    }
+    expect(body.extras?.dnsZoneId).toBeTruthy();
+    expect(body.extras?.emailDomainId).toBeTruthy();
+    expect(Array.isArray(body.extras?.notes)).toBe(true);
   });
 });

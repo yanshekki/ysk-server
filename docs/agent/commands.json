@@ -54,15 +54,19 @@
     {
       "name": "projects create",
       "risk": "write-panel",
-      "summary": "Create project (+ optional template)",
+      "summary": "Create project (+ optional template, DNS zone draft, mail domain draft)",
       "args": [
         "--name",
         "--domain",
         "--runtime",
         "--runtime-version",
-        "--template"
+        "--template",
+        "--create-dns",
+        "--create-mail",
+        "--server-ip",
+        "--server-ipv6"
       ],
-      "example": "ysk-server projects create --name demo --runtime node --json"
+      "example": "ysk-server projects create --name demo --domain demo.example.com --runtime node --create-dns --create-mail --json"
     },
     {
       "name": "nginx status",

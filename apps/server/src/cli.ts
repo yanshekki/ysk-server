@@ -2889,7 +2889,19 @@ async function mainInner(
           templateId: getOpt(args, '--template'),
           forceTemplate: hasFlag(args, '--force'),
           actor: 'cli' });
-        printJson(created);
+        const { attachProjectCreateExtras } = await import('ysk-server-core');
+        const extras = attachProjectCreateExtras({
+          db: ctx.db,
+          email: ctx.email,
+          projectId: created.project.id,
+          domain: getOpt(args, '--domain'),
+          actor: 'cli',
+          createDnsZone: hasFlag(args, '--create-dns'),
+          createMailDomain: hasFlag(args, '--create-mail'),
+          serverIp: getOpt(args, '--server-ip'),
+          serverIpv6: getOpt(args, '--server-ipv6'),
+        });
+        printJson({ ...created, extras });
         return 0;
       }
       if (sub === 'deploy') {

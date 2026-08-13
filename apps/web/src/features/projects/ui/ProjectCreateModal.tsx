@@ -459,6 +459,7 @@ export function ProjectCreateModal({
             <CheckboxField
               id="pc-dns"
               label={t('projects.createDnsZone')}
+              description={t('projects.createDnsZoneDesc')}
               checked={createDns && hasDomain}
               onChange={(v) => setCreateDns(v)}
               disabled={!hasDomain || busy}
@@ -466,6 +467,7 @@ export function ProjectCreateModal({
             <CheckboxField
               id="pc-mail"
               label={t('projects.createMailDomain')}
+              description={t('projects.createMailDomainDesc')}
               checked={createMail && hasDomain}
               onChange={(v) => setCreateMail(v)}
               disabled={!hasDomain || busy}

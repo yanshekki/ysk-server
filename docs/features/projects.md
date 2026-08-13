@@ -23,7 +23,7 @@ First-class **sites** on the host: create, deploy, stop, health, git deploy, OS 
 | Panel action | CLI | Risk | Notes |
 |--------------|-----|------|-------|
 | List / get | `ysk-server projects list\|get` | read | |
-| Create | `ysk-server projects create …` | write-panel | |
+| Create | `ysk-server projects create …` | write-panel | `--create-dns` / `--create-mail` match panel checkboxes (draft only) |
 | Deploy / stop / health | `ysk-server projects deploy\|stop\|health` | write-host | deploy needs execute |
 | Git deploy | `ysk-server projects git-deploy …` | write-host | |
 | Isolation | `ysk-server projects isolation …` | write-host | |
@@ -33,7 +33,7 @@ First-class **sites** on the host: create, deploy, stop, health, git deploy, OS 
 
 ```bash
 ysk-server projects list --json
-ysk-server projects create --name demo --domain demo.example.com --runtime node --json
+ysk-server projects create --name demo --domain demo.example.com --runtime node --create-dns --create-mail --json
 export YSK_EXECUTE=1
 ysk-server projects deploy --id UUID --execute --json
 ```

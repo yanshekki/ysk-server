@@ -9,6 +9,7 @@ import type { HostExecutor } from '../host/executor.js';
 import type { ProjectService } from './project-service.js';
 import type { EmailService } from '../email/service.js';
 import { assertCanCreateDatabase, assertCanCreateProject } from './package-limits.js';
+import { attachProjectCreateExtras } from './project-create-extras.js';
 
 export type WizardStepResult = {
   step: string;
@@ -92,69 +93,45 @@ export async function runCreateWizard(input: {
   const serverIp = input.body.serverIp?.trim() || '127.0.0.1';
   const serverIpv6 = input.body.serverIpv6?.trim() || undefined;
 
-  // 2) DNS zone (control-plane resource)
+  // 2) DNS zone (control-plane draft — same helper as panel/CLI)
   if (input.body.createDns && domain) {
-    try {
-      const { randomUUID } = await import('node:crypto');
-      if (!input.db.snapshot.dns_zones) input.db.snapshot.dns_zones = [];
-      const id = randomUUID();
-      input.db.snapshot.dns_zones.unshift({
-        id,
-        zone: domain,
-        serverIp,
-        ...(serverIpv6 ? { serverIpv6 } : {}),
-        template: 'full',
-        apply_status: 'draft',
-        created_at: new Date().toISOString(),
-      });
-      // seed A/AAAA template records for honesty in records tab
-      try {
-        const { seedDnsZoneRecords } = await import('./managed-resources.js');
-        seedDnsZoneRecords(input.db, id, domain, serverIp, 'full', serverIpv6);
-      } catch {
-        /* seed optional if import cycle */
-      }
-      input.db.persist();
-      steps.push({
-        step: 'dns',
-        ok: true,
-        id,
-        notes: [
-          tl('notes.auto.t0321', { v0: (domain) }),
-          ...(serverIpv6 ? [tl('notes.auto.t0322', { v0: (serverIpv6) })] : []),
-        ],
-      });
-    } catch (e) {
-      steps.push({
-        step: 'dns',
-        ok: false,
-        notes: [e instanceof Error ? e.message : String(e)],
-      });
-    }
+    const linked = attachProjectCreateExtras({
+      db: input.db,
+      email: input.email,
+      projectId: projectId ?? '',
+      domain,
+      actor: input.actor,
+      createDnsZone: true,
+      serverIp,
+      serverIpv6,
+      dnsTemplate: 'full',
+    });
+    steps.push({
+      step: 'dns',
+      ok: Boolean(linked.dnsZoneId),
+      id: linked.dnsZoneId,
+      notes: linked.notes,
+    });
   }
 
   // 3) Mail domain
   if (input.body.createMail && domain) {
-    try {
-      const d = input.email.create({
-        domain,
-        serverIp,
-        serverIpv6,
-        actor: input.actor,
-      });
-      steps.push({
-        step: 'mail',
-        ok: true,
-        id: d.domain.id,
-        notes: [tl('notes.auto.t0323', { v0: (domain) })],
-      });
-    } catch (e) {
-      steps.push({
-        step: 'mail',
-        ok: false,
-        notes: [e instanceof Error ? e.message : String(e)],
-      });
-    }
+    const linked = attachProjectCreateExtras({
+      db: input.db,
+      email: input.email,
+      projectId: projectId ?? '',
+      domain,
+      actor: input.actor,
+      createMailDomain: true,
+      serverIp,
+      serverIpv6,
+    });
+    steps.push({
+      step: 'mail',
+      ok: Boolean(linked.emailDomainId),
+      id: linked.emailDomainId,
+      notes: linked.notes,
+    });
   }
 
   // 4) MySQL DB registration (control plane)

@@ -56,6 +56,7 @@ ysk-server help --locale en
 ```bash
 export YSK_EXECUTE=1   # real host changes
 ysk-server projects list --json
+ysk-server projects create --name demo --domain demo.example.com --create-dns --create-mail --json
 ysk-server files shares create --path REL --mode both --root public --json
 ysk-server bt-tracker status --json
 ysk-server bt-tracker start --execute --json

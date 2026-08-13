@@ -29,7 +29,7 @@ Handbook: [../features/security-auth.md](../features/security-auth.md).
 
 ```bash
 export YSK_EXECUTE=1   # as root for systemd/nginx
-ysk-server projects create --name demo --domain demo.example.com --runtime node --json
+ysk-server projects create --name demo --domain demo.example.com --runtime node --create-dns --create-mail --json
 ysk-server projects deploy --id <UUID> --execute --json
 ysk-server nginx sync --execute --json
 ```

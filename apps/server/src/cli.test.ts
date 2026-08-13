@@ -363,6 +363,40 @@ describe('CLI projects + templates', () => {
       rmSync(dir, { recursive: true, force: true });
     }
   });
+
+  it('creates project with --create-dns and --create-mail extras', async () => {
+    const dir = setupTmpDataDir();
+    try {
+      const r = await runMain([
+        'node',
+        'ysk-server',
+        'projects',
+        'create',
+        '--data-dir',
+        dir,
+        '--name',
+        'B1Site',
+        '--domain',
+        'b1.example.test',
+        '--create-dns',
+        '--create-mail',
+        '--server-ip',
+        '203.0.113.10',
+        '--json',
+      ]);
+      expect(r.code).toBe(0);
+      const body = parseJsonOut(r.out) as {
+        project?: { id?: string; domain?: string };
+        extras?: { dnsZoneId?: string; emailDomainId?: string; notes?: string[] };
+      };
+      expect(body.project?.id).toBeTruthy();
+      expect(body.project?.domain).toBe('b1.example.test');
+      expect(body.extras?.dnsZoneId).toBeTruthy();
+      expect(body.extras?.emailDomainId).toBeTruthy();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });
 
 describe('CLI main paths (read-only / dry, no root)', () => {

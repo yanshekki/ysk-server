@@ -3,7 +3,6 @@
  * Extracted from projects-catalog.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -134,57 +133,21 @@ export async function handleProjectsCreateRoutes(
         extras.notes.push(`goLive: ${msg}`);
       }
     }
-    const domain = (data.domain ?? '').trim().toLowerCase();
-    const serverIp = (data.serverIp ?? '127.0.0.1').trim();
-    const serverIpv6 = data.serverIpv6?.trim() || undefined;
-    if (domain && data.createDnsZone) {
-      try {
-        const { createResource, seedDnsZoneRecords } = await import('ysk-server-core');
-        const zoneRow = createResource(ctx.db, 'dns_zones', {
-          zone: domain,
-          serverIp,
-          ...(serverIpv6 ? { serverIpv6 } : {}),
-          backend: 'bind',
-          template: 'web',
-          apply_status: 'draft',
-          projectId: created.project.id,
-        });
-        seedDnsZoneRecords(
-          ctx.db,
-          String(zoneRow.id),
-          domain,
-          serverIp,
-          'web',
-          serverIpv6,
-        );
-        extras.dnsZoneId = String(zoneRow.id);
-        extras.notes.push(tl('notes.auto.t0785', { v0: (domain) }));
-      } catch (e) {
-        extras.notes.push(
-          tl('notes.auto.t0786', { v0: (e instanceof Error ? e.message : String(e)) }),
-        );
-      }
-    }
-    if (domain && data.createMailDomain) {
-      try {
-        const mail = ctx.email.create({
-          domain,
-          serverIp,
-          serverIpv6,
-          actor: user.username,
-        });
-        extras.emailDomainId = String(
-          (mail as { domain?: { id?: string } }).domain?.id ??
-            (mail as { id?: string }).id ??
-            '',
-        );
-        extras.notes.push(tl('notes.auto.t0787', { v0: (domain) }));
-      } catch (e) {
-        extras.notes.push(
-          tl('notes.auto.t0788', { v0: (e instanceof Error ? e.message : String(e)) }),
-        );
-      }
-    }
+    const { attachProjectCreateExtras } = await import('ysk-server-core');
+    const linked = attachProjectCreateExtras({
+      db: ctx.db,
+      email: ctx.email,
+      projectId: created.project.id,
+      domain: data.domain,
+      actor: user.username,
+      createDnsZone: data.createDnsZone,
+      createMailDomain: data.createMailDomain,
+      serverIp: data.serverIp,
+      serverIpv6: data.serverIpv6,
+    });
+    extras.dnsZoneId = linked.dnsZoneId;
+    extras.emailDomainId = linked.emailDomainId;
+    extras.notes.push(...linked.notes);
     // Refresh project after optional goLive so port/nginx_status are current
     const project = wantGoLive
       ? ctx.projects.get(created.project.id)

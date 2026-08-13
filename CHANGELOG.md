@@ -6,6 +6,7 @@
 - CLI `files --if-exists` matches panel/API name-collision policy (default fail)
 - CLI `updates hub` matches panel `/updates` `collectUpdateHub` entries
 - Three-way inventory gate: `node scripts/cli-panel-parity.mjs --strict`
+- `projects create --create-dns --create-mail` matches panel checkboxes and API `createDnsZone` / `createMailDomain`
 
 ## 1.0.6 — 2026-08-13
 
