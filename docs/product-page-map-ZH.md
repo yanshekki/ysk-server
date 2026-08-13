@@ -276,7 +276,7 @@ All **sidebar 系統** pages share:
 | `/system` 匯出 | export JSON · managed nginx · rebuild dry-run/sync |
 | `/system/unit` | write template vs install+enable · blockers steps |
 | `/system/readiness` | auto-probe · blockers · filter · fixHref · download JSON |
-| `/updates` | scan · OSV · self-update · risk chips · apply package |
+| `/updates` | **全機更新中心**：面板 + catalog 服務 + runtime + 其餘 apt · 掃描 · OSV · 套用 |
 | `/users` | create user/package · suspend · impersonate · delete |
 | `/services` | matrix lifecycle · category filter · protection probe tab |
 | `/metrics` | load/mem/disk meters · alerts · refresh |

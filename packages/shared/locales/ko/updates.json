@@ -84,9 +84,9 @@
   "applyPanelUpdate": "패널 업데이트 적용",
   "recheck": "재확인",
   "aboutScope": "범위",
-  "aboutScopeV": "ysk-server 제어 평면 버전 · 전체 시스템 적절한 업그레이드가 아님",
+  "aboutScopeV": "ysk-server panel + catalog services + runtimes + remaining apt packages",
   "aboutChannel": "채널",
-  "aboutChannelV": "npm → GitHub 릴리스 → package.json; npm install -g 또는 git(YSK_SOURCE_ROOT)을 통해 적용",
+  "aboutChannelV": "npm package ysk-server → GitHub release → apps/server/package.json; apply: npm i -g ysk-server@version or git (YSK_SOURCE_ROOT)",
   "aboutFail": "실패",
   "aboutFailV": "사용할 수 없는 채널은 최신으로 보고되지 않습니다. 적용하려면 실행이 필요합니다. git Apply에 서비스를 다시 시작해야 합니다.",
   "jobsTitle": "예약된 작업",
@@ -163,5 +163,11 @@
   "scanNow": "지금 스캔",
   "viewUpgradable": "업그레이드 가능 보기",
   "installElsewhere": "패키지(Nginx, PHP, 데이터베이스…)를 설치하려면 이 허브가 아닌 해당 기능 페이지를 엽니다.",
-  "status": "상태"
+  "status": "상태",
+  "groupService": "Services",
+  "groupRuntime": "Runtimes",
+  "groupOs": "System packages",
+  "notInstalled": "Not installed",
+  "goToPage": "Open page",
+  "hubHint": "Catalog software and runtimes on this host. Scan to refresh."
 }

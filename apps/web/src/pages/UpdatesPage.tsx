@@ -29,7 +29,16 @@ import { useCapabilities } from '../shared/hooks/useCapabilities';
 import { humanizeOperatorNote } from '../shared/lib/operator-messages';
 import { bindAllOrValue, bindCall1, bindCall2, bindCloseIfIdle, bindInput, bindSet, bindValueSet, bindVoid } from './bind-handlers';
 
-const UPD_TABS = ['overview', 'packages', 'panel', 'schedule', 'about'] as const;
+const UPD_TABS = [
+  'overview',
+  'available',
+  'services',
+  'runtime',
+  'packages',
+  'panel',
+  'schedule',
+  'about',
+] as const;
 type RiskFilter = 'all' | 'upgradable' | 'high' | 'medium' | 'low' | 'approval';
 
 export function riskTone(risk?: string): 'ok' | 'warn' | 'danger' | 'info' | 'neutral' {
@@ -171,6 +180,7 @@ export function UpdatesPage() {
   const canApply = can('updates.apply');
   const {
     inventory,
+    entries,
     selfUpdate,
     lastAt,
     jobs,
@@ -491,6 +501,22 @@ export function UpdatesPage() {
             label: t('updates.tabOverview'),
             badge: summary?.badgeCount || undefined },
           {
+            id: 'available',
+            label: t('updates.upgradable'),
+            badge: entries.filter((e) => e.upgradable).length || undefined },
+          {
+            id: 'services',
+            label: t('updates.groupService'),
+            badge:
+              entries.filter((e) => e.group === 'service' && e.upgradable).length ||
+              undefined },
+          {
+            id: 'runtime',
+            label: t('updates.groupRuntime'),
+            badge:
+              entries.filter((e) => e.group === 'runtime' && e.upgradable).length ||
+              undefined },
+          {
             id: 'packages',
             label: t('updates.tabInventory'),
             badge: inventory.length || undefined },
@@ -607,6 +633,97 @@ export function UpdatesPage() {
           </div>
         ) : null}
 
+        {tab === 'available' || tab === 'services' || tab === 'runtime' ? (
+          <div className="tab-panel stack">
+            <DataTable
+              title={
+                tab === 'available'
+                  ? t('updates.upgradable')
+                  : tab === 'services'
+                    ? t('updates.groupService')
+                    : t('updates.groupRuntime')
+              }
+              description={t('updates.hubHint')}
+              rows={entries.filter((e) => {
+                if (tab === 'available') return e.upgradable;
+                if (tab === 'services') return e.group === 'service';
+                return e.group === 'runtime';
+              })}
+              rowKey={(e) => e.id}
+              empty={
+                <EmptyState
+                  title={t('updates.emptyInventory')}
+                  description={t('updates.emptyInventoryDesc')}
+                />
+              }
+              columns={[
+                {
+                  key: 'title',
+                  header: t('updates.colPackage'),
+                  render: (e) => (
+                    <span>
+                      {e.title}
+                      {!e.installed ? (
+                        <Badge tone="neutral">{t('updates.notInstalled')}</Badge>
+                      ) : null}
+                    </span>
+                  ),
+                },
+                {
+                  key: 'ver',
+                  header: t('updates.colVersion'),
+                  render: (e) =>
+                    `${e.currentVersion ?? '—'} → ${e.latestVersion ?? '—'}`,
+                },
+                {
+                  key: 'kind',
+                  header: t('updates.colAdvice'),
+                  render: (e) => e.kind,
+                },
+                {
+                  key: 'act',
+                  header: t('common.actions'),
+                  render: (e) => (
+                    <ActionBar>
+                      {e.applyPath === 'apt' && e.upgradable && canApply ? (
+                        <Button
+                          size="sm"
+                          variant="primary"
+                          disabled={busy}
+                          onClick={() => {
+                            void applyPackage({
+                              packageName: e.packageName || '',
+                              currentVersion: e.currentVersion || '',
+                              candidateVersion: e.latestVersion,
+                              risk: e.risk,
+                              requiresApproval: e.requiresApproval,
+                              summary: e.summary,
+                            });
+                          }}
+                        >
+                          {t('updates.applyPkg')}
+                        </Button>
+                      ) : null}
+                      {e.applyPath === 'panel' && e.upgradable && canApply ? (
+                        <Button
+                          size="sm"
+                          variant="primary"
+                          disabled={busy}
+                          onClick={bindVoid(applySelf)}
+                        >
+                          {t('updates.applyPanelUpdate')}
+                        </Button>
+                      ) : null}
+                      <Link className="btn btn--ghost btn--sm" to={e.href}>
+                        {t('updates.goToPage')}
+                      </Link>
+                    </ActionBar>
+                  ),
+                },
+              ]}
+            />
+          </div>
+        ) : null}
         {tab === 'packages' ? (
           <div className="tab-panel stack">
             {batchProgress || applyLog.length > 0 ? (

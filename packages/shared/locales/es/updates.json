@@ -84,9 +84,9 @@
   "applyPanelUpdate": "Aplicar actualización del panel",
   "recheck": "Vuelva a comprobar",
   "aboutScope": "Alcance",
-  "aboutScopeV": "Versión del plano de control del servidor ysk · no es una actualización adecuada del sistema completo",
+  "aboutScopeV": "ysk-server panel + catalog services + runtimes + remaining apt packages",
   "aboutChannel": "Canal",
-  "aboutChannelV": "npm → Lanzamiento de GitHub → paquete.json; aplicar a través de npm install -g o git (YSK_SOURCE_ROOT)",
+  "aboutChannelV": "npm package ysk-server → GitHub release → apps/server/package.json; apply: npm i -g ysk-server@version or git (YSK_SOURCE_ROOT)",
   "aboutFail": "Fallos",
   "aboutFailV": "Los canales no disponibles no se informan como actualizados; aplicar necesidades EJECUTAR; git apply necesita reiniciar el servicio",
   "jobsTitle": "Trabajos programados",
@@ -163,5 +163,11 @@
   "scanNow": "Escanear ahora",
   "viewUpgradable": "Ver actualizable",
   "installElsewhere": "Para instalar paquetes (Nginx, PHP, bases de datos…), abra la página de funciones correspondientes, no este centro.",
-  "status": "Estado"
+  "status": "Estado",
+  "groupService": "Services",
+  "groupRuntime": "Runtimes",
+  "groupOs": "System packages",
+  "notInstalled": "Not installed",
+  "goToPage": "Open page",
+  "hubHint": "Catalog software and runtimes on this host. Scan to refresh."
 }

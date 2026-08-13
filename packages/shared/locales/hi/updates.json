@@ -84,9 +84,9 @@
   "applyPanelUpdate": "पैनल अद्यतन लागू करें",
   "recheck": "पुनः जांच करें",
   "aboutScope": "दायरा",
-  "aboutScopeV": "ysk-सर्वर कंट्रोल-प्लेन संस्करण · पूर्ण-सिस्टम उपयुक्त अपग्रेड नहीं",
+  "aboutScopeV": "ysk-server panel + catalog services + runtimes + remaining apt packages",
   "aboutChannel": "चैनल",
-  "aboutChannelV": "एनपीएम → गिटहब रिलीज → पैकेज.जेसन; npm install -g या git (YSK_SOURCE_ROOT) के माध्यम से आवेदन करें",
+  "aboutChannelV": "npm package ysk-server → GitHub release → apps/server/package.json; apply: npm i -g ysk-server@version or git (YSK_SOURCE_ROOT)",
   "aboutFail": "विफलताओं",
   "aboutFailV": "अनुपलब्ध चैनलों को अद्यतन के रूप में रिपोर्ट नहीं किया जाता है; लागू करें आवश्यकताएँ निष्पादित करें; git अप्लाई को सेवा पुनरारंभ की आवश्यकता है",
   "jobsTitle": "अनुसूचित नौकरियाँ",
@@ -163,5 +163,11 @@
   "scanNow": "अब स्कैन करें",
   "viewUpgradable": "अपग्रेड करने योग्य देखें",
   "installElsewhere": "पैकेज स्थापित करने के लिए (Nginx, PHP, डेटाबेस…), मिलान सुविधा पृष्ठ खोलें - यह हब नहीं।",
-  "status": "स्थिति"
+  "status": "स्थिति",
+  "groupService": "Services",
+  "groupRuntime": "Runtimes",
+  "groupOs": "System packages",
+  "notInstalled": "Not installed",
+  "goToPage": "Open page",
+  "hubHint": "Catalog software and runtimes on this host. Scan to refresh."
 }

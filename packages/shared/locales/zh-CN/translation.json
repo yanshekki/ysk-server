@@ -11357,9 +11357,9 @@
     "applyPanelUpdate": "套用面板更新",
     "recheck": "重新检查",
     "aboutScope": "范围",
-    "aboutScopeV": "ysk-server 控制面版本 · 非系统 apt 全量升级",
+    "aboutScopeV": "ysk-server 控制面 + catalog 服務 + runtime + 其餘 apt 套件",
     "aboutChannel": "频道",
-    "aboutChannelV": "npm → GitHub release → package.json；套用：npm install -g 或 git（YSK_SOURCE_ROOT）",
+    "aboutChannelV": "npm 套件 ysk-server → GitHub release → apps/server/package.json；套用：npm i -g ysk-server@版本 或 git（YSK_SOURCE_ROOT）",
     "aboutFail": "失败",
     "aboutFailV": "频道不可用不会假装已是最新；套用需 EXECUTE；git 后需重启服务",
     "jobsTitle": "计划任务",
@@ -11436,7 +11436,13 @@
     "scanNow": "立即扫描",
     "viewUpgradable": "查看可升级",
     "installElsewhere": "安装软件（Nginx、PHP、数据库等）请到对应功能页，而非本页。",
-    "status": "状态"
+    "status": "状态",
+    "groupService": "服务",
+    "groupRuntime": "运行时",
+    "groupOs": "系统套件",
+    "notInstalled": "未安装",
+    "goToPage": "前往页面",
+    "hubHint": "本机 catalog 服务与 runtime。请扫描以刷新。"
   },
   "users": {
     "userCount": "{{count}} 用户",

@@ -6,6 +6,26 @@ import { api } from '../../shared/services/api';
 
 export type { AdviceRow, InventoryMeta } from 'ysk-server-shared';
 
+export type UpdateHubEntry = {
+  id: string;
+  title: string;
+  group: 'panel' | 'service' | 'runtime' | 'os';
+  kind: 'npm-panel' | 'apt' | 'runtime' | 'npm-global';
+  softwareId?: string;
+  packageName?: string;
+  currentVersion?: string;
+  latestVersion?: string;
+  installed: boolean;
+  upgradable: boolean;
+  href: string;
+  applyPath: 'apt' | 'runtime' | 'panel' | 'none';
+  risk?: string;
+  cves?: string[];
+  requiresApproval?: boolean;
+  summary?: string;
+  notes: string[];
+};
+
 export const updatesApi = {
   inventory: (query?: {
     q?: string;
@@ -35,6 +55,7 @@ export const updatesApi = {
       meta?: InventoryMeta;
       listMeta?: { total?: number; facets?: Record<string, Record<string, number>> };
       collectedAt?: string;
+      entries?: UpdateHubEntry[];
     }>(`/api/v1/updates/inventory${qs ? `?${qs}` : ''}`);
   },
   refresh: (osv = false) =>
@@ -47,6 +68,7 @@ export const updatesApi = {
       advice: AdviceRow[];
       meta?: InventoryMeta;
       collectedAt?: string;
+      entries?: UpdateHubEntry[];
     }>('/api/v1/updates/inventory/refresh', {
       method: 'POST',
       body: JSON.stringify({ osv, limit: 12 }),

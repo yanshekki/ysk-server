@@ -84,9 +84,9 @@
   "applyPanelUpdate": "প্যানেল আপডেট প্রয়োগ করুন",
   "recheck": "পুনরায় পরীক্ষা করুন",
   "aboutScope": "ব্যাপ্তি",
-  "aboutScopeV": "ysk-সার্ভার কন্ট্রোল-প্লেন সংস্করণ · সম্পূর্ণ-সিস্টেম আপগ্রেড নয়",
+  "aboutScopeV": "ysk-server panel + catalog services + runtimes + remaining apt packages",
   "aboutChannel": "চ্যানেল",
-  "aboutChannelV": "npm → GitHub রিলিজ → package.json; npm install -g বা git এর মাধ্যমে আবেদন করুন (YSK_SOURCE_ROOT)",
+  "aboutChannelV": "npm package ysk-server → GitHub release → apps/server/package.json; apply: npm i -g ysk-server@version or git (YSK_SOURCE_ROOT)",
   "aboutFail": "ব্যর্থতা",
   "aboutFailV": "অনুপলব্ধ চ্যানেল আপ টু ডেট হিসাবে রিপোর্ট করা হয় না; প্রয়োগ প্রয়োজন বাস্তবায়ন; git apply পরিষেবা পুনরায় চালু করতে হবে",
   "jobsTitle": "নির্ধারিত কাজ",
@@ -163,5 +163,11 @@
   "scanNow": "এখন স্ক্যান করুন",
   "viewUpgradable": "আপগ্রেডযোগ্য দেখুন",
   "installElsewhere": "প্যাকেজ ইনস্টল করতে (Nginx, PHP, ডাটাবেস...), ম্যাচিং ফিচার পেজ খুলুন — এই হাব নয়।",
-  "status": "স্ট্যাটাস"
+  "status": "স্ট্যাটাস",
+  "groupService": "Services",
+  "groupRuntime": "Runtimes",
+  "groupOs": "System packages",
+  "notInstalled": "Not installed",
+  "goToPage": "Open page",
+  "hubHint": "Catalog software and runtimes on this host. Scan to refresh."
 }

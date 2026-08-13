@@ -85,6 +85,37 @@ describe('checkSelfUpdate', () => {
   });
 });
 
+describe('legacy npm names stay off user notes', () => {
+  it('skips @ysk/server 404 when ysk-server succeeds', async () => {
+    const prev = process.env.YSK_LATEST_VERSION;
+    delete process.env.YSK_LATEST_VERSION;
+    const orig = globalThis.fetch;
+    globalThis.fetch = (async (url: RequestInfo | URL) => {
+      const u = String(url);
+      if (u.includes('%40ysk%2Fserver') || u.includes('@ysk/server')) {
+        return { ok: false, status: 404, json: async () => ({}) } as Response;
+      }
+      if (u.includes('ysk-server')) {
+        return {
+          ok: true,
+          json: async () => ({ version: '1.0.4', dist: { shasum: 'a'.repeat(40) } }),
+        } as Response;
+      }
+      return { ok: false, status: 404, json: async () => ({}) } as Response;
+    }) as typeof fetch;
+    try {
+      const r = await checkSelfUpdate({ currentVersion: '1.0.0' });
+      expect(r.ok).toBe(true);
+      expect(r.latestVersion).toBe('1.0.4');
+      expect(r.packageName).toBe('ysk-server');
+      expect(r.notes.join(' ')).not.toMatch(/@ysk\/server/);
+    } finally {
+      globalThis.fetch = orig;
+      if (prev !== undefined) process.env.YSK_LATEST_VERSION = prev;
+    }
+  });
+});
+
 describe('self-update resolve and apply honesty', () => {
   it('resolveLatestVersion uses override and strips v prefix', async () => {
     const { resolveLatestVersion, applySelfUpdateFromGit } = await import('./self-update-apply.js');

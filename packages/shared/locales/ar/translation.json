@@ -11357,9 +11357,9 @@
     "applyPanelUpdate": "تطبيق تحديث اللوحة",
     "recheck": "إعادة الفحص",
     "aboutScope": "نِطَاق",
-    "aboutScopeV": "إصدار طائرة التحكم بخادم ysk · عدم ترقية النظام بالكامل",
+    "aboutScopeV": "ysk-server panel + catalog services + runtimes + remaining apt packages",
     "aboutChannel": "قناة",
-    "aboutChannelV": "npm → إصدار GitHub → package.json؛ تقدم بطلب عبر npm install -g أو git (YSK_SOURCE_ROOT)",
+    "aboutChannelV": "npm package ysk-server → GitHub release → apps/server/package.json; apply: npm i -g ysk-server@version or git (YSK_SOURCE_ROOT)",
     "aboutFail": "الفشل",
     "aboutFailV": "لا يتم الإبلاغ عن القنوات غير المتوفرة على أنها محدثة؛ تطبيق الاحتياجات تنفيذ؛ يحتاج تطبيق git إلى إعادة تشغيل الخدمة",
     "jobsTitle": "الوظائف المجدولة",
@@ -11436,7 +11436,13 @@
     "scanNow": "مسح الآن",
     "viewUpgradable": "عرض للترقية",
     "installElsewhere": "لتثبيت الحزم (Nginx، PHP، قواعد البيانات...)، افتح صفحة الميزات المطابقة - وليس هذا المحور.",
-    "status": "حالة"
+    "status": "حالة",
+    "groupService": "Services",
+    "groupRuntime": "Runtimes",
+    "groupOs": "System packages",
+    "notInstalled": "Not installed",
+    "goToPage": "Open page",
+    "hubHint": "Catalog software and runtimes on this host. Scan to refresh."
   },
   "users": {
     "userCount": "{{count}} المستخدمين",

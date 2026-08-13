@@ -32,7 +32,7 @@ Operate the **control-plane host**: systemd unit, service matrix, metrics, netwo
 | Apply package | `ysk-server updates apply --package … --execute` | write-host | |
 | Software catalog | `ysk-server software list\|install\|uninstall …` | write-host | |
 | Stack plans | `ysk-server stack plans\|status\|install …` | write-host | |
-| Product self-update | `ysk-server update --check\|--apply` | write-host | binary update |
+| Product self-update | `ysk-server update --check\|--apply` | write-host | npm `ysk-server@x` + verify + restart |
 | Readiness / doctor | `ysk-server readiness\|doctor --json` | read | |
 
 ## CLI quick start

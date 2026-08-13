@@ -133,6 +133,18 @@ if [[ "$PUBLISH" -eq 1 ]]; then
   log "  https://www.npmjs.com/package/ysk-server-shared"
   log "  https://www.npmjs.com/package/ysk-server-core"
   log "install: npm install -g ysk-server@$SERVER_VER"
+  if command -v gh >/dev/null 2>&1; then
+    if gh release view "v$SERVER_VER" >/dev/null 2>&1; then
+      log "GitHub release v$SERVER_VER already exists"
+    else
+      log "create GitHub release v$SERVER_VER"
+      gh release create "v$SERVER_VER" --title "ysk-server $SERVER_VER" \
+        --notes "npm: https://www.npmjs.com/package/ysk-server/v/$SERVER_VER" \
+        || log "WARN: gh release create failed (non-fatal)"
+    fi
+  else
+    log "WARN: gh not installed — skip GitHub release v$SERVER_VER"
+  fi
 else
   log "dry-run pack ysk-server…"
   (cd "$STAGE" && npm pack --dry-run 2>&1 | grep -E 'README|package size|total files|Bundled|name:|version:' | head -20)

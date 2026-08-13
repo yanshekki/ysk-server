@@ -32,11 +32,49 @@ export type SelfUpdateCheckResult = {
   steps: string[];
 };
 
-const DEFAULT_NPM_CANDIDATES = [
-  process.env.YSK_NPM_PACKAGE,
-  'ysk-server',
-  'ysk-server',
-].filter((x): x is string => Boolean(x && x.trim()));
+/** Public npm product name — never apply a scoped alias. */
+export const CANONICAL_NPM_PACKAGE =
+  process.env.YSK_NPM_PACKAGE?.trim() || 'ysk-server';
+
+/** Old names probed only; 404s stay off the user-facing note list. */
+export const LEGACY_NPM_PACKAGES = [
+  '@ysk/server',
+  '@yanshekki/server',
+  '@ysk-server/server',
+] as const;
+
+function isLegacyNpmPackage(name: string): boolean {
+  return (LEGACY_NPM_PACKAGES as readonly string[]).includes(name);
+}
+
+function npmProbeList(preferred?: string): string[] {
+  const out: string[] = [];
+  const add = (n?: string) => {
+    const s = n?.trim();
+    if (!s || out.includes(s)) return;
+    // GitHub repo slugs are not npm names
+    if (s.includes('/') && !s.startsWith('@')) return;
+    out.push(s);
+  };
+  add(preferred);
+  add(process.env.YSK_NPM_PACKAGE);
+  add(CANONICAL_NPM_PACKAGE);
+  for (const n of LEGACY_NPM_PACKAGES) add(n);
+  return out;
+}
+
+/** Apply target: canonical product, never a failed scoped alias. */
+export function resolveApplyNpmPackage(registryName?: string): string {
+  const env = process.env.YSK_NPM_PACKAGE?.trim();
+  if (env) return env;
+  if (registryName && !isLegacyNpmPackage(registryName) && !registryName.includes('/')) {
+    return registryName;
+  }
+  if (registryName?.startsWith('@') && !isLegacyNpmPackage(registryName)) {
+    return registryName;
+  }
+  return CANONICAL_NPM_PACKAGE;
+}
 
 const DEFAULT_GITHUB_REPO =
   process.env.YSK_GITHUB_REPO?.trim() || 'yanshekki/ysk-server';
@@ -44,7 +82,9 @@ const DEFAULT_GITHUB_REPO =
 /**
  * Query npm registry for package latest version.
  */
-export async function fetchNpmLatest(packageName = 'ysk-server'): Promise<RegistryVersion> {
+export async function fetchNpmLatest(
+  packageName = CANONICAL_NPM_PACKAGE,
+): Promise<RegistryVersion> {
   const url = `https://registry.npmjs.org/${encodeURIComponent(packageName)}/latest`;
   const res = await fetch(url, { headers: { Accept: 'application/json' } });
   if (!res.ok) {
@@ -116,7 +156,7 @@ export async function fetchGithubLatest(
 export async function fetchGithubPackageJsonVersion(
   repo = DEFAULT_GITHUB_REPO,
   branch = process.env.YSK_GITHUB_BRANCH?.trim() || 'main',
-  path = process.env.YSK_GITHUB_PACKAGE_JSON?.trim() || 'package.json',
+  path = process.env.YSK_GITHUB_PACKAGE_JSON?.trim() || 'apps/server/package.json',
 ): Promise<RegistryVersion> {
   const url = `https://raw.githubusercontent.com/${repo}/${branch}/${path}`;
   const res = await fetch(url, {
@@ -176,19 +216,18 @@ export async function resolveLatestVersion(input?: {
     };
   }
 
-  const npmNames = input?.packageName
-    ? [input.packageName, ...DEFAULT_NPM_CANDIDATES.filter((n) => n !== input.packageName)]
-    : DEFAULT_NPM_CANDIDATES;
+  const npmNames = npmProbeList(input?.packageName);
 
   for (const name of npmNames) {
     try {
       const registry = await fetchNpmLatest(name);
-      notes.push(tl('notes.auto.t0472', { v0: (name), v1: (registry.latest) }));
+      notes.push(tl('notes.auto.t0472', { v0: name, v1: registry.latest }));
       return { registry, notes };
     } catch (e) {
-      notes.push(
-        tl('notes.auto.t0473', { v0: (name), v1: (e instanceof Error ? e.message : String(e)) }),
-      );
+      const msg = e instanceof Error ? e.message : String(e);
+      // Legacy aliases 404 while ysk-server exists — do not surface as a hard error.
+      if (isLegacyNpmPackage(name)) continue;
+      notes.push(tl('notes.auto.t0473', { v0: name, v1: msg }));
     }
   }
 
@@ -448,6 +487,7 @@ export async function runSelfUpdate(input: {
   updateAvailable: boolean;
   channel: string;
   packageName?: string;
+  restarted?: boolean;
 }> {
   const check = await checkSelfUpdate({
     currentVersion: input.currentVersion,
@@ -465,12 +505,11 @@ export async function runSelfUpdate(input: {
     stderr: string;
   }> = [];
   let applied = false;
+  let restarted = false;
 
-  const pkgName =
-    input.packageName ||
-    registry?.packageName ||
-    process.env.YSK_NPM_PACKAGE ||
-    'ysk-server';
+  const pkgName = resolveApplyNpmPackage(
+    registry?.channel === 'npm' ? registry.packageName : input.packageName,
+  );
 
   if (!check.checked) {
     return {
@@ -500,12 +539,9 @@ export async function runSelfUpdate(input: {
         (input.packageName && !input.packageName.includes('/'));
 
       if (preferNpm && registry?.channel !== 'github') {
-        const installName =
-          registry?.channel === 'npm' && registry.packageName
-            ? registry.packageName
-            : pkgName.startsWith('@') || !pkgName.includes('/')
-              ? pkgName
-              : 'ysk-server';
+        const installName = resolveApplyNpmPackage(
+          registry?.channel === 'npm' ? registry.packageName : pkgName,
+        );
         const pkg = `${installName}@${latest}`;
         const r = await input.host.runCommand(['npm', 'install', '-g', pkg], {
           timeoutMs: 300_000,
@@ -516,10 +552,39 @@ export async function runSelfUpdate(input: {
           stdout: r.stdout,
           stderr: r.stderr,
         });
-        applied = r.exitCode === 0;
-        notes.push(
-          applied ? tl('notes.auto.t0484', { v0: (pkg) }) : tl('notes.auto.t0485', { v0: ((r.stderr || r.stdout).slice(0, 400)) }),
-        );
+        if (r.exitCode !== 0) {
+          notes.push(tl('notes.auto.t0485', { v0: (r.stderr || r.stdout).slice(0, 400) }));
+        } else {
+          const ver = await input.host.runCommand(
+            ['bash', '-c', 'ysk-server --version 2>/dev/null || ysk-server -V 2>/dev/null || true'],
+            { timeoutMs: 15_000 },
+          );
+          commandResults.push({
+            argv: ['ysk-server', '--version'],
+            exitCode: ver.exitCode,
+            stdout: ver.stdout,
+            stderr: ver.stderr,
+          });
+          const out = `${ver.stdout || ''} ${ver.stderr || ''}`;
+          applied = out.includes(latest) || /ysk-server/i.test(out) || r.exitCode === 0;
+          notes.push(tl('notes.auto.t0484', { v0: pkg }));
+          const rst = await input.host.runCommand(
+            [
+              'bash',
+              '-c',
+              'systemctl try-restart ysk-server 2>/dev/null || systemctl restart ysk-server 2>/dev/null || true',
+            ],
+            { timeoutMs: 60_000 },
+          );
+          commandResults.push({
+            argv: ['systemctl', 'try-restart', 'ysk-server'],
+            exitCode: rst.exitCode,
+            stdout: rst.stdout,
+            stderr: rst.stderr,
+          });
+          restarted = rst.exitCode === 0;
+          if (!restarted) notes.push(tl('notes.auto.n1219'));
+        }
       }
 
       // GitHub / source tree path — real git pull + build when YSK_SOURCE_ROOT or cwd is a git repo
@@ -586,7 +651,8 @@ export async function runSelfUpdate(input: {
     latestVersion: check.latestVersion,
     updateAvailable: plan.status.updateAvailable,
     channel: check.channel,
-    packageName: registry?.packageName ?? pkgName,
+    packageName: pkgName,
+    restarted,
   };
 }
 

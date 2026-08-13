@@ -6,6 +6,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import {
   collectInventory,
   collectCatalogSoftwareUpgrades,
+  collectUpdateHub,
   adviseInventory,
   lookupOsvVulns,
   buildUpdatesSummary,
@@ -173,6 +174,7 @@ export async function handleUpdatesInventoryRoutes(
               last,
               inventory: filtered.inventory,
               advice: filtered.advice,
+              entries: (last?.entries as unknown[]) ?? [],
               meta: { ...(typeof last?.meta === 'object' && last?.meta ? last.meta : {}), list: filtered.meta },
               listMeta: filtered.meta,
               collectedAt: (last?.at as string) ?? null,
@@ -181,9 +183,14 @@ export async function handleUpdatesInventoryRoutes(
           }
           // fall through to live collectInventory
         }
-        const [{ items: inv, meta }, catalogSoftware] = await Promise.all([
+        const [{ items: inv, meta }, catalogSoftware, hub] = await Promise.all([
           collectInventory(ctx.host),
           collectCatalogSoftwareUpgrades(ctx.host),
+          collectUpdateHub({
+            host: ctx.host,
+            dataDir: ctx.dataDir,
+            currentPanelVersion: VERSION,
+          }),
         ]);
         const advice = adviseInventory(inv);
         ctx.settings.setJson('last_inventory', {
@@ -192,9 +199,10 @@ export async function handleUpdatesInventoryRoutes(
           upgradable: meta.upgradableCount,
           meta,
           sample: inv.slice(0, 40),
-          items: inv.slice(0, 120),
-          advice: advice.slice(0, 120),
+          items: inv.slice(0, 500),
+          advice: advice.slice(0, 500),
           catalogSoftware: catalogSoftware.slice(0, 80),
+          entries: hub.entries,
           stale: false,
         });
         persistUpdatesSummary(ctx);
@@ -208,6 +216,7 @@ export async function handleUpdatesInventoryRoutes(
           inventory: filtered.inventory,
           advice: filtered.advice,
           catalogSoftware,
+          entries: hub.entries,
           meta: { ...meta, list: filtered.meta },
           listMeta: filtered.meta,
           collectedAt: new Date().toISOString(),
@@ -218,9 +227,15 @@ export async function handleUpdatesInventoryRoutes(
         const user = ctx.auth.authenticate(getBearer(req));
         const raw = await readBody(req);
         const data = JSON.parse(raw || '{}') as { osv?: boolean; limit?: number };
-        const [{ items: inv, meta }, catalogSoftware] = await Promise.all([
+        const [{ items: inv, meta }, catalogSoftware, hub] = await Promise.all([
           collectInventory(ctx.host),
           collectCatalogSoftwareUpgrades(ctx.host),
+          collectUpdateHub({
+            host: ctx.host,
+            dataDir: ctx.dataDir,
+            currentPanelVersion: VERSION,
+            refreshRuntimes: true,
+          }),
         ]);
         let advice = adviseInventory(inv);
         if (data.osv) {
@@ -252,6 +267,7 @@ export async function handleUpdatesInventoryRoutes(
           items: inv.slice(0, 120),
           advice: advice.slice(0, 120),
           catalogSoftware: catalogSoftware.slice(0, 80),
+          entries: hub.entries,
           stale: false,
         });
         // Refresh panel status into cache (best-effort) so summary badge stays honest
@@ -287,6 +303,7 @@ export async function handleUpdatesInventoryRoutes(
           inventory: inv,
           advice,
           catalogSoftware,
+          entries: hub.entries,
           meta,
           summary,
           collectedAt: new Date().toISOString(),

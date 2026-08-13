@@ -41,8 +41,10 @@ const VERSION_CMD: Partial<Record<SoftwareId, string[]>> = {
 
 const DPKG_PRIMARY: Partial<Record<SoftwareId, string>> = {
   nginx: 'nginx',
+  apache2: 'apache2',
   certbot: 'certbot',
   'mysql-server': 'mysql-server',
+  'mysql-client': 'mariadb-client',
   'mariadb-server': 'mariadb-server',
   postgresql: 'postgresql',
   'postgresql-client': 'postgresql-client',
@@ -52,6 +54,7 @@ const DPKG_PRIMARY: Partial<Record<SoftwareId, string>> = {
   fail2ban: 'fail2ban',
   postfix: 'postfix',
   dovecot: 'dovecot-core',
+  opendkim: 'opendkim',
   vsftpd: 'vsftpd',
   'pdns-server': 'pdns-server',
   git: 'git',
@@ -61,6 +64,14 @@ const DPKG_PRIMARY: Partial<Record<SoftwareId, string>> = {
   node: 'nodejs',
   java: 'openjdk-21-jdk',
   chromium: 'chromium',
+  wireguard: 'wireguard',
+  openvpn: 'openvpn',
+  shadowsocks: 'shadowsocks-libev',
+  tigervnc: 'tigervnc-standalone-server',
+  novnc: 'novnc',
+  'vnc-desktop-xfce': 'xfce4',
+  'tigervnc-viewer': 'tigervnc-viewer',
+  'db-util': 'db-util',
 };
 
 function buildFromCatalog(): Map<SoftwareProbeId, ProbeRegistryEntry> {

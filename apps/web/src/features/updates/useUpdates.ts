@@ -3,13 +3,14 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { updatesApi, type AdviceRow } from './api';
+import { updatesApi, type AdviceRow, type UpdateHubEntry } from './api';
 import { sanitizeOperatorNotes } from '../../shared/lib/operator-messages';
 import { toast } from '../../shared/stores/toast-store';
 
 export function useUpdates() {
   const { t } = useTranslation();
   const [inventory, setInventory] = useState<AdviceRow[]>([]);
+  const [entries, setEntries] = useState<UpdateHubEntry[]>([]);
   const [selfUpdate, setSelfUpdate] = useState<Record<string, unknown> | null>(null);
   const [lastAt, setLastAt] = useState<string | null>(null);
   const [jobs, setJobs] = useState<Array<Record<string, unknown>>>([]);
@@ -27,7 +28,8 @@ export function useUpdates() {
     try {
       if (refresh) {
         const inv = await updatesApi.refresh(osv);
-        setInventory((inv.advice ?? []).slice(0, 120));
+        setInventory((inv.advice ?? []).slice(0, 500));
+        setEntries(inv.entries ?? []);
         setLastAt(inv.collectedAt ?? new Date().toISOString());
         const up = (inv.advice ?? []).filter(
           (a) => a.candidateVersion && a.candidateVersion !== a.currentVersion,
@@ -63,7 +65,8 @@ export function useUpdates() {
                   requiresApproval: Boolean((i as { needsApproval?: boolean }).needsApproval),
                   summary: '' }))
               : (inv.advice ?? []);
-        setInventory(merged.slice(0, 200));
+        setInventory(merged.slice(0, 500));
+        setEntries(inv.entries ?? []);
         setLastAt(inv.collectedAt ?? null);
         void listMeta;
       }
@@ -74,7 +77,14 @@ export function useUpdates() {
           self && typeof self === 'object' && 'status' in self && self.status
             ? { ...(self as Record<string, unknown>), ...(self.status as object) }
             : self;
-        setSelfUpdate(status as Record<string, unknown>);
+        const rec = status as Record<string, unknown>;
+        // Successful check: drop leftover scoped-package 404s from toast/notes
+        if (rec.ok !== false && rec.checked !== false && Array.isArray(rec.notes)) {
+          rec.notes = (rec.notes as string[]).filter(
+            (n) => !/@ysk\/server|@yanshekki\/server|@ysk-server\//i.test(n),
+          );
+        }
+        setSelfUpdate(rec);
       } catch (e) {
         setSelfUpdate({
           ok: false,
@@ -127,6 +137,7 @@ export function useUpdates() {
         );
       }
       setLastAt(inv.collectedAt ?? new Date().toISOString());
+      setEntries(inv.entries ?? []);
     } catch {
       /* keep prior list; user can click 掃描套件 */
     }
@@ -394,6 +405,7 @@ export function useUpdates() {
 
   return {
     inventory,
+    entries,
     selfUpdate,
     lastAt,
     jobs,

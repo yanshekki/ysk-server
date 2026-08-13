@@ -16,6 +16,8 @@ export type InventoryCollectMeta = {
   source: 'apt' | 'dpkg-only' | 'mixed';
   upgradableCount: number;
   notes: string[];
+  /** True when apt upgradable list was capped */
+  truncated?: boolean;
 };
 
 /**
@@ -36,8 +38,8 @@ export async function collectInventory(host: HostExecutor): Promise<{
   // apt-get update mutates indexes and needs YSK_EXECUTE; apt list is read-only and works without it.
   const refreshIndexes = host.executeEnabled();
   const upScript = refreshIndexes
-    ? `apt-get update -qq 2>/dev/null || true; apt list --upgradable -qq 2>/dev/null | head -n 200`
-    : `apt list --upgradable -qq 2>/dev/null | head -n 200`;
+    ? `apt-get update -qq 2>/dev/null || true; apt list --upgradable -qq 2>/dev/null | head -n 2000`
+    : `apt list --upgradable -qq 2>/dev/null | head -n 2000`;
   if (!refreshIndexes) {
     notes.push(tl('notes.auto.n1610'));
   }
@@ -70,6 +72,9 @@ export async function collectInventory(host: HostExecutor): Promise<{
     if (upgradableCount > 0) {
       notes.push(tl('notes.auto.t0463', { v0: (upgradableCount) }));
     }
+    if (upgradableCount >= 2000) {
+      notes.push(tl('notes.auto.n1610'));
+    }
   } else {
     notes.push(
       up.exitCode !== 0
@@ -93,8 +98,8 @@ while IFS=$'\\t' read -r name ver; do
   fi
   printf '%s\\t%s\\t%s\\n' "$name" "$ver" "$cand"
   n=$((n+1))
-  [ "$n" -ge 80 ] && break
-done < <(dpkg-query -W -f='\${Package}\\t\${Version}\\n' 2>/dev/null | head -n 80)
+  [ "$n" -ge 400 ] && break
+done < <(dpkg-query -W -f='\${Package}\\t\${Version}\\n' 2>/dev/null | head -n 400)
 `.trim();
 
   const pol = await host.runCommand(['bash', '-c', policyScript], {
@@ -165,7 +170,12 @@ done < <(dpkg-query -W -f='\${Package}\\t\${Version}\\n' 2>/dev/null | head -n 8
 
   return {
     items,
-    meta: { source, upgradableCount: realUpgrades, notes },
+    meta: {
+      source,
+      upgradableCount: realUpgrades,
+      notes,
+      truncated: upgradableCount >= 2000,
+    },
   };
 }
 
