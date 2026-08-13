@@ -24,6 +24,25 @@ export function isFullTunnelAllowedIps(text: string): boolean {
   return false;
 }
 
+const WG_HOOK_LINE =
+  /^\s*(PostUp|PostDown|PreUp|PreDown)\s*=/i;
+const OVPN_HOOK_LINE =
+  /^\s*(up|down|ipchange|route-up|route-pre-down|learn-address|tls-verify|auth-user-pass-verify|client-connect|client-disconnect|plugin|script-security|system)\b/i;
+
+/** Strip operator-supplied hook scripts so wg-quick / openvpn cannot run attacker commands as root. */
+export function stripImportedVpnHooks(conf: string): { conf: string; stripped: number } {
+  let n = 0;
+  const lines = conf.replace(/\r\n/g, '\n').split('\n');
+  const kept = lines.filter((line) => {
+    if (WG_HOOK_LINE.test(line) || OVPN_HOOK_LINE.test(line)) {
+      n += 1;
+      return false;
+    }
+    return true;
+  });
+  return { conf: kept.join('\n'), stripped: n };
+}
+
 /** Extract first IPv4 Endpoint host (hostname or IP). */
 export function extractWgEndpointHost(conf: string): string | null {
   for (const line of conf.split(/\r?\n/)) {

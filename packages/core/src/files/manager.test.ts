@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mkdtempSync, rmSync, existsSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, existsSync, writeFileSync, symlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { FileManager, publicFilesRoot } from './manager.js';
@@ -20,6 +20,20 @@ describe('FileManager sandbox', () => {
     fm.remove('docs/hello.txt');
     expect(fm.list('docs')).toHaveLength(0);
     rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('blocks parent symlink escape', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-fm-sym-'));
+    try {
+      const fm = new FileManager(dir);
+      symlinkSync(join(dir, '..'), join(dir, 'up'));
+      expect(() => fm.writeText('up/ysk-fm-escape.txt', 'x')).toThrow(YskError);
+    } catch (e) {
+      if ((e as NodeJS.ErrnoException).code === 'EPERM') return;
+      throw e;
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it('writeBase64, stat, refuse root delete, publicFilesRoot', () => {

@@ -40,6 +40,9 @@ WebSocket（要 ticket）：終端、VNC、Host Browse。
 | A08-7 | 低 | API／SPA 缺 Content-Security-Policy | **已修** |
 | A08-8 | 危急 | `bash -c` 只要有 `postqueue`／`grep` 就當成段只讀（可夾 `reboot`） | **已修** — 拒絕電源／防火牆動詞；postqueue 只准 `-p`／if 包裝 |
 | A08-9 | 中 | 任何工作階段可 `GET /api/v1/terminal/targets`（Linux 用戶＋家目錄） | **已修** — 要 `settings.system` 或 `services.control` |
+| A08-10 | 高 | IPv6-mapped IMDS／AWS `fd00:ec2::`／阿里雲 `100.100.100.200` 繞過 SSRF | **已修** |
+| A08-11 | 高 | Unzip zip-slip／父層 symlink 逃出 FileManager | **已修** |
+| A08-12 | 高 | 匯入 VPN 客戶端 `PostUp`／OpenVPN `up` 會以 root 執行 | **已修** — 匯入同啟動前剝走 hook |
 
 ## 已接受殘項
 

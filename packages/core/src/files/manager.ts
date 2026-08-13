@@ -84,24 +84,38 @@ export function assertInside(root: string, target: string): string {
       httpStatus: 403,
     });
   }
-  // Symlink escape: if path exists, realpath must stay under root
+  const rootPrefix = rootAbs.endsWith(sep) ? rootAbs : rootAbs + sep;
+  const underRoot = (p: string) => p === rootAbs || p.startsWith(rootPrefix);
+  // Symlink escape: existing path, or nearest existing ancestor (parent symlink)
   try {
-    if (existsSync(abs)) {
-      const real = realpathSync(abs);
-      if (real !== rootAbs && !real.startsWith(rootAbs.endsWith(sep) ? rootAbs : rootAbs + sep)) {
+    let cur = abs;
+    while (!existsSync(cur) && cur !== dirname(cur)) cur = dirname(cur);
+    if (existsSync(cur)) {
+      const realAncestor = realpathSync(cur);
+      const tail = cur === abs ? '' : abs.slice(cur.length);
+      const real = resolve(realAncestor + tail);
+      if (!underRoot(real)) {
         throw new YskError(
           ErrorCodes.SANDBOX_VIOLATION,
           tl('notes.files.pathOutsideSandbox', { target }),
           { httpStatus: 403, details: { reason: 'symlink_escape', real } },
         );
       }
-      return real;
+      return existsSync(abs) ? realpathSync(abs) : abs;
     }
   } catch (e) {
     if (e instanceof YskError) throw e;
     /* path may not exist yet — allow create under resolved abs */
   }
   return abs;
+}
+
+function zipMemberSafe(name: string): boolean {
+  const n = name.replace(/\\/g, '/').replace(/^\.\//, '');
+  if (!n || n.includes('\0')) return false;
+  if (n.startsWith('/') || n.startsWith('../') || n === '..' || n.endsWith('/..')) return false;
+  if (n.split('/').includes('..')) return false;
+  return true;
 }
 
 function guessMime(name: string): string {
@@ -585,6 +599,20 @@ export class FileManager {
       throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.auto.t0009', { v0: (zipPath) }), { httpStatus: 404 });
     }
     mkdirSync(destAbs, { recursive: true });
+    const listing = spawnSync('unzip', ['-Z', '-1', zipAbs], {
+      encoding: 'utf8',
+      timeout: 30_000,
+    });
+    if (!listing.error && listing.status === 0) {
+      const members = listing.stdout.split('\n').map((l) => l.trim()).filter(Boolean);
+      const bad = members.find((m) => !zipMemberSafe(m));
+      if (bad) {
+        throw new YskError(ErrorCodes.SANDBOX_VIOLATION, tl('notes.files.pathOutsideSandbox', { target: bad }), {
+          httpStatus: 403,
+          details: { reason: 'zip_slip', member: bad },
+        });
+      }
+    }
     const r = spawnSync('unzip', ['-o', '-q', zipAbs, '-d', destAbs], {
       encoding: 'utf8',
       timeout: 120_000 });
@@ -595,6 +623,38 @@ export class FileManager {
         tl('notes.auto.t0010', { v0: (r.stderr || r.error?.message || 'exit ' + r.status) }),
         { httpStatus: 500 },
       );
+    }
+    const escaped: string[] = [];
+    const walk = (abs: string) => {
+      for (const name of readdirSync(abs)) {
+        const p = join(abs, name);
+        let st;
+        try {
+          st = statSync(p, { throwIfNoEntry: false });
+        } catch {
+          continue;
+        }
+        try {
+          const real = realpathSync(p);
+          const rootAbs = resolve(this.root);
+          const prefix = rootAbs.endsWith(sep) ? rootAbs : rootAbs + sep;
+          if (real !== rootAbs && !real.startsWith(prefix)) {
+            escaped.push(p);
+            rmSync(p, { recursive: true, force: true });
+            continue;
+          }
+        } catch {
+          /* dangling */
+        }
+        if (st?.isDirectory()) walk(p);
+      }
+    };
+    walk(destAbs);
+    if (escaped.length) {
+      throw new YskError(ErrorCodes.SANDBOX_VIOLATION, tl('notes.files.pathOutsideSandbox', { target: destDir }), {
+        httpStatus: 403,
+        details: { reason: 'zip_symlink_escape', removed: escaped.length },
+      });
     }
     return { path: destDir || '.', notes: [tl('notes.auto.t0011', { v0: (zipPath), v1: (destDir || '.') })] };
   }

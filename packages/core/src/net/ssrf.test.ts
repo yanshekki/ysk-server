@@ -23,6 +23,15 @@ describe('ssrf guards', () => {
     expect(u.hostname).toBe('health.example.com');
   });
 
+  it('blocks IPv4-mapped IMDS and cloud metadata aliases', () => {
+    expect(isBlockedSsrfHost('::ffff:169.254.169.254', 'strict')).toBe(true);
+    expect(isBlockedSsrfHost('::ffff:a9fe:a9fe', 'strict')).toBe(true);
+    expect(isBlockedSsrfHost('::ffff:127.0.0.1', 'metadata')).toBe(true);
+    expect(isBlockedSsrfHost('fd00:ec2::254', 'metadata')).toBe(true);
+    expect(isBlockedSsrfHost('100.100.100.200', 'metadata')).toBe(true);
+    expect(isBlockedSsrfHost('::ffff:10.1.2.3', 'strict')).toBe(true);
+  });
+
   it('assertSafeOutboundUrl rejects metadata and file schemes', () => {
     expect(() => assertSafeOutboundUrl('http://169.254.169.254/latest')).toThrow(YskError);
     expect(() => assertSafeOutboundUrl('file:///etc/passwd')).toThrow(YskError);

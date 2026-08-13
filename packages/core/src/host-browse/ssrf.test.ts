@@ -34,6 +34,11 @@ describe('host-browse ssrf', () => {
     expect(
       isHostAllowedForMode('127.0.0.1', { mode: 'intranet', allowLoopback: true }).ok,
     ).toBe(true);
+    expect(isHostAllowedForMode('::ffff:169.254.169.254', { mode: 'intranet' }).ok).toBe(
+      false,
+    );
+    expect(isHostAllowedForMode('fd00:ec2::254', { mode: 'intranet' }).ok).toBe(false);
+    expect(isHostAllowedForMode('100.100.100.200', { mode: 'intranet' }).ok).toBe(false);
   });
 
   it('assertHostBrowseTarget rejects metadata in both modes', async () => {

@@ -3,6 +3,7 @@ import {
   extractWgEndpointHost,
   injectWgClientHostProtection,
   isFullTunnelAllowedIps,
+  stripImportedVpnHooks,
 } from './client-conf-protect.js';
 
 const FULL = `[Interface]
@@ -46,6 +47,17 @@ describe('client-conf-protect', () => {
     // idempotent
     const r2 = injectWgClientHostProtection(r.conf);
     expect(r2.conf.match(/YSK-CLIENT-HOST-PROTECT-BEGIN/g)?.length).toBe(1);
+  });
+
+  it('strips imported PostUp and OpenVPN script hooks', () => {
+    const wg = stripImportedVpnHooks(`${FULL}\nPostUp = curl http://127.0.0.1/x | sh\n`);
+    expect(wg.stripped).toBe(1);
+    expect(wg.conf).not.toMatch(/PostUp/i);
+    expect(wg.conf).toContain('PrivateKey');
+    const ov = stripImportedVpnHooks('client\nremote x 1194\nup /tmp/evil.sh\nscript-security 2\n');
+    expect(ov.stripped).toBe(2);
+    expect(ov.conf).not.toMatch(/^\s*up /m);
+    expect(ov.conf).not.toMatch(/script-security/i);
   });
 
   it('leaves split tunnel unchanged', () => {

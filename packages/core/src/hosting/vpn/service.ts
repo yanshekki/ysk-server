@@ -32,6 +32,7 @@ import {
 import {
   buildVpnClientProtectScript,
   injectWgClientHostProtection,
+  stripImportedVpnHooks,
 } from './client-conf-protect.js';
 import {
   addOvpnPeer,
@@ -769,6 +770,8 @@ export class VpnService {
         return { ok: false, notes: [tl('notes.vpn.invalidOvpn')] };
       }
     }
+    const cleaned = stripImportedVpnHooks(conf);
+    const safeConf = cleaned.conf;
     this.ensureDirs();
     const id = newId();
     const iface =
@@ -784,7 +787,11 @@ export class VpnService {
       createdAt: new Date().toISOString(),
       confFile,
     };
-    writeFileSync(join(this.clientDir(), confFile), conf.endsWith('\n') ? conf : conf + '\n', 'utf8');
+    writeFileSync(
+      join(this.clientDir(), confFile),
+      safeConf.endsWith('\n') ? safeConf : safeConf + '\n',
+      'utf8',
+    );
     writeFileSync(join(this.clientDir(), `${id}.meta.json`), JSON.stringify(meta, null, 2), 'utf8');
 
     return {
@@ -831,7 +838,7 @@ export class VpnService {
       return { ok: true, notes: [tl('notes.vpn.clientUp', { name: meta.name }), ...r.notes] };
     }
     const dest = `/etc/wireguard/${meta.iface}.conf`;
-    const rawConf = readFileSync(confSrc, 'utf8');
+    const rawConf = stripImportedVpnHooks(readFileSync(confSrc, 'utf8')).conf;
     const prepared = injectWgClientHostProtection(rawConf);
     const notes: string[] = [];
     if (prepared.fullTunnel) {

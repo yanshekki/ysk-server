@@ -7,6 +7,7 @@ import { promises as dns } from 'node:dns';
 import { isIP } from 'node:net';
 import { ErrorCodes, YskError } from 'ysk-server-shared';
 import {
+  canonicalizeSsrfHost,
   isBlockedSsrfHost,
   isMetadataOrLoopbackHost,
   isRfc1918Host,
@@ -94,7 +95,7 @@ export function isHostAllowedForMode(
   host: string,
   opts: HostBrowseSsrfOpts,
 ): { ok: boolean; reason?: string } {
-  const h = host.trim().toLowerCase().replace(/^\[|\]$/g, '');
+  const h = canonicalizeSsrfHost(host);
   if (!h) return { ok: false, reason: 'empty_host' };
 
   // Metadata / IMDS always denied

@@ -16,16 +16,45 @@ const BLOCKED_HOSTNAMES = new Set([
 function ipv4Parts(ip: string): [number, number, number, number] | null {
   const m = ip.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/);
   if (!m) return null;
-  return [Number(m[1]), Number(m[2]), Number(m[3]), Number(m[4])];
+  const a = Number(m[1]);
+  const b = Number(m[2]);
+  const c = Number(m[3]);
+  const d = Number(m[4]);
+  if ([a, b, c, d].some((n) => !Number.isInteger(n) || n < 0 || n > 255)) return null;
+  return [a, b, c, d];
+}
+
+/** Strip URL brackets and decode IPv4-mapped / IPv4-compatible IPv6. */
+export function canonicalizeSsrfHost(host: string): string {
+  let h = host.trim().toLowerCase().replace(/^\[|\]$/g, '');
+  const mappedDotted = h.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
+  if (mappedDotted) return mappedDotted[1]!;
+  const mappedHex = h.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/);
+  if (mappedHex) {
+    const hi = parseInt(mappedHex[1]!, 16);
+    const lo = parseInt(mappedHex[2]!, 16);
+    return `${(hi >> 8) & 255}.${hi & 255}.${(lo >> 8) & 255}.${lo & 255}`;
+  }
+  const compat = h.match(/^::(\d+\.\d+\.\d+\.\d+)$/);
+  if (compat) return compat[1]!;
+  return h;
+}
+
+function isAlwaysImdsHost(h: string): boolean {
+  if (h === '100.100.100.200') return true; // Alibaba
+  if (h === 'fd00:ec2::254' || h === 'fd00:ec2::ff' || h.startsWith('fd00:ec2:')) return true;
+  return false;
 }
 
 /** Cloud metadata + loopback — always dangerous for SSRF. */
 export function isMetadataOrLoopbackHost(host: string): boolean {
-  const h = host.trim().toLowerCase().replace(/^\[|\]$/g, '');
+  const raw = host.trim().toLowerCase().replace(/^\[|\]$/g, '');
+  const h = canonicalizeSsrfHost(raw);
   if (!h) return true;
-  if (BLOCKED_HOSTNAMES.has(h)) return true;
-  if (h.endsWith('.localhost')) return true;
-  if (h === '::1') return true;
+  if (BLOCKED_HOSTNAMES.has(h) || BLOCKED_HOSTNAMES.has(raw)) return true;
+  if (h.endsWith('.localhost') || raw.endsWith('.localhost')) return true;
+  if (h === '::1' || raw === '::1') return true;
+  if (isAlwaysImdsHost(h) || isAlwaysImdsHost(raw)) return true;
   const p = ipv4Parts(h);
   if (p) {
     const [a, b] = p;
@@ -33,15 +62,14 @@ export function isMetadataOrLoopbackHost(host: string): boolean {
     if (a === 169 && b === 254) return true; // link-local / IMDS
   }
   if (isIP(h) === 6) {
-    const s = h.toLowerCase();
-    if (s.startsWith('fe80')) return true;
+    if (h.startsWith('fe80')) return true;
   }
   return false;
 }
 
 /** RFC1918 + CGNAT + ULA (not loopback/IMDS). */
 export function isRfc1918Host(host: string): boolean {
-  const h = host.trim().toLowerCase().replace(/^\[|\]$/g, '');
+  const h = canonicalizeSsrfHost(host);
   const p = ipv4Parts(h);
   if (p) {
     const [a, b] = p;
@@ -66,7 +94,7 @@ export function isBlockedSsrfHost(
   host: string,
   policy: 'strict' | 'metadata' = 'strict',
 ): boolean {
-  const h = host.trim().toLowerCase().replace(/^\[|\]$/g, '');
+  const h = canonicalizeSsrfHost(host);
   if (!h) return true;
   if (isMetadataOrLoopbackHost(h)) return true;
   if (policy === 'strict') {

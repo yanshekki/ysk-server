@@ -40,6 +40,9 @@ WebSocket (ticket required): terminal, VNC, host-browse.
 | A08-7 | Low | API/SPA missing Content-Security-Policy | **Fixed** — API `default-src 'none'`; SPA self + ws |
 | A08-8 | Critical | `bash -c` with the word `postqueue`/`grep` treated whole script as read-only (`reboot` companion) | **Fixed** — deny power/firewall verbs; postqueue only `-p` / if-wrapper |
 | A08-9 | Medium | Any session could `GET /api/v1/terminal/targets` (linux users + homes) | **Fixed** — `settings.system` or `services.control` |
+| A08-10 | High | IPv6-mapped IMDS / AWS `fd00:ec2::` / Alibaba `100.100.100.200` bypassed SSRF | **Fixed** |
+| A08-11 | High | Unzip zip-slip / parent symlink escape in FileManager | **Fixed** — member list + ancestor realpath |
+| A08-12 | High | Imported VPN client `PostUp` / OpenVPN `up` ran as root via wg-quick | **Fixed** — strip hooks on import and before up |
 
 ## Accepted residual
 
