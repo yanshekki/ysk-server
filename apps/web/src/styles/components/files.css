@@ -280,6 +280,106 @@
   color: var(--danger, #b91c1c);
 }
 
+.fm-upload-item.is-skipped .fm-upload-item__bar,
+.fm-upload-item.is-cancelled .fm-upload-item__bar {
+  background: var(--text-muted, #94a3b8);
+  width: 100% !important;
+}
+
+.fm-conflict__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.fm-conflict__compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.fm-conflict__card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  background: var(--bg-subtle, rgba(0, 0, 0, 0.03));
+  min-width: 0;
+}
+
+.fm-conflict__card-label {
+  font-size: var(--text-xs);
+  font-weight: 650;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fm-conflict__card-kind {
+  margin-top: 0.15rem;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.fm-conflict__card-name {
+  margin-top: 0.35rem;
+  font-weight: 700;
+  word-break: break-all;
+}
+
+.fm-conflict__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.fm-conflict__choice {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-white, #fff);
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.fm-conflict__choice:hover,
+.fm-conflict__choice:focus-visible {
+  border-color: var(--brand-blue);
+  background: rgba(59, 130, 246, 0.05);
+  outline: none;
+}
+
+.fm-conflict__choice strong {
+  font-weight: 700;
+}
+
+.fm-conflict__choice span {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.fm-conflict__choice--primary {
+  border-color: color-mix(in srgb, var(--brand-blue) 45%, var(--border-color));
+}
+
+.fm-conflict__choice--danger:hover,
+.fm-conflict__choice--danger:focus-visible {
+  border-color: var(--danger, #ef4444);
+  background: rgba(239, 68, 68, 0.06);
+}
+
+@media (max-width: 520px) {
+  .fm-conflict__compare {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Collapsed upload dock (panel minimized) */
 .fm-upload-dock {
   display: flex;

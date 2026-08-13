@@ -83,7 +83,8 @@
     "pathOutsideSandbox": "স্যান্ডবক্সের বাইরের পথ: {{target}}",
     "notFoundRel": "পাওয়া যায়নি: {{relPath}}",
     "fileNotFoundRel": "ফাইল পাওয়া যায়নি: {{relPath}}",
-    "notFoundFrom": "পাওয়া যায়নি: {{fromPath}}"
+    "notFoundFrom": "পাওয়া যায়নি: {{fromPath}}",
+    "alreadyExists": "ইতিমধ্যে আছে: {{name}}"
   },
   "dns": {
     "needZoneServerIp": "জোন এবং সার্ভার আইপি লিখুন",

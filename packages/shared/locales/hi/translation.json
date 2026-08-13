@@ -3699,7 +3699,35 @@
     "publicShareBtFailed": "वेबटोरेंट विफल: {{detail}}",
     "publicShareBtNeedMagnet": "इस शेयर के लिए कोई चुंबक यूआरआई नहीं",
     "publicShareBtUnsupported": "यह ब्राउज़र वेबटोरेंट नहीं चला सकता; इसके बजाय चुंबक या .टोरेंट का उपयोग करें",
-    "btNone": "—"
+    "btNone": "—",
+    "uploadStatusSkipped": "छोड़ा गया",
+    "uploadStatusCancelled": "रद्द",
+    "conflict": {
+      "titleFile": "“{{name}}” नाम की वस्तु पहले से है",
+      "titleFolder": "“{{name}}” नाम का फ़ोल्डर पहले से है",
+      "descFile": "क्या करना है चुनें। बदलें चुनने तक कुछ अधिलेखित नहीं होगा।",
+      "descFolder": "क्या करना है चुनें। मिलाएँ मौजूदा फ़ोल्डर रखता है और उसकी सामग्री जारी रखता है।",
+      "incoming": "आने वाली",
+      "existing": "यहाँ पहले से",
+      "kindFile": "फ़ाइल",
+      "kindFolder": "फ़ोल्डर",
+      "skip": "छोड़ें",
+      "skipHint": "इस वस्तु को न जोड़ें",
+      "keepBoth": "दोनों रखें",
+      "keepBothHint": "आने वाली वस्तु को {{name}} के रूप में सहेजें",
+      "replace": "बदलें",
+      "replaceHint": "मौजूदा फ़ाइल अधिलेखित करें। संभव हो तो संस्करण स्नैपशॉट रखा जाता है।",
+      "replaceFolderHint": "इस फ़ोल्डर में समान नाम वाली फ़ाइलें अधिलेखित होंगी। बाकी फ़ाइलें रहेंगी।",
+      "merge": "मिलाएँ",
+      "mergeHint": "मौजूदा फ़ोल्डर रखें और आने वाली फ़ाइलें उसमें जोड़ें",
+      "applyAll": "बाकी सभी नाम टकराव पर लागू करें",
+      "applyAllHint": "इस ड्रॉप या स्थानांतरण के बाकी भाग के लिए यही क्रिया उपयोग करें",
+      "cancelRest": "बाकी रद्द करें",
+      "progress": "{{current}} / {{total}}",
+      "typeMismatch": "यहाँ पहले से “{{name}}” नाम का {{destKind}} है। आने वाली वस्तु {{incomingKind}} है।",
+      "skipped": "छोड़ा गया",
+      "cancelled": "रद्द"
+    }
   },
   "firewall": {
     "profiles": {
@@ -5003,7 +5031,8 @@
       "pathOutsideSandbox": "सैंडबॉक्स के बाहर का पथ: {{target}}",
       "notFoundRel": "नहीं मिला: {{relPath}}",
       "fileNotFoundRel": "फ़ाइल नहीं मिली: {{relPath}}",
-      "notFoundFrom": "नहीं मिला: {{fromPath}}"
+      "notFoundFrom": "नहीं मिला: {{fromPath}}",
+      "alreadyExists": "पहले से मौजूद है: {{name}}"
     },
     "dns": {
       "needZoneServerIp": "ज़ोन और सर्वर आईपी दर्ज करें",

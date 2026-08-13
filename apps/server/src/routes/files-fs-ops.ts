@@ -3,7 +3,7 @@
  * Extracted from files-write.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from 'ysk-server-shared';
+import { parseFileIfExists, tl } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
 import { readBody, sendJson } from '../http/util.js';
 import { chownProjectRels } from './files-shared.js';
@@ -21,12 +21,14 @@ export async function handleFilesFsOpsRoutes(
 
   if (method === 'POST' && url.pathname === '/api/v1/files/rename') {
     const raw = await readBody(req);
-    const data = JSON.parse(raw || '{}') as { from?: string; to?: string };
+    const data = JSON.parse(raw || '{}') as { from?: string; to?: string; ifExists?: string };
     if (!data.from || !data.to) {
       sendJson(res, 400, { ok: false, message: tl('notes.files.needSrcDst') });
       return true;
     }
-    const result = fm.rename(data.from, data.to);
+    const result = fm.rename(data.from, data.to, {
+      ifExists: parseFileIfExists(data.ifExists, 'fail'),
+    });
     const own = await chownProjectRels(ctx, owner, [data.to]);
     ctx.audit.append({
       actor: user.username,
@@ -40,12 +42,14 @@ export async function handleFilesFsOpsRoutes(
 
   if (method === 'POST' && url.pathname === '/api/v1/files/copy') {
     const raw = await readBody(req);
-    const data = JSON.parse(raw || '{}') as { from?: string; to?: string };
+    const data = JSON.parse(raw || '{}') as { from?: string; to?: string; ifExists?: string };
     if (!data.from || !data.to) {
       sendJson(res, 400, { ok: false, message: tl('notes.files.needSrcDst') });
       return true;
     }
-    const result = fm.copy(data.from, data.to);
+    const result = fm.copy(data.from, data.to, {
+      ifExists: parseFileIfExists(data.ifExists, 'fail'),
+    });
     const own = await chownProjectRels(ctx, owner, [data.to]);
     ctx.audit.append({
       actor: user.username,
@@ -59,12 +63,14 @@ export async function handleFilesFsOpsRoutes(
 
   if (method === 'POST' && url.pathname === '/api/v1/files/move') {
     const raw = await readBody(req);
-    const data = JSON.parse(raw || '{}') as { from?: string; to?: string };
+    const data = JSON.parse(raw || '{}') as { from?: string; to?: string; ifExists?: string };
     if (!data.from || !data.to) {
       sendJson(res, 400, { ok: false, message: tl('notes.files.needSrcDst') });
       return true;
     }
-    const result = fm.move(data.from, data.to);
+    const result = fm.move(data.from, data.to, {
+      ifExists: parseFileIfExists(data.ifExists, 'fail'),
+    });
     const own = await chownProjectRels(ctx, owner, [data.to]);
     ctx.audit.append({
       actor: user.username,

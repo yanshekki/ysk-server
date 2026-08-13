@@ -3699,7 +3699,35 @@
     "publicShareBtFailed": "WebTorrent 失敗：{{detail}}",
     "publicShareBtNeedMagnet": "此分享沒有 magnet 連結",
     "publicShareBtUnsupported": "此瀏覽器無法執行 WebTorrent；請改用 magnet 或 .torrent",
-    "btNone": "—"
+    "btNone": "—",
+    "uploadStatusSkipped": "已略過",
+    "uploadStatusCancelled": "已取消",
+    "conflict": {
+      "titleFile": "已有名為「{{name}}」的項目",
+      "titleFolder": "已有名為「{{name}}」的資料夾",
+      "descFile": "請選擇處理方式。在選擇「取代」之前不會覆寫現有檔案。",
+      "descFolder": "請選擇處理方式。「合併」會保留現有資料夾，再處理其中的檔案。",
+      "incoming": "即將加入",
+      "existing": "已在此處",
+      "kindFile": "檔案",
+      "kindFolder": "資料夾",
+      "skip": "略過",
+      "skipHint": "不加入此項目",
+      "keepBoth": "兩者都保留",
+      "keepBothHint": "將新項目存成 {{name}}",
+      "replace": "取代",
+      "replaceHint": "覆寫現有檔案。可以時會保留版本快照。",
+      "replaceFolderHint": "覆寫資料夾內的同名檔案，其餘檔案會保留。",
+      "merge": "合併",
+      "mergeHint": "保留現有資料夾，並將新檔案加入其中",
+      "applyAll": "套用到其餘所有撞名",
+      "applyAllHint": "此次拖放或複製／移動的其餘項目都用同一做法",
+      "cancelRest": "取消其餘項目",
+      "progress": "第 {{current}}／{{total}} 項",
+      "typeMismatch": "此處已有名為「{{name}}」的{{destKind}}，即將加入的是{{incomingKind}}。",
+      "skipped": "已略過",
+      "cancelled": "已取消"
+    }
   },
   "firewall": {
     "profiles": {
@@ -5003,7 +5031,8 @@
       "pathOutsideSandbox": "路徑超出沙箱範圍：{{target}}",
       "notFoundRel": "找不到：{{relPath}}",
       "fileNotFoundRel": "找不到檔案：{{relPath}}",
-      "notFoundFrom": "找不到：{{fromPath}}"
+      "notFoundFrom": "找不到：{{fromPath}}",
+      "alreadyExists": "已有同名項目：{{name}}"
     },
     "dns": {
       "needZoneServerIp": "請填寫 zone 與 伺服器 IP",

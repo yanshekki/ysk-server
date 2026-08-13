@@ -83,7 +83,8 @@
     "pathOutsideSandbox": "Chemin hors bac à sable : {{target}}",
     "notFoundRel": "Introuvable : {{relPath}}",
     "fileNotFoundRel": "Fichier introuvable : {{relPath}}",
-    "notFoundFrom": "Introuvable : {{fromPath}}"
+    "notFoundFrom": "Introuvable : {{fromPath}}",
+    "alreadyExists": "Existe déjà : {{name}}"
   },
   "dns": {
     "needZoneServerIp": "Saisissez la zone et l'IP du serveur",

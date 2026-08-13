@@ -83,7 +83,8 @@
     "pathOutsideSandbox": "Jalur di luar kotak pasir: {{target}}",
     "notFoundRel": "Tidak ditemukan: {{relPath}}",
     "fileNotFoundRel": "Berkas tidak ditemukan: {{relPath}}",
-    "notFoundFrom": "Tidak ditemukan: {{fromPath}}"
+    "notFoundFrom": "Tidak ditemukan: {{fromPath}}",
+    "alreadyExists": "Sudah ada: {{name}}"
   },
   "dns": {
     "needZoneServerIp": "Masukkan zona dan IP server",

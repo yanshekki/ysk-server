@@ -83,7 +83,8 @@
     "pathOutsideSandbox": "路徑超出沙箱範圍：{{target}}",
     "notFoundRel": "找不到：{{relPath}}",
     "fileNotFoundRel": "找不到檔案：{{relPath}}",
-    "notFoundFrom": "找不到：{{fromPath}}"
+    "notFoundFrom": "找不到：{{fromPath}}",
+    "alreadyExists": "已有同名項目：{{name}}"
   },
   "dns": {
     "needZoneServerIp": "請填寫 zone 與 伺服器 IP",

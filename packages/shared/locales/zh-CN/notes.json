@@ -83,7 +83,8 @@
     "pathOutsideSandbox": "路径超出沙箱范围：{{target}}",
     "notFoundRel": "找不到：{{relPath}}",
     "fileNotFoundRel": "找不到文件：{{relPath}}",
-    "notFoundFrom": "找不到：{{fromPath}}"
+    "notFoundFrom": "找不到：{{fromPath}}",
+    "alreadyExists": "已有同名项目：{{name}}"
   },
   "dns": {
     "needZoneServerIp": "请填写 zone 与 server IP",

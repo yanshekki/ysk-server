@@ -3699,7 +3699,35 @@
     "publicShareBtFailed": "Échec de WebTorrent : {{detail}}",
     "publicShareBtNeedMagnet": "Pas d'URI magnétique pour ce partage",
     "publicShareBtUnsupported": "Ce navigateur ne peut pas exécuter WebTorrent ; utilisez plutôt magnet ou .torrent",
-    "btNone": "—"
+    "btNone": "—",
+    "uploadStatusSkipped": "Ignoré",
+    "uploadStatusCancelled": "Annulé",
+    "conflict": {
+      "titleFile": "Un élément nommé « {{name}} » existe déjà",
+      "titleFolder": "Un dossier nommé « {{name}} » existe déjà",
+      "descFile": "Choisissez l’action. Rien n’est écrasé tant que vous ne choisissez pas Remplacer.",
+      "descFolder": "Choisissez l’action. Fusionner conserve le dossier existant et continue avec son contenu.",
+      "incoming": "À ajouter",
+      "existing": "Déjà ici",
+      "kindFile": "Fichier",
+      "kindFolder": "Dossier",
+      "skip": "Ignorer",
+      "skipHint": "Ne pas ajouter cet élément",
+      "keepBoth": "Conserver les deux",
+      "keepBothHint": "Enregistrer l’élément entrant sous {{name}}",
+      "replace": "Remplacer",
+      "replaceHint": "Écraser le fichier existant. Une instantané de version est conservé si possible.",
+      "replaceFolderHint": "Écrase les fichiers du même nom dans ce dossier. Les autres fichiers restent.",
+      "merge": "Fusionner",
+      "mergeHint": "Conserver le dossier existant et y ajouter les fichiers entrants",
+      "applyAll": "Appliquer à tous les conflits restants",
+      "applyAllHint": "Utiliser cette action pour le reste de ce dépôt ou transfert",
+      "cancelRest": "Annuler le reste",
+      "progress": "{{current}} sur {{total}}",
+      "typeMismatch": "Un {{destKind}} nommé « {{name}} » est déjà ici. L’élément entrant est un {{incomingKind}}.",
+      "skipped": "Ignoré",
+      "cancelled": "Annulé"
+    }
   },
   "firewall": {
     "profiles": {
@@ -5003,7 +5031,8 @@
       "pathOutsideSandbox": "Chemin hors bac à sable : {{target}}",
       "notFoundRel": "Introuvable : {{relPath}}",
       "fileNotFoundRel": "Fichier introuvable : {{relPath}}",
-      "notFoundFrom": "Introuvable : {{fromPath}}"
+      "notFoundFrom": "Introuvable : {{fromPath}}",
+      "alreadyExists": "Existe déjà : {{name}}"
     },
     "dns": {
       "needZoneServerIp": "Saisissez la zone et l'IP du serveur",

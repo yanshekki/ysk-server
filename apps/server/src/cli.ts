@@ -1024,7 +1024,7 @@ async function mainInner(
           process.stderr.write(`${tl('cli.usage.files.rename.--from.rel.--to.35a260')}\n`);
           return 2;
         }
-        const result = fm.rename(from, to);
+        const result = fm.rename(from, to, { ifExists: 'overwrite' });
         const own = await maybeChown([to]);
         printJson({ ok: true, root: rootKey, ...result, ...own });
         return 0;
@@ -1037,7 +1037,7 @@ async function mainInner(
           process.stderr.write(`${tl('cli.usage.files.copy.--from.rel.--to.5337f4')}\n`);
           return 2;
         }
-        const result = fm.copy(from, to);
+        const result = fm.copy(from, to, { ifExists: 'overwrite' });
         const own = await maybeChown([to]);
         printJson({ ok: true, root: rootKey, ...result, ...own });
         return 0;
@@ -1050,7 +1050,7 @@ async function mainInner(
           process.stderr.write(`${tl('cli.usage.files.move.--from.rel.--to.75cf5d')}\n`);
           return 2;
         }
-        const result = fm.move(from, to);
+        const result = fm.move(from, to, { ifExists: 'overwrite' });
         const own = await maybeChown([to]);
         printJson({ ok: true, root: rootKey, ...result, ...own });
         return 0;

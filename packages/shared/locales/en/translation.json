@@ -3699,7 +3699,35 @@
     "publicShareBtFailed": "WebTorrent failed: {{detail}}",
     "publicShareBtNeedMagnet": "No magnet URI for this share",
     "publicShareBtUnsupported": "This browser cannot run WebTorrent; use magnet or .torrent instead",
-    "btNone": "—"
+    "btNone": "—",
+    "uploadStatusSkipped": "Skipped",
+    "uploadStatusCancelled": "Cancelled",
+    "conflict": {
+      "titleFile": "An item named “{{name}}” already exists",
+      "titleFolder": "A folder named “{{name}}” already exists",
+      "descFile": "Choose what to do. Nothing is overwritten until you pick Replace.",
+      "descFolder": "Choose what to do. Merge keeps the existing folder and continues with its contents.",
+      "incoming": "Incoming",
+      "existing": "Already here",
+      "kindFile": "File",
+      "kindFolder": "Folder",
+      "skip": "Skip",
+      "skipHint": "Do not add this item",
+      "keepBoth": "Keep both",
+      "keepBothHint": "Save incoming as {{name}}",
+      "replace": "Replace",
+      "replaceHint": "Overwrite the existing file. A version snapshot is kept when possible.",
+      "replaceFolderHint": "Overwrite files with the same names inside this folder. Other files stay.",
+      "merge": "Merge",
+      "mergeHint": "Keep the existing folder and add incoming files into it",
+      "applyAll": "Apply to all remaining conflicts",
+      "applyAllHint": "Use this action for the rest of this drop or transfer",
+      "cancelRest": "Cancel remaining",
+      "progress": "{{current}} of {{total}}",
+      "typeMismatch": "A {{destKind}} named “{{name}}” is already here. Incoming is a {{incomingKind}}.",
+      "skipped": "Skipped",
+      "cancelled": "Cancelled"
+    }
   },
   "firewall": {
     "profiles": {
@@ -5003,7 +5031,8 @@
       "pathOutsideSandbox": "Path outside sandbox: {{target}}",
       "notFoundRel": "Not found: {{relPath}}",
       "fileNotFoundRel": "File not found: {{relPath}}",
-      "notFoundFrom": "Not found: {{fromPath}}"
+      "notFoundFrom": "Not found: {{fromPath}}",
+      "alreadyExists": "Already exists: {{name}}"
     },
     "dns": {
       "needZoneServerIp": "Enter zone and server IP",

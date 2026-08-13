@@ -3699,7 +3699,35 @@
     "publicShareBtFailed": "WebTorrent falló: {{detail}}",
     "publicShareBtNeedMagnet": "No hay URI magnético para este recurso compartido",
     "publicShareBtUnsupported": "Este navegador no puede ejecutar WebTorrent; use magnet o .torrent en su lugar",
-    "btNone": "—"
+    "btNone": "—",
+    "uploadStatusSkipped": "Omitido",
+    "uploadStatusCancelled": "Cancelado",
+    "conflict": {
+      "titleFile": "Ya existe un elemento llamado “{{name}}”",
+      "titleFolder": "Ya existe una carpeta llamada “{{name}}”",
+      "descFile": "Elige qué hacer. No se sobrescribe nada hasta que pulses Reemplazar.",
+      "descFolder": "Elige qué hacer. Combinar conserva la carpeta existente y sigue con su contenido.",
+      "incoming": "Entrante",
+      "existing": "Ya está aquí",
+      "kindFile": "Archivo",
+      "kindFolder": "Carpeta",
+      "skip": "Omitir",
+      "skipHint": "No añadir este elemento",
+      "keepBoth": "Conservar ambos",
+      "keepBothHint": "Guardar el entrante como {{name}}",
+      "replace": "Reemplazar",
+      "replaceHint": "Sobrescribir el archivo existente. Se guarda una instantánea de versión si es posible.",
+      "replaceFolderHint": "Sobrescribe los archivos con el mismo nombre en esta carpeta. Los demás se quedan.",
+      "merge": "Combinar",
+      "mergeHint": "Conservar la carpeta existente y añadir los archivos entrantes dentro",
+      "applyAll": "Aplicar a todos los conflictos restantes",
+      "applyAllHint": "Usar esta acción para el resto de este arrastre o transferencia",
+      "cancelRest": "Cancelar el resto",
+      "progress": "{{current}} de {{total}}",
+      "typeMismatch": "Ya hay {{destKind}} llamado “{{name}}”. Lo que llega es {{incomingKind}}.",
+      "skipped": "Omitido",
+      "cancelled": "Cancelado"
+    }
   },
   "firewall": {
     "profiles": {
@@ -5003,7 +5031,8 @@
       "pathOutsideSandbox": "Ruta fuera del arenero: {{target}}",
       "notFoundRel": "No encontrado: {{relPath}}",
       "fileNotFoundRel": "Archivo no encontrado: {{relPath}}",
-      "notFoundFrom": "No encontrado: {{fromPath}}"
+      "notFoundFrom": "No encontrado: {{fromPath}}",
+      "alreadyExists": "Ya existe: {{name}}"
     },
     "dns": {
       "needZoneServerIp": "Ingrese la zona y la IP del servidor",

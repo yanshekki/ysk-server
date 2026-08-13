@@ -83,7 +83,8 @@
     "pathOutsideSandbox": "سینڈ باکس سے باہر کا راستہ: {{target}}",
     "notFoundRel": "نہیں ملا: {{relPath}}",
     "fileNotFoundRel": "فائل نہیں ملی: {{relPath}}",
-    "notFoundFrom": "نہیں ملا: {{fromPath}}"
+    "notFoundFrom": "نہیں ملا: {{fromPath}}",
+    "alreadyExists": "پہلے سے موجود ہے: {{name}}"
   },
   "dns": {
     "needZoneServerIp": "زون اور سرور IP درج کریں۔",

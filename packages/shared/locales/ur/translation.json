@@ -3699,7 +3699,35 @@
     "publicShareBtFailed": "WebTorrent ناکام ہو گیا: {{detail}}",
     "publicShareBtNeedMagnet": "اس شیئر کے لیے کوئی میگنیٹ URI نہیں ہے۔",
     "publicShareBtUnsupported": "یہ براؤزر WebTorrent نہیں چلا سکتا۔ اس کے بجائے مقناطیس یا .torrent استعمال کریں۔",
-    "btNone": "—"
+    "btNone": "—",
+    "uploadStatusSkipped": "چھوڑ دیا",
+    "uploadStatusCancelled": "منسوخ",
+    "conflict": {
+      "titleFile": "“{{name}}” نام کی چیز پہلے سے موجود ہے",
+      "titleFolder": "“{{name}}” نام کا فولڈر پہلے سے موجود ہے",
+      "descFile": "کیا کرنا ہے منتخب کریں۔ تبدیل کریں دبانے تک کچھ اوور رائٹ نہیں ہوگا۔",
+      "descFolder": "کیا کرنا ہے منتخب کریں۔ ضم کریں موجودہ فولڈر رکھتا ہے اور اس کے مواد کو جاری رکھتا ہے۔",
+      "incoming": "آنے والی",
+      "existing": "یہاں پہلے سے",
+      "kindFile": "فائل",
+      "kindFolder": "فولڈر",
+      "skip": "چھوڑیں",
+      "skipHint": "اس چیز کو شامل نہ کریں",
+      "keepBoth": "دونوں رکھیں",
+      "keepBothHint": "آنے والی چیز کو {{name}} کے طور پر محفوظ کریں",
+      "replace": "تبدیل کریں",
+      "replaceHint": "موجودہ فائل اوور رائٹ کریں۔ ممکن ہو تو ورژن سنیپ شاٹ رکھا جاتا ہے۔",
+      "replaceFolderHint": "اس فولڈر میں ہم نام فائلیں اوور رائٹ ہوں گی۔ باقی فائلیں رہیں گی۔",
+      "merge": "ضم کریں",
+      "mergeHint": "موجودہ فولڈر رکھیں اور آنے والی فائلیں اس میں شامل کریں",
+      "applyAll": "باقی تمام نام ٹکراؤ پر لاگو کریں",
+      "applyAllHint": "اس ڈراپ یا منتقلی کے باقی حصے کے لیے یہی عمل استعمال کریں",
+      "cancelRest": "باقی منسوخ کریں",
+      "progress": "{{current}} / {{total}}",
+      "typeMismatch": "یہاں پہلے سے “{{name}}” نام کا {{destKind}} ہے۔ آنے والی چیز {{incomingKind}} ہے۔",
+      "skipped": "چھوڑ دیا",
+      "cancelled": "منسوخ"
+    }
   },
   "firewall": {
     "profiles": {
@@ -5003,7 +5031,8 @@
       "pathOutsideSandbox": "سینڈ باکس سے باہر کا راستہ: {{target}}",
       "notFoundRel": "نہیں ملا: {{relPath}}",
       "fileNotFoundRel": "فائل نہیں ملی: {{relPath}}",
-      "notFoundFrom": "نہیں ملا: {{fromPath}}"
+      "notFoundFrom": "نہیں ملا: {{fromPath}}",
+      "alreadyExists": "پہلے سے موجود ہے: {{name}}"
     },
     "dns": {
       "needZoneServerIp": "زون اور سرور IP درج کریں۔",

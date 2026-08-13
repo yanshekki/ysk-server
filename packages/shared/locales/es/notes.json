@@ -83,7 +83,8 @@
     "pathOutsideSandbox": "Ruta fuera del arenero: {{target}}",
     "notFoundRel": "No encontrado: {{relPath}}",
     "fileNotFoundRel": "Archivo no encontrado: {{relPath}}",
-    "notFoundFrom": "No encontrado: {{fromPath}}"
+    "notFoundFrom": "No encontrado: {{fromPath}}",
+    "alreadyExists": "Ya existe: {{name}}"
   },
   "dns": {
     "needZoneServerIp": "Ingrese la zona y la IP del servidor",

@@ -1,7 +1,13 @@
 /**
  * Files feature — ownCloud-style sandboxed API client.
  */
-import type { FileEntry, TrashEntry, FileShare } from 'ysk-server-shared';
+import type {
+  DirIfExists,
+  FileEntry,
+  FileIfExists,
+  FileShare,
+  TrashEntry,
+} from 'ysk-server-shared';
 import { api } from '../../shared/services/api';
 
 export type { FileEntry, TrashEntry, FileShare } from 'ysk-server-shared';
@@ -48,19 +54,24 @@ export const filesApi = {
       body: JSON.stringify({ path, content }),
     }),
 
-  upload: (root: string, dir: string, files: Array<{ name: string; base64: string }>) =>
+  upload: (
+    root: string,
+    dir: string,
+    files: Array<{ name: string; base64: string; ifExists?: FileIfExists }>,
+    opts?: { ifExists?: FileIfExists },
+  ) =>
     api.requestRaw<{ ok: boolean; results: Array<{ path: string; bytes: number }> }>(
       `/api/v1/files/upload?${q(root)}`,
       {
         method: 'POST',
-        body: JSON.stringify({ dir, files }),
+        body: JSON.stringify({ dir, files, ifExists: opts?.ifExists }),
       },
     ),
 
-  mkdir: (root: string, path: string) =>
+  mkdir: (root: string, path: string, opts?: { ifExists?: DirIfExists }) =>
     api.requestRaw(`/api/v1/files/mkdir?${q(root)}`, {
       method: 'POST',
-      body: JSON.stringify({ path }),
+      body: JSON.stringify({ path, ifExists: opts?.ifExists }),
     }),
 
   createText: (root: string, path: string, content = '') =>
@@ -99,22 +110,22 @@ export const filesApi = {
       { method: 'DELETE' },
     ),
 
-  rename: (root: string, from: string, to: string) =>
+  rename: (root: string, from: string, to: string, opts?: { ifExists?: FileIfExists }) =>
     api.requestRaw(`/api/v1/files/rename?${q(root)}`, {
       method: 'POST',
-      body: JSON.stringify({ from, to }),
+      body: JSON.stringify({ from, to, ifExists: opts?.ifExists }),
     }),
 
-  copy: (root: string, from: string, to: string) =>
+  copy: (root: string, from: string, to: string, opts?: { ifExists?: FileIfExists }) =>
     api.requestRaw(`/api/v1/files/copy?${q(root)}`, {
       method: 'POST',
-      body: JSON.stringify({ from, to }),
+      body: JSON.stringify({ from, to, ifExists: opts?.ifExists }),
     }),
 
-  move: (root: string, from: string, to: string) =>
+  move: (root: string, from: string, to: string, opts?: { ifExists?: FileIfExists }) =>
     api.requestRaw(`/api/v1/files/move?${q(root)}`, {
       method: 'POST',
-      body: JSON.stringify({ from, to }),
+      body: JSON.stringify({ from, to, ifExists: opts?.ifExists }),
     }),
 
   trash: (root: string) =>

@@ -3,7 +3,7 @@
  * Extracted from files-write.ts. Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { tl } from 'ysk-server-shared';
+import { parseDirIfExists, parseFileIfExists, tl } from 'ysk-server-shared';
 import type { UserDto } from 'ysk-server-shared';
 import type { FileManager } from 'ysk-server-core';
 import type { AppContext } from '../app-context.js';
@@ -29,14 +29,20 @@ export async function handleFilesContentRoutes(
 
   if (method === 'PUT' && url.pathname === '/api/v1/files/write') {
     const raw = await readBody(req);
-    const data = JSON.parse(raw || '{}') as { path?: string; content?: string; base64?: string };
+    const data = JSON.parse(raw || '{}') as {
+      path?: string;
+      content?: string;
+      base64?: string;
+      ifExists?: string;
+    };
     if (!data.path) {
       sendJson(res, 400, { ok: false, message: tl('notes.needPath') });
       return true;
     }
+    const writeOpts = { ifExists: parseFileIfExists(data.ifExists, 'overwrite') };
     const result = data.base64
-      ? fm.writeBase64(data.path, data.base64)
-      : fm.writeText(data.path, data.content ?? '');
+      ? fm.writeBase64(data.path, data.base64, writeOpts)
+      : fm.writeText(data.path, data.content ?? '', writeOpts);
     const own = await chownProjectRels(ctx, owner, [data.path]);
     ctx.audit.append({
       actor: user.username,
@@ -52,7 +58,8 @@ export async function handleFilesContentRoutes(
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as {
       dir?: string;
-      files?: Array<{ name: string; base64: string }>;
+      files?: Array<{ name: string; base64: string; ifExists?: string }>;
+      ifExists?: string;
     };
     const dir = (data.dir ?? '.').replace(/\/$/, '') || '.';
     const files = data.files ?? [];
@@ -60,6 +67,7 @@ export async function handleFilesContentRoutes(
       sendJson(res, 400, { ok: false, message: tl('notes.auto.n1428') });
       return true;
     }
+    const defaultIf = parseFileIfExists(data.ifExists, 'fail');
     const results: Array<{ path: string; bytes: number }> = [];
     const paths: string[] = [];
     // Allow nested relative paths from folder drag-drop (e.g. photos/a.jpg)
@@ -72,8 +80,11 @@ export async function handleFilesContentRoutes(
         .join('/');
       if (!rel) continue;
       const path = dir === '.' ? rel : `${dir.replace(/\/$/, '')}/${rel}`;
-      results.push(fm.writeBase64(path, f.base64));
-      paths.push(path);
+      const written = fm.writeBase64(path, f.base64, {
+        ifExists: parseFileIfExists(f.ifExists, defaultIf),
+      });
+      results.push(written);
+      paths.push(written.path);
     }
     const own = await chownProjectRels(ctx, owner, paths);
     ctx.audit.append({
@@ -87,12 +98,12 @@ export async function handleFilesContentRoutes(
 
   if (method === 'POST' && url.pathname === '/api/v1/files/mkdir') {
     const raw = await readBody(req);
-    const data = JSON.parse(raw || '{}') as { path?: string };
+    const data = JSON.parse(raw || '{}') as { path?: string; ifExists?: string };
     if (!data.path?.trim()) {
       sendJson(res, 400, { ok: false, message: tl('notes.needPath') });
       return true;
     }
-    const result = fm.mkdir(data.path.trim());
+    const result = fm.mkdir(data.path.trim(), { ifExists: parseDirIfExists(data.ifExists) });
     const own = await chownProjectRels(ctx, owner, [data.path.trim()]);
     ctx.audit.append({
       actor: user.username,

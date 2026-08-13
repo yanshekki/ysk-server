@@ -83,7 +83,8 @@
     "pathOutsideSandbox": "Caminho fora da sandbox: {{target}}",
     "notFoundRel": "Não encontrado: {{relPath}}",
     "fileNotFoundRel": "Arquivo não encontrado: {{relPath}}",
-    "notFoundFrom": "Não encontrado: {{fromPath}}"
+    "notFoundFrom": "Não encontrado: {{fromPath}}",
+    "alreadyExists": "Já existe: {{name}}"
   },
   "dns": {
     "needZoneServerIp": "Insira a zona e o IP do servidor",

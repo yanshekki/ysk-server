@@ -3699,7 +3699,35 @@
     "publicShareBtFailed": "WebTorrent gagal: {{detail}}",
     "publicShareBtNeedMagnet": "Tidak ada URI magnet untuk pembagian ini",
     "publicShareBtUnsupported": "Browser ini tidak dapat menjalankan WebTorrent; gunakan magnet atau .torrent sebagai gantinya",
-    "btNone": "—"
+    "btNone": "—",
+    "uploadStatusSkipped": "Dilewati",
+    "uploadStatusCancelled": "Dibatalkan",
+    "conflict": {
+      "titleFile": "Item bernama “{{name}}” sudah ada",
+      "titleFolder": "Folder bernama “{{name}}” sudah ada",
+      "descFile": "Pilih tindakan. Tidak ada yang ditimpa sebelum Anda memilih Ganti.",
+      "descFolder": "Pilih tindakan. Gabung mempertahankan folder yang ada lalu lanjut ke isinya.",
+      "incoming": "Yang akan ditambah",
+      "existing": "Sudah di sini",
+      "kindFile": "Berkas",
+      "kindFolder": "Folder",
+      "skip": "Lewati",
+      "skipHint": "Jangan tambahkan item ini",
+      "keepBoth": "Simpan keduanya",
+      "keepBothHint": "Simpan yang masuk sebagai {{name}}",
+      "replace": "Ganti",
+      "replaceHint": "Timpa berkas yang ada. Cuplikan versi disimpan jika memungkinkan.",
+      "replaceFolderHint": "Timpa berkas dengan nama yang sama di folder ini. Berkas lain tetap.",
+      "merge": "Gabung",
+      "mergeHint": "Pertahankan folder yang ada dan tambahkan berkas masuk ke dalamnya",
+      "applyAll": "Terapkan ke semua konflik nama yang tersisa",
+      "applyAllHint": "Gunakan tindakan ini untuk sisa drop atau transfer ini",
+      "cancelRest": "Batalkan sisanya",
+      "progress": "{{current}} dari {{total}}",
+      "typeMismatch": "Sudah ada {{destKind}} bernama “{{name}}”. Yang masuk adalah {{incomingKind}}.",
+      "skipped": "Dilewati",
+      "cancelled": "Dibatalkan"
+    }
   },
   "firewall": {
     "profiles": {
@@ -5003,7 +5031,8 @@
       "pathOutsideSandbox": "Jalur di luar kotak pasir: {{target}}",
       "notFoundRel": "Tidak ditemukan: {{relPath}}",
       "fileNotFoundRel": "Berkas tidak ditemukan: {{relPath}}",
-      "notFoundFrom": "Tidak ditemukan: {{fromPath}}"
+      "notFoundFrom": "Tidak ditemukan: {{fromPath}}",
+      "alreadyExists": "Sudah ada: {{name}}"
     },
     "dns": {
       "needZoneServerIp": "Masukkan zona dan IP server",

@@ -23,7 +23,6 @@ export default defineConfig({
         'src/databases.ts',
         'src/dto.ts',
         'src/email-domain.ts',
-        'src/files.ts',
         'src/fleet.ts',
         'src/ftp.ts',
         'src/metrics.ts',

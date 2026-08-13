@@ -3699,7 +3699,35 @@
     "publicShareBtFailed": "WebTorrent が失敗しました: {{detail}}",
     "publicShareBtNeedMagnet": "この共有にはマグネット URI がありません",
     "publicShareBtUnsupported": "このブラウザでは WebTorrent を実行できません。代わりにマグネットまたは .torrent を使用してください",
-    "btNone": "—"
+    "btNone": "—",
+    "uploadStatusSkipped": "スキップしました",
+    "uploadStatusCancelled": "キャンセルしました",
+    "conflict": {
+      "titleFile": "「{{name}}」という項目は既にあります",
+      "titleFolder": "「{{name}}」というフォルダーは既にあります",
+      "descFile": "処理方法を選んでください。「置き換え」を選ぶまで上書きしません。",
+      "descFolder": "処理方法を選んでください。「マージ」は既存フォルダーを残し、中身を続けて処理します。",
+      "incoming": "追加する項目",
+      "existing": "既にある項目",
+      "kindFile": "ファイル",
+      "kindFolder": "フォルダー",
+      "skip": "スキップ",
+      "skipHint": "この項目は追加しません",
+      "keepBoth": "両方を残す",
+      "keepBothHint": "追加する項目を {{name}} として保存",
+      "replace": "置き換え",
+      "replaceHint": "既存ファイルを上書きします。可能なら版のスナップショットを残します。",
+      "replaceFolderHint": "このフォルダー内の同名ファイルを上書きします。他のファイルは残します。",
+      "merge": "マージ",
+      "mergeHint": "既存フォルダーを残し、追加ファイルをその中に入れます",
+      "applyAll": "残りの名前の重複すべてに適用",
+      "applyAllHint": "このドロップまたは移動／コピーの残りに同じ操作を使います",
+      "cancelRest": "残りをキャンセル",
+      "progress": "{{current}} / {{total}}",
+      "typeMismatch": "「{{name}}」という{{destKind}}が既にあります。追加しようとしているのは{{incomingKind}}です。",
+      "skipped": "スキップしました",
+      "cancelled": "キャンセルしました"
+    }
   },
   "firewall": {
     "profiles": {
@@ -5003,7 +5031,8 @@
       "pathOutsideSandbox": "サンドボックスの外のパス: {{target}}",
       "notFoundRel": "見つかりません: {{relPath}}",
       "fileNotFoundRel": "ファイルが見つかりません: {{relPath}}",
-      "notFoundFrom": "見つかりません: {{fromPath}}"
+      "notFoundFrom": "見つかりません: {{fromPath}}",
+      "alreadyExists": "同じ名前が既にあります：{{name}}"
     },
     "dns": {
       "needZoneServerIp": "ゾーンとサーバーIPを入力してください",

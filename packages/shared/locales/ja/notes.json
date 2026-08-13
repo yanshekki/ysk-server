@@ -83,7 +83,8 @@
     "pathOutsideSandbox": "サンドボックスの外のパス: {{target}}",
     "notFoundRel": "見つかりません: {{relPath}}",
     "fileNotFoundRel": "ファイルが見つかりません: {{relPath}}",
-    "notFoundFrom": "見つかりません: {{fromPath}}"
+    "notFoundFrom": "見つかりません: {{fromPath}}",
+    "alreadyExists": "同じ名前が既にあります：{{name}}"
   },
   "dns": {
     "needZoneServerIp": "ゾーンとサーバーIPを入力してください",

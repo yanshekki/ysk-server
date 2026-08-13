@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
+import { uniqueFileName } from 'ysk-server-shared';
 import {
   PageGuide,
   ActionBar,
@@ -41,6 +42,16 @@ import {
   collectFromFileList,
   type CollectedUpload,
 } from '../features/files/drop-collect';
+import { FileNameConflictDialog } from '../features/files/FileNameConflictDialog';
+import {
+  destKindOf,
+  planCollectedUploads,
+  resolveAppliedAction,
+  type ConflictAction,
+  type ConflictDecision,
+  type DestNameEntry,
+  type FileNameConflictPrompt,
+} from '../features/files/name-conflict';
 import { projectsApi } from '../features/projects';
 import { authStore } from '../shared/stores/auth-store';
 import { toast } from '../shared/stores/toast-store';
@@ -66,7 +77,7 @@ type ViewMode = 'list' | 'grid';
 type SideView = 'all' | 'favorites' | 'shares' | 'trash';
 type SortKey = 'name' | 'size' | 'mtime';
 
-type UploadJobStatus = 'queued' | 'uploading' | 'done' | 'error';
+type UploadJobStatus = 'queued' | 'uploading' | 'done' | 'error' | 'skipped' | 'cancelled';
 
 type UploadJob = {
   id: string;
@@ -78,6 +89,8 @@ type UploadJob = {
   progress: number;
   error?: string;
   file?: File;
+  destRelativePath?: string;
+  ifExists?: 'fail' | 'overwrite' | 'rename' | 'merge';
 };
 
 const UPLOAD_CONCURRENCY = 4;
@@ -485,6 +498,8 @@ export function FilesPage() {
   const [dragDepth, setDragDepth] = useState(0);
   const [uploads, setUploads] = useState<UploadJob[]>([]);
   const [uploadPanelOpen, setUploadPanelOpen] = useState(false);
+  const [conflictPrompt, setConflictPrompt] = useState<FileNameConflictPrompt | null>(null);
+  const conflictWaiter = useRef<((d: ConflictDecision) => void) | null>(null);
 
   // dialogs
   const [mkdirOpen, setMkdirOpen] = useState(false);
@@ -816,6 +831,28 @@ export function FilesPage() {
     setUploads((prev) => prev.map((u) => (u.id === id ? { ...u, ...patch } : u)));
   }, []);
 
+  const askConflict = useCallback((prompt: FileNameConflictPrompt) => {
+    return new Promise<ConflictDecision>((resolve) => {
+      conflictWaiter.current = resolve;
+      setConflictPrompt(prompt);
+    });
+  }, []);
+
+  function decideConflict(decision: ConflictDecision) {
+    setConflictPrompt(null);
+    const waiter = conflictWaiter.current;
+    conflictWaiter.current = null;
+    waiter?.(decision);
+  }
+
+  async function listDestEntries(destDir: string): Promise<DestNameEntry[]> {
+    if (destDir === path || ((destDir === '.' || destDir === '') && (path === '.' || path === ''))) {
+      return items.map((i) => ({ name: i.name, type: i.type }));
+    }
+    const r = await filesApi.list(root, destDir);
+    return r.items.map((i) => ({ name: i.name, type: i.type }));
+  }
+
   async function enqueueUploads(collected: CollectedUpload[]) {
     if (!collected.length) return;
     if (collected.length > UPLOAD_MAX_ITEMS) {
@@ -824,31 +861,49 @@ export function FilesPage() {
       );
     }
     const batch = collected.slice(0, UPLOAD_MAX_ITEMS);
+    const targetDir = path;
+    const rootKey = root;
+    const destItems = items.map((i) => ({ name: i.name, type: i.type }));
 
-    const jobs: UploadJob[] = batch.map((c, i) => ({
-      id: `${Date.now()}-${i}-${c.relativePath}`,
-      relativePath: c.relativePath,
+    const planned = await planCollectedUploads({
+      collected: batch,
+      destItems,
+      destDir: targetDir,
+      listDir: (rel) => listDestEntries(rel),
+      ask: askConflict,
+    });
+
+    const jobs: UploadJob[] = planned.map((c, i) => ({
+      id: `${Date.now()}-${i}-${c.destRelativePath}`,
+      relativePath: c.destRelativePath,
       folderLabel: c.folderLabel,
       kind: c.kind,
-      status: 'queued',
-      progress: 0,
+      status: c.cancelled ? 'cancelled' : c.skipped ? 'skipped' : 'queued',
+      progress: c.cancelled || c.skipped ? 100 : 0,
       file: c.file,
+      destRelativePath: c.destRelativePath,
+      ifExists: c.ifExists,
     }));
 
     setUploads((prev) => [...jobs, ...prev].slice(0, 300));
     setUploadPanelOpen(true);
 
-    const targetDir = path;
-    const rootKey = root;
+    const active = jobs.filter((j) => j.status === 'queued');
     let okCount = 0;
     let errCount = 0;
+    const skipCount = jobs.filter((j) => j.status === 'skipped' || j.status === 'cancelled').length;
 
-    await runPool(jobs, UPLOAD_CONCURRENCY, async (job) => {
+    await runPool(active, UPLOAD_CONCURRENCY, async (job) => {
       patchUpload(job.id, { status: 'uploading', progress: 2 });
       try {
         if (job.kind === 'dir') {
-          const full = joinUploadPath(targetDir, job.relativePath);
-          await filesApi.mkdir(rootKey, full);
+          const full = joinUploadPath(targetDir, job.destRelativePath || job.relativePath);
+          await filesApi.mkdir(rootKey, full, {
+            ifExists:
+              job.ifExists === 'fail' || job.ifExists === 'rename' || job.ifExists === 'overwrite'
+                ? job.ifExists
+                : 'merge',
+          });
           patchUpload(job.id, { status: 'done', progress: 100 });
           okCount += 1;
           return;
@@ -863,16 +918,19 @@ export function FilesPage() {
           return;
         }
         const base64 = await fileToBase64(job.file, (ratio) => {
-          // Reading local file: 0–70%
           patchUpload(job.id, {
             status: 'uploading',
             progress: Math.round(ratio * 70),
           });
         });
         patchUpload(job.id, { progress: 75 });
-        await filesApi.upload(rootKey, targetDir, [
-          { name: job.relativePath, base64 },
-        ]);
+        const ifExists = job.ifExists === 'merge' ? 'overwrite' : (job.ifExists ?? 'fail');
+        await filesApi.upload(
+          rootKey,
+          targetDir,
+          [{ name: job.destRelativePath || job.relativePath, base64, ifExists }],
+          { ifExists },
+        );
         patchUpload(job.id, { status: 'done', progress: 100 });
         okCount += 1;
       } catch (e) {
@@ -888,6 +946,9 @@ export function FilesPage() {
     await refresh();
     if (okCount > 0) setMsg(t('files.uploadDone', { count: okCount }));
     if (errCount > 0) setError(t('files.uploadSomeFailed', { count: errCount }));
+    if (skipCount > 0 && okCount === 0 && errCount === 0) {
+      setMsg(t('files.conflict.skipped'));
+    }
   }
 
   async function onUploadFiles(fileList: FileList | File[]) {
@@ -916,7 +977,9 @@ export function FilesPage() {
       uploading: 0,
       queued: 1,
       error: 2,
-      done: 3,
+      skipped: 3,
+      cancelled: 4,
+      done: 5,
     };
     const visible = [...uploads]
       .sort((a, b) => rank[a.status] - rank[b.status])
@@ -1726,7 +1789,11 @@ export function FilesPage() {
                                   ? t('files.uploadStatusError')
                                   : u.status === 'queued'
                                     ? t('files.uploadStatusQueued')
-                                    : `${u.progress}%`}
+                                    : u.status === 'skipped'
+                                      ? t('files.uploadStatusSkipped')
+                                      : u.status === 'cancelled'
+                                        ? t('files.uploadStatusCancelled')
+                                        : `${u.progress}%`}
                             </span>
                           </div>
                           <div className="fm-upload-item__track">
@@ -2553,11 +2620,53 @@ export function FilesPage() {
               onClick={() =>
                 void run(async () => {
                   if (!renameTarget) return;
+                  const nextName = renameTo.trim();
+                  if (!nextName) throw new Error(t('files.nameRequired'));
                   const parent = renameTarget.path.includes('/')
                     ? renameTarget.path.slice(0, renameTarget.path.lastIndexOf('/'))
                     : '.';
-                  const to = joinPath(parent, renameTo.trim());
-                  await filesApi.rename(root, renameTarget.path, to);
+                  if (nextName === renameTarget.name) {
+                    setRenameTarget(null);
+                    return;
+                  }
+                  const destType = destKindOf(items, nextName);
+                  if (destType) {
+                    const incomingType = renameTarget.type === 'dir' ? 'dir' : 'file';
+                    const keepBothName = uniqueFileName(
+                      nextName,
+                      items.map((i) => i.name),
+                      { kind: incomingType },
+                    );
+                    const decision = await askConflict({
+                      name: nextName,
+                      destType,
+                      incomingType,
+                      destPath: joinPath(parent, nextName),
+                      keepBothName,
+                      current: 1,
+                      total: 1,
+                      remaining: 1,
+                    });
+                    if (decision.action === 'skip' || decision.action === 'cancel') return;
+                    if (decision.action === 'keepBoth') {
+                      await filesApi.rename(
+                        root,
+                        renameTarget.path,
+                        joinPath(parent, keepBothName),
+                        { ifExists: 'rename' },
+                      );
+                      setRenameTarget(null);
+                      return;
+                    }
+                    await filesApi.rename(root, renameTarget.path, joinPath(parent, nextName), {
+                      ifExists: 'overwrite',
+                    });
+                    setRenameTarget(null);
+                    return;
+                  }
+                  await filesApi.rename(root, renameTarget.path, joinPath(parent, nextName), {
+                    ifExists: 'fail',
+                  });
                   setRenameTarget(null);
                 }, t('files.renamed'))
               }
@@ -2604,10 +2713,52 @@ export function FilesPage() {
                 void run(async () => {
                   if (!moveTarget) return;
                   const destDir = moveDest.trim() || '.';
-                  for (const e of moveTarget.entries) {
+                  const destEntries = await listDestEntries(destDir);
+                  const taken = new Set(destEntries.map((i) => i.name));
+                  let applyAll: ConflictAction | null = null;
+                  for (let i = 0; i < moveTarget.entries.length; i++) {
+                    const e = moveTarget.entries[i]!;
+                    const incomingType = e.type === 'dir' ? 'dir' : 'file';
+                    const destType = destKindOf(destEntries, e.name);
                     const to = joinPath(destDir, e.name);
-                    if (moveTarget.mode === 'copy') await filesApi.copy(root, e.path, to);
-                    else await filesApi.move(root, e.path, to);
+                    const transfer = (dest: string, ifExists: 'fail' | 'overwrite' | 'rename') =>
+                      moveTarget.mode === 'copy'
+                        ? filesApi.copy(root, e.path, dest, { ifExists })
+                        : filesApi.move(root, e.path, dest, { ifExists });
+                    if (!destType) {
+                      await transfer(to, 'fail');
+                      taken.add(e.name);
+                      destEntries.push({ name: e.name, type: incomingType });
+                      continue;
+                    }
+                    let action = resolveAppliedAction(applyAll, incomingType, destType);
+                    if (!action) {
+                      const keepBothName = uniqueFileName(e.name, taken, { kind: incomingType });
+                      const decision = await askConflict({
+                        name: e.name,
+                        destType,
+                        incomingType,
+                        destPath: to,
+                        keepBothName,
+                        current: i + 1,
+                        total: moveTarget.entries.length,
+                        remaining: moveTarget.entries.length - i,
+                      });
+                      if (decision.applyToAll) applyAll = decision.action;
+                      action =
+                        resolveAppliedAction(decision.action, incomingType, destType) ??
+                        decision.action;
+                    }
+                    if (action === 'cancel') break;
+                    if (action === 'skip') continue;
+                    if (action === 'keepBoth') {
+                      const keepName = uniqueFileName(e.name, taken, { kind: incomingType });
+                      taken.add(keepName);
+                      destEntries.push({ name: keepName, type: incomingType });
+                      await transfer(joinPath(destDir, keepName), 'rename');
+                      continue;
+                    }
+                    await transfer(to, 'overwrite');
                   }
                   setMoveTarget(null);
                 }, moveTarget?.mode === 'copy' ? t('files.copied') : t('files.moved'))
@@ -3099,6 +3250,12 @@ export function FilesPage() {
           </Field>
         </FormLayout>
       </Modal>
+
+      <FileNameConflictDialog
+        open={Boolean(conflictPrompt)}
+        prompt={conflictPrompt}
+        onDecide={decideConflict}
+      />
 
       {/* Delete confirm */}
       <ConfirmDialog

@@ -90,4 +90,42 @@ describe('FileManager sandbox', () => {
 
     rmSync(dir, { recursive: true, force: true });
   });
+
+  it('write/copy/rename ifExists fail, rename, overwrite', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-fm-if-'));
+    try {
+      const fm = new FileManager(dir);
+      fm.writeText('a.txt', 'one');
+      expect(() => fm.writeText('a.txt', 'two', { ifExists: 'fail' })).toThrow(YskError);
+      const renamed = fm.writeText('a.txt', 'two', { ifExists: 'rename' });
+      expect(renamed.path).toBe('a (1).txt');
+      expect(fm.readText('a.txt').content).toBe('one');
+      expect(fm.readText('a (1).txt').content).toBe('two');
+
+      fm.writeText('a.txt', 'replaced', { ifExists: 'overwrite' });
+      expect(fm.readText('a.txt').content).toBe('replaced');
+
+      fm.mkdir('docs');
+      expect(fm.mkdir('docs').path).toBe('docs');
+      expect(() => fm.mkdir('docs', { ifExists: 'fail' })).toThrow(YskError);
+      expect(fm.mkdir('docs', { ifExists: 'rename' }).path).toBe('docs (1)');
+      fm.writeText('as-file', 'x');
+      expect(fm.mkdir('as-file', { ifExists: 'overwrite' }).path).toBe('as-file');
+      expect(fm.stat('as-file').type).toBe('dir');
+
+      fm.writeText('b.txt', 'B');
+      expect(() => fm.copy('b.txt', 'a.txt')).toThrow(YskError);
+      const kept = fm.copy('b.txt', 'a.txt', { ifExists: 'rename' });
+      expect(kept.to).toBe('a (2).txt');
+      fm.copy('b.txt', 'a.txt', { ifExists: 'overwrite' });
+      expect(fm.readText('a.txt').content).toBe('B');
+
+      fm.writeText('c.txt', 'C');
+      expect(() => fm.rename('c.txt', 'a.txt')).toThrow(YskError);
+      const moved = fm.rename('c.txt', 'a.txt', { ifExists: 'rename' });
+      expect(moved.to).toBe('a (3).txt');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });

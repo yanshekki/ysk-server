@@ -83,7 +83,8 @@
     "pathOutsideSandbox": "المسار خارج صندوق الرمل: {{target}}",
     "notFoundRel": "لم يتم العثور على: {{relPath}}",
     "fileNotFoundRel": "لم يتم العثور على الملف: {{relPath}}",
-    "notFoundFrom": "لم يتم العثور على: {{fromPath}}"
+    "notFoundFrom": "لم يتم العثور على: {{fromPath}}",
+    "alreadyExists": "موجود مسبقاً: {{name}}"
   },
   "dns": {
     "needZoneServerIp": "أدخل المنطقة وعنوان IP الخاص بالخادم",

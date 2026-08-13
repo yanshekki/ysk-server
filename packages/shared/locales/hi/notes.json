@@ -83,7 +83,8 @@
     "pathOutsideSandbox": "सैंडबॉक्स के बाहर का पथ: {{target}}",
     "notFoundRel": "नहीं मिला: {{relPath}}",
     "fileNotFoundRel": "फ़ाइल नहीं मिली: {{relPath}}",
-    "notFoundFrom": "नहीं मिला: {{fromPath}}"
+    "notFoundFrom": "नहीं मिला: {{fromPath}}",
+    "alreadyExists": "पहले से मौजूद है: {{name}}"
   },
   "dns": {
     "needZoneServerIp": "ज़ोन और सर्वर आईपी दर्ज करें",

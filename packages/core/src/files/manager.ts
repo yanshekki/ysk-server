@@ -19,7 +19,14 @@ import {
 import { join, resolve, relative, dirname, basename, extname, sep } from 'node:path';
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
+import {
+  ErrorCodes,
+  YskError,
+  tl,
+  type DirIfExists,
+  type FileIfExists,
+} from 'ysk-server-shared';
+import { alreadyExistsError, resolveDestPath } from './name-conflict.js';
 import { listFileVersions, restoreFileVersion, snapshotFileVersion } from './versions.js';
 
 export interface FileEntry {
@@ -223,21 +230,43 @@ export class FileManager {
       name };
   }
 
-  writeText(relPath: string, content: string): { path: string; bytes: number } {
-    const abs = assertInside(this.root, relPath);
-    this.snapshotIfExists(abs, relPath);
-    mkdirSync(dirname(abs), { recursive: true });
-    writeFileSync(abs, content, 'utf8');
-    return { path: relPath, bytes: Buffer.byteLength(content) };
+  writeText(
+    relPath: string,
+    content: string,
+    opts?: { ifExists?: FileIfExists },
+  ): { path: string; bytes: number } {
+    const dest = this.prepareFileWrite(relPath, opts?.ifExists ?? 'overwrite');
+    writeFileSync(dest.abs, content, 'utf8');
+    return { path: dest.relPath, bytes: Buffer.byteLength(content) };
   }
 
-  writeBase64(relPath: string, base64: string): { path: string; bytes: number } {
-    const abs = assertInside(this.root, relPath);
-    this.snapshotIfExists(abs, relPath);
-    mkdirSync(dirname(abs), { recursive: true });
+  writeBase64(
+    relPath: string,
+    base64: string,
+    opts?: { ifExists?: FileIfExists },
+  ): { path: string; bytes: number } {
+    const dest = this.prepareFileWrite(relPath, opts?.ifExists ?? 'overwrite');
     const buf = Buffer.from(base64, 'base64');
-    writeFileSync(abs, buf);
-    return { path: relPath, bytes: buf.length };
+    writeFileSync(dest.abs, buf);
+    return { path: dest.relPath, bytes: buf.length };
+  }
+
+  /** Resolve dest, snapshot existing file, remove dest dir when replacing a file. */
+  private prepareFileWrite(
+    relPath: string,
+    ifExists: FileIfExists,
+  ): { abs: string; relPath: string } {
+    const abs0 = assertInside(this.root, relPath);
+    const dest = resolveDestPath(abs0, relPath, ifExists, 'file');
+    if (existsSync(dest.abs) && statSync(dest.abs).isDirectory()) {
+      if (ifExists !== 'overwrite') {
+        throw alreadyExistsError(dest.relPath, 'dir');
+      }
+      rmSync(dest.abs, { recursive: true, force: true });
+    }
+    this.snapshotIfExists(dest.abs, dest.relPath);
+    mkdirSync(dirname(dest.abs), { recursive: true });
+    return dest;
   }
 
   /** Snapshot existing file into .versions before overwrite */
@@ -268,8 +297,33 @@ export class FileManager {
     );
   }
 
-  mkdir(relPath: string): { path: string } {
+  mkdir(relPath: string, opts?: { ifExists?: DirIfExists }): { path: string } {
+    const ifExists = opts?.ifExists ?? 'merge';
     const abs = assertInside(this.root, relPath);
+    if (existsSync(abs)) {
+      const st = statSync(abs);
+      if (st.isDirectory()) {
+        if (ifExists === 'fail') throw alreadyExistsError(relPath, 'dir');
+        if (ifExists === 'rename') {
+          const dest = resolveDestPath(abs, relPath, 'rename', 'dir');
+          mkdirSync(dest.abs, { recursive: true });
+          return { path: dest.relPath };
+        }
+        // overwrite + existing dir = keep (same as merge)
+        return { path: relPath };
+      }
+      if (ifExists === 'rename') {
+        const dest = resolveDestPath(abs, relPath, 'rename', 'dir');
+        mkdirSync(dest.abs, { recursive: true });
+        return { path: dest.relPath };
+      }
+      if (ifExists === 'overwrite') {
+        rmSync(abs, { force: true });
+        mkdirSync(abs, { recursive: true });
+        return { path: relPath };
+      }
+      throw alreadyExistsError(relPath, 'file');
+    }
     mkdirSync(abs, { recursive: true });
     return { path: relPath };
   }
@@ -400,35 +454,64 @@ export class FileManager {
     return { ok: true, purged: n };
   }
 
-  rename(fromPath: string, toPath: string): { from: string; to: string } {
+  rename(
+    fromPath: string,
+    toPath: string,
+    opts?: { ifExists?: FileIfExists },
+  ): { from: string; to: string } {
     const fromAbs = assertInside(this.root, fromPath);
-    const toAbs = assertInside(this.root, toPath);
     if (!existsSync(fromAbs)) {
       throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.files.notFoundFrom', { fromPath }), { httpStatus: 404 });
     }
-    mkdirSync(dirname(toAbs), { recursive: true });
-    renameSync(fromAbs, toAbs);
-    return { from: fromPath, to: toPath };
+    const kind = statSync(fromAbs).isDirectory() ? 'dir' : 'file';
+    const ifExists = opts?.ifExists ?? 'fail';
+    const toAbs0 = assertInside(this.root, toPath);
+    if (fromAbs === toAbs0) return { from: fromPath, to: toPath };
+    const dest = resolveDestPath(toAbs0, toPath, ifExists, kind);
+    if (existsSync(dest.abs) && ifExists === 'overwrite') {
+      rmSync(dest.abs, { recursive: true, force: true });
+    }
+    mkdirSync(dirname(dest.abs), { recursive: true });
+    renameSync(fromAbs, dest.abs);
+    return { from: fromPath, to: dest.relPath };
   }
 
-  move(fromPath: string, toPath: string): { from: string; to: string } {
-    return this.rename(fromPath, toPath);
+  move(
+    fromPath: string,
+    toPath: string,
+    opts?: { ifExists?: FileIfExists },
+  ): { from: string; to: string } {
+    return this.rename(fromPath, toPath, opts);
   }
 
-  copy(fromPath: string, toPath: string): { from: string; to: string } {
+  copy(
+    fromPath: string,
+    toPath: string,
+    opts?: { ifExists?: FileIfExists },
+  ): { from: string; to: string } {
     const fromAbs = assertInside(this.root, fromPath);
-    const toAbs = assertInside(this.root, toPath);
     if (!existsSync(fromAbs)) {
       throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.files.notFoundFrom', { fromPath }), { httpStatus: 404 });
     }
-    mkdirSync(dirname(toAbs), { recursive: true });
     const st = statSync(fromAbs);
-    if (st.isDirectory()) {
-      cpSync(fromAbs, toAbs, { recursive: true });
-    } else {
-      copyFileSync(fromAbs, toAbs);
+    const kind = st.isDirectory() ? 'dir' : 'file';
+    const ifExists = opts?.ifExists ?? 'fail';
+    const toAbs0 = assertInside(this.root, toPath);
+    if (fromAbs === toAbs0) return { from: fromPath, to: toPath };
+    const dest = resolveDestPath(toAbs0, toPath, ifExists, kind);
+    if (existsSync(dest.abs) && ifExists === 'overwrite') {
+      const destSt = statSync(dest.abs);
+      if (kind === 'file' || destSt.isFile() || (kind === 'dir' && !destSt.isDirectory())) {
+        rmSync(dest.abs, { recursive: true, force: true });
+      }
     }
-    return { from: fromPath, to: toPath };
+    mkdirSync(dirname(dest.abs), { recursive: true });
+    if (st.isDirectory()) {
+      cpSync(fromAbs, dest.abs, { recursive: true });
+    } else {
+      copyFileSync(fromAbs, dest.abs);
+    }
+    return { from: fromPath, to: dest.relPath };
   }
 
   stat(relPath: string): FileEntry {
