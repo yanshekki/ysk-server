@@ -2,7 +2,8 @@
 
 > 語言：中文 | [English](./product-feature-matrix.md)
 
-**狀態:** product contract (唯一真相來源)  
+**狀態:** 產品契約（準則來源）  
+**重計：** 2026-08-13 — 標記對齊已發布 1.0.7（zip／WebDAV／版本／操作員 2FA／用戶先前誤標 ✗）。  
 **研究基礎：** Hestia Control Panel v1.9.x（文件 + UI + 524 個 `v-*` CLI）與 DirectAdmin（官方文件：獨特功能、託管服務、垃圾郵件、備份、MSS、CustomBuild）— 2026-07。  
 **Rule:** UI never markets competitors. Buttons = 真實操作 or preset deep-links only.
 
@@ -165,8 +166,8 @@
 | F5 | Autoreply / vacation | H | D | ✗ | P0 |
 | F6 | DKIM generate + DNS display | 兩 | 兩 | △ | P0 |
 | F7 | SPF / DMARC suggested records | 兩 | 兩 | △ | P0 |
-| F8 | Webmail link | 兩 | 兩 | ✗ | P1 |
-| F9 | Webmail SSO | — | D | ✗ | Better |
+| F8 | Webmail link | 兩 | 兩 | ✓ | P1 |
+| F9 | Webmail SSO | — | D | ✓ | Better |
 | F10 | Anti-spam per domain | H | D | ✗ | P0 |
 | F11 | Anti-virus toggle | H | D | ✗ | P1 |
 | F12 | SMTP relay | H | D | ✓ | P0 |
@@ -175,7 +176,7 @@
 | F15 | Black/white lists | — | D | ✗ | P1 |
 | F16 | Sieve filters | H | D | ✗ | P1 |
 | F17 | Autodiscover / autoconfig | — | D | ✗ | P0 |
-| F18 | 郵件 queue view / flush | H | D | ✗ | P0 |
+| F18 | 郵件 queue view / flush | H | D | △ | P0 |
 | F19 | Live deliverability check (MX/PTR/25) | 弱 | 弱 | △ | Better |
 | F20 | One-click mail stack install | H | D | △ | P0 |
 | F21 | 郵件 SSL | 兩 | 兩 | △ | P0 |
@@ -191,15 +192,15 @@
 |----|---------|---|---|-----|-----|
 | G1 | Browse / upload / download / delete | 兩 | 兩 | ✓ | P0 |
 | G2 | Mkdir / rename / move / copy | 兩 | 兩 | ✓ | P0 |
-| G3 | chmod | 兩 | 兩 | △ | P0 |
-| G4 | Archive zip/unzip | H | D | ✗ | P0 |
+| G3 | chmod | 兩 | 兩 | ✓ | P0 |
+| G4 | Archive zip/unzip | H | D | ✓ | P0 |
 | G5 | Text edit / preview | 兩 | 兩 | ✓ | P0 |
 | G6 | Trash + restore | 弱 | 弱 | ✓ | Better |
 | G7 | Public share links | 弱 | 弱 | ✓ | Better |
 | G8 | Favorites | 弱 | 弱 | ✓ | Better |
 | G9 | Multi-root (public + per-project) | 弱 | 弱 | ✓ | Better |
-| G10 | Versions / history | 弱 | 弱 | ✗ | P2 |
-| G11 | WebDAV | 弱 | 弱 | ✗ | P2 |
+| G10 | Versions / history | 弱 | 弱 | ✓ | P2 |
+| G11 | WebDAV | 弱 | 弱 | ✓ | P2 |
 | G12 | Search | H | D | △ | P0 |
 
 ---
@@ -333,9 +334,9 @@ Each engine: **data page** + **service page**.
 
 | ID | 功能 | H | D | YSK | Pri |
 |----|---------|---|---|-----|-----|
-| Q1 | User CRUD | 兩 | 兩 | ✗ | P2 |
-| Q2 | Package quotas | 兩 | 兩 | ✗ | P2 |
-| Q3 | Impersonate / login-as | H | D | ✗ | P2 |
+| Q1 | User CRUD | 兩 | 兩 | ✓ | P2 |
+| Q2 | Package quotas | 兩 | 兩 | △ | P2 |
+| Q3 | Impersonate / login-as | H | D | ✓ | P2 |
 | Q4 | 2FA (users) | H | D | ✗ | P0* |
 | Q5 | SSH key / shell | H | D | △ | P1 |
 | Q6 | 功能 sets (email-only) | — | D | ✗ | P2 |
@@ -351,7 +352,7 @@ Each engine: **data page** + **service page**.
 | ID | 功能 | H | D | YSK | Pri |
 |----|---------|---|---|-----|-----|
 | R1 | Change password | 兩 | 兩 | ✓ | P0 |
-| R2 | 2FA | 兩 | 兩 | ✗ | P0 |
+| R2 | 2FA | 兩 | 兩 | ✓ | P0 |
 | R3 | Login / audit log | H | D | ✓ | P0 |
 | R4 | Tool allowlist + human approval | — | — | ✓ | Better |
 | R5 | Session / API token management | H | D | △ | P0 |
@@ -362,7 +363,7 @@ Each engine: **data page** + **service page**.
 
 | ID | 功能 | H | D | YSK | Pri |
 |----|---------|---|---|-----|-----|
-| S1 | Panel self-update | H | D | △ | P0 |
+| S1 | Panel self-update | H | D | ✓ | P0 |
 | S2 | 系統 package updates | H | D | ✓ | P0 |
 | S3 | Component pin / rebuild (CustomBuild-class) | — | D | ✗ | P2 |
 | S4 | CVE / risk advisories | 弱 | 弱 | ✓ | Better |

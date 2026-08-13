@@ -98,6 +98,7 @@
   --form-field-gap: var(--space-5);
   --form-label-gap: 0.4rem; /* label ↔ control: slightly more than space-1 */
 
-  --font-sans: 'Plus Jakarta Sans', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', 'Noto Sans CJK TC', 'Noto Sans TC',
+    sans-serif;
   --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }

@@ -68,7 +68,6 @@ type WtCtor = new (opts?: Record<string, unknown>) => WtClient;
  * classic `<script>` tag (that caused: Unexpected token 'export').
  * Vite copies it to same-origin `/assets/webtorrent.min-*.js`.
  */
-// @ts-expect-error Vite ?url import
 import webtorrentMinUrl from 'webtorrent/dist/webtorrent.min.js?url';
 
 let loadPromise: Promise<WtCtor> | null = null;

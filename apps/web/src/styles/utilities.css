@@ -221,6 +221,11 @@
   overflow: auto;
 }
 
+.u-scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .u-text-xs {
   font-size: var(--text-xs, 0.75rem);
 }

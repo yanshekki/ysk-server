@@ -355,6 +355,13 @@
     transform: translateX(-100%);
     transition: transform var(--transition);
     box-shadow: var(--shadow-lg);
+    width: min(20rem, 88vw);
+  }
+
+  html[dir='rtl'] .shell__sidebar {
+    left: auto;
+    right: 0;
+    transform: translateX(100%);
   }
 
   .shell__sidebar.is-open {
@@ -364,6 +371,8 @@
   .shell__menu-btn {
     display: inline-flex;
     margin-right: auto;
+    min-height: 2.75rem;
+    min-width: 2.75rem;
   }
 
   .shell__backdrop {
@@ -371,6 +380,25 @@
     inset: 0;
     background: rgba(15, 23, 42, 0.35);
     z-index: 35;
+  }
+
+  .shell__header {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    min-height: var(--header-height);
+    height: auto;
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .shell__link {
+    min-height: 2.75rem;
+  }
+}
+
+@media (pointer: coarse) {
+  .shell__link,
+  .shell__menu-btn {
+    min-height: 2.75rem;
   }
 }
 

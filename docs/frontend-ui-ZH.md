@@ -14,6 +14,7 @@
 2. 每功能單一主入口（見 feature-single-entry）。  
 3. 操作結果誠實顯示 blocked／dry-run。  
 4. 列表頁使用共用 list-query／工具列模式。  
+5. 執行期不連外 CDN：JS、CSS、字型均打入面板 build（系統字型）。  
 
 ## 主要路由
 

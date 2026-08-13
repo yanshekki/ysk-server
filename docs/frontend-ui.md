@@ -13,7 +13,8 @@
 1. Operator-visible strings use `t()` only.  
 2. One primary entry per feature (see feature-single-entry).  
 3. Ops results show honest blocked / dry-run states.  
-4. List pages use shared list-query / toolbar patterns.
+4. List pages use shared list-query / toolbar patterns.  
+5. No runtime CDN: JS, CSS, and fonts ship in the panel build (system fonts).
 
 ## Key routes
 

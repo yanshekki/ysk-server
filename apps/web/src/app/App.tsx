@@ -18,9 +18,11 @@ export function RouteFallback() {
   );
 }
 
-// Eager: login + shell-critical only
+// Eager: login only. Dashboard is a chunk so /login stays thin.
 import { LoginPage } from '../pages/LoginPage';
-import { DashboardPage } from '../pages/DashboardPage';
+const DashboardPage = lazy(() =>
+  import('../pages/DashboardPage').then((m) => ({ default: m.DashboardPage })),
+);
 
 // Lazy: heavy feature pages — avoids one import crash blanking the whole app
 const SecurityPage = lazy(() =>
@@ -244,7 +246,14 @@ export function App() {
               </RequireAuth>
             }
           >
-            <Route index element={<DashboardPage />} />
+            <Route
+              index
+              element={
+                <Lazy>
+                  <DashboardPage />
+                </Lazy>
+              }
+            />
             {/* AI panel UI removed — use CLI (ask / agents / tools) + docs */}
             <Route path="ai" element={<Navigate to="/" replace />} />
             <Route path="agents" element={<Navigate to="/" replace />} />

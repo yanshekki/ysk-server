@@ -58,6 +58,61 @@ const loading = new Map<string, Promise<void>>();
 /** Locales that already received the dedicated serviceExposure merge this session */
 const serviceExposurePatched = new Set<string>();
 
+/** Shell / login only — first paint must not wait for the 400–900 KB catalog. */
+const BOOT_NAMESPACES = [
+  'common',
+  'nav',
+  'login',
+  'errors',
+  'dialogs',
+  'roles',
+  'tabs',
+  'applyStatus',
+] as const;
+
+const NS_MODULES = import.meta.glob<{ default: Catalog }>(
+  '../../../../../packages/shared/locales/*/*.json',
+);
+
+function isTestRuntime(): boolean {
+  return Boolean(import.meta.env?.MODE === 'test' || import.meta.env?.VITEST);
+}
+
+async function loadNamespaceFile(locale: string, ns: string): Promise<Catalog | null> {
+  const suffix = `/locales/${locale}/${ns}.json`;
+  const key = Object.keys(NS_MODULES).find((p) => p.endsWith(suffix));
+  if (!key) return null;
+  const loader = NS_MODULES[key];
+  if (!loader) return null;
+  const mod = await loader();
+  return asCatalog(mod);
+}
+
+/** Merge selected namespace JSON files into i18n `translation` (same shape as translation.json). */
+export async function loadLocaleNamespaces(
+  lng: string,
+  namespaces: readonly string[],
+): Promise<void> {
+  const key = catalogKey(lng);
+  const parts = await Promise.all(
+    namespaces.map(async (ns) => {
+      const data = await loadNamespaceFile(key, ns);
+      return data ? ([ns, data] as const) : null;
+    }),
+  );
+  const bundle: Catalog = {};
+  for (const row of parts) {
+    if (!row) continue;
+    bundle[row[0]] = row[1];
+  }
+  if (Object.keys(bundle).length) {
+    i18n.addResourceBundle(key, 'translation', bundle, true, true);
+    if (key === 'zh-HK') {
+      i18n.addResourceBundle('zh-TW', 'translation', bundle, true, true);
+    }
+  }
+}
+
 function catalogKey(code: string): string {
   const n = String(normalizeLocale(code));
   // historical alias still used in storage / Accept-Language
@@ -197,14 +252,24 @@ export async function bootstrapI18n(): Promise<void> {
     });
   }
 
-  // Always load English fallback + chosen locale in parallel
-  await Promise.all([ensureLocaleLoaded('en'), ensureLocaleLoaded(lng)]);
+  // Tests need the full catalog immediately (pages assert on any key).
+  if (isTestRuntime()) {
+    await Promise.all([ensureLocaleLoaded('en'), ensureLocaleLoaded(lng)]);
+  } else {
+    await Promise.all([
+      loadLocaleNamespaces('en', BOOT_NAMESPACES),
+      loadLocaleNamespaces(lng, BOOT_NAMESPACES),
+    ]);
+    // Full catalogs after first paint (do not block login / shell).
+    void Promise.all([ensureLocaleLoaded('en'), ensureLocaleLoaded(lng)]);
+  }
   if (i18n.language !== lng) {
     await i18n.changeLanguage(lng);
   }
   applyDocumentLocale(i18n.language);
   i18n.on('languageChanged', (code) => {
     applyDocumentLocale(code);
+    if (!isTestRuntime()) void ensureLocaleLoaded(code);
   });
   bootstrapped = true;
 }

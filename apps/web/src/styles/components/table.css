@@ -99,6 +99,8 @@ table.data tr:hover td {
 .data-table__wrap {
   border: none;
   border-radius: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .data-table--dense table.data th,
