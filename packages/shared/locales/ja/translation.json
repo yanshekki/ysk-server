@@ -3964,7 +3964,9 @@
     "sftpRegister": "キーを登録します。",
     "sftpAddedAt": "{{time}}を追加しました",
     "sftpTechSummary": "技術的な詳細（上級）",
-    "sftpTechNote": "キーは管理対象パスの下に書き込まれます"
+    "sftpTechNote": "キーは管理対象パスの下に書き込まれます",
+    "filterProject": "このプロジェクトの FTP アカウントのみ表示",
+    "clearProjectFilter": "すべてのアカウントを表示"
   },
   "geo": {
     "continents": {
@@ -8636,7 +8638,10 @@
     "deleteRemoveFilesDesc": "キャンセル",
     "deleteTypeNameHint": "「{{v0}}」",
     "deleteDnsWarn": "DNSゾーン/ドメイン。",
-    "manageInNginx": "Nginxで管理する"
+    "manageInNginx": "Nginxで管理する",
+    "advFtpHomeApp": "サイト app ディレクトリ",
+    "advFtpHomeRoot": "プロジェクトホーム（全体）",
+    "advFtpManage": "FTP ページを開く"
   },
   "protection": {
     "levels": {

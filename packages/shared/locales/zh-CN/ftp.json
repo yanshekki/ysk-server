@@ -131,5 +131,7 @@
   "sftpRegister": "登记公钥",
   "sftpAddedAt": "添加于 {{time}}",
   "sftpTechSummary": "技术细节（高级）",
-  "sftpTechNote": "公钥会写入管理路径"
+  "sftpTechNote": "公钥会写入管理路径",
+  "filterProject": "只显示此项目的 FTP 帐户",
+  "clearProjectFilter": "显示全部帐户"
 }

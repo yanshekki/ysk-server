@@ -69,6 +69,18 @@
       "example": "ysk-server projects create --name demo --domain demo.example.com --runtime node --create-dns --create-mail --json"
     },
     {
+      "name": "projects ftp",
+      "risk": "write-panel",
+      "summary": "Create jailed FTPS account for a project (draft until ftp apply)",
+      "args": [
+        "--id",
+        "--password",
+        "--user",
+        "--home"
+      ],
+      "example": "ysk-server projects ftp --id UUID --password P --home app --json"
+    },
+    {
       "name": "nginx status",
       "risk": "read",
       "summary": "Nginx service probe + managed confs + nginx -t",

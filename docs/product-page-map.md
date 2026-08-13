@@ -116,7 +116,7 @@ See also: [`product-feature-matrix.md`](./product-feature-matrix.md).
 
 - `/files?root=project:<id>`
 - `/ssl?domain=<domain>&action=le`
-- `/ftp?project=<id>` (when implemented)
+- `/ftp?project=<id>`
 
 ---
 

@@ -28,6 +28,7 @@
 | Git 部署 | `ysk-server projects git-deploy …` | write-host | |
 | 隔離 | `ysk-server projects isolation …` | write-host | |
 | 範本 | `ysk-server templates list\|apply` | write-panel | |
+| 專案 FTP（路徑 Jail） | `ysk-server projects ftp --id UUID --password P` | write-panel | 草稿；到 `/ftp` 套用 |
 
 ## CLI 速查
 

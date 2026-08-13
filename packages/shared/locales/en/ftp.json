@@ -131,5 +131,7 @@
   "sftpRegister": "Register key",
   "sftpAddedAt": "Added {{time}}",
   "sftpTechSummary": "Technical details (advanced)",
-  "sftpTechNote": "Keys are written under the managed path"
+  "sftpTechNote": "Keys are written under the managed path",
+  "filterProject": "Showing FTP accounts for this project",
+  "clearProjectFilter": "Show all accounts"
 }

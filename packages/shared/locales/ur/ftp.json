@@ -131,5 +131,7 @@
   "sftpRegister": "رجسٹر کی کلید",
   "sftpAddedAt": "شامل کیا گیا {{time}}",
   "sftpTechSummary": "تکنیکی تفصیلات (جدید)",
-  "sftpTechNote": "کلیدیں منظم راستے کے تحت لکھی جاتی ہیں۔"
+  "sftpTechNote": "کلیدیں منظم راستے کے تحت لکھی جاتی ہیں۔",
+  "filterProject": "صرف اس پروجیکٹ کے FTP اکاؤنٹس",
+  "clearProjectFilter": "تمام اکاؤنٹس دکھائیں"
 }

@@ -46,3 +46,5 @@ Full OpenAPI is not published. Inventory: `docs/cli/control-plane-inventory.json
 Files name collisions: `ifExists=fail|overwrite|rename` on upload/copy/rename (default **fail**).
 
 `POST /api/v1/projects` optional `createDnsZone` / `createMailDomain` (plus `serverIp` / `serverIpv6`) write DNS and mail **drafts**. Same flags on CLI: `--create-dns` / `--create-mail`. Not live authoritative DNS or a provisioned mailbox.
+
+`POST /api/v1/projects/:id/ftp` creates a jailed FTPS account (`homeSubdir` `app`|`root`). CLI: `ysk-server projects ftp` or `ftp accounts create --project`. Apply vsftpd on `/ftp`.

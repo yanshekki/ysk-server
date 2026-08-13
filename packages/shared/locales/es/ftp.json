@@ -131,5 +131,7 @@
   "sftpRegister": "Clave de registro",
   "sftpAddedAt": "Añadido {{time}}",
   "sftpTechSummary": "Detalles técnicos (avanzado)",
-  "sftpTechNote": "Las claves se escriben en la ruta administrada."
+  "sftpTechNote": "Las claves se escriben en la ruta administrada.",
+  "filterProject": "Solo cuentas FTP de este proyecto",
+  "clearProjectFilter": "Mostrar todas las cuentas"
 }

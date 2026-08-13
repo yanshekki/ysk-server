@@ -152,12 +152,37 @@ export async function runFtpCommand(
     }
 
     if (action === 'create' || action === 'add') {
+      const projectId = h.getOpt(args, '--project') ?? h.getOpt(args, '--project-id');
+      if (projectId) {
+        const password = h.getOpt(args, '--password');
+        if (!password) {
+          process.stderr.write(
+            'Usage: ysk-server ftp accounts create --project ID --password P [--username NAME] [--home app|root]\n',
+          );
+          return 2;
+        }
+        const proj = ctx.projects.get(projectId);
+        const homeRaw = (h.getOpt(args, '--home') ?? 'app').toLowerCase();
+        const homeSubdir = homeRaw === 'root' ? 'root' : 'app';
+        const { createProjectFtpAccount } = await import('ysk-server-core');
+        const result = createProjectFtpAccount(ctx.db, {
+          projectId: proj.id,
+          projectHome: proj.homeDir,
+          linuxUser: proj.linuxUser,
+          linuxGroup: proj.linuxGroup || proj.linuxUser,
+          username: h.getOpt(args, '--username') ?? h.getOpt(args, '--user'),
+          password,
+          homeSubdir,
+        });
+        h.printJson(result);
+        return result.ok ? 0 : 1;
+      }
       const username = h.getOpt(args, '--username') ?? h.getOpt(args, '--user') ?? tokens[3];
       const password = h.getOpt(args, '--password');
       const homePath = h.getOpt(args, '--home') ?? h.getOpt(args, '--home-path');
       if (!username?.trim()) {
         process.stderr.write(
-          'Usage: ysk-server ftp accounts create --username NAME [--password …] [--home PATH] [--domain …]\n',
+          'Usage: ysk-server ftp accounts create --username NAME [--password …] [--home PATH] [--domain …]\n  or: ysk-server ftp accounts create --project ID --password P [--username NAME] [--home app|root]\n',
         );
         return 2;
       }

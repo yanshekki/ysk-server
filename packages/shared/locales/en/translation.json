@@ -1331,7 +1331,7 @@
           "get": {
             "create": {
               "deploy": {
-                "253b48": "Usage: ysk-server projects list|get|create|deploy|git-deploy|stop|backup|template|health [options]\n  deploy --id UUID [--entry f] [--port N] [--fpm|--builtin] [--reload]\n  git-deploy --id UUID [--git-url URL] [--branch B] [--no-redeploy]\n"
+                "253b48": "Usage: ysk-server projects list|get|create|deploy|git-deploy|stop|backup|template|ftp|health [options]\n  deploy --id UUID [--entry f] [--port N] [--fpm|--builtin] [--reload]\n  git-deploy --id UUID [--git-url URL] [--branch B] [--no-redeploy]\n  ftp --id UUID --password P [--user NAME] [--home app|root]\n"
               }
             }
           }
@@ -3964,7 +3964,9 @@
     "sftpRegister": "Register key",
     "sftpAddedAt": "Added {{time}}",
     "sftpTechSummary": "Technical details (advanced)",
-    "sftpTechNote": "Keys are written under the managed path"
+    "sftpTechNote": "Keys are written under the managed path",
+    "filterProject": "Showing FTP accounts for this project",
+    "clearProjectFilter": "Show all accounts"
   },
   "geo": {
     "continents": {
@@ -8636,7 +8638,10 @@
     "deleteRemoveFilesDesc": "Cancel，",
     "deleteTypeNameHint": "「{{v0}}」",
     "deleteDnsWarn": "DNS zone / domain 。",
-    "manageInNginx": "Manage in Nginx"
+    "manageInNginx": "Manage in Nginx",
+    "advFtpHomeApp": "Site app directory",
+    "advFtpHomeRoot": "Project home (full)",
+    "advFtpManage": "Open FTP page"
   },
   "protection": {
     "levels": {

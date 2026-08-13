@@ -556,5 +556,8 @@
   "deleteRemoveFilesDesc": "취소,",
   "deleteTypeNameHint": "「{{v0}}」",
   "deleteDnsWarn": "DNS 영역/도메인 。",
-  "manageInNginx": "Nginx에서 관리"
+  "manageInNginx": "Nginx에서 관리",
+  "advFtpHomeApp": "사이트 app 디렉터리",
+  "advFtpHomeRoot": "프로젝트 홈(전체)",
+  "advFtpManage": "FTP 페이지 열기"
 }

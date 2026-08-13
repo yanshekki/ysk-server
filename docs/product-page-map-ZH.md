@@ -116,7 +116,7 @@
 
 - `/files?root=project:<id>`
 - `/ssl?domain=<domain>&action=le`
-- `/ftp?project=<id>` (when implemented)
+- `/ftp?project=<id>`
 
 ---
 

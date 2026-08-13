@@ -3964,7 +3964,9 @@
     "sftpRegister": "키 등록",
     "sftpAddedAt": "추가됨 {{time}}",
     "sftpTechSummary": "기술 세부정보(고급)",
-    "sftpTechNote": "키는 관리 경로 아래에 기록됩니다."
+    "sftpTechNote": "키는 관리 경로 아래에 기록됩니다.",
+    "filterProject": "이 프로젝트의 FTP 계정만 표시",
+    "clearProjectFilter": "모든 계정 보기"
   },
   "geo": {
     "continents": {
@@ -8636,7 +8638,10 @@
     "deleteRemoveFilesDesc": "취소,",
     "deleteTypeNameHint": "「{{v0}}」",
     "deleteDnsWarn": "DNS 영역/도메인 。",
-    "manageInNginx": "Nginx에서 관리"
+    "manageInNginx": "Nginx에서 관리",
+    "advFtpHomeApp": "사이트 app 디렉터리",
+    "advFtpHomeRoot": "프로젝트 홈(전체)",
+    "advFtpManage": "FTP 페이지 열기"
   },
   "protection": {
     "levels": {

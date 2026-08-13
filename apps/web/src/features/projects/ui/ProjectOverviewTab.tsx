@@ -2,6 +2,7 @@
  * Project overview — facts + usage + retry strip when live path broken.
  */
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { ProjectDto } from 'ysk-server-shared';
 import {
@@ -221,6 +222,18 @@ export function ProjectOverviewTab({
                 value: project.env ?? '—' },
             ]}
           />
+          <FormActions>
+            <Link to={`/files?root=project:${encodeURIComponent(project.id)}`}>
+              <Button variant="secondary" size="md">
+                {t('projects.ovOpenFiles')}
+              </Button>
+            </Link>
+            <Link to={`/ftp?project=${encodeURIComponent(project.id)}`}>
+              <Button variant="secondary" size="md">
+                {t('projects.advFtpManage')}
+              </Button>
+            </Link>
+          </FormActions>
         </CardSection>
       </Card>
 

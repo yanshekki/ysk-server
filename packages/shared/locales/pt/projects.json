@@ -556,5 +556,8 @@
   "deleteRemoveFilesDesc": "Cancelar,",
   "deleteTypeNameHint": "「{{v0}}」",
   "deleteDnsWarn": "Zona / domínio DNS.",
-  "manageInNginx": "Gerenciar no Nginx"
+  "manageInNginx": "Gerenciar no Nginx",
+  "advFtpHomeApp": "Diretório app do site",
+  "advFtpHomeRoot": "Home do projeto (completo)",
+  "advFtpManage": "Abrir página FTP"
 }

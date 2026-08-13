@@ -131,5 +131,7 @@
   "sftpRegister": "키 등록",
   "sftpAddedAt": "추가됨 {{time}}",
   "sftpTechSummary": "기술 세부정보(고급)",
-  "sftpTechNote": "키는 관리 경로 아래에 기록됩니다."
+  "sftpTechNote": "키는 관리 경로 아래에 기록됩니다.",
+  "filterProject": "이 프로젝트의 FTP 계정만 표시",
+  "clearProjectFilter": "모든 계정 보기"
 }

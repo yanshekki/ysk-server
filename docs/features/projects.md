@@ -28,6 +28,7 @@ First-class **sites** on the host: create, deploy, stop, health, git deploy, OS 
 | Git deploy | `ysk-server projects git-deploy …` | write-host | |
 | Isolation | `ysk-server projects isolation …` | write-host | |
 | Templates | `ysk-server templates list\|apply` | write-panel | |
+| Project FTP (jailed) | `ysk-server projects ftp --id UUID --password P` | write-panel | Draft; apply on `/ftp` |
 
 ## CLI quick start
 

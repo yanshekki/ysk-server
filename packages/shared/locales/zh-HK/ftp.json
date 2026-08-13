@@ -131,5 +131,7 @@
   "sftpRegister": "登記公鑰",
   "sftpAddedAt": "新增於 {{time}}",
   "sftpTechSummary": "技術細節（進階）",
-  "sftpTechNote": "公鑰會寫入管理路徑"
+  "sftpTechNote": "公鑰會寫入管理路徑",
+  "filterProject": "只顯示此專案的 FTP 帳戶",
+  "clearProjectFilter": "顯示全部帳戶"
 }

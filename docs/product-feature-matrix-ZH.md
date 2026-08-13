@@ -72,7 +72,7 @@
 | B15 | 快取（FastCGI／proxy）+ purge | H | D | ✗ | P1 |
 | B16 | 路徑 HTTP 認證 | H | D | ✗ | P1 |
 | B17 | 整站 301／302 轉向 | H | D | ✗ | P1 |
-| B18 | 每站 FTP 帳戶 (jailed path) | H | D | △ | P0 |
+| B18 | 每站 FTP 帳戶 (jailed path) | H | D | ✓ | P0 |
 | B19 | 網站統計 (AWStats-class) | H | D | ✗ | P1 |
 | B20 | 面板內 access／error 日誌 | H | D | △ | P0 |
 | B21 | 一鍵應用 (e.g. WordPress) | H | D | ✗ | P2 |

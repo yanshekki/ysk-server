@@ -556,5 +556,8 @@
   "deleteRemoveFilesDesc": "取消勾選則只從面板移除，檔案與系統用戶保留",
   "deleteTypeNameHint": "請輸入「{{v0}}」",
   "deleteDnsWarn": "共享 DNS zone / 郵箱 domain 不會自動刪除。",
-  "manageInNginx": "在 Nginx 管理"
+  "manageInNginx": "在 Nginx 管理",
+  "advFtpHomeApp": "網站 app 目錄",
+  "advFtpHomeRoot": "專案家目錄（全部）",
+  "advFtpManage": "開啟 FTP 頁"
 }

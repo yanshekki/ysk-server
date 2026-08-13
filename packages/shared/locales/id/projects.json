@@ -556,5 +556,8 @@
   "deleteRemoveFilesDesc": "Membatalkan,",
   "deleteTypeNameHint": "「{{v0}}」",
   "deleteDnsWarn": "Zona / domain DNS 。",
-  "manageInNginx": "Kelola di Nginx"
+  "manageInNginx": "Kelola di Nginx",
+  "advFtpHomeApp": "Direktori app situs",
+  "advFtpHomeRoot": "Home proyek (penuh)",
+  "advFtpManage": "Buka halaman FTP"
 }

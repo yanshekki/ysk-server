@@ -556,5 +556,8 @@
   "deleteRemoveFilesDesc": "रद्द करना,",
   "deleteTypeNameHint": "「{{v0}}」",
   "deleteDnsWarn": "डीएनएस जोन/डोमेन 。",
-  "manageInNginx": "Nginx में प्रबंधित करें"
+  "manageInNginx": "Nginx में प्रबंधित करें",
+  "advFtpHomeApp": "साइट app निर्देशिका",
+  "advFtpHomeRoot": "प्रोजेक्ट होम (पूर्ण)",
+  "advFtpManage": "FTP पृष्ठ खोलें"
 }

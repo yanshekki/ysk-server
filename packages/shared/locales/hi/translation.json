@@ -3964,7 +3964,9 @@
     "sftpRegister": "रजिस्टर कुंजी",
     "sftpAddedAt": "जोड़ा गया {{time}}",
     "sftpTechSummary": "तकनीकी विवरण (उन्नत)",
-    "sftpTechNote": "कुंजियाँ प्रबंधित पथ के अंतर्गत लिखी जाती हैं"
+    "sftpTechNote": "कुंजियाँ प्रबंधित पथ के अंतर्गत लिखी जाती हैं",
+    "filterProject": "केवल इस प्रोजेक्ट के FTP खाते",
+    "clearProjectFilter": "सभी खाते दिखाएँ"
   },
   "geo": {
     "continents": {
@@ -8636,7 +8638,10 @@
     "deleteRemoveFilesDesc": "रद्द करना,",
     "deleteTypeNameHint": "「{{v0}}」",
     "deleteDnsWarn": "डीएनएस जोन/डोमेन 。",
-    "manageInNginx": "Nginx में प्रबंधित करें"
+    "manageInNginx": "Nginx में प्रबंधित करें",
+    "advFtpHomeApp": "साइट app निर्देशिका",
+    "advFtpHomeRoot": "प्रोजेक्ट होम (पूर्ण)",
+    "advFtpManage": "FTP पृष्ठ खोलें"
   },
   "protection": {
     "levels": {

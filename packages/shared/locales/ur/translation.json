@@ -3964,7 +3964,9 @@
     "sftpRegister": "رجسٹر کی کلید",
     "sftpAddedAt": "شامل کیا گیا {{time}}",
     "sftpTechSummary": "تکنیکی تفصیلات (جدید)",
-    "sftpTechNote": "کلیدیں منظم راستے کے تحت لکھی جاتی ہیں۔"
+    "sftpTechNote": "کلیدیں منظم راستے کے تحت لکھی جاتی ہیں۔",
+    "filterProject": "صرف اس پروجیکٹ کے FTP اکاؤنٹس",
+    "clearProjectFilter": "تمام اکاؤنٹس دکھائیں"
   },
   "geo": {
     "continents": {
@@ -8636,7 +8638,10 @@
     "deleteRemoveFilesDesc": "منسوخ کریں",
     "deleteTypeNameHint": "「{{v0}}」",
     "deleteDnsWarn": "DNS زون / ڈومین۔",
-    "manageInNginx": "Nginx میں انتظام کریں۔"
+    "manageInNginx": "Nginx میں انتظام کریں۔",
+    "advFtpHomeApp": "سائٹ app ڈائرکٹری",
+    "advFtpHomeRoot": "پروجیکٹ ہوم (مکمل)",
+    "advFtpManage": "FTP صفحہ کھولیں"
   },
   "protection": {
     "levels": {

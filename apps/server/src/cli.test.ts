@@ -397,6 +397,54 @@ describe('CLI projects + templates', () => {
       rmSync(dir, { recursive: true, force: true });
     }
   });
+
+  it('projects ftp creates jailed account extras', async () => {
+    const dir = setupTmpDataDir();
+    try {
+      const created = await runMain([
+        'node',
+        'ysk-server',
+        'projects',
+        'create',
+        '--data-dir',
+        dir,
+        '--name',
+        'FtpSite',
+        '--json',
+      ]);
+      expect(created.code).toBe(0);
+      const proj = parseJsonOut(created.out) as { project?: { id?: string } };
+      const id = proj.project?.id;
+      expect(id).toBeTruthy();
+      const ftp = await runMain([
+        'node',
+        'ysk-server',
+        'projects',
+        'ftp',
+        '--data-dir',
+        dir,
+        '--id',
+        String(id),
+        '--password',
+        'ftpPass12',
+        '--user',
+        'p_ftpsite',
+        '--home',
+        'root',
+        '--json',
+      ]);
+      expect(ftp.code).toBe(0);
+      const body = parseJsonOut(ftp.out) as {
+        ok?: boolean;
+        account?: { username?: string; projectId?: string; chroot?: boolean };
+      };
+      expect(body.ok).toBe(true);
+      expect(body.account?.username).toBe('p_ftpsite');
+      expect(body.account?.projectId).toBe(id);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });
 
 describe('CLI main paths (read-only / dry, no root)', () => {

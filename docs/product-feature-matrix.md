@@ -72,7 +72,7 @@
 | B15 | Cache (FastCGI/proxy) + purge | H | D | ✗ | P1 |
 | B16 | HTTP auth on path | H | D | ✗ | P1 |
 | B17 | Whole-site 301/302 redirect | H | D | ✗ | P1 |
-| B18 | Per-site FTP account (jailed path) | H | D | △ | P0 |
+| B18 | Per-site FTP account (jailed path) | H | D | ✓ | P0 |
 | B19 | Web stats (AWStats-class) | H | D | ✗ | P1 |
 | B20 | Access / error logs in panel | H | D | △ | P0 |
 | B21 | One-click apps (e.g. WordPress) | H | D | ✗ | P2 |

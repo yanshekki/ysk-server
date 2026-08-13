@@ -31,7 +31,8 @@ Sandboxed **file manager** (public or project root), **public share links** (dir
 | Copy / move / rename collision | `… --if-exists fail\|overwrite\|rename` | write-panel | Same as `POST /api/v1/files/copy` |
 | WebDAV | `ysk-server files webdav status\|token\|disable` | write-panel | |
 | FTP status/settings | `ysk-server ftp status\|settings …` | read / write-panel | |
-| FTP accounts CRUD | `ysk-server ftp accounts list\|create\|update\|delete` | write-panel | |
+| FTP accounts CRUD | `ysk-server ftp accounts list\|create\|update\|delete` | write-panel | `--project ID` jails to that site |
+| Project FTP | `ysk-server projects ftp --id UUID --password P` | write-panel | Same as `POST /api/v1/projects/:id/ftp` |
 | FTP apply to host | `ysk-server ftp apply\|accounts apply --execute` | write-host | |
 | BT tracker | `ysk-server bt-tracker status\|start\|stop\|settings\|torrents\|restore\|jobs` | read / write-host | See [bt-tracker.md](./bt-tracker.md) |
 | Public files site | `ysk-server hosting public-files …` | write-host | |

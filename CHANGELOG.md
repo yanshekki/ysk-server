@@ -7,6 +7,7 @@
 - CLI `updates hub` matches panel `/updates` `collectUpdateHub` entries
 - Three-way inventory gate: `node scripts/cli-panel-parity.mjs --strict`
 - `projects create --create-dns --create-mail` matches panel checkboxes and API `createDnsZone` / `createMailDomain`
+- Project FTP: CLI `projects ftp` / `ftp accounts create --project` matches `POST /api/v1/projects/:id/ftp`; panel `/ftp?project=`
 
 ## 1.0.6 — 2026-08-13
 

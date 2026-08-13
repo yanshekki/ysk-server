@@ -3964,7 +3964,9 @@
     "sftpRegister": "রেজিস্টার কী",
     "sftpAddedAt": "যোগ করা হয়েছে {{time}}",
     "sftpTechSummary": "প্রযুক্তিগত বিবরণ (উন্নত)",
-    "sftpTechNote": "কীগুলি পরিচালিত পথের অধীনে লেখা হয়"
+    "sftpTechNote": "কীগুলি পরিচালিত পথের অধীনে লেখা হয়",
+    "filterProject": "শুধু এই প্রজেক্টের FTP অ্যাকাউন্ট",
+    "clearProjectFilter": "সব অ্যাকাউন্ট দেখান"
   },
   "geo": {
     "continents": {
@@ -8636,7 +8638,10 @@
     "deleteRemoveFilesDesc": "বাতিল,",
     "deleteTypeNameHint": "「{{v0}}」",
     "deleteDnsWarn": "DNS জোন / ডোমেইন।",
-    "manageInNginx": "Nginx এ পরিচালনা করুন"
+    "manageInNginx": "Nginx এ পরিচালনা করুন",
+    "advFtpHomeApp": "সাইট app ডিরেক্টরি",
+    "advFtpHomeRoot": "প্রজেক্ট হোম (পূর্ণ)",
+    "advFtpManage": "FTP পৃষ্ঠা খুলুন"
   },
   "protection": {
     "levels": {

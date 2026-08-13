@@ -31,7 +31,8 @@
 | 複製／移動／重新命名撞名 | `… --if-exists fail\|overwrite\|rename` | write-panel | 與 `POST /api/v1/files/copy` 相同 |
 | WebDAV | `ysk-server files webdav status\|token\|disable` | write-panel | |
 | FTP 狀態／設定 | `ysk-server ftp status\|settings …` | read／write-panel | |
-| FTP 帳戶 CRUD | `ysk-server ftp accounts list\|create\|update\|delete` | write-panel | |
+| FTP 帳戶 CRUD | `ysk-server ftp accounts list\|create\|update\|delete` | write-panel | `--project ID` 會 Jail 到該站 |
+| 專案 FTP | `ysk-server projects ftp --id UUID --password P` | write-panel | 等同 `POST /api/v1/projects/:id/ftp` |
 | FTP 套用主機 | `ysk-server ftp apply\|accounts apply --execute` | write-host | |
 | BT Tracker | `ysk-server bt-tracker status\|start\|stop\|settings\|torrents\|restore\|jobs` | read／write-host | 見 [bt-tracker-ZH.md](./bt-tracker-ZH.md) |
 | 公開檔案站 | `ysk-server hosting public-files …` | write-host | |

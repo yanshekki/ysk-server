@@ -2,6 +2,7 @@
  * FTPS — unified page: accounts | SFTP keys | service | software | about
  */
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   PageGuide,
@@ -71,6 +72,8 @@ const FTP_TABS = ['accounts', 'sftp', 'service', 'stack', 'about'] as const;
 
 export function FtpPage() {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+  const projectFilter = (searchParams.get('project') ?? '').trim();
   const crud = useResourceCrud('ftp/accounts');
   const [tab, setTab] = usePageTab(FTP_TABS, 'accounts');
   const [open, setOpen] = useState(false);
@@ -172,6 +175,10 @@ export function FtpPage() {
   }
 
   const { applied, draft } = countApplyStatus(crud.items);
+  const visibleAccounts = useMemo(() => {
+    if (!projectFilter) return crud.items;
+    return crud.items.filter((r) => String(r.projectId ?? '') === projectFilter);
+  }, [crud.items, projectFilter]);
   const filteredSftpKeys = useMemo(
     () => filterSftpKeys(sftpKeys, sftpUserFilter),
     [sftpKeys, sftpUserFilter],
@@ -263,6 +270,14 @@ export function FtpPage() {
       >
         {tab === 'accounts' ? (
           <div className="tab-panel">
+            {projectFilter ? (
+              <Alert variant="info">
+                {t('ftp.filterProject')}{' '}
+                <code className="inline">{projectFilter}</code>
+                {' · '}
+                <Link to="/ftp">{t('ftp.clearProjectFilter')}</Link>
+              </Alert>
+            ) : null}
             <Card flush>
               <div className="card__header card__header--pad">
                 <div>
@@ -273,7 +288,7 @@ export function FtpPage() {
                   {t('ftp.createAccountPlus')}
                 </Button>
               </div>
-              {crud.items.length === 0 ? (
+              {visibleAccounts.length === 0 ? (
                 <div className="empty empty--compact">
                   <div className="empty__title">{t('ftp.noFtpAccounts')}</div>
                   <p>{t('ftp.noFtpAccountsDesc')}</p>
@@ -288,7 +303,7 @@ export function FtpPage() {
                       searching={crud.searching}
                       loading={crud.listLoading}
                       total={crud.total}
-                      shown={crud.items.length}
+                      shown={visibleAccounts.length}
                       activeFilterCount={crud.activeFilterCount}
                       clear={crud.clearSearch}
                     />
@@ -321,7 +336,7 @@ export function FtpPage() {
                       ),
                     },
                   ]}
-                  rows={crud.items}
+                  rows={visibleAccounts}
                   rowActions={(r) => (
                     <ActionBar>
                       <Button

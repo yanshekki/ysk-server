@@ -131,5 +131,7 @@
   "sftpRegister": "Chave de registro",
   "sftpAddedAt": "Adicionado {{time}}",
   "sftpTechSummary": "Detalhes técnicos (avançado)",
-  "sftpTechNote": "As chaves são gravadas no caminho gerenciado"
+  "sftpTechNote": "As chaves são gravadas no caminho gerenciado",
+  "filterProject": "Apenas contas FTP deste projeto",
+  "clearProjectFilter": "Mostrar todas as contas"
 }

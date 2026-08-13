@@ -1331,7 +1331,7 @@
           "get": {
             "create": {
               "deploy": {
-                "253b48": "用法： ysk-server 專案 列表|get|建立|deploy|git-deploy|stop|備份|template|health [options]\n deploy --識別碼 UUID [--entry f] [--埠 N] [--fpm|--builtin] [--重新載入]\n git-deploy --識別碼 UUID [--git-url URL] [--branch B] [--no-redeploy]"
+                "253b48": "用法： ysk-server projects list|get|create|deploy|git-deploy|stop|backup|template|ftp|health [options]\n  deploy --id UUID --entry f [--port N] [--fpm|--builtin] [--reload]\n  git-deploy --id UUID [--git-url URL] [--branch B] [--no-redeploy]\n  ftp --id UUID --password P [--user NAME] [--home app|root]"
               }
             }
           }
@@ -3964,7 +3964,9 @@
     "sftpRegister": "登記公鑰",
     "sftpAddedAt": "新增於 {{time}}",
     "sftpTechSummary": "技術細節（進階）",
-    "sftpTechNote": "公鑰會寫入管理路徑"
+    "sftpTechNote": "公鑰會寫入管理路徑",
+    "filterProject": "只顯示此專案的 FTP 帳戶",
+    "clearProjectFilter": "顯示全部帳戶"
   },
   "geo": {
     "continents": {
@@ -8636,7 +8638,10 @@
     "deleteRemoveFilesDesc": "取消勾選則只從面板移除，檔案與系統用戶保留",
     "deleteTypeNameHint": "請輸入「{{v0}}」",
     "deleteDnsWarn": "共享 DNS zone / 郵箱 domain 不會自動刪除。",
-    "manageInNginx": "在 Nginx 管理"
+    "manageInNginx": "在 Nginx 管理",
+    "advFtpHomeApp": "網站 app 目錄",
+    "advFtpHomeRoot": "專案家目錄（全部）",
+    "advFtpManage": "開啟 FTP 頁"
   },
   "protection": {
     "levels": {

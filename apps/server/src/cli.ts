@@ -2994,6 +2994,50 @@ async function mainInner(
         printJson(ctx.projects.applyTemplate(id, templateId, 'cli', hasFlag(args, '--force')));
         return 0;
       }
+      if (sub === 'ftp') {
+        const id = getOpt(args, '--id');
+        const password = getOpt(args, '--password');
+        if (!id || !password) {
+          process.stderr.write(
+            'Usage: ysk-server projects ftp --id UUID --password P [--user NAME] [--home app|root]\n',
+          );
+          return 2;
+        }
+        const proj = ctx.projects.get(id);
+        const homeRaw = (getOpt(args, '--home') ?? 'app').toLowerCase();
+        const homeSubdir = homeRaw === 'root' ? 'root' : 'app';
+        const { createProjectFtpAccount } = await import('ysk-server-core');
+        const result = createProjectFtpAccount(ctx.db, {
+          projectId: proj.id,
+          projectHome: proj.homeDir,
+          linuxUser: proj.linuxUser,
+          linuxGroup: proj.linuxGroup || proj.linuxUser,
+          username: getOpt(args, '--user') ?? getOpt(args, '--username'),
+          password,
+          homeSubdir,
+        });
+        if (
+          result.ok &&
+          ctx.host.executeEnabled() &&
+          ctx.host.isRoot() &&
+          proj.linuxUser &&
+          result.account?.homePath
+        ) {
+          const { chownProjectPath } = await import('ysk-server-core');
+          const ch = await chownProjectPath(
+            ctx.host,
+            {
+              linuxUser: proj.linuxUser,
+              linuxGroup: proj.linuxGroup || proj.linuxUser,
+              homeDir: proj.homeDir,
+            },
+            String(result.account.homePath),
+          );
+          result.notes.push(...ch.notes);
+        }
+        printJson(result);
+        return result.ok ? 0 : 1;
+      }
       if (sub === 'health') {
         const id = getOpt(args, '--id');
         if (!id) {

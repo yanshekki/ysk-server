@@ -3964,7 +3964,9 @@
     "sftpRegister": "Enregistrer la clé",
     "sftpAddedAt": "Ajoutée {{time}}",
     "sftpTechSummary": "Détails techniques (avancé)",
-    "sftpTechNote": "Les clés sont écrites sous le chemin géré"
+    "sftpTechNote": "Les clés sont écrites sous le chemin géré",
+    "filterProject": "Comptes FTP de ce projet uniquement",
+    "clearProjectFilter": "Afficher tous les comptes"
   },
   "geo": {
     "continents": {
@@ -8636,7 +8638,10 @@
     "deleteRemoveFilesDesc": "Annuler，",
     "deleteTypeNameHint": "「{{v0}}」",
     "deleteDnsWarn": "Zone DNS / domaine 。",
-    "manageInNginx": "Gérer dans Nginx"
+    "manageInNginx": "Gérer dans Nginx",
+    "advFtpHomeApp": "Répertoire app du site",
+    "advFtpHomeRoot": "Répertoire racine du projet",
+    "advFtpManage": "Ouvrir la page FTP"
   },
   "protection": {
     "levels": {

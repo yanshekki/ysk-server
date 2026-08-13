@@ -67,6 +67,7 @@ ysk-server projects backup --id UUID
 ysk-server projects git-deploy --id UUID [--ref BRANCH] [--execute]
 ysk-server projects isolation list|provision|provision-all|backfill-owners …
 ysk-server projects template …
+ysk-server projects ftp --id UUID --password P [--user NAME] [--home app|root]
 ```
 
 Host deploy paths: systemd → PM2 → pidfile (Node); FPM or `php -S` (PHP); nginx root (static). See [../features/projects.md](../features/projects.md).
@@ -372,6 +373,7 @@ See [../features/databases.md](../features/databases.md).
 ```bash
 ysk-server ftp status|settings|accounts|options|apply …
 ysk-server ftp accounts list|create|update|delete|apply …
+ysk-server ftp accounts create --project ID --password P [--username NAME] [--home app|root]
 ```
 
 See [../features/files-ftp.md](../features/files-ftp.md).

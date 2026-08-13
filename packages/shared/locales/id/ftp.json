@@ -131,5 +131,7 @@
   "sftpRegister": "Daftarkan kunci",
   "sftpAddedAt": "Ditambahkan {{time}}",
   "sftpTechSummary": "Detail teknis (lanjutan)",
-  "sftpTechNote": "Kunci ditulis di bawah jalur yang dikelola"
+  "sftpTechNote": "Kunci ditulis di bawah jalur yang dikelola",
+  "filterProject": "Hanya akun FTP proyek ini",
+  "clearProjectFilter": "Tampilkan semua akun"
 }

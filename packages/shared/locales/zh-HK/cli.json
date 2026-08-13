@@ -638,7 +638,7 @@
         "get": {
           "create": {
             "deploy": {
-              "253b48": "用法： ysk-server 專案 列表|get|建立|deploy|git-deploy|stop|備份|template|health [options]\n deploy --識別碼 UUID [--entry f] [--埠 N] [--fpm|--builtin] [--重新載入]\n git-deploy --識別碼 UUID [--git-url URL] [--branch B] [--no-redeploy]"
+              "253b48": "用法： ysk-server projects list|get|create|deploy|git-deploy|stop|backup|template|ftp|health [options]\n  deploy --id UUID --entry f [--port N] [--fpm|--builtin] [--reload]\n  git-deploy --id UUID [--git-url URL] [--branch B] [--no-redeploy]\n  ftp --id UUID --password P [--user NAME] [--home app|root]"
             }
           }
         }

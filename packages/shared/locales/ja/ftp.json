@@ -131,5 +131,7 @@
   "sftpRegister": "キーを登録します。",
   "sftpAddedAt": "{{time}}を追加しました",
   "sftpTechSummary": "技術的な詳細（上級）",
-  "sftpTechNote": "キーは管理対象パスの下に書き込まれます"
+  "sftpTechNote": "キーは管理対象パスの下に書き込まれます",
+  "filterProject": "このプロジェクトの FTP アカウントのみ表示",
+  "clearProjectFilter": "すべてのアカウントを表示"
 }

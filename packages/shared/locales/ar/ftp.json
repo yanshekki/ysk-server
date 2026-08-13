@@ -131,5 +131,7 @@
   "sftpRegister": "مفتاح التسجيل",
   "sftpAddedAt": "تمت الإضافة {{time}}",
   "sftpTechSummary": "التفاصيل الفنية (متقدمة)",
-  "sftpTechNote": "تتم كتابة المفاتيح ضمن المسار المُدار"
+  "sftpTechNote": "تتم كتابة المفاتيح ضمن المسار المُدار",
+  "filterProject": "عرض حسابات FTP لهذا المشروع فقط",
+  "clearProjectFilter": "عرض كل الحسابات"
 }
