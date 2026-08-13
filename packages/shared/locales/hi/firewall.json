@@ -37,7 +37,7 @@
     "deny": "आईपी ​​को स्थायी रूप से अस्वीकार करें",
     "profiles": "प्रोफाइल",
     "about": "के बारे में",
-    "services": "Services"
+    "services": "सेवाएं"
   },
   "currentRules": "वर्तमान नियम",
   "rulesSourceHint": "UFW क्रमांकित नियम (ufw स्थिति क्रमांकित)",
@@ -93,10 +93,10 @@
   "servicesEmptyDesc": "इस सूची को भरने के लिए एक प्रबंधित सेवा (वेब, एफटीपीएस, वीपीएन, डीबी...) शुरू करें।",
   "servicesManualHint": "मैनुअल पोर्ट चिप्स पोर्ट्स टैब के अंतर्गत हैं - यहां पहुंच प्रबंधित करना पसंद करते हैं ताकि नियम टैग रहें (ysk-svc)।",
   "portsManualHint": "उन्नत मैन्युअल नियम. प्रबंधित सॉफ़्टवेयर के लिए सेवाएँ टैब को प्राथमिकता दें।",
-  "colService": "Service",
-  "colMode": "Mode",
-  "colPorts": "Ports",
-  "colSync": "Status",
-  "synced": "Synced",
-  "syncNow": "Sync"
+  "colService": "सेवा",
+  "colMode": "तरीका",
+  "colPorts": "बंदरगाहों",
+  "colSync": "स्थिति",
+  "synced": "सिंक किया गया",
+  "syncNow": "साथ-साथ करना"
 }

@@ -37,7 +37,7 @@
     "deny": "Negar IP permanente",
     "profiles": "Perfis",
     "about": "Sobre",
-    "services": "Services"
+    "services": "Serviços"
   },
   "currentRules": "Regras atuais",
   "rulesSourceHint": "Regras numeradas UFW (status ufw numerado)",
@@ -93,10 +93,10 @@
   "servicesEmptyDesc": "Inicie um serviço gerenciado (web, FTPS, VPN, DB…) para preencher esta lista.",
   "servicesManualHint": "Os chips de porta manual estão na guia Portas – prefira gerenciar o acesso aqui para que as regras permaneçam marcadas (ysk-svc).",
   "portsManualHint": "Regras manuais avançadas. Prefira a guia Serviços para software gerenciado.",
-  "colService": "Service",
-  "colMode": "Mode",
-  "colPorts": "Ports",
+  "colService": "Serviço",
+  "colMode": "Modo",
+  "colPorts": "Portas",
   "colSync": "Status",
-  "synced": "Synced",
-  "syncNow": "Sync"
+  "synced": "Sincronizado",
+  "syncNow": "Sincronizar"
 }

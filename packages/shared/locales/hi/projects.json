@@ -52,7 +52,7 @@
     "created": "बनाया था",
     "os": "ओएस उपयोगकर्ता",
     "deploy": "तैनात करना",
-    "nginx": "Nginx",
+    "nginx": "nginx",
     "health": "स्वास्थ्य"
   },
   "next": {
@@ -503,14 +503,14 @@
   "railNode": "नोड प्रक्रिया",
   "runtimeName": {
     "php": "PHP",
-    "node": "Node.js",
+    "node": "नोड.जे.एस",
     "static": "स्थिर",
-    "python": "Python",
-    "go": "Go",
-    "rust": "Rust",
-    "java": "Java",
+    "python": "अजगर",
+    "go": "जाना",
+    "rust": "जंग",
+    "java": "जावा",
     "kotlin": "Kotlin",
-    "bun": "Bun"
+    "bun": "बन"
   },
   "netCacheTitle": "कैश",
   "logsDeepAccess": "लॉग सेंटर · पहुंच",

@@ -111,7 +111,7 @@
   "barTitle": "{{count}} peringatan host",
   "levelCritical": "Kritis",
   "levelWarn": "Peringatan",
-  "levelInfo": "Info",
+  "levelInfo": "Informasi",
   "colTitle": "Peringatan",
   "colDetail": "Rincian",
   "colSource": "Sumber"

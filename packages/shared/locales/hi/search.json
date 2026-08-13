@@ -5,20 +5,20 @@
   "loading": "खोज रहे हैं...",
   "noResults": "कोई मेल नहीं",
   "kinds": {
-    "page": "Pages",
-    "project": "Projects",
-    "email": "Email",
-    "mailbox": "Mailboxes",
+    "page": "पृष्ठों",
+    "project": "परियोजनाओं",
+    "email": "ईमेल",
+    "mailbox": "मेलबॉक्स",
     "ssl": "SSL",
     "dns": "DNS",
-    "nginx": "Nginx",
-    "share": "Shares",
+    "nginx": "nginx",
+    "share": "शेयरों",
     "ftp": "FTP",
     "mysql": "MySQL",
     "postgres": "PostgreSQL",
-    "redis": "Redis",
-    "cron": "Cron",
-    "user": "Users",
-    "other": "Other"
+    "redis": "रेडिस",
+    "cron": "क्रॉन",
+    "user": "उपयोगकर्ताओं",
+    "other": "अन्य"
   }
 }

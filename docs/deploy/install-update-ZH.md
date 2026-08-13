@@ -12,6 +12,18 @@ ysk-server update --check --json
 
 見 [../getting-started/install-ZH.md](../getting-started/install-ZH.md)。
 
+## 面板自身更新
+
+`ysk-server update --apply` 與面板 **更新 → 套用面板更新** 會把官方 `ysk-server` npm tarball overlay 到執行中 `ExecStart` 目錄，然後重啟 `ysk-server.service`。不依賴 `npm install -g`。
+
+若線上面板無法自行套用，用：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade
+```
+
+`--upgrade` **只更新產品**（不動 apt，亦不重裝 MariaDB／MySQL）。主機 `/var/lib/mysql` 已是 MySQL 8 資料時，不要用 `--upgrade-stack`。
+
 ## 面板「更新」頁
 
 - **更新**（`/updates`）是全機中心：面板 npm + catalog 服務 + runtime + 其餘 apt。CLI：`ysk-server updates hub --json`（與 `GET /api/v1/updates` 同一套 `entries`）。`ysk-server update` 只負責產品自身更新。

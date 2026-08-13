@@ -13,7 +13,7 @@
 | `--json` | Structured JSON on stdout (preferred for AI) |
 | `--data-dir PATH` | Control-plane data directory |
 | `--config PATH` | `config.json` from setup |
-| `--locale CODE` | `zh-HK` · `zh-CN` · `en` (also `YSK_LOCALE` / `LANG`) |
+| `--locale CODE` | `zh-HK` · `zh-CN` · `en` plus Tier-2 (`ja` `ko` `es` `fr` `pt` `id` `hi` `bn` `ar` `ur`; also `YSK_LOCALE` / `LANG`) |
 | `--execute` / `--apply` | Attempt real host mutation |
 | `--help` / `--version` | Help / version |
 

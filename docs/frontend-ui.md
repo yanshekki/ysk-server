@@ -15,6 +15,8 @@
 3. Ops results show honest blocked / dry-run states.  
 4. List pages use shared list-query / toolbar patterns.  
 5. No runtime CDN: JS, CSS, and fonts ship in the panel build (system fonts).
+6. Lists use the shared `DataTable`: desktop is a real table; ≤720px is cards + a ⋯ action menu.
+7. Mobile header is menu + search only. Language, account, and logout sit at the **bottom** of the drawer.
 
 ## Key routes
 

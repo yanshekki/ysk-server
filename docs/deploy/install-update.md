@@ -12,6 +12,18 @@ ysk-server update --check --json
 
 See [../getting-started/install.md](../getting-started/install.md).
 
+## Panel self-update
+
+`ysk-server update --apply` and **Updates → 套用面板更新** overlay the official `ysk-server` npm tarball onto the running ExecStart tree, then restart `ysk-server.service`. This does not require `npm install -g`.
+
+Escape hatch when the live panel cannot apply itself:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade
+```
+
+`--upgrade` is **product only** (no apt, no MariaDB/MySQL). Do not use `--upgrade-stack` on a host that already has MySQL 8 data in `/var/lib/mysql`.
+
 ## Panel updates UI
 
 - **Updates** (`/updates`) is the host-wide hub: panel npm + catalog services + runtimes + remaining apt. CLI: `ysk-server updates hub --json` (same `entries` as `GET /api/v1/updates`). `ysk-server update` is product self-update only.

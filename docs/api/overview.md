@@ -60,3 +60,5 @@ Files name collisions: `ifExists=fail|overwrite|rename` on upload/copy/rename (d
 `POST /api/v1/email/domains/:id/policy` sets per-domain antispam + outbound rate (Rspamd map). CLI: `ysk-server email policy`. `--execute` copies into `/etc`.
 
 Panel-user 2FA: `GET/POST /api/v1/settings/security` `requireUserTotp`. CLI: `ysk-server users totp` / `users totp-clear`. Each user enrolls on `/security`.
+
+`GET /api/v1/updates/self` is the panel version check. `POST /api/v1/updates/self/apply` overlays the official npm tarball onto the running dest (same as `ysk-server update --apply`). Failed apply returns **422** with `blockMessage` / `message` — never an `npm notice` file listing. Overlay of own package files does not require `YSK_EXECUTE`.

@@ -84,9 +84,9 @@
   "applyPanelUpdate": "تطبيق تحديث اللوحة",
   "recheck": "إعادة الفحص",
   "aboutScope": "نِطَاق",
-  "aboutScopeV": "ysk-server panel + catalog services + runtimes + remaining apt packages",
+  "aboutScopeV": "لوحة خادم ysk + خدمات الكتالوج + أوقات التشغيل + الحزم الملائمة المتبقية",
   "aboutChannel": "قناة",
-  "aboutChannelV": "npm package ysk-server → GitHub release → apps/server/package.json; apply: npm i -g ysk-server@version or git (YSK_SOURCE_ROOT)",
+  "aboutChannelV": "حزمة npm ysk-server → إصدار GitHub → apps/server/package.json؛ تطبيق: npm i -g ysk-server@version أو git (YSK_SOURCE_ROOT)",
   "aboutFail": "الفشل",
   "aboutFailV": "لا يتم الإبلاغ عن القنوات غير المتوفرة على أنها محدثة؛ تطبيق الاحتياجات تنفيذ؛ يحتاج تطبيق git إلى إعادة تشغيل الخدمة",
   "jobsTitle": "الوظائف المجدولة",
@@ -164,10 +164,10 @@
   "viewUpgradable": "عرض للترقية",
   "installElsewhere": "لتثبيت الحزم (Nginx، PHP، قواعد البيانات...)، افتح صفحة الميزات المطابقة - وليس هذا المحور.",
   "status": "حالة",
-  "groupService": "Services",
-  "groupRuntime": "Runtimes",
-  "groupOs": "System packages",
-  "notInstalled": "Not installed",
-  "goToPage": "Open page",
-  "hubHint": "Catalog software and runtimes on this host. Scan to refresh."
+  "groupService": "خدمات",
+  "groupRuntime": "أوقات التشغيل",
+  "groupOs": "حزم النظام",
+  "notInstalled": "غير مثبت",
+  "goToPage": "افتح الصفحة",
+  "hubHint": "برنامج الكتالوج وأوقات التشغيل على هذا المضيف. المسح للتحديث."
 }

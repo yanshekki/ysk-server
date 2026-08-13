@@ -2629,13 +2629,13 @@
     "tScoreFrom": "skor={{score}} dari={{from}}",
     "appliedTag": "(terapan)",
     "writtenTag": "(hanya tertulis)",
-    "selfDestMissing": "Cannot find the running install directory (systemd ExecStart or cli.js)",
-    "selfDestUnwritable": "Cannot write to the running install directory {{v0}}",
-    "selfApplied": "Applied {{v0}} onto {{v1}}",
-    "selfVerifyFail": "Version file after overlay does not contain {{v0}}",
-    "selfDownloadFail": "Cannot download or unpack official package {{v0}}: {{v1}}",
-    "selfOverlayFail": "Could not overlay the official package onto the running install: {{v0}}",
-    "selfUpgradeHint": "Panel apply failed. As root run: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade"
+    "selfDestMissing": "Direktori instalasi yang berjalan tidak ditemukan (systemd ExecStart atau cli.js)",
+    "selfDestUnwritable": "Tidak dapat menulis ke direktori instalasi yang berjalan {{v0}}",
+    "selfApplied": "{{v0}} diterapkan ke {{v1}}",
+    "selfVerifyFail": "Berkas versi tidak berisi {{v0}} setelah diterapkan",
+    "selfDownloadFail": "Tidak dapat mengunduh atau mengekstrak paket resmi {{v0}}: {{v1}}",
+    "selfOverlayFail": "Tidak dapat menerapkan paket resmi ke direktori yang berjalan: {{v0}}",
+    "selfUpgradeHint": "Penerapan panel gagal. Sebagai root: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade"
   },
   "tpl": {
     "deleted": "Dihapus {{name}}",

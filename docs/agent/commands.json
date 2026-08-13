@@ -1,6 +1,6 @@
 {
   "product": "ysk-server",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "exitCodes": {
     "0": "ok",
     "1": "error",
@@ -494,8 +494,9 @@
     },
     {
       "name": "update",
-      "risk": "execute-host",
-      "summary": "Self-update check/apply"
+      "risk": "write-host",
+      "summary": "Overlay official npm ysk-server onto the running install (EXECUTE not required for own files)",
+      "example": "ysk-server update --apply --json"
     },
     {
       "name": "backup all",

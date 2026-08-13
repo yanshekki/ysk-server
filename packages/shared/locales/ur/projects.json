@@ -505,12 +505,12 @@
     "php": "PHP",
     "node": "Node.js",
     "static": "جامد",
-    "python": "Python",
-    "go": "Go",
-    "rust": "Rust",
-    "java": "Java",
-    "kotlin": "Kotlin",
-    "bun": "Bun"
+    "python": "ازگر",
+    "go": "جاؤ",
+    "rust": "زنگ",
+    "java": "جاوا",
+    "kotlin": "کوٹلن",
+    "bun": "بن"
   },
   "netCacheTitle": "کیشے",
   "logsDeepAccess": "لاگ سینٹر · رسائی",

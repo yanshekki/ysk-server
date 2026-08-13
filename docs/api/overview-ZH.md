@@ -60,3 +60,5 @@
 `POST /api/v1/email/domains/:id/policy` 設定每域反垃圾與出站限速（Rspamd 對應表）。CLI：`ysk-server email policy`。加 `--execute` 才複製到 `/etc`。
 
 面板用戶 2FA：`GET/POST /api/v1/settings/security` 的 `requireUserTotp`。CLI：`ysk-server users totp`／`users totp-clear`。用戶到 `/security` 自行登記。
+
+`GET /api/v1/updates/self` 為面板版本檢查。`POST /api/v1/updates/self/apply` 把官方 npm tarball overlay 到執行中目錄（等同 `ysk-server update --apply`）。套用失敗回 **422**，`blockMessage`／`message` 為真正原因，不會把 `npm notice` 檔案清單當錯誤。覆寫產品自己的檔案不需要 `YSK_EXECUTE`。

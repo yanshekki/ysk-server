@@ -2,7 +2,7 @@
   "neverExpire": "N'expire jamais",
   "ttlSeconds": "{{ttl}}s",
   "ttlMinutes": "{{n}} minutes",
-  "ttlHours": "{{n}} h",
+  "ttlHours": "{{n}} heures",
   "ttlDays": "{{n}} j",
   "typeString": "Chaîne",
   "typeHash": "Hacher",

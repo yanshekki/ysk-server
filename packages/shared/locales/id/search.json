@@ -5,20 +5,20 @@
   "loading": "Mencari…",
   "noResults": "Tidak ada kecocokan",
   "kinds": {
-    "page": "Pages",
-    "project": "Projects",
-    "email": "Email",
-    "mailbox": "Mailboxes",
+    "page": "Halaman",
+    "project": "Proyek",
+    "email": "E-mail",
+    "mailbox": "Kotak surat",
     "ssl": "SSL",
     "dns": "DNS",
     "nginx": "Nginx",
-    "share": "Shares",
+    "share": "Bagikan",
     "ftp": "FTP",
     "mysql": "MySQL",
     "postgres": "PostgreSQL",
-    "redis": "Redis",
-    "cron": "Cron",
-    "user": "Users",
-    "other": "Other"
+    "redis": "ulang",
+    "cron": "Kron",
+    "user": "Pengguna",
+    "other": "Lainnya"
   }
 }

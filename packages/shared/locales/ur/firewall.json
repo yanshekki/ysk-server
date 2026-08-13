@@ -37,7 +37,7 @@
     "deny": "مستقل انکار IP",
     "profiles": "پروفائلز",
     "about": "کے بارے میں",
-    "services": "Services"
+    "services": "خدمات"
   },
   "currentRules": "موجودہ قوانین",
   "rulesSourceHint": "UFW نمبر والے قواعد (ufw اسٹیٹس نمبر شدہ)",
@@ -93,10 +93,10 @@
   "servicesEmptyDesc": "اس فہرست کو آباد کرنے کے لیے ایک منظم سروس (ویب، ایف ٹی پی ایس، وی پی این، ڈی بی…) شروع کریں۔",
   "servicesManualHint": "مینوئل پورٹ چپس پورٹس ٹیب کے نیچے ہیں - یہاں رسائی کا انتظام کرنے کو ترجیح دیں تاکہ قواعد ٹیگ رہیں (ysk-svc)۔",
   "portsManualHint": "اعلی درجے کے دستی قواعد۔ منظم سافٹ ویئر کے لیے سروسز ٹیب کو ترجیح دیں۔",
-  "colService": "Service",
-  "colMode": "Mode",
-  "colPorts": "Ports",
-  "colSync": "Status",
-  "synced": "Synced",
-  "syncNow": "Sync"
+  "colService": "سروس",
+  "colMode": "موڈ",
+  "colPorts": "بندرگاہیں",
+  "colSync": "حیثیت",
+  "synced": "مطابقت پذیر",
+  "syncNow": "مطابقت پذیری"
 }

@@ -5,20 +5,20 @@
   "loading": "Búsqueda…",
   "noResults": "No hay coincidencias",
   "kinds": {
-    "page": "Pages",
-    "project": "Projects",
-    "email": "Email",
-    "mailbox": "Mailboxes",
+    "page": "paginas",
+    "project": "Proyectos",
+    "email": "Correo electrónico",
+    "mailbox": "Buzones",
     "ssl": "SSL",
     "dns": "DNS",
-    "nginx": "Nginx",
-    "share": "Shares",
+    "nginx": "nginx",
+    "share": "Acciones",
     "ftp": "FTP",
     "mysql": "MySQL",
     "postgres": "PostgreSQL",
     "redis": "Redis",
-    "cron": "Cron",
-    "user": "Users",
-    "other": "Other"
+    "cron": "cron",
+    "user": "Usuarios",
+    "other": "Otro"
   }
 }

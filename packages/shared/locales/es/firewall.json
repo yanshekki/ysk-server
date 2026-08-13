@@ -37,7 +37,7 @@
     "deny": "Denegación permanente de IP",
     "profiles": "Perfiles",
     "about": "Acerca de",
-    "services": "Services"
+    "services": "Servicios"
   },
   "currentRules": "Reglas actuales",
   "rulesSourceHint": "Reglas numeradas de UFW (estado de ufw numerado)",
@@ -93,10 +93,10 @@
   "servicesEmptyDesc": "Inicie un servicio administrado (web, FTPS, VPN, DB…) para completar esta lista.",
   "servicesManualHint": "Los chips de puerto manuales se encuentran en la pestaña Puertos; prefiera administrar el acceso aquí para que las reglas permanezcan etiquetadas (ysk-svc).",
   "portsManualHint": "Reglas manuales avanzadas. Prefiera la pestaña Servicios para software administrado.",
-  "colService": "Service",
-  "colMode": "Mode",
-  "colPorts": "Ports",
-  "colSync": "Status",
-  "synced": "Synced",
-  "syncNow": "Sync"
+  "colService": "Servicio",
+  "colMode": "Modo",
+  "colPorts": "Puertos",
+  "colSync": "Estado",
+  "synced": "Sincronizado",
+  "syncNow": "Sincronizar"
 }

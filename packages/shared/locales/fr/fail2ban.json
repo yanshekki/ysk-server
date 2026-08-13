@@ -61,7 +61,7 @@
   "customExample15m": "Personnalisé, ex. 15m",
   "customMaxretry": "Personnalisé 1–50",
   "min": "{{n}} minutes",
-  "hour": "{{n}} h",
+  "hour": "{{n}} heures",
   "week": "{{n}} sem",
   "enableJailsHint": "Activer les jails (cocher puis appliquer) :",
   "writtenOnlyMsg": "Fichier du panneau écrit (non appliqué sur l'hôte)",

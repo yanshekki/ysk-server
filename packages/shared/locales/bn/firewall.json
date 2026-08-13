@@ -37,7 +37,7 @@
     "deny": "স্থায়ী অস্বীকার আইপি",
     "profiles": "প্রোফাইল",
     "about": "সম্পর্কে",
-    "services": "Services"
+    "services": "সেবা"
   },
   "currentRules": "বর্তমান নিয়ম",
   "rulesSourceHint": "UFW সংখ্যাযুক্ত নিয়ম (ufw স্ট্যাটাস নম্বরযুক্ত)",
@@ -93,10 +93,10 @@
   "servicesEmptyDesc": "এই তালিকাটি পূরণ করতে একটি পরিচালিত পরিষেবা (ওয়েব, FTPS, VPN, DB…) শুরু করুন৷",
   "servicesManualHint": "ম্যানুয়াল পোর্ট চিপগুলি পোর্ট ট্যাবের অধীনে রয়েছে — এখানে অ্যাক্সেস পরিচালনা করতে পছন্দ করুন যাতে নিয়মগুলি ট্যাগ করা থাকে (ysk-svc)৷",
   "portsManualHint": "উন্নত ম্যানুয়াল নিয়ম। পরিচালিত সফ্টওয়্যারের জন্য পরিষেবা ট্যাবটি পছন্দ করুন৷",
-  "colService": "Service",
-  "colMode": "Mode",
-  "colPorts": "Ports",
-  "colSync": "Status",
-  "synced": "Synced",
-  "syncNow": "Sync"
+  "colService": "সেবা",
+  "colMode": "মোড",
+  "colPorts": "বন্দর",
+  "colSync": "স্ট্যাটাস",
+  "synced": "সিঙ্ক করা হয়েছে",
+  "syncNow": "সিঙ্ক"
 }

@@ -5,20 +5,20 @@
   "loading": "অনুসন্ধান করা হচ্ছে...",
   "noResults": "কোন মিল নেই",
   "kinds": {
-    "page": "Pages",
-    "project": "Projects",
-    "email": "Email",
-    "mailbox": "Mailboxes",
+    "page": "পাতা",
+    "project": "প্রকল্প",
+    "email": "ইমেইল",
+    "mailbox": "ডাকবাক্স",
     "ssl": "SSL",
     "dns": "DNS",
     "nginx": "Nginx",
-    "share": "Shares",
+    "share": "শেয়ার",
     "ftp": "FTP",
     "mysql": "MySQL",
     "postgres": "PostgreSQL",
-    "redis": "Redis",
-    "cron": "Cron",
-    "user": "Users",
-    "other": "Other"
+    "redis": "রেডিস",
+    "cron": "ক্রোন",
+    "user": "ব্যবহারকারীদের",
+    "other": "অন্যান্য"
   }
 }

@@ -96,7 +96,7 @@
   "colService": "Service",
   "colMode": "Mode",
   "colPorts": "Ports",
-  "colSync": "Status",
-  "synced": "Synced",
-  "syncNow": "Sync"
+  "colSync": "Statut",
+  "synced": "Synchronisé",
+  "syncNow": "Synchroniser"
 }

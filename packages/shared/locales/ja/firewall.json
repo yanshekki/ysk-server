@@ -37,7 +37,7 @@
     "deny": "永久拒否IP",
     "profiles": "プロファイル",
     "about": "説明",
-    "services": "Services"
+    "services": "サービス"
   },
   "currentRules": "現在のルール",
   "rulesSourceHint": "UFW 番号付きルール (UFW ステータス番号付き)",
@@ -93,10 +93,10 @@
   "servicesEmptyDesc": "マネージド サービス (Web、FTPS、VPN、DB など) を開始して、このリストに入力します。",
   "servicesManualHint": "手動ポート チップは [ポート] タブの下にあります。ルールがタグ付けされたままになるように、ここでアクセスを管理することをお勧めします (ysk-svc)。",
   "portsManualHint": "高度な手動ルール。管理対象ソフトウェアには [サービス] タブを推奨します。",
-  "colService": "Service",
-  "colMode": "Mode",
-  "colPorts": "Ports",
-  "colSync": "Status",
-  "synced": "Synced",
-  "syncNow": "Sync"
+  "colService": "サービス",
+  "colMode": "モード",
+  "colPorts": "ポート",
+  "colSync": "状態",
+  "synced": "同期済み",
+  "syncNow": "同期"
 }

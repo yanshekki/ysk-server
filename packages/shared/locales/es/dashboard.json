@@ -111,7 +111,7 @@
   "barTitle": "{{count}} aviso(s) del host",
   "levelCritical": "Crítico",
   "levelWarn": "Aviso",
-  "levelInfo": "Info",
+  "levelInfo": "Información",
   "colTitle": "Aviso",
   "colDetail": "Detalle",
   "colSource": "Origen"

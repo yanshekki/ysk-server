@@ -5,20 +5,20 @@
   "loading": "検索中…",
   "noResults": "一致しません",
   "kinds": {
-    "page": "Pages",
-    "project": "Projects",
-    "email": "Email",
-    "mailbox": "Mailboxes",
+    "page": "ページ",
+    "project": "プロジェクト",
+    "email": "メール",
+    "mailbox": "メールボックス",
     "ssl": "SSL",
     "dns": "DNS",
     "nginx": "Nginx",
-    "share": "Shares",
+    "share": "株式",
     "ftp": "FTP",
     "mysql": "MySQL",
     "postgres": "PostgreSQL",
-    "redis": "Redis",
+    "redis": "レディス",
     "cron": "Cron",
-    "user": "Users",
-    "other": "Other"
+    "user": "ユーザー",
+    "other": "他の"
   }
 }

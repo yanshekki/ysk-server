@@ -52,7 +52,7 @@
     "created": "생성됨",
     "os": "OS 사용자",
     "deploy": "배포",
-    "nginx": "Nginx",
+    "nginx": "엔진엑스",
     "health": "건강"
   },
   "next": {
@@ -505,12 +505,12 @@
     "php": "PHP",
     "node": "Node.js",
     "static": "공전",
-    "python": "Python",
-    "go": "Go",
-    "rust": "Rust",
-    "java": "Java",
-    "kotlin": "Kotlin",
-    "bun": "Bun"
+    "python": "파이썬",
+    "go": "가다",
+    "rust": "녹",
+    "java": "자바",
+    "kotlin": "코틀린",
+    "bun": "혈액 요소 질소"
   },
   "netCacheTitle": "은닉처",
   "logsDeepAccess": "로그센터 · 접속",

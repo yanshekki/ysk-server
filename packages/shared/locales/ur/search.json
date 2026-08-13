@@ -5,20 +5,20 @@
   "loading": "تلاش کر رہا ہے…",
   "noResults": "کوئی میچ نہیں",
   "kinds": {
-    "page": "Pages",
-    "project": "Projects",
-    "email": "Email",
-    "mailbox": "Mailboxes",
+    "page": "صفحات",
+    "project": "پروجیکٹس",
+    "email": "ای میل",
+    "mailbox": "میل باکسز",
     "ssl": "SSL",
     "dns": "DNS",
     "nginx": "Nginx",
-    "share": "Shares",
+    "share": "شیئرز",
     "ftp": "FTP",
     "mysql": "MySQL",
     "postgres": "PostgreSQL",
-    "redis": "Redis",
-    "cron": "Cron",
-    "user": "Users",
-    "other": "Other"
+    "redis": "ریڈیس",
+    "cron": "کرون",
+    "user": "صارفین",
+    "other": "دیگر"
   }
 }

@@ -2629,13 +2629,13 @@
     "tScoreFrom": "স্কোর={{score}} থেকে={{from}}",
     "appliedTag": "(প্রযোজ্য)",
     "writtenTag": "(শুধুমাত্র লিখিত)",
-    "selfDestMissing": "Cannot find the running install directory (systemd ExecStart or cli.js)",
-    "selfDestUnwritable": "Cannot write to the running install directory {{v0}}",
-    "selfApplied": "Applied {{v0}} onto {{v1}}",
-    "selfVerifyFail": "Version file after overlay does not contain {{v0}}",
-    "selfDownloadFail": "Cannot download or unpack official package {{v0}}: {{v1}}",
-    "selfOverlayFail": "Could not overlay the official package onto the running install: {{v0}}",
-    "selfUpgradeHint": "Panel apply failed. As root run: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade"
+    "selfDestMissing": "চলমান ইনস্টল ডিরেক্টরি পাওয়া যায়নি (systemd ExecStart বা cli.js)",
+    "selfDestUnwritable": "চলমান ইনস্টল ডিরেক্টরিতে লেখা যায় না {{v0}}",
+    "selfApplied": "{{v0}} {{v1}}-এ প্রয়োগ করা হয়েছে",
+    "selfVerifyFail": "প্রয়োগের পর সংস্করণ ফাইলে {{v0}} নেই",
+    "selfDownloadFail": "অফিসিয়াল প্যাকেজ {{v0}} ডাউনলোড বা আনপ্যাক করা যায়নি: {{v1}}",
+    "selfOverlayFail": "অফিসিয়াল প্যাকেজ চলমান ডিরেক্টরিতে প্রয়োগ করা যায়নি: {{v0}}",
+    "selfUpgradeHint": "প্যানেল প্রয়োগ ব্যর্থ। root হিসেবে চালান: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade"
   },
   "tpl": {
     "deleted": "মুছে ফেলা হয়েছে {{name}}",

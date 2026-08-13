@@ -84,9 +84,9 @@
   "applyPanelUpdate": "پینل اپ ڈیٹ کا اطلاق کریں۔",
   "recheck": "دوبارہ چیک کریں۔",
   "aboutScope": "دائرہ کار",
-  "aboutScopeV": "ysk-server panel + catalog services + runtimes + remaining apt packages",
+  "aboutScopeV": "ysk-server پینل + کیٹلاگ سروسز + رن ٹائمز + باقی مناسب پیکجز",
   "aboutChannel": "چینل",
-  "aboutChannelV": "npm package ysk-server → GitHub release → apps/server/package.json; apply: npm i -g ysk-server@version or git (YSK_SOURCE_ROOT)",
+  "aboutChannelV": "npm پیکیج ysk-server → GitHub ریلیز → apps/server/package.json؛ لاگو کریں: npm i -g ysk-server@version یا git (YSK_SOURCE_ROOT)",
   "aboutFail": "ناکامیاں",
   "aboutFailV": "غیر دستیاب چینلز کو اپ ٹو ڈیٹ کے طور پر رپورٹ نہیں کیا جاتا ہے۔ لاگو کرنے کی ضروریات کو انجام دینا؛ git apply سروس کو دوبارہ شروع کرنے کی ضرورت ہے۔",
   "jobsTitle": "طے شدہ ملازمتیں۔",
@@ -164,10 +164,10 @@
   "viewUpgradable": "اپ گریڈ ایبل دیکھیں",
   "installElsewhere": "پیکجز (Nginx، PHP، ڈیٹا بیسز…) انسٹال کرنے کے لیے، مماثل فیچر کا صفحہ کھولیں — یہ مرکز نہیں۔",
   "status": "حیثیت",
-  "groupService": "Services",
-  "groupRuntime": "Runtimes",
-  "groupOs": "System packages",
-  "notInstalled": "Not installed",
-  "goToPage": "Open page",
-  "hubHint": "Catalog software and runtimes on this host. Scan to refresh."
+  "groupService": "خدمات",
+  "groupRuntime": "رن ٹائمز",
+  "groupOs": "سسٹم پیکجز",
+  "notInstalled": "انسٹال نہیں ہے۔",
+  "goToPage": "صفحہ کھولیں۔",
+  "hubHint": "اس میزبان پر کیٹلاگ سافٹ ویئر اور رن ٹائمز۔ ریفریش کرنے کے لیے اسکین کریں۔"
 }

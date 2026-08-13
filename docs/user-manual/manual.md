@@ -111,7 +111,7 @@ ysk-server readiness --json
 | Readiness | `readiness --json` / System → Readiness |
 | Logs | `logs query …` / Log Center |
 | Host packages | `updates inventory` |
-| Product self-update | `update --check` |
+| Product self-update | `update --apply` or `install.sh --upgrade` |
 | Sessions / keys | `security sessions` · `security api-keys` |
 | FTP | `ftp accounts list` |
 | Runtimes | `runtimes list` |

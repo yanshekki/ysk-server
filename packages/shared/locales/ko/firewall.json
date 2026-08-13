@@ -37,7 +37,7 @@
     "deny": "IP 영구 거부",
     "profiles": "프로필",
     "about": "설명",
-    "services": "Services"
+    "services": "서비스"
   },
   "currentRules": "현재 규칙",
   "rulesSourceHint": "UFW 번호가 매겨진 규칙(ufw 상태 번호가 매겨짐)",
@@ -93,10 +93,10 @@
   "servicesEmptyDesc": "이 목록을 채우려면 관리형 서비스(웹, FTPS, VPN, DB…)를 시작하세요.",
   "servicesManualHint": "수동 포트 칩은 포트 탭 아래에 있습니다. 규칙이 태그된 상태로 유지되도록 여기에서 액세스를 관리하는 것이 좋습니다(ysk-svc).",
   "portsManualHint": "고급 수동 규칙. 관리되는 소프트웨어의 경우 서비스 탭을 선호합니다.",
-  "colService": "Service",
-  "colMode": "Mode",
-  "colPorts": "Ports",
-  "colSync": "Status",
-  "synced": "Synced",
-  "syncNow": "Sync"
+  "colService": "서비스",
+  "colMode": "방법",
+  "colPorts": "포트",
+  "colSync": "상태",
+  "synced": "동기화됨",
+  "syncNow": "동조"
 }

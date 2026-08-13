@@ -266,7 +266,7 @@
     "spfFix": "انشر v=spf1 بما في ذلك عنوان IP هذا",
     "dkim": "دكيم TXT",
     "dkimFix": "نشر المحدد._domainkey TXT من اللوحة",
-    "dmarc": "DMARC TXT",
+    "dmarc": "ديمارك TXT",
     "dmarcFix": "نشر سياسة _dmarc (ابدأ بـ p=none)",
     "ptr": "عكس DNS (PTR)",
     "ptrFix": "قم بتعيين PTR على VPS/وحدة التحكم السحابية لمطابقة اسم مضيف البريد - لا يمكن للوحة تعيين هذا",

@@ -6,19 +6,19 @@
   "noResults": "Aucune correspondance",
   "kinds": {
     "page": "Pages",
-    "project": "Projects",
-    "email": "Email",
-    "mailbox": "Mailboxes",
+    "project": "Projets",
+    "email": "E-mail",
+    "mailbox": "Boîtes aux lettres",
     "ssl": "SSL",
     "dns": "DNS",
     "nginx": "Nginx",
-    "share": "Shares",
+    "share": "Actions",
     "ftp": "FTP",
     "mysql": "MySQL",
     "postgres": "PostgreSQL",
-    "redis": "Redis",
+    "redis": "Rédis",
     "cron": "Cron",
-    "user": "Users",
-    "other": "Other"
+    "user": "Utilisateurs",
+    "other": "Autre"
   }
 }

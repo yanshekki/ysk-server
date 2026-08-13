@@ -505,12 +505,12 @@
     "php": "PHP",
     "node": "Node.js",
     "static": "静止画",
-    "python": "Python",
-    "go": "Go",
-    "rust": "Rust",
-    "java": "Java",
-    "kotlin": "Kotlin",
-    "bun": "Bun"
+    "python": "パイソン",
+    "go": "行く",
+    "rust": "さび",
+    "java": "ジャワ",
+    "kotlin": "コトリン",
+    "bun": "バン"
   },
   "netCacheTitle": "キャッシュ",
   "logsDeepAccess": "ログセンター・アクセス",

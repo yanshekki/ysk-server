@@ -84,9 +84,9 @@
   "applyPanelUpdate": "Aplicar actualización del panel",
   "recheck": "Vuelva a comprobar",
   "aboutScope": "Alcance",
-  "aboutScopeV": "ysk-server panel + catalog services + runtimes + remaining apt packages",
+  "aboutScopeV": "panel ysk-server + servicios de catálogo + tiempos de ejecución + paquetes apt restantes",
   "aboutChannel": "Canal",
-  "aboutChannelV": "npm package ysk-server → GitHub release → apps/server/package.json; apply: npm i -g ysk-server@version or git (YSK_SOURCE_ROOT)",
+  "aboutChannelV": "paquete npm ysk-server → versión de GitHub → apps/server/package.json; aplicar: npm i -g ysk-server@version o git (YSK_SOURCE_ROOT)",
   "aboutFail": "Fallos",
   "aboutFailV": "Los canales no disponibles no se informan como actualizados; aplicar necesidades EJECUTAR; git apply necesita reiniciar el servicio",
   "jobsTitle": "Trabajos programados",
@@ -164,10 +164,10 @@
   "viewUpgradable": "Ver actualizable",
   "installElsewhere": "Para instalar paquetes (Nginx, PHP, bases de datos…), abra la página de funciones correspondientes, no este centro.",
   "status": "Estado",
-  "groupService": "Services",
-  "groupRuntime": "Runtimes",
-  "groupOs": "System packages",
-  "notInstalled": "Not installed",
-  "goToPage": "Open page",
-  "hubHint": "Catalog software and runtimes on this host. Scan to refresh."
+  "groupService": "Servicios",
+  "groupRuntime": "Tiempos de ejecución",
+  "groupOs": "Paquetes de sistema",
+  "notInstalled": "No instalado",
+  "goToPage": "Abrir página",
+  "hubHint": "Catálogo de software y tiempos de ejecución en este host. Escanee para actualizar."
 }

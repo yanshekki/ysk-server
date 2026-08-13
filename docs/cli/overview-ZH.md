@@ -13,7 +13,7 @@
 | `--json` | 標準輸出結構化 JSON（AI 優先） |
 | `--data-dir PATH` | 控制平面資料目錄 |
 | `--config PATH` | setup 產生的 `config.json` |
-| `--locale CODE` | `zh-HK` · `zh-CN` · `en`（亦可用 `YSK_LOCALE`／`LANG`） |
+| `--locale CODE` | `zh-HK` · `zh-CN` · `en` 以及第二層（`ja` `ko` `es` `fr` `pt` `id` `hi` `bn` `ar` `ur`；亦可用 `YSK_LOCALE`／`LANG`） |
 | `--execute`／`--apply` | 嘗試真實主機變更 |
 | `--help`／`--version` | 說明／版本 |
 

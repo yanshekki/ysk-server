@@ -52,7 +52,7 @@
     "created": "Creado",
     "os": "Usuario del sistema operativo",
     "deploy": "Desplegar",
-    "nginx": "Nginx",
+    "nginx": "nginx",
     "health": "Salud"
   },
   "next": {
@@ -503,14 +503,14 @@
   "railNode": "Proceso de nodo",
   "runtimeName": {
     "php": "PHP",
-    "node": "Node.js",
+    "node": "Nodo.js",
     "static": "Estático",
-    "python": "Python",
-    "go": "Go",
-    "rust": "Rust",
+    "python": "Pitón",
+    "go": "Ir",
+    "rust": "Óxido",
     "java": "Java",
     "kotlin": "Kotlin",
-    "bun": "Bun"
+    "bun": "Bollo"
   },
   "netCacheTitle": "Cache",
   "logsDeepAccess": "Centro de registro · acceso",

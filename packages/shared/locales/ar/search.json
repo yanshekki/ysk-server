@@ -5,20 +5,20 @@
   "loading": "البحث…",
   "noResults": "لا توجد مباريات",
   "kinds": {
-    "page": "Pages",
-    "project": "Projects",
-    "email": "Email",
-    "mailbox": "Mailboxes",
+    "page": "الصفحات",
+    "project": "المشاريع",
+    "email": "بريد إلكتروني",
+    "mailbox": "صناديق البريد",
     "ssl": "SSL",
     "dns": "DNS",
-    "nginx": "Nginx",
-    "share": "Shares",
+    "nginx": "نجينكس",
+    "share": "أسهم",
     "ftp": "FTP",
     "mysql": "MySQL",
     "postgres": "PostgreSQL",
-    "redis": "Redis",
-    "cron": "Cron",
-    "user": "Users",
-    "other": "Other"
+    "redis": "ريديس",
+    "cron": "كرون",
+    "user": "المستخدمين",
+    "other": "آخر"
   }
 }

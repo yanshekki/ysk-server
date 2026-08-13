@@ -5,20 +5,20 @@
   "loading": "Procurando…",
   "noResults": "Nenhuma correspondência",
   "kinds": {
-    "page": "Pages",
-    "project": "Projects",
-    "email": "Email",
-    "mailbox": "Mailboxes",
+    "page": "Páginas",
+    "project": "Projetos",
+    "email": "E-mail",
+    "mailbox": "Caixas de correio",
     "ssl": "SSL",
     "dns": "DNS",
     "nginx": "Nginx",
-    "share": "Shares",
+    "share": "Ações",
     "ftp": "FTP",
     "mysql": "MySQL",
     "postgres": "PostgreSQL",
     "redis": "Redis",
     "cron": "Cron",
-    "user": "Users",
-    "other": "Other"
+    "user": "Usuários",
+    "other": "Outro"
   }
 }

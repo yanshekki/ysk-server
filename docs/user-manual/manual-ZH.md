@@ -111,7 +111,7 @@ ysk-server readiness --json
 | 就緒 | `readiness --json`／系統 → 就緒 |
 | 日誌 | `logs query …`／日誌中心 |
 | 主機套件 | `updates inventory` |
-| 產品本體更新 | `update --check` |
+| 產品本體更新 | `update --apply` 或 `install.sh --upgrade` |
 | 工作階段／金鑰 | `security sessions` · `security api-keys` |
 | FTP | `ftp accounts list` |
 | 執行環境 | `runtimes list` |

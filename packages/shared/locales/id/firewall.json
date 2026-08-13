@@ -37,7 +37,7 @@
     "deny": "IP penolakan permanen",
     "profiles": "Profil",
     "about": "Tentang",
-    "services": "Services"
+    "services": "Layanan"
   },
   "currentRules": "Aturan saat ini",
   "rulesSourceHint": "Aturan bernomor UFW (status ufw bernomor)",
@@ -93,10 +93,10 @@
   "servicesEmptyDesc": "Mulai layanan terkelola (web, FTPS, VPN, DB…) untuk mengisi daftar ini.",
   "servicesManualHint": "Chip port manual ada di tab Ports — lebih suka mengelola akses di sini sehingga aturan tetap diberi tag (ysk-svc).",
   "portsManualHint": "Aturan manual tingkat lanjut. Pilih tab Layanan untuk perangkat lunak yang dikelola.",
-  "colService": "Service",
+  "colService": "Melayani",
   "colMode": "Mode",
-  "colPorts": "Ports",
+  "colPorts": "Pelabuhan",
   "colSync": "Status",
-  "synced": "Synced",
-  "syncNow": "Sync"
+  "synced": "Disinkronkan",
+  "syncNow": "Sinkronisasi"
 }

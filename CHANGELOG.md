@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.18 — 2026-08-13
+
+### Fix
+- Nginx proxy render fails closed on empty/invalid `serverName` (CI `nginx-ssl.depth` green)
+
+### i18n
+- Filled leftover English leaves in ja/ko/es/fr/pt/id/hi/bn/ar/ur; product names stay English
+- zh-HK glossary remains Hong Kong written Chinese
+
+### Docs
+- CLI / API / install-update / user-manual: panel overlay apply, `install.sh --upgrade`, no `npm i -g`
+
 ## 1.0.17 — 2026-08-13
 
 ### UI

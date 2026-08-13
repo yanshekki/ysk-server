@@ -122,9 +122,23 @@ function httpRedirectBlock(serverName: string, bindIp?: string): string {
 /**
  * Render an Nginx server block for reverse proxy.
  */
+export function requireNginxServerName(raw: string): string {
+  const kept = String(raw ?? '')
+    .split(/\s+/)
+    .map(sanitizeNginxServerNameToken)
+    .filter((x): x is string => Boolean(x));
+  const name = [...new Set(kept)].join(' ');
+  if (!name) {
+    throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1388'), {
+      httpStatus: 400,
+    });
+  }
+  return name;
+}
+
 export function renderNginxProxy(config: NginxProxyConfig): string {
-  config = { ...config, serverName: sanitizeNginxServerNameList(config.serverName) };
-  if (!config.serverName || !config.upstream) {
+  config = { ...config, serverName: requireNginxServerName(config.serverName) };
+  if (!config.upstream) {
     throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1388'), {
       httpStatus: 400,
     });

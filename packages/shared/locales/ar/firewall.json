@@ -37,7 +37,7 @@
     "deny": "رفض IP الدائم",
     "profiles": "الملفات الشخصية",
     "about": "عن",
-    "services": "Services"
+    "services": "خدمات"
   },
   "currentRules": "القواعد الحالية",
   "rulesSourceHint": "قواعد مرقمة UFW (حالة ufw مرقمة)",
@@ -93,10 +93,10 @@
   "servicesEmptyDesc": "ابدأ خدمة مُدارة (الويب، FTPS، VPN، DB...) لملء هذه القائمة.",
   "servicesManualHint": "توجد شرائح المنافذ اليدوية ضمن علامة التبويب \"المنافذ\" - تفضل إدارة الوصول هنا حتى تظل القواعد مميزة (ysk-svc).",
   "portsManualHint": "القواعد اليدوية المتقدمة تفضل علامة التبويب \"الخدمات\" للبرامج المُدارة.",
-  "colService": "Service",
-  "colMode": "Mode",
-  "colPorts": "Ports",
-  "colSync": "Status",
-  "synced": "Synced",
-  "syncNow": "Sync"
+  "colService": "خدمة",
+  "colMode": "وضع",
+  "colPorts": "الموانئ",
+  "colSync": "حالة",
+  "synced": "تمت المزامنة",
+  "syncNow": "مزامنة"
 }

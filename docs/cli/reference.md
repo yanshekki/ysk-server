@@ -31,10 +31,17 @@ ysk-server serve [--config PATH] [--data-dir PATH] [--host 127.0.0.1] [--port 92
 
 ## update
 
-Self-update check / apply (apply needs network + EXECUTE).
+Check or apply **panel** self-update from the official npm package `ysk-server`.
+
+Apply overlays the tarball onto the **running** install (`systemd` ExecStart tree, usually `…/apps/server` or `…/ysk-server`). It does **not** depend on `npm install -g` (that path never updates a from-source ExecStart). Overlay of the product’s own files does **not** require `YSK_EXECUTE`. A unit restart is scheduled after a successful overlay.
+
+If the running panel is too old to apply itself: `install.sh --upgrade` (product overlay only — does not reinstall MariaDB/MySQL).
+
+Host package upgrades live on `/updates` and `ysk-server updates hub`.
 
 ```bash
-ysk-server update [--check] [--latest VERSION] [--apply] [--json]
+ysk-server update --check --json
+ysk-server update --apply --json
 ```
 
 ## system

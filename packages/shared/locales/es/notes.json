@@ -2629,13 +2629,13 @@
     "tScoreFrom": "puntuación={{score}} de={{from}}",
     "appliedTag": "(aplicado)",
     "writtenTag": "(solo escrito)",
-    "selfDestMissing": "Cannot find the running install directory (systemd ExecStart or cli.js)",
-    "selfDestUnwritable": "Cannot write to the running install directory {{v0}}",
-    "selfApplied": "Applied {{v0}} onto {{v1}}",
-    "selfVerifyFail": "Version file after overlay does not contain {{v0}}",
-    "selfDownloadFail": "Cannot download or unpack official package {{v0}}: {{v1}}",
-    "selfOverlayFail": "Could not overlay the official package onto the running install: {{v0}}",
-    "selfUpgradeHint": "Panel apply failed. As root run: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade"
+    "selfDestMissing": "No se encuentra el directorio de instalación en ejecución (systemd ExecStart o cli.js)",
+    "selfDestUnwritable": "No se puede escribir en el directorio de instalación en ejecución {{v0}}",
+    "selfApplied": "Se aplicó {{v0}} en {{v1}}",
+    "selfVerifyFail": "El archivo de versión no contiene {{v0}} tras aplicar",
+    "selfDownloadFail": "No se puede descargar o descomprimir el paquete oficial {{v0}}: {{v1}}",
+    "selfOverlayFail": "No se pudo aplicar el paquete oficial al directorio en ejecución: {{v0}}",
+    "selfUpgradeHint": "Falló la aplicación del panel. Como root: curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.sh | bash -s -- --upgrade"
   },
   "tpl": {
     "deleted": "Eliminado {{name}}",

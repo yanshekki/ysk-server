@@ -31,10 +31,17 @@ ysk-server serve [--config PATH] [--data-dir PATH] [--host 127.0.0.1] [--port 92
 
 ## update
 
-自我更新檢查／套用（套用需網絡 + EXECUTE）。
+檢查或套用**面板**自身更新（官方 npm 套件 `ysk-server`）。
+
+套用會把 tarball overlay 到**執行中**安裝目錄（systemd `ExecStart` 樹，通常是 `…/apps/server` 或 `…/ysk-server`）。**不依賴** `npm install -g`（該路徑不會更新從源碼安裝的 ExecStart）。覆寫產品自己的檔案**不需要** `YSK_EXECUTE`。成功後會排程重啟服務。
+
+若執行中面板太舊、無法自行套用：用 `install.sh --upgrade`（只 overlay 產品，不會重裝 MariaDB／MySQL）。
+
+主機套件升級在 `/updates` 與 `ysk-server updates hub`。
 
 ```bash
-ysk-server update [--check] [--latest VERSION] [--apply] [--json]
+ysk-server update --check --json
+ysk-server update --apply --json
 ```
 
 ## system

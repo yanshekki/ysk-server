@@ -84,9 +84,9 @@
   "applyPanelUpdate": "Terapkan pembaruan panel",
   "recheck": "Periksa kembali",
   "aboutScope": "Cakupan",
-  "aboutScopeV": "ysk-server panel + catalog services + runtimes + remaining apt packages",
+  "aboutScopeV": "panel ysk-server + layanan katalog + runtime + sisa paket apt",
   "aboutChannel": "Saluran",
-  "aboutChannelV": "npm package ysk-server → GitHub release → apps/server/package.json; apply: npm i -g ysk-server@version or git (YSK_SOURCE_ROOT)",
+  "aboutChannelV": "paket npm ysk-server → Rilis GitHub → apps/server/package.json; terapkan: npm i -g ysk-server@version atau git (YSK_SOURCE_ROOT)",
   "aboutFail": "Kegagalan",
   "aboutFailV": "Saluran yang tidak tersedia tidak dilaporkan sebagai saluran terkini; terapkan kebutuhan EXECUTE; git apply perlu memulai ulang layanan",
   "jobsTitle": "Pekerjaan terjadwal",
@@ -164,10 +164,10 @@
   "viewUpgradable": "Lihat dapat diupgrade",
   "installElsewhere": "Untuk menginstal paket (Nginx, PHP, database…), buka halaman fitur yang cocok — bukan hub ini.",
   "status": "Status",
-  "groupService": "Services",
-  "groupRuntime": "Runtimes",
-  "groupOs": "System packages",
-  "notInstalled": "Not installed",
-  "goToPage": "Open page",
-  "hubHint": "Catalog software and runtimes on this host. Scan to refresh."
+  "groupService": "Layanan",
+  "groupRuntime": "Waktu proses",
+  "groupOs": "Paket sistem",
+  "notInstalled": "Tidak dipasang",
+  "goToPage": "Buka halaman",
+  "hubHint": "Katalog perangkat lunak dan runtime pada host ini. Pindai untuk menyegarkan."
 }

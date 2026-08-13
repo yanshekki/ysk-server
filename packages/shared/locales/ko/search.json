@@ -5,20 +5,20 @@
   "loading": "수색…",
   "noResults": "일치하는 항목 없음",
   "kinds": {
-    "page": "Pages",
-    "project": "Projects",
-    "email": "Email",
-    "mailbox": "Mailboxes",
+    "page": "페이지",
+    "project": "프로젝트",
+    "email": "이메일",
+    "mailbox": "사서함",
     "ssl": "SSL",
     "dns": "DNS",
-    "nginx": "Nginx",
-    "share": "Shares",
+    "nginx": "엔진엑스",
+    "share": "주식",
     "ftp": "FTP",
     "mysql": "MySQL",
     "postgres": "PostgreSQL",
-    "redis": "Redis",
+    "redis": "레디스",
     "cron": "Cron",
-    "user": "Users",
-    "other": "Other"
+    "user": "사용자",
+    "other": "다른"
   }
 }
