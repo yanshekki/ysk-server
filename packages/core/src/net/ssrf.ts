@@ -46,6 +46,19 @@ function isAlwaysImdsHost(h: string): boolean {
   return false;
 }
 
+/** True when hostname is loopback (not a substring match on the full URL). */
+export function isLoopbackHostname(host: string): boolean {
+  const raw = host.trim().toLowerCase().replace(/^\[|\]$/g, '');
+  const h = canonicalizeSsrfHost(raw);
+  if (!h) return false;
+  if (h === 'localhost' || h === 'localhost.localdomain' || raw === 'localhost') return true;
+  if (h.endsWith('.localhost') || raw.endsWith('.localhost')) return true;
+  if (h === '::1' || raw === '::1') return true;
+  const p = ipv4Parts(h);
+  if (p && p[0] === 127) return true;
+  return false;
+}
+
 /** Cloud IMDS / link-local metadata — not loopback (VNC may target 127.0.0.1). */
 export function isCloudMetadataHost(host: string): boolean {
   const raw = host.trim().toLowerCase().replace(/^\[|\]$/g, '');

@@ -79,6 +79,14 @@ describe('nginx + ssl', () => {
     );
   });
 
+  it('drops injected server_name tokens', () => {
+    expect(buildServerNameList('app.example.com; include /tmp/x;', [])).toBe('localhost');
+    expect(buildServerNameList('ok.example.com', ['bad;foo'])).toBe('ok.example.com');
+    const conf = renderNginxSuspended('x.com; return 200;');
+    expect(conf).toContain('server_name localhost;');
+    expect(conf).not.toContain('return 200;');
+  });
+
   it('forceHttps + hsts emits redirect and STS header', () => {
     const conf = renderNginxProxy({
       serverName: 'app.example.com www.example.com',

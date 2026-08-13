@@ -48,6 +48,19 @@ describe('fetchTransport', () => {
     ).rejects.toThrow(YskError);
   });
 
+  it('does not treat localhost in query as allowPrivate', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    await expect(
+      fetchTransport.complete({
+        baseUrl: 'http://169.254.169.254/latest?ref=localhost',
+        model: 'm',
+        messages: [{ role: 'user', content: 'x' }],
+      }),
+    ).rejects.toThrow(YskError);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('throws on network failure', async () => {
     vi.stubGlobal(
       'fetch',

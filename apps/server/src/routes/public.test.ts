@@ -113,6 +113,11 @@ describe('public routes (HTTP)', () => {
     expect(outlook.status).toBe(200);
     const outlookText = await outlook.text();
     expect(outlookText.length).toBeGreaterThan(20);
+
+    const injected = await fetch(
+      `${ts.baseUrl}/mail/config-v1.1.xml?domain=ex.com%3C/domain%3E%3Cevil%3E`,
+    );
+    expect(injected.status).toBe(400);
   });
 
   it('authenticated project health for missing project is not 401', async () => {

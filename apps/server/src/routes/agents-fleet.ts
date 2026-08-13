@@ -2,19 +2,26 @@
  * Fleet agents register / heartbeat / commands (Wave X3).
  * Extracted from agents.ts. Behaviour preserved.
  */
+import { timingSafeEqual } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { ErrorCodes } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
 import { getAgentToken } from '../http/auth-guards.js';
 import { listWithQuery } from '../http/list-response.js';
 import { getBearer, readBody, sendJson } from '../http/util.js';
+import { requireAnyCap } from '../http/rbac-guard.js';
+
+const FLEET_PANEL_CAPS = ['settings.system', 'services.control'] as const;
 
 function enrollTokenOk(ctx: AppContext, provided: string | undefined): boolean {
   const expected =
     process.env.YSK_FLEET_ENROLL_TOKEN?.trim() ||
     String(ctx.db.snapshot.settings?.['fleet.enroll_token'] ?? '').trim();
-  if (!expected) return false;
-  return Boolean(provided && provided === expected);
+  if (!expected || !provided) return false;
+  const a = Buffer.from(expected);
+  const b = Buffer.from(provided);
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
 }
 
 /** Panel session auth OR valid enrollment token. */
@@ -30,6 +37,7 @@ function assertFleetRegisterAuth(
     return { actor: 'edge-enroll' };
   }
   const user = ctx.auth.authenticate(getBearer(req));
+  requireAnyCap(ctx, user, FLEET_PANEL_CAPS);
   return { actor: user.username };
 }
 
@@ -56,7 +64,8 @@ export async function handleAgentsFleetRoutes(
     return true;
   }
   if (method === 'GET' && url.pathname === '/api/v1/fleet/agents') {
-    ctx.auth.authenticate(getBearer(req));
+    const user = ctx.auth.authenticate(getBearer(req));
+    requireAnyCap(ctx, user, FLEET_PANEL_CAPS);
     const group = url.searchParams.get('group') ?? undefined;
     type Agent = {
       id?: string;

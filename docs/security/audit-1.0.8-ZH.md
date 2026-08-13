@@ -52,6 +52,12 @@ WebSocket（要 ticket）：終端、VNC、Host Browse。
 | A08-19 | 高 | VPN `listenPort` 未強制整數就插入 bash | **已修** — `parseVpnListenPort`／`coerceVpnListenPort` |
 | A08-20 | 中 | 任何已登入工作階段可 `GET` 資料庫／Redis 控制台（含 `requirepass`） | **已修** — 要 `mysql.console.write` **或** `services.control` **或** `settings.system` |
 | A08-21 | 低 | WebDAV PROPFIND 無上限；PUT 無體積上限 | **已修** — 500 項／50 MiB |
+| A08-22 | 高 | LLM 只要 URL 字串有 `localhost` 就 `allowPrivate`（IMDS + `?localhost`） | **已修** — 只睇 hostname；儲存時 `assertSafeOutboundUrl` |
+| A08-23 | 高 | 公開 Autoconfig／Autodiscover 未淨化就把 `domain`／`email` 插入 XML | **已修** — 網域／電郵允許清單 + XML 轉義；非法參數 400 |
+| A08-24 | 高 | Nginx `server_name` 未淨化就寫入 conf | **已修** — 列出同渲染時允許清單 |
+| A08-25 | 高 | `GET /settings/llm` 任何工作階段都回存好嘅 `apiKey` | **已修** — 要 `settings.system` + 遮成 `***` |
+| A08-26 | 中 | SSH 身分列表／公鑰／詳情同 Fleet 列表係任何 session 嘅 GET | **已修** — 身分：`settings.system`／`security.policy`／`backups.run`；Fleet：`settings.system`／`services.control` |
+| A08-27 | 低 | Fleet enroll token 用 `===`；開機失敗把 `err.message` 直接寫入 `innerHTML` | **已修** — `timingSafeEqual`；開機錯誤轉義 |
 
 ## 已接受殘項
 
@@ -70,7 +76,7 @@ WebSocket（要 ticket）：終端、VNC、Host Browse。
 
 ## 本輪已審、無需再改碼
 
-Host Browse CDP 只綁 `127.0.0.1`。`--no-sandbox` 仍係 R-6。CDN 節點健康已用 `assertSafeOutboundUrl`（metadata 政策）。主機遷移臨時金鑰仍係 `dataDir/migrate/<job>/ssh` 下 `0600`（目錄 `0700`）。Outline 無 script hook；監聽埠已強制整數。檔案編輯器 `highlightToHtml` 每個 token 都有轉義。安裝 I-07 仍按營運文件（R-5）。
+Host Browse CDP 只綁 `127.0.0.1`。Live WS ticket 一次過＋TTL。VNC／終端 ticket 已 consume-once＋過期。CDN 健康用 `assertSafeOutboundUrl`。遷移臨時金鑰 `0600`／目錄 `0700`。Outline 無 script hook。檔案 highlight 有轉義；其餘 `innerHTML` 係 VNC 清畫面或已轉義開機錯誤。專案 Linux 用戶由 UUID 衍生（`ysk-…`），唔係專案名。備份 GET 已遮秘密。安裝 I-07 仍按文件（R-5）。公開 BT tracker WS 只代理本機。SQL 開庫仍行 mutating cap。npm 產品包係 `dist`＋`public`＋README（未見多餘 secret）。
 
 ## 先前階段重核
 
@@ -90,5 +96,9 @@ pnpm --filter ysk-server-core exec vitest run \
   src/hosting/vnc/client-profiles.test.ts \
   src/hosting/vpn/client-conf-protect.test.ts \
   src/hosting/vpn/ports.test.ts \
-  src/security/mfa/rate-limit.test.ts
+  src/security/mfa/rate-limit.test.ts \
+  src/llm/http-transport.test.ts \
+  src/email/autodiscover.test.ts \
+  src/hosting/nginx-ssl.test.ts \
+  src/host-browse/live-ticket.test.ts
 ```

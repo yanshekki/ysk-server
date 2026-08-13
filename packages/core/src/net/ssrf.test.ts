@@ -3,6 +3,7 @@ import {
   assertSafeOutboundUrl,
   isBlockedSsrfHost,
   isCloudMetadataHost,
+  isLoopbackHostname,
   isMetadataOrLoopbackHost,
 } from './ssrf.js';
 import { YskError } from 'ysk-server-shared';
@@ -21,6 +22,13 @@ describe('ssrf guards', () => {
     expect(isBlockedSsrfHost('10.0.0.5', 'metadata')).toBe(false);
     expect(isBlockedSsrfHost('169.254.169.254', 'metadata')).toBe(true);
     expect(isBlockedSsrfHost('127.0.0.1', 'metadata')).toBe(true);
+  });
+
+  it('isLoopbackHostname is hostname-only (not URL substring)', () => {
+    expect(isLoopbackHostname('127.0.0.1')).toBe(true);
+    expect(isLoopbackHostname('localhost')).toBe(true);
+    expect(isLoopbackHostname('169.254.169.254')).toBe(false);
+    expect(isLoopbackHostname('example.com')).toBe(false);
   });
 
   it('isCloudMetadataHost allows loopback (VNC) but blocks IMDS', () => {

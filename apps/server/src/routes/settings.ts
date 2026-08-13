@@ -214,21 +214,57 @@ export async function handleSettingsRoutes(
           apiKey?: string;
           model?: string;
         };
-        ctx.settings.setJson('llm', data);
+        const prev = ctx.settings.getJson<{
+          baseUrl?: string;
+          apiKey?: string;
+          model?: string;
+        }>('llm') ?? {};
+        const next = {
+          baseUrl: String(data.baseUrl ?? prev.baseUrl ?? '').trim(),
+          model: String(data.model ?? prev.model ?? '').trim(),
+          apiKey:
+            data.apiKey === undefined || data.apiKey === '' || data.apiKey === '***'
+              ? prev.apiKey
+              : String(data.apiKey),
+        };
+        if (next.baseUrl) {
+          const { assertSafeOutboundUrl, isLoopbackHostname } = await import('ysk-server-core');
+          let hostname = '';
+          try {
+            hostname = new URL(next.baseUrl).hostname;
+          } catch {
+            hostname = '';
+          }
+          assertSafeOutboundUrl(next.baseUrl, {
+            field: 'llm.baseUrl',
+            allowPrivate: isLoopbackHostname(hostname),
+          });
+        }
+        ctx.settings.setJson('llm', next);
         ctx.reloadLlm();
         ctx.audit.append({
           actor: user.username,
           action: 'settings.llm',
-          detail: { baseUrl: data.baseUrl, model: data.model },
+          detail: { baseUrl: next.baseUrl, model: next.model },
           ok: true });
-        sendJson(res, 200, { ok: true, llm: data, transport: data.baseUrl ? 'http' : 'echo' });
+        sendJson(res, 200, {
+          ok: true,
+          llm: { ...next, apiKey: next.apiKey ? '***' : '' },
+          transport: next.baseUrl ? 'http' : 'echo',
+        });
         return true;
       }
       if (method === 'GET' && url.pathname === '/api/v1/settings/llm') {
-        ctx.auth.authenticate(getBearer(req));
-        const llm = ctx.settings.getJson<{ baseUrl?: string }>('llm') ?? {};
+        const user = ctx.auth.authenticate(getBearer(req));
+        const { requireCap } = await import('../http/rbac-guard.js');
+        requireCap(ctx, user, 'settings.system');
+        const llm = ctx.settings.getJson<{
+          baseUrl?: string;
+          apiKey?: string;
+          model?: string;
+        }>('llm') ?? {};
         sendJson(res, 200, {
-          llm,
+          llm: { ...llm, apiKey: llm.apiKey ? '***' : '' },
           transport: llm.baseUrl || process.env.YSK_LLM_BASE_URL ? 'http' : 'echo' });
         return true;
       }

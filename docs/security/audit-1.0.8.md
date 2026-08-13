@@ -52,6 +52,12 @@ WebSocket (ticket required): terminal, VNC, host-browse.
 | A08-19 | High | VPN `listenPort` interpolated into bash without integer coerce | **Fixed** — `parseVpnListenPort` / `coerceVpnListenPort` |
 | A08-20 | Medium | Any authenticated session could `GET` DB/Redis console live values (`requirepass`) | **Fixed** — `mysql.console.write` **or** `services.control` **or** `settings.system` |
 | A08-21 | Low | WebDAV PROPFIND unbounded listing; PUT unbounded body | **Fixed** — 500 entries / 50 MiB |
+| A08-22 | High | LLM `allowPrivate` if URL string contained `localhost` (IMDS + `?localhost`) | **Fixed** — hostname-only loopback; save-time `assertSafeOutboundUrl` |
+| A08-23 | High | Public Autoconfig/Autodiscover interpolated unsanitized `domain`/`email` into XML | **Fixed** — hostname/email allowlist + XML escape; invalid query 400 |
+| A08-24 | High | Nginx `server_name` interpolated unsanitized into conf | **Fixed** — token allowlist at list + render |
+| A08-25 | High | `GET /settings/llm` returned stored `apiKey` to any session | **Fixed** — `settings.system` + mask `***` |
+| A08-26 | Medium | SSH identity list/public/get and fleet agent list were any-session GETs | **Fixed** — identity: `settings.system`/`security.policy`/`backups.run`; fleet: `settings.system`/`services.control` |
+| A08-27 | Low | Fleet enroll token compared with `===`; boot splash wrote raw `err.message` to `innerHTML` | **Fixed** — `timingSafeEqual`; HTML-escape boot error |
 
 ## Accepted residual
 
@@ -70,7 +76,7 @@ WebSocket (ticket required): terminal, VNC, host-browse.
 
 ## Reviewed this pass (no extra code change)
 
-Host Browse CDP binds `127.0.0.1` only. `--no-sandbox` remains R-6. CDN node health already uses `assertSafeOutboundUrl` (metadata policy). Host-migrate temp keys stay `0600` under `dataDir/migrate/<job>/ssh` (`0700` dir). Outline has no script hooks; listen port now coerced. File editor `highlightToHtml` escapes every token class. Install I-07 still operator-documented (R-5).
+Host Browse CDP binds `127.0.0.1` only. Live WS tickets are one-time + TTL. VNC/terminal tickets already consume-once + expire. CDN node health uses `assertSafeOutboundUrl`. Host-migrate temp keys `0600` / dir `0700`. Outline has no script hooks. File editor `highlightToHtml` escapes tokens; other `innerHTML` is VNC canvas clear or escaped boot error. Project OS users are derived from UUID (`ysk-…`), not the project name. Backup GET already masks secrets. Install I-07 still operator-documented (R-5). Public BT tracker WS still proxies loopback only. SQL resource create stays on mutating caps; replica plans use quoted identifiers. npm product pack is `dist` + `public` + README (no extra secrets found).
 
 ## Re-check of prior phases
 
@@ -90,5 +96,9 @@ pnpm --filter ysk-server-core exec vitest run \
   src/hosting/vnc/client-profiles.test.ts \
   src/hosting/vpn/client-conf-protect.test.ts \
   src/hosting/vpn/ports.test.ts \
-  src/security/mfa/rate-limit.test.ts
+  src/security/mfa/rate-limit.test.ts \
+  src/llm/http-transport.test.ts \
+  src/email/autodiscover.test.ts \
+  src/hosting/nginx-ssl.test.ts \
+  src/host-browse/live-ticket.test.ts
 ```

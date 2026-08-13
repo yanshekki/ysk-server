@@ -46,14 +46,17 @@ describe('settings routes (HTTP)', () => {
     const put = await apiJson(ts, 'POST', '/api/v1/settings/llm', {
       baseUrl: '',
       model: 'test-model',
+      apiKey: 'sk-secret-test',
     });
     expect(put.status).toBe(200);
     expect((put.body as { ok?: boolean }).ok).toBe(true);
+    expect((put.body as { llm?: { apiKey?: string } }).llm?.apiKey).toBe('***');
 
     const get = await apiJson(ts, 'GET', '/api/v1/settings/llm');
     expect(get.status).toBe(200);
-    const llm = (get.body as { llm?: { model?: string } }).llm;
+    const llm = (get.body as { llm?: { model?: string; apiKey?: string } }).llm;
     expect(llm?.model).toBe('test-model');
+    expect(llm?.apiKey).toBe('***');
   });
 
   it('rejects unauthenticated llm mutation', async () => {

@@ -11,6 +11,13 @@ import {
   sendJson,
   sendOpsResult,
 } from '../http/util.js';
+import { requireAnyCap } from '../http/rbac-guard.js';
+
+const SSH_IDENTITY_READ_CAPS = [
+  'settings.system',
+  'security.policy',
+  'backups.run',
+] as const;
 
 export async function handleSshIdentitiesCrudRoutes(
   ctx: AppContext,
@@ -21,7 +28,8 @@ export async function handleSshIdentitiesCrudRoutes(
 ): Promise<boolean> {
   // —— SSH identity vault (outbound private keys; distinct from sftp authorized_keys) ——
   if (method === 'GET' && url.pathname === '/api/v1/ssh/identities') {
-    ctx.auth.authenticate(getBearer(req));
+    const user = ctx.auth.authenticate(getBearer(req));
+    requireAnyCap(ctx, user, SSH_IDENTITY_READ_CAPS);
     const { listSshIdentities } = await import('ysk-server-core');
     const purposeRaw = url.searchParams.get('purpose') ?? undefined;
     const purpose =
@@ -130,7 +138,8 @@ export async function handleSshIdentitiesCrudRoutes(
     return true;
   }
   if (method === 'GET' && url.pathname.match(/^\/api\/v1\/ssh\/identities\/[^/]+\/public$/)) {
-    ctx.auth.authenticate(getBearer(req));
+    const user = ctx.auth.authenticate(getBearer(req));
+    requireAnyCap(ctx, user, SSH_IDENTITY_READ_CAPS);
     const id = url.pathname.split('/')[5];
     const { getSshIdentity } = await import('ysk-server-core');
     const identity = getSshIdentity(ctx.dataDir, id);
@@ -180,7 +189,8 @@ export async function handleSshIdentitiesCrudRoutes(
     return true;
   }
   if (method === 'GET' && url.pathname.match(/^\/api\/v1\/ssh\/identities\/[^/]+$/)) {
-    ctx.auth.authenticate(getBearer(req));
+    const user = ctx.auth.authenticate(getBearer(req));
+    requireAnyCap(ctx, user, SSH_IDENTITY_READ_CAPS);
     const id = url.pathname.split('/')[5];
     const { getSshIdentity } = await import('ysk-server-core');
     const identity = getSshIdentity(ctx.dataDir, id);

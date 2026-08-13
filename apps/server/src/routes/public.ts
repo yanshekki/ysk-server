@@ -71,6 +71,12 @@ export async function handlePublicRoutes(
           res.end('domain or email query required');
           return true;
         }
+        const { isSafeAutoconfigDomain } = await import('ysk-server-core');
+        if (!isSafeAutoconfigDomain(domain)) {
+          res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+          res.end('invalid domain');
+          return true;
+        }
         const known = ctx.email.list().find((d) => d.domain === domain);
         const mailHost = known?.mail_hostname || `mail.${domain}`;
         if (url.pathname.includes('autodiscover')) {

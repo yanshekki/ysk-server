@@ -26,11 +26,35 @@ function realIpSnippet(opts: NginxRealIpOpts): string {
   });
 }
 
+/** One nginx server_name token (hostname, wildcard, or `_`). */
+export function sanitizeNginxServerNameToken(raw: string): string | null {
+  const s = String(raw ?? '').trim().toLowerCase();
+  if (!s || s.length > 253) return null;
+  if (/[;{}$'"\\]/.test(s)) return null;
+  if (s === '_' || s === 'localhost') return s;
+  const body = s.startsWith('*.') ? s.slice(2) : s;
+  if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(body)) return s;
+  // Require a dot so directive words (return, include, …) cannot be tokens
+  if (!body.includes('.')) return null;
+  if (/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(body)) {
+    return s;
+  }
+  return null;
+}
+
+export function sanitizeNginxServerNameList(raw: string): string {
+  const kept = String(raw ?? '')
+    .split(/\s+/)
+    .map(sanitizeNginxServerNameToken)
+    .filter((x): x is string => Boolean(x));
+  return [...new Set(kept)].join(' ') || 'localhost';
+}
+
 /** Build space-separated server_name from primary + aliases. */
 export function buildServerNameList(primary?: string, aliases?: string[]): string {
   const names = [primary, ...(aliases ?? [])]
-    .map((s) => (s ?? '').trim().toLowerCase())
-    .filter(Boolean);
+    .map((s) => sanitizeNginxServerNameToken((s ?? '').trim().toLowerCase()))
+    .filter((x): x is string => Boolean(x));
   const uniq = [...new Set(names)];
   return uniq.join(' ') || 'localhost';
 }
@@ -86,9 +110,10 @@ export function nginxListenLines(opts: {
 
 function httpRedirectBlock(serverName: string, bindIp?: string): string {
   const listen = nginxListenLines({ ssl: false, bindIp });
+  const name = sanitizeNginxServerNameList(serverName);
   return `server {
   ${listen}
-  server_name ${serverName};
+  server_name ${name};
   return 301 https://$host$request_uri;
 }
 `;
@@ -98,6 +123,7 @@ function httpRedirectBlock(serverName: string, bindIp?: string): string {
  * Render an Nginx server block for reverse proxy.
  */
 export function renderNginxProxy(config: NginxProxyConfig): string {
+  config = { ...config, serverName: sanitizeNginxServerNameList(config.serverName) };
   if (!config.serverName || !config.upstream) {
     throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1388'), {
       httpStatus: 400,
@@ -200,18 +226,19 @@ function siteRedirectOnly(opts: {
   hsts?: boolean;
   bindIp?: string;
 }): string {
+  const serverName = sanitizeNginxServerNameList(opts.serverName);
   const target = opts.siteRedirectUrl.replace(/"/g, '');
   const listen = nginxListenLines({ ssl: opts.ssl, bindIp: opts.bindIp });
   const sslBlock = sslLines({
     ssl: opts.ssl,
     sslCertificate: opts.sslCertificate,
     sslCertificateKey: opts.sslCertificateKey,
-    serverName: opts.serverName,
+    serverName,
     hsts: opts.hsts,
   });
   return `server {
   ${listen}
-  server_name ${opts.serverName};
+  server_name ${serverName};
   ${sslBlock}
   return 301 ${target}$request_uri;
 }
@@ -236,6 +263,7 @@ export function renderNginxStatic(
     staticCache?: boolean;
   } & NginxRealIpOpts,
 ): string {
+  opts = { ...opts, serverName: sanitizeNginxServerNameList(opts.serverName) };
   if (!opts.serverName || !opts.docRoot) {
     throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1389'), {
       httpStatus: 400,
@@ -388,9 +416,10 @@ export async function purgeNginxCache(input: {
 
 /** Suspended site: refuse traffic with 503. */
 export function renderNginxSuspended(serverName: string): string {
+  const name = sanitizeNginxServerNameList(serverName);
   return `server {
   listen 80;
-  server_name ${serverName};
+  server_name ${name};
   return 503;
 }
 `;

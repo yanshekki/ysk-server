@@ -7,12 +7,19 @@ import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
 
 export const fetchTransport: LlmTransport = {
   async complete(input) {
-    // SSRF: block cloud metadata / private targets unless local LLM allowed
-    const { assertSafeOutboundUrl } = await import('../net/ssrf.js');
+    // SSRF: private/loopback only when hostname is loopback or env opts in.
+    // Do not match "localhost" as a substring of the URL (query / fragment).
+    const { assertSafeOutboundUrl, isLoopbackHostname } = await import('../net/ssrf.js');
+    let hostname = '';
+    try {
+      hostname = new URL(input.baseUrl.trim()).hostname;
+    } catch {
+      hostname = '';
+    }
     const allowPrivate =
       process.env.YSK_LLM_ALLOW_PRIVATE === '1' ||
       process.env.YSK_LLM_ALLOW_PRIVATE === 'true' ||
-      /127\.0\.0\.1|localhost/i.test(input.baseUrl);
+      isLoopbackHostname(hostname);
     assertSafeOutboundUrl(input.baseUrl, { field: 'llm.baseUrl', allowPrivate });
     const url = input.baseUrl.replace(/\/$/, '') + '/v1/chat/completions';
     const headers: Record<string, string> = {
