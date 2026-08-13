@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.22 — 2026-08-14
+
+### Feature
+- Every host service page has stop: vsftpd, Nginx, Apache, Postfix, Dovecot, OpenDKIM, PowerDNS, PHP-FPM, VPN servers, sshd, YSK Server
+- Service matrix catalog includes Apache, PowerDNS, OpenDKIM, sshd, and VPN units
+- VPN: `ysk-server vpn stop --engine … --execute` (panel + API)
+
 ## 1.0.21 — 2026-08-13
 
 ### UI
