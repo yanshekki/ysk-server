@@ -52,8 +52,9 @@ ysk-server vnc session mint --id ACCOUNT_ID --json
 ## 誠實邊界
 
 - 帳戶建立／啟動／停止需 EXECUTE + root（`useradd`／`vncserver`）。  
-- 分享連結為短效 token；公開落地頁屬 HTTP UX。  
+- 分享連結為短效 token；公開落地頁為 `/vnc-share/:token`（無需登入面板）。訪客兌換為 `POST /api/v1/vnc/share/:token/session`。關閉檢視器只結束本次 session，**不會**把訪客送到 `/login`。  
 - `session mint` 回傳 RFB 元資料，**不會**在終端開啟桌面畫布。  
+- 側欄與路由閘都要 `network.vnc`（不是 `firewall.edit`）。  
 
 ## 僅面板 ⚠️
 

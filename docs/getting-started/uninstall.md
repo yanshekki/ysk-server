@@ -12,6 +12,8 @@ Remove **YSK Server** host stack packages (and optionally the control plane prod
 
 **Honesty:** uninstall removes **packages / units / optional data paths** recorded for YSK. It does **not** reverse every panel config file unless those paths are in the manifest. Prefer **keep-data** unless you intentionally want DB/mail data deleted.
 
+`YSK_INSTALL_RAW` (remote lib fetch) must be `https://`. Non-HTTPS bases are refused, same as `install.sh`.
+
 ---
 
 ## Interactive (recommended)

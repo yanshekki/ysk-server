@@ -328,7 +328,7 @@ TigerVNC accounts, client profiles, share links, noVNC. **Browser canvas remains
 | `accounts list\|create\|update\|password\|start\|stop\|delete` | Account lifecycle | create/start/stop/delete **yes** |
 | `connection` / `firewall` / `novnc` | Connect info / UFW / noVNC | firewall/novnc **yes** |
 | `clients …` | Outbound profiles | up/down **yes** |
-| `share create\|info\|revoke` | Share links | no (panel store) |
+| `share create\|info\|revoke` | Share links (`/vnc-share/:token`) | no (panel store) |
 | `session mint` | RFB metadata for operators | may need execute to start desktop |
 
 ```bash

@@ -64,3 +64,13 @@ Panel-user 2FA: `GET/POST /api/v1/settings/security` `requireUserTotp`. CLI: `ys
 `GET /api/v1/updates/self` is the panel version check. `POST /api/v1/updates/self/apply` overlays the official npm tarball onto the running dest (same as `ysk-server update --apply`). Failed apply returns **422** with `blockMessage` / `message` — never an `npm notice` file listing. Overlay of own package files does not require `YSK_EXECUTE`.
 
 Nginx site apply (`POST /api/v1` nginx / managed resources) **fails closed** on empty or invalid `serverName`. The response is `ok: false` with a validation message — it does not write `server_name localhost`. CLI: `ysk-server nginx` / `ysk-server hosting nginx`.
+
+JSON request bodies are capped (default 1 MiB; `POST /api/v1/auth/login` 256 KiB). Oversize → **413**. Invalid login JSON → **400**.
+
+Public VNC share: `GET /api/v1/vnc/share/:token` and `POST /api/v1/vnc/share/:token/session` are unauthenticated (rate-limited). Create share (`POST /api/v1/vnc/share`) still needs `network.vnc` and returns path `/vnc-share/:token`.
+
+Public file shares send the unlock password only as `X-Share-Password` (never `?password=`). After a correct password, `GET /api/v1/public/shares/:token/meta` returns magnet / torrent fields.
+
+`GET /api/v1/email/domains/:id` returns one domain. `POST /api/v1/terminal/` accepts `settings.system` **or** `services.control`.
+
+User PATCH/DELETE cannot suspend, demote, or delete the signed-in account or the last admin.

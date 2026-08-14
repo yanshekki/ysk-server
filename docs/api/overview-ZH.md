@@ -64,3 +64,13 @@
 `GET /api/v1/updates/self` 為面板版本檢查。`POST /api/v1/updates/self/apply` 把官方 npm tarball overlay 到執行中目錄（等同 `ysk-server update --apply`）。套用失敗回 **422**，`blockMessage`／`message` 為真正原因，不會把 `npm notice` 檔案清單當錯誤。覆寫產品自己的檔案不需要 `YSK_EXECUTE`。
 
 Nginx 站點套用（`POST /api/v1` nginx／受管資源）在 `serverName` 空白或非法時 **直接失敗**。回傳 `ok: false` 與驗證訊息，**不會**寫入 `server_name localhost`。CLI：`ysk-server nginx`／`ysk-server hosting nginx`。
+
+JSON 請求正文有上限（預設 1 MiB；`POST /api/v1/auth/login` 為 256 KiB）。超限回 **413**。登入 JSON 無效回 **400**。
+
+公開 VNC 分享：`GET /api/v1/vnc/share/:token` 與 `POST /api/v1/vnc/share/:token/session` 無需登入（有速率限制）。建立分享（`POST /api/v1/vnc/share`）仍需 `network.vnc`，回傳路徑 `/vnc-share/:token`。
+
+公開檔案分享只以 `X-Share-Password` 傳送解鎖密碼（不用 `?password=`）。密碼正確後，`GET /api/v1/public/shares/:token/meta` 才會回 magnet／torrent 欄位。
+
+`GET /api/v1/email/domains/:id` 回傳單一網域。`POST /api/v1/terminal/` 接受 `settings.system` **或** `services.control`。
+
+用戶 PATCH／DELETE 不能暫停、降級或刪除目前登入帳戶，也不能對最後一個管理員這樣做。

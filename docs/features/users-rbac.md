@@ -38,6 +38,7 @@ ysk-server rbac list --json
 ## Honesty
 
 - Panel packages are control-plane plans, not apt packages (`updates` / `software`).  
+- You cannot delete, suspend, or demote the signed-in account, or the last remaining admin. Demoting another admin asks for confirmation. API `PATCH`/`DELETE` enforce the same rules.  
 
 ## Panel-only ⚠️
 

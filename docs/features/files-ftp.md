@@ -54,7 +54,7 @@ ysk-server ftp apply --execute --json
 - File ops are sandboxed to chosen root.  
 - FTPS apply needs EXECUTE + root for vsftpd.
 - vsftpd start/stop/restart: panel service tab, or `ysk-server services stop vsftpd --execute`.  
-- Public `/share/:token` page is UX; **create** is CLI/API.  
+- Public `/share/:token` page is UX; **create** is CLI/API. Password-protected shares send `X-Share-Password` (never `?password=`). After a correct password the page re-fetches meta so magnet / in-browser BT unlock.  
 - BT mode needs tracker running for peer discovery; set `publicAnnounceHost` for off-host magnets. Browser WebTorrent uses a same-origin tracker proxy (`/api/v1/public/bt-tracker`) and a panel-built WebTorrent asset (not a public CDN).
 - Name collisions: panel dialog (skip / keep both / replace / merge). CLI/API default `--if-exists fail`. `files write` still overwrites.
 

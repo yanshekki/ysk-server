@@ -44,6 +44,7 @@ ysk-server audit --limit 50 --json
 
 - SSH TOTP ≠ 面板 TOTP。  
 - 主機安裝路徑需 EXECUTE + root。  
+- 若帳戶有 `mustChangePassword`，登入後會出現改密表單（`POST /api/v1/auth/password`），改完才可進儀表板。弱的 bootstrap 密碼會被拒絕，除非 `YSK_ALLOW_INSECURE_DEFAULTS=1`。  
 
 ## 僅面板 ⚠️
 

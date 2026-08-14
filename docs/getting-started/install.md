@@ -48,6 +48,8 @@ ysk-server serve --data-dir /var/lib/ysk-server --port 9287
 
 After install, open the panel URL printed on the console, log in with credentials in `$dataDir/BOOTSTRAP-CREDENTIALS.txt`, then change password and enable 2FA. Support: **email@ysk.hk** · panel `/support`.
 
+Re-running install when `$dataDir/config.json` already exists does **not** rotate the admin password or print a new one (unless you pass `--admin-password`). Use the existing account.
+
 ---
 
 ## Interactive wizard (recommended on a VPS)

@@ -38,6 +38,7 @@ ysk-server rbac list --json
 ## 誠實邊界
 
 - 面板 packages 為控制平面方案，不是 apt 套件（見 `updates`／`software`）。  
+- 不能刪除、暫停或降級目前登入帳戶，也不能對最後一個管理員這樣做。降級其他管理員要確認。API `PATCH`／`DELETE` 同樣拒絕。  
 
 ## 僅面板 ⚠️
 

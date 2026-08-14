@@ -328,7 +328,7 @@ TigerVNC 帳戶、客戶端設定檔、分享連結、noVNC。**瀏覽器畫布�
 | `accounts list\|create\|update\|password\|start\|stop\|delete` | 帳戶生命週期 | create/start/stop/delete **是** |
 | `connection`／`firewall`／`novnc` | 連線資訊／UFW／noVNC | firewall/novnc **是** |
 | `clients …` | 連出設定檔 | up/down **是** |
-| `share create\|info\|revoke` | 分享連結 | 否（面板儲存） |
+| `share create\|info\|revoke` | 分享連結（`/vnc-share/:token`） | 否（面板儲存） |
 | `session mint` | 供操作員的 RFB 元資料 | 啟動桌面時可能需 execute |
 
 ```bash

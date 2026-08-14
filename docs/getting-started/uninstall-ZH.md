@@ -12,6 +12,8 @@
 
 **誠實原則：** uninstall 只處理 **套件／單元／可選資料路徑**（manifest 有記錄的）。不會聲稱還原所有面板設定檔。除非你刻意要清 DB／郵件資料，否則用 **keep-data**。
 
+`YSK_INSTALL_RAW`（遠端擷取函式庫）必須是 `https://`。非 HTTPS 會被拒絕，與 `install.sh` 相同。
+
 ---
 
 ## 互動式（建議）

@@ -54,7 +54,7 @@ ysk-server ftp apply --execute --json
 - 檔案操作受限於所選 root。  
 - FTPS 套用需 EXECUTE + root（vsftpd）。
 - vsftpd 啟動／停止／重啟：面板服務分頁，或 `ysk-server services stop vsftpd --execute`。  
-- 公開 `/share/:token` 頁為 UX；**建立**屬 CLI／API。  
+- 公開 `/share/:token` 頁為 UX；**建立**屬 CLI／API。有密碼的分享只用 `X-Share-Password`（不用 `?password=`）。密碼正確後會再取 meta，magnet／瀏覽器內 BT 才會解鎖。  
 - BT 模式需 Tracker 運行才可靠發現 peers；對外分享請設定 `publicAnnounceHost`。瀏覽器 WebTorrent 經同源 Tracker 代理（`/api/v1/public/bt-tracker`），使用面板 build 自帶資源（非第三方 CDN）。
 - 撞名：面板對話（略過／兩者都保留／取代／合併）。CLI／API 預設 `--if-exists fail`。`files write` 仍會覆寫。
 

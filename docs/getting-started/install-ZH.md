@@ -48,6 +48,8 @@ ysk-server serve --data-dir /var/lib/ysk-server --port 9287
 
 裝完後，用終端打印的面板 URL 登入；帳密在 `$dataDir/BOOTSTRAP-CREDENTIALS.txt`。登入後請改密碼並開 2FA。支援：**email@ysk.hk** · 面板 `/support`。
 
+若 `$dataDir/config.json` 已存在，再跑一次 install **不會**輪換管理員密碼，也不會印新密碼（除非你傳 `--admin-password`）。請用現有帳戶。
+
 ---
 
 ## 互動嚮導（建議用於 VPS）

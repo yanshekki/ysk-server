@@ -140,7 +140,7 @@ describe('RequireCapability', () => {
     expect(await screen.findByText('projects-ok')).toBeInTheDocument();
   });
 
-  it('shows loading then redirects when path not allowed', async () => {
+  it('shows loading then a no-access page when path is not allowed', async () => {
     authStore.setSession('tok', {
       username: 'viewer',
       roles: ['viewer'],
@@ -160,10 +160,14 @@ describe('RequireCapability', () => {
         </Routes>
       </MemoryRouter>,
     );
-    // Eventually redirected home (or still loading briefly)
     expect(
-      await screen.findByText('home-page', {}, { timeout: 3000 }),
+      await screen.findByRole('heading', { name: /no access/i }, { timeout: 3000 }),
     ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /back to dashboard/i })).toHaveAttribute(
+      'href',
+      '/',
+    );
     expect(screen.queryByText('users-ok')).not.toBeInTheDocument();
+    expect(screen.queryByText('home-page')).not.toBeInTheDocument();
   });
 });

@@ -9,15 +9,15 @@
 
 ```bash
 pnpm install && pnpm build
-ysk-server setup --data-dir /var/lib/ysk --admin-password 'StrongPass!' --locale zh-HK --json
-ysk-server serve --data-dir /var/lib/ysk
+ysk-server setup --data-dir /var/lib/ysk-server --admin-user admin --admin-password 'StrongPass!' --locale zh-HK --json
+ysk-server serve --data-dir /var/lib/ysk-server
 ```
 
 見 [../getting-started/install-ZH.md](../getting-started/install-ZH.md) · [setup-ZH.md](../getting-started/setup-ZH.md)。
 
 ## 2. 加固面板
 
-1. 登入 → 若 bootstrap 密碼偏弱請立即更改。  
+1. 登入 → 若 bootstrap 密碼偏弱請立即更改（`mustChangePassword` 會在 `/login` 顯示改密表單）。  
 2. 開啟**面板 2FA**（帳號安全）。  
 3. 建議監聽 `127.0.0.1` + 反向代理／SSH tunnel。  
 4. 可選：`security.require_admin_totp`。  

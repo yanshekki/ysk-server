@@ -9,15 +9,15 @@ Doc standard: [../docs-standard.md](../docs-standard.md).
 
 ```bash
 pnpm install && pnpm build
-ysk-server setup --data-dir /var/lib/ysk --admin-password 'StrongPass!' --locale en --json
-ysk-server serve --data-dir /var/lib/ysk
+ysk-server setup --data-dir /var/lib/ysk-server --admin-user admin --admin-password 'StrongPass!' --locale en --json
+ysk-server serve --data-dir /var/lib/ysk-server
 ```
 
 See [../getting-started/install.md](../getting-started/install.md) · [setup.md](../getting-started/setup.md).
 
 ## 2. Secure the panel
 
-1. Login → change password if bootstrap was weak.  
+1. Login → change password if bootstrap was weak (`mustChangePassword` shows a form on `/login`).  
 2. Enable **panel 2FA** (Security).  
 3. Prefer listen `127.0.0.1` + reverse proxy / SSH tunnel.  
 4. Optional: `security.require_admin_totp`.  
