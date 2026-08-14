@@ -10,6 +10,7 @@ import {
   Badge,
   Button,
   CheckboxField,
+  ConfirmDialog,
   EmptyState,
   FeaturePageLayout,
   Field,
@@ -100,6 +101,9 @@ export function HostBrowsePage() {
     reason?: string;
   } | null>(null);
   const [audioUnlocked, setAudioUnlocked] = useState(false);
+  const [dangerConfirm, setDangerConfirm] = useState<null | 'nosandbox' | 'dangerdl'>(
+    null,
+  );
 
   const abortRef = useRef(false);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
@@ -1031,7 +1035,8 @@ export function HostBrowsePage() {
                   <Button
                     size="sm"
                     variant="ghost"
-                    title={t('hostBrowse.bookmark')}
+                    title={t('hostBrowse.bookmarkAdd')}
+                    aria-label={t('hostBrowse.bookmarkAdd')}
                     onClick={() => {
                       const u = last?.finalUrl || session?.currentUrl || urlDraft;
                       if (!u) return;
@@ -1056,7 +1061,22 @@ export function HostBrowsePage() {
                   <Button
                     size="sm"
                     variant="ghost"
+                    title={t('hostBrowse.bookmarkList')}
+                    aria-label={t('hostBrowse.bookmarkList')}
+                    onClick={() =>
+                      setDrawer((d) => (d === 'bookmarks' ? 'none' : 'bookmarks'))
+                    }
+                  >
+                    ☰
+                    {library.bookmarks.length > 0 ? (
+                      <Badge tone="info">{library.bookmarks.length}</Badge>
+                    ) : null}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
                     title={t('hostBrowse.history')}
+                    aria-label={t('hostBrowse.history')}
                     onClick={() =>
                       setDrawer((d) => (d === 'history' ? 'none' : 'history'))
                     }
@@ -1116,7 +1136,7 @@ export function HostBrowsePage() {
                   </Button>
                 </div>
                 <div className="hb-toolbar__url">
-                  <span className="hb-lock" title={lockLabel}>
+                  <span className="hb-lock" title={lockLabel} aria-label={lockLabel}>
                     {lockLabel === t('hostBrowse.locked') ? '🔒' : '🔓'}
                   </span>
                   <label className="hb-url-field" htmlFor="hb-url">
@@ -1427,7 +1447,7 @@ export function HostBrowsePage() {
                     ref={iframeRef}
                     className="hb-frame"
                     title={t('nav.hostBrowse')}
-                    sandbox="allow-scripts allow-forms allow-modals allow-popups allow-downloads allow-same-origin"
+                    sandbox="allow-scripts allow-forms allow-modals allow-popups allow-downloads"
                     onError={() => setError(t('hostBrowse.frameBlocked'))}
                     referrerPolicy="no-referrer"
                     src={frameSrc ?? undefined}
@@ -1606,10 +1626,15 @@ export function HostBrowsePage() {
               <CheckboxField
                 id="hb-nosandbox"
                 label={t('hostBrowse.settingsNoSandbox')}
+                description={t('hostBrowse.settingsNoSandboxWarn')}
                 checked={settingsDraft.noSandbox}
-                onChange={(c) =>
-                  setSettingsDraft((d) => ({ ...d, noSandbox: c }))
-                }
+                onChange={(c) => {
+                  if (c && !settingsDraft.noSandbox) {
+                    setDangerConfirm('nosandbox');
+                    return;
+                  }
+                  setSettingsDraft((d) => ({ ...d, noSandbox: c }));
+                }}
               />
               <Field
                 label={t('hostBrowse.settingsSafety')}
@@ -1651,13 +1676,18 @@ export function HostBrowsePage() {
               <CheckboxField
                 id="hb-danger-dl"
                 label={t('hostBrowse.settingsAllowDangerousDownloads')}
+                description={t('hostBrowse.settingsDangerDlWarn')}
                 checked={settingsDraft.allowDangerousDownloads}
-                onChange={(c) =>
+                onChange={(c) => {
+                  if (c && !settingsDraft.allowDangerousDownloads) {
+                    setDangerConfirm('dangerdl');
+                    return;
+                  }
                   setSettingsDraft((d) => ({
                     ...d,
                     allowDangerousDownloads: c,
-                  }))
-                }
+                  }));
+                }}
               />
               <CheckboxField
                 id="hb-audio-bridge"
@@ -1704,11 +1734,33 @@ export function HostBrowsePage() {
               <div className="stack u-mt-3">
                 <div className="muted u-text-sm">{t('hostBrowse.envHintsTitle')}</div>
                 <ul className="muted u-text-sm">
-                  {Object.entries(envHints).map(([k, v]) => (
-                    <li key={k}>
-                      <code>{k}</code>={v ?? '—'}
-                    </li>
-                  ))}
+                  {Object.entries(envHints).map(([k, v]) => {
+                    const panelVal =
+                      k === 'YSK_HOST_BROWSE_ENGINE'
+                        ? settingsDraft.engine
+                        : k === 'YSK_HOST_BROWSE_CHROME'
+                          ? settingsDraft.chromePath || t('hostBrowse.envUnset')
+                          : k === 'YSK_HOST_BROWSE_LOOPBACK'
+                            ? settingsDraft.allowLoopback
+                              ? '1'
+                              : '0'
+                            : k === 'YSK_HOST_BROWSE_NO_SANDBOX'
+                              ? settingsDraft.noSandbox
+                                ? '1'
+                                : '0'
+                              : k === 'YSK_HOST_BROWSE_AUDIO'
+                                ? settingsDraft.audioBridge
+                                  ? '1'
+                                  : '0'
+                                : t('hostBrowse.envUnset');
+                    return (
+                      <li key={k}>
+                        <code>{k}</code>={v ?? t('hostBrowse.envUnset')}
+                        {' · '}
+                        {t('hostBrowse.envPanelValue', { value: panelVal })}
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             ) : null}
@@ -1717,6 +1769,27 @@ export function HostBrowsePage() {
 
         {tab === 'about' ? <PageGuide guideId="hostBrowse" /> : null}
       </PageTabs>
+
+      <ConfirmDialog
+        open={dangerConfirm != null}
+        onClose={() => setDangerConfirm(null)}
+        onConfirm={() => {
+          if (dangerConfirm === 'nosandbox') {
+            setSettingsDraft((d) => ({ ...d, noSandbox: true }));
+          } else if (dangerConfirm === 'dangerdl') {
+            setSettingsDraft((d) => ({ ...d, allowDangerousDownloads: true }));
+          }
+          setDangerConfirm(null);
+        }}
+        title={t('hostBrowse.settingsDangerConfirmTitle')}
+        description={
+          dangerConfirm === 'nosandbox'
+            ? t('hostBrowse.settingsNoSandboxWarn')
+            : t('hostBrowse.settingsDangerDlWarn')
+        }
+        danger
+        confirmLabel={t('common.confirm')}
+      />
     </FeaturePageLayout>
   );
 }

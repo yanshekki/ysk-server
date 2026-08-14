@@ -4277,6 +4277,8 @@
     },
     "home": "主頁",
     "bookmark": "書籤",
+    "bookmarkAdd": "加入或移除書籤",
+    "bookmarkList": "書籤清單",
     "bookmarks": "書籤",
     "history": "瀏覽記錄",
     "bookmarkToggled": "已更新書籤",
@@ -4323,7 +4325,12 @@
     "frameBlocked": "頁面無法在面板框架內顯示。",
     "historyEmpty": "此工作階段尚無瀏覽記錄。",
     "bookmarksEmpty": "尚未有書籤。",
-    "closeSessionHint": "會清掉此瀏覽工作階段的 Cookie；書籤會保留。"
+    "closeSessionHint": "會清掉此瀏覽工作階段的 Cookie；書籤會保留。",
+    "envUnset": "未設定",
+    "envPanelValue": "面板：{{value}}",
+    "settingsNoSandboxWarn": "會關閉 Chromium 沙箱。只應在可信的 container 內使用。下次真實瀏覽器工作階段才生效。",
+    "settingsDangerDlWarn": "允許經主機瀏覽器下載執行檔與腳本。請確認確實需要。",
+    "settingsDangerConfirmTitle": "啟用高風險瀏覽設定？"
   },
   "listToolbar": {
     "searchPlaceholder": "搜尋…",
@@ -4496,7 +4503,9 @@
     "prioInfo": "資訊+",
     "vacuumSize": "限制至 500 MB",
     "logrotateNoStatus": "尚未有 logrotate 狀態檔（從未跑過時屬常見）。",
-    "autoVacuumOff": "自動清理未啟用。啟用前時間設定不會執行。"
+    "autoVacuumOff": "自動清理未啟用。啟用前時間設定不會執行。",
+    "aboutAllowlist": "探索只可讀取允許清單內的 journal 單元與 /var/log 路徑，不會提供任意主機路徑。",
+    "aboutCustomPath": "請在「設定」加入自訂路徑（僅限 /var/log 或 /run/log），再到「探索」開啟。"
   },
   "metrics": {
     "alert": {
@@ -4925,6 +4934,8 @@
     "applyDnsNotes": "套用後會 nmcli connection modify + up；短暫斷線屬正常。stub 127.0.0.53 不會寫入（本機 resolved 內部用）。",
     "testResolve": "測試解析",
     "loadRaw": "載入 raw 輸出",
+    "hideRaw": "隱藏 raw 輸出",
+    "rawLoadedAt": "載入時間 {{time}}",
     "confirmDown": "確認離線",
     "linkDownTitle": "將 {{name}} 離線",
     "linkDownNeedConfirm": "需輸入介面名稱確認",
@@ -4960,7 +4971,8 @@
         "gcore": "國核CDN",
         "custom": "自訂代理"
       },
-      "needProvider": "請先選擇 CDN 供應商，先可更新 IP 列表。"
+      "needProvider": "請先選擇 CDN 供應商，先可更新 IP 列表。",
+      "spoofWarn": "信任錯誤的 CIDR 會讓客戶端偽造 X-Forwarded-For／CDN 標頭，假裝成真實來源 IP。"
     },
     "linkUp": "向上",
     "linkDown": "離線",
@@ -11960,6 +11972,8 @@
     "needViewer": "Viewer（可選）",
     "needViewerOrNovnc": "需 viewer 或 noVNC",
     "settingsHint": "新建帳號預設值",
+    "settingsNeedStack": "此處預設值要在已安裝 TigerVNC（若選 XFCE 亦需 XFCE）後才會生效。請先到「安裝」分頁安裝。",
+    "clientNeedNovnc": "「在瀏覽器開啟」需要 noVNC。若要在此開啟遠端，請先到「安裝」分頁安裝。",
     "defaultDesktop": "預設桌面",
     "defaultGeometry": "預設解析度",
     "defaultDepth": "色深",

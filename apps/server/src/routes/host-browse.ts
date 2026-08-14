@@ -25,6 +25,39 @@ function sendBrowseError(res: ServerResponse, e: unknown): void {
   });
 }
 
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/** Iframe-safe error so X-Frame-Options: DENY JSON does not look like “refused to connect”. */
+function sendFramedBrowseError(res: ServerResponse, e: unknown): void {
+  const status = e instanceof YskError ? (e.httpStatus ?? 400) : 500;
+  const message =
+    e instanceof YskError
+      ? e.message
+      : e instanceof Error
+        ? e.message
+        : 'unavailable';
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>Host browse</title>
+<style>body{font:14px/1.45 system-ui,sans-serif;margin:1.5rem;color:#222}</style></head>
+<body><p>${escapeHtml(message)}</p></body></html>`;
+  res.writeHead(status, {
+    'Content-Type': 'text/html; charset=utf-8',
+    'Content-Length': Buffer.byteLength(html),
+    'Cache-Control': 'no-store',
+    'X-Frame-Options': 'SAMEORIGIN',
+    'Content-Security-Policy':
+      "frame-ancestors 'self'; default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'",
+    'X-Content-Type-Options': 'nosniff',
+    'Referrer-Policy': 'no-referrer',
+  });
+  res.end(html);
+}
+
 function privacyBlock() {
   return {
     clientHeadersForwarded: false,
@@ -66,11 +99,10 @@ export async function handleHostBrowseRoutes(
     const target = url.searchParams.get('u') || '';
     try {
       if (!target) {
-        sendJson(res, 400, {
-          ok: false,
-          code: ErrorCodes.VALIDATION,
-          message: 'u query required',
-        });
+        sendFramedBrowseError(
+          res,
+          new YskError(ErrorCodes.VALIDATION, 'u query required', { httpStatus: 400 }),
+        );
         return true;
       }
       const content = await svc.getContentByToken(sessionId, ct, target);
@@ -79,6 +111,7 @@ export async function handleHostBrowseRoutes(
         'Content-Length': content.body.length,
         'Cache-Control': 'no-store',
         'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'SAMEORIGIN',
         'Content-Security-Policy':
           "sandbox allow-scripts allow-forms allow-modals allow-popups; frame-ancestors 'self'; default-src 'none'; img-src data: blob: https: http:; style-src 'unsafe-inline' data: https: http:; script-src 'unsafe-inline' 'unsafe-eval' https: http:; font-src data: https: http:; connect-src 'none'; base-uri 'none'",
         'Referrer-Policy': 'no-referrer',
@@ -88,7 +121,7 @@ export async function handleHostBrowseRoutes(
       res.writeHead(content.status || 200, headers);
       res.end(content.body);
     } catch (e) {
-      sendBrowseError(res, e);
+      sendFramedBrowseError(res, e);
     }
     return true;
   }

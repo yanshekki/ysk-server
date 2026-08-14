@@ -7,6 +7,7 @@ import {
   requireCap,
   requireAnyCap,
   effectiveCaps,
+  isHostBrowseTokenPath,
 } from './rbac-guard.js';
 import type { AppContext } from '../app-context.js';
 
@@ -189,6 +190,48 @@ describe('rbac-guard', () => {
     expect(() =>
       enforceGetRouteCaps(ctx, mockReq('tok'), 'GET', '/api/v1/email/domains'),
     ).not.toThrow();
+  });
+
+  it('isHostBrowseTokenPath matches iframe content and form only', () => {
+    expect(isHostBrowseTokenPath('/api/v1/host-browse/sessions/s1/content')).toBe(true);
+    expect(isHostBrowseTokenPath('/api/v1/host-browse/sessions/s1/form')).toBe(true);
+    expect(isHostBrowseTokenPath('/api/v1/host-browse/library')).toBe(false);
+    expect(isHostBrowseTokenPath('/api/v1/host-browse/sessions/s1')).toBe(false);
+  });
+
+  it('enforceGetRouteCaps skips host-browse content token GET', () => {
+    const auth = vi.fn();
+    const ctx = mockCtx({ authenticate: auth as never });
+    expect(() =>
+      enforceGetRouteCaps(
+        ctx,
+        mockReq(),
+        'GET',
+        '/api/v1/host-browse/sessions/s1/content',
+      ),
+    ).not.toThrow();
+    expect(auth).not.toHaveBeenCalled();
+  });
+
+  it('enforceGetRouteCaps still gates host-browse library GET', () => {
+    const ctx = mockCtx({ caps: ['dashboard.read'] });
+    expect(() =>
+      enforceGetRouteCaps(ctx, mockReq('tok'), 'GET', '/api/v1/host-browse/library'),
+    ).toThrow(YskError);
+  });
+
+  it('enforceMutatingRouteCaps skips host-browse form POST', () => {
+    const auth = vi.fn();
+    const ctx = mockCtx({ authenticate: auth as never });
+    expect(() =>
+      enforceMutatingRouteCaps(
+        ctx,
+        mockReq(),
+        'POST',
+        '/api/v1/host-browse/sessions/s1/form',
+      ),
+    ).not.toThrow();
+    expect(auth).not.toHaveBeenCalled();
   });
 
   it('enforceMutatingRouteCaps 403 when missing required cap', () => {

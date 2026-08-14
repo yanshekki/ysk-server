@@ -10,6 +10,9 @@
 - SSH public keys must be a real OpenSSH line; Strict apply stays off until PAM is ready
 - VNC XFCE / viewer install banners list only their own packages
 - journald vacuum copy is readable; Real IP CDN refresh needs a provider
+- Host-browse iframe content is token-auth (not Bearer), so proxy pages render instead of “refused to connect”
+- Bookmarks have a list drawer; no-sandbox / dangerous downloads need confirm
+- VNC client / settings warn when noVNC or TigerVNC is missing
 
 ## 1.0.34 — 2026-08-15
 

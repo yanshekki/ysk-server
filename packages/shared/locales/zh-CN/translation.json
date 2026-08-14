@@ -4277,6 +4277,8 @@
     },
     "home": "主頁",
     "bookmark": "書籤",
+    "bookmarkAdd": "加入或移除書籤",
+    "bookmarkList": "書籤清單",
     "bookmarks": "書籤",
     "history": "瀏覽記錄",
     "bookmarkToggled": "已更新書籤",
@@ -4323,7 +4325,12 @@
     "frameBlocked": "页面无法在面板框架内显示。",
     "historyEmpty": "此工作阶段尚无浏览记录。",
     "bookmarksEmpty": "尚未有书签。",
-    "closeSessionHint": "会清掉此浏览工作阶段的 Cookie；书签会保留。"
+    "closeSessionHint": "会清掉此浏览工作阶段的 Cookie；书签会保留。",
+    "envUnset": "未设置",
+    "envPanelValue": "面板：{{value}}",
+    "settingsNoSandboxWarn": "会关闭 Chromium 沙箱。只应在可信的 container 内使用。下次真实浏览器工作阶段才生效。",
+    "settingsDangerDlWarn": "允许经主机浏览器下载可执行文件与脚本。请确认确实需要。",
+    "settingsDangerConfirmTitle": "启用高风险浏览设置？"
   },
   "listToolbar": {
     "searchPlaceholder": "搜索…",
@@ -4496,7 +4503,9 @@
     "srcFail2ban": "fail2ban",
     "vacuumSize": "限制至 500 MB",
     "logrotateNoStatus": "尚未有 logrotate 状态档（从未跑过时属常见）。",
-    "autoVacuumOff": "自动清理未启用。启用前时间设定不会执行。"
+    "autoVacuumOff": "自动清理未启用。启用前时间设定不会执行。",
+    "aboutAllowlist": "探索只可读允许清单内的 journal 单元与 /var/log 路径，不会提供任意主机路径。",
+    "aboutCustomPath": "请在「设置」加入自定义路径（仅限 /var/log 或 /run/log），再到「探索」开启。"
   },
   "metrics": {
     "alert": {
@@ -4925,6 +4934,8 @@
     "applyDnsNotes": "套用后会 nmcli connection modify + up；短暂断线属正常。stub 127.0.0.53 不会写入（本机 resolved 内部用）。",
     "testResolve": "测试解析",
     "loadRaw": "加载 raw 输出",
+    "hideRaw": "隐藏 raw 输出",
+    "rawLoadedAt": "加载时间 {{time}}",
     "confirmDown": "确认 Down",
     "defaultRouteDownWarn": "此接口是默认路由出口，down 后可能无法连上管理面板。",
     "deleteDefaultMayDrop": " — 删除 default 可能断线。",
@@ -4958,7 +4969,8 @@
         "gcore": "国核CDN",
         "custom": "自定义代理"
       },
-      "needProvider": "请先选择 CDN 供应商，才可更新 IP 列表。"
+      "needProvider": "请先选择 CDN 供应商，才可更新 IP 列表。",
+      "spoofWarn": "信任错误的 CIDR 会让客户端伪造 X-Forwarded-For／CDN 标头，假装成真实来源 IP。"
     },
     "linkUp": "向上",
     "linkDown": "断开",
@@ -11960,6 +11972,8 @@
     "needViewer": "Viewer（可选）",
     "needViewerOrNovnc": "需 viewer 或 noVNC",
     "settingsHint": "新建账号默认",
+    "settingsNeedStack": "此处默认值要在已安装 TigerVNC（若选 XFCE 亦需 XFCE）后才会生效。请先到「安装」分页安装。",
+    "clientNeedNovnc": "「在浏览器开启」需要 noVNC。若要在此开启远端，请先到「安装」分页安装。",
     "defaultDesktop": "默认桌面",
     "defaultGeometry": "默认分辨率",
     "defaultDepth": "色深",

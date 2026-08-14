@@ -136,11 +136,14 @@
       "gcore": "جيكور CDN",
       "custom": "وكلاء مخصصون"
     },
-    "needProvider": "Choose a CDN provider before fetching its IP list."
+    "needProvider": "Choose a CDN provider before fetching its IP list.",
+    "spoofWarn": "Trusting the wrong CIDR lets clients spoof X-Forwarded-For / CDN headers as their IP."
   },
   "linkUp": "أعلى",
   "linkDown": "تحت",
   "linkDownTitle": "Take {{name}} offline",
   "linkDownNeedConfirm": "Type the interface name to confirm",
-  "persistNmHint": "Persistable means changes can survive reboot via NetworkManager."
+  "persistNmHint": "Persistable means changes can survive reboot via NetworkManager.",
+  "hideRaw": "Hide raw output",
+  "rawLoadedAt": "Loaded {{time}}"
 }

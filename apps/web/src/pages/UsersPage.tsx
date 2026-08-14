@@ -809,6 +809,7 @@ export function UsersPage() {
                   </ActionBar>
                 }
                 filters={
+                  pkgTotal > 0 || packagesList.q ? (
                   <ListToolbar
                     search={packagesList.q}
                     onSearchChange={packagesList.setQ}
@@ -821,6 +822,7 @@ export function UsersPage() {
                     activeFilterCount={packagesList.activeFilterCount}
                     onClear={packagesList.clear}
                   />
+                  ) : undefined
                 }
                 columns={[
                   {

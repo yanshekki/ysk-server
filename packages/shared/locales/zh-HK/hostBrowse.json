@@ -82,6 +82,8 @@
   },
   "home": "主頁",
   "bookmark": "書籤",
+  "bookmarkAdd": "加入或移除書籤",
+  "bookmarkList": "書籤清單",
   "bookmarks": "書籤",
   "history": "瀏覽記錄",
   "bookmarkToggled": "已更新書籤",
@@ -128,5 +130,10 @@
   "frameBlocked": "頁面無法在面板框架內顯示。",
   "historyEmpty": "此工作階段尚無瀏覽記錄。",
   "bookmarksEmpty": "尚未有書籤。",
-  "closeSessionHint": "會清掉此瀏覽工作階段的 Cookie；書籤會保留。"
+  "closeSessionHint": "會清掉此瀏覽工作階段的 Cookie；書籤會保留。",
+  "envUnset": "未設定",
+  "envPanelValue": "面板：{{value}}",
+  "settingsNoSandboxWarn": "會關閉 Chromium 沙箱。只應在可信的 container 內使用。下次真實瀏覽器工作階段才生效。",
+  "settingsDangerDlWarn": "允許經主機瀏覽器下載執行檔與腳本。請確認確實需要。",
+  "settingsDangerConfirmTitle": "啟用高風險瀏覽設定？"
 }

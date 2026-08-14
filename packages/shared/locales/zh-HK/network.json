@@ -103,6 +103,8 @@
   "applyDnsNotes": "套用後會 nmcli connection modify + up；短暫斷線屬正常。stub 127.0.0.53 不會寫入（本機 resolved 內部用）。",
   "testResolve": "測試解析",
   "loadRaw": "載入 raw 輸出",
+  "hideRaw": "隱藏 raw 輸出",
+  "rawLoadedAt": "載入時間 {{time}}",
   "confirmDown": "確認離線",
   "linkDownTitle": "將 {{name}} 離線",
   "linkDownNeedConfirm": "需輸入介面名稱確認",
@@ -138,7 +140,8 @@
       "gcore": "國核CDN",
       "custom": "自訂代理"
     },
-    "needProvider": "請先選擇 CDN 供應商，先可更新 IP 列表。"
+    "needProvider": "請先選擇 CDN 供應商，先可更新 IP 列表。",
+    "spoofWarn": "信任錯誤的 CIDR 會讓客戶端偽造 X-Forwarded-For／CDN 標頭，假裝成真實來源 IP。"
   },
   "linkUp": "向上",
   "linkDown": "離線",

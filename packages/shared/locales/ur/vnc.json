@@ -243,5 +243,7 @@
   "editClientTitle": "ریموٹ کلائنٹ میں ترمیم کریں۔",
   "editClientDesc": "راستہ، میزبان، اور اختیاری ذخیرہ شدہ پاس ورڈ کو اپ ڈیٹ کریں۔",
   "clientUpdated": "کلائنٹ پروفائل کو اپ ڈیٹ کر دیا گیا۔",
-  "rememberNeedPassword": "Enter a password first."
+  "rememberNeedPassword": "Enter a password first.",
+  "settingsNeedStack": "These defaults apply when TigerVNC (and XFCE if selected) are installed. Install them on the Install tab first.",
+  "clientNeedNovnc": "Open in browser needs noVNC. Install it on the Install tab before adding remotes you expect to open here."
 }

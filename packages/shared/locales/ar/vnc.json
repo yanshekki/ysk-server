@@ -243,5 +243,7 @@
   "editClientTitle": "تحرير العميل البعيد",
   "editClientDesc": "قم بتحديث المسار والمضيفين وكلمة المرور المخزنة الاختيارية.",
   "clientUpdated": "تم تحديث ملف تعريف العميل",
-  "rememberNeedPassword": "Enter a password first."
+  "rememberNeedPassword": "Enter a password first.",
+  "settingsNeedStack": "These defaults apply when TigerVNC (and XFCE if selected) are installed. Install them on the Install tab first.",
+  "clientNeedNovnc": "Open in browser needs noVNC. Install it on the Install tab before adding remotes you expect to open here."
 }

@@ -203,6 +203,8 @@ export function NetworkPage() {
   );
   const [realIpCustomCidrs, setRealIpCustomCidrs] = useState('');
   const [realIpMsg, setRealIpMsg] = useState<string | null>(null);
+  const [rawOpen, setRawOpen] = useState(false);
+  const [rawAt, setRawAt] = useState<number | null>(null);
 
   const loadRealIp = useCallback(async () => {
     try {
@@ -1000,9 +1002,18 @@ export function NetworkPage() {
                           variant="secondary"
                           size="sm"
                           loading={loading}
-                          onClick={bindCall1(refresh, true)}
+                          onClick={() => {
+                            if (rawOpen) {
+                              setRawOpen(false);
+                              return;
+                            }
+                            void refresh(true).then(() => {
+                              setRawOpen(true);
+                              setRawAt(Date.now());
+                            });
+                          }}
                         >
-                          {t('network.loadRaw')}
+                          {rawOpen ? t('network.hideRaw') : t('network.loadRaw')}
                         </Button>
                       </ActionBar>
                     }
@@ -1039,13 +1050,22 @@ export function NetworkPage() {
                     <FormHint>{snap.notes.join(' · ')}</FormHint>
                   ) : null}
                 </Card>
-                {snap.raw?.addr ? (
+                {rawOpen && snap.raw?.addr ? (
                   <Card>
-                    <CardHeader title="ip addr" />
+                    <CardHeader
+                      title="ip addr"
+                      description={
+                        rawAt
+                          ? t('network.rawLoadedAt', {
+                              time: new Date(rawAt).toLocaleString(),
+                            })
+                          : undefined
+                      }
+                    />
                     <CodeBlock>{snap.raw.addr}</CodeBlock>
                   </Card>
                 ) : null}
-                {snap.raw?.route ? (
+                {rawOpen && snap.raw?.route ? (
                   <Card>
                     <CardHeader title="ip route" />
                     <CodeBlock>{snap.raw.route}</CodeBlock>
@@ -1061,6 +1081,7 @@ export function NetworkPage() {
                     title={t('network.realip.title')}
                     description={t('network.realip.desc')}
                   />
+                  <Alert variant="warn">{t('network.realip.spoofWarn')}</Alert>
                   {realIpMsg ? <Alert variant="info">{realIpMsg}</Alert> : null}
                   <FormLayout>
                     <Field

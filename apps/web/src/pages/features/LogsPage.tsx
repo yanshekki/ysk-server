@@ -1603,7 +1603,15 @@ export function LogsPage() {
           </div>
         ) : null}
       
-        {tab === 'about' ? <PageGuide guideId="logs" /> : null}
+        {tab === 'about' ? (
+          <div className="tab-panel stack">
+            <PageGuide guideId="logs" />
+            <ul className="u-text-sm muted">
+              <li>{t('logs.aboutAllowlist')}</li>
+              <li>{t('logs.aboutCustomPath')}</li>
+            </ul>
+          </div>
+        ) : null}
       </PageTabs>
 
       <OpsResultPanel title={t('systemd.opsResult')} result={result} message={msg} busy={busy} />

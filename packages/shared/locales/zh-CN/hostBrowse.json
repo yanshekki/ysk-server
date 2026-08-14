@@ -82,6 +82,8 @@
   },
   "home": "主頁",
   "bookmark": "書籤",
+  "bookmarkAdd": "加入或移除書籤",
+  "bookmarkList": "書籤清單",
   "bookmarks": "書籤",
   "history": "瀏覽記錄",
   "bookmarkToggled": "已更新書籤",
@@ -128,5 +130,10 @@
   "frameBlocked": "页面无法在面板框架内显示。",
   "historyEmpty": "此工作阶段尚无浏览记录。",
   "bookmarksEmpty": "尚未有书签。",
-  "closeSessionHint": "会清掉此浏览工作阶段的 Cookie；书签会保留。"
+  "closeSessionHint": "会清掉此浏览工作阶段的 Cookie；书签会保留。",
+  "envUnset": "未设置",
+  "envPanelValue": "面板：{{value}}",
+  "settingsNoSandboxWarn": "会关闭 Chromium 沙箱。只应在可信的 container 内使用。下次真实浏览器工作阶段才生效。",
+  "settingsDangerDlWarn": "允许经主机浏览器下载可执行文件与脚本。请确认确实需要。",
+  "settingsDangerConfirmTitle": "启用高风险浏览设置？"
 }

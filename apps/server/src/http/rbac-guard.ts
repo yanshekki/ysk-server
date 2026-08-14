@@ -71,6 +71,16 @@ function isPublicVncShareMutating(pathname: string): boolean {
 }
 
 /**
+ * Host-browse iframe content / form POST is authenticated by contentToken
+ * in the query string (browser cannot attach Authorization). Bearer GET
+ * inventory must not 401 these — that response is X-Frame-Options: DENY
+ * and the panel shows “refused to connect” after a successful navigate.
+ */
+export function isHostBrowseTokenPath(pathname: string): boolean {
+  return /^\/api\/v1\/host-browse\/sessions\/[^/]+\/(content|form)$/.test(pathname);
+}
+
+/**
  * Edge agent poller paths — agent secret checked in handler (not panel session).
  * Register is intentionally excluded (enrollment / panel auth required).
  */
@@ -104,6 +114,9 @@ export function enforceMutatingRouteCaps(
   if (isPublicVncShareMutating(pathname)) {
     return;
   }
+  if (isHostBrowseTokenPath(pathname)) {
+    return;
+  }
   const caps = matchMutatingRouteAnyOf(m, pathname);
   if (!caps?.length) return;
   const user = ctx.auth.authenticate(getBearer(req));
@@ -130,6 +143,7 @@ function skipGetRouteCaps(pathname: string): boolean {
     return true;
   }
   if (pathname.startsWith('/api/v1/vnc/share/')) return true;
+  if (isHostBrowseTokenPath(pathname)) return true;
   // Agent poller pull (history=1 still gated in the handler)
   if (/^\/api\/v1\/fleet\/agents\/[^/]+\/commands$/.test(pathname)) return true;
   return false;

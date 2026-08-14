@@ -124,6 +124,8 @@
   "needViewer": "Viewer（可選）",
   "needViewerOrNovnc": "需 viewer 或 noVNC",
   "settingsHint": "新建帳號預設值",
+  "settingsNeedStack": "此處預設值要在已安裝 TigerVNC（若選 XFCE 亦需 XFCE）後才會生效。請先到「安裝」分頁安裝。",
+  "clientNeedNovnc": "「在瀏覽器開啟」需要 noVNC。若要在此開啟遠端，請先到「安裝」分頁安裝。",
   "defaultDesktop": "預設桌面",
   "defaultGeometry": "預設解析度",
   "defaultDepth": "色深",

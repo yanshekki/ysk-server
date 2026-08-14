@@ -598,6 +598,12 @@ export function VncPage() {
 
         {tab === 'client' ? (
           <div className="stack">
+            <SoftwareInstallBanner
+              feature="novnc"
+              title={t('vnc.needNovnc')}
+              showReadyActions={false}
+            />
+            <Alert variant="info">{t('vnc.clientNeedNovnc')}</Alert>
             <Alert variant="info">{t('vnc.clientPathHint')}</Alert>
             <Alert variant="info">{t('vnc.clientPathCompare')}</Alert>
             <DataTable
@@ -787,6 +793,19 @@ export function VncPage() {
 
         {tab === 'settings' ? (
           <div className="stack">
+            <Alert variant="info">{t('vnc.settingsNeedStack')}</Alert>
+            <SoftwareInstallBanner
+              feature="tigervnc"
+              title={t('vnc.needTigerVnc')}
+              showReadyActions={false}
+            />
+            {desktop === 'xfce' ? (
+              <SoftwareInstallBanner
+                feature="vnc-xfce"
+                title={t('vnc.needXfce')}
+                showReadyActions={false}
+              />
+            ) : null}
             <Alert variant="info">{t('vnc.settingsHint')}</Alert>
             <FormLayout columns={2}>
               <Field label={t('vnc.defaultDesktop')} htmlFor="vnc-desk" flush>
@@ -1375,6 +1394,9 @@ export function VncPage() {
             />
             <span className="u-text-sm">{t('vnc.clientRememberPassword')}</span>
           </label>
+          {!clPassword.trim() ? (
+            <p className="muted u-text-sm">{t('vnc.rememberNeedPassword')}</p>
+          ) : null}
           {clRememberPass ? (
             <Alert variant="warn">{t('vnc.clientRememberPasswordWarn')}</Alert>
           ) : null}

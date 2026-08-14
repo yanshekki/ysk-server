@@ -103,6 +103,8 @@
   "applyDnsNotes": "套用后会 nmcli connection modify + up；短暂断线属正常。stub 127.0.0.53 不会写入（本机 resolved 内部用）。",
   "testResolve": "测试解析",
   "loadRaw": "加载 raw 输出",
+  "hideRaw": "隐藏 raw 输出",
+  "rawLoadedAt": "加载时间 {{time}}",
   "confirmDown": "确认 Down",
   "defaultRouteDownWarn": "此接口是默认路由出口，down 后可能无法连上管理面板。",
   "deleteDefaultMayDrop": " — 删除 default 可能断线。",
@@ -136,7 +138,8 @@
       "gcore": "国核CDN",
       "custom": "自定义代理"
     },
-    "needProvider": "请先选择 CDN 供应商，才可更新 IP 列表。"
+    "needProvider": "请先选择 CDN 供应商，才可更新 IP 列表。",
+    "spoofWarn": "信任错误的 CIDR 会让客户端伪造 X-Forwarded-For／CDN 标头，假装成真实来源 IP。"
   },
   "linkUp": "向上",
   "linkDown": "断开",

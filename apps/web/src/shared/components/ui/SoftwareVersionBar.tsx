@@ -255,17 +255,20 @@ export function SoftwareVersionBar({
         ) : null}
       </div>
       <div className="software-version-bar__row">
-        <span className="software-version-bar__label">
-          {t('software.version.installed')}
-        </span>
-        <strong>
-          {st.currentVersion ||
-            (st.installed ? '—' : t('software.status.notInstalled'))}
-        </strong>
-        <span className="software-version-bar__label">
-          {t('software.version.latest')}
-        </span>
-        <strong>{st.latestVersion || '—'}</strong>
+        {st.installed ? (
+          <>
+            <span className="software-version-bar__label">
+              {t('software.version.installed')}
+            </span>
+            <strong>{st.currentVersion || '—'}</strong>
+            <span className="software-version-bar__label">
+              {t('software.version.latest')}
+            </span>
+            <strong>{st.latestVersion || '—'}</strong>
+          </>
+        ) : (
+          <Badge tone="warn">{t('software.status.notInstalled')}</Badge>
+        )}
         {st.upgradable ? (
           <Badge tone="warn">{t('software.badge.update')}</Badge>
         ) : st.installed && st.latestVersion ? (

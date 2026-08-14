@@ -136,11 +136,14 @@
       "gcore": "G코어 CDN",
       "custom": "맞춤형 프록시"
     },
-    "needProvider": "Choose a CDN provider before fetching its IP list."
+    "needProvider": "Choose a CDN provider before fetching its IP list.",
+    "spoofWarn": "Trusting the wrong CIDR lets clients spoof X-Forwarded-For / CDN headers as their IP."
   },
   "linkUp": "위로",
   "linkDown": "아래에",
   "linkDownTitle": "Take {{name}} offline",
   "linkDownNeedConfirm": "Type the interface name to confirm",
-  "persistNmHint": "Persistable means changes can survive reboot via NetworkManager."
+  "persistNmHint": "Persistable means changes can survive reboot via NetworkManager.",
+  "hideRaw": "Hide raw output",
+  "rawLoadedAt": "Loaded {{time}}"
 }

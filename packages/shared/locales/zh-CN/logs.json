@@ -135,5 +135,7 @@
   "srcFail2ban": "fail2ban",
   "vacuumSize": "限制至 500 MB",
   "logrotateNoStatus": "尚未有 logrotate 状态档（从未跑过时属常见）。",
-  "autoVacuumOff": "自动清理未启用。启用前时间设定不会执行。"
+  "autoVacuumOff": "自动清理未启用。启用前时间设定不会执行。",
+  "aboutAllowlist": "探索只可读允许清单内的 journal 单元与 /var/log 路径，不会提供任意主机路径。",
+  "aboutCustomPath": "请在「设置」加入自定义路径（仅限 /var/log 或 /run/log），再到「探索」开启。"
 }

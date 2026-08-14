@@ -82,6 +82,8 @@
   },
   "home": "Home",
   "bookmark": "Bookmark",
+  "bookmarkAdd": "Add or remove bookmark",
+  "bookmarkList": "Bookmark list",
   "bookmarks": "Bookmarks",
   "history": "History",
   "bookmarkToggled": "Bookmark updated",
@@ -128,5 +130,10 @@
   "frameBlocked": "The page could not be shown in the panel frame.",
   "historyEmpty": "No history in this session.",
   "bookmarksEmpty": "No bookmarks yet.",
-  "closeSessionHint": "Clears cookies for this browse session. Bookmarks stay."
+  "closeSessionHint": "Clears cookies for this browse session. Bookmarks stay.",
+  "envUnset": "not set",
+  "envPanelValue": "panel: {{value}}",
+  "settingsNoSandboxWarn": "Disables Chromium sandbox. Use only inside a trusted container. Applies on next real-browser session.",
+  "settingsDangerDlWarn": "Allows executable and script downloads through the host browser. Confirm you need this.",
+  "settingsDangerConfirmTitle": "Enable a high-risk browse setting?"
 }
