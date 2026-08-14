@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.30 — 2026-08-14
+
+### Change
+- Product requires **Node.js 22+**. Official install upgrades Node 20 hosts to current LTS (**24.x**) instead of pinning older plugins
+- WebTorrent stays on **3.x**; global pnpm is **latest** (11) once Node meets the floor
+
 ## 1.0.29 — 2026-08-14
 
 ### Fix
