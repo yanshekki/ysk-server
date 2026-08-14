@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.24 — 2026-08-14
+
+### Fix
+- RequireCapability shows a no-access page (CI guard test aligned)
+
+### Docs
+- API / CLI / install / uninstall / VNC / users / security / files / user-manual: public VNC share, login body cap, share password header, last-admin lock, install password honesty (EN + 香港書面語)
+
 ## 1.0.23 — 2026-08-14
 
 ### Fix
