@@ -3,7 +3,7 @@
  *
  * Backends (D4):
  * - json (default): atomic ysk.json
- * - sqlite: better-sqlite3 document blob (YSK_STORE=sqlite or path ends .sqlite)
+ * - sqlite: sql.js document blob (YSK_STORE=sqlite or path ends .sqlite)
  * - postgres: optional pg + YSK_DATABASE_URL
  *
  * All backends are JsonStore (or subclass) — same snapshot API.

@@ -459,14 +459,14 @@ npm_rebuild_natives() {
   if [[ -n "$prefix" ]]; then
     export PATH="${prefix}/bin:${PATH}"
     if [[ -d "$prefix/lib/node_modules/ysk-server" ]]; then
-      (cd "$prefix/lib/node_modules/ysk-server" && npm rebuild node-pty better-sqlite3) || true
+      (cd "$prefix/lib/node_modules/ysk-server" && npm rebuild node-pty) || true
     fi
     npm rebuild --prefix "$prefix" >/dev/null 2>&1 || true
     return 0
   fi
   root="$(npm root -g 2>/dev/null || true)"
   if [[ -n "$root" && -d "$root/ysk-server" ]]; then
-    (cd "$root/ysk-server" && npm rebuild node-pty better-sqlite3) || true
+    (cd "$root/ysk-server" && npm rebuild node-pty) || true
   fi
   npm rebuild -g ysk-server >/dev/null 2>&1 || true
 }
@@ -1048,7 +1048,7 @@ print_next() {
   cat <<EOF
 
 ============================================================
- $PRODUCT v1.0.28 — installation finished
+ $PRODUCT v1.0.29 — installation finished
 ============================================================
  Plan:     ${PLAN:-custom}
  Bundles:  $BUNDLES_CSV

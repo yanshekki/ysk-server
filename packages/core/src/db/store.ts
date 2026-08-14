@@ -1,6 +1,6 @@
 /**
  * Durable JSON control-plane store (atomic writes).
- * Used instead of native better-sqlite3 when the environment cannot load it.
+ * Default backend. SQLite uses sql.js (no native addon) when YSK_STORE=sqlite.
  * Provides real restart-safe persistence for users/sessions/projects/audit.
  */
 
