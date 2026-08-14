@@ -10,10 +10,12 @@ Install **YSK Server** (control plane CLI `ysk-server`) and **selected host soft
 | Uninstall | [`uninstall.sh`](../../uninstall.sh) · [uninstall.md](./uninstall.md) |
 | Stack definitions | [`deploy/stack/bundles.json`](../../deploy/stack/bundles.json), [`components.json`](../../deploy/stack/components.json) |
 | Target OS | **Ubuntu 22.04 / 24.04** (Debian best-effort) |
-| Node.js | **20+** (NodeSource if missing) |
+| Node.js | **20+** (NodeSource if missing). Do not require Node 22. |
 | Default plan | **`recommended`** (not full stack) |
 
 **Honesty:** packages are installed; **most services are not force-enabled**. Live apply still needs **root** + **`YSK_EXECUTE=1`**. See [../architecture/ops-honesty.md](../architecture/ops-honesty.md).
+
+`npm install -g ysk-server` skips dependency lifecycle scripts (`ip-set@3` runs `npx only-allow pnpm` and aborts a stock Ubuntu 24 / Node 20 host), then rebuilds native addons (`node-pty`, `better-sqlite3`). Global **pnpm** is pinned to **9.x** — `pnpm@latest` (11) needs Node 22.
 
 **Logs:** `/var/log/ysk-server/install-*.log` (root) or `~/.ysk/logs/`.  
 **Manifest:** `$dataDir/stack-manifest.json` (what was installed — used by uninstall).

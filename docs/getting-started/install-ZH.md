@@ -10,10 +10,12 @@
 | 解除安裝 | [`uninstall.sh`](../../uninstall.sh) · [uninstall-ZH.md](./uninstall-ZH.md) |
 | 套餐定義 | [`deploy/stack/bundles.json`](../../deploy/stack/bundles.json)、[`components.json`](../../deploy/stack/components.json) |
 | 目標系統 | **Ubuntu 22.04 / 24.04**（Debian 盡力支援） |
-| Node.js | **20+** |
+| Node.js | **20+**（唔需要 Node 22） |
 | 預設方案 | **`recommended`**（不再默認全裝） |
 
 **誠實原則：** 會裝套件；**多數服務不會強制啟用**。真正套用仍要 **root** + **`YSK_EXECUTE=1`**。見 [../architecture/ops-honesty-ZH.md](../architecture/ops-honesty-ZH.md)。
+
+`npm install -g ysk-server` 會略過依賴嘅 lifecycle 腳本（`ip-set@3` 會跑 `npx only-allow pnpm`，喺 Ubuntu 24／Node 20 會令安裝失敗），然後重建 native 模組（`node-pty`、`better-sqlite3`）。全域 **pnpm** 釘死 **9.x** — `pnpm@latest`（11）需要 Node 22。
 
 **日誌：** `/var/log/ysk-server/install-*.log`（root）或 `~/.ysk/logs/`。  
 **Manifest：** `$dataDir/stack-manifest.json`（uninstall 靠呢份）。

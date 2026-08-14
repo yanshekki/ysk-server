@@ -48,7 +48,8 @@ curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.s
 Or from npm (CLI bin: `ysk-server`):
 
 ```bash
-npm install -g ysk-server
+npm install -g ysk-server --ignore-scripts
+npm rebuild -g ysk-server
 # Weak default "admin" is rejected. Pass a strong password:
 ysk-server setup --admin-user admin --admin-password 'YourStrongPass1!' --data-dir /var/lib/ysk-server
 export YSK_EXECUTE=1

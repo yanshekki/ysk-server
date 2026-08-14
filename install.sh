@@ -284,6 +284,27 @@ npm_global_prefix() {
   echo "${HOME}/.npm-global"
 }
 
+# ip-set@3 (via webtorrent) ships preinstall: npx only-allow pnpm — that
+# aborts npm install -g on a stock Ubuntu 24 / Node 20 host (LIVE-001).
+# Skip lifecycle scripts, then rebuild native addons we actually need.
+npm_rebuild_natives() {
+  local prefix root
+  prefix="$(npm_global_prefix)"
+  if [[ -n "$prefix" ]]; then
+    export PATH="${prefix}/bin:${PATH}"
+    if [[ -d "$prefix/lib/node_modules/ysk-server" ]]; then
+      (cd "$prefix/lib/node_modules/ysk-server" && npm rebuild node-pty better-sqlite3) || true
+    fi
+    npm rebuild --prefix "$prefix" >/dev/null 2>&1 || true
+    return 0
+  fi
+  root="$(npm root -g 2>/dev/null || true)"
+  if [[ -n "$root" && -d "$root/ysk-server" ]]; then
+    (cd "$root/ysk-server" && npm rebuild node-pty better-sqlite3) || true
+  fi
+  npm rebuild -g ysk-server >/dev/null 2>&1 || true
+}
+
 npm_install_global() {
   # usage: npm_install_global <pkg-spec> [pkg-spec...]
   local prefix
@@ -299,14 +320,22 @@ npm_install_global() {
     warn "I-07: installing npm packages as root into system global (set YSK_NPM_PREFIX or YSK_NPM_USER to avoid)"
   fi
   extra+=(--force)
+  extra+=(--ignore-scripts)
+  local rc=0
   if [[ "$(id -u)" -eq 0 && -n "${YSK_NPM_USER:-}" ]] && id "$YSK_NPM_USER" &>/dev/null && [[ -n "$prefix" ]]; then
     # Run as dedicated user when prefix is under their home
     runuser -u "$YSK_NPM_USER" -- npm install -g "${extra[@]}" "$@" 2>/dev/null \
       || sudo -u "$YSK_NPM_USER" npm install -g "${extra[@]}" "$@" 2>/dev/null \
       || npm install -g "${extra[@]}" "$@"
+    rc=$?
   else
     npm install -g "${extra[@]}" "$@"
+    rc=$?
   fi
+  if [[ "$rc" -eq 0 ]]; then
+    npm_rebuild_natives
+  fi
+  return "$rc"
 }
 
 install_node_globals() {
@@ -319,8 +348,9 @@ install_node_globals() {
     log "pnpm and pm2 already on PATH — skip global reinstall"
     return 0
   fi
-  log "Installing global npm tools (pnpm, pm2)..."
-  npm_install_global pnpm@latest 2>/dev/null || npm_install_global pnpm || warn "pnpm install failed"
+  log "Installing global npm tools (pnpm@9, pm2)..."
+  # pnpm@latest (11+) needs Node >=22.13 (node:sqlite). Product is Node 20+ (LIVE-004).
+  npm_install_global pnpm@9.15.9 2>/dev/null || npm_install_global pnpm@9 || warn "pnpm install failed"
   npm_install_global pm2@latest 2>/dev/null || npm_install_global pm2 || warn "pm2 install failed"
   local prefix
   prefix="$(npm_global_prefix)"
