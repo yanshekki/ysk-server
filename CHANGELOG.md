@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.28 — 2026-08-14
+
+### Fix
+- Optional apt uses `--no-remove` so Ubuntu `mysql-client` cannot purge MariaDB
+- SQL client follows the chosen engine (no MySQL client on a MariaDB host)
+- Official one-liner: move leftover global `ysk-server` aside before `npm install -g` (ENOTEMPTY + `node-gyp-build: not found`). If npm still fails, overlay the running tree instead of exiting 1
+
 ## 1.0.27 — 2026-08-14
 
 ### Fix
