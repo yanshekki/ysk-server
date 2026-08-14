@@ -469,6 +469,17 @@ install_component_apt() {
   while IFS= read -r u; do [[ -n "$u" ]] && units+=("$u"); done < <(component_field_array "$id" "units")
   while IFS= read -r d; do [[ -n "$d" ]] && dpaths+=("$d"); done < <(component_field_array "$id" "dataPaths")
 
+  # Ubuntu mysql-client / default-mysql-client Conflict with MariaDB and
+  # apt will remove mariadb-server. Pick the client for the chosen engine.
+  if [[ "$id" == "mysql-client" ]]; then
+    if [[ "${SQL_SERVER:-mariadb}" == "mysql" ]]; then
+      pkgs=(mysql-client)
+    else
+      pkgs=(mariadb-client)
+    fi
+    opt=()
+  fi
+
   if [[ "$id" == "postfix" ]]; then
     preseed_postfix
   fi

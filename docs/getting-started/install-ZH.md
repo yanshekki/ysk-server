@@ -15,7 +15,9 @@
 
 **誠實原則：** 會裝套件；**多數服務不會強制啟用**。真正套用仍要 **root** + **`YSK_EXECUTE=1`**。見 [../architecture/ops-honesty-ZH.md](../architecture/ops-honesty-ZH.md)。
 
-`install.sh` 會 stub `npx only-allow`，避免 `ip-set@3` 令 `npm install -g` 失敗（Ubuntu 24／Node 20）。**唔好**用 `--ignore-scripts`，否則 `@simplewebauthn/server` 會係空目錄，`ysk-server setup`／`--version` 會崩潰。全域 **pnpm** 釘死 **9.x**；若 PATH 上已有 pnpm 11 會換走（佢要 Node 22）。
+`install.sh` 會 stub `npx only-allow`，避免 `ip-set@3` 令 `npm install -g` 失敗（Ubuntu 24／Node 20）。**唔好**只用 `--ignore-scripts`，否則 `@simplewebauthn/server` 可以係空目錄，`ysk-server setup`／`--version` 會崩潰。安裝程式會先移走殘留嘅全域 `ysk-server` 目錄，再跑 `npm install -g`（舊目錄加 `bufferutil` 嘅 `node-gyp-build` 會失敗）。若 npm 仍然失敗，會重試，有現成 CLI 就 overlay 運行中嘅樹。全域 **pnpm** 釘死 **9.x**；若 PATH 上已有 pnpm 11 會換走（佢要 Node 22）。
+
+可選 apt 套件用 `--no-remove`，唔會拆走已裝嘅 MariaDB 或 MySQL。SQL 客戶端跟你揀嘅引擎（`mariadb-client` 或 `mysql-client`）。Ubuntu 嘅 `mysql-client` 同 MariaDB 衝突，唔可以喺 MariaDB 主機當「可選」來裝。
 
 驗證會認 Ubuntu PostgreSQL 嘅版本目錄（`/usr/lib/postgresql/*/bin/postgres`）。伺服器二進位唔喺 `PATH` 上；`psql` 先喺。`postgresql` unit 係 active 即代表伺服器已裝好。
 

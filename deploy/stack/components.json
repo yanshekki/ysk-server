@@ -47,10 +47,10 @@
       "title": "MySQL/MariaDB client",
       "source": "apt",
       "aptPackages": ["mariadb-client"],
-      "optionalApt": ["default-mysql-client", "mysql-client"],
       "bins": ["mysql", "mariadb"],
       "units": [],
-      "dataPaths": []
+      "dataPaths": [],
+      "notes": "Installer swaps to mysql-client when the plan is MySQL. Do not list Ubuntu mysql-client as optional — it Conflicts with MariaDB and removes mariadb-server."
     },
     "mysql-server": {
       "title": "MySQL server",

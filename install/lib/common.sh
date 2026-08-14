@@ -210,11 +210,13 @@ apt_install_optional() {
   local pkg
   for pkg in "$@"; do
     log "apt install (optional): $pkg"
+    # --no-remove: Ubuntu mysql-client Conflicts with MariaDB and would
+    # purge mariadb-server. Optional must never evict a required engine.
     # shellcheck disable=SC2086
-    if $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-downgrades "$pkg"; then
+    if $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-downgrades --no-remove "$pkg"; then
       log "  + $pkg (optional OK)"
     else
-      warn "optional package unavailable: $pkg"
+      warn "optional package skipped (unavailable or would remove installed packages): $pkg"
       SOFT_SKIPS+=("$pkg")
     fi
   done

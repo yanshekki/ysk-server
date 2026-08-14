@@ -284,6 +284,119 @@ npm_global_prefix() {
   echo "${HOME}/.npm-global"
 }
 
+ysk_npm_global_dest() {
+  local prefix root
+  prefix="$(npm_global_prefix)"
+  if [[ -n "$prefix" ]]; then
+    printf '%s\n' "${prefix}/lib/node_modules/${PKG}"
+    return 0
+  fi
+  root="$(npm root -g 2>/dev/null || true)"
+  if [[ -n "$root" ]]; then
+    printf '%s\n' "${root}/${PKG}"
+  fi
+}
+
+# Leftover global tree + npm --force → ENOTEMPTY, then bufferutil runs
+# `node-gyp-build` against a half-deleted tree (LIVE 1.0.27 log).
+# First call keeps the previous tree as rollback; later calls only wipe a failed extract.
+clean_ysk_npm_global_dest() {
+  local dest bak
+  dest="$(ysk_npm_global_dest)"
+  [[ -n "$dest" && -e "$dest" ]] || return 0
+  if [[ -n "${YSK_NPM_DEST_BAK:-}" && -e "$YSK_NPM_DEST_BAK" ]]; then
+    log "Clearing failed extract at $dest"
+    rm -rf "$dest" 2>/dev/null || mv "$dest" "${dest}.ysk-broken.$$" 2>/dev/null || true
+    return 0
+  fi
+  bak="${dest}.ysk-old.$$"
+  log "Moving leftover $dest aside (npm ENOTEMPTY / broken extract)"
+  if mv "$dest" "$bak" 2>/dev/null; then
+    YSK_NPM_DEST_BAK="$bak"
+    return 0
+  fi
+  rm -rf "$dest" 2>/dev/null || warn "Could not clear leftover $dest"
+}
+
+restore_ysk_npm_global_dest() {
+  local dest
+  dest="$(ysk_npm_global_dest)"
+  [[ -n "${YSK_NPM_DEST_BAK:-}" && -d "$YSK_NPM_DEST_BAK" ]] || return 0
+  if [[ ! -d "$dest" ]]; then
+    log "Restoring previous $dest from $YSK_NPM_DEST_BAK"
+    mv "$YSK_NPM_DEST_BAK" "$dest" 2>/dev/null || true
+  fi
+}
+
+discard_ysk_npm_dest_bak() {
+  if [[ -n "${YSK_NPM_DEST_BAK:-}" ]]; then
+    rm -rf "$YSK_NPM_DEST_BAK" 2>/dev/null || true
+  fi
+  YSK_NPM_DEST_BAK=""
+}
+
+ensure_node_gyp_build() {
+  if command -v node-gyp-build >/dev/null 2>&1; then
+    return 0
+  fi
+  log "Installing node-gyp-build (ws optional native helper)"
+  npm install -g --force node-gyp-build >/dev/null 2>&1 || true
+}
+
+install_product_from_pack() {
+  local dest tmp spec tgz
+  dest="$(ysk_npm_global_dest)"
+  spec="${PKG}@${YSK_NPM_VERSION:-latest}"
+  [[ -n "$dest" ]] || return 1
+  tmp="$(mktemp -d)"
+  log "Extracting $spec to $dest (npm pack fallback)"
+  if ! (cd "$tmp" && npm pack "$spec" >/dev/null); then
+    rm -rf "$tmp"
+    return 1
+  fi
+  tgz="$(ls -1 "$tmp"/*.tgz 2>/dev/null | head -1 || true)"
+  if [[ -z "$tgz" || ! -f "$tgz" ]]; then
+    rm -rf "$tmp"
+    return 1
+  fi
+  tar -xzf "$tgz" -C "$tmp" || {
+    rm -rf "$tmp"
+    return 1
+  }
+  if [[ ! -f "$tmp/package/dist/cli.js" ]]; then
+    rm -rf "$tmp"
+    return 1
+  fi
+  mkdir -p "$(dirname "$dest")"
+  rm -rf "$dest"
+  mkdir -p "$dest"
+  cp -a "$tmp/package/." "$dest/"
+  rm -rf "$tmp"
+  with_npm_only_allow_stub
+  (cd "$dest" && npm install --omit=dev --no-fund --no-audit --ignore-scripts --no-progress) || true
+  npm_rebuild_natives
+  if [[ -f "$dest/dist/cli.js" ]]; then
+    if [[ "$(id -u)" -eq 0 ]]; then
+      cat >/usr/local/bin/ysk-server <<WRAP
+#!/usr/bin/env bash
+exec node "$dest/dist/cli.js" "\$@"
+WRAP
+      chmod +x /usr/local/bin/ysk-server
+    else
+      mkdir -p "${HOME}/.local/bin"
+      cat >"${HOME}/.local/bin/ysk-server" <<WRAP
+#!/usr/bin/env bash
+exec node "$dest/dist/cli.js" "\$@"
+WRAP
+      chmod +x "${HOME}/.local/bin/ysk-server"
+      export PATH="${HOME}/.local/bin:${PATH}"
+    fi
+    hash -r 2>/dev/null || true
+    return 0
+  fi
+  return 1
+}
+
 # ip-set@3 preinstall is `npx only-allow pnpm`. On Ubuntu 24 that often
 # becomes `only-allow: not found` (LIVE-001). --ignore-scripts avoids the
 # hook but leaves empty scoped packages (@simplewebauthn/server) so CLI
@@ -373,6 +486,9 @@ npm_install_global() {
     warn "I-07: installing npm packages as root into system global (set YSK_NPM_PREFIX or YSK_NPM_USER to avoid)"
   fi
   extra+=(--force)
+  if [[ "${YSK_NPM_IGNORE_SCRIPTS:-0}" == "1" ]]; then
+    extra+=(--ignore-scripts)
+  fi
   with_npm_only_allow_stub
   local rc=0
   if [[ "$(id -u)" -eq 0 && -n "${YSK_NPM_USER:-}" ]] && id "$YSK_NPM_USER" &>/dev/null && [[ -n "$prefix" ]]; then
@@ -610,10 +726,30 @@ WRAP
   local npm_spec="${YSK_NPM_VERSION:-latest}"
   local npm_pkg="${PKG}@${npm_spec}"
   log "npm package: $npm_pkg"
+  clean_ysk_npm_global_dest
+  ensure_node_gyp_build
+  local product_ok=0
   # I-07: use npm_install_global (prefix / dedicated user when configured)
-  if ! npm_install_global "$npm_pkg"; then
-    if [[ "$UPGRADE" -eq 1 ]]; then
-      warn "npm install -g $npm_pkg failed (EEXIST/prefix) — overlay will update the running tree"
+  if npm_install_global "$npm_pkg"; then
+    product_ok=1
+  else
+    warn "npm install -g $npm_pkg failed — retry without lifecycle scripts"
+    clean_ysk_npm_global_dest
+    if YSK_NPM_IGNORE_SCRIPTS=1 npm_install_global "$npm_pkg"; then
+      product_ok=1
+    elif install_product_from_pack; then
+      log "Installed $PKG from npm pack fallback"
+      product_ok=1
+    fi
+  fi
+  if [[ "$product_ok" -eq 1 ]]; then
+    discard_ysk_npm_dest_bak
+  else
+    restore_ysk_npm_global_dest
+    if require_cmd "$CLI" || require_cmd ysk-server \
+      || [[ -f /etc/systemd/system/ysk-server.service ]] \
+      || [[ -f /usr/lib/ysk-server/apps/server/dist/cli.js ]]; then
+      warn "npm install -g $npm_pkg failed — overlay will update the running tree"
     else
       record_hard_fail "Global npm install failed for $PKG (try YSK_NPM_PREFIX=\$HOME/.npm-global or npm install -g --force)"
       return 1
@@ -912,7 +1048,7 @@ print_next() {
   cat <<EOF
 
 ============================================================
- $PRODUCT v1.0.27 — installation finished
+ $PRODUCT v1.0.28 — installation finished
 ============================================================
  Plan:     ${PLAN:-custom}
  Bundles:  $BUNDLES_CSV

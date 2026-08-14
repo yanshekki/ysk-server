@@ -15,7 +15,9 @@ Install **YSK Server** (control plane CLI `ysk-server`) and **selected host soft
 
 **Honesty:** packages are installed; **most services are not force-enabled**. Live apply still needs **root** + **`YSK_EXECUTE=1`**. See [../architecture/ops-honesty.md](../architecture/ops-honesty.md).
 
-`install.sh` stubs `npx only-allow` so `ip-set@3` cannot abort `npm install -g` (Ubuntu 24 / Node 20). Do **not** use `--ignore-scripts` — that leaves an empty `@simplewebauthn/server` and `ysk-server setup` / `--version` crash. Global **pnpm** is pinned to **9.x**; pnpm 11 on the PATH is replaced (it needs Node 22).
+`install.sh` stubs `npx only-allow` so `ip-set@3` cannot abort `npm install -g` (Ubuntu 24 / Node 20). Do **not** use `--ignore-scripts` as the only install — that can leave an empty `@simplewebauthn/server` and `ysk-server setup` / `--version` crash. The installer moves a leftover global `ysk-server` tree aside before `npm install -g` (dirty tree + `bufferutil` `node-gyp-build` fails). If npm still fails, it retries, then overlays the running tree when a CLI already exists. Global **pnpm** is pinned to **9.x**; pnpm 11 on the PATH is replaced (it needs Node 22).
+
+Optional apt packages use `--no-remove` so they cannot evict MariaDB or MySQL. The SQL client follows the chosen engine (`mariadb-client` or `mysql-client`). Ubuntu `mysql-client` Conflicts with MariaDB and must not be installed as “optional” on a MariaDB host.
 
 Verify accepts Ubuntu PostgreSQL’s versioned binary (`/usr/lib/postgresql/*/bin/postgres`). The `postgres` server binary is not on `PATH`; `psql` is. The `postgresql` unit being active is enough for the panel.
 
