@@ -17,6 +17,8 @@
 
 `install.sh` 會 stub `npx only-allow`，避免 `ip-set@3` 令 `npm install -g` 失敗（Ubuntu 24／Node 20）。**唔好**用 `--ignore-scripts`，否則 `@simplewebauthn/server` 會係空目錄，`ysk-server setup`／`--version` 會崩潰。全域 **pnpm** 釘死 **9.x**；若 PATH 上已有 pnpm 11 會換走（佢要 Node 22）。
 
+驗證會認 Ubuntu PostgreSQL 嘅版本目錄（`/usr/lib/postgresql/*/bin/postgres`）。伺服器二進位唔喺 `PATH` 上；`psql` 先喺。`postgresql` unit 係 active 即代表伺服器已裝好。
+
 **日誌：** `/var/log/ysk-server/install-*.log`（root）或 `~/.ysk/logs/`。  
 **Manifest：** `$dataDir/stack-manifest.json`（uninstall 靠呢份）。
 

@@ -17,6 +17,8 @@ Install **YSK Server** (control plane CLI `ysk-server`) and **selected host soft
 
 `install.sh` stubs `npx only-allow` so `ip-set@3` cannot abort `npm install -g` (Ubuntu 24 / Node 20). Do **not** use `--ignore-scripts` — that leaves an empty `@simplewebauthn/server` and `ysk-server setup` / `--version` crash. Global **pnpm** is pinned to **9.x**; pnpm 11 on the PATH is replaced (it needs Node 22).
 
+Verify accepts Ubuntu PostgreSQL’s versioned binary (`/usr/lib/postgresql/*/bin/postgres`). The `postgres` server binary is not on `PATH`; `psql` is. The `postgresql` unit being active is enough for the panel.
+
 **Logs:** `/var/log/ysk-server/install-*.log` (root) or `~/.ysk/logs/`.  
 **Manifest:** `$dataDir/stack-manifest.json` (what was installed — used by uninstall).
 

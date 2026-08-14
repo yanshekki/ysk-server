@@ -90,6 +90,17 @@ find_bin() {
       return 0
     fi
   done
+  # Debian/Ubuntu PostgreSQL: /usr/lib/postgresql/16/bin/postgres is not on PATH
+  # (same set as packages/core/.../resolve-bin.ts PG_VERSIONED_BINS).
+  case "$b" in
+    postgres|pg_ctl|initdb|pg_isready|pg_dump|pg_restore|createdb|dropdb|createuser|dropuser)
+      p="$(ls -1 /usr/lib/postgresql/*/bin/"$b" 2>/dev/null | sort -V | tail -n 1 || true)"
+      if [[ "$p" == /* && -x "$p" ]]; then
+        printf '%s\n' "$p"
+        return 0
+      fi
+      ;;
+  esac
   return 1
 }
 
