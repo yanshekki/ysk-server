@@ -912,7 +912,7 @@ print_next() {
   cat <<EOF
 
 ============================================================
- $PRODUCT v1.0.26 — installation finished
+ $PRODUCT v1.0.27 — installation finished
 ============================================================
  Plan:     ${PLAN:-custom}
  Bundles:  $BUNDLES_CSV

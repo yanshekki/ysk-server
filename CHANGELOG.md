@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.27 — 2026-08-14
+
+### Fix
+- Official one-liner verify no longer fails on Ubuntu PostgreSQL: `postgres` lives at `/usr/lib/postgresql/*/bin/postgres`, not on `PATH`
+
 ## 1.0.26 — 2026-08-14
 
 ### Fix
