@@ -1,5 +1,32 @@
 # Changelog
 
+## 1.0.23 — 2026-08-14
+
+### Fix
+- Public VNC share sessions no longer require panel login
+- Login JSON body is size-capped; bad JSON returns 400
+- `uninstall.sh` refuses a non-HTTPS `YSK_INSTALL_RAW`
+- Corrupt SMTP relay settings no longer 500 the dashboard
+- Public torrent download is sandboxed to the data directory
+- Re-running install no longer prints a password that was not applied
+- First-login `mustChangePassword` has a change-password form
+- Terminal POST accepts `settings.system` or `services.control`
+- PHP-FPM lifecycle follows the installed matrix unit
+- Password-protected BT shares unlock via `X-Share-Password` (no query leak)
+- VNC share API returns `/vnc-share/:token`; guest Close does not send `/login`
+- Auth redirect keeps the original query string
+- Project Java / Kotlin / Bun filters, GET-by-id details, and tab aliases work
+- SMTP relay form loads saved settings instead of `smtp.example.com`
+
+### Safety
+- Confirm stop/restart on DB console and the services matrix (typed confirm for sshd / panel)
+- Confirm before disabling UFW
+- Cannot delete, suspend, or demote the signed-in user or the last admin
+
+### Docs
+- npm setup documents `--admin-password`; prefer `install.sh`
+- setup docs use `--admin-user` and `/var/lib/ysk-server`
+
 ## 1.0.22 — 2026-08-14
 
 ### Feature
