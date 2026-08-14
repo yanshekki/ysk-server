@@ -316,7 +316,8 @@
     "dmarcMissing": "DMARC غائب ہے — سختی سے تجویز کردہ",
     "ptrBad": "PTR ریورس DNS غائب یا غلط — VPS فراہم کنندہ سے درخواست کریں۔",
     "port25Blocked": "آؤٹ باؤنڈ پورٹ 25 بلاک نظر آتا ہے — ان بلاک کرنے کی درخواست کریں یا SMTP ریلے استعمال کریں۔",
-    "port25Unknown": "پورٹ 25 اسٹیٹس نامعلوم — کنیکٹیویٹی چیک چلائیں۔"
+    "port25Unknown": "پورٹ 25 اسٹیٹس نامعلوم — کنیکٹیویٹی چیک چلائیں۔",
+    "dmarcUnpublished": "DMARC is generated in the panel but not published in public DNS yet"
   },
   "stack": {
     "tlsNote": "SMTP/IMAP کے لیے Let's Encrypt کے ذریعے TLS سرٹیفکیٹ",

@@ -460,6 +460,8 @@
   "remoteSourceSuffix": "（{{source}}）",
   "nodePathYskMissingTitle": "受管 Node 路徑未就緒",
   "nodePathYskMissing": "版本 {{version}} 的 YSK 受管 Node 尚未就緒。請重新探測或重新安裝。",
+  "managedPathMissingTitle": "受管 {{name}} 路徑未就緒",
+  "managedPathMissing": "版本 {{version}} 的 YSK 受管 {{name}} 尚未就緒。請重新探測或重新安裝。",
   "nodePathUnsafeTitle": "Node 路徑不安全",
   "nodePathUnsafe": "目前路徑 {{path}} 不在受管目錄；專案部署可能失敗。",
   "recordedButProbeEmpty": "控制面曾記錄安裝 {{v}}，但主機探測未見執行檔。不算已安裝——請「重新探測」或重新安裝。",

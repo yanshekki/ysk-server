@@ -3096,7 +3096,8 @@
       "dmarcMissing": "DMARC مفقود — موصى به بشدة",
       "ptrBad": "PTR عكس DNS مفقود أو غير صحيح - طلب من مزود VPS",
       "port25Blocked": "يبدو أن المنفذ الصادر 25 محظور — اطلب إلغاء الحظر أو استخدم ترحيل SMTP",
-      "port25Unknown": "حالة المنفذ 25 غير معروفة - قم بإجراء فحص الاتصال"
+      "port25Unknown": "حالة المنفذ 25 غير معروفة - قم بإجراء فحص الاتصال",
+      "dmarcUnpublished": "DMARC is generated in the panel but not published in public DNS yet"
     },
     "stack": {
       "tlsNote": "شهادات TLS عبر Let’s Encrypt لـ SMTP/IMAP",
@@ -9045,7 +9046,10 @@
     "plusRegion": "+ المنطقة {{v}}",
     "plusCity": "+ المدينة {{v}}",
     "lastTickPrefix": "· الأخير {{t}}",
-    "nextTickPrefix": "· التالي {{t}}"
+    "nextTickPrefix": "· التالي {{t}}",
+    "stackApply": "Apply protection stack (UFW, fail2ban, preset)",
+    "stackApplyDone": "Protection stack apply requested",
+    "stackApplyHint": "This enables UFW and applies fail2ban plus the suggested preset. Confirm you will not lock yourself out of a remote panel."
   },
   "publicFiles": {
     "notSet": "لم يتم ضبطه",
@@ -9885,7 +9889,9 @@
     "path": "طريق",
     "fullVersion": "النسخة الكاملة",
     "useListForDefaults": "لتغيير المضيف أو اللوحة الافتراضية، أو إزالة هذا الإصدار، استخدم القائمة أعلاه.",
-    "alreadyHostDefaultShort": "المضيف الافتراضي"
+    "alreadyHostDefaultShort": "المضيف الافتراضي",
+    "managedPathMissingTitle": "Managed {{name}} path not ready",
+    "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall."
   },
   "search": {
     "placeholder": "صفحات البحث والموارد...",
@@ -10336,7 +10342,13 @@
     "restrictedNeedSource": "أضف رمز IP/CIDR أو رمز البلد واحدًا على الأقل للوضع المقيد.",
     "privateStartTitle": "فضح {{service}} على الشبكة؟",
     "confirmAndStart": "تأكيد والبدء",
-    "cloudSgNote": "جدار حماية المضيف فقط - لم يتم تغيير مجموعات الأمان السحابية (AWS/GCP/Azure)."
+    "cloudSgNote": "جدار حماية المضيف فقط - لم يتم تغيير مجموعات الأمان السحابية (AWS/GCP/Azure).",
+    "modeUndecided": "Not set",
+    "modeLoading": "Loading",
+    "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
+    "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
+    "roleSmtp": "SMTP submission",
+    "roleImap": "IMAP / POP3 mailbox"
   },
   "services": {
     "enabledBoot": "على التمهيد",
@@ -11694,7 +11706,8 @@
     "lockSelfHint": "هذا هو الحساب المسجّل دخوله. حُظر الحذف والإيقاف وتغيير الدور لمنع فقدان الدخول.",
     "lockLastAdminHint": "هذا آخر مسؤول. حُظر الحذف والإيقاف والتخفيض.",
     "demoteAdminTitle": "تخفيض هذا المسؤول؟",
-    "demoteAdminDesc": "سيفقد هذا المستخدم صلاحيات المسؤول الكاملة. تأكد من بقاء مسؤول آخر."
+    "demoteAdminDesc": "سيفقد هذا المستخدم صلاحيات المسؤول الكاملة. تأكد من بقاء مسؤول آخر.",
+    "searchPkgPh": "Package name"
   },
   "vnc": {
     "pageDesc": "خادم وعميل VNC",

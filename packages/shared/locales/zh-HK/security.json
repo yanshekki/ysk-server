@@ -103,7 +103,7 @@
   "revokeAllDevices": "撤銷全部裝置",
   "revokedAllDevices": "已撤銷全部信任裝置",
   "export2faBackup": "匯出 雙重驗證 加密備份",
-  "fail2banSnippetMsg": "fail2ban 片段：{{已寫入}} — {{notes}}",
+  "fail2banSnippetMsg": "fail2ban 片段：{{written}} — {{notes}}",
   "generatefail2ban": "產生 fail2ban 片段",
   "generateFail2ban": "產生 fail2ban 片段",
   "adminPolicyTitle": "管理員 2FA 政策",

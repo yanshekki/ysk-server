@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.0.32 — 2026-08-14
+
+### Fix
+- Create-project / wizard runtime chips are real buttons; dialogs portal to `document.body` so a click no longer dismisses the modal
+- Global search always matches panel pages locally (備份 / backup / mysql) even if the API is empty
+- MariaDB page lists control-plane databases tagged `mysql` (exclusive engine pool); wizard tags the live engine
+- Node probe no longer treats `v24.19.0` as major 19
+- Dashboard no longer leaks `執行{{狀態}}`; PM2 is not 「顆粒物」; WireGuard peer placeholder is not 「電話」
+- Feature portal lists every sidebar feature (no silent 16-card cut)
+- Notification tab badge is the notification count only (apply-audit stays on its own chip)
+- Firewall-off / undecided exposure no longer claims 「公網開放」
+- Let's Encrypt certificates stay **issued**, not uploaded; Nginx SSL column follows cert/conf
+- Redis RDB filename presets no longer include `appendonly.aof`
+- Empty recycle bin cannot run empty-trash; public-files 「開啟網站」 is disabled until live
+- MySQL / MariaDB pages have a real one-click install banner
+- `?tab=shadowsocks` / `?tab=plans` / `?tab=perm` deep links work
+
 ## 1.0.31 — 2026-08-14
 
 ### Fix

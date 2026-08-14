@@ -107,6 +107,8 @@ function modeLabel(
 
 export type ServiceAccessStripProps = {
   serviceId: string;
+  /** Override the card title (e.g. SMTP vs IMAP) */
+  heading?: string;
   /** Override ports shown (e.g. current form values before save) */
   ports?: ServicePortBinding[];
   /** Compact inline in action bars */
@@ -117,6 +119,7 @@ export type ServiceAccessStripProps = {
 
 export function ServiceAccessStrip({
   serviceId,
+  heading,
   ports: portsOverride,
   compact,
   className,
@@ -143,22 +146,40 @@ export function ServiceAccessStrip({
   }, [refresh]);
 
   const ports = portsOverride?.length ? portsOverride : status?.ports ?? [];
+  const loaded = status != null;
   const mode = status?.mode ?? status?.defaultMode ?? 'private';
+  const decided = Boolean(status?.decided);
   const inSync = status?.inSync ?? true;
   const fwOff =
     status?.firewallInstalled === false ||
     (status?.firewallActive != null &&
       status.firewallActive !== 'active' &&
       !/active/i.test(status.firewallActive));
+  const displayModeLabel = !loaded
+    ? t('serviceExposure.modeLoading')
+    : fwOff
+      ? t('serviceExposure.firewallOff')
+      : !decided
+        ? t('serviceExposure.modeUndecided')
+        : modeLabel(mode, t);
+  const displayTone: BadgeTone = !loaded
+    ? 'neutral'
+    : fwOff || !decided
+      ? 'warn'
+      : modeTone(mode, inSync);
   const summary = useMemo(() => {
+    if (!loaded) return t('common.loading');
     if (fwOff) {
-      return t('serviceExposure.summaryFirewallOff', {
+      return `${t('serviceExposure.summaryNotEnforced')} ${t('serviceExposure.summaryFirewallOff', {
         detail:
           status?.firewallActiveLabel ||
           (status?.firewallInstalled === false
             ? t('serviceExposure.ufwMissing')
             : t('serviceExposure.ufwInactive')),
-      });
+      })}`;
+    }
+    if (!decided) {
+      return t('serviceExposure.summaryUndecided', { suggested: modeLabel(mode, t) });
     }
     if (mode === 'private') return t('serviceExposure.summaryPrivate');
     if (mode === 'restricted') {
@@ -166,7 +187,7 @@ export function ServiceAccessStrip({
       return t('serviceExposure.summaryRestricted', { count: n });
     }
     return t('serviceExposure.summaryPublic', { ports: formatPorts(ports) });
-  }, [mode, ports, status, fwOff, t]);
+  }, [loaded, mode, ports, status, fwOff, decided, t]);
 
   return (
     <>
@@ -179,10 +200,13 @@ export function ServiceAccessStrip({
       >
         <div className="service-access-strip__body">
           <div className="service-access-strip__meta">
-            <span className="service-access-strip__label">{t('serviceExposure.title')}</span>
-            <Badge tone={modeTone(mode, inSync)}>{modeLabel(mode, t)}</Badge>
-            {!inSync ? <Badge tone="warn">{t('serviceExposure.outOfSync')}</Badge> : null}
-            {fwOff ? <Badge tone="warn">{t('serviceExposure.firewallOff')}</Badge> : null}
+            <span className="service-access-strip__label">
+              {heading || t('serviceExposure.title')}
+            </span>
+            <Badge tone={displayTone}>{displayModeLabel}</Badge>
+            {loaded && decided && !fwOff && !inSync ? (
+              <Badge tone="warn">{t('serviceExposure.outOfSync')}</Badge>
+            ) : null}
           </div>
           <p className="service-access-strip__summary muted">{summary}</p>
           <p className="service-access-strip__summary muted u-text-sm">

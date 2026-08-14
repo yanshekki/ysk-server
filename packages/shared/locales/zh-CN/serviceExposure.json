@@ -27,5 +27,11 @@
   "restrictedNeedSource": "受限模式请至少加入 IP／网段或国家代码。",
   "privateStartTitle": "要对外开放 {{service}} 吗？",
   "confirmAndStart": "确认并启动",
-  "cloudSgNote": "仅主机防火墙 — 不会改云安全组（AWS／GCP／Azure）。"
+  "cloudSgNote": "仅主机防火墙 — 不会改云安全组（AWS／GCP／Azure）。",
+  "modeUndecided": "尚未設定",
+  "modeLoading": "載入中",
+  "summaryUndecided": "尚未確認存取模式（目錄建議：{{suggested}}）。",
+  "summaryNotEnforced": "防火牆未啟用，面板未強制開放或封鎖此埠。",
+  "roleSmtp": "SMTP 提交",
+  "roleImap": "IMAP／POP3 收件"
 }

@@ -70,7 +70,7 @@
   "peersTitleOvpn": "Client configs",
   "peersTitleSs": "Access keys",
   "peerName": "Name",
-  "peerNamePlaceholder": "phone",
+  "peerNamePlaceholder": "office-laptop",
   "addPeer": "+ Add",
   "addPeerWg": "+ Add peer",
   "addPeerOvpn": "+ Add client",

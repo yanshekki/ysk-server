@@ -10,6 +10,7 @@
   "createUser": "建立用戶",
   "createUserPlus": "+ 建立用戶",
   "searchPh": "用戶名 / 角色 / 方案",
+  "searchPkgPh": "方案名稱",
   "searchUsersAria": "搜尋用戶",
   "user": "用戶",
   "roles": "角色",

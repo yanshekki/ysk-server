@@ -3096,7 +3096,8 @@
       "dmarcMissing": "DMARC অনুপস্থিত — দৃঢ়ভাবে সুপারিশ করা হয়",
       "ptrBad": "PTR বিপরীত DNS অনুপস্থিত বা ভুল — VPS প্রদানকারীর কাছে অনুরোধ",
       "port25Blocked": "আউটবাউন্ড পোর্ট 25 অবরুদ্ধ দেখাচ্ছে — আনব্লক করার অনুরোধ করুন বা SMTP রিলে ব্যবহার করুন",
-      "port25Unknown": "পোর্ট 25 স্ট্যাটাস অজানা — কানেক্টিভিটি চেক চালান"
+      "port25Unknown": "পোর্ট 25 স্ট্যাটাস অজানা — কানেক্টিভিটি চেক চালান",
+      "dmarcUnpublished": "DMARC is generated in the panel but not published in public DNS yet"
     },
     "stack": {
       "tlsNote": "SMTP/IMAP-এর জন্য Let's Encrypt-এর মাধ্যমে TLS শংসাপত্র",
@@ -9045,7 +9046,10 @@
     "plusRegion": "+ অঞ্চল {{v}}",
     "plusCity": "+ শহর {{v}}",
     "lastTickPrefix": "· শেষ {{t}}",
-    "nextTickPrefix": "· পরবর্তী {{t}}"
+    "nextTickPrefix": "· পরবর্তী {{t}}",
+    "stackApply": "Apply protection stack (UFW, fail2ban, preset)",
+    "stackApplyDone": "Protection stack apply requested",
+    "stackApplyHint": "This enables UFW and applies fail2ban plus the suggested preset. Confirm you will not lock yourself out of a remote panel."
   },
   "publicFiles": {
     "notSet": "সেট করা হয়নি",
@@ -9885,7 +9889,9 @@
     "path": "পথ",
     "fullVersion": "সম্পূর্ণ সংস্করণ",
     "useListForDefaults": "হোস্ট বা প্যানেল ডিফল্ট পরিবর্তন করতে, বা এই সংস্করণটি সরাতে, উপরের তালিকাটি ব্যবহার করুন৷",
-    "alreadyHostDefaultShort": "হোস্ট ডিফল্ট"
+    "alreadyHostDefaultShort": "হোস্ট ডিফল্ট",
+    "managedPathMissingTitle": "Managed {{name}} path not ready",
+    "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall."
   },
   "search": {
     "placeholder": "পৃষ্ঠা এবং সম্পদ অনুসন্ধান করুন...",
@@ -10336,7 +10342,13 @@
     "restrictedNeedSource": "সীমাবদ্ধ মোডের জন্য কমপক্ষে একটি আইপি/সিআইডিআর বা দেশের কোড যোগ করুন।",
     "privateStartTitle": "নেটওয়ার্কে {{service}} প্রকাশ করবেন?",
     "confirmAndStart": "নিশ্চিত করুন এবং শুরু করুন",
-    "cloudSgNote": "শুধুমাত্র হোস্ট ফায়ারওয়াল — ক্লাউড সিকিউরিটি গ্রুপ (AWS/GCP/Azure) পরিবর্তন করা হয় না।"
+    "cloudSgNote": "শুধুমাত্র হোস্ট ফায়ারওয়াল — ক্লাউড সিকিউরিটি গ্রুপ (AWS/GCP/Azure) পরিবর্তন করা হয় না।",
+    "modeUndecided": "Not set",
+    "modeLoading": "Loading",
+    "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
+    "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
+    "roleSmtp": "SMTP submission",
+    "roleImap": "IMAP / POP3 mailbox"
   },
   "services": {
     "enabledBoot": "বুট উপর",
@@ -11694,7 +11706,8 @@
     "lockSelfHint": "এটি সাইন-ইন করা অ্যাকাউন্ট। লক-আউট এড়াতে মুছে ফেলা, স্থগিত ও ভূমিকা পরিবর্তন বন্ধ।",
     "lockLastAdminHint": "এটি শেষ অ্যাডমিন। মুছে ফেলা, স্থগিত ও পদত্যাগ বন্ধ।",
     "demoteAdminTitle": "এই অ্যাডমিনকে পদত্যাগ করবেন?",
-    "demoteAdminDesc": "এই ব্যবহারকারী পূর্ণ অ্যাডমিন অ্যাক্সেস হারাবেন। নিশ্চিত করুন অন্য অ্যাডমিন আছেন।"
+    "demoteAdminDesc": "এই ব্যবহারকারী পূর্ণ অ্যাডমিন অ্যাক্সেস হারাবেন। নিশ্চিত করুন অন্য অ্যাডমিন আছেন।",
+    "searchPkgPh": "Package name"
   },
   "vnc": {
     "pageDesc": "VNC সার্ভার এবং ক্লায়েন্ট",

@@ -126,5 +126,6 @@
   "lockSelfHint": "Ceci est le compte connecté. La suppression, la suspension et le changement de rôle sont bloqués pour éviter un verrouillage.",
   "lockLastAdminHint": "Ceci est le dernier administrateur. La suppression, la suspension et la rétrogradation sont bloquées.",
   "demoteAdminTitle": "Rétrograder cet administrateur ?",
-  "demoteAdminDesc": "Cet utilisateur perdra l’accès administrateur complet. Confirmez qu’un autre administrateur reste."
+  "demoteAdminDesc": "Cet utilisateur perdra l’accès administrateur complet. Confirmez qu’un autre administrateur reste.",
+  "searchPkgPh": "Package name"
 }

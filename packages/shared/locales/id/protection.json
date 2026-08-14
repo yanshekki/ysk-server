@@ -344,5 +344,8 @@
   "plusRegion": "+ wilayah {{v}}",
   "plusCity": "+ kota {{v}}",
   "lastTickPrefix": "· terakhir {{t}}",
-  "nextTickPrefix": "· selanjutnya {{t}}"
+  "nextTickPrefix": "· selanjutnya {{t}}",
+  "stackApply": "Apply protection stack (UFW, fail2ban, preset)",
+  "stackApplyDone": "Protection stack apply requested",
+  "stackApplyHint": "This enables UFW and applies fail2ban plus the suggested preset. Confirm you will not lock yourself out of a remote panel."
 }

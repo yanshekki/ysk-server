@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 
 export interface ModalProps {
   open: boolean;
@@ -82,7 +83,7 @@ export function Modal({
           ? 'modal--xl'
           : '';
 
-  return (
+  const tree = (
     <div
       className="modal-backdrop"
       role="presentation"
@@ -96,6 +97,8 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="modal__header">
           <div>
@@ -118,4 +121,7 @@ export function Modal({
       </div>
     </div>
   );
+
+  if (typeof document === 'undefined') return tree;
+  return createPortal(tree, document.body);
 }

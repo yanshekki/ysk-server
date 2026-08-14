@@ -3096,7 +3096,8 @@
       "dmarcMissing": "Falta DMARC: muy recomendable",
       "ptrBad": "Falta el DNS inverso de PTR o es incorrecto: solicitud al proveedor de VPS",
       "port25Blocked": "El puerto de salida 25 aparece bloqueado: solicite desbloquearlo o utilice la retransmisión SMTP",
-      "port25Unknown": "Estado del puerto 25 desconocido: ejecute la verificación de conectividad"
+      "port25Unknown": "Estado del puerto 25 desconocido: ejecute la verificación de conectividad",
+      "dmarcUnpublished": "DMARC is generated in the panel but not published in public DNS yet"
     },
     "stack": {
       "tlsNote": "Certificados TLS a través de Let's Encrypt para SMTP/IMAP",
@@ -9045,7 +9046,10 @@
     "plusRegion": "+ región {{v}}",
     "plusCity": "+ ciudad {{v}}",
     "lastTickPrefix": "· último {{t}}",
-    "nextTickPrefix": "· siguiente {{t}}"
+    "nextTickPrefix": "· siguiente {{t}}",
+    "stackApply": "Apply protection stack (UFW, fail2ban, preset)",
+    "stackApplyDone": "Protection stack apply requested",
+    "stackApplyHint": "This enables UFW and applies fail2ban plus the suggested preset. Confirm you will not lock yourself out of a remote panel."
   },
   "publicFiles": {
     "notSet": "No establecido",
@@ -9885,7 +9889,9 @@
     "path": "Camino",
     "fullVersion": "Versión completa",
     "useListForDefaults": "Para cambiar el valor predeterminado del host o del panel, o eliminar esta versión, utilice la lista anterior.",
-    "alreadyHostDefaultShort": "Valor predeterminado del host"
+    "alreadyHostDefaultShort": "Valor predeterminado del host",
+    "managedPathMissingTitle": "Managed {{name}} path not ready",
+    "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall."
   },
   "search": {
     "placeholder": "Buscar páginas y recursos...",
@@ -10336,7 +10342,13 @@
     "restrictedNeedSource": "Agregue al menos una IP/CIDR o código de país para el modo restringido.",
     "privateStartTitle": "¿Exponer {{service}} en la red?",
     "confirmAndStart": "Confirmar y comenzar",
-    "cloudSgNote": "Solo firewall de host: los grupos de seguridad en la nube (AWS/GCP/Azure) no se modifican."
+    "cloudSgNote": "Solo firewall de host: los grupos de seguridad en la nube (AWS/GCP/Azure) no se modifican.",
+    "modeUndecided": "Not set",
+    "modeLoading": "Loading",
+    "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
+    "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
+    "roleSmtp": "SMTP submission",
+    "roleImap": "IMAP / POP3 mailbox"
   },
   "services": {
     "enabledBoot": "En el arranque",
@@ -11694,7 +11706,8 @@
     "lockSelfHint": "Esta es la cuenta con la que ha iniciado sesión. Eliminar, suspender y cambiar el rol están bloqueados para evitar el bloqueo.",
     "lockLastAdminHint": "Este es el último administrador. Eliminar, suspender y degradar están bloqueados.",
     "demoteAdminTitle": "¿Degradar a este administrador?",
-    "demoteAdminDesc": "Este usuario perderá el acceso completo de administrador. Confirme que queda otro administrador."
+    "demoteAdminDesc": "Este usuario perderá el acceso completo de administrador. Confirme que queda otro administrador.",
+    "searchPkgPh": "Package name"
   },
   "vnc": {
     "pageDesc": "Servidor y cliente VNC",

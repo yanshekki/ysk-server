@@ -316,7 +316,8 @@
     "dmarcMissing": "DMARC مفقود — موصى به بشدة",
     "ptrBad": "PTR عكس DNS مفقود أو غير صحيح - طلب من مزود VPS",
     "port25Blocked": "يبدو أن المنفذ الصادر 25 محظور — اطلب إلغاء الحظر أو استخدم ترحيل SMTP",
-    "port25Unknown": "حالة المنفذ 25 غير معروفة - قم بإجراء فحص الاتصال"
+    "port25Unknown": "حالة المنفذ 25 غير معروفة - قم بإجراء فحص الاتصال",
+    "dmarcUnpublished": "DMARC is generated in the panel but not published in public DNS yet"
   },
   "stack": {
     "tlsNote": "شهادات TLS عبر Let’s Encrypt لـ SMTP/IMAP",

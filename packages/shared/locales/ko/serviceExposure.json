@@ -27,5 +27,11 @@
   "restrictedNeedSource": "제한 모드에 대한 IP/CIDR 또는 국가 코드를 하나 이상 추가하세요.",
   "privateStartTitle": "네트워크에 {{service}}를 노출하시겠습니까?",
   "confirmAndStart": "확인하고 시작하세요",
-  "cloudSgNote": "호스트 방화벽만 해당 - 클라우드 보안 그룹(AWS/GCP/Azure)은 변경되지 않습니다."
+  "cloudSgNote": "호스트 방화벽만 해당 - 클라우드 보안 그룹(AWS/GCP/Azure)은 변경되지 않습니다.",
+  "modeUndecided": "Not set",
+  "modeLoading": "Loading",
+  "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
+  "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
+  "roleSmtp": "SMTP submission",
+  "roleImap": "IMAP / POP3 mailbox"
 }

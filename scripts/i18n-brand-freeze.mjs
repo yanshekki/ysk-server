@@ -62,6 +62,7 @@ const REQUIRED_TOKENS = [
   'InnoDB',
   "Let's Encrypt",
   'journalctl',
+  'PM2',
 ];
 
 const FORBIDDEN = [
@@ -71,7 +72,7 @@ const FORBIDDEN = [
   /ダブコット/,
   /パワーDNS/,
   /fail\s+2\s+ban/i,
-  /クロム/,
+  /顆粒物/,
 ];
 
 function locales() {

@@ -27,5 +27,11 @@
   "restrictedNeedSource": "সীমাবদ্ধ মোডের জন্য কমপক্ষে একটি আইপি/সিআইডিআর বা দেশের কোড যোগ করুন।",
   "privateStartTitle": "নেটওয়ার্কে {{service}} প্রকাশ করবেন?",
   "confirmAndStart": "নিশ্চিত করুন এবং শুরু করুন",
-  "cloudSgNote": "শুধুমাত্র হোস্ট ফায়ারওয়াল — ক্লাউড সিকিউরিটি গ্রুপ (AWS/GCP/Azure) পরিবর্তন করা হয় না।"
+  "cloudSgNote": "শুধুমাত্র হোস্ট ফায়ারওয়াল — ক্লাউড সিকিউরিটি গ্রুপ (AWS/GCP/Azure) পরিবর্তন করা হয় না।",
+  "modeUndecided": "Not set",
+  "modeLoading": "Loading",
+  "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
+  "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
+  "roleSmtp": "SMTP submission",
+  "roleImap": "IMAP / POP3 mailbox"
 }

@@ -126,5 +126,6 @@
   "lockSelfHint": "これはサインイン中のアカウントです。ロックアウト防止のため、削除・停止・役割変更はできません。",
   "lockLastAdminHint": "これは最後の管理者です。削除・停止・降格はできません。",
   "demoteAdminTitle": "この管理者を降格しますか？",
-  "demoteAdminDesc": "このユーザーは管理者権限を失います。他の管理者が残っていることを確認してください。"
+  "demoteAdminDesc": "このユーザーは管理者権限を失います。他の管理者が残っていることを確認してください。",
+  "searchPkgPh": "Package name"
 }

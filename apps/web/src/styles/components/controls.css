@@ -360,6 +360,8 @@
 }
 
 .seg-radios__opt {
+  appearance: none;
+  -webkit-appearance: none;
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -367,25 +369,17 @@
   min-width: 2.25rem;
   height: 2.1rem;
   padding: 0 0.65rem;
+  border: 0;
   border-radius: var(--radius-sm);
+  font: inherit;
   font-size: var(--text-sm);
   font-weight: 700;
+  line-height: 1;
   color: var(--text-muted, #64748b);
+  background: transparent;
   cursor: pointer;
   user-select: none;
   transition: background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
-}
-
-.seg-radios__opt input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  border: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
 }
 
 .seg-radios__opt:hover {
@@ -399,12 +393,12 @@
   box-shadow: var(--shadow-sm);
 }
 
-.seg-radios__opt:has(input:focus-visible) {
+.seg-radios__opt:focus-visible {
   outline: 2px solid var(--color-primary, #2563eb);
   outline-offset: 1px;
 }
 
-.seg-radios__opt:has(input:disabled) {
+.seg-radios__opt:disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }

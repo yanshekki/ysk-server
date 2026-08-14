@@ -25,6 +25,40 @@ import { resolveBin, shellBinExists, shellResolveBin } from './software-probe/in
 import { getCachedRuntimeVersionPins } from './version-discovery.js';
 import { withHostMutatingJob } from '../host/host-job.js';
 
+/**
+ * True when a host version string (v24.19.0 / PHP 8.2.12) satisfies a panel pin (24 / 8.2).
+ * Uses component prefix — `19` must NOT match `v24.19.0`.
+ */
+export function versionOutputMatchesPin(output: string, pin: string): boolean {
+  const out = String(output ?? '').trim();
+  const p = String(pin ?? '').trim();
+  if (!out || !p) return false;
+  const rolling = /^(latest|stable|nightly|current)$/i;
+  if (rolling.test(p)) return rolling.test(out) || /\d+\.\d+/.test(out);
+  const hostTok =
+    out
+      .replace(/^go\s+version\s+/i, '')
+      .replace(/\bgo(?=\d)/i, '')
+      .replace(/^v/i, '')
+      .match(/(\d+(?:[.+_-]\d+)*)/)?.[1] ?? '';
+  if (!hostTok) return false;
+  const hostParts = hostTok
+    .split(/[.+_-]/)
+    .map((x) => parseInt(x, 10))
+    .filter((n) => Number.isFinite(n));
+  const pinParts = p
+    .replace(/^v/i, '')
+    .replace(/^go/i, '')
+    .split(/[.+_-]/)
+    .map((x) => parseInt(x, 10))
+    .filter((n) => Number.isFinite(n));
+  if (!hostParts.length || !pinParts.length) return false;
+  for (let i = 0; i < pinParts.length; i++) {
+    if (hostParts[i] !== pinParts[i]) return false;
+  }
+  return true;
+}
+
 export interface RuntimeProbeItem {
   kind: RuntimeKind;
   version: string;
@@ -484,7 +518,7 @@ export async function discoverYskNodeMajors(
     const versionOutput = (ver.stdout || ver.stderr || '').trim().split('\n')[0];
     if (!versionOutput) return;
     // Sanity: major should appear in output (v26.x.x)
-    if (!new RegExp(`v?${major}\\b`).test(versionOutput)) {
+    if (!versionOutputMatchesPin(versionOutput, major)) {
       // still accept if binary lives under that major dir (custom build)
     }
     seen.add(major);
@@ -714,7 +748,7 @@ export async function probeRuntimes(
     nodePins,
     selectNodeRuntime,
     (p) => [p, '-v'],
-    (out, v) => new RegExp(`v?${v}\\b`).test(out),
+    versionOutputMatchesPin,
     hostNode,
   );
 
@@ -748,7 +782,7 @@ export async function probeRuntimes(
     phpPins,
     selectPhpRuntime,
     (p) => [p, '-v'],
-    (out, v) => out.includes(v),
+    versionOutputMatchesPin,
     hostPhp,
   );
 
@@ -758,7 +792,7 @@ export async function probeRuntimes(
     pythonPins,
     selectPythonRuntime,
     (p) => [p, '--version'],
-    (out, v) => out.includes(v),
+    versionOutputMatchesPin,
     hostPython,
   );
 

@@ -3096,7 +3096,8 @@
       "dmarcMissing": "DMARC tidak ada — sangat disarankan",
       "ptrBad": "PTR membalikkan DNS hilang atau salah — permintaan di penyedia VPS",
       "port25Blocked": "Port Keluar 25 tampak diblokir — minta buka blokir atau gunakan relai SMTP",
-      "port25Unknown": "Status port 25 tidak diketahui — jalankan pemeriksaan konektivitas"
+      "port25Unknown": "Status port 25 tidak diketahui — jalankan pemeriksaan konektivitas",
+      "dmarcUnpublished": "DMARC is generated in the panel but not published in public DNS yet"
     },
     "stack": {
       "tlsNote": "Sertifikat TLS melalui Let's Encrypt untuk SMTP/IMAP",
@@ -9045,7 +9046,10 @@
     "plusRegion": "+ wilayah {{v}}",
     "plusCity": "+ kota {{v}}",
     "lastTickPrefix": "· terakhir {{t}}",
-    "nextTickPrefix": "· selanjutnya {{t}}"
+    "nextTickPrefix": "· selanjutnya {{t}}",
+    "stackApply": "Apply protection stack (UFW, fail2ban, preset)",
+    "stackApplyDone": "Protection stack apply requested",
+    "stackApplyHint": "This enables UFW and applies fail2ban plus the suggested preset. Confirm you will not lock yourself out of a remote panel."
   },
   "publicFiles": {
     "notSet": "Tidak disetel",
@@ -9885,7 +9889,9 @@
     "path": "Jalur",
     "fullVersion": "Versi lengkap",
     "useListForDefaults": "Untuk mengubah default host atau panel, atau menghapus versi ini, gunakan daftar di atas.",
-    "alreadyHostDefaultShort": "Default tuan rumah"
+    "alreadyHostDefaultShort": "Default tuan rumah",
+    "managedPathMissingTitle": "Managed {{name}} path not ready",
+    "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall."
   },
   "search": {
     "placeholder": "Telusuri halaman & sumber daya…",
@@ -10336,7 +10342,13 @@
     "restrictedNeedSource": "Tambahkan setidaknya satu IP/CIDR atau kode negara untuk mode terbatas.",
     "privateStartTitle": "Paparkan {{service}} di jaringan?",
     "confirmAndStart": "Konfirmasikan dan mulai",
-    "cloudSgNote": "Hanya firewall host — grup keamanan cloud (AWS/GCP/Azure) tidak diubah."
+    "cloudSgNote": "Hanya firewall host — grup keamanan cloud (AWS/GCP/Azure) tidak diubah.",
+    "modeUndecided": "Not set",
+    "modeLoading": "Loading",
+    "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
+    "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
+    "roleSmtp": "SMTP submission",
+    "roleImap": "IMAP / POP3 mailbox"
   },
   "services": {
     "enabledBoot": "Saat boot",
@@ -11694,7 +11706,8 @@
     "lockSelfHint": "Ini akun yang sedang masuk. Hapus, tangguhkan, dan ubah peran diblokir agar tidak terkunci.",
     "lockLastAdminHint": "Ini admin terakhir. Hapus, tangguhkan, dan penurunan diblokir.",
     "demoteAdminTitle": "Turunkan admin ini?",
-    "demoteAdminDesc": "Pengguna ini akan kehilangan akses admin penuh. Pastikan masih ada admin lain."
+    "demoteAdminDesc": "Pengguna ini akan kehilangan akses admin penuh. Pastikan masih ada admin lain.",
+    "searchPkgPh": "Package name"
   },
   "vnc": {
     "pageDesc": "Server & klien VNC",

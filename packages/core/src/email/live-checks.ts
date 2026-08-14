@@ -8,6 +8,14 @@ import { tl, type EmailHealthReport } from 'ysk-server-shared';
 import { scoreEmailHealth } from './dns-records.js';
 import { checkIpDnsbl, type DnsblReport } from './dnsbl.js';
 
+function dnsLookupDetail(e: unknown, unpublished: string): string {
+  const code = e && typeof e === 'object' && 'code' in e ? String((e as { code?: string }).code) : '';
+  if (code === 'ENODATA' || code === 'ENOTFOUND' || code === 'ETIMEOUT') return unpublished;
+  const msg = e instanceof Error ? e.message : '';
+  if (/ENODATA|ENOTFOUND|queryMx|queryTxt/i.test(msg)) return unpublished;
+  return msg || unpublished;
+}
+
 export interface LiveCheckResult {
   mx: { ok: boolean; detail: string };
   spf: { ok: boolean; detail: string };
@@ -55,7 +63,7 @@ export async function runLiveEmailChecks(input: {
     mxOk = mx.length > 0;
     mxDetail = mx.map((m) => `${m.priority} ${m.exchange}`).join(', ') || tl('email.live.noMx');
   } catch (e) {
-    mxDetail = e instanceof Error ? e.message : tl('email.live.mxLookupFailed');
+    mxDetail = dnsLookupDetail(e, tl('email.live.noMx'));
   }
 
   let spfOk = false;
@@ -67,7 +75,7 @@ export async function runLiveEmailChecks(input: {
     spfOk = Boolean(spf);
     spfDetail = spf ?? tl('email.live.noSpf');
   } catch (e) {
-    spfDetail = e instanceof Error ? e.message : tl('email.live.spfLookupFailed');
+    spfDetail = dnsLookupDetail(e, tl('email.live.noSpf'));
   }
 
   let dkimOk = false;
@@ -80,7 +88,7 @@ export async function runLiveEmailChecks(input: {
     dkimOk = Boolean(dkim);
     dkimDetail = dkim ? dkim.slice(0, 80) + '…' : tl('email.live.noDkim');
   } catch (e) {
-    dkimDetail = e instanceof Error ? e.message : tl('email.live.dkimLookupFailed');
+    dkimDetail = dnsLookupDetail(e, tl('email.live.noDkim'));
   }
 
   let dmarcOk = false;
@@ -92,7 +100,7 @@ export async function runLiveEmailChecks(input: {
     dmarcOk = Boolean(dmarc);
     dmarcDetail = dmarc ?? tl('email.live.noDmarc');
   } catch (e) {
-    dmarcDetail = e instanceof Error ? e.message : tl('email.live.dmarcLookupFailed');
+    dmarcDetail = dnsLookupDetail(e, tl('email.live.noDmarc'));
   }
 
   let ptrOk = false;

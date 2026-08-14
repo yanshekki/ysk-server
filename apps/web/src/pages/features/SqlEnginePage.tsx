@@ -27,6 +27,7 @@ import {
   CheckboxField,
   SegRadio,
   ServerListFilters,
+  SoftwareInstallBanner,
   buttonClassName } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
@@ -269,13 +270,13 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             value: st.text,
             tone: st.tone === 'neutral' ? 'neutral' : st.tone },
           {
-            label: 'EXECUTE',
+            label: t('dashboard.executeLabel'),
             value: svc?.executeEnabled ? t('common.on') : t('common.off'),
             tone: svc?.executeEnabled ? 'ok' : 'warn' },
           { label: t('common.database'), value: dbs.items.length },
           { label: t('common.user'), value: users.items.length },
           {
-            label: 'Root',
+            label: t('roles.admin'),
             value: svc?.isRoot ? t('common.yes') : t('common.no'),
             tone: svc?.isRoot ? 'ok' : 'warn' },
           {
@@ -400,6 +401,12 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
     >
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
       {error ? <Alert variant="error">{error}</Alert> : null}
+      {!installed ? (
+        <SoftwareInstallBanner
+          feature={engine === 'mariadb' ? 'mariadb' : 'mysql'}
+          title={t('db.installBannerHint', { engine: title })}
+        />
+      ) : null}
       <Card>
         <CardSection title={t('db.serviceOverview')} description={t('db.readonlyStatus')}>
           <DescriptionList

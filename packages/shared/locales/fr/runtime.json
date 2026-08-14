@@ -508,5 +508,7 @@
   "path": "Chemin",
   "fullVersion": "Version complète",
   "useListForDefaults": "Pour modifier la valeur par défaut de l'hôte ou du panneau, ou supprimer cette version, utilisez la liste ci-dessus.",
-  "alreadyHostDefaultShort": "Défaut de l'hôte"
+  "alreadyHostDefaultShort": "Défaut de l'hôte",
+  "managedPathMissingTitle": "Managed {{name}} path not ready",
+  "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall."
 }

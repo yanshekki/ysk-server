@@ -54,7 +54,7 @@
   "pageOf": "第 {{page}} / {{total}} 頁 · 共 {{count}}",
   "projectConfEmpty": "（設定檔空白）",
   "projectConfReadFail": "讀取專案 conf 失敗",
-  "projectPreviewPath": "{{小路}}",
+  "projectPreviewPath": "{{path}}",
   "pageDesc": "Nginx 站點",
   "filterSource": "來源",
   "sourceAll": "全部",

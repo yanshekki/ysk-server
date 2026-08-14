@@ -508,5 +508,7 @@
   "path": "طريق",
   "fullVersion": "النسخة الكاملة",
   "useListForDefaults": "لتغيير المضيف أو اللوحة الافتراضية، أو إزالة هذا الإصدار، استخدم القائمة أعلاه.",
-  "alreadyHostDefaultShort": "المضيف الافتراضي"
+  "alreadyHostDefaultShort": "المضيف الافتراضي",
+  "managedPathMissingTitle": "Managed {{name}} path not ready",
+  "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall."
 }

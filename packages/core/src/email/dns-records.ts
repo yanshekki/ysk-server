@@ -210,7 +210,7 @@ export function scoreEmailHealth(input: {
   if (input.dmarcPresent) {
     score += 15;
   } else {
-    messages.push(tl('email.health.dmarcMissing'));
+    messages.push(tl('email.health.dmarcUnpublished'));
   }
   // PTR 25
   if (input.ptrOk) {

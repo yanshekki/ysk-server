@@ -524,7 +524,7 @@
   "railBun": "Bun 進程",
   "deployProcessManager": "進程管理",
   "deployProcessManagerSystemd": "systemd（推薦）",
-  "deployProcessManagerPm2": "顆粒物",
+  "deployProcessManagerPm2": "PM2",
   "proc_restart": "重啟",
   "proc_stop": "停止",
   "proc_reload": "重新載入",

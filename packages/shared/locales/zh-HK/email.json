@@ -314,6 +314,7 @@
   "health": {
     "dnsUnconfirmed": "DNS 記錄（MX／SPF／DKIM）尚未確認",
     "dmarcMissing": "缺少 DMARC — 強烈建議設定",
+    "dmarcUnpublished": "DMARC 記錄已在面板產生，但公網尚未解析到",
     "ptrBad": "PTR 反向 DNS 缺失或不正確 — 請向 VPS 供應商申請",
     "port25Blocked": "外送 埠 25 似乎被封鎖 — 請申請解封或改用 SMTP 中繼",
     "port25Unknown": "埠 25 狀態未知 — 請執行連通性檢查"

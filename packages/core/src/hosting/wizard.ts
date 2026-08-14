@@ -146,10 +146,23 @@ export async function runCreateWizard(input: {
           .slice(0, 32) || 'app';
       if (!input.db.snapshot.mysql_databases) input.db.snapshot.mysql_databases = [];
       const id = randomUUID();
+      let engine: 'mysql' | 'mariadb' = 'mysql';
+      try {
+        const { probeDbEngine } = await import('./db-engine.js');
+        const [maria, mysql] = await Promise.all([
+          probeDbEngine(input.host, 'mariadb'),
+          probeDbEngine(input.host, 'mysql'),
+        ]);
+        if (maria.serverInstalled && !mysql.serverInstalled) engine = 'mariadb';
+        else if (mysql.blockedByExclusive === 'mariadb-server') engine = 'mariadb';
+        else if (maria.active === 'active' && mysql.active !== 'active') engine = 'mariadb';
+      } catch {
+        /* default mysql */
+      }
       input.db.snapshot.mysql_databases.unshift({
         id,
         name,
-        engine: 'mysql',
+        engine,
         apply_status: 'draft',
         projectId,
         created_at: new Date().toISOString(),

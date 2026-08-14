@@ -1850,7 +1850,7 @@ export function ProtectionPage() {
                       }, t('protection.stackApplyDone', { defaultValue: 'Defense stack apply requested' }))
                     }
                   >
-                    {t('protection.stackApply', { defaultValue: 'Apply stack (UFW+f2b+preset)' })}
+                    {t('protection.stackApply')}
                   </Button>
                 </ActionBar>
               }

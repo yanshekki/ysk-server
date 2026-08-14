@@ -3,7 +3,7 @@
   "result": "VNC 操作结果",
   "installed": "已安装",
   "notInstalled": "未安装",
-  "stackBins": "{{垃圾箱}}",
+  "stackBins": "{{bins}}",
   "stackMissing": "未装",
   "executeOn": "YSK_EXECUTE 已开",
   "executeOff": "YSK_EXECUTE 未开",

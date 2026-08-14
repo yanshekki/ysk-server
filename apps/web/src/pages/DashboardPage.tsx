@@ -29,7 +29,7 @@ import {
   CheckboxField,
   SegRadio,
   buttonClassName } from '../shared/components/ui';
-import { allFeatureTiles } from '../shared/nav/features';
+import { FEATURE_SECTIONS } from '../shared/nav/features';
 import { api } from '../shared/services/api';
 import { toast } from '../shared/stores/toast-store';
 import { usePageTab } from '../shared/hooks/usePageTab';
@@ -128,9 +128,7 @@ export function DashboardPage() {
   const [wizRuntimeVersion, setWizRuntimeVersion] = useState(() =>
     defaultRuntimeInstallVersion('node'),
   );
-  const [wizVersionChoices, setWizVersionChoices] = useState<string[]>(() =>
-    runtimeVersionChoices('node'),
-  );
+  const [wizVersionChoices, setWizVersionChoices] = useState<string[]>([]);
   const [wizDns, setWizDns] = useState(true);
   const [wizMail, setWizMail] = useState(true);
   const [wizDb, setWizDb] = useState(false);
@@ -224,24 +222,23 @@ export function DashboardPage() {
     };
   }, [tab, wizRuntime]);
 
-  const tiles = useMemo(() => {
-    return allFeatureTiles()
-      .filter((i) => !['systemIndex'].includes(i.key))
-      .slice(0, 16)
-      .map((i) => ({
-        ...i,
-        title: t(`nav.${i.key}`, { defaultValue: i.key }),
-        description: t(`features.desc.${i.key}`, { defaultValue: '' }),
-        badge: badgeForKey(i.key, software, {
-          executeEnabled,
-          productionReady: readiness?.productionReady }, t) }));
+  const featureGroups = useMemo(() => {
+    return FEATURE_SECTIONS.filter((s) => s.sectionKey !== 'overview').map((s) => ({
+      sectionKey: s.sectionKey,
+      title: t(`nav.sections.${s.sectionKey}`, { defaultValue: s.sectionKey }),
+      items: s.items
+        .filter((i) => !['systemIndex'].includes(i.key) && i.to !== '/')
+        .map((i) => ({
+          ...i,
+          title: t(`nav.${i.key}`, { defaultValue: i.key }),
+          description: t(`features.desc.${i.key}`, { defaultValue: '' }),
+          badge: badgeForKey(i.key, software, {
+            executeEnabled,
+            productionReady: readiness?.productionReady }, t) })),
+    })).filter((g) => g.items.length > 0);
   }, [t, software, executeEnabled, readiness?.productionReady]);
 
-  const notifBadge =
-    notifications.length +
-    (applyAudit && (applyAudit.summary.bad > 0 || applyAudit.summary.warn > 0)
-      ? applyAudit.findings.length
-      : 0);
+  const notifBadge = notifications.length;
 
   return (
     <FeaturePageLayout
@@ -780,12 +777,7 @@ export function DashboardPage() {
                         onChange={(v) => {
                           const next = v as typeof wizRuntime;
                           setWizRuntime(next);
-                          const choices = runtimeVersionChoices(next);
-                          const def = defaultRuntimeInstallVersion(next);
-                          setWizVersionChoices(choices);
-                          setWizRuntimeVersion(
-                            choices.includes(def) ? def : choices[0] ?? '',
-                          );
+                          setWizVersionChoices([]);
                         }}
                         options={[
                           { value: 'node', label: 'Node' },
@@ -800,6 +792,9 @@ export function DashboardPage() {
                         ]}
                       />
                     </Field>
+                    {tab === 'wizard' && wizRuntime !== 'static' && wizVersionChoices.length === 0 ? (
+                      <p className="muted u-text-sm">{t('common.loading')}</p>
+                    ) : null}
                     {wizVersionChoices.length > 0 ? (
                       <Field
                         label={t('common.version')}
@@ -1008,7 +1003,12 @@ export function DashboardPage() {
 {t('dashboard.featuresHint')}
               </p>
             </div>
-            <FeatureIconGrid items={tiles} />
+            {featureGroups.map((g) => (
+              <div key={g.sectionKey} className="u-mb-5">
+                <h3 className="section-title">{g.title}</h3>
+                <FeatureIconGrid items={g.items} />
+              </div>
+            ))}
           </div>
         ) : null}
       

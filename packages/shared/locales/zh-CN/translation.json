@@ -2199,7 +2199,7 @@
     "criticalCount": " · 严重 {{count}}",
     "warnCount": " · 警告 {{count}}",
     "applyAuditBadge": "套用 audit · ok {{ok}} · warn {{warn}} · bad {{bad}}",
-    "executeBadge": "执行{{状态}}",
+    "executeBadge": "系统变更 {{state}}",
     "executeLabel": "系统变更",
     "go": "前往",
     "open": "打开",
@@ -3096,7 +3096,8 @@
       "dmarcMissing": "缺少 DMARC — 强烈建议设置",
       "ptrBad": "PTR 反向 DNS 缺失或不正确 — 请向 VPS 供应商申请",
       "port25Blocked": "外发 Port 25 似乎被封锁 — 请申请解封或改用 SMTP 中继",
-      "port25Unknown": "Port 25 状态未知 — 请执行连通性检查"
+      "port25Unknown": "Port 25 状态未知 — 请执行连通性检查",
+      "dmarcUnpublished": "DMARC 記錄已在面板產生，但公網尚未解析到"
     },
     "stack": {
       "tlsNote": "SMTP／IMAP 用 Let’s Encrypt TLS 证书",
@@ -4966,7 +4967,7 @@
     "pageOf": "第 {{page}} / {{total}} 页 · 共 {{count}}",
     "projectConfEmpty": "（配置文件为空）",
     "projectConfReadFail": "读取项目 conf 失败",
-    "projectPreviewPath": "{{小路}}",
+    "projectPreviewPath": "{{path}}",
     "pageDesc": "Nginx 站点",
     "filterSource": "来源",
     "sourceAll": "全部",
@@ -9045,7 +9046,10 @@
     "plusRegion": "+ 省 {{v}}",
     "plusCity": "+ 城市 {{v}}",
     "lastTickPrefix": "· 上次 {{t}}",
-    "nextTickPrefix": "· 下轮 {{t}}"
+    "nextTickPrefix": "· 下轮 {{t}}",
+    "stackApply": "套用防護組合（UFW、fail2ban、建議檔）",
+    "stackApplyDone": "已要求套用防護組合",
+    "stackApplyHint": "會啟用 UFW 並套用 fail2ban 與建議防護檔。遠端面板請先確認不會把自己鎖在外面。"
   },
   "publicFiles": {
     "notSet": "未设置",
@@ -9885,7 +9889,9 @@
     "path": "路径",
     "fullVersion": "完整版本",
     "useListForDefaults": "要改主机／面板默认或移除此版本，请用上方列表。",
-    "alreadyHostDefaultShort": "主机默认"
+    "alreadyHostDefaultShort": "主机默认",
+    "managedPathMissingTitle": "受管 {{name}} 路徑未就緒",
+    "managedPathMissing": "版本 {{version}} 的 YSK 受管 {{name}} 尚未就緒。請重新探測或重新安裝。"
   },
   "search": {
     "placeholder": "搜索页面与资源…",
@@ -10336,7 +10342,13 @@
     "restrictedNeedSource": "受限模式请至少加入 IP／网段或国家代码。",
     "privateStartTitle": "要对外开放 {{service}} 吗？",
     "confirmAndStart": "确认并启动",
-    "cloudSgNote": "仅主机防火墙 — 不会改云安全组（AWS／GCP／Azure）。"
+    "cloudSgNote": "仅主机防火墙 — 不会改云安全组（AWS／GCP／Azure）。",
+    "modeUndecided": "尚未設定",
+    "modeLoading": "載入中",
+    "summaryUndecided": "尚未確認存取模式（目錄建議：{{suggested}}）。",
+    "summaryNotEnforced": "防火牆未啟用，面板未強制開放或封鎖此埠。",
+    "roleSmtp": "SMTP 提交",
+    "roleImap": "IMAP／POP3 收件"
   },
   "services": {
     "enabledBoot": "自启",
@@ -10472,7 +10484,7 @@
       "partial": "部分成功",
       "partialTitle": "部分更新失败",
       "failedTitle": "{{label}} 更新失败",
-      "progressDetail": "{{从}} → {{到}}",
+      "progressDetail": "{{from}} → {{to}}",
       "confirmBodyMulti": "将更新 {{label}}：{{list}}"
     },
     "version": {
@@ -11694,14 +11706,15 @@
     "lockSelfHint": "这是目前登入的帐户。已禁止删除、暂停及更改角色，以免无法登入。",
     "lockLastAdminHint": "这是最后一个管理员。已禁止删除、暂停及降级。",
     "demoteAdminTitle": "降级此管理员？",
-    "demoteAdminDesc": "此用户将失去完整管理员权限。请确认仍有其他管理员。"
+    "demoteAdminDesc": "此用户将失去完整管理员权限。请确认仍有其他管理员。",
+    "searchPkgPh": "方案名稱"
   },
   "vnc": {
     "pageDesc": "VNC 服务器／客户端",
     "result": "VNC 操作结果",
     "installed": "已安装",
     "notInstalled": "未安装",
-    "stackBins": "{{垃圾箱}}",
+    "stackBins": "{{bins}}",
     "stackMissing": "未装",
     "executeOn": "YSK_EXECUTE 已开",
     "executeOff": "YSK_EXECUTE 未开",

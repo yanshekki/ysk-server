@@ -99,15 +99,24 @@ export function PublicFilesPage() {
           <Link to="/nginx" className={buttonClassName({ variant: 'secondary', size: 'sm' })}>
             Nginx
           </Link>
-          {serverName ? (
+          {serverName && status?.likelyLive ? (
             <a
-              href={`http://${serverName}/`}
+              href={`https://${serverName}/`}
               target="_blank"
               rel="noreferrer"
               className={buttonClassName({ variant: 'secondary', size: 'sm' })}
             >
               {t('publicFiles.openSite')}
             </a>
+          ) : serverName ? (
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled
+              title={t('publicFiles.notLiveHint')}
+            >
+              {t('publicFiles.openSite')}
+            </Button>
           ) : null}
         </>
       }

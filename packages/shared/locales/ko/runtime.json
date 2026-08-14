@@ -508,5 +508,7 @@
   "path": "길",
   "fullVersion": "정식 버전",
   "useListForDefaults": "호스트 또는 패널 기본값을 변경하거나 이 버전을 제거하려면 위 목록을 사용하십시오.",
-  "alreadyHostDefaultShort": "호스트 기본값"
+  "alreadyHostDefaultShort": "호스트 기본값",
+  "managedPathMissingTitle": "Managed {{name}} path not ready",
+  "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall."
 }

@@ -111,9 +111,8 @@ export function ProjectCreateModal({
   const [serverIpv6, setServerIpv6] = useState('');
   const [templates, setTemplates] = useState<AppTemplateItem[]>(HELLO_TEMPLATES);
 
-  const [versionChoices, setVersionChoices] = useState<string[]>(() =>
-    runtimeVersionChoices('node'),
-  );
+  const [versionChoices, setVersionChoices] = useState<string[]>([]);
+  const [versionsLoading, setVersionsLoading] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -142,14 +141,16 @@ export function ProjectCreateModal({
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
+    setVersionsLoading(true);
+    setVersionChoices([]);
     void fetchRuntimeVersionChoices(runtime).then((r) => {
       if (cancelled) return;
-      if (r.choices.length) {
-        setVersionChoices(r.choices);
-        setRuntimeVersion((prev) =>
-          r.choices.includes(prev) ? prev : r.latest || r.choices[0] || prev,
-        );
-      }
+      const choices = r.choices.length ? r.choices : runtimeVersionChoices(runtime);
+      setVersionChoices(choices);
+      setRuntimeVersion((prev) =>
+        choices.includes(prev) ? prev : r.latest || choices[0] || prev,
+      );
+      setVersionsLoading(false);
     });
     return () => {
       cancelled = true;
@@ -163,7 +164,8 @@ export function ProjectCreateModal({
       setAliases('');
       setRuntime('node');
       setRuntimeVersion(defaultRuntimeInstallVersion('node'));
-      setVersionChoices(runtimeVersionChoices('node'));
+      setVersionChoices([]);
+      setVersionsLoading(false);
       setTemplateId(helloTemplateId('node'));
       setGoLive(true);
       setPreferredPort('');
@@ -193,11 +195,13 @@ export function ProjectCreateModal({
 
   function applyRuntime(next: ProjectRuntime) {
     setRuntime(next);
-    setVersionChoices(runtimeVersionChoices(next));
+    setVersionChoices([]);
+    setVersionsLoading(true);
     void fetchRuntimeVersionChoices(next).then((r) => {
       const choices = r.choices.length ? r.choices : runtimeVersionChoices(next);
       setVersionChoices(choices);
       setRuntimeVersion(r.latest || choices[0] || defaultRuntimeInstallVersion(next));
+      setVersionsLoading(false);
     });
     // Always offer / preselect Hello World for the chosen runtime (incl. PHP)
     const match =
@@ -331,6 +335,9 @@ export function ProjectCreateModal({
               ]}
             />
           </Field>
+          {versionsLoading && versionChoices.length === 0 ? (
+            <p className="muted u-text-sm">{t('common.loading')}</p>
+          ) : null}
           {versionChoices.length > 0 ? (
             <Field
               label={t('common.version')}

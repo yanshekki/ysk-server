@@ -3096,7 +3096,8 @@
       "dmarcMissing": "DMARC غائب ہے — سختی سے تجویز کردہ",
       "ptrBad": "PTR ریورس DNS غائب یا غلط — VPS فراہم کنندہ سے درخواست کریں۔",
       "port25Blocked": "آؤٹ باؤنڈ پورٹ 25 بلاک نظر آتا ہے — ان بلاک کرنے کی درخواست کریں یا SMTP ریلے استعمال کریں۔",
-      "port25Unknown": "پورٹ 25 اسٹیٹس نامعلوم — کنیکٹیویٹی چیک چلائیں۔"
+      "port25Unknown": "پورٹ 25 اسٹیٹس نامعلوم — کنیکٹیویٹی چیک چلائیں۔",
+      "dmarcUnpublished": "DMARC is generated in the panel but not published in public DNS yet"
     },
     "stack": {
       "tlsNote": "SMTP/IMAP کے لیے Let's Encrypt کے ذریعے TLS سرٹیفکیٹ",
@@ -9045,7 +9046,10 @@
     "plusRegion": "+ علاقہ {{v}}",
     "plusCity": "+ شہر {{v}}",
     "lastTickPrefix": "· آخری {{t}}",
-    "nextTickPrefix": "· اگلا {{t}}"
+    "nextTickPrefix": "· اگلا {{t}}",
+    "stackApply": "Apply protection stack (UFW, fail2ban, preset)",
+    "stackApplyDone": "Protection stack apply requested",
+    "stackApplyHint": "This enables UFW and applies fail2ban plus the suggested preset. Confirm you will not lock yourself out of a remote panel."
   },
   "publicFiles": {
     "notSet": "سیٹ نہیں ہے۔",
@@ -9885,7 +9889,9 @@
     "path": "راستہ",
     "fullVersion": "مکمل ورژن",
     "useListForDefaults": "میزبان یا پینل ڈیفالٹ کو تبدیل کرنے، یا اس ورژن کو ہٹانے کے لیے، اوپر دی گئی فہرست کا استعمال کریں۔",
-    "alreadyHostDefaultShort": "میزبان ڈیفالٹ"
+    "alreadyHostDefaultShort": "میزبان ڈیفالٹ",
+    "managedPathMissingTitle": "Managed {{name}} path not ready",
+    "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall."
   },
   "search": {
     "placeholder": "صفحات اور وسائل تلاش کریں…",
@@ -10336,7 +10342,13 @@
     "restrictedNeedSource": "محدود موڈ کے لیے کم از کم ایک IP/CIDR یا کنٹری کوڈ شامل کریں۔",
     "privateStartTitle": "نیٹ ورک پر {{service}} کو بے نقاب کریں؟",
     "confirmAndStart": "تصدیق کریں اور شروع کریں۔",
-    "cloudSgNote": "صرف میزبان فائر وال — کلاؤڈ سیکیورٹی گروپس (AWS/GCP/Azure) کو تبدیل نہیں کیا گیا ہے۔"
+    "cloudSgNote": "صرف میزبان فائر وال — کلاؤڈ سیکیورٹی گروپس (AWS/GCP/Azure) کو تبدیل نہیں کیا گیا ہے۔",
+    "modeUndecided": "Not set",
+    "modeLoading": "Loading",
+    "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
+    "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
+    "roleSmtp": "SMTP submission",
+    "roleImap": "IMAP / POP3 mailbox"
   },
   "services": {
     "enabledBoot": "بوٹ پر",
@@ -11694,7 +11706,8 @@
     "lockSelfHint": "یہ سائن ان اکاؤنٹ ہے۔ لاک آؤٹ روکنے کے لیے حذف، معطلی اور کردار تبدیل مسدود ہیں۔",
     "lockLastAdminHint": "یہ آخری ایڈمن ہے۔ حذف، معطلی اور تنزیل مسدود ہیں۔",
     "demoteAdminTitle": "اس ایڈمن کو تنزیل دیں؟",
-    "demoteAdminDesc": "یہ صارف مکمل ایڈمن رسائی کھو دے گا۔ تصدیق کریں کہ دوسرا ایڈمن باقی ہے۔"
+    "demoteAdminDesc": "یہ صارف مکمل ایڈمن رسائی کھو دے گا۔ تصدیق کریں کہ دوسرا ایڈمن باقی ہے۔",
+    "searchPkgPh": "Package name"
   },
   "vnc": {
     "pageDesc": "VNC سرور اور کلائنٹ",

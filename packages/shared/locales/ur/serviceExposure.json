@@ -27,5 +27,11 @@
   "restrictedNeedSource": "محدود موڈ کے لیے کم از کم ایک IP/CIDR یا کنٹری کوڈ شامل کریں۔",
   "privateStartTitle": "نیٹ ورک پر {{service}} کو بے نقاب کریں؟",
   "confirmAndStart": "تصدیق کریں اور شروع کریں۔",
-  "cloudSgNote": "صرف میزبان فائر وال — کلاؤڈ سیکیورٹی گروپس (AWS/GCP/Azure) کو تبدیل نہیں کیا گیا ہے۔"
+  "cloudSgNote": "صرف میزبان فائر وال — کلاؤڈ سیکیورٹی گروپس (AWS/GCP/Azure) کو تبدیل نہیں کیا گیا ہے۔",
+  "modeUndecided": "Not set",
+  "modeLoading": "Loading",
+  "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
+  "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
+  "roleSmtp": "SMTP submission",
+  "roleImap": "IMAP / POP3 mailbox"
 }

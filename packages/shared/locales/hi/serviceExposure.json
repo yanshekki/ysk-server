@@ -27,5 +27,11 @@
   "restrictedNeedSource": "प्रतिबंधित मोड के लिए कम से कम एक आईपी/सीआईडीआर या देश कोड जोड़ें।",
   "privateStartTitle": "नेटवर्क पर {{service}} का पर्दाफाश करें?",
   "confirmAndStart": "पुष्टि करें और प्रारंभ करें",
-  "cloudSgNote": "केवल होस्ट फ़ायरवॉल - क्लाउड सुरक्षा समूह (AWS/GCP/Azure) नहीं बदले गए हैं।"
+  "cloudSgNote": "केवल होस्ट फ़ायरवॉल - क्लाउड सुरक्षा समूह (AWS/GCP/Azure) नहीं बदले गए हैं।",
+  "modeUndecided": "Not set",
+  "modeLoading": "Loading",
+  "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
+  "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
+  "roleSmtp": "SMTP submission",
+  "roleImap": "IMAP / POP3 mailbox"
 }

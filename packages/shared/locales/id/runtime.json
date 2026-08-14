@@ -508,5 +508,7 @@
   "path": "Jalur",
   "fullVersion": "Versi lengkap",
   "useListForDefaults": "Untuk mengubah default host atau panel, atau menghapus versi ini, gunakan daftar di atas.",
-  "alreadyHostDefaultShort": "Default tuan rumah"
+  "alreadyHostDefaultShort": "Default tuan rumah",
+  "managedPathMissingTitle": "Managed {{name}} path not ready",
+  "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall."
 }

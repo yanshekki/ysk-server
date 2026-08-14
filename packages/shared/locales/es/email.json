@@ -316,7 +316,8 @@
     "dmarcMissing": "Falta DMARC: muy recomendable",
     "ptrBad": "Falta el DNS inverso de PTR o es incorrecto: solicitud al proveedor de VPS",
     "port25Blocked": "El puerto de salida 25 aparece bloqueado: solicite desbloquearlo o utilice la retransmisión SMTP",
-    "port25Unknown": "Estado del puerto 25 desconocido: ejecute la verificación de conectividad"
+    "port25Unknown": "Estado del puerto 25 desconocido: ejecute la verificación de conectividad",
+    "dmarcUnpublished": "DMARC is generated in the panel but not published in public DNS yet"
   },
   "stack": {
     "tlsNote": "Certificados TLS a través de Let's Encrypt para SMTP/IMAP",

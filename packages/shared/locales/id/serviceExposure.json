@@ -27,5 +27,11 @@
   "restrictedNeedSource": "Tambahkan setidaknya satu IP/CIDR atau kode negara untuk mode terbatas.",
   "privateStartTitle": "Paparkan {{service}} di jaringan?",
   "confirmAndStart": "Konfirmasikan dan mulai",
-  "cloudSgNote": "Hanya firewall host — grup keamanan cloud (AWS/GCP/Azure) tidak diubah."
+  "cloudSgNote": "Hanya firewall host — grup keamanan cloud (AWS/GCP/Azure) tidak diubah.",
+  "modeUndecided": "Not set",
+  "modeLoading": "Loading",
+  "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
+  "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
+  "roleSmtp": "SMTP submission",
+  "roleImap": "IMAP / POP3 mailbox"
 }

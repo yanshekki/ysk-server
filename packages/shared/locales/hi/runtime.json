@@ -508,5 +508,7 @@
   "path": "पथ",
   "fullVersion": "पूर्ण संस्करण",
   "useListForDefaults": "होस्ट या पैनल डिफ़ॉल्ट को बदलने या इस संस्करण को हटाने के लिए, ऊपर दी गई सूची का उपयोग करें।",
-  "alreadyHostDefaultShort": "होस्ट डिफ़ॉल्ट"
+  "alreadyHostDefaultShort": "होस्ट डिफ़ॉल्ट",
+  "managedPathMissingTitle": "Managed {{name}} path not ready",
+  "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall."
 }

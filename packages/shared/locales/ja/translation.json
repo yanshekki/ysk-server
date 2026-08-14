@@ -3096,7 +3096,8 @@
       "dmarcMissing": "DMARC が欠落しています - 強く推奨されます",
       "ptrBad": "PTR 逆引き DNS が見つからないか正しくありません - VPS プロバイダーでリクエストしてください",
       "port25Blocked": "送信ポート 25 がブロックされているようです — ブロック解除を要求するか、SMTP リレーを使用してください",
-      "port25Unknown": "ポート 25 のステータスが不明です - 接続チェックを実行します"
+      "port25Unknown": "ポート 25 のステータスが不明です - 接続チェックを実行します",
+      "dmarcUnpublished": "DMARC is generated in the panel but not published in public DNS yet"
     },
     "stack": {
       "tlsNote": "SMTP/IMAP の Let’s Encrypt による TLS 証明書",
@@ -9045,7 +9046,10 @@
     "plusRegion": "+ 地域 {{v}}",
     "plusCity": "+ 都市 {{v}}",
     "lastTickPrefix": "· 最後 {{t}}",
-    "nextTickPrefix": "· 次へ {{t}}"
+    "nextTickPrefix": "· 次へ {{t}}",
+    "stackApply": "Apply protection stack (UFW, fail2ban, preset)",
+    "stackApplyDone": "Protection stack apply requested",
+    "stackApplyHint": "This enables UFW and applies fail2ban plus the suggested preset. Confirm you will not lock yourself out of a remote panel."
   },
   "publicFiles": {
     "notSet": "未設定",
@@ -9885,7 +9889,9 @@
     "path": "パス",
     "fullVersion": "フルバージョン",
     "useListForDefaults": "ホストまたはパネルのデフォルトを変更するか、このバージョンを削除するには、上記のリストを使用してください。",
-    "alreadyHostDefaultShort": "ホストのデフォルト"
+    "alreadyHostDefaultShort": "ホストのデフォルト",
+    "managedPathMissingTitle": "Managed {{name}} path not ready",
+    "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall."
   },
   "search": {
     "placeholder": "ページとリソースを検索…",
@@ -10336,7 +10342,13 @@
     "restrictedNeedSource": "制限付きモードの場合は、少なくとも 1 つの IP/CIDR または国コードを追加します。",
     "privateStartTitle": "{{service}}をネットワーク上に公開しますか?",
     "confirmAndStart": "確認して開始",
-    "cloudSgNote": "ホスト ファイアウォールのみ - クラウド セキュリティ グループ (AWS/GCP/Azure) は変更されません。"
+    "cloudSgNote": "ホスト ファイアウォールのみ - クラウド セキュリティ グループ (AWS/GCP/Azure) は変更されません。",
+    "modeUndecided": "Not set",
+    "modeLoading": "Loading",
+    "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
+    "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
+    "roleSmtp": "SMTP submission",
+    "roleImap": "IMAP / POP3 mailbox"
   },
   "services": {
     "enabledBoot": "起動時",
@@ -11694,7 +11706,8 @@
     "lockSelfHint": "これはサインイン中のアカウントです。ロックアウト防止のため、削除・停止・役割変更はできません。",
     "lockLastAdminHint": "これは最後の管理者です。削除・停止・降格はできません。",
     "demoteAdminTitle": "この管理者を降格しますか？",
-    "demoteAdminDesc": "このユーザーは管理者権限を失います。他の管理者が残っていることを確認してください。"
+    "demoteAdminDesc": "このユーザーは管理者権限を失います。他の管理者が残っていることを確認してください。",
+    "searchPkgPh": "Package name"
   },
   "vnc": {
     "pageDesc": "VNCサーバーとクライアント",

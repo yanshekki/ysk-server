@@ -126,5 +126,6 @@
   "lockSelfHint": "Ini akun yang sedang masuk. Hapus, tangguhkan, dan ubah peran diblokir agar tidak terkunci.",
   "lockLastAdminHint": "Ini admin terakhir. Hapus, tangguhkan, dan penurunan diblokir.",
   "demoteAdminTitle": "Turunkan admin ini?",
-  "demoteAdminDesc": "Pengguna ini akan kehilangan akses admin penuh. Pastikan masih ada admin lain."
+  "demoteAdminDesc": "Pengguna ini akan kehilangan akses admin penuh. Pastikan masih ada admin lain.",
+  "searchPkgPh": "Package name"
 }

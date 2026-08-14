@@ -75,6 +75,16 @@ const PANEL_PAGES: Array<{
   { kind: 'page', id: 'support', title: 'Support', href: '/support', aliases: ['donate', 'creator', 'ysk', 'help', 'contact'], section: 'system' },
 ];
 
+function safeTl(key: string): string {
+  try {
+    const s = tl(key);
+    if (!s || s === key || s.startsWith('nav.')) return '';
+    return s;
+  } catch {
+    return '';
+  }
+}
+
 function matchScore(query: string, ...fields: string[]): number {
   const q = query.toLowerCase();
   if (!q) return 0;
@@ -115,11 +125,9 @@ export function globalSearch(db: YskDatabase, q: string, limit = 40): SearchHit[
 
   // —— Pages (always available) ——
   for (const p of PANEL_PAGES) {
-    const locTitle = tl(`nav.${p.id}`);
-    const locSection = tl(`nav.sections.${p.section}`);
-    const localized = [locTitle, locSection].filter(
-      (s) => s && !s.startsWith('nav.'),
-    );
+    const locTitle = safeTl(`nav.${p.id}`);
+    const locSection = safeTl(`nav.sections.${p.section}`);
+    const localized = [locTitle, locSection].filter(Boolean);
     const score = matchScore(query, p.title, p.id, p.section, ...p.aliases, ...localized);
     // Prefer pages slightly when score ties resources later
     pushHit(

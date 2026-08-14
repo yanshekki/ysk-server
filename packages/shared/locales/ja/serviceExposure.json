@@ -27,5 +27,11 @@
   "restrictedNeedSource": "制限付きモードの場合は、少なくとも 1 つの IP/CIDR または国コードを追加します。",
   "privateStartTitle": "{{service}}をネットワーク上に公開しますか?",
   "confirmAndStart": "確認して開始",
-  "cloudSgNote": "ホスト ファイアウォールのみ - クラウド セキュリティ グループ (AWS/GCP/Azure) は変更されません。"
+  "cloudSgNote": "ホスト ファイアウォールのみ - クラウド セキュリティ グループ (AWS/GCP/Azure) は変更されません。",
+  "modeUndecided": "Not set",
+  "modeLoading": "Loading",
+  "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
+  "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
+  "roleSmtp": "SMTP submission",
+  "roleImap": "IMAP / POP3 mailbox"
 }

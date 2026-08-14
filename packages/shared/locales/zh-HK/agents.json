@@ -69,7 +69,7 @@
   "emptyRuntimeDesc": "按重新整理載入運行時清單，或逐個探測",
   "pathExists": "已存在",
   "pathMissing": "尚未安裝",
-  "unitUnknown": "{{服務單元}} · 未知",
+  "unitUnknown": "{{unit}} · 未知",
   "path": "路徑",
   "probe": "探測",
   "install": "安裝",

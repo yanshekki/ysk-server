@@ -10,6 +10,7 @@
   "createUser": "Create user",
   "createUserPlus": "+ Create user",
   "searchPh": "Username / role / package",
+  "searchPkgPh": "Package name",
   "searchUsersAria": "Search users",
   "user": "User",
   "roles": "Roles",

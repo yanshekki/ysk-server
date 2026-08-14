@@ -3096,7 +3096,8 @@
       "dmarcMissing": "DMARC manquant — fortement recommandé",
       "ptrBad": "PTR (DNS inverse) manquant ou incorrect — demander au fournisseur VPS",
       "port25Blocked": "Le port sortant 25 semble bloqué — demander le déblocage ou utiliser un relais SMTP",
-      "port25Unknown": "État du port 25 inconnu — lancer le test de connectivité"
+      "port25Unknown": "État du port 25 inconnu — lancer le test de connectivité",
+      "dmarcUnpublished": "DMARC is generated in the panel but not published in public DNS yet"
     },
     "stack": {
       "tlsNote": "Certificats TLS via Let’s Encrypt pour SMTP/IMAP",
@@ -9045,7 +9046,10 @@
     "plusRegion": "+ région {{v}}",
     "plusCity": "+ ville {{v}}",
     "lastTickPrefix": "· dernier {{t}}",
-    "nextTickPrefix": "· prochain {{t}}"
+    "nextTickPrefix": "· prochain {{t}}",
+    "stackApply": "Apply protection stack (UFW, fail2ban, preset)",
+    "stackApplyDone": "Protection stack apply requested",
+    "stackApplyHint": "This enables UFW and applies fail2ban plus the suggested preset. Confirm you will not lock yourself out of a remote panel."
   },
   "publicFiles": {
     "notSet": "Non défini",
@@ -9885,7 +9889,9 @@
     "path": "Chemin",
     "fullVersion": "Version complète",
     "useListForDefaults": "Pour modifier la valeur par défaut de l'hôte ou du panneau, ou supprimer cette version, utilisez la liste ci-dessus.",
-    "alreadyHostDefaultShort": "Défaut de l'hôte"
+    "alreadyHostDefaultShort": "Défaut de l'hôte",
+    "managedPathMissingTitle": "Managed {{name}} path not ready",
+    "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall."
   },
   "search": {
     "placeholder": "Rechercher des pages et des ressources…",
@@ -10336,7 +10342,13 @@
     "restrictedNeedSource": "Ajoutez au moins un code IP/CIDR ou pays pour le mode restreint.",
     "privateStartTitle": "Exposer {{service}} sur le réseau ?",
     "confirmAndStart": "Confirmez et démarrez",
-    "cloudSgNote": "Pare-feu hôte uniquement : les groupes de sécurité cloud (AWS/GCP/Azure) ne sont pas modifiés."
+    "cloudSgNote": "Pare-feu hôte uniquement : les groupes de sécurité cloud (AWS/GCP/Azure) ne sont pas modifiés.",
+    "modeUndecided": "Not set",
+    "modeLoading": "Loading",
+    "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
+    "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
+    "roleSmtp": "SMTP submission",
+    "roleImap": "IMAP / POP3 mailbox"
   },
   "services": {
     "enabledBoot": "Au démarrage",
@@ -11694,7 +11706,8 @@
     "lockSelfHint": "Ceci est le compte connecté. La suppression, la suspension et le changement de rôle sont bloqués pour éviter un verrouillage.",
     "lockLastAdminHint": "Ceci est le dernier administrateur. La suppression, la suspension et la rétrogradation sont bloquées.",
     "demoteAdminTitle": "Rétrograder cet administrateur ?",
-    "demoteAdminDesc": "Cet utilisateur perdra l’accès administrateur complet. Confirmez qu’un autre administrateur reste."
+    "demoteAdminDesc": "Cet utilisateur perdra l’accès administrateur complet. Confirmez qu’un autre administrateur reste.",
+    "searchPkgPh": "Package name"
   },
   "vnc": {
     "pageDesc": "Serveur et client VNC",

@@ -2720,7 +2720,7 @@
     "killFailed": "kill -s {{sig}} 失敗：{{detail}}",
     "routeAdded": "已加入路由 {{dst}}{{via}}{{dev}}",
     "dnsWritten": "已寫入 {{conn}}：DNS {{dns}}{{search}}",
-    "peerInstalled": "已安裝到 {{dest}}{{重新啟動}}"
+    "peerInstalled": "已安裝到 {{dest}}{{restart}}"
   },
   "installedTool": "已安裝（工具）",
   "cron": {

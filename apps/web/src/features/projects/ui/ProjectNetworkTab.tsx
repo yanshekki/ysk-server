@@ -337,7 +337,7 @@ export function ProjectNetworkTab({
                   {project.port != null ? String(project.port) : '—'}
                 </code>
               </Field>
-              <Field label="bind_ip" htmlFor="net-bind" flush>
+              <Field label={t('projects.netBindIp')} htmlFor="net-bind" flush>
                 <input
                   id="net-bind"
                   value={bindIp}
@@ -366,9 +366,9 @@ export function ProjectNetworkTab({
         </Card>
       ) : (
         <Card>
-          <CardSection title="bind_ip">
+          <CardSection title={t('projects.netBindIp')}>
             <FormLayout>
-              <Field label="bind_ip" htmlFor="net-bind-only" flush>
+              <Field label={t('projects.netBindIp')} htmlFor="net-bind-only" flush>
                 <input
                   id="net-bind-only"
                   value={bindIp}

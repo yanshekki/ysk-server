@@ -21,8 +21,11 @@
 }
 
 .btn:disabled {
-  opacity: 0.55;
+  opacity: 0.42;
+  filter: grayscale(0.4);
   cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 
 .btn--primary {

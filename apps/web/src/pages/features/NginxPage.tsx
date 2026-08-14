@@ -433,7 +433,9 @@ export function NginxPage() {
               nowrap: true,
               render: (r) => (
                 <Badge tone={r.confPath || r.apply_status === 'applied' ? 'ok' : 'warn'}>
-                  {r.apply_status || (r.confPath ? 'written' : 'draft')}
+                  {t(`applyStatus.${r.apply_status || (r.confPath ? 'written' : 'draft')}`, {
+                    defaultValue: r.apply_status || (r.confPath ? 'written' : 'draft'),
+                  })}
                 </Badge>
               ),
             },

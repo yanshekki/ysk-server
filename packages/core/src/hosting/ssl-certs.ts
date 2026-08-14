@@ -515,7 +515,7 @@ export function listCertificatesView(db: YskDatabase, dataDir: string): Certific
       cur.bytes = f.bytes;
       cur.expires_at = cur.expires_at ?? parseCertExpiryFromPath(f.fullchain);
       if (cur.status === 'planned' || cur.status === 'missing' || cur.status === 'draft') {
-        cur.status = 'uploaded';
+        cur.status = cur.provider === 'letsencrypt' ? 'issued' : 'uploaded';
       }
       continue;
     }

@@ -1901,6 +1901,8 @@ export function FilesPage() {
                         variant="danger"
                         size="md"
                         loading={busy}
+                        disabled={trash.length === 0}
+                        title={trash.length === 0 ? t('files.trashEmpty') : undefined}
                         onClick={() => setEmptyTrashOpen(true)}
                       >
                         {t('files.emptyTrash')}

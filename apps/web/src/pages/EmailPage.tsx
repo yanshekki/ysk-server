@@ -803,6 +803,7 @@ export function EmailPage() {
             <div className="u-mb-3 u-stack-form">
               <ServiceAccessStrip
                 serviceId="postfix"
+                heading={t('serviceExposure.roleSmtp')}
                 ports={[
                   { role: 'smtp', port: '25', proto: 'tcp' },
                   { role: 'smtps', port: '465', proto: 'tcp' },
@@ -812,6 +813,7 @@ export function EmailPage() {
               />
               <ServiceAccessStrip
                 serviceId="dovecot"
+                heading={t('serviceExposure.roleImap')}
                 ports={[
                   { role: 'imap', port: '143', proto: 'tcp' },
                   { role: 'imaps', port: '993', proto: 'tcp' },

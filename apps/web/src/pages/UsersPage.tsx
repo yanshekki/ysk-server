@@ -776,7 +776,7 @@ export function UsersPage() {
                   <ListToolbar
                     search={packagesList.q}
                     onSearchChange={packagesList.setQ}
-                    searchPlaceholder={t('users.searchPh')}
+                    searchPlaceholder={t('users.searchPkgPh')}
                     searchAriaLabel={t('users.packages')}
                     searching={packagesList.searching}
                     loading={packagesList.loading}

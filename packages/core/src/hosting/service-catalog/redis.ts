@@ -104,7 +104,7 @@ export const REDIS_SETTING_DEFS: SettingDef[] = [
     label: 'notes.auto.n0167',
     category: 'persistence',
     type: 'enum',
-    enumValues: ['dump.rdb', 'redis.rdb', 'appendonly.aof'],
+    enumValues: ['dump.rdb', 'redis.rdb'],
     applyMode: 'runtime' },
   {
     key: 'requirepass',

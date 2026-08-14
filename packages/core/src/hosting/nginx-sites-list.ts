@@ -34,6 +34,25 @@ function kindFromRuntime(runtime?: string | null): NginxSiteKind {
   return 'proxy';
 }
 
+function certDomainSet(db: JsonStore): Set<string> {
+  const set = new Set<string>();
+  const certs = (db.snapshot as { certificates?: Array<Record<string, unknown>> }).certificates ?? [];
+  for (const c of certs) {
+    const d = String(c.domain ?? '').trim().toLowerCase();
+    if (d) set.add(d);
+  }
+  return set;
+}
+
+function confMentionsSsl(confPath: string | null | undefined): boolean {
+  if (!confPath || !existsSync(confPath)) return false;
+  try {
+    return /ssl_certificate\s+\S+/.test(readFileSync(confPath, 'utf8'));
+  } catch {
+    return false;
+  }
+}
+
 function projectTarget(p: Record<string, unknown>): string {
   const kind = kindFromRuntime(p.runtime as string);
   if (kind === 'static' || kind === 'php') {
@@ -52,6 +71,7 @@ export function listMergedNginxSites(input: {
   projects: Array<Record<string, unknown>>;
 }): NginxSiteRow[] {
   const rows: NginxSiteRow[] = [];
+  const certs = certDomainSet(input.db);
 
   for (const p of input.projects) {
     const domain = String(p.domain ?? '').trim();
@@ -61,6 +81,7 @@ export function listMergedNginxSites(input: {
     const id = String(p.id ?? '');
     if (!id) continue;
     const confPath = (p.nginxConfigPath ?? p.nginx_config_path) as string | undefined;
+    const hasCert = Boolean(domain && certs.has(domain.toLowerCase()));
     rows.push({
       id: `project:${id}`,
       source: 'project',
@@ -69,7 +90,7 @@ export function listMergedNginxSites(input: {
       serverName: domain || '—',
       kind: kindFromRuntime(p.runtime as string),
       target: projectTarget(p),
-      ssl: Boolean(p.ssl ?? p.force_https ?? p.forceHttps),
+      ssl: Boolean(p.ssl ?? p.force_https ?? p.forceHttps) || hasCert || confMentionsSsl(confPath),
       forceHttps: Boolean(p.force_https ?? p.forceHttps),
       hsts: Boolean(p.hsts),
       confPath: confPath ?? null,
@@ -91,7 +112,10 @@ export function listMergedNginxSites(input: {
       serverName: String(s.serverName ?? s.server_name ?? '—'),
       kind: kind === 'static' || kind === 'php' ? kind : 'proxy',
       target,
-      ssl: Boolean(s.ssl),
+      ssl:
+        Boolean(s.ssl) ||
+        certs.has(String(s.serverName ?? s.server_name ?? '').trim().toLowerCase()) ||
+        confMentionsSsl((s.confPath as string) ?? null),
       forceHttps: Boolean(s.forceHttps ?? s.force_https),
       hsts: Boolean(s.hsts),
       confPath: (s.confPath as string) ?? null,

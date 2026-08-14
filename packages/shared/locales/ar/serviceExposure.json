@@ -27,5 +27,11 @@
   "restrictedNeedSource": "أضف رمز IP/CIDR أو رمز البلد واحدًا على الأقل للوضع المقيد.",
   "privateStartTitle": "فضح {{service}} على الشبكة؟",
   "confirmAndStart": "تأكيد والبدء",
-  "cloudSgNote": "جدار حماية المضيف فقط - لم يتم تغيير مجموعات الأمان السحابية (AWS/GCP/Azure)."
+  "cloudSgNote": "جدار حماية المضيف فقط - لم يتم تغيير مجموعات الأمان السحابية (AWS/GCP/Azure).",
+  "modeUndecided": "Not set",
+  "modeLoading": "Loading",
+  "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
+  "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
+  "roleSmtp": "SMTP submission",
+  "roleImap": "IMAP / POP3 mailbox"
 }

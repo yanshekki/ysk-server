@@ -316,7 +316,8 @@
     "dmarcMissing": "DMARC অনুপস্থিত — দৃঢ়ভাবে সুপারিশ করা হয়",
     "ptrBad": "PTR বিপরীত DNS অনুপস্থিত বা ভুল — VPS প্রদানকারীর কাছে অনুরোধ",
     "port25Blocked": "আউটবাউন্ড পোর্ট 25 অবরুদ্ধ দেখাচ্ছে — আনব্লক করার অনুরোধ করুন বা SMTP রিলে ব্যবহার করুন",
-    "port25Unknown": "পোর্ট 25 স্ট্যাটাস অজানা — কানেক্টিভিটি চেক চালান"
+    "port25Unknown": "পোর্ট 25 স্ট্যাটাস অজানা — কানেক্টিভিটি চেক চালান",
+    "dmarcUnpublished": "DMARC is generated in the panel but not published in public DNS yet"
   },
   "stack": {
     "tlsNote": "SMTP/IMAP-এর জন্য Let's Encrypt-এর মাধ্যমে TLS শংসাপত্র",

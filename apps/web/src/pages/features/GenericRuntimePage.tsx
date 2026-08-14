@@ -535,8 +535,14 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
       ) : null}
       {nodePathSafety?.kind === 'yskMissing' ? (
         <Alert variant="info">
-          <strong>{t('runtime.nodePathYskMissingTitle')}</strong>{' '}
-          {t('runtime.nodePathYskMissing', { version: version || '…' })}
+          <strong>
+            {kind === 'node'
+              ? t('runtime.nodePathYskMissingTitle')
+              : t('runtime.managedPathMissingTitle', { name: meta.title })}
+          </strong>{' '}
+          {kind === 'node'
+            ? t('runtime.nodePathYskMissing', { version: version || '…' })
+            : t('runtime.managedPathMissing', { version: version || '…', name: meta.title })}
         </Alert>
       ) : null}
       {recordedButProbeEmpty ? (

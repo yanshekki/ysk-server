@@ -17,6 +17,10 @@ export type UsePageTabOptions = {
 const DEFAULT_TAB_ALIASES: Record<string, string> = {
   apikeys: 'keys',
   perms: 'permissions',
+  perm: 'permissions',
+  plans: 'packages',
+  shadowsocks: 'outline',
+  ss: 'outline',
   help: 'about',
 };
 

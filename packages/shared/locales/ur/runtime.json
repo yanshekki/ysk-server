@@ -508,5 +508,7 @@
   "path": "راستہ",
   "fullVersion": "مکمل ورژن",
   "useListForDefaults": "میزبان یا پینل ڈیفالٹ کو تبدیل کرنے، یا اس ورژن کو ہٹانے کے لیے، اوپر دی گئی فہرست کا استعمال کریں۔",
-  "alreadyHostDefaultShort": "میزبان ڈیفالٹ"
+  "alreadyHostDefaultShort": "میزبان ڈیفالٹ",
+  "managedPathMissingTitle": "Managed {{name}} path not ready",
+  "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall."
 }

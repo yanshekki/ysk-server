@@ -316,7 +316,8 @@
     "dmarcMissing": "DMARC tidak ada — sangat disarankan",
     "ptrBad": "PTR membalikkan DNS hilang atau salah — permintaan di penyedia VPS",
     "port25Blocked": "Port Keluar 25 tampak diblokir — minta buka blokir atau gunakan relai SMTP",
-    "port25Unknown": "Status port 25 tidak diketahui — jalankan pemeriksaan konektivitas"
+    "port25Unknown": "Status port 25 tidak diketahui — jalankan pemeriksaan konektivitas",
+    "dmarcUnpublished": "DMARC is generated in the panel but not published in public DNS yet"
   },
   "stack": {
     "tlsNote": "Sertifikat TLS melalui Let's Encrypt untuk SMTP/IMAP",

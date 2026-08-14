@@ -460,6 +460,8 @@
   "remoteSourceSuffix": " ({{source}})",
   "nodePathYskMissingTitle": "Managed Node path not ready",
   "nodePathYskMissing": "YSK-managed Node for version {{version}} is not ready. Re-probe or reinstall.",
+  "managedPathMissingTitle": "Managed {{name}} path not ready",
+  "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall.",
   "nodePathUnsafeTitle": "Node path is unsafe",
   "nodePathUnsafe": "Path {{path}} is outside the managed tree; project deploys may fail.",
   "recordedButProbeEmpty": "Panel recorded install {{v}}, but the host probe found no binary. Not installed — re-probe or reinstall.",

@@ -207,6 +207,22 @@ describe('ProjectCreateModal deep', () => {
     authStore.clear();
   });
 
+  it('clicking PHP chip selects runtime and does not close the modal', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    installFetchMock(baseRoutes());
+    render(
+      <MemoryRouter>
+        <ProjectCreateModal open onClose={onClose} onSubmit={async () => undefined} />
+      </MemoryRouter>,
+    );
+    const php = await screen.findByRole('radio', { name: 'PHP' });
+    await user.click(php);
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.getByRole('radio', { name: 'PHP' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
   it('fills form, switches runtime/template, enables DNS draft, submits', async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn(async () => undefined);

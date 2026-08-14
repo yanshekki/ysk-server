@@ -3096,7 +3096,8 @@
       "dmarcMissing": "DMARC गायब है - पुरजोर अनुशंसा की जाती है",
       "ptrBad": "पीटीआर रिवर्स डीएनएस गायब या गलत - वीपीएस प्रदाता से अनुरोध करें",
       "port25Blocked": "आउटबाउंड पोर्ट 25 अवरुद्ध प्रतीत होता है - अनब्लॉक का अनुरोध करें या एसएमटीपी रिले का उपयोग करें",
-      "port25Unknown": "पोर्ट 25 स्थिति अज्ञात - कनेक्टिविटी जांच चलाएँ"
+      "port25Unknown": "पोर्ट 25 स्थिति अज्ञात - कनेक्टिविटी जांच चलाएँ",
+      "dmarcUnpublished": "DMARC is generated in the panel but not published in public DNS yet"
     },
     "stack": {
       "tlsNote": "एसएमटीपी/आईएमएपी के लिए लेट्स एनक्रिप्ट के माध्यम से टीएलएस प्रमाणपत्र",
@@ -9045,7 +9046,10 @@
     "plusRegion": "+ क्षेत्र {{v}}",
     "plusCity": "+ शहर {{v}}",
     "lastTickPrefix": "· अंतिम {{t}}",
-    "nextTickPrefix": "· अगला {{t}}"
+    "nextTickPrefix": "· अगला {{t}}",
+    "stackApply": "Apply protection stack (UFW, fail2ban, preset)",
+    "stackApplyDone": "Protection stack apply requested",
+    "stackApplyHint": "This enables UFW and applies fail2ban plus the suggested preset. Confirm you will not lock yourself out of a remote panel."
   },
   "publicFiles": {
     "notSet": "सेट नहीं",
@@ -9885,7 +9889,9 @@
     "path": "पथ",
     "fullVersion": "पूर्ण संस्करण",
     "useListForDefaults": "होस्ट या पैनल डिफ़ॉल्ट को बदलने या इस संस्करण को हटाने के लिए, ऊपर दी गई सूची का उपयोग करें।",
-    "alreadyHostDefaultShort": "होस्ट डिफ़ॉल्ट"
+    "alreadyHostDefaultShort": "होस्ट डिफ़ॉल्ट",
+    "managedPathMissingTitle": "Managed {{name}} path not ready",
+    "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall."
   },
   "search": {
     "placeholder": "पृष्ठ और संसाधन खोजें...",
@@ -10336,7 +10342,13 @@
     "restrictedNeedSource": "प्रतिबंधित मोड के लिए कम से कम एक आईपी/सीआईडीआर या देश कोड जोड़ें।",
     "privateStartTitle": "नेटवर्क पर {{service}} का पर्दाफाश करें?",
     "confirmAndStart": "पुष्टि करें और प्रारंभ करें",
-    "cloudSgNote": "केवल होस्ट फ़ायरवॉल - क्लाउड सुरक्षा समूह (AWS/GCP/Azure) नहीं बदले गए हैं।"
+    "cloudSgNote": "केवल होस्ट फ़ायरवॉल - क्लाउड सुरक्षा समूह (AWS/GCP/Azure) नहीं बदले गए हैं।",
+    "modeUndecided": "Not set",
+    "modeLoading": "Loading",
+    "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
+    "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
+    "roleSmtp": "SMTP submission",
+    "roleImap": "IMAP / POP3 mailbox"
   },
   "services": {
     "enabledBoot": "बूट पर",
@@ -11694,7 +11706,8 @@
     "lockSelfHint": "यह साइन-इन खाता है। लॉक-आउट रोकने के लिए हटाना, निलंबन और भूमिका बदलना बंद है।",
     "lockLastAdminHint": "यह अंतिम व्यवस्थापक है। हटाना, निलंबन और पदावनति बंद है।",
     "demoteAdminTitle": "इस व्यवस्थापक को पदावनत करें?",
-    "demoteAdminDesc": "यह उपयोगकर्ता पूर्ण व्यवस्थापक पहुँच खो देगा। पुष्टि करें कि अन्य व्यवस्थापक रहें।"
+    "demoteAdminDesc": "यह उपयोगकर्ता पूर्ण व्यवस्थापक पहुँच खो देगा। पुष्टि करें कि अन्य व्यवस्थापक रहें।",
+    "searchPkgPh": "Package name"
   },
   "vnc": {
     "pageDesc": "वीएनसी सर्वर और क्लाइंट",

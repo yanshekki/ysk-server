@@ -13,6 +13,18 @@ import type { AppContext } from '../app-context.js';
 import { sendJson } from '../http/util.js';
 import { redactResourceSecrets } from './resources-shared.js';
 
+/** MySQL/MariaDB share one control-plane pool (exclusive host engine). */
+export function sqlEngineMatchesRow(rowEngine: unknown, requested: string): boolean {
+  const want = String(requested ?? '').trim().toLowerCase();
+  const have = String(rowEngine ?? '').trim().toLowerCase();
+  if (!want) return true;
+  if (!have) return true;
+  if (have === want) return true;
+  return (
+    (want === 'mariadb' && have === 'mysql') || (want === 'mysql' && have === 'mariadb')
+  );
+}
+
 export async function handleResourcesReadRoutes(
   ctx: AppContext,
   _req: IncomingMessage,
@@ -41,7 +53,7 @@ export async function handleResourcesReadRoutes(
     if (zoneId) items = items.filter((r) => r.zoneId === zoneId);
     if (databaseId) items = items.filter((r) => r.databaseId === databaseId);
     if (engine) {
-      items = items.filter((r) => String(r.engine ?? 'mysql') === engine);
+      items = items.filter((r) => sqlEngineMatchesRow(r.engine, engine));
     }
     const { listWithQuery } = await import('../http/list-response.js');
     const { items: filtered, meta } = listWithQuery(url, items, {

@@ -126,5 +126,6 @@
   "lockSelfHint": "Esta es la cuenta con la que ha iniciado sesión. Eliminar, suspender y cambiar el rol están bloqueados para evitar el bloqueo.",
   "lockLastAdminHint": "Este es el último administrador. Eliminar, suspender y degradar están bloqueados.",
   "demoteAdminTitle": "¿Degradar a este administrador?",
-  "demoteAdminDesc": "Este usuario perderá el acceso completo de administrador. Confirme que queda otro administrador."
+  "demoteAdminDesc": "Este usuario perderá el acceso completo de administrador. Confirme que queda otro administrador.",
+  "searchPkgPh": "Package name"
 }

@@ -316,7 +316,8 @@
     "dmarcMissing": "DMARC が欠落しています - 強く推奨されます",
     "ptrBad": "PTR 逆引き DNS が見つからないか正しくありません - VPS プロバイダーでリクエストしてください",
     "port25Blocked": "送信ポート 25 がブロックされているようです — ブロック解除を要求するか、SMTP リレーを使用してください",
-    "port25Unknown": "ポート 25 のステータスが不明です - 接続チェックを実行します"
+    "port25Unknown": "ポート 25 のステータスが不明です - 接続チェックを実行します",
+    "dmarcUnpublished": "DMARC is generated in the panel but not published in public DNS yet"
   },
   "stack": {
     "tlsNote": "SMTP/IMAP の Let’s Encrypt による TLS 証明書",

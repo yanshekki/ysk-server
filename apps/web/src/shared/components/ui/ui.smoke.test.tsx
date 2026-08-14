@@ -332,7 +332,7 @@ describe('UI primitives smoke', () => {
     expect(screen.getByText('panel-a')).toBeInTheDocument();
     await user.click(screen.getByRole('tab', { name: /Tab B/i }));
     expect(onTab).toHaveBeenCalledWith('b');
-    await user.click(screen.getByLabelText('Large'));
+    await user.click(screen.getByRole('radio', { name: 'Large' }));
     expect(onSeg).toHaveBeenCalledWith('lg');
     await user.click(screen.getByRole('button', { name: '1 day' }));
     expect(onPreset).toHaveBeenCalledWith('1d');

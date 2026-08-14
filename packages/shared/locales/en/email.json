@@ -314,6 +314,7 @@
   "health": {
     "dnsUnconfirmed": "DNS records (MX/SPF/DKIM) not yet confirmed",
     "dmarcMissing": "DMARC missing — strongly recommended",
+    "dmarcUnpublished": "DMARC is generated in the panel but not published in public DNS yet",
     "ptrBad": "PTR reverse DNS missing or incorrect — request at VPS provider",
     "port25Blocked": "Outbound Port 25 appears blocked — request unblock or use SMTP relay",
     "port25Unknown": "Port 25 status unknown — run connectivity check"

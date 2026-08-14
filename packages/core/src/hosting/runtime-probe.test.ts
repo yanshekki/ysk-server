@@ -8,7 +8,19 @@ import {
   discoverYskNodeMajors,
   planOrInstallRuntime,
   probeRuntimes,
+  versionOutputMatchesPin,
 } from './runtime-probe.js';
+
+describe('versionOutputMatchesPin', () => {
+  it('does not treat Node minor 19 as major 19', () => {
+    expect(versionOutputMatchesPin('v24.19.0', '24')).toBe(true);
+    expect(versionOutputMatchesPin('v24.19.0', '19')).toBe(false);
+    expect(versionOutputMatchesPin('v20.18.0', '20')).toBe(true);
+    expect(versionOutputMatchesPin('v20.18.0', '18')).toBe(false);
+    expect(versionOutputMatchesPin('PHP 8.2.12 (cli)', '8.2')).toBe(true);
+    expect(versionOutputMatchesPin('PHP 8.10.0 (cli)', '8.1')).toBe(false);
+  });
+});
 
 describe('runtime-probe', () => {
   it('discoverYskNodeMajors finds versioned binary under ysk tree', async () => {

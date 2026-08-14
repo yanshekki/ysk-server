@@ -54,7 +54,7 @@
   "criticalCount": "· 嚴重 {{count}}",
   "warnCount": "· 警告 {{count}}",
   "applyAuditBadge": "套用 audit · 成功 {{ok}} · warn {{warn}} · bad {{bad}}",
-  "executeBadge": "執行{{狀態}}",
+  "executeBadge": "系統變更 {{state}}",
   "executeLabel": "系統變更",
   "go": "前往",
   "open": "開啟",

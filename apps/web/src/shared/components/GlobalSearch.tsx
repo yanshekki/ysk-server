@@ -14,6 +14,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { api } from '../services/api';
+import { FEATURE_SECTIONS } from '../nav/features';
 
 export type SearchHitDto = {
   kind: string;
@@ -42,6 +43,48 @@ const KIND_ORDER = [
 
 function kindLabel(kind: string, t: (k: string, o?: Record<string, unknown>) => string): string {
   return t(`search.kinds.${kind}`, { defaultValue: kind });
+}
+
+function localPageHits(
+  query: string,
+  t: (k: string, o?: Record<string, unknown>) => string,
+): SearchHitDto[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  const hits: SearchHitDto[] = [];
+  for (const section of FEATURE_SECTIONS) {
+    const sectionLabel = t(`nav.sections.${section.sectionKey}`, {
+      defaultValue: section.sectionKey,
+    });
+    for (const item of section.items) {
+      const title = t(`nav.${item.key}`, { defaultValue: item.key });
+      const hay = [item.key, item.to, title, sectionLabel, section.sectionKey]
+        .map((s) => String(s).toLowerCase())
+        .join('\n');
+      if (hay.includes(q) || hay.split(/[\s./:_-]+/).some((tok) => tok.startsWith(q))) {
+        hits.push({
+          kind: 'page',
+          id: item.key,
+          title,
+          subtitle: sectionLabel,
+          href: item.to,
+        });
+      }
+    }
+  }
+  return hits;
+}
+
+function mergeHits(primary: SearchHitDto[], extra: SearchHitDto[]): SearchHitDto[] {
+  const seen = new Set(primary.map((h) => `${h.kind}:${h.href}:${h.title}`));
+  const out = [...primary];
+  for (const h of extra) {
+    const k = `${h.kind}:${h.href}:${h.title}`;
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push(h);
+  }
+  return out;
 }
 
 function groupHits(hits: SearchHitDto[]): Array<{ kind: string; items: SearchHitDto[] }> {
@@ -73,6 +116,7 @@ export function GlobalSearch() {
   const [hits, setHits] = useState<SearchHitDto[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [active, setActive] = useState(0);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reqSeq = useRef(0);
@@ -91,29 +135,35 @@ export function GlobalSearch() {
       }
       const seq = ++reqSeq.current;
       setLoading(true);
+      setSearchError(null);
+      const local = localPageHits(trimmed, t);
       try {
         const r = await api.requestRaw<{ items: SearchHitDto[] }>(
           `/api/v1/search?q=${encodeURIComponent(trimmed)}`,
         );
         if (seq !== reqSeq.current) return;
         lastCompletedQ.current = trimmed;
-        setHits(r.items ?? []);
+        setHits(mergeHits(r.items ?? [], local));
         setActive(0);
-      } catch {
+      } catch (e) {
         if (seq !== reqSeq.current) return;
-        setHits([]);
+        lastCompletedQ.current = trimmed;
+        setHits(local);
+        setSearchError(e instanceof Error ? e.message : t('search.failed', { defaultValue: 'Search failed' }));
       } finally {
         if (seq === reqSeq.current) setLoading(false);
       }
     },
-    [],
+    [t],
   );
 
   const onChange = (value: string) => {
     setQ(value);
     setOpen(true);
-    setHits([]);
-    lastCompletedQ.current = '';
+    setSearchError(null);
+    const local = localPageHits(value, t);
+    setHits(local);
+    lastCompletedQ.current = local.length ? value.trim() : '';
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => void runSearch(value), 160);
   };
@@ -220,7 +270,10 @@ export function GlobalSearch() {
           {loading && hits.length === 0 ? (
             <p className="shell-search__empty muted">{t('search.loading', { defaultValue: '…' })}</p>
           ) : null}
-          {!loading && hits.length === 0 ? (
+          {searchError && hits.length === 0 ? (
+            <p className="shell-search__empty muted">{searchError}</p>
+          ) : null}
+          {!loading && !searchError && hits.length === 0 ? (
             <p className="shell-search__empty muted">
               {t('search.noResults', { defaultValue: 'No results' })}
             </p>

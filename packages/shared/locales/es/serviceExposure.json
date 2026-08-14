@@ -27,5 +27,11 @@
   "restrictedNeedSource": "Agregue al menos una IP/CIDR o código de país para el modo restringido.",
   "privateStartTitle": "¿Exponer {{service}} en la red?",
   "confirmAndStart": "Confirmar y comenzar",
-  "cloudSgNote": "Solo firewall de host: los grupos de seguridad en la nube (AWS/GCP/Azure) no se modifican."
+  "cloudSgNote": "Solo firewall de host: los grupos de seguridad en la nube (AWS/GCP/Azure) no se modifican.",
+  "modeUndecided": "Not set",
+  "modeLoading": "Loading",
+  "summaryUndecided": "Access mode not confirmed (catalog default: {{suggested}}).",
+  "summaryNotEnforced": "Firewall is off — the panel is not opening or blocking these ports.",
+  "roleSmtp": "SMTP submission",
+  "roleImap": "IMAP / POP3 mailbox"
 }
