@@ -115,5 +115,9 @@
   "deleteNodeDesc": "CDN نوڈ \"{{name}}\" کو حذف کرتا ہے۔",
   "deleteSiteDesc": "CDN سائٹ \"{{name}}\" کو حذف کرتا ہے۔",
   "deleteSiteC1": "سائٹ کی پالیسی اور ایج ایسوسی ایشنز",
-  "deleteSiteC2": "لاگو nginx کنفیگرز کو علیحدہ صفائی یا دوبارہ اپلائی کرنے کی ضرورت ہو سکتی ہے۔"
+  "deleteSiteC2": "لاگو nginx کنفیگرز کو علیحدہ صفائی یا دوبارہ اپلائی کرنے کی ضرورت ہو سکتی ہے۔",
+  "statOnline": "Online {{n}}/{{total}}",
+  "statOffline": "Offline {{n}}",
+  "statDraining": "Draining {{n}}",
+  "statHitRate": "Hit rate {{v}}"
 }

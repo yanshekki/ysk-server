@@ -29,5 +29,6 @@
   "stepUpHint": "アカウントで TOTP が有効になっている場合、root ログインには 2FA ステップアップが必要です。",
   "stepUpTitle": "ルートシェルを確認する",
   "stepUpDesc": "認証コードまたは回復コードを入力します。",
-  "totpLabel": "TOTP / リカバリーコード"
+  "totpLabel": "TOTP / リカバリーコード",
+  "sessionStillOpen": "A live shell is still connected while you read this page."
 }

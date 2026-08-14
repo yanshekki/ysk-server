@@ -107,5 +107,6 @@
   "fixNow": "أصلح الآن",
   "fixFailed": "فشل الإصلاح",
   "fixDone": "تم تعزيز أذونات dataDir (chmod 750)",
-  "fixDoneWebUi": "تم إنشاء/تثبيت واجهة مستخدم الويب"
+  "fixDoneWebUi": "تم إنشاء/تثبيت واجهة مستخدم الويب",
+  "rootLabel": "Superuser"
 }

@@ -115,5 +115,9 @@
   "deleteNodeDesc": "CDN नोड \"{{name}}\" को हटाता है।",
   "deleteSiteDesc": "CDN साइट \"{{name}}\" को हटाता है।",
   "deleteSiteC1": "साइट नीति और एज एसोसिएशन",
-  "deleteSiteC2": "लागू nginx कॉन्फ़िगरेशन को अलग से सफाई या पुनः लागू करने की आवश्यकता हो सकती है"
+  "deleteSiteC2": "लागू nginx कॉन्फ़िगरेशन को अलग से सफाई या पुनः लागू करने की आवश्यकता हो सकती है",
+  "statOnline": "Online {{n}}/{{total}}",
+  "statOffline": "Offline {{n}}",
+  "statDraining": "Draining {{n}}",
+  "statHitRate": "Hit rate {{v}}"
 }

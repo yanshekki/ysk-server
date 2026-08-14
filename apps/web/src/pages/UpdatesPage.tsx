@@ -56,8 +56,48 @@ export function riskLabel(risk: string | undefined, tr: (k: string) => string): 
   return risk ?? '—';
 }
 
-function isKernelPackage(name: string | undefined): boolean {
-  return /^linux(-image|-headers|-modules|-generic)?/i.test(name ?? '');
+export function isKernelPackage(name: string | undefined): boolean {
+  return /^linux(-image|-headers|-modules|-generic|-tools|-libc)/i.test(name ?? '');
+}
+
+/** Strip "PHP 8.3.6 (cli) (built: …)" → "8.3.6". */
+export function shortVersion(raw: string | null | undefined): string {
+  const s = String(raw ?? '').trim();
+  if (!s || s === '—') return '—';
+  const m = s.match(/v?(\d+\.\d+(?:\.\d+)?[a-z0-9._-]*)/i);
+  return m?.[1] ? (s.startsWith('v') && m[0].startsWith('v') ? `v${m[1]}` : m[1]) : s;
+}
+
+export function formatIntervalMs(
+  ms: number,
+  tr: (k: string, o?: Record<string, unknown>) => string,
+): string {
+  if (!Number.isFinite(ms) || ms <= 0) return '—';
+  if (ms % 86_400_000 === 0) {
+    const n = ms / 86_400_000;
+    return n === 1 ? tr('updates.intervalDay') : tr('updates.intervalDays', { n });
+  }
+  if (ms % 3_600_000 === 0) {
+    const n = ms / 3_600_000;
+    return n === 1 ? tr('updates.intervalHour') : tr('updates.intervalHours', { n });
+  }
+  if (ms % 60_000 === 0) {
+    const n = ms / 60_000;
+    return tr('updates.intervalMinutes', { n });
+  }
+  if (ms % 1000 === 0) return tr('updates.intervalSeconds', { n: ms / 1000 });
+  return `${ms}ms`;
+}
+
+export function versionArrow(
+  current: string | null | undefined,
+  latest: string | null | undefined,
+): string {
+  const cur = current?.trim() || '—';
+  const lat = latest?.trim() || '—';
+  if (cur === '—' && lat === '—') return '—';
+  if (cur === lat || !latest) return cur;
+  return `${cur} → ${lat}`;
 }
 
 export function isHighRisk(row: AdviceRow): boolean {
@@ -506,7 +546,7 @@ export function UpdatesPage() {
             onClick={bindCall2(load, true, true)}
             title={t('updates.osvTitle')}
           >
-            {t('updates.scanOsv')}
+            {t('updates.scanOsvN', { n: 12, defaultValue: t('updates.scanOsv') })}
           </Button>
           <Button
             variant="primary"
@@ -529,7 +569,7 @@ export function UpdatesPage() {
           {
             id: 'available',
             label: t('updates.upgradable'),
-            badge: entries.filter((e) => e.upgradable).length || undefined },
+            badge: upgradableCount || undefined },
           {
             id: 'services',
             label: t('updates.groupService'),
@@ -594,9 +634,7 @@ export function UpdatesPage() {
                 facts={[
                   {
                     label: t('updates.upgradable'),
-                    value: String(
-                      summary?.packagesUpgradable ?? upgradableCount ?? 0,
-                    ),
+                    value: String(upgradableCount ?? 0),
                   },
                   {
                     label: t('updates.highRisk'),
@@ -613,11 +651,11 @@ export function UpdatesPage() {
                   },
                   {
                     label: t('updates.selfLatest'),
-                    value: summary?.panelLatest ?? selfLatest,
+                    value: selfLatest,
                   },
                   {
                     label: t('updates.status'),
-                    value: summary?.panelUpdateAvailable || selfAvailable
+                    value: selfAvailable
                       ? t('updates.selfAvailable')
                       : t('updates.selfUpToDate'),
                   },
@@ -669,7 +707,13 @@ export function UpdatesPage() {
                     ? t('updates.groupService')
                     : t('updates.groupRuntime')
               }
-              description={t('updates.hubHint')}
+              description={
+                tab === 'available'
+                  ? t('updates.availableHint')
+                  : tab === 'services'
+                    ? t('updates.servicesHint')
+                    : t('updates.runtimeHint')
+              }
               rows={entries.filter((e) => {
                 if (tab === 'available') return e.upgradable;
                 if (tab === 'services') return e.group === 'service';
@@ -700,8 +744,15 @@ export function UpdatesPage() {
                   key: 'ver',
                   header: t('updates.colVersion'),
                   mobile: 'meta',
-                  render: (e) =>
-                    `${e.currentVersion ?? '—'} → ${e.latestVersion ?? '—'}`,
+                  render: (e) => {
+                    const cur = shortVersion(e.currentVersion);
+                    const lat = shortVersion(e.latestVersion);
+                    const label = versionArrow(cur, lat);
+                    const raw = `${e.currentVersion ?? ''} → ${e.latestVersion ?? ''}`;
+                    return (
+                      <span title={raw !== label ? raw : undefined}>{label}</span>
+                    );
+                  },
                 },
                 {
                   key: 'kind',
@@ -918,6 +969,9 @@ export function UpdatesPage() {
                           </Badge>
                           {i.requiresApproval ? (
                             <Badge tone="warn">{t('updates.needApproval')}</Badge>
+                          ) : null}
+                          {isKernelPackage(i.packageName) ? (
+                            <Badge tone="warn">{t('updates.needsReboot')}</Badge>
                           ) : null}
                         </div>
                         {i.cves?.length ? (
@@ -1207,14 +1261,14 @@ export function UpdatesPage() {
                       <span className="upd-job__id">{String(j.id)}</span>
                       <span className="upd-job__meta">
                         {j.intervalMs != null
-                          ? `${j.intervalMs}ms`
+                          ? formatIntervalMs(Number(j.intervalMs), t)
                           : j.interval
                             ? String(j.interval)
                             : '—'}
                         {j.lastRunAt
                           ? t('updates.lastRun', {
                               when: relTime(String(j.lastRunAt), t) })
-                          : ''}
+                          : ` · ${t('updates.neverRun')}`}
                       </span>
                     </li>
                   ))}
@@ -1290,6 +1344,10 @@ export function UpdatesPage() {
         description={
           highRiskApply
             ? `${highRiskApply.currentVersion} → ${highRiskApply.candidateVersion}. ${
+                isKernelPackage(highRiskApply.packageName)
+                  ? t('updates.kernelRebootWarn') + ' '
+                  : ''
+              }${
                 highRiskApply.summary
                   ? humanizeOperatorNote(highRiskApply.summary) ??
                     highRiskApply.summary

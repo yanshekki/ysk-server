@@ -1682,7 +1682,19 @@ export function DnsPage() {
             <button type="button" className={buttonClassName({ variant: 'secondary', size: 'md' })} onClick={bindSet(setZoneOpen, false)}>
               {t('common.cancel')}
             </button>
-            <button type="submit" form="dz" className={buttonClassName({ variant: 'primary', size: 'md' })} disabled={zones.busy}>
+            <button
+              type="submit"
+              form="dz"
+              className={buttonClassName({ variant: 'primary', size: 'md' })}
+              disabled={
+                zones.busy ||
+                !/^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/i.test(zone.trim()) ||
+                zone.includes('..') ||
+                !/^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/.test(
+                  serverIp.trim(),
+                )
+              }
+            >
               {t('common.create')}
             </button>
           </>
@@ -1696,6 +1708,13 @@ export function DnsPage() {
               flush
               required
               hint={t('dns.zoneNameHint')}
+              error={
+                zone.trim() &&
+                (!/^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/i.test(zone.trim()) ||
+                  zone.includes('..'))
+                  ? t('dns.invalidZone')
+                  : undefined
+              }
             >
               <input
                 id="z"
@@ -1712,6 +1731,14 @@ export function DnsPage() {
               flush
               required
               hint={t('dns.serverIpv4Hint')}
+              error={
+                serverIp.trim() &&
+                !/^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/.test(
+                  serverIp.trim(),
+                )
+                  ? t('dns.invalidIpv4')
+                  : undefined
+              }
             >
               <input
                 id="sip"

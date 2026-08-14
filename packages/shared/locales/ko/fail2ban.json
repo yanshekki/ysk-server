@@ -78,5 +78,23 @@
     "reload": "fail2ban이 다시 로드되었습니다.",
     "restart": "fail2ban이 다시 시작되었습니다.",
     "stop": "fail2ban이 중지되었습니다."
+  },
+  "statWhitelist": "Whitelist",
+  "invalidIp": "Enter a valid IPv4, IPv6, or CIDR.",
+  "whitelistPendingApply": "Saved to the panel list. Press Apply policy to write jail.local.",
+  "ignoreipFile": "Panel data directory / fail2ban / ignoreip.txt",
+  "jailsTabHint": "Status of active jails. Turn jails on or off in the Policy tab.",
+  "colJail": "Jail",
+  "colEnabled": "On",
+  "serviceStateLine": "Unit {{unit}} · {{state}} · boot {{boot}}",
+  "jail": {
+    "sshd": "SSH brute-force",
+    "nginxHttpAuth": "Nginx HTTP authentication",
+    "nginxBotsearch": "Nginx scanner / bot probes",
+    "nginxBadbots": "Nginx known bad bots",
+    "nginxLimitReq": "Nginx rate-limit jail",
+    "postfix": "Postfix mail brute-force",
+    "dovecot": "Dovecot mail login",
+    "recidive": "Repeat offenders"
   }
 }

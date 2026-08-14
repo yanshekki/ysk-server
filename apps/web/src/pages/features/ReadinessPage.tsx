@@ -294,11 +294,11 @@ export function ReadinessPage() {
                 tone: heroTone },
               items: [
                 {
-                  label: 'EXECUTE',
+                  label: t('dashboard.executeLabel'),
                   value: report.executeEnabled ? t('readiness.executeOn') : t('readiness.executeOff'),
                   tone: report.executeEnabled ? 'ok' : 'warn' },
                 {
-                  label: 'Root',
+                  label: t('readiness.rootLabel'),
                   value: report.isRoot ? t('common.yes') : t('common.no'),
                   tone: report.isRoot ? 'ok' : 'warn' },
                 { label: t('common.ready'), value: score?.ready ?? 0, tone: 'ok' },

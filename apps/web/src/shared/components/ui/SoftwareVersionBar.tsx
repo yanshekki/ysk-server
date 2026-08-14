@@ -250,7 +250,9 @@ export function SoftwareVersionBar({
     <div className={`software-version-bar ${className ?? ''}`.trim()}>
       <div className="software-version-bar__head">
         <strong className="software-version-bar__name">{displayName}</strong>
-        <span className="muted u-text-sm">{softwareId}</span>
+        {softwareId.toLowerCase() !== displayName.toLowerCase() ? (
+          <span className="muted u-text-sm">{softwareId}</span>
+        ) : null}
       </div>
       <div className="software-version-bar__row">
         <span className="software-version-bar__label">
@@ -271,6 +273,7 @@ export function SoftwareVersionBar({
         ) : null}
         {st.source ? (
           <span className="muted u-text-sm" title={st.notes.join(' · ')}>
+            {t('software.version.sourceLabel', { defaultValue: 'Source' })}:{' '}
             {st.source}
           </span>
         ) : null}
@@ -351,6 +354,14 @@ export function SoftwareVersionBar({
         open={uninstallOpen}
         ids={[softwareId]}
         title={displayName}
+        extraWarning={
+          softwareId === 'certbot'
+            ? t('ssl.uninstallCertbotWarn', {
+                defaultValue:
+                  'Removing certbot stops automatic renewal of existing Let\'s Encrypt certificates.',
+              })
+            : undefined
+        }
         busy={busy}
         onClose={() => !busy && setUninstallOpen(false)}
         onConfirm={runUninstall}

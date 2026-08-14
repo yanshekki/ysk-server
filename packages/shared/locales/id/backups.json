@@ -132,5 +132,7 @@
   "overwriteConfirmHint": "Ketik OVERWRITE untuk mengonfirmasi penimpaan",
   "testRemote": "Uji tujuan",
   "testRemoteDone": "Probe jarak jauh selesai",
-  "testRemoteFailed": "Probe jarak jauh gagal"
+  "testRemoteFailed": "Probe jarak jauh gagal",
+  "resticRepoPh": "Panel data directory / restic-repo",
+  "testDisabledHint": "Turn on remote push before testing."
 }

@@ -169,5 +169,18 @@
   "groupOs": "시스템 패키지",
   "notInstalled": "미설치",
   "goToPage": "페이지 열기",
-  "hubHint": "이 호스트의 카탈로그 소프트웨어 및 런타임. 새로고침하려면 스캔하세요."
+  "hubHint": "이 호스트의 카탈로그 소프트웨어 및 런타임. 새로고침하려면 스캔하세요.",
+  "intervalDay": "every day",
+  "intervalDays": "every {{n}} days",
+  "intervalHour": "every hour",
+  "intervalHours": "every {{n}} hours",
+  "intervalMinutes": "every {{n}} minutes",
+  "intervalSeconds": "every {{n}} seconds",
+  "availableHint": "Packages with a newer candidate from the package manager.",
+  "servicesHint": "Catalog services on this host. Open the service page to install.",
+  "runtimeHint": "Runtimes on this host. Version upgrades are done on each runtime page.",
+  "needsReboot": "Reboot needed",
+  "kernelRebootWarn": "Installing a new kernel usually needs a reboot before it is used.",
+  "neverRun": "not run yet",
+  "scanOsvN": "Scan + OSV (first {{n}})"
 }

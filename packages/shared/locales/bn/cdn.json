@@ -115,5 +115,9 @@
   "deleteNodeDesc": "CDN নোড \"{{name}}\" মুছে দেয়।",
   "deleteSiteDesc": "CDN সাইট \"{{name}}\" মুছে দেয়।",
   "deleteSiteC1": "সাইট নীতি এবং প্রান্ত সমিতি",
-  "deleteSiteC2": "প্রয়োগ করা nginx কনফিগারেশনের জন্য আলাদা ক্লিনআপ বা পুনরায় আবেদন করতে হতে পারে"
+  "deleteSiteC2": "প্রয়োগ করা nginx কনফিগারেশনের জন্য আলাদা ক্লিনআপ বা পুনরায় আবেদন করতে হতে পারে",
+  "statOnline": "Online {{n}}/{{total}}",
+  "statOffline": "Offline {{n}}",
+  "statDraining": "Draining {{n}}",
+  "statHitRate": "Hit rate {{v}}"
 }

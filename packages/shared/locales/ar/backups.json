@@ -132,5 +132,7 @@
   "overwriteConfirmHint": "اكتب OVERWRITE لتأكيد الكتابة الفوقية",
   "testRemote": "اختبار الوجهة",
   "testRemoteDone": "اكتمل فحص الوجهة",
-  "testRemoteFailed": "فشل فحص الوجهة"
+  "testRemoteFailed": "فشل فحص الوجهة",
+  "resticRepoPh": "Panel data directory / restic-repo",
+  "testDisabledHint": "Turn on remote push before testing."
 }

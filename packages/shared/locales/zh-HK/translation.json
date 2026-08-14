@@ -422,7 +422,9 @@
     "overwriteConfirmHint": "輸入 OVERWRITE 確認覆寫",
     "testRemote": "測試目的地",
     "testRemoteDone": "遠端探測完成",
-    "testRemoteFailed": "遠端探測失敗"
+    "testRemoteFailed": "遠端探測失敗",
+    "resticRepoPh": "面板資料目錄／restic 庫",
+    "testDisabledHint": "請先開啟遠端推送才可測試。"
   },
   "btTracker": {
     "title": "BT追蹤器",
@@ -607,7 +609,7 @@
     "confWritten": "已寫入 設定檔（{{status}}）",
     "partialFail": "未全部成功（{{status}}）— 見 notes",
     "statNodes": "節點",
-    "statSites": "站點",
+    "statSites": "站點 {{n}}",
     "recentNotes": "最近 notes",
     "edgeConfPreview": "Nginx 邊緣 設定檔 預覽",
     "tabs": {
@@ -692,7 +694,11 @@
     "deleteNodeDesc": "將刪除 CDN 節點「{{name}}」。",
     "deleteSiteDesc": "將刪除 CDN 站點「{{name}}」。",
     "deleteSiteC1": "站點政策與邊緣關聯",
-    "deleteSiteC2": "已下發的 nginx 設定需另行清理或重新套用"
+    "deleteSiteC2": "已下發的 nginx 設定需另行清理或重新套用",
+    "statOnline": "線上 {{n}}/{{total}}",
+    "statOffline": "離線 {{n}}",
+    "statDraining": "排水中 {{n}}",
+    "statHitRate": "命中率 {{v}}"
   },
   "cli": {
     "unknownCommand": "未知命令：{{command}}\n執行 `{{cli}} help`",
@@ -2141,7 +2147,19 @@
     "sourceHost": "主機",
     "noHostJobs": "此範圍沒有 crontab 工作",
     "hostPartial": "無法完整讀取所有用戶 crontab（需要 root）",
-    "pendingInstall": "待安裝到系統（{{count}}）"
+    "pendingInstall": "待安裝到系統（{{count}}）",
+    "hourRange": "小時必須介乎 0–23。",
+    "minuteRange": "分鐘必須介乎 0–59。",
+    "hoursCommon": "常用小時",
+    "hoursAll": "全部小時",
+    "invalidExpr": "不是有效的 5 欄 cron 表達式。",
+    "needCommand": "請填寫指令。",
+    "needUser": "請選擇專案或系統用戶。",
+    "hostCounts": "主機行數",
+    "hostCountsVal": "{{ysk}} · 其他 {{other}} · 合共 {{total}}",
+    "hostYskYes": "已有面板行",
+    "hostYskNo": "尚無面板行",
+    "emptyHostCrontab": "用戶 {{user}} 尚未有 crontab。"
   },
   "dashboard": {
     "title": "控制台",
@@ -3337,10 +3355,10 @@
     "startService": "啟動服務",
     "notInstalled": "fail2ban 尚未安裝",
     "toolHintPrefix": "底層工具：",
-    "toolHintBody": "掃日誌後臨時封鎖。攻擊應變請用防護中心。",
+    "toolHintBody": "fail2ban 會掃日誌後臨時封鎖。攻擊應變請用",
     "toolHintTemp": "",
     "toolHintBody2": "",
-    "toolHintUfw": "埠／永久規則",
+    "toolHintUfw": "負責埠與永久規則。",
     "tabs": {
       "bans": "封鎖列表",
       "whitelist": "白名單",
@@ -3369,7 +3387,7 @@
     "addWhitelist": "加入白名單",
     "applyPolicyIgnoreip": "套用策略（含 ignoreip）",
     "applyIgnoreipOk": "已把 ignoreip 寫入 jail.local 並套用",
-    "ignoreipHint": "無 系統變更權限 時只寫管理檔（apply_status=已寫入）；「套用策略」會重建 jail.local 的 ignoreip= 行並 重新載入。",
+    "ignoreipHint": "沒有系統變更權限時只寫面板檔。套用策略會重建 jail.local 的 ignoreip 並重新載入。",
     "whitelistTitle": "白名單 ({{count}})",
     "whitelistRemoved": "已移除白名單",
     "remove": "移除",
@@ -3407,6 +3425,24 @@
       "reload": "已重新載入 fail2ban",
       "restart": "已重啟 fail2ban",
       "stop": "已停止 fail2ban"
+    },
+    "statWhitelist": "白名單",
+    "invalidIp": "請輸入有效的 IPv4、IPv6 或 CIDR。",
+    "whitelistPendingApply": "已寫入面板名單。請按「套用策略」才會寫入 jail.local。",
+    "ignoreipFile": "面板資料目錄／fail2ban／ignoreip.txt",
+    "jailsTabHint": "顯示作用中 Jail 狀態。要開關 Jail 請到「策略」分頁。",
+    "colJail": "Jail",
+    "colEnabled": "開啟",
+    "serviceStateLine": "單元 {{unit}} · {{state}} · 開機 {{boot}}",
+    "jail": {
+      "sshd": "遠端登入暴力破解",
+      "nginxHttpAuth": "Nginx HTTP 驗證",
+      "nginxBotsearch": "Nginx 掃描／機械人探測",
+      "nginxBadbots": "Nginx 已知惡意機械人",
+      "nginxLimitReq": "Nginx 限速 Jail",
+      "postfix": "Postfix 郵件暴力破解",
+      "dovecot": "Dovecot 郵件登入",
+      "recidive": "累犯"
     }
   },
   "featurePage": {
@@ -4585,7 +4621,15 @@
     "usageNoteFull": "用量來自本機 du（非估算）。配額為控制面 soft limit；硬 setquota 需「套用限制到系統」。",
     "sseNeedLogin": "未登入，無法開啟 SSE",
     "sseSessionExpired": "未登入或 工作階段 失效，無法開啟 SSE",
-    "sseHttpError": "串流 HTTP {{status}}"
+    "sseHttpError": "串流 HTTP {{status}}",
+    "colFilesystem": "檔案系統",
+    "colMount": "掛載點",
+    "colSize": "容量",
+    "colUsed": "已用",
+    "colAvail": "可用",
+    "colUsePct": "使用率",
+    "colHome": "主目錄",
+    "usageNoteLink": "配額是控制面軟上限。要套用硬限制請到專案「隔離」分頁。"
   },
   "migrate": {
     "tabInventory": "盤點",
@@ -8700,7 +8744,11 @@
     "manageInNginx": "在 Nginx 管理",
     "advFtpHomeApp": "網站 app 目錄",
     "advFtpHomeRoot": "專案家目錄（全部）",
-    "advFtpManage": "開啟 FTP 頁"
+    "advFtpManage": "開啟 FTP 頁",
+    "resShell": "登入 shell",
+    "resSaveHint": "「儲存並套用」會改主機。「僅存控制面」只記表單。「再套用」用已存值再寫入系統。",
+    "resBashConfirmTitle": "允許互動式 bash？",
+    "resBashConfirmDesc": "這會讓專案用戶有互動登入 shell。只在需要以該用戶 SSH 或終端機時才確認。"
   },
   "protection": {
     "levels": {
@@ -9298,7 +9346,8 @@
     "fixNow": "立即修復",
     "fixFailed": "修復失敗",
     "fixDone": "已修復 dataDir 權限（chmod 750）",
-    "fixDoneWebUi": "已建置／安裝 Web 介面"
+    "fixDoneWebUi": "已建置／安裝 Web 介面",
+    "rootLabel": "超級用戶"
   },
   "redis": {
     "neverExpire": "永不過期",
@@ -9917,6 +9966,10 @@
       "cron": "Cron",
       "user": "使用者",
       "other": "其他"
+    },
+    "alias": {
+      "ssl": "證書 cert certificate 憑證 certs",
+      "projects": "項目 專案 project sites"
     }
   },
   "security": {
@@ -10498,7 +10551,8 @@
       "pick": "選擇版本",
       "noTarget": "沒有可更新版本",
       "needRuntimePage": "請在執行環境頁安裝此版本",
-      "noAptCandidate": "沒有可用的 apt 候選版本"
+      "noAptCandidate": "沒有可用的 apt 候選版本",
+      "sourceLabel": "來源"
     },
     "install": {
       "progress": "正在安裝：{{list}}…",
@@ -10826,7 +10880,8 @@
     "requestDone": "憑證申請已完成",
     "requestFailed": "憑證申請未成功",
     "applyFailed": "申請失敗",
-    "deletedCert": "已刪除 {{domain}}"
+    "deletedCert": "已刪除 {{domain}}",
+    "uninstallCertbotWarn": "解除安裝 certbot 會令現有 Let's Encrypt 憑證無法自動續期。"
   },
   "stackWizard": {
     "purgeConfirm": "確認清除？將刪除已登記的資料目錄（資料庫／郵件等），此操作無法復原。",
@@ -11059,7 +11114,10 @@
     "exportPath": "匯出路徑",
     "mode": "模式",
     "managedConf": "託管設定檔",
-    "dryRunFlag": "預覽試行"
+    "dryRunFlag": "預覽試行",
+    "timezoneSearch": "篩選時區…",
+    "resyncNtp": "重新同步 NTP",
+    "storageSub": "磁碟用量"
   },
   "systemd": {
     "enabled": "已啟用",
@@ -11193,7 +11251,8 @@
     "stepUpHint": "帳戶已啟用 2FA 時，root 登入需再驗證。",
     "stepUpTitle": "確認 root shell",
     "stepUpDesc": "輸入驗證器代碼或救援碼。",
-    "totpLabel": "TOTP／救援碼"
+    "totpLabel": "TOTP／救援碼",
+    "sessionStillOpen": "說明分頁開啟期間，工作階段仍保持連線。"
   },
   "uiInline": {
     "s27d9daa5": "已預填 runtime {{v0}} {{v1}}，可建立專案",
@@ -11574,11 +11633,24 @@
     "installElsewhere": "安裝軟件（Nginx、PHP、資料庫等）請到對應功能頁，而非本頁。",
     "status": "狀態",
     "groupService": "服務",
-    "groupRuntime": "Runtime",
+    "groupRuntime": "執行環境",
     "groupOs": "系統套件",
     "notInstalled": "未安裝",
     "goToPage": "前往頁面",
-    "hubHint": "本機 catalog 服務與 runtime。請掃描以重新整理。"
+    "hubHint": "本機 catalog 服務與 runtime。請掃描以重新整理。",
+    "intervalDay": "每日",
+    "intervalDays": "每 {{n}} 日",
+    "intervalHour": "每小時",
+    "intervalHours": "每 {{n}} 小時",
+    "intervalMinutes": "每 {{n}} 分鐘",
+    "intervalSeconds": "每 {{n}} 秒",
+    "availableHint": "套件管理有較新候選版本的套件。",
+    "servicesHint": "本機 catalog 服務。未安裝請前往該服務頁安裝。",
+    "runtimeHint": "本機執行環境。升級請到各執行環境頁。",
+    "needsReboot": "需重啟",
+    "kernelRebootWarn": "安裝新 kernel 後通常要重啟才會生效。",
+    "neverRun": "尚未執行",
+    "scanOsvN": "掃描 + OSV（前 {{n}} 個）"
   },
   "users": {
     "userCount": "{{count}} 用戶",

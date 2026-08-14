@@ -422,7 +422,9 @@
     "overwriteConfirmHint": "덮어쓰기를 확인하려면 OVERWRITE를 입력하세요.",
     "testRemote": "대상 테스트",
     "testRemoteDone": "원격 탐침 완료",
-    "testRemoteFailed": "원격 탐침 실패"
+    "testRemoteFailed": "원격 탐침 실패",
+    "resticRepoPh": "Panel data directory / restic-repo",
+    "testDisabledHint": "Turn on remote push before testing."
   },
   "btTracker": {
     "title": "블루투스 트래커",
@@ -692,7 +694,11 @@
     "deleteNodeDesc": "CDN 노드 \"{{name}}\"을 삭제합니다.",
     "deleteSiteDesc": "CDN 사이트 \"{{name}}\"을 삭제합니다.",
     "deleteSiteC1": "사이트 정책 및 에지 연결",
-    "deleteSiteC2": "적용된 nginx 구성은 별도의 정리 또는 재적용이 필요할 수 있습니다."
+    "deleteSiteC2": "적용된 nginx 구성은 별도의 정리 또는 재적용이 필요할 수 있습니다.",
+    "statOnline": "Online {{n}}/{{total}}",
+    "statOffline": "Offline {{n}}",
+    "statDraining": "Draining {{n}}",
+    "statHitRate": "Hit rate {{v}}"
   },
   "cli": {
     "unknownCommand": "알 수 없는 명령: {{command}}\n`{{cli}} 도움말`을 실행하세요.",
@@ -2141,7 +2147,19 @@
     "sourceHost": "주인",
     "noHostJobs": "이 범위에는 crontab 작업이 없습니다.",
     "hostPartial": "모든 사용자 crontab을 읽을 수 없습니다(루트 필요).",
-    "pendingInstall": "설치 대기 중({{count}})"
+    "pendingInstall": "설치 대기 중({{count}})",
+    "hourRange": "Hour must be 0–23.",
+    "minuteRange": "Minute must be 0–59.",
+    "hoursCommon": "Common hours",
+    "hoursAll": "All hours",
+    "invalidExpr": "Not a valid 5-field cron expression.",
+    "needCommand": "Command is required.",
+    "needUser": "Choose a project or a system user.",
+    "hostCounts": "Host lines",
+    "hostCountsVal": "{{ysk}} · other {{other}} · total {{total}}",
+    "hostYskYes": "panel lines present",
+    "hostYskNo": "no panel lines",
+    "emptyHostCrontab": "No crontab for {{user}}."
   },
   "dashboard": {
     "title": "대시보드",
@@ -3407,6 +3425,24 @@
       "reload": "fail2ban이 다시 로드되었습니다.",
       "restart": "fail2ban이 다시 시작되었습니다.",
       "stop": "fail2ban이 중지되었습니다."
+    },
+    "statWhitelist": "Whitelist",
+    "invalidIp": "Enter a valid IPv4, IPv6, or CIDR.",
+    "whitelistPendingApply": "Saved to the panel list. Press Apply policy to write jail.local.",
+    "ignoreipFile": "Panel data directory / fail2ban / ignoreip.txt",
+    "jailsTabHint": "Status of active jails. Turn jails on or off in the Policy tab.",
+    "colJail": "Jail",
+    "colEnabled": "On",
+    "serviceStateLine": "Unit {{unit}} · {{state}} · boot {{boot}}",
+    "jail": {
+      "sshd": "SSH brute-force",
+      "nginxHttpAuth": "Nginx HTTP authentication",
+      "nginxBotsearch": "Nginx scanner / bot probes",
+      "nginxBadbots": "Nginx known bad bots",
+      "nginxLimitReq": "Nginx rate-limit jail",
+      "postfix": "Postfix mail brute-force",
+      "dovecot": "Dovecot mail login",
+      "recidive": "Repeat offenders"
     }
   },
   "featurePage": {
@@ -4585,7 +4621,15 @@
     "usageNoteFull": "로컬 du의 사용량(추정되지 않음) 할당량은 제어 영역의 소프트 한도입니다. 하드 설정 할당량에는 호스트에 적용이 필요합니다.",
     "sseNeedLogin": "로그인되지 않았습니다. SSE를 열 수 없습니다",
     "sseSessionExpired": "로그인되지 않았거나 세션이 만료되었습니다. SSE를 열 수 없습니다",
-    "sseHttpError": "HTTP 스트리밍 {{status}}"
+    "sseHttpError": "HTTP 스트리밍 {{status}}",
+    "colFilesystem": "Filesystem",
+    "colMount": "Mount",
+    "colSize": "Size",
+    "colUsed": "Used",
+    "colAvail": "Available",
+    "colUsePct": "Used %",
+    "colHome": "Home",
+    "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab."
   },
   "migrate": {
     "tabInventory": "목록",
@@ -8700,7 +8744,11 @@
     "advFtpHomeApp": "사이트 app 디렉터리",
     "advFtpHomeRoot": "프로젝트 홈(전체)",
     "advFtpManage": "FTP 페이지 열기",
-    "listDesc": "Manage sites on this host."
+    "listDesc": "Manage sites on this host.",
+    "resShell": "Login shell",
+    "resSaveHint": "Save and apply changes the live OS. Control-plane only stores the form. Re-apply uses the last saved values.",
+    "resBashConfirmTitle": "Allow interactive bash?",
+    "resBashConfirmDesc": "This grants an interactive login shell to the project user. Confirm only if you need SSH or PTY as that user."
   },
   "protection": {
     "levels": {
@@ -9298,7 +9346,8 @@
     "fixNow": "지금 고치세요",
     "fixFailed": "수정 실패",
     "fixDone": "dataDir 권한 강화(chmod 750)",
-    "fixDoneWebUi": "웹 UI 구축/설치"
+    "fixDoneWebUi": "웹 UI 구축/설치",
+    "rootLabel": "Superuser"
   },
   "redis": {
     "neverExpire": "만료되지 않음",
@@ -9917,6 +9966,10 @@
       "cron": "Cron",
       "user": "사용자",
       "other": "다른"
+    },
+    "alias": {
+      "ssl": "cert certificate certs",
+      "projects": "project sites"
     }
   },
   "security": {
@@ -10498,7 +10551,8 @@
       "pick": "버전 선택",
       "noTarget": "업데이트 대상 없음",
       "needRuntimePage": "런타임 페이지에 이 버전을 설치하세요.",
-      "noAptCandidate": "적절한 후보 버전 없음"
+      "noAptCandidate": "적절한 후보 버전 없음",
+      "sourceLabel": "Source"
     },
     "install": {
       "progress": "설치 중: {{list}}…",
@@ -10826,7 +10880,8 @@
     "requestDone": "인증서 요청이 완료되었습니다.",
     "requestFailed": "인증서 요청이 실패했습니다.",
     "applyFailed": "요청 실패",
-    "deletedCert": "삭제됨 {{domain}}"
+    "deletedCert": "삭제됨 {{domain}}",
+    "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates."
   },
   "stackWizard": {
     "purgeConfirm": "퍼지를 확인하시겠습니까? 등록된 데이터 경로(데이터베이스/메일)가 영구적으로 삭제됩니다.",
@@ -11059,7 +11114,10 @@
     "exportPath": "내보내기 경로",
     "mode": "방법",
     "managedConf": "관리형 구성",
-    "dryRunFlag": "드라이런"
+    "dryRunFlag": "드라이런",
+    "timezoneSearch": "Filter timezones…",
+    "resyncNtp": "Re-sync NTP",
+    "storageSub": "Disk usage"
   },
   "systemd": {
     "enabled": "사용",
@@ -11193,7 +11251,8 @@
     "stepUpHint": "계정에 TOTP가 활성화되어 있는 경우 루트 로그인을 위해서는 2FA 승격이 필요합니다.",
     "stepUpTitle": "루트 쉘 확인",
     "stepUpDesc": "인증 코드 또는 복구 코드를 입력하세요.",
-    "totpLabel": "TOTP / 복구 코드"
+    "totpLabel": "TOTP / 복구 코드",
+    "sessionStillOpen": "A live shell is still connected while you read this page."
   },
   "uiInline": {
     "s27d9daa5": "런타임 {{v0}} {{v1}}，",
@@ -11578,7 +11637,20 @@
     "groupOs": "시스템 패키지",
     "notInstalled": "미설치",
     "goToPage": "페이지 열기",
-    "hubHint": "이 호스트의 카탈로그 소프트웨어 및 런타임. 새로고침하려면 스캔하세요."
+    "hubHint": "이 호스트의 카탈로그 소프트웨어 및 런타임. 새로고침하려면 스캔하세요.",
+    "intervalDay": "every day",
+    "intervalDays": "every {{n}} days",
+    "intervalHour": "every hour",
+    "intervalHours": "every {{n}} hours",
+    "intervalMinutes": "every {{n}} minutes",
+    "intervalSeconds": "every {{n}} seconds",
+    "availableHint": "Packages with a newer candidate from the package manager.",
+    "servicesHint": "Catalog services on this host. Open the service page to install.",
+    "runtimeHint": "Runtimes on this host. Version upgrades are done on each runtime page.",
+    "needsReboot": "Reboot needed",
+    "kernelRebootWarn": "Installing a new kernel usually needs a reboot before it is used.",
+    "neverRun": "not run yet",
+    "scanOsvN": "Scan + OSV (first {{n}})"
   },
   "users": {
     "userCount": "{{count}} 사용자",

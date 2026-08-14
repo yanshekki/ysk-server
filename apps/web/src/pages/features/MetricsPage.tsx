@@ -1294,35 +1294,35 @@ export function MetricsPage() {
                   columns={[
                     {
                       key: 'fs',
-                      header: 'Filesystem',
+                      header: t('metrics.colFilesystem'),
                       render: (m) => (
                         <code className="inline">{m.filesystem}</code>
                       ) },
                     {
                       key: 'mount',
-                      header: 'Mount',
+                      header: t('metrics.colMount'),
                       render: (m) => <code className="inline">{m.mount}</code> },
                     {
                       key: 'size',
-                      header: 'Size',
+                      header: t('metrics.colSize'),
                       className: 'u-num',
                       nowrap: true,
                       render: (m) => formatBytes(m.size) },
                     {
                       key: 'used',
-                      header: 'Used',
+                      header: t('metrics.colUsed'),
                       className: 'u-num',
                       nowrap: true,
                       render: (m) => formatBytes(m.used) },
                     {
                       key: 'avail',
-                      header: 'Avail',
+                      header: t('metrics.colAvail'),
                       className: 'u-num',
                       nowrap: true,
                       render: (m) => formatBytes(m.avail) },
                     {
                       key: 'pct',
-                      header: 'Use%',
+                      header: t('metrics.colUsePct'),
                       nowrap: true,
                       render: (m) => {
                         const pct = Math.round(m.usedRatio * 100);
@@ -1355,7 +1355,7 @@ export function MetricsPage() {
                                   : pct >= 75
                                     ? ' met-meter__fill--warn'
                                     : ''
-                              } u-meter-fill`} style={{ ["--meter-pct" as string]: `${Math.min(100, pct)}%` }}
+                              } u-meter-fill`} style={{ ["--meter-pct" as string]: `${Math.min(100, pct)}%`, minWidth: pct > 0 ? '0.4rem' : 0 }}
                             />
                           </div>
                         );
@@ -1423,12 +1423,16 @@ export function MetricsPage() {
                         ) },
                       {
                         key: 'home',
-                        header: 'Home',
-                        render: (r) => (
-                          <code className="inline u-break-all">
-                            {r.homeDir || '—'}
-                          </code>
-                        ) },
+                        header: t('metrics.colHome'),
+                        render: (r) => {
+                          const full = r.homeDir || '';
+                          const short = full.replace(/^\/home\//, '~/');
+                          return (
+                            <code className="inline" title={full}>
+                              {short || '—'}
+                            </code>
+                          );
+                        } },
                       {
                         key: 'used',
                         header: t('metrics.used'),
@@ -1474,7 +1478,10 @@ export function MetricsPage() {
                 {projectUsage?.notes?.length ? (
                   <p className="met-footnote">{projectUsage.notes.join(' · ')}</p>
                 ) : (
-                  <p className="met-footnote">{t('metrics.usageNoteFull')}</p>
+                  <p className="met-footnote">
+                    {t('metrics.usageNoteLink')}{' '}
+                    <Link to="/projects">{t('nav.projects')}</Link>
+                  </p>
                 )}
               </div>
             ) : null}

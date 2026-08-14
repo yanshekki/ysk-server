@@ -128,5 +128,13 @@
   "usageNoteFull": "Penggunaan dari du lokal (tidak diperkirakan). Kuota adalah batas lunak bidang kontrol; hard setquota perlu diterapkan ke host.",
   "sseNeedLogin": "Tidak masuk; tidak dapat membuka SSE",
   "sseSessionExpired": "Tidak masuk atau sesi berakhir; tidak dapat membuka SSE",
-  "sseHttpError": "streaming HTTP {{status}}"
+  "sseHttpError": "streaming HTTP {{status}}",
+  "colFilesystem": "Filesystem",
+  "colMount": "Mount",
+  "colSize": "Size",
+  "colUsed": "Used",
+  "colAvail": "Available",
+  "colUsePct": "Used %",
+  "colHome": "Home",
+  "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab."
 }

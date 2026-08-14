@@ -29,5 +29,6 @@
   "stepUpHint": "帳戶已啟用 2FA 時，root 登入需再驗證。",
   "stepUpTitle": "確認 root shell",
   "stepUpDesc": "輸入驗證器代碼或救援碼。",
-  "totpLabel": "TOTP／救援碼"
+  "totpLabel": "TOTP／救援碼",
+  "sessionStillOpen": "說明分頁開啟期間，工作階段仍保持連線。"
 }

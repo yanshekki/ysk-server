@@ -29,5 +29,6 @@
   "stepUpHint": "La connexion root exige une élévation 2FA lorsque votre compte a le TOTP activé.",
   "stepUpTitle": "Confirmer le shell root",
   "stepUpDesc": "Saisissez le code de votre authenticator ou un code de récupération.",
-  "totpLabel": "Code TOTP / de récupération"
+  "totpLabel": "Code TOTP / de récupération",
+  "sessionStillOpen": "A live shell is still connected while you read this page."
 }

@@ -87,7 +87,8 @@
     "pick": "選擇版本",
     "noTarget": "沒有可更新版本",
     "needRuntimePage": "請在執行環境頁安裝此版本",
-    "noAptCandidate": "沒有可用的 apt 候選版本"
+    "noAptCandidate": "沒有可用的 apt 候選版本",
+    "sourceLabel": "來源"
   },
   "install": {
     "progress": "正在安裝：{{list}}…",

@@ -87,7 +87,8 @@
     "pick": "Escolha a versão",
     "noTarget": "Sem meta de atualização",
     "needRuntimePage": "Instale esta versão na página de tempo de execução",
-    "noAptCandidate": "Nenhuma versão candidata adequada"
+    "noAptCandidate": "Nenhuma versão candidata adequada",
+    "sourceLabel": "Source"
   },
   "install": {
     "progress": "Instalando: {{list}}…",

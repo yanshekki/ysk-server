@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.0.34 — 2026-08-15
+
+### Fix
+- fail2ban stop uses the shared lifecycle bar with confirm; ignoreip rejects `999.999.999.999`
+- Let's Encrypt certificates show **issued**, not uploaded
+- System cron jobs can be created without a project; invalid cron expressions are rejected
+- Updates current/latest versions follow the live probe; same-version rows no longer draw `X → X`
+- Kernel apply confirm mentions reboot; jail descriptions follow the UI language
+- Isolation form no longer pretends 512M limits are already applied; bash needs confirm
+- Remote backup fields disable when remote push is off
+- `?tab=self` / `?tab=disk` rewrite to the real tab
+- fail2ban banner no longer prints `UFW = UFW =`
+
 ## 1.0.33 — 2026-08-14
 
 ### Fix

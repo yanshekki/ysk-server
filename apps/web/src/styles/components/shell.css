@@ -508,7 +508,10 @@
 }
 
 .shell__nav-section-title {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
   width: 100%;
   appearance: none;
   border: 0;
@@ -521,6 +524,12 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-muted);
+}
+
+.shell__nav-section-caret {
+  flex: 0 0 auto;
+  font-size: 0.7rem;
+  opacity: 0.75;
 }
 
 .shell__nav-section-title:hover {

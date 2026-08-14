@@ -107,5 +107,6 @@
   "fixNow": "今すぐ修正",
   "fixFailed": "修正に失敗しました",
   "fixDone": "dataDir 権限の強化 (chmod 750)",
-  "fixDoneWebUi": "Web UIの構築/インストール"
+  "fixDoneWebUi": "Web UIの構築/インストール",
+  "rootLabel": "Superuser"
 }

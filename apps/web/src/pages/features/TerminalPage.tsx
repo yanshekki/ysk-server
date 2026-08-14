@@ -428,10 +428,14 @@ export function TerminalPage() {
             label: t('terminal.user'),
             value: titleUser,
           },
-          {
-            label: t('terminal.size'),
-            value: `${dims.cols}×${dims.rows}`,
-          },
+          ...(conn === 'connected'
+            ? [
+                {
+                  label: t('terminal.size'),
+                  value: `${dims.cols}×${dims.rows}`,
+                },
+              ]
+            : []),
         ],
       }}
       actions={
@@ -612,6 +616,18 @@ export function TerminalPage() {
 
         {tab === 'about' ? (
           <div className="tab-panel stack">
+            {conn === 'connected' ? (
+              <Alert variant="warn">
+                {t('terminal.sessionStillOpen')}{' '}
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => disconnect(t('terminal.disconnected'))}
+                >
+                  {t('terminal.disconnect')}
+                </Button>
+              </Alert>
+            ) : null}
             <section className="dns-about">
               <header className="dns-about__head">
                 <h3 className="dns-about__title">{t('terminal.aboutTitle')}</h3>

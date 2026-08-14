@@ -20,5 +20,9 @@
     "cron": "کرون",
     "user": "صارفین",
     "other": "دیگر"
+  },
+  "alias": {
+    "ssl": "cert certificate certs",
+    "projects": "project sites"
   }
 }

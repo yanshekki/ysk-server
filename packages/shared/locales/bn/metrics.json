@@ -128,5 +128,13 @@
   "usageNoteFull": "স্থানীয় du থেকে ব্যবহার (আনুমানিক নয়)। কোটা একটি নিয়ন্ত্রণ-বিমান নরম সীমা; হার্ড সেটকোটা হোস্টে প্রয়োগ করতে হবে।",
   "sseNeedLogin": "লগ ইন করা হয়নি; SSE খুলতে পারে না",
   "sseSessionExpired": "লগ ইন বা অধিবেশন মেয়াদ শেষ না; SSE খুলতে পারে না",
-  "sseHttpError": "স্ট্রিম HTTP {{status}}"
+  "sseHttpError": "স্ট্রিম HTTP {{status}}",
+  "colFilesystem": "Filesystem",
+  "colMount": "Mount",
+  "colSize": "Size",
+  "colUsed": "Used",
+  "colAvail": "Available",
+  "colUsePct": "Used %",
+  "colHome": "Home",
+  "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab."
 }

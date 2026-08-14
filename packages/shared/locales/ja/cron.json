@@ -135,5 +135,17 @@
   "sourceHost": "ホスト",
   "noHostJobs": "このスコープには crontab ジョブがありません",
   "hostPartial": "すべてのユーザーの crontab を読み取ることができませんでした (root が必要)",
-  "pendingInstall": "インストール保留中 ({{count}})"
+  "pendingInstall": "インストール保留中 ({{count}})",
+  "hourRange": "Hour must be 0–23.",
+  "minuteRange": "Minute must be 0–59.",
+  "hoursCommon": "Common hours",
+  "hoursAll": "All hours",
+  "invalidExpr": "Not a valid 5-field cron expression.",
+  "needCommand": "Command is required.",
+  "needUser": "Choose a project or a system user.",
+  "hostCounts": "Host lines",
+  "hostCountsVal": "{{ysk}} · other {{other}} · total {{total}}",
+  "hostYskYes": "panel lines present",
+  "hostYskNo": "no panel lines",
+  "emptyHostCrontab": "No crontab for {{user}}."
 }

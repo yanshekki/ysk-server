@@ -839,9 +839,9 @@ export function VpnPage() {
                     onChange={(v) => setMonEngine(v as 'all' | VpnEngineId)}
                     options={[
                       { value: 'all', label: t('vpn.monitor.engineAll') },
-                      { value: 'wireguard', label: 'WG' },
-                      { value: 'openvpn', label: 'OVPN' },
-                      { value: 'outline', label: 'SS' },
+                      { value: 'wireguard', label: 'WireGuard' },
+                      { value: 'openvpn', label: 'OpenVPN' },
+                      { value: 'outline', label: 'Shadowsocks' },
                     ]}
                   />
                   <SegRadio

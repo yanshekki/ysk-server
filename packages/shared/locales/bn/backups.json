@@ -132,5 +132,7 @@
   "overwriteConfirmHint": "ওভাররাইট নিশ্চিত করতে ওভাররাইট টাইপ করুন",
   "testRemote": "গন্তব্য পরীক্ষা",
   "testRemoteDone": "রিমোট প্রোব শেষ",
-  "testRemoteFailed": "রিমোট প্রোব ব্যর্থ"
+  "testRemoteFailed": "রিমোট প্রোব ব্যর্থ",
+  "resticRepoPh": "Panel data directory / restic-repo",
+  "testDisabledHint": "Turn on remote push before testing."
 }

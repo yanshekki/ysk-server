@@ -132,5 +132,7 @@
   "overwriteConfirmHint": "Tapez OVERWRITE pour confirmer l'écrasement",
   "testRemote": "Tester la destination",
   "testRemoteDone": "Sonde distante terminée",
-  "testRemoteFailed": "Sonde distante échouée"
+  "testRemoteFailed": "Sonde distante échouée",
+  "resticRepoPh": "Panel data directory / restic-repo",
+  "testDisabledHint": "Turn on remote push before testing."
 }

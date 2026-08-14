@@ -107,5 +107,6 @@
   "fixNow": "Arreglar ahora",
   "fixFailed": "La solución falló",
   "fixDone": "Permisos de dataDir reforzados (chmod 750)",
-  "fixDoneWebUi": "UI web construida/instalada"
+  "fixDoneWebUi": "UI web construida/instalada",
+  "rootLabel": "Superuser"
 }

@@ -99,5 +99,6 @@
   "requestDone": "Solicitação de certificado concluída",
   "requestFailed": "A solicitação de certificado não foi bem-sucedida",
   "applyFailed": "Falha na solicitação",
-  "deletedCert": "Excluído {{domain}}"
+  "deletedCert": "Excluído {{domain}}",
+  "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates."
 }

@@ -182,5 +182,8 @@
   "exportPath": "निर्यात पथ",
   "mode": "तरीका",
   "managedConf": "प्रबंधित कॉन्फ़",
-  "dryRunFlag": "पूर्वाभ्यास"
+  "dryRunFlag": "पूर्वाभ्यास",
+  "timezoneSearch": "Filter timezones…",
+  "resyncNtp": "Re-sync NTP",
+  "storageSub": "Disk usage"
 }

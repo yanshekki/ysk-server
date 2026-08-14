@@ -30,7 +30,7 @@
   "confWritten": "Conf written ({{status}})",
   "partialFail": "Not fully successful ({{status}}) — see notes",
   "statNodes": "Nodes",
-  "statSites": "Sites",
+  "statSites": "Sites {{n}}",
   "recentNotes": "Recent notes",
   "edgeConfPreview": "Nginx edge conf preview",
   "tabs": {
@@ -115,5 +115,9 @@
   "deleteNodeDesc": "Deletes CDN node \"{{name}}\".",
   "deleteSiteDesc": "Deletes CDN site \"{{name}}\".",
   "deleteSiteC1": "Site policy and edge associations",
-  "deleteSiteC2": "Applied nginx configs may need separate cleanup or re-apply"
+  "deleteSiteC2": "Applied nginx configs may need separate cleanup or re-apply",
+  "statOnline": "Online {{n}}/{{total}}",
+  "statOffline": "Offline {{n}}",
+  "statDraining": "Draining {{n}}",
+  "statHitRate": "Hit rate {{v}}"
 }

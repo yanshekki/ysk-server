@@ -128,5 +128,13 @@
   "usageNoteFull": "用量来自本机 du（非估算）。配额为控制面 soft limit；硬 setquota 需「套用限制到系统」。",
   "sseNeedLogin": "未登录，无法开启 SSE",
   "sseSessionExpired": "未登录或 session 失效，无法开启 SSE",
-  "sseHttpError": "流 HTTP {{status}}"
+  "sseHttpError": "流 HTTP {{status}}",
+  "colFilesystem": "文件系统",
+  "colMount": "挂载点",
+  "colSize": "容量",
+  "colUsed": "已用",
+  "colAvail": "可用",
+  "colUsePct": "使用率",
+  "colHome": "主目录",
+  "usageNoteLink": "配额是控制面软上限。要套用硬限制请到专案「隔离」分页。"
 }

@@ -182,5 +182,8 @@
   "exportPath": "Jalur ekspor",
   "mode": "Mode",
   "managedConf": "Konferensi terkelola",
-  "dryRunFlag": "Lari kering"
+  "dryRunFlag": "Lari kering",
+  "timezoneSearch": "Filter timezones…",
+  "resyncNtp": "Re-sync NTP",
+  "storageSub": "Disk usage"
 }

@@ -1,7 +1,7 @@
 /**
  * Human-friendly cron schedule builder → standard 5-field expression.
  */
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Field, FormLayout, PresetChips, SegRadio } from '../../shared/components/ui';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../shared/lib/i18n';
@@ -112,7 +112,9 @@ export function humanizeSchedule(
     case 'monthly':
       return t('cron.monthlyAt', { day: s.dayOfMonth, time });
     case 'custom':
-      return t('cron.customAt', { expr: s.custom.trim() || '—' });
+      return isValidCronSchedule(s.custom)
+        ? t('cron.customAt', { expr: s.custom.trim() })
+        : t('cron.invalidExpr');
     default:
       return '—';
   }
@@ -178,7 +180,26 @@ function clamp(n: number, lo: number, hi: number) {
   return Math.min(hi, Math.max(lo, Math.floor(n)));
 }
 
-const MINUTE_STEPS = [0, 5, 10, 15, 20, 30, 45];
+/** Same 5-field rules as assertSafeCronSchedule (no newlines; * / - , digits). */
+export function isValidCronSchedule(expr: string): boolean {
+  const s = expr.trim();
+  if (!s || /[\r\n]/.test(s)) return false;
+  const fields = s.split(/\s+/);
+  if (fields.length !== 5) return false;
+  for (const f of fields) {
+    if (/^[0-9*,/-]+$/.test(f)) continue;
+    if (/^(sun|mon|tue|wed|thu|fri|sat)(-(sun|mon|tue|wed|thu|fri|sat))?$/i.test(f)) continue;
+    if (/^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)(-(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec))?$/i.test(f)) {
+      continue;
+    }
+    return false;
+  }
+  return true;
+}
+
+const MINUTE_STEPS = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+const HOUR_COMMON = [0, 1, 2, 3, 4, 6, 8, 9, 12, 18, 21, 22, 23];
+const HOUR_ALL = Array.from({ length: 24 }, (_, i) => i);
 const EVERY_N = [1, 5, 10, 15, 20, 30];
 
 export interface CronScheduleBuilderProps {
@@ -188,8 +209,12 @@ export interface CronScheduleBuilderProps {
 
 export function CronScheduleBuilder({ value, onChange }: CronScheduleBuilderProps) {
   const { t } = useTranslation();
+  const [allHours, setAllHours] = useState(false);
+  const [hourErr, setHourErr] = useState<string | null>(null);
+  const [minErr, setMinErr] = useState<string | null>(null);
   const expr = useMemo(() => buildCronExpr(value), [value]);
   const human = useMemo(() => humanizeSchedule(value), [value]);
+  const customInvalid = value.mode === 'custom' && !isValidCronSchedule(value.custom);
 
   const patch = (partial: Partial<ScheduleState>) => {
     const next = { ...value, ...partial };
@@ -260,40 +285,66 @@ export function CronScheduleBuilder({ value, onChange }: CronScheduleBuilderProp
 
         {showTime ? (
           <FormLayout columns={2}>
-            <Field label={t('cron.hour')} htmlFor="cron-hour" flush>
-              <PresetChips
-                options={[
-                  { value: '0', label: '00' },
-                  { value: '1', label: '01' },
-                  { value: '2', label: '02' },
-                  { value: '3', label: '03' },
-                  { value: '4', label: '04' },
-                  { value: '6', label: '06' },
-                  { value: '8', label: '08' },
-                  { value: '9', label: '09' },
-                  { value: '12', label: '12' },
-                  { value: '18', label: '18' },
-                  { value: '21', label: '21' },
-                  { value: '22', label: '22' },
-                  { value: '23', label: '23' },
-                ]}
-                value={String(value.hour)}
-                onChange={(v) =>
-                  patch({ hour: Math.max(0, Math.min(23, Number(v) || 0)) })
-                }
-                allowCustom
-                customPlaceholder="0–23"
-              />
+            <Field
+              label={t('cron.hour')}
+              htmlFor="cron-hour"
+              flush
+              error={hourErr ?? undefined}
+              hint="0–23"
+            >
+              <>
+                <PresetChips
+                  options={(allHours || HOUR_COMMON.includes(value.hour)
+                    ? allHours
+                      ? HOUR_ALL
+                      : HOUR_COMMON
+                    : [...HOUR_COMMON, value.hour].sort((a, b) => a - b)
+                  ).map((n) => ({
+                    value: String(n),
+                    label: String(n).padStart(2, '0'),
+                  }))}
+                  value={String(value.hour)}
+                  onChange={(v) => {
+                    const n = Number(v);
+                    if (!Number.isInteger(n) || n < 0 || n > 23) {
+                      setHourErr(t('cron.hourRange'));
+                      return;
+                    }
+                    setHourErr(null);
+                    patch({ hour: n });
+                  }}
+                  allowCustom
+                  customPlaceholder="0–23"
+                />
+                <button
+                  type="button"
+                  className="btn btn--ghost btn--sm u-mt-2"
+                  onClick={() => setAllHours((v) => !v)}
+                >
+                  {allHours ? t('cron.hoursCommon') : t('cron.hoursAll')}
+                </button>
+              </>
             </Field>
-            <Field label={t('cron.minute')} htmlFor="cron-min" flush>
+            <Field
+              label={t('cron.minute')}
+              htmlFor="cron-min"
+              flush
+              error={minErr ?? undefined}
+            >
               <PresetChips
                 options={MINUTE_STEPS.map((n) => ({
                   value: String(n),
                   label: String(n).padStart(2, '0') }))}
                 value={String(value.minute)}
-                onChange={(v) =>
-                  patch({ minute: Math.max(0, Math.min(59, Number(v) || 0)) })
-                }
+                onChange={(v) => {
+                  const n = Number(v);
+                  if (!Number.isInteger(n) || n < 0 || n > 59) {
+                    setMinErr(t('cron.minuteRange'));
+                    return;
+                  }
+                  setMinErr(null);
+                  patch({ minute: n });
+                }}
                 allowCustom
                 customPlaceholder="0–59"
               />
@@ -360,7 +411,13 @@ export function CronScheduleBuilder({ value, onChange }: CronScheduleBuilderProp
               onChange={(e) => patch({ custom: e.target.value })}
               placeholder="0 3 * * *"
               spellCheck={false}
+              aria-invalid={customInvalid}
             />
+            {customInvalid ? (
+              <p className="field__error" role="alert">
+                {t('cron.invalidExpr')}
+              </p>
+            ) : null}
           </Field>
         ) : null}
       </div>

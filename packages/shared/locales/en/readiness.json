@@ -107,5 +107,6 @@
   "fixNow": "Fix now",
   "fixFailed": "Fix failed",
   "fixDone": "dataDir permissions hardened (chmod 750)",
-  "fixDoneWebUi": "Web UI built / installed"
+  "fixDoneWebUi": "Web UI built / installed",
+  "rootLabel": "Superuser"
 }

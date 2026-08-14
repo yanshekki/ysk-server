@@ -135,5 +135,17 @@
   "sourceHost": "يستضيف",
   "noHostJobs": "لا توجد وظائف crontab في هذا النطاق",
   "hostPartial": "لا يمكن قراءة كل crontab للمستخدم (الجذر مطلوب)",
-  "pendingInstall": "في انتظار التثبيت ({{count}})"
+  "pendingInstall": "في انتظار التثبيت ({{count}})",
+  "hourRange": "Hour must be 0–23.",
+  "minuteRange": "Minute must be 0–59.",
+  "hoursCommon": "Common hours",
+  "hoursAll": "All hours",
+  "invalidExpr": "Not a valid 5-field cron expression.",
+  "needCommand": "Command is required.",
+  "needUser": "Choose a project or a system user.",
+  "hostCounts": "Host lines",
+  "hostCountsVal": "{{ysk}} · other {{other}} · total {{total}}",
+  "hostYskYes": "panel lines present",
+  "hostYskNo": "no panel lines",
+  "emptyHostCrontab": "No crontab for {{user}}."
 }

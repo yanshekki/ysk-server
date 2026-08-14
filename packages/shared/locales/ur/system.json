@@ -182,5 +182,8 @@
   "exportPath": "برآمدی راستہ",
   "mode": "موڈ",
   "managedConf": "منظم conf",
-  "dryRunFlag": "ڈرائی رن"
+  "dryRunFlag": "ڈرائی رن",
+  "timezoneSearch": "Filter timezones…",
+  "resyncNtp": "Re-sync NTP",
+  "storageSub": "Disk usage"
 }

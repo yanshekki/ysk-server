@@ -107,5 +107,6 @@
   "fixNow": "지금 고치세요",
   "fixFailed": "수정 실패",
   "fixDone": "dataDir 권한 강화(chmod 750)",
-  "fixDoneWebUi": "웹 UI 구축/설치"
+  "fixDoneWebUi": "웹 UI 구축/설치",
+  "rootLabel": "Superuser"
 }

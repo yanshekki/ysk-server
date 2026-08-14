@@ -182,5 +182,8 @@
   "exportPath": "রপ্তানি পথ",
   "mode": "মোড",
   "managedConf": "পরিচালিত conf",
-  "dryRunFlag": "ড্রাই-রান"
+  "dryRunFlag": "ড্রাই-রান",
+  "timezoneSearch": "Filter timezones…",
+  "resyncNtp": "Re-sync NTP",
+  "storageSub": "Disk usage"
 }

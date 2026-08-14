@@ -27,7 +27,7 @@ import {
   SoftwareVersionBar,
   PageTabs } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
-import { systemApi } from '../../features/system';
+import { ServiceLifecycleBar, systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import {
@@ -102,11 +102,51 @@ export function clampMaxretry(v: unknown): number {
   return Math.max(1, Math.min(50, Math.floor(n)));
 }
 
-/** Whether a ban IP string looks usable. */
+function isIpv4Octets(s: string): boolean {
+  const parts = s.split('.');
+  if (parts.length !== 4) return false;
+  return parts.every((o) => {
+    if (!/^\d{1,3}$/.test(o)) return false;
+    const n = Number(o);
+    return n >= 0 && n <= 255;
+  });
+}
+
+function isIpv6Addr(s: string): boolean {
+  if (!s || s.includes('%') || s.includes('/')) return false;
+  if (!/^[0-9a-fA-F:]+$/.test(s)) return false;
+  const halves = s.split('::');
+  if (halves.length > 2) return false;
+  const hexOk = (x: string) => !x || /^[0-9a-fA-F]{1,4}$/.test(x);
+  if (halves.length === 1) {
+    const segs = halves[0].split(':');
+    return segs.length === 8 && segs.every(hexOk);
+  }
+  const left = halves[0] ? halves[0].split(':') : [];
+  const right = halves[1] ? halves[1].split(':') : [];
+  return left.length + right.length < 8 && [...left, ...right].every(hexOk);
+}
+
+/** Strict IPv4 / IPv6 — rejects 999.999.999.999 and bare words. */
 export function isValidBanIp(ip: string): boolean {
   const s = ip.trim();
   if (!s) return false;
-  return /^[\d.a-fA-F:]+$/.test(s) && s.length >= 3;
+  if (s.includes('.')) return isIpv4Octets(s);
+  if (s.includes(':')) return isIpv6Addr(s);
+  return false;
+}
+
+/** Ban IP or CIDR for ignoreip. */
+export function isValidIgnoreIp(ip: string): boolean {
+  const s = ip.trim();
+  const slash = s.lastIndexOf('/');
+  if (slash < 0) return isValidBanIp(s);
+  const addr = s.slice(0, slash);
+  const bits = Number(s.slice(slash + 1));
+  if (!Number.isInteger(bits) || bits < 0) return false;
+  if (isIpv4Octets(addr)) return bits <= 32;
+  if (isIpv6Addr(addr)) return bits <= 128;
+  return false;
 }
 
 export function Fail2banPage() {
@@ -121,6 +161,7 @@ export function Fail2banPage() {
   const [banIp, setBanIp] = useState('');
   const [banJail, setBanJail] = useState('sshd');
   const [ignoreIp, setIgnoreIp] = useState('');
+  const [ignorePendingApply, setIgnorePendingApply] = useState(false);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
 
   const catalog = status?.catalog ?? [];
@@ -150,8 +191,13 @@ export function Fail2banPage() {
   const bannedAll = status?.banned ?? [];
   const banned = useMemo(() => filterBannedRows(bannedAll, banQ), [bannedAll, banQ]);
 
-  function descFor(id: string): string | undefined {
-    return catalog.find((c) => c.id === id)?.desc;
+  function descFor(id: string): string {
+    const raw = catalog.find((c) => c.id === id)?.desc;
+    const key = raw?.startsWith('fail2ban.jail.') ? raw : `fail2ban.jail.${id}`;
+    const translated = t(key, { defaultValue: '' });
+    if (translated && translated !== key) return translated;
+    if (raw && !raw.startsWith('fail2ban.jail.')) return raw;
+    return '—';
   }
 
   return (
@@ -172,12 +218,15 @@ export function Fail2banPage() {
             label: t('fail2ban.statTotal'),
             value: status?.jails?.reduce((a, j) => a + (j.totalBanned ?? 0), 0) ?? 0 },
           { label: 'Jail', value: status?.jails?.length ?? 0 },
-          { label: t('fail2ban.statBanList'), value: banned.length },
-          { label: 'ignoreip', value: status?.ignoreIps?.length ?? 0 },
+          { label: t('fail2ban.statWhitelist'), value: status?.ignoreIps?.length ?? 0 },
           {
             label: t('fail2ban.statBoot'),
             value: status?.installed
-              ? (status.enabled ?? '—')
+              ? status.enabled === 'enabled'
+                ? t('common.enabled')
+                : status.enabled === 'disabled'
+                  ? t('common.disabled')
+                  : t('services.bootEnabled', { defaultValue: String(status.enabled ?? '—') })
               : t('common.notInstalled') },
         ] }}
       actions={
@@ -210,11 +259,12 @@ export function Fail2banPage() {
       }
     >
       <Alert variant="info">
-        <strong>{t('fail2ban.toolHintPrefix')}</strong> {t('fail2ban.toolHintBody')}
-        <strong>{t('fail2ban.toolHintTemp')}</strong> {t('fail2ban.toolHintBody2')}{' '}
+        {t('fail2ban.toolHintBody')}{' '}
         <Link to="/protection">{t('nav.protection')}</Link>
         {' · '}
-        <Link to="/protection/firewall">UFW</Link> = {t('fail2ban.toolHintUfw')}
+        <Link to="/protection/firewall">UFW</Link>
+        {' '}
+        {t('fail2ban.toolHintUfw')}
       </Alert>
 
       {loadError ? <Alert variant="error">{loadError}</Alert> : null}
@@ -411,7 +461,17 @@ export function Fail2banPage() {
                 </div>
               </div>
               <FormLayout columns={2}>
-                <Field label={t('fail2ban.addIp')} htmlFor="f2b-ignore" flush required>
+                <Field
+                  label={t('fail2ban.addIp')}
+                  htmlFor="f2b-ignore"
+                  flush
+                  required
+                  error={
+                    ignoreIp.trim() && !isValidIgnoreIp(ignoreIp)
+                      ? t('fail2ban.invalidIp')
+                      : undefined
+                  }
+                >
                   <input
                     id="f2b-ignore"
                     value={ignoreIp}
@@ -426,16 +486,19 @@ export function Fail2banPage() {
                   variant="primary"
                   size="md"
                   loading={busy}
-                  disabled={!ignoreIp.trim()}
-                  onClick={bindApiRefresh2(
-                    run,
-                    systemApi.fail2banIgnoreIp,
-                    ignoreIp.trim(),
-                    'add',
-                    refresh,
-                    t('fail2ban.whitelistAdded'),
-                    setIgnoreIp,
-                  )}
+                  disabled={!isValidIgnoreIp(ignoreIp)}
+                  onClick={async () => {
+                    await bindApiRefresh2(
+                      run,
+                      systemApi.fail2banIgnoreIp,
+                      ignoreIp.trim(),
+                      'add',
+                      refresh,
+                      t('fail2ban.whitelistAdded'),
+                      setIgnoreIp,
+                    )();
+                    setIgnorePendingApply(true);
+                  }}
                 >
                   {t('fail2ban.addWhitelist')}
                 </Button>
@@ -453,19 +516,25 @@ export function Fail2banPage() {
                       bantime: normalizeDurationPreset(bantime, '1h'),
                       findtime: normalizeDurationPreset(findtime, '10m'),
                       maxretry: clampMaxretry(maxretry) },
-                    refresh,
+                    async () => {
+                      await refresh();
+                      setIgnorePendingApply(false);
+                    },
                     t('fail2ban.applyIgnoreipOk'),
                   )}
                 >
                   {t('fail2ban.applyPolicyIgnoreip')}
                 </Button>
               </FormActions>
+              {ignorePendingApply ? (
+                <Alert variant="warn">{t('fail2ban.whitelistPendingApply')}</Alert>
+              ) : null}
               <FormHint>{t('fail2ban.ignoreipHint')}</FormHint>
               <DataTable
                 className="u-mt-4"
                 title={t('fail2ban.whitelistTitle', {
                   count: status?.ignoreIps?.length ?? 0 })}
-                description="dataDir/fail2ban/ignoreip.txt"
+                description={t('fail2ban.ignoreipFile')}
                 columns={[
                   {
                     key: 'ip',
@@ -516,22 +585,23 @@ export function Fail2banPage() {
             <div className="def-panel-card">
               <div className="def-section-head">
                 <h3 className="def-section-head__title">{t('fail2ban.activeJails')}</h3>
+                <p className="def-section-head__desc">{t('fail2ban.jailsTabHint')}</p>
               </div>
               <DataTable
                 columns={[
                   {
                     key: 'name',
-                    header: 'Jail',
+                    header: t('fail2ban.colJail'),
                     render: (j) => <code className="inline">{j.name}</code> },
                   {
                     key: 'enabled',
-                    header: t('fail2ban.colEnabled', { defaultValue: 'On' }),
+                    header: t('fail2ban.colEnabled'),
                     nowrap: true,
                     render: (j) => (
                       <Badge tone={jailEnabledTone((j as { enabled?: boolean }).enabled)}>
                         {(j as { enabled?: boolean }).enabled === false
-                          ? t('common.off', { defaultValue: 'off' })
-                          : t('common.on', { defaultValue: 'on' })}
+                          ? t('common.off')
+                          : t('common.on')}
                       </Badge>
                     ) },
                   {
@@ -706,36 +776,44 @@ export function Fail2banPage() {
             <div className="def-panel-card">
               <div className="def-section-head">
                 <h3 className="def-section-head__title">{t('fail2ban.systemdTitle')}</h3>
+                <p className="def-section-head__desc">
+                  {t('fail2ban.serviceStateLine', {
+                    unit: 'fail2ban',
+                    state: running ? t('common.running') : t('common.stopped'),
+                    boot:
+                      status?.enabled === 'enabled'
+                        ? t('common.enabled')
+                        : t('common.disabled'),
+                  })}
+                </p>
               </div>
-              <div className="def-head-actions">
-                {(
-                  [
-                    ['enable', t('fail2ban.enableAndStart')],
-                    ['start', 'start'],
-                    ['reload', 'reload'],
-                    ['restart', 'restart'],
-                    ['stop', 'stop'],
-                  ] as const
-                ).map(([action, label]) => (
+              <ServiceLifecycleBar
+                unit="fail2ban"
+                label="fail2ban"
+                installed={Boolean(status?.installed)}
+                running={running}
+                actions={['start', 'stop', 'restart', 'reload']}
+                danger="edge"
+                onDone={refresh}
+              />
+              {!running && status?.installed ? (
+                <FormActions>
                   <Button
-                    key={action}
-                    variant={action === 'stop' ? 'danger' : 'secondary'}
+                    variant="secondary"
                     size="sm"
                     loading={busy}
                     onClick={bindApiRefresh1(
                       run,
                       systemApi.fail2banService,
-                      action,
+                      'enable',
                       refresh,
-                      t(`fail2ban.actionOk.${action}`, {
-                        defaultValue: t('common.success'),
-                      }),
+                      t('fail2ban.actionOk.enable'),
                     )}
                   >
-                    {label}
+                    {t('fail2ban.enableAndStart')}
                   </Button>
-                ))}
-              </div>
+                </FormActions>
+              ) : null}
               <FormHint>
                 {t('fail2ban.serviceHint')}{' '}
                 <Link to="/protection">{t('nav.protection')}</Link>

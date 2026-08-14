@@ -158,9 +158,9 @@ export function ProjectDetailPage() {
   const [loading, setLoading] = useState(true);
   const [gitUrl, setGitUrl] = useState('');
   const [envText, setEnvText] = useState('');
-  const [quotaMb, setQuotaMb] = useState('1024');
-  const [memoryMax, setMemoryMax] = useState('512M');
-  const [cpuQuota, setCpuQuota] = useState('100');
+  const [quotaMb, setQuotaMb] = useState('');
+  const [memoryMax, setMemoryMax] = useState('');
+  const [cpuQuota, setCpuQuota] = useState('');
   const [logTail, setLogTail] = useState('');
   const [logFiles, setLogFiles] = useState<
     Array<{ name: string; bytes?: number; mtime?: string; root?: string }>

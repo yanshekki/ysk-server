@@ -182,5 +182,8 @@
   "exportPath": "내보내기 경로",
   "mode": "방법",
   "managedConf": "관리형 구성",
-  "dryRunFlag": "드라이런"
+  "dryRunFlag": "드라이런",
+  "timezoneSearch": "Filter timezones…",
+  "resyncNtp": "Re-sync NTP",
+  "storageSub": "Disk usage"
 }

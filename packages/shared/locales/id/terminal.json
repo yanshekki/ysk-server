@@ -29,5 +29,6 @@
   "stepUpHint": "Login root memerlukan peningkatan 2FA ketika akun Anda mengaktifkan TOTP.",
   "stepUpTitle": "Konfirmasikan shell root",
   "stepUpDesc": "Masukkan kode autentikator Anda atau kode pemulihan.",
-  "totpLabel": "TOTP / kode pemulihan"
+  "totpLabel": "TOTP / kode pemulihan",
+  "sessionStillOpen": "A live shell is still connected while you read this page."
 }

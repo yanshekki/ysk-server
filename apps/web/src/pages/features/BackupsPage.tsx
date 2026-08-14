@@ -951,6 +951,7 @@ export function BackupsPage() {
                     <SegRadio
                       name="bk-kind"
                       aria-label={t('backups.remoteKindAria')}
+                      disabled={!remote.enabled}
                       value={remote.kind}
                       onChange={(v) =>
                         setRemote((r) => ({
@@ -972,6 +973,7 @@ export function BackupsPage() {
                           value={remote.host ?? ''}
                           onChange={(e) => setRemote((r) => ({ ...r, host: e.target.value }))}
                           placeholder="backup.example.com"
+                          disabled={!remote.enabled}
                         />
                       </Field>
                       <Field label={t('common.port')} htmlFor="bk-port" flush>
@@ -981,6 +983,7 @@ export function BackupsPage() {
                           onChange={(e) =>
                             setRemote((r) => ({ ...r, port: Number(e.target.value) || 22 }))
                           }
+                          disabled={!remote.enabled}
                         />
                       </Field>
                       <Field label={t('common.username')} htmlFor="bk-user" flush>
@@ -990,6 +993,7 @@ export function BackupsPage() {
                           onChange={(e) =>
                             setRemote((r) => ({ ...r, username: e.target.value }))
                           }
+                          disabled={!remote.enabled}
                         />
                       </Field>
                       <Field
@@ -1006,6 +1010,7 @@ export function BackupsPage() {
                             setRemote((r) => ({ ...r, password: e.target.value }))
                           }
                           placeholder={t('backups.savedLeaveEmpty')}
+                          disabled={!remote.enabled}
                         />
                       </Field>
                     </>
@@ -1076,6 +1081,7 @@ export function BackupsPage() {
                         value={remote.path ?? ''}
                         onChange={(e) => setRemote((r) => ({ ...r, path: e.target.value }))}
                         placeholder="/backups/ysk"
+                        disabled={!remote.enabled}
                       />
                     </Field>
                   ) : null}
@@ -1116,7 +1122,8 @@ export function BackupsPage() {
                       onChange={(e) =>
                         setRestic((r) => ({ ...r, repoPath: e.target.value }))
                       }
-                      placeholder="dataDir/restic-repo"
+                      placeholder={t('backups.resticRepoPh')}
+                      disabled={!restic.enabled}
                     />
                   </Field>
                   <Field
@@ -1187,7 +1194,8 @@ export function BackupsPage() {
                     size="md"
                     loading={busy}
                     disabled={!remote.enabled}
-                    onClick={() =>
+                    title={!remote.enabled ? t('backups.testDisabledHint') : undefined}
+                    onClick={() => {
                       void run(async () => {
                         try {
                           return (await api.requestRaw('/api/v1/backups/remote/test', {
@@ -1198,8 +1206,8 @@ export function BackupsPage() {
                           const m = e instanceof Error ? e.message : t('backups.testRemoteFailed');
                           return { ok: false, notes: [m], blockMessage: m };
                         }
-                      }, t('backups.testRemoteDone'))
-                    }
+                      }, t('backups.testRemoteDone'));
+                    }}
                   >
                     {t('backups.testRemote')}
                   </Button>

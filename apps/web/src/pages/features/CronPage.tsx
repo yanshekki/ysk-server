@@ -29,6 +29,7 @@ import {
   defaultScheduleState,
   humanizeSchedule,
   parseCronToState,
+  isValidCronSchedule,
   type ScheduleState } from './CronScheduleBuilder';
 
 const CRON_TABS = ['jobs', 'status', 'about'] as const;
@@ -116,7 +117,8 @@ export function defaultCommandForProject(p: CronProjectOpt): string {
 /** True if command looks like our auto template / placeholder */
 export function isAutoCommand(cmd: string, projects: CronProjectOpt[]): boolean {
   const t = cmd.trim();
-  if (!t || t === '/usr/bin/true') return true;
+  if (!t) return false;
+  if (t === '/usr/bin/true') return true;
   return projects.some((p) => projectCommandPresets(p).some((x) => x.command === t));
 }
 
@@ -195,6 +197,7 @@ export function CronPage() {
   const schedule = useMemo(() => buildCronExpr(schedState), [schedState]);
   const scheduleHuman = useMemo(() => humanizeSchedule(schedState), [schedState]);
   const [command, setCommand] = useState('/usr/bin/true');
+  const [commandTouched, setCommandTouched] = useState(false);
   /** Only used when no project ({t('cron.systemLevel')}工作) */
   const [systemUser, setSystemUser] = useState('ysk');
   const [projectId, setProjectId] = useState('');
@@ -333,9 +336,29 @@ export function CronPage() {
     void refresh().catch((e: Error) => setError(e.message));
   }, [refresh]);
 
+  const scheduleOk =
+    schedState.mode !== 'custom' || isValidCronSchedule(schedState.custom);
+  const canCreate =
+    Boolean(command.trim()) &&
+    scheduleOk &&
+    Boolean(projectId || systemUser.trim());
+
   async function onCreate(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    setCommandTouched(true);
+    if (!command.trim()) {
+      setError(t('cron.needCommand'));
+      return;
+    }
+    if (!scheduleOk) {
+      setError(t('cron.invalidExpr'));
+      return;
+    }
+    if (!projectId && !systemUser.trim()) {
+      setError(t('cron.needUser'));
+      return;
+    }
     if (projectId && !selectedProject?.linuxUser) {
       setError(t('cron.needLinuxUser'));
       return;
@@ -401,20 +424,11 @@ export function CronPage() {
             value: hostInv?.users?.length ?? '—',
           },
           {
-            label: t('cron.systemCrontab'),
-            value: hostOk
-              ? t('cron.synced')
-              : hostNo
-                ? t('common.notInstalled')
-                : t('common.unknown'),
-            tone: hostOk ? 'ok' : hostNo ? 'warn' : 'neutral',
-          },
-          {
             label: t('cron.managedLines'),
             value: status?.managedLines ?? items.length,
           },
           {
-            label: 'EXECUTE',
+            label: t('dashboard.executeLabel', { defaultValue: t('common.execute') }),
             value: status?.executeEnabled ? t('common.on') : t('common.off'),
             tone: status?.executeEnabled ? 'ok' : 'warn',
           },
@@ -687,33 +701,13 @@ export function CronPage() {
                     <dd>{status?.managedLines ?? '—'}</dd>
                   </div>
                   <div>
-                    <dt>{t('cron.hostYsk')}</dt>
+                    <dt>{t('cron.hostCounts')}</dt>
                     <dd>
-                      <Badge
-                        tone={
-                          status?.hostHasYskEntries
-                            ? 'ok'
-                            : status?.hostHasYskEntries === false
-                              ? 'warn'
-                              : 'neutral'
-                        }
-                      >
-                        {status?.hostHasYskEntries == null
-                          ? '—'
-                          : status.hostHasYskEntries
-                            ? t('ssl.filesYes')
-                            : t('ssl.filesNo')}
-                      </Badge>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>{t('cron.hostOtherLines')}</dt>
-                    <dd>
-                      {status?.hostOtherLines == null
-                        ? '—'
-                        : t('cron.hostOtherLinesVal', {
-                            other: status.hostOtherLines,
-                            total: status.hostTotalLines ?? '—' })}
+                      {t('cron.hostCountsVal', {
+                        ysk: status?.hostHasYskEntries ? t('cron.hostYskYes') : t('cron.hostYskNo'),
+                        other: status?.hostOtherLines ?? 0,
+                        total: status?.hostTotalLines ?? 0,
+                      })}
                     </dd>
                   </div>
                   <div>
@@ -725,16 +719,6 @@ export function CronPage() {
                     </dd>
                   </div>
                 </dl>
-                <div className="ops-panel__actions">
-                  <Button
-                    variant="primary"
-                    size="md"
-                    loading={busy}
-                    onClick={onInstall}
-                  >
-                    {t('cron.installToSystem')}
-                  </Button>
-                </div>
                 <p className="ops-footnote">
                   {t('cron.installHint')}
                 </p>
@@ -743,11 +727,21 @@ export function CronPage() {
                 <header className="ops-panel__head">
                   <h3 className="ops-panel__title">{t('cron.hostPreview')}</h3>
                 </header>
-                {status?.hostCrontabPreview ? (
-                  <pre className="ops-pre">{status.hostCrontabPreview}</pre>
-                ) : (
-                  <p className="ops-muted">{t('cron.cannotRead')}</p>
-                )}
+                {(() => {
+                  const preview = String(status?.hostCrontabPreview ?? '').trim();
+                  const emptyHost =
+                    !preview || /^no crontab for /i.test(preview);
+                  if (emptyHost) {
+                    return (
+                      <p className="ops-muted">
+                        {t('cron.emptyHostCrontab', {
+                          user: userFilter || 'root',
+                        })}
+                      </p>
+                    );
+                  }
+                  return <pre className="ops-pre">{preview}</pre>;
+                })()}
               </section>
             </div>
           </div>
@@ -780,8 +774,16 @@ export function CronPage() {
               variant="primary"
               size="md"
               loading={busy}
-              disabled={!projectId || !command.trim()}
-              title={!projectId ? t('cron.needProjectFirst', { defaultValue: t('cron.pickProject') }) : undefined}
+              disabled={!canCreate}
+              title={
+                !scheduleOk
+                  ? t('cron.invalidExpr')
+                  : !command.trim()
+                    ? t('cron.needCommand')
+                    : !projectId && !systemUser.trim()
+                      ? t('cron.needUser')
+                      : undefined
+              }
             >
               {t('cron.createManageOnlyParen')}
             </Button>
@@ -811,13 +813,11 @@ export function CronPage() {
               label={t('common.project')}
               htmlFor="cron-pid"
               flush
-              required
               hint={t('cron.userPathHint')}
             >
               <select
                 id="cron-pid"
                 value={projectId}
-                required
                 onChange={(e) => onProjectChange(e.target.value)}
               >
                 <option value="">{t('cron.pickProject')}</option>
@@ -873,11 +873,17 @@ export function CronPage() {
                   ? t('cron.runInHome', { home: selectedProject.homeDir })
                   : t('cron.absPath')
               }
+              error={
+                commandTouched && !command.trim() ? t('cron.needCommand') : undefined
+              }
             >
               <input
                 id="cron-cmd"
                 value={command}
-                onChange={bindInput(setCommand)}
+                onChange={(e) => {
+                  setCommandTouched(true);
+                  setCommand(e.target.value);
+                }}
                 required
                 placeholder={
                   selectedProject

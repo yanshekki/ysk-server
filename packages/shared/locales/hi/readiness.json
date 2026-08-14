@@ -107,5 +107,6 @@
   "fixNow": "अब ठीक करें",
   "fixFailed": "सुधार विफल रहा",
   "fixDone": "डेटाडिर अनुमतियाँ सख्त (chmod 750)",
-  "fixDoneWebUi": "वेब यूआई निर्मित/स्थापित"
+  "fixDoneWebUi": "वेब यूआई निर्मित/स्थापित",
+  "rootLabel": "Superuser"
 }

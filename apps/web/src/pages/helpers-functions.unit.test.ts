@@ -381,7 +381,7 @@ describe('Cron project presets', () => {
     const cmd = defaultCommandForProject(php);
     expect(isAutoCommand(cmd, [php])).toBe(true);
     expect(isAutoCommand('/usr/bin/true', [php])).toBe(true);
-    expect(isAutoCommand('', [php])).toBe(true);
+    expect(isAutoCommand('', [php])).toBe(false);
     expect(isAutoCommand('echo custom', [php])).toBe(false);
   });
 });

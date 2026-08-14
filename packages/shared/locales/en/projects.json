@@ -560,5 +560,9 @@
   "manageInNginx": "Manage in Nginx",
   "advFtpHomeApp": "Site app directory",
   "advFtpHomeRoot": "Project home (full)",
-  "advFtpManage": "Open FTP page"
+  "advFtpManage": "Open FTP page",
+  "resShell": "Login shell",
+  "resSaveHint": "Save and apply changes the live OS. Control-plane only stores the form. Re-apply uses the last saved values.",
+  "resBashConfirmTitle": "Allow interactive bash?",
+  "resBashConfirmDesc": "This grants an interactive login shell to the project user. Confirm only if you need SSH or PTY as that user."
 }

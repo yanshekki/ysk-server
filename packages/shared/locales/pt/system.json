@@ -182,5 +182,8 @@
   "exportPath": "Caminho de exportação",
   "mode": "Modo",
   "managedConf": "Configuração gerenciada",
-  "dryRunFlag": "Teste a seco"
+  "dryRunFlag": "Teste a seco",
+  "timezoneSearch": "Filter timezones…",
+  "resyncNtp": "Re-sync NTP",
+  "storageSub": "Disk usage"
 }

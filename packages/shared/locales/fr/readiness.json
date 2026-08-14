@@ -107,5 +107,6 @@
   "fixNow": "Corriger maintenant",
   "fixFailed": "Échec de la correction",
   "fixDone": "Permissions dataDir renforcées (chmod 750)",
-  "fixDoneWebUi": "Interface Web compilée / installée"
+  "fixDoneWebUi": "Interface Web compilée / installée",
+  "rootLabel": "Superuser"
 }

@@ -128,5 +128,13 @@
   "usageNoteFull": "Uso del du local (no estimado). La cuota es un límite flexible del plano de control; La cuota establecida rígida necesita aplicarse al host.",
   "sseNeedLogin": "No iniciado sesión; no puedo abrir SSE",
   "sseSessionExpired": "No iniciado sesión o la sesión expiró; no puedo abrir SSE",
-  "sseHttpError": "transmitir HTTP {{status}}"
+  "sseHttpError": "transmitir HTTP {{status}}",
+  "colFilesystem": "Filesystem",
+  "colMount": "Mount",
+  "colSize": "Size",
+  "colUsed": "Used",
+  "colAvail": "Available",
+  "colUsePct": "Used %",
+  "colHome": "Home",
+  "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab."
 }

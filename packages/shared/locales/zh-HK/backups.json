@@ -132,5 +132,7 @@
   "overwriteConfirmHint": "輸入 OVERWRITE 確認覆寫",
   "testRemote": "測試目的地",
   "testRemoteDone": "遠端探測完成",
-  "testRemoteFailed": "遠端探測失敗"
+  "testRemoteFailed": "遠端探測失敗",
+  "resticRepoPh": "面板資料目錄／restic 庫",
+  "testDisabledHint": "請先開啟遠端推送才可測試。"
 }

@@ -422,7 +422,9 @@
     "overwriteConfirmHint": "اكتب OVERWRITE لتأكيد الكتابة الفوقية",
     "testRemote": "اختبار الوجهة",
     "testRemoteDone": "اكتمل فحص الوجهة",
-    "testRemoteFailed": "فشل فحص الوجهة"
+    "testRemoteFailed": "فشل فحص الوجهة",
+    "resticRepoPh": "Panel data directory / restic-repo",
+    "testDisabledHint": "Turn on remote push before testing."
   },
   "btTracker": {
     "title": "جهاز تعقب بي تي",
@@ -692,7 +694,11 @@
     "deleteNodeDesc": "يحذف عقدة CDN \"{{name}}\".",
     "deleteSiteDesc": "يحذف موقع CDN \"{{name}}\".",
     "deleteSiteC1": "سياسة الموقع وجمعيات الحافة",
-    "deleteSiteC2": "قد تحتاج تكوينات nginx المطبقة إلى عملية تنظيف منفصلة أو إعادة تطبيق"
+    "deleteSiteC2": "قد تحتاج تكوينات nginx المطبقة إلى عملية تنظيف منفصلة أو إعادة تطبيق",
+    "statOnline": "Online {{n}}/{{total}}",
+    "statOffline": "Offline {{n}}",
+    "statDraining": "Draining {{n}}",
+    "statHitRate": "Hit rate {{v}}"
   },
   "cli": {
     "unknownCommand": "أمر غير معروف: {{command}}\nتشغيل `{{cli}} مساعدة`",
@@ -2141,7 +2147,19 @@
     "sourceHost": "يستضيف",
     "noHostJobs": "لا توجد وظائف crontab في هذا النطاق",
     "hostPartial": "لا يمكن قراءة كل crontab للمستخدم (الجذر مطلوب)",
-    "pendingInstall": "في انتظار التثبيت ({{count}})"
+    "pendingInstall": "في انتظار التثبيت ({{count}})",
+    "hourRange": "Hour must be 0–23.",
+    "minuteRange": "Minute must be 0–59.",
+    "hoursCommon": "Common hours",
+    "hoursAll": "All hours",
+    "invalidExpr": "Not a valid 5-field cron expression.",
+    "needCommand": "Command is required.",
+    "needUser": "Choose a project or a system user.",
+    "hostCounts": "Host lines",
+    "hostCountsVal": "{{ysk}} · other {{other}} · total {{total}}",
+    "hostYskYes": "panel lines present",
+    "hostYskNo": "no panel lines",
+    "emptyHostCrontab": "No crontab for {{user}}."
   },
   "dashboard": {
     "title": "لوحة القيادة",
@@ -3407,6 +3425,24 @@
       "reload": "تم إعادة تحميل fail2ban",
       "restart": "تمت إعادة تشغيل fail2ban",
       "stop": "توقف fail2ban"
+    },
+    "statWhitelist": "Whitelist",
+    "invalidIp": "Enter a valid IPv4, IPv6, or CIDR.",
+    "whitelistPendingApply": "Saved to the panel list. Press Apply policy to write jail.local.",
+    "ignoreipFile": "Panel data directory / fail2ban / ignoreip.txt",
+    "jailsTabHint": "Status of active jails. Turn jails on or off in the Policy tab.",
+    "colJail": "Jail",
+    "colEnabled": "On",
+    "serviceStateLine": "Unit {{unit}} · {{state}} · boot {{boot}}",
+    "jail": {
+      "sshd": "SSH brute-force",
+      "nginxHttpAuth": "Nginx HTTP authentication",
+      "nginxBotsearch": "Nginx scanner / bot probes",
+      "nginxBadbots": "Nginx known bad bots",
+      "nginxLimitReq": "Nginx rate-limit jail",
+      "postfix": "Postfix mail brute-force",
+      "dovecot": "Dovecot mail login",
+      "recidive": "Repeat offenders"
     }
   },
   "featurePage": {
@@ -4585,7 +4621,15 @@
     "usageNoteFull": "الاستخدام من du المحلي (غير مقدر). الحصة هي حد بسيط لمستوى التحكم؛ تحتاج الحصة المحددة الصعبة إلى التقديم على المضيف.",
     "sseNeedLogin": "لم يتم تسجيل الدخول؛ لا يمكن فتح SSE",
     "sseSessionExpired": "لم يتم تسجيل الدخول أو انتهت صلاحية الجلسة؛ لا يمكن فتح SSE",
-    "sseHttpError": "تيار HTTP {{status}}"
+    "sseHttpError": "تيار HTTP {{status}}",
+    "colFilesystem": "Filesystem",
+    "colMount": "Mount",
+    "colSize": "Size",
+    "colUsed": "Used",
+    "colAvail": "Available",
+    "colUsePct": "Used %",
+    "colHome": "Home",
+    "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab."
   },
   "migrate": {
     "tabInventory": "جرد",
@@ -8700,7 +8744,11 @@
     "advFtpHomeApp": "دليل app للموقع",
     "advFtpHomeRoot": "منزل المشروع (كامل)",
     "advFtpManage": "فتح صفحة FTP",
-    "listDesc": "Manage sites on this host."
+    "listDesc": "Manage sites on this host.",
+    "resShell": "Login shell",
+    "resSaveHint": "Save and apply changes the live OS. Control-plane only stores the form. Re-apply uses the last saved values.",
+    "resBashConfirmTitle": "Allow interactive bash?",
+    "resBashConfirmDesc": "This grants an interactive login shell to the project user. Confirm only if you need SSH or PTY as that user."
   },
   "protection": {
     "levels": {
@@ -9298,7 +9346,8 @@
     "fixNow": "أصلح الآن",
     "fixFailed": "فشل الإصلاح",
     "fixDone": "تم تعزيز أذونات dataDir (chmod 750)",
-    "fixDoneWebUi": "تم إنشاء/تثبيت واجهة مستخدم الويب"
+    "fixDoneWebUi": "تم إنشاء/تثبيت واجهة مستخدم الويب",
+    "rootLabel": "Superuser"
   },
   "redis": {
     "neverExpire": "لا تنتهي صلاحيته أبدًا",
@@ -9917,6 +9966,10 @@
       "cron": "كرون",
       "user": "المستخدمين",
       "other": "آخر"
+    },
+    "alias": {
+      "ssl": "cert certificate certs",
+      "projects": "project sites"
     }
   },
   "security": {
@@ -10498,7 +10551,8 @@
       "pick": "اختر الإصدار",
       "noTarget": "لا يوجد هدف التحديث",
       "needRuntimePage": "قم بتثبيت هذا الإصدار على صفحة وقت التشغيل",
-      "noAptCandidate": "لا يوجد نسخة مرشحة مناسبة"
+      "noAptCandidate": "لا يوجد نسخة مرشحة مناسبة",
+      "sourceLabel": "Source"
     },
     "install": {
       "progress": "التثبيت: {{list}}…",
@@ -10826,7 +10880,8 @@
     "requestDone": "اكتمل طلب الشهادة",
     "requestFailed": "لم ينجح طلب الشهادة",
     "applyFailed": "فشل الطلب",
-    "deletedCert": "محذوفة {{domain}}"
+    "deletedCert": "محذوفة {{domain}}",
+    "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates."
   },
   "stackWizard": {
     "purgeConfirm": "تأكيد التطهير؟ سيتم حذف مسارات البيانات المسجلة (قواعد البيانات/البريد) نهائيًا.",
@@ -11059,7 +11114,10 @@
     "exportPath": "مسار التصدير",
     "mode": "وضع",
     "managedConf": "أسيوط المدارة",
-    "dryRunFlag": "التشغيل الجاف"
+    "dryRunFlag": "التشغيل الجاف",
+    "timezoneSearch": "Filter timezones…",
+    "resyncNtp": "Re-sync NTP",
+    "storageSub": "Disk usage"
   },
   "systemd": {
     "enabled": "ممكّن",
@@ -11193,7 +11251,8 @@
     "stepUpHint": "يتطلب تسجيل الدخول الجذر إجراء 2FA عندما يكون TOTP في حسابك ممكّنًا.",
     "stepUpTitle": "تأكيد قذيفة الجذر",
     "stepUpDesc": "أدخل رمز المصادقة الخاص بك أو رمز الاسترداد.",
-    "totpLabel": "TOTP / رمز الاسترداد"
+    "totpLabel": "TOTP / رمز الاسترداد",
+    "sessionStillOpen": "A live shell is still connected while you read this page."
   },
   "uiInline": {
     "s27d9daa5": "وقت التشغيل {{v0}} {{v1}}،",
@@ -11578,7 +11637,20 @@
     "groupOs": "حزم النظام",
     "notInstalled": "غير مثبت",
     "goToPage": "افتح الصفحة",
-    "hubHint": "برنامج الكتالوج وأوقات التشغيل على هذا المضيف. المسح للتحديث."
+    "hubHint": "برنامج الكتالوج وأوقات التشغيل على هذا المضيف. المسح للتحديث.",
+    "intervalDay": "every day",
+    "intervalDays": "every {{n}} days",
+    "intervalHour": "every hour",
+    "intervalHours": "every {{n}} hours",
+    "intervalMinutes": "every {{n}} minutes",
+    "intervalSeconds": "every {{n}} seconds",
+    "availableHint": "Packages with a newer candidate from the package manager.",
+    "servicesHint": "Catalog services on this host. Open the service page to install.",
+    "runtimeHint": "Runtimes on this host. Version upgrades are done on each runtime page.",
+    "needsReboot": "Reboot needed",
+    "kernelRebootWarn": "Installing a new kernel usually needs a reboot before it is used.",
+    "neverRun": "not run yet",
+    "scanOsvN": "Scan + OSV (first {{n}})"
   },
   "users": {
     "userCount": "{{count}} المستخدمين",

@@ -3,6 +3,7 @@ import {
   buildCronExpr,
   defaultScheduleState,
   humanizeSchedule,
+  isValidCronSchedule,
   parseCronToState,
 } from './CronScheduleBuilder';
 
@@ -67,7 +68,7 @@ describe('CronScheduleBuilder pure helpers', () => {
       /weeklyAt/,
     );
     expect(humanizeSchedule({ ...base, mode: 'monthly' }, t)).toMatch(/monthlyAt/);
-    expect(humanizeSchedule({ ...base, mode: 'custom', custom: '' }, t)).toMatch(/customAt/);
+    expect(humanizeSchedule({ ...base, mode: 'custom', custom: '' }, t)).toMatch(/invalidExpr/);
     expect(humanizeSchedule({ ...base, mode: 'custom', custom: '0 0 * * 0' }, t)).toMatch(
       /customAt/,
     );
@@ -96,5 +97,12 @@ describe('CronScheduleBuilder pure helpers', () => {
     expect(buildCronExpr(weird)).toBe('0 3 * * *');
     const t = (k: string) => k;
     expect(humanizeSchedule(weird, t)).toBe('—');
+  });
+
+  it('isValidCronSchedule matches backend 5-field rules', () => {
+    expect(isValidCronSchedule('0 3 * * *')).toBe(true);
+    expect(isValidCronSchedule('*/5 * * * *')).toBe(true);
+    expect(isValidCronSchedule('not a cron')).toBe(false);
+    expect(isValidCronSchedule('0 3 * *')).toBe(false);
   });
 });

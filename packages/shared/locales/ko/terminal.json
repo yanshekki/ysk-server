@@ -29,5 +29,6 @@
   "stepUpHint": "계정에 TOTP가 활성화되어 있는 경우 루트 로그인을 위해서는 2FA 승격이 필요합니다.",
   "stepUpTitle": "루트 쉘 확인",
   "stepUpDesc": "인증 코드 또는 복구 코드를 입력하세요.",
-  "totpLabel": "TOTP / 복구 코드"
+  "totpLabel": "TOTP / 복구 코드",
+  "sessionStillOpen": "A live shell is still connected while you read this page."
 }

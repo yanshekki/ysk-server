@@ -107,5 +107,6 @@
   "fixNow": "Perbaiki sekarang",
   "fixFailed": "Perbaikan gagal",
   "fixDone": "izin dataDir diperkeras (chmod 750)",
-  "fixDoneWebUi": "UI web dibuat/diinstal"
+  "fixDoneWebUi": "UI web dibuat/diinstal",
+  "rootLabel": "Superuser"
 }

@@ -2,7 +2,7 @@
  * Page tab state with optional URL sync (`?tab=`).
  * Prefer for feature pages with ≥3 independent task areas.
  */
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 export type UsePageTabOptions = {
@@ -24,6 +24,8 @@ const DEFAULT_TAB_ALIASES: Record<string, string> = {
   truthip: 'realip',
   truth: 'realip',
   help: 'about',
+  self: 'panel',
+  disk: 'storage',
 };
 
 function resolveTabId(
@@ -54,12 +56,28 @@ export function usePageTab(
   );
   const fallback = allowed.has(defaultId) ? defaultId : (tabIds[0] ?? defaultId);
 
-  const fromUrl = resolveTabId(searchParams.get(param), allowed, aliasMap);
+  const rawParam = searchParams.get(param);
+  const fromUrl = resolveTabId(rawParam, allowed, aliasMap);
   const active = syncUrl
     ? fromUrl ?? fallback
     : allowed.has(local)
       ? local
       : fallback;
+
+  useEffect(() => {
+    if (!syncUrl || !rawParam) return;
+    const mapped = aliasMap[rawParam];
+    if (!mapped || !allowed.has(mapped) || rawParam === mapped) return;
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (mapped === fallback) next.delete(param);
+        else next.set(param, mapped);
+        return next;
+      },
+      { replace: true },
+    );
+  }, [allowed, aliasMap, fallback, param, rawParam, setSearchParams, syncUrl]);
 
   const setTab = useCallback(
     (id: string) => {

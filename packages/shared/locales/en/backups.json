@@ -132,5 +132,7 @@
   "overwriteConfirmHint": "Type OVERWRITE to confirm overwrite",
   "testRemote": "Test destination",
   "testRemoteDone": "Remote probe finished",
-  "testRemoteFailed": "Remote probe failed"
+  "testRemoteFailed": "Remote probe failed",
+  "resticRepoPh": "Panel data directory / restic-repo",
+  "testDisabledHint": "Turn on remote push before testing."
 }

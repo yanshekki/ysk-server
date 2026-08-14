@@ -107,5 +107,6 @@
   "fixNow": "اب ٹھیک کریں۔",
   "fixFailed": "درست کرنا ناکام ہو گیا۔",
   "fixDone": "dataDir کی اجازتیں سخت (chmod 750)",
-  "fixDoneWebUi": "ویب UI بلٹ / انسٹال"
+  "fixDoneWebUi": "ویب UI بلٹ / انسٹال",
+  "rootLabel": "Superuser"
 }

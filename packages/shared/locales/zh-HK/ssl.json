@@ -99,5 +99,6 @@
   "requestDone": "憑證申請已完成",
   "requestFailed": "憑證申請未成功",
   "applyFailed": "申請失敗",
-  "deletedCert": "已刪除 {{domain}}"
+  "deletedCert": "已刪除 {{domain}}",
+  "uninstallCertbotWarn": "解除安裝 certbot 會令現有 Let's Encrypt 憑證無法自動續期。"
 }

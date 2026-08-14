@@ -115,5 +115,9 @@
   "deleteNodeDesc": "يحذف عقدة CDN \"{{name}}\".",
   "deleteSiteDesc": "يحذف موقع CDN \"{{name}}\".",
   "deleteSiteC1": "سياسة الموقع وجمعيات الحافة",
-  "deleteSiteC2": "قد تحتاج تكوينات nginx المطبقة إلى عملية تنظيف منفصلة أو إعادة تطبيق"
+  "deleteSiteC2": "قد تحتاج تكوينات nginx المطبقة إلى عملية تنظيف منفصلة أو إعادة تطبيق",
+  "statOnline": "Online {{n}}/{{total}}",
+  "statOffline": "Offline {{n}}",
+  "statDraining": "Draining {{n}}",
+  "statHitRate": "Hit rate {{v}}"
 }

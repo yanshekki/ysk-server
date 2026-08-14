@@ -132,5 +132,7 @@
   "overwriteConfirmHint": "Digite OVERWRITE para confirmar a substituição",
   "testRemote": "Testar destino",
   "testRemoteDone": "Sonda remota concluída",
-  "testRemoteFailed": "Sonda remota falhou"
+  "testRemoteFailed": "Sonda remota falhou",
+  "resticRepoPh": "Panel data directory / restic-repo",
+  "testDisabledHint": "Turn on remote push before testing."
 }

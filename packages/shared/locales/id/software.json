@@ -87,7 +87,8 @@
     "pick": "Pilih versi",
     "noTarget": "Tidak ada target pembaruan",
     "needRuntimePage": "Instal versi ini di halaman runtime",
-    "noAptCandidate": "Tidak ada versi kandidat yang tepat"
+    "noAptCandidate": "Tidak ada versi kandidat yang tepat",
+    "sourceLabel": "Source"
   },
   "install": {
     "progress": "Memasang: {{list}}…",

@@ -99,5 +99,6 @@
   "requestDone": "प्रमाणपत्र अनुरोध पूरा हुआ",
   "requestFailed": "प्रमाणपत्र अनुरोध सफल नहीं हुआ",
   "applyFailed": "अनुरोध विफल रहा",
-  "deletedCert": "हटा दिया गया {{domain}}"
+  "deletedCert": "हटा दिया गया {{domain}}",
+  "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates."
 }

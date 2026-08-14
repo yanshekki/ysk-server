@@ -29,5 +29,6 @@
   "stepUpHint": "যখন আপনার অ্যাকাউন্ট TOTP সক্রিয় থাকে তখন রুট লগইনের জন্য 2FA স্টেপ-আপ প্রয়োজন৷",
   "stepUpTitle": "রুট শেল নিশ্চিত করুন",
   "stepUpDesc": "আপনার প্রমাণীকরণ কোড বা একটি পুনরুদ্ধার কোড লিখুন.",
-  "totpLabel": "TOTP / রিকভারি কোড"
+  "totpLabel": "TOTP / রিকভারি কোড",
+  "sessionStillOpen": "A live shell is still connected while you read this page."
 }

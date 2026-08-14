@@ -560,5 +560,9 @@
   "advFtpHomeApp": "站点 app 目录",
   "advFtpHomeRoot": "项目家目录（全部）",
   "advFtpManage": "打开 FTP 页",
-  "listDesc": "Manage sites on this host."
+  "listDesc": "Manage sites on this host.",
+  "resShell": "登录 shell",
+  "resSaveHint": "「储存并套用」会改主机。「仅存控制面」只记表单。「再套用」用已存值再写入系统。",
+  "resBashConfirmTitle": "允许互动式 bash？",
+  "resBashConfirmDesc": "这会让专案用户有互动登录 shell。只在需要以该用户 SSH 或终端机时才确认。"
 }

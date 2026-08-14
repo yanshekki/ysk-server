@@ -182,5 +182,8 @@
   "exportPath": "مسار التصدير",
   "mode": "وضع",
   "managedConf": "أسيوط المدارة",
-  "dryRunFlag": "التشغيل الجاف"
+  "dryRunFlag": "التشغيل الجاف",
+  "timezoneSearch": "Filter timezones…",
+  "resyncNtp": "Re-sync NTP",
+  "storageSub": "Disk usage"
 }

@@ -422,7 +422,9 @@
     "overwriteConfirmHint": "Type OVERWRITE to confirm overwrite",
     "testRemote": "Test destination",
     "testRemoteDone": "Remote probe finished",
-    "testRemoteFailed": "Remote probe failed"
+    "testRemoteFailed": "Remote probe failed",
+    "resticRepoPh": "Panel data directory / restic-repo",
+    "testDisabledHint": "Turn on remote push before testing."
   },
   "btTracker": {
     "title": "BT Tracker",
@@ -607,7 +609,7 @@
     "confWritten": "Conf written ({{status}})",
     "partialFail": "Not fully successful ({{status}}) — see notes",
     "statNodes": "Nodes",
-    "statSites": "Sites",
+    "statSites": "Sites {{n}}",
     "recentNotes": "Recent notes",
     "edgeConfPreview": "Nginx edge conf preview",
     "tabs": {
@@ -692,7 +694,11 @@
     "deleteNodeDesc": "Deletes CDN node \"{{name}}\".",
     "deleteSiteDesc": "Deletes CDN site \"{{name}}\".",
     "deleteSiteC1": "Site policy and edge associations",
-    "deleteSiteC2": "Applied nginx configs may need separate cleanup or re-apply"
+    "deleteSiteC2": "Applied nginx configs may need separate cleanup or re-apply",
+    "statOnline": "Online {{n}}/{{total}}",
+    "statOffline": "Offline {{n}}",
+    "statDraining": "Draining {{n}}",
+    "statHitRate": "Hit rate {{v}}"
   },
   "cli": {
     "unknownCommand": "Unknown command: {{command}}\nRun `{{cli}} help`",
@@ -2141,7 +2147,19 @@
     "sourceHost": "Host",
     "noHostJobs": "No crontab jobs in this scope",
     "hostPartial": "Could not read every user crontab (root required)",
-    "pendingInstall": "Pending install ({{count}})"
+    "pendingInstall": "Pending install ({{count}})",
+    "hourRange": "Hour must be 0–23.",
+    "minuteRange": "Minute must be 0–59.",
+    "hoursCommon": "Common hours",
+    "hoursAll": "All hours",
+    "invalidExpr": "Not a valid 5-field cron expression.",
+    "needCommand": "Command is required.",
+    "needUser": "Choose a project or a system user.",
+    "hostCounts": "Host lines",
+    "hostCountsVal": "{{ysk}} · other {{other}} · total {{total}}",
+    "hostYskYes": "panel lines present",
+    "hostYskNo": "no panel lines",
+    "emptyHostCrontab": "No crontab for {{user}}."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -3337,10 +3355,10 @@
     "startService": "Start service",
     "notInstalled": "fail2ban is not installed",
     "toolHintPrefix": "Underlying tools:",
-    "toolHintBody": "fail2ban = after scanning logs,",
-    "toolHintTemp": "temporary",
-    "toolHintBody2": "bans · for attack response use",
-    "toolHintUfw": "UFW = ports / permanent rules",
+    "toolHintBody": "fail2ban temporarily bans after scanning logs. For attack response use",
+    "toolHintTemp": "",
+    "toolHintBody2": "",
+    "toolHintUfw": "handles ports and permanent rules.",
     "tabs": {
       "bans": "Ban list",
       "whitelist": "Whitelist",
@@ -3369,7 +3387,7 @@
     "addWhitelist": "Add to whitelist",
     "applyPolicyIgnoreip": "Apply policy (incl. ignoreip)",
     "applyIgnoreipOk": "Wrote ignoreip into jail.local and applied",
-    "ignoreipHint": "Without YSK_EXECUTE only panel file is written (apply_status=written);",
+    "ignoreipHint": "Without system-change permission only the panel file is written. Apply policy rebuilds jail.local ignoreip and reloads.",
     "whitelistTitle": "Whitelist ({{count}})",
     "whitelistRemoved": "Removed from whitelist",
     "remove": "Remove",
@@ -3407,6 +3425,24 @@
       "reload": "fail2ban reloaded",
       "restart": "fail2ban restarted",
       "stop": "fail2ban stopped"
+    },
+    "statWhitelist": "Whitelist",
+    "invalidIp": "Enter a valid IPv4, IPv6, or CIDR.",
+    "whitelistPendingApply": "Saved to the panel list. Press Apply policy to write jail.local.",
+    "ignoreipFile": "Panel data directory / fail2ban / ignoreip.txt",
+    "jailsTabHint": "Status of active jails. Turn jails on or off in the Policy tab.",
+    "colJail": "Jail",
+    "colEnabled": "On",
+    "serviceStateLine": "Unit {{unit}} · {{state}} · boot {{boot}}",
+    "jail": {
+      "sshd": "SSH brute-force",
+      "nginxHttpAuth": "Nginx HTTP authentication",
+      "nginxBotsearch": "Nginx scanner / bot probes",
+      "nginxBadbots": "Nginx known bad bots",
+      "nginxLimitReq": "Nginx rate-limit jail",
+      "postfix": "Postfix mail brute-force",
+      "dovecot": "Dovecot mail login",
+      "recidive": "Repeat offenders"
     }
   },
   "featurePage": {
@@ -4585,7 +4621,15 @@
     "usageNoteFull": "Usage from local du (not estimated). Quota is a control-plane soft limit; hard setquota needs apply-to-host.",
     "sseNeedLogin": "Not logged in; cannot open SSE",
     "sseSessionExpired": "Not logged in or session expired; cannot open SSE",
-    "sseHttpError": "stream HTTP {{status}}"
+    "sseHttpError": "stream HTTP {{status}}",
+    "colFilesystem": "Filesystem",
+    "colMount": "Mount",
+    "colSize": "Size",
+    "colUsed": "Used",
+    "colAvail": "Available",
+    "colUsePct": "Used %",
+    "colHome": "Home",
+    "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab."
   },
   "migrate": {
     "tabInventory": "Inventory",
@@ -8700,7 +8744,11 @@
     "manageInNginx": "Manage in Nginx",
     "advFtpHomeApp": "Site app directory",
     "advFtpHomeRoot": "Project home (full)",
-    "advFtpManage": "Open FTP page"
+    "advFtpManage": "Open FTP page",
+    "resShell": "Login shell",
+    "resSaveHint": "Save and apply changes the live OS. Control-plane only stores the form. Re-apply uses the last saved values.",
+    "resBashConfirmTitle": "Allow interactive bash?",
+    "resBashConfirmDesc": "This grants an interactive login shell to the project user. Confirm only if you need SSH or PTY as that user."
   },
   "protection": {
     "levels": {
@@ -9298,7 +9346,8 @@
     "fixNow": "Fix now",
     "fixFailed": "Fix failed",
     "fixDone": "dataDir permissions hardened (chmod 750)",
-    "fixDoneWebUi": "Web UI built / installed"
+    "fixDoneWebUi": "Web UI built / installed",
+    "rootLabel": "Superuser"
   },
   "redis": {
     "neverExpire": "Never expires",
@@ -9917,6 +9966,10 @@
       "cron": "Cron",
       "user": "Users",
       "other": "Other"
+    },
+    "alias": {
+      "ssl": "cert certificate certs",
+      "projects": "project sites"
     }
   },
   "security": {
@@ -10498,7 +10551,8 @@
       "pick": "Pick version",
       "noTarget": "No update target",
       "needRuntimePage": "Install this version on the runtime page",
-      "noAptCandidate": "No apt candidate version"
+      "noAptCandidate": "No apt candidate version",
+      "sourceLabel": "Source"
     },
     "install": {
       "progress": "Installing: {{list}}…",
@@ -10826,7 +10880,8 @@
     "requestDone": "Certificate request completed",
     "requestFailed": "Certificate request did not succeed",
     "applyFailed": "Request failed",
-    "deletedCert": "Deleted {{domain}}"
+    "deletedCert": "Deleted {{domain}}",
+    "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates."
   },
   "stackWizard": {
     "purgeConfirm": "Confirm purge? Registered data paths (databases/mail) will be deleted permanently.",
@@ -11059,7 +11114,10 @@
     "exportPath": "Export path",
     "mode": "Mode",
     "managedConf": "Managed conf",
-    "dryRunFlag": "Dry-run"
+    "dryRunFlag": "Dry-run",
+    "timezoneSearch": "Filter timezones…",
+    "resyncNtp": "Re-sync NTP",
+    "storageSub": "Disk usage"
   },
   "systemd": {
     "enabled": "Enabled",
@@ -11193,7 +11251,8 @@
     "stepUpHint": "Root login requires 2FA step-up when your account has TOTP enabled.",
     "stepUpTitle": "Confirm root shell",
     "stepUpDesc": "Enter your authenticator code or a recovery code.",
-    "totpLabel": "TOTP / recovery code"
+    "totpLabel": "TOTP / recovery code",
+    "sessionStillOpen": "A live shell is still connected while you read this page."
   },
   "uiInline": {
     "s27d9daa5": "runtime {{v0}} {{v1}}，",
@@ -11578,7 +11637,20 @@
     "groupOs": "System packages",
     "notInstalled": "Not installed",
     "goToPage": "Open page",
-    "hubHint": "Catalog software and runtimes on this host. Scan to refresh."
+    "hubHint": "Catalog software and runtimes on this host. Scan to refresh.",
+    "intervalDay": "every day",
+    "intervalDays": "every {{n}} days",
+    "intervalHour": "every hour",
+    "intervalHours": "every {{n}} hours",
+    "intervalMinutes": "every {{n}} minutes",
+    "intervalSeconds": "every {{n}} seconds",
+    "availableHint": "Packages with a newer candidate from the package manager.",
+    "servicesHint": "Catalog services on this host. Open the service page to install.",
+    "runtimeHint": "Runtimes on this host. Version upgrades are done on each runtime page.",
+    "needsReboot": "Reboot needed",
+    "kernelRebootWarn": "Installing a new kernel usually needs a reboot before it is used.",
+    "neverRun": "not run yet",
+    "scanOsvN": "Scan + OSV (first {{n}})"
   },
   "users": {
     "userCount": "{{count}} users",

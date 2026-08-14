@@ -132,5 +132,7 @@
   "overwriteConfirmHint": "上書きを確認するには「OVERWRITE」と入力します。",
   "testRemote": "送信先をテスト",
   "testRemoteDone": "リモート検査が完了",
-  "testRemoteFailed": "リモート検査に失敗"
+  "testRemoteFailed": "リモート検査に失敗",
+  "resticRepoPh": "Panel data directory / restic-repo",
+  "testDisabledHint": "Turn on remote push before testing."
 }

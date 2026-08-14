@@ -178,8 +178,16 @@ export function AppShell() {
                     });
                   }}
                 >
-                  {t(`nav.sections.${section.sectionKey}`, {
-                    defaultValue: section.sectionKey })}
+                  <span className="shell__nav-section-label">
+                    {t(`nav.sections.${section.sectionKey}`, {
+                      defaultValue: section.sectionKey })}
+                  </span>
+                  <span
+                    className="shell__nav-section-caret"
+                    aria-hidden
+                  >
+                    {collapsedNav.has(section.sectionKey) ? '▸' : '▾'}
+                  </span>
                 </button>
               ) : null}
               {(!collapsedNav.has(section.sectionKey) ||

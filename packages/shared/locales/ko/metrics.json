@@ -128,5 +128,13 @@
   "usageNoteFull": "로컬 du의 사용량(추정되지 않음) 할당량은 제어 영역의 소프트 한도입니다. 하드 설정 할당량에는 호스트에 적용이 필요합니다.",
   "sseNeedLogin": "로그인되지 않았습니다. SSE를 열 수 없습니다",
   "sseSessionExpired": "로그인되지 않았거나 세션이 만료되었습니다. SSE를 열 수 없습니다",
-  "sseHttpError": "HTTP 스트리밍 {{status}}"
+  "sseHttpError": "HTTP 스트리밍 {{status}}",
+  "colFilesystem": "Filesystem",
+  "colMount": "Mount",
+  "colSize": "Size",
+  "colUsed": "Used",
+  "colAvail": "Available",
+  "colUsePct": "Used %",
+  "colHome": "Home",
+  "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab."
 }

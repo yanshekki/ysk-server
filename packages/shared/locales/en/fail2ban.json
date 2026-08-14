@@ -8,10 +8,10 @@
   "startService": "Start service",
   "notInstalled": "fail2ban is not installed",
   "toolHintPrefix": "Underlying tools:",
-  "toolHintBody": "fail2ban = after scanning logs,",
-  "toolHintTemp": "temporary",
-  "toolHintBody2": "bans · for attack response use",
-  "toolHintUfw": "UFW = ports / permanent rules",
+  "toolHintBody": "fail2ban temporarily bans after scanning logs. For attack response use",
+  "toolHintTemp": "",
+  "toolHintBody2": "",
+  "toolHintUfw": "handles ports and permanent rules.",
   "tabs": {
     "bans": "Ban list",
     "whitelist": "Whitelist",
@@ -40,7 +40,7 @@
   "addWhitelist": "Add to whitelist",
   "applyPolicyIgnoreip": "Apply policy (incl. ignoreip)",
   "applyIgnoreipOk": "Wrote ignoreip into jail.local and applied",
-  "ignoreipHint": "Without YSK_EXECUTE only panel file is written (apply_status=written);",
+  "ignoreipHint": "Without system-change permission only the panel file is written. Apply policy rebuilds jail.local ignoreip and reloads.",
   "whitelistTitle": "Whitelist ({{count}})",
   "whitelistRemoved": "Removed from whitelist",
   "remove": "Remove",
@@ -78,5 +78,23 @@
     "reload": "fail2ban reloaded",
     "restart": "fail2ban restarted",
     "stop": "fail2ban stopped"
+  },
+  "statWhitelist": "Whitelist",
+  "invalidIp": "Enter a valid IPv4, IPv6, or CIDR.",
+  "whitelistPendingApply": "Saved to the panel list. Press Apply policy to write jail.local.",
+  "ignoreipFile": "Panel data directory / fail2ban / ignoreip.txt",
+  "jailsTabHint": "Status of active jails. Turn jails on or off in the Policy tab.",
+  "colJail": "Jail",
+  "colEnabled": "On",
+  "serviceStateLine": "Unit {{unit}} · {{state}} · boot {{boot}}",
+  "jail": {
+    "sshd": "SSH brute-force",
+    "nginxHttpAuth": "Nginx HTTP authentication",
+    "nginxBotsearch": "Nginx scanner / bot probes",
+    "nginxBadbots": "Nginx known bad bots",
+    "nginxLimitReq": "Nginx rate-limit jail",
+    "postfix": "Postfix mail brute-force",
+    "dovecot": "Dovecot mail login",
+    "recidive": "Repeat offenders"
   }
 }

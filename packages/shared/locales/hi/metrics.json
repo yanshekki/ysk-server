@@ -128,5 +128,13 @@
   "usageNoteFull": "स्थानीय डु से उपयोग (अनुमानित नहीं)। कोटा एक नियंत्रण-तल नरम सीमा है; हार्ड सेटकोटा को होस्ट पर लागू करने की आवश्यकता है।",
   "sseNeedLogin": "अंदर प्रवेश की अनुमति नहीं है; SSE नहीं खोल सकता",
   "sseSessionExpired": "लॉग इन नहीं हुआ या सत्र समाप्त हो गया; SSE नहीं खोल सकता",
-  "sseHttpError": "स्ट्रीम HTTP {{status}}"
+  "sseHttpError": "स्ट्रीम HTTP {{status}}",
+  "colFilesystem": "Filesystem",
+  "colMount": "Mount",
+  "colSize": "Size",
+  "colUsed": "Used",
+  "colAvail": "Available",
+  "colUsePct": "Used %",
+  "colHome": "Home",
+  "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab."
 }

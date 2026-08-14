@@ -115,5 +115,9 @@
   "deleteNodeDesc": "Elimina el nodo CDN \"{{name}}\".",
   "deleteSiteDesc": "Elimina el sitio CDN \"{{name}}\".",
   "deleteSiteC1": "Política del sitio y asociaciones perimetrales",
-  "deleteSiteC2": "Las configuraciones de nginx aplicadas pueden necesitar una limpieza por separado o volver a aplicarse"
+  "deleteSiteC2": "Las configuraciones de nginx aplicadas pueden necesitar una limpieza por separado o volver a aplicarse",
+  "statOnline": "Online {{n}}/{{total}}",
+  "statOffline": "Offline {{n}}",
+  "statDraining": "Draining {{n}}",
+  "statHitRate": "Hit rate {{v}}"
 }

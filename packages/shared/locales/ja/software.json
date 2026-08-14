@@ -87,7 +87,8 @@
     "pick": "バージョンを選択",
     "noTarget": "アップデート対象なし",
     "needRuntimePage": "このバージョンをランタイム ページにインストールします",
-    "noAptCandidate": "適切な候補バージョンがありません"
+    "noAptCandidate": "適切な候補バージョンがありません",
+    "sourceLabel": "Source"
   },
   "install": {
     "progress": "インストール中: {{list}}…",

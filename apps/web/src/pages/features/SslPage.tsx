@@ -34,9 +34,8 @@ export function statusBadge(
   t: (key: string) => string,
 ) {
   const s = (status || '').toLowerCase();
-  if (filesExist || s === 'uploaded')
-    return <Badge tone="ok">{t('ssl.status.uploaded')}</Badge>;
   if (s === 'issued') return <Badge tone="ok">{t('ssl.status.issued')}</Badge>;
+  if (s === 'uploaded') return <Badge tone="ok">{t('ssl.status.uploaded')}</Badge>;
   if (s === 'planned') return <Badge tone="warn">{t('ssl.status.planned')}</Badge>;
   if (s === 'failed') return <Badge tone="danger">{t('ssl.status.failed')}</Badge>;
   if (s === 'missing') return <Badge tone="danger">{t('ssl.status.missing')}</Badge>;
@@ -46,6 +45,7 @@ export function statusBadge(
     ) : (
       <Badge tone="warn">{t('ssl.status.processing')}</Badge>
     );
+  if (filesExist) return <Badge tone="ok">{t('ssl.status.ready')}</Badge>;
   return <Badge tone="neutral">{status || '—'}</Badge>;
 }
 

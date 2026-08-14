@@ -132,5 +132,7 @@
   "overwriteConfirmHint": "اوور رائٹ کی تصدیق کرنے کے لیے اوور رائٹ ٹائپ کریں۔",
   "testRemote": "منزل جانچیں",
   "testRemoteDone": "ریموٹ پروب مکمل",
-  "testRemoteFailed": "ریموٹ پروب ناکام"
+  "testRemoteFailed": "ریموٹ پروب ناکام",
+  "resticRepoPh": "Panel data directory / restic-repo",
+  "testDisabledHint": "Turn on remote push before testing."
 }

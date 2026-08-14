@@ -8,10 +8,10 @@
   "startService": "启动服务",
   "notInstalled": "fail2ban 尚未安装",
   "toolHintPrefix": "底层工具：",
-  "toolHintBody": "fail2ban = 扫 log 后",
-  "toolHintTemp": "临时",
-  "toolHintBody2": "ban · 攻击应变请用",
-  "toolHintUfw": "UFW = 端口／永久规则",
+  "toolHintBody": "fail2ban 会扫描日志后临时封锁。攻击应变请用",
+  "toolHintTemp": "",
+  "toolHintBody2": "",
+  "toolHintUfw": "负责端口与永久规则。",
   "tabs": {
     "bans": "封锁列表",
     "whitelist": "白名单",
@@ -40,7 +40,7 @@
   "addWhitelist": "加入白名单",
   "applyPolicyIgnoreip": "套用策略（含 ignoreip）",
   "applyIgnoreipOk": "已把 ignoreip 写入 jail.local 并套用",
-  "ignoreipHint": "无 YSK_EXECUTE 时只写管理文件（apply_status=written）；",
+  "ignoreipHint": "没有系统变更权限时只写面板档。套用策略会重建 jail.local 的 ignoreip 并重新载入。",
   "whitelistTitle": "白名单 ({{count}})",
   "whitelistRemoved": "已移除白名单",
   "remove": "移除",
@@ -78,5 +78,23 @@
     "reload": "已重新加载 fail2ban",
     "restart": "已重启 fail2ban",
     "stop": "已停止 fail2ban"
+  },
+  "statWhitelist": "白名单",
+  "invalidIp": "请输入有效的 IPv4、IPv6 或 CIDR。",
+  "whitelistPendingApply": "已写入面板名单。请按「套用策略」才会写入 jail.local。",
+  "ignoreipFile": "面板资料目录／fail2ban／ignoreip.txt",
+  "jailsTabHint": "显示作用中 Jail 状态。要开关 Jail 请到「策略」分页。",
+  "colJail": "Jail",
+  "colEnabled": "开启",
+  "serviceStateLine": "单元 {{unit}} · {{state}} · 开机 {{boot}}",
+  "jail": {
+    "sshd": "远程登录暴力破解",
+    "nginxHttpAuth": "Nginx HTTP 验证",
+    "nginxBotsearch": "Nginx 扫描／机器人探测",
+    "nginxBadbots": "Nginx 已知恶意机器人",
+    "nginxLimitReq": "Nginx 限速 Jail",
+    "postfix": "Postfix 邮件暴力破解",
+    "dovecot": "Dovecot 邮件登录",
+    "recidive": "累犯"
   }
 }

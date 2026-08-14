@@ -20,5 +20,9 @@
     "cron": "Cron",
     "user": "使用者",
     "other": "其他"
+  },
+  "alias": {
+    "ssl": "證書 cert certificate 憑證 certs",
+    "projects": "項目 專案 project sites"
   }
 }

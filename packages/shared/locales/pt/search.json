@@ -20,5 +20,9 @@
     "cron": "Cron",
     "user": "Usuários",
     "other": "Outro"
+  },
+  "alias": {
+    "ssl": "cert certificate certs",
+    "projects": "project sites"
   }
 }

@@ -99,5 +99,6 @@
   "requestDone": "인증서 요청이 완료되었습니다.",
   "requestFailed": "인증서 요청이 실패했습니다.",
   "applyFailed": "요청 실패",
-  "deletedCert": "삭제됨 {{domain}}"
+  "deletedCert": "삭제됨 {{domain}}",
+  "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates."
 }

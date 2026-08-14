@@ -128,5 +128,13 @@
   "usageNoteFull": "مقامی ڈو سے استعمال (تخمینہ نہیں)۔ کوٹہ ایک کنٹرول پلین نرم حد ہے۔ ہارڈ سیٹ کوٹا لاگو کرنے کے لیے میزبان کی ضرورت ہے۔",
   "sseNeedLogin": "لاگ ان نہیں؛ SSE نہیں کھول سکتا",
   "sseSessionExpired": "لاگ ان نہیں ہوا یا سیشن ختم ہو گیا؛ SSE نہیں کھول سکتا",
-  "sseHttpError": "سٹریم HTTP {{status}}"
+  "sseHttpError": "سٹریم HTTP {{status}}",
+  "colFilesystem": "Filesystem",
+  "colMount": "Mount",
+  "colSize": "Size",
+  "colUsed": "Used",
+  "colAvail": "Available",
+  "colUsePct": "Used %",
+  "colHome": "Home",
+  "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab."
 }

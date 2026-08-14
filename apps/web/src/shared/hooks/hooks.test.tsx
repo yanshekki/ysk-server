@@ -34,6 +34,19 @@ describe('usePageTab', () => {
     expect(result.current[0]).toBe('a');
   });
 
+  it('rewrites alias query tabs onto the real id', async () => {
+    const { result } = renderHook(
+      () => usePageTab(['overview', 'panel', 'storage'] as const, 'overview'),
+      { wrapper: wrapRouter('/?tab=self') },
+    );
+    expect(result.current[0]).toBe('panel');
+    const disk = renderHook(
+      () => usePageTab(['overview', 'storage'] as const, 'overview'),
+      { wrapper: wrapRouter('/?tab=disk') },
+    );
+    expect(disk.result.current[0]).toBe('storage');
+  });
+
   it('local mode without URL sync', () => {
     const { result } = renderHook(
       () => usePageTab(['x', 'y'] as const, 'x', { syncUrl: false }),

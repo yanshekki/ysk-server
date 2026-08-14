@@ -29,5 +29,6 @@
   "stepUpHint": "El inicio de sesión raíz requiere un paso adelante 2FA cuando su cuenta tiene TOTP habilitado.",
   "stepUpTitle": "Confirmar shell raíz",
   "stepUpDesc": "Ingrese su código de autenticación o un código de recuperación.",
-  "totpLabel": "TOTP/código de recuperación"
+  "totpLabel": "TOTP/código de recuperación",
+  "sessionStillOpen": "A live shell is still connected while you read this page."
 }

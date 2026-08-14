@@ -99,5 +99,6 @@
   "requestDone": "শংসাপত্রের অনুরোধ সম্পূর্ণ হয়েছে",
   "requestFailed": "শংসাপত্রের অনুরোধ সফল হয়নি৷",
   "applyFailed": "অনুরোধ ব্যর্থ হয়েছে",
-  "deletedCert": "মুছে ফেলা হয়েছে {{domain}}"
+  "deletedCert": "মুছে ফেলা হয়েছে {{domain}}",
+  "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates."
 }

@@ -18,6 +18,8 @@ export type SoftwareUninstallDialogProps = {
   feature?: string;
   ids?: string[];
   title?: string;
+  /** Extra operator warning (e.g. certbot breaks Let's Encrypt renewal). */
+  extraWarning?: string;
   busy?: boolean;
   onClose: () => void;
   onConfirm: (opts: {
@@ -33,6 +35,7 @@ export function SoftwareUninstallDialog({
   feature,
   ids,
   title,
+  extraWarning,
   busy,
   onClose,
   onConfirm,
@@ -169,6 +172,7 @@ export function SoftwareUninstallDialog({
                 <Alert variant="warn">
                   {t('softwareLifecycle.impactIntro')}
                 </Alert>
+                {extraWarning ? <Alert variant="warn">{extraWarning}</Alert> : null}
                 {preview.summary.installedCount === 0 ? (
                   <EmptyHint text={t('softwareLifecycle.nothingInstalled')} />
                 ) : (

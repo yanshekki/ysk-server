@@ -132,5 +132,7 @@
   "overwriteConfirmHint": "输入 OVERWRITE 确认覆盖",
   "testRemote": "测试目的地",
   "testRemoteDone": "远端探测完成",
-  "testRemoteFailed": "远端探测失败"
+  "testRemoteFailed": "远端探测失败",
+  "resticRepoPh": "面板资料目录／restic 库",
+  "testDisabledHint": "请先开启远端推送才可测试。"
 }

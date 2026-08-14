@@ -53,11 +53,12 @@ export function ProjectResourcesTab({
   onProjectRefresh }: ProjectResourcesTabProps) {
   const { t } = useTranslation();
   const [tasksMax, setTasksMax] = useState(
-    project.tasksMax != null ? String(project.tasksMax) : '512',
+    project.tasksMax != null ? String(project.tasksMax) : '',
   );
   const [limitNofile, setLimitNofile] = useState(
-    project.limitNofile != null ? String(project.limitNofile) : '4096',
+    project.limitNofile != null ? String(project.limitNofile) : '',
   );
+  const [bashConfirm, setBashConfirm] = useState(false);
   const [shell, setShell] = useState(project.shell || '/usr/sbin/nologin');
   const [locked, setLocked] = useState(Boolean(project.accountLocked));
   const [localBusy, setLocalBusy] = useState(false);
@@ -84,8 +85,8 @@ export function ProjectResourcesTab({
   }, [project.id]);
 
   useEffect(() => {
-    setTasksMax(project.tasksMax != null ? String(project.tasksMax) : '512');
-    setLimitNofile(project.limitNofile != null ? String(project.limitNofile) : '4096');
+    setTasksMax(project.tasksMax != null ? String(project.tasksMax) : '');
+    setLimitNofile(project.limitNofile != null ? String(project.limitNofile) : '');
     setShell(project.shell || '/usr/sbin/nologin');
     setLocked(Boolean(project.accountLocked));
   }, [
@@ -188,15 +189,14 @@ export function ProjectResourcesTab({
               />
             </Field>
             <Field label={t('projects.resHomeDir')} htmlFor="home" flush>
-              <input id="home" value={project.homeDir || '—'} readOnly disabled />
+              <code id="home" className="inline" title={project.homeDir || ''}>
+                {project.homeDir || '—'}
+              </code>
             </Field>
             <Field label={t('projects.resCanonical')} htmlFor="canon" flush>
-              <input
-                id="canon"
-                value={`/home/ysk-server-${project.id}`}
-                readOnly
-                disabled
-              />
+              <code id="canon" className="inline" title={`/home/ysk-server-${project.id}`}>
+                {`/home/ysk-server-${project.id}`}
+              </code>
             </Field>
             <Field label="UID / GID" htmlFor="uid" flush>
               <input
@@ -293,12 +293,12 @@ export function ProjectResourcesTab({
             >
               <PresetChips
                 options={[
-                  { value: '512', label: '512' },
-                  { value: '1024', label: '1G' },
-                  { value: '2048', label: '2G' },
-                  { value: '5120', label: '5G' },
-                  { value: '10240', label: '10G' },
-                  { value: '20480', label: '20G' },
+                  { value: '512', label: '512 MiB' },
+                  { value: '1024', label: '1 GiB' },
+                  { value: '2048', label: '2 GiB' },
+                  { value: '5120', label: '5 GiB' },
+                  { value: '10240', label: '10 GiB' },
+                  { value: '20480', label: '20 GiB' },
                 ]}
                 value={quotaMb}
                 onChange={setQuotaMb}
@@ -402,15 +402,21 @@ export function ProjectResourcesTab({
                 customPlaceholder={t('common.custom')}
               />
             </Field>
-            <Field label="Shell" htmlFor="shell" hint={t('projects.resShellHint')} flush>
+            <Field label={t('projects.resShell')} htmlFor="shell" hint={t('projects.resShellHint')} flush>
               <SegRadio
                 name="shell"
-                aria-label="Shell"
+                aria-label={t('projects.resShell')}
                 value={shell}
-                onChange={setShell}
+                onChange={(v) => {
+                  if (v === '/bin/bash') {
+                    setBashConfirm(true);
+                    return;
+                  }
+                  setShell(v);
+                }}
                 options={[
                   { value: '/usr/sbin/nologin', label: 'nologin' },
-                  { value: '/bin/false', label: 'false' },
+                  { value: '/bin/false', label: '/bin/false' },
                   { value: '/bin/bash', label: t('projects.resShellBashRisk') },
                 ]}
               />
@@ -447,8 +453,22 @@ export function ProjectResourcesTab({
               {t('projects.resReapply')}
             </Button>
           </FormActions>
+          <p className="muted u-text-sm">{t('projects.resSaveHint')}</p>
         </CardSection>
       </Card>
+
+      <ConfirmDialog
+        open={bashConfirm}
+        onClose={() => setBashConfirm(false)}
+        onConfirm={() => {
+          setShell('/bin/bash');
+          setBashConfirm(false);
+        }}
+        title={t('projects.resBashConfirmTitle')}
+        description={t('projects.resBashConfirmDesc')}
+        danger
+        confirmLabel={t('common.confirm')}
+      />
 
       <ConfirmDialog
         open={migrateConfirm}

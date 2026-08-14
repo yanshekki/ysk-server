@@ -422,7 +422,9 @@
     "overwriteConfirmHint": "ওভাররাইট নিশ্চিত করতে ওভাররাইট টাইপ করুন",
     "testRemote": "গন্তব্য পরীক্ষা",
     "testRemoteDone": "রিমোট প্রোব শেষ",
-    "testRemoteFailed": "রিমোট প্রোব ব্যর্থ"
+    "testRemoteFailed": "রিমোট প্রোব ব্যর্থ",
+    "resticRepoPh": "Panel data directory / restic-repo",
+    "testDisabledHint": "Turn on remote push before testing."
   },
   "btTracker": {
     "title": "বিটি ট্র্যাকার",
@@ -692,7 +694,11 @@
     "deleteNodeDesc": "CDN নোড \"{{name}}\" মুছে দেয়।",
     "deleteSiteDesc": "CDN সাইট \"{{name}}\" মুছে দেয়।",
     "deleteSiteC1": "সাইট নীতি এবং প্রান্ত সমিতি",
-    "deleteSiteC2": "প্রয়োগ করা nginx কনফিগারেশনের জন্য আলাদা ক্লিনআপ বা পুনরায় আবেদন করতে হতে পারে"
+    "deleteSiteC2": "প্রয়োগ করা nginx কনফিগারেশনের জন্য আলাদা ক্লিনআপ বা পুনরায় আবেদন করতে হতে পারে",
+    "statOnline": "Online {{n}}/{{total}}",
+    "statOffline": "Offline {{n}}",
+    "statDraining": "Draining {{n}}",
+    "statHitRate": "Hit rate {{v}}"
   },
   "cli": {
     "unknownCommand": "অজানা কমান্ড: {{command}}\n`{{cli}} help` চালান",
@@ -2141,7 +2147,19 @@
     "sourceHost": "হোস্ট",
     "noHostJobs": "এই সুযোগে কোন ক্রন্টাব চাকরি নেই",
     "hostPartial": "প্রতিটি ব্যবহারকারী ক্রন্টাব পড়তে পারেনি (রুট প্রয়োজন)",
-    "pendingInstall": "মুলতুবি ইনস্টল ({{count}})"
+    "pendingInstall": "মুলতুবি ইনস্টল ({{count}})",
+    "hourRange": "Hour must be 0–23.",
+    "minuteRange": "Minute must be 0–59.",
+    "hoursCommon": "Common hours",
+    "hoursAll": "All hours",
+    "invalidExpr": "Not a valid 5-field cron expression.",
+    "needCommand": "Command is required.",
+    "needUser": "Choose a project or a system user.",
+    "hostCounts": "Host lines",
+    "hostCountsVal": "{{ysk}} · other {{other}} · total {{total}}",
+    "hostYskYes": "panel lines present",
+    "hostYskNo": "no panel lines",
+    "emptyHostCrontab": "No crontab for {{user}}."
   },
   "dashboard": {
     "title": "ড্যাশবোর্ড",
@@ -3407,6 +3425,24 @@
       "reload": "fail2ban পুনরায় লোড হয়েছে",
       "restart": "fail2ban পুনরায় চালু হয়েছে",
       "stop": "fail2ban বন্ধ"
+    },
+    "statWhitelist": "Whitelist",
+    "invalidIp": "Enter a valid IPv4, IPv6, or CIDR.",
+    "whitelistPendingApply": "Saved to the panel list. Press Apply policy to write jail.local.",
+    "ignoreipFile": "Panel data directory / fail2ban / ignoreip.txt",
+    "jailsTabHint": "Status of active jails. Turn jails on or off in the Policy tab.",
+    "colJail": "Jail",
+    "colEnabled": "On",
+    "serviceStateLine": "Unit {{unit}} · {{state}} · boot {{boot}}",
+    "jail": {
+      "sshd": "SSH brute-force",
+      "nginxHttpAuth": "Nginx HTTP authentication",
+      "nginxBotsearch": "Nginx scanner / bot probes",
+      "nginxBadbots": "Nginx known bad bots",
+      "nginxLimitReq": "Nginx rate-limit jail",
+      "postfix": "Postfix mail brute-force",
+      "dovecot": "Dovecot mail login",
+      "recidive": "Repeat offenders"
     }
   },
   "featurePage": {
@@ -4585,7 +4621,15 @@
     "usageNoteFull": "স্থানীয় du থেকে ব্যবহার (আনুমানিক নয়)। কোটা একটি নিয়ন্ত্রণ-বিমান নরম সীমা; হার্ড সেটকোটা হোস্টে প্রয়োগ করতে হবে।",
     "sseNeedLogin": "লগ ইন করা হয়নি; SSE খুলতে পারে না",
     "sseSessionExpired": "লগ ইন বা অধিবেশন মেয়াদ শেষ না; SSE খুলতে পারে না",
-    "sseHttpError": "স্ট্রিম HTTP {{status}}"
+    "sseHttpError": "স্ট্রিম HTTP {{status}}",
+    "colFilesystem": "Filesystem",
+    "colMount": "Mount",
+    "colSize": "Size",
+    "colUsed": "Used",
+    "colAvail": "Available",
+    "colUsePct": "Used %",
+    "colHome": "Home",
+    "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab."
   },
   "migrate": {
     "tabInventory": "ইনভেন্টরি",
@@ -8700,7 +8744,11 @@
     "advFtpHomeApp": "সাইট app ডিরেক্টরি",
     "advFtpHomeRoot": "প্রজেক্ট হোম (পূর্ণ)",
     "advFtpManage": "FTP পৃষ্ঠা খুলুন",
-    "listDesc": "Manage sites on this host."
+    "listDesc": "Manage sites on this host.",
+    "resShell": "Login shell",
+    "resSaveHint": "Save and apply changes the live OS. Control-plane only stores the form. Re-apply uses the last saved values.",
+    "resBashConfirmTitle": "Allow interactive bash?",
+    "resBashConfirmDesc": "This grants an interactive login shell to the project user. Confirm only if you need SSH or PTY as that user."
   },
   "protection": {
     "levels": {
@@ -9298,7 +9346,8 @@
     "fixNow": "এখন ঠিক করুন",
     "fixFailed": "সংশোধন ব্যর্থ হয়েছে",
     "fixDone": "dataDir অনুমতি কঠোর (chmod 750)",
-    "fixDoneWebUi": "ওয়েব UI বিল্ট/ইনস্টল করা হয়েছে"
+    "fixDoneWebUi": "ওয়েব UI বিল্ট/ইনস্টল করা হয়েছে",
+    "rootLabel": "Superuser"
   },
   "redis": {
     "neverExpire": "কখনই মেয়াদ শেষ হয় না",
@@ -9917,6 +9966,10 @@
       "cron": "ক্রোন",
       "user": "ব্যবহারকারীদের",
       "other": "অন্যান্য"
+    },
+    "alias": {
+      "ssl": "cert certificate certs",
+      "projects": "project sites"
     }
   },
   "security": {
@@ -10498,7 +10551,8 @@
       "pick": "সংস্করণ চয়ন করুন",
       "noTarget": "কোন আপডেট টার্গেট নেই",
       "needRuntimePage": "রানটাইম পৃষ্ঠায় এই সংস্করণটি ইনস্টল করুন",
-      "noAptCandidate": "কোন উপযুক্ত প্রার্থী সংস্করণ"
+      "noAptCandidate": "কোন উপযুক্ত প্রার্থী সংস্করণ",
+      "sourceLabel": "Source"
     },
     "install": {
       "progress": "ইনস্টল করা হচ্ছে: {{list}}…",
@@ -10826,7 +10880,8 @@
     "requestDone": "শংসাপত্রের অনুরোধ সম্পূর্ণ হয়েছে",
     "requestFailed": "শংসাপত্রের অনুরোধ সফল হয়নি৷",
     "applyFailed": "অনুরোধ ব্যর্থ হয়েছে",
-    "deletedCert": "মুছে ফেলা হয়েছে {{domain}}"
+    "deletedCert": "মুছে ফেলা হয়েছে {{domain}}",
+    "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates."
   },
   "stackWizard": {
     "purgeConfirm": "শুদ্ধি নিশ্চিত করবেন? নিবন্ধিত ডেটা পাথ (ডাটাবেস/মেইল) স্থায়ীভাবে মুছে ফেলা হবে।",
@@ -11059,7 +11114,10 @@
     "exportPath": "রপ্তানি পথ",
     "mode": "মোড",
     "managedConf": "পরিচালিত conf",
-    "dryRunFlag": "ড্রাই-রান"
+    "dryRunFlag": "ড্রাই-রান",
+    "timezoneSearch": "Filter timezones…",
+    "resyncNtp": "Re-sync NTP",
+    "storageSub": "Disk usage"
   },
   "systemd": {
     "enabled": "সক্রিয়",
@@ -11193,7 +11251,8 @@
     "stepUpHint": "যখন আপনার অ্যাকাউন্ট TOTP সক্রিয় থাকে তখন রুট লগইনের জন্য 2FA স্টেপ-আপ প্রয়োজন৷",
     "stepUpTitle": "রুট শেল নিশ্চিত করুন",
     "stepUpDesc": "আপনার প্রমাণীকরণ কোড বা একটি পুনরুদ্ধার কোড লিখুন.",
-    "totpLabel": "TOTP / রিকভারি কোড"
+    "totpLabel": "TOTP / রিকভারি কোড",
+    "sessionStillOpen": "A live shell is still connected while you read this page."
   },
   "uiInline": {
     "s27d9daa5": "রানটাইম {{v0}} {{v1}},",
@@ -11578,7 +11637,20 @@
     "groupOs": "সিস্টেম প্যাকেজ",
     "notInstalled": "ইনস্টল করা হয়নি",
     "goToPage": "পৃষ্ঠা খুলুন",
-    "hubHint": "এই হোস্টে ক্যাটালগ সফ্টওয়্যার এবং রানটাইম। রিফ্রেশ করতে স্ক্যান করুন।"
+    "hubHint": "এই হোস্টে ক্যাটালগ সফ্টওয়্যার এবং রানটাইম। রিফ্রেশ করতে স্ক্যান করুন।",
+    "intervalDay": "every day",
+    "intervalDays": "every {{n}} days",
+    "intervalHour": "every hour",
+    "intervalHours": "every {{n}} hours",
+    "intervalMinutes": "every {{n}} minutes",
+    "intervalSeconds": "every {{n}} seconds",
+    "availableHint": "Packages with a newer candidate from the package manager.",
+    "servicesHint": "Catalog services on this host. Open the service page to install.",
+    "runtimeHint": "Runtimes on this host. Version upgrades are done on each runtime page.",
+    "needsReboot": "Reboot needed",
+    "kernelRebootWarn": "Installing a new kernel usually needs a reboot before it is used.",
+    "neverRun": "not run yet",
+    "scanOsvN": "Scan + OSV (first {{n}})"
   },
   "users": {
     "userCount": "{{count}} ব্যবহারকারী",

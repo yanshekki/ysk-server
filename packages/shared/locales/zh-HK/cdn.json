@@ -30,7 +30,7 @@
   "confWritten": "已寫入 設定檔（{{status}}）",
   "partialFail": "未全部成功（{{status}}）— 見 notes",
   "statNodes": "節點",
-  "statSites": "站點",
+  "statSites": "站點 {{n}}",
   "recentNotes": "最近 notes",
   "edgeConfPreview": "Nginx 邊緣 設定檔 預覽",
   "tabs": {
@@ -115,5 +115,9 @@
   "deleteNodeDesc": "將刪除 CDN 節點「{{name}}」。",
   "deleteSiteDesc": "將刪除 CDN 站點「{{name}}」。",
   "deleteSiteC1": "站點政策與邊緣關聯",
-  "deleteSiteC2": "已下發的 nginx 設定需另行清理或重新套用"
+  "deleteSiteC2": "已下發的 nginx 設定需另行清理或重新套用",
+  "statOnline": "線上 {{n}}/{{total}}",
+  "statOffline": "離線 {{n}}",
+  "statDraining": "排水中 {{n}}",
+  "statHitRate": "命中率 {{v}}"
 }

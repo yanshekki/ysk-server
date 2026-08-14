@@ -444,6 +444,10 @@ describe('firewall / fail2ban probes and mutations', () => {
       expect(bad.ok).toBe(false);
       expect(bad.apply_status).toBe('failed');
 
+      const bogusOctet = await fail2banIgnoreIp(host, dir, '999.999.999.999');
+      expect(bogusOctet.ok).toBe(false);
+      expect(bogusOctet.apply_status).toBe('failed');
+
       const add = await fail2banIgnoreIp(host, dir, '203.0.113.50', 'add');
       expect(add.ok).toBe(true);
       expect(add.apply_status).toBe('written');

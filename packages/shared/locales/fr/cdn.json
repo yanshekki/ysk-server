@@ -115,5 +115,9 @@
   "deleteNodeDesc": "Supprime le nœud CDN « {{name}} ».",
   "deleteSiteDesc": "Supprime le site CDN « {{name}} ».",
   "deleteSiteC1": "Politique du site et associations edge",
-  "deleteSiteC2": "Les configs nginx appliquées peuvent nécessiter un nettoyage ou une réapplication séparés"
+  "deleteSiteC2": "Les configs nginx appliquées peuvent nécessiter un nettoyage ou une réapplication séparés",
+  "statOnline": "Online {{n}}/{{total}}",
+  "statOffline": "Offline {{n}}",
+  "statDraining": "Draining {{n}}",
+  "statHitRate": "Hit rate {{v}}"
 }

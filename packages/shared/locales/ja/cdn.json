@@ -115,5 +115,9 @@
   "deleteNodeDesc": "CDN ノード「{{name}}」を削除します。",
   "deleteSiteDesc": "CDN サイト「{{name}}」を削除します。",
   "deleteSiteC1": "サイトポリシーとエッジの関連付け",
-  "deleteSiteC2": "適用された nginx 構成には、個別のクリーンアップまたは再適用が必要な場合があります"
+  "deleteSiteC2": "適用された nginx 構成には、個別のクリーンアップまたは再適用が必要な場合があります",
+  "statOnline": "Online {{n}}/{{total}}",
+  "statOffline": "Offline {{n}}",
+  "statDraining": "Draining {{n}}",
+  "statHitRate": "Hit rate {{v}}"
 }

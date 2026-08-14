@@ -87,7 +87,8 @@
     "pick": "Pick version",
     "noTarget": "No update target",
     "needRuntimePage": "Install this version on the runtime page",
-    "noAptCandidate": "No apt candidate version"
+    "noAptCandidate": "No apt candidate version",
+    "sourceLabel": "Source"
   },
   "install": {
     "progress": "Installing: {{list}}…",

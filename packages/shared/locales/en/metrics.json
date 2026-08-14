@@ -128,5 +128,13 @@
   "usageNoteFull": "Usage from local du (not estimated). Quota is a control-plane soft limit; hard setquota needs apply-to-host.",
   "sseNeedLogin": "Not logged in; cannot open SSE",
   "sseSessionExpired": "Not logged in or session expired; cannot open SSE",
-  "sseHttpError": "stream HTTP {{status}}"
+  "sseHttpError": "stream HTTP {{status}}",
+  "colFilesystem": "Filesystem",
+  "colMount": "Mount",
+  "colSize": "Size",
+  "colUsed": "Used",
+  "colAvail": "Available",
+  "colUsePct": "Used %",
+  "colHome": "Home",
+  "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab."
 }

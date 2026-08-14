@@ -128,5 +128,13 @@
   "usageNoteFull": "Uso do du local (não estimado). Cota é um limite flexível do plano de controle; hard setquota precisa aplicar ao host.",
   "sseNeedLogin": "Não logado; não consigo abrir o SSE",
   "sseSessionExpired": "Não logado ou sessão expirada; não consigo abrir o SSE",
-  "sseHttpError": "transmitir HTTP {{status}}"
+  "sseHttpError": "transmitir HTTP {{status}}",
+  "colFilesystem": "Filesystem",
+  "colMount": "Mount",
+  "colSize": "Size",
+  "colUsed": "Used",
+  "colAvail": "Available",
+  "colUsePct": "Used %",
+  "colHome": "Home",
+  "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab."
 }

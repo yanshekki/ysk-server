@@ -135,5 +135,17 @@
   "sourceHost": "주인",
   "noHostJobs": "이 범위에는 crontab 작업이 없습니다.",
   "hostPartial": "모든 사용자 crontab을 읽을 수 없습니다(루트 필요).",
-  "pendingInstall": "설치 대기 중({{count}})"
+  "pendingInstall": "설치 대기 중({{count}})",
+  "hourRange": "Hour must be 0–23.",
+  "minuteRange": "Minute must be 0–59.",
+  "hoursCommon": "Common hours",
+  "hoursAll": "All hours",
+  "invalidExpr": "Not a valid 5-field cron expression.",
+  "needCommand": "Command is required.",
+  "needUser": "Choose a project or a system user.",
+  "hostCounts": "Host lines",
+  "hostCountsVal": "{{ysk}} · other {{other}} · total {{total}}",
+  "hostYskYes": "panel lines present",
+  "hostYskNo": "no panel lines",
+  "emptyHostCrontab": "No crontab for {{user}}."
 }

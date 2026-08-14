@@ -560,5 +560,9 @@
   "manageInNginx": "在 Nginx 管理",
   "advFtpHomeApp": "網站 app 目錄",
   "advFtpHomeRoot": "專案家目錄（全部）",
-  "advFtpManage": "開啟 FTP 頁"
+  "advFtpManage": "開啟 FTP 頁",
+  "resShell": "登入 shell",
+  "resSaveHint": "「儲存並套用」會改主機。「僅存控制面」只記表單。「再套用」用已存值再寫入系統。",
+  "resBashConfirmTitle": "允許互動式 bash？",
+  "resBashConfirmDesc": "這會讓專案用戶有互動登入 shell。只在需要以該用戶 SSH 或終端機時才確認。"
 }

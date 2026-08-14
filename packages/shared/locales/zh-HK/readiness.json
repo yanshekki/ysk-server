@@ -107,5 +107,6 @@
   "fixNow": "立即修復",
   "fixFailed": "修復失敗",
   "fixDone": "已修復 dataDir 權限（chmod 750）",
-  "fixDoneWebUi": "已建置／安裝 Web 介面"
+  "fixDoneWebUi": "已建置／安裝 Web 介面",
+  "rootLabel": "超級用戶"
 }

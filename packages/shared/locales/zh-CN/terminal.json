@@ -29,5 +29,6 @@
   "stepUpHint": "账户已启用 2FA 时，root 登录需再验证。",
   "stepUpTitle": "确认 root shell",
   "stepUpDesc": "输入验证器代码或救援码。",
-  "totpLabel": "TOTP／救援码"
+  "totpLabel": "TOTP／救援码",
+  "sessionStillOpen": "说明分页开启期间，工作阶段仍保持连线。"
 }

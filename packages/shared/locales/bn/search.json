@@ -20,5 +20,9 @@
     "cron": "ক্রোন",
     "user": "ব্যবহারকারীদের",
     "other": "অন্যান্য"
+  },
+  "alias": {
+    "ssl": "cert certificate certs",
+    "projects": "project sites"
   }
 }

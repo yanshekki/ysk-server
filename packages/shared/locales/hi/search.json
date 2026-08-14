@@ -20,5 +20,9 @@
     "cron": "क्रॉन",
     "user": "उपयोगकर्ताओं",
     "other": "अन्य"
+  },
+  "alias": {
+    "ssl": "cert certificate certs",
+    "projects": "project sites"
   }
 }

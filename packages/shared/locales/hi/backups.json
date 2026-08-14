@@ -132,5 +132,7 @@
   "overwriteConfirmHint": "ओवरराइट की पुष्टि करने के लिए ओवरराइट टाइप करें",
   "testRemote": "गंतव्य जाँचें",
   "testRemoteDone": "रिमोट जांच पूरी",
-  "testRemoteFailed": "रिमोट जांच असफल"
+  "testRemoteFailed": "रिमोट जांच असफल",
+  "resticRepoPh": "Panel data directory / restic-repo",
+  "testDisabledHint": "Turn on remote push before testing."
 }

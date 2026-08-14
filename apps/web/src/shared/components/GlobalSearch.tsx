@@ -45,7 +45,7 @@ function kindLabel(kind: string, t: (k: string, o?: Record<string, unknown>) => 
   return t(`search.kinds.${kind}`, { defaultValue: kind });
 }
 
-function localPageHits(
+export function localPageHits(
   query: string,
   t: (k: string, o?: Record<string, unknown>) => string,
 ): SearchHitDto[] {
@@ -58,7 +58,8 @@ function localPageHits(
     });
     for (const item of section.items) {
       const title = t(`nav.${item.key}`, { defaultValue: item.key });
-      const hay = [item.key, item.to, title, sectionLabel, section.sectionKey]
+      const aliasBlob = t(`search.alias.${item.key}`, { defaultValue: '' });
+      const hay = [item.key, item.to, title, sectionLabel, section.sectionKey, aliasBlob]
         .map((s) => String(s).toLowerCase())
         .join('\n');
       if (hay.includes(q) || hay.split(/[\s./:_-]+/).some((tok) => tok.startsWith(q))) {

@@ -9,21 +9,23 @@ import { join } from 'node:path';
 import type { HostExecutor } from '../host/executor.js';
 import { probeFail2banStatus, fail2banBannedIps, fail2banUnban } from './system-apply.js';
 import { shellEnsureAptPackage } from './software-probe/index.js';
+import { isValidIp } from '../net/ip.js';
 
 export const FAIL2BAN_JAIL_CATALOG: Array<{
   id: string;
   label: string;
+  /** i18n key under fail2ban.jail.* — translate at display time, not module load */
   desc: string;
   group: 'ssh' | 'web' | 'mail' | 'other';
 }> = [
-  { id: 'sshd', label: 'SSH', desc: tl('notes.auto.n0185'), group: 'ssh' },
-  { id: 'nginx-http-auth', label: 'Nginx Auth', desc: tl('notes.auto.n0115'), group: 'web' },
-  { id: 'nginx-botsearch', label: tl('notes.auto.n0084'), desc: tl('notes.auto.n0817'), group: 'web' },
-  { id: 'nginx-badbots', label: tl('notes.auto.n0637'), desc: tl('notes.auto.n0793'), group: 'web' },
-  { id: 'nginx-limit-req', label: tl('notes.auto.n1532'), desc: tl('notes.auto.n1352'), group: 'web' },
-  { id: 'postfix', label: 'Postfix', desc: tl('notes.auto.n0182'), group: 'mail' },
-  { id: 'dovecot', label: 'Dovecot', desc: tl('notes.auto.n0117'), group: 'mail' },
-  { id: 'recidive', label: tl('notes.auto.n1313'), desc: tl('notes.auto.n1513'), group: 'other' },
+  { id: 'sshd', label: 'SSH', desc: 'fail2ban.jail.sshd', group: 'ssh' },
+  { id: 'nginx-http-auth', label: 'Nginx Auth', desc: 'fail2ban.jail.nginxHttpAuth', group: 'web' },
+  { id: 'nginx-botsearch', label: 'Nginx botsearch', desc: 'fail2ban.jail.nginxBotsearch', group: 'web' },
+  { id: 'nginx-badbots', label: 'Nginx badbots', desc: 'fail2ban.jail.nginxBadbots', group: 'web' },
+  { id: 'nginx-limit-req', label: 'Nginx limit-req', desc: 'fail2ban.jail.nginxLimitReq', group: 'web' },
+  { id: 'postfix', label: 'Postfix', desc: 'fail2ban.jail.postfix', group: 'mail' },
+  { id: 'dovecot', label: 'Dovecot', desc: 'fail2ban.jail.dovecot', group: 'mail' },
+  { id: 'recidive', label: 'recidive', desc: 'fail2ban.jail.recidive', group: 'other' },
 ];
 
 export type Fail2banPolicy = {
@@ -77,7 +79,7 @@ export async function fail2banBanIp(
   }
   const safeJail = jail.replace(/[^a-zA-Z0-9._-]/g, '') || 'sshd';
   const safeIp = ip.trim();
-  if (!/^(\d{1,3}\.){3}\d{1,3}$/.test(safeIp) && !safeIp.includes(':')) {
+  if (!isValidIp(safeIp)) {
     return { ok: false, notes: [tl('notes.invalidIp')] };
   }
   const r = await host.runCommand(

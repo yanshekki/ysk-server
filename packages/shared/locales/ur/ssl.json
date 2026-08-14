@@ -99,5 +99,6 @@
   "requestDone": "سرٹیفکیٹ کی درخواست مکمل ہوگئی",
   "requestFailed": "سرٹیفکیٹ کی درخواست کامیاب نہیں ہوئی۔",
   "applyFailed": "درخواست ناکام ہوگئی",
-  "deletedCert": "حذف شدہ {{domain}}"
+  "deletedCert": "حذف شدہ {{domain}}",
+  "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates."
 }

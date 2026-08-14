@@ -182,5 +182,8 @@
   "exportPath": "匯出路徑",
   "mode": "模式",
   "managedConf": "託管設定檔",
-  "dryRunFlag": "預覽試行"
+  "dryRunFlag": "預覽試行",
+  "timezoneSearch": "篩選時區…",
+  "resyncNtp": "重新同步 NTP",
+  "storageSub": "磁碟用量"
 }

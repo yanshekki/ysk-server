@@ -182,5 +182,8 @@
   "exportPath": "Chemin d’export",
   "mode": "Mode",
   "managedConf": "Conf gérée",
-  "dryRunFlag": "Simulation"
+  "dryRunFlag": "Simulation",
+  "timezoneSearch": "Filter timezones…",
+  "resyncNtp": "Re-sync NTP",
+  "storageSub": "Disk usage"
 }

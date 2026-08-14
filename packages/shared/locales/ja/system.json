@@ -182,5 +182,8 @@
   "exportPath": "エクスポートパス",
   "mode": "モード",
   "managedConf": "マネージドコンファレンス",
-  "dryRunFlag": "テスト実行"
+  "dryRunFlag": "テスト実行",
+  "timezoneSearch": "Filter timezones…",
+  "resyncNtp": "Re-sync NTP",
+  "storageSub": "Disk usage"
 }

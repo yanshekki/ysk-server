@@ -135,5 +135,17 @@
   "sourceHost": "হোস্ট",
   "noHostJobs": "এই সুযোগে কোন ক্রন্টাব চাকরি নেই",
   "hostPartial": "প্রতিটি ব্যবহারকারী ক্রন্টাব পড়তে পারেনি (রুট প্রয়োজন)",
-  "pendingInstall": "মুলতুবি ইনস্টল ({{count}})"
+  "pendingInstall": "মুলতুবি ইনস্টল ({{count}})",
+  "hourRange": "Hour must be 0–23.",
+  "minuteRange": "Minute must be 0–59.",
+  "hoursCommon": "Common hours",
+  "hoursAll": "All hours",
+  "invalidExpr": "Not a valid 5-field cron expression.",
+  "needCommand": "Command is required.",
+  "needUser": "Choose a project or a system user.",
+  "hostCounts": "Host lines",
+  "hostCountsVal": "{{ysk}} · other {{other}} · total {{total}}",
+  "hostYskYes": "panel lines present",
+  "hostYskNo": "no panel lines",
+  "emptyHostCrontab": "No crontab for {{user}}."
 }

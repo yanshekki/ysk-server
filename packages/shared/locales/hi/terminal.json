@@ -29,5 +29,6 @@
   "stepUpHint": "जब आपके खाते में TOTP सक्षम हो तो रूट लॉगिन के लिए 2FA स्टेप-अप की आवश्यकता होती है।",
   "stepUpTitle": "रूट शेल की पुष्टि करें",
   "stepUpDesc": "अपना प्रमाणक कोड या पुनर्प्राप्ति कोड दर्ज करें।",
-  "totpLabel": "टीओटीपी/रिकवरी कोड"
+  "totpLabel": "टीओटीपी/रिकवरी कोड",
+  "sessionStillOpen": "A live shell is still connected while you read this page."
 }

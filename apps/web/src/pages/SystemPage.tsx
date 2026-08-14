@@ -27,6 +27,7 @@ import type { HostOverviewDto } from '../features/system/api';
 import { api } from '../shared/services/api';
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { toast } from '../shared/stores/toast-store';
+import { formatDateTime } from '../shared/lib/datetime';
 import { bindSet, bindInput, bindVoid } from './bind-handlers';
 import { ServiceAccessStrip } from '../features/network/service-exposure';
 
@@ -108,7 +109,8 @@ export function formatNtpSyncedLabel(
 }
 
 export function SystemPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const [tzQuery, setTzQuery] = useState('');
 
   const [hostname, setHostname] = useState('');
   const [prettyHostname, setPrettyHostname] = useState('');
@@ -518,6 +520,13 @@ export function SystemPage() {
                           hint={t('system.timezoneHint')}
                           flush
                         >
+                          <input
+                            id="sys-tz-q"
+                            value={tzQuery}
+                            onChange={bindInput(setTzQuery)}
+                            placeholder={t('system.timezoneSearch')}
+                            disabled={!host?.caps.canIdentity && host != null}
+                          />
                           <select
                             id="sys-tz"
                             value={timezone}
@@ -531,7 +540,13 @@ export function SystemPage() {
                             {timezone && !timezoneOptions.includes(timezone) ? (
                               <option value={timezone}>{timezone}</option>
                             ) : null}
-                            {timezoneOptions.map((z) => (
+                            {timezoneOptions
+                              .filter((z) =>
+                                !tzQuery.trim()
+                                  ? true
+                                  : z.toLowerCase().includes(tzQuery.trim().toLowerCase()),
+                              )
+                              .map((z) => (
                               <option key={z} value={z}>
                                 {z}
                               </option>
@@ -860,7 +875,12 @@ export function SystemPage() {
                         <div>
                           <dt>{t('system.local')}</dt>
                           <dd>
-                            <code>{host?.time.local ?? '—'}</code>
+                            <code>
+                              {formatDateTime(host?.time.utc ?? host?.time.local, {
+                                locale: i18n.language,
+                                timeZone: timezone || host?.identity?.timezone,
+                              })}
+                            </code>
                           </dd>
                         </div>
                         <div>
@@ -904,7 +924,9 @@ export function SystemPage() {
                               .finally(() => setBusy(false));
                           }}
                         >
-                          {t('system.enableNtp')}
+                          {host?.time.ntpSynchronized
+                            ? t('system.resyncNtp')
+                            : t('system.enableNtp')}
                         </Button>
                       </div>
                     </section>
@@ -921,17 +943,10 @@ export function SystemPage() {
                           </p>
                         </div>
                       </header>
-                      {(host?.network.ips?.length ?? 0) === 0 ? (
+                      {!host?.network.interfaces?.length &&
+                      (host?.network.ips?.length ?? 0) === 0 ? (
                         <p className="sys-muted">{t('system.noIp')}</p>
-                      ) : (
-                        <div className="sys-chips">
-                          {host!.network.ips.map((ip) => (
-                            <code key={ip} className="sys-chip-code">
-                              {ip}
-                            </code>
-                          ))}
-                        </div>
-                      )}
+                      ) : null}
                       {host?.network.interfaces?.length ? (
                         <ul className="sys-iface">
                           {host.network.interfaces.map((iface) => (
@@ -961,8 +976,8 @@ export function SystemPage() {
                         <div>
                           <h3 className="sys-panel__title">{t('system.storage')}</h3>
                           <p className="sys-panel__sub">
-                            df -hT ·{' '}
-                            <Link to="/metrics" className="sys-inline-link">
+                            {t('system.storageSub')}{' '}
+                            <Link to="/metrics?tab=storage" className="sys-inline-link">
                               {t('system.metricsDetail')}
                             </Link>
                           </p>
@@ -1295,7 +1310,7 @@ export function SystemPage() {
                 {snapshot ? (
                   <div className="sys-preview">
                     <div className="sys-preview__meta">
-                      {t('system.snapshotMeta', { at: new Date(snapshot.exportedAt).toLocaleString(), users: snapshot.users ?? snapshot.counts?.users ?? 0, packages: snapshot.packages ?? snapshot.counts?.packages ?? 0 })}
+                      {t('system.snapshotMeta', { at: formatDateTime(snapshot.exportedAt, { locale: i18n.language, timeZone: timezone || host?.identity?.timezone }), users: snapshot.users ?? snapshot.counts?.users ?? 0, packages: snapshot.packages ?? snapshot.counts?.packages ?? 0 })}
                     </div>
                     <LogViewer
                       text={JSON.stringify(snapshot, null, 2)}

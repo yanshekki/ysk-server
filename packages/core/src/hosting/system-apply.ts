@@ -17,6 +17,7 @@ import {
 import { planFirewall } from './extras.js';
 import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
 import { HostSoftwareProbe, shellEnsureAptPackage } from './software-probe/index.js';
+import { isValidIpOrCidr } from '../net/ip.js';
 
 export type BlockReason =
   | 'no_execute'
@@ -857,7 +858,7 @@ export async function fail2banIgnoreIp(
   const written: string[] = [];
   const notes: string[] = [];
   const safeIp = ip.trim();
-  if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(safeIp) && !safeIp.includes(':')) {
+  if (!isValidIpOrCidr(safeIp)) {
     return {
       ok: false,
       notes: [tl('notes.invalidIp')],

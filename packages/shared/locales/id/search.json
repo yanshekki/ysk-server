@@ -20,5 +20,9 @@
     "cron": "Kron",
     "user": "Pengguna",
     "other": "Lainnya"
+  },
+  "alias": {
+    "ssl": "cert certificate certs",
+    "projects": "project sites"
   }
 }

@@ -422,7 +422,9 @@
     "overwriteConfirmHint": "Ketik OVERWRITE untuk mengonfirmasi penimpaan",
     "testRemote": "Uji tujuan",
     "testRemoteDone": "Probe jarak jauh selesai",
-    "testRemoteFailed": "Probe jarak jauh gagal"
+    "testRemoteFailed": "Probe jarak jauh gagal",
+    "resticRepoPh": "Panel data directory / restic-repo",
+    "testDisabledHint": "Turn on remote push before testing."
   },
   "btTracker": {
     "title": "Pelacak BT",
@@ -692,7 +694,11 @@
     "deleteNodeDesc": "Menghapus simpul CDN \"{{name}}\".",
     "deleteSiteDesc": "Menghapus situs CDN \"{{name}}\".",
     "deleteSiteC1": "Kebijakan situs dan asosiasi edge",
-    "deleteSiteC2": "Konfigurasi nginx yang diterapkan mungkin memerlukan pembersihan terpisah atau penerapan ulang"
+    "deleteSiteC2": "Konfigurasi nginx yang diterapkan mungkin memerlukan pembersihan terpisah atau penerapan ulang",
+    "statOnline": "Online {{n}}/{{total}}",
+    "statOffline": "Offline {{n}}",
+    "statDraining": "Draining {{n}}",
+    "statHitRate": "Hit rate {{v}}"
   },
   "cli": {
     "unknownCommand": "Perintah tidak diketahui: {{command}}\nJalankan `{{cli}} bantuan`",
@@ -2141,7 +2147,19 @@
     "sourceHost": "Tuan rumah",
     "noHostJobs": "Tidak ada pekerjaan crontab dalam cakupan ini",
     "hostPartial": "Tidak dapat membaca crontab setiap pengguna (diperlukan root)",
-    "pendingInstall": "Pemasangan tertunda ({{count}})"
+    "pendingInstall": "Pemasangan tertunda ({{count}})",
+    "hourRange": "Hour must be 0–23.",
+    "minuteRange": "Minute must be 0–59.",
+    "hoursCommon": "Common hours",
+    "hoursAll": "All hours",
+    "invalidExpr": "Not a valid 5-field cron expression.",
+    "needCommand": "Command is required.",
+    "needUser": "Choose a project or a system user.",
+    "hostCounts": "Host lines",
+    "hostCountsVal": "{{ysk}} · other {{other}} · total {{total}}",
+    "hostYskYes": "panel lines present",
+    "hostYskNo": "no panel lines",
+    "emptyHostCrontab": "No crontab for {{user}}."
   },
   "dashboard": {
     "title": "Dasbor",
@@ -3407,6 +3425,24 @@
       "reload": "fail2ban dimuat ulang",
       "restart": "fail2ban dimulai ulang",
       "stop": "fail2ban dihentikan"
+    },
+    "statWhitelist": "Whitelist",
+    "invalidIp": "Enter a valid IPv4, IPv6, or CIDR.",
+    "whitelistPendingApply": "Saved to the panel list. Press Apply policy to write jail.local.",
+    "ignoreipFile": "Panel data directory / fail2ban / ignoreip.txt",
+    "jailsTabHint": "Status of active jails. Turn jails on or off in the Policy tab.",
+    "colJail": "Jail",
+    "colEnabled": "On",
+    "serviceStateLine": "Unit {{unit}} · {{state}} · boot {{boot}}",
+    "jail": {
+      "sshd": "SSH brute-force",
+      "nginxHttpAuth": "Nginx HTTP authentication",
+      "nginxBotsearch": "Nginx scanner / bot probes",
+      "nginxBadbots": "Nginx known bad bots",
+      "nginxLimitReq": "Nginx rate-limit jail",
+      "postfix": "Postfix mail brute-force",
+      "dovecot": "Dovecot mail login",
+      "recidive": "Repeat offenders"
     }
   },
   "featurePage": {
@@ -4585,7 +4621,15 @@
     "usageNoteFull": "Penggunaan dari du lokal (tidak diperkirakan). Kuota adalah batas lunak bidang kontrol; hard setquota perlu diterapkan ke host.",
     "sseNeedLogin": "Tidak masuk; tidak dapat membuka SSE",
     "sseSessionExpired": "Tidak masuk atau sesi berakhir; tidak dapat membuka SSE",
-    "sseHttpError": "streaming HTTP {{status}}"
+    "sseHttpError": "streaming HTTP {{status}}",
+    "colFilesystem": "Filesystem",
+    "colMount": "Mount",
+    "colSize": "Size",
+    "colUsed": "Used",
+    "colAvail": "Available",
+    "colUsePct": "Used %",
+    "colHome": "Home",
+    "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab."
   },
   "migrate": {
     "tabInventory": "Inventaris",
@@ -8700,7 +8744,11 @@
     "advFtpHomeApp": "Direktori app situs",
     "advFtpHomeRoot": "Home proyek (penuh)",
     "advFtpManage": "Buka halaman FTP",
-    "listDesc": "Manage sites on this host."
+    "listDesc": "Manage sites on this host.",
+    "resShell": "Login shell",
+    "resSaveHint": "Save and apply changes the live OS. Control-plane only stores the form. Re-apply uses the last saved values.",
+    "resBashConfirmTitle": "Allow interactive bash?",
+    "resBashConfirmDesc": "This grants an interactive login shell to the project user. Confirm only if you need SSH or PTY as that user."
   },
   "protection": {
     "levels": {
@@ -9298,7 +9346,8 @@
     "fixNow": "Perbaiki sekarang",
     "fixFailed": "Perbaikan gagal",
     "fixDone": "izin dataDir diperkeras (chmod 750)",
-    "fixDoneWebUi": "UI web dibuat/diinstal"
+    "fixDoneWebUi": "UI web dibuat/diinstal",
+    "rootLabel": "Superuser"
   },
   "redis": {
     "neverExpire": "Tidak pernah kadaluarsa",
@@ -9917,6 +9966,10 @@
       "cron": "Kron",
       "user": "Pengguna",
       "other": "Lainnya"
+    },
+    "alias": {
+      "ssl": "cert certificate certs",
+      "projects": "project sites"
     }
   },
   "security": {
@@ -10498,7 +10551,8 @@
       "pick": "Pilih versi",
       "noTarget": "Tidak ada target pembaruan",
       "needRuntimePage": "Instal versi ini di halaman runtime",
-      "noAptCandidate": "Tidak ada versi kandidat yang tepat"
+      "noAptCandidate": "Tidak ada versi kandidat yang tepat",
+      "sourceLabel": "Source"
     },
     "install": {
       "progress": "Memasang: {{list}}…",
@@ -10826,7 +10880,8 @@
     "requestDone": "Permintaan sertifikat selesai",
     "requestFailed": "Permintaan sertifikat tidak berhasil",
     "applyFailed": "Permintaan gagal",
-    "deletedCert": "Dihapus {{domain}}"
+    "deletedCert": "Dihapus {{domain}}",
+    "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates."
   },
   "stackWizard": {
     "purgeConfirm": "Konfirmasikan pembersihan? Jalur data yang terdaftar (database/mail) akan dihapus secara permanen.",
@@ -11059,7 +11114,10 @@
     "exportPath": "Jalur ekspor",
     "mode": "Mode",
     "managedConf": "Konferensi terkelola",
-    "dryRunFlag": "Lari kering"
+    "dryRunFlag": "Lari kering",
+    "timezoneSearch": "Filter timezones…",
+    "resyncNtp": "Re-sync NTP",
+    "storageSub": "Disk usage"
   },
   "systemd": {
     "enabled": "Diaktifkan",
@@ -11193,7 +11251,8 @@
     "stepUpHint": "Login root memerlukan peningkatan 2FA ketika akun Anda mengaktifkan TOTP.",
     "stepUpTitle": "Konfirmasikan shell root",
     "stepUpDesc": "Masukkan kode autentikator Anda atau kode pemulihan.",
-    "totpLabel": "TOTP / kode pemulihan"
+    "totpLabel": "TOTP / kode pemulihan",
+    "sessionStillOpen": "A live shell is still connected while you read this page."
   },
   "uiInline": {
     "s27d9daa5": "waktu proses {{v0}} {{v1}},",
@@ -11578,7 +11637,20 @@
     "groupOs": "Paket sistem",
     "notInstalled": "Tidak dipasang",
     "goToPage": "Buka halaman",
-    "hubHint": "Katalog perangkat lunak dan runtime pada host ini. Pindai untuk menyegarkan."
+    "hubHint": "Katalog perangkat lunak dan runtime pada host ini. Pindai untuk menyegarkan.",
+    "intervalDay": "every day",
+    "intervalDays": "every {{n}} days",
+    "intervalHour": "every hour",
+    "intervalHours": "every {{n}} hours",
+    "intervalMinutes": "every {{n}} minutes",
+    "intervalSeconds": "every {{n}} seconds",
+    "availableHint": "Packages with a newer candidate from the package manager.",
+    "servicesHint": "Catalog services on this host. Open the service page to install.",
+    "runtimeHint": "Runtimes on this host. Version upgrades are done on each runtime page.",
+    "needsReboot": "Reboot needed",
+    "kernelRebootWarn": "Installing a new kernel usually needs a reboot before it is used.",
+    "neverRun": "not run yet",
+    "scanOsvN": "Scan + OSV (first {{n}})"
   },
   "users": {
     "userCount": "{{count}} pengguna",

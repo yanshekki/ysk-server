@@ -78,5 +78,23 @@
     "reload": "fail2ban rechargé",
     "restart": "fail2ban redémarré",
     "stop": "fail2ban arrêté"
+  },
+  "statWhitelist": "Whitelist",
+  "invalidIp": "Enter a valid IPv4, IPv6, or CIDR.",
+  "whitelistPendingApply": "Saved to the panel list. Press Apply policy to write jail.local.",
+  "ignoreipFile": "Panel data directory / fail2ban / ignoreip.txt",
+  "jailsTabHint": "Status of active jails. Turn jails on or off in the Policy tab.",
+  "colJail": "Jail",
+  "colEnabled": "On",
+  "serviceStateLine": "Unit {{unit}} · {{state}} · boot {{boot}}",
+  "jail": {
+    "sshd": "SSH brute-force",
+    "nginxHttpAuth": "Nginx HTTP authentication",
+    "nginxBotsearch": "Nginx scanner / bot probes",
+    "nginxBadbots": "Nginx known bad bots",
+    "nginxLimitReq": "Nginx rate-limit jail",
+    "postfix": "Postfix mail brute-force",
+    "dovecot": "Dovecot mail login",
+    "recidive": "Repeat offenders"
   }
 }

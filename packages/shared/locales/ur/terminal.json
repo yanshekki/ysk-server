@@ -29,5 +29,6 @@
   "stepUpHint": "جب آپ کا اکاؤنٹ TOTP فعال ہو تو روٹ لاگ ان کے لیے 2FA اسٹیپ اپ کی ضرورت ہوتی ہے۔",
   "stepUpTitle": "جڑ کے شیل کی تصدیق کریں۔",
   "stepUpDesc": "اپنا مستند کوڈ یا ریکوری کوڈ درج کریں۔",
-  "totpLabel": "TOTP / ریکوری کوڈ"
+  "totpLabel": "TOTP / ریکوری کوڈ",
+  "sessionStillOpen": "A live shell is still connected while you read this page."
 }

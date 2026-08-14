@@ -128,5 +128,13 @@
   "usageNoteFull": "الاستخدام من du المحلي (غير مقدر). الحصة هي حد بسيط لمستوى التحكم؛ تحتاج الحصة المحددة الصعبة إلى التقديم على المضيف.",
   "sseNeedLogin": "لم يتم تسجيل الدخول؛ لا يمكن فتح SSE",
   "sseSessionExpired": "لم يتم تسجيل الدخول أو انتهت صلاحية الجلسة؛ لا يمكن فتح SSE",
-  "sseHttpError": "تيار HTTP {{status}}"
+  "sseHttpError": "تيار HTTP {{status}}",
+  "colFilesystem": "Filesystem",
+  "colMount": "Mount",
+  "colSize": "Size",
+  "colUsed": "Used",
+  "colAvail": "Available",
+  "colUsePct": "Used %",
+  "colHome": "Home",
+  "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab."
 }

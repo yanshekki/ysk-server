@@ -29,5 +29,6 @@
   "stepUpHint": "يتطلب تسجيل الدخول الجذر إجراء 2FA عندما يكون TOTP في حسابك ممكّنًا.",
   "stepUpTitle": "تأكيد قذيفة الجذر",
   "stepUpDesc": "أدخل رمز المصادقة الخاص بك أو رمز الاسترداد.",
-  "totpLabel": "TOTP / رمز الاسترداد"
+  "totpLabel": "TOTP / رمز الاسترداد",
+  "sessionStillOpen": "A live shell is still connected while you read this page."
 }

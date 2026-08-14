@@ -422,7 +422,9 @@
     "overwriteConfirmHint": "اوور رائٹ کی تصدیق کرنے کے لیے اوور رائٹ ٹائپ کریں۔",
     "testRemote": "منزل جانچیں",
     "testRemoteDone": "ریموٹ پروب مکمل",
-    "testRemoteFailed": "ریموٹ پروب ناکام"
+    "testRemoteFailed": "ریموٹ پروب ناکام",
+    "resticRepoPh": "Panel data directory / restic-repo",
+    "testDisabledHint": "Turn on remote push before testing."
   },
   "btTracker": {
     "title": "بی ٹی ٹریکر",
@@ -692,7 +694,11 @@
     "deleteNodeDesc": "CDN نوڈ \"{{name}}\" کو حذف کرتا ہے۔",
     "deleteSiteDesc": "CDN سائٹ \"{{name}}\" کو حذف کرتا ہے۔",
     "deleteSiteC1": "سائٹ کی پالیسی اور ایج ایسوسی ایشنز",
-    "deleteSiteC2": "لاگو nginx کنفیگرز کو علیحدہ صفائی یا دوبارہ اپلائی کرنے کی ضرورت ہو سکتی ہے۔"
+    "deleteSiteC2": "لاگو nginx کنفیگرز کو علیحدہ صفائی یا دوبارہ اپلائی کرنے کی ضرورت ہو سکتی ہے۔",
+    "statOnline": "Online {{n}}/{{total}}",
+    "statOffline": "Offline {{n}}",
+    "statDraining": "Draining {{n}}",
+    "statHitRate": "Hit rate {{v}}"
   },
   "cli": {
     "unknownCommand": "نامعلوم کمانڈ: {{command}}\n`{{cli}} مدد` چلائیں۔",
@@ -2141,7 +2147,19 @@
     "sourceHost": "میزبان",
     "noHostJobs": "اس دائرہ کار میں کوئی کرنٹاب نوکریاں نہیں ہیں۔",
     "hostPartial": "ہر صارف کرونٹاب کو نہیں پڑھ سکا (جڑ کی ضرورت ہے)",
-    "pendingInstall": "زیر التواء انسٹال ({{count}})"
+    "pendingInstall": "زیر التواء انسٹال ({{count}})",
+    "hourRange": "Hour must be 0–23.",
+    "minuteRange": "Minute must be 0–59.",
+    "hoursCommon": "Common hours",
+    "hoursAll": "All hours",
+    "invalidExpr": "Not a valid 5-field cron expression.",
+    "needCommand": "Command is required.",
+    "needUser": "Choose a project or a system user.",
+    "hostCounts": "Host lines",
+    "hostCountsVal": "{{ysk}} · other {{other}} · total {{total}}",
+    "hostYskYes": "panel lines present",
+    "hostYskNo": "no panel lines",
+    "emptyHostCrontab": "No crontab for {{user}}."
   },
   "dashboard": {
     "title": "ڈیش بورڈ",
@@ -3407,6 +3425,24 @@
       "reload": "fail2ban دوبارہ لوڈ ہو گیا۔",
       "restart": "fail2ban دوبارہ شروع ہوا۔",
       "stop": "fail2ban رک گیا۔"
+    },
+    "statWhitelist": "Whitelist",
+    "invalidIp": "Enter a valid IPv4, IPv6, or CIDR.",
+    "whitelistPendingApply": "Saved to the panel list. Press Apply policy to write jail.local.",
+    "ignoreipFile": "Panel data directory / fail2ban / ignoreip.txt",
+    "jailsTabHint": "Status of active jails. Turn jails on or off in the Policy tab.",
+    "colJail": "Jail",
+    "colEnabled": "On",
+    "serviceStateLine": "Unit {{unit}} · {{state}} · boot {{boot}}",
+    "jail": {
+      "sshd": "SSH brute-force",
+      "nginxHttpAuth": "Nginx HTTP authentication",
+      "nginxBotsearch": "Nginx scanner / bot probes",
+      "nginxBadbots": "Nginx known bad bots",
+      "nginxLimitReq": "Nginx rate-limit jail",
+      "postfix": "Postfix mail brute-force",
+      "dovecot": "Dovecot mail login",
+      "recidive": "Repeat offenders"
     }
   },
   "featurePage": {
@@ -4585,7 +4621,15 @@
     "usageNoteFull": "مقامی ڈو سے استعمال (تخمینہ نہیں)۔ کوٹہ ایک کنٹرول پلین نرم حد ہے۔ ہارڈ سیٹ کوٹا لاگو کرنے کے لیے میزبان کی ضرورت ہے۔",
     "sseNeedLogin": "لاگ ان نہیں؛ SSE نہیں کھول سکتا",
     "sseSessionExpired": "لاگ ان نہیں ہوا یا سیشن ختم ہو گیا؛ SSE نہیں کھول سکتا",
-    "sseHttpError": "سٹریم HTTP {{status}}"
+    "sseHttpError": "سٹریم HTTP {{status}}",
+    "colFilesystem": "Filesystem",
+    "colMount": "Mount",
+    "colSize": "Size",
+    "colUsed": "Used",
+    "colAvail": "Available",
+    "colUsePct": "Used %",
+    "colHome": "Home",
+    "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab."
   },
   "migrate": {
     "tabInventory": "انوینٹری",
@@ -8700,7 +8744,11 @@
     "advFtpHomeApp": "سائٹ app ڈائرکٹری",
     "advFtpHomeRoot": "پروجیکٹ ہوم (مکمل)",
     "advFtpManage": "FTP صفحہ کھولیں",
-    "listDesc": "Manage sites on this host."
+    "listDesc": "Manage sites on this host.",
+    "resShell": "Login shell",
+    "resSaveHint": "Save and apply changes the live OS. Control-plane only stores the form. Re-apply uses the last saved values.",
+    "resBashConfirmTitle": "Allow interactive bash?",
+    "resBashConfirmDesc": "This grants an interactive login shell to the project user. Confirm only if you need SSH or PTY as that user."
   },
   "protection": {
     "levels": {
@@ -9298,7 +9346,8 @@
     "fixNow": "اب ٹھیک کریں۔",
     "fixFailed": "درست کرنا ناکام ہو گیا۔",
     "fixDone": "dataDir کی اجازتیں سخت (chmod 750)",
-    "fixDoneWebUi": "ویب UI بلٹ / انسٹال"
+    "fixDoneWebUi": "ویب UI بلٹ / انسٹال",
+    "rootLabel": "Superuser"
   },
   "redis": {
     "neverExpire": "کبھی ختم نہیں ہوتا",
@@ -9917,6 +9966,10 @@
       "cron": "کرون",
       "user": "صارفین",
       "other": "دیگر"
+    },
+    "alias": {
+      "ssl": "cert certificate certs",
+      "projects": "project sites"
     }
   },
   "security": {
@@ -10498,7 +10551,8 @@
       "pick": "ورژن چنیں۔",
       "noTarget": "اپ ڈیٹ کا کوئی ہدف نہیں۔",
       "needRuntimePage": "اس ورژن کو رن ٹائم پیج پر انسٹال کریں۔",
-      "noAptCandidate": "کوئی موزوں امیدوار ورژن نہیں۔"
+      "noAptCandidate": "کوئی موزوں امیدوار ورژن نہیں۔",
+      "sourceLabel": "Source"
     },
     "install": {
       "progress": "انسٹال ہو رہا ہے: {{list}}…",
@@ -10826,7 +10880,8 @@
     "requestDone": "سرٹیفکیٹ کی درخواست مکمل ہوگئی",
     "requestFailed": "سرٹیفکیٹ کی درخواست کامیاب نہیں ہوئی۔",
     "applyFailed": "درخواست ناکام ہوگئی",
-    "deletedCert": "حذف شدہ {{domain}}"
+    "deletedCert": "حذف شدہ {{domain}}",
+    "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates."
   },
   "stackWizard": {
     "purgeConfirm": "صاف کرنے کی تصدیق کریں؟ رجسٹرڈ ڈیٹا پاتھ (ڈیٹا بیس/میل) کو مستقل طور پر حذف کر دیا جائے گا۔",
@@ -11059,7 +11114,10 @@
     "exportPath": "برآمدی راستہ",
     "mode": "موڈ",
     "managedConf": "منظم conf",
-    "dryRunFlag": "ڈرائی رن"
+    "dryRunFlag": "ڈرائی رن",
+    "timezoneSearch": "Filter timezones…",
+    "resyncNtp": "Re-sync NTP",
+    "storageSub": "Disk usage"
   },
   "systemd": {
     "enabled": "فعال",
@@ -11193,7 +11251,8 @@
     "stepUpHint": "جب آپ کا اکاؤنٹ TOTP فعال ہو تو روٹ لاگ ان کے لیے 2FA اسٹیپ اپ کی ضرورت ہوتی ہے۔",
     "stepUpTitle": "جڑ کے شیل کی تصدیق کریں۔",
     "stepUpDesc": "اپنا مستند کوڈ یا ریکوری کوڈ درج کریں۔",
-    "totpLabel": "TOTP / ریکوری کوڈ"
+    "totpLabel": "TOTP / ریکوری کوڈ",
+    "sessionStillOpen": "A live shell is still connected while you read this page."
   },
   "uiInline": {
     "s27d9daa5": "رن ٹائم {{v0}} {{v1}}،",
@@ -11578,7 +11637,20 @@
     "groupOs": "سسٹم پیکجز",
     "notInstalled": "انسٹال نہیں ہے۔",
     "goToPage": "صفحہ کھولیں۔",
-    "hubHint": "اس میزبان پر کیٹلاگ سافٹ ویئر اور رن ٹائمز۔ ریفریش کرنے کے لیے اسکین کریں۔"
+    "hubHint": "اس میزبان پر کیٹلاگ سافٹ ویئر اور رن ٹائمز۔ ریفریش کرنے کے لیے اسکین کریں۔",
+    "intervalDay": "every day",
+    "intervalDays": "every {{n}} days",
+    "intervalHour": "every hour",
+    "intervalHours": "every {{n}} hours",
+    "intervalMinutes": "every {{n}} minutes",
+    "intervalSeconds": "every {{n}} seconds",
+    "availableHint": "Packages with a newer candidate from the package manager.",
+    "servicesHint": "Catalog services on this host. Open the service page to install.",
+    "runtimeHint": "Runtimes on this host. Version upgrades are done on each runtime page.",
+    "needsReboot": "Reboot needed",
+    "kernelRebootWarn": "Installing a new kernel usually needs a reboot before it is used.",
+    "neverRun": "not run yet",
+    "scanOsvN": "Scan + OSV (first {{n}})"
   },
   "users": {
     "userCount": "{{count}} صارفین",

@@ -29,5 +29,6 @@
   "stepUpHint": "O login root requer aumento de 2FA quando sua conta tem TOTP ativado.",
   "stepUpTitle": "Confirme o shell raiz",
   "stepUpDesc": "Digite seu código autenticador ou um código de recuperação.",
-  "totpLabel": "TOTP/código de recuperação"
+  "totpLabel": "TOTP/código de recuperação",
+  "sessionStillOpen": "A live shell is still connected while you read this page."
 }

@@ -422,7 +422,9 @@
     "overwriteConfirmHint": "Escriba OVERWRITE para confirmar la sobrescritura.",
     "testRemote": "Probar destino",
     "testRemoteDone": "Sonda remota finalizada",
-    "testRemoteFailed": "Sonda remota fallida"
+    "testRemoteFailed": "Sonda remota fallida",
+    "resticRepoPh": "Panel data directory / restic-repo",
+    "testDisabledHint": "Turn on remote push before testing."
   },
   "btTracker": {
     "title": "Rastreador BT",
@@ -692,7 +694,11 @@
     "deleteNodeDesc": "Elimina el nodo CDN \"{{name}}\".",
     "deleteSiteDesc": "Elimina el sitio CDN \"{{name}}\".",
     "deleteSiteC1": "Política del sitio y asociaciones perimetrales",
-    "deleteSiteC2": "Las configuraciones de nginx aplicadas pueden necesitar una limpieza por separado o volver a aplicarse"
+    "deleteSiteC2": "Las configuraciones de nginx aplicadas pueden necesitar una limpieza por separado o volver a aplicarse",
+    "statOnline": "Online {{n}}/{{total}}",
+    "statOffline": "Offline {{n}}",
+    "statDraining": "Draining {{n}}",
+    "statHitRate": "Hit rate {{v}}"
   },
   "cli": {
     "unknownCommand": "Comando desconocido: {{command}}\nEjecute `{{cli}} ayuda`",
@@ -2141,7 +2147,19 @@
     "sourceHost": "Anfitrión",
     "noHostJobs": "No hay trabajos crontab en este ámbito",
     "hostPartial": "No se pudo leer el crontab de todos los usuarios (se requiere root)",
-    "pendingInstall": "Instalación pendiente ({{count}})"
+    "pendingInstall": "Instalación pendiente ({{count}})",
+    "hourRange": "Hour must be 0–23.",
+    "minuteRange": "Minute must be 0–59.",
+    "hoursCommon": "Common hours",
+    "hoursAll": "All hours",
+    "invalidExpr": "Not a valid 5-field cron expression.",
+    "needCommand": "Command is required.",
+    "needUser": "Choose a project or a system user.",
+    "hostCounts": "Host lines",
+    "hostCountsVal": "{{ysk}} · other {{other}} · total {{total}}",
+    "hostYskYes": "panel lines present",
+    "hostYskNo": "no panel lines",
+    "emptyHostCrontab": "No crontab for {{user}}."
   },
   "dashboard": {
     "title": "Panel",
@@ -3407,6 +3425,24 @@
       "reload": "fail2ban recargado",
       "restart": "fail2ban reiniciado",
       "stop": "fail2ban detenido"
+    },
+    "statWhitelist": "Whitelist",
+    "invalidIp": "Enter a valid IPv4, IPv6, or CIDR.",
+    "whitelistPendingApply": "Saved to the panel list. Press Apply policy to write jail.local.",
+    "ignoreipFile": "Panel data directory / fail2ban / ignoreip.txt",
+    "jailsTabHint": "Status of active jails. Turn jails on or off in the Policy tab.",
+    "colJail": "Jail",
+    "colEnabled": "On",
+    "serviceStateLine": "Unit {{unit}} · {{state}} · boot {{boot}}",
+    "jail": {
+      "sshd": "SSH brute-force",
+      "nginxHttpAuth": "Nginx HTTP authentication",
+      "nginxBotsearch": "Nginx scanner / bot probes",
+      "nginxBadbots": "Nginx known bad bots",
+      "nginxLimitReq": "Nginx rate-limit jail",
+      "postfix": "Postfix mail brute-force",
+      "dovecot": "Dovecot mail login",
+      "recidive": "Repeat offenders"
     }
   },
   "featurePage": {
@@ -4585,7 +4621,15 @@
     "usageNoteFull": "Uso del du local (no estimado). La cuota es un límite flexible del plano de control; La cuota establecida rígida necesita aplicarse al host.",
     "sseNeedLogin": "No iniciado sesión; no puedo abrir SSE",
     "sseSessionExpired": "No iniciado sesión o la sesión expiró; no puedo abrir SSE",
-    "sseHttpError": "transmitir HTTP {{status}}"
+    "sseHttpError": "transmitir HTTP {{status}}",
+    "colFilesystem": "Filesystem",
+    "colMount": "Mount",
+    "colSize": "Size",
+    "colUsed": "Used",
+    "colAvail": "Available",
+    "colUsePct": "Used %",
+    "colHome": "Home",
+    "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab."
   },
   "migrate": {
     "tabInventory": "Inventario",
@@ -8700,7 +8744,11 @@
     "advFtpHomeApp": "Directorio app del sitio",
     "advFtpHomeRoot": "Inicio del proyecto (completo)",
     "advFtpManage": "Abrir página FTP",
-    "listDesc": "Manage sites on this host."
+    "listDesc": "Manage sites on this host.",
+    "resShell": "Login shell",
+    "resSaveHint": "Save and apply changes the live OS. Control-plane only stores the form. Re-apply uses the last saved values.",
+    "resBashConfirmTitle": "Allow interactive bash?",
+    "resBashConfirmDesc": "This grants an interactive login shell to the project user. Confirm only if you need SSH or PTY as that user."
   },
   "protection": {
     "levels": {
@@ -9298,7 +9346,8 @@
     "fixNow": "Arreglar ahora",
     "fixFailed": "La solución falló",
     "fixDone": "Permisos de dataDir reforzados (chmod 750)",
-    "fixDoneWebUi": "UI web construida/instalada"
+    "fixDoneWebUi": "UI web construida/instalada",
+    "rootLabel": "Superuser"
   },
   "redis": {
     "neverExpire": "Nunca caduca",
@@ -9917,6 +9966,10 @@
       "cron": "cron",
       "user": "Usuarios",
       "other": "Otro"
+    },
+    "alias": {
+      "ssl": "cert certificate certs",
+      "projects": "project sites"
     }
   },
   "security": {
@@ -10498,7 +10551,8 @@
       "pick": "Elegir versión",
       "noTarget": "Sin objetivo de actualización",
       "needRuntimePage": "Instale esta versión en la página de tiempo de ejecución",
-      "noAptCandidate": "No hay versión candidata apta"
+      "noAptCandidate": "No hay versión candidata apta",
+      "sourceLabel": "Source"
     },
     "install": {
       "progress": "Instalando: {{list}}…",
@@ -10826,7 +10880,8 @@
     "requestDone": "Solicitud de certificado completada",
     "requestFailed": "La solicitud de certificado no tuvo éxito",
     "applyFailed": "Solicitud fallida",
-    "deletedCert": "Eliminado {{domain}}"
+    "deletedCert": "Eliminado {{domain}}",
+    "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates."
   },
   "stackWizard": {
     "purgeConfirm": "¿Confirmar purga? Las rutas de datos registradas (bases de datos/correo) se eliminarán permanentemente.",
@@ -11059,7 +11114,10 @@
     "exportPath": "Ruta de exportación",
     "mode": "Modo",
     "managedConf": "Configuración administrada",
-    "dryRunFlag": "Ejecución en seco"
+    "dryRunFlag": "Ejecución en seco",
+    "timezoneSearch": "Filter timezones…",
+    "resyncNtp": "Re-sync NTP",
+    "storageSub": "Disk usage"
   },
   "systemd": {
     "enabled": "Activado",
@@ -11193,7 +11251,8 @@
     "stepUpHint": "El inicio de sesión raíz requiere un paso adelante 2FA cuando su cuenta tiene TOTP habilitado.",
     "stepUpTitle": "Confirmar shell raíz",
     "stepUpDesc": "Ingrese su código de autenticación o un código de recuperación.",
-    "totpLabel": "TOTP/código de recuperación"
+    "totpLabel": "TOTP/código de recuperación",
+    "sessionStillOpen": "A live shell is still connected while you read this page."
   },
   "uiInline": {
     "s27d9daa5": "tiempo de ejecución {{v0}} {{v1}}，",
@@ -11578,7 +11637,20 @@
     "groupOs": "Paquetes de sistema",
     "notInstalled": "No instalado",
     "goToPage": "Abrir página",
-    "hubHint": "Catálogo de software y tiempos de ejecución en este host. Escanee para actualizar."
+    "hubHint": "Catálogo de software y tiempos de ejecución en este host. Escanee para actualizar.",
+    "intervalDay": "every day",
+    "intervalDays": "every {{n}} days",
+    "intervalHour": "every hour",
+    "intervalHours": "every {{n}} hours",
+    "intervalMinutes": "every {{n}} minutes",
+    "intervalSeconds": "every {{n}} seconds",
+    "availableHint": "Packages with a newer candidate from the package manager.",
+    "servicesHint": "Catalog services on this host. Open the service page to install.",
+    "runtimeHint": "Runtimes on this host. Version upgrades are done on each runtime page.",
+    "needsReboot": "Reboot needed",
+    "kernelRebootWarn": "Installing a new kernel usually needs a reboot before it is used.",
+    "neverRun": "not run yet",
+    "scanOsvN": "Scan + OSV (first {{n}})"
   },
   "users": {
     "userCount": "{{count}} usuarios",

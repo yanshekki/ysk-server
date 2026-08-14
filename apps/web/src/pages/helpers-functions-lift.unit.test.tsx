@@ -13,7 +13,8 @@ import {
   jailEnabledTone,
   normalizeDurationPreset,
   clampMaxretry,
-  isValidBanIp } from './features/Fail2banPage';
+  isValidBanIp,
+  isValidIgnoreIp } from './features/Fail2banPage';
 import {
   parsePorts,
   firewallActionTone,
@@ -90,6 +91,10 @@ describe('Fail2ban pure helpers', () => {
     expect(isValidBanIp('  ')).toBe(false);
     expect(isValidBanIp('ab')).toBe(false);
     expect(isValidBanIp('2001:db8::1')).toBe(true);
+    expect(isValidBanIp('999.999.999.999')).toBe(false);
+    expect(isValidBanIp('not-an-ip')).toBe(false);
+    expect(isValidIgnoreIp('203.0.113.0/24')).toBe(true);
+    expect(isValidIgnoreIp('999.999.999.999')).toBe(false);
   });
 });
 

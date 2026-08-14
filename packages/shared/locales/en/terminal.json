@@ -29,5 +29,6 @@
   "stepUpHint": "Root login requires 2FA step-up when your account has TOTP enabled.",
   "stepUpTitle": "Confirm root shell",
   "stepUpDesc": "Enter your authenticator code or a recovery code.",
-  "totpLabel": "TOTP / recovery code"
+  "totpLabel": "TOTP / recovery code",
+  "sessionStillOpen": "A live shell is still connected while you read this page."
 }

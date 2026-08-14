@@ -135,5 +135,17 @@
   "sourceHost": "主机",
   "noHostJobs": "此范围没有 crontab 任务",
   "hostPartial": "无法完整读取所有用户 crontab（需要 root）",
-  "pendingInstall": "待安装到系统（{{count}}）"
+  "pendingInstall": "待安装到系统（{{count}}）",
+  "hourRange": "小时必须介于 0–23。",
+  "minuteRange": "分钟必须介于 0–59。",
+  "hoursCommon": "常用小时",
+  "hoursAll": "全部小时",
+  "invalidExpr": "不是有效的 5 栏 cron 表达式。",
+  "needCommand": "请填写指令。",
+  "needUser": "请选择专案或系统用户。",
+  "hostCounts": "主机行数",
+  "hostCountsVal": "{{ysk}} · 其他 {{other}} · 合计 {{total}}",
+  "hostYskYes": "已有面板行",
+  "hostYskNo": "尚无面板行",
+  "emptyHostCrontab": "用户 {{user}} 尚未有 crontab。"
 }

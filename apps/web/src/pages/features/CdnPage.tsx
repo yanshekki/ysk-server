@@ -1251,26 +1251,31 @@ export function CdnPage() {
                   <>
                     <div className="u-flex u-flex-wrap gap-3 u-mt-2">
                       <Badge tone="ok">
-                        online {dashboard.nodes.online}/{dashboard.nodes.total}
+                        {t('cdn.statOnline', {
+                          n: dashboard.nodes.online,
+                          total: dashboard.nodes.total,
+                        })}
                       </Badge>
                       <Badge tone="danger">
-                        offline {dashboard.nodes.offline}
+                        {t('cdn.statOffline', { n: dashboard.nodes.offline })}
                       </Badge>
                       <Badge tone="warn">
-                        draining {dashboard.nodes.draining}
+                        {t('cdn.statDraining', { n: dashboard.nodes.draining })}
                       </Badge>
                       <Badge tone="neutral">
-                        sites {dashboard.sites.total}
+                        {t('cdn.statSites', { n: dashboard.sites.total })}
                       </Badge>
                       <Badge
                         tone={
                           dashboard.overallHitRatePct != null ? 'ok' : 'warn'
                         }
                       >
-                        hit-rate{' '}
-                        {dashboard.overallHitRatePct != null
-                          ? `${dashboard.overallHitRatePct}%`
-                          : t('common.unknown')}
+                        {t('cdn.statHitRate', {
+                          v:
+                            dashboard.overallHitRatePct != null
+                              ? `${dashboard.overallHitRatePct}%`
+                              : t('common.unknown'),
+                        })}
                       </Badge>
                     </div>
                     {Object.keys(dashboard.nodes.byRegion).length ? (
