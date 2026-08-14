@@ -1,14 +1,10 @@
 import { tl } from 'ysk-server-shared';
 /**
  * WebAuthn / passkey (panel second factor) via @simplewebauthn/server v13.
+ * Load the library only when a passkey call runs so `ysk-server --version`
+ * and setup survive a missing/empty install of the package (LIVE-005).
  */
 
-import {
-  generateRegistrationOptions,
-  verifyRegistrationResponse,
-  generateAuthenticationOptions,
-  verifyAuthenticationResponse,
-} from '@simplewebauthn/server';
 import type {
   AuthenticatorTransportFuture,
   RegistrationResponseJSON,
@@ -33,6 +29,15 @@ export type WebAuthnUserBlob = {
 };
 
 const RP_NAME = 'YSK Server';
+
+async function loadWebAuthnServer() {
+  try {
+    return await import('@simplewebauthn/server');
+  } catch (e) {
+    const detail = e instanceof Error ? e.message : String(e);
+    throw new Error(`Cannot load the WebAuthn server module: ${detail}`);
+  }
+}
 
 function getRpID(origin?: string): string {
   if (origin) {
@@ -80,6 +85,7 @@ export async function beginWebAuthnRegistration(input: {
   origin?: string;
 }) {
   const blob = loadBlob(input.db, input.userId);
+  const { generateRegistrationOptions } = await loadWebAuthnServer();
   const options = await generateRegistrationOptions({
     rpName: RP_NAME,
     rpID: getRpID(input.origin),
@@ -114,6 +120,7 @@ export async function finishWebAuthnRegistration(input: {
   }
   let verification;
   try {
+    const { verifyRegistrationResponse } = await loadWebAuthnServer();
     verification = await verifyRegistrationResponse({
       response: input.response,
       expectedChallenge: blob.currentChallenge,
@@ -162,6 +169,7 @@ export async function beginWebAuthnAuthentication(input: {
   if (!blob.credentials.length) {
     return { ok: false as const, notes: [tl('notes.auto.n0712')] };
   }
+  const { generateAuthenticationOptions } = await loadWebAuthnServer();
   const options = await generateAuthenticationOptions({
     rpID: getRpID(input.origin),
     allowCredentials: blob.credentials.map((c) => ({
@@ -190,6 +198,7 @@ export async function finishWebAuthnAuthentication(input: {
     return { ok: false, notes: [tl('notes.auto.n0964')] };
   }
   try {
+    const { verifyAuthenticationResponse } = await loadWebAuthnServer();
     const verification = await verifyAuthenticationResponse({
       response: input.response,
       expectedChallenge: blob.currentChallenge,

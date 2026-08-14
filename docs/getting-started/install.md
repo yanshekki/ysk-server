@@ -15,7 +15,7 @@ Install **YSK Server** (control plane CLI `ysk-server`) and **selected host soft
 
 **Honesty:** packages are installed; **most services are not force-enabled**. Live apply still needs **root** + **`YSK_EXECUTE=1`**. See [../architecture/ops-honesty.md](../architecture/ops-honesty.md).
 
-`npm install -g ysk-server` skips dependency lifecycle scripts (`ip-set@3` runs `npx only-allow pnpm` and aborts a stock Ubuntu 24 / Node 20 host), then rebuilds native addons (`node-pty`, `better-sqlite3`). Global **pnpm** is pinned to **9.x** — `pnpm@latest` (11) needs Node 22.
+`install.sh` stubs `npx only-allow` so `ip-set@3` cannot abort `npm install -g` (Ubuntu 24 / Node 20). Do **not** use `--ignore-scripts` — that leaves an empty `@simplewebauthn/server` and `ysk-server setup` / `--version` crash. Global **pnpm** is pinned to **9.x**; pnpm 11 on the PATH is replaced (it needs Node 22).
 
 **Logs:** `/var/log/ysk-server/install-*.log` (root) or `~/.ysk/logs/`.  
 **Manifest:** `$dataDir/stack-manifest.json` (what was installed — used by uninstall).

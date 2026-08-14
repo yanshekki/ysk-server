@@ -284,9 +284,62 @@ npm_global_prefix() {
   echo "${HOME}/.npm-global"
 }
 
-# ip-set@3 (via webtorrent) ships preinstall: npx only-allow pnpm — that
-# aborts npm install -g on a stock Ubuntu 24 / Node 20 host (LIVE-001).
-# Skip lifecycle scripts, then rebuild native addons we actually need.
+# ip-set@3 preinstall is `npx only-allow pnpm`. On Ubuntu 24 that often
+# becomes `only-allow: not found` (LIVE-001). --ignore-scripts avoids the
+# hook but leaves empty scoped packages (@simplewebauthn/server) so CLI
+# setup/--version crash (LIVE-005). Stub the gate and extract packages.
+with_npm_only_allow_stub() {
+  local stub
+  stub="$(mktemp -d "${TMPDIR:-/tmp}/ysk-npm-gate.XXXXXX")"
+  cat >"$stub/only-allow" <<'SH'
+#!/bin/sh
+exit 0
+SH
+  chmod +x "$stub/only-allow"
+  cat >"$stub/npx" <<'SH'
+#!/bin/sh
+for a in "$@"; do
+  if [ "$a" = "only-allow" ]; then exit 0; fi
+done
+stubdir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+oldifs=$IFS
+IFS=:
+for d in $PATH; do
+  [ "$d" = "$stubdir" ] && continue
+  if [ -x "$d/npx" ]; then
+    IFS=$oldifs
+    exec "$d/npx" "$@"
+  fi
+done
+IFS=$oldifs
+exit 127
+SH
+  chmod +x "$stub/npx"
+  export PATH="$stub:$PATH"
+  # Real only-allow allows installs when INIT_CWD contains node_modules
+  export INIT_CWD="${INIT_CWD:-/usr/lib/node_modules/ysk-server}"
+}
+
+# --ignore-scripts (1.0.25) left an empty scoped dir; repair it.
+ensure_webauthn_module() {
+  local prefix root dest
+  prefix="$(npm_global_prefix)"
+  if [[ -n "$prefix" ]]; then
+    dest="$prefix/lib/node_modules/ysk-server"
+  else
+    root="$(npm root -g 2>/dev/null || true)"
+    dest="${root}/ysk-server"
+  fi
+  [[ -d "$dest" ]] || return 0
+  if [[ -f "$dest/node_modules/@simplewebauthn/server/package.json" ]]; then
+    return 0
+  fi
+  log "Repairing @simplewebauthn/server (empty or missing)"
+  with_npm_only_allow_stub
+  (cd "$dest" && npm install --omit=dev --no-fund --no-audit --no-progress @simplewebauthn/server@13.3.2) \
+    || warn "Could not install @simplewebauthn/server — passkeys will fail until repaired"
+}
+
 npm_rebuild_natives() {
   local prefix root
   prefix="$(npm_global_prefix)"
@@ -320,12 +373,12 @@ npm_install_global() {
     warn "I-07: installing npm packages as root into system global (set YSK_NPM_PREFIX or YSK_NPM_USER to avoid)"
   fi
   extra+=(--force)
-  extra+=(--ignore-scripts)
+  with_npm_only_allow_stub
   local rc=0
   if [[ "$(id -u)" -eq 0 && -n "${YSK_NPM_USER:-}" ]] && id "$YSK_NPM_USER" &>/dev/null && [[ -n "$prefix" ]]; then
     # Run as dedicated user when prefix is under their home
-    runuser -u "$YSK_NPM_USER" -- npm install -g "${extra[@]}" "$@" 2>/dev/null \
-      || sudo -u "$YSK_NPM_USER" npm install -g "${extra[@]}" "$@" 2>/dev/null \
+    runuser -u "$YSK_NPM_USER" -- env PATH="$PATH" INIT_CWD="$INIT_CWD" npm install -g "${extra[@]}" "$@" 2>/dev/null \
+      || sudo -u "$YSK_NPM_USER" env PATH="$PATH" INIT_CWD="$INIT_CWD" npm install -g "${extra[@]}" "$@" 2>/dev/null \
       || npm install -g "${extra[@]}" "$@"
     rc=$?
   else
@@ -344,14 +397,29 @@ install_node_globals() {
     record_hard_fail "npm not found"
     return 1
   fi
-  if require_cmd pnpm && require_cmd pm2; then
+  local need_pnpm=1 need_pm2=1
+  if require_cmd pnpm; then
+    local pnpm_major
+    pnpm_major="$(pnpm -v 2>/dev/null | cut -d. -f1 || echo 0)"
+    if [[ "$pnpm_major" =~ ^[0-9]+$ ]] && [[ "$pnpm_major" -ge 11 ]]; then
+      log "pnpm $(pnpm -v) needs Node 22 — replacing with pnpm 9 (LIVE-004)"
+    else
+      need_pnpm=0
+    fi
+  fi
+  require_cmd pm2 && need_pm2=0
+  if [[ "$need_pnpm" -eq 0 && "$need_pm2" -eq 0 ]]; then
     log "pnpm and pm2 already on PATH — skip global reinstall"
     return 0
   fi
   log "Installing global npm tools (pnpm@9, pm2)..."
   # pnpm@latest (11+) needs Node >=22.13 (node:sqlite). Product is Node 20+ (LIVE-004).
-  npm_install_global pnpm@9.15.9 2>/dev/null || npm_install_global pnpm@9 || warn "pnpm install failed"
-  npm_install_global pm2@latest 2>/dev/null || npm_install_global pm2 || warn "pm2 install failed"
+  if [[ "$need_pnpm" -eq 1 ]]; then
+    npm_install_global pnpm@9.15.9 2>/dev/null || npm_install_global pnpm@9 || warn "pnpm install failed"
+  fi
+  if [[ "$need_pm2" -eq 1 ]]; then
+    npm_install_global pm2@latest 2>/dev/null || npm_install_global pm2 || warn "pm2 install failed"
+  fi
   local prefix
   prefix="$(npm_global_prefix)"
   if [[ -n "$prefix" && -d "$prefix/bin" ]]; then
@@ -551,6 +619,7 @@ WRAP
       return 1
     fi
   fi
+  ensure_webauthn_module
   if require_cmd npm; then
     local prefix
     prefix="$(npm_global_prefix)"

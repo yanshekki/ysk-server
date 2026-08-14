@@ -48,8 +48,7 @@ curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.s
 或從 npm（CLI 命令：`ysk-server`）：
 
 ```bash
-npm install -g ysk-server --ignore-scripts
-npm rebuild -g ysk-server
+npm install -g ysk-server
 # 預設弱密碼 admin 會被拒絕。請指定強密碼：
 ysk-server setup --admin-user admin --admin-password 'YourStrongPass1!' --data-dir /var/lib/ysk-server
 export YSK_EXECUTE=1

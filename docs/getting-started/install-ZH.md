@@ -15,7 +15,7 @@
 
 **誠實原則：** 會裝套件；**多數服務不會強制啟用**。真正套用仍要 **root** + **`YSK_EXECUTE=1`**。見 [../architecture/ops-honesty-ZH.md](../architecture/ops-honesty-ZH.md)。
 
-`npm install -g ysk-server` 會略過依賴嘅 lifecycle 腳本（`ip-set@3` 會跑 `npx only-allow pnpm`，喺 Ubuntu 24／Node 20 會令安裝失敗），然後重建 native 模組（`node-pty`、`better-sqlite3`）。全域 **pnpm** 釘死 **9.x** — `pnpm@latest`（11）需要 Node 22。
+`install.sh` 會 stub `npx only-allow`，避免 `ip-set@3` 令 `npm install -g` 失敗（Ubuntu 24／Node 20）。**唔好**用 `--ignore-scripts`，否則 `@simplewebauthn/server` 會係空目錄，`ysk-server setup`／`--version` 會崩潰。全域 **pnpm** 釘死 **9.x**；若 PATH 上已有 pnpm 11 會換走（佢要 Node 22）。
 
 **日誌：** `/var/log/ysk-server/install-*.log`（root）或 `~/.ysk/logs/`。  
 **Manifest：** `$dataDir/stack-manifest.json`（uninstall 靠呢份）。
