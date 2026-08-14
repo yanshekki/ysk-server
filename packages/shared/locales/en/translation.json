@@ -3302,7 +3302,8 @@
       "sessionExpired": "Session expired; sign in again",
       "sessionIdle": "Idle timeout; sign in again",
       "totpNotEnabled": "2FA is not enabled",
-      "totpSecretNoDataDir": "TOTP secret is encrypted but dataDir is not set"
+      "totpSecretNoDataDir": "TOTP secret is encrypted but dataDir is not set",
+      "mustChangePassword": "You must set a new password before continuing"
     },
     "http": {
       "notFoundRoute": "Not found: {{method}} {{path}}",
@@ -3312,7 +3313,8 @@
       "unprocessable": "Request rejected by server",
       "requestFailed": "Request failed ({{status}})",
       "jsonInvalid": "Invalid JSON",
-      "internal": "Internal error"
+      "internal": "Internal error",
+      "payloadTooLarge": "Request body is too large"
     },
     "YSK_HOST_BROWSE_SSRF": "Host browse blocked by security policy",
     "YSK_HOST_BROWSE_SESSION": "Host browse session not found or expired",
@@ -3852,7 +3854,10 @@
     "colPorts": "Ports",
     "colSync": "Status",
     "synced": "Synced",
-    "syncNow": "Sync"
+    "syncNow": "Sync",
+    "disableConfirmTitle": "Disable UFW?",
+    "disableConfirmDesc": "The host firewall will stop filtering traffic. SSH and the panel can be exposed if the host is on a public network.",
+    "disableConfirmConsequence": "Existing allow/deny rules stay stored but are not enforced until UFW is enabled again."
   },
   "ftp": {
     "title": "FTPS accounts",
@@ -4297,7 +4302,12 @@
     "totpLabel": "Authentication code",
     "totpHint": "6-digit code from your authenticator app",
     "submitting": "Signing in…",
-    "sessionExpired": "Session expired; sign in again"
+    "sessionExpired": "Session expired; sign in again",
+    "newPassword": "New password",
+    "newPasswordAgain": "Confirm new password",
+    "changePassword": "Change password",
+    "passwordMismatch": "The two passwords do not match",
+    "passwordChanged": "Password updated"
   },
   "logs": {
     "catSystem": "System files",
@@ -4743,7 +4753,10 @@
     "bookmarkAdded": "Pinned to sidebar",
     "bookmarkRemoved": "Removed from sidebar",
     "btTracker": "BT Tracker",
-    "support": "Support"
+    "support": "Support",
+    "noAccessTitle": "No access",
+    "noAccessDesc": "Your role does not include this page. Ask an admin if you need it.",
+    "backToDashboard": "Back to dashboard"
   },
   "network": {
     "title": "Network interfaces",
@@ -11654,7 +11667,15 @@
     "securityClearTotpHint": "Requires step-up",
     "securityClearConfirm": "Type the username to confirm clearing 2FA",
     "securityClearOk": "Cleared 2FA for {{name}}",
-    "securitySelfNote": "To set up your own 2FA, open Security → My security."
+    "securitySelfNote": "To set up your own 2FA, open Security → My security.",
+    "cannotDeleteSelf": "You cannot delete the signed-in account",
+    "cannotModifySelf": "You cannot suspend or demote the signed-in account",
+    "cannotDeleteLastAdmin": "Cannot delete the last admin",
+    "cannotDemoteLastAdmin": "Cannot suspend or demote the last admin",
+    "lockSelfHint": "This is the signed-in account. Delete, suspend, and role change are blocked to prevent lock-out.",
+    "lockLastAdminHint": "This is the last admin. Delete, suspend, and demotion are blocked.",
+    "demoteAdminTitle": "Demote this admin?",
+    "demoteAdminDesc": "This user will lose full admin access. Confirm only if another admin remains."
   },
   "vnc": {
     "pageDesc": "VNC server & client",

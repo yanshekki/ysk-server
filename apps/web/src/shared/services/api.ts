@@ -289,6 +289,12 @@ export const api = {
   logout(): Promise<{ ok: boolean }> {
     return request('/api/v1/auth/logout', { method: 'POST' });
   },
+  changePassword(currentPassword: string, newPassword: string): Promise<{ ok: boolean }> {
+    return request('/api/v1/auth/password', {
+      method: 'POST',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+  },
   me(): Promise<{
     user: {
       id?: string;

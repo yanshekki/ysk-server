@@ -185,8 +185,14 @@ export function ProjectDetailPage() {
   const [phpVersion, setPhpVersion] = useState('8.2');
 
   const refreshProject = useCallback(async () => {
-    const list = await projectsApi.list();
-    const found = list.items.find((p) => p.id === id) ?? null;
+    if (!id) return null;
+    let found: ProjectDto | null = null;
+    try {
+      const r = await projectsApi.get(id);
+      found = r.project ?? null;
+    } catch {
+      found = null;
+    }
     setProject(found);
     if (found) {
       setGitUrl(found.gitUrl ?? '');
@@ -291,13 +297,15 @@ export function ProjectDetailPage() {
   const tabIds = useMemo(() => projectTabIds(ui), [ui]);
 
   const rawTab = searchParams.get('tab');
-  const defaultTab =
-    rawTab === 'deploy' || rawTab === 'app'
-      ? (tabIds as readonly string[]).includes('app')
-        ? 'app'
-        : 'overview'
-      : 'overview';
-  const [tab, setTab] = usePageTab(tabIds as string[], defaultTab);
+  const defaultTab = resolveActiveTab(
+    (tabIds as string[]).map((id) => ({ id })),
+    rawTab === 'deploy' || rawTab === 'app' ? 'app' : rawTab || 'overview',
+  );
+  const [tabRaw, setTab] = usePageTab(
+    [...(tabIds as string[]), 'deploy', 'logs', 'resources', 'advanced'],
+    defaultTab,
+  );
+  const tab = resolveActiveTab((tabIds as string[]).map((id) => ({ id })), tabRaw);
 
   if (loading) return <LoadingBlock label={t('common.loading')} />;
   if (loadError || !project || !ui) {

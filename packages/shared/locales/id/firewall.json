@@ -98,5 +98,8 @@
   "colPorts": "Pelabuhan",
   "colSync": "Status",
   "synced": "Disinkronkan",
-  "syncNow": "Sinkronisasi"
+  "syncNow": "Sinkronisasi",
+  "disableConfirmTitle": "Nonaktifkan UFW?",
+  "disableConfirmDesc": "Firewall host akan berhenti menyaring lalu lintas. Di jaringan publik, SSH dan panel bisa terekspos.",
+  "disableConfirmConsequence": "Aturan izinkan/tolak tetap tersimpan, tetapi tidak ditegakkan sampai UFW diaktifkan lagi."
 }

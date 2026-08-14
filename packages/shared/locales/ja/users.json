@@ -118,5 +118,13 @@
   "securityClearTotpHint": "ステップアップが必要",
   "securityClearConfirm": "ユーザー名を入力して 2FA のクリアを確認します",
   "securityClearOk": "{{name}} の 2FA をクリアしました",
-  "securitySelfNote": "独自の 2FA を設定するには、「セキュリティ」→「マイセキュリティ」を開きます。"
+  "securitySelfNote": "独自の 2FA を設定するには、「セキュリティ」→「マイセキュリティ」を開きます。",
+  "cannotDeleteSelf": "サインイン中のアカウントは削除できません",
+  "cannotModifySelf": "サインイン中のアカウントは停止・降格できません",
+  "cannotDeleteLastAdmin": "最後の管理者は削除できません",
+  "cannotDemoteLastAdmin": "最後の管理者は停止・降格できません",
+  "lockSelfHint": "これはサインイン中のアカウントです。ロックアウト防止のため、削除・停止・役割変更はできません。",
+  "lockLastAdminHint": "これは最後の管理者です。削除・停止・降格はできません。",
+  "demoteAdminTitle": "この管理者を降格しますか？",
+  "demoteAdminDesc": "このユーザーは管理者権限を失います。他の管理者が残っていることを確認してください。"
 }

@@ -124,6 +124,13 @@ if ! load_libs; then
   log() { printf '[%s] %s\n' "$PRODUCT" "$*"; }
   err() { printf '[%s] ERROR: %s\n' "$PRODUCT" "$*" >&2; }
   raw="${YSK_INSTALL_RAW:-https://raw.githubusercontent.com/yanshekki/ysk-server/main}"
+  case "$raw" in
+    https://*) ;;
+    *)
+      err "YSK_INSTALL_RAW must be https:// (refusing $raw)"
+      exit 1
+      ;;
+  esac
   tmp="$(mktemp -d "${TMPDIR:-/tmp}/ysk-uninstall-XXXXXX")"
   log "Fetching uninstaller assets from $raw …"
   mkdir -p "$tmp/install/lib" "$tmp/deploy/stack"

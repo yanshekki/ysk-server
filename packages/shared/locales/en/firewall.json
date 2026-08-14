@@ -98,5 +98,8 @@
   "colPorts": "Ports",
   "colSync": "Status",
   "synced": "Synced",
-  "syncNow": "Sync"
+  "syncNow": "Sync",
+  "disableConfirmTitle": "Disable UFW?",
+  "disableConfirmDesc": "The host firewall will stop filtering traffic. SSH and the panel can be exposed if the host is on a public network.",
+  "disableConfirmConsequence": "Existing allow/deny rules stay stored but are not enforced until UFW is enabled again."
 }

@@ -98,5 +98,8 @@
   "colPorts": "Ports",
   "colSync": "Statut",
   "synced": "Synchronisé",
-  "syncNow": "Synchroniser"
+  "syncNow": "Synchroniser",
+  "disableConfirmTitle": "Désactiver UFW ?",
+  "disableConfirmDesc": "Le pare-feu de l’hôte cessera de filtrer le trafic. Sur un réseau public, SSH et le panneau peuvent être exposés.",
+  "disableConfirmConsequence": "Les règles d’autorisation/refus restent enregistrées mais ne s’appliquent plus tant que UFW n’est pas réactivé."
 }

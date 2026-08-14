@@ -118,5 +118,13 @@
   "securityClearTotpHint": "Requer intensificação",
   "securityClearConfirm": "Digite o nome de usuário para confirmar a limpeza 2FA",
   "securityClearOk": "Liberado 2FA para {{name}}",
-  "securitySelfNote": "Para configurar seu próprio 2FA, abra Segurança → Minha segurança."
+  "securitySelfNote": "Para configurar seu próprio 2FA, abra Segurança → Minha segurança.",
+  "cannotDeleteSelf": "Não pode eliminar a conta com sessão iniciada",
+  "cannotModifySelf": "Não pode suspender nem despromover a conta com sessão iniciada",
+  "cannotDeleteLastAdmin": "Não é possível eliminar o último administrador",
+  "cannotDemoteLastAdmin": "Não é possível suspender nem despromover o último administrador",
+  "lockSelfHint": "Esta é a conta com sessão iniciada. Eliminar, suspender e alterar a função estão bloqueados para evitar bloqueio.",
+  "lockLastAdminHint": "Este é o último administrador. Eliminar, suspender e despromover estão bloqueados.",
+  "demoteAdminTitle": "Despromover este administrador?",
+  "demoteAdminDesc": "Este utilizador perderá o acesso completo de administrador. Confirme que resta outro administrador."
 }

@@ -233,7 +233,7 @@ export async function handleVncRoutes(
         ok: true,
         detail: { viewOnly: share.viewOnly, expiresAt: share.expiresAt },
       });
-      const path = `/vnc?share=${encodeURIComponent(share.token)}`;
+      const path = `/vnc-share/${encodeURIComponent(share.token)}`;
       sendJson(res, 200, {
         ok: true,
         token: share.token,

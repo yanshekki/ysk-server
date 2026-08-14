@@ -49,9 +49,13 @@ Or from npm (CLI bin: `ysk-server`):
 
 ```bash
 npm install -g ysk-server
-ysk-server setup
+# Weak default "admin" is rejected. Pass a strong password:
+ysk-server setup --admin-user admin --admin-password 'YourStrongPass1!' --data-dir /var/lib/ysk-server
+export YSK_EXECUTE=1
 ysk-server serve
 ```
+
+On a fresh host, prefer **`install.sh`** (systemd, TLS, random admin password printed once).
 
 Or from git:
 

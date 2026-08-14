@@ -11,6 +11,8 @@ export type RouteCapRule = {
   /** Full path match (no query). */
   pattern: RegExp;
   cap: CapabilityId;
+  /** If set, any listed cap satisfies the mutating gate. */
+  anyOf?: readonly CapabilityId[];
   /** Optional human note for docs / tests */
   note?: string;
 };
@@ -307,6 +309,7 @@ export const MUTATING_ROUTE_CAP_RULES: readonly RouteCapRule[] = [
     methods: ['POST'],
     pattern: /^\/api\/v1\/terminal\//,
     cap: 'settings.system',
+    anyOf: ['settings.system', 'services.control'],
     note: 'browser terminal tickets — privilege shell access',
   },
   {
@@ -380,6 +383,27 @@ export function matchMutatingRouteCap(
     if (rule.pattern.test(pathname)) return rule.cap;
   }
   return null;
+}
+
+/** Caps that satisfy a mutating rule (any-of), or null if no rule. */
+export function matchMutatingRouteAnyOf(
+  method: string,
+  pathname: string,
+): CapabilityId[] | null {
+  const m = method.toUpperCase();
+  if (m !== 'POST' && m !== 'PUT' && m !== 'PATCH' && m !== 'DELETE') {
+    return null;
+  }
+  const cap = matchMutatingRouteCap(m, pathname);
+  if (!cap) return null;
+  for (const rule of MUTATING_ROUTE_CAP_RULES) {
+    if (!(rule.methods as readonly string[]).includes(m)) continue;
+    if (rule.pattern.test(pathname)) {
+      if (rule.anyOf?.length) return [...rule.anyOf];
+      return [rule.cap];
+    }
+  }
+  return [cap];
 }
 
 /**
@@ -463,15 +487,15 @@ export const FEATURE_NAV_CAPS: Readonly<Record<string, readonly CapabilityId[]>>
   firewall: ['firewall.read', 'firewall.edit', 'firewall.flush'],
   fail2ban: ['firewall.read', 'firewall.edit', 'firewall.flush'],
   // system admin-ish
-  systemd: ['services.read', 'services.control', 'settings.system'],
+  systemd: ['services.control', 'settings.system'],
   migrate: ['settings.system', 'backups.restore'],
   agents: ['services.read', 'services.control', 'runtime.tuning'],
   cdn: ['publish.apply', 'projects.read'],
   rbac: ['rbac.policy', 'users.manage'],
   terminal: ['settings.system', 'services.control'],
   hostBrowse: ['network.browse'],
-  vpn: ['network.vpn', 'firewall.edit'],
-  vnc: ['network.vnc', 'firewall.edit'],
+  vpn: ['network.vpn'],
+  vnc: ['network.vnc'],
 };
 
 /** Path prefix → any-of caps (for SPA route guard). Longer prefixes win. */

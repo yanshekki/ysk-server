@@ -282,8 +282,14 @@ export async function handleFilesPublicRoutes(
         return true;
       }
       const { readFileSync, existsSync } = await import('node:fs');
-      const { join } = await import('node:path');
-      const abs = join(ctx.dataDir, share.torrentRelPath || '');
+      const { assertInside } = await import('ysk-server-core');
+      let abs = '';
+      try {
+        abs = assertInside(ctx.dataDir, share.torrentRelPath || '');
+      } catch {
+        sendJson(res, 404, { ok: false, message: 'torrent missing' });
+        return true;
+      }
       if (!share.torrentRelPath || !existsSync(abs)) {
         sendJson(res, 404, { ok: false, message: 'torrent missing' });
         return true;

@@ -37,7 +37,8 @@
     "sessionExpired": "Sesi berakhir; masuk lagi",
     "sessionIdle": "Batas waktu menganggur; masuk lagi",
     "totpNotEnabled": "2FA tidak diaktifkan",
-    "totpSecretNoDataDir": "Rahasia TOTP dienkripsi tetapi dataDir tidak disetel"
+    "totpSecretNoDataDir": "Rahasia TOTP dienkripsi tetapi dataDir tidak disetel",
+    "mustChangePassword": "Anda harus mengatur kata sandi baru sebelum lanjut"
   },
   "http": {
     "notFoundRoute": "Tidak ditemukan: {{method}} {{path}}",
@@ -47,7 +48,8 @@
     "unprocessable": "Permintaan ditolak oleh server",
     "requestFailed": "Permintaan gagal ({{status}})",
     "jsonInvalid": "JSON tidak valid",
-    "internal": "Kesalahan dalaman"
+    "internal": "Kesalahan dalaman",
+    "payloadTooLarge": "Isi permintaan terlalu besar"
   },
   "YSK_HOST_BROWSE_SSRF": "Penjelajahan host diblokir oleh kebijakan keamanan",
   "YSK_HOST_BROWSE_SESSION": "Sesi penelusuran host tidak ditemukan atau kedaluwarsa",

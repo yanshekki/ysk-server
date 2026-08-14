@@ -363,7 +363,7 @@ export function EmailDomainPage() {
   const [deliverability, setDeliverability] = useState<Awaited<
     ReturnType<typeof emailApi.deliverability>
   > | null>(null);
-  const [relayHost, setRelayHost] = useState('smtp.example.com');
+  const [relayHost, setRelayHost] = useState('');
   const [relayUser, setRelayUser] = useState('');
   const [relayPass, setRelayPass] = useState('');
   const [relayApplySystem, setRelayApplySystem] = useState(true);
@@ -430,10 +430,11 @@ export function EmailDomainPage() {
   }, [t]);
 
   const load = useCallback(async () => {
-    const list = await emailApi.list();
-    const found = list.items.find((d) => d.id === id) ?? null;
+    const r = await emailApi.get(id ?? '');
+    const found = r.domain?.id ? r.domain : null;
     setDomain(found);
     if (!found) return null;
+    setError(null);
     // Prefill policy form from control-plane domain flags
     if (found.rate_limit_per_hour != null && Number(found.rate_limit_per_hour) > 0) {
       setPolicyRate(String(found.rate_limit_per_hour));
@@ -456,6 +457,25 @@ export function EmailDomainPage() {
     }
     return found;
   }, [id]);
+
+  useEffect(() => {
+    if (tab !== 'relay') return;
+    let cancelled = false;
+    void emailApi
+      .getRelay()
+      .then((r) => {
+        if (cancelled) return;
+        const s = (r.settings ?? {}) as Record<string, unknown>;
+        if (typeof s.host === 'string') setRelayHost(s.host);
+        if (typeof s.username === 'string') setRelayUser(s.username);
+      })
+      .catch(() => {
+        /* optional */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [tab]);
 
   useEffect(() => {
     let cancelled = false;

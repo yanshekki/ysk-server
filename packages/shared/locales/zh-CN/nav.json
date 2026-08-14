@@ -73,5 +73,8 @@
   "bookmarkAdded": "已固定到侧栏",
   "bookmarkRemoved": "已从侧栏移除",
   "btTracker": "BT Tracker",
-  "support": "支持"
+  "support": "支持",
+  "noAccessTitle": "没有权限",
+  "noAccessDesc": "你的角色不能开启此页。如需使用，请向管理员申请。",
+  "backToDashboard": "返回仪表板"
 }

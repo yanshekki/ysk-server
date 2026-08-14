@@ -2,7 +2,7 @@ import { FormEvent, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../shared/hooks/useAuth';
-import { ApiError } from '../shared/services/api';
+import { api, ApiError } from '../shared/services/api';
 import { toast } from '../shared/stores/toast-store';
 import { bindInput } from './bind-handlers';
 import {
@@ -30,6 +30,9 @@ export function LoginPage() {
   const [needsTotp, setNeedsTotp] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [mustChange, setMustChange] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [newPassword2, setNewPassword2] = useState('');
 
   const sessionBanner = useMemo(
     () =>
@@ -49,6 +52,11 @@ export function LoginPage() {
       const res = await login(username, password, totp || undefined);
       if (res.mustEnrollTotp) {
         nav('/security', { replace: true });
+        return;
+      }
+      if (res.mustChangePassword || res.user?.mustChangePassword) {
+        setMustChange(true);
+        setError(null);
         return;
       }
       nav(from === '/login' ? '/' : from, { replace: true });
@@ -91,6 +99,27 @@ export function LoginPage() {
     }
   }
 
+  async function onChangePassword(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (newPassword !== newPassword2) {
+      setError(t('login.passwordMismatch'));
+      return;
+    }
+    setLoading(true);
+    try {
+      await api.changePassword(password, newPassword);
+      toast.ok(t('login.passwordChanged'));
+      nav(from === '/login' ? '/' : from, { replace: true });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : t('login.failed');
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="login-page">
       <div className="login-card">
@@ -110,6 +139,44 @@ export function LoginPage() {
           <Alert variant="info">{t('login.totpRequired')}</Alert>
         ) : null}
 
+        {mustChange ? (
+        <form className="login-card__form" onSubmit={(e) => void onChangePassword(e)}>
+          <Alert variant="info">{t('errors.auth.mustChangePassword')}</Alert>
+          <FormLayout>
+            <Field label={t('login.newPassword')} htmlFor="new-password" flush required>
+              <input
+                id="new-password"
+                type="password"
+                value={newPassword}
+                onChange={bindInput(setNewPassword)}
+                autoComplete="new-password"
+                required
+                minLength={8}
+              />
+            </Field>
+            <Field label={t('login.newPasswordAgain')} htmlFor="new-password2" flush required>
+              <input
+                id="new-password2"
+                type="password"
+                value={newPassword2}
+                onChange={bindInput(setNewPassword2)}
+                autoComplete="new-password"
+                required
+                minLength={8}
+              />
+            </Field>
+          </FormLayout>
+          <FormActions>
+            <button
+              type="submit"
+              className={buttonClassName({ variant: 'primary', fullWidth: true })}
+              disabled={loading}
+            >
+              {loading ? t('login.submitting') : t('login.changePassword')}
+            </button>
+          </FormActions>
+        </form>
+        ) : (
         <form className="login-card__form" onSubmit={(e) => void onSubmit(e)}>
           <FormLayout>
             <Field label={t('login.username')} htmlFor="username" flush required>
@@ -160,6 +227,7 @@ export function LoginPage() {
             </button>
           </FormActions>
         </form>
+        )}
 
         <div className="login-card__footer">
           <p className="login-card__powered">

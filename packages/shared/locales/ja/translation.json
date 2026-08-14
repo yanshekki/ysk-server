@@ -3302,7 +3302,8 @@
       "sessionExpired": "セッションが期限切れになりました。再度サインインする",
       "sessionIdle": "アイドルタイムアウト。再度サインインする",
       "totpNotEnabled": "2FA が有効になっていません",
-      "totpSecretNoDataDir": "TOTP シークレットは暗号化されていますが、dataDir が設定されていません"
+      "totpSecretNoDataDir": "TOTP シークレットは暗号化されていますが、dataDir が設定されていません",
+      "mustChangePassword": "続行する前に新しいパスワードを設定してください"
     },
     "http": {
       "notFoundRoute": "見つかりません: {{method}} {{path}}",
@@ -3312,7 +3313,8 @@
       "unprocessable": "リクエストはサーバーによって拒否されました",
       "requestFailed": "リクエストが失敗しました ({{status}})",
       "jsonInvalid": "無効な JSON",
-      "internal": "内部エラー"
+      "internal": "内部エラー",
+      "payloadTooLarge": "リクエスト本文が大きすぎます"
     },
     "YSK_HOST_BROWSE_SSRF": "ホストの参照がセキュリティ ポリシーによってブロックされている",
     "YSK_HOST_BROWSE_SESSION": "ホストの参照セッションが見つからないか、期限切れになっています",
@@ -3852,7 +3854,10 @@
     "colPorts": "ポート",
     "colSync": "状態",
     "synced": "同期済み",
-    "syncNow": "同期"
+    "syncNow": "同期",
+    "disableConfirmTitle": "UFW を無効にしますか？",
+    "disableConfirmDesc": "ホストのファイアウォールが通信をフィルタしなくなります。公開ネットワーク上では SSH とパネルが露出する可能性があります。",
+    "disableConfirmConsequence": "既存の許可／拒否ルールは残りますが、UFW を再度有効にするまで適用されません。"
   },
   "ftp": {
     "title": "FTPSアカウント",
@@ -4297,7 +4302,12 @@
     "totpLabel": "認証コード",
     "totpHint": "認証アプリの 6 桁コード",
     "submitting": "サインイン中…",
-    "sessionExpired": "セッションの有効期限が切れました。再度サインインしてください"
+    "sessionExpired": "セッションの有効期限が切れました。再度サインインしてください",
+    "newPassword": "新しいパスワード",
+    "newPasswordAgain": "新しいパスワード（確認）",
+    "changePassword": "パスワードを変更",
+    "passwordMismatch": "パスワードが一致しません",
+    "passwordChanged": "パスワードを更新しました"
   },
   "logs": {
     "catSystem": "システムファイル",
@@ -4743,7 +4753,10 @@
     "bookmarkAdded": "サイドバーに固定",
     "bookmarkRemoved": "サイドバーから削除されました",
     "btTracker": "BT Tracker",
-    "support": "サポート"
+    "support": "サポート",
+    "noAccessTitle": "アクセス権がありません",
+    "noAccessDesc": "このページは現在の役割では開けません。必要な場合は管理者に依頼してください。",
+    "backToDashboard": "ダッシュボードに戻る"
   },
   "network": {
     "title": "ネットワークインターフェース",
@@ -11654,7 +11667,15 @@
     "securityClearTotpHint": "ステップアップが必要",
     "securityClearConfirm": "ユーザー名を入力して 2FA のクリアを確認します",
     "securityClearOk": "{{name}} の 2FA をクリアしました",
-    "securitySelfNote": "独自の 2FA を設定するには、「セキュリティ」→「マイセキュリティ」を開きます。"
+    "securitySelfNote": "独自の 2FA を設定するには、「セキュリティ」→「マイセキュリティ」を開きます。",
+    "cannotDeleteSelf": "サインイン中のアカウントは削除できません",
+    "cannotModifySelf": "サインイン中のアカウントは停止・降格できません",
+    "cannotDeleteLastAdmin": "最後の管理者は削除できません",
+    "cannotDemoteLastAdmin": "最後の管理者は停止・降格できません",
+    "lockSelfHint": "これはサインイン中のアカウントです。ロックアウト防止のため、削除・停止・役割変更はできません。",
+    "lockLastAdminHint": "これは最後の管理者です。削除・停止・降格はできません。",
+    "demoteAdminTitle": "この管理者を降格しますか？",
+    "demoteAdminDesc": "このユーザーは管理者権限を失います。他の管理者が残っていることを確認してください。"
   },
   "vnc": {
     "pageDesc": "VNCサーバーとクライアント",

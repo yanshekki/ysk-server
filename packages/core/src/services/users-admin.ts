@@ -97,6 +97,25 @@ export class UsersAdminService {
     if (!existing) {
       throw new YskError(ErrorCodes.NOT_FOUND, tl('notes.auto.n0002'), { httpStatus: 404 });
     }
+    const actorUser = this.users.findByUsername(actor);
+    const isSelf = Boolean(actorUser && actorUser.id === id);
+    const wasAdmin = existing.roles.includes('admin');
+    const adminCount = this.users.list().filter((x) => x.roles.includes('admin')).length;
+    const nextRoles = patch.roles ?? existing.roles;
+    const demoting = wasAdmin && !nextRoles.includes('admin');
+    const suspending = patch.suspended === true && !existing.suspended;
+    if (isSelf && (demoting || suspending)) {
+      throw new YskError(ErrorCodes.VALIDATION, tl('users.cannotModifySelf'), {
+        httpStatus: 400,
+        details: { reason: 'self_lock' },
+      });
+    }
+    if (wasAdmin && adminCount <= 1 && (demoting || suspending)) {
+      throw new YskError(ErrorCodes.VALIDATION, tl('users.cannotDemoteLastAdmin'), {
+        httpStatus: 400,
+        details: { reason: 'last_admin' },
+      });
+    }
     const upd: Parameters<UserRepository['update']>[1] = {};
     if (patch.roles) upd.roles = patch.roles;
     if (patch.packageId === null) upd.package_id = undefined;
@@ -130,8 +149,15 @@ export class UsersAdminService {
   deleteUser(id: string, actor: string): boolean {
     const u = this.users.findById(id);
     if (!u) return false;
+    const actorUser = this.users.findByUsername(actor);
+    if (actorUser?.id === id) {
+      throw new YskError(ErrorCodes.VALIDATION, tl('users.cannotDeleteSelf'), {
+        httpStatus: 400,
+        details: { reason: 'self_lock' },
+      });
+    }
     if (u.roles.includes('admin') && this.users.list().filter((x) => x.roles.includes('admin')).length <= 1) {
-      throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n0500'), { httpStatus: 400 });
+      throw new YskError(ErrorCodes.VALIDATION, tl('users.cannotDeleteLastAdmin'), { httpStatus: 400 });
     }
     const ok = this.users.delete(id);
     this.audit?.append({

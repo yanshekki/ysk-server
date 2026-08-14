@@ -98,5 +98,8 @@
   "colPorts": "Portas",
   "colSync": "Status",
   "synced": "Sincronizado",
-  "syncNow": "Sincronizar"
+  "syncNow": "Sincronizar",
+  "disableConfirmTitle": "Desativar o UFW?",
+  "disableConfirmDesc": "A firewall do anfitrião deixará de filtrar o tráfego. Numa rede pública, o SSH e o painel podem ficar expostos.",
+  "disableConfirmConsequence": "As regras de permitir/negar mantêm-se, mas só são aplicadas quando o UFW for reativado."
 }

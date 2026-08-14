@@ -16,7 +16,7 @@ import {
   parsePortSpecs,
   isValidAllowFrom,
 } from './features/FirewallPage';
-import { enabledLabel, actionLabel, toneFor } from './features/ServicesPage';
+import { enabledLabel, actionLabel, toneFor, lifecycleDangerForUnit } from './features/ServicesPage';
 import { applyLabel } from './EmailPage';
 import { statusLabel as ftpsStatusLabel } from '../features/ftp';
 import {
@@ -158,6 +158,12 @@ describe('Services helpers', () => {
     expect(toneFor('failed', true)).toBe('danger');
     expect(toneFor('not-found', false)).toBe('danger');
     expect(toneFor('activating', true)).toBe('neutral');
+    expect(lifecycleDangerForUnit('sshd')).toBe('sshd');
+    expect(lifecycleDangerForUnit('ssh')).toBe('sshd');
+    expect(lifecycleDangerForUnit('ysk-server')).toBe('panel');
+    expect(lifecycleDangerForUnit('nginx')).toBe('edge');
+    expect(lifecycleDangerForUnit('apache2')).toBe('edge');
+    expect(lifecycleDangerForUnit('redis')).toBe('normal');
   });
 });
 

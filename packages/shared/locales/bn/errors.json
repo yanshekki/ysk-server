@@ -37,7 +37,8 @@
     "sessionExpired": "সেশনের মেয়াদ শেষ; আবার সাইন ইন করুন",
     "sessionIdle": "নিষ্ক্রিয় সময়সীমা; আবার সাইন ইন করুন",
     "totpNotEnabled": "2FA সক্ষম করা নেই",
-    "totpSecretNoDataDir": "TOTP গোপনীয়তা এনক্রিপ্ট করা হয়েছে কিন্তু dataDir সেট করা নেই"
+    "totpSecretNoDataDir": "TOTP গোপনীয়তা এনক্রিপ্ট করা হয়েছে কিন্তু dataDir সেট করা নেই",
+    "mustChangePassword": "চালিয়ে যেতে আগে নতুন পাসওয়ার্ড সেট করুন"
   },
   "http": {
     "notFoundRoute": "পাওয়া যায়নি: {{method}} {{path}}",
@@ -47,7 +48,8 @@
     "unprocessable": "সার্ভার দ্বারা অনুরোধ প্রত্যাখ্যান",
     "requestFailed": "অনুরোধ ব্যর্থ হয়েছে ({{status}})",
     "jsonInvalid": "অবৈধ JSON",
-    "internal": "অভ্যন্তরীণ ত্রুটি"
+    "internal": "অভ্যন্তরীণ ত্রুটি",
+    "payloadTooLarge": "অনুরোধের আকার খুব বড়"
   },
   "YSK_HOST_BROWSE_SSRF": "নিরাপত্তা নীতি দ্বারা অবরুদ্ধ হোস্ট ব্রাউজ",
   "YSK_HOST_BROWSE_SESSION": "হোস্ট ব্রাউজ সেশন খুঁজে পাওয়া যায় নি বা মেয়াদ শেষ",

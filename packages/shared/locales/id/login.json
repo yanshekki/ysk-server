@@ -10,5 +10,10 @@
   "totpLabel": "Kode autentikasi",
   "totpHint": "Kode 6 digit dari aplikasi autentikator",
   "submitting": "Sedang masuk…",
-  "sessionExpired": "Sesi berakhir; masuk lagi"
+  "sessionExpired": "Sesi berakhir; masuk lagi",
+  "newPassword": "Kata sandi baru",
+  "newPasswordAgain": "Konfirmasi kata sandi baru",
+  "changePassword": "Ubah kata sandi",
+  "passwordMismatch": "Kata sandi tidak cocok",
+  "passwordChanged": "Kata sandi diperbarui"
 }

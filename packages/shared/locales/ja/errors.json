@@ -37,7 +37,8 @@
     "sessionExpired": "セッションが期限切れになりました。再度サインインする",
     "sessionIdle": "アイドルタイムアウト。再度サインインする",
     "totpNotEnabled": "2FA が有効になっていません",
-    "totpSecretNoDataDir": "TOTP シークレットは暗号化されていますが、dataDir が設定されていません"
+    "totpSecretNoDataDir": "TOTP シークレットは暗号化されていますが、dataDir が設定されていません",
+    "mustChangePassword": "続行する前に新しいパスワードを設定してください"
   },
   "http": {
     "notFoundRoute": "見つかりません: {{method}} {{path}}",
@@ -47,7 +48,8 @@
     "unprocessable": "リクエストはサーバーによって拒否されました",
     "requestFailed": "リクエストが失敗しました ({{status}})",
     "jsonInvalid": "無効な JSON",
-    "internal": "内部エラー"
+    "internal": "内部エラー",
+    "payloadTooLarge": "リクエスト本文が大きすぎます"
   },
   "YSK_HOST_BROWSE_SSRF": "ホストの参照がセキュリティ ポリシーによってブロックされている",
   "YSK_HOST_BROWSE_SESSION": "ホストの参照セッションが見つからないか、期限切れになっています",

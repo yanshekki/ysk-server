@@ -118,5 +118,13 @@
   "securityClearTotpHint": "Nécessite une authentification renforcée",
   "securityClearConfirm": "Saisissez le nom d'utilisateur pour confirmer la suppression de la 2FA",
   "securityClearOk": "2FA supprimée pour {{name}}",
-  "securitySelfNote": "Pour configurer votre propre 2FA, ouvrez Sécurité → Ma sécurité."
+  "securitySelfNote": "Pour configurer votre propre 2FA, ouvrez Sécurité → Ma sécurité.",
+  "cannotDeleteSelf": "Impossible de supprimer le compte actuellement connecté",
+  "cannotModifySelf": "Impossible de suspendre ou rétrograder le compte actuellement connecté",
+  "cannotDeleteLastAdmin": "Impossible de supprimer le dernier administrateur",
+  "cannotDemoteLastAdmin": "Impossible de suspendre ou rétrograder le dernier administrateur",
+  "lockSelfHint": "Ceci est le compte connecté. La suppression, la suspension et le changement de rôle sont bloqués pour éviter un verrouillage.",
+  "lockLastAdminHint": "Ceci est le dernier administrateur. La suppression, la suspension et la rétrogradation sont bloquées.",
+  "demoteAdminTitle": "Rétrograder cet administrateur ?",
+  "demoteAdminDesc": "Cet utilisateur perdra l’accès administrateur complet. Confirmez qu’un autre administrateur reste."
 }

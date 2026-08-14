@@ -215,10 +215,28 @@ describe('sendJson / sendOpsResult / sendError / readBody', () => {
 
   it('readBody concatenates chunks', async () => {
     const req = new EventEmitter() as IncomingMessage & EventEmitter;
+    (req as IncomingMessage).headers = {};
     const p = readBody(req);
     req.emit('data', Buffer.from('{"a":'));
     req.emit('data', Buffer.from('1}'));
     req.emit('end');
     await expect(p).resolves.toBe('{"a":1}');
+  });
+
+  it('readBody rejects oversize content-length', async () => {
+    const req = new EventEmitter() as IncomingMessage & EventEmitter;
+    (req as IncomingMessage).headers = { 'content-length': '9999999' };
+    await expect(readBody(req as IncomingMessage, { maxBytes: 16 })).rejects.toMatchObject({
+      httpStatus: 413,
+    });
+  });
+
+  it('readBody rejects streamed payload over the cap', async () => {
+    const req = new EventEmitter() as IncomingMessage & EventEmitter;
+    (req as IncomingMessage).headers = {};
+    (req as IncomingMessage).destroy = () => req;
+    const p = readBody(req as IncomingMessage, { maxBytes: 8 });
+    req.emit('data', Buffer.from('0123456789'));
+    await expect(p).rejects.toMatchObject({ httpStatus: 413 });
   });
 });

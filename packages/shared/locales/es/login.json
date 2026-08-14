@@ -10,5 +10,10 @@
   "totpLabel": "Código de autenticación",
   "totpHint": "Código de 6 dígitos de su aplicación de autenticación",
   "submitting": "Iniciando sesión…",
-  "sessionExpired": "La sesión caducó; inicie sesión de nuevo"
+  "sessionExpired": "La sesión caducó; inicie sesión de nuevo",
+  "newPassword": "Nueva contraseña",
+  "newPasswordAgain": "Confirmar nueva contraseña",
+  "changePassword": "Cambiar contraseña",
+  "passwordMismatch": "Las contraseñas no coinciden",
+  "passwordChanged": "Contraseña actualizada"
 }

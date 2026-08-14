@@ -118,5 +118,13 @@
   "securityClearTotpHint": "اسٹیپ اپ کی ضرورت ہے۔",
   "securityClearConfirm": "کلیئرنگ 2FA کی تصدیق کے لیے صارف نام ٹائپ کریں۔",
   "securityClearOk": "{{name}} کے لیے 2FA صاف کیا گیا",
-  "securitySelfNote": "اپنا 2FA سیٹ اپ کرنے کے لیے، سیکیورٹی → My security کھولیں۔"
+  "securitySelfNote": "اپنا 2FA سیٹ اپ کرنے کے لیے، سیکیورٹی → My security کھولیں۔",
+  "cannotDeleteSelf": "سائن ان اکاؤنٹ حذف نہیں کر سکتے",
+  "cannotModifySelf": "سائن ان اکاؤنٹ معطل یا تنزیل نہیں کر سکتے",
+  "cannotDeleteLastAdmin": "آخری ایڈمن حذف نہیں کر سکتے",
+  "cannotDemoteLastAdmin": "آخری ایڈمن کو معطل یا تنزیل نہیں کر سکتے",
+  "lockSelfHint": "یہ سائن ان اکاؤنٹ ہے۔ لاک آؤٹ روکنے کے لیے حذف، معطلی اور کردار تبدیل مسدود ہیں۔",
+  "lockLastAdminHint": "یہ آخری ایڈمن ہے۔ حذف، معطلی اور تنزیل مسدود ہیں۔",
+  "demoteAdminTitle": "اس ایڈمن کو تنزیل دیں؟",
+  "demoteAdminDesc": "یہ صارف مکمل ایڈمن رسائی کھو دے گا۔ تصدیق کریں کہ دوسرا ایڈمن باقی ہے۔"
 }

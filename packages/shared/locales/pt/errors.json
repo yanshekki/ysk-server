@@ -37,7 +37,8 @@
     "sessionExpired": "Sessão expirada; faça login novamente",
     "sessionIdle": "Tempo limite de inatividade; faça login novamente",
     "totpNotEnabled": "2FA não está ativado",
-    "totpSecretNoDataDir": "O segredo TOTP está criptografado, mas dataDir não está definido"
+    "totpSecretNoDataDir": "O segredo TOTP está criptografado, mas dataDir não está definido",
+    "mustChangePassword": "Defina uma nova senha antes de continuar"
   },
   "http": {
     "notFoundRoute": "Não encontrado: {{method}} {{path}}",
@@ -47,7 +48,8 @@
     "unprocessable": "Solicitação rejeitada pelo servidor",
     "requestFailed": "Falha na solicitação ({{status}})",
     "jsonInvalid": "JSON inválido",
-    "internal": "Erro interno"
+    "internal": "Erro interno",
+    "payloadTooLarge": "O corpo do pedido é demasiado grande"
   },
   "YSK_HOST_BROWSE_SSRF": "Navegação no host bloqueada pela política de segurança",
   "YSK_HOST_BROWSE_SESSION": "Sessão de navegação do host não encontrada ou expirada",

@@ -37,7 +37,8 @@
     "sessionExpired": "सत्र समाप्त हुआ; पुनः साइन इन करें",
     "sessionIdle": "निष्क्रिय टाइम आउट; पुनः साइन इन करें",
     "totpNotEnabled": "2FA सक्षम नहीं है",
-    "totpSecretNoDataDir": "TOTP रहस्य एन्क्रिप्ट किया गया है लेकिन डेटाडिर सेट नहीं है"
+    "totpSecretNoDataDir": "TOTP रहस्य एन्क्रिप्ट किया गया है लेकिन डेटाडिर सेट नहीं है",
+    "mustChangePassword": "जारी रखने से पहले नया पासवर्ड सेट करें"
   },
   "http": {
     "notFoundRoute": "नहीं मिला: {{method}} {{path}}",
@@ -47,7 +48,8 @@
     "unprocessable": "अनुरोध सर्वर द्वारा अस्वीकृत कर दिया गया",
     "requestFailed": "अनुरोध विफल ({{status}})",
     "jsonInvalid": "अमान्य JSON",
-    "internal": "आंतरिक त्रुटि"
+    "internal": "आंतरिक त्रुटि",
+    "payloadTooLarge": "अनुरोध बहुत बड़ा है"
   },
   "YSK_HOST_BROWSE_SSRF": "होस्ट ब्राउज को सुरक्षा नीति द्वारा अवरुद्ध कर दिया गया है",
   "YSK_HOST_BROWSE_SESSION": "होस्ट ब्राउज़ सत्र नहीं मिला या समाप्त हो गया",

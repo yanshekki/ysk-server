@@ -3,6 +3,7 @@
  * Extracted from email-domains.ts (Wave P3). Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { YskError } from 'ysk-server-shared';
 import { listWithQuery } from '../http/list-response.js';
 import type { AppContext } from '../app-context.js';
 import {
@@ -64,6 +65,19 @@ export async function handleEmailDomainsCrudRoutes(
           },
         );
         sendJson(res, 200, { items, meta });
+        return true;
+      }
+      if (method === 'GET' && /^\/api\/v1\/email\/domains\/[^/]+$/.test(url.pathname)) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5] ?? '';
+        try {
+          sendJson(res, 200, { domain: redactEmail(ctx.email.get(id)) });
+        } catch (e) {
+          const status = e instanceof YskError ? e.httpStatus || 404 : 404;
+          const code = e instanceof YskError ? e.code : 'YSK_NOT_FOUND';
+          const message = e instanceof Error ? e.message : 'Not found';
+          sendJson(res, status, { ok: false, code, message });
+        }
         return true;
       }
       if (method === 'POST' && url.pathname === '/api/v1/email/domains') {

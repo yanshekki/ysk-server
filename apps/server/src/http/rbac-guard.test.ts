@@ -109,6 +109,23 @@ describe('rbac-guard', () => {
     expect(auth).not.toHaveBeenCalled();
   });
 
+  it('enforceMutatingRouteCaps skips public VNC share redeem but not create', () => {
+    const auth = vi.fn(() => {
+      throw new Error('should not auth');
+    });
+    const ctx = mockCtx({ authenticate: auth as never });
+    expect(() =>
+      enforceMutatingRouteCaps(ctx, mockReq(), 'POST', '/api/v1/vnc/share/tok123/session'),
+    ).not.toThrow();
+    expect(() =>
+      enforceMutatingRouteCaps(ctx, mockReq(), 'POST', '/api/v1/vnc/share/tok123'),
+    ).not.toThrow();
+    expect(auth).not.toHaveBeenCalled();
+    expect(() =>
+      enforceMutatingRouteCaps(ctx, mockReq(), 'POST', '/api/v1/vnc/share'),
+    ).toThrow();
+  });
+
   it('enforceMutatingRouteCaps skips fleet agent heartbeat', () => {
     const auth = vi.fn(() => {
       throw new Error('should not auth');

@@ -10,5 +10,10 @@
   "totpLabel": "प्रमाणीकरण कोड",
   "totpHint": "प्रमाणक ऐप से 6 अंकों का कोड",
   "submitting": "साइन इन हो रहा है…",
-  "sessionExpired": "सत्र समाप्त; फिर साइन इन करें"
+  "sessionExpired": "सत्र समाप्त; फिर साइन इन करें",
+  "newPassword": "नया पासवर्ड",
+  "newPasswordAgain": "नया पासवर्ड पुष्टि करें",
+  "changePassword": "पासवर्ड बदलें",
+  "passwordMismatch": "पासवर्ड मेल नहीं खाते",
+  "passwordChanged": "पासवर्ड अपडेट हो गया"
 }

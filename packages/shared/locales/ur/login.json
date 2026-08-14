@@ -10,5 +10,10 @@
   "totpLabel": "توثیقی کوڈ",
   "totpHint": "توثیق ایپ سے 6 ہندسی کوڈ",
   "submitting": "سائن ان ہو رہا ہے…",
-  "sessionExpired": "سیشن ختم؛ دوبارہ سائن ان کریں"
+  "sessionExpired": "سیشن ختم؛ دوبارہ سائن ان کریں",
+  "newPassword": "نیا پاس ورڈ",
+  "newPasswordAgain": "نیا پاس ورڈ تصدیق کریں",
+  "changePassword": "پاس ورڈ تبدیل کریں",
+  "passwordMismatch": "پاس ورڈ مماثل نہیں",
+  "passwordChanged": "پاس ورڈ اپ ڈیٹ ہو گیا"
 }

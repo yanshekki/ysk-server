@@ -3,8 +3,8 @@
 > 語言：中文 | [English](./setup.md)
 
 ```bash
-ysk-server setup --data-dir /var/lib/ysk --admin-username admin --admin-password 'StrongPass!' --locale zh-HK --json
-ysk-server serve --data-dir /var/lib/ysk
+ysk-server setup --data-dir /var/lib/ysk-server --admin-user admin --admin-password 'StrongPass!' --locale zh-HK --json
+ysk-server serve --data-dir /var/lib/ysk-server
 ```
 
 會建立 `config.json`、document store、管理員、dataDir 內 systemd unit 範本。

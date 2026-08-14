@@ -49,9 +49,13 @@ curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.s
 
 ```bash
 npm install -g ysk-server
-ysk-server setup
+# 預設弱密碼 admin 會被拒絕。請指定強密碼：
+ysk-server setup --admin-user admin --admin-password 'YourStrongPass1!' --data-dir /var/lib/ysk-server
+export YSK_EXECUTE=1
 ysk-server serve
 ```
+
+全新主機請優先用 **`install.sh`**（會安裝 systemd、TLS，並一次性打印隨機管理員密碼）。
 
 或從 git：
 

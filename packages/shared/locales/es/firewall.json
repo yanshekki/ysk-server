@@ -98,5 +98,8 @@
   "colPorts": "Puertos",
   "colSync": "Estado",
   "synced": "Sincronizado",
-  "syncNow": "Sincronizar"
+  "syncNow": "Sincronizar",
+  "disableConfirmTitle": "¿Desactivar UFW?",
+  "disableConfirmDesc": "El cortafuegos del host dejará de filtrar el tráfico. En una red pública, SSH y el panel pueden quedar expuestos.",
+  "disableConfirmConsequence": "Las reglas de permitir/denegar se conservan, pero no se aplican hasta volver a activar UFW."
 }

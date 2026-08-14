@@ -93,6 +93,13 @@ export function normalizeDownloadModes(
   return out.length ? out : ['direct'];
 }
 
+function sanitizeTorrentRelPath(raw: unknown): string | undefined {
+  if (raw == null) return undefined;
+  const s = String(raw).replace(/\\/g, '/').trim();
+  if (!s || s.startsWith('/') || s.split('/').includes('..')) return undefined;
+  return s;
+}
+
 export function patchFileShare(
   store: JsonStore,
   id: string,
@@ -101,7 +108,13 @@ export function patchFileShare(
   const items = list(store);
   const row = items.find((s) => s.id === id || s.token === id);
   if (!row) return null;
-  Object.assign(row, patch, { id: row.id, token: row.token });
+  const next = { ...patch };
+  if ('torrentRelPath' in next) {
+    const clean = sanitizeTorrentRelPath(next.torrentRelPath);
+    if (clean === undefined) delete next.torrentRelPath;
+    else next.torrentRelPath = clean;
+  }
+  Object.assign(row, next, { id: row.id, token: row.token });
   store.persist();
   return { ...row };
 }

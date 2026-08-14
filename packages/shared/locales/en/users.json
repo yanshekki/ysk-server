@@ -118,5 +118,13 @@
   "securityClearTotpHint": "Requires step-up",
   "securityClearConfirm": "Type the username to confirm clearing 2FA",
   "securityClearOk": "Cleared 2FA for {{name}}",
-  "securitySelfNote": "To set up your own 2FA, open Security → My security."
+  "securitySelfNote": "To set up your own 2FA, open Security → My security.",
+  "cannotDeleteSelf": "You cannot delete the signed-in account",
+  "cannotModifySelf": "You cannot suspend or demote the signed-in account",
+  "cannotDeleteLastAdmin": "Cannot delete the last admin",
+  "cannotDemoteLastAdmin": "Cannot suspend or demote the last admin",
+  "lockSelfHint": "This is the signed-in account. Delete, suspend, and role change are blocked to prevent lock-out.",
+  "lockLastAdminHint": "This is the last admin. Delete, suspend, and demotion are blocked.",
+  "demoteAdminTitle": "Demote this admin?",
+  "demoteAdminDesc": "This user will lose full admin access. Confirm only if another admin remains."
 }

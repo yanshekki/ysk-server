@@ -10,5 +10,10 @@
   "totpLabel": "인증 코드",
   "totpHint": "인증 앱의 6자리 코드",
   "submitting": "로그인 중…",
-  "sessionExpired": "세션이 만료되었습니다. 다시 로그인하세요"
+  "sessionExpired": "세션이 만료되었습니다. 다시 로그인하세요",
+  "newPassword": "새 비밀번호",
+  "newPasswordAgain": "새 비밀번호 확인",
+  "changePassword": "비밀번호 변경",
+  "passwordMismatch": "비밀번호가 일치하지 않습니다",
+  "passwordChanged": "비밀번호가 업데이트되었습니다"
 }

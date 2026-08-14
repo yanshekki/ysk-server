@@ -10,5 +10,10 @@
   "totpLabel": "双重验证码",
   "totpHint": "Authenticator 应用中的 6 位数字",
   "submitting": "登录中…",
-  "sessionExpired": "登录已失效，请重新登录"
+  "sessionExpired": "登录已失效，请重新登录",
+  "newPassword": "新密码",
+  "newPasswordAgain": "再次输入新密码",
+  "changePassword": "更改密码",
+  "passwordMismatch": "两次输入的密码不一致",
+  "passwordChanged": "密码已更新"
 }

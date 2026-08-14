@@ -3,7 +3,7 @@
  */
 import {
   matchGetRouteCaps,
-  matchMutatingRouteCap,
+  matchMutatingRouteAnyOf,
   type CapabilityId,
   type UserDto,
 } from 'ysk-server-shared';
@@ -65,6 +65,11 @@ const PUBLIC_MUTATING_PREFIXES = [
   // Fleet/agent register is NOT public — requires panel auth or enroll token in handler
 ];
 
+/** Guest redeem only — not POST /api/v1/vnc/share (create still needs network.vnc). */
+function isPublicVncShareMutating(pathname: string): boolean {
+  return /^\/api\/v1\/vnc\/share\/[^/]+(\/session)?$/.test(pathname);
+}
+
 /**
  * Edge agent poller paths — agent secret checked in handler (not panel session).
  * Register is intentionally excluded (enrollment / panel auth required).
@@ -96,10 +101,13 @@ export function enforceMutatingRouteCaps(
   if (isFleetAgentPublicMutating(pathname)) {
     return;
   }
-  const cap = matchMutatingRouteCap(m, pathname);
-  if (!cap) return;
+  if (isPublicVncShareMutating(pathname)) {
+    return;
+  }
+  const caps = matchMutatingRouteAnyOf(m, pathname);
+  if (!caps?.length) return;
   const user = ctx.auth.authenticate(getBearer(req));
-  requireCap(ctx, user, cap);
+  requireAnyCap(ctx, user, caps);
 }
 
 const GET_CAP_SKIP = [

@@ -3302,7 +3302,8 @@
       "sessionExpired": "Session expirée ; reconnectez-vous",
       "sessionIdle": "Délai d'inactivité dépassé ; reconnectez-vous",
       "totpNotEnabled": "La 2FA n'est pas activée",
-      "totpSecretNoDataDir": "Le secret TOTP est chiffré mais dataDir n'est pas défini"
+      "totpSecretNoDataDir": "Le secret TOTP est chiffré mais dataDir n'est pas défini",
+      "mustChangePassword": "Vous devez définir un nouveau mot de passe avant de continuer"
     },
     "http": {
       "notFoundRoute": "Introuvable : {{method}} {{path}}",
@@ -3312,7 +3313,8 @@
       "unprocessable": "Requête rejetée par le serveur",
       "requestFailed": "Échec de la requête ({{status}})",
       "jsonInvalid": "JSON invalide",
-      "internal": "Erreur interne"
+      "internal": "Erreur interne",
+      "payloadTooLarge": "Le corps de la requête est trop volumineux"
     },
     "YSK_HOST_BROWSE_SSRF": "Navigation d'hôte bloquée par la politique de sécurité",
     "YSK_HOST_BROWSE_SESSION": "Session de navigation de l'hôte introuvable ou expirée",
@@ -3852,7 +3854,10 @@
     "colPorts": "Ports",
     "colSync": "Statut",
     "synced": "Synchronisé",
-    "syncNow": "Synchroniser"
+    "syncNow": "Synchroniser",
+    "disableConfirmTitle": "Désactiver UFW ?",
+    "disableConfirmDesc": "Le pare-feu de l’hôte cessera de filtrer le trafic. Sur un réseau public, SSH et le panneau peuvent être exposés.",
+    "disableConfirmConsequence": "Les règles d’autorisation/refus restent enregistrées mais ne s’appliquent plus tant que UFW n’est pas réactivé."
   },
   "ftp": {
     "title": "Comptes FTPS",
@@ -4297,7 +4302,12 @@
     "totpLabel": "Code d’authentification",
     "totpHint": "Code à 6 chiffres de votre application d’authentification",
     "submitting": "Connexion…",
-    "sessionExpired": "Session expirée ; reconnectez-vous"
+    "sessionExpired": "Session expirée ; reconnectez-vous",
+    "newPassword": "Nouveau mot de passe",
+    "newPasswordAgain": "Confirmer le nouveau mot de passe",
+    "changePassword": "Changer le mot de passe",
+    "passwordMismatch": "Les mots de passe ne correspondent pas",
+    "passwordChanged": "Mot de passe mis à jour"
   },
   "logs": {
     "catSystem": "Fichiers système",
@@ -4743,7 +4753,10 @@
     "bookmarkAdded": "Épinglé sur la barre latérale",
     "bookmarkRemoved": "Supprimé de la barre latérale",
     "btTracker": "BT Tracker",
-    "support": "Soutien"
+    "support": "Soutien",
+    "noAccessTitle": "Accès refusé",
+    "noAccessDesc": "Votre rôle n’inclut pas cette page. Demandez à un administrateur si vous en avez besoin.",
+    "backToDashboard": "Retour au tableau de bord"
   },
   "network": {
     "title": "Interfaces réseau",
@@ -11654,7 +11667,15 @@
     "securityClearTotpHint": "Nécessite une authentification renforcée",
     "securityClearConfirm": "Saisissez le nom d'utilisateur pour confirmer la suppression de la 2FA",
     "securityClearOk": "2FA supprimée pour {{name}}",
-    "securitySelfNote": "Pour configurer votre propre 2FA, ouvrez Sécurité → Ma sécurité."
+    "securitySelfNote": "Pour configurer votre propre 2FA, ouvrez Sécurité → Ma sécurité.",
+    "cannotDeleteSelf": "Impossible de supprimer le compte actuellement connecté",
+    "cannotModifySelf": "Impossible de suspendre ou rétrograder le compte actuellement connecté",
+    "cannotDeleteLastAdmin": "Impossible de supprimer le dernier administrateur",
+    "cannotDemoteLastAdmin": "Impossible de suspendre ou rétrograder le dernier administrateur",
+    "lockSelfHint": "Ceci est le compte connecté. La suppression, la suspension et le changement de rôle sont bloqués pour éviter un verrouillage.",
+    "lockLastAdminHint": "Ceci est le dernier administrateur. La suppression, la suspension et la rétrogradation sont bloquées.",
+    "demoteAdminTitle": "Rétrograder cet administrateur ?",
+    "demoteAdminDesc": "Cet utilisateur perdra l’accès administrateur complet. Confirmez qu’un autre administrateur reste."
   },
   "vnc": {
     "pageDesc": "Serveur et client VNC",

@@ -653,12 +653,24 @@ run_setup() {
   # shellcheck disable=SC2086
   $SUDO mkdir -p "$DATA_DIR" 2>/dev/null || mkdir -p "$DATA_DIR" 2>/dev/null || true
 
-  gen_admin_password
-  write_credentials_file
+  local existing_cp=0
+  if [[ -f "$DATA_DIR/config.json" ]]; then
+    existing_cp=1
+  fi
+  KEEP_EXISTING_ADMIN=0
+  if [[ "$existing_cp" -eq 1 && -z "$ADMIN_PASSWORD" ]]; then
+    log "Existing control-plane config found — not rotating admin password"
+    KEEP_EXISTING_ADMIN=1
+  else
+    gen_admin_password
+    write_credentials_file
+  fi
 
   local setup_cmd=("$CLI" setup --non-interactive --data-dir "$DATA_DIR")
   setup_cmd+=(--admin-user "$ADMIN_USER")
-  setup_cmd+=(--admin-password "$ADMIN_PASSWORD")
+  if [[ "$KEEP_EXISTING_ADMIN" -eq 0 ]]; then
+    setup_cmd+=(--admin-password "$ADMIN_PASSWORD")
+  fi
   # IP-first login needs bind-all when TLS bootstrap is on
   if [[ "$BOOTSTRAP_TLS" -eq 1 ]]; then
     setup_cmd+=(--host "${LISTEN_HOST_OVERRIDE:-0.0.0.0}")
@@ -789,11 +801,19 @@ print_next() {
   elif [[ "$INSTALL_SYSTEMD" -eq 1 ]]; then
     service_line="systemd unit written — start: sudo systemctl start ysk-server"
   fi
+  local login_pass
+  if [[ "${KEEP_EXISTING_ADMIN:-0}" -eq 1 ]]; then
+    login_pass="(unchanged — existing admin kept)"
+  elif [[ -n "${ADMIN_PASSWORD:-}" ]]; then
+    login_pass="$ADMIN_PASSWORD"
+  else
+    login_pass="see ${CREDENTIALS_FILE:-$DATA_DIR/BOOTSTRAP-CREDENTIALS.txt}"
+  fi
 
   cat <<EOF
 
 ============================================================
- $PRODUCT v1.0.0 — installation finished
+ $PRODUCT v1.0.22 — installation finished
 ============================================================
  Plan:     ${PLAN:-custom}
  Bundles:  $BUNDLES_CSV
@@ -808,7 +828,7 @@ print_next() {
 
  Login (change after first login + enable 2FA):
    Username: ${ADMIN_USER:-admin}
-   Password: ${ADMIN_PASSWORD:-(see credentials file)}
+   Password: ${login_pass}
    File:     ${CREDENTIALS_FILE:-$DATA_DIR/BOOTSTRAP-CREDENTIALS.txt}
 
  Firewall: open TCP 9287 for remote admin access.

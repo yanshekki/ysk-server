@@ -3302,7 +3302,8 @@
       "sessionExpired": "登入已失效，請重新登入",
       "sessionIdle": "閒置逾時，請重新登入",
       "totpNotEnabled": "未啟用 雙重驗證",
-      "totpSecretNoDataDir": "TOTP secret 已加密但未設定 dataDir"
+      "totpSecretNoDataDir": "TOTP secret 已加密但未設定 dataDir",
+      "mustChangePassword": "請先設定新密碼才可繼續"
     },
     "http": {
       "notFoundRoute": "找不到：{{method}} {{path}}",
@@ -3312,7 +3313,8 @@
       "unprocessable": "操作無法完成（伺服器拒絕）",
       "requestFailed": "請求失敗（{{status}}）",
       "jsonInvalid": "JSON 無效",
-      "internal": "內部錯誤"
+      "internal": "內部錯誤",
+      "payloadTooLarge": "請求內容過大"
     },
     "YSK_HOST_BROWSE_SSRF": "主機瀏覽已被安全政策攔截",
     "YSK_HOST_BROWSE_SESSION": "主機瀏覽工作階段不存在或已過期",
@@ -3852,7 +3854,10 @@
     "colPorts": "埠",
     "colSync": "狀態",
     "synced": "已同步",
-    "syncNow": "立即同步"
+    "syncNow": "立即同步",
+    "disableConfirmTitle": "停用 UFW？",
+    "disableConfirmDesc": "主機防火牆將停止過濾流量。若主機在公眾網絡上，SSH 與面板可能直接暴露。",
+    "disableConfirmConsequence": "現有允許／拒絕規則仍會保留，但要重新啟用 UFW 才會生效。"
   },
   "ftp": {
     "title": "FTPS 帳戶",
@@ -4297,7 +4302,12 @@
     "totpLabel": "雙重驗證碼",
     "totpHint": "Authenticator 應用程式中的 6 位數字",
     "submitting": "登入中…",
-    "sessionExpired": "登入已失效，請重新登入"
+    "sessionExpired": "登入已失效，請重新登入",
+    "newPassword": "新密碼",
+    "newPasswordAgain": "再次輸入新密碼",
+    "changePassword": "更改密碼",
+    "passwordMismatch": "兩次輸入的密碼不一致",
+    "passwordChanged": "密碼已更新"
   },
   "logs": {
     "catSystem": "系統檔",
@@ -4743,7 +4753,10 @@
     "bookmarkAdded": "已釘到側欄",
     "bookmarkRemoved": "已從側欄移除",
     "btTracker": "BT Tracker",
-    "support": "支持"
+    "support": "支持",
+    "noAccessTitle": "沒有權限",
+    "noAccessDesc": "你的角色不能開啟此頁。如需使用，請向管理員申請。",
+    "backToDashboard": "返回儀表板"
   },
   "network": {
     "title": "網絡介面",
@@ -11654,7 +11667,15 @@
     "securityClearTotpHint": "需 step-up 驗證；清除後該用戶下次只需密碼登入（直至自行重設 2FA）。",
     "securityClearConfirm": "輸入用戶名以確認清除 2FA",
     "securityClearOk": "已清除 {{name}} 的 2FA",
-    "securitySelfNote": "要為自己設定 2FA，請到「安全 → 我的安全」。"
+    "securitySelfNote": "要為自己設定 2FA，請到「安全 → 我的安全」。",
+    "cannotDeleteSelf": "不能刪除目前登入的帳戶",
+    "cannotModifySelf": "不能暫停或降級目前登入的帳戶",
+    "cannotDeleteLastAdmin": "不能刪除最後一個管理員",
+    "cannotDemoteLastAdmin": "不能暫停或降級最後一個管理員",
+    "lockSelfHint": "這是目前登入的帳戶。已禁止刪除、暫停及更改角色，以免無法登入。",
+    "lockLastAdminHint": "這是最後一個管理員。已禁止刪除、暫停及降級。",
+    "demoteAdminTitle": "降級此管理員？",
+    "demoteAdminDesc": "此用戶將失去完整管理員權限。請確認仍有其他管理員。"
   },
   "vnc": {
     "pageDesc": "VNC 伺服器／客戶端",

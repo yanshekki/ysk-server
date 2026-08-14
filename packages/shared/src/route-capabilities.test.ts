@@ -4,6 +4,7 @@ import {
   canSeeFeature,
   capsRequiredForPath,
   matchGetRouteCaps,
+  matchMutatingRouteAnyOf,
   matchMutatingRouteCap,
 } from './route-capabilities.js';
 
@@ -51,6 +52,14 @@ describe('matchMutatingRouteCap', () => {
     expect(matchMutatingRouteCap('GET', '/api/v1/backups/restore')).toBe(null);
   });
 
+  it('terminal POST accepts settings.system or services.control', () => {
+    expect(matchMutatingRouteCap('POST', '/api/v1/terminal/session')).toBe('settings.system');
+    expect(matchMutatingRouteAnyOf('POST', '/api/v1/terminal/session')).toEqual([
+      'settings.system',
+      'services.control',
+    ]);
+  });
+
   it('matchGetRouteCaps gates inventory prefixes (any-of)', () => {
     expect(matchGetRouteCaps('/api/v1/email/domains')).toEqual(
       expect.arrayContaining(['mail.read']),
@@ -85,6 +94,15 @@ describe('canSeeFeature', () => {
   it('accepts Set effective caps', () => {
     expect(canSeeFeature('users', new Set(['dashboard.read']))).toBe(false);
     expect(canSeeFeature('users', new Set(['rbac.policy']))).toBe(true);
+  });
+
+  it('aligns vpn/vnc/systemd nav with path guards', () => {
+    expect(canSeeFeature('vpn', ['firewall.edit'])).toBe(false);
+    expect(canSeeFeature('vpn', ['network.vpn'])).toBe(true);
+    expect(canSeeFeature('vnc', ['firewall.edit'])).toBe(false);
+    expect(canSeeFeature('vnc', ['network.vnc'])).toBe(true);
+    expect(canSeeFeature('systemd', ['services.read'])).toBe(false);
+    expect(canSeeFeature('systemd', ['services.control'])).toBe(true);
   });
 });
 

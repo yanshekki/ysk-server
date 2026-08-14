@@ -3302,7 +3302,8 @@
       "sessionExpired": "세션이 만료되었습니다. 다시 로그인",
       "sessionIdle": "유휴 시간 초과; 다시 로그인",
       "totpNotEnabled": "2FA가 활성화되지 않았습니다",
-      "totpSecretNoDataDir": "TOTP 비밀번호가 암호화되었지만 dataDir이 설정되지 않았습니다."
+      "totpSecretNoDataDir": "TOTP 비밀번호가 암호화되었지만 dataDir이 설정되지 않았습니다.",
+      "mustChangePassword": "계속하려면 새 비밀번호를 설정해야 합니다"
     },
     "http": {
       "notFoundRoute": "찾을 수 없음: {{method}} {{path}}",
@@ -3312,7 +3313,8 @@
       "unprocessable": "서버에서 요청을 거부했습니다.",
       "requestFailed": "요청 실패({{status}})",
       "jsonInvalid": "잘못된 JSON",
-      "internal": "내부 오류"
+      "internal": "내부 오류",
+      "payloadTooLarge": "요청 본문이 너무 큽니다"
     },
     "YSK_HOST_BROWSE_SSRF": "보안 정책에 의해 호스트 탐색이 차단되었습니다.",
     "YSK_HOST_BROWSE_SESSION": "호스트 찾아보기 세션을 찾을 수 없거나 만료되었습니다.",
@@ -3852,7 +3854,10 @@
     "colPorts": "포트",
     "colSync": "상태",
     "synced": "동기화됨",
-    "syncNow": "동조"
+    "syncNow": "동조",
+    "disableConfirmTitle": "UFW를 사용 중지할까요?",
+    "disableConfirmDesc": "호스트 방화벽이 트래픽을 필터하지 않습니다. 공용 네트워크에서는 SSH와 패널이 노출될 수 있습니다.",
+    "disableConfirmConsequence": "기존 허용/거부 규칙은 유지되지만 UFW를 다시 켤 때까지 적용되지 않습니다."
   },
   "ftp": {
     "title": "FTPS 계정",
@@ -4297,7 +4302,12 @@
     "totpLabel": "인증 코드",
     "totpHint": "인증 앱의 6자리 코드",
     "submitting": "로그인 중…",
-    "sessionExpired": "세션이 만료되었습니다. 다시 로그인하세요"
+    "sessionExpired": "세션이 만료되었습니다. 다시 로그인하세요",
+    "newPassword": "새 비밀번호",
+    "newPasswordAgain": "새 비밀번호 확인",
+    "changePassword": "비밀번호 변경",
+    "passwordMismatch": "비밀번호가 일치하지 않습니다",
+    "passwordChanged": "비밀번호가 업데이트되었습니다"
   },
   "logs": {
     "catSystem": "시스템 파일",
@@ -4743,7 +4753,10 @@
     "bookmarkAdded": "사이드바에 고정됨",
     "bookmarkRemoved": "사이드바에서 삭제됨",
     "btTracker": "BT Tracker",
-    "support": "지원하다"
+    "support": "지원하다",
+    "noAccessTitle": "접근 권한 없음",
+    "noAccessDesc": "현재 역할로는 이 페이지를 열 수 없습니다. 필요하면 관리자에게 요청하세요.",
+    "backToDashboard": "대시보드로 돌아가기"
   },
   "network": {
     "title": "네트워크 인터페이스",
@@ -11654,7 +11667,15 @@
     "securityClearTotpHint": "승격이 필요합니다",
     "securityClearConfirm": "2FA 삭제를 확인하려면 사용자 이름을 입력하세요.",
     "securityClearOk": "{{name}}에 대한 2FA를 통과했습니다.",
-    "securitySelfNote": "자신만의 2FA를 설정하려면 보안 → 내 보안을 엽니다."
+    "securitySelfNote": "자신만의 2FA를 설정하려면 보안 → 내 보안을 엽니다.",
+    "cannotDeleteSelf": "로그인한 계정은 삭제할 수 없습니다",
+    "cannotModifySelf": "로그인한 계정은 정지하거나 강등할 수 없습니다",
+    "cannotDeleteLastAdmin": "마지막 관리자는 삭제할 수 없습니다",
+    "cannotDemoteLastAdmin": "마지막 관리자는 정지하거나 강등할 수 없습니다",
+    "lockSelfHint": "로그인한 계정입니다. 잠김을 막기 위해 삭제, 정지, 역할 변경이 차단됩니다.",
+    "lockLastAdminHint": "마지막 관리자입니다. 삭제, 정지, 강등이 차단됩니다.",
+    "demoteAdminTitle": "이 관리자를 강등할까요?",
+    "demoteAdminDesc": "이 사용자는 전체 관리자 권한을 잃습니다. 다른 관리자가 남아 있는지 확인하세요."
   },
   "vnc": {
     "pageDesc": "VNC 서버 및 클라이언트",

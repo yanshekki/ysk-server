@@ -37,7 +37,8 @@
     "sessionExpired": "سیشن ختم ہو گیا؛ دوبارہ سائن ان کریں۔",
     "sessionIdle": "بیکار ٹائم آؤٹ؛ دوبارہ سائن ان کریں۔",
     "totpNotEnabled": "2FA فعال نہیں ہے۔",
-    "totpSecretNoDataDir": "TOTP سیکرٹ کو خفیہ کیا گیا ہے لیکن dataDir سیٹ نہیں ہے۔"
+    "totpSecretNoDataDir": "TOTP سیکرٹ کو خفیہ کیا گیا ہے لیکن dataDir سیٹ نہیں ہے۔",
+    "mustChangePassword": "جاری رکھنے سے پہلے نیا پاس ورڈ سیٹ کریں"
   },
   "http": {
     "notFoundRoute": "نہیں ملا: {{method}} {{path}}",
@@ -47,7 +48,8 @@
     "unprocessable": "سرور کی طرف سے درخواست مسترد کر دی گئی۔",
     "requestFailed": "درخواست ناکام ہو گئی ({{status}})",
     "jsonInvalid": "غلط JSON",
-    "internal": "اندرونی خرابی۔"
+    "internal": "اندرونی خرابی۔",
+    "payloadTooLarge": "درخواست کا مواد بہت بڑا ہے"
   },
   "YSK_HOST_BROWSE_SSRF": "سیکیورٹی پالیسی کے ذریعہ میزبان براؤز کو مسدود کردیا گیا ہے۔",
   "YSK_HOST_BROWSE_SESSION": "میزبان براؤز سیشن نہیں ملا یا ختم ہو گیا۔",

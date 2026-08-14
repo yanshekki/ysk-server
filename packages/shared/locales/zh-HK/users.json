@@ -118,5 +118,13 @@
   "securityClearTotpHint": "需 step-up 驗證；清除後該用戶下次只需密碼登入（直至自行重設 2FA）。",
   "securityClearConfirm": "輸入用戶名以確認清除 2FA",
   "securityClearOk": "已清除 {{name}} 的 2FA",
-  "securitySelfNote": "要為自己設定 2FA，請到「安全 → 我的安全」。"
+  "securitySelfNote": "要為自己設定 2FA，請到「安全 → 我的安全」。",
+  "cannotDeleteSelf": "不能刪除目前登入的帳戶",
+  "cannotModifySelf": "不能暫停或降級目前登入的帳戶",
+  "cannotDeleteLastAdmin": "不能刪除最後一個管理員",
+  "cannotDemoteLastAdmin": "不能暫停或降級最後一個管理員",
+  "lockSelfHint": "這是目前登入的帳戶。已禁止刪除、暫停及更改角色，以免無法登入。",
+  "lockLastAdminHint": "這是最後一個管理員。已禁止刪除、暫停及降級。",
+  "demoteAdminTitle": "降級此管理員？",
+  "demoteAdminDesc": "此用戶將失去完整管理員權限。請確認仍有其他管理員。"
 }

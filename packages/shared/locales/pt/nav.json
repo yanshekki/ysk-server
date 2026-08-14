@@ -73,5 +73,8 @@
   "bookmarkAdded": "Fixado na barra lateral",
   "bookmarkRemoved": "Removido da barra lateral",
   "btTracker": "BT Tracker",
-  "support": "Apoiar"
+  "support": "Apoiar",
+  "noAccessTitle": "Sem acesso",
+  "noAccessDesc": "A sua função não inclui esta página. Peça a um administrador se precisar dela.",
+  "backToDashboard": "Voltar ao painel"
 }

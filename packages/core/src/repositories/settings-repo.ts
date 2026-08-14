@@ -10,7 +10,11 @@ export class SettingsRepository {
   getJson<T>(key: string): T | undefined {
     const v = this.get(key);
     if (v === undefined) return undefined;
-    return JSON.parse(v) as T;
+    try {
+      return JSON.parse(v) as T;
+    } catch {
+      return undefined;
+    }
   }
 
   set(key: string, value: string): void {

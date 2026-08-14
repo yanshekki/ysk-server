@@ -73,5 +73,8 @@
   "bookmarkAdded": "مثبت في الشريط الجانبي",
   "bookmarkRemoved": "تمت الإزالة من الشريط الجانبي",
   "btTracker": "BT Tracker",
-  "support": "يدعم"
+  "support": "يدعم",
+  "noAccessTitle": "لا صلاحية",
+  "noAccessDesc": "دورك لا يشمل هذه الصفحة. اطلب من مسؤول إن احتجت إليها.",
+  "backToDashboard": "العودة إلى لوحة المعلومات"
 }

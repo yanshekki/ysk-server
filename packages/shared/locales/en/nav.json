@@ -73,5 +73,8 @@
   "bookmarkAdded": "Pinned to sidebar",
   "bookmarkRemoved": "Removed from sidebar",
   "btTracker": "BT Tracker",
-  "support": "Support"
+  "support": "Support",
+  "noAccessTitle": "No access",
+  "noAccessDesc": "Your role does not include this page. Ask an admin if you need it.",
+  "backToDashboard": "Back to dashboard"
 }

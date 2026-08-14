@@ -73,5 +73,8 @@
   "bookmarkAdded": "サイドバーに固定",
   "bookmarkRemoved": "サイドバーから削除されました",
   "btTracker": "BT Tracker",
-  "support": "サポート"
+  "support": "サポート",
+  "noAccessTitle": "アクセス権がありません",
+  "noAccessDesc": "このページは現在の役割では開けません。必要な場合は管理者に依頼してください。",
+  "backToDashboard": "ダッシュボードに戻る"
 }

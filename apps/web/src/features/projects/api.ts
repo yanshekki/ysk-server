@@ -6,6 +6,7 @@ import { api } from '../../shared/services/api';
 
 export const projectsApi = {
   list: () => api.listProjects(),
+  get: (id: string) => api.getProject(id),
   create: (body: {
     name: string;
     domain?: string;

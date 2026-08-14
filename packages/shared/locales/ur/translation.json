@@ -3302,7 +3302,8 @@
       "sessionExpired": "سیشن ختم ہو گیا؛ دوبارہ سائن ان کریں۔",
       "sessionIdle": "بیکار ٹائم آؤٹ؛ دوبارہ سائن ان کریں۔",
       "totpNotEnabled": "2FA فعال نہیں ہے۔",
-      "totpSecretNoDataDir": "TOTP سیکرٹ کو خفیہ کیا گیا ہے لیکن dataDir سیٹ نہیں ہے۔"
+      "totpSecretNoDataDir": "TOTP سیکرٹ کو خفیہ کیا گیا ہے لیکن dataDir سیٹ نہیں ہے۔",
+      "mustChangePassword": "جاری رکھنے سے پہلے نیا پاس ورڈ سیٹ کریں"
     },
     "http": {
       "notFoundRoute": "نہیں ملا: {{method}} {{path}}",
@@ -3312,7 +3313,8 @@
       "unprocessable": "سرور کی طرف سے درخواست مسترد کر دی گئی۔",
       "requestFailed": "درخواست ناکام ہو گئی ({{status}})",
       "jsonInvalid": "غلط JSON",
-      "internal": "اندرونی خرابی۔"
+      "internal": "اندرونی خرابی۔",
+      "payloadTooLarge": "درخواست کا مواد بہت بڑا ہے"
     },
     "YSK_HOST_BROWSE_SSRF": "سیکیورٹی پالیسی کے ذریعہ میزبان براؤز کو مسدود کردیا گیا ہے۔",
     "YSK_HOST_BROWSE_SESSION": "میزبان براؤز سیشن نہیں ملا یا ختم ہو گیا۔",
@@ -3852,7 +3854,10 @@
     "colPorts": "بندرگاہیں",
     "colSync": "حیثیت",
     "synced": "مطابقت پذیر",
-    "syncNow": "مطابقت پذیری"
+    "syncNow": "مطابقت پذیری",
+    "disableConfirmTitle": "UFW غیر فعال کریں؟",
+    "disableConfirmDesc": "ہوسٹ فائر وال ٹریفک فلٹر کرنا بند کر دے گی۔ عوامی نیٹ ورک پر SSH اور پینل بے نقاب ہو سکتے ہیں۔",
+    "disableConfirmConsequence": "موجودہ اجازت/انکار قواعد محفوظ رہیں گے، لیکن UFW دوبارہ فعال ہونے تک نافذ نہیں ہوں گے۔"
   },
   "ftp": {
     "title": "FTPS اکاؤنٹس",
@@ -4297,7 +4302,12 @@
     "totpLabel": "توثیقی کوڈ",
     "totpHint": "توثیق ایپ سے 6 ہندسی کوڈ",
     "submitting": "سائن ان ہو رہا ہے…",
-    "sessionExpired": "سیشن ختم؛ دوبارہ سائن ان کریں"
+    "sessionExpired": "سیشن ختم؛ دوبارہ سائن ان کریں",
+    "newPassword": "نیا پاس ورڈ",
+    "newPasswordAgain": "نیا پاس ورڈ تصدیق کریں",
+    "changePassword": "پاس ورڈ تبدیل کریں",
+    "passwordMismatch": "پاس ورڈ مماثل نہیں",
+    "passwordChanged": "پاس ورڈ اپ ڈیٹ ہو گیا"
   },
   "logs": {
     "catSystem": "سسٹم فائلیں۔",
@@ -4743,7 +4753,10 @@
     "bookmarkAdded": "سائڈبار پر پن کیا گیا۔",
     "bookmarkRemoved": "سائڈبار سے ہٹا دیا گیا۔",
     "btTracker": "BT Tracker",
-    "support": "حمایت"
+    "support": "حمایت",
+    "noAccessTitle": "رسائی نہیں",
+    "noAccessDesc": "آپ کے کردار میں یہ صفحہ شامل نہیں۔ ضرورت ہو تو ایڈمن سے پوچھیں۔",
+    "backToDashboard": "ڈیش بورڈ پر واپس"
   },
   "network": {
     "title": "نیٹ ورک انٹرفیس",
@@ -11654,7 +11667,15 @@
     "securityClearTotpHint": "اسٹیپ اپ کی ضرورت ہے۔",
     "securityClearConfirm": "کلیئرنگ 2FA کی تصدیق کے لیے صارف نام ٹائپ کریں۔",
     "securityClearOk": "{{name}} کے لیے 2FA صاف کیا گیا",
-    "securitySelfNote": "اپنا 2FA سیٹ اپ کرنے کے لیے، سیکیورٹی → My security کھولیں۔"
+    "securitySelfNote": "اپنا 2FA سیٹ اپ کرنے کے لیے، سیکیورٹی → My security کھولیں۔",
+    "cannotDeleteSelf": "سائن ان اکاؤنٹ حذف نہیں کر سکتے",
+    "cannotModifySelf": "سائن ان اکاؤنٹ معطل یا تنزیل نہیں کر سکتے",
+    "cannotDeleteLastAdmin": "آخری ایڈمن حذف نہیں کر سکتے",
+    "cannotDemoteLastAdmin": "آخری ایڈمن کو معطل یا تنزیل نہیں کر سکتے",
+    "lockSelfHint": "یہ سائن ان اکاؤنٹ ہے۔ لاک آؤٹ روکنے کے لیے حذف، معطلی اور کردار تبدیل مسدود ہیں۔",
+    "lockLastAdminHint": "یہ آخری ایڈمن ہے۔ حذف، معطلی اور تنزیل مسدود ہیں۔",
+    "demoteAdminTitle": "اس ایڈمن کو تنزیل دیں؟",
+    "demoteAdminDesc": "یہ صارف مکمل ایڈمن رسائی کھو دے گا۔ تصدیق کریں کہ دوسرا ایڈمن باقی ہے۔"
   },
   "vnc": {
     "pageDesc": "VNC سرور اور کلائنٹ",

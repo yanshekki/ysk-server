@@ -37,7 +37,8 @@
     "sessionExpired": "Session expirée ; reconnectez-vous",
     "sessionIdle": "Délai d'inactivité dépassé ; reconnectez-vous",
     "totpNotEnabled": "La 2FA n'est pas activée",
-    "totpSecretNoDataDir": "Le secret TOTP est chiffré mais dataDir n'est pas défini"
+    "totpSecretNoDataDir": "Le secret TOTP est chiffré mais dataDir n'est pas défini",
+    "mustChangePassword": "Vous devez définir un nouveau mot de passe avant de continuer"
   },
   "http": {
     "notFoundRoute": "Introuvable : {{method}} {{path}}",
@@ -47,7 +48,8 @@
     "unprocessable": "Requête rejetée par le serveur",
     "requestFailed": "Échec de la requête ({{status}})",
     "jsonInvalid": "JSON invalide",
-    "internal": "Erreur interne"
+    "internal": "Erreur interne",
+    "payloadTooLarge": "Le corps de la requête est trop volumineux"
   },
   "YSK_HOST_BROWSE_SSRF": "Navigation d'hôte bloquée par la politique de sécurité",
   "YSK_HOST_BROWSE_SESSION": "Session de navigation de l'hôte introuvable ou expirée",

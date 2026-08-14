@@ -10,5 +10,10 @@
   "totpLabel": "رمز المصادقة",
   "totpHint": "رمز من 6 أرقام من تطبيق المصادقة",
   "submitting": "جارٍ تسجيل الدخول…",
-  "sessionExpired": "انتهت الجلسة؛ سجّل الدخول مرة أخرى"
+  "sessionExpired": "انتهت الجلسة؛ سجّل الدخول مرة أخرى",
+  "newPassword": "كلمة المرور الجديدة",
+  "newPasswordAgain": "تأكيد كلمة المرور الجديدة",
+  "changePassword": "تغيير كلمة المرور",
+  "passwordMismatch": "كلمتا المرور غير متطابقتين",
+  "passwordChanged": "تم تحديث كلمة المرور"
 }

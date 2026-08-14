@@ -70,8 +70,19 @@ describe('UsersAdminService', () => {
       // Package with subscribers cannot be deleted
       expect(() => svc.deletePackage(pkg.id, 'admin')).toThrow();
 
+      expect(() => svc.updateUser('admin1', { roles: ['operator'] }, 'op1')).toThrow(
+        /最後一個|last|admin|管理員/i,
+      );
       expect(svc.deleteUser(u.id, 'admin')).toBe(true);
-      expect(() => svc.deleteUser('admin1', 'admin')).toThrow(/最後一個|last|admin|管理員/i);
+      expect(() => svc.deleteUser('admin1', 'admin')).toThrow(
+        /自己|self|own|signed-in|登入|帳戶|最後一個|last|admin|管理員/i,
+      );
+      expect(() => svc.updateUser('admin1', { roles: ['operator'] }, 'admin')).toThrow(
+        /自己|self|own|signed-in|登入|帳戶|cannotModify|最後一個|last|admin|管理員/i,
+      );
+      expect(() => svc.updateUser('admin1', { suspended: true }, 'admin')).toThrow(
+        /自己|self|own|signed-in|登入|帳戶|cannotModify|最後一個|last/i,
+      );
       expect(svc.deletePackage(pkg.id, 'admin')).toBe(true);
     } finally {
       rmSync(dir, { recursive: true, force: true });

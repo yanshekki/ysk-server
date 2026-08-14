@@ -37,7 +37,8 @@
     "sessionExpired": "Session expired; sign in again",
     "sessionIdle": "Idle timeout; sign in again",
     "totpNotEnabled": "2FA is not enabled",
-    "totpSecretNoDataDir": "TOTP secret is encrypted but dataDir is not set"
+    "totpSecretNoDataDir": "TOTP secret is encrypted but dataDir is not set",
+    "mustChangePassword": "You must set a new password before continuing"
   },
   "http": {
     "notFoundRoute": "Not found: {{method}} {{path}}",
@@ -47,7 +48,8 @@
     "unprocessable": "Request rejected by server",
     "requestFailed": "Request failed ({{status}})",
     "jsonInvalid": "Invalid JSON",
-    "internal": "Internal error"
+    "internal": "Internal error",
+    "payloadTooLarge": "Request body is too large"
   },
   "YSK_HOST_BROWSE_SSRF": "Host browse blocked by security policy",
   "YSK_HOST_BROWSE_SESSION": "Host browse session not found or expired",

@@ -10,5 +10,10 @@
   "totpLabel": "প্রমাণীকরণ কোড",
   "totpHint": "প্রমাণীকরণ অ্যাপের ৬ সংখ্যার কোড",
   "submitting": "সাইন ইন হচ্ছে…",
-  "sessionExpired": "সেশন শেষ; আবার সাইন ইন করুন"
+  "sessionExpired": "সেশন শেষ; আবার সাইন ইন করুন",
+  "newPassword": "নতুন পাসওয়ার্ড",
+  "newPasswordAgain": "নতুন পাসওয়ার্ড নিশ্চিত করুন",
+  "changePassword": "পাসওয়ার্ড পরিবর্তন",
+  "passwordMismatch": "পাসওয়ার্ড মিলছে না",
+  "passwordChanged": "পাসওয়ার্ড আপডেট হয়েছে"
 }

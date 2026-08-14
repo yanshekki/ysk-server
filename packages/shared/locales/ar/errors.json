@@ -37,7 +37,8 @@
     "sessionExpired": "انتهت صلاحية الجلسة؛ تسجيل الدخول مرة أخرى",
     "sessionIdle": "مهلة الخمول. تسجيل الدخول مرة أخرى",
     "totpNotEnabled": "لم يتم تمكين 2FA",
-    "totpSecretNoDataDir": "تم تشفير سر TOTP ولكن لم يتم تعيين dataDir"
+    "totpSecretNoDataDir": "تم تشفير سر TOTP ولكن لم يتم تعيين dataDir",
+    "mustChangePassword": "يجب تعيين كلمة مرور جديدة قبل المتابعة"
   },
   "http": {
     "notFoundRoute": "لم يتم العثور على: {{method}} {{path}}",
@@ -47,7 +48,8 @@
     "unprocessable": "تم رفض الطلب من قبل الخادم",
     "requestFailed": "فشل الطلب ({{status}})",
     "jsonInvalid": "تنسيق JSON غير صالح",
-    "internal": "خطأ داخلي"
+    "internal": "خطأ داخلي",
+    "payloadTooLarge": "نص الطلب كبير جداً"
   },
   "YSK_HOST_BROWSE_SSRF": "تم حظر تصفح المضيف بواسطة سياسة الأمان",
   "YSK_HOST_BROWSE_SESSION": "لم يتم العثور على جلسة استعراض المضيف أو انتهت صلاحيتها",

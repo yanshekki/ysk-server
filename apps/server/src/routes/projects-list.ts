@@ -38,7 +38,7 @@ export async function handleProjectsListRoutes(
       },
       {
         enums: {
-          runtime: ['node', 'php', 'static', 'python', 'go', 'rust'],
+          runtime: ['node', 'php', 'static', 'python', 'go', 'rust', 'java', 'kotlin', 'bun'],
         },
         sortFields: ['name', 'domain'],
       },

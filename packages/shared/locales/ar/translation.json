@@ -3302,7 +3302,8 @@
       "sessionExpired": "انتهت صلاحية الجلسة؛ تسجيل الدخول مرة أخرى",
       "sessionIdle": "مهلة الخمول. تسجيل الدخول مرة أخرى",
       "totpNotEnabled": "لم يتم تمكين 2FA",
-      "totpSecretNoDataDir": "تم تشفير سر TOTP ولكن لم يتم تعيين dataDir"
+      "totpSecretNoDataDir": "تم تشفير سر TOTP ولكن لم يتم تعيين dataDir",
+      "mustChangePassword": "يجب تعيين كلمة مرور جديدة قبل المتابعة"
     },
     "http": {
       "notFoundRoute": "لم يتم العثور على: {{method}} {{path}}",
@@ -3312,7 +3313,8 @@
       "unprocessable": "تم رفض الطلب من قبل الخادم",
       "requestFailed": "فشل الطلب ({{status}})",
       "jsonInvalid": "تنسيق JSON غير صالح",
-      "internal": "خطأ داخلي"
+      "internal": "خطأ داخلي",
+      "payloadTooLarge": "نص الطلب كبير جداً"
     },
     "YSK_HOST_BROWSE_SSRF": "تم حظر تصفح المضيف بواسطة سياسة الأمان",
     "YSK_HOST_BROWSE_SESSION": "لم يتم العثور على جلسة استعراض المضيف أو انتهت صلاحيتها",
@@ -3852,7 +3854,10 @@
     "colPorts": "الموانئ",
     "colSync": "حالة",
     "synced": "تمت المزامنة",
-    "syncNow": "مزامنة"
+    "syncNow": "مزامنة",
+    "disableConfirmTitle": "تعطيل UFW؟",
+    "disableConfirmDesc": "سيتوقف جدار حماية المضيف عن تصفية الحركة. على شبكة عامة قد يتعرض SSH واللوحة.",
+    "disableConfirmConsequence": "تبقى قواعد السماح/الرفض مخزّنة لكنها لا تُفرض حتى إعادة تفعيل UFW."
   },
   "ftp": {
     "title": "حسابات اف تي بي اس",
@@ -4297,7 +4302,12 @@
     "totpLabel": "رمز المصادقة",
     "totpHint": "رمز من 6 أرقام من تطبيق المصادقة",
     "submitting": "جارٍ تسجيل الدخول…",
-    "sessionExpired": "انتهت الجلسة؛ سجّل الدخول مرة أخرى"
+    "sessionExpired": "انتهت الجلسة؛ سجّل الدخول مرة أخرى",
+    "newPassword": "كلمة المرور الجديدة",
+    "newPasswordAgain": "تأكيد كلمة المرور الجديدة",
+    "changePassword": "تغيير كلمة المرور",
+    "passwordMismatch": "كلمتا المرور غير متطابقتين",
+    "passwordChanged": "تم تحديث كلمة المرور"
   },
   "logs": {
     "catSystem": "ملفات النظام",
@@ -4743,7 +4753,10 @@
     "bookmarkAdded": "مثبت في الشريط الجانبي",
     "bookmarkRemoved": "تمت الإزالة من الشريط الجانبي",
     "btTracker": "BT Tracker",
-    "support": "يدعم"
+    "support": "يدعم",
+    "noAccessTitle": "لا صلاحية",
+    "noAccessDesc": "دورك لا يشمل هذه الصفحة. اطلب من مسؤول إن احتجت إليها.",
+    "backToDashboard": "العودة إلى لوحة المعلومات"
   },
   "network": {
     "title": "واجهات الشبكة",
@@ -11654,7 +11667,15 @@
     "securityClearTotpHint": "يتطلب خطوة المتابعة",
     "securityClearConfirm": "اكتب اسم المستخدم لتأكيد مسح المصادقة الثنائية (2FA).",
     "securityClearOk": "تم مسح المصادقة الثنائية لـ {{name}}",
-    "securitySelfNote": "لإعداد المصادقة الثنائية (2FA) الخاصة بك، افتح الأمان → الأمان الخاص بي."
+    "securitySelfNote": "لإعداد المصادقة الثنائية (2FA) الخاصة بك، افتح الأمان → الأمان الخاص بي.",
+    "cannotDeleteSelf": "لا يمكن حذف الحساب الذي سجلت الدخول به",
+    "cannotModifySelf": "لا يمكن إيقاف أو تخفيض الحساب الذي سجلت الدخول به",
+    "cannotDeleteLastAdmin": "لا يمكن حذف آخر مسؤول",
+    "cannotDemoteLastAdmin": "لا يمكن إيقاف أو تخفيض آخر مسؤول",
+    "lockSelfHint": "هذا هو الحساب المسجّل دخوله. حُظر الحذف والإيقاف وتغيير الدور لمنع فقدان الدخول.",
+    "lockLastAdminHint": "هذا آخر مسؤول. حُظر الحذف والإيقاف والتخفيض.",
+    "demoteAdminTitle": "تخفيض هذا المسؤول؟",
+    "demoteAdminDesc": "سيفقد هذا المستخدم صلاحيات المسؤول الكاملة. تأكد من بقاء مسؤول آخر."
   },
   "vnc": {
     "pageDesc": "خادم وعميل VNC",

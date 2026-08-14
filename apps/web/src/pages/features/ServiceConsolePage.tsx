@@ -23,7 +23,8 @@ import {
   PageTabs,
   FeaturePageLayout,
   SoftwareInstallBanner,
-  SoftwareVersionBar } from '../../shared/components/ui';
+  SoftwareVersionBar,
+  ConfirmDialog } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import type { DbServiceEngine } from '../../features/db-service';
 import {
@@ -140,6 +141,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
   const [tab, setTab] = useState('lifecycle');
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [pendingLc, setPendingLc] = useState<'stop' | 'restart' | null>(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
   const link = DATA_LINK[engine];
   const svcId = exposureServiceId(engine);
@@ -575,10 +577,10 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
                   <Button variant="primary" size="md" loading={busy} onClick={bindCall1(doLifecycle, 'start')}>
                     {t('services.action.start')}
                   </Button>
-                  <Button variant="secondary" size="md" loading={busy} onClick={bindCall1(doLifecycle, 'stop')}>
+                  <Button variant="secondary" size="md" loading={busy} onClick={() => setPendingLc('stop')}>
                     {t('services.action.stop')}
                   </Button>
-                  <Button variant="secondary" size="md" loading={busy} onClick={bindCall1(doLifecycle, 'restart')}>
+                  <Button variant="secondary" size="md" loading={busy} onClick={() => setPendingLc('restart')}>
                     {t('services.action.restart')}
                   </Button>
                   <Button variant="secondary" size="md" loading={busy} onClick={bindCall1(doLifecycle, 'reload')}>
@@ -601,6 +603,27 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
             </CardSection>
           </Card>
         ) : null}
+
+        <ConfirmDialog
+          open={pendingLc != null}
+          onClose={() => !busy && setPendingLc(null)}
+          onConfirm={() => {
+            const action = pendingLc;
+            setPendingLc(null);
+            if (action) void doLifecycle(action);
+          }}
+          title={t('services.stopConfirmTitle', { label: console?.title ?? engine })}
+          description={
+            pendingLc === 'restart'
+              ? t('db.console.needRestart')
+              : t('services.stopConfirmDesc', { label: console?.title ?? engine })
+          }
+          severity="destructive"
+          confirmLabel={
+            pendingLc === 'restart' ? t('services.action.restart') : t('services.action.stop')
+          }
+          busy={busy}
+        />
 
         <ServiceExposureDialog
           open={startGate.pending}

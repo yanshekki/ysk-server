@@ -103,6 +103,8 @@ import {
   userStatusTone,
   packageQuotaTone,
   filterUsersByQuery,
+  isLastAdminUser,
+  userMutationLock,
 } from './UsersPage';
 import {
   cpuTone,
@@ -475,6 +477,11 @@ describe('Network / Users / Metrics helpers (wave3)', () => {
         'adm',
       ),
     ).toHaveLength(1);
+    expect(isLastAdminUser({ roles: ['admin'] }, 1)).toBe(true);
+    expect(isLastAdminUser({ roles: ['admin'] }, 2)).toBe(false);
+    expect(userMutationLock({ id: 'me', roles: ['admin'] }, 'me', 3)).toBe('self');
+    expect(userMutationLock({ id: 'a1', roles: ['admin'] }, 'other', 1)).toBe('last-admin');
+    expect(userMutationLock({ id: 'op', roles: ['operator'] }, 'me', 1)).toBe(null);
   });
 
   it('metrics', () => {

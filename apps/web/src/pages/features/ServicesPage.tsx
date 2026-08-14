@@ -15,7 +15,9 @@ import {
   LoadingBlock,
   OpsResultPanel,
   PageTabs,
+  ConfirmDialog,
   buttonClassName } from '../../shared/components/ui';
+import type { ConfirmSeverity } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
@@ -36,6 +38,14 @@ export function actionLabel(
   t: TFunction,
 ): string {
   return t(`services.action.${action}`);
+}
+
+export function lifecycleDangerForUnit(unit: string): 'normal' | 'edge' | 'sshd' | 'panel' {
+  const u = unit.trim().toLowerCase();
+  if (u === 'sshd' || u === 'ssh' || u.startsWith('sshd@')) return 'sshd';
+  if (u === 'ysk-server' || u.startsWith('ysk-server')) return 'panel';
+  if (u === 'nginx' || u === 'apache2' || u === 'httpd') return 'edge';
+  return 'normal';
 }
 
 type MatrixItem = {
@@ -77,6 +87,11 @@ export function ServicesPage() {
     items: Array<{ name: string; engine: string; status: string; id: string }>;
   } | null>(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
+  const [pendingLc, setPendingLc] = useState<{
+    unit: string;
+    label: string;
+    action: 'stop' | 'restart';
+  } | null>(null);
 
   const refresh = useCallback(async () => {
     setLoadError(null);
@@ -373,7 +388,13 @@ export function ServicesPage() {
                                 size="sm"
                                 loading={busy}
                                 disabled={!canMutate}
-                                onClick={bindCall2(lifecycle, row.unit, 'restart')}
+                                onClick={() =>
+                                  setPendingLc({
+                                    unit: row.unit,
+                                    label: row.label,
+                                    action: 'restart',
+                                  })
+                                }
                               >
                                 {t('services.action.restart')}
                               </Button>
@@ -382,7 +403,13 @@ export function ServicesPage() {
                                 size="sm"
                                 loading={busy}
                                 disabled={!canMutate}
-                                onClick={bindCall2(lifecycle, row.unit, 'stop')}
+                                onClick={() =>
+                                  setPendingLc({
+                                    unit: row.unit,
+                                    label: row.label,
+                                    action: 'stop',
+                                  })
+                                }
                               >
                                 {t('services.action.stop')}
                               </Button>
@@ -421,6 +448,68 @@ export function ServicesPage() {
           />
         </div>
       )}
+
+      <ConfirmDialog
+        open={pendingLc != null}
+        onClose={() => !busy && setPendingLc(null)}
+        onConfirm={() => {
+          const p = pendingLc;
+          setPendingLc(null);
+          if (p) void lifecycle(p.unit, p.action);
+        }}
+        title={
+          pendingLc
+            ? lifecycleDangerForUnit(pendingLc.unit) === 'sshd'
+              ? t('services.stopConfirmSshdTitle')
+              : lifecycleDangerForUnit(pendingLc.unit) === 'panel'
+                ? t('services.stopConfirmPanelTitle')
+                : t('services.stopConfirmTitle', { label: pendingLc.label })
+            : ''
+        }
+        description={
+          pendingLc
+            ? lifecycleDangerForUnit(pendingLc.unit) === 'sshd'
+              ? t('services.stopConfirmSshdDesc')
+              : lifecycleDangerForUnit(pendingLc.unit) === 'panel'
+                ? t('services.stopConfirmPanelDesc')
+                : lifecycleDangerForUnit(pendingLc.unit) === 'edge'
+                  ? t('services.stopConfirmEdgeDesc', { label: pendingLc.label })
+                  : t('services.stopConfirmDesc', { label: pendingLc.label })
+            : ''
+        }
+        consequences={
+          pendingLc && lifecycleDangerForUnit(pendingLc.unit) === 'sshd'
+            ? [t('services.stopConfirmSshdConsequence')]
+            : pendingLc && lifecycleDangerForUnit(pendingLc.unit) === 'panel'
+              ? [t('services.stopConfirmPanelConsequence')]
+              : pendingLc && lifecycleDangerForUnit(pendingLc.unit) === 'edge'
+                ? [t('services.stopConfirmEdgeConsequence', { label: pendingLc.label })]
+                : undefined
+        }
+        confirmText={
+          pendingLc && lifecycleDangerForUnit(pendingLc.unit) === 'sshd'
+            ? t('services.stopConfirmSshdToken')
+            : pendingLc && lifecycleDangerForUnit(pendingLc.unit) === 'panel'
+              ? t('services.stopConfirmPanelToken')
+              : undefined
+        }
+        severity={
+          (pendingLc
+            ? lifecycleDangerForUnit(pendingLc.unit) === 'sshd' ||
+              lifecycleDangerForUnit(pendingLc.unit) === 'panel'
+              ? 'critical'
+              : lifecycleDangerForUnit(pendingLc.unit) === 'edge'
+                ? 'destructive'
+                : 'standard'
+            : 'standard') as ConfirmSeverity
+        }
+        confirmLabel={
+          pendingLc?.action === 'restart'
+            ? t('services.action.restart')
+            : t('services.action.stop')
+        }
+        busy={busy}
+      />
     </FeaturePageLayout>
   );
 }

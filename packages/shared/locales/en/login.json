@@ -10,5 +10,10 @@
   "totpLabel": "Authentication code",
   "totpHint": "6-digit code from your authenticator app",
   "submitting": "Signing in…",
-  "sessionExpired": "Session expired; sign in again"
+  "sessionExpired": "Session expired; sign in again",
+  "newPassword": "New password",
+  "newPasswordAgain": "Confirm new password",
+  "changePassword": "Change password",
+  "passwordMismatch": "The two passwords do not match",
+  "passwordChanged": "Password updated"
 }

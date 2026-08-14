@@ -10,5 +10,10 @@
   "totpLabel": "Code d’authentification",
   "totpHint": "Code à 6 chiffres de votre application d’authentification",
   "submitting": "Connexion…",
-  "sessionExpired": "Session expirée ; reconnectez-vous"
+  "sessionExpired": "Session expirée ; reconnectez-vous",
+  "newPassword": "Nouveau mot de passe",
+  "newPasswordAgain": "Confirmer le nouveau mot de passe",
+  "changePassword": "Changer le mot de passe",
+  "passwordMismatch": "Les mots de passe ne correspondent pas",
+  "passwordChanged": "Mot de passe mis à jour"
 }

@@ -8,6 +8,15 @@ export type { EmailDomain, EmailBundle } from 'ysk-server-shared';
 
 export const emailApi = {
   list: () => api.requestRaw<{ items: EmailDomain[] }>('/api/v1/email/domains'),
+  get: async (id: string) => {
+    const r = await api.requestRaw<EmailDomain & { domain?: EmailDomain | string }>(
+      `/api/v1/email/domains/${encodeURIComponent(id)}`,
+    );
+    if (r?.domain && typeof r.domain === 'object') {
+      return { domain: r.domain };
+    }
+    return { domain: r as EmailDomain };
+  },
   create: (body: { domain: string; serverIp: string; serverIpv6?: string }) =>
     api.requestRaw<EmailBundle & { domain: EmailDomain }>('/api/v1/email/domains', {
       method: 'POST',

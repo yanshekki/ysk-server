@@ -3,10 +3,11 @@
  * Extracted from auth.ts (Wave L3). Behaviour preserved.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { YskError } from 'ysk-server-shared';
+import { YskError, tl } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
+  LOGIN_BODY_LIMIT,
   readBody,
   sendJson,
 } from '../http/util.js';
@@ -19,8 +20,8 @@ export async function handleAuthSessionRoutes(
   method: string,
 ): Promise<boolean> {
       if (method === 'POST' && url.pathname === '/api/v1/auth/login') {
-        const raw = await readBody(req);
-        const data = JSON.parse(raw || '{}') as {
+        const raw = await readBody(req, { maxBytes: LOGIN_BODY_LIMIT });
+        let data: {
           username?: string;
           password?: string;
           totp?: string;
@@ -28,6 +29,16 @@ export async function handleAuthSessionRoutes(
           deviceToken?: string;
           rememberDevice?: boolean;
         };
+        try {
+          data = JSON.parse(raw || '{}') as typeof data;
+        } catch {
+          sendJson(res, 400, {
+            ok: false,
+            code: 'YSK_VALIDATION',
+            message: tl('errors.http.jsonInvalid'),
+          });
+          return true;
+        }
         const trustProxy =
           process.env.YSK_TRUST_PROXY === '1' || process.env.YSK_TRUST_PROXY === 'true';
         const ip = trustProxy

@@ -12,7 +12,7 @@ import { VncViewer, type VncViewerTarget } from '../../features/vnc/VncViewer';
 export function VncSharePage() {
   const { t } = useTranslation();
   const { token: rawToken } = useParams();
-  const token = decodeURIComponent(rawToken || '');
+  const token = rawToken || '';
   const [error, setError] = useState<string | null>(null);
   const [target, setTarget] = useState<VncViewerTarget | null>(null);
   const [loading, setLoading] = useState(true);
@@ -89,7 +89,8 @@ export function VncSharePage() {
           target={target}
           createSession={createSession}
           onClose={() => {
-            window.location.href = '/login';
+            setTarget(null);
+            setError(t('vnc.viewer.shareEnded', { defaultValue: t('vnc.viewer.shareExpired') }));
           }}
         />
       ) : null}

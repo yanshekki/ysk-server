@@ -73,5 +73,8 @@
   "bookmarkAdded": "سائڈبار پر پن کیا گیا۔",
   "bookmarkRemoved": "سائڈبار سے ہٹا دیا گیا۔",
   "btTracker": "BT Tracker",
-  "support": "حمایت"
+  "support": "حمایت",
+  "noAccessTitle": "رسائی نہیں",
+  "noAccessDesc": "آپ کے کردار میں یہ صفحہ شامل نہیں۔ ضرورت ہو تو ایڈمن سے پوچھیں۔",
+  "backToDashboard": "ڈیش بورڈ پر واپس"
 }

@@ -56,6 +56,7 @@ export type UserDetailModalProps = {
   busy?: boolean;
   canImpersonate?: boolean;
   isAdminRole: boolean;
+  lock?: 'self' | 'last-admin' | null;
   onRoleChange: (r: SystemRole) => void;
   onPackageChange: (id: string) => void;
   onSuspendedChange: (v: boolean) => void;
@@ -86,6 +87,7 @@ export function UserDetailModal({
   busy,
   canImpersonate,
   isAdminRole,
+  lock,
   onRoleChange,
   onPackageChange,
   onSuspendedChange,
@@ -203,6 +205,11 @@ export function UserDetailModal({
           >
             {tab === 'account' ? (
               <div className="user-detail__tab-panel">
+                {lock ? (
+                  <Alert variant="info">
+                    {lock === 'self' ? t('users.lockSelfHint') : t('users.lockLastAdminHint')}
+                  </Alert>
+                ) : null}
                 <section className="user-detail__section">
                   <div className="user-detail__section-head">
                     <h4 className="user-detail__section-title">{t('users.role')}</h4>
@@ -219,6 +226,7 @@ export function UserDetailModal({
                           name="user-detail-role"
                           value={r}
                           checked={role === r}
+                          disabled={Boolean(lock) && r !== role}
                           onChange={bindCall1(onRoleChange, r)}
                         />
                         <span className="role-card__title">
@@ -311,6 +319,7 @@ export function UserDetailModal({
                       <input
                         type="checkbox"
                         checked={suspended}
+                        disabled={Boolean(lock)}
                         onChange={bindCheckCall(onSuspendedChange)}
                       />
                       {t('users.suspended')}

@@ -3,11 +3,16 @@
  * Admin system role always allowed (full-open).
  */
 import type { ReactNode } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { canAccessPath } from 'ysk-server-shared';
 import { useCapabilities } from '../../shared/hooks/useCapabilities';
 import { useAuth } from '../../shared/hooks/useAuth';
-import { LoadingBlock } from '../../shared/components/ui';
+import {
+  EmptyState,
+  FeaturePageLayout,
+  LoadingBlock,
+  buttonClassName,
+} from '../../shared/components/ui';
 import { useTranslation } from 'react-i18next';
 
 export function RequireCapability({ children }: { children: ReactNode }) {
@@ -17,7 +22,7 @@ export function RequireCapability({ children }: { children: ReactNode }) {
   const location = useLocation();
 
   if (!loaded) {
-    return <LoadingBlock label={t('common.loading', { defaultValue: 'Loading…' })} />;
+    return <LoadingBlock label={t('common.loading')} />;
   }
 
   // Panel admin always full access
@@ -26,7 +31,19 @@ export function RequireCapability({ children }: { children: ReactNode }) {
   }
 
   if (!canAccessPath(location.pathname, capabilities)) {
-    return <Navigate to="/" replace state={{ forbiddenPath: location.pathname }} />;
+    return (
+      <FeaturePageLayout title={t('nav.noAccessTitle')}>
+        <EmptyState
+          title={t('nav.noAccessTitle')}
+          description={t('nav.noAccessDesc')}
+          action={
+            <Link to="/" className={buttonClassName({ variant: 'primary' })}>
+              {t('nav.backToDashboard')}
+            </Link>
+          }
+        />
+      </FeaturePageLayout>
+    );
   }
 
   return <>{children}</>;

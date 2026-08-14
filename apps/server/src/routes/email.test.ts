@@ -45,8 +45,17 @@ describe('email routes (HTTP)', () => {
 
     const list = await apiJson(ts, 'GET', '/api/v1/email/domains');
     expect(list.status).toBe(200);
-    const items = (list.body as { items: Array<{ domain?: string }> }).items;
+    const items = (list.body as { items: Array<{ domain?: string; id?: string }> }).items;
     expect(items.some((d) => d.domain === 'mail-http-test.local')).toBe(true);
+    const id = items.find((d) => d.domain === 'mail-http-test.local')?.id;
+    expect(id).toBeTruthy();
+    const one = await apiJson(ts, 'GET', `/api/v1/email/domains/${id}`);
+    expect(one.status).toBe(200);
+    expect((one.body as { domain?: { domain?: string } }).domain?.domain).toBe(
+      'mail-http-test.local',
+    );
+    const missing = await apiJson(ts, 'GET', '/api/v1/email/domains/no-such-id');
+    expect(missing.status).toBe(404);
   });
 
   it('relay apply without system apply is honest ops', async () => {

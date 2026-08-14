@@ -133,6 +133,23 @@ export function filterUsersByQuery<
   );
 }
 
+export function isLastAdminUser(
+  user: { roles?: string[] },
+  adminCount: number,
+): boolean {
+  return (user.roles ?? []).includes('admin') && adminCount <= 1;
+}
+
+export function userMutationLock(
+  user: { id: string; roles?: string[] },
+  currentUserId: string | undefined,
+  adminCount: number,
+): 'self' | 'last-admin' | null {
+  if (currentUserId && user.id === currentUserId) return 'self';
+  if (isLastAdminUser(user, adminCount)) return 'last-admin';
+  return null;
+}
+
 type RolePolicyView = {
   role: SystemRole;
   dirty: boolean;
@@ -143,6 +160,7 @@ type RolePolicyView = {
 export function UsersPage() {
   const { t } = useTranslation();
   const { can } = useCapabilities();
+  const me = authStore.getUser();
   const canImpersonate = can('users.impersonate');
   const canEditRbac = can('rbac.policy');
   const [tab, setTab] = usePageTab(
@@ -201,6 +219,7 @@ export function UsersPage() {
     | { kind: 'restoreAll' }
     | { kind: 'restoreUserOverrides'; user: UserRow }
     | { kind: 'promoteAdmin'; next: () => void }
+    | { kind: 'demoteAdmin'; next: () => void }
     | { kind: 'dangerPolicySave'; next: () => void }
     | null
   >(null);
@@ -429,6 +448,19 @@ export function UsersPage() {
 
   async function saveDetailUser() {
     if (!detailUser) return;
+    const adminCount =
+      usersList.meta?.facets?.role?.admin ??
+      users.filter((u) => u.roles.includes('admin')).length;
+    const lock = userMutationLock(detailUser, me?.id, adminCount);
+    const wasAdmin = detailUser.roles.includes('admin');
+    const demoting = wasAdmin && detailRole !== 'admin';
+    const suspending = detailSuspended && !detailUser.suspended;
+    if (lock && (demoting || suspending)) {
+      setError(
+        lock === 'self' ? t('users.cannotModifySelf') : t('users.cannotDemoteLastAdmin'),
+      );
+      return;
+    }
     const run = async () => {
       setBusy(true);
       setError(null);
@@ -454,6 +486,10 @@ export function UsersPage() {
     };
     if (detailRole === 'admin' && !detailUser.roles.includes('admin')) {
       setPending({ kind: 'promoteAdmin', next: () => void run() });
+      return;
+    }
+    if (demoting) {
+      setPending({ kind: 'demoteAdmin', next: () => void run() });
       return;
     }
     await run();
@@ -711,7 +747,11 @@ export function UsersPage() {
                     variant="danger"
                     size="sm"
                     loading={busy}
-                    onClick={() => setPending({ kind: 'delUser', user: u })}
+                    disabled={Boolean(userMutationLock(u, me?.id, admins))}
+                    onClick={() => {
+                      if (userMutationLock(u, me?.id, admins)) return;
+                      setPending({ kind: 'delUser', user: u });
+                    }}
                   >
                     {t('common.delete')}
                   </Button>
@@ -1106,6 +1146,7 @@ export function UsersPage() {
         busy={busy}
         canImpersonate={canImpersonate}
         isAdminRole={detailRole === 'admin'}
+        lock={detailUser ? userMutationLock(detailUser, me?.id, admins) : null}
         onRoleChange={setDetailRole}
         onPackageChange={setDetailPkg}
         onSuspendedChange={setDetailSuspended}
@@ -1120,7 +1161,9 @@ export function UsersPage() {
             : undefined
         }
         onDelete={
-          detailUser ? () => setPending({ kind: 'delUser', user: detailUser }) : undefined
+          detailUser && !userMutationLock(detailUser, me?.id, admins)
+            ? () => setPending({ kind: 'delUser', user: detailUser })
+            : undefined
         }
         onRestoreOverrides={
           detailUser
@@ -1233,9 +1276,11 @@ export function UsersPage() {
                       ? t('rbac.restoreUserOverridesTitle', { name: pending.user.username })
                       : pending?.kind === 'promoteAdmin'
                         ? t('rbac.promoteAdminTitle')
-                        : pending?.kind === 'dangerPolicySave'
-                          ? t('rbac.dangerPolicyTitle')
-                          : t('common.confirm')
+                        : pending?.kind === 'demoteAdmin'
+                          ? t('users.demoteAdminTitle')
+                          : pending?.kind === 'dangerPolicySave'
+                            ? t('rbac.dangerPolicyTitle')
+                            : t('common.confirm')
         }
         description={
           pending?.kind === 'impersonate'
@@ -1252,14 +1297,17 @@ export function UsersPage() {
                       ? t('rbac.restoreUserOverridesDesc')
                       : pending?.kind === 'promoteAdmin'
                         ? t('rbac.promoteAdminDesc')
-                        : pending?.kind === 'dangerPolicySave'
-                          ? t('rbac.dangerPolicyDesc')
-                          : ''
+                        : pending?.kind === 'demoteAdmin'
+                          ? t('users.demoteAdminDesc')
+                          : pending?.kind === 'dangerPolicySave'
+                            ? t('rbac.dangerPolicyDesc')
+                            : ''
         }
         confirmLabel={
           pending?.kind === 'impersonate'
             ? t('users.impersonate')
             : pending?.kind === 'promoteAdmin' ||
+                pending?.kind === 'demoteAdmin' ||
                 pending?.kind === 'dangerPolicySave' ||
                 pending?.kind === 'restoreRole' ||
                 pending?.kind === 'restoreAll' ||
@@ -1279,7 +1327,11 @@ export function UsersPage() {
           const p = pending;
           setPending(null);
           if (!p) return;
-          if (p.kind === 'promoteAdmin' || p.kind === 'dangerPolicySave') {
+          if (
+            p.kind === 'promoteAdmin' ||
+            p.kind === 'demoteAdmin' ||
+            p.kind === 'dangerPolicySave'
+          ) {
             p.next();
             return;
           }

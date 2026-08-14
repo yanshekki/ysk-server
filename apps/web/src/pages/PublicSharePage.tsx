@@ -13,6 +13,7 @@ import {
   type BtShareStats,
 } from 'ysk-server-shared';
 import { Alert, Button, Field, FormActions } from '../shared/components/ui';
+import { toast } from '../shared/stores/toast-store';
 import { setAppLocale } from '../shared/lib/i18n';
 import {
   downloadWithBrowserWebTorrent,
@@ -220,22 +221,17 @@ export function PublicSharePage() {
     wtSupported,
   ]);
 
-  const passQ = useCallback(
-    (pass?: string) => {
-      const p = pass?.trim() || password.trim();
-      return p ? `?password=${encodeURIComponent(p)}` : '';
-    },
-    [password],
-  );
-
-  const loadMeta = useCallback(async () => {
+  const loadMeta = useCallback(async (pass?: string) => {
     if (!token) {
       setPhase('error');
       setError(t('files.publicShareMissing'));
       return;
     }
     try {
-      const res = await fetch(`/api/v1/public/files/${encodeURIComponent(token)}/meta`);
+      const hdrPass = pass?.trim() || password.trim();
+      const res = await fetch(`/api/v1/public/files/${encodeURIComponent(token)}/meta`, {
+        headers: hdrPass ? { 'X-Share-Password': hdrPass } : undefined,
+      });
       if (res.status === 404) {
         setPhase('error');
         setError(t('files.publicShareNotFound'));
@@ -253,6 +249,9 @@ export function PublicSharePage() {
       if (body.magnetUri) setMagnet(body.magnetUri);
 
       if (body.needPassword) {
+        if (hdrPass) {
+          setError(t('files.publicShareBadPassword'));
+        }
         setPhase('password');
         return;
       }
@@ -276,7 +275,7 @@ export function PublicSharePage() {
       setPhase('error');
       setError(e instanceof Error ? e.message : t('files.publicShareFailedGeneric'));
     }
-  }, [t, token]);
+  }, [password, t, token]);
 
   const refreshBtStats = useCallback(
     async (pass?: string) => {
@@ -458,20 +457,9 @@ export function PublicSharePage() {
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
-    const hasBt = meta?.hasBt || (meta?.downloadModes ?? []).includes('bt');
-    const hasDirect =
-      meta?.hasDirect !== false &&
-      (!(meta?.downloadModes?.length) || (meta?.downloadModes ?? []).includes('direct'));
-    if (hasBt && hasDirect) {
-      setPhase('choose');
-      return;
-    }
-    if (hasBt && !hasDirect) {
-      setPhase('choose');
+    void loadMeta(password).then(() => {
       void refreshBtStats(password);
-      return;
-    }
-    void tryDownload(password);
+    });
   }
 
   function onLocaleChange(code: string) {
@@ -508,9 +496,27 @@ export function PublicSharePage() {
   const sizeLabel =
     total != null || received > 0 ? formatBytes(total ?? received) : null;
 
-  const torrentHref = token
-    ? `/api/v1/public/files/${encodeURIComponent(token)}/torrent${passQ()}`
-    : '#';
+  const downloadTorrent = useCallback(async () => {
+    if (!token) return;
+    const hdrPass = password.trim();
+    try {
+      const res = await fetch(`/api/v1/public/files/${encodeURIComponent(token)}/torrent`, {
+        headers: hdrPass ? { 'X-Share-Password': hdrPass } : undefined,
+      });
+      if (!res.ok) {
+        setError(t('files.publicShareFailed', { status: res.status }));
+        return;
+      }
+      const blob = await res.blob();
+      const name = filenameFromDisposition(
+        res.headers.get('Content-Disposition'),
+        `${fileName || 'share'}.torrent`,
+      );
+      triggerBlobDownload(blob, name);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('files.publicShareFailedGeneric'));
+    }
+  }, [fileName, password, t, token]);
 
   const seedStatusLabel = (status: string | undefined): string => {
     const s = String(status || '').toLowerCase();
@@ -714,12 +720,15 @@ export function PublicSharePage() {
                         {t('files.publicShareBtInBrowser')}
                       </Button>
                     ) : null}
-                    <a
-                      className="btn btn--secondary btn--lg pub-share__cta"
-                      href={torrentHref}
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="lg"
+                      className="pub-share__cta"
+                      onClick={() => void downloadTorrent()}
                     >
                       {t('files.shareTorrentFile')}
-                    </a>
+                    </Button>
                     {(magnet || meta?.magnetUri) ? (
                       <Button
                         type="button"
@@ -728,10 +737,9 @@ export function PublicSharePage() {
                         onClick={() => {
                           const m = magnet || meta?.magnetUri || '';
                           void navigator.clipboard?.writeText(m).then(
-                            () => undefined,
-                            () => undefined,
+                            () => toast.ok(t('files.shareMagnetCopied', { defaultValue: t('common.copied') })),
+                            () => toast.error(t('common.copyFailed')),
                           );
-                          window.location.href = m;
                         }}
                       >
                         {t('files.shareMagnet')}

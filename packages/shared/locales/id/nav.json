@@ -73,5 +73,8 @@
   "bookmarkAdded": "Disematkan ke sidebar",
   "bookmarkRemoved": "Dihapus dari bilah sisi",
   "btTracker": "BT Tracker",
-  "support": "Mendukung"
+  "support": "Mendukung",
+  "noAccessTitle": "Tidak ada akses",
+  "noAccessDesc": "Peran Anda tidak mencakup halaman ini. Minta admin jika Anda membutuhkannya.",
+  "backToDashboard": "Kembali ke dasbor"
 }

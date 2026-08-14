@@ -5,6 +5,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import {
   YskError,
+  ErrorCodes,
   localizeOpsResult,
   resolveRequestLocale,
   tl,
@@ -12,11 +13,45 @@ import {
   type OpsResultInput,
 } from 'ysk-server-shared';
 
-export function readBody(req: IncomingMessage): Promise<string> {
+export const DEFAULT_JSON_BODY_LIMIT = 1_048_576;
+export const LOGIN_BODY_LIMIT = 262_144;
+
+function payloadTooLarge(): YskError {
+  return new YskError(ErrorCodes.VALIDATION, tl('errors.http.payloadTooLarge'), {
+    httpStatus: 413,
+    details: { reason: 'payload_too_large' },
+  });
+}
+
+export function readBody(
+  req: IncomingMessage,
+  opts?: { maxBytes?: number },
+): Promise<string> {
+  const max = opts?.maxBytes ?? DEFAULT_JSON_BODY_LIMIT;
   return new Promise((resolve, reject) => {
+    const cl = Number(req.headers?.['content-length']);
+    if (Number.isFinite(cl) && cl > max) {
+      reject(payloadTooLarge());
+      return;
+    }
     const chunks: Buffer[] = [];
-    req.on('data', (c) => chunks.push(Buffer.from(c)));
-    req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+    let n = 0;
+    let rejected = false;
+    req.on('data', (c) => {
+      if (rejected) return;
+      const b = Buffer.from(c);
+      n += b.length;
+      if (n > max) {
+        rejected = true;
+        req.destroy();
+        reject(payloadTooLarge());
+        return;
+      }
+      chunks.push(b);
+    });
+    req.on('end', () => {
+      if (!rejected) resolve(Buffer.concat(chunks).toString('utf8'));
+    });
     req.on('error', reject);
   });
 }

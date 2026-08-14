@@ -10,5 +10,10 @@
   "totpLabel": "雙重驗證碼",
   "totpHint": "Authenticator 應用程式中的 6 位數字",
   "submitting": "登入中…",
-  "sessionExpired": "登入已失效，請重新登入"
+  "sessionExpired": "登入已失效，請重新登入",
+  "newPassword": "新密碼",
+  "newPasswordAgain": "再次輸入新密碼",
+  "changePassword": "更改密碼",
+  "passwordMismatch": "兩次輸入的密碼不一致",
+  "passwordChanged": "密碼已更新"
 }

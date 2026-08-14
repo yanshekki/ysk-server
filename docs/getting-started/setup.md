@@ -3,8 +3,8 @@
 > Language: English | [中文](./setup-ZH.md)
 
 ```bash
-ysk-server setup --data-dir /var/lib/ysk --admin-username admin --admin-password 'StrongPass!' --locale zh-HK --json
-ysk-server serve --data-dir /var/lib/ysk
+ysk-server setup --data-dir /var/lib/ysk-server --admin-user admin --admin-password 'StrongPass!' --locale zh-HK --json
+ysk-server serve --data-dir /var/lib/ysk-server
 ```
 
 Creates `config.json`, document store, admin user, systemd unit template under dataDir.

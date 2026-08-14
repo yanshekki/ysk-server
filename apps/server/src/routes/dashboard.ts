@@ -21,7 +21,9 @@ export async function handleDashboardRoutes(
     const lastDnsbl = ctx.settings.getJson<Record<string, unknown>>('last_dnsbl_run');
     const lastBackup = ctx.settings.getJson<Record<string, unknown>>('last_backup_run');
     const lastInventory = ctx.settings.getJson<Record<string, unknown>>('last_inventory');
-    const relay = ctx.settings.get('email.smtp_relay');
+    const smtpRelay =
+      ctx.settings.getJson<Record<string, unknown>>('email.smtp_relay') ??
+      loadSmtpRelaySettings(ctx.dataDir);
     sendJson(res, 200, {
       projects: {
         total: projects.length,
@@ -44,7 +46,7 @@ export async function handleDashboardRoutes(
       email: {
         domains: ctx.email.list().length,
         lastDnsbl: lastDnsbl ?? null,
-        smtpRelay: relay ? JSON.parse(relay) : loadSmtpRelaySettings(ctx.dataDir),
+        smtpRelay,
       },
       ops: {
         lastBackup: lastBackup ?? null,

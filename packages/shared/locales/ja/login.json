@@ -10,5 +10,10 @@
   "totpLabel": "認証コード",
   "totpHint": "認証アプリの 6 桁コード",
   "submitting": "サインイン中…",
-  "sessionExpired": "セッションの有効期限が切れました。再度サインインしてください"
+  "sessionExpired": "セッションの有効期限が切れました。再度サインインしてください",
+  "newPassword": "新しいパスワード",
+  "newPasswordAgain": "新しいパスワード（確認）",
+  "changePassword": "パスワードを変更",
+  "passwordMismatch": "パスワードが一致しません",
+  "passwordChanged": "パスワードを更新しました"
 }

@@ -3302,7 +3302,8 @@
       "sessionExpired": "Sesi berakhir; masuk lagi",
       "sessionIdle": "Batas waktu menganggur; masuk lagi",
       "totpNotEnabled": "2FA tidak diaktifkan",
-      "totpSecretNoDataDir": "Rahasia TOTP dienkripsi tetapi dataDir tidak disetel"
+      "totpSecretNoDataDir": "Rahasia TOTP dienkripsi tetapi dataDir tidak disetel",
+      "mustChangePassword": "Anda harus mengatur kata sandi baru sebelum lanjut"
     },
     "http": {
       "notFoundRoute": "Tidak ditemukan: {{method}} {{path}}",
@@ -3312,7 +3313,8 @@
       "unprocessable": "Permintaan ditolak oleh server",
       "requestFailed": "Permintaan gagal ({{status}})",
       "jsonInvalid": "JSON tidak valid",
-      "internal": "Kesalahan dalaman"
+      "internal": "Kesalahan dalaman",
+      "payloadTooLarge": "Isi permintaan terlalu besar"
     },
     "YSK_HOST_BROWSE_SSRF": "Penjelajahan host diblokir oleh kebijakan keamanan",
     "YSK_HOST_BROWSE_SESSION": "Sesi penelusuran host tidak ditemukan atau kedaluwarsa",
@@ -3852,7 +3854,10 @@
     "colPorts": "Pelabuhan",
     "colSync": "Status",
     "synced": "Disinkronkan",
-    "syncNow": "Sinkronisasi"
+    "syncNow": "Sinkronisasi",
+    "disableConfirmTitle": "Nonaktifkan UFW?",
+    "disableConfirmDesc": "Firewall host akan berhenti menyaring lalu lintas. Di jaringan publik, SSH dan panel bisa terekspos.",
+    "disableConfirmConsequence": "Aturan izinkan/tolak tetap tersimpan, tetapi tidak ditegakkan sampai UFW diaktifkan lagi."
   },
   "ftp": {
     "title": "akun FTPS",
@@ -4297,7 +4302,12 @@
     "totpLabel": "Kode autentikasi",
     "totpHint": "Kode 6 digit dari aplikasi autentikator",
     "submitting": "Sedang masuk…",
-    "sessionExpired": "Sesi berakhir; masuk lagi"
+    "sessionExpired": "Sesi berakhir; masuk lagi",
+    "newPassword": "Kata sandi baru",
+    "newPasswordAgain": "Konfirmasi kata sandi baru",
+    "changePassword": "Ubah kata sandi",
+    "passwordMismatch": "Kata sandi tidak cocok",
+    "passwordChanged": "Kata sandi diperbarui"
   },
   "logs": {
     "catSystem": "File sistem",
@@ -4743,7 +4753,10 @@
     "bookmarkAdded": "Disematkan ke sidebar",
     "bookmarkRemoved": "Dihapus dari bilah sisi",
     "btTracker": "BT Tracker",
-    "support": "Mendukung"
+    "support": "Mendukung",
+    "noAccessTitle": "Tidak ada akses",
+    "noAccessDesc": "Peran Anda tidak mencakup halaman ini. Minta admin jika Anda membutuhkannya.",
+    "backToDashboard": "Kembali ke dasbor"
   },
   "network": {
     "title": "Antarmuka jaringan",
@@ -11654,7 +11667,15 @@
     "securityClearTotpHint": "Membutuhkan peningkatan",
     "securityClearConfirm": "Ketikkan nama pengguna untuk mengonfirmasi penghapusan 2FA",
     "securityClearOk": "Menyelesaikan 2FA untuk {{name}}",
-    "securitySelfNote": "Untuk mengatur 2FA Anda sendiri, buka Keamanan → Keamanan saya."
+    "securitySelfNote": "Untuk mengatur 2FA Anda sendiri, buka Keamanan → Keamanan saya.",
+    "cannotDeleteSelf": "Tidak dapat menghapus akun yang sedang masuk",
+    "cannotModifySelf": "Tidak dapat menangguhkan atau menurunkan akun yang sedang masuk",
+    "cannotDeleteLastAdmin": "Tidak dapat menghapus admin terakhir",
+    "cannotDemoteLastAdmin": "Tidak dapat menangguhkan atau menurunkan admin terakhir",
+    "lockSelfHint": "Ini akun yang sedang masuk. Hapus, tangguhkan, dan ubah peran diblokir agar tidak terkunci.",
+    "lockLastAdminHint": "Ini admin terakhir. Hapus, tangguhkan, dan penurunan diblokir.",
+    "demoteAdminTitle": "Turunkan admin ini?",
+    "demoteAdminDesc": "Pengguna ini akan kehilangan akses admin penuh. Pastikan masih ada admin lain."
   },
   "vnc": {
     "pageDesc": "Server & klien VNC",

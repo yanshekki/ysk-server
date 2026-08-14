@@ -73,5 +73,8 @@
   "bookmarkAdded": "সাইডবারে পিন করা হয়েছে",
   "bookmarkRemoved": "সাইডবার থেকে সরানো হয়েছে",
   "btTracker": "BT Tracker",
-  "support": "সমর্থন"
+  "support": "সমর্থন",
+  "noAccessTitle": "অ্যাক্সেস নেই",
+  "noAccessDesc": "আপনার ভূমিকায় এই পৃষ্ঠা নেই। প্রয়োজন হলে অ্যাডমিনকে জানান।",
+  "backToDashboard": "ড্যাশবোর্ডে ফিরুন"
 }

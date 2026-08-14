@@ -528,7 +528,6 @@ export function PhpRuntimePage() {
                 </FormHint>
                 <ServiceLifecycleBar
                   matrixId="php-fpm"
-                  unit="php8.2-fpm"
                   label="PHP-FPM"
                   actions={['start', 'stop', 'restart', 'reload']}
                   size="sm"

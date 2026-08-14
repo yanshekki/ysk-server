@@ -37,7 +37,8 @@
     "sessionExpired": "登录已失效，请重新登录",
     "sessionIdle": "闲置超时，请重新登录",
     "totpNotEnabled": "未启用 2FA",
-    "totpSecretNoDataDir": "TOTP secret 已加密但未设置 dataDir"
+    "totpSecretNoDataDir": "TOTP secret 已加密但未设置 dataDir",
+    "mustChangePassword": "请先设定新密码才可继续"
   },
   "http": {
     "notFoundRoute": "找不到：{{method}} {{path}}",
@@ -47,7 +48,8 @@
     "unprocessable": "操作无法完成（服务器拒绝）",
     "requestFailed": "请求失败（{{status}}）",
     "jsonInvalid": "JSON 无效",
-    "internal": "内部错误"
+    "internal": "内部错误",
+    "payloadTooLarge": "请求内容过大"
   },
   "YSK_HOST_BROWSE_SSRF": "主機瀏覽已被安全政策攔截",
   "YSK_HOST_BROWSE_SESSION": "主機瀏覽工作階段不存在或已過期",

@@ -3302,7 +3302,8 @@
       "sessionExpired": "La sesión expiró; iniciar sesión de nuevo",
       "sessionIdle": "Tiempo de inactividad; iniciar sesión de nuevo",
       "totpNotEnabled": "2FA no está habilitado",
-      "totpSecretNoDataDir": "El secreto TOTP está cifrado pero el directorio de datos no está configurado"
+      "totpSecretNoDataDir": "El secreto TOTP está cifrado pero el directorio de datos no está configurado",
+      "mustChangePassword": "Debe establecer una contraseña nueva antes de continuar"
     },
     "http": {
       "notFoundRoute": "No encontrado: {{method}} {{path}}",
@@ -3312,7 +3313,8 @@
       "unprocessable": "Solicitud rechazada por el servidor",
       "requestFailed": "Solicitud fallida ({{status}})",
       "jsonInvalid": "JSON no válido",
-      "internal": "error interno"
+      "internal": "error interno",
+      "payloadTooLarge": "El cuerpo de la solicitud es demasiado grande"
     },
     "YSK_HOST_BROWSE_SSRF": "Navegación del host bloqueada por la política de seguridad",
     "YSK_HOST_BROWSE_SESSION": "Sesión de exploración del host no encontrada o caducada",
@@ -3852,7 +3854,10 @@
     "colPorts": "Puertos",
     "colSync": "Estado",
     "synced": "Sincronizado",
-    "syncNow": "Sincronizar"
+    "syncNow": "Sincronizar",
+    "disableConfirmTitle": "¿Desactivar UFW?",
+    "disableConfirmDesc": "El cortafuegos del host dejará de filtrar el tráfico. En una red pública, SSH y el panel pueden quedar expuestos.",
+    "disableConfirmConsequence": "Las reglas de permitir/denegar se conservan, pero no se aplican hasta volver a activar UFW."
   },
   "ftp": {
     "title": "cuentas FTPS",
@@ -4297,7 +4302,12 @@
     "totpLabel": "Código de autenticación",
     "totpHint": "Código de 6 dígitos de su aplicación de autenticación",
     "submitting": "Iniciando sesión…",
-    "sessionExpired": "La sesión caducó; inicie sesión de nuevo"
+    "sessionExpired": "La sesión caducó; inicie sesión de nuevo",
+    "newPassword": "Nueva contraseña",
+    "newPasswordAgain": "Confirmar nueva contraseña",
+    "changePassword": "Cambiar contraseña",
+    "passwordMismatch": "Las contraseñas no coinciden",
+    "passwordChanged": "Contraseña actualizada"
   },
   "logs": {
     "catSystem": "Archivos del sistema",
@@ -4743,7 +4753,10 @@
     "bookmarkAdded": "Fijado en la barra lateral",
     "bookmarkRemoved": "Eliminado de la barra lateral",
     "btTracker": "BT Tracker",
-    "support": "Apoyo"
+    "support": "Apoyo",
+    "noAccessTitle": "Sin acceso",
+    "noAccessDesc": "Su rol no incluye esta página. Pida acceso a un administrador si la necesita.",
+    "backToDashboard": "Volver al panel"
   },
   "network": {
     "title": "Interfaces de red",
@@ -11654,7 +11667,15 @@
     "securityClearTotpHint": "Requiere un paso adelante",
     "securityClearConfirm": "Escriba el nombre de usuario para confirmar la eliminación de 2FA",
     "securityClearOk": "Se completó 2FA para {{name}}",
-    "securitySelfNote": "Para configurar su propia 2FA, abra Seguridad → Mi seguridad."
+    "securitySelfNote": "Para configurar su propia 2FA, abra Seguridad → Mi seguridad.",
+    "cannotDeleteSelf": "No puede eliminar la cuenta con la que ha iniciado sesión",
+    "cannotModifySelf": "No puede suspender ni degradar la cuenta con la que ha iniciado sesión",
+    "cannotDeleteLastAdmin": "No se puede eliminar el último administrador",
+    "cannotDemoteLastAdmin": "No se puede suspender ni degradar al último administrador",
+    "lockSelfHint": "Esta es la cuenta con la que ha iniciado sesión. Eliminar, suspender y cambiar el rol están bloqueados para evitar el bloqueo.",
+    "lockLastAdminHint": "Este es el último administrador. Eliminar, suspender y degradar están bloqueados.",
+    "demoteAdminTitle": "¿Degradar a este administrador?",
+    "demoteAdminDesc": "Este usuario perderá el acceso completo de administrador. Confirme que queda otro administrador."
   },
   "vnc": {
     "pageDesc": "Servidor y cliente VNC",

@@ -231,6 +231,7 @@ export function FirewallPage() {
     if (parsed?.proto) setPortProto(parsed.proto);
   }, []);
   const [delRuleNum, setDelRuleNum] = useState<number | null>(null);
+  const [pendingDisable, setPendingDisable] = useState(false);
   const [ruleQ, setRuleQ] = useState('');
   const [debouncedRuleQ, setDebouncedRuleQ] = useState('');
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
@@ -341,13 +342,17 @@ export function FirewallPage() {
               variant={active ? 'ghost' : 'primary'}
               size="sm"
               loading={busy}
-              onClick={() =>
+              onClick={() => {
+                if (active) {
+                  setPendingDisable(true);
+                  return;
+                }
                 void run(async () => {
-                  const r = (await systemApi.firewallEnable(!active)) as OpsResultLike;
+                  const r = (await systemApi.firewallEnable(true)) as OpsResultLike;
                   await refresh();
                   return r;
-                }, active ? t('firewall.ufwDisabled') : t('firewall.ufwEnabled'))
-              }
+                }, t('firewall.ufwEnabled'));
+              }}
             >
               {active ? t('firewall.disableUfw') : t('firewall.enableUfw')}
             </Button>
@@ -767,6 +772,27 @@ export function FirewallPage() {
       {result && !msg && !error ? (
         <OpsResultPanel result={result} busy={busy} />
       ) : null}
+
+      <ConfirmDialog
+        open={pendingDisable}
+        onClose={() => !busy && setPendingDisable(false)}
+        onConfirm={() => {
+          setPendingDisable(false);
+          void run(async () => {
+            const r = (await systemApi.firewallEnable(false)) as OpsResultLike;
+            await refresh();
+            return r;
+          }, t('firewall.ufwDisabled'));
+        }}
+        title={t('firewall.disableConfirmTitle')}
+        description={t('firewall.disableConfirmDesc')}
+        consequences={[t('firewall.disableConfirmConsequence')]}
+        severity="destructive"
+        confirmLabel={t('firewall.disableUfw')}
+        cancelLabel={t('common.cancel')}
+        danger
+        busy={busy}
+      />
 
       <ConfirmDialog
         open={delRuleNum != null}
