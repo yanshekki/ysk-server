@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.29 — 2026-08-14
+
+### Fix
+- Node 20 hosts no longer get `EBADENGINE` for Node 22-only packages: pin WebTorrent to 2.8.5; drop unused `better-sqlite3` 13 (SQLite is sql.js)
+
 ## 1.0.28 — 2026-08-14
 
 ### Fix

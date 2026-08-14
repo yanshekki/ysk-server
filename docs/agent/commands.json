@@ -1,6 +1,6 @@
 {
   "product": "ysk-server",
-  "version": "1.0.28",
+  "version": "1.0.29",
   "exitCodes": {
     "0": "ok",
     "1": "error",
