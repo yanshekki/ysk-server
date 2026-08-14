@@ -76,6 +76,7 @@ export function GlobalSearch() {
   const [active, setActive] = useState(0);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reqSeq = useRef(0);
+  const lastCompletedQ = useRef('');
 
   const groups = useMemo(() => groupHits(hits), [hits]);
   const flat = useMemo(() => groups.flatMap((g) => g.items), [groups]);
@@ -95,6 +96,7 @@ export function GlobalSearch() {
           `/api/v1/search?q=${encodeURIComponent(trimmed)}`,
         );
         if (seq !== reqSeq.current) return;
+        lastCompletedQ.current = trimmed;
         setHits(r.items ?? []);
         setActive(0);
       } catch {
@@ -110,6 +112,8 @@ export function GlobalSearch() {
   const onChange = (value: string) => {
     setQ(value);
     setOpen(true);
+    setHits([]);
+    lastCompletedQ.current = '';
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => void runSearch(value), 160);
   };
@@ -171,6 +175,7 @@ export function GlobalSearch() {
       setActive((i) => (i - 1 + flat.length) % flat.length);
     } else if (e.key === 'Enter') {
       e.preventDefault();
+      if (lastCompletedQ.current !== q.trim()) return;
       const hit = flat[active];
       if (hit) go(hit);
     }

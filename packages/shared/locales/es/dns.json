@@ -212,5 +212,7 @@
   "aboutHealthTitle": "Estado del servicio",
   "aboutHealthBody": "Utilice Herramientas para sondear PowerDNS, reparar el enlace y abrir el puerto 53.",
   "aboutStackTitle": "Software",
-  "aboutStackBody": "Verifique/actualice el paquete PowerDNS en Software."
+  "aboutStackBody": "Verifique/actualice el paquete PowerDNS en Software.",
+  "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
+  "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
 }

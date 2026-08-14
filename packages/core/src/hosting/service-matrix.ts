@@ -244,6 +244,18 @@ export async function getServiceMatrix(host: HostExecutor): Promise<{
       bestActive = 'inactive';
     }
 
+    if (entry.id === 'ufw' && installed) {
+      try {
+        const st = await host.runCommand(['ufw', 'status'], { timeoutMs: 5_000 });
+        const text = `${st.stdout || ''}\n${st.stderr || ''}`;
+        if (/inactive/i.test(text.slice(0, 240))) {
+          bestActive = 'inactive';
+        }
+      } catch {
+        /* keep unit probe */
+      }
+    }
+
     items.push({
       id: entry.id,
       label,

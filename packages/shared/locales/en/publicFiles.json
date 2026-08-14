@@ -12,6 +12,10 @@
   "siteSettings": "Site settings",
   "siteSettingsDesc": "Writes managed conf; may reload Nginx on apply (reachable only after apply)",
   "serverNameHint": "Nginx server_name, e.g. files.example.com",
+  "notes": {
+    "noManagedConf": "No managed Nginx conf yet — click Apply",
+    "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+  },
   "quotaMiB": "Quota (MiB)",
   "quotaHint": "Optional; caps public directory size",
   "unlimited": "Unlimited",

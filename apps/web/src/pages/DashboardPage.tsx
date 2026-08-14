@@ -36,6 +36,7 @@ import { usePageTab } from '../shared/hooks/usePageTab';
 import { bindSet, bindInput } from './bind-handlers';
 import {
   defaultRuntimeInstallVersion,
+  fetchRuntimeVersionChoices,
   runtimeVersionChoices } from '../features/projects/model/deploy-prefs';
 
 const DASH_TABS = ['overview', 'wizard', 'notifications', 'features', 'about'] as const;
@@ -122,10 +123,13 @@ export function DashboardPage() {
   const [wizName, setWizName] = useState('');
   const [wizDomain, setWizDomain] = useState('');
   const [wizRuntime, setWizRuntime] = useState<
-    'node' | 'php' | 'static' | 'python' | 'go' | 'rust'
+    'node' | 'php' | 'static' | 'python' | 'go' | 'rust' | 'java' | 'kotlin' | 'bun'
   >('node');
   const [wizRuntimeVersion, setWizRuntimeVersion] = useState(() =>
     defaultRuntimeInstallVersion('node'),
+  );
+  const [wizVersionChoices, setWizVersionChoices] = useState<string[]>(() =>
+    runtimeVersionChoices('node'),
   );
   const [wizDns, setWizDns] = useState(true);
   const [wizMail, setWizMail] = useState(true);
@@ -203,6 +207,22 @@ export function DashboardPage() {
   const executeEnabled = health?.executeEnabled;
 
   const [tab, setTab] = usePageTab(DASH_TABS, 'overview');
+
+  useEffect(() => {
+    if (tab !== 'wizard') return;
+    let cancelled = false;
+    void fetchRuntimeVersionChoices(wizRuntime).then((r) => {
+      if (cancelled) return;
+      const choices = r.choices.length ? r.choices : runtimeVersionChoices(wizRuntime);
+      setWizVersionChoices(choices);
+      setWizRuntimeVersion((prev) =>
+        choices.includes(prev) ? prev : r.latest || choices[0] || prev,
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [tab, wizRuntime]);
 
   const tiles = useMemo(() => {
     return allFeatureTiles()
@@ -762,6 +782,7 @@ export function DashboardPage() {
                           setWizRuntime(next);
                           const choices = runtimeVersionChoices(next);
                           const def = defaultRuntimeInstallVersion(next);
+                          setWizVersionChoices(choices);
                           setWizRuntimeVersion(
                             choices.includes(def) ? def : choices[0] ?? '',
                           );
@@ -772,11 +793,14 @@ export function DashboardPage() {
                           { value: 'python', label: 'Python' },
                           { value: 'go', label: 'Go' },
                           { value: 'rust', label: 'Rust' },
+                          { value: 'java', label: 'Java' },
+                          { value: 'kotlin', label: 'Kotlin' },
+                          { value: 'bun', label: 'Bun' },
                           { value: 'static', label: t('common.static') },
                         ]}
                       />
                     </Field>
-                    {runtimeVersionChoices(wizRuntime).length > 0 ? (
+                    {wizVersionChoices.length > 0 ? (
                       <Field
                         label={t('common.version')}
                         htmlFor="wiz-ver"
@@ -788,17 +812,17 @@ export function DashboardPage() {
                           name="wiz-ver"
                           aria-label={t('dashboard.runtimeVersion')}
                           value={
-                            runtimeVersionChoices(wizRuntime).includes(
-                              wizRuntimeVersion,
-                            )
+                            wizVersionChoices.includes(wizRuntimeVersion)
                               ? wizRuntimeVersion
-                              : runtimeVersionChoices(wizRuntime)[0]!
+                              : wizVersionChoices[0]!
                           }
                           onChange={setWizRuntimeVersion}
-                          options={runtimeVersionChoices(wizRuntime).map((v) => ({
+                          options={wizVersionChoices.map((v) => ({
                             value: v,
                             label:
-                              wizRuntime === 'node' && v === '20' ? '20 LTS' : v }))}
+                              wizRuntime === 'node' && (v === '20' || v === '22' || v === '24')
+                                ? `${v} LTS`
+                                : v }))}
                         />
                       </Field>
                     ) : null}

@@ -1999,7 +1999,10 @@
     "show": "보여주다",
     "done": "완료",
     "next": "다음",
-    "previous": "이전"
+    "previous": "이전",
+    "all": "All",
+    "showPassword": "Show",
+    "hidePassword": "Hide"
   },
   "cron": {
     "presetCdTrue": "CD 앱 + true(테스트)",
@@ -2771,7 +2774,9 @@
     "aboutHealthTitle": "서비스 상태",
     "aboutHealthBody": "도구를 사용하여 PowerDNS를 검색하고 바인딩을 복구하고 포트 53을 엽니다.",
     "aboutStackTitle": "소프트웨어",
-    "aboutStackBody": "소프트웨어에서 PowerDNS 패키지를 확인/업데이트하세요."
+    "aboutStackBody": "소프트웨어에서 PowerDNS 패키지를 확인/업데이트하세요.",
+    "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
+    "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
   },
   "email": {
     "title": "이메일",
@@ -3752,7 +3757,10 @@
       "typeMismatch": "“{{name}}” {{destKind}}이(가) 이미 있습니다. 가져올 항목은 {{incomingKind}}입니다.",
       "skipped": "건너뜀",
       "cancelled": "취소됨"
-    }
+    },
+    "emptyTrashTitle": "Empty trash?",
+    "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
+    "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone."
   },
   "firewall": {
     "profiles": {
@@ -3857,7 +3865,8 @@
     "syncNow": "동조",
     "disableConfirmTitle": "UFW를 사용 중지할까요?",
     "disableConfirmDesc": "호스트 방화벽이 트래픽을 필터하지 않습니다. 공용 네트워크에서는 SSH와 패널이 노출될 수 있습니다.",
-    "disableConfirmConsequence": "기존 허용/거부 규칙은 유지되지만 UFW를 다시 켤 때까지 적용되지 않습니다."
+    "disableConfirmConsequence": "기존 허용/거부 규칙은 유지되지만 UFW를 다시 켤 때까지 적용되지 않습니다.",
+    "toolHintFail2ban": "fail2ban = temporary log-based bans"
   },
   "ftp": {
     "title": "FTPS 계정",
@@ -4442,7 +4451,8 @@
     "groupVarLog": "/var/log",
     "prioErr": "오류+",
     "prioWarn": "경고+",
-    "prioInfo": "정보+"
+    "prioInfo": "정보+",
+    "srcFail2ban": "fail2ban"
   },
   "metrics": {
     "alert": {
@@ -8686,7 +8696,8 @@
     "manageInNginx": "Nginx에서 관리",
     "advFtpHomeApp": "사이트 app 디렉터리",
     "advFtpHomeRoot": "프로젝트 홈(전체)",
-    "advFtpManage": "FTP 페이지 열기"
+    "advFtpManage": "FTP 페이지 열기",
+    "listDesc": "Manage sites on this host."
   },
   "protection": {
     "levels": {
@@ -9066,7 +9077,11 @@
     "diskRoot": "디스크 루트",
     "filesInRoot": "항목",
     "managedConf": "관리형 구성",
-    "systemConf": "시스템 구성"
+    "systemConf": "시스템 구성",
+    "notes": {
+      "noManagedConf": "No managed Nginx conf yet — click Apply",
+      "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+    }
   },
   "rbac": {
     "permissions": "권한",
@@ -9813,7 +9828,10 @@
       "projectsCount": "YSK 프로젝트",
       "noProjects": "프로젝트 없음",
       "noProjectsDesc": "패널에 노드/bun 프로젝트가 없거나 OS 사용자가 프로비저닝되지 않았습니다.",
-      "pm2OnlyDesc": "패널 사용자 아래에서 PM2로 시작된 앱만 해당됩니다. systemd 배포가 위에 나타납니다."
+      "pm2OnlyDesc": "패널 사용자 아래에서 PM2로 시작된 앱만 해당됩니다. systemd 배포가 위에 나타납니다.",
+      "startupTitle": "Start on boot",
+      "startupDesc": "Register PM2 so processes come back after reboot.",
+      "systemdActionsHint": "systemd actions need root and YSK_EXECUTE."
     },
     "recordedInstalled": "녹화됨 {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -10286,7 +10304,8 @@
     "sessionRevoked": "세션이 로그아웃되었습니다.",
     "mySecurityHint": "",
     "policyTotpHint": "사이트 정책: 각 관리자는 자신의 2FA(개별 QR)를 활성화해야 합니다.",
-    "requireUser2fa": "모든 패널 사용자에게 2FA 요구"
+    "requireUser2fa": "모든 패널 사용자에게 2FA 요구",
+    "generateFail2ban": "Generate fail2ban snippets"
   },
   "serviceExposure": {
     "title": "네트워크 접속",

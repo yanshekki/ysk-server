@@ -109,6 +109,8 @@
   "createZoneTitle": "Create DNS zone",
   "createZoneDesc": "Generate records from a template",
   "zoneNameHint": "e.g. example.com (no trailing dot)",
+  "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
+  "invalidIpv4": "Invalid IPv4. Each octet must be 0–255.",
   "serverIpv4": "Server IPv4",
   "serverIpv4Hint": "Address used for template A records",
   "thisHostIpv4": "This host public IPv4",

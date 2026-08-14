@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.0.31 — 2026-08-14
+
+### Fix
+- Login no longer flashes the raw `product` key; language can be switched before sign-in
+- Empty trash / permanent purge ask for confirmation
+- Public files no longer default to `files.` or link to `http://files./`
+- Search matches Chinese nav names; stale results are not used for Enter
+- Dashboard UFW chip follows `ufw status` (not just the systemd unit)
+- MySQL page on a MariaDB host no longer shows a MariaDB client version as MySQL
+- Exposure strip defaults to private, not public
+- PHP header pill uses the host version, not php.net latest
+- Service console presets are per-engine (no more 3306/5432/6379 on every port field)
+- Kernel/linux-image apply requires confirm
+- Readiness export actually downloads
+- Toast sits below the header
+- Brand names stay English (WireGuard, InnoDB, RDB, Let's Encrypt, SSE, journalctl)
+
 ## 1.0.30 — 2026-08-14
 
 ### Change

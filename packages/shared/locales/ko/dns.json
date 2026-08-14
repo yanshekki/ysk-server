@@ -212,5 +212,7 @@
   "aboutHealthTitle": "서비스 상태",
   "aboutHealthBody": "도구를 사용하여 PowerDNS를 검색하고 바인딩을 복구하고 포트 53을 엽니다.",
   "aboutStackTitle": "소프트웨어",
-  "aboutStackBody": "소프트웨어에서 PowerDNS 패키지를 확인/업데이트하세요."
+  "aboutStackBody": "소프트웨어에서 PowerDNS 패키지를 확인/업데이트하세요.",
+  "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
+  "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
 }

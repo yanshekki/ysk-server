@@ -101,5 +101,6 @@
   "syncNow": "साथ-साथ करना",
   "disableConfirmTitle": "UFW बंद करें?",
   "disableConfirmDesc": "होस्ट फ़ायरवॉल ट्रैफ़िक फ़िल्टर करना बंद कर देगा। सार्वजनिक नेटवर्क पर SSH और पैनल खुले हो सकते हैं।",
-  "disableConfirmConsequence": "मौजूदा अनुमति/अस्वीकार नियम रहेंगे, पर UFW फिर चालू होने तक लागू नहीं होंगे।"
+  "disableConfirmConsequence": "मौजूदा अनुमति/अस्वीकार नियम रहेंगे, पर UFW फिर चालू होने तक लागू नहीं होंगे।",
+  "toolHintFail2ban": "fail2ban = temporary log-based bans"
 }

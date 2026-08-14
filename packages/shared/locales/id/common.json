@@ -121,5 +121,8 @@
   "show": "Menunjukkan",
   "done": "Selesai",
   "next": "Berikutnya",
-  "previous": "Sebelumnya"
+  "previous": "Sebelumnya",
+  "all": "All",
+  "showPassword": "Show",
+  "hidePassword": "Hide"
 }

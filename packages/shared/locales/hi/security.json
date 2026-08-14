@@ -391,5 +391,6 @@
   "sessionRevoked": "सत्र साइन आउट हो गया",
   "mySecurityHint": "",
   "policyTotpHint": "साइट नीति: प्रत्येक व्यवस्थापक को अपना स्वयं का 2FA (व्यक्तिगत QR) सक्षम करना होगा",
-  "requireUser2fa": "सभी पैनल उपयोगकर्ताओं के लिए 2FA अनिवार्य"
+  "requireUser2fa": "सभी पैनल उपयोगकर्ताओं के लिए 2FA अनिवार्य",
+  "generateFail2ban": "Generate fail2ban snippets"
 }

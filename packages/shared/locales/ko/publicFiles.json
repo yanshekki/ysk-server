@@ -28,5 +28,9 @@
   "diskRoot": "디스크 루트",
   "filesInRoot": "항목",
   "managedConf": "관리형 구성",
-  "systemConf": "시스템 구성"
+  "systemConf": "시스템 구성",
+  "notes": {
+    "noManagedConf": "No managed Nginx conf yet — click Apply",
+    "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+  }
 }

@@ -451,7 +451,10 @@
     "projectsCount": "YSK প্রকল্প",
     "noProjects": "কোনো প্রকল্প নেই",
     "noProjectsDesc": "প্যানেলে কোন নোড/বান প্রজেক্ট নেই, বা OS ব্যবহারকারীর ব্যবস্থা করা নেই।",
-    "pm2OnlyDesc": "শুধুমাত্র প্যানেল ব্যবহারকারীর অধীনে PM2 দিয়ে শুরু করা অ্যাপগুলি। systemd ডিপ্লয়গুলি উপরে প্রদর্শিত হয়।"
+    "pm2OnlyDesc": "শুধুমাত্র প্যানেল ব্যবহারকারীর অধীনে PM2 দিয়ে শুরু করা অ্যাপগুলি। systemd ডিপ্লয়গুলি উপরে প্রদর্শিত হয়।",
+    "startupTitle": "Start on boot",
+    "startupDesc": "Register PM2 so processes come back after reboot.",
+    "systemdActionsHint": "systemd actions need root and YSK_EXECUTE."
   },
   "recordedInstalled": "রেকর্ড করা {{v}}",
   "remoteSourceSuffix": "({{source}})",

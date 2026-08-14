@@ -101,5 +101,6 @@
   "syncNow": "同期",
   "disableConfirmTitle": "UFW を無効にしますか？",
   "disableConfirmDesc": "ホストのファイアウォールが通信をフィルタしなくなります。公開ネットワーク上では SSH とパネルが露出する可能性があります。",
-  "disableConfirmConsequence": "既存の許可／拒否ルールは残りますが、UFW を再度有効にするまで適用されません。"
+  "disableConfirmConsequence": "既存の許可／拒否ルールは残りますが、UFW を再度有効にするまで適用されません。",
+  "toolHintFail2ban": "fail2ban = temporary log-based bans"
 }

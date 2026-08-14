@@ -22,6 +22,18 @@ import {
 /** All nav paths — used so parent routes do not stay active on longer sibling paths (e.g. mysql vs mysql/service). */
 const NAV_PATHS = FEATURE_SECTIONS.flatMap((s) => s.items.map((i) => i.to));
 
+const NAV_COLLAPSE_KEY = 'ysk.nav.collapsed';
+
+function loadNavCollapsed(): Set<string> {
+  try {
+    const raw = JSON.parse(localStorage.getItem(NAV_COLLAPSE_KEY) || 'null');
+    if (Array.isArray(raw)) return new Set(raw.filter((x) => typeof x === 'string'));
+  } catch {
+    /* ignore */
+  }
+  return new Set(['runtimes']);
+}
+
 /**
  * Active only for exact match, or for nested routes when no longer sibling nav path matches.
  * Example: `/databases/mysql` must not highlight when on `/databases/mysql/service`.
@@ -46,6 +58,7 @@ export function AppShell() {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const [collapsedNav, setCollapsedNav] = useState<Set<string>>(loadNavCollapsed);
   const [compactChrome, setCompactChrome] = useState(() =>
     typeof window !== 'undefined' && typeof window.matchMedia === 'function'
       ? window.matchMedia('(max-width: 900px)').matches
@@ -147,12 +160,31 @@ export function AppShell() {
           {navSections.map((section) => (
             <div key={section.sectionKey} className="shell__nav-section">
               {section.sectionKey !== 'overview' ? (
-                <span className="shell__nav-section-title">
+                <button
+                  type="button"
+                  className="shell__nav-section-title"
+                  aria-expanded={!collapsedNav.has(section.sectionKey)}
+                  onClick={() => {
+                    setCollapsedNav((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(section.sectionKey)) next.delete(section.sectionKey);
+                      else next.add(section.sectionKey);
+                      try {
+                        localStorage.setItem(NAV_COLLAPSE_KEY, JSON.stringify([...next]));
+                      } catch {
+                        /* ignore */
+                      }
+                      return next;
+                    });
+                  }}
+                >
                   {t(`nav.sections.${section.sectionKey}`, {
                     defaultValue: section.sectionKey })}
-                </span>
+                </button>
               ) : null}
-              {section.items.map((item) => {
+              {(!collapsedNav.has(section.sectionKey) ||
+                section.items.some((it) => isNavActive(it.to, location.pathname))) &&
+                section.items.map((item) => {
                 const badgeN = navBadgeFor(item.to);
                 const showProjectPins =
                   item.to === '/projects' && bookmarks.projects.length > 0;

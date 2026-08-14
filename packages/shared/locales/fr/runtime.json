@@ -451,7 +451,10 @@
     "projectsCount": "Projets YSK",
     "noProjects": "Aucun projet",
     "noProjectsDesc": "Aucun projet node/bun dans le panneau, ou utilisateur OS non provisionné.",
-    "pm2OnlyDesc": "Uniquement les applications démarrées avec PM2 sous l’utilisateur du panneau. Les déploiements systemd apparaissent ci-dessus."
+    "pm2OnlyDesc": "Uniquement les applications démarrées avec PM2 sous l’utilisateur du panneau. Les déploiements systemd apparaissent ci-dessus.",
+    "startupTitle": "Start on boot",
+    "startupDesc": "Register PM2 so processes come back after reboot.",
+    "systemdActionsHint": "systemd actions need root and YSK_EXECUTE."
   },
   "recordedInstalled": "Enregistré {{v}}",
   "remoteSourceSuffix": "({{source}})",

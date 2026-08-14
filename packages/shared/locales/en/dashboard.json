@@ -104,7 +104,7 @@
   "wizardPartial": "Partially failed",
   "notifCenterTitle": "Notifications ({{count}})",
   "notifCenterDesc": "Critical {{critical}} · warn {{warn}} · info {{info}}",
-  "noNotifs": "No notifications",
+  "noNotifs": "No notifications. Recent audit events are on Overview.",
   "noNotifsDesc": "System alerts and todos appear here",
   "applyAuditTitle": "Apply status audit",
   "applyAuditDesc": "ok {{ok}} · warn {{warn}} · bad {{bad}}",

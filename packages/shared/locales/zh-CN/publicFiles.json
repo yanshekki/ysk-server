@@ -28,5 +28,9 @@
   "diskRoot": "磁盘根目录",
   "filesInRoot": "条目数",
   "managedConf": "管理 conf",
-  "systemConf": "系统 conf.d"
+  "systemConf": "系统 conf.d",
+  "notes": {
+    "noManagedConf": "No managed Nginx conf yet — click Apply",
+    "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+  }
 }

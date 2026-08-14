@@ -121,5 +121,8 @@
   "show": "Mostrar",
   "done": "Feito",
   "next": "Próximo",
-  "previous": "Anterior"
+  "previous": "Anterior",
+  "all": "All",
+  "showPassword": "Show",
+  "hidePassword": "Hide"
 }

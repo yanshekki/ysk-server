@@ -31,6 +31,8 @@ export type { PageTabsProps, PageTabItem, TabsProps, TabItem } from './PageTabs'
 export { KpiGrid, KpiCard } from './KpiCard';
 export type { KpiCardProps, KpiGridCols } from './KpiCard';
 
+export { PasswordInput } from './PasswordInput';
+
 export {
   Field,
   FormGrid,

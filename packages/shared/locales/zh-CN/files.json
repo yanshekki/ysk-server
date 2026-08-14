@@ -344,5 +344,8 @@
     "typeMismatch": "此处已有名为“{{name}}”的{{destKind}}，即将加入的是{{incomingKind}}。",
     "skipped": "已跳过",
     "cancelled": "已取消"
-  }
+  },
+  "emptyTrashTitle": "Empty trash?",
+  "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
+  "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone."
 }

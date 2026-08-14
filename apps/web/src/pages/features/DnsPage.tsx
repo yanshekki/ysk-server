@@ -284,6 +284,16 @@ export function DnsPage() {
 
   async function onCreateZone(e: FormEvent) {
     e.preventDefault();
+    const z = zone.trim().toLowerCase();
+    if (!/^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/.test(z) || z.includes('..')) {
+      toast.error(t('dns.invalidZone', { defaultValue: t('common.failed') }));
+      return;
+    }
+    const ip = serverIp.trim();
+    if (!/^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/.test(ip)) {
+      toast.error(t('dns.invalidIpv4', { defaultValue: t('common.failed') }));
+      return;
+    }
     const item = await zones.create({
       zone,
       serverIp,

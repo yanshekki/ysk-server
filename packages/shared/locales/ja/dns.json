@@ -212,5 +212,7 @@
   "aboutHealthTitle": "サービスの健全性",
   "aboutHealthBody": "ツールを使用して PowerDNS をプローブし、バインドを修復し、ポート 53 を開きます。",
   "aboutStackTitle": "ソフトウェア",
-  "aboutStackBody": "ソフトウェアの下の PowerDNS パッケージを確認/更新します。"
+  "aboutStackBody": "ソフトウェアの下の PowerDNS パッケージを確認/更新します。",
+  "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
+  "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
 }

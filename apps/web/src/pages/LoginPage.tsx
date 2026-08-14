@@ -10,10 +10,18 @@ import {
   Field,
   FormActions,
   FormLayout,
+  PasswordInput,
   buttonClassName } from '../shared/components/ui';
+import {
+  LOCALES,
+  LOCALE_LABELS,
+  normalizeLocale,
+  setAppLocale,
+  type LocaleCode,
+} from '../shared/lib/i18n';
 
 export function LoginPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { login } = useAuth();
   const nav = useNavigate();
   const location = useLocation();
@@ -126,9 +134,25 @@ export function LoginPage() {
         <div className="login-card__brand">
           <img src="/logo.svg" alt="YSK Limited" width={56} height={56} />
           <h1>
-            <span className="gradient-text">{t('product')}</span>
+            <span className="gradient-text">{t('login.title')}</span>
           </h1>
           <p>{t('login.subtitle')}</p>
+          <label className="login-card__lang">
+            <span className="sr-only">{t('common.language')}</span>
+            <select
+              className="shell__lang-select"
+              value={normalizeLocale(i18n.language)}
+              onChange={(e) => setAppLocale(e.target.value as LocaleCode, { syncServer: false })}
+              title={t('common.switchLanguage')}
+              aria-label={t('common.language')}
+            >
+              {LOCALES.map((code) => (
+                <option key={code} value={code}>
+                  {LOCALE_LABELS[code]}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
 
         {sessionBanner ? <Alert variant="info">{sessionBanner}</Alert> : null}
@@ -144,9 +168,8 @@ export function LoginPage() {
           <Alert variant="info">{t('errors.auth.mustChangePassword')}</Alert>
           <FormLayout>
             <Field label={t('login.newPassword')} htmlFor="new-password" flush required>
-              <input
+              <PasswordInput
                 id="new-password"
-                type="password"
                 value={newPassword}
                 onChange={bindInput(setNewPassword)}
                 autoComplete="new-password"
@@ -155,9 +178,8 @@ export function LoginPage() {
               />
             </Field>
             <Field label={t('login.newPasswordAgain')} htmlFor="new-password2" flush required>
-              <input
+              <PasswordInput
                 id="new-password2"
-                type="password"
                 value={newPassword2}
                 onChange={bindInput(setNewPassword2)}
                 autoComplete="new-password"
@@ -189,9 +211,8 @@ export function LoginPage() {
               />
             </Field>
             <Field label={t('login.password')} htmlFor="password" flush required>
-              <input
+              <PasswordInput
                 id="password"
-                type="password"
                 value={password}
                 onChange={bindInput(setPassword)}
                 autoComplete="current-password"

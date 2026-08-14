@@ -1999,7 +1999,10 @@
     "show": "دکھائیں۔",
     "done": "ہو گیا",
     "next": "اگلا",
-    "previous": "پچھلا"
+    "previous": "پچھلا",
+    "all": "All",
+    "showPassword": "Show",
+    "hidePassword": "Hide"
   },
   "cron": {
     "presetCdTrue": "سی ڈی ایپ + سچ (ٹیسٹ)",
@@ -2771,7 +2774,9 @@
     "aboutHealthTitle": "خدمت صحت",
     "aboutHealthBody": "پاور ڈی این ایس کی تحقیقات کے لیے ٹولز کا استعمال کریں، بائنڈ کو ٹھیک کریں، اور پورٹ 53 کھولیں۔",
     "aboutStackTitle": "سافٹ ویئر",
-    "aboutStackBody": "سافٹ ویئر کے تحت PowerDNS پیکیج کو چیک/اپ ڈیٹ کریں۔"
+    "aboutStackBody": "سافٹ ویئر کے تحت PowerDNS پیکیج کو چیک/اپ ڈیٹ کریں۔",
+    "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
+    "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
   },
   "email": {
     "title": "ای میل",
@@ -3752,7 +3757,10 @@
       "typeMismatch": "یہاں پہلے سے “{{name}}” نام کا {{destKind}} ہے۔ آنے والی چیز {{incomingKind}} ہے۔",
       "skipped": "چھوڑ دیا",
       "cancelled": "منسوخ"
-    }
+    },
+    "emptyTrashTitle": "Empty trash?",
+    "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
+    "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone."
   },
   "firewall": {
     "profiles": {
@@ -3857,7 +3865,8 @@
     "syncNow": "مطابقت پذیری",
     "disableConfirmTitle": "UFW غیر فعال کریں؟",
     "disableConfirmDesc": "ہوسٹ فائر وال ٹریفک فلٹر کرنا بند کر دے گی۔ عوامی نیٹ ورک پر SSH اور پینل بے نقاب ہو سکتے ہیں۔",
-    "disableConfirmConsequence": "موجودہ اجازت/انکار قواعد محفوظ رہیں گے، لیکن UFW دوبارہ فعال ہونے تک نافذ نہیں ہوں گے۔"
+    "disableConfirmConsequence": "موجودہ اجازت/انکار قواعد محفوظ رہیں گے، لیکن UFW دوبارہ فعال ہونے تک نافذ نہیں ہوں گے۔",
+    "toolHintFail2ban": "fail2ban = temporary log-based bans"
   },
   "ftp": {
     "title": "FTPS اکاؤنٹس",
@@ -4442,7 +4451,8 @@
     "groupVarLog": "/var/log",
     "prioErr": "غلطی +",
     "prioWarn": "وارننگ+",
-    "prioInfo": "معلومات+"
+    "prioInfo": "معلومات+",
+    "srcFail2ban": "fail2ban"
   },
   "metrics": {
     "alert": {
@@ -8686,7 +8696,8 @@
     "manageInNginx": "Nginx میں انتظام کریں۔",
     "advFtpHomeApp": "سائٹ app ڈائرکٹری",
     "advFtpHomeRoot": "پروجیکٹ ہوم (مکمل)",
-    "advFtpManage": "FTP صفحہ کھولیں"
+    "advFtpManage": "FTP صفحہ کھولیں",
+    "listDesc": "Manage sites on this host."
   },
   "protection": {
     "levels": {
@@ -9066,7 +9077,11 @@
     "diskRoot": "ڈسک کی جڑ",
     "filesInRoot": "اندراجات",
     "managedConf": "منظم conf",
-    "systemConf": "سسٹم conf.d"
+    "systemConf": "سسٹم conf.d",
+    "notes": {
+      "noManagedConf": "No managed Nginx conf yet — click Apply",
+      "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+    }
   },
   "rbac": {
     "permissions": "اجازتیں",
@@ -9813,7 +9828,10 @@
       "projectsCount": "YSK پروجیکٹس",
       "noProjects": "کوئی پروجیکٹ نہیں۔",
       "noProjectsDesc": "پینل میں کوئی نوڈ/بن پروجیکٹ نہیں ہے، یا OS صارف کی فراہمی نہیں ہے۔",
-      "pm2OnlyDesc": "پینل صارف کے تحت صرف ایپس PM2 کے ساتھ شروع ہوئیں۔ systemd تعیناتیاں اوپر ظاہر ہوتی ہیں۔"
+      "pm2OnlyDesc": "پینل صارف کے تحت صرف ایپس PM2 کے ساتھ شروع ہوئیں۔ systemd تعیناتیاں اوپر ظاہر ہوتی ہیں۔",
+      "startupTitle": "Start on boot",
+      "startupDesc": "Register PM2 so processes come back after reboot.",
+      "systemdActionsHint": "systemd actions need root and YSK_EXECUTE."
     },
     "recordedInstalled": "ریکارڈ شدہ {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -10286,7 +10304,8 @@
     "sessionRevoked": "سیشن سائن آؤٹ ہو گیا۔",
     "mySecurityHint": "",
     "policyTotpHint": "سائٹ کی پالیسی: ہر منتظم کو اپنے 2FA (انفرادی QR) کو فعال کرنا ہوگا۔",
-    "requireUser2fa": "تمام پینل صارفین کے لیے 2FA لازمی"
+    "requireUser2fa": "تمام پینل صارفین کے لیے 2FA لازمی",
+    "generateFail2ban": "Generate fail2ban snippets"
   },
   "serviceExposure": {
     "title": "نیٹ ورک تک رسائی",

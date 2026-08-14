@@ -391,5 +391,6 @@
   "sessionRevoked": "سیشن سائن آؤٹ ہو گیا۔",
   "mySecurityHint": "",
   "policyTotpHint": "سائٹ کی پالیسی: ہر منتظم کو اپنے 2FA (انفرادی QR) کو فعال کرنا ہوگا۔",
-  "requireUser2fa": "تمام پینل صارفین کے لیے 2FA لازمی"
+  "requireUser2fa": "تمام پینل صارفین کے لیے 2FA لازمی",
+  "generateFail2ban": "Generate fail2ban snippets"
 }

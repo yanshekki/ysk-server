@@ -41,6 +41,11 @@ export function SegRadio<T extends string = string>({
             htmlFor={id}
             className={`seg-radios__opt${on ? ' seg-radios__opt--on' : ''}`}
             title={o.hint}
+            onClick={(e) => {
+              if (disabled || on) return;
+              e.preventDefault();
+              onChange(o.value);
+            }}
           >
             <input
               id={id}

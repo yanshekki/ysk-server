@@ -161,7 +161,12 @@ export async function applyPublicFileServer(input: {
   reload?: boolean;
 }): Promise<PublicFilesApplyResult> {
   const serverName = input.serverName.trim().toLowerCase();
-  if (!serverName || serverName.includes('..')) {
+  if (
+    !serverName ||
+    serverName.includes('..') ||
+    serverName.endsWith('.') ||
+    !/^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/i.test(serverName)
+  ) {
     throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.n1387'), { httpStatus: 400 });
   }
   const plan = planPublicFileServer({

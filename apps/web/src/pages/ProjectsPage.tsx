@@ -102,7 +102,7 @@ export function ProjectsPage() {
 
         <ListPanel
           title={t('nav.projects', { defaultValue: t('common.project') })}
-          description={t('projects.searchPlaceholder')}
+          description={t('projects.listDesc', { defaultValue: t('projects.searchPlaceholder') })}
           toolbar={
             <ActionBar>
               <Button variant="primary" size="sm" onClick={bindSet(setCreateOpen, true)}>

@@ -352,6 +352,8 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             variant="ghost"
             size="sm"
             loading={busy}
+            disabled={!installed}
+            title={!installed ? t('db.installFirst', { engine: title }) : undefined}
             onClick={() => {
               void api
                 .requestRaw('/api/v1/db/temp-users/expire', {
@@ -404,7 +406,13 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             columns={2}
             items={[
               { label: t('common.status'), value: <Badge tone={st.tone}>{st.text}</Badge> },
-              { label: t('common.version'), value: svc?.version ?? '—' },
+              {
+                label: t('common.version'),
+                value:
+                  !installed && svc?.blockedByExclusive
+                    ? '—'
+                    : (svc?.version ?? '—'),
+              },
               {
                 label: t('db.systemChange'),
                 value: svc?.executeEnabled ? t('db.opened') : t('db.notOpened') },

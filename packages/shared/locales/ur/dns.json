@@ -212,5 +212,7 @@
   "aboutHealthTitle": "خدمت صحت",
   "aboutHealthBody": "پاور ڈی این ایس کی تحقیقات کے لیے ٹولز کا استعمال کریں، بائنڈ کو ٹھیک کریں، اور پورٹ 53 کھولیں۔",
   "aboutStackTitle": "سافٹ ویئر",
-  "aboutStackBody": "سافٹ ویئر کے تحت PowerDNS پیکیج کو چیک/اپ ڈیٹ کریں۔"
+  "aboutStackBody": "سافٹ ویئر کے تحت PowerDNS پیکیج کو چیک/اپ ڈیٹ کریں۔",
+  "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
+  "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
 }

@@ -10,25 +10,47 @@ export type UsePageTabOptions = {
   syncUrl?: boolean;
   /** Query key (default `tab`) */
   param?: string;
+  /** Map legacy / bookmarked query values onto a real tab id */
+  aliases?: Record<string, string>;
 };
+
+const DEFAULT_TAB_ALIASES: Record<string, string> = {
+  apikeys: 'keys',
+  perms: 'permissions',
+  help: 'about',
+};
+
+function resolveTabId(
+  raw: string | null,
+  allowed: Set<string>,
+  aliases: Record<string, string>,
+): string | null {
+  if (!raw) return null;
+  if (allowed.has(raw)) return raw;
+  const mapped = aliases[raw];
+  if (mapped && allowed.has(mapped)) return mapped;
+  return null;
+}
 
 export function usePageTab(
   tabIds: readonly string[],
   defaultId: string,
   options: UsePageTabOptions = {},
 ): [string, (id: string) => void] {
-  const { syncUrl = true, param = 'tab' } = options;
+  const { syncUrl = true, param = 'tab', aliases } = options;
   const [searchParams, setSearchParams] = useSearchParams();
   const [local, setLocal] = useState(defaultId);
 
   const allowed = useMemo(() => new Set(tabIds), [tabIds]);
+  const aliasMap = useMemo(
+    () => ({ ...DEFAULT_TAB_ALIASES, ...aliases }),
+    [aliases],
+  );
   const fallback = allowed.has(defaultId) ? defaultId : (tabIds[0] ?? defaultId);
 
-  const fromUrl = searchParams.get(param);
+  const fromUrl = resolveTabId(searchParams.get(param), allowed, aliasMap);
   const active = syncUrl
-    ? fromUrl && allowed.has(fromUrl)
-      ? fromUrl
-      : fallback
+    ? fromUrl ?? fallback
     : allowed.has(local)
       ? local
       : fallback;

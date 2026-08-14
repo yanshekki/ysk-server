@@ -451,7 +451,10 @@
     "projectsCount": "वाईएसके परियोजनाएं",
     "noProjects": "कोई प्रोजेक्ट नहीं",
     "noProjectsDesc": "पैनल में कोई नोड/बन प्रोजेक्ट नहीं है, या ओएस उपयोगकर्ता का प्रावधान नहीं है।",
-    "pm2OnlyDesc": "पैनल उपयोगकर्ता के अंतर्गत केवल ऐप्स PM2 के साथ प्रारंभ हुए। systemd परिनियोजन ऊपर दिखाई देते हैं।"
+    "pm2OnlyDesc": "पैनल उपयोगकर्ता के अंतर्गत केवल ऐप्स PM2 के साथ प्रारंभ हुए। systemd परिनियोजन ऊपर दिखाई देते हैं।",
+    "startupTitle": "Start on boot",
+    "startupDesc": "Register PM2 so processes come back after reboot.",
+    "systemdActionsHint": "systemd actions need root and YSK_EXECUTE."
   },
   "recordedInstalled": "रिकॉर्ड किया गया {{v}}",
   "remoteSourceSuffix": "({{source}})",

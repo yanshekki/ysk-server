@@ -451,7 +451,10 @@
     "projectsCount": "مشاريع YSK",
     "noProjects": "لا مشاريع",
     "noProjectsDesc": "لا توجد مشاريع عقدة/كعكة في اللوحة، أو لم يتم توفير مستخدم نظام التشغيل.",
-    "pm2OnlyDesc": "بدأت التطبيقات فقط مع PM2 ضمن مستخدم اللوحة. تظهر عمليات نشر systemd أعلاه."
+    "pm2OnlyDesc": "بدأت التطبيقات فقط مع PM2 ضمن مستخدم اللوحة. تظهر عمليات نشر systemd أعلاه.",
+    "startupTitle": "Start on boot",
+    "startupDesc": "Register PM2 so processes come back after reboot.",
+    "systemdActionsHint": "systemd actions need root and YSK_EXECUTE."
   },
   "recordedInstalled": "تم التسجيل {{v}}",
   "remoteSourceSuffix": "({{source}})",

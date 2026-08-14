@@ -391,5 +391,6 @@
   "sessionRevoked": "تم تسجيل الخروج من الجلسة",
   "mySecurityHint": "",
   "policyTotpHint": "سياسة الموقع: يجب على كل مسؤول تمكين المصادقة الثنائية الخاصة به (QR الفردي)",
-  "requireUser2fa": "إلزام كل مستخدمي اللوحة بـ 2FA"
+  "requireUser2fa": "إلزام كل مستخدمي اللوحة بـ 2FA",
+  "generateFail2ban": "Generate fail2ban snippets"
 }

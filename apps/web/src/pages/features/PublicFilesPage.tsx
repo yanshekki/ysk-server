@@ -31,7 +31,9 @@ type FilesStatus = Awaited<ReturnType<typeof systemApi.publicFilesStatus>>;
 export function PublicFilesPage() {
   const { t } = useTranslation();
   const ctx = getServerContext();
-  const [serverName, setServerName] = useState(`files.${ctx.domain}`);
+  const [serverName, setServerName] = useState(
+    ctx.domain ? `files.${ctx.domain}` : '',
+  );
   const [quotaMb, setQuotaMb] = useState('1024');
   const { busy, error, result, msg, run, setMsg } = useFeatureAction();
   const [status, setStatus] = useState<FilesStatus | null>(null);

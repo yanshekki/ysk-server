@@ -101,5 +101,6 @@
   "syncNow": "مطابقت پذیری",
   "disableConfirmTitle": "UFW غیر فعال کریں؟",
   "disableConfirmDesc": "ہوسٹ فائر وال ٹریفک فلٹر کرنا بند کر دے گی۔ عوامی نیٹ ورک پر SSH اور پینل بے نقاب ہو سکتے ہیں۔",
-  "disableConfirmConsequence": "موجودہ اجازت/انکار قواعد محفوظ رہیں گے، لیکن UFW دوبارہ فعال ہونے تک نافذ نہیں ہوں گے۔"
+  "disableConfirmConsequence": "موجودہ اجازت/انکار قواعد محفوظ رہیں گے، لیکن UFW دوبارہ فعال ہونے تک نافذ نہیں ہوں گے۔",
+  "toolHintFail2ban": "fail2ban = temporary log-based bans"
 }

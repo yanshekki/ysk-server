@@ -212,5 +212,7 @@
   "aboutHealthTitle": "सेवा स्वास्थ्य",
   "aboutHealthBody": "PowerDNS की जांच करने, बाइंड ठीक करने और पोर्ट 53 खोलने के लिए टूल्स का उपयोग करें।",
   "aboutStackTitle": "सॉफ़्टवेयर",
-  "aboutStackBody": "सॉफ़्टवेयर के अंतर्गत PowerDNS पैकेज की जाँच/अद्यतन करें।"
+  "aboutStackBody": "सॉफ़्टवेयर के अंतर्गत PowerDNS पैकेज की जाँच/अद्यतन करें।",
+  "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
+  "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
 }

@@ -75,6 +75,9 @@ describe('globalSearch', () => {
       const projects = globalSearch(db, 'projects');
       expect(projects[0]?.kind).toBe('page');
       expect(projects[0]?.href).toBe('/projects');
+
+      const backupsZh = globalSearch(db, '備份');
+      expect(backupsZh.some((h) => h.kind === 'page' && h.href === '/backups')).toBe(true);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

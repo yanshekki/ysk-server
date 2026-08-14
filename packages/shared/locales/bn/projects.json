@@ -559,5 +559,6 @@
   "manageInNginx": "Nginx এ পরিচালনা করুন",
   "advFtpHomeApp": "সাইট app ডিরেক্টরি",
   "advFtpHomeRoot": "প্রজেক্ট হোম (পূর্ণ)",
-  "advFtpManage": "FTP পৃষ্ঠা খুলুন"
+  "advFtpManage": "FTP পৃষ্ঠা খুলুন",
+  "listDesc": "Manage sites on this host."
 }

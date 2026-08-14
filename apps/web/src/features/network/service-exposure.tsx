@@ -43,13 +43,13 @@ export type ExposureStatus = {
 function emptyStatus(serviceId: string): ExposureStatus {
   return {
     serviceId,
-    mode: 'public',
+    mode: 'private',
     ports: [],
     allowFrom: [],
     allowCountries: [],
     decided: false,
     inSync: true,
-    defaultMode: 'public',
+    defaultMode: 'private',
     liveCount: 0,
   };
 }
@@ -65,13 +65,13 @@ export async function fetchExposureStatus(serviceId: string): Promise<ExposureSt
   };
   return {
     serviceId,
-    mode: d?.mode ?? 'public',
+    defaultMode: r.defaultMode ?? 'private',
+    mode: d?.mode ?? r.defaultMode ?? 'private',
     ports: (d?.ports ?? []) as ServicePortBinding[],
     allowFrom: d?.allowFrom ?? [],
     allowCountries: d?.allowCountries ?? [],
     decided: Boolean(d?.decided),
     inSync: Boolean(r.inSync),
-    defaultMode: r.defaultMode ?? 'public',
     liveCount: Array.isArray(r.liveRules) ? r.liveRules.length : 0,
     firewallInstalled: r.firewall?.installed,
     firewallActive: r.firewall?.active,
@@ -143,7 +143,7 @@ export function ServiceAccessStrip({
   }, [refresh]);
 
   const ports = portsOverride?.length ? portsOverride : status?.ports ?? [];
-  const mode = status?.mode ?? 'public';
+  const mode = status?.mode ?? status?.defaultMode ?? 'private';
   const inSync = status?.inSync ?? true;
   const fwOff =
     status?.firewallInstalled === false ||
@@ -199,7 +199,7 @@ export function ServiceAccessStrip({
           >
             {t('serviceExposure.manage')}
           </Button>
-          <Link className="btn btn--secondary btn--sm" to="/firewall?tab=services">
+          <Link className="btn btn--secondary btn--sm" to="/protection/firewall?tab=services">
             {t('serviceExposure.firewallLink')}
           </Link>
         </div>

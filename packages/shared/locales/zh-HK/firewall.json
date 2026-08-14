@@ -29,7 +29,8 @@
   "notInstalled": "UFW 尚未安裝",
   "toolHintPrefix": "底層工具：",
   "toolHintBody": "UFW = 埠／永久規則 · 攻擊應變與自動 封鎖 請用",
-  "toolHintfail2ban": "fail2ban = 日誌臨時 封鎖",
+  "toolHintfail2ban": "fail2ban = 日誌臨時封鎖",
+  "toolHintFail2ban": "fail2ban = 日誌臨時封鎖",
   "executeOffHint": "系統變更未開 — 可看狀態，改規則需 管理員權限與系統變更權限已開啟",
   "tabs": {
     "rules": "規則表",

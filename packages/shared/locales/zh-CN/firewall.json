@@ -101,5 +101,6 @@
   "syncNow": "立即同步",
   "disableConfirmTitle": "停用 UFW？",
   "disableConfirmDesc": "主机防火墙将停止过滤流量。若主机在公众网络上，SSH 与面板可能直接暴露。",
-  "disableConfirmConsequence": "现有允许／拒绝规则仍会保留，但要重新启用 UFW 才会生效。"
+  "disableConfirmConsequence": "现有允许／拒绝规则仍会保留，但要重新启用 UFW 才会生效。",
+  "toolHintFail2ban": "fail2ban = temporary log-based bans"
 }

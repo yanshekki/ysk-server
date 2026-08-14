@@ -131,5 +131,6 @@
   "groupVarLog": "/var/log",
   "prioErr": "错误+",
   "prioWarn": "警告+",
-  "prioInfo": "信息+"
+  "prioInfo": "信息+",
+  "srcFail2ban": "fail2ban"
 }

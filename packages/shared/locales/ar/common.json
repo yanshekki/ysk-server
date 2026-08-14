@@ -121,5 +121,8 @@
   "show": "يعرض",
   "done": "منتهي",
   "next": "التالي",
-  "previous": "سابق"
+  "previous": "سابق",
+  "all": "All",
+  "showPassword": "Show",
+  "hidePassword": "Hide"
 }

@@ -28,5 +28,9 @@
   "diskRoot": "डिस्क रूट",
   "filesInRoot": "प्रविष्टियां",
   "managedConf": "प्रबंधित कॉन्फ़",
-  "systemConf": "सिस्टम गोपनीय"
+  "systemConf": "सिस्टम गोपनीय",
+  "notes": {
+    "noManagedConf": "No managed Nginx conf yet — click Apply",
+    "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+  }
 }

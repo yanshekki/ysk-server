@@ -1999,7 +1999,10 @@
     "show": "দেখান",
     "done": "সম্পন্ন",
     "next": "পরবর্তী",
-    "previous": "আগের"
+    "previous": "আগের",
+    "all": "All",
+    "showPassword": "Show",
+    "hidePassword": "Hide"
   },
   "cron": {
     "presetCdTrue": "সিডি অ্যাপ + সত্য (পরীক্ষা)",
@@ -2771,7 +2774,9 @@
     "aboutHealthTitle": "সেবা স্বাস্থ্য",
     "aboutHealthBody": "পাওয়ারডিএনএস অনুসন্ধান করতে, বাঁধন নিরাময় করতে এবং পোর্ট 53 খুলতে সরঞ্জামগুলি ব্যবহার করুন।",
     "aboutStackTitle": "সফটওয়্যার",
-    "aboutStackBody": "সফটওয়্যারের অধীনে পাওয়ারডিএনএস প্যাকেজ চেক/আপডেট করুন।"
+    "aboutStackBody": "সফটওয়্যারের অধীনে পাওয়ারডিএনএস প্যাকেজ চেক/আপডেট করুন।",
+    "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
+    "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
   },
   "email": {
     "title": "ইমেইল",
@@ -3752,7 +3757,10 @@
       "typeMismatch": "এখানে আগে থেকেই “{{name}}” নামের {{destKind}} আছে। আসছে {{incomingKind}}।",
       "skipped": "এড়িয়ে যাওয়া হয়েছে",
       "cancelled": "বাতিল"
-    }
+    },
+    "emptyTrashTitle": "Empty trash?",
+    "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
+    "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone."
   },
   "firewall": {
     "profiles": {
@@ -3857,7 +3865,8 @@
     "syncNow": "সিঙ্ক",
     "disableConfirmTitle": "UFW নিষ্ক্রিয় করবেন?",
     "disableConfirmDesc": "হোস্ট ফায়ারওয়াল ট্র্যাফিক ফিল্টার করা বন্ধ করবে। পাবলিক নেটওয়ার্কে SSH ও প্যানেল উন্মুক্ত হতে পারে।",
-    "disableConfirmConsequence": "বিদ্যমান অনুমতি/প্রত্যাখ্যান নিয়ম থাকবে, কিন্তু UFW আবার চালু না হওয়া পর্যন্ত কার্যকর হবে না।"
+    "disableConfirmConsequence": "বিদ্যমান অনুমতি/প্রত্যাখ্যান নিয়ম থাকবে, কিন্তু UFW আবার চালু না হওয়া পর্যন্ত কার্যকর হবে না।",
+    "toolHintFail2ban": "fail2ban = temporary log-based bans"
   },
   "ftp": {
     "title": "FTPS অ্যাকাউন্ট",
@@ -4442,7 +4451,8 @@
     "groupVarLog": "/var/log",
     "prioErr": "ভুল +",
     "prioWarn": "সতর্ক করুন+",
-    "prioInfo": "তথ্য+"
+    "prioInfo": "তথ্য+",
+    "srcFail2ban": "fail2ban"
   },
   "metrics": {
     "alert": {
@@ -8686,7 +8696,8 @@
     "manageInNginx": "Nginx এ পরিচালনা করুন",
     "advFtpHomeApp": "সাইট app ডিরেক্টরি",
     "advFtpHomeRoot": "প্রজেক্ট হোম (পূর্ণ)",
-    "advFtpManage": "FTP পৃষ্ঠা খুলুন"
+    "advFtpManage": "FTP পৃষ্ঠা খুলুন",
+    "listDesc": "Manage sites on this host."
   },
   "protection": {
     "levels": {
@@ -9066,7 +9077,11 @@
     "diskRoot": "ডিস্ক রুট",
     "filesInRoot": "এন্ট্রি",
     "managedConf": "পরিচালিত conf",
-    "systemConf": "সিস্টেম conf.d"
+    "systemConf": "সিস্টেম conf.d",
+    "notes": {
+      "noManagedConf": "No managed Nginx conf yet — click Apply",
+      "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+    }
   },
   "rbac": {
     "permissions": "অনুমতি",
@@ -9813,7 +9828,10 @@
       "projectsCount": "YSK প্রকল্প",
       "noProjects": "কোনো প্রকল্প নেই",
       "noProjectsDesc": "প্যানেলে কোন নোড/বান প্রজেক্ট নেই, বা OS ব্যবহারকারীর ব্যবস্থা করা নেই।",
-      "pm2OnlyDesc": "শুধুমাত্র প্যানেল ব্যবহারকারীর অধীনে PM2 দিয়ে শুরু করা অ্যাপগুলি। systemd ডিপ্লয়গুলি উপরে প্রদর্শিত হয়।"
+      "pm2OnlyDesc": "শুধুমাত্র প্যানেল ব্যবহারকারীর অধীনে PM2 দিয়ে শুরু করা অ্যাপগুলি। systemd ডিপ্লয়গুলি উপরে প্রদর্শিত হয়।",
+      "startupTitle": "Start on boot",
+      "startupDesc": "Register PM2 so processes come back after reboot.",
+      "systemdActionsHint": "systemd actions need root and YSK_EXECUTE."
     },
     "recordedInstalled": "রেকর্ড করা {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -10286,7 +10304,8 @@
     "sessionRevoked": "সেশন সাইন আউট",
     "mySecurityHint": "",
     "policyTotpHint": "সাইটের নীতি: প্রতিটি প্রশাসককে অবশ্যই তাদের নিজস্ব 2FA (স্বতন্ত্র QR) সক্ষম করতে হবে",
-    "requireUser2fa": "সব প্যানেল ব্যবহারকারীর জন্য 2FA বাধ্যতামূলক"
+    "requireUser2fa": "সব প্যানেল ব্যবহারকারীর জন্য 2FA বাধ্যতামূলক",
+    "generateFail2ban": "Generate fail2ban snippets"
   },
   "serviceExposure": {
     "title": "নেটওয়ার্ক অ্যাক্সেস",

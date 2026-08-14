@@ -21,6 +21,7 @@
   "template": "Template (optional)",
   "templateNone": "— none —",
   "searchPlaceholder": "Search name, domain, or ID…",
+  "listDesc": "Manage sites on this host.",
   "filterAll": "All runtimes",
   "statTotal": "Total",
   "statRunning": "Running",

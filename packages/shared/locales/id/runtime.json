@@ -451,7 +451,10 @@
     "projectsCount": "proyek YSK",
     "noProjects": "Tidak ada proyek",
     "noProjectsDesc": "Tidak ada proyek node/bun di panel, atau pengguna OS tidak tersedia.",
-    "pm2OnlyDesc": "Hanya aplikasi yang dimulai dengan PM2 di bawah panel pengguna. penerapan systemd muncul di atas."
+    "pm2OnlyDesc": "Hanya aplikasi yang dimulai dengan PM2 di bawah panel pengguna. penerapan systemd muncul di atas.",
+    "startupTitle": "Start on boot",
+    "startupDesc": "Register PM2 so processes come back after reboot.",
+    "systemdActionsHint": "systemd actions need root and YSK_EXECUTE."
   },
   "recordedInstalled": "Direkam {{v}}",
   "remoteSourceSuffix": "({{source}})",

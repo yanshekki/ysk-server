@@ -451,7 +451,10 @@
     "projectsCount": "YSK 프로젝트",
     "noProjects": "프로젝트 없음",
     "noProjectsDesc": "패널에 노드/bun 프로젝트가 없거나 OS 사용자가 프로비저닝되지 않았습니다.",
-    "pm2OnlyDesc": "패널 사용자 아래에서 PM2로 시작된 앱만 해당됩니다. systemd 배포가 위에 나타납니다."
+    "pm2OnlyDesc": "패널 사용자 아래에서 PM2로 시작된 앱만 해당됩니다. systemd 배포가 위에 나타납니다.",
+    "startupTitle": "Start on boot",
+    "startupDesc": "Register PM2 so processes come back after reboot.",
+    "systemdActionsHint": "systemd actions need root and YSK_EXECUTE."
   },
   "recordedInstalled": "녹화됨 {{v}}",
   "remoteSourceSuffix": "({{source}})",

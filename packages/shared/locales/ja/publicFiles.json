@@ -28,5 +28,9 @@
   "diskRoot": "ディスクルート",
   "filesInRoot": "エントリー",
   "managedConf": "マネージドコンファレンス",
-  "systemConf": "システム設定"
+  "systemConf": "システム設定",
+  "notes": {
+    "noManagedConf": "No managed Nginx conf yet — click Apply",
+    "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+  }
 }

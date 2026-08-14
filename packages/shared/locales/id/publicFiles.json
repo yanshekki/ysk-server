@@ -28,5 +28,9 @@
   "diskRoot": "Akar disk",
   "filesInRoot": "Entri",
   "managedConf": "Konferensi terkelola",
-  "systemConf": "Konferensi sistem.d"
+  "systemConf": "Konferensi sistem.d",
+  "notes": {
+    "noManagedConf": "No managed Nginx conf yet — click Apply",
+    "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+  }
 }

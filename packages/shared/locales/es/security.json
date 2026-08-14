@@ -391,5 +391,6 @@
   "sessionRevoked": "Sesión cerrada",
   "mySecurityHint": "",
   "policyTotpHint": "Política del sitio: cada administrador debe habilitar su propio 2FA (QR individual)",
-  "requireUser2fa": "Exigir 2FA a todos los usuarios del panel"
+  "requireUser2fa": "Exigir 2FA a todos los usuarios del panel",
+  "generateFail2ban": "Generate fail2ban snippets"
 }

@@ -215,7 +215,7 @@ export function FirewallServicesPanel(props: {
               header: t('firewall.colMode'),
               nowrap: true,
               render: (r) => {
-                const m = r.desired?.mode ?? 'public';
+                const m = r.desired?.mode ?? r.defaultMode ?? 'private';
                 const label =
                   m === 'private'
                     ? t('serviceExposure.modePrivate')

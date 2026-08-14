@@ -56,11 +56,16 @@ export function riskLabel(risk: string | undefined, tr: (k: string) => string): 
   return risk ?? '—';
 }
 
+function isKernelPackage(name: string | undefined): boolean {
+  return /^linux(-image|-headers|-modules|-generic)?/i.test(name ?? '');
+}
+
 export function isHighRisk(row: AdviceRow): boolean {
   return (
     row.risk === 'high' ||
     row.risk === 'critical' ||
-    Boolean(row.requiresApproval)
+    Boolean(row.requiresApproval) ||
+    isKernelPackage(row.packageName)
   );
 }
 
@@ -716,14 +721,19 @@ export function UpdatesPage() {
                           variant="primary"
                           disabled={busy}
                           onClick={() => {
-                            void applyPackage({
+                            const row = {
                               packageName: e.packageName || '',
                               currentVersion: e.currentVersion || '',
                               candidateVersion: e.latestVersion,
                               risk: e.risk,
                               requiresApproval: e.requiresApproval,
                               summary: e.summary,
-                            });
+                            };
+                            if (isHighRisk(row)) {
+                              setHighRiskApply(row);
+                              return;
+                            }
+                            void applyPackage(row);
                           }}
                         >
                           {t('updates.applyPkg')}

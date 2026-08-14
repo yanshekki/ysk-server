@@ -267,7 +267,10 @@ export function ReadinessPage() {
     const a = document.createElement('a');
     a.href = url;
     a.download = `ysk-readiness-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.json`;
+    a.rel = 'noopener';
+    document.body.appendChild(a);
     a.click();
+    a.remove();
     URL.revokeObjectURL(url);
   }
 

@@ -212,5 +212,7 @@
   "aboutHealthTitle": "Kesehatan layanan",
   "aboutHealthBody": "Gunakan Alat untuk menyelidiki PowerDNS, memulihkan ikatan, dan membuka port 53.",
   "aboutStackTitle": "Perangkat lunak",
-  "aboutStackBody": "Periksa/perbarui paket PowerDNS di bawah Perangkat Lunak."
+  "aboutStackBody": "Periksa/perbarui paket PowerDNS di bawah Perangkat Lunak.",
+  "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
+  "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
 }

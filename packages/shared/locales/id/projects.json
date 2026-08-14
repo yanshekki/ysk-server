@@ -559,5 +559,6 @@
   "manageInNginx": "Kelola di Nginx",
   "advFtpHomeApp": "Direktori app situs",
   "advFtpHomeRoot": "Home proyek (penuh)",
-  "advFtpManage": "Buka halaman FTP"
+  "advFtpManage": "Buka halaman FTP",
+  "listDesc": "Manage sites on this host."
 }

@@ -121,5 +121,8 @@
   "show": "Espectáculo",
   "done": "Hecho",
   "next": "Próximo",
-  "previous": "Anterior"
+  "previous": "Anterior",
+  "all": "All",
+  "showPassword": "Show",
+  "hidePassword": "Hide"
 }

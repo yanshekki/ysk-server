@@ -28,5 +28,9 @@
   "diskRoot": "ڈسک کی جڑ",
   "filesInRoot": "اندراجات",
   "managedConf": "منظم conf",
-  "systemConf": "سسٹم conf.d"
+  "systemConf": "سسٹم conf.d",
+  "notes": {
+    "noManagedConf": "No managed Nginx conf yet — click Apply",
+    "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+  }
 }

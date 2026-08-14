@@ -451,7 +451,10 @@
     "projectsCount": "YSK 项目数",
     "noProjects": "没有项目",
     "noProjectsDesc": "面板没有 node/bun 项目，或未建 OS 用户。",
-    "pm2OnlyDesc": "仅显示 panel 用户用 PM2 启动的进程。systemd 部署见上方项目表。"
+    "pm2OnlyDesc": "仅显示 panel 用户用 PM2 启动的进程。systemd 部署见上方项目表。",
+    "startupTitle": "Start on boot",
+    "startupDesc": "Register PM2 so processes come back after reboot.",
+    "systemdActionsHint": "systemd actions need root and YSK_EXECUTE."
   },
   "recordedInstalled": "记录已装 {{v}}",
   "remoteSourceSuffix": "（{{source}}）",

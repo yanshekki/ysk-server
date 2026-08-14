@@ -212,5 +212,7 @@
   "aboutHealthTitle": "Santé des services",
   "aboutHealthBody": "Utilisez Outils pour sonder PowerDNS, réparer le bind et ouvrir le port 53.",
   "aboutStackTitle": "Logiciels",
-  "aboutStackBody": "Vérifiez/mettez à jour le paquet PowerDNS sous Logiciels."
+  "aboutStackBody": "Vérifiez/mettez à jour le paquet PowerDNS sous Logiciels.",
+  "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
+  "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
 }

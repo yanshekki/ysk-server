@@ -1999,7 +1999,10 @@
     "show": "दिखाओ",
     "done": "हो गया",
     "next": "अगला",
-    "previous": "पहले का"
+    "previous": "पहले का",
+    "all": "All",
+    "showPassword": "Show",
+    "hidePassword": "Hide"
   },
   "cron": {
     "presetCdTrue": "सीडी ऐप + सत्य (परीक्षण)",
@@ -2771,7 +2774,9 @@
     "aboutHealthTitle": "सेवा स्वास्थ्य",
     "aboutHealthBody": "PowerDNS की जांच करने, बाइंड ठीक करने और पोर्ट 53 खोलने के लिए टूल्स का उपयोग करें।",
     "aboutStackTitle": "सॉफ़्टवेयर",
-    "aboutStackBody": "सॉफ़्टवेयर के अंतर्गत PowerDNS पैकेज की जाँच/अद्यतन करें।"
+    "aboutStackBody": "सॉफ़्टवेयर के अंतर्गत PowerDNS पैकेज की जाँच/अद्यतन करें।",
+    "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
+    "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
   },
   "email": {
     "title": "ईमेल",
@@ -3752,7 +3757,10 @@
       "typeMismatch": "यहाँ पहले से “{{name}}” नाम का {{destKind}} है। आने वाली वस्तु {{incomingKind}} है।",
       "skipped": "छोड़ा गया",
       "cancelled": "रद्द"
-    }
+    },
+    "emptyTrashTitle": "Empty trash?",
+    "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
+    "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone."
   },
   "firewall": {
     "profiles": {
@@ -3857,7 +3865,8 @@
     "syncNow": "साथ-साथ करना",
     "disableConfirmTitle": "UFW बंद करें?",
     "disableConfirmDesc": "होस्ट फ़ायरवॉल ट्रैफ़िक फ़िल्टर करना बंद कर देगा। सार्वजनिक नेटवर्क पर SSH और पैनल खुले हो सकते हैं।",
-    "disableConfirmConsequence": "मौजूदा अनुमति/अस्वीकार नियम रहेंगे, पर UFW फिर चालू होने तक लागू नहीं होंगे।"
+    "disableConfirmConsequence": "मौजूदा अनुमति/अस्वीकार नियम रहेंगे, पर UFW फिर चालू होने तक लागू नहीं होंगे।",
+    "toolHintFail2ban": "fail2ban = temporary log-based bans"
   },
   "ftp": {
     "title": "एफटीपीएस खाते",
@@ -4442,7 +4451,8 @@
     "groupVarLog": "/var/log",
     "prioErr": "ग़लती+",
     "prioWarn": "चेतावनी+",
-    "prioInfo": "जानकारी+"
+    "prioInfo": "जानकारी+",
+    "srcFail2ban": "fail2ban"
   },
   "metrics": {
     "alert": {
@@ -8686,7 +8696,8 @@
     "manageInNginx": "Nginx में प्रबंधित करें",
     "advFtpHomeApp": "साइट app निर्देशिका",
     "advFtpHomeRoot": "प्रोजेक्ट होम (पूर्ण)",
-    "advFtpManage": "FTP पृष्ठ खोलें"
+    "advFtpManage": "FTP पृष्ठ खोलें",
+    "listDesc": "Manage sites on this host."
   },
   "protection": {
     "levels": {
@@ -9066,7 +9077,11 @@
     "diskRoot": "डिस्क रूट",
     "filesInRoot": "प्रविष्टियां",
     "managedConf": "प्रबंधित कॉन्फ़",
-    "systemConf": "सिस्टम गोपनीय"
+    "systemConf": "सिस्टम गोपनीय",
+    "notes": {
+      "noManagedConf": "No managed Nginx conf yet — click Apply",
+      "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+    }
   },
   "rbac": {
     "permissions": "अनुमतियां",
@@ -9813,7 +9828,10 @@
       "projectsCount": "वाईएसके परियोजनाएं",
       "noProjects": "कोई प्रोजेक्ट नहीं",
       "noProjectsDesc": "पैनल में कोई नोड/बन प्रोजेक्ट नहीं है, या ओएस उपयोगकर्ता का प्रावधान नहीं है।",
-      "pm2OnlyDesc": "पैनल उपयोगकर्ता के अंतर्गत केवल ऐप्स PM2 के साथ प्रारंभ हुए। systemd परिनियोजन ऊपर दिखाई देते हैं।"
+      "pm2OnlyDesc": "पैनल उपयोगकर्ता के अंतर्गत केवल ऐप्स PM2 के साथ प्रारंभ हुए। systemd परिनियोजन ऊपर दिखाई देते हैं।",
+      "startupTitle": "Start on boot",
+      "startupDesc": "Register PM2 so processes come back after reboot.",
+      "systemdActionsHint": "systemd actions need root and YSK_EXECUTE."
     },
     "recordedInstalled": "रिकॉर्ड किया गया {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -10286,7 +10304,8 @@
     "sessionRevoked": "सत्र साइन आउट हो गया",
     "mySecurityHint": "",
     "policyTotpHint": "साइट नीति: प्रत्येक व्यवस्थापक को अपना स्वयं का 2FA (व्यक्तिगत QR) सक्षम करना होगा",
-    "requireUser2fa": "सभी पैनल उपयोगकर्ताओं के लिए 2FA अनिवार्य"
+    "requireUser2fa": "सभी पैनल उपयोगकर्ताओं के लिए 2FA अनिवार्य",
+    "generateFail2ban": "Generate fail2ban snippets"
   },
   "serviceExposure": {
     "title": "नेटवर्क पहुंच",

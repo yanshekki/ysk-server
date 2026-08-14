@@ -131,5 +131,6 @@
   "groupVarLog": "/var/log",
   "prioErr": "ग़लती+",
   "prioWarn": "चेतावनी+",
-  "prioInfo": "जानकारी+"
+  "prioInfo": "जानकारी+",
+  "srcFail2ban": "fail2ban"
 }

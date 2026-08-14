@@ -344,5 +344,8 @@
     "typeMismatch": "Ya hay {{destKind}} llamado “{{name}}”. Lo que llega es {{incomingKind}}.",
     "skipped": "Omitido",
     "cancelled": "Cancelado"
-  }
+  },
+  "emptyTrashTitle": "Empty trash?",
+  "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
+  "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone."
 }

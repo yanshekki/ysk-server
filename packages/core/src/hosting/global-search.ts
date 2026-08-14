@@ -3,6 +3,7 @@
  * Designed for command-palette UX: ranked, kind-tagged, deep-link hrefs.
  */
 
+import { tl } from 'ysk-server-shared';
 import type { YskDatabase } from '../db/database.js';
 
 export type SearchHit = {
@@ -114,15 +115,20 @@ export function globalSearch(db: YskDatabase, q: string, limit = 40): SearchHit[
 
   // —— Pages (always available) ——
   for (const p of PANEL_PAGES) {
-    const score = matchScore(query, p.title, p.id, p.section, ...p.aliases);
+    const locTitle = tl(`nav.${p.id}`);
+    const locSection = tl(`nav.sections.${p.section}`);
+    const localized = [locTitle, locSection].filter(
+      (s) => s && !s.startsWith('nav.'),
+    );
+    const score = matchScore(query, p.title, p.id, p.section, ...p.aliases, ...localized);
     // Prefer pages slightly when score ties resources later
     pushHit(
       hits,
       {
         kind: 'page',
         id: p.id,
-        title: p.title,
-        subtitle: p.section,
+        title: localized[0] && localized[0] !== p.title ? locTitle : p.title,
+        subtitle: locSection.startsWith('nav.') ? p.section : locSection,
         href: p.href,
       },
       score > 0 ? score + 5 : 0,

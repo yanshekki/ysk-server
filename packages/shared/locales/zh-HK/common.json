@@ -1,4 +1,5 @@
 {
+  "all": "全部",
   "cancel": "取消",
   "confirm": "確認",
   "refresh": "重新整理",
@@ -21,6 +22,8 @@
   "languageNative": "繁體中文",
   "language": "語言",
   "switchLanguage": "切換語言",
+  "showPassword": "顯示",
+  "hidePassword": "隱藏",
   "searchGlobal": "搜尋頁面與資源…",
   "menu": "選單",
   "processing": "處理中…",

@@ -23,6 +23,7 @@ import {
   SoftwareVersionBar,
   PageTabs,
   FormHint,
+  PasswordInput,
 } from '../../shared/components/ui';
 import { ResourceStatusBadge } from '../../shared/components/resource/ResourceStatusBadge';
 import { useResourceCrud } from '../../features/resources/useResourceCrud';
@@ -621,9 +622,8 @@ export function FtpPage() {
               required={!editId}
               hint={editId ? t('ftp.passwordKeepHint') : t('ftp.passwordMin8')}
             >
-              <input
+              <PasswordInput
                 id="fp"
-                type="password"
                 value={password}
                 onChange={bindInput(setPassword)}
                 required={!editId}

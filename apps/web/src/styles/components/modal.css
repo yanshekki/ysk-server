@@ -2,7 +2,7 @@
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(15, 23, 42, 0.62);
   z-index: 80;
   display: flex;
   align-items: center;
@@ -266,11 +266,9 @@
 
 @keyframes modal-rise {
   from {
-    opacity: 0;
     transform: translateY(8px);
   }
   to {
-    opacity: 1;
     transform: translateY(0);
   }
 }

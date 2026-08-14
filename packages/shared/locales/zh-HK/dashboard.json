@@ -104,7 +104,7 @@
   "wizardPartial": "部分失敗",
   "notifCenterTitle": "通知中心（{{count}}）",
   "notifCenterDesc": "嚴重 {{critical}} · 警告 {{warn}} · 資訊 {{info}}",
-  "noNotifs": "暫無通知",
+  "noNotifs": "暫無通知。近期審計紀錄見「概覽」。",
   "noNotifsDesc": "系統告警與待辦會顯示於此",
   "applyAuditTitle": "套用狀態審計",
   "applyAuditDesc": "好的 {{ok}} · 警告 {{warn}} · 不好 {{bad}}",

@@ -1999,7 +1999,10 @@
     "show": "表示",
     "done": "完了",
     "next": "次へ",
-    "previous": "前へ"
+    "previous": "前へ",
+    "all": "All",
+    "showPassword": "Show",
+    "hidePassword": "Hide"
   },
   "cron": {
     "presetCdTrue": "cd アプリ + true (テスト)",
@@ -2771,7 +2774,9 @@
     "aboutHealthTitle": "サービスの健全性",
     "aboutHealthBody": "ツールを使用して PowerDNS をプローブし、バインドを修復し、ポート 53 を開きます。",
     "aboutStackTitle": "ソフトウェア",
-    "aboutStackBody": "ソフトウェアの下の PowerDNS パッケージを確認/更新します。"
+    "aboutStackBody": "ソフトウェアの下の PowerDNS パッケージを確認/更新します。",
+    "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
+    "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
   },
   "email": {
     "title": "メール",
@@ -3752,7 +3757,10 @@
       "typeMismatch": "「{{name}}」という{{destKind}}が既にあります。追加しようとしているのは{{incomingKind}}です。",
       "skipped": "スキップしました",
       "cancelled": "キャンセルしました"
-    }
+    },
+    "emptyTrashTitle": "Empty trash?",
+    "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
+    "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone."
   },
   "firewall": {
     "profiles": {
@@ -3857,7 +3865,8 @@
     "syncNow": "同期",
     "disableConfirmTitle": "UFW を無効にしますか？",
     "disableConfirmDesc": "ホストのファイアウォールが通信をフィルタしなくなります。公開ネットワーク上では SSH とパネルが露出する可能性があります。",
-    "disableConfirmConsequence": "既存の許可／拒否ルールは残りますが、UFW を再度有効にするまで適用されません。"
+    "disableConfirmConsequence": "既存の許可／拒否ルールは残りますが、UFW を再度有効にするまで適用されません。",
+    "toolHintFail2ban": "fail2ban = temporary log-based bans"
   },
   "ftp": {
     "title": "FTPSアカウント",
@@ -4442,7 +4451,8 @@
     "groupVarLog": "/var/log",
     "prioErr": "ERR",
     "prioWarn": "意する",
-    "prioInfo": "インフォ"
+    "prioInfo": "インフォ",
+    "srcFail2ban": "fail2ban"
   },
   "metrics": {
     "alert": {
@@ -8686,7 +8696,8 @@
     "manageInNginx": "Nginxで管理する",
     "advFtpHomeApp": "サイト app ディレクトリ",
     "advFtpHomeRoot": "プロジェクトホーム（全体）",
-    "advFtpManage": "FTP ページを開く"
+    "advFtpManage": "FTP ページを開く",
+    "listDesc": "Manage sites on this host."
   },
   "protection": {
     "levels": {
@@ -9066,7 +9077,11 @@
     "diskRoot": "ディスクルート",
     "filesInRoot": "エントリー",
     "managedConf": "マネージドコンファレンス",
-    "systemConf": "システム設定"
+    "systemConf": "システム設定",
+    "notes": {
+      "noManagedConf": "No managed Nginx conf yet — click Apply",
+      "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+    }
   },
   "rbac": {
     "permissions": "権限",
@@ -9813,7 +9828,10 @@
       "projectsCount": "YSKプロジェクト",
       "noProjects": "プロジェクトがありません",
       "noProjectsDesc": "パネルにノード/バン プロジェクトがないか、OS ユーザーがプロビジョニングされていません。",
-      "pm2OnlyDesc": "パネル ユーザーの下で PM2 で起動されたアプリのみ。 systemd のデプロイは上に表示されます。"
+      "pm2OnlyDesc": "パネル ユーザーの下で PM2 で起動されたアプリのみ。 systemd のデプロイは上に表示されます。",
+      "startupTitle": "Start on boot",
+      "startupDesc": "Register PM2 so processes come back after reboot.",
+      "systemdActionsHint": "systemd actions need root and YSK_EXECUTE."
     },
     "recordedInstalled": "記録しました {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -10286,7 +10304,8 @@
     "sessionRevoked": "セッションがサインアウトしました",
     "mySecurityHint": "",
     "policyTotpHint": "サイト ポリシー: 各管理者は独自の 2FA (個別の QR) を有効にする必要があります。",
-    "requireUser2fa": "すべてのパネルユーザーに 2FA を要求"
+    "requireUser2fa": "すべてのパネルユーザーに 2FA を要求",
+    "generateFail2ban": "Generate fail2ban snippets"
   },
   "serviceExposure": {
     "title": "ネットワークアクセス",

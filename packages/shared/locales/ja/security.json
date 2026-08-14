@@ -391,5 +391,6 @@
   "sessionRevoked": "セッションがサインアウトしました",
   "mySecurityHint": "",
   "policyTotpHint": "サイト ポリシー: 各管理者は独自の 2FA (個別の QR) を有効にする必要があります。",
-  "requireUser2fa": "すべてのパネルユーザーに 2FA を要求"
+  "requireUser2fa": "すべてのパネルユーザーに 2FA を要求",
+  "generateFail2ban": "Generate fail2ban snippets"
 }

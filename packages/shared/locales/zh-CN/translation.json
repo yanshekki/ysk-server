@@ -1999,7 +1999,10 @@
     "show": "顯示",
     "done": "完成",
     "next": "下一步",
-    "previous": "上一步"
+    "previous": "上一步",
+    "all": "All",
+    "showPassword": "Show",
+    "hidePassword": "Hide"
   },
   "cron": {
     "presetCdTrue": "cd app + true（测试）",
@@ -2771,7 +2774,9 @@
     "aboutHealthTitle": "服务健康",
     "aboutHealthBody": "在「工具」探测 PowerDNS、修复绑定、开放 53 端口。",
     "aboutStackTitle": "软件版本",
-    "aboutStackBody": "在「软件」检查／更新 PowerDNS 套件。"
+    "aboutStackBody": "在「软件」检查／更新 PowerDNS 套件。",
+    "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
+    "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
   },
   "email": {
     "title": "邮件",
@@ -3752,7 +3757,10 @@
       "typeMismatch": "此处已有名为“{{name}}”的{{destKind}}，即将加入的是{{incomingKind}}。",
       "skipped": "已跳过",
       "cancelled": "已取消"
-    }
+    },
+    "emptyTrashTitle": "Empty trash?",
+    "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
+    "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone."
   },
   "firewall": {
     "profiles": {
@@ -3857,7 +3865,8 @@
     "syncNow": "立即同步",
     "disableConfirmTitle": "停用 UFW？",
     "disableConfirmDesc": "主机防火墙将停止过滤流量。若主机在公众网络上，SSH 与面板可能直接暴露。",
-    "disableConfirmConsequence": "现有允许／拒绝规则仍会保留，但要重新启用 UFW 才会生效。"
+    "disableConfirmConsequence": "现有允许／拒绝规则仍会保留，但要重新启用 UFW 才会生效。",
+    "toolHintFail2ban": "fail2ban = temporary log-based bans"
   },
   "ftp": {
     "title": "FTPS 账户",
@@ -4442,7 +4451,8 @@
     "groupVarLog": "/var/log",
     "prioErr": "错误+",
     "prioWarn": "警告+",
-    "prioInfo": "信息+"
+    "prioInfo": "信息+",
+    "srcFail2ban": "fail2ban"
   },
   "metrics": {
     "alert": {
@@ -8686,7 +8696,8 @@
     "manageInNginx": "在 Nginx 管理",
     "advFtpHomeApp": "站点 app 目录",
     "advFtpHomeRoot": "项目家目录（全部）",
-    "advFtpManage": "打开 FTP 页"
+    "advFtpManage": "打开 FTP 页",
+    "listDesc": "Manage sites on this host."
   },
   "protection": {
     "levels": {
@@ -9066,7 +9077,11 @@
     "diskRoot": "磁盘根目录",
     "filesInRoot": "条目数",
     "managedConf": "管理 conf",
-    "systemConf": "系统 conf.d"
+    "systemConf": "系统 conf.d",
+    "notes": {
+      "noManagedConf": "No managed Nginx conf yet — click Apply",
+      "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+    }
   },
   "rbac": {
     "permissions": "权限",
@@ -9813,7 +9828,10 @@
       "projectsCount": "YSK 项目数",
       "noProjects": "没有项目",
       "noProjectsDesc": "面板没有 node/bun 项目，或未建 OS 用户。",
-      "pm2OnlyDesc": "仅显示 panel 用户用 PM2 启动的进程。systemd 部署见上方项目表。"
+      "pm2OnlyDesc": "仅显示 panel 用户用 PM2 启动的进程。systemd 部署见上方项目表。",
+      "startupTitle": "Start on boot",
+      "startupDesc": "Register PM2 so processes come back after reboot.",
+      "systemdActionsHint": "systemd actions need root and YSK_EXECUTE."
     },
     "recordedInstalled": "记录已装 {{v}}",
     "remoteSourceSuffix": "（{{source}}）",
@@ -10286,7 +10304,8 @@
     "sessionRevoked": "已登出该会话",
     "mySecurityHint": "",
     "policyTotpHint": "全站政策：要求 admin 角色各自启用 2FA（每人自己扫码），不是共用同一组验证码。",
-    "requireUser2fa": "要求所有面板用户启用 2FA"
+    "requireUser2fa": "要求所有面板用户启用 2FA",
+    "generateFail2ban": "Generate fail2ban snippets"
   },
   "serviceExposure": {
     "title": "网络访问",

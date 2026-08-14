@@ -1,4 +1,5 @@
 {
+  "all": "All",
   "cancel": "Cancel",
   "confirm": "Confirm",
   "refresh": "Refresh",
@@ -21,6 +22,8 @@
   "languageNative": "English",
   "language": "Language",
   "switchLanguage": "Switch language",
+  "showPassword": "Show",
+  "hidePassword": "Hide",
   "searchGlobal": "Search pages & resources…",
   "menu": "Menu",
   "processing": "Working…",

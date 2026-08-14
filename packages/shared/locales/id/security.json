@@ -391,5 +391,6 @@
   "sessionRevoked": "Sesi keluar",
   "mySecurityHint": "",
   "policyTotpHint": "Kebijakan situs: setiap admin harus mengaktifkan 2FA (QR individual) mereka sendiri",
-  "requireUser2fa": "Wajibkan 2FA untuk semua pengguna panel"
+  "requireUser2fa": "Wajibkan 2FA untuk semua pengguna panel",
+  "generateFail2ban": "Generate fail2ban snippets"
 }

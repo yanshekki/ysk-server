@@ -212,5 +212,7 @@
   "aboutHealthTitle": "صحة الخدمة",
   "aboutHealthBody": "استخدم الأدوات لفحص PowerDNS ومعالجة الارتباط وفتح المنفذ 53.",
   "aboutStackTitle": "برمجة",
-  "aboutStackBody": "قم بفحص/تحديث حزمة PowerDNS ضمن البرنامج."
+  "aboutStackBody": "قم بفحص/تحديث حزمة PowerDNS ضمن البرنامج.",
+  "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
+  "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
 }

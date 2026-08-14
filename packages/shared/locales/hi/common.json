@@ -121,5 +121,8 @@
   "show": "दिखाओ",
   "done": "हो गया",
   "next": "अगला",
-  "previous": "पहले का"
+  "previous": "पहले का",
+  "all": "All",
+  "showPassword": "Show",
+  "hidePassword": "Hide"
 }

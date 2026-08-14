@@ -30,6 +30,7 @@
   "toolHintPrefix": "Underlying tools:",
   "toolHintBody": "UFW = ports / permanent rules · for attack response and auto-ban use",
   "toolHintfail2ban": "fail2ban = temporary log-based bans",
+  "toolHintFail2ban": "fail2ban = temporary log-based bans",
   "executeOffHint": "System changes off — status is readable;",
   "tabs": {
     "rules": "Rules",

@@ -226,6 +226,11 @@ export function PhpRuntimePage() {
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
   const stream = useOpsStreamOptional();
 
+  const hostPhp = useMemo(() => {
+    const p = (probe?.probe as Record<string, unknown> | undefined) ?? undefined;
+    return p?.hostPhp != null ? String(p.hostPhp) : '';
+  }, [probe]);
+
   // Dynamic PHP minors from upstream (no hardcoded 8.1/8.2/8.3 chips)
   useEffect(() => {
     let cancelled = false;
@@ -236,9 +241,8 @@ export function PhpRuntimePage() {
         const cands = (h.candidates ?? []).map((c) => c.version).filter(Boolean);
         setPhpCandidates(cands);
         // Prefer discovered latest; do not lock on initial '8.2' via `prev ||`
-        if (!searchParams.get('version')) {
-          if (h.latestVersion) setVersion(h.latestVersion);
-          else if (cands[0]) setVersion(cands[0]);
+        if (!searchParams.get('version') && !hostPhp) {
+          if (cands[0]) setVersion(cands[0]);
         }
       })
       .catch(() => {
@@ -247,7 +251,13 @@ export function PhpRuntimePage() {
     return () => {
       cancelled = true;
     };
-  }, [searchParams]);
+  }, [searchParams, hostPhp]);
+
+  useEffect(() => {
+    if (searchParams.get('version')) return;
+    const hostMinor = hostPhp.match(/(\d+\.\d+)/)?.[1];
+    if (hostMinor) setVersion(hostMinor);
+  }, [hostPhp, searchParams]);
 
   // Software hub "更新" → /runtimes/php?version=8.3
   useEffect(() => {
@@ -255,11 +265,6 @@ export function PhpRuntimePage() {
     if (!raw) return;
     setVersion(pickSupportedVersion(raw, phpCandidates, raw));
   }, [searchParams, phpCandidates]);
-
-  const hostPhp = useMemo(() => {
-    const p = (probe?.probe as Record<string, unknown> | undefined) ?? undefined;
-    return p?.hostPhp != null ? String(p.hostPhp) : '';
-  }, [probe]);
 
   const phpInstallState = useMemo(() => {
     const p = (probe?.probe as Record<string, unknown> | undefined) ?? undefined;
@@ -450,7 +455,12 @@ export function PhpRuntimePage() {
     <FeaturePageLayout
       title={t('nav.php', { defaultValue: 'PHP' })}
       status={{
-        pill: { label: `PHP ${version}`, tone: 'ok' },
+        pill: {
+          label: hostPhp
+            ? `PHP ${hostPhp.replace(/^PHP\s+/i, '').split(/\s+/)[0]}`
+            : `PHP ${version}`,
+          tone: hostPhp || phpInstallState.installedVersions.length ? 'ok' : 'warn',
+        },
         items: [
           { label: 'PHP', value: version },
           { label: 'Pool', value: poolName || '—' },

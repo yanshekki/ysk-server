@@ -780,6 +780,8 @@ export function CronPage() {
               variant="primary"
               size="md"
               loading={busy}
+              disabled={!projectId || !command.trim()}
+              title={!projectId ? t('cron.needProjectFirst', { defaultValue: t('cron.pickProject') }) : undefined}
             >
               {t('cron.createManageOnlyParen')}
             </Button>
@@ -815,6 +817,7 @@ export function CronPage() {
               <select
                 id="cron-pid"
                 value={projectId}
+                required
                 onChange={(e) => onProjectChange(e.target.value)}
               >
                 <option value="">{t('cron.pickProject')}</option>

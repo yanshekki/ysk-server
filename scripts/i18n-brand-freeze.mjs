@@ -56,6 +56,12 @@ const REQUIRED_TOKENS = [
   'Certbot',
   'OPcache',
   'Chromium',
+  'WireGuard',
+  'OpenVPN',
+  'Shadowsocks',
+  'InnoDB',
+  "Let's Encrypt",
+  'journalctl',
 ];
 
 const FORBIDDEN = [

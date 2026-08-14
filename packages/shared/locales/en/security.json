@@ -105,6 +105,7 @@
   "export2faBackup": "Export 2FA encrypted backup",
   "fail2banSnippetMsg": "fail2ban snippets: {{written}} — {{notes}}",
   "generatefail2ban": "Generate fail2ban snippets",
+  "generateFail2ban": "Generate fail2ban snippets",
   "adminPolicyTitle": "Admin 2FA policy",
   "adminPolicyDesc": "",
   "requireAdmin2fa": "Require admin 2FA",

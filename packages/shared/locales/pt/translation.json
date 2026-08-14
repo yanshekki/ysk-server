@@ -1999,7 +1999,10 @@
     "show": "Mostrar",
     "done": "Feito",
     "next": "Próximo",
-    "previous": "Anterior"
+    "previous": "Anterior",
+    "all": "All",
+    "showPassword": "Show",
+    "hidePassword": "Hide"
   },
   "cron": {
     "presetCdTrue": "aplicativo cd + verdadeiro (teste)",
@@ -2771,7 +2774,9 @@
     "aboutHealthTitle": "Integridade do serviço",
     "aboutHealthBody": "Use Ferramentas para testar o PowerDNS, reparar o bind e abrir a porta 53.",
     "aboutStackTitle": "Programas",
-    "aboutStackBody": "Verifique/atualize o pacote PowerDNS em Software."
+    "aboutStackBody": "Verifique/atualize o pacote PowerDNS em Software.",
+    "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
+    "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
   },
   "email": {
     "title": "E-mail",
@@ -3752,7 +3757,10 @@
       "typeMismatch": "Já existe {{destKind}} chamado “{{name}}”. O que chega é {{incomingKind}}.",
       "skipped": "Ignorado",
       "cancelled": "Cancelado"
-    }
+    },
+    "emptyTrashTitle": "Empty trash?",
+    "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
+    "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone."
   },
   "firewall": {
     "profiles": {
@@ -3857,7 +3865,8 @@
     "syncNow": "Sincronizar",
     "disableConfirmTitle": "Desativar o UFW?",
     "disableConfirmDesc": "A firewall do anfitrião deixará de filtrar o tráfego. Numa rede pública, o SSH e o painel podem ficar expostos.",
-    "disableConfirmConsequence": "As regras de permitir/negar mantêm-se, mas só são aplicadas quando o UFW for reativado."
+    "disableConfirmConsequence": "As regras de permitir/negar mantêm-se, mas só são aplicadas quando o UFW for reativado.",
+    "toolHintFail2ban": "fail2ban = temporary log-based bans"
   },
   "ftp": {
     "title": "Contas FTPS",
@@ -4442,7 +4451,8 @@
     "groupVarLog": "/var/log",
     "prioErr": "errar+",
     "prioWarn": "avisar+",
-    "prioInfo": "informações+"
+    "prioInfo": "informações+",
+    "srcFail2ban": "fail2ban"
   },
   "metrics": {
     "alert": {
@@ -8686,7 +8696,8 @@
     "manageInNginx": "Gerenciar no Nginx",
     "advFtpHomeApp": "Diretório app do site",
     "advFtpHomeRoot": "Home do projeto (completo)",
-    "advFtpManage": "Abrir página FTP"
+    "advFtpManage": "Abrir página FTP",
+    "listDesc": "Manage sites on this host."
   },
   "protection": {
     "levels": {
@@ -9066,7 +9077,11 @@
     "diskRoot": "Raiz do disco",
     "filesInRoot": "Entradas",
     "managedConf": "Configuração gerenciada",
-    "systemConf": "Configuração do sistema.d"
+    "systemConf": "Configuração do sistema.d",
+    "notes": {
+      "noManagedConf": "No managed Nginx conf yet — click Apply",
+      "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+    }
   },
   "rbac": {
     "permissions": "Permissões",
@@ -9813,7 +9828,10 @@
       "projectsCount": "Projetos YSK",
       "noProjects": "Nenhum projeto",
       "noProjectsDesc": "Nenhum projeto de nó/bun no painel ou usuário do sistema operacional não provisionado.",
-      "pm2OnlyDesc": "Somente aplicativos iniciados com PM2 no usuário do painel. As implantações do systemd aparecem acima."
+      "pm2OnlyDesc": "Somente aplicativos iniciados com PM2 no usuário do painel. As implantações do systemd aparecem acima.",
+      "startupTitle": "Start on boot",
+      "startupDesc": "Register PM2 so processes come back after reboot.",
+      "systemdActionsHint": "systemd actions need root and YSK_EXECUTE."
     },
     "recordedInstalled": "Gravado {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -10286,7 +10304,8 @@
     "sessionRevoked": "Sessão desconectada",
     "mySecurityHint": "",
     "policyTotpHint": "Política do site: cada administrador deve habilitar seu próprio 2FA (QR individual)",
-    "requireUser2fa": "Exigir 2FA para todos os utilizadores do painel"
+    "requireUser2fa": "Exigir 2FA para todos os utilizadores do painel",
+    "generateFail2ban": "Generate fail2ban snippets"
   },
   "serviceExposure": {
     "title": "Acesso à rede",

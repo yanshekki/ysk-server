@@ -344,5 +344,8 @@
     "typeMismatch": "এখানে আগে থেকেই “{{name}}” নামের {{destKind}} আছে। আসছে {{incomingKind}}।",
     "skipped": "এড়িয়ে যাওয়া হয়েছে",
     "cancelled": "বাতিল"
-  }
+  },
+  "emptyTrashTitle": "Empty trash?",
+  "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
+  "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone."
 }

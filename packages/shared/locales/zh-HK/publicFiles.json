@@ -11,7 +11,11 @@
   "reloadTry": "套用時嘗試",
   "siteSettings": "站點設定",
   "siteSettingsDesc": "寫入管理 設定檔；套用時可嘗試 重新載入 Nginx（套用後才可連）",
-  "serverNameHint": "Nginx server_name，例如 檔案.example.com",
+  "serverNameHint": "Nginx server_name，例如 files.example.com",
+  "notes": {
+    "noManagedConf": "尚未有受管 Nginx 設定 — 請按套用",
+    "notSynced": "管理檔已寫入，但未進入 /etc/nginx/conf.d — 需 root 與 YSK_EXECUTE 再套用並重載"
+  },
   "quotaMiB": "配額（MiB）",
   "quotaHint": "可選：限制公開目錄總量",
   "unlimited": "不限",

@@ -559,5 +559,6 @@
   "manageInNginx": "الإدارة في Nginx",
   "advFtpHomeApp": "دليل app للموقع",
   "advFtpHomeRoot": "منزل المشروع (كامل)",
-  "advFtpManage": "فتح صفحة FTP"
+  "advFtpManage": "فتح صفحة FTP",
+  "listDesc": "Manage sites on this host."
 }

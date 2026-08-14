@@ -121,5 +121,8 @@
   "show": "보여주다",
   "done": "완료",
   "next": "다음",
-  "previous": "이전"
+  "previous": "이전",
+  "all": "All",
+  "showPassword": "Show",
+  "hidePassword": "Hide"
 }

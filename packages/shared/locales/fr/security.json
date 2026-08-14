@@ -391,5 +391,6 @@
   "sessionRevoked": "Session déconnectée",
   "mySecurityHint": "",
   "policyTotpHint": "Politique du site : chaque administrateur doit activer sa propre 2FA (QR individuel)",
-  "requireUser2fa": "Exiger la 2FA pour tous les utilisateurs du panneau"
+  "requireUser2fa": "Exiger la 2FA pour tous les utilisateurs du panneau",
+  "generateFail2ban": "Generate fail2ban snippets"
 }

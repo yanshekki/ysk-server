@@ -344,5 +344,8 @@
     "typeMismatch": "“{{name}}” {{destKind}}이(가) 이미 있습니다. 가져올 항목은 {{incomingKind}}입니다.",
     "skipped": "건너뜀",
     "cancelled": "취소됨"
-  }
+  },
+  "emptyTrashTitle": "Empty trash?",
+  "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
+  "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone."
 }

@@ -28,5 +28,9 @@
   "diskRoot": "ডিস্ক রুট",
   "filesInRoot": "এন্ট্রি",
   "managedConf": "পরিচালিত conf",
-  "systemConf": "সিস্টেম conf.d"
+  "systemConf": "সিস্টেম conf.d",
+  "notes": {
+    "noManagedConf": "No managed Nginx conf yet — click Apply",
+    "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+  }
 }

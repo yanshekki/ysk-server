@@ -121,5 +121,8 @@
   "show": "দেখান",
   "done": "সম্পন্ন",
   "next": "পরবর্তী",
-  "previous": "আগের"
+  "previous": "আগের",
+  "all": "All",
+  "showPassword": "Show",
+  "hidePassword": "Hide"
 }

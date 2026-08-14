@@ -451,7 +451,10 @@
     "projectsCount": "YSK 專案數",
     "noProjects": "沒有專案",
     "noProjectsDesc": "面板未有 node/bun 專案，或未建 OS 用戶。",
-    "pm2OnlyDesc": "只顯示 panel 用戶用 PM2 啟動的程序。systemd 部署見上方專案表。"
+    "pm2OnlyDesc": "只顯示 panel 用戶用 PM2 啟動的程序。systemd 部署見上方專案表。",
+    "startupTitle": "開機自動啟動",
+    "startupDesc": "把 PM2 登記為開機啟動，主機重啟後程序會再起來。",
+    "systemdActionsHint": "systemd 操作需 root 與 YSK_EXECUTE。"
   },
   "recordedInstalled": "記錄已裝 {{v}}",
   "remoteSourceSuffix": "（{{source}}）",

@@ -391,5 +391,6 @@
   "sessionRevoked": "সেশন সাইন আউট",
   "mySecurityHint": "",
   "policyTotpHint": "সাইটের নীতি: প্রতিটি প্রশাসককে অবশ্যই তাদের নিজস্ব 2FA (স্বতন্ত্র QR) সক্ষম করতে হবে",
-  "requireUser2fa": "সব প্যানেল ব্যবহারকারীর জন্য 2FA বাধ্যতামূলক"
+  "requireUser2fa": "সব প্যানেল ব্যবহারকারীর জন্য 2FA বাধ্যতামূলক",
+  "generateFail2ban": "Generate fail2ban snippets"
 }

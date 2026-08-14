@@ -1618,7 +1618,10 @@ export function LogsPage() {
         onClose={bindCloseIfIdle(busy, bindSet(setVacuumConfirm, null))}
         title={
           vacuumConfirm === 'time'
-            ? `{t('logs.vacuumTime')} ${vacuumDays}？`
+            ? t('logs.vacuumTimeConfirm', {
+                days: vacuumDays,
+                defaultValue: `${t('logs.vacuumTime')} ${vacuumDays}?`,
+              })
             : t('logs.vacuumSizeQ')
         }
         description={t('logs.vacuumDesc')}

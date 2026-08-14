@@ -109,6 +109,8 @@
   "createZoneTitle": "建立 DNS 區域",
   "createZoneDesc": "依模板產生記錄",
   "zoneNameHint": "例如 example.com（不含結尾點）",
+  "invalidZone": "區域名稱無效。請用合法域名（例如 example.com）。",
+  "invalidIpv4": "IPv4 無效。每個欄位須為 0–255。",
   "serverIpv4": "伺服器 IPv4",
   "serverIpv4Hint": "模板 A 記錄使用的位址",
   "thisHostIpv4": "此主機公網 IPv4",

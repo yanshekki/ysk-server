@@ -54,7 +54,7 @@
   flex-wrap: nowrap;
   gap: 0;
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: visible;
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
   scrollbar-width: thin;
@@ -122,7 +122,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  transition: color var(--transition), border-color var(--transition), background var(--transition);
+  transition: color 0.12s ease, border-color 0.12s ease, background 0.12s ease;
 }
 
 .tabs__tab-label {

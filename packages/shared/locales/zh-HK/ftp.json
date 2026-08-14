@@ -95,7 +95,7 @@
   "opsResult": "操作結果",
   "saved": "已儲存",
   "accountsList": "帳戶列表",
-  "accountsListDesc": "建立後按「套用」同步到 vsftpd。服務未裝時請先用上方安裝，再到",
+  "accountsListDesc": "建立後按「套用」同步到 vsftpd。服務未裝時請先用上方安裝，再到軟件分頁完成安裝。",
   "startService": "啟動。",
   "createAccountPlus": "+ 建立帳戶",
   "noFtpAccounts": "尚未有 FTP 帳戶",

@@ -1999,7 +1999,10 @@
     "show": "Menunjukkan",
     "done": "Selesai",
     "next": "Berikutnya",
-    "previous": "Sebelumnya"
+    "previous": "Sebelumnya",
+    "all": "All",
+    "showPassword": "Show",
+    "hidePassword": "Hide"
   },
   "cron": {
     "presetCdTrue": "cd aplikasi + benar (tes)",
@@ -2771,7 +2774,9 @@
     "aboutHealthTitle": "Kesehatan layanan",
     "aboutHealthBody": "Gunakan Alat untuk menyelidiki PowerDNS, memulihkan ikatan, dan membuka port 53.",
     "aboutStackTitle": "Perangkat lunak",
-    "aboutStackBody": "Periksa/perbarui paket PowerDNS di bawah Perangkat Lunak."
+    "aboutStackBody": "Periksa/perbarui paket PowerDNS di bawah Perangkat Lunak.",
+    "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
+    "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
   },
   "email": {
     "title": "E-mail",
@@ -3752,7 +3757,10 @@
       "typeMismatch": "Sudah ada {{destKind}} bernama “{{name}}”. Yang masuk adalah {{incomingKind}}.",
       "skipped": "Dilewati",
       "cancelled": "Dibatalkan"
-    }
+    },
+    "emptyTrashTitle": "Empty trash?",
+    "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
+    "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone."
   },
   "firewall": {
     "profiles": {
@@ -3857,7 +3865,8 @@
     "syncNow": "Sinkronisasi",
     "disableConfirmTitle": "Nonaktifkan UFW?",
     "disableConfirmDesc": "Firewall host akan berhenti menyaring lalu lintas. Di jaringan publik, SSH dan panel bisa terekspos.",
-    "disableConfirmConsequence": "Aturan izinkan/tolak tetap tersimpan, tetapi tidak ditegakkan sampai UFW diaktifkan lagi."
+    "disableConfirmConsequence": "Aturan izinkan/tolak tetap tersimpan, tetapi tidak ditegakkan sampai UFW diaktifkan lagi.",
+    "toolHintFail2ban": "fail2ban = temporary log-based bans"
   },
   "ftp": {
     "title": "akun FTPS",
@@ -4442,7 +4451,8 @@
     "groupVarLog": "/var/log",
     "prioErr": "salah+",
     "prioWarn": "memperingatkan+",
-    "prioInfo": "info+"
+    "prioInfo": "info+",
+    "srcFail2ban": "fail2ban"
   },
   "metrics": {
     "alert": {
@@ -8686,7 +8696,8 @@
     "manageInNginx": "Kelola di Nginx",
     "advFtpHomeApp": "Direktori app situs",
     "advFtpHomeRoot": "Home proyek (penuh)",
-    "advFtpManage": "Buka halaman FTP"
+    "advFtpManage": "Buka halaman FTP",
+    "listDesc": "Manage sites on this host."
   },
   "protection": {
     "levels": {
@@ -9066,7 +9077,11 @@
     "diskRoot": "Akar disk",
     "filesInRoot": "Entri",
     "managedConf": "Konferensi terkelola",
-    "systemConf": "Konferensi sistem.d"
+    "systemConf": "Konferensi sistem.d",
+    "notes": {
+      "noManagedConf": "No managed Nginx conf yet — click Apply",
+      "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+    }
   },
   "rbac": {
     "permissions": "Izin",
@@ -9813,7 +9828,10 @@
       "projectsCount": "proyek YSK",
       "noProjects": "Tidak ada proyek",
       "noProjectsDesc": "Tidak ada proyek node/bun di panel, atau pengguna OS tidak tersedia.",
-      "pm2OnlyDesc": "Hanya aplikasi yang dimulai dengan PM2 di bawah panel pengguna. penerapan systemd muncul di atas."
+      "pm2OnlyDesc": "Hanya aplikasi yang dimulai dengan PM2 di bawah panel pengguna. penerapan systemd muncul di atas.",
+      "startupTitle": "Start on boot",
+      "startupDesc": "Register PM2 so processes come back after reboot.",
+      "systemdActionsHint": "systemd actions need root and YSK_EXECUTE."
     },
     "recordedInstalled": "Direkam {{v}}",
     "remoteSourceSuffix": "({{source}})",
@@ -10286,7 +10304,8 @@
     "sessionRevoked": "Sesi keluar",
     "mySecurityHint": "",
     "policyTotpHint": "Kebijakan situs: setiap admin harus mengaktifkan 2FA (QR individual) mereka sendiri",
-    "requireUser2fa": "Wajibkan 2FA untuk semua pengguna panel"
+    "requireUser2fa": "Wajibkan 2FA untuk semua pengguna panel",
+    "generateFail2ban": "Generate fail2ban snippets"
   },
   "serviceExposure": {
     "title": "Akses jaringan",

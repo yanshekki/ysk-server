@@ -28,5 +28,9 @@
   "diskRoot": "Racine disque",
   "filesInRoot": "Entrées",
   "managedConf": "Conf gérée",
-  "systemConf": "conf.d système"
+  "systemConf": "conf.d système",
+  "notes": {
+    "noManagedConf": "No managed Nginx conf yet — click Apply",
+    "notSynced": "Managed conf exists but is not under /etc/nginx/conf.d — apply again as root with YSK_EXECUTE"
+  }
 }

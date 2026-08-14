@@ -121,5 +121,8 @@
   "show": "表示",
   "done": "完了",
   "next": "次へ",
-  "previous": "前へ"
+  "previous": "前へ",
+  "all": "All",
+  "showPassword": "Show",
+  "hidePassword": "Hide"
 }

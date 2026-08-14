@@ -513,6 +513,8 @@ export function FilesPage() {
   );
   const [moveDest, setMoveDest] = useState('');
   const [delPaths, setDelPaths] = useState<string[] | null>(null);
+  const [emptyTrashOpen, setEmptyTrashOpen] = useState(false);
+  const [purgeTrashId, setPurgeTrashId] = useState<string | null>(null);
   const [preview, setPreview] = useState<{
     entry: FileEntry;
     kind: PreviewKind;
@@ -1899,11 +1901,7 @@ export function FilesPage() {
                         variant="danger"
                         size="md"
                         loading={busy}
-                        onClick={() =>
-                          void run(async () => {
-                            await filesApi.purgeTrash(root);
-                          }, t('files.emptyTrashDone'))
-                        }
+                        onClick={() => setEmptyTrashOpen(true)}
                       >
                         {t('files.emptyTrash')}
                       </Button>
@@ -1955,11 +1953,7 @@ export function FilesPage() {
                         variant="danger"
                         size="sm"
                         loading={busy}
-                        onClick={() =>
-                          void run(async () => {
-                            await filesApi.purgeTrash(root, entry.trashId);
-                          }, t('files.purged'))
-                        }
+                        onClick={() => setPurgeTrashId(entry.trashId)}
                       >
                         {t('files.purgeForever')}
                       </Button>
@@ -3321,6 +3315,44 @@ export function FilesPage() {
         title={t('files.moveToTrashTitle')}
         description={t('files.moveToTrashDesc', { count: delPaths?.length ?? 0 })}
         confirmLabel={t('files.delete')}
+        cancelLabel={t('common.cancel')}
+        danger
+        busy={busy}
+      />
+
+      <ConfirmDialog
+        open={emptyTrashOpen}
+        onClose={() => setEmptyTrashOpen(false)}
+        onConfirm={() =>
+          void run(async () => {
+            await filesApi.purgeTrash(root);
+            setEmptyTrashOpen(false);
+          }, t('files.emptyTrashDone'))
+        }
+        title={t('files.emptyTrashTitle', { defaultValue: t('files.emptyTrash') })}
+        description={t('files.emptyTrashDesc', {
+          defaultValue: t('files.trashDesc'),
+        })}
+        confirmLabel={t('files.emptyTrash')}
+        cancelLabel={t('common.cancel')}
+        danger
+        busy={busy}
+      />
+
+      <ConfirmDialog
+        open={Boolean(purgeTrashId)}
+        onClose={() => setPurgeTrashId(null)}
+        onConfirm={() =>
+          void run(async () => {
+            if (purgeTrashId) await filesApi.purgeTrash(root, purgeTrashId);
+            setPurgeTrashId(null);
+          }, t('files.purged'))
+        }
+        title={t('files.purgeForever')}
+        description={t('files.purgeForeverDesc', {
+          defaultValue: t('files.emptyTrashDesc', { defaultValue: t('files.trashDesc') }),
+        })}
+        confirmLabel={t('files.purgeForever')}
         cancelLabel={t('common.cancel')}
         danger
         busy={busy}

@@ -344,5 +344,8 @@
     "typeMismatch": "يوجد هنا {{destKind}} باسم «{{name}}». الوارد هو {{incomingKind}}.",
     "skipped": "تم التخطي",
     "cancelled": "أُلغي"
-  }
+  },
+  "emptyTrashTitle": "Empty trash?",
+  "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
+  "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone."
 }

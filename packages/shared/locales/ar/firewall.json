@@ -101,5 +101,6 @@
   "syncNow": "مزامنة",
   "disableConfirmTitle": "تعطيل UFW؟",
   "disableConfirmDesc": "سيتوقف جدار حماية المضيف عن تصفية الحركة. على شبكة عامة قد يتعرض SSH واللوحة.",
-  "disableConfirmConsequence": "تبقى قواعد السماح/الرفض مخزّنة لكنها لا تُفرض حتى إعادة تفعيل UFW."
+  "disableConfirmConsequence": "تبقى قواعد السماح/الرفض مخزّنة لكنها لا تُفرض حتى إعادة تفعيل UFW.",
+  "toolHintFail2ban": "fail2ban = temporary log-based bans"
 }

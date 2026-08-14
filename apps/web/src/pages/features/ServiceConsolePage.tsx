@@ -49,6 +49,79 @@ function exposureServiceId(engine: DbServiceEngine): string {
   return engine;
 }
 
+function defaultPortForEngine(engine: DbServiceEngine): string {
+  if (engine === 'postgres') return '5432';
+  if (engine === 'redis') return '6379';
+  return '3306';
+}
+
+function consolePresets(
+  engine: DbServiceEngine,
+  key: string,
+  type: string,
+): Array<{ value: string; label: string }> {
+  if (/port/i.test(key)) {
+    const p = defaultPortForEngine(engine);
+    return [{ value: p, label: p }];
+  }
+  if (/expire_logs_days|expire_logs/i.test(key) && /second/i.test(key) === false && !/sec/i.test(key)) {
+    return [
+      { value: '1', label: '1d' },
+      { value: '7', label: '7d' },
+      { value: '14', label: '14d' },
+      { value: '30', label: '30d' },
+    ];
+  }
+  if (/expire_logs_seconds|binlog_expire_logs_seconds/i.test(key)) {
+    return [
+      { value: '86400', label: '1d' },
+      { value: '604800', label: '7d' },
+      { value: '1209600', label: '14d' },
+      { value: '2592000', label: '30d' },
+    ];
+  }
+  if (/shared_buffers|work_mem|maintenance_work_mem|innodb_buffer/i.test(key)) {
+    return [
+      { value: '128MB', label: '128MB' },
+      { value: '256MB', label: '256MB' },
+      { value: '512MB', label: '512MB' },
+      { value: '1GB', label: '1GB' },
+    ];
+  }
+  if (/max_wal_size|min_wal_size/i.test(key)) {
+    return [
+      { value: '64MB', label: '64MB' },
+      { value: '256MB', label: '256MB' },
+      { value: '1GB', label: '1GB' },
+    ];
+  }
+  if (/log_min_duration/i.test(key)) {
+    return [
+      { value: '-1', label: 'off' },
+      { value: '0', label: 'all' },
+      { value: '200', label: '200ms' },
+      { value: '1000', label: '1s' },
+    ];
+  }
+  if (type === 'duration' || /timeout|idle|query_time/i.test(key)) {
+    return [
+      { value: '30', label: '30s' },
+      { value: '60', label: '60s' },
+      { value: '300', label: '5m' },
+      { value: '600', label: '10m' },
+    ];
+  }
+  if (/conn|client|worker|pool/i.test(key)) {
+    return [
+      { value: '50', label: '50' },
+      { value: '100', label: '100' },
+      { value: '200', label: '200' },
+      { value: '500', label: '500' },
+    ];
+  }
+  return [];
+}
+
 const DATA_LINK: Record<DbServiceEngine, { path: string; label: string }> = {
   redis: { path: '/databases/redis', label: i18n.t('db.console.dataBrowse') },
   mysql: { path: '/databases/mysql', label: i18n.t('db.console.dbManage') },
@@ -310,36 +383,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
     ) {
       const numish = val === '' || /^-?\d+(\.\d+)?[smh]?$/.test(val.trim());
       if (numish || s.type === 'duration') {
-        const presets = /port/i.test(s.key)
-          ? [
-              { value: '3306', label: '3306' },
-              { value: '5432', label: '5432' },
-              { value: '6379', label: '6379' },
-              { value: '8080', label: '8080' },
-            ]
-          : s.type === 'duration' || /timeout|idle|query_time/i.test(s.key)
-            ? [
-                { value: '30', label: '30s' },
-                { value: '60', label: '60s' },
-                { value: '300', label: '300s' },
-                { value: '600', label: '600s' },
-                { value: '28800', label: '28800s' },
-              ]
-            : /conn|client|worker|pool/i.test(s.key)
-              ? [
-                  { value: '50', label: '50' },
-                  { value: '100', label: '100' },
-                  { value: '200', label: '200' },
-                  { value: '500', label: '500' },
-                ]
-              : [
-                  { value: '0', label: '0' },
-                  { value: '1', label: '1' },
-                  { value: '16', label: '16' },
-                  { value: '64', label: '64' },
-                  { value: '128', label: '128' },
-                  { value: '256', label: '256' },
-                ];
+        const presets = consolePresets(engine, s.key, s.type);
         return (
           <PresetChips
             options={presets}

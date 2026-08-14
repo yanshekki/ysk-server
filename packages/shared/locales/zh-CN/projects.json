@@ -559,5 +559,6 @@
   "manageInNginx": "在 Nginx 管理",
   "advFtpHomeApp": "站点 app 目录",
   "advFtpHomeRoot": "项目家目录（全部）",
-  "advFtpManage": "打开 FTP 页"
+  "advFtpManage": "打开 FTP 页",
+  "listDesc": "Manage sites on this host."
 }

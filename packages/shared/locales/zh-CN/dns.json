@@ -212,5 +212,7 @@
   "aboutHealthTitle": "服务健康",
   "aboutHealthBody": "在「工具」探测 PowerDNS、修复绑定、开放 53 端口。",
   "aboutStackTitle": "软件版本",
-  "aboutStackBody": "在「软件」检查／更新 PowerDNS 套件。"
+  "aboutStackBody": "在「软件」检查／更新 PowerDNS 套件。",
+  "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
+  "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
 }
