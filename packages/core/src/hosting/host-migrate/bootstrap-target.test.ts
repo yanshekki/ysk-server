@@ -123,10 +123,11 @@ describe('script builders', () => {
     expect(s).toContain('YSK_APT_OK');
   });
 
-  it('buildNodeInstallScript checks major >= 20', () => {
+  it('buildNodeInstallScript checks major >= 22 and installs current LTS', () => {
     const s = buildNodeInstallScript();
     expect(s).toContain('YSK_NODE_OK');
-    expect(s).toContain('setup_20.x');
+    expect(s).toContain('setup_24.x');
+    expect(s).toContain('-ge 22');
   });
 
   it('buildYskCliInstallScript', () => {

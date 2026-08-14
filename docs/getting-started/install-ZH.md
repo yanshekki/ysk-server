@@ -10,12 +10,14 @@
 | 解除安裝 | [`uninstall.sh`](../../uninstall.sh) · [uninstall-ZH.md](./uninstall-ZH.md) |
 | 套餐定義 | [`deploy/stack/bundles.json`](../../deploy/stack/bundles.json)、[`components.json`](../../deploy/stack/components.json) |
 | 目標系統 | **Ubuntu 22.04 / 24.04**（Debian 盡力支援） |
-| Node.js | **20+**（唔需要 Node 22） |
+| Node.js | **22+**（若過舊或未裝，安裝程式會升到目前 LTS **24.x**） |
 | 預設方案 | **`recommended`**（不再默認全裝） |
 
 **誠實原則：** 會裝套件；**多數服務不會強制啟用**。真正套用仍要 **root** + **`YSK_EXECUTE=1`**。見 [../architecture/ops-honesty-ZH.md](../architecture/ops-honesty-ZH.md)。
 
-`install.sh` 會 stub `npx only-allow`，避免 `ip-set@3` 令 `npm install -g` 失敗（Ubuntu 24／Node 20）。**唔好**只用 `--ignore-scripts`，否則 `@simplewebauthn/server` 可以係空目錄，`ysk-server setup`／`--version` 會崩潰。安裝程式會先移走殘留嘅全域 `ysk-server` 目錄，再跑 `npm install -g`（舊目錄加 `bufferutil` 嘅 `node-gyp-build` 會失敗）。若 npm 仍然失敗，會重試，有現成 CLI 就 overlay 運行中嘅樹。全域 **pnpm** 釘死 **9.x**；若 PATH 上已有 pnpm 11 會換走（佢要 Node 22）。產品依賴維持 Node 20：WebTorrent **2.8.x**（3.x 要 Node 22）。SQLite 用 **sql.js**，唔用 `better-sqlite3` 13（同樣要 Node 22）。
+`install.sh` 會 stub `npx only-allow`，避免 `ip-set@3` 令 `npm install -g` 失敗。**唔好**只用 `--ignore-scripts`，否則 `@simplewebauthn/server` 可以係空目錄，`ysk-server setup`／`--version` 會崩潰。安裝程式會先移走殘留嘅全域 `ysk-server` 目錄，再跑 `npm install -g`（舊目錄加 `bufferutil` 嘅 `node-gyp-build` 會失敗）。若 npm 仍然失敗，會重試，有現成 CLI 就 overlay 運行中嘅樹。
+
+產品要求 **Node.js 22+**。插件用現行主版本（WebTorrent **3.x**、pnpm **11**）。若主機仲係 Node 20，安裝程式會**升級 Node** 到目前 LTS（24.x），唔會為遷就舊 Node 而釘死舊插件。Node 已達最低要求時，全域 pnpm 用最新版。
 
 可選 apt 套件用 `--no-remove`，唔會拆走已裝嘅 MariaDB 或 MySQL。SQL 客戶端跟你揀嘅引擎（`mariadb-client` 或 `mysql-client`）。Ubuntu 嘅 `mysql-client` 同 MariaDB 衝突，唔可以喺 MariaDB 主機當「可選」來裝。
 
@@ -119,7 +121,7 @@ curl -fsSL https://raw.githubusercontent.com/yanshekki/ysk-server/main/install.s
 
 | 套餐 | 內容摘要 |
 |------|----------|
-| `control-plane` | 基礎工具、git、Node 20+、`ysk-server`（**必選**） |
+| `control-plane` | 基礎工具、git、Node 22+、`ysk-server`（**必選**） |
 | `web` | nginx（對外 :80/:443）、apache2（PHP 後端 `127.0.0.1:8080`）、certbot、PHP |
 | `database` | MariaDB **或** MySQL、PostgreSQL、Redis、clients、sqlite |
 | `email` | postfix、dovecot、opendkim；可選 rspamd／ClamAV |

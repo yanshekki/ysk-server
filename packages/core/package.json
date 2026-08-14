@@ -41,7 +41,7 @@
     "parse-torrent": "^11.0.24",
     "playwright-core": "^1.62.1",
     "sql.js": "^1.14.1",
-    "webtorrent": "2.8.5"
+    "webtorrent": "^3.0.21"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

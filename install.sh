@@ -17,7 +17,7 @@ PRODUCT="YSK Server"
 CLI="ysk-server"
 # Global npm package name (bin remains `ysk-server`)
 PKG="ysk-server"
-MIN_NODE_MAJOR=20
+MIN_NODE_MAJOR=22
 NON_INTERACTIVE=0
 RUN_SETUP=1
 UPGRADE=0
@@ -518,9 +518,9 @@ install_node_globals() {
     local pnpm_major
     pnpm_major="$(pnpm -v 2>/dev/null | cut -d. -f1 || echo 0)"
     if [[ "$pnpm_major" =~ ^[0-9]+$ ]] && [[ "$pnpm_major" -ge 11 ]]; then
-      log "pnpm $(pnpm -v) needs Node 22 — replacing with pnpm 9 (LIVE-004)"
-    else
       need_pnpm=0
+    else
+      log "pnpm $(pnpm -v) is older than 11 — installing latest (Node ${MIN_NODE_MAJOR}+)"
     fi
   fi
   require_cmd pm2 && need_pm2=0
@@ -528,10 +528,9 @@ install_node_globals() {
     log "pnpm and pm2 already on PATH — skip global reinstall"
     return 0
   fi
-  log "Installing global npm tools (pnpm@9, pm2)..."
-  # pnpm@latest (11+) needs Node >=22.13 (node:sqlite). Product is Node 20+ (LIVE-004).
+  log "Installing global npm tools (pnpm@latest, pm2)..."
   if [[ "$need_pnpm" -eq 1 ]]; then
-    npm_install_global pnpm@9.15.9 2>/dev/null || npm_install_global pnpm@9 || warn "pnpm install failed"
+    npm_install_global pnpm@latest 2>/dev/null || npm_install_global pnpm || warn "pnpm install failed"
   fi
   if [[ "$need_pm2" -eq 1 ]]; then
     npm_install_global pm2@latest 2>/dev/null || npm_install_global pm2 || warn "pm2 install failed"
@@ -1048,7 +1047,7 @@ print_next() {
   cat <<EOF
 
 ============================================================
- $PRODUCT v1.0.29 — installation finished
+ $PRODUCT v1.0.30 — installation finished
 ============================================================
  Plan:     ${PLAN:-custom}
  Bundles:  $BUNDLES_CSV

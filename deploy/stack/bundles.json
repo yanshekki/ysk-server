@@ -35,7 +35,7 @@
       "title": "Control plane",
       "titleZh": "控制平面",
       "required": true,
-      "description": "Base deps, Node.js 20+, ysk-server product, git.",
+      "description": "Base deps, Node.js 22+ (current LTS if upgrading), ysk-server product, git.",
       "components": ["base-deps", "git", "node", "control-plane-product"]
     },
     "web": {

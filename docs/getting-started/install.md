@@ -10,12 +10,14 @@ Install **YSK Server** (control plane CLI `ysk-server`) and **selected host soft
 | Uninstall | [`uninstall.sh`](../../uninstall.sh) · [uninstall.md](./uninstall.md) |
 | Stack definitions | [`deploy/stack/bundles.json`](../../deploy/stack/bundles.json), [`components.json`](../../deploy/stack/components.json) |
 | Target OS | **Ubuntu 22.04 / 24.04** (Debian best-effort) |
-| Node.js | **20+** (NodeSource if missing). Do not require Node 22. |
+| Node.js | **22+** (installer upgrades to current LTS **24.x** if missing or too old) |
 | Default plan | **`recommended`** (not full stack) |
 
 **Honesty:** packages are installed; **most services are not force-enabled**. Live apply still needs **root** + **`YSK_EXECUTE=1`**. See [../architecture/ops-honesty.md](../architecture/ops-honesty.md).
 
-`install.sh` stubs `npx only-allow` so `ip-set@3` cannot abort `npm install -g` (Ubuntu 24 / Node 20). Do **not** use `--ignore-scripts` as the only install — that can leave an empty `@simplewebauthn/server` and `ysk-server setup` / `--version` crash. The installer moves a leftover global `ysk-server` tree aside before `npm install -g` (dirty tree + `bufferutil` `node-gyp-build` fails). If npm still fails, it retries, then overlays the running tree when a CLI already exists. Global **pnpm** is pinned to **9.x**; pnpm 11 on the PATH is replaced (it needs Node 22). Product dependencies stay on Node 20: WebTorrent **2.8.x** (3.x needs Node 22). SQLite uses **sql.js**, not `better-sqlite3` 13 (that also needs Node 22).
+`install.sh` stubs `npx only-allow` so `ip-set@3` cannot abort `npm install -g`. Do **not** use `--ignore-scripts` as the only install — that can leave an empty `@simplewebauthn/server` and `ysk-server setup` / `--version` crash. The installer moves a leftover global `ysk-server` tree aside before `npm install -g` (dirty tree + `bufferutil` `node-gyp-build` fails). If npm still fails, it retries, then overlays the running tree when a CLI already exists.
+
+Product requires **Node.js 22+**. Plugins stay on current majors (WebTorrent **3.x**, pnpm **11**). If the host is on Node 20, the installer **upgrades Node** to current LTS (24.x) — it does not pin older plugins. Global pnpm is latest when Node already meets the floor.
 
 Optional apt packages use `--no-remove` so they cannot evict MariaDB or MySQL. The SQL client follows the chosen engine (`mariadb-client` or `mysql-client`). Ubuntu `mysql-client` Conflicts with MariaDB and must not be installed as “optional” on a MariaDB host.
 
@@ -118,7 +120,7 @@ If the host already has **MySQL 8** data in `/var/lib/mysql`, never run `--upgra
 
 | Bundle | Contents (summary) |
 |--------|-------------------|
-| `control-plane` | base tools, git, Node 20+, `ysk-server` product (**always included**) |
+| `control-plane` | base tools, git, Node 22+, `ysk-server` product (**always included**) |
 | `web` | nginx (:80/:443 edge), apache2 (PHP backend `127.0.0.1:8080`), certbot, PHP |
 
 **MySQL ↔ MariaDB:** exclusive on one host. Panel one-click install opens a confirm dialog (`SWITCH`) that dumps user DBs, uninstalls the other engine, installs the target, then imports. Bare apt install of the other server is refused (`needs_exclusive_switch`).
@@ -197,7 +199,7 @@ YSK_EXECUTE=1 sudo ysk-server stack uninstall --yes --bundles email --data-dir /
 ```bash
 git clone https://github.com/yanshekki/ysk-server.git
 cd ysk-server
-# Node 20+ and pnpm
+# Node 22+ and pnpm
 pnpm install && pnpm build
 ./install.sh --from-source --plan minimal --non-interactive
 ```

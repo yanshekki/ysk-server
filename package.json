@@ -55,7 +55,7 @@
     "cli:parity": "node ./scripts/cli-panel-parity.mjs"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "packageManager": "pnpm@9.15.0",
   "keywords": [

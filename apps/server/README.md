@@ -6,7 +6,7 @@
 |--|--|
 | **Install** | `npm install -g ysk-server` |
 | **CLI bin** | `ysk-server` |
-| **Node** | ≥ 20 (native deps need `python3`, `make`, `g++` on the host) |
+| **Node** | ≥ 22 (native deps need `python3`, `make`, `g++` on the host) |
 | **License** | MIT |
 | **Source** | [github.com/yanshekki/ysk-server](https://github.com/yanshekki/ysk-server) |
 | **Support** | [email@ysk.hk](mailto:email@ysk.hk) |

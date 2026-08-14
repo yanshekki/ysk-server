@@ -69,7 +69,7 @@ export const STACK_BUNDLES: Record<string, StackBundleDef> = {
   'control-plane': {
     title: 'Control plane',
     required: true,
-    description: 'Base deps, Node.js 20+, ysk-server product, git.',
+    description: 'Base deps, Node.js 22+ (current LTS if upgrading), ysk-server product, git.',
     components: ['base-deps', 'git', 'node', 'control-plane-product'],
   },
   web: {

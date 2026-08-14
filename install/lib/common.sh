@@ -5,7 +5,7 @@
 PRODUCT="${PRODUCT:-YSK Server}"
 CLI="${CLI:-ysk-server}"
 PKG="${PKG:-ysk-server}"
-MIN_NODE_MAJOR="${MIN_NODE_MAJOR:-20}"
+MIN_NODE_MAJOR="${MIN_NODE_MAJOR:-22}"
 SUDO="${SUDO:-}"
 INSTALL_LOG="${INSTALL_LOG:-}"
 LOG_DIR="${LOG_DIR:-}"

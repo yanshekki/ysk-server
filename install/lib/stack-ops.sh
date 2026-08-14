@@ -111,12 +111,14 @@ install_component_node() {
       manifest_add_component "node" "nodejs" "" "" "nodesource"
       return 0
     fi
-    log "Node.js too old ($(node -v)); upgrading via NodeSource"
+    log "Node.js too old ($(node -v)); upgrading to current LTS via NodeSource (need ${MIN_NODE_MAJOR}+)"
   else
-    log "Installing Node.js 20.x via NodeSource"
+    log "Installing Node.js current LTS via NodeSource"
   fi
   resolve_sudo
-  curl -fsSL https://deb.nodesource.com/setup_20.x | $SUDO bash - || {
+  # Product uses current plugins (WebTorrent 3, pnpm 11). Do not pin old
+  # packages for Node 20 — upgrade the runtime. 24.x is LTS as of 2026-08.
+  curl -fsSL https://deb.nodesource.com/setup_24.x | $SUDO bash - || {
     record_hard_fail "NodeSource setup failed"
     return 1
   }

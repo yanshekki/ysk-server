@@ -80,7 +80,7 @@ export function buildMinimalBootstrapScript(): string {
 }
 
 /**
- * Install Node.js ≥20 on Debian/Ubuntu (NodeSource setup or distro package).
+ * Install Node.js ≥22 on Debian/Ubuntu (NodeSource current LTS).
  */
 export function buildNodeInstallScript(): string {
   return [
@@ -88,20 +88,20 @@ export function buildNodeInstallScript(): string {
     'export DEBIAN_FRONTEND=noninteractive',
     `if ${shellBinExists('node')}; then`,
     '  MAJOR=$(node -p "process.versions.node.split(\\".\\")[0]" 2>/dev/null || echo 0)',
-    '  if [ "$MAJOR" -ge 20 ]; then echo YSK_NODE_OK; exit 0; fi',
+    '  if [ "$MAJOR" -ge 22 ]; then echo YSK_NODE_OK; exit 0; fi',
     'fi',
     'apt-get update -y',
     '# try distro node first',
     'if apt-get install -y nodejs npm 2>/dev/null; then',
     '  MAJOR=$(node -p "process.versions.node.split(\\".\\")[0]" 2>/dev/null || echo 0)',
-    '  if [ "$MAJOR" -ge 20 ]; then echo YSK_NODE_OK; exit 0; fi',
+    '  if [ "$MAJOR" -ge 22 ]; then echo YSK_NODE_OK; exit 0; fi',
     'fi',
-    '# NodeSource 20.x',
+    '# NodeSource current LTS (24.x as of 2026-08)',
     'apt-get install -y ca-certificates curl gnupg',
-    'curl -fsSL https://deb.nodesource.com/setup_20.x | bash -',
+    'curl -fsSL https://deb.nodesource.com/setup_24.x | bash -',
     'apt-get install -y nodejs',
     'MAJOR=$(node -p "process.versions.node.split(\\".\\")[0]" 2>/dev/null || echo 0)',
-    'if [ "$MAJOR" -ge 20 ]; then echo YSK_NODE_OK; else echo YSK_NODE_FAIL major=$MAJOR; exit 1; fi',
+    'if [ "$MAJOR" -ge 22 ]; then echo YSK_NODE_OK; else echo YSK_NODE_FAIL major=$MAJOR; exit 1; fi',
   ].join('\n');
 }
 
