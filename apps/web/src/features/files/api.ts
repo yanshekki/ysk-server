@@ -68,10 +68,19 @@ export const filesApi = {
       },
     ),
 
-  mkdir: (root: string, path: string, opts?: { ifExists?: DirIfExists }) =>
+  mkdir: (
+    root: string,
+    path: string,
+    opts?: { ifExists?: DirIfExists; leafOnly?: boolean; name?: string },
+  ) =>
     api.requestRaw(`/api/v1/files/mkdir?${q(root)}`, {
       method: 'POST',
-      body: JSON.stringify({ path, ifExists: opts?.ifExists }),
+      body: JSON.stringify({
+        path,
+        ifExists: opts?.ifExists,
+        leafOnly: opts?.leafOnly,
+        name: opts?.name,
+      }),
     }),
 
   createText: (root: string, path: string, content = '') =>

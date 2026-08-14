@@ -6,7 +6,7 @@
 
 | | |
 |--|--|
-| **Version** | **1.0.32** |
+| **Version** | **1.0.33** |
 | **License** | Free for public use (see repository license) |
 | **CLI** | `ysk-server` |
 | **Default UI locale** | zh-HK · also en, zh-CN, and more |

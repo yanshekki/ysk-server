@@ -80,7 +80,7 @@
   "retentionAlertsDesc": "清理 預設、系統日誌 磁碟告警、自動清理時間窗",
   "dailyNeedRoot": "每日（需要管理員權限 + 執行）",
   "customAllow": "自訂 allow 路徑",
-  "customAllowDesc": "僅 /var/日誌 或 /run/日誌 · 拒絕 .ssh、金鑰、/etc",
+  "customAllowDesc": "僅 /var/log 或 /run/log · 拒絕 .ssh、金鑰、/etc",
   "pathsCount": "{{n}} 條",
   "noCustomPaths": "尚未加入自訂路徑",
   "bookmarks": "書籤",

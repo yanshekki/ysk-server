@@ -4909,7 +4909,9 @@
       }
     },
     "linkUp": "위로",
-    "linkDown": "아래에"
+    "linkDown": "아래에",
+    "linkDownTitle": "Take {{name}} offline",
+    "linkDownNeedConfirm": "Type the interface name to confirm"
   },
   "nginx": {
     "pillSites": "{{count}} 사이트",

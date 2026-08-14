@@ -270,8 +270,11 @@ export function ReadinessPage() {
     a.rel = 'noopener';
     document.body.appendChild(a);
     a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+    window.setTimeout(() => {
+      a.remove();
+      URL.revokeObjectURL(url);
+    }, 1500);
+    toast.ok(t('readiness.exportStarted', { defaultValue: t('common.download') }));
   }
 
   const score = report?.score;

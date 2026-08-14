@@ -4909,7 +4909,9 @@
       }
     },
     "linkUp": "ऊपर",
-    "linkDown": "नीचे"
+    "linkDown": "नीचे",
+    "linkDownTitle": "Take {{name}} offline",
+    "linkDownNeedConfirm": "Type the interface name to confirm"
   },
   "nginx": {
     "pillSites": "{{count}} साइट(साइटें)",

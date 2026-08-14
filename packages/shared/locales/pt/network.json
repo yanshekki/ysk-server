@@ -138,5 +138,7 @@
     }
   },
   "linkUp": "Acima",
-  "linkDown": "Abaixo"
+  "linkDown": "Abaixo",
+  "linkDownTitle": "Take {{name}} offline",
+  "linkDownNeedConfirm": "Type the interface name to confirm"
 }

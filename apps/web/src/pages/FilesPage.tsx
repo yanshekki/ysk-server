@@ -764,6 +764,12 @@ export function FilesPage() {
       setItems(list);
       setUsage(r.usage ?? null);
       setSelected(new Set());
+      try {
+        const tr = await filesApi.trash(root);
+        setTrash(tr.items);
+      } catch {
+        /* optional count */
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : t('common.loadFailed'));
     }
@@ -1638,6 +1644,9 @@ export function FilesPage() {
                     ]}
                     rows={items}
                     rowKey={(e) => e.path}
+                    onRowActivate={(e) => {
+                      if (e.type === 'dir') setPath(e.path);
+                    }}
                     rowActions={(e) => (
                       <ActionBar align="end">
                         {e.type === 'file' &&
@@ -2470,11 +2479,17 @@ export function FilesPage() {
               variant="primary"
               size="md"
               loading={busy}
+              disabled={!mkdirName.trim() || /[\\/]/.test(mkdirName)}
+              title={/[\\/]/.test(mkdirName) ? t('files.noPathSepHint') : undefined}
               onClick={() =>
                 void run(async () => {
                   const name = mkdirName.trim();
                   if (!name) throw new Error(t('files.nameRequired'));
-                  await filesApi.mkdir(root, joinPath(path, name));
+                  if (/[\\/]/.test(name)) throw new Error(t('files.noPathSepHint'));
+                  await filesApi.mkdir(root, joinPath(path, name), {
+                    leafOnly: true,
+                    name,
+                  });
                   setMkdirOpen(false);
                   setMkdirName('');
                 }, t('files.folderCreated'))
@@ -2492,6 +2507,7 @@ export function FilesPage() {
             flush
             required
             hint={t('files.noPathSepHint')}
+            error={/[\\/]/.test(mkdirName) ? t('files.noPathSepHint') : undefined}
           >
             <input
               id="mn"
@@ -3312,6 +3328,12 @@ export function FilesPage() {
               await filesApi.remove(root, p, false);
             }
             setDelPaths(null);
+            try {
+              const tr = await filesApi.trash(root);
+              setTrash(tr.items);
+            } catch {
+              /* ignore */
+            }
           }, t('files.movedToTrash'))
         }
         title={t('files.moveToTrashTitle')}

@@ -36,6 +36,10 @@ table.data tr:hover td {
   background: rgba(59, 130, 246, 0.03);
 }
 
+table.data tr.data-table__row--activate {
+  cursor: pointer;
+}
+
 /* DataTable shell — dense list card */
 .data-table {
   background: var(--bg-white);

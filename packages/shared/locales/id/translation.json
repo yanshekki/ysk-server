@@ -4909,7 +4909,9 @@
       }
     },
     "linkUp": "Ke atas",
-    "linkDown": "Turun"
+    "linkDown": "Turun",
+    "linkDownTitle": "Take {{name}} offline",
+    "linkDownNeedConfirm": "Type the interface name to confirm"
   },
   "nginx": {
     "pillSites": "{{count}} situs",

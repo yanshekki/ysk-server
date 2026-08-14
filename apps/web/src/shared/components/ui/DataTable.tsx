@@ -6,7 +6,7 @@
  * Actions: primary CTAs only in `toolbar` or page header.
  * `empty` EmptyState must be text only — no Create / Go-to / Refresh buttons.
  */
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type MouseEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from './EmptyState';
 
@@ -76,6 +76,8 @@ export interface DataTableProps<T> {
   rowActions?: (row: T) => ReactNode;
   /** Optional row class (e.g. is-selected / is-control-plane) */
   rowClassName?: (row: T, index: number) => string | undefined;
+  /** Activate a row (e.g. open a folder). Ignore clicks on buttons/links. */
+  onRowActivate?: (row: T) => void;
   empty?: ReactNode;
   className?: string;
   /** Compact density (default true) */
@@ -94,6 +96,7 @@ export function DataTable<T>({
   filters,
   rowActions,
   rowClassName,
+  onRowActivate,
   empty,
   className,
   dense = true,
@@ -191,7 +194,21 @@ export function DataTable<T>({
             </thead>
             <tbody>
               {rows.map((row, index) => (
-                <tr key={rowKey(row, index)} className={rowClassName?.(row, index)}>
+                <tr
+                  key={rowKey(row, index)}
+                  className={[
+                    rowClassName?.(row, index),
+                    onRowActivate ? 'data-table__row--activate' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  onClick={(e: MouseEvent) => {
+                    if (!onRowActivate) return;
+                    const el = e.target as HTMLElement;
+                    if (el.closest('button, a, input, select, textarea, label')) return;
+                    onRowActivate(row);
+                  }}
+                >
                   {columns.map((c, ci) => {
                     const role = resolveMobileRole(columns, ci);
                     const label = headerLabel(c.header);

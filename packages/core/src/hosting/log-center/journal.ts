@@ -188,6 +188,9 @@ export async function queryJournal(
     notes.push(tl('notes.auto.t0761', { v0: (maxBytes) }));
   }
   let lines = text.split(/\r?\n/).filter((l, i, a) => l.length || i < a.length - 1);
+  if (lines.length === 1 && /^--\s*No entries\s*--$/i.test(lines[0]!.trim())) {
+    lines = [];
+  }
   if (lines.length > linesN) {
     lines = lines.slice(-linesN);
     truncated = true;

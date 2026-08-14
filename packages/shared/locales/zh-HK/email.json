@@ -329,7 +329,7 @@
     "checkSpam": "寄出後請查收件人垃圾箱與伺服器郵件日誌",
     "hintDeferred": "若 deferred：查 埠 25 封鎖或中繼憑證",
     "hintSpam": "若已接受但仍入垃圾：改善 SPF／DKIM／DMARC／PTR 並暖機",
-    "hintLogs": "檢查 /var/日誌/mail.日誌 或 系統日誌ctl -u postfix"
+    "hintLogs": "檢查 /var/log/mail.log 或 journalctl -u postfix"
   },
   "leMailHost": "申請憑證 · {{host}}",
   "leWebmailHost": "申請憑證 · {{host}}（網頁郵件）",

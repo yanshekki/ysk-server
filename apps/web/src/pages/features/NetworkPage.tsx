@@ -447,6 +447,13 @@ export function NetworkPage() {
                           variant="danger"
                           size="sm"
                           disabled={busy || r.isLoopback}
+                          title={
+                            r.isDefaultEgress
+                              ? t('network.defaultRouteDownWarn')
+                              : t('network.linkDownNeedConfirm', {
+                                  defaultValue: t('network.confirmDown'),
+                                })
+                          }
                           onClick={bindSet2(setDownConfirm, '', setDownDlg, r)}
                         >
                           {t('network.linkDown')}
@@ -1421,7 +1428,14 @@ export function NetworkPage() {
       <Modal
         open={downDlg != null}
         onClose={bindCloseIfIdle(busy, bindSet(setDownDlg, null))}
-        title={downDlg ? `Down ${downDlg.name}` : 'Down'}
+        title={
+          downDlg
+            ? t('network.linkDownTitle', {
+                name: downDlg.name,
+                defaultValue: t('network.linkDown'),
+              })
+            : t('network.linkDown')
+        }
         size="sm"
         footer={
           <ActionBar size="sm" align="end">

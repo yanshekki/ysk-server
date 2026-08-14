@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { mkdtempSync, rmSync, existsSync, writeFileSync, symlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { FileManager, publicFilesRoot } from './manager.js';
+import { FileManager, hasPathSeparator, publicFilesRoot } from './manager.js';
 import { YskError } from 'ysk-server-shared';
 
 describe('FileManager sandbox', () => {
@@ -121,6 +121,9 @@ describe('FileManager sandbox', () => {
 
       fm.mkdir('docs');
       expect(fm.mkdir('docs').path).toBe('docs');
+      expect(hasPathSeparator('a/b')).toBe(true);
+      expect(hasPathSeparator('a\\b')).toBe(true);
+      expect(hasPathSeparator('docs')).toBe(false);
       expect(() => fm.mkdir('docs', { ifExists: 'fail' })).toThrow(YskError);
       expect(fm.mkdir('docs', { ifExists: 'rename' }).path).toBe('docs (1)');
       fm.writeText('as-file', 'x');

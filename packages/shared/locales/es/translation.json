@@ -4909,7 +4909,9 @@
       }
     },
     "linkUp": "Arriba",
-    "linkDown": "Abajo"
+    "linkDown": "Abajo",
+    "linkDownTitle": "Take {{name}} offline",
+    "linkDownNeedConfirm": "Type the interface name to confirm"
   },
   "nginx": {
     "pillSites": "{{count}} sitio(s)",

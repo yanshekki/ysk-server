@@ -138,5 +138,7 @@
     }
   },
   "linkUp": "向上",
-  "linkDown": "断开"
+  "linkDown": "断开",
+  "linkDownTitle": "將 {{name}} 離線",
+  "linkDownNeedConfirm": "需輸入介面名稱確認"
 }

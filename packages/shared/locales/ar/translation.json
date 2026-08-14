@@ -4909,7 +4909,9 @@
       }
     },
     "linkUp": "أعلى",
-    "linkDown": "تحت"
+    "linkDown": "تحت",
+    "linkDownTitle": "Take {{name}} offline",
+    "linkDownNeedConfirm": "Type the interface name to confirm"
   },
   "nginx": {
     "pillSites": "{{count}} موقع (مواقع)",

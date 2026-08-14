@@ -184,7 +184,7 @@ export function ServicesPage() {
             value: missing,
             tone: missing ? 'warn' : 'neutral' },
           {
-            label: 'EXECUTE',
+            label: t('dashboard.executeLabel'),
             value: meta.executeEnabled ? t('common.on') : t('common.off'),
             tone: meta.executeEnabled ? 'ok' : 'warn' },
           {
@@ -377,7 +377,16 @@ export function ServicesPage() {
                                 size="sm"
                                 loading={busy}
                                 disabled={
-                                  (!row.installed && row.active !== 'active') || !canMutate
+                                  !canMutate ||
+                                  !row.installed ||
+                                  row.active === 'active'
+                                }
+                                title={
+                                  !row.installed
+                                    ? t('common.notInstalled')
+                                    : row.active === 'active'
+                                      ? t('common.running')
+                                      : undefined
                                 }
                                 onClick={bindCall2(lifecycle, row.unit, 'start')}
                               >
@@ -387,7 +396,8 @@ export function ServicesPage() {
                                 variant="secondary"
                                 size="sm"
                                 loading={busy}
-                                disabled={!canMutate}
+                                disabled={!canMutate || !row.installed}
+                                title={!row.installed ? t('common.notInstalled') : undefined}
                                 onClick={() =>
                                   setPendingLc({
                                     unit: row.unit,
@@ -402,7 +412,8 @@ export function ServicesPage() {
                                 variant="ghost"
                                 size="sm"
                                 loading={busy}
-                                disabled={!canMutate}
+                                disabled={!canMutate || !row.installed}
+                                title={!row.installed ? t('common.notInstalled') : undefined}
                                 onClick={() =>
                                   setPendingLc({
                                     unit: row.unit,

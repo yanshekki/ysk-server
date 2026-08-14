@@ -4909,7 +4909,9 @@
       }
     },
     "linkUp": "Postfix",
-    "linkDown": "ダウン"
+    "linkDown": "ダウン",
+    "linkDownTitle": "Take {{name}} offline",
+    "linkDownNeedConfirm": "Type the interface name to confirm"
   },
   "nginx": {
     "pillSites": "{{count}} サイト",

@@ -138,5 +138,7 @@
     }
   },
   "linkUp": "উপরে",
-  "linkDown": "নিচে"
+  "linkDown": "নিচে",
+  "linkDownTitle": "Take {{name}} offline",
+  "linkDownNeedConfirm": "Type the interface name to confirm"
 }

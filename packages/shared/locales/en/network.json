@@ -104,6 +104,8 @@
   "testResolve": "Test resolve",
   "loadRaw": "Load raw output",
   "confirmDown": "Confirm Down",
+  "linkDownTitle": "Take {{name}} offline",
+  "linkDownNeedConfirm": "Type the interface name to confirm",
   "defaultRouteDownWarn": "This interface is the default route egress; down may cut panel access.",
   "deleteDefaultMayDrop": " — deleting default may drop connectivity.",
   "gateway": "Gateway",

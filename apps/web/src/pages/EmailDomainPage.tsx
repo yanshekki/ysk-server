@@ -258,6 +258,11 @@ export function parsePolicyRate(raw: unknown, fallback = 200): number {
   return Number.isFinite(n) && n > 0 ? n : fallback;
 }
 
+export function isPolicyRateValid(raw: unknown): boolean {
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0;
+}
+
 /** Bootstrap admin password is usable (≥8 chars). */
 export function isBootstrapPasswordValid(pw: string): boolean {
   return pw.trim().length >= 8;
@@ -366,7 +371,7 @@ export function EmailDomainPage() {
   const [relayHost, setRelayHost] = useState('');
   const [relayUser, setRelayUser] = useState('');
   const [relayPass, setRelayPass] = useState('');
-  const [relayApplySystem, setRelayApplySystem] = useState(true);
+  const [relayApplySystem, setRelayApplySystem] = useState(false);
   const [relayLog, setRelayLog] = useState<Record<string, unknown> | null>(null);
   const [bootstrapPassword, setBootstrapPassword] = useState('');
   const [mboxLocal, setMboxLocal] = useState('info');
@@ -1176,12 +1181,10 @@ export function EmailDomainPage() {
                     variant="primary"
                     size="md"
                     loading={busy}
-                    onClick={bindBusySetAndTab(
+                    onClick={bindBusySet(
                       withBusy,
                       () => emailApi.deliverability(domain.id),
                       setDeliverability,
-                      setTab,
-                      'deliverability',
                     )}
                   >
                     {t('email.runDeliverabilityPack')}
@@ -1475,6 +1478,8 @@ export function EmailDomainPage() {
                     variant="primary"
                     size="md"
                     loading={busy}
+                    disabled={!relayHost.trim()}
+                    title={!relayHost.trim() ? t('email.relayHostRequired', { defaultValue: t('common.required') }) : undefined}
                     onClick={bindBusySetRelay(
                       withBusy,
                       emailApi.setRelay,
@@ -1788,11 +1793,16 @@ export function EmailDomainPage() {
                       htmlFor="policy-rate"
                       flush
                       hint={t('email.hourlyMsgCapHint')}
+                      error={
+                        !isPolicyRateValid(policyRate)
+                          ? t('email.hourlyMsgCapInvalid', { defaultValue: t('common.invalid') })
+                          : undefined
+                      }
                     >
                       <input
                         id="policy-rate"
                         type="number"
-                        min={10}
+                        min={1}
                         max={100000}
                         value={policyRate}
                         onChange={bindInput(setPolicyRate)}
@@ -1812,6 +1822,7 @@ export function EmailDomainPage() {
                       variant="secondary"
                       size="md"
                       loading={busy}
+                      disabled={!isPolicyRateValid(policyRate)}
                       onClick={bindBusyApplyPolicy(
                         withBusy,
                         emailApi.applyPolicy,

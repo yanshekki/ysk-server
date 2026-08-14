@@ -3,7 +3,7 @@
  */
 .ysk-toast-viewport {
   position: fixed;
-  top: calc(var(--header-height, 4rem) + var(--space-3));
+  top: calc(var(--header-height, 4rem) + var(--page-tabs-offset, 3.25rem) + var(--space-2));
   right: var(--space-4);
   z-index: 400;
   display: flex;

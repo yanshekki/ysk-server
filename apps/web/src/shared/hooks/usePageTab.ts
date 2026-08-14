@@ -21,6 +21,8 @@ const DEFAULT_TAB_ALIASES: Record<string, string> = {
   plans: 'packages',
   shadowsocks: 'outline',
   ss: 'outline',
+  truthip: 'realip',
+  truth: 'realip',
   help: 'about',
 };
 

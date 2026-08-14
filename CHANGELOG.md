@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.33 — 2026-08-14
+
+### Fix
+- New-folder names cannot contain `/` or `\\` (UI + API `leafOnly`)
+- `/services` cannot restart/stop missing units; start is not offered while running
+- Cron copy no longer claims the cron daemon is missing when only the panel crontab is unsynced
+- Updates page current version follows the live self-update probe; high-risk counts use the same inventory
+- Email health probe stays on the health tab; relay host is required; hourly cap rejects negatives
+- Recycle-bin header count refreshes after delete; folder rows open on row click
+- journalctl is not machine-translated to 「系統日誌ctl」
+- Toasts sit below page tabs; firewall/fail2ban banners no longer say 「fail2ban = fail2ban =」
+
 ## 1.0.32 — 2026-08-14
 
 ### Fix

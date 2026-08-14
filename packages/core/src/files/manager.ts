@@ -64,6 +64,11 @@ const HIDDEN_PREFIXES = ['.trash', '.versions', '.ysk'];
  * Uses boundary-safe prefix check (not bare startsWith) to avoid
  * `/data/file` matching `/data/file-evil` style escapes.
  */
+/** New-folder names must be a single segment (uploads may still mkdir trees). */
+export function hasPathSeparator(name: string): boolean {
+  return /[\\/]/.test(String(name ?? ''));
+}
+
 export function assertInside(root: string, target: string): string {
   if (typeof target === 'string' && target.includes('\0')) {
     throw new YskError(ErrorCodes.SANDBOX_VIOLATION, tl('notes.files.pathOutsideSandbox', { target }), {

@@ -600,7 +600,7 @@ export function UpdatesPage() {
                   },
                   {
                     label: t('updates.highRisk'),
-                    value: String(summary?.packagesHighRisk ?? highRisk ?? 0),
+                    value: String(highRisk),
                   },
                 ]}
               />
@@ -609,7 +609,7 @@ export function UpdatesPage() {
                 facts={[
                   {
                     label: t('updates.selfCurrent'),
-                    value: summary?.panelCurrent ?? selfVersion,
+                    value: selfVersion,
                   },
                   {
                     label: t('updates.selfLatest'),
