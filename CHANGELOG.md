@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.25 — 2026-08-14
+
+### Fix
+- Official `install.sh` one-liner: `npm install -g ysk-server` no longer dies on `ip-set` `only-allow` (skip lifecycle scripts, then rebuild native addons)
+- Global pnpm pinned to 9.x so Node 20 hosts are not asked for Node 22
+
 ## 1.0.24 — 2026-08-14
 
 ### Fix
