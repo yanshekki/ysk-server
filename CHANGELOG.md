@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.26 — 2026-08-14
+
+### Fix
+- Official one-liner: do not use `--ignore-scripts` (that left `@simplewebauthn/server` empty; setup and `ysk-server --version` crashed)
+- Stub `npx only-allow` so `ip-set` cannot abort npm, then extract packages fully
+- Repair an empty `@simplewebauthn/server` from a 1.0.25 install
+- Load the WebAuthn library only when a passkey call runs
+- Replace pnpm 11 already on PATH (needs Node 22) with pnpm 9
+
 ## 1.0.25 — 2026-08-14
 
 ### Fix
