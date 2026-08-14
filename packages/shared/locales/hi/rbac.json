@@ -96,5 +96,11 @@
   "capabilitiesHint": "टॉगल करें कि यह भूमिका क्या कर सकती है",
   "enabledCount": "{{total}} में से {{enabled}} सक्षम",
   "bandAboveMax": "अधिकतम स्तर से ऊपर",
-  "dirtyHint": "अनुकूलित (कारखाने से अलग)"
+  "dirtyHint": "अनुकूलित (कारखाने से अलग)",
+  "unsaved": "Unsaved",
+  "unsavedHint": "Unsaved edits on this role",
+  "nothingToSave": "Nothing to save",
+  "saveRole": "Save {{role}} policy",
+  "discardTitle": "Discard unsaved policy?",
+  "discardDesc": "Switching roles drops unsaved capability edits."
 }

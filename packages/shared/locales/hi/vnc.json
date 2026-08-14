@@ -242,5 +242,6 @@
   "stackMissingShort": "स्थापित नहीं हे",
   "editClientTitle": "दूरस्थ क्लाइंट संपादित करें",
   "editClientDesc": "अद्यतन पथ, होस्ट और वैकल्पिक संग्रहीत पासवर्ड।",
-  "clientUpdated": "ग्राहक प्रोफ़ाइल अपडेट की गई"
+  "clientUpdated": "ग्राहक प्रोफ़ाइल अपडेट की गई",
+  "rememberNeedPassword": "Enter a password first."
 }

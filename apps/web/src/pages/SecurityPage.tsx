@@ -267,8 +267,20 @@ export function SecurityPage() {
   const [apiKeys, setApiKeys] = useState<
     Array<{ id: string; name: string; prefix: string; created_at: string }>
   >([]);
-  const [newKeyName, setNewKeyName] = useState('panel-api');
+  const [newKeyName, setNewKeyName] = useState('');
+  const [newKeyScope, setNewKeyScope] = useState<'read' | 'full'>('read');
   const [newKeyToken, setNewKeyToken] = useState<string | null>(null);
+  const [curPw, setCurPw] = useState('');
+  const [newPw, setNewPw] = useState('');
+  const [newPw2, setNewPw2] = useState('');
+  const [pwBusy, setPwBusy] = useState(false);
+  const [snippetOpen, setSnippetOpen] = useState(false);
+  const [snippetText, setSnippetText] = useState('');
+  const [deviceItems, setDeviceItems] = useState<Array<{ id: string; ip?: string }> | null>(
+    null,
+  );
+  const [revokeDevicesOpen, setRevokeDevicesOpen] = useState(false);
+  const [strictConfirmOpen, setStrictConfirmOpen] = useState(false);
   const [totpPrompt, setTotpPrompt] = useState<
     null | { kind: 'backup' } | { kind: 'apiKey' }
   >(null);
@@ -284,6 +296,19 @@ export function SecurityPage() {
       setSearchParams(next, { replace: true });
     }
   }, [searchParams, setSearchParams]);
+
+  useEffect(() => {
+    if (tab === 'ssh') return;
+    if (!searchParams.has('ssh')) return;
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete('ssh');
+        return next;
+      },
+      { replace: true },
+    );
+  }, [tab, searchParams, setSearchParams]);
 
   const refreshTotp = useCallback(async () => {
     setTotpStatus(await api.totpStatus());
@@ -309,6 +334,22 @@ export function SecurityPage() {
       /* non-admin */
     }
   }, []);
+
+  const saveSecurityPolicy = useCallback(async () => {
+    try {
+      await api.setSecuritySettings({
+        requireAdminTotp,
+        requireUserTotp,
+        requireAdminTotpStrict: requireStrict,
+        totp: policyTotp || undefined,
+      });
+      toast.ok(t('security.policyUpdated'));
+      setPolicyTotp('');
+      await refreshPolicy();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t('common.saveFailed'));
+    }
+  }, [requireAdminTotp, requireUserTotp, requireStrict, policyTotp, refreshPolicy, t]);
 
   useEffect(() => {
     void refreshTotp().catch(() => undefined);
@@ -382,6 +423,70 @@ export function SecurityPage() {
             <Card>
               <CardSection>
                 <TotpSetupPanel status={totpStatus} onStatusChange={refreshTotp} />
+              </CardSection>
+            </Card>
+
+            <Card>
+              <CardSection title={t('security.changePasswordTitle')}>
+                <FormLayout columns={1}>
+                  <Field label={t('security.currentPassword')} htmlFor="sec-cur-pw" flush required>
+                    <input
+                      id="sec-cur-pw"
+                      type="password"
+                      value={curPw}
+                      onChange={bindInput(setCurPw)}
+                      autoComplete="current-password"
+                    />
+                  </Field>
+                  <Field label={t('security.newPassword')} htmlFor="sec-new-pw" flush required>
+                    <input
+                      id="sec-new-pw"
+                      type="password"
+                      value={newPw}
+                      onChange={bindInput(setNewPw)}
+                      autoComplete="new-password"
+                      minLength={8}
+                    />
+                  </Field>
+                  <Field
+                    label={t('security.confirmNewPassword')}
+                    htmlFor="sec-new-pw2"
+                    flush
+                    required
+                    error={newPw2 && newPw !== newPw2 ? t('security.passwordMismatch') : undefined}
+                  >
+                    <input
+                      id="sec-new-pw2"
+                      type="password"
+                      value={newPw2}
+                      onChange={bindInput(setNewPw2)}
+                      autoComplete="new-password"
+                    />
+                  </Field>
+                </FormLayout>
+                <FormActions>
+                  <Button
+                    variant="primary"
+                    size="md"
+                    loading={pwBusy}
+                    disabled={!curPw || newPw.length < 8 || newPw !== newPw2}
+                    onClick={() => {
+                      setPwBusy(true);
+                      void api
+                        .changePassword(curPw, newPw)
+                        .then(() => {
+                          toast.ok(t('security.passwordChanged'));
+                          setCurPw('');
+                          setNewPw('');
+                          setNewPw2('');
+                        })
+                        .catch((e: Error) => toast.error(e.message))
+                        .finally(() => setPwBusy(false));
+                    }}
+                  >
+                    {t('security.changePassword')}
+                  </Button>
+                </FormActions>
               </CardSection>
             </Card>
 
@@ -661,13 +766,8 @@ export function SecurityPage() {
                         .requestRaw<{ items: Array<{ id: string; ip?: string }> }>(
                           '/api/v1/auth/devices',
                         )
-                        .then((r) =>
-                          toast.ok(t('security.trustedDevicesCount', {
-                              count: (r.items ?? []).length })),
-                        )
-                        .catch((e: Error) =>
-                          toast.error(e.message),
-                        );
+                        .then((r) => setDeviceItems(r.items ?? []))
+                        .catch((e: Error) => toast.error(e.message));
                     }}
                   >
                     {t('security.viewTrustedDevices')}
@@ -675,14 +775,7 @@ export function SecurityPage() {
                   <Button
                     variant="danger"
                     size="sm"
-                    onClick={() => {
-                      void api
-                        .requestRaw('/api/v1/auth/devices', { method: 'DELETE' })
-                        .then(() => toast.ok(t('security.revokedAllDevices')))
-                        .catch((e: Error) =>
-                          toast.error(e.message),
-                        );
-                    }}
+                    onClick={bindSet(setRevokeDevicesOpen, true)}
                   >
                     {t('security.revokeAllDevices')}
                   </Button>
@@ -701,14 +794,15 @@ export function SecurityPage() {
                         .requestRaw<{ written?: string[]; notes?: string[] }>(
                           '/api/v1/security/fail2ban-snippets',
                         )
-                        .then((r) =>
-                          toast.ok(t('security.fail2banSnippetMsg', {
-                              written: (r.written ?? []).join(', '),
-                              notes: (r.notes ?? []).join(' · ') })),
-                        )
-                        .catch((e: Error) =>
-                          toast.error(e.message),
-                        );
+                        .then((r) => {
+                          const text = [
+                            ...(r.written ?? []).map((p) => p),
+                            ...(r.notes ?? []),
+                          ].join('\n');
+                          setSnippetText(text || t('security.fail2banSnippetEmpty'));
+                          setSnippetOpen(true);
+                        })
+                        .catch((e: Error) => toast.error(e.message));
                     }}
                   >
                     {t('security.generateFail2ban')}
@@ -739,14 +833,28 @@ export function SecurityPage() {
                   <input
                     type="checkbox"
                     checked={requireStrict}
+                    disabled={!totpStatus?.enrolled && !totpStatus?.enabled}
+                    title={
+                      !totpStatus?.enrolled && !totpStatus?.enabled
+                        ? t('security.strictNeedsEnrolled')
+                        : undefined
+                    }
                     onChange={bindCheck(setRequireStrict)}
                   />
                   <span>{t('security.strictAdmin2fa')}</span>
                 </label>
+                {!totpStatus?.enrolled && !totpStatus?.enabled ? (
+                  <p className="muted u-text-sm u-mt-1">{t('security.strictNeedsEnrolled')}</p>
+                ) : null}
                 <Field
                   label={t('security.confirmTotpPolicy')}
                   htmlFor="pol-totp"
                   className="u-mt-4"
+                  hint={
+                    !totpStatus?.enabled
+                      ? t('security.policyTotpNeedSelf')
+                      : undefined
+                  }
                 >
                   <input
                     id="pol-totp"
@@ -761,20 +869,11 @@ export function SecurityPage() {
                     variant="primary"
                     size="md"
                     onClick={() => {
-                      void api
-                        .setSecuritySettings({
-                          requireAdminTotp,
-                          requireUserTotp,
-                          requireAdminTotpStrict: requireStrict,
-                          totp: policyTotp || undefined })
-                        .then(() => {
-                          toast.ok(t('security.policyUpdated'));
-                          setPolicyTotp('');
-                          return refreshPolicy();
-                        })
-                        .catch((e: Error) =>
-                          toast.error(e.message),
-                        );
+                      if (requireStrict) {
+                        setStrictConfirmOpen(true);
+                        return;
+                      }
+                      void saveSecurityPolicy();
                     }}
                   >
                     {t('security.savePolicy')}
@@ -908,7 +1007,10 @@ export function SecurityPage() {
             <Card>
               <CardSection title={t('security.pending')}>
                 {approvals.length === 0 ? (
-                  <EmptyState title={t('security.none')} />
+                  <EmptyState
+                    title={t('security.none')}
+                    description={t('security.approvalsHint')}
+                  />
                 ) : (
                   <div className="list-panel">
                     {approvals.map((a) => (
@@ -950,30 +1052,34 @@ export function SecurityPage() {
             ) : null}
             <DataTable
               title={t('security.allowlistTitle', { count: tools.length })}
+              description={t('security.allowlistReadonly')}
               columns={[
                 {
                   key: 'tool',
-                  header: 'Tool',
+                  header: t('security.colTool'),
                   render: (tool) => (
                     <code className="inline">{String(tool.tool)}</code>
                   ) },
                 {
                   key: 'allowed',
-                  header: 'Allowed',
+                  header: t('security.colAllowed'),
                   nowrap: true,
                   render: (tool) => (
                     <Badge tone={tool.allowed ? 'ok' : 'danger'}>
-                      {String(tool.allowed)}
+                      {tool.allowed ? t('common.yes') : t('common.no')}
                     </Badge>
                   ) },
                 {
                   key: 'risk',
-                  header: 'Risk',
-                  render: (tool) => String(tool.risk) },
+                  header: t('security.colRisk'),
+                  render: (tool) => t(`security.risk.${String(tool.risk)}`, {
+                    defaultValue: String(tool.risk),
+                  }) },
                 {
                   key: 'approval',
-                  header: 'Approval',
-                  render: (tool) => String(tool.requiresApproval) },
+                  header: t('security.colApproval'),
+                  render: (tool) =>
+                    tool.requiresApproval ? t('common.yes') : t('common.no') },
               ]}
               rows={tools}
               rowKey={(tool) => String(tool.tool)}
@@ -1006,7 +1112,7 @@ export function SecurityPage() {
                 }
                 setTotpBusy(true);
                 const scopeEl = document.getElementById('ak-scope') as HTMLSelectElement | null;
-                const scope = scopeEl?.value === 'read' ? 'read' : 'full';
+                const scope = newKeyScope;
                 void api
                   .requestRaw<{
                     key: { id: string; name: string; prefix: string; created_at: string };
@@ -1042,9 +1148,13 @@ export function SecurityPage() {
             />
           </Field>
           <Field label={t('security.apiKeyScope')} htmlFor="ak-scope" flush hint={t('security.apiKeyScopeHint')}>
-            <select id="ak-scope" defaultValue="full">
-              <option value="full">{t('security.scopeFull')}</option>
+            <select
+              id="ak-scope"
+              value={newKeyScope}
+              onChange={(e) => setNewKeyScope(e.target.value === 'full' ? 'full' : 'read')}
+            >
               <option value="read">{t('security.scopeRead')}</option>
+              <option value="full">{t('security.scopeFull')}</option>
             </select>
           </Field>
           <FormHint>{t('security.apiKey2faHint')}</FormHint>
@@ -1094,10 +1204,7 @@ export function SecurityPage() {
           }
           if (totpPrompt?.kind === 'apiKey') {
             setTotpBusy(true);
-            const scopeEl = document.getElementById(
-              'ak-scope',
-            ) as HTMLSelectElement | null;
-            const scope = scopeEl?.value === 'read' ? 'read' : 'full';
+            const scope = newKeyScope;
             try {
               const r = await api.requestRaw<{
                 key: {
@@ -1124,6 +1231,87 @@ export function SecurityPage() {
             return true;
           }
           return true;
+        }}
+      />
+
+      <Modal
+        open={snippetOpen}
+        onClose={bindSet(setSnippetOpen, false)}
+        title={t('security.fail2banSnippetTitle')}
+        footer={
+          <ActionBar align="end">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                void navigator.clipboard?.writeText(snippetText);
+                toast.ok(t('common.copied'));
+              }}
+            >
+              {t('common.copy')}
+            </Button>
+            <Button variant="primary" size="sm" onClick={bindSet(setSnippetOpen, false)}>
+              {t('common.close')}
+            </Button>
+          </ActionBar>
+        }
+      >
+        <pre className="u-font-mono u-text-sm u-break-all">{snippetText}</pre>
+      </Modal>
+
+      <Modal
+        open={deviceItems != null}
+        onClose={() => setDeviceItems(null)}
+        title={t('security.trustedDevicesTitle')}
+        footer={
+          <Button variant="secondary" size="sm" onClick={() => setDeviceItems(null)}>
+            {t('common.close')}
+          </Button>
+        }
+      >
+        {deviceItems && deviceItems.length === 0 ? (
+          <EmptyState title={t('security.noTrustedDevices')} />
+        ) : (
+          <ul className="list-plain">
+            {(deviceItems ?? []).map((d) => (
+              <li key={d.id}>
+                <code>{d.id}</code>
+                {d.ip ? ` · ${d.ip}` : ''}
+              </li>
+            ))}
+          </ul>
+        )}
+      </Modal>
+
+      <ConfirmDialog
+        open={strictConfirmOpen}
+        onClose={bindSet(setStrictConfirmOpen, false)}
+        title={t('security.strictConfirmTitle')}
+        description={t('security.strictConfirmDesc')}
+        danger
+        confirmLabel={t('security.savePolicy')}
+        onConfirm={() => {
+          setStrictConfirmOpen(false);
+          void saveSecurityPolicy();
+        }}
+      />
+
+      <ConfirmDialog
+        open={revokeDevicesOpen}
+        onClose={bindSet(setRevokeDevicesOpen, false)}
+        title={t('security.revokeDevicesTitle')}
+        description={t('security.revokeDevicesDesc')}
+        danger
+        confirmLabel={t('security.revokeAllDevices')}
+        onConfirm={() => {
+          setRevokeDevicesOpen(false);
+          void api
+            .requestRaw('/api/v1/auth/devices', { method: 'DELETE' })
+            .then(() => {
+              toast.ok(t('security.revokedAllDevices'));
+              setDeviceItems([]);
+            })
+            .catch((e: Error) => toast.error(e.message));
         }}
       />
     </FeaturePageLayout>

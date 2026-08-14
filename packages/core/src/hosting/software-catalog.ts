@@ -72,6 +72,8 @@ export type FeatureSoftwareKey =
   | 'vnc'
   | 'tigervnc'
   | 'novnc'
+  | 'vnc-xfce'
+  | 'vnc-viewer'
   | 'all';
 
 export type RuntimeInstaller =
@@ -455,14 +457,14 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     title: 'XFCE desktop (for VNC)',
     bins: ['startxfce4', 'xfce4-session'],
     aptPackages: ['xfce4', 'xfce4-goodies', 'dbus-x11'],
-    features: ['vnc'],
+    features: ['vnc', 'vnc-xfce'],
   },
   {
     id: 'tigervnc-viewer',
     title: 'TigerVNC viewer',
     bins: ['vncviewer', 'xtigervncviewer'],
     aptPackages: ['tigervnc-viewer'],
-    features: ['vnc'],
+    features: ['vnc', 'vnc-viewer'],
   },
 ];
 

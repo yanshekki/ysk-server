@@ -242,5 +242,6 @@
   "stackMissingShort": "Non installé",
   "editClientTitle": "Modifier le client distant",
   "editClientDesc": "Mettez à jour le chemin, les hôtes et le mot de passe stocké facultatif.",
-  "clientUpdated": "Profil client mis à jour"
+  "clientUpdated": "Profil client mis à jour",
+  "rememberNeedPassword": "Enter a password first."
 }

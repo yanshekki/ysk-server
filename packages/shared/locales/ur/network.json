@@ -135,10 +135,12 @@
       "azure_frontdoor": "Azure سامنے کا دروازہ",
       "gcore": "Gcore CDN",
       "custom": "حسب ضرورت پراکسی"
-    }
+    },
+    "needProvider": "Choose a CDN provider before fetching its IP list."
   },
   "linkUp": "اوپر",
   "linkDown": "نیچے",
   "linkDownTitle": "Take {{name}} offline",
-  "linkDownNeedConfirm": "Type the interface name to confirm"
+  "linkDownNeedConfirm": "Type the interface name to confirm",
+  "persistNmHint": "Persistable means changes can survive reboot via NetworkManager."
 }

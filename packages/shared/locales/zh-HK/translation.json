@@ -4319,7 +4319,11 @@
     "mediaAudioLabel": "音訊",
     "mediaAudioDesc": "可選用來自主機 Chrome 的橋接；可能需要解鎖點選。",
     "mediaPolicyLabel": "政策",
-    "mediaPolicyDesc": "下載與自動播放遵循上方安全與下載設定。"
+    "mediaPolicyDesc": "下載與自動播放遵循上方安全與下載設定。",
+    "frameBlocked": "頁面無法在面板框架內顯示。",
+    "historyEmpty": "此工作階段尚無瀏覽記錄。",
+    "bookmarksEmpty": "尚未有書籤。",
+    "closeSessionHint": "會清掉此瀏覽工作階段的 Cookie；書籤會保留。"
   },
   "listToolbar": {
     "searchPlaceholder": "搜尋…",
@@ -4465,8 +4469,8 @@
     "lines": "{{n}} 行",
     "followingSseDyn": "· 跟隨中{{sse}}",
     "ipBan": "IP → 封禁",
-    "vacuumNote": "釋放 系統服務-系統日誌 磁碟。無 執行 會 已封鎖，不假成功。",
-    "vacuumTime": "清理 時間",
+    "vacuumNote": "釋放 systemd-journald 佔用的磁碟。沒有系統變更權限時會封鎖，不會假裝成功。",
+    "vacuumTime": "依保留時間清理",
     "vacuumHint": "建議保留 ≥7 日；操作後重新探測磁碟用量。",
     "logrotateStatus": "系統 logrotate 狀態（唯讀探測）",
     "logrotateMissing": "無 狀態 檔或不可讀 — 可於服務矩陣檢查 logrotate 套件",
@@ -4474,7 +4478,7 @@
     "relatedOpsDesc": "日誌觀測 vs 攻擊應變分工",
     "scLogsLine": "觀測 系統日誌／檔案／專案",
     "scProtLine": "攻擊應變、自動 封鎖（點 IP）",
-    "journalVacuumTitle": "系統日誌 清理（清理）",
+    "journalVacuumTitle": "清理 journald 磁碟",
     "journalSection": "雜誌",
     "sseLabel": "SSE",
     "logrotateLabel": "對數旋轉",
@@ -4489,7 +4493,10 @@
     "groupVarLog": "/var/log",
     "prioErr": "錯誤+",
     "prioWarn": "警告+",
-    "prioInfo": "資訊+"
+    "prioInfo": "資訊+",
+    "vacuumSize": "限制至 500 MB",
+    "logrotateNoStatus": "尚未有 logrotate 狀態檔（從未跑過時屬常見）。",
+    "autoVacuumOff": "自動清理未啟用。啟用前時間設定不會執行。"
   },
   "metrics": {
     "alert": {
@@ -4952,10 +4959,12 @@
         "azure_frontdoor": "蔚藍前門",
         "gcore": "國核CDN",
         "custom": "自訂代理"
-      }
+      },
+      "needProvider": "請先選擇 CDN 供應商，先可更新 IP 列表。"
     },
     "linkUp": "向上",
-    "linkDown": "離線"
+    "linkDown": "離線",
+    "persistNmHint": "可持久化代表經 NetworkManager 寫入後，重啟後設定仍然有效。"
   },
   "nginx": {
     "pillSites": "{{count}} 站點",
@@ -9235,7 +9244,13 @@
     "capabilitiesHint": "勾選此角色可用的功能。橙點表示與系統預設不同。",
     "enabledCount": "已開 {{enabled}}／{{total}}",
     "bandAboveMax": "高於最高等級",
-    "dirtyHint": "已自訂（與系統預設不同）"
+    "dirtyHint": "已自訂（與系統預設不同）",
+    "unsaved": "未儲存",
+    "unsavedHint": "此角色有未儲存變更",
+    "nothingToSave": "沒有要儲存的變更",
+    "saveRole": "儲存「{{role}}」政策",
+    "discardTitle": "放棄未儲存政策？",
+    "discardDesc": "轉去另一個角色會丟棄未儲存的權限變更。"
   },
   "readiness": {
     "cat": {
@@ -9994,7 +10009,7 @@
     "tabSsh": "SSH",
     "tabApprovals": "審批",
     "tabAllowlist": "允許清單",
-    "apiTokenOnce": "介面 權杖（只顯示一次）：",
+    "apiTokenOnce": "API 權杖（只顯示一次）：",
     "copiedToken": "已複製 權杖",
     "totpTitle": "雙重驗證 (TOTP)",
     "totpStatus": "狀態：",
@@ -10090,29 +10105,29 @@
     "policyUpdated": "安全政策已更新",
     "savePolicy": "儲存政策",
     "recentProbe": "最近探測",
-    "apiKeysTitle": "介面 存取金鑰",
+    "apiKeysTitle": "API 存取金鑰",
     "apiKeysDesc": "",
     "createKey": "+ 建立金鑰",
     "colName": "名稱",
     "colPrefix": "前綴",
     "colCreated": "建立",
-    "apiKeysEmpty": "尚未有 介面 金鑰",
-    "apiKeysEmptyHint": "用列表右上角建立；建立後可用 Bearer 權杖 呼叫 介面",
+    "apiKeysEmpty": "尚未有 API 金鑰",
+    "apiKeysEmptyHint": "用列表右上角建立；建立後可用 Bearer 權杖呼叫 API",
     "approve": "批准",
     "allowlistTitle": "允許清單（{{count}}）",
     "allowlistEmpty": "尚無 允許清單 工具",
-    "createApiKeyTitle": "建立 介面 金鑰",
+    "createApiKeyTitle": "建立 API 金鑰",
     "createApiKeyDesc": "建立後完整 權杖 只顯示一次",
     "createKeyBtn": "建立金鑰",
     "apiKeyNameHint": "方便辨識，例如 CI／備份腳本",
     "apiKeyScope": "範圍",
     "apiKeyScopeHint": "read = 只讀（no full mutate）",
-    "scopeFull": "full（完整 介面）",
+    "scopeFull": "full（完整 API）",
     "scopeRead": "read（只讀）",
     "apiKey2faHint": "若已開 雙重驗證，建立金鑰會要求再輸入驗證碼（step-up）。",
-    "apiKeyCreated": "介面 金鑰已建立",
+    "apiKeyCreated": "API 金鑰已建立",
     "export2faBackupTitle": "匯出 雙重驗證 備份",
-    "createApiKeyStepUp": "建立 介面 金鑰 · step-up",
+    "createApiKeyStepUp": "建立 API 金鑰 · step-up",
     "enterTotpCode": "請輸入目前 TOTP 驗證碼",
     "export": "匯出",
     "backupCopied": "加密備份已複製到剪貼簿（離線保存）",
@@ -10342,7 +10357,10 @@
       "sharePanelTitle": "共用 面板 TOTP secret？",
       "sharePanelDesc": "風險高。請輸入 SHARED 確認。",
       "confirmString": "確認字串",
-      "enableShare": "啟用共用"
+      "enableShare": "啟用共用",
+      "invalidPub": "請貼上完整 OpenSSH 公鑰行（ssh-ed25519／ssh-rsa／ecdsa…）。",
+      "dryRunOk": "預覽試行完成。請查看下方預覽。",
+      "strictBlocked": "套件或 PAM 未就緒，已停用套用 Strict。"
     },
     "sessionsActive": "使用中",
     "sessionsOther": "其他裝置",
@@ -10366,7 +10384,36 @@
     "sessionRevoked": "已登出該工作階段",
     "mySecurityHint": "",
     "policyTotpHint": "全站政策：要求 admin 角色各自啟用 2FA（每人自己掃碼），不是共用同一組驗證碼。",
-    "requireUser2fa": "要求所有面板用戶啟用 2FA"
+    "requireUser2fa": "要求所有面板用戶啟用 2FA",
+    "changePasswordTitle": "變更登入密碼",
+    "currentPassword": "目前密碼",
+    "newPassword": "新密碼",
+    "confirmNewPassword": "確認新密碼",
+    "passwordMismatch": "兩次新密碼不一致。",
+    "changePassword": "變更密碼",
+    "passwordChanged": "已更新密碼。",
+    "strictNeedsEnrolled": "至少一名管理員已開 2FA，先可開啟 Strict。",
+    "policyTotpNeedSelf": "請先在本帳號啟用 2FA，否則確認碼無法填寫。",
+    "fail2banSnippetTitle": "fail2ban 片段",
+    "fail2banSnippetEmpty": "沒有寫入片段。",
+    "trustedDevicesTitle": "信任裝置",
+    "noTrustedDevices": "尚未有信任裝置。",
+    "strictConfirmTitle": "開啟 Strict 2FA？",
+    "strictConfirmDesc": "未開 2FA 的用戶會被拒絕登入。請確認你已有可用的 TOTP 或通行密鑰。",
+    "revokeDevicesTitle": "撤銷信任裝置？",
+    "revokeDevicesDesc": "已記住的瀏覽器要再做 2FA。",
+    "approvalsHint": "高風險工具需要第二人批准時會出現在此。權限在「用戶 → 權限」設定 approvals.review／approvals.handle。",
+    "allowlistReadonly": "代理工具目錄（唯讀）。能力授權在「用戶 → 權限」設定。",
+    "colTool": "工具",
+    "colAllowed": "允許",
+    "colRisk": "風險",
+    "colApproval": "審批",
+    "risk": {
+      "low": "低",
+      "medium": "中",
+      "high": "高",
+      "critical": "嚴重"
+    }
   },
   "serviceExposure": {
     "title": "網絡存取",
@@ -10928,7 +10975,8 @@
     "cryptoNetwork": "網絡",
     "cryptoAddress": "地址",
     "copy": "複製",
-    "copied": "已複製"
+    "copied": "已複製",
+    "docsLink": "說明文件"
   },
   "system": {
     "exportLoadFailed": "載入匯出資料失敗",
@@ -11781,7 +11829,10 @@
     "lockSelfHint": "這是目前登入的帳戶。已禁止刪除、暫停及更改角色，以免無法登入。",
     "lockLastAdminHint": "這是最後一個管理員。已禁止刪除、暫停及降級。",
     "demoteAdminTitle": "降級此管理員？",
-    "demoteAdminDesc": "此用戶將失去完整管理員權限。請確認仍有其他管理員。"
+    "demoteAdminDesc": "此用戶將失去完整管理員權限。請確認仍有其他管理員。",
+    "quotaNonNeg": "數量與配額不可為負數。",
+    "diskQuotaHint": "預設晶片以 GiB 計；自訂欄為 MiB。",
+    "bandwidthHint": "0 代表不限。"
   },
   "vnc": {
     "pageDesc": "VNC 伺服器／客戶端",
@@ -12027,7 +12078,8 @@
     "stackMissingShort": "未安裝",
     "editClientTitle": "編輯遠端客戶端",
     "editClientDesc": "更新連線路徑、主機與可選已存密碼。",
-    "clientUpdated": "已更新客戶端設定"
+    "clientUpdated": "已更新客戶端設定",
+    "rememberNeedPassword": "請先填密碼。"
   },
   "vpn": {
     "pageDesc": "VPN 伺服器／客戶端",

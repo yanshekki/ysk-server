@@ -24,5 +24,6 @@
   "cryptoNetwork": "네트워크",
   "cryptoAddress": "주소",
   "copy": "복사",
-  "copied": "복사됨"
+  "copied": "복사됨",
+  "docsLink": "Documentation"
 }

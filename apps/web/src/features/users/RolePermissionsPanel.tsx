@@ -31,11 +31,19 @@ function capLabelKey(id: CapabilityId): string {
   return def?.labelKey ?? id;
 }
 
+export function sameCapSet(a: CapabilityId[], b: CapabilityId[]): boolean {
+  if (a.length !== b.length) return false;
+  const sa = [...a].sort().join('\0');
+  const sb = [...b].sort().join('\0');
+  return sa === sb;
+}
+
 type Props = {
   policies: RolePolicyView[];
   policyRole: SystemRole;
   draftMax: OperationLevel;
   draftCaps: CapabilityId[];
+  draftDirty?: boolean;
   busy?: boolean;
   canEdit: boolean;
   onRoleChange: (r: SystemRole) => void;
@@ -51,6 +59,7 @@ export function RolePermissionsPanel({
   policyRole,
   draftMax,
   draftCaps,
+  draftDirty = false,
   busy,
   canEdit,
   onRoleChange,
@@ -124,6 +133,8 @@ export function RolePermissionsPanel({
                   <span className="rbac-role-item__meta">
                     {r === 'admin' ? (
                       <Badge tone="ok">{t('rbac.adminLockedFull')}</Badge>
+                    ) : selected && draftDirty ? (
+                      <Badge tone="warn">{t('rbac.unsaved')}</Badge>
                     ) : view?.dirty ? (
                       <Badge tone="warn">{t('rbac.dirty')}</Badge>
                     ) : (
@@ -147,10 +158,12 @@ export function RolePermissionsPanel({
                 {t(`users.roleName.${policyRole}`, { defaultValue: policyRole })}
               </h2>
               <p className="rbac-panel__subtitle muted u-text-sm">
-                {policyView?.dirty
-                  ? t('rbac.dirtyHint', {
-                      defaultValue: t('rbac.dirty') })
-                  : t('rbac.factory')}
+                {draftDirty
+                  ? t('rbac.unsavedHint')
+                  : policyView?.dirty
+                    ? t('rbac.dirtyHint', {
+                        defaultValue: t('rbac.dirty') })
+                    : t('rbac.factory')}
                 {' · '}
                 {t('rbac.enabledCount', {
                   enabled: enabledCount,
@@ -179,11 +192,19 @@ export function RolePermissionsPanel({
                 variant="primary"
                 size="sm"
                 loading={busy}
-                disabled={lockedRole}
-                title={policyRole === 'admin' ? t('rbac.adminLockedFull') : undefined}
+                disabled={lockedRole || !draftDirty}
+                title={
+                  policyRole === 'admin'
+                    ? t('rbac.adminLockedFull')
+                    : !draftDirty
+                      ? t('rbac.nothingToSave')
+                      : undefined
+                }
                 onClick={onSave}
               >
-                {t('rbac.save')}
+                {t('rbac.saveRole', {
+                  role: t(`users.roleName.${policyRole}`, { defaultValue: policyRole }),
+                })}
               </Button>
             </ActionBar>
           </header>

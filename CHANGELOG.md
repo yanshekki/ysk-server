@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.35 — 2026-08-15
+
+### Fix
+- Role-policy editor asks before discarding unsaved capability edits; Save is disabled when clean
+- Package quota chips use GiB labels; negative values are rejected
+- Account security can change the sign-in password; Strict 2FA cannot lock the last unenrolled admin
+- API keys stay named API (not 「介面」); default scope is read
+- SSH public keys must be a real OpenSSH line; Strict apply stays off until PAM is ready
+- VNC XFCE / viewer install banners list only their own packages
+- journald vacuum copy is readable; Real IP CDN refresh needs a provider
+
 ## 1.0.34 — 2026-08-15
 
 ### Fix

@@ -96,5 +96,11 @@
   "capabilitiesHint": "Toggle what this role may do",
   "enabledCount": "{{enabled}} of {{total}} enabled",
   "bandAboveMax": "Above max level",
-  "dirtyHint": "Customized (differs from factory)"
+  "dirtyHint": "Customized (differs from factory)",
+  "unsaved": "Unsaved",
+  "unsavedHint": "Unsaved edits on this role",
+  "nothingToSave": "Nothing to save",
+  "saveRole": "Save {{role}} policy",
+  "discardTitle": "Discard unsaved policy?",
+  "discardDesc": "Switching roles drops unsaved capability edits."
 }

@@ -124,5 +124,9 @@
   "mediaAudioLabel": "Audio",
   "mediaAudioDesc": "Pont facultatif depuis l'hôte Chrome ; peut nécessiter un clic de déverrouillage.",
   "mediaPolicyLabel": "Politique",
-  "mediaPolicyDesc": "Les téléchargements et la lecture automatique suivent les paramètres de sécurité et de téléchargement ci-dessus."
+  "mediaPolicyDesc": "Les téléchargements et la lecture automatique suivent les paramètres de sécurité et de téléchargement ci-dessus.",
+  "frameBlocked": "The page could not be shown in the panel frame.",
+  "historyEmpty": "No history in this session.",
+  "bookmarksEmpty": "No bookmarks yet.",
+  "closeSessionHint": "Clears cookies for this browse session. Bookmarks stay."
 }

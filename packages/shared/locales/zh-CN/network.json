@@ -135,10 +135,12 @@
       "azure_frontdoor": "蔚蓝前门",
       "gcore": "国核CDN",
       "custom": "自定义代理"
-    }
+    },
+    "needProvider": "请先选择 CDN 供应商，才可更新 IP 列表。"
   },
   "linkUp": "向上",
   "linkDown": "断开",
   "linkDownTitle": "將 {{name}} 離線",
-  "linkDownNeedConfirm": "需輸入介面名稱確認"
+  "linkDownNeedConfirm": "需輸入介面名稱確認",
+  "persistNmHint": "可持久化代表经 NetworkManager 写入后，重启后设定仍然有效。"
 }

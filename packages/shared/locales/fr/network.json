@@ -135,10 +135,12 @@
       "azure_frontdoor": "Porte d'entrée azur",
       "gcore": "CDN Gcore",
       "custom": "Proxys personnalisés"
-    }
+    },
+    "needProvider": "Choose a CDN provider before fetching its IP list."
   },
   "linkUp": "En haut",
   "linkDown": "Vers le bas",
   "linkDownTitle": "Take {{name}} offline",
-  "linkDownNeedConfirm": "Type the interface name to confirm"
+  "linkDownNeedConfirm": "Type the interface name to confirm",
+  "persistNmHint": "Persistable means changes can survive reboot via NetworkManager."
 }

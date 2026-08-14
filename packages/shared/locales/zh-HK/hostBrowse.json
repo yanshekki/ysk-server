@@ -124,5 +124,9 @@
   "mediaAudioLabel": "音訊",
   "mediaAudioDesc": "可選用來自主機 Chrome 的橋接；可能需要解鎖點選。",
   "mediaPolicyLabel": "政策",
-  "mediaPolicyDesc": "下載與自動播放遵循上方安全與下載設定。"
+  "mediaPolicyDesc": "下載與自動播放遵循上方安全與下載設定。",
+  "frameBlocked": "頁面無法在面板框架內顯示。",
+  "historyEmpty": "此工作階段尚無瀏覽記錄。",
+  "bookmarksEmpty": "尚未有書籤。",
+  "closeSessionHint": "會清掉此瀏覽工作階段的 Cookie；書籤會保留。"
 }

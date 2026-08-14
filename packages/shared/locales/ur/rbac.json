@@ -96,5 +96,11 @@
   "capabilitiesHint": "ٹوگل کریں کہ یہ کردار کیا کر سکتا ہے۔",
   "enabledCount": "{{total}} میں سے {{enabled}} فعال",
   "bandAboveMax": "زیادہ سے زیادہ سطح سے اوپر",
-  "dirtyHint": "اپنی مرضی کے مطابق (فیکٹری سے مختلف)"
+  "dirtyHint": "اپنی مرضی کے مطابق (فیکٹری سے مختلف)",
+  "unsaved": "Unsaved",
+  "unsavedHint": "Unsaved edits on this role",
+  "nothingToSave": "Nothing to save",
+  "saveRole": "Save {{role}} policy",
+  "discardTitle": "Discard unsaved policy?",
+  "discardDesc": "Switching roles drops unsaved capability edits."
 }

@@ -242,5 +242,6 @@
   "stackMissingShort": "No instalado",
   "editClientTitle": "Editar cliente remoto",
   "editClientDesc": "Actualice la ruta, los hosts y la contraseña almacenada opcional.",
-  "clientUpdated": "Perfil de cliente actualizado"
+  "clientUpdated": "Perfil de cliente actualizado",
+  "rememberNeedPassword": "Enter a password first."
 }

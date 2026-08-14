@@ -271,7 +271,7 @@ export function SoftwareVersionBar({
         ) : st.installed && st.latestVersion ? (
           <Badge tone="ok">{t('software.version.upToDate')}</Badge>
         ) : null}
-        {st.source ? (
+        {st.source && st.source !== 'none' ? (
           <span className="muted u-text-sm" title={st.notes.join(' · ')}>
             {t('software.version.sourceLabel', { defaultValue: 'Source' })}:{' '}
             {st.source}

@@ -4319,7 +4319,11 @@
     "mediaAudioLabel": "آڈیو",
     "mediaAudioDesc": "میزبان کروم سے اختیاری پل؛ انلاک کلک کی ضرورت ہو سکتی ہے۔",
     "mediaPolicyLabel": "پالیسی",
-    "mediaPolicyDesc": "ڈاؤن لوڈ اور آٹو پلے اوپر کی حفاظت اور ڈاؤن لوڈ کی ترتیبات کی پیروی کرتے ہیں۔"
+    "mediaPolicyDesc": "ڈاؤن لوڈ اور آٹو پلے اوپر کی حفاظت اور ڈاؤن لوڈ کی ترتیبات کی پیروی کرتے ہیں۔",
+    "frameBlocked": "The page could not be shown in the panel frame.",
+    "historyEmpty": "No history in this session.",
+    "bookmarksEmpty": "No bookmarks yet.",
+    "closeSessionHint": "Clears cookies for this browse session. Bookmarks stay."
   },
   "listToolbar": {
     "searchPlaceholder": "تلاش کریں…",
@@ -4489,7 +4493,10 @@
     "prioErr": "غلطی +",
     "prioWarn": "وارننگ+",
     "prioInfo": "معلومات+",
-    "srcFail2ban": "fail2ban"
+    "srcFail2ban": "fail2ban",
+    "vacuumSize": "Limit to 500 MB",
+    "logrotateNoStatus": "No logrotate status file yet (normal if it has never run).",
+    "autoVacuumOff": "Automatic clean is off. Time is unused until you enable it."
   },
   "metrics": {
     "alert": {
@@ -4950,12 +4957,14 @@
         "azure_frontdoor": "Azure سامنے کا دروازہ",
         "gcore": "Gcore CDN",
         "custom": "حسب ضرورت پراکسی"
-      }
+      },
+      "needProvider": "Choose a CDN provider before fetching its IP list."
     },
     "linkUp": "اوپر",
     "linkDown": "نیچے",
     "linkDownTitle": "Take {{name}} offline",
-    "linkDownNeedConfirm": "Type the interface name to confirm"
+    "linkDownNeedConfirm": "Type the interface name to confirm",
+    "persistNmHint": "Persistable means changes can survive reboot via NetworkManager."
   },
   "nginx": {
     "pillSites": "{{count}} سائٹ (سائٹس)",
@@ -9235,7 +9244,13 @@
     "capabilitiesHint": "ٹوگل کریں کہ یہ کردار کیا کر سکتا ہے۔",
     "enabledCount": "{{total}} میں سے {{enabled}} فعال",
     "bandAboveMax": "زیادہ سے زیادہ سطح سے اوپر",
-    "dirtyHint": "اپنی مرضی کے مطابق (فیکٹری سے مختلف)"
+    "dirtyHint": "اپنی مرضی کے مطابق (فیکٹری سے مختلف)",
+    "unsaved": "Unsaved",
+    "unsavedHint": "Unsaved edits on this role",
+    "nothingToSave": "Nothing to save",
+    "saveRole": "Save {{role}} policy",
+    "discardTitle": "Discard unsaved policy?",
+    "discardDesc": "Switching roles drops unsaved capability edits."
   },
   "readiness": {
     "cat": {
@@ -10341,7 +10356,10 @@
       "sharePanelTitle": "اشتراک پینل TOTP راز؟",
       "sharePanelDesc": "زیادہ خطرہ۔ تصدیق کے لیے SHARED ٹائپ کریں۔",
       "confirmString": "تصدیقی تار",
-      "enableShare": "اشتراک کو فعال کریں۔"
+      "enableShare": "اشتراک کو فعال کریں۔",
+      "invalidPub": "Paste a full OpenSSH public key line (ssh-ed25519 / ssh-rsa / ecdsa…).",
+      "dryRunOk": "Dry-run finished. Review the preview below.",
+      "strictBlocked": "Package or PAM is not ready; Strict apply is disabled."
     },
     "sessionsActive": "فعال سیشنز",
     "sessionsOther": "دیگر آلات",
@@ -10366,7 +10384,36 @@
     "mySecurityHint": "",
     "policyTotpHint": "سائٹ کی پالیسی: ہر منتظم کو اپنے 2FA (انفرادی QR) کو فعال کرنا ہوگا۔",
     "requireUser2fa": "تمام پینل صارفین کے لیے 2FA لازمی",
-    "generateFail2ban": "Generate fail2ban snippets"
+    "generateFail2ban": "Generate fail2ban snippets",
+    "changePasswordTitle": "Change sign-in password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmNewPassword": "Confirm new password",
+    "passwordMismatch": "New passwords do not match.",
+    "changePassword": "Change password",
+    "passwordChanged": "Password updated.",
+    "strictNeedsEnrolled": "At least one admin must have 2FA before Strict can be turned on.",
+    "policyTotpNeedSelf": "Enable 2FA on this account first; the confirm code cannot be filled otherwise.",
+    "fail2banSnippetTitle": "fail2ban snippet",
+    "fail2banSnippetEmpty": "No snippet was written.",
+    "trustedDevicesTitle": "Trusted devices",
+    "noTrustedDevices": "No trusted devices.",
+    "strictConfirmTitle": "Turn on Strict 2FA?",
+    "strictConfirmDesc": "Users without 2FA will be refused sign-in. Confirm you already have a working TOTP or passkey.",
+    "revokeDevicesTitle": "Revoke trusted devices?",
+    "revokeDevicesDesc": "Remembered browsers will need 2FA again.",
+    "approvalsHint": "Approvals appear when a high-risk tool needs a second operator. Grant approvals.review / approvals.handle on Users → Permissions.",
+    "allowlistReadonly": "Read-only catalog of agent tools. Capability grants are configured on Users → Permissions.",
+    "colTool": "Tool",
+    "colAllowed": "Allowed",
+    "colRisk": "Risk",
+    "colApproval": "Approval",
+    "risk": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    }
   },
   "serviceExposure": {
     "title": "نیٹ ورک تک رسائی",
@@ -10928,7 +10975,8 @@
     "cryptoNetwork": "نیٹ ورک",
     "cryptoAddress": "پتہ",
     "copy": "کاپی",
-    "copied": "کاپی ہو گیا"
+    "copied": "کاپی ہو گیا",
+    "docsLink": "Documentation"
   },
   "system": {
     "exportLoadFailed": "برآمدی ڈیٹا لوڈ کرنے میں ناکام",
@@ -11781,7 +11829,10 @@
     "lockLastAdminHint": "یہ آخری ایڈمن ہے۔ حذف، معطلی اور تنزیل مسدود ہیں۔",
     "demoteAdminTitle": "اس ایڈمن کو تنزیل دیں؟",
     "demoteAdminDesc": "یہ صارف مکمل ایڈمن رسائی کھو دے گا۔ تصدیق کریں کہ دوسرا ایڈمن باقی ہے۔",
-    "searchPkgPh": "Package name"
+    "searchPkgPh": "Package name",
+    "quotaNonNeg": "Counts and quotas cannot be negative.",
+    "diskQuotaHint": "Presets are GiB; custom box is MiB.",
+    "bandwidthHint": "0 means unlimited."
   },
   "vnc": {
     "pageDesc": "VNC سرور اور کلائنٹ",
@@ -12027,7 +12078,8 @@
     "stackMissingShort": "انسٹال نہیں ہے۔",
     "editClientTitle": "ریموٹ کلائنٹ میں ترمیم کریں۔",
     "editClientDesc": "راستہ، میزبان، اور اختیاری ذخیرہ شدہ پاس ورڈ کو اپ ڈیٹ کریں۔",
-    "clientUpdated": "کلائنٹ پروفائل کو اپ ڈیٹ کر دیا گیا۔"
+    "clientUpdated": "کلائنٹ پروفائل کو اپ ڈیٹ کر دیا گیا۔",
+    "rememberNeedPassword": "Enter a password first."
   },
   "vpn": {
     "pageDesc": "VPN سرور اور کلائنٹ",

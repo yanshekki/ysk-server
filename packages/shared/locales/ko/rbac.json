@@ -96,5 +96,11 @@
   "capabilitiesHint": "이 역할이 수행할 수 있는 작업 전환",
   "enabledCount": "{{total}} 중 {{enabled}} 활성화됨",
   "bandAboveMax": "최대 레벨 이상",
-  "dirtyHint": "맞춤형(공장마다 다름)"
+  "dirtyHint": "맞춤형(공장마다 다름)",
+  "unsaved": "Unsaved",
+  "unsavedHint": "Unsaved edits on this role",
+  "nothingToSave": "Nothing to save",
+  "saveRole": "Save {{role}} policy",
+  "discardTitle": "Discard unsaved policy?",
+  "discardDesc": "Switching roles drops unsaved capability edits."
 }

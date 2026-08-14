@@ -135,10 +135,12 @@
       "azure_frontdoor": "アズールフロントドア",
       "gcore": "GコアCDN",
       "custom": "カスタムプロキシ"
-    }
+    },
+    "needProvider": "Choose a CDN provider before fetching its IP list."
   },
   "linkUp": "Postfix",
   "linkDown": "ダウン",
   "linkDownTitle": "Take {{name}} offline",
-  "linkDownNeedConfirm": "Type the interface name to confirm"
+  "linkDownNeedConfirm": "Type the interface name to confirm",
+  "persistNmHint": "Persistable means changes can survive reboot via NetworkManager."
 }

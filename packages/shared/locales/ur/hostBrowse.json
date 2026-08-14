@@ -124,5 +124,9 @@
   "mediaAudioLabel": "آڈیو",
   "mediaAudioDesc": "میزبان کروم سے اختیاری پل؛ انلاک کلک کی ضرورت ہو سکتی ہے۔",
   "mediaPolicyLabel": "پالیسی",
-  "mediaPolicyDesc": "ڈاؤن لوڈ اور آٹو پلے اوپر کی حفاظت اور ڈاؤن لوڈ کی ترتیبات کی پیروی کرتے ہیں۔"
+  "mediaPolicyDesc": "ڈاؤن لوڈ اور آٹو پلے اوپر کی حفاظت اور ڈاؤن لوڈ کی ترتیبات کی پیروی کرتے ہیں۔",
+  "frameBlocked": "The page could not be shown in the panel frame.",
+  "historyEmpty": "No history in this session.",
+  "bookmarksEmpty": "No bookmarks yet.",
+  "closeSessionHint": "Clears cookies for this browse session. Bookmarks stay."
 }

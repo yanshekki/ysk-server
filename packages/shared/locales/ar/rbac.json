@@ -96,5 +96,11 @@
   "capabilitiesHint": "قم بتبديل ما قد يفعله هذا الدور",
   "enabledCount": "{{enabled}} من {{total}} ممكّنة",
   "bandAboveMax": "فوق المستوى الأقصى",
-  "dirtyHint": "حسب الطلب (يختلف عن المصنع)"
+  "dirtyHint": "حسب الطلب (يختلف عن المصنع)",
+  "unsaved": "Unsaved",
+  "unsavedHint": "Unsaved edits on this role",
+  "nothingToSave": "Nothing to save",
+  "saveRole": "Save {{role}} policy",
+  "discardTitle": "Discard unsaved policy?",
+  "discardDesc": "Switching roles drops unsaved capability edits."
 }

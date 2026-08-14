@@ -127,5 +127,8 @@
   "lockLastAdminHint": "Ceci est le dernier administrateur. La suppression, la suspension et la rétrogradation sont bloquées.",
   "demoteAdminTitle": "Rétrograder cet administrateur ?",
   "demoteAdminDesc": "Cet utilisateur perdra l’accès administrateur complet. Confirmez qu’un autre administrateur reste.",
-  "searchPkgPh": "Package name"
+  "searchPkgPh": "Package name",
+  "quotaNonNeg": "Counts and quotas cannot be negative.",
+  "diskQuotaHint": "Presets are GiB; custom box is MiB.",
+  "bandwidthHint": "0 means unlimited."
 }

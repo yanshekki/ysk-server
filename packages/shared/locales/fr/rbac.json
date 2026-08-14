@@ -96,5 +96,11 @@
   "capabilitiesHint": "Activer/désactiver ce que ce rôle peut faire",
   "enabledCount": "{{enabled}} sur {{total}} activées",
   "bandAboveMax": "Au-dessus du niveau max",
-  "dirtyHint": "Personnalisé (diffère de l'usine)"
+  "dirtyHint": "Personnalisé (diffère de l'usine)",
+  "unsaved": "Unsaved",
+  "unsavedHint": "Unsaved edits on this role",
+  "nothingToSave": "Nothing to save",
+  "saveRole": "Save {{role}} policy",
+  "discardTitle": "Discard unsaved policy?",
+  "discardDesc": "Switching roles drops unsaved capability edits."
 }

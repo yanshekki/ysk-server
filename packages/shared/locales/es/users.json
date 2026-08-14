@@ -127,5 +127,8 @@
   "lockLastAdminHint": "Este es el último administrador. Eliminar, suspender y degradar están bloqueados.",
   "demoteAdminTitle": "¿Degradar a este administrador?",
   "demoteAdminDesc": "Este usuario perderá el acceso completo de administrador. Confirme que queda otro administrador.",
-  "searchPkgPh": "Package name"
+  "searchPkgPh": "Package name",
+  "quotaNonNeg": "Counts and quotas cannot be negative.",
+  "diskQuotaHint": "Presets are GiB; custom box is MiB.",
+  "bandwidthHint": "0 means unlimited."
 }

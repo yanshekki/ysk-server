@@ -242,5 +242,6 @@
   "stackMissingShort": "미설치",
   "editClientTitle": "원격 클라이언트 편집",
   "editClientDesc": "경로, 호스트 및 선택적으로 저장된 비밀번호를 업데이트합니다.",
-  "clientUpdated": "클라이언트 프로필이 업데이트되었습니다."
+  "clientUpdated": "클라이언트 프로필이 업데이트되었습니다.",
+  "rememberNeedPassword": "Enter a password first."
 }

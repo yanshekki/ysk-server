@@ -127,5 +127,8 @@
   "lockLastAdminHint": "یہ آخری ایڈمن ہے۔ حذف، معطلی اور تنزیل مسدود ہیں۔",
   "demoteAdminTitle": "اس ایڈمن کو تنزیل دیں؟",
   "demoteAdminDesc": "یہ صارف مکمل ایڈمن رسائی کھو دے گا۔ تصدیق کریں کہ دوسرا ایڈمن باقی ہے۔",
-  "searchPkgPh": "Package name"
+  "searchPkgPh": "Package name",
+  "quotaNonNeg": "Counts and quotas cannot be negative.",
+  "diskQuotaHint": "Presets are GiB; custom box is MiB.",
+  "bandwidthHint": "0 means unlimited."
 }

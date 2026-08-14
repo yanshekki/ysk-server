@@ -96,5 +96,11 @@
   "capabilitiesHint": "この役割ができることを切り替える",
   "enabledCount": "{{enabled}}/{{total}} が有効になりました",
   "bandAboveMax": "最大レベル以上",
-  "dirtyHint": "カスタマイズされた（工場とは異なります）"
+  "dirtyHint": "カスタマイズされた（工場とは異なります）",
+  "unsaved": "Unsaved",
+  "unsavedHint": "Unsaved edits on this role",
+  "nothingToSave": "Nothing to save",
+  "saveRole": "Save {{role}} policy",
+  "discardTitle": "Discard unsaved policy?",
+  "discardDesc": "Switching roles drops unsaved capability edits."
 }

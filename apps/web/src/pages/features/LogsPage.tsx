@@ -1249,7 +1249,7 @@ export function LogsPage() {
                       loading={busy}
                       onClick={bindSet(setVacuumConfirm, 'size')}
                     >
-                      Vacuum 500M
+                      {t('logs.vacuumSize')}
                     </Button>
                   </div>
                   <p className="lc-card__hint">{t('logs.vacuumHint')}</p>
@@ -1267,8 +1267,11 @@ export function LogsPage() {
                   </Badge>
                 </div>
                 <div className="lc-card__body">
-                  {overview?.logrotate?.statusText ? (
+                  {overview?.logrotate?.statusText &&
+                  !/no status file/i.test(overview.logrotate.statusText) ? (
                     <pre className="lc-pre">{overview.logrotate.statusText}</pre>
+                  ) : overview?.logrotate?.statusText ? (
+                    <p className="muted u-text-sm">{t('logs.logrotateNoStatus')}</p>
                   ) : (
                     <div className="lc-empty-inline">
                       {t('logs.logrotateMissing')}
@@ -1420,7 +1423,16 @@ export function LogsPage() {
                       <span>{t('logs.dailyNeedRoot')}</span>
                     </label>
                   </Field>
-                  <Field label={t('common.time')} htmlFor="set-auto-t" flush>
+                  <Field
+                    label={t('common.time')}
+                    htmlFor="set-auto-t"
+                    flush
+                    hint={
+                      settingsDraft.autoVacuumEnabled
+                        ? undefined
+                        : t('logs.autoVacuumOff')
+                    }
+                  >
                     <PresetChips
                       options={[
                         { value: '01:00', label: '01:00' },
@@ -1432,6 +1444,7 @@ export function LogsPage() {
                       onChange={bindDraftString(setSettingsDraft, 'autoVacuumTime')}
                       allowCustom
                       customPlaceholder="HH:MM"
+                      disabled={!settingsDraft.autoVacuumEnabled}
                     />
                   </Field>
                 </div>

@@ -124,5 +124,9 @@
   "mediaAudioLabel": "Audio",
   "mediaAudioDesc": "Optional bridge from host Chrome; may require unlock click.",
   "mediaPolicyLabel": "Policy",
-  "mediaPolicyDesc": "Downloads and autoplay follow the safety and download settings above."
+  "mediaPolicyDesc": "Downloads and autoplay follow the safety and download settings above.",
+  "frameBlocked": "The page could not be shown in the panel frame.",
+  "historyEmpty": "No history in this session.",
+  "bookmarksEmpty": "No bookmarks yet.",
+  "closeSessionHint": "Clears cookies for this browse session. Bookmarks stay."
 }

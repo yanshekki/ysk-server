@@ -108,8 +108,8 @@
   "lines": "{{n}} 行",
   "followingSseDyn": " · 跟随中{{sse}}",
   "ipBan": "IP → 封禁",
-  "vacuumNote": "释放 systemd-journal 磁盘。无 EXECUTE 会 blocked，不假成功。",
-  "vacuumTime": "Vacuum 时间",
+  "vacuumNote": "释放 systemd-journald 占用的磁盘。没有系统变更权限时会封锁，不会假装成功。",
+  "vacuumTime": "依保留时间清理",
   "vacuumHint": "建议保留 ≥7 日；操作后重新探测磁盘用量。",
   "logrotateStatus": "系统 logrotate 状态（只读探测）",
   "logrotateMissing": "无 status 档或不可读 — 可于服务矩阵检查 logrotate 套件",
@@ -117,7 +117,7 @@
   "relatedOpsDesc": "日志观测 vs 攻击应变分工",
   "scLogsLine": "观测 journal／文件／项目",
   "scProtLine": "攻击应变、自动 ban（点 IP）",
-  "journalVacuumTitle": "Journal 清理（vacuum）",
+  "journalVacuumTitle": "清理 journald 磁盘",
   "journalSection": "杂志",
   "sseLabel": "上证所",
   "logrotateLabel": "logrotate",
@@ -132,5 +132,8 @@
   "prioErr": "错误+",
   "prioWarn": "警告+",
   "prioInfo": "信息+",
-  "srcFail2ban": "fail2ban"
+  "srcFail2ban": "fail2ban",
+  "vacuumSize": "限制至 500 MB",
+  "logrotateNoStatus": "尚未有 logrotate 状态档（从未跑过时属常见）。",
+  "autoVacuumOff": "自动清理未启用。启用前时间设定不会执行。"
 }

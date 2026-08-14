@@ -127,5 +127,8 @@
   "lockLastAdminHint": "এটি শেষ অ্যাডমিন। মুছে ফেলা, স্থগিত ও পদত্যাগ বন্ধ।",
   "demoteAdminTitle": "এই অ্যাডমিনকে পদত্যাগ করবেন?",
   "demoteAdminDesc": "এই ব্যবহারকারী পূর্ণ অ্যাডমিন অ্যাক্সেস হারাবেন। নিশ্চিত করুন অন্য অ্যাডমিন আছেন।",
-  "searchPkgPh": "Package name"
+  "searchPkgPh": "Package name",
+  "quotaNonNeg": "Counts and quotas cannot be negative.",
+  "diskQuotaHint": "Presets are GiB; custom box is MiB.",
+  "bandwidthHint": "0 means unlimited."
 }

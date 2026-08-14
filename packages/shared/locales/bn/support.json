@@ -24,5 +24,6 @@
   "cryptoNetwork": "নেটওয়ার্ক",
   "cryptoAddress": "ঠিকানা",
   "copy": "কপি",
-  "copied": "কপি হয়েছে"
+  "copied": "কপি হয়েছে",
+  "docsLink": "Documentation"
 }

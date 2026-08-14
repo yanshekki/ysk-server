@@ -4319,7 +4319,11 @@
     "mediaAudioLabel": "オーディオ",
     "mediaAudioDesc": "ホスト Chrome からのオプションのブリッジ。ロック解除のクリックが必要になる場合があります。",
     "mediaPolicyLabel": "ポリシー",
-    "mediaPolicyDesc": "ダウンロードと自動再生は、上記の安全性とダウンロードの設定に従います。"
+    "mediaPolicyDesc": "ダウンロードと自動再生は、上記の安全性とダウンロードの設定に従います。",
+    "frameBlocked": "The page could not be shown in the panel frame.",
+    "historyEmpty": "No history in this session.",
+    "bookmarksEmpty": "No bookmarks yet.",
+    "closeSessionHint": "Clears cookies for this browse session. Bookmarks stay."
   },
   "listToolbar": {
     "searchPlaceholder": "検索…",
@@ -4489,7 +4493,10 @@
     "prioErr": "ERR",
     "prioWarn": "意する",
     "prioInfo": "インフォ",
-    "srcFail2ban": "fail2ban"
+    "srcFail2ban": "fail2ban",
+    "vacuumSize": "Limit to 500 MB",
+    "logrotateNoStatus": "No logrotate status file yet (normal if it has never run).",
+    "autoVacuumOff": "Automatic clean is off. Time is unused until you enable it."
   },
   "metrics": {
     "alert": {
@@ -4950,12 +4957,14 @@
         "azure_frontdoor": "アズールフロントドア",
         "gcore": "GコアCDN",
         "custom": "カスタムプロキシ"
-      }
+      },
+      "needProvider": "Choose a CDN provider before fetching its IP list."
     },
     "linkUp": "Postfix",
     "linkDown": "ダウン",
     "linkDownTitle": "Take {{name}} offline",
-    "linkDownNeedConfirm": "Type the interface name to confirm"
+    "linkDownNeedConfirm": "Type the interface name to confirm",
+    "persistNmHint": "Persistable means changes can survive reboot via NetworkManager."
   },
   "nginx": {
     "pillSites": "{{count}} サイト",
@@ -9235,7 +9244,13 @@
     "capabilitiesHint": "この役割ができることを切り替える",
     "enabledCount": "{{enabled}}/{{total}} が有効になりました",
     "bandAboveMax": "最大レベル以上",
-    "dirtyHint": "カスタマイズされた（工場とは異なります）"
+    "dirtyHint": "カスタマイズされた（工場とは異なります）",
+    "unsaved": "Unsaved",
+    "unsavedHint": "Unsaved edits on this role",
+    "nothingToSave": "Nothing to save",
+    "saveRole": "Save {{role}} policy",
+    "discardTitle": "Discard unsaved policy?",
+    "discardDesc": "Switching roles drops unsaved capability edits."
   },
   "readiness": {
     "cat": {
@@ -10341,7 +10356,10 @@
       "sharePanelTitle": "パネルの TOTP 秘密を共有しますか?",
       "sharePanelDesc": "リスクが高い。 「SHARED」と入力して確認します。",
       "confirmString": "確認文字列",
-      "enableShare": "共有を有効にする"
+      "enableShare": "共有を有効にする",
+      "invalidPub": "Paste a full OpenSSH public key line (ssh-ed25519 / ssh-rsa / ecdsa…).",
+      "dryRunOk": "Dry-run finished. Review the preview below.",
+      "strictBlocked": "Package or PAM is not ready; Strict apply is disabled."
     },
     "sessionsActive": "アクティブなセッション",
     "sessionsOther": "その他のデバイス",
@@ -10366,7 +10384,36 @@
     "mySecurityHint": "",
     "policyTotpHint": "サイト ポリシー: 各管理者は独自の 2FA (個別の QR) を有効にする必要があります。",
     "requireUser2fa": "すべてのパネルユーザーに 2FA を要求",
-    "generateFail2ban": "Generate fail2ban snippets"
+    "generateFail2ban": "Generate fail2ban snippets",
+    "changePasswordTitle": "Change sign-in password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmNewPassword": "Confirm new password",
+    "passwordMismatch": "New passwords do not match.",
+    "changePassword": "Change password",
+    "passwordChanged": "Password updated.",
+    "strictNeedsEnrolled": "At least one admin must have 2FA before Strict can be turned on.",
+    "policyTotpNeedSelf": "Enable 2FA on this account first; the confirm code cannot be filled otherwise.",
+    "fail2banSnippetTitle": "fail2ban snippet",
+    "fail2banSnippetEmpty": "No snippet was written.",
+    "trustedDevicesTitle": "Trusted devices",
+    "noTrustedDevices": "No trusted devices.",
+    "strictConfirmTitle": "Turn on Strict 2FA?",
+    "strictConfirmDesc": "Users without 2FA will be refused sign-in. Confirm you already have a working TOTP or passkey.",
+    "revokeDevicesTitle": "Revoke trusted devices?",
+    "revokeDevicesDesc": "Remembered browsers will need 2FA again.",
+    "approvalsHint": "Approvals appear when a high-risk tool needs a second operator. Grant approvals.review / approvals.handle on Users → Permissions.",
+    "allowlistReadonly": "Read-only catalog of agent tools. Capability grants are configured on Users → Permissions.",
+    "colTool": "Tool",
+    "colAllowed": "Allowed",
+    "colRisk": "Risk",
+    "colApproval": "Approval",
+    "risk": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    }
   },
   "serviceExposure": {
     "title": "ネットワークアクセス",
@@ -10928,7 +10975,8 @@
     "cryptoNetwork": "ネットワーク",
     "cryptoAddress": "アドレス",
     "copy": "コピー",
-    "copied": "コピーしました"
+    "copied": "コピーしました",
+    "docsLink": "Documentation"
   },
   "system": {
     "exportLoadFailed": "エクスポートデータのロードに失敗しました",
@@ -11781,7 +11829,10 @@
     "lockLastAdminHint": "これは最後の管理者です。削除・停止・降格はできません。",
     "demoteAdminTitle": "この管理者を降格しますか？",
     "demoteAdminDesc": "このユーザーは管理者権限を失います。他の管理者が残っていることを確認してください。",
-    "searchPkgPh": "Package name"
+    "searchPkgPh": "Package name",
+    "quotaNonNeg": "Counts and quotas cannot be negative.",
+    "diskQuotaHint": "Presets are GiB; custom box is MiB.",
+    "bandwidthHint": "0 means unlimited."
   },
   "vnc": {
     "pageDesc": "VNCサーバーとクライアント",
@@ -12027,7 +12078,8 @@
     "stackMissingShort": "未インストール",
     "editClientTitle": "リモートクライアントの編集",
     "editClientDesc": "パス、ホスト、およびオプションで保存されているパスワードを更新します。",
-    "clientUpdated": "クライアントプロファイルが更新されました"
+    "clientUpdated": "クライアントプロファイルが更新されました",
+    "rememberNeedPassword": "Enter a password first."
   },
   "vpn": {
     "pageDesc": "VPNサーバーとクライアント",

@@ -4319,7 +4319,11 @@
     "mediaAudioLabel": "Áudio",
     "mediaAudioDesc": "Ponte opcional do host Chrome; pode exigir clique de desbloqueio.",
     "mediaPolicyLabel": "Política",
-    "mediaPolicyDesc": "Os downloads e a reprodução automática seguem as configurações de segurança e download acima."
+    "mediaPolicyDesc": "Os downloads e a reprodução automática seguem as configurações de segurança e download acima.",
+    "frameBlocked": "The page could not be shown in the panel frame.",
+    "historyEmpty": "No history in this session.",
+    "bookmarksEmpty": "No bookmarks yet.",
+    "closeSessionHint": "Clears cookies for this browse session. Bookmarks stay."
   },
   "listToolbar": {
     "searchPlaceholder": "Procurar…",
@@ -4489,7 +4493,10 @@
     "prioErr": "errar+",
     "prioWarn": "avisar+",
     "prioInfo": "informações+",
-    "srcFail2ban": "fail2ban"
+    "srcFail2ban": "fail2ban",
+    "vacuumSize": "Limit to 500 MB",
+    "logrotateNoStatus": "No logrotate status file yet (normal if it has never run).",
+    "autoVacuumOff": "Automatic clean is off. Time is unused until you enable it."
   },
   "metrics": {
     "alert": {
@@ -4950,12 +4957,14 @@
         "azure_frontdoor": "Porta frontal Azure",
         "gcore": "CDN Gcore",
         "custom": "Proxies personalizados"
-      }
+      },
+      "needProvider": "Choose a CDN provider before fetching its IP list."
     },
     "linkUp": "Acima",
     "linkDown": "Abaixo",
     "linkDownTitle": "Take {{name}} offline",
-    "linkDownNeedConfirm": "Type the interface name to confirm"
+    "linkDownNeedConfirm": "Type the interface name to confirm",
+    "persistNmHint": "Persistable means changes can survive reboot via NetworkManager."
   },
   "nginx": {
     "pillSites": "{{count}} sites",
@@ -9235,7 +9244,13 @@
     "capabilitiesHint": "Alternar o que esta função pode fazer",
     "enabledCount": "{{enabled}} de {{total}} ativado",
     "bandAboveMax": "Acima do nível máximo",
-    "dirtyHint": "Personalizado (diferente da fábrica)"
+    "dirtyHint": "Personalizado (diferente da fábrica)",
+    "unsaved": "Unsaved",
+    "unsavedHint": "Unsaved edits on this role",
+    "nothingToSave": "Nothing to save",
+    "saveRole": "Save {{role}} policy",
+    "discardTitle": "Discard unsaved policy?",
+    "discardDesc": "Switching roles drops unsaved capability edits."
   },
   "readiness": {
     "cat": {
@@ -10341,7 +10356,10 @@
       "sharePanelTitle": "Compartilhar segredo TOTP do painel?",
       "sharePanelDesc": "Alto risco. Digite COMPARTILHADO para confirmar.",
       "confirmString": "Sequência de confirmação",
-      "enableShare": "Ativar compartilhamento"
+      "enableShare": "Ativar compartilhamento",
+      "invalidPub": "Paste a full OpenSSH public key line (ssh-ed25519 / ssh-rsa / ecdsa…).",
+      "dryRunOk": "Dry-run finished. Review the preview below.",
+      "strictBlocked": "Package or PAM is not ready; Strict apply is disabled."
     },
     "sessionsActive": "Sessões ativas",
     "sessionsOther": "Outros dispositivos",
@@ -10366,7 +10384,36 @@
     "mySecurityHint": "",
     "policyTotpHint": "Política do site: cada administrador deve habilitar seu próprio 2FA (QR individual)",
     "requireUser2fa": "Exigir 2FA para todos os utilizadores do painel",
-    "generateFail2ban": "Generate fail2ban snippets"
+    "generateFail2ban": "Generate fail2ban snippets",
+    "changePasswordTitle": "Change sign-in password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmNewPassword": "Confirm new password",
+    "passwordMismatch": "New passwords do not match.",
+    "changePassword": "Change password",
+    "passwordChanged": "Password updated.",
+    "strictNeedsEnrolled": "At least one admin must have 2FA before Strict can be turned on.",
+    "policyTotpNeedSelf": "Enable 2FA on this account first; the confirm code cannot be filled otherwise.",
+    "fail2banSnippetTitle": "fail2ban snippet",
+    "fail2banSnippetEmpty": "No snippet was written.",
+    "trustedDevicesTitle": "Trusted devices",
+    "noTrustedDevices": "No trusted devices.",
+    "strictConfirmTitle": "Turn on Strict 2FA?",
+    "strictConfirmDesc": "Users without 2FA will be refused sign-in. Confirm you already have a working TOTP or passkey.",
+    "revokeDevicesTitle": "Revoke trusted devices?",
+    "revokeDevicesDesc": "Remembered browsers will need 2FA again.",
+    "approvalsHint": "Approvals appear when a high-risk tool needs a second operator. Grant approvals.review / approvals.handle on Users → Permissions.",
+    "allowlistReadonly": "Read-only catalog of agent tools. Capability grants are configured on Users → Permissions.",
+    "colTool": "Tool",
+    "colAllowed": "Allowed",
+    "colRisk": "Risk",
+    "colApproval": "Approval",
+    "risk": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    }
   },
   "serviceExposure": {
     "title": "Acesso à rede",
@@ -10928,7 +10975,8 @@
     "cryptoNetwork": "Rede",
     "cryptoAddress": "Endereço",
     "copy": "Copiar",
-    "copied": "Copiado"
+    "copied": "Copiado",
+    "docsLink": "Documentation"
   },
   "system": {
     "exportLoadFailed": "Falha ao carregar dados de exportação",
@@ -11781,7 +11829,10 @@
     "lockLastAdminHint": "Este é o último administrador. Eliminar, suspender e despromover estão bloqueados.",
     "demoteAdminTitle": "Despromover este administrador?",
     "demoteAdminDesc": "Este utilizador perderá o acesso completo de administrador. Confirme que resta outro administrador.",
-    "searchPkgPh": "Package name"
+    "searchPkgPh": "Package name",
+    "quotaNonNeg": "Counts and quotas cannot be negative.",
+    "diskQuotaHint": "Presets are GiB; custom box is MiB.",
+    "bandwidthHint": "0 means unlimited."
   },
   "vnc": {
     "pageDesc": "Servidor e cliente VNC",
@@ -12027,7 +12078,8 @@
     "stackMissingShort": "Não instalado",
     "editClientTitle": "Editar cliente remoto",
     "editClientDesc": "Atualizar caminho, hosts e senha armazenada opcional.",
-    "clientUpdated": "Perfil do cliente atualizado"
+    "clientUpdated": "Perfil do cliente atualizado",
+    "rememberNeedPassword": "Enter a password first."
   },
   "vpn": {
     "pageDesc": "Servidor e cliente VPN",

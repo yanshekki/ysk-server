@@ -127,5 +127,8 @@
   "lockSelfHint": "這是目前登入的帳戶。已禁止刪除、暫停及更改角色，以免無法登入。",
   "lockLastAdminHint": "這是最後一個管理員。已禁止刪除、暫停及降級。",
   "demoteAdminTitle": "降級此管理員？",
-  "demoteAdminDesc": "此用戶將失去完整管理員權限。請確認仍有其他管理員。"
+  "demoteAdminDesc": "此用戶將失去完整管理員權限。請確認仍有其他管理員。",
+  "quotaNonNeg": "數量與配額不可為負數。",
+  "diskQuotaHint": "預設晶片以 GiB 計；自訂欄為 MiB。",
+  "bandwidthHint": "0 代表不限。"
 }

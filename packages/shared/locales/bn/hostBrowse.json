@@ -124,5 +124,9 @@
   "mediaAudioLabel": "অডিও",
   "mediaAudioDesc": "হোস্ট ক্রোম থেকে ঐচ্ছিক সেতু; আনলক ক্লিক প্রয়োজন হতে পারে.",
   "mediaPolicyLabel": "নীতি",
-  "mediaPolicyDesc": "ডাউনলোড এবং অটোপ্লে উপরের নিরাপত্তা এবং ডাউনলোড সেটিংস অনুসরণ করে।"
+  "mediaPolicyDesc": "ডাউনলোড এবং অটোপ্লে উপরের নিরাপত্তা এবং ডাউনলোড সেটিংস অনুসরণ করে।",
+  "frameBlocked": "The page could not be shown in the panel frame.",
+  "historyEmpty": "No history in this session.",
+  "bookmarksEmpty": "No bookmarks yet.",
+  "closeSessionHint": "Clears cookies for this browse session. Bookmarks stay."
 }

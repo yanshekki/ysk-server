@@ -132,5 +132,8 @@
   "prioErr": "ERR",
   "prioWarn": "意する",
   "prioInfo": "インフォ",
-  "srcFail2ban": "fail2ban"
+  "srcFail2ban": "fail2ban",
+  "vacuumSize": "Limit to 500 MB",
+  "logrotateNoStatus": "No logrotate status file yet (normal if it has never run).",
+  "autoVacuumOff": "Automatic clean is off. Time is unused until you enable it."
 }

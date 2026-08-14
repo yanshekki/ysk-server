@@ -96,5 +96,11 @@
   "capabilitiesHint": "勾選此角色可用的功能。橙點表示與系統預設不同。",
   "enabledCount": "已開 {{enabled}}／{{total}}",
   "bandAboveMax": "高於最高等級",
-  "dirtyHint": "已自訂（與系統預設不同）"
+  "dirtyHint": "已自訂（與系統預設不同）",
+  "unsaved": "未儲存",
+  "unsavedHint": "此角色有未儲存變更",
+  "nothingToSave": "沒有要儲存的變更",
+  "saveRole": "儲存「{{role}}」政策",
+  "discardTitle": "放棄未儲存政策？",
+  "discardDesc": "轉去另一個角色會丟棄未儲存的權限變更。"
 }

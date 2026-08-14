@@ -127,5 +127,8 @@
   "lockLastAdminHint": "마지막 관리자입니다. 삭제, 정지, 강등이 차단됩니다.",
   "demoteAdminTitle": "이 관리자를 강등할까요?",
   "demoteAdminDesc": "이 사용자는 전체 관리자 권한을 잃습니다. 다른 관리자가 남아 있는지 확인하세요.",
-  "searchPkgPh": "Package name"
+  "searchPkgPh": "Package name",
+  "quotaNonNeg": "Counts and quotas cannot be negative.",
+  "diskQuotaHint": "Presets are GiB; custom box is MiB.",
+  "bandwidthHint": "0 means unlimited."
 }

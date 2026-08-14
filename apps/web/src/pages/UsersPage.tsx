@@ -35,7 +35,7 @@ import {
   SegRadio,
   buttonClassName } from '../shared/components/ui';
 import { UserDetailModal } from '../features/users/UserDetailModal';
-import { RolePermissionsPanel } from '../features/users/RolePermissionsPanel';
+import { RolePermissionsPanel, sameCapSet } from '../features/users/RolePermissionsPanel';
 import { ApiError, api } from '../shared/services/api';
 import { authStore } from '../shared/stores/auth-store';
 import { usePageTab } from '../shared/hooks/usePageTab';
@@ -221,6 +221,7 @@ export function UsersPage() {
     | { kind: 'promoteAdmin'; next: () => void }
     | { kind: 'demoteAdmin'; next: () => void }
     | { kind: 'dangerPolicySave'; next: () => void }
+    | { kind: 'discardPolicy'; next: () => void }
     | null
   >(null);
   /** Admin force-clear another user's 2FA (per-user secret). */
@@ -322,6 +323,21 @@ export function UsersPage() {
     }
   }, [policyRole, policies]);
 
+  const draftDirty = useMemo(() => {
+    const view = policies.find((x) => x.role === policyRole);
+    const base = view?.policy ?? factoryRolePolicy(policyRole);
+    return draftMax !== base.maxLevel || !sameCapSet(draftCaps, base.capabilities);
+  }, [policies, policyRole, draftMax, draftCaps]);
+
+  function requestPolicyRole(next: SystemRole) {
+    if (next === policyRole) return;
+    if (draftDirty) {
+      setPending({ kind: 'discardPolicy', next: () => setPolicyRole(next) });
+      return;
+    }
+    setPolicyRole(next);
+  }
+
   function openCreateUser() {
     setUsername('');
     setPassword('');
@@ -404,15 +420,35 @@ export function UsersPage() {
 
   async function onSavePkg(e: FormEvent) {
     e.preventDefault();
+    const mail = Number(pkgMail);
+    const db = Number(pkgDb);
+    const disk = Number(pkgDisk);
+    const bw = Number(pkgBw);
+    const proj = Number(pkgProjects);
+    if (
+      !Number.isFinite(mail) ||
+      mail < 0 ||
+      !Number.isFinite(db) ||
+      db < 0 ||
+      !Number.isFinite(disk) ||
+      disk < 0 ||
+      !Number.isFinite(bw) ||
+      bw < 0 ||
+      !Number.isFinite(proj) ||
+      proj < 0
+    ) {
+      setError(t('users.quotaNonNeg'));
+      return;
+    }
     setBusy(true);
     setError(null);
     const body = {
       name: pkgName,
-      max_projects: Number(pkgProjects) || 10,
-      max_mailboxes: Number(pkgMail) || 10,
-      max_databases: Number(pkgDb) || 5,
-      disk_mb: Number(pkgDisk) || 10240,
-      bandwidth_mb: Number(pkgBw) || 0,
+      max_projects: proj || 10,
+      max_mailboxes: mail || 10,
+      max_databases: db || 5,
+      disk_mb: disk || 10240,
+      bandwidth_mb: bw || 0,
       allow_ftp: pkgFtp,
       allow_ssh: pkgSsh,
       notes: pkgNotes || undefined };
@@ -885,7 +921,8 @@ export function UsersPage() {
                 draftCaps={draftCaps}
                 busy={busy}
                 canEdit={canEditRbac}
-                onRoleChange={setPolicyRole}
+                draftDirty={draftDirty}
+                onRoleChange={requestPolicyRole}
                 onMaxLevelChange={(next) => {
                   setDraftMax(next);
                   setDraftCaps((caps) =>
@@ -1071,7 +1108,16 @@ export function UsersPage() {
               customPlaceholder={t('users.custom')}
             />
           </Field>
-          <Field label={t('users.mailboxes')} htmlFor="p-mail" flush>
+          <Field
+            label={t('users.mailboxes')}
+            htmlFor="p-mail"
+            flush
+            error={
+              pkgMail !== '' && (!Number.isFinite(Number(pkgMail)) || Number(pkgMail) < 0)
+                ? t('users.quotaNonNeg')
+                : undefined
+            }
+          >
             <input
               id="p-mail"
               type="number"
@@ -1080,7 +1126,16 @@ export function UsersPage() {
               onChange={bindInput(setPkgMail)}
             />
           </Field>
-          <Field label={t('users.databases')} htmlFor="p-db" flush>
+          <Field
+            label={t('users.databases')}
+            htmlFor="p-db"
+            flush
+            error={
+              pkgDb !== '' && (!Number.isFinite(Number(pkgDb)) || Number(pkgDb) < 0)
+                ? t('users.quotaNonNeg')
+                : undefined
+            }
+          >
             <input
               id="p-db"
               type="number"
@@ -1089,14 +1144,14 @@ export function UsersPage() {
               onChange={bindInput(setPkgDb)}
             />
           </Field>
-          <Field label={t('users.diskQuota')} htmlFor="p-disk" flush>
+          <Field label={t('users.diskQuota')} htmlFor="p-disk" flush hint={t('users.diskQuotaHint')}>
             <PresetChips
               options={[
-                { value: '1024', label: '1G' },
-                { value: '5120', label: '5G' },
-                { value: '10240', label: '10G' },
-                { value: '20480', label: '20G' },
-                { value: '51200', label: '50G' },
+                { value: '1024', label: '1 GiB' },
+                { value: '5120', label: '5 GiB' },
+                { value: '10240', label: '10 GiB' },
+                { value: '20480', label: '20 GiB' },
+                { value: '51200', label: '50 GiB' },
               ]}
               value={pkgDisk}
               onChange={setPkgDisk}
@@ -1104,7 +1159,17 @@ export function UsersPage() {
               customPlaceholder="MiB"
             />
           </Field>
-          <Field label={t('users.bandwidth')} htmlFor="p-bw" flush>
+          <Field
+            label={t('users.bandwidth')}
+            htmlFor="p-bw"
+            flush
+            hint={t('users.bandwidthHint')}
+            error={
+              pkgBw !== '' && (!Number.isFinite(Number(pkgBw)) || Number(pkgBw) < 0)
+                ? t('users.quotaNonNeg')
+                : undefined
+            }
+          >
             <input
               id="p-bw"
               type="number"
@@ -1280,6 +1345,8 @@ export function UsersPage() {
                           ? t('users.demoteAdminTitle')
                           : pending?.kind === 'dangerPolicySave'
                             ? t('rbac.dangerPolicyTitle')
+                            : pending?.kind === 'discardPolicy'
+                              ? t('rbac.discardTitle')
                             : t('common.confirm')
         }
         description={
@@ -1301,6 +1368,8 @@ export function UsersPage() {
                           ? t('users.demoteAdminDesc')
                           : pending?.kind === 'dangerPolicySave'
                             ? t('rbac.dangerPolicyDesc')
+                            : pending?.kind === 'discardPolicy'
+                              ? t('rbac.discardDesc')
                             : ''
         }
         confirmLabel={
@@ -1311,7 +1380,8 @@ export function UsersPage() {
                 pending?.kind === 'dangerPolicySave' ||
                 pending?.kind === 'restoreRole' ||
                 pending?.kind === 'restoreAll' ||
-                pending?.kind === 'restoreUserOverrides'
+                pending?.kind === 'restoreUserOverrides' ||
+                pending?.kind === 'discardPolicy'
               ? t('common.confirm')
               : t('common.delete')
         }
@@ -1330,7 +1400,8 @@ export function UsersPage() {
           if (
             p.kind === 'promoteAdmin' ||
             p.kind === 'demoteAdmin' ||
-            p.kind === 'dangerPolicySave'
+            p.kind === 'dangerPolicySave' ||
+            p.kind === 'discardPolicy'
           ) {
             p.next();
             return;

@@ -93,7 +93,12 @@ export function addSftpKey(
 ): { ok: boolean; key?: SftpKeyRecord; notes: string[]; written: string[] } {
   const username = input.username.trim().toLowerCase();
   const publicKey = input.publicKey.trim();
-  if (!username || !publicKey.startsWith('ssh-')) {
+  if (
+    !username ||
+    !/^(ssh-ed25519|ssh-rsa|ecdsa-sha2-nistp256|ecdsa-sha2-nistp384|ecdsa-sha2-nistp521|sk-ssh-ed25519@openssh\.com|sk-ecdsa-sha2-nistp256@openssh\.com)\s+[A-Za-z0-9+/]+=*/.test(
+      publicKey,
+    )
+  ) {
     return { ok: false, notes: [tl('notes.auto.n1575')], written: [] };
   }
 

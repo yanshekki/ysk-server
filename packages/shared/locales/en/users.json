@@ -127,5 +127,8 @@
   "lockSelfHint": "This is the signed-in account. Delete, suspend, and role change are blocked to prevent lock-out.",
   "lockLastAdminHint": "This is the last admin. Delete, suspend, and demotion are blocked.",
   "demoteAdminTitle": "Demote this admin?",
-  "demoteAdminDesc": "This user will lose full admin access. Confirm only if another admin remains."
+  "demoteAdminDesc": "This user will lose full admin access. Confirm only if another admin remains.",
+  "quotaNonNeg": "Counts and quotas cannot be negative.",
+  "diskQuotaHint": "Presets are GiB; custom box is MiB.",
+  "bandwidthHint": "0 means unlimited."
 }

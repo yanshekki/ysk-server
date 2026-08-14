@@ -127,5 +127,8 @@
   "lockLastAdminHint": "Ini admin terakhir. Hapus, tangguhkan, dan penurunan diblokir.",
   "demoteAdminTitle": "Turunkan admin ini?",
   "demoteAdminDesc": "Pengguna ini akan kehilangan akses admin penuh. Pastikan masih ada admin lain.",
-  "searchPkgPh": "Package name"
+  "searchPkgPh": "Package name",
+  "quotaNonNeg": "Counts and quotas cannot be negative.",
+  "diskQuotaHint": "Presets are GiB; custom box is MiB.",
+  "bandwidthHint": "0 means unlimited."
 }

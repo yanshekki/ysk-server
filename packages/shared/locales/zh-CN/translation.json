@@ -4319,7 +4319,11 @@
     "mediaAudioLabel": "音频",
     "mediaAudioDesc": "可选自主机 Chrome 的桥接；可能需要解锁点击。",
     "mediaPolicyLabel": "策略",
-    "mediaPolicyDesc": "下载与自动播放遵循上方安全与下载设置。"
+    "mediaPolicyDesc": "下载与自动播放遵循上方安全与下载设置。",
+    "frameBlocked": "页面无法在面板框架内显示。",
+    "historyEmpty": "此工作阶段尚无浏览记录。",
+    "bookmarksEmpty": "尚未有书签。",
+    "closeSessionHint": "会清掉此浏览工作阶段的 Cookie；书签会保留。"
   },
   "listToolbar": {
     "searchPlaceholder": "搜索…",
@@ -4465,8 +4469,8 @@
     "lines": "{{n}} 行",
     "followingSseDyn": " · 跟随中{{sse}}",
     "ipBan": "IP → 封禁",
-    "vacuumNote": "释放 systemd-journal 磁盘。无 EXECUTE 会 blocked，不假成功。",
-    "vacuumTime": "Vacuum 时间",
+    "vacuumNote": "释放 systemd-journald 占用的磁盘。没有系统变更权限时会封锁，不会假装成功。",
+    "vacuumTime": "依保留时间清理",
     "vacuumHint": "建议保留 ≥7 日；操作后重新探测磁盘用量。",
     "logrotateStatus": "系统 logrotate 状态（只读探测）",
     "logrotateMissing": "无 status 档或不可读 — 可于服务矩阵检查 logrotate 套件",
@@ -4474,7 +4478,7 @@
     "relatedOpsDesc": "日志观测 vs 攻击应变分工",
     "scLogsLine": "观测 journal／文件／项目",
     "scProtLine": "攻击应变、自动 ban（点 IP）",
-    "journalVacuumTitle": "Journal 清理（vacuum）",
+    "journalVacuumTitle": "清理 journald 磁盘",
     "journalSection": "杂志",
     "sseLabel": "上证所",
     "logrotateLabel": "logrotate",
@@ -4489,7 +4493,10 @@
     "prioErr": "错误+",
     "prioWarn": "警告+",
     "prioInfo": "信息+",
-    "srcFail2ban": "fail2ban"
+    "srcFail2ban": "fail2ban",
+    "vacuumSize": "限制至 500 MB",
+    "logrotateNoStatus": "尚未有 logrotate 状态档（从未跑过时属常见）。",
+    "autoVacuumOff": "自动清理未启用。启用前时间设定不会执行。"
   },
   "metrics": {
     "alert": {
@@ -4950,12 +4957,14 @@
         "azure_frontdoor": "蔚蓝前门",
         "gcore": "国核CDN",
         "custom": "自定义代理"
-      }
+      },
+      "needProvider": "请先选择 CDN 供应商，才可更新 IP 列表。"
     },
     "linkUp": "向上",
     "linkDown": "断开",
     "linkDownTitle": "將 {{name}} 離線",
-    "linkDownNeedConfirm": "需輸入介面名稱確認"
+    "linkDownNeedConfirm": "需輸入介面名稱確認",
+    "persistNmHint": "可持久化代表经 NetworkManager 写入后，重启后设定仍然有效。"
   },
   "nginx": {
     "pillSites": "{{count}} 站点",
@@ -9235,7 +9244,13 @@
     "capabilitiesHint": "勾选此角色可用的功能。橙点表示与系统默认不同。",
     "enabledCount": "已开 {{enabled}}／{{total}}",
     "bandAboveMax": "高于最高等级",
-    "dirtyHint": "已自定义（与系统默认不同）"
+    "dirtyHint": "已自定义（与系统默认不同）",
+    "unsaved": "未储存",
+    "unsavedHint": "此角色有未储存变更",
+    "nothingToSave": "没有要储存的变更",
+    "saveRole": "储存「{{role}}」政策",
+    "discardTitle": "放弃未储存政策？",
+    "discardDesc": "转到另一个角色会丢弃未储存的权限变更。"
   },
   "readiness": {
     "cat": {
@@ -10341,7 +10356,10 @@
       "sharePanelTitle": "共用 panel TOTP secret？",
       "sharePanelDesc": "风险高。请输入 SHARED 确认。",
       "confirmString": "确认字符串",
-      "enableShare": "启用共用"
+      "enableShare": "启用共用",
+      "invalidPub": "请贴上完整 OpenSSH 公钥行（ssh-ed25519／ssh-rsa／ecdsa…）。",
+      "dryRunOk": "预览试行完成。请查看下方预览。",
+      "strictBlocked": "套件或 PAM 未就绪，已停用套用 Strict。"
     },
     "sessionsActive": "使用中",
     "sessionsOther": "其他设备",
@@ -10366,7 +10384,36 @@
     "mySecurityHint": "",
     "policyTotpHint": "全站政策：要求 admin 角色各自启用 2FA（每人自己扫码），不是共用同一组验证码。",
     "requireUser2fa": "要求所有面板用户启用 2FA",
-    "generateFail2ban": "Generate fail2ban snippets"
+    "generateFail2ban": "Generate fail2ban snippets",
+    "changePasswordTitle": "变更登录密码",
+    "currentPassword": "目前密码",
+    "newPassword": "新密码",
+    "confirmNewPassword": "确认新密码",
+    "passwordMismatch": "两次新密码不一致。",
+    "changePassword": "变更密码",
+    "passwordChanged": "已更新密码。",
+    "strictNeedsEnrolled": "至少一名管理员已开 2FA，才可开启 Strict。",
+    "policyTotpNeedSelf": "请先在本帐号启用 2FA，否则确认码无法填写。",
+    "fail2banSnippetTitle": "fail2ban 片段",
+    "fail2banSnippetEmpty": "没有写入片段。",
+    "trustedDevicesTitle": "信任装置",
+    "noTrustedDevices": "尚未有信任装置。",
+    "strictConfirmTitle": "开启 Strict 2FA？",
+    "strictConfirmDesc": "未开 2FA 的用户会被拒绝登录。请确认你已有可用的 TOTP 或通行密钥。",
+    "revokeDevicesTitle": "撤销信任装置？",
+    "revokeDevicesDesc": "已记住的浏览器要再做 2FA。",
+    "approvalsHint": "高风险工具需要第二人批准时会出现在此。权限在「用户 → 权限」设定。",
+    "allowlistReadonly": "代理工具目录（只读）。能力授权在「用户 → 权限」设定。",
+    "colTool": "工具",
+    "colAllowed": "允许",
+    "colRisk": "风险",
+    "colApproval": "审批",
+    "risk": {
+      "low": "低",
+      "medium": "中",
+      "high": "高",
+      "critical": "严重"
+    }
   },
   "serviceExposure": {
     "title": "网络访问",
@@ -10928,7 +10975,8 @@
     "cryptoNetwork": "网络",
     "cryptoAddress": "地址",
     "copy": "复制",
-    "copied": "已复制"
+    "copied": "已复制",
+    "docsLink": "说明文件"
   },
   "system": {
     "exportLoadFailed": "加载导出数据失败",
@@ -11781,7 +11829,10 @@
     "lockLastAdminHint": "这是最后一个管理员。已禁止删除、暂停及降级。",
     "demoteAdminTitle": "降级此管理员？",
     "demoteAdminDesc": "此用户将失去完整管理员权限。请确认仍有其他管理员。",
-    "searchPkgPh": "方案名稱"
+    "searchPkgPh": "方案名稱",
+    "quotaNonNeg": "数量与配额不可为负数。",
+    "diskQuotaHint": "预设晶片以 GiB 计；自订栏为 MiB。",
+    "bandwidthHint": "0 代表不限。"
   },
   "vnc": {
     "pageDesc": "VNC 服务器／客户端",
@@ -12027,7 +12078,8 @@
     "stackMissingShort": "未安装",
     "editClientTitle": "编辑远程客户端",
     "editClientDesc": "更新连接路径、主机与可选已存密码。",
-    "clientUpdated": "已更新客户端配置"
+    "clientUpdated": "已更新客户端配置",
+    "rememberNeedPassword": "请先填密码。"
   },
   "vpn": {
     "pageDesc": "VPN 服务器／客户端",

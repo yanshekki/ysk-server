@@ -459,7 +459,9 @@ export function Ssh2faPanel({ onFlash }: Props) {
                         recoveryUsers: recoveryUsers.split(/[\s,]+/).filter(Boolean) }) },
                   )
                   .then((r) => {
-                    onFlash('ok', (r.notes ?? []).join(' · ') || 'strict dry-run');
+                    const notes = r.notes ?? [];
+                    if (notes.length) setStrictSnippet(notes.join('\n'));
+                    onFlash('ok', notes.join(' · ') || t('security.ssh.dryRunOk'));
                     return refresh();
                   })
                   .catch((e: Error) => onFlash('error', e.message))
@@ -472,6 +474,16 @@ export function Ssh2faPanel({ onFlash }: Props) {
               variant="primary"
               size="md"
               loading={busy}
+              disabled={
+                lights?.package !== 'green' ||
+                lights?.pam !== 'green' ||
+                !(items.some((i) => i.status === 'file_written' || i.status === 'confirmed'))
+              }
+              title={
+                lights?.package !== 'green' || lights?.pam !== 'green'
+                  ? t('security.ssh.strictBlocked')
+                  : undefined
+              }
               onClick={bindSet(setStrictTotpOpen, true)}
             >
               {t('security.ssh.applyStrict')}

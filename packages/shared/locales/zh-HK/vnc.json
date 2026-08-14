@@ -242,5 +242,6 @@
   "stackMissingShort": "未安裝",
   "editClientTitle": "編輯遠端客戶端",
   "editClientDesc": "更新連線路徑、主機與可選已存密碼。",
-  "clientUpdated": "已更新客戶端設定"
+  "clientUpdated": "已更新客戶端設定",
+  "rememberNeedPassword": "請先填密碼。"
 }

@@ -4,6 +4,7 @@
  */
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from '../../shared/stores/toast-store';
 import {
   FeaturePageLayout,
   Card,
@@ -36,11 +37,12 @@ export function SupportPage() {
     try {
       await navigator.clipboard.writeText(addr);
       setCopied(addr);
+      toast.ok(t('support.copied'));
       window.setTimeout(() => setCopied((c) => (c === addr ? null : c)), 1800);
     } catch {
       /* ignore — user can select manually */
     }
-  }, []);
+  }, [t]);
 
   const cryptoRows = useMemo(() => [...DONATE.crypto], []);
 
@@ -150,7 +152,7 @@ export function SupportPage() {
             <p className="u-text-sm muted u-mt-3 u-mb-0">
               {t('support.docsHint')}{' '}
               <a href="https://github.com/yanshekki/ysk-server/tree/main/docs" target="_blank" rel="noreferrer">
-                docs/
+                {t('support.docsLink')}
               </a>
             </p>
           </CardSection>

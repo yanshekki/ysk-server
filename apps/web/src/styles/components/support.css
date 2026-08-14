@@ -2,7 +2,7 @@
  * Support / donate page
  */
 .support-page {
-  max-width: 48rem;
+  max-width: min(72rem, 100%);
 }
 
 .support-page__prose {

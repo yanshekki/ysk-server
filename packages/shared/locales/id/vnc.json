@@ -242,5 +242,6 @@
   "stackMissingShort": "Tidak dipasang",
   "editClientTitle": "Edit klien jarak jauh",
   "editClientDesc": "Perbarui jalur, host, dan kata sandi opsional yang disimpan.",
-  "clientUpdated": "Profil klien diperbarui"
+  "clientUpdated": "Profil klien diperbarui",
+  "rememberNeedPassword": "Enter a password first."
 }

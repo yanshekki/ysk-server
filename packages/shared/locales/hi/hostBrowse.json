@@ -124,5 +124,9 @@
   "mediaAudioLabel": "ऑडियो",
   "mediaAudioDesc": "होस्ट क्रोम से वैकल्पिक ब्रिज; अनलॉक क्लिक की आवश्यकता हो सकती है.",
   "mediaPolicyLabel": "नीति",
-  "mediaPolicyDesc": "डाउनलोड और ऑटोप्ले उपरोक्त सुरक्षा और डाउनलोड सेटिंग्स का पालन करते हैं।"
+  "mediaPolicyDesc": "डाउनलोड और ऑटोप्ले उपरोक्त सुरक्षा और डाउनलोड सेटिंग्स का पालन करते हैं।",
+  "frameBlocked": "The page could not be shown in the panel frame.",
+  "historyEmpty": "No history in this session.",
+  "bookmarksEmpty": "No bookmarks yet.",
+  "closeSessionHint": "Clears cookies for this browse session. Bookmarks stay."
 }

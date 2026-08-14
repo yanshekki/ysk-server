@@ -1015,15 +1015,26 @@ export function NetworkPage() {
                         value: snap.backend.hasIp ? t('network.available') : t('network.unavailable') },
                       {
                         label: 'NetworkManager',
-                        value: snap.backend.networkManager },
+                        value:
+                          snap.backend.networkManager === 'active'
+                            ? t('common.running')
+                            : snap.backend.networkManager === 'inactive'
+                              ? t('common.stopped')
+                              : snap.backend.networkManager },
                       {
                         label: 'systemd-networkd',
-                        value: snap.backend.networkd },
+                        value:
+                          snap.backend.networkd === 'active'
+                            ? t('common.running')
+                            : snap.backend.networkd === 'inactive'
+                              ? t('common.stopped')
+                              : snap.backend.networkd },
                       {
                         label: t('network.persistNmCap'),
                         value: snap.backend.canPersist ? t('common.yes') : t('common.no') },
                     ]}
                   />
+                  <FormHint>{t('network.persistNmHint')}</FormHint>
                   {snap.notes?.length ? (
                     <FormHint>{snap.notes.join(' · ')}</FormHint>
                   ) : null}
@@ -1172,6 +1183,12 @@ export function NetworkPage() {
                       variant="secondary"
                       size="md"
                       loading={busy}
+                      disabled={!realIpProvider || realIpProvider === 'none'}
+                      title={
+                        !realIpProvider || realIpProvider === 'none'
+                          ? t('network.realip.needProvider')
+                          : undefined
+                      }
                       onClick={() => {
                         void (async () => {
                           setBusy(true);

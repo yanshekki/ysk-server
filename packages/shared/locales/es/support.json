@@ -24,5 +24,6 @@
   "cryptoNetwork": "Red",
   "cryptoAddress": "Dirección",
   "copy": "Copiar",
-  "copied": "Copiado"
+  "copied": "Copiado",
+  "docsLink": "Documentation"
 }

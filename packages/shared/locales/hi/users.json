@@ -127,5 +127,8 @@
   "lockLastAdminHint": "यह अंतिम व्यवस्थापक है। हटाना, निलंबन और पदावनति बंद है।",
   "demoteAdminTitle": "इस व्यवस्थापक को पदावनत करें?",
   "demoteAdminDesc": "यह उपयोगकर्ता पूर्ण व्यवस्थापक पहुँच खो देगा। पुष्टि करें कि अन्य व्यवस्थापक रहें।",
-  "searchPkgPh": "Package name"
+  "searchPkgPh": "Package name",
+  "quotaNonNeg": "Counts and quotas cannot be negative.",
+  "diskQuotaHint": "Presets are GiB; custom box is MiB.",
+  "bandwidthHint": "0 means unlimited."
 }

@@ -124,5 +124,9 @@
   "mediaAudioLabel": "Áudio",
   "mediaAudioDesc": "Ponte opcional do host Chrome; pode exigir clique de desbloqueio.",
   "mediaPolicyLabel": "Política",
-  "mediaPolicyDesc": "Os downloads e a reprodução automática seguem as configurações de segurança e download acima."
+  "mediaPolicyDesc": "Os downloads e a reprodução automática seguem as configurações de segurança e download acima.",
+  "frameBlocked": "The page could not be shown in the panel frame.",
+  "historyEmpty": "No history in this session.",
+  "bookmarksEmpty": "No bookmarks yet.",
+  "closeSessionHint": "Clears cookies for this browse session. Bookmarks stay."
 }

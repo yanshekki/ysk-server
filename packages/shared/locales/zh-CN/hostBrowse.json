@@ -124,5 +124,9 @@
   "mediaAudioLabel": "音频",
   "mediaAudioDesc": "可选自主机 Chrome 的桥接；可能需要解锁点击。",
   "mediaPolicyLabel": "策略",
-  "mediaPolicyDesc": "下载与自动播放遵循上方安全与下载设置。"
+  "mediaPolicyDesc": "下载与自动播放遵循上方安全与下载设置。",
+  "frameBlocked": "页面无法在面板框架内显示。",
+  "historyEmpty": "此工作阶段尚无浏览记录。",
+  "bookmarksEmpty": "尚未有书签。",
+  "closeSessionHint": "会清掉此浏览工作阶段的 Cookie；书签会保留。"
 }

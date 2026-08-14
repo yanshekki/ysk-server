@@ -4319,7 +4319,11 @@
     "mediaAudioLabel": "Audio",
     "mediaAudioDesc": "Optional bridge from host Chrome; may require unlock click.",
     "mediaPolicyLabel": "Policy",
-    "mediaPolicyDesc": "Downloads and autoplay follow the safety and download settings above."
+    "mediaPolicyDesc": "Downloads and autoplay follow the safety and download settings above.",
+    "frameBlocked": "The page could not be shown in the panel frame.",
+    "historyEmpty": "No history in this session.",
+    "bookmarksEmpty": "No bookmarks yet.",
+    "closeSessionHint": "Clears cookies for this browse session. Bookmarks stay."
   },
   "listToolbar": {
     "searchPlaceholder": "Search…",
@@ -4465,8 +4469,8 @@
     "lines": "{{n}} lines",
     "followingSseDyn": " · following{{sse}}",
     "ipBan": "IP → ban",
-    "vacuumNote": "Free systemd-journal disk. No EXECUTE → blocked, no fake success.",
-    "vacuumTime": "Vacuum time",
+    "vacuumNote": "Reclaims systemd-journald disk. Without execute permission the action is blocked — it is not treated as success.",
+    "vacuumTime": "Clean by retention",
     "vacuumHint": "Keep ≥7 days recommended; re-probe disk after.",
     "logrotateStatus": "System logrotate status (read-only probe)",
     "logrotateMissing": "No status file or unreadable — check logrotate package in services matrix",
@@ -4474,7 +4478,7 @@
     "relatedOpsDesc": "Log observation vs incident response",
     "scLogsLine": "Observe journal / files / projects",
     "scProtLine": "Incident response, auto ban (click IP)",
-    "journalVacuumTitle": "Journal vacuum",
+    "journalVacuumTitle": "Clean journald disk",
     "journalSection": "Journal",
     "sseLabel": "SSE",
     "logrotateLabel": "logrotate",
@@ -4489,7 +4493,10 @@
     "groupVarLog": "/var/log",
     "prioErr": "err+",
     "prioWarn": "warn+",
-    "prioInfo": "info+"
+    "prioInfo": "info+",
+    "vacuumSize": "Limit to 500 MB",
+    "logrotateNoStatus": "No logrotate status file yet (normal if it has never run).",
+    "autoVacuumOff": "Automatic clean is off. Time is unused until you enable it."
   },
   "metrics": {
     "alert": {
@@ -4952,10 +4959,12 @@
         "azure_frontdoor": "Azure Front Door",
         "gcore": "Gcore CDN",
         "custom": "Custom proxies"
-      }
+      },
+      "needProvider": "Choose a CDN provider before fetching its IP list."
     },
     "linkUp": "Up",
-    "linkDown": "Down"
+    "linkDown": "Down",
+    "persistNmHint": "Persistable means changes can survive reboot via NetworkManager."
   },
   "nginx": {
     "pillSites": "{{count}} site(s)",
@@ -9235,7 +9244,13 @@
     "capabilitiesHint": "Toggle what this role may do",
     "enabledCount": "{{enabled}} of {{total}} enabled",
     "bandAboveMax": "Above max level",
-    "dirtyHint": "Customized (differs from factory)"
+    "dirtyHint": "Customized (differs from factory)",
+    "unsaved": "Unsaved",
+    "unsavedHint": "Unsaved edits on this role",
+    "nothingToSave": "Nothing to save",
+    "saveRole": "Save {{role}} policy",
+    "discardTitle": "Discard unsaved policy?",
+    "discardDesc": "Switching roles drops unsaved capability edits."
   },
   "readiness": {
     "cat": {
@@ -10342,7 +10357,10 @@
       "sharePanelTitle": "Share panel TOTP secret?",
       "sharePanelDesc": "High risk. Type SHARED to confirm.",
       "confirmString": "Confirmation string",
-      "enableShare": "Enable sharing"
+      "enableShare": "Enable sharing",
+      "invalidPub": "Paste a full OpenSSH public key line (ssh-ed25519 / ssh-rsa / ecdsa…).",
+      "dryRunOk": "Dry-run finished. Review the preview below.",
+      "strictBlocked": "Package or PAM is not ready; Strict apply is disabled."
     },
     "sessionsActive": "Active sessions",
     "sessionsOther": "Other devices",
@@ -10366,7 +10384,36 @@
     "sessionRevoked": "Session signed out",
     "mySecurityHint": "",
     "policyTotpHint": "Site policy: each admin must enable their own 2FA (individual QR)",
-    "requireUser2fa": "Require 2FA for all panel users"
+    "requireUser2fa": "Require 2FA for all panel users",
+    "changePasswordTitle": "Change sign-in password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmNewPassword": "Confirm new password",
+    "passwordMismatch": "New passwords do not match.",
+    "changePassword": "Change password",
+    "passwordChanged": "Password updated.",
+    "strictNeedsEnrolled": "At least one admin must have 2FA before Strict can be turned on.",
+    "policyTotpNeedSelf": "Enable 2FA on this account first; the confirm code cannot be filled otherwise.",
+    "fail2banSnippetTitle": "fail2ban snippet",
+    "fail2banSnippetEmpty": "No snippet was written.",
+    "trustedDevicesTitle": "Trusted devices",
+    "noTrustedDevices": "No trusted devices.",
+    "strictConfirmTitle": "Turn on Strict 2FA?",
+    "strictConfirmDesc": "Users without 2FA will be refused sign-in. Confirm you already have a working TOTP or passkey.",
+    "revokeDevicesTitle": "Revoke trusted devices?",
+    "revokeDevicesDesc": "Remembered browsers will need 2FA again.",
+    "approvalsHint": "Approvals appear when a high-risk tool needs a second operator. Grant approvals.review / approvals.handle on Users → Permissions.",
+    "allowlistReadonly": "Read-only catalog of agent tools. Capability grants are configured on Users → Permissions.",
+    "colTool": "Tool",
+    "colAllowed": "Allowed",
+    "colRisk": "Risk",
+    "colApproval": "Approval",
+    "risk": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    }
   },
   "serviceExposure": {
     "title": "Network access",
@@ -10928,7 +10975,8 @@
     "cryptoNetwork": "Network",
     "cryptoAddress": "Address",
     "copy": "Copy",
-    "copied": "Copied"
+    "copied": "Copied",
+    "docsLink": "Documentation"
   },
   "system": {
     "exportLoadFailed": "Failed to load export data",
@@ -11781,7 +11829,10 @@
     "lockSelfHint": "This is the signed-in account. Delete, suspend, and role change are blocked to prevent lock-out.",
     "lockLastAdminHint": "This is the last admin. Delete, suspend, and demotion are blocked.",
     "demoteAdminTitle": "Demote this admin?",
-    "demoteAdminDesc": "This user will lose full admin access. Confirm only if another admin remains."
+    "demoteAdminDesc": "This user will lose full admin access. Confirm only if another admin remains.",
+    "quotaNonNeg": "Counts and quotas cannot be negative.",
+    "diskQuotaHint": "Presets are GiB; custom box is MiB.",
+    "bandwidthHint": "0 means unlimited."
   },
   "vnc": {
     "pageDesc": "VNC server & client",
@@ -12027,7 +12078,8 @@
     "stackMissingShort": "Not installed",
     "editClientTitle": "Edit remote client",
     "editClientDesc": "Update path, hosts, and optional stored password.",
-    "clientUpdated": "Client profile updated"
+    "clientUpdated": "Client profile updated",
+    "rememberNeedPassword": "Enter a password first."
   },
   "vpn": {
     "pageDesc": "VPN server & client",

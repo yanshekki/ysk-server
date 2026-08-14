@@ -135,10 +135,12 @@
       "azure_frontdoor": "আজুর সামনের দরজা",
       "gcore": "জিকোর সিডিএন",
       "custom": "কাস্টম প্রক্সি"
-    }
+    },
+    "needProvider": "Choose a CDN provider before fetching its IP list."
   },
   "linkUp": "উপরে",
   "linkDown": "নিচে",
   "linkDownTitle": "Take {{name}} offline",
-  "linkDownNeedConfirm": "Type the interface name to confirm"
+  "linkDownNeedConfirm": "Type the interface name to confirm",
+  "persistNmHint": "Persistable means changes can survive reboot via NetworkManager."
 }

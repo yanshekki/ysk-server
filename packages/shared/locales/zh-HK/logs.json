@@ -108,8 +108,8 @@
   "lines": "{{n}} 行",
   "followingSseDyn": "· 跟隨中{{sse}}",
   "ipBan": "IP → 封禁",
-  "vacuumNote": "釋放 系統服務-系統日誌 磁碟。無 執行 會 已封鎖，不假成功。",
-  "vacuumTime": "清理 時間",
+  "vacuumNote": "釋放 systemd-journald 佔用的磁碟。沒有系統變更權限時會封鎖，不會假裝成功。",
+  "vacuumTime": "依保留時間清理",
   "vacuumHint": "建議保留 ≥7 日；操作後重新探測磁碟用量。",
   "logrotateStatus": "系統 logrotate 狀態（唯讀探測）",
   "logrotateMissing": "無 狀態 檔或不可讀 — 可於服務矩陣檢查 logrotate 套件",
@@ -117,7 +117,7 @@
   "relatedOpsDesc": "日誌觀測 vs 攻擊應變分工",
   "scLogsLine": "觀測 系統日誌／檔案／專案",
   "scProtLine": "攻擊應變、自動 封鎖（點 IP）",
-  "journalVacuumTitle": "系統日誌 清理（清理）",
+  "journalVacuumTitle": "清理 journald 磁碟",
   "journalSection": "雜誌",
   "sseLabel": "SSE",
   "logrotateLabel": "對數旋轉",
@@ -132,5 +132,8 @@
   "groupVarLog": "/var/log",
   "prioErr": "錯誤+",
   "prioWarn": "警告+",
-  "prioInfo": "資訊+"
+  "prioInfo": "資訊+",
+  "vacuumSize": "限制至 500 MB",
+  "logrotateNoStatus": "尚未有 logrotate 狀態檔（從未跑過時屬常見）。",
+  "autoVacuumOff": "自動清理未啟用。啟用前時間設定不會執行。"
 }

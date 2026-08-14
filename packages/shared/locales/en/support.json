@@ -24,5 +24,6 @@
   "cryptoNetwork": "Network",
   "cryptoAddress": "Address",
   "copy": "Copy",
-  "copied": "Copied"
+  "copied": "Copied",
+  "docsLink": "Documentation"
 }

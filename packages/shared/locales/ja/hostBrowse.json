@@ -124,5 +124,9 @@
   "mediaAudioLabel": "オーディオ",
   "mediaAudioDesc": "ホスト Chrome からのオプションのブリッジ。ロック解除のクリックが必要になる場合があります。",
   "mediaPolicyLabel": "ポリシー",
-  "mediaPolicyDesc": "ダウンロードと自動再生は、上記の安全性とダウンロードの設定に従います。"
+  "mediaPolicyDesc": "ダウンロードと自動再生は、上記の安全性とダウンロードの設定に従います。",
+  "frameBlocked": "The page could not be shown in the panel frame.",
+  "historyEmpty": "No history in this session.",
+  "bookmarksEmpty": "No bookmarks yet.",
+  "closeSessionHint": "Clears cookies for this browse session. Bookmarks stay."
 }

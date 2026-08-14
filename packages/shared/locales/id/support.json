@@ -24,5 +24,6 @@
   "cryptoNetwork": "Jaringan",
   "cryptoAddress": "Alamat",
   "copy": "Salin",
-  "copied": "Disalin"
+  "copied": "Disalin",
+  "docsLink": "Documentation"
 }

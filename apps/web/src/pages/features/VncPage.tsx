@@ -777,10 +777,10 @@ export function VncPage() {
             <SoftwareVersionBar softwareId="tigervnc" />
             <SoftwareInstallBanner feature="novnc" title={t('vnc.needNovnc')} showReadyActions={false} />
             <SoftwareVersionBar softwareId="novnc" />
-            <SoftwareInstallBanner feature="vnc" title={t('vnc.needXfce')} showReadyActions={false} />
+            <SoftwareInstallBanner feature="vnc-xfce" title={t('vnc.needXfce')} showReadyActions={false} />
             <SoftwareVersionBar softwareId="vnc-desktop-xfce" />
             <Alert variant="info">{t('vnc.viewerStackOptional')}</Alert>
-            <SoftwareInstallBanner feature="vnc" title={t('vnc.needViewerOptional')} showReadyActions={false} />
+            <SoftwareInstallBanner feature="vnc-viewer" title={t('vnc.needViewerOptional')} showReadyActions={false} />
             <SoftwareVersionBar softwareId="tigervnc-viewer" />
           </div>
         ) : null}
@@ -1371,6 +1371,7 @@ export function VncPage() {
               checked={clRememberPass}
               onChange={(e) => setClRememberPass(e.target.checked)}
               disabled={!clPassword.trim()}
+              title={!clPassword.trim() ? t('vnc.rememberNeedPassword') : undefined}
             />
             <span className="u-text-sm">{t('vnc.clientRememberPassword')}</span>
           </label>

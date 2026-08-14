@@ -242,5 +242,6 @@
   "stackMissingShort": "انسٹال نہیں ہے۔",
   "editClientTitle": "ریموٹ کلائنٹ میں ترمیم کریں۔",
   "editClientDesc": "راستہ، میزبان، اور اختیاری ذخیرہ شدہ پاس ورڈ کو اپ ڈیٹ کریں۔",
-  "clientUpdated": "کلائنٹ پروفائل کو اپ ڈیٹ کر دیا گیا۔"
+  "clientUpdated": "کلائنٹ پروفائل کو اپ ڈیٹ کر دیا گیا۔",
+  "rememberNeedPassword": "Enter a password first."
 }

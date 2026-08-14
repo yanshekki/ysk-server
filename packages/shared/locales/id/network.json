@@ -135,10 +135,12 @@
       "azure_frontdoor": "Pintu Depan Azure",
       "gcore": "Dapatkan CDN",
       "custom": "Proksi khusus"
-    }
+    },
+    "needProvider": "Choose a CDN provider before fetching its IP list."
   },
   "linkUp": "Ke atas",
   "linkDown": "Turun",
   "linkDownTitle": "Take {{name}} offline",
-  "linkDownNeedConfirm": "Type the interface name to confirm"
+  "linkDownNeedConfirm": "Type the interface name to confirm",
+  "persistNmHint": "Persistable means changes can survive reboot via NetworkManager."
 }

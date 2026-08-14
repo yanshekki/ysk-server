@@ -137,8 +137,10 @@
       "azure_frontdoor": "Azure Front Door",
       "gcore": "Gcore CDN",
       "custom": "Custom proxies"
-    }
+    },
+    "needProvider": "Choose a CDN provider before fetching its IP list."
   },
   "linkUp": "Up",
-  "linkDown": "Down"
+  "linkDown": "Down",
+  "persistNmHint": "Persistable means changes can survive reboot via NetworkManager."
 }

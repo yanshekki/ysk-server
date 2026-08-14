@@ -894,6 +894,7 @@ export function HostBrowsePage() {
           variant="ghost"
           onClick={() => void onCloseSession()}
           disabled={!session || busy}
+          title={t('hostBrowse.closeSessionHint')}
         >
           {t('hostBrowse.closeSession')}
         </Button>
@@ -1319,6 +1320,13 @@ export function HostBrowsePage() {
                       ×
                     </Button>
                   </div>
+                  {(drawer === 'history' ? library.history : library.bookmarks).length === 0 ? (
+                    <p className="muted u-text-sm">
+                      {drawer === 'history'
+                        ? t('hostBrowse.historyEmpty')
+                        : t('hostBrowse.bookmarksEmpty')}
+                    </p>
+                  ) : null}
                   <ul className="hb-drawer__list">
                     {(drawer === 'history' ? library.history : library.bookmarks).map((item) => (
                       <li key={item.id}>
@@ -1419,7 +1427,8 @@ export function HostBrowsePage() {
                     ref={iframeRef}
                     className="hb-frame"
                     title={t('nav.hostBrowse')}
-                    sandbox="allow-scripts allow-forms allow-modals allow-popups allow-downloads"
+                    sandbox="allow-scripts allow-forms allow-modals allow-popups allow-downloads allow-same-origin"
+                    onError={() => setError(t('hostBrowse.frameBlocked'))}
                     referrerPolicy="no-referrer"
                     src={frameSrc ?? undefined}
                   />

@@ -4319,7 +4319,11 @@
     "mediaAudioLabel": "오디오",
     "mediaAudioDesc": "호스트 Chrome의 선택적 브리지; 잠금 해제 클릭이 필요할 수 있습니다.",
     "mediaPolicyLabel": "정책",
-    "mediaPolicyDesc": "다운로드 및 자동 재생은 위의 안전 및 다운로드 설정을 따릅니다."
+    "mediaPolicyDesc": "다운로드 및 자동 재생은 위의 안전 및 다운로드 설정을 따릅니다.",
+    "frameBlocked": "The page could not be shown in the panel frame.",
+    "historyEmpty": "No history in this session.",
+    "bookmarksEmpty": "No bookmarks yet.",
+    "closeSessionHint": "Clears cookies for this browse session. Bookmarks stay."
   },
   "listToolbar": {
     "searchPlaceholder": "찾다…",
@@ -4489,7 +4493,10 @@
     "prioErr": "오류+",
     "prioWarn": "경고+",
     "prioInfo": "정보+",
-    "srcFail2ban": "fail2ban"
+    "srcFail2ban": "fail2ban",
+    "vacuumSize": "Limit to 500 MB",
+    "logrotateNoStatus": "No logrotate status file yet (normal if it has never run).",
+    "autoVacuumOff": "Automatic clean is off. Time is unused until you enable it."
   },
   "metrics": {
     "alert": {
@@ -4950,12 +4957,14 @@
         "azure_frontdoor": "푸른 정문",
         "gcore": "G코어 CDN",
         "custom": "맞춤형 프록시"
-      }
+      },
+      "needProvider": "Choose a CDN provider before fetching its IP list."
     },
     "linkUp": "위로",
     "linkDown": "아래에",
     "linkDownTitle": "Take {{name}} offline",
-    "linkDownNeedConfirm": "Type the interface name to confirm"
+    "linkDownNeedConfirm": "Type the interface name to confirm",
+    "persistNmHint": "Persistable means changes can survive reboot via NetworkManager."
   },
   "nginx": {
     "pillSites": "{{count}} 사이트",
@@ -9235,7 +9244,13 @@
     "capabilitiesHint": "이 역할이 수행할 수 있는 작업 전환",
     "enabledCount": "{{total}} 중 {{enabled}} 활성화됨",
     "bandAboveMax": "최대 레벨 이상",
-    "dirtyHint": "맞춤형(공장마다 다름)"
+    "dirtyHint": "맞춤형(공장마다 다름)",
+    "unsaved": "Unsaved",
+    "unsavedHint": "Unsaved edits on this role",
+    "nothingToSave": "Nothing to save",
+    "saveRole": "Save {{role}} policy",
+    "discardTitle": "Discard unsaved policy?",
+    "discardDesc": "Switching roles drops unsaved capability edits."
   },
   "readiness": {
     "cat": {
@@ -10341,7 +10356,10 @@
       "sharePanelTitle": "패널 TOTP 비밀을 공유하시겠습니까?",
       "sharePanelDesc": "위험. 확인하려면 SHARED를 입력하세요.",
       "confirmString": "확인 문자열",
-      "enableShare": "공유 활성화"
+      "enableShare": "공유 활성화",
+      "invalidPub": "Paste a full OpenSSH public key line (ssh-ed25519 / ssh-rsa / ecdsa…).",
+      "dryRunOk": "Dry-run finished. Review the preview below.",
+      "strictBlocked": "Package or PAM is not ready; Strict apply is disabled."
     },
     "sessionsActive": "활성 세션",
     "sessionsOther": "기타 장치",
@@ -10366,7 +10384,36 @@
     "mySecurityHint": "",
     "policyTotpHint": "사이트 정책: 각 관리자는 자신의 2FA(개별 QR)를 활성화해야 합니다.",
     "requireUser2fa": "모든 패널 사용자에게 2FA 요구",
-    "generateFail2ban": "Generate fail2ban snippets"
+    "generateFail2ban": "Generate fail2ban snippets",
+    "changePasswordTitle": "Change sign-in password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmNewPassword": "Confirm new password",
+    "passwordMismatch": "New passwords do not match.",
+    "changePassword": "Change password",
+    "passwordChanged": "Password updated.",
+    "strictNeedsEnrolled": "At least one admin must have 2FA before Strict can be turned on.",
+    "policyTotpNeedSelf": "Enable 2FA on this account first; the confirm code cannot be filled otherwise.",
+    "fail2banSnippetTitle": "fail2ban snippet",
+    "fail2banSnippetEmpty": "No snippet was written.",
+    "trustedDevicesTitle": "Trusted devices",
+    "noTrustedDevices": "No trusted devices.",
+    "strictConfirmTitle": "Turn on Strict 2FA?",
+    "strictConfirmDesc": "Users without 2FA will be refused sign-in. Confirm you already have a working TOTP or passkey.",
+    "revokeDevicesTitle": "Revoke trusted devices?",
+    "revokeDevicesDesc": "Remembered browsers will need 2FA again.",
+    "approvalsHint": "Approvals appear when a high-risk tool needs a second operator. Grant approvals.review / approvals.handle on Users → Permissions.",
+    "allowlistReadonly": "Read-only catalog of agent tools. Capability grants are configured on Users → Permissions.",
+    "colTool": "Tool",
+    "colAllowed": "Allowed",
+    "colRisk": "Risk",
+    "colApproval": "Approval",
+    "risk": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    }
   },
   "serviceExposure": {
     "title": "네트워크 접속",
@@ -10928,7 +10975,8 @@
     "cryptoNetwork": "네트워크",
     "cryptoAddress": "주소",
     "copy": "복사",
-    "copied": "복사됨"
+    "copied": "복사됨",
+    "docsLink": "Documentation"
   },
   "system": {
     "exportLoadFailed": "내보내기 데이터를 로드하지 못했습니다.",
@@ -11781,7 +11829,10 @@
     "lockLastAdminHint": "마지막 관리자입니다. 삭제, 정지, 강등이 차단됩니다.",
     "demoteAdminTitle": "이 관리자를 강등할까요?",
     "demoteAdminDesc": "이 사용자는 전체 관리자 권한을 잃습니다. 다른 관리자가 남아 있는지 확인하세요.",
-    "searchPkgPh": "Package name"
+    "searchPkgPh": "Package name",
+    "quotaNonNeg": "Counts and quotas cannot be negative.",
+    "diskQuotaHint": "Presets are GiB; custom box is MiB.",
+    "bandwidthHint": "0 means unlimited."
   },
   "vnc": {
     "pageDesc": "VNC 서버 및 클라이언트",
@@ -12027,7 +12078,8 @@
     "stackMissingShort": "미설치",
     "editClientTitle": "원격 클라이언트 편집",
     "editClientDesc": "경로, 호스트 및 선택적으로 저장된 비밀번호를 업데이트합니다.",
-    "clientUpdated": "클라이언트 프로필이 업데이트되었습니다."
+    "clientUpdated": "클라이언트 프로필이 업데이트되었습니다.",
+    "rememberNeedPassword": "Enter a password first."
   },
   "vpn": {
     "pageDesc": "VPN 서버 및 클라이언트",

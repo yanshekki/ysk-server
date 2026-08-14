@@ -242,5 +242,6 @@
   "stackMissingShort": "ইনস্টল করা হয়নি",
   "editClientTitle": "দূরবর্তী ক্লায়েন্ট সম্পাদনা করুন",
   "editClientDesc": "পাথ, হোস্ট এবং ঐচ্ছিক সংরক্ষিত পাসওয়ার্ড আপডেট করুন।",
-  "clientUpdated": "ক্লায়েন্ট প্রোফাইল আপডেট করা হয়েছে"
+  "clientUpdated": "ক্লায়েন্ট প্রোফাইল আপডেট করা হয়েছে",
+  "rememberNeedPassword": "Enter a password first."
 }

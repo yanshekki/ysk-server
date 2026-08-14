@@ -242,5 +242,6 @@
   "stackMissingShort": "未インストール",
   "editClientTitle": "リモートクライアントの編集",
   "editClientDesc": "パス、ホスト、およびオプションで保存されているパスワードを更新します。",
-  "clientUpdated": "クライアントプロファイルが更新されました"
+  "clientUpdated": "クライアントプロファイルが更新されました",
+  "rememberNeedPassword": "Enter a password first."
 }

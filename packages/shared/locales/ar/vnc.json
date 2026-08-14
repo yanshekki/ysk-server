@@ -242,5 +242,6 @@
   "stackMissingShort": "غير مثبت",
   "editClientTitle": "تحرير العميل البعيد",
   "editClientDesc": "قم بتحديث المسار والمضيفين وكلمة المرور المخزنة الاختيارية.",
-  "clientUpdated": "تم تحديث ملف تعريف العميل"
+  "clientUpdated": "تم تحديث ملف تعريف العميل",
+  "rememberNeedPassword": "Enter a password first."
 }

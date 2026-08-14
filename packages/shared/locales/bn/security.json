@@ -367,7 +367,10 @@
     "sharePanelTitle": "শেয়ার প্যানেল TOTP গোপন?",
     "sharePanelDesc": "উচ্চ ঝুঁকি. নিশ্চিত করতে SHARED টাইপ করুন।",
     "confirmString": "নিশ্চিতকরণ স্ট্রিং",
-    "enableShare": "শেয়ারিং সক্ষম করুন"
+    "enableShare": "শেয়ারিং সক্ষম করুন",
+    "invalidPub": "Paste a full OpenSSH public key line (ssh-ed25519 / ssh-rsa / ecdsa…).",
+    "dryRunOk": "Dry-run finished. Review the preview below.",
+    "strictBlocked": "Package or PAM is not ready; Strict apply is disabled."
   },
   "sessionsActive": "সক্রিয় সেশন",
   "sessionsOther": "অন্যান্য ডিভাইস",
@@ -392,5 +395,34 @@
   "mySecurityHint": "",
   "policyTotpHint": "সাইটের নীতি: প্রতিটি প্রশাসককে অবশ্যই তাদের নিজস্ব 2FA (স্বতন্ত্র QR) সক্ষম করতে হবে",
   "requireUser2fa": "সব প্যানেল ব্যবহারকারীর জন্য 2FA বাধ্যতামূলক",
-  "generateFail2ban": "Generate fail2ban snippets"
+  "generateFail2ban": "Generate fail2ban snippets",
+  "changePasswordTitle": "Change sign-in password",
+  "currentPassword": "Current password",
+  "newPassword": "New password",
+  "confirmNewPassword": "Confirm new password",
+  "passwordMismatch": "New passwords do not match.",
+  "changePassword": "Change password",
+  "passwordChanged": "Password updated.",
+  "strictNeedsEnrolled": "At least one admin must have 2FA before Strict can be turned on.",
+  "policyTotpNeedSelf": "Enable 2FA on this account first; the confirm code cannot be filled otherwise.",
+  "fail2banSnippetTitle": "fail2ban snippet",
+  "fail2banSnippetEmpty": "No snippet was written.",
+  "trustedDevicesTitle": "Trusted devices",
+  "noTrustedDevices": "No trusted devices.",
+  "strictConfirmTitle": "Turn on Strict 2FA?",
+  "strictConfirmDesc": "Users without 2FA will be refused sign-in. Confirm you already have a working TOTP or passkey.",
+  "revokeDevicesTitle": "Revoke trusted devices?",
+  "revokeDevicesDesc": "Remembered browsers will need 2FA again.",
+  "approvalsHint": "Approvals appear when a high-risk tool needs a second operator. Grant approvals.review / approvals.handle on Users → Permissions.",
+  "allowlistReadonly": "Read-only catalog of agent tools. Capability grants are configured on Users → Permissions.",
+  "colTool": "Tool",
+  "colAllowed": "Allowed",
+  "colRisk": "Risk",
+  "colApproval": "Approval",
+  "risk": {
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "critical": "Critical"
+  }
 }

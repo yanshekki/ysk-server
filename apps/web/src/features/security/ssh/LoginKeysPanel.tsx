@@ -15,6 +15,7 @@ import { ActionBar,
 import { sshApi } from './api';
 import type { ProjectOpt, SftpKeyRow } from './types';
 import { bindSet, bindInput, bindVoid } from '../../../pages/bind-handlers';
+import { isValidSshPublicKey } from './ssh-key-format';
 
 type Props = {
   onFlash: (tone: 'ok' | 'error', text: string) => void;
@@ -47,7 +48,7 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
   }, [refresh]);
 
   async function addKey() {
-    if (!projectId || !pub.trim().startsWith('ssh-')) {
+    if (!projectId || !isValidSshPublicKey(pub)) {
       onFlash('error', t('security.ssh.loginNeedPub'));
       return;
     }
@@ -175,7 +176,7 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
               variant="primary"
               size="md"
               loading={busy}
-              disabled={!projectId || !pub.trim()}
+              disabled={!projectId || !isValidSshPublicKey(pub)}
               onClick={bindVoid(addKey)}
             >
               {t('security.ssh.addAuth')}
@@ -205,6 +206,11 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
             required
             fullWidth
             hint={t('security.ssh.publicKeyHint')}
+            error={
+              pub.trim() && !isValidSshPublicKey(pub)
+                ? t('security.ssh.invalidPub')
+                : undefined
+            }
           >
             <textarea
               id="login-pub"
