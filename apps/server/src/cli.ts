@@ -305,7 +305,9 @@ async function mainInner(
     const stripped = args.filter((a) => a !== '--help' && a !== '-h');
     const pos = cliPositionals(stripped);
     const rest = pos.slice(1).filter((s) => s !== 'help');
-    return mainInner([command, 'help', ...rest], json, command, { ...parsed, help: false });
+    const code = await mainInner([command, 'help', ...rest], json, command, { ...parsed, help: false });
+    // Explicit --help is a successful no-op (never runs the action).
+    return code === 2 ? 0 : code;
   }
   if (/[\u3400-\u9fff]/.test(command)) {
     process.stderr.write(
@@ -1496,7 +1498,7 @@ async function mainInner(
     const sub = cliPositionals(args).slice(1)[0] ?? 'status';
     if (sub === 'help' || sub === '--help') {
       process.stderr.write(`${tl('cli.usage.store.sub.--data-dir.path.--json.d580e4')}\n`);
-      return 2;
+      return 0;
     }
     const {
       exportStoreDocument,
@@ -3026,6 +3028,10 @@ async function mainInner(
 
   if (command === 'projects') {
     const sub = cliPositionals(args).slice(1)[0] ?? 'list';
+    if (sub === 'help' || sub === '--help') {
+      process.stderr.write(`${tl('cli.usage.projects.list.get.create.deploy.253b48')}\n`);
+      return 0;
+    }
     const configPath = getOpt(args, '--config');
     const dataDir = resolveCliDataDir({ flag: getOpt(args, '--data-dir') });
     let config = configPath ? loadConfigFile(configPath) : undefined;
