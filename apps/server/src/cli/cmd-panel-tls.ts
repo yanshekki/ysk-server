@@ -10,6 +10,7 @@ import {
   issueAndEnablePanelTls,
   tryRestartPanelService,
 } from 'ysk-server-core';
+import { cliPositionals } from '../cli-argv.js';
 import type { AppContext } from '../app-context.js';
 import type { CliHelpers } from './cmd-vpn.js';
 
@@ -18,7 +19,7 @@ export async function runPanelTlsCommand(
   args: string[],
   h: CliHelpers,
 ): Promise<number> {
-  const tokens = args.filter((a) => !a.startsWith('-'));
+  const tokens = cliPositionals(args);
   // tokens: ssl panel-tls <action>  OR panel-tls <action>
   let action = 'status';
   const pti = tokens.indexOf('panel-tls');

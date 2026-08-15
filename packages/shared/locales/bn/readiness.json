@@ -108,5 +108,6 @@
   "fixFailed": "সংশোধন ব্যর্থ হয়েছে",
   "fixDone": "dataDir অনুমতি কঠোর (chmod 750)",
   "fixDoneWebUi": "ওয়েব UI বিল্ট/ইনস্টল করা হয়েছে",
-  "rootLabel": "Superuser"
+  "rootLabel": "Superuser",
+  "exportStarted": "Downloading {{name}}"
 }

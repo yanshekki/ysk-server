@@ -53,5 +53,8 @@
   "protectionDoneNote": "保護プローブが完成しました",
   "probeDone": "プローブが完了しました",
   "runProtection": "保護プローブを実行する",
-  "notProbedYet": "まだ調査されていません"
+  "notProbedYet": "まだ調査されていません",
+  "stopConfirmFail2banTitle": "Stop fail2ban?",
+  "stopConfirmFail2banDesc": "Stopping fail2ban turns off automatic IP bans. Websites and SSH keep running.",
+  "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again."
 }

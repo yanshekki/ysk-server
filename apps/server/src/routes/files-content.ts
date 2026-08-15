@@ -127,9 +127,19 @@ export async function handleFilesContentRoutes(
 
   if (method === 'POST' && url.pathname === '/api/v1/files/create-text') {
     const raw = await readBody(req);
-    const data = JSON.parse(raw || '{}') as { path?: string; content?: string };
+    const data = JSON.parse(raw || '{}') as {
+      path?: string;
+      content?: string;
+      name?: string;
+      leafOnly?: boolean;
+    };
     if (!data.path?.trim()) {
       sendJson(res, 400, { ok: false, message: tl('notes.needPath') });
+      return true;
+    }
+    const { hasPathSeparator } = await import('ysk-server-core');
+    if (data.leafOnly && hasPathSeparator(String(data.name ?? ''))) {
+      sendJson(res, 400, { ok: false, message: tl('files.noPathSepHint') });
       return true;
     }
     const result = fm.createTextFile(data.path.trim(), data.content ?? '');

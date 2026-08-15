@@ -2536,11 +2536,16 @@ export function FilesPage() {
               variant="primary"
               size="md"
               loading={busy}
+              disabled={/[\\/]/.test(newFileName)}
               onClick={() =>
                 void run(async () => {
                   const name = newFileName.trim();
                   if (!name) throw new Error(t('files.fileNameRequired'));
-                  await filesApi.createText(root, joinPath(path, name), '');
+                  if (/[\\/]/.test(name)) throw new Error(t('files.noPathSepHint'));
+                  await filesApi.createText(root, joinPath(path, name), '', {
+                    leafOnly: true,
+                    name,
+                  });
                   setNewFileOpen(false);
                 }, t('files.textFileCreated'))
               }
@@ -2551,7 +2556,14 @@ export function FilesPage() {
         }
       >
         <FormLayout>
-          <Field label={t('files.fileName')} htmlFor="nf" flush required hint={t('files.fileNameHint')}>
+          <Field
+            label={t('files.fileName')}
+            htmlFor="nf"
+            flush
+            required
+            hint={t('files.fileNameHint')}
+            error={/[\\/]/.test(newFileName) ? t('files.noPathSepHint') : undefined}
+          >
             <input
               id="nf"
               value={newFileName}

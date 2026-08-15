@@ -108,5 +108,6 @@
   "fixFailed": "La solución falló",
   "fixDone": "Permisos de dataDir reforzados (chmod 750)",
   "fixDoneWebUi": "UI web construida/instalada",
-  "rootLabel": "Superuser"
+  "rootLabel": "Superuser",
+  "exportStarted": "Downloading {{name}}"
 }

@@ -882,7 +882,7 @@
           },
           "status": {
             "bans": {
-              "a8d96b": "استعمال: {{CLI_NAME}} دفاعی حیثیت|پابندی|مشتبہ افراد|پابندی\n` +\n          ` پابندی [-q text] [-source fail2ban|panel|ufw|auto]\n` +\n          ` مشتبہ [-q متن]\n` +\n          ` stack-apply [-execute] # UFW + fail2ban + موجودہ پیش سیٹ\n` +\n          `fail2ban | فائر وال # گہری تحقیقات (ایماندار)\n` +\n          ` ٹائم لائن [-حد N] [-q متن]\n` +\n          ` presets # list + activePreset"
+              "a8d96b": "استعمال: {{CLI_NAME}} دفاعی حیثیت|پابندی|مشتبہ افراد|پابندی\n پابندی [-q text] [-source fail2ban|panel|ufw|auto]\n مشتبہ [-q متن]\n stack-apply [-execute] # UFW + fail2ban + موجودہ پیش سیٹ\nfail2ban | فائر وال # گہری تحقیقات (ایماندار)\n ٹائم لائن [-حد N] [-q متن]\n presets # list + activePreset"
             }
           }
         }

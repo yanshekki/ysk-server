@@ -8,6 +8,7 @@
  */
 import { createVpnService, parseEngine, syncServiceExposure, vpnPortBindings } from 'ysk-server-core';
 import { readFileSync } from 'node:fs';
+import { cliPositionals } from '../cli-argv.js';
 import type { AppContext } from '../app-context.js';
 
 export type CliHelpers = {
@@ -44,7 +45,7 @@ export async function runVpnCommand(
   h: CliHelpers,
 ): Promise<number> {
   void _json;
-  const tokens = args.filter((a) => !a.startsWith('-'));
+  const tokens = cliPositionals(args);
   // tokens[0] === 'vpn'
   const sub = tokens[1] ?? 'status';
   const vpn = createVpnService(ctx.dataDir, ctx.host);

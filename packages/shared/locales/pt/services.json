@@ -53,5 +53,8 @@
   "protectionDoneNote": "Sonda de proteção concluída",
   "probeDone": "Sondagem concluída",
   "runProtection": "Executar investigação de proteção",
-  "notProbedYet": "Ainda não foi investigado"
+  "notProbedYet": "Ainda não foi investigado",
+  "stopConfirmFail2banTitle": "Stop fail2ban?",
+  "stopConfirmFail2banDesc": "Stopping fail2ban turns off automatic IP bans. Websites and SSH keep running.",
+  "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again."
 }

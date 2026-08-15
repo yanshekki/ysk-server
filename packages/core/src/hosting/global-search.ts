@@ -148,9 +148,12 @@ export function globalSearch(db: YskDatabase, q: string, limit = 40): SearchHit[
   for (const p of arr(snap, 'projects')) {
     const name = String(p.name ?? '');
     const domain = String(p.domain ?? '');
+    const aliases = Array.isArray(p.domain_aliases)
+      ? (p.domain_aliases as unknown[]).map((a) => String(a)).join(' ')
+      : '';
     const id = String(p.id ?? '');
     const linux = String(p.linux_user ?? '');
-    const score = matchScore(query, name, domain, id, linux);
+    const score = matchScore(query, name, domain, aliases, id, linux);
     pushHit(
       hits,
       {

@@ -108,5 +108,6 @@
   "fixFailed": "درست کرنا ناکام ہو گیا۔",
   "fixDone": "dataDir کی اجازتیں سخت (chmod 750)",
   "fixDoneWebUi": "ویب UI بلٹ / انسٹال",
-  "rootLabel": "Superuser"
+  "rootLabel": "Superuser",
+  "exportStarted": "Downloading {{name}}"
 }

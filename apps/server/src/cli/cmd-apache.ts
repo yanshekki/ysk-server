@@ -23,6 +23,7 @@ import {
   syncServiceExposure,
 } from 'ysk-server-core';
 import { join } from 'node:path';
+import { cliPositionals } from '../cli-argv.js';
 import type { AppContext } from '../app-context.js';
 import type { CliHelpers } from './cmd-vpn.js';
 
@@ -43,7 +44,7 @@ export async function runApacheCommand(
   h: CliHelpers,
 ): Promise<number> {
   void _json;
-  const tokens = args.filter((a) => !a.startsWith('-'));
+  const tokens = cliPositionals(args);
   const sub = tokens[1] ?? 'sites';
 
   if (sub === 'sites' || sub === 'list' || sub === 'status') {

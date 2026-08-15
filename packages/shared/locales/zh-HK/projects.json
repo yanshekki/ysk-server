@@ -193,6 +193,7 @@
   "osUserIncomplete": "系統用戶建立未完成",
   "saveLogDirsFailed": "儲存 日誌 目錄失敗",
   "createName": "專案名稱",
+  "noPathSepHint": "名稱不可包含 / 或 \\。",
   "createRuntime": "執行環境",
   "createRuntimeHint": "之後可在詳情調整部署方式",
   "createVersion": "版本",

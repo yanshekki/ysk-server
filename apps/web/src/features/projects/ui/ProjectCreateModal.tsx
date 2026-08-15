@@ -212,6 +212,7 @@ export function ProjectCreateModal({
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (/[\\/]/.test(name)) return;
     const domainAliases = aliases
       .split(/[\n,]+/)
       .map((s) => s.trim())
@@ -287,7 +288,7 @@ export function ProjectCreateModal({
             size="md"
             form="project-create-form"
             loading={busy}
-            disabled={!name.trim()}
+            disabled={!name.trim() || /[\\/]/.test(name)}
           >
             {t('projects.create')}
           </Button>
@@ -301,7 +302,13 @@ export function ProjectCreateModal({
       >
         {/* ① 基本：單欄，避免 SegRadio 把兩欄撐歪 */}
         <FormLayout>
-          <Field label={t('projects.createName')} htmlFor="pname" required flush>
+          <Field
+            label={t('projects.createName')}
+            htmlFor="pname"
+            required
+            flush
+            error={/[\\/]/.test(name) ? t('projects.noPathSepHint') : undefined}
+          >
             <input
               id="pname"
               value={name}

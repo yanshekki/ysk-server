@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.36 — 2026-08-15
+
+### Fix
+- CLI parses `--data-dir` / `--locale` (space or `=`) before the command; `YSK_DATA_DIR` works; root uses `/var/lib/ysk-server` when that store exists
+- `--help` never runs list/export/schedule/setup/serve
+- `security sessions revoke-others` needs `--user`; API keys need `--name` (default scope read)
+- CLI language defaults to English (`--locale` / `YSK_LOCALE`); command names stay English
+- `dig` / Redis GET·KEYS are read-only (no EXECUTE)
+- Create-project modal is opaque; CDN tab is not `站點 {{n}}`; fail2ban stop copy is honest
+- Readiness export toast uses a real string; file names cannot contain `/`
+
 ## 1.0.35 — 2026-08-15
 
 ### Fix

@@ -882,7 +882,7 @@
           },
           "status": {
             "bans": {
-              "a8d96b": "使用法: {{CLI_NAME}} 防御ステータス|禁止|容疑者|禁止|禁止解除|ホワイトリスト|スタック適用|fail2ban|ファイアウォール|タイムライン|プリセット [--json]\n` +\n          ` 禁止 [--q テキスト] [--source failed2ban|panel|ufw|auto]\n` +\n          ` 容疑者 [--q テキスト]\n` +\n          ` stack-apply [--execute] # UFW + failed2ban + 現在のプリセット\n` +\n          ` 失敗2禁止 |ファイアウォール # ディーププローブ (正直)\n` +\n          ` タイムライン [--limit N] [--q テキスト]\n` +\n          ` プリセット # リスト + activePreset"
+              "a8d96b": "使用法: {{CLI_NAME}} 防御ステータス|禁止|容疑者|禁止|禁止解除|ホワイトリスト|スタック適用|fail2ban|ファイアウォール|タイムライン|プリセット [--json]\n 禁止 [--q テキスト] [--source failed2ban|panel|ufw|auto]\n 容疑者 [--q テキスト]\n stack-apply [--execute] # UFW + failed2ban + 現在のプリセット\n 失敗2禁止 |ファイアウォール # ディーププローブ (正直)\n タイムライン [--limit N] [--q テキスト]\n プリセット # リスト + activePreset"
             }
           }
         }

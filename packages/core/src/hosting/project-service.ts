@@ -109,6 +109,9 @@ export class ProjectService {
       throw new YskError(ErrorCodes.VALIDATION, tl('notes.needProjectName'), { httpStatus: 400 });
     }
     const nameNorm = input.name.trim();
+    if (/[\\/]/.test(nameNorm)) {
+      throw new YskError(ErrorCodes.VALIDATION, tl('projects.noPathSepHint'), { httpStatus: 400 });
+    }
     // Reject duplicate project names (case-insensitive) before OS provision
     const nameClash = this.projects.list().find(
       (p) => p.name.trim().toLowerCase() === nameNorm.toLowerCase(),

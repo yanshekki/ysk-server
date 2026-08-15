@@ -53,5 +53,8 @@
   "protectionDoneNote": "보호 프로브 완료",
   "probeDone": "프로브 완료",
   "runProtection": "보호 프로브 실행",
-  "notProbedYet": "아직 조사되지 않음"
+  "notProbedYet": "아직 조사되지 않음",
+  "stopConfirmFail2banTitle": "Stop fail2ban?",
+  "stopConfirmFail2banDesc": "Stopping fail2ban turns off automatic IP bans. Websites and SSH keep running.",
+  "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again."
 }

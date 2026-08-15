@@ -564,5 +564,6 @@
   "resShell": "登录 shell",
   "resSaveHint": "「储存并套用」会改主机。「仅存控制面」只记表单。「再套用」用已存值再写入系统。",
   "resBashConfirmTitle": "允许互动式 bash？",
-  "resBashConfirmDesc": "这会让专案用户有互动登录 shell。只在需要以该用户 SSH 或终端机时才确认。"
+  "resBashConfirmDesc": "这会让专案用户有互动登录 shell。只在需要以该用户 SSH 或终端机时才确认。",
+  "noPathSepHint": "名稱不可包含 / 或 \\。"
 }

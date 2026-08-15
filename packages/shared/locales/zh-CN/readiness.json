@@ -108,5 +108,6 @@
   "fixFailed": "修复失败",
   "fixDone": "已修复 dataDir 权限（chmod 750）",
   "fixDoneWebUi": "已构建／安装 Web 界面",
-  "rootLabel": "超级用户"
+  "rootLabel": "超级用户",
+  "exportStarted": "正在下載 {{name}}"
 }

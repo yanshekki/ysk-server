@@ -1584,7 +1584,7 @@
             },
             "status": {
               "bans": {
-                "a8d96b": "Penggunaan: {{CLI_NAME}} status pertahanan|larangan|tersangka|larangan|batalkan pelarangan|daftar putih|stack-apply|fail2ban|firewall|timeline|preset [--json]\n` +\n          ` melarang [--q teks] [--sumber fail2ban|panel|ufw|auto]\n` +\n          ` tersangka [--q teks]\n` +\n          ` stack-apply [--execute] # UFW + fail2ban + preset saat ini\n` +\n          `gagal2ban | firewall # probe mendalam (jujur)\n` +\n          ` garis waktu [--batas N] [--q teks]\n` +\n          ` preset # daftar + Preset aktif"
+                "a8d96b": "Penggunaan: {{CLI_NAME}} status pertahanan|larangan|tersangka|larangan|batalkan pelarangan|daftar putih|stack-apply|fail2ban|firewall|timeline|preset [--json]\n melarang [--q teks] [--sumber fail2ban|panel|ufw|auto]\n tersangka [--q teks]\n stack-apply [--execute] # UFW + fail2ban + preset saat ini\ngagal2ban | firewall # probe mendalam (jujur)\n garis waktu [--batas N] [--q teks]\n preset # daftar + Preset aktif"
               }
             }
           }
@@ -8769,7 +8769,8 @@
     "resShell": "Login shell",
     "resSaveHint": "Save and apply changes the live OS. Control-plane only stores the form. Re-apply uses the last saved values.",
     "resBashConfirmTitle": "Allow interactive bash?",
-    "resBashConfirmDesc": "This grants an interactive login shell to the project user. Confirm only if you need SSH or PTY as that user."
+    "resBashConfirmDesc": "This grants an interactive login shell to the project user. Confirm only if you need SSH or PTY as that user.",
+    "noPathSepHint": "The name cannot contain / or \\."
   },
   "protection": {
     "levels": {
@@ -9374,7 +9375,8 @@
     "fixFailed": "Perbaikan gagal",
     "fixDone": "izin dataDir diperkeras (chmod 750)",
     "fixDoneWebUi": "UI web dibuat/diinstal",
-    "rootLabel": "Superuser"
+    "rootLabel": "Superuser",
+    "exportStarted": "Downloading {{name}}"
   },
   "redis": {
     "neverExpire": "Tidak pernah kadaluarsa",
@@ -10519,7 +10521,10 @@
     "protectionDoneNote": "Pemeriksaan perlindungan selesai",
     "probeDone": "Penyelidikan selesai",
     "runProtection": "Jalankan pemeriksaan perlindungan",
-    "notProbedYet": "Belum diselidiki"
+    "notProbedYet": "Belum diselidiki",
+    "stopConfirmFail2banTitle": "Stop fail2ban?",
+    "stopConfirmFail2banDesc": "Stopping fail2ban turns off automatic IP bans. Websites and SSH keep running.",
+    "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again."
   },
   "software": {
     "title": "Perangkat lunak",

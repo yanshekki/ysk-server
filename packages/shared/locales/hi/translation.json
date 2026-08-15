@@ -8769,7 +8769,8 @@
     "resShell": "Login shell",
     "resSaveHint": "Save and apply changes the live OS. Control-plane only stores the form. Re-apply uses the last saved values.",
     "resBashConfirmTitle": "Allow interactive bash?",
-    "resBashConfirmDesc": "This grants an interactive login shell to the project user. Confirm only if you need SSH or PTY as that user."
+    "resBashConfirmDesc": "This grants an interactive login shell to the project user. Confirm only if you need SSH or PTY as that user.",
+    "noPathSepHint": "The name cannot contain / or \\."
   },
   "protection": {
     "levels": {
@@ -9374,7 +9375,8 @@
     "fixFailed": "सुधार विफल रहा",
     "fixDone": "डेटाडिर अनुमतियाँ सख्त (chmod 750)",
     "fixDoneWebUi": "वेब यूआई निर्मित/स्थापित",
-    "rootLabel": "Superuser"
+    "rootLabel": "Superuser",
+    "exportStarted": "Downloading {{name}}"
   },
   "redis": {
     "neverExpire": "कभी समाप्त नहीं होता",
@@ -10519,7 +10521,10 @@
     "protectionDoneNote": "सुरक्षा जांच समाप्त हो गई",
     "probeDone": "जांच पूरी",
     "runProtection": "सुरक्षा जांच चलाएँ",
-    "notProbedYet": "अभी तक जांच नहीं हुई"
+    "notProbedYet": "अभी तक जांच नहीं हुई",
+    "stopConfirmFail2banTitle": "Stop fail2ban?",
+    "stopConfirmFail2banDesc": "Stopping fail2ban turns off automatic IP bans. Websites and SSH keep running.",
+    "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again."
   },
   "software": {
     "title": "सॉफ़्टवेयर",

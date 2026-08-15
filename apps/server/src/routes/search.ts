@@ -19,8 +19,12 @@ export async function handleSearchRoutes(
     try {
       const { globalSearch } = await import('ysk-server-core');
       sendJson(res, 200, { items: globalSearch(ctx.db, q) });
-    } catch {
-      sendJson(res, 200, { items: [] });
+    } catch (e) {
+      sendJson(res, 500, {
+        ok: false,
+        items: [],
+        message: e instanceof Error ? e.message : 'search failed',
+      });
     }
     return true;
   }

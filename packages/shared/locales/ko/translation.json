@@ -1584,7 +1584,7 @@
             },
             "status": {
               "bans": {
-                "a8d96b": "사용법: {{CLI_NAME}} 방어 상태|bans|suspects|ban|unban|whitelist|stack-apply|fail2ban|firewall|timeline|presets [--json]\n` +\n          ` 금지 [--q 텍스트] [--source 실패2ban|패널|ufw|자동]\n` +\n          ` 용의자 [--q 텍스트]\n` +\n          ` stack-apply [--execute] # UFW + fail2ban + 현재 프리셋\n` +\n          ` 실패2반 | 방화벽 # 심층 조사(정직)\n` +\n          ` 타임라인 [--limit N] [--q 텍스트]\n` +\n          ` 사전 설정 # 목록 + activePreset"
+                "a8d96b": "사용법: {{CLI_NAME}} 방어 상태|bans|suspects|ban|unban|whitelist|stack-apply|fail2ban|firewall|timeline|presets [--json]\n 금지 [--q 텍스트] [--source 실패2ban|패널|ufw|자동]\n 용의자 [--q 텍스트]\n stack-apply [--execute] # UFW + fail2ban + 현재 프리셋\n 실패2반 | 방화벽 # 심층 조사(정직)\n 타임라인 [--limit N] [--q 텍스트]\n 사전 설정 # 목록 + activePreset"
               }
             }
           }
@@ -8769,7 +8769,8 @@
     "resShell": "Login shell",
     "resSaveHint": "Save and apply changes the live OS. Control-plane only stores the form. Re-apply uses the last saved values.",
     "resBashConfirmTitle": "Allow interactive bash?",
-    "resBashConfirmDesc": "This grants an interactive login shell to the project user. Confirm only if you need SSH or PTY as that user."
+    "resBashConfirmDesc": "This grants an interactive login shell to the project user. Confirm only if you need SSH or PTY as that user.",
+    "noPathSepHint": "The name cannot contain / or \\."
   },
   "protection": {
     "levels": {
@@ -9374,7 +9375,8 @@
     "fixFailed": "수정 실패",
     "fixDone": "dataDir 권한 강화(chmod 750)",
     "fixDoneWebUi": "웹 UI 구축/설치",
-    "rootLabel": "Superuser"
+    "rootLabel": "Superuser",
+    "exportStarted": "Downloading {{name}}"
   },
   "redis": {
     "neverExpire": "만료되지 않음",
@@ -10519,7 +10521,10 @@
     "protectionDoneNote": "보호 프로브 완료",
     "probeDone": "프로브 완료",
     "runProtection": "보호 프로브 실행",
-    "notProbedYet": "아직 조사되지 않음"
+    "notProbedYet": "아직 조사되지 않음",
+    "stopConfirmFail2banTitle": "Stop fail2ban?",
+    "stopConfirmFail2banDesc": "Stopping fail2ban turns off automatic IP bans. Websites and SSH keep running.",
+    "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again."
   },
   "software": {
     "title": "소프트웨어",

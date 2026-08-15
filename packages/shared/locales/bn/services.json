@@ -53,5 +53,8 @@
   "protectionDoneNote": "সুরক্ষা তদন্ত সমাপ্ত",
   "probeDone": "তদন্ত সম্পূর্ণ",
   "runProtection": "সুরক্ষা প্রোব চালান",
-  "notProbedYet": "এখনো তদন্ত করা হয়নি"
+  "notProbedYet": "এখনো তদন্ত করা হয়নি",
+  "stopConfirmFail2banTitle": "Stop fail2ban?",
+  "stopConfirmFail2banDesc": "Stopping fail2ban turns off automatic IP bans. Websites and SSH keep running.",
+  "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again."
 }

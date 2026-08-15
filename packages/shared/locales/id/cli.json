@@ -882,7 +882,7 @@
           },
           "status": {
             "bans": {
-              "a8d96b": "Penggunaan: {{CLI_NAME}} status pertahanan|larangan|tersangka|larangan|batalkan pelarangan|daftar putih|stack-apply|fail2ban|firewall|timeline|preset [--json]\n` +\n          ` melarang [--q teks] [--sumber fail2ban|panel|ufw|auto]\n` +\n          ` tersangka [--q teks]\n` +\n          ` stack-apply [--execute] # UFW + fail2ban + preset saat ini\n` +\n          `gagal2ban | firewall # probe mendalam (jujur)\n` +\n          ` garis waktu [--batas N] [--q teks]\n` +\n          ` preset # daftar + Preset aktif"
+              "a8d96b": "Penggunaan: {{CLI_NAME}} status pertahanan|larangan|tersangka|larangan|batalkan pelarangan|daftar putih|stack-apply|fail2ban|firewall|timeline|preset [--json]\n melarang [--q teks] [--sumber fail2ban|panel|ufw|auto]\n tersangka [--q teks]\n stack-apply [--execute] # UFW + fail2ban + preset saat ini\ngagal2ban | firewall # probe mendalam (jujur)\n garis waktu [--batas N] [--q teks]\n preset # daftar + Preset aktif"
             }
           }
         }

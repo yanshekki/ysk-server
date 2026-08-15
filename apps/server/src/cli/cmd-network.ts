@@ -17,6 +17,7 @@ import {
   refreshRealIpCidrs,
 } from 'ysk-server-core';
 import { YSK_SERVICE_PORTS, defaultPortsForService } from 'ysk-server-shared';
+import { cliPositionals } from '../cli-argv.js';
 import type { AppContext } from '../app-context.js';
 import type { CliHelpers } from './cmd-vpn.js';
 
@@ -65,7 +66,7 @@ export async function runNetworkCommand(
   h: CliHelpers,
 ): Promise<number> {
   void _json;
-  const tokens = args.filter((a) => !a.startsWith('-'));
+  const tokens = cliPositionals(args);
   // tokens[0] === 'network' | 'real-ip' | 'exposure'
   const root = tokens[0];
 
@@ -356,6 +357,6 @@ export async function runRealIpCommand(
   h: CliHelpers,
 ): Promise<number> {
   void json;
-  const tokens = args.filter((a) => !a.startsWith('-'));
+  const tokens = cliPositionals(args);
   return runRealIp(ctx, args, tokens.slice(1), h);
 }

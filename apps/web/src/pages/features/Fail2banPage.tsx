@@ -793,7 +793,7 @@ export function Fail2banPage() {
                 installed={Boolean(status?.installed)}
                 running={running}
                 actions={['start', 'stop', 'restart', 'reload']}
-                danger="edge"
+                danger="fail2ban"
                 onDone={refresh}
               />
               {!running && status?.installed ? (

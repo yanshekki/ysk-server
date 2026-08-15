@@ -193,6 +193,7 @@
   "osUserIncomplete": "System user provisioning incomplete",
   "saveLogDirsFailed": "Failed to save log directories",
   "createName": "Project name",
+  "noPathSepHint": "The name cannot contain / or \\.",
   "createRuntime": "Runtime",
   "createRuntimeHint": "You can change deploy options later in detail",
   "createVersion": "Version",

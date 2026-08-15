@@ -609,7 +609,7 @@
     "confWritten": "已寫入 設定檔（{{status}}）",
     "partialFail": "未全部成功（{{status}}）— 見 notes",
     "statNodes": "節點",
-    "statSites": "站點 {{n}}",
+    "statSites": "站點",
     "recentNotes": "最近 notes",
     "edgeConfPreview": "Nginx 邊緣 設定檔 預覽",
     "tabs": {
@@ -704,17 +704,17 @@
     "unknownCommand": "未知命令：{{command}}\n執行 `{{cli}} help`",
     "usagePrefix": "用法：",
     "security": {
-      "help": "用法：ysk-server security 狀態\n ysk-server security sessions 列表|revoke|revoke-others [--用戶 U]\n ysk-server security api-keys 列表|建立|delete …",
-      "sessionsHelp": "用法：ysk-server security sessions 列表 [--用戶 U]\n ysk-server security sessions revoke --識別碼 PREFIX [--用戶 U]\n ysk-server security sessions revoke-others [--用戶 U] [--keep-權杖 T]",
-      "apiKeysHelp": "用法：ysk-server security api-keys 列表\n ysk-server security api-keys 建立 --名稱 N [--用戶 U] [--scope full|read]\n ysk-server security api-keys delete --識別碼 KEY_ID",
-      "noUser": "找不到用戶。請先建立管理員，或傳入 --用戶 <名稱|識別碼>",
+      "help": "Usage: ysk-server security status\n       ysk-server security sessions list|revoke|revoke-others [--user U]\n       ysk-server security api-keys list|create|delete …",
+      "sessionsHelp": "Usage: ysk-server security sessions list [--user U]\n       ysk-server security sessions revoke --id PREFIX [--user U]\n       ysk-server security sessions revoke-others [--user U] [--keep-token T]",
+      "apiKeysHelp": "Usage: ysk-server security api-keys list\n       ysk-server security api-keys create --name N [--user U] [--scope full|read]\n       ysk-server security api-keys delete --id KEY_ID",
+      "noUser": "找不到用戶。請先建立管理員，或傳入 --user <名稱或識別碼>。",
       "tokenOnce": "權杖 只顯示一次 — 請妥善保存",
-      "sessionRevokeUsage": "用法：ysk-server security sessions revoke --識別碼 <sessionIdPrefix> [--用戶 U]",
-      "apiKeyDeleteUsage": "用法：ysk-server security api-keys delete --識別碼 KEY_ID"
+      "sessionRevokeUsage": "Usage: ysk-server security sessions revoke --id <sessionIdPrefix> [--user U]",
+      "apiKeyDeleteUsage": "Usage: ysk-server security api-keys delete --id KEY_ID"
     },
     "help": {
       "blurb": "控制平面 命令列 — 人工智能 代理 請優先用 --json。\n文件：docs/代理/README.md · docs/cli/reference.md · docs/代理/commands.json",
-      "main": "{{product}} ({{cli}}) v{{version}}\n\n控制平面 命令列 — 人工智能 代理 請優先用 --json。\n文件：docs/代理/README.md · docs/cli/reference.md · docs/代理/commands.json\n\n用法：\n {{cli}} <command> [options]\n\n命令：\n setup 初始化 dataDir + 管理員\n update 自我更新檢查／套用\n serve HTTP 介面 + Web UI\n system 服務單元-安裝 安裝 ysk-server.service [--啟用]\n tools 工具列表；tools run --tool <名稱> [--預覽試行]\n ask 自然語言 → 人工智能 計劃 [--執行]\n 專案 列表|get|建立|deploy|stop|health|備份|template\n 備份 all|列表|狀態|還原|delete|schedule|control-plane|settings|Restic\n templates 應用範本\n hosting nginx|dns|db|firewall 輔助\n dns zone|zones（人工智能 別名 → hosting dns-*）\n 日誌 sources|query|系統日誌|overview\n 主機 overview|metrics（唯讀）\n nginx 狀態|列表|test|同步\n ssl 列表|get（憑證）\n db-叢集 列表|get|建立|計劃（HA 先計劃）\n ssh-金鑰 列表|建立|匯入|public|export|安裝|delete（遠端登入 身分庫）\n ssh-2fa 列表|enroll|confirm|安裝|pam|retire（遠端登入 登入 TOTP ≠ 面板 雙重驗證）\n services 主機服務矩陣（系統控制 探測）\n defense | protection 狀態|封鎖|unban|whitelist\n security 狀態|sessions|api-keys（雙重驗證 · 撤銷工作階段 · 介面 金鑰）\n cdn nodes|sites|render|套用|清除|探測|dashboard|health-loop|from-project\n agents 運行時s|機群 列表|commands|登記（面板 + 邊緣）\n 代理 run 外送 機群 輪詢（實驗）\n store 狀態|export|匯入|migrate（json|sqlite|postgres document 後端）\n 檔案 列表|read|write|mkdir|rm|stat|rename|copy|move|chmod|trash|shares（沙箱）\n 定時工作 列表|建立|delete|啟用|停用|run|安裝|狀態\n 電郵 domains|mailboxes|deliverability|初始化|dns（面板對等）\n health 本機模式快照或 --url http://主機:埠/health\n 就緒檢查 | doctor 生產就緒（誠實）\n migrate inventory|主機|post|狀態|resume（整機遷移）\n version | help\n\n全域：\n --json JSON 標準輸出（AI）\n --data-dir 路徑\n --config 路徑\n --help | --version\n\n結束碼：0 成功 · 1 錯誤 · 2 驗證 · 3 阻擋 · 4 找不到 · 5 主機錯誤\n\n安全：\n 危險操作預設 預覽試行（只出計劃）。\n 傳 --執行（別名 --套用）+ 環境變數 系統變更權限已開啟 才改主機。\n\n例子：\n {{cli}} 就緒檢查 --json\n {{cli}} 主機 --json\n {{cli}} nginx 狀態 --json\n {{cli}} ssl 列表 --json\n {{cli}} 專案 get --識別碼 UUID --json\n {{cli}} defense 封鎖 --ip 1.2.3.4 --json # 預覽試行 計劃\n {{cli}} 專案 列表 --json\n {{cli}} 日誌 query --source 系統日誌: --lines 100 --json\n {{cli}} tools --json"
+      "main": "YSK Server 命令列。指令與旗標一律為英文；--locale 只翻譯說明文字。\n\n{{product}} ({{cli}}) v{{version}}\n\nControl plane CLI — prefer --json for AI agents.\nDocs: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json\n\nUsage:\n  {{cli}} <command> [options]\n\nCommands:\n  setup                 Init dataDir + admin\n  update                Self-update check/apply\n  serve                 HTTP API + Web UI\n  system unit-install   Install ysk-server.service [--enable]\n  stack                 plans|bundles|status|install|uninstall\n  tools                 List tools; tools run --tool <name> [--dry-run]\n  ask                   NL → AI plan [--execute]\n  projects              list|get|create|deploy|stop|health|backup|template\n  users                 list|create|totp\n  packages              list\n  rbac                  list|show\n  audit                 list\n  backup                all|list|status|restore|delete|schedule|control-plane|settings|restic\n  templates             App templates\n  hosting               nginx|dns|db|firewall helpers\n  dns                   zone|zones|lookup\n  logs                  sources|query|journal|overview\n  host                  overview|metrics (read-only)\n  nginx                 status|list|test|sync\n  ssl                   list|get (certificates)\n  db-cluster            list|get|create|plan (HA plan-first)\n  ssh-key               list|create|import|public|export|install|delete (SSH identity vault)\n  ssh-2fa               list|enroll|confirm|install|pam|retire (SSH login TOTP ≠ panel 2FA)\n  services              Host service matrix (systemctl probe)\n  defense | protection  status|ban|unban|whitelist\n  security              status|sessions|api-keys (2FA flags · session revoke · API keys)\n  cdn                   nodes|sites|render|apply|purge|probe|dashboard|health-loop|from-project\n  agents                runtimes|fleet list|commands|register (panel + edge)\n  agent run             Outbound fleet poller (experimental)\n  store                 status|export|import|migrate (json|sqlite|postgres document backends)\n  files                 list|read|write|mkdir|rm|stat|rename|copy|move|chmod|trash|shares (sandbox)\n  cron                  list|create|delete|enable|disable|run|install|status\n  email                 domains|mailboxes|deliverability|bootstrap|dns (panel parity)\n  health                Local mode snapshot or --url http://host:port/health\n  notifications         list\n  readiness | doctor    Production readiness (honest)\n  migrate               inventory|host|post|status|resume (full host migrate)\n  vpn                   WireGuard / OpenVPN\n  vnc                   accounts|clients|share\n  apache                sites|settings\n  network               ifaces|exposure|real-ip\n  real-ip               CDN Real IP\n  updates               inventory|apply\n  software              list|install|uninstall\n  db                    MySQL / MariaDB / PostgreSQL\n  redis                 status|keys|get|set\n  ftp                   accounts|status\n  runtimes              list|install\n  bt-tracker            status|settings\n  version | help\n\nGlobal:\n  --json                JSON stdout (AI)\n  --data-dir PATH       also --data-dir=PATH or YSK_DATA_DIR\n  --config PATH\n  --locale CODE         CLI language (default en). Also YSK_LOCALE.\n                        Codes: en zh-HK zh-CN ja ko hi es ar fr bn pt id ur\n  --help | --version\n\nExit: 0 ok · 1 error · 2 validation · 3 blocked · 4 not found · 5 host error\n\nSafety:\n  Dangerous ops default to dry-run (plan only).\n  Pass --execute (alias --apply) + env YSK_EXECUTE=1 to mutate host.\n  Command names and flags are always English. --locale only translates messages.\n\nExamples:\n  {{cli}} readiness --json\n  {{cli}} host --json\n  {{cli}} nginx status --json\n  {{cli}} ssl list --json\n  {{cli}} projects get --id UUID --json\n  {{cli}} defense ban --ip 1.2.3.4 --json          # dry-run plan\n  {{cli}} projects list --json\n  {{cli}} --locale=zh-HK help\n  {{cli}} logs query --source journal: --lines 100 --json\n  {{cli}} tools --json"
     },
     "usage": {
       "tools": {
@@ -1584,7 +1584,7 @@
             },
             "status": {
               "bans": {
-                "a8d96b": "用法： {{CLI_NAME}} defense 狀態|bans|suspects|封鎖|unban|whitelist|stack-套用|fail2ban|firewall|timeline|預設方案s [--json]\n` +\n ` bans [--q text] [--source fail2ban|面板|ufw|auto]\n` +\n ` suspects [--q text]\n` +\n ` stack-套用 [--執行] # UFW + fail2ban + current 預設方案\n` +\n ` fail2ban | firewall # deep probes (honest)\n` +\n ` timeline [--limit N] [--q text]\n` +\n ` 預設方案s # 列表 + active預設方案"
+                "a8d96b": "用法： {{CLI_NAME}} defense 狀態|bans|suspects|封鎖|unban|whitelist|stack-套用|fail2ban|firewall|timeline|預設方案s [--json]\n bans [--q text] [--source fail2ban|面板|ufw|auto]\n suspects [--q text]\n stack-套用 [--執行] # UFW + fail2ban + current 預設方案\n fail2ban | firewall # deep probes (honest)\n timeline [--limit N] [--q text]\n 預設方案s # 列表 + active預設方案"
               }
             }
           }
@@ -8398,6 +8398,7 @@
     "osUserIncomplete": "系統用戶建立未完成",
     "saveLogDirsFailed": "儲存 日誌 目錄失敗",
     "createName": "專案名稱",
+    "noPathSepHint": "名稱不可包含 / 或 \\。",
     "createRuntime": "執行環境",
     "createRuntimeHint": "之後可在詳情調整部署方式",
     "createVersion": "版本",
@@ -9374,7 +9375,8 @@
     "fixFailed": "修復失敗",
     "fixDone": "已修復 dataDir 權限（chmod 750）",
     "fixDoneWebUi": "已建置／安裝 Web 介面",
-    "rootLabel": "超級用戶"
+    "rootLabel": "超級用戶",
+    "exportStarted": "正在下載 {{name}}"
   },
   "redis": {
     "neverExpire": "永不過期",
@@ -10489,6 +10491,9 @@
     "stopConfirmPanelDesc": "面板與 API 會離線，直至在主機上再啟動該服務單元。",
     "stopConfirmPanelToken": "stop ysk-server",
     "stopConfirmPanelConsequence": "此瀏覽器工作階段會中斷。請從 SSH 或主機控制台啟動服務單元。",
+    "stopConfirmFail2banTitle": "停止 fail2ban？",
+    "stopConfirmFail2banDesc": "停止 fail2ban 後不會再自動封鎖 IP。網站與 SSH 會繼續運作。",
+    "stopConfirmFail2banConsequence": "在再次啟動 fail2ban 之前，新的攻擊來源不會被自動封鎖。",
     "actionDone": "已{{action}}",
     "runningOf": "{{running}}/{{total}} 運行中",
     "canMutate": "可變更",

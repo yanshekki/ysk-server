@@ -8,10 +8,17 @@ import {
   PRODUCT_NAME,
   ErrorCodes,
   YskError,
-  localeFromEnv,
-  normalizeLocale,
   runWithLocaleAsync,
   type StructuredResult,  tl} from 'ysk-server-shared';
+import {
+  cliLocale,
+  cliPositionals,
+  getOpt,
+  hasFlag,
+  parseCliArgv,
+  resolveCliDataDir,
+  wantsHostExecute,
+} from './cli-argv.js';
 import {
   createDefaultAllowlist,
   installControlPlaneSystemd,
@@ -198,7 +205,7 @@ export function printCliError(err: unknown, json: boolean): number {
 
 function openCliContext(args: string[]) {
   const configPath = getOpt(args, '--config');
-  const dataDir = getOpt(args, '--data-dir');
+  const dataDir = resolveCliDataDir({ flag: getOpt(args, '--data-dir') });
   let config = configPath ? loadConfigFile(configPath) : undefined;
   if (dataDir) {
     config = config ? { ...config, dataDir } : ({ dataDir } as NonNullable<typeof config>);
@@ -220,15 +227,7 @@ function printHelp(): void {
   process.stdout.write(`${text}\n`);
 }
 
-function hasFlag(args: string[], name: string): boolean {
-  return args.includes(name);
-}
 
-function getOpt(args: string[], name: string): string | undefined {
-  const i = args.indexOf(name);
-  if (i >= 0 && args[i + 1] && !args[i + 1].startsWith('-')) return args[i + 1];
-  return undefined;
-}
 
 /** Default fail — same as HTTP upload / copy / rename. */
 function cliFileIfExists(args: string[]): 'fail' | 'overwrite' | 'rename' | null {
@@ -250,9 +249,7 @@ function cliDirIfExists(args: string[]): 'fail' | 'merge' | 'rename' | null {
  * Pass --execute (or legacy --apply) to attempt real change.
  * Still requires YSK_EXECUTE=1 (and often root) on the host.
  */
-function wantsHostExecute(args: string[]): boolean {
-  return hasFlag(args, '--execute') || hasFlag(args, '--apply');
-}
+
 
 function printVersion(json: boolean): void {
   if (json) {
@@ -264,30 +261,21 @@ function printVersion(json: boolean): void {
 
 async function main(argv: string[]): Promise<number> {
   const args = argv.slice(2);
-  const json = hasFlag(args, '--json');
-  const command = args.find((a) => !a.startsWith('-'));
-  // Locale: --locale=xx | YSK_LOCALE | LANG
-  const localeFlag =
-    args.find((a) => a.startsWith('--locale='))?.slice('--locale='.length) ??
-    (() => {
-      const i = args.indexOf('--locale');
-      return i >= 0 ? args[i + 1] : undefined;
-    })();
-  const locale = normalizeLocale(localeFlag ?? localeFromEnv());
-
-  return runWithLocaleAsync(locale, () => mainInner(args, json, command));
+  const parsed = parseCliArgv(args);
+  const locale = cliLocale(parsed.localeFlag);
+  return runWithLocaleAsync(locale, () =>
+    mainInner(args, parsed.json, parsed.command, parsed),
+  );
 }
 
 async function mainInner(
   args: string[],
   json: boolean,
   command: string | undefined,
+  parsed = parseCliArgv(args),
 ): Promise<number> {
   // Global --version / -V only when no command (else --version is a subcommand option, e.g. runtime install)
-  if (
-    !command &&
-    (hasFlag(args, '--version') || hasFlag(args, '-V'))
-  ) {
+  if (!command && parsed.version) {
     printVersion(json);
     return 0;
   }
@@ -296,27 +284,8 @@ async function mainInner(
     return 0;
   }
 
-  // Global --help only without a command; `ysk-server <cmd> --help` handled per-command where present
-  if (
-    !command &&
-    (hasFlag(args, '--help') || hasFlag(args, '-h'))
-  ) {
-    if (json) {
-      printJson({
-        ok: true,
-        product: PRODUCT_NAME,
-        cli: CLI_NAME,
-        version: VERSION,
-        commands: [...CLI_COMMANDS],
-        docs: ['docs/agent/README.md', 'docs/cli/reference.md', 'docs/agent/commands.json'],
-        exitCodes: { 0: 'ok', 1: 'error', 2: 'validation', 3: 'blocked', 4: 'not_found', 5: 'host_error' } });
-    } else {
-      printHelp();
-    }
-    return 0;
-  }
-
-  if (!command || command === 'help') {
+  // --help / -h never executes a default action (including store export / backup schedule)
+  if (parsed.help || !command || command === 'help') {
     if (json) {
       printJson({
         ok: true,
@@ -372,7 +341,7 @@ async function mainInner(
   }
 
   if (command === 'tools') {
-    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0];
+    const sub = cliPositionals(args).slice(1)[0];
     if (sub === 'run') {
       const tool = getOpt(args, '--tool');
       if (!tool) {
@@ -426,7 +395,7 @@ async function mainInner(
   }
 
   if (command === 'email') {
-    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'help';
+    const sub = cliPositionals(args).slice(1)[0] ?? 'help';
     const ctx = openCliContext(args);
     try {
       if (sub === 'help' || sub === '--help') {
@@ -443,7 +412,7 @@ async function mainInner(
       };
 
       if (sub === 'domains') {
-        const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
+        const act = cliPositionals(args).slice(2)[0] ?? 'list';
         if (act === 'list') {
           let items = ctx.email.list().map((d) => ({
             ...d,
@@ -496,7 +465,7 @@ async function mainInner(
       }
 
       if (sub === 'mailboxes' || sub === 'mailbox') {
-        const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
+        const act = cliPositionals(args).slice(2)[0] ?? 'list';
         if (act === 'list') {
           const row = resolveDomain();
           const items = ctx.email.listMailboxes(row?.id);
@@ -624,7 +593,7 @@ async function mainInner(
       }
 
       if (sub === 'aliases' || sub === 'alias') {
-        const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
+        const act = cliPositionals(args).slice(2)[0] ?? 'list';
         const row = resolveDomain();
         if (!row) {
           process.stderr.write(
@@ -812,7 +781,7 @@ async function mainInner(
       }
 
       if (sub === 'queue') {
-        const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
+        const act = cliPositionals(args).slice(2)[0] ?? 'list';
         const { listMailQueue, flushMailQueue } = await import('ysk-server-core');
         if (act === 'list' || act === 'status') {
           printJson({ ...(await listMailQueue(ctx.host)), ok: true });
@@ -840,7 +809,7 @@ async function mainInner(
       }
 
       if (sub === 'relay') {
-        const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'get';
+        const act = cliPositionals(args).slice(2)[0] ?? 'get';
         const { applySmtpRelay, loadSmtpRelaySettings } = await import('ysk-server-core');
         if (act === 'get' || act === 'status' || act === 'show') {
           const stored = ctx.settings.get('email.smtp_relay');
@@ -893,7 +862,7 @@ async function mainInner(
   }
 
   if (command === 'cron') {
-    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'help';
+    const sub = cliPositionals(args).slice(1)[0] ?? 'help';
     const ctx = openCliContext(args);
     try {
       if (sub === 'help' || sub === '--help') {
@@ -1020,7 +989,7 @@ async function mainInner(
   }
 
   if (command === 'files') {
-    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'help';
+    const sub = cliPositionals(args).slice(1)[0] ?? 'help';
     const {
       FileManager,
       publicFilesRoot,
@@ -1249,7 +1218,7 @@ async function mainInner(
       }
 
       if (sub === 'trash') {
-        const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
+        const act = cliPositionals(args).slice(2)[0] ?? 'list';
         if (act === 'list') {
           printJson({ ok: true, root: rootKey, items: fm.listTrash() });
           return 0;
@@ -1274,7 +1243,7 @@ async function mainInner(
       }
 
       if (sub === 'shares') {
-        const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
+        const act = cliPositionals(args).slice(2)[0] ?? 'list';
         if (act === 'list') {
           printJson({ ok: true, root: rootKey, items: listFileShares(ctx.db, rootKey) });
           return 0;
@@ -1419,7 +1388,7 @@ async function mainInner(
       }
 
       if (sub === 'webdav') {
-        const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'status';
+        const act = cliPositionals(args).slice(2)[0] ?? 'status';
         if (act === 'status') {
           const s = getWebDavSettings(ctx.db);
           printJson({
@@ -1467,7 +1436,7 @@ async function mainInner(
   }
 
   if (command === 'store') {
-    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'status';
+    const sub = cliPositionals(args).slice(1)[0] ?? 'status';
     if (sub === 'help' || sub === '--help') {
       process.stderr.write(`${tl('cli.usage.store.sub.--data-dir.path.--json.d580e4')}\n`);
       return 2;
@@ -1548,7 +1517,7 @@ async function mainInner(
   }
 
   if (command === 'cdn') {
-    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'help';
+    const sub = cliPositionals(args).slice(1)[0] ?? 'help';
     const ctx = openCliContext(args);
     try {
       const {
@@ -1577,7 +1546,7 @@ async function mainInner(
       }
 
       if (sub === 'nodes') {
-        const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
+        const act = cliPositionals(args).slice(2)[0] ?? 'list';
         if (act === 'list') {
           const items = listCdnNodes(ctx.db);
           printJson({ ok: true, items, meta: { total: items.length } });
@@ -1645,7 +1614,7 @@ async function mainInner(
       }
 
       if (sub === 'sites') {
-        const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
+        const act = cliPositionals(args).slice(2)[0] ?? 'list';
         if (act === 'list') {
           const items = listCdnSites(ctx.db);
           printJson({ ok: true, items, meta: { total: items.length } });
@@ -1832,7 +1801,7 @@ async function mainInner(
   }
 
   if (command === 'agents') {
-    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0];
+    const sub = cliPositionals(args).slice(1)[0];
     // Fleet registry (panel parity)
     if (sub === 'fleet' || sub === 'list' || sub === 'register' || sub === 'commands') {
       const ctx = openCliContext(args);
@@ -1841,7 +1810,7 @@ async function mainInner(
           const act =
             sub === 'list'
               ? 'list'
-              : (args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list');
+              : (cliPositionals(args).slice(2)[0] ?? 'list');
           if (act === 'list' || sub === 'list') {
             const group = getOpt(args, '--group');
             const items = ctx.fleet.list(group);
@@ -1958,7 +1927,7 @@ async function mainInner(
   }
 
   if (command === 'agent') {
-    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'run';
+    const sub = cliPositionals(args).slice(1)[0] ?? 'run';
     if (sub !== 'run') {
       process.stderr.write(`${tl('cli.usage.agent.run.--control-plane.url.--id.cfefbe')}\n`);
       return 2;
@@ -2102,7 +2071,7 @@ async function mainInner(
   }
 
   if (command === 'ask') {
-    const prompt = args.filter((a) => !a.startsWith('-')).slice(1).join(' ');
+    const prompt = cliPositionals(args).slice(1).join(' ');
     if (!prompt) {
       process.stderr.write(`${tl('cli.usage.ask.check.system.info.b0c781')}\n`);
       return 2;
@@ -2133,7 +2102,7 @@ async function mainInner(
   }
 
   if (command === 'backup') {
-    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'help';
+    const sub = cliPositionals(args).slice(1)[0] ?? 'help';
     const configPath = getOpt(args, '--config');
     const dataDir = getOpt(args, '--data-dir');
     let config = configPath ? loadConfigFile(configPath) : undefined;
@@ -2211,7 +2180,7 @@ async function mainInner(
       }
 
       if (sub === 'settings') {
-        const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'get';
+        const act = cliPositionals(args).slice(2)[0] ?? 'get';
         if (act === 'get' || act === 'show' || act === 'list') {
           printJson({
             ok: true,
@@ -2418,7 +2387,7 @@ async function mainInner(
       }
 
       if (sub === 'restic') {
-        const resticSub = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
+        const resticSub = cliPositionals(args).slice(2)[0] ?? 'list';
         if (resticSub === 'list') {
           const r = await listResticSnapshots({
             host: ctx.host,
@@ -2604,9 +2573,9 @@ async function mainInner(
     command === 'audit' ||
     command === 'security'
   ) {
-    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'list';
+    const sub = cliPositionals(args).slice(1)[0] ?? 'list';
     const configPath = getOpt(args, '--config');
-    const dataDir = getOpt(args, '--data-dir');
+    const dataDir = resolveCliDataDir({ flag: getOpt(args, '--data-dir') });
     let config = configPath ? loadConfigFile(configPath) : undefined;
     if (dataDir) {
       config = config ? { ...config, dataDir } : ({ dataDir } as NonNullable<typeof config>);
@@ -2854,7 +2823,7 @@ async function mainInner(
         }
 
         if (sub === 'sessions') {
-          const action = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
+          const action = cliPositionals(args).slice(2)[0] ?? 'list';
           const target = resolveUserId();
           if (!target) {
             process.stderr.write(`${tl('cli.security.noUser')}\n`);
@@ -2876,6 +2845,10 @@ async function mainInner(
             return ok ? 0 : 4;
           }
           if (action === 'revoke-others' || action === 'revoke-all') {
+            if (!getOpt(args, '--user') && !getOpt(args, '--username') && !getOpt(args, '--id')) {
+              process.stderr.write(`${tl('cli.security.sessionsHelp')}\n`);
+              return 2;
+            }
             // CLI has no live Bearer — optional --keep-token; empty keeps none (full wipe for user)
             const keep = getOpt(args, '--keep-token') ?? '';
             const n = ctx.auth.revokeOtherSessions(target.id, keep);
@@ -2893,7 +2866,7 @@ async function mainInner(
         }
 
         if (sub === 'api-keys' || sub === 'api-key' || sub === 'apikeys') {
-          const action = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
+          const action = cliPositionals(args).slice(2)[0] ?? 'list';
           const { listApiKeys, createApiKey, deleteApiKey } = await import('ysk-server-core');
           if (action === 'list') {
             const items = listApiKeys(ctx.db);
@@ -2901,8 +2874,12 @@ async function mainInner(
             return 0;
           }
           if (action === 'create') {
-            const name = getOpt(args, '--name') ?? 'cli-key';
-            const scopeRaw = getOpt(args, '--scope') ?? 'full';
+            const name = getOpt(args, '--name');
+            if (!name?.trim()) {
+              process.stderr.write(`${tl('cli.security.apiKeysHelp')}\n`);
+              return 2;
+            }
+            const scopeRaw = getOpt(args, '--scope') ?? 'read';
             const scope = scopeRaw === 'read' ? 'read' : 'full';
             const target = resolveUserId();
             if (!target) {
@@ -2966,9 +2943,9 @@ async function mainInner(
   }
 
   if (command === 'projects') {
-    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'list';
+    const sub = cliPositionals(args).slice(1)[0] ?? 'list';
     const configPath = getOpt(args, '--config');
-    const dataDir = getOpt(args, '--data-dir');
+    const dataDir = resolveCliDataDir({ flag: getOpt(args, '--data-dir') });
     let config = configPath ? loadConfigFile(configPath) : undefined;
     if (dataDir) {
       config = config ? { ...config, dataDir } : ({ dataDir } as NonNullable<typeof config>);
@@ -2986,7 +2963,7 @@ async function mainInner(
         return 0;
       }
       if (sub === 'isolation') {
-        const action = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
+        const action = cliPositionals(args).slice(2)[0] ?? 'list';
         const { listIsolationReport, backfillProjectOwners } = await import('ysk-server-core');
         if (action === 'list' || action === 'status') {
           const snaps = ctx.projects.list().map((p) => ({
@@ -3254,7 +3231,7 @@ async function mainInner(
   }
 
   if (command === 'hosting') {
-    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'nginx';
+    const sub = cliPositionals(args).slice(1)[0] ?? 'nginx';
     const configPath = getOpt(args, '--config');
     const dataDir = getOpt(args, '--data-dir');
     let config = configPath ? loadConfigFile(configPath) : undefined;
@@ -3741,7 +3718,7 @@ async function mainInner(
 
   /** Top-level DNS alias for AI agents → hosting dns-zone / dns-zones */
   if (command === 'dns') {
-    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'zones';
+    const sub = cliPositionals(args).slice(1)[0] ?? 'zones';
     const {
       writeManagedDnsZone,
       listManagedDnsZones,
@@ -3780,8 +3757,8 @@ async function mainInner(
         return exitFromResult(result);
       }
       if (sub === 'dnssec') {
-        const act = args.filter((a) => !a.startsWith('-')).slice(2)[0] ?? 'list';
-        const zone = getOpt(args, '--zone') ?? args.filter((a) => !a.startsWith('-')).slice(3)[0];
+        const act = cliPositionals(args).slice(2)[0] ?? 'list';
+        const zone = getOpt(args, '--zone') ?? cliPositionals(args).slice(3)[0];
         if (!zone?.trim()) {
           process.stderr.write(
             'Usage: ysk-server dns dnssec list|generate --zone example.com [--execute]\n',
@@ -3842,7 +3819,7 @@ async function mainInner(
         return 0;
       }
       if (sub === 'lookup') {
-        const name = getOpt(args, '--name') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
+        const name = getOpt(args, '--name') ?? cliPositionals(args).slice(2)[0];
         if (!name?.trim()) {
           process.stderr.write(
             'Usage: ysk-server dns lookup --name example.com [--type A|MX|TXT|…] [--server 1.1.1.1]\n',
@@ -3915,7 +3892,7 @@ async function mainInner(
 
   /** DB engine HA clusters — plan-first (MariaDB Galera v1) */
   if (command === 'db-cluster') {
-    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'list';
+    const sub = cliPositionals(args).slice(1)[0] ?? 'list';
     const {
       listDbClusters,
       getDbCluster,
@@ -4229,7 +4206,7 @@ async function mainInner(
 
   /** SSH identity vault — encrypted private keys (user/panel outbound) */
   if (command === 'ssh-key' || command === 'ssh-keys') {
-    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'list';
+    const sub = cliPositionals(args).slice(1)[0] ?? 'list';
     const {
       listSshIdentities,
       getSshIdentity,
@@ -4264,7 +4241,7 @@ async function mainInner(
         return 0;
       }
       if (sub === 'get' || sub === 'show') {
-        const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
+        const id = getOpt(args, '--id') ?? cliPositionals(args).slice(2)[0];
         if (!id) {
           process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.get.--id.292716', { CLI_NAME })}\n`);
           return 2;
@@ -4362,7 +4339,7 @@ async function mainInner(
         return r.ok ? 0 : 2;
       }
       if (sub === 'public') {
-        const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
+        const id = getOpt(args, '--id') ?? cliPositionals(args).slice(2)[0];
         if (!id) {
           process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.public.--id.525d7d', { CLI_NAME })}\n`);
           return 2;
@@ -4377,7 +4354,7 @@ async function mainInner(
         return 0;
       }
       if (sub === 'export') {
-        const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
+        const id = getOpt(args, '--id') ?? cliPositionals(args).slice(2)[0];
         const out = getOpt(args, '--out');
         if (!id) {
           process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.export.--id.0a6d81', { CLI_NAME })}\n`);
@@ -4416,7 +4393,7 @@ async function mainInner(
         return 0;
       }
       if (sub === 'install') {
-        const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
+        const id = getOpt(args, '--id') ?? cliPositionals(args).slice(2)[0];
         if (!id) {
           process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.install.--id.b99c56', { CLI_NAME })}\n`);
           return 2;
@@ -4431,7 +4408,7 @@ async function mainInner(
         return exitFromResult(r);
       }
       if (sub === 'test') {
-        const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
+        const id = getOpt(args, '--id') ?? cliPositionals(args).slice(2)[0];
         const target = getOpt(args, '--target');
         if (!id || !target) {
           process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.test.--id.e1aed3', { CLI_NAME })}\n`);
@@ -4449,7 +4426,7 @@ async function mainInner(
         return exitFromResult(r);
       }
       if (sub === 'rotate') {
-        const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
+        const id = getOpt(args, '--id') ?? cliPositionals(args).slice(2)[0];
         if (!id) {
           process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.rotate.--id.9c3224', { CLI_NAME })}\n`);
           return 2;
@@ -4464,7 +4441,7 @@ async function mainInner(
         return r.ok ? 0 : 4;
       }
       if (sub === 'authorize-self' || sub === 'authorize') {
-        const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
+        const id = getOpt(args, '--id') ?? cliPositionals(args).slice(2)[0];
         if (!id) {
           process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.authorize-self.--id.b7ea2e', { CLI_NAME })}\n`);
           return 2;
@@ -4479,7 +4456,7 @@ async function mainInner(
         return r.ok ? 0 : 1;
       }
       if (sub === 'uninstall') {
-        const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
+        const id = getOpt(args, '--id') ?? cliPositionals(args).slice(2)[0];
         if (!id) {
           process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.uninstall.--id.afcba0', { CLI_NAME })}\n`);
           return 2;
@@ -4493,7 +4470,7 @@ async function mainInner(
         return exitFromResult(r);
       }
       if (sub === 'delete' || sub === 'rm') {
-        const id = getOpt(args, '--id') ?? args.filter((a) => !a.startsWith('-')).slice(2)[0];
+        const id = getOpt(args, '--id') ?? cliPositionals(args).slice(2)[0];
         if (!id) {
           process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.delete.--id.a6e2f2', { CLI_NAME })}\n`);
           return 2;
@@ -4518,7 +4495,7 @@ async function mainInner(
 
   /** SSH login 2FA (PAM TOTP) — independent of panel operator 2FA */
   if (command === 'ssh-2fa' || command === 'ssh2fa') {
-    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'list';
+    const sub = cliPositionals(args).slice(1)[0] ?? 'list';
     const {
       listSsh2fa,
       enrollSsh2fa,
@@ -4665,7 +4642,7 @@ async function mainInner(
 
   /** Nginx status / managed confs / config test — AI-friendly */
   if (command === 'nginx') {
-    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'status';
+    const sub = cliPositionals(args).slice(1)[0] ?? 'status';
     const {
       getServiceMatrix,
       listManagedNginxConfs,
@@ -4771,7 +4748,7 @@ async function mainInner(
 
   /** SSL certificates list/get — read-only */
   if (command === 'ssl') {
-    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'list';
+    const sub = cliPositionals(args).slice(1)[0] ?? 'list';
     const { listCertificatesView, dedupeCertificatesInStore } = await import('ysk-server-core');
     const ctx = openCliContext(args);
     try {
@@ -4857,7 +4834,7 @@ async function mainInner(
 
   /** Host overview / metrics — read-only, AI-friendly */
   if (command === 'host') {
-    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'overview';
+    const sub = cliPositionals(args).slice(1)[0] ?? 'overview';
     const { collectHostOverview, collectMetrics } = await import('ysk-server-core');
     const ctx = openCliContext(args);
     try {
@@ -4901,7 +4878,7 @@ async function mainInner(
 
   /** Log Center query for AI agents */
   if (command === 'logs') {
-    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'query';
+    const sub = cliPositionals(args).slice(1)[0] ?? 'query';
     const {
       queryLogSource,
       listSourceStatuses,
@@ -4979,7 +4956,7 @@ async function mainInner(
   }
 
   if (command === 'services') {
-    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'matrix';
+    const sub = cliPositionals(args).slice(1)[0] ?? 'matrix';
     const { getServiceMatrix, lifecycleServiceUnit } = await import('ysk-server-core');
     const ctx = openCliContext(args);
     try {
@@ -5018,7 +4995,7 @@ async function mainInner(
   }
 
   if (command === 'defense' || command === 'protection') {
-    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'status';
+    const sub = cliPositionals(args).slice(1)[0] ?? 'status';
     const {
       getDefenseStatus,
       defenseBanIp,
@@ -5228,7 +5205,7 @@ async function mainInner(
   }
 
   if (command === 'migrate') {
-    const sub = args.filter((a) => !a.startsWith('-')).slice(1)[0] ?? 'help';
+    const sub = cliPositionals(args).slice(1)[0] ?? 'help';
     const configPath = getOpt(args, '--config');
     const dataDirOpt = getOpt(args, '--data-dir');
     let config = configPath ? loadConfigFile(configPath) : undefined;
@@ -5387,7 +5364,7 @@ async function mainInner(
   }
 
   if (command === 'system') {
-    const sub = args[1];
+    const sub = cliPositionals(args)[1];
     if (sub === 'unit-install') {
       const dataDir = getOpt(args, '--data-dir') ?? join(process.cwd(), '.ysk');
       const enable = hasFlag(args, '--enable');
@@ -5422,8 +5399,8 @@ async function mainInner(
   }
 
   if (command === 'stack') {
-    const sub = args[1] ?? 'status';
-    const dataDir = getOpt(args, '--data-dir') ?? join(process.cwd(), '.ysk');
+    const sub = cliPositionals(args)[1] ?? 'status';
+    const dataDir = resolveCliDataDir({ flag: getOpt(args, '--data-dir') }) ?? join(process.cwd(), '.ysk');
     const ctx = createAppContext({
       version: VERSION,
       dataDir,
@@ -5492,6 +5469,12 @@ async function mainInner(
         const plan = getOpt(args, '--plan') ?? undefined;
         const bundlesCsv = getOpt(args, '--bundles');
         const bundles = bundlesCsv ? bundlesCsv.split(',').map((s) => s.trim()).filter(Boolean) : undefined;
+        if (!plan && !bundles?.length) {
+          process.stderr.write(
+            `Usage: ${CLI_NAME} stack install --plan recommended|… [--bundles web,defense] [--yes]\n`,
+          );
+          return 2;
+        }
         const wantExecute = hasFlag(args, '--yes') || hasFlag(args, '--execute');
         const useDry = hasFlag(args, '--dry-run') || !wantExecute;
         // Real install requires YSK_EXECUTE=1 + root honesty via host
@@ -5530,6 +5513,14 @@ async function mainInner(
         }
       }
       if (sub === 'uninstall') {
+        const bundlesCsvPre = getOpt(args, '--bundles');
+        const componentsCsvPre = getOpt(args, '--components');
+        if (!hasFlag(args, '--all') && !bundlesCsvPre && !componentsCsvPre) {
+          process.stderr.write(
+            `Usage: ${CLI_NAME} stack uninstall --all|--bundles …|--components … [--yes]\n`,
+          );
+          return 2;
+        }
         const wantExecute = hasFlag(args, '--yes') || hasFlag(args, '--execute');
         const useDry = hasFlag(args, '--dry-run') || !wantExecute;
         const bundlesCsv = getOpt(args, '--bundles');
@@ -5893,7 +5884,7 @@ async function mainInner(
       }
       if (command === 'runtimes') {
         // Alias → hosting runtimes / runtime-install / switch / uninstall
-        const tokens = args.filter((a) => !a.startsWith('-'));
+        const tokens = cliPositionals(args);
         const act = tokens[1] ?? 'list';
         const {
           probeRuntimes,

@@ -10,7 +10,7 @@ import { systemApi } from './api';
 import { useFeatureAction } from './useFeatureAction';
 
 export type ServiceLifecycleAction = 'start' | 'stop' | 'restart' | 'reload';
-export type ServiceLifecycleDanger = 'normal' | 'edge' | 'sshd' | 'panel';
+export type ServiceLifecycleDanger = 'normal' | 'edge' | 'sshd' | 'panel' | 'fail2ban';
 
 export type ServiceLifecycleBarProps = {
   /** systemd unit, e.g. vsftpd / nginx / apache2 */
@@ -75,6 +75,15 @@ export function ServiceLifecycleBar({
   const canAct = Boolean(installed && (unit || onAction));
 
   const confirmCopy = useMemo(() => {
+    if (danger === 'fail2ban') {
+      return {
+        title: t('services.stopConfirmFail2banTitle'),
+        description: t('services.stopConfirmFail2banDesc'),
+        confirmText: undefined,
+        severity: 'standard' as ConfirmSeverity,
+        consequences: [t('services.stopConfirmFail2banConsequence')],
+      };
+    }
     if (danger === 'sshd') {
       return {
         title: t('services.stopConfirmSshdTitle'),

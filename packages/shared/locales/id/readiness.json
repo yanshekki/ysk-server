@@ -108,5 +108,6 @@
   "fixFailed": "Perbaikan gagal",
   "fixDone": "izin dataDir diperkeras (chmod 750)",
   "fixDoneWebUi": "UI web dibuat/diinstal",
-  "rootLabel": "Superuser"
+  "rootLabel": "Superuser",
+  "exportStarted": "Downloading {{name}}"
 }

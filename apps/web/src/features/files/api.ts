@@ -83,10 +83,20 @@ export const filesApi = {
       }),
     }),
 
-  createText: (root: string, path: string, content = '') =>
+  createText: (
+    root: string,
+    path: string,
+    content = '',
+    opts?: { leafOnly?: boolean; name?: string },
+  ) =>
     api.requestRaw(`/api/v1/files/create-text?${q(root)}`, {
       method: 'POST',
-      body: JSON.stringify({ path, content }),
+      body: JSON.stringify({
+        path,
+        content,
+        leafOnly: opts?.leafOnly,
+        name: opts?.name,
+      }),
     }),
 
   chmod: (root: string, path: string, mode: string) =>

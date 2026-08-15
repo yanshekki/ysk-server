@@ -117,6 +117,11 @@ describe('pathUnderRoot + commandRequiresExecute', () => {
       ]),
     ).toBe(false);
     expect(commandRequiresExecute(['true'])).toBe(false);
+    expect(commandRequiresExecute(['dig', '+short', 'A', 'example.com'])).toBe(false);
+    expect(commandRequiresExecute(['redis-cli', 'INFO'])).toBe(false);
+    expect(commandRequiresExecute(['redis-cli', 'GET', 'k'])).toBe(false);
+    expect(commandRequiresExecute(['redis-cli', 'KEYS', '*'])).toBe(false);
+    expect(commandRequiresExecute(['redis-cli', 'SET', 'k', 'v'])).toBe(true);
     // readiness inventory probes
     expect(commandRequiresExecute(['php', '-v'])).toBe(false);
     expect(commandRequiresExecute(['node', '-v'])).toBe(false);

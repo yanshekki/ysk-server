@@ -1584,7 +1584,7 @@
             },
             "status": {
               "bans": {
-                "a8d96b": "الاستخدام: {{CLI_NAME}} حالة الدفاع|الحظر|المشتبه بهم|الحظر|unban|القائمة البيضاء|تطبيق المكدس|fail2ban|جدار الحماية|المخطط الزمني|الإعدادات المسبقة [--json]\n` +\n          ` الحظر [--نص q] [--المصدر fail2ban|لوحة|ufw|تلقائي]\n` +\n          ` المشتبه بهم [--نص q]\n` +\n          ` تطبيق المكدس [--تنفيذ] # UFW + fail2ban + الإعداد المسبق الحالي\n` +\n          `fail2ban | جدار الحماية # تحقيقات عميقة (صادقة)\n` +\n          ` الجدول الزمني [--الحد N] [--نص q]\n` +\n          `الإعدادات المسبقة # قائمة + activePreset"
+                "a8d96b": "الاستخدام: {{CLI_NAME}} حالة الدفاع|الحظر|المشتبه بهم|الحظر|unban|القائمة البيضاء|تطبيق المكدس|fail2ban|جدار الحماية|المخطط الزمني|الإعدادات المسبقة [--json]\n الحظر [--نص q] [--المصدر fail2ban|لوحة|ufw|تلقائي]\n المشتبه بهم [--نص q]\n تطبيق المكدس [--تنفيذ] # UFW + fail2ban + الإعداد المسبق الحالي\nfail2ban | جدار الحماية # تحقيقات عميقة (صادقة)\n الجدول الزمني [--الحد N] [--نص q]\nالإعدادات المسبقة # قائمة + activePreset"
               }
             }
           }
@@ -8769,7 +8769,8 @@
     "resShell": "Login shell",
     "resSaveHint": "Save and apply changes the live OS. Control-plane only stores the form. Re-apply uses the last saved values.",
     "resBashConfirmTitle": "Allow interactive bash?",
-    "resBashConfirmDesc": "This grants an interactive login shell to the project user. Confirm only if you need SSH or PTY as that user."
+    "resBashConfirmDesc": "This grants an interactive login shell to the project user. Confirm only if you need SSH or PTY as that user.",
+    "noPathSepHint": "The name cannot contain / or \\."
   },
   "protection": {
     "levels": {
@@ -9374,7 +9375,8 @@
     "fixFailed": "فشل الإصلاح",
     "fixDone": "تم تعزيز أذونات dataDir (chmod 750)",
     "fixDoneWebUi": "تم إنشاء/تثبيت واجهة مستخدم الويب",
-    "rootLabel": "Superuser"
+    "rootLabel": "Superuser",
+    "exportStarted": "Downloading {{name}}"
   },
   "redis": {
     "neverExpire": "لا تنتهي صلاحيته أبدًا",
@@ -10519,7 +10521,10 @@
     "protectionDoneNote": "انتهى مسبار الحماية",
     "probeDone": "اكتمل التحقيق",
     "runProtection": "تشغيل مسبار الحماية",
-    "notProbedYet": "لم يتم التحقيق فيها بعد"
+    "notProbedYet": "لم يتم التحقيق فيها بعد",
+    "stopConfirmFail2banTitle": "Stop fail2ban?",
+    "stopConfirmFail2banDesc": "Stopping fail2ban turns off automatic IP bans. Websites and SSH keep running.",
+    "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again."
   },
   "software": {
     "title": "برمجة",

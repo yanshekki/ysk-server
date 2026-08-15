@@ -609,7 +609,7 @@
     "confWritten": "已写入 conf（{{status}}）",
     "partialFail": "未全部成功（{{status}}）— 见 notes",
     "statNodes": "节点",
-    "statSites": "站点 {{n}}",
+    "statSites": "站点",
     "recentNotes": "最近 notes",
     "edgeConfPreview": "Nginx edge conf 预览",
     "tabs": {
@@ -1584,7 +1584,7 @@
             },
             "status": {
               "bans": {
-                "a8d96b": "用法： {{CLI_NAME}} defense status|bans|suspects|ban|unban|whitelist|stack-apply|fail2ban|firewall|timeline|presets [--json]\n` +\n          `  bans [--q text] [--source fail2ban|panel|ufw|auto]\n` +\n          `  suspects [--q text]\n` +\n          `  stack-apply [--execute]   # UFW + fail2ban + current preset\n` +\n          `  fail2ban | firewall       # deep probes (honest)\n` +\n          `  timeline [--limit N] [--q text]\n` +\n          `  presets                   # list + activePreset\n"
+                "a8d96b": "用法： {{CLI_NAME}} defense status|bans|suspects|ban|unban|whitelist|stack-apply|fail2ban|firewall|timeline|presets [--json]\n  bans [--q text] [--source fail2ban|panel|ufw|auto]\n  suspects [--q text]\n  stack-apply [--execute]   # UFW + fail2ban + current preset\n  fail2ban | firewall       # deep probes (honest)\n  timeline [--limit N] [--q text]\n  presets                   # list + activePreset\n"
               }
             }
           }
@@ -8769,7 +8769,8 @@
     "resShell": "登录 shell",
     "resSaveHint": "「储存并套用」会改主机。「仅存控制面」只记表单。「再套用」用已存值再写入系统。",
     "resBashConfirmTitle": "允许互动式 bash？",
-    "resBashConfirmDesc": "这会让专案用户有互动登录 shell。只在需要以该用户 SSH 或终端机时才确认。"
+    "resBashConfirmDesc": "这会让专案用户有互动登录 shell。只在需要以该用户 SSH 或终端机时才确认。",
+    "noPathSepHint": "名稱不可包含 / 或 \\。"
   },
   "protection": {
     "levels": {
@@ -9374,7 +9375,8 @@
     "fixFailed": "修复失败",
     "fixDone": "已修复 dataDir 权限（chmod 750）",
     "fixDoneWebUi": "已构建／安装 Web 界面",
-    "rootLabel": "超级用户"
+    "rootLabel": "超级用户",
+    "exportStarted": "正在下載 {{name}}"
   },
   "redis": {
     "neverExpire": "永不过期",
@@ -10489,6 +10491,9 @@
     "stopConfirmPanelDesc": "面板與 API 會離線，直至在主機上再啟動該服務單元。",
     "stopConfirmPanelToken": "stop ysk-server",
     "stopConfirmPanelConsequence": "此瀏覽器工作階段會中斷。請從 SSH 或主機控制台啟動服務單元。",
+    "stopConfirmFail2banTitle": "停止 fail2ban？",
+    "stopConfirmFail2banDesc": "停止 fail2ban 後不會再自動封鎖 IP。網站與 SSH 會繼續運作。",
+    "stopConfirmFail2banConsequence": "在再次啟動 fail2ban 之前，新的攻擊來源不會被自動封鎖。",
     "actionDone": "已{{action}}",
     "runningOf": "{{running}}/{{total}} 运行中",
     "canMutate": "可变更",

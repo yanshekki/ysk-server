@@ -882,7 +882,7 @@
           },
           "status": {
             "bans": {
-              "a8d96b": "Uso: {{CLI_NAME}} estado de defensa|prohibiciones|sospechosos|prohibición|unban|lista blanca|stack-apply|fail2ban|firewall|timeline|presets [--json]\n` +\n          ` prohibiciones [--q texto] [--source fail2ban|panel|ufw|auto]\n` +\n          ` sospechosos [--q texto]\n` +\n          `stack-apply [--execute] # UFW + fail2ban + valor preestablecido actual\n` +\n          `fail2ban | firewall # sondas profundas (honestas)\n` +\n          ` línea de tiempo [--limit N] [--q texto]\n` +\n          ` presets # lista + activePreset"
+              "a8d96b": "Uso: {{CLI_NAME}} estado de defensa|prohibiciones|sospechosos|prohibición|unban|lista blanca|stack-apply|fail2ban|firewall|timeline|presets [--json]\n prohibiciones [--q texto] [--source fail2ban|panel|ufw|auto]\n sospechosos [--q texto]\nstack-apply [--execute] # UFW + fail2ban + valor preestablecido actual\nfail2ban | firewall # sondas profundas (honestas)\n línea de tiempo [--limit N] [--q texto]\n presets # lista + activePreset"
             }
           }
         }

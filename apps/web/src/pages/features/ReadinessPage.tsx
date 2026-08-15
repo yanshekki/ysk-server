@@ -266,7 +266,8 @@ export function ReadinessPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `ysk-readiness-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.json`;
+    const filename = `ysk-readiness-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.json`;
+    a.download = filename;
     a.rel = 'noopener';
     document.body.appendChild(a);
     a.click();
@@ -274,7 +275,7 @@ export function ReadinessPage() {
       a.remove();
       URL.revokeObjectURL(url);
     }, 1500);
-    toast.ok(t('readiness.exportStarted', { defaultValue: t('common.download') }));
+    toast.ok(t('readiness.exportStarted', { name: filename }));
   }
 
   const score = report?.score;

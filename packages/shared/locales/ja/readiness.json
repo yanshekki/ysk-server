@@ -108,5 +108,6 @@
   "fixFailed": "修正に失敗しました",
   "fixDone": "dataDir 権限の強化 (chmod 750)",
   "fixDoneWebUi": "Web UIの構築/インストール",
-  "rootLabel": "Superuser"
+  "rootLabel": "Superuser",
+  "exportStarted": "Downloading {{name}}"
 }

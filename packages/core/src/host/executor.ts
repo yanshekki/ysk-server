@@ -339,6 +339,10 @@ const READ_ONLY_SIMPLE_BINS = new Set([
   'arch',
   'env',
   'printenv',
+  'dig',
+  'host',
+  'nslookup',
+  'getent',
 ]);
 
 function isReadOnlyArgv(argv: string[]): boolean {
@@ -496,7 +500,12 @@ function isReadOnlyArgv(argv: string[]): boolean {
     // redis-cli INFO / PING
     if (bin === 'redis-cli') {
       const rest = argv.slice(1).join(' ').toUpperCase();
-      if (/\b(INFO|PING)\b/.test(rest)) return true;
+      if (/\b(SET|DEL|UNLINK|FLUSHDB|FLUSHALL|SADD|HSET|LPUSH|RPUSH|RENAME|EXPIRE|PERSIST|CONFIG\s+SET)\b/.test(rest)) {
+        return false;
+      }
+      if (/\b(INFO|PING|GET|KEYS|SCAN|TYPE|TTL|EXISTS|DBSIZE|LLEN|HLEN|SCARD|CLIENT\s+LIST)\b/.test(rest)) {
+        return true;
+      }
     }
     // journalctl disk-usage / short reads (not vacuum)
     if (bin === 'journalctl') {

@@ -17,6 +17,7 @@ import {
   collectUpdateHub,
   summarizeHub,
 } from 'ysk-server-core';
+import { cliPositionals } from '../cli-argv.js';
 import type { AppContext } from '../app-context.js';
 import type { CliHelpers } from './cmd-vpn.js';
 import { VERSION } from '../version.js';
@@ -38,7 +39,7 @@ export async function runUpdatesCommand(
   h: CliHelpers,
 ): Promise<number> {
   void _json;
-  const tokens = args.filter((a) => !a.startsWith('-'));
+  const tokens = cliPositionals(args);
   const sub = tokens[1] ?? 'inventory';
 
   if (sub === 'hub') {

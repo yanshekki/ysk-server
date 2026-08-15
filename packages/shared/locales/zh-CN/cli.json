@@ -882,7 +882,7 @@
           },
           "status": {
             "bans": {
-              "a8d96b": "用法： {{CLI_NAME}} defense status|bans|suspects|ban|unban|whitelist|stack-apply|fail2ban|firewall|timeline|presets [--json]\n` +\n          `  bans [--q text] [--source fail2ban|panel|ufw|auto]\n` +\n          `  suspects [--q text]\n` +\n          `  stack-apply [--execute]   # UFW + fail2ban + current preset\n` +\n          `  fail2ban | firewall       # deep probes (honest)\n` +\n          `  timeline [--limit N] [--q text]\n` +\n          `  presets                   # list + activePreset\n"
+              "a8d96b": "用法： {{CLI_NAME}} defense status|bans|suspects|ban|unban|whitelist|stack-apply|fail2ban|firewall|timeline|presets [--json]\n  bans [--q text] [--source fail2ban|panel|ufw|auto]\n  suspects [--q text]\n  stack-apply [--execute]   # UFW + fail2ban + current preset\n  fail2ban | firewall       # deep probes (honest)\n  timeline [--limit N] [--q text]\n  presets                   # list + activePreset\n"
             }
           }
         }

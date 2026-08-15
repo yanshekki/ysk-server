@@ -30,7 +30,7 @@
   "confWritten": "已寫入 設定檔（{{status}}）",
   "partialFail": "未全部成功（{{status}}）— 見 notes",
   "statNodes": "節點",
-  "statSites": "站點 {{n}}",
+  "statSites": "站點",
   "recentNotes": "最近 notes",
   "edgeConfPreview": "Nginx 邊緣 設定檔 預覽",
   "tabs": {

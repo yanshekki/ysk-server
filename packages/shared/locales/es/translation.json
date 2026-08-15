@@ -1584,7 +1584,7 @@
             },
             "status": {
               "bans": {
-                "a8d96b": "Uso: {{CLI_NAME}} estado de defensa|prohibiciones|sospechosos|prohibición|unban|lista blanca|stack-apply|fail2ban|firewall|timeline|presets [--json]\n` +\n          ` prohibiciones [--q texto] [--source fail2ban|panel|ufw|auto]\n` +\n          ` sospechosos [--q texto]\n` +\n          `stack-apply [--execute] # UFW + fail2ban + valor preestablecido actual\n` +\n          `fail2ban | firewall # sondas profundas (honestas)\n` +\n          ` línea de tiempo [--limit N] [--q texto]\n` +\n          ` presets # lista + activePreset"
+                "a8d96b": "Uso: {{CLI_NAME}} estado de defensa|prohibiciones|sospechosos|prohibición|unban|lista blanca|stack-apply|fail2ban|firewall|timeline|presets [--json]\n prohibiciones [--q texto] [--source fail2ban|panel|ufw|auto]\n sospechosos [--q texto]\nstack-apply [--execute] # UFW + fail2ban + valor preestablecido actual\nfail2ban | firewall # sondas profundas (honestas)\n línea de tiempo [--limit N] [--q texto]\n presets # lista + activePreset"
               }
             }
           }
@@ -8769,7 +8769,8 @@
     "resShell": "Login shell",
     "resSaveHint": "Save and apply changes the live OS. Control-plane only stores the form. Re-apply uses the last saved values.",
     "resBashConfirmTitle": "Allow interactive bash?",
-    "resBashConfirmDesc": "This grants an interactive login shell to the project user. Confirm only if you need SSH or PTY as that user."
+    "resBashConfirmDesc": "This grants an interactive login shell to the project user. Confirm only if you need SSH or PTY as that user.",
+    "noPathSepHint": "The name cannot contain / or \\."
   },
   "protection": {
     "levels": {
@@ -9374,7 +9375,8 @@
     "fixFailed": "La solución falló",
     "fixDone": "Permisos de dataDir reforzados (chmod 750)",
     "fixDoneWebUi": "UI web construida/instalada",
-    "rootLabel": "Superuser"
+    "rootLabel": "Superuser",
+    "exportStarted": "Downloading {{name}}"
   },
   "redis": {
     "neverExpire": "Nunca caduca",
@@ -10519,7 +10521,10 @@
     "protectionDoneNote": "Sonda de protección terminada",
     "probeDone": "Sonda completa",
     "runProtection": "Ejecutar sonda de protección",
-    "notProbedYet": "Aún no investigado"
+    "notProbedYet": "Aún no investigado",
+    "stopConfirmFail2banTitle": "Stop fail2ban?",
+    "stopConfirmFail2banDesc": "Stopping fail2ban turns off automatic IP bans. Websites and SSH keep running.",
+    "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again."
   },
   "software": {
     "title": "Software",
