@@ -16,6 +16,17 @@ import {
   statusValidatorInstance,
   stopValidatorInstance,
   restoreAdaMithril,
+  restoreValidatorSnapshot,
+  pruneValidatorInstance,
+  readValidatorCompose,
+  switchValidatorNetwork,
+  summarizeValidatorInstances,
+  stakingChecklist,
+  validatorContainerStats,
+  writeValidatorCompose,
+  loadValidatorSettings,
+  saveValidatorSettings,
+  snapshotOffer,
   upgradeValidatorInstance,
 } from 'ysk-server-core';
 import { ErrorCodes, isValidatorInstanceId } from 'ysk-server-shared';
@@ -58,12 +69,32 @@ export async function handleValidatorsRoutes(
 
   try {
     if (method === 'GET' && (url.pathname === BASE || url.pathname === `${BASE}/`)) {
+      const { summaries } = await summarizeValidatorInstances({
+        dataDir: ctx.dataDir,
+        host: ctx.host,
+      });
       sendJson(res, 200, {
         ok: true,
         instances: listValidatorInstances(ctx.dataDir),
+        summaries,
+        settings: loadValidatorSettings(ctx.dataDir),
         executeEnabled: ctx.host.executeEnabled(),
         isRoot: ctx.host.isRoot(),
       });
+      return true;
+    }
+
+    if (method === 'GET' && url.pathname === `${BASE}/settings`) {
+      sendJson(res, 200, { ok: true, settings: loadValidatorSettings(ctx.dataDir) });
+      return true;
+    }
+
+    if (method === 'PATCH' && url.pathname === `${BASE}/settings`) {
+      const body = JSON.parse((await readBody(req)) || '{}') as Record<string, unknown>;
+      const settings = saveValidatorSettings(ctx.dataDir, {
+        autoClear: body.autoClear === true,
+      });
+      sendJson(res, 200, { ok: true, settings });
       return true;
     }
 
@@ -92,6 +123,10 @@ export async function handleValidatorsRoutes(
         el: body.el != null ? String(body.el) : undefined,
         cl: body.cl != null ? String(body.cl) : undefined,
         mithril: body.mithril === true,
+        dataPath: body.dataPath != null ? String(body.dataPath) : undefined,
+        memory: body.memory != null ? String(body.memory) : undefined,
+        cpus: body.cpus != null ? String(body.cpus) : undefined,
+        rpcPort: body.rpcPort != null ? Number(body.rpcPort) : undefined,
       });
       ctx.audit.append({
         actor: user.username,
@@ -126,6 +161,43 @@ export async function handleValidatorsRoutes(
         id,
       });
       sendJson(res, 200, { ok: true, ...status });
+      return true;
+    }
+
+    if (id && isValidatorInstanceId(id) && action === 'compose' && method === 'GET') {
+      sendJson(res, 200, readValidatorCompose(ctx.dataDir, id));
+      return true;
+    }
+
+    if (id && isValidatorInstanceId(id) && action === 'compose' && method === 'PUT') {
+      const body = JSON.parse((await readBody(req)) || '{}') as Record<string, unknown>;
+      const result = writeValidatorCompose({
+        dataDir: ctx.dataDir,
+        id,
+        content: String(body.content ?? ''),
+        execute: wantsExecute(ctx, body),
+      });
+      sendOpsResult(res, result);
+      return true;
+    }
+
+    if (id && isValidatorInstanceId(id) && action === 'stats' && method === 'GET') {
+      const stats = await validatorContainerStats({
+        dataDir: ctx.dataDir,
+        host: ctx.host,
+        id,
+      });
+      sendJson(res, 200, stats);
+      return true;
+    }
+
+    if (id && isValidatorInstanceId(id) && action === 'checklist' && method === 'GET') {
+      const inst = getValidatorInstance(ctx.dataDir, id);
+      if (!inst) {
+        sendJson(res, 404, { ok: false, code: ErrorCodes.NOT_FOUND });
+        return true;
+      }
+      sendJson(res, 200, { ok: true, ...stakingChecklist(inst.chain), snapshot: snapshotOffer(inst.chain, inst.network) });
       return true;
     }
 
@@ -166,6 +238,19 @@ export async function handleValidatorsRoutes(
       else if (action === 'restart') result = await restartValidatorInstance(base);
       else if (action === 'update' || action === 'upgrade') {
         result = await upgradeValidatorInstance(base);
+      } else if (action === 'prune') {
+        result = await pruneValidatorInstance(base);
+      } else if (action === 'switch-network') {
+        result = await switchValidatorNetwork({
+          ...base,
+          network: String(body.network ?? ''),
+          confirm: body.confirm != null ? String(body.confirm) : undefined,
+        });
+      } else if (action === 'snapshot') {
+        result = await restoreValidatorSnapshot({
+          ...base,
+          confirm: body.confirm != null ? String(body.confirm) : undefined,
+        });
       } else if (action === 'mithril') {
         result = await restoreAdaMithril({
           ...base,
@@ -176,6 +261,7 @@ export async function handleValidatorsRoutes(
           ...base,
           confirm: body.confirm != null ? String(body.confirm) : undefined,
           removeUnit: Boolean(body.removeUnit),
+          restoreSnapshot: Boolean(body.restoreSnapshot),
         });
       } else {
         sendJson(res, 404, { ok: false, code: ErrorCodes.NOT_FOUND, message: 'not found' });

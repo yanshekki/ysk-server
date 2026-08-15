@@ -19,7 +19,8 @@
     "used": "已用",
     "none": "尚无实例数据",
     "warn": "磁盘用量偏高（70% 或以上）",
-    "danger": "磁盘用量危急（85% 或以上）"
+    "danger": "磁盘用量危急（85% 或以上）",
+    "autoClear": "Auto-clear the largest stopped instance when disk is critical (off by default)"
   },
   "chain": {
     "eth": "Ethereum",
@@ -76,7 +77,12 @@
     "needMithrilConfirm": "Mithril requires confirm=instance id or MITHRIL",
     "mithrilBlocked": "Mithril docker run was blocked by the allowlist",
     "mithrilKey": "Could not load the Mithril genesis verification key",
-    "mithrilFailed": "Mithril snapshot download failed"
+    "mithrilFailed": "Mithril snapshot download failed",
+    "pruneFailed": "Prune failed",
+    "switchNeedStop": "Stop the node before switching network",
+    "switchNeedClear": "Switching network clears chain data. Confirm with instance id or CLEAR",
+    "composeMissing": "Compose file not found",
+    "composeNotManaged": "Refusing to write a compose file that is not YSK-managed"
   },
   "notes": {
     "beta": "此功能为 Beta。变更主机须 root 及 YSK_EXECUTE=1。",
@@ -91,7 +97,17 @@
     "stopped": "已停止节点",
     "cleared": "已清空链数据",
     "dryMithril": "Mithril restore is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "mithril": "Mithril snapshot restored; node restarted"
+    "mithril": "Mithril snapshot restored; node restarted",
+    "dryPrune": "Prune is dry-run. Pass --execute and YSK_EXECUTE=1.",
+    "pruned": "Unused project images pruned",
+    "pruneProfile": "Client-native prune is the pruned/minimal profile. Recreate to change it.",
+    "sameNetwork": "Already on that network",
+    "drySwitch": "Network switch is dry-run.",
+    "switched": "Network switched and chain data cleared",
+    "dryCompose": "Would write compose.yml",
+    "composeWrote": "Wrote compose.yml",
+    "statsEmpty": "No running containers to measure",
+    "autoClearNone": "No stopped instance to auto-clear"
   },
   "create": "创建节点",
   "wizard": {
@@ -101,7 +117,9 @@
     "install": "安装",
     "mainnetWarn": "主网需要大量可用磁盘（ETH 常达 800 GiB 或以上）。建议先用测试网。",
     "mainnetAck": "我明白磁盘与罚没风险，仍要创建主网节点。",
-    "heavyWarn": "此链负载很重（大量磁盘与高 IOPS）。Solana 主网通常需要 2 TiB 或以上。"
+    "heavyWarn": "此链负载很重（大量磁盘与高 IOPS）。Solana 主网通常需要 2 TiB 或以上。",
+    "memory": "Memory limit (e.g. 4g)",
+    "cpus": "CPU limit (e.g. 2.0)"
   },
   "actions": {
     "detail": "详情",
@@ -110,7 +128,11 @@
     "restart": "重新启动",
     "clear": "清空",
     "upgrade": "升级",
-    "clearConfirm": "输入实例标识或 CLEAR"
+    "clearConfirm": "输入实例标识或 CLEAR",
+    "prune": "Prune",
+    "switchNetwork": "Switch network",
+    "removeUnit": "Also remove compose / instance record",
+    "restoreAfter": "Restore snapshot after clear"
   },
   "policy": {
     "label": "升级策略",
@@ -120,13 +142,16 @@
     "auto-all": "自动（全部）"
   },
   "logs": {
-    "empty": "尚无日志"
+    "empty": "尚无日志",
+    "follow": "Follow logs"
   },
   "alerts": {
     "diskTitle": "验证者节点磁盘危急",
     "diskBody": "验证者数据卷可用空间极低。",
     "upgradeTitle": "验证者节点有可用升级",
-    "upgradeBody": "一个或多个客户端有较新的钉选版本。"
+    "upgradeBody": "一个或多个客户端有较新的钉选版本。",
+    "syncTitle": "Validator node needs attention",
+    "syncBody": "A node has been syncing for more than 6 hours or reported an error."
   },
   "clients": {
     "el": "执行层客户端",
@@ -135,5 +160,24 @@
   "mithril": {
     "label": "先用 Mithril 快照还原（测试网建议）",
     "action": "用 Mithril 还原"
+  },
+  "compose": {
+    "label": "Compose file",
+    "save": "Save compose"
+  },
+  "snapshot": {
+    "action": "Restore snapshot",
+    "mithril": "Cardano uses Mithril for certified snapshot restore.",
+    "eth": "Ethereum bootstraps via checkpoint sync on the consensus client. No extra snapshot is configured.",
+    "avax": "Avalanche uses state-sync in the compose profile.",
+    "near": "NEAR downloads genesis in compose. A separate snapshot URL is not configured.",
+    "none": "No snapshot source is configured for this chain."
+  },
+  "stake": {
+    "title": "Prepare for staking (you keep the keys)",
+    "offlineKeys": "Generate keys offline. The panel never stores them.",
+    "deposit": "Complete deposit / registration on the official launchpad.",
+    "withdrawal": "Set withdrawal credentials yourself.",
+    "monitor": "Watch disk, peers, and upgrade badges on this page."
   }
 }

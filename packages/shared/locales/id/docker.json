@@ -34,7 +34,8 @@
     "size": "Size",
     "driver": "Driver",
     "type": "Type",
-    "reclaimable": "Reclaimable"
+    "reclaimable": "Reclaimable",
+    "disk": "Disk"
   },
   "state": {
     "up": "Active",
@@ -59,7 +60,8 @@
     "startEngine": "Start engine",
     "stopEngine": "Stop engine",
     "restartEngine": "Restart engine",
-    "applyDaemon": "Apply daemon settings"
+    "applyDaemon": "Apply daemon settings",
+    "inspect": "Inspect"
   },
   "empty": {
     "containers": "No containers",
@@ -73,7 +75,9 @@
   },
   "settings": {
     "logMaxSize": "Container log max size",
-    "liveRestore": "Live restore (keep containers if the daemon restarts)"
+    "liveRestore": "Live restore (keep containers if the daemon restarts)",
+    "mirrors": "Registry mirrors (one URL per line)",
+    "insecure": "Insecure registries (one host per line)"
   },
   "about": {
     "body": "Docker is a first-class host service on YSK Server, like Nginx. Install via the panel (Ubuntu docker.io + docker-compose-v2). Validator nodes run as Compose projects named yskval-*.",
@@ -102,7 +106,8 @@
     "composeMissing": "Compose file for this project was not found",
     "logsFailed": "Could not read container logs",
     "mutateFailed": "Docker command failed",
-    "engineFailed": "Could not control docker.service"
+    "engineFailed": "Could not control docker.service",
+    "uninstallBusy": "Stop YSK-managed containers (including validator stacks) before uninstalling Docker"
   },
   "notes": {
     "dryMutate": "Dry-run only. Pass --execute and YSK_EXECUTE=1 to change the host.",

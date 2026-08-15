@@ -1,0 +1,365 @@
+/**
+ * Remaining validator ops: summaries, prune, switch-network, compose, snapshot, stats, auto-clear.
+ */
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { join } from 'node:path';
+import {
+  isValidatorInstanceId,
+  tl,
+  type ValidatorInstanceDto,
+  type ValidatorSummaryDto,
+} from 'ysk-server-shared';
+import type { HostExecutor } from '../../host/executor.js';
+import { getValidatorNetwork } from './registry.js';
+import {
+  appliedValidatorOp,
+  blockedValidatorOp,
+  failedValidatorOp,
+  writtenValidatorOp,
+  type ValidatorOpsResult,
+} from './honesty.js';
+import {
+  composeFilePath,
+  composeProjectName,
+  composePsRunning,
+  writeComposeFile,
+} from './compose-runner.js';
+import { planInstallFor } from './adapters/index.js';
+import {
+  deleteValidatorInstance,
+  getValidatorInstance,
+  instanceDir,
+  listValidatorInstances,
+  nextValidatorInstanceId,
+  upsertValidatorInstance,
+} from './store.js';
+import { collectValidatorDisk } from './disk.js';
+import { statusValidatorInstance } from './manager.js';
+import { restoreAdaMithril } from './mithril.js';
+import { loadValidatorSettings } from './settings.js';
+import { clearValidatorInstance } from './manager.js';
+
+export async function summarizeValidatorInstances(input: {
+  dataDir: string;
+  host: HostExecutor;
+}): Promise<{ summaries: ValidatorSummaryDto[] }> {
+  const disk = await collectValidatorDisk({ dataDir: input.dataDir, host: input.host });
+  const used = new Map(disk.instances.map((i) => [i.id, i.usedBytes]));
+  const summaries: ValidatorSummaryDto[] = [];
+  for (const inst of listValidatorInstances(input.dataDir)) {
+    const st = await statusValidatorInstance({
+      dataDir: input.dataDir,
+      host: input.host,
+      id: inst.id,
+    });
+    const diskUsedBytes = used.get(inst.id) ?? st.diskUsedBytes;
+    const summary: ValidatorSummaryDto = {
+      id: inst.id,
+      status: st.status,
+      running: st.running,
+      syncProgress: st.syncProgress,
+      peers: st.peers,
+      diskUsedBytes,
+      lastError: st.lastError,
+      upgrade: st.upgrade ?? null,
+    };
+    summaries.push(summary);
+    upsertValidatorInstance(input.dataDir, {
+      ...inst,
+      lastStatus: {
+        at: new Date().toISOString(),
+        status: summary.status,
+        running: summary.running,
+        syncProgress: summary.syncProgress,
+        peers: summary.peers,
+        diskUsedBytes: summary.diskUsedBytes,
+        lastError: summary.lastError,
+      },
+    });
+  }
+  return { summaries };
+}
+
+export async function pruneValidatorInstance(input: {
+  dataDir: string;
+  host: HostExecutor;
+  execute: boolean;
+  id: string;
+}): Promise<ValidatorOpsResult> {
+  const inst = getValidatorInstance(input.dataDir, input.id);
+  if (!inst) return blockedValidatorOp({ reason: 'validation', notes: [tl('validators.errors.notFound')] });
+  const project = composeProjectName(inst.id);
+  const argv = ['image', 'prune', '-f', '--filter', `label=com.docker.compose.project=${project}`];
+  if (!input.execute || !input.host.executeEnabled()) {
+    return writtenValidatorOp({
+      instanceId: inst.id,
+      written: [],
+      notes: [tl('validators.notes.dryPrune'), argv.join(' ')],
+    });
+  }
+  const r = await input.host.runCommand(['docker', ...argv], { timeoutMs: 180_000 });
+  if (r.exitCode !== 0) {
+    return failedValidatorOp({
+      instanceId: inst.id,
+      notes: [tl('validators.errors.pruneFailed'), r.stderr || r.stdout],
+    });
+  }
+  return appliedValidatorOp({
+    instanceId: inst.id,
+    notes: [tl('validators.notes.pruned'), tl('validators.notes.pruneProfile')],
+  });
+}
+
+export async function switchValidatorNetwork(input: {
+  dataDir: string;
+  host: HostExecutor;
+  execute: boolean;
+  id: string;
+  network: string;
+  confirm?: string;
+}): Promise<ValidatorOpsResult> {
+  const inst = getValidatorInstance(input.dataDir, input.id);
+  if (!inst) return blockedValidatorOp({ reason: 'validation', notes: [tl('validators.errors.notFound')] });
+  const net = getValidatorNetwork(inst.chain, input.network);
+  if (!net) return blockedValidatorOp({ reason: 'validation', notes: [tl('validators.errors.invalidId')] });
+  if (inst.network === input.network) {
+    return writtenValidatorOp({ instanceId: inst.id, written: [], notes: [tl('validators.notes.sameNetwork')] });
+  }
+  const running = await composePsRunning({
+    host: input.host,
+    file: composeFilePath(instanceDir(input.dataDir, inst.id)),
+    project: composeProjectName(inst.id),
+  });
+  if (running) {
+    return blockedValidatorOp({
+      reason: 'validation',
+      instanceId: inst.id,
+      notes: [tl('validators.errors.switchNeedStop')],
+    });
+  }
+  if (input.confirm !== inst.id && String(input.confirm ?? '').toUpperCase() !== 'CLEAR') {
+    return blockedValidatorOp({
+      reason: 'validation',
+      instanceId: inst.id,
+      notes: [tl('validators.errors.switchNeedClear')],
+    });
+  }
+  if (!input.execute || !input.host.executeEnabled()) {
+    return writtenValidatorOp({
+      instanceId: inst.id,
+      written: [],
+      notes: [tl('validators.notes.drySwitch'), `${inst.network} -> ${input.network}`],
+    });
+  }
+  try {
+    rmSync(inst.dataPath, { recursive: true, force: true });
+  } catch {
+    /* continue */
+  }
+  mkdirSync(inst.dataPath, { recursive: true });
+  const newId = isValidatorInstanceId(`${inst.chain}-${input.network}-${inst.slug}`)
+    ? `${inst.chain}-${input.network}-${inst.slug}`
+    : nextValidatorInstanceId(input.dataDir, inst.chain, input.network);
+  const next: ValidatorInstanceDto = {
+    ...inst,
+    id: newId,
+    network: input.network,
+    dataPath: join(input.dataDir, 'validators', newId, 'data'),
+    desiredState: 'stopped',
+    updatedAt: new Date().toISOString(),
+  };
+  mkdirSync(next.dataPath, { recursive: true });
+  const plan = planInstallFor(next);
+  writeComposeFile(composeFilePath(instanceDir(input.dataDir, next.id)), plan.composeYaml, next.id);
+  if (newId !== inst.id) deleteValidatorInstance(input.dataDir, inst.id);
+  upsertValidatorInstance(input.dataDir, next);
+  return appliedValidatorOp({
+    instanceId: next.id,
+    notes: [tl('validators.notes.switched'), `${inst.network} -> ${input.network}`],
+  });
+}
+
+export function readValidatorCompose(dataDir: string, id: string): { ok: boolean; path: string; content: string; notes: string[] } {
+  const inst = getValidatorInstance(dataDir, id);
+  if (!inst) return { ok: false, path: '', content: '', notes: [tl('validators.errors.notFound')] };
+  const path = composeFilePath(instanceDir(dataDir, inst.id));
+  if (!existsSync(path)) return { ok: false, path, content: '', notes: [tl('validators.errors.composeMissing')] };
+  return { ok: true, path, content: readFileSync(path, 'utf8'), notes: [] };
+}
+
+export function writeValidatorCompose(input: {
+  dataDir: string;
+  id: string;
+  content: string;
+  execute: boolean;
+}): ValidatorOpsResult {
+  const inst = getValidatorInstance(input.dataDir, input.id);
+  if (!inst) return blockedValidatorOp({ reason: 'validation', notes: [tl('validators.errors.notFound')] });
+  const body = String(input.content ?? '');
+  if (!body.includes('ysk-server validators') && !body.includes(inst.id)) {
+    return blockedValidatorOp({ reason: 'validation', notes: [tl('validators.errors.composeNotManaged')] });
+  }
+  const path = composeFilePath(instanceDir(input.dataDir, inst.id));
+  if (!input.execute) {
+    return writtenValidatorOp({ instanceId: inst.id, written: [path], notes: [tl('validators.notes.dryCompose')] });
+  }
+  writeComposeFile(path, body, inst.id);
+  return appliedValidatorOp({ instanceId: inst.id, written: [path], notes: [tl('validators.notes.composeWrote')] });
+}
+
+export function snapshotOffer(chain: string, network: string): {
+  kind: 'mithril' | 'checkpoint' | 'none';
+  notes: string[];
+} {
+  if (chain === 'ada') return { kind: 'mithril', notes: [tl('validators.snapshot.mithril')] };
+  if (chain === 'eth') return { kind: 'checkpoint', notes: [tl('validators.snapshot.eth')] };
+  if (chain === 'avax') return { kind: 'none', notes: [tl('validators.snapshot.avax')] };
+  if (chain === 'near') return { kind: 'none', notes: [tl('validators.snapshot.near')] };
+  void network;
+  return { kind: 'none', notes: [tl('validators.snapshot.none')] };
+}
+
+export async function restoreValidatorSnapshot(input: {
+  dataDir: string;
+  host: HostExecutor;
+  execute: boolean;
+  id: string;
+  confirm?: string;
+}): Promise<ValidatorOpsResult> {
+  const inst = getValidatorInstance(input.dataDir, input.id);
+  if (!inst) return blockedValidatorOp({ reason: 'validation', notes: [tl('validators.errors.notFound')] });
+  const offer = snapshotOffer(inst.chain, inst.network);
+  if (offer.kind === 'mithril') {
+    return restoreAdaMithril({
+      dataDir: input.dataDir,
+      host: input.host,
+      execute: input.execute,
+      id: inst.id,
+      confirm: input.confirm ?? inst.id,
+    });
+  }
+  return writtenValidatorOp({
+    instanceId: inst.id,
+    written: [],
+    notes: offer.notes,
+  });
+}
+
+export async function validatorContainerStats(input: {
+  dataDir: string;
+  host: HostExecutor;
+  id: string;
+}): Promise<{ ok: boolean; items: Array<Record<string, string>>; notes: string[] }> {
+  const inst = getValidatorInstance(input.dataDir, input.id);
+  if (!inst) return { ok: false, items: [], notes: [tl('validators.errors.notFound')] };
+  const file = composeFilePath(instanceDir(input.dataDir, inst.id));
+  const project = composeProjectName(inst.id);
+  const ps = await input.host.runCommand(
+    ['docker', 'compose', '-f', file, '-p', project, 'ps', '-q'],
+    { timeoutMs: 15_000 },
+  );
+  const ids = ps.stdout.trim().split(/\s+/).filter(Boolean);
+  if (!ids.length) return { ok: true, items: [], notes: [tl('validators.notes.statsEmpty')] };
+  const st = await input.host.runCommand(
+    ['docker', 'stats', '--no-stream', '--format', '{{json .}}', ...ids],
+    { timeoutMs: 20_000 },
+  );
+  const items: Array<Record<string, string>> = [];
+  for (const line of st.stdout.split('\n')) {
+    const s = line.trim();
+    if (!s.startsWith('{')) continue;
+    try {
+      items.push(JSON.parse(s) as Record<string, string>);
+    } catch {
+      /* skip */
+    }
+  }
+  return { ok: st.exitCode === 0, items, notes: st.exitCode === 0 ? [] : [st.stderr] };
+}
+
+export async function runValidatorAutoClear(input: {
+  dataDir: string;
+  host: HostExecutor;
+}): Promise<{ cleared: string[]; notes: string[] }> {
+  const settings = loadValidatorSettings(input.dataDir);
+  if (!settings.autoClear) return { cleared: [], notes: ['auto-clear off'] };
+  const disk = await collectValidatorDisk({ dataDir: input.dataDir, host: input.host });
+  if (disk.tone !== 'danger') return { cleared: [], notes: ['disk not critical'] };
+  const running = new Set<string>();
+  for (const inst of listValidatorInstances(input.dataDir)) {
+    const on = await composePsRunning({
+      host: input.host,
+      file: composeFilePath(instanceDir(input.dataDir, inst.id)),
+      project: composeProjectName(inst.id),
+    });
+    if (on) running.add(inst.id);
+  }
+  const candidates = disk.instances
+    .filter((i) => !running.has(i.id))
+    .sort((a, b) => b.usedBytes - a.usedBytes);
+  const target = candidates[0];
+  if (!target) return { cleared: [], notes: [tl('validators.notes.autoClearNone')] };
+  const r = await clearValidatorInstance({
+    dataDir: input.dataDir,
+    host: input.host,
+    execute: input.host.executeEnabled(),
+    id: target.id,
+    confirm: target.id,
+  });
+  return {
+    cleared: r.ok && r.apply_status === 'applied' ? [target.id] : [],
+    notes: r.notes ?? [],
+  };
+}
+
+export function stakingChecklist(chain: string): { items: string[]; links: Array<{ label: string; href: string }> } {
+  if (chain === 'eth') {
+    return {
+      items: [
+        tl('validators.stake.offlineKeys'),
+        tl('validators.stake.deposit'),
+        tl('validators.stake.withdrawal'),
+        tl('validators.stake.monitor'),
+      ],
+      links: [
+        { label: 'Hoodi launchpad', href: 'https://hoodi.launchpad.ethereum.org' },
+        { label: 'Mainnet launchpad', href: 'https://launchpad.ethereum.org' },
+      ],
+    };
+  }
+  if (chain === 'ada') {
+    return {
+      items: [
+        tl('validators.stake.offlineKeys'),
+        tl('validators.stake.monitor'),
+      ],
+      links: [{ label: 'Cardano docs', href: 'https://docs.cardano.org' }],
+    };
+  }
+  if (chain === 'near') {
+    return {
+      items: [tl('validators.stake.offlineKeys'), tl('validators.stake.monitor')],
+      links: [{ label: 'NEAR validators', href: 'https://docs.near.org/protocol/network/validators' }],
+    };
+  }
+  return {
+    items: [tl('validators.stake.offlineKeys'), tl('validators.stake.monitor')],
+    links: [],
+  };
+}
+
+export function dataDirHasChainData(dataPath: string): boolean {
+  if (!existsSync(dataPath)) return false;
+  try {
+    const names = readdirSync(dataPath);
+    return names.some((n) => {
+      try {
+        return statSync(join(dataPath, n)).isDirectory() || statSync(join(dataPath, n)).size > 0;
+      } catch {
+        return false;
+      }
+    });
+  } catch {
+    return false;
+  }
+}

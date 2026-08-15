@@ -31,9 +31,15 @@ export async function probeDockerCompose(host: HostExecutor): Promise<{
   }
 }
 
-export function writeComposeFile(path: string, yaml: string, instanceId?: string): string {
+export function writeComposeFile(
+  path: string,
+  yaml: string,
+  instanceId?: string,
+  limits?: { memory?: string; cpus?: string },
+): string {
   mkdirSync(dirname(path), { recursive: true });
-  const stamped = instanceId ? stampYskComposeLabels(yaml, instanceId) : yaml;
+  const limited = applyComposeLimits(yaml, limits);
+  const stamped = instanceId ? stampYskComposeLabels(limited, instanceId) : limited;
   const body = stamped.endsWith('\n') ? stamped : `${stamped}\n`;
   writeFileSync(path, body, 'utf8');
   return path;
@@ -66,6 +72,18 @@ export function stubComposeYaml(inst: ValidatorInstanceDto): string {
           `      - ${JSON.stringify(inst.dataPath)}:/data`,
         ].join('\n');
   return `# ysk-server validators — generated, do not edit\nservices:\n${services}\n`;
+}
+
+export function applyComposeLimits(
+  yaml: string,
+  limits?: { memory?: string; cpus?: string },
+): string {
+  if (!limits?.memory && !limits?.cpus) return yaml;
+  const extra: string[] = [];
+  if (limits.memory && /^\d+[mMgGkK]$/.test(limits.memory)) extra.push(`    mem_limit: ${limits.memory}`);
+  if (limits.cpus && /^\d+(\.\d+)?$/.test(limits.cpus)) extra.push(`    cpus: ${JSON.stringify(limits.cpus)}`);
+  if (!extra.length) return yaml;
+  return yaml.replace(/^([ \t]+restart:\s+unless-stopped)\s*$/gm, `$1\n${extra.join('\n')}`);
 }
 
 export function stampYskComposeLabels(yaml: string, instanceId: string): string {

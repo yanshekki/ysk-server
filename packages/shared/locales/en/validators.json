@@ -19,7 +19,8 @@
     "used": "Used",
     "none": "No instance data yet",
     "warn": "Disk usage is high (70%+)",
-    "danger": "Disk usage is critical (85%+)"
+    "danger": "Disk usage is critical (85%+)",
+    "autoClear": "Auto-clear the largest stopped instance when disk is critical (off by default)"
   },
   "chain": {
     "eth": "Ethereum",
@@ -62,7 +63,7 @@
     "disk": "Disk"
   },
   "cli": {
-    "usage": "Usage: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
+    "usage": "Usage: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
   },
   "clients": {
     "el": "Execution client",
@@ -84,7 +85,12 @@
     "needMithrilConfirm": "Mithril requires confirm=instance id or MITHRIL",
     "mithrilBlocked": "Mithril docker run was blocked by the allowlist",
     "mithrilKey": "Could not load the Mithril genesis verification key",
-    "mithrilFailed": "Mithril snapshot download failed"
+    "mithrilFailed": "Mithril snapshot download failed",
+    "pruneFailed": "Prune failed",
+    "switchNeedStop": "Stop the node before switching network",
+    "switchNeedClear": "Switching network clears chain data. Confirm with instance id or CLEAR",
+    "composeMissing": "Compose file not found",
+    "composeNotManaged": "Refusing to write a compose file that is not YSK-managed"
   },
   "notes": {
     "beta": "This feature is Beta. Host changes need root and YSK_EXECUTE=1.",
@@ -99,7 +105,17 @@
     "stopped": "Node stopped",
     "cleared": "Chain data cleared",
     "dryMithril": "Mithril restore is dry-run. Pass --execute and YSK_EXECUTE=1.",
-    "mithril": "Mithril snapshot restored; node restarted"
+    "mithril": "Mithril snapshot restored; node restarted",
+    "dryPrune": "Prune is dry-run. Pass --execute and YSK_EXECUTE=1.",
+    "pruned": "Unused project images pruned",
+    "pruneProfile": "Client-native prune is the pruned/minimal profile. Recreate to change it.",
+    "sameNetwork": "Already on that network",
+    "drySwitch": "Network switch is dry-run.",
+    "switched": "Network switched and chain data cleared",
+    "dryCompose": "Would write compose.yml",
+    "composeWrote": "Wrote compose.yml",
+    "statsEmpty": "No running containers to measure",
+    "autoClearNone": "No stopped instance to auto-clear"
   },
   "create": "Create node",
   "wizard": {
@@ -109,7 +125,9 @@
     "install": "Install",
     "mainnetWarn": "Mainnet needs a lot of free disk (ETH often 800 GiB+). Testnet is recommended.",
     "mainnetAck": "I understand the disk and slashing risk. Continue with mainnet.",
-    "heavyWarn": "This chain is heavy (large disk and high IOPS). Mainnet Solana typically needs 2 TiB+."
+    "heavyWarn": "This chain is heavy (large disk and high IOPS). Mainnet Solana typically needs 2 TiB+.",
+    "memory": "Memory limit (e.g. 4g)",
+    "cpus": "CPU limit (e.g. 2.0)"
   },
   "actions": {
     "detail": "Details",
@@ -118,7 +136,11 @@
     "restart": "Restart",
     "clear": "Clear",
     "upgrade": "Upgrade",
-    "clearConfirm": "Type instance id or CLEAR"
+    "clearConfirm": "Type instance id or CLEAR",
+    "prune": "Prune",
+    "switchNetwork": "Switch network",
+    "removeUnit": "Also remove compose / instance record",
+    "restoreAfter": "Restore snapshot after clear"
   },
   "policy": {
     "label": "Upgrade policy",
@@ -128,12 +150,34 @@
     "auto-all": "Auto (all)"
   },
   "logs": {
-    "empty": "No logs yet"
+    "empty": "No logs yet",
+    "follow": "Follow logs"
+  },
+  "compose": {
+    "label": "Compose file",
+    "save": "Save compose"
+  },
+  "snapshot": {
+    "action": "Restore snapshot",
+    "mithril": "Cardano uses Mithril for certified snapshot restore.",
+    "eth": "Ethereum bootstraps via checkpoint sync on the consensus client. No extra snapshot is configured.",
+    "avax": "Avalanche uses state-sync in the compose profile.",
+    "near": "NEAR downloads genesis in compose. A separate snapshot URL is not configured.",
+    "none": "No snapshot source is configured for this chain."
+  },
+  "stake": {
+    "title": "Prepare for staking (you keep the keys)",
+    "offlineKeys": "Generate keys offline. The panel never stores them.",
+    "deposit": "Complete deposit / registration on the official launchpad.",
+    "withdrawal": "Set withdrawal credentials yourself.",
+    "monitor": "Watch disk, peers, and upgrade badges on this page."
   },
   "alerts": {
     "diskTitle": "Validator disk critical",
     "diskBody": "Free space on the validator data volume is critically low.",
     "upgradeTitle": "Validator upgrade available",
-    "upgradeBody": "One or more node clients have a newer pinned version."
+    "upgradeBody": "One or more node clients have a newer pinned version.",
+    "syncTitle": "Validator node needs attention",
+    "syncBody": "A node has been syncing for more than 6 hours or reported an error."
   }
 }

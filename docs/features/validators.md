@@ -29,6 +29,7 @@ Install and manage **L1 validator-ready nodes** (Ethereum, Avalanche, NEAR, Card
 | Create / install | `ysk-server validators create --chain … --network … --execute --json` | write-host | Dry-run writes spec; apply needs Docker Compose. ETH accepts `--el` / `--cl`. Missing Docker → panel banner to `/docker` |
 | Mithril restore | `ysk-server validators mithril --id ID --confirm MITHRIL --execute --json` | write-host | Cardano only; certified snapshot, no keys |
 | Upgrade | `ysk-server validators upgrade --id ID --execute --json` | write-host | Health-checks then rolls back the previous image on failure |
+| Prune / switch network / snapshot | `validators prune` · `switch-network` · `snapshot` | write-host | Switch requires stop + confirm (clears data) |
 | Start / stop / restart | `ysk-server validators start\|stop\|restart --id ID --execute --json` | write-host | |
 | Clear chain data | `ysk-server validators clear --id ID --confirm --execute --json` | write-host | Confirm = id or `CLEAR` |
 

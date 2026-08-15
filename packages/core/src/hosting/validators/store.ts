@@ -127,6 +127,8 @@ export function buildValidatorInstance(input: {
   rpcHost?: string;
   clients?: ValidatorInstanceDto['clients'];
   ports?: Record<string, number>;
+  dataPath?: string;
+  limits?: ValidatorInstanceDto['limits'];
 }): ValidatorInstanceDto {
   const id = input.slug
     ? `${input.chain}-${input.network}-${input.slug}`
@@ -145,7 +147,7 @@ export function buildValidatorInstance(input: {
     network: input.network,
     profile: input.profile,
     slug: input.slug ?? id.slice(`${input.chain}-${input.network}-`.length),
-    dataPath: defaultInstanceDataPath(input.dataDir, id),
+    dataPath: input.dataPath?.trim() || defaultInstanceDataPath(input.dataDir, id),
     rpcHost: (input.rpcHost ?? '127.0.0.1').trim() || '127.0.0.1',
     upgradePolicy: policy,
     desiredState: 'stopped',
@@ -153,6 +155,7 @@ export function buildValidatorInstance(input: {
     updatedAt: now,
     clients: input.clients ?? {},
     ports: input.ports ?? {},
+    limits: input.limits,
   };
 }
 
@@ -211,6 +214,14 @@ function normalizeInstance(raw: unknown): ValidatorInstanceDto | null {
     lastMithril:
       o.lastMithril && typeof o.lastMithril === 'object'
         ? (o.lastMithril as ValidatorInstanceDto['lastMithril'])
+        : undefined,
+    limits:
+      o.limits && typeof o.limits === 'object'
+        ? (o.limits as ValidatorInstanceDto['limits'])
+        : undefined,
+    lastStatus:
+      o.lastStatus && typeof o.lastStatus === 'object'
+        ? (o.lastStatus as ValidatorInstanceDto['lastStatus'])
         : undefined,
   };
 }

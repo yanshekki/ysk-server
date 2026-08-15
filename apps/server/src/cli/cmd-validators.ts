@@ -15,6 +15,13 @@ import {
   statusValidatorInstance,
   stopValidatorInstance,
   restoreAdaMithril,
+  restoreValidatorSnapshot,
+  pruneValidatorInstance,
+  readValidatorCompose,
+  switchValidatorNetwork,
+  summarizeValidatorInstances,
+  loadValidatorSettings,
+  saveValidatorSettings,
   upgradeValidatorInstance,
 } from 'ysk-server-core';
 import { isValidatorInstanceId, tl } from 'ysk-server-shared';
@@ -33,12 +40,28 @@ export async function runValidatorsCommand(
   const execute = h.wantsHostExecute(args) && ctx.host.executeEnabled();
 
   if (sub === 'list') {
+    const { summaries } = await summarizeValidatorInstances({
+      dataDir: ctx.dataDir,
+      host: ctx.host,
+    });
     h.printJson({
       ok: true,
       instances: listValidatorInstances(ctx.dataDir),
+      summaries,
+      settings: loadValidatorSettings(ctx.dataDir),
       executeEnabled: ctx.host.executeEnabled(),
       isRoot: ctx.host.isRoot(),
     });
+    return 0;
+  }
+
+  if (sub === 'settings') {
+    if (h.getOpt(args, '--auto-clear') != null) {
+      const on = h.getOpt(args, '--auto-clear') === '1' || h.getOpt(args, '--auto-clear') === 'true';
+      h.printJson({ ok: true, settings: saveValidatorSettings(ctx.dataDir, { autoClear: on }) });
+      return 0;
+    }
+    h.printJson({ ok: true, settings: loadValidatorSettings(ctx.dataDir) });
     return 0;
   }
 
@@ -136,9 +159,73 @@ export async function runValidatorsCommand(
       slug,
       el: h.getOpt(args, '--el') ?? undefined,
       cl: h.getOpt(args, '--cl') ?? undefined,
+      memory: h.getOpt(args, '--memory') ?? undefined,
+      cpus: h.getOpt(args, '--cpus') ?? undefined,
     });
     h.printJson(result);
     return h.exitFromResult(result);
+  }
+
+  if (sub === 'prune') {
+    const id = h.getOpt(args, '--id') ?? tokens[2];
+    if (!id || !isValidatorInstanceId(id)) {
+      process.stderr.write(`${tl('validators.cli.usage')}\n`);
+      return 2;
+    }
+    const result = await pruneValidatorInstance({
+      dataDir: ctx.dataDir,
+      host: ctx.host,
+      execute,
+      id,
+    });
+    h.printJson(result);
+    return h.exitFromResult(result);
+  }
+
+  if (sub === 'switch-network') {
+    const id = h.getOpt(args, '--id') ?? tokens[2];
+    const network = h.getOpt(args, '--network') ?? tokens[3] ?? '';
+    if (!id || !isValidatorInstanceId(id)) {
+      process.stderr.write(`${tl('validators.cli.usage')}\n`);
+      return 2;
+    }
+    const result = await switchValidatorNetwork({
+      dataDir: ctx.dataDir,
+      host: ctx.host,
+      execute,
+      id,
+      network,
+      confirm: h.getOpt(args, '--confirm') ?? id,
+    });
+    h.printJson(result);
+    return h.exitFromResult(result);
+  }
+
+  if (sub === 'snapshot') {
+    const id = h.getOpt(args, '--id') ?? tokens[2];
+    if (!id || !isValidatorInstanceId(id)) {
+      process.stderr.write(`${tl('validators.cli.usage')}\n`);
+      return 2;
+    }
+    const result = await restoreValidatorSnapshot({
+      dataDir: ctx.dataDir,
+      host: ctx.host,
+      execute,
+      id,
+      confirm: h.getOpt(args, '--confirm') ?? id,
+    });
+    h.printJson(result);
+    return h.exitFromResult(result);
+  }
+
+  if (sub === 'compose') {
+    const id = h.getOpt(args, '--id') ?? tokens[2];
+    if (!id || !isValidatorInstanceId(id)) {
+      process.stderr.write(`${tl('validators.cli.usage')}\n`);
+      return 2;
+    }
+    h.printJson(readValidatorCompose(ctx.dataDir, id));
+    return 0;
   }
 
   if (sub === 'mithril') {
@@ -176,6 +263,7 @@ export async function runValidatorsCommand(
                 ...base,
                 confirm: h.getOpt(args, '--confirm') ?? (h.hasFlag(args, '--confirm') ? id : undefined),
                 removeUnit: h.hasFlag(args, '--remove-unit'),
+                restoreSnapshot: h.hasFlag(args, '--restore-snapshot'),
               });
     h.printJson(result);
     return h.exitFromResult(result);

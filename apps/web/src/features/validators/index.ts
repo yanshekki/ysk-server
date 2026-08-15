@@ -9,3 +9,4 @@ export type {
   ValidatorStatusResponse,
   ValidatorsListResponse,
 } from './api';
+export type { ValidatorSettingsDto, ValidatorSummaryDto } from 'ysk-server-shared';

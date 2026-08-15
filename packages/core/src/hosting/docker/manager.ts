@@ -179,6 +179,24 @@ export async function dockerEngineStatus(input: {
     const info = parseDockerInfo(infoRaw.stdout);
     const vols = await listDockerVolumes({ host: input.host });
     const nets = await listDockerNetworks({ host: input.host });
+    let disk = { dataRoot: info.dataRoot, usedBytes: null as number | null, availBytes: null as number | null, usePct: null as number | null };
+    if (info.dataRoot) {
+      try {
+        const { parseDfBytes, pickMountForPath } = await import('../validators/disk.js');
+        const df = await input.host.runCommand(['df', '-B1', '-T', info.dataRoot], { timeoutMs: 8_000 });
+        const mount = pickMountForPath(parseDfBytes(df.stdout), info.dataRoot);
+        if (mount) {
+          disk = {
+            dataRoot: info.dataRoot,
+            usedBytes: mount.usedBytes,
+            availBytes: mount.availBytes,
+            usePct: mount.usePct,
+          };
+        }
+      } catch {
+        /* leave nulls */
+      }
+    }
     return {
       ...probe,
       version: info.version ?? probe.version,
@@ -192,7 +210,7 @@ export async function dockerEngineStatus(input: {
         volumes: vols.length,
         networks: nets.length,
       },
-      disk: { dataRoot: info.dataRoot, usedBytes: null, availBytes: null, usePct: null },
+      disk,
       validatorProjects,
     };
   } catch (e) {

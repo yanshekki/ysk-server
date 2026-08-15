@@ -11,6 +11,7 @@ import { auditApplyStatuses } from '../hosting/apply-audit.js';
 import { existsSync } from 'node:fs';
 import { collectValidatorDisk } from '../hosting/validators/disk.js';
 import { loadUpgradeScan } from '../hosting/validators/upgrade.js';
+import { listValidatorInstances } from '../hosting/validators/store.js';
 import { probeDockerEngine } from '../hosting/docker/manager.js';
 
 export type NotificationLevel = 'critical' | 'warn' | 'info';
@@ -111,6 +112,31 @@ export async function collectNotifications(input: {
         href: '/validators',
         source: 'validators',
       });
+    }
+    const lagCut = Date.now() - 6 * 60 * 60_000;
+    for (const inst of listValidatorInstances(input.dataDir)) {
+      const ls = inst.lastStatus;
+      if (!ls) continue;
+      const at = Date.parse(ls.at);
+      if (ls.running && ls.lastError) {
+        push({
+          id: `validators-error-${inst.id}`,
+          level: 'warn',
+          title: tl('validators.alerts.syncTitle'),
+          body: ls.lastError,
+          href: '/validators',
+          source: 'validators',
+        });
+      } else if (ls.running && ls.syncProgress != null && ls.syncProgress < 1 && Number.isFinite(at) && at < lagCut) {
+        push({
+          id: `validators-lag-${inst.id}`,
+          level: 'warn',
+          title: tl('validators.alerts.syncTitle'),
+          body: tl('validators.alerts.syncBody'),
+          href: '/validators',
+          source: 'validators',
+        });
+      }
     }
   } catch {
     /* ignore */

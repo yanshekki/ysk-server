@@ -29,6 +29,7 @@
 | 建立／安裝 | `ysk-server validators create --chain … --network … --execute --json` | write-host | Dry-run 寫規格；套用須 Docker Compose。ETH 可用 `--el`／`--cl`。未裝 Docker 會連去 `/docker` |
 | Mithril 還原 | `ysk-server validators mithril --id ID --confirm MITHRIL --execute --json` | write-host | 只限 Cardano；認證快照，無私鑰 |
 | 升級 | `ysk-server validators upgrade --id ID --execute --json` | write-host | 健康檢查失敗會回滾舊映像 |
+| 清理／轉網絡／快照 | `validators prune` · `switch-network` · `snapshot` | write-host | 轉網絡要先停機並確認清空 |
 | 啟動／停止／重啟 | `ysk-server validators start\|stop\|restart --id ID --execute --json` | write-host | |
 | 清空鏈資料 | `ysk-server validators clear --id ID --confirm --execute --json` | write-host | 確認為識別碼或 `CLEAR` |
 

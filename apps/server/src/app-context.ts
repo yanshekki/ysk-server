@@ -38,6 +38,7 @@ import {
   runProtectionProbes,
   backupAllProjects,
   runValidatorUpgradeScan,
+  runValidatorAutoClear,
   checkIpDnsbl,
   createTerminalTicketStore,
   createVncSessionTicketStore,
@@ -407,6 +408,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
       async () => {
         try {
           await runValidatorUpgradeScan({ dataDir, host });
+          await runValidatorAutoClear({ dataDir, host });
         } catch {
           /* next interval */
         }

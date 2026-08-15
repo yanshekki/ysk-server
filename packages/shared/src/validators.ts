@@ -89,6 +89,49 @@ export type ValidatorInstanceDto = {
     network: string;
     digest?: string;
   };
+  limits?: {
+    memory?: string;
+    cpus?: string;
+  };
+  lastStatus?: {
+    at: string;
+    status: ValidatorRuntimeStatus;
+    running: boolean;
+    syncProgress: number | null;
+    peers: number | null;
+    diskUsedBytes: number | null;
+    lastError: string | null;
+  };
+};
+
+export type ValidatorSettingsDto = {
+  autoClear: boolean;
+};
+
+export const DEFAULT_VALIDATOR_SETTINGS: ValidatorSettingsDto = { autoClear: false };
+
+export function isSafeValidatorLimitMemory(value: string): boolean {
+  return /^\d+[mMgGkK]$/.test(String(value ?? '').trim());
+}
+
+export function isSafeValidatorLimitCpus(value: string): boolean {
+  return /^\d+(\.\d+)?$/.test(String(value ?? '').trim());
+}
+
+export type ValidatorSummaryDto = {
+  id: string;
+  status: ValidatorRuntimeStatus;
+  running: boolean;
+  syncProgress: number | null;
+  peers: number | null;
+  diskUsedBytes: number | null;
+  lastError: string | null;
+  upgrade: {
+    clientId: string;
+    currentTag: string;
+    nextTag: string;
+    breaking: boolean;
+  } | null;
 };
 
 export type ValidatorDiskTone = 'ok' | 'warn' | 'danger';

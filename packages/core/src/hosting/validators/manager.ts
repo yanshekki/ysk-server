@@ -79,6 +79,10 @@ export async function createValidatorInstance(
     el?: string;
     cl?: string;
     mithril?: boolean;
+    dataPath?: string;
+    memory?: string;
+    cpus?: string;
+    rpcPort?: number;
   },
 ): Promise<ValidatorOpsResult> {
   if (!isValidatorChainId(input.chain)) {
@@ -117,6 +121,14 @@ export async function createValidatorInstance(
     el: input.el,
     cl: input.cl,
   });
+  const ports = allocateValidatorPorts(input.dataDir, chain);
+  if (input.rpcPort && Number.isInteger(input.rpcPort) && input.rpcPort > 1024 && input.rpcPort <= 65535) {
+    ports.rpc = input.rpcPort;
+  }
+  const limits =
+    input.memory || input.cpus
+      ? { memory: input.memory, cpus: input.cpus }
+      : undefined;
   let inst: ValidatorInstanceDto;
   try {
     inst = buildValidatorInstance({
@@ -126,7 +138,9 @@ export async function createValidatorInstance(
       profile,
       slug: input.slug,
       clients,
-      ports: allocateValidatorPorts(input.dataDir, chain),
+      ports,
+      dataPath: input.dataPath,
+      limits,
     });
   } catch {
     return blockedValidatorOp({ reason: 'validation', notes: [tl('validators.errors.invalidId')] });
@@ -145,7 +159,7 @@ export async function createValidatorInstance(
     }
   }
   const composePath = composeFilePath(dir);
-  writeComposeFile(composePath, plan.composeYaml, inst.id);
+  writeComposeFile(composePath, plan.composeYaml, inst.id, inst.limits);
   upsertValidatorInstance(input.dataDir, inst);
   const written = [join(dir, '..', 'instances.json'), composePath, inst.dataPath];
 
@@ -296,7 +310,12 @@ export function isClearConfirm(id: string, confirm: string | undefined): boolean
 }
 
 export async function clearValidatorInstance(
-  input: ValidatorMutateOpts & { id: string; confirm?: string; removeUnit?: boolean },
+  input: ValidatorMutateOpts & {
+    id: string;
+    confirm?: string;
+    removeUnit?: boolean;
+    restoreSnapshot?: boolean;
+  },
 ): Promise<ValidatorOpsResult> {
   return withInstance(input, async (inst, composePath) => {
     if (!isClearConfirm(inst.id, input.confirm)) {
@@ -323,6 +342,16 @@ export async function clearValidatorInstance(
       rmSync(inst.dataPath, { recursive: true, force: true });
     } catch {
       /* continue */
+    }
+    if (input.restoreSnapshot && inst.chain === 'ada') {
+      const { restoreAdaMithril } = await import('./mithril.js');
+      await restoreAdaMithril({
+        dataDir: input.dataDir,
+        host: input.host,
+        execute: true,
+        id: inst.id,
+        confirm: inst.id,
+      });
     }
     if (input.removeUnit) {
       deleteValidatorInstance(input.dataDir, inst.id);

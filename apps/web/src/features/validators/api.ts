@@ -6,12 +6,16 @@ import type {
   ValidatorDiskInstance,
   ValidatorDiskReport,
   ValidatorInstanceDto,
+  ValidatorSettingsDto,
+  ValidatorSummaryDto,
 } from 'ysk-server-shared';
 import { api } from '../../shared/services/api';
 
 export type ValidatorsListResponse = {
   ok: boolean;
   instances: ValidatorInstanceDto[];
+  summaries?: ValidatorSummaryDto[];
+  settings?: ValidatorSettingsDto;
   executeEnabled?: boolean;
   isRoot?: boolean;
 };
@@ -45,6 +49,8 @@ export const validatorsApi = {
     el?: string;
     cl?: string;
     mithril?: boolean;
+    memory?: string;
+    cpus?: string;
     execute?: boolean;
   }) =>
     api.requestRaw<ValidatorOpsResponse>('/api/v1/validators', {
@@ -72,6 +78,47 @@ export const validatorsApi = {
   upgrade: (id: string, execute = true) => postAction(id, 'update', { execute }),
   mithril: (id: string, confirm: string, execute = true) =>
     postAction(id, 'mithril', { confirm, execute }),
+  prune: (id: string, execute = true) => postAction(id, 'prune', { execute }),
+  snapshot: (id: string, confirm: string, execute = true) =>
+    postAction(id, 'snapshot', { confirm, execute }),
+  switchNetwork: (id: string, network: string, confirm: string, execute = true) =>
+    postAction(id, 'switch-network', { network, confirm, execute }),
+  clearFull: (
+    id: string,
+    confirm: string,
+    opts?: { removeUnit?: boolean; restoreSnapshot?: boolean; execute?: boolean },
+  ) =>
+    postAction(id, 'clear', {
+      confirm,
+      execute: opts?.execute !== false,
+      removeUnit: opts?.removeUnit,
+      restoreSnapshot: opts?.restoreSnapshot,
+    }),
+  compose: (id: string) =>
+    api.requestRaw<{ ok: boolean; path: string; content: string; notes: string[] }>(
+      `/api/v1/validators/${encodeURIComponent(id)}/compose`,
+    ),
+  saveCompose: (id: string, content: string, execute = true) =>
+    api.requestRaw<ValidatorOpsResponse>(`/api/v1/validators/${encodeURIComponent(id)}/compose`, {
+      method: 'PUT',
+      body: JSON.stringify({ content, execute }),
+    }),
+  stats: (id: string) =>
+    api.requestRaw<{ ok: boolean; items: Record<string, string>[]; notes: string[] }>(
+      `/api/v1/validators/${encodeURIComponent(id)}/stats`,
+    ),
+  checklist: (id: string) =>
+    api.requestRaw<{
+      ok: boolean;
+      items: string[];
+      links: Array<{ label: string; href: string }>;
+      snapshot?: { kind: string; notes: string[] };
+    }>(`/api/v1/validators/${encodeURIComponent(id)}/checklist`),
+  saveSettings: (autoClear: boolean) =>
+    api.requestRaw<{ ok: boolean; settings: ValidatorSettingsDto }>('/api/v1/validators/settings', {
+      method: 'PATCH',
+      body: JSON.stringify({ autoClear }),
+    }),
 };
 
 export type ValidatorStatusResponse = {

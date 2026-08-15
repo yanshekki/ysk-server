@@ -34,7 +34,8 @@
     "size": "大小",
     "driver": "驅動",
     "type": "類型",
-    "reclaimable": "可回收"
+    "reclaimable": "可回收",
+    "disk": "Disk"
   },
   "state": {
     "up": "運行中",
@@ -59,7 +60,8 @@
     "startEngine": "啟動引擎",
     "stopEngine": "停止引擎",
     "restartEngine": "重啟引擎",
-    "applyDaemon": "套用引擎設定"
+    "applyDaemon": "套用引擎設定",
+    "inspect": "Inspect"
   },
   "empty": {
     "containers": "未有容器",
@@ -73,7 +75,9 @@
   },
   "settings": {
     "logMaxSize": "容器日誌上限",
-    "liveRestore": "即時還原（引擎重啟時保留容器）"
+    "liveRestore": "即時還原（引擎重啟時保留容器）",
+    "mirrors": "Registry mirrors (one URL per line)",
+    "insecure": "Insecure registries (one host per line)"
   },
   "about": {
     "body": "Docker 是 YSK Server 的一級主機服務，地位同 Nginx 一樣。由面板用 Ubuntu docker.io + docker-compose-v2 安裝。驗證者節點以 yskval-* Compose 專案運行。",
@@ -102,7 +106,8 @@
     "composeMissing": "找不到這個專案的 Compose 檔",
     "logsFailed": "讀不到容器日誌",
     "mutateFailed": "Docker 指令失敗",
-    "engineFailed": "無法控制 docker.service"
+    "engineFailed": "無法控制 docker.service",
+    "uninstallBusy": "Stop YSK-managed containers (including validator stacks) before uninstalling Docker"
   },
   "notes": {
     "dryMutate": "只係試行。要改主機請加 --execute 同 YSK_EXECUTE=1。",

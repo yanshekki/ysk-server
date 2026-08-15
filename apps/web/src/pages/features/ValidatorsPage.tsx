@@ -28,6 +28,7 @@ import {
   type ValidatorInstanceDto,
   type ValidatorOpsResponse,
   type ValidatorStatusResponse,
+  type ValidatorSummaryDto,
 } from '../../features/validators';
 
 const TABS = ['nodes', 'disk', 'about'] as const;
@@ -57,6 +58,21 @@ export function ValidatorsPage() {
   const [el, setEl] = useState('reth');
   const [cl, setCl] = useState('lighthouse');
   const [mithril, setMithril] = useState(true);
+  const [memory, setMemory] = useState('');
+  const [cpus, setCpus] = useState('');
+  const [summaries, setSummaries] = useState<Record<string, ValidatorSummaryDto>>({});
+  const [autoClear, setAutoClear] = useState(false);
+  const [followLogs, setFollowLogs] = useState(false);
+  const [composeText, setComposeText] = useState('');
+  const [stats, setStats] = useState<Record<string, string>[]>([]);
+  const [checklist, setChecklist] = useState<{
+    items: string[];
+    links: Array<{ label: string; href: string }>;
+    snapshot?: { kind: string; notes: string[] };
+  } | null>(null);
+  const [switchNet, setSwitchNet] = useState('');
+  const [removeUnit, setRemoveUnit] = useState(false);
+  const [restoreAfter, setRestoreAfter] = useState(false);
   const [busy, setBusy] = useState(false);
   const [ops, setOps] = useState<OpsResultLike | null>(null);
   const [detail, setDetail] = useState<ValidatorInstanceDto | null>(null);
@@ -75,6 +91,10 @@ export function ValidatorsPage() {
       setInstances(list.instances ?? []);
       setDisk(diskRes.disk ?? null);
       setChains(chainRes.chains ?? []);
+      const map: Record<string, ValidatorSummaryDto> = {};
+      for (const s of list.summaries ?? []) map[s.id] = s;
+      setSummaries(map);
+      setAutoClear(list.settings?.autoClear === true);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -85,6 +105,14 @@ export function ValidatorsPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    if (!followLogs || !detail) return;
+    const tmr = window.setInterval(() => {
+      void validatorsApi.logs(detail.id).then((lg) => setLogs(lg.lines ?? []));
+    }, 4000);
+    return () => window.clearInterval(tmr);
+  }, [followLogs, detail]);
 
   const chainSpec = useMemo(() => chains.find((c) => c.id === chain), [chains, chain]);
   const netSpec = chainSpec?.networks.find((n) => n.id === network);
@@ -101,6 +129,8 @@ export function ValidatorsPage() {
     setEl('reth');
     setCl('lighthouse');
     setMithril(true);
+    setMemory('');
+    setCpus('');
     setOps(null);
   };
 
@@ -114,6 +144,8 @@ export function ValidatorsPage() {
         el: chain === 'eth' ? el : undefined,
         cl: chain === 'eth' ? cl : undefined,
         mithril: chain === 'ada' ? mithril : undefined,
+        memory: memory.trim() || undefined,
+        cpus: cpus.trim() || undefined,
         execute,
       });
       setOps(toOps(r));
@@ -146,13 +178,25 @@ export function ValidatorsPage() {
     setDetail(row);
     setClearText('');
     setLogs([]);
+    setComposeText('');
+    setStats([]);
+    setChecklist(null);
+    setSwitchNet(row.network);
+    setRemoveUnit(false);
+    setRestoreAfter(false);
     try {
-      const [st, lg] = await Promise.all([
+      const [st, lg, cmp, stt, ck] = await Promise.all([
         validatorsApi.status(row.id),
         validatorsApi.logs(row.id),
+        validatorsApi.compose(row.id),
+        validatorsApi.stats(row.id),
+        validatorsApi.checklist(row.id),
       ]);
       setStatus(st);
       setLogs(lg.lines ?? []);
+      setComposeText(cmp.content ?? '');
+      setStats(stt.items ?? []);
+      setChecklist(ck);
     } catch {
       setStatus(null);
     }
@@ -237,7 +281,36 @@ export function ValidatorsPage() {
               {
                 key: 'status',
                 header: t('validators.col.status'),
-                render: (row) => row.desiredState,
+                render: (row) => {
+                  const s = summaries[row.id];
+                  const label = s?.status ?? row.lastStatus?.status ?? row.desiredState;
+                  return (
+                    <span>
+                      <Badge
+                        tone={
+                          s?.status === 'error'
+                            ? 'danger'
+                            : s?.status === 'syncing'
+                              ? 'warn'
+                              : s?.running
+                                ? 'ok'
+                                : 'neutral'
+                        }
+                      >
+                        {label}
+                      </Badge>
+                      {s?.syncProgress != null ? ` ${Math.round(s.syncProgress * 100)}%` : ''}
+                      {s?.upgrade ? (
+                        <Badge tone="warn">{t('validators.actions.upgrade')}</Badge>
+                      ) : null}
+                    </span>
+                  );
+                },
+              },
+              {
+                key: 'disk',
+                header: t('validators.col.disk'),
+                render: (row) => formatBytes(summaries[row.id]?.diskUsedBytes ?? row.lastStatus?.diskUsedBytes),
               },
             ]}
             rows={loading ? [] : instances}
@@ -264,6 +337,18 @@ export function ValidatorsPage() {
             ) : disk?.tone === 'warn' ? (
               <Alert variant="warn">{t('validators.disk.warn')}</Alert>
             ) : null}
+            <Field htmlFor="val-autoclear" label={t('validators.disk.autoClear')}>
+              <input
+                id="val-autoclear"
+                type="checkbox"
+                checked={autoClear}
+                onChange={(e) => {
+                  const on = e.target.checked;
+                  setAutoClear(on);
+                  void validatorsApi.saveSettings(on);
+                }}
+              />
+            </Field>
             <dl className="desc-list">
               <div>
                 <dt>{t('validators.disk.root')}</dt>
@@ -429,6 +514,12 @@ export function ValidatorsPage() {
                 />
               </Field>
             ) : null}
+            <Field htmlFor="val-mem" label={t('validators.wizard.memory')}>
+              <input id="val-mem" value={memory} onChange={(e) => setMemory(e.target.value)} placeholder="4g" />
+            </Field>
+            <Field htmlFor="val-cpus" label={t('validators.wizard.cpus')}>
+              <input id="val-cpus" value={cpus} onChange={(e) => setCpus(e.target.value)} placeholder="2.0" />
+            </Field>
           </>
         ) : null}
         {step === 3 ? (
@@ -466,6 +557,9 @@ export function ValidatorsPage() {
               >
                 {t('validators.actions.upgrade')}
               </Button>
+              <Button onClick={() => void runAction(() => validatorsApi.prune(detail.id))}>
+                {t('validators.actions.prune')}
+              </Button>
               {detail.chain === 'ada' ? (
                 <Button
                   onClick={() =>
@@ -476,12 +570,22 @@ export function ValidatorsPage() {
                 </Button>
               ) : null}
               <Button
+                onClick={() =>
+                  void runAction(() => validatorsApi.snapshot(detail.id, detail.id))
+                }
+              >
+                {t('validators.snapshot.action')}
+              </Button>
+              <Button
                 variant="danger"
                 disabled={clearText !== detail.id && clearText.toUpperCase() !== 'CLEAR'}
                 onClick={() =>
-                  void runAction(() => validatorsApi.clear(detail.id, clearText)).then(() =>
-                    setDetail(null),
-                  )
+                  void runAction(() =>
+                    validatorsApi.clearFull(detail.id, clearText, {
+                      removeUnit,
+                      restoreSnapshot: restoreAfter,
+                    }),
+                  ).then(() => setDetail(null))
                 }
               >
                 {t('validators.actions.clear')}
@@ -526,6 +630,78 @@ export function ValidatorsPage() {
                 onChange={(e) => setClearText(e.target.value)}
               />
             </Field>
+            <label className="u-flex u-gap-2">
+              <input type="checkbox" checked={removeUnit} onChange={(e) => setRemoveUnit(e.target.checked)} />
+              {t('validators.actions.removeUnit')}
+            </label>
+            <label className="u-flex u-gap-2">
+              <input type="checkbox" checked={restoreAfter} onChange={(e) => setRestoreAfter(e.target.checked)} />
+              {t('validators.actions.restoreAfter')}
+            </label>
+            <Field htmlFor="val-switch" label={t('validators.actions.switchNetwork')}>
+              <input id="val-switch" value={switchNet} onChange={(e) => setSwitchNet(e.target.value)} />
+            </Field>
+            <Button
+              size="sm"
+              onClick={() =>
+                void runAction(() =>
+                  validatorsApi.switchNetwork(detail.id, switchNet, clearText || detail.id),
+                )
+              }
+            >
+              {t('validators.actions.switchNetwork')}
+            </Button>
+            {stats.length ? (
+              <pre className="code-block">
+                {stats
+                  .map((s) => `${s.Name ?? s.ID ?? ''} CPU ${s.CPUPerc ?? '—'} MEM ${s.MemUsage ?? '—'}`)
+                  .join('\n')}
+              </pre>
+            ) : null}
+            {checklist ? (
+              <>
+                <p className="u-text-sm">{t('validators.stake.title')}</p>
+                <ul>
+                  {checklist.items.map((it) => (
+                    <li key={it}>{it}</li>
+                  ))}
+                </ul>
+                {checklist.links.map((l) => (
+                  <p key={l.href}>
+                    <a href={l.href} target="_blank" rel="noreferrer">
+                      {l.label}
+                    </a>
+                  </p>
+                ))}
+                {checklist.snapshot?.notes?.length ? (
+                  <Alert variant="info">{checklist.snapshot.notes.join(' ')}</Alert>
+                ) : null}
+              </>
+            ) : null}
+            <Field htmlFor="val-compose" label={t('validators.compose.label')}>
+              <textarea
+                id="val-compose"
+                rows={8}
+                value={composeText}
+                onChange={(e) => setComposeText(e.target.value)}
+              />
+            </Field>
+            <Button
+              size="sm"
+              onClick={() =>
+                void runAction(() => validatorsApi.saveCompose(detail.id, composeText))
+              }
+            >
+              {t('validators.compose.save')}
+            </Button>
+            <label className="u-flex u-gap-2">
+              <input
+                type="checkbox"
+                checked={followLogs}
+                onChange={(e) => setFollowLogs(e.target.checked)}
+              />
+              {t('validators.logs.follow')}
+            </label>
             <pre className="code-block">{logs.join('\n') || t('validators.logs.empty')}</pre>
           </>
         ) : null}

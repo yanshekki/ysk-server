@@ -70,6 +70,9 @@ export function DockerPage() {
   const [pruneConfirm, setPruneConfirm] = useState('');
   const [logMaxSize, setLogMaxSize] = useState('10m');
   const [liveRestore, setLiveRestore] = useState(false);
+  const [mirrors, setMirrors] = useState('');
+  const [insecure, setInsecure] = useState('');
+  const [inspectText, setInspectText] = useState('');
 
   const load = useCallback(async () => {
     setError(null);
@@ -95,6 +98,8 @@ export function DockerPage() {
       if (dm.daemon) {
         setLogMaxSize(dm.daemon.logMaxSize);
         setLiveRestore(dm.daemon.liveRestore);
+        setMirrors((dm.daemon.registryMirrors ?? []).join('\n'));
+        setInsecure((dm.daemon.insecureRegistries ?? []).join('\n'));
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -193,6 +198,18 @@ export function DockerPage() {
                 </dd>
               </div>
               <div>
+                <dt>{t('docker.col.disk')}</dt>
+                <dd>
+                  {status?.disk.usedBytes != null
+                    ? `${(status.disk.usedBytes / 1024 ** 3).toFixed(1)} GiB / ${
+                        status.disk.availBytes != null
+                          ? `${(status.disk.availBytes / 1024 ** 3).toFixed(1)} GiB free`
+                          : '—'
+                      }`
+                    : '—'}
+                </dd>
+              </div>
+              <div>
                 <dt>{t('docker.col.validators')}</dt>
                 <dd>
                   <Link to="/validators">{status?.validatorProjects ?? 0}</Link>
@@ -255,6 +272,17 @@ export function DockerPage() {
                 </Button>
                 <Button size="sm" onClick={() => void openLogs(row.name || row.id)}>
                   {t('docker.actions.logs')}
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() =>
+                    void dockerApi.inspect(row.name || row.id).then((r) => {
+                      setInspectText(JSON.stringify(r.inspect, null, 2));
+                      setLogTitle(`${row.name || row.id} inspect`);
+                    })
+                  }
+                >
+                  {t('docker.actions.inspect')}
                 </Button>
                 <Button
                   size="sm"
@@ -452,9 +480,34 @@ export function DockerPage() {
               />
               {t('docker.settings.liveRestore')}
             </label>
+            <Field htmlFor="dock-mirrors" label={t('docker.settings.mirrors')}>
+              <textarea
+                id="dock-mirrors"
+                rows={3}
+                value={mirrors}
+                onChange={(e) => setMirrors(e.target.value)}
+              />
+            </Field>
+            <Field htmlFor="dock-insecure" label={t('docker.settings.insecure')}>
+              <textarea
+                id="dock-insecure"
+                rows={2}
+                value={insecure}
+                onChange={(e) => setInsecure(e.target.value)}
+              />
+            </Field>
             <Button
               className="u-mt-3"
-              onClick={() => void run(() => dockerApi.patchDaemon({ logMaxSize, liveRestore }))}
+              onClick={() =>
+                void run(() =>
+                  dockerApi.patchDaemon({
+                    logMaxSize,
+                    liveRestore,
+                    registryMirrors: mirrors.split(/\s+/).map((s) => s.trim()).filter(Boolean),
+                    insecureRegistries: insecure.split(/\s+/).map((s) => s.trim()).filter(Boolean),
+                  }),
+                )
+              }
             >
               {t('docker.actions.applyDaemon')}
             </Button>
@@ -501,8 +554,18 @@ export function DockerPage() {
         </form>
       </Modal>
 
-      <Modal open={Boolean(logTitle)} onClose={() => setLogTitle('')} title={logTitle} size="lg">
-        <pre className="code-block">{logs.join('\n') || t('docker.logs.empty')}</pre>
+      <Modal
+        open={Boolean(logTitle)}
+        onClose={() => {
+          setLogTitle('');
+          setInspectText('');
+        }}
+        title={logTitle}
+        size="lg"
+      >
+        <pre className="code-block">
+          {inspectText || logs.join('\n') || t('docker.logs.empty')}
+        </pre>
       </Modal>
     </FeaturePageLayout>
   );

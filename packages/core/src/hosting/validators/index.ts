@@ -14,4 +14,6 @@ export * from './upgrade.js';
 export * from './health.js';
 export * from './mithril.js';
 export * from './ports.js';
+export * from './settings.js';
+export * from './extras.js';
 export * from './adapters/eth-clients.js';
