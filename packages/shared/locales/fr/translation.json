@@ -795,7 +795,7 @@
     },
     "help": {
       "blurb": "CLI du plan de contrôle — préférez --json pour les agents IA.\nDocs : docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json",
-      "main": "{{product}} ({{cli}}) v{{version}}\n\nCLI du plan de contrôle — préférez --json pour les agents IA.\nDocs : docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json\n\nUtilisation :\n  {{cli}} <command> [options]\n\nCommandes :\n  setup                 Init dataDir + admin\n  update                Vérif./appl. auto-mise à jour\n  serve                 API HTTP + interface Web\n  system unit-install   Installer ysk-server.service [--enable]\n  tools                 Lister les outils ; tools run --tool <name> [--dry-run]\n  ask                   NL → plan IA [--execute]\n  projects              list|get|create|deploy|stop|health|backup|template\n  backup                all|list|status|restore|delete|schedule|control-plane|settings|restic\n  templates             Modèles d'applications\n  hosting               aides nginx|dns|db|firewall\n  dns                   zone|zones (alias IA → hosting dns-*)\n  logs                  sources|query|journal|overview\n  host                  overview|metrics (lecture seule)\n  nginx                 status|list|test|sync\n  ssl                   list|get (certificats)\n  db-cluster            list|get|create|plan (HA plan d'abord)\n  ssh-key               list|create|import|public|export|install|delete (coffre d'identités SSH)\n  ssh-2fa               list|enroll|confirm|install|pam|retire (TOTP connexion SSH ≠ 2FA panneau)\n  services              Matrice des services hôte (sondage systemctl)\n  defense | protection  status|ban|unban|whitelist\n  security              status|sessions|api-keys (flags 2FA · révocation session · clés API)\n  cdn                   nodes|sites|render|apply|purge|probe|dashboard|health-loop|from-project\n  agents                runtimes|fleet list|commands|register (panneau + edge)\n  agent run             Sondeur de flotte sortant (expérimental)\n  store                 status|export|import|migrate (backends document json|sqlite|postgres)\n  files                 list|read|write|mkdir|rm|stat|rename|copy|move|chmod|trash|shares (bac à sable)\n  cron                  list|create|delete|enable|disable|run|install|status\n  email                 domains|mailboxes|deliverability|bootstrap|dns (parité panneau)\n  health                Instantané mode local ou --url http://host:port/health\n  readiness | doctor    Préparation production (honnête)\n  migrate               inventory|host|post|status|resume (migration hôte complète)\n  version | help\n\nGlobal :\n  --json                stdout JSON (IA)\n  --data-dir PATH\n  --config PATH\n  --help | --version\n\nSortie : 0 ok · 1 erreur · 2 validation · 3 bloqué · 4 introuvable · 5 erreur hôte\n\nSécurité :\n  Les ops dangereuses sont en dry-run par défaut (plan seulement).\n  Passez --execute (alias --apply) + env YSK_EXECUTE=1 pour modifier l'hôte.\n\nExemples :\n  {{cli}} readiness --json\n  {{cli}} host --json\n  {{cli}} nginx status --json\n  {{cli}} ssl list --json\n  {{cli}} projects get --id UUID --json\n  {{cli}} defense ban --ip 1.2.3.4 --json          # plan dry-run\n  {{cli}} projects list --json\n  {{cli}} logs query --source journal: --lines 100 --json\n  {{cli}} tools --json"
+      "main": "{{product}} ({{cli}}) v{{version}}\n\nCLI du plan de contrôle — préférez --json pour les agents IA.\nDocs : docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json\n\nUtilisation :\n  {{cli}} <command> [options]\n\nCommandes :\n  setup                 Init dataDir + admin\n  update                Vérif./appl. auto-mise à jour\n  serve                 API HTTP + interface Web\n  system unit-install   Installer ysk-server.service [--enable]\n  tools                 Lister les outils ; tools run --tool <name> [--dry-run]\n  ask                   NL → plan IA [--execute]\n  projects              list|get|create|deploy|stop|health|backup|template\n  backup                all|list|status|restore|delete|schedule|control-plane|settings|restic\n  templates             Modèles d'applications\n  hosting               aides nginx|dns|db|firewall\n  dns                   zone|zones (alias IA → hosting dns-*)\n  logs                  sources|query|journal|overview\n  host                  overview|metrics (lecture seule)\n  nginx                 status|list|test|sync\n  ssl                   list|get (certificats)\n  db-cluster            list|get|create|plan (HA plan d'abord)\n  ssh-key               list|create|import|public|export|install|delete (coffre d'identités SSH)\n  ssh-2fa               list|enroll|confirm|install|pam|retire (TOTP connexion SSH ≠ 2FA panneau)\n  services              Matrice des services hôte (sondage systemctl)\n  defense | protection  status|ban|unban|whitelist\n  security              status|sessions|api-keys (flags 2FA · révocation session · clés API)\n  cdn                   nodes|sites|render|apply|purge|probe|dashboard|health-loop|from-project\n  agents                runtimes|fleet list|commands|register (panneau + edge)\n  agent run             Sondeur de flotte sortant (expérimental)\n  store                 status|export|import|migrate (backends document json|sqlite|postgres)\n  files                 list|read|write|mkdir|rm|stat|rename|copy|move|chmod|trash|shares (bac à sable)\n  cron                  list|create|delete|enable|disable|run|install|status\n  email                 domains|mailboxes|deliverability|bootstrap|dns (parité panneau)\n  health                Instantané mode local ou --url http://host:port/health\n  readiness | doctor    Préparation production (honnête)\n  migrate               inventory|host|post|status|resume (migration hôte complète)\n  validators            list|chains|disk|get (Beta)\n  docker                status|ps|images|compose|prune (engine)\n  version | help\n\nGlobal :\n  --json                stdout JSON (IA)\n  --data-dir PATH\n  --config PATH\n  --help | --version\n\nSortie : 0 ok · 1 erreur · 2 validation · 3 bloqué · 4 introuvable · 5 erreur hôte\n\nSécurité :\n  Les ops dangereuses sont en dry-run par défaut (plan seulement).\n  Passez --execute (alias --apply) + env YSK_EXECUTE=1 pour modifier l'hôte.\n\nExemples :\n  {{cli}} readiness --json\n  {{cli}} host --json\n  {{cli}} nginx status --json\n  {{cli}} ssl list --json\n  {{cli}} projects get --id UUID --json\n  {{cli}} defense ban --ip 1.2.3.4 --json          # plan dry-run\n  {{cli}} projects list --json\n  {{cli}} logs query --source journal: --lines 100 --json\n  {{cli}} tools --json"
     },
     "usage": {
       "tools": {
@@ -2907,6 +2907,150 @@
     "createMailZone": "Create mail zone",
     "createMailZoneNow": "Created mail zone {{domain}}"
   },
+  "docker": {
+    "title": "Docker",
+    "subtitle": "Installez et contrôlez le moteur Docker, les conteneurs, images, projets Compose et le disque sur cet hôte.",
+    "refresh": "Actualiser",
+    "notInstalled": "Docker Engine n’est pas installé. Installez docker.io et docker-compose-v2 depuis cette page.",
+    "protected": "Protégé",
+    "pruneConfirm": "Saisissez PRUNE pour confirmer le nettoyage de volume ou du système",
+    "settingsHint": "Sous-ensemble sûr de daemon.json uniquement. Appliquer écrit le fichier et redémarre docker.service.",
+    "cli": {
+      "usage": "Utilisation : ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|exec|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--preset version|help|hostname] [--bin BIN] [--project P] [--execute] [--json]"
+    },
+    "tab": {
+      "overview": "Aperçu",
+      "containers": "Conteneurs",
+      "images": "Images Docker",
+      "compose": "Compose",
+      "volumes": "Volumes",
+      "networks": "Réseaux",
+      "prune": "Nettoyer",
+      "settings": "Paramètres",
+      "about": "À propos"
+    },
+    "col": {
+      "engine": "Moteur",
+      "containers": "Conteneurs",
+      "version": "Version du moteur",
+      "dataRoot": "Répertoire de données",
+      "disk": "Disque",
+      "validators": "Piles validateur",
+      "name": "Nom",
+      "image": "Image du conteneur",
+      "status": "État",
+      "ports": "Ports publiés",
+      "managed": "Géré par le panneau",
+      "size": "Taille",
+      "driver": "Pilote",
+      "type": "Genre",
+      "reclaimable": "Récupérable"
+    },
+    "state": {
+      "up": "Actif",
+      "down": "Arrêté"
+    },
+    "actions": {
+      "start": "Démarrer",
+      "stop": "Arrêter",
+      "restart": "Redémarrer",
+      "remove": "Supprimer",
+      "logs": "Journaux",
+      "inspect": "Inspecter",
+      "exec": "Exec (version du client)",
+      "run": "Exécuter une image",
+      "pull": "Télécharger",
+      "up": "Démarrer",
+      "down": "Arrêter",
+      "createVolume": "Créer un volume",
+      "createNetwork": "Créer un réseau",
+      "pruneContainers": "Nettoyer les conteneurs",
+      "pruneImages": "Nettoyer les images",
+      "pruneVolumes": "Nettoyer les volumes",
+      "pruneSystem": "Nettoyage système",
+      "startEngine": "Démarrer le moteur",
+      "stopEngine": "Arrêter le moteur",
+      "restartEngine": "Redémarrer le moteur",
+      "applyDaemon": "Appliquer les paramètres du moteur"
+    },
+    "empty": {
+      "containers": "Aucun conteneur",
+      "images": "Aucune image",
+      "compose": "Aucun projet Compose",
+      "volumes": "Aucun volume",
+      "networks": "Aucun réseau"
+    },
+    "logs": {
+      "empty": "Pas encore de journaux"
+    },
+    "settings": {
+      "logMaxSize": "Taille max. des journaux de conteneur",
+      "liveRestore": "Restauration à chaud (conserver les conteneurs si le démon redémarre)",
+      "mirrors": "Miroirs Registry (une URL par ligne)",
+      "insecure": "Registries non chiffrés (un hôte par ligne)"
+    },
+    "about": {
+      "body": "Docker est un service hôte de premier plan sur YSK Server, comme Nginx. Installation via le panneau (Ubuntu docker.io + docker-compose-v2). Les nœuds validateurs s’exécutent en projets Compose yskval-*.",
+      "honesty": "Les changements d’hôte nécessitent root et YSK_EXECUTE=1. Le dry-run est la valeur par défaut. Cette page n’est pas Kubernetes.",
+      "validators": "Ouvrir les nœuds validateurs"
+    },
+    "alerts": {
+      "daemonTitle": "Le démon Docker est arrêté",
+      "daemonBody": "Docker est installé mais docker.service n’est pas actif. Les piles validateur ne peuvent pas démarrer."
+    },
+    "errors": {
+      "notInstalled": "Docker n’est pas installé",
+      "daemonDown": "Le démon Docker n’est pas actif",
+      "needCompose": "docker compose (greffon v2) est requis",
+      "badImage": "Référence d’image invalide",
+      "badName": "Nom invalide",
+      "badPort": "Publication de port invalide",
+      "badEnv": "Variable d’environnement invalide",
+      "badVolume": "Montage de volume invalide",
+      "badNetwork": "Réseau invalide",
+      "protectedNetwork": "Impossible de supprimer un réseau Docker intégré",
+      "badRestart": "Politique de redémarrage invalide",
+      "badPrune": "Portée de nettoyage invalide",
+      "needPruneConfirm": "Le nettoyage de volume ou du système exige confirm=PRUNE",
+      "badDaemon": "Paramètre du moteur invalide",
+      "composeMissing": "Fichier Compose de ce projet introuvable",
+      "logsFailed": "Impossible de lire les journaux du conteneur",
+      "mutateFailed": "La commande Docker a échoué",
+      "engineFailed": "Impossible de contrôler docker.service",
+      "badExec": "Exec est limité aux binaires et préréglages autorisés (pas de shell, pas de TTY)",
+      "uninstallBusy": "Arrêtez les conteneurs gérés par le panneau (y compris les piles validateur) avant de désinstaller Docker"
+    },
+    "notes": {
+      "dryMutate": "Dry-run uniquement. Passez --execute et YSK_EXECUTE=1 pour modifier l’hôte.",
+      "dryPrune": "Aperçu du nettoyage (non appliqué).",
+      "dryEngine": "Le contrôle du moteur est un dry-run.",
+      "dryDaemon": "Écrirait /etc/docker/daemon.json et redémarrerait docker.service.",
+      "daemonWrote": "daemon.json écrit",
+      "start": "Conteneur démarré",
+      "stop": "Conteneur arrêté",
+      "restart": "Conteneur redémarré",
+      "remove": "Conteneur supprimé",
+      "ran": "Conteneur démarré depuis une image",
+      "pulled": "Image téléchargée",
+      "exec": "Exec autorisé exécuté",
+      "imageRemoved": "Image supprimée",
+      "volumeCreated": "Volume créé",
+      "volumeRemoved": "Volume supprimé",
+      "networkCreated": "Réseau créé",
+      "networkRemoved": "Réseau supprimé",
+      "pruned": "Nettoyage terminé",
+      "compose": {
+        "up": "Projet Compose démarré",
+        "down": "Projet Compose arrêté",
+        "restart": "Projet Compose redémarré"
+      },
+      "engine": {
+        "start": "docker.service démarré",
+        "stop": "docker.service arrêté",
+        "restart": "docker.service redémarré"
+      }
+    }
+  },
   "email": {
     "title": "E-mail",
     "subtitle": "Domaines, DNS, boîtes mail et relais",
@@ -4970,7 +5114,9 @@
       "runtimes": "Durées d'exécution",
       "security": "Sécurité",
       "system": "Système",
-      "ai": "IA"
+      "ai": "IA",
+      "validators": "Validateurs",
+      "containers": "Conteneurs"
     },
     "java": "Java",
     "kotlin": "Kotlin",
@@ -4993,7 +5139,9 @@
     "support": "Soutien",
     "noAccessTitle": "Accès refusé",
     "noAccessDesc": "Votre rôle n’inclut pas cette page. Demandez à un administrateur si vous en avez besoin.",
-    "backToDashboard": "Retour au tableau de bord"
+    "backToDashboard": "Retour au tableau de bord",
+    "validators": "Validateurs (Beta)",
+    "docker": "Docker"
   },
   "network": {
     "title": "Interfaces réseau",
@@ -9669,7 +9817,13 @@
       "auditExport": "Export d'audit",
       "securityApiKeysAdmin": "Administration des clés API",
       "networkBrowse": "Navigation Web via l'hôte",
-      "networkVnc": "Bureau à distance VNC"
+      "networkVnc": "Bureau à distance VNC",
+      "validatorsRead": "Validateurs (lecture)",
+      "validatorsManage": "Validateurs gérer",
+      "validatorsWipe": "Validateurs effacer les données",
+      "dockerRead": "Docker (lecture)",
+      "dockerManage": "Docker gérer",
+      "dockerWipe": "Docker supprimer / nettoyer"
     },
     "aboutRoles": "Rôles (valeurs d'usine)",
     "aboutRolesBody": "Les rôles définissent les capacités par défaut ; les utilisateurs peuvent en remplacer certaines individuellement.",
@@ -11205,7 +11359,9 @@
       "generic": "Les services associés peuvent s'arrêter",
       "purgeData": "Les chemins de données seront supprimés",
       "protectedSkipped": "Les composants protégés sont ignorés",
-      "runtimeStack": "Toutes les versions gérées par panneau de ce runtime seront supprimées"
+      "runtimeStack": "Toutes les versions gérées par panneau de ce runtime seront supprimées",
+      "containers": "Les conteneurs en cours s’arrêteront",
+      "validators": "Les piles validateur qui utilisent Docker Compose s’arrêteront"
     },
     "requestCancel": "Demande d'annulation",
     "cancelling": "Annulation…",
@@ -12375,6 +12531,214 @@
     "bandwidthHint": "0 means unlimited.",
     "impersonateHint": "Opens a session as this user. Use the account menu to leave impersonation.",
     "operatorHighRiskHint": "Le rôle opérateur d’usine inclut des écritures à haut risque. Le restreindre n’affecte que les nouveaux comptes ; changer le défaut affecte les opérateurs existants."
+  },
+  "validators": {
+    "title": "Validateurs (Beta)",
+    "subtitle": "Installez et gérez des nœuds L1 sur cet hôte. Non dépositaire — vous gardez les clés.",
+    "beta": "Beta",
+    "tab": {
+      "nodes": "Nœuds",
+      "disk": "Disque",
+      "about": "À propos"
+    },
+    "empty": {
+      "title": "Aucun nœud validateur pour l’instant",
+      "desc": "Créez un nœud de testnet en quelques clics. CLI : ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+    },
+    "refresh": "Actualiser",
+    "disk": {
+      "title": "Disque des validateurs",
+      "root": "Répertoire de données",
+      "free": "Libre",
+      "used": "Utilisé",
+      "none": "Pas encore de données d’instance",
+      "warn": "Utilisation du disque élevée (70 %+)",
+      "danger": "Utilisation du disque critique (85 %+)",
+      "autoClear": "Vider automatiquement la plus grande instance arrêtée lorsque le disque est critique (désactivé par défaut)"
+    },
+    "chain": {
+      "eth": "Ethereum",
+      "avax": "Avalanche",
+      "near": "NEAR",
+      "ada": "Cardano",
+      "btc": "Bitcoin",
+      "cosmos": "Cosmos Hub",
+      "sui": "Sui",
+      "aptos": "Aptos",
+      "dot": "Polkadot",
+      "sol": "Solana"
+    },
+    "network": {
+      "hoodi": "Hoodi",
+      "sepolia": "Sepolia",
+      "mainnet": "Réseau principal",
+      "fuji": "Fuji",
+      "testnet": "Réseau de test",
+      "preview": "Preview",
+      "preprod": "Preprod",
+      "westend": "Westend"
+    },
+    "networkKind": {
+      "testnet": "Réseau de test",
+      "mainnet": "Réseau principal"
+    },
+    "profile": {
+      "minimal": "Minimaliste",
+      "pruned": "Élagué",
+      "validator-ready": "Prêt validateur",
+      "rpc": "RPC"
+    },
+    "col": {
+      "id": "ID",
+      "chain": "Chaîne",
+      "network": "Réseau",
+      "profile": "Profil",
+      "status": "État",
+      "disk": "Disque"
+    },
+    "cli": {
+      "usage": "Utilisation : ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
+    },
+    "clients": {
+      "el": "Client d’exécution",
+      "cl": "Client de consensus"
+    },
+    "mithril": {
+      "label": "Restaurer d’abord depuis un instantané Mithril (recommandé en testnet)",
+      "action": "Restaurer avec Mithril"
+    },
+    "errors": {
+      "notFound": "Instance de validateur introuvable",
+      "invalidId": "Identifiant d’instance invalide",
+      "diskLow": "Pas assez d’espace disque libre pour cette chaîne, ce réseau et ce profil",
+      "diskUnknownMainnet": "Impossible de mesurer l’espace libre ; création en réseau principal refusée",
+      "needDocker": "Docker Compose est requis et introuvable",
+      "composeFailed": "docker compose a échoué",
+      "needConfirm": "Vider exige confirm=identifiant d’instance ou CLEAR",
+      "mithrilAdaOnly": "La restauration Mithril n’est disponible que pour Cardano",
+      "needMithrilConfirm": "Mithril exige confirm=identifiant d’instance ou MITHRIL",
+      "mithrilBlocked": "Le docker run Mithril a été bloqué par la liste d’autorisation",
+      "mithrilKey": "Impossible de charger la clé de vérification genesis Mithril",
+      "mithrilFailed": "Échec du téléchargement de l’instantané Mithril",
+      "pruneFailed": "Le nettoyage a échoué",
+      "switchNeedStop": "Arrêtez le nœud avant de changer de réseau",
+      "switchNeedClear": "Changer de réseau efface les données de chaîne. Confirmez avec l’identifiant d’instance ou CLEAR",
+      "composeMissing": "Fichier Compose introuvable",
+      "composeNotManaged": "Refus d’écrire un fichier Compose non géré par YSK",
+      "badDataPath": "Le chemin de données doit être un répertoire absolu hors des chemins système",
+      "portInUse": "Ce port RPC est déjà utilisé par une autre instance de validateur",
+      "snapshotUnsupported": "Aucune source d’instantané autorisée pour cette chaîne",
+      "snapshotLookup": "Impossible de résoudre le pointeur d’instantané officiel",
+      "needSnapshotConfirm": "La restauration d’instantané exige confirm=identifiant d’instance ou SNAPSHOT",
+      "snapshotBlocked": "Le docker run d’instantané a été bloqué par la liste d’autorisation",
+      "snapshotFailed": "Échec du téléchargement ou de l’extraction de l’instantané"
+    },
+    "notes": {
+      "beta": "Cette fonction est Beta. Les changements d’hôte nécessitent root et YSK_EXECUTE=1.",
+      "noKeys": "YSK Server ne génère ni n’enregistre jamais de clés de staking.",
+      "dockerSoon": "Installation, démarrage et arrêt arrivent à l’étape suivante. Cette page liste seulement les instances et le disque.",
+      "dryCreate": "Spécification d’instance et compose écrits (dry-run). Passez --execute et YSK_EXECUTE=1 pour démarrer les conteneurs.",
+      "dryStart": "Le démarrage est un dry-run. Passez --execute et YSK_EXECUTE=1.",
+      "dryStop": "L’arrêt est un dry-run. Passez --execute et YSK_EXECUTE=1.",
+      "dryClear": "Le vidage est un dry-run. Passez --execute et YSK_EXECUTE=1.",
+      "created": "Nœud créé et compose démarré",
+      "started": "Nœud démarré",
+      "stopped": "Nœud arrêté",
+      "cleared": "Données de chaîne vidées",
+      "dryMithril": "La restauration Mithril est un dry-run. Passez --execute et YSK_EXECUTE=1.",
+      "mithril": "Instantané Mithril restauré ; nœud redémarré",
+      "dryPrune": "Le nettoyage est un dry-run. Passez --execute et YSK_EXECUTE=1.",
+      "pruned": "Images de projet inutilisées nettoyées",
+      "pruneProfile": "L’élagage natif du client est le profil pruned／minimal. Recréez pour le changer.",
+      "sameNetwork": "Déjà sur ce réseau",
+      "drySwitch": "Le changement de réseau est un dry-run.",
+      "switched": "Réseau changé et données de chaîne vidées",
+      "dryCompose": "Écrirait compose.yml",
+      "composeWrote": "compose.yml écrit",
+      "statsEmpty": "Aucun conteneur en cours d’exécution à mesurer",
+      "autoClearNone": "Aucune instance arrêtée à vider automatiquement",
+      "drySnapshot": "La restauration d’instantané est un dry-run. Passez --execute et YSK_EXECUTE=1.",
+      "snapshotEthEl": "Archive EL ethPandaOps restaurée et CL réinitialisé pour le checkpoint sync",
+      "snapshotEthCl": "Données CL réinitialisées pour le checkpoint sync officiel",
+      "snapshotNear": "Données NEAR effacées ; compose réinitialisera avec le genesis officiel et epoch sync",
+      "nativePrune": "Commande d’élagage native du client exécutée"
+    },
+    "create": "Créer un nœud",
+    "wizard": {
+      "title": "Créer un nœud",
+      "back": "Retour",
+      "next": "Suivant",
+      "install": "Installer",
+      "mainnetWarn": "Le réseau principal demande beaucoup d’espace libre (ETH souvent 800 Gio+). Le testnet est recommandé.",
+      "mainnetAck": "Je comprends le risque disque et slashing. Continuer en réseau principal.",
+      "heavyWarn": "Cette chaîne est lourde (gros disque et IOPS élevés). Solana en réseau principal demande généralement 2 Tio+.",
+      "memory": "Limite mémoire (ex. 4g)",
+      "cpus": "Limite CPU (ex. 2.0)",
+      "dataPath": "Chemin de données (facultatif)",
+      "rpcPort": "Port RPC (facultatif)"
+    },
+    "actions": {
+      "detail": "Détails",
+      "start": "Démarrer",
+      "stop": "Arrêter",
+      "restart": "Redémarrer",
+      "clear": "Vider",
+      "upgrade": "Mettre à jour",
+      "clearConfirm": "Saisissez l’identifiant d’instance ou CLEAR",
+      "prune": "Nettoyer les images",
+      "switchNetwork": "Changer de réseau",
+      "removeUnit": "Supprimer aussi compose / l’enregistrement d’instance",
+      "restoreAfter": "Restaurer l’instantané après vidage"
+    },
+    "policy": {
+      "label": "Politique de mise à jour",
+      "manual": "Manuel",
+      "notify": "Notifier",
+      "auto-safe": "Auto (sûr)",
+      "auto-all": "Auto (tout)"
+    },
+    "logs": {
+      "empty": "Pas encore de journaux",
+      "follow": "Suivre les journaux"
+    },
+    "compose": {
+      "label": "Fichier Compose",
+      "save": "Enregistrer compose"
+    },
+    "snapshot": {
+      "action": "Restaurer l’instantané",
+      "mithril": "Cardano utilise Mithril pour restaurer un instantané certifié.",
+      "eth": "Ethereum en réseau principal démarre via le checkpoint sync officiel du client de consensus. L’EL continue en snap sync.",
+      "ethEl": "Hoodi／Sepolia peuvent restaurer une archive EL ethPandaOps, puis faire un checkpoint-sync du CL.",
+      "avax": "Avalanche utilise state-sync dans le profil compose.",
+      "near": "Les instantanés tar NEAR gratuits officiels ont été retirés. Restaurer efface les données et utilise le genesis officiel plus epoch sync.",
+      "none": "Aucune source d’instantané n’est configurée pour cette chaîne."
+    },
+    "stake": {
+      "title": "Préparer le staking (vous gardez les clés)",
+      "offlineKeys": "Générez les clés hors ligne. Le panneau ne les stocke jamais.",
+      "deposit": "Terminez le dépôt / l’enregistrement sur le launchpad officiel.",
+      "withdrawal": "Définissez vous-même les identifiants de retrait.",
+      "monitor": "Surveillez disque, pairs et badges de mise à jour sur cette page."
+    },
+    "alerts": {
+      "diskTitle": "Disque validateur critique",
+      "diskBody": "L’espace libre du volume de données validateur est critique.",
+      "upgradeTitle": "Mise à jour validateur disponible",
+      "upgradeBody": "Un ou plusieurs clients de nœud ont une version épinglée plus récente.",
+      "syncTitle": "Le nœud validateur nécessite une attention",
+      "syncBody": "Un nœud se synchronise depuis plus de 6 heures ou a signalé une erreur.",
+      "rollbackTitle": "Mise à jour validateur annulée",
+      "rollbackBody": "La mise à jour de {{id}} a échoué au contrôle de santé et a été annulée."
+    },
+    "upgrade": {
+      "changelog": "Journal des changements"
+    },
+    "readiness": {
+      "dockerTitle": "Docker pour les nœuds validateurs",
+      "dockerOk": "{{count}} instance(s) de validateur ; Docker est installé",
+      "dockerMissing": "Des instances de validateur existent mais la commande docker est introuvable"
+    }
   },
   "vnc": {
     "pageDesc": "Serveur et client VNC",

@@ -1,0 +1,144 @@
+{
+  "title": "Docker",
+  "subtitle": "Installez et contrôlez le moteur Docker, les conteneurs, images, projets Compose et le disque sur cet hôte.",
+  "refresh": "Actualiser",
+  "notInstalled": "Docker Engine n’est pas installé. Installez docker.io et docker-compose-v2 depuis cette page.",
+  "protected": "Protégé",
+  "pruneConfirm": "Saisissez PRUNE pour confirmer le nettoyage de volume ou du système",
+  "settingsHint": "Sous-ensemble sûr de daemon.json uniquement. Appliquer écrit le fichier et redémarre docker.service.",
+  "cli": {
+    "usage": "Utilisation : ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|exec|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--preset version|help|hostname] [--bin BIN] [--project P] [--execute] [--json]"
+  },
+  "tab": {
+    "overview": "Aperçu",
+    "containers": "Conteneurs",
+    "images": "Images Docker",
+    "compose": "Compose",
+    "volumes": "Volumes",
+    "networks": "Réseaux",
+    "prune": "Nettoyer",
+    "settings": "Paramètres",
+    "about": "À propos"
+  },
+  "col": {
+    "engine": "Moteur",
+    "containers": "Conteneurs",
+    "version": "Version du moteur",
+    "dataRoot": "Répertoire de données",
+    "disk": "Disque",
+    "validators": "Piles validateur",
+    "name": "Nom",
+    "image": "Image du conteneur",
+    "status": "État",
+    "ports": "Ports publiés",
+    "managed": "Géré par le panneau",
+    "size": "Taille",
+    "driver": "Pilote",
+    "type": "Genre",
+    "reclaimable": "Récupérable"
+  },
+  "state": {
+    "up": "Actif",
+    "down": "Arrêté"
+  },
+  "actions": {
+    "start": "Démarrer",
+    "stop": "Arrêter",
+    "restart": "Redémarrer",
+    "remove": "Supprimer",
+    "logs": "Journaux",
+    "inspect": "Inspecter",
+    "exec": "Exec (version du client)",
+    "run": "Exécuter une image",
+    "pull": "Télécharger",
+    "up": "Démarrer",
+    "down": "Arrêter",
+    "createVolume": "Créer un volume",
+    "createNetwork": "Créer un réseau",
+    "pruneContainers": "Nettoyer les conteneurs",
+    "pruneImages": "Nettoyer les images",
+    "pruneVolumes": "Nettoyer les volumes",
+    "pruneSystem": "Nettoyage système",
+    "startEngine": "Démarrer le moteur",
+    "stopEngine": "Arrêter le moteur",
+    "restartEngine": "Redémarrer le moteur",
+    "applyDaemon": "Appliquer les paramètres du moteur"
+  },
+  "empty": {
+    "containers": "Aucun conteneur",
+    "images": "Aucune image",
+    "compose": "Aucun projet Compose",
+    "volumes": "Aucun volume",
+    "networks": "Aucun réseau"
+  },
+  "logs": {
+    "empty": "Pas encore de journaux"
+  },
+  "settings": {
+    "logMaxSize": "Taille max. des journaux de conteneur",
+    "liveRestore": "Restauration à chaud (conserver les conteneurs si le démon redémarre)",
+    "mirrors": "Miroirs Registry (une URL par ligne)",
+    "insecure": "Registries non chiffrés (un hôte par ligne)"
+  },
+  "about": {
+    "body": "Docker est un service hôte de premier plan sur YSK Server, comme Nginx. Installation via le panneau (Ubuntu docker.io + docker-compose-v2). Les nœuds validateurs s’exécutent en projets Compose yskval-*.",
+    "honesty": "Les changements d’hôte nécessitent root et YSK_EXECUTE=1. Le dry-run est la valeur par défaut. Cette page n’est pas Kubernetes.",
+    "validators": "Ouvrir les nœuds validateurs"
+  },
+  "alerts": {
+    "daemonTitle": "Le démon Docker est arrêté",
+    "daemonBody": "Docker est installé mais docker.service n’est pas actif. Les piles validateur ne peuvent pas démarrer."
+  },
+  "errors": {
+    "notInstalled": "Docker n’est pas installé",
+    "daemonDown": "Le démon Docker n’est pas actif",
+    "needCompose": "docker compose (greffon v2) est requis",
+    "badImage": "Référence d’image invalide",
+    "badName": "Nom invalide",
+    "badPort": "Publication de port invalide",
+    "badEnv": "Variable d’environnement invalide",
+    "badVolume": "Montage de volume invalide",
+    "badNetwork": "Réseau invalide",
+    "protectedNetwork": "Impossible de supprimer un réseau Docker intégré",
+    "badRestart": "Politique de redémarrage invalide",
+    "badPrune": "Portée de nettoyage invalide",
+    "needPruneConfirm": "Le nettoyage de volume ou du système exige confirm=PRUNE",
+    "badDaemon": "Paramètre du moteur invalide",
+    "composeMissing": "Fichier Compose de ce projet introuvable",
+    "logsFailed": "Impossible de lire les journaux du conteneur",
+    "mutateFailed": "La commande Docker a échoué",
+    "engineFailed": "Impossible de contrôler docker.service",
+    "badExec": "Exec est limité aux binaires et préréglages autorisés (pas de shell, pas de TTY)",
+    "uninstallBusy": "Arrêtez les conteneurs gérés par le panneau (y compris les piles validateur) avant de désinstaller Docker"
+  },
+  "notes": {
+    "dryMutate": "Dry-run uniquement. Passez --execute et YSK_EXECUTE=1 pour modifier l’hôte.",
+    "dryPrune": "Aperçu du nettoyage (non appliqué).",
+    "dryEngine": "Le contrôle du moteur est un dry-run.",
+    "dryDaemon": "Écrirait /etc/docker/daemon.json et redémarrerait docker.service.",
+    "daemonWrote": "daemon.json écrit",
+    "start": "Conteneur démarré",
+    "stop": "Conteneur arrêté",
+    "restart": "Conteneur redémarré",
+    "remove": "Conteneur supprimé",
+    "ran": "Conteneur démarré depuis une image",
+    "pulled": "Image téléchargée",
+    "exec": "Exec autorisé exécuté",
+    "imageRemoved": "Image supprimée",
+    "volumeCreated": "Volume créé",
+    "volumeRemoved": "Volume supprimé",
+    "networkCreated": "Réseau créé",
+    "networkRemoved": "Réseau supprimé",
+    "pruned": "Nettoyage terminé",
+    "compose": {
+      "up": "Projet Compose démarré",
+      "down": "Projet Compose arrêté",
+      "restart": "Projet Compose redémarré"
+    },
+    "engine": {
+      "start": "docker.service démarré",
+      "stop": "docker.service arrêté",
+      "restart": "docker.service redémarré"
+    }
+  }
+}

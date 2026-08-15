@@ -53,7 +53,9 @@
     "runtimes": "运行环境",
     "security": "安全",
     "system": "系统",
-    "ai": "人工智能"
+    "ai": "人工智能",
+    "validators": "验证者节点",
+    "containers": "容器"
   },
   "java": "Java",
   "kotlin": "Kotlin",
@@ -76,5 +78,7 @@
   "support": "支持",
   "noAccessTitle": "没有权限",
   "noAccessDesc": "你的角色不能开启此页。如需使用，请向管理员申请。",
-  "backToDashboard": "返回仪表板"
+  "backToDashboard": "返回仪表板",
+  "validators": "验证者节点 (Beta)",
+  "docker": "Docker"
 }

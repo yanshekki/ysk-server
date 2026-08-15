@@ -313,6 +313,46 @@ Tools respect allowlist + protection mode.
 
 ---
 
+## docker
+
+Docker Engine control plane (install via panel software catalog: `docker.io` + `docker-compose-v2`).
+
+```bash
+ysk-server docker status --json
+ysk-server docker ps --json
+ysk-server docker images --json
+ysk-server docker compose ls --json
+YSK_EXECUTE=1 ysk-server docker run --image alpine:3.20 --name demo --execute --json
+YSK_EXECUTE=1 ysk-server docker engine start --execute --json
+```
+
+See [../features/docker.md](../features/docker.md).
+
+## validators
+
+L1 validator-ready nodes (Ethereum, Avalanche, NEAR, Cardano, Bitcoin, Cosmos Hub, Sui, Aptos, Polkadot, Solana). **Beta.** Non-custodial — the CLI never writes staking keys. Solana is marked **heavy** (2 TiB+ mainnet).
+
+```bash
+ysk-server validators list --json
+ysk-server validators chains --json
+ysk-server validators disk --json
+ysk-server validators get --id eth-hoodi-1 --json
+ysk-server validators create --chain eth --network hoodi --profile minimal --json
+YSK_EXECUTE=1 ysk-server validators create --chain eth --network hoodi --profile minimal --execute --json
+YSK_EXECUTE=1 ysk-server validators start --id eth-hoodi-1 --execute --json
+YSK_EXECUTE=1 ysk-server validators stop --id eth-hoodi-1 --execute --json
+YSK_EXECUTE=1 ysk-server validators clear --id eth-hoodi-1 --confirm --execute --json
+ysk-server validators logs --id eth-hoodi-1 --json
+ysk-server validators policy --id eth-hoodi-1 --upgrade notify --json
+YSK_EXECUTE=1 ysk-server validators upgrade --id eth-hoodi-1 --execute --json
+YSK_EXECUTE=1 ysk-server validators mithril --id ada-preview-1 --confirm MITHRIL --execute --json
+ysk-server validators create --chain eth --network hoodi --el geth --cl prysm --json
+```
+
+Create without `--execute` writes the instance spec and compose file (`written`). Start / stop / clear stay **blocked** until `YSK_EXECUTE=1` and `--execute`. Docker Compose is required to apply.
+
+See [../features/validators.md](../features/validators.md).
+
 ## vpn
 
 Open-source VPN on the control-plane host (WireGuard / OpenVPN / Outline-style ss-server).
@@ -442,6 +482,8 @@ Kinds include **java**, **kotlin**, **bun**. See [../features/runtimes.md](../fe
 | cdn, agents | [../features/cdn-agents.md](../features/cdn-agents.md) |
 | logs, host | [../features/logs-metrics.md](../features/logs-metrics.md) |
 | vpn | [../features/vpn.md](../features/vpn.md) |
+| docker | [../features/docker.md](../features/docker.md) |
+| validators | [../features/validators.md](../features/validators.md) |
 | vnc | [../features/vnc.md](../features/vnc.md) |
 | apache | [../features/apache.md](../features/apache.md) |
 | db, redis, runtimes | [../features/databases.md](../features/databases.md) · [../features/runtimes.md](../features/runtimes.md) |

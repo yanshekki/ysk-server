@@ -1,0 +1,144 @@
+{
+  "title": "Docker",
+  "subtitle": "এই হোস্টে Docker ইঞ্জিন, কন্টেইনার, ইমেজ, Compose প্রকল্প ও ডিস্ক স্থাপন ও নিয়ন্ত্রণ করুন।",
+  "refresh": "রিফ্রেশ",
+  "notInstalled": "Docker Engine স্থাপিত নয়। এই পাতা থেকে docker.io ও docker-compose-v2 স্থাপন করুন।",
+  "protected": "সুরক্ষিত",
+  "pruneConfirm": "volume বা সিস্টেম পরিষ্কার নিশ্চিত করতে PRUNE লিখুন",
+  "settingsHint": "শুধু নিরাপদ daemon.json বিকল্প। প্রয়োগ করলে ফাইল লেখা হয় ও docker.service পুনরায় চালু হয়।",
+  "cli": {
+    "usage": "ব্যবহার: ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|exec|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--preset version|help|hostname] [--bin BIN] [--project P] [--execute] [--json]"
+  },
+  "tab": {
+    "overview": "সারসংক্ষেপ",
+    "containers": "কন্টেইনার",
+    "images": "ইমেজ",
+    "compose": "Compose",
+    "volumes": "Volume",
+    "networks": "নেটওয়ার্ক",
+    "prune": "পরিষ্কার",
+    "settings": "সেটিংস",
+    "about": "সম্পর্কে"
+  },
+  "col": {
+    "engine": "ইঞ্জিন",
+    "containers": "কন্টেইনার",
+    "version": "সংস্করণ",
+    "dataRoot": "ডেটা ডিরেক্টরি",
+    "disk": "ডিস্ক",
+    "validators": "ভ্যালিডেটর স্তূপ",
+    "name": "নাম",
+    "image": "ইমেজ",
+    "status": "অবস্থা",
+    "ports": "পোর্ট",
+    "managed": "প্যানেল-পরিচালিত",
+    "size": "আকার",
+    "driver": "ড্রাইভার",
+    "type": "ধরন",
+    "reclaimable": "পুনরুদ্ধারযোগ্য"
+  },
+  "state": {
+    "up": "সক্রিয়",
+    "down": "বন্ধ"
+  },
+  "actions": {
+    "start": "চালু",
+    "stop": "থামান",
+    "restart": "পুনরায় চালু",
+    "remove": "মুছুন",
+    "logs": "লগ",
+    "inspect": "পরীক্ষা",
+    "exec": "Exec (সংস্করণ)",
+    "run": "ইমেজ চালান",
+    "pull": "টেনে আনুন",
+    "up": "চালু",
+    "down": "নামান",
+    "createVolume": "volume তৈরি",
+    "createNetwork": "নেটওয়ার্ক তৈরি",
+    "pruneContainers": "কন্টেইনার পরিষ্কার",
+    "pruneImages": "ইমেজ পরিষ্কার",
+    "pruneVolumes": "volume পরিষ্কার",
+    "pruneSystem": "সিস্টেম পরিষ্কার",
+    "startEngine": "ইঞ্জিন চালু",
+    "stopEngine": "ইঞ্জিন থামান",
+    "restartEngine": "ইঞ্জিন পুনরায় চালু",
+    "applyDaemon": "ইঞ্জিন সেটিং প্রয়োগ"
+  },
+  "empty": {
+    "containers": "কোনো কন্টেইনার নেই",
+    "images": "কোনো ইমেজ নেই",
+    "compose": "কোনো Compose প্রকল্প নেই",
+    "volumes": "কোনো volume নেই",
+    "networks": "কোনো নেটওয়ার্ক নেই"
+  },
+  "logs": {
+    "empty": "এখনও কোনো লগ নেই"
+  },
+  "settings": {
+    "logMaxSize": "কন্টেইনার লগ সর্বোচ্চ আকার",
+    "liveRestore": "লাইভ পুনরুদ্ধার (ডেমন পুনরায় চালু হলে কন্টেইনার রাখুন)",
+    "mirrors": "Registry আয়না (প্রতি লাইনে একটি URL)",
+    "insecure": "অসংকেতায়িত Registry (প্রতি লাইনে একটি হোস্ট)"
+  },
+  "about": {
+    "body": "Docker হলো YSK Server-এ Nginx-এর মতো প্রথম শ্রেণির হোস্ট সেবা। প্যানেল থেকে Ubuntu docker.io + docker-compose-v2 দিয়ে স্থাপন হয়। ভ্যালিডেটর নোড yskval-* Compose প্রকল্প হিসেবে চলে।",
+    "honesty": "হোস্ট পরিবর্তনে root ও YSK_EXECUTE=1 লাগে। ডিফল্ট dry-run। এই পাতা Kubernetes নয়।",
+    "validators": "ভ্যালিডেটর নোড খুলুন"
+  },
+  "alerts": {
+    "daemonTitle": "Docker ডেমন বন্ধ",
+    "daemonBody": "Docker স্থাপিত কিন্তু docker.service সক্রিয় নয়। ভ্যালিডেটর স্তূপ চালু হতে পারবে না।"
+  },
+  "errors": {
+    "notInstalled": "Docker স্থাপিত নয়",
+    "daemonDown": "Docker ডেমন সক্রিয় নয়",
+    "needCompose": "docker compose (v2 প্লাগইন) প্রয়োজন",
+    "badImage": "ইমেজ রেফারেন্স অবৈধ",
+    "badName": "নাম অবৈধ",
+    "badPort": "পোর্ট প্রকাশ অবৈধ",
+    "badEnv": "পরিবেশ চলক অবৈধ",
+    "badVolume": "ভলিউম মাউন্ট অবৈধ",
+    "badNetwork": "নেটওয়ার্ক অবৈধ",
+    "protectedNetwork": "অন্তর্নির্মিত Docker নেটওয়ার্ক মুছা যায় না",
+    "badRestart": "পুনরায় চালু নীতি অবৈধ",
+    "badPrune": "পরিষ্কারের পরিসর অবৈধ",
+    "needPruneConfirm": "volume বা সিস্টেম পরিষ্কারে confirm=PRUNE লাগে",
+    "badDaemon": "ইঞ্জিন সেটিং অবৈধ",
+    "composeMissing": "এই প্রকল্পের Compose ফাইল পাওয়া যায়নি",
+    "logsFailed": "কন্টেইনার লগ পড়া যায়নি",
+    "mutateFailed": "Docker কমান্ড ব্যর্থ",
+    "engineFailed": "docker.service নিয়ন্ত্রণ করা যায়নি",
+    "badExec": "exec শুধু অনুমোদিত বাইনারি ও প্রিসেটে সীমিত (শেল নয়, TTY নয়)",
+    "uninstallBusy": "Docker সরানোর আগে প্যানেল-পরিচালিত কন্টেইনার (ভ্যালিডেটর স্তূপসহ) থামান"
+  },
+  "notes": {
+    "dryMutate": "শুধু dry-run। হোস্ট বদলাতে --execute ও YSK_EXECUTE=1 দিন।",
+    "dryPrune": "পরিষ্কারের পূর্বরূপ (প্রয়োগ হয়নি)।",
+    "dryEngine": "ইঞ্জিন নিয়ন্ত্রণ dry-run।",
+    "dryDaemon": "/etc/docker/daemon.json লেখা হবে ও docker.service পুনরায় চালু হবে।",
+    "daemonWrote": "daemon.json লেখা হয়েছে",
+    "start": "কন্টেইনার চালু",
+    "stop": "কন্টেইনার থামানো",
+    "restart": "কন্টেইনার পুনরায় চালু",
+    "remove": "কন্টেইনার মুছেছে",
+    "ran": "ইমেজ থেকে কন্টেইনার চালু",
+    "pulled": "ইমেজ টেনে আনা হয়েছে",
+    "exec": "অনুমোদিত exec চালানো হয়েছে",
+    "imageRemoved": "ইমেজ মুছেছে",
+    "volumeCreated": "Volume তৈরি",
+    "volumeRemoved": "Volume মুছেছে",
+    "networkCreated": "নেটওয়ার্ক তৈরি",
+    "networkRemoved": "নেটওয়ার্ক মুছেছে",
+    "pruned": "পরিষ্কার শেষ",
+    "compose": {
+      "up": "Compose প্রকল্প চালু",
+      "down": "Compose প্রকল্প থামানো",
+      "restart": "Compose প্রকল্প পুনরায় চালু"
+    },
+    "engine": {
+      "start": "docker.service চালু",
+      "stop": "docker.service থামানো",
+      "restart": "docker.service পুনরায় চালু"
+    }
+  }
+}

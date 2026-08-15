@@ -72,6 +72,25 @@ describe('matchMutatingRouteCap', () => {
     );
     expect(matchGetRouteCaps('/api/v1/auth/me')).toBeNull();
     expect(matchGetRouteCaps('/api/v1/dashboard')).toBeNull();
+    expect(matchGetRouteCaps('/api/v1/validators')).toEqual(
+      expect.arrayContaining(['validators.read']),
+    );
+  });
+
+  it('gates validator mutations by wipe vs manage', () => {
+    expect(matchMutatingRouteCap('POST', '/api/v1/validators/eth-hoodi-1/clear')).toBe(
+      'validators.wipe',
+    );
+    expect(matchMutatingRouteCap('POST', '/api/v1/validators')).toBe('validators.manage');
+    expect(matchMutatingRouteCap('POST', '/api/v1/validators/eth-hoodi-1/start')).toBe(
+      'validators.manage',
+    );
+  });
+
+  it('gates docker mutations by wipe vs manage', () => {
+    expect(matchMutatingRouteCap('POST', '/api/v1/docker/prune')).toBe('docker.wipe');
+    expect(matchMutatingRouteCap('POST', '/api/v1/docker/engine/start')).toBe('docker.manage');
+    expect(matchGetRouteCaps('/api/v1/docker')).toEqual(expect.arrayContaining(['docker.read']));
   });
 
   it('ssl upload is write-low before generic ssl rules', () => {

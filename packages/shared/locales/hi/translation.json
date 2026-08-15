@@ -2907,6 +2907,150 @@
     "createMailZone": "Create mail zone",
     "createMailZoneNow": "Created mail zone {{domain}}"
   },
+  "docker": {
+    "title": "Docker",
+    "subtitle": "इस होस्ट पर Docker इंजन, कंटेनर, छवियाँ, Compose प्रोजेक्ट और डिस्क स्थापित व नियंत्रित करें।",
+    "refresh": "ताज़ा करें",
+    "notInstalled": "Docker Engine स्थापित नहीं है। इस पृष्ठ से docker.io और docker-compose-v2 स्थापित करें।",
+    "protected": "सुरक्षित",
+    "pruneConfirm": "volume या सिस्टम सफ़ाई की पुष्टि के लिए PRUNE लिखें",
+    "settingsHint": "केवल सुरक्षित daemon.json विकल्प। लागू करने पर फ़ाइल लिखी जाती है और docker.service पुनः चालू होता है।",
+    "cli": {
+      "usage": "उपयोग: ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|exec|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--preset version|help|hostname] [--bin BIN] [--project P] [--execute] [--json]"
+    },
+    "tab": {
+      "overview": "सारांश",
+      "containers": "कंटेनर",
+      "images": "छवियाँ",
+      "compose": "Compose",
+      "volumes": "Volume",
+      "networks": "नेटवर्क",
+      "prune": "साफ़ करें",
+      "settings": "सेटिंग",
+      "about": "परिचय"
+    },
+    "col": {
+      "engine": "इंजन",
+      "containers": "कंटेनर",
+      "version": "संस्करण",
+      "dataRoot": "डेटा निर्देशिका",
+      "disk": "डिस्क",
+      "validators": "वैलिडेटर स्टैक",
+      "name": "नाम",
+      "image": "छवि",
+      "status": "स्थिति",
+      "ports": "पोर्ट",
+      "managed": "पैनल-प्रबंधित",
+      "size": "आकार",
+      "driver": "ड्राइवर",
+      "type": "प्रकार",
+      "reclaimable": "पुनः प्राप्त योग्य"
+    },
+    "state": {
+      "up": "सक्रिय",
+      "down": "रुका"
+    },
+    "actions": {
+      "start": "चालू",
+      "stop": "बंद",
+      "restart": "पुनः चालू",
+      "remove": "हटाएँ",
+      "logs": "लॉग",
+      "inspect": "जाँचें",
+      "exec": "Exec (संस्करण)",
+      "run": "छवि चलाएँ",
+      "pull": "खींचें",
+      "up": "चालू",
+      "down": "बंद",
+      "createVolume": "volume बनाएँ",
+      "createNetwork": "नेटवर्क बनाएँ",
+      "pruneContainers": "कंटेनर साफ़ करें",
+      "pruneImages": "छवियाँ साफ़ करें",
+      "pruneVolumes": "volume साफ़ करें",
+      "pruneSystem": "सिस्टम सफ़ाई",
+      "startEngine": "इंजन चालू करें",
+      "stopEngine": "इंजन बंद करें",
+      "restartEngine": "इंजन पुनः चालू करें",
+      "applyDaemon": "इंजन सेटिंग लागू करें"
+    },
+    "empty": {
+      "containers": "कोई कंटेनर नहीं",
+      "images": "कोई छवि नहीं",
+      "compose": "कोई Compose प्रोजेक्ट नहीं",
+      "volumes": "कोई volume नहीं",
+      "networks": "कोई नेटवर्क नहीं"
+    },
+    "logs": {
+      "empty": "अभी कोई लॉग नहीं"
+    },
+    "settings": {
+      "logMaxSize": "कंटेनर लॉग अधिकतम आकार",
+      "liveRestore": "लाइव पुनर्स्थापना (डेमन पुनः चालू होने पर कंटेनर रखें)",
+      "mirrors": "Registry दर्पण (प्रति पंक्ति एक URL)",
+      "insecure": "असुरक्षित Registry (प्रति पंक्ति एक होस्ट)"
+    },
+    "about": {
+      "body": "Docker, YSK Server पर Nginx जैसा प्रथम-श्रेणी होस्ट सेवा है। पैनल से Ubuntu docker.io + docker-compose-v2 स्थापित होता है। वैलिडेटर नोड yskval-* Compose प्रोजेक्ट के रूप में चलते हैं।",
+      "honesty": "होस्ट परिवर्तन के लिए root और YSK_EXECUTE=1 चाहिए। डिफ़ॉल्ट dry-run है। यह पृष्ठ Kubernetes नहीं है।",
+      "validators": "वैलिडेटर नोड खोलें"
+    },
+    "alerts": {
+      "daemonTitle": "Docker डेमन बंद है",
+      "daemonBody": "Docker स्थापित है लेकिन docker.service सक्रिय नहीं। वैलिडेटर स्टैक चालू नहीं हो सकते।"
+    },
+    "errors": {
+      "notInstalled": "Docker स्थापित नहीं है",
+      "daemonDown": "Docker डेमन सक्रिय नहीं",
+      "needCompose": "docker compose (v2 प्लगइन) आवश्यक है",
+      "badImage": "छवि संदर्भ अमान्य",
+      "badName": "नाम अमान्य",
+      "badPort": "पोर्ट प्रकाशन अमान्य",
+      "badEnv": "पर्यावरण चर अमान्य",
+      "badVolume": "वॉल्यूम माउंट अमान्य",
+      "badNetwork": "नेटवर्क अमान्य",
+      "protectedNetwork": "अंतर्निहित Docker नेटवर्क नहीं हटाया जा सकता",
+      "badRestart": "पुनः चालू नीति अमान्य",
+      "badPrune": "सफ़ाई दायरा अमान्य",
+      "needPruneConfirm": "volume या सिस्टम सफ़ाई के लिए confirm=PRUNE चाहिए",
+      "badDaemon": "इंजन सेटिंग अमान्य",
+      "composeMissing": "इस प्रोजेक्ट की Compose फ़ाइल नहीं मिली",
+      "logsFailed": "कंटेनर लॉग नहीं पढ़े जा सके",
+      "mutateFailed": "Docker आदेश विफल",
+      "engineFailed": "docker.service नियंत्रित नहीं हो सका",
+      "badExec": "Exec केवल अनुमत बाइनरी और प्रीसेट तक सीमित है (कोई शेल नहीं, कोई TTY नहीं)",
+      "uninstallBusy": "Docker हटाने से पहले पैनल-प्रबंधित कंटेनर (वैलिडेटर स्टैक सहित) रोकें"
+    },
+    "notes": {
+      "dryMutate": "केवल dry-run। होस्ट बदलने के लिए --execute और YSK_EXECUTE=1 दें।",
+      "dryPrune": "सफ़ाई पूर्वावलोकन (लागू नहीं)।",
+      "dryEngine": "इंजन नियंत्रण dry-run है।",
+      "dryDaemon": "/etc/docker/daemon.json लिखा जाएगा और docker.service पुनः चालू होगा।",
+      "daemonWrote": "daemon.json लिखा गया",
+      "start": "कंटेनर चालू हुआ",
+      "stop": "कंटेनर रुका",
+      "restart": "कंटेनर पुनः चालू हुआ",
+      "remove": "कंटेनर हटाया गया",
+      "ran": "छवि से कंटेनर चालू हुआ",
+      "pulled": "छवि खींची गई",
+      "exec": "अनुमत exec चला",
+      "imageRemoved": "छवि हटाई गई",
+      "volumeCreated": "Volume बना",
+      "volumeRemoved": "Volume हटाया गया",
+      "networkCreated": "नेटवर्क बना",
+      "networkRemoved": "नेटवर्क हटाया गया",
+      "pruned": "सफ़ाई पूर्ण",
+      "compose": {
+        "up": "Compose प्रोजेक्ट चालू हुआ",
+        "down": "Compose प्रोजेक्ट रुका",
+        "restart": "Compose प्रोजेक्ट पुनः चालू हुआ"
+      },
+      "engine": {
+        "start": "docker.service चालू हुआ",
+        "stop": "docker.service रुका",
+        "restart": "docker.service पुनः चालू हुआ"
+      }
+    }
+  },
   "email": {
     "title": "ईमेल",
     "subtitle": "डोमेन, डीएनएस, मेलबॉक्स और रिले",
@@ -4970,7 +5114,9 @@
       "runtimes": "रनटाइम्स",
       "security": "सुरक्षा",
       "system": "प्रणाली",
-      "ai": "AI"
+      "ai": "AI",
+      "validators": "वैलिडेटर",
+      "containers": "कंटेनर"
     },
     "java": "Java",
     "kotlin": "Kotlin",
@@ -4993,7 +5139,9 @@
     "support": "सहायता",
     "noAccessTitle": "पहुँच नहीं",
     "noAccessDesc": "आपकी भूमिका इस पृष्ठ को नहीं खोल सकती। आवश्यकता हो तो व्यवस्थापक से पूछें।",
-    "backToDashboard": "डैशबोर्ड पर वापस"
+    "backToDashboard": "डैशबोर्ड पर वापस",
+    "validators": "वैलिडेटर (Beta)",
+    "docker": "Docker"
   },
   "network": {
     "title": "नेटवर्क इंटरफेस",
@@ -9669,7 +9817,13 @@
       "auditExport": "निर्यात का ऑडिट करें",
       "securityApiKeysAdmin": "एपीआई कुंजियाँ व्यवस्थापक",
       "networkBrowse": "होस्ट-मध्यस्थता वेब ब्राउज़",
-      "networkVnc": "वीएनसी रिमोट डेस्कटॉप"
+      "networkVnc": "वीएनसी रिमोट डेस्कटॉप",
+      "validatorsRead": "वैलिडेटर (पढ़ें)",
+      "validatorsManage": "वैलिडेटर प्रबंधन",
+      "validatorsWipe": "वैलिडेटर डेटा साफ़",
+      "dockerRead": "Docker (पढ़ें)",
+      "dockerManage": "Docker प्रबंधन",
+      "dockerWipe": "Docker हटाएँ / साफ़ करें"
     },
     "aboutRoles": "भूमिकाएँ (फ़ैक्टरी डिफ़ॉल्ट)",
     "aboutRolesBody": "भूमिकाएँ डिफ़ॉल्ट क्षमताएँ निर्धारित करती हैं; उपयोगकर्ता अलग-अलग को ओवरराइड कर सकते हैं।",
@@ -9681,7 +9835,7 @@
     "adminLockedFull": "व्यवस्थापक पूर्ण-खुला (लॉक)",
     "adminLockedHint": "एडमिन सिस्टम की भूमिका हमेशा पूरी तरह से खुली होती है और इसे कम नहीं किया जा सकता",
     "maxLevelHint": "इस स्तर से ऊपर के क्षमता समूह लॉक रहते हैं।",
-    "capabilities": "क्षमताओं",
+    "capabilities": "क्षमताएँ",
     "capabilitiesHint": "टॉगल करें कि यह भूमिका क्या कर सकती है",
     "enabledCount": "{{total}} में से {{enabled}} सक्षम",
     "bandAboveMax": "अधिकतम स्तर से ऊपर",
@@ -11205,7 +11359,9 @@
       "generic": "संबंधित सेवाएँ बंद हो सकती हैं",
       "purgeData": "डेटा पथ हटा दिए जाएंगे",
       "protectedSkipped": "संरक्षित घटकों को छोड़ दिया गया है",
-      "runtimeStack": "इस रनटाइम के सभी पैनल-प्रबंधित संस्करण हटा दिए जाएंगे"
+      "runtimeStack": "इस रनटाइम के सभी पैनल-प्रबंधित संस्करण हटा दिए जाएंगे",
+      "containers": "चल रहे कंटेनर रुकेंगे",
+      "validators": "Docker Compose वाले वैलिडेटर स्टैक रुकेंगे"
     },
     "requestCancel": "अनुरोध रद्द करें",
     "cancelling": "रद्द किया जा रहा है...",
@@ -12375,6 +12531,214 @@
     "bandwidthHint": "0 means unlimited.",
     "impersonateHint": "Opens a session as this user. Use the account menu to leave impersonation.",
     "operatorHighRiskHint": "फ़ैक्टरी ऑपरेटर में उच्च-जोखिम लेखन शामिल है। संकीर्ण करना केवल नए खातों पर; डिफ़ॉल्ट बदलने से मौजूदा ऑपरेटर प्रभावित होते हैं।"
+  },
+  "validators": {
+    "title": "वैलिडेटर (Beta)",
+    "subtitle": "इस होस्ट पर L1 नोड स्थापित और प्रबंधित करें। गैर-कस्टोडियल — कुंजियाँ आपके पास रहें।",
+    "beta": "Beta",
+    "tab": {
+      "nodes": "नोड",
+      "disk": "डिस्क",
+      "about": "परिचय"
+    },
+    "empty": {
+      "title": "अभी कोई वैलिडेटर नोड नहीं",
+      "desc": "कुछ क्लिक में टेस्टनेट नोड बनाएँ। CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+    },
+    "refresh": "ताज़ा करें",
+    "disk": {
+      "title": "वैलिडेटर डिस्क",
+      "root": "डेटा निर्देशिका",
+      "free": "खाली",
+      "used": "प्रयुक्त",
+      "none": "अभी कोई इंस्टेंस डेटा नहीं",
+      "warn": "डिस्क उपयोग अधिक है (70%+)",
+      "danger": "डिस्क उपयोग गंभीर है (85%+)",
+      "autoClear": "डिस्क गंभीर होने पर सबसे बड़े रुके इंस्टेंस को स्वतः साफ़ करें (डिफ़ॉल्ट बंद)"
+    },
+    "chain": {
+      "eth": "Ethereum",
+      "avax": "Avalanche",
+      "near": "NEAR",
+      "ada": "Cardano",
+      "btc": "Bitcoin",
+      "cosmos": "Cosmos Hub",
+      "sui": "Sui",
+      "aptos": "Aptos",
+      "dot": "Polkadot",
+      "sol": "Solana"
+    },
+    "network": {
+      "hoodi": "Hoodi",
+      "sepolia": "Sepolia",
+      "mainnet": "मुख्य नेट",
+      "fuji": "Fuji",
+      "testnet": "परीक्षण नेट",
+      "preview": "Preview",
+      "preprod": "Preprod",
+      "westend": "Westend"
+    },
+    "networkKind": {
+      "testnet": "परीक्षण नेट",
+      "mainnet": "मुख्य नेट"
+    },
+    "profile": {
+      "minimal": "न्यूनतम",
+      "pruned": "काटा गया",
+      "validator-ready": "वैलिडेटर तैयार",
+      "rpc": "RPC"
+    },
+    "col": {
+      "id": "ID",
+      "chain": "श्रृंखला",
+      "network": "नेटवर्क",
+      "profile": "प्रोफ़ाइल",
+      "status": "स्थिति",
+      "disk": "डिस्क"
+    },
+    "cli": {
+      "usage": "उपयोग: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
+    },
+    "clients": {
+      "el": "निष्पादन क्लाइंट",
+      "cl": "सहमति क्लाइंट"
+    },
+    "mithril": {
+      "label": "पहले Mithril स्नैपशॉट से पुनर्स्थापित करें (टेस्टनेट पर अनुशंसित)",
+      "action": "Mithril से पुनर्स्थापित करें"
+    },
+    "errors": {
+      "notFound": "वैलिडेटर इंस्टेंस नहीं मिला",
+      "invalidId": "इंस्टेंस आईडी अमान्य है",
+      "diskLow": "इस श्रृंखला, नेटवर्क और प्रोफ़ाइल के लिए पर्याप्त खाली डिस्क नहीं",
+      "diskUnknownMainnet": "खाली डिस्क मापी नहीं जा सकी; मुख्य नेट बनाना अस्वीकृत",
+      "needDocker": "Docker Compose आवश्यक है और नहीं मिला",
+      "composeFailed": "docker compose विफल",
+      "needConfirm": "साफ़ करने के लिए confirm=इंस्टेंस आईडी या CLEAR चाहिए",
+      "mithrilAdaOnly": "Mithril पुनर्स्थापना केवल Cardano के लिए है",
+      "needMithrilConfirm": "Mithril के लिए confirm=इंस्टेंस आईडी या MITHRIL चाहिए",
+      "mithrilBlocked": "Mithril docker run अनुमति सूची से अवरुद्ध हुआ",
+      "mithrilKey": "Mithril genesis सत्यापन कुंजी लोड नहीं हो सकी",
+      "mithrilFailed": "Mithril स्नैपशॉट डाउनलोड विफल",
+      "pruneFailed": "सफ़ाई विफल",
+      "switchNeedStop": "नेटवर्क बदलने से पहले नोड रोकें",
+      "switchNeedClear": "नेटवर्क बदलने से श्रृंखला डेटा मिटता है। इंस्टेंस आईडी या CLEAR से पुष्टि करें",
+      "composeMissing": "Compose फ़ाइल नहीं मिली",
+      "composeNotManaged": "YSK-प्रबंधित न होने वाली Compose फ़ाइल नहीं लिखी जाएगी",
+      "badDataPath": "डेटा पथ सिस्टम पथों से बाहर एक पूर्ण निर्देशिका होना चाहिए",
+      "portInUse": "वह RPC पोर्ट पहले से किसी अन्य वैलिडेटर इंस्टेंस के उपयोग में है",
+      "snapshotUnsupported": "इस श्रृंखला के लिए कोई अनुमत स्नैपशॉट स्रोत नहीं",
+      "snapshotLookup": "आधिकारिक स्नैपशॉट सूचक हल नहीं हो सका",
+      "needSnapshotConfirm": "स्नैपशॉट पुनर्स्थापना के लिए confirm=इंस्टेंस आईडी या SNAPSHOT चाहिए",
+      "snapshotBlocked": "स्नैपशॉट docker run अनुमति सूची से अवरुद्ध हुआ",
+      "snapshotFailed": "स्नैपशॉट डाउनलोड या निकालना विफल"
+    },
+    "notes": {
+      "beta": "यह सुविधा Beta है। होस्ट परिवर्तन के लिए root और YSK_EXECUTE=1 चाहिए।",
+      "noKeys": "YSK Server कभी स्टेकिंग कुंजियाँ बनाता या रखता नहीं।",
+      "dockerSoon": "स्थापना, चालू और बंद अगले चरण में आएंगे। यह पृष्ठ केवल इंस्टेंस और डिस्क दिखाता है।",
+      "dryCreate": "इंस्टेंस विनिर्देश और compose लिखा (dry-run)। कंटेनर चालू करने के लिए --execute और YSK_EXECUTE=1 दें।",
+      "dryStart": "चालू dry-run है। --execute और YSK_EXECUTE=1 दें।",
+      "dryStop": "बंद dry-run है। --execute और YSK_EXECUTE=1 दें।",
+      "dryClear": "साफ़ करना dry-run है। --execute और YSK_EXECUTE=1 दें।",
+      "created": "नोड बना और compose चालू हुआ",
+      "started": "नोड चालू हुआ",
+      "stopped": "नोड रुका",
+      "cleared": "श्रृंखला डेटा साफ़ हुआ",
+      "dryMithril": "Mithril पुनर्स्थापना dry-run है। --execute और YSK_EXECUTE=1 दें।",
+      "mithril": "Mithril स्नैपशॉट पुनर्स्थापित; नोड पुनः चालू",
+      "dryPrune": "सफ़ाई dry-run है। --execute और YSK_EXECUTE=1 दें।",
+      "pruned": "अप्रयुक्त प्रोजेक्ट छवियाँ साफ़ हुईं",
+      "pruneProfile": "क्लाइंट-नेटिव काटना pruned／minimal प्रोफ़ाइल है। बदलने के लिए फिर बनाएँ।",
+      "sameNetwork": "पहले से उसी नेटवर्क पर है",
+      "drySwitch": "नेटवर्क बदलना dry-run है।",
+      "switched": "नेटवर्क बदला और श्रृंखला डेटा साफ़ हुआ",
+      "dryCompose": "compose.yml लिखा जाएगा",
+      "composeWrote": "compose.yml लिखा गया",
+      "statsEmpty": "मापने के लिए कोई चालू कंटेनर नहीं",
+      "autoClearNone": "स्वतः साफ़ करने के लिए कोई रुका इंस्टेंस नहीं",
+      "drySnapshot": "स्नैपशॉट पुनर्स्थापना dry-run है। --execute और YSK_EXECUTE=1 दें।",
+      "snapshotEthEl": "ethPandaOps EL संग्रह पुनर्स्थापित और checkpoint sync के लिए CL रीसेट",
+      "snapshotEthCl": "आधिकारिक checkpoint sync के लिए CL डेटा रीसेट",
+      "snapshotNear": "NEAR डेटा मिटाया; compose आधिकारिक genesis और epoch sync से फिर आरंभ करेगा",
+      "nativePrune": "क्लाइंट-नेटिव सफ़ाई आदेश चला"
+    },
+    "create": "नोड बनाएँ",
+    "wizard": {
+      "title": "नोड बनाएँ",
+      "back": "पीछे",
+      "next": "आगे",
+      "install": "स्थापित करें",
+      "mainnetWarn": "मुख्य नेट को बहुत खाली डिस्क चाहिए (ETH अक्सर 800 GiB+)। टेस्टनेट अनुशंसित है।",
+      "mainnetAck": "मैं डिस्क और स्लैशिंग जोखिम समझता हूँ। मुख्य नेट जारी रखें।",
+      "heavyWarn": "यह श्रृंखला भारी है (बड़ी डिस्क और उच्च IOPS)। Solana मुख्य नेट को आमतौर पर 2 TiB+ चाहिए।",
+      "memory": "मेमोरी सीमा (जैसे 4g)",
+      "cpus": "CPU सीमा (जैसे 2.0)",
+      "dataPath": "डेटा पथ (वैकल्पिक)",
+      "rpcPort": "RPC पोर्ट (वैकल्पिक)"
+    },
+    "actions": {
+      "detail": "विवरण",
+      "start": "चालू",
+      "stop": "बंद",
+      "restart": "पुनः चालू",
+      "clear": "साफ़ करें",
+      "upgrade": "उन्नयन",
+      "clearConfirm": "इंस्टेंस आईडी या CLEAR लिखें",
+      "prune": "छवियाँ साफ़ करें",
+      "switchNetwork": "नेटवर्क बदलें",
+      "removeUnit": "compose / इंस्टेंस रिकॉर्ड भी हटाएँ",
+      "restoreAfter": "साफ़ करने के बाद स्नैपशॉट पुनर्स्थापित करें"
+    },
+    "policy": {
+      "label": "उन्नयन नीति",
+      "manual": "मैन्युअल",
+      "notify": "सूचित करें",
+      "auto-safe": "स्वतः (सुरक्षित)",
+      "auto-all": "स्वतः (सभी)"
+    },
+    "logs": {
+      "empty": "अभी कोई लॉग नहीं",
+      "follow": "लॉग अनुसरण करें"
+    },
+    "compose": {
+      "label": "Compose फ़ाइल",
+      "save": "compose सहेजें"
+    },
+    "snapshot": {
+      "action": "स्नैपशॉट पुनर्स्थापित करें",
+      "mithril": "Cardano प्रमाणित स्नैपशॉट पुनर्स्थापना के लिए Mithril उपयोग करता है।",
+      "eth": "Ethereum मुख्य नेट सहमति क्लाइंट के आधिकारिक checkpoint sync से आरंभ होता है। EL snap sync जारी रखता है।",
+      "ethEl": "Hoodi／Sepolia ethPandaOps EL संग्रह पुनर्स्थापित कर सकते हैं, फिर CL का checkpoint-sync।",
+      "avax": "Avalanche compose प्रोफ़ाइल में state-sync उपयोग करता है।",
+      "near": "आधिकारिक मुफ़्त NEAR tar स्नैपशॉट बंद हो गए। पुनर्स्थापना डेटा मिटाती है और आधिकारिक genesis तथा epoch sync उपयोग करती है।",
+      "none": "इस श्रृंखला के लिए कोई स्नैपशॉट स्रोत नहीं है।"
+    },
+    "stake": {
+      "title": "स्टेकिंग की तैयारी (कुंजियाँ आपके पास)",
+      "offlineKeys": "कुंजियाँ ऑफ़लाइन बनाएँ। पैनल उन्हें कभी नहीं रखता।",
+      "deposit": "आधिकारिक launchpad पर जमा / पंजीकरण पूरा करें।",
+      "withdrawal": "निकासी प्रमाण स्वयं सेट करें।",
+      "monitor": "इस पृष्ठ पर डिस्क, पीयर और उन्नयन बैज देखें।"
+    },
+    "alerts": {
+      "diskTitle": "वैलिडेटर डिस्क गंभीर",
+      "diskBody": "वैलिडेटर डेटा वॉल्यूम पर खाली स्थान अत्यंत कम है।",
+      "upgradeTitle": "वैलिडेटर उन्नयन उपलब्ध",
+      "upgradeBody": "एक या अधिक नोड क्लाइंट के पास नया पिन संस्करण है।",
+      "syncTitle": "वैलिडेटर नोड पर ध्यान दें",
+      "syncBody": "कोई नोड 6 घंटे से अधिक सिंक कर रहा है या त्रुटि बताई।",
+      "rollbackTitle": "वैलिडेटर उन्नयन वापस लिया गया",
+      "rollbackBody": "{{id}} का उन्नयन स्वास्थ्य जाँच में विफल हुआ और वापस लिया गया।"
+    },
+    "upgrade": {
+      "changelog": "परिवर्तन सूची"
+    },
+    "readiness": {
+      "dockerTitle": "वैलिडेटर नोड के लिए Docker",
+      "dockerOk": "{{count}} वैलिडेटर इंस्टेंस; Docker स्थापित है",
+      "dockerMissing": "वैलिडेटर इंस्टेंस हैं लेकिन docker आदेश नहीं मिला"
+    }
   },
   "vnc": {
     "pageDesc": "वीएनसी सर्वर और क्लाइंट",

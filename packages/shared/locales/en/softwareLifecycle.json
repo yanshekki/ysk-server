@@ -48,6 +48,8 @@
     "vnc": "VNC services will stop",
     "controlPlane": "Control plane runtime (protected)",
     "generic": "Related services may stop",
+    "containers": "Running containers will stop",
+    "validators": "Validator node stacks that use Docker Compose will stop",
     "purgeData": "Data paths will be deleted",
     "protectedSkipped": "Protected components are skipped",
     "runtimeStack": "All panel-managed versions of this runtime will be removed"

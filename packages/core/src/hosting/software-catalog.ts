@@ -40,7 +40,8 @@ export type SoftwareId =
   | 'tigervnc'
   | 'novnc'
   | 'vnc-desktop-xfce'
-  | 'tigervnc-viewer';
+  | 'tigervnc-viewer'
+  | 'docker';
 
 export type FeatureSoftwareKey =
   | 'ftp'
@@ -74,6 +75,7 @@ export type FeatureSoftwareKey =
   | 'novnc'
   | 'vnc-xfce'
   | 'vnc-viewer'
+  | 'docker'
   | 'all';
 
 export type RuntimeInstaller =
@@ -466,6 +468,15 @@ export const SOFTWARE_CATALOG: SoftwareSpec[] = [
     aptPackages: ['tigervnc-viewer'],
     features: ['vnc', 'vnc-viewer'],
   },
+  {
+    id: 'docker',
+    title: 'Docker Engine',
+    bins: ['docker'],
+    aptPackages: ['docker.io', 'docker-compose-v2'],
+    units: ['docker'],
+    dataPaths: ['/var/lib/docker'],
+    impactKeys: ['containers', 'validators'],
+    features: ['docker'] },
 ];
 
 export function getSoftware(id: string): SoftwareSpec | undefined {

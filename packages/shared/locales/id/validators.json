@@ -1,0 +1,208 @@
+{
+  "title": "Validator (Beta)",
+  "subtitle": "Pasang dan kelola node L1 di host ini. Non-kustodian — kunci tetap Anda pegang.",
+  "beta": "Beta",
+  "tab": {
+    "nodes": "Node",
+    "disk": "Cakram",
+    "about": "Tentang"
+  },
+  "empty": {
+    "title": "Belum ada node validator",
+    "desc": "Buat node testnet dalam beberapa klik. CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+  },
+  "refresh": "Segarkan",
+  "disk": {
+    "title": "Disk validator",
+    "root": "Direktori data",
+    "free": "Kosong",
+    "used": "Terpakai",
+    "none": "Belum ada data instans",
+    "warn": "Pemakaian disk tinggi (70%+)",
+    "danger": "Pemakaian disk kritis (85%+)",
+    "autoClear": "Kosongkan otomatis instans berhenti terbesar saat disk kritis (default mati)"
+  },
+  "chain": {
+    "eth": "Ethereum",
+    "avax": "Avalanche",
+    "near": "NEAR",
+    "ada": "Cardano",
+    "btc": "Bitcoin",
+    "cosmos": "Cosmos Hub",
+    "sui": "Sui",
+    "aptos": "Aptos",
+    "dot": "Polkadot",
+    "sol": "Solana"
+  },
+  "network": {
+    "hoodi": "Hoodi",
+    "sepolia": "Sepolia",
+    "mainnet": "Jaringan utama",
+    "fuji": "Fuji",
+    "testnet": "Jaringan uji",
+    "preview": "Preview",
+    "preprod": "Preprod",
+    "westend": "Westend"
+  },
+  "networkKind": {
+    "testnet": "Jaringan uji",
+    "mainnet": "Jaringan utama"
+  },
+  "profile": {
+    "minimal": "Paling kecil",
+    "pruned": "Dipangkas",
+    "validator-ready": "Siap validator",
+    "rpc": "RPC"
+  },
+  "col": {
+    "id": "ID",
+    "chain": "Rantai",
+    "network": "Jaringan",
+    "profile": "Profil",
+    "status": "Keadaan",
+    "disk": "Cakram"
+  },
+  "cli": {
+    "usage": "Pemakaian: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
+  },
+  "clients": {
+    "el": "Klien eksekusi",
+    "cl": "Klien konsensus"
+  },
+  "mithril": {
+    "label": "Pulihkan dulu dari snapshot Mithril (disarankan di testnet)",
+    "action": "Pulihkan dengan Mithril"
+  },
+  "errors": {
+    "notFound": "Instans validator tidak ditemukan",
+    "invalidId": "Id instans tidak valid",
+    "diskLow": "Disk kosong tidak cukup untuk rantai, jaringan, dan profil ini",
+    "diskUnknownMainnet": "Tidak dapat mengukur disk kosong; pembuatan jaringan utama ditolak",
+    "needDocker": "Docker Compose wajib dan tidak ditemukan",
+    "composeFailed": "docker compose gagal",
+    "needConfirm": "Mengosongkan memerlukan confirm=id instans atau CLEAR",
+    "mithrilAdaOnly": "Pemulihan Mithril hanya untuk Cardano",
+    "needMithrilConfirm": "Mithril memerlukan confirm=id instans atau MITHRIL",
+    "mithrilBlocked": "docker run Mithril diblokir oleh daftar izin",
+    "mithrilKey": "Tidak dapat memuat kunci verifikasi genesis Mithril",
+    "mithrilFailed": "Unduhan snapshot Mithril gagal",
+    "pruneFailed": "Pembersihan gagal",
+    "switchNeedStop": "Hentikan node sebelum mengganti jaringan",
+    "switchNeedClear": "Mengganti jaringan menghapus data rantai. Konfirmasi dengan id instans atau CLEAR",
+    "composeMissing": "Berkas Compose tidak ditemukan",
+    "composeNotManaged": "Menolak menulis berkas Compose yang tidak dikelola YSK",
+    "badDataPath": "Jalur data harus direktori absolut di luar jalur sistem",
+    "portInUse": "Port RPC itu sudah dipakai instans validator lain",
+    "snapshotUnsupported": "Tidak ada sumber snapshot yang diizinkan untuk rantai ini",
+    "snapshotLookup": "Tidak dapat menyelesaikan penunjuk snapshot resmi",
+    "needSnapshotConfirm": "Pemulihan snapshot memerlukan confirm=id instans atau SNAPSHOT",
+    "snapshotBlocked": "docker run snapshot diblokir oleh daftar izin",
+    "snapshotFailed": "Unduhan atau ekstraksi snapshot gagal"
+  },
+  "notes": {
+    "beta": "Fitur ini Beta. Perubahan host membutuhkan root dan YSK_EXECUTE=1.",
+    "noKeys": "YSK Server tidak pernah membuat atau menyimpan kunci staking.",
+    "dockerSoon": "Pasang, mulai, dan henti menyusul di tahap berikutnya. Halaman ini hanya menampilkan instans dan disk.",
+    "dryCreate": "Spesifikasi instans dan compose ditulis (dry-run). Tambahkan --execute dan YSK_EXECUTE=1 untuk memulai kontainer.",
+    "dryStart": "Mulai adalah dry-run. Tambahkan --execute dan YSK_EXECUTE=1.",
+    "dryStop": "Henti adalah dry-run. Tambahkan --execute dan YSK_EXECUTE=1.",
+    "dryClear": "Kosongkan adalah dry-run. Tambahkan --execute dan YSK_EXECUTE=1.",
+    "created": "Node dibuat dan compose dimulai",
+    "started": "Node dimulai",
+    "stopped": "Node dihentikan",
+    "cleared": "Data rantai dikosongkan",
+    "dryMithril": "Pemulihan Mithril adalah dry-run. Tambahkan --execute dan YSK_EXECUTE=1.",
+    "mithril": "Snapshot Mithril dipulihkan; node dimulai ulang",
+    "dryPrune": "Pembersihan adalah dry-run. Tambahkan --execute dan YSK_EXECUTE=1.",
+    "pruned": "Citra proyek yang tidak terpakai dibersihkan",
+    "pruneProfile": "Pangkas native klien adalah profil pruned／minimal. Buat ulang untuk mengubahnya.",
+    "sameNetwork": "Sudah di jaringan itu",
+    "drySwitch": "Pergantian jaringan adalah dry-run.",
+    "switched": "Jaringan diganti dan data rantai dikosongkan",
+    "dryCompose": "Akan menulis compose.yml",
+    "composeWrote": "compose.yml ditulis",
+    "statsEmpty": "Tidak ada kontainer berjalan untuk diukur",
+    "autoClearNone": "Tidak ada instans berhenti untuk dikosongkan otomatis",
+    "drySnapshot": "Pemulihan snapshot adalah dry-run. Tambahkan --execute dan YSK_EXECUTE=1.",
+    "snapshotEthEl": "Arsip EL ethPandaOps dipulihkan dan CL diatur ulang untuk checkpoint sync",
+    "snapshotEthCl": "Data CL diatur ulang untuk checkpoint sync resmi",
+    "snapshotNear": "Data NEAR dihapus; compose akan inisialisasi ulang dengan genesis resmi dan epoch sync",
+    "nativePrune": "Perintah pangkas native klien dijalankan"
+  },
+  "create": "Buat node",
+  "wizard": {
+    "title": "Buat node",
+    "back": "Kembali",
+    "next": "Berikutnya",
+    "install": "Pasang",
+    "mainnetWarn": "Jaringan utama membutuhkan banyak disk kosong (ETH sering 800 GiB+). Testnet disarankan.",
+    "mainnetAck": "Saya memahami risiko disk dan slashing. Lanjutkan jaringan utama.",
+    "heavyWarn": "Rantai ini berat (disk besar dan IOPS tinggi). Solana jaringan utama biasanya butuh 2 TiB+.",
+    "memory": "Batas memori (mis. 4g)",
+    "cpus": "Batas CPU (mis. 2.0)",
+    "dataPath": "Jalur data (opsional)",
+    "rpcPort": "Port RPC (opsional)"
+  },
+  "actions": {
+    "detail": "Rincian",
+    "start": "Mulai",
+    "stop": "Henti",
+    "restart": "Mulai ulang",
+    "clear": "Kosongkan",
+    "upgrade": "Tingkatkan",
+    "clearConfirm": "Ketik id instans atau CLEAR",
+    "prune": "Bersihkan citra",
+    "switchNetwork": "Ganti jaringan",
+    "removeUnit": "Hapus juga compose / catatan instans",
+    "restoreAfter": "Pulihkan snapshot setelah mengosongkan"
+  },
+  "policy": {
+    "label": "Kebijakan peningkatan",
+    "manual": "Manual (tangan)",
+    "notify": "Beritahu",
+    "auto-safe": "Otomatis (aman)",
+    "auto-all": "Otomatis (semua)"
+  },
+  "logs": {
+    "empty": "Belum ada log",
+    "follow": "Ikuti log"
+  },
+  "compose": {
+    "label": "Berkas Compose",
+    "save": "Simpan compose"
+  },
+  "snapshot": {
+    "action": "Pulihkan snapshot",
+    "mithril": "Cardano memakai Mithril untuk pemulihan snapshot bersertifikat.",
+    "eth": "Jaringan utama Ethereum boot lewat checkpoint sync resmi klien konsensus. EL lanjut snap sync.",
+    "ethEl": "Hoodi/Sepolia dapat memulihkan arsip EL ethPandaOps, lalu checkpoint-sync CL.",
+    "avax": "Avalanche memakai state-sync di profil compose.",
+    "near": "Snapshot tar gratis resmi NEAR sudah dihentikan. Pulihkan menghapus data dan memakai genesis resmi plus epoch sync.",
+    "none": "Tidak ada sumber snapshot untuk rantai ini."
+  },
+  "stake": {
+    "title": "Siapkan staking (kunci tetap Anda pegang)",
+    "offlineKeys": "Buat kunci secara offline. Panel tidak pernah menyimpannya.",
+    "deposit": "Selesaikan deposit / pendaftaran di launchpad resmi.",
+    "withdrawal": "Atur sendiri kredensial penarikan.",
+    "monitor": "Pantau disk, peer, dan lencana peningkatan di halaman ini."
+  },
+  "alerts": {
+    "diskTitle": "Disk validator kritis",
+    "diskBody": "Ruang kosong volume data validator sangat rendah.",
+    "upgradeTitle": "Peningkatan validator tersedia",
+    "upgradeBody": "Satu atau lebih klien node memiliki versi pin yang lebih baru.",
+    "syncTitle": "Node validator perlu perhatian",
+    "syncBody": "Sebuah node telah sinkron lebih dari 6 jam atau melaporkan kesalahan.",
+    "rollbackTitle": "Peningkatan validator dibatalkan",
+    "rollbackBody": "Peningkatan {{id}} gagal pemeriksaan kesehatan dan dibatalkan."
+  },
+  "upgrade": {
+    "changelog": "Catatan perubahan"
+  },
+  "readiness": {
+    "dockerTitle": "Docker untuk node validator",
+    "dockerOk": "{{count}} instans validator; Docker terpasang",
+    "dockerMissing": "Ada instans validator tetapi perintah docker tidak ditemukan"
+  }
+}

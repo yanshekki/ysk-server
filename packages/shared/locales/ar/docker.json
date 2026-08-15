@@ -1,0 +1,144 @@
+{
+  "title": "Docker",
+  "subtitle": "ثبّت وتحكّم بمحرك Docker والحاويات والصور ومشاريع Compose والقرص على هذا المضيف.",
+  "refresh": "تحديث",
+  "notInstalled": "Docker Engine غير مثبت. ثبّت docker.io و docker-compose-v2 من هذه الصفحة.",
+  "protected": "محمي",
+  "pruneConfirm": "اكتب PRUNE لتأكيد تنظيف volume أو النظام",
+  "settingsHint": "مجموعة آمنة فقط من daemon.json. التطبيق يكتب الملف ويعيد تشغيل docker.service.",
+  "cli": {
+    "usage": "الاستخدام: ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|exec|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--preset version|help|hostname] [--bin BIN] [--project P] [--execute] [--json]"
+  },
+  "tab": {
+    "overview": "نظرة عامة",
+    "containers": "الحاويات",
+    "images": "الصور",
+    "compose": "Compose",
+    "volumes": "Volumes",
+    "networks": "الشبكات",
+    "prune": "تنظيف",
+    "settings": "الإعدادات",
+    "about": "حول"
+  },
+  "col": {
+    "engine": "المحرك",
+    "containers": "الحاويات",
+    "version": "الإصدار",
+    "dataRoot": "دليل البيانات",
+    "disk": "القرص",
+    "validators": "مكدسات المدقق",
+    "name": "الاسم",
+    "image": "الصورة",
+    "status": "الحالة",
+    "ports": "المنافذ",
+    "managed": "تديره اللوحة",
+    "size": "الحجم",
+    "driver": "المشغّل",
+    "type": "النوع",
+    "reclaimable": "قابل للاسترداد"
+  },
+  "state": {
+    "up": "نشط",
+    "down": "متوقف"
+  },
+  "actions": {
+    "start": "بدء",
+    "stop": "إيقاف",
+    "restart": "إعادة تشغيل",
+    "remove": "حذف",
+    "logs": "السجلات",
+    "inspect": "فحص",
+    "exec": "Exec (الإصدار)",
+    "run": "تشغيل صورة",
+    "pull": "سحب",
+    "up": "رفع",
+    "down": "إنزال",
+    "createVolume": "إنشاء volume",
+    "createNetwork": "إنشاء شبكة",
+    "pruneContainers": "تنظيف الحاويات",
+    "pruneImages": "تنظيف الصور",
+    "pruneVolumes": "تنظيف volumes",
+    "pruneSystem": "تنظيف النظام",
+    "startEngine": "بدء المحرك",
+    "stopEngine": "إيقاف المحرك",
+    "restartEngine": "إعادة تشغيل المحرك",
+    "applyDaemon": "تطبيق إعدادات المحرك"
+  },
+  "empty": {
+    "containers": "لا حاويات",
+    "images": "لا صور",
+    "compose": "لا مشاريع Compose",
+    "volumes": "لا volumes",
+    "networks": "لا شبكات"
+  },
+  "logs": {
+    "empty": "لا سجلات بعد"
+  },
+  "settings": {
+    "logMaxSize": "الحد الأقصى لسجل الحاوية",
+    "liveRestore": "استعادة حية (الإبقاء على الحاويات إن أُعيد تشغيل الشيطان)",
+    "mirrors": "مرايا Registry (عنوان لكل سطر)",
+    "insecure": "سجلات غير مشفّرة (مضيف لكل سطر)"
+  },
+  "about": {
+    "body": "Docker خدمة مضيف من الدرجة الأولى في YSK Server مثل Nginx. يُثبَّت من اللوحة (Ubuntu docker.io + docker-compose-v2). تعمل عُقد المدقق كمشاريع Compose باسم yskval-*.",
+    "honesty": "تغييرات المضيف تحتاج root و YSK_EXECUTE=1. الافتراضي dry-run. هذه الصفحة ليست Kubernetes.",
+    "validators": "فتح عُقد المدقق"
+  },
+  "alerts": {
+    "daemonTitle": "شيطان Docker متوقف",
+    "daemonBody": "Docker مثبت لكن docker.service غير نشط. لا يمكن بدء مكدسات المدقق."
+  },
+  "errors": {
+    "notInstalled": "Docker غير مثبت",
+    "daemonDown": "شيطان Docker غير نشط",
+    "needCompose": "مطلوب docker compose (إضافة v2)",
+    "badImage": "مرجع صورة غير صالح",
+    "badName": "اسم غير صالح",
+    "badPort": "نشر منفذ غير صالح",
+    "badEnv": "متغير بيئة غير صالح",
+    "badVolume": "تركيب مجلد غير صالح",
+    "badNetwork": "شبكة غير صالحة",
+    "protectedNetwork": "لا يمكن حذف شبكة Docker مدمجة",
+    "badRestart": "سياسة إعادة التشغيل غير صالحة",
+    "badPrune": "نطاق التنظيف غير صالح",
+    "needPruneConfirm": "تنظيف volume أو النظام يتطلب confirm=PRUNE",
+    "badDaemon": "إعداد المحرك غير صالح",
+    "composeMissing": "ملف Compose لهذا المشروع غير موجود",
+    "logsFailed": "تعذر قراءة سجلات الحاوية",
+    "mutateFailed": "فشل أمر Docker",
+    "engineFailed": "تعذر التحكم بـ docker.service",
+    "badExec": "exec مقتصر على الثنائيات والإعدادات المسبقة المسموحة (بدون صدفة ولا TTY)",
+    "uninstallBusy": "أوقف الحاويات التي تديرها اللوحة (بما فيها مكدسات المدقق) قبل إزالة Docker"
+  },
+  "notes": {
+    "dryMutate": "dry-run فقط. مرّر --execute و YSK_EXECUTE=1 لتغيير المضيف.",
+    "dryPrune": "معاينة التنظيف (غير مطبّقة).",
+    "dryEngine": "التحكم بالمحرك dry-run.",
+    "dryDaemon": "سيُكتب /etc/docker/daemon.json ويُعاد تشغيل docker.service.",
+    "daemonWrote": "كُتب daemon.json",
+    "start": "بدأت الحاوية",
+    "stop": "توقفت الحاوية",
+    "restart": "أُعيد تشغيل الحاوية",
+    "remove": "حُذفت الحاوية",
+    "ran": "بدأت الحاوية من صورة",
+    "pulled": "سُحبت الصورة",
+    "exec": "شُغّل exec مسموح",
+    "imageRemoved": "حُذفت الصورة",
+    "volumeCreated": "أُنشئ volume",
+    "volumeRemoved": "حُذف volume",
+    "networkCreated": "أُنشئت الشبكة",
+    "networkRemoved": "حُذفت الشبكة",
+    "pruned": "اكتمل التنظيف",
+    "compose": {
+      "up": "بدأ مشروع Compose",
+      "down": "توقف مشروع Compose",
+      "restart": "أُعيد تشغيل مشروع Compose"
+    },
+    "engine": {
+      "start": "بدأ docker.service",
+      "stop": "توقف docker.service",
+      "restart": "أُعيد تشغيل docker.service"
+    }
+  }
+}

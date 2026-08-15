@@ -37,6 +37,7 @@ const VERSION_CMD: Partial<Record<SoftwareId, string[]>> = {
   vsftpd: ['vsftpd', '-v'],
   'pdns-server': ['pdns_server', '--version'],
   chromium: ['chromium', '--version'],
+  docker: ['docker', '--version'],
 };
 
 const DPKG_PRIMARY: Partial<Record<SoftwareId, string>> = {
@@ -64,6 +65,7 @@ const DPKG_PRIMARY: Partial<Record<SoftwareId, string>> = {
   node: 'nodejs',
   java: 'openjdk-21-jdk',
   chromium: 'chromium',
+  docker: 'docker.io',
   wireguard: 'wireguard',
   openvpn: 'openvpn',
   shadowsocks: 'shadowsocks-libev',

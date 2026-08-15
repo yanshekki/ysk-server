@@ -50,7 +50,9 @@
     "generic": "Les services associés peuvent s'arrêter",
     "purgeData": "Les chemins de données seront supprimés",
     "protectedSkipped": "Les composants protégés sont ignorés",
-    "runtimeStack": "Toutes les versions gérées par panneau de ce runtime seront supprimées"
+    "runtimeStack": "Toutes les versions gérées par panneau de ce runtime seront supprimées",
+    "containers": "Les conteneurs en cours s’arrêteront",
+    "validators": "Les piles validateur qui utilisent Docker Compose s’arrêteront"
   },
   "requestCancel": "Demande d'annulation",
   "cancelling": "Annulation…",

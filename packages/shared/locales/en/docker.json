@@ -1,0 +1,144 @@
+{
+  "title": "Docker",
+  "subtitle": "Install and control the Docker engine, containers, images, Compose projects, and disk on this host.",
+  "refresh": "Refresh",
+  "notInstalled": "Docker Engine is not installed. Install docker.io and docker-compose-v2 from this page.",
+  "protected": "Protected",
+  "pruneConfirm": "Type PRUNE to confirm volume or system prune",
+  "settingsHint": "Safe daemon.json subset only. Apply writes the file and restarts docker.service.",
+  "cli": {
+    "usage": "Usage: ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|exec|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--preset version|help|hostname] [--bin BIN] [--project P] [--execute] [--json]"
+  },
+  "tab": {
+    "overview": "Overview",
+    "containers": "Containers",
+    "images": "Images",
+    "compose": "Compose",
+    "volumes": "Volumes",
+    "networks": "Networks",
+    "prune": "Prune",
+    "settings": "Settings",
+    "about": "About"
+  },
+  "col": {
+    "engine": "Engine",
+    "containers": "Containers",
+    "version": "Version",
+    "dataRoot": "Data root",
+    "disk": "Disk",
+    "validators": "Validator stacks",
+    "name": "Name",
+    "image": "Image",
+    "status": "Status",
+    "ports": "Ports",
+    "managed": "Managed",
+    "size": "Size",
+    "driver": "Driver",
+    "type": "Type",
+    "reclaimable": "Reclaimable"
+  },
+  "state": {
+    "up": "Active",
+    "down": "Stopped"
+  },
+  "actions": {
+    "start": "Start",
+    "stop": "Stop",
+    "restart": "Restart",
+    "remove": "Remove",
+    "logs": "Logs",
+    "inspect": "Inspect",
+    "exec": "Exec (version)",
+    "run": "Run image",
+    "pull": "Pull",
+    "up": "Up",
+    "down": "Down",
+    "createVolume": "Create volume",
+    "createNetwork": "Create network",
+    "pruneContainers": "Prune containers",
+    "pruneImages": "Prune images",
+    "pruneVolumes": "Prune volumes",
+    "pruneSystem": "System prune",
+    "startEngine": "Start engine",
+    "stopEngine": "Stop engine",
+    "restartEngine": "Restart engine",
+    "applyDaemon": "Apply daemon settings"
+  },
+  "empty": {
+    "containers": "No containers",
+    "images": "No images",
+    "compose": "No Compose projects",
+    "volumes": "No volumes",
+    "networks": "No networks"
+  },
+  "logs": {
+    "empty": "No logs yet"
+  },
+  "settings": {
+    "logMaxSize": "Container log max size",
+    "liveRestore": "Live restore (keep containers if the daemon restarts)",
+    "mirrors": "Registry mirrors (one URL per line)",
+    "insecure": "Insecure registries (one host per line)"
+  },
+  "about": {
+    "body": "Docker is a first-class host service on YSK Server, like Nginx. Install via the panel (Ubuntu docker.io + docker-compose-v2). Validator nodes run as Compose projects named yskval-*.",
+    "honesty": "Host changes need root and YSK_EXECUTE=1. Dry-run is the default. This page is not Kubernetes.",
+    "validators": "Open validator nodes"
+  },
+  "alerts": {
+    "daemonTitle": "Docker daemon is down",
+    "daemonBody": "The Docker engine is installed but docker.service is not active. Validator stacks cannot start."
+  },
+  "errors": {
+    "notInstalled": "Docker is not installed",
+    "daemonDown": "Docker daemon is not active",
+    "needCompose": "docker compose (v2 plugin) is required",
+    "badImage": "Invalid image reference",
+    "badName": "Invalid name",
+    "badPort": "Invalid port publish",
+    "badEnv": "Invalid environment variable",
+    "badVolume": "Invalid volume mount",
+    "badNetwork": "Invalid network",
+    "protectedNetwork": "Cannot remove a built-in Docker network",
+    "badRestart": "Invalid restart policy",
+    "badPrune": "Invalid prune scope",
+    "needPruneConfirm": "Volume or system prune requires confirm=PRUNE",
+    "badDaemon": "Invalid daemon setting",
+    "composeMissing": "Compose file for this project was not found",
+    "logsFailed": "Could not read container logs",
+    "mutateFailed": "Docker command failed",
+    "engineFailed": "Could not control docker.service",
+    "badExec": "Exec is limited to allowlisted binaries and presets (no shell, no TTY)",
+    "uninstallBusy": "Stop YSK-managed containers (including validator stacks) before uninstalling Docker"
+  },
+  "notes": {
+    "dryMutate": "Dry-run only. Pass --execute and YSK_EXECUTE=1 to change the host.",
+    "dryPrune": "Prune preview (not applied).",
+    "dryEngine": "Engine control is dry-run.",
+    "dryDaemon": "Would write /etc/docker/daemon.json and restart docker.service.",
+    "daemonWrote": "Wrote daemon.json",
+    "start": "Container started",
+    "stop": "Container stopped",
+    "restart": "Container restarted",
+    "remove": "Container removed",
+    "ran": "Container started from image",
+    "pulled": "Image pulled",
+    "exec": "Ran allowlisted exec",
+    "imageRemoved": "Image removed",
+    "volumeCreated": "Volume created",
+    "volumeRemoved": "Volume removed",
+    "networkCreated": "Network created",
+    "networkRemoved": "Network removed",
+    "pruned": "Prune finished",
+    "compose": {
+      "up": "Compose project started",
+      "down": "Compose project stopped",
+      "restart": "Compose project restarted"
+    },
+    "engine": {
+      "start": "docker.service started",
+      "stop": "docker.service stopped",
+      "restart": "docker.service restarted"
+    }
+  }
+}

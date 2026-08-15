@@ -1,0 +1,144 @@
+{
+  "title": "Docker",
+  "subtitle": "اس میزبان پر Docker انجن، کنٹینر، تصاویر، Compose منصوبے اور ڈسک نصب و کنٹرول کریں۔",
+  "refresh": "تازہ کریں",
+  "notInstalled": "Docker Engine نصب نہیں۔ اس صفحے سے docker.io اور docker-compose-v2 نصب کریں۔",
+  "protected": "محفوظ",
+  "pruneConfirm": "volume یا نظام صفائی کی تصدیق کے لیے PRUNE لکھیں",
+  "settingsHint": "صرف محفوظ daemon.json اختیارات۔ اطلاق فائل لکھتا ہے اور docker.service دوبارہ چلاتا ہے۔",
+  "cli": {
+    "usage": "استعمال: ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|exec|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--preset version|help|hostname] [--bin BIN] [--project P] [--execute] [--json]"
+  },
+  "tab": {
+    "overview": "جائزہ",
+    "containers": "کنٹینر",
+    "images": "تصاویر",
+    "compose": "Compose",
+    "volumes": "Volume",
+    "networks": "نیٹ ورک",
+    "prune": "صاف کریں",
+    "settings": "ترتیبات",
+    "about": "تعارف"
+  },
+  "col": {
+    "engine": "انجن",
+    "containers": "کنٹینر",
+    "version": "ورژن",
+    "dataRoot": "ڈیٹا ڈائریکٹری",
+    "disk": "ڈسک",
+    "validators": "ویلیڈیٹر ڈھیر",
+    "name": "نام",
+    "image": "تصویر",
+    "status": "حالت",
+    "ports": "پورٹس",
+    "managed": "پینل کے زیر انتظام",
+    "size": "سائز",
+    "driver": "ڈرائیور",
+    "type": "قسم",
+    "reclaimable": "واپس لینے کے قابل"
+  },
+  "state": {
+    "up": "فعال",
+    "down": "رکا"
+  },
+  "actions": {
+    "start": "چلائیں",
+    "stop": "روکیں",
+    "restart": "دوبارہ چلائیں",
+    "remove": "ہٹائیں",
+    "logs": "لاگز",
+    "inspect": "جائزہ",
+    "exec": "Exec (ورژن)",
+    "run": "تصویر چلائیں",
+    "pull": "کھینچیں",
+    "up": "اوپر",
+    "down": "نیچے",
+    "createVolume": "volume بنائیں",
+    "createNetwork": "نیٹ ورک بنائیں",
+    "pruneContainers": "کنٹینر صاف کریں",
+    "pruneImages": "تصاویر صاف کریں",
+    "pruneVolumes": "volume صاف کریں",
+    "pruneSystem": "نظام صفائی",
+    "startEngine": "انجن چلائیں",
+    "stopEngine": "انجن روکیں",
+    "restartEngine": "انجن دوبارہ چلائیں",
+    "applyDaemon": "انجن ترتیبات لگائیں"
+  },
+  "empty": {
+    "containers": "کوئی کنٹینر نہیں",
+    "images": "کوئی تصویر نہیں",
+    "compose": "کوئی Compose منصوبہ نہیں",
+    "volumes": "کوئی volume نہیں",
+    "networks": "کوئی نیٹ ورک نہیں"
+  },
+  "logs": {
+    "empty": "ابھی کوئی لاگ نہیں"
+  },
+  "settings": {
+    "logMaxSize": "کنٹینر لاگ زیادہ سے زیادہ سائز",
+    "liveRestore": "لائیو بحالی (ڈیمن دوبارہ چلنے پر کنٹینر رکھیں)",
+    "mirrors": "Registry آئینے (ہر سطر ایک URL)",
+    "insecure": "غیر مرموز Registry (ہر سطر ایک میزبان)"
+  },
+  "about": {
+    "body": "Docker، YSK Server پر Nginx جیسی درجہ اول میزبان خدمت ہے۔ پینل سے Ubuntu docker.io + docker-compose-v2 نصب ہوتا ہے۔ ویلیڈیٹر نوڈ yskval-* Compose منصوبوں کے طور پر چلتے ہیں۔",
+    "honesty": "میزبان تبدیلی کے لیے root اور YSK_EXECUTE=1 چاہیے۔ طے شدہ dry-run ہے۔ یہ صفحہ Kubernetes نہیں۔",
+    "validators": "ویلیڈیٹر نوڈز کھولیں"
+  },
+  "alerts": {
+    "daemonTitle": "Docker ڈیمن بند ہے",
+    "daemonBody": "Docker نصب ہے مگر docker.service فعال نہیں۔ ویلیڈیٹر ڈھیر شروع نہیں ہو سکتے۔"
+  },
+  "errors": {
+    "notInstalled": "Docker نصب نہیں",
+    "daemonDown": "Docker ڈیمن فعال نہیں",
+    "needCompose": "docker compose (v2 پلگ ان) درکار ہے",
+    "badImage": "تصویر حوالہ غلط",
+    "badName": "نام غلط",
+    "badPort": "پورٹ اشاعت غلط",
+    "badEnv": "ماحول متغیر غلط",
+    "badVolume": "حجم ماؤنٹ غلط",
+    "badNetwork": "نیٹ ورک غلط",
+    "protectedNetwork": "اندرونی Docker نیٹ ورک نہیں ہٹایا جا سکتا",
+    "badRestart": "دوبارہ چلانے کی پالیسی غلط",
+    "badPrune": "صفائی دائرہ غلط",
+    "needPruneConfirm": "volume یا نظام صفائی کے لیے confirm=PRUNE چاہیے",
+    "badDaemon": "انجن ترتیب غلط",
+    "composeMissing": "اس منصوبے کی Compose فائل نہیں ملی",
+    "logsFailed": "کنٹینر لاگز نہیں پڑھے جا سکے",
+    "mutateFailed": "Docker حکم ناکام",
+    "engineFailed": "docker.service کنٹرول نہیں ہو سکا",
+    "badExec": "exec صرف اجازت یافتہ بائنری اور پیشگی ترتیبات تک محدود ہے (کوئی شیل نہیں، کوئی TTY نہیں)",
+    "uninstallBusy": "Docker ہٹانے سے پہلے پینل کے زیر انتظام کنٹینر (ویلیڈیٹر ڈھیر سمیت) روکیں"
+  },
+  "notes": {
+    "dryMutate": "صرف dry-run۔ میزبان بدلنے کے لیے --execute اور YSK_EXECUTE=1 دیں۔",
+    "dryPrune": "صفائی پیش نظارہ (لاگو نہیں)۔",
+    "dryEngine": "انجن کنٹرول dry-run ہے۔",
+    "dryDaemon": "/etc/docker/daemon.json لکھا جائے گا اور docker.service دوبارہ چلے گا۔",
+    "daemonWrote": "daemon.json لکھا گیا",
+    "start": "کنٹینر چلا",
+    "stop": "کنٹینر رکا",
+    "restart": "کنٹینر دوبارہ چلا",
+    "remove": "کنٹینر ہٹایا گیا",
+    "ran": "تصویر سے کنٹینر چلا",
+    "pulled": "تصویر کھینچی گئی",
+    "exec": "اجازت یافتہ exec چلا",
+    "imageRemoved": "تصویر ہٹائی گئی",
+    "volumeCreated": "Volume بنا",
+    "volumeRemoved": "Volume ہٹایا گیا",
+    "networkCreated": "نیٹ ورک بنا",
+    "networkRemoved": "نیٹ ورک ہٹایا گیا",
+    "pruned": "صفائی مکمل",
+    "compose": {
+      "up": "Compose منصوبہ چلا",
+      "down": "Compose منصوبہ رکا",
+      "restart": "Compose منصوبہ دوبارہ چلا"
+    },
+    "engine": {
+      "start": "docker.service چلا",
+      "stop": "docker.service رکا",
+      "restart": "docker.service دوبارہ چلا"
+    }
+  }
+}

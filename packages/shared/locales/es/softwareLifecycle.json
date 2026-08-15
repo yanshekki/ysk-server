@@ -50,7 +50,9 @@
     "generic": "Los servicios relacionados pueden detenerse",
     "purgeData": "Las rutas de datos se eliminarán",
     "protectedSkipped": "Se omiten los componentes protegidos",
-    "runtimeStack": "Se eliminarán todas las versiones administradas por panel de este tiempo de ejecución."
+    "runtimeStack": "Se eliminarán todas las versiones administradas por panel de este tiempo de ejecución.",
+    "containers": "Los contenedores en ejecución se detendrán",
+    "validators": "Las pilas de validador que usan Docker Compose se detendrán"
   },
   "requestCancel": "Solicitar cancelar",
   "cancelling": "Cancelado…",

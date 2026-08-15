@@ -313,6 +313,46 @@ ysk-server ask "自然語言" [--execute]
 
 ---
 
+## docker
+
+Docker Engine 控制面（面板軟件目錄安裝 `docker.io` + `docker-compose-v2`）。
+
+```bash
+ysk-server docker status --json
+ysk-server docker ps --json
+ysk-server docker images --json
+ysk-server docker compose ls --json
+YSK_EXECUTE=1 ysk-server docker run --image alpine:3.20 --name demo --execute --json
+YSK_EXECUTE=1 ysk-server docker engine start --execute --json
+```
+
+見 [../features/docker-ZH.md](../features/docker-ZH.md)。
+
+## validators
+
+L1 驗證者就緒節點（Ethereum、Avalanche、NEAR、Cardano、Bitcoin、Cosmos Hub、Sui、Aptos、Polkadot、Solana）。**Beta。** 非託管 — CLI 不會寫入質押私鑰。Solana 標為 **heavy**（主網 2 TiB 或以上）。
+
+```bash
+ysk-server validators list --json
+ysk-server validators chains --json
+ysk-server validators disk --json
+ysk-server validators get --id eth-hoodi-1 --json
+ysk-server validators create --chain eth --network hoodi --profile minimal --json
+YSK_EXECUTE=1 ysk-server validators create --chain eth --network hoodi --profile minimal --execute --json
+YSK_EXECUTE=1 ysk-server validators start --id eth-hoodi-1 --execute --json
+YSK_EXECUTE=1 ysk-server validators stop --id eth-hoodi-1 --execute --json
+YSK_EXECUTE=1 ysk-server validators clear --id eth-hoodi-1 --confirm --execute --json
+ysk-server validators logs --id eth-hoodi-1 --json
+ysk-server validators policy --id eth-hoodi-1 --upgrade notify --json
+YSK_EXECUTE=1 ysk-server validators upgrade --id eth-hoodi-1 --execute --json
+YSK_EXECUTE=1 ysk-server validators mithril --id ada-preview-1 --confirm MITHRIL --execute --json
+ysk-server validators create --chain eth --network hoodi --el geth --cl prysm --json
+```
+
+沒有 `--execute` 的 create 只寫入實例規格與 compose（`written`）。start／stop／clear 在 `YSK_EXECUTE=1` 加 `--execute` 之前維持 **blocked**。真正套用需要 Docker Compose。
+
+見 [../features/validators-ZH.md](../features/validators-ZH.md)。
+
 ## vpn
 
 控制平面主機上的開源 VPN（WireGuard／OpenVPN／Outline 風格 ss-server）。
@@ -442,6 +482,8 @@ ysk-server hosting runtime-install|runtime-switch|runtime-uninstall …
 | cdn, agents | [../features/cdn-agents-ZH.md](../features/cdn-agents-ZH.md) |
 | logs, host | [../features/logs-metrics-ZH.md](../features/logs-metrics-ZH.md) |
 | vpn | [../features/vpn-ZH.md](../features/vpn-ZH.md) |
+| docker | [../features/docker-ZH.md](../features/docker-ZH.md) |
+| validators | [../features/validators-ZH.md](../features/validators-ZH.md) |
 | vnc | [../features/vnc-ZH.md](../features/vnc-ZH.md) |
 | apache | [../features/apache-ZH.md](../features/apache-ZH.md) |
 | db, redis, runtimes | [../features/databases-ZH.md](../features/databases-ZH.md) · [../features/runtimes-ZH.md](../features/runtimes-ZH.md) |

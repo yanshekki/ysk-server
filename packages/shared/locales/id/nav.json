@@ -53,7 +53,9 @@
     "runtimes": "Waktu proses",
     "security": "Keamanan",
     "system": "Sistem",
-    "ai": "AI"
+    "ai": "AI",
+    "validators": "Validator",
+    "containers": "Kontainer"
   },
   "java": "Java",
   "kotlin": "Kotlin",
@@ -76,5 +78,7 @@
   "support": "Mendukung",
   "noAccessTitle": "Tidak ada akses",
   "noAccessDesc": "Peran Anda tidak mencakup halaman ini. Minta admin jika Anda membutuhkannya.",
-  "backToDashboard": "Kembali ke dasbor"
+  "backToDashboard": "Kembali ke dasbor",
+  "validators": "Validator (Beta)",
+  "docker": "Docker"
 }

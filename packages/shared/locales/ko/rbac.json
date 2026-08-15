@@ -80,7 +80,13 @@
     "auditExport": "내보내기 감사",
     "securityApiKeysAdmin": "API 키 관리자",
     "networkBrowse": "호스트 중재 웹 탐색",
-    "networkVnc": "VNC 원격 데스크톱"
+    "networkVnc": "VNC 원격 데스크톱",
+    "validatorsRead": "검증자(읽기)",
+    "validatorsManage": "검증자 관리",
+    "validatorsWipe": "검증자 데이터 삭제",
+    "dockerRead": "Docker(읽기)",
+    "dockerManage": "Docker 관리",
+    "dockerWipe": "Docker 삭제／정리"
   },
   "aboutRoles": "역할(공장 기본값)",
   "aboutRolesBody": "역할은 기본 기능을 설정합니다. 사용자는 개별 항목을 재정의할 수 있습니다.",

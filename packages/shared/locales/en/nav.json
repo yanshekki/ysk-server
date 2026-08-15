@@ -53,7 +53,9 @@
     "runtimes": "Runtimes",
     "security": "Security",
     "system": "System",
-    "ai": "AI"
+    "ai": "AI",
+    "validators": "Validators",
+    "containers": "Containers"
   },
   "java": "Java",
   "kotlin": "Kotlin",
@@ -76,5 +78,7 @@
   "support": "Support",
   "noAccessTitle": "No access",
   "noAccessDesc": "Your role does not include this page. Ask an admin if you need it.",
-  "backToDashboard": "Back to dashboard"
+  "backToDashboard": "Back to dashboard",
+  "validators": "Validators (Beta)",
+  "docker": "Docker"
 }

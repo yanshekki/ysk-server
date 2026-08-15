@@ -80,7 +80,13 @@
     "auditExport": "নিরীক্ষা রপ্তানি",
     "securityApiKeysAdmin": "API কী অ্যাডমিন",
     "networkBrowse": "হোস্ট-মধ্যস্থিত ওয়েব ব্রাউজ",
-    "networkVnc": "VNC দূরবর্তী ডেস্কটপ"
+    "networkVnc": "VNC দূরবর্তী ডেস্কটপ",
+    "validatorsRead": "ভ্যালিডেটর (পঠন)",
+    "validatorsManage": "ভ্যালিডেটর পরিচালনা",
+    "validatorsWipe": "ভ্যালিডেটর ডেটা মুছুন",
+    "dockerRead": "Docker (পঠন)",
+    "dockerManage": "Docker পরিচালনা",
+    "dockerWipe": "Docker মুছুন / পরিষ্কার"
   },
   "aboutRoles": "ভূমিকা (ফ্যাক্টরি ডিফল্ট)",
   "aboutRolesBody": "ভূমিকা সেট ডিফল্ট ক্ষমতা; ব্যবহারকারীরা স্বতন্ত্র ওভাররাইড করতে পারেন।",

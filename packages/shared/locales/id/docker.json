@@ -1,0 +1,144 @@
+{
+  "title": "Docker",
+  "subtitle": "Pasang dan kendalikan mesin Docker, kontainer, citra, proyek Compose, dan disk di host ini.",
+  "refresh": "Segarkan",
+  "notInstalled": "Docker Engine belum terpasang. Pasang docker.io dan docker-compose-v2 dari halaman ini.",
+  "protected": "Dilindungi",
+  "pruneConfirm": "Ketik PRUNE untuk mengonfirmasi pembersihan volume atau sistem",
+  "settingsHint": "Hanya subset aman daemon.json. Menerapkan menulis berkas dan memulai ulang docker.service.",
+  "cli": {
+    "usage": "Pemakaian: ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|exec|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--preset version|help|hostname] [--bin BIN] [--project P] [--execute] [--json]"
+  },
+  "tab": {
+    "overview": "Ringkasan",
+    "containers": "Kontainer",
+    "images": "Citra",
+    "compose": "Compose",
+    "volumes": "Volume",
+    "networks": "Jaringan",
+    "prune": "Bersihkan",
+    "settings": "Pengaturan",
+    "about": "Tentang"
+  },
+  "col": {
+    "engine": "Mesin",
+    "containers": "Kontainer",
+    "version": "Versi",
+    "dataRoot": "Direktori data",
+    "disk": "Cakram",
+    "validators": "Tumpukan validator",
+    "name": "Nama",
+    "image": "Citra",
+    "status": "Status",
+    "ports": "Port",
+    "managed": "Dikelola panel",
+    "size": "Ukuran",
+    "driver": "Driver",
+    "type": "Jenis",
+    "reclaimable": "Dapat diklaim ulang"
+  },
+  "state": {
+    "up": "Aktif",
+    "down": "Berhenti"
+  },
+  "actions": {
+    "start": "Mulai",
+    "stop": "Henti",
+    "restart": "Mulai ulang",
+    "remove": "Hapus",
+    "logs": "Log",
+    "inspect": "Periksa",
+    "exec": "Exec (versi)",
+    "run": "Jalankan citra",
+    "pull": "Ambil",
+    "up": "Naikkan",
+    "down": "Turunkan",
+    "createVolume": "Buat volume",
+    "createNetwork": "Buat jaringan",
+    "pruneContainers": "Bersihkan kontainer",
+    "pruneImages": "Bersihkan citra",
+    "pruneVolumes": "Bersihkan volume",
+    "pruneSystem": "Bersihkan sistem",
+    "startEngine": "Mulai mesin",
+    "stopEngine": "Henti mesin",
+    "restartEngine": "Mulai ulang mesin",
+    "applyDaemon": "Terapkan pengaturan mesin"
+  },
+  "empty": {
+    "containers": "Tidak ada kontainer",
+    "images": "Tidak ada citra",
+    "compose": "Tidak ada proyek Compose",
+    "volumes": "Tidak ada volume",
+    "networks": "Tidak ada jaringan"
+  },
+  "logs": {
+    "empty": "Belum ada log"
+  },
+  "settings": {
+    "logMaxSize": "Batas log kontainer",
+    "liveRestore": "Pemulihan langsung (pertahankan kontainer jika daemon dimulai ulang)",
+    "mirrors": "Cermin Registry (satu URL per baris)",
+    "insecure": "Registry tanpa enkripsi (satu host per baris)"
+  },
+  "about": {
+    "body": "Docker adalah layanan host kelas satu di YSK Server, setara Nginx. Dipasang lewat panel (Ubuntu docker.io + docker-compose-v2). Node validator berjalan sebagai proyek Compose yskval-*.",
+    "honesty": "Perubahan host membutuhkan root dan YSK_EXECUTE=1. Default adalah dry-run. Halaman ini bukan Kubernetes.",
+    "validators": "Buka node validator"
+  },
+  "alerts": {
+    "daemonTitle": "Daemon Docker tidak berjalan",
+    "daemonBody": "Docker terpasang tetapi docker.service tidak aktif. Tumpukan validator tidak dapat dimulai."
+  },
+  "errors": {
+    "notInstalled": "Docker belum terpasang",
+    "daemonDown": "Daemon Docker tidak aktif",
+    "needCompose": "docker compose (plugin v2) wajib",
+    "badImage": "Referensi citra tidak valid",
+    "badName": "Nama tidak valid",
+    "badPort": "Publikasi port tidak valid",
+    "badEnv": "Variabel lingkungan tidak valid",
+    "badVolume": "Kait volume tidak valid",
+    "badNetwork": "Jaringan tidak valid",
+    "protectedNetwork": "Tidak dapat menghapus jaringan Docker bawaan",
+    "badRestart": "Kebijakan mulai ulang tidak valid",
+    "badPrune": "Lingkup pembersihan tidak valid",
+    "needPruneConfirm": "Membersihkan volume atau sistem memerlukan confirm=PRUNE",
+    "badDaemon": "Pengaturan mesin tidak valid",
+    "composeMissing": "Berkas Compose proyek ini tidak ditemukan",
+    "logsFailed": "Tidak dapat membaca log kontainer",
+    "mutateFailed": "Perintah Docker gagal",
+    "engineFailed": "Tidak dapat mengendalikan docker.service",
+    "badExec": "Exec terbatas pada biner dan prasetel yang diizinkan (tanpa shell, tanpa TTY)",
+    "uninstallBusy": "Hentikan kontainer yang dikelola panel (termasuk tumpukan validator) sebelum mencopot Docker"
+  },
+  "notes": {
+    "dryMutate": "Hanya dry-run. Tambahkan --execute dan YSK_EXECUTE=1 untuk mengubah host.",
+    "dryPrune": "Pratinjau pembersihan (belum diterapkan).",
+    "dryEngine": "Kontrol mesin adalah dry-run.",
+    "dryDaemon": "Akan menulis /etc/docker/daemon.json dan memulai ulang docker.service.",
+    "daemonWrote": "daemon.json ditulis",
+    "start": "Kontainer dimulai",
+    "stop": "Kontainer dihentikan",
+    "restart": "Kontainer dimulai ulang",
+    "remove": "Kontainer dihapus",
+    "ran": "Kontainer dimulai dari citra",
+    "pulled": "Citra diambil",
+    "exec": "Exec yang diizinkan dijalankan",
+    "imageRemoved": "Citra dihapus",
+    "volumeCreated": "Volume dibuat",
+    "volumeRemoved": "Volume dihapus",
+    "networkCreated": "Jaringan dibuat",
+    "networkRemoved": "Jaringan dihapus",
+    "pruned": "Pembersihan selesai",
+    "compose": {
+      "up": "Proyek Compose dimulai",
+      "down": "Proyek Compose dihentikan",
+      "restart": "Proyek Compose dimulai ulang"
+    },
+    "engine": {
+      "start": "docker.service dimulai",
+      "stop": "docker.service dihentikan",
+      "restart": "docker.service dimulai ulang"
+    }
+  }
+}

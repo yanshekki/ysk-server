@@ -80,7 +80,13 @@
     "auditExport": "Ekspor audit",
     "securityApiKeysAdmin": "Admin kunci API",
     "networkBrowse": "Penjelajahan web yang dimediasi host",
-    "networkVnc": "Desktop jarak jauh VNC"
+    "networkVnc": "Desktop jarak jauh VNC",
+    "validatorsRead": "Validator (baca)",
+    "validatorsManage": "Validator kelola",
+    "validatorsWipe": "Validator hapus data",
+    "dockerRead": "Docker (baca)",
+    "dockerManage": "Docker kelola",
+    "dockerWipe": "Docker hapus / bersihkan"
   },
   "aboutRoles": "Peran (default pabrik)",
   "aboutRolesBody": "Peran menetapkan kemampuan default; pengguna dapat menggantinya satu per satu.",

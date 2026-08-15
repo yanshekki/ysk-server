@@ -80,7 +80,13 @@
     "auditExport": "Audit export",
     "securityApiKeysAdmin": "API keys admin",
     "networkBrowse": "Host-mediated web browse",
-    "networkVnc": "VNC remote desktop"
+    "networkVnc": "VNC remote desktop",
+    "validatorsRead": "Validators (read)",
+    "validatorsManage": "Validators manage",
+    "validatorsWipe": "Validators wipe data",
+    "dockerRead": "Docker (read)",
+    "dockerManage": "Docker manage",
+    "dockerWipe": "Docker wipe / prune"
   },
   "aboutRoles": "Roles (factory defaults)",
   "aboutRolesBody": "Roles set default capabilities; users can override individual ones.",

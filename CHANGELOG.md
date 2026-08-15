@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Feature
+- Validators (Beta): panel `/validators` + `ysk-server validators` for L1 nodes — Phase 1 (ETH, AVAX, NEAR, ADA) and Phase 2 (BTC pruned, Cosmos Hub, Sui, Aptos, Polkadot, Solana heavy). Non-custodial. Mutations need `YSK_EXECUTE=1`.
+- Docker engine page `/docker` + `ysk-server docker` (install via apt `docker.io` + compose v2; containers, images, volumes, networks, Compose, prune, safe daemon.json).
+- Validator upgrades health-check and roll back to the previous image/tag on failure.
+- Cardano Mithril one-click snapshot restore (`validators mithril`).
+- Ethereum EL×CL matrix: Geth / Nethermind / Reth × Lighthouse / Prysm / Teku / Nimbus.
+
 ## 1.0.39 — 2026-08-15
 
 ### Fix

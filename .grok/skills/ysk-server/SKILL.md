@@ -70,6 +70,12 @@ ysk-server users totp --user NAME --json
 ysk-server files shares create --path REL --mode both --root public --json
 ysk-server bt-tracker status --json
 ysk-server bt-tracker start --execute --json
+ysk-server validators list --json
+ysk-server validators create --chain eth --network hoodi --profile minimal --json
+ysk-server validators create --chain near --network testnet --profile minimal --json
+ysk-server validators create --chain ada --network preview --profile minimal --json
+ysk-server docker status --json
+YSK_EXECUTE=1 ysk-server docker run --image alpine:3.20 --name demo --execute --json
 ysk-server defense status --json   # or protection — use docs if flag differs
 ```
 
@@ -93,6 +99,8 @@ Full command map: **`docs/agent/commands.json`** · **`docs/cli/reference.md`**.
 | `/bt-tracker` | BitTorrent tracker |
 | `/email` | Mail |
 | `/protection` | Host defense |
+| `/docker` | Docker engine |
+| `/validators` | L1 validator nodes (Beta) |
 | `/support` | Creator · Linktree/crypto donate · YSK Limited · email@ysk.hk |
 
 ## BT / WebTorrent notes

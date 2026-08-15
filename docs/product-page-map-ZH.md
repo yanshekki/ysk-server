@@ -44,6 +44,8 @@
 | 執行環境 | `/runtimes/java` | Java | J |
 | 執行環境 | `/runtimes/kotlin` | Kotlin | J |
 | 執行環境 | `/runtimes/bun` | Bun | J |
+| 容器 | `/docker` | Docker 引擎 | |
+| 驗證者 | `/validators` | L1 節點 (Beta) | |
 | 安全 | `/protection` | 主機防護（UFW／fail2ban） | M |
 | 安全 | `/security` | 帳號 2FA · API 金鑰 · SSH · 審批 · 工具權限 | R |
 | 安全 | `/vpn` | VPN | |

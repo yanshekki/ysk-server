@@ -158,3 +158,5 @@ export { handleUpdatesApplyRoutes } from './updates-apply.js';
 export { handleUpdatesApplySingleRoutes } from './updates-apply-single.js';
 export { handleUpdatesInventoryRoutes } from './updates-inventory.js';
 export { handleUpdatesRoutes } from './updates.js';
+export { handleValidatorsRoutes } from './validators.js';
+export { handleDockerRoutes } from './docker.js';

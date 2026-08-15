@@ -18,6 +18,7 @@ import { cpus, freemem, loadavg, totalmem, uptime, hostname, platform, arch, rel
 import { resolve as pathResolve, sep as pathSep } from 'node:path';
 import { promisify } from 'node:util';
 import { ErrorCodes, YskError, yskError, tl } from 'ysk-server-shared';
+import { isReadOnlyDockerArgv } from '../hosting/docker/argv.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -686,6 +687,10 @@ function isReadOnlyArgv(argv: string[]): boolean {
     }
     if (bin === 'curl' || bin === 'wget') {
       // network fetch can write with -o; treat as mutating always (SSRF + write)
+      return false;
+    }
+    if (bin === 'docker') {
+      if (isReadOnlyDockerArgv(argv)) return true;
       return false;
     }
     return false;

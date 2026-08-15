@@ -30,13 +30,22 @@ describe('capability catalog + factory', () => {
     expect(hasCapability(op.capabilities, 'backups.restore')).toBe(false);
     expect(hasCapability(op.capabilities, 'updates.apply')).toBe(true);
     expect(hasCapability(op.capabilities, 'projects.write')).toBe(true);
+    expect(hasCapability(op.capabilities, 'validators.manage')).toBe(true);
+    expect(hasCapability(op.capabilities, 'validators.wipe')).toBe(false);
+    expect(hasCapability(admin.capabilities, 'validators.wipe')).toBe(true);
+    expect(hasCapability(op.capabilities, 'docker.manage')).toBe(true);
+    expect(hasCapability(op.capabilities, 'docker.wipe')).toBe(false);
+    expect(hasCapability(admin.capabilities, 'docker.wipe')).toBe(true);
   });
 
   it('viewer is read-only', () => {
     const v = factoryRolePolicy('viewer');
     expect(v.maxLevel).toBe('read');
     expect(hasCapability(v.capabilities, 'dashboard.read')).toBe(true);
+    expect(hasCapability(v.capabilities, 'validators.read')).toBe(true);
+    expect(hasCapability(v.capabilities, 'docker.read')).toBe(true);
     expect(hasCapability(v.capabilities, 'projects.write')).toBe(false);
+    expect(hasCapability(v.capabilities, 'validators.manage')).toBe(false);
   });
 
   it('effective unions roles, applies grants and revokes', () => {

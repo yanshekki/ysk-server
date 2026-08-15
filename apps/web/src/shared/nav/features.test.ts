@@ -48,4 +48,18 @@ describe('allFeatureTiles', () => {
     const tiles = allFeatureTiles();
     expect(tiles.some((t) => t.to === '/ai' || t.to === '/agents')).toBe(false);
   });
+
+  it('has a single docker entry between runtimes and validators', () => {
+    const tiles = allFeatureTiles();
+    expect(tiles.filter((t) => t.to === '/docker' || t.key === 'docker')).toHaveLength(1);
+    expect(FEATURE_SECTIONS.some((s) => s.sectionKey === 'containers')).toBe(true);
+  });
+
+  it('has a single validators (Beta) entry', () => {
+    const tiles = allFeatureTiles();
+    expect(tiles.filter((t) => t.to === '/validators' || t.key === 'validators')).toHaveLength(
+      1,
+    );
+    expect(FEATURE_SECTIONS.some((s) => s.sectionKey === 'validators')).toBe(true);
+  });
 });

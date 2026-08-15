@@ -1,0 +1,208 @@
+{
+  "title": "驗證者節點 (Beta)",
+  "subtitle": "在此主機安裝與管理 L1 節點。非託管 — 私鑰由你自行保管。",
+  "beta": "Beta",
+  "tab": {
+    "nodes": "節點",
+    "disk": "磁碟",
+    "about": "說明"
+  },
+  "empty": {
+    "title": "尚未建立驗證者節點",
+    "desc": "用精靈幾步建立測試網節點。CLI：ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+  },
+  "refresh": "重新整理",
+  "disk": {
+    "title": "驗證者節點磁碟",
+    "root": "資料目錄",
+    "free": "可用",
+    "used": "已用",
+    "none": "尚未有實例資料",
+    "warn": "磁碟用量偏高（70% 或以上）",
+    "danger": "磁碟用量危急（85% 或以上）",
+    "autoClear": "磁碟危急時自動清空最大的已停止實例（預設關閉）"
+  },
+  "chain": {
+    "eth": "Ethereum",
+    "avax": "Avalanche",
+    "near": "NEAR",
+    "ada": "Cardano",
+    "btc": "Bitcoin",
+    "cosmos": "Cosmos Hub",
+    "sui": "Sui",
+    "aptos": "Aptos",
+    "dot": "Polkadot",
+    "sol": "Solana"
+  },
+  "network": {
+    "hoodi": "Hoodi",
+    "sepolia": "Sepolia",
+    "mainnet": "主網",
+    "fuji": "Fuji",
+    "testnet": "測試網",
+    "preview": "Preview",
+    "preprod": "Preprod",
+    "westend": "Westend"
+  },
+  "networkKind": {
+    "testnet": "測試網",
+    "mainnet": "主網"
+  },
+  "profile": {
+    "minimal": "精簡",
+    "pruned": "已修剪",
+    "validator-ready": "驗證者就緒",
+    "rpc": "RPC"
+  },
+  "col": {
+    "id": "識別碼",
+    "chain": "鏈",
+    "network": "網絡",
+    "profile": "設定檔",
+    "status": "狀態",
+    "disk": "磁碟"
+  },
+  "cli": {
+    "usage": "用法：ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
+  },
+  "clients": {
+    "el": "執行層客戶端",
+    "cl": "共識層客戶端"
+  },
+  "mithril": {
+    "label": "先用 Mithril 快照還原（測試網建議）",
+    "action": "用 Mithril 還原"
+  },
+  "errors": {
+    "notFound": "找不到驗證者節點實例",
+    "invalidId": "實例識別碼無效",
+    "diskLow": "此鏈、網絡與設定檔所需的可用磁碟空間不足",
+    "diskUnknownMainnet": "無法量度可用磁碟，拒絕建立主網節點",
+    "needDocker": "需要 Docker Compose，但找不到",
+    "composeFailed": "docker compose 失敗",
+    "needConfirm": "清空須 confirm=實例識別碼 或 CLEAR",
+    "mithrilAdaOnly": "Mithril 還原只適用於 Cardano",
+    "needMithrilConfirm": "Mithril 需要 confirm=實例識別碼 或 MITHRIL",
+    "mithrilBlocked": "Mithril 的 docker run 被允許清單拒絕",
+    "mithrilKey": "無法載入 Mithril genesis 驗證金鑰",
+    "mithrilFailed": "Mithril 快照下載失敗",
+    "pruneFailed": "清理失敗",
+    "switchNeedStop": "轉網絡前請先停止節點",
+    "switchNeedClear": "轉網絡會清空鏈資料。請用實例識別碼或 CLEAR 確認",
+    "composeMissing": "找不到 Compose 檔",
+    "composeNotManaged": "拒絕寫入非 YSK 管理的 Compose 檔",
+    "badDataPath": "資料路徑必須是絕對目錄，並且不可使用系統路徑",
+    "portInUse": "這個 RPC 埠已被另一個驗證者實例使用",
+    "snapshotUnsupported": "此鏈沒有在允許清單內的快照來源",
+    "snapshotLookup": "無法解析官方快照指標",
+    "needSnapshotConfirm": "還原快照須 confirm=實例識別碼 或 SNAPSHOT",
+    "snapshotBlocked": "快照的 docker run 被允許清單拒絕",
+    "snapshotFailed": "快照下載或解壓失敗"
+  },
+  "notes": {
+    "beta": "此功能屬 Beta。變更主機須 root 及 YSK_EXECUTE=1。",
+    "noKeys": "YSK Server 不會產生或保存質押私鑰。",
+    "dockerSoon": "安裝、啟動、停止會在下一階段提供。此頁只列出實例與磁碟用量。",
+    "dryCreate": "已寫入實例規格與 compose（dry-run）。要啟動容器請加 --execute 及 YSK_EXECUTE=1。",
+    "dryStart": "啟動為 dry-run。請加 --execute 及 YSK_EXECUTE=1。",
+    "dryStop": "停止為 dry-run。請加 --execute 及 YSK_EXECUTE=1。",
+    "dryClear": "清空為 dry-run。請加 --execute 及 YSK_EXECUTE=1。",
+    "created": "已建立節點並啟動 compose",
+    "started": "已啟動節點",
+    "stopped": "已停止節點",
+    "cleared": "已清空鏈資料",
+    "dryMithril": "Mithril 還原為試行。請加 --execute 及 YSK_EXECUTE=1。",
+    "mithril": "已用 Mithril 還原快照並重啟節點",
+    "dryPrune": "清理為試行。請加 --execute 及 YSK_EXECUTE=1。",
+    "pruned": "已清理此專案未用映像",
+    "pruneProfile": "客戶端原生修剪靠 pruned／minimal 設定檔。要改請重建實例。",
+    "sameNetwork": "已經在這個網絡",
+    "drySwitch": "轉網絡為試行。",
+    "switched": "已轉網絡並清空鏈資料",
+    "dryCompose": "會寫入 compose.yml",
+    "composeWrote": "已寫入 compose.yml",
+    "statsEmpty": "沒有運行中的容器可量度",
+    "autoClearNone": "沒有已停止的實例可供自動清空",
+    "drySnapshot": "快照還原為試行。請加 --execute 及 YSK_EXECUTE=1。",
+    "snapshotEthEl": "已還原 ethPandaOps 執行層封存，並重設共識層以用 checkpoint sync",
+    "snapshotEthCl": "已重設共識層資料，使用官方 checkpoint sync",
+    "snapshotNear": "已清空 NEAR 資料；compose 會重新用官方 genesis 與 epoch sync 初始化",
+    "nativePrune": "已執行客戶端原生清理指令"
+  },
+  "create": "建立節點",
+  "wizard": {
+    "title": "建立節點",
+    "back": "上一步",
+    "next": "下一步",
+    "install": "安裝",
+    "mainnetWarn": "主網需要大量可用磁碟（ETH 常達 800 GiB 或以上）。建議先用測試網。",
+    "mainnetAck": "我明白磁碟與罰沒風險，仍要建立主網節點。",
+    "heavyWarn": "此鏈負載很重（大量磁碟與高 IOPS）。Solana 主網通常需要 2 TiB 或以上。",
+    "memory": "記憶體上限（例如 4g）",
+    "cpus": "CPU 上限（例如 2.0）",
+    "dataPath": "資料路徑（可選）",
+    "rpcPort": "RPC 埠（可選）"
+  },
+  "actions": {
+    "detail": "詳情",
+    "start": "啟動",
+    "stop": "停止",
+    "restart": "重新啟動",
+    "clear": "清空",
+    "upgrade": "升級",
+    "clearConfirm": "輸入實例識別碼或 CLEAR",
+    "prune": "清理映像",
+    "switchNetwork": "轉網絡",
+    "removeUnit": "一併刪除 compose／實例紀錄",
+    "restoreAfter": "清空後還原快照"
+  },
+  "policy": {
+    "label": "升級政策",
+    "manual": "手動",
+    "notify": "通知",
+    "auto-safe": "自動（安全）",
+    "auto-all": "自動（全部）"
+  },
+  "logs": {
+    "empty": "尚無日誌",
+    "follow": "跟隨日誌"
+  },
+  "compose": {
+    "label": "Compose 檔",
+    "save": "儲存 compose"
+  },
+  "snapshot": {
+    "action": "還原快照",
+    "mithril": "Cardano 用 Mithril 做認證快照還原。",
+    "eth": "Ethereum 主網用官方 checkpoint sync 引導共識客戶端。執行層繼續 snap sync。",
+    "ethEl": "Hoodi／Sepolia 可還原 ethPandaOps 執行層封存，再用 checkpoint sync 引導共識層。",
+    "avax": "Avalanche 在 compose 設定檔使用 state-sync。",
+    "near": "官方免費 NEAR tar 快照已停用。還原會清空資料，再用官方 genesis 與 epoch sync。",
+    "none": "此鏈未設定快照來源。"
+  },
+  "stake": {
+    "title": "準備質押（私鑰由你保管）",
+    "offlineKeys": "離線產生金鑰。面板永不保存。",
+    "deposit": "在官方 launchpad 完成存款／登記。",
+    "withdrawal": "自行設定提取憑證。",
+    "monitor": "在此頁留意磁碟、對等節點與升級徽章。"
+  },
+  "alerts": {
+    "diskTitle": "驗證者節點磁碟危急",
+    "diskBody": "驗證者資料卷可用空間極低。",
+    "upgradeTitle": "驗證者節點有可用升級",
+    "upgradeBody": "一個或多個客戶端有較新的釘選版本。",
+    "syncTitle": "驗證者節點需要留意",
+    "syncBody": "有節點已同步超過 6 小時，或回報錯誤。",
+    "rollbackTitle": "驗證者升級已回滾",
+    "rollbackBody": "{{id}} 升級健康檢查失敗，已回滾。"
+  },
+  "upgrade": {
+    "changelog": "更新紀錄"
+  },
+  "readiness": {
+    "dockerTitle": "驗證者節點所需的 Docker",
+    "dockerOk": "有 {{count}} 個驗證者實例；已安裝 Docker",
+    "dockerMissing": "已有驗證者實例，但找不到 docker 指令"
+  }
+}

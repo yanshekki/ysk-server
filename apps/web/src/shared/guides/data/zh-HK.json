@@ -1733,5 +1733,80 @@
         "to": "/network"
       }
     ]
+  },
+  "validators": {
+    "id": "validators",
+    "title": "驗證者節點 (Beta)",
+    "summary": "在此主機一鍵安裝與管理 L1 節點（Ethereum、Avalanche、NEAR、Cardano、Bitcoin、Cosmos、Sui、Aptos、Polkadot、Solana）。非託管 — 面板不會保管質押私鑰。",
+    "canDo": [
+      "列出節點實例與支援鏈",
+      "查看驗證者資料佔用的磁碟",
+      "使用 CLI：ysk-server validators list|chains|disk --json",
+      "稍後：安裝／啟動／停止／清空／升級"
+    ],
+    "workflow": [
+      "建立前先看磁碟分頁",
+      "細碟建議測試網 + 精簡設定檔",
+      "變更主機須 root 及 YSK_EXECUTE=1"
+    ],
+    "notes": [
+      "Beta：此頁尚未提供安裝與啟動",
+      "ETH 主網需要數百 GB 可用空間 — 空間不足時會拒絕建立",
+      "RPC 預設只綁本機"
+    ],
+    "cliHints": [
+      "ysk-server validators list --json",
+      "ysk-server validators chains --json",
+      "ysk-server validators disk --json"
+    ],
+    "related": [
+      {
+        "label": "Docker",
+        "to": "/docker"
+      },
+      {
+        "label": "更新",
+        "to": "/updates"
+      },
+      {
+        "label": "網絡",
+        "to": "/network"
+      }
+    ]
+  },
+  "docker": {
+    "id": "docker",
+    "title": "Docker",
+    "summary": "在這部主機安裝同控制 Docker 引擎：容器、映像、Compose（包括驗證者堆疊）、volume、網絡同清理。",
+    "canDo": [
+      "由面板安裝 docker.io + docker-compose-v2",
+      "啟動同停止 docker.service",
+      "受限執行映像、拉取、清理、查看 Compose 專案",
+      "CLI：ysk-server docker status|ps|images|compose --json"
+    ],
+    "workflow": [
+      "若橫幅顯示未安裝 Docker，先在這頁安裝",
+      "RPC 同發佈埠預設留在 127.0.0.1",
+      "變更主機需要 root 同 YSK_EXECUTE=1"
+    ],
+    "notes": [
+      "這頁不是 Kubernetes。不提供特權執行或任意上載 Compose。",
+      "停止引擎會一併停止驗證者堆疊。"
+    ],
+    "cliHints": [
+      "ysk-server docker status --json",
+      "ysk-server docker ps --json",
+      "ysk-server docker compose ls --json"
+    ],
+    "related": [
+      {
+        "label": "驗證者節點",
+        "to": "/validators"
+      },
+      {
+        "label": "服務",
+        "to": "/services"
+      }
+    ]
   }
 }

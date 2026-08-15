@@ -80,7 +80,13 @@
     "auditExport": "Export d'audit",
     "securityApiKeysAdmin": "Administration des clés API",
     "networkBrowse": "Navigation Web via l'hôte",
-    "networkVnc": "Bureau à distance VNC"
+    "networkVnc": "Bureau à distance VNC",
+    "validatorsRead": "Validateurs (lecture)",
+    "validatorsManage": "Validateurs gérer",
+    "validatorsWipe": "Validateurs effacer les données",
+    "dockerRead": "Docker (lecture)",
+    "dockerManage": "Docker gérer",
+    "dockerWipe": "Docker supprimer / nettoyer"
   },
   "aboutRoles": "Rôles (valeurs d'usine)",
   "aboutRolesBody": "Les rôles définissent les capacités par défaut ; les utilisateurs peuvent en remplacer certaines individuellement.",

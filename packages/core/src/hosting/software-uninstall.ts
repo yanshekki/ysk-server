@@ -391,6 +391,29 @@ export async function uninstallSoftware(input: {
   }
 
   const toRemove = preview.targets.filter((t) => t.installed && !t.protected);
+  if (toRemove.some((t) => t.id === 'docker')) {
+    try {
+      const { listDockerContainers } = await import('./docker/manager.js');
+      const running = await listDockerContainers({ host: input.host, all: false });
+      const busy = running.filter(
+        (c) => c.yskManaged || (c.composeProject ?? '').startsWith('yskval-'),
+      );
+      if (busy.length) {
+        return {
+          ok: false,
+          executed: false,
+          blocked: true,
+          dataPolicy,
+          targets: toRemove.map((t) => t.id),
+          steps: [],
+          notes: [tl('docker.errors.uninstallBusy'), ...busy.map((c) => c.name || c.id)],
+          statuses: await probeAllSoftware(input.host, input.feature ?? 'all'),
+        };
+      }
+    } catch {
+      /* if docker probe fails, continue uninstall */
+    }
+  }
   if (!toRemove.length) {
     return {
       ok: true,

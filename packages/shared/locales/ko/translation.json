@@ -2907,6 +2907,150 @@
     "createMailZone": "Create mail zone",
     "createMailZoneNow": "Created mail zone {{domain}}"
   },
+  "docker": {
+    "title": "Docker",
+    "subtitle": "이 서버에서 Docker 엔진, 컨테이너, 이미지, Compose 프로젝트, 디스크를 설치하고 제어합니다.",
+    "refresh": "새로 고침",
+    "notInstalled": "Docker Engine이 설치되어 있지 않습니다. 이 페이지에서 docker.io와 docker-compose-v2를 설치하세요.",
+    "protected": "보호됨",
+    "pruneConfirm": "volume 또는 시스템 정리를 확인하려면 PRUNE을 입력",
+    "settingsHint": "안전한 daemon.json 항목만 엽니다. 적용하면 파일을 쓰고 docker.service를 다시 시작합니다.",
+    "cli": {
+      "usage": "사용법: ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|exec|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--preset version|help|hostname] [--bin BIN] [--project P] [--execute] [--json]"
+    },
+    "tab": {
+      "overview": "개요",
+      "containers": "컨테이너",
+      "images": "이미지",
+      "compose": "Compose",
+      "volumes": "Volume",
+      "networks": "네트워크",
+      "prune": "정리",
+      "settings": "설정",
+      "about": "정보"
+    },
+    "col": {
+      "engine": "엔진",
+      "containers": "컨테이너",
+      "version": "버전",
+      "dataRoot": "데이터 디렉터리",
+      "disk": "디스크",
+      "validators": "검증자 스택",
+      "name": "이름",
+      "image": "이미지",
+      "status": "상태",
+      "ports": "포트",
+      "managed": "패널 관리",
+      "size": "크기",
+      "driver": "드라이버",
+      "type": "유형",
+      "reclaimable": "회수 가능"
+    },
+    "state": {
+      "up": "실행 중",
+      "down": "중지됨"
+    },
+    "actions": {
+      "start": "시작",
+      "stop": "중지",
+      "restart": "다시 시작",
+      "remove": "삭제",
+      "logs": "로그",
+      "inspect": "검사",
+      "exec": "실행(version)",
+      "run": "이미지 실행",
+      "pull": "받기",
+      "up": "시작",
+      "down": "중지",
+      "createVolume": "volume 만들기",
+      "createNetwork": "네트워크 만들기",
+      "pruneContainers": "컨테이너 정리",
+      "pruneImages": "이미지 정리",
+      "pruneVolumes": "volume 정리",
+      "pruneSystem": "시스템 정리",
+      "startEngine": "엔진 시작",
+      "stopEngine": "엔진 중지",
+      "restartEngine": "엔진 다시 시작",
+      "applyDaemon": "엔진 설정 적용"
+    },
+    "empty": {
+      "containers": "컨테이너 없음",
+      "images": "이미지 없음",
+      "compose": "Compose 프로젝트 없음",
+      "volumes": "volume 없음",
+      "networks": "네트워크 없음"
+    },
+    "logs": {
+      "empty": "아직 로그가 없습니다"
+    },
+    "settings": {
+      "logMaxSize": "컨테이너 로그 한도",
+      "liveRestore": "실시간 복원(데몬 재시작 시 컨테이너 유지)",
+      "mirrors": "Registry 미러(줄마다 URL 하나)",
+      "insecure": "암호화되지 않은 Registry(줄마다 호스트 하나)"
+    },
+    "about": {
+      "body": "Docker는 Nginx와 같은 등급의 YSK Server 호스트 서비스입니다. 패널에서 Ubuntu docker.io + docker-compose-v2로 설치합니다. 검증자 노드는 yskval-* Compose 프로젝트로 실행됩니다.",
+      "honesty": "호스트 변경에는 root와 YSK_EXECUTE=1이 필요합니다. 기본은 시험 실행입니다. 이 페이지는 Kubernetes가 아닙니다.",
+      "validators": "검증자 노드 열기"
+    },
+    "alerts": {
+      "daemonTitle": "Docker 데몬이 중지됨",
+      "daemonBody": "Docker는 설치되어 있지만 docker.service가 활성 상태가 아닙니다. 검증자 스택을 시작할 수 없습니다."
+    },
+    "errors": {
+      "notInstalled": "Docker가 설치되어 있지 않습니다",
+      "daemonDown": "Docker 데몬이 활성 상태가 아닙니다",
+      "needCompose": "docker compose(v2 플러그인)가 필요합니다",
+      "badImage": "이미지 참조가 올바르지 않습니다",
+      "badName": "이름이 올바르지 않습니다",
+      "badPort": "포트 공개가 올바르지 않습니다",
+      "badEnv": "환경 변수가 올바르지 않습니다",
+      "badVolume": "볼륨 마운트가 올바르지 않습니다",
+      "badNetwork": "네트워크가 올바르지 않습니다",
+      "protectedNetwork": "내장 Docker 네트워크는 삭제할 수 없습니다",
+      "badRestart": "재시작 정책이 올바르지 않습니다",
+      "badPrune": "정리 범위가 올바르지 않습니다",
+      "needPruneConfirm": "volume 또는 시스템 정리에는 confirm=PRUNE이 필요합니다",
+      "badDaemon": "엔진 설정이 올바르지 않습니다",
+      "composeMissing": "이 프로젝트의 Compose 파일을 찾을 수 없습니다",
+      "logsFailed": "컨테이너 로그를 읽을 수 없습니다",
+      "mutateFailed": "Docker 명령이 실패했습니다",
+      "engineFailed": "docker.service를 제어할 수 없습니다",
+      "badExec": "exec는 허용 목록의 바이너리와 프리셋만 가능합니다(셸 불가, TTY 불가)",
+      "uninstallBusy": "Docker를 제거하기 전에 패널이 관리하는 컨테이너(검증자 스택 포함)를 중지하십시오"
+    },
+    "notes": {
+      "dryMutate": "시험 실행입니다. 호스트를 바꾸려면 --execute와 YSK_EXECUTE=1을 사용하세요.",
+      "dryPrune": "정리 미리보기(적용되지 않음).",
+      "dryEngine": "엔진 제어는 시험 실행입니다.",
+      "dryDaemon": "/etc/docker/daemon.json을 쓰고 docker.service를 다시 시작합니다.",
+      "daemonWrote": "daemon.json을 썼습니다",
+      "start": "컨테이너를 시작했습니다",
+      "stop": "컨테이너를 중지했습니다",
+      "restart": "컨테이너를 다시 시작했습니다",
+      "remove": "컨테이너를 삭제했습니다",
+      "ran": "이미지로 컨테이너를 시작했습니다",
+      "pulled": "이미지를 받았습니다",
+      "exec": "허용 목록 exec를 실행했습니다",
+      "imageRemoved": "이미지를 삭제했습니다",
+      "volumeCreated": "volume을 만들었습니다",
+      "volumeRemoved": "volume을 삭제했습니다",
+      "networkCreated": "네트워크를 만들었습니다",
+      "networkRemoved": "네트워크를 삭제했습니다",
+      "pruned": "정리가 끝났습니다",
+      "compose": {
+        "up": "Compose 프로젝트를 시작했습니다",
+        "down": "Compose 프로젝트를 중지했습니다",
+        "restart": "Compose 프로젝트를 다시 시작했습니다"
+      },
+      "engine": {
+        "start": "docker.service를 시작했습니다",
+        "stop": "docker.service를 중지했습니다",
+        "restart": "docker.service를 다시 시작했습니다"
+      }
+    }
+  },
   "email": {
     "title": "이메일",
     "subtitle": "도메인, DNS, 사서함 및 릴레이",
@@ -4970,7 +5114,9 @@
       "runtimes": "런타임",
       "security": "보안",
       "system": "시스템",
-      "ai": "AI"
+      "ai": "AI",
+      "validators": "검증자",
+      "containers": "컨테이너"
     },
     "java": "Java",
     "kotlin": "Kotlin",
@@ -4993,7 +5139,9 @@
     "support": "지원하다",
     "noAccessTitle": "접근 권한 없음",
     "noAccessDesc": "현재 역할로는 이 페이지를 열 수 없습니다. 필요하면 관리자에게 요청하세요.",
-    "backToDashboard": "대시보드로 돌아가기"
+    "backToDashboard": "대시보드로 돌아가기",
+    "validators": "검증자 (Beta)",
+    "docker": "Docker"
   },
   "network": {
     "title": "네트워크 인터페이스",
@@ -9669,7 +9817,13 @@
       "auditExport": "내보내기 감사",
       "securityApiKeysAdmin": "API 키 관리자",
       "networkBrowse": "호스트 중재 웹 탐색",
-      "networkVnc": "VNC 원격 데스크톱"
+      "networkVnc": "VNC 원격 데스크톱",
+      "validatorsRead": "검증자(읽기)",
+      "validatorsManage": "검증자 관리",
+      "validatorsWipe": "검증자 데이터 삭제",
+      "dockerRead": "Docker(읽기)",
+      "dockerManage": "Docker 관리",
+      "dockerWipe": "Docker 삭제／정리"
     },
     "aboutRoles": "역할(공장 기본값)",
     "aboutRolesBody": "역할은 기본 기능을 설정합니다. 사용자는 개별 항목을 재정의할 수 있습니다.",
@@ -11205,7 +11359,9 @@
       "generic": "관련 서비스가 중단될 수 있습니다",
       "purgeData": "데이터 경로가 삭제됩니다.",
       "protectedSkipped": "보호된 구성 요소를 건너뜁니다.",
-      "runtimeStack": "이 런타임의 모든 패널 관리 버전이 삭제됩니다."
+      "runtimeStack": "이 런타임의 모든 패널 관리 버전이 삭제됩니다.",
+      "containers": "실행 중인 컨테이너가 중지됩니다",
+      "validators": "Docker Compose를 쓰는 검증자 스택이 중지됩니다"
     },
     "requestCancel": "취소 요청",
     "cancelling": "취소 중…",
@@ -12375,6 +12531,214 @@
     "bandwidthHint": "0 means unlimited.",
     "impersonateHint": "Opens a session as this user. Use the account menu to leave impersonation.",
     "operatorHighRiskHint": "공장 기본 운영자 역할에는 고위험 쓰기가 포함됩니다. 좁히면 새 계정만, 기본을 바꾸면 기존 운영자에게도 영향을 줍니다."
+  },
+  "validators": {
+    "title": "검증자 노드 (Beta)",
+    "subtitle": "이 호스트에서 L1 노드를 설치하고 관리합니다. 비수탁 — 키는 직접 보관하세요.",
+    "beta": "Beta",
+    "tab": {
+      "nodes": "노드",
+      "disk": "디스크",
+      "about": "설명"
+    },
+    "empty": {
+      "title": "아직 검증자 노드가 없습니다",
+      "desc": "마법사로 테스트넷 노드를 만드세요. CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+    },
+    "refresh": "새로 고침",
+    "disk": {
+      "title": "검증자 디스크",
+      "root": "데이터 디렉터리",
+      "free": "여유",
+      "used": "사용",
+      "none": "아직 인스턴스 데이터가 없습니다",
+      "warn": "디스크 사용량이 높습니다(70% 이상)",
+      "danger": "디스크 사용량이 위험합니다(85% 이상)",
+      "autoClear": "디스크가 위험할 때 가장 큰 중지 인스턴스를 자동 삭제(기본 꺼짐)"
+    },
+    "chain": {
+      "eth": "Ethereum",
+      "avax": "Avalanche",
+      "near": "NEAR",
+      "ada": "Cardano",
+      "btc": "Bitcoin",
+      "cosmos": "Cosmos Hub",
+      "sui": "Sui",
+      "aptos": "Aptos",
+      "dot": "Polkadot",
+      "sol": "Solana"
+    },
+    "network": {
+      "hoodi": "Hoodi",
+      "sepolia": "Sepolia",
+      "mainnet": "메인넷",
+      "fuji": "Fuji",
+      "testnet": "테스트넷",
+      "preview": "Preview",
+      "preprod": "Preprod",
+      "westend": "Westend"
+    },
+    "networkKind": {
+      "testnet": "테스트넷",
+      "mainnet": "메인넷"
+    },
+    "profile": {
+      "minimal": "최소",
+      "pruned": "가지치기됨",
+      "validator-ready": "검증자 준비",
+      "rpc": "RPC"
+    },
+    "col": {
+      "id": "ID",
+      "chain": "체인",
+      "network": "네트워크",
+      "profile": "프로필",
+      "status": "상태",
+      "disk": "디스크"
+    },
+    "cli": {
+      "usage": "사용법: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
+    },
+    "clients": {
+      "el": "실행 클라이언트",
+      "cl": "합의 클라이언트"
+    },
+    "mithril": {
+      "label": "먼저 Mithril 스냅샷으로 복원(테스트넷 권장)",
+      "action": "Mithril로 복원"
+    },
+    "errors": {
+      "notFound": "검증자 인스턴스를 찾을 수 없습니다",
+      "invalidId": "인스턴스 ID가 올바르지 않습니다",
+      "diskLow": "이 체인, 네트워크, 프로필에 필요한 여유 디스크가 부족합니다",
+      "diskUnknownMainnet": "여유 디스크를 측정할 수 없어 메인넷 생성을 거부했습니다",
+      "needDocker": "Docker Compose가 필요하지만 찾을 수 없습니다",
+      "composeFailed": "docker compose가 실패했습니다",
+      "needConfirm": "삭제에는 confirm=인스턴스 ID 또는 CLEAR가 필요합니다",
+      "mithrilAdaOnly": "Mithril 복원은 Cardano만 지원합니다",
+      "needMithrilConfirm": "Mithril에는 confirm=인스턴스 ID 또는 MITHRIL이 필요합니다",
+      "mithrilBlocked": "Mithril docker run이 허용 목록에서 거부되었습니다",
+      "mithrilKey": "Mithril genesis 검증 키를 불러올 수 없습니다",
+      "mithrilFailed": "Mithril 스냅샷 다운로드가 실패했습니다",
+      "pruneFailed": "정리가 실패했습니다",
+      "switchNeedStop": "네트워크를 바꾸기 전에 노드를 중지하십시오",
+      "switchNeedClear": "네트워크 전환은 체인 데이터를 지웁니다. 인스턴스 ID 또는 CLEAR로 확인하십시오",
+      "composeMissing": "Compose 파일을 찾을 수 없습니다",
+      "composeNotManaged": "YSK가 관리하지 않는 Compose 파일은 쓰지 않습니다",
+      "badDataPath": "데이터 경로는 시스템 경로가 아닌 절대 디렉터리여야 합니다",
+      "portInUse": "해당 RPC 포트는 다른 검증자 인스턴스가 사용 중입니다",
+      "snapshotUnsupported": "이 체인에는 허용된 스냅샷 원본이 없습니다",
+      "snapshotLookup": "공식 스냅샷 포인터를 해석할 수 없습니다",
+      "needSnapshotConfirm": "스냅샷 복원에는 confirm=인스턴스 ID 또는 SNAPSHOT이 필요합니다",
+      "snapshotBlocked": "스냅샷 docker run이 허용 목록에서 거부되었습니다",
+      "snapshotFailed": "스냅샷 다운로드 또는 압축 해제가 실패했습니다"
+    },
+    "notes": {
+      "beta": "이 기능은 Beta입니다. 호스트 변경에는 root와 YSK_EXECUTE=1이 필요합니다.",
+      "noKeys": "YSK Server는 스테이킹 키를 생성하거나 저장하지 않습니다.",
+      "dockerSoon": "설치, 시작, 중지는 다음 단계에서 제공됩니다. 이 페이지는 인스턴스와 디스크만 표시합니다.",
+      "dryCreate": "인스턴스 사양과 compose를 썼습니다(dry-run). 컨테이너를 시작하려면 --execute와 YSK_EXECUTE=1을 사용하세요.",
+      "dryStart": "시작은 dry-run입니다. --execute와 YSK_EXECUTE=1을 사용하세요.",
+      "dryStop": "중지는 dry-run입니다. --execute와 YSK_EXECUTE=1을 사용하세요.",
+      "dryClear": "삭제는 dry-run입니다. --execute와 YSK_EXECUTE=1을 사용하세요.",
+      "created": "노드를 만들고 compose를 시작했습니다",
+      "started": "노드를 시작했습니다",
+      "stopped": "노드를 중지했습니다",
+      "cleared": "체인 데이터를 지웠습니다",
+      "dryMithril": "Mithril 복원은 dry-run입니다. --execute와 YSK_EXECUTE=1을 사용하세요.",
+      "mithril": "Mithril 스냅샷을 복원하고 노드를 다시 시작했습니다",
+      "dryPrune": "정리는 dry-run입니다. --execute와 YSK_EXECUTE=1을 사용하세요.",
+      "pruned": "사용하지 않는 프로젝트 이미지를 정리했습니다",
+      "pruneProfile": "클라이언트 원본 정리는 pruned／minimal 프로필입니다. 바꾸려면 다시 만드세요.",
+      "sameNetwork": "이미 그 네트워크입니다",
+      "drySwitch": "네트워크 전환은 dry-run입니다.",
+      "switched": "네트워크를 바꾸고 체인 데이터를 지웠습니다",
+      "dryCompose": "compose.yml을 씁니다",
+      "composeWrote": "compose.yml을 썼습니다",
+      "statsEmpty": "측정할 실행 중 컨테이너가 없습니다",
+      "autoClearNone": "자동 삭제할 중지된 인스턴스가 없습니다",
+      "drySnapshot": "스냅샷 복원은 dry-run입니다. --execute와 YSK_EXECUTE=1을 사용하세요.",
+      "snapshotEthEl": "ethPandaOps EL 아카이브를 복원하고 checkpoint sync를 위해 CL을 재설정했습니다",
+      "snapshotEthCl": "CL 데이터를 재설정하고 공식 checkpoint sync를 사용합니다",
+      "snapshotNear": "NEAR 데이터를 지웠습니다. compose가 공식 genesis와 epoch sync로 다시 초기화합니다",
+      "nativePrune": "클라이언트 원본 정리 명령을 실행했습니다"
+    },
+    "create": "노드 만들기",
+    "wizard": {
+      "title": "노드 만들기",
+      "back": "뒤로",
+      "next": "다음",
+      "install": "설치",
+      "mainnetWarn": "메인넷은 여유 디스크가 많이 필요합니다(ETH는 종종 800 GiB 이상). 테스트넷을 권장합니다.",
+      "mainnetAck": "디스크와 슬래싱 위험을 이해했으며 메인넷을 계속합니다.",
+      "heavyWarn": "이 체인은 부하가 큽니다(대용량 디스크와 높은 IOPS). Solana 메인넷은 보통 2 TiB 이상이 필요합니다.",
+      "memory": "메모리 한도(예: 4g)",
+      "cpus": "CPU 한도(예: 2.0)",
+      "dataPath": "데이터 경로(선택)",
+      "rpcPort": "RPC 포트(선택)"
+    },
+    "actions": {
+      "detail": "자세히",
+      "start": "시작",
+      "stop": "중지",
+      "restart": "다시 시작",
+      "clear": "비우기",
+      "upgrade": "업그레이드",
+      "clearConfirm": "인스턴스 ID 또는 CLEAR 입력",
+      "prune": "이미지 정리",
+      "switchNetwork": "네트워크 전환",
+      "removeUnit": "compose／인스턴스 기록도 삭제",
+      "restoreAfter": "비운 뒤 스냅샷 복원"
+    },
+    "policy": {
+      "label": "업그레이드 정책",
+      "manual": "수동",
+      "notify": "알림",
+      "auto-safe": "자동(안전)",
+      "auto-all": "자동(모두)"
+    },
+    "logs": {
+      "empty": "아직 로그가 없습니다",
+      "follow": "로그 따라가기"
+    },
+    "compose": {
+      "label": "Compose 파일",
+      "save": "compose 저장"
+    },
+    "snapshot": {
+      "action": "스냅샷 복원",
+      "mithril": "Cardano는 인증 스냅샷 복원에 Mithril을 사용합니다.",
+      "eth": "Ethereum 메인넷은 합의 클라이언트의 공식 checkpoint sync로 시작합니다. EL은 snap sync를 계속합니다.",
+      "ethEl": "Hoodi／Sepolia는 ethPandaOps EL 아카이브를 복원한 뒤 CL을 checkpoint-sync할 수 있습니다.",
+      "avax": "Avalanche는 compose 프로필에서 state-sync를 사용합니다.",
+      "near": "공식 무료 NEAR tar 스냅샷은 종료되었습니다. 복원은 데이터를 지우고 공식 genesis와 epoch sync를 사용합니다.",
+      "none": "이 체인에는 스냅샷 원본이 설정되어 있지 않습니다."
+    },
+    "stake": {
+      "title": "스테이킹 준비(키는 직접 보관)",
+      "offlineKeys": "키는 오프라인에서 만드세요. 패널은 저장하지 않습니다.",
+      "deposit": "공식 launchpad에서 예치／등록을 완료하세요.",
+      "withdrawal": "출금 자격 증명은 직접 설정하세요.",
+      "monitor": "이 페이지에서 디스크, 피어, 업그레이드 배지를 확인하세요."
+    },
+    "alerts": {
+      "diskTitle": "검증자 디스크가 위험합니다",
+      "diskBody": "검증자 데이터 볼륨의 여유 공간이 매우 적습니다.",
+      "upgradeTitle": "검증자 업그레이드가 있습니다",
+      "upgradeBody": "하나 이상의 노드 클라이언트에 더 새로운 고정 버전이 있습니다.",
+      "syncTitle": "검증자 노드를 확인하세요",
+      "syncBody": "6시간 넘게 동기화 중인 노드가 있거나 오류를 보고했습니다.",
+      "rollbackTitle": "검증자 업그레이드를 롤백했습니다",
+      "rollbackBody": "{{id}} 업그레이드가 상태 확인에 실패하여 롤백되었습니다."
+    },
+    "upgrade": {
+      "changelog": "변경 기록"
+    },
+    "readiness": {
+      "dockerTitle": "검증자 노드용 Docker",
+      "dockerOk": "검증자 인스턴스 {{count}}개; Docker가 설치되어 있습니다",
+      "dockerMissing": "검증자 인스턴스가 있지만 docker 명령을 찾을 수 없습니다"
+    }
   },
   "vnc": {
     "pageDesc": "VNC 서버 및 클라이언트",

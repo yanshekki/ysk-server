@@ -37,6 +37,8 @@ import {
   openDatabase,
   runProtectionProbes,
   backupAllProjects,
+  runValidatorUpgradeScan,
+  runValidatorAutoClear,
   checkIpDnsbl,
   createTerminalTicketStore,
   createVncSessionTicketStore,
@@ -404,6 +406,20 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
           process.env.YSK_UPDATES_SCAN_ON_START === '1',
         maxIntervalMs: 7 * 24 * 60 * 60_000,
       },
+    );
+
+    scheduler.every(
+      'validators.upgrade-scan',
+      6 * 60 * 60_000,
+      async () => {
+        try {
+          await runValidatorUpgradeScan({ dataDir, host });
+          await runValidatorAutoClear({ dataDir, host });
+        } catch {
+          /* next interval */
+        }
+      },
+      { runImmediately: process.env.YSK_VALIDATORS_SCAN_ON_START === '1' },
     );
 
     // Daily project backups (interval overridable for tests)

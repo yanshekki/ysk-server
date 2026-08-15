@@ -69,6 +69,28 @@ export const MUTATING_ROUTE_CAP_RULES: readonly RouteCapRule[] = [
   },
   {
     methods: ['POST'],
+    pattern: /^\/api\/v1\/validators\/[^/]+\/clear$/,
+    cap: 'validators.wipe',
+    note: 'wipe chain data',
+  },
+  {
+    methods: ['POST', 'PATCH', 'PUT', 'DELETE'],
+    pattern: /^\/api\/v1\/validators(\/|$)/,
+    cap: 'validators.manage',
+  },
+  {
+    methods: ['POST'],
+    pattern: /^\/api\/v1\/docker\/(prune|volumes\/[^/]+\/remove|images\/remove|containers\/[^/]+\/remove)$/,
+    cap: 'docker.wipe',
+    note: 'docker destructive prune / remove',
+  },
+  {
+    methods: ['POST', 'PATCH', 'PUT', 'DELETE'],
+    pattern: /^\/api\/v1\/docker(\/|$)/,
+    cap: 'docker.manage',
+  },
+  {
+    methods: ['POST'],
     pattern: /^\/api\/v1\/system\/firewall\/(enable|deny|delete-deny|delete-rule)$/,
     cap: 'firewall.flush',
     note: 'high-impact firewall mutations',
@@ -429,6 +451,14 @@ export const GET_ROUTE_CAP_RULES: readonly GetRouteCapRule[] = [
   { pattern: /^\/api\/v1\/logs(\/|$)/, caps: ['logs.read', 'logs.purge'] },
   { pattern: /^\/api\/v1\/metrics(\/|$)/, caps: ['metrics.read'] },
   { pattern: /^\/api\/v1\/updates(\/|$)/, caps: ['updates.read', 'updates.apply'] },
+  {
+    pattern: /^\/api\/v1\/validators(\/|$)/,
+    caps: ['validators.read', 'validators.manage', 'validators.wipe'],
+  },
+  {
+    pattern: /^\/api\/v1\/docker(\/|$)/,
+    caps: ['docker.read', 'docker.manage', 'docker.wipe'],
+  },
   { pattern: /^\/api\/v1\/defense(\/|$)/, caps: ['firewall.read', 'firewall.edit', 'firewall.flush'] },
   {
     pattern: /^\/api\/v1\/system\/firewall/,
@@ -496,6 +526,8 @@ export const FEATURE_NAV_CAPS: Readonly<Record<string, readonly CapabilityId[]>>
   hostBrowse: ['network.browse'],
   vpn: ['network.vpn'],
   vnc: ['network.vnc'],
+  validators: ['validators.read', 'validators.manage', 'validators.wipe'],
+  docker: ['docker.read', 'docker.manage', 'docker.wipe'],
 };
 
 /** Path prefix → any-of caps (for SPA route guard). Longer prefixes win. */
@@ -526,6 +558,14 @@ export const PATH_CAP_GUARDS: ReadonlyArray<{
   { prefix: '/browse', caps: ['network.browse'] },
   { prefix: '/vpn', caps: ['network.vpn'] },
   { prefix: '/vnc', caps: ['network.vnc'] },
+  {
+    prefix: '/validators',
+    caps: ['validators.read', 'validators.manage', 'validators.wipe'],
+  },
+  {
+    prefix: '/docker',
+    caps: ['docker.read', 'docker.manage', 'docker.wipe'],
+  },
   { prefix: '/agents', caps: ['services.read', 'services.control', 'runtime.tuning'] },
   { prefix: '/cdn', caps: ['publish.apply', 'projects.read'] },
 ];

@@ -1,0 +1,208 @@
+{
+  "title": "ویلیڈیٹرز (Beta)",
+  "subtitle": "اس میزبان پر L1 نوڈ نصب اور منظم کریں۔ غیر تولیتی — کنجیاں آپ کے پاس رہیں۔",
+  "beta": "Beta",
+  "tab": {
+    "nodes": "نوڈز",
+    "disk": "ڈسک",
+    "about": "تعارف"
+  },
+  "empty": {
+    "title": "ابھی کوئی ویلیڈیٹر نوڈ نہیں",
+    "desc": "چند کلکس میں ٹیسٹ نیٹ نوڈ بنائیں۔ CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+  },
+  "refresh": "تازہ کریں",
+  "disk": {
+    "title": "ویلیڈیٹر ڈسک",
+    "root": "ڈیٹا ڈائریکٹری",
+    "free": "خالی",
+    "used": "استعمال شدہ",
+    "none": "ابھی کوئی انسٹنس ڈیٹا نہیں",
+    "warn": "ڈسک استعمال زیادہ ہے (70%+)",
+    "danger": "ڈسک استعمال سنگین ہے (85%+)",
+    "autoClear": "ڈسک سنگین ہونے پر سب سے بڑا رکا ہوا انسٹنس خود صاف کریں (طے شدہ بند)"
+  },
+  "chain": {
+    "eth": "Ethereum",
+    "avax": "Avalanche",
+    "near": "NEAR",
+    "ada": "Cardano",
+    "btc": "Bitcoin",
+    "cosmos": "Cosmos Hub",
+    "sui": "Sui",
+    "aptos": "Aptos",
+    "dot": "Polkadot",
+    "sol": "Solana"
+  },
+  "network": {
+    "hoodi": "Hoodi",
+    "sepolia": "Sepolia",
+    "mainnet": "مین نیٹ",
+    "fuji": "Fuji",
+    "testnet": "ٹیسٹ نیٹ",
+    "preview": "Preview",
+    "preprod": "Preprod",
+    "westend": "Westend"
+  },
+  "networkKind": {
+    "testnet": "ٹیسٹ نیٹ",
+    "mainnet": "مین نیٹ"
+  },
+  "profile": {
+    "minimal": "کم سے کم",
+    "pruned": "تراشا ہوا",
+    "validator-ready": "ویلیڈیٹر تیار",
+    "rpc": "RPC"
+  },
+  "col": {
+    "id": "ID",
+    "chain": "چین",
+    "network": "نیٹ ورک",
+    "profile": "پروفائل",
+    "status": "حالت",
+    "disk": "ڈسک"
+  },
+  "cli": {
+    "usage": "استعمال: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
+  },
+  "clients": {
+    "el": "عمل درآمد کلائنٹ",
+    "cl": "اتفاق رائے کلائنٹ"
+  },
+  "mithril": {
+    "label": "پہلے Mithril اسنیپ شاٹ سے بحال کریں (ٹیسٹ نیٹ پر تجویز)",
+    "action": "Mithril سے بحال کریں"
+  },
+  "errors": {
+    "notFound": "ویلیڈیٹر انسٹنس نہیں ملا",
+    "invalidId": "انسٹنس شناخت غلط ہے",
+    "diskLow": "اس چین، نیٹ ورک اور پروفائل کے لیے کافی خالی ڈسک نہیں",
+    "diskUnknownMainnet": "خالی ڈسک ناپی نہیں جا سکی؛ مین نیٹ بنانا مسترد",
+    "needDocker": "Docker Compose درکار ہے اور نہیں ملا",
+    "composeFailed": "docker compose ناکام",
+    "needConfirm": "صاف کرنے کے لیے confirm=انسٹنس شناخت یا CLEAR چاہیے",
+    "mithrilAdaOnly": "Mithril بحالی صرف Cardano کے لیے ہے",
+    "needMithrilConfirm": "Mithril کے لیے confirm=انسٹنس شناخت یا MITHRIL چاہیے",
+    "mithrilBlocked": "Mithril docker run اجازت فہرست نے روک دیا",
+    "mithrilKey": "Mithril genesis تصدیقی کنجی لوڈ نہیں ہو سکی",
+    "mithrilFailed": "Mithril اسنیپ شاٹ ڈاؤن لوڈ ناکام",
+    "pruneFailed": "صفائی ناکام",
+    "switchNeedStop": "نیٹ ورک بدلنے سے پہلے نوڈ روکیں",
+    "switchNeedClear": "نیٹ ورک بدلنے سے چین ڈیٹا مٹ جاتا ہے۔ انسٹنس شناخت یا CLEAR سے تصدیق کریں",
+    "composeMissing": "Compose فائل نہیں ملی",
+    "composeNotManaged": "YSK کے زیر انتظام نہ ہونے والی Compose فائل نہیں لکھی جائے گی",
+    "badDataPath": "ڈیٹا راستہ نظام کے راستوں سے باہر مطلق ڈائریکٹری ہونا چاہیے",
+    "portInUse": "وہ RPC پورٹ پہلے سے کسی اور ویلیڈیٹر انسٹنس کے استعمال میں ہے",
+    "snapshotUnsupported": "اس چین کے لیے کوئی اجازت یافتہ اسنیپ شاٹ ماخذ نہیں",
+    "snapshotLookup": "سرکاری اسنیپ شاٹ اشارہ حل نہیں ہو سکا",
+    "needSnapshotConfirm": "اسنیپ شاٹ بحالی کے لیے confirm=انسٹنس شناخت یا SNAPSHOT چاہیے",
+    "snapshotBlocked": "اسنیپ شاٹ docker run اجازت فہرست نے روک دیا",
+    "snapshotFailed": "اسنیپ شاٹ ڈاؤن لوڈ یا نکالنا ناکام"
+  },
+  "notes": {
+    "beta": "یہ خصوصیت Beta ہے۔ میزبان تبدیلی کے لیے root اور YSK_EXECUTE=1 چاہیے۔",
+    "noKeys": "YSK Server کبھی سٹیکنگ کنجیاں بناتا یا رکھتا نہیں۔",
+    "dockerSoon": "نصب، چلانا اور روکنا اگلے مرحلے میں آئیں گے۔ یہ صفحہ صرف انسٹنس اور ڈسک دکھاتا ہے۔",
+    "dryCreate": "انسٹنس وضاحت اور compose لکھا (dry-run)۔ کنٹینر چلانے کے لیے --execute اور YSK_EXECUTE=1 دیں۔",
+    "dryStart": "چلانا dry-run ہے۔ --execute اور YSK_EXECUTE=1 دیں۔",
+    "dryStop": "روکنا dry-run ہے۔ --execute اور YSK_EXECUTE=1 دیں۔",
+    "dryClear": "صاف کرنا dry-run ہے۔ --execute اور YSK_EXECUTE=1 دیں۔",
+    "created": "نوڈ بنا اور compose چلا",
+    "started": "نوڈ چلا",
+    "stopped": "نوڈ رکا",
+    "cleared": "چین ڈیٹا صاف ہوا",
+    "dryMithril": "Mithril بحالی dry-run ہے۔ --execute اور YSK_EXECUTE=1 دیں۔",
+    "mithril": "Mithril اسنیپ شاٹ بحال؛ نوڈ دوبارہ چلا",
+    "dryPrune": "صفائی dry-run ہے۔ --execute اور YSK_EXECUTE=1 دیں۔",
+    "pruned": "غیر استعمال شدہ منصوبہ تصاویر صاف ہوئیں",
+    "pruneProfile": "کلائنٹ مقامی تراش pruned／minimal پروفائل ہے۔ بدلنے کے لیے دوبارہ بنائیں۔",
+    "sameNetwork": "پہلے سے اسی نیٹ ورک پر ہے",
+    "drySwitch": "نیٹ ورک بدلنا dry-run ہے۔",
+    "switched": "نیٹ ورک بدلا اور چین ڈیٹا صاف ہوا",
+    "dryCompose": "compose.yml لکھا جائے گا",
+    "composeWrote": "compose.yml لکھا گیا",
+    "statsEmpty": "ناپنے کے لیے کوئی چلتا کنٹینر نہیں",
+    "autoClearNone": "خود صاف کرنے کے لیے کوئی رکا انسٹنس نہیں",
+    "drySnapshot": "اسنیپ شاٹ بحالی dry-run ہے۔ --execute اور YSK_EXECUTE=1 دیں۔",
+    "snapshotEthEl": "ethPandaOps EL محفوظہ بحال اور checkpoint sync کے لیے CL ری سیٹ",
+    "snapshotEthCl": "سرکاری checkpoint sync کے لیے CL ڈیٹا ری سیٹ",
+    "snapshotNear": "NEAR ڈیٹا مٹا؛ compose سرکاری genesis اور epoch sync سے دوبارہ شروع کرے گا",
+    "nativePrune": "کلائنٹ مقامی صفائی حکم چلا"
+  },
+  "create": "نوڈ بنائیں",
+  "wizard": {
+    "title": "نوڈ بنائیں",
+    "back": "پیچھے",
+    "next": "آگے",
+    "install": "نصب کریں",
+    "mainnetWarn": "مین نیٹ کو بہت خالی ڈسک چاہیے (ETH اکثر 800 GiB+)۔ ٹیسٹ نیٹ تجویز ہے۔",
+    "mainnetAck": "میں ڈسک اور سلیشنگ خطرہ سمجھتا ہوں۔ مین نیٹ جاری رکھیں۔",
+    "heavyWarn": "یہ چین بھاری ہے (بڑی ڈسک اور اونچا IOPS)۔ Solana مین نیٹ کو عام طور پر 2 TiB+ چاہیے۔",
+    "memory": "میموری حد (جیسے 4g)",
+    "cpus": "CPU حد (جیسے 2.0)",
+    "dataPath": "ڈیٹا راستہ (اختیاری)",
+    "rpcPort": "RPC پورٹ (اختیاری)"
+  },
+  "actions": {
+    "detail": "تفصیل",
+    "start": "چلائیں",
+    "stop": "روکیں",
+    "restart": "دوبارہ چلائیں",
+    "clear": "صاف کریں",
+    "upgrade": "اپ گریڈ",
+    "clearConfirm": "انسٹنس شناخت یا CLEAR لکھیں",
+    "prune": "تصاویر صاف کریں",
+    "switchNetwork": "نیٹ ورک بدلیں",
+    "removeUnit": "compose / انسٹنس ریکارڈ بھی ہٹائیں",
+    "restoreAfter": "صاف کرنے کے بعد اسنیپ شاٹ بحال کریں"
+  },
+  "policy": {
+    "label": "اپ گریڈ پالیسی",
+    "manual": "دستی",
+    "notify": "اطلاع",
+    "auto-safe": "خودکار (محفوظ)",
+    "auto-all": "خودکار (سب)"
+  },
+  "logs": {
+    "empty": "ابھی کوئی لاگ نہیں",
+    "follow": "لاگ کی پیروی"
+  },
+  "compose": {
+    "label": "Compose فائل",
+    "save": "compose محفوظ کریں"
+  },
+  "snapshot": {
+    "action": "اسنیپ شاٹ بحال کریں",
+    "mithril": "Cardano تصدیق شدہ اسنیپ شاٹ بحالی کے لیے Mithril استعمال کرتا ہے۔",
+    "eth": "Ethereum مین نیٹ اتفاق رائے کلائنٹ کے سرکاری checkpoint sync سے شروع ہوتا ہے۔ EL snap sync جاری رکھتا ہے۔",
+    "ethEl": "Hoodi／Sepolia ethPandaOps EL محفوظہ بحال کر کے CL کا checkpoint-sync کر سکتے ہیں۔",
+    "avax": "Avalanche compose پروفائل میں state-sync استعمال کرتا ہے۔",
+    "near": "سرکاری مفت NEAR tar اسنیپ شاٹس بند ہو گئے۔ بحالی ڈیٹا مٹا کر سرکاری genesis اور epoch sync استعمال کرتی ہے۔",
+    "none": "اس چین کے لیے کوئی اسنیپ شاٹ ماخذ نہیں ہے۔"
+  },
+  "stake": {
+    "title": "سٹیکنگ کی تیاری (کنجیاں آپ کے پاس)",
+    "offlineKeys": "کنجیاں آف لائن بنائیں۔ پینل انہیں کبھی نہیں رکھتا۔",
+    "deposit": "سرکاری launchpad پر جمع / اندراج مکمل کریں۔",
+    "withdrawal": "نکلوانے کی اسناد خود سیٹ کریں۔",
+    "monitor": "اس صفحے پر ڈسک، ہم مرتبہ اور اپ گریڈ بیجز دیکھیں۔"
+  },
+  "alerts": {
+    "diskTitle": "ویلیڈیٹر ڈسک سنگین",
+    "diskBody": "ویلیڈیٹر ڈیٹا حجم پر خالی جگہ بہت کم ہے۔",
+    "upgradeTitle": "ویلیڈیٹر اپ گریڈ دستیاب",
+    "upgradeBody": "ایک یا زیادہ نوڈ کلائنٹس کے پاس نیا پن ورژن ہے۔",
+    "syncTitle": "ویلیڈیٹر نوڈ پر توجہ دیں",
+    "syncBody": "کوئی نوڈ 6 گھنٹے سے زیادہ سنک کر رہا ہے یا غلطی بتائی۔",
+    "rollbackTitle": "ویلیڈیٹر اپ گریڈ واپس لیا گیا",
+    "rollbackBody": "{{id}} کا اپ گریڈ صحت جانچ میں ناکام ہوا اور واپس لیا گیا۔"
+  },
+  "upgrade": {
+    "changelog": "تبدیلیوں کی فہرست"
+  },
+  "readiness": {
+    "dockerTitle": "ویلیڈیٹر نوڈز کے لیے Docker",
+    "dockerOk": "{{count}} ویلیڈیٹر انسٹنس؛ Docker نصب ہے",
+    "dockerMissing": "ویلیڈیٹر انسٹنس ہیں مگر docker حکم نہیں ملا"
+  }
+}

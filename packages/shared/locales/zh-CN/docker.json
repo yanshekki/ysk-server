@@ -1,0 +1,144 @@
+{
+  "title": "Docker",
+  "subtitle": "在这台服务器安装与控制 Docker 引擎、容器、映像、Compose 项目与磁盘。",
+  "refresh": "刷新",
+  "notInstalled": "未安装 Docker Engine。请在此页安装 docker.io 及 docker-compose-v2。",
+  "protected": "受保护",
+  "pruneConfirm": "输入 PRUNE 以确认清理 volume 或系统",
+  "settingsHint": "只开放安全的 daemon.json 选项。应用会写入文件并重启 docker.service。",
+  "cli": {
+    "usage": "用法：ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|exec|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--preset version|help|hostname] [--bin BIN] [--project P] [--execute] [--json]"
+  },
+  "tab": {
+    "overview": "概览",
+    "containers": "容器",
+    "images": "映像",
+    "compose": "Compose",
+    "volumes": "Volume",
+    "networks": "网络",
+    "prune": "清理",
+    "settings": "设置",
+    "about": "关于"
+  },
+  "col": {
+    "engine": "引擎",
+    "containers": "容器",
+    "version": "版本",
+    "dataRoot": "数据目录",
+    "disk": "磁盘",
+    "validators": "验证者堆栈",
+    "name": "名称",
+    "image": "映像",
+    "status": "状态",
+    "ports": "端口",
+    "managed": "由面板管理",
+    "size": "大小",
+    "driver": "驱动",
+    "type": "类型",
+    "reclaimable": "可回收"
+  },
+  "state": {
+    "up": "运行中",
+    "down": "已停止"
+  },
+  "actions": {
+    "start": "启动",
+    "stop": "停止",
+    "restart": "重启",
+    "remove": "删除",
+    "logs": "日志",
+    "inspect": "检查",
+    "exec": "执行（version）",
+    "run": "运行映像",
+    "pull": "拉取",
+    "up": "启动",
+    "down": "停止",
+    "createVolume": "创建 volume",
+    "createNetwork": "创建网络",
+    "pruneContainers": "清理容器",
+    "pruneImages": "清理映像",
+    "pruneVolumes": "清理 volume",
+    "pruneSystem": "系统清理",
+    "startEngine": "启动引擎",
+    "stopEngine": "停止引擎",
+    "restartEngine": "重启引擎",
+    "applyDaemon": "应用引擎设置"
+  },
+  "empty": {
+    "containers": "没有容器",
+    "images": "没有映像",
+    "compose": "没有 Compose 项目",
+    "volumes": "没有 volume",
+    "networks": "没有网络"
+  },
+  "logs": {
+    "empty": "没有日志"
+  },
+  "settings": {
+    "logMaxSize": "容器日志上限",
+    "liveRestore": "即时还原（引擎重启时保留容器）",
+    "mirrors": "Registry 镜像（每行一个网址）",
+    "insecure": "未加密 Registry（每行一个主机）"
+  },
+  "about": {
+    "body": "Docker 是 YSK Server 的一级主机服务，与 Nginx 同级。由面板用 Ubuntu docker.io + docker-compose-v2 安装。验证者节点以 yskval-* Compose 项目运行。",
+    "honesty": "变更主机需要 root 及 YSK_EXECUTE=1。默认是试运行。此页不是 Kubernetes。",
+    "validators": "打开验证者节点"
+  },
+  "alerts": {
+    "daemonTitle": "Docker 引擎未运行",
+    "daemonBody": "已安装 Docker，但 docker.service 未启动。验证者堆栈无法启动。"
+  },
+  "errors": {
+    "notInstalled": "未安装 Docker",
+    "daemonDown": "Docker 引擎未运行",
+    "needCompose": "需要 docker compose（v2 插件）",
+    "badImage": "映像名称无效",
+    "badName": "名称无效",
+    "badPort": "端口映射无效",
+    "badEnv": "环境变量无效",
+    "badVolume": "磁盘挂载无效",
+    "badNetwork": "网络无效",
+    "protectedNetwork": "不可以删除内建 Docker 网络",
+    "badRestart": "重启策略无效",
+    "badPrune": "清理范围无效",
+    "needPruneConfirm": "清理 volume 或系统需要 confirm=PRUNE",
+    "badDaemon": "引擎设置无效",
+    "composeMissing": "找不到这个项目的 Compose 文件",
+    "logsFailed": "读不到容器日志",
+    "mutateFailed": "Docker 命令失败",
+    "engineFailed": "无法控制 docker.service",
+    "badExec": "exec 只限允许清单内的二进制与预设（不可用 shell，不可开 TTY）",
+    "uninstallBusy": "请先停止由面板管理的容器（包括验证者堆栈）再卸载 Docker"
+  },
+  "notes": {
+    "dryMutate": "此为试运行。要改主机请加 --execute 及 YSK_EXECUTE=1。",
+    "dryPrune": "清理预览（未应用）。",
+    "dryEngine": "引擎控制此为试运行。",
+    "dryDaemon": "将写入 /etc/docker/daemon.json 并重启 docker.service。",
+    "daemonWrote": "已写入 daemon.json",
+    "start": "已启动容器",
+    "stop": "已停止容器",
+    "restart": "已重启容器",
+    "remove": "已删除容器",
+    "ran": "已用映像启动容器",
+    "pulled": "已拉取映像",
+    "exec": "已执行允许清单内的 exec",
+    "imageRemoved": "已删除映像",
+    "volumeCreated": "已创建 volume",
+    "volumeRemoved": "已删除 volume",
+    "networkCreated": "已创建网络",
+    "networkRemoved": "已删除网络",
+    "pruned": "清理完成",
+    "compose": {
+      "up": "已启动 Compose 项目",
+      "down": "已停止 Compose 项目",
+      "restart": "已重启 Compose 项目"
+    },
+    "engine": {
+      "start": "已启动 docker.service",
+      "stop": "已停止 docker.service",
+      "restart": "已重启 docker.service"
+    }
+  }
+}

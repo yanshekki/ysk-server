@@ -80,7 +80,13 @@
     "auditExport": "تصدير التدقيق",
     "securityApiKeysAdmin": "مسؤول مفاتيح API",
     "networkBrowse": "تصفح الويب بوساطة المضيف",
-    "networkVnc": "سطح المكتب البعيد VNC"
+    "networkVnc": "سطح المكتب البعيد VNC",
+    "validatorsRead": "المدققون (قراءة)",
+    "validatorsManage": "المدققون إدارة",
+    "validatorsWipe": "المدققون مسح البيانات",
+    "dockerRead": "Docker (قراءة)",
+    "dockerManage": "Docker إدارة",
+    "dockerWipe": "Docker حذف / تنظيف"
   },
   "aboutRoles": "الأدوار (افتراضيات المصنع)",
   "aboutRolesBody": "تحدد الأدوار القدرات الافتراضية؛ يمكن للمستخدمين تجاوز تلك الفردية.",

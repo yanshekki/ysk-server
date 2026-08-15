@@ -2907,6 +2907,150 @@
     "createMailZone": "Create mail zone",
     "createMailZoneNow": "Created mail zone {{domain}}"
   },
+  "docker": {
+    "title": "Docker",
+    "subtitle": "このサーバーで Docker エンジン、コンテナ、イメージ、Compose プロジェクト、ディスクを導入・操作します。",
+    "refresh": "更新",
+    "notInstalled": "Docker Engine が導入されていません。このページで docker.io と docker-compose-v2 を導入してください。",
+    "protected": "保護済み",
+    "pruneConfirm": "volume またはシステムの削除を確認するには PRUNE と入力",
+    "settingsHint": "安全な daemon.json 項目のみ。適用するとファイルを書き込み、docker.service を再起動します。",
+    "cli": {
+      "usage": "使い方: ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|exec|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--preset version|help|hostname] [--bin BIN] [--project P] [--execute] [--json]"
+    },
+    "tab": {
+      "overview": "概要",
+      "containers": "コンテナ",
+      "images": "イメージ",
+      "compose": "Compose",
+      "volumes": "Volume",
+      "networks": "ネットワーク",
+      "prune": "整理",
+      "settings": "設定",
+      "about": "説明"
+    },
+    "col": {
+      "engine": "エンジン",
+      "containers": "コンテナ",
+      "version": "バージョン",
+      "dataRoot": "データディレクトリ",
+      "disk": "ディスク",
+      "validators": "バリデータースタック",
+      "name": "名前",
+      "image": "イメージ",
+      "status": "状態",
+      "ports": "ポート",
+      "managed": "パネル管理",
+      "size": "サイズ",
+      "driver": "ドライバ",
+      "type": "種類",
+      "reclaimable": "回収可能"
+    },
+    "state": {
+      "up": "稼働中",
+      "down": "停止"
+    },
+    "actions": {
+      "start": "起動",
+      "stop": "停止",
+      "restart": "再起動",
+      "remove": "削除",
+      "logs": "ログ",
+      "inspect": "検査",
+      "exec": "実行（version）",
+      "run": "イメージを実行",
+      "pull": "取得",
+      "up": "起動",
+      "down": "停止",
+      "createVolume": "volume を作成",
+      "createNetwork": "ネットワークを作成",
+      "pruneContainers": "コンテナを整理",
+      "pruneImages": "イメージを整理",
+      "pruneVolumes": "volume を整理",
+      "pruneSystem": "システム整理",
+      "startEngine": "エンジンを起動",
+      "stopEngine": "エンジンを停止",
+      "restartEngine": "エンジンを再起動",
+      "applyDaemon": "エンジン設定を適用"
+    },
+    "empty": {
+      "containers": "コンテナはありません",
+      "images": "イメージはありません",
+      "compose": "Compose プロジェクトはありません",
+      "volumes": "volume はありません",
+      "networks": "ネットワークはありません"
+    },
+    "logs": {
+      "empty": "ログはまだありません"
+    },
+    "settings": {
+      "logMaxSize": "コンテナログ上限",
+      "liveRestore": "ライブ復元（デーモン再起動時もコンテナを維持）",
+      "mirrors": "Registry ミラー（1 行に 1 URL）",
+      "insecure": "非 TLS Registry（1 行に 1 ホスト）"
+    },
+    "about": {
+      "body": "Docker は YSK Server の一級ホストサービスで、Nginx と同格です。パネルから Ubuntu の docker.io + docker-compose-v2 で導入します。バリデーターノードは yskval-* の Compose プロジェクトとして動きます。",
+      "honesty": "ホスト変更には root と YSK_EXECUTE=1 が必要です。既定は dry-run です。このページは Kubernetes ではありません。",
+      "validators": "バリデーターノードを開く"
+    },
+    "alerts": {
+      "daemonTitle": "Docker デーモンが停止しています",
+      "daemonBody": "Docker は導入済みですが docker.service が起動していません。バリデータースタックは起動できません。"
+    },
+    "errors": {
+      "notInstalled": "Docker が導入されていません",
+      "daemonDown": "Docker デーモンが稼働していません",
+      "needCompose": "docker compose（v2 プラグイン）が必要です",
+      "badImage": "イメージ参照が無効です",
+      "badName": "名前が無効です",
+      "badPort": "ポート公開が無効です",
+      "badEnv": "環境変数が無効です",
+      "badVolume": "ボリュームマウントが無効です",
+      "badNetwork": "ネットワークが無効です",
+      "protectedNetwork": "組み込み Docker ネットワークは削除できません",
+      "badRestart": "再起動ポリシーが無効です",
+      "badPrune": "整理範囲が無効です",
+      "needPruneConfirm": "volume またはシステムの整理には confirm=PRUNE が必要です",
+      "badDaemon": "エンジン設定が無効です",
+      "composeMissing": "このプロジェクトの Compose ファイルが見つかりません",
+      "logsFailed": "コンテナログを読めません",
+      "mutateFailed": "Docker コマンドが失敗しました",
+      "engineFailed": "docker.service を制御できません",
+      "badExec": "exec は許可リストのバイナリとプリセットのみです（shell 不可、TTY 不可）",
+      "uninstallBusy": "Docker を外す前に、パネル管理のコンテナ（バリデータースタックを含む）を停止してください"
+    },
+    "notes": {
+      "dryMutate": "dry-run のみです。ホストを変えるには --execute と YSK_EXECUTE=1 を付けてください。",
+      "dryPrune": "整理のプレビュー（未適用）。",
+      "dryEngine": "エンジン操作は dry-run です。",
+      "dryDaemon": "/etc/docker/daemon.json を書き込み、docker.service を再起動します。",
+      "daemonWrote": "daemon.json を書き込みました",
+      "start": "コンテナを起動しました",
+      "stop": "コンテナを停止しました",
+      "restart": "コンテナを再起動しました",
+      "remove": "コンテナを削除しました",
+      "ran": "イメージからコンテナを起動しました",
+      "pulled": "イメージを取得しました",
+      "exec": "許可リストの exec を実行しました",
+      "imageRemoved": "イメージを削除しました",
+      "volumeCreated": "volume を作成しました",
+      "volumeRemoved": "volume を削除しました",
+      "networkCreated": "ネットワークを作成しました",
+      "networkRemoved": "ネットワークを削除しました",
+      "pruned": "整理が完了しました",
+      "compose": {
+        "up": "Compose プロジェクトを起動しました",
+        "down": "Compose プロジェクトを停止しました",
+        "restart": "Compose プロジェクトを再起動しました"
+      },
+      "engine": {
+        "start": "docker.service を起動しました",
+        "stop": "docker.service を停止しました",
+        "restart": "docker.service を再起動しました"
+      }
+    }
+  },
   "email": {
     "title": "メール",
     "subtitle": "ドメイン、DNS、メールボックス、リレー",
@@ -4970,7 +5114,9 @@
       "runtimes": "ランタイム",
       "security": "セキュリティ",
       "system": "システム",
-      "ai": "AI"
+      "ai": "AI",
+      "validators": "バリデーター",
+      "containers": "コンテナ"
     },
     "java": "Java",
     "kotlin": "Kotlin",
@@ -4993,7 +5139,9 @@
     "support": "サポート",
     "noAccessTitle": "アクセス権がありません",
     "noAccessDesc": "このページは現在の役割では開けません。必要な場合は管理者に依頼してください。",
-    "backToDashboard": "ダッシュボードに戻る"
+    "backToDashboard": "ダッシュボードに戻る",
+    "validators": "バリデーター (Beta)",
+    "docker": "Docker"
   },
   "network": {
     "title": "ネットワークインターフェース",
@@ -9669,7 +9817,13 @@
       "auditExport": "監査エクスポート",
       "securityApiKeysAdmin": "API キー管理者",
       "networkBrowse": "ホスト仲介の Web ブラウズ",
-      "networkVnc": "VNCリモートデスクトップ"
+      "networkVnc": "VNCリモートデスクトップ",
+      "validatorsRead": "バリデーター（読み取り）",
+      "validatorsManage": "バリデーター管理",
+      "validatorsWipe": "バリデーターデータ消去",
+      "dockerRead": "Docker（読み取り）",
+      "dockerManage": "Docker 管理",
+      "dockerWipe": "Docker 削除／整理"
     },
     "aboutRoles": "役割 (工場出荷時のデフォルト)",
     "aboutRolesBody": "ロールはデフォルトの機能を設定します。ユーザーは個々の設定をオーバーライドできます。",
@@ -11205,7 +11359,9 @@
       "generic": "関連サービスが停止する可能性があります",
       "purgeData": "データパスが削除されます",
       "protectedSkipped": "保護されたコンポーネントはスキップされます",
-      "runtimeStack": "このランタイムのパネル管理バージョンはすべて削除されます"
+      "runtimeStack": "このランタイムのパネル管理バージョンはすべて削除されます",
+      "containers": "実行中のコンテナは停止します",
+      "validators": "Docker Compose を使うバリデータースタックは停止します"
     },
     "requestCancel": "キャンセルのリクエスト",
     "cancelling": "キャンセルしています...",
@@ -12375,6 +12531,214 @@
     "bandwidthHint": "0 means unlimited.",
     "impersonateHint": "Opens a session as this user. Use the account menu to leave impersonation.",
     "operatorHighRiskHint": "工場既定のオペレーターは高リスク書き込みを含みます。狭めると新規口座だけに効き、既定を変えると既存オペレーターにも影響します。"
+  },
+  "validators": {
+    "title": "バリデーター (Beta)",
+    "subtitle": "このホストで L1 ノードを導入・管理します。ノンカストディアル — 鍵は自分で保管してください。",
+    "beta": "Beta",
+    "tab": {
+      "nodes": "ノード",
+      "disk": "ディスク",
+      "about": "説明"
+    },
+    "empty": {
+      "title": "バリデーターノードはまだありません",
+      "desc": "ウィザードでテストネットノードを作成できます。CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+    },
+    "refresh": "更新",
+    "disk": {
+      "title": "バリデーターディスク",
+      "root": "データディレクトリ",
+      "free": "空き",
+      "used": "使用中",
+      "none": "インスタンスデータはまだありません",
+      "warn": "ディスク使用率が高い（70% 以上）",
+      "danger": "ディスク使用率が危険（85% 以上）",
+      "autoClear": "ディスクが危険なとき、停止中の最大インスタンスを自動消去（既定はオフ）"
+    },
+    "chain": {
+      "eth": "Ethereum",
+      "avax": "Avalanche",
+      "near": "NEAR",
+      "ada": "Cardano",
+      "btc": "Bitcoin",
+      "cosmos": "Cosmos Hub",
+      "sui": "Sui",
+      "aptos": "Aptos",
+      "dot": "Polkadot",
+      "sol": "Solana"
+    },
+    "network": {
+      "hoodi": "Hoodi",
+      "sepolia": "Sepolia",
+      "mainnet": "メインネット",
+      "fuji": "Fuji",
+      "testnet": "テストネット",
+      "preview": "Preview",
+      "preprod": "Preprod",
+      "westend": "Westend"
+    },
+    "networkKind": {
+      "testnet": "テストネット",
+      "mainnet": "メインネット"
+    },
+    "profile": {
+      "minimal": "最小",
+      "pruned": "プルーニング済み",
+      "validator-ready": "バリデーター準備",
+      "rpc": "RPC"
+    },
+    "col": {
+      "id": "ID",
+      "chain": "チェーン",
+      "network": "ネットワーク",
+      "profile": "プロファイル",
+      "status": "状態",
+      "disk": "ディスク"
+    },
+    "cli": {
+      "usage": "使い方: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril|prune|switch-network|snapshot|compose|settings [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--data-path P] [--rpc-port N] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
+    },
+    "clients": {
+      "el": "実行クライアント",
+      "cl": "コンセンサスクライアント"
+    },
+    "mithril": {
+      "label": "先に Mithril スナップショットから復元（テストネット推奨）",
+      "action": "Mithril で復元"
+    },
+    "errors": {
+      "notFound": "バリデーターインスタンスが見つかりません",
+      "invalidId": "インスタンス ID が無効です",
+      "diskLow": "このチェーン・ネットワーク・プロファイルに必要な空きディスクが不足しています",
+      "diskUnknownMainnet": "空きディスクを測定できないため、メインネット作成を拒否しました",
+      "needDocker": "Docker Compose が必要ですが見つかりません",
+      "composeFailed": "docker compose に失敗しました",
+      "needConfirm": "消去には confirm=インスタンス ID または CLEAR が必要です",
+      "mithrilAdaOnly": "Mithril 復元は Cardano のみです",
+      "needMithrilConfirm": "Mithril には confirm=インスタンス ID または MITHRIL が必要です",
+      "mithrilBlocked": "Mithril の docker run は許可リストで拒否されました",
+      "mithrilKey": "Mithril genesis 検証鍵を読み込めませんでした",
+      "mithrilFailed": "Mithril スナップショットのダウンロードに失敗しました",
+      "pruneFailed": "プルーニングに失敗しました",
+      "switchNeedStop": "ネットワーク切替の前にノードを停止してください",
+      "switchNeedClear": "ネットワーク切替はチェーンデータを消します。インスタンス ID または CLEAR で確認してください",
+      "composeMissing": "Compose ファイルが見つかりません",
+      "composeNotManaged": "YSK 管理外の Compose ファイルは書き込みません",
+      "badDataPath": "データパスはシステムパス以外の絶対ディレクトリである必要があります",
+      "portInUse": "その RPC ポートは別のバリデーターインスタンスが使用中です",
+      "snapshotUnsupported": "このチェーンに許可されたスナップショット源はありません",
+      "snapshotLookup": "公式スナップショットポインタを解決できませんでした",
+      "needSnapshotConfirm": "スナップショット復元には confirm=インスタンス ID または SNAPSHOT が必要です",
+      "snapshotBlocked": "スナップショットの docker run は許可リストで拒否されました",
+      "snapshotFailed": "スナップショットのダウンロードまたは展開に失敗しました"
+    },
+    "notes": {
+      "beta": "この機能は Beta です。ホスト変更には root と YSK_EXECUTE=1 が必要です。",
+      "noKeys": "YSK Server はステーキング鍵を生成も保存もしません。",
+      "dockerSoon": "導入・起動・停止は次の段階です。このページはインスタンスとディスクのみ表示します。",
+      "dryCreate": "インスタンス仕様と compose を書き込みました（dry-run）。コンテナ起動には --execute と YSK_EXECUTE=1 を付けてください。",
+      "dryStart": "起動は dry-run です。--execute と YSK_EXECUTE=1 を付けてください。",
+      "dryStop": "停止は dry-run です。--execute と YSK_EXECUTE=1 を付けてください。",
+      "dryClear": "消去は dry-run です。--execute と YSK_EXECUTE=1 を付けてください。",
+      "created": "ノードを作成し compose を起動しました",
+      "started": "ノードを起動しました",
+      "stopped": "ノードを停止しました",
+      "cleared": "チェーンデータを消去しました",
+      "dryMithril": "Mithril 復元は dry-run です。--execute と YSK_EXECUTE=1 を付けてください。",
+      "mithril": "Mithril スナップショットを復元し、ノードを再起動しました",
+      "dryPrune": "プルーニングは dry-run です。--execute と YSK_EXECUTE=1 を付けてください。",
+      "pruned": "未使用のプロジェクトイメージを削除しました",
+      "pruneProfile": "クライアント側プルーニングは pruned／minimal プロファイルです。変更するには作り直してください。",
+      "sameNetwork": "すでにそのネットワークです",
+      "drySwitch": "ネットワーク切替は dry-run です。",
+      "switched": "ネットワークを切り替え、チェーンデータを消去しました",
+      "dryCompose": "compose.yml を書き込みます",
+      "composeWrote": "compose.yml を書き込みました",
+      "statsEmpty": "計測できる実行中コンテナがありません",
+      "autoClearNone": "自動消去できる停止中インスタンスがありません",
+      "drySnapshot": "スナップショット復元は dry-run です。--execute と YSK_EXECUTE=1 を付けてください。",
+      "snapshotEthEl": "ethPandaOps の EL アーカイブを復元し、CL を checkpoint sync 用にリセットしました",
+      "snapshotEthCl": "CL データをリセットし、公式 checkpoint sync を使います",
+      "snapshotNear": "NEAR データを消去しました。compose は公式 genesis と epoch sync で再初期化します",
+      "nativePrune": "クライアントネイティブのプルーニングを実行しました"
+    },
+    "create": "ノードを作成",
+    "wizard": {
+      "title": "ノードを作成",
+      "back": "戻る",
+      "next": "次へ",
+      "install": "導入",
+      "mainnetWarn": "メインネットは大量の空きディスクが必要です（ETH はしばしば 800 GiB 以上）。テストネットを推奨します。",
+      "mainnetAck": "ディスクとスラッシングのリスクを理解したうえで、メインネットを続行します。",
+      "heavyWarn": "このチェーンは負荷が大きいです（大容量ディスクと高い IOPS）。Solana メインネットは通常 2 TiB 以上必要です。",
+      "memory": "メモリ上限（例: 4g）",
+      "cpus": "CPU 上限（例: 2.0）",
+      "dataPath": "データパス（任意）",
+      "rpcPort": "RPC ポート（任意）"
+    },
+    "actions": {
+      "detail": "詳細",
+      "start": "起動",
+      "stop": "停止",
+      "restart": "再起動",
+      "clear": "消去",
+      "upgrade": "アップグレード",
+      "clearConfirm": "インスタンス ID または CLEAR を入力",
+      "prune": "イメージを削除",
+      "switchNetwork": "ネットワーク切替",
+      "removeUnit": "compose／インスタンス記録も削除",
+      "restoreAfter": "消去後にスナップショットを復元"
+    },
+    "policy": {
+      "label": "アップグレード方針",
+      "manual": "手動",
+      "notify": "通知",
+      "auto-safe": "自動（安全）",
+      "auto-all": "自動（すべて）"
+    },
+    "logs": {
+      "empty": "ログはまだありません",
+      "follow": "ログを追従"
+    },
+    "compose": {
+      "label": "Compose ファイル",
+      "save": "compose を保存"
+    },
+    "snapshot": {
+      "action": "スナップショットを復元",
+      "mithril": "Cardano は認証済みスナップショット復元に Mithril を使います。",
+      "eth": "Ethereum メインネットはコンセンサスクライアントの公式 checkpoint sync で起動します。EL は snap sync を続けます。",
+      "ethEl": "Hoodi／Sepolia は ethPandaOps の EL アーカイブを復元し、CL を checkpoint-sync できます。",
+      "avax": "Avalanche は compose プロファイルで state-sync を使います。",
+      "near": "公式の無料 NEAR tar スナップショットは終了しました。復元はデータを消し、公式 genesis と epoch sync を使います。",
+      "none": "このチェーンにスナップショット源は設定されていません。"
+    },
+    "stake": {
+      "title": "ステーキング準備（鍵は自分で保管）",
+      "offlineKeys": "鍵はオフラインで生成してください。パネルは保存しません。",
+      "deposit": "公式 launchpad でデポジット／登録を完了してください。",
+      "withdrawal": "引き出し資格情報は自分で設定してください。",
+      "monitor": "このページでディスク、ピア、アップグレードバッジを確認してください。"
+    },
+    "alerts": {
+      "diskTitle": "バリデーターディスクが危険",
+      "diskBody": "バリデーターデータボリュームの空き容量が極めて少ないです。",
+      "upgradeTitle": "バリデーターのアップグレードがあります",
+      "upgradeBody": "1 つ以上のノードクライアントに新しい固定版があります。",
+      "syncTitle": "バリデーターノード要確認",
+      "syncBody": "6 時間以上同期中のノードがあるか、エラーを報告しました。",
+      "rollbackTitle": "バリデーターのアップグレードをロールバックしました",
+      "rollbackBody": "{{id}} のアップグレードはヘルスチェックに失敗し、ロールバックされました。"
+    },
+    "upgrade": {
+      "changelog": "変更履歴"
+    },
+    "readiness": {
+      "dockerTitle": "バリデーターノード用 Docker",
+      "dockerOk": "バリデーターインスタンス {{count}} 件。Docker は導入済みです",
+      "dockerMissing": "バリデーターインスタンスがありますが、docker コマンドが見つかりません"
+    }
   },
   "vnc": {
     "pageDesc": "VNCサーバーとクライアント",

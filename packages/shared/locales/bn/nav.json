@@ -53,7 +53,9 @@
     "runtimes": "রানটাইম",
     "security": "নিরাপত্তা",
     "system": "সিস্টেম",
-    "ai": "AI"
+    "ai": "AI",
+    "validators": "ভ্যালিডেটর",
+    "containers": "কন্টেইনার"
   },
   "java": "Java",
   "kotlin": "Kotlin",
@@ -76,5 +78,7 @@
   "support": "সমর্থন",
   "noAccessTitle": "অ্যাক্সেস নেই",
   "noAccessDesc": "আপনার ভূমিকায় এই পৃষ্ঠা নেই। প্রয়োজন হলে অ্যাডমিনকে জানান।",
-  "backToDashboard": "ড্যাশবোর্ডে ফিরুন"
+  "backToDashboard": "ড্যাশবোর্ডে ফিরুন",
+  "validators": "ভ্যালিডেটর (Beta)",
+  "docker": "Docker"
 }
