@@ -248,7 +248,8 @@
     "cleanupConflicts": "清理衝突殘留",
     "cleanupConflictsTitle": "清理全部衝突殘留？",
     "cleanupConflictsDesc": "移除所有與專案或獨立站 ServerName 衝突的磁碟 conf。專案列會保留。",
-    "artifactRemovedOk": "已移除殘留 conf"
+    "artifactRemovedOk": "已移除殘留 conf",
+    "sslTerminatedUpstream": "由前置 Nginx 終止 TLS"
   },
   "applyStatus": {
     "draft": "草稿",
@@ -371,6 +372,7 @@
     "endpointOptional": "端點（可選）",
     "localMirror": "本機鏡像路徑",
     "remotePath": "遠端路徑",
+    "remotePathHint": "相對遠端用戶家目錄（或 SFTP chroot）。「.」即該家目錄。",
     "resticTitle": "Restic 增量備份",
     "resticDesc": "可選：系統路徑須有 Restic 指令。啟用後必須設定密碼（不會使用預設密碼）。",
     "enableRestic": "啟用 Restic",
@@ -676,6 +678,7 @@
     "confWritten": "已寫入 設定檔（{{status}}）",
     "partialFail": "未全部成功（{{status}}）— 見 notes",
     "statNodes": "節點",
+    "hitNoStats": "尚無邊緣統計",
     "statSites": "站點",
     "recentNotes": "最近 notes",
     "edgeConfPreview": "Nginx 邊緣 設定檔 預覽",
@@ -1990,6 +1993,7 @@
     "input": "輸入",
     "pleaseEnter": "請輸入 {{value}}",
     "about": "說明",
+    "more": "更多",
     "operation": "操作",
     "delete": "刪除",
     "edit": "編輯",
@@ -2322,6 +2326,7 @@
     "serverIpv6": "伺服器 IPv6（可選）",
     "serverIpv6Hint": "有則寫 AAAA／ip6:",
     "serverIpv6Ph": "公網 IPv6（可留空）",
+    "needDomainFirst": "請先填域名",
     "withDns": "一併建立 DNS 區域",
     "withDnsDesc": "需填寫域名；僅登記，需到 DNS 頁寫入區域檔",
     "withMail": "一併登記郵件域名",
@@ -2584,7 +2589,8 @@
       "probe": "探測",
       "name": "名稱",
       "type": "類型",
-      "status": "狀態"
+      "status": "狀態",
+      "engineNotInstalled": "此主機未安裝 {{engine}} — 請先安裝，或改用實際運行的引擎。"
     },
     "console": {
       "dataBrowse": "資料瀏覽",
@@ -2925,6 +2931,7 @@
     "webmailMovedHint": "網頁電郵已改為全站共用設定，不再按單一域名安裝。",
     "openGlobalWebmailSettings": "前往網頁電郵設定",
     "domainsTitle": "域名 ({{filtered}}/{{total}})",
+    "domainsListDesc": "本機已登記的郵件域名",
     "emptyFilterHint": "沒有符合搜尋的域名",
     "emptyCreateHint": "用列表右上角「建立」登記域名；成功後进入詳情完成一鍵設定與 DNS。",
     "queueLocalTitle": "郵件佇列",
@@ -3119,7 +3126,7 @@
     "bootstrapBtn": "一鍵設定郵件",
     "webmailInstallDesc": "下載／套用 Roundcube",
     "webmailHostname": "Webmail 主機名",
-    "webmailHostnameHint": "虚拟主機 server_name，例如 webmail.example.com",
+    "webmailHostnameHint": "虛擬主機 server_name，例如 webmail.example.com",
     "installWebmail": "建立並上線網頁電郵",
     "bootstrapResult": "一鍵設定／Webmail 結果",
     "createMailboxTitle": "建立郵箱",
@@ -3532,7 +3539,10 @@
       "postfix": "Postfix 郵件暴力破解",
       "dovecot": "Dovecot 郵件登入",
       "recidive": "累犯"
-    }
+    },
+    "cannotBanSelf": "這是本機或你的登入 IP — 應加入 ignoreip，不要封鎖",
+    "suggestIgnoreHint": "建議的管理 IP（先寫入面板檔，套用政策後才生效）：",
+    "suggestIgnoreAdd": "加入 {{ip}}"
   },
   "featurePage": {
     "back": "返回"
@@ -3912,6 +3922,8 @@
     "statAllow": "允許",
     "statDeny": "拒絕",
     "statDefaultIn": "入站預設",
+    "defaultNotApplied": "未套用（UFW 關閉）",
+    "ufwOffHint": "UFW 關閉時入站預設不會生效",
     "executeOn": "開",
     "executeOff": "關",
     "ufwDisabled": "已停用 UFW",
@@ -4601,7 +4613,10 @@
     "logrotateNoStatus": "尚未有 logrotate 狀態檔（從未跑過時屬常見）。",
     "autoVacuumOff": "自動清理未啟用。啟用前時間設定不會執行。",
     "aboutAllowlist": "探索只可讀取允許清單內的 journal 單元與 /var/log 路徑，不會提供任意主機路徑。",
-    "aboutCustomPath": "請在「設定」加入自訂路徑（僅限 /var/log 或 /run/log），再到「探索」開啟。"
+    "aboutCustomPath": "請在「設定」加入自訂路徑（僅限 /var/log 或 /run/log），再到「探索」開啟。",
+    "noRowsInWindow": "此時間窗內無記錄",
+    "showInactiveUnits": "顯示未啟動的服務單元",
+    "sseNeedFollow": "請先開啟跟隨 — SSE 只用於即時尾隨"
   },
   "metrics": {
     "alert": {
@@ -4687,6 +4702,8 @@
     "noProjectsDesc": "建立專案後可在此看真實 主目錄 用量",
     "usageNote": "用量來自本機 du（非估算）。配額為控制面 soft limit；硬 setquota 需「套用限制到系統」。",
     "thresholdAlerts": "閾值告警",
+    "alertsBuiltinOnly": "只有內建 CPU／記憶體／磁碟閾值。沒有電郵、webhook 或 Slack 渠道。",
+    "lastEvaluated": "上次檢查",
     "alertsOkTitle": "目前正常",
     "alertsOkDesc": "沒有記憶體／負載／磁碟閾值告警。",
     "cpu": "中央處理器",
@@ -5076,7 +5093,9 @@
     },
     "linkUp": "向上",
     "linkDown": "離線",
-    "persistNmHint": "可持久化代表經 NetworkManager 寫入後，重啟後設定仍然有效。"
+    "persistNmHint": "可持久化代表經 NetworkManager 寫入後，重啟後設定仍然有效。",
+    "deleteDefaultPanelWarn": "刪除預設路由可能令面板連線中斷。請輸入 DEFAULT 確認。",
+    "typeDefaultToConfirm": "輸入 DEFAULT 確認"
   },
   "nginx": {
     "pillSites": "{{count}} 站點",
@@ -5162,6 +5181,12 @@
     "setIndexes": "目錄列表",
     "bodyInherit": "跟隨全域"
   },
+  "notFound": {
+    "title": "找不到頁面",
+    "body": "沒有 {{path}} 這個面板頁。",
+    "hint": "不明網址不會再默默轉去儀表板。",
+    "home": "儀表板"
+  },
   "notes": {
     "notFound": "找不到",
     "needPath": "請指定路徑",
@@ -5195,12 +5220,15 @@
     "ssh": {
       "identityNotFound": "找不到 identity",
       "registrationNotFound": "找不到登記",
-      "keyOkNologin": "金鑰已接受。帳戶無登入 shell（nologin）——請用 SFTP。視為通過。"
+      "keyOkNologin": "金鑰已接受。帳戶為 nologin 或僅限 SFTP（無 SSH shell）。視為通過。",
+      "keyOkSftp": "SSH shell 被拒後，SFTP pwd 成功。"
     },
     "cdn": {
       "siteNotFound": "找不到 CDN 站點",
       "nodeMissing": "節點不存在",
       "loopbackOriginRemote": "來源是 127.0.0.1——那是本機，不是遠端 edge。請設可達的 origin IP 或 bind_ip。",
+      "originRemoteRewrite": "遠端 edge 會用可達 origin {{url}}，而不是 loopback。",
+      "originRemoteUnknown": "來源是 loopback，且未知道公網／內網 IP 或 bind_ip——在補上之前，套用會拒絕遠端 edge。",
       "needSshOrFleet": "遠端 edge 需要出站 SSH 身份（或用戶名），或 /agents 機群 session。單憑 Health URL 不能套用。",
       "probe": {
         "timeout": "連線逾時 {{ms}}ms（{{detail}}）。對端可能被防火牆擋住。",
@@ -5213,7 +5241,7 @@
     },
     "backup": {
       "testUnsaved": "正在測試未儲存的表單（尚未寫入設定）。",
-      "testIdentity": "ssh（身份金鑰）連到 {{spec}} 成功",
+      "testIdentity": "sftp（身份金鑰）連到 {{spec}} 成功",
       "sshAuthFailed": "SSH 金鑰或密碼被拒（publickey）。請選出站身份，或安裝 sshpass。",
       "remotePathIsFile": "遠端路徑 {{path}} 是檔案。請用目錄。",
       "remoteMkdirFailed": "無法建立遠端目錄：{{detail}}",
@@ -5223,7 +5251,10 @@
       "resticNotInPath": "Restic 不在 路徑",
       "dbEnvUnreadable": "無法讀取 .db.env，略過 SQL 傾印。",
       "dbEnvNoName": ".db.env 沒有資料庫名稱，略過 SQL 傾印。",
-      "targetOutside": "還原目標必須在專案家目錄或公開檔案根目錄之內。"
+      "targetOutside": "還原目標必須在專案家目錄或公開檔案根目錄之內。",
+      "controlPlaneDryRun": "僅預覽——未寫入任何檔。在面板按還原並確認短語才會寫入。",
+      "controlPlaneNeedConfirm": "完整還原控制平面需要確認短語 RESTORE-CONTROL-PLANE。",
+      "controlPlaneRestartAfter": "還原成功後請重啟 API。"
     },
     "redis": {
       "cliMissing": "未安裝 redis-cli"
@@ -5392,7 +5423,17 @@
       "dns": "DNS",
       "email": "郵件",
       "isolation": "專案隔離",
-      "ops": "維運"
+      "ops": "維運",
+      "runtimesNode": "Node.js",
+      "runtimesPhp": "PHP",
+      "runtimesPython": "Python",
+      "runtimesGo": "Go",
+      "pm2": "PM2",
+      "runtimesNodeFix": "到 /runtimes/node 安裝 Node",
+      "runtimesPhpFix": "到 /runtimes/php 安裝 PHP",
+      "runtimesPythonFix": "到 /runtimes/python 安裝 Python",
+      "runtimesGoFix": "到 /runtimes/go 安裝 Go",
+      "pm2Fix": "到 Node 執行環境頁安裝 PM2"
     },
     "needAdmin": "需要管理員權限",
     "notInstalled": "未安裝",
@@ -5435,7 +5476,11 @@
       "hostScanFailed": "ssh-keyscan 沒有傳回該主機的 key。",
       "hookEnabled": "已開啟 inbound Git hook。請自行把 URL 貼到 GitHub、Gitea 或 GitLab。",
       "hookDisabled": "已關閉 inbound Git hook。該 URL 不會再同步。",
-      "hookSecretOnce": "請立即複製此 hook secret。之後不會再顯示。"
+      "hookSecretOnce": "請立即複製此 hook secret。之後不會再顯示。",
+      "refsNeedUrl": "請先填寫 Git 網址。",
+      "refsOk": "已載入 {{branches}} 條分支、{{tags}} 個 tag。",
+      "refsEmpty": "遠端沒有列出分支或 tag。",
+      "diffEmpty": "沒有未暫存的 diff（已排除受保護的 .env）。"
     },
     "auto": {
       "n0001": "狀態：已套用",
@@ -8267,7 +8312,7 @@
       "staleCliTitle": "遺留舊版 CLI",
       "staleCli": "仍有舊 CLI：{{path}}（產品版本 {{version}}）。PATH 可能優先用它。移除：rm -f {{path}}",
       "apacheDefaultTitle": "Apache 遺留預設站",
-      "apacheDefault": "Apache 000-default 仍佔 :80。產品 overlay 不會停用。請在面板套用 Apache，或 hosting apache apply --execute。",
+      "apacheDefault": "Apache 000-default 仍已啟用。這只代表預設站設定檔仍在，不代表 Apache 正在聽公網 :80（產品預期 Apache 綁在 127.0.0.1:8080）。產品 overlay 不會停用此預設站。請在面板套用 Apache，或 hosting apache apply --execute。",
       "nginxCatchAllTitle": "Nginx 缺 catch-all",
       "nginxCatchAll": "/etc/nginx/conf.d 沒有 ysk-000-default.conf。未知 SNI 可能落到其他站。請執行 projects nginx-sync --execute。",
       "vsftpdTitle": "vsftpd 單元失敗",
@@ -8277,6 +8322,15 @@
       "overlayDoesNotHeal": "產品 overlay 不會改寫 nginx、Apache、vsftpd 或 Dovecot。請用列出的套用命令（root + YSK_EXECUTE=1）。",
       "readinessTitle": "overlay 後主機遺留",
       "readinessClean": "未偵測到 Apache 預設站、缺 nginx catch-all、vsftpd 失敗或舊 CLI。"
+    },
+    "defense": {
+      "panelReqLabel": "面板請求／分鐘",
+      "panelReqExcluded": "已認證面板流量 — 只顯示，不計入威脅分數",
+      "tcpOk": "TCP {{target}} 可達",
+      "tcpFail": "TCP {{target}} 失敗",
+      "dnsDegraded": "DNS 路徑降級",
+      "reqRateHigh": "公開請求速率 {{reqs}}／分鐘 ≥ {{threshold}}",
+      "ddosHeuristic": "公開請求偏高且邊緣探測失敗"
     }
   },
   "ops": {
@@ -8543,8 +8597,8 @@
     "healthUnknown": "尚未檢查",
     "sectionRuntimeDeploy": "運行時 部署",
     "sectionRuntimeDeployDesc": "依專案 運行時 啟動行程（節點 / PHP）",
-    "sectionGit": "Git 部署",
-    "sectionGitDesc": "從 Git 拉取程式碼並重新部署",
+    "sectionGit": "Git",
+    "sectionGitDesc": "Clone、同步、入站 push",
     "sectionEnv": "環境變數",
     "sectionEnvDesc": "以 金鑰=value 寫入專案 .env",
     "gitUrl": "git 網址",
@@ -8869,7 +8923,7 @@
     "deployPhpIniSaved": "已儲存專案 php.ini 覆寫；請再部署或套用 FPM",
     "deployHistory": "部署歷史（{{count}}）",
     "deployHistoryDesc": "來自操作稽核；newest first",
-    "deployGitUrlHint": "HTTPS 或 遠端登入 倉庫位址；同步後會依 運行時 自動 redeploy",
+    "deployGitUrlHint": "HTTPS 或 git@host:org/repo.git",
     "deployEnvHint": "每行 金鑰=value；# 開頭為註解",
     "resume": "恢復專案",
     "suspend": "暫停專案",
@@ -8973,8 +9027,9 @@
     "resBashConfirmTitle": "允許互動式 bash？",
     "resBashConfirmDesc": "這會讓專案用戶有互動登入 shell。只在需要以該用戶 SSH 或終端機時才確認。",
     "createGitHint": "可選。會記在專案；到部署分頁再 clone（建立時不會 clone）。",
+    "gitTokenLaterHint": "HTTPS token 與 clone depth 請在建立後於部署分頁設定。",
     "gitBranch": "分支",
-    "gitBranchHint": "分支或 tag。留空則用遠端預設分支。首次 clone 為淺層（depth 1）。",
+    "gitBranchHint": "從遠端揀分支或 tag。",
     "gitLastRef": "上次同步：{{branch}} @ {{commit}}",
     "gitConfirmTitle": "要 clone 到此專案？",
     "gitConfirmBody": "若 app/ 仍是 Hello World 佔位會先清除再 clone。非 YSK 範本的自訂檔案會拒絕覆寫。",
@@ -9003,7 +9058,7 @@
     "gitResetConfirmBody": "會丟棄本機 Git 歷史及未追蹤檔（保留 .env），再用控制面資料還原 .env。",
     "gitHeads": "遠端分支",
     "gitToken": "HTTPS token",
-    "gitTokenHint": "Personal access token。加密存放；不會寫入 remote URL。",
+    "gitTokenHint": "加密存放。不會寫入 remote URL。",
     "gitTokenPlaceholder": "ghp_… 或 glpat-…",
     "gitTokenSet": "已設 token",
     "gitSaveToken": "儲存 token",
@@ -9018,23 +9073,48 @@
     "gitPinHost": "釘選 host key",
     "gitPinHostBody": "尚未釘選 {{host}}。請核對 fingerprint，再釘選後才用 SSH clone。",
     "gitHostUnpinned": "未釘選 host key",
-    "gitHookTitle": "Inbound hook",
-    "gitHookHint": "請自行把上方完整 POST URL 貼到 GitHub／Gitea／GitLab（只接收 push）。不是 Slack。密鑰用 HMAC 或 X-YSK-Git-Hook。只會同步本專案已選定的 ref。",
-    "gitHookOn": "Hook 已開",
-    "gitHookOff": "Hook 已關",
-    "gitHookEnable": "開啟 hook",
+    "gitHookTitle": "Push hook",
+    "gitHookHint": "自行把 URL 貼到 GitHub／Gitea／GitLab（只收 push）。不是 Slack。",
+    "gitHookOn": "已開",
+    "gitHookOff": "已關",
+    "gitHookEnable": "開啟",
     "gitHookRotate": "更換 secret",
-    "gitHookDisable": "關閉 hook",
-    "gitHookSecretOnce": "請立即複製此 secret——離開頁面後不會再顯示。",
-    "gitHookCopyUrl": "複製 URL",
+    "gitHookDisable": "關閉",
+    "gitHookSecretOnce": "請立即複製此 secret——之後不會再顯示。",
+    "gitHookCopyUrl": "複製",
     "gitHookCopySecret": "複製 secret",
     "gitHookCopied": "已複製",
-    "gitHookSetup": "請在 Git 平台自行新增 webhook：Payload URL 用上方完整網址；Content type 用 application/json；事件只選 push；Secret 用啟用時顯示的值。",
-    "gitHookGithub": "GitHub：Settings → Webhooks → Add webhook。Content type 選 application/json。Events 選 Just the push event。GitHub.com 需要 HTTPS。",
-    "gitHookGitea": "Gitea：Settings → Webhooks → Add Webhook → Gitea。方法 POST。事件選 Push。",
-    "gitHookGitlab": "GitLab：Settings → Webhooks。Trigger 選 Push events。Secret token 填 hook secret（以 X-Gitlab-Token 傳送）。",
-    "gitHookHonesty": "主機 systemd 必須設 YSK_EXECUTE=1，hook 才會真正 clone／部署。否則只回計劃結果。",
-    "gitHookSkipOther": "其他分支的 push 會被忽略，只同步本專案的 ref。"
+    "gitHookSetup": "Payload URL 用上方網址。Content type：application/json。事件只選 push。Secret 用啟用時顯示的值。",
+    "gitHookGithub": "Settings → Webhooks → Add webhook。Content type：application/json。Events：Just the push event。GitHub.com 需要 HTTPS。",
+    "gitHookGitea": "Settings → Webhooks → Add Webhook → Gitea。方法 POST。事件：Push。",
+    "gitHookGitlab": "Settings → Webhooks。Trigger：Push events。Secret token 填 hook secret（X-Gitlab-Token）。",
+    "gitHookHonesty": "主機 unit 需 YSK_EXECUTE=1，否則 hook 只回計劃。",
+    "gitHookSkipOther": "其他分支會被忽略。",
+    "gitAuthHttps": "HTTPS token",
+    "gitAuthSsh": "SSH deploy key",
+    "gitLoadRefs": "載入分支",
+    "gitRefDefault": "遠端預設",
+    "gitRefBranches": "分支",
+    "gitRefTags": "Tags",
+    "gitRefOther": "其他 ref…",
+    "gitRefCustom": "Commit 或 ref",
+    "gitRefsNeedUrl": "請先填網址。",
+    "gitRefsNeedAuth": "請先儲存 token 或 deploy key，再載入分支。",
+    "gitRefsHint": "來自遠端清單，請選擇。",
+    "gitHookSetupToggle": "如何貼到 Git 平台",
+    "gitHookOneLiner": "HMAC 或 X-YSK-Git-Hook。只同步本專案 ref。",
+    "gitHookExecuteHint": "真正 clone／部署需 YSK_EXECUTE=1。",
+    "gitShowKey": "顯示金鑰",
+    "gitHideKey": "隱藏",
+    "gitBehindShort": "↓{{count}}",
+    "gitAheadShort": "↑{{count}}",
+    "gitDirtyShort": "有改動 · {{count}}",
+    "gitFilesLink": "Files",
+    "netForceHttpsOn": "發佈邊緣後，HTTP 會跳轉到 HTTPS。",
+    "netForceHttpsOff": "未儲存強制跳轉。",
+    "netHttpsLiveNotForced": "已有邊緣設定檔，HTTPS 可能已生效。此項只控制是否強制 HTTP→HTTPS。",
+    "gitSyncBlockedDirty": "有本機改動時無法同步。請先檢視 diff，或以重設丟棄後再同步。",
+    "gitViewDiff": "檢視 diff"
   },
   "protection": {
     "levels": {
@@ -9385,7 +9465,14 @@
     "plusRegion": "+ 省 {{v}}",
     "plusCity": "+ 城市 {{v}}",
     "lastTickPrefix": "· 上次 {{t}}",
-    "nextTickPrefix": "· 下輪 {{t}}"
+    "nextTickPrefix": "· 下輪 {{t}}",
+    "cannotBanSelf": "不可封鎖 {{ip}} — 這是本機、你的登入 IP 或 ignoreip",
+    "selfIp": "本機",
+    "selfHostIp": "主機 IP",
+    "selfLoginIp": "你的登入 IP",
+    "showZeroScore": "顯示 0 分",
+    "hideZeroScore": "隱藏 0 分",
+    "freshnessNa": "不適用"
   },
   "publicFiles": {
     "notSet": "未設定",
@@ -10701,7 +10788,10 @@
       "critical": "嚴重"
     },
     "confirmDeleteApiKey": "刪除此 API 金鑰？",
-    "confirmDeleteApiKeyDesc": "刪除後「{{name}}」無法再驗證。此操作無法復原。"
+    "confirmDeleteApiKeyDesc": "刪除後「{{name}}」無法再驗證。此操作無法復原。",
+    "policyNoTotpHint": "此帳號尚未設定 2FA — 儲存政策不需 TOTP。如要強制其他人使用 2FA，請先在上方設定。",
+    "sessionCli": "CLI",
+    "sessionApi": "API"
   },
   "serviceExposure": {
     "title": "網絡存取",
@@ -10800,7 +10890,13 @@
     "protectionDoneNote": "保護探測完成",
     "probeDone": "探測完成",
     "runProtection": "執行保護探測",
-    "notProbedYet": "尚未探測"
+    "notProbedYet": "尚未探測",
+    "statusFilter": {
+      "all": "全部狀態",
+      "running": "運行中",
+      "failed": "失敗",
+      "missing": "未安裝"
+    }
   },
   "software": {
     "title": "軟件中心",
@@ -11192,6 +11288,8 @@
     "filesYes": "有",
     "filesNo": "無",
     "colExpires": "到期",
+    "renew": "續期",
+    "renewFor": "為 {{domain}} 續期 Let’s Encrypt",
     "colStatus": "狀態",
     "emptyTitle": "尚未有憑證",
     "emptyDesc": "用右上角「上傳憑證」或「申請 Let’s Encrypt」",
@@ -11240,7 +11338,10 @@
     "dataPolicy": "資料策略",
     "keepData": "保留資料",
     "purgeData": "清除資料",
-    "uninstallNow": "立即移除"
+    "uninstallNow": "立即移除",
+    "uninstallNeedSelect": "請至少勾選一個套餐。不再允許全部不勾就一次刪光。",
+    "uninstallConfirmTitle": "移除已選套餐？",
+    "uninstallConfirmDesc": "將移除 {{count}} 個套餐。請輸入 REMOVE 確認。"
   },
   "support": {
     "title": "支持",
@@ -11269,7 +11370,11 @@
     "cryptoAddress": "地址",
     "copy": "複製",
     "copied": "已複製",
-    "docsLink": "說明文件"
+    "docsLink": "說明文件",
+    "diagTitle": "診斷摘要",
+    "diagBody": "複製版本、EXECUTE 與主機資料，方便貼到電郵。這不是完整 log 包。",
+    "diagCopy": "複製診斷摘要",
+    "diagCopied": "已複製診斷摘要"
   },
   "system": {
     "exportLoadFailed": "載入匯出資料失敗",
@@ -11350,7 +11455,10 @@
       "leOk": "已取得 {{domain}} 的 Let’s Encrypt 憑證",
       "leFailed": "申請憑證失敗：{{detail}}",
       "leHint": "請確認域名 A 記錄指向本機，且 80 埠可從外網到達（或 nginx 已服務該域名）",
-      "openFirewall": "若外網連線：防火牆請允許面板埠 {{port}}/tcp（防火牆 → 開埠 → 9287 Panel）"
+      "openFirewall": "若外網連線：防火牆請允許面板埠 {{port}}/tcp（防火牆 → 開埠 → 9287 Panel）",
+      "disableConfirmTitle": "關閉面板 HTTPS？",
+      "disableConfirmDesc": "面板會改以 HTTP 提供服務。WebAuthn／Passkey 在 HTTPS 恢復前會失效。",
+      "disablePasskeyWarn": "已登記的 Passkey 需要 HTTPS — HTTP 下會失敗。"
     },
     "timeNtp": "時間與 NTP",
     "clockStatus": "系統時鐘狀態",
@@ -11520,9 +11628,9 @@
     "willNotEnable": "不會 啟用 服務。",
     "writeTemplateBtn": "寫入範本",
     "installEnableTitle": "安裝並啟用",
-    "installEnableBody": "複製到 /etc/系統服務/system、daemon-重新載入、啟用 --now。需要管理員權限 + 執行。",
+    "installEnableBody": "複製到 /etc/systemd/system、daemon-reload、enable --now。需要管理員權限 + 執行。",
     "policyWrite": "僅寫入範本 — 只寫 dataDir，不動 /etc",
-    "policyInstall": "安裝並啟用 — cp + daemon-重新載入 + 啟用",
+    "policyInstall": "安裝並啟用 — cp + daemon-reload + enable",
     "policyBlocked": "未開 執行 或非 管理員 → 明確 已封鎖，不假成功",
     "policyNotEqual": "寫入範本 ≠ 服務已啟用 ≠ 已在監聽端口",
     "shortcutPower": "執行 / 電源",
@@ -11884,6 +11992,8 @@
     "policyTitle": "更新政策",
     "policyBody": "高風險與有 CVE 的套件預設需審批後才可套用。面板自身更新與系統 套件管理 升級分開處理。",
     "applyPkg": "套用套件升級",
+    "rebootNeeded": "需重啟",
+    "kernelRebootHint": "核心類套件套用後需要重新開機",
     "applyPkgConfirm": "確認升級 {{name}}？",
     "applyPkgDesc": "將對此主機執行 套件管理 升級。需 管理員權限與系統變更權限。",
     "lastScan": "上次掃描",
@@ -12018,6 +12128,8 @@
     "resume": "恢復",
     "suspend": "暫停",
     "impersonate": "模擬登入",
+    "impersonateHint": "以該用戶開啟工作階段。離開時請用帳戶選單結束模擬。",
+    "cannotDeleteSelf": "不能刪除目前登入的帳戶",
     "openDetail": "詳情",
     "edit": "編輯",
     "resetPassword": "重設密碼",
@@ -12118,7 +12230,6 @@
     "securityClearConfirm": "輸入用戶名以確認清除 2FA",
     "securityClearOk": "已清除 {{name}} 的 2FA",
     "securitySelfNote": "要為自己設定 2FA，請到「安全 → 我的安全」。",
-    "cannotDeleteSelf": "不能刪除目前登入的帳戶",
     "cannotModifySelf": "不能暫停或降級目前登入的帳戶",
     "cannotDeleteLastAdmin": "不能刪除最後一個管理員",
     "cannotDemoteLastAdmin": "不能暫停或降級最後一個管理員",
@@ -12128,7 +12239,8 @@
     "demoteAdminDesc": "此用戶將失去完整管理員權限。請確認仍有其他管理員。",
     "quotaNonNeg": "數量與配額不可為負數。",
     "diskQuotaHint": "預設晶片以 GiB 計；自訂欄為 MiB。",
-    "bandwidthHint": "0 代表不限。"
+    "bandwidthHint": "0 代表不限。",
+    "operatorHighRiskHint": "系統預設「操作員」含高危寫入（服務控制、防火牆、套件套用、MySQL、發佈 Nginx）。收窄只影響新理解讀；改預設會改現有操作員。"
   },
   "vnc": {
     "pageDesc": "VNC 伺服器／客戶端",
@@ -12453,6 +12565,7 @@
     "peerName": "名稱",
     "peerNamePlaceholder": "辦公室手提電腦",
     "addPeer": "+ 新增",
+    "installEngineFirst": "請先安裝 VPN 引擎",
     "addPeerWg": "+ 新增 peer",
     "addPeerOvpn": "+ 新增客戶端",
     "addPeerSs": "+ 新增金鑰",

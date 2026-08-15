@@ -208,7 +208,7 @@ describe('pushBackupRemote honesty', () => {
     expect(r.notes.length).toBeGreaterThan(0);
   });
 
-  it('scp path without password uses BatchMode scp', async () => {
+  it('sftp path without password uses BatchMode sftp', async () => {
     const calls: string[][] = [];
     const host = mockHost({
       executeEnabled: true,
@@ -245,7 +245,9 @@ describe('pushBackupRemote honesty', () => {
       localArchivePath: archive,
     });
     expect(r.ok).toBe(true);
-    expect(calls.some((a) => a[0] === 'scp' && a.includes('2222'))).toBe(true);
+    expect(
+      calls.some((a) => a.join(' ').includes('sftp') && a.join(' ').includes('2222')),
+    ).toBe(true);
   });
 });
 

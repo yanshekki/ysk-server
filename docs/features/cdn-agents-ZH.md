@@ -12,7 +12,7 @@
 
 | 項目 | 值 |
 |------|-----|
-| 路由 | CDN 頁、agents |
+| 路由 | `/cdn`、`/agents` |
 | 導航鍵 | `cdn`、agents 面 |
 | 主要操作 | 節點 · 站點 · render/apply/purge · fleet 列表／註冊／命令 |
 | 能力 | CDN／agents |
@@ -38,6 +38,7 @@ ysk-server agents fleet list --json
 
 - 已註冊 ≠ 已連線（需 heartbeat）。  
 - 已入佇列 ≠ 邊緣已套用。  
+- `/agents` 是機群頁。其他未知路徑顯示 404，不會默默轉去儀表板。  
 - 節點探測會分類 timeout／DNS／拒絕連線／TLS（不是只顯示 `fetch failed`）。  
 - 套用不會虛構 `root@publicIpv4`。只有節點有身分、用戶名或 `sshHost` 才走 SSH。遠端 edge 上的 loopback origin 會改寫或拒絕。非 SSH 路徑請貼 `/agents` fleet session。  
 

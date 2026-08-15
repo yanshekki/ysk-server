@@ -28,6 +28,12 @@
   "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again.",
   "actionDone": "{{action}} done",
   "runningOf": "{{running}}/{{total}} running",
+  "statusFilter": {
+    "all": "All states",
+    "running": "Running",
+    "failed": "Failed",
+    "missing": "Not installed"
+  },
   "canMutate": "Mutable",
   "locked": "Locked",
   "controlUnit": "Control-plane unit",

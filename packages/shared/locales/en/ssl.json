@@ -71,6 +71,8 @@
   "filesYes": "Yes",
   "filesNo": "No",
   "colExpires": "Expires",
+  "renew": "Renew",
+  "renewFor": "Renew Let’s Encrypt for {{domain}}",
   "colStatus": "Status",
   "emptyTitle": "No certificates yet",
   "emptyDesc": "Use “Upload certificate” or “Request Let’s Encrypt” above",

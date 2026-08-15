@@ -31,7 +31,8 @@
   "ssh": {
     "identityNotFound": "পরিচয় পাওয়া যায়নি",
     "registrationNotFound": "নিবন্ধন পাওয়া যায়নি",
-    "keyOkNologin": "Key accepted. Account has no login shell (nologin) — use SFTP. Treated as PASS."
+    "keyOkNologin": "Key accepted. Account has no login shell (nologin) — use SFTP. Treated as PASS.",
+    "keyOkSftp": "SFTP pwd succeeded after SSH shell was refused."
   },
   "cdn": {
     "siteNotFound": "CDN সাইট পাওয়া যায়নি",
@@ -45,7 +46,9 @@
       "http": "HTTP probe failed after {{ms}}ms ({{detail}})."
     },
     "loopbackOriginRemote": "Origin is 127.0.0.1 — that is this host, not a remote edge. Set a reachable origin IP or bind_ip.",
-    "needSshOrFleet": "Remote edge needs an outbound SSH identity (or username) or a /agents fleet session. Health URL alone is not apply transport."
+    "needSshOrFleet": "Remote edge needs an outbound SSH identity (or username) or a /agents fleet session. Health URL alone is not apply transport.",
+    "originRemoteRewrite": "Remote edges will use reachable origin {{url}} instead of loopback.",
+    "originRemoteUnknown": "Origin is loopback and no public/LAN IP or bind_ip is known — apply will refuse remote edges until one is set."
   },
   "backup": {
     "fileNotFound": "ব্যাকআপ ফাইল পাওয়া যায়নি",
@@ -59,7 +62,10 @@
     "sshAuthFailed": "SSH key or password rejected (publickey). Pick an outbound identity or install sshpass.",
     "remotePathIsFile": "Remote path {{path}} is a file. Use a directory.",
     "remoteMkdirFailed": "Could not create remote directory: {{detail}}",
-    "sidecarPushed": "Also pushed SQL sidecar {{name}}"
+    "sidecarPushed": "Also pushed SQL sidecar {{name}}",
+    "controlPlaneDryRun": "Preview only — nothing written. In the panel, use Restore and confirm the phrase to write.",
+    "controlPlaneNeedConfirm": "Full control-plane restore needs the confirm phrase RESTORE-CONTROL-PLANE.",
+    "controlPlaneRestartAfter": "Restart the API after a successful restore."
   },
   "redis": {
     "cliMissing": "redis-cli ইনস্টল করা নেই"
@@ -228,7 +234,17 @@
     "dns": "DNS",
     "email": "ইমেইল",
     "isolation": "প্রকল্প বিচ্ছিন্নতা",
-    "ops": "অপারেশন"
+    "ops": "অপারেশন",
+    "runtimesNode": "Node.js",
+    "runtimesPhp": "PHP",
+    "runtimesPython": "Python",
+    "runtimesGo": "Go",
+    "pm2": "PM2",
+    "runtimesNodeFix": "Install Node from /runtimes/node",
+    "runtimesPhpFix": "Install PHP from /runtimes/php",
+    "runtimesPythonFix": "Install Python from /runtimes/python",
+    "runtimesGoFix": "Install Go from /runtimes/go",
+    "pm2Fix": "Install PM2 from the Node runtime page"
   },
   "needAdmin": "প্রশাসকের অনুমতি প্রয়োজন",
   "notInstalled": "ইনস্টল করা হয়নি",
@@ -510,10 +526,10 @@
     "n0268": "ড্রাই-রান — লিখবেন না /ইত্যাদি",
     "n0269": "dry-run: add --execute firstapply ufw",
     "n0270": "ড্রাই-রান: ইনভেন্টরি + প্রিফ্লাইট পাস, প্যাকেজ/ট্রান্সফার নয়",
-    "n0271": "dry-run: probe/. যোগ করুন --execute YSK_EXECUTE=1 প্রথমত প্রভিশন",
-    "n0272": "ড্রাই-রান: লিখিত পরিচালিত ফাইল (ডেটাডির)। এক্সিকিউট + YSK_EXECUTE=1 + রুট ফার্স্টসিস্টেম ড্রপ-ইন যোগ করুন",
-    "n0273": "dry-run: না। যোগ করুন --execute YSK_EXECUTE=1 প্রথমত নিষিদ্ধ করুন",
-    "n0274": "dry-run: না। যোগ করুন --execute YSK_EXECUTE=1 প্রথমে সত্যিই নিষিদ্ধ করুন",
+    "n0271": "Dry-run: probe/plan only. Pass --execute with YSK_EXECUTE=1 to actually provision.",
+    "n0272": "Dry-run: wrote the managed file (dataDir). Pass --execute with YSK_EXECUTE=1 as root to install the system drop-in.",
+    "n0273": "Dry-run: not banned. Pass --execute with YSK_EXECUTE=1 to actually ban.",
+    "n0274": "Dry-run: not unbanned. Pass --execute with YSK_EXECUTE=1 to actually unban.",
     "n0275": "dryRun=true — এপিআই পরিবর্তন করুন",
     "n0276": "dryRun: লিখবেন না",
     "n0277": "ডাম্প ডাটাডির লিখেছেন, স্থানান্তর নয়",
@@ -1078,7 +1094,7 @@
     "n0836": "শংসাপত্র অনুগ্রহ করে ব্যর্থ হয়েছে",
     "n0837": "≥ ফাইল",
     "n0838": "settingskeptbackup",
-    "n0839": "সফল এই লক্ষ্য ব্যাচমোড করতে পারেন, ≠",
+    "n0839": "Success means this target accepts BatchMode SSH (non-interactive). It is not a grant of global access.",
     "n0840": "বা 32767",
     "n0841": "সফ্টওয়্যার ইনস্টল করা হয়েছে",
     "n0842": "অনুমতি/",
@@ -1238,7 +1254,7 @@
     "n0996": "স্থানীয় nginx -t ঠিক আছে (পরিচালিত conf, ≠ প্রান্ত প্রয়োগ করা হয়েছে)",
     "n0997": "স্থানীয় wsrep পারে, আকার নোড নয়",
     "n0998": "স্থানীয় ysk.json পড়তে পারে না / আঙ্গুলের ছাপ",
-    "n0999": "স্থানীয় ঠিক আছে; সম্পূর্ণ সুস্থ পিয়ার প্রোব (না)",
+    "n0999": "Local node is OK; a complete healthy status needs a peer probe (not done).",
     "n1000": "local nginx — conf লিখেছে, রিলোড নয়",
     "n1001": "স্থানীয় উপলব্ধ NM সংযোগ; সফল হবে। পারেন \"\" বা নেটওয়ার্ক ম্যানেজার।",
     "n1002": "স্থানীয় উপলভ্য ps — পারে না ()",
@@ -2483,7 +2499,7 @@
     "t0629": "প্রকল্প {{v0}} বাড়ি: {{v1}}",
     "t0630": "প্রকল্প {{v0}} bind_ip={{v1}} — ক্যান (আইপি)",
     "t0631": "প্রকল্প {{v0}} বাড়ির পথ নয়: {{v1}}",
-    "t0632": "বাড়ি (দোকান): {{v0}}",
+    "t0632": "Orphan home on disk (no matching store project): {{v0}}",
     "t0633": "মেইলডির: {{v0}}",
     "t0634": "{{v0}} — লক্ষ্য করা যাবে না",
     "t0635": "{{v0}} পরীক্ষা করা যাবে না",
@@ -2491,7 +2507,7 @@
     "t0637": "প্রকল্প {{v0}} · {{v1}} · DB {{v2}} · Redis {{v3}}",
     "t0638": "সফ্টওয়্যার ইনস্টল করুন {{v0}} · বাড়ি {{v1}}",
     "t0639": "কাটওভার হোস্ট {{v0}}",
-    "t0640": "সতর্কতা {{v0}} (দয়া করে)",
+    "t0640": "{{v0}} warning(s) — review before cutover.",
     "t0641": "কী {{v0}}",
     "t0642": "ক্যান্টকি: {{v0}}",
     "t0643": "লক্ষ্য লিখবেন না অনুমোদিত_কী: {{v0}}",
@@ -2555,7 +2571,7 @@
     "t0701": "CDN {{v0}}",
     "t0702": "অরিজিন শিল্ড নোডের অস্তিত্ব নেই: {{v0}}",
     "t0703": "প্রান্ত: {{v0}}",
-    "t0704": "মূল URL (): {{v0}}",
+    "t0704": "Origin URL (from project bind): {{v0}}",
     "t0705": "CDN আপডেট করুন {{v0}}",
     "t0706": "CDN {{v0}} তৈরি করুন",
     "t0707": "মূল ঢাল: প্রান্ত ঢাল {{v0}} → {{v1}}",
@@ -3061,7 +3077,7 @@
     "staleCliTitle": "Stale leftover CLI",
     "staleCli": "Leftover CLI still present: {{path}} (running product {{version}}). PATH may prefer it. Remove with: rm -f {{path}}",
     "apacheDefaultTitle": "Apache leftover default site",
-    "apacheDefault": "Apache 000-default is still enabled on :80. Product overlay does not disable it. Apply Apache from the panel or hosting apache apply --execute.",
+    "apacheDefault": "Apache 000-default is still enabled. That is the stock site file — it does not mean Apache is listening on public :80 (YSK Apache is expected on 127.0.0.1:8080). Overlay does not disable it. Apply Apache from the panel or hosting apache apply --execute.",
     "nginxCatchAllTitle": "Nginx catch-all missing",
     "nginxCatchAll": "ysk-000-default.conf is not in /etc/nginx/conf.d. Unknown SNI can fall through. Run projects nginx-sync --execute.",
     "vsftpdTitle": "vsftpd unit failed",
@@ -3104,7 +3120,11 @@
     "hostScanFailed": "ssh-keyscan returned no keys for that host.",
     "hookEnabled": "Inbound Git hook is on. Paste the URL into GitHub, Gitea, or GitLab yourself.",
     "hookDisabled": "Inbound Git hook is off. The URL will not sync.",
-    "hookSecretOnce": "Copy this hook secret now. It is not shown again."
+    "hookSecretOnce": "Copy this hook secret now. It is not shown again.",
+    "refsNeedUrl": "Enter a Git URL first.",
+    "refsOk": "Loaded {{branches}} branch(es) and {{tags}} tag(s).",
+    "refsEmpty": "Remote advertised no branches or tags.",
+    "diffEmpty": "No unstaged diff (protected .env is excluded)."
   },
   "migrate": {
     "orphanConfirm": "Type the exact leftover home path to confirm delete.",
@@ -3113,5 +3133,14 @@
     "orphanNeedExecute": "Would remove leftover {{path}}. Needs YSK_EXECUTE=1.",
     "orphanRmFailed": "Could not remove leftover home: {{detail}}",
     "orphanRemoved": "Removed leftover project home {{path}}."
+  },
+  "defense": {
+    "panelReqLabel": "Panel requests / min",
+    "panelReqExcluded": "Authenticated panel traffic — shown here, not counted in threat score",
+    "tcpOk": "TCP {{target}} reachable",
+    "tcpFail": "TCP {{target}} failed",
+    "dnsDegraded": "DNS path degraded",
+    "reqRateHigh": "Public request rate {{reqs}}/min ≥ {{threshold}}",
+    "ddosHeuristic": "High public request rate plus edge probe failure"
   }
 }

@@ -35,6 +35,7 @@ import {
   type ProjectDiskUsageRow,
   type ProjectsDiskUsageSnapshot } from '../../features/metrics/api';
 import { bindSet, bindInput, bindCheck, bindVoid, bindCall1, bindCall2 } from '../bind-handlers';
+import { formatDateTimeLocale } from '../../shared/lib/format-date';
 import {
   TopHeaderPanel,
   formatRes } from '../../features/metrics/TopHeaderPanel';
@@ -137,7 +138,7 @@ export function formatLoadAvg(
 }
 
 export function MetricsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [tab, setTab] = usePageTab(MET_TABS, 'overview');
   const [metrics, setMetrics] = useState<MetricsSnapshot | null>(null);
   const [processes, setProcesses] = useState<ProcessSnapshot | null>(null);
@@ -1496,12 +1497,12 @@ export function MetricsPage() {
                     </Badge>
                   </header>
                   <p className="muted u-text-sm">
-                    {t('metrics.alertsBuiltinOnly', {
-                      defaultValue:
-                        'Built-in CPU / memory / disk thresholds only. No email, webhook, or Slack channel.',
-                    })}
+                    {t('metrics.alertsBuiltinOnly')}
                     {metrics && 'at' in metrics && (metrics as { at?: string }).at
-                      ? ` · ${t('metrics.lastEvaluated', { defaultValue: 'Last checked' })} ${new Date(String((metrics as { at?: string }).at)).toLocaleString()}`
+                      ? ` · ${t('metrics.lastEvaluated')} ${formatDateTimeLocale(
+                          String((metrics as { at?: string }).at),
+                          i18n.language,
+                        )}`
                       : ''}
                   </p>
                   {alerts.length === 0 ? (

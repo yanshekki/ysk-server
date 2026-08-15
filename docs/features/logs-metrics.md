@@ -36,6 +36,9 @@ ysk-server host metrics --json
 ## Honesty
 
 - Read-only probes; no silent “we fixed the outage”.  
+- A query that returns 0 lines says so. It does not look like “not queried yet”.  
+- The live process table drops the sampling `ps` row (it is not 100% CPU).  
+- Threshold alerts are on-page only. There is no Slack, webhook, or mail channel.  
 
 ## Panel-only ⚠️
 

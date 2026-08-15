@@ -121,4 +121,19 @@ describe('CronJobService.listHostCrontabs', () => {
     expect(inv.users).toHaveLength(1);
     expect(inv.lines.filter((l) => l.kind === 'job')).toHaveLength(1);
   });
+
+  it('reads crontab without YSK_EXECUTE', async () => {
+    const host = mockHost(
+      {
+        root: { exitCode: 0, stdout: '0 4 * * * /usr/bin/true\n' },
+      },
+      { root: true, execute: false },
+    );
+    const cron = new CronJobService(emptyDb(), host, '/tmp/ysk-cron-test');
+    const inv = await cron.listHostCrontabs([]);
+    expect(inv.partial).toBe(false);
+    expect(inv.lines.some((l) => l.kind === 'job' && l.command?.includes('/usr/bin/true'))).toBe(
+      true,
+    );
+  });
 });

@@ -44,7 +44,9 @@ import {
   gitCheckoutRef,
   gitFetch,
   gitLog,
+  gitDiff,
   gitResetHard,
+  listGitRemoteRefs,
   probeGitStatus,
   restoreEnvFile,
   type GitOpResult,
@@ -1629,6 +1631,35 @@ export class ProjectOpsService {
   async gitLog(projectId: string, limit?: number) {
     const row = this.require(projectId);
     return gitLog({ host: this.host, appDir: join(row.home_dir, 'app'), limit });
+  }
+
+  async gitDiff(projectId: string) {
+    const row = this.require(projectId);
+    return gitDiff({ host: this.host, appDir: join(row.home_dir, 'app') });
+  }
+
+  async gitRefs(projectId: string, opts?: { gitUrl?: string }) {
+    const row = this.require(projectId);
+    const gitUrl = (opts?.gitUrl ?? row.git_url ?? '').trim();
+    if (!gitUrl) {
+      return {
+        ok: false,
+        branches: [] as string[],
+        tags: [] as string[],
+        notes: [tl('notes.git.refsNeedUrl')],
+      };
+    }
+    const auth = this.gitAuthRuntime(row, gitUrl);
+    if (auth.blocked) {
+      return {
+        ok: false,
+        branches: [] as string[],
+        tags: [] as string[],
+        notes: [auth.blocked.message],
+        code: auth.blocked.code,
+      };
+    }
+    return listGitRemoteRefs({ host: this.host, gitUrl, env: auth.env });
   }
 
   async gitFetch(projectId: string, opts?: { actor: string; unshallow?: boolean }) {

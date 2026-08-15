@@ -120,6 +120,22 @@ export async function handleProjectsOpsDeployRoutes(
     sendJson(res, 200, status);
     return true;
   }
+  if (method === 'POST' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/git\/refs$/)) {
+    ctx.auth.authenticate(getBearer(req));
+    const id = url.pathname.split('/')[4]!;
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { gitUrl?: string };
+    const refs = await ctx.projectOps.gitRefs(id, { gitUrl: data.gitUrl });
+    sendJson(res, 200, refs);
+    return true;
+  }
+  if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/git\/diff$/)) {
+    ctx.auth.authenticate(getBearer(req));
+    const id = url.pathname.split('/')[4]!;
+    const diff = await ctx.projectOps.gitDiff(id);
+    sendJson(res, 200, diff);
+    return true;
+  }
   if (method === 'GET' && url.pathname.match(/^\/api\/v1\/projects\/[^/]+\/git\/log$/)) {
     ctx.auth.authenticate(getBearer(req));
     const id = url.pathname.split('/')[4]!;

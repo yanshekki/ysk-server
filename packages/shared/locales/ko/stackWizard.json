@@ -15,5 +15,8 @@
   "dataPolicy": "데이터 정책",
   "keepData": "데이터 보관",
   "purgeData": "데이터 삭제",
-  "uninstallNow": "지금 제거"
+  "uninstallNow": "지금 제거",
+  "uninstallNeedSelect": "Select at least one bundle. Empty selection no longer means remove all.",
+  "uninstallConfirmTitle": "Remove selected bundles?",
+  "uninstallConfirmDesc": "{{count}} bundle(s) will be removed. Type REMOVE to confirm."
 }

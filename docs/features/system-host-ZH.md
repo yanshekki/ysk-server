@@ -60,6 +60,7 @@ ysk-server network exposure sync --service nginx --execute --json
 - **已寫入** 套件計劃 ≠ 已套用 apt。  
 - 就緒可能非零結束，但仍回傳完整 JSON。  
 - 產品 overlay 不會自行修復殘留主機檔；殘留會繼續顯示，直至執行對應套用命令。  
+- 停止控制面服務與關閉面板 HTTPS 需確認字串。套餐移除在未勾選時停用。  
 
 ## 僅面板 ⚠️
 

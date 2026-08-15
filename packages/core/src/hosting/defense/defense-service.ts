@@ -89,7 +89,7 @@ export async function getDefenseStatus(input: {
   }
   const sig = await collectDefenseSignals({
     host: input.host,
-    requestCountLastMinute: input.requestCountLastMinute,
+    panelRequestCountLastMinute: input.requestCountLastMinute,
     weights,
     threatThresholds });
   const activePreset = loadPresetId(input.db);

@@ -30,6 +30,12 @@ import type { OpsResultLike } from '../../shared/components/ui';
 import { ServiceLifecycleBar, systemApi } from '../../features/system';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
+import { api } from '../../shared/services/api';
+import {
+  collectHostIps,
+  collectLoginIps,
+  isProtectedSelfIp,
+} from '../../shared/lib/self-ip';
 import {
   bindSet,
   bindInput,
@@ -173,6 +179,8 @@ export function Fail2banPage() {
   const [banJail, setBanJail] = useState('sshd');
   const [ignoreIp, setIgnoreIp] = useState('');
   const [ignorePendingApply, setIgnorePendingApply] = useState(false);
+  const [hostIps, setHostIps] = useState<string[]>([]);
+  const [loginIps, setLoginIps] = useState<string[]>([]);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
 
   const catalog = status?.catalog ?? [];
@@ -188,6 +196,20 @@ export function Fail2banPage() {
       setStatus(s);
       setSelected((prev) => (prev.length ? prev : initialSelectedJails(s)));
       if (s.jails?.[0]?.name) setBanJail((j) => j || s.jails[0].name);
+      try {
+        const host = await api.requestRaw<{ network?: { ips?: string[] } }>(
+          '/api/v1/system/host',
+        );
+        setHostIps(collectHostIps(host));
+      } catch {
+        /* optional */
+      }
+      try {
+        const ses = await api.listSessions();
+        setLoginIps(collectLoginIps(ses.items));
+      } catch {
+        /* optional */
+      }
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : t('common.loadFailed'));
     }
@@ -201,12 +223,33 @@ export function Fail2banPage() {
   const [banQ, setBanQ] = useState('');
   const bannedAll = status?.banned ?? [];
   const banned = useMemo(() => filterBannedRows(bannedAll, banQ), [bannedAll, banQ]);
+  const selfIpOpts = useMemo(
+    () => ({
+      hostIps,
+      loginIps,
+      ignoreIps: status?.ignoreIps ?? [],
+    }),
+    [hostIps, loginIps, status?.ignoreIps],
+  );
+  const suggestedIgnore = useMemo(() => {
+    const have = new Set((status?.ignoreIps ?? []).map((x) => x.trim()));
+    return [...new Set([...hostIps, ...loginIps])].filter(
+      (ip) => ip && !have.has(ip) && !ip.startsWith('127.'),
+    );
+  }, [hostIps, loginIps, status?.ignoreIps]);
 
   function descFor(id: string): string {
     const raw = catalog.find((c) => c.id === id)?.desc;
-    const key = raw?.startsWith('fail2ban.jail.') ? raw : `fail2ban.jail.${id}`;
-    const translated = t(key, { defaultValue: '' });
-    if (translated && translated !== key) return translated;
+    const camel = id.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
+    const keys = [
+      raw?.startsWith('fail2ban.jail.') ? raw : '',
+      `fail2ban.jail.${camel}`,
+      `fail2ban.jail.${id}`,
+    ].filter(Boolean);
+    for (const key of keys) {
+      const translated = t(key, { defaultValue: '' });
+      if (translated && translated !== key) return translated;
+    }
     if (raw && !raw.startsWith('fail2ban.jail.')) return raw;
     return '—';
   }
@@ -356,7 +399,15 @@ export function Fail2banPage() {
                   variant="danger"
                   size="md"
                   loading={busy}
-                  disabled={!isValidBanIp(banIp)}
+                  disabled={
+                    !isValidBanIp(banIp) ||
+                    isProtectedSelfIp(banIp.trim(), selfIpOpts)
+                  }
+                  title={
+                    isProtectedSelfIp(banIp.trim(), selfIpOpts)
+                      ? t('fail2ban.cannotBanSelf')
+                      : undefined
+                  }
                   onClick={bindApiRefresh2(
                     run,
                     systemApi.fail2banBan,
@@ -471,6 +522,34 @@ export function Fail2banPage() {
                   <p className="def-section-head__desc">{t('fail2ban.ignoreipDesc')}</p>
                 </div>
               </div>
+              {suggestedIgnore.length ? (
+                <Alert variant="info">
+                  <p className="u-mt-0 u-mb-2">{t('fail2ban.suggestIgnoreHint')}</p>
+                  <ActionBar>
+                    {suggestedIgnore.map((ip) => (
+                      <Button
+                        key={ip}
+                        variant="secondary"
+                        size="sm"
+                        loading={busy}
+                        onClick={async () => {
+                          await bindApiRefresh2(
+                            run,
+                            systemApi.fail2banIgnoreIp,
+                            ip,
+                            'add',
+                            refresh,
+                            t('fail2ban.whitelistAdded'),
+                          )();
+                          setIgnorePendingApply(true);
+                        }}
+                      >
+                        {t('fail2ban.suggestIgnoreAdd', { ip })}
+                      </Button>
+                    ))}
+                  </ActionBar>
+                </Alert>
+              ) : null}
               <FormLayout columns={2}>
                 <Field
                   label={t('fail2ban.addIp')}
@@ -667,7 +746,6 @@ export function Fail2banPage() {
                       { value: '6h', label: t('fail2ban.hour', { n: 6 }) },
                       { value: '24h', label: t('fail2ban.hour', { n: 24 }) },
                       { value: '1w', label: t('fail2ban.week', { n: 1 }) },
-                      { value: '3600', label: '3600s' },
                     ]}
                     value={bantime}
                     onChange={setBantime}
@@ -687,7 +765,6 @@ export function Fail2banPage() {
                       { value: '10m', label: t('fail2ban.min', { n: 10 }) },
                       { value: '30m', label: t('fail2ban.min', { n: 30 }) },
                       { value: '1h', label: t('fail2ban.hour', { n: 1 }) },
-                      { value: '600', label: '600s' },
                     ]}
                     value={findtime}
                     onChange={setFindtime}
@@ -730,7 +807,7 @@ export function Fail2banPage() {
                     key={c.id}
                     id={`f2b-jail-${c.id}`}
                     label={c.label || c.id}
-                    description={c.desc}
+                    description={descFor(c.id)}
                     checked={selected.includes(c.id)}
                     onChange={bindToggleInList(setSelected, c.id)}
                   />

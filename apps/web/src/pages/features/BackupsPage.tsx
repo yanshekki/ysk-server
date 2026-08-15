@@ -1117,6 +1117,11 @@ export function BackupsPage() {
                       htmlFor="bk-path"
                       fullWidth
                       flush
+                      hint={
+                        remote.kind === 'sftp'
+                          ? t('backups.remotePathHint')
+                          : undefined
+                      }
                     >
                       <input
                         id="bk-path"

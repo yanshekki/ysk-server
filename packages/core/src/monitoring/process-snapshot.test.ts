@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   parsePsOutput,
   collectProcessSnapshot,
+  isSamplerPsCommand,
   type ProcessRow,
 } from './process-snapshot.js';
 import type { HostExecutor, RunResult } from '../host/executor.js';
@@ -91,6 +92,20 @@ describe('parsePsOutput', () => {
       5,
     );
     expect(rows[0]?.command).toBe('—');
+  });
+
+  it('drops the sampling ps command itself', () => {
+    expect(isSamplerPsCommand('ps -eo pid,user,pri,ni,vsz,rss,stat,pcpu')).toBe(true);
+    expect(isSamplerPsCommand('sleep 10')).toBe(false);
+    const parsed = parsePsOutput(
+      [
+        FULL_HEADER,
+        '1 root 20 0 100 50 S 100.0 0.1 00:00:00 00:00:01 ps -eo pid,user,pri,ni,vsz,rss,stat,pcpu,pmem,time,etime,args',
+        FULL_ROW,
+      ].join('\n'),
+      10,
+    );
+    expect(parsed.some((r) => isSamplerPsCommand(r.command))).toBe(true);
   });
 });
 

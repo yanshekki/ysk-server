@@ -21,7 +21,7 @@ import {
   applyCdnSiteEdgeRender,
   type CdnEdgeSslPaths } from './edge-render.js';
 import { fanOutCdnSite, type CdnEdgeApplyItem, type CdnFanOutResult } from './fan-out.js';
-import { getCdnNode } from './nodes.js';
+import { getCdnNode, resolveCdnSshTarget } from './nodes.js';
 import { getCdnSite, upsertCdnSite } from './sites.js';
 
 export type CdnCertResolve = {
@@ -137,23 +137,7 @@ function resolveSshTarget(node: CdnNodeDto): {
   port: number;
   username: string;
 } | null {
-  const host =
-    node.sshHost?.trim() ||
-    node.publicIpv4[0] ||
-    (node.baseUrl
-      ? (() => {
-          try {
-            return new URL(node.baseUrl).hostname;
-          } catch {
-            return '';
-          }
-        })()
-      : '');
-  if (!host) return null;
-  return {
-    host,
-    port: node.sshPort && node.sshPort > 0 ? node.sshPort : 22,
-    username: node.sshUsername?.trim() || 'root' };
+  return resolveCdnSshTarget(node);
 }
 
 function isLocalEdge(node: CdnNodeDto): boolean {

@@ -21,7 +21,7 @@ import type {
   CdnFleetApplyPayload,
   CdnFleetEnqueueFn,
   CdnFleetPurgePayload } from './fleet-payload.js';
-import { getCdnNode } from './nodes.js';
+import { getCdnNode, resolveCdnSshTarget } from './nodes.js';
 import { getCdnSite, patchCdnSiteStatus } from './sites.js';
 import {
   isLoopbackOriginUrl,
@@ -77,28 +77,7 @@ function resolveSshTarget(node: CdnNodeDto): {
   port: number;
   username: string;
 } | null {
-  const explicit =
-    Boolean(node.sshIdentityId?.trim()) ||
-    Boolean(node.sshUsername?.trim()) ||
-    Boolean(node.sshHost?.trim());
-  if (!explicit) return null;
-  const host =
-    node.sshHost?.trim() ||
-    node.publicIpv4[0] ||
-    (node.baseUrl
-      ? (() => {
-          try {
-            return new URL(node.baseUrl).hostname;
-          } catch {
-            return '';
-          }
-        })()
-      : '');
-  if (!host) return null;
-  return {
-    host,
-    port: node.sshPort && node.sshPort > 0 ? node.sshPort : 22,
-    username: node.sshUsername?.trim() || 'root' };
+  return resolveCdnSshTarget(node);
 }
 
 function isLoopbackHost(h: string): boolean {
@@ -322,8 +301,14 @@ export async function fanOutCdnSite(input: {
 
     let edgeConfPath = confPath;
     const storedOrigin = site.origin.url || input.projectOriginUrl || '';
+    let effectiveOrigin = storedOrigin;
     if (!isLocalEdge(node) && isLoopbackOriginUrl(storedOrigin)) {
-      const rewritten = reachableOriginUrlForRemoteEdge(input.db, storedOrigin);
+      const pid = site.origin.projectId;
+      const prow = pid ? input.db.snapshot.projects.find((p) => p.id === pid) : undefined;
+      const rewritten = reachableOriginUrlForRemoteEdge(input.db, storedOrigin, {
+        bindIp: prow?.bind_ip,
+        port: typeof prow?.port === 'number' ? prow.port : undefined,
+      });
       if (!rewritten) {
         const item: CdnEdgeApplyItem = {
           edgeNodeId: eid,
@@ -337,6 +322,7 @@ export async function fanOutCdnSite(input: {
         notes.push(`${node.name}: refuse loopback origin on remote edge`);
         continue;
       }
+      effectiveOrigin = rewritten;
       const sslPaths =
         site.ssl?.mode && site.ssl.mode !== 'off' ? edgeSslPaths(site.id) : undefined;
       const rendered = renderCdnEdgeNginxConf({
@@ -360,8 +346,8 @@ export async function fanOutCdnSite(input: {
           ? edgeSslPaths(site.id)
           : undefined;
       const rendered = renderCdnEdgeNginxConf({
-        site,
-        projectOriginUrl: input.projectOriginUrl,
+        site: { ...site, origin: { ...site.origin, url: effectiveOrigin } },
+        projectOriginUrl: effectiveOrigin || input.projectOriginUrl,
         sslPaths,
         shieldUpstreamUrl: isShield ? undefined : shieldUrl,
         isShieldEdge: isShield,

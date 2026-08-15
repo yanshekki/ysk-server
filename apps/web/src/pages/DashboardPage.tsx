@@ -38,6 +38,7 @@ import {
   defaultRuntimeInstallVersion,
   fetchRuntimeVersionChoices,
   runtimeVersionChoices } from '../features/projects/model/deploy-prefs';
+import { deriveProjectStatus } from '../features/projects/model/status';
 
 const DASH_TABS = ['overview', 'wizard', 'notifications', 'features', 'about'] as const;
 
@@ -677,18 +678,27 @@ export function DashboardPage() {
                         </div>
                       ) : (
                         <ul className="dash-kpi__list">
-                          {projects.slice(0, 4).map((p) => (
+                          {projects.slice(0, 4).map((p) => {
+                            const st = deriveProjectStatus(p);
+                            return (
                             <li key={p.id}>
                               <Link to={`/projects/${p.id}`} className="dash-kpi__list-name">
                                 {p.name}
                               </Link>
                               <Badge
-                                tone={p.processStatus === 'running' ? 'ok' : 'neutral'}
+                                tone={
+                                  st.tone === 'ok'
+                                    ? 'ok'
+                                    : st.tone === 'danger'
+                                      ? 'danger'
+                                      : 'neutral'
+                                }
                               >
-                                {p.processStatus ?? p.status ?? '—'}
+                                {t(st.labelKey, { defaultValue: st.labelFallback })}
                               </Badge>
                             </li>
-                          ))}
+                            );
+                          })}
                         </ul>
                       )}
                     </div>
@@ -726,7 +736,10 @@ export function DashboardPage() {
                         </div>
                       ) : (
                         <ul className="dash-kpi__audit">
-                          {audit.slice(0, 5).map((a) => {
+                          {audit
+                            .filter((a) => String(a.action ?? '') !== 'auth.locale')
+                            .slice(0, 5)
+                            .map((a) => {
                             const action = String(a.action ?? '');
                             const actionKey = `audit.actions.${action}`;
                             const actionLabel = t(actionKey, {
@@ -895,18 +908,26 @@ export function DashboardPage() {
                     <CheckboxField
                       id="wiz-dns"
                       label={t('dashboard.withDns')}
-                      description={t('dashboard.withDnsDesc')}
-                      checked={wizDns}
-                      onChange={setWizDns}
-                      disabled={!wizDomain}
+                      description={
+                        wizDomain.trim()
+                          ? t('dashboard.withDnsDesc')
+                          : t('dashboard.needDomainFirst')
+                      }
+                      checked={Boolean(wizDomain.trim() && wizDns)}
+                      onChange={(v) => setWizDns(v)}
+                      disabled={!wizDomain.trim()}
                     />
                     <CheckboxField
                       id="wiz-mail"
                       label={t('dashboard.withMail')}
-                      description={t('dashboard.withMailDesc')}
-                      checked={wizMail}
-                      onChange={setWizMail}
-                      disabled={!wizDomain}
+                      description={
+                        wizDomain.trim()
+                          ? t('dashboard.withMailDesc')
+                          : t('dashboard.needDomainFirst')
+                      }
+                      checked={Boolean(wizDomain.trim() && wizMail)}
+                      onChange={(v) => setWizMail(v)}
+                      disabled={!wizDomain.trim()}
                     />
                     <CheckboxField
                       id="wiz-db"

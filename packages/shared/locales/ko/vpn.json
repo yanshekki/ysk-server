@@ -129,5 +129,6 @@
     "addCidr": "추가하다"
   },
   "engineNotInstalled": "이 VPN 엔진이 호스트에 설치되어 있지 않습니다.",
-  "serverNotListening": "서버 유닛이 활성 상태가 아닙니다. UDP/TCP {{port}}가 닫혀 있을 수 있습니다."
+  "serverNotListening": "서버 유닛이 활성 상태가 아닙니다. UDP/TCP {{port}}가 닫혀 있을 수 있습니다.",
+  "installEngineFirst": "Install the VPN engine first"
 }

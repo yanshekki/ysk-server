@@ -686,7 +686,9 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
           }}
         />
 
-        {tab === 'cluster' ? <DbClusterPanel engine={engine} /> : null}
+        {tab === 'cluster' ? (
+          <DbClusterPanel engine={engine} engineInstalled={console?.installed !== false} />
+        ) : null}
 
         {console?.categories.map((cat) =>
           tab === cat.id ? (

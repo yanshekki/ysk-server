@@ -3,6 +3,7 @@
  */
 
 import { createConnection } from 'node:net';
+import { tl } from 'ysk-server-shared';
 import { evaluateProtection, type ProtectionState, EMERGENCY_PLAYBOOKS } from './protection.js';
 import { getPlaybook, listPlaybooks } from '../skills/playbooks.js';
 
@@ -58,20 +59,22 @@ export async function runProtectionProbes(opts?: {
 
   const networkReachable = cloudflare || googleDns;
   details.push(
-    cloudflare ? 'tcp 1.1.1.1:443 ok' : 'tcp 1.1.1.1:443 fail',
-    googleDns ? 'tcp 8.8.8.8:53 ok' : 'tcp 8.8.8.8:53 fail',
+    cloudflare ? tl('notes.defense.tcpOk', { target: '1.1.1.1:443' }) : tl('notes.defense.tcpFail', { target: '1.1.1.1:443' }),
+    googleDns ? tl('notes.defense.tcpOk', { target: '8.8.8.8:53' }) : tl('notes.defense.tcpFail', { target: '8.8.8.8:53' }),
   );
 
   // DNS ok if we can reach a DNS port or Cloudflare
   const dnsOk = googleDns || cloudflare;
-  if (!dnsOk) details.push('dns path degraded');
+  if (!dnsOk) details.push(tl('notes.defense.dnsDegraded'));
 
   const highRequestRate = reqs >= rateThreshold;
-  if (highRequestRate) details.push(`request rate ${reqs}/min >= ${rateThreshold}`);
+  if (highRequestRate) {
+    details.push(tl('notes.defense.reqRateHigh', { reqs, threshold: rateThreshold }));
+  }
 
   // Simple DDoS heuristic: high rate + partial network failure
   const ddosSuspected = highRequestRate && !cloudflare;
-  if (ddosSuspected) details.push('ddos heuristic: high rate + edge probe fail');
+  if (ddosSuspected) details.push(tl('notes.defense.ddosHeuristic'));
 
   const protection = evaluateProtection({
     networkReachable,

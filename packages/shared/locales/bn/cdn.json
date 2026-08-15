@@ -119,5 +119,6 @@
   "statOnline": "Online {{n}}/{{total}}",
   "statOffline": "Offline {{n}}",
   "statDraining": "Draining {{n}}",
-  "statHitRate": "Hit rate {{v}}"
+  "statHitRate": "Hit rate {{v}}",
+  "hitNoStats": "No edge stats yet"
 }

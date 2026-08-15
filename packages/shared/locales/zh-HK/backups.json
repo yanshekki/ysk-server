@@ -81,6 +81,7 @@
   "endpointOptional": "端點（可選）",
   "localMirror": "本機鏡像路徑",
   "remotePath": "遠端路徑",
+  "remotePathHint": "相對遠端用戶家目錄（或 SFTP chroot）。「.」即該家目錄。",
   "resticTitle": "Restic 增量備份",
   "resticDesc": "可選：系統路徑須有 Restic 指令。啟用後必須設定密碼（不會使用預設密碼）。",
   "enableRestic": "啟用 Restic",

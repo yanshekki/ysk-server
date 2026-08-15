@@ -231,6 +231,7 @@ export function PostgresPage() {
           <DataTable
                   rowKey={(r, i) => String((r as { id?: string }).id ?? i)}
             filters={
+              dbs.total > 0 || dbs.q.trim() ? (
               <ServerListFilters
                 q={dbs.q}
                 setQ={dbs.setQ}
@@ -241,6 +242,7 @@ export function PostgresPage() {
                 activeFilterCount={dbs.activeFilterCount}
                 clear={dbs.clearSearch}
               />
+              ) : undefined
             }
             columns={[
               { key: 'name', header: t('common.database'), render: (r) => <strong>{String(r.name)}</strong> },

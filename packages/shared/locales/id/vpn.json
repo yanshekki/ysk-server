@@ -129,5 +129,6 @@
     "addCidr": "Menambahkan"
   },
   "engineNotInstalled": "Mesin VPN ini belum terpasang di host.",
-  "serverNotListening": "Unit server tidak aktif. UDP/TCP {{port}} mungkin tertutup."
+  "serverNotListening": "Unit server tidak aktif. UDP/TCP {{port}} mungkin tertutup.",
+  "installEngineFirst": "Install the VPN engine first"
 }

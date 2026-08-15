@@ -27,6 +27,17 @@ export type NginxSiteRow = {
   port?: number | null;
 };
 
+function serverNameFromConf(confPath?: string | null): string {
+  if (!confPath || !existsSync(confPath)) return '';
+  try {
+    const body = readFileSync(confPath, 'utf8');
+    const m = body.match(/^\s*server_name\s+([^;]+);/m);
+    return (m?.[1] ?? '').trim();
+  } catch {
+    return '';
+  }
+}
+
 function kindFromRuntime(runtime?: string | null): NginxSiteKind {
   const r = String(runtime ?? '').toLowerCase();
   if (r === 'static') return 'static';
@@ -87,7 +98,7 @@ export function listMergedNginxSites(input: {
       source: 'project',
       projectId: id,
       projectName: String(p.name ?? id),
-      serverName: domain || '—',
+      serverName: domain || serverNameFromConf(confPath) || '—',
       kind: kindFromRuntime(p.runtime as string),
       target: projectTarget(p),
       ssl: Boolean(p.ssl ?? p.force_https ?? p.forceHttps) || hasCert || confMentionsSsl(confPath),

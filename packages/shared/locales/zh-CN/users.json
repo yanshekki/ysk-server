@@ -130,5 +130,7 @@
   "searchPkgPh": "方案名稱",
   "quotaNonNeg": "数量与配额不可为负数。",
   "diskQuotaHint": "预设晶片以 GiB 计；自订栏为 MiB。",
-  "bandwidthHint": "0 代表不限。"
+  "bandwidthHint": "0 代表不限。",
+  "impersonateHint": "Opens a session as this user. Use the account menu to leave impersonation.",
+  "operatorHighRiskHint": "The factory operator role includes high-risk writes (services, firewall, package apply, MySQL, Nginx publish). Narrow it only if you intend to change every existing operator."
 }

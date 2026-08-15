@@ -100,5 +100,7 @@
   "requestFailed": "인증서 요청이 실패했습니다.",
   "applyFailed": "요청 실패",
   "deletedCert": "삭제됨 {{domain}}",
-  "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates."
+  "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates.",
+  "renew": "Renew",
+  "renewFor": "Renew Let’s Encrypt for {{domain}}"
 }

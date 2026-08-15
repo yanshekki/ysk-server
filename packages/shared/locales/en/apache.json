@@ -26,6 +26,7 @@
   "upstreamLabel": "Upstream",
   "rootLabel": "Document root",
   "sslLabel": "SSL",
+  "sslTerminatedUpstream": "TLS ends at front Nginx",
   "apply": "Apply",
   "notInstalled": "Apache not installed",
   "globalSettings": "Global settings",

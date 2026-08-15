@@ -118,5 +118,6 @@
   "notifSearch": "搜索通知",
   "notifAll": "全部",
   "notifDismiss": "隐藏",
-  "goFix": "前往处理"
+  "goFix": "前往处理",
+  "needDomainFirst": "Enter a domain first"
 }

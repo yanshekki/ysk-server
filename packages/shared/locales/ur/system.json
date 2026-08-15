@@ -77,7 +77,10 @@
     "leOk": "آئیے {{domain}} کے لیے حاصل کردہ سرٹیفکیٹ کو خفیہ کریں",
     "leFailed": "سرٹیفکیٹ کی درخواست ناکام ہوگئی: {{detail}}",
     "leHint": "یقینی بنائیں کہ DNS A پوائنٹس یہاں ہیں اور پورٹ 80 قابل رسائی ہے (یا nginx ڈومین کی خدمت کرتا ہے)",
-    "openFirewall": "اگر عوامی: پینل پورٹ {{port}}/tcp کی اجازت دیں (فائر وال → اوپن پورٹ → 9287 پینل)"
+    "openFirewall": "اگر عوامی: پینل پورٹ {{port}}/tcp کی اجازت دیں (فائر وال → اوپن پورٹ → 9287 پینل)",
+    "disableConfirmTitle": "Disable panel HTTPS?",
+    "disableConfirmDesc": "The panel will serve HTTP. WebAuthn / Passkey will stop working until HTTPS is on again.",
+    "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP."
   },
   "timeNtp": "وقت اور این ٹی پی",
   "clockStatus": "سسٹم کی گھڑی کی حیثیت",

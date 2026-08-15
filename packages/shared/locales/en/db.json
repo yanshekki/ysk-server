@@ -211,6 +211,7 @@
     "remoteInstalled": "Remote installed",
     "fleetSynced": "Fleet sync queued",
     "fleetApplyQueued": "Fleet apply queued",
+    "engineNotInstalled": "{{engine}} is not installed on this host — install it first, or open the engine that is actually running.",
     "plan": "Plan",
     "writeFile": "Write files",
     "applyLocal": "Apply local",

@@ -490,5 +490,6 @@
   "deleteQueueDesc": "로컬 MTA 큐에서 {{id}}를 제거합니다. YSK_EXECUTE가 필요합니다.",
   "openQueuePage": "메일 큐 열기",
   "healthUnchecked": "Not checked yet",
-  "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first."
+  "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first.",
+  "domainsListDesc": "Mail domains registered on this host"
 }

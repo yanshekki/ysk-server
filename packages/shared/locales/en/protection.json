@@ -179,6 +179,7 @@
   "dbReady": "DB ready",
   "stale": "Stale",
   "older7d": ">7 days",
+  "freshnessNa": "n/a",
   "lastSuccess": "Last success",
   "downloaded": "Downloaded",
   "missing": "Missing",
@@ -347,5 +348,11 @@
   "plusRegion": "+ region {{v}}",
   "plusCity": "+ city {{v}}",
   "lastTickPrefix": "· last {{t}}",
-  "nextTickPrefix": "· next {{t}}"
+  "nextTickPrefix": "· next {{t}}",
+  "cannotBanSelf": "Cannot ban {{ip}} — this is the host, your login, or ignoreip",
+  "selfIp": "This host",
+  "selfHostIp": "Host IP",
+  "selfLoginIp": "Your login IP",
+  "showZeroScore": "Show 0-score",
+  "hideZeroScore": "Hide 0-score"
 }

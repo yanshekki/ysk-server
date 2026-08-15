@@ -65,6 +65,7 @@ Full argv: [../cli/reference.md](../cli/reference.md#vpn).
 ## Honesty
 
 - Without `YSK_EXECUTE` + root, install / ensure / peer mutations stay **blocked** or dry-run.  
+- Apply server is disabled while that engine (WireGuard / OpenVPN / Outline) is not installed. Service cards deep-link `?tab=`.  
 - Public **endpoint** in QR must match firewall and real public address.  
 - Full-tunnel client conf may inject policy routing so panel/SSH stay reachable.  
 

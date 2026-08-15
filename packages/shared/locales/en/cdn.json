@@ -30,6 +30,7 @@
   "confWritten": "Conf written ({{status}})",
   "partialFail": "Not fully successful ({{status}}) — see notes",
   "statNodes": "Nodes",
+  "hitNoStats": "No edge stats yet",
   "statSites": "Sites",
   "recentNotes": "Recent notes",
   "edgeConfPreview": "Nginx edge conf preview",

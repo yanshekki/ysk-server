@@ -34,6 +34,12 @@ import { api } from '../../shared/services/api';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { useServerList } from '../../shared/hooks/useServerList';
+import {
+  classifySelfIp,
+  collectHostIps,
+  collectLoginIps,
+  isProtectedSelfIp,
+} from '../../shared/lib/self-ip';
 import { bindAppendUniqueStr, bindBanAndClear, bindBanOne, bindCheck, bindCloseIfIdle, bindDefenseAutoBanTick, bindDefenseGeoApply, bindDefensePost, bindDefensePostOnly, bindDefenseProbe, bindDefenseUnban, bindDefenseWhitelist, bindDefenseWhitelistAction, bindFormSubmit, bindInput, bindListRemove, bindLoadGeo, bindPreset, bindSaveCfZones, bindSaveChecked, bindSaveNumber, bindSaveString, bindSaveTopChecked, bindSelect, bindSelectAllSuspects, bindValueSet, bindVoid } from '../bind-handlers';
 
 import {
@@ -532,6 +538,9 @@ export function ProtectionPage() {
     access?: { blocked: boolean; reason?: string; matched: string[] };
   } | null>(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
+  const [hostIps, setHostIps] = useState<string[]>([]);
+  const [loginIps, setLoginIps] = useState<string[]>([]);
+  const [hideZeroScore, setHideZeroScore] = useState(true);
 
   const loadGeo = useCallback(async () => {
     setGeoLoading(true);
@@ -589,6 +598,20 @@ export function ProtectionPage() {
     try {
       const s = await api.requestRaw<DefenseStatus>('/api/v1/defense/status');
       setStatus(s);
+      try {
+        const host = await api.requestRaw<{ network?: { ips?: string[] } }>(
+          '/api/v1/system/host',
+        );
+        setHostIps(collectHostIps(host));
+      } catch {
+        /* optional */
+      }
+      try {
+        const ses = await api.listSessions();
+        setLoginIps(collectLoginIps(ses.items));
+      } catch {
+        /* optional */
+      }
       const t = await api.requestRaw<{ items: typeof timeline }>('/api/v1/defense/timeline?hours=48');
       setTimeline(t.items ?? []);
       const sus = await api.requestRaw<{ items: SuspectIp[]; notes: string[] }>(
@@ -684,9 +707,27 @@ export function ProtectionPage() {
   const clearPresetConfirm = useCallback(() => setPresetConfirmId(null), []);
   const closeEmergency = useCallback(() => setEmergencyPromptOpen(false), []);
 
+  const selfIpOpts = useMemo(
+    () => ({
+      hostIps,
+      loginIps,
+      ignoreIps: suspects.filter((s) => s.whitelisted).map((s) => s.ip),
+    }),
+    [hostIps, loginIps, suspects],
+  );
+
+  const visibleSuspects = useMemo(
+    () =>
+      hideZeroScore ? suspects.filter((s) => (s.score ?? 0) > 0) : suspects,
+    [suspects, hideZeroScore],
+  );
+
   const actionableSuspects = useMemo(
-    () => filterActionableSuspects(suspects),
-    [suspects],
+    () =>
+      filterActionableSuspects(visibleSuspects).filter(
+        (s) => !isProtectedSelfIp(s.ip, selfIpOpts),
+      ),
+    [visibleSuspects, selfIpOpts],
   );
 
   async function applyPreset(
@@ -718,6 +759,10 @@ export function ProtectionPage() {
   }
 
   async function banOne(ip: string, reason?: string) {
+    if (isProtectedSelfIp(ip, selfIpOpts)) {
+      setError(t('protection.cannotBanSelf', { ip }));
+      return;
+    }
     await run(async () => {
       const r = (await api.requestRaw('/api/v1/defense/ban', {
         method: 'POST',
@@ -816,8 +861,10 @@ export function ProtectionPage() {
                 },
                 {
                   label: t('protection.statActiveBans'),
-                  value: status.bans?.count ?? 0,
-                  tone: banCountTone(status.bans?.count ?? 0),
+                  value: banList.meta?.total ?? banList.items.length ?? status.bans?.count ?? 0,
+                  tone: banCountTone(
+                    banList.meta?.total ?? banList.items.length ?? status.bans?.count ?? 0,
+                  ),
                 },
                 {
                   label: t('protection.statPreset'),
@@ -1725,6 +1772,15 @@ export function ProtectionPage() {
                 <Button
                   variant="ghost"
                   size="sm"
+                  onClick={() => setHideZeroScore((v) => !v)}
+                >
+                  {hideZeroScore
+                    ? t('protection.showZeroScore')
+                    : t('protection.hideZeroScore')}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   disabled={!actionableSuspects.length}
                   onClick={bindSelectAllSuspects(setSelected, actionableSuspects)}
                 >
@@ -1733,7 +1789,7 @@ export function ProtectionPage() {
               </div>
             </div>
 
-            {!suspects.length ? (
+            {!visibleSuspects.length ? (
               <div className="def-empty-card">
                 <EmptyState
                   title={t('protection.noSuspectIps')}
@@ -1742,8 +1798,11 @@ export function ProtectionPage() {
               </div>
             ) : (
               <div className="def-suspect-grid">
-                {suspects.map((s) => {
-                  const disabled = Boolean(s.alreadyBanned || s.whitelisted);
+                {visibleSuspects.map((s) => {
+                  const selfKind = classifySelfIp(s.ip, selfIpOpts);
+                  const disabled = Boolean(
+                    s.alreadyBanned || s.whitelisted || selfKind,
+                  );
                   const checked = Boolean(selected[s.ip]);
                   return (
                     <article
@@ -1774,6 +1833,15 @@ export function ProtectionPage() {
                         <Badge tone={scoreTone(s.score)}>{s.score}</Badge>
                         {s.alreadyBanned ? <Badge tone="ok">{t('protection.alreadyBanned')}</Badge> : null}
                         {s.whitelisted ? <Badge tone="info">{t('protection.whitelist')}</Badge> : null}
+                        {selfKind ? (
+                          <Badge tone="warn">
+                            {selfKind === 'login'
+                              ? t('protection.selfLoginIp')
+                              : selfKind === 'host'
+                                ? t('protection.selfHostIp')
+                                : t('protection.selfIp')}
+                          </Badge>
+                        ) : null}
                       </div>
                       <p className="def-suspect__why">{s.reasons.slice(0, 3).join(' · ') || '—'}</p>
                       <div className="def-suspect__meta">
@@ -1787,6 +1855,9 @@ export function ProtectionPage() {
                           size="sm"
                           loading={busy}
                           disabled={disabled}
+                          title={
+                            selfKind ? t('protection.cannotBanSelf', { ip: s.ip }) : undefined
+                          }
                           onClick={bindBanOne(banOne, s.ip, s.reasons[0])}
                         >
                           {t('protection.ban')}
@@ -2132,18 +2203,36 @@ export function ProtectionPage() {
                   ]}
                   rows={topIps.slice(0, 20)}
                   rowKey={(row) => row.ip}
-                  rowActions={(row) => (
+                  rowActions={(row) => {
+                    const selfKind = classifySelfIp(row.ip, selfIpOpts);
+                    return (
                     <ActionBar align="end">
+                      {selfKind ? (
+                        <Badge tone="warn">
+                          {selfKind === 'login'
+                            ? t('protection.selfLoginIp')
+                            : selfKind === 'host'
+                              ? t('protection.selfHostIp')
+                              : t('protection.selfIp')}
+                        </Badge>
+                      ) : null}
                       <Button
                         variant="danger"
                         size="sm"
                         loading={busy}
+                        disabled={Boolean(selfKind)}
+                        title={
+                          selfKind
+                            ? t('protection.cannotBanSelf', { ip: row.ip })
+                            : undefined
+                        }
                         onClick={bindBanOne(banOne, row.ip, `top-ip score=${row.score}`)}
                       >
                         {t('protection.banShort')}
                       </Button>
                     </ActionBar>
-                  )}
+                    );
+                  }}
                   empty={
                     <EmptyState
                       title={t('protection.noTopIps')}
@@ -2285,8 +2374,16 @@ export function ProtectionPage() {
                         tone: geoStatus.ready ? 'ok' : 'warn' },
                       {
                         label: t('protection.stale'),
-                        value: geoStatus.stale ? t('protection.older7d') : 'OK',
-                        tone: geoStatus.stale ? 'warn' : 'ok' },
+                        value: !geoStatus.ready
+                          ? t('protection.freshnessNa')
+                          : geoStatus.stale
+                            ? t('protection.older7d')
+                            : t('protection.yes'),
+                        tone: !geoStatus.ready
+                          ? 'default'
+                          : geoStatus.stale
+                            ? 'warn'
+                            : 'ok' },
                       {
                         label: t('protection.lastSuccess'),
                         value: geoStatus.meta?.lastSuccessAt

@@ -60,6 +60,7 @@ Full argv: [../cli/reference.md](../cli/reference.md).
 - **written** package plans ≠ applied apt.  
 - Readiness may exit non-zero while still returning full JSON.  
 - Product overlay does not heal leftover host files; leftovers stay visible until the matching apply command.  
+- Stopping the control-plane unit and disabling panel HTTPS require a confirm phrase. Pack uninstall is disabled when nothing is selected.  
 
 ## Panel-only ⚠️
 

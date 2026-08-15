@@ -27,6 +27,7 @@ import { useServerList } from '../../shared/hooks/useServerList';
 import { useSslCertificates } from '../../features/ssl/useSslCertificates';
 import type { CertificateView } from '../../features/ssl/api';
 import { bindSet, bindInput } from '../bind-handlers';
+import { formatDateLocale } from '../../shared/lib/format-date';
 
 export function statusBadge(
   status: string,
@@ -79,7 +80,7 @@ export function formatStepLine(
 }
 
 export function SslPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const {
     error,
@@ -318,7 +319,7 @@ export function SslPage() {
                     const soon = days >= 0 && days <= 30;
                     return (
                       <span title={d.toISOString()}>
-                        {d.toLocaleDateString()}
+                        {formatDateLocale(d, i18n.language)}
                         {Number.isFinite(days) ? (
                           <span className={`u-text-sm ${soon ? '' : 'muted'}`}>
                             {' '}
@@ -352,6 +353,16 @@ export function SslPage() {
                       title={t('ssl.retryRequestFor', { domain: r.domain })}
                     >
                       {t('ssl.retryRequest')}
+                    </Button>
+                  ) : r.provider === 'letsencrypt' ? (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      loading={busy}
+                      onClick={() => void onRetryDomain(r)}
+                      title={t('ssl.renewFor', { domain: r.domain })}
+                    >
+                      {t('ssl.renew')}
                     </Button>
                   ) : null}
                   <Button

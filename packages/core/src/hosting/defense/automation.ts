@@ -371,7 +371,7 @@ export async function runDefenseAutomationTick(input: {
   const threatThresholds = threatThresholdsFromAutoPreset(automation.autoPreset);
   const sig = await collectDefenseSignals({
     host: input.host,
-    requestCountLastMinute: input.requestCountLastMinute,
+    panelRequestCountLastMinute: input.requestCountLastMinute,
     weights: automation.signalWeights,
     threatThresholds });
   notes.push(tl('notes.auto.t0530', { v0: (sig.score), v1: (sig.threatLevel) }));

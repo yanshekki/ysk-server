@@ -9,6 +9,7 @@ export type PageStatusChip = {
   label: string;
   value: ReactNode;
   tone?: BadgeTone;
+  hint?: string;
 };
 
 export type PageStatusBarProps = {
@@ -46,7 +47,7 @@ export function PageStatusBar({
       {list.length > 0 ? (
         <ul className="page-status__chips">
           {list.map((c) => (
-            <li key={c.label} className="page-status__chip">
+            <li key={c.label} className="page-status__chip" title={c.hint}>
               <span className="page-status__chip-lab">{c.label}</span>
               {c.tone ? (
                 <Badge tone={c.tone}>{c.value}</Badge>

@@ -53,5 +53,6 @@
   "cleanupConflicts": "Limpar resíduos de conflito",
   "cleanupConflictsTitle": "Limpar todos os resíduos de conflito?",
   "cleanupConflictsDesc": "Remova todos os artefatos no disco que entrem em conflito com um projeto ou ServerName independente. As linhas do projeto são mantidas.",
-  "artifactRemovedOk": "Configuração residual removida"
+  "artifactRemovedOk": "Configuração residual removida",
+  "sslTerminatedUpstream": "TLS ends at front Nginx"
 }

@@ -77,7 +77,10 @@
     "leOk": "आइए {{domain}} के लिए प्राप्त प्रमाणपत्र एन्क्रिप्ट करें",
     "leFailed": "प्रमाणपत्र अनुरोध विफल: {{detail}}",
     "leHint": "सुनिश्चित करें कि DNS A यहां बिंदु है और पोर्ट 80 पहुंच योग्य है (या nginx डोमेन पर कार्य करता है)",
-    "openFirewall": "यदि सार्वजनिक है: पैनल पोर्ट {{port}}/tcp (फ़ायरवॉल → ओपन पोर्ट → 9287 पैनल) की अनुमति दें"
+    "openFirewall": "यदि सार्वजनिक है: पैनल पोर्ट {{port}}/tcp (फ़ायरवॉल → ओपन पोर्ट → 9287 पैनल) की अनुमति दें",
+    "disableConfirmTitle": "Disable panel HTTPS?",
+    "disableConfirmDesc": "The panel will serve HTTP. WebAuthn / Passkey will stop working until HTTPS is on again.",
+    "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP."
   },
   "timeNtp": "समय और एनटीपी",
   "clockStatus": "सिस्टम घड़ी की स्थिति",

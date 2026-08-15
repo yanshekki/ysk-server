@@ -133,6 +133,23 @@ export function enableCdnFromProject(
 
   const originUrl = projectOriginUrl(input.project);
   notes.push(tl('notes.auto.t0704', { v0: (originUrl) }));
+  const reachable = reachableOriginUrlForRemoteEdge(input.db, originUrl, {
+    bindIp: input.project.bindIp,
+    port: input.project.port,
+  });
+  const nodeById = new Map(listCdnNodes(input.db).map((n) => [n.id, n]));
+  const hasRemoteEdge = edges.some((id) => {
+    const n = nodeById.get(id);
+    if (!n) return false;
+    const ip = n.publicIpv4[0];
+    if (ip && ip !== '127.0.0.1' && ip !== '::1') return true;
+    return Boolean(n.baseUrl?.trim() || n.fleetAgentId?.trim() || n.sshHost?.trim());
+  });
+  if (reachable && reachable !== originUrl) {
+    notes.push(tl('notes.cdn.originRemoteRewrite', { url: reachable }));
+  } else if (hasRemoteEdge && isLoopbackOriginUrl(originUrl)) {
+    notes.push(tl('notes.cdn.originRemoteUnknown'));
+  }
 
   // Reuse existing site bound to same projectId if any
   const existing = listCdnSites(input.db).find(

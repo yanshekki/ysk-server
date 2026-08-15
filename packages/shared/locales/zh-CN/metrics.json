@@ -136,5 +136,7 @@
   "colAvail": "可用",
   "colUsePct": "使用率",
   "colHome": "主目录",
-  "usageNoteLink": "配额是控制面软上限。要套用硬限制请到专案「隔离」分页。"
+  "usageNoteLink": "配额是控制面软上限。要套用硬限制请到专案「隔离」分页。",
+  "alertsBuiltinOnly": "Built-in CPU / memory / disk thresholds only. No email, webhook, or Slack channel.",
+  "lastEvaluated": "Last checked"
 }

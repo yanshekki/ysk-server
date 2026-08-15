@@ -138,8 +138,35 @@ function clampPort(n: unknown, fallback: number): number {
 /**
  * Host clients see in magnet / announce URLs — always from panel settings.
  * Order: explicit override → publicAnnounceHost → listenHost (if not 0.0.0.0).
+ * Short hostnames (no dot, not an IP) are rejected — peers cannot resolve them.
  * Never invent a random hostname; empty string means “not configured yet”.
  */
+export function isUsableAnnounceHost(raw: string): boolean {
+  const host = String(raw || '')
+    .trim()
+    .replace(/^https?:\/\//i, '')
+    .replace(/\/$/, '')
+    .split('/')[0]
+    ?.trim()
+    .replace(/^\[|\]$/g, '')
+    .replace(/:\d+$/, '')
+    .toLowerCase();
+  if (!host) return false;
+  if (
+    host === 'localhost' ||
+    host === '127.0.0.1' ||
+    host === '::1' ||
+    host === '0.0.0.0' ||
+    host === '::' ||
+    host === '*'
+  ) {
+    return false;
+  }
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return true;
+  if (host.includes(':')) return true; // IPv6
+  return host.includes('.'); // FQDN only — skip short names like demo-server
+}
+
 export function resolveAnnounceHost(
   settings: Pick<BtTrackerSettings, 'publicAnnounceHost' | 'listenHost'>,
   opts?: { publicHost?: string | null },
@@ -157,14 +184,14 @@ export function resolveAnnounceHost(
   };
 
   const fromOpt = pick(opts?.publicHost);
-  if (fromOpt) return fromOpt;
+  if (fromOpt && isUsableAnnounceHost(fromOpt)) return fromOpt;
 
   const fromPublic = pick(settings.publicAnnounceHost);
-  if (fromPublic) return fromPublic;
+  if (fromPublic && isUsableAnnounceHost(fromPublic)) return fromPublic;
 
   const listen = pick(settings.listenHost);
   if (listen && listen !== '0.0.0.0' && listen !== '::' && listen !== '[::]') {
-    return listen;
+    if (isUsableAnnounceHost(listen)) return listen;
   }
   return '';
 }

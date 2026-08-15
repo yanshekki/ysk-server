@@ -49,7 +49,7 @@
 
 `POST /api/v1/projects/:id/ftp` 建立路徑 Jail 的 FTPS 帳戶（`homeSubdir` 為 `app` 或 `root`）。CLI：`ysk-server projects ftp` 或 `ftp accounts create --project`。要套用 vsftpd 請到 `/ftp`。
 
-Inbound Git hook（無需登入）：`POST /api/v1/hooks/git/:id`。認證用專案 secret——`X-YSK-Git-Hook`、`X-Gitlab-Token`，或 HMAC（`X-Hub-Signature-256`／`X-Gitea-Signature`）。管理（需登入、`projects.write`）：`POST /api/v1/projects/:id/git/hook` `{ action: enable|rotate|disable }`。其他 Git 控制：`GET /api/v1/projects/:id/git` · `/git/log`，`POST …/git/fetch|checkout|reset|auth`。CLI：`ysk-server projects git`。ping／其他事件／其他分支的 push 回 `200 { skipped }`。真正 clone 仍需 `YSK_EXECUTE=1`。
+Inbound Git hook（無需登入）：`POST /api/v1/hooks/git/:id`。認證用專案 secret——`X-YSK-Git-Hook`、`X-Gitlab-Token`，或 HMAC（`X-Hub-Signature-256`／`X-Gitea-Signature`）。管理（需登入、`projects.write`）：`POST /api/v1/projects/:id/git/hook` `{ action: enable|rotate|disable }`。其他 Git 控制：`GET /api/v1/projects/:id/git` · `/git/log` · `/git/diff`，`POST …/git/refs|fetch|checkout|reset|auth`。CLI：`ysk-server projects git`。`POST …/git/refs` 列出遠端分支／tag（`git ls-remote`；不需 EXECUTE）。ping／其他事件／其他分支的 push 回 `200 { skipped }`。真正 clone 仍需 `YSK_EXECUTE=1`。
 
 `PATCH /api/v1/email/domains/:id/flags` 設定假期自動回覆（`autoreply*`）與 Catch-all。CLI：`ysk-server email flags`／`email aliases create --type catchall`。未加 `--execute` 只寫草稿。
 

@@ -37,6 +37,7 @@
 @import './users-admin.css';
 @import './page-guide.css';
 @import './projects.css';
+@import './git-control.css';
 @import './redis.css';
 @import './shell.css';
 @import './split-panel.css';

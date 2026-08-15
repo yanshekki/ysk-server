@@ -148,6 +148,7 @@ export function SystemPage() {
   const [tlsBusy, setTlsBusy] = useState(false);
   /** Apply TLS config without killing this session unless user opts in */
   const [tlsRestart, setTlsRestart] = useState(false);
+  const [disableTlsOpen, setDisableTlsOpen] = useState(false);
 
   const refresh = useCallback(async () => {
     const [o, tz, tls] = await Promise.all([
@@ -830,26 +831,7 @@ export function SystemPage() {
                           size="md"
                           loading={tlsBusy}
                           disabled={!panelTls?.tlsEnabled}
-                          onClick={() => {
-                            if (
-                              tlsRestart &&
-                              !window.confirm(t('system.panelTls.restartConfirm'))
-                            ) {
-                              return;
-                            }
-                            setTlsBusy(true);
-                            setErr(null);
-                            setMsg(null);
-                            void systemApi
-                              .panelTlsDisable({ restart: tlsRestart })
-                              .then((r) => {
-                                setOpsResult(r as RebuildResult);
-                                setMsg((r.notes ?? []).join('；'));
-                                return refresh();
-                              })
-                              .catch((e: Error) => setErr(e.message))
-                              .finally(() => setTlsBusy(false));
-                          }}
+                          onClick={() => setDisableTlsOpen(true)}
                         >
                           {t('system.panelTls.disable')}
                         </Button>
@@ -1584,6 +1566,37 @@ export function SystemPage() {
             writeExport: true,
             syncNginx: true,
             dryRun: false });
+        }}
+      />
+      <ConfirmDialog
+        open={disableTlsOpen}
+        onClose={() => !tlsBusy && setDisableTlsOpen(false)}
+        title={t('system.panelTls.disableConfirmTitle')}
+        description={t('system.panelTls.disableConfirmDesc')}
+        consequences={[
+          t('system.panelTls.disablePasskeyWarn'),
+          tlsRestart
+            ? t('system.panelTls.restartConfirm')
+            : t('system.panelTls.disabledNote'),
+        ]}
+        confirmText="DISABLE-HTTPS"
+        severity="critical"
+        confirmLabel={t('system.panelTls.disable')}
+        busy={tlsBusy}
+        onConfirm={() => {
+          setDisableTlsOpen(false);
+          setTlsBusy(true);
+          setErr(null);
+          setMsg(null);
+          void systemApi
+            .panelTlsDisable({ restart: tlsRestart })
+            .then((r) => {
+              setOpsResult(r as RebuildResult);
+              setMsg((r.notes ?? []).join('；'));
+              return refresh();
+            })
+            .catch((e: Error) => setErr(e.message))
+            .finally(() => setTlsBusy(false));
         }}
       />
     </FeaturePageLayout>

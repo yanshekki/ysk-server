@@ -105,5 +105,7 @@
   "disableConfirmConsequence": "现有允许／拒绝规则仍会保留，但要重新启用 UFW 才会生效。",
   "toolHintFail2ban": "fail2ban = temporary log-based bans",
   "desiredOnlyUfwOff": "设定：{{mode}} · UFW 关闭（未套用）",
-  "syncNotApplied": "UFW 关闭 · 未套用"
+  "syncNotApplied": "UFW 关闭 · 未套用",
+  "defaultNotApplied": "n/a (UFW off)",
+  "ufwOffHint": "Default incoming is not applied while UFW is off"
 }

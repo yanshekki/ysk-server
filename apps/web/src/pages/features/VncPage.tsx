@@ -34,6 +34,7 @@ import {
   type VncDesktopProfile,
   type VncOpsResult,
   type VncRfbBind,
+  type VncStackStatus,
 } from '../../features/vnc/api';
 import {
   VncViewer,
@@ -70,6 +71,7 @@ export function VncPage() {
   const [error, setError] = useState<string | null>(null);
   const [accounts, setAccounts] = useState<VncAccountSummary[]>([]);
   const [clients, setClients] = useState<VncClientProfile[]>([]);
+  const [vncStacks, setVncStacks] = useState<VncStackStatus[]>([]);
   const [lastOps, setLastOps] = useState<OpsResultLike | null>(null);
   const [page, setPage] = useState(0);
 
@@ -174,6 +176,7 @@ export function VncPage() {
       const s = await vncApi.status();
       setAccounts(s.accounts ?? []);
       setClients(s.clientProfiles ?? []);
+      setVncStacks(s.stacks ?? []);
       if (s.settings) {
         setDesktop(s.settings.defaultDesktop);
         setGeometry(s.settings.defaultGeometry);
@@ -277,6 +280,20 @@ export function VncPage() {
             label: t('vnc.tab.accounts'),
             value: accounts.length,
             tone: accounts.length > 0 ? 'ok' : 'neutral',
+          },
+          {
+            label: 'TigerVNC',
+            value: vncStacks.find((s) => s.id === 'tigervnc')?.installed
+              ? t('common.installed')
+              : t('common.notInstalled'),
+            tone: vncStacks.find((s) => s.id === 'tigervnc')?.installed ? 'ok' : 'warn',
+          },
+          {
+            label: 'noVNC',
+            value: vncStacks.find((s) => s.id === 'novnc')?.installed
+              ? t('common.installed')
+              : t('common.notInstalled'),
+            tone: vncStacks.find((s) => s.id === 'novnc')?.installed ? 'ok' : 'warn',
           },
         ],
       }}
@@ -402,7 +419,17 @@ export function VncPage() {
               description={t('vnc.accountListDesc')}
               toolbar={
                 <ActionBar>
-                  <Button variant="primary" size="sm" onClick={openCreate}>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    disabled={!vncStacks.find((s) => s.id === 'tigervnc')?.installed}
+                    title={
+                      vncStacks.find((s) => s.id === 'tigervnc')?.installed
+                        ? undefined
+                        : t('vnc.needTigerVnc')
+                    }
+                    onClick={openCreate}
+                  >
                     {t('vnc.createAccount')}
                   </Button>
                   <Button

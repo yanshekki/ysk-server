@@ -140,4 +140,15 @@ export class Scheduler {
     const j = this.jobs.get(id);
     return j ? { ...j } : undefined;
   }
+
+  /**
+   * Record that work matching this job already happened (manual scan,
+   * persisted last_inventory, etc.) so the schedule list is not “never run”.
+   */
+  touchLastRun(id: string, at?: string): void {
+    const j = this.jobs.get(id);
+    if (!j) return;
+    const iso = at && !Number.isNaN(Date.parse(at)) ? at : new Date().toISOString();
+    j.lastRunAt = iso;
+  }
 }

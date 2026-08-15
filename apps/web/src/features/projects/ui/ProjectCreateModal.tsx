@@ -148,9 +148,9 @@ export function ProjectCreateModal({
   useEffect(() => {
     if (!open) return;
     const seq = ++versionReq.current;
-    const fallback = runtimeVersionChoices(runtime);
-    if (fallback.length) setVersionChoices(fallback);
+    setVersionChoices([]);
     setVersionsLoading(true);
+    const fallback = runtimeVersionChoices(runtime);
     void fetchRuntimeVersionChoices(runtime).then((r) => {
       if (seq !== versionReq.current) return;
       const choices = r.choices.length ? r.choices : fallback;
@@ -202,8 +202,9 @@ export function ProjectCreateModal({
 
   function applyRuntime(next: ProjectRuntime) {
     setRuntime(next);
+    setVersionChoices([]);
+    setVersionsLoading(true);
     const fallback = runtimeVersionChoices(next);
-    if (fallback.length) setVersionChoices(fallback);
     setRuntimeVersion(defaultRuntimeInstallVersion(next) || fallback[0] || '');
     if (gitUrl.trim()) {
       setTemplateId('');
@@ -471,6 +472,7 @@ export function ProjectCreateModal({
               }}
               placeholder="https://github.com/org/repo.git"
             />
+            <FormHint>{t('projects.gitTokenLaterHint')}</FormHint>
           </Field>
           {gitUrl.trim() ? (
             <Field

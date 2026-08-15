@@ -56,6 +56,7 @@ ysk-server hosting mysql-provision --execute --json
 - 無 EXECUTE 時，安裝／生命週期／套用維持已阻擋或試跑。  
 - SQL 切換為 **互斥**（MySQL XOR MariaDB）；務必預覽並確認短語。  
 - 叢集模組不會靜默組成多節點叢集。  
+- 此主機未安裝 MySQL（可能是 MariaDB）時，MySQL 主從精靈停用。  
 - Postgres 叢集探測以 `postgres` 系統用戶執行（`runuser -u postgres -- psql`）。  
 - 試跑叢集推送說明不會顯示成「系統變更已關閉」。  
 

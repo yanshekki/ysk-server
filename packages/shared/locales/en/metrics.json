@@ -82,6 +82,8 @@
   "noProjectsDesc": "Create a project to see real home usage here",
   "usageNote": "Usage from local du (not estimated). Quota is a control-plane soft limit; hard setquota needs apply-to-host.",
   "thresholdAlerts": "Threshold alerts",
+  "alertsBuiltinOnly": "Built-in CPU / memory / disk thresholds only. No email, webhook, or Slack channel.",
+  "lastEvaluated": "Last checked",
   "alertsOkTitle": "All clear",
   "alertsOkDesc": "No memory / load / disk threshold alerts.",
   "cpu": "CPU",

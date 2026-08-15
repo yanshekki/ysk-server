@@ -68,8 +68,18 @@ function LogIpLink({ ip }: { ip: string }) {
   );
 }
 
+function lineLooksLikeTrustedCidr(line: string): boolean {
+  return (
+    /\bset_real_ip_from\b/i.test(line) ||
+    /\ballow\s+/i.test(line) ||
+    /\bdeny\s+/i.test(line) ||
+    /\/\d{1,3}\b/.test(line)
+  );
+}
+
 function renderLineContent(line: string, linkIps: boolean): ReactNode {
   if (!linkIps) return line;
+  if (lineLooksLikeTrustedCidr(line)) return line;
   const nodes: React.ReactNode[] = [];
   let last = 0;
   let m: RegExpExecArray | null;

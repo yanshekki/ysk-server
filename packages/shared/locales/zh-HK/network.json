@@ -145,5 +145,7 @@
   },
   "linkUp": "向上",
   "linkDown": "離線",
-  "persistNmHint": "可持久化代表經 NetworkManager 寫入後，重啟後設定仍然有效。"
+  "persistNmHint": "可持久化代表經 NetworkManager 寫入後，重啟後設定仍然有效。",
+  "deleteDefaultPanelWarn": "刪除預設路由可能令面板連線中斷。請輸入 DEFAULT 確認。",
+  "typeDefaultToConfirm": "輸入 DEFAULT 確認"
 }

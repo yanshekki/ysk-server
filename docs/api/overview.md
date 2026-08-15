@@ -49,7 +49,7 @@ Files name collisions: `ifExists=fail|overwrite|rename` on upload/copy/rename (d
 
 `POST /api/v1/projects/:id/ftp` creates a jailed FTPS account (`homeSubdir` `app`|`root`). CLI: `ysk-server projects ftp` or `ftp accounts create --project`. Apply vsftpd on `/ftp`.
 
-Inbound Git hook (no session): `POST /api/v1/hooks/git/:id`. Auth is the project secret — `X-YSK-Git-Hook`, `X-Gitlab-Token`, or HMAC (`X-Hub-Signature-256` / `X-Gitea-Signature`). Manage (session, `projects.write`): `POST /api/v1/projects/:id/git/hook` `{ action: enable|rotate|disable }`. Other Git control: `GET /api/v1/projects/:id/git` · `/git/log`, `POST …/git/fetch|checkout|reset|auth`. CLI: `ysk-server projects git`. Ping / other events / wrong-branch pushes return `200 { skipped }`. Clone still needs `YSK_EXECUTE=1`.
+Inbound Git hook (no session): `POST /api/v1/hooks/git/:id`. Auth is the project secret — `X-YSK-Git-Hook`, `X-Gitlab-Token`, or HMAC (`X-Hub-Signature-256` / `X-Gitea-Signature`). Manage (session, `projects.write`): `POST /api/v1/projects/:id/git/hook` `{ action: enable|rotate|disable }`. Other Git control: `GET /api/v1/projects/:id/git` · `/git/log` · `/git/diff`, `POST …/git/refs|fetch|checkout|reset|auth`. CLI: `ysk-server projects git`. `POST …/git/refs` lists remote branches/tags (`git ls-remote`; no EXECUTE). Ping / other events / wrong-branch pushes return `200 { skipped }`. Clone still needs `YSK_EXECUTE=1`.
 
 `PATCH /api/v1/email/domains/:id/flags` sets vacation (`autoreply*`) and catch-all. CLI: `ysk-server email flags` / `email aliases create --type catchall`. Draft until `--execute`.
 

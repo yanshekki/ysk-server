@@ -206,6 +206,7 @@ export async function handleUpdatesInventoryRoutes(
           stale: false,
         });
         persistUpdatesSummary(ctx);
+        ctx.scheduler.touchLastRun('updates.scan');
         const filtered = filterInventoryAdvice(
           inv as unknown as InvRow[],
           advice as unknown as InvRow[],
@@ -270,6 +271,7 @@ export async function handleUpdatesInventoryRoutes(
           entries: hub.entries,
           stale: false,
         });
+        ctx.scheduler.touchLastRun('updates.scan');
         // Refresh panel status into cache (best-effort) so summary badge stays honest
         try {
           const status = await checkSelfUpdate({ currentVersion: VERSION });

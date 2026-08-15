@@ -115,6 +115,49 @@ table.data tr.data-table__row--activate {
 
 .data-table__actions-cell .action-bar {
   justify-content: flex-end;
+  flex-wrap: wrap;
+  max-width: 22rem;
+}
+
+.table-more {
+  position: relative;
+}
+
+.table-more > summary {
+  list-style: none;
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: 650;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-white);
+}
+
+.table-more > summary::-webkit-details-marker {
+  display: none;
+}
+
+.table-more__menu {
+  position: absolute;
+  right: 0;
+  z-index: 8;
+  margin-top: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.25rem;
+  min-width: 10rem;
+  padding: 0.4rem;
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(15, 23, 42, 0.12));
+}
+
+table.data th,
+table.data td {
+  padding: 0.55rem 0.75rem;
 }
 
 .data-table__empty {

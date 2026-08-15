@@ -432,5 +432,8 @@
   },
   "totpStatusLoadFailed": "Tidak dapat memuat status 2FA",
   "confirmDeleteApiKey": "Delete this API key?",
-  "confirmDeleteApiKeyDesc": "“{{name}}” will stop authenticating. This cannot be undone."
+  "confirmDeleteApiKeyDesc": "“{{name}}” will stop authenticating. This cannot be undone.",
+  "policyNoTotpHint": "This account has no 2FA yet — saving policy does not need a TOTP. Set up 2FA above if you want to require it for others.",
+  "sessionCli": "CLI",
+  "sessionApi": "API"
 }

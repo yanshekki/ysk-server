@@ -38,6 +38,7 @@ import {
   SegRadio,
   buttonClassName } from '../shared/components/ui';
 import { UserDetailModal } from '../features/users/UserDetailModal';
+import { formatDateTimeLocale } from '../shared/lib/format-date';
 import { RolePermissionsPanel, sameCapSet } from '../features/users/RolePermissionsPanel';
 import { ApiError, api } from '../shared/services/api';
 import { authStore } from '../shared/stores/auth-store';
@@ -162,7 +163,7 @@ type RolePolicyView = {
 };
 
 export function UsersPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { can } = useCapabilities();
   const me = authStore.getUser();
   const canImpersonate = can('users.impersonate');
@@ -766,7 +767,7 @@ export function UsersPage() {
                   nowrap: true,
                   render: (u) =>
                     u.lastSeenAt
-                      ? new Date(u.lastSeenAt).toLocaleString()
+                      ? formatDateTimeLocale(u.lastSeenAt, i18n.language)
                       : t('users.neverSeen') },
               ]}
               rows={users}
@@ -788,6 +789,7 @@ export function UsersPage() {
                       variant="secondary"
                       size="sm"
                       loading={busy}
+                      title={t('users.impersonateHint')}
                       onClick={() => setPending({ kind: 'impersonate', user: u })}
                     >
                       {t('users.impersonate')}
@@ -798,6 +800,13 @@ export function UsersPage() {
                     size="sm"
                     loading={busy}
                     disabled={Boolean(userMutationLock(u, me?.id, admins))}
+                    title={
+                      userMutationLock(u, me?.id, admins) === 'last-admin'
+                        ? t('users.cannotDeleteLastAdmin')
+                        : userMutationLock(u, me?.id, admins) === 'self'
+                          ? t('users.cannotDeleteSelf')
+                          : undefined
+                    }
                     onClick={() => {
                       if (userMutationLock(u, me?.id, admins)) return;
                       setPending({ kind: 'delUser', user: u });
@@ -930,6 +939,9 @@ export function UsersPage() {
 
           {tab === 'permissions' ? (
             <div className="tab-panel">
+              {policyRole === 'operator' ? (
+                <Alert variant="warn">{t('users.operatorHighRiskHint')}</Alert>
+              ) : null}
               <RolePermissionsPanel
                 policies={policies}
                 policyRole={policyRole}

@@ -129,5 +129,6 @@
     "addCidr": "যোগ করুন"
   },
   "engineNotInstalled": "এই VPN ইঞ্জিন হোস্টে ইনস্টল নেই।",
-  "serverNotListening": "সার্ভার ইউনিট সক্রিয় নয়। UDP/TCP {{port}} বন্ধ থাকতে পারে।"
+  "serverNotListening": "সার্ভার ইউনিট সক্রিয় নয়। UDP/TCP {{port}} বন্ধ থাকতে পারে।",
+  "installEngineFirst": "Install the VPN engine first"
 }

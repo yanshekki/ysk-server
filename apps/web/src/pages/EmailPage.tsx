@@ -479,7 +479,7 @@ export function EmailPage() {
           <div className="tab-panel mail-panel">
             <ListPanel
               title={t('email.domainsTitle', { filtered: items.length, total })}
-              description={t('email.searchPlaceholder')}
+              description={t('email.domainsListDesc')}
               toolbar={
                 <ActionBar>
                   <Button
@@ -830,7 +830,7 @@ export function EmailPage() {
                 )
               }
             />
-            {queueOk === true && queueMsg ? (
+            {queueOk === true && queueMsg && visibleQueue.length > 0 ? (
               <FormHint>{queueMsg}</FormHint>
             ) : null}
           </div>
@@ -862,30 +862,39 @@ export function EmailPage() {
                 compact
               />
             </div>
-            <SoftwareVersionBar softwareId="postfix" title="Postfix" />
-            <ServiceLifecycleBar
-              unit="postfix"
-              label="Postfix"
-              actions={['start', 'stop', 'restart', 'reload']}
-              size="sm"
-              className="u-mb-3"
-            />
-            <SoftwareVersionBar softwareId="dovecot" title="Dovecot" />
-            <ServiceLifecycleBar
-              unit="dovecot"
-              label="Dovecot"
-              actions={['start', 'stop', 'restart', 'reload']}
-              size="sm"
-              className="u-mb-3"
-            />
-            <SoftwareVersionBar softwareId="opendkim" title="OpenDKIM" />
-            <ServiceLifecycleBar
-              unit="opendkim"
-              label="OpenDKIM"
-              actions={['start', 'stop', 'restart']}
-              size="sm"
-              className="u-mb-3"
-            />
+            <Card>
+              <CardSection title="Postfix">
+                <SoftwareVersionBar softwareId="postfix" title="Postfix" />
+                <ServiceLifecycleBar
+                  unit="postfix"
+                  label="Postfix"
+                  actions={['start', 'stop', 'restart', 'reload']}
+                  size="sm"
+                />
+              </CardSection>
+            </Card>
+            <Card>
+              <CardSection title="Dovecot">
+                <SoftwareVersionBar softwareId="dovecot" title="Dovecot" />
+                <ServiceLifecycleBar
+                  unit="dovecot"
+                  label="Dovecot"
+                  actions={['start', 'stop', 'restart', 'reload']}
+                  size="sm"
+                />
+              </CardSection>
+            </Card>
+            <Card>
+              <CardSection title="OpenDKIM">
+                <SoftwareVersionBar softwareId="opendkim" title="OpenDKIM" />
+                <ServiceLifecycleBar
+                  unit="opendkim"
+                  label="OpenDKIM"
+                  actions={['start', 'stop', 'restart']}
+                  size="sm"
+                />
+              </CardSection>
+            </Card>
           </div>
         ) : null}
 

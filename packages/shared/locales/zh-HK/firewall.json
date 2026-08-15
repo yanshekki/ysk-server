@@ -20,6 +20,8 @@
   "statAllow": "允許",
   "statDeny": "拒絕",
   "statDefaultIn": "入站預設",
+  "defaultNotApplied": "未套用（UFW 關閉）",
+  "ufwOffHint": "UFW 關閉時入站預設不會生效",
   "executeOn": "開",
   "executeOff": "關",
   "ufwDisabled": "已停用 UFW",

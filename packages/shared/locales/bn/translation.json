@@ -248,7 +248,8 @@
     "cleanupConflicts": "দ্বন্দ্বের অবশিষ্টাংশ পরিষ্কার করুন",
     "cleanupConflictsTitle": "সমস্ত দ্বন্দ্ব অবশিষ্টাংশ পরিষ্কার?",
     "cleanupConflictsDesc": "প্রতিটি অন-ডিস্ক আর্টিফ্যাক্ট কনফ সরান যা একটি প্রকল্প বা স্বতন্ত্র সার্ভারনামের সাথে বিরোধপূর্ণ। প্রকল্প সারি রাখা হয়.",
-    "artifactRemovedOk": "অবশিষ্ট কনফ সরানো হয়েছে"
+    "artifactRemovedOk": "অবশিষ্ট কনফ সরানো হয়েছে",
+    "sslTerminatedUpstream": "TLS ends at front Nginx"
   },
   "applyStatus": {
     "draft": "খসড়া",
@@ -427,7 +428,8 @@
     "testDisabledHint": "Turn on remote push before testing.",
     "identityId": "Outbound SSH identity",
     "identityHint": "Preferred. Same vault as /security SSH. Password needs sshpass.",
-    "identityNone": "None — password or default key"
+    "identityNone": "None — password or default key",
+    "remotePathHint": "Relative to the remote user’s home (or SFTP chroot). “.” is that home."
   },
   "btTracker": {
     "title": "বিটি ট্র্যাকার",
@@ -765,7 +767,8 @@
     "statOnline": "Online {{n}}/{{total}}",
     "statOffline": "Offline {{n}}",
     "statDraining": "Draining {{n}}",
-    "statHitRate": "Hit rate {{v}}"
+    "statHitRate": "Hit rate {{v}}",
+    "hitNoStats": "No edge stats yet"
   },
   "cli": {
     "unknownCommand": "অজানা কমান্ড: {{command}}\n`{{cli}} help` চালান",
@@ -2075,7 +2078,8 @@
     "previous": "আগের",
     "all": "All",
     "showPassword": "Show",
-    "hidePassword": "Hide"
+    "hidePassword": "Hide",
+    "more": "More"
   },
   "cron": {
     "presetCdTrue": "সিডি অ্যাপ + সত্য (পরীক্ষা)",
@@ -2348,7 +2352,8 @@
     "notifSearch": "Search alerts",
     "notifAll": "All",
     "notifDismiss": "Hide",
-    "goFix": "Fix"
+    "goFix": "Fix",
+    "needDomainFirst": "Enter a domain first"
   },
   "dataTable": {
     "empty": "কোন তথ্য নেই",
@@ -2576,7 +2581,8 @@
       "status": "স্ট্যাটাস",
       "fleetSession": "Fleet agent session id",
       "fleetSessionHint": "Optional. Paste a session UUID from /agents. Then this peer uses fleet (no SSH). Leave empty for SSH scp.",
-      "fleetSessionPh": "Agents page session UUID"
+      "fleetSessionPh": "Agents page session UUID",
+      "engineNotInstalled": "{{engine}} is not installed on this host — install it first, or open the engine that is actually running."
     },
     "console": {
       "dataBrowse": "ডেটা ব্রাউজ করুন",
@@ -3374,7 +3380,8 @@
     "deleteQueueDesc": "স্থানীয় MTA সারি থেকে {{id}} সরান। YSK_EXECUTE লাগে।",
     "openQueuePage": "মেইল সারি খুলুন",
     "healthUnchecked": "Not checked yet",
-    "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first."
+    "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first.",
+    "domainsListDesc": "Mail domains registered on this host"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "অননুমোদিত",
@@ -3532,7 +3539,10 @@
       "postfix": "Postfix mail brute-force",
       "dovecot": "Dovecot mail login",
       "recidive": "Repeat offenders"
-    }
+    },
+    "cannotBanSelf": "This is the host or your login IP — add it to ignoreip instead of banning",
+    "suggestIgnoreHint": "Suggested admin IPs (panel file only until you apply policy):",
+    "suggestIgnoreAdd": "Add {{ip}}"
   },
   "featurePage": {
     "back": "ফিরে"
@@ -3997,7 +4007,9 @@
     "toolHintFail2ban": "fail2ban = temporary log-based bans",
     "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing.",
     "desiredOnlyUfwOff": "Desired: {{mode}} · UFW off (not applied)",
-    "syncNotApplied": "UFW off · not applied"
+    "syncNotApplied": "UFW off · not applied",
+    "defaultNotApplied": "n/a (UFW off)",
+    "ufwOffHint": "Default incoming is not applied while UFW is off"
   },
   "ftp": {
     "title": "FTPS অ্যাকাউন্ট",
@@ -4601,7 +4613,10 @@
     "logrotateNoStatus": "No logrotate status file yet (normal if it has never run).",
     "autoVacuumOff": "Automatic clean is off. Time is unused until you enable it.",
     "aboutAllowlist": "Explore can only read allowlisted journal units and /var/log paths. Arbitrary host paths are not offered.",
-    "aboutCustomPath": "Add a custom path on Settings (only /var/log or /run/log). Then open it from Explore."
+    "aboutCustomPath": "Add a custom path on Settings (only /var/log or /run/log). Then open it from Explore.",
+    "noRowsInWindow": "No records in this time window",
+    "showInactiveUnits": "Show inactive units",
+    "sseNeedFollow": "Turn on Follow first — SSE is only for live tail"
   },
   "metrics": {
     "alert": {
@@ -4741,7 +4756,9 @@
     "colAvail": "Available",
     "colUsePct": "Used %",
     "colHome": "Home",
-    "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab."
+    "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab.",
+    "alertsBuiltinOnly": "Built-in CPU / memory / disk thresholds only. No email, webhook, or Slack channel.",
+    "lastEvaluated": "Last checked"
   },
   "migrate": {
     "tabInventory": "ইনভেন্টরি",
@@ -5076,7 +5093,9 @@
     "linkDownNeedConfirm": "Type the interface name to confirm",
     "persistNmHint": "Persistable means changes can survive reboot via NetworkManager.",
     "hideRaw": "Hide raw output",
-    "rawLoadedAt": "Loaded {{time}}"
+    "rawLoadedAt": "Loaded {{time}}",
+    "deleteDefaultPanelWarn": "Deleting the default route can drop this panel session. Type DEFAULT to confirm.",
+    "typeDefaultToConfirm": "Type DEFAULT to confirm"
   },
   "nginx": {
     "pillSites": "{{count}} সাইট(গুলি)",
@@ -5162,6 +5181,12 @@
     "setIndexes": "ডিরেক্টরি তালিকা",
     "bodyInherit": "গ্লোবাল"
   },
+  "notFound": {
+    "title": "Page not found",
+    "body": "No panel page at {{path}}.",
+    "hint": "Unknown URLs no longer send you to the dashboard.",
+    "home": "Dashboard"
+  },
   "notes": {
     "notFound": "পাওয়া যায়নি",
     "needPath": "একটি পথ নির্দিষ্ট করুন",
@@ -5195,7 +5220,8 @@
     "ssh": {
       "identityNotFound": "পরিচয় পাওয়া যায়নি",
       "registrationNotFound": "নিবন্ধন পাওয়া যায়নি",
-      "keyOkNologin": "Key accepted. Account has no login shell (nologin) — use SFTP. Treated as PASS."
+      "keyOkNologin": "Key accepted. Account has no login shell (nologin) — use SFTP. Treated as PASS.",
+      "keyOkSftp": "SFTP pwd succeeded after SSH shell was refused."
     },
     "cdn": {
       "siteNotFound": "CDN সাইট পাওয়া যায়নি",
@@ -5209,7 +5235,9 @@
         "http": "HTTP probe failed after {{ms}}ms ({{detail}})."
       },
       "loopbackOriginRemote": "Origin is 127.0.0.1 — that is this host, not a remote edge. Set a reachable origin IP or bind_ip.",
-      "needSshOrFleet": "Remote edge needs an outbound SSH identity (or username) or a /agents fleet session. Health URL alone is not apply transport."
+      "needSshOrFleet": "Remote edge needs an outbound SSH identity (or username) or a /agents fleet session. Health URL alone is not apply transport.",
+      "originRemoteRewrite": "Remote edges will use reachable origin {{url}} instead of loopback.",
+      "originRemoteUnknown": "Origin is loopback and no public/LAN IP or bind_ip is known — apply will refuse remote edges until one is set."
     },
     "backup": {
       "fileNotFound": "ব্যাকআপ ফাইল পাওয়া যায়নি",
@@ -5223,7 +5251,10 @@
       "sshAuthFailed": "SSH key or password rejected (publickey). Pick an outbound identity or install sshpass.",
       "remotePathIsFile": "Remote path {{path}} is a file. Use a directory.",
       "remoteMkdirFailed": "Could not create remote directory: {{detail}}",
-      "sidecarPushed": "Also pushed SQL sidecar {{name}}"
+      "sidecarPushed": "Also pushed SQL sidecar {{name}}",
+      "controlPlaneDryRun": "Preview only — nothing written. In the panel, use Restore and confirm the phrase to write.",
+      "controlPlaneNeedConfirm": "Full control-plane restore needs the confirm phrase RESTORE-CONTROL-PLANE.",
+      "controlPlaneRestartAfter": "Restart the API after a successful restore."
     },
     "redis": {
       "cliMissing": "redis-cli ইনস্টল করা নেই"
@@ -5392,7 +5423,17 @@
       "dns": "DNS",
       "email": "ইমেইল",
       "isolation": "প্রকল্প বিচ্ছিন্নতা",
-      "ops": "অপারেশন"
+      "ops": "অপারেশন",
+      "runtimesNode": "Node.js",
+      "runtimesPhp": "PHP",
+      "runtimesPython": "Python",
+      "runtimesGo": "Go",
+      "pm2": "PM2",
+      "runtimesNodeFix": "Install Node from /runtimes/node",
+      "runtimesPhpFix": "Install PHP from /runtimes/php",
+      "runtimesPythonFix": "Install Python from /runtimes/python",
+      "runtimesGoFix": "Install Go from /runtimes/go",
+      "pm2Fix": "Install PM2 from the Node runtime page"
     },
     "needAdmin": "প্রশাসকের অনুমতি প্রয়োজন",
     "notInstalled": "ইনস্টল করা হয়নি",
@@ -5674,10 +5715,10 @@
       "n0268": "ড্রাই-রান — লিখবেন না /ইত্যাদি",
       "n0269": "dry-run: add --execute firstapply ufw",
       "n0270": "ড্রাই-রান: ইনভেন্টরি + প্রিফ্লাইট পাস, প্যাকেজ/ট্রান্সফার নয়",
-      "n0271": "dry-run: probe/. যোগ করুন --execute YSK_EXECUTE=1 প্রথমত প্রভিশন",
-      "n0272": "ড্রাই-রান: লিখিত পরিচালিত ফাইল (ডেটাডির)। এক্সিকিউট + YSK_EXECUTE=1 + রুট ফার্স্টসিস্টেম ড্রপ-ইন যোগ করুন",
-      "n0273": "dry-run: না। যোগ করুন --execute YSK_EXECUTE=1 প্রথমত নিষিদ্ধ করুন",
-      "n0274": "dry-run: না। যোগ করুন --execute YSK_EXECUTE=1 প্রথমে সত্যিই নিষিদ্ধ করুন",
+      "n0271": "Dry-run: probe/plan only. Pass --execute with YSK_EXECUTE=1 to actually provision.",
+      "n0272": "Dry-run: wrote the managed file (dataDir). Pass --execute with YSK_EXECUTE=1 as root to install the system drop-in.",
+      "n0273": "Dry-run: not banned. Pass --execute with YSK_EXECUTE=1 to actually ban.",
+      "n0274": "Dry-run: not unbanned. Pass --execute with YSK_EXECUTE=1 to actually unban.",
       "n0275": "dryRun=true — এপিআই পরিবর্তন করুন",
       "n0276": "dryRun: লিখবেন না",
       "n0277": "ডাম্প ডাটাডির লিখেছেন, স্থানান্তর নয়",
@@ -6242,7 +6283,7 @@
       "n0836": "শংসাপত্র অনুগ্রহ করে ব্যর্থ হয়েছে",
       "n0837": "≥ ফাইল",
       "n0838": "settingskeptbackup",
-      "n0839": "সফল এই লক্ষ্য ব্যাচমোড করতে পারেন, ≠",
+      "n0839": "Success means this target accepts BatchMode SSH (non-interactive). It is not a grant of global access.",
       "n0840": "বা 32767",
       "n0841": "সফ্টওয়্যার ইনস্টল করা হয়েছে",
       "n0842": "অনুমতি/",
@@ -6402,7 +6443,7 @@
       "n0996": "স্থানীয় nginx -t ঠিক আছে (পরিচালিত conf, ≠ প্রান্ত প্রয়োগ করা হয়েছে)",
       "n0997": "স্থানীয় wsrep পারে, আকার নোড নয়",
       "n0998": "স্থানীয় ysk.json পড়তে পারে না / আঙ্গুলের ছাপ",
-      "n0999": "স্থানীয় ঠিক আছে; সম্পূর্ণ সুস্থ পিয়ার প্রোব (না)",
+      "n0999": "Local node is OK; a complete healthy status needs a peer probe (not done).",
       "n1000": "local nginx — conf লিখেছে, রিলোড নয়",
       "n1001": "স্থানীয় উপলব্ধ NM সংযোগ; সফল হবে। পারেন \"\" বা নেটওয়ার্ক ম্যানেজার।",
       "n1002": "স্থানীয় উপলভ্য ps — পারে না ()",
@@ -7647,7 +7688,7 @@
       "t0629": "প্রকল্প {{v0}} বাড়ি: {{v1}}",
       "t0630": "প্রকল্প {{v0}} bind_ip={{v1}} — ক্যান (আইপি)",
       "t0631": "প্রকল্প {{v0}} বাড়ির পথ নয়: {{v1}}",
-      "t0632": "বাড়ি (দোকান): {{v0}}",
+      "t0632": "Orphan home on disk (no matching store project): {{v0}}",
       "t0633": "মেইলডির: {{v0}}",
       "t0634": "{{v0}} — লক্ষ্য করা যাবে না",
       "t0635": "{{v0}} পরীক্ষা করা যাবে না",
@@ -7655,7 +7696,7 @@
       "t0637": "প্রকল্প {{v0}} · {{v1}} · DB {{v2}} · Redis {{v3}}",
       "t0638": "সফ্টওয়্যার ইনস্টল করুন {{v0}} · বাড়ি {{v1}}",
       "t0639": "কাটওভার হোস্ট {{v0}}",
-      "t0640": "সতর্কতা {{v0}} (দয়া করে)",
+      "t0640": "{{v0}} warning(s) — review before cutover.",
       "t0641": "কী {{v0}}",
       "t0642": "ক্যান্টকি: {{v0}}",
       "t0643": "লক্ষ্য লিখবেন না অনুমোদিত_কী: {{v0}}",
@@ -7719,7 +7760,7 @@
       "t0701": "CDN {{v0}}",
       "t0702": "অরিজিন শিল্ড নোডের অস্তিত্ব নেই: {{v0}}",
       "t0703": "প্রান্ত: {{v0}}",
-      "t0704": "মূল URL (): {{v0}}",
+      "t0704": "Origin URL (from project bind): {{v0}}",
       "t0705": "CDN আপডেট করুন {{v0}}",
       "t0706": "CDN {{v0}} তৈরি করুন",
       "t0707": "মূল ঢাল: প্রান্ত ঢাল {{v0}} → {{v1}}",
@@ -8225,7 +8266,7 @@
       "staleCliTitle": "Stale leftover CLI",
       "staleCli": "Leftover CLI still present: {{path}} (running product {{version}}). PATH may prefer it. Remove with: rm -f {{path}}",
       "apacheDefaultTitle": "Apache leftover default site",
-      "apacheDefault": "Apache 000-default is still enabled on :80. Product overlay does not disable it. Apply Apache from the panel or hosting apache apply --execute.",
+      "apacheDefault": "Apache 000-default is still enabled. That is the stock site file — it does not mean Apache is listening on public :80 (YSK Apache is expected on 127.0.0.1:8080). Overlay does not disable it. Apply Apache from the panel or hosting apache apply --execute.",
       "nginxCatchAllTitle": "Nginx catch-all missing",
       "nginxCatchAll": "ysk-000-default.conf is not in /etc/nginx/conf.d. Unknown SNI can fall through. Run projects nginx-sync --execute.",
       "vsftpdTitle": "vsftpd unit failed",
@@ -8268,7 +8309,11 @@
       "hostScanFailed": "ssh-keyscan returned no keys for that host.",
       "hookEnabled": "Inbound Git hook is on. Paste the URL into GitHub, Gitea, or GitLab yourself.",
       "hookDisabled": "Inbound Git hook is off. The URL will not sync.",
-      "hookSecretOnce": "Copy this hook secret now. It is not shown again."
+      "hookSecretOnce": "Copy this hook secret now. It is not shown again.",
+      "refsNeedUrl": "Enter a Git URL first.",
+      "refsOk": "Loaded {{branches}} branch(es) and {{tags}} tag(s).",
+      "refsEmpty": "Remote advertised no branches or tags.",
+      "diffEmpty": "No unstaged diff (protected .env is excluded)."
     },
     "migrate": {
       "orphanConfirm": "Type the exact leftover home path to confirm delete.",
@@ -8277,6 +8322,15 @@
       "orphanNeedExecute": "Would remove leftover {{path}}. Needs YSK_EXECUTE=1.",
       "orphanRmFailed": "Could not remove leftover home: {{detail}}",
       "orphanRemoved": "Removed leftover project home {{path}}."
+    },
+    "defense": {
+      "panelReqLabel": "Panel requests / min",
+      "panelReqExcluded": "Authenticated panel traffic — shown here, not counted in threat score",
+      "tcpOk": "TCP {{target}} reachable",
+      "tcpFail": "TCP {{target}} failed",
+      "dnsDegraded": "DNS path degraded",
+      "reqRateHigh": "Public request rate {{reqs}}/min ≥ {{threshold}}",
+      "ddosHeuristic": "High public request rate plus edge probe failure"
     }
   },
   "ops": {
@@ -9034,7 +9088,33 @@
     "gitHookGitea": "Gitea: Settings → Webhooks → Add Webhook → Gitea. HTTP Method POST. Push events.",
     "gitHookGitlab": "GitLab: Settings → Webhooks. Trigger: Push events. Secret token = the hook secret (sent as X-Gitlab-Token).",
     "gitHookHonesty": "The host unit must have YSK_EXECUTE=1. Without it the hook answers but does not clone or deploy.",
-    "gitHookSkipOther": "Pushes to other branches are ignored. Only the project ref syncs."
+    "gitHookSkipOther": "Pushes to other branches are ignored. Only the project ref syncs.",
+    "gitAuthHttps": "HTTPS token",
+    "gitAuthSsh": "SSH deploy key",
+    "gitLoadRefs": "Load branches",
+    "gitRefDefault": "Remote default",
+    "gitRefBranches": "Branches",
+    "gitRefTags": "Tags",
+    "gitRefOther": "Other ref…",
+    "gitRefCustom": "Commit or ref",
+    "gitRefsNeedUrl": "Enter a URL first.",
+    "gitRefsNeedAuth": "Save a token or deploy key, then load branches.",
+    "gitRefsHint": "Loaded from the remote. Choose one — do not type.",
+    "gitHookSetupToggle": "How to paste this",
+    "gitHookOneLiner": "HMAC or X-YSK-Git-Hook. Only this project’s ref.",
+    "gitHookExecuteHint": "Needs YSK_EXECUTE=1 to clone or deploy.",
+    "gitShowKey": "Show key",
+    "gitHideKey": "Hide",
+    "gitBehindShort": "↓{{count}}",
+    "gitAheadShort": "↑{{count}}",
+    "gitDirtyShort": "Dirty · {{count}}",
+    "gitFilesLink": "Files",
+    "gitTokenLaterHint": "HTTPS token and clone depth are set on the project Deploy tab after create.",
+    "netForceHttpsOn": "HTTP will redirect to HTTPS after you publish the edge.",
+    "netForceHttpsOff": "No forced redirect is stored.",
+    "netHttpsLiveNotForced": "An edge file exists; HTTPS may already work. This box only forces HTTP→HTTPS.",
+    "gitSyncBlockedDirty": "Sync is disabled until local changes are discarded (Reset) or the files match Git.",
+    "gitViewDiff": "View diff"
   },
   "protection": {
     "levels": {
@@ -9385,7 +9465,14 @@
     "nextTickPrefix": "· পরবর্তী {{t}}",
     "stackApply": "Apply protection stack (UFW, fail2ban, preset)",
     "stackApplyDone": "Protection stack apply requested",
-    "stackApplyHint": "This enables UFW and applies fail2ban plus the suggested preset. Confirm you will not lock yourself out of a remote panel."
+    "stackApplyHint": "This enables UFW and applies fail2ban plus the suggested preset. Confirm you will not lock yourself out of a remote panel.",
+    "cannotBanSelf": "Cannot ban {{ip}} — this is the host, your login, or ignoreip",
+    "selfIp": "This host",
+    "selfHostIp": "Host IP",
+    "selfLoginIp": "Your login IP",
+    "showZeroScore": "Show 0-score",
+    "hideZeroScore": "Hide 0-score",
+    "freshnessNa": "n/a"
   },
   "publicFiles": {
     "notSet": "সেট করা হয়নি",
@@ -10701,7 +10788,10 @@
     },
     "totpStatusLoadFailed": "2FA অবস্থা লোড করা যায়নি",
     "confirmDeleteApiKey": "Delete this API key?",
-    "confirmDeleteApiKeyDesc": "“{{name}}” will stop authenticating. This cannot be undone."
+    "confirmDeleteApiKeyDesc": "“{{name}}” will stop authenticating. This cannot be undone.",
+    "policyNoTotpHint": "This account has no 2FA yet — saving policy does not need a TOTP. Set up 2FA above if you want to require it for others.",
+    "sessionCli": "CLI",
+    "sessionApi": "API"
   },
   "serviceExposure": {
     "title": "নেটওয়ার্ক অ্যাক্সেস",
@@ -10800,7 +10890,13 @@
     "stopConfirmFail2banTitle": "Stop fail2ban?",
     "stopConfirmFail2banDesc": "Stopping fail2ban turns off automatic IP bans. Websites and SSH keep running.",
     "stopConfirmFail2banConsequence": "New attackers are not banned until fail2ban is started again.",
-    "installOrOpen": "Install / open"
+    "installOrOpen": "Install / open",
+    "statusFilter": {
+      "all": "All states",
+      "running": "Running",
+      "failed": "Failed",
+      "missing": "Not installed"
+    }
   },
   "software": {
     "title": "সফটওয়্যার",
@@ -11221,7 +11317,9 @@
     "requestFailed": "শংসাপত্রের অনুরোধ সফল হয়নি৷",
     "applyFailed": "অনুরোধ ব্যর্থ হয়েছে",
     "deletedCert": "মুছে ফেলা হয়েছে {{domain}}",
-    "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates."
+    "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates.",
+    "renew": "Renew",
+    "renewFor": "Renew Let’s Encrypt for {{domain}}"
   },
   "stackWizard": {
     "purgeConfirm": "শুদ্ধি নিশ্চিত করবেন? নিবন্ধিত ডেটা পাথ (ডাটাবেস/মেইল) স্থায়ীভাবে মুছে ফেলা হবে।",
@@ -11240,7 +11338,10 @@
     "dataPolicy": "ডেটা নীতি",
     "keepData": "ডেটা রাখুন",
     "purgeData": "ডেটা পরিষ্কার করুন",
-    "uninstallNow": "এখনই আনইনস্টল করুন"
+    "uninstallNow": "এখনই আনইনস্টল করুন",
+    "uninstallNeedSelect": "Select at least one bundle. Empty selection no longer means remove all.",
+    "uninstallConfirmTitle": "Remove selected bundles?",
+    "uninstallConfirmDesc": "{{count}} bundle(s) will be removed. Type REMOVE to confirm."
   },
   "support": {
     "title": "সহায়তা",
@@ -11269,7 +11370,11 @@
     "cryptoAddress": "ঠিকানা",
     "copy": "কপি",
     "copied": "কপি হয়েছে",
-    "docsLink": "Documentation"
+    "docsLink": "Documentation",
+    "diagTitle": "Diagnostic summary",
+    "diagBody": "Copy version, execute, and host facts to paste into an email. This is not a full log bundle.",
+    "diagCopy": "Copy diagnostic summary",
+    "diagCopied": "Diagnostic summary copied"
   },
   "system": {
     "exportLoadFailed": "এক্সপোর্ট ডেটা লোড করতে ব্যর্থ হয়েছে৷",
@@ -11350,7 +11455,10 @@
       "leOk": "আসুন {{domain}} এর জন্য প্রাপ্ত শংসাপত্র এনক্রিপ্ট করি",
       "leFailed": "শংসাপত্রের অনুরোধ ব্যর্থ হয়েছে: {{detail}}",
       "leHint": "নিশ্চিত করুন যে এখানে DNS A পয়েন্ট এবং পোর্ট 80 পৌঁছানো যায় (বা nginx ডোমেনটি পরিবেশন করে)",
-      "openFirewall": "সর্বজনীন হলে: প্যানেল পোর্ট {{port}}/tcp অনুমতি দিন (ফায়ারওয়াল → ওপেন পোর্ট → 9287 প্যানেল)"
+      "openFirewall": "সর্বজনীন হলে: প্যানেল পোর্ট {{port}}/tcp অনুমতি দিন (ফায়ারওয়াল → ওপেন পোর্ট → 9287 প্যানেল)",
+      "disableConfirmTitle": "Disable panel HTTPS?",
+      "disableConfirmDesc": "The panel will serve HTTP. WebAuthn / Passkey will stop working until HTTPS is on again.",
+      "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP."
     },
     "timeNtp": "সময় এবং NTP",
     "clockStatus": "সিস্টেম ঘড়ির অবস্থা",
@@ -11994,7 +12102,9 @@
     "needsReboot": "Reboot needed",
     "kernelRebootWarn": "Installing a new kernel usually needs a reboot before it is used.",
     "neverRun": "not run yet",
-    "scanOsvN": "Scan + OSV (first {{n}})"
+    "scanOsvN": "Scan + OSV (first {{n}})",
+    "rebootNeeded": "reboot",
+    "kernelRebootHint": "Kernel packages need a reboot after apply"
   },
   "users": {
     "userCount": "{{count}} ব্যবহারকারী",
@@ -12128,7 +12238,9 @@
     "searchPkgPh": "Package name",
     "quotaNonNeg": "Counts and quotas cannot be negative.",
     "diskQuotaHint": "Presets are GiB; custom box is MiB.",
-    "bandwidthHint": "0 means unlimited."
+    "bandwidthHint": "0 means unlimited.",
+    "impersonateHint": "Opens a session as this user. Use the account menu to leave impersonation.",
+    "operatorHighRiskHint": "The factory operator role includes high-risk writes (services, firewall, package apply, MySQL, Nginx publish). Narrow it only if you intend to change every existing operator."
   },
   "vnc": {
     "pageDesc": "VNC সার্ভার এবং ক্লায়েন্ট",
@@ -12510,6 +12622,7 @@
       "addCidr": "যোগ করুন"
     },
     "engineNotInstalled": "এই VPN ইঞ্জিন হোস্টে ইনস্টল নেই।",
-    "serverNotListening": "সার্ভার ইউনিট সক্রিয় নয়। UDP/TCP {{port}} বন্ধ থাকতে পারে।"
+    "serverNotListening": "সার্ভার ইউনিট সক্রিয় নয়। UDP/TCP {{port}} বন্ধ থাকতে পারে।",
+    "installEngineFirst": "Install the VPN engine first"
   }
 }

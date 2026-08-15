@@ -490,5 +490,6 @@
   "deleteQueueDesc": "स्थानीय MTA कतार से {{id}} हटाएँ। YSK_EXECUTE चाहिए।",
   "openQueuePage": "मेल कतार खोलें",
   "healthUnchecked": "Not checked yet",
-  "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first."
+  "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first.",
+  "domainsListDesc": "Mail domains registered on this host"
 }

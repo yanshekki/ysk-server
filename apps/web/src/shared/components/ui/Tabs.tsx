@@ -104,7 +104,7 @@ export function Tabs({ tabs, active, onChange, children, variant = 'scroll' }: T
                 id={`tab-${tab.id}`}
                 aria-selected={active === tab.id}
                 aria-controls={`panel-${tab.id}`}
-                className="tabs__tab"
+                className={`tabs__tab${active === tab.id ? ' tabs__tab--on' : ''}`}
                 onClick={bindCall1(onChange, tab.id)}
               >
                 <span className="tabs__tab-label">{tab.label}</span>

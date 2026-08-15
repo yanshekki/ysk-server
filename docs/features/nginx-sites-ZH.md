@@ -40,6 +40,7 @@ ysk-server nginx sync --execute --json
 
 - 同步在 `--execute` 前為試跑。  
 - `nginx -t` 失敗則不可誠實宣稱「已套用」。  
+- Conf 預覽不會把 `set_real_ip_from` CIDR 做成封禁連結。空域名仍會顯示檔內 `server_name`。  
 
 ## 僅面板 ⚠️
 

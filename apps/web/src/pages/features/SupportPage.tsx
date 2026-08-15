@@ -5,6 +5,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from '../../shared/stores/toast-store';
+import { api } from '../../shared/services/api';
 import {
   FeaturePageLayout,
   Card,
@@ -122,6 +123,51 @@ export function SupportPage() {
               rows={cryptoRows}
               rowKey={(row) => row.network}
             />
+          </CardSection>
+        </Card>
+
+        <Card>
+          <CardSection title={t('support.diagTitle')}>
+            <p className="u-text-sm u-mb-3">{t('support.diagBody')}</p>
+            <Button
+              type="button"
+              size="md"
+              variant="secondary"
+              onClick={() =>
+                void Promise.all([
+                  api.health(),
+                  api
+                    .requestRaw<{
+                      os?: { platform?: string; kernel?: string };
+                      identity?: { hostname?: string };
+                    }>('/api/v1/system/host')
+                    .catch(() => null),
+                ])
+                  .then(async ([h, host]) => {
+                    const text = [
+                      `YSK Server ${h.version}`,
+                      `status=${h.status}`,
+                      `mode=${h.mode ?? '?'}`,
+                      `execute=${h.executeEnabled ? 'on' : 'off'}`,
+                      `root=${h.isRoot ? 'yes' : 'no'}`,
+                      `protection=${h.protectionMode}`,
+                      host?.identity?.hostname
+                        ? `hostname=${host.identity.hostname}`
+                        : null,
+                      host?.os?.platform
+                        ? `os=${host.os.platform} ${host.os.kernel ?? ''}`.trim()
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join('\n');
+                    await navigator.clipboard.writeText(text);
+                    toast.ok(t('support.diagCopied'));
+                  })
+                  .catch((e: Error) => toast.error(e.message))
+              }
+            >
+              {t('support.diagCopy')}
+            </Button>
           </CardSection>
         </Card>
 

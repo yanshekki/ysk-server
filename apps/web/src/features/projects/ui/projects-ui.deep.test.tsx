@@ -19,6 +19,7 @@ import { ProjectLogsTab } from './ProjectLogsTab';
 import { ProjectAdvancedTab } from './ProjectAdvancedTab';
 import { ProjectOverviewTab } from './ProjectOverviewTab';
 import { ProjectDeployTab } from './ProjectDeployTab';
+import { ProjectGitPanel } from './ProjectGitPanel';
 import { ProjectSshCard } from './ProjectSshCard';
 import { ProjectNextStep } from './ProjectNextStep';
 import { ProjectDetailHeader } from './ProjectDetailHeader';
@@ -830,6 +831,72 @@ describe('ProjectAdvancedTab + Overview + Deploy variants', () => {
         screen.queryAllByRole('button', { name: label })[0];
       if (el) await user.click(el);
     }
+  });
+
+  it('git panel: branch select from refs; hook docs stay folded', async () => {
+    const user = userEvent.setup();
+    installFetchMock([
+      {
+        match: (url: string) => /\/git\/refs/.test(url),
+        body: {
+          ok: true,
+          defaultBranch: 'main',
+          branches: ['main', 'develop'],
+          tags: ['v1.0.0'],
+          notes: [],
+        },
+      },
+      {
+        match: (url: string) => /\/git\/log/.test(url),
+        body: { ok: true, items: [], notes: [] },
+      },
+      {
+        match: (url: string) => /\/git$/.test(url) || /\/git\?/.test(url),
+        body: {
+          ok: true,
+          gitInstalled: true,
+          isRepo: false,
+          detached: false,
+          dirty: false,
+          dirtyFiles: [],
+          ahead: 0,
+          behind: 0,
+          shallow: false,
+          heads: [],
+          notes: [],
+          auth: {
+            kind: 'none',
+            scheme: 'https',
+            hasToken: false,
+            hostPinned: false,
+          },
+          hook: { enabled: false, hasSecret: false, path: '/api/v1/hooks/git/p1' },
+        },
+      },
+      { match: /.*/, body: { ok: true, notes: [] } },
+    ]);
+
+    render(
+      <MemoryRouter>
+        <ProjectGitPanel
+          project={project}
+          gitUrl={project.gitUrl ?? ''}
+          setGitUrl={vi.fn()}
+          onGitDeploy={vi.fn()}
+        />
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      const sel = document.getElementById('gitbranch') as HTMLSelectElement | null;
+      expect(sel).toBeTruthy();
+      expect([...sel!.options].map((o) => o.value)).toContain('main');
+      expect([...sel!.options].map((o) => o.value)).toContain('develop');
+    });
+    expect(document.body.textContent).not.toMatch(/Just the push event/i);
+    const toggle = screen.getByRole('button', { name: /how to paste|如何貼/i });
+    await user.click(toggle);
+    expect(document.body.textContent).toMatch(/Just the push event|Webhooks/i);
   });
 });
 

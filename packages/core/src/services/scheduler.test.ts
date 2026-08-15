@@ -57,4 +57,14 @@ describe('Scheduler', () => {
     expect(job?.running).toBe(false);
     s.stopAll();
   });
+
+  it('touchLastRun seeds lastRunAt without running the job', () => {
+    const s = new Scheduler();
+    s.every('updates.scan', 60_000, () => undefined);
+    expect(s.get('updates.scan')?.lastRunAt).toBeUndefined();
+    s.touchLastRun('updates.scan', '2026-08-15T03:00:00.000Z');
+    expect(s.get('updates.scan')?.lastRunAt).toBe('2026-08-15T03:00:00.000Z');
+    s.touchLastRun('missing-job', '2026-08-15T03:00:00.000Z');
+    s.stopAll();
+  });
 });

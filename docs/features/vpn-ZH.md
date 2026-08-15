@@ -65,6 +65,7 @@ ysk-server vpn peers config --id PEER_ID --out ./peer.conf
 ## 誠實邊界
 
 - 無 `YSK_EXECUTE` + root 時，安裝／ensure／對等端變更維持 **已阻擋** 或試跑。  
+- 該引擎（WireGuard／OpenVPN／Outline）未安裝時，「套用伺服器」停用。服務卡連到對應 `?tab=`。  
 - QR 中的公開 **端點** 須與防火牆及真實公網位址一致。  
 - 全隧道客戶端 conf 可能注入策略路由，以保持面板／SSH 可達。  
 

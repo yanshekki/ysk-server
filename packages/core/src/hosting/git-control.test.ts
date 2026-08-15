@@ -15,11 +15,34 @@ import {
   blockingDirtyFiles,
   gitCheckoutRef,
   gitLog,
+  gitDiff,
+  listGitRemoteRefs,
+  parseGitLsRemote,
   parsePorcelain,
   probeGitStatus,
   restoreEnvFile,
 } from './git-control.js';
 import { gitSync } from './git-deploy.js';
+
+describe('parseGitLsRemote', () => {
+  it('reads default branch, heads, and tags; skips peeled tags', () => {
+    const parsed = parseGitLsRemote(`
+ref: refs/heads/main	HEAD
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa	HEAD
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa	refs/heads/main
+bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb	refs/heads/develop
+cccccccccccccccccccccccccccccccccccccccc	refs/tags/v1.0.0
+cccccccccccccccccccccccccccccccccccccccc	refs/tags/v1.0.0^{}
+`);
+    expect(parsed.defaultBranch).toBe('main');
+    expect(parsed.branches).toEqual(['main', 'develop']);
+    expect(parsed.tags).toEqual(['v1.0.0']);
+  });
+
+  it('empty stdout is empty lists', () => {
+    expect(parseGitLsRemote('')).toEqual({ defaultBranch: undefined, branches: [], tags: [] });
+  });
+});
 
 describe('classifyGitError', () => {
   it('maps common git failures', () => {
@@ -87,12 +110,27 @@ describe('probe + dirty block', () => {
     writeFileSync(join(target, 'hello.txt'), 'local\n');
     const dirty = await probeGitStatus({ host, appDir: target });
     expect(dirty.dirty).toBe(true);
+    const diff = await gitDiff({ host, appDir: target });
+    expect(diff.ok).toBe(true);
+    expect(diff.text).toMatch(/hello\.txt/);
     const pulled = await gitSync({ host, gitUrl: bare, targetDir: target, branch: 'main' });
     expect(pulled.ok).toBe(false);
     expect(pulled.errorCode).toBe('dirty');
     const co = await gitCheckoutRef({ host, appDir: target, ref: 'main' });
     expect(co.ok).toBe(false);
     expect(co.code).toBe('dirty');
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  it('ls-remote lists heads from a bare remote; empty URL is not a fake empty repo', async () => {
+    const { root, bare, host } = await makeRepo();
+    const empty = await listGitRemoteRefs({ host, gitUrl: '' });
+    expect(empty.ok).toBe(false);
+    expect(empty.branches).toEqual([]);
+    const listed = await listGitRemoteRefs({ host, gitUrl: bare });
+    expect(listed.ok).toBe(true);
+    expect(listed.branches).toContain('main');
+    expect(listed.defaultBranch === undefined || listed.defaultBranch === 'main').toBe(true);
     rmSync(root, { recursive: true, force: true });
   });
 });

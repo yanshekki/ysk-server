@@ -278,7 +278,7 @@ export function ProjectDetailPage() {
             (tail.tail?.lines ?? []).join('\n'),
         );
       } else {
-        setLogTail(t('projects.logsNoFiles'));
+        setLogTail('');
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : t('projects.logsLoadFailed'));
@@ -304,7 +304,19 @@ export function ProjectDetailPage() {
     rawTab === 'deploy' || rawTab === 'app' ? 'app' : rawTab || 'overview',
   );
   const [tabRaw, setTab] = usePageTab(
-    [...(tabIds as string[]), 'deploy', 'logs', 'resources', 'advanced'],
+    [
+      'overview',
+      'app',
+      'network',
+      'isolation',
+      'more',
+      'about',
+      'deploy',
+      'logs',
+      'resources',
+      'advanced',
+      ...(tabIds as string[]),
+    ],
     defaultTab,
   );
   const tab = resolveActiveTab((tabIds as string[]).map((id) => ({ id })), tabRaw);
@@ -368,7 +380,7 @@ export function ProjectDetailPage() {
         items: [
           {
             label: t('common.status'),
-            value: project.status ?? project.processStatus ?? '—' },
+            value: t(display.labelKey, { defaultValue: display.labelFallback }) },
           {
             label: t('common.port'),
             value: project.port != null ? String(project.port) : '—' },

@@ -129,5 +129,6 @@
     "addCidr": "जोड़ना"
   },
   "engineNotInstalled": "यह VPN इंजन होस्ट पर स्थापित नहीं है।",
-  "serverNotListening": "सर्वर यूनिट सक्रिय नहीं है। UDP/TCP {{port}} बंद हो सकता है।"
+  "serverNotListening": "सर्वर यूनिट सक्रिय नहीं है। UDP/TCP {{port}} बंद हो सकता है।",
+  "installEngineFirst": "Install the VPN engine first"
 }

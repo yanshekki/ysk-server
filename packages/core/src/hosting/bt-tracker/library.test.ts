@@ -199,5 +199,13 @@ describe('bt library dest + inspect', () => {
         done: true,
       }),
     ).toBe('seeding');
+    expect(
+      deriveLibraryLiveStatus({
+        stored: 'downloading',
+        hasSeed: false,
+        destHasFiles: false,
+        ageMs: 11 * 60_000,
+      }),
+    ).toBe('error');
   });
 });

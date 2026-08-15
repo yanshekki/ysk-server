@@ -77,6 +77,26 @@ describe('bt-tracker settings', () => {
         listenHost: '0.0.0.0',
       }),
     ).toBe('tracker.example.test');
+
+    // Short hostnames are not usable for public peers
+    expect(
+      resolveAnnounceHost({
+        publicAnnounceHost: 'demo-server',
+        listenHost: '0.0.0.0',
+      }),
+    ).toBe('');
+    expect(
+      resolveAnnounceHost(
+        { publicAnnounceHost: '', listenHost: '0.0.0.0' },
+        { publicHost: 'demo-server' },
+      ),
+    ).toBe('');
+    expect(
+      resolveAnnounceHost({
+        publicAnnounceHost: '',
+        listenHost: '203.0.113.10',
+      }),
+    ).toBe('203.0.113.10');
   });
 
   it('seeder announce is a single local URL (avoid double seed count)', () => {

@@ -77,7 +77,10 @@
     "leOk": "আসুন {{domain}} এর জন্য প্রাপ্ত শংসাপত্র এনক্রিপ্ট করি",
     "leFailed": "শংসাপত্রের অনুরোধ ব্যর্থ হয়েছে: {{detail}}",
     "leHint": "নিশ্চিত করুন যে এখানে DNS A পয়েন্ট এবং পোর্ট 80 পৌঁছানো যায় (বা nginx ডোমেনটি পরিবেশন করে)",
-    "openFirewall": "সর্বজনীন হলে: প্যানেল পোর্ট {{port}}/tcp অনুমতি দিন (ফায়ারওয়াল → ওপেন পোর্ট → 9287 প্যানেল)"
+    "openFirewall": "সর্বজনীন হলে: প্যানেল পোর্ট {{port}}/tcp অনুমতি দিন (ফায়ারওয়াল → ওপেন পোর্ট → 9287 প্যানেল)",
+    "disableConfirmTitle": "Disable panel HTTPS?",
+    "disableConfirmDesc": "The panel will serve HTTP. WebAuthn / Passkey will stop working until HTTPS is on again.",
+    "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP."
   },
   "timeNtp": "সময় এবং NTP",
   "clockStatus": "সিস্টেম ঘড়ির অবস্থা",

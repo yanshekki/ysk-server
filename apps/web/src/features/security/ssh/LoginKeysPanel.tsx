@@ -251,7 +251,7 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
           </Field>
         </FormLayout>
         {projects.length === 0 ? (
-          <FormHint>{t('security.ssh.loginNeedProject')}</FormHint>
+          <FormHint>{t('security.ssh.loginNoProjects')}</FormHint>
         ) : null}
       </Modal>
     </div>

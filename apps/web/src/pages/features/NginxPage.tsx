@@ -190,7 +190,10 @@ export function NginxPage() {
     try {
       const r = await nginxHostingApi.siteConf(row.id);
       setPreview({
-        title: row.serverName,
+        title:
+          row.serverName && row.serverName !== '—'
+            ? row.serverName
+            : row.projectName || row.id,
         path: r.path,
         content: r.content || t('nginx.projectConfEmpty'),
       });
@@ -505,7 +508,12 @@ export function NginxPage() {
             </Button>
           }
         >
-          <LogViewer text={preview?.content ?? ''} maxHeight={420} />
+          <LogViewer
+            text={preview?.content ?? ''}
+            maxHeight={420}
+            linkIps={false}
+            highlight={false}
+          />
         </Modal>
 
         <Modal

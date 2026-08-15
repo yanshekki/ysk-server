@@ -77,7 +77,10 @@
     "leOk": "已取得 {{domain}} 的 Let’s Encrypt 憑證",
     "leFailed": "申請憑證失敗：{{detail}}",
     "leHint": "請確認域名 A 記錄指向本機，且 80 埠可從外網到達（或 nginx 已服務該域名）",
-    "openFirewall": "若外網連線：防火牆請允許面板埠 {{port}}/tcp（防火牆 → 開埠 → 9287 Panel）"
+    "openFirewall": "若外網連線：防火牆請允許面板埠 {{port}}/tcp（防火牆 → 開埠 → 9287 Panel）",
+    "disableConfirmTitle": "關閉面板 HTTPS？",
+    "disableConfirmDesc": "面板會改以 HTTP 提供服務。WebAuthn／Passkey 在 HTTPS 恢復前會失效。",
+    "disablePasskeyWarn": "已登記的 Passkey 需要 HTTPS — HTTP 下會失敗。"
   },
   "timeNtp": "時間與 NTP",
   "clockStatus": "系統時鐘狀態",

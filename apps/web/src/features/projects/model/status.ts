@@ -55,7 +55,9 @@ export function projectNeedsLiveRetry(project: ProjectDto): boolean {
 /**
  * Single display model for project status — never show raw codes as primary label.
  */
-export function deriveProjectStatus(project: ProjectDto): ProjectDisplayStatus {
+export function deriveProjectStatus(
+  project: Pick<ProjectDto, 'processStatus' | 'status'>,
+): ProjectDisplayStatus {
   const ps = (project.processStatus ?? '').toLowerCase();
   const st = (project.status ?? '').toLowerCase();
   const raw = project.processStatus || project.status || '';

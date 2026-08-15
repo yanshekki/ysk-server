@@ -15,5 +15,8 @@
   "dataPolicy": "資料策略",
   "keepData": "保留資料",
   "purgeData": "清除資料",
-  "uninstallNow": "立即移除"
+  "uninstallNow": "立即移除",
+  "uninstallNeedSelect": "請至少勾選一個套餐。不再允許全部不勾就一次刪光。",
+  "uninstallConfirmTitle": "移除已選套餐？",
+  "uninstallConfirmDesc": "將移除 {{count}} 個套餐。請輸入 REMOVE 確認。"
 }

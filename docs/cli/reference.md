@@ -72,10 +72,13 @@ ysk-server projects stop --id UUID [--execute]
 ysk-server projects health --id UUID
 ysk-server projects backup --id UUID
 ysk-server projects git-deploy --id UUID [--git-url URL] [--branch|--ref B] [--depth N] [--execute]
-ysk-server projects git status|log|fetch|checkout|reset|auth|deploy --id UUID [--ref R] [--unshallow] [--yes]
+ysk-server projects git status|log|diff|refs|fetch|checkout|reset|auth|deploy --id UUID [--ref R] [--unshallow] [--yes]
+ysk-server projects git refs --id UUID [--git-url URL]
 ysk-server projects git auth --id UUID --token T | --deploy-key | --pin-host | --clear-token | --clear-key | --clear-host
 ysk-server projects git hook --id UUID --enable|--rotate|--disable
 # After --enable/--rotate, paste hook.path + hookSecret into GitHub/Gitea/GitLab yourself.
+# refs: list remote branches/tags (git ls-remote; no EXECUTE)
+# diff: local `git diff --stat` (excludes .env; no EXECUTE)
 # Inbound: POST /api/v1/hooks/git/:id  (no session; HMAC or X-YSK-Git-Hook)
 ysk-server projects isolation list|provision|provision-all|backfill-owners …
 ysk-server projects template …

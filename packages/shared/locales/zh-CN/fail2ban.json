@@ -96,5 +96,8 @@
     "postfix": "Postfix 邮件暴力破解",
     "dovecot": "Dovecot 邮件登录",
     "recidive": "累犯"
-  }
+  },
+  "cannotBanSelf": "This is the host or your login IP — add it to ignoreip instead of banning",
+  "suggestIgnoreHint": "Suggested admin IPs (panel file only until you apply policy):",
+  "suggestIgnoreAdd": "Add {{ip}}"
 }

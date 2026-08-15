@@ -77,7 +77,10 @@
     "leOk": "{{domain}} で Let’s Encrypt 証明書を取得しました",
     "leFailed": "証明書リクエストが失敗しました: {{detail}}",
     "leHint": "DNS A がここを指しており、ポート 80 が到達可能であることを確認します (または nginx がドメインにサービスを提供します)。",
-    "openFirewall": "パブリックの場合: パネル ポート {{port}}/tcp を許可 (ファイアウォール → ポートを開く → 9287 パネル)"
+    "openFirewall": "パブリックの場合: パネル ポート {{port}}/tcp を許可 (ファイアウォール → ポートを開く → 9287 パネル)",
+    "disableConfirmTitle": "Disable panel HTTPS?",
+    "disableConfirmDesc": "The panel will serve HTTP. WebAuthn / Passkey will stop working until HTTPS is on again.",
+    "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP."
   },
   "timeNtp": "時間とNTP",
   "clockStatus": "システムクロックのステータス",

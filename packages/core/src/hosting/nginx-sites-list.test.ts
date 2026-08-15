@@ -39,6 +39,28 @@ describe('listMergedNginxSites', () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
+  it('uses server_name from conf when project domain is empty', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-ngx-sn-'));
+    const db = openDatabase(join(dir, 'ysk.json'));
+    const conf = join(dir, 'idm.conf');
+    writeFileSync(conf, 'server {\n  server_name localhost;\n}\n');
+    const rows = listMergedNginxSites({
+      db,
+      projects: [
+        {
+          id: 'idm',
+          name: 'idm',
+          domain: '',
+          runtime: 'php',
+          nginxConfigPath: conf,
+        },
+      ],
+    });
+    expect(rows.find((r) => r.id === 'project:idm')?.serverName).toBe('localhost');
+    closeDatabase(db);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
   it('reads conf file', () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-ngx-conf-'));
     const p = join(dir, 'a.conf');

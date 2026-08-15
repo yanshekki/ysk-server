@@ -81,6 +81,9 @@ export function ServicesPage() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('matrix');
   const [catFilter, setCatFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'failed' | 'running' | 'missing'>(
+    'all',
+  );
   const [q, setQ] = useState('');
   const [haOverview, setHaOverview] = useState<{
     count: number;
@@ -155,6 +158,13 @@ export function ServicesPage() {
   const filtered = useMemo(() => {
     let list = items;
     if (catFilter !== 'all') list = list.filter((i) => i.category === catFilter);
+    if (statusFilter === 'failed') list = list.filter((i) => i.active === 'failed');
+    if (statusFilter === 'running') {
+      list = list.filter((i) => i.active === 'active' || i.active === 'tool');
+    }
+    if (statusFilter === 'missing') {
+      list = list.filter((i) => !i.installed || i.active === 'not-found');
+    }
     const needle = q.trim().toLowerCase();
     if (needle) {
       list = list.filter(
@@ -165,7 +175,7 @@ export function ServicesPage() {
       );
     }
     return list;
-  }, [items, catFilter, q]);
+  }, [items, catFilter, statusFilter, q]);
 
   const heroTone = failed > 0 || missing > 0 ? 'warn' : running > 0 ? 'ok' : 'warn';
 
@@ -320,6 +330,26 @@ export function ServicesPage() {
                           </button>
                         );
                       })}
+                    </div>
+                    <div className="ops-chips">
+                      {(
+                        [
+                          ['all', items.length],
+                          ['running', running],
+                          ['failed', failed],
+                          ['missing', missing],
+                        ] as const
+                      ).map(([id, n]) => (
+                        <button
+                          key={id}
+                          type="button"
+                          className={`ops-chip${statusFilter === id ? ' ops-chip--active' : ''}`}
+                          onClick={() => setStatusFilter(id)}
+                        >
+                          {t(`services.statusFilter.${id}`)}
+                          <span className="ops-chip__n">{n}</span>
+                        </button>
+                      ))}
                     </div>
                     <Field label={t('common.search')} htmlFor="svc-q" flush>
                       <input

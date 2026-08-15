@@ -326,7 +326,15 @@ export function FirewallPage() {
             value: status?.denyCount ?? 0 },
           {
             label: t('firewall.statDefaultIn'),
-            value: status?.defaultIncoming ?? '—' },
+            value:
+              status?.active !== 'active'
+                ? t('firewall.defaultNotApplied')
+                : status?.defaultIncoming ?? t('firewall.defaultNotApplied'),
+            hint:
+              status?.active !== 'active'
+                ? t('firewall.ufwOffHint')
+                : undefined,
+          },
           {
             label: 'EXECUTE',
             value: status?.executeEnabled

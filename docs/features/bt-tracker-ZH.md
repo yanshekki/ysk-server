@@ -133,6 +133,7 @@ pnpm e2e:bt-tracker
 
 - Magnet／announce **只用**面板 `publicAnnounceHost` + 埠。  
 - **未設公開主機**時 magnet **不**再硬塞 `127.0.0.1`。  
+- 沒有點的短主機名（例如 `demo-server`）不會用作 announce；優先 FQDN（`hostname -f`）或可用 IP。  
 - Seeder 只向本機 Tracker **announce 一次**（避免種子數永遠顯示 2）。  
 - 瀏覽器 WebTorrent 使用面板 build **自帶** `webtorrent.min.js`（非第三方 CDN），並強制 `announce` 走同源代理。
 

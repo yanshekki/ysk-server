@@ -39,6 +39,21 @@ describe('cdn from-project + geo (PR-C7)', () => {
     expect(projectOriginUrl(p)).toBe('http://127.0.0.1:3000');
   });
 
+  it('rewrites loopback origin using project bindIp first', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-cdn-bind-'));
+    try {
+      const db = new JsonStore(join(dir, 'db.json'));
+      expect(
+        reachableOriginUrlForRemoteEdge(db, 'http://127.0.0.1:3100', {
+          bindIp: '10.186.230.10',
+          port: 3100,
+        }),
+      ).toBe('http://10.186.230.10:3100');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it('rewrites loopback origin using origin node IPv4', () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-cdn-orig-'));
     try {

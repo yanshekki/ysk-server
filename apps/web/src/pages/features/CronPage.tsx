@@ -940,11 +940,14 @@ export function CronPage() {
             </Alert>
           ) : null}
           <p className="form-hint u-mb-0">
-            {t('cron.afterCreate')}<strong>{scheduleHuman}</strong>
+            {t('cron.afterCreate')}{' '}
+            <strong>{scheduleHuman}</strong>
             {' · '}
             <code className="inline">{schedule}</code>
-            {t('cron.userSuffix')}
+            {' · '}
+            {t('cron.userSuffix')}{' '}
             <code className="inline">{runAsUser}</code>
+            {' '}
             {selectedProject ? (
               <span className="muted">{t('cron.projectParen', { name: selectedProject.name })}</span>
             ) : (

@@ -100,5 +100,7 @@
   "requestFailed": "La demande de certificat n’a pas abouti",
   "applyFailed": "Échec de la demande",
   "deletedCert": "{{domain}} supprimé",
-  "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates."
+  "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates.",
+  "renew": "Renew",
+  "renewFor": "Renew Let’s Encrypt for {{domain}}"
 }

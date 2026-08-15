@@ -220,7 +220,8 @@
     "status": "حالة",
     "fleetSession": "Fleet agent session id",
     "fleetSessionHint": "Optional. Paste a session UUID from /agents. Then this peer uses fleet (no SSH). Leave empty for SSH scp.",
-    "fleetSessionPh": "Agents page session UUID"
+    "fleetSessionPh": "Agents page session UUID",
+    "engineNotInstalled": "{{engine}} is not installed on this host — install it first, or open the engine that is actually running."
   },
   "console": {
     "dataBrowse": "تصفح البيانات",

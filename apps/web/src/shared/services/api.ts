@@ -620,6 +620,22 @@ export const api = {
   }> {
     return request(`/api/v1/projects/${id}/git`);
   },
+  gitRefs(
+    id: string,
+    body?: { gitUrl?: string },
+  ): Promise<{
+    ok: boolean;
+    defaultBranch?: string;
+    branches: string[];
+    tags: string[];
+    notes: string[];
+    code?: string;
+  }> {
+    return request(`/api/v1/projects/${id}/git/refs`, {
+      method: 'POST',
+      body: JSON.stringify(body ?? {}),
+    });
+  },
   gitLog(id: string, limit?: number): Promise<{
     ok: boolean;
     items: Array<{ hash: string; subject: string; at?: string }>;
@@ -627,6 +643,9 @@ export const api = {
   }> {
     const q = limit ? `?limit=${limit}` : '';
     return request(`/api/v1/projects/${id}/git/log${q}`);
+  },
+  gitDiff(id: string): Promise<{ ok: boolean; text: string; notes: string[] }> {
+    return request(`/api/v1/projects/${id}/git/diff`);
   },
   gitFetch(id: string, body?: { unshallow?: boolean }): Promise<{ ok: boolean; notes: string[]; code?: string }> {
     return request(`/api/v1/projects/${id}/git/fetch`, {
