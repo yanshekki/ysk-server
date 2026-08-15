@@ -751,7 +751,7 @@ export async function restoreControlPlaneBackup(input: {
         r.exitCode === 0
           ? tl('notes.auto.t0331', { v0: listing.length, v1: listing.length })
           : tl('notes.auto.t0332', { v0: r.stderr }),
-        'dry-run only — pass mode=full + confirmPhrase=RESTORE-CONTROL-PLANE to write',
+        tl('notes.backup.controlPlaneDryRun'),
         ...listing.slice(0, 12).map((l) => `  ${l}`),
       ],
       commandResults: [{ argv: ['tar', '-tzf', archivePath], exitCode: r.exitCode, stderr: r.stderr }],
@@ -763,8 +763,8 @@ export async function restoreControlPlaneBackup(input: {
       ok: false,
       archivePath,
       notes: [
-        'refused: full control-plane restore requires confirmPhrase=RESTORE-CONTROL-PLANE',
-        'restart API after a successful restore',
+        tl('notes.backup.controlPlaneNeedConfirm'),
+        tl('notes.backup.controlPlaneRestartAfter'),
       ],
       commandResults: [],
     };
@@ -1233,15 +1233,9 @@ export class CronJobService {
       linux_user?: string;
     }> = [],
   ): Promise<HostCronInventory> {
-    const executeEnabled = this.host.executeEnabled();
     const isRoot = this.host.isRoot();
     const notes: string[] = [];
     let partial = false;
-
-    if (!executeEnabled) {
-      notes.push(tl('notes.auto.n1165'));
-      partial = true;
-    }
 
     const users: HostCronUserSlot[] = [];
     const lines: HostCronLine[] = [];
@@ -1333,7 +1327,7 @@ export class CronJobService {
       notes,
       partial,
       isRoot,
-      executeEnabled,
+      executeEnabled: this.host.executeEnabled(),
     };
   }
 

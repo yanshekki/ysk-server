@@ -52,6 +52,7 @@ Full argv: [../cli/reference.md](../cli/reference.md#vnc).
 ## Honesty
 
 - Account create/start/stop need EXECUTE + root for `useradd` / `vncserver`.  
+- The panel Create account button stays disabled until TigerVNC is installed.  
 - Share links are short-lived tokens; public landing is `/vnc-share/:token` (no panel login). `POST /api/v1/vnc/share/:token/session` is the guest redeem. Closing the viewer ends the session locally — it does not send guests to `/login`.  
 - `session mint` returns RFB metadata; it does **not** open a desktop canvas in the terminal.  
 - Sidebar and route guard both require `network.vnc` (not `firewall.edit`).  

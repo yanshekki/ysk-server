@@ -72,6 +72,7 @@
   "peerName": "Name",
   "peerNamePlaceholder": "office-laptop",
   "addPeer": "+ Add",
+  "installEngineFirst": "Install the VPN engine first",
   "addPeerWg": "+ Add peer",
   "addPeerOvpn": "+ Add client",
   "addPeerSs": "+ Add key",

@@ -146,6 +146,22 @@ describe('ssh-identity residual ops/install', () => {
     });
     expect(fail.ok).toBe(false);
     expect(fail.applied).toBe(true);
+
+    const sftpOnly = await testSshIdentity({
+      dataDir,
+      id: r.identity!.id,
+      target: 'ysk@box',
+      apply: true,
+      executeEnabled: true,
+      host: mockHost({
+        onRun: (argv) =>
+          argv[0] === 'ssh'
+            ? { exitCode: 255, stderr: 'This service allows sftp connections only.' }
+            : { exitCode: 0, stdout: 'sftp>' },
+      }),
+    });
+    expect(sftpOnly.ok).toBe(true);
+    expect(sftpOnly.applied).toBe(true);
   });
 
   it('rotate missing id; authorizeSelf with project binding', async () => {

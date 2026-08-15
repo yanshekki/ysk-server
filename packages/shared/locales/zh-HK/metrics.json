@@ -82,6 +82,8 @@
   "noProjectsDesc": "建立專案後可在此看真實 主目錄 用量",
   "usageNote": "用量來自本機 du（非估算）。配額為控制面 soft limit；硬 setquota 需「套用限制到系統」。",
   "thresholdAlerts": "閾值告警",
+  "alertsBuiltinOnly": "只有內建 CPU／記憶體／磁碟閾值。沒有電郵、webhook 或 Slack 渠道。",
+  "lastEvaluated": "上次檢查",
   "alertsOkTitle": "目前正常",
   "alertsOkDesc": "沒有記憶體／負載／磁碟閾值告警。",
   "cpu": "中央處理器",

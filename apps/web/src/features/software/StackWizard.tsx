@@ -3,7 +3,7 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Badge, Button, Field, LoadingBlock, OpsResultPanel } from '../../shared/components/ui';
+import { Alert, Badge, Button, ConfirmDialog, Field, LoadingBlock, OpsResultPanel } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import {
   softwareApi,
@@ -40,6 +40,7 @@ export function StackWizard() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<StackOpResult | null>(null);
+  const [uninstallConfirm, setUninstallConfirm] = useState(false);
 
   const refresh = useCallback(async () => {
     setError(null);
@@ -294,15 +295,40 @@ export function StackWizard() {
               {t('stackWizard.dryRun')}
             </Button>
             <Button
-              disabled={busy || !canMutate}
+              disabled={busy || !canMutate || unBundles.length === 0}
               variant="danger"
-              onClick={() => void runUninstall(false)}
+              title={
+                unBundles.length === 0 ? t('stackWizard.uninstallNeedSelect') : undefined
+              }
+              onClick={() => setUninstallConfirm(true)}
             >
               {t('stackWizard.uninstallNow')}
             </Button>
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={uninstallConfirm}
+        onClose={() => !busy && setUninstallConfirm(false)}
+        title={t('stackWizard.uninstallConfirmTitle')}
+        description={t('stackWizard.uninstallConfirmDesc', { count: unBundles.length })}
+        consequences={[
+          ...unBundles.map((id) => {
+            const b = bundles.find((x) => x.id === id);
+            return b ? titleOf(b) : id;
+          }),
+          dataPolicy === 'purge' ? t('stackWizard.purgeData') : t('stackWizard.keepData'),
+        ]}
+        confirmText="REMOVE"
+        severity="critical"
+        confirmLabel={t('stackWizard.uninstallNow')}
+        busy={busy}
+        onConfirm={() => {
+          setUninstallConfirm(false);
+          void runUninstall(false);
+        }}
+      />
 
       {error ? <Alert variant="error">{error}</Alert> : null}
       {result ? (

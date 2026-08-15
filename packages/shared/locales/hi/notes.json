@@ -31,7 +31,8 @@
   "ssh": {
     "identityNotFound": "पहचान नहीं हो पाई",
     "registrationNotFound": "पंजीकरण नहीं मिला",
-    "keyOkNologin": "Key accepted. Account has no login shell (nologin) — use SFTP. Treated as PASS."
+    "keyOkNologin": "Key accepted. Account has no login shell (nologin) — use SFTP. Treated as PASS.",
+    "keyOkSftp": "SFTP pwd succeeded after SSH shell was refused."
   },
   "cdn": {
     "siteNotFound": "सीडीएन साइट नहीं मिली",
@@ -45,7 +46,9 @@
       "http": "HTTP probe failed after {{ms}}ms ({{detail}})."
     },
     "loopbackOriginRemote": "Origin is 127.0.0.1 — that is this host, not a remote edge. Set a reachable origin IP or bind_ip.",
-    "needSshOrFleet": "Remote edge needs an outbound SSH identity (or username) or a /agents fleet session. Health URL alone is not apply transport."
+    "needSshOrFleet": "Remote edge needs an outbound SSH identity (or username) or a /agents fleet session. Health URL alone is not apply transport.",
+    "originRemoteRewrite": "Remote edges will use reachable origin {{url}} instead of loopback.",
+    "originRemoteUnknown": "Origin is loopback and no public/LAN IP or bind_ip is known — apply will refuse remote edges until one is set."
   },
   "backup": {
     "fileNotFound": "बैकअप फ़ाइल नहीं मिली",
@@ -59,7 +62,10 @@
     "sshAuthFailed": "SSH key or password rejected (publickey). Pick an outbound identity or install sshpass.",
     "remotePathIsFile": "Remote path {{path}} is a file. Use a directory.",
     "remoteMkdirFailed": "Could not create remote directory: {{detail}}",
-    "sidecarPushed": "Also pushed SQL sidecar {{name}}"
+    "sidecarPushed": "Also pushed SQL sidecar {{name}}",
+    "controlPlaneDryRun": "Preview only — nothing written. In the panel, use Restore and confirm the phrase to write.",
+    "controlPlaneNeedConfirm": "Full control-plane restore needs the confirm phrase RESTORE-CONTROL-PLANE.",
+    "controlPlaneRestartAfter": "Restart the API after a successful restore."
   },
   "redis": {
     "cliMissing": "रेडिस-सीएलआई स्थापित नहीं है"
@@ -228,7 +234,17 @@
     "dns": "DNS",
     "email": "ईमेल",
     "isolation": "परियोजना अलगाव",
-    "ops": "संचालन"
+    "ops": "संचालन",
+    "runtimesNode": "Node.js",
+    "runtimesPhp": "PHP",
+    "runtimesPython": "Python",
+    "runtimesGo": "Go",
+    "pm2": "PM2",
+    "runtimesNodeFix": "Install Node from /runtimes/node",
+    "runtimesPhpFix": "Install PHP from /runtimes/php",
+    "runtimesPythonFix": "Install Python from /runtimes/python",
+    "runtimesGoFix": "Install Go from /runtimes/go",
+    "pm2Fix": "Install PM2 from the Node runtime page"
   },
   "needAdmin": "प्रशासक की अनुमति आवश्यक है",
   "notInstalled": "स्थापित नहीं हे",
@@ -510,10 +526,10 @@
     "n0268": "ड्राई-रन - न लिखें /आदि",
     "n0269": "ड्राई-रन: जोड़ें --execute पहले ufw लागू करें",
     "n0270": "ड्राई-रन: इन्वेंट्री + प्रीफ़्लाइट पास, पैकेज/ट्रांसफर नहीं",
-    "n0271": "ड्राई-रन: जांच/। --execute YSK_EXECUTE=1 पहले वास्तव में प्रावधान जोड़ें",
-    "n0272": "ड्राई-रन: प्रबंधित फ़ाइल (डेटाडिर) लिखी। एक्जीक्यूट + YSK_EXECUTE=1 + रूट फर्स्टसिस्टम ड्रॉप-इन जोड़ें",
-    "n0273": "ड्राई-रन: नहीं. जोड़ें --execute YSK_EXECUTE=1 पहले वास्तव में प्रतिबंध लगाएं",
-    "n0274": "ड्राई-रन: नहीं. जोड़ें --execute YSK_EXECUTE=1 सबसे पहले वास्तव में प्रतिबंध हटाएँ",
+    "n0271": "Dry-run: probe/plan only. Pass --execute with YSK_EXECUTE=1 to actually provision.",
+    "n0272": "Dry-run: wrote the managed file (dataDir). Pass --execute with YSK_EXECUTE=1 as root to install the system drop-in.",
+    "n0273": "Dry-run: not banned. Pass --execute with YSK_EXECUTE=1 to actually ban.",
+    "n0274": "Dry-run: not unbanned. Pass --execute with YSK_EXECUTE=1 to actually unban.",
     "n0275": "ड्राईरुन = सत्य - एपीआई बदलें",
     "n0276": "ड्राईरन: लिखें नहीं",
     "n0277": "डंप ने डेटाडायर लिखा, ट्रांसफर नहीं",
@@ -1078,7 +1094,7 @@
     "n0836": "प्रमाणपत्रकृपया विफल",
     "n0837": "≥ फ़ाइल",
     "n0838": "सेटिंग्सबैकअप रखें",
-    "n0839": "सफलतायह लक्ष्य बैचमोड, ​​≠ हो सकता है",
+    "n0839": "Success means this target accepts BatchMode SSH (non-interactive). It is not a grant of global access.",
     "n0840": "या 32767",
     "n0841": "सॉफ़्टवेयर स्थापित",
     "n0842": "अनुमति/",
@@ -1238,7 +1254,7 @@
     "n0996": "स्थानीय nginx -t ठीक है (प्रबंधित आत्मविश्वास, ≠ किनारा लागू)",
     "n0997": "स्थानीय wsrep कर सकते हैं, आकार नोड नहीं",
     "n0998": "स्थानीय ysk.json पढ़/फिंगरप्रिंट नहीं पढ़ सकता",
-    "n0999": "स्थानीय ठीक है; पूर्ण स्वस्थ सहकर्मी जांच (नहीं)",
+    "n0999": "Local node is OK; a complete healthy status needs a peer probe (not done).",
     "n1000": "स्थानीय nginx - conf लिखा, पुनः लोड नहीं",
     "n1001": "स्थानीय उपलब्ध एनएम कनेक्शन; सफलता मिलेगी. \"\" या नेटवर्कमैनेजर कर सकते हैं।",
     "n1002": "स्थानीय उपलब्ध पीएस - नहीं कर सकता ()",
@@ -2483,7 +2499,7 @@
     "t0629": "प्रोजेक्ट {{v0}} घर: {{v1}}",
     "t0630": "प्रोजेक्ट {{v0}} बाइंड_आईपी={{v1}} — कर सकते हैं (आईपी)",
     "t0631": "प्रोजेक्ट {{v0}} घर नहीं पथ: {{v1}}",
-    "t0632": "घर (स्टोर): {{v0}}",
+    "t0632": "Orphan home on disk (no matching store project): {{v0}}",
     "t0633": "मेलडिर: {{v0}}",
     "t0634": "{{v0}}- ​​लक्ष्य नहीं कर सकते",
     "t0635": "जांच नहीं की जा सकती {{v0}}",
@@ -2491,7 +2507,7 @@
     "t0637": "प्रोजेक्ट {{v0}} · {{v1}} · डीबी {{v2}} · रेडिस {{v3}}",
     "t0638": "सॉफ़्टवेयर इंस्टॉल करें {{v0}} · होम {{v1}}",
     "t0639": "कटओवर होस्ट {{v0}}",
-    "t0640": "चेतावनी {{v0}} (कृपया)",
+    "t0640": "{{v0}} warning(s) — review before cutover.",
     "t0641": "कुंजी {{v0}}",
     "t0642": "cantkey: {{v0}}",
     "t0643": "लक्ष्य नहीं लिखें अधिकृत_कुंजियाँ: {{v0}}",
@@ -2555,7 +2571,7 @@
     "t0701": "सीडीएन {{v0}}",
     "t0702": "मूल ढाल नोड मौजूद नहीं है: {{v0}}",
     "t0703": "किनारे: {{v0}}",
-    "t0704": "मूल URL (): {{v0}}",
+    "t0704": "Origin URL (from project bind): {{v0}}",
     "t0705": "सीडीएन अपडेट करें {{v0}}",
     "t0706": "सीडीएन बनाएं {{v0}}",
     "t0707": "मूल ढाल: किनारा ढाल {{v0}} → {{v1}}",
@@ -3061,7 +3077,7 @@
     "staleCliTitle": "Stale leftover CLI",
     "staleCli": "Leftover CLI still present: {{path}} (running product {{version}}). PATH may prefer it. Remove with: rm -f {{path}}",
     "apacheDefaultTitle": "Apache leftover default site",
-    "apacheDefault": "Apache 000-default is still enabled on :80. Product overlay does not disable it. Apply Apache from the panel or hosting apache apply --execute.",
+    "apacheDefault": "Apache 000-default is still enabled. That is the stock site file — it does not mean Apache is listening on public :80 (YSK Apache is expected on 127.0.0.1:8080). Overlay does not disable it. Apply Apache from the panel or hosting apache apply --execute.",
     "nginxCatchAllTitle": "Nginx catch-all missing",
     "nginxCatchAll": "ysk-000-default.conf is not in /etc/nginx/conf.d. Unknown SNI can fall through. Run projects nginx-sync --execute.",
     "vsftpdTitle": "vsftpd unit failed",
@@ -3104,7 +3120,11 @@
     "hostScanFailed": "ssh-keyscan returned no keys for that host.",
     "hookEnabled": "Inbound Git hook is on. Paste the URL into GitHub, Gitea, or GitLab yourself.",
     "hookDisabled": "Inbound Git hook is off. The URL will not sync.",
-    "hookSecretOnce": "Copy this hook secret now. It is not shown again."
+    "hookSecretOnce": "Copy this hook secret now. It is not shown again.",
+    "refsNeedUrl": "Enter a Git URL first.",
+    "refsOk": "Loaded {{branches}} branch(es) and {{tags}} tag(s).",
+    "refsEmpty": "Remote advertised no branches or tags.",
+    "diffEmpty": "No unstaged diff (protected .env is excluded)."
   },
   "migrate": {
     "orphanConfirm": "Type the exact leftover home path to confirm delete.",
@@ -3113,5 +3133,14 @@
     "orphanNeedExecute": "Would remove leftover {{path}}. Needs YSK_EXECUTE=1.",
     "orphanRmFailed": "Could not remove leftover home: {{detail}}",
     "orphanRemoved": "Removed leftover project home {{path}}."
+  },
+  "defense": {
+    "panelReqLabel": "Panel requests / min",
+    "panelReqExcluded": "Authenticated panel traffic — shown here, not counted in threat score",
+    "tcpOk": "TCP {{target}} reachable",
+    "tcpFail": "TCP {{target}} failed",
+    "dnsDegraded": "DNS path degraded",
+    "reqRateHigh": "Public request rate {{reqs}}/min ≥ {{threshold}}",
+    "ddosHeuristic": "High public request rate plus edge probe failure"
   }
 }

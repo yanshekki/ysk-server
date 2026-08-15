@@ -15,5 +15,8 @@
   "dataPolicy": "डेटा नीति",
   "keepData": "डेटा रखें",
   "purgeData": "डेटा शुद्ध करें",
-  "uninstallNow": "अभी अनइंस्टॉल करें"
+  "uninstallNow": "अभी अनइंस्टॉल करें",
+  "uninstallNeedSelect": "Select at least one bundle. Empty selection no longer means remove all.",
+  "uninstallConfirmTitle": "Remove selected bundles?",
+  "uninstallConfirmDesc": "{{count}} bundle(s) will be removed. Type REMOVE to confirm."
 }

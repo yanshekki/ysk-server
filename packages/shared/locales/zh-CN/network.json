@@ -145,5 +145,7 @@
   "linkDown": "断开",
   "linkDownTitle": "將 {{name}} 離線",
   "linkDownNeedConfirm": "需輸入介面名稱確認",
-  "persistNmHint": "可持久化代表经 NetworkManager 写入后，重启后设定仍然有效。"
+  "persistNmHint": "可持久化代表经 NetworkManager 写入后，重启后设定仍然有效。",
+  "deleteDefaultPanelWarn": "Deleting the default route can drop this panel session. Type DEFAULT to confirm.",
+  "typeDefaultToConfirm": "Type DEFAULT to confirm"
 }

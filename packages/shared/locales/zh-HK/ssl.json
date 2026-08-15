@@ -71,6 +71,8 @@
   "filesYes": "有",
   "filesNo": "無",
   "colExpires": "到期",
+  "renew": "續期",
+  "renewFor": "為 {{domain}} 續期 Let’s Encrypt",
   "colStatus": "狀態",
   "emptyTitle": "尚未有憑證",
   "emptyDesc": "用右上角「上傳憑證」或「申請 Let’s Encrypt」",

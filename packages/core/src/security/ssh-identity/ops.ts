@@ -101,6 +101,67 @@ export function buildScpIdentityArgv(
   ];
 }
 
+/** Auth succeeded but the account has no SSH shell (nologin / SFTP-only). */
+export function isSftpOnlyOrNologinMessage(text: string): boolean {
+  return /this service allows sftp connections only|this account is currently not available|nologin|shell.*not available|sftp connections only/i.test(
+    text,
+  );
+}
+
+export function buildSftpIdentityArgv(
+  privateKeyPath: string,
+  opts: {
+    port?: number;
+    userAtHost: string;
+  },
+): string[] {
+  return [
+    'sftp',
+    ...buildIdentityFileOpts(privateKeyPath),
+    '-o',
+    'ConnectTimeout=8',
+    '-P',
+    String(opts.port ?? 22),
+    '-b',
+    '-',
+    opts.userAtHost,
+  ];
+}
+
+export function sftpQuote(path: string): string {
+  if (!/[\s'"\\]/.test(path)) return path;
+  return `"${path.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+}
+
+export function sftpStdinArgv(sftpArgv: string[], batch: string): string[] {
+  const body = batch.endsWith('\n') ? batch : `${batch}\n`;
+  return [
+    'bash',
+    '-c',
+    `printf %s ${JSON.stringify(body)} | ${sftpArgv.map((a) => JSON.stringify(a)).join(' ')}`,
+  ];
+}
+
+export function sftpMkdirBatch(remoteDir: string): string {
+  const dir = remoteDir.replace(/\/+$/, '');
+  if (!dir || dir === '.') return 'pwd\n';
+  const parts = dir.split('/').filter(Boolean);
+  const cmds: string[] = [];
+  let acc = dir.startsWith('/') ? '' : '';
+  for (const p of parts) {
+    acc = dir.startsWith('/') ? `${acc}/${p}` : acc ? `${acc}/${p}` : p;
+    cmds.push(`-mkdir ${sftpQuote(acc)}`);
+  }
+  return `${cmds.join('\n')}\n`;
+}
+
+export function sftpPutBatch(localPath: string, remoteDir: string): string {
+  const base = localPath.split('/').pop() || 'archive';
+  const dir = remoteDir.replace(/\/+$/, '') || '.';
+  const dest = dir === '.' ? base : `${dir}/${base}`;
+  return `put ${sftpQuote(localPath)} ${sftpQuote(dest)}\n`;
+}
+
 /**
  * Resolve private key path for outbound ssh/scp (-i).
  * Prefers install path; else materializes under dataDir/secrets/ssh/keys/{id}/.
@@ -198,10 +259,23 @@ export async function testSshIdentity(input: {
 
   const r = await input.host.runCommand(argv, { timeoutMs: 20_000 });
   const errText = `${r.stderr || ''} ${r.stdout || ''}`;
-  const nologin =
-    r.exitCode !== 0 &&
-    /this account is currently not available|nologin|shell.*not available/i.test(errText);
-  const ok = r.exitCode === 0 || nologin;
+  const nologin = r.exitCode !== 0 && isSftpOnlyOrNologinMessage(errText);
+  let ok = r.exitCode === 0 || nologin;
+  if (nologin) {
+    const sftp = await input.host.runCommand(
+      sftpStdinArgv(
+        buildSftpIdentityArgv(mat.path, {
+          port: parsed.port,
+          userAtHost: `${parsed.user}@${parsed.host}`,
+        }),
+        'pwd\n',
+      ),
+      { timeoutMs: 20_000 },
+    );
+    if (sftp.exitCode === 0) {
+      notes.push(tl('notes.ssh.keyOkSftp'));
+    }
+  }
   notes.push(
     r.exitCode === 0
       ? tl('notes.auto.n0434')

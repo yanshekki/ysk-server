@@ -467,7 +467,13 @@ export function ApachePage() {
               header: 'SSL',
               nowrap: true,
               render: (r) =>
-                r.ssl ? <Badge tone="ok">SSL</Badge> : <span className="muted">—</span>,
+                r.ssl ? (
+                  <Badge tone="ok">SSL</Badge>
+                ) : r.kind === 'proxy' ? (
+                  <span className="muted">{t('apache.sslTerminatedUpstream')}</span>
+                ) : (
+                  <span className="muted">—</span>
+                ),
             },
             {
               key: 'status',

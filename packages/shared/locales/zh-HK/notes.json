@@ -31,12 +31,15 @@
   "ssh": {
     "identityNotFound": "找不到 identity",
     "registrationNotFound": "找不到登記",
-    "keyOkNologin": "金鑰已接受。帳戶無登入 shell（nologin）——請用 SFTP。視為通過。"
+    "keyOkNologin": "金鑰已接受。帳戶為 nologin 或僅限 SFTP（無 SSH shell）。視為通過。",
+    "keyOkSftp": "SSH shell 被拒後，SFTP pwd 成功。"
   },
   "cdn": {
     "siteNotFound": "找不到 CDN 站點",
     "nodeMissing": "節點不存在",
     "loopbackOriginRemote": "來源是 127.0.0.1——那是本機，不是遠端 edge。請設可達的 origin IP 或 bind_ip。",
+    "originRemoteRewrite": "遠端 edge 會用可達 origin {{url}}，而不是 loopback。",
+    "originRemoteUnknown": "來源是 loopback，且未知道公網／內網 IP 或 bind_ip——在補上之前，套用會拒絕遠端 edge。",
     "needSshOrFleet": "遠端 edge 需要出站 SSH 身份（或用戶名），或 /agents 機群 session。單憑 Health URL 不能套用。",
     "probe": {
       "timeout": "連線逾時 {{ms}}ms（{{detail}}）。對端可能被防火牆擋住。",
@@ -49,7 +52,7 @@
   },
   "backup": {
     "testUnsaved": "正在測試未儲存的表單（尚未寫入設定）。",
-    "testIdentity": "ssh（身份金鑰）連到 {{spec}} 成功",
+    "testIdentity": "sftp（身份金鑰）連到 {{spec}} 成功",
     "sshAuthFailed": "SSH 金鑰或密碼被拒（publickey）。請選出站身份，或安裝 sshpass。",
     "remotePathIsFile": "遠端路徑 {{path}} 是檔案。請用目錄。",
     "remoteMkdirFailed": "無法建立遠端目錄：{{detail}}",
@@ -59,7 +62,10 @@
     "resticNotInPath": "Restic 不在 路徑",
     "dbEnvUnreadable": "無法讀取 .db.env，略過 SQL 傾印。",
     "dbEnvNoName": ".db.env 沒有資料庫名稱，略過 SQL 傾印。",
-    "targetOutside": "還原目標必須在專案家目錄或公開檔案根目錄之內。"
+    "targetOutside": "還原目標必須在專案家目錄或公開檔案根目錄之內。",
+    "controlPlaneDryRun": "僅預覽——未寫入任何檔。在面板按還原並確認短語才會寫入。",
+    "controlPlaneNeedConfirm": "完整還原控制平面需要確認短語 RESTORE-CONTROL-PLANE。",
+    "controlPlaneRestartAfter": "還原成功後請重啟 API。"
   },
   "redis": {
     "cliMissing": "未安裝 redis-cli"
@@ -228,7 +234,17 @@
     "dns": "DNS",
     "email": "郵件",
     "isolation": "專案隔離",
-    "ops": "維運"
+    "ops": "維運",
+    "runtimesNode": "Node.js",
+    "runtimesPhp": "PHP",
+    "runtimesPython": "Python",
+    "runtimesGo": "Go",
+    "pm2": "PM2",
+    "runtimesNodeFix": "到 /runtimes/node 安裝 Node",
+    "runtimesPhpFix": "到 /runtimes/php 安裝 PHP",
+    "runtimesPythonFix": "到 /runtimes/python 安裝 Python",
+    "runtimesGoFix": "到 /runtimes/go 安裝 Go",
+    "pm2Fix": "到 Node 執行環境頁安裝 PM2"
   },
   "needAdmin": "需要管理員權限",
   "notInstalled": "未安裝",
@@ -271,7 +287,11 @@
     "hostScanFailed": "ssh-keyscan 沒有傳回該主機的 key。",
     "hookEnabled": "已開啟 inbound Git hook。請自行把 URL 貼到 GitHub、Gitea 或 GitLab。",
     "hookDisabled": "已關閉 inbound Git hook。該 URL 不會再同步。",
-    "hookSecretOnce": "請立即複製此 hook secret。之後不會再顯示。"
+    "hookSecretOnce": "請立即複製此 hook secret。之後不會再顯示。",
+    "refsNeedUrl": "請先填寫 Git 網址。",
+    "refsOk": "已載入 {{branches}} 條分支、{{tags}} 個 tag。",
+    "refsEmpty": "遠端沒有列出分支或 tag。",
+    "diffEmpty": "沒有未暫存的 diff（已排除受保護的 .env）。"
   },
   "auto": {
     "n0001": "狀態：已套用",
@@ -3103,7 +3123,7 @@
     "staleCliTitle": "遺留舊版 CLI",
     "staleCli": "仍有舊 CLI：{{path}}（產品版本 {{version}}）。PATH 可能優先用它。移除：rm -f {{path}}",
     "apacheDefaultTitle": "Apache 遺留預設站",
-    "apacheDefault": "Apache 000-default 仍佔 :80。產品 overlay 不會停用。請在面板套用 Apache，或 hosting apache apply --execute。",
+    "apacheDefault": "Apache 000-default 仍已啟用。這只代表預設站設定檔仍在，不代表 Apache 正在聽公網 :80（產品預期 Apache 綁在 127.0.0.1:8080）。產品 overlay 不會停用此預設站。請在面板套用 Apache，或 hosting apache apply --execute。",
     "nginxCatchAllTitle": "Nginx 缺 catch-all",
     "nginxCatchAll": "/etc/nginx/conf.d 沒有 ysk-000-default.conf。未知 SNI 可能落到其他站。請執行 projects nginx-sync --execute。",
     "vsftpdTitle": "vsftpd 單元失敗",
@@ -3113,5 +3133,14 @@
     "overlayDoesNotHeal": "產品 overlay 不會改寫 nginx、Apache、vsftpd 或 Dovecot。請用列出的套用命令（root + YSK_EXECUTE=1）。",
     "readinessTitle": "overlay 後主機遺留",
     "readinessClean": "未偵測到 Apache 預設站、缺 nginx catch-all、vsftpd 失敗或舊 CLI。"
+  },
+  "defense": {
+    "panelReqLabel": "面板請求／分鐘",
+    "panelReqExcluded": "已認證面板流量 — 只顯示，不計入威脅分數",
+    "tcpOk": "TCP {{target}} 可達",
+    "tcpFail": "TCP {{target}} 失敗",
+    "dnsDegraded": "DNS 路徑降級",
+    "reqRateHigh": "公開請求速率 {{reqs}}／分鐘 ≥ {{threshold}}",
+    "ddosHeuristic": "公開請求偏高且邊緣探測失敗"
   }
 }

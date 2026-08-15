@@ -24,6 +24,7 @@ const DEFAULT_TAB_ALIASES: Record<string, string> = {
   truthip: 'realip',
   truth: 'realip',
   help: 'about',
+  software: 'stack',
   self: 'panel',
   disk: 'storage',
 };
@@ -67,18 +68,7 @@ export function usePageTab(
   useEffect(() => {
     if (!syncUrl || !rawParam) return;
     const mapped = aliasMap[rawParam];
-    if (mapped && allowed.has(mapped) && rawParam !== mapped) {
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev);
-          if (mapped === fallback) next.delete(param);
-          else next.set(param, mapped);
-          return next;
-        },
-        { replace: true },
-      );
-      return;
-    }
+    // Keep the operator's tab key (help → about). Only strip unknown keys.
     if (allowed.has(rawParam)) return;
     if (mapped && allowed.has(mapped)) return;
     setSearchParams(

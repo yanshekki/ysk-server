@@ -57,7 +57,7 @@ export function riskLabel(risk: string | undefined, tr: (k: string) => string): 
 }
 
 export function isKernelPackage(name: string | undefined): boolean {
-  return /^linux(-image|-headers|-modules|-generic|-tools|-libc)/i.test(name ?? '');
+  return /^linux(-image|-headers|-modules|-generic|-tools|-libc|-virtual)/i.test(name ?? '');
 }
 
 /** Strip "PHP 8.3.6 (cli) (built: …)" → "8.3.6". */
@@ -771,6 +771,11 @@ export function UpdatesPage() {
                           size="sm"
                           variant="primary"
                           disabled={busy}
+                          title={
+                            isKernelPackage(e.packageName || e.title)
+                              ? t('updates.kernelRebootHint')
+                              : undefined
+                          }
                           onClick={() => {
                             const row = {
                               packageName: e.packageName || '',
@@ -788,6 +793,9 @@ export function UpdatesPage() {
                           }}
                         >
                           {t('updates.applyPkg')}
+                          {isKernelPackage(e.packageName || e.title)
+                            ? ` · ${t('updates.rebootNeeded')}`
+                            : ''}
                         </Button>
                       ) : null}
                       {e.applyPath === 'panel' && e.upgradable && canApply ? (
@@ -1265,9 +1273,18 @@ export function UpdatesPage() {
                           : j.interval
                             ? String(j.interval)
                             : '—'}
-                        {j.lastRunAt
+                        {j.lastRunAt ||
+                        (String(j.id) === 'updates.scan' && (summary?.lastScanAt ?? lastAt))
                           ? t('updates.lastRun', {
-                              when: relTime(String(j.lastRunAt), t) })
+                              when: relTime(
+                                String(
+                                  j.lastRunAt ||
+                                    summary?.lastScanAt ||
+                                    lastAt,
+                                ),
+                                t,
+                              ),
+                            })
                           : ` · ${t('updates.neverRun')}`}
                       </span>
                     </li>

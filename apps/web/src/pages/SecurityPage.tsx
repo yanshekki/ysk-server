@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { useSecurity } from '../features/security';
 import { TotpSetupPanel } from '../features/security/TotpSetupPanel';
-import { SshWorkspace } from '../features/security/ssh';
+import { SshWorkspace, sshApi } from '../features/security/ssh';
 import { api } from '../shared/services/api';
 import { toast } from '../shared/stores/toast-store';
 import {
@@ -46,13 +46,20 @@ type SessionRow = {
 };
 
 /** Friendly browser/OS from User-Agent (best-effort). */
-export function parseUserAgent(ua?: string): { browser: string; os: string; icon: string } {
+export function parseUserAgent(ua?: string): {
+  browser: string;
+  os: string;
+  icon: string;
+  kind: 'browser' | 'cli' | 'api';
+} {
   const s = ua || '';
   let browser = 'Unknown';
   let icon = '💻';
-  if (/curl\//i.test(s)) {
-    browser = 'curl / API';
+  let kind: 'browser' | 'cli' | 'api' = 'browser';
+  if (/curl\//i.test(s) || /ysk-server/i.test(s) || /Python-urllib|python-requests/i.test(s)) {
+    browser = /ysk-server/i.test(s) ? 'CLI' : /curl\//i.test(s) ? 'curl / API' : 'API';
     icon = '⌨️';
+    kind = /ysk-server/i.test(s) ? 'cli' : 'api';
   } else if (/Edg\//i.test(s)) {
     browser = 'Microsoft Edge';
     icon = '🌐';
@@ -74,7 +81,7 @@ export function parseUserAgent(ua?: string): { browser: string; os: string; icon
   else if (/Android/i.test(s)) os = 'Android';
   else if (/iPhone|iPad/i.test(s)) os = 'iOS';
   else if (/Linux/i.test(s)) os = 'Linux';
-  return { browser, os, icon };
+  return { browser, os, icon, kind };
 }
 
 export function relativeTime(
@@ -377,6 +384,14 @@ export function SecurityPage() {
     void refreshSessions().catch(() => undefined);
     void refreshPolicy().catch(() => undefined);
     void refreshPasskeys().catch(() => undefined);
+    void Promise.all([sshApi.listIdentities(), sshApi.listLoginKeys()])
+      .then(([ids, keys]) => {
+        setSshCounts({
+          identities: (ids.items ?? []).filter((i) => i.status !== 'retired').length,
+          loginKeys: (keys.items ?? []).length,
+        });
+      })
+      .catch(() => undefined);
   }, [refreshTotp, refreshKeys, refreshSessions, refreshPolicy, refreshPasskeys]);
 
   const totpKnown = totpLoad === 'ok' && totpStatus != null;
@@ -578,9 +593,14 @@ export function SecurityPage() {
                                 <strong className="sess-card__title">{title}</strong>
                                 {s.current ? (
                                   <Badge tone="ok">{t('security.currentSession')}</Badge>
-                                ) : (
-                                  <Badge tone="neutral">{t('security.sessionOtherBadge')}</Badge>
-                                )}
+                                ) : null}
+                                {ua.kind !== 'browser' ? (
+                                  <Badge tone="info">
+                                    {ua.kind === 'cli'
+                                      ? t('security.sessionCli')
+                                      : t('security.sessionApi')}
+                                  </Badge>
+                                ) : null}
                               </div>
                               <div className="sess-card__meta">
                                 <span>{s.ip || t('security.sessionIpUnknown')}</span>
@@ -897,22 +917,25 @@ export function SecurityPage() {
                 {totpKnown && !totpStatus.enrolled && !totpStatus.enabled ? (
                   <p className="muted u-text-sm u-mt-1">{t('security.strictNeedsEnrolled')}</p>
                 ) : null}
-                <Field
-                  label={t('security.confirmTotpPolicy')}
-                  htmlFor="pol-totp"
-                  className="u-mt-4"
-                  hint={
-                    totpKnown && !totpOn ? t('security.policyTotpNeedSelf') : undefined
-                  }
-                >
-                  <input
-                    id="pol-totp"
-                    value={policyTotp}
-                    onChange={bindInput(setPolicyTotp)}
-                    maxLength={12}
-                    placeholder={t('security.totp6digitPlaceholder')}
-                  />
-                </Field>
+                {totpOn ? (
+                  <Field
+                    label={t('security.confirmTotpPolicy')}
+                    htmlFor="pol-totp"
+                    className="u-mt-4"
+                  >
+                    <input
+                      id="pol-totp"
+                      value={policyTotp}
+                      onChange={bindInput(setPolicyTotp)}
+                      maxLength={12}
+                      placeholder={t('security.totp6digitPlaceholder')}
+                    />
+                  </Field>
+                ) : (
+                  <Alert variant="info" className="u-mt-4">
+                    {t('security.policyNoTotpHint')}
+                  </Alert>
+                )}
                 <FormActions>
                   <Button
                     variant="primary"

@@ -72,6 +72,8 @@
   "policyTitle": "Update policy",
   "policyBody": "High-risk and CVE packages require approval before apply",
   "applyPkg": "Apply package upgrade",
+  "rebootNeeded": "reboot",
+  "kernelRebootHint": "Kernel packages need a reboot after apply",
   "applyPkgConfirm": "Upgrade {{name}}?",
   "applyPkgDesc": "Runs apt upgrade for this package on the host. Needs root + YSK_EXECUTE.",
   "lastScan": "Last scan",

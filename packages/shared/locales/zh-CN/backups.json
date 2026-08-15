@@ -137,5 +137,6 @@
   "testDisabledHint": "请先开启远端推送才可测试。",
   "identityId": "Outbound SSH identity",
   "identityHint": "Preferred. Same vault as /security SSH. Password needs sshpass.",
-  "identityNone": "None — password or default key"
+  "identityNone": "None — password or default key",
+  "remotePathHint": "Relative to the remote user’s home (or SFTP chroot). “.” is that home."
 }

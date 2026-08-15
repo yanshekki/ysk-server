@@ -96,5 +96,8 @@
     "postfix": "Postfix mail brute-force",
     "dovecot": "Dovecot mail login",
     "recidive": "Repeat offenders"
-  }
+  },
+  "cannotBanSelf": "This is the host or your login IP — add it to ignoreip instead of banning",
+  "suggestIgnoreHint": "Suggested admin IPs (panel file only until you apply policy):",
+  "suggestIgnoreAdd": "Add {{ip}}"
 }

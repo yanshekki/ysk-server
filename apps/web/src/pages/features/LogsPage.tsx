@@ -49,7 +49,8 @@ const LEGACY_TAB_MAP: Record<string, (typeof TABS)[number]> = {
   files: 'explore',
   projects: 'explore',
   maintain: 'ops',
-  settings: 'settings' };
+  settings: 'settings',
+  help: 'about' };
 
 type LogSettings = {
   maxLines: number;
@@ -254,7 +255,7 @@ export function groupRailItems(
 export function LogsPage() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [tab, setTab] = usePageTab(TABS, 'explore');
+  const [tab, setTab] = usePageTab(TABS, 'explore', { aliases: LEGACY_TAB_MAP });
   const [overview, setOverview] = useState<Overview | null>(null);
   const [sources, setSources] = useState<Source[]>([]);
   const [units, setUnits] = useState<Array<{ unit: string; active?: string }>>([]);
@@ -281,6 +282,7 @@ export function LogsPage() {
   const [loadErr, setLoadErr] = useState<string | null>(null);
   const [metaLoading, setMetaLoading] = useState(true);
   const [railFilter, setRailFilter] = useState('');
+  const [showInactiveUnits, setShowInactiveUnits] = useState(false);
   const [vacuumDays, setVacuumDays] = useState('14d');
   const [vacuumConfirm, setVacuumConfirm] = useState<null | 'time' | 'size'>(null);
   const [bookmarkPromptOpen, setBookmarkPromptOpen] = useState(false);
@@ -426,6 +428,14 @@ export function LogsPage() {
       if (journalSeen.has(u.unit)) continue;
       // hide per-project units from global journal list (they appear under project)
       if ((u.unit ?? '').startsWith('ysk-project-')) continue;
+      if (
+        !showInactiveUnits &&
+        u.active &&
+        u.active !== 'active' &&
+        u.active !== 'activating'
+      ) {
+        continue;
+      }
       journalSeen.add(u.unit);
       items.push({
         id: `unit:${u.unit}`,
@@ -508,7 +518,7 @@ export function LogsPage() {
       }
     }
     return items;
-  }, [sources, units, projects, overview?.quickUnits]);
+  }, [sources, units, projects, overview?.quickUnits, showInactiveUnits, t]);
 
   const railFiltered = useMemo(
     () =>
@@ -915,6 +925,14 @@ export function LogsPage() {
                   <strong>{t('system.source')}</strong>
                   <span className="muted u-text-sm">{railFiltered.length}</span>
                 </div>
+                <label className="lc-toggle lc-toggle--block u-mb-2">
+                  <input
+                    type="checkbox"
+                    checked={showInactiveUnits}
+                    onChange={bindCheck(setShowInactiveUnits)}
+                  />
+                  <span>{t('logs.showInactiveUnits')}</span>
+                </label>
                 <input
                   id="logs-source-search"
                   name="logs-source-search"
@@ -1092,10 +1110,13 @@ export function LogsPage() {
                       />
                       <span>{t('logs.followSec', { sec: followSec })}</span>
                     </label>
-                    <label className={`lc-toggle ${useSse ? 'lc-toggle--on' : ''}`}>
+                    <label
+                      className={`lc-toggle ${follow && useSse ? 'lc-toggle--on' : ''}`}
+                      title={!follow ? t('logs.sseNeedFollow') : undefined}
+                    >
                       <input
                         type="checkbox"
-                        checked={useSse}
+                        checked={Boolean(follow && useSse)}
                         disabled={!follow}
                         onChange={bindCheck(setUseSse)}
                       />
@@ -1177,7 +1198,9 @@ export function LogsPage() {
                     emptyLabel={
                       metaLoading
                         ? t('logs.loadingSources')
-                        : t('logs.pickSource')
+                        : queryOk == null
+                          ? t('logs.pickSource')
+                          : t('logs.noRowsInWindow')
                     }
                     maxHeight="min(58vh, 620px)"
                   />
@@ -1440,7 +1463,11 @@ export function LogsPage() {
                         { value: '04:30', label: '04:30' },
                         { value: '05:00', label: '05:00' },
                       ]}
-                      value={String(settingsDraft.autoVacuumTime ?? '03:00')}
+                      value={
+                        settingsDraft.autoVacuumEnabled
+                          ? String(settingsDraft.autoVacuumTime ?? '03:00')
+                          : ''
+                      }
                       onChange={bindDraftString(setSettingsDraft, 'autoVacuumTime')}
                       allowCustom
                       customPlaceholder="HH:MM"

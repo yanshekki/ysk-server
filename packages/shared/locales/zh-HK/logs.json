@@ -137,5 +137,8 @@
   "logrotateNoStatus": "尚未有 logrotate 狀態檔（從未跑過時屬常見）。",
   "autoVacuumOff": "自動清理未啟用。啟用前時間設定不會執行。",
   "aboutAllowlist": "探索只可讀取允許清單內的 journal 單元與 /var/log 路徑，不會提供任意主機路徑。",
-  "aboutCustomPath": "請在「設定」加入自訂路徑（僅限 /var/log 或 /run/log），再到「探索」開啟。"
+  "aboutCustomPath": "請在「設定」加入自訂路徑（僅限 /var/log 或 /run/log），再到「探索」開啟。",
+  "noRowsInWindow": "此時間窗內無記錄",
+  "showInactiveUnits": "顯示未啟動的服務單元",
+  "sseNeedFollow": "請先開啟跟隨 — SSE 只用於即時尾隨"
 }

@@ -9,6 +9,7 @@ import { useNavBookmarks } from '../../shared/hooks/useNavBookmarks';
 import { FEATURE_SECTIONS } from '../../shared/nav/features';
 import { buttonClassName } from '../../shared/components/ui';
 import { GlobalSearch } from '../../shared/components/GlobalSearch';
+import { api } from '../../shared/services/api';
 import {
   LOCALES,
   LOCALE_LABELS,
@@ -118,6 +119,19 @@ export function AppShell() {
     ? t(`roles.${primaryRole}`, { defaultValue: primaryRole })
     : null;
   const locale = normalizeLocale(i18n.language);
+  const [panelVersion, setPanelVersion] = useState('');
+  useEffect(() => {
+    let cancelled = false;
+    void api
+      .health()
+      .then((h) => {
+        if (!cancelled && h.version) setPanelVersion(String(h.version));
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const accountControls = (
     <>
@@ -320,6 +334,9 @@ export function AppShell() {
               {t('company', { defaultValue: 'YSK Limited' })}
             </a>
             {t('files.publicSharePoweredSuffix', { defaultValue: '' })}
+            {panelVersion ? (
+              <span className="shell__version muted"> v{panelVersion}</span>
+            ) : null}
           </p>
         </div>
       </aside>

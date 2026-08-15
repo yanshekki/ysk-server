@@ -77,7 +77,10 @@
     "leOk": "{{domain}}에 대해 획득한 인증서를 암호화하자",
     "leFailed": "인증서 요청 실패: {{detail}}",
     "leHint": "여기에서 DNS A가 가리키고 포트 80이 연결 가능한지 확인하세요(또는 nginx가 도메인을 제공함)",
-    "openFirewall": "공개인 경우: 패널 포트 {{port}}/tcp 허용(방화벽 → 포트 열기 → 9287 패널)"
+    "openFirewall": "공개인 경우: 패널 포트 {{port}}/tcp 허용(방화벽 → 포트 열기 → 9287 패널)",
+    "disableConfirmTitle": "Disable panel HTTPS?",
+    "disableConfirmDesc": "The panel will serve HTTP. WebAuthn / Passkey will stop working until HTTPS is on again.",
+    "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP."
   },
   "timeNtp": "시간 및 NTP",
   "clockStatus": "시스템 시계 상태",

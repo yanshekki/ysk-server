@@ -231,6 +231,13 @@ export function ProjectNetworkTab({
               checked={forceHttps}
               onChange={setForceHttps}
               disabled={suspended}
+              description={
+                forceHttps
+                  ? t('projects.netForceHttpsOn')
+                  : project.nginxConfigPath
+                    ? t('projects.netHttpsLiveNotForced')
+                    : t('projects.netForceHttpsOff')
+              }
             />
             <CheckboxField
               id="net-hsts"

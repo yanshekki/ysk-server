@@ -15,5 +15,8 @@
   "dataPolicy": "سياسة البيانات",
   "keepData": "احتفظ بالبيانات",
   "purgeData": "تطهير البيانات",
-  "uninstallNow": "قم بإلغاء التثبيت الآن"
+  "uninstallNow": "قم بإلغاء التثبيت الآن",
+  "uninstallNeedSelect": "Select at least one bundle. Empty selection no longer means remove all.",
+  "uninstallConfirmTitle": "Remove selected bundles?",
+  "uninstallConfirmDesc": "{{count}} bundle(s) will be removed. Type REMOVE to confirm."
 }

@@ -39,6 +39,43 @@ export type UpsertCdnNodeInput = {
   status?: CdnNodeStatus;
 };
 
+/** SSH fan-out only when the operator set identity / host / non-default user. */
+export function resolveCdnSshTarget(node: CdnNodeDto): {
+  host: string;
+  port: number;
+  username: string;
+} | null {
+  const username = node.sshUsername?.trim() || '';
+  const explicit =
+    Boolean(node.sshIdentityId?.trim()) ||
+    Boolean(node.sshHost?.trim()) ||
+    (Boolean(username) && username !== 'root');
+  const panelTransport = Boolean(node.baseUrl?.trim() || node.fleetAgentId?.trim());
+  // Online panel / fleet edges must not inherit implicit root@ip SSH.
+  if (!explicit && panelTransport) return null;
+  const host =
+    node.sshHost?.trim() ||
+    node.publicIpv4[0] ||
+    (node.baseUrl
+      ? (() => {
+          try {
+            return new URL(node.baseUrl).hostname;
+          } catch {
+            return '';
+          }
+        })()
+      : '');
+  if (!host) return null;
+  if (!explicit && !panelTransport && !node.publicIpv4[0] && !node.sshHost?.trim()) {
+    return null;
+  }
+  return {
+    host,
+    port: node.sshPort && node.sshPort > 0 ? node.sshPort : 22,
+    username: username || 'root',
+  };
+}
+
 function assertName(name: string): string {
   const n = name.trim();
   if (!n || n.length > 80) {

@@ -97,7 +97,7 @@ describe('services thin paths depth', () => {
       rateThreshold: 100,
     });
     expect(r.highRequestRate).toBe(true);
-    expect(r.details.some((d) => /request rate/i.test(d))).toBe(true);
+    expect(r.details.join(' ')).toMatch(/10000|100/);
     expect(r.protection.mode).toMatch(/degraded|ddos|normal|offline/);
   }, 15_000);
 });

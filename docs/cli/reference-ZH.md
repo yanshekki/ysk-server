@@ -72,10 +72,13 @@ ysk-server projects stop --id UUID [--execute]
 ysk-server projects health --id UUID
 ysk-server projects backup --id UUID
 ysk-server projects git-deploy --id UUID [--git-url URL] [--branch|--ref B] [--depth N] [--execute]
-ysk-server projects git status|log|fetch|checkout|reset|auth|deploy --id UUID [--ref R] [--unshallow] [--yes]
+ysk-server projects git status|log|diff|refs|fetch|checkout|reset|auth|deploy --id UUID [--ref R] [--unshallow] [--yes]
+ysk-server projects git refs --id UUID [--git-url URL]
 ysk-server projects git auth --id UUID --token T | --deploy-key | --pin-host | --clear-token | --clear-key | --clear-host
 ysk-server projects git hook --id UUID --enable|--rotate|--disable
 # --enable／--rotate 之後，請自行把 hook.path + hookSecret 貼到 GitHub／Gitea／GitLab。
+# refs：列出遠端分支／tag（git ls-remote；不需 EXECUTE）
+# diff：本機 `git diff --stat`（排除 .env；不需 EXECUTE）
 # 入站：POST /api/v1/hooks/git/:id（無需登入；HMAC 或 X-YSK-Git-Hook）
 ysk-server projects isolation list|provision|provision-all|backfill-owners …
 ysk-server projects template …

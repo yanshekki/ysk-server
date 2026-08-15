@@ -41,6 +41,7 @@
   "webmailMovedHint": "Webmail is configured globally (not per domain).",
   "openGlobalWebmailSettings": "Open webmail settings",
   "domainsTitle": "Domains ({{filtered}}/{{total}})",
+  "domainsListDesc": "Mail domains registered on this host",
   "emptyFilterHint": "No domains match the search",
   "emptyCreateHint": "Use Create in the toolbar to register a domain;",
   "queueLocalTitle": "Mail queue",

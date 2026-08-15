@@ -1,6 +1,6 @@
 {
   "product": "ysk-server",
-  "version": "1.0.38",
+  "version": "1.0.39",
   "exitCodes": {
     "0": "ok",
     "1": "error",
@@ -1362,9 +1362,23 @@
     {
       "name": "projects git",
       "risk": "write-host",
-      "summary": "Git control: status/log (read), fetch/checkout/reset, HTTPS token or deploy key, inbound hook",
+      "summary": "Git control: status/log/diff/refs (read), fetch/checkout/reset, HTTPS token or deploy key, inbound hook",
       "args": ["--id", "--ref", "--token", "--deploy-key", "--pin-host"],
       "example": "ysk-server projects git status --id UUID --json"
+    },
+    {
+      "name": "projects git refs",
+      "risk": "read",
+      "summary": "List remote branches and tags (git ls-remote). No EXECUTE. Needs URL + token/key for private repos.",
+      "args": ["--id", "--git-url"],
+      "example": "ysk-server projects git refs --id UUID --json"
+    },
+    {
+      "name": "projects git diff",
+      "risk": "read",
+      "summary": "Show local Git diff --stat (excludes .env). No EXECUTE.",
+      "args": ["--id"],
+      "example": "ysk-server projects git diff --id UUID --json"
     },
     {
       "name": "projects git hook",

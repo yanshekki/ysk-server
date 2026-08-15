@@ -69,6 +69,13 @@ export function hasPathSeparator(name: string): boolean {
   return /[\\/]/.test(String(name ?? ''));
 }
 
+/** `--path /` means sandbox root, not the host filesystem root. */
+export function normalizeSandboxRel(target: string | undefined): string {
+  const raw = String(target ?? '.').trim();
+  if (!raw || raw === '/' || raw === '\\') return '.';
+  return raw;
+}
+
 export function assertInside(root: string, target: string): string {
   if (typeof target === 'string' && target.includes('\0')) {
     throw new YskError(ErrorCodes.SANDBOX_VIOLATION, tl('notes.files.pathOutsideSandbox', { target }), {
@@ -76,7 +83,7 @@ export function assertInside(root: string, target: string): string {
     });
   }
   const rootAbs = resolve(root);
-  const abs = resolve(rootAbs, target ?? '.');
+  const abs = resolve(rootAbs, normalizeSandboxRel(target));
   const rel = relative(rootAbs, abs);
   if (rel.startsWith('..') || rel === '..') {
     throw new YskError(ErrorCodes.SANDBOX_VIOLATION, tl('notes.files.pathOutsideSandbox', { target }), {

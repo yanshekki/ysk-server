@@ -150,5 +150,12 @@ describe('pathUnderRoot + commandRequiresExecute', () => {
     expect(commandRequiresExecute(['git', 'clone', 'https://x', '/app'])).toBe(true);
     expect(commandRequiresExecute(['git', '-C', '/app', 'reset', '--hard'])).toBe(true);
     expect(commandRequiresExecute(['ssh-keyscan', '-T', '5', 'github.com'])).toBe(false);
+    expect(commandRequiresExecute(['crontab', '-l'])).toBe(false);
+    expect(commandRequiresExecute(['crontab', '-u', 'www-data', '-l'])).toBe(false);
+    expect(commandRequiresExecute(['bash', '-c', 'crontab -l'])).toBe(false);
+    expect(commandRequiresExecute(['bash', '-c', 'crontab -u ysk -l'])).toBe(false);
+    expect(commandRequiresExecute(['crontab', '/tmp/ysk.crontab'])).toBe(true);
+    expect(commandRequiresExecute(['crontab', '-r'])).toBe(true);
+    expect(commandRequiresExecute(['bash', '-c', 'crontab /tmp/ysk.crontab'])).toBe(true);
   });
 });

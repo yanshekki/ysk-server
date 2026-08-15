@@ -100,5 +100,7 @@
   "requestFailed": "Permintaan sertifikat tidak berhasil",
   "applyFailed": "Permintaan gagal",
   "deletedCert": "Dihapus {{domain}}",
-  "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates."
+  "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates.",
+  "renew": "Renew",
+  "renewFor": "Renew Let’s Encrypt for {{domain}}"
 }

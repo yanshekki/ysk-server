@@ -490,5 +490,6 @@
   "deleteQueueTitle": "删除此队列邮件？",
   "deleteQueueDesc": "从本机 MTA 队列移除 {{id}}。需要 YSK_EXECUTE。",
   "openQueuePage": "打开邮件队列",
-  "dovecotFailedHint": "Dovecot 服务失败。请先到软件分页查看状态；若邮件证书尚未签发，请先到 SSL 签发 mail 主机名。"
+  "dovecotFailedHint": "Dovecot 服务失败。请先到软件分页查看状态；若邮件证书尚未签发，请先到 SSL 签发 mail 主机名。",
+  "domainsListDesc": "Mail domains registered on this host"
 }

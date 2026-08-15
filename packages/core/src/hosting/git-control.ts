@@ -49,7 +49,10 @@ export type GitOpResult = {
 };
 
 function gitArgv(repoDir: string, rest: string[]): string[] {
-  return ['git', '-C', repoDir, ...rest];
+  // Root (or any other uid) reading a project-owned tree trips
+  // "fatal: detected dubious ownership" unless this repo is trusted
+  // for this invocation — do not require a global safe.directory.
+  return ['git', '-c', `safe.directory=${repoDir}`, '-C', repoDir, ...rest];
 }
 
 export type GitAuthEnv = Record<string, string>;
@@ -234,6 +237,30 @@ export async function gitLog(input: {
   return { ok: true, items, notes: [] };
 }
 
+export async function gitDiff(input: {
+  host: HostExecutor;
+  appDir: string;
+}): Promise<{ ok: boolean; text: string; notes: string[] }> {
+  if (!(await binPresent(input.host, 'git')) || !existsSync(join(input.appDir, '.git'))) {
+    return { ok: false, text: '', notes: [tl('notes.git.notRepo')] };
+  }
+  const r = await git(
+    input.host,
+    input.appDir,
+    ['diff', '--stat', '--', '.', ':(exclude).env'],
+    15_000,
+  );
+  if (r.exitCode !== 0) {
+    return { ok: false, text: '', notes: [r.stderr || tl('notes.git.unknown')] };
+  }
+  const text = (r.stdout || '').trim();
+  return {
+    ok: true,
+    text: text || tl('notes.git.diffEmpty'),
+    notes: [],
+  };
+}
+
 export async function gitFetch(input: {
   host: HostExecutor;
   appDir: string;
@@ -327,6 +354,98 @@ export async function gitResetHard(input: {
     notes: [tl('notes.git.resetOk', { ref: target })],
     commit: rev.exitCode === 0 ? rev.stdout.trim() : undefined,
     branch: br.exitCode === 0 ? br.stdout.trim() : undefined,
+  };
+}
+
+export type ParsedGitRemoteRefs = {
+  defaultBranch?: string;
+  branches: string[];
+  tags: string[];
+};
+
+/** Parse `git ls-remote --heads --tags --symref` stdout. */
+export function parseGitLsRemote(stdout: string): ParsedGitRemoteRefs {
+  const branches: string[] = [];
+  const tags: string[] = [];
+  let defaultBranch: string | undefined;
+  for (const line of String(stdout || '').split('\n')) {
+    const t = line.trim();
+    if (!t) continue;
+    const tab = t.indexOf('\t');
+    if (tab < 0) continue;
+    const left = t.slice(0, tab).trim();
+    const name = t.slice(tab + 1).trim();
+    if (name === 'HEAD' && /^ref:\s+/i.test(left)) {
+      const m = /refs\/heads\/([^\s]+)/.exec(left);
+      if (m?.[1]) defaultBranch = m[1];
+      continue;
+    }
+    if (name.endsWith('^{}')) continue;
+    if (name.startsWith('refs/heads/')) {
+      const n = name.slice('refs/heads/'.length);
+      if (n && !branches.includes(n)) branches.push(n);
+    } else if (name.startsWith('refs/tags/')) {
+      const n = name.slice('refs/tags/'.length);
+      if (n && !tags.includes(n)) tags.push(n);
+    }
+  }
+  return {
+    defaultBranch,
+    branches: branches.slice(0, 80),
+    tags: tags.slice(0, 80),
+  };
+}
+
+export async function listGitRemoteRefs(input: {
+  host: HostExecutor;
+  gitUrl: string;
+  env?: GitAuthEnv;
+}): Promise<{
+  ok: boolean;
+  defaultBranch?: string;
+  branches: string[];
+  tags: string[];
+  notes: string[];
+  code?: GitErrorCode;
+}> {
+  const url = input.gitUrl.trim();
+  if (!url) {
+    return { ok: false, branches: [], tags: [], notes: [tl('notes.git.refsNeedUrl')] };
+  }
+  if (!(await binPresent(input.host, 'git'))) {
+    return {
+      ok: false,
+      branches: [],
+      tags: [],
+      notes: [tl('notes.git.missingBin')],
+      code: 'missing-bin',
+    };
+  }
+  const r = await input.host.runCommand(
+    ['git', 'ls-remote', '--heads', '--tags', '--symref', '--', url],
+    { timeoutMs: 25_000, env: input.env },
+  );
+  if (r.exitCode !== 0) {
+    const code = classifyGitError(r.stderr, r.stdout);
+    const extra = (r.stderr || r.stdout || '').trim().slice(0, 400);
+    return {
+      ok: false,
+      branches: [],
+      tags: [],
+      notes: [tl(`notes.git.${camel(code)}`), extra].filter(Boolean),
+      code,
+    };
+  }
+  const parsed = parseGitLsRemote(r.stdout ?? '');
+  const n = parsed.branches.length + parsed.tags.length;
+  return {
+    ok: true,
+    ...parsed,
+    notes: [
+      n
+        ? tl('notes.git.refsOk', { branches: parsed.branches.length, tags: parsed.tags.length })
+        : tl('notes.git.refsEmpty'),
+    ],
   };
 }
 

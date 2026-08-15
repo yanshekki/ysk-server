@@ -397,7 +397,7 @@ export function CdnPage() {
   const [weight, setWeight] = useState('100');
   const [sshIdentityId, setSshIdentityId] = useState('');
   const [sshHost, setSshHost] = useState('');
-  const [sshUsername, setSshUsername] = useState('root');
+  const [sshUsername, setSshUsername] = useState('');
   /** Fleet session id — queues conf to agent; not sync nginx apply */
   const [fleetAgentId, setFleetAgentId] = useState('');
 
@@ -540,7 +540,7 @@ export function CdnPage() {
     setWeight(String(n.weight ?? 100));
     setSshIdentityId(n.sshIdentityId ?? '');
     setSshHost(n.sshHost ?? '');
-    setSshUsername(n.sshUsername ?? 'root');
+    setSshUsername(n.sshUsername ?? '');
     setFleetAgentId(n.fleetAgentId ?? '');
     setNodeOpen(true);
   }
@@ -811,7 +811,12 @@ export function CdnPage() {
           { label: t('cdn.statSites'), value: sites.length },
           {
             label: 'Hit%',
-            value: formatHitRatePct(dashboard?.overallHitRatePct) },
+            value: formatHitRatePct(dashboard?.overallHitRatePct),
+            hint:
+              dashboard?.overallHitRatePct == null
+                ? t('cdn.hitNoStats')
+                : undefined,
+          },
         ] }}
       actions={
         <>
@@ -1123,7 +1128,18 @@ export function CdnPage() {
                   header: '',
                   mobile: 'actions',
                   render: (s) => (
-                    <ActionBar>
+                    <ActionBar className="cdn-site-ops">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        loading={busy}
+                        onClick={bindVoidCall3(postSiteOp, s.id, 'apply', {})}
+                      >
+                        {t('cdn.applyEdges')}
+                      </Button>
+                      <details className="table-more">
+                        <summary>{t('common.more', { defaultValue: 'More' })}</summary>
+                        <div className="table-more__menu">
                       <Button
                         variant="secondary"
                         size="sm"
@@ -1139,14 +1155,6 @@ export function CdnPage() {
                         onClick={bindVoidCall3(postSiteOp, s.id, 'render', { dryRun: false })}
                       >
                         {t('cdn.writeConf')}
-                      </Button>
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        loading={busy}
-                        onClick={bindVoidCall3(postSiteOp, s.id, 'apply', {})}
-                      >
-                        {t('cdn.applyEdges')}
                       </Button>
                       <Button
                         variant="secondary"
@@ -1165,7 +1173,7 @@ export function CdnPage() {
                         {t('cdn.dnsSync')}
                       </Button>
                       <Button
-                        variant="primary"
+                        variant="secondary"
                         size="sm"
                         loading={busy}
                         onClick={bindVoidCall3(postSiteOp, s.id, 'health-loop', {})}
@@ -1208,6 +1216,8 @@ export function CdnPage() {
                       >
                         {t('common.delete')}
                       </Button>
+                        </div>
+                      </details>
                     </ActionBar>
                   ) },
               ]}

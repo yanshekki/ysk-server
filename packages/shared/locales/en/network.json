@@ -110,6 +110,8 @@
   "linkDownNeedConfirm": "Type the interface name to confirm",
   "defaultRouteDownWarn": "This interface is the default route egress; down may cut panel access.",
   "deleteDefaultMayDrop": " — deleting default may drop connectivity.",
+  "deleteDefaultPanelWarn": "Deleting the default route can drop this panel session. Type DEFAULT to confirm.",
+  "typeDefaultToConfirm": "Type DEFAULT to confirm",
   "gateway": "Gateway",
   "nameservers": "Nameservers",
   "searchDomains": "Search domains",

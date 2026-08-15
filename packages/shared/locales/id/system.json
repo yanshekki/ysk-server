@@ -77,7 +77,10 @@
     "leOk": "Mari Enkripsi sertifikat yang diperoleh untuk {{domain}}",
     "leFailed": "Permintaan sertifikat gagal: {{detail}}",
     "leHint": "Pastikan DNS A menunjuk di sini dan port 80 dapat dijangkau (atau nginx melayani domain)",
-    "openFirewall": "Jika publik: izinkan port panel {{port}}/tcp (Firewall → port terbuka → Panel 9287)"
+    "openFirewall": "Jika publik: izinkan port panel {{port}}/tcp (Firewall → port terbuka → Panel 9287)",
+    "disableConfirmTitle": "Disable panel HTTPS?",
+    "disableConfirmDesc": "The panel will serve HTTP. WebAuthn / Passkey will stop working until HTTPS is on again.",
+    "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP."
   },
   "timeNtp": "Waktu & NTP",
   "clockStatus": "Status jam sistem",

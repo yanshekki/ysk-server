@@ -145,5 +145,7 @@
   "linkDownNeedConfirm": "Type the interface name to confirm",
   "persistNmHint": "Persistable means changes can survive reboot via NetworkManager.",
   "hideRaw": "Hide raw output",
-  "rawLoadedAt": "Loaded {{time}}"
+  "rawLoadedAt": "Loaded {{time}}",
+  "deleteDefaultPanelWarn": "Deleting the default route can drop this panel session. Type DEFAULT to confirm.",
+  "typeDefaultToConfirm": "Type DEFAULT to confirm"
 }

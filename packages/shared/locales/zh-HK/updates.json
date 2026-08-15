@@ -72,6 +72,8 @@
   "policyTitle": "更新政策",
   "policyBody": "高風險與有 CVE 的套件預設需審批後才可套用。面板自身更新與系統 套件管理 升級分開處理。",
   "applyPkg": "套用套件升級",
+  "rebootNeeded": "需重啟",
+  "kernelRebootHint": "核心類套件套用後需要重新開機",
   "applyPkgConfirm": "確認升級 {{name}}？",
   "applyPkgDesc": "將對此主機執行 套件管理 升級。需 管理員權限與系統變更權限。",
   "lastScan": "上次掃描",

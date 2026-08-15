@@ -350,6 +350,27 @@ const READ_ONLY_SIMPLE_BINS = new Set([
   'getent',
 ]);
 
+/** `crontab -l` / `crontab -u USER -l` are inventory. Install/edit/remove still mutate. */
+function isReadOnlyCrontabArgv(argv: string[]): boolean {
+  const rest = argv.slice(1);
+  if (rest.includes('--help') || rest.includes('-h') || rest.includes('-V') || rest.includes('--version')) {
+    return true;
+  }
+  if (!rest.some((a) => a === '-l' || a === '--list')) return false;
+  if (rest.some((a) => a === '-r' || a === '-e' || a === '-i' || a === '--remove')) return false;
+  for (let i = 0; i < rest.length; i++) {
+    const a = rest[i]!;
+    if (a === '-l' || a === '--list') continue;
+    if (a === '-u' || a === '--user') {
+      if (!rest[i + 1] || rest[i + 1]!.startsWith('-')) return false;
+      i += 1;
+      continue;
+    }
+    return false;
+  }
+  return true;
+}
+
 function isReadOnlyArgv(argv: string[]): boolean {
   const bin = baseBin(argv[0] ?? '');
   if (!bin) return false;
@@ -420,6 +441,7 @@ function isReadOnlyArgv(argv: string[]): boolean {
     const mutates = /[xcurdA]/.test(compact);
     return lists && !mutates;
   }
+  if (bin === 'crontab') return isReadOnlyCrontabArgv(argv);
   if (bin === 'nginx') return argv[1] === '-t';
   if (bin === 'pm2') {
     const sub = argv[1] ?? '';
@@ -622,7 +644,6 @@ function isReadOnlyArgv(argv: string[]): boolean {
       'install',
       'ln',
       'mkdir',
-      'crontab',
       'a2ensite',
       'a2dissite',
       'certbot',
@@ -723,8 +744,13 @@ function isReadOnlyShellScript(argv: string[]): boolean {
   ) {
     return true;
   }
+  const withoutCrontabList = s.replace(/\bcrontab(?:\s+-u\s+\S+)?\s+-l\b/g, ' ');
+  if (/\bcrontab\b/.test(withoutCrontabList)) return false;
+  if (/^crontab(?:\s+-u\s+\S+)?\s+-l\s*$/.test(s) || !withoutCrontabList.replace(/[;\s]/g, '')) {
+    return true;
+  }
   if (
-    /\b(rm|mv|cp|mkdir|useradd|userdel|usermod|chown|chmod|crontab|dd|mkfs|fdisk|parted|reboot|shutdown|poweroff|halt|init|ufw|iptables|nft|kill|pkill|killall|postsuper|mount|umount|sysctl)\b/.test(
+    /\b(rm|mv|cp|mkdir|useradd|userdel|usermod|chown|chmod|dd|mkfs|fdisk|parted|reboot|shutdown|poweroff|halt|init|ufw|iptables|nft|kill|pkill|killall|postsuper|mount|umount|sysctl)\b/.test(
       s,
     )
   ) {

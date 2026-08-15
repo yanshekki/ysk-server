@@ -41,6 +41,9 @@ ysk-server defense ban --ip 1.2.3.4 --execute --json
 
 - Live UFW/fail2ban mutations need EXECUTE + root.  
 - Fail-closed without tools is correct, not a silent success.  
+- The panel does not one-click ban the host egress IP, the current login IP, or fail2ban `ignoreip`. Those addresses are labelled.  
+- Authenticated panel request rate is shown as panel traffic. It does not raise the threat score.  
+- Nginx conf preview does not turn `set_real_ip_from` CIDRs into ban links.  
 
 ## Panel-only ⚠️
 

@@ -57,5 +57,11 @@
   "protectionDoneNote": "保護探測完成",
   "probeDone": "探測完成",
   "runProtection": "執行保護探測",
-  "notProbedYet": "尚未探測"
+  "notProbedYet": "尚未探測",
+  "statusFilter": {
+    "all": "全部狀態",
+    "running": "運行中",
+    "failed": "失敗",
+    "missing": "未安裝"
+  }
 }

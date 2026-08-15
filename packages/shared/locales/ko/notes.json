@@ -31,7 +31,8 @@
   "ssh": {
     "identityNotFound": "신원을 찾을 수 없습니다",
     "registrationNotFound": "등록을 찾을 수 없습니다",
-    "keyOkNologin": "Key accepted. Account has no login shell (nologin) — use SFTP. Treated as PASS."
+    "keyOkNologin": "Key accepted. Account has no login shell (nologin) — use SFTP. Treated as PASS.",
+    "keyOkSftp": "SFTP pwd succeeded after SSH shell was refused."
   },
   "cdn": {
     "siteNotFound": "CDN 사이트를 찾을 수 없습니다",
@@ -45,7 +46,9 @@
       "http": "HTTP probe failed after {{ms}}ms ({{detail}})."
     },
     "loopbackOriginRemote": "Origin is 127.0.0.1 — that is this host, not a remote edge. Set a reachable origin IP or bind_ip.",
-    "needSshOrFleet": "Remote edge needs an outbound SSH identity (or username) or a /agents fleet session. Health URL alone is not apply transport."
+    "needSshOrFleet": "Remote edge needs an outbound SSH identity (or username) or a /agents fleet session. Health URL alone is not apply transport.",
+    "originRemoteRewrite": "Remote edges will use reachable origin {{url}} instead of loopback.",
+    "originRemoteUnknown": "Origin is loopback and no public/LAN IP or bind_ip is known — apply will refuse remote edges until one is set."
   },
   "backup": {
     "fileNotFound": "백업 파일을 찾을 수 없습니다",
@@ -59,7 +62,10 @@
     "sshAuthFailed": "SSH key or password rejected (publickey). Pick an outbound identity or install sshpass.",
     "remotePathIsFile": "Remote path {{path}} is a file. Use a directory.",
     "remoteMkdirFailed": "Could not create remote directory: {{detail}}",
-    "sidecarPushed": "Also pushed SQL sidecar {{name}}"
+    "sidecarPushed": "Also pushed SQL sidecar {{name}}",
+    "controlPlaneDryRun": "Preview only — nothing written. In the panel, use Restore and confirm the phrase to write.",
+    "controlPlaneNeedConfirm": "Full control-plane restore needs the confirm phrase RESTORE-CONTROL-PLANE.",
+    "controlPlaneRestartAfter": "Restart the API after a successful restore."
   },
   "redis": {
     "cliMissing": "redis-cli가 설치되지 않았습니다"
@@ -228,7 +234,17 @@
     "dns": "DNS",
     "email": "이메일",
     "isolation": "프로젝트 격리",
-    "ops": "운영"
+    "ops": "운영",
+    "runtimesNode": "Node.js",
+    "runtimesPhp": "PHP",
+    "runtimesPython": "Python",
+    "runtimesGo": "Go",
+    "pm2": "PM2",
+    "runtimesNodeFix": "Install Node from /runtimes/node",
+    "runtimesPhpFix": "Install PHP from /runtimes/php",
+    "runtimesPythonFix": "Install Python from /runtimes/python",
+    "runtimesGoFix": "Install Go from /runtimes/go",
+    "pm2Fix": "Install PM2 from the Node runtime page"
   },
   "needAdmin": "관리자 권한이 필요합니다",
   "notInstalled": "미설치",
@@ -510,10 +526,10 @@
     "n0268": "테스트 실행 — /etc를 쓰지 않음",
     "n0269": "테스트 실행: add --execute firstapply ufw",
     "n0270": "테스트 실행: 인벤토리 + 프리플라이트 통과, 패키지/이송 아님",
-    "n0271": "테스트 실행: 프로브/. add --execute YSK_EXECUTE=1 firstreally 프로비저닝",
-    "n0272": "dry-run: 관리 파일(dataDir)을 작성했습니다. 실행 추가 + YSK_EXECUTE=1 + 루트 첫 번째 시스템 드롭인",
-    "n0273": "드라이런: 아닙니다. add --execute YSK_EXECUTE=1 firstreally 금지",
-    "n0274": "드라이런: 아닙니다. add --execute YSK_EXECUTE=1 firstreally 차단 해제",
+    "n0271": "Dry-run: probe/plan only. Pass --execute with YSK_EXECUTE=1 to actually provision.",
+    "n0272": "Dry-run: wrote the managed file (dataDir). Pass --execute with YSK_EXECUTE=1 as root to install the system drop-in.",
+    "n0273": "Dry-run: not banned. Pass --execute with YSK_EXECUTE=1 to actually ban.",
+    "n0274": "Dry-run: not unbanned. Pass --execute with YSK_EXECUTE=1 to actually unban.",
     "n0275": "dryRun=true — API 변경",
     "n0276": "dryRun: 쓰지 않음",
     "n0277": "dump write dataDir, 전송하지 않음",
@@ -1078,7 +1094,7 @@
     "n0836": "인증서를 주세요. 실패했습니다.",
     "n0837": "≥ 파일",
     "n0838": "설정유지백업",
-    "n0839": "성공이 대상은 BatchMode, ≠ 가능",
+    "n0839": "Success means this target accepts BatchMode SSH (non-interactive). It is not a grant of global access.",
     "n0840": "또는 32767",
     "n0841": "소프트웨어가 설치됨",
     "n0842": "허가/",
@@ -1238,7 +1254,7 @@
     "n0996": "local nginx -t OK (관리형 conf, ≠ edge 적용)",
     "n0997": "로컬 wsrep은 노드가 아닌 크기일 수 있습니다.",
     "n0998": "로컬 ysk.json을 읽을 수 없음/지문",
-    "n0999": "로컬 OK; 완전한 정상 피어 프로브( 아님)",
+    "n0999": "Local node is OK; a complete healthy status needs a peer probe (not done).",
     "n1000": "local nginx — conf 작성했지만 다시 로드하지 않음",
     "n1001": "localAvailable NM 연결; 성공할 것입니다. \"\" 또는 NetworkManager를 사용할 수 있습니다.",
     "n1002": "localAvailable ps - 할 수 없음 ()",
@@ -2483,7 +2499,7 @@
     "t0629": "프로젝트 {{v0}} 집: {{v1}}",
     "t0630": "프로젝트 {{v0}} bind_ip={{v1}} — 가능 ( IP )",
     "t0631": "프로젝트 {{v0}} 집이 아닌 경로: {{v1}}",
-    "t0632": "집(상점): {{v0}}",
+    "t0632": "Orphan home on disk (no matching store project): {{v0}}",
     "t0633": "메일주소: {{v0}}",
     "t0634": "{{v0}} — 타겟팅할 수 없음",
     "t0635": "조사할 수 없습니다 {{v0}}",
@@ -2491,7 +2507,7 @@
     "t0637": "프로젝트 {{v0}} · {{v1}} · DB {{v2}} · Redis {{v3}}",
     "t0638": "설치소프트웨어 {{v0}} · 주택 {{v1}}",
     "t0639": "컷오버 호스트 {{v0}}",
-    "t0640": "경고 {{v0}} (부탁드립니다)",
+    "t0640": "{{v0}} warning(s) — review before cutover.",
     "t0641": "열쇠 {{v0}}",
     "t0642": "키를 사용할 수 없습니다: {{v0}}",
     "t0643": "targetnot writeauthorized_keys: {{v0}}",
@@ -2555,7 +2571,7 @@
     "t0701": "CDN {{v0}}",
     "t0702": "원본 쉴드 노드가 존재하지 않습니다: {{v0}}",
     "t0703": "가장자리: {{v0}}",
-    "t0704": "원본 URL(): {{v0}}",
+    "t0704": "Origin URL (from project bind): {{v0}}",
     "t0705": "CDN 업데이트 {{v0}}",
     "t0706": "CDN 생성 {{v0}}",
     "t0707": "원점 방패: 가장자리 방패 {{v0}} → {{v1}}",
@@ -3061,7 +3077,7 @@
     "staleCliTitle": "Stale leftover CLI",
     "staleCli": "Leftover CLI still present: {{path}} (running product {{version}}). PATH may prefer it. Remove with: rm -f {{path}}",
     "apacheDefaultTitle": "Apache leftover default site",
-    "apacheDefault": "Apache 000-default is still enabled on :80. Product overlay does not disable it. Apply Apache from the panel or hosting apache apply --execute.",
+    "apacheDefault": "Apache 000-default is still enabled. That is the stock site file — it does not mean Apache is listening on public :80 (YSK Apache is expected on 127.0.0.1:8080). Overlay does not disable it. Apply Apache from the panel or hosting apache apply --execute.",
     "nginxCatchAllTitle": "Nginx catch-all missing",
     "nginxCatchAll": "ysk-000-default.conf is not in /etc/nginx/conf.d. Unknown SNI can fall through. Run projects nginx-sync --execute.",
     "vsftpdTitle": "vsftpd unit failed",
@@ -3104,7 +3120,11 @@
     "hostScanFailed": "ssh-keyscan returned no keys for that host.",
     "hookEnabled": "Inbound Git hook is on. Paste the URL into GitHub, Gitea, or GitLab yourself.",
     "hookDisabled": "Inbound Git hook is off. The URL will not sync.",
-    "hookSecretOnce": "Copy this hook secret now. It is not shown again."
+    "hookSecretOnce": "Copy this hook secret now. It is not shown again.",
+    "refsNeedUrl": "Enter a Git URL first.",
+    "refsOk": "Loaded {{branches}} branch(es) and {{tags}} tag(s).",
+    "refsEmpty": "Remote advertised no branches or tags.",
+    "diffEmpty": "No unstaged diff (protected .env is excluded)."
   },
   "migrate": {
     "orphanConfirm": "Type the exact leftover home path to confirm delete.",
@@ -3113,5 +3133,14 @@
     "orphanNeedExecute": "Would remove leftover {{path}}. Needs YSK_EXECUTE=1.",
     "orphanRmFailed": "Could not remove leftover home: {{detail}}",
     "orphanRemoved": "Removed leftover project home {{path}}."
+  },
+  "defense": {
+    "panelReqLabel": "Panel requests / min",
+    "panelReqExcluded": "Authenticated panel traffic — shown here, not counted in threat score",
+    "tcpOk": "TCP {{target}} reachable",
+    "tcpFail": "TCP {{target}} failed",
+    "dnsDegraded": "DNS path degraded",
+    "reqRateHigh": "Public request rate {{reqs}}/min ≥ {{threshold}}",
+    "ddosHeuristic": "High public request rate plus edge probe failure"
   }
 }

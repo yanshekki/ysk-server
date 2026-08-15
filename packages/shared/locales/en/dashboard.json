@@ -92,6 +92,7 @@
   "serverIpv6": "Server IPv6 (optional)",
   "serverIpv6Hint": "Writes AAAA / ip6: when set",
   "serverIpv6Ph": "Public IPv6 (optional)",
+  "needDomainFirst": "Enter a domain first",
   "withDns": "Also create DNS zone",
   "withDnsDesc": "Needs domain; registration only — apply zone on DNS page",
   "withMail": "Also register mail domain",

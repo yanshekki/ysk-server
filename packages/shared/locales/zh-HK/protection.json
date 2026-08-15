@@ -347,5 +347,12 @@
   "plusRegion": "+ 省 {{v}}",
   "plusCity": "+ 城市 {{v}}",
   "lastTickPrefix": "· 上次 {{t}}",
-  "nextTickPrefix": "· 下輪 {{t}}"
+  "nextTickPrefix": "· 下輪 {{t}}",
+  "cannotBanSelf": "不可封鎖 {{ip}} — 這是本機、你的登入 IP 或 ignoreip",
+  "selfIp": "本機",
+  "selfHostIp": "主機 IP",
+  "selfLoginIp": "你的登入 IP",
+  "showZeroScore": "顯示 0 分",
+  "hideZeroScore": "隱藏 0 分",
+  "freshnessNa": "不適用"
 }

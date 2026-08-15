@@ -228,7 +228,8 @@
     "probe": "探測",
     "name": "名稱",
     "type": "類型",
-    "status": "狀態"
+    "status": "狀態",
+    "engineNotInstalled": "此主機未安裝 {{engine}} — 請先安裝，或改用實際運行的引擎。"
   },
   "console": {
     "dataBrowse": "資料瀏覽",

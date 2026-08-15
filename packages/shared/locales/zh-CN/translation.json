@@ -248,7 +248,8 @@
     "cleanupConflicts": "清理冲突残留",
     "cleanupConflictsTitle": "清理全部冲突残留？",
     "cleanupConflictsDesc": "移除所有与项目或独立站 ServerName 冲突的磁盘 conf。项目行会保留。",
-    "artifactRemovedOk": "已移除残留 conf"
+    "artifactRemovedOk": "已移除残留 conf",
+    "sslTerminatedUpstream": "TLS ends at front Nginx"
   },
   "applyStatus": {
     "draft": "草稿",
@@ -427,7 +428,8 @@
     "testDisabledHint": "请先开启远端推送才可测试。",
     "identityId": "Outbound SSH identity",
     "identityHint": "Preferred. Same vault as /security SSH. Password needs sshpass.",
-    "identityNone": "None — password or default key"
+    "identityNone": "None — password or default key",
+    "remotePathHint": "Relative to the remote user’s home (or SFTP chroot). “.” is that home."
   },
   "btTracker": {
     "title": "BT追踪器",
@@ -765,7 +767,8 @@
     "statOnline": "线上 {{n}}/{{total}}",
     "statOffline": "离线 {{n}}",
     "statDraining": "排水中 {{n}}",
-    "statHitRate": "命中率 {{v}}"
+    "statHitRate": "命中率 {{v}}",
+    "hitNoStats": "No edge stats yet"
   },
   "cli": {
     "unknownCommand": "未知命令：{{command}}\n执行 `{{cli}} help`",
@@ -2075,7 +2078,8 @@
     "previous": "上一步",
     "all": "All",
     "showPassword": "Show",
-    "hidePassword": "Hide"
+    "hidePassword": "Hide",
+    "more": "More"
   },
   "cron": {
     "presetCdTrue": "cd app + true（测试）",
@@ -2348,7 +2352,8 @@
     "notifSearch": "搜索通知",
     "notifAll": "全部",
     "notifDismiss": "隐藏",
-    "goFix": "前往处理"
+    "goFix": "前往处理",
+    "needDomainFirst": "Enter a domain first"
   },
   "dataTable": {
     "empty": "没有数据",
@@ -2584,7 +2589,8 @@
       "probe": "探测",
       "name": "名称",
       "type": "类型",
-      "status": "状态"
+      "status": "状态",
+      "engineNotInstalled": "{{engine}} is not installed on this host — install it first, or open the engine that is actually running."
     },
     "console": {
       "dataBrowse": "资料浏览",
@@ -3518,7 +3524,8 @@
     "deleteQueueTitle": "删除此队列邮件？",
     "deleteQueueDesc": "从本机 MTA 队列移除 {{id}}。需要 YSK_EXECUTE。",
     "openQueuePage": "打开邮件队列",
-    "dovecotFailedHint": "Dovecot 服务失败。请先到软件分页查看状态；若邮件证书尚未签发，请先到 SSL 签发 mail 主机名。"
+    "dovecotFailedHint": "Dovecot 服务失败。请先到软件分页查看状态；若邮件证书尚未签发，请先到 SSL 签发 mail 主机名。",
+    "domainsListDesc": "Mail domains registered on this host"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "未授权",
@@ -3676,7 +3683,10 @@
       "postfix": "Postfix 邮件暴力破解",
       "dovecot": "Dovecot 邮件登录",
       "recidive": "累犯"
-    }
+    },
+    "cannotBanSelf": "This is the host or your login IP — add it to ignoreip instead of banning",
+    "suggestIgnoreHint": "Suggested admin IPs (panel file only until you apply policy):",
+    "suggestIgnoreAdd": "Add {{ip}}"
   },
   "featurePage": {
     "back": "返回"
@@ -4141,7 +4151,9 @@
     "disableConfirmConsequence": "现有允许／拒绝规则仍会保留，但要重新启用 UFW 才会生效。",
     "toolHintFail2ban": "fail2ban = temporary log-based bans",
     "desiredOnlyUfwOff": "设定：{{mode}} · UFW 关闭（未套用）",
-    "syncNotApplied": "UFW 关闭 · 未套用"
+    "syncNotApplied": "UFW 关闭 · 未套用",
+    "defaultNotApplied": "n/a (UFW off)",
+    "ufwOffHint": "Default incoming is not applied while UFW is off"
   },
   "ftp": {
     "title": "FTPS 账户",
@@ -4745,7 +4757,10 @@
     "logrotateNoStatus": "尚未有 logrotate 状态档（从未跑过时属常见）。",
     "autoVacuumOff": "自动清理未启用。启用前时间设定不会执行。",
     "aboutAllowlist": "探索只可读允许清单内的 journal 单元与 /var/log 路径，不会提供任意主机路径。",
-    "aboutCustomPath": "请在「设置」加入自定义路径（仅限 /var/log 或 /run/log），再到「探索」开启。"
+    "aboutCustomPath": "请在「设置」加入自定义路径（仅限 /var/log 或 /run/log），再到「探索」开启。",
+    "noRowsInWindow": "No records in this time window",
+    "showInactiveUnits": "Show inactive units",
+    "sseNeedFollow": "Turn on Follow first — SSE is only for live tail"
   },
   "metrics": {
     "alert": {
@@ -4885,7 +4900,9 @@
     "colAvail": "可用",
     "colUsePct": "使用率",
     "colHome": "主目录",
-    "usageNoteLink": "配额是控制面软上限。要套用硬限制请到专案「隔离」分页。"
+    "usageNoteLink": "配额是控制面软上限。要套用硬限制请到专案「隔离」分页。",
+    "alertsBuiltinOnly": "Built-in CPU / memory / disk thresholds only. No email, webhook, or Slack channel.",
+    "lastEvaluated": "Last checked"
   },
   "migrate": {
     "tabInventory": "盘点",
@@ -5224,7 +5241,9 @@
     "linkDown": "断开",
     "linkDownTitle": "將 {{name}} 離線",
     "linkDownNeedConfirm": "需輸入介面名稱確認",
-    "persistNmHint": "可持久化代表经 NetworkManager 写入后，重启后设定仍然有效。"
+    "persistNmHint": "可持久化代表经 NetworkManager 写入后，重启后设定仍然有效。",
+    "deleteDefaultPanelWarn": "Deleting the default route can drop this panel session. Type DEFAULT to confirm.",
+    "typeDefaultToConfirm": "Type DEFAULT to confirm"
   },
   "nginx": {
     "pillSites": "{{count}} 站点",
@@ -5310,6 +5329,12 @@
     "setIndexes": "目录列表",
     "bodyInherit": "跟随全局"
   },
+  "notFound": {
+    "title": "Page not found",
+    "body": "No panel page at {{path}}.",
+    "hint": "Unknown URLs no longer send you to the dashboard.",
+    "home": "Dashboard"
+  },
   "notes": {
     "notFound": "找不到",
     "needPath": "请指定路径",
@@ -5343,7 +5368,8 @@
     "ssh": {
       "identityNotFound": "找不到 identity",
       "registrationNotFound": "找不到登记",
-      "keyOkNologin": "Key accepted. Account has no login shell (nologin) — use SFTP. Treated as PASS."
+      "keyOkNologin": "Key accepted. Account has no login shell (nologin) — use SFTP. Treated as PASS.",
+      "keyOkSftp": "SFTP pwd succeeded after SSH shell was refused."
     },
     "cdn": {
       "siteNotFound": "找不到 CDN 站点",
@@ -5357,7 +5383,9 @@
         "http": "HTTP 探活失败 {{ms}}ms（{{detail}}）。"
       },
       "loopbackOriginRemote": "Origin is 127.0.0.1 — that is this host, not a remote edge. Set a reachable origin IP or bind_ip.",
-      "needSshOrFleet": "Remote edge needs an outbound SSH identity (or username) or a /agents fleet session. Health URL alone is not apply transport."
+      "needSshOrFleet": "Remote edge needs an outbound SSH identity (or username) or a /agents fleet session. Health URL alone is not apply transport.",
+      "originRemoteRewrite": "Remote edges will use reachable origin {{url}} instead of loopback.",
+      "originRemoteUnknown": "Origin is loopback and no public/LAN IP or bind_ip is known — apply will refuse remote edges until one is set."
     },
     "backup": {
       "testUnsaved": "正在测试未保存的表单（尚未写入设置）。",
@@ -5371,7 +5399,10 @@
       "sshAuthFailed": "SSH key or password rejected (publickey). Pick an outbound identity or install sshpass.",
       "remotePathIsFile": "Remote path {{path}} is a file. Use a directory.",
       "remoteMkdirFailed": "Could not create remote directory: {{detail}}",
-      "sidecarPushed": "Also pushed SQL sidecar {{name}}"
+      "sidecarPushed": "Also pushed SQL sidecar {{name}}",
+      "controlPlaneDryRun": "Preview only — nothing written. In the panel, use Restore and confirm the phrase to write.",
+      "controlPlaneNeedConfirm": "Full control-plane restore needs the confirm phrase RESTORE-CONTROL-PLANE.",
+      "controlPlaneRestartAfter": "Restart the API after a successful restore."
     },
     "redis": {
       "cliMissing": "未安装 redis-cli"
@@ -5540,7 +5571,17 @@
       "dns": "DNS",
       "email": "邮件",
       "isolation": "项目隔离",
-      "ops": "运维"
+      "ops": "运维",
+      "runtimesNode": "Node.js",
+      "runtimesPhp": "PHP",
+      "runtimesPython": "Python",
+      "runtimesGo": "Go",
+      "pm2": "PM2",
+      "runtimesNodeFix": "Install Node from /runtimes/node",
+      "runtimesPhpFix": "Install PHP from /runtimes/php",
+      "runtimesPythonFix": "Install Python from /runtimes/python",
+      "runtimesGoFix": "Install Go from /runtimes/go",
+      "pm2Fix": "Install PM2 from the Node runtime page"
     },
     "needAdmin": "需要管理员权限",
     "notInstalled": "未安装",
@@ -8424,7 +8465,20 @@
       "hostScanFailed": "ssh-keyscan returned no keys for that host.",
       "hookEnabled": "Inbound Git hook is on. Paste the URL into GitHub, Gitea, or GitLab yourself.",
       "hookDisabled": "Inbound Git hook is off. The URL will not sync.",
-      "hookSecretOnce": "Copy this hook secret now. It is not shown again."
+      "hookSecretOnce": "Copy this hook secret now. It is not shown again.",
+      "refsNeedUrl": "Enter a Git URL first.",
+      "refsOk": "Loaded {{branches}} branch(es) and {{tags}} tag(s).",
+      "refsEmpty": "Remote advertised no branches or tags.",
+      "diffEmpty": "No unstaged diff (protected .env is excluded)."
+    },
+    "defense": {
+      "panelReqLabel": "Panel requests / min",
+      "panelReqExcluded": "Authenticated panel traffic — shown here, not counted in threat score",
+      "tcpOk": "TCP {{target}} reachable",
+      "tcpFail": "TCP {{target}} failed",
+      "dnsDegraded": "DNS path degraded",
+      "reqRateHigh": "Public request rate {{reqs}}/min ≥ {{threshold}}",
+      "ddosHeuristic": "High public request rate plus edge probe failure"
     }
   },
   "ops": {
@@ -9182,7 +9236,33 @@
     "gitHookGitea": "Gitea：Settings → Webhooks → Add Webhook → Gitea。方法 POST。事件选 Push。",
     "gitHookGitlab": "GitLab：Settings → Webhooks。Trigger 选 Push events。Secret token 填 hook secret（以 X-Gitlab-Token 传送）。",
     "gitHookHonesty": "主机 systemd 必须设 YSK_EXECUTE=1，hook 才会真正 clone／部署。否则只回计划结果。",
-    "gitHookSkipOther": "其他分支的 push 会被忽略，只同步本项目的 ref。"
+    "gitHookSkipOther": "其他分支的 push 会被忽略，只同步本项目的 ref。",
+    "gitAuthHttps": "HTTPS token",
+    "gitAuthSsh": "SSH deploy key",
+    "gitLoadRefs": "Load branches",
+    "gitRefDefault": "Remote default",
+    "gitRefBranches": "Branches",
+    "gitRefTags": "Tags",
+    "gitRefOther": "Other ref…",
+    "gitRefCustom": "Commit or ref",
+    "gitRefsNeedUrl": "Enter a URL first.",
+    "gitRefsNeedAuth": "Save a token or deploy key, then load branches.",
+    "gitRefsHint": "Loaded from the remote. Choose one — do not type.",
+    "gitHookSetupToggle": "How to paste this",
+    "gitHookOneLiner": "HMAC or X-YSK-Git-Hook. Only this project’s ref.",
+    "gitHookExecuteHint": "Needs YSK_EXECUTE=1 to clone or deploy.",
+    "gitShowKey": "Show key",
+    "gitHideKey": "Hide",
+    "gitBehindShort": "↓{{count}}",
+    "gitAheadShort": "↑{{count}}",
+    "gitDirtyShort": "Dirty · {{count}}",
+    "gitFilesLink": "Files",
+    "gitTokenLaterHint": "HTTPS token and clone depth are set on the project Deploy tab after create.",
+    "netForceHttpsOn": "HTTP will redirect to HTTPS after you publish the edge.",
+    "netForceHttpsOff": "No forced redirect is stored.",
+    "netHttpsLiveNotForced": "An edge file exists; HTTPS may already work. This box only forces HTTP→HTTPS.",
+    "gitSyncBlockedDirty": "Sync is disabled until local changes are discarded (Reset) or the files match Git.",
+    "gitViewDiff": "View diff"
   },
   "protection": {
     "levels": {
@@ -9533,7 +9613,14 @@
     "nextTickPrefix": "· 下轮 {{t}}",
     "stackApply": "套用防護組合（UFW、fail2ban、建議檔）",
     "stackApplyDone": "已要求套用防護組合",
-    "stackApplyHint": "會啟用 UFW 並套用 fail2ban 與建議防護檔。遠端面板請先確認不會把自己鎖在外面。"
+    "stackApplyHint": "會啟用 UFW 並套用 fail2ban 與建議防護檔。遠端面板請先確認不會把自己鎖在外面。",
+    "cannotBanSelf": "Cannot ban {{ip}} — this is the host, your login, or ignoreip",
+    "selfIp": "This host",
+    "selfHostIp": "Host IP",
+    "selfLoginIp": "Your login IP",
+    "showZeroScore": "Show 0-score",
+    "hideZeroScore": "Hide 0-score",
+    "freshnessNa": "n/a"
   },
   "publicFiles": {
     "notSet": "未设置",
@@ -10855,7 +10942,10 @@
       "critical": "严重"
     },
     "confirmDeleteApiKey": "删除此 API 密钥？",
-    "confirmDeleteApiKeyDesc": "删除后「{{name}}」无法再验证。此操作无法复原。"
+    "confirmDeleteApiKeyDesc": "删除后「{{name}}」无法再验证。此操作无法复原。",
+    "policyNoTotpHint": "This account has no 2FA yet — saving policy does not need a TOTP. Set up 2FA above if you want to require it for others.",
+    "sessionCli": "CLI",
+    "sessionApi": "API"
   },
   "serviceExposure": {
     "title": "网络访问",
@@ -10954,7 +11044,13 @@
     "protectionDoneNote": "保护探测完成",
     "probeDone": "探测完成",
     "runProtection": "执行保护探测",
-    "notProbedYet": "尚未探测"
+    "notProbedYet": "尚未探测",
+    "statusFilter": {
+      "all": "All states",
+      "running": "Running",
+      "failed": "Failed",
+      "missing": "Not installed"
+    }
   },
   "software": {
     "title": "软件中心",
@@ -11377,7 +11473,9 @@
     "requestFailed": "证书申请未成功",
     "applyFailed": "申请失败",
     "deletedCert": "已删除 {{domain}}",
-    "uninstallCertbotWarn": "解除安装 certbot 会使现有 Let's Encrypt 证书无法自动续期。"
+    "uninstallCertbotWarn": "解除安装 certbot 会使现有 Let's Encrypt 证书无法自动续期。",
+    "renew": "Renew",
+    "renewFor": "Renew Let’s Encrypt for {{domain}}"
   },
   "stackWizard": {
     "purgeConfirm": "确认清除？将删除已登记的数据目录（数据库／邮件等），此操作无法复原。",
@@ -11396,7 +11494,10 @@
     "dataPolicy": "数据策略",
     "keepData": "保留数据",
     "purgeData": "清除数据",
-    "uninstallNow": "立即移除"
+    "uninstallNow": "立即移除",
+    "uninstallNeedSelect": "Select at least one bundle. Empty selection no longer means remove all.",
+    "uninstallConfirmTitle": "Remove selected bundles?",
+    "uninstallConfirmDesc": "{{count}} bundle(s) will be removed. Type REMOVE to confirm."
   },
   "support": {
     "title": "支持",
@@ -11425,7 +11526,11 @@
     "cryptoAddress": "地址",
     "copy": "复制",
     "copied": "已复制",
-    "docsLink": "说明文件"
+    "docsLink": "说明文件",
+    "diagTitle": "Diagnostic summary",
+    "diagBody": "Copy version, execute, and host facts to paste into an email. This is not a full log bundle.",
+    "diagCopy": "Copy diagnostic summary",
+    "diagCopied": "Diagnostic summary copied"
   },
   "system": {
     "exportLoadFailed": "加载导出数据失败",
@@ -11506,7 +11611,10 @@
       "leOk": "已取得 {{domain}} 的 Let’s Encrypt 证书",
       "leFailed": "申请证书失败：{{detail}}",
       "leHint": "请确认域名 A 记录指向本机，且 80 端口可从外网到达（或 nginx 已服务该域名）",
-      "openFirewall": "若外网连接：防火墙请允许面板端口 {{port}}/tcp（防火墙 → 开埠 → 9287 Panel）"
+      "openFirewall": "若外网连接：防火墙请允许面板端口 {{port}}/tcp（防火墙 → 开埠 → 9287 Panel）",
+      "disableConfirmTitle": "Disable panel HTTPS?",
+      "disableConfirmDesc": "The panel will serve HTTP. WebAuthn / Passkey will stop working until HTTPS is on again.",
+      "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP."
     },
     "timeNtp": "时间与 NTP",
     "clockStatus": "系统时钟状态",
@@ -12150,7 +12258,9 @@
     "needsReboot": "需重启",
     "kernelRebootWarn": "安装新 kernel 后通常要重启才会生效。",
     "neverRun": "尚未执行",
-    "scanOsvN": "扫描 + OSV（前 {{n}} 个）"
+    "scanOsvN": "扫描 + OSV（前 {{n}} 个）",
+    "rebootNeeded": "reboot",
+    "kernelRebootHint": "Kernel packages need a reboot after apply"
   },
   "users": {
     "userCount": "{{count}} 用户",
@@ -12284,7 +12394,9 @@
     "searchPkgPh": "方案名稱",
     "quotaNonNeg": "数量与配额不可为负数。",
     "diskQuotaHint": "预设晶片以 GiB 计；自订栏为 MiB。",
-    "bandwidthHint": "0 代表不限。"
+    "bandwidthHint": "0 代表不限。",
+    "impersonateHint": "Opens a session as this user. Use the account menu to leave impersonation.",
+    "operatorHighRiskHint": "The factory operator role includes high-risk writes (services, firewall, package apply, MySQL, Nginx publish). Narrow it only if you intend to change every existing operator."
   },
   "validators": {
     "title": "验证者节点 (Beta)",
@@ -12874,6 +12986,7 @@
       "addCidr": "添加"
     },
     "engineNotInstalled": "此主机尚未安装此 VPN 引擎。",
-    "serverNotListening": "服务器单元未在运行。UDP/TCP {{port}} 可能未监听。"
+    "serverNotListening": "服务器单元未在运行。UDP/TCP {{port}} 可能未监听。",
+    "installEngineFirst": "Install the VPN engine first"
   }
 }

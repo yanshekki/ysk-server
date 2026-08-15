@@ -9,6 +9,32 @@
 - Cardano Mithril one-click snapshot restore (`validators mithril`).
 - Ethereum EL×CL matrix: Geth / Nethermind / Reth × Lighthouse / Prysm / Teku / Nimbus.
 
+## 1.0.39 — 2026-08-15
+
+### Fix
+- Project Git: pick branch/tag from `git ls-remote` (no EXECUTE); `git -c safe.directory=<repo>` so root can read a project-owned tree; `GET …/git/diff` + CLI `projects git diff`
+- Nginx conf preview does not turn `set_real_ip_from` CIDRs into ban links; empty project domain reads `server_name` from the conf (including `localhost`)
+- Protection / fail2ban / intel will not one-click ban the host egress IP, the current login IP, or ignoreip; fail2ban can suggest those IPs for the panel ignoreip file
+- Panel HTTP hits are shown as panel traffic and do not raise the threat score; live process table drops the sampling `ps` row
+- zh-HK systemd install copy keeps `/etc/systemd/system` and `daemon-reload` in English
+- Disable panel HTTPS, remove a software pack, and delete the default route require a confirm phrase; pack remove is disabled when nothing is checked
+- Create VNC / MySQL replica / apply Outline is disabled when that engine is not installed; DNS apply is disabled without NetworkManager
+- Unknown panel paths show a 404 (not a silent dashboard). `/php-fpm`, `/opendkim`, `/shadowsocks`, `/ask` redirect to the real page; `/agents` is the fleet page again
+- Service cards open `/vpn?tab=wireguard|openvpn|outline`
+- Schedule `lastRun` is seeded from last inventory / backup / DNSBL / GeoIP; a manual scan updates the job
+- 2FA policy save does not require TOTP when this account has no 2FA
+- BT announce rejects a short hostname (`demo-server`); prefers FQDN (`hostname -f`) or a usable IP
+- Apache “Global settings” works from any tab; Logs empty query says “no rows in this window”; `?tab=help` maps to About
+- `crontab -l` is read-only; Files `/` normalizes to `.`; SFTP-only users are not tested with `scp`
+- CDN apply rewrites loopback origin with bind IP; implicit `sshUsername=root` is not treated as SSH when a fleet/base URL is present
+- doctor / readiness `--help` stay help; leftover Apache copy no longer claims the stock site is on public :80
+
+### Improve
+- Footer shows live panel version; global search is debounced; page tabs wrap and keep aliases
+- SSL renew on the cert table; dates use the UI locale; `/approvals` goes to Security
+- Support page copies a diagnostic summary; operator factory role shows a high-risk write warning (caps unchanged)
+- GeoIP freshness is n/a when no MMDB exists; metrics alerts text is translated
+
 ## 1.0.38 — 2026-08-15
 
 ### Fix

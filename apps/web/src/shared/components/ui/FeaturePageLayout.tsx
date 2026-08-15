@@ -26,6 +26,7 @@ export type PageStatusItem = {
   label: string;
   value: ReactNode;
   tone?: BadgeTone;
+  hint?: string;
 };
 
 export type PageStatus = {
@@ -63,7 +64,8 @@ export function FeaturePageLayout({
     ? status.items.slice(0, 6).map((s) => ({
         label: s.label,
         value: s.value,
-        tone: s.tone }))
+        tone: s.tone,
+        hint: s.hint }))
     : undefined;
 
   const showStatus =

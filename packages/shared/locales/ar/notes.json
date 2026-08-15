@@ -31,7 +31,8 @@
   "ssh": {
     "identityNotFound": "لم يتم العثور على الهوية",
     "registrationNotFound": "لم يتم العثور على التسجيل",
-    "keyOkNologin": "Key accepted. Account has no login shell (nologin) — use SFTP. Treated as PASS."
+    "keyOkNologin": "Key accepted. Account has no login shell (nologin) — use SFTP. Treated as PASS.",
+    "keyOkSftp": "SFTP pwd succeeded after SSH shell was refused."
   },
   "cdn": {
     "siteNotFound": "لم يتم العثور على موقع CDN",
@@ -45,7 +46,9 @@
       "http": "HTTP probe failed after {{ms}}ms ({{detail}})."
     },
     "loopbackOriginRemote": "Origin is 127.0.0.1 — that is this host, not a remote edge. Set a reachable origin IP or bind_ip.",
-    "needSshOrFleet": "Remote edge needs an outbound SSH identity (or username) or a /agents fleet session. Health URL alone is not apply transport."
+    "needSshOrFleet": "Remote edge needs an outbound SSH identity (or username) or a /agents fleet session. Health URL alone is not apply transport.",
+    "originRemoteRewrite": "Remote edges will use reachable origin {{url}} instead of loopback.",
+    "originRemoteUnknown": "Origin is loopback and no public/LAN IP or bind_ip is known — apply will refuse remote edges until one is set."
   },
   "backup": {
     "fileNotFound": "لم يتم العثور على ملف النسخ الاحتياطي",
@@ -59,7 +62,10 @@
     "sshAuthFailed": "SSH key or password rejected (publickey). Pick an outbound identity or install sshpass.",
     "remotePathIsFile": "Remote path {{path}} is a file. Use a directory.",
     "remoteMkdirFailed": "Could not create remote directory: {{detail}}",
-    "sidecarPushed": "Also pushed SQL sidecar {{name}}"
+    "sidecarPushed": "Also pushed SQL sidecar {{name}}",
+    "controlPlaneDryRun": "Preview only — nothing written. In the panel, use Restore and confirm the phrase to write.",
+    "controlPlaneNeedConfirm": "Full control-plane restore needs the confirm phrase RESTORE-CONTROL-PLANE.",
+    "controlPlaneRestartAfter": "Restart the API after a successful restore."
   },
   "redis": {
     "cliMissing": "لم يتم تثبيت redis-cli"
@@ -228,7 +234,17 @@
     "dns": "DNS",
     "email": "بريد إلكتروني",
     "isolation": "عزل المشروع",
-    "ops": "العمليات"
+    "ops": "العمليات",
+    "runtimesNode": "Node.js",
+    "runtimesPhp": "PHP",
+    "runtimesPython": "Python",
+    "runtimesGo": "Go",
+    "pm2": "PM2",
+    "runtimesNodeFix": "Install Node from /runtimes/node",
+    "runtimesPhpFix": "Install PHP from /runtimes/php",
+    "runtimesPythonFix": "Install Python from /runtimes/python",
+    "runtimesGoFix": "Install Go from /runtimes/go",
+    "pm2Fix": "Install PM2 from the Node runtime page"
   },
   "needAdmin": "إذن المسؤول مطلوب",
   "notInstalled": "غير مثبت",
@@ -510,10 +526,10 @@
     "n0268": "التشغيل الجاف - عدم الكتابة/الخ",
     "n0269": "التشغيل الجاف: إضافة - التنفيذ أولاً، تطبيق ufw",
     "n0270": "التشغيل الجاف: تم اجتياز المخزون + الاختبار المبدئي، وليس الحزمة/النقل",
-    "n0271": "التشغيل الجاف: مسبار/. إضافة --تنفيذ YSK_EXECUTE=1 توفير أولًا حقًا",
-    "n0272": "التشغيل الجاف: كتب الملف المُدار (dataDir). إضافة تنفيذ + YSK_EXECUTE=1 + القائمة المنسدلة للنظام الأول للجذر",
-    "n0273": "التشغيل الجاف: لا. إضافة --تنفيذ YSK_EXECUTE=1 أول حظر حقيقي",
-    "n0274": "التشغيل الجاف: لا. أضف --تنفيذ YSK_EXECUTE=1 أولاً قم بإلغاء الحظر حقًا",
+    "n0271": "Dry-run: probe/plan only. Pass --execute with YSK_EXECUTE=1 to actually provision.",
+    "n0272": "Dry-run: wrote the managed file (dataDir). Pass --execute with YSK_EXECUTE=1 as root to install the system drop-in.",
+    "n0273": "Dry-run: not banned. Pass --execute with YSK_EXECUTE=1 to actually ban.",
+    "n0274": "Dry-run: not unbanned. Pass --execute with YSK_EXECUTE=1 to actually unban.",
     "n0275": "DryRun=true — تغيير واجهة برمجة التطبيقات",
     "n0276": "التشغيل الجاف: لا يكتب",
     "n0277": "تفريغ كتب dataDir، وليس نقل",
@@ -1078,7 +1094,7 @@
     "n0836": "فشل الشهادة من فضلك",
     "n0837": "≥ الملف",
     "n0838": "settings.settingsketbackup",
-    "n0839": "نجاح هذا الهدف يمكن أن يكون BatchMode، ≠",
+    "n0839": "Success means this target accepts BatchMode SSH (non-interactive). It is not a grant of global access.",
     "n0840": "أو 32767",
     "n0841": "تم تثبيت البرنامج",
     "n0842": "إذن/",
@@ -1238,7 +1254,7 @@
     "n0996": "nginx المحلي -t OK (الإعداد المُدار، ≠ الحافة المطبقة)",
     "n0997": "يمكن لـ wsrep المحلي الحجم وليس العقدة",
     "n0998": "لا يمكن لـ ysk.json المحلي قراءة / بصمة الإصبع",
-    "n0999": "موافق المحلية؛ استكمال التحقيق الأقران صحية (لا)",
+    "n0999": "Local node is OK; a complete healthy status needs a peer probe (not done).",
     "n1000": "كتب nginx المحلي - conf، وليس إعادة التحميل",
     "n1001": "اتصال NM المحلي المتوفر؛ willSuccess. يمكن \"\" أو NetworkManager.",
     "n1002": "localAvailable ps - لا يمكن ()",
@@ -2483,7 +2499,7 @@
     "t0629": "مشروع {{v0}} المنزل: {{v1}}",
     "t0630": "مشروع {{v0}} bind_ip={{v1}} — يمكن ( IP )",
     "t0631": "المشروع {{v0}} الوطن وليس المسار : {{v1}}",
-    "t0632": "المنزل (المتجر): {{v0}}",
+    "t0632": "Orphan home on disk (no matching store project): {{v0}}",
     "t0633": "عنوان البريد: {{v0}}",
     "t0634": "{{v0}} — لا يمكن الاستهداف",
     "t0635": "لا يمكن التحقيق {{v0}}",
@@ -2491,7 +2507,7 @@
     "t0637": "مشروع {{v0}} · {{v1}} · DB {{v2}} · Redis {{v3}}",
     "t0638": "تثبيت البرامج {{v0}} · المنازل {{v1}}",
     "t0639": "مضيف القطع {{v0}}",
-    "t0640": "تحذير {{v0}} (من فضلك)",
+    "t0640": "{{v0}} warning(s) — review before cutover.",
     "t0641": "المفتاح {{v0}}",
     "t0642": "لامفتاح: {{v0}}",
     "t0643": "الهدفلا تكتب المفاتيح المعتمدة: {{v0}}",
@@ -2555,7 +2571,7 @@
     "t0701": "CDN {{v0}}",
     "t0702": "عقدة الدرع الأصلية غير موجودة: {{v0}}",
     "t0703": "الحواف: {{v0}}",
-    "t0704": "عنوان URL الأصلي (): {{v0}}",
+    "t0704": "Origin URL (from project bind): {{v0}}",
     "t0705": "تحديث CDN {{v0}}",
     "t0706": "إنشاء CDN {{v0}}",
     "t0707": "الدرع الأصلي: درع الحافة {{v0}} → {{v1}}",
@@ -3061,7 +3077,7 @@
     "staleCliTitle": "Stale leftover CLI",
     "staleCli": "Leftover CLI still present: {{path}} (running product {{version}}). PATH may prefer it. Remove with: rm -f {{path}}",
     "apacheDefaultTitle": "Apache leftover default site",
-    "apacheDefault": "Apache 000-default is still enabled on :80. Product overlay does not disable it. Apply Apache from the panel or hosting apache apply --execute.",
+    "apacheDefault": "Apache 000-default is still enabled. That is the stock site file — it does not mean Apache is listening on public :80 (YSK Apache is expected on 127.0.0.1:8080). Overlay does not disable it. Apply Apache from the panel or hosting apache apply --execute.",
     "nginxCatchAllTitle": "Nginx catch-all missing",
     "nginxCatchAll": "ysk-000-default.conf is not in /etc/nginx/conf.d. Unknown SNI can fall through. Run projects nginx-sync --execute.",
     "vsftpdTitle": "vsftpd unit failed",
@@ -3104,7 +3120,11 @@
     "hostScanFailed": "ssh-keyscan returned no keys for that host.",
     "hookEnabled": "Inbound Git hook is on. Paste the URL into GitHub, Gitea, or GitLab yourself.",
     "hookDisabled": "Inbound Git hook is off. The URL will not sync.",
-    "hookSecretOnce": "Copy this hook secret now. It is not shown again."
+    "hookSecretOnce": "Copy this hook secret now. It is not shown again.",
+    "refsNeedUrl": "Enter a Git URL first.",
+    "refsOk": "Loaded {{branches}} branch(es) and {{tags}} tag(s).",
+    "refsEmpty": "Remote advertised no branches or tags.",
+    "diffEmpty": "No unstaged diff (protected .env is excluded)."
   },
   "migrate": {
     "orphanConfirm": "Type the exact leftover home path to confirm delete.",
@@ -3113,5 +3133,14 @@
     "orphanNeedExecute": "Would remove leftover {{path}}. Needs YSK_EXECUTE=1.",
     "orphanRmFailed": "Could not remove leftover home: {{detail}}",
     "orphanRemoved": "Removed leftover project home {{path}}."
+  },
+  "defense": {
+    "panelReqLabel": "Panel requests / min",
+    "panelReqExcluded": "Authenticated panel traffic — shown here, not counted in threat score",
+    "tcpOk": "TCP {{target}} reachable",
+    "tcpFail": "TCP {{target}} failed",
+    "dnsDegraded": "DNS path degraded",
+    "reqRateHigh": "Public request rate {{reqs}}/min ≥ {{threshold}}",
+    "ddosHeuristic": "High public request rate plus edge probe failure"
   }
 }

@@ -20,6 +20,8 @@
   "resume": "恢復",
   "suspend": "暫停",
   "impersonate": "模擬登入",
+  "impersonateHint": "以該用戶開啟工作階段。離開時請用帳戶選單結束模擬。",
+  "cannotDeleteSelf": "不能刪除目前登入的帳戶",
   "openDetail": "詳情",
   "edit": "編輯",
   "resetPassword": "重設密碼",
@@ -120,7 +122,6 @@
   "securityClearConfirm": "輸入用戶名以確認清除 2FA",
   "securityClearOk": "已清除 {{name}} 的 2FA",
   "securitySelfNote": "要為自己設定 2FA，請到「安全 → 我的安全」。",
-  "cannotDeleteSelf": "不能刪除目前登入的帳戶",
   "cannotModifySelf": "不能暫停或降級目前登入的帳戶",
   "cannotDeleteLastAdmin": "不能刪除最後一個管理員",
   "cannotDemoteLastAdmin": "不能暫停或降級最後一個管理員",
@@ -130,5 +131,6 @@
   "demoteAdminDesc": "此用戶將失去完整管理員權限。請確認仍有其他管理員。",
   "quotaNonNeg": "數量與配額不可為負數。",
   "diskQuotaHint": "預設晶片以 GiB 計；自訂欄為 MiB。",
-  "bandwidthHint": "0 代表不限。"
+  "bandwidthHint": "0 代表不限。",
+  "operatorHighRiskHint": "系統預設「操作員」含高危寫入（服務控制、防火牆、套件套用、MySQL、發佈 Nginx）。收窄只影響新理解讀；改預設會改現有操作員。"
 }

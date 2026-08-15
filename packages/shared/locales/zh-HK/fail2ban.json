@@ -96,5 +96,8 @@
     "postfix": "Postfix 郵件暴力破解",
     "dovecot": "Dovecot 郵件登入",
     "recidive": "累犯"
-  }
+  },
+  "cannotBanSelf": "這是本機或你的登入 IP — 應加入 ignoreip，不要封鎖",
+  "suggestIgnoreHint": "建議的管理 IP（先寫入面板檔，套用政策後才生效）：",
+  "suggestIgnoreAdd": "加入 {{ip}}"
 }

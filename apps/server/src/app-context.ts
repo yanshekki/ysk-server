@@ -686,6 +686,18 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
       },
       { runImmediately: process.env.YSK_DNSBL_ON_START === '1' },
     );
+
+    const seedJob = (id: string, raw: unknown) => {
+      const at =
+        raw && typeof raw === 'object' && 'at' in raw
+          ? String((raw as { at?: string }).at ?? '')
+          : '';
+      if (at) scheduler.touchLastRun(id, at);
+    };
+    seedJob('updates.scan', settings.getJson('last_inventory'));
+    seedJob('daily-backup', settings.getJson('last_backup_run'));
+    seedJob('email-dnsbl', settings.getJson('last_dnsbl_run'));
+    seedJob('defense-geoip-update', settings.getJson('last_geoip_update'));
   }
 
   // Host-browse: kill Chromium + ephemeral users when panel leaves (no heartbeat)

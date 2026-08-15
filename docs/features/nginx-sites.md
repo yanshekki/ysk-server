@@ -40,6 +40,7 @@ ysk-server nginx sync --execute --json
 
 - Sync dry-run until `--execute`.  
 - `nginx -t` failure blocks honest “applied”.  
+- Conf preview does not link `set_real_ip_from` CIDRs as bans. Empty stored domain still shows `server_name` from the file.  
 
 ## Panel-only ⚠️
 

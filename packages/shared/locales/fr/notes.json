@@ -31,7 +31,8 @@
   "ssh": {
     "identityNotFound": "Identité introuvable",
     "registrationNotFound": "Enregistrement introuvable",
-    "keyOkNologin": "Key accepted. Account has no login shell (nologin) — use SFTP. Treated as PASS."
+    "keyOkNologin": "Key accepted. Account has no login shell (nologin) — use SFTP. Treated as PASS.",
+    "keyOkSftp": "SFTP pwd succeeded after SSH shell was refused."
   },
   "cdn": {
     "siteNotFound": "Site CDN introuvable",
@@ -45,7 +46,9 @@
       "http": "HTTP probe failed after {{ms}}ms ({{detail}})."
     },
     "loopbackOriginRemote": "Origin is 127.0.0.1 — that is this host, not a remote edge. Set a reachable origin IP or bind_ip.",
-    "needSshOrFleet": "Remote edge needs an outbound SSH identity (or username) or a /agents fleet session. Health URL alone is not apply transport."
+    "needSshOrFleet": "Remote edge needs an outbound SSH identity (or username) or a /agents fleet session. Health URL alone is not apply transport.",
+    "originRemoteRewrite": "Remote edges will use reachable origin {{url}} instead of loopback.",
+    "originRemoteUnknown": "Origin is loopback and no public/LAN IP or bind_ip is known — apply will refuse remote edges until one is set."
   },
   "backup": {
     "fileNotFound": "Fichier de sauvegarde introuvable",
@@ -59,7 +62,10 @@
     "sshAuthFailed": "SSH key or password rejected (publickey). Pick an outbound identity or install sshpass.",
     "remotePathIsFile": "Remote path {{path}} is a file. Use a directory.",
     "remoteMkdirFailed": "Could not create remote directory: {{detail}}",
-    "sidecarPushed": "Also pushed SQL sidecar {{name}}"
+    "sidecarPushed": "Also pushed SQL sidecar {{name}}",
+    "controlPlaneDryRun": "Preview only — nothing written. In the panel, use Restore and confirm the phrase to write.",
+    "controlPlaneNeedConfirm": "Full control-plane restore needs the confirm phrase RESTORE-CONTROL-PLANE.",
+    "controlPlaneRestartAfter": "Restart the API after a successful restore."
   },
   "redis": {
     "cliMissing": "redis-cli n'est pas installé"
@@ -228,7 +234,17 @@
     "dns": "DNS",
     "email": "E-mail",
     "isolation": "Isolation de projet",
-    "ops": "Opérations"
+    "ops": "Opérations",
+    "runtimesNode": "Node.js",
+    "runtimesPhp": "PHP",
+    "runtimesPython": "Python",
+    "runtimesGo": "Go",
+    "pm2": "PM2",
+    "runtimesNodeFix": "Install Node from /runtimes/node",
+    "runtimesPhpFix": "Install PHP from /runtimes/php",
+    "runtimesPythonFix": "Install Python from /runtimes/python",
+    "runtimesGoFix": "Install Go from /runtimes/go",
+    "pm2Fix": "Install PM2 from the Node runtime page"
   },
   "needAdmin": "Autorisation administrateur requise",
   "notInstalled": "Non installé",
@@ -510,10 +526,10 @@
     "n0268": "dry-run — n'écrit pas /etc",
     "n0269": "dry-run : ajoutez d'abord --execute pour appliquer ufw",
     "n0270": "dry-run : inventaire + prévol OK, pas de package/transfert",
-    "n0271": "dry-run : probe/. ajoutez d'abord --execute YSK_EXECUTE=1 pour vraiment provisionner",
-    "n0272": "dry-run : fichier géré écrit (dataDir). ajoutez d'abord execute + YSK_EXECUTE=1 + root pour le drop-in système",
-    "n0273": "dry-run : non. ajoutez d'abord --execute YSK_EXECUTE=1 pour vraiment bannir",
-    "n0274": "dry-run : non. ajoutez d'abord --execute YSK_EXECUTE=1 pour vraiment débannir",
+    "n0271": "Dry-run: probe/plan only. Pass --execute with YSK_EXECUTE=1 to actually provision.",
+    "n0272": "Dry-run: wrote the managed file (dataDir). Pass --execute with YSK_EXECUTE=1 as root to install the system drop-in.",
+    "n0273": "Dry-run: not banned. Pass --execute with YSK_EXECUTE=1 to actually ban.",
+    "n0274": "Dry-run: not unbanned. Pass --execute with YSK_EXECUTE=1 to actually unban.",
     "n0275": "dryRun=true — API de modification",
     "n0276": "dryRun : n'écrit pas",
     "n0277": "dump écrit dans dataDir, pas de transfert",
@@ -1078,7 +1094,7 @@
     "n0836": "certificat veuillez — Échec",
     "n0837": "≥ fichier",
     "n0838": "paramètres conservés sauvegarde",
-    "n0839": "Succès — cette cible peut BatchMode, ≠",
+    "n0839": "Success means this target accepts BatchMode SSH (non-interactive). It is not a grant of global access.",
     "n0840": "ou 32767",
     "n0841": "logiciel installé",
     "n0842": "autorisation/",
@@ -1238,7 +1254,7 @@
     "n0996": "nginx local -t OK ( conf gérée, ≠ edge appliqué)",
     "n0997": "wsrep local possible, taille pas nœud",
     "n0998": "ysk.json local illisible / empreinte",
-    "n0999": "local OK ; sonde pair saine complète (non )",
+    "n0999": "Local node is OK; a complete healthy status needs a peer probe (not done).",
     "n1000": "nginx local — conf écrite, pas de rechargement",
     "n1001": "connexion NM localeDisponible ; réussira. peut \"\" ou NetworkManager.",
     "n1002": "ps localDisponible — impossible ()",
@@ -2483,7 +2499,7 @@
     "t0629": "projet {{v0}} home : {{v1}}",
     "t0630": "projet {{v0}} bind_ip={{v1}} — possible ( IP )",
     "t0631": "projet {{v0}} home n'est pas un chemin : {{v1}}",
-    "t0632": "home (store ) : {{v0}}",
+    "t0632": "Orphan home on disk (no matching store project): {{v0}}",
     "t0633": "Maildir : {{v0}}",
     "t0634": "{{v0}} — impossible vers la cible",
     "t0635": "sondage impossible {{v0}}",
@@ -2491,7 +2507,7 @@
     "t0637": "projet {{v0}} · {{v1}} · DB {{v2}} · Redis {{v3}}",
     "t0638": "installation logiciel {{v0}} · homes {{v1}}",
     "t0639": "bascule hôte {{v0}}",
-    "t0640": "Avertissement {{v0}} (veuillez )",
+    "t0640": "{{v0}} warning(s) — review before cutover.",
     "t0641": "clé {{v0}}",
     "t0642": "clé impossible : {{v0}}",
     "t0643": "cible : écriture authorized_keys impossible : {{v0}}",
@@ -2555,7 +2571,7 @@
     "t0701": "CDN {{v0}}",
     "t0702": "nœud origin shield inexistant : {{v0}}",
     "t0703": "edges : {{v0}}",
-    "t0704": "URL origin () : {{v0}}",
+    "t0704": "Origin URL (from project bind): {{v0}}",
     "t0705": "mise à jour CDN {{v0}}",
     "t0706": "création CDN {{v0}}",
     "t0707": "origin shield : edge shield {{v0}} → {{v1}}",
@@ -3061,7 +3077,7 @@
     "staleCliTitle": "Stale leftover CLI",
     "staleCli": "Leftover CLI still present: {{path}} (running product {{version}}). PATH may prefer it. Remove with: rm -f {{path}}",
     "apacheDefaultTitle": "Apache leftover default site",
-    "apacheDefault": "Apache 000-default is still enabled on :80. Product overlay does not disable it. Apply Apache from the panel or hosting apache apply --execute.",
+    "apacheDefault": "Apache 000-default is still enabled. That is the stock site file — it does not mean Apache is listening on public :80 (YSK Apache is expected on 127.0.0.1:8080). Overlay does not disable it. Apply Apache from the panel or hosting apache apply --execute.",
     "nginxCatchAllTitle": "Nginx catch-all missing",
     "nginxCatchAll": "ysk-000-default.conf is not in /etc/nginx/conf.d. Unknown SNI can fall through. Run projects nginx-sync --execute.",
     "vsftpdTitle": "vsftpd unit failed",
@@ -3104,7 +3120,11 @@
     "hostScanFailed": "ssh-keyscan returned no keys for that host.",
     "hookEnabled": "Inbound Git hook is on. Paste the URL into GitHub, Gitea, or GitLab yourself.",
     "hookDisabled": "Inbound Git hook is off. The URL will not sync.",
-    "hookSecretOnce": "Copy this hook secret now. It is not shown again."
+    "hookSecretOnce": "Copy this hook secret now. It is not shown again.",
+    "refsNeedUrl": "Enter a Git URL first.",
+    "refsOk": "Loaded {{branches}} branch(es) and {{tags}} tag(s).",
+    "refsEmpty": "Remote advertised no branches or tags.",
+    "diffEmpty": "No unstaged diff (protected .env is excluded)."
   },
   "migrate": {
     "orphanConfirm": "Type the exact leftover home path to confirm delete.",
@@ -3113,5 +3133,14 @@
     "orphanNeedExecute": "Would remove leftover {{path}}. Needs YSK_EXECUTE=1.",
     "orphanRmFailed": "Could not remove leftover home: {{detail}}",
     "orphanRemoved": "Removed leftover project home {{path}}."
+  },
+  "defense": {
+    "panelReqLabel": "Panel requests / min",
+    "panelReqExcluded": "Authenticated panel traffic — shown here, not counted in threat score",
+    "tcpOk": "TCP {{target}} reachable",
+    "tcpFail": "TCP {{target}} failed",
+    "dnsDegraded": "DNS path degraded",
+    "reqRateHigh": "Public request rate {{reqs}}/min ≥ {{threshold}}",
+    "ddosHeuristic": "High public request rate plus edge probe failure"
   }
 }

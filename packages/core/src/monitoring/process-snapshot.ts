@@ -113,6 +113,15 @@ export function parsePsOutput(stdout: string, limit: number): ProcessRow[] {
   return rows;
 }
 
+/** Sampling `ps` itself often shows 100% CPU for one tick — drop it. */
+export function isSamplerPsCommand(command: string): boolean {
+  const c = String(command || '').trim();
+  if (!c) return false;
+  if (/^ps(\s|$)/.test(c)) return true;
+  if (/\bps\s+-eo\b/.test(c)) return true;
+  return false;
+}
+
 function sortRows(rows: ProcessRow[], sort: ProcessSort): ProcessRow[] {
   const copy = [...rows];
   if (sort === 'mem') copy.sort((a, b) => b.mem - a.mem);
@@ -208,12 +217,14 @@ export async function collectProcessSnapshot(
       notes.push(tl('notes.auto.n0393'));
     }
   } else {
-    rows = parsePsOutput(ps.stdout, limit);
+    rows = parsePsOutput(ps.stdout, limit * 2);
     // If sort flag unsupported silently, re-sort client-side
     if (sort !== 'cpu') {
-      rows = sortRows(rows, sort).slice(0, limit);
+      rows = sortRows(rows, sort);
     }
   }
+
+  rows = rows.filter((r) => !isSamplerPsCommand(r.command)).slice(0, limit);
 
   if (!rows.length) {
     notes.push(tl('notes.auto.n0391'));

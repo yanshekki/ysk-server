@@ -56,7 +56,11 @@ export function AddTorrentModal(props: {
   const [probe, setProbe] = useState<BtLibraryDestProbe | null>(null);
   const [destMode, setDestMode] = useState<BtLibraryDestMode>('download');
 
-  const destName = inspected ? sanitizeFolder(inspected.name) : '';
+  const destName = inspected
+    ? (inspected.files?.length ?? 1) <= 1 && /\.[a-z0-9]{1,8}$/i.test(sanitizeFolder(inspected.name))
+      ? ''
+      : sanitizeFolder(inspected.name)
+    : '';
   const saveRelPath = [parent.replace(/^\/+|\/+$/g, ''), destName].filter(Boolean).join('/');
 
   const destLabel = useMemo(() => {

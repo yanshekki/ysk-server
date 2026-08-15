@@ -100,6 +100,11 @@ async function readSockstat(): Promise<{ tcp: number; detail: string }> {
 export async function collectDefenseSignals(input: {
   host: HostExecutor;
   requestCountLastMinute?: number;
+  /**
+   * Control-plane HTTP hits in the last minute. Informational only —
+   * never raises threat score (panel/QA traffic is not an external flood).
+   */
+  panelRequestCountLastMinute?: number;
   weights?: Partial<SignalWeights>;
   /** When set, threatLevel bands match automation escalate thresholds */
   threatThresholds?: Partial<ThreatLevelThresholds>;
@@ -120,8 +125,10 @@ export async function collectDefenseSignals(input: {
   const scale = (base: number, key: keyof SignalWeights) =>
     Math.round(base * w(weights, key));
 
+  const publicReqs = input.requestCountLastMinute ?? 0;
+  const panelReqs = input.panelRequestCountLastMinute ?? 0;
   const probe = await runProtectionProbes({
-    requestCountLastMinute: input.requestCountLastMinute ?? 0,
+    requestCountLastMinute: publicReqs,
   });
   const netPts = probe.networkReachable ? 0 : scale(15, 'networkDown');
   signals.push({
@@ -137,11 +144,21 @@ export async function collectDefenseSignals(input: {
   signals.push({
     id: 'req_rate',
     label: tl('notes.auto.n1593'),
-    value: input.requestCountLastMinute ?? 0,
+    value: publicReqs,
     points: reqPts,
     detail: probe.highRequestRate ? tl('notes.auto.n1457') : tl('notes.auto.n1030'),
   });
   score += reqPts;
+
+  if (panelReqs > 0) {
+    signals.push({
+      id: 'panel_req_rate',
+      label: tl('notes.defense.panelReqLabel'),
+      value: panelReqs,
+      points: 0,
+      detail: tl('notes.defense.panelReqExcluded'),
+    });
+  }
 
   if (probe.ddosSuspected) {
     const dPts = scale(25, 'ddosHeuristic');

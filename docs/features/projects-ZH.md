@@ -26,7 +26,7 @@
 | 建立 | `ysk-server projects create …` | write-panel | `--create-dns`／`--create-mail` 對齊面板勾選（只寫草稿） |
 | 部署／停止／健康 | `ysk-server projects deploy\|stop\|health` | write-host | deploy 需 execute |
 | Git 部署 | `ysk-server projects git-deploy --id UUID [--git-url URL] [--branch|--ref B]` | write-host | 首次 clone 為淺層（depth 1）。建立只存 `--git-url`／`--branch`，不會即時 clone。 |
-| Git 控制 | `ysk-server projects git status\|log\|fetch\|checkout\|reset --id UUID` | read／write-host | status／log 唯讀。本機改動會阻止 pull。同步後用控制面還原 `.env`。 |
+| Git 控制 | `ysk-server projects git status\|log\|diff\|refs\|fetch\|checkout\|reset --id UUID` | read／write-host | status／log／diff／refs 唯讀。面板分支由 `git ls-remote` 下拉選擇。本機改動會阻止 pull，並可檢視 diff。git 帶 `safe.directory`，root 可讀專案用戶的家目錄。同步後用控制面還原 `.env`。 |
 | Git 認證 | `ysk-server projects git auth --id UUID --token T \| --deploy-key \| --pin-host` | write-panel | HTTPS token 加密存放。SSH deploy key + 釘選 known_hosts。無 OAuth。Token 不會寫入 remote URL。 |
 | Git hook | `ysk-server projects git hook --id UUID --enable\|--rotate\|--disable` | write-panel | Inbound `POST /api/v1/hooks/git/:id`。請自行把 URL + secret 貼到 GitHub／Gitea／GitLab（push）。不是 Slack。 |
 | 隔離 | `ysk-server projects isolation …` | write-host | |
@@ -53,7 +53,7 @@ ysk-server projects deploy --id UUID --execute --json
 
 由操作員自行把 webhook 貼到 Git 平台。不是 Slack，亦不是 OAuth。YSK Server 不會代你在遠端建立 hook。
 
-1. 專案 **App** 分頁 → **開啟 hook** → 複製完整 URL 與一次性 secret。
+1. 專案 **App** 分頁 → Git → **開啟** push hook → 複製 URL（及一次性 secret）。平台步驟摺在「如何貼到 Git 平台」。
 2. 到 **GitHub**／**Gitea**／**GitLab** 自行新增 webhook：
    - Payload URL：`https://<panel-host>:9287/api/v1/hooks/git/<project-uuid>`
    - Content type：`application/json`

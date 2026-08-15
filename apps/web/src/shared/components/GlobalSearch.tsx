@@ -238,7 +238,7 @@ export function GlobalSearch() {
       return;
     }
     setLoading(true);
-    debounceRef.current = setTimeout(() => void runSearch(value), 160);
+    debounceRef.current = setTimeout(() => void runSearch(value), 280);
   };
 
   const close = useCallback(() => {
@@ -282,7 +282,12 @@ export function GlobalSearch() {
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Escape') {
       e.preventDefault();
-      close();
+      if (open) {
+        close();
+        return;
+      }
+      setQ('');
+      setHits([]);
       inputRef.current?.blur();
       return;
     }

@@ -20,6 +20,8 @@
   "statAllow": "Allow",
   "statDeny": "Deny",
   "statDefaultIn": "Default incoming",
+  "defaultNotApplied": "n/a (UFW off)",
+  "ufwOffHint": "Default incoming is not applied while UFW is off",
   "executeOn": "On",
   "executeOff": "Off",
   "ufwDisabled": "UFW disabled",

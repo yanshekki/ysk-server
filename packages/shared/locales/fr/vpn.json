@@ -129,5 +129,6 @@
     "addCidr": "Ajouter"
   },
   "engineNotInstalled": "Ce moteur VPN n'est pas installé sur l'hôte.",
-  "serverNotListening": "L'unité serveur n'est pas active. UDP/TCP {{port}} est peut-être fermé."
+  "serverNotListening": "L'unité serveur n'est pas active. UDP/TCP {{port}} est peut-être fermé.",
+  "installEngineFirst": "Install the VPN engine first"
 }

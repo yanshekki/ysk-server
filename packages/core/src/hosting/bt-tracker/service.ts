@@ -11,6 +11,7 @@ import {
 } from 'ysk-server-shared';
 import {
   buildAnnounceList,
+  isUsableAnnounceHost,
   loadBtTrackerSettings,
   saveBtTrackerSettings,
 } from './settings.js';
@@ -90,11 +91,20 @@ export async function getBtTrackerStatus(input: {
     notes.push(tl('notes.btTracker.runningDetached', { pid: String(detachedPid || '') }));
   }
   let publicHost = input.publicHostHint || settings.publicAnnounceHost || undefined;
-  if (!publicHost) {
+  if (!publicHost || !isUsableAnnounceHost(publicHost)) {
+    try {
+      const fq = await input.host.runCommand(['hostname', '-f'], { timeoutMs: 4_000 });
+      const fqdn = String(fq.stdout ?? '').trim().split(/\s+/)[0] ?? '';
+      if (fq.exitCode === 0 && isUsableAnnounceHost(fqdn)) publicHost = fqdn;
+    } catch {
+      /* optional */
+    }
+  }
+  if (!publicHost || !isUsableAnnounceHost(publicHost)) {
     try {
       const info = await input.host.sysInfo();
       const hn = String((info as { hostname?: string }).hostname ?? '').trim();
-      if (hn && hn !== 'localhost' && hn !== '127.0.0.1') publicHost = hn;
+      if (isUsableAnnounceHost(hn)) publicHost = hn;
     } catch {
       /* optional */
     }

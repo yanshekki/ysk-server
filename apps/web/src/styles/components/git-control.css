@@ -1,0 +1,198 @@
+/* —— Project Git console: dense, one primary action —— */
+
+.git-ctl {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.git-ctl__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  min-width: 0;
+}
+
+.git-ctl__status {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.65rem;
+  min-width: 0;
+  flex: 1 1 12rem;
+}
+
+.git-ctl__meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  font-size: var(--text-sm);
+  color: var(--text-sub);
+}
+
+.git-ctl__dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: #94a3b8;
+  flex: 0 0 auto;
+}
+
+.git-ctl__dot--ok {
+  background: #22c55e;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.18);
+}
+
+.git-ctl__dot--warn {
+  background: #f59e0b;
+}
+
+.git-ctl__dot--bad {
+  background: #ef4444;
+}
+
+.git-ctl__hash {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.8em;
+}
+
+.git-ctl__files {
+  margin-left: auto;
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.git-ctl__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+@media (max-width: 720px) {
+  .git-ctl__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .git-ctl__files {
+    margin-left: 0;
+  }
+}
+
+.git-ctl__url-row {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-end;
+  min-width: 0;
+}
+
+.git-ctl__url-row .field {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.git-ctl__url-row .btn {
+  flex: 0 0 auto;
+}
+
+.git-ctl__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.git-ctl__toolbar-right {
+  margin-left: auto;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+@media (max-width: 720px) {
+  .git-ctl__toolbar-right {
+    margin-left: 0;
+  }
+}
+
+.git-ctl__hook {
+  padding: var(--space-3);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle, #f8fafc);
+  min-width: 0;
+}
+
+.git-ctl__hook-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.git-ctl__hook-row .git-ctl__url {
+  flex: 1 1 12rem;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.git-ctl__secret {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.git-ctl__help {
+  margin-top: var(--space-2);
+}
+
+.git-ctl__help[hidden] {
+  display: none;
+}
+
+.git-ctl__help-body {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-sm);
+  color: var(--text-sub);
+}
+
+.git-ctl__help-body p {
+  margin: 0 0 0.4rem;
+}
+
+.git-ctl__pubkey {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.78rem;
+  word-break: break-all;
+}
+
+.git-ctl__log {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.git-ctl__log li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 0.15rem 0;
+}
+
+.git-ctl__log .git-ctl__subj {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+}

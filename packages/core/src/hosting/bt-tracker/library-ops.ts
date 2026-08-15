@@ -215,14 +215,21 @@ export function deriveLibraryLiveStatus(input: {
   done?: boolean;
   paused?: boolean;
   destHasFiles?: boolean;
+  ageMs?: number;
 }): BtLibraryStatus {
   if (input.stored === 'paused' || input.stored === 'queued') return input.stored;
-  if (!input.hasSeed) return input.stored;
+  const stalled =
+    (input.ageMs ?? 0) > 10 * 60_000 && !input.destHasFiles && (Number(input.progress) || 0) <= 0;
+  if (!input.hasSeed) {
+    if (stalled && (input.stored === 'downloading' || input.stored === 'checking')) return 'error';
+    return input.stored;
+  }
   if (input.paused) return 'paused';
   const progress = Number(input.progress) || 0;
   if (input.done || progress >= 1) return 'seeding';
   if (progress > 0) return 'downloading';
   if (input.destHasFiles) return 'checking';
+  if (stalled) return 'error';
   return 'downloading';
 }
 
@@ -355,6 +362,11 @@ export async function addBtLibraryItem(input: {
       });
     }
     saveRel = probe.seedRel;
+  } else if ((inspected.files?.length ?? 1) <= 1) {
+    const leaf = String(saveRel || '').split('/').pop() || '';
+    if (/\.[a-z0-9]{1,8}$/i.test(leaf)) {
+      saveRel = String(saveRel || '').split('/').slice(0, -1).join('/') || '.';
+    }
   }
   const dest = resolveLibraryDestAbs(input.dataDir, input.saveRoot, saveRel, {
     mkdir: mode !== 'seed-existing',
@@ -523,6 +535,7 @@ export function listBtLibraryLive(dataDir: string): Array<
       destAbs = '';
     }
     const destHasFiles = destAbs ? destLooksPopulated(destAbs) : false;
+    const ageMs = Date.now() - Date.parse(item.createdAt || '') || 0;
     const status = deriveLibraryLiveStatus({
       stored: item.status,
       hasSeed: Boolean(seed),
@@ -530,8 +543,8 @@ export function listBtLibraryLive(dataDir: string): Array<
       done: t?.done,
       paused: t?.paused,
       destHasFiles,
+      ageMs,
     });
-    const ageMs = Date.now() - Date.parse(item.createdAt || '') || 0;
     const waitHint =
       status === 'downloading' &&
       !destHasFiles &&

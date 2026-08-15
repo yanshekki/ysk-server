@@ -347,5 +347,12 @@
   "nextTickPrefix": "· अगला {{t}}",
   "stackApply": "Apply protection stack (UFW, fail2ban, preset)",
   "stackApplyDone": "Protection stack apply requested",
-  "stackApplyHint": "This enables UFW and applies fail2ban plus the suggested preset. Confirm you will not lock yourself out of a remote panel."
+  "stackApplyHint": "This enables UFW and applies fail2ban plus the suggested preset. Confirm you will not lock yourself out of a remote panel.",
+  "cannotBanSelf": "Cannot ban {{ip}} — this is the host, your login, or ignoreip",
+  "selfIp": "This host",
+  "selfHostIp": "Host IP",
+  "selfLoginIp": "Your login IP",
+  "showZeroScore": "Show 0-score",
+  "hideZeroScore": "Hide 0-score",
+  "freshnessNa": "n/a"
 }

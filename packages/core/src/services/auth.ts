@@ -732,12 +732,6 @@ export class AuthService {
         messageKey: 'errors.auth.userNotFound',
       });
     }
-    this.audit?.append({
-      actor: u.username,
-      action: 'auth.locale',
-      detail: { locale: code },
-      ok: true,
-    });
     return toDto(u);
   }
 

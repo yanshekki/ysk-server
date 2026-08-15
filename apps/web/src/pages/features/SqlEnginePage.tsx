@@ -297,7 +297,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             value: svc?.clientInstalled ? t('ssl.filesYes') : t('ssl.filesNo'),
             tone: svc?.clientInstalled ? 'ok' : 'danger' },
         ] }}
-      actions={<ActionBar>
+      actions={<ActionBar className="action-bar--wrap">
           <Link to={servicePath}>
             <Button variant="secondary" size="sm">
               {t('db.serviceSettings')}

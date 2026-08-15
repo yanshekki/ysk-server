@@ -730,6 +730,15 @@ export function FilesPage() {
     setError(null);
     try {
       // Page tab drives data load (supports deep-link ?tab=shares from BT Tracker)
+      if (tab !== 'browse') {
+        try {
+          const usageRes = await filesApi.list(root, '.', {});
+          if (usageRes.usage) setUsage(usageRes.usage);
+        } catch {
+          /* keep last usage */
+        }
+      }
+
       if (tab === 'trash') {
         const r = await filesApi.trash(root);
         setTrash(r.items);

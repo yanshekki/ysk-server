@@ -25,5 +25,9 @@
   "cryptoAddress": "地址",
   "copy": "复制",
   "copied": "已复制",
-  "docsLink": "说明文件"
+  "docsLink": "说明文件",
+  "diagTitle": "Diagnostic summary",
+  "diagBody": "Copy version, execute, and host facts to paste into an email. This is not a full log bundle.",
+  "diagCopy": "Copy diagnostic summary",
+  "diagCopied": "Diagnostic summary copied"
 }

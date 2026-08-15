@@ -46,9 +46,22 @@ export function WithPageGuide({
 
   return (
     <PageTabs tabs={tabs} active={tab} onChange={setTab} variant="scroll">
-      {tab === 'main' ? <div className="tab-panel stack">{children}</div> : null}
-      {hasStack && tab === 'stack' ? (
-        <div className="tab-panel stack">{stackContent}</div>
+      {/* Keep main children mounted so header-triggered modals still exist on other tabs. */}
+      <div
+        className="tab-panel stack"
+        hidden={tab !== 'main'}
+        aria-hidden={tab !== 'main'}
+      >
+        {children}
+      </div>
+      {hasStack ? (
+        <div
+          className="tab-panel stack"
+          hidden={tab !== 'stack'}
+          aria-hidden={tab !== 'stack'}
+        >
+          {stackContent}
+        </div>
       ) : null}
       {tab === 'about' ? <PageGuide guideId={guideId} /> : null}
     </PageTabs>

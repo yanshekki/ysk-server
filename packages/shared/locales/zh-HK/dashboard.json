@@ -92,6 +92,7 @@
   "serverIpv6": "伺服器 IPv6（可選）",
   "serverIpv6Hint": "有則寫 AAAA／ip6:",
   "serverIpv6Ph": "公網 IPv6（可留空）",
+  "needDomainFirst": "請先填域名",
   "withDns": "一併建立 DNS 區域",
   "withDnsDesc": "需填寫域名；僅登記，需到 DNS 頁寫入區域檔",
   "withMail": "一併登記郵件域名",

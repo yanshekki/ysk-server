@@ -118,5 +118,6 @@
   "notifSearch": "Search alerts",
   "notifAll": "All",
   "notifDismiss": "Hide",
-  "goFix": "Fix"
+  "goFix": "Fix",
+  "needDomainFirst": "Enter a domain first"
 }

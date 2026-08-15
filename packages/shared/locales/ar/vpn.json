@@ -129,5 +129,6 @@
     "addCidr": "يضيف"
   },
   "engineNotInstalled": "محرك VPN هذا غير مثبت على المضيف.",
-  "serverNotListening": "وحدة الخادم غير نشطة. قد يكون UDP/TCP {{port}} مغلقاً."
+  "serverNotListening": "وحدة الخادم غير نشطة. قد يكون UDP/TCP {{port}} مغلقاً.",
+  "installEngineFirst": "Install the VPN engine first"
 }

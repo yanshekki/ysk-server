@@ -172,6 +172,12 @@ const HostBrowsePage = lazy(() =>
 const SupportPage = lazy(() =>
   import('../pages/features/SupportPage').then((m) => ({ default: m.SupportPage })),
 );
+const AgentsPage = lazy(() =>
+  import('../pages/AgentsPage').then((m) => ({ default: m.AgentsPage })),
+);
+const NotFoundPage = lazy(() =>
+  import('../pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
+);
 const VpnPage = lazy(() =>
   import('../pages/features/VpnPage').then((m) => ({ default: m.VpnPage })),
 );
@@ -259,9 +265,23 @@ export function App() {
                 </Lazy>
               }
             />
-            {/* AI panel UI removed — use CLI (ask / agents / tools) + docs */}
-            <Route path="ai" element={<Navigate to="/" replace />} />
-            <Route path="agents" element={<Navigate to="/" replace />} />
+            {/* AI chat UI is CLI-only; keep /ai honest as 404 via catch-all */}
+            <Route
+              path="agents"
+              element={
+                <Lazy>
+                  <AgentsPage />
+                </Lazy>
+              }
+            />
+            <Route path="php-fpm" element={<Navigate to="/runtimes/php" replace />} />
+            <Route path="opendkim" element={<Navigate to="/email" replace />} />
+            <Route path="shadowsocks" element={<Navigate to="/vpn?tab=outline" replace />} />
+            <Route path="ask" element={<Navigate to="/support" replace />} />
+            <Route
+              path="cluster"
+              element={<Navigate to="/databases/mysql/service?tab=cluster" replace />}
+            />
             <Route
               path="projects"
               element={
@@ -278,6 +298,7 @@ export function App() {
                 </Lazy>
               }
             />
+            <Route path="approvals" element={<Navigate to="/security?tab=approvals" replace />} />
             <Route
               path="security"
               element={
@@ -687,8 +708,15 @@ export function App() {
                 </Lazy>
               }
             />
+            <Route
+              path="*"
+              element={
+                <Lazy>
+                  <NotFoundPage />
+                </Lazy>
+              }
+            />
           </Route>
-          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
       </OpsStreamProvider>

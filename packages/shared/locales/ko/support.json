@@ -25,5 +25,9 @@
   "cryptoAddress": "주소",
   "copy": "복사",
   "copied": "복사됨",
-  "docsLink": "Documentation"
+  "docsLink": "Documentation",
+  "diagTitle": "Diagnostic summary",
+  "diagBody": "Copy version, execute, and host facts to paste into an email. This is not a full log bundle.",
+  "diagCopy": "Copy diagnostic summary",
+  "diagCopied": "Diagnostic summary copied"
 }

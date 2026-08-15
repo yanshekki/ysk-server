@@ -77,7 +77,10 @@
     "leOk": "دعونا تشفير الشهادة التي تم الحصول عليها لـ {{domain}}",
     "leFailed": "فشل طلب الشهادة: {{detail}}",
     "leHint": "تأكد من إمكانية الوصول إلى نقاط DNS A هنا ومن إمكانية الوصول إلى المنفذ 80 (أو أن nginx يخدم المجال)",
-    "openFirewall": "إذا كان عامًا: السماح بمنفذ اللوحة {{port}}/tcp (جدار الحماية → فتح المنفذ → لوحة 9287)"
+    "openFirewall": "إذا كان عامًا: السماح بمنفذ اللوحة {{port}}/tcp (جدار الحماية → فتح المنفذ → لوحة 9287)",
+    "disableConfirmTitle": "Disable panel HTTPS?",
+    "disableConfirmDesc": "The panel will serve HTTP. WebAuthn / Passkey will stop working until HTTPS is on again.",
+    "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP."
   },
   "timeNtp": "الوقت وNTP",
   "clockStatus": "حالة ساعة النظام",

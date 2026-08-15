@@ -133,6 +133,7 @@ Public guest tracker proxy stays `/api/v1/public/bt-tracker` (no auth).
 
 - Magnets / announce lists use **`publicAnnounceHost` + panel ports** only.  
 - If public host is **empty**, magnets get **no** tracker URLs (do not invent `127.0.0.1` for public clients).  
+- A short hostname with no dot (for example `demo-server`) is not used; prefer FQDN (`hostname -f`) or a usable IP.  
 - Seeder process announces **once** to the local tracker (avoids double seed counts).  
 - Browser WebTorrent loads a **self-hosted** `webtorrent.min.js` asset from the panel build (not a third-party CDN), with `announce` forced to the same-origin proxy.
 

@@ -187,6 +187,7 @@ export function NetworkPage() {
   const [routePersist, setRoutePersist] = useState(true);
   const [delRoute, setDelRoute] = useState<NetRoute | null>(null);
   const [delRoutePersist, setDelRoutePersist] = useState(true);
+  const [delRoutePhrase, setDelRoutePhrase] = useState('');
 
   /** DNS editor — list of servers (add / edit / remove) */
   const [dnsServers, setDnsServers] = useState<string[]>([]);
@@ -529,7 +530,10 @@ export function NetworkPage() {
                         variant="danger"
                         size="sm"
                         disabled={busy}
-                        onClick={bindSet(setDelRoute, r)}
+                        onClick={() => {
+                          setDelRoutePhrase('');
+                          setDelRoute(r);
+                        }}
                       >
                         {t('common.delete')}
                       </Button>
@@ -876,7 +880,10 @@ export function NetworkPage() {
                       variant="secondary"
                       size="sm"
                       loading={busy}
-                      disabled={!snap.caps.canMutate}
+                      disabled={!snap.caps.canMutate || !snap.dns.canApply}
+                      title={
+                        !snap.dns.canApply ? t('network.noNmConnection') : undefined
+                      }
                       onClick={() =>
                         void run(() =>
                           networkApi.setDns({
@@ -892,7 +899,10 @@ export function NetworkPage() {
                       variant="primary"
                       size="sm"
                       loading={busy}
-                      disabled={!snap.caps.canMutate}
+                      disabled={!snap.caps.canMutate || !snap.dns.canApply}
+                      title={
+                        !snap.dns.canApply ? t('network.noNmConnection') : undefined
+                      }
                       onClick={() => {
                         const nameservers = dnsServers
                           .map((s) => s.trim())
@@ -1547,11 +1557,17 @@ export function NetworkPage() {
               variant="danger"
               size="sm"
               loading={busy}
+              disabled={
+                Boolean(delRoute) &&
+                (delRoute!.dst === 'default' || delRoute!.dst === '0.0.0.0/0') &&
+                delRoutePhrase.trim() !== 'DEFAULT'
+              }
               onClick={() => {
                 if (!delRoute) return;
                 const isDef =
                   delRoute.dst === 'default' ||
                   delRoute.dst === '0.0.0.0/0';
+                if (isDef && delRoutePhrase.trim() !== 'DEFAULT') return;
                 void run(() =>
                   networkApi.delRoute({
                     dst: delRoute.dst,
@@ -1575,10 +1591,27 @@ export function NetworkPage() {
               <code>{delRoute.dst}</code>
               {delRoute.gateway ? ` via ${delRoute.gateway}` : ''}
               {delRoute.dev ? ` dev ${delRoute.dev}` : ''}
-              {delRoute.dst === 'default' || delRoute.dst === '0.0.0.0/0'
-                ? t('network.deleteDefaultMayDrop')
-                : ''}
             </p>
+            {delRoute.dst === 'default' || delRoute.dst === '0.0.0.0/0' ? (
+              <>
+                <Alert variant="error">{t('network.deleteDefaultPanelWarn')}</Alert>
+                <Field
+                  label={t('network.typeDefaultToConfirm')}
+                  htmlFor="net-del-default-phrase"
+                >
+                  <input
+                    id="net-del-default-phrase"
+                    value={delRoutePhrase}
+                    onChange={bindInput(setDelRoutePhrase)}
+                    placeholder="DEFAULT"
+                    autoComplete="off"
+                    spellCheck={false}
+                  />
+                </Field>
+              </>
+            ) : (
+              <p className="u-text-sm">{t('network.deleteDefaultMayDrop')}</p>
+            )}
             <CheckboxField
               id="net-del-route-persist"
               label={t('network.alsoRemoveNm')}

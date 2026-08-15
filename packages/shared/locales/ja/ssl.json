@@ -100,5 +100,7 @@
   "requestFailed": "証明書リクエストが成功しませんでした",
   "applyFailed": "リクエストが失敗しました",
   "deletedCert": "削除されました {{domain}}",
-  "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates."
+  "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates.",
+  "renew": "Renew",
+  "renewFor": "Renew Let’s Encrypt for {{domain}}"
 }

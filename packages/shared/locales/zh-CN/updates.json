@@ -182,5 +182,7 @@
   "needsReboot": "需重启",
   "kernelRebootWarn": "安装新 kernel 后通常要重启才会生效。",
   "neverRun": "尚未执行",
-  "scanOsvN": "扫描 + OSV（前 {{n}} 个）"
+  "scanOsvN": "扫描 + OSV（前 {{n}} 个）",
+  "rebootNeeded": "reboot",
+  "kernelRebootHint": "Kernel packages need a reboot after apply"
 }

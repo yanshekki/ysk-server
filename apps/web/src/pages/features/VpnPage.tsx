@@ -591,6 +591,8 @@ export function VpnPage() {
             variant="primary"
             size="sm"
             loading={busy}
+            disabled={!engSt?.installed}
+            title={!engSt?.installed ? t('vpn.engineNotInstalled') : undefined}
             onClick={() =>
               void runOps(
                 () =>
@@ -684,7 +686,12 @@ export function VpnPage() {
               variant="primary"
               size="sm"
               loading={busy}
-              disabled={!peerName.trim()}
+              disabled={!peerName.trim() || !engineStatus(status, engine)?.installed}
+              title={
+                engineStatus(status, engine)?.installed
+                  ? undefined
+                  : t('vpn.installEngineFirst')
+              }
               onClick={() => {
                 const name = peerName.trim();
                 void runOps(

@@ -41,6 +41,9 @@ ysk-server defense ban --ip 1.2.3.4 --execute --json
 
 - 線上 UFW／fail2ban 變更需 EXECUTE + root。  
 - 無工具時 fail-closed 屬正確，而非靜默成功。  
+- 面板不會一鍵封鎖本機出口 IP、目前登入 IP 或 fail2ban `ignoreip`；會標示這些位址。  
+- 已認證面板請求只顯示為面板流量，不計入威脅分數。  
+- Nginx conf 預覽不會把 `set_real_ip_from` CIDR 做成封禁連結。  
 
 ## 僅面板 ⚠️
 

@@ -77,7 +77,10 @@
     "leOk": "Certificat Let’s Encrypt obtenu pour {{domain}}",
     "leFailed": "Échec de la demande de certificat : {{detail}}",
     "leHint": "Vérifiez que l’enregistrement DNS A pointe ici et que le port 80 est joignable (ou que nginx sert le domaine)",
-    "openFirewall": "Si public : autorisez le port du panneau {{port}}/tcp (Pare-feu → ouvrir le port → 9287 Panel)"
+    "openFirewall": "Si public : autorisez le port du panneau {{port}}/tcp (Pare-feu → ouvrir le port → 9287 Panel)",
+    "disableConfirmTitle": "Disable panel HTTPS?",
+    "disableConfirmDesc": "The panel will serve HTTP. WebAuthn / Passkey will stop working until HTTPS is on again.",
+    "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP."
   },
   "timeNtp": "Heure et NTP",
   "clockStatus": "État de l’horloge système",

@@ -119,5 +119,6 @@
   "statOnline": "线上 {{n}}/{{total}}",
   "statOffline": "离线 {{n}}",
   "statDraining": "排水中 {{n}}",
-  "statHitRate": "命中率 {{v}}"
+  "statHitRate": "命中率 {{v}}",
+  "hitNoStats": "No edge stats yet"
 }

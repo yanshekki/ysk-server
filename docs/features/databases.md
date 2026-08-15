@@ -56,6 +56,7 @@ Full argv: [../cli/reference.md](../cli/reference.md#db--redis--db-cluster).
 - Without EXECUTE, install/lifecycle/apply stay blocked or dry-run.  
 - SQL switch is **exclusive** (MySQL XOR MariaDB); always preview + confirm phrase.  
 - Cluster modules never silently form multi-node clusters.  
+- The MySQL replica wizard is disabled when MySQL is not the installed engine (this host may be MariaDB).  
 - Postgres cluster probe runs as the `postgres` OS user (`runuser -u postgres -- psql`).  
 - Dry-run cluster push notes are not shown as “system change is off”.  
 

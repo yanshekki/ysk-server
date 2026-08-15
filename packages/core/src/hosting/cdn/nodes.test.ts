@@ -11,6 +11,7 @@ import {
   probeCdnNode,
   setCdnNodeDrain,
   probeAllCdnNodes,
+  resolveCdnSshTarget,
 } from './nodes.js';
 
 describe('cdn nodes (PR-C1)', () => {
@@ -100,5 +101,50 @@ describe('cdn nodes (PR-C1)', () => {
       server.close();
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+
+  it('does not treat default root + panel URL as SSH', () => {
+    expect(
+      resolveCdnSshTarget({
+        id: 'e1',
+        name: 'hermes',
+        roles: ['edge'],
+        publicIpv4: ['203.0.113.8'],
+        publicIpv6: [],
+        baseUrl: 'http://203.0.113.8:9287',
+        sshUsername: 'root',
+        status: 'online',
+        weight: 100,
+        region: 'default',
+      } as never),
+    ).toBeNull();
+    expect(
+      resolveCdnSshTarget({
+        id: 'e2',
+        name: 'ssh-only',
+        roles: ['edge'],
+        publicIpv4: ['203.0.113.9'],
+        publicIpv6: [],
+        sshUsername: 'root',
+        status: 'online',
+        weight: 100,
+        region: 'default',
+      } as never)?.host,
+    ).toBe('203.0.113.9');
+    expect(
+      resolveCdnSshTarget({
+        id: 'e3',
+        name: 'explicit',
+        roles: ['edge'],
+        publicIpv4: ['203.0.113.10'],
+        publicIpv6: [],
+        baseUrl: 'http://203.0.113.10:9287',
+        sshHost: '203.0.113.10',
+        sshUsername: 'root',
+        status: 'online',
+        weight: 100,
+        region: 'default',
+      } as never)?.username,
+    ).toBe('root');
   });
 });

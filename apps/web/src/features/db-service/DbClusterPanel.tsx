@@ -65,7 +65,13 @@ export function ctaLabel(kind: DbClusterKind): string {
   return i18n.t('db.cluster.createRedisReplica');
 }
 
-export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
+export function DbClusterPanel({
+  engine,
+  engineInstalled = true,
+}: {
+  engine: DbServiceEngine;
+  engineInstalled?: boolean;
+}) {
   const { t } = useTranslation();
   const [items, setItems] = useState<DbCluster[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -108,7 +114,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
   }, [refresh]);
 
   const kind = defaultKind(engine);
-  const wizardReady = true;
+  const wizardReady = engineInstalled;
   const isGalera = kind === 'mariadb-galera';
   const isRepl =
     kind === 'mysql-replica' ||
@@ -328,11 +334,19 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
           title={t('dns.tabs.cluster')}
           description={t('db.cluster.description')}
         >
+          {!engineInstalled ? (
+            <Alert variant="warn">
+              {t('db.cluster.engineNotInstalled', { engine })}
+            </Alert>
+          ) : null}
           <ActionBar className="u-mb-3">
             <Button
               variant="primary"
               size="md"
               disabled={busy || !wizardReady}
+              title={
+                wizardReady ? undefined : t('db.cluster.engineNotInstalled', { engine })
+              }
               onClick={() => {
                 setError(null);
                 setWizOpen(true);

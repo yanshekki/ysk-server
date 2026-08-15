@@ -15,5 +15,8 @@
   "dataPolicy": "Politique de données",
   "keepData": "Conserver les données",
   "purgeData": "Purger les données",
-  "uninstallNow": "Désinstaller maintenant"
+  "uninstallNow": "Désinstaller maintenant",
+  "uninstallNeedSelect": "Select at least one bundle. Empty selection no longer means remove all.",
+  "uninstallConfirmTitle": "Remove selected bundles?",
+  "uninstallConfirmDesc": "{{count}} bundle(s) will be removed. Type REMOVE to confirm."
 }

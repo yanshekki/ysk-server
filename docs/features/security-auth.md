@@ -45,6 +45,7 @@ ysk-server audit --limit 50 --json
 - SSH TOTP ≠ panel TOTP.  
 - Host install paths need EXECUTE + root.  
 - If `mustChangePassword` is set, login shows a change-password form (`POST /api/v1/auth/password`) before the dashboard. Weak bootstrap passwords are rejected unless `YSK_ALLOW_INSECURE_DEFAULTS=1`.  
+- Saving 2FA policy does not require a TOTP when this account has no 2FA enrolled.  
 
 ## Panel-only ⚠️
 

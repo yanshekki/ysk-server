@@ -57,5 +57,11 @@
   "protectionDoneNote": "保护探测完成",
   "probeDone": "探测完成",
   "runProtection": "执行保护探测",
-  "notProbedYet": "尚未探测"
+  "notProbedYet": "尚未探测",
+  "statusFilter": {
+    "all": "All states",
+    "running": "Running",
+    "failed": "Failed",
+    "missing": "Not installed"
+  }
 }

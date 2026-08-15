@@ -432,5 +432,8 @@
     "critical": "嚴重"
   },
   "confirmDeleteApiKey": "刪除此 API 金鑰？",
-  "confirmDeleteApiKeyDesc": "刪除後「{{name}}」無法再驗證。此操作無法復原。"
+  "confirmDeleteApiKeyDesc": "刪除後「{{name}}」無法再驗證。此操作無法復原。",
+  "policyNoTotpHint": "此帳號尚未設定 2FA — 儲存政策不需 TOTP。如要強制其他人使用 2FA，請先在上方設定。",
+  "sessionCli": "CLI",
+  "sessionApi": "API"
 }

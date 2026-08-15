@@ -430,49 +430,49 @@ export async function assessProductionReadiness(input: {
   push({
     id: 'runtimes-node',
     category: 'hosting',
-    title: tl('notes.auto.n0141'),
+    title: tl('notes.readiness.runtimesNode'),
     level: nodeReady.length ? 'ready' : 'degraded',
     detail: nodeReady.length
       ? tl('notes.auto.t0389', { v0: (nodeReady.join(', ')) })
       : tl('notes.tpl.supportedNotProbed', { name: 'dynamic (software/versions)' }),
     spec: '§4.2',
-    fixHint: tl('notes.auto.n0910'),
+    fixHint: tl('notes.readiness.runtimesNodeFix'),
     fixHref: nodeReady.length ? undefined : '/runtimes/node',
     severity: 'recommended' });
   push({
     id: 'runtimes-php',
     category: 'hosting',
-    title: tl('notes.auto.n0146'),
+    title: tl('notes.readiness.runtimesPhp'),
     level: phpReady.length ? 'ready' : 'degraded',
     detail: phpReady.length
       ? tl('notes.tpl.available', { detail: phpReady.join(', ') })
       : tl('notes.tpl.supportedNotProbed', { name: 'dynamic (software/versions)' }),
     spec: '§4.3',
-    fixHint: tl('notes.auto.n0911'),
+    fixHint: tl('notes.readiness.runtimesPhpFix'),
     fixHref: phpReady.length ? undefined : '/runtimes/php',
     severity: 'optional' });
   push({
     id: 'runtimes-python',
     category: 'hosting',
-    title: tl('notes.auto.n0164'),
+    title: tl('notes.readiness.runtimesPython'),
     level: pyReady.length ? 'ready' : 'degraded',
     detail: pyReady.length
       ? tl('notes.tpl.available', { detail: pyReady.join(', ') })
       : tl('notes.tpl.supportedNotProbed', { name: 'dynamic (software/versions)' }),
     spec: '§4.2',
-    fixHint: tl('notes.auto.n0912'),
+    fixHint: tl('notes.readiness.runtimesPythonFix'),
     fixHref: pyReady.length ? undefined : '/runtimes/python',
     severity: 'optional' });
   push({
     id: 'runtimes-go',
     category: 'hosting',
-    title: tl('notes.auto.n0113'),
+    title: tl('notes.readiness.runtimesGo'),
     level: goReady.length ? 'ready' : 'degraded',
     detail: goReady.length
       ? tl('notes.tpl.available', { detail: goReady.join(', ') })
       : tl('notes.tpl.supportedNotProbed', { name: 'dynamic (software/versions)' }),
     spec: '§4.2',
-    fixHint: tl('notes.auto.n0909'),
+    fixHint: tl('notes.readiness.runtimesGoFix'),
     fixHref: goReady.length ? undefined : '/runtimes/go',
     severity: 'optional' });
   push({
@@ -492,13 +492,13 @@ export async function assessProductionReadiness(input: {
   push({
     id: 'pm2',
     category: 'hosting',
-    title: tl('notes.auto.n0153'),
+    title: tl('notes.readiness.pm2'),
     level: pm2.available ? 'ready' : 'degraded',
     detail: pm2.available
       ? `pm2：${pm2.path}`
       : tl('notes.auto.n0379'),
     spec: '§4.2',
-    fixHint: tl('notes.auto.n0615'),
+    fixHint: tl('notes.readiness.pm2Fix'),
     fixHref: pm2.available ? undefined : '/runtimes/node',
     severity: 'optional' });
 

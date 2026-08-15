@@ -307,7 +307,12 @@ async function mainInner(
     const stripped = args.filter((a) => a !== '--help' && a !== '-h');
     const pos = cliPositionals(stripped);
     const rest = pos.slice(1).filter((s) => s !== 'help');
-    const code = await mainInner([command, 'help', ...rest], json, command, { ...parsed, help: false });
+    const cmdIdx = stripped.findIndex((a) => a === command);
+    const withHelp =
+      cmdIdx >= 0
+        ? [...stripped.slice(0, cmdIdx + 1), 'help', ...stripped.slice(cmdIdx + 1)]
+        : [command, 'help', ...rest, ...stripped];
+    const code = await mainInner(withHelp, json, command, { ...parsed, help: false });
     // Explicit --help is a successful no-op (never runs the action).
     return code === 2 ? 0 : code;
   }
@@ -3266,7 +3271,7 @@ async function mainInner(
         const id = getOpt(args, '--id');
         if (!id) {
           process.stderr.write(
-            'Usage: ysk-server projects git status|log|fetch|checkout|reset|auth|hook|deploy --id UUID\n',
+            'Usage: ysk-server projects git status|log|diff|refs|fetch|checkout|reset|auth|hook|deploy --id UUID\n',
           );
           return 2;
         }
@@ -3278,6 +3283,17 @@ async function mainInner(
           const limit = getOpt(args, '--limit') ? Number(getOpt(args, '--limit')) : 10;
           printJson(await ctx.projectOps.gitLog(id, limit));
           return 0;
+        }
+        if (gitAction === 'diff') {
+          printJson(await ctx.projectOps.gitDiff(id));
+          return 0;
+        }
+        if (gitAction === 'refs') {
+          const r = await ctx.projectOps.gitRefs(id, {
+            gitUrl: getOpt(args, '--git-url') ?? getOpt(args, '--url'),
+          });
+          printJson(r);
+          return r.ok ? 0 : 1;
         }
         if (gitAction === 'fetch') {
           const r = await ctx.projectOps.gitFetch(id, {
@@ -3371,7 +3387,7 @@ async function mainInner(
           return exitFromResult(result);
         }
         process.stderr.write(
-          'Usage: ysk-server projects git status|log|fetch|checkout|reset|auth|hook|deploy --id UUID\n',
+          'Usage: ysk-server projects git status|log|diff|refs|fetch|checkout|reset|auth|hook|deploy --id UUID\n',
         );
         return 2;
       }
@@ -6259,8 +6275,19 @@ async function mainInner(
   }
 
   if (command === 'readiness' || command === 'doctor') {
+    const sub = cliPositionals(args).slice(1)[0];
+    if (sub === 'help' || sub === '--help') {
+      process.stdout.write(
+        `Usage: ysk-server ${command} [--data-dir PATH] [--json]\n` +
+          '  Production readiness probe (honest). Does not change the host.\n' +
+          '  --data-dir   Store path (also --data-dir=PATH or YSK_DATA_DIR)\n' +
+          '  --json       JSON report (default for this command)\n',
+      );
+      return 0;
+    }
     const { assessProductionReadiness, storeStatus } = await import('ysk-server-core');
-    const dataDir = getOpt(args, '--data-dir') ?? join(process.cwd(), '.ysk');
+    const dataDir =
+      resolveCliDataDir({ flag: getOpt(args, '--data-dir') }) ?? join(process.cwd(), '.ysk');
     const ctx = createAppContext({
       version: VERSION,
       dataDir,

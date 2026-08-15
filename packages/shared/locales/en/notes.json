@@ -31,12 +31,15 @@
   "ssh": {
     "identityNotFound": "Identity not found",
     "registrationNotFound": "Registration not found",
-    "keyOkNologin": "Key accepted. Account has no login shell (nologin) — use SFTP. Treated as PASS."
+    "keyOkNologin": "Key accepted. Account is nologin or SFTP-only (no SSH shell). Treated as PASS.",
+    "keyOkSftp": "SFTP pwd succeeded after SSH shell was refused."
   },
   "cdn": {
     "siteNotFound": "CDN site not found",
     "nodeMissing": "Node does not exist",
     "loopbackOriginRemote": "Origin is 127.0.0.1 — that is this host, not a remote edge. Set a reachable origin IP or bind_ip.",
+    "originRemoteRewrite": "Remote edges will use reachable origin {{url}} instead of loopback.",
+    "originRemoteUnknown": "Origin is loopback and no public/LAN IP or bind_ip is known — apply will refuse remote edges until one is set.",
     "needSshOrFleet": "Remote edge needs an outbound SSH identity (or username) or a /agents fleet session. Health URL alone is not apply transport.",
     "probe": {
       "timeout": "Connect timeout after {{ms}}ms ({{detail}}). Peer may be firewalled.",
@@ -49,7 +52,7 @@
   },
   "backup": {
     "testUnsaved": "Testing unsaved form values (not written to settings).",
-    "testIdentity": "ssh (identity) to {{spec}} ok",
+    "testIdentity": "sftp (identity) to {{spec}} ok",
     "sshAuthFailed": "SSH key or password rejected (publickey). Pick an outbound identity or install sshpass.",
     "remotePathIsFile": "Remote path {{path}} is a file. Use a directory.",
     "remoteMkdirFailed": "Could not create remote directory: {{detail}}",
@@ -59,7 +62,10 @@
     "resticNotInPath": "restic not in PATH",
     "dbEnvUnreadable": "Could not read .db.env; skipped SQL dump.",
     "dbEnvNoName": ".db.env has no database name; skipped SQL dump.",
-    "targetOutside": "Restore target must be inside the project home or the public files root."
+    "targetOutside": "Restore target must be inside the project home or the public files root.",
+    "controlPlaneDryRun": "Preview only — nothing written. In the panel, use Restore and confirm the phrase to write.",
+    "controlPlaneNeedConfirm": "Full control-plane restore needs the confirm phrase RESTORE-CONTROL-PLANE.",
+    "controlPlaneRestartAfter": "Restart the API after a successful restore."
   },
   "redis": {
     "cliMissing": "redis-cli is not installed"
@@ -228,7 +234,17 @@
     "dns": "DNS",
     "email": "Email",
     "isolation": "Project isolation",
-    "ops": "Operations"
+    "ops": "Operations",
+    "runtimesNode": "Node.js",
+    "runtimesPhp": "PHP",
+    "runtimesPython": "Python",
+    "runtimesGo": "Go",
+    "pm2": "PM2",
+    "runtimesNodeFix": "Install Node from /runtimes/node",
+    "runtimesPhpFix": "Install PHP from /runtimes/php",
+    "runtimesPythonFix": "Install Python from /runtimes/python",
+    "runtimesGoFix": "Install Go from /runtimes/go",
+    "pm2Fix": "Install PM2 from the Node runtime page"
   },
   "needAdmin": "Administrator permission required",
   "notInstalled": "Not installed",
@@ -248,6 +264,7 @@
     "missingRef": "That branch, tag, or commit is not on the remote.",
     "shallow": "This clone is shallow. Fetch full history before pinning an old commit.",
     "notRepo": "app/ is not a Git repository yet.",
+    "diffEmpty": "No unstaged diff (protected .env is excluded).",
     "unrelated": "Unrelated histories. Reclone only after confirm — custom files will be lost.",
     "lock": "Git index.lock is present. Remove it only if no git process is running.",
     "disk": "Disk full or quota exceeded.",
@@ -271,7 +288,10 @@
     "hostScanFailed": "ssh-keyscan returned no keys for that host.",
     "hookEnabled": "Inbound Git hook is on. Paste the URL into GitHub, Gitea, or GitLab yourself.",
     "hookDisabled": "Inbound Git hook is off. The URL will not sync.",
-    "hookSecretOnce": "Copy this hook secret now. It is not shown again."
+    "hookSecretOnce": "Copy this hook secret now. It is not shown again.",
+    "refsNeedUrl": "Enter a Git URL first.",
+    "refsOk": "Loaded {{branches}} branch(es) and {{tags}} tag(s).",
+    "refsEmpty": "Remote advertised no branches or tags."
   },
   "auto": {
     "n0001": "Status: applied",
@@ -544,10 +564,10 @@
     "n0268": "dry-run — not write /etc",
     "n0269": "dry-run: add --execute firstapply ufw",
     "n0270": "dry-run: inventory + preflight passed, not package/transfer",
-    "n0271": "dry-run: probe/. add --execute YSK_EXECUTE=1 firstreally provision",
-    "n0272": "dry-run: Wrote managed file (dataDir). add execute + YSK_EXECUTE=1 + root firstsystem drop-in",
-    "n0273": "dry-run: not. add --execute YSK_EXECUTE=1 firstreally ban",
-    "n0274": "dry-run: not. add --execute YSK_EXECUTE=1 firstreally unban",
+    "n0271": "Dry-run: probe/plan only. Pass --execute with YSK_EXECUTE=1 to actually provision.",
+    "n0272": "Dry-run: wrote the managed file (dataDir). Pass --execute with YSK_EXECUTE=1 as root to install the system drop-in.",
+    "n0273": "Dry-run: not banned. Pass --execute with YSK_EXECUTE=1 to actually ban.",
+    "n0274": "Dry-run: not unbanned. Pass --execute with YSK_EXECUTE=1 to actually unban.",
     "n0275": "dryRun=true — change API",
     "n0276": "dryRun: not write",
     "n0277": "dump Wrote dataDir, not transfer",
@@ -1112,7 +1132,7 @@
     "n0836": "certificateplease Failed",
     "n0837": "≥ file",
     "n0838": "settingskeptbackup",
-    "n0839": "Successthis target can BatchMode, ≠",
+    "n0839": "Success means this target accepts BatchMode SSH (non-interactive). It is not a grant of global access.",
     "n0840": "or 32767",
     "n0841": "softwareInstalled",
     "n0842": "permission/",
@@ -1272,7 +1292,7 @@
     "n0996": "local nginx -t OK ( managed conf, ≠ edge applied)",
     "n0997": "local wsrep can, size not node",
     "n0998": "local ysk.json cannotread / fingerprint",
-    "n0999": "local OK; complete healthy peer probe (not )",
+    "n0999": "Local node is OK; a complete healthy status needs a peer probe (not done).",
     "n1000": "local nginx — conf Wrote, not reload",
     "n1001": "localAvailable NM connection; willSuccess. can \"\" or NetworkManager.",
     "n1002": "localAvailable ps — cannot ()",
@@ -2519,7 +2539,7 @@
     "t0629": "project {{v0}} home: {{v1}}",
     "t0630": "project {{v0}} bind_ip={{v1}} — can ( IP )",
     "t0631": "project {{v0}} home not path: {{v1}}",
-    "t0632": "home (store ): {{v0}}",
+    "t0632": "Orphan home on disk (no matching store project): {{v0}}",
     "t0633": "Maildir: {{v0}}",
     "t0634": "{{v0}} — cannot to target",
     "t0635": "cannotprobe {{v0}}",
@@ -2527,7 +2547,7 @@
     "t0637": "project {{v0}} · {{v1}} · DB {{v2}} · Redis {{v3}}",
     "t0638": "installsoftware {{v0}} · homes {{v1}}",
     "t0639": "cutover host {{v0}}",
-    "t0640": "Warning {{v0}} (please )",
+    "t0640": "{{v0}} warning(s) — review before cutover.",
     "t0641": "key {{v0}}",
     "t0642": "cannotkey: {{v0}}",
     "t0643": "targetnot write authorized_keys: {{v0}}",
@@ -2591,7 +2611,7 @@
     "t0701": "CDN {{v0}}",
     "t0702": "origin shield Node does not exist: {{v0}}",
     "t0703": "edges: {{v0}}",
-    "t0704": "origin URL (): {{v0}}",
+    "t0704": "Origin URL (from project bind): {{v0}}",
     "t0705": "update CDN {{v0}}",
     "t0706": "create CDN {{v0}}",
     "t0707": "origin shield: edge shield {{v0}} → {{v1}}",
@@ -3103,7 +3123,7 @@
     "staleCliTitle": "Stale leftover CLI",
     "staleCli": "Leftover CLI still present: {{path}} (running product {{version}}). PATH may prefer it. Remove with: rm -f {{path}}",
     "apacheDefaultTitle": "Apache leftover default site",
-    "apacheDefault": "Apache 000-default is still enabled on :80. Product overlay does not disable it. Apply Apache from the panel or hosting apache apply --execute.",
+    "apacheDefault": "Apache 000-default is still enabled. That is the stock site file — it does not mean Apache is listening on public :80 (YSK Apache is expected on 127.0.0.1:8080). Overlay does not disable it. Apply Apache from the panel or hosting apache apply --execute.",
     "nginxCatchAllTitle": "Nginx catch-all missing",
     "nginxCatchAll": "ysk-000-default.conf is not in /etc/nginx/conf.d. Unknown SNI can fall through. Run projects nginx-sync --execute.",
     "vsftpdTitle": "vsftpd unit failed",
@@ -3113,5 +3133,14 @@
     "overlayDoesNotHeal": "Product overlay does not rewrite nginx, Apache, vsftpd, or Dovecot. Use the listed apply commands (root + YSK_EXECUTE=1).",
     "readinessTitle": "Host leftovers after overlay",
     "readinessClean": "No leftover Apache default, missing nginx catch-all, failed vsftpd, or stale CLI detected."
+  },
+  "defense": {
+    "panelReqLabel": "Panel requests / min",
+    "panelReqExcluded": "Authenticated panel traffic — shown here, not counted in threat score",
+    "tcpOk": "TCP {{target}} reachable",
+    "tcpFail": "TCP {{target}} failed",
+    "dnsDegraded": "DNS path degraded",
+    "reqRateHigh": "Public request rate {{reqs}}/min ≥ {{threshold}}",
+    "ddosHeuristic": "High public request rate plus edge probe failure"
   }
 }

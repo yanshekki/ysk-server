@@ -12,7 +12,7 @@
 
 | Item | Value |
 |------|--------|
-| Routes | CDN pages, agents |
+| Routes | `/cdn`, `/agents` |
 | Nav keys | `cdn`, agents surfaces |
 | Main actions | Nodes · sites · render/apply/purge · fleet list/register/commands |
 | Capability | CDN / agents |
@@ -38,6 +38,7 @@ ysk-server agents fleet list --json
 
 - Registered ≠ connected (need heartbeat).  
 - Enqueued ≠ applied on edge.  
+- `/agents` is the fleet page. Unknown other paths are a 404, not the dashboard.  
 - Node probe classifies timeout / DNS / refused / TLS (not only `fetch failed`).  
 - Apply does not invent `root@publicIpv4`. SSH runs only when the node has an identity, username, or `sshHost`. Loopback origin is rewritten or refused on a remote edge. A fleet session id is the non-SSH path.  
 

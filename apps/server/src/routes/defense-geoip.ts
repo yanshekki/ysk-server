@@ -47,6 +47,8 @@ export async function handleDefenseGeoipRoutes(
     );
     const r = await updateGeoipDatabases(ctx.dataDir);
     resetGeoipReaders();
+    ctx.settings.setJson('last_geoip_update', { at: new Date().toISOString(), ok: r.ok });
+    ctx.scheduler.touchLastRun('defense-geoip-update');
     const status = await getGeoipStatus(ctx.dataDir, ctx.db);
     ctx.audit.append({
       actor: user.username,

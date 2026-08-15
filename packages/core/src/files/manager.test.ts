@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { mkdtempSync, rmSync, existsSync, writeFileSync, symlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { FileManager, hasPathSeparator, publicFilesRoot } from './manager.js';
+import { FileManager, assertInside, hasPathSeparator, publicFilesRoot } from './manager.js';
 import { YskError } from 'ysk-server-shared';
 
 describe('FileManager sandbox', () => {
@@ -14,6 +14,8 @@ describe('FileManager sandbox', () => {
     const list = fm.list('docs');
     expect(list.some((e) => e.name === 'hello.txt')).toBe(true);
     expect(fm.readText('docs/hello.txt').content).toBe('hello ysk');
+    expect(assertInside(dir, '/')).toBe(assertInside(dir, '.'));
+    expect(fm.list('/').some((e) => e.name === 'docs')).toBe(true);
     expect(() => fm.readText('../etc/passwd')).toThrow(/沙箱|sandbox|escape|SANDBOX|pathOutside/i);
     expect(() => fm.readText('docs/../../etc/passwd')).toThrow();
     expect(() => fm.readText('x\0y')).toThrow();

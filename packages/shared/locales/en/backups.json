@@ -81,6 +81,7 @@
   "endpointOptional": "Endpoint (optional)",
   "localMirror": "Local mirror path",
   "remotePath": "Remote path",
+  "remotePathHint": "Relative to the remote user’s home (or SFTP chroot). “.” is that home.",
   "resticTitle": "Restic incremental",
   "resticDesc": "Optional; restic on PATH. Password required when enabled (no default)",
   "enableRestic": "Enable restic",
