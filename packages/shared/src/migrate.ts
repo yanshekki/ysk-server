@@ -113,6 +113,8 @@ export interface HostManifest {
   };
   /** sha256 hex of key artifacts for post-transfer verify */
   fingerprints: Record<string, string>;
+  /** /home/ysk-server-<uuid> on disk with no store row */
+  orphanHomes?: string[];
   /** Non-fatal issues operator must review */
   warnings: string[];
   /** Operator-chosen exclusion globs (not applied in inventory itself) */

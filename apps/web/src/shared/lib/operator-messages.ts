@@ -40,8 +40,10 @@ export function isOperatorNoise(text: string): boolean {
 
 /** Detect permission / execute / root blocks across locales + codes */
 export function looksLikeBlockedMessage(text: string): boolean {
-  return /YSK_NEED_EXECUTE|YSK_NEED_ROOT|YSK_EXECUTE|requiresExecute|requiresRoot|executeEnabled|Host execute|need root|requires? root|permission denied|權限|权限|系統變更|系统变更|管理員|管理员|無法在管理面板|无法在管理面板|沙箱|sandbox/i.test(
-    text,
+  const t = text.trim();
+  if (/真正推送需|預覽試行|needs? --execute|pass execute=true/i.test(t)) return false;
+  return /YSK_NEED_EXECUTE|YSK_NEED_ROOT|YSK_EXECUTE|requiresExecute|requiresRoot|executeEnabled|Host execute is off|need root|requires? root|permission denied|無法在管理面板|无法在管理面板|未開啟系統變更權限|系統變更權限未開|沙箱|sandbox/i.test(
+    t,
   );
 }
 
@@ -89,9 +91,11 @@ export function humanizeOperatorNote(text: string): string | null {
     if (out !== raw) return out;
   }
 
-  // —— Permission / capability ——
-  if (
-    /YSK_NEED_EXECUTE|YSK_EXECUTE|executeEnabled|系統變更權限|系统变更|Set YSK_EXECUTE|requiresExecute|Host execute is off/i.test(
+  // —— Permission / capability (off now — not “will need execute to apply”) ——
+  if (/真正推送需|預覽試行|needs? --execute|pass execute=true/i.test(raw)) {
+    /* keep instructional note */
+  } else if (
+    /YSK_NEED_EXECUTE|YSK_EXECUTE=|Set YSK_EXECUTE|Host execute is off|executeEnabled.{0,12}false|未開啟系統變更權限|系統變更權限未開|無法[^。]{0,24}系統變更權限/i.test(
       raw,
     )
   ) {
@@ -110,7 +114,10 @@ export function humanizeOperatorNote(text: string): string | null {
   if (/SANDBOX|sandbox violation|path not allowed|不在允許|不在允许/i.test(raw)) {
     return tr('ops.blocked.writeOutsideDataDir');
   }
-  if (/EACCES|permission denied|Permission denied/i.test(raw)) {
+  if (/permission denied \(publickey|publickey,password\)/i.test(raw)) {
+    return tr('notes.backup.sshAuthFailed');
+  }
+  if (/EACCES|permission denied|Permission denied/i.test(raw) && !/publickey/i.test(raw)) {
     return tr('ops.blocked.panel');
   }
   if (/EADDRINUSE|address already in use|port.*in use/i.test(raw)) {

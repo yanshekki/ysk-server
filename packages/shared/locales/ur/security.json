@@ -373,7 +373,9 @@
     "strictBlocked": "پیکج یا PAM تیار نہیں؛ Strict لاگو نہیں ہو سکتا۔",
     "strictDryRun": "سخت موڈ پیش نظارہ",
     "errorNoDetail": "ٹیسٹ ناکام (تفصیل نہیں)",
-    "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it."
+    "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it.",
+    "loginNoProjects": "No projects. Authorize an existing Linux user (root / tester) below. Writing /root/.ssh needs YSK_EXECUTE=1.",
+    "loginLinuxHint": "Used when no project. Example: root or tester."
   },
   "sessionsActive": "فعال سیشنز",
   "sessionsOther": "دیگر آلات",

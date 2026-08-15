@@ -23,6 +23,19 @@
 - Project Git control: live status (dirty / behind / shallow / detached), classified errors, pull blocked on Files edits, `.env` restored after sync, fetch / checkout / reset, commit log; CLI `projects git status|log|fetch|checkout|reset`
 - Project Git auth: encrypted HTTPS token, per-project SSH deploy key, pinned `known_hosts` (no silent `StrictHostKeyChecking=no`); token never stored in the remote URL
 - Project Git inbound hook: `POST /api/v1/hooks/git/:id` with HMAC or `X-YSK-Git-Hook`; enable/rotate/disable from the App tab; full URL + copy; other-branch pushes skipped; operator pastes the URL into GitHub/Gitea/GitLab (not Slack)
+- Control-plane backup Preview lists the archive (`tar -tzf`); it no longer looks up a project row
+- Backup “Test destination” uses the unsaved form (does not persist)
+- CDN node probe classifies timeout / DNS / refused / TLS instead of only `fetch failed`
+- Redis cluster peer bundle README is Redis (not Galera / MySQL)
+- Dry-run cluster push notes no longer display as “system change is off”
+- Remote DB hosts have Test connection (TCP); migrate inventory lists leftover `/home/ysk-server-<uuid>`; panel / CLI `migrate orphan-homes` deletes only with confirm + EXECUTE
+- Cluster wizard can paste a `/agents` fleet session id (non-SSH path)
+- Backup SFTP test uses the saved outbound identity (same as `backup all`); form can pick the identity; missing key/password is not shown as EXECUTE-off
+- Remote SFTP push `mkdir -p`s the dest dir and copies the SQL sidecar next to the tar
+- `db-cluster create --kind postgres-replica` infers `--engine postgres`; postgres probe runs as `postgres`
+- CDN apply does not invent `root@publicIpv4`; loopback origin is rewritten or refused on a remote edge
+- Login authorized_keys can target an existing Linux user with 0 projects; SSH key test treats nologin as PASS
+- `software get postgresql` treats an active unit as installed when `postgres` is not on PATH
 
 ## 1.0.37 — 2026-08-15
 

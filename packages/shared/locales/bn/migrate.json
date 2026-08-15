@@ -78,5 +78,9 @@
   "dryRunOnlyDesc": "· ইনভেন্টরি + শুধুমাত্র প্রিচেক; কোনো rsync বা টার্গেট লেখা নেই",
   "executeNote": "হোস্টের প্রয়োজন YSK_EXECUTE=1 এবং রুট API। মাইগ্রেট করার পরে, DNS A/AAAA আপডেট করুন এবং ক্লাউড ফায়ারওয়াল + মেল PTR চেক করুন।",
   "dnsCutover": "DNS কাটওভার (ম্যানুয়াল)",
-  "dnsCutoverDesc": "নতুন পাবলিক আইপিতে এই নামের জন্য A/AAAA পয়েন্ট করুন;"
+  "dnsCutoverDesc": "নতুন পাবলিক আইপিতে এই নামের জন্য A/AAAA পয়েন্ট করুন;",
+  "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
+  "orphanRemove": "Remove leftover home",
+  "orphanRemoveTitle": "Delete leftover project home?",
+  "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1."
 }

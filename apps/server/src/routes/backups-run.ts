@@ -7,6 +7,7 @@ import { tl } from 'ysk-server-shared';
 import {
   backupAllProjects,
   backupControlPlane,
+  CONTROL_PLANE_BACKUP_ID,
   restoreControlPlaneBackup,
   restoreProjectBackup,
 } from 'ysk-server-core';
@@ -112,11 +113,14 @@ export async function handleBackupsRunRoutes(
           p.updated_at = new Date().toISOString();
         }
         try {
+          const sqlSidecar = item.archivePath.replace(/\.tar\.gz$/i, '.sql');
           const push = await pushBackupRemote({
             host: ctx.host,
             db: ctx.db,
             dataDir: ctx.dataDir,
-            localArchivePath: item.archivePath });
+            localArchivePath: item.archivePath,
+            extraLocalPaths: item.includesDatabase ? [sqlSidecar] : [],
+          });
           sideResults.push({
             projectId: item.projectId,
             kind: 'remote',
@@ -210,6 +214,25 @@ export async function handleBackupsRunRoutes(
     };
     if (!data.projectId || !data.name) {
       sendJson(res, 400, { ok: false, notes: [tl('notes.auto.n0049')] });
+      return true;
+    }
+    if (data.projectId === CONTROL_PLANE_BACKUP_ID) {
+      const r = await restoreControlPlaneBackup({
+        host: ctx.host,
+        dataDir: ctx.dataDir,
+        archiveName: data.name,
+        mode: data.mode === 'full' ? 'full' : 'dry-run',
+      });
+      ctx.audit.append({
+        actor: user.username,
+        action:
+          data.mode === 'full'
+            ? 'backup.control_plane.restore'
+            : 'backup.control_plane.restore.dry_run',
+        detail: { name: data.name, mode: data.mode ?? 'dry-run', ok: r.ok },
+        ok: r.ok,
+      });
+      sendOpsResult(res, r);
       return true;
     }
     const project = ctx.db.snapshot.projects.find((p) => p.id === data.projectId);

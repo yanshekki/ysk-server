@@ -373,7 +373,9 @@
     "strictBlocked": "الحزمة أو PAM غير جاهزة؛ لا يمكن تطبيق Strict.",
     "strictDryRun": "معاينة الوضع الصارم",
     "errorNoDetail": "فشل الاختبار (بدون تفاصيل)",
-    "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it."
+    "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it.",
+    "loginNoProjects": "No projects. Authorize an existing Linux user (root / tester) below. Writing /root/.ssh needs YSK_EXECUTE=1.",
+    "loginLinuxHint": "Used when no project. Example: root or tester."
   },
   "sessionsActive": "جلسات نشطة",
   "sessionsOther": "أجهزة أخرى",

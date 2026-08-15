@@ -197,11 +197,17 @@ export async function testSshIdentity(input: {
   }
 
   const r = await input.host.runCommand(argv, { timeoutMs: 20_000 });
-  const ok = r.exitCode === 0;
+  const errText = `${r.stderr || ''} ${r.stdout || ''}`;
+  const nologin =
+    r.exitCode !== 0 &&
+    /this account is currently not available|nologin|shell.*not available/i.test(errText);
+  const ok = r.exitCode === 0 || nologin;
   notes.push(
-    ok
+    r.exitCode === 0
       ? tl('notes.auto.n0434')
-      : tl('notes.auto.t0519', { v0: ((r.stderr || r.stdout || '').slice(0, 160)) }),
+      : nologin
+        ? tl('notes.ssh.keyOkNologin')
+        : tl('notes.auto.t0519', { v0: errText.slice(0, 160) }),
   );
 
   const identity = updateSshIdentityRecord(input.dataDir, row.id, {

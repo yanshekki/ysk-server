@@ -30,13 +30,30 @@
   },
   "ssh": {
     "identityNotFound": "找不到 identity",
-    "registrationNotFound": "找不到登記"
+    "registrationNotFound": "找不到登記",
+    "keyOkNologin": "金鑰已接受。帳戶無登入 shell（nologin）——請用 SFTP。視為通過。"
   },
   "cdn": {
     "siteNotFound": "找不到 CDN 站點",
-    "nodeMissing": "節點不存在"
+    "nodeMissing": "節點不存在",
+    "loopbackOriginRemote": "來源是 127.0.0.1——那是本機，不是遠端 edge。請設可達的 origin IP 或 bind_ip。",
+    "needSshOrFleet": "遠端 edge 需要出站 SSH 身份（或用戶名），或 /agents 機群 session。單憑 Health URL 不能套用。",
+    "probe": {
+      "timeout": "連線逾時 {{ms}}ms（{{detail}}）。對端可能被防火牆擋住。",
+      "dns": "DNS 查詢失敗（{{detail}}）。",
+      "refused": "連線被拒 {{ms}}ms（{{detail}}）。埠未開或單向封鎖。",
+      "tls": "TLS 驗證失敗（{{detail}}）。",
+      "unreach": "主機不可達 {{ms}}ms（{{detail}}）。",
+      "http": "HTTP 探活失敗 {{ms}}ms（{{detail}}）。"
+    }
   },
   "backup": {
+    "testUnsaved": "正在測試未儲存的表單（尚未寫入設定）。",
+    "testIdentity": "ssh（身份金鑰）連到 {{spec}} 成功",
+    "sshAuthFailed": "SSH 金鑰或密碼被拒（publickey）。請選出站身份，或安裝 sshpass。",
+    "remotePathIsFile": "遠端路徑 {{path}} 是檔案。請用目錄。",
+    "remoteMkdirFailed": "無法建立遠端目錄：{{detail}}",
+    "sidecarPushed": "已一併推送 SQL sidecar {{name}}",
     "fileNotFound": "找不到備份檔",
     "resticNoPassword": "Restic 已啟用但未設定 密碼",
     "resticNotInPath": "Restic 不在 路徑",
@@ -127,7 +144,10 @@
   },
   "db": {
     "needExecuteCreate": "伺服器未開啟系統變更權限，無法在管理面板建立資料庫",
-    "dryRunMysql": "預覽試行：未建立資料庫。加 --執行 且 系統變更權限已開啟 先真正 provision"
+    "dryRunMysql": "預覽試行：未建立資料庫。加 --執行 且 系統變更權限已開啟 先真正 provision",
+    "remoteNoCreds": "未存帳號／密碼——只測 TCP（登記 ≠ 已登入）。",
+    "remoteReachable": "TCP {{host}}:{{port}} 可達（{{ms}}ms）。",
+    "remoteUnreachable": "TCP {{host}}:{{port}} 關閉或被過濾（{{ms}}ms）。"
   },
   "net": {
     "invalidIface": "介面名稱無效",
@@ -637,7 +657,7 @@
     "n0381": "post-傳輸 停在 reapply",
     "n0382": "post-傳輸 停在 還原",
     "n0383": "postconf 未能確認 message_rate_limit（不當完整 已套用）",
-    "n0384": "postgres-從節點 僅支援 postgres",
+    "n0384": "kind postgres-replica 需要 --engine postgres",
     "n0385": "postgres_databases 列缺 名稱",
     "n0386": "postqueue 不可用或郵件堆疊未安裝",
     "n0387": "preflight 失敗",
@@ -806,7 +826,7 @@
     "n0550": "例如 128M、256M、512M、-1（無限）",
     "n0551": "例如 512MiB；留空不設",
     "n0552": "例如 900 1 300 10；空字串關閉",
-    "n0553": "例：--member 10.0.0.3=從節點:機群:SESSION_UUID",
+    "n0553": "到 /agents 複製 session UUID 填入叢集表單，或 CLI --member 10.0.0.3=從節點:機群:SESSION_UUID",
     "n0554": "供應商 = ASN（自治系統），非消費品牌名",
     "n0555": "保持 22/80/443；受攻擊時可手動關非必要埠",
     "n0556": "保留策略：最近 10 份",
@@ -3070,6 +3090,14 @@
     "libraryDestIsFile": "無法建立名為 {{name}} 的資料夾——該處已有同名檔案。",
     "librarySeedMissing": "此資料夾沒有可做種的對應檔案。",
     "libraryWaitingPeers": "正在等待 peers。若檔案已在此主機，請重新加入並選使用現有檔案做種。"
+  },
+  "migrate": {
+    "orphanConfirm": "請輸入完整孤立主目錄路徑以確認刪除。",
+    "orphanStillInStore": "該主目錄仍屬於 store 內的專案。",
+    "orphanMissing": "磁碟沒有此路徑：{{path}}",
+    "orphanNeedExecute": "將刪除孤立主目錄 {{path}}。需 YSK_EXECUTE=1。",
+    "orphanRmFailed": "無法刪除孤立主目錄：{{detail}}",
+    "orphanRemoved": "已刪除孤立專案主目錄 {{path}}。"
   },
   "leftover": {
     "staleCliTitle": "遺留舊版 CLI",

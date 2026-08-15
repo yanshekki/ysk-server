@@ -82,6 +82,7 @@ pnpm e2e:real-ops
 - 自動多 CDN 商（Akamai 等）  
 - 全網 Anycast 任播  
 - 無 agent 時假標 `applied`  
+- 虛構 `root@publicIpv4` SSH；遠端 edge 使用 loopback origin 而不改寫／拒絕  
 
 見 [dns-cdn-design.md](../product/dns-cdn-design.md) · [panel-parity-matrix](../cli/panel-parity-matrix.md)。
 

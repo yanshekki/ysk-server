@@ -32,6 +32,7 @@ export YSK_EXECUTE=1   # systemd／nginx 通常需 root
 ysk-server projects create --name demo --domain demo.example.com --runtime node --create-dns --create-mail --json
 ysk-server projects deploy --id <UUID> --execute --json
 ysk-server nginx sync --execute --json
+# Git 控制：projects git status|fetch|checkout|reset；入站 hook 為 POST /api/v1/hooks/git/:id（不是 Slack）
 ```
 
 詳見：[../features/projects-ZH.md](../features/projects-ZH.md)。
@@ -102,6 +103,8 @@ ysk-server update --check --json
 ```bash
 ysk-server defense status --json
 ysk-server backup schedule --install --execute
+ysk-server backup settings test --json
+ysk-server migrate inventory --json
 ysk-server readiness --json
 ```
 

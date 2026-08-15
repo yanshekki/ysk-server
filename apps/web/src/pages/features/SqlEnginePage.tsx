@@ -925,7 +925,31 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                       <strong>{String(h.label)}</strong> · {String(h.host)}:
                       {String(h.port)} · {String(h.username ?? '—')}
                       {h.hasPassword ? ' · 🔐' : ''}
+                      {h.lastChecked
+                        ? ` · ${Boolean((h.lastChecked as { ok?: boolean }).ok) ? t('db.remoteTestOk') : t('db.remoteTestFail')}`
+                        : ` · ${t('db.remoteNotChecked')}`}
                     </span>
+                    <span className="u-flex u-gap-2">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        loading={busy}
+                        onClick={() => {
+                          void api
+                            .requestRaw(`/api/v1/db/remote-hosts/${h.id}/test`, {
+                              method: 'POST',
+                              body: '{}',
+                            })
+                            .then((r) => {
+                              const notes = (r as { notes?: string[] }).notes?.join('；');
+                              setMsg(notes || t('db.remoteTestDone'));
+                              return refreshExtras();
+                            })
+                            .catch((e: Error) => setError(e.message));
+                        }}
+                      >
+                        {t('db.remoteTest')}
+                      </Button>
                     <Button
                       variant="danger"
                       size="sm"
@@ -939,6 +963,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                     >
                       {t('common.delete')}
                     </Button>
+                    </span>
                   </li>
                 ))}
               </ul>

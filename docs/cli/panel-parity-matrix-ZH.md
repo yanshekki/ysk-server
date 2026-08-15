@@ -55,14 +55,14 @@
 | 域 | CLI 入口 |
 |----|----------|
 | 控制平面 | `setup` `serve` `readiness` `health` `store` `system unit-install` `update` |
-| 專案 | `projects list\|get\|create\|deploy\|stop\|git-deploy\|git\|isolation\|health` |
+| 專案 | `projects list\|get\|create\|deploy\|stop\|git-deploy\|git`（status/fetch/checkout/reset/auth/hook）`isolation\|health` |
 | 檔案 | `files list\|read\|write\|mkdir\|rm\|…\|trash\|webdav\|shares list\|create\|bt-stats` |
 | BT Tracker | `bt-tracker status\|start\|stop\|settings\|torrents\|restore\|jobs` |
 | 郵件 | `email domains\|mailboxes\|dns\|bootstrap\|deliverability` |
 | Nginx／SSL／DNS 區域 | `nginx` `ssl` `dns` `hosting …` |
 | 防護 | `defense`／`protection` |
 | CDN／agents／db-cluster | `cdn` `agents` `db-cluster` |
-| Cron／備份／遷移 | `cron` `backup` `migrate` |
+| Cron／備份／遷移 | `cron` `backup` `migrate`（`orphan-homes`） |
 | 安全身分 | `security` `ssh-key` `ssh-2fa` `users` `rbac` |
 | 服務／主機／日誌 | `services` `host` `logs` |
 | 堆疊 | `stack plans\|install\|…` |

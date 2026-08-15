@@ -424,7 +424,10 @@
     "testRemoteDone": "রিমোট প্রোব শেষ",
     "testRemoteFailed": "রিমোট প্রোব ব্যর্থ",
     "resticRepoPh": "Panel data directory / restic-repo",
-    "testDisabledHint": "Turn on remote push before testing."
+    "testDisabledHint": "Turn on remote push before testing.",
+    "identityId": "Outbound SSH identity",
+    "identityHint": "Preferred. Same vault as /security SSH. Password needs sshpass.",
+    "identityNone": "None — password or default key"
   },
   "btTracker": {
     "title": "বিটি ট্র্যাকার",
@@ -1814,7 +1817,7 @@
         }
       },
       "x": {
-        "972912": "ব্যবহার:\n  ysk-সার্ভার মাইগ্রেট ইনভেন্টরি [--ডেটা-ডির PATH] --json\n  ysk-সার্ভার মাইগ্রেট হোস্ট --target root@IP [--identity-file PATH|--identity-id ID|--পাসওয়ার্ড PW] -- execute [--রক্ষণাবেক্ষণ] [-force-wipe-target]\n  ysk-সার্ভার মাইগ্রেট পোস্ট -- জব আইডি -- ডেটা-ডির PATH -- টার্গেটে # চালান\n  ysk-সার্ভার মাইগ্রেট অবস্থা [--চাকরির আইডি]\n  ysk-সার্ভার মাইগ্রেট জীবনবৃত্তান্ত --জব আইডি --এক্সিকিউট"
+        "972912": "ব্যবহার:\n  ysk-সার্ভার মাইগ্রেট ইনভেন্টরি [--ডেটা-ডির PATH] --json\n  ysk-সার্ভার মাইগ্রেট হোস্ট --target root@IP [--identity-file PATH|--identity-id ID|--পাসওয়ার্ড PW] -- execute [--রক্ষণাবেক্ষণ] [-force-wipe-target]\n  ysk-সার্ভার মাইগ্রেট পোস্ট -- জব আইডি -- ডেটা-ডির PATH -- টার্গেটে # চালান\n  ysk-সার্ভার মাইগ্রেট অবস্থা [--চাকরির আইডি]\n  ysk-সার্ভার মাইগ্রেট জীবনবৃত্তান্ত --জব আইডি --এক্সিকিউট\n  ysk-server migrate orphan-homes [--data-dir PATH] --json\n  ysk-server migrate orphan-homes --path /home/ysk-server-UUID --confirm PATH --execute\n"
       },
       "hostingHelp": "ব্যবহার: ysk-সার্ভার হোস্টিং <sub>\n  বিপজ্জনক অপ্স ডিফল্ট ড্রাই-রান; প্রয়োগ করতে --execute (+ YSK_EXECUTE=1) যোগ করুন\n  nginx | nginx-sync [--নির্বাহিত]\n  redis-বিধান | postgres-বিধান | mysql-বিধান [--নির্বাহিত]\n  dns-zone --zone X --ip A.B.C.D [--ipv6 X:X::X] [--প্রমাণিত করুন] [--পুনরায় লোড করুন]\n  dns-জোন | powerdns-স্থিতি | powerdns-install [--install|--Execute]\n  powerdns-load --zone X --ip A.B.C.D [--load|--Execute]\n  ইমেল-প্রয়োগ --ডোমেইন এক্স [--ইনস্টল|--চালনা]\n  email-mailbox --domain X --local user [--password P] [--ip A.B.C.D] [--সিস্টেম]\n  ftps-অ্যাপ্লাই --ডোমেইন এক্স [--ইনস্টল|--চালনা করা]\n  রানটাইম | runtime-install --kind node|php|python|go|rust --version V [--install|--execute]\n  dovecot-passdb --domain X | --সব\n  webmail-apply --domain webmail.example.com [--ডাউনলোড]\n  public-files --domain files.example.com [--রিলোড]\n  email-bootstrap --domain example.com --ip A.B.C.D [--install|--execute]\n  email-deliverability --domain example.com # PTR/DNSBL/warmup প্যাক (সৎ)\n  ফায়ারওয়াল-প্রয়োগ [--smtp] [--চালিত]",
       "logsQuery": "ব্যবহার: {{CLI_NAME}} লগ ক্যোয়ারী --source <id> [--লাইন N] [--grep G] [--1ঘন্টা থেকে] [--অগ্রাধিকার ত্রুটি]\n  উত্স উদাহরণ: জার্নাল: journal:nginx.service ফাইল:syslog প্রকল্প:<uuid>\n  {{CLI_NAME}} লগ সোর্স --json\n  {{CLI_NAME}} লগ জার্নাল [--unit nginx.service] --json"
@@ -2570,7 +2573,10 @@
       "probe": "অনুসন্ধান",
       "name": "নাম",
       "type": "টাইপ",
-      "status": "স্ট্যাটাস"
+      "status": "স্ট্যাটাস",
+      "fleetSession": "Fleet agent session id",
+      "fleetSessionHint": "Optional. Paste a session UUID from /agents. Then this peer uses fleet (no SSH). Leave empty for SSH scp.",
+      "fleetSessionPh": "Agents page session UUID"
     },
     "console": {
       "dataBrowse": "ডেটা ব্রাউজ করুন",
@@ -2640,7 +2646,12 @@
     "emptyDbHostHasRows": "The host already has databases that are not in this control-plane list.",
     "hostHasUntracked": "{{count}} host databases are not registered in the panel",
     "hostInventoryHint": "The table is control-plane rows only. Live names come from SHOW DATABASES.",
-    "adoptHostDb": "Register {{name}}"
+    "adoptHostDb": "Register {{name}}",
+    "remoteTest": "Test connection",
+    "remoteTestDone": "Remote host probe finished",
+    "remoteTestOk": "reachable",
+    "remoteTestFail": "unreachable",
+    "remoteNotChecked": "not tested"
   },
   "dialogs": {
     "confirmDefault": "নিশ্চিত করুন",
@@ -4812,7 +4823,11 @@
     "dryRunOnlyDesc": "· ইনভেন্টরি + শুধুমাত্র প্রিচেক; কোনো rsync বা টার্গেট লেখা নেই",
     "executeNote": "হোস্টের প্রয়োজন YSK_EXECUTE=1 এবং রুট API। মাইগ্রেট করার পরে, DNS A/AAAA আপডেট করুন এবং ক্লাউড ফায়ারওয়াল + মেল PTR চেক করুন।",
     "dnsCutover": "DNS কাটওভার (ম্যানুয়াল)",
-    "dnsCutoverDesc": "নতুন পাবলিক আইপিতে এই নামের জন্য A/AAAA পয়েন্ট করুন;"
+    "dnsCutoverDesc": "নতুন পাবলিক আইপিতে এই নামের জন্য A/AAAA পয়েন্ট করুন;",
+    "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
+    "orphanRemove": "Remove leftover home",
+    "orphanRemoveTitle": "Delete leftover project home?",
+    "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1."
   },
   "multiCheck": {
     "customPlaceholder": "কাস্টম কোড",
@@ -5179,11 +5194,22 @@
     },
     "ssh": {
       "identityNotFound": "পরিচয় পাওয়া যায়নি",
-      "registrationNotFound": "নিবন্ধন পাওয়া যায়নি"
+      "registrationNotFound": "নিবন্ধন পাওয়া যায়নি",
+      "keyOkNologin": "Key accepted. Account has no login shell (nologin) — use SFTP. Treated as PASS."
     },
     "cdn": {
       "siteNotFound": "CDN সাইট পাওয়া যায়নি",
-      "nodeMissing": "নোডের অস্তিত্ব নেই"
+      "nodeMissing": "নোডের অস্তিত্ব নেই",
+      "probe": {
+        "timeout": "Connect timeout after {{ms}}ms ({{detail}}). Peer may be firewalled.",
+        "dns": "DNS lookup failed ({{detail}}).",
+        "refused": "Connection refused after {{ms}}ms ({{detail}}). Port closed or one-way block.",
+        "tls": "TLS verify failed ({{detail}}).",
+        "unreach": "Host unreachable after {{ms}}ms ({{detail}}).",
+        "http": "HTTP probe failed after {{ms}}ms ({{detail}})."
+      },
+      "loopbackOriginRemote": "Origin is 127.0.0.1 — that is this host, not a remote edge. Set a reachable origin IP or bind_ip.",
+      "needSshOrFleet": "Remote edge needs an outbound SSH identity (or username) or a /agents fleet session. Health URL alone is not apply transport."
     },
     "backup": {
       "fileNotFound": "ব্যাকআপ ফাইল পাওয়া যায়নি",
@@ -5191,7 +5217,13 @@
       "resticNotInPath": "PATH-এ বিশ্রাম নেই",
       "dbEnvUnreadable": "Could not read .db.env; skipped SQL dump.",
       "dbEnvNoName": ".db.env has no database name; skipped SQL dump.",
-      "targetOutside": "Restore target must be inside the project home or the public files root."
+      "targetOutside": "Restore target must be inside the project home or the public files root.",
+      "testUnsaved": "Testing unsaved form values (not written to settings).",
+      "testIdentity": "ssh (identity) to {{spec}} ok",
+      "sshAuthFailed": "SSH key or password rejected (publickey). Pick an outbound identity or install sshpass.",
+      "remotePathIsFile": "Remote path {{path}} is a file. Use a directory.",
+      "remoteMkdirFailed": "Could not create remote directory: {{detail}}",
+      "sidecarPushed": "Also pushed SQL sidecar {{name}}"
     },
     "redis": {
       "cliMissing": "redis-cli ইনস্টল করা নেই"
@@ -5276,7 +5308,10 @@
     },
     "db": {
       "needExecuteCreate": "হোস্ট এক্সিকিউট বন্ধ আছে; প্যানেল থেকে ডাটাবেস তৈরি করতে পারে না",
-      "dryRunMysql": "dry-run: ডাটাবেস তৈরি করা হয়নি। বিধান করতে YSK_EXECUTE=1 দিয়ে --execute ব্যবহার করুন"
+      "dryRunMysql": "dry-run: ডাটাবেস তৈরি করা হয়নি। বিধান করতে YSK_EXECUTE=1 দিয়ে --execute ব্যবহার করুন",
+      "remoteNoCreds": "No username/password stored — TCP only (registration is not a login).",
+      "remoteReachable": "TCP {{host}}:{{port}} open ({{ms}}ms).",
+      "remoteUnreachable": "TCP {{host}}:{{port}} closed or filtered ({{ms}}ms)."
     },
     "net": {
       "invalidIface": "অবৈধ ইন্টারফেসের নাম",
@@ -8234,6 +8269,14 @@
       "hookEnabled": "Inbound Git hook is on. Paste the URL into GitHub, Gitea, or GitLab yourself.",
       "hookDisabled": "Inbound Git hook is off. The URL will not sync.",
       "hookSecretOnce": "Copy this hook secret now. It is not shown again."
+    },
+    "migrate": {
+      "orphanConfirm": "Type the exact leftover home path to confirm delete.",
+      "orphanStillInStore": "That home still belongs to a project in the store.",
+      "orphanMissing": "Path not on disk: {{path}}",
+      "orphanNeedExecute": "Would remove leftover {{path}}. Needs YSK_EXECUTE=1.",
+      "orphanRmFailed": "Could not remove leftover home: {{detail}}",
+      "orphanRemoved": "Removed leftover project home {{path}}."
     }
   },
   "ops": {
@@ -10599,7 +10642,9 @@
       "strictBlocked": "প্যাকেজ বা PAM প্রস্তুত নয়; Strict প্রয়োগ বন্ধ।",
       "strictDryRun": "কঠোর মোড প্রিভিউ",
       "errorNoDetail": "পরীক্ষা ব্যর্থ (বিস্তারিত নেই)",
-      "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it."
+      "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it.",
+      "loginNoProjects": "No projects. Authorize an existing Linux user (root / tester) below. Writing /root/.ssh needs YSK_EXECUTE=1.",
+      "loginLinuxHint": "Used when no project. Example: root or tester."
     },
     "sessionsActive": "সক্রিয় সেশন",
     "sessionsOther": "অন্যান্য ডিভাইস",

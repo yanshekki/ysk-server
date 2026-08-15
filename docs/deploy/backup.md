@@ -17,3 +17,5 @@ Feature deep-dive: [../features/backups-cron.md](../features/backups-cron.md).
 ## Honesty
 
 Install schedule needs EXECUTE. dataDir archives ≠ offsite until remote/restic OK.
+
+SFTP test/push uses the outbound identity. Remote dest is created with `mkdir -p`. A project SQL sidecar is copied next to the tar when present. Control-plane Preview is `tar -tzf` (no project row).

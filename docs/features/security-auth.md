@@ -26,7 +26,7 @@ Panel **login security**: sessions, API keys, panel 2FA, audit trail; separate f
 | Sessions | `ysk-server security sessions list\|revoke…` | write-panel | |
 | API keys | `ysk-server security api-keys …` | write-panel | token once |
 | Audit | `ysk-server audit --json` | read | |
-| SSH keys | `ysk-server ssh-key …` | write-host | install needs execute |
+| SSH keys | `ysk-server ssh-key …` | write-host | install needs execute. Login `authorized_keys` can target an existing Linux user with 0 projects. Key test treats nologin after pubkey as PASS. |
 | SSH 2FA | `ysk-server ssh-2fa …` | write-host | ≠ panel TOTP |
 | Panel-user 2FA policy | `ysk-server security status` · `/security` | write-panel | `requireUserTotp` |
 | User 2FA status / clear | `ysk-server users totp\|totp-clear` | write-panel | |

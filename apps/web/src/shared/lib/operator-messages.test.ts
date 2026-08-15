@@ -58,7 +58,8 @@ describe('looksLikeBlockedMessage', () => {
     expect(looksLikeBlockedMessage('permission denied')).toBe(true);
     expect(looksLikeBlockedMessage('need root')).toBe(true);
     expect(looksLikeBlockedMessage('requires root')).toBe(true);
-    expect(looksLikeBlockedMessage('權限不足')).toBe(true);
+    expect(looksLikeBlockedMessage('未開啟系統變更權限')).toBe(true);
+    expect(looksLikeBlockedMessage('真正推送需 執行 + 系統變更權限已開啟')).toBe(false);
     expect(looksLikeBlockedMessage('all good')).toBe(false);
   });
 });
@@ -67,6 +68,16 @@ describe('humanizeOperatorNote', () => {
   it('returns null for empty', () => {
     expect(humanizeOperatorNote('')).toBeNull();
     expect(humanizeOperatorNote('   ')).toBeNull();
+  });
+
+  it('maps SSH publickey deny to auth, not panel EXECUTE-off', () => {
+    const n = humanizeOperatorNote('Permission denied (publickey,password).');
+    expect(n).not.toMatch(/無法在管理面板完成此操作|伺服器未開啟系統變更權限/);
+  });
+
+  it('does not treat dry-run “needs execute to apply” as execute-off', () => {
+    const n = humanizeOperatorNote('真正推送需 執行 + 系統變更權限已開啟');
+    expect(n).not.toMatch(/伺服器未開啟系統變更權限|無法在管理面板完成此操作/);
   });
 
   it('maps execute / root blocks to localized ops keys', () => {

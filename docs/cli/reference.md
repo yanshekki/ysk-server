@@ -97,7 +97,7 @@ ysk-server templates list|apply …
 Low-level hosting helpers (default dry-run):
 
 ```bash
-ysk-server hosting leftovers
+ysk-server hosting leftovers   # read-only; overlay does not rewrite host files
 ysk-server hosting nginx|nginx-sync [--execute]
 ysk-server hosting mysql-provision|postgres-provision|redis-provision [--execute]
 ysk-server hosting dns-zone --zone X --ip A.B.C.D …
@@ -126,10 +126,12 @@ ysk-server backup list [--q TEXT]
 ysk-server backup status
 ysk-server backup all [--side …]
 ysk-server backup restore --project-id ID --name ARCHIVE [--mode full|web|dry-run] [--target DIR]
+# control-plane preview: --project-id control-plane  (tar -tzf; no project row)
 ysk-server backup delete …
 ysk-server backup schedule [--install] [--execute]
 ysk-server backup control-plane
 ysk-server backup settings get|set|test [--remote-enable] [--remote-kind sftp|s3|local] [--s3-bucket …]
+# test uses form/settings identity; live probe needs --execute + YSK_EXECUTE=1
 ysk-server backup restic …
 ```
 
@@ -292,7 +294,8 @@ ysk-server db-cluster list|get|create|plan …
 ## migrate
 
 ```bash
-ysk-server migrate inventory|host|post|status|resume …
+ysk-server migrate inventory|host|post|status|resume|orphan-homes …
+# orphan-homes: list leftover /home/ysk-server-<uuid>; --path + --confirm + --execute to delete
 ```
 
 ## tools | ask
@@ -383,6 +386,7 @@ See [../features/system-host.md](../features/system-host.md).
 ysk-server updates hub [--refresh-runtimes]
 ysk-server updates inventory|refresh|apply|apply-batch|summary|self …
 ysk-server software list|get|install|uninstall|uninstall-preview|upgrades|versions …
+# postgresql: active unit counts as installed when postgres is not on PATH
 ysk-server stack plans|bundles|status|install|scan …
 ysk-server update [--check] [--apply]   # product npm self-update
 ```
@@ -396,6 +400,7 @@ ysk-server db status|console|apply|lifecycle|install --engine mysql|mariadb|post
 ysk-server db sql-engine preview|switch --target mysql|mariadb …
 ysk-server redis status|settings|keys|get|set|del|install|start …
 ysk-server db-cluster list|get|create|plan|apply|probe …
+# create --kind postgres-replica infers --engine postgres; probe runs as postgres
 ```
 
 See [../features/databases.md](../features/databases.md).
@@ -478,7 +483,7 @@ Without `--execute`: plan / write managed unit files only.
 | `schedule --install` | Install schedule (EXECUTE) |
 | `control-plane` | Backup control-plane state |
 | `restic …` | Restic helpers when configured |
-| `settings get\|set` | Remote / exclusion settings |
+| `settings get\|set\|test` | Remote dest; test can use unsaved values + outbound identity; live probe needs EXECUTE |
 
 ### email deliverability
 

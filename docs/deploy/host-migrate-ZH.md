@@ -21,6 +21,8 @@
 
 ```bash
 ysk-server migrate inventory --data-dir /var/lib/ysk-server --json
+ysk-server migrate orphan-homes --json
+# 刪除殘留 home：--path /home/ysk-server-UUID --confirm /home/ysk-server-UUID --execute
 ysk-server migrate host --target root@NEW_IP --identity-file /root/.ssh/id_ed25519 \
   --execute --maintenance --data-dir /var/lib/ysk-server
 # 或密碼（環境變數較安全）：
@@ -35,7 +37,8 @@ ysk-server migrate status [--job id]
 
 | 方法 | 路徑 | 說明 |
 |------|------|------|
-| POST | `/api/v1/system/migrate/inventory` | 盤點 |
+| POST | `/api/v1/system/migrate/inventory` | 盤點（含 `orphanHomes`） |
+| POST | `/api/v1/system/migrate/orphan-homes` | 刪除殘留 `/home/ysk-server-<uuid>`（confirm + EXECUTE） |
 | GET | `/api/v1/system/migrate/jobs` | 列表 |
 | GET | `/api/v1/system/migrate/jobs/:id` | 詳情 |
 | POST | `/api/v1/system/migrate/jobs` | 執行/resume（body: target, password?, execute, maintenanceAccepted…） |

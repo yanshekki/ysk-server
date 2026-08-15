@@ -260,6 +260,40 @@ describe('testBackupRemote', () => {
     expect(incomplete.kind).toBe('sftp');
   });
 
+  it('sftp test without identity or password asks for a key', async () => {
+    const { host, db } = setup(true);
+    setBackupRemote(db, {
+      enabled: true,
+      kind: 'sftp',
+      host: 'backup.example.com',
+      username: 'ysk',
+      path: '/backups',
+    });
+    const r = await testBackupRemote({ host, db });
+    expect(r.ok).toBe(false);
+    expect(r.requiresExecute).not.toBe(true);
+    expect(r.notes.join(' ')).toMatch(/identityId|sshpass/i);
+  });
+
+  it('overlay enabled tests the form without persisting', async () => {
+    const { host, db } = setup(false);
+    const r = await testBackupRemote({
+      host,
+      db,
+      overlay: {
+        enabled: true,
+        kind: 'sftp',
+        host: 'backup.example.com',
+        username: 'ysk',
+        path: '/backups/ysk',
+      },
+    });
+    expect(r.ok).toBe(false);
+    expect(r.requiresExecute).toBe(true);
+    expect(r.notes.join(' ')).not.toMatch(/n1479|not enabled/i);
+    expect(getBackupRemote(db).enabled).toBe(false);
+  });
+
   it('rejects metadata / loopback SFTP host and IMDS S3 endpoint', async () => {
     const { host, db } = setup(true);
     setBackupRemote(db, {

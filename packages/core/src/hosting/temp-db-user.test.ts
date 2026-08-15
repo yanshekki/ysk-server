@@ -11,6 +11,7 @@ import {
   listRemoteDbHosts,
   upsertRemoteDbHost,
   deleteRemoteDbHost,
+  testRemoteDbHost,
 } from './temp-db-user.js';
 import type { HostExecutor } from '../host/executor.js';
 
@@ -97,6 +98,14 @@ describe('temp-db-user', () => {
         true,
       );
       expect(deleteRemoteDbHost(db, rem.id)).toBe(true);
+
+      const bad = upsertRemoteDbHost(db, {
+        engine: 'mysql',
+        label: 'imds',
+        host: '169.254.169.254',
+      });
+      const probed = await testRemoteDbHost(db, bad.id);
+      expect(probed.ok).toBe(false);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

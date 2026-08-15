@@ -24,6 +24,10 @@
 - 主機是 MariaDB → MySQL server **未安裝**（`blockedByExclusive`）。
 - MySQL **服務頁**與**資料庫頁**必須用同一 `presence('mysql-server')`，不可以再「有 mysql client 就算已安裝 MySQL」。
 
+## PostgreSQL
+
+`software get postgresql`：若 `postgres` 不在 PATH，但 `postgresql` unit 為 **active**，仍視為已安裝（二進位常在 `/usr/lib/postgresql/*/bin`）。有版本路徑時仍優先用該路徑。
+
 ## 新增軟件
 
 1. 寫入 `SOFTWARE_CATALOG`

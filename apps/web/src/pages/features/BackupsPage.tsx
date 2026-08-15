@@ -23,6 +23,7 @@ import {
   PromptDialog } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { api } from '../../shared/services/api';
+import { sshApi } from '../../features/security/ssh/api';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { useCapabilities } from '../../shared/hooks/useCapabilities';
@@ -46,6 +47,7 @@ type RemoteSettings = {
   username?: string;
   path?: string;
   password?: string;
+  identityId?: string;
   s3Bucket?: string;
   s3Region?: string;
   s3Endpoint?: string;
@@ -161,9 +163,10 @@ export function BackupsPage() {
     snapshotId: string;
   } | null>(null);
   const { busy, error: actErr, result, msg, run, setMsg } = useFeatureAction();
+  const [identities, setIdentities] = useState<Array<{ id: string; name?: string }>>([]);
 
   const refresh = useCallback(async () => {
-    const [r, s, proj] = await Promise.all([
+    const [r, s, proj, ids] = await Promise.all([
       api.requestRaw<{
         items: BackupItem[];
         lastRun?: Record<string, unknown> | null;
@@ -174,7 +177,9 @@ export function BackupsPage() {
         restic?: ResticSettings;
       }>('/api/v1/backups/settings'),
       api.listProjects().catch(() => ({ items: [] })),
+      sshApi.listIdentities().catch(() => ({ items: [] as Array<{ id: string; name?: string }> })),
     ]);
+    setIdentities(ids.items ?? []);
     setItems(r.items ?? []);
     setLastRun(r.lastRun ?? null);
     setLiveProjectCount(proj.items?.length ?? 0);
@@ -194,7 +199,9 @@ export function BackupsPage() {
         s3Endpoint: s.remote.s3Endpoint ?? '',
         awsAccessKeyId: s.remote.awsAccessKeyId ?? '',
         awsSecretAccessKey:
-          s.remote.awsSecretAccessKey === '***' ? '' : (s.remote.awsSecretAccessKey ?? '') });
+          s.remote.awsSecretAccessKey === '***' ? '' : (s.remote.awsSecretAccessKey ?? ''),
+        identityId: s.remote.identityId ?? '',
+      });
     }
     if (s.restic) {
       const hasPw =
@@ -1026,6 +1033,28 @@ export function BackupsPage() {
                           disabled={!remote.enabled}
                         />
                       </Field>
+                      <Field
+                        label={t('backups.identityId')}
+                        htmlFor="bk-ident"
+                        hint={t('backups.identityHint')}
+                        flush
+                      >
+                        <select
+                          id="bk-ident"
+                          value={remote.identityId ?? ''}
+                          onChange={(e) =>
+                            setRemote((r) => ({ ...r, identityId: e.target.value || undefined }))
+                          }
+                          disabled={!remote.enabled}
+                        >
+                          <option value="">{t('backups.identityNone')}</option>
+                          {identities.map((i) => (
+                            <option key={i.id} value={i.id}>
+                              {(i.name || i.id).slice(0, 48)}
+                            </option>
+                          ))}
+                        </select>
+                      </Field>
                     </>
                   ) : null}
                   {remote.kind === 's3' ? (
@@ -1213,7 +1242,15 @@ export function BackupsPage() {
                         try {
                           return (await api.requestRaw('/api/v1/backups/remote/test', {
                             method: 'POST',
-                            body: '{}',
+                            body: JSON.stringify({
+                              remote: {
+                                ...remote,
+                                password:
+                                  !remote.password || remote.password === '***'
+                                    ? undefined
+                                    : remote.password,
+                              },
+                            }),
                           })) as OpsResultLike;
                         } catch (e) {
                           const m = e instanceof Error ? e.message : t('backups.testRemoteFailed');
@@ -1239,12 +1276,22 @@ export function BackupsPage() {
           if (!restoreTarget) return;
           void run(async () => {
             try {
-              const r = await api.requestRaw('/api/v1/backups/restore', {
+              const path =
+                restoreTarget.projectId === 'control-plane'
+                  ? '/api/v1/backups/control-plane/restore'
+                  : '/api/v1/backups/restore';
+              const r = await api.requestRaw(path, {
                 method: 'POST',
-                body: JSON.stringify({
-                  projectId: restoreTarget.projectId,
-                  name: restoreTarget.name,
-                  mode: restoreMode }) });
+                body: JSON.stringify(
+                  restoreTarget.projectId === 'control-plane'
+                    ? { name: restoreTarget.name, mode: 'dry-run' }
+                    : {
+                        projectId: restoreTarget.projectId,
+                        name: restoreTarget.name,
+                        mode: restoreMode,
+                      },
+                ),
+              });
               setRestoreTarget(null);
               await refresh();
               return r as OpsResultLike;

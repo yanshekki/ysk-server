@@ -319,7 +319,7 @@ export async function probeDbCluster(input: {
   } else if (cluster.kind === 'postgres-replica') {
     const role = (local?.role || 'primary').toLowerCase();
     const r = await input.host.runCommand(
-      ['psql', '-tAc', 'SELECT pg_is_in_recovery();'],
+      ['runuser', '-u', 'postgres', '--', 'psql', '-tAc', 'SELECT pg_is_in_recovery();'],
       { timeoutMs: 15_000 },
     );
     if (r.exitCode !== 0) {

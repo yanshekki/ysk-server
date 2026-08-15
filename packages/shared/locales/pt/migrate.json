@@ -78,5 +78,9 @@
   "dryRunOnlyDesc": "· Estoque + pré-verificação somente; sem rsync ou gravações de destino",
   "executeNote": "O host precisa de YSK_EXECUTE=1 e API raiz. Após a migração, atualize o DNS A/AAAA e verifique o firewall da nuvem + PTR de correio.",
   "dnsCutover": "Substituição de DNS (manual)",
-  "dnsCutoverDesc": "Aponte A/AAAA para esses nomes para o novo IP público;"
+  "dnsCutoverDesc": "Aponte A/AAAA para esses nomes para o novo IP público;",
+  "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
+  "orphanRemove": "Remove leftover home",
+  "orphanRemoveTitle": "Delete leftover project home?",
+  "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1."
 }

@@ -58,6 +58,7 @@ export function MigrateHostPage() {
   const [last, setLast] = useState<MigrateOpsResult | null>(null);
   const [jobs, setJobs] = useState<MigrateJob[]>([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [orphanTarget, setOrphanTarget] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   const loadJobs = useCallback(async () => {
@@ -296,6 +297,28 @@ export function MigrateHostPage() {
                           ) : null}
                         </ul>
                       </Alert>
+                    ) : null}
+                    {((inventory.manifest as { orphanHomes?: string[] } | undefined)?.orphanHomes ?? [])
+                      .length > 0 ? (
+                      <div className="u-mt-3">
+                        <p className="muted u-text-sm">{t('migrate.orphanHomesHint')}</p>
+                        <ul className="list-plain">
+                          {((inventory.manifest as { orphanHomes?: string[] }).orphanHomes ?? []).map(
+                            (p) => (
+                              <li key={p} className="u-justify-between">
+                                <code className="inline u-text-sm">{p}</code>
+                                <Button
+                                  variant="danger"
+                                  size="sm"
+                                  onClick={() => setOrphanTarget(p)}
+                                >
+                                  {t('migrate.orphanRemove')}
+                                </Button>
+                              </li>
+                            ),
+                          )}
+                        </ul>
+                      </div>
                     ) : null}
                   </>
                 ) : (
@@ -626,6 +649,30 @@ export function MigrateHostPage() {
         title={t('migrate.confirmTitle')}
         description={t('migrate.confirmDesc', { target: target.trim() || t('migrate.unfilledTarget') })}
         confirmLabel={t('migrate.confirmStart')}
+        cancelLabel={t('common.cancel')}
+        danger
+        busy={busy}
+      />
+      <ConfirmDialog
+        open={Boolean(orphanTarget)}
+        onClose={() => !busy && setOrphanTarget(null)}
+        onConfirm={() => {
+          if (!orphanTarget) return;
+          const path = orphanTarget;
+          setBusy(true);
+          void migrateApi
+            .removeOrphanHome(path)
+            .then((r) => {
+              setLast(r);
+              setOrphanTarget(null);
+              return refreshAll();
+            })
+            .catch((e: Error) => setErr(e.message))
+            .finally(() => setBusy(false));
+        }}
+        title={t('migrate.orphanRemoveTitle')}
+        description={t('migrate.orphanRemoveDesc', { path: orphanTarget ?? '' })}
+        confirmLabel={t('migrate.orphanRemove')}
         cancelLabel={t('common.cancel')}
         danger
         busy={busy}

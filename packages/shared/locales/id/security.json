@@ -373,7 +373,9 @@
     "strictBlocked": "Paket atau PAM belum siap; penerapan Strict dinonaktifkan.",
     "strictDryRun": "Pratinjau mode ketat",
     "errorNoDetail": "Uji gagal (tanpa rincian)",
-    "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it."
+    "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it.",
+    "loginNoProjects": "No projects. Authorize an existing Linux user (root / tester) below. Writing /root/.ssh needs YSK_EXECUTE=1.",
+    "loginLinuxHint": "Used when no project. Example: root or tester."
   },
   "sessionsActive": "Sesi aktif",
   "sessionsOther": "Perangkat lain",

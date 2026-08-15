@@ -134,5 +134,8 @@
   "testRemoteDone": "اكتمل فحص الوجهة",
   "testRemoteFailed": "فشل فحص الوجهة",
   "resticRepoPh": "Panel data directory / restic-repo",
-  "testDisabledHint": "Turn on remote push before testing."
+  "testDisabledHint": "Turn on remote push before testing.",
+  "identityId": "Outbound SSH identity",
+  "identityHint": "Preferred. Same vault as /security SSH. Password needs sshpass.",
+  "identityNone": "None — password or default key"
 }

@@ -65,7 +65,8 @@ export const sshApi = {
     api.requestRaw<{ items: SftpKeyRow[] }>('/api/v1/sftp/keys'),
 
   addLoginKey: (body: {
-    projectId: string;
+    projectId?: string;
+    linuxUser?: string;
     publicKey: string;
     comment?: string;
   }) =>

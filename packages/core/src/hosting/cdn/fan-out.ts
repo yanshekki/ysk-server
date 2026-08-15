@@ -23,6 +23,10 @@ import type {
   CdnFleetPurgePayload } from './fleet-payload.js';
 import { getCdnNode } from './nodes.js';
 import { getCdnSite, patchCdnSiteStatus } from './sites.js';
+import {
+  isLoopbackOriginUrl,
+  reachableOriginUrlForRemoteEdge,
+} from './from-project.js';
 import { edgeSslPaths } from './ssl.js';
 import { shellBinExists } from '../software-probe/index.js';
 
@@ -73,6 +77,11 @@ function resolveSshTarget(node: CdnNodeDto): {
   port: number;
   username: string;
 } | null {
+  const explicit =
+    Boolean(node.sshIdentityId?.trim()) ||
+    Boolean(node.sshUsername?.trim()) ||
+    Boolean(node.sshHost?.trim());
+  if (!explicit) return null;
   const host =
     node.sshHost?.trim() ||
     node.publicIpv4[0] ||
@@ -92,16 +101,17 @@ function resolveSshTarget(node: CdnNodeDto): {
     username: node.sshUsername?.trim() || 'root' };
 }
 
+function isLoopbackHost(h: string): boolean {
+  const x = h.toLowerCase();
+  return x === '127.0.0.1' || x === 'localhost' || x === '::1' || x === '0.0.0.0';
+}
+
 function isLocalEdge(node: CdnNodeDto): boolean {
   const t = resolveSshTarget(node);
-  if (!t) return true; // no remote target → treat as local control-plane edge
-  const h = t.host.toLowerCase();
-  return (
-    h === '127.0.0.1' ||
-    h === 'localhost' ||
-    h === '::1' ||
-    h === '0.0.0.0'
-  );
+  if (t) return isLoopbackHost(t.host);
+  const ip = node.publicIpv4[0];
+  if (ip && !isLoopbackHost(ip)) return false;
+  return true;
 }
 
 async function resolveIdentityPath(
@@ -310,8 +320,39 @@ export async function fanOutCdnSite(input: {
       continue;
     }
 
-    // Per-edge conf when origin shield is configured
     let edgeConfPath = confPath;
+    const storedOrigin = site.origin.url || input.projectOriginUrl || '';
+    if (!isLocalEdge(node) && isLoopbackOriginUrl(storedOrigin)) {
+      const rewritten = reachableOriginUrlForRemoteEdge(input.db, storedOrigin);
+      if (!rewritten) {
+        const item: CdnEdgeApplyItem = {
+          edgeNodeId: eid,
+          name: node.name,
+          apply_status: 'failed',
+          method: 'skip',
+          notes: [tl('notes.cdn.loopbackOriginRemote')],
+        };
+        edges.push(item);
+        edge_status[eid] = 'failed';
+        notes.push(`${node.name}: refuse loopback origin on remote edge`);
+        continue;
+      }
+      const sslPaths =
+        site.ssl?.mode && site.ssl.mode !== 'off' ? edgeSslPaths(site.id) : undefined;
+      const rendered = renderCdnEdgeNginxConf({
+        site: { ...site, origin: { ...site.origin, url: rewritten } },
+        projectOriginUrl: rewritten,
+        sslPaths,
+        forEdgeNodeId: eid,
+      });
+      const edgeDir = join(input.dataDir, 'cdn', 'sites', site.id, 'edges');
+      mkdirSync(edgeDir, { recursive: true });
+      const rewrittenPath = join(edgeDir, `${eid.slice(0, 8)}.conf`);
+      writeFileSync(rewrittenPath, rendered.conf, 'utf8');
+      notes.push(`${node.name}: origin rewritten ${storedOrigin} → ${rewritten}`);
+      edgeConfPath = rewrittenPath;
+    }
+
     if (site.originShieldNodeId) {
       const isShield = site.originShieldNodeId === eid;
       const sslPaths =
@@ -340,6 +381,20 @@ export async function fanOutCdnSite(input: {
       notes.push(
         `${node.name}: ${isShield ? 'shield conf' : 'via-shield conf'} hash=${rendered.contentHash}`,
       );
+    }
+
+    if (!isLocalEdge(node) && !resolveSshTarget(node) && !node.fleetAgentId?.trim()) {
+      const item: CdnEdgeApplyItem = {
+        edgeNodeId: eid,
+        name: node.name,
+        apply_status: 'failed',
+        method: 'skip',
+        notes: [tl('notes.cdn.needSshOrFleet')],
+      };
+      edges.push(item);
+      edge_status[eid] = 'failed';
+      notes.push(`${node.name}: no SSH identity and no fleet session`);
+      continue;
     }
 
     // Fleet-only edge (no SSH target): enqueue conf for agent — never mark applied here

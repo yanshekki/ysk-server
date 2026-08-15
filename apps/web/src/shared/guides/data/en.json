@@ -84,12 +84,12 @@
       "Deploy：Start or update the runtime for this site.",
       "Environment：Edit project env vars safely.",
       "Health and logs：Probe readiness and open related logs.",
-      "Ship a code change for one site",
+      "Git control：status, fetch, checkout, reset; inbound hook URL for GitHub/Gitea/GitLab (not Slack).",
       "Rotate secrets without touching other projects"
     ],
     "notes": [
       "Apply / execute rules still apply—blocked means the host was not changed",
-      "Wrong env values can take the site down; change carefully"
+      "Inbound Git hook answers without a panel session; clone/deploy still needs YSK_EXECUTE=1"
     ],
     "related": [
       {
@@ -630,7 +630,7 @@
     ],
     "notes": [
       "Queued edge jobs ≠ applied on every node—read honest status",
-      "TLS distribute does not guarantee full browser trust chain alone"
+      "Apply does not invent root@publicIpv4; SSH needs identity/username/sshHost. Probe classifies timeout/DNS/TLS."
     ],
     "related": [
       {
@@ -1228,7 +1228,8 @@
     ],
     "notes": [
       "A listed job ≠ a verified restore—test recovery regularly",
-      "Remote / restic needs credentials and EXECUTE for live apply"
+      "Remote SFTP test uses the outbound identity; missing key is not EXECUTE-off",
+      "Control-plane Preview lists the archive (tar -tzf) without a project row"
     ],
     "related": [
       {
@@ -1259,11 +1260,11 @@
       "Precheck and run：Connect to the target, transfer, and restore.",
       "Verify：Check critical services after migration.",
       "Move off an expiring VPS",
-      "Upgrade to a larger host"
+      "Remove leftover /home/ysk-server-<uuid> (confirm + EXECUTE)"
     ],
     "notes": [
       "Needs root and EXECUTE capability on the target",
-      "Cutting DNS without lowering TTL can dual-write or cause brief anomalies"
+      "Orphan homes are leftover disk dirs, not false positives"
     ],
     "related": [
       {
@@ -1281,7 +1282,8 @@
       "Confirm with readiness / health if host-changing"
     ],
     "cliHints": [
-      "ysk-server migrate status --json"
+      "ysk-server migrate inventory --json",
+      "ysk-server migrate orphan-homes --json"
     ]
   },
   "updates": {

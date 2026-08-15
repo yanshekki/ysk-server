@@ -34,20 +34,29 @@ export async function handleSshSftpRoutes(
           publicKey?: string;
           comment?: string;
           projectId?: string;
+          linuxUser?: string;
         };
         const { addSftpKey, chownSftpProjectKeys } = await import('ysk-server-core');
-        let linuxUser: string | undefined;
+        let linuxUser: string | undefined = data.linuxUser?.trim() || undefined;
         let homeDir: string | undefined;
         let username = data.username ?? '';
         if (data.projectId) {
           try {
             const proj = ctx.projects.get(data.projectId);
-            linuxUser = proj.linuxUser;
+            linuxUser = linuxUser || proj.linuxUser;
             homeDir = proj.homeDir;
             username = username || proj.linuxUser;
           } catch {
             /* invalid project */
           }
+        }
+        if (linuxUser && !homeDir) {
+          const ge = await ctx.host.runCommand(['getent', 'passwd', linuxUser], {
+            timeoutMs: 8_000,
+          });
+          const home = (ge.stdout || '').split(':')[5]?.trim();
+          if (home) homeDir = home;
+          username = username || linuxUser;
         }
         const r = addSftpKey(ctx.db, ctx.dataDir, {
           username,

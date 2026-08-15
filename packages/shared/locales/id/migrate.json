@@ -78,5 +78,9 @@
   "dryRunOnlyDesc": "· Inventaris + pemeriksaan awal saja; tidak ada rsync atau target penulisan",
   "executeNote": "Host membutuhkan YSK_EXECUTE=1 dan API root. Setelah migrasi, perbarui DNS A/AAAA dan periksa cloud firewall + mail PTR.",
   "dnsCutover": "Peralihan DNS (manual)",
-  "dnsCutoverDesc": "Poin A/AAAA untuk nama-nama ini ke IP publik yang baru;"
+  "dnsCutoverDesc": "Poin A/AAAA untuk nama-nama ini ke IP publik yang baru;",
+  "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
+  "orphanRemove": "Remove leftover home",
+  "orphanRemoveTitle": "Delete leftover project home?",
+  "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1."
 }

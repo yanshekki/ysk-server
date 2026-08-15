@@ -30,11 +30,22 @@
   },
   "ssh": {
     "identityNotFound": "アイデンティティが見つかりません",
-    "registrationNotFound": "登録が見つかりません"
+    "registrationNotFound": "登録が見つかりません",
+    "keyOkNologin": "Key accepted. Account has no login shell (nologin) — use SFTP. Treated as PASS."
   },
   "cdn": {
     "siteNotFound": "CDN サイトが見つかりません",
-    "nodeMissing": "ノードが存在しません"
+    "nodeMissing": "ノードが存在しません",
+    "probe": {
+      "timeout": "Connect timeout after {{ms}}ms ({{detail}}). Peer may be firewalled.",
+      "dns": "DNS lookup failed ({{detail}}).",
+      "refused": "Connection refused after {{ms}}ms ({{detail}}). Port closed or one-way block.",
+      "tls": "TLS verify failed ({{detail}}).",
+      "unreach": "Host unreachable after {{ms}}ms ({{detail}}).",
+      "http": "HTTP probe failed after {{ms}}ms ({{detail}})."
+    },
+    "loopbackOriginRemote": "Origin is 127.0.0.1 — that is this host, not a remote edge. Set a reachable origin IP or bind_ip.",
+    "needSshOrFleet": "Remote edge needs an outbound SSH identity (or username) or a /agents fleet session. Health URL alone is not apply transport."
   },
   "backup": {
     "fileNotFound": "バックアップファイルが見つかりません",
@@ -42,7 +53,13 @@
     "resticNotInPath": "Restic が PATH にありません",
     "dbEnvUnreadable": "Could not read .db.env; skipped SQL dump.",
     "dbEnvNoName": ".db.env has no database name; skipped SQL dump.",
-    "targetOutside": "Restore target must be inside the project home or the public files root."
+    "targetOutside": "Restore target must be inside the project home or the public files root.",
+    "testUnsaved": "Testing unsaved form values (not written to settings).",
+    "testIdentity": "ssh (identity) to {{spec}} ok",
+    "sshAuthFailed": "SSH key or password rejected (publickey). Pick an outbound identity or install sshpass.",
+    "remotePathIsFile": "Remote path {{path}} is a file. Use a directory.",
+    "remoteMkdirFailed": "Could not create remote directory: {{detail}}",
+    "sidecarPushed": "Also pushed SQL sidecar {{name}}"
   },
   "redis": {
     "cliMissing": "redis-cli がインストールされていません"
@@ -127,7 +144,10 @@
   },
   "db": {
     "needExecuteCreate": "ホストの実行はオフです。パネルからデータベースを作成できません",
-    "dryRunMysql": "予行演習: データベースが作成されていません。プロビジョニングするには、YSK_EXECUTE=1 を指定して --execute を使用します。"
+    "dryRunMysql": "予行演習: データベースが作成されていません。プロビジョニングするには、YSK_EXECUTE=1 を指定して --execute を使用します。",
+    "remoteNoCreds": "No username/password stored — TCP only (registration is not a login).",
+    "remoteReachable": "TCP {{host}}:{{port}} open ({{ms}}ms).",
+    "remoteUnreachable": "TCP {{host}}:{{port}} closed or filtered ({{ms}}ms)."
   },
   "net": {
     "invalidIface": "無効なインターフェース名です",
@@ -3085,5 +3105,13 @@
     "hookEnabled": "Inbound Git hook is on. Paste the URL into GitHub, Gitea, or GitLab yourself.",
     "hookDisabled": "Inbound Git hook is off. The URL will not sync.",
     "hookSecretOnce": "Copy this hook secret now. It is not shown again."
+  },
+  "migrate": {
+    "orphanConfirm": "Type the exact leftover home path to confirm delete.",
+    "orphanStillInStore": "That home still belongs to a project in the store.",
+    "orphanMissing": "Path not on disk: {{path}}",
+    "orphanNeedExecute": "Would remove leftover {{path}}. Needs YSK_EXECUTE=1.",
+    "orphanRmFailed": "Could not remove leftover home: {{detail}}",
+    "orphanRemoved": "Removed leftover project home {{path}}."
   }
 }

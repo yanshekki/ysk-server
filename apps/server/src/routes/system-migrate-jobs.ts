@@ -34,6 +34,27 @@ export async function handleSystemMigrateJobsRoutes(
     return true;
   }
 
+  if (method === 'POST' && url.pathname === '/api/v1/system/migrate/orphan-homes') {
+    const user = ctx.auth.authenticate(getBearer(req));
+    const raw = await readBody(req);
+    const data = JSON.parse(raw || '{}') as { path?: string; confirmPath?: string };
+    const { removeOrphanProjectHome } = await import('ysk-server-core');
+    const r = await removeOrphanProjectHome({
+      host: ctx.host,
+      db: ctx.db,
+      path: data.path ?? '',
+      confirmPath: data.confirmPath ?? '',
+    });
+    ctx.audit.append({
+      actor: user.username,
+      action: 'migrate.orphan_home.remove',
+      detail: { path: data.path, ok: r.ok },
+      ok: r.ok,
+    });
+    sendOpsResult(res, r);
+    return true;
+  }
+
   if (method === 'GET' && url.pathname === '/api/v1/system/migrate/jobs') {
     ctx.auth.authenticate(getBearer(req));
     const { listMigrateJobs } = await import('ysk-server-core');

@@ -34,7 +34,8 @@
 | Redis 鍵列表／讀取 | `ysk-server redis keys\|get …` | read | |
 | Redis 寫入／刪除 | `ysk-server redis set\|del … --execute` | write-host | |
 | 佈建計劃 | `ysk-server hosting mysql-provision\|postgres-provision\|redis-provision` | write-host | 預設試跑 |
-| 資料庫叢集 | `ysk-server db-cluster list\|plan\|apply …` | write-host | 先計劃後套用 |
+| 資料庫叢集 | `ysk-server db-cluster list\|plan\|apply …` | write-host | 先計劃後套用。`create --kind postgres-…` 會推斷 `--engine postgres`。精靈可貼 `/agents` fleet session（非 SSH）。Redis 對等 README 是 Redis，不是 Galera。 |
+| 遠端資料庫主機 | `POST /api/v1/db/remote-hosts/:id/test` | read | TCP 可達性。面板：測試連線。 |
 
 ## CLI 速查
 
@@ -55,6 +56,8 @@ ysk-server hosting mysql-provision --execute --json
 - 無 EXECUTE 時，安裝／生命週期／套用維持已阻擋或試跑。  
 - SQL 切換為 **互斥**（MySQL XOR MariaDB）；務必預覽並確認短語。  
 - 叢集模組不會靜默組成多節點叢集。  
+- Postgres 叢集探測以 `postgres` 系統用戶執行（`runuser -u postgres -- psql`）。  
+- 試跑叢集推送說明不會顯示成「系統變更已關閉」。  
 
 ## 僅面板 ⚠️
 

@@ -2575,11 +2575,13 @@ async function mainInner(
               p.updated_at = new Date().toISOString();
             }
             try {
+              const sqlSidecar = item.archivePath.replace(/\.tar\.gz$/i, '.sql');
               const push = await pushBackupRemote({
                 host: ctx.host,
                 db: ctx.db,
                 dataDir: ctx.dataDir,
                 localArchivePath: item.archivePath,
+                extraLocalPaths: item.includesDatabase ? [sqlSidecar] : [],
               });
               sideResults.push({
                 projectId: item.projectId,
@@ -4297,8 +4299,9 @@ async function mainInner(
       }
       if (sub === 'create') {
         const name = getOpt(args, '--name');
-        const engineRaw = getOpt(args, '--engine') ?? 'mariadb';
         const kindRaw = getOpt(args, '--kind') ?? 'mariadb-galera';
+        const { engineFromKind } = await import('ysk-server-core');
+        const engineRaw = getOpt(args, '--engine') ?? engineFromKind(kindRaw) ?? 'mariadb';
         if (!name) {
           process.stderr.write(`${tl('cli.usage.cli.name.db-cluster.create.--name.e3b733', { CLI_NAME })}\n`);
           return 2;
@@ -5685,7 +5688,8 @@ async function mainInner(
       runSourceMigrateHost,
       runLocalMigratePost,
       loadMigrateJob,
-      listMigrateJobs } = await import('ysk-server-core');
+      listMigrateJobs,
+      removeOrphanProjectHome } = await import('ysk-server-core');
     const ctx = createAppContext({
       version: VERSION,
       config,
@@ -5701,6 +5705,28 @@ async function mainInner(
           yskVersion: VERSION });
         printJson(r);
         return r.ok ? 0 : 1;
+      }
+      if (sub === 'orphan-homes' || sub === 'orphan-home') {
+        const path = getOpt(args, '--path');
+        if (!path) {
+          const r = await migrateInventory({
+            host: ctx.host,
+            db: ctx.db,
+            dataDir: ctx.dataDir,
+            yskVersion: VERSION });
+          printJson({
+            ok: r.ok,
+            orphanHomes: r.manifest?.orphanHomes ?? [],
+            notes: r.notes });
+          return r.ok ? 0 : 1;
+        }
+        const r = await removeOrphanProjectHome({
+          host: ctx.host,
+          db: ctx.db,
+          path,
+          confirmPath: getOpt(args, '--confirm') ?? '' });
+        printJson(r);
+        return r.ok ? 0 : r.blocked ? 3 : 1;
       }
       if (sub === 'status') {
         const jobId = getOpt(args, '--job');

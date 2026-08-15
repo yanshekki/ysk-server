@@ -26,7 +26,8 @@
 | 還原／刪除 | `ysk-server backup restore\|delete` | write-host | |
 | 排程安裝 | `ysk-server backup schedule --install --execute` | write-host | |
 | Restic 輔助 | `ysk-server backup restic …` | write-host | |
-| 遠端目的地（SFTP／S3／local） | `ysk-server backup settings get\|set\|test` | write-host | 探測需 `--execute` |
+| 遠端目的地（SFTP／S3／local） | `ysk-server backup settings get\|set\|test` | write-host | 面板測試可送未儲存表單與出站 SSH 身分。真正連線需 `--execute`。缺金鑰／密碼不是「未開 EXECUTE」。遠端推送會 `mkdir -p` 目的目錄，並把 `.sql` sidecar 放在 tar 旁邊。 |
+| 控制平面預覽 | `ysk-server backup restore`（id 為 `control-plane`），或 `POST /api/v1/backups/control-plane/restore` | read | 列出封存（`tar -tzf`）。不需專案列。 |
 | Cron 列表／建立… | `ysk-server cron list\|create\|…` | write-panel | |
 | Cron 安裝至主機 | `ysk-server cron install --execute` | write-host | |
 
@@ -44,6 +45,7 @@ ysk-server cron install --execute --json
 
 - 無 EXECUTE 時排程／安裝會被阻擋。  
 - 備份「已寫入」路徑 ≠ 已驗證異地副本。  
+- SFTP 測試與 `backup all` 使用同一出站身分。公鑰被拒是認證問題，不是面板未開 EXECUTE。  
 
 ## 僅面板 ⚠️
 

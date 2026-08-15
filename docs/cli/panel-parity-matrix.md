@@ -55,14 +55,14 @@
 | Domain | CLI entry points |
 |--------|------------------|
 | Control plane | `setup` `serve` `readiness` `health` `store` `system unit-install` `update` |
-| Projects | `projects list\|get\|create\|deploy\|stop\|git-deploy\|git\|isolation\|health` |
+| Projects | `projects list\|get\|create\|deploy\|stop\|git-deploy\|git` (status/fetch/checkout/reset/auth/hook) `isolation\|health` |
 | Files | `files list\|read\|write\|mkdir\|rm\|…\|trash\|webdav\|shares list\|create\|bt-stats` |
 | BT Tracker | `bt-tracker status\|start\|stop\|settings\|torrents\|restore\|jobs` |
 | Email | `email domains\|mailboxes\|dns\|bootstrap\|deliverability` |
 | Nginx / SSL / DNS zones | `nginx` `ssl` `dns` `hosting …` |
 | Defense | `defense` / `protection` |
 | CDN / agents / db-cluster | `cdn` `agents` `db-cluster` |
-| Cron / backup / migrate | `cron` `backup` `migrate` |
+| Cron / backup / migrate | `cron` `backup` `migrate` (`orphan-homes`) |
 | Security identity | `security` `ssh-key` `ssh-2fa` `users` `rbac` |
 | Services / host / logs | `services` `host` `logs` |
 | Stack | `stack plans\|install\|…` |

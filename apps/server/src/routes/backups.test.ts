@@ -115,6 +115,37 @@ describe('backups routes (HTTP)', () => {
     });
   });
 
+  it('control-plane archive preview via /restore does not require a project', async () => {
+    ts = await startTestServer();
+    const preview = await apiJson(ts, 'POST', '/api/v1/backups/restore', {
+      projectId: 'control-plane',
+      name: 'missing-cp.tar.gz',
+      mode: 'dry-run',
+    });
+    expect(preview.status).toBeLessThan(500);
+    const body = preview.body as { ok?: boolean; notes?: string[]; error?: string };
+    const blob = `${(body.notes ?? []).join(' ')} ${body.error ?? ''}`;
+    expect(blob).not.toMatch(/找不到專案|n0028/);
+  });
+
+  it('remote test overlay uses unsaved form enabled flag', async () => {
+    ts = await startTestServer();
+    const res = await apiJson(ts, 'POST', '/api/v1/backups/remote/test', {
+      remote: {
+        enabled: true,
+        kind: 'sftp',
+        host: 'backup.example.com',
+        username: 'ysk',
+        path: '/backups/ysk',
+      },
+    });
+    expect(res.status).toBeLessThan(500);
+    const body = res.body as { ok?: boolean; notes?: string[]; requiresExecute?: boolean };
+    expect(body.ok).toBe(false);
+    expect((body.notes ?? []).join(' ')).not.toMatch(/n1479|遠端備份未啟用/);
+    expect(body.requiresExecute === true || (body.notes ?? []).length > 0).toBe(true);
+  });
+
   it('control-plane restore dry-run missing archive is honest', async () => {
     ts = await startTestServer();
     const res = await apiJson(ts, 'POST', '/api/v1/backups/control-plane/restore', {

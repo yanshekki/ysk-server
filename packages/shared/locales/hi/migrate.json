@@ -78,5 +78,9 @@
   "dryRunOnlyDesc": "· इन्वेंटरी + केवल प्रीचेक; कोई rsync या लक्ष्य नहीं लिखता",
   "executeNote": "होस्ट को YSK_EXECUTE=1 और रूट API की आवश्यकता है। माइग्रेट करने के बाद, DNS A/AAAA अपडेट करें और क्लाउड फ़ायरवॉल + मेल PTR जांचें।",
   "dnsCutover": "डीएनएस कटओवर (मैनुअल)",
-  "dnsCutoverDesc": "नए सार्वजनिक आईपी में इन नामों के लिए प्वाइंट ए/एएएए;"
+  "dnsCutoverDesc": "नए सार्वजनिक आईपी में इन नामों के लिए प्वाइंट ए/एएएए;",
+  "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
+  "orphanRemove": "Remove leftover home",
+  "orphanRemoveTitle": "Delete leftover project home?",
+  "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1."
 }

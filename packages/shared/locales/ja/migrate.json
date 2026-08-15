@@ -78,5 +78,9 @@
   "dryRunOnlyDesc": "· 在庫 + 事前チェックのみ。 rsync またはターゲット書き込みはありません",
   "executeNote": "ホストにはYSK_EXECUTE=1とroot APIが必要です。移行後、DNS A/AAAA を更新し、クラウド ファイアウォール + メール PTR を確認します。",
   "dnsCutover": "DNSカットオーバー(手動)",
-  "dnsCutoverDesc": "これらの名前の A/AAAA を新しいパブリック IP にポイントします。"
+  "dnsCutoverDesc": "これらの名前の A/AAAA を新しいパブリック IP にポイントします。",
+  "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
+  "orphanRemove": "Remove leftover home",
+  "orphanRemoveTitle": "Delete leftover project home?",
+  "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1."
 }

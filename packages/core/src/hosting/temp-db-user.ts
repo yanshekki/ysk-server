@@ -34,6 +34,7 @@ export type RemoteDbHost = {
   hasPassword: boolean;
   password?: string;
   createdAt: string;
+  lastChecked?: { ok: boolean; at: string; notes: string[] };
 };
 
 const TEMP_KEY = 'temp_db_users';
@@ -300,4 +301,43 @@ export function deleteRemoteDbHost(db: JsonStore, id: string): boolean {
   const next = all.filter((h) => h.id !== id);
   saveRemote(db, next);
   return next.length < all.length;
+}
+
+export async function testRemoteDbHost(
+  db: JsonStore,
+  id: string,
+): Promise<{
+  ok: boolean;
+  notes: string[];
+  host?: Omit<RemoteDbHost, 'password'>;
+}> {
+  const { isMetadataOrLoopbackHost } = await import('../net/ssrf.js');
+  const { probeTcp } = await import('../email/live-checks.js');
+  const all = loadRemote(db);
+  const row = all.find((h) => h.id === id);
+  if (!row) {
+    return { ok: false, notes: [tl('notes.auto.n0044')] };
+  }
+  if (isMetadataOrLoopbackHost(row.host)) {
+    return { ok: false, notes: [tl('notes.auto.n0303')] };
+  }
+  const t0 = Date.now();
+  const open = await probeTcp(row.host, row.port, 5_000);
+  const ms = Date.now() - t0;
+  const notes: string[] = [];
+  if (!row.username && !row.hasPassword) {
+    notes.push(tl('notes.db.remoteNoCreds'));
+  }
+  if (!open) {
+    notes.push(tl('notes.db.remoteUnreachable', { host: row.host, port: row.port, ms }));
+    const next = { ...row, lastChecked: { ok: false, at: new Date().toISOString(), notes } };
+    saveRemote(db, all.map((h) => (h.id === id ? next : h)));
+    const { password: _p, ...pub } = next;
+    return { ok: false, notes, host: { ...pub, hasPassword: Boolean(_p) } };
+  }
+  notes.push(tl('notes.db.remoteReachable', { host: row.host, port: row.port, ms }));
+  const next = { ...row, lastChecked: { ok: true, at: new Date().toISOString(), notes } };
+  saveRemote(db, all.map((h) => (h.id === id ? next : h)));
+  const { password: _p, ...pub } = next;
+  return { ok: true, notes, host: { ...pub, hasPassword: Boolean(_p) } };
 }

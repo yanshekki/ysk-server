@@ -424,7 +424,10 @@
     "testRemoteDone": "रिमोट जांच पूरी",
     "testRemoteFailed": "रिमोट जांच असफल",
     "resticRepoPh": "Panel data directory / restic-repo",
-    "testDisabledHint": "Turn on remote push before testing."
+    "testDisabledHint": "Turn on remote push before testing.",
+    "identityId": "Outbound SSH identity",
+    "identityHint": "Preferred. Same vault as /security SSH. Password needs sshpass.",
+    "identityNone": "None — password or default key"
   },
   "btTracker": {
     "title": "बीटी ट्रैकर",
@@ -1814,7 +1817,7 @@
         }
       },
       "x": {
-        "972912": "उपयोग:\n  ysk-सर्वर माइग्रेट इन्वेंट्री [--डेटा-dir PATH] --json\n  ysk-सर्वर माइग्रेट होस्ट --target root@IP [--identity-file PATH|--identity-id ID|--password PW] --execute [--maintenance] [--force-wipe-target]\n  ysk-सर्वर पोस्ट --जॉब आईडी --डेटा-dir PATH --निष्पादित # को लक्ष्य पर माइग्रेट करता है\n  ysk-सर्वर माइग्रेट स्थिति [--जॉब आईडी]\n  ysk-सर्वर माइग्रेट बायोडाटा --जॉब आईडी --निष्पादित करें"
+        "972912": "उपयोग:\n  ysk-सर्वर माइग्रेट इन्वेंट्री [--डेटा-dir PATH] --json\n  ysk-सर्वर माइग्रेट होस्ट --target root@IP [--identity-file PATH|--identity-id ID|--password PW] --execute [--maintenance] [--force-wipe-target]\n  ysk-सर्वर पोस्ट --जॉब आईडी --डेटा-dir PATH --निष्पादित # को लक्ष्य पर माइग्रेट करता है\n  ysk-सर्वर माइग्रेट स्थिति [--जॉब आईडी]\n  ysk-सर्वर माइग्रेट बायोडाटा --जॉब आईडी --निष्पादित करें\n  ysk-server migrate orphan-homes [--data-dir PATH] --json\n  ysk-server migrate orphan-homes --path /home/ysk-server-UUID --confirm PATH --execute\n"
       },
       "hostingHelp": "उपयोग: ysk-सर्वर होस्टिंग <sub>\n  खतरनाक ऑप्स डिफॉल्ट ड्राई-रन; लागू करने के लिए --execute (+ YSK_EXECUTE=1) जोड़ें\n  nginx | nginx-सिंक [--निष्पादित करें]\n  रेडिस-प्रावधान | पोस्टग्रेस-प्रावधान | mysql-प्रावधान [--निष्पादित]\n  डीएनएस-ज़ोन --ज़ोन एक्स --आईपी ए.बी.सी.डी [--आईपीवी6 एक्स:एक्स::एक्स] [--मान्य करें] [--पुनः लोड करें]\n  डीएनएस-जोन | पॉवरडीएनएस-स्थिति | पॉवरडीएनएस-इंस्टॉल [--इंस्टॉल|--निष्पादित]\n  पॉवरडीएनएस-लोड --ज़ोन एक्स --आईपी ए.बी.सी.डी [--लोड|--निष्पादित]\n  ईमेल-लागू करें --डोमेन एक्स [--इंस्टॉल करें|--निष्पादित करें]\n  ईमेल-मेलबॉक्स --डोमेन एक्स --स्थानीय उपयोगकर्ता [--पासवर्ड पी] [--आईपी ए.बी.सी.डी.] [--सिस्टम]\n  ftps-लागू करें --डोमेन एक्स [--इंस्टॉल करें|--निष्पादित करें]\n  रनटाइम | रनटाइम-इंस्टॉल --काइंड नोड|php|पायथन|गो|रस्ट --वर्जन वी [--इंस्टॉल|--निष्पादित]\n  dovecot-passdb --डोमेन एक्स | --सभी\n  वेबमेल-लागू --domain webmail.example.com [--डाउनलोड]\n  सार्वजनिक-फ़ाइलें --डोमेन फ़ाइलें.example.com [--पुनः लोड करें]\n  ईमेल-बूटस्ट्रैप --डोमेन example.com --आईपी ए.बी.सी.डी [--इंस्टॉल|--निष्पादित]\n  ईमेल-डिलीवरेबिलिटी --डोमेन example.com # पीटीआर/डीएनएसबीएल/वार्मअप पैक (ईमानदार)\n  फ़ायरवॉल-लागू करें [--एसएमटीपी] [--निष्पादित करें]",
       "logsQuery": "उपयोग: {{CLI_NAME}} लॉग क्वेरी --स्रोत <आईडी> [--लाइन एन] [--ग्रेप जी] [--1 घंटे से] [--प्राथमिकता त्रुटि]\n  स्रोत उदाहरण: जर्नल: जर्नल:nginx.service फ़ाइल:syslog प्रोजेक्ट:<uuid>\n  {{CLI_NAME}} लॉग स्रोत --json\n  {{CLI_NAME}} लॉग जर्नल [--यूनिट nginx.service] --json"
@@ -2570,7 +2573,10 @@
       "probe": "जांच",
       "name": "नाम",
       "type": "प्रकार",
-      "status": "स्थिति"
+      "status": "स्थिति",
+      "fleetSession": "Fleet agent session id",
+      "fleetSessionHint": "Optional. Paste a session UUID from /agents. Then this peer uses fleet (no SSH). Leave empty for SSH scp.",
+      "fleetSessionPh": "Agents page session UUID"
     },
     "console": {
       "dataBrowse": "डेटा ब्राउज़ करें",
@@ -2640,7 +2646,12 @@
     "emptyDbHostHasRows": "The host already has databases that are not in this control-plane list.",
     "hostHasUntracked": "{{count}} host databases are not registered in the panel",
     "hostInventoryHint": "The table is control-plane rows only. Live names come from SHOW DATABASES.",
-    "adoptHostDb": "Register {{name}}"
+    "adoptHostDb": "Register {{name}}",
+    "remoteTest": "Test connection",
+    "remoteTestDone": "Remote host probe finished",
+    "remoteTestOk": "reachable",
+    "remoteTestFail": "unreachable",
+    "remoteNotChecked": "not tested"
   },
   "dialogs": {
     "confirmDefault": "पुष्टि करना",
@@ -4812,7 +4823,11 @@
     "dryRunOnlyDesc": "· इन्वेंटरी + केवल प्रीचेक; कोई rsync या लक्ष्य नहीं लिखता",
     "executeNote": "होस्ट को YSK_EXECUTE=1 और रूट API की आवश्यकता है। माइग्रेट करने के बाद, DNS A/AAAA अपडेट करें और क्लाउड फ़ायरवॉल + मेल PTR जांचें।",
     "dnsCutover": "डीएनएस कटओवर (मैनुअल)",
-    "dnsCutoverDesc": "नए सार्वजनिक आईपी में इन नामों के लिए प्वाइंट ए/एएएए;"
+    "dnsCutoverDesc": "नए सार्वजनिक आईपी में इन नामों के लिए प्वाइंट ए/एएएए;",
+    "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
+    "orphanRemove": "Remove leftover home",
+    "orphanRemoveTitle": "Delete leftover project home?",
+    "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1."
   },
   "multiCheck": {
     "customPlaceholder": "कस्टम कोड",
@@ -5179,11 +5194,22 @@
     },
     "ssh": {
       "identityNotFound": "पहचान नहीं हो पाई",
-      "registrationNotFound": "पंजीकरण नहीं मिला"
+      "registrationNotFound": "पंजीकरण नहीं मिला",
+      "keyOkNologin": "Key accepted. Account has no login shell (nologin) — use SFTP. Treated as PASS."
     },
     "cdn": {
       "siteNotFound": "सीडीएन साइट नहीं मिली",
-      "nodeMissing": "नोड मौजूद नहीं है"
+      "nodeMissing": "नोड मौजूद नहीं है",
+      "probe": {
+        "timeout": "Connect timeout after {{ms}}ms ({{detail}}). Peer may be firewalled.",
+        "dns": "DNS lookup failed ({{detail}}).",
+        "refused": "Connection refused after {{ms}}ms ({{detail}}). Port closed or one-way block.",
+        "tls": "TLS verify failed ({{detail}}).",
+        "unreach": "Host unreachable after {{ms}}ms ({{detail}}).",
+        "http": "HTTP probe failed after {{ms}}ms ({{detail}})."
+      },
+      "loopbackOriginRemote": "Origin is 127.0.0.1 — that is this host, not a remote edge. Set a reachable origin IP or bind_ip.",
+      "needSshOrFleet": "Remote edge needs an outbound SSH identity (or username) or a /agents fleet session. Health URL alone is not apply transport."
     },
     "backup": {
       "fileNotFound": "बैकअप फ़ाइल नहीं मिली",
@@ -5191,7 +5217,13 @@
       "resticNotInPath": "रेस्टिक PATH में नहीं है",
       "dbEnvUnreadable": "Could not read .db.env; skipped SQL dump.",
       "dbEnvNoName": ".db.env has no database name; skipped SQL dump.",
-      "targetOutside": "Restore target must be inside the project home or the public files root."
+      "targetOutside": "Restore target must be inside the project home or the public files root.",
+      "testUnsaved": "Testing unsaved form values (not written to settings).",
+      "testIdentity": "ssh (identity) to {{spec}} ok",
+      "sshAuthFailed": "SSH key or password rejected (publickey). Pick an outbound identity or install sshpass.",
+      "remotePathIsFile": "Remote path {{path}} is a file. Use a directory.",
+      "remoteMkdirFailed": "Could not create remote directory: {{detail}}",
+      "sidecarPushed": "Also pushed SQL sidecar {{name}}"
     },
     "redis": {
       "cliMissing": "रेडिस-सीएलआई स्थापित नहीं है"
@@ -5276,7 +5308,10 @@
     },
     "db": {
       "needExecuteCreate": "होस्ट निष्पादन बंद है; पैनल से डेटाबेस नहीं बनाया जा सकता",
-      "dryRunMysql": "ड्राई-रन: डेटाबेस नहीं बनाया गया। प्रावधान के लिए YSK_EXECUTE=1 के साथ --execute का उपयोग करें"
+      "dryRunMysql": "ड्राई-रन: डेटाबेस नहीं बनाया गया। प्रावधान के लिए YSK_EXECUTE=1 के साथ --execute का उपयोग करें",
+      "remoteNoCreds": "No username/password stored — TCP only (registration is not a login).",
+      "remoteReachable": "TCP {{host}}:{{port}} open ({{ms}}ms).",
+      "remoteUnreachable": "TCP {{host}}:{{port}} closed or filtered ({{ms}}ms)."
     },
     "net": {
       "invalidIface": "अमान्य इंटरफ़ेस नाम",
@@ -8234,6 +8269,14 @@
       "hookEnabled": "Inbound Git hook is on. Paste the URL into GitHub, Gitea, or GitLab yourself.",
       "hookDisabled": "Inbound Git hook is off. The URL will not sync.",
       "hookSecretOnce": "Copy this hook secret now. It is not shown again."
+    },
+    "migrate": {
+      "orphanConfirm": "Type the exact leftover home path to confirm delete.",
+      "orphanStillInStore": "That home still belongs to a project in the store.",
+      "orphanMissing": "Path not on disk: {{path}}",
+      "orphanNeedExecute": "Would remove leftover {{path}}. Needs YSK_EXECUTE=1.",
+      "orphanRmFailed": "Could not remove leftover home: {{detail}}",
+      "orphanRemoved": "Removed leftover project home {{path}}."
     }
   },
   "ops": {
@@ -10599,7 +10642,9 @@
       "strictBlocked": "पैकेज या PAM तैयार नहीं; Strict लागू नहीं किया जा सकता।",
       "strictDryRun": "सख्त मोड पूर्वावलोकन",
       "errorNoDetail": "परीक्षण विफल (विवरण नहीं)",
-      "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it."
+      "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it.",
+      "loginNoProjects": "No projects. Authorize an existing Linux user (root / tester) below. Writing /root/.ssh needs YSK_EXECUTE=1.",
+      "loginLinuxHint": "Used when no project. Example: root or tester."
     },
     "sessionsActive": "सक्रिय सत्र",
     "sessionsOther": "अन्य उपकरण",

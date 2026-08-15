@@ -134,6 +134,10 @@ export class HostSoftwareProbe {
         units.push({ name: u, active: 'unknown', enabled: 'unknown' });
       }
     }
+    if (!installed && id === 'postgresql' && units.some((u) => u.active === 'active')) {
+      installed = true;
+      notes.push('postgresql unit is active; server binary may live under /usr/lib/postgresql/*/bin');
+    }
 
     // Optional: check primary dpkg package present
     let packagesPresent: string[] | undefined;

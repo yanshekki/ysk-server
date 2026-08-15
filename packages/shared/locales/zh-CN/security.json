@@ -374,7 +374,9 @@
     "strictDryRun": "严格模式预览",
     "errorNoDetail": "测试失败（无详情）",
     "strictBlocked": "套件或 PAM 未就绪，已停用套用 Strict。",
-    "privCloseWithoutAck": "已关闭。私钥不会再显示；若尚未保存，请立即重新生成。"
+    "privCloseWithoutAck": "已关闭。私钥不会再显示；若尚未保存，请立即重新生成。",
+    "loginNoProjects": "No projects. Authorize an existing Linux user (root / tester) below. Writing /root/.ssh needs YSK_EXECUTE=1.",
+    "loginLinuxHint": "Used when no project. Example: root or tester."
   },
   "sessionsActive": "使用中",
   "sessionsOther": "其他设备",

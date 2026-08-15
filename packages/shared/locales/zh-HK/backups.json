@@ -134,5 +134,8 @@
   "testRemoteDone": "遠端探測完成",
   "testRemoteFailed": "遠端探測失敗",
   "resticRepoPh": "面板資料目錄／restic 庫",
-  "testDisabledHint": "請先開啟遠端推送才可測試。"
+  "testDisabledHint": "請先開啟遠端推送才可測試。",
+  "identityId": "出站 SSH 身份",
+  "identityHint": "優先使用。與 /security SSH 同一金鑰庫。密碼需 sshpass。",
+  "identityNone": "無 — 用密碼或本機預設金鑰"
 }

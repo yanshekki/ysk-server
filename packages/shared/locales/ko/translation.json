@@ -424,7 +424,10 @@
     "testRemoteDone": "원격 탐침 완료",
     "testRemoteFailed": "원격 탐침 실패",
     "resticRepoPh": "Panel data directory / restic-repo",
-    "testDisabledHint": "Turn on remote push before testing."
+    "testDisabledHint": "Turn on remote push before testing.",
+    "identityId": "Outbound SSH identity",
+    "identityHint": "Preferred. Same vault as /security SSH. Password needs sshpass.",
+    "identityNone": "None — password or default key"
   },
   "btTracker": {
     "title": "블루투스 트래커",
@@ -1814,7 +1817,7 @@
         }
       },
       "x": {
-        "972912": "사용법:\n  ysk-server 인벤토리 마이그레이션 [--data-dir PATH] --json\n  ysk-server 마이그레이션 호스트 --target root@IP [--identity-file PATH|--identity-id ID|--password PW] --execute [--maintenance] [--force-wipe-target]\n  ysk-server 마이그레이션 post --job ID --data-dir PATH --execute # 대상에서\n  ysk-server 마이그레이션 상태 [--작업 ID]\n  ysk-server 마이그레이션 이력서 --작업 ID --execute"
+        "972912": "사용법:\n  ysk-server 인벤토리 마이그레이션 [--data-dir PATH] --json\n  ysk-server 마이그레이션 호스트 --target root@IP [--identity-file PATH|--identity-id ID|--password PW] --execute [--maintenance] [--force-wipe-target]\n  ysk-server 마이그레이션 post --job ID --data-dir PATH --execute # 대상에서\n  ysk-server 마이그레이션 상태 [--작업 ID]\n  ysk-server 마이그레이션 이력서 --작업 ID --execute\n  ysk-server migrate orphan-homes [--data-dir PATH] --json\n  ysk-server migrate orphan-homes --path /home/ysk-server-UUID --confirm PATH --execute\n"
       },
       "hostingHelp": "사용법: ysk-server 호스팅 <sub>\n  위험한 작전의 기본 테스트 실행; 적용하려면 --execute(+ YSK_EXECUTE=1)를 추가하세요.\n  엔진엑스 | nginx-sync [--실행]\n  redis 제공 | postgres 제공 | mysql-provision [--실행]\n  dns-zone --zone X --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n  DNS 영역 | powerdns 상태 | powerdns-install [--install|--실행]\n  powerdns-load --zone X --ip A.B.C.D [--load|--execute]\n  이메일 적용 --domain X [--install|--execute]\n  email-mailbox --domain X --local user [--password P] [--ip A.B.C.D] [--system]\n  ftps-apply --domain X [--install|--execute]\n  런타임 | 런타임 설치 --kind node|php|python|go|rust --version V [--install|--execute]\n  dovecot-passdb --domain X | --모두\n  webmail-apply --domain webmail.example.com [--다운로드]\n  공개 파일 --domain files.example.com [--reload]\n  email-bootstrap --domain example.com --ip A.B.C.D [--install|--execute]\n  email-deliverability --domain example.com # PTR/DNSBL/웜업 팩(정직)\n  방화벽 적용 [--smtp] [--실행]",
       "logsQuery": "사용법: {{CLI_NAME}} 로그 쿼리 --source <id> [--lines N] [--grep G] [--since 1h] [--priority err]\n  소스 예: 저널: 저널:nginx.service 파일:syslog 프로젝트:<uuid>\n  {{CLI_NAME}} 로그 소스 --json\n  {{CLI_NAME}} 로그 저널 [--unit nginx.service] --json"
@@ -2570,7 +2573,10 @@
       "probe": "조사",
       "name": "이름",
       "type": "유형",
-      "status": "상태"
+      "status": "상태",
+      "fleetSession": "Fleet agent session id",
+      "fleetSessionHint": "Optional. Paste a session UUID from /agents. Then this peer uses fleet (no SSH). Leave empty for SSH scp.",
+      "fleetSessionPh": "Agents page session UUID"
     },
     "console": {
       "dataBrowse": "데이터 찾아보기",
@@ -2640,7 +2646,12 @@
     "emptyDbHostHasRows": "The host already has databases that are not in this control-plane list.",
     "hostHasUntracked": "{{count}} host databases are not registered in the panel",
     "hostInventoryHint": "The table is control-plane rows only. Live names come from SHOW DATABASES.",
-    "adoptHostDb": "Register {{name}}"
+    "adoptHostDb": "Register {{name}}",
+    "remoteTest": "Test connection",
+    "remoteTestDone": "Remote host probe finished",
+    "remoteTestOk": "reachable",
+    "remoteTestFail": "unreachable",
+    "remoteNotChecked": "not tested"
   },
   "dialogs": {
     "confirmDefault": "확인하다",
@@ -4812,7 +4823,11 @@
     "dryRunOnlyDesc": "· 재고 + 사전 확인만; rsync 또는 대상 쓰기 없음",
     "executeNote": "호스트에는 YSK_EXECUTE=1 및 루트 API가 필요합니다. 마이그레이션 후 DNS A/AAAA를 업데이트하고 클라우드 방화벽 + 메일 PTR을 확인하세요.",
     "dnsCutover": "DNS 컷오버(수동)",
-    "dnsCutoverDesc": "이러한 이름에 대한 A/AAAA를 새 공용 IP로 지정합니다."
+    "dnsCutoverDesc": "이러한 이름에 대한 A/AAAA를 새 공용 IP로 지정합니다.",
+    "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
+    "orphanRemove": "Remove leftover home",
+    "orphanRemoveTitle": "Delete leftover project home?",
+    "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1."
   },
   "multiCheck": {
     "customPlaceholder": "맞춤 코드",
@@ -5179,11 +5194,22 @@
     },
     "ssh": {
       "identityNotFound": "신원을 찾을 수 없습니다",
-      "registrationNotFound": "등록을 찾을 수 없습니다"
+      "registrationNotFound": "등록을 찾을 수 없습니다",
+      "keyOkNologin": "Key accepted. Account has no login shell (nologin) — use SFTP. Treated as PASS."
     },
     "cdn": {
       "siteNotFound": "CDN 사이트를 찾을 수 없습니다",
-      "nodeMissing": "노드가 존재하지 않습니다"
+      "nodeMissing": "노드가 존재하지 않습니다",
+      "probe": {
+        "timeout": "Connect timeout after {{ms}}ms ({{detail}}). Peer may be firewalled.",
+        "dns": "DNS lookup failed ({{detail}}).",
+        "refused": "Connection refused after {{ms}}ms ({{detail}}). Port closed or one-way block.",
+        "tls": "TLS verify failed ({{detail}}).",
+        "unreach": "Host unreachable after {{ms}}ms ({{detail}}).",
+        "http": "HTTP probe failed after {{ms}}ms ({{detail}})."
+      },
+      "loopbackOriginRemote": "Origin is 127.0.0.1 — that is this host, not a remote edge. Set a reachable origin IP or bind_ip.",
+      "needSshOrFleet": "Remote edge needs an outbound SSH identity (or username) or a /agents fleet session. Health URL alone is not apply transport."
     },
     "backup": {
       "fileNotFound": "백업 파일을 찾을 수 없습니다",
@@ -5191,7 +5217,13 @@
       "resticNotInPath": "PATH에 있지 않음",
       "dbEnvUnreadable": "Could not read .db.env; skipped SQL dump.",
       "dbEnvNoName": ".db.env has no database name; skipped SQL dump.",
-      "targetOutside": "Restore target must be inside the project home or the public files root."
+      "targetOutside": "Restore target must be inside the project home or the public files root.",
+      "testUnsaved": "Testing unsaved form values (not written to settings).",
+      "testIdentity": "ssh (identity) to {{spec}} ok",
+      "sshAuthFailed": "SSH key or password rejected (publickey). Pick an outbound identity or install sshpass.",
+      "remotePathIsFile": "Remote path {{path}} is a file. Use a directory.",
+      "remoteMkdirFailed": "Could not create remote directory: {{detail}}",
+      "sidecarPushed": "Also pushed SQL sidecar {{name}}"
     },
     "redis": {
       "cliMissing": "redis-cli가 설치되지 않았습니다"
@@ -5276,7 +5308,10 @@
     },
     "db": {
       "needExecuteCreate": "호스트 실행이 꺼져 있습니다. 패널에서 데이터베이스를 생성할 수 없습니다.",
-      "dryRunMysql": "테스트 실행: 데이터베이스가 생성되지 않았습니다. YSK_EXECUTE=1과 함께 --execute를 사용하여 프로비저닝"
+      "dryRunMysql": "테스트 실행: 데이터베이스가 생성되지 않았습니다. YSK_EXECUTE=1과 함께 --execute를 사용하여 프로비저닝",
+      "remoteNoCreds": "No username/password stored — TCP only (registration is not a login).",
+      "remoteReachable": "TCP {{host}}:{{port}} open ({{ms}}ms).",
+      "remoteUnreachable": "TCP {{host}}:{{port}} closed or filtered ({{ms}}ms)."
     },
     "net": {
       "invalidIface": "잘못된 인터페이스 이름",
@@ -8234,6 +8269,14 @@
       "hookEnabled": "Inbound Git hook is on. Paste the URL into GitHub, Gitea, or GitLab yourself.",
       "hookDisabled": "Inbound Git hook is off. The URL will not sync.",
       "hookSecretOnce": "Copy this hook secret now. It is not shown again."
+    },
+    "migrate": {
+      "orphanConfirm": "Type the exact leftover home path to confirm delete.",
+      "orphanStillInStore": "That home still belongs to a project in the store.",
+      "orphanMissing": "Path not on disk: {{path}}",
+      "orphanNeedExecute": "Would remove leftover {{path}}. Needs YSK_EXECUTE=1.",
+      "orphanRmFailed": "Could not remove leftover home: {{detail}}",
+      "orphanRemoved": "Removed leftover project home {{path}}."
     }
   },
   "ops": {
@@ -10599,7 +10642,9 @@
       "strictBlocked": "패키지 또는 PAM이 준비되지 않아 Strict 적용이 비활성화되었습니다.",
       "strictDryRun": "엄격 모드 미리보기",
       "errorNoDetail": "테스트 실패(상세 없음)",
-      "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it."
+      "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it.",
+      "loginNoProjects": "No projects. Authorize an existing Linux user (root / tester) below. Writing /root/.ssh needs YSK_EXECUTE=1.",
+      "loginLinuxHint": "Used when no project. Example: root or tester."
     },
     "sessionsActive": "활성 세션",
     "sessionsOther": "기타 장치",

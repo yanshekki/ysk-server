@@ -424,7 +424,10 @@
     "testRemoteDone": "Sonda remota finalizada",
     "testRemoteFailed": "Sonda remota fallida",
     "resticRepoPh": "Panel data directory / restic-repo",
-    "testDisabledHint": "Turn on remote push before testing."
+    "testDisabledHint": "Turn on remote push before testing.",
+    "identityId": "Outbound SSH identity",
+    "identityHint": "Preferred. Same vault as /security SSH. Password needs sshpass.",
+    "identityNone": "None — password or default key"
   },
   "btTracker": {
     "title": "Rastreador BT",
@@ -1814,7 +1817,7 @@
         }
       },
       "x": {
-        "972912": "Uso:\n  ysk-server migra inventario [--data-dir PATH] --json\n  ysk-server migrar host --target root@IP [--identity-file PATH|--identity-id ID|--contraseña PW] --execute [--maintenance] [--force-wipe-target]\n  ysk-server migrar publicación --ID de trabajo --data-dir RUTA --ejecutar # en el objetivo\n  Estado de migración del servidor ysk [--ID de trabajo]\n  ysk-server migrar currículum --ID de trabajo --ejecutar"
+        "972912": "Uso:\n  ysk-server migra inventario [--data-dir PATH] --json\n  ysk-server migrar host --target root@IP [--identity-file PATH|--identity-id ID|--contraseña PW] --execute [--maintenance] [--force-wipe-target]\n  ysk-server migrar publicación --ID de trabajo --data-dir RUTA --ejecutar # en el objetivo\n  Estado de migración del servidor ysk [--ID de trabajo]\n  ysk-server migrar currículum --ID de trabajo --ejecutar\n  ysk-server migrate orphan-homes [--data-dir PATH] --json\n  ysk-server migrate orphan-homes --path /home/ysk-server-UUID --confirm PATH --execute\n"
       },
       "hostingHelp": "Uso: alojamiento del servidor ysk <sub>\n  Operaciones peligrosas en seco por defecto; agregue --execute (+ YSK_EXECUTE=1) para aplicar\n  nginx | nginx-sync [--ejecutar]\n  redis-provisión | provisión-postgres | mysql-provision [--ejecutar]\n  dns-zone --zone X --ip A.B.C.D [--ipv6 X:X::X] [--validar] [--recargar]\n  zonas-dns | estado-powerdns | instalación-powerdns [--instalar|--ejecutar]\n  powerdns-load --zone X --ip A.B.C.D [--carga|--ejecutar]\n  aplicar correo electrónico --dominio X [--instalar|--ejecutar]\n  buzón de correo electrónico --dominio X --usuario local [--contraseña P] [--ip A.B.C.D] [--sistema]\n  ftps-apply --dominio X [--instalar|--ejecutar]\n  tiempos de ejecución | instalación en tiempo de ejecución --kind node|php|python|go|rust --versión V [--install|--execute]\n  dovecot-passdb --dominio X | --todos\n  aplicación de correo web --dominio webmail.ejemplo.com [--descargar]\n  archivos-públicos --archivos de dominio.ejemplo.com [--recargar]\n  email-bootstrap --dominio ejemplo.com --ip A.B.C.D [--instalar|--ejecutar]\n  capacidad de entrega de correo electrónico --dominio ejemplo.com # PTR/DNSBL/paquete de preparación (honesto)\n  aplicar firewall [--smtp] [--ejecutar]",
       "logsQuery": "Uso: {{CLI_NAME}} consulta de registros --source <id> [--lines N] [--grep G] [--since 1h] [--priority err]\n  ejemplos de fuentes: diario: diario:nginx.service archivo:syslog proyecto:<uuid>\n  {{CLI_NAME}} fuentes de registros --json\n  {{CLI_NAME}} diario de registros [--unit nginx.service] --json"
@@ -2570,7 +2573,10 @@
       "probe": "Sonda",
       "name": "Nombre",
       "type": "Tipo",
-      "status": "Estado"
+      "status": "Estado",
+      "fleetSession": "Fleet agent session id",
+      "fleetSessionHint": "Optional. Paste a session UUID from /agents. Then this peer uses fleet (no SSH). Leave empty for SSH scp.",
+      "fleetSessionPh": "Agents page session UUID"
     },
     "console": {
       "dataBrowse": "Explorar datos",
@@ -2640,7 +2646,12 @@
     "emptyDbHostHasRows": "The host already has databases that are not in this control-plane list.",
     "hostHasUntracked": "{{count}} host databases are not registered in the panel",
     "hostInventoryHint": "The table is control-plane rows only. Live names come from SHOW DATABASES.",
-    "adoptHostDb": "Register {{name}}"
+    "adoptHostDb": "Register {{name}}",
+    "remoteTest": "Test connection",
+    "remoteTestDone": "Remote host probe finished",
+    "remoteTestOk": "reachable",
+    "remoteTestFail": "unreachable",
+    "remoteNotChecked": "not tested"
   },
   "dialogs": {
     "confirmDefault": "Confirmar",
@@ -4812,7 +4823,11 @@
     "dryRunOnlyDesc": "· Inventario + verificación previa solamente; sin rsync o escrituras de destino",
     "executeNote": "El host necesita YSK_EXECUTE=1 y API raíz. Después de migrar, actualice DNS A/AAAA y verifique el firewall en la nube + PTR de correo.",
     "dnsCutover": "Transferencia de DNS (manual)",
-    "dnsCutoverDesc": "Punto A/AAAA para estos nombres a la nueva IP pública;"
+    "dnsCutoverDesc": "Punto A/AAAA para estos nombres a la nueva IP pública;",
+    "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
+    "orphanRemove": "Remove leftover home",
+    "orphanRemoveTitle": "Delete leftover project home?",
+    "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1."
   },
   "multiCheck": {
     "customPlaceholder": "código personalizado",
@@ -5179,11 +5194,22 @@
     },
     "ssh": {
       "identityNotFound": "Identidad no encontrada",
-      "registrationNotFound": "Registro no encontrado"
+      "registrationNotFound": "Registro no encontrado",
+      "keyOkNologin": "Key accepted. Account has no login shell (nologin) — use SFTP. Treated as PASS."
     },
     "cdn": {
       "siteNotFound": "Sitio CDN no encontrado",
-      "nodeMissing": "El nodo no existe"
+      "nodeMissing": "El nodo no existe",
+      "probe": {
+        "timeout": "Connect timeout after {{ms}}ms ({{detail}}). Peer may be firewalled.",
+        "dns": "DNS lookup failed ({{detail}}).",
+        "refused": "Connection refused after {{ms}}ms ({{detail}}). Port closed or one-way block.",
+        "tls": "TLS verify failed ({{detail}}).",
+        "unreach": "Host unreachable after {{ms}}ms ({{detail}}).",
+        "http": "HTTP probe failed after {{ms}}ms ({{detail}})."
+      },
+      "loopbackOriginRemote": "Origin is 127.0.0.1 — that is this host, not a remote edge. Set a reachable origin IP or bind_ip.",
+      "needSshOrFleet": "Remote edge needs an outbound SSH identity (or username) or a /agents fleet session. Health URL alone is not apply transport."
     },
     "backup": {
       "fileNotFound": "Archivo de copia de seguridad no encontrado",
@@ -5191,7 +5217,13 @@
       "resticNotInPath": "restic no en RUTA",
       "dbEnvUnreadable": "Could not read .db.env; skipped SQL dump.",
       "dbEnvNoName": ".db.env has no database name; skipped SQL dump.",
-      "targetOutside": "Restore target must be inside the project home or the public files root."
+      "targetOutside": "Restore target must be inside the project home or the public files root.",
+      "testUnsaved": "Testing unsaved form values (not written to settings).",
+      "testIdentity": "ssh (identity) to {{spec}} ok",
+      "sshAuthFailed": "SSH key or password rejected (publickey). Pick an outbound identity or install sshpass.",
+      "remotePathIsFile": "Remote path {{path}} is a file. Use a directory.",
+      "remoteMkdirFailed": "Could not create remote directory: {{detail}}",
+      "sidecarPushed": "Also pushed SQL sidecar {{name}}"
     },
     "redis": {
       "cliMissing": "redis-cli no está instalado"
@@ -5276,7 +5308,10 @@
     },
     "db": {
       "needExecuteCreate": "La ejecución del host está desactivada; No se puede crear una base de datos desde el panel.",
-      "dryRunMysql": "ejecución en seco: base de datos no creada. Utilice --execute con YSK_EXECUTE=1 para aprovisionar"
+      "dryRunMysql": "ejecución en seco: base de datos no creada. Utilice --execute con YSK_EXECUTE=1 para aprovisionar",
+      "remoteNoCreds": "No username/password stored — TCP only (registration is not a login).",
+      "remoteReachable": "TCP {{host}}:{{port}} open ({{ms}}ms).",
+      "remoteUnreachable": "TCP {{host}}:{{port}} closed or filtered ({{ms}}ms)."
     },
     "net": {
       "invalidIface": "Nombre de interfaz no válido",
@@ -8234,6 +8269,14 @@
       "hookEnabled": "Inbound Git hook is on. Paste the URL into GitHub, Gitea, or GitLab yourself.",
       "hookDisabled": "Inbound Git hook is off. The URL will not sync.",
       "hookSecretOnce": "Copy this hook secret now. It is not shown again."
+    },
+    "migrate": {
+      "orphanConfirm": "Type the exact leftover home path to confirm delete.",
+      "orphanStillInStore": "That home still belongs to a project in the store.",
+      "orphanMissing": "Path not on disk: {{path}}",
+      "orphanNeedExecute": "Would remove leftover {{path}}. Needs YSK_EXECUTE=1.",
+      "orphanRmFailed": "Could not remove leftover home: {{detail}}",
+      "orphanRemoved": "Removed leftover project home {{path}}."
     }
   },
   "ops": {
@@ -10599,7 +10642,9 @@
       "strictBlocked": "El paquete o PAM no está listo; no se puede aplicar Strict.",
       "strictDryRun": "Vista previa del modo estricto",
       "errorNoDetail": "Prueba fallida (sin detalles)",
-      "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it."
+      "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it.",
+      "loginNoProjects": "No projects. Authorize an existing Linux user (root / tester) below. Writing /root/.ssh needs YSK_EXECUTE=1.",
+      "loginLinuxHint": "Used when no project. Example: root or tester."
     },
     "sessionsActive": "Sesiones activas",
     "sessionsOther": "Otros dispositivos",

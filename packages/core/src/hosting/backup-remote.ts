@@ -99,22 +99,41 @@ export async function testBackupRemote(input: {
   host: HostExecutor;
   db: JsonStore;
   dataDir?: string;
+  /** Form values — not persisted. Empty / *** secrets keep the store. */
+  overlay?: Partial<BackupRemoteSettings>;
 }): Promise<BackupRemoteTestResult> {
-  const remote = getBackupRemote(input.db);
+  const stored = getBackupRemote(input.db);
+  const remote: BackupRemoteSettings = { ...stored, ...(input.overlay ?? {}) };
+  if (input.overlay) {
+    if (input.overlay.password === '' || input.overlay.password === '***' || input.overlay.password === undefined) {
+      remote.password = stored.password;
+    }
+    if (
+      input.overlay.awsSecretAccessKey === '' ||
+      input.overlay.awsSecretAccessKey === '***' ||
+      input.overlay.awsSecretAccessKey === undefined
+    ) {
+      remote.awsSecretAccessKey = stored.awsSecretAccessKey;
+    }
+  }
   if (!remote.enabled) {
     return { ok: false, notes: [tl('notes.auto.n1479')], kind: remote.kind };
   }
+  const notesPrefix =
+    input.overlay && stored.enabled !== remote.enabled
+      ? [tl('notes.backup.testUnsaved')]
+      : [];
   if (remote.kind === 'sftp' && (!remote.host || !remote.username || !remote.path)) {
-    return { ok: false, notes: [tl('notes.auto.n1474')], kind: remote.kind };
+    return { ok: false, notes: [...notesPrefix, tl('notes.auto.n1474')], kind: remote.kind };
   }
   if (remote.kind === 's3' && !(remote.s3Bucket || remote.path || '').trim()) {
-    return { ok: false, notes: [tl('notes.auto.n0179')], kind: remote.kind };
+    return { ok: false, notes: [...notesPrefix, tl('notes.auto.n0179')], kind: remote.kind };
   }
   if (remote.kind === 'local' && !(remote.path || '').trim()) {
-    return { ok: false, notes: [tl('notes.auto.n1474')], kind: remote.kind };
+    return { ok: false, notes: [...notesPrefix, tl('notes.auto.n1474')], kind: remote.kind };
   }
   if (remote.kind === 'sftp' && remote.host && isMetadataOrLoopbackHost(remote.host)) {
-    return { ok: false, kind: 'sftp', notes: [tl('notes.auto.n0303')] };
+    return { ok: false, kind: 'sftp', notes: [...notesPrefix, tl('notes.auto.n0303')] };
   }
   if (remote.kind === 's3' && remote.s3Endpoint?.trim()) {
     try {
@@ -123,7 +142,7 @@ export async function testBackupRemote(input: {
         policy: 'strict',
       });
     } catch {
-      return { ok: false, kind: 's3', notes: [tl('notes.auto.n0303')] };
+      return { ok: false, kind: 's3', notes: [...notesPrefix, tl('notes.auto.n0303')] };
     }
   }
   if (!input.host.executeEnabled()) {
@@ -132,7 +151,7 @@ export async function testBackupRemote(input: {
       blocked: true,
       requiresExecute: true,
       kind: remote.kind,
-      notes: [tl('notes.auto.n1173')],
+      notes: [...notesPrefix, tl('notes.auto.n1173')],
     };
   }
 
@@ -196,30 +215,150 @@ export async function testBackupRemote(input: {
     };
   }
 
-  const port = remote.port ?? 22;
-  const spec = `${remote.username}@${remote.host}`;
-  if (remote.password) {
-    const r = await input.host.runCommand(
-      [
-        'bash',
-        '-c',
-        `if ${shellBinExists('sshpass')}; then sshpass -p ${JSON.stringify(remote.password)} ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=8 -p ${port} ${JSON.stringify(spec)} true; else echo NEED_SSHPASS; fi`,
-      ],
-      { timeoutMs: 20_000 },
+  return probeSftpRemote({
+    host: input.host,
+    remote,
+    dataDir: input.dataDir,
+    notesPrefix,
+  });
+}
+
+async function probeSftpRemote(input: {
+  host: HostExecutor;
+  remote: BackupRemoteSettings;
+  dataDir?: string;
+  notesPrefix: string[];
+}): Promise<BackupRemoteTestResult> {
+  const port = input.remote.port ?? 22;
+  const spec = `${input.remote.username}@${input.remote.host}`;
+  const identityId = input.remote.identityId?.trim();
+  if (identityId && input.dataDir) {
+    const { resolveIdentityKeyPath, buildSshIdentityArgv } = await import(
+      '../security/ssh-identity/ops.js'
     );
-    const out = (r.stdout || '') + (r.stderr || '');
-    if (out.includes('NEED_SSHPASS')) {
-      return { ok: false, kind: 'sftp', notes: [tl('notes.auto.n1572')] };
+    const key = resolveIdentityKeyPath(input.dataDir, identityId);
+    if (!key.ok || !key.path) {
+      return {
+        ok: false,
+        kind: 'sftp',
+        notes: [
+          ...input.notesPrefix,
+          tl('notes.auto.t0375', {
+            v0: identityId,
+            v1: (key.notes ?? []).join('; ') || tl('notes.tpl.unavailable'),
+          }),
+        ],
+      };
     }
+    const argv = buildSshIdentityArgv(key.path, {
+      port,
+      userAtHost: spec,
+      remoteCommand: ['true'],
+    });
+    const r = await input.host.runCommand(argv, { timeoutMs: 20_000 });
     return {
       ok: r.exitCode === 0,
       kind: 'sftp',
       notes: [
+        ...input.notesPrefix,
         r.exitCode === 0
-          ? tl('notes.auto.t0378', { v0: spec })
-          : tl('notes.auto.t0379', { v0: out.slice(0, 300) }),
+          ? tl('notes.backup.testIdentity', { spec })
+          : tl('notes.auto.t0377', { v0: (r.stderr || r.stdout).slice(0, 300) }),
       ],
     };
+  }
+  if (!input.remote.password) {
+    return {
+      ok: false,
+      kind: 'sftp',
+      notes: [...input.notesPrefix, tl('notes.auto.n1572')],
+    };
+  }
+  const r = await input.host.runCommand(
+    [
+      'bash',
+      '-c',
+      `if ${shellBinExists('sshpass')}; then sshpass -p ${JSON.stringify(input.remote.password)} ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=8 -p ${port} ${JSON.stringify(spec)} true; else echo NEED_SSHPASS; fi`,
+    ],
+    { timeoutMs: 20_000 },
+  );
+  const out = (r.stdout || '') + (r.stderr || '');
+  if (out.includes('NEED_SSHPASS')) {
+    return { ok: false, kind: 'sftp', notes: [...input.notesPrefix, tl('notes.auto.n1572')] };
+  }
+  return {
+    ok: r.exitCode === 0,
+    kind: 'sftp',
+    notes: [
+      ...input.notesPrefix,
+      r.exitCode === 0
+        ? tl('notes.auto.t0378', { v0: spec })
+        : tl('notes.auto.t0379', { v0: out.slice(0, 300) }),
+    ],
+  };
+}
+
+async function ensureRemoteSftpDir(input: {
+  host: HostExecutor;
+  remote: BackupRemoteSettings;
+  remoteDir: string;
+  identityId?: string;
+  dataDir?: string;
+  port: number;
+  spec: string;
+}): Promise<{ ok: boolean; notes: string[] }> {
+  const dir = input.remoteDir;
+  if (!dir || dir === '.') return { ok: true, notes: [] };
+  const remoteCmd = `if [ -f ${JSON.stringify(dir)} ]; then echo YSK_DEST_IS_FILE; exit 2; fi; mkdir -p ${JSON.stringify(dir)}`;
+  if (input.identityId && input.dataDir) {
+    const { resolveIdentityKeyPath, buildSshIdentityArgv } = await import(
+      '../security/ssh-identity/ops.js'
+    );
+    const key = resolveIdentityKeyPath(input.dataDir, input.identityId);
+    if (!key.ok || !key.path) {
+      return {
+        ok: false,
+        notes: [
+          tl('notes.auto.t0375', {
+            v0: input.identityId,
+            v1: (key.notes ?? []).join('; ') || tl('notes.tpl.unavailable'),
+          }),
+        ],
+      };
+    }
+    const argv = buildSshIdentityArgv(key.path, {
+      port: input.port,
+      userAtHost: input.spec,
+      remoteCommand: ['bash', '-lc', remoteCmd],
+    });
+    const r = await input.host.runCommand(argv, { timeoutMs: 20_000 });
+    const out = `${r.stdout || ''} ${r.stderr || ''}`;
+    if (out.includes('YSK_DEST_IS_FILE')) {
+      return { ok: false, notes: [tl('notes.backup.remotePathIsFile', { path: dir })] };
+    }
+    if (r.exitCode !== 0) {
+      return { ok: false, notes: [tl('notes.backup.remoteMkdirFailed', { detail: out.slice(0, 200) })] };
+    }
+    return { ok: true, notes: [] };
+  }
+  if (input.remote.password) {
+    const r = await input.host.runCommand(
+      [
+        'bash',
+        '-c',
+        `if ${shellBinExists('sshpass')}; then sshpass -p ${JSON.stringify(input.remote.password)} ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=8 -p ${input.port} ${JSON.stringify(input.spec)} ${JSON.stringify(remoteCmd)}; else echo NEED_SSHPASS; fi`,
+      ],
+      { timeoutMs: 20_000 },
+    );
+    const out = (r.stdout || '') + (r.stderr || '');
+    if (out.includes('NEED_SSHPASS')) return { ok: false, notes: [tl('notes.auto.n1572')] };
+    if (out.includes('YSK_DEST_IS_FILE')) {
+      return { ok: false, notes: [tl('notes.backup.remotePathIsFile', { path: dir })] };
+    }
+    if (r.exitCode !== 0) {
+      return { ok: false, notes: [tl('notes.backup.remoteMkdirFailed', { detail: out.slice(0, 200) })] };
+    }
+    return { ok: true, notes: [] };
   }
   const r = await input.host.runCommand(
     [
@@ -231,27 +370,28 @@ export async function testBackupRemote(input: {
       '-o',
       'ConnectTimeout=8',
       '-p',
-      String(port),
-      spec,
-      'true',
+      String(input.port),
+      input.spec,
+      remoteCmd,
     ],
     { timeoutMs: 20_000 },
   );
-  return {
-    ok: r.exitCode === 0,
-    kind: 'sftp',
-    notes: [
-      r.exitCode === 0
-        ? tl('notes.auto.t0380', { v0: spec })
-        : tl('notes.auto.t0381', { v0: r.stderr || r.stdout }),
-    ],
-  };
+  const out = `${r.stdout || ''} ${r.stderr || ''}`;
+  if (out.includes('YSK_DEST_IS_FILE')) {
+    return { ok: false, notes: [tl('notes.backup.remotePathIsFile', { path: dir })] };
+  }
+  if (r.exitCode !== 0) {
+    return { ok: false, notes: [tl('notes.backup.remoteMkdirFailed', { detail: out.slice(0, 200) })] };
+  }
+  return { ok: true, notes: [] };
 }
 
 export async function pushBackupRemote(input: {
   host: HostExecutor;
   db: JsonStore;
   localArchivePath: string;
+  /** Extra files (e.g. SQL sidecar) copied next to the archive */
+  extraLocalPaths?: string[];
   /** override settings identityId */
   identityId?: string;
   dataDir?: string;
@@ -307,9 +447,22 @@ export async function pushBackupRemote(input: {
     return { ok: false, notes: [tl('notes.auto.n1474')] };
   }
   const port = remote.port ?? 22;
-  const dest = `${remote.username}@${remote.host}:${remote.path}/`;
+  const remoteDir = (remote.path || '.').replace(/\/+$/, '') || '.';
+  const dest = `${remote.username}@${remote.host}:${remoteDir}/`;
   const identityId = input.identityId || remote.identityId;
   const dataDir = input.dataDir;
+  const extras = (input.extraLocalPaths ?? []).filter((p) => p && existsSync(p));
+
+  const mkdirNote = await ensureRemoteSftpDir({
+    host: input.host,
+    remote,
+    remoteDir,
+    identityId,
+    dataDir,
+    port,
+    spec: `${remote.username}@${remote.host}`,
+  });
+  if (mkdirNote.ok === false) return mkdirNote;
 
   // Prefer vault identity when configured
   if (identityId && dataDir) {
@@ -329,14 +482,27 @@ export async function pushBackupRemote(input: {
       remoteSpec: dest,
     });
     const r = await input.host.runCommand(argv, { timeoutMs: 180_000 });
-    return {
-      ok: r.exitCode === 0,
-      notes: [
-        r.exitCode === 0
-          ? tl('notes.auto.t0376', { v0: (dest) })
-          : tl('notes.auto.t0377', { v0: ((r.stderr || r.stdout).slice(0, 300)) }),
-      ],
-    };
+    const notes = [
+      r.exitCode === 0
+        ? tl('notes.auto.t0376', { v0: dest })
+        : tl('notes.auto.t0377', { v0: (r.stderr || r.stdout).slice(0, 300) }),
+    ];
+    if (r.exitCode !== 0) return { ok: false, notes };
+    for (const extra of extras) {
+      const argv2 = buildScpIdentityArgv(key.path, {
+        port,
+        localPath: extra,
+        remoteSpec: dest,
+      });
+      const r2 = await input.host.runCommand(argv2, { timeoutMs: 180_000 });
+      notes.push(
+        r2.exitCode === 0
+          ? tl('notes.backup.sidecarPushed', { name: extra.split('/').pop() ?? extra })
+          : tl('notes.auto.t0377', { v0: (r2.stderr || r2.stdout).slice(0, 200) }),
+      );
+      if (r2.exitCode !== 0) return { ok: false, notes };
+    }
+    return { ok: true, notes };
   }
 
   // Prefer scp; with password use sshpass if available
@@ -356,10 +522,27 @@ export async function pushBackupRemote(input: {
         notes: [tl('notes.auto.n1572')],
       };
     }
-    return {
-      ok: r.exitCode === 0,
-      notes: [r.exitCode === 0 ? tl('notes.auto.t0378', { v0: (dest) }) : tl('notes.auto.t0379', { v0: (out.slice(0, 300)) })],
-    };
+    const notes = [
+      r.exitCode === 0 ? tl('notes.auto.t0378', { v0: dest }) : tl('notes.auto.t0379', { v0: out.slice(0, 300) }),
+    ];
+    if (r.exitCode !== 0) return { ok: false, notes };
+    for (const extra of extras) {
+      const r2 = await input.host.runCommand(
+        [
+          'bash',
+          '-c',
+          `sshpass -p ${JSON.stringify(remote.password)} scp -o StrictHostKeyChecking=accept-new -P ${port} ${JSON.stringify(extra)} ${JSON.stringify(dest)}`,
+        ],
+        { timeoutMs: 180_000 },
+      );
+      notes.push(
+        r2.exitCode === 0
+          ? tl('notes.backup.sidecarPushed', { name: extra.split('/').pop() ?? extra })
+          : tl('notes.auto.t0379', { v0: (r2.stderr || r2.stdout).slice(0, 200) }),
+      );
+      if (r2.exitCode !== 0) return { ok: false, notes };
+    }
+    return { ok: true, notes };
   }
   const r = await input.host.runCommand(
     [
@@ -375,14 +558,35 @@ export async function pushBackupRemote(input: {
     ],
     { timeoutMs: 180_000 },
   );
-  return {
-    ok: r.exitCode === 0,
-    notes: [
-      r.exitCode === 0
-        ? tl('notes.auto.t0380', { v0: (dest) })
-        : tl('notes.auto.t0381', { v0: (r.stderr || r.stdout) }),
-    ],
-  };
+  const notes = [
+    r.exitCode === 0
+      ? tl('notes.auto.t0380', { v0: dest })
+      : tl('notes.auto.t0381', { v0: r.stderr || r.stdout }),
+  ];
+  if (r.exitCode !== 0) return { ok: false, notes };
+  for (const extra of extras) {
+    const r2 = await input.host.runCommand(
+      [
+        'scp',
+        '-o',
+        'StrictHostKeyChecking=accept-new',
+        '-o',
+        'BatchMode=yes',
+        '-P',
+        String(port),
+        extra,
+        dest,
+      ],
+      { timeoutMs: 180_000 },
+    );
+    notes.push(
+      r2.exitCode === 0
+        ? tl('notes.backup.sidecarPushed', { name: extra.split('/').pop() ?? extra })
+        : tl('notes.auto.t0381', { v0: r2.stderr || r2.stdout }),
+    );
+    if (r2.exitCode !== 0) return { ok: false, notes };
+  }
+  return { ok: true, notes };
 }
 
 async function pushBackupS3(

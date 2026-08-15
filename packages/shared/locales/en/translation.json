@@ -424,7 +424,10 @@
     "testRemoteDone": "Remote probe finished",
     "testRemoteFailed": "Remote probe failed",
     "resticRepoPh": "Panel data directory / restic-repo",
-    "testDisabledHint": "Turn on remote push before testing."
+    "testDisabledHint": "Turn on remote push before testing.",
+    "identityId": "Outbound SSH identity",
+    "identityHint": "Preferred. Same vault as /security SSH. Password needs sshpass.",
+    "identityNone": "None — password or default key"
   },
   "btTracker": {
     "title": "BT Tracker",
@@ -778,7 +781,7 @@
     },
     "help": {
       "blurb": "Control plane CLI — prefer --json for AI agents.\nDocs: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json",
-      "main": "{{product}} ({{cli}}) v{{version}}\n\nControl plane CLI — prefer --json for AI agents.\nDocs: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json\n\nUsage:\n  {{cli}} <command> [options]\n\nCommands:\n  setup                 Init dataDir + admin\n  update                Self-update check/apply\n  serve                 HTTP API + Web UI\n  system unit-install   Install ysk-server.service [--enable]\n  stack                 plans|bundles|status|install|uninstall\n  tools                 List tools; tools run --tool <name> [--dry-run]\n  ask                   NL → AI plan [--execute]\n  projects              list|get|create|deploy|stop|health|backup|template\n  users                 list|create|totp\n  packages              list\n  rbac                  list|show\n  audit                 list\n  backup                all|list|status|restore|delete|schedule|control-plane|settings|restic\n  templates             App templates\n  hosting               nginx|dns|db|firewall helpers\n  dns                   zone|zones|lookup\n  logs                  sources|query|journal|overview\n  host                  overview|metrics (read-only)\n  nginx                 status|list|test|sync\n  ssl                   list|get (certificates)\n  db-cluster            list|get|create|plan (HA plan-first)\n  ssh-key               list|create|import|public|export|install|delete (SSH identity vault)\n  ssh-2fa               list|enroll|confirm|install|pam|retire (SSH login TOTP ≠ panel 2FA)\n  services              Host service matrix (systemctl probe)\n  defense | protection  status|ban|unban|whitelist\n  security              status|sessions|api-keys (2FA flags · session revoke · API keys)\n  cdn                   nodes|sites|render|apply|purge|probe|dashboard|health-loop|from-project\n  agents                runtimes|fleet list|commands|register (panel + edge)\n  agent run             Outbound fleet poller (experimental)\n  store                 status|export|import|migrate (json|sqlite|postgres document backends)\n  files                 list|read|write|mkdir|rm|stat|rename|copy|move|chmod|trash|shares (sandbox)\n  cron                  list|create|delete|enable|disable|run|install|status\n  email                 domains|mailboxes|deliverability|bootstrap|dns (panel parity)\n  health                Local mode snapshot or --url http://host:port/health\n  notifications         list\n  readiness | doctor    Production readiness (honest)\n  migrate               inventory|host|post|status|resume (full host migrate)\n  vpn                   WireGuard / OpenVPN\n  vnc                   accounts|clients|share\n  apache                sites|settings\n  network               ifaces|exposure|real-ip\n  real-ip               CDN Real IP\n  updates               inventory|apply\n  software              list|install|uninstall\n  db                    MySQL / MariaDB / PostgreSQL\n  redis                 status|keys|get|set\n  ftp                   accounts|status\n  runtimes              list|install\n  bt-tracker            status|settings\n  version | help\n\nGlobal:\n  --json                JSON stdout (AI)\n  --data-dir PATH       also --data-dir=PATH or YSK_DATA_DIR\n  --config PATH\n  --locale CODE         CLI language (default en). Also YSK_LOCALE.\n                        Codes: en zh-HK zh-CN ja ko hi es ar fr bn pt id ur\n  --limit N --offset N  Slice large JSON lists (software / updates / host metrics / rbac)\n  --help | --version\n\nExit: 0 ok · 1 error · 2 validation · 3 blocked · 4 not found · 5 host error\n\nSafety:\n  Dangerous ops default to dry-run (plan only).\n  Pass --execute (alias --apply) + env YSK_EXECUTE=1 to mutate host.\n  Command names and flags are always English. --locale only translates messages.\n\nExamples:\n  {{cli}} readiness --json\n  {{cli}} host --json\n  {{cli}} nginx status --json\n  {{cli}} ssl list --json\n  {{cli}} projects get --id UUID --json\n  {{cli}} defense ban --ip 1.2.3.4 --json          # dry-run plan\n  {{cli}} projects list --json\n  {{cli}} --locale=zh-HK help\n  {{cli}} logs query --source journal: --lines 100 --json\n  {{cli}} tools --json"
+      "main": "{{product}} ({{cli}}) v{{version}}\n\nControl plane CLI — prefer --json for AI agents.\nDocs: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json\n\nUsage:\n  {{cli}} <command> [options]\n\nCommands:\n  setup                 Init dataDir + admin\n  update                Self-update check/apply\n  serve                 HTTP API + Web UI\n  system unit-install   Install ysk-server.service [--enable]\n  stack                 plans|bundles|status|install|uninstall\n  tools                 List tools; tools run --tool <name> [--dry-run]\n  ask                   NL → AI plan [--execute]\n  projects              list|get|create|deploy|stop|health|backup|template\n  users                 list|create|totp\n  packages              list\n  rbac                  list|show\n  audit                 list\n  backup                all|list|status|restore|delete|schedule|control-plane|settings|restic\n  templates             App templates\n  hosting               nginx|dns|db|firewall helpers\n  dns                   zone|zones|lookup\n  logs                  sources|query|journal|overview\n  host                  overview|metrics (read-only)\n  nginx                 status|list|test|sync\n  ssl                   list|get (certificates)\n  db-cluster            list|get|create|plan (HA plan-first)\n  ssh-key               list|create|import|public|export|install|delete (SSH identity vault)\n  ssh-2fa               list|enroll|confirm|install|pam|retire (SSH login TOTP ≠ panel 2FA)\n  services              Host service matrix (systemctl probe)\n  defense | protection  status|ban|unban|whitelist\n  security              status|sessions|api-keys (2FA flags · session revoke · API keys)\n  cdn                   nodes|sites|render|apply|purge|probe|dashboard|health-loop|from-project\n  agents                runtimes|fleet list|commands|register (panel + edge)\n  agent run             Outbound fleet poller (experimental)\n  store                 status|export|import|migrate (json|sqlite|postgres document backends)\n  files                 list|read|write|mkdir|rm|stat|rename|copy|move|chmod|trash|shares (sandbox)\n  cron                  list|create|delete|enable|disable|run|install|status\n  email                 domains|mailboxes|deliverability|bootstrap|dns (panel parity)\n  health                Local mode snapshot or --url http://host:port/health\n  notifications         list\n  readiness | doctor    Production readiness (honest)\n  migrate               inventory|host|post|status|resume|orphan-homes (full host migrate)\n  vpn                   WireGuard / OpenVPN\n  vnc                   accounts|clients|share\n  apache                sites|settings\n  network               ifaces|exposure|real-ip\n  real-ip               CDN Real IP\n  updates               inventory|apply\n  software              list|install|uninstall\n  db                    MySQL / MariaDB / PostgreSQL\n  redis                 status|keys|get|set\n  ftp                   accounts|status\n  runtimes              list|install\n  bt-tracker            status|settings\n  version | help\n\nGlobal:\n  --json                JSON stdout (AI)\n  --data-dir PATH       also --data-dir=PATH or YSK_DATA_DIR\n  --config PATH\n  --locale CODE         CLI language (default en). Also YSK_LOCALE.\n                        Codes: en zh-HK zh-CN ja ko hi es ar fr bn pt id ur\n  --limit N --offset N  Slice large JSON lists (software / updates / host metrics / rbac)\n  --help | --version\n\nExit: 0 ok · 1 error · 2 validation · 3 blocked · 4 not found · 5 host error\n\nSafety:\n  Dangerous ops default to dry-run (plan only).\n  Pass --execute (alias --apply) + env YSK_EXECUTE=1 to mutate host.\n  Command names and flags are always English. --locale only translates messages.\n\nExamples:\n  {{cli}} readiness --json\n  {{cli}} host --json\n  {{cli}} nginx status --json\n  {{cli}} ssl list --json\n  {{cli}} projects get --id UUID --json\n  {{cli}} defense ban --ip 1.2.3.4 --json          # dry-run plan\n  {{cli}} projects list --json\n  {{cli}} --locale=zh-HK help\n  {{cli}} logs query --source journal: --lines 100 --json\n  {{cli}} tools --json"
     },
     "usage": {
       "tools": {
@@ -1814,7 +1817,7 @@
         }
       },
       "x": {
-        "972912": "Usage:\n  ysk-server migrate inventory [--data-dir PATH] --json\n  ysk-server migrate host --target root@IP [--identity-file PATH|--identity-id ID|--password PW] --execute [--maintenance] [--force-wipe-target]\n  ysk-server migrate post --job ID --data-dir PATH --execute   # on target\n  ysk-server migrate status [--job ID]\n  ysk-server migrate resume --job ID --execute\n"
+        "972912": "Usage:\n  ysk-server migrate inventory [--data-dir PATH] --json\n  ysk-server migrate host --target root@IP [--identity-file PATH|--identity-id ID|--password PW] --execute [--maintenance] [--force-wipe-target]\n  ysk-server migrate post --job ID --data-dir PATH --execute   # on target\n  ysk-server migrate status [--job ID]\n  ysk-server migrate resume --job ID --execute\n  ysk-server migrate orphan-homes [--data-dir PATH] --json\n  ysk-server migrate orphan-homes --path /home/ysk-server-UUID --confirm PATH --execute\n"
       },
       "hostingHelp": "Usage: ysk-server hosting <sub>\n  Dangerous ops default dry-run; add --execute (+ YSK_EXECUTE=1) to apply\n  nginx | nginx-sync [--execute]\n  redis-provision | postgres-provision | mysql-provision [--execute]\n  dns-zone --zone X --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--reload]\n  dns-zones | powerdns-status | powerdns-install [--install|--execute]\n  powerdns-load --zone X --ip A.B.C.D [--load|--execute]\n  email-apply --domain X [--install|--execute]\n  email-mailbox --domain X --local user [--password P] [--ip A.B.C.D] [--system]\n  ftps-apply --domain X [--install|--execute]\n  runtimes | runtime-install --kind node|php|python|go|rust --version V [--install|--execute]\n  dovecot-passdb --domain X | --all\n  webmail-apply --domain webmail.example.com [--download]\n  public-files --domain files.example.com [--reload]\n  email-bootstrap --domain example.com --ip A.B.C.D [--install|--execute]\n  email-deliverability --domain example.com   # PTR/DNSBL/warmup pack (honest)\n  firewall-apply [--smtp] [--execute]\n",
       "logsQuery": "Usage: {{CLI_NAME}} logs query --source <id> [--lines N] [--grep G] [--since 1h] [--priority err]\n  source examples: journal:  journal:nginx.service  file:syslog  project:<uuid>\n  {{CLI_NAME}} logs sources --json\n  {{CLI_NAME}} logs journal [--unit nginx.service] --json\n"
@@ -2422,7 +2425,12 @@
     "expiresAt": "Expires",
     "revokeRegistration": "Revoke registration",
     "remoteDbHosts": "Remote database hosts",
-    "remoteDbHostsDesc": "Register connection targets (password not echoed back)",
+    "remoteDbHostsDesc": "Register connection targets (password not echoed back). Saved ≠ reachable until Test connection.",
+    "remoteTest": "Test connection",
+    "remoteTestDone": "Remote host probe finished",
+    "remoteTestOk": "reachable",
+    "remoteTestFail": "unreachable",
+    "remoteNotChecked": "not tested",
     "displayName": "Display name",
     "prodReplicaPlaceholder": "Production replica",
     "remoteHostSaved": "Remote host saved",
@@ -2506,6 +2514,9 @@
       "registrationDeleted": "Registration deleted",
       "nodes": "Nodes",
       "remoteInstallPlan": "Remote install plan",
+      "fleetSession": "Fleet agent session id",
+      "fleetSessionHint": "Optional. Paste a session UUID from /agents. Then this peer uses fleet (no SSH). Leave empty for SSH scp.",
+      "fleetSessionPh": "Agents page session UUID",
       "fleetSyncPlan": "Fleet sync plan",
       "standaloneTitle": "Currently: standalone",
       "standaloneRepl": "No replica registered. Set primary/master + replica to generate conf and scripts.",
@@ -4800,6 +4811,10 @@
     "restartApiHint": "If you just deployed a new version, restart the API (",
     "afterRestart": ") then Refresh.",
     "inventoryWarnings": "Inventory warnings ({{count}})",
+    "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
+    "orphanRemove": "Remove leftover home",
+    "orphanRemoveTitle": "Delete leftover project home?",
+    "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1.",
     "moreWarnings": "…and {{n}} more",
     "authPassword": "root password (switch to key after temp key install)",
     "authIdentity": "SSH identity vault identityId",
@@ -5179,13 +5194,30 @@
     },
     "ssh": {
       "identityNotFound": "Identity not found",
-      "registrationNotFound": "Registration not found"
+      "registrationNotFound": "Registration not found",
+      "keyOkNologin": "Key accepted. Account has no login shell (nologin) — use SFTP. Treated as PASS."
     },
     "cdn": {
       "siteNotFound": "CDN site not found",
-      "nodeMissing": "Node does not exist"
+      "nodeMissing": "Node does not exist",
+      "loopbackOriginRemote": "Origin is 127.0.0.1 — that is this host, not a remote edge. Set a reachable origin IP or bind_ip.",
+      "needSshOrFleet": "Remote edge needs an outbound SSH identity (or username) or a /agents fleet session. Health URL alone is not apply transport.",
+      "probe": {
+        "timeout": "Connect timeout after {{ms}}ms ({{detail}}). Peer may be firewalled.",
+        "dns": "DNS lookup failed ({{detail}}).",
+        "refused": "Connection refused after {{ms}}ms ({{detail}}). Port closed or one-way block.",
+        "tls": "TLS verify failed ({{detail}}).",
+        "unreach": "Host unreachable after {{ms}}ms ({{detail}}).",
+        "http": "HTTP probe failed after {{ms}}ms ({{detail}})."
+      }
     },
     "backup": {
+      "testUnsaved": "Testing unsaved form values (not written to settings).",
+      "testIdentity": "ssh (identity) to {{spec}} ok",
+      "sshAuthFailed": "SSH key or password rejected (publickey). Pick an outbound identity or install sshpass.",
+      "remotePathIsFile": "Remote path {{path}} is a file. Use a directory.",
+      "remoteMkdirFailed": "Could not create remote directory: {{detail}}",
+      "sidecarPushed": "Also pushed SQL sidecar {{name}}",
       "fileNotFound": "Backup file not found",
       "resticNoPassword": "restic is enabled but password is not set",
       "resticNotInPath": "restic not in PATH",
@@ -5276,7 +5308,10 @@
     },
     "db": {
       "needExecuteCreate": "Host execute is off; cannot create database from the panel",
-      "dryRunMysql": "dry-run: database not created. Use --execute with YSK_EXECUTE=1 to provision"
+      "dryRunMysql": "dry-run: database not created. Use --execute with YSK_EXECUTE=1 to provision",
+      "remoteNoCreds": "No username/password stored — TCP only (registration is not a login).",
+      "remoteReachable": "TCP {{host}}:{{port}} open ({{ms}}ms).",
+      "remoteUnreachable": "TCP {{host}}:{{port}} closed or filtered ({{ms}}ms)."
     },
     "net": {
       "invalidIface": "Invalid interface name",
@@ -5786,7 +5821,7 @@
       "n0381": "post-transfer reapply",
       "n0382": "post-transfer restore",
       "n0383": "postconf not message_rate_limit (complete applied)",
-      "n0384": "postgres-replica Supports postgres",
+      "n0384": "kind postgres-replica needs --engine postgres",
       "n0385": "postgres_databases name",
       "n0386": "postqueue unavailable or mailNot installed",
       "n0387": "Install nginx on the host, or use panel software / runtime install",
@@ -5955,7 +5990,7 @@
       "n0550": "128M, 256M, 512M, -1 ()",
       "n0551": "e.g. 512MiB; leave empty to unset",
       "n0552": "900 1 300 10; disable",
-      "n0553": ": --member 10.0.0.3=replica:fleet:SESSION_UUID",
+      "n0553": "Paste a session UUID from /agents on the cluster form, or CLI --member 10.0.0.3=replica:fleet:SESSION_UUID",
       "n0554": "= ASN (system), not",
       "n0555": "22/80/443; can offnot port",
       "n0556": "kept: 10",
@@ -6577,7 +6612,7 @@
       "n1170": "cannot from npm or GitHub version (not )",
       "n1171": "cannotprobe systemctl",
       "n1172": "cannot DNS cluster: Host execute is not enabled",
-      "n1173": "cannot: Host execute is not enabled (backupSuccess)",
+      "n1173": "Host execute is off. Live SFTP/S3/local probe needs YSK_EXECUTE=1.",
       "n1174": "cannot metrics",
       "n1175": "cannot: serverHost execute is not enabled",
       "n1176": "cannot ACME: Host execute is not enabled",
@@ -8219,6 +8254,14 @@
       "libraryDestIsFile": "Cannot create a folder named {{name}} — a file with that name already exists.",
       "librarySeedMissing": "No matching files in that folder to seed.",
       "libraryWaitingPeers": "Waiting for peers. If the files are already on this host, add again and choose seed-existing."
+    },
+    "migrate": {
+      "orphanConfirm": "Type the exact leftover home path to confirm delete.",
+      "orphanStillInStore": "That home still belongs to a project in the store.",
+      "orphanMissing": "Path not on disk: {{path}}",
+      "orphanNeedExecute": "Would remove leftover {{path}}. Needs YSK_EXECUTE=1.",
+      "orphanRmFailed": "Could not remove leftover home: {{detail}}",
+      "orphanRemoved": "Removed leftover project home {{path}}."
     },
     "leftover": {
       "staleCliTitle": "Stale leftover CLI",
@@ -10427,7 +10470,9 @@
       "commentOptional": "Comment (optional)",
       "commentPlaceholder": "laptop / CI",
       "loginNeedProject": "Create a project first. Binding works best when the system user is ready.",
-      "loginNeedPub": "Select a project and paste a public key starting with ssh-",
+      "loginNeedPub": "Select a project or Linux user, and paste a public key starting with ssh-",
+      "loginNoProjects": "No projects. Authorize an existing Linux user (root / tester) below. Writing /root/.ssh needs YSK_EXECUTE=1.",
+      "loginLinuxHint": "Used when no project. Example: root or tester.",
       "loginAdded": "Added",
       "sshdTitle": "Project user SFTP (sshd)",
       "sshdDesc": "Let ysks_* / ysk_* project users SFTP with public keys",

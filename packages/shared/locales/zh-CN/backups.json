@@ -134,5 +134,8 @@
   "testRemoteDone": "远端探测完成",
   "testRemoteFailed": "远端探测失败",
   "resticRepoPh": "面板资料目录／restic 库",
-  "testDisabledHint": "请先开启远端推送才可测试。"
+  "testDisabledHint": "请先开启远端推送才可测试。",
+  "identityId": "Outbound SSH identity",
+  "identityHint": "Preferred. Same vault as /security SSH. Password needs sshpass.",
+  "identityNone": "None — password or default key"
 }

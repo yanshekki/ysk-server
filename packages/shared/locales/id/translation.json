@@ -424,7 +424,10 @@
     "testRemoteDone": "Probe jarak jauh selesai",
     "testRemoteFailed": "Probe jarak jauh gagal",
     "resticRepoPh": "Panel data directory / restic-repo",
-    "testDisabledHint": "Turn on remote push before testing."
+    "testDisabledHint": "Turn on remote push before testing.",
+    "identityId": "Outbound SSH identity",
+    "identityHint": "Preferred. Same vault as /security SSH. Password needs sshpass.",
+    "identityNone": "None — password or default key"
   },
   "btTracker": {
     "title": "Pelacak BT",
@@ -1814,7 +1817,7 @@
         }
       },
       "x": {
-        "972912": "Penggunaan:\n  ysk-server memigrasi inventaris [--data-dir PATH] --json\n  ysk-server migrasi host --target root@IP [--identity-file PATH|--identity-id ID|--password PW] --execute [--maintenance] [--force-wipe-target]\n  ysk-server migrasi posting --job ID --data-dir PATH --execute # sesuai target\n  status migrasi server ysk [--ID pekerjaan]\n  ysk-server migrasi melanjutkan --ID pekerjaan --eksekusi"
+        "972912": "Penggunaan:\n  ysk-server memigrasi inventaris [--data-dir PATH] --json\n  ysk-server migrasi host --target root@IP [--identity-file PATH|--identity-id ID|--password PW] --execute [--maintenance] [--force-wipe-target]\n  ysk-server migrasi posting --job ID --data-dir PATH --execute # sesuai target\n  status migrasi server ysk [--ID pekerjaan]\n  ysk-server migrasi melanjutkan --ID pekerjaan --eksekusi\n  ysk-server migrate orphan-homes [--data-dir PATH] --json\n  ysk-server migrate orphan-homes --path /home/ysk-server-UUID --confirm PATH --execute\n"
       },
       "hostingHelp": "Penggunaan: hosting server ysk <sub>\n  Uji coba default operasi berbahaya; tambahkan --execute (+ YSK_EXECUTE=1) untuk diterapkan\n  nginx | sinkronisasi nginx [--eksekusi]\n  ketentuan redis | ketentuan postgres | ketentuan mysql [--eksekusi]\n  dns-zone --zone X --ip A.B.C.D [--ipv6 X:X::X] [--validasi] [--reload]\n  zona-dns | status powerdns | powerdns-install [--install|--eksekusi]\n  powerdns-load --zone X --ip ABCD [--load|--execute]\n  lamaran email --domain X [--install|--eksekusi]\n  email-kotak surat --domain X --pengguna lokal [--kata sandi P] [--ip A.B.C.D] [--sistem]\n  ftps-apply --domain X [--install|--eksekusi]\n  waktu proses | runtime-install --kind node|php|python|go|rust --version V [--install|--execute]\n  tempat perlindungan merpati-passdb --domain X | --semua\n  webmail-apply --domain webmail.example.com [--unduh]\n  file publik --file domain.example.com [--reload]\n  email-bootstrap --domain example.com --ip A.B.C.D [--install|--execute]\n  email-deliverability --domain example.com # PTR/DNSBL/paket pemanasan (jujur)\n  penerapan firewall [--smtp] [--eksekusi]",
       "logsQuery": "Penggunaan: {{CLI_NAME}} kueri log --source <id> [--lines N] [--grep G] [--since 1h] [--priority err]\n  contoh sumber: jurnal: jurnal:nginx.service file:syslog project:<uuid>\n  {{CLI_NAME}} mencatat sumber --json\n  {{CLI_NAME}} log jurnal [--unit nginx.service] --json"
@@ -2570,7 +2573,10 @@
       "probe": "Menguji",
       "name": "Nama",
       "type": "Jenis",
-      "status": "Status"
+      "status": "Status",
+      "fleetSession": "Fleet agent session id",
+      "fleetSessionHint": "Optional. Paste a session UUID from /agents. Then this peer uses fleet (no SSH). Leave empty for SSH scp.",
+      "fleetSessionPh": "Agents page session UUID"
     },
     "console": {
       "dataBrowse": "Telusuri data",
@@ -2640,7 +2646,12 @@
     "emptyDbHostHasRows": "The host already has databases that are not in this control-plane list.",
     "hostHasUntracked": "{{count}} host databases are not registered in the panel",
     "hostInventoryHint": "The table is control-plane rows only. Live names come from SHOW DATABASES.",
-    "adoptHostDb": "Register {{name}}"
+    "adoptHostDb": "Register {{name}}",
+    "remoteTest": "Test connection",
+    "remoteTestDone": "Remote host probe finished",
+    "remoteTestOk": "reachable",
+    "remoteTestFail": "unreachable",
+    "remoteNotChecked": "not tested"
   },
   "dialogs": {
     "confirmDefault": "Mengonfirmasi",
@@ -4812,7 +4823,11 @@
     "dryRunOnlyDesc": "· Inventaris + pemeriksaan awal saja; tidak ada rsync atau target penulisan",
     "executeNote": "Host membutuhkan YSK_EXECUTE=1 dan API root. Setelah migrasi, perbarui DNS A/AAAA dan periksa cloud firewall + mail PTR.",
     "dnsCutover": "Peralihan DNS (manual)",
-    "dnsCutoverDesc": "Poin A/AAAA untuk nama-nama ini ke IP publik yang baru;"
+    "dnsCutoverDesc": "Poin A/AAAA untuk nama-nama ini ke IP publik yang baru;",
+    "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
+    "orphanRemove": "Remove leftover home",
+    "orphanRemoveTitle": "Delete leftover project home?",
+    "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1."
   },
   "multiCheck": {
     "customPlaceholder": "Kode khusus",
@@ -5179,11 +5194,22 @@
     },
     "ssh": {
       "identityNotFound": "Identitas tidak ditemukan",
-      "registrationNotFound": "Pendaftaran tidak ditemukan"
+      "registrationNotFound": "Pendaftaran tidak ditemukan",
+      "keyOkNologin": "Key accepted. Account has no login shell (nologin) — use SFTP. Treated as PASS."
     },
     "cdn": {
       "siteNotFound": "Situs CDN tidak ditemukan",
-      "nodeMissing": "Node tidak ada"
+      "nodeMissing": "Node tidak ada",
+      "probe": {
+        "timeout": "Connect timeout after {{ms}}ms ({{detail}}). Peer may be firewalled.",
+        "dns": "DNS lookup failed ({{detail}}).",
+        "refused": "Connection refused after {{ms}}ms ({{detail}}). Port closed or one-way block.",
+        "tls": "TLS verify failed ({{detail}}).",
+        "unreach": "Host unreachable after {{ms}}ms ({{detail}}).",
+        "http": "HTTP probe failed after {{ms}}ms ({{detail}})."
+      },
+      "loopbackOriginRemote": "Origin is 127.0.0.1 — that is this host, not a remote edge. Set a reachable origin IP or bind_ip.",
+      "needSshOrFleet": "Remote edge needs an outbound SSH identity (or username) or a /agents fleet session. Health URL alone is not apply transport."
     },
     "backup": {
       "fileNotFound": "File cadangan tidak ditemukan",
@@ -5191,7 +5217,13 @@
       "resticNotInPath": "istirahat tidak di PATH",
       "dbEnvUnreadable": "Could not read .db.env; skipped SQL dump.",
       "dbEnvNoName": ".db.env has no database name; skipped SQL dump.",
-      "targetOutside": "Restore target must be inside the project home or the public files root."
+      "targetOutside": "Restore target must be inside the project home or the public files root.",
+      "testUnsaved": "Testing unsaved form values (not written to settings).",
+      "testIdentity": "ssh (identity) to {{spec}} ok",
+      "sshAuthFailed": "SSH key or password rejected (publickey). Pick an outbound identity or install sshpass.",
+      "remotePathIsFile": "Remote path {{path}} is a file. Use a directory.",
+      "remoteMkdirFailed": "Could not create remote directory: {{detail}}",
+      "sidecarPushed": "Also pushed SQL sidecar {{name}}"
     },
     "redis": {
       "cliMissing": "redis-cli tidak diinstal"
@@ -5276,7 +5308,10 @@
     },
     "db": {
       "needExecuteCreate": "Eksekusi host tidak aktif; tidak dapat membuat database dari panel",
-      "dryRunMysql": "uji coba: database tidak dibuat. Gunakan --execute dengan YSK_EXECUTE=1 untuk menyediakan"
+      "dryRunMysql": "uji coba: database tidak dibuat. Gunakan --execute dengan YSK_EXECUTE=1 untuk menyediakan",
+      "remoteNoCreds": "No username/password stored — TCP only (registration is not a login).",
+      "remoteReachable": "TCP {{host}}:{{port}} open ({{ms}}ms).",
+      "remoteUnreachable": "TCP {{host}}:{{port}} closed or filtered ({{ms}}ms)."
     },
     "net": {
       "invalidIface": "Nama antarmuka tidak valid",
@@ -8234,6 +8269,14 @@
       "hookEnabled": "Inbound Git hook is on. Paste the URL into GitHub, Gitea, or GitLab yourself.",
       "hookDisabled": "Inbound Git hook is off. The URL will not sync.",
       "hookSecretOnce": "Copy this hook secret now. It is not shown again."
+    },
+    "migrate": {
+      "orphanConfirm": "Type the exact leftover home path to confirm delete.",
+      "orphanStillInStore": "That home still belongs to a project in the store.",
+      "orphanMissing": "Path not on disk: {{path}}",
+      "orphanNeedExecute": "Would remove leftover {{path}}. Needs YSK_EXECUTE=1.",
+      "orphanRmFailed": "Could not remove leftover home: {{detail}}",
+      "orphanRemoved": "Removed leftover project home {{path}}."
     }
   },
   "ops": {
@@ -10599,7 +10642,9 @@
       "strictBlocked": "Paket atau PAM belum siap; penerapan Strict dinonaktifkan.",
       "strictDryRun": "Pratinjau mode ketat",
       "errorNoDetail": "Uji gagal (tanpa rincian)",
-      "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it."
+      "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it.",
+      "loginNoProjects": "No projects. Authorize an existing Linux user (root / tester) below. Writing /root/.ssh needs YSK_EXECUTE=1.",
+      "loginLinuxHint": "Used when no project. Example: root or tester."
     },
     "sessionsActive": "Sesi aktif",
     "sessionsOther": "Perangkat lain",

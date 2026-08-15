@@ -38,6 +38,50 @@ export type PeerPushTarget = {
   files: string[];
 };
 
+export function renderPeerReadme(cluster: DbCluster): string {
+  const head = [
+    `# YSK cluster peer bundle — ${cluster.name}`,
+    ``,
+    `- id: ${cluster.id}`,
+    `- kind: ${cluster.kind}`,
+    `- engine: ${cluster.engine}`,
+    ``,
+    `## On each peer`,
+    `1. Extract: tar -xzf ysk-cluster-*.tar.gz`,
+    `2. Review conf/ (and scripts/ if present)`,
+  ];
+  if (cluster.kind === 'redis-replica' || cluster.kind === 'redis-sentinel') {
+    head.push(
+      `3. Install drop-in under /etc/redis/ (see plan.md)`,
+      `4. Restart: systemctl restart redis-server`,
+      `5. Replica conf uses replicaof <master> 6379 — passwords are CHANGE_ME placeholders only`,
+    );
+  } else if (cluster.kind === 'postgres-replica') {
+    head.push(
+      `3. Install conf under PostgreSQL data/conf dir (see plan.md)`,
+      `4. Restart: systemctl restart postgresql`,
+      `5. Replica: follow plan.md (no Galera)`,
+    );
+  } else if (cluster.kind === 'mysql-replica') {
+    head.push(
+      `3. Install drop-in under /etc/mysql/ (see plan.md)`,
+      `4. Restart: systemctl restart mysql`,
+      `5. Replica: run scripts/replica-change-source.sql after data clone`,
+    );
+  } else {
+    head.push(
+      `3. Install drop-in under /etc/mysql/ (see plan.md)`,
+      `4. Galera join: systemctl restart mariadb`,
+    );
+  }
+  head.push(
+    ``,
+    `Control plane push uses scp of selected files only; this archive is for manual copy.`,
+    ``,
+  );
+  return head.join('\n');
+}
+
 function walkFiles(dir: string, base = dir): PeerBundleFile[] {
   if (!existsSync(dir)) return [];
   const out: PeerBundleFile[] = [];
@@ -117,25 +161,11 @@ export function bundleDbClusterArtifacts(input: {
   const short = listed.cluster.id.slice(0, 8);
   const bundlePath = join(bundleDir, `ysk-cluster-${short}.tar.gz`);
 
-  // README for peers
-  const readme = [
-    `# YSK cluster peer bundle — ${listed.cluster.name}`,
-    ``,
-    `- id: ${listed.cluster.id}`,
-    `- kind: ${listed.cluster.kind}`,
-    `- engine: ${listed.cluster.engine}`,
-    ``,
-    `## On each peer`,
-    `1. Extract: tar -xzf ysk-cluster-*.tar.gz`,
-    `2. Review conf/ and scripts/`,
-    `3. Install drop-in under /etc/mysql/... (see plan.md)`,
-    `4. Galera join: systemctl restart mariadb`,
-    `5. MySQL replica: run scripts/replica-change-source.sql after data clone`,
-    ``,
-    `Control plane push uses scp of selected files only; this archive is for manual copy.`,
-    ``,
-  ].join('\n');
-  writeFileSync(join(listed.artifactDir, 'PEER-README.md'), readme, 'utf8');
+  writeFileSync(
+    join(listed.artifactDir, 'PEER-README.md'),
+    renderPeerReadme(listed.cluster),
+    'utf8',
+  );
 
   const tar = spawnSync(
     'tar',

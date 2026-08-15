@@ -30,6 +30,7 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
   const [err, setErr] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [projectId, setProjectId] = useState('');
+  const [linuxUser, setLinuxUser] = useState('');
   const [pub, setPub] = useState('');
   const [comment, setComment] = useState('');
 
@@ -48,14 +49,15 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
   }, [refresh]);
 
   async function addKey() {
-    if (!projectId || !isValidSshPublicKey(pub)) {
+    if ((!projectId && !linuxUser.trim()) || !isValidSshPublicKey(pub)) {
       onFlash('error', t('security.ssh.loginNeedPub'));
       return;
     }
     setBusy(true);
     try {
       const r = await sshApi.addLoginKey({
-        projectId,
+        projectId: projectId || undefined,
+        linuxUser: linuxUser.trim() || undefined,
         publicKey: pub.trim(),
         comment: comment.trim() || undefined });
       onFlash(
@@ -176,7 +178,7 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
               variant="primary"
               size="md"
               loading={busy}
-              disabled={!projectId || !isValidSshPublicKey(pub)}
+              disabled={(!projectId && !linuxUser.trim()) || !isValidSshPublicKey(pub)}
               onClick={bindVoid(addKey)}
             >
               {t('security.ssh.addAuth')}
@@ -185,7 +187,7 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
         }
       >
         <FormLayout columns={1}>
-          <Field label={t('common.project')} htmlFor="login-proj" flush required>
+          <Field label={t('common.project')} htmlFor="login-proj" flush>
             <select
               id="login-proj"
               value={projectId}
@@ -198,6 +200,23 @@ export function LoginKeysPanel({ onFlash, onChanged }: Props) {
                 </option>
               ))}
             </select>
+          </Field>
+          {projects.length === 0 ? (
+            <Alert variant="info">{t('security.ssh.loginNoProjects')}</Alert>
+          ) : null}
+          <Field
+            label={t('security.ssh.linuxUser')}
+            htmlFor="login-user"
+            flush
+            hint={t('security.ssh.loginLinuxHint')}
+          >
+            <input
+              id="login-user"
+              value={linuxUser}
+              onChange={bindInput(setLinuxUser)}
+              placeholder="root"
+              disabled={Boolean(projectId)}
+            />
           </Field>
           <Field
             label={t('security.ssh.publicKey')}

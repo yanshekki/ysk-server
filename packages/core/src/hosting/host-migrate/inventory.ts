@@ -199,10 +199,12 @@ export async function buildHostManifest(input: {
   }
 
   // Disk homes not in store
+  const orphanHomes: string[] = [];
   for (const diskHome of globHomesOnDisk()) {
     const abs = resolve(diskHome);
     if (!homeSet.has(abs)) {
       warnings.push(tl('notes.auto.t0632', { v0: (diskHome) }));
+      orphanHomes.push(abs);
       homeSet.add(abs);
     }
   }
@@ -347,6 +349,7 @@ export async function buildHostManifest(input: {
     api_keys: s.api_keys?.length ?? 0,
     file_shares: s.file_shares?.length ?? 0,
     homes_on_disk: homeSet.size,
+    orphan_homes: orphanHomes.length,
     software_needed: softwareNeeded.length,
     warnings: warnings.length,
   };
@@ -403,6 +406,7 @@ export async function buildHostManifest(input: {
       dataDirCritical,
     },
     fingerprints,
+    orphanHomes,
     warnings,
     exclusions: [...(input.exclusions ?? [])],
     cutoverHostnames: [...cutoverHostnames].sort(),

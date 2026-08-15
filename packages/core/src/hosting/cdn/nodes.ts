@@ -13,6 +13,7 @@ import {
 import type { JsonStore } from '../../db/store.js';
 import { probeTcp } from '../../email/live-checks.js';
 import { assertSafeOutboundUrl } from '../../net/ssrf.js';
+import { classifyHttpProbeFailure } from './http-probe-error.js';
 
 const KEY = 'cdn_nodes';
 const MAX = 50;
@@ -286,9 +287,8 @@ export async function probeCdnNode(
       }
     } catch (e) {
       ok = false;
-      notes.push(
-        tl('notes.auto.t0755', { v0: (e instanceof Error ? e.message : String(e)) }),
-      );
+      const cls = classifyHttpProbeFailure(e);
+      notes.push(tl(`notes.cdn.probe.${cls.code}`, { detail: cls.detail, ms: Date.now() - t0 }));
     }
   } else if (node.publicIpv4[0]) {
     method = 'tcp';

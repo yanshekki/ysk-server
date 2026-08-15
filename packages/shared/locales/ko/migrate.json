@@ -78,5 +78,9 @@
   "dryRunOnlyDesc": "· 재고 + 사전 확인만; rsync 또는 대상 쓰기 없음",
   "executeNote": "호스트에는 YSK_EXECUTE=1 및 루트 API가 필요합니다. 마이그레이션 후 DNS A/AAAA를 업데이트하고 클라우드 방화벽 + 메일 PTR을 확인하세요.",
   "dnsCutover": "DNS 컷오버(수동)",
-  "dnsCutoverDesc": "이러한 이름에 대한 A/AAAA를 새 공용 IP로 지정합니다."
+  "dnsCutoverDesc": "이러한 이름에 대한 A/AAAA를 새 공용 IP로 지정합니다.",
+  "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
+  "orphanRemove": "Remove leftover home",
+  "orphanRemoveTitle": "Delete leftover project home?",
+  "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1."
 }

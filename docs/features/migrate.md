@@ -22,8 +22,9 @@
 
 | Panel action | CLI | Risk | Notes |
 |--------------|-----|------|-------|
-| Inventory / status | `ysk-server migrate inventory\|status` | read | |
+| Inventory / status | `ysk-server migrate inventory\|status` | read | Inventory includes leftover `/home/ysk-server-<uuid>` with no store row (`orphanHomes`). |
 | Host migrate / post / resume | `ysk-server migrate host\|post\|resume` | write-host | needs execute |
+| Orphan project homes | `ysk-server migrate orphan-homes [--path … --confirm PATH --execute]` | write-host | List without `--path`. Delete needs matching `--confirm` + `YSK_EXECUTE=1`. Same as `POST /api/v1/system/migrate/orphan-homes`. |
 
 ## CLI quick start
 
@@ -36,6 +37,7 @@ ysk-server migrate status --json
 
 - Long-running host moves need EXECUTE and careful planning.  
 - Never claim complete without post-checks.  
+- Orphan `/home/ysk-server-<uuid>` dirs are leftover disk homes, not false positives. Delete is confirm + EXECUTE only.  
 
 ## Panel-only ⚠️
 

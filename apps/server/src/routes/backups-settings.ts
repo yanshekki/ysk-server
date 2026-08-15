@@ -66,11 +66,14 @@ export async function handleBackupsSettingsRoutes(
       }
       if (method === 'POST' && url.pathname === '/api/v1/backups/remote/test') {
         const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req);
+        const data = JSON.parse(raw || '{}') as { remote?: Record<string, unknown> };
         const { testBackupRemote } = await import('ysk-server-core');
         const result = await testBackupRemote({
           host: ctx.host,
           db: ctx.db,
           dataDir: ctx.dataDir,
+          overlay: data.remote as never,
         });
         ctx.audit.append({
           actor: user.username,

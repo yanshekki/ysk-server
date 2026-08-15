@@ -57,7 +57,13 @@ Inbound Git hook（無需登入）：`POST /api/v1/hooks/git/:id`。認證用專
 
 `GET /api/v1/notifications` 為儀表板提示條。CLI：`ysk-server notifications`。
 
-`POST /api/v1/backups/remote/test` 探測 SFTP／S3／local 目的地。CLI：`ysk-server backup settings test`。實際探測需 EXECUTE。
+`POST /api/v1/backups/remote/test` 探測 SFTP／S3／local 目的地。本文可覆寫未儲存表單（不會寫入設定）。SFTP 使用出站身分。CLI：`ysk-server backup settings test`。實際探測需 EXECUTE。缺金鑰／密碼不是未開 EXECUTE。
+
+`POST /api/v1/backups/control-plane/restore` 且 `mode: dry-run` 會列出封存（`tar -tzf`），不需專案列。CLI：`ysk-server backup restore --project-id control-plane`。
+
+`POST /api/v1/system/migrate/orphan-homes` `{ path, confirmPath }` 刪除殘留 `/home/ysk-server-<uuid>`（需確認 + EXECUTE）。清冊含 `orphanHomes`。CLI：`ysk-server migrate orphan-homes`。
+
+`POST /api/v1/db/remote-hosts/:id/test` 為 TCP 可達性檢查（面板「測試連線」）。
 
 `POST /api/v1/email/domains/:id/policy` 設定每域反垃圾與出站限速（Rspamd 對應表）。CLI：`ysk-server email policy`。加 `--execute` 才複製到 `/etc`。
 

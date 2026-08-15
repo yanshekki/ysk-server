@@ -30,13 +30,30 @@
   },
   "ssh": {
     "identityNotFound": "Identity not found",
-    "registrationNotFound": "Registration not found"
+    "registrationNotFound": "Registration not found",
+    "keyOkNologin": "Key accepted. Account has no login shell (nologin) — use SFTP. Treated as PASS."
   },
   "cdn": {
     "siteNotFound": "CDN site not found",
-    "nodeMissing": "Node does not exist"
+    "nodeMissing": "Node does not exist",
+    "loopbackOriginRemote": "Origin is 127.0.0.1 — that is this host, not a remote edge. Set a reachable origin IP or bind_ip.",
+    "needSshOrFleet": "Remote edge needs an outbound SSH identity (or username) or a /agents fleet session. Health URL alone is not apply transport.",
+    "probe": {
+      "timeout": "Connect timeout after {{ms}}ms ({{detail}}). Peer may be firewalled.",
+      "dns": "DNS lookup failed ({{detail}}).",
+      "refused": "Connection refused after {{ms}}ms ({{detail}}). Port closed or one-way block.",
+      "tls": "TLS verify failed ({{detail}}).",
+      "unreach": "Host unreachable after {{ms}}ms ({{detail}}).",
+      "http": "HTTP probe failed after {{ms}}ms ({{detail}})."
+    }
   },
   "backup": {
+    "testUnsaved": "Testing unsaved form values (not written to settings).",
+    "testIdentity": "ssh (identity) to {{spec}} ok",
+    "sshAuthFailed": "SSH key or password rejected (publickey). Pick an outbound identity or install sshpass.",
+    "remotePathIsFile": "Remote path {{path}} is a file. Use a directory.",
+    "remoteMkdirFailed": "Could not create remote directory: {{detail}}",
+    "sidecarPushed": "Also pushed SQL sidecar {{name}}",
     "fileNotFound": "Backup file not found",
     "resticNoPassword": "restic is enabled but password is not set",
     "resticNotInPath": "restic not in PATH",
@@ -127,7 +144,10 @@
   },
   "db": {
     "needExecuteCreate": "Host execute is off; cannot create database from the panel",
-    "dryRunMysql": "dry-run: database not created. Use --execute with YSK_EXECUTE=1 to provision"
+    "dryRunMysql": "dry-run: database not created. Use --execute with YSK_EXECUTE=1 to provision",
+    "remoteNoCreds": "No username/password stored — TCP only (registration is not a login).",
+    "remoteReachable": "TCP {{host}}:{{port}} open ({{ms}}ms).",
+    "remoteUnreachable": "TCP {{host}}:{{port}} closed or filtered ({{ms}}ms)."
   },
   "net": {
     "invalidIface": "Invalid interface name",
@@ -637,7 +657,7 @@
     "n0381": "post-transfer reapply",
     "n0382": "post-transfer restore",
     "n0383": "postconf not message_rate_limit (complete applied)",
-    "n0384": "postgres-replica Supports postgres",
+    "n0384": "kind postgres-replica needs --engine postgres",
     "n0385": "postgres_databases name",
     "n0386": "postqueue unavailable or mailNot installed",
     "n0387": "Install nginx on the host, or use panel software / runtime install",
@@ -806,7 +826,7 @@
     "n0550": "128M, 256M, 512M, -1 ()",
     "n0551": "e.g. 512MiB; leave empty to unset",
     "n0552": "900 1 300 10; disable",
-    "n0553": ": --member 10.0.0.3=replica:fleet:SESSION_UUID",
+    "n0553": "Paste a session UUID from /agents on the cluster form, or CLI --member 10.0.0.3=replica:fleet:SESSION_UUID",
     "n0554": "= ASN (system), not",
     "n0555": "22/80/443; can offnot port",
     "n0556": "kept: 10",
@@ -1428,7 +1448,7 @@
     "n1170": "cannot from npm or GitHub version (not )",
     "n1171": "cannotprobe systemctl",
     "n1172": "cannot DNS cluster: Host execute is not enabled",
-    "n1173": "cannot: Host execute is not enabled (backupSuccess)",
+    "n1173": "Host execute is off. Live SFTP/S3/local probe needs YSK_EXECUTE=1.",
     "n1174": "cannot metrics",
     "n1175": "cannot: serverHost execute is not enabled",
     "n1176": "cannot ACME: Host execute is not enabled",
@@ -3070,6 +3090,14 @@
     "libraryDestIsFile": "Cannot create a folder named {{name}} — a file with that name already exists.",
     "librarySeedMissing": "No matching files in that folder to seed.",
     "libraryWaitingPeers": "Waiting for peers. If the files are already on this host, add again and choose seed-existing."
+  },
+  "migrate": {
+    "orphanConfirm": "Type the exact leftover home path to confirm delete.",
+    "orphanStillInStore": "That home still belongs to a project in the store.",
+    "orphanMissing": "Path not on disk: {{path}}",
+    "orphanNeedExecute": "Would remove leftover {{path}}. Needs YSK_EXECUTE=1.",
+    "orphanRmFailed": "Could not remove leftover home: {{detail}}",
+    "orphanRemoved": "Removed leftover project home {{path}}."
   },
   "leftover": {
     "staleCliTitle": "Stale leftover CLI",

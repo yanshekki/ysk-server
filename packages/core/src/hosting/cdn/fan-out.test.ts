@@ -587,6 +587,7 @@ describe('cdn fan-out (PR-C3)', () => {
         name: 'scp-fail',
         roles: ['edge'],
         publicIpv4: ['203.0.113.70'],
+        sshUsername: 'root',
       });
       const site1 = upsertCdnSite(db, {
         name: 'scpf',
@@ -619,6 +620,7 @@ describe('cdn fan-out (PR-C3)', () => {
         name: 'ngx-none',
         roles: ['edge'],
         publicIpv4: ['203.0.113.71'],
+        sshUsername: 'root',
       });
       const site2 = upsertCdnSite(db, {
         name: 'ngxnone',
@@ -777,6 +779,7 @@ describe('cdn fan-out (PR-C3)', () => {
         name: 'ssh-purge',
         roles: ['edge'],
         publicIpv4: ['203.0.113.90'],
+        sshUsername: 'root',
       });
       const site2 = upsertCdnSite(db, {
         name: 'purge-ssh',

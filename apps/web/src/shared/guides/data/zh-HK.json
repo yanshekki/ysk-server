@@ -81,11 +81,11 @@
       "環境變數：寫入專案 .env，供 runtime 讀取。",
       "Nginx／SSL 發布：產生虛擬主機設定並可掛憑證。",
       "健康與程序：查看埠、程序狀態與健康探測。",
-      "啟用 CDN：一鍵帶入域名與回源，建立 CDN 站點政策。"
+      "Git 控制：狀態、fetch、checkout、reset；入站 hook 貼到 GitHub／Gitea／GitLab（不是 Slack）。"
     ],
     "notes": [
       "套用結果以 Ops 面板的 written／applied／blocked 為準",
-      "CDN 一鍵只建立政策，仍需在 CDN 頁套用 edges 與 DNS"
+      "入站 Git hook 無需面板登入即可回應；真正 clone／部署仍需 YSK_EXECUTE=1"
     ],
     "related": [
       {
@@ -636,7 +636,7 @@
       "這是 DNS 級分流 + Nginx 邊緣，不是 Anycast 商業 CDN",
       "套用 edges 成功 ≠ 使用者解析器已看到新 IP（受 TTL 影響）",
       "Fleet agent 路徑：fan-out 只入佇列；agent 執行後才 nginx reload（查看 Agents 指令紀錄）",
-      "有 SSH 時優先同步 SSH 套用，不會假裝 fleet 已 applied"
+      "不會虛構 root@publicIpv4；遠端 edge 的 loopback origin 會改寫或拒絕"
     ],
     "related": [
       {
@@ -1219,7 +1219,8 @@
     ],
     "notes": [
       "未驗證的備份等於沒有備份",
-      "注意磁碟空間"
+      "遠端 SFTP 測試使用出站身分；缺金鑰不是未開 EXECUTE",
+      "控制平面預覽只列封存（tar -tzf），不需專案列"
     ],
     "related": [
       {
@@ -1250,11 +1251,11 @@
       "預檢與執行：連線目標機、傳輸與還原。",
       "驗證：遷移後檢查關鍵服務。",
       "VPS 到期搬遷",
-      "升配到更大主機"
+      "清理殘留 /home/ysk-server-<uuid>（確認路徑 + EXECUTE）"
     ],
     "notes": [
       "需目標機 root 與 EXECUTE 能力",
-      "TTL 未降時切 DNS 可能雙寫或短暫異常"
+      "孤兒 home 是磁碟殘留，不是誤報"
     ],
     "related": [
       {
@@ -1272,7 +1273,8 @@
       "若改主機，再到就緒／健康確認"
     ],
     "cliHints": [
-      "ysk-server migrate status --json"
+      "ysk-server migrate inventory --json",
+      "ysk-server migrate orphan-homes --json"
     ]
   },
   "updates": {

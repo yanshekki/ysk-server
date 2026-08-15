@@ -187,6 +187,21 @@ export async function handleDbAccessRoutes(
         sendOpsResult(res, r, { notFound: true });
         return true;
       }
+      if (method === 'POST' && url.pathname.match(/^\/api\/v1\/db\/remote-hosts\/[^/]+\/test$/)) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const id = url.pathname.split('/')[5] ?? '';
+        const { testRemoteDbHost } = await import('ysk-server-core');
+        const r = await testRemoteDbHost(ctx.db, id);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'db.remote_host.test',
+          resource: id,
+          detail: { ok: r.ok },
+          ok: r.ok,
+        });
+        sendOpsResult(res, r);
+        return true;
+      }
       if (method === 'DELETE' && url.pathname.match(/^\/api\/v1\/db\/remote-hosts\/[^/]+$/)) {
         const user = ctx.auth.authenticate(getBearer(req));
         const id = url.pathname.split('/')[5];

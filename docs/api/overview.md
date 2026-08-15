@@ -57,7 +57,13 @@ Inbound Git hook (no session): `POST /api/v1/hooks/git/:id`. Auth is the project
 
 `GET /api/v1/notifications` is the dashboard alert bar. CLI: `ysk-server notifications`.
 
-`POST /api/v1/backups/remote/test` probes SFTP/S3/local destination. CLI: `ysk-server backup settings test`. Live probe needs EXECUTE.
+`POST /api/v1/backups/remote/test` probes SFTP/S3/local destination. Body may overlay unsaved form values (does not persist). SFTP uses the outbound identity. CLI: `ysk-server backup settings test`. Live probe needs EXECUTE. Missing key/password is not EXECUTE-off.
+
+`POST /api/v1/backups/control-plane/restore` with `mode: dry-run` lists the archive (`tar -tzf`) without a project row. CLI: `ysk-server backup restore --project-id control-plane`.
+
+`POST /api/v1/system/migrate/orphan-homes` `{ path, confirmPath }` deletes leftover `/home/ysk-server-<uuid>` (confirm + EXECUTE). Inventory includes `orphanHomes`. CLI: `ysk-server migrate orphan-homes`.
+
+`POST /api/v1/db/remote-hosts/:id/test` is a TCP reachability check (panel Test connection).
 
 `POST /api/v1/email/domains/:id/policy` sets per-domain antispam + outbound rate (Rspamd map). CLI: `ysk-server email policy`. `--execute` copies into `/etc`.
 

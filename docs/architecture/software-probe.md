@@ -29,6 +29,10 @@ Registry: `SOFTWARE_CATALOG` + exclusive/version metadata in `registry.ts`.
 
 This keeps **MySQL databases page** and **MySQL service page** consistent.
 
+## PostgreSQL
+
+`software get postgresql` treats an **active** `postgresql` unit as installed when `postgres` is not on PATH (binaries often live under `/usr/lib/postgresql/*/bin`). Versioned paths are still preferred when present.
+
 ## Callers (migrated)
 
 - `probeSoftware` → `HostSoftwareProbe.presence`

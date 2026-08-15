@@ -424,7 +424,10 @@
     "testRemoteDone": "遠端探測完成",
     "testRemoteFailed": "遠端探測失敗",
     "resticRepoPh": "面板資料目錄／restic 庫",
-    "testDisabledHint": "請先開啟遠端推送才可測試。"
+    "testDisabledHint": "請先開啟遠端推送才可測試。",
+    "identityId": "出站 SSH 身份",
+    "identityHint": "優先使用。與 /security SSH 同一金鑰庫。密碼需 sshpass。",
+    "identityNone": "無 — 用密碼或本機預設金鑰"
   },
   "btTracker": {
     "title": "BT追蹤器",
@@ -778,7 +781,7 @@
     },
     "help": {
       "blurb": "控制平面 命令列 — 人工智能 代理 請優先用 --json。\n文件：docs/代理/README.md · docs/cli/reference.md · docs/代理/commands.json",
-      "main": "YSK Server 命令列。指令與旗標一律為英文；--locale 只翻譯說明文字。\n\n{{product}} ({{cli}}) v{{version}}\n\nControl plane CLI — prefer --json for AI agents.\nDocs: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json\n\nUsage:\n  {{cli}} <command> [options]\n\nCommands:\n  setup                 Init dataDir + admin\n  update                Self-update check/apply\n  serve                 HTTP API + Web UI\n  system unit-install   Install ysk-server.service [--enable]\n  stack                 plans|bundles|status|install|uninstall\n  tools                 List tools; tools run --tool <name> [--dry-run]\n  ask                   NL → AI plan [--execute]\n  projects              list|get|create|deploy|stop|health|backup|template\n  users                 list|create|totp\n  packages              list\n  rbac                  list|show\n  audit                 list\n  backup                all|list|status|restore|delete|schedule|control-plane|settings|restic\n  templates             App templates\n  hosting               nginx|dns|db|firewall helpers\n  dns                   zone|zones|lookup\n  logs                  sources|query|journal|overview\n  host                  overview|metrics (read-only)\n  nginx                 status|list|test|sync\n  ssl                   list|get (certificates)\n  db-cluster            list|get|create|plan (HA plan-first)\n  ssh-key               list|create|import|public|export|install|delete (SSH identity vault)\n  ssh-2fa               list|enroll|confirm|install|pam|retire (SSH login TOTP ≠ panel 2FA)\n  services              Host service matrix (systemctl probe)\n  defense | protection  status|ban|unban|whitelist\n  security              status|sessions|api-keys (2FA flags · session revoke · API keys)\n  cdn                   nodes|sites|render|apply|purge|probe|dashboard|health-loop|from-project\n  agents                runtimes|fleet list|commands|register (panel + edge)\n  agent run             Outbound fleet poller (experimental)\n  store                 status|export|import|migrate (json|sqlite|postgres document backends)\n  files                 list|read|write|mkdir|rm|stat|rename|copy|move|chmod|trash|shares (sandbox)\n  cron                  list|create|delete|enable|disable|run|install|status\n  email                 domains|mailboxes|deliverability|bootstrap|dns (panel parity)\n  health                Local mode snapshot or --url http://host:port/health\n  notifications         list\n  readiness | doctor    Production readiness (honest)\n  migrate               inventory|host|post|status|resume (full host migrate)\n  vpn                   WireGuard / OpenVPN\n  vnc                   accounts|clients|share\n  apache                sites|settings\n  network               ifaces|exposure|real-ip\n  real-ip               CDN Real IP\n  updates               inventory|apply\n  software              list|install|uninstall\n  db                    MySQL / MariaDB / PostgreSQL\n  redis                 status|keys|get|set\n  ftp                   accounts|status\n  runtimes              list|install\n  bt-tracker            status|settings\n  version | help\n\nGlobal:\n  --json                JSON stdout (AI)\n  --data-dir PATH       also --data-dir=PATH or YSK_DATA_DIR\n  --config PATH\n  --locale CODE         CLI language (default en). Also YSK_LOCALE.\n                        Codes: en zh-HK zh-CN ja ko hi es ar fr bn pt id ur\n  --limit N --offset N  Slice large JSON lists (software / updates / host metrics / rbac)\n  --help | --version\n\nExit: 0 ok · 1 error · 2 validation · 3 blocked · 4 not found · 5 host error\n\nSafety:\n  Dangerous ops default to dry-run (plan only).\n  Pass --execute (alias --apply) + env YSK_EXECUTE=1 to mutate host.\n  Command names and flags are always English. --locale only translates messages.\n\nExamples:\n  {{cli}} readiness --json\n  {{cli}} host --json\n  {{cli}} nginx status --json\n  {{cli}} ssl list --json\n  {{cli}} projects get --id UUID --json\n  {{cli}} defense ban --ip 1.2.3.4 --json          # dry-run plan\n  {{cli}} projects list --json\n  {{cli}} --locale=zh-HK help\n  {{cli}} logs query --source journal: --lines 100 --json\n  {{cli}} tools --json"
+      "main": "YSK Server 命令列。指令與旗標一律為英文；--locale 只翻譯說明文字。\n\n{{product}} ({{cli}}) v{{version}}\n\nControl plane CLI — prefer --json for AI agents.\nDocs: docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json\n\nUsage:\n  {{cli}} <command> [options]\n\nCommands:\n  setup                 Init dataDir + admin\n  update                Self-update check/apply\n  serve                 HTTP API + Web UI\n  system unit-install   Install ysk-server.service [--enable]\n  stack                 plans|bundles|status|install|uninstall\n  tools                 List tools; tools run --tool <name> [--dry-run]\n  ask                   NL → AI plan [--execute]\n  projects              list|get|create|deploy|stop|health|backup|template\n  users                 list|create|totp\n  packages              list\n  rbac                  list|show\n  audit                 list\n  backup                all|list|status|restore|delete|schedule|control-plane|settings|restic\n  templates             App templates\n  hosting               nginx|dns|db|firewall helpers\n  dns                   zone|zones|lookup\n  logs                  sources|query|journal|overview\n  host                  overview|metrics (read-only)\n  nginx                 status|list|test|sync\n  ssl                   list|get (certificates)\n  db-cluster            list|get|create|plan (HA plan-first)\n  ssh-key               list|create|import|public|export|install|delete (SSH identity vault)\n  ssh-2fa               list|enroll|confirm|install|pam|retire (SSH login TOTP ≠ panel 2FA)\n  services              Host service matrix (systemctl probe)\n  defense | protection  status|ban|unban|whitelist\n  security              status|sessions|api-keys (2FA flags · session revoke · API keys)\n  cdn                   nodes|sites|render|apply|purge|probe|dashboard|health-loop|from-project\n  agents                runtimes|fleet list|commands|register (panel + edge)\n  agent run             Outbound fleet poller (experimental)\n  store                 status|export|import|migrate (json|sqlite|postgres document backends)\n  files                 list|read|write|mkdir|rm|stat|rename|copy|move|chmod|trash|shares (sandbox)\n  cron                  list|create|delete|enable|disable|run|install|status\n  email                 domains|mailboxes|deliverability|bootstrap|dns (panel parity)\n  health                Local mode snapshot or --url http://host:port/health\n  notifications         list\n  readiness | doctor    Production readiness (honest)\n  migrate               inventory|host|post|status|resume|orphan-homes (full host migrate)\n  vpn                   WireGuard / OpenVPN\n  vnc                   accounts|clients|share\n  apache                sites|settings\n  network               ifaces|exposure|real-ip\n  real-ip               CDN Real IP\n  updates               inventory|apply\n  software              list|install|uninstall\n  db                    MySQL / MariaDB / PostgreSQL\n  redis                 status|keys|get|set\n  ftp                   accounts|status\n  runtimes              list|install\n  bt-tracker            status|settings\n  version | help\n\nGlobal:\n  --json                JSON stdout (AI)\n  --data-dir PATH       also --data-dir=PATH or YSK_DATA_DIR\n  --config PATH\n  --locale CODE         CLI language (default en). Also YSK_LOCALE.\n                        Codes: en zh-HK zh-CN ja ko hi es ar fr bn pt id ur\n  --limit N --offset N  Slice large JSON lists (software / updates / host metrics / rbac)\n  --help | --version\n\nExit: 0 ok · 1 error · 2 validation · 3 blocked · 4 not found · 5 host error\n\nSafety:\n  Dangerous ops default to dry-run (plan only).\n  Pass --execute (alias --apply) + env YSK_EXECUTE=1 to mutate host.\n  Command names and flags are always English. --locale only translates messages.\n\nExamples:\n  {{cli}} readiness --json\n  {{cli}} host --json\n  {{cli}} nginx status --json\n  {{cli}} ssl list --json\n  {{cli}} projects get --id UUID --json\n  {{cli}} defense ban --ip 1.2.3.4 --json          # dry-run plan\n  {{cli}} projects list --json\n  {{cli}} --locale=zh-HK help\n  {{cli}} logs query --source journal: --lines 100 --json\n  {{cli}} tools --json"
     },
     "usage": {
       "tools": {
@@ -1814,7 +1817,7 @@
         }
       },
       "x": {
-        "972912": "用法：\n ysk-server migrate inventory [--data-dir 路徑] --json\n ysk-server migrate 主機 --目標 管理員@IP [--identity-檔案 路徑|--identity-識別碼 識別碼|--密碼 PW] --執行 [--maintenance] [--force-wipe-目標]\n ysk-server migrate post --job 識別碼 --data-dir 路徑 --執行 # on 目標\n ysk-server migrate 狀態 [--job 識別碼]\n ysk-server migrate resume --job 識別碼 --執行"
+        "972912": "用法：\n  ysk-server migrate inventory [--data-dir PATH] --json\n  ysk-server migrate host --target root@IP [--identity-file PATH|--identity-id ID|--password PW] --execute [--maintenance] [--force-wipe-target]\n  ysk-server migrate post --job ID --data-dir PATH --execute   # 在目標機\n  ysk-server migrate status [--job ID]\n  ysk-server migrate resume --job ID --execute\n  ysk-server migrate orphan-homes [--data-dir PATH] --json\n  ysk-server migrate orphan-homes --path /home/ysk-server-UUID --confirm PATH --execute\n"
       },
       "hostingHelp": "用法：ysk-server hosting <sub>\n 危險操作預設 預覽試行；加 --執行（+ 系統變更權限已開啟）才真正套用\n nginx | nginx-同步 [--執行]\n redis-provision | postgres-provision | mysql-provision [--執行]\n dns-zone --zone X --ip A.B.C.D [--ipv6 X:X::X] [--validate] [--重新載入]\n dns-zones | powerdns-狀態 | powerdns-安裝 [--安裝|--執行]\n powerdns-load --zone X --ip A.B.C.D [--load|--執行]\n 電郵-套用 --網域 X [--安裝|--執行]\n 電郵-mailbox --網域 X --local 用戶 [--密碼 P] [--ip A.B.C.D] [--system]\n ftps-套用 --網域 X [--安裝|--執行]\n 運行時s | 運行時-安裝 --kind node|php|python|go|rust --version V [--安裝|--執行]\n dovecot-passdb --網域 X | --all\n webmail-套用 --網域 webmail.example.com [--下載]\n public-檔案 --網域 檔案.example.com [--重新載入]\n 電郵-初始化 --網域 example.com --ip A.B.C.D [--安裝|--執行]\n 電郵-deliverability --網域 example.com # PTR/DNSBL/warmup 誠實報告\n firewall-套用 [--smtp] [--執行]",
       "logsQuery": "用法：{{CLI_NAME}} 日誌 query --source <識別碼> [--lines N] [--grep G] [--since 1h] [--priority err]\n source 例：系統日誌: 系統日誌:nginx.service 檔案:syslog project:<uuid>\n {{CLI_NAME}} 日誌 sources --json\n {{CLI_NAME}} 日誌 系統日誌 [--unit nginx.service] --json"
@@ -2422,7 +2425,12 @@
     "expiresAt": "到期",
     "revokeRegistration": "撤銷登記",
     "remoteDbHosts": "遠端資料庫主機",
-    "remoteDbHostsDesc": "登記連線目標（密碼不回顯）",
+    "remoteDbHostsDesc": "登記連線目標（密碼不回顯）。未按「測試連線」前，已儲存 ≠ 可達。",
+    "remoteTest": "測試連線",
+    "remoteTestDone": "遠端主機探測完成",
+    "remoteTestOk": "可達",
+    "remoteTestFail": "不可達",
+    "remoteNotChecked": "未測試",
     "displayName": "顯示名稱",
     "prodReplicaPlaceholder": "生產從庫",
     "remoteHostSaved": "已儲存遠端主機",
@@ -2506,6 +2514,9 @@
       "registrationDeleted": "已刪除登記",
       "nodes": "節點",
       "remoteInstallPlan": "遠端安裝計劃",
+      "fleetSession": "機群 agent session id",
+      "fleetSessionHint": "可選。到 /agents 複製 session UUID。填了就用機群（不用 SSH）。留空則 scp。",
+      "fleetSessionPh": "Agents 頁的 session UUID",
       "fleetSyncPlan": "機群 同步 計劃",
       "standaloneTitle": "目前：單機",
       "standaloneRepl": "未登記主從／串流。指定 主節點/主節點 + 從節點 後產生 設定檔 與腳本。",
@@ -4800,6 +4811,10 @@
     "restartApiHint": "若剛部署新版本，請重啟 介面（",
     "afterRestart": "）後再按「重新整理」。",
     "inventoryWarnings": "盤點警告（{{count}}）",
+    "orphanHomesHint": "孤立專案主目錄（store 無對應）。確認無用途後先刪。",
+    "orphanRemove": "刪除孤立主目錄",
+    "orphanRemoveTitle": "刪除此孤立專案主目錄？",
+    "orphanRemoveDesc": "將永久刪除磁碟上的 {{path}}。這不是 store 內專案。需 YSK_EXECUTE=1。",
     "moreWarnings": "…另有 {{n}} 則",
     "authPassword": "管理員 密碼（安裝臨時金鑰後改用 金鑰）",
     "authIdentity": "遠端登入 身份庫 identityId",
@@ -5179,13 +5194,30 @@
     },
     "ssh": {
       "identityNotFound": "找不到 identity",
-      "registrationNotFound": "找不到登記"
+      "registrationNotFound": "找不到登記",
+      "keyOkNologin": "金鑰已接受。帳戶無登入 shell（nologin）——請用 SFTP。視為通過。"
     },
     "cdn": {
       "siteNotFound": "找不到 CDN 站點",
-      "nodeMissing": "節點不存在"
+      "nodeMissing": "節點不存在",
+      "loopbackOriginRemote": "來源是 127.0.0.1——那是本機，不是遠端 edge。請設可達的 origin IP 或 bind_ip。",
+      "needSshOrFleet": "遠端 edge 需要出站 SSH 身份（或用戶名），或 /agents 機群 session。單憑 Health URL 不能套用。",
+      "probe": {
+        "timeout": "連線逾時 {{ms}}ms（{{detail}}）。對端可能被防火牆擋住。",
+        "dns": "DNS 查詢失敗（{{detail}}）。",
+        "refused": "連線被拒 {{ms}}ms（{{detail}}）。埠未開或單向封鎖。",
+        "tls": "TLS 驗證失敗（{{detail}}）。",
+        "unreach": "主機不可達 {{ms}}ms（{{detail}}）。",
+        "http": "HTTP 探活失敗 {{ms}}ms（{{detail}}）。"
+      }
     },
     "backup": {
+      "testUnsaved": "正在測試未儲存的表單（尚未寫入設定）。",
+      "testIdentity": "ssh（身份金鑰）連到 {{spec}} 成功",
+      "sshAuthFailed": "SSH 金鑰或密碼被拒（publickey）。請選出站身份，或安裝 sshpass。",
+      "remotePathIsFile": "遠端路徑 {{path}} 是檔案。請用目錄。",
+      "remoteMkdirFailed": "無法建立遠端目錄：{{detail}}",
+      "sidecarPushed": "已一併推送 SQL sidecar {{name}}",
       "fileNotFound": "找不到備份檔",
       "resticNoPassword": "Restic 已啟用但未設定 密碼",
       "resticNotInPath": "Restic 不在 路徑",
@@ -5276,7 +5308,10 @@
     },
     "db": {
       "needExecuteCreate": "伺服器未開啟系統變更權限，無法在管理面板建立資料庫",
-      "dryRunMysql": "預覽試行：未建立資料庫。加 --執行 且 系統變更權限已開啟 先真正 provision"
+      "dryRunMysql": "預覽試行：未建立資料庫。加 --執行 且 系統變更權限已開啟 先真正 provision",
+      "remoteNoCreds": "未存帳號／密碼——只測 TCP（登記 ≠ 已登入）。",
+      "remoteReachable": "TCP {{host}}:{{port}} 可達（{{ms}}ms）。",
+      "remoteUnreachable": "TCP {{host}}:{{port}} 關閉或被過濾（{{ms}}ms）。"
     },
     "net": {
       "invalidIface": "介面名稱無效",
@@ -5786,7 +5821,7 @@
       "n0381": "post-傳輸 停在 reapply",
       "n0382": "post-傳輸 停在 還原",
       "n0383": "postconf 未能確認 message_rate_limit（不當完整 已套用）",
-      "n0384": "postgres-從節點 僅支援 postgres",
+      "n0384": "kind postgres-replica 需要 --engine postgres",
       "n0385": "postgres_databases 列缺 名稱",
       "n0386": "postqueue 不可用或郵件堆疊未安裝",
       "n0387": "preflight 失敗",
@@ -5955,7 +5990,7 @@
       "n0550": "例如 128M、256M、512M、-1（無限）",
       "n0551": "例如 512MiB；留空不設",
       "n0552": "例如 900 1 300 10；空字串關閉",
-      "n0553": "例：--member 10.0.0.3=從節點:機群:SESSION_UUID",
+      "n0553": "到 /agents 複製 session UUID 填入叢集表單，或 CLI --member 10.0.0.3=從節點:機群:SESSION_UUID",
       "n0554": "供應商 = ASN（自治系統），非消費品牌名",
       "n0555": "保持 22/80/443；受攻擊時可手動關非必要埠",
       "n0556": "保留策略：最近 10 份",
@@ -8220,6 +8255,14 @@
       "librarySeedMissing": "此資料夾沒有可做種的對應檔案。",
       "libraryWaitingPeers": "正在等待 peers。若檔案已在此主機，請重新加入並選使用現有檔案做種。"
     },
+    "migrate": {
+      "orphanConfirm": "請輸入完整孤立主目錄路徑以確認刪除。",
+      "orphanStillInStore": "該主目錄仍屬於 store 內的專案。",
+      "orphanMissing": "磁碟沒有此路徑：{{path}}",
+      "orphanNeedExecute": "將刪除孤立主目錄 {{path}}。需 YSK_EXECUTE=1。",
+      "orphanRmFailed": "無法刪除孤立主目錄：{{detail}}",
+      "orphanRemoved": "已刪除孤立專案主目錄 {{path}}。"
+    },
     "leftover": {
       "staleCliTitle": "遺留舊版 CLI",
       "staleCli": "仍有舊 CLI：{{path}}（產品版本 {{version}}）。PATH 可能優先用它。移除：rm -f {{path}}",
@@ -10427,7 +10470,9 @@
       "commentOptional": "備註（可選）",
       "commentPlaceholder": "筆電 / CI",
       "loginNeedProject": "請先建立專案。系統用戶就緒後再綁公鑰效果最佳。",
-      "loginNeedPub": "請選擇專案並貼上以 ssh- 開頭的公鑰",
+      "loginNeedPub": "請選擇專案或 Linux 用戶，並貼上以 ssh- 開頭的公鑰",
+      "loginNoProjects": "沒有專案。可授權現有 Linux 用戶（root／tester）。寫入 /root/.ssh 需 YSK_EXECUTE=1。",
+      "loginLinuxHint": "沒有專案時使用。例如 root 或 tester。",
       "loginAdded": "已加入",
       "sshdTitle": "專案用戶 SFTP（sshd）",
       "sshdDesc": "讓 ysks_* / ysk_* 專案用戶可用公鑰 SFTP。未安裝時，登入授權可能無效。",

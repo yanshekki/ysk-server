@@ -30,19 +30,36 @@
   },
   "ssh": {
     "identityNotFound": "找不到 identity",
-    "registrationNotFound": "找不到登记"
+    "registrationNotFound": "找不到登记",
+    "keyOkNologin": "Key accepted. Account has no login shell (nologin) — use SFTP. Treated as PASS."
   },
   "cdn": {
     "siteNotFound": "找不到 CDN 站点",
-    "nodeMissing": "节点不存在"
+    "nodeMissing": "节点不存在",
+    "probe": {
+      "timeout": "连接超时 {{ms}}ms（{{detail}}）。对端可能被防火墙挡住。",
+      "dns": "DNS 查询失败（{{detail}}）。",
+      "refused": "连接被拒 {{ms}}ms（{{detail}}）。端口未开或单向封锁。",
+      "tls": "TLS 验证失败（{{detail}}）。",
+      "unreach": "主机不可达 {{ms}}ms（{{detail}}）。",
+      "http": "HTTP 探活失败 {{ms}}ms（{{detail}}）。"
+    },
+    "loopbackOriginRemote": "Origin is 127.0.0.1 — that is this host, not a remote edge. Set a reachable origin IP or bind_ip.",
+    "needSshOrFleet": "Remote edge needs an outbound SSH identity (or username) or a /agents fleet session. Health URL alone is not apply transport."
   },
   "backup": {
+    "testUnsaved": "正在测试未保存的表单（尚未写入设置）。",
     "fileNotFound": "找不到备份文件",
     "resticNoPassword": "restic 已启用但未设置 password",
     "resticNotInPath": "restic 不在 PATH",
     "dbEnvUnreadable": "无法读取 .db.env，跳过 SQL 导出。",
     "dbEnvNoName": ".db.env 没有数据库名称，跳过 SQL 导出。",
-    "targetOutside": "还原目标必须在项目家目录或公开文件根目录之内。"
+    "targetOutside": "还原目标必须在项目家目录或公开文件根目录之内。",
+    "testIdentity": "ssh (identity) to {{spec}} ok",
+    "sshAuthFailed": "SSH key or password rejected (publickey). Pick an outbound identity or install sshpass.",
+    "remotePathIsFile": "Remote path {{path}} is a file. Use a directory.",
+    "remoteMkdirFailed": "Could not create remote directory: {{detail}}",
+    "sidecarPushed": "Also pushed SQL sidecar {{name}}"
   },
   "redis": {
     "cliMissing": "未安装 redis-cli"
@@ -127,7 +144,10 @@
   },
   "db": {
     "needExecuteCreate": "服务器未开启系统变更权限，无法在管理面板创建数据库",
-    "dryRunMysql": "dry-run：未创建数据库。加 --execute 且 YSK_EXECUTE=1 才真正 provision"
+    "dryRunMysql": "dry-run：未创建数据库。加 --execute 且 YSK_EXECUTE=1 才真正 provision",
+    "remoteNoCreds": "未存账号／密码——只测 TCP（登记 ≠ 已登录）。",
+    "remoteReachable": "TCP {{host}}:{{port}} 可达（{{ms}}ms）。",
+    "remoteUnreachable": "TCP {{host}}:{{port}} 关闭或被过滤（{{ms}}ms）。"
   },
   "net": {
     "invalidIface": "接口名称无效",
@@ -3036,6 +3056,14 @@
     "libraryDestIsFile": "无法建立名为 {{name}} 的文件夹——该处已有同名文件。",
     "librarySeedMissing": "此文件夹没有可做种的对应文件。",
     "libraryWaitingPeers": "正在等待 peers。若文件已在此主机，请重新加入并选使用现有文件做种。"
+  },
+  "migrate": {
+    "orphanConfirm": "请输入完整孤立主目录路径以确认删除。",
+    "orphanStillInStore": "该主目录仍属于 store 内的项目。",
+    "orphanMissing": "磁盘没有此路径：{{path}}",
+    "orphanNeedExecute": "将删除孤立主目录 {{path}}。需 YSK_EXECUTE=1。",
+    "orphanRmFailed": "无法删除孤立主目录：{{detail}}",
+    "orphanRemoved": "已删除孤立项目主目录 {{path}}。"
   },
   "leftover": {
     "staleCliTitle": "遗留旧版 CLI",

@@ -22,6 +22,8 @@ ysk-server ssh-key delete --id KEY
 
 Installing into system `authorized_keys` / sshd paths needs root + EXECUTE where applicable.
 
+Login keys can target an existing Linux user that has no project (home from `getent`). An SSH key test that authenticates then hits nologin is **PASS** (the key works; the shell is locked).
+
 ## Related
 
 [ssh.md](./ssh.md) · [ssh-fido2.md](./ssh-fido2.md) · [2fa-panel-vs-ssh.md](./2fa-panel-vs-ssh.md)

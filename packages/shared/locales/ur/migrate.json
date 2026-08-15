@@ -78,5 +78,9 @@
   "dryRunOnlyDesc": "· انوینٹری + صرف پری چیک؛ کوئی rsync یا ہدف نہیں لکھتا",
   "executeNote": "میزبان کو YSK_EXECUTE=1 اور روٹ API کی ضرورت ہے۔ منتقلی کے بعد، DNS A/AAAA کو اپ ڈیٹ کریں اور کلاؤڈ فائر وال + میل PTR چیک کریں۔",
   "dnsCutover": "DNS کٹ اوور (دستی)",
-  "dnsCutoverDesc": "نئے عوامی IP پر ان ناموں کے لیے A/AAAA پوائنٹ کریں؛"
+  "dnsCutoverDesc": "نئے عوامی IP پر ان ناموں کے لیے A/AAAA پوائنٹ کریں؛",
+  "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
+  "orphanRemove": "Remove leftover home",
+  "orphanRemoveTitle": "Delete leftover project home?",
+  "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1."
 }

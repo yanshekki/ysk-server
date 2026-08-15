@@ -74,6 +74,7 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
   const [localHost, setLocalHost] = useState('');
   const [peerHost, setPeerHost] = useState('');
   const [peer3Host, setPeer3Host] = useState('');
+  const [fleetAgentId, setFleetAgentId] = useState('');
   const [sst, setSst] = useState('mariabackup');
   const [lastPlan, setLastPlan] = useState<ClusterPlan | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -124,11 +125,13 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
     await run(async () => {
       const primaryRole =
         kind === 'redis-replica' || kind === 'redis-sentinel' ? 'master' : 'primary';
+      const peerAccess = fleetAgentId.trim() ? 'fleet' : 'ssh';
       const members: Array<{
         host: string;
         role: string;
         access: 'local' | 'ssh' | 'fleet';
         label: string;
+        fleetAgentId?: string;
       }> = isGalera
         ? [
             {
@@ -139,8 +142,9 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
             {
               host: peerHost.trim(),
               role: 'node',
-              access: 'ssh',
-              label: 'peer-1' },
+              access: peerAccess,
+              label: 'peer-1',
+              fleetAgentId: fleetAgentId.trim() || undefined },
           ]
         : [
             {
@@ -151,8 +155,9 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
             {
               host: peerHost.trim(),
               role: 'replica',
-              access: 'ssh',
-              label: 'replica-1' },
+              access: peerAccess,
+              label: 'replica-1',
+              fleetAgentId: fleetAgentId.trim() || undefined },
           ];
       if (peer3Host.trim()) {
         members.push({
@@ -683,6 +688,21 @@ export function DbClusterPanel({ engine }: { engine: DbServiceEngine }) {
                 value={peer3Host}
                 onChange={bindInput(setPeer3Host)}
                 placeholder={t('db.cluster.ipExample3')}
+                spellCheck={false}
+                autoComplete="off"
+              />
+            </Field>
+            <Field
+              label={t('db.cluster.fleetSession')}
+              htmlFor="dbc-fleet"
+              flush
+              hint={t('db.cluster.fleetSessionHint')}
+            >
+              <input
+                id="dbc-fleet"
+                value={fleetAgentId}
+                onChange={bindInput(setFleetAgentId)}
+                placeholder={t('db.cluster.fleetSessionPh')}
                 spellCheck={false}
                 autoComplete="off"
               />

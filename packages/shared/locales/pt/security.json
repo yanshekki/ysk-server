@@ -373,7 +373,9 @@
     "strictBlocked": "O pacote ou o PAM não está pronto; a aplicação Strict está desativada.",
     "strictDryRun": "Pré-visualização do modo estrito",
     "errorNoDetail": "Teste falhou (sem detalhes)",
-    "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it."
+    "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it.",
+    "loginNoProjects": "No projects. Authorize an existing Linux user (root / tester) below. Writing /root/.ssh needs YSK_EXECUTE=1.",
+    "loginLinuxHint": "Used when no project. Example: root or tester."
   },
   "sessionsActive": "Sessões ativas",
   "sessionsOther": "Outros dispositivos",

@@ -21,6 +21,12 @@ export const migrateApi = {
       body: JSON.stringify({}),
     }),
 
+  removeOrphanHome: (path: string) =>
+    api.requestRaw<MigrateOpsResult>('/api/v1/system/migrate/orphan-homes', {
+      method: 'POST',
+      body: JSON.stringify({ path, confirmPath: path }),
+    }),
+
   listJobs: () =>
     api.requestRaw<{ ok: boolean; jobs: MigrateJob[] }>(
       '/api/v1/system/migrate/jobs',

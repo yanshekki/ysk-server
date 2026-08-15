@@ -195,7 +195,7 @@ describe('probeDbCluster', () => {
         ],
       });
       const hostPg = mockHost((argv) => {
-        if (argv[0] === 'psql') {
+        if (argv[0] === 'runuser' || argv[0] === 'psql') {
           return { exitCode: 0, stdout: 'f\n' };
         }
         return { exitCode: 1 };

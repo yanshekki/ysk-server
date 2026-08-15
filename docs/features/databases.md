@@ -34,7 +34,8 @@ Operate **MySQL / MariaDB / PostgreSQL / Redis** as services and data planes on 
 | Redis keys list/get | `ysk-server redis keys\|get …` | read | |
 | Redis set/del | `ysk-server redis set\|del … --execute` | write-host | |
 | Provision plans | `ysk-server hosting mysql-provision\|postgres-provision\|redis-provision` | write-host | dry-run default |
-| DB cluster fleet | `ysk-server db-cluster list\|plan\|apply …` | write-host | plan-first HA |
+| DB cluster fleet | `ysk-server db-cluster list\|plan\|apply …` | write-host | plan-first HA. `create --kind postgres-…` infers `--engine postgres`. Wizard can paste a `/agents` fleet session (non-SSH). Redis peer README is Redis, not Galera. |
+| Remote DB hosts | `POST /api/v1/db/remote-hosts/:id/test` | read | TCP reachability. Panel: Test connection. |
 
 ## CLI quick start
 
@@ -55,6 +56,8 @@ Full argv: [../cli/reference.md](../cli/reference.md#db--redis--db-cluster).
 - Without EXECUTE, install/lifecycle/apply stay blocked or dry-run.  
 - SQL switch is **exclusive** (MySQL XOR MariaDB); always preview + confirm phrase.  
 - Cluster modules never silently form multi-node clusters.  
+- Postgres cluster probe runs as the `postgres` OS user (`runuser -u postgres -- psql`).  
+- Dry-run cluster push notes are not shown as “system change is off”.  
 
 ## Panel-only ⚠️
 

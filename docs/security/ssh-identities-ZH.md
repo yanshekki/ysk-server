@@ -22,6 +22,8 @@ ysk-server ssh-key delete --id KEY
 
 安裝到系統 `authorized_keys`／sshd 路徑時，視情況需 root + EXECUTE。
 
+登入金鑰可指定沒有專案的既有 Linux 用戶（家目錄來自 `getent`）。金鑰測試若已通過公鑰、之後才遇到 nologin，結果為 **PASS**（金鑰可用；shell 被鎖屬預期）。
+
 ## 相關
 
 [ssh-ZH.md](./ssh-ZH.md) · [ssh-fido2-ZH.md](./ssh-fido2-ZH.md) · [2fa-panel-vs-ssh-ZH.md](./2fa-panel-vs-ssh-ZH.md)

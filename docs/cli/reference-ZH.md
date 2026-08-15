@@ -97,7 +97,7 @@ ysk-server templates list|apply …
 底層架站輔助（預設 dry-run）：
 
 ```bash
-ysk-server hosting leftovers
+ysk-server hosting leftovers   # 唯讀；overlay 不會改寫主機檔
 ysk-server hosting nginx|nginx-sync [--execute]
 ysk-server hosting mysql-provision|postgres-provision|redis-provision [--execute]
 ysk-server hosting dns-zone --zone X --ip A.B.C.D …
@@ -126,10 +126,12 @@ ysk-server backup list [--q TEXT]
 ysk-server backup status
 ysk-server backup all
 ysk-server backup restore --project-id ID --name ARCHIVE [--mode full|web|dry-run] [--target DIR]
+# 控制平面預覽：--project-id control-plane（tar -tzf；不需專案列）
 ysk-server backup delete …
 ysk-server backup schedule [--install] [--execute]
 ysk-server backup control-plane
 ysk-server backup settings get|set|test [--remote-enable] [--remote-kind sftp|s3|local] [--s3-bucket …]
+# test 使用表單／已存身分；真正探測需 --execute + YSK_EXECUTE=1
 ysk-server backup restic …
 ```
 
@@ -292,7 +294,8 @@ ysk-server db-cluster list|get|create|plan …
 ## migrate
 
 ```bash
-ysk-server migrate inventory|host|post|status|resume …
+ysk-server migrate inventory|host|post|status|resume|orphan-homes …
+# orphan-homes：列出殘留 /home/ysk-server-<uuid>；刪除需 --path + --confirm + --execute
 ```
 
 ## tools | ask
@@ -383,6 +386,7 @@ ysk-server real-ip status|set|refresh [--execute]
 ysk-server updates hub [--refresh-runtimes]
 ysk-server updates inventory|refresh|apply|apply-batch|summary|self …
 ysk-server software list|get|install|uninstall|uninstall-preview|upgrades|versions …
+# postgresql：postgres 不在 PATH 但 unit 為 active 時視為已安裝
 ysk-server stack plans|bundles|status|install|scan …
 ysk-server update [--check] [--apply]   # 產品 npm 自身更新
 ```
@@ -396,6 +400,7 @@ ysk-server db status|console|apply|lifecycle|install --engine mysql|mariadb|post
 ysk-server db sql-engine preview|switch --target mysql|mariadb …
 ysk-server redis status|settings|keys|get|set|del|install|start …
 ysk-server db-cluster list|get|create|plan|apply|probe …
+# create --kind postgres-replica 會推斷 --engine postgres；探測以 postgres 用戶執行
 ```
 
 見 [../features/databases-ZH.md](../features/databases-ZH.md)。
@@ -478,7 +483,7 @@ ysk-server hosting runtime-install|runtime-switch|runtime-uninstall …
 | `schedule --install` | 安裝排程（EXECUTE） |
 | `control-plane` | 備份控制平面狀態 |
 | `restic …` | 已設定時的 restic 輔助 |
-| `settings get\|set` | 遠端／排除設定 |
+| `settings get\|set\|test` | 遠端目的地；test 可用未儲存值 + 出站身分；真正探測需 EXECUTE |
 
 ### email deliverability
 

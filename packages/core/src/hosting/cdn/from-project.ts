@@ -46,6 +46,41 @@ export function projectOriginUrl(project: ProjectDto): string {
   return `http://127.0.0.1:${port}`;
 }
 
+export function isLoopbackOriginUrl(url: string): boolean {
+  try {
+    const u = new URL(url);
+    return u.hostname === '127.0.0.1' || u.hostname === 'localhost' || u.hostname === '::1';
+  } catch {
+    return /127\.0\.0\.1|localhost/.test(url);
+  }
+}
+
+/** LAN/public origin for a remote edge. Empty if we cannot rewrite honestly. */
+export function reachableOriginUrlForRemoteEdge(
+  db: JsonStore,
+  loopbackUrl: string,
+  project?: { bindIp?: string; port?: number },
+): string | undefined {
+  let port = 8080;
+  try {
+    port = Number(new URL(loopbackUrl).port) || port;
+  } catch {
+    /* keep */
+  }
+  if (project?.port && project.port > 0) port = project.port;
+  const bind = project?.bindIp?.trim();
+  if (bind && bind !== '127.0.0.1' && bind !== '0.0.0.0' && bind !== '::') {
+    return `http://${bind}:${port}`;
+  }
+  const nodes = listCdnNodes(db);
+  const origin = nodes.find((n) => n.roles.includes('origin') && n.publicIpv4[0]);
+  const ip =
+    origin?.publicIpv4[0] ||
+    nodes.find((n) => n.roles.includes('control') && n.publicIpv4[0])?.publicIpv4[0];
+  if (ip && ip !== '127.0.0.1' && ip !== '::1') return `http://${ip}:${port}`;
+  return undefined;
+}
+
 export function domainsFromProject(
   project: ProjectDto,
   extra?: string[],

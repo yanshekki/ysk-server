@@ -31,7 +31,8 @@ Operate the **control-plane host**: systemd unit, service matrix, metrics, netwo
 | Update hub (panel + services + runtimes + apt) | `ysk-server updates hub [--refresh-runtimes] --json` | read | Same `entries` as `GET /api/v1/updates` |
 | Package inventory | `ysk-server updates inventory\|refresh --json` | read | Apt list only |
 | Apply package | `ysk-server updates apply --package … --execute` | write-host | |
-| Software catalog | `ysk-server software list\|install\|uninstall …` | write-host | |
+| Software catalog | `ysk-server software list\|install\|uninstall …` | write-host | `software get postgresql` treats an active unit as installed when `postgres` is not on PATH. |
+| Leftover probe | `ysk-server hosting leftovers` | read | Also folded into readiness. Overlay does **not** rewrite Apache / nginx / vsftpd / Dovecot. |
 | Stack plans | `ysk-server stack plans\|status\|install …` | write-host | |
 | Product self-update | `ysk-server update --check\|--apply` | write-host | npm `ysk-server@x` + verify + restart |
 | Readiness / doctor | `ysk-server readiness\|doctor --json` | read | |
@@ -58,6 +59,7 @@ Full argv: [../cli/reference.md](../cli/reference.md).
 - Exposure probes may degrade without EXECUTE (desired state still listed).  
 - **written** package plans ≠ applied apt.  
 - Readiness may exit non-zero while still returning full JSON.  
+- Product overlay does not heal leftover host files; leftovers stay visible until the matching apply command.  
 
 ## Panel-only ⚠️
 

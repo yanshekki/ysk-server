@@ -332,6 +332,27 @@ describe('apply local dry-run', () => {
     expect(existsSync(bundled.bundlePath!)).toBe(true);
   });
 
+  it('redis peer README is redis, not Galera', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-dbc-redis-readme-'));
+    const db = new JsonStore(join(dir, 'db.json'));
+    const c = createDbCluster(db, {
+      name: 'redis-replica',
+      engine: 'redis',
+      kind: 'redis-replica',
+      members: [
+        { host: '10.50.0.1', role: 'master', access: 'local' },
+        { host: '10.50.0.2', role: 'replica', access: 'ssh' },
+      ],
+    });
+    planAndMaterializeDbCluster({ db, dataDir: dir, clusterId: c.id });
+    const bundled = bundleDbClusterArtifacts({ db, dataDir: dir, clusterId: c.id });
+    expect(bundled.ok).toBe(true);
+    const md = readFileSync(join(dir, 'clusters', c.id, 'PEER-README.md'), 'utf8');
+    expect(md).toMatch(/redis/i);
+    expect(md).not.toMatch(/Galera/i);
+    expect(md).not.toMatch(/replica-change-source/i);
+  });
+
   it('peer push dry-run lists ssh targets', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-dbc-push-'));
     const db = new JsonStore(join(dir, 'db.json'));

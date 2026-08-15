@@ -32,6 +32,7 @@ export YSK_EXECUTE=1   # as root for systemd/nginx
 ysk-server projects create --name demo --domain demo.example.com --runtime node --create-dns --create-mail --json
 ysk-server projects deploy --id <UUID> --execute --json
 ysk-server nginx sync --execute --json
+# Git control: projects git status|fetch|checkout|reset; inbound hook is POST /api/v1/hooks/git/:id (not Slack)
 ```
 
 Details: [../features/projects.md](../features/projects.md).
@@ -102,6 +103,8 @@ ysk-server update --check --json
 ```bash
 ysk-server defense status --json
 ysk-server backup schedule --install --execute
+ysk-server backup settings test --json
+ysk-server migrate inventory --json
 ysk-server readiness --json
 ```
 

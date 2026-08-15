@@ -373,7 +373,9 @@
     "strictBlocked": "패키지 또는 PAM이 준비되지 않아 Strict 적용이 비활성화되었습니다.",
     "strictDryRun": "엄격 모드 미리보기",
     "errorNoDetail": "테스트 실패(상세 없음)",
-    "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it."
+    "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it.",
+    "loginNoProjects": "No projects. Authorize an existing Linux user (root / tester) below. Writing /root/.ssh needs YSK_EXECUTE=1.",
+    "loginLinuxHint": "Used when no project. Example: root or tester."
   },
   "sessionsActive": "활성 세션",
   "sessionsOther": "기타 장치",

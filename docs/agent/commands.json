@@ -1,6 +1,6 @@
 {
   "product": "ysk-server",
-  "version": "1.0.36",
+  "version": "1.0.38",
   "exitCodes": {
     "0": "ok",
     "1": "error",
@@ -571,7 +571,7 @@
     {
       "name": "backup settings",
       "risk": "write-panel",
-      "summary": "Get/set/test remote SFTP|S3|local, exclusions, restic (test needs --execute)",
+      "summary": "Get/set/test remote SFTP|S3|local, exclusions, restic. Test uses outbound identity; live probe needs --execute. Missing key is not EXECUTE-off.",
       "example": "ysk-server backup settings test --json"
     },
     {
@@ -1230,6 +1230,39 @@
       "risk": "read",
       "summary": "List or get background large-share torrent jobs",
       "example": "ysk-server bt-tracker jobs [--id JOB] --json"
+    },
+    {
+      "name": "projects git",
+      "risk": "write-host",
+      "summary": "Git control: status/log (read), fetch/checkout/reset, HTTPS token or deploy key, inbound hook",
+      "args": ["--id", "--ref", "--token", "--deploy-key", "--pin-host"],
+      "example": "ysk-server projects git status --id UUID --json"
+    },
+    {
+      "name": "projects git hook",
+      "risk": "write-panel",
+      "summary": "Enable/rotate/disable inbound POST /api/v1/hooks/git/:id (HMAC or X-YSK-Git-Hook). Operator pastes URL into GitHub/Gitea/GitLab. Not Slack.",
+      "args": ["--id", "--enable", "--rotate", "--disable"],
+      "example": "ysk-server projects git hook --id UUID --enable --json"
+    },
+    {
+      "name": "migrate inventory",
+      "risk": "read",
+      "summary": "Host migrate inventory (includes leftover /home/ysk-server-<uuid> as orphanHomes)",
+      "example": "ysk-server migrate inventory --json"
+    },
+    {
+      "name": "migrate orphan-homes",
+      "risk": "write-host",
+      "summary": "List leftover project homes; delete only with --path --confirm and YSK_EXECUTE=1",
+      "args": ["--path", "--confirm"],
+      "example": "ysk-server migrate orphan-homes --json"
+    },
+    {
+      "name": "hosting leftovers",
+      "risk": "read",
+      "summary": "Read-only leftover probe (Apache default, nginx catch-all, vsftpd, Dovecot TLS, stale ~/.npm-global). Overlay does not rewrite those files.",
+      "example": "ysk-server hosting leftovers --json"
     }
   ]
 }

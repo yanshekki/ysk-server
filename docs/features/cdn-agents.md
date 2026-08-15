@@ -38,6 +38,8 @@ ysk-server agents fleet list --json
 
 - Registered ≠ connected (need heartbeat).  
 - Enqueued ≠ applied on edge.  
+- Node probe classifies timeout / DNS / refused / TLS (not only `fetch failed`).  
+- Apply does not invent `root@publicIpv4`. SSH runs only when the node has an identity, username, or `sshHost`. Loopback origin is rewritten or refused on a remote edge. A fleet session id is the non-SSH path.  
 
 ## Panel-only ⚠️
 

@@ -424,7 +424,10 @@
     "testRemoteDone": "ریموٹ پروب مکمل",
     "testRemoteFailed": "ریموٹ پروب ناکام",
     "resticRepoPh": "Panel data directory / restic-repo",
-    "testDisabledHint": "Turn on remote push before testing."
+    "testDisabledHint": "Turn on remote push before testing.",
+    "identityId": "Outbound SSH identity",
+    "identityHint": "Preferred. Same vault as /security SSH. Password needs sshpass.",
+    "identityNone": "None — password or default key"
   },
   "btTracker": {
     "title": "بی ٹی ٹریکر",
@@ -1814,7 +1817,7 @@
         }
       },
       "x": {
-        "972912": "استعمال:\n  ysk-سرور منتقلی انوینٹری [-data-dir PATH] --json\n  ysk-server ہجرت میزبان --target root@IP [--identity-file PATH|--identity-id ID|--password PW] --execute [--maintenance] [-force-wipe-target]\n  ysk-سرور کی منتقلی پوسٹ -- جاب ID -- ڈیٹا ڈائر PATH -- ایگزیکٹ # ہدف پر\n  ysk-سرور کی منتقلی کی حیثیت [-جاب ID]\n  ysk-server migrate resume --job ID --execute"
+        "972912": "استعمال:\n  ysk-سرور منتقلی انوینٹری [-data-dir PATH] --json\n  ysk-server ہجرت میزبان --target root@IP [--identity-file PATH|--identity-id ID|--password PW] --execute [--maintenance] [-force-wipe-target]\n  ysk-سرور کی منتقلی پوسٹ -- جاب ID -- ڈیٹا ڈائر PATH -- ایگزیکٹ # ہدف پر\n  ysk-سرور کی منتقلی کی حیثیت [-جاب ID]\n  ysk-server migrate resume --job ID --execute\n  ysk-server migrate orphan-homes [--data-dir PATH] --json\n  ysk-server migrate orphan-homes --path /home/ysk-server-UUID --confirm PATH --execute\n"
       },
       "hostingHelp": "استعمال: ysk-server ہوسٹنگ <sub>\n  خطرناک آپریشن ڈیفالٹ ڈرائی رن؛ لاگو کرنے کے لیے --execute (+ YSK_EXECUTE=1) شامل کریں۔\n  nginx | nginx-sync [--- execute]\n  redis-provision | postgres-provision | mysql-provision [--execute]\n  dns-zone --zone X --ip A.B.C.D [--ipv6 X:X::X] [--تصدیق کریں] [--دوبارہ لوڈ کریں]\n  dns-zones | powerdns-status | powerdns-install [-install|-execute]\n  powerdns-load --zone X --ip A.B.C.D [--load|--execute]\n  email-apply --domain X [-install|-execute]\n  email-mailbox --domain X --local user [--password P] [-ip A.B.C.D] [--سسٹم]\n  ftps-apply --domain X [-install|--execute]\n  رن ٹائمز | runtime-install --kind node|php|python|go|rust --version V [--install|--execute]\n  dovecot-passdb --domain X | --تمام\n  webmail-apply --domain webmail.example.com [--ڈاؤن لوڈ]\n  public-files --domain files.example.com [--دوبارہ لوڈ]\n  email-bootstrap --domain example.com --ip A.B.C.D [-install|--execute]\n  email-deliverability --domain example.com # PTR/DNSBL/warmup پیک (ایماندار)\n  firewall-apply [-smtp] [-execute]",
       "logsQuery": "استعمال: {{CLI_NAME}} لاگز استفسار --source <id> [-لائنز N] [--grep G] [--سے 1h] [-priority error]\n  ماخذ کی مثالیں: journal: journal:nginx.service فائل:syslog پروجیکٹ:<uuid>\n  {{CLI_NAME}} لاگز ذرائع --json\n  {{CLI_NAME}} لاگز جرنل [-unit nginx.service] --json"
@@ -2570,7 +2573,10 @@
       "probe": "تحقیقات",
       "name": "نام",
       "type": "قسم",
-      "status": "حیثیت"
+      "status": "حیثیت",
+      "fleetSession": "Fleet agent session id",
+      "fleetSessionHint": "Optional. Paste a session UUID from /agents. Then this peer uses fleet (no SSH). Leave empty for SSH scp.",
+      "fleetSessionPh": "Agents page session UUID"
     },
     "console": {
       "dataBrowse": "ڈیٹا براؤز کریں۔",
@@ -2640,7 +2646,12 @@
     "emptyDbHostHasRows": "The host already has databases that are not in this control-plane list.",
     "hostHasUntracked": "{{count}} host databases are not registered in the panel",
     "hostInventoryHint": "The table is control-plane rows only. Live names come from SHOW DATABASES.",
-    "adoptHostDb": "Register {{name}}"
+    "adoptHostDb": "Register {{name}}",
+    "remoteTest": "Test connection",
+    "remoteTestDone": "Remote host probe finished",
+    "remoteTestOk": "reachable",
+    "remoteTestFail": "unreachable",
+    "remoteNotChecked": "not tested"
   },
   "dialogs": {
     "confirmDefault": "تصدیق کریں۔",
@@ -4812,7 +4823,11 @@
     "dryRunOnlyDesc": "· انوینٹری + صرف پری چیک؛ کوئی rsync یا ہدف نہیں لکھتا",
     "executeNote": "میزبان کو YSK_EXECUTE=1 اور روٹ API کی ضرورت ہے۔ منتقلی کے بعد، DNS A/AAAA کو اپ ڈیٹ کریں اور کلاؤڈ فائر وال + میل PTR چیک کریں۔",
     "dnsCutover": "DNS کٹ اوور (دستی)",
-    "dnsCutoverDesc": "نئے عوامی IP پر ان ناموں کے لیے A/AAAA پوائنٹ کریں؛"
+    "dnsCutoverDesc": "نئے عوامی IP پر ان ناموں کے لیے A/AAAA پوائنٹ کریں؛",
+    "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
+    "orphanRemove": "Remove leftover home",
+    "orphanRemoveTitle": "Delete leftover project home?",
+    "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1."
   },
   "multiCheck": {
     "customPlaceholder": "حسب ضرورت کوڈ",
@@ -5179,11 +5194,22 @@
     },
     "ssh": {
       "identityNotFound": "شناخت نہیں ملی",
-      "registrationNotFound": "رجسٹریشن نہیں ملی"
+      "registrationNotFound": "رجسٹریشن نہیں ملی",
+      "keyOkNologin": "Key accepted. Account has no login shell (nologin) — use SFTP. Treated as PASS."
     },
     "cdn": {
       "siteNotFound": "CDN سائٹ نہیں ملی",
-      "nodeMissing": "نوڈ موجود نہیں ہے۔"
+      "nodeMissing": "نوڈ موجود نہیں ہے۔",
+      "probe": {
+        "timeout": "Connect timeout after {{ms}}ms ({{detail}}). Peer may be firewalled.",
+        "dns": "DNS lookup failed ({{detail}}).",
+        "refused": "Connection refused after {{ms}}ms ({{detail}}). Port closed or one-way block.",
+        "tls": "TLS verify failed ({{detail}}).",
+        "unreach": "Host unreachable after {{ms}}ms ({{detail}}).",
+        "http": "HTTP probe failed after {{ms}}ms ({{detail}})."
+      },
+      "loopbackOriginRemote": "Origin is 127.0.0.1 — that is this host, not a remote edge. Set a reachable origin IP or bind_ip.",
+      "needSshOrFleet": "Remote edge needs an outbound SSH identity (or username) or a /agents fleet session. Health URL alone is not apply transport."
     },
     "backup": {
       "fileNotFound": "بیک اپ فائل نہیں ملی",
@@ -5191,7 +5217,13 @@
       "resticNotInPath": "PATH میں نہیں ہے",
       "dbEnvUnreadable": "Could not read .db.env; skipped SQL dump.",
       "dbEnvNoName": ".db.env has no database name; skipped SQL dump.",
-      "targetOutside": "Restore target must be inside the project home or the public files root."
+      "targetOutside": "Restore target must be inside the project home or the public files root.",
+      "testUnsaved": "Testing unsaved form values (not written to settings).",
+      "testIdentity": "ssh (identity) to {{spec}} ok",
+      "sshAuthFailed": "SSH key or password rejected (publickey). Pick an outbound identity or install sshpass.",
+      "remotePathIsFile": "Remote path {{path}} is a file. Use a directory.",
+      "remoteMkdirFailed": "Could not create remote directory: {{detail}}",
+      "sidecarPushed": "Also pushed SQL sidecar {{name}}"
     },
     "redis": {
       "cliMissing": "redis-cli انسٹال نہیں ہے۔"
@@ -5276,7 +5308,10 @@
     },
     "db": {
       "needExecuteCreate": "میزبان عمل بند ہے؛ پینل سے ڈیٹا بیس نہیں بنا سکتا",
-      "dryRunMysql": "dry-run: ڈیٹا بیس نہیں بنایا گیا۔ فراہمی کے لیے YSK_EXECUTE=1 کے ساتھ --execute استعمال کریں۔"
+      "dryRunMysql": "dry-run: ڈیٹا بیس نہیں بنایا گیا۔ فراہمی کے لیے YSK_EXECUTE=1 کے ساتھ --execute استعمال کریں۔",
+      "remoteNoCreds": "No username/password stored — TCP only (registration is not a login).",
+      "remoteReachable": "TCP {{host}}:{{port}} open ({{ms}}ms).",
+      "remoteUnreachable": "TCP {{host}}:{{port}} closed or filtered ({{ms}}ms)."
     },
     "net": {
       "invalidIface": "غلط انٹرفیس کا نام",
@@ -8234,6 +8269,14 @@
       "hookEnabled": "Inbound Git hook is on. Paste the URL into GitHub, Gitea, or GitLab yourself.",
       "hookDisabled": "Inbound Git hook is off. The URL will not sync.",
       "hookSecretOnce": "Copy this hook secret now. It is not shown again."
+    },
+    "migrate": {
+      "orphanConfirm": "Type the exact leftover home path to confirm delete.",
+      "orphanStillInStore": "That home still belongs to a project in the store.",
+      "orphanMissing": "Path not on disk: {{path}}",
+      "orphanNeedExecute": "Would remove leftover {{path}}. Needs YSK_EXECUTE=1.",
+      "orphanRmFailed": "Could not remove leftover home: {{detail}}",
+      "orphanRemoved": "Removed leftover project home {{path}}."
     }
   },
   "ops": {
@@ -10599,7 +10642,9 @@
       "strictBlocked": "پیکج یا PAM تیار نہیں؛ Strict لاگو نہیں ہو سکتا۔",
       "strictDryRun": "سخت موڈ پیش نظارہ",
       "errorNoDetail": "ٹیسٹ ناکام (تفصیل نہیں)",
-      "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it."
+      "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it.",
+      "loginNoProjects": "No projects. Authorize an existing Linux user (root / tester) below. Writing /root/.ssh needs YSK_EXECUTE=1.",
+      "loginLinuxHint": "Used when no project. Example: root or tester."
     },
     "sessionsActive": "فعال سیشنز",
     "sessionsOther": "دیگر آلات",

@@ -1,6 +1,7 @@
 export * from './types.js';
 export * from './job-store.js';
 export * from './inventory.js';
+export * from './orphan-homes.js';
 export * from './transport.js';
 export * from './temp-key.js';
 export * from './preflight.js';

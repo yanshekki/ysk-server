@@ -8,6 +8,7 @@ import {
   domainsFromProject,
   enableCdnFromProject,
   projectOriginUrl,
+  reachableOriginUrlForRemoteEdge,
 } from './from-project.js';
 import type { ProjectDto } from 'ysk-server-shared';
 import { selectGeoEdges } from './dns-sync.js';
@@ -36,6 +37,23 @@ describe('cdn from-project + geo (PR-C7)', () => {
       'www.demo.example.com',
     ]);
     expect(projectOriginUrl(p)).toBe('http://127.0.0.1:3000');
+  });
+
+  it('rewrites loopback origin using origin node IPv4', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-cdn-orig-'));
+    try {
+      const db = new JsonStore(join(dir, 'db.json'));
+      upsertCdnNode(db, {
+        name: 'origin',
+        roles: ['origin'],
+        publicIpv4: ['10.186.230.24'],
+      });
+      expect(
+        reachableOriginUrlForRemoteEdge(db, 'http://127.0.0.1:3100', { port: 3100 }),
+      ).toBe('http://10.186.230.24:3100');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it('enableCdnFromProject creates site bound to project', () => {

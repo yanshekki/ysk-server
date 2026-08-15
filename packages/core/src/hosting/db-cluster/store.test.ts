@@ -10,6 +10,7 @@ import {
   updateDbCluster,
   deleteDbCluster,
   setDbClusterStatus,
+  engineFromKind,
 } from './store.js';
 import { YskError } from 'ysk-server-shared';
 
@@ -96,6 +97,12 @@ describe('db-cluster store', () => {
     expect(deleteDbCluster(db, c.id)).toBe(false);
     expect(() => getDbCluster(db, c.id)).toThrow(YskError);
     cleanup();
+  });
+
+  it('infers engine from kind', () => {
+    expect(engineFromKind('postgres-replica')).toBe('postgres');
+    expect(engineFromKind('redis-sentinel')).toBe('redis');
+    expect(engineFromKind('mysql-replica')).toBe('mysql');
   });
 
   it('postgres replica gets repl user defaults', () => {

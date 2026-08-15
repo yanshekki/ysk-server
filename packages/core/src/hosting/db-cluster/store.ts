@@ -34,6 +34,14 @@ function assertEngine(e: string): DbClusterEngine {
   return e as DbClusterEngine;
 }
 
+export function engineFromKind(kind: string): DbClusterEngine | undefined {
+  if (kind.startsWith('mariadb')) return 'mariadb';
+  if (kind.startsWith('mysql')) return 'mysql';
+  if (kind.startsWith('postgres')) return 'postgres';
+  if (kind.startsWith('redis')) return 'redis';
+  return undefined;
+}
+
 function assertKind(k: string): DbClusterKind {
   if (!KINDS.includes(k as DbClusterKind)) {
     throw new YskError(ErrorCodes.VALIDATION, tl('notes.auto.t0602', { v0: (k) }), { httpStatus: 400 });

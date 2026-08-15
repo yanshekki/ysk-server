@@ -31,7 +31,8 @@
 | 更新中心（面板 + 服務 + runtime + apt） | `ysk-server updates hub [--refresh-runtimes] --json` | read | 與 `GET /api/v1/updates` 同一套 `entries` |
 | 套件清冊 | `ysk-server updates inventory\|refresh --json` | read | 僅 apt 清單 |
 | 套用套件 | `ysk-server updates apply --package … --execute` | write-host | |
-| 軟件目錄 | `ysk-server software list\|install\|uninstall …` | write-host | |
+| 軟件目錄 | `ysk-server software list\|install\|uninstall …` | write-host | `software get postgresql`：`postgres` 不在 PATH 但 unit 為 active 時仍視為已安裝。 |
+| 殘留探測 | `ysk-server hosting leftovers` | read | 亦納入就緒報告。Overlay **不會**改寫 Apache／nginx／vsftpd／Dovecot。 |
 | 堆疊計劃 | `ysk-server stack plans\|status\|install …` | write-host | |
 | 產品本體更新 | `ysk-server update --check\|--apply` | write-host | 二進位更新 |
 | 就緒／doctor | `ysk-server readiness\|doctor --json` | read | |
@@ -58,6 +59,7 @@ ysk-server network exposure sync --service nginx --execute --json
 - 無 EXECUTE 時暴露探測可能降級（仍列出期望狀態）。  
 - **已寫入** 套件計劃 ≠ 已套用 apt。  
 - 就緒可能非零結束，但仍回傳完整 JSON。  
+- 產品 overlay 不會自行修復殘留主機檔；殘留會繼續顯示，直至執行對應套用命令。  
 
 ## 僅面板 ⚠️
 

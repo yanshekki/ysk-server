@@ -84,12 +84,12 @@
       "部署：启动或更新该站点的运行环境。",
       "环境变量：安全编辑项目环境变量。",
       "健康与日志：探测就绪状态并打开相关日志。",
-      "为单个站点发布代码变更",
+      "Git 控制：状态、fetch、checkout、reset；入站 hook 贴到 GitHub／Gitea／GitLab（不是 Slack）。",
       "轮换密钥而不影响其他项目"
     ],
     "notes": [
       "仍受应用／EXECUTE 规则约束——blocked 表示主机未真正变更",
-      "错误的环境变量可能导致站点不可用，请谨慎修改"
+      "入站 Git hook 无需面板登录即可响应；真正 clone／部署仍需 YSK_EXECUTE=1"
     ],
     "related": [
       {
@@ -1228,7 +1228,8 @@
     ],
     "notes": [
       "列表中有任务 ≠ 已验证可恢复——请定期演练",
-      "远程／restic 需要凭据，实机应用常需 EXECUTE"
+      "远程 SFTP 测试使用出站身份；缺密钥不是未开 EXECUTE",
+      "控制平面预览只列归档（tar -tzf），不需项目行"
     ],
     "related": [
       {
@@ -1259,11 +1260,11 @@
       "预检与执行：连接目标机、傳输与还原。",
       "验证：迁移后检查关键服务。",
       "VPS 到期搬迁",
-      "升配到更大主机"
+      "清理残留 /home/ysk-server-<uuid>（确认路径 + EXECUTE）"
     ],
     "notes": [
       "需目标机 root 与 EXECUTE 能力",
-      "TTL 未降时切 DNS 可能双寫或短暂异常"
+      "孤儿 home 是磁盘残留，不是误报"
     ],
     "related": [
       {
@@ -1281,7 +1282,8 @@
       "若改主机，再到就绪／健康确认"
     ],
     "cliHints": [
-      "ysk-server migrate status --json"
+      "ysk-server migrate inventory --json",
+      "ysk-server migrate orphan-homes --json"
     ]
   },
   "updates": {
