@@ -116,6 +116,8 @@
   "tuneLoadFailed": "Failed to load tuning",
   "availableCount": "{{n}} available",
   "notDetected": "Not detected",
+  "targetMissing": "Target not installed",
+  "targetMissingHint": "Target {{version}} is not on this host. Bind an installed version or install this pin.",
   "target": "Target",
   "tune": "Tune",
   "loadedShort": "Loaded",
@@ -511,5 +513,17 @@
   "fullVersion": "Full version",
   "useListForDefaults": "To change host or panel default, or remove this version, use the list above.",
   "alreadyHostDefaultShort": "Host default",
-  "installRecordedCta": "Install recorded {{v}}"
+  "installRecordedCta": "Install recorded {{v}}",
+  "needsInstall": "needs install",
+  "needsInstallHint": "Not on this host. Install it first, or pick an installed version.",
+  "unitBytes": "bytes",
+  "headerSizeKb": "{{n}} KB",
+  "phpIniChipEmpty": "Not loaded — open the php.ini tab",
+  "phpFpmService": "PHP-FPM",
+  "phpFpmServiceDesc": "Start, stop, reload, or restart the PHP-FPM unit",
+  "rustupDefaultMissingTitle": "No rustup default toolchain",
+  "rustupDefaultMissing": "rustup has no default toolchain. Set one (stable) on the Software tab.",
+  "rustupDefaultMissingShort": "No default toolchain",
+  "rustupSetDefaultHint": "Set default toolchain",
+  "uninstalledCountHint": "{{n}} version(s) not on this host"
 }

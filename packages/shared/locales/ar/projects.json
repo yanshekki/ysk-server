@@ -654,5 +654,7 @@
   "netForceHttpsOff": "No forced redirect is stored.",
   "netHttpsLiveNotForced": "An edge file exists; HTTPS may already work. This box only forces HTTP→HTTPS.",
   "gitSyncBlockedDirty": "Sync is disabled until local changes are discarded (Reset) or the files match Git.",
-  "gitViewDiff": "View diff"
+  "gitViewDiff": "View diff",
+  "gitBranchAfterUrl": "أدخل عنوان Git أولاً. الفراغ يستخدم الفرع الافتراضي البعيد.",
+  "gitResetNeedConfirm": "يلزم التأكيد — يتجاهل التزامات Git المحلية"
 }

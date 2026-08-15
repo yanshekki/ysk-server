@@ -296,5 +296,12 @@
   "remoteTestDone": "Remote host probe finished",
   "remoteTestOk": "reachable",
   "remoteTestFail": "unreachable",
-  "remoteNotChecked": "not tested"
+  "remoteNotChecked": "not tested",
+  "registeredVsHostHint": "Enregistré dans le panneau / trouvé sur l’hôte",
+  "dumpNeedRegistered": "Enregistrez d’abord une base dans le panneau",
+  "dumpFirstDbTitle": "Exporter la première base enregistrée",
+  "importNeedRegistered": "Enregistrez d’abord une base dans le panneau",
+  "importLatestNeedConfirm": "Confirmation requise — importe dans la base enregistrée",
+  "adoptHostDbTitle": "N’enregistre que le nom dans le plan de contrôle ; n’altère pas les données hôte.",
+  "cleanupExpiredTempUsersTitle": "Supprime les utilisateurs temporaires du panneau déjà expirés"
 }

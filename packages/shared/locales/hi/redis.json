@@ -64,5 +64,13 @@
   "pickKey": "सामग्री देखने के लिए बाईं ओर एक कुंजी चुनें.",
   "ttlPrefix": "टीटीएल: {{ttl}}",
   "writeLiveHint": "लाइव रेडिस लिखते हैं; एक क्लिक में पैनल से पूर्ववत नहीं किया जा सकता.",
-  "refPath": "संदर्भ: {{path}}"
+  "refPath": "संदर्भ: {{path}}",
+  "dbEmptyMark": " · खाली",
+  "noRequirepass": "सुरक्षित मोड चालू है, पर requirepass खाली या अपठित है — पासवर्ड नहीं।",
+  "setRequirepass": "पासवर्ड सेट करें",
+  "rdbOnlyLossHint": "AOF बंद और RDB चालू। पुनः प्रारंभ या क्रैश से हाल के लेखन खो सकते हैं।",
+  "dirDataContainer": "/data (container)",
+  "dirHostDefault": "/var/lib/redis",
+  "dirDefaultInstance": "/var/lib/redis/default",
+  "dirDataWarn": "/data is usually a container path; this panel cannot confirm it exists."
 }

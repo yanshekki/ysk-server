@@ -164,7 +164,7 @@
   "seedStatusChecking": "Checking",
   "seedStatusPaused": "Paused",
   "seedStatusQueued": "Queued",
-  "swarmLeftover": "लाइब्रेरी में नहीं {{count}} announce",
+  "swarmLeftover": "Tracker में लाइब्रेरी के बाहर {{count}} announce हैं (Torrent सूची से अलग स्रोत)",
   "addSourceSection": "स्रोत",
   "addSourceFile": "फ़ाइल",
   "addSourceMagnet": "Magnet",

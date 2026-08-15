@@ -12,7 +12,67 @@ export type LeftoverFinding = {
   title: string;
   detail: string;
   cta?: string;
+  /** Panel deep-link when the finding maps to a feature page */
+  href?: string;
 };
+
+/** Overlay leftover kinds — UI splits the readiness blob on these. */
+export type LeftoverKind = 'apache' | 'vsftpd' | 'cli' | 'nginx' | 'dovecot' | 'other';
+
+/** Managed nginx list roles — leftover/unused stay in sync until the operator acts. */
+export type ManagedNginxRole = 'managed' | 'leftover' | 'unused';
+
+export function leftoverHrefForKind(kind: LeftoverKind): string | undefined {
+  if (kind === 'apache') return '/apache';
+  if (kind === 'vsftpd') return '/ftp';
+  if (kind === 'nginx') return '/nginx';
+  if (kind === 'dovecot') return '/email';
+  // stale CLI / rm -f: leftover apply after overlay (no dedicated leftover page)
+  if (kind === 'cli') return '/updates';
+  return undefined;
+}
+
+export function leftoverHrefForId(id: string): string | undefined {
+  if (id === 'apache-default') return leftoverHrefForKind('apache');
+  if (id === 'vsftpd-failed') return leftoverHrefForKind('vsftpd');
+  if (id === 'stale-cli') return leftoverHrefForKind('cli');
+  if (id === 'nginx-catchall') return leftoverHrefForKind('nginx');
+  if (id === 'dovecot-ssl') return leftoverHrefForKind('dovecot');
+  return undefined;
+}
+
+export function leftoverKindFromNote(note: string): LeftoverKind {
+  const s = String(note || '');
+  if (/ysk-000-default|catch-all|nginx-sync/i.test(s)) return 'nginx';
+  if (/Apache leftover|Apache 遺留|Apache 預設|Apache 000-default|sites-enabled\/000-default/i.test(s)) {
+    return 'apache';
+  }
+  if (/vsftpd/i.test(s)) return 'vsftpd';
+  if (/rm -f|leftover CLI|stale leftover|舊 CLI|舊版 CLI|PATH may prefer|PATH 可能/i.test(s)) {
+    return 'cli';
+  }
+  if (/Dovecot|ssl_cert/i.test(s)) return 'dovecot';
+  return 'other';
+}
+
+/** Split the readiness leftover blob (notes joined with " · "). */
+export function splitLeftoverNotes(blob: string): string[] {
+  return String(blob || '')
+    .split(/\s·\s|\n+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+/**
+ * Export-tab nginx files: leftover public-files-* and unused 000-default.
+ * Do not drop them from sync — operator must act.
+ */
+export function classifyManagedNginxName(name: string): ManagedNginxRole {
+  const base = String(name || '').replace(/^ysk-/i, '');
+  if (/^000-default\.conf$/i.test(base)) return 'unused';
+  if (/^public-files-/i.test(base)) return 'leftover';
+  return 'managed';
+}
 
 export function staleNpmGlobalCliPaths(): string[] {
   const home = homedir();
@@ -47,6 +107,7 @@ export async function probeHostLeftovers(input: {
       title: tl('notes.leftover.staleCliTitle'),
       detail: tl('notes.leftover.staleCli', { path: p, version: input.currentVersion || '?' }),
       cta: `rm -f ${p}`,
+      href: leftoverHrefForId('stale-cli'),
     });
   }
 
@@ -58,6 +119,7 @@ export async function probeHostLeftovers(input: {
       title: tl('notes.leftover.apacheDefaultTitle'),
       detail: tl('notes.leftover.apacheDefault'),
       cta: 'ysk-server hosting apache apply --execute',
+      href: leftoverHrefForId('apache-default'),
     });
   }
 
@@ -69,6 +131,7 @@ export async function probeHostLeftovers(input: {
       title: tl('notes.leftover.nginxCatchAllTitle'),
       detail: tl('notes.leftover.nginxCatchAll'),
       cta: 'ysk-server projects nginx-sync --execute',
+      href: leftoverHrefForId('nginx-catchall'),
     });
   }
 
@@ -83,6 +146,7 @@ export async function probeHostLeftovers(input: {
           title: tl('notes.leftover.vsftpdTitle'),
           detail: tl('notes.leftover.vsftpd'),
           cta: 'ysk-server ftp apply --execute',
+          href: leftoverHrefForId('vsftpd-failed'),
         });
       }
     } catch {
@@ -102,6 +166,7 @@ export async function probeHostLeftovers(input: {
           title: tl('notes.leftover.dovecotTitle'),
           detail: tl('notes.leftover.dovecot', { path: cert }),
           cta: 'ysk-server email apply --execute  (or issue mail LE, then apply TLS)',
+          href: leftoverHrefForId('dovecot-ssl'),
         });
       }
     } catch {

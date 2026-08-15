@@ -511,5 +511,19 @@
   "alreadyHostDefaultShort": "হোস্ট ডিফল্ট",
   "managedPathMissingTitle": "Managed {{name}} path not ready",
   "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall.",
-  "installRecordedCta": "Install recorded {{v}}"
+  "installRecordedCta": "Install recorded {{v}}",
+  "targetMissing": "লক্ষ্য সংস্করণ ইনস্টল নেই",
+  "targetMissingHint": "লক্ষ্য {{version}} এই হোস্টে নেই। ইনস্টল করা সংস্করণ বেঁধে দিন অথবা এই পিন ইনস্টল করুন।",
+  "needsInstall": "ইনস্টল করতে হবে",
+  "needsInstallHint": "এই হোস্টে নেই। আগে ইনস্টল করুন বা ইনস্টল করা সংস্করণ বেছে নিন।",
+  "unitBytes": "বাইট",
+  "headerSizeKb": "{{n}} KB",
+  "phpIniChipEmpty": "লোড হয়নি — php.ini ট্যাব খুলুন",
+  "phpFpmService": "PHP-FPM",
+  "phpFpmServiceDesc": "PHP-FPM ইউনিট চালু, বন্ধ, রিলোড বা পুনরায় চালু",
+  "rustupDefaultMissingTitle": "rustup ডিফল্ট টুলচেইন নেই",
+  "rustupDefaultMissing": "rustup-এর ডিফল্ট নেই। সফটওয়্যার ট্যাবে stable সেট করুন।",
+  "rustupDefaultMissingShort": "No default toolchain",
+  "rustupSetDefaultHint": "Set default toolchain",
+  "uninstalledCountHint": "{{n}} সংস্করণ এই হোস্টে নেই"
 }

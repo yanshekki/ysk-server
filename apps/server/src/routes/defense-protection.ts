@@ -77,7 +77,7 @@ export async function handleDefenseProtectionRoutes(
     const raw = await readBody(req);
     const data = JSON.parse(raw || '{}') as { playbookId?: string };
     const probe = await runProtectionProbes({
-      requestCountLastMinute: ctx.requestHits.length,
+      requestCountLastMinute: ctx.requestHitsLastMinute(),
     });
     applyProtection(ctx, probe.protection);
     const playbookId = data.playbookId ?? probe.suggestedPlaybooks[0]?.id ?? 'local-llm-ops-only';

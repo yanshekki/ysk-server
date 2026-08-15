@@ -145,7 +145,9 @@ export function enableCdnFromProject(
     if (ip && ip !== '127.0.0.1' && ip !== '::1') return true;
     return Boolean(n.baseUrl?.trim() || n.fleetAgentId?.trim() || n.sshHost?.trim());
   });
+  let persistOrigin = originUrl;
   if (reachable && reachable !== originUrl) {
+    persistOrigin = reachable;
     notes.push(tl('notes.cdn.originRemoteRewrite', { url: reachable }));
   } else if (hasRemoteEdge && isLoopbackOriginUrl(originUrl)) {
     notes.push(tl('notes.cdn.originRemoteUnknown'));
@@ -169,7 +171,7 @@ export function enableCdnFromProject(
     origin: {
       kind: 'project',
       projectId: input.project.id,
-      url: originUrl,
+      url: persistOrigin,
       sni: domains[0],
     },
     edgeNodeIds: edges,

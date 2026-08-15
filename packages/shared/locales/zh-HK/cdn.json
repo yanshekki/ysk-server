@@ -31,6 +31,16 @@
   "partialFail": "未全部成功（{{status}}）— 見 notes",
   "statNodes": "節點",
   "hitNoStats": "尚無邊緣統計",
+  "loopbackOriginBlocked": "不會把回環 origin {{url}} 寫到遠端邊緣。請先改成可達的 origin。",
+  "applyFailedHint": "套用失敗 — 見下方備註",
+  "applyStatus": {
+    "draft": "草稿",
+    "planned": "已計劃",
+    "applying": "套用中",
+    "applied": "已套用",
+    "failed": "失敗",
+    "partial": "部分成功"
+  },
   "statSites": "站點",
   "recentNotes": "最近 notes",
   "edgeConfPreview": "Nginx 邊緣 設定檔 預覽",

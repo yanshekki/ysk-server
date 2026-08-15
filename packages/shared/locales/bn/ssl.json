@@ -102,5 +102,8 @@
   "deletedCert": "মুছে ফেলা হয়েছে {{domain}}",
   "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates.",
   "renew": "Renew",
-  "renewFor": "Renew Let’s Encrypt for {{domain}}"
+  "renewFor": "Renew Let’s Encrypt for {{domain}}",
+  "domainRequired": "ডোমেইন লিখুন।",
+  "domainInvalid": "ডোমেইন বিন্যাস বৈধ নয়।",
+  "domainKnownHint": "পরিচিত প্রকল্প / DNS / মেইল ডোমেইন বেছে নিন, অথবা নিজে লিখুন।"
 }

@@ -30,6 +30,9 @@ function minimalCtx(config: Partial<YskConfig> & { dataDir: string }): AppContex
     configPath: join(config.dataDir, 'config.json'),
     dataDir: config.dataDir,
     requestHits: [],
+    requestHitsLastMinute() {
+      return 0;
+    },
     version: 'test',
     startedAt: new Date().toISOString(),
     webRoot: undefined,

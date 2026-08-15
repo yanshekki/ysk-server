@@ -147,5 +147,7 @@
   "hideRaw": "Hide raw output",
   "rawLoadedAt": "Loaded {{time}}",
   "deleteDefaultPanelWarn": "Deleting the default route can drop this panel session. Type DEFAULT to confirm.",
-  "typeDefaultToConfirm": "Type DEFAULT to confirm"
+  "typeDefaultToConfirm": "Type DEFAULT to confirm",
+  "deleteDefaultNeedConfirm": "확인 필요 — DEFAULT 입력(이 패널 연결이 끊길 수 있음)",
+  "deleteRouteNeedConfirm": "확인이 필요합니다"
 }

@@ -12,6 +12,7 @@ import {
   Badge,
   Button,
   ConfirmDialog,
+  DataTable,
   FeaturePageLayout,
   Field,
   LogViewer,
@@ -26,6 +27,7 @@ import { api } from '../../shared/services/api';
 import { authStore } from '../../shared/stores/auth-store';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { usePageTab } from '../../shared/hooks/usePageTab';
+import { formatDateTimeLocale } from '../../shared/lib/format-date';
 import {
   bindSet,
   bindInput,
@@ -156,11 +158,87 @@ type RailItem = {
   projectId?: string;
 };
 
+const VACUUM_SIZE_MB = 500;
+const LOGROTATE_PREVIEW = 8;
+
 export function formatBytes(n?: number): string {
   if (n == null) return '—';
   if (n < 1024) return `${n} B`;
   if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
   return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+export function formatDiskMb(n?: number, approx = false): string {
+  if (n == null) return '—';
+  return `${approx ? '≈ ' : ''}${n} MB`;
+}
+
+export function journalVacuumSizeNoop(
+  journalDiskMb?: number,
+  capMb = VACUUM_SIZE_MB,
+): boolean {
+  return journalDiskMb != null && journalDiskMb < capMb;
+}
+
+export function projectChipSourceCount(p: {
+  files?: Array<{ previewable?: boolean }>;
+  related?: Array<{ available: boolean; kind: string }>;
+}): number {
+  const files = p.files?.length ?? 0;
+  const related = (p.related ?? []).filter((r) => r.kind !== 'managed-nginx').length;
+  return files + related;
+}
+
+export type LogrotateEntry = {
+  path: string;
+  lastAt: Date | null;
+  rawDate: string;
+};
+
+/** logrotate status dates look like `2026-8-15-0:0:0` (unpadded). */
+export function parseLogrotateDate(raw: string): Date | null {
+  const m = raw
+    .trim()
+    .match(/^(\d{4})-(\d{1,2})-(\d{1,2})-(\d{1,2}):(\d{1,2}):(\d{1,2})$/);
+  if (!m) return null;
+  const dt = new Date(
+    Number(m[1]),
+    Number(m[2]) - 1,
+    Number(m[3]),
+    Number(m[4]),
+    Number(m[5]),
+    Number(m[6]),
+  );
+  return Number.isNaN(dt.getTime()) ? null : dt;
+}
+
+const LOGROTATE_ENTRY =
+  /^(?:"([^"]+)"|(\S+))\s+(\d{4}-\d{1,2}-\d{1,2}-\d{1,2}:\d{1,2}:\d{1,2})\s*$/;
+
+export function parseLogrotateStatus(text?: string): {
+  version?: string;
+  entries: LogrotateEntry[];
+} {
+  if (!text) return { entries: [] };
+  const entries: LogrotateEntry[] = [];
+  let version: string | undefined;
+  for (const line of text.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    const ver = trimmed.match(/^logrotate state -- version\s+(\S+)/i);
+    if (ver) {
+      version = ver[1];
+      continue;
+    }
+    if (/no status file/i.test(trimmed)) continue;
+    const hit = trimmed.match(LOGROTATE_ENTRY);
+    if (!hit) continue;
+    const path = hit[1] || hit[2] || '';
+    const rawDate = hit[3] || '';
+    if (!path) continue;
+    entries.push({ path, rawDate, lastAt: parseLogrotateDate(rawDate) });
+  }
+  return { version, entries };
 }
 
 export function groupLabel(g: string): string {
@@ -285,6 +363,7 @@ export function LogsPage() {
   const [showInactiveUnits, setShowInactiveUnits] = useState(false);
   const [vacuumDays, setVacuumDays] = useState('14d');
   const [vacuumConfirm, setVacuumConfirm] = useState<null | 'time' | 'size'>(null);
+  const [logrotateExpanded, setLogrotateExpanded] = useState(false);
   const [bookmarkPromptOpen, setBookmarkPromptOpen] = useState(false);
   const [customPathInput, setCustomPathInput] = useState('');
   const [settingsDraft, setSettingsDraft] = useState<Partial<LogSettings>>({});
@@ -294,6 +373,14 @@ export function LogsPage() {
   const journalWarn = settings?.journalWarnMb ?? 1024;
   const journalHigh =
     overview?.journalDiskMb != null && overview.journalDiskMb >= journalWarn;
+  const vacuumSizeNoop = journalVacuumSizeNoop(overview?.journalDiskMb);
+  const logrotateParsed = useMemo(
+    () => parseLogrotateStatus(overview?.logrotate?.statusText),
+    [overview?.logrotate?.statusText],
+  );
+  const logrotateRows = logrotateExpanded
+    ? logrotateParsed.entries
+    : logrotateParsed.entries.slice(0, LOGROTATE_PREVIEW);
 
   const refreshMeta = useCallback(async () => {
     setLoadErr(null);
@@ -792,15 +879,13 @@ export function LogsPage() {
         items: [
           {
             label: t('logs.groupJournal'),
-            value:
-              overview?.journalDiskMb != null
-                ? `${overview.journalDiskMb} MB`
-                : '—',
-            tone: journalHigh ? 'warn' : undefined },
+            value: formatDiskMb(overview?.journalDiskMb),
+            tone: journalHigh ? 'warn' : undefined,
+            hint: t('logs.journalDiskHint') },
           {
             label: t('logs.groupVarLog'),
-            value:
-              overview?.varLogMb != null ? `≈${overview.varLogMb}MB` : '—' },
+            value: formatDiskMb(overview?.varLogMb, true),
+            hint: t('logs.varLogDiskHint') },
           {
             label: t('projects.healthDetail.error'),
             value: overview?.recentErrors ?? '—',
@@ -880,7 +965,9 @@ export function LogsPage() {
                 else if (p.related?.[0]) selectSource(p.related[0].source);
                 else selectSource(`project:${p.projectId}`);
               }}
-              title={t('logs.filesTitle', { n: p.files?.length ?? 0 })}
+              title={t('logs.projectSourcesTitle', {
+                n: projectChipSourceCount(p),
+              })}
             >
               {p.name}
             </button>
@@ -1135,6 +1222,7 @@ export function LogsPage() {
                         variant="secondary"
                         size="sm"
                         disabled={!text}
+                        title={!text ? t('logs.queryFirst') : undefined}
                         onClick={bindCall1(exportServer, 'text')}
                       >
                         {t('security.export')}
@@ -1143,6 +1231,7 @@ export function LogsPage() {
                         variant="ghost"
                         size="sm"
                         disabled={!text}
+                        title={!text ? t('logs.queryFirst') : undefined}
                         onClick={bindCall1(exportServer, 'jsonl')}
                       >
                         JSONL
@@ -1151,6 +1240,7 @@ export function LogsPage() {
                         variant="ghost"
                         size="sm"
                         disabled={!text}
+                        title={!text ? t('logs.queryFirst') : undefined}
                         onClick={bindCopyMsg(text, setMsg, t('logs.copied'))}
                       >
                         {t('common.copy')}
@@ -1262,6 +1352,12 @@ export function LogsPage() {
                       variant="danger"
                       size="md"
                       loading={busy}
+                      disabled={!vacuumDays.trim()}
+                      title={
+                        !vacuumDays.trim()
+                          ? t('logs.vacuumNeedRetention')
+                          : t('logs.vacuumNeedConfirm')
+                      }
                       onClick={bindSet(setVacuumConfirm, 'time')}
                     >
                       {t('logs.vacuumTime')}
@@ -1270,11 +1366,19 @@ export function LogsPage() {
                       variant="secondary"
                       size="md"
                       loading={busy}
+                      title={
+                        vacuumSizeNoop
+                          ? t('logs.vacuumSizeAlreadyBelow')
+                          : t('logs.vacuumSizeNeedConfirm')
+                      }
                       onClick={bindSet(setVacuumConfirm, 'size')}
                     >
                       {t('logs.vacuumSize')}
                     </Button>
                   </div>
+                  {vacuumSizeNoop ? (
+                    <p className="lc-card__hint">{t('logs.vacuumSizeAlreadyBelow')}</p>
+                  ) : null}
                   <p className="lc-card__hint">{t('logs.vacuumHint')}</p>
                 </div>
               </article>
@@ -1292,7 +1396,52 @@ export function LogsPage() {
                 <div className="lc-card__body">
                   {overview?.logrotate?.statusText &&
                   !/no status file/i.test(overview.logrotate.statusText) ? (
-                    <pre className="lc-pre">{overview.logrotate.statusText}</pre>
+                    logrotateParsed.entries.length ? (
+                      <>
+                        {logrotateParsed.version ? (
+                          <p className="muted u-text-sm">
+                            {t('logs.logrotateVersion', { v: logrotateParsed.version })}
+                          </p>
+                        ) : null}
+                        <DataTable<LogrotateEntry>
+                          columns={[
+                            {
+                              key: 'path',
+                              header: t('logs.logrotatePath'),
+                              render: (row) => <code>{row.path}</code>,
+                            },
+                            {
+                              key: 'last',
+                              header: t('logs.logrotateLast'),
+                              nowrap: true,
+                              render: (row) =>
+                                row.lastAt
+                                  ? formatDateTimeLocale(row.lastAt, i18n.language)
+                                  : row.rawDate || '—',
+                            },
+                          ]}
+                          rows={logrotateRows}
+                          rowKey={(row) => row.path}
+                        />
+                        {logrotateParsed.entries.length > LOGROTATE_PREVIEW ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setLogrotateExpanded((v) => !v)}
+                          >
+                            {logrotateExpanded
+                              ? t('logs.logrotateCollapse')
+                              : t('logs.logrotateExpand', {
+                                  n:
+                                    logrotateParsed.entries.length -
+                                    LOGROTATE_PREVIEW,
+                                })}
+                          </Button>
+                        ) : null}
+                      </>
+                    ) : (
+                      <pre className="lc-pre">{overview.logrotate.statusText}</pre>
+                    )
                   ) : overview?.logrotate?.statusText ? (
                     <p className="muted u-text-sm">{t('logs.logrotateNoStatus')}</p>
                   ) : (
@@ -1672,7 +1821,11 @@ export function LogsPage() {
               })
             : t('logs.vacuumSizeQ')
         }
-        description={t('logs.vacuumDesc')}
+        description={
+          vacuumConfirm === 'size' && vacuumSizeNoop
+            ? t('logs.vacuumSizeNoopDesc')
+            : t('logs.vacuumDesc')
+        }
         confirmLabel={t('migrate.tabRun')}
         cancelLabel={t('common.cancel')}
         danger

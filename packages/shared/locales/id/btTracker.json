@@ -164,7 +164,7 @@
   "seedStatusChecking": "Checking",
   "seedStatusPaused": "Paused",
   "seedStatusQueued": "Queued",
-  "swarmLeftover": "Tracker punya {{count}} announce yang tidak ada di pustaka",
+  "swarmLeftover": "Tracker punya {{count}} announce di luar pustaka (sumber berbeda dari daftar Torrent)",
   "addSourceSection": "Sumber",
   "addSourceFile": "Berkas",
   "addSourceMagnet": "Magnet",

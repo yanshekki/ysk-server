@@ -85,7 +85,7 @@
   "runtime": "运行环境",
   "runtimeHint": "决定默认 runtime 版本与部署方式",
   "runtimeVersion": "运行环境版本",
-  "versionHint": "写入项目 runtime_version",
+  "versionHint": "会写入项目的运行环境版本设定",
   "serverIpv4": "服务器 IPv4",
   "serverIpv4Hint": "DNS A／邮件 SPF",
   "serverIpv4Ph": "此主机公网 IPv4",
@@ -119,5 +119,5 @@
   "notifAll": "全部",
   "notifDismiss": "隐藏",
   "goFix": "前往处理",
-  "needDomainFirst": "Enter a domain first"
+  "needDomainFirst": "请先填域名"
 }

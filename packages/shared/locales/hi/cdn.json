@@ -120,5 +120,15 @@
   "statOffline": "Offline {{n}}",
   "statDraining": "Draining {{n}}",
   "statHitRate": "Hit rate {{v}}",
-  "hitNoStats": "No edge stats yet"
+  "hitNoStats": "अभी एज आँकड़े नहीं",
+  "loopbackOriginBlocked": "लूपबैक origin {{url}} दूरस्थ एज पर नहीं लिखा जाएगा। पहले पहुँच योग्य origin सेट करें।",
+  "applyFailedHint": "लागू विफल — नीचे नोट देखें",
+  "applyStatus": {
+    "draft": "ड्राफ़्ट",
+    "planned": "योजनाबद्ध",
+    "applying": "लागू हो रहा है",
+    "applied": "लागू",
+    "failed": "विफल",
+    "partial": "आंशिक"
+  }
 }

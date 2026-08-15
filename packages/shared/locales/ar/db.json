@@ -296,5 +296,12 @@
   "remoteTestDone": "Remote host probe finished",
   "remoteTestOk": "reachable",
   "remoteTestFail": "unreachable",
-  "remoteNotChecked": "not tested"
+  "remoteNotChecked": "not tested",
+  "registeredVsHostHint": "مسجّل في اللوحة / موجود على المضيف",
+  "dumpNeedRegistered": "سجّل قاعدة بيانات في اللوحة أولاً",
+  "dumpFirstDbTitle": "تصدير أول قاعدة مسجّلة",
+  "importNeedRegistered": "سجّل قاعدة بيانات في اللوحة أولاً",
+  "importLatestNeedConfirm": "يحتاج تأكيدًا — يستورد إلى القاعدة المسجّلة",
+  "adoptHostDbTitle": "يسجّل الاسم في مستوى التحكم فقط ولا يغيّر بيانات المضيف.",
+  "cleanupExpiredTempUsersTitle": "يحذف مستخدمي اللوحة المؤقتين المنتهية صلاحيتهم"
 }

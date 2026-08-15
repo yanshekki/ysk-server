@@ -1,5 +1,6 @@
-import { lazy, Suspense, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useRef, type ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AppShell } from './layout/AppShell';
 import { RequireAuth } from './layout/RequireAuth';
 import { RequireCapability } from './layout/RequireCapability';
@@ -7,6 +8,7 @@ import { GuestOnly } from './layout/GuestOnly';
 import { ErrorBoundary } from '../shared/components/ErrorBoundary';
 import { ToastViewport } from '../shared/components/ui';
 import i18n from '../shared/lib/i18n';
+import { toast } from '../shared/stores/toast-store';
 import { OpsStreamProvider } from '../shared/ops-stream/OpsStreamContext';
 import { OpsStreamDock } from '../shared/ops-stream/OpsStreamDock';
 
@@ -191,11 +193,28 @@ const UsersPage = lazy(() =>
   import('../pages/UsersPage').then((m) => ({ default: m.UsersPage })),
 );
 
+function useRedirectToast(from: string, to: string) {
+  const { t } = useTranslation();
+  const shown = useRef(false);
+  useEffect(() => {
+    if (shown.current) return;
+    shown.current = true;
+    toast.info(t('common.redirectedTo', { from, to }));
+  }, [from, t, to]);
+}
+
 /** Legacy top-level paths → protection subtree (preserve query, e.g. ?tab=whitelist). */
-export function RedirectPreserveQuery({ to }: { to: string }) {
+export function RedirectPreserveQuery({ to, from }: { to: string; from?: string }) {
   const [params] = useSearchParams();
   const q = params.toString();
-  return <Navigate to={q ? `${to}?${q}` : to} replace />;
+  const dest = q ? `${to}?${q}` : to;
+  useRedirectToast(from ?? to, dest);
+  return <Navigate to={dest} replace />;
+}
+
+export function RedirectWithToast({ to, from }: { to: string; from: string }) {
+  useRedirectToast(from, to);
+  return <Navigate to={to} replace />;
 }
 
 export function Lazy({ children }: { children: ReactNode }) {
@@ -268,10 +287,22 @@ export function App() {
                 </Lazy>
               }
             />
-            <Route path="php-fpm" element={<Navigate to="/runtimes/php" replace />} />
-            <Route path="opendkim" element={<Navigate to="/email" replace />} />
-            <Route path="shadowsocks" element={<Navigate to="/vpn?tab=outline" replace />} />
-            <Route path="ask" element={<Navigate to="/support" replace />} />
+            <Route
+              path="php-fpm"
+              element={<RedirectWithToast from="/php-fpm" to="/runtimes/php" />}
+            />
+            <Route
+              path="opendkim"
+              element={<RedirectWithToast from="/opendkim" to="/email" />}
+            />
+            <Route
+              path="shadowsocks"
+              element={<RedirectWithToast from="/shadowsocks" to="/vpn?tab=outline" />}
+            />
+            <Route
+              path="ask"
+              element={<RedirectWithToast from="/ask" to="/support" />}
+            />
             <Route
               path="cluster"
               element={<Navigate to="/databases/mysql/service?tab=cluster" replace />}

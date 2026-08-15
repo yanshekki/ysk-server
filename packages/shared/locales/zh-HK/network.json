@@ -56,7 +56,7 @@
   "searchDomainsPlaceholder": "可選，空白分隔",
   "ignoreDhcpDns": "忽略 DHCP 自動 DNS（ipv4.ignore-auto-dns=yes）",
   "restoreDhcpHint": "用「還原 DHCP DNS」可交回路由器分配",
-  "noNmConnection": "無可用 NM 連線 — 不會盲改 /etc/resolv.設定檔（避免假成功）。",
+  "noNmConnection": "無可用 NM 連線 — 不會盲改 /etc/resolv.conf（避免假成功）。",
   "needExecuteRoot": "需 系統變更權限已開啟 與管理員權限 才會真寫入。",
   "resolveTest": "解析測試",
   "resolveTestDesc": "getent ahosts（本機實際解析結果）",
@@ -147,5 +147,7 @@
   "linkDown": "離線",
   "persistNmHint": "可持久化代表經 NetworkManager 寫入後，重啟後設定仍然有效。",
   "deleteDefaultPanelWarn": "刪除預設路由可能令面板連線中斷。請輸入 DEFAULT 確認。",
+  "deleteDefaultNeedConfirm": "需確認 — 請輸入 DEFAULT（可能中斷本面板）",
+  "deleteRouteNeedConfirm": "需確認",
   "typeDefaultToConfirm": "輸入 DEFAULT 確認"
 }

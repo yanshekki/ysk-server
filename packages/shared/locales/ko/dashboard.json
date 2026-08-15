@@ -85,7 +85,7 @@
   "runtime": "실행 시간",
   "runtimeHint": "기본 런타임 버전 및 배포 스타일 설정",
   "runtimeVersion": "런타임 버전",
-  "versionHint": "프로젝트 런타임_버전으로 저장됨",
+  "versionHint": "프로젝트 실행 환경 버전 설정에 씁니다",
   "serverIpv4": "서버 IPv4",
   "serverIpv4Hint": "DNS A/메일 SPF",
   "serverIpv4Ph": "이 호스트의 공개 IPv4",
@@ -119,5 +119,5 @@
   "notifAll": "All",
   "notifDismiss": "Hide",
   "goFix": "Fix",
-  "needDomainFirst": "Enter a domain first"
+  "needDomainFirst": "먼저 도메인을 입력하세요"
 }

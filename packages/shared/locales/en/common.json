@@ -125,5 +125,6 @@
   "show": "Show",
   "done": "Done",
   "next": "Next",
-  "previous": "Previous"
+  "previous": "Previous",
+  "redirectedTo": "Opened {{to}} (was {{from}})"
 }

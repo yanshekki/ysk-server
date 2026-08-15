@@ -125,5 +125,6 @@
   "all": "All",
   "showPassword": "Show",
   "hidePassword": "Hide",
-  "more": "More"
+  "more": "More",
+  "redirectedTo": "{{to}} を開きました（元: {{from}}）"
 }

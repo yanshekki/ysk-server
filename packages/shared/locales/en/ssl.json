@@ -102,5 +102,8 @@
   "requestFailed": "Certificate request did not succeed",
   "applyFailed": "Request failed",
   "deletedCert": "Deleted {{domain}}",
-  "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates."
+  "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates.",
+  "domainRequired": "Please enter a domain.",
+  "domainInvalid": "Domain format is not valid.",
+  "domainKnownHint": "Pick a known project, DNS, or mail domain, or type a custom name."
 }

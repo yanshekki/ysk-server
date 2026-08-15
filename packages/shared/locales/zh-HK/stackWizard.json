@@ -11,7 +11,7 @@
   "componentsTitle": "將安裝的組件",
   "dryRun": "預覽試行",
   "installNow": "立即安裝",
-  "uninstallHint": "勾選要移除的套餐；若全部不勾選，則移除清單內全部組件。預設保留資料。",
+  "uninstallHint": "勾選要移除的套餐。未勾選時無法移除。預設保留資料。",
   "dataPolicy": "資料策略",
   "keepData": "保留資料",
   "purgeData": "清除資料",

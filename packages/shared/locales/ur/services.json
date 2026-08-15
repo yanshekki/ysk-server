@@ -63,5 +63,7 @@
     "running": "Running",
     "failed": "Failed",
     "missing": "Not installed"
-  }
+  },
+  "stopNeedConfirm": "تصدیق درکار",
+  "stopNeedConfirmPhrase": "تصدیقی فقرہ لکھنا ضروری ہے"
 }

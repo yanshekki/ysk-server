@@ -25,6 +25,7 @@ import {
   SegRadio,
   SoftwareInstallBanner,
   SoftwareVersionBar,
+  ConfirmDialog,
   PageTabs } from '../../shared/components/ui';
 import type { OpsResultLike } from '../../shared/components/ui';
 import { ServiceLifecycleBar, systemApi } from '../../features/system';
@@ -179,6 +180,7 @@ export function Fail2banPage() {
   const [banJail, setBanJail] = useState('sshd');
   const [ignoreIp, setIgnoreIp] = useState('');
   const [ignorePendingApply, setIgnorePendingApply] = useState(false);
+  const [applyConfirm, setApplyConfirm] = useState(false);
   const [hostIps, setHostIps] = useState<string[]>([]);
   const [loginIps, setLoginIps] = useState<string[]>([]);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
@@ -234,7 +236,11 @@ export function Fail2banPage() {
   const suggestedIgnore = useMemo(() => {
     const have = new Set((status?.ignoreIps ?? []).map((x) => x.trim()));
     return [...new Set([...hostIps, ...loginIps])].filter(
-      (ip) => ip && !have.has(ip) && !ip.startsWith('127.'),
+      (ip) =>
+        ip &&
+        !have.has(ip) &&
+        !ip.startsWith('127.') &&
+        !ip.toLowerCase().startsWith('fe80:'),
     );
   }, [hostIps, loginIps, status?.ignoreIps]);
 
@@ -272,7 +278,15 @@ export function Fail2banPage() {
             label: t('fail2ban.statTotal'),
             value: status?.jails?.reduce((a, j) => a + (j.totalBanned ?? 0), 0) ?? 0 },
           { label: 'Jail', value: status?.jails?.length ?? 0 },
-          { label: t('fail2ban.statWhitelist'), value: status?.ignoreIps?.length ?? 0 },
+          {
+            label: t('fail2ban.statWhitelist'),
+            value: status?.ignoreIps?.length ?? 0,
+            tone: (status?.ignoreIps?.length ?? 0) === 0 ? 'warn' : 'ok',
+            hint:
+              (status?.ignoreIps?.length ?? 0) === 0
+                ? t('fail2ban.whitelistEmptyWarn')
+                : undefined,
+          },
           {
             label: t('fail2ban.statBoot'),
             value: status?.installed
@@ -522,6 +536,9 @@ export function Fail2banPage() {
                   <p className="def-section-head__desc">{t('fail2ban.ignoreipDesc')}</p>
                 </div>
               </div>
+              {(status?.ignoreIps?.length ?? 0) === 0 ? (
+                <Alert variant="warn">{t('fail2ban.whitelistEmptyWarn')}</Alert>
+              ) : null}
               {suggestedIgnore.length ? (
                 <Alert variant="info">
                   <p className="u-mt-0 u-mb-2">{t('fail2ban.suggestIgnoreHint')}</p>
@@ -544,7 +561,9 @@ export function Fail2banPage() {
                           setIgnorePendingApply(true);
                         }}
                       >
-                        {t('fail2ban.suggestIgnoreAdd', { ip })}
+                        {loginIps.includes(ip)
+                          ? t('fail2ban.suggestIgnoreLogin', { ip })
+                          : t('fail2ban.suggestIgnoreAdd', { ip })}
                       </Button>
                     ))}
                   </ActionBar>
@@ -597,21 +616,12 @@ export function Fail2banPage() {
                   size="md"
                   loading={busy}
                   disabled={!selected.length}
-                  onClick={bindApiRefresh1(
-                    run,
-                    systemApi.fail2banApply,
-                    {
-                      apply: true,
-                      jails: selected,
-                      bantime: normalizeDurationPreset(bantime, '1h'),
-                      findtime: normalizeDurationPreset(findtime, '10m'),
-                      maxretry: clampMaxretry(maxretry) },
-                    async () => {
-                      await refresh();
-                      setIgnorePendingApply(false);
-                    },
-                    t('fail2ban.applyIgnoreipOk'),
-                  )}
+                  title={
+                    (status?.ignoreIps?.length ?? 0) === 0
+                      ? t('fail2ban.applyIgnoreEmptyWarn')
+                      : t('fail2ban.applyIgnoreNeedConfirm')
+                  }
+                  onClick={() => setApplyConfirm(true)}
                 >
                   {t('fail2ban.applyPolicyIgnoreip')}
                 </Button>
@@ -624,7 +634,7 @@ export function Fail2banPage() {
                 className="u-mt-4"
                 title={t('fail2ban.whitelistTitle', {
                   count: status?.ignoreIps?.length ?? 0 })}
-                description={t('fail2ban.ignoreipFile')}
+                description={status?.ignoreipFile || t('fail2ban.ignoreipFile')}
                 columns={[
                   {
                     key: 'ip',
@@ -669,6 +679,38 @@ export function Fail2banPage() {
             </div>
           </div>
         ) : null}
+
+        <ConfirmDialog
+          open={applyConfirm}
+          onClose={() => setApplyConfirm(false)}
+          onConfirm={() => {
+            setApplyConfirm(false);
+            void bindApiRefresh1(
+              run,
+              systemApi.fail2banApply,
+              {
+                apply: true,
+                jails: selected,
+                bantime: normalizeDurationPreset(bantime, '1h'),
+                findtime: normalizeDurationPreset(findtime, '10m'),
+                maxretry: clampMaxretry(maxretry),
+              },
+              async () => {
+                await refresh();
+                setIgnorePendingApply(false);
+              },
+              t('fail2ban.applyIgnoreipOk'),
+            )();
+          }}
+          title={t('fail2ban.applyPolicyIgnoreip')}
+          description={
+            (status?.ignoreIps?.length ?? 0) === 0
+              ? t('fail2ban.applyIgnoreEmptyWarn')
+              : t('fail2ban.applyIgnoreNeedConfirm')
+          }
+          confirmLabel={t('fail2ban.applyPolicyIgnoreip')}
+          danger={(status?.ignoreIps?.length ?? 0) === 0}
+        />
 
         {tab === 'jails' ? (
           <div className="tab-panel def-panel">

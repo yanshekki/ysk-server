@@ -291,7 +291,7 @@ describe('testBackupRemote', () => {
       },
     });
     expect(r.ok).toBe(false);
-    expect(r.requiresExecute).toBe(true);
+    expect(r.requiresExecute).not.toBe(true);
     expect(r.notes.join(' ')).not.toMatch(/n1479|not enabled/i);
     expect(getBackupRemote(db).enabled).toBe(false);
   });
@@ -319,7 +319,7 @@ describe('testBackupRemote', () => {
     expect(s3.kind).toBe('s3');
   });
 
-  it('blocks live probe without EXECUTE', async () => {
+  it('sftp probe does not require EXECUTE; local/s3 still do', async () => {
     const { host, db } = setup(false);
     setBackupRemote(db, {
       enabled: true,
@@ -328,10 +328,14 @@ describe('testBackupRemote', () => {
       username: 'ysk',
       path: '/backups',
     });
-    const r = await testBackupRemote({ host, db });
-    expect(r.ok).toBe(false);
-    expect(r.blocked).toBe(true);
-    expect(r.requiresExecute).toBe(true);
+    const sftp = await testBackupRemote({ host, db });
+    expect(sftp.ok).toBe(false);
+    expect(sftp.blocked).not.toBe(true);
+    setBackupRemote(db, { enabled: true, kind: 'local', path: '/tmp/ysk-bak' });
+    const local = await testBackupRemote({ host, db });
+    expect(local.ok).toBe(false);
+    expect(local.blocked).toBe(true);
+    expect(local.requiresExecute).toBe(true);
   });
 
   it('probes local path when execute is on', async () => {

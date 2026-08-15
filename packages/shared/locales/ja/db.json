@@ -296,5 +296,12 @@
   "remoteTestDone": "Remote host probe finished",
   "remoteTestOk": "reachable",
   "remoteTestFail": "unreachable",
-  "remoteNotChecked": "not tested"
+  "remoteNotChecked": "not tested",
+  "registeredVsHostHint": "パネル登録 / ホスト実測",
+  "dumpNeedRegistered": "先にパネルへデータベースを登録してください",
+  "dumpFirstDbTitle": "最初に登録したデータベースをエクスポート",
+  "importNeedRegistered": "先にパネルへデータベースを登録してください",
+  "importLatestNeedConfirm": "確認が必要 — 登録済みデータベースへ取り込みます",
+  "adoptHostDbTitle": "制御面に名前を登録するだけです。ホストのデータは変えません。",
+  "cleanupExpiredTempUsersTitle": "期限切れのパネル一時ユーザーを削除します"
 }

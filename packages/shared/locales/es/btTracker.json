@@ -164,7 +164,7 @@
   "seedStatusChecking": "Checking",
   "seedStatusPaused": "Paused",
   "seedStatusQueued": "Queued",
-  "swarmLeftover": "El tracker tiene {{count}} anuncio(s) que no están en la biblioteca",
+  "swarmLeftover": "El Tracker tiene {{count}} anuncio(s) que no están en la biblioteca (origen distinto de la lista de torrents)",
   "addSourceSection": "Origen",
   "addSourceFile": "Archivo",
   "addSourceMagnet": "Magnet",

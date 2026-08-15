@@ -64,5 +64,13 @@
   "pickKey": "Pilih tombol di sebelah kiri untuk melihat konten.",
   "ttlPrefix": "TTL: {{ttl}}",
   "writeLiveHint": "Menulis Redis langsung; tidak dapat membatalkan dari panel dalam satu klik.",
-  "refPath": "Referensi: {{path}}"
+  "refPath": "Referensi: {{path}}",
+  "dbEmptyMark": " · kosong",
+  "noRequirepass": "Mode terlindung aktif, tetapi requirepass kosong atau belum dibaca — tidak ada kata sandi.",
+  "setRequirepass": "Setel kata sandi",
+  "rdbOnlyLossHint": "AOF mati dan RDB nyala. Mulai ulang atau crash bisa kehilangan tulis terbaru.",
+  "dirDataContainer": "/data (container)",
+  "dirHostDefault": "/var/lib/redis",
+  "dirDefaultInstance": "/var/lib/redis/default",
+  "dirDataWarn": "/data is usually a container path; this panel cannot confirm it exists."
 }

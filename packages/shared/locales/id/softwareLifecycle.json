@@ -63,5 +63,7 @@
   "kindDeploy": "Deploy",
   "kindRuntime": "Runtime",
   "jobDone": "Finished · {{title}}",
-  "jobFailed": "Failed · {{title}}"
+  "jobFailed": "Failed · {{title}}",
+  "uninstallUfwWarn": "Menghapus UFW membuat host ini tanpa firewall port yang dikelola panel.",
+  "uninstallFail2banWarn": "Menghapus fail2ban menghentikan jail dan melepas blokir. Jika tetap dipakai, tambahkan IP login ke ignoreip dulu."
 }

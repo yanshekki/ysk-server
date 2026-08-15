@@ -59,7 +59,10 @@ export function TerminalPage() {
     try {
       const r = await terminalApi.targets();
       setTargets(r);
-      if (!r.items.some((i) => i.id === targetId) && r.items[0]) {
+      const firstNonRoot = r.items.find((i) => i.id !== 'root');
+      if (targetId === 'root' && firstNonRoot) {
+        setTargetId(firstNonRoot.id);
+      } else if (!r.items.some((i) => i.id === targetId) && r.items[0]) {
         setTargetId(r.items[0].id);
       }
     } catch (e) {

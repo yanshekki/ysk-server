@@ -54,5 +54,6 @@
   "cleanupConflictsTitle": "清理全部冲突残留？",
   "cleanupConflictsDesc": "移除所有与项目或独立站 ServerName 冲突的磁盘 conf。项目行会保留。",
   "artifactRemovedOk": "已移除残留 conf",
-  "sslTerminatedUpstream": "TLS ends at front Nginx"
+  "sslTerminatedUpstream": "TLS ends at front Nginx",
+  "removeArtifactHint": "只删除此残留磁盘 conf，不会删除项目。"
 }

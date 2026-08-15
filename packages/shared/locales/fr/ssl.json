@@ -102,5 +102,8 @@
   "deletedCert": "{{domain}} supprimé",
   "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates.",
   "renew": "Renew",
-  "renewFor": "Renew Let’s Encrypt for {{domain}}"
+  "renewFor": "Renew Let’s Encrypt for {{domain}}",
+  "domainRequired": "Saisissez un domaine.",
+  "domainInvalid": "Le format du domaine n’est pas valide.",
+  "domainKnownHint": "Choisissez un domaine projet / DNS / mail connu, ou saisissez-en un."
 }

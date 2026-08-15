@@ -138,5 +138,9 @@
   "colHome": "Home",
   "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab.",
   "alertsBuiltinOnly": "Built-in CPU / memory / disk thresholds only. No email, webhook, or Slack channel.",
-  "lastEvaluated": "Last checked"
+  "lastEvaluated": "Last checked",
+  "shareNoQuotaHint": "کوٹہ نہ ہو تو حصہ فیصد نہیں۔ پراجیکٹ Isolation ٹیب پر سیٹ کریں۔",
+  "setQuotaLink": "کوٹہ سیٹ کریں",
+  "unusualHome": "غیر معمولی راستہ",
+  "unusualHomeHint": "Not a /home/… project home. Canonical isolation is /home/ysk-server-{id}."
 }

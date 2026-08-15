@@ -80,7 +80,8 @@
     "openFirewall": "공개인 경우: 패널 포트 {{port}}/tcp 허용(방화벽 → 포트 열기 → 9287 패널)",
     "disableConfirmTitle": "Disable panel HTTPS?",
     "disableConfirmDesc": "The panel will serve HTTP. WebAuthn / Passkey will stop working until HTTPS is on again.",
-    "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP."
+    "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP.",
+    "disableNeedConfirm": "확인 필요 — DISABLE-HTTPS 입력"
   },
   "timeNtp": "시간 및 NTP",
   "clockStatus": "시스템 시계 상태",
@@ -188,5 +189,10 @@
   "dryRunFlag": "드라이런",
   "timezoneSearch": "Filter timezones…",
   "resyncNtp": "Re-sync NTP",
-  "storageSub": "Disk usage"
+  "storageSub": "Disk usage",
+  "syncReloadNeedConfirm": "확인 필요 — /etc/nginx/conf.d에 쓰고 Nginx를 다시 불러옵니다",
+  "nginxLeftover": "잔여",
+  "nginxUnused": "미사용",
+  "nginxLeftoverHint": "옛 public-files 등 잔여 conf. 조치하기 전까지 동기화에 포함됩니다.",
+  "nginxUnusedHint": "기본 / catch-all conf(000-default). 조치하기 전까지 동기화에 포함됩니다."
 }

@@ -80,7 +80,8 @@
     "openFirewall": "Jika publik: izinkan port panel {{port}}/tcp (Firewall → port terbuka → Panel 9287)",
     "disableConfirmTitle": "Disable panel HTTPS?",
     "disableConfirmDesc": "The panel will serve HTTP. WebAuthn / Passkey will stop working until HTTPS is on again.",
-    "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP."
+    "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP.",
+    "disableNeedConfirm": "Perlu konfirmasi — ketik DISABLE-HTTPS"
   },
   "timeNtp": "Waktu & NTP",
   "clockStatus": "Status jam sistem",
@@ -188,5 +189,10 @@
   "dryRunFlag": "Lari kering",
   "timezoneSearch": "Filter timezones…",
   "resyncNtp": "Re-sync NTP",
-  "storageSub": "Disk usage"
+  "storageSub": "Disk usage",
+  "syncReloadNeedConfirm": "Perlu konfirmasi — menulis /etc/nginx/conf.d dan memuat ulang Nginx",
+  "nginxLeftover": "Sisa",
+  "nginxUnused": "Tidak dipakai",
+  "nginxLeftoverHint": "Conf sisa (mis. public-files). Tetap ikut sinkron sampai Anda bertindak.",
+  "nginxUnusedHint": "Conf bawaan / catch-all (000-default). Tetap ikut sinkron sampai Anda bertindak."
 }

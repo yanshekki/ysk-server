@@ -30,7 +30,6 @@ import type { OpsResultLike, MultiCheckOption } from '../../shared/components/ui
 import { useOpsStreamOptional } from '../../shared/ops-stream/OpsStreamContext';
 import { getServerContext, setServerContext } from '../../shared/stores/server-context';
 import { systemApi } from '../../features/system';
-import { ServiceLifecycleBar } from '../../features/system/ServiceLifecycleBar';
 import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { resolveRuntimeInstallState } from '../../features/runtimes/install-state';
 import { RuntimeSoftwarePanel } from '../../features/runtimes/RuntimeSoftwarePanel';
@@ -223,8 +222,48 @@ export function PhpRuntimePage() {
   const [hostDefaultConfirm, setHostDefaultConfirm] = useState<string | null>(null);
   const [panelDefault, setPanelDefault] = useState<string | null>(null);
   const [extOps, setExtOps] = useState<OpsResultLike | null>(null);
+  const [phpFpmUnit, setPhpFpmUnit] = useState('');
+  const [pendingPhpLc, setPendingPhpLc] = useState<null | 'stop' | 'restart'>(null);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
   const stream = useOpsStreamOptional();
+
+  useEffect(() => {
+    let cancelled = false;
+    void systemApi
+      .servicesMatrix()
+      .then((r) => {
+        if (cancelled) return;
+        const row = (r.items ?? []).find((x) => x.id === 'php-fpm');
+        if (row?.unit && row.unit !== '—') setPhpFpmUnit(row.unit);
+      })
+      .catch(() => {
+        /* buttons stay disabled */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const runPhpLifecycle = useCallback(
+    (action: 'start' | 'stop' | 'restart' | 'reload') => {
+      if (!phpFpmUnit) return;
+      const okKey =
+        action === 'start'
+          ? 'services.startedOk'
+          : action === 'stop'
+            ? 'services.stoppedOk'
+            : action === 'reload'
+              ? 'services.reloadedOk'
+              : 'services.restartedOk';
+      void run(async () => {
+        return (await systemApi.serviceLifecycle({
+          unit: phpFpmUnit,
+          action,
+        })) as OpsResultLike;
+      }, t(okKey, { label: t('runtime.phpFpmService') }));
+    },
+    [phpFpmUnit, run, t],
+  );
 
   const hostPhp = useMemo(() => {
     const p = (probe?.probe as Record<string, unknown> | undefined) ?? undefined;
@@ -466,7 +505,20 @@ export function PhpRuntimePage() {
           { label: 'Pool', value: poolName || '—' },
           {
             label: 'php.ini',
-            value: iniLoaded ? (iniUpdatedAt ? t('runtime.loaded') : t('runtime.default')) : '—' },
+            value: iniLoaded ? (
+              iniUpdatedAt ? t('runtime.loaded') : t('runtime.default')
+            ) : (
+              <button
+                type="button"
+                className="linkish"
+                title={t('runtime.phpIniChipEmpty')}
+                onClick={() => setTab('ini')}
+              >
+                —
+              </button>
+            ),
+            hint: iniLoaded ? undefined : t('runtime.phpIniChipEmpty'),
+          },
         ] }}
       actions={<Button
           variant="secondary"
@@ -536,13 +588,66 @@ export function PhpRuntimePage() {
                     {t('runtime.tabSoftware')}
                   </button>
                 </FormHint>
-                <ServiceLifecycleBar
-                  matrixId="php-fpm"
-                  label="PHP-FPM"
-                  actions={['start', 'stop', 'restart', 'reload']}
-                  size="sm"
-                  className="u-mt-3"
-                />
+              </CardSection>
+            </Card>
+            <Card>
+              <CardSection
+                title={t('runtime.phpFpmService')}
+                description={t('runtime.phpFpmServiceDesc')}
+              >
+                <div
+                  className="lifecycle-toolbar"
+                  role="group"
+                  aria-label={t('services.lifecycleTitle', {
+                    label: t('runtime.phpFpmService'),
+                  })}
+                  title={t('services.lifecycleTitle', {
+                    label: t('runtime.phpFpmService'),
+                  })}
+                >
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    loading={busy}
+                    disabled={!phpFpmUnit}
+                    title={t('services.action.start')}
+                    onClick={() => runPhpLifecycle('start')}
+                  >
+                    {t('services.action.start')}
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    loading={busy}
+                    disabled={!phpFpmUnit}
+                    title={t('services.stopConfirmTitle', {
+                      label: t('runtime.phpFpmService'),
+                    })}
+                    onClick={() => setPendingPhpLc('stop')}
+                  >
+                    {t('services.action.stop')}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={busy}
+                    disabled={!phpFpmUnit}
+                    title={t('services.action.restart')}
+                    onClick={() => setPendingPhpLc('restart')}
+                  >
+                    {t('services.action.restart')}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    loading={busy}
+                    disabled={!phpFpmUnit}
+                    title={t('services.action.reload')}
+                    onClick={() => runPhpLifecycle('reload')}
+                  >
+                    {t('services.action.reload')}
+                  </Button>
+                </div>
               </CardSection>
             </Card>
           </div>
@@ -1423,6 +1528,36 @@ export function PhpRuntimePage() {
       </PageTabs>
 
       <OpsResultPanel title={t('systemd.opsResult')} result={result} message={msg} busy={busy} />
+
+      <ConfirmDialog
+        open={pendingPhpLc != null}
+        title={
+          pendingPhpLc === 'restart'
+            ? t('services.action.restart')
+            : t('services.stopConfirmTitle', {
+                label: t('runtime.phpFpmService'),
+              })
+        }
+        description={t('services.stopConfirmDesc', {
+          label: t('runtime.phpFpmService'),
+        })}
+        confirmLabel={
+          pendingPhpLc === 'restart'
+            ? t('services.action.restart')
+            : t('services.action.stop')
+        }
+        cancelLabel={t('common.cancel')}
+        severity="destructive"
+        busy={busy}
+        onClose={() => {
+          if (!busy) setPendingPhpLc(null);
+        }}
+        onConfirm={() => {
+          const action = pendingPhpLc;
+          setPendingPhpLc(null);
+          if (action) runPhpLifecycle(action);
+        }}
+      />
     </FeaturePageLayout>
   );
 }

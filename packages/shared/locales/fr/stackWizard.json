@@ -11,7 +11,7 @@
   "componentsTitle": "Composants à installer",
   "dryRun": "Aperçu dry-run",
   "installNow": "Installer maintenant",
-  "uninstallHint": "Sélectionner les lots à supprimer",
+  "uninstallHint": "Cochez les lots à retirer. Sans sélection, le retrait est impossible. Les données sont conservées par défaut.",
   "dataPolicy": "Politique de données",
   "keepData": "Conserver les données",
   "purgeData": "Purger les données",

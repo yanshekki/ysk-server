@@ -249,7 +249,8 @@
     "cleanupConflictsTitle": "تمام تنازعات کی باقیات کو صاف کریں؟",
     "cleanupConflictsDesc": "ہر آن ڈسک آرٹفیکٹ conf کو ہٹا دیں جو کسی پروجیکٹ یا اسٹینڈ ایلون ServerName سے متصادم ہو۔ پروجیکٹ کی قطاریں رکھی جاتی ہیں۔",
     "artifactRemovedOk": "بقایا conf کو ہٹا دیا گیا۔",
-    "sslTerminatedUpstream": "TLS ends at front Nginx"
+    "sslTerminatedUpstream": "TLS ends at front Nginx",
+    "removeArtifactHint": "صرف یہ باقی ڈسک conf ہٹاتا ہے۔ پراجیکٹ نہیں مٹتا۔"
   },
   "applyStatus": {
     "draft": "مسودہ",
@@ -597,7 +598,7 @@
     "seedStatusChecking": "Checking",
     "seedStatusPaused": "Paused",
     "seedStatusQueued": "Queued",
-    "swarmLeftover": "ٹریکر میں {{count}} اعلان لائبریری میں نہیں",
+    "swarmLeftover": "Tracker میں لائبریری سے باہر {{count}} announce ہیں (Torrent فہرست سے الگ ماخذ)",
     "addSourceSection": "ماخذ",
     "addSourceFile": "فائل",
     "addSourceMagnet": "Magnet",
@@ -768,7 +769,17 @@
     "statOffline": "Offline {{n}}",
     "statDraining": "Draining {{n}}",
     "statHitRate": "Hit rate {{v}}",
-    "hitNoStats": "No edge stats yet"
+    "hitNoStats": "ابھی ایج اعداد نہیں",
+    "loopbackOriginBlocked": "لوپ بیک origin {{url}} دور دراز ایج پر نہیں لکھا جائے گا۔ پہلے قابل رسائی origin سیٹ کریں۔",
+    "applyFailedHint": "اطلاق ناکام — نیچے نوٹ دیکھیں",
+    "applyStatus": {
+      "draft": "مسودہ",
+      "planned": "منصوبہ بند",
+      "applying": "اطلاق ہو رہا ہے",
+      "applied": "لاگو",
+      "failed": "ناکام",
+      "partial": "جزوی"
+    }
   },
   "cli": {
     "unknownCommand": "نامعلوم کمانڈ: {{command}}\n`{{cli}} مدد` چلائیں۔",
@@ -2079,7 +2090,8 @@
     "all": "All",
     "showPassword": "Show",
     "hidePassword": "Hide",
-    "more": "More"
+    "more": "More",
+    "redirectedTo": "{{to}} کھولا گیا (پہلے {{from}})"
   },
   "cron": {
     "presetCdTrue": "سی ڈی ایپ + سچ (ٹیسٹ)",
@@ -2319,7 +2331,7 @@
     "runtime": "رن ٹائم",
     "runtimeHint": "ڈیفالٹ رن ٹائم ورژن اور تعیناتی کا انداز سیٹ کرتا ہے۔",
     "runtimeVersion": "رن ٹائم ورژن",
-    "versionHint": "پروجیکٹ رن ٹائم_ورژن کے بطور اسٹور کیا گیا۔",
+    "versionHint": "پراجیکٹ کے رن ٹائم ورژن سیٹنگ میں لکھتا ہے",
     "serverIpv4": "سرور IPv4",
     "serverIpv4Hint": "ڈی این ایس اے / میل ایس پی ایف",
     "serverIpv4Ph": "یہ عوامی IPv4 کی میزبانی کرتا ہے۔",
@@ -2353,7 +2365,7 @@
     "notifAll": "All",
     "notifDismiss": "Hide",
     "goFix": "Fix",
-    "needDomainFirst": "Enter a domain first"
+    "needDomainFirst": "پہلے ڈومین بھریں"
   },
   "dataTable": {
     "empty": "کوئی ڈیٹا نہیں۔",
@@ -2657,7 +2669,14 @@
     "remoteTestDone": "Remote host probe finished",
     "remoteTestOk": "reachable",
     "remoteTestFail": "unreachable",
-    "remoteNotChecked": "not tested"
+    "remoteNotChecked": "not tested",
+    "registeredVsHostHint": "پینل میں رجسٹرڈ / ہوسٹ پر ملا",
+    "dumpNeedRegistered": "پہلے پینل میں ڈیٹا بیس رجسٹر کریں",
+    "dumpFirstDbTitle": "پہلا رجسٹرڈ ڈیٹا بیس برآمد کریں",
+    "importNeedRegistered": "پہلے پینل میں ڈیٹا بیس رجسٹر کریں",
+    "importLatestNeedConfirm": "تصدیق درکار — رجسٹرڈ ڈیٹا بیس میں درآمد",
+    "adoptHostDbTitle": "صرف کنٹرول प्लेन میں نام رجسٹر کرتا ہے؛ ہوسٹ ڈیٹا نہیں بدلتا۔",
+    "cleanupExpiredTempUsersTitle": "پینل کے میعاد ختم عارضی صارفین ہٹاتا ہے"
   },
   "dialogs": {
     "confirmDefault": "تصدیق کریں۔",
@@ -3381,7 +3400,10 @@
     "openQueuePage": "میل قطار کھولیں",
     "healthUnchecked": "Not checked yet",
     "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first.",
-    "domainsListDesc": "Mail domains registered on this host"
+    "domainsListDesc": "Mail domains registered on this host",
+    "healthChecklist": "چیک لسٹ {{score}}/100",
+    "healthChecklistHint": "چیک لسٹ اسکور — DNS / PTR / پورٹ 25 ابھی پروب نہیں ہوا",
+    "healthLiveHint": "لائیو پروب اسکور"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "غیر مجاز",
@@ -3525,7 +3547,7 @@
     "statWhitelist": "Whitelist",
     "invalidIp": "Enter a valid IPv4, IPv6, or CIDR.",
     "whitelistPendingApply": "Saved to the panel list. Press Apply policy to write jail.local.",
-    "ignoreipFile": "Panel data directory / fail2ban / ignoreip.txt",
+    "ignoreipFile": "dataDir/fail2ban/ignoreip.txt",
     "jailsTabHint": "Status of active jails. Turn jails on or off in the Policy tab.",
     "colJail": "Jail",
     "colEnabled": "On",
@@ -3542,7 +3564,11 @@
     },
     "cannotBanSelf": "This is the host or your login IP — add it to ignoreip instead of banning",
     "suggestIgnoreHint": "Suggested admin IPs (panel file only until you apply policy):",
-    "suggestIgnoreAdd": "Add {{ip}}"
+    "suggestIgnoreAdd": "Add {{ip}}",
+    "whitelistEmptyWarn": "وائٹ لسٹ خالی ہے؛ jail آپ پر پابندی لگا سکتے ہیں۔ ignoreip سے پہلے لاگ اِن IP شامل کریں۔",
+    "suggestIgnoreLogin": "آپ کا لاگ اِن IP {{ip}}",
+    "applyIgnoreEmptyWarn": "خالی وائٹ لسٹ سے اطلاق ignoreip صاف کر دے گا",
+    "applyIgnoreNeedConfirm": "jail ignoreip دوبارہ لکھتا ہے اور fail2ban ری لوڈ کرتا ہے"
   },
   "featurePage": {
     "back": "پیچھے"
@@ -3898,7 +3924,9 @@
     "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
     "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone.",
     "webdavReissueUnchanged": "Token id did not change after re-issue — the write may not have persisted. Try again.",
-    "webdavDisableFailed": "WebDAV is still enabled after disable — the write may not have persisted. Try again."
+    "webdavDisableFailed": "WebDAV is still enabled after disable — the write may not have persisted. Try again.",
+    "dirNamedLikeFile": "(بقیہ فولڈر؛ نام فائل جیسا ہے)",
+    "webdavAfterEnable": "WebDAV فعال کر کے ٹوکن جاری کرنے کے بعد دستیاب۔"
   },
   "firewall": {
     "profiles": {
@@ -4438,7 +4466,8 @@
     "envPanelValue": "panel: {{value}}",
     "settingsNoSandboxWarn": "Disables Chromium sandbox. Use only inside a trusted container. Applies on next real-browser session.",
     "settingsDangerDlWarn": "Allows executable and script downloads through the host browser. Confirm you need this.",
-    "settingsDangerConfirmTitle": "Enable a high-risk browse setting?"
+    "settingsDangerConfirmTitle": "Enable a high-risk browse setting?",
+    "needUrl": "سیشن شروع کرنے کے لیے اوپر URL درج کریں۔"
   },
   "listToolbar": {
     "searchPlaceholder": "تلاش کریں…",
@@ -4616,7 +4645,21 @@
     "aboutCustomPath": "Add a custom path on Settings (only /var/log or /run/log). Then open it from Explore.",
     "noRowsInWindow": "No records in this time window",
     "showInactiveUnits": "Show inactive units",
-    "sseNeedFollow": "Turn on Follow first — SSE is only for live tail"
+    "sseNeedFollow": "Turn on Follow first — SSE is only for live tail",
+    "vacuumNeedRetention": "پہلے برقرار رکھنے کی مدت درج کریں (مثلاً 14d)",
+    "vacuumNeedConfirm": "تصدیق درکار — پرانے journal لاگ ہٹاتا ہے",
+    "vacuumSizeNeedConfirm": "تصدیق درکار — journal ڈسک استعمال محدود کرتا ہے",
+    "vacuumSizeAlreadyBelow": "موجودہ استعمال پہلے ہی حد سے کم ہے؛ عام طور پر کچھ نہیں ہٹے گا۔",
+    "vacuumSizeNoopDesc": "journal پہلے ہی 500 MB سے کم ہے۔ vacuum --size=500M پھر بھی چلتا ہے اور عام طور پر کچھ نہیں ہٹتا۔",
+    "journalDiskHint": "موجودہ systemd-journald استعمال (فعال journal)۔ /var/log کے گھمائے فائل شامل نہیں۔",
+    "varLogDiskHint": "/var/log کا اندازہ، گھمائے فائلوں سمیت۔",
+    "queryFirst": "پہلے استفسار کریں",
+    "projectSourcesTitle": "{{n}} ماخذ (فائلیں + journal)",
+    "logrotatePath": "Path",
+    "logrotateLast": "Last rotated",
+    "logrotateExpand": "Show {{n}} more",
+    "logrotateCollapse": "Show fewer",
+    "logrotateVersion": "Status version {{v}}"
   },
   "metrics": {
     "alert": {
@@ -4758,7 +4801,11 @@
     "colHome": "Home",
     "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab.",
     "alertsBuiltinOnly": "Built-in CPU / memory / disk thresholds only. No email, webhook, or Slack channel.",
-    "lastEvaluated": "Last checked"
+    "lastEvaluated": "Last checked",
+    "shareNoQuotaHint": "کوٹہ نہ ہو تو حصہ فیصد نہیں۔ پراجیکٹ Isolation ٹیب پر سیٹ کریں۔",
+    "setQuotaLink": "کوٹہ سیٹ کریں",
+    "unusualHome": "غیر معمولی راستہ",
+    "unusualHomeHint": "Not a /home/… project home. Canonical isolation is /home/ysk-server-{id}."
   },
   "migrate": {
     "tabInventory": "انوینٹری",
@@ -4844,7 +4891,9 @@
     "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
     "orphanRemove": "Remove leftover home",
     "orphanRemoveTitle": "Delete leftover project home?",
-    "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1."
+    "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1.",
+    "orphanRemovePhrase": "تصدیق کے لیے DELETE لکھیں۔",
+    "orphanRemoveNeedConfirm": "تصدیق درکار"
   },
   "multiCheck": {
     "customPlaceholder": "حسب ضرورت کوڈ",
@@ -5095,7 +5144,9 @@
     "hideRaw": "Hide raw output",
     "rawLoadedAt": "Loaded {{time}}",
     "deleteDefaultPanelWarn": "Deleting the default route can drop this panel session. Type DEFAULT to confirm.",
-    "typeDefaultToConfirm": "Type DEFAULT to confirm"
+    "typeDefaultToConfirm": "Type DEFAULT to confirm",
+    "deleteDefaultNeedConfirm": "تصدیق درکار — DEFAULT لکھیں (یہ پینل منقطع ہو سکتا ہے)",
+    "deleteRouteNeedConfirm": "تصدیق درکار"
   },
   "nginx": {
     "pillSites": "{{count}} سائٹ (سائٹس)",
@@ -5706,7 +5757,7 @@
       "n0259": "ڈومین",
       "n0260": "ڈومین نہیں ملا:",
       "n0261": "dovecot دوبارہ لوڈ ناکام یا servicenot (چھلنی لکھا؛ دوبارہ لوڈ کامیابی)",
-      "n0262": "ڈرائی رن فلیٹ ڈسپیچ (نہیں)",
+      "n0262": "فلیٹ ڈسپیچ ڈرائی رن (قطار میں نہیں)",
       "n0263": "ڈرائی رن پیئر پش (ایس سی پی نہیں)",
       "n0264": "ڈرائی رن ریموٹ انسٹال (ssh نہیں)",
       "n0265": "ڈرائی رن ٹرانسفر ہو گیا (مکمل بوٹسٹریپ)",
@@ -7039,7 +7090,7 @@
       "n1590": "",
       "n1591": "روٹ نہیں — useradd/ systemd/ nginx سسٹم کے راستے محدود ہیں۔",
       "n1592": "seccomp کو runAsUser کی ضرورت نہیں ہے۔",
-      "n1593": "پینل برائے مہربانی",
+      "n1593": "عوامی درخواستیں / منٹ",
       "n1594": "پینل کنکشن؛ دستیاب\"\" ()",
       "n1595": "پینل جڑ کے طور پر نہیں چل رہا ہے۔",
       "n1596": "دستیاب درخواست: غلط",
@@ -7310,7 +7361,7 @@
       "t0251": "{{v0}} انسٹال کرنا نامکمل ہے۔",
       "t0252": "{{v0}} سروس اسٹارٹ",
       "t0253": "شروع کرنا ناکام ہو گیا: {{v0}}",
-      "t0254": "Node.js ورژن {{v0}} کو سپورٹ کرتا ہے۔ دستیاب ورژن: {{v1}}",
+      "t0254": "Node.js ورژن {{v0}} معاون؛ دستیاب ورژن: {{v1}}",
       "t0255": "پی ایچ پی ورژن کی حمایت کرتا ہے {{v0}}; دستیاب: {{v1}}",
       "t0256": "ازگر ورژن {{v0}} کی حمایت کرتا ہے؛ دستیاب: {{v1}}",
       "t0257": "گو ورژن کو سپورٹ کرتا ہے {{v0}}؛ دستیاب: {{v1}}",
@@ -7432,12 +7483,12 @@
       "t0373": "پروجیکٹ \"{{v0}}\" تنہائی",
       "t0374": "لوکل پاتھ کی طرف {{v0}}",
       "t0375": "شناخت {{v0}}: {{v1}}",
-      "t0376": "scp (شناخت) سے {{v0}}",
-      "t0377": "scp(شناخت) ناکام: {{v0}}",
-      "t0378": "scp سے {{v0}}",
-      "t0379": "scp ناکام: {{v0}}",
-      "t0380": "scp سے {{v0}}",
-      "t0381": "scp ناکام: {{v0}} (بیک اپ ریموٹ شناخت آئی ڈی)",
+      "t0376": "sftp (شناخت) {{v0}} کامیاب",
+      "t0377": "sftp (شناخت) ناکام: {{v0}}",
+      "t0378": "sftp {{v0}} کامیاب",
+      "t0379": "sftp ناکام: {{v0}}",
+      "t0380": "sftp {{v0}} کامیاب",
+      "t0381": "sftp ناکام: {{v0}} (backup remote identityId سیٹ کر سکتے ہیں)",
       "t0382": "S3 {{v0}}",
       "t0383": "S3 ناکام ہو گیا: {{v0}}",
       "t0384": ": {{v0}}/{{v1}} ایڈمن فعال 2FA",
@@ -7694,7 +7745,7 @@
       "t0635": "تحقیقات نہیں کر سکتے {{v0}}",
       "t0636": "{{v0}} · {{v1}}",
       "t0637": "پروجیکٹ {{v0}} · {{v1}} · DB {{v2}} · Redis {{v3}}",
-      "t0638": "انسٹال سافٹ ویئر {{v0}} · گھر {{v1}}",
+      "t0638": "سافٹ ویئر انسٹال {{v0}} · homes {{v1}}",
       "t0639": "کٹ اوور میزبان {{v0}}",
       "t0640": "{{v0}} warning(s) — review before cutover.",
       "t0641": "کلید {{v0}}",
@@ -8275,7 +8326,11 @@
       "dovecot": "Dovecot ssl_cert points at missing {{path}}. Overlay does not rewrite ssl=no. Apply mail TLS after issuing the cert, or apply email stack.",
       "overlayDoesNotHeal": "Product overlay does not rewrite nginx, Apache, vsftpd, or Dovecot. Use the listed apply commands (root + YSK_EXECUTE=1).",
       "readinessTitle": "Host leftovers after overlay",
-      "readinessClean": "No leftover Apache default, missing nginx catch-all, failed vsftpd, or stale CLI detected."
+      "readinessClean": "No leftover Apache default, missing nginx catch-all, failed vsftpd, or stale CLI detected.",
+      "staleCliRemoved": "بقیہ CLI {{path}} ہٹا دیا گیا۔",
+      "staleCliRemoveFailed": "بقیہ CLI {{path}} ہٹ نہیں سکا: {{detail}}",
+      "vsftpdSslOff": "FTPS سرٹیفکیٹ نہیں؛ vsftpd پر ssl_enable=NO کر کے دوبارہ چلایا۔",
+      "dovecotSslOff": "{{path}} نہیں؛ Dovecot پر ssl=no کر کے دوبارہ چلایا۔"
     },
     "git": {
       "missingBin": "git is not on PATH",
@@ -8331,6 +8386,11 @@
       "dnsDegraded": "DNS path degraded",
       "reqRateHigh": "Public request rate {{reqs}}/min ≥ {{threshold}}",
       "ddosHeuristic": "High public request rate plus edge probe failure"
+    },
+    "publicFiles": {
+      "liveConf": "لائیو Nginx کنف: {{path}}",
+      "publicRoot": "عوامی روٹ: {{path}}",
+      "confNameStale": "کنف {{file}} موجودہ server_name {{serverName}} سے نہیں ملتی۔ نام بدلنے کے لیے پبلک فائلیں دوبارہ لگائیں۔"
     }
   },
   "ops": {
@@ -9114,7 +9174,9 @@
     "netForceHttpsOff": "No forced redirect is stored.",
     "netHttpsLiveNotForced": "An edge file exists; HTTPS may already work. This box only forces HTTP→HTTPS.",
     "gitSyncBlockedDirty": "Sync is disabled until local changes are discarded (Reset) or the files match Git.",
-    "gitViewDiff": "View diff"
+    "gitViewDiff": "View diff",
+    "gitBranchAfterUrl": "پہلے Git URL درج کریں۔ خالی ہونے پر ریموٹ ڈیفالٹ برانچ۔",
+    "gitResetNeedConfirm": "تصدیق درکار — مقامی کمٹس رد کرتا ہے"
   },
   "protection": {
     "levels": {
@@ -9466,13 +9528,27 @@
     "stackApply": "Apply protection stack (UFW, fail2ban, preset)",
     "stackApplyDone": "Protection stack apply requested",
     "stackApplyHint": "This enables UFW and applies fail2ban plus the suggested preset. Confirm you will not lock yourself out of a remote panel.",
-    "cannotBanSelf": "Cannot ban {{ip}} — this is the host, your login, or ignoreip",
+    "cannotBanSelf": "{{ip}} پر پابندی نہیں — یہ ہوسٹ، لاگ اِن IP یا ignoreip ہے",
     "selfIp": "This host",
     "selfHostIp": "Host IP",
     "selfLoginIp": "Your login IP",
     "showZeroScore": "Show 0-score",
     "hideZeroScore": "Hide 0-score",
-    "freshnessNa": "n/a"
+    "freshnessNa": "n/a",
+    "geoDraftOnly": "پالیسی بند ہے — محفوظ صرف مسودہ لکھتا ہے۔ آن کرنے تک Nginx نافذ نہیں کرے گا۔",
+    "selectAllCountriesWarn": "بلاک فہرست میں سب ممالک منتخب کریں؟ اس سے یہ ہوسٹ اور لاگ اِن ملک بھی بند ہو سکتے ہیں۔",
+    "badgeRecommendPreset": "موجودہ خطرے کے لیے مضبوط پری سیٹ تجویز ہے",
+    "badgeAutomationOn": "آٹومیشن آن ہے",
+    "badgeBanCount": "فعال پابندیاں",
+    "badgeGeoOn": "Geo رسائی پالیسی آن ہے",
+    "badgeGeoNotReady": "GeoIP ڈیٹا بیس تیار نہیں",
+    "badgeIntelSignals": "اب اسکور بڑھانے والے سگنل",
+    "signalActive": "فعال",
+    "signalInactive": "غیر فعال",
+    "signalJails": "{{n}} jail",
+    "dbReadyHint": "MMDB فائلیں موجود ہیں",
+    "dbNotReadyHint": "پہلے GeoIP ڈیٹا بیس ڈاؤن لوڈ کریں",
+    "staleHint": "آخری کامیاب اپ ڈیٹ 7 دن سے پرانی ہے؟"
   },
   "publicFiles": {
     "notSet": "سیٹ نہیں ہے۔",
@@ -9728,7 +9804,25 @@
     "fixDone": "dataDir کی اجازتیں سخت (chmod 750)",
     "fixDoneWebUi": "ویب UI بلٹ / انسٹال",
     "rootLabel": "Superuser",
-    "exportStarted": "Downloading {{name}}"
+    "exportStarted": "Downloading {{name}}",
+    "blockersHint": "رکاوٹیں «غائب» کا اہم ذیلی مجموعہ ہیں — اضافی جانچ نہیں۔",
+    "techDetails": "Technical details",
+    "missingOwner": "No panel owner assigned (package quota attribution)",
+    "notOsProvisioned": "OS user/home not provisioned yet",
+    "ondrejNone": "No ondrej Launchpad PHP sources detected",
+    "ondrejFound": "Found legacy ondrej/php sources that conflict with packages.sury.org: {{paths}}",
+    "ondrejTitle": "PHP apt source (ondrej residual)",
+    "systemctlActive": "Service is running",
+    "systemctlStatus": "Service status: {{status}}",
+    "binInPath": "{{bin}} in PATH",
+    "leftoverApache": "Apache leftover default site",
+    "leftoverVsftpd": "vsftpd unit failed",
+    "leftoverCli": "Stale leftover CLI",
+    "leftoverNginx": "Nginx catch-all missing",
+    "leftoverDovecot": "Dovecot TLS points at missing cert",
+    "leftoverOther": "Host leftover",
+    "leftoverApply": "Leftover apply",
+    "isolationOwnerDegrades": "Missing owner_user_id affects package quota attribution — status is degraded, not ready."
   },
   "redis": {
     "neverExpire": "کبھی ختم نہیں ہوتا",
@@ -9796,7 +9890,15 @@
     "pickKey": "مواد دیکھنے کے لیے بائیں جانب ایک کلید منتخب کریں۔",
     "ttlPrefix": "TTL: {{ttl}}",
     "writeLiveHint": "زندہ Redis لکھتے ہیں; ایک کلک میں پینل سے کالعدم نہیں کیا جا سکتا۔",
-    "refPath": "حوالہ: {{path}}"
+    "refPath": "حوالہ: {{path}}",
+    "dbEmptyMark": " · خالی",
+    "noRequirepass": "محفوظ موڈ آن ہے مگر requirepass خالی یا نہ پڑھا گیا — پاس ورڈ نہیں۔",
+    "setRequirepass": "پاس ورڈ سیٹ کریں",
+    "rdbOnlyLossHint": "AOF بند اور RDB آن۔ دوبارہ شروع یا کریش سے حالیہ تحریر کھو سکتی ہے۔",
+    "dirDataContainer": "/data (container)",
+    "dirHostDefault": "/var/lib/redis",
+    "dirDefaultInstance": "/var/lib/redis/default",
+    "dirDataWarn": "/data is usually a container path; this panel cannot confirm it exists."
   },
   "resources": {
     "created": "بنایا",
@@ -10324,7 +10426,21 @@
     "alreadyHostDefaultShort": "میزبان ڈیفالٹ",
     "managedPathMissingTitle": "Managed {{name}} path not ready",
     "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall.",
-    "installRecordedCta": "Install recorded {{v}}"
+    "installRecordedCta": "Install recorded {{v}}",
+    "targetMissing": "ہدف ورژن انسٹال نہیں",
+    "targetMissingHint": "ہدف {{version}} اس میزبان پر نہیں۔ نصب ورژن باندھیں یا یہ پن انسٹال کریں۔",
+    "needsInstall": "انسٹال کرنا ہوگا",
+    "needsInstallHint": "اس ہوسٹ پر نہیں۔ پہلے انسٹال کریں یا نصب شدہ ورژن چنیں۔",
+    "unitBytes": "بائٹ",
+    "headerSizeKb": "{{n}} KB",
+    "phpIniChipEmpty": "لوڈ نہیں — php.ini ٹیب کھولیں",
+    "phpFpmService": "PHP-FPM",
+    "phpFpmServiceDesc": "PHP-FPM یونٹ شروع، روکیں، ری لوڈ یا دوبارہ شروع کریں",
+    "rustupDefaultMissingTitle": "rustup ڈیفالٹ ٹول چین نہیں",
+    "rustupDefaultMissing": "rustup کا ڈیفالٹ نہیں۔ سافٹ ویئر ٹیب پر stable سیٹ کریں۔",
+    "rustupDefaultMissingShort": "No default toolchain",
+    "rustupSetDefaultHint": "Set default toolchain",
+    "uninstalledCountHint": "{{n}} ورژن اس ہوسٹ پر نہیں"
   },
   "search": {
     "placeholder": "صفحات اور وسائل تلاش کریں…",
@@ -10896,7 +11012,9 @@
       "running": "Running",
       "failed": "Failed",
       "missing": "Not installed"
-    }
+    },
+    "stopNeedConfirm": "تصدیق درکار",
+    "stopNeedConfirmPhrase": "تصدیقی فقرہ لکھنا ضروری ہے"
   },
   "software": {
     "title": "سافٹ ویئر",
@@ -11100,7 +11218,9 @@
     "kindDeploy": "Deploy",
     "kindRuntime": "Runtime",
     "jobDone": "Finished · {{title}}",
-    "jobFailed": "Failed · {{title}}"
+    "jobFailed": "Failed · {{title}}",
+    "uninstallUfwWarn": "UFW ہٹانے سے اس ہوسٹ پر پینل کا پورٹ فائر وال ختم ہو جائے گا۔",
+    "uninstallFail2banWarn": "fail2ban ہٹانے سے jail رک جائیں گے اور پابندیاں اٹھ جائیں گی۔ رکھنا ہو تو پہلے لاگ اِن IP کو ignoreip میں ڈالیں۔"
   },
   "sqlEngineHealth": {
     "finding": {
@@ -11319,7 +11439,10 @@
     "deletedCert": "حذف شدہ {{domain}}",
     "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates.",
     "renew": "Renew",
-    "renewFor": "Renew Let’s Encrypt for {{domain}}"
+    "renewFor": "Renew Let’s Encrypt for {{domain}}",
+    "domainRequired": "ڈومین درج کریں۔",
+    "domainInvalid": "ڈومین فارمیٹ درست نہیں۔",
+    "domainKnownHint": "معروف پراجیکٹ / DNS / میل ڈومین چنیں، یا خود لکھیں۔"
   },
   "stackWizard": {
     "purgeConfirm": "صاف کرنے کی تصدیق کریں؟ رجسٹرڈ ڈیٹا پاتھ (ڈیٹا بیس/میل) کو مستقل طور پر حذف کر دیا جائے گا۔",
@@ -11334,7 +11457,7 @@
     "componentsTitle": "انسٹال کرنے کے لیے اجزاء",
     "dryRun": "ڈرائی رن پیش نظارہ",
     "installNow": "ابھی انسٹال کریں۔",
-    "uninstallHint": "ہٹانے کے لیے بنڈل منتخب کریں۔",
+    "uninstallHint": "ہٹانے کے لیے بنڈل منتخب کریں۔ انتخاب کے بغیر ہٹانا ممکن نہیں۔ ڈیٹا پہلے سے محفوظ رہتا ہے۔",
     "dataPolicy": "ڈیٹا پالیسی",
     "keepData": "ڈیٹا رکھیں",
     "purgeData": "ڈیٹا صاف کریں۔",
@@ -11374,7 +11497,12 @@
     "diagTitle": "Diagnostic summary",
     "diagBody": "Copy version, execute, and host facts to paste into an email. This is not a full log bundle.",
     "diagCopy": "Copy diagnostic summary",
-    "diagCopied": "Diagnostic summary copied"
+    "diagCopied": "Diagnostic summary copied",
+    "copyTitle": "{{address}} کاپی کریں",
+    "diagCopyTitle": "ورژن، EXECUTE اور ہوسٹ حقائق کاپی کریں",
+    "diagPreview": "جو کاپی ہوگا اس کا پیش نظارہ",
+    "diagLoading": "Loading diagnostic…",
+    "diagLoadFailed": "Could not load diagnostic"
   },
   "system": {
     "exportLoadFailed": "برآمدی ڈیٹا لوڈ کرنے میں ناکام",
@@ -11458,7 +11586,8 @@
       "openFirewall": "اگر عوامی: پینل پورٹ {{port}}/tcp کی اجازت دیں (فائر وال → اوپن پورٹ → 9287 پینل)",
       "disableConfirmTitle": "Disable panel HTTPS?",
       "disableConfirmDesc": "The panel will serve HTTP. WebAuthn / Passkey will stop working until HTTPS is on again.",
-      "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP."
+      "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP.",
+      "disableNeedConfirm": "تصدیق درکار — DISABLE-HTTPS لکھیں"
     },
     "timeNtp": "وقت اور این ٹی پی",
     "clockStatus": "سسٹم کی گھڑی کی حیثیت",
@@ -11566,7 +11695,12 @@
     "dryRunFlag": "ڈرائی رن",
     "timezoneSearch": "Filter timezones…",
     "resyncNtp": "Re-sync NTP",
-    "storageSub": "Disk usage"
+    "storageSub": "Disk usage",
+    "syncReloadNeedConfirm": "تصدیق درکار — /etc/nginx/conf.d لکھتا ہے اور Nginx ری لوڈ کرتا ہے",
+    "nginxLeftover": "باقیات",
+    "nginxUnused": "غیر استعمال شدہ",
+    "nginxLeftoverHint": "پرانا public-files وغیرہ باقی conf۔ کارروائی تک سنک میں رہتا ہے۔",
+    "nginxUnusedHint": "اسٹاک / catch-all conf (000-default)۔ کارروائی تک سنک میں رہتا ہے۔"
   },
   "systemd": {
     "enabled": "فعال",
@@ -12240,7 +12374,7 @@
     "diskQuotaHint": "Presets are GiB; custom box is MiB.",
     "bandwidthHint": "0 means unlimited.",
     "impersonateHint": "Opens a session as this user. Use the account menu to leave impersonation.",
-    "operatorHighRiskHint": "The factory operator role includes high-risk writes (services, firewall, package apply, MySQL, Nginx publish). Narrow it only if you intend to change every existing operator."
+    "operatorHighRiskHint": "فیکٹری آپریٹر میں اعلیٰ خطرے کی تحریر شامل ہے۔ تنگ کرنا صرف نئے اکاؤنٹس؛ ڈیفالٹ بدلنے سے موجودہ آپریٹر متاثر ہوتے ہیں۔"
   },
   "vnc": {
     "pageDesc": "VNC سرور اور کلائنٹ",

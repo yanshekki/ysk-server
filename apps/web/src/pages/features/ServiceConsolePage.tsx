@@ -208,6 +208,112 @@ export function isEnumSelected(current: string, option: string): boolean {
   return current === option;
 }
 
+type SettingRowLike = { key: string; liveValue?: string };
+type CategoryLike = { id?: string; settings: SettingRowLike[] };
+
+export function findSetting(
+  categories: CategoryLike[] | null | undefined,
+  key: string,
+): SettingRowLike | undefined {
+  if (!categories) return undefined;
+  for (const cat of categories) {
+    const hit = cat.settings.find((s) => s.key === key);
+    if (hit) return hit;
+  }
+  return undefined;
+}
+
+export function findCategoryIdForSetting(
+  categories: Array<{ id: string; settings: Array<{ key: string }> }> | null | undefined,
+  key: string,
+): string | undefined {
+  if (!categories) return undefined;
+  for (const cat of categories) {
+    if (cat.settings.some((s) => s.key === key)) return cat.id;
+  }
+  return undefined;
+}
+
+export function consoleLiveValue(
+  categories: CategoryLike[] | null | undefined,
+  live: Record<string, string> | null | undefined,
+  key: string,
+): string | undefined {
+  const row = findSetting(categories, key);
+  if (row && row.liveValue !== undefined) return row.liveValue;
+  return live?.[key];
+}
+
+/** True when the service did not return this key (placeholder: not read from service). */
+export function isLiveUnread(
+  categories: CategoryLike[] | null | undefined,
+  live: Record<string, string> | null | undefined,
+  key: string,
+): boolean {
+  const row = findSetting(categories, key);
+  if (row) return row.liveValue == null;
+  if (live && Object.prototype.hasOwnProperty.call(live, key)) return live[key] == null;
+  return true;
+}
+
+export function isRedisAffirmative(v?: string | null): boolean {
+  const s = (v ?? '').trim().toLowerCase();
+  return s === 'yes' || s === 'on' || s === '1' || s === 'true';
+}
+
+export function isRedisNegative(v?: string | null): boolean {
+  const s = (v ?? '').trim().toLowerCase();
+  return s === 'no' || s === 'off' || s === '0' || s === 'false';
+}
+
+/** protected-mode yes + requirepass empty or unread. */
+export function redisShowNoRequirepassAlert(
+  engine: string,
+  categories: CategoryLike[] | null | undefined,
+  live?: Record<string, string> | null,
+): boolean {
+  if (engine !== 'redis') return false;
+  const pm = consoleLiveValue(categories, live, 'protected-mode');
+  if (!isRedisAffirmative(pm)) return false;
+  if (isLiveUnread(categories, live, 'requirepass')) return true;
+  return !String(consoleLiveValue(categories, live, 'requirepass') ?? '').trim();
+}
+
+/** appendonly=no and save is non-empty → RDB-only; recent writes can be lost. */
+export function redisRdbOnlyLossRisk(
+  engine: string,
+  appendonly?: string | null,
+  save?: string | null,
+): boolean {
+  if (engine !== 'redis') return false;
+  return isRedisNegative(appendonly) && Boolean((save ?? '').trim());
+}
+
+/** Selecting /data when live dir is not already /data. Host path existence is unknown. */
+export function redisWarnContainerDataDir(
+  engine: string,
+  selectedDir?: string | null,
+  liveDir?: string | null,
+): boolean {
+  if (engine !== 'redis') return false;
+  if ((selectedDir ?? '').trim() !== '/data') return false;
+  return (liveDir ?? '').trim() !== '/data';
+}
+
+export function redisDirOptionLabel(
+  option: string,
+  t: (k: string, o?: Record<string, unknown>) => string,
+): string {
+  if (option === '/data') return t('redis.dirDataContainer', { defaultValue: '/data (container)' });
+  if (option === '/var/lib/redis/default') {
+    return t('redis.dirDefaultInstance', { defaultValue: '/var/lib/redis/default' });
+  }
+  if (option === '/var/lib/redis') {
+    return t('redis.dirHostDefault', { defaultValue: '/var/lib/redis' });
+  }
+  return option;
+}
+
 export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
   const { t } = useTranslation();
   const [console, setConsole] = useState<ServiceConsole | null>(null);
@@ -215,6 +321,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [loadError, setLoadError] = useState<string | null>(null);
   const [pendingLc, setPendingLc] = useState<'stop' | 'restart' | null>(null);
+  const [focusRequirepass, setFocusRequirepass] = useState(false);
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
   const link = DATA_LINK[engine];
   const svcId = exposureServiceId(engine);
@@ -245,6 +352,27 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
     () => collectDirtyKeys(console?.categories, draft),
     [console, draft],
   );
+
+  const noRequirepass = redisShowNoRequirepassAlert(
+    engine,
+    console?.categories,
+  );
+  const requirepassCatId = findCategoryIdForSetting(console?.categories, 'requirepass');
+  const rdbOnlyLoss = redisRdbOnlyLossRisk(
+    engine,
+    draft.appendonly ?? findSetting(console?.categories, 'appendonly')?.liveValue,
+    draft.save ?? findSetting(console?.categories, 'save')?.liveValue,
+  );
+
+  useEffect(() => {
+    if (!focusRequirepass) return;
+    const el = document.getElementById(`sc-${engine}-requirepass`);
+    if (el instanceof HTMLElement) {
+      el.focus();
+      if (el instanceof HTMLInputElement) el.select();
+      setFocusRequirepass(false);
+    }
+  }, [focusRequirepass, tab, engine]);
 
   const tabs = useMemo(() => {
     const base = [
@@ -323,6 +451,11 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
     }, t('db.console.settingsApplied'));
   }
 
+  function enumOptionLabel(s: ConsoleSetting, option: string): string {
+    if (engine === 'redis' && s.key === 'dir') return redisDirOptionLabel(option, t);
+    return option;
+  }
+
   function renderControl(s: ConsoleSetting) {
     const val = draft[s.key] ?? displayValue(s.liveValue);
     const onChange = (v: string) => setDraft((d) => ({ ...d, [s.key]: v }));
@@ -345,7 +478,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
           aria-label={s.label}
           value={current}
           onChange={onChange}
-          options={opts.map((x) => ({ value: x, label: x }))}
+          options={opts.map((x) => ({ value: x, label: enumOptionLabel(s, x) }))}
         />
       );
     }
@@ -360,7 +493,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
             aria-label={s.label}
             value={current}
             onChange={onChange}
-            options={enums.map((x) => ({ value: x, label: x }))}
+            options={enums.map((x) => ({ value: x, label: enumOptionLabel(s, x) }))}
           />
         );
       }
@@ -369,7 +502,7 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
           {val === '' ? <option value="">{t('db.console.noneFetched')}</option> : null}
           {enums.map((x) => (
             <option key={x} value={x}>
-              {x}
+              {enumOptionLabel(s, x)}
             </option>
           ))}
         </select>
@@ -424,11 +557,20 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
     const live = displayValue(s.liveValue);
     const dirty = (draft[s.key] ?? live) !== live;
     const mode = applyModeLabel(s.applyMode);
+    const liveDir = findSetting(console?.categories, 'dir')?.liveValue;
     const hintParts = [
       s.description,
       mode ? t('db.console.applyMode', { mode }) : null,
       dirty ? t('db.console.dirtyNotApplied') : null,
       s.danger ? t('db.console.highRisk') : null,
+      engine === 'redis' &&
+      s.key === 'dir' &&
+      redisWarnContainerDataDir(engine, draft[s.key] ?? live, liveDir)
+        ? t('redis.dirDataWarn', {
+            defaultValue:
+              '/data is usually a container path; this panel cannot confirm it exists.',
+          })
+        : null,
     ].filter(Boolean);
     return (
       <div key={s.key} className={dirty ? 'field-wrap is-dirty' : 'field-wrap'}>
@@ -454,6 +596,14 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
     return (
       <>
         {cat.description ? <FormHint>{cat.description}</FormHint> : null}
+        {engine === 'redis' && cat.id === 'persistence' && rdbOnlyLoss ? (
+          <Alert variant="warn">
+            {t('redis.rdbOnlyLossHint', {
+              defaultValue:
+                'AOF is off and RDB is on. A restart or crash can lose recent writes.',
+            })}
+          </Alert>
+        ) : null}
         <FormHint>
           {t('db.console.applyHint')}
         </FormHint>
@@ -595,6 +745,30 @@ export function ServiceConsolePage({ engine }: { engine: DbServiceEngine }) {
       ) : null}
       {console?.blockMessage && !console.blockedByExclusive ? (
         <Alert variant="info">{console.blockMessage}</Alert>
+      ) : null}
+      {noRequirepass ? (
+        <Alert variant="warn">
+          <div className="u-flex u-flex-wrap u-gap-2 u-items-center">
+            <span>
+              {t('redis.noRequirepass', {
+                defaultValue:
+                  'Protected mode is on, but requirepass is empty or unread — no password.',
+              })}
+            </span>
+            {requirepassCatId ? (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setTab(requirepassCatId);
+                  setFocusRequirepass(true);
+                }}
+              >
+                {t('redis.setRequirepass', { defaultValue: 'Set password' })}
+              </Button>
+            ) : null}
+          </div>
+        </Alert>
       ) : null}
 
       <PageTabs tabs={tabs} active={tab} onChange={setTab} variant="scroll">

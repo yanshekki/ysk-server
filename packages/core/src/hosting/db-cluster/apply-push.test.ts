@@ -67,7 +67,7 @@ describe('applyDbClusterLocal', () => {
       expect(r.dryRun).toBe(true);
       expect(r.executed).toBe(false);
       expect(r.requiresExecute).toBe(true);
-      expect(r.cluster.status).toBe('partial');
+      expect(r.cluster.status).toBe('planned');
       expect(
         existsSync(join(dir, 'clusters', c.id, 'conf', '99-ysk-mysql-primary.cnf')),
       ).toBe(true);

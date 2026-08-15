@@ -144,7 +144,7 @@ describe('cdn nodes (PR-C1)', () => {
         status: 'online',
         weight: 100,
         region: 'default',
-      } as never)?.username,
-    ).toBe('root');
+      } as never),
+    ).toBeNull();
   });
 });

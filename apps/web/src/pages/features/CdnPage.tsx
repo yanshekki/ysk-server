@@ -746,6 +746,15 @@ export function CdnPage() {
     action: CdnSiteOpAction,
     body: Record<string, unknown> = {},
   ) {
+    if (action === 'apply') {
+      const site = sites.find((s) => s.id === id);
+      const origin = String(site?.origin?.url ?? '');
+      if (/^https?:\/\/(127\.0\.0\.1|localhost|\[::1\])(?::\d+)?/i.test(origin)) {
+        setMsg(t('cdn.loopbackOriginBlocked', { url: origin }));
+        setNotes([t('cdn.loopbackOriginBlocked', { url: origin })]);
+        return;
+      }
+    }
     setBusy(true);
     setNotes([]);
     if (action === 'render') setConfPreview(null);
@@ -1119,8 +1128,19 @@ export function CdnPage() {
                   key: 'status',
                   header: 'apply',
                   render: (s) => (
-                    <Badge tone={statusTone(s.apply_status)}>
-                      {s.apply_status}
+                    <Badge
+                      tone={statusTone(s.apply_status)}
+                      title={
+                        s.apply_status === 'failed'
+                          ? t('cdn.applyFailedHint')
+                          : t(`cdn.applyStatus.${s.apply_status}`, {
+                              defaultValue: s.apply_status,
+                            })
+                      }
+                    >
+                      {t(`cdn.applyStatus.${s.apply_status}`, {
+                        defaultValue: s.apply_status,
+                      })}
                     </Badge>
                   ) },
                 {
@@ -1128,7 +1148,10 @@ export function CdnPage() {
                   header: '',
                   mobile: 'actions',
                   render: (s) => (
-                    <ActionBar className="cdn-site-ops">
+                    <ActionBar className="cdn-site-ops" wrap={false}>
+                      <details className="table-more">
+                        <summary>{t('common.more', { defaultValue: 'More' })}</summary>
+                        <div className="table-more__menu">
                       <Button
                         variant="primary"
                         size="sm"
@@ -1137,9 +1160,6 @@ export function CdnPage() {
                       >
                         {t('cdn.applyEdges')}
                       </Button>
-                      <details className="table-more">
-                        <summary>{t('common.more', { defaultValue: 'More' })}</summary>
-                        <div className="table-more__menu">
                       <Button
                         variant="secondary"
                         size="sm"

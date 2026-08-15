@@ -138,5 +138,9 @@
   "colAvail": "Available",
   "colUsePct": "Used %",
   "colHome": "Home",
-  "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab."
+  "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab.",
+  "shareNoQuotaHint": "No quota set, so share is not a percentage. Set a quota on the project Isolation tab.",
+  "setQuotaLink": "Set quota",
+  "unusualHome": "Unusual path",
+  "unusualHomeHint": "Not a /home/… project home. Canonical isolation is /home/ysk-server-{id}."
 }

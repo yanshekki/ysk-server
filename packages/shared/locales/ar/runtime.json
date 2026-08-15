@@ -511,5 +511,19 @@
   "alreadyHostDefaultShort": "المضيف الافتراضي",
   "managedPathMissingTitle": "Managed {{name}} path not ready",
   "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall.",
-  "installRecordedCta": "Install recorded {{v}}"
+  "installRecordedCta": "Install recorded {{v}}",
+  "targetMissing": "الإصدار المستهدف غير مثبت",
+  "targetMissingHint": "الإصدار المستهدف {{version}} غير موجود على هذا المضيف. اربط إصدارًا مثبتًا أو ثبّت هذا التثبيت.",
+  "needsInstall": "يحتاج تثبيتاً",
+  "needsInstallHint": "ليس على هذا المضيف. ثبّته أولاً أو اختر إصداراً مثبتاً.",
+  "unitBytes": "بايت",
+  "headerSizeKb": "{{n}} KB",
+  "phpIniChipEmpty": "غير محمّل — افتح تبويب php.ini",
+  "phpFpmService": "PHP-FPM",
+  "phpFpmServiceDesc": "بدء أو إيقاف أو إعادة تحميل أو إعادة تشغيل وحدة PHP-FPM",
+  "rustupDefaultMissingTitle": "لا سلسلة أدوات rustup افتراضية",
+  "rustupDefaultMissing": "لا افتراضي لـ rustup. عيّن stable في تبويب البرمجيات.",
+  "rustupDefaultMissingShort": "No default toolchain",
+  "rustupSetDefaultHint": "Set default toolchain",
+  "uninstalledCountHint": "{{n}} إصدارًا ليس على هذا المضيف"
 }

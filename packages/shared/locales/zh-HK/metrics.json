@@ -138,5 +138,9 @@
   "colAvail": "可用",
   "colUsePct": "使用率",
   "colHome": "主目錄",
-  "usageNoteLink": "配額是控制面軟上限。要套用硬限制請到專案「隔離」分頁。"
+  "usageNoteLink": "配額是控制面軟上限。要套用硬限制請到專案「隔離」分頁。",
+  "shareNoQuotaHint": "未設配額，故無佔比。請到專案「隔離」分頁設定配額。",
+  "setQuotaLink": "設定配額",
+  "unusualHome": "非標準路徑",
+  "unusualHomeHint": "不是 /home/… 專案主目錄。標準隔離路徑為 /home/ysk-server-{id}。"
 }

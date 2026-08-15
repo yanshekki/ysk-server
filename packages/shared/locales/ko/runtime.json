@@ -511,5 +511,19 @@
   "alreadyHostDefaultShort": "호스트 기본값",
   "managedPathMissingTitle": "Managed {{name}} path not ready",
   "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall.",
-  "installRecordedCta": "Install recorded {{v}}"
+  "installRecordedCta": "Install recorded {{v}}",
+  "targetMissing": "대상 버전이 설치되지 않음",
+  "targetMissingHint": "대상 {{version}}이(가) 이 호스트에 없습니다. 설치된 버전에 묶거나 이 핀을 설치하세요.",
+  "needsInstall": "설치 필요",
+  "needsInstallHint": "이 버전은 이 호스트에 없습니다. 먼저 설치하거나 설치된 버전을 고르세요.",
+  "unitBytes": "바이트",
+  "headerSizeKb": "{{n}} KB",
+  "phpIniChipEmpty": "불러오지 않음 — php.ini 탭을 여세요",
+  "phpFpmService": "PHP-FPM",
+  "phpFpmServiceDesc": "PHP-FPM 유닛 시작, 중지, 다시 불러오기, 재시작",
+  "rustupDefaultMissingTitle": "rustup 기본 툴체인이 없습니다",
+  "rustupDefaultMissing": "rustup에 기본값이 없습니다. 소프트웨어 탭에서 stable을 설정하세요.",
+  "rustupDefaultMissingShort": "No default toolchain",
+  "rustupSetDefaultHint": "Set default toolchain",
+  "uninstalledCountHint": "{{n}}개 버전이 이 호스트에 없습니다"
 }

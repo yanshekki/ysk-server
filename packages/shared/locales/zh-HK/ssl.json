@@ -102,5 +102,8 @@
   "requestFailed": "憑證申請未成功",
   "applyFailed": "申請失敗",
   "deletedCert": "已刪除 {{domain}}",
-  "uninstallCertbotWarn": "解除安裝 certbot 會令現有 Let's Encrypt 憑證無法自動續期。"
+  "uninstallCertbotWarn": "解除安裝 certbot 會令現有 Let's Encrypt 憑證無法自動續期。",
+  "domainRequired": "請填寫域名。",
+  "domainInvalid": "域名格式不正確。",
+  "domainKnownHint": "可從已知專案、DNS 或郵件域名選擇，或自行輸入。"
 }

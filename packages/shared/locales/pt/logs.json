@@ -140,5 +140,19 @@
   "aboutCustomPath": "Add a custom path on Settings (only /var/log or /run/log). Then open it from Explore.",
   "noRowsInWindow": "No records in this time window",
   "showInactiveUnits": "Show inactive units",
-  "sseNeedFollow": "Turn on Follow first — SSE is only for live tail"
+  "sseNeedFollow": "Turn on Follow first — SSE is only for live tail",
+  "vacuumNeedRetention": "Introduza primeiro uma janela de retenção (p.ex. 14d)",
+  "vacuumNeedConfirm": "Precisa de confirmação — apaga journal antigos",
+  "vacuumSizeNeedConfirm": "Precisa de confirmação — limita o disco do journal",
+  "vacuumSizeAlreadyBelow": "O uso atual já está abaixo do limite; normalmente não apaga nada.",
+  "vacuumSizeNoopDesc": "O journal já está abaixo de 500 MB. Ainda corre vacuum --size=500M e normalmente não apaga nada.",
+  "journalDiskHint": "Uso atual do systemd-journald (journal ativo). Não inclui rodados em /var/log.",
+  "varLogDiskHint": "Estimativa de /var/log, incluindo rodados.",
+  "queryFirst": "Consulte primeiro",
+  "projectSourcesTitle": "{{n}} origem(ns) (ficheiros + journal)",
+  "logrotatePath": "Path",
+  "logrotateLast": "Last rotated",
+  "logrotateExpand": "Show {{n}} more",
+  "logrotateCollapse": "Show fewer",
+  "logrotateVersion": "Status version {{v}}"
 }

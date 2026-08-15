@@ -53,6 +53,11 @@
   "emptyDbCannotProvision": "目前無法在伺服器建立資料庫",
   "emptyDbCreateHint": "用右上角「建立資料庫」新增；建立後請再按「套用」",
   "emptyDbHostHasRows": "主機已有資料庫，但尚未在控制面登記。",
+  "registeredVsHostHint": "已在面板登記 / 主機實測",
+  "dumpNeedRegistered": "請先在面板登記資料庫",
+  "dumpFirstDbTitle": "匯出第一個已登記資料庫",
+  "importNeedRegistered": "請先在面板登記資料庫",
+  "importLatestNeedConfirm": "需確認 — 會匯入到已登記資料庫",
   "hostHasUntracked": "主機另有 {{count}} 個未在面板登記的資料庫",
   "hostInventoryHint": "列表只顯示控制面已登記的資料庫；即時名稱來自 SHOW DATABASES。",
   "userList": "用戶列表",
@@ -296,5 +301,7 @@
   "startAfterUnfreeze": "啟動服務（失敗時會自動套用修復計劃）",
   "serviceDownTitle": "資料庫服務未運作",
   "serviceDownBody": "服務異常。面板會診斷常見原因（凍結、設定殘留、空白資料目錄、埠衝突等）。資料目錄為空：{{empty}}。請按「檢查並修復服務」確認執行。",
-  "adoptHostDb": "登記 {{name}}"
+  "adoptHostDb": "登記 {{name}}",
+  "adoptHostDbTitle": "只在控制面登記名稱，不改主機資料",
+  "cleanupExpiredTempUsersTitle": "清除已過期的面板臨時用戶"
 }

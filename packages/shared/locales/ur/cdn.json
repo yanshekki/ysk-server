@@ -120,5 +120,15 @@
   "statOffline": "Offline {{n}}",
   "statDraining": "Draining {{n}}",
   "statHitRate": "Hit rate {{v}}",
-  "hitNoStats": "No edge stats yet"
+  "hitNoStats": "ابھی ایج اعداد نہیں",
+  "loopbackOriginBlocked": "لوپ بیک origin {{url}} دور دراز ایج پر نہیں لکھا جائے گا۔ پہلے قابل رسائی origin سیٹ کریں۔",
+  "applyFailedHint": "اطلاق ناکام — نیچے نوٹ دیکھیں",
+  "applyStatus": {
+    "draft": "مسودہ",
+    "planned": "منصوبہ بند",
+    "applying": "اطلاق ہو رہا ہے",
+    "applied": "لاگو",
+    "failed": "ناکام",
+    "partial": "جزوی"
+  }
 }

@@ -125,5 +125,6 @@
   "all": "All",
   "showPassword": "Show",
   "hidePassword": "Hide",
-  "more": "More"
+  "more": "More",
+  "redirectedTo": "已转到 {{to}}（原为 {{from}}）"
 }

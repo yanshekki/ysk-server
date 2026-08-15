@@ -63,5 +63,7 @@
   "kindDeploy": "部署",
   "kindRuntime": "Runtime",
   "jobDone": "完成 · {{title}}",
-  "jobFailed": "失败 · {{title}}"
+  "jobFailed": "失败 · {{title}}",
+  "uninstallUfwWarn": "卸载 UFW 后，主机将失去面板管理的端口防火墙。",
+  "uninstallFail2banWarn": "卸载 fail2ban 会停止 jail 并解除现有封锁。若要保留服务，请先把登录 IP 加入 ignoreip。"
 }

@@ -120,5 +120,15 @@
   "statOffline": "Offline {{n}}",
   "statDraining": "Draining {{n}}",
   "statHitRate": "Hit rate {{v}}",
-  "hitNoStats": "No edge stats yet"
+  "hitNoStats": "لا إحصاءات حافة بعد",
+  "loopbackOriginBlocked": "لن يُطبَّق أصل الاسترجاع {{url}} على حافة بعيدة. عيّن أصلاً يمكن بلوغه.",
+  "applyFailedHint": "فشل التطبيق — انظر الملاحظات أدناه",
+  "applyStatus": {
+    "draft": "مسودة",
+    "planned": "مخطط",
+    "applying": "جارٍ التطبيق",
+    "applied": "مطبّق",
+    "failed": "فشل",
+    "partial": "جزئي"
+  }
 }

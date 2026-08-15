@@ -57,9 +57,19 @@ export function isProtectedSelfIp(
 }
 
 export function collectHostIps(host: {
-  network?: { ips?: string[] };
+  network?: {
+    ips?: string[];
+    interfaces?: Array<{ addrs?: string[] }>;
+  };
+  identity?: { publicIpv4?: string; announceHost?: string };
 } | null | undefined): string[] {
-  return [...new Set((host?.network?.ips ?? []).map(normalizeIp).filter(Boolean))];
+  const out: string[] = [];
+  for (const ip of host?.network?.ips ?? []) out.push(normalizeIp(ip));
+  for (const iface of host?.network?.interfaces ?? []) {
+    for (const a of iface.addrs ?? []) out.push(normalizeIp(a));
+  }
+  if (host?.identity?.publicIpv4) out.push(normalizeIp(host.identity.publicIpv4));
+  return [...new Set(out.filter(Boolean))];
 }
 
 export function collectLoginIps(

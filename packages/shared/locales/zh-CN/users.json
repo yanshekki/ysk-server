@@ -132,5 +132,5 @@
   "diskQuotaHint": "预设晶片以 GiB 计；自订栏为 MiB。",
   "bandwidthHint": "0 代表不限。",
   "impersonateHint": "Opens a session as this user. Use the account menu to leave impersonation.",
-  "operatorHighRiskHint": "The factory operator role includes high-risk writes (services, firewall, package apply, MySQL, Nginx publish). Narrow it only if you intend to change every existing operator."
+  "operatorHighRiskHint": "系统默认「操作员」含高危写入（服务控制、防火墙、套件套用、MySQL、发布 Nginx）。收窄只影响新建账户；修改默认会影响现有操作员。"
 }

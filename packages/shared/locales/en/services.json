@@ -11,6 +11,8 @@
   "stoppedOk": "{{label}} stopped",
   "restartedOk": "{{label}} restarted",
   "reloadedOk": "{{label}} reloaded",
+  "stopNeedConfirm": "Needs confirmation",
+  "stopNeedConfirmPhrase": "Needs confirmation phrase",
   "stopConfirmTitle": "Stop {{label}}?",
   "stopConfirmDesc": "{{label}} will stop listening. Start it again from this page when needed.",
   "stopConfirmEdgeDesc": "Stopping {{label}} takes sites and reverse-proxy traffic offline until it is started again.",

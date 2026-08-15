@@ -42,6 +42,8 @@ export type MultiCheckSelectProps = {
    * Default 8; set 0 to never collapse.
    */
   chipCollapseAt?: number;
+  /** If set, confirm before selecting every catalog option (not filtered). */
+  confirmSelectAll?: string;
 };
 
 const LIST_SIZE_CLASS: Record<NonNullable<MultiCheckSelectProps['listSize']>, string> = {
@@ -65,7 +67,8 @@ export function MultiCheckSelect({
   showSelectAll = true,
   listMaxHeight,
   listSize = 'lg',
-  chipCollapseAt = 8 }: MultiCheckSelectProps) {
+  chipCollapseAt = 8,
+  confirmSelectAll }: MultiCheckSelectProps) {
   const { t } = useTranslation();
   const [q, setQ] = useState('');
   const [custom, setCustom] = useState('');
@@ -134,6 +137,7 @@ export function MultiCheckSelect({
 
   function selectAllOptions() {
     if (disabled) return;
+    if (confirmSelectAll && !window.confirm(confirmSelectAll)) return;
     const next = new Set(value);
     for (const v of selectableOptions) next.add(v);
     onChange([...next]);

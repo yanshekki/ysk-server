@@ -149,6 +149,7 @@ export interface Fail2banStatusDto {
   jails: Fail2banJailDto[];
   banned: Array<{ jail: string; ip: string }>;
   ignoreIps: string[];
+  ignoreipFile?: string;
   catalog: Fail2banCatalogItemDto[];
   executeEnabled: boolean;
   isRoot: boolean;

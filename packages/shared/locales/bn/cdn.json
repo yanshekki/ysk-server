@@ -120,5 +120,15 @@
   "statOffline": "Offline {{n}}",
   "statDraining": "Draining {{n}}",
   "statHitRate": "Hit rate {{v}}",
-  "hitNoStats": "No edge stats yet"
+  "hitNoStats": "এখনও এজ পরিসংখ্যান নেই",
+  "loopbackOriginBlocked": "লুপব্যাক origin {{url}} দূরবর্তী এজে লেখা হবে না। আগে পৌঁছানো যায় এমন origin সেট করুন।",
+  "applyFailedHint": "প্রয়োগ ব্যর্থ — নিচের নোট দেখুন",
+  "applyStatus": {
+    "draft": "খসড়া",
+    "planned": "পরিকল্পিত",
+    "applying": "প্রয়োগ হচ্ছে",
+    "applied": "প্রয়োগ হয়েছে",
+    "failed": "ব্যর্থ",
+    "partial": "আংশিক"
+  }
 }

@@ -63,5 +63,7 @@
   "kindDeploy": "Deploy",
   "kindRuntime": "Runtime",
   "jobDone": "Finished · {{title}}",
-  "jobFailed": "Failed · {{title}}"
+  "jobFailed": "Failed · {{title}}",
+  "uninstallUfwWarn": "UFW সরিয়ে দিলে প্যানেল-পরিচালিত পোর্ট ফায়ারওয়াল থাকবে না।",
+  "uninstallFail2banWarn": "fail2ban সরালে jail থেমে যাবে এবং নিষেধ উঠবে। রাখতে চাইলে আগে লগইন IP ignoreip-এ যোগ করুন।"
 }

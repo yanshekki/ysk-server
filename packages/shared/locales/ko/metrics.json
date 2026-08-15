@@ -138,5 +138,9 @@
   "colHome": "Home",
   "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab.",
   "alertsBuiltinOnly": "Built-in CPU / memory / disk thresholds only. No email, webhook, or Slack channel.",
-  "lastEvaluated": "Last checked"
+  "lastEvaluated": "Last checked",
+  "shareNoQuotaHint": "할당량이 없어 비율이 없습니다. 프로젝트 격리 탭에서 설정하세요.",
+  "setQuotaLink": "할당량 설정",
+  "unusualHome": "비표준 경로",
+  "unusualHomeHint": "Not a /home/… project home. Canonical isolation is /home/ysk-server-{id}."
 }

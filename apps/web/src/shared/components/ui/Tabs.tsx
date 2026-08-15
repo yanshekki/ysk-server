@@ -18,6 +18,8 @@ export interface TabItem {
   label: string;
   /** Optional count / status badge on the tab label */
   badge?: string | number;
+  /** Tooltip / accessible name for the badge (e.g. why it is “!”) */
+  badgeTitle?: string;
 }
 
 export interface TabsProps {
@@ -109,7 +111,13 @@ export function Tabs({ tabs, active, onChange, children, variant = 'scroll' }: T
               >
                 <span className="tabs__tab-label">{tab.label}</span>
                 {tab.badge != null && tab.badge !== '' ? (
-                  <span className="tabs__tab-badge">{tab.badge}</span>
+                  <span
+                    className="tabs__tab-badge"
+                    title={tab.badgeTitle}
+                    aria-label={tab.badgeTitle || undefined}
+                  >
+                    {tab.badge}
+                  </span>
                 ) : null}
               </button>
             ))}

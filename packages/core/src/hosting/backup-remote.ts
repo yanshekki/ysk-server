@@ -145,7 +145,7 @@ export async function testBackupRemote(input: {
       return { ok: false, kind: 's3', notes: [...notesPrefix, tl('notes.auto.n0303')] };
     }
   }
-  if (!input.host.executeEnabled()) {
+  if (!input.host.executeEnabled() && remote.kind !== 'sftp') {
     return {
       ok: false,
       blocked: true,
@@ -282,6 +282,10 @@ async function probeSftpRemote(input: {
       'pwd\n',
     );
     const r = await input.host.runCommand(argv, { timeoutMs: 20_000 });
+    const out = `${r.stderr || ''} ${r.stdout || ''}`;
+    const sftpOnly = /invalid command|this service allows sftp connections only|sftp connections only/i.test(
+      out,
+    );
     return {
       ok: r.exitCode === 0,
       kind: 'sftp',
@@ -289,7 +293,9 @@ async function probeSftpRemote(input: {
         ...input.notesPrefix,
         r.exitCode === 0
           ? tl('notes.backup.testIdentity', { spec })
-          : tl('notes.auto.t0377', { v0: (r.stderr || r.stdout).slice(0, 300) }),
+          : sftpOnly
+            ? tl('notes.auto.t0377', { v0: out.slice(0, 300) })
+            : tl('notes.auto.t0377', { v0: out.slice(0, 300) }),
       ],
     };
   }

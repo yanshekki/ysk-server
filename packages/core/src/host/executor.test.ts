@@ -143,6 +143,24 @@ describe('pathUnderRoot + commandRequiresExecute', () => {
     expect(commandRequiresExecute(['ufw', 'deny', 'from', '1.2.3.4'])).toBe(true);
     expect(commandRequiresExecute(['git', '-C', '/app', 'status', '--porcelain'])).toBe(false);
     expect(commandRequiresExecute(['git', '-C', '/app', 'log', '-n10'])).toBe(false);
+    expect(
+      commandRequiresExecute([
+        'git',
+        '-c',
+        'safe.directory=/app',
+        '-C',
+        '/app',
+        'log',
+        '-n20',
+        '--format=%h%x09%s',
+      ]),
+    ).toBe(false);
+    expect(
+      commandRequiresExecute(['git', '-c', 'safe.directory=/app', '-C', '/app', 'status']),
+    ).toBe(false);
+    expect(
+      commandRequiresExecute(['git', '-c', 'safe.directory=/app', '-C', '/app', 'fetch', 'origin']),
+    ).toBe(true);
     expect(commandRequiresExecute(['git', '-C', '/app', 'remote', 'get-url', 'origin'])).toBe(
       false,
     );
@@ -150,6 +168,13 @@ describe('pathUnderRoot + commandRequiresExecute', () => {
     expect(commandRequiresExecute(['git', 'clone', 'https://x', '/app'])).toBe(true);
     expect(commandRequiresExecute(['git', '-C', '/app', 'reset', '--hard'])).toBe(true);
     expect(commandRequiresExecute(['ssh-keyscan', '-T', '5', 'github.com'])).toBe(false);
+    expect(
+      commandRequiresExecute([
+        'bash',
+        '-c',
+        'printf %s "pwd\\n" | sftp -o BatchMode=yes -b - qa@host',
+      ]),
+    ).toBe(false);
     expect(commandRequiresExecute(['crontab', '-l'])).toBe(false);
     expect(commandRequiresExecute(['crontab', '-u', 'www-data', '-l'])).toBe(false);
     expect(commandRequiresExecute(['bash', '-c', 'crontab -l'])).toBe(false);

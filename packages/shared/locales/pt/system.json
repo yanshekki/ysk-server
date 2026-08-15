@@ -80,7 +80,8 @@
     "openFirewall": "Se público: permitir porta do painel {{port}}/tcp (Firewall → porta aberta → Painel 9287)",
     "disableConfirmTitle": "Disable panel HTTPS?",
     "disableConfirmDesc": "The panel will serve HTTP. WebAuthn / Passkey will stop working until HTTPS is on again.",
-    "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP."
+    "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP.",
+    "disableNeedConfirm": "Requer confirmação — escreva DISABLE-HTTPS"
   },
   "timeNtp": "Tempo e NTP",
   "clockStatus": "Status do relógio do sistema",
@@ -188,5 +189,10 @@
   "dryRunFlag": "Teste a seco",
   "timezoneSearch": "Filter timezones…",
   "resyncNtp": "Re-sync NTP",
-  "storageSub": "Disk usage"
+  "storageSub": "Disk usage",
+  "syncReloadNeedConfirm": "Precisa de confirmação — escreve /etc/nginx/conf.d e recarrega o Nginx",
+  "nginxLeftover": "Residual",
+  "nginxUnused": "Não usado",
+  "nginxLeftoverHint": "Conf residual (p.ex. public-files). Incluída na sincronização até agir.",
+  "nginxUnusedHint": "Conf de origem / catch-all (000-default). Incluída na sincronização até agir."
 }

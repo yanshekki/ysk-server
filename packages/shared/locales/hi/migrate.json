@@ -82,5 +82,7 @@
   "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
   "orphanRemove": "Remove leftover home",
   "orphanRemoveTitle": "Delete leftover project home?",
-  "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1."
+  "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1.",
+  "orphanRemovePhrase": "पुष्टि के लिए DELETE लिखें।",
+  "orphanRemoveNeedConfirm": "पुष्टि आवश्यक"
 }

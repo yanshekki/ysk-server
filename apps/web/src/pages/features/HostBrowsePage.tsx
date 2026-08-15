@@ -1103,6 +1103,7 @@ export function HostBrowsePage() {
                     variant="ghost"
                     onClick={() => void runNavigate({ action: 'back' })}
                     disabled={busy || !session || !canBack}
+                    title={!session ? t('hostBrowse.needUrl') : t('hostBrowse.back')}
                     aria-label={t('hostBrowse.back')}
                   >
                     ←
@@ -1112,6 +1113,7 @@ export function HostBrowsePage() {
                     variant="ghost"
                     onClick={() => void runNavigate({ action: 'forward' })}
                     disabled={busy || !session || !canForward}
+                    title={!session ? t('hostBrowse.needUrl') : t('hostBrowse.forward')}
                     aria-label={t('hostBrowse.forward')}
                   >
                     →
@@ -1121,6 +1123,7 @@ export function HostBrowsePage() {
                     variant="ghost"
                     onClick={() => void runNavigate({ action: 'reload' })}
                     disabled={busy || !session?.currentUrl}
+                    title={!session ? t('hostBrowse.needUrl') : t('hostBrowse.reload')}
                     aria-label={t('hostBrowse.reload')}
                   >
                     ↻
@@ -1130,6 +1133,7 @@ export function HostBrowsePage() {
                     variant="ghost"
                     onClick={onStop}
                     disabled={!busy && !session}
+                    title={!session ? t('hostBrowse.needUrl') : t('hostBrowse.stop')}
                     aria-label={t('hostBrowse.stop')}
                   >
                     ⏹
@@ -1168,6 +1172,7 @@ export function HostBrowsePage() {
                     variant="ghost"
                     onClick={() => void onClearCookies()}
                     disabled={!session || busy}
+                    title={!session ? t('hostBrowse.needUrl') : t('hostBrowse.clearCookies')}
                   >
                     {t('hostBrowse.clearCookies')}
                   </Button>
@@ -1176,11 +1181,19 @@ export function HostBrowsePage() {
                     variant="ghost"
                     onClick={() => void onCopyUrl()}
                     disabled={!urlDraft && !last?.finalUrl}
+                    title={
+                      !urlDraft && !last?.finalUrl
+                        ? t('hostBrowse.needUrl')
+                        : t('hostBrowse.copyUrl')
+                    }
                   >
                     {t('hostBrowse.copyUrl')}
                   </Button>
                 </div>
               </div>
+              {!session ? (
+                <p className="hb-toolbar-hint muted u-text-sm">{t('hostBrowse.needUrl')}</p>
+              ) : null}
 
               <div className="hb-progress" aria-hidden={!busy}>
                 <div className={`hb-progress__bar${busy ? '' : ' is-done'}`} />

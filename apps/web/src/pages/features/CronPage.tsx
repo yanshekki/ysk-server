@@ -740,7 +740,15 @@ export function CronPage() {
                       </p>
                     );
                   }
-                  return <pre className="ops-pre">{preview}</pre>;
+                  const deduped = preview
+                    .split('\n')
+                    .filter((line, i, arr) => {
+                      const t = line.trim();
+                      if (!t.startsWith('# YSK Server crontab merge')) return true;
+                      return arr.findIndex((x) => x.trim().startsWith('# YSK Server crontab merge')) === i;
+                    })
+                    .join('\n');
+                  return <pre className="ops-pre">{deduped}</pre>;
                 })()}
               </section>
             </div>
@@ -940,19 +948,20 @@ export function CronPage() {
             </Alert>
           ) : null}
           <p className="form-hint u-mb-0">
-            {t('cron.afterCreate')}{' '}
-            <strong>{scheduleHuman}</strong>
-            {' · '}
-            <code className="inline">{schedule}</code>
-            {' · '}
-            {t('cron.userSuffix')}{' '}
-            <code className="inline">{runAsUser}</code>
-            {' '}
-            {selectedProject ? (
-              <span className="muted">{t('cron.projectParen', { name: selectedProject.name })}</span>
-            ) : (
-              <span className="muted">{t('cron.systemParenFull')}</span>
-            )}
+            {[
+              t('cron.afterCreate'),
+              scheduleHuman,
+              schedule,
+              runAsUser
+                ? `${t('cron.userSuffix')} ${runAsUser}`
+                : '',
+              selectedProject
+                ? t('cron.projectParen', { name: selectedProject.name })
+                : t('cron.systemParenFull'),
+            ]
+              .map((s) => String(s || '').trim())
+              .filter(Boolean)
+              .join(' · ')}
           </p>
         </form>
       </Modal>

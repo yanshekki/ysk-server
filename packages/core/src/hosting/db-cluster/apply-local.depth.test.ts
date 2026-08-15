@@ -65,7 +65,7 @@ describe('applyDbClusterLocal depth', () => {
       });
       expect(r.ok).toBe(true);
       expect(r.dryRun).toBe(true);
-      expect(r.cluster.status).toBe('partial');
+      expect(r.cluster.status).toBe('planned');
       expect(
         existsSync(join(dir, 'clusters', c.id, 'conf', '99-ysk-postgres-primary.conf')),
       ).toBe(true);
@@ -388,7 +388,7 @@ describe('applyDbClusterLocal depth', () => {
       expect(r.ok).toBe(true);
       expect(r.dryRun).toBe(true);
       // peer conf or primary fallback may be listed in written
-      expect(r.cluster.members.some((m) => m.applyStatus === 'written')).toBe(true);
+      expect(r.cluster.members.some((m) => m.applyStatus === 'planned')).toBe(true);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

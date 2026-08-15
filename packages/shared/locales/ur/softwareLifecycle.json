@@ -63,5 +63,7 @@
   "kindDeploy": "Deploy",
   "kindRuntime": "Runtime",
   "jobDone": "Finished · {{title}}",
-  "jobFailed": "Failed · {{title}}"
+  "jobFailed": "Failed · {{title}}",
+  "uninstallUfwWarn": "UFW ہٹانے سے اس ہوسٹ پر پینل کا پورٹ فائر وال ختم ہو جائے گا۔",
+  "uninstallFail2banWarn": "fail2ban ہٹانے سے jail رک جائیں گے اور پابندیاں اٹھ جائیں گی۔ رکھنا ہو تو پہلے لاگ اِن IP کو ignoreip میں ڈالیں۔"
 }

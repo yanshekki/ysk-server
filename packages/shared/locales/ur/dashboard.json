@@ -85,7 +85,7 @@
   "runtime": "رن ٹائم",
   "runtimeHint": "ڈیفالٹ رن ٹائم ورژن اور تعیناتی کا انداز سیٹ کرتا ہے۔",
   "runtimeVersion": "رن ٹائم ورژن",
-  "versionHint": "پروجیکٹ رن ٹائم_ورژن کے بطور اسٹور کیا گیا۔",
+  "versionHint": "پراجیکٹ کے رن ٹائم ورژن سیٹنگ میں لکھتا ہے",
   "serverIpv4": "سرور IPv4",
   "serverIpv4Hint": "ڈی این ایس اے / میل ایس پی ایف",
   "serverIpv4Ph": "یہ عوامی IPv4 کی میزبانی کرتا ہے۔",
@@ -119,5 +119,5 @@
   "notifAll": "All",
   "notifDismiss": "Hide",
   "goFix": "Fix",
-  "needDomainFirst": "Enter a domain first"
+  "needDomainFirst": "پہلے ڈومین بھریں"
 }

@@ -249,7 +249,8 @@
     "cleanupConflictsTitle": "تنظيف كافة مخلفات الصراع؟",
     "cleanupConflictsDesc": "قم بإزالة كل conf Artifact الموجود على القرص والذي يتعارض مع مشروع أو ServerName مستقل. يتم الاحتفاظ بصفوف المشروع.",
     "artifactRemovedOk": "تمت إزالة الكونفرت المتبقي",
-    "sslTerminatedUpstream": "TLS ends at front Nginx"
+    "sslTerminatedUpstream": "TLS ends at front Nginx",
+    "removeArtifactHint": "يحذف إعداد القرص المتبقي هذا فقط. لا يحذف المشروع."
   },
   "applyStatus": {
     "draft": "مسودة",
@@ -597,7 +598,7 @@
     "seedStatusChecking": "Checking",
     "seedStatusPaused": "Paused",
     "seedStatusQueued": "Queued",
-    "swarmLeftover": "المتعقب لديه {{count}} إعلان غير موجود في المكتبة",
+    "swarmLeftover": "لدى Tracker عدد {{count}} من announce خارج المكتبة (مصدر مختلف عن قائمة التورنت)",
     "addSourceSection": "المصدر",
     "addSourceFile": "ملف",
     "addSourceMagnet": "Magnet",
@@ -768,7 +769,17 @@
     "statOffline": "Offline {{n}}",
     "statDraining": "Draining {{n}}",
     "statHitRate": "Hit rate {{v}}",
-    "hitNoStats": "No edge stats yet"
+    "hitNoStats": "لا إحصاءات حافة بعد",
+    "loopbackOriginBlocked": "لن يُطبَّق أصل الاسترجاع {{url}} على حافة بعيدة. عيّن أصلاً يمكن بلوغه.",
+    "applyFailedHint": "فشل التطبيق — انظر الملاحظات أدناه",
+    "applyStatus": {
+      "draft": "مسودة",
+      "planned": "مخطط",
+      "applying": "جارٍ التطبيق",
+      "applied": "مطبّق",
+      "failed": "فشل",
+      "partial": "جزئي"
+    }
   },
   "cli": {
     "unknownCommand": "أمر غير معروف: {{command}}\nتشغيل `{{cli}} مساعدة`",
@@ -2079,7 +2090,8 @@
     "all": "All",
     "showPassword": "Show",
     "hidePassword": "Hide",
-    "more": "More"
+    "more": "More",
+    "redirectedTo": "فُتح {{to}} (كان {{from}})"
   },
   "cron": {
     "presetCdTrue": "تطبيق cd + صحيح (اختبار)",
@@ -2319,7 +2331,7 @@
     "runtime": "وقت التشغيل",
     "runtimeHint": "يضبط إصدار وقت التشغيل الافتراضي ونمط النشر",
     "runtimeVersion": "نسخة وقت التشغيل",
-    "versionHint": "مخزنة كمشروع runtime_version",
+    "versionHint": "يكتب إعداد إصدار بيئة تشغيل المشروع",
     "serverIpv4": "خادم IPv4",
     "serverIpv4Hint": "DNS أ / البريد SPF",
     "serverIpv4Ph": "هذا المضيف IPv4 العام",
@@ -2353,7 +2365,7 @@
     "notifAll": "All",
     "notifDismiss": "Hide",
     "goFix": "Fix",
-    "needDomainFirst": "Enter a domain first"
+    "needDomainFirst": "أدخل نطاقاً أولاً"
   },
   "dataTable": {
     "empty": "لا توجد بيانات",
@@ -2657,7 +2669,14 @@
     "remoteTestDone": "Remote host probe finished",
     "remoteTestOk": "reachable",
     "remoteTestFail": "unreachable",
-    "remoteNotChecked": "not tested"
+    "remoteNotChecked": "not tested",
+    "registeredVsHostHint": "مسجّل في اللوحة / موجود على المضيف",
+    "dumpNeedRegistered": "سجّل قاعدة بيانات في اللوحة أولاً",
+    "dumpFirstDbTitle": "تصدير أول قاعدة مسجّلة",
+    "importNeedRegistered": "سجّل قاعدة بيانات في اللوحة أولاً",
+    "importLatestNeedConfirm": "يحتاج تأكيدًا — يستورد إلى القاعدة المسجّلة",
+    "adoptHostDbTitle": "يسجّل الاسم في مستوى التحكم فقط ولا يغيّر بيانات المضيف.",
+    "cleanupExpiredTempUsersTitle": "يحذف مستخدمي اللوحة المؤقتين المنتهية صلاحيتهم"
   },
   "dialogs": {
     "confirmDefault": "يتأكد",
@@ -3381,7 +3400,10 @@
     "openQueuePage": "فتح طابور البريد",
     "healthUnchecked": "Not checked yet",
     "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first.",
-    "domainsListDesc": "Mail domains registered on this host"
+    "domainsListDesc": "Mail domains registered on this host",
+    "healthChecklist": "قائمة التحقق {{score}}/100",
+    "healthChecklistHint": "درجة القائمة — لم يُفحص DNS / PTR / المنفذ 25 بعد",
+    "healthLiveHint": "درجة الفحص الحي"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "غير مصرح به",
@@ -3525,7 +3547,7 @@
     "statWhitelist": "Whitelist",
     "invalidIp": "Enter a valid IPv4, IPv6, or CIDR.",
     "whitelistPendingApply": "Saved to the panel list. Press Apply policy to write jail.local.",
-    "ignoreipFile": "Panel data directory / fail2ban / ignoreip.txt",
+    "ignoreipFile": "dataDir/fail2ban/ignoreip.txt",
     "jailsTabHint": "Status of active jails. Turn jails on or off in the Policy tab.",
     "colJail": "Jail",
     "colEnabled": "On",
@@ -3542,7 +3564,11 @@
     },
     "cannotBanSelf": "This is the host or your login IP — add it to ignoreip instead of banning",
     "suggestIgnoreHint": "Suggested admin IPs (panel file only until you apply policy):",
-    "suggestIgnoreAdd": "Add {{ip}}"
+    "suggestIgnoreAdd": "Add {{ip}}",
+    "whitelistEmptyWarn": "القائمة البيضاء فارغة وقد تحظرك الـ jail. أضف IP الدخول قبل تطبيق ignoreip.",
+    "suggestIgnoreLogin": "IP تسجيل الدخول {{ip}}",
+    "applyIgnoreEmptyWarn": "التطبيق بقائمة بيضاء فارغة يفرّغ ignoreip",
+    "applyIgnoreNeedConfirm": "يعيد كتابة ignoreip للـ jail ويعيد تحميل fail2ban"
   },
   "featurePage": {
     "back": "خلف"
@@ -3898,7 +3924,9 @@
     "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
     "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone.",
     "webdavReissueUnchanged": "Token id did not change after re-issue — the write may not have persisted. Try again.",
-    "webdavDisableFailed": "WebDAV is still enabled after disable — the write may not have persisted. Try again."
+    "webdavDisableFailed": "WebDAV is still enabled after disable — the write may not have persisted. Try again.",
+    "dirNamedLikeFile": "(مجلد متبقٍ؛ الاسم يشبه ملفًا)",
+    "webdavAfterEnable": "متاح بعد تفعيل WebDAV وإصدار رمز."
   },
   "firewall": {
     "profiles": {
@@ -4438,7 +4466,8 @@
     "envPanelValue": "panel: {{value}}",
     "settingsNoSandboxWarn": "Disables Chromium sandbox. Use only inside a trusted container. Applies on next real-browser session.",
     "settingsDangerDlWarn": "Allows executable and script downloads through the host browser. Confirm you need this.",
-    "settingsDangerConfirmTitle": "Enable a high-risk browse setting?"
+    "settingsDangerConfirmTitle": "Enable a high-risk browse setting?",
+    "needUrl": "أدخل عنوان URL أعلاه لبدء الجلسة."
   },
   "listToolbar": {
     "searchPlaceholder": "يبحث…",
@@ -4616,7 +4645,21 @@
     "aboutCustomPath": "Add a custom path on Settings (only /var/log or /run/log). Then open it from Explore.",
     "noRowsInWindow": "No records in this time window",
     "showInactiveUnits": "Show inactive units",
-    "sseNeedFollow": "Turn on Follow first — SSE is only for live tail"
+    "sseNeedFollow": "Turn on Follow first — SSE is only for live tail",
+    "vacuumNeedRetention": "أدخل أولاً نافذة الاحتفاظ (مثل 14d)",
+    "vacuumNeedConfirm": "يحتاج تأكيدًا — يحذف سجلات journal القديمة",
+    "vacuumSizeNeedConfirm": "يحتاج تأكيدًا — يحد استخدام قرص journal",
+    "vacuumSizeAlreadyBelow": "الاستخدام الحالي دون الحد؛ عادة لا يُحذف شيء.",
+    "vacuumSizeNoopDesc": "journal أصلاً دون 500 م.ب. سيُشغَّل vacuum --size=500M ولن يُحذف شيء عادةً.",
+    "journalDiskHint": "استخدام systemd-journald الحالي (journal النشط). لا يشمل الملفات المدوّرة تحت /var/log.",
+    "varLogDiskHint": "تقدير /var/log بما فيه الملفات المدوّرة.",
+    "queryFirst": "استعلم أولاً",
+    "projectSourcesTitle": "{{n}} مصدرًا (ملفات + journal)",
+    "logrotatePath": "Path",
+    "logrotateLast": "Last rotated",
+    "logrotateExpand": "Show {{n}} more",
+    "logrotateCollapse": "Show fewer",
+    "logrotateVersion": "Status version {{v}}"
   },
   "metrics": {
     "alert": {
@@ -4758,7 +4801,11 @@
     "colHome": "Home",
     "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab.",
     "alertsBuiltinOnly": "Built-in CPU / memory / disk thresholds only. No email, webhook, or Slack channel.",
-    "lastEvaluated": "Last checked"
+    "lastEvaluated": "Last checked",
+    "shareNoQuotaHint": "بلا حصة لا تكون النسبة مئوية. عيّنها في تبويب عزل المشروع.",
+    "setQuotaLink": "تعيين الحصة",
+    "unusualHome": "مسار غير معتاد",
+    "unusualHomeHint": "Not a /home/… project home. Canonical isolation is /home/ysk-server-{id}."
   },
   "migrate": {
     "tabInventory": "جرد",
@@ -4844,7 +4891,9 @@
     "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
     "orphanRemove": "Remove leftover home",
     "orphanRemoveTitle": "Delete leftover project home?",
-    "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1."
+    "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1.",
+    "orphanRemovePhrase": "اكتب DELETE للتأكيد.",
+    "orphanRemoveNeedConfirm": "يلزم التأكيد"
   },
   "multiCheck": {
     "customPlaceholder": "رمز مخصص",
@@ -5095,7 +5144,9 @@
     "hideRaw": "Hide raw output",
     "rawLoadedAt": "Loaded {{time}}",
     "deleteDefaultPanelWarn": "Deleting the default route can drop this panel session. Type DEFAULT to confirm.",
-    "typeDefaultToConfirm": "Type DEFAULT to confirm"
+    "typeDefaultToConfirm": "Type DEFAULT to confirm",
+    "deleteDefaultNeedConfirm": "يلزم التأكيد — اكتب DEFAULT (قد يقطع هذا اللوحة)",
+    "deleteRouteNeedConfirm": "يلزم التأكيد"
   },
   "nginx": {
     "pillSites": "{{count}} موقع (مواقع)",
@@ -5706,7 +5757,7 @@
       "n0259": "اِختِصاص",
       "n0260": "لم يتم العثور على المجال:",
       "n0261": "فشلت إعادة تحميل الحمامة أو لم تتم الخدمة (كتب المنخل؛ تم إعادة التحميل بنجاح)",
-      "n0262": "إرسال الأسطول الجاف (لا)",
+      "n0262": "تجربة إرسال الأسطول (غير مدرج في الطابور)",
       "n0263": "دفع الأقران الجاف (وليس scp)",
       "n0264": "التثبيت عن بعد للتشغيل الجاف (وليس ssh)",
       "n0265": "تم النقل الجاف (التمهيد الكامل)",
@@ -7039,7 +7090,7 @@
       "n1590": "",
       "n1591": "ليس جذرًا - مسارات نظام useradd / systemd / nginx مقيدة",
       "n1592": "لا يتطلب الأمر runAsUser",
-      "n1593": "لوحة من فضلك /",
+      "n1593": "الطلبات العامة / د",
       "n1594": "اتصال اللوحة؛ متاح\"\" ( )",
       "n1595": "اللوحة لا تعمل كجذر",
       "n1596": "التطبيق المتاح: خطأ",
@@ -7310,7 +7361,7 @@
       "t0251": "{{v0}} التثبيت غير مكتمل",
       "t0252": "{{v0}} بداية الخدمة",
       "t0253": "فشل البدء: {{v0}}",
-      "t0254": "يدعم إصدار Node.js {{v0}}؛ الإصدار المتاح: {{v1}}",
+      "t0254": "يدعم إصدار Node.js {{v0}}؛ الإصدارات المتاحة: {{v1}}",
       "t0255": "يدعم إصدار PHP {{v0}}؛ متاح: {{v1}}",
       "t0256": "يدعم إصدار بايثون {{v0}}؛ متاح: {{v1}}",
       "t0257": "يدعم إصدار Go {{v0}}؛ متاح: {{v1}}",
@@ -7432,12 +7483,12 @@
       "t0373": "مشروع \"{{v0}}\" العزل",
       "t0374": "إلى المسار المحلي {{v0}}",
       "t0375": "الهوية {{v0}}: {{v1}}",
-      "t0376": "scp (الهوية) إلى {{v0}}",
-      "t0377": "فشل scp(الهوية): {{v0}}",
-      "t0378": "SCP إلى {{v0}}",
-      "t0379": "فشل scp: {{v0}}",
-      "t0380": "SCP إلى {{v0}}",
-      "t0381": "فشل scp: {{v0}} (معرف الهوية البعيد الاحتياطي)",
+      "t0376": "نجح sftp (الهوية) إلى {{v0}}",
+      "t0377": "فشل sftp (الهوية): {{v0}}",
+      "t0378": "نجح sftp إلى {{v0}}",
+      "t0379": "فشل sftp: {{v0}}",
+      "t0380": "نجح sftp إلى {{v0}}",
+      "t0381": "فشل sftp: {{v0}} (يمكن تعيين backup remote identityId)",
       "t0382": "S3 {{v0}}",
       "t0383": "فشل S3: {{v0}}",
       "t0384": ": {{v0}}/{{v1}} admin تمكين المصادقة الثنائية",
@@ -7445,7 +7496,7 @@
       "t0386": "{{v0}} المسار",
       "t0387": "{{v0}} غير موجود",
       "t0388": "قم بتثبيت {{v0}} أو أضفه إلى PATH",
-      "t0389": "الإصدار المتاح: {{v0}}",
+      "t0389": "الإصدارات المتاحة: {{v0}}",
       "t0390": "{{v0}}% ( {{v1}} ميجابايت)",
       "t0391": "{{v0}}% ({{v1}})",
       "t0392": "بداية الخدمة {{v0}}",
@@ -7694,7 +7745,7 @@
       "t0635": "لا يمكن التحقيق {{v0}}",
       "t0636": "{{v0}} · {{v1}}",
       "t0637": "مشروع {{v0}} · {{v1}} · DB {{v2}} · Redis {{v3}}",
-      "t0638": "تثبيت البرامج {{v0}} · المنازل {{v1}}",
+      "t0638": "تثبيت البرنامج {{v0}} · homes {{v1}}",
       "t0639": "مضيف القطع {{v0}}",
       "t0640": "{{v0}} warning(s) — review before cutover.",
       "t0641": "المفتاح {{v0}}",
@@ -8275,7 +8326,11 @@
       "dovecot": "Dovecot ssl_cert points at missing {{path}}. Overlay does not rewrite ssl=no. Apply mail TLS after issuing the cert, or apply email stack.",
       "overlayDoesNotHeal": "Product overlay does not rewrite nginx, Apache, vsftpd, or Dovecot. Use the listed apply commands (root + YSK_EXECUTE=1).",
       "readinessTitle": "Host leftovers after overlay",
-      "readinessClean": "No leftover Apache default, missing nginx catch-all, failed vsftpd, or stale CLI detected."
+      "readinessClean": "No leftover Apache default, missing nginx catch-all, failed vsftpd, or stale CLI detected.",
+      "staleCliRemoved": "تمت إزالة CLI المتبقي {{path}}.",
+      "staleCliRemoveFailed": "تعذّر إزالة CLI المتبقي {{path}}: {{detail}}",
+      "vsftpdSslOff": "ملف شهادة FTPS مفقود: عُيّن ssl_enable=NO في vsftpd ثم أُعيد التشغيل.",
+      "dovecotSslOff": "{{path}} مفقود: عُيّن ssl=no في Dovecot ثم أُعيد التشغيل."
     },
     "git": {
       "missingBin": "git is not on PATH",
@@ -8331,6 +8386,11 @@
       "dnsDegraded": "DNS path degraded",
       "reqRateHigh": "Public request rate {{reqs}}/min ≥ {{threshold}}",
       "ddosHeuristic": "High public request rate plus edge probe failure"
+    },
+    "publicFiles": {
+      "liveConf": "إعداد Nginx الفعّال: {{path}}",
+      "publicRoot": "الجذر العام: {{path}}",
+      "confNameStale": "الملف {{file}} لا يطابق server_name الحالي {{serverName}}. أعد تطبيق الملفات العامة لإعادة التسمية."
     }
   },
   "ops": {
@@ -9114,7 +9174,9 @@
     "netForceHttpsOff": "No forced redirect is stored.",
     "netHttpsLiveNotForced": "An edge file exists; HTTPS may already work. This box only forces HTTP→HTTPS.",
     "gitSyncBlockedDirty": "Sync is disabled until local changes are discarded (Reset) or the files match Git.",
-    "gitViewDiff": "View diff"
+    "gitViewDiff": "View diff",
+    "gitBranchAfterUrl": "أدخل عنوان Git أولاً. الفراغ يستخدم الفرع الافتراضي البعيد.",
+    "gitResetNeedConfirm": "يلزم التأكيد — يتجاهل التزامات Git المحلية"
   },
   "protection": {
     "levels": {
@@ -9466,13 +9528,27 @@
     "stackApply": "Apply protection stack (UFW, fail2ban, preset)",
     "stackApplyDone": "Protection stack apply requested",
     "stackApplyHint": "This enables UFW and applies fail2ban plus the suggested preset. Confirm you will not lock yourself out of a remote panel.",
-    "cannotBanSelf": "Cannot ban {{ip}} — this is the host, your login, or ignoreip",
+    "cannotBanSelf": "لا يمكن حظر {{ip}} — هذا المضيف أو IP الدخول أو ignoreip",
     "selfIp": "This host",
     "selfHostIp": "Host IP",
     "selfLoginIp": "Your login IP",
     "showZeroScore": "Show 0-score",
     "hideZeroScore": "Hide 0-score",
-    "freshnessNa": "n/a"
+    "freshnessNa": "n/a",
+    "geoDraftOnly": "السياسة متوقفة — الحفظ مسودة فقط. لن يطبّق Nginx حتى تفعّلها.",
+    "selectAllCountriesWarn": "تحديد كل الدول في قائمة الحظر؟ قد يُقفل هذا المضيف وبلد تسجيل الدخول.",
+    "badgeRecommendPreset": "يُستحسن إعداد أقوى للتهديد الحالي",
+    "badgeAutomationOn": "الأتمتة قيد التشغيل",
+    "badgeBanCount": "الحظر النشط",
+    "badgeGeoOn": "سياسة وصول Geo مفعّلة",
+    "badgeGeoNotReady": "قاعدة GeoIP غير جاهزة",
+    "badgeIntelSignals": "الإشارات التي تضيف للنقاط الآن",
+    "signalActive": "نشط",
+    "signalInactive": "غير نشط",
+    "signalJails": "{{n}} jail",
+    "dbReadyHint": "ملفات MMDB موجودة",
+    "dbNotReadyHint": "نزّل قاعدة GeoIP أولاً",
+    "staleHint": "هل مرّ أكثر من 7 أيام على آخر تحديث ناجح"
   },
   "publicFiles": {
     "notSet": "لم يتم ضبطه",
@@ -9728,7 +9804,25 @@
     "fixDone": "تم تعزيز أذونات dataDir (chmod 750)",
     "fixDoneWebUi": "تم إنشاء/تثبيت واجهة مستخدم الويب",
     "rootLabel": "Superuser",
-    "exportStarted": "Downloading {{name}}"
+    "exportStarted": "Downloading {{name}}",
+    "blockersHint": "العوائق مجموعة فرعية حرجة من «ناقص» وليست فحوصات إضافية.",
+    "techDetails": "Technical details",
+    "missingOwner": "No panel owner assigned (package quota attribution)",
+    "notOsProvisioned": "OS user/home not provisioned yet",
+    "ondrejNone": "No ondrej Launchpad PHP sources detected",
+    "ondrejFound": "Found legacy ondrej/php sources that conflict with packages.sury.org: {{paths}}",
+    "ondrejTitle": "PHP apt source (ondrej residual)",
+    "systemctlActive": "Service is running",
+    "systemctlStatus": "Service status: {{status}}",
+    "binInPath": "{{bin}} in PATH",
+    "leftoverApache": "Apache leftover default site",
+    "leftoverVsftpd": "vsftpd unit failed",
+    "leftoverCli": "Stale leftover CLI",
+    "leftoverNginx": "Nginx catch-all missing",
+    "leftoverDovecot": "Dovecot TLS points at missing cert",
+    "leftoverOther": "Host leftover",
+    "leftoverApply": "Leftover apply",
+    "isolationOwnerDegrades": "Missing owner_user_id affects package quota attribution — status is degraded, not ready."
   },
   "redis": {
     "neverExpire": "لا تنتهي صلاحيته أبدًا",
@@ -9796,7 +9890,15 @@
     "pickKey": "حدد مفتاحًا على اليسار لعرض المحتوى.",
     "ttlPrefix": "تل: {{ttl}}",
     "writeLiveHint": "يكتب العيش ريديس. لا يمكن التراجع عن اللوحة بنقرة واحدة.",
-    "refPath": "المرجع: {{path}}"
+    "refPath": "المرجع: {{path}}",
+    "dbEmptyMark": " · فارغ",
+    "noRequirepass": "وضع الحماية يعمل لكن requirepass فارغ أو غير مقروء — لا كلمة مرور.",
+    "setRequirepass": "تعيين كلمة المرور",
+    "rdbOnlyLossHint": "AOF متوقف وRDB يعمل. إعادة التشغيل أو الانهيار قد تفقد كتابات حديثة.",
+    "dirDataContainer": "/data (container)",
+    "dirHostDefault": "/var/lib/redis",
+    "dirDefaultInstance": "/var/lib/redis/default",
+    "dirDataWarn": "/data is usually a container path; this panel cannot confirm it exists."
   },
   "resources": {
     "created": "مخلوق",
@@ -10324,7 +10426,21 @@
     "alreadyHostDefaultShort": "المضيف الافتراضي",
     "managedPathMissingTitle": "Managed {{name}} path not ready",
     "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall.",
-    "installRecordedCta": "Install recorded {{v}}"
+    "installRecordedCta": "Install recorded {{v}}",
+    "targetMissing": "الإصدار المستهدف غير مثبت",
+    "targetMissingHint": "الإصدار المستهدف {{version}} غير موجود على هذا المضيف. اربط إصدارًا مثبتًا أو ثبّت هذا التثبيت.",
+    "needsInstall": "يحتاج تثبيتاً",
+    "needsInstallHint": "ليس على هذا المضيف. ثبّته أولاً أو اختر إصداراً مثبتاً.",
+    "unitBytes": "بايت",
+    "headerSizeKb": "{{n}} KB",
+    "phpIniChipEmpty": "غير محمّل — افتح تبويب php.ini",
+    "phpFpmService": "PHP-FPM",
+    "phpFpmServiceDesc": "بدء أو إيقاف أو إعادة تحميل أو إعادة تشغيل وحدة PHP-FPM",
+    "rustupDefaultMissingTitle": "لا سلسلة أدوات rustup افتراضية",
+    "rustupDefaultMissing": "لا افتراضي لـ rustup. عيّن stable في تبويب البرمجيات.",
+    "rustupDefaultMissingShort": "No default toolchain",
+    "rustupSetDefaultHint": "Set default toolchain",
+    "uninstalledCountHint": "{{n}} إصدارًا ليس على هذا المضيف"
   },
   "search": {
     "placeholder": "صفحات البحث والموارد...",
@@ -10896,7 +11012,9 @@
       "running": "Running",
       "failed": "Failed",
       "missing": "Not installed"
-    }
+    },
+    "stopNeedConfirm": "يلزم التأكيد",
+    "stopNeedConfirmPhrase": "يلزم إدخال عبارة التأكيد"
   },
   "software": {
     "title": "برمجة",
@@ -11100,7 +11218,9 @@
     "kindDeploy": "Deploy",
     "kindRuntime": "Runtime",
     "jobDone": "Finished · {{title}}",
-    "jobFailed": "Failed · {{title}}"
+    "jobFailed": "Failed · {{title}}",
+    "uninstallUfwWarn": "إزالة UFW تترك هذا المضيف دون جدار حماية المنافذ الذي يديره اللوحة.",
+    "uninstallFail2banWarn": "إزالة fail2ban توقف الـ jail وترفع الحظر الحالي. إن أبقيته فأضف IP تسجيل الدخول إلى ignoreip أولاً."
   },
   "sqlEngineHealth": {
     "finding": {
@@ -11319,7 +11439,10 @@
     "deletedCert": "محذوفة {{domain}}",
     "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates.",
     "renew": "Renew",
-    "renewFor": "Renew Let’s Encrypt for {{domain}}"
+    "renewFor": "Renew Let’s Encrypt for {{domain}}",
+    "domainRequired": "أدخل نطاقاً.",
+    "domainInvalid": "صيغة النطاق غير صالحة.",
+    "domainKnownHint": "اختر نطاقاً معروفاً من مشروع أو DNS أو بريد، أو اكتبه."
   },
   "stackWizard": {
     "purgeConfirm": "تأكيد التطهير؟ سيتم حذف مسارات البيانات المسجلة (قواعد البيانات/البريد) نهائيًا.",
@@ -11334,7 +11457,7 @@
     "componentsTitle": "مكونات للتثبيت",
     "dryRun": "معاينة التشغيل الجاف",
     "installNow": "التثبيت الآن",
-    "uninstallHint": "حدد الحزم المراد إزالتها",
+    "uninstallHint": "حدد الحزم المراد إزالتها. دون تحديد لا يمكن الإزالة. تُحفظ البيانات افتراضيًا.",
     "dataPolicy": "سياسة البيانات",
     "keepData": "احتفظ بالبيانات",
     "purgeData": "تطهير البيانات",
@@ -11374,7 +11497,12 @@
     "diagTitle": "Diagnostic summary",
     "diagBody": "Copy version, execute, and host facts to paste into an email. This is not a full log bundle.",
     "diagCopy": "Copy diagnostic summary",
-    "diagCopied": "Diagnostic summary copied"
+    "diagCopied": "Diagnostic summary copied",
+    "copyTitle": "نسخ {{address}}",
+    "diagCopyTitle": "نسخ الإصدار وEXECUTE وبيانات المضيف",
+    "diagPreview": "معاينة ما سيُنسخ",
+    "diagLoading": "Loading diagnostic…",
+    "diagLoadFailed": "Could not load diagnostic"
   },
   "system": {
     "exportLoadFailed": "فشل تحميل بيانات التصدير",
@@ -11458,7 +11586,8 @@
       "openFirewall": "إذا كان عامًا: السماح بمنفذ اللوحة {{port}}/tcp (جدار الحماية → فتح المنفذ → لوحة 9287)",
       "disableConfirmTitle": "Disable panel HTTPS?",
       "disableConfirmDesc": "The panel will serve HTTP. WebAuthn / Passkey will stop working until HTTPS is on again.",
-      "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP."
+      "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP.",
+      "disableNeedConfirm": "يلزم التأكيد — اكتب DISABLE-HTTPS"
     },
     "timeNtp": "الوقت وNTP",
     "clockStatus": "حالة ساعة النظام",
@@ -11566,7 +11695,12 @@
     "dryRunFlag": "التشغيل الجاف",
     "timezoneSearch": "Filter timezones…",
     "resyncNtp": "Re-sync NTP",
-    "storageSub": "Disk usage"
+    "storageSub": "Disk usage",
+    "syncReloadNeedConfirm": "يحتاج تأكيدًا — يكتب /etc/nginx/conf.d ويعيد تحميل Nginx",
+    "nginxLeftover": "بقايا",
+    "nginxUnused": "غير مستخدم",
+    "nginxLeftoverHint": "إعدادات بقايا (مثل public-files). تبقى في المزامنة حتى تتصرّف.",
+    "nginxUnusedHint": "إعداد افتراضي / catch-all (000-default). يبقى في المزامنة حتى تتصرّف."
   },
   "systemd": {
     "enabled": "ممكّن",
@@ -12240,7 +12374,7 @@
     "diskQuotaHint": "Presets are GiB; custom box is MiB.",
     "bandwidthHint": "0 means unlimited.",
     "impersonateHint": "Opens a session as this user. Use the account menu to leave impersonation.",
-    "operatorHighRiskHint": "The factory operator role includes high-risk writes (services, firewall, package apply, MySQL, Nginx publish). Narrow it only if you intend to change every existing operator."
+    "operatorHighRiskHint": "دور المشغّل الافتراضي يشمل كتابات عالية المخاطر. تضييقه يؤثر على الحسابات الجديدة فقط؛ تغيير الافتراضي يؤثر على المشغّلين الحاليين."
   },
   "vnc": {
     "pageDesc": "خادم وعميل VNC",

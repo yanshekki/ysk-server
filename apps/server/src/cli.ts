@@ -78,6 +78,7 @@ const CLI_COMMANDS = [
   'protection',
   'cdn',
   'agents',
+  'fleet',
   'agent',
   'store',
   'files',
@@ -1623,6 +1624,11 @@ async function mainInner(
       } = await import('ysk-server-core');
 
       if (sub === 'help' || sub === '--help') {
+        const leaf = cliPositionals(args).slice(2)[0];
+        if (leaf === 'from-project') {
+          process.stderr.write(`${tl('cli.usage.cdn.from-project.--project-id.id.--edge-id.a96f42')}\n`);
+          return 0;
+        }
         process.stderr.write(`${tl('cli.usage.cdn.sub.--data-dir.path.--json.092842')}\n`);
         return 2;
       }
@@ -1880,6 +1886,10 @@ async function mainInner(
     } finally {
       closeAppContext(ctx);
     }
+  }
+
+  if (command === 'fleet') {
+    return mainInner(['agents', 'fleet', ...args.slice(1)], json, 'agents', parsed);
   }
 
   if (command === 'agents') {
@@ -2228,6 +2238,12 @@ async function mainInner(
         if (leaf === 'restore') {
           process.stderr.write(
             'Usage: ysk-server backup restore --project-id ID --name ARCHIVE [--mode full|web|dry-run] [--target DIR]\n',
+          );
+          return 0;
+        }
+        if (leaf === 'settings') {
+          process.stderr.write(
+            'Usage: ysk-server backup settings [--set ...] [--execute]\n',
           );
           return 0;
         }
@@ -3076,6 +3092,13 @@ async function mainInner(
   if (command === 'projects') {
     const sub = cliPositionals(args).slice(1)[0] ?? 'list';
     if (sub === 'help' || sub === '--help') {
+      const leaf = cliPositionals(args).slice(2)[0];
+      if (leaf === 'delete') {
+        process.stderr.write(
+          'Usage: ysk-server projects delete --id UUID [--execute]\n',
+        );
+        return 0;
+      }
       process.stderr.write(`${tl('cli.usage.projects.list.get.create.deploy.253b48')}\n`);
       return 0;
     }
@@ -3571,7 +3594,17 @@ async function mainInner(
         return 0;
       }
       if (sub === 'leftovers') {
-        const { probeHostLeftovers } = await import('ysk-server-core');
+        const execute = wantsHostExecute(args);
+        const { probeHostLeftovers, applyHostLeftovers } = await import('ysk-server-core');
+        if (execute) {
+          const r = await applyHostLeftovers({
+            host: ctx.host,
+            currentVersion: VERSION,
+            execute: true,
+          });
+          printJson(r);
+          return r.ok ? 0 : 1;
+        }
         const r = await probeHostLeftovers({ host: ctx.host, currentVersion: VERSION });
         printJson({
           ok: r.ok,
@@ -3579,6 +3612,7 @@ async function mainInner(
           notes: [
             ...r.notes,
             tl('notes.leftover.overlayDoesNotHeal'),
+            'Pass --execute (root + YSK_EXECUTE=1) to remove stale CLI bins and disable missing-cert TLS so vsftpd/Dovecot can start.',
           ],
         });
         return r.ok ? 0 : 1;
@@ -3788,12 +3822,13 @@ async function mainInner(
         return exitFromResult(result);
       }
       if (sub === 'runtimes' || sub === 'runtimes-probe') {
-        const { probeRuntimes, listSupportedRuntimes } = await import('ysk-server-core');
+        const { probeRuntimes, listSupportedRuntimes, supportedFromProbe } = await import('ysk-server-core');
         try {
+          const probe = await probeRuntimes(ctx.host, { dataDir: ctx.dataDir });
           printJson({
             ok: true,
-            supported: listSupportedRuntimes(),
-            probe: await probeRuntimes(ctx.host, { dataDir: ctx.dataDir }),
+            supported: supportedFromProbe(probe),
+            probe,
           });
           return 0;
         } catch (e) {
@@ -4292,6 +4327,15 @@ async function mainInner(
       importDbClusterSync } = await import('ysk-server-core');
     const ctx = openCliContext(args);
     try {
+      if (sub === 'help' || sub === '--help') {
+        const leaf = cliPositionals(args).slice(2)[0];
+        if (leaf === 'create') {
+          process.stderr.write(`${tl('cli.usage.cli.name.db-cluster.create.--name.e3b733', { CLI_NAME })}\n`);
+          return 0;
+        }
+        process.stderr.write(`${tl('cli.usage.cli.name.db-cluster.list.get.3b9cfa', { CLI_NAME })}\n`);
+        return 0;
+      }
       if (sub === 'list' || sub === 'ls') {
         const engineRaw = getOpt(args, '--engine');
         const engine =
@@ -4534,7 +4578,9 @@ async function mainInner(
           clusterId: id,
           memberId: getOpt(args, '--member'),
           execute: wantsHostExecute(args),
-          identityId: getOpt(args, '--identity') });
+          identityId: getOpt(args, '--identity'),
+          username: getOpt(args, '--user') ?? getOpt(args, '--username') ?? undefined,
+        });
         printJson(result);
         return exitFromResult(result);
       }
@@ -4600,6 +4646,34 @@ async function mainInner(
       uninstallSshIdentity } = await import('ysk-server-core');
     const ctx = openCliContext(args);
     try {
+      if (sub === 'help' || sub === '--help') {
+        const leaf = cliPositionals(args).slice(2)[0];
+        if (leaf === 'test') {
+          process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.test.--id.e1aed3', { CLI_NAME })}\n`);
+          return 0;
+        }
+        if (leaf === 'inbound-list') {
+          process.stderr.write(
+            'Usage: ysk-server ssh-key inbound-list [--user LINUX]\n',
+          );
+          return 0;
+        }
+        process.stderr.write(`${tl('cli.usage.cli.name.ssh-key.list.get.2c92c6', { CLI_NAME })}\n`);
+        return 0;
+      }
+      if (sub === 'inbound-list') {
+        const { listSftpKeys } = await import('ysk-server-core');
+        const items = listSftpKeys(ctx.db, getOpt(args, '--user') ?? undefined);
+        printJson({
+          ok: true,
+          items,
+          notes: [
+            'Inbound authorized keys (not the outbound ssh-key vault).',
+            'Add with: ysk-server ssh-key authorize-self --id UUID --execute',
+          ],
+        });
+        return 0;
+      }
       if (sub === 'list' || sub === 'ls') {
         const purposeRaw = getOpt(args, '--purpose');
         const purpose =
@@ -5489,6 +5563,15 @@ async function mainInner(
       probeFirewallDeep } = await import('ysk-server-core');
     const ctx = openCliContext(args);
     try {
+      if (sub === 'help' || sub === '--help') {
+        const leaf = cliPositionals(args).slice(2)[0];
+        if (leaf === 'ban') {
+          process.stderr.write(`${tl('cli.usage.cli.name.defense.ban.--ip.cc22de', { CLI_NAME })}\n`);
+          return 0;
+        }
+        process.stderr.write(`${tl('cli.usage.cli.name.defense.status.bans.a8d96b', { CLI_NAME })}\n`);
+        return 0;
+      }
       if (sub === 'status') {
         const status = await getDefenseStatus({
           host: ctx.host,
@@ -6422,6 +6505,7 @@ async function mainInner(
         const {
           probeRuntimes,
           listSupportedRuntimes,
+          supportedFromProbe,
           planOrInstallRuntime,
           defaultRuntimeVersion,
           switchRuntimeDefault,
@@ -6443,10 +6527,11 @@ async function mainInner(
 
         if (act === 'list' || act === 'status' || act === 'probe') {
           try {
+            const probe = await probeRuntimes(ctx.host, { dataDir: ctx.dataDir });
             printJson({
               ok: true,
-              supported: listSupportedRuntimes(),
-              probe: await probeRuntimes(ctx.host, { dataDir: ctx.dataDir }),
+              supported: supportedFromProbe(probe),
+              probe,
             });
             return 0;
           } catch (e) {

@@ -125,10 +125,17 @@ export async function handleSoftwareStackRoutes(
       removeProduct?: boolean;
       dryRun?: boolean;
     };
+    if (data.all && !(data.bundles?.length || data.components?.length)) {
+      sendOpsResult(res, {
+        ok: false,
+        notes: ['Specify bundles or components; empty selection no longer means remove all'],
+      } as unknown as Record<string, unknown>);
+      return true;
+    }
     const result = await uninstallStack({
       host: ctx.host,
       dataDir: ctx.dataDir,
-      all: data.all,
+      all: false,
       bundles: data.bundles,
       components: data.components,
       dataPolicy: data.dataPolicy ?? 'keep',

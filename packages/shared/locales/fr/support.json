@@ -29,5 +29,10 @@
   "diagTitle": "Diagnostic summary",
   "diagBody": "Copy version, execute, and host facts to paste into an email. This is not a full log bundle.",
   "diagCopy": "Copy diagnostic summary",
-  "diagCopied": "Diagnostic summary copied"
+  "diagCopied": "Diagnostic summary copied",
+  "copyTitle": "Copier {{address}}",
+  "diagCopyTitle": "Copier version, EXECUTE et faits hôte",
+  "diagPreview": "Aperçu de ce qui sera copié",
+  "diagLoading": "Loading diagnostic…",
+  "diagLoadFailed": "Could not load diagnostic"
 }

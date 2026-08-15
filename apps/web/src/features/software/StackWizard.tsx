@@ -122,9 +122,13 @@ export function StackWizard() {
           return;
         }
       }
+      if (!unBundles.length) {
+        setError(t('stackWizard.uninstallNeedSelect'));
+        return;
+      }
       const r = await softwareApi.stackUninstall({
-        bundles: unBundles.length ? unBundles : undefined,
-        all: unBundles.length === 0,
+        bundles: unBundles,
+        all: false,
         dataPolicy,
         dryRun });
       setResult(r);
@@ -291,7 +295,14 @@ export function StackWizard() {
             </select>
           </Field>
           <div className="stack-wizard__actions u-flex u-gap-2 u-flex-wrap u-mt-3">
-            <Button disabled={busy} variant="secondary" onClick={() => void runUninstall(true)}>
+            <Button
+              disabled={busy || unBundles.length === 0}
+              variant="secondary"
+              title={
+                unBundles.length === 0 ? t('stackWizard.uninstallNeedSelect') : undefined
+              }
+              onClick={() => void runUninstall(true)}
+            >
               {t('stackWizard.dryRun')}
             </Button>
             <Button

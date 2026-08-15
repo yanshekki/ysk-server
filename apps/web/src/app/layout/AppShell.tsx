@@ -358,7 +358,7 @@ export function AppShell() {
         </header>
         <main className="shell__content">
           {catalogReady ? (
-            <Outlet />
+            <Outlet key={normalizeLocale(i18n.language)} />
           ) : (
             <div className="u-pad-panel muted u-text-sm">{t('common.loading')}</div>
           )}

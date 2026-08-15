@@ -64,5 +64,13 @@
   "pickKey": "বিষয়বস্তু দেখতে বাম দিকে একটি কী নির্বাচন করুন.",
   "ttlPrefix": "TTL: {{ttl}}",
   "writeLiveHint": "লাইভ রেডিস লেখেন; এক ক্লিকে প্যানেল থেকে পূর্বাবস্থায় ফেরানো যাবে না।",
-  "refPath": "রেফারেন্স: {{path}}"
+  "refPath": "রেফারেন্স: {{path}}",
+  "dbEmptyMark": " · খালি",
+  "noRequirepass": "সুরক্ষিত মোড চালু, কিন্তু requirepass খালি বা পড়া হয়নি — পাসওয়ার্ড নেই।",
+  "setRequirepass": "পাসওয়ার্ড সেট করুন",
+  "rdbOnlyLossHint": "AOF বন্ধ ও RDB চালু। পুনরায় চালু বা ক্র্যাশে সাম্প্রতিক লেখা হারাতে পারে।",
+  "dirDataContainer": "/data (container)",
+  "dirHostDefault": "/var/lib/redis",
+  "dirDefaultInstance": "/var/lib/redis/default",
+  "dirDataWarn": "/data is usually a container path; this panel cannot confirm it exists."
 }

@@ -9,6 +9,7 @@ import {
   planOrInstallRuntime,
   probeRuntimes,
   versionOutputMatchesPin,
+  extractPin,
 } from './runtime-probe.js';
 
 describe('versionOutputMatchesPin', () => {
@@ -19,6 +20,9 @@ describe('versionOutputMatchesPin', () => {
     expect(versionOutputMatchesPin('v20.18.0', '18')).toBe(false);
     expect(versionOutputMatchesPin('PHP 8.2.12 (cli)', '8.2')).toBe(true);
     expect(versionOutputMatchesPin('PHP 8.10.0 (cli)', '8.1')).toBe(false);
+    expect(extractPin('java', 'openjdk version "21.0.11" 2026-04-21')).toBe('21');
+    expect(extractPin('java', 'openjdk version "21.0.11" 2026-04-21') === '11').toBe(false);
+    expect(extractPin('kotlin', 'info: kotlinc-jvm 2.4.10 (JRE 21.0.11+10)')).toBe('2.4.10');
   });
 });
 

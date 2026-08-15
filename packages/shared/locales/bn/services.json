@@ -63,5 +63,7 @@
     "running": "Running",
     "failed": "Failed",
     "missing": "Not installed"
-  }
+  },
+  "stopNeedConfirm": "নিশ্চিতকরণ প্রয়োজন",
+  "stopNeedConfirmPhrase": "নিশ্চিতকরণ বাক্যাংশ লিখতে হবে"
 }

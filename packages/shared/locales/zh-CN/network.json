@@ -147,5 +147,7 @@
   "linkDownNeedConfirm": "需輸入介面名稱確認",
   "persistNmHint": "可持久化代表经 NetworkManager 写入后，重启后设定仍然有效。",
   "deleteDefaultPanelWarn": "Deleting the default route can drop this panel session. Type DEFAULT to confirm.",
-  "typeDefaultToConfirm": "Type DEFAULT to confirm"
+  "typeDefaultToConfirm": "Type DEFAULT to confirm",
+  "deleteDefaultNeedConfirm": "需确认 — 请输入 DEFAULT（可能中断本面板）",
+  "deleteRouteNeedConfirm": "需确认"
 }

@@ -80,7 +80,8 @@
     "openFirewall": "إذا كان عامًا: السماح بمنفذ اللوحة {{port}}/tcp (جدار الحماية → فتح المنفذ → لوحة 9287)",
     "disableConfirmTitle": "Disable panel HTTPS?",
     "disableConfirmDesc": "The panel will serve HTTP. WebAuthn / Passkey will stop working until HTTPS is on again.",
-    "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP."
+    "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP.",
+    "disableNeedConfirm": "يلزم التأكيد — اكتب DISABLE-HTTPS"
   },
   "timeNtp": "الوقت وNTP",
   "clockStatus": "حالة ساعة النظام",
@@ -188,5 +189,10 @@
   "dryRunFlag": "التشغيل الجاف",
   "timezoneSearch": "Filter timezones…",
   "resyncNtp": "Re-sync NTP",
-  "storageSub": "Disk usage"
+  "storageSub": "Disk usage",
+  "syncReloadNeedConfirm": "يحتاج تأكيدًا — يكتب /etc/nginx/conf.d ويعيد تحميل Nginx",
+  "nginxLeftover": "بقايا",
+  "nginxUnused": "غير مستخدم",
+  "nginxLeftoverHint": "إعدادات بقايا (مثل public-files). تبقى في المزامنة حتى تتصرّف.",
+  "nginxUnusedHint": "إعداد افتراضي / catch-all (000-default). يبقى في المزامنة حتى تتصرّف."
 }

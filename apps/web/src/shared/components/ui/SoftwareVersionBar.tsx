@@ -332,6 +332,13 @@ export function SoftwareVersionBar({
             variant="danger"
             size="sm"
             disabled={busy || stream?.isBusy}
+            title={
+              softwareId === 'ufw'
+                ? t('softwareLifecycle.uninstallUfwWarn')
+                : softwareId === 'fail2ban'
+                  ? t('softwareLifecycle.uninstallFail2banWarn')
+                  : t('softwareLifecycle.uninstall')
+            }
             onClick={() => setUninstallOpen(true)}
           >
             {t('softwareLifecycle.uninstall')}
@@ -363,7 +370,11 @@ export function SoftwareVersionBar({
                 defaultValue:
                   'Removing certbot stops automatic renewal of existing Let\'s Encrypt certificates.',
               })
-            : undefined
+            : softwareId === 'ufw'
+              ? t('softwareLifecycle.uninstallUfwWarn')
+              : softwareId === 'fail2ban'
+                ? t('softwareLifecycle.uninstallFail2banWarn')
+                : undefined
         }
         busy={busy}
         onClose={() => !busy && setUninstallOpen(false)}

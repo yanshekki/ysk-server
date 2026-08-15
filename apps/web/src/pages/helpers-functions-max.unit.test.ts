@@ -13,6 +13,7 @@ import {
   clampScanIntervalSeconds,
   isActionableSuspect,
   filterActionableSuspects,
+  formatSignalValue,
 } from './features/ProtectionPage';
 import {
   formatBytes as filesFormatBytes,
@@ -126,6 +127,9 @@ describe('ProtectionPage helpers', () => {
     expect(recommendedPresetForThreat('under_attack')).toBe('under_attack');
     expect(recommendedPresetForThreat('elevated')).toBe('hardened');
     expect(recommendedPresetForThreat('calm')).toBeNull();
+    expect(formatSignalValue(true, t)).toBe('common.yes');
+    expect(formatSignalValue('inactive', t)).toBe('protection.signalInactive');
+    expect(formatSignalValue('1 jails', t)).toBe('protection.signalJails:{"n":1}');
   });
 
   it('summarizeOpsNotes / tone / relTime / suspects / clamp', () => {

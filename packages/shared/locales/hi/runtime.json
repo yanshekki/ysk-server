@@ -511,5 +511,19 @@
   "alreadyHostDefaultShort": "होस्ट डिफ़ॉल्ट",
   "managedPathMissingTitle": "Managed {{name}} path not ready",
   "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall.",
-  "installRecordedCta": "Install recorded {{v}}"
+  "installRecordedCta": "Install recorded {{v}}",
+  "targetMissing": "लक्ष्य संस्करण स्थापित नहीं",
+  "targetMissingHint": "लक्ष्य {{version}} इस होस्ट पर नहीं है। स्थापित संस्करण बाँधें या यह पिन स्थापित करें।",
+  "needsInstall": "स्थापित करना होगा",
+  "needsInstallHint": "इस होस्ट पर नहीं है। पहले स्थापित करें या स्थापित संस्करण चुनें।",
+  "unitBytes": "बाइट",
+  "headerSizeKb": "{{n}} KB",
+  "phpIniChipEmpty": "लोड नहीं — php.ini टैब खोलें",
+  "phpFpmService": "PHP-FPM",
+  "phpFpmServiceDesc": "PHP-FPM इकाई शुरू, रोक, रीलोड या पुनः प्रारंभ करें",
+  "rustupDefaultMissingTitle": "rustup डिफ़ॉल्ट टूलचेन नहीं",
+  "rustupDefaultMissing": "rustup का डिफ़ॉल्ट नहीं है। सॉफ़्टवेयर टैब पर stable सेट करें।",
+  "rustupDefaultMissingShort": "No default toolchain",
+  "rustupSetDefaultHint": "Set default toolchain",
+  "uninstalledCountHint": "{{n}} संस्करण इस होस्ट पर नहीं"
 }

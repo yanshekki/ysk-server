@@ -137,6 +137,13 @@ export function formatLoadAvg(
   return load.slice(0, 3).map((x) => x.toFixed(2)).join(' · ');
 }
 
+/** Unusual if not under /home/ (canonical isolation is /home/ysk-server-{id}). */
+export function isUnusualProjectHome(homeDir: string): boolean {
+  const p = String(homeDir || '').trim();
+  if (!p) return false;
+  return !p.startsWith('/home/');
+}
+
 export function MetricsPage() {
   const { t, i18n } = useTranslation();
   const [tab, setTab] = usePageTab(MET_TABS, 'overview');
@@ -1392,7 +1399,7 @@ export function MetricsPage() {
                     title={t('metrics.projectUsageTitle', { count: projectUsage?.items.length ?? 0 })}
                     description={
                       projectUsage
-                        ? t('metrics.projectUsageDesc', { total: formatBytes(projectUsage.totalUsedBytes), at: new Date(projectUsage.at).toLocaleString() })
+                        ? t('metrics.projectUsageDesc', { total: formatBytes(projectUsage.totalUsedBytes), at: formatDateTimeLocale(projectUsage.at, i18n.language) })
                         : t('metrics.projectUsageDescEmpty')
                     }
                     toolbar={
@@ -1427,11 +1434,18 @@ export function MetricsPage() {
                         header: t('metrics.colHome'),
                         render: (r) => {
                           const full = r.homeDir || '';
-                          const short = full.replace(/^\/home\//, '~/');
+                          const unusual = isUnusualProjectHome(full);
                           return (
-                            <code className="inline" title={full}>
-                              {short || '—'}
-                            </code>
+                            <span>
+                              <code className="inline" title={full}>
+                                {full || '—'}
+                              </code>
+                              {unusual ? (
+                                <Badge tone="warn" title={t('metrics.unusualHomeHint')}>
+                                  {t('metrics.unusualHome')}
+                                </Badge>
+                              ) : null}
+                            </span>
                           );
                         } },
                       {
@@ -1448,7 +1462,20 @@ export function MetricsPage() {
                         header: t('metrics.ratio'),
                         render: (r) => {
                           if (r.usedRatio == null) {
-                            return <span className="muted">—</span>;
+                            return (
+                              <span
+                                className="muted"
+                                title={t('metrics.shareNoQuotaHint')}
+                              >
+                                —
+                                {' '}
+                                <Link
+                                  to={`/projects/${encodeURIComponent(r.projectId)}?tab=isolation`}
+                                >
+                                  {t('metrics.setQuotaLink')}
+                                </Link>
+                              </span>
+                            );
                           }
                           const pct = Math.round(r.usedRatio * 100);
                           return (

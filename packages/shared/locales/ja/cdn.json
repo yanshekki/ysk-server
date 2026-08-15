@@ -120,5 +120,15 @@
   "statOffline": "Offline {{n}}",
   "statDraining": "Draining {{n}}",
   "statHitRate": "Hit rate {{v}}",
-  "hitNoStats": "No edge stats yet"
+  "hitNoStats": "エッジ統計はまだありません",
+  "loopbackOriginBlocked": "ループバック origin {{url}} は遠隔エッジに書きません。到達可能な origin に変えてください。",
+  "applyFailedHint": "適用に失敗 — 下のメモを見てください",
+  "applyStatus": {
+    "draft": "下書き",
+    "planned": "計画済み",
+    "applying": "適用中",
+    "applied": "適用済み",
+    "failed": "失敗",
+    "partial": "一部"
+  }
 }

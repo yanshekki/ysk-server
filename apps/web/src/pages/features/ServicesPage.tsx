@@ -24,6 +24,7 @@ import { useFeatureAction } from '../../features/system/useFeatureAction';
 import { dbClusterApi } from '../../features/db-service/cluster-api';
 import { StackWizard } from '../../features/software/StackWizard';
 import { useCapabilities } from '../../shared/hooks/useCapabilities';
+import { usePageTab } from '../../shared/hooks/usePageTab';
 import { bindSet, bindInput, bindCall2 } from '../bind-handlers';
 
 export function enabledLabel(v: string, t: TFunction): string {
@@ -79,7 +80,9 @@ export function ServicesPage() {
   }>({});
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState('matrix');
+  const [tab, setTab] = usePageTab(['matrix', 'stack', 'about'] as const, 'matrix', {
+    aliases: { packages: 'stack', software: 'stack', plans: 'stack' },
+  });
   const [catFilter, setCatFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'failed' | 'running' | 'missing'>(
     'all',
@@ -454,7 +457,14 @@ export function ServicesPage() {
                                 size="sm"
                                 loading={busy}
                                 disabled={!canMutate || !row.installed}
-                                title={!row.installed ? t('common.notInstalled') : undefined}
+                                title={
+                                  !row.installed
+                                    ? t('common.notInstalled')
+                                    : lifecycleDangerForUnit(row.unit) === 'panel' ||
+                                        lifecycleDangerForUnit(row.unit) === 'sshd'
+                                      ? t('services.stopNeedConfirmPhrase')
+                                      : t('services.stopNeedConfirm')
+                                }
                                 onClick={() =>
                                   setPendingLc({
                                     unit: row.unit,

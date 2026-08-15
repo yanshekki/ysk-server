@@ -147,5 +147,7 @@
   "hideRaw": "Hide raw output",
   "rawLoadedAt": "Loaded {{time}}",
   "deleteDefaultPanelWarn": "Deleting the default route can drop this panel session. Type DEFAULT to confirm.",
-  "typeDefaultToConfirm": "Type DEFAULT to confirm"
+  "typeDefaultToConfirm": "Type DEFAULT to confirm",
+  "deleteDefaultNeedConfirm": "يلزم التأكيد — اكتب DEFAULT (قد يقطع هذا اللوحة)",
+  "deleteRouteNeedConfirm": "يلزم التأكيد"
 }

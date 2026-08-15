@@ -237,6 +237,7 @@ export async function getFail2banDeepStatus(input: {
   jails: Array<{ name: string; currentlyBanned?: number; totalBanned?: number }>;
   banned: Array<{ jail: string; ip: string }>;
   ignoreIps: string[];
+  ignoreipFile: string;
   catalog: typeof FAIL2BAN_JAIL_CATALOG;
   executeEnabled: boolean;
   isRoot: boolean;
@@ -273,6 +274,7 @@ export async function getFail2banDeepStatus(input: {
     jails: st.jails,
     banned,
     ignoreIps,
+    ignoreipFile: join(input.dataDir, 'fail2ban', 'ignoreip.txt'),
     catalog: FAIL2BAN_JAIL_CATALOG,
     executeEnabled: st.executeEnabled,
     isRoot: st.isRoot,

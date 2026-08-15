@@ -249,7 +249,8 @@
     "cleanupConflictsTitle": "Limpar todos os resíduos de conflito?",
     "cleanupConflictsDesc": "Remova todos os artefatos no disco que entrem em conflito com um projeto ou ServerName independente. As linhas do projeto são mantidas.",
     "artifactRemovedOk": "Configuração residual removida",
-    "sslTerminatedUpstream": "TLS ends at front Nginx"
+    "sslTerminatedUpstream": "TLS ends at front Nginx",
+    "removeArtifactHint": "Apaga só este conf residual em disco. Não elimina o projeto."
   },
   "applyStatus": {
     "draft": "Rascunho",
@@ -597,7 +598,7 @@
     "seedStatusChecking": "Checking",
     "seedStatusPaused": "Paused",
     "seedStatusQueued": "Queued",
-    "swarmLeftover": "O tracker tem {{count}} anúncio(s) fora da biblioteca",
+    "swarmLeftover": "O Tracker tem {{count}} anúncio(s) fora da biblioteca (origem distinta da lista de torrents)",
     "addSourceSection": "Origem",
     "addSourceFile": "Ficheiro",
     "addSourceMagnet": "Magnet",
@@ -768,7 +769,17 @@
     "statOffline": "Offline {{n}}",
     "statDraining": "Draining {{n}}",
     "statHitRate": "Hit rate {{v}}",
-    "hitNoStats": "No edge stats yet"
+    "hitNoStats": "Ainda sem estatísticas de bordo",
+    "loopbackOriginBlocked": "Não aplica o origin de loopback {{url}} a um bordo remoto. Defina um origin alcançável.",
+    "applyFailedHint": "Falha ao aplicar — veja as notas abaixo",
+    "applyStatus": {
+      "draft": "Rascunho",
+      "planned": "Planeado",
+      "applying": "A aplicar",
+      "applied": "Aplicado",
+      "failed": "Falhou",
+      "partial": "Parcial"
+    }
   },
   "cli": {
     "unknownCommand": "Comando desconhecido: {{command}}\nExecute `{{cli}} ajuda`",
@@ -2079,7 +2090,8 @@
     "all": "All",
     "showPassword": "Show",
     "hidePassword": "Hide",
-    "more": "More"
+    "more": "More",
+    "redirectedTo": "Aberto {{to}} (antes {{from}})"
   },
   "cron": {
     "presetCdTrue": "aplicativo cd + verdadeiro (teste)",
@@ -2319,7 +2331,7 @@
     "runtime": "Tempo de execução",
     "runtimeHint": "Define a versão de tempo de execução padrão e o estilo de implantação",
     "runtimeVersion": "Versão de tempo de execução",
-    "versionHint": "Armazenado como projeto runtime_version",
+    "versionHint": "Grava a definição de versão do ambiente de execução do projeto",
     "serverIpv4": "Servidor IPv4",
     "serverIpv4Hint": "DNS A / correio SPF",
     "serverIpv4Ph": "Este host IPv4 público",
@@ -2353,7 +2365,7 @@
     "notifAll": "All",
     "notifDismiss": "Hide",
     "goFix": "Fix",
-    "needDomainFirst": "Enter a domain first"
+    "needDomainFirst": "Introduza primeiro um domínio"
   },
   "dataTable": {
     "empty": "Sem dados",
@@ -2657,7 +2669,14 @@
     "remoteTestDone": "Remote host probe finished",
     "remoteTestOk": "reachable",
     "remoteTestFail": "unreachable",
-    "remoteNotChecked": "not tested"
+    "remoteNotChecked": "not tested",
+    "registeredVsHostHint": "Registado no painel / encontrado no anfitrião",
+    "dumpNeedRegistered": "Registe primeiro uma base de dados no painel",
+    "dumpFirstDbTitle": "Exportar a primeira base registada",
+    "importNeedRegistered": "Registe primeiro uma base de dados no painel",
+    "importLatestNeedConfirm": "Precisa de confirmação — importa para a base registada",
+    "adoptHostDbTitle": "Só regista o nome no plano de controlo; não altera dados do anfitrião.",
+    "cleanupExpiredTempUsersTitle": "Remove utilizadores temporários do painel já expirados"
   },
   "dialogs": {
     "confirmDefault": "Confirmar",
@@ -3381,7 +3400,10 @@
     "openQueuePage": "Abrir fila de correio",
     "healthUnchecked": "Not checked yet",
     "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first.",
-    "domainsListDesc": "Mail domains registered on this host"
+    "domainsListDesc": "Mail domains registered on this host",
+    "healthChecklist": "Lista {{score}}/100",
+    "healthChecklistHint": "Pontuação da lista — DNS / PTR / porta 25 ainda não verificados",
+    "healthLiveHint": "Pontuação da sonda ao vivo"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "Não autorizado",
@@ -3525,7 +3547,7 @@
     "statWhitelist": "Whitelist",
     "invalidIp": "Enter a valid IPv4, IPv6, or CIDR.",
     "whitelistPendingApply": "Saved to the panel list. Press Apply policy to write jail.local.",
-    "ignoreipFile": "Panel data directory / fail2ban / ignoreip.txt",
+    "ignoreipFile": "dataDir/fail2ban/ignoreip.txt",
     "jailsTabHint": "Status of active jails. Turn jails on or off in the Policy tab.",
     "colJail": "Jail",
     "colEnabled": "On",
@@ -3542,7 +3564,11 @@
     },
     "cannotBanSelf": "This is the host or your login IP — add it to ignoreip instead of banning",
     "suggestIgnoreHint": "Suggested admin IPs (panel file only until you apply policy):",
-    "suggestIgnoreAdd": "Add {{ip}}"
+    "suggestIgnoreAdd": "Add {{ip}}",
+    "whitelistEmptyWarn": "A lista branca está vazia e as jails podem bloqueá-lo. Adicione o IP de início antes de aplicar ignoreip.",
+    "suggestIgnoreLogin": "O seu IP de início {{ip}}",
+    "applyIgnoreEmptyWarn": "Aplicar com lista branca vazia limpa o ignoreip",
+    "applyIgnoreNeedConfirm": "Reescreve o ignoreip do jail e recarrega o fail2ban"
   },
   "featurePage": {
     "back": "Voltar"
@@ -3898,7 +3924,9 @@
     "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
     "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone.",
     "webdavReissueUnchanged": "Token id did not change after re-issue — the write may not have persisted. Try again.",
-    "webdavDisableFailed": "WebDAV is still enabled after disable — the write may not have persisted. Try again."
+    "webdavDisableFailed": "WebDAV is still enabled after disable — the write may not have persisted. Try again.",
+    "dirNamedLikeFile": "(pasta residual; o nome parece um ficheiro)",
+    "webdavAfterEnable": "Disponível depois de ativar o WebDAV e emitir um token."
   },
   "firewall": {
     "profiles": {
@@ -4438,7 +4466,8 @@
     "envPanelValue": "panel: {{value}}",
     "settingsNoSandboxWarn": "Disables Chromium sandbox. Use only inside a trusted container. Applies on next real-browser session.",
     "settingsDangerDlWarn": "Allows executable and script downloads through the host browser. Confirm you need this.",
-    "settingsDangerConfirmTitle": "Enable a high-risk browse setting?"
+    "settingsDangerConfirmTitle": "Enable a high-risk browse setting?",
+    "needUrl": "Introduza um URL acima para iniciar uma sessão."
   },
   "listToolbar": {
     "searchPlaceholder": "Procurar…",
@@ -4616,7 +4645,21 @@
     "aboutCustomPath": "Add a custom path on Settings (only /var/log or /run/log). Then open it from Explore.",
     "noRowsInWindow": "No records in this time window",
     "showInactiveUnits": "Show inactive units",
-    "sseNeedFollow": "Turn on Follow first — SSE is only for live tail"
+    "sseNeedFollow": "Turn on Follow first — SSE is only for live tail",
+    "vacuumNeedRetention": "Introduza primeiro uma janela de retenção (p.ex. 14d)",
+    "vacuumNeedConfirm": "Precisa de confirmação — apaga journal antigos",
+    "vacuumSizeNeedConfirm": "Precisa de confirmação — limita o disco do journal",
+    "vacuumSizeAlreadyBelow": "O uso atual já está abaixo do limite; normalmente não apaga nada.",
+    "vacuumSizeNoopDesc": "O journal já está abaixo de 500 MB. Ainda corre vacuum --size=500M e normalmente não apaga nada.",
+    "journalDiskHint": "Uso atual do systemd-journald (journal ativo). Não inclui rodados em /var/log.",
+    "varLogDiskHint": "Estimativa de /var/log, incluindo rodados.",
+    "queryFirst": "Consulte primeiro",
+    "projectSourcesTitle": "{{n}} origem(ns) (ficheiros + journal)",
+    "logrotatePath": "Path",
+    "logrotateLast": "Last rotated",
+    "logrotateExpand": "Show {{n}} more",
+    "logrotateCollapse": "Show fewer",
+    "logrotateVersion": "Status version {{v}}"
   },
   "metrics": {
     "alert": {
@@ -4758,7 +4801,11 @@
     "colHome": "Home",
     "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab.",
     "alertsBuiltinOnly": "Built-in CPU / memory / disk thresholds only. No email, webhook, or Slack channel.",
-    "lastEvaluated": "Last checked"
+    "lastEvaluated": "Last checked",
+    "shareNoQuotaHint": "Sem quota, a parte não é uma percentagem. Defina-a no separador Isolamento do projeto.",
+    "setQuotaLink": "Definir quota",
+    "unusualHome": "Caminho invulgar",
+    "unusualHomeHint": "Not a /home/… project home. Canonical isolation is /home/ysk-server-{id}."
   },
   "migrate": {
     "tabInventory": "Inventário",
@@ -4844,7 +4891,9 @@
     "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
     "orphanRemove": "Remove leftover home",
     "orphanRemoveTitle": "Delete leftover project home?",
-    "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1."
+    "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1.",
+    "orphanRemovePhrase": "Escreva DELETE para confirmar.",
+    "orphanRemoveNeedConfirm": "Requer confirmação"
   },
   "multiCheck": {
     "customPlaceholder": "Código personalizado",
@@ -5095,7 +5144,9 @@
     "hideRaw": "Hide raw output",
     "rawLoadedAt": "Loaded {{time}}",
     "deleteDefaultPanelWarn": "Deleting the default route can drop this panel session. Type DEFAULT to confirm.",
-    "typeDefaultToConfirm": "Type DEFAULT to confirm"
+    "typeDefaultToConfirm": "Type DEFAULT to confirm",
+    "deleteDefaultNeedConfirm": "Requer confirmação — escreva DEFAULT (pode interromper este painel)",
+    "deleteRouteNeedConfirm": "Requer confirmação"
   },
   "nginx": {
     "pillSites": "{{count}} sites",
@@ -5706,7 +5757,7 @@
       "n0259": "domínio",
       "n0260": "domínio não encontrado:",
       "n0261": "falha no recarregamento do dovecot ou servicenot (peneira escrita; recarregamento com sucesso)",
-      "n0262": "despacho de frota a seco (não )",
+      "n0262": "ensaio de envio da frota (não colocado em fila)",
       "n0263": "push de pares de simulação (não scp)",
       "n0264": "instalação remota de simulação (não ssh)",
       "n0265": "transferência de simulação concluída (bootstrap completo)",
@@ -7039,7 +7090,7 @@
       "n1590": "",
       "n1591": "Não root – os caminhos do sistema useradd / systemd / nginx são restritos",
       "n1592": "não seccomp requer runAsUser",
-      "n1593": "painelpor favor /",
+      "n1593": "Pedidos públicos / min",
       "n1594": "conexão do painel; Disponível\"\" ( )",
       "n1595": "O painel não está sendo executado como root",
       "n1596": "Disponível aplicar:falso",
@@ -7310,7 +7361,7 @@
       "t0251": "{{v0}} Instalação incompleta",
       "t0252": "{{v0}} início do serviço",
       "t0253": "Falha na inicialização: {{v0}}",
-      "t0254": "Suporta versão Node.js {{v0}}; Versão disponível: {{v1}}",
+      "t0254": "Suporta Node.js {{v0}}; versões disponíveis: {{v1}}",
       "t0255": "Suporta versão PHP {{v0}}; Disponível: {{v1}}",
       "t0256": "Suporta versão Python {{v0}}; Disponível: {{v1}}",
       "t0257": "Suporta versão Go {{v0}}; Disponível: {{v1}}",
@@ -7432,12 +7483,12 @@
       "t0373": "Isolamento do projeto \"{{v0}}\"",
       "t0374": "para caminho local {{v0}}",
       "t0375": "identidade {{v0}}: {{v1}}",
-      "t0376": "scp (identidade) para {{v0}}",
-      "t0377": "scp(identidade) falhou: {{v0}}",
-      "t0378": "scp para {{v0}}",
-      "t0379": "scp falhou: {{v0}}",
-      "t0380": "scp para {{v0}}",
-      "t0381": "scp falhou: {{v0}} (backup de identidade remota)",
+      "t0376": "sftp (identidade) para {{v0}} com êxito",
+      "t0377": "sftp (identidade) falhou: {{v0}}",
+      "t0378": "sftp para {{v0}} com êxito",
+      "t0379": "sftp falhou: {{v0}}",
+      "t0380": "sftp para {{v0}} com êxito",
+      "t0381": "sftp falhou: {{v0}} (pode definir backup remote identityId)",
       "t0382": "S3 {{v0}}",
       "t0383": "S3 falhou: {{v0}}",
       "t0384": ": {{v0}}/{{v1}} admin Habilitado 2FA",
@@ -7445,7 +7496,7 @@
       "t0386": "{{v0}} CAMINHO",
       "t0387": "{{v0}} não encontrado",
       "t0388": "Instale {{v0}} ou adicione-o ao PATH",
-      "t0389": "Versão disponível: {{v0}}",
+      "t0389": "Versões disponíveis: {{v0}}",
       "t0390": "{{v0}}% ({{v1}}MB)",
       "t0391": "{{v0}}% ({{v1}})",
       "t0392": "início do serviço {{v0}}",
@@ -7694,7 +7745,7 @@
       "t0635": "não é possível sondar {{v0}}",
       "t0636": "{{v0}} · {{v1}}",
       "t0637": "projeto {{v0}} · {{v1}} · Banco de dados {{v2}} · Redis {{v3}}",
-      "t0638": "instalar software {{v0}} · casas {{v1}}",
+      "t0638": "Instalar software {{v0}} · homes {{v1}}",
       "t0639": "host de transição {{v0}}",
       "t0640": "{{v0}} warning(s) — review before cutover.",
       "t0641": "chave {{v0}}",
@@ -8275,7 +8326,11 @@
       "dovecot": "Dovecot ssl_cert points at missing {{path}}. Overlay does not rewrite ssl=no. Apply mail TLS after issuing the cert, or apply email stack.",
       "overlayDoesNotHeal": "Product overlay does not rewrite nginx, Apache, vsftpd, or Dovecot. Use the listed apply commands (root + YSK_EXECUTE=1).",
       "readinessTitle": "Host leftovers after overlay",
-      "readinessClean": "No leftover Apache default, missing nginx catch-all, failed vsftpd, or stale CLI detected."
+      "readinessClean": "No leftover Apache default, missing nginx catch-all, failed vsftpd, or stale CLI detected.",
+      "staleCliRemoved": "CLI residual {{path}} removido.",
+      "staleCliRemoveFailed": "Não foi possível remover o CLI residual {{path}}: {{detail}}",
+      "vsftpdSslOff": "Sem certificado FTPS: vsftpd com ssl_enable=NO e reinício.",
+      "dovecotSslOff": "Falta {{path}}: Dovecot com ssl=no e reinício."
     },
     "git": {
       "missingBin": "git is not on PATH",
@@ -8331,6 +8386,11 @@
       "dnsDegraded": "DNS path degraded",
       "reqRateHigh": "Public request rate {{reqs}}/min ≥ {{threshold}}",
       "ddosHeuristic": "High public request rate plus edge probe failure"
+    },
+    "publicFiles": {
+      "liveConf": "Conf Nginx em vigor: {{path}}",
+      "publicRoot": "Raiz pública: {{path}}",
+      "confNameStale": "O ficheiro {{file}} não coincide com o server_name atual {{serverName}}. Volte a aplicar os ficheiros públicos para o renomear."
     }
   },
   "ops": {
@@ -9114,7 +9174,9 @@
     "netForceHttpsOff": "No forced redirect is stored.",
     "netHttpsLiveNotForced": "An edge file exists; HTTPS may already work. This box only forces HTTP→HTTPS.",
     "gitSyncBlockedDirty": "Sync is disabled until local changes are discarded (Reset) or the files match Git.",
-    "gitViewDiff": "View diff"
+    "gitViewDiff": "View diff",
+    "gitBranchAfterUrl": "Introduza primeiro o URL Git. Vazio usa o ramo predefinido remoto.",
+    "gitResetNeedConfirm": "Requer confirmação — descarta commits locais"
   },
   "protection": {
     "levels": {
@@ -9466,13 +9528,27 @@
     "stackApply": "Apply protection stack (UFW, fail2ban, preset)",
     "stackApplyDone": "Protection stack apply requested",
     "stackApplyHint": "This enables UFW and applies fail2ban plus the suggested preset. Confirm you will not lock yourself out of a remote panel.",
-    "cannotBanSelf": "Cannot ban {{ip}} — this is the host, your login, or ignoreip",
+    "cannotBanSelf": "Não é possível bloquear {{ip}} — é o anfitrião, o IP de início ou ignoreip",
     "selfIp": "This host",
     "selfHostIp": "Host IP",
     "selfLoginIp": "Your login IP",
     "showZeroScore": "Show 0-score",
     "hideZeroScore": "Hide 0-score",
-    "freshnessNa": "n/a"
+    "freshnessNa": "n/a",
+    "geoDraftOnly": "Política desligada — Guardar só grava rascunho. O Nginx não aplica até a ativar.",
+    "selectAllCountriesWarn": "Selecionar todos os países em lista de bloqueio? Pode bloquear este anfitrião e o país de início.",
+    "badgeRecommendPreset": "Recomenda-se um predefinição mais forte para a ameaça atual",
+    "badgeAutomationOn": "A automatização está ligada",
+    "badgeBanCount": "Bloqueios ativos",
+    "badgeGeoOn": "A política de acesso Geo está ligada",
+    "badgeGeoNotReady": "A base GeoIP não está pronta",
+    "badgeIntelSignals": "Sinais que somam pontuação agora",
+    "signalActive": "Ativo",
+    "signalInactive": "Inativo",
+    "signalJails": "{{n}} jail(s)",
+    "dbReadyHint": "Ficheiros MMDB presentes",
+    "dbNotReadyHint": "Descarregue primeiro uma base GeoIP",
+    "staleHint": "Se a última atualização bem-sucedida tem mais de 7 dias"
   },
   "publicFiles": {
     "notSet": "Não definido",
@@ -9728,7 +9804,25 @@
     "fixDone": "Permissões dataDir reforçadas (chmod 750)",
     "fixDoneWebUi": "UI da Web construída/instalada",
     "rootLabel": "Superuser",
-    "exportStarted": "Downloading {{name}}"
+    "exportStarted": "Downloading {{name}}",
+    "blockersHint": "Os bloqueios são o subconjunto crítico de Em falta — não são verificações extra.",
+    "techDetails": "Technical details",
+    "missingOwner": "No panel owner assigned (package quota attribution)",
+    "notOsProvisioned": "OS user/home not provisioned yet",
+    "ondrejNone": "No ondrej Launchpad PHP sources detected",
+    "ondrejFound": "Found legacy ondrej/php sources that conflict with packages.sury.org: {{paths}}",
+    "ondrejTitle": "PHP apt source (ondrej residual)",
+    "systemctlActive": "Service is running",
+    "systemctlStatus": "Service status: {{status}}",
+    "binInPath": "{{bin}} in PATH",
+    "leftoverApache": "Apache leftover default site",
+    "leftoverVsftpd": "vsftpd unit failed",
+    "leftoverCli": "Stale leftover CLI",
+    "leftoverNginx": "Nginx catch-all missing",
+    "leftoverDovecot": "Dovecot TLS points at missing cert",
+    "leftoverOther": "Host leftover",
+    "leftoverApply": "Leftover apply",
+    "isolationOwnerDegrades": "Missing owner_user_id affects package quota attribution — status is degraded, not ready."
   },
   "redis": {
     "neverExpire": "Nunca expira",
@@ -9796,7 +9890,15 @@
     "pickKey": "Selecione uma tecla à esquerda para visualizar o conteúdo.",
     "ttlPrefix": "TTL: {{ttl}}",
     "writeLiveHint": "Grava Redis ao vivo; não é possível desfazer no painel com um clique.",
-    "refPath": "Referência: {{path}}"
+    "refPath": "Referência: {{path}}",
+    "dbEmptyMark": " · vazio",
+    "noRequirepass": "O modo protegido está ligado, mas requirepass está vazio ou não foi lido — sem palavra-passe.",
+    "setRequirepass": "Definir palavra-passe",
+    "rdbOnlyLossHint": "AOF desligado e RDB ligado. Um reinício ou falha pode perder escritas recentes.",
+    "dirDataContainer": "/data (container)",
+    "dirHostDefault": "/var/lib/redis",
+    "dirDefaultInstance": "/var/lib/redis/default",
+    "dirDataWarn": "/data is usually a container path; this panel cannot confirm it exists."
   },
   "resources": {
     "created": "Criado",
@@ -10324,7 +10426,21 @@
     "alreadyHostDefaultShort": "Padrão de host",
     "managedPathMissingTitle": "Managed {{name}} path not ready",
     "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall.",
-    "installRecordedCta": "Install recorded {{v}}"
+    "installRecordedCta": "Install recorded {{v}}",
+    "targetMissing": "Versão de destino não instalada",
+    "targetMissingHint": "O destino {{version}} não está neste anfitrião. Ligue uma versão instalada ou instale este pin.",
+    "needsInstall": "é preciso instalar",
+    "needsInstallHint": "Não está neste anfitrião. Instale-o ou escolha uma versão instalada.",
+    "unitBytes": "bytes",
+    "headerSizeKb": "{{n}} KB",
+    "phpIniChipEmpty": "Não carregado — abra o separador php.ini",
+    "phpFpmService": "PHP-FPM",
+    "phpFpmServiceDesc": "Iniciar, parar, recarregar ou reiniciar a unidade PHP-FPM",
+    "rustupDefaultMissingTitle": "Sem toolchain predefinida do rustup",
+    "rustupDefaultMissing": "O rustup não tem predefinição. Defina stable no separador Software.",
+    "rustupDefaultMissingShort": "No default toolchain",
+    "rustupSetDefaultHint": "Set default toolchain",
+    "uninstalledCountHint": "{{n}} versão(ões) não estão neste anfitrião"
   },
   "search": {
     "placeholder": "Pesquisar páginas e recursos…",
@@ -10896,7 +11012,9 @@
       "running": "Running",
       "failed": "Failed",
       "missing": "Not installed"
-    }
+    },
+    "stopNeedConfirm": "Requer confirmação",
+    "stopNeedConfirmPhrase": "É necessário escrever a frase de confirmação"
   },
   "software": {
     "title": "Programas",
@@ -11100,7 +11218,9 @@
     "kindDeploy": "Deploy",
     "kindRuntime": "Runtime",
     "jobDone": "Finished · {{title}}",
-    "jobFailed": "Failed · {{title}}"
+    "jobFailed": "Failed · {{title}}",
+    "uninstallUfwWarn": "Remover o UFW deixa este anfitrião sem a firewall de portas gerida pelo painel.",
+    "uninstallFail2banWarn": "Remover o fail2ban para as jails e liberta os bloqueios. Se o mantiver, adicione o IP de início a ignoreip."
   },
   "sqlEngineHealth": {
     "finding": {
@@ -11319,7 +11439,10 @@
     "deletedCert": "Excluído {{domain}}",
     "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates.",
     "renew": "Renew",
-    "renewFor": "Renew Let’s Encrypt for {{domain}}"
+    "renewFor": "Renew Let’s Encrypt for {{domain}}",
+    "domainRequired": "Introduza um domínio.",
+    "domainInvalid": "O formato do domínio não é válido.",
+    "domainKnownHint": "Escolha um domínio de projeto, DNS ou correio, ou escreva um."
   },
   "stackWizard": {
     "purgeConfirm": "Confirmar a purga? Os caminhos de dados registrados (bancos de dados/correio) serão excluídos permanentemente.",
@@ -11334,7 +11457,7 @@
     "componentsTitle": "Componentes para instalar",
     "dryRun": "Visualização de simulação",
     "installNow": "Instale agora",
-    "uninstallHint": "Selecione pacotes para remover",
+    "uninstallHint": "Selecione os pacotes a remover. Sem seleção não é possível remover. Os dados são conservados por omissão.",
     "dataPolicy": "Política de dados",
     "keepData": "Mantenha os dados",
     "purgeData": "Limpar dados",
@@ -11374,7 +11497,12 @@
     "diagTitle": "Diagnostic summary",
     "diagBody": "Copy version, execute, and host facts to paste into an email. This is not a full log bundle.",
     "diagCopy": "Copy diagnostic summary",
-    "diagCopied": "Diagnostic summary copied"
+    "diagCopied": "Diagnostic summary copied",
+    "copyTitle": "Copiar {{address}}",
+    "diagCopyTitle": "Copiar versão, EXECUTE e dados do anfitrião",
+    "diagPreview": "Pré-visualizar o que será copiado",
+    "diagLoading": "Loading diagnostic…",
+    "diagLoadFailed": "Could not load diagnostic"
   },
   "system": {
     "exportLoadFailed": "Falha ao carregar dados de exportação",
@@ -11458,7 +11586,8 @@
       "openFirewall": "Se público: permitir porta do painel {{port}}/tcp (Firewall → porta aberta → Painel 9287)",
       "disableConfirmTitle": "Disable panel HTTPS?",
       "disableConfirmDesc": "The panel will serve HTTP. WebAuthn / Passkey will stop working until HTTPS is on again.",
-      "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP."
+      "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP.",
+      "disableNeedConfirm": "Requer confirmação — escreva DISABLE-HTTPS"
     },
     "timeNtp": "Tempo e NTP",
     "clockStatus": "Status do relógio do sistema",
@@ -11566,7 +11695,12 @@
     "dryRunFlag": "Teste a seco",
     "timezoneSearch": "Filter timezones…",
     "resyncNtp": "Re-sync NTP",
-    "storageSub": "Disk usage"
+    "storageSub": "Disk usage",
+    "syncReloadNeedConfirm": "Precisa de confirmação — escreve /etc/nginx/conf.d e recarrega o Nginx",
+    "nginxLeftover": "Residual",
+    "nginxUnused": "Não usado",
+    "nginxLeftoverHint": "Conf residual (p.ex. public-files). Incluída na sincronização até agir.",
+    "nginxUnusedHint": "Conf de origem / catch-all (000-default). Incluída na sincronização até agir."
   },
   "systemd": {
     "enabled": "Habilitado",
@@ -12240,7 +12374,7 @@
     "diskQuotaHint": "Presets are GiB; custom box is MiB.",
     "bandwidthHint": "0 means unlimited.",
     "impersonateHint": "Opens a session as this user. Use the account menu to leave impersonation.",
-    "operatorHighRiskHint": "The factory operator role includes high-risk writes (services, firewall, package apply, MySQL, Nginx publish). Narrow it only if you intend to change every existing operator."
+    "operatorHighRiskHint": "O operador de fábrica inclui escritas de alto risco. Estreitá-lo só afeta contas novas; alterar o predefinido afeta operadores existentes."
   },
   "vnc": {
     "pageDesc": "Servidor e cliente VNC",

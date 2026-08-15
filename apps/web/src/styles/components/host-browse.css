@@ -75,6 +75,11 @@
   align-items: center;
 }
 
+.hb-toolbar-hint {
+  margin: 0;
+  padding: 0.2rem 0.65rem 0.35rem;
+}
+
 .hb-toolbar__url {
   flex: 1 1 16rem;
   min-width: 12rem;
@@ -327,7 +332,8 @@ button.linkish {
   border-bottom: 1px solid var(--border-color);
   max-height: 12rem;
   overflow: auto;
-  background: var(--surface-2, rgba(255, 255, 255, 0.03));
+  background: var(--bg-elevated, #f4f5f7);
+  color: var(--fg, #1a1d23);
 }
 
 .hb-drawer__head {
@@ -358,7 +364,7 @@ button.linkish {
 }
 
 .hb-drawer__item:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(15, 18, 24, 0.06);
 }
 
 .hb-drawer__empty {

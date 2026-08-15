@@ -140,5 +140,19 @@
   "aboutCustomPath": "Add a custom path on Settings (only /var/log or /run/log). Then open it from Explore.",
   "noRowsInWindow": "No records in this time window",
   "showInactiveUnits": "Show inactive units",
-  "sseNeedFollow": "Turn on Follow first — SSE is only for live tail"
+  "sseNeedFollow": "Turn on Follow first — SSE is only for live tail",
+  "vacuumNeedRetention": "پہلے برقرار رکھنے کی مدت درج کریں (مثلاً 14d)",
+  "vacuumNeedConfirm": "تصدیق درکار — پرانے journal لاگ ہٹاتا ہے",
+  "vacuumSizeNeedConfirm": "تصدیق درکار — journal ڈسک استعمال محدود کرتا ہے",
+  "vacuumSizeAlreadyBelow": "موجودہ استعمال پہلے ہی حد سے کم ہے؛ عام طور پر کچھ نہیں ہٹے گا۔",
+  "vacuumSizeNoopDesc": "journal پہلے ہی 500 MB سے کم ہے۔ vacuum --size=500M پھر بھی چلتا ہے اور عام طور پر کچھ نہیں ہٹتا۔",
+  "journalDiskHint": "موجودہ systemd-journald استعمال (فعال journal)۔ /var/log کے گھمائے فائل شامل نہیں۔",
+  "varLogDiskHint": "/var/log کا اندازہ، گھمائے فائلوں سمیت۔",
+  "queryFirst": "پہلے استفسار کریں",
+  "projectSourcesTitle": "{{n}} ماخذ (فائلیں + journal)",
+  "logrotatePath": "Path",
+  "logrotateLast": "Last rotated",
+  "logrotateExpand": "Show {{n}} more",
+  "logrotateCollapse": "Show fewer",
+  "logrotateVersion": "Status version {{v}}"
 }

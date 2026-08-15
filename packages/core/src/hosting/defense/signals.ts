@@ -125,6 +125,7 @@ export async function collectDefenseSignals(input: {
   const scale = (base: number, key: keyof SignalWeights) =>
     Math.round(base * w(weights, key));
 
+  const publicProvided = input.requestCountLastMinute != null;
   const publicReqs = input.requestCountLastMinute ?? 0;
   const panelReqs = input.panelRequestCountLastMinute ?? 0;
   const probe = await runProtectionProbes({
@@ -140,15 +141,19 @@ export async function collectDefenseSignals(input: {
   });
   score += netPts;
 
-  const reqPts = probe.highRequestRate ? scale(20, 'highReqRate') : 0;
-  signals.push({
-    id: 'req_rate',
-    label: tl('notes.auto.n1593'),
-    value: publicReqs,
-    points: reqPts,
-    detail: probe.highRequestRate ? tl('notes.auto.n1457') : tl('notes.auto.n1030'),
-  });
-  score += reqPts;
+  // Public /min only when a public counter is supplied. Panel HTTP hits are a
+  // separate informational card — never show a fake 0 “public” next to panel.
+  if (publicProvided) {
+    const reqPts = probe.highRequestRate ? scale(20, 'highReqRate') : 0;
+    signals.push({
+      id: 'req_rate',
+      label: tl('notes.auto.n1593'),
+      value: publicReqs,
+      points: reqPts,
+      detail: probe.highRequestRate ? tl('notes.auto.n1457') : tl('notes.auto.n1030'),
+    });
+    score += reqPts;
+  }
 
   if (panelReqs > 0) {
     signals.push({

@@ -64,5 +64,13 @@
   "pickKey": "Select a key on the left to view content.",
   "ttlPrefix": "TTL: {{ttl}}",
   "writeLiveHint": "Writes live Redis; cannot undo from the panel in one click.",
-  "refPath": "Ref: {{path}}"
+  "refPath": "Ref: {{path}}",
+  "dbEmptyMark": " · empty",
+  "noRequirepass": "Protected mode is on, but requirepass is empty or unread — no password.",
+  "setRequirepass": "Set password",
+  "rdbOnlyLossHint": "AOF is off and RDB is on. A restart or crash can lose recent writes.",
+  "dirDataContainer": "/data (container)",
+  "dirHostDefault": "/var/lib/redis",
+  "dirDefaultInstance": "/var/lib/redis/default",
+  "dirDataWarn": "/data is usually a container path; this panel cannot confirm it exists."
 }

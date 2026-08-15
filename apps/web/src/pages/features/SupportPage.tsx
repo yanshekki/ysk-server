@@ -2,14 +2,16 @@
  * Support / Creator / YSK Limited — free product contact & donate.
  * No pricing. Issues → email@ysk.hk
  */
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { HealthResponse } from 'ysk-server-shared';
 import { toast } from '../../shared/stores/toast-store';
 import { api } from '../../shared/services/api';
 import {
   FeaturePageLayout,
   Card,
   CardSection,
+  CodeBlock,
   DataTable,
   Button,
 } from '../../shared/components/ui';
@@ -30,9 +32,39 @@ const DONATE = {
 
 type CryptoRow = (typeof DONATE.crypto)[number];
 
+type HostFacts = {
+  os?: { platform?: string; kernel?: string };
+  identity?: { hostname?: string };
+};
+
+export function formatSupportDiagnostic(
+  h: Pick<
+    HealthResponse,
+    'version' | 'status' | 'mode' | 'executeEnabled' | 'isRoot' | 'protectionMode'
+  >,
+  host: HostFacts | null,
+): string {
+  return [
+    `YSK Server ${h.version}`,
+    `status=${h.status}`,
+    `mode=${h.mode ?? '?'}`,
+    `execute=${h.executeEnabled ? 'on' : 'off'}`,
+    `root=${h.isRoot ? 'yes' : 'no'}`,
+    `protection=${h.protectionMode}`,
+    host?.identity?.hostname ? `hostname=${host.identity.hostname}` : null,
+    host?.os?.platform
+      ? `os=${host.os.platform} ${host.os.kernel ?? ''}`.trim()
+      : null,
+  ]
+    .filter(Boolean)
+    .join('\n');
+}
+
 export function SupportPage() {
   const { t } = useTranslation();
   const [copied, setCopied] = useState<string | null>(null);
+  const [diagText, setDiagText] = useState('');
+  const [diagState, setDiagState] = useState<'loading' | 'ok' | 'err'>('loading');
 
   const copyAddress = useCallback(async (addr: string) => {
     try {
@@ -46,6 +78,38 @@ export function SupportPage() {
   }, [t]);
 
   const cryptoRows = useMemo(() => [...DONATE.crypto], []);
+
+  useEffect(() => {
+    let alive = true;
+    setDiagState('loading');
+    void Promise.all([
+      api.health(),
+      api.requestRaw<HostFacts>('/api/v1/system/host').catch(() => null),
+    ])
+      .then(([h, host]) => {
+        if (!alive) return;
+        setDiagText(formatSupportDiagnostic(h, host));
+        setDiagState('ok');
+      })
+      .catch(() => {
+        if (!alive) return;
+        setDiagText('');
+        setDiagState('err');
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const copyDiagnostic = useCallback(async () => {
+    if (!diagText) return;
+    try {
+      await navigator.clipboard.writeText(diagText);
+      toast.ok(t('support.diagCopied'));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t('support.diagLoadFailed'));
+    }
+  }, [diagText, t]);
 
   return (
     <FeaturePageLayout
@@ -113,6 +177,11 @@ export function SupportPage() {
                       type="button"
                       size="sm"
                       variant="secondary"
+                      title={
+                        copied === row.address
+                          ? t('support.copied')
+                          : t('support.copyTitle', { address: row.address })
+                      }
                       onClick={() => void copyAddress(row.address)}
                     >
                       {copied === row.address ? t('support.copied') : t('support.copy')}
@@ -129,42 +198,29 @@ export function SupportPage() {
         <Card>
           <CardSection title={t('support.diagTitle')}>
             <p className="u-text-sm u-mb-3">{t('support.diagBody')}</p>
+            <details className="u-mb-3">
+              <summary className="u-text-sm">{t('support.diagPreview')}</summary>
+              {diagState === 'loading' ? (
+                <p className="muted u-text-sm u-mb-0">{t('support.diagLoading')}</p>
+              ) : diagState === 'err' || !diagText ? (
+                <p className="muted u-text-sm u-mb-0">{t('support.diagLoadFailed')}</p>
+              ) : (
+                <CodeBlock>{diagText}</CodeBlock>
+              )}
+            </details>
             <Button
               type="button"
               size="md"
               variant="secondary"
-              onClick={() =>
-                void Promise.all([
-                  api.health(),
-                  api
-                    .requestRaw<{
-                      os?: { platform?: string; kernel?: string };
-                      identity?: { hostname?: string };
-                    }>('/api/v1/system/host')
-                    .catch(() => null),
-                ])
-                  .then(async ([h, host]) => {
-                    const text = [
-                      `YSK Server ${h.version}`,
-                      `status=${h.status}`,
-                      `mode=${h.mode ?? '?'}`,
-                      `execute=${h.executeEnabled ? 'on' : 'off'}`,
-                      `root=${h.isRoot ? 'yes' : 'no'}`,
-                      `protection=${h.protectionMode}`,
-                      host?.identity?.hostname
-                        ? `hostname=${host.identity.hostname}`
-                        : null,
-                      host?.os?.platform
-                        ? `os=${host.os.platform} ${host.os.kernel ?? ''}`.trim()
-                        : null,
-                    ]
-                      .filter(Boolean)
-                      .join('\n');
-                    await navigator.clipboard.writeText(text);
-                    toast.ok(t('support.diagCopied'));
-                  })
-                  .catch((e: Error) => toast.error(e.message))
+              disabled={!diagText}
+              title={
+                diagState === 'loading'
+                  ? t('support.diagLoading')
+                  : !diagText
+                    ? t('support.diagLoadFailed')
+                    : t('support.diagCopyTitle')
               }
+              onClick={() => void copyDiagnostic()}
             >
               {t('support.diagCopy')}
             </Button>

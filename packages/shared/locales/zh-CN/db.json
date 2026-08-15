@@ -296,5 +296,12 @@
   "startAfterUnfreeze": "启动服务（失败时会自动套用修复计划）",
   "serviceDownTitle": "数据库服务未运行",
   "serviceDownBody": "服务异常。面板会诊断常见原因（冻结、配置残留、空白数据目录、端口冲突等）。数据目录为空：{{empty}}。请按「检查并修复服务」确认执行。",
-  "adoptHostDb": "登记 {{name}}"
+  "adoptHostDb": "登记 {{name}}",
+  "registeredVsHostHint": "已在面板登记 / 主机实测",
+  "dumpNeedRegistered": "请先在面板登记数据库",
+  "dumpFirstDbTitle": "导出第一个已登记数据库",
+  "importNeedRegistered": "请先在面板登记数据库",
+  "importLatestNeedConfirm": "需确认 — 会导入到已登记数据库",
+  "adoptHostDbTitle": "只在控制面登记名称，不改主机数据",
+  "cleanupExpiredTempUsersTitle": "清除已过期的面板临时用户"
 }

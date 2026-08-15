@@ -49,6 +49,7 @@
   "removeArtifact": "移除殘留",
   "removeArtifactTitle": "移除殘留 conf？",
   "removeArtifactDesc": "刪除此未認領的 Apache conf（面板 dataDir），並在可能時停用系統副本。不會刪除專案。",
+  "removeArtifactHint": "刪除此磁碟殘留 conf，不會刪除專案。",
   "previewConf": "預覽 conf",
   "cleanupConflicts": "清理衝突殘留",
   "cleanupConflictsTitle": "清理全部衝突殘留？",

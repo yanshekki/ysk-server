@@ -63,5 +63,7 @@
   "kindDeploy": "Deploy",
   "kindRuntime": "Runtime",
   "jobDone": "Finished · {{title}}",
-  "jobFailed": "Failed · {{title}}"
+  "jobFailed": "Failed · {{title}}",
+  "uninstallUfwWarn": "Remover o UFW deixa este anfitrião sem a firewall de portas gerida pelo painel.",
+  "uninstallFail2banWarn": "Remover o fail2ban para as jails e liberta os bloqueios. Se o mantiver, adicione o IP de início a ignoreip."
 }

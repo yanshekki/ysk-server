@@ -164,7 +164,7 @@
   "seedStatusChecking": "Checking",
   "seedStatusPaused": "Paused",
   "seedStatusQueued": "Queued",
-  "swarmLeftover": "ライブラリにない announce が {{count}} 件あります",
+  "swarmLeftover": "Tracker にライブラリ外の announce が {{count}} 件あります（Torrent 一覧とは別ソース）",
   "addSourceSection": "ソース",
   "addSourceFile": "ファイル",
   "addSourceMagnet": "Magnet",

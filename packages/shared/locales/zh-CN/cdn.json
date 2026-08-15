@@ -120,5 +120,15 @@
   "statOffline": "离线 {{n}}",
   "statDraining": "排水中 {{n}}",
   "statHitRate": "命中率 {{v}}",
-  "hitNoStats": "No edge stats yet"
+  "hitNoStats": "尚无边缘统计",
+  "loopbackOriginBlocked": "不会把回环 origin {{url}} 写到远端边缘。请先改成可达的 origin。",
+  "applyFailedHint": "套用失败 — 见下方说明",
+  "applyStatus": {
+    "draft": "草稿",
+    "planned": "已计划",
+    "applying": "套用中",
+    "applied": "已套用",
+    "failed": "失败",
+    "partial": "部分"
+  }
 }

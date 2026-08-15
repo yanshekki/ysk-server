@@ -63,5 +63,7 @@
     "running": "Running",
     "failed": "Failed",
     "missing": "Not installed"
-  }
+  },
+  "stopNeedConfirm": "पुष्टि आवश्यक",
+  "stopNeedConfirmPhrase": "पुष्टि वाक्यांश लिखना आवश्यक"
 }

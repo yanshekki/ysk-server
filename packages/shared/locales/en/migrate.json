@@ -70,6 +70,8 @@
   "orphanRemove": "Remove leftover home",
   "orphanRemoveTitle": "Delete leftover project home?",
   "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1.",
+  "orphanRemovePhrase": "Type DELETE to confirm.",
+  "orphanRemoveNeedConfirm": "Needs confirmation",
   "moreWarnings": "…and {{n}} more",
   "authPassword": "root password (switch to key after temp key install)",
   "authIdentity": "SSH identity vault identityId",

@@ -491,5 +491,8 @@
   "openQueuePage": "Abrir cola de correo",
   "healthUnchecked": "Not checked yet",
   "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first.",
-  "domainsListDesc": "Mail domains registered on this host"
+  "domainsListDesc": "Mail domains registered on this host",
+  "healthChecklist": "Lista {{score}}/100",
+  "healthChecklistHint": "Puntuación de lista — aún no se ha sondeado DNS / PTR / puerto 25",
+  "healthLiveHint": "Puntuación de sonda en vivo"
 }

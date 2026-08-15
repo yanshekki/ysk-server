@@ -40,6 +40,7 @@ import {
   collectLoginIps,
   isProtectedSelfIp,
 } from '../../shared/lib/self-ip';
+import { formatDateTimeLocale } from '../../shared/lib/format-date';
 import { bindAppendUniqueStr, bindBanAndClear, bindBanOne, bindCheck, bindCloseIfIdle, bindDefenseAutoBanTick, bindDefenseGeoApply, bindDefensePost, bindDefensePostOnly, bindDefenseProbe, bindDefenseUnban, bindDefenseWhitelist, bindDefenseWhitelistAction, bindFormSubmit, bindInput, bindListRemove, bindLoadGeo, bindPreset, bindSaveCfZones, bindSaveChecked, bindSaveNumber, bindSaveString, bindSaveTopChecked, bindSelect, bindSelectAllSuspects, bindValueSet, bindVoid } from '../bind-handlers';
 
 import {
@@ -346,6 +347,33 @@ export function parseCommaList(raw: string): string[] {
     .split(/[,;\s]+/)
     .map((s) => s.trim())
     .filter(Boolean);
+}
+
+/** Localize raw probe values (true/inactive/installed) for signal cards. */
+export function formatSignalValue(
+  v: unknown,
+  t: (k: string, o?: Record<string, unknown>) => string,
+): string {
+  if (v === true) return t('common.yes');
+  if (v === false) return t('common.no');
+  if (typeof v === 'number' && Number.isFinite(v)) return String(v);
+  const raw = String(v ?? '').trim();
+  if (!raw) return '—';
+  const mapped: Record<string, string> = {
+    true: t('common.yes'),
+    false: t('common.no'),
+    yes: t('common.yes'),
+    no: t('common.no'),
+    active: t('protection.signalActive'),
+    inactive: t('protection.signalInactive'),
+    installed: t('common.installed'),
+    missing: t('common.notInstalled'),
+  };
+  const lower = raw.toLowerCase();
+  if (mapped[lower]) return mapped[lower];
+  const jail = raw.match(/^(\d+)\s*jails?$/i);
+  if (jail) return t('protection.signalJails', { n: Number(jail[1]) });
+  return raw;
 }
 
 /** Installed stack badge tone. */
@@ -909,15 +937,28 @@ export function ProtectionPage() {
 
       <PageTabs
         tabs={[
-          { id: 'command', label: t('protection.tabs.command'), badge: recommendedPreset ? '!' : undefined },
+          {
+            id: 'command',
+            label: t('protection.tabs.command'),
+            badge: recommendedPreset ? '!' : undefined,
+            badgeTitle: recommendedPreset
+              ? t('protection.badgeRecommendPreset')
+              : undefined,
+          },
           {
             id: 'automation',
             label: t('protection.tabs.automation'),
-            badge: automation?.enabled ? 'ON' : undefined },
+            badge: automation?.enabled ? 'ON' : undefined,
+            badgeTitle: automation?.enabled
+              ? t('protection.badgeAutomationOn')
+              : undefined,
+          },
           {
             id: 'bans',
             label: t('protection.tabs.bans'),
-            badge: status?.bans.count || undefined },
+            badge: status?.bans.count || undefined,
+            badgeTitle: t('protection.badgeBanCount'),
+          },
           {
             id: 'geo',
             label: t('protection.tabs.geo'),
@@ -925,12 +966,19 @@ export function ProtectionPage() {
               ? 'ON'
               : geoStatus?.ready
                 ? undefined
-                : '!' },
+                : '!',
+            badgeTitle: geoStatus?.policy?.enabled
+              ? t('protection.badgeGeoOn')
+              : geoStatus?.ready
+                ? undefined
+                : t('protection.badgeGeoNotReady'),
+          },
           { id: 'stack', label: t('protection.tabs.stack') },
           {
             id: 'intel',
             label: t('protection.tabs.intel'),
             badge: activeSignalsCount(status?.signals) || undefined,
+            badgeTitle: t('protection.badgeIntelSignals'),
           },
           { id: 'about', label: t('protection.tabs.about') },
         ]}
@@ -1850,18 +1898,21 @@ export function ProtectionPage() {
                         <span>{relTime(s.lastSeen, t)}</span>
                       </div>
                       <div className="def-suspect__actions">
+                        {selfKind ? (
+                          <span className="muted u-text-sm" title={t('protection.cannotBanSelf', { ip: s.ip })}>
+                            {t('protection.cannotBanSelf', { ip: s.ip })}
+                          </span>
+                        ) : (
                         <Button
                           variant="danger"
                           size="sm"
                           loading={busy}
                           disabled={disabled}
-                          title={
-                            selfKind ? t('protection.cannotBanSelf', { ip: s.ip }) : undefined
-                          }
                           onClick={bindBanOne(banOne, s.ip, s.reasons[0])}
                         >
                           {t('protection.ban')}
                         </Button>
+                        )}
                         {!s.whitelisted ? (
                           <Button
                             variant="ghost"
@@ -2149,7 +2200,7 @@ export function ProtectionPage() {
                             {s.points > 0 ? `+${s.points}` : '0'}
                           </Badge>
                         </div>
-                        <code className="def-signal-list__val">{String(s.value)}</code>
+                        <code className="def-signal-list__val">{formatSignalValue(s.value, t)}</code>
                         {s.detail && !/need to be root/i.test(String(s.detail)) ? (
                           <p className="muted u-text-sm">{s.detail}</p>
                         ) : s.id === 'ufw' && labels?.firewall.detail ? (
@@ -2216,20 +2267,16 @@ export function ProtectionPage() {
                               : t('protection.selfIp')}
                         </Badge>
                       ) : null}
+                      {selfKind ? null : (
                       <Button
                         variant="danger"
                         size="sm"
                         loading={busy}
-                        disabled={Boolean(selfKind)}
-                        title={
-                          selfKind
-                            ? t('protection.cannotBanSelf', { ip: row.ip })
-                            : undefined
-                        }
                         onClick={bindBanOne(banOne, row.ip, `top-ip score=${row.score}`)}
                       >
                         {t('protection.banShort')}
                       </Button>
+                      )}
                     </ActionBar>
                     );
                   }}
@@ -2371,6 +2418,9 @@ export function ProtectionPage() {
                       {
                         label: t('protection.dbReady'),
                         value: geoStatus.ready ? t('protection.yes') : t('protection.no'),
+                        hint: geoStatus.ready
+                          ? t('protection.dbReadyHint')
+                          : t('protection.dbNotReadyHint'),
                         tone: geoStatus.ready ? 'ok' : 'warn' },
                       {
                         label: t('protection.stale'),
@@ -2379,6 +2429,7 @@ export function ProtectionPage() {
                           : geoStatus.stale
                             ? t('protection.older7d')
                             : t('protection.yes'),
+                        hint: t('protection.staleHint'),
                         tone: !geoStatus.ready
                           ? 'default'
                           : geoStatus.stale
@@ -2421,7 +2472,12 @@ export function ProtectionPage() {
                   ) : null}
                   {geoStatus.scheduler?.nextRunAt ? (
                     <FormHint>
-                      {t('protection.nextScheduledUpdate', { at: new Date(geoStatus.scheduler.nextRunAt).toLocaleString() })}
+                      {t('protection.nextScheduledUpdate', {
+                        at: formatDateTimeLocale(
+                          geoStatus.scheduler.nextRunAt,
+                          i18n.language,
+                        ),
+                      })}
                     </FormHint>
                   ) : null}
                 </>
@@ -2455,6 +2511,9 @@ export function ProtectionPage() {
               <FormHint>
                 {t('protection.freeGranularity')}
               </FormHint>
+              {!geoEnabled ? (
+                <Alert variant="warn">{t('protection.geoDraftOnly')}</Alert>
+              ) : null}
               {geoMode === 'allow_list' ? (
                 <Alert variant="error">
                   {t('protection.allowListDanger')}
@@ -2501,6 +2560,11 @@ export function ProtectionPage() {
                     onChange={setGeoCountries}
                     searchPlaceholder={t('protection.countryPlaceholder')}
                     disabled={busy}
+                    confirmSelectAll={
+                      geoMode === 'deny_list'
+                        ? t('protection.selectAllCountriesWarn')
+                        : undefined
+                    }
                   />
                 </Field>
                 <Field
@@ -2656,6 +2720,11 @@ export function ProtectionPage() {
                   variant="primary"
                   size="md"
                   loading={busy}
+                  title={
+                    geoEnabled
+                      ? t('protection.savePolicy')
+                      : t('protection.geoDraftOnly')
+                  }
                   onClick={() =>
                     void run(async () => {
                       const r = await api.requestRaw<{
@@ -2693,6 +2762,12 @@ export function ProtectionPage() {
                   variant="secondary"
                   size="md"
                   loading={busy}
+                  disabled={!geoEnabled}
+                  title={
+                    geoEnabled
+                      ? t('protection.applyNginxSnippet')
+                      : t('protection.geoDraftOnly')
+                  }
                   onClick={bindDefenseGeoApply(
                     run,
                     api.requestRaw,

@@ -74,6 +74,8 @@ export interface AppContext {
   scheduler: Scheduler;
   /** rolling request counter for rate detection */
   requestHits: number[];
+  /** Hits in the last 60s (trims the rolling buffer). */
+  requestHitsLastMinute(): number;
   version: string;
   startedAt: string;
   config?: YskConfig;
@@ -201,6 +203,11 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
     settings,
     scheduler,
     requestHits: [],
+    requestHitsLastMinute() {
+      const cutoff = Date.now() - 60_000;
+      this.requestHits = this.requestHits.filter((t) => t >= cutoff);
+      return this.requestHits.length;
+    },
     version: opts.version,
     startedAt: new Date().toISOString(),
     config: opts.config,
@@ -280,9 +287,8 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
     },
     async runAutoProtection() {
       const now = Date.now();
-      ctx.requestHits = ctx.requestHits.filter((t) => now - t < 60_000);
       const probe = await runProtectionProbes({
-        requestCountLastMinute: ctx.requestHits.length,
+        requestCountLastMinute: ctx.requestHitsLastMinute(),
       });
       applyProtection(ctx, probe.protection);
       ctx.settings.setJson('last_protection_probe', probe);
@@ -505,7 +511,7 @@ export function createAppContext(versionOrOpts: string | CreateAppContextOptions
             host,
             db,
             dataDir,
-            requestCountLastMinute: ctx.requestHits?.length ?? 0,
+            requestCountLastMinute: ctx.requestHitsLastMinute(),
           });
           if (r.banned.length > 0 || r.presetChanged || r.suggestEmergency) {
             audit.append({

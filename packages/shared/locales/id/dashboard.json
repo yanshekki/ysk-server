@@ -85,7 +85,7 @@
   "runtime": "Waktu proses",
   "runtimeHint": "Menetapkan versi runtime default dan gaya penerapan",
   "runtimeVersion": "Versi waktu proses",
-  "versionHint": "Disimpan sebagai proyek runtime_version",
+  "versionHint": "Menulis pengaturan versi lingkungan eksekusi proyek",
   "serverIpv4": "Server IPv4",
   "serverIpv4Hint": "DNS A / surat SPF",
   "serverIpv4Ph": "Ini menghosting IPv4 publik",
@@ -119,5 +119,5 @@
   "notifAll": "All",
   "notifDismiss": "Hide",
   "goFix": "Fix",
-  "needDomainFirst": "Enter a domain first"
+  "needDomainFirst": "Isi domain dulu"
 }

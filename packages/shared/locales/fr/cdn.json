@@ -120,5 +120,15 @@
   "statOffline": "Offline {{n}}",
   "statDraining": "Draining {{n}}",
   "statHitRate": "Hit rate {{v}}",
-  "hitNoStats": "No edge stats yet"
+  "hitNoStats": "Pas encore de stats de bord",
+  "loopbackOriginBlocked": "N’appliquera pas l’origin de bouclage {{url}} à un bord distant. Définissez un origin joignable.",
+  "applyFailedHint": "Échec d’application — voir les notes ci-dessous",
+  "applyStatus": {
+    "draft": "Brouillon",
+    "planned": "Planifié",
+    "applying": "Application…",
+    "applied": "Appliqué",
+    "failed": "Échoué",
+    "partial": "Partiel"
+  }
 }

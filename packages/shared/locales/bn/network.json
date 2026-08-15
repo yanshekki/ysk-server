@@ -147,5 +147,7 @@
   "hideRaw": "Hide raw output",
   "rawLoadedAt": "Loaded {{time}}",
   "deleteDefaultPanelWarn": "Deleting the default route can drop this panel session. Type DEFAULT to confirm.",
-  "typeDefaultToConfirm": "Type DEFAULT to confirm"
+  "typeDefaultToConfirm": "Type DEFAULT to confirm",
+  "deleteDefaultNeedConfirm": "নিশ্চিতকরণ প্রয়োজন — DEFAULT লিখুন (এই প্যানেল বিচ্ছিন্ন হতে পারে)",
+  "deleteRouteNeedConfirm": "নিশ্চিতকরণ প্রয়োজন"
 }

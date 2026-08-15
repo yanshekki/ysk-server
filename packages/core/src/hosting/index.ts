@@ -11,6 +11,7 @@ export * from './database.js';
 export * from './nginx-ssl.js';
 export * from './nginx-sync.js';
 export * from './leftover-probe.js';
+export * from './leftover-apply.js';
 export * from './nginx-sites-list.js';
 export * from './nginx-settings.js';
 export * from './apache/index.js';

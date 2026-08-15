@@ -21,7 +21,7 @@ import type {
   CdnFleetApplyPayload,
   CdnFleetEnqueueFn,
   CdnFleetPurgePayload } from './fleet-payload.js';
-import { getCdnNode, resolveCdnSshTarget } from './nodes.js';
+import { getCdnNode, isLocalCdnEdge, resolveCdnSshTarget } from './nodes.js';
 import { getCdnSite, patchCdnSiteStatus } from './sites.js';
 import {
   isLoopbackOriginUrl,
@@ -80,17 +80,8 @@ function resolveSshTarget(node: CdnNodeDto): {
   return resolveCdnSshTarget(node);
 }
 
-function isLoopbackHost(h: string): boolean {
-  const x = h.toLowerCase();
-  return x === '127.0.0.1' || x === 'localhost' || x === '::1' || x === '0.0.0.0';
-}
-
 function isLocalEdge(node: CdnNodeDto): boolean {
-  const t = resolveSshTarget(node);
-  if (t) return isLoopbackHost(t.host);
-  const ip = node.publicIpv4[0];
-  if (ip && !isLoopbackHost(ip)) return false;
-  return true;
+  return isLocalCdnEdge(node);
 }
 
 async function resolveIdentityPath(

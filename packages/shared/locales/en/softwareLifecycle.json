@@ -63,5 +63,7 @@
   "kindDeploy": "Deploy",
   "kindRuntime": "Runtime",
   "jobDone": "Finished · {{title}}",
-  "jobFailed": "Failed · {{title}}"
+  "jobFailed": "Failed · {{title}}",
+  "uninstallUfwWarn": "Removing UFW leaves this host without its panel-managed port firewall.",
+  "uninstallFail2banWarn": "Removing fail2ban stops jails and releases current bans. Add your login IP to ignoreip first if you keep it."
 }

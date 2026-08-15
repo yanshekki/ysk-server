@@ -82,7 +82,7 @@
   "statWhitelist": "Whitelist",
   "invalidIp": "Enter a valid IPv4, IPv6, or CIDR.",
   "whitelistPendingApply": "Saved to the panel list. Press Apply policy to write jail.local.",
-  "ignoreipFile": "Panel data directory / fail2ban / ignoreip.txt",
+  "ignoreipFile": "dataDir/fail2ban/ignoreip.txt",
   "jailsTabHint": "Status of active jails. Turn jails on or off in the Policy tab.",
   "colJail": "Jail",
   "colEnabled": "On",
@@ -99,5 +99,9 @@
   },
   "cannotBanSelf": "This is the host or your login IP — add it to ignoreip instead of banning",
   "suggestIgnoreHint": "Suggested admin IPs (panel file only until you apply policy):",
-  "suggestIgnoreAdd": "Add {{ip}}"
+  "suggestIgnoreAdd": "Add {{ip}}",
+  "whitelistEmptyWarn": "A lista branca está vazia e as jails podem bloqueá-lo. Adicione o IP de início antes de aplicar ignoreip.",
+  "suggestIgnoreLogin": "O seu IP de início {{ip}}",
+  "applyIgnoreEmptyWarn": "Aplicar com lista branca vazia limpa o ignoreip",
+  "applyIgnoreNeedConfirm": "Reescreve o ignoreip do jail e recarrega o fail2ban"
 }

@@ -63,5 +63,7 @@
     "running": "Running",
     "failed": "Failed",
     "missing": "Not installed"
-  }
+  },
+  "stopNeedConfirm": "需确认",
+  "stopNeedConfirmPhrase": "需输入确认短语"
 }

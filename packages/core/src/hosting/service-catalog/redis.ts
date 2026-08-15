@@ -97,6 +97,7 @@ export const REDIS_SETTING_DEFS: SettingDef[] = [
     label: 'notes.auto.n1454',
     category: 'persistence',
     type: 'enum',
+    // /data is a typical container volume; catalog is static (no pathExists).
     enumValues: ['/var/lib/redis', '/var/lib/redis/default', '/data'],
     applyMode: 'runtime' },
   {

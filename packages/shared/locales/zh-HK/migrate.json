@@ -70,6 +70,8 @@
   "orphanRemove": "刪除孤立主目錄",
   "orphanRemoveTitle": "刪除此孤立專案主目錄？",
   "orphanRemoveDesc": "將永久刪除磁碟上的 {{path}}。這不是 store 內專案。需 YSK_EXECUTE=1。",
+  "orphanRemovePhrase": "請輸入 DELETE 確認。",
+  "orphanRemoveNeedConfirm": "需確認",
   "moreWarnings": "…另有 {{n}} 則",
   "authPassword": "管理員 密碼（安裝臨時金鑰後改用 金鑰）",
   "authIdentity": "遠端登入 身份庫 identityId",

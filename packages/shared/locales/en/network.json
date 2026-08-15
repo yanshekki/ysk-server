@@ -111,6 +111,8 @@
   "defaultRouteDownWarn": "This interface is the default route egress; down may cut panel access.",
   "deleteDefaultMayDrop": " — deleting default may drop connectivity.",
   "deleteDefaultPanelWarn": "Deleting the default route can drop this panel session. Type DEFAULT to confirm.",
+  "deleteDefaultNeedConfirm": "Needs confirmation — type DEFAULT (may drop this panel)",
+  "deleteRouteNeedConfirm": "Needs confirmation",
   "typeDefaultToConfirm": "Type DEFAULT to confirm",
   "gateway": "Gateway",
   "nameservers": "Nameservers",

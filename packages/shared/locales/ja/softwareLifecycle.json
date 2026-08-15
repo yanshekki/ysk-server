@@ -63,5 +63,7 @@
   "kindDeploy": "Deploy",
   "kindRuntime": "Runtime",
   "jobDone": "Finished · {{title}}",
-  "jobFailed": "Failed · {{title}}"
+  "jobFailed": "Failed · {{title}}",
+  "uninstallUfwWarn": "UFW を外すと、パネル管理のポートファイアウォールがなくなります。",
+  "uninstallFail2banWarn": "fail2ban を外すと jail が止まり、現在の禁止が解除されます。残すなら先にログイン IP を ignoreip へ。"
 }

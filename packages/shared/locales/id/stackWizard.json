@@ -11,7 +11,7 @@
   "componentsTitle": "Komponen yang akan dipasang",
   "dryRun": "Pratinjau uji coba",
   "installNow": "Instal sekarang",
-  "uninstallHint": "Pilih bundel yang akan dihapus",
+  "uninstallHint": "Pilih bundel yang akan dihapus. Tanpa pilihan, penghapusan tidak bisa. Data dipertahankan secara default.",
   "dataPolicy": "Kebijakan data",
   "keepData": "Simpan datanya",
   "purgeData": "Bersihkan data",

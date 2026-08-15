@@ -4,6 +4,7 @@ export interface StatItem {
   label: string;
   value: number | string;
   tone?: StatTone;
+  hint?: string;
 }
 
 export interface SummaryStripProps {
@@ -20,7 +21,11 @@ export function SummaryStrip({ items }: SummaryStripProps) {
   return (
     <div className="summary-strip" role="group" aria-label="Summary">
       {items.map((item) => (
-        <div key={item.label} className={TONE_CLASS[item.tone ?? 'default']}>
+        <div
+          key={item.label}
+          className={TONE_CLASS[item.tone ?? 'default']}
+          title={item.hint}
+        >
           <span>{item.label}</span>
           <span className="stat-pill__value">{item.value}</span>
         </div>

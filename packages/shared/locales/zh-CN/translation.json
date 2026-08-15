@@ -249,7 +249,8 @@
     "cleanupConflictsTitle": "清理全部冲突残留？",
     "cleanupConflictsDesc": "移除所有与项目或独立站 ServerName 冲突的磁盘 conf。项目行会保留。",
     "artifactRemovedOk": "已移除残留 conf",
-    "sslTerminatedUpstream": "TLS ends at front Nginx"
+    "sslTerminatedUpstream": "TLS ends at front Nginx",
+    "removeArtifactHint": "只删除此残留磁盘 conf，不会删除项目。"
   },
   "applyStatus": {
     "draft": "草稿",
@@ -597,7 +598,7 @@
     "seedStatusChecking": "檢查中",
     "seedStatusPaused": "已暫停",
     "seedStatusQueued": "排隊中",
-    "swarmLeftover": "Tracker 另有 {{count}} 个未在资料库的 announce",
+    "swarmLeftover": "Tracker 记录另有 {{count}} 个 announce（不是数据库 Torrent 列；来源不同）",
     "addSourceSection": "来源",
     "addSourceFile": "文件",
     "addSourceMagnet": "Magnet",
@@ -768,7 +769,17 @@
     "statOffline": "离线 {{n}}",
     "statDraining": "排水中 {{n}}",
     "statHitRate": "命中率 {{v}}",
-    "hitNoStats": "No edge stats yet"
+    "hitNoStats": "尚无边缘统计",
+    "loopbackOriginBlocked": "不会把回环 origin {{url}} 写到远端边缘。请先改成可达的 origin。",
+    "applyFailedHint": "套用失败 — 见下方说明",
+    "applyStatus": {
+      "draft": "草稿",
+      "planned": "已计划",
+      "applying": "套用中",
+      "applied": "已套用",
+      "failed": "失败",
+      "partial": "部分"
+    }
   },
   "cli": {
     "unknownCommand": "未知命令：{{command}}\n执行 `{{cli}} help`",
@@ -2079,7 +2090,8 @@
     "all": "All",
     "showPassword": "Show",
     "hidePassword": "Hide",
-    "more": "More"
+    "more": "More",
+    "redirectedTo": "已转到 {{to}}（原为 {{from}}）"
   },
   "cron": {
     "presetCdTrue": "cd app + true（测试）",
@@ -2319,7 +2331,7 @@
     "runtime": "运行环境",
     "runtimeHint": "决定默认 runtime 版本与部署方式",
     "runtimeVersion": "运行环境版本",
-    "versionHint": "写入项目 runtime_version",
+    "versionHint": "会写入项目的运行环境版本设定",
     "serverIpv4": "服务器 IPv4",
     "serverIpv4Hint": "DNS A／邮件 SPF",
     "serverIpv4Ph": "此主机公网 IPv4",
@@ -2353,7 +2365,7 @@
     "notifAll": "全部",
     "notifDismiss": "隐藏",
     "goFix": "前往处理",
-    "needDomainFirst": "Enter a domain first"
+    "needDomainFirst": "请先填域名"
   },
   "dataTable": {
     "empty": "没有数据",
@@ -2657,7 +2669,14 @@
     "startAfterUnfreeze": "启动服务（失败时会自动套用修复计划）",
     "serviceDownTitle": "数据库服务未运行",
     "serviceDownBody": "服务异常。面板会诊断常见原因（冻结、配置残留、空白数据目录、端口冲突等）。数据目录为空：{{empty}}。请按「检查并修复服务」确认执行。",
-    "adoptHostDb": "登记 {{name}}"
+    "adoptHostDb": "登记 {{name}}",
+    "registeredVsHostHint": "已在面板登记 / 主机实测",
+    "dumpNeedRegistered": "请先在面板登记数据库",
+    "dumpFirstDbTitle": "导出第一个已登记数据库",
+    "importNeedRegistered": "请先在面板登记数据库",
+    "importLatestNeedConfirm": "需确认 — 会导入到已登记数据库",
+    "adoptHostDbTitle": "只在控制面登记名称，不改主机数据",
+    "cleanupExpiredTempUsersTitle": "清除已过期的面板临时用户"
   },
   "dialogs": {
     "confirmDefault": "确认",
@@ -3381,7 +3400,10 @@
     "deleteQueueDesc": "从本机 MTA 队列移除 {{id}}。需要 YSK_EXECUTE。",
     "openQueuePage": "打开邮件队列",
     "dovecotFailedHint": "Dovecot 服务失败。请先到软件分页查看状态；若邮件证书尚未签发，请先到 SSL 签发 mail 主机名。",
-    "domainsListDesc": "Mail domains registered on this host"
+    "domainsListDesc": "Mail domains registered on this host",
+    "healthChecklist": "检查清单 {{score}}/100",
+    "healthChecklistHint": "检查清单分数 — 尚未做 DNS／PTR／25 端口实测",
+    "healthLiveHint": "实测分数"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "未授权",
@@ -3525,7 +3547,7 @@
     "statWhitelist": "白名单",
     "invalidIp": "请输入有效的 IPv4、IPv6 或 CIDR。",
     "whitelistPendingApply": "已写入面板名单。请按「套用策略」才会写入 jail.local。",
-    "ignoreipFile": "面板资料目录／fail2ban／ignoreip.txt",
+    "ignoreipFile": "dataDir/fail2ban/ignoreip.txt",
     "jailsTabHint": "显示作用中 Jail 状态。要开关 Jail 请到「策略」分页。",
     "colJail": "Jail",
     "colEnabled": "开启",
@@ -3542,7 +3564,11 @@
     },
     "cannotBanSelf": "This is the host or your login IP — add it to ignoreip instead of banning",
     "suggestIgnoreHint": "Suggested admin IPs (panel file only until you apply policy):",
-    "suggestIgnoreAdd": "Add {{ip}}"
+    "suggestIgnoreAdd": "Add {{ip}}",
+    "whitelistEmptyWarn": "白名单为空，jail 可能把你自己封锁。套用 ignoreip 前请先加入登录 IP。",
+    "suggestIgnoreLogin": "你的登录 IP {{ip}}",
+    "applyIgnoreEmptyWarn": "白名单为空时套用会清空 ignoreip",
+    "applyIgnoreNeedConfirm": "会重写 jail ignoreip 并重新载入 fail2ban"
   },
   "featurePage": {
     "back": "返回"
@@ -3898,7 +3924,9 @@
     "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
     "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone.",
     "webdavReissueUnchanged": "重新签发后令牌编号未变——写入可能未生效，请再试一次。",
-    "webdavDisableFailed": "停用后状态仍为启用——写入可能未生效，请再试一次。"
+    "webdavDisableFailed": "停用后状态仍为启用——写入可能未生效，请再试一次。",
+    "dirNamedLikeFile": "（文件夹残留；名称像文件）",
+    "webdavAfterEnable": "启用 WebDAV 并签发令牌后才可用。"
   },
   "firewall": {
     "profiles": {
@@ -4438,7 +4466,8 @@
     "envPanelValue": "面板：{{value}}",
     "settingsNoSandboxWarn": "会关闭 Chromium 沙箱。只应在可信的 container 内使用。下次真实浏览器工作阶段才生效。",
     "settingsDangerDlWarn": "允许经主机浏览器下载可执行文件与脚本。请确认确实需要。",
-    "settingsDangerConfirmTitle": "启用高风险浏览设置？"
+    "settingsDangerConfirmTitle": "启用高风险浏览设置？",
+    "needUrl": "请先在上方输入网址开始会话。"
   },
   "listToolbar": {
     "searchPlaceholder": "搜索…",
@@ -4616,7 +4645,21 @@
     "aboutCustomPath": "请在「设置」加入自定义路径（仅限 /var/log 或 /run/log），再到「探索」开启。",
     "noRowsInWindow": "No records in this time window",
     "showInactiveUnits": "Show inactive units",
-    "sseNeedFollow": "Turn on Follow first — SSE is only for live tail"
+    "sseNeedFollow": "Turn on Follow first — SSE is only for live tail",
+    "vacuumNeedRetention": "请先填写保留时间（例如 14d）",
+    "vacuumNeedConfirm": "需确认 — 会删除旧 journal 日志",
+    "vacuumSizeNeedConfirm": "需确认 — 会限制 journal 磁盘用量",
+    "vacuumSizeAlreadyBelow": "目前用量已低于上限，此操作通常无动作",
+    "vacuumSizeNoopDesc": "journal 已低于 500 MB。仍会执行 vacuum --size=500M，通常不会删除任何内容。",
+    "journalDiskHint": "目前 systemd-journald 用量（作用中 journal）。不含 /var/log 下的轮替档。",
+    "varLogDiskHint": "/var/log 的估算用量（含轮替档）。",
+    "queryFirst": "请先查询",
+    "projectSourcesTitle": "{{n}} 个来源（文件 + journal）",
+    "logrotatePath": "Path",
+    "logrotateLast": "Last rotated",
+    "logrotateExpand": "Show {{n}} more",
+    "logrotateCollapse": "Show fewer",
+    "logrotateVersion": "Status version {{v}}"
   },
   "metrics": {
     "alert": {
@@ -4758,7 +4801,11 @@
     "colHome": "主目录",
     "usageNoteLink": "配额是控制面软上限。要套用硬限制请到专案「隔离」分页。",
     "alertsBuiltinOnly": "Built-in CPU / memory / disk thresholds only. No email, webhook, or Slack channel.",
-    "lastEvaluated": "Last checked"
+    "lastEvaluated": "Last checked",
+    "shareNoQuotaHint": "未设配额，故无占比。请到项目「隔离」分页设定配额。",
+    "setQuotaLink": "设定配额",
+    "unusualHome": "非标准路径",
+    "unusualHomeHint": "Not a /home/… project home. Canonical isolation is /home/ysk-server-{id}."
   },
   "migrate": {
     "tabInventory": "盘点",
@@ -4844,7 +4891,9 @@
     "dryRunOnlyDesc": "· 只做盘点 + 预检，不 rsync、不写目标",
     "executeNote": "本机需 YSK_EXECUTE=1 且以 root 执行 API。迁移完成后请改 DNS A/AAAA，并检查雲防火墙与邮件 PTR。",
     "dnsCutover": "DNS cutover（需人工）",
-    "dnsCutoverDesc": "将下列主机名的 A / AAAA 指到新机公网 IP；并确认 80/443/25/587 等防火墙与邮件 rDNS。"
+    "dnsCutoverDesc": "将下列主机名的 A / AAAA 指到新机公网 IP；并确认 80/443/25/587 等防火墙与邮件 rDNS。",
+    "orphanRemovePhrase": "请输入 DELETE 确认。",
+    "orphanRemoveNeedConfirm": "需确认"
   },
   "multiCheck": {
     "customPlaceholder": "自定义代码",
@@ -5095,7 +5144,9 @@
     "linkDownNeedConfirm": "需輸入介面名稱確認",
     "persistNmHint": "可持久化代表经 NetworkManager 写入后，重启后设定仍然有效。",
     "deleteDefaultPanelWarn": "Deleting the default route can drop this panel session. Type DEFAULT to confirm.",
-    "typeDefaultToConfirm": "Type DEFAULT to confirm"
+    "typeDefaultToConfirm": "Type DEFAULT to confirm",
+    "deleteDefaultNeedConfirm": "需确认 — 请输入 DEFAULT（可能中断本面板）",
+    "deleteRouteNeedConfirm": "需确认"
   },
   "nginx": {
     "pillSites": "{{count}} 站点",
@@ -5706,7 +5757,7 @@
       "n0259": "domain 必填",
       "n0260": "domain 找不到",
       "n0261": "dovecot reload 失败或服务未裝（sieve 檔已寫；唔標假 reload 成功）",
-      "n0262": "dry-run fleet dispatch（未入佇列）",
+      "n0262": "预览试行机群派送（未入队列）",
       "n0263": "dry-run peer push 計劃（未 scp）",
       "n0264": "dry-run remote install（未 ssh）",
       "n0265": "dry-run transfer 完成（略過 full bootstrap）",
@@ -7039,7 +7090,7 @@
       "n1590": "靜態網站",
       "n1591": "非 root — useradd／systemd／nginx 系統路径受限",
       "n1592": "非受限 seccomp 需要明確指定 runAsUser",
-      "n1593": "面板請求/分",
+      "n1593": "公开请求／分钟",
       "n1594": "面板连接即將中斷；可用「取消排程」撤回（若仍在線）",
       "n1595": "面板非 root",
       "n1596": "預覽可用 apply:false",
@@ -7312,7 +7363,7 @@
       "t0251": "{{v0}} 安装未完成",
       "t0252": "{{v0}} 服務已启动",
       "t0253": "启动失败：{{v0}}",
-      "t0254": "不支援的 Node.js 版本 {{v0}}；可用主版本：{{v1}}",
+      "t0254": "支持 Node.js 版本 {{v0}}；可用版本：{{v1}}",
       "t0255": "不支援的 PHP 版本 {{v0}}；可用：{{v1}}",
       "t0256": "不支援的 Python 版本 {{v0}}；可用：{{v1}}",
       "t0257": "不支援的 Go 版本 {{v0}}；可用：{{v1}}",
@@ -7434,12 +7485,12 @@
       "t0373": "项目「{{v0}}」隔離",
       "t0374": "已複製到本機路径 {{v0}}",
       "t0375": "身份 {{v0}}：{{v1}}",
-      "t0376": "已 scp（identity）到 {{v0}}",
-      "t0377": "scp(identity) 失败: {{v0}}",
-      "t0378": "已 scp 到 {{v0}}",
-      "t0379": "scp 失败: {{v0}}",
-      "t0380": "已 scp 到 {{v0}}",
-      "t0381": "scp 失败: {{v0}}（可設 backup remote identityId）",
+      "t0376": "sftp（身份密钥）连到 {{v0}} 成功",
+      "t0377": "sftp（身份密钥）失败：{{v0}}",
+      "t0378": "sftp 连到 {{v0}} 成功",
+      "t0379": "sftp 失败：{{v0}}",
+      "t0380": "sftp 连到 {{v0}} 成功",
+      "t0381": "sftp 失败：{{v0}}（可设置备份 remote identityId）",
       "t0382": "已上傳 S3 {{v0}}",
       "t0383": "S3 失败: {{v0}}",
       "t0384": "政策已開：{{v0}}/{{v1}} admin 已啟用 2FA",
@@ -7447,7 +7498,7 @@
       "t0386": "{{v0}} 在 PATH",
       "t0387": "{{v0}} 找不到",
       "t0388": "請於系統安装 {{v0}}，或於面板软件／runtime 安装",
-      "t0389": "可用主版本：{{v0}}",
+      "t0389": "可用版本：{{v0}}",
       "t0390": "使用率約 {{v0}}%（總 {{v1}} MB）",
       "t0391": "使用率約 {{v0}}%（{{v1}}）",
       "t0392": "於服務矩陣启动 {{v0}}",
@@ -7696,7 +7747,7 @@
       "t0635": "无法探测 {{v0}}",
       "t0636": "來源 {{v0}} · {{v1}}",
       "t0637": "项目 {{v0}} · 信箱 {{v1}} · DB {{v2}} · Redis {{v3}}",
-      "t0638": "需安装软件 {{v0}} 項 · homes {{v1}}",
+      "t0638": "需安装软件 {{v0}} 项 · homes {{v1}}",
       "t0639": "cutover 主機名 {{v0}}",
       "t0640": "警告 {{v0}} 則（請審閱）",
       "t0641": "已產生臨時密钥 {{v0}}",
@@ -8283,7 +8334,11 @@
       "dovecot": "Dovecot ssl_cert 指向不存在的 {{path}}。overlay 不会改成 ssl=no。签发邮件证书后套用邮件 TLS。",
       "overlayDoesNotHeal": "产品 overlay 不会改写 nginx、Apache、vsftpd 或 Dovecot。请用列出的套用命令（root + YSK_EXECUTE=1）。",
       "readinessTitle": "overlay 后主机遗留",
-      "readinessClean": "未检测到 Apache 默认站、缺 nginx catch-all、vsftpd 失败或旧 CLI。"
+      "readinessClean": "未检测到 Apache 默认站、缺 nginx catch-all、vsftpd 失败或旧 CLI。",
+      "staleCliRemoved": "已移除残留 CLI {{path}}。",
+      "staleCliRemoveFailed": "无法移除残留 CLI {{path}}：{{detail}}",
+      "vsftpdSslOff": "因 FTPS 证书文件不存在，已将 vsftpd 设为 ssl_enable=NO 并重新启动。",
+      "dovecotSslOff": "因 {{path}} 不存在，已将 Dovecot 设为 ssl=no 并重新启动。"
     },
     "git": {
       "missingBin": "git is not on PATH",
@@ -8331,6 +8386,11 @@
       "dnsDegraded": "DNS path degraded",
       "reqRateHigh": "Public request rate {{reqs}}/min ≥ {{threshold}}",
       "ddosHeuristic": "High public request rate plus edge probe failure"
+    },
+    "publicFiles": {
+      "liveConf": "生效 Nginx 配置文件：{{path}}",
+      "publicRoot": "公开根目录：{{path}}",
+      "confNameStale": "配置文件 {{file}} 与当前 server_name {{serverName}} 不一致。请再套用公用文件以改名。"
     }
   },
   "ops": {
@@ -9114,7 +9174,9 @@
     "netForceHttpsOff": "No forced redirect is stored.",
     "netHttpsLiveNotForced": "An edge file exists; HTTPS may already work. This box only forces HTTP→HTTPS.",
     "gitSyncBlockedDirty": "Sync is disabled until local changes are discarded (Reset) or the files match Git.",
-    "gitViewDiff": "View diff"
+    "gitViewDiff": "View diff",
+    "gitBranchAfterUrl": "请先填写 Git 网址。留空则使用远端默认分支。",
+    "gitResetNeedConfirm": "需确认 — 会丢弃本机提交"
   },
   "protection": {
     "levels": {
@@ -9466,13 +9528,27 @@
     "stackApply": "套用防護組合（UFW、fail2ban、建議檔）",
     "stackApplyDone": "已要求套用防護組合",
     "stackApplyHint": "會啟用 UFW 並套用 fail2ban 與建議防護檔。遠端面板請先確認不會把自己鎖在外面。",
-    "cannotBanSelf": "Cannot ban {{ip}} — this is the host, your login, or ignoreip",
+    "cannotBanSelf": "不可封锁 {{ip}} — 这是本机、你的登录 IP 或 ignoreip",
     "selfIp": "This host",
     "selfHostIp": "Host IP",
     "selfLoginIp": "Your login IP",
     "showZeroScore": "Show 0-score",
     "hideZeroScore": "Hide 0-score",
-    "freshnessNa": "n/a"
+    "freshnessNa": "n/a",
+    "geoDraftOnly": "政策未启用 — 保存只写草稿，Nginx 不会执行，直到你勾选启用。",
+    "selectAllCountriesWarn": "封锁名单模式下全选全部国家？这可能把本机与你的登录所在地一并封锁。",
+    "badgeRecommendPreset": "以目前威胁水平，建议改用更强预设",
+    "badgeAutomationOn": "自动化已开启",
+    "badgeBanCount": "目前封锁数",
+    "badgeGeoOn": "Geo 准入政策已启用",
+    "badgeGeoNotReady": "GeoIP 数据库尚未就绪",
+    "badgeIntelSignals": "目前计分的信号数",
+    "signalActive": "运行中",
+    "signalInactive": "未启用",
+    "signalJails": "{{n}} 个 jail",
+    "dbReadyHint": "已有 MMDB 文件",
+    "dbNotReadyHint": "请先下载 GeoIP 数据库",
+    "staleHint": "上次成功更新是否已超过 7 日"
   },
   "publicFiles": {
     "notSet": "未设置",
@@ -9728,7 +9804,25 @@
     "fixDone": "已修复 dataDir 权限（chmod 750）",
     "fixDoneWebUi": "已构建／安装 Web 界面",
     "rootLabel": "超级用户",
-    "exportStarted": "正在下載 {{name}}"
+    "exportStarted": "正在下載 {{name}}",
+    "blockersHint": "「阻挡」是「缺少」中的关键项，不是额外检查。",
+    "techDetails": "Technical details",
+    "missingOwner": "No panel owner assigned (package quota attribution)",
+    "notOsProvisioned": "OS user/home not provisioned yet",
+    "ondrejNone": "No ondrej Launchpad PHP sources detected",
+    "ondrejFound": "Found legacy ondrej/php sources that conflict with packages.sury.org: {{paths}}",
+    "ondrejTitle": "PHP apt source (ondrej residual)",
+    "systemctlActive": "Service is running",
+    "systemctlStatus": "Service status: {{status}}",
+    "binInPath": "{{bin}} in PATH",
+    "leftoverApache": "Apache leftover default site",
+    "leftoverVsftpd": "vsftpd unit failed",
+    "leftoverCli": "Stale leftover CLI",
+    "leftoverNginx": "Nginx catch-all missing",
+    "leftoverDovecot": "Dovecot TLS points at missing cert",
+    "leftoverOther": "Host leftover",
+    "leftoverApply": "Leftover apply",
+    "isolationOwnerDegrades": "Missing owner_user_id affects package quota attribution — status is degraded, not ready."
   },
   "redis": {
     "neverExpire": "永不过期",
@@ -9796,7 +9890,15 @@
     "pickKey": "从左側选擇一个鍵，即可查看内容。",
     "ttlPrefix": "过期：{{ttl}}",
     "writeLiveHint": "此操作直接写入执行中的 Redis，无法从面板一鍵还原。",
-    "refPath": "参考：{{path}}"
+    "refPath": "参考：{{path}}",
+    "dbEmptyMark": " · 空",
+    "noRequirepass": "保护模式已开，但 requirepass 为空或未读到 — 实际无密码。",
+    "setRequirepass": "设定密码",
+    "rdbOnlyLossHint": "AOF 关闭且 RDB 开启。重启或崩溃可能丢失最近写入。",
+    "dirDataContainer": "/data (container)",
+    "dirHostDefault": "/var/lib/redis",
+    "dirDefaultInstance": "/var/lib/redis/default",
+    "dirDataWarn": "/data is usually a container path; this panel cannot confirm it exists."
   },
   "resources": {
     "created": "已创建",
@@ -10324,7 +10426,21 @@
     "alreadyHostDefaultShort": "主机默认",
     "managedPathMissingTitle": "受管 {{name}} 路徑未就緒",
     "managedPathMissing": "版本 {{version}} 的 YSK 受管 {{name}} 尚未就緒。請重新探測或重新安裝。",
-    "installRecordedCta": "前往软件分页安装 {{v}}"
+    "installRecordedCta": "前往软件分页安装 {{v}}",
+    "targetMissing": "目标版本未安装",
+    "targetMissingHint": "目标 {{version}} 不在本机。请改绑已安装的版本，或先安装此版本。",
+    "needsInstall": "需安装",
+    "needsInstallHint": "此版本未在本机。请先安装，或改选已安装的版本。",
+    "unitBytes": "字节",
+    "headerSizeKb": "{{n}} KB",
+    "phpIniChipEmpty": "未载入 — 请打开 php.ini 分页",
+    "phpFpmService": "PHP-FPM",
+    "phpFpmServiceDesc": "启动、停止、重载或重启 PHP-FPM 单元",
+    "rustupDefaultMissingTitle": "未设 rustup 默认工具链",
+    "rustupDefaultMissing": "rustup 未设默认工具链。请到「软件」分页设为 stable。",
+    "rustupDefaultMissingShort": "No default toolchain",
+    "rustupSetDefaultHint": "Set default toolchain",
+    "uninstalledCountHint": "{{n}} 个版本未在本机"
   },
   "search": {
     "placeholder": "搜索页面与资源…",
@@ -10896,7 +11012,9 @@
       "running": "Running",
       "failed": "Failed",
       "missing": "Not installed"
-    }
+    },
+    "stopNeedConfirm": "需确认",
+    "stopNeedConfirmPhrase": "需输入确认短语"
   },
   "software": {
     "title": "软件中心",
@@ -11100,7 +11218,9 @@
     "kindDeploy": "部署",
     "kindRuntime": "Runtime",
     "jobDone": "完成 · {{title}}",
-    "jobFailed": "失败 · {{title}}"
+    "jobFailed": "失败 · {{title}}",
+    "uninstallUfwWarn": "卸载 UFW 后，主机将失去面板管理的端口防火墙。",
+    "uninstallFail2banWarn": "卸载 fail2ban 会停止 jail 并解除现有封锁。若要保留服务，请先把登录 IP 加入 ignoreip。"
   },
   "sqlEngineHealth": {
     "finding": {
@@ -11319,7 +11439,10 @@
     "deletedCert": "已删除 {{domain}}",
     "uninstallCertbotWarn": "解除安装 certbot 会使现有 Let's Encrypt 证书无法自动续期。",
     "renew": "Renew",
-    "renewFor": "Renew Let’s Encrypt for {{domain}}"
+    "renewFor": "Renew Let’s Encrypt for {{domain}}",
+    "domainRequired": "请填写域名。",
+    "domainInvalid": "域名格式无效。",
+    "domainKnownHint": "可从已知项目、DNS 或邮件域名选择，或自行输入。"
   },
   "stackWizard": {
     "purgeConfirm": "确认清除？将删除已登记的数据目录（数据库／邮件等），此操作无法复原。",
@@ -11334,7 +11457,7 @@
     "componentsTitle": "将安装的组件",
     "dryRun": "预览试行",
     "installNow": "立即安装",
-    "uninstallHint": "勾选要移除的套餐；若全部不勾选，则移除清单内全部组件。默认保留数据。",
+    "uninstallHint": "勾选要移除的套餐。未勾选时无法移除。默认保留数据。",
     "dataPolicy": "数据策略",
     "keepData": "保留数据",
     "purgeData": "清除数据",
@@ -11374,7 +11497,12 @@
     "diagTitle": "Diagnostic summary",
     "diagBody": "Copy version, execute, and host facts to paste into an email. This is not a full log bundle.",
     "diagCopy": "Copy diagnostic summary",
-    "diagCopied": "Diagnostic summary copied"
+    "diagCopied": "Diagnostic summary copied",
+    "copyTitle": "复制 {{address}}",
+    "diagCopyTitle": "复制版本、EXECUTE 与主机资料",
+    "diagPreview": "预览将复制的内容",
+    "diagLoading": "Loading diagnostic…",
+    "diagLoadFailed": "Could not load diagnostic"
   },
   "system": {
     "exportLoadFailed": "加载导出数据失败",
@@ -11458,7 +11586,8 @@
       "openFirewall": "若外网连接：防火墙请允许面板端口 {{port}}/tcp（防火墙 → 开埠 → 9287 Panel）",
       "disableConfirmTitle": "Disable panel HTTPS?",
       "disableConfirmDesc": "The panel will serve HTTP. WebAuthn / Passkey will stop working until HTTPS is on again.",
-      "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP."
+      "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP.",
+      "disableNeedConfirm": "需确认 — 请输入 DISABLE-HTTPS"
     },
     "timeNtp": "时间与 NTP",
     "clockStatus": "系统时钟状态",
@@ -11566,7 +11695,12 @@
     "dryRunFlag": "预览试运行",
     "timezoneSearch": "筛选时区…",
     "resyncNtp": "重新同步 NTP",
-    "storageSub": "磁盘用量"
+    "storageSub": "磁盘用量",
+    "syncReloadNeedConfirm": "需确认 — 会写入 /etc/nginx/conf.d 并重新载入 Nginx",
+    "nginxLeftover": "残留",
+    "nginxUnused": "未使用",
+    "nginxLeftoverHint": "旧 public-files 或其他残留配置。同步仍会一并写入，除非操作员另行处理。",
+    "nginxUnusedHint": "默认／catch-all 配置（000-default）。同步仍会一并写入，除非操作员另行处理。"
   },
   "systemd": {
     "enabled": "已启用",
@@ -12240,7 +12374,7 @@
     "diskQuotaHint": "预设晶片以 GiB 计；自订栏为 MiB。",
     "bandwidthHint": "0 代表不限。",
     "impersonateHint": "Opens a session as this user. Use the account menu to leave impersonation.",
-    "operatorHighRiskHint": "The factory operator role includes high-risk writes (services, firewall, package apply, MySQL, Nginx publish). Narrow it only if you intend to change every existing operator."
+    "operatorHighRiskHint": "系统默认「操作员」含高危写入（服务控制、防火墙、套件套用、MySQL、发布 Nginx）。收窄只影响新建账户；修改默认会影响现有操作员。"
   },
   "vnc": {
     "pageDesc": "VNC 服务器／客户端",

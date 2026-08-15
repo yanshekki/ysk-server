@@ -164,7 +164,7 @@
   "seedStatusChecking": "Checking",
   "seedStatusPaused": "Paused",
   "seedStatusQueued": "Queued",
-  "swarmLeftover": "ٹریکر میں {{count}} اعلان لائبریری میں نہیں",
+  "swarmLeftover": "Tracker میں لائبریری سے باہر {{count}} announce ہیں (Torrent فہرست سے الگ ماخذ)",
   "addSourceSection": "ماخذ",
   "addSourceFile": "فائل",
   "addSourceMagnet": "Magnet",

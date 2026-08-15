@@ -80,7 +80,8 @@
     "openFirewall": "সর্বজনীন হলে: প্যানেল পোর্ট {{port}}/tcp অনুমতি দিন (ফায়ারওয়াল → ওপেন পোর্ট → 9287 প্যানেল)",
     "disableConfirmTitle": "Disable panel HTTPS?",
     "disableConfirmDesc": "The panel will serve HTTP. WebAuthn / Passkey will stop working until HTTPS is on again.",
-    "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP."
+    "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP.",
+    "disableNeedConfirm": "নিশ্চিতকরণ প্রয়োজন — DISABLE-HTTPS লিখুন"
   },
   "timeNtp": "সময় এবং NTP",
   "clockStatus": "সিস্টেম ঘড়ির অবস্থা",
@@ -188,5 +189,10 @@
   "dryRunFlag": "ড্রাই-রান",
   "timezoneSearch": "Filter timezones…",
   "resyncNtp": "Re-sync NTP",
-  "storageSub": "Disk usage"
+  "storageSub": "Disk usage",
+  "syncReloadNeedConfirm": "নিশ্চিতকরণ দরকার — /etc/nginx/conf.d লিখে Nginx রিলোড করে",
+  "nginxLeftover": "অবশিষ্ট",
+  "nginxUnused": "অব্যবহৃত",
+  "nginxLeftoverHint": "পুরনো public-files ইত্যাদি অবশিষ্ট conf. ব্যবস্থা না নিলে সিঙ্কে থাকে।",
+  "nginxUnusedHint": "স্টক / catch-all conf (000-default)। ব্যবস্থা না নিলে সিঙ্কে থাকে।"
 }

@@ -102,5 +102,8 @@
   "deletedCert": "हटा दिया गया {{domain}}",
   "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates.",
   "renew": "Renew",
-  "renewFor": "Renew Let’s Encrypt for {{domain}}"
+  "renewFor": "Renew Let’s Encrypt for {{domain}}",
+  "domainRequired": "डोमेन दर्ज करें।",
+  "domainInvalid": "डोमेन प्रारूप मान्य नहीं।",
+  "domainKnownHint": "ज्ञात प्रोजेक्ट / DNS / मेल डोमेन चुनें, या स्वयं लिखें।"
 }

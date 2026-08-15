@@ -61,6 +61,8 @@ import {
   countFailedCerts,
   stepStatusLabel,
   formatStepLine,
+  validateSslDomain,
+  collectKnownSslDomains,
 } from './features/SslPage';
 import {
   countAppliedDomains,
@@ -518,6 +520,21 @@ describe('SslPage wave2 helpers', () => {
     expect(
       formatStepLine({ name: 'issue', status: 'failed', detail: 'nx' }, t),
     ).toBe('issue: ssl.step.failed — nx');
+  });
+
+  it('validateSslDomain / collectKnownSslDomains', () => {
+    expect(validateSslDomain('', t)).toBe('ssl.domainRequired');
+    expect(validateSslDomain('not a domain', t)).toBe('ssl.domainInvalid');
+    expect(validateSslDomain('example.com', t)).toBeNull();
+    expect(validateSslDomain('*.example.com', t)).toBeNull();
+    expect(
+      collectKnownSslDomains({
+        projects: [{ domain: 'a.com', domainAliases: ['www.a.com'] }],
+        mail: [{ domain: 'mail.a.com' }],
+        zones: [{ name: 'a.com' }],
+        certs: [{ domain: 'b.com' }],
+      }),
+    ).toEqual(['a.com', 'b.com', 'mail.a.com', 'www.a.com']);
   });
 });
 

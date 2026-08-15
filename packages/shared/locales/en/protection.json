@@ -354,5 +354,19 @@
   "selfHostIp": "Host IP",
   "selfLoginIp": "Your login IP",
   "showZeroScore": "Show 0-score",
-  "hideZeroScore": "Hide 0-score"
+  "hideZeroScore": "Hide 0-score",
+  "geoDraftOnly": "Policy is off — Save stores a draft only. Nginx will not enforce until you enable it.",
+  "selectAllCountriesWarn": "Select all countries in block-list mode? That can lock out this host and your login country.",
+  "badgeRecommendPreset": "A stronger preset is recommended for the current threat",
+  "badgeAutomationOn": "Automation is on",
+  "badgeBanCount": "Active bans",
+  "badgeGeoOn": "Geo access policy is on",
+  "badgeGeoNotReady": "GeoIP database is not ready",
+  "badgeIntelSignals": "Signals that currently add score",
+  "signalActive": "Active",
+  "signalInactive": "Inactive",
+  "signalJails": "{{n}} jail(s)",
+  "dbReadyHint": "MMDB files are present",
+  "dbNotReadyHint": "Download a GeoIP database first",
+  "staleHint": "Whether the last successful update is older than 7 days"
 }

@@ -125,5 +125,6 @@
   "show": "顯示",
   "done": "完成",
   "next": "下一步",
-  "previous": "上一步"
+  "previous": "上一步",
+  "redirectedTo": "已轉到 {{to}}（原為 {{from}}）"
 }

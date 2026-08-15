@@ -105,6 +105,11 @@ describe('cdn from-project + geo (PR-C7)', () => {
       expect(r.site.domains).toContain('demo.example.com');
       expect(r.site.dns.strategy).toBe('geo');
       expect(r.site.originShieldNodeId).toBe(e1.id);
+      const withBind = enableCdnFromProject({
+        db,
+        project: baseProject({ bindIp: '10.186.230.10' }),
+      });
+      expect(withBind.site.origin.url).toBe('http://10.186.230.10:3000');
       expect(r.site.dns.geoSubdomains).toBe(true);
 
       // idempotent update

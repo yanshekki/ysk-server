@@ -511,5 +511,19 @@
   "alreadyHostDefaultShort": "Default tuan rumah",
   "managedPathMissingTitle": "Managed {{name}} path not ready",
   "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall.",
-  "installRecordedCta": "Install recorded {{v}}"
+  "installRecordedCta": "Install recorded {{v}}",
+  "targetMissing": "Versi target belum terpasang",
+  "targetMissingHint": "Target {{version}} tidak ada di host ini. Ikat versi terpasang atau pasang pin ini.",
+  "needsInstall": "perlu dipasang",
+  "needsInstallHint": "Tidak ada di host ini. Pasang dulu, atau pilih versi yang sudah terpasang.",
+  "unitBytes": "byte",
+  "headerSizeKb": "{{n}} KB",
+  "phpIniChipEmpty": "Belum dimuat — buka tab php.ini",
+  "phpFpmService": "PHP-FPM",
+  "phpFpmServiceDesc": "Mulai, hentikan, muat ulang, atau mulai ulang unit PHP-FPM",
+  "rustupDefaultMissingTitle": "Tidak ada toolchain default rustup",
+  "rustupDefaultMissing": "rustup tidak punya default. Setel stable di tab Perangkat lunak.",
+  "rustupDefaultMissingShort": "No default toolchain",
+  "rustupSetDefaultHint": "Set default toolchain",
+  "uninstalledCountHint": "{{n}} versi tidak ada di host ini"
 }

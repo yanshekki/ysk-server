@@ -35,6 +35,7 @@ import {
   formatBytes as sysFormatBytes,
   formatUptime as sysFormatUptime,
   memTone,
+  classifyManagedNginxName,
 } from './SystemPage';
 import { riskTone, riskLabel, isHighRisk, relTime as updRelTime } from './UpdatesPage';
 import { formatBytes as filesFormatBytes, iconFor, joinPath } from './FilesPage';
@@ -57,7 +58,15 @@ import {
   levelTone,
   levelLabel,
   severityLabel,
+  isCriticalMissing,
+  blockingMissingItems,
+  honestIsolationItem,
+  leftoverKindFromNote,
+  leftoverHrefForKind,
+  splitLeftoverDetail,
+  localizeReadinessCopy,
 } from './features/ReadinessPage';
+import { isUnusualProjectHome } from './features/MetricsPage';
 import { serviceLabel } from './features/SqlEnginePage';
 import {
   statusTone as clusterStatusTone,
@@ -438,6 +447,57 @@ describe('Protection / Readiness / SqlEngine helpers', () => {
     expect(severityLabel('optional', t)).toBeTruthy();
     expect(severityLabel(undefined, t)).toBeNull();
     expect(severityLabel('x', t)).toBeNull();
+    expect(
+      isCriticalMissing({
+        id: 'bin-nginx',
+        category: 'binaries',
+        title: 'nginx',
+        level: 'missing',
+        detail: '',
+        severity: 'critical',
+      }),
+    ).toBe(true);
+    expect(
+      blockingMissingItems([
+        {
+          id: 'bin-nginx',
+          category: 'binaries',
+          title: 'nginx',
+          level: 'missing',
+          detail: '',
+          severity: 'critical',
+        },
+        {
+          id: 'pm2',
+          category: 'hosting',
+          title: 'pm2',
+          level: 'degraded',
+          detail: '',
+        },
+      ]).map((i) => i.id),
+    ).toEqual(['bin-nginx']);
+    expect(
+      honestIsolationItem({
+        id: 'project-isolation-a',
+        category: 'isolation',
+        title: 'A',
+        level: 'ready',
+        detail: 'missing panel owner_user_id (package quota attribution)',
+      }).level,
+    ).toBe('degraded');
+    expect(leftoverKindFromNote('Apache 000-default is still enabled')).toBe('apache');
+    expect(leftoverHrefForKind('vsftpd')).toBe('/ftp');
+    expect(splitLeftoverDetail('one · two')).toEqual(['one', 'two']);
+    expect(
+      localizeReadinessCopy('systemctl is-active: active', t).display,
+    ).toBe('readiness.systemctlActive');
+    expect(localizeReadinessCopy('php 在 PATH', t).display).toContain('readiness.binInPath');
+    expect(classifyManagedNginxName('public-files-qa35web-example-com.conf')).toBe(
+      'leftover',
+    );
+    expect(classifyManagedNginxName('000-default.conf')).toBe('unused');
+    expect(isUnusualProjectHome('/var/lib/ysk-server/projects/x')).toBe(true);
+    expect(isUnusualProjectHome('/home/ysk-server-abc')).toBe(false);
   });
 
   it('sql serviceLabel', () => {

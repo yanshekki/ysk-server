@@ -135,5 +135,6 @@
   "envPanelValue": "panel: {{value}}",
   "settingsNoSandboxWarn": "Disables Chromium sandbox. Use only inside a trusted container. Applies on next real-browser session.",
   "settingsDangerDlWarn": "Allows executable and script downloads through the host browser. Confirm you need this.",
-  "settingsDangerConfirmTitle": "Enable a high-risk browse setting?"
+  "settingsDangerConfirmTitle": "Enable a high-risk browse setting?",
+  "needUrl": "أدخل عنوان URL أعلاه لبدء الجلسة."
 }

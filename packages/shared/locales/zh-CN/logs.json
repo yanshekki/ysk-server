@@ -140,5 +140,19 @@
   "aboutCustomPath": "请在「设置」加入自定义路径（仅限 /var/log 或 /run/log），再到「探索」开启。",
   "noRowsInWindow": "No records in this time window",
   "showInactiveUnits": "Show inactive units",
-  "sseNeedFollow": "Turn on Follow first — SSE is only for live tail"
+  "sseNeedFollow": "Turn on Follow first — SSE is only for live tail",
+  "vacuumNeedRetention": "请先填写保留时间（例如 14d）",
+  "vacuumNeedConfirm": "需确认 — 会删除旧 journal 日志",
+  "vacuumSizeNeedConfirm": "需确认 — 会限制 journal 磁盘用量",
+  "vacuumSizeAlreadyBelow": "目前用量已低于上限，此操作通常无动作",
+  "vacuumSizeNoopDesc": "journal 已低于 500 MB。仍会执行 vacuum --size=500M，通常不会删除任何内容。",
+  "journalDiskHint": "目前 systemd-journald 用量（作用中 journal）。不含 /var/log 下的轮替档。",
+  "varLogDiskHint": "/var/log 的估算用量（含轮替档）。",
+  "queryFirst": "请先查询",
+  "projectSourcesTitle": "{{n}} 个来源（文件 + journal）",
+  "logrotatePath": "Path",
+  "logrotateLast": "Last rotated",
+  "logrotateExpand": "Show {{n}} more",
+  "logrotateCollapse": "Show fewer",
+  "logrotateVersion": "Status version {{v}}"
 }

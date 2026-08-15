@@ -491,5 +491,8 @@
   "openQueuePage": "মেইল সারি খুলুন",
   "healthUnchecked": "Not checked yet",
   "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first.",
-  "domainsListDesc": "Mail domains registered on this host"
+  "domainsListDesc": "Mail domains registered on this host",
+  "healthChecklist": "চেকলিস্ট {{score}}/100",
+  "healthChecklistHint": "চেকলিস্ট স্কোর — DNS / PTR / পোর্ট 25 এখনও পরীক্ষা হয়নি",
+  "healthLiveHint": "লাইভ প্রোব স্কোর"
 }

@@ -132,5 +132,5 @@
   "quotaNonNeg": "數量與配額不可為負數。",
   "diskQuotaHint": "預設晶片以 GiB 計；自訂欄為 MiB。",
   "bandwidthHint": "0 代表不限。",
-  "operatorHighRiskHint": "系統預設「操作員」含高危寫入（服務控制、防火牆、套件套用、MySQL、發佈 Nginx）。收窄只影響新理解讀；改預設會改現有操作員。"
+  "operatorHighRiskHint": "系統預設「操作員」含高危寫入（服務控制、防火牆、套件套用、MySQL、發佈 Nginx）。收窄只影響新建帳戶；修改預設會影響現有操作員。"
 }

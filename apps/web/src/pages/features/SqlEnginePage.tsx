@@ -261,7 +261,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
     [dbs.items],
   );
   const hostOnlyDatabases = hostDatabases.filter((n) => n && !panelDbNames.has(n));
-  const firstDumpName = String(dbs.items[0]?.name ?? hostDatabases[0] ?? '');
+  const firstDumpName = String(dbs.items[0]?.name ?? '');
 
   return (
     <FeaturePageLayout
@@ -286,6 +286,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
               hostOnlyDatabases.length > 0
                 ? `${dbs.items.length} / ${hostDatabases.length}`
                 : dbs.items.length,
+            hint: t('db.registeredVsHostHint'),
           },
           { label: t('common.user'), value: users.items.length },
           {
@@ -321,6 +322,9 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             variant="secondary"
             size="sm"
             disabled={busy || !firstDumpName}
+            title={
+              !firstDumpName ? t('db.dumpNeedRegistered') : t('db.dumpFirstDbTitle')
+            }
             onClick={() => {
               const name = firstDumpName;
               if (!name) return;
@@ -344,6 +348,9 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             variant="secondary"
             size="sm"
             disabled={busy || !firstDumpName}
+            title={
+              !firstDumpName ? t('db.importNeedRegistered') : t('db.importLatestNeedConfirm')
+            }
             onClick={() => {
               const name = firstDumpName;
               if (!name) return;
@@ -363,11 +370,15 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             {t('db.importLatestDump')}
           </Button>
           <Button
-            variant="ghost"
+            variant="secondary"
             size="sm"
             loading={busy}
             disabled={!installed}
-            title={!installed ? t('db.installFirst', { engine: title }) : undefined}
+            title={
+              !installed
+                ? t('db.installFirst', { engine: title })
+                : t('db.cleanupExpiredTempUsersTitle')
+            }
             onClick={() => {
               void api
                 .requestRaw('/api/v1/db/temp-users/expire', {
@@ -598,6 +609,7 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                         variant="secondary"
                         size="sm"
                         loading={busy}
+                        title={t('db.adoptHostDbTitle')}
                         onClick={() => {
                           void dbs.create({ name: n, engine });
                         }}

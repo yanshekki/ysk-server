@@ -22,7 +22,7 @@ export type DbClusterStatus =
 
 export type MemberAccess = 'local' | 'ssh' | 'fleet';
 
-export type MemberApplyStatus = 'none' | 'written' | 'applied' | 'failed';
+export type MemberApplyStatus = 'none' | 'planned' | 'written' | 'applied' | 'failed';
 
 export type ClusterStepKind = 'conf' | 'command' | 'manual' | 'probe';
 

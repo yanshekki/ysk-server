@@ -85,7 +85,7 @@
   "runtime": "রানটাইম",
   "runtimeHint": "ডিফল্ট রানটাইম সংস্করণ সেট করে এবং স্টাইল স্থাপন করে",
   "runtimeVersion": "রানটাইম সংস্করণ",
-  "versionHint": "প্রজেক্ট রানটাইম_সংস্করণ হিসাবে সংরক্ষণ করা হয়েছে",
+  "versionHint": "প্রকল্পের রানটাইম সংস্করণ সেটিং লেখে",
   "serverIpv4": "সার্ভার IPv4",
   "serverIpv4Hint": "ডিএনএস এ/মেইল এসপিএফ",
   "serverIpv4Ph": "এই হোস্ট পাবলিক IPv4",
@@ -119,5 +119,5 @@
   "notifAll": "All",
   "notifDismiss": "Hide",
   "goFix": "Fix",
-  "needDomainFirst": "Enter a domain first"
+  "needDomainFirst": "আগে ডোমেইন লিখুন"
 }

@@ -25,9 +25,14 @@
   "cryptoAddress": "地址",
   "copy": "複製",
   "copied": "已複製",
+  "copyTitle": "複製 {{address}}",
   "docsLink": "說明文件",
   "diagTitle": "診斷摘要",
   "diagBody": "複製版本、EXECUTE 與主機資料，方便貼到電郵。這不是完整 log 包。",
   "diagCopy": "複製診斷摘要",
-  "diagCopied": "已複製診斷摘要"
+  "diagCopied": "已複製診斷摘要",
+  "diagCopyTitle": "複製版本、EXECUTE 與主機資料",
+  "diagPreview": "預覽將會複製的內容",
+  "diagLoading": "載入診斷中…",
+  "diagLoadFailed": "無法載入診斷"
 }

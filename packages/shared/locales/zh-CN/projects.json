@@ -654,5 +654,7 @@
   "netForceHttpsOff": "No forced redirect is stored.",
   "netHttpsLiveNotForced": "An edge file exists; HTTPS may already work. This box only forces HTTP→HTTPS.",
   "gitSyncBlockedDirty": "Sync is disabled until local changes are discarded (Reset) or the files match Git.",
-  "gitViewDiff": "View diff"
+  "gitViewDiff": "View diff",
+  "gitBranchAfterUrl": "请先填写 Git 网址。留空则使用远端默认分支。",
+  "gitResetNeedConfirm": "需确认 — 会丢弃本机提交"
 }

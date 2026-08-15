@@ -31,6 +31,16 @@
   "partialFail": "Not fully successful ({{status}}) — see notes",
   "statNodes": "Nodes",
   "hitNoStats": "No edge stats yet",
+  "loopbackOriginBlocked": "Will not apply loopback origin {{url}} to a remote edge. Set a reachable origin first.",
+  "applyFailedHint": "Apply failed — see notes below",
+  "applyStatus": {
+    "draft": "Draft",
+    "planned": "Planned",
+    "applying": "Applying",
+    "applied": "Applied",
+    "failed": "Failed",
+    "partial": "Partial"
+  },
   "statSites": "Sites",
   "recentNotes": "Recent notes",
   "edgeConfPreview": "Nginx edge conf preview",

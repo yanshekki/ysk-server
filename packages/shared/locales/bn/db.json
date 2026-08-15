@@ -296,5 +296,12 @@
   "remoteTestDone": "Remote host probe finished",
   "remoteTestOk": "reachable",
   "remoteTestFail": "unreachable",
-  "remoteNotChecked": "not tested"
+  "remoteNotChecked": "not tested",
+  "registeredVsHostHint": "প্যানেলে নিবন্ধিত / হোস্টে পাওয়া",
+  "dumpNeedRegistered": "আগে প্যানেলে ডাটাবেস নিবন্ধন করুন",
+  "dumpFirstDbTitle": "প্রথম নিবন্ধিত ডাটাবেস রপ্তানি",
+  "importNeedRegistered": "আগে প্যানেলে ডাটাবেস নিবন্ধন করুন",
+  "importLatestNeedConfirm": "নিশ্চিতকরণ দরকার — নিবন্ধিত ডাটাবেসে আমদানি",
+  "adoptHostDbTitle": "শুধু কন্ট্রোল প্লেনে নাম নিবন্ধন করে; হোস্ট ডেটা বদলায় না।",
+  "cleanupExpiredTempUsersTitle": "প্যানেলের মেয়াদোত্তীর্ণ অস্থায়ী ব্যবহারকারী মুছে"
 }

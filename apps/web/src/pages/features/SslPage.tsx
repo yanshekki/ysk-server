@@ -27,7 +27,9 @@ import { useServerList } from '../../shared/hooks/useServerList';
 import { useSslCertificates } from '../../features/ssl/useSslCertificates';
 import type { CertificateView } from '../../features/ssl/api';
 import { bindSet, bindInput } from '../bind-handlers';
-import { formatDateLocale } from '../../shared/lib/format-date';
+import { formatDateTimeLocale } from '../../shared/lib/format-date';
+import { api } from '../../shared/services/api';
+import { emailApi } from '../../features/email/api';
 
 export function statusBadge(
   status: string,
@@ -79,6 +81,43 @@ export function formatStepLine(
   return s.detail ? `${s.name}: ${st} — ${s.detail}` : `${s.name}: ${st}`;
 }
 
+/** Apex or *.example.com — panel validation (avoid native English required). */
+export function validateSslDomain(
+  value: string,
+  t: (key: string) => string,
+): string | null {
+  const d = String(value ?? '').trim();
+  if (!d) return t('ssl.domainRequired');
+  const ok = /^(\*\.)?([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/i.test(d);
+  return ok ? null : t('ssl.domainInvalid');
+}
+
+export function collectKnownSslDomains(input: {
+  projects?: Array<{ domain?: string; domainAliases?: string[] }>;
+  mail?: Array<{ domain?: string }>;
+  zones?: Array<{ name?: string; zone?: string; domain?: string }>;
+  certs?: Array<{ domain?: string }>;
+}): string[] {
+  const set = new Set<string>();
+  for (const p of input.projects ?? []) {
+    if (p.domain) set.add(p.domain.trim());
+    for (const a of p.domainAliases ?? []) {
+      if (a) set.add(String(a).trim());
+    }
+  }
+  for (const e of input.mail ?? []) {
+    if (e.domain) set.add(String(e.domain).trim());
+  }
+  for (const z of input.zones ?? []) {
+    const n = z.name || z.zone || z.domain;
+    if (n) set.add(String(n).trim());
+  }
+  for (const c of input.certs ?? []) {
+    if (c.domain) set.add(String(c.domain).trim());
+  }
+  return [...set].filter(Boolean).sort((a, b) => a.localeCompare(b));
+}
+
 export function SslPage() {
   const { t, i18n } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -108,6 +147,8 @@ export function SslPage() {
   const [fullchain, setFullchain] = useState('');
   const [privkey, setPrivkey] = useState('');
   const [email, setEmail] = useState('');
+  const [leDomainError, setLeDomainError] = useState<string | null>(null);
+  const [knownDomains, setKnownDomains] = useState<string[]>([]);
 
   // Preset from other pages: ?domain=example.com&action=le
   useEffect(() => {
@@ -121,6 +162,34 @@ export function SslPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!leOpen && !uploadOpen) return;
+    let cancelled = false;
+    void (async () => {
+      const [projects, mail, zones] = await Promise.all([
+        api.listProjects().catch(() => ({ items: [] as Array<{ domain?: string; domainAliases?: string[] }> })),
+        emailApi.list().catch(() => ({ items: [] as Array<{ domain?: string }> })),
+        api
+          .requestRaw<{
+            items: Array<{ name?: string; zone?: string; domain?: string }>;
+          }>('/api/v1/resources/dns/zones?limit=200')
+          .catch(() => ({ items: [] })),
+      ]);
+      if (cancelled) return;
+      setKnownDomains(
+        collectKnownSslDomains({
+          projects: projects.items,
+          mail: mail.items,
+          zones: zones.items,
+          certs: items,
+        }),
+      );
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [leOpen, uploadOpen, items]);
 
   async function onUpload(e: FormEvent) {
     e.preventDefault();
@@ -138,6 +207,9 @@ export function SslPage() {
   async function onLe(e: FormEvent) {
     e.preventDefault();
     const d = domain.trim();
+    const fieldErr = validateSslDomain(d, t);
+    setLeDomainError(fieldErr);
+    if (fieldErr) return;
     const em = email.trim() || defaultLeEmail(d);
     try {
       const r = await requestCertificate(d, em);
@@ -198,7 +270,14 @@ export function SslPage() {
         ] }}
       actions={
         <ActionBar>
-          <Button variant="secondary" size="sm" onClick={bindSet(setLeOpen, true)}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              setLeDomainError(null);
+              setLeOpen(true);
+            }}
+          >
             {t('ssl.requestLe')}
           </Button>
           <Button variant="primary" size="sm" onClick={bindSet(setUploadOpen, true)}>
@@ -319,7 +398,7 @@ export function SslPage() {
                     const soon = days >= 0 && days <= 30;
                     return (
                       <span title={d.toISOString()}>
-                        {formatDateLocale(d, i18n.language)}
+                        {formatDateTimeLocale(d, i18n.language)}
                         {Number.isFinite(days) ? (
                           <span className={`u-text-sm ${soon ? '' : 'muted'}`}>
                             {' '}
@@ -493,23 +572,33 @@ export function SslPage() {
             </>
           }
         >
-          <form id="ssl-le" onSubmit={(e) => void onLe(e)}>
+          <form id="ssl-le" noValidate onSubmit={(e) => void onLe(e)}>
             <FormLayout columns={2}>
               <Field
                 label={t('common.domain')}
                 htmlFor="ld"
                 flush
                 required
-                hint={t('ssl.domainLeHint')}
+                error={leDomainError ?? undefined}
+                hint={leDomainError ? undefined : t('ssl.domainKnownHint')}
               >
                 <input
                   id="ld"
                   value={domain}
-                  onChange={bindInput(setDomain)}
-                  required
+                  onChange={(e) => {
+                    setDomain(e.target.value);
+                    if (leDomainError) setLeDomainError(null);
+                  }}
+                  list="ssl-known-domains"
                   placeholder={t('ssl.domainLePlaceholder')}
                   spellCheck={false}
+                  aria-invalid={leDomainError ? true : undefined}
                 />
+                <datalist id="ssl-known-domains">
+                  {knownDomains.map((d) => (
+                    <option key={d} value={d} />
+                  ))}
+                </datalist>
               </Field>
               <Field
                 label={t('ssl.emailLabel')}

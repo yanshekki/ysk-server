@@ -216,5 +216,6 @@ describe('fail2ban-ops honesty gates', () => {
     expect(st.executeEnabled).toBe(false);
     expect(Array.isArray(st.banned)).toBe(true);
     expect(Array.isArray(st.ignoreIps)).toBe(true);
+    expect(st.ignoreipFile).toContain('fail2ban/ignoreip.txt');
   });
 });

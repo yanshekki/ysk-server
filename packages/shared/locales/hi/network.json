@@ -147,5 +147,7 @@
   "hideRaw": "Hide raw output",
   "rawLoadedAt": "Loaded {{time}}",
   "deleteDefaultPanelWarn": "Deleting the default route can drop this panel session. Type DEFAULT to confirm.",
-  "typeDefaultToConfirm": "Type DEFAULT to confirm"
+  "typeDefaultToConfirm": "Type DEFAULT to confirm",
+  "deleteDefaultNeedConfirm": "पुष्टि आवश्यक — DEFAULT लिखें (यह पैनल कट सकता है)",
+  "deleteRouteNeedConfirm": "पुष्टि आवश्यक"
 }

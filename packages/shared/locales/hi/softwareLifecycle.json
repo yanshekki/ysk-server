@@ -63,5 +63,7 @@
   "kindDeploy": "Deploy",
   "kindRuntime": "Runtime",
   "jobDone": "Finished · {{title}}",
-  "jobFailed": "Failed · {{title}}"
+  "jobFailed": "Failed · {{title}}",
+  "uninstallUfwWarn": "UFW हटाने पर पैनल-प्रबंधित पोर्ट फ़ायरवॉल नहीं रहेगा।",
+  "uninstallFail2banWarn": "fail2ban हटाने से jail रुकेंगे और मौजूदा प्रतिबंध हटेंगे। रखने पर पहले लॉगिन IP को ignoreip में डालें।"
 }

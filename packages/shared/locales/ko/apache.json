@@ -54,5 +54,6 @@
   "cleanupConflictsTitle": "모든 충돌 잔여물을 청소하시겠습니까?",
   "cleanupConflictsDesc": "프로젝트 또는 독립 실행형 ServerName과 충돌하는 모든 디스크상의 아티팩트 구성을 제거하십시오. 프로젝트 행은 유지됩니다.",
   "artifactRemovedOk": "잔여 conf가 제거되었습니다.",
-  "sslTerminatedUpstream": "TLS ends at front Nginx"
+  "sslTerminatedUpstream": "TLS ends at front Nginx",
+  "removeArtifactHint": "이 잔여 디스크 conf만 삭제하며 프로젝트는 지우지 않습니다."
 }

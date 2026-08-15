@@ -164,7 +164,7 @@
   "seedStatusChecking": "Checking",
   "seedStatusPaused": "Paused",
   "seedStatusQueued": "Queued",
-  "swarmLeftover": "المتعقب لديه {{count}} إعلان غير موجود في المكتبة",
+  "swarmLeftover": "لدى Tracker عدد {{count}} من announce خارج المكتبة (مصدر مختلف عن قائمة التورنت)",
   "addSourceSection": "المصدر",
   "addSourceFile": "ملف",
   "addSourceMagnet": "Magnet",

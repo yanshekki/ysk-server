@@ -83,6 +83,22 @@ export function keysInDb(svc: RedisServiceStatus | null, db: number): number {
   return svc?.keyspace?.find((k) => k.db === db)?.keys ?? 0;
 }
 
+export function keyspaceKnown(svc: RedisServiceStatus | null): boolean {
+  return Array.isArray(svc?.keyspace);
+}
+
+export function formatRedisDbOption(
+  i: number,
+  keys: number,
+  known: boolean,
+  t: (k: string, o?: Record<string, unknown>) => string,
+): string {
+  const name = t('redis.dbLabel', { i });
+  if (keys > 0) return `${name}${t('redis.keysInDb', { n: keys })}`;
+  if (known) return `${name}${t('redis.dbEmptyMark', { defaultValue: ' · empty' })}`;
+  return name;
+}
+
 export function clampDbCount(
   configured?: number | null,
   databases?: number | null,
@@ -391,8 +407,7 @@ export function RedisPage() {
                     const n = keysInDb(svc, i);
                     return (
                       <option key={i} value={i}>
-                        {t('redis.dbLabel', { i })}
-                        {n > 0 ? t('redis.keysInDb', { n }) : ''}
+                        {formatRedisDbOption(i, n, keyspaceKnown(svc), t)}
                       </option>
                     );
                   })}

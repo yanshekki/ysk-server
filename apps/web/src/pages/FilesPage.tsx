@@ -52,6 +52,7 @@ import {
   type DestNameEntry,
   type FileNameConflictPrompt,
 } from '../features/files/name-conflict';
+import { formatDateTimeLocale } from '../shared/lib/format-date';
 import { projectsApi } from '../features/projects';
 import { authStore } from '../shared/stores/auth-store';
 import { toast } from '../shared/stores/toast-store';
@@ -233,8 +234,12 @@ export function previewKindFromName(name?: string | null): PreviewKind | null {
   return null;
 }
 
+export function looksLikeFileName(name: string): boolean {
+  return /\.[a-z0-9]{1,8}$/i.test(String(name || '').trim());
+}
+
 export function iconFor(e: FileEntry): string {
-  if (e.type === 'dir') return '📁';
+  if (e.type === 'dir') return looksLikeFileName(e.name) ? '📁📄' : '📁';
   const kind = previewKind(e.mime, e.name);
   if (kind === 'image') return '🖼';
   if (kind === 'pdf') return '📄';
@@ -479,7 +484,7 @@ export function selectAllPaths(
 }
 
 export function FilesPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const rootFromQuery = searchParams.get('root') || 'public';
   const [root, setRoot] = useState(rootFromQuery);
@@ -1669,6 +1674,9 @@ export function FilesPage() {
                             onClick={bindCall1(openEntry, e)}
                           >
                             <span aria-hidden>{iconFor(e)}</span> {e.name}
+                            {e.type === 'dir' && looksLikeFileName(e.name) ? (
+                              <span className="muted u-text-sm"> {t('files.dirNamedLikeFile')}</span>
+                            ) : null}
                             {e.favorite ? ' ★' : ''}
                           </button>
                         ) },
@@ -2250,7 +2258,7 @@ export function FilesPage() {
                   {webdavUpdatedAt ? (
                     <span className="muted u-text-sm">
                       {t('files.webdavUpdated', {
-                        at: new Date(webdavUpdatedAt).toLocaleString(),
+                        at: formatDateTimeLocale(webdavUpdatedAt, i18n.language),
                       })}
                     </span>
                   ) : null}
@@ -2328,11 +2336,19 @@ export function FilesPage() {
               </CardSection>
             </Card>
 
-            <Card>
+            <Card className={webdavEnabled ? undefined : 'is-muted'}>
               <CardSection
                 title={t('files.webdavConnTitle')}
-                description={t('files.webdavConnDesc')}
+                description={
+                  webdavEnabled
+                    ? t('files.webdavConnDesc')
+                    : t('files.webdavAfterEnable')
+                }
               >
+                {webdavEnabled ? null : (
+                  <p className="muted u-text-sm">{t('files.webdavAfterEnable')}</p>
+                )}
+                <div hidden={!webdavEnabled && !webdavToken} className={webdavEnabled ? undefined : 'muted'}>
                 <DescriptionList
                   columns={1}
                   items={[
@@ -2425,15 +2441,20 @@ export function FilesPage() {
                     </Button>
                   </FormActions>
                 ) : null}
+                </div>
               </CardSection>
             </Card>
 
-            <Card>
+            <Card className={webdavEnabled ? undefined : 'is-muted'}>
               <CardSection
                 title={t('files.webdavClientsTitle')}
-                description={t('files.webdavClientsDesc')}
+                description={
+                  webdavEnabled
+                    ? t('files.webdavClientsDesc')
+                    : t('files.webdavAfterEnable')
+                }
               >
-                <div className="u-stack u-gap-3">
+                <div className="u-stack u-gap-3" hidden={!webdavEnabled}>
                   <div>
                     <h4 className="u-text-sm u-font-bold u-mb-1">
                       {t('files.webdavClientFinder')}

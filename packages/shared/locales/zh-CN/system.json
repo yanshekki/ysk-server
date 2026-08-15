@@ -80,7 +80,8 @@
     "openFirewall": "若外网连接：防火墙请允许面板端口 {{port}}/tcp（防火墙 → 开埠 → 9287 Panel）",
     "disableConfirmTitle": "Disable panel HTTPS?",
     "disableConfirmDesc": "The panel will serve HTTP. WebAuthn / Passkey will stop working until HTTPS is on again.",
-    "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP."
+    "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP.",
+    "disableNeedConfirm": "需确认 — 请输入 DISABLE-HTTPS"
   },
   "timeNtp": "时间与 NTP",
   "clockStatus": "系统时钟状态",
@@ -188,5 +189,10 @@
   "dryRunFlag": "预览试运行",
   "timezoneSearch": "筛选时区…",
   "resyncNtp": "重新同步 NTP",
-  "storageSub": "磁盘用量"
+  "storageSub": "磁盘用量",
+  "syncReloadNeedConfirm": "需确认 — 会写入 /etc/nginx/conf.d 并重新载入 Nginx",
+  "nginxLeftover": "残留",
+  "nginxUnused": "未使用",
+  "nginxLeftoverHint": "旧 public-files 或其他残留配置。同步仍会一并写入，除非操作员另行处理。",
+  "nginxUnusedHint": "默认／catch-all 配置（000-default）。同步仍会一并写入，除非操作员另行处理。"
 }

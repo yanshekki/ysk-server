@@ -249,7 +249,8 @@
     "cleanupConflictsTitle": "모든 충돌 잔여물을 청소하시겠습니까?",
     "cleanupConflictsDesc": "프로젝트 또는 독립 실행형 ServerName과 충돌하는 모든 디스크상의 아티팩트 구성을 제거하십시오. 프로젝트 행은 유지됩니다.",
     "artifactRemovedOk": "잔여 conf가 제거되었습니다.",
-    "sslTerminatedUpstream": "TLS ends at front Nginx"
+    "sslTerminatedUpstream": "TLS ends at front Nginx",
+    "removeArtifactHint": "이 잔여 디스크 conf만 삭제하며 프로젝트는 지우지 않습니다."
   },
   "applyStatus": {
     "draft": "초안",
@@ -597,7 +598,7 @@
     "seedStatusChecking": "Checking",
     "seedStatusPaused": "Paused",
     "seedStatusQueued": "Queued",
-    "swarmLeftover": "라이브러리에 없는 announce가 {{count}}개 있습니다",
+    "swarmLeftover": "Tracker에 라이브러리에 없는 announce가 {{count}}개 있습니다(Torrent 목록과 출처가 다름)",
     "addSourceSection": "소스",
     "addSourceFile": "파일",
     "addSourceMagnet": "Magnet",
@@ -768,7 +769,17 @@
     "statOffline": "Offline {{n}}",
     "statDraining": "Draining {{n}}",
     "statHitRate": "Hit rate {{v}}",
-    "hitNoStats": "No edge stats yet"
+    "hitNoStats": "아직 에지 통계가 없습니다",
+    "loopbackOriginBlocked": "루프백 origin {{url}}을 원격 에지에 쓰지 않습니다. 먼저 도달 가능한 origin으로 바꾸세요.",
+    "applyFailedHint": "적용 실패 — 아래 메모를 보세요",
+    "applyStatus": {
+      "draft": "초안",
+      "planned": "계획됨",
+      "applying": "적용 중",
+      "applied": "적용됨",
+      "failed": "실패",
+      "partial": "부분"
+    }
   },
   "cli": {
     "unknownCommand": "알 수 없는 명령: {{command}}\n`{{cli}} 도움말`을 실행하세요.",
@@ -2079,7 +2090,8 @@
     "all": "All",
     "showPassword": "Show",
     "hidePassword": "Hide",
-    "more": "More"
+    "more": "More",
+    "redirectedTo": "{{to}}(으)로 이동했습니다(원래 {{from}})"
   },
   "cron": {
     "presetCdTrue": "CD 앱 + true(테스트)",
@@ -2319,7 +2331,7 @@
     "runtime": "실행 시간",
     "runtimeHint": "기본 런타임 버전 및 배포 스타일 설정",
     "runtimeVersion": "런타임 버전",
-    "versionHint": "프로젝트 런타임_버전으로 저장됨",
+    "versionHint": "프로젝트 실행 환경 버전 설정에 씁니다",
     "serverIpv4": "서버 IPv4",
     "serverIpv4Hint": "DNS A/메일 SPF",
     "serverIpv4Ph": "이 호스트의 공개 IPv4",
@@ -2353,7 +2365,7 @@
     "notifAll": "All",
     "notifDismiss": "Hide",
     "goFix": "Fix",
-    "needDomainFirst": "Enter a domain first"
+    "needDomainFirst": "먼저 도메인을 입력하세요"
   },
   "dataTable": {
     "empty": "데이터 없음",
@@ -2657,7 +2669,14 @@
     "remoteTestDone": "Remote host probe finished",
     "remoteTestOk": "reachable",
     "remoteTestFail": "unreachable",
-    "remoteNotChecked": "not tested"
+    "remoteNotChecked": "not tested",
+    "registeredVsHostHint": "패널 등록 / 호스트 실측",
+    "dumpNeedRegistered": "먼저 패널에 데이터베이스를 등록하세요",
+    "dumpFirstDbTitle": "첫 등록 데이터베이스 내보내기",
+    "importNeedRegistered": "먼저 패널에 데이터베이스를 등록하세요",
+    "importLatestNeedConfirm": "확인 필요 — 등록된 데이터베이스로 가져옵니다",
+    "adoptHostDbTitle": "제어면에 이름만 등록하며 호스트 데이터는 바꾸지 않습니다.",
+    "cleanupExpiredTempUsersTitle": "만료된 패널 임시 사용자를 삭제합니다"
   },
   "dialogs": {
     "confirmDefault": "확인하다",
@@ -3381,7 +3400,10 @@
     "openQueuePage": "메일 큐 열기",
     "healthUnchecked": "Not checked yet",
     "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first.",
-    "domainsListDesc": "Mail domains registered on this host"
+    "domainsListDesc": "Mail domains registered on this host",
+    "healthChecklist": "점검표 {{score}}/100",
+    "healthChecklistHint": "점검표 점수 — DNS/PTR/포트 25 실측 전",
+    "healthLiveHint": "실측 점수"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "승인되지 않은",
@@ -3525,7 +3547,7 @@
     "statWhitelist": "Whitelist",
     "invalidIp": "Enter a valid IPv4, IPv6, or CIDR.",
     "whitelistPendingApply": "Saved to the panel list. Press Apply policy to write jail.local.",
-    "ignoreipFile": "Panel data directory / fail2ban / ignoreip.txt",
+    "ignoreipFile": "dataDir/fail2ban/ignoreip.txt",
     "jailsTabHint": "Status of active jails. Turn jails on or off in the Policy tab.",
     "colJail": "Jail",
     "colEnabled": "On",
@@ -3542,7 +3564,11 @@
     },
     "cannotBanSelf": "This is the host or your login IP — add it to ignoreip instead of banning",
     "suggestIgnoreHint": "Suggested admin IPs (panel file only until you apply policy):",
-    "suggestIgnoreAdd": "Add {{ip}}"
+    "suggestIgnoreAdd": "Add {{ip}}",
+    "whitelistEmptyWarn": "허용 목록이 비어 있습니다. jail이 당신을 차단할 수 있습니다. ignoreip 적용 전에 로그인 IP를 넣으세요.",
+    "suggestIgnoreLogin": "내 로그인 IP {{ip}}",
+    "applyIgnoreEmptyWarn": "허용 목록이 빈 채로 적용하면 ignoreip가 비워집니다",
+    "applyIgnoreNeedConfirm": "jail ignoreip를 다시 쓰고 fail2ban을 다시 불러옵니다"
   },
   "featurePage": {
     "back": "뒤로"
@@ -3898,7 +3924,9 @@
     "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
     "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone.",
     "webdavReissueUnchanged": "Token id did not change after re-issue — the write may not have persisted. Try again.",
-    "webdavDisableFailed": "WebDAV is still enabled after disable — the write may not have persisted. Try again."
+    "webdavDisableFailed": "WebDAV is still enabled after disable — the write may not have persisted. Try again.",
+    "dirNamedLikeFile": "(폴더 잔여물; 이름이 파일처럼 보임)",
+    "webdavAfterEnable": "WebDAV를 켜고 토큰을 발급한 뒤에 사용할 수 있습니다."
   },
   "firewall": {
     "profiles": {
@@ -4438,7 +4466,8 @@
     "envPanelValue": "panel: {{value}}",
     "settingsNoSandboxWarn": "Disables Chromium sandbox. Use only inside a trusted container. Applies on next real-browser session.",
     "settingsDangerDlWarn": "Allows executable and script downloads through the host browser. Confirm you need this.",
-    "settingsDangerConfirmTitle": "Enable a high-risk browse setting?"
+    "settingsDangerConfirmTitle": "Enable a high-risk browse setting?",
+    "needUrl": "위에서 URL을 입력해 세션을 시작하세요."
   },
   "listToolbar": {
     "searchPlaceholder": "찾다…",
@@ -4616,7 +4645,21 @@
     "aboutCustomPath": "Add a custom path on Settings (only /var/log or /run/log). Then open it from Explore.",
     "noRowsInWindow": "No records in this time window",
     "showInactiveUnits": "Show inactive units",
-    "sseNeedFollow": "Turn on Follow first — SSE is only for live tail"
+    "sseNeedFollow": "Turn on Follow first — SSE is only for live tail",
+    "vacuumNeedRetention": "먼저 보존 기간을 입력하세요(예: 14d)",
+    "vacuumNeedConfirm": "확인 필요 — 오래된 journal 로그를 삭제합니다",
+    "vacuumSizeNeedConfirm": "확인 필요 — journal 디스크 사용을 제한합니다",
+    "vacuumSizeAlreadyBelow": "현재 사용량이 한도보다 낮아 보통 삭제되지 않습니다.",
+    "vacuumSizeNoopDesc": "journal이 이미 500 MB 미만입니다. vacuum --size=500M은 실행되지만 보통 삭제하지 않습니다.",
+    "journalDiskHint": "현재 systemd-journald 사용량(활성 journal). /var/log 순환 파일은 포함하지 않습니다.",
+    "varLogDiskHint": "/var/log 추정(순환 파일 포함).",
+    "queryFirst": "먼저 조회하세요",
+    "projectSourcesTitle": "출처 {{n}}개(파일 + journal)",
+    "logrotatePath": "Path",
+    "logrotateLast": "Last rotated",
+    "logrotateExpand": "Show {{n}} more",
+    "logrotateCollapse": "Show fewer",
+    "logrotateVersion": "Status version {{v}}"
   },
   "metrics": {
     "alert": {
@@ -4758,7 +4801,11 @@
     "colHome": "Home",
     "usageNoteLink": "Control-plane soft quota. Apply hard limits on the project Isolation tab.",
     "alertsBuiltinOnly": "Built-in CPU / memory / disk thresholds only. No email, webhook, or Slack channel.",
-    "lastEvaluated": "Last checked"
+    "lastEvaluated": "Last checked",
+    "shareNoQuotaHint": "할당량이 없어 비율이 없습니다. 프로젝트 격리 탭에서 설정하세요.",
+    "setQuotaLink": "할당량 설정",
+    "unusualHome": "비표준 경로",
+    "unusualHomeHint": "Not a /home/… project home. Canonical isolation is /home/ysk-server-{id}."
   },
   "migrate": {
     "tabInventory": "목록",
@@ -4844,7 +4891,9 @@
     "orphanHomesHint": "Leftover project homes (not in the store). Remove only after you confirm they are unused.",
     "orphanRemove": "Remove leftover home",
     "orphanRemoveTitle": "Delete leftover project home?",
-    "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1."
+    "orphanRemoveDesc": "Permanently delete {{path}} from disk. This is not a store project. Needs YSK_EXECUTE=1.",
+    "orphanRemovePhrase": "확인하려면 DELETE를 입력하세요.",
+    "orphanRemoveNeedConfirm": "확인이 필요합니다"
   },
   "multiCheck": {
     "customPlaceholder": "맞춤 코드",
@@ -5095,7 +5144,9 @@
     "hideRaw": "Hide raw output",
     "rawLoadedAt": "Loaded {{time}}",
     "deleteDefaultPanelWarn": "Deleting the default route can drop this panel session. Type DEFAULT to confirm.",
-    "typeDefaultToConfirm": "Type DEFAULT to confirm"
+    "typeDefaultToConfirm": "Type DEFAULT to confirm",
+    "deleteDefaultNeedConfirm": "확인 필요 — DEFAULT 입력(이 패널 연결이 끊길 수 있음)",
+    "deleteRouteNeedConfirm": "확인이 필요합니다"
   },
   "nginx": {
     "pillSites": "{{count}} 사이트",
@@ -5706,7 +5757,7 @@
       "n0259": "도메인",
       "n0260": "도메인을 찾을 수 없음:",
       "n0261": "dovecot 다시 로드 실패 또는 servicenot(시브 쓰기, 다시 로드 성공)",
-      "n0262": "시험 운행 함대 파견 (아님)",
+      "n0262": "플릿 디스패치 미리보기(대기열에 넣지 않음)",
       "n0263": "테스트 실행 피어 푸시(SCP 아님)",
       "n0264": "테스트 실행 원격 설치(Ssh 아님)",
       "n0265": "테스트 실행 전송 완료(전체 부트스트랩)",
@@ -7039,7 +7090,7 @@
       "n1590": "",
       "n1591": "루트 아님 — useradd / systemd / nginx 시스템 경로가 제한됩니다.",
       "n1592": "seccomp가 아닌 경우 runAsUser가 필요합니다.",
-      "n1593": "패널부탁드립니다 /",
+      "n1593": "공개 요청 / 분",
       "n1594": "패널연결; 사용 가능\"\" ( )",
       "n1595": "패널이 루트로 실행되고 있지 않습니다.",
       "n1596": "사용 가능 적용:거짓",
@@ -7310,7 +7361,7 @@
       "t0251": "{{v0}} 설치가 완료되지 않았습니다.",
       "t0252": "{{v0}} 서비스 시작",
       "t0253": "시작 실패: {{v0}}",
-      "t0254": "Node.js 버전 {{v0}} 지원; 사용 가능한 버전: {{v1}}",
+      "t0254": "Node.js 버전 {{v0}} 지원; 사용 가능 버전: {{v1}}",
       "t0255": "PHP 버전 {{v0}} 지원; 사용 가능 시간: {{v1}}",
       "t0256": "Python 버전 {{v0}} 지원; 사용 가능 시간: {{v1}}",
       "t0257": "Go 버전 {{v0}} 지원; 사용 가능 시간: {{v1}}",
@@ -7432,12 +7483,12 @@
       "t0373": "프로젝트 \"{{v0}}\" 격리",
       "t0374": "로컬 경로로 {{v0}}",
       "t0375": "신원 {{v0}}: {{v1}}",
-      "t0376": "scp(ID)를 {{v0}}로",
-      "t0377": "scp(ID) 실패: {{v0}}",
-      "t0378": "scp를 {{v0}}로",
-      "t0379": "scp 실패: {{v0}}",
-      "t0380": "scp를 {{v0}}로",
-      "t0381": "scp 실패: {{v0}} (원격 ID 백업)",
+      "t0376": "sftp(identity)로 {{v0}}에 성공",
+      "t0377": "sftp(identity) 실패: {{v0}}",
+      "t0378": "sftp로 {{v0}}에 성공",
+      "t0379": "sftp 실패: {{v0}}",
+      "t0380": "sftp로 {{v0}}에 성공",
+      "t0381": "sftp 실패: {{v0}} (백업 remote identityId를 설정할 수 있음)",
       "t0382": "시즌3 {{v0}}",
       "t0383": "S3 실패: {{v0}}",
       "t0384": ": {{v0}}/{{v1}} 관리자 2FA 활성화",
@@ -7445,7 +7496,7 @@
       "t0386": "{{v0}} 경로",
       "t0387": "{{v0}} 찾을 수 없음",
       "t0388": "{{v0}}를 설치하거나 PATH에 추가하세요.",
-      "t0389": "사용 가능한 버전: {{v0}}",
+      "t0389": "사용 가능 버전: {{v0}}",
       "t0390": "{{v0}}%( {{v1}}MB)",
       "t0391": "{{v0}}% ({{v1}})",
       "t0392": "서비스 시작 {{v0}}",
@@ -7694,7 +7745,7 @@
       "t0635": "조사할 수 없습니다 {{v0}}",
       "t0636": "{{v0}} · {{v1}}",
       "t0637": "프로젝트 {{v0}} · {{v1}} · DB {{v2}} · Redis {{v3}}",
-      "t0638": "설치소프트웨어 {{v0}} · 주택 {{v1}}",
+      "t0638": "설치할 소프트웨어 {{v0}} · homes {{v1}}",
       "t0639": "컷오버 호스트 {{v0}}",
       "t0640": "{{v0}} warning(s) — review before cutover.",
       "t0641": "열쇠 {{v0}}",
@@ -8275,7 +8326,11 @@
       "dovecot": "Dovecot ssl_cert points at missing {{path}}. Overlay does not rewrite ssl=no. Apply mail TLS after issuing the cert, or apply email stack.",
       "overlayDoesNotHeal": "Product overlay does not rewrite nginx, Apache, vsftpd, or Dovecot. Use the listed apply commands (root + YSK_EXECUTE=1).",
       "readinessTitle": "Host leftovers after overlay",
-      "readinessClean": "No leftover Apache default, missing nginx catch-all, failed vsftpd, or stale CLI detected."
+      "readinessClean": "No leftover Apache default, missing nginx catch-all, failed vsftpd, or stale CLI detected.",
+      "staleCliRemoved": "잔여 CLI {{path}}을(를) 제거했습니다.",
+      "staleCliRemoveFailed": "잔여 CLI {{path}}을(를) 제거하지 못했습니다: {{detail}}",
+      "vsftpdSslOff": "FTPS 인증서 파일이 없어 vsftpd를 ssl_enable=NO로 설정한 뒤 다시 시작했습니다.",
+      "dovecotSslOff": "{{path}}이(가) 없어 Dovecot을 ssl=no로 설정한 뒤 다시 시작했습니다."
     },
     "git": {
       "missingBin": "git is not on PATH",
@@ -8331,6 +8386,11 @@
       "dnsDegraded": "DNS path degraded",
       "reqRateHigh": "Public request rate {{reqs}}/min ≥ {{threshold}}",
       "ddosHeuristic": "High public request rate plus edge probe failure"
+    },
+    "publicFiles": {
+      "liveConf": "적용 중인 Nginx 설정: {{path}}",
+      "publicRoot": "공개 루트: {{path}}",
+      "confNameStale": "설정 파일 {{file}}이(가) 현재 server_name {{serverName}}과(와) 일치하지 않습니다. 공개 파일을 다시 적용해 이름을 바꾸세요."
     }
   },
   "ops": {
@@ -9114,7 +9174,9 @@
     "netForceHttpsOff": "No forced redirect is stored.",
     "netHttpsLiveNotForced": "An edge file exists; HTTPS may already work. This box only forces HTTP→HTTPS.",
     "gitSyncBlockedDirty": "Sync is disabled until local changes are discarded (Reset) or the files match Git.",
-    "gitViewDiff": "View diff"
+    "gitViewDiff": "View diff",
+    "gitBranchAfterUrl": "먼저 Git URL을 입력하세요. 비우면 원격 기본 분기를 사용합니다.",
+    "gitResetNeedConfirm": "확인 필요 — 로컬 커밋을 버립니다"
   },
   "protection": {
     "levels": {
@@ -9466,13 +9528,27 @@
     "stackApply": "Apply protection stack (UFW, fail2ban, preset)",
     "stackApplyDone": "Protection stack apply requested",
     "stackApplyHint": "This enables UFW and applies fail2ban plus the suggested preset. Confirm you will not lock yourself out of a remote panel.",
-    "cannotBanSelf": "Cannot ban {{ip}} — this is the host, your login, or ignoreip",
+    "cannotBanSelf": "{{ip}}는 차단할 수 없습니다 — 호스트, 로그인 IP 또는 ignoreip입니다",
     "selfIp": "This host",
     "selfHostIp": "Host IP",
     "selfLoginIp": "Your login IP",
     "showZeroScore": "Show 0-score",
     "hideZeroScore": "Hide 0-score",
-    "freshnessNa": "n/a"
+    "freshnessNa": "n/a",
+    "geoDraftOnly": "정책이 꺼져 있습니다. 저장은 초안만 씁니다. 켜기 전까지 Nginx는 적용하지 않습니다.",
+    "selectAllCountriesWarn": "차단 목록에서 모든 국가를 선택할까요? 이 호스트와 로그인 국가도 막힐 수 있습니다.",
+    "badgeRecommendPreset": "현재 위협 수준에는 더 강한 프리셋을 권장합니다",
+    "badgeAutomationOn": "자동화가 켜져 있습니다",
+    "badgeBanCount": "현재 차단 수",
+    "badgeGeoOn": "Geo 접근 정책이 켜져 있습니다",
+    "badgeGeoNotReady": "GeoIP 데이터베이스가 준비되지 않았습니다",
+    "badgeIntelSignals": "지금 점수에 더해지는 신호 수",
+    "signalActive": "동작 중",
+    "signalInactive": "비활성",
+    "signalJails": "jail {{n}}개",
+    "dbReadyHint": "MMDB 파일이 있습니다",
+    "dbNotReadyHint": "먼저 GeoIP 데이터베이스를 받으세요",
+    "staleHint": "마지막 성공 업데이트가 7일을 넘겼는지"
   },
   "publicFiles": {
     "notSet": "설정되지 않음",
@@ -9728,7 +9804,25 @@
     "fixDone": "dataDir 권한 강화(chmod 750)",
     "fixDoneWebUi": "웹 UI 구축/설치",
     "rootLabel": "Superuser",
-    "exportStarted": "Downloading {{name}}"
+    "exportStarted": "Downloading {{name}}",
+    "blockersHint": "「차단」은 「없음」의 핵심 부분집합이며 추가 검사가 아닙니다.",
+    "techDetails": "Technical details",
+    "missingOwner": "No panel owner assigned (package quota attribution)",
+    "notOsProvisioned": "OS user/home not provisioned yet",
+    "ondrejNone": "No ondrej Launchpad PHP sources detected",
+    "ondrejFound": "Found legacy ondrej/php sources that conflict with packages.sury.org: {{paths}}",
+    "ondrejTitle": "PHP apt source (ondrej residual)",
+    "systemctlActive": "Service is running",
+    "systemctlStatus": "Service status: {{status}}",
+    "binInPath": "{{bin}} in PATH",
+    "leftoverApache": "Apache leftover default site",
+    "leftoverVsftpd": "vsftpd unit failed",
+    "leftoverCli": "Stale leftover CLI",
+    "leftoverNginx": "Nginx catch-all missing",
+    "leftoverDovecot": "Dovecot TLS points at missing cert",
+    "leftoverOther": "Host leftover",
+    "leftoverApply": "Leftover apply",
+    "isolationOwnerDegrades": "Missing owner_user_id affects package quota attribution — status is degraded, not ready."
   },
   "redis": {
     "neverExpire": "만료되지 않음",
@@ -9796,7 +9890,15 @@
     "pickKey": "콘텐츠를 보려면 왼쪽에 있는 키를 선택하세요.",
     "ttlPrefix": "TTL: {{ttl}}",
     "writeLiveHint": "라이브 Redis를 작성합니다. 한 번의 클릭으로 패널에서 실행 취소할 수 없습니다.",
-    "refPath": "참조: {{path}}"
+    "refPath": "참조: {{path}}",
+    "dbEmptyMark": " · 비어 있음",
+    "noRequirepass": "보호 모드는 켜져 있지만 requirepass가 비었거나 읽히지 않았습니다 — 암호 없음.",
+    "setRequirepass": "암호 설정",
+    "rdbOnlyLossHint": "AOF 꺼짐, RDB 켜짐. 재시작이나 충돌 시 최근 쓰기가 유실될 수 있습니다.",
+    "dirDataContainer": "/data (container)",
+    "dirHostDefault": "/var/lib/redis",
+    "dirDefaultInstance": "/var/lib/redis/default",
+    "dirDataWarn": "/data is usually a container path; this panel cannot confirm it exists."
   },
   "resources": {
     "created": "생성됨",
@@ -10324,7 +10426,21 @@
     "alreadyHostDefaultShort": "호스트 기본값",
     "managedPathMissingTitle": "Managed {{name}} path not ready",
     "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall.",
-    "installRecordedCta": "Install recorded {{v}}"
+    "installRecordedCta": "Install recorded {{v}}",
+    "targetMissing": "대상 버전이 설치되지 않음",
+    "targetMissingHint": "대상 {{version}}이(가) 이 호스트에 없습니다. 설치된 버전에 묶거나 이 핀을 설치하세요.",
+    "needsInstall": "설치 필요",
+    "needsInstallHint": "이 버전은 이 호스트에 없습니다. 먼저 설치하거나 설치된 버전을 고르세요.",
+    "unitBytes": "바이트",
+    "headerSizeKb": "{{n}} KB",
+    "phpIniChipEmpty": "불러오지 않음 — php.ini 탭을 여세요",
+    "phpFpmService": "PHP-FPM",
+    "phpFpmServiceDesc": "PHP-FPM 유닛 시작, 중지, 다시 불러오기, 재시작",
+    "rustupDefaultMissingTitle": "rustup 기본 툴체인이 없습니다",
+    "rustupDefaultMissing": "rustup에 기본값이 없습니다. 소프트웨어 탭에서 stable을 설정하세요.",
+    "rustupDefaultMissingShort": "No default toolchain",
+    "rustupSetDefaultHint": "Set default toolchain",
+    "uninstalledCountHint": "{{n}}개 버전이 이 호스트에 없습니다"
   },
   "search": {
     "placeholder": "페이지 및 리소스 검색…",
@@ -10896,7 +11012,9 @@
       "running": "Running",
       "failed": "Failed",
       "missing": "Not installed"
-    }
+    },
+    "stopNeedConfirm": "확인이 필요합니다",
+    "stopNeedConfirmPhrase": "확인 문구를 입력해야 합니다"
   },
   "software": {
     "title": "소프트웨어",
@@ -11100,7 +11218,9 @@
     "kindDeploy": "Deploy",
     "kindRuntime": "Runtime",
     "jobDone": "Finished · {{title}}",
-    "jobFailed": "Failed · {{title}}"
+    "jobFailed": "Failed · {{title}}",
+    "uninstallUfwWarn": "UFW를 제거하면 패널이 관리하는 포트 방화벽이 사라집니다.",
+    "uninstallFail2banWarn": "fail2ban을 제거하면 jail이 멈추고 현재 차단이 해제됩니다. 유지하려면 먼저 로그인 IP를 ignoreip에 넣으세요."
   },
   "sqlEngineHealth": {
     "finding": {
@@ -11319,7 +11439,10 @@
     "deletedCert": "삭제됨 {{domain}}",
     "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates.",
     "renew": "Renew",
-    "renewFor": "Renew Let’s Encrypt for {{domain}}"
+    "renewFor": "Renew Let’s Encrypt for {{domain}}",
+    "domainRequired": "도메인을 입력하세요.",
+    "domainInvalid": "도메인 형식이 올바르지 않습니다.",
+    "domainKnownHint": "알려진 프로젝트·DNS·메일 도메인에서 고르거나 직접 입력하세요."
   },
   "stackWizard": {
     "purgeConfirm": "퍼지를 확인하시겠습니까? 등록된 데이터 경로(데이터베이스/메일)가 영구적으로 삭제됩니다.",
@@ -11334,7 +11457,7 @@
     "componentsTitle": "설치할 구성 요소",
     "dryRun": "테스트 실행 미리보기",
     "installNow": "지금 설치",
-    "uninstallHint": "제거할 번들 선택",
+    "uninstallHint": "제거할 번들을 선택하세요. 선택하지 않으면 제거할 수 없습니다. 데이터는 기본적으로 유지됩니다.",
     "dataPolicy": "데이터 정책",
     "keepData": "데이터 보관",
     "purgeData": "데이터 삭제",
@@ -11374,7 +11497,12 @@
     "diagTitle": "Diagnostic summary",
     "diagBody": "Copy version, execute, and host facts to paste into an email. This is not a full log bundle.",
     "diagCopy": "Copy diagnostic summary",
-    "diagCopied": "Diagnostic summary copied"
+    "diagCopied": "Diagnostic summary copied",
+    "copyTitle": "{{address}} 복사",
+    "diagCopyTitle": "버전, EXECUTE, 호스트 정보 복사",
+    "diagPreview": "복사될 내용 미리보기",
+    "diagLoading": "Loading diagnostic…",
+    "diagLoadFailed": "Could not load diagnostic"
   },
   "system": {
     "exportLoadFailed": "내보내기 데이터를 로드하지 못했습니다.",
@@ -11458,7 +11586,8 @@
       "openFirewall": "공개인 경우: 패널 포트 {{port}}/tcp 허용(방화벽 → 포트 열기 → 9287 패널)",
       "disableConfirmTitle": "Disable panel HTTPS?",
       "disableConfirmDesc": "The panel will serve HTTP. WebAuthn / Passkey will stop working until HTTPS is on again.",
-      "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP."
+      "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP.",
+      "disableNeedConfirm": "확인 필요 — DISABLE-HTTPS 입력"
     },
     "timeNtp": "시간 및 NTP",
     "clockStatus": "시스템 시계 상태",
@@ -11566,7 +11695,12 @@
     "dryRunFlag": "드라이런",
     "timezoneSearch": "Filter timezones…",
     "resyncNtp": "Re-sync NTP",
-    "storageSub": "Disk usage"
+    "storageSub": "Disk usage",
+    "syncReloadNeedConfirm": "확인 필요 — /etc/nginx/conf.d에 쓰고 Nginx를 다시 불러옵니다",
+    "nginxLeftover": "잔여",
+    "nginxUnused": "미사용",
+    "nginxLeftoverHint": "옛 public-files 등 잔여 conf. 조치하기 전까지 동기화에 포함됩니다.",
+    "nginxUnusedHint": "기본 / catch-all conf(000-default). 조치하기 전까지 동기화에 포함됩니다."
   },
   "systemd": {
     "enabled": "사용",
@@ -12240,7 +12374,7 @@
     "diskQuotaHint": "Presets are GiB; custom box is MiB.",
     "bandwidthHint": "0 means unlimited.",
     "impersonateHint": "Opens a session as this user. Use the account menu to leave impersonation.",
-    "operatorHighRiskHint": "The factory operator role includes high-risk writes (services, firewall, package apply, MySQL, Nginx publish). Narrow it only if you intend to change every existing operator."
+    "operatorHighRiskHint": "공장 기본 운영자 역할에는 고위험 쓰기가 포함됩니다. 좁히면 새 계정만, 기본을 바꾸면 기존 운영자에게도 영향을 줍니다."
   },
   "vnc": {
     "pageDesc": "VNC 서버 및 클라이언트",

@@ -80,7 +80,8 @@
     "openFirewall": "パブリックの場合: パネル ポート {{port}}/tcp を許可 (ファイアウォール → ポートを開く → 9287 パネル)",
     "disableConfirmTitle": "Disable panel HTTPS?",
     "disableConfirmDesc": "The panel will serve HTTP. WebAuthn / Passkey will stop working until HTTPS is on again.",
-    "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP."
+    "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP.",
+    "disableNeedConfirm": "確認が必要です — DISABLE-HTTPS と入力"
   },
   "timeNtp": "時間とNTP",
   "clockStatus": "システムクロックのステータス",
@@ -188,5 +189,10 @@
   "dryRunFlag": "テスト実行",
   "timezoneSearch": "Filter timezones…",
   "resyncNtp": "Re-sync NTP",
-  "storageSub": "Disk usage"
+  "storageSub": "Disk usage",
+  "syncReloadNeedConfirm": "確認が必要 — /etc/nginx/conf.d に書き Nginx を再読み込みします",
+  "nginxLeftover": "残留",
+  "nginxUnused": "未使用",
+  "nginxLeftoverHint": "古い public-files などの残留 conf。操作しない限り同期に含まれます。",
+  "nginxUnusedHint": "標準 / catch-all conf（000-default）。操作しない限り同期に含まれます。"
 }

@@ -63,5 +63,7 @@
   "kindDeploy": "Deploy",
   "kindRuntime": "Runtime",
   "jobDone": "Finished · {{title}}",
-  "jobFailed": "Failed · {{title}}"
+  "jobFailed": "Failed · {{title}}",
+  "uninstallUfwWarn": "UFW를 제거하면 패널이 관리하는 포트 방화벽이 사라집니다.",
+  "uninstallFail2banWarn": "fail2ban을 제거하면 jail이 멈추고 현재 차단이 해제됩니다. 유지하려면 먼저 로그인 IP를 ignoreip에 넣으세요."
 }

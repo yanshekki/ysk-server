@@ -120,5 +120,15 @@
   "statOffline": "Offline {{n}}",
   "statDraining": "Draining {{n}}",
   "statHitRate": "Hit rate {{v}}",
-  "hitNoStats": "No edge stats yet"
+  "hitNoStats": "Belum ada statistik edge",
+  "loopbackOriginBlocked": "Tidak akan menerapkan origin loopback {{url}} ke edge jarak jauh. Setel origin yang dapat dijangkau.",
+  "applyFailedHint": "Gagal menerapkan — lihat catatan di bawah",
+  "applyStatus": {
+    "draft": "Draf",
+    "planned": "Direncanakan",
+    "applying": "Menerapkan",
+    "applied": "Diterapkan",
+    "failed": "Gagal",
+    "partial": "Sebagian"
+  }
 }

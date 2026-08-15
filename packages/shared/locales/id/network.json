@@ -147,5 +147,7 @@
   "hideRaw": "Hide raw output",
   "rawLoadedAt": "Loaded {{time}}",
   "deleteDefaultPanelWarn": "Deleting the default route can drop this panel session. Type DEFAULT to confirm.",
-  "typeDefaultToConfirm": "Type DEFAULT to confirm"
+  "typeDefaultToConfirm": "Type DEFAULT to confirm",
+  "deleteDefaultNeedConfirm": "Perlu konfirmasi — ketik DEFAULT (dapat memutus panel ini)",
+  "deleteRouteNeedConfirm": "Perlu konfirmasi"
 }

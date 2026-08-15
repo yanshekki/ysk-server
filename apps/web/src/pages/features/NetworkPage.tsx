@@ -530,6 +530,16 @@ export function NetworkPage() {
                         variant="danger"
                         size="sm"
                         disabled={busy}
+                        title={
+                          r.dst === 'default' || r.dst === '0.0.0.0/0'
+                            ? t('network.deleteDefaultNeedConfirm')
+                            : t('network.deleteRouteNeedConfirm')
+                        }
+                        aria-label={
+                          r.dst === 'default' || r.dst === '0.0.0.0/0'
+                            ? t('network.deleteDefaultNeedConfirm')
+                            : t('network.deleteRouteNeedConfirm')
+                        }
                         onClick={() => {
                           setDelRoutePhrase('');
                           setDelRoute(r);

@@ -85,7 +85,7 @@
   "runtime": "処理時間",
   "runtimeHint": "デフォルトのランタイムバージョンとデプロイスタイルを設定します",
   "runtimeVersion": "ランタイムバージョン",
-  "versionHint": "プロジェクト runtime_version として保存されます",
+  "versionHint": "プロジェクトの実行環境バージョン設定に書き込みます",
   "serverIpv4": "サーバーIPv 4",
   "serverIpv4Hint": "DNS A / メール SPF",
   "serverIpv4Ph": "このホストのパブリック IPv4",
@@ -119,5 +119,5 @@
   "notifAll": "All",
   "notifDismiss": "Hide",
   "goFix": "Fix",
-  "needDomainFirst": "Enter a domain first"
+  "needDomainFirst": "先にドメインを入力してください"
 }

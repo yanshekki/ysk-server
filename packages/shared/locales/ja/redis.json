@@ -64,5 +64,13 @@
   "pickKey": "左側のキーを選択してコンテンツを表示します。",
   "ttlPrefix": "TTL",
   "writeLiveHint": "ライブ Redis を書き込みます。パネルからワンクリックで元に戻すことはできません。",
-  "refPath": "参照: {{path}}"
+  "refPath": "参照: {{path}}",
+  "dbEmptyMark": " · 空",
+  "noRequirepass": "保護モードはオンですが requirepass が空または未取得です — パスワードなし。",
+  "setRequirepass": "パスワードを設定",
+  "rdbOnlyLossHint": "AOF オフ・RDB オン。再起動やクラッシュで直近の書き込みが失われることがあります。",
+  "dirDataContainer": "/data (container)",
+  "dirHostDefault": "/var/lib/redis",
+  "dirDefaultInstance": "/var/lib/redis/default",
+  "dirDataWarn": "/data is usually a container path; this panel cannot confirm it exists."
 }

@@ -120,5 +120,15 @@
   "statOffline": "Offline {{n}}",
   "statDraining": "Draining {{n}}",
   "statHitRate": "Hit rate {{v}}",
-  "hitNoStats": "No edge stats yet"
+  "hitNoStats": "아직 에지 통계가 없습니다",
+  "loopbackOriginBlocked": "루프백 origin {{url}}을 원격 에지에 쓰지 않습니다. 먼저 도달 가능한 origin으로 바꾸세요.",
+  "applyFailedHint": "적용 실패 — 아래 메모를 보세요",
+  "applyStatus": {
+    "draft": "초안",
+    "planned": "계획됨",
+    "applying": "적용 중",
+    "applied": "적용됨",
+    "failed": "실패",
+    "partial": "부분"
+  }
 }

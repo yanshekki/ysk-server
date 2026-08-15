@@ -89,9 +89,10 @@ function attachRequestHandler(ctx: AppContext, webRoot: string | null) {
     void runWithLocaleAsync(locale, async () => {
       try {
         // rate window for protection heuristics
-        ctx.requestHits.push(Date.now());
-        if (ctx.requestHits.length > 10_000) {
-          const cutoff = Date.now() - 60_000;
+        const nowHit = Date.now();
+        ctx.requestHits.push(nowHit);
+        const cutoff = nowHit - 60_000;
+        if (ctx.requestHits[0]! < cutoff || ctx.requestHits.length > 4_000) {
           ctx.requestHits = ctx.requestHits.filter((t) => t >= cutoff);
         }
 

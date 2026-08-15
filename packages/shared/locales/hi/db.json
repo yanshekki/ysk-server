@@ -296,5 +296,12 @@
   "remoteTestDone": "Remote host probe finished",
   "remoteTestOk": "reachable",
   "remoteTestFail": "unreachable",
-  "remoteNotChecked": "not tested"
+  "remoteNotChecked": "not tested",
+  "registeredVsHostHint": "पैनल में पंजीकृत / होस्ट पर मिला",
+  "dumpNeedRegistered": "पहले पैनल में डेटाबेस पंजीकृत करें",
+  "dumpFirstDbTitle": "पहला पंजीकृत डेटाबेस निर्यात करें",
+  "importNeedRegistered": "पहले पैनल में डेटाबेस पंजीकृत करें",
+  "importLatestNeedConfirm": "पुष्टि चाहिए — पंजीकृत डेटाबेस में आयात होगा",
+  "adoptHostDbTitle": "केवल कंट्रोल प्लेन में नाम पंजीकृत करता है; होस्ट डेटा नहीं बदलता।",
+  "cleanupExpiredTempUsersTitle": "पैनल के समाप्त अस्थायी उपयोगकर्ता हटाता है"
 }

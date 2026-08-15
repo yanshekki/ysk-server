@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActionBar,
+  Badge,
   Button,
   CheckboxField,
   Field,
@@ -16,6 +17,35 @@ import {
   defaultRuntimeInstallVersion,
   fetchRuntimeVersionChoices,
   runtimeVersionChoices } from '../model/deploy-prefs';
+import { systemApi } from '../../system';
+import { hostSatisfiesTarget } from '../../runtimes/install-state';
+
+function createRuntimeHostKey(runtime: string): string {
+  if (runtime === 'node') return 'hostNode';
+  if (runtime === 'php') return 'hostPhp';
+  if (runtime === 'python') return 'hostPython';
+  if (runtime === 'go') return 'hostGo';
+  if (runtime === 'rust') return 'hostRust';
+  if (runtime === 'java') return 'hostJava';
+  if (runtime === 'kotlin') return 'hostKotlin';
+  if (runtime === 'bun') return 'hostBun';
+  return '';
+}
+
+function createPinOnHost(pin: string, installed: string[], host?: string): boolean {
+  const p = pin.trim();
+  if (!p) return false;
+  if (installed.some((v) => hostSatisfiesTarget(v, p) || hostSatisfiesTarget(p, v))) {
+    return true;
+  }
+  if (hostSatisfiesTarget(host, p)) return true;
+  if (/^(latest|stable|nightly|current)$/i.test(p)) {
+    if (installed.length > 0) return true;
+    const h = String(host ?? '').trim();
+    return Boolean(h) && /\d/.test(h) && !/no default toolchain|rustup could not choose/i.test(h);
+  }
+  return false;
+}
 
 type ProjectRuntime =
   | 'node'
@@ -119,6 +149,7 @@ export function ProjectCreateModal({
     runtimeVersionChoices('node'),
   );
   const [versionsLoading, setVersionsLoading] = useState(false);
+  const [hostProbe, setHostProbe] = useState<Record<string, unknown> | null>(null);
   const versionReq = useRef(0);
 
   useEffect(() => {
@@ -161,6 +192,25 @@ export function ProjectCreateModal({
       setVersionsLoading(false);
     });
   }, [open, runtime]);
+
+  useEffect(() => {
+    if (!open) {
+      setHostProbe(null);
+      return;
+    }
+    let cancelled = false;
+    void systemApi
+      .runtimes()
+      .then((r) => {
+        if (!cancelled) setHostProbe(r);
+      })
+      .catch(() => {
+        if (!cancelled) setHostProbe(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open) {
@@ -254,6 +304,30 @@ export function ProjectCreateModal({
   }
 
   const hasDomain = Boolean(domain.trim());
+
+  const hostPins = useMemo(() => {
+    if (!hostProbe || runtime === 'static') return { installed: [] as string[], host: '' };
+    const p = (hostProbe.probe as Record<string, unknown> | undefined) ?? hostProbe;
+    const items = (p[runtime] as Array<Record<string, unknown>> | undefined) ?? [];
+    const installed = items
+      .filter((i) => i.available)
+      .map((i) => String(i.version ?? ''))
+      .filter(Boolean);
+    const hk = createRuntimeHostKey(runtime);
+    const host = hk && p[hk] != null ? String(p[hk]) : '';
+    return { installed, host };
+  }, [hostProbe, runtime]);
+  const selectedCreateVersion =
+    runtime !== 'static' && versionChoices.length
+      ? versionChoices.includes(runtimeVersion)
+        ? runtimeVersion
+        : versionChoices[0]!
+      : runtimeVersion;
+  const createVersionMissing =
+    Boolean(hostProbe) &&
+    runtime !== 'static' &&
+    Boolean(selectedCreateVersion) &&
+    !createPinOnHost(selectedCreateVersion, hostPins.installed, hostPins.host);
 
   /** Only templates for the selected runtime (PHP → php-hello, etc.). */
   const filteredTemplates = useMemo(() => {
@@ -354,7 +428,7 @@ export function ProjectCreateModal({
             />
           </Field>
           {versionsLoading && versionChoices.length === 0 ? (
-            <p className="muted u-text-sm">{t('common.loading')}</p>
+            <div className="u-skeleton u-h-10 u-mt-2" aria-hidden />
           ) : null}
           {versionChoices.length > 0 ? (
             <Field
@@ -367,21 +441,29 @@ export function ProjectCreateModal({
               <SegRadio
                 name="pver"
                 aria-label={t('projects.createVersionAria')}
-                value={
-                  versionChoices.includes(runtimeVersion)
-                    ? runtimeVersion
-                    : versionChoices[0]!
-                }
+                value={selectedCreateVersion}
                 onChange={setRuntimeVersion}
-                options={versionChoices.map((v) => ({
-                  value: v,
-                  label:
+                options={versionChoices.map((v) => {
+                  const base =
                     runtime === 'node' && v === '20'
                       ? '20 LTS'
                       : runtime === 'rust' && v === 'stable'
                         ? 'stable'
-                        : v }))}
+                        : v;
+                  const onHost =
+                    !hostProbe || createPinOnHost(v, hostPins.installed, hostPins.host);
+                  return {
+                    value: v,
+                    label: onHost ? base : `${base} · ${t('runtime.needsInstall')}`,
+                    hint: onHost ? undefined : t('runtime.needsInstallHint'),
+                  };
+                })}
               />
+              {createVersionMissing ? (
+                <Badge tone="warn" title={t('runtime.needsInstallHint')}>
+                  {t('runtime.targetMissing')}
+                </Badge>
+              ) : null}
             </Field>
           ) : null}
         </FormLayout>
@@ -474,21 +556,20 @@ export function ProjectCreateModal({
             />
             <FormHint>{t('projects.gitTokenLaterHint')}</FormHint>
           </Field>
-          {gitUrl.trim() ? (
-            <Field
-              label={t('projects.gitBranch')}
-              htmlFor="pbranch"
-              hint={t('projects.gitBranchHint')}
-              flush
-            >
-              <input
-                id="pbranch"
-                value={gitBranch}
-                onChange={bindInput(setGitBranch)}
-                placeholder="main"
-              />
-            </Field>
-          ) : null}
+          <Field
+            label={t('projects.gitBranch')}
+            htmlFor="pbranch"
+            hint={gitUrl.trim() ? t('projects.gitBranchHint') : t('projects.gitBranchAfterUrl')}
+            flush
+          >
+            <input
+              id="pbranch"
+              value={gitBranch}
+              onChange={bindInput(setGitBranch)}
+              placeholder="main"
+              disabled={!gitUrl.trim()}
+            />
+          </Field>
         </FormLayout>
 
         <FormLayout>
@@ -520,22 +601,43 @@ export function ProjectCreateModal({
         {/* ④ 草稿資源 */}
         <div className="project-create-form__extras">
           <div className="form-switches">
-            <CheckboxField
-              id="pc-dns"
-              label={t('projects.createDnsZone')}
-              description={t('projects.createDnsZoneDesc')}
-              checked={createDns && hasDomain}
-              onChange={(v) => setCreateDns(v)}
-              disabled={!hasDomain || busy}
-            />
-            <CheckboxField
-              id="pc-mail"
-              label={t('projects.createMailDomain')}
-              description={t('projects.createMailDomainDesc')}
-              checked={createMail && hasDomain}
-              onChange={(v) => setCreateMail(v)}
-              disabled={!hasDomain || busy}
-            />
+            <span id="pc-domain-first" className="sr-only">
+              {t('projects.createNeedDomainFirst')}
+            </span>
+            <div
+              title={!hasDomain ? t('projects.createNeedDomainFirst') : undefined}
+              aria-describedby={!hasDomain ? 'pc-domain-first' : undefined}
+            >
+              <CheckboxField
+                id="pc-dns"
+                label={t('projects.createDnsZone')}
+                description={
+                  hasDomain
+                    ? t('projects.createDnsZoneDesc')
+                    : t('projects.createNeedDomainFirst')
+                }
+                checked={createDns && hasDomain}
+                onChange={(v) => setCreateDns(v)}
+                disabled={!hasDomain || busy}
+              />
+            </div>
+            <div
+              title={!hasDomain ? t('projects.createNeedDomainFirst') : undefined}
+              aria-describedby={!hasDomain ? 'pc-domain-first' : undefined}
+            >
+              <CheckboxField
+                id="pc-mail"
+                label={t('projects.createMailDomain')}
+                description={
+                  hasDomain
+                    ? t('projects.createMailDomainDesc')
+                    : t('projects.createNeedDomainFirst')
+                }
+                checked={createMail && hasDomain}
+                onChange={(v) => setCreateMail(v)}
+                disabled={!hasDomain || busy}
+              />
+            </div>
           </div>
           {hasDomain && (createDns || createMail) ? (
             <FormLayout columns={2}>

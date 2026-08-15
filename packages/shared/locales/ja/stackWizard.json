@@ -11,7 +11,7 @@
   "componentsTitle": "インストールするコンポーネント",
   "dryRun": "ドライランプレビュー",
   "installNow": "今すぐインストール",
-  "uninstallHint": "削除するバンドルを選択してください",
+  "uninstallHint": "削除するバンドルを選んでください。未選択では削除できません。データは既定で残します。",
   "dataPolicy": "データポリシー",
   "keepData": "データを保持",
   "purgeData": "古いデータを消去",

@@ -85,7 +85,7 @@
   "runtime": "Tiempo de ejecución",
   "runtimeHint": "Establece la versión de tiempo de ejecución predeterminada y el estilo de implementación.",
   "runtimeVersion": "Versión en tiempo de ejecución",
-  "versionHint": "Almacenado como proyecto runtime_version",
+  "versionHint": "Se guarda como versión de entorno de ejecución del proyecto",
   "serverIpv4": "Servidor IPv4",
   "serverIpv4Hint": "DNS A/correo SPF",
   "serverIpv4Ph": "Este host público IPv4",
@@ -119,5 +119,5 @@
   "notifAll": "All",
   "notifDismiss": "Hide",
   "goFix": "Fix",
-  "needDomainFirst": "Enter a domain first"
+  "needDomainFirst": "Escriba primero un dominio"
 }

@@ -18,6 +18,7 @@
   "viaHost": "via host",
   "emptyTitle": "Host-mediated browse",
   "emptyBody": "Enter a URL. DNS, TLS, and egress use this server — not your browser. Cookies stay in a server-side jar.",
+  "needUrl": "Enter a URL above to start a session.",
   "ssrfBlocked": "Blocked by security policy (SSRF / mode)",
   "loadFailed": "Fetch failed on host",
   "sessionReady": "Session ready",

@@ -39,6 +39,51 @@ import {
   fetchRuntimeVersionChoices,
   runtimeVersionChoices } from '../features/projects/model/deploy-prefs';
 import { deriveProjectStatus } from '../features/projects/model/status';
+import { systemApi } from '../features/system';
+import { hostSatisfiesTarget } from '../features/runtimes/install-state';
+
+function runtimeHostKey(runtime: string): string {
+  if (runtime === 'node') return 'hostNode';
+  if (runtime === 'php') return 'hostPhp';
+  if (runtime === 'python') return 'hostPython';
+  if (runtime === 'go') return 'hostGo';
+  if (runtime === 'rust') return 'hostRust';
+  if (runtime === 'java') return 'hostJava';
+  if (runtime === 'kotlin') return 'hostKotlin';
+  if (runtime === 'bun') return 'hostBun';
+  return '';
+}
+
+function installedFromRuntimesProbe(
+  payload: Record<string, unknown> | null,
+  runtime: string,
+): { installed: string[]; host: string } {
+  if (!payload || runtime === 'static') return { installed: [], host: '' };
+  const p = (payload.probe as Record<string, unknown> | undefined) ?? payload;
+  const items = (p[runtime] as Array<Record<string, unknown>> | undefined) ?? [];
+  const installed = items
+    .filter((i) => i.available)
+    .map((i) => String(i.version ?? ''))
+    .filter(Boolean);
+  const hk = runtimeHostKey(runtime);
+  const host = hk && p[hk] != null ? String(p[hk]) : '';
+  return { installed, host };
+}
+
+function wizardPinOnHost(pin: string, installed: string[], host?: string): boolean {
+  const p = pin.trim();
+  if (!p) return false;
+  if (installed.some((v) => hostSatisfiesTarget(v, p) || hostSatisfiesTarget(p, v))) {
+    return true;
+  }
+  if (hostSatisfiesTarget(host, p)) return true;
+  if (/^(latest|stable|nightly|current)$/i.test(p)) {
+    if (installed.length > 0) return true;
+    const h = String(host ?? '').trim();
+    return Boolean(h) && /\d/.test(h) && !/no default toolchain|rustup could not choose/i.test(h);
+  }
+  return false;
+}
 
 const DASH_TABS = ['overview', 'wizard', 'notifications', 'features', 'about'] as const;
 
@@ -130,6 +175,7 @@ export function DashboardPage() {
     defaultRuntimeInstallVersion('node'),
   );
   const [wizVersionChoices, setWizVersionChoices] = useState<string[]>([]);
+  const [wizProbe, setWizProbe] = useState<Record<string, unknown> | null>(null);
   const [wizDns, setWizDns] = useState(true);
   const [wizMail, setWizMail] = useState(true);
   const [wizDb, setWizDb] = useState(false);
@@ -222,6 +268,39 @@ export function DashboardPage() {
       cancelled = true;
     };
   }, [tab, wizRuntime]);
+
+  useEffect(() => {
+    if (tab !== 'wizard') return;
+    let cancelled = false;
+    void systemApi
+      .runtimes()
+      .then((r) => {
+        if (!cancelled) setWizProbe(r);
+      })
+      .catch(() => {
+        if (!cancelled) setWizProbe(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [tab]);
+
+  const wizHostPins = useMemo(
+    () => installedFromRuntimesProbe(wizProbe, wizRuntime),
+    [wizProbe, wizRuntime],
+  );
+  const wizSelectedVersion =
+    wizRuntime !== 'static' && wizVersionChoices.length
+      ? wizVersionChoices.includes(wizRuntimeVersion)
+        ? wizRuntimeVersion
+        : wizVersionChoices[0]!
+      : wizRuntimeVersion;
+  const wizVersionMissing =
+    Boolean(wizProbe) &&
+    wizRuntime !== 'static' &&
+    Boolean(wizSelectedVersion) &&
+    !wizardPinOnHost(wizSelectedVersion, wizHostPins.installed, wizHostPins.host);
+  const wizHasDomain = Boolean(wizDomain.trim());
 
   const featureGroups = useMemo(() => {
     return FEATURE_SECTIONS.filter((s) => s.sectionKey !== 'overview').map((s) => ({
@@ -856,19 +935,28 @@ export function DashboardPage() {
                         <SegRadio
                           name="wiz-ver"
                           aria-label={t('dashboard.runtimeVersion')}
-                          value={
-                            wizVersionChoices.includes(wizRuntimeVersion)
-                              ? wizRuntimeVersion
-                              : wizVersionChoices[0]!
-                          }
+                          value={wizSelectedVersion}
                           onChange={setWizRuntimeVersion}
-                          options={wizVersionChoices.map((v) => ({
-                            value: v,
-                            label:
+                          options={wizVersionChoices.map((v) => {
+                            const base =
                               wizRuntime === 'node' && (v === '20' || v === '22' || v === '24')
                                 ? `${v} LTS`
-                                : v }))}
+                                : v;
+                            const onHost =
+                              !wizProbe ||
+                              wizardPinOnHost(v, wizHostPins.installed, wizHostPins.host);
+                            return {
+                              value: v,
+                              label: onHost ? base : `${base} · ${t('runtime.needsInstall')}`,
+                              hint: onHost ? undefined : t('runtime.needsInstallHint'),
+                            };
+                          })}
                         />
+                        {wizVersionMissing ? (
+                          <Badge tone="warn" title={t('runtime.needsInstallHint')}>
+                            {t('runtime.targetMissing')}
+                          </Badge>
+                        ) : null}
                       </Field>
                     ) : null}
                   </FormLayout>
@@ -905,30 +993,43 @@ export function DashboardPage() {
                     </FormLayout>
                   ) : null}
                   <div className="form-check-row u-mt-4">
-                    <CheckboxField
-                      id="wiz-dns"
-                      label={t('dashboard.withDns')}
-                      description={
-                        wizDomain.trim()
-                          ? t('dashboard.withDnsDesc')
-                          : t('dashboard.needDomainFirst')
-                      }
-                      checked={Boolean(wizDomain.trim() && wizDns)}
-                      onChange={(v) => setWizDns(v)}
-                      disabled={!wizDomain.trim()}
-                    />
-                    <CheckboxField
-                      id="wiz-mail"
-                      label={t('dashboard.withMail')}
-                      description={
-                        wizDomain.trim()
-                          ? t('dashboard.withMailDesc')
-                          : t('dashboard.needDomainFirst')
-                      }
-                      checked={Boolean(wizDomain.trim() && wizMail)}
-                      onChange={(v) => setWizMail(v)}
-                      disabled={!wizDomain.trim()}
-                    />
+                    <span id="wiz-domain-first" className="sr-only">
+                      {t('dashboard.needDomainFirst')}
+                    </span>
+                    <div
+                      title={!wizHasDomain ? t('dashboard.needDomainFirst') : undefined}
+                      aria-describedby={!wizHasDomain ? 'wiz-domain-first' : undefined}
+                    >
+                      <CheckboxField
+                        id="wiz-dns"
+                        label={t('dashboard.withDns')}
+                        description={
+                          wizHasDomain
+                            ? t('dashboard.withDnsDesc')
+                            : t('dashboard.needDomainFirst')
+                        }
+                        checked={Boolean(wizHasDomain && wizDns)}
+                        onChange={(v) => setWizDns(v)}
+                        disabled={!wizHasDomain}
+                      />
+                    </div>
+                    <div
+                      title={!wizHasDomain ? t('dashboard.needDomainFirst') : undefined}
+                      aria-describedby={!wizHasDomain ? 'wiz-domain-first' : undefined}
+                    >
+                      <CheckboxField
+                        id="wiz-mail"
+                        label={t('dashboard.withMail')}
+                        description={
+                          wizHasDomain
+                            ? t('dashboard.withMailDesc')
+                            : t('dashboard.needDomainFirst')
+                        }
+                        checked={Boolean(wizHasDomain && wizMail)}
+                        onChange={(v) => setWizMail(v)}
+                        disabled={!wizHasDomain}
+                      />
+                    </div>
                     <CheckboxField
                       id="wiz-db"
                       label={t('dashboard.withDb')}

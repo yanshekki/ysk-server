@@ -80,7 +80,8 @@
     "openFirewall": "यदि सार्वजनिक है: पैनल पोर्ट {{port}}/tcp (फ़ायरवॉल → ओपन पोर्ट → 9287 पैनल) की अनुमति दें",
     "disableConfirmTitle": "Disable panel HTTPS?",
     "disableConfirmDesc": "The panel will serve HTTP. WebAuthn / Passkey will stop working until HTTPS is on again.",
-    "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP."
+    "disablePasskeyWarn": "Registered passkeys need HTTPS — they will fail on HTTP.",
+    "disableNeedConfirm": "पुष्टि आवश्यक — DISABLE-HTTPS लिखें"
   },
   "timeNtp": "समय और एनटीपी",
   "clockStatus": "सिस्टम घड़ी की स्थिति",
@@ -188,5 +189,10 @@
   "dryRunFlag": "पूर्वाभ्यास",
   "timezoneSearch": "Filter timezones…",
   "resyncNtp": "Re-sync NTP",
-  "storageSub": "Disk usage"
+  "storageSub": "Disk usage",
+  "syncReloadNeedConfirm": "पुष्टि चाहिए — /etc/nginx/conf.d लिखता है और Nginx रीलोड करता है",
+  "nginxLeftover": "अवशेष",
+  "nginxUnused": "अप्रयुक्त",
+  "nginxLeftoverHint": "पुराना public-files आदि अवशेष conf. कार्रवाई तक सिंक में रहता है।",
+  "nginxUnusedHint": "स्टॉक / catch-all conf (000-default). कार्रवाई तक सिंक में रहता है।"
 }

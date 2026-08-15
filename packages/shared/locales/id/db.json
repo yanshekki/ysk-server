@@ -296,5 +296,12 @@
   "remoteTestDone": "Remote host probe finished",
   "remoteTestOk": "reachable",
   "remoteTestFail": "unreachable",
-  "remoteNotChecked": "not tested"
+  "remoteNotChecked": "not tested",
+  "registeredVsHostHint": "Terdaftar di panel / ditemukan di host",
+  "dumpNeedRegistered": "Daftarkan dulu basis data di panel",
+  "dumpFirstDbTitle": "Ekspor basis data terdaftar pertama",
+  "importNeedRegistered": "Daftarkan dulu basis data di panel",
+  "importLatestNeedConfirm": "Perlu konfirmasi — mengimpor ke basis data terdaftar",
+  "adoptHostDbTitle": "Hanya mendaftarkan nama di control plane; tidak mengubah data host.",
+  "cleanupExpiredTempUsersTitle": "Menghapus pengguna sementara panel yang sudah kedaluwarsa"
 }

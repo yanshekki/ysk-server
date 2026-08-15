@@ -588,10 +588,13 @@ export function EmailDomainPage() {
           {
             label: t('email.statHealth'),
             value: emailHealthUnprobed(domain)
-              ? t('email.healthUnchecked')
+              ? t('email.healthChecklist', { score: domain.health_score ?? 0 })
               : `${domain.health_score}/100`,
+            hint: emailHealthUnprobed(domain)
+              ? t('email.healthChecklistHint')
+              : t('email.healthLiveHint'),
             tone: emailHealthUnprobed(domain)
-              ? 'neutral'
+              ? 'warn'
               : healthScoreTone(domain.health_score) },
           {
             label: t('email.statApply'),

@@ -102,5 +102,8 @@
   "deletedCert": "삭제됨 {{domain}}",
   "uninstallCertbotWarn": "Removing certbot stops automatic renewal of existing Let's Encrypt certificates.",
   "renew": "Renew",
-  "renewFor": "Renew Let’s Encrypt for {{domain}}"
+  "renewFor": "Renew Let’s Encrypt for {{domain}}",
+  "domainRequired": "도메인을 입력하세요.",
+  "domainInvalid": "도메인 형식이 올바르지 않습니다.",
+  "domainKnownHint": "알려진 프로젝트·DNS·메일 도메인에서 고르거나 직접 입력하세요."
 }

@@ -472,12 +472,17 @@ function isReadOnlyArgv(argv: string[]): boolean {
     return true; // show / device status / general
   }
   if (bin === 'ssh-keyscan') return true;
+  if (bin === 'sftp') {
+    const joined = argv.join(' ');
+    if (/\b(put|get|rm|rename|mkdir|rmdir|ln|symlink|chmod|chown)\b/.test(joined)) return false;
+    return argv.includes('-b') || argv.includes('-V') || argv.includes('--help');
+  }
   if (bin === 'git') {
     const rest = argv.slice(1);
     const tokens: string[] = [];
     for (let i = 0; i < rest.length; i++) {
       const a = rest[i]!;
-      if (a === '-C' || a === '--git-dir' || a === '--work-tree') {
+      if (a === '-C' || a === '--git-dir' || a === '--work-tree' || a === '-c' || a === '--config') {
         i += 1;
         continue;
       }
@@ -821,6 +826,13 @@ function isReadOnlyShellScript(argv: string[]): boolean {
   // File/dir existence probes
   if (/\btest\s+-[efdrwxLsb]\b/.test(s) || /\b\[\s+-[efdrwxLsb]\b/.test(s)) return true;
   if (/\bgrep\b/.test(s) && !/\b-l\b/.test(s)) return true;
+  if (
+    /\bsftp\b/.test(s) &&
+    /\bpwd\b/.test(s) &&
+    !/\b(put|get|rm|rename|mkdir)\b/.test(s)
+  ) {
+    return true;
+  }
   if (/\bsystemctl\s+(is-active|is-enabled|status|show)\b/.test(s)) return true;
   if (/\bservice\s+\S+\s+status\b/.test(s)) return true;
   // Network DNS inventory (resolvectl status | head …)

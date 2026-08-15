@@ -63,5 +63,7 @@
     "running": "Running",
     "failed": "Failed",
     "missing": "Not installed"
-  }
+  },
+  "stopNeedConfirm": "確認が必要です",
+  "stopNeedConfirmPhrase": "確認フレーズの入力が必要です"
 }

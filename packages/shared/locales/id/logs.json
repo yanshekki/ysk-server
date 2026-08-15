@@ -140,5 +140,19 @@
   "aboutCustomPath": "Add a custom path on Settings (only /var/log or /run/log). Then open it from Explore.",
   "noRowsInWindow": "No records in this time window",
   "showInactiveUnits": "Show inactive units",
-  "sseNeedFollow": "Turn on Follow first — SSE is only for live tail"
+  "sseNeedFollow": "Turn on Follow first — SSE is only for live tail",
+  "vacuumNeedRetention": "Isi dulu jendela retensi (mis. 14d)",
+  "vacuumNeedConfirm": "Perlu konfirmasi — menghapus log journal lama",
+  "vacuumSizeNeedConfirm": "Perlu konfirmasi — membatasi penggunaan disk journal",
+  "vacuumSizeAlreadyBelow": "Pemakaian saat ini sudah di bawah batas; biasanya tidak menghapus apa pun.",
+  "vacuumSizeNoopDesc": "journal sudah di bawah 500 MB. Tetap menjalankan vacuum --size=500M dan biasanya tidak menghapus apa pun.",
+  "journalDiskHint": "Pemakaian systemd-journald saat ini (journal aktif). Tidak termasuk file rotasi di /var/log.",
+  "varLogDiskHint": "Perkiraan /var/log, termasuk file rotasi.",
+  "queryFirst": "Kueri dulu",
+  "projectSourcesTitle": "{{n}} sumber (berkas + journal)",
+  "logrotatePath": "Path",
+  "logrotateLast": "Last rotated",
+  "logrotateExpand": "Show {{n}} more",
+  "logrotateCollapse": "Show fewer",
+  "logrotateVersion": "Status version {{v}}"
 }

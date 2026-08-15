@@ -491,5 +491,8 @@
   "openQueuePage": "Buka antrean surat",
   "healthUnchecked": "Not checked yet",
   "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first.",
-  "domainsListDesc": "Mail domains registered on this host"
+  "domainsListDesc": "Mail domains registered on this host",
+  "healthChecklist": "Daftar periksa {{score}}/100",
+  "healthChecklistHint": "Skor daftar — DNS / PTR / port 25 belum diuji",
+  "healthLiveHint": "Skor uji langsung"
 }

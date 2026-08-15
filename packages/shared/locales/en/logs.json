@@ -113,6 +113,9 @@
   "ipBan": "IP → ban",
   "vacuumNote": "Reclaims systemd-journald disk. Without execute permission the action is blocked — it is not treated as success.",
   "vacuumTime": "Clean by retention",
+  "vacuumNeedRetention": "Enter a retention window first (for example 14d)",
+  "vacuumNeedConfirm": "Needs confirmation — deletes old journal logs",
+  "vacuumSizeNeedConfirm": "Needs confirmation — caps journal disk use",
   "vacuumHint": "Keep ≥7 days recommended; re-probe disk after.",
   "logrotateStatus": "System logrotate status (read-only probe)",
   "logrotateMissing": "No status file or unreadable — check logrotate package in services matrix",
@@ -140,5 +143,16 @@
   "logrotateNoStatus": "No logrotate status file yet (normal if it has never run).",
   "autoVacuumOff": "Automatic clean is off. Time is unused until you enable it.",
   "aboutAllowlist": "Explore can only read allowlisted journal units and /var/log paths. Arbitrary host paths are not offered.",
-  "aboutCustomPath": "Add a custom path on Settings (only /var/log or /run/log). Then open it from Explore."
+  "aboutCustomPath": "Add a custom path on Settings (only /var/log or /run/log). Then open it from Explore.",
+  "vacuumSizeAlreadyBelow": "Current usage already below cap, this will no-op",
+  "vacuumSizeNoopDesc": "Journal is already under 500 MB. This still runs vacuum --size=500M and typically deletes nothing.",
+  "journalDiskHint": "Current systemd-journald usage (active journal). Rotated files under /var/log are not included.",
+  "varLogDiskHint": "Estimated du of /var/log, including rotated files. Approximate.",
+  "queryFirst": "Query first",
+  "projectSourcesTitle": "{{n}} source(s) (files + journal)",
+  "logrotatePath": "Path",
+  "logrotateLast": "Last rotated",
+  "logrotateExpand": "Show {{n}} more",
+  "logrotateCollapse": "Show fewer",
+  "logrotateVersion": "Status version {{v}}"
 }

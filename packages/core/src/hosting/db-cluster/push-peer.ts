@@ -264,6 +264,7 @@ export function planDbClusterPeerPush(input: {
   dataDir: string;
   clusterId: string;
   memberId?: string;
+  username?: string;
 }): {
   ok: boolean;
   dryRun: true;
@@ -279,7 +280,7 @@ export function planDbClusterPeerPush(input: {
     memberId: m.id,
     host: m.host,
     role: m.role,
-    username: m.ssh?.username || 'root',
+    username: input.username?.trim() || m.ssh?.username || 'root',
     port: m.ssh?.port || 22,
     remotePath: `/tmp/ysk-cluster-${listed.cluster.id.slice(0, 8)}`,
     files: filesForMember(listed.cluster, m, listed.artifactDir, listed.files),
@@ -319,6 +320,7 @@ export async function pushDbClusterToPeers(input: {
   execute?: boolean;
   /** vault identity for all peers (override member.ssh.identityId) */
   identityId?: string;
+  username?: string;
 }): Promise<{
   ok: boolean;
   dryRun: boolean;
@@ -330,7 +332,17 @@ export async function pushDbClusterToPeers(input: {
   requiresExecute: boolean;
   identityUsed?: string;
 }> {
-  const plan = planDbClusterPeerPush(input);
+  let username = input.username?.trim();
+  if (!username && input.identityId) {
+    try {
+      const { getSshIdentityInternal } = await import('../../security/ssh-identity/store.js');
+      const idn = getSshIdentityInternal(input.dataDir, input.identityId);
+      username = idn?.binding?.linuxUser?.trim() || undefined;
+    } catch {
+      /* optional */
+    }
+  }
+  const plan = planDbClusterPeerPush({ ...input, username });
   const want = input.execute === true;
 
   if (!want) {

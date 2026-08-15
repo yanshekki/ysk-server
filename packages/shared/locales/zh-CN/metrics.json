@@ -138,5 +138,9 @@
   "colHome": "主目录",
   "usageNoteLink": "配额是控制面软上限。要套用硬限制请到专案「隔离」分页。",
   "alertsBuiltinOnly": "Built-in CPU / memory / disk thresholds only. No email, webhook, or Slack channel.",
-  "lastEvaluated": "Last checked"
+  "lastEvaluated": "Last checked",
+  "shareNoQuotaHint": "未设配额，故无占比。请到项目「隔离」分页设定配额。",
+  "setQuotaLink": "设定配额",
+  "unusualHome": "非标准路径",
+  "unusualHomeHint": "Not a /home/… project home. Canonical isolation is /home/ysk-server-{id}."
 }

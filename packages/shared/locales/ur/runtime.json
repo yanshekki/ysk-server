@@ -511,5 +511,19 @@
   "alreadyHostDefaultShort": "میزبان ڈیفالٹ",
   "managedPathMissingTitle": "Managed {{name}} path not ready",
   "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall.",
-  "installRecordedCta": "Install recorded {{v}}"
+  "installRecordedCta": "Install recorded {{v}}",
+  "targetMissing": "ہدف ورژن انسٹال نہیں",
+  "targetMissingHint": "ہدف {{version}} اس میزبان پر نہیں۔ نصب ورژن باندھیں یا یہ پن انسٹال کریں۔",
+  "needsInstall": "انسٹال کرنا ہوگا",
+  "needsInstallHint": "اس ہوسٹ پر نہیں۔ پہلے انسٹال کریں یا نصب شدہ ورژن چنیں۔",
+  "unitBytes": "بائٹ",
+  "headerSizeKb": "{{n}} KB",
+  "phpIniChipEmpty": "لوڈ نہیں — php.ini ٹیب کھولیں",
+  "phpFpmService": "PHP-FPM",
+  "phpFpmServiceDesc": "PHP-FPM یونٹ شروع، روکیں، ری لوڈ یا دوبارہ شروع کریں",
+  "rustupDefaultMissingTitle": "rustup ڈیفالٹ ٹول چین نہیں",
+  "rustupDefaultMissing": "rustup کا ڈیفالٹ نہیں۔ سافٹ ویئر ٹیب پر stable سیٹ کریں۔",
+  "rustupDefaultMissingShort": "No default toolchain",
+  "rustupSetDefaultHint": "Set default toolchain",
+  "uninstalledCountHint": "{{n}} ورژن اس ہوسٹ پر نہیں"
 }

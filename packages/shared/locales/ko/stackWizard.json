@@ -11,7 +11,7 @@
   "componentsTitle": "설치할 구성 요소",
   "dryRun": "테스트 실행 미리보기",
   "installNow": "지금 설치",
-  "uninstallHint": "제거할 번들 선택",
+  "uninstallHint": "제거할 번들을 선택하세요. 선택하지 않으면 제거할 수 없습니다. 데이터는 기본적으로 유지됩니다.",
   "dataPolicy": "데이터 정책",
   "keepData": "데이터 보관",
   "purgeData": "데이터 삭제",

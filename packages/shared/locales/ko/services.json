@@ -63,5 +63,7 @@
     "running": "Running",
     "failed": "Failed",
     "missing": "Not installed"
-  }
+  },
+  "stopNeedConfirm": "확인이 필요합니다",
+  "stopNeedConfirmPhrase": "확인 문구를 입력해야 합니다"
 }

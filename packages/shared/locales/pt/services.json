@@ -63,5 +63,7 @@
     "running": "Running",
     "failed": "Failed",
     "missing": "Not installed"
-  }
+  },
+  "stopNeedConfirm": "Requer confirmação",
+  "stopNeedConfirmPhrase": "É necessário escrever a frase de confirmação"
 }

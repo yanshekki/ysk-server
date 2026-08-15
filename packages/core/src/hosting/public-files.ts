@@ -432,9 +432,17 @@ export function probePublicFileServer(input: {
     );
   }
   if (systemConfExists) {
-    notes.push(`Live system conf: ${systemConf}`);
+    notes.push(tl('notes.publicFiles.liveConf', { path: systemConf }));
+    const base = String(systemConf || '').split('/').pop() || '';
+    const expectSlug = String(serverName || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    if (expectSlug && base && !base.includes(expectSlug)) {
+      notes.push(tl('notes.publicFiles.confNameStale', { file: base, serverName }));
+    }
   }
-  notes.push(`Public root: ${publicRoot}`);
+  notes.push(tl('notes.publicFiles.publicRoot', { path: publicRoot }));
 
   return {
     publicRoot,

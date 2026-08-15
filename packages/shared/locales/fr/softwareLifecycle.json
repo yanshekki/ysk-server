@@ -63,5 +63,7 @@
   "kindDeploy": "Deploy",
   "kindRuntime": "Runtime",
   "jobDone": "Finished · {{title}}",
-  "jobFailed": "Failed · {{title}}"
+  "jobFailed": "Failed · {{title}}",
+  "uninstallUfwWarn": "Retirer UFW laisse cet hôte sans le pare-feu de ports géré par le panneau.",
+  "uninstallFail2banWarn": "Retirer fail2ban arrête les jails et lève les interdictions. Si vous le gardez, ajoutez votre IP de connexion à ignoreip."
 }

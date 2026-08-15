@@ -39,6 +39,30 @@ export type UpsertCdnNodeInput = {
   status?: CdnNodeStatus;
 };
 
+function isLoopbackHostName(h: string): boolean {
+  const x = h.toLowerCase();
+  return x === '127.0.0.1' || x === 'localhost' || x === '::1' || x === '0.0.0.0';
+}
+
+/** True when this node is the control-plane host, not a remote edge. */
+export function isLocalCdnEdge(node: CdnNodeDto): boolean {
+  const ip = node.publicIpv4[0];
+  if (ip && !isLoopbackHostName(ip)) return false;
+  const base = node.baseUrl?.trim();
+  if (base) {
+    try {
+      const host = new URL(base).hostname;
+      if (host && !isLoopbackHostName(host)) return false;
+    } catch {
+      /* ignore */
+    }
+  }
+  if (node.fleetAgentId?.trim()) return false;
+  const ssh = node.sshHost?.trim();
+  if (ssh && !isLoopbackHostName(ssh)) return false;
+  return true;
+}
+
 /** SSH fan-out only when the operator set identity / host / non-default user. */
 export function resolveCdnSshTarget(node: CdnNodeDto): {
   host: string;
@@ -46,13 +70,13 @@ export function resolveCdnSshTarget(node: CdnNodeDto): {
   username: string;
 } | null {
   const username = node.sshUsername?.trim() || '';
-  const explicit =
-    Boolean(node.sshIdentityId?.trim()) ||
-    Boolean(node.sshHost?.trim()) ||
-    (Boolean(username) && username !== 'root');
+  const explicitIdentity = Boolean(node.sshIdentityId?.trim());
+  const explicitUser = Boolean(username) && username !== 'root';
   const panelTransport = Boolean(node.baseUrl?.trim() || node.fleetAgentId?.trim());
-  // Online panel / fleet edges must not inherit implicit root@ip SSH.
-  if (!explicit && panelTransport) return null;
+  const onlinePanel = panelTransport && node.status === 'online';
+  // Online panel / fleet edges use inbound apply — leftover root@sshHost must not win.
+  if (onlinePanel && !explicitIdentity) return null;
+  if (panelTransport && !explicitIdentity && !explicitUser) return null;
   const host =
     node.sshHost?.trim() ||
     node.publicIpv4[0] ||
@@ -66,7 +90,13 @@ export function resolveCdnSshTarget(node: CdnNodeDto): {
         })()
       : '');
   if (!host) return null;
-  if (!explicit && !panelTransport && !node.publicIpv4[0] && !node.sshHost?.trim()) {
+  if (
+    !explicitIdentity &&
+    !explicitUser &&
+    !panelTransport &&
+    !node.publicIpv4[0] &&
+    !node.sshHost?.trim()
+  ) {
     return null;
   }
   return {

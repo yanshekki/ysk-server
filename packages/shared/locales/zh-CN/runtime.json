@@ -511,5 +511,19 @@
   "alreadyHostDefaultShort": "主机默认",
   "managedPathMissingTitle": "受管 {{name}} 路徑未就緒",
   "managedPathMissing": "版本 {{version}} 的 YSK 受管 {{name}} 尚未就緒。請重新探測或重新安裝。",
-  "installRecordedCta": "前往软件分页安装 {{v}}"
+  "installRecordedCta": "前往软件分页安装 {{v}}",
+  "targetMissing": "目标版本未安装",
+  "targetMissingHint": "目标 {{version}} 不在本机。请改绑已安装的版本，或先安装此版本。",
+  "needsInstall": "需安装",
+  "needsInstallHint": "此版本未在本机。请先安装，或改选已安装的版本。",
+  "unitBytes": "字节",
+  "headerSizeKb": "{{n}} KB",
+  "phpIniChipEmpty": "未载入 — 请打开 php.ini 分页",
+  "phpFpmService": "PHP-FPM",
+  "phpFpmServiceDesc": "启动、停止、重载或重启 PHP-FPM 单元",
+  "rustupDefaultMissingTitle": "未设 rustup 默认工具链",
+  "rustupDefaultMissing": "rustup 未设默认工具链。请到「软件」分页设为 stable。",
+  "rustupDefaultMissingShort": "No default toolchain",
+  "rustupSetDefaultHint": "Set default toolchain",
+  "uninstalledCountHint": "{{n}} 个版本未在本机"
 }

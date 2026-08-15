@@ -82,5 +82,7 @@
   "dryRunOnlyDesc": "· 只做盘点 + 预检，不 rsync、不写目标",
   "executeNote": "本机需 YSK_EXECUTE=1 且以 root 执行 API。迁移完成后请改 DNS A/AAAA，并检查雲防火墙与邮件 PTR。",
   "dnsCutover": "DNS cutover（需人工）",
-  "dnsCutoverDesc": "将下列主机名的 A / AAAA 指到新机公网 IP；并确认 80/443/25/587 等防火墙与邮件 rDNS。"
+  "dnsCutoverDesc": "将下列主机名的 A / AAAA 指到新机公网 IP；并确认 80/443/25/587 等防火墙与邮件 rDNS。",
+  "orphanRemovePhrase": "请输入 DELETE 确认。",
+  "orphanRemoveNeedConfirm": "需确认"
 }

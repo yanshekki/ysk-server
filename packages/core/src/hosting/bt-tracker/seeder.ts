@@ -187,7 +187,9 @@ export async function addLibrarySeed(input: {
   if (!torrentId) {
     return { ok: false, notes: [tl('notes.btTracker.libraryInspectFailed')], status: 'error' };
   }
-  mkdirSync(input.destAbs, { recursive: true });
+  const destLooksLikeFile = /\.[a-z0-9]{1,8}$/i.test(input.destAbs.replace(/\/+$/, '').split('/').pop() || '');
+  const torrentPath = destLooksLikeFile ? dirname(input.destAbs) : input.destAbs;
+  mkdirSync(torrentPath, { recursive: true });
   const settings = loadBtTrackerSettings(input.dataDir);
   if (seeds.size >= settings.maxSeeds) {
     return {
@@ -202,7 +204,7 @@ export async function addLibrarySeed(input: {
     const torrent = await new Promise<SeedTorrent>((resolve, reject) => {
       const t = c.add(
         torrentId,
-        { path: input.destAbs, destroyStore: false, announce },
+        { path: torrentPath, destroyStore: false, announce },
         (ready) => resolve(ready || t),
       );
       t.on?.('error', (e: unknown) => {

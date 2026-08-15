@@ -302,9 +302,9 @@ describe('apply local dry-run', () => {
     });
     expect(r.ok).toBe(true);
     expect(r.dryRun).toBe(true);
-    expect(r.cluster.status).toBe('partial');
+    expect(r.cluster.status).toBe('planned');
     expect(r.cluster.members.find((m) => m.access === 'local')?.applyStatus).toBe(
-      'written',
+      'planned',
     );
     expect(existsSync(join(dir, 'clusters', c.id, 'conf', '99-ysk-galera.cnf'))).toBe(
       true,

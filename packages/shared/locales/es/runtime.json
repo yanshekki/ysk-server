@@ -511,5 +511,19 @@
   "alreadyHostDefaultShort": "Valor predeterminado del host",
   "managedPathMissingTitle": "Managed {{name}} path not ready",
   "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall.",
-  "installRecordedCta": "Install recorded {{v}}"
+  "installRecordedCta": "Install recorded {{v}}",
+  "targetMissing": "Versión de destino no instalada",
+  "targetMissingHint": "El destino {{version}} no está en este host. Enlace una versión instalada o instale este pin.",
+  "needsInstall": "hay que instalar",
+  "needsInstallHint": "No está en este anfitrión. Instálelo o elija una versión instalada.",
+  "unitBytes": "bytes",
+  "headerSizeKb": "{{n}} KB",
+  "phpIniChipEmpty": "No cargado — abra la pestaña php.ini",
+  "phpFpmService": "PHP-FPM",
+  "phpFpmServiceDesc": "Iniciar, detener, recargar o reiniciar la unidad PHP-FPM",
+  "rustupDefaultMissingTitle": "No hay toolchain predeterminada de rustup",
+  "rustupDefaultMissing": "rustup no tiene toolchain predeterminada. Fije stable en la pestaña Software.",
+  "rustupDefaultMissingShort": "No default toolchain",
+  "rustupSetDefaultHint": "Set default toolchain",
+  "uninstalledCountHint": "{{n}} versión(es) no están en este anfitrión"
 }

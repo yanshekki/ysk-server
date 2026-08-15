@@ -53,6 +53,7 @@
     "issueEnable": "Issue cert & enable HTTPS",
     "enableExisting": "Enable with existing cert",
     "disable": "Disable panel HTTPS",
+    "disableNeedConfirm": "Needs confirmation — type DISABLE-HTTPS",
     "needDomain": "Enter hostname / domain first",
     "urlHint": "After restart open {{url}}",
     "certMissing": "TLS enabled but cert/key files missing",
@@ -163,6 +164,7 @@
   "syncToSystem": "Sync to system",
   "syncSub": "Copy to /etc/nginx/conf.d and reload — needs root + EXECUTE",
   "syncReload": "Sync + reload",
+  "syncReloadNeedConfirm": "Needs confirmation — writes /etc/nginx/conf.d and reloads Nginx",
   "exportOnly": "Export only + list conf",
   "dryRun": "Dry-run",
   "dryRunNote": "Dry-run does not change the system.",
@@ -188,5 +190,9 @@
   "dryRunFlag": "Dry-run",
   "timezoneSearch": "Filter timezones…",
   "resyncNtp": "Re-sync NTP",
-  "storageSub": "Disk usage"
+  "storageSub": "Disk usage",
+  "nginxLeftover": "Leftover",
+  "nginxUnused": "Unused",
+  "nginxLeftoverHint": "Stale public-files or leftover conf. Still included in sync until you remove or replace it.",
+  "nginxUnusedHint": "Stock / catch-all conf (000-default). Still included in sync until you act."
 }

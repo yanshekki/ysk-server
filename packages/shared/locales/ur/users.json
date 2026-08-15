@@ -132,5 +132,5 @@
   "diskQuotaHint": "Presets are GiB; custom box is MiB.",
   "bandwidthHint": "0 means unlimited.",
   "impersonateHint": "Opens a session as this user. Use the account menu to leave impersonation.",
-  "operatorHighRiskHint": "The factory operator role includes high-risk writes (services, firewall, package apply, MySQL, Nginx publish). Narrow it only if you intend to change every existing operator."
+  "operatorHighRiskHint": "فیکٹری آپریٹر میں اعلیٰ خطرے کی تحریر شامل ہے۔ تنگ کرنا صرف نئے اکاؤنٹس؛ ڈیفالٹ بدلنے سے موجودہ آپریٹر متاثر ہوتے ہیں۔"
 }

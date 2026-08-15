@@ -517,7 +517,7 @@
     "n0259": "ডোমেইন",
     "n0260": "ডোমেইন পাওয়া যায়নি:",
     "n0261": "dovecot পুনরায় লোড ব্যর্থ বা servicenot (চালনী লেখা; পুনরায় লোড সফল)",
-    "n0262": "শুষ্ক-চালিত বহর প্রেরণ (না)",
+    "n0262": "ফ্লিট ডিসপ্যাচ ড্রাই-রান (কিউতে নয়)",
     "n0263": "ড্রাই-রান পিয়ার পুশ (scp নয়)",
     "n0264": "ড্রাই-রান রিমোট ইনস্টল (ssh নয়)",
     "n0265": "ড্রাই-রান ট্রান্সফার সম্পন্ন হয়েছে (সম্পূর্ণ বুটস্ট্র্যাপ)",
@@ -1850,7 +1850,7 @@
     "n1590": "",
     "n1591": "রুট নয় — useradd/ systemd/ nginx সিস্টেম পাথ সীমাবদ্ধ",
     "n1592": "seccomp এর জন্য runAsUser প্রয়োজন নেই",
-    "n1593": "প্যানেল অনুগ্রহ করে /",
+    "n1593": "সর্বজনীন অনুরোধ / মিনিট",
     "n1594": "প্যানেল সংযোগ; উপলব্ধ\"\" ()",
     "n1595": "প্যানেল রুট হিসাবে চলছে না",
     "n1596": "উপলব্ধ প্রয়োগ: মিথ্যা",
@@ -2121,7 +2121,7 @@
     "t0251": "{{v0}} ইনস্টল অসম্পূর্ণ",
     "t0252": "{{v0}} পরিষেবা শুরু",
     "t0253": "শুরু করা ব্যর্থ হয়েছে: {{v0}}",
-    "t0254": "Node.js সংস্করণ {{v0}} সমর্থন করে; উপলব্ধ সংস্করণ: {{v1}}",
+    "t0254": "Node.js সংস্করণ {{v0}} সমর্থিত; উপলব্ধ সংস্করণ: {{v1}}",
     "t0255": "পিএইচপি সংস্করণ {{v0}} সমর্থন করে; উপলব্ধ: {{v1}}",
     "t0256": "পাইথন সংস্করণ {{v0}} সমর্থন করে; উপলব্ধ: {{v1}}",
     "t0257": "Go সংস্করণ {{v0}} সমর্থন করে; উপলব্ধ: {{v1}}",
@@ -2243,12 +2243,12 @@
     "t0373": "প্রকল্প \"{{v0}}\" বিচ্ছিন্নতা",
     "t0374": "লোকালপথে {{v0}}",
     "t0375": "পরিচয় {{v0}}: {{v1}}",
-    "t0376": "scp (পরিচয়) থেকে {{v0}}",
-    "t0377": "scp(পরিচয়) ব্যর্থ হয়েছে: {{v0}}",
-    "t0378": "scp থেকে {{v0}}",
-    "t0379": "scp ব্যর্থ হয়েছে: {{v0}}",
-    "t0380": "scp থেকে {{v0}}",
-    "t0381": "scp ব্যর্থ হয়েছে: {{v0}} ( ব্যাকআপ রিমোট আইডেন্টিটিআইডি)",
+    "t0376": "sftp (পরিচয়) {{v0}}-এ সফল",
+    "t0377": "sftp (পরিচয়) ব্যর্থ: {{v0}}",
+    "t0378": "sftp {{v0}}-এ সফল",
+    "t0379": "sftp ব্যর্থ: {{v0}}",
+    "t0380": "sftp {{v0}}-এ সফল",
+    "t0381": "sftp ব্যর্থ: {{v0}} (backup remote identityId সেট করা যায়)",
     "t0382": "S3 {{v0}}",
     "t0383": "S3 ব্যর্থ হয়েছে: {{v0}}",
     "t0384": ": {{v0}}/{{v1}} অ্যাডমিন 2FA সক্রিয়",
@@ -2505,7 +2505,7 @@
     "t0635": "{{v0}} পরীক্ষা করা যাবে না",
     "t0636": "{{v0}} · {{v1}}",
     "t0637": "প্রকল্প {{v0}} · {{v1}} · DB {{v2}} · Redis {{v3}}",
-    "t0638": "সফ্টওয়্যার ইনস্টল করুন {{v0}} · বাড়ি {{v1}}",
+    "t0638": "সফটওয়্যার ইনস্টল {{v0}} · homes {{v1}}",
     "t0639": "কাটওভার হোস্ট {{v0}}",
     "t0640": "{{v0}} warning(s) — review before cutover.",
     "t0641": "কী {{v0}}",
@@ -3086,7 +3086,11 @@
     "dovecot": "Dovecot ssl_cert points at missing {{path}}. Overlay does not rewrite ssl=no. Apply mail TLS after issuing the cert, or apply email stack.",
     "overlayDoesNotHeal": "Product overlay does not rewrite nginx, Apache, vsftpd, or Dovecot. Use the listed apply commands (root + YSK_EXECUTE=1).",
     "readinessTitle": "Host leftovers after overlay",
-    "readinessClean": "No leftover Apache default, missing nginx catch-all, failed vsftpd, or stale CLI detected."
+    "readinessClean": "No leftover Apache default, missing nginx catch-all, failed vsftpd, or stale CLI detected.",
+    "staleCliRemoved": "অবশিষ্ট CLI {{path}} সরানো হয়েছে।",
+    "staleCliRemoveFailed": "অবশিষ্ট CLI {{path}} সরানো যায়নি: {{detail}}",
+    "vsftpdSslOff": "FTPS সনদ নেই; vsftpd-এ ssl_enable=NO করে পুনরায় চালু করা হয়েছে।",
+    "dovecotSslOff": "{{path}} নেই; Dovecot-এ ssl=no করে পুনরায় চালু করা হয়েছে।"
   },
   "git": {
     "missingBin": "git is not on PATH",
@@ -3142,5 +3146,10 @@
     "dnsDegraded": "DNS path degraded",
     "reqRateHigh": "Public request rate {{reqs}}/min ≥ {{threshold}}",
     "ddosHeuristic": "High public request rate plus edge probe failure"
+  },
+  "publicFiles": {
+    "liveConf": "লাইভ Nginx কনফ: {{path}}",
+    "publicRoot": "পাবলিক রুট: {{path}}",
+    "confNameStale": "কনফ {{file}} বর্তমান server_name {{serverName}}-এর সাথে মেলে না। নাম বদলাতে পাবলিক ফাইল আবার প্রয়োগ করুন।"
   }
 }

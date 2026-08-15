@@ -491,5 +491,8 @@
   "openQueuePage": "メールキューを開く",
   "healthUnchecked": "Not checked yet",
   "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first.",
-  "domainsListDesc": "Mail domains registered on this host"
+  "domainsListDesc": "Mail domains registered on this host",
+  "healthChecklist": "チェックリスト {{score}}/100",
+  "healthChecklistHint": "チェックリスト点 — DNS / PTR / ポート 25 の実測は未実施",
+  "healthLiveHint": "実測スコア"
 }

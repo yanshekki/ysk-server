@@ -91,6 +91,21 @@ export interface RuntimeProbeReport {
   notes: string[];
 }
 
+export function supportedFromProbe(probe: RuntimeProbeReport): Record<string, string[]> {
+  const pick = (items: RuntimeProbeItem[]) =>
+    [...new Set(items.filter((i) => i.available).map((i) => i.version))];
+  return {
+    node: pick(probe.node),
+    php: pick(probe.php),
+    python: pick(probe.python),
+    go: pick(probe.go),
+    rust: pick(probe.rust),
+    java: pick(probe.java),
+    kotlin: pick(probe.kotlin),
+    bun: pick(probe.bun),
+  };
+}
+
 /** Managed Go roots: /usr/local/ysk/go/<minor>/bin/go */
 async function probeGoVersions(
   host: HostExecutor,
@@ -607,7 +622,7 @@ async function listHostVersionedBins(
   }
 }
 
-function extractPin(kind: string, versionText?: string): string | undefined {
+export function extractPin(kind: string, versionText?: string): string | undefined {
   if (!versionText) return undefined;
   if (kind === 'node') return versionText.replace(/^v/i, '').match(/^(\d+)/)?.[1];
   if (kind === 'go') return versionText.replace(/^go/i, '').match(/(\d+\.\d+)/)?.[1];
@@ -819,7 +834,7 @@ export async function probeRuntimes(
     javaPins,
     selectJavaRuntime,
     (p) => [p, '-version'],
-    (out, v) => out.includes(`"${v}`) || out.includes(`version ${v}`) || new RegExp(`\\b${v}\\b`).test(out),
+    (out, v) => extractPin('java', out) === String(v).replace(/^java-?/i, ''),
     hostJava,
   );
 
@@ -829,7 +844,11 @@ export async function probeRuntimes(
     kotlinPins,
     selectKotlinRuntime,
     (p) => [p, '-version'],
-    (out, v) => out.includes(v) || /kotlinc/i.test(out),
+    (out, v) => {
+      const pin = extractPin('kotlin', out);
+      if (!pin) return false;
+      return pin === v || pin.startsWith(`${v}.`);
+    },
     hostKotlin,
   );
 

@@ -63,5 +63,7 @@
   "kindDeploy": "Deploy",
   "kindRuntime": "Runtime",
   "jobDone": "Finished · {{title}}",
-  "jobFailed": "Failed · {{title}}"
+  "jobFailed": "Failed · {{title}}",
+  "uninstallUfwWarn": "Quitar UFW deja este host sin el cortafuegos de puertos gestionado por el panel.",
+  "uninstallFail2banWarn": "Quitar fail2ban detiene las jails y libera los bloqueos. Si lo conserva, añada su IP de inicio a ignoreip."
 }

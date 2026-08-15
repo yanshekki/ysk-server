@@ -11,6 +11,8 @@
   "stoppedOk": "已停止 {{label}}",
   "restartedOk": "已重啟 {{label}}",
   "reloadedOk": "已重載 {{label}}",
+  "stopNeedConfirm": "需確認",
+  "stopNeedConfirmPhrase": "需輸入確認短語",
   "stopConfirmTitle": "停止 {{label}}？",
   "stopConfirmDesc": "{{label}} 將停止接聽。需要時可在本頁再啟動。",
   "stopConfirmEdgeDesc": "停止 {{label}} 會令站點與反向代理離線，直至再次啟動。",

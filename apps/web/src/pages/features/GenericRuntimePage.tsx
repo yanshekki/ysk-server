@@ -154,6 +154,34 @@ export function pickSupportedVersion(
   return fallback;
 }
 
+export function isRustupDefaultMissingText(text: string | null | undefined): boolean {
+  const s = String(text ?? '');
+  return (
+    /no default toolchain/i.test(s) ||
+    /rustup could not choose a version/i.test(s) ||
+    /no default is configured/i.test(s)
+  );
+}
+
+export function runtimePinOnHost(
+  pin: string,
+  installed: string[],
+  hostRaw?: string,
+): boolean {
+  const p = String(pin ?? '').trim();
+  if (!p) return false;
+  if (installed.some((v) => hostSatisfiesTarget(v, p) || hostSatisfiesTarget(p, v))) {
+    return true;
+  }
+  if (hostSatisfiesTarget(hostRaw, p)) return true;
+  if (/^(latest|stable|nightly|current)$/i.test(p)) {
+    if (installed.length > 0) return true;
+    const h = String(hostRaw ?? '').trim();
+    return Boolean(h) && /\d/.test(h) && !isRustupDefaultMissingText(h);
+  }
+  return false;
+}
+
 export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
@@ -349,6 +377,27 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
   const recordedButProbeEmpty =
     Boolean(recordedPin) && probeData.available.length === 0;
 
+  const rustupDefaultMissing =
+    kind === 'rust' &&
+    (isRustupDefaultMissingText(probeData.hostRaw) ||
+      probeData.items.some(
+        (i) =>
+          isRustupDefaultMissingText(
+            i.versionOutput != null ? String(i.versionOutput) : '',
+          ) ||
+          (Array.isArray(i.notes) &&
+            i.notes.some((n) => isRustupDefaultMissingText(String(n)))),
+      ));
+  const hostDisplay = rustupDefaultMissing
+    ? t('runtime.rustupDefaultMissingShort')
+    : probeData.host;
+  const targetOnHost = runtimePinOnHost(
+    version,
+    probeData.available,
+    rustupDefaultMissing ? '' : probeData.hostRaw,
+  );
+  const showTargetMissing = Boolean(probe) && Boolean(version) && !targetOnHost;
+
   const [defaultConfirmOpen, setDefaultConfirmOpen] = useState(false);
   const [uninstallConfirmOpen, setUninstallConfirmOpen] = useState(false);
   const [uninstallTarget, setUninstallTarget] = useState<string | null>(null);
@@ -492,6 +541,16 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
           return { label: t('runtime.notDetected'), tone: 'warn' as const };
         })(),
         items: [
+          ...(showTargetMissing
+            ? [
+                {
+                  label: t('runtime.targetMissing'),
+                  value: version,
+                  tone: 'warn' as const,
+                  hint: t('runtime.targetMissingHint', { version }),
+                },
+              ]
+            : []),
           {
             label: t('common.probe'),
             value: probe ? t('runtime.readShort') : '—',
@@ -501,7 +560,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
             value: probeData.available.length },
           { label: t('common.target'), value: version },
           { label: t('runtime.tune'), value: tuningLoaded ? t('runtime.loadedShort') : '—' },
-          { label: t('common.host'), value: probeData.host || '—' },
+          { label: t('common.host'), value: hostDisplay || '—' },
         ] }}
       actions={<>
           <Button
@@ -558,6 +617,23 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
           </Button>
         </Alert>
       ) : null}
+      {rustupDefaultMissing ? (
+        <Alert variant="warn">
+          <strong>{t('runtime.rustupDefaultMissingTitle')}</strong>{' '}
+          {t('runtime.rustupDefaultMissing')}{' '}
+          <Button
+            variant="secondary"
+            size="sm"
+            className="u-ml-2"
+            onClick={() => setTab('software')}
+          >
+            {t('runtime.rustupSetDefaultHint')}
+          </Button>
+        </Alert>
+      ) : null}
+      {showTargetMissing && !recordedButProbeEmpty && !rustupDefaultMissing ? (
+        <Alert variant="warn">{t('runtime.targetMissingHint', { version })}</Alert>
+      ) : null}
       <PageTabs
         tabs={[
           { id: 'overview', label: t('runtime.overview') },
@@ -584,7 +660,7 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                 <DescriptionList
                   columns={2}
                   items={[
-                    { label: t('runtime.hostDefault'), value: probeData.host },
+                    { label: t('runtime.hostDefault'), value: hostDisplay },
                     {
                       label: t('runtime.panelSupport'),
                       value: probeData.supported.join(', ') || '—',
@@ -592,12 +668,23 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                     {
                       label: t('ssl.status.ready'),
                       value: probeData.available.length ? (
-                        <span>
-                          {probeData.available.map((v) => (
-                            <Badge key={v} tone="ok">
-                              {v}
-                            </Badge>
-                          ))}
+                        <span className="u-flex-gap u-flex-wrap">
+                          {probeData.available.map((v, i) => {
+                            const pin =
+                              kind === 'bun' && /^(latest|stable)$/i.test(v)
+                                ? probeData.hostRaw.match(/(\d+\.\d+[\w.-]*)/)?.[1]
+                                : undefined;
+                            const extra =
+                              pin && !probeData.available.includes(pin)
+                                ? ` · ${pin}`
+                                : '';
+                            return (
+                              <span key={v}>
+                                {i > 0 ? <span className="muted"> · </span> : null}
+                                <Badge tone="ok">{`${v}${extra}`}</Badge>
+                              </span>
+                            );
+                          })}
                         </span>
                       ) : (
                         t('runtime.notDetectedYet')
@@ -607,28 +694,52 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                 />
                 {probeData.items.length > 0 ? (
                   <ul className="list-plain list-spaced u-mt-3">
-                    {probeData.items.map((i) => (
-                      <li key={String(i.version)}>
-                        <strong>{String(i.version)}</strong>{' '}
-                        <Badge tone={i.available ? 'ok' : 'neutral'}>
-                          {i.available ? t('common.available') : t('runtime.notFound')}
-                        </Badge>
-                        {i.available &&
-                        (i.active ||
-                          hostSatisfiesTarget(
-                            probeData.hostRaw,
-                            String(i.version ?? ''),
-                          )) ? (
-                          <Badge tone="ok">{t('runtime.activeDefault')}</Badge>
-                        ) : null}
-                        {i.resolvedPath ? (
-                          <span className="muted u-text-sm"> · {String(i.resolvedPath)}</span>
-                        ) : null}
-                        {i.versionOutput ? (
-                          <span className="muted u-text-sm"> · {String(i.versionOutput)}</span>
-                        ) : null}
+                    {probeData.items
+                      .filter((i) => i.available)
+                      .map((i) => {
+                        const rawOut =
+                          i.versionOutput != null ? String(i.versionOutput) : '';
+                        const outText = isRustupDefaultMissingText(rawOut)
+                          ? t('runtime.rustupDefaultMissingShort')
+                          : rawOut.replace(/^info:\s*/i, '');
+                        return (
+                          <li key={String(i.version)}>
+                            <strong>{String(i.version)}</strong>{' '}
+                            <Badge tone="ok">{t('common.available')}</Badge>
+                            {i.active ||
+                            hostSatisfiesTarget(
+                              probeData.hostRaw,
+                              String(i.version ?? ''),
+                            ) ? (
+                              <Badge tone="ok">{t('runtime.activeDefault')}</Badge>
+                            ) : null}
+                            {i.resolvedPath ? (
+                              <span className="muted u-text-sm">
+                                {' '}
+                                · {String(i.resolvedPath)}
+                              </span>
+                            ) : null}
+                            {outText ? (
+                              <span className="muted u-text-sm"> · {outText}</span>
+                            ) : null}
+                          </li>
+                        );
+                      })}
+                    {probeData.items.some((i) => !i.available) ? (
+                      <li>
+                        <Badge tone="neutral">{t('runtime.notFound')}</Badge>{' '}
+                        {t('runtime.uninstalledCountHint', {
+                          n: probeData.items.filter((i) => !i.available).length,
+                        })}{' '}
+                        <button
+                          type="button"
+                          className="linkish"
+                          onClick={() => setTab('software')}
+                        >
+                          {t('runtime.install')}
+                        </button>
                       </li>
-                    ))}
+                    ) : null}
                   </ul>
                 ) : (
                   <p className="muted u-mt-2">{t('runtime.pressReprobeHost')}</p>
@@ -720,13 +831,35 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                 description={t('runtime.panelTuneDesc')}
               >
                 <FormLayout columns={2}>
-                  <Field label={t('runtime.bindVersion')} htmlFor={`tune-${kind}-ver`} flush>
+                  <Field
+                    label={t('runtime.bindVersion')}
+                    htmlFor={`tune-${kind}-ver`}
+                    flush
+                    hint={
+                      showTargetMissing
+                        ? t('runtime.targetMissingHint', { version })
+                        : undefined
+                    }
+                  >
                     {(() => {
                       const vers = probeData.supported.length
                         ? probeData.supported
                         : version
                           ? [version]
                           : [];
+                      const opt = (v: string) => {
+                        const onHost = runtimePinOnHost(
+                          v,
+                          probeData.available,
+                          rustupDefaultMissing ? '' : probeData.hostRaw,
+                        );
+                        return {
+                          value: v,
+                          label: onHost ? v : `${v} · ${t('runtime.needsInstall')}`,
+                          hint: onHost ? undefined : t('runtime.needsInstallHint'),
+                          onHost,
+                        };
+                      };
                       if (vers.length <= 8) {
                         return (
                           <SegRadio
@@ -734,7 +867,10 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                             aria-label={t('runtime.bindVersion')}
                             value={version}
                             onChange={setVersion}
-                            options={vers.map((v) => ({ value: v, label: v }))}
+                            options={vers.map((v) => {
+                              const o = opt(v);
+                              return { value: o.value, label: o.label, hint: o.hint };
+                            })}
                           />
                         );
                       }
@@ -743,15 +879,26 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                           id={`tune-${kind}-ver`}
                           value={version}
                           onChange={bindInput(setVersion)}
+                          title={
+                            showTargetMissing ? t('runtime.needsInstallHint') : undefined
+                          }
                         >
-                          {vers.map((v) => (
-                            <option key={v} value={v}>
-                              {v}
+                          {vers.map((v) => {
+                            const o = opt(v);
+                            return (
+                            <option key={v} value={v} title={o.hint}>
+                              {o.label}
                             </option>
-                          ))}
+                            );
+                          })}
                         </select>
                       );
                     })()}
+                    {showTargetMissing ? (
+                      <Badge tone="warn" title={t('runtime.needsInstallHint')}>
+                        {t('runtime.targetMissing')}
+                      </Badge>
+                    ) : null}
                   </Field>
                 </FormLayout>
                 <FormHint>
@@ -770,7 +917,12 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                       return (
                         <Field
                           key={f.key}
-                          label={f.label}
+                          label={
+                            f.key === 'max_http_header_size' ||
+                            f.key.includes('http_header')
+                              ? `${String(f.label).replace(/\s*\(bytes\)\s*$/i, '')} (${t('runtime.unitBytes')})`
+                              : f.label
+                          }
                           htmlFor={id}
                           techKey={f.key}
                           hint={f.hint}
@@ -834,6 +986,26 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
                                       { value: '1024', label: '1024' },
                                       { value: '2048', label: '2048' },
                                     ]
+                                  : f.key === 'max_http_header_size' ||
+                                      f.key.includes('http_header')
+                                    ? [
+                                        {
+                                          value: '8192',
+                                          label: t('runtime.headerSizeKb', { n: '8' }),
+                                        },
+                                        {
+                                          value: '16384',
+                                          label: t('runtime.headerSizeKb', { n: '16' }),
+                                        },
+                                        {
+                                          value: '32768',
+                                          label: t('runtime.headerSizeKb', { n: '32' }),
+                                        },
+                                        {
+                                          value: '65536',
+                                          label: t('runtime.headerSizeKb', { n: '64' }),
+                                        },
+                                      ]
                                   : f.key.includes('worker') || f.key.includes('thread')
                                     ? [
                                         { value: '1', label: '1' },

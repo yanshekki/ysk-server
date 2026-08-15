@@ -517,7 +517,7 @@
     "n0259": "ڈومین",
     "n0260": "ڈومین نہیں ملا:",
     "n0261": "dovecot دوبارہ لوڈ ناکام یا servicenot (چھلنی لکھا؛ دوبارہ لوڈ کامیابی)",
-    "n0262": "ڈرائی رن فلیٹ ڈسپیچ (نہیں)",
+    "n0262": "فلیٹ ڈسپیچ ڈرائی رن (قطار میں نہیں)",
     "n0263": "ڈرائی رن پیئر پش (ایس سی پی نہیں)",
     "n0264": "ڈرائی رن ریموٹ انسٹال (ssh نہیں)",
     "n0265": "ڈرائی رن ٹرانسفر ہو گیا (مکمل بوٹسٹریپ)",
@@ -1850,7 +1850,7 @@
     "n1590": "",
     "n1591": "روٹ نہیں — useradd/ systemd/ nginx سسٹم کے راستے محدود ہیں۔",
     "n1592": "seccomp کو runAsUser کی ضرورت نہیں ہے۔",
-    "n1593": "پینل برائے مہربانی",
+    "n1593": "عوامی درخواستیں / منٹ",
     "n1594": "پینل کنکشن؛ دستیاب\"\" ()",
     "n1595": "پینل جڑ کے طور پر نہیں چل رہا ہے۔",
     "n1596": "دستیاب درخواست: غلط",
@@ -2121,7 +2121,7 @@
     "t0251": "{{v0}} انسٹال کرنا نامکمل ہے۔",
     "t0252": "{{v0}} سروس اسٹارٹ",
     "t0253": "شروع کرنا ناکام ہو گیا: {{v0}}",
-    "t0254": "Node.js ورژن {{v0}} کو سپورٹ کرتا ہے۔ دستیاب ورژن: {{v1}}",
+    "t0254": "Node.js ورژن {{v0}} معاون؛ دستیاب ورژن: {{v1}}",
     "t0255": "پی ایچ پی ورژن کی حمایت کرتا ہے {{v0}}; دستیاب: {{v1}}",
     "t0256": "ازگر ورژن {{v0}} کی حمایت کرتا ہے؛ دستیاب: {{v1}}",
     "t0257": "گو ورژن کو سپورٹ کرتا ہے {{v0}}؛ دستیاب: {{v1}}",
@@ -2243,12 +2243,12 @@
     "t0373": "پروجیکٹ \"{{v0}}\" تنہائی",
     "t0374": "لوکل پاتھ کی طرف {{v0}}",
     "t0375": "شناخت {{v0}}: {{v1}}",
-    "t0376": "scp (شناخت) سے {{v0}}",
-    "t0377": "scp(شناخت) ناکام: {{v0}}",
-    "t0378": "scp سے {{v0}}",
-    "t0379": "scp ناکام: {{v0}}",
-    "t0380": "scp سے {{v0}}",
-    "t0381": "scp ناکام: {{v0}} (بیک اپ ریموٹ شناخت آئی ڈی)",
+    "t0376": "sftp (شناخت) {{v0}} کامیاب",
+    "t0377": "sftp (شناخت) ناکام: {{v0}}",
+    "t0378": "sftp {{v0}} کامیاب",
+    "t0379": "sftp ناکام: {{v0}}",
+    "t0380": "sftp {{v0}} کامیاب",
+    "t0381": "sftp ناکام: {{v0}} (backup remote identityId سیٹ کر سکتے ہیں)",
     "t0382": "S3 {{v0}}",
     "t0383": "S3 ناکام ہو گیا: {{v0}}",
     "t0384": ": {{v0}}/{{v1}} ایڈمن فعال 2FA",
@@ -2505,7 +2505,7 @@
     "t0635": "تحقیقات نہیں کر سکتے {{v0}}",
     "t0636": "{{v0}} · {{v1}}",
     "t0637": "پروجیکٹ {{v0}} · {{v1}} · DB {{v2}} · Redis {{v3}}",
-    "t0638": "انسٹال سافٹ ویئر {{v0}} · گھر {{v1}}",
+    "t0638": "سافٹ ویئر انسٹال {{v0}} · homes {{v1}}",
     "t0639": "کٹ اوور میزبان {{v0}}",
     "t0640": "{{v0}} warning(s) — review before cutover.",
     "t0641": "کلید {{v0}}",
@@ -3086,7 +3086,11 @@
     "dovecot": "Dovecot ssl_cert points at missing {{path}}. Overlay does not rewrite ssl=no. Apply mail TLS after issuing the cert, or apply email stack.",
     "overlayDoesNotHeal": "Product overlay does not rewrite nginx, Apache, vsftpd, or Dovecot. Use the listed apply commands (root + YSK_EXECUTE=1).",
     "readinessTitle": "Host leftovers after overlay",
-    "readinessClean": "No leftover Apache default, missing nginx catch-all, failed vsftpd, or stale CLI detected."
+    "readinessClean": "No leftover Apache default, missing nginx catch-all, failed vsftpd, or stale CLI detected.",
+    "staleCliRemoved": "بقیہ CLI {{path}} ہٹا دیا گیا۔",
+    "staleCliRemoveFailed": "بقیہ CLI {{path}} ہٹ نہیں سکا: {{detail}}",
+    "vsftpdSslOff": "FTPS سرٹیفکیٹ نہیں؛ vsftpd پر ssl_enable=NO کر کے دوبارہ چلایا۔",
+    "dovecotSslOff": "{{path}} نہیں؛ Dovecot پر ssl=no کر کے دوبارہ چلایا۔"
   },
   "git": {
     "missingBin": "git is not on PATH",
@@ -3142,5 +3146,10 @@
     "dnsDegraded": "DNS path degraded",
     "reqRateHigh": "Public request rate {{reqs}}/min ≥ {{threshold}}",
     "ddosHeuristic": "High public request rate plus edge probe failure"
+  },
+  "publicFiles": {
+    "liveConf": "لائیو Nginx کنف: {{path}}",
+    "publicRoot": "عوامی روٹ: {{path}}",
+    "confNameStale": "کنف {{file}} موجودہ server_name {{serverName}} سے نہیں ملتی۔ نام بدلنے کے لیے پبلک فائلیں دوبارہ لگائیں۔"
   }
 }

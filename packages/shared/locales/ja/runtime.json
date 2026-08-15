@@ -511,5 +511,19 @@
   "alreadyHostDefaultShort": "ホストのデフォルト",
   "managedPathMissingTitle": "Managed {{name}} path not ready",
   "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall.",
-  "installRecordedCta": "Install recorded {{v}}"
+  "installRecordedCta": "Install recorded {{v}}",
+  "targetMissing": "目標バージョンが未インストール",
+  "targetMissingHint": "目標 {{version}} はこのホストにありません。インストール済みに切り替えるか、この版を入れてください。",
+  "needsInstall": "要インストール",
+  "needsInstallHint": "このバージョンはこのホストにありません。先に入れるか、入っている版を選んでください。",
+  "unitBytes": "バイト",
+  "headerSizeKb": "{{n}} KB",
+  "phpIniChipEmpty": "未読み込み — php.ini タブを開いてください",
+  "phpFpmService": "PHP-FPM",
+  "phpFpmServiceDesc": "PHP-FPM ユニットの開始・停止・再読込・再起動",
+  "rustupDefaultMissingTitle": "rustup のデフォルトツールチェーンがありません",
+  "rustupDefaultMissing": "rustup にデフォルトがありません。ソフトウェアタブで stable を設定してください。",
+  "rustupDefaultMissingShort": "No default toolchain",
+  "rustupSetDefaultHint": "Set default toolchain",
+  "uninstalledCountHint": "{{n}} 版はこのホストにありません"
 }

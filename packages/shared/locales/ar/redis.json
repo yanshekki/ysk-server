@@ -64,5 +64,13 @@
   "pickKey": "حدد مفتاحًا على اليسار لعرض المحتوى.",
   "ttlPrefix": "تل: {{ttl}}",
   "writeLiveHint": "يكتب العيش ريديس. لا يمكن التراجع عن اللوحة بنقرة واحدة.",
-  "refPath": "المرجع: {{path}}"
+  "refPath": "المرجع: {{path}}",
+  "dbEmptyMark": " · فارغ",
+  "noRequirepass": "وضع الحماية يعمل لكن requirepass فارغ أو غير مقروء — لا كلمة مرور.",
+  "setRequirepass": "تعيين كلمة المرور",
+  "rdbOnlyLossHint": "AOF متوقف وRDB يعمل. إعادة التشغيل أو الانهيار قد تفقد كتابات حديثة.",
+  "dirDataContainer": "/data (container)",
+  "dirHostDefault": "/var/lib/redis",
+  "dirDefaultInstance": "/var/lib/redis/default",
+  "dirDataWarn": "/data is usually a container path; this panel cannot confirm it exists."
 }

@@ -164,7 +164,7 @@
   "seedStatusChecking": "檢查中",
   "seedStatusPaused": "已暫停",
   "seedStatusQueued": "排隊中",
-  "swarmLeftover": "Tracker 另有 {{count}} 個未在資料庫的 announce",
+  "swarmLeftover": "Tracker 紀錄另有 {{count}} 個 announce（不是資料庫 Torrent 列；來源不同）",
   "addSourceSection": "來源",
   "addSourceFile": "檔案",
   "addSourceMagnet": "Magnet",

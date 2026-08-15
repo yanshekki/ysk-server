@@ -63,5 +63,7 @@
     "running": "Running",
     "failed": "Failed",
     "missing": "Not installed"
-  }
+  },
+  "stopNeedConfirm": "Perlu konfirmasi",
+  "stopNeedConfirmPhrase": "Perlu mengetik frasa konfirmasi"
 }

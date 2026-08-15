@@ -571,6 +571,8 @@ export function ProjectGitPanel({
             size="sm"
             loading={gitBusy}
             disabled={!gitSt?.isRepo}
+            title={t('projects.gitResetNeedConfirm')}
+            aria-label={t('projects.gitResetNeedConfirm')}
             onClick={() => setGitResetOpen(true)}
           >
             {t('projects.gitReset')}

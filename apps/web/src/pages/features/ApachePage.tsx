@@ -479,17 +479,26 @@ export function ApachePage() {
               key: 'status',
               header: t('apache.colStatus'),
               nowrap: true,
-              render: (r) => (
-                <Badge
-                  tone={
-                    r.apply_status === 'applied' || r.apply_status === 'written'
-                      ? 'ok'
-                      : 'warn'
-                  }
-                >
-                  {r.apply_status || 'draft'}
-                </Badge>
-              ),
+              render: (r) => {
+                const status = r.apply_status || 'draft';
+                const statusKey =
+                  status === 'pending_execute'
+                    ? 'applyStatus.pendingExecute'
+                    : `applyStatus.${status}`;
+                return (
+                  <Badge
+                    tone={
+                      status === 'applied' || status === 'written'
+                        ? 'ok'
+                        : status === 'failed'
+                          ? 'danger'
+                          : 'warn'
+                    }
+                  >
+                    {t(statusKey, { defaultValue: status })}
+                  </Badge>
+                );
+              },
             },
           ]}
           rows={sites}
@@ -519,6 +528,9 @@ export function ApachePage() {
                   <Button
                     variant="danger"
                     size="sm"
+                    title={t('apache.removeArtifactHint', {
+                      defaultValue: t('apache.removeArtifactDesc'),
+                    })}
                     onClick={() => setArtifactDelId(r.id)}
                   >
                     {t('apache.removeArtifact')}

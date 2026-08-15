@@ -11,7 +11,7 @@
   "componentsTitle": "Componentes para instalar",
   "dryRun": "Visualização de simulação",
   "installNow": "Instale agora",
-  "uninstallHint": "Selecione pacotes para remover",
+  "uninstallHint": "Selecione os pacotes a remover. Sem seleção não é possível remover. Os dados são conservados por omissão.",
   "dataPolicy": "Política de dados",
   "keepData": "Mantenha os dados",
   "purgeData": "Limpar dados",

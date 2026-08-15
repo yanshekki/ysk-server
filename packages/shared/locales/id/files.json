@@ -349,5 +349,7 @@
   "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
   "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone.",
   "webdavReissueUnchanged": "Token id did not change after re-issue — the write may not have persisted. Try again.",
-  "webdavDisableFailed": "WebDAV is still enabled after disable — the write may not have persisted. Try again."
+  "webdavDisableFailed": "WebDAV is still enabled after disable — the write may not have persisted. Try again.",
+  "dirNamedLikeFile": "(sisa folder; nama terlihat seperti berkas)",
+  "webdavAfterEnable": "Tersedia setelah WebDAV diaktifkan dan token diterbitkan."
 }

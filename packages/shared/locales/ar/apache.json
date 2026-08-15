@@ -54,5 +54,6 @@
   "cleanupConflictsTitle": "تنظيف كافة مخلفات الصراع؟",
   "cleanupConflictsDesc": "قم بإزالة كل conf Artifact الموجود على القرص والذي يتعارض مع مشروع أو ServerName مستقل. يتم الاحتفاظ بصفوف المشروع.",
   "artifactRemovedOk": "تمت إزالة الكونفرت المتبقي",
-  "sslTerminatedUpstream": "TLS ends at front Nginx"
+  "sslTerminatedUpstream": "TLS ends at front Nginx",
+  "removeArtifactHint": "يحذف إعداد القرص المتبقي هذا فقط. لا يحذف المشروع."
 }

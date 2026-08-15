@@ -64,5 +64,13 @@
   "pickKey": "Selecione uma tecla à esquerda para visualizar o conteúdo.",
   "ttlPrefix": "TTL: {{ttl}}",
   "writeLiveHint": "Grava Redis ao vivo; não é possível desfazer no painel com um clique.",
-  "refPath": "Referência: {{path}}"
+  "refPath": "Referência: {{path}}",
+  "dbEmptyMark": " · vazio",
+  "noRequirepass": "O modo protegido está ligado, mas requirepass está vazio ou não foi lido — sem palavra-passe.",
+  "setRequirepass": "Definir palavra-passe",
+  "rdbOnlyLossHint": "AOF desligado e RDB ligado. Um reinício ou falha pode perder escritas recentes.",
+  "dirDataContainer": "/data (container)",
+  "dirHostDefault": "/var/lib/redis",
+  "dirDefaultInstance": "/var/lib/redis/default",
+  "dirDataWarn": "/data is usually a container path; this panel cannot confirm it exists."
 }

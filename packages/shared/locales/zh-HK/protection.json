@@ -354,5 +354,19 @@
   "selfLoginIp": "你的登入 IP",
   "showZeroScore": "顯示 0 分",
   "hideZeroScore": "隱藏 0 分",
-  "freshnessNa": "不適用"
+  "freshnessNa": "不適用",
+  "geoDraftOnly": "政策未啟用 — 儲存只寫草稿，Nginx 不會執行，直至你勾選啟用。",
+  "selectAllCountriesWarn": "封鎖名單模式下全選全部國家？這可能把本機與你的登入所在地一併封鎖。",
+  "badgeRecommendPreset": "以目前威脅水平，建議改用更強預設",
+  "badgeAutomationOn": "自動化已開啟",
+  "badgeBanCount": "目前封鎖數",
+  "badgeGeoOn": "Geo 准入政策已啟用",
+  "badgeGeoNotReady": "GeoIP 資料庫尚未就緒",
+  "badgeIntelSignals": "目前計分的訊號數",
+  "signalActive": "運作中",
+  "signalInactive": "未啟用",
+  "signalJails": "{{n}} 個 jail",
+  "dbReadyHint": "已有 MMDB 檔",
+  "dbNotReadyHint": "請先下載 GeoIP 資料庫",
+  "staleHint": "上次成功更新是否已超過 7 日"
 }

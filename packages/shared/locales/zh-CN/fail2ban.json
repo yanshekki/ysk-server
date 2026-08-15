@@ -82,7 +82,7 @@
   "statWhitelist": "白名单",
   "invalidIp": "请输入有效的 IPv4、IPv6 或 CIDR。",
   "whitelistPendingApply": "已写入面板名单。请按「套用策略」才会写入 jail.local。",
-  "ignoreipFile": "面板资料目录／fail2ban／ignoreip.txt",
+  "ignoreipFile": "dataDir/fail2ban/ignoreip.txt",
   "jailsTabHint": "显示作用中 Jail 状态。要开关 Jail 请到「策略」分页。",
   "colJail": "Jail",
   "colEnabled": "开启",
@@ -99,5 +99,9 @@
   },
   "cannotBanSelf": "This is the host or your login IP — add it to ignoreip instead of banning",
   "suggestIgnoreHint": "Suggested admin IPs (panel file only until you apply policy):",
-  "suggestIgnoreAdd": "Add {{ip}}"
+  "suggestIgnoreAdd": "Add {{ip}}",
+  "whitelistEmptyWarn": "白名单为空，jail 可能把你自己封锁。套用 ignoreip 前请先加入登录 IP。",
+  "suggestIgnoreLogin": "你的登录 IP {{ip}}",
+  "applyIgnoreEmptyWarn": "白名单为空时套用会清空 ignoreip",
+  "applyIgnoreNeedConfirm": "会重写 jail ignoreip 并重新载入 fail2ban"
 }

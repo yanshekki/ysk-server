@@ -26,7 +26,7 @@ export async function handleDefenseBanRoutes(
       host: ctx.host,
       db: ctx.db,
       dataDir: ctx.dataDir,
-      requestCountLastMinute: ctx.requestHits?.length ?? 0,
+      requestCountLastMinute: ctx.requestHitsLastMinute(),
     });
     sendJson(res, 200, status);
     return true;
@@ -39,7 +39,7 @@ export async function handleDefenseBanRoutes(
       host: ctx.host,
       db: ctx.db,
       dataDir: ctx.dataDir,
-      requestCountLastMinute: ctx.requestHits?.length ?? 0,
+      requestCountLastMinute: ctx.requestHitsLastMinute(),
     });
     ctx.audit.append({
       actor: user.username,

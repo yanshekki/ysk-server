@@ -28,6 +28,7 @@ import { api } from '../shared/services/api';
 import { usePageTab } from '../shared/hooks/usePageTab';
 import { toast } from '../shared/stores/toast-store';
 import { formatDateTime } from '../shared/lib/datetime';
+import { formatDateTimeLocale } from '../shared/lib/format-date';
 import { bindSet, bindInput, bindVoid } from './bind-handlers';
 import { ServiceAccessStrip } from '../features/network/service-exposure';
 
@@ -97,6 +98,16 @@ export function formatNtpServiceLabel(
   if (s === 'inactive') return t('system.ntpServiceInactive');
   if (s === 'n/a' || s === 'na' || s === 'not available') return t('system.ntpServiceNa');
   return String(source).trim();
+}
+
+/** Export-tab nginx: leftover public-files-* / unused 000-default. Keep in sync. */
+export function classifyManagedNginxName(
+  name: string,
+): 'managed' | 'leftover' | 'unused' {
+  const base = String(name || '').replace(/^ysk-/i, '');
+  if (/^000-default\.conf$/i.test(base)) return 'unused';
+  if (/^public-files-/i.test(base)) return 'leftover';
+  return 'managed';
 }
 
 export function formatNtpSyncedLabel(
@@ -831,6 +842,8 @@ export function SystemPage() {
                           size="md"
                           loading={tlsBusy}
                           disabled={!panelTls?.tlsEnabled}
+                          title={t('system.panelTls.disableNeedConfirm')}
+                          aria-label={t('system.panelTls.disableNeedConfirm')}
                           onClick={() => setDisableTlsOpen(true)}
                         >
                           {t('system.panelTls.disable')}
@@ -1292,7 +1305,7 @@ export function SystemPage() {
                 {snapshot ? (
                   <div className="sys-preview">
                     <div className="sys-preview__meta">
-                      {t('system.snapshotMeta', { at: formatDateTime(snapshot.exportedAt, { locale: i18n.language, timeZone: timezone || host?.identity?.timezone }), users: snapshot.users ?? snapshot.counts?.users ?? 0, packages: snapshot.packages ?? snapshot.counts?.packages ?? 0 })}
+                      {t('system.snapshotMeta', { at: formatDateTimeLocale(snapshot.exportedAt, i18n.language), users: snapshot.users ?? snapshot.counts?.users ?? 0, packages: snapshot.packages ?? snapshot.counts?.packages ?? 0 })}
                     </div>
                     <LogViewer
                       text={JSON.stringify(snapshot, null, 2)}
@@ -1329,14 +1342,26 @@ export function SystemPage() {
                 ) : (
                   <>
                     <div className="sys-conf-list">
-                      {managedPageItems.map((c) => (
+                      {managedPageItems.map((c) => {
+                        const nginxRole = classifyManagedNginxName(c.name);
+                        return (
                         <div key={c.name} className="sys-conf-row">
                           <div className="sys-conf-row__main">
                             <code className="sys-conf-row__name">{c.name}</code>
+                            {nginxRole === 'leftover' ? (
+                              <Badge tone="warn" title={t('system.nginxLeftoverHint')}>
+                                {t('system.nginxLeftover')}
+                              </Badge>
+                            ) : null}
+                            {nginxRole === 'unused' ? (
+                              <Badge tone="neutral" title={t('system.nginxUnusedHint')}>
+                                {t('system.nginxUnused')}
+                              </Badge>
+                            ) : null}
                             <span className="sys-conf-row__meta">
                               {formatBytes(c.bytes)}
                               {c.mtime
-                                ? ` · ${new Date(c.mtime).toLocaleString()}`
+                                ? ` · ${formatDateTimeLocale(c.mtime, i18n.language)}`
                                 : ''}
                             </span>
                           </div>
@@ -1349,7 +1374,8 @@ export function SystemPage() {
                             {t('system.preview')}
                           </Button>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                     {managed.length > MANAGED_PAGE_SIZE ? (
                       <div className="sys-conf-pager" role="navigation" aria-label={t('system.managedPager')}>
@@ -1439,9 +1465,11 @@ export function SystemPage() {
                     {t('system.dryRun')}
                   </Button>
                   <Button
-                    variant="primary"
+                    variant="secondary"
                     size="md"
                     loading={busy}
+                    title={t('system.syncReloadNeedConfirm')}
+                    aria-label={t('system.syncReloadNeedConfirm')}
                     onClick={bindSet(setRebuildSyncConfirm, true)}
                   >
                     {t('system.syncReload')}
@@ -1489,7 +1517,7 @@ export function SystemPage() {
                           <code className="sys-conf-row__name">{a.name}</code>
                           <div className="sys-conf-row__meta">
                             {formatBytes(a.bytes)} ·{' '}
-                            {new Date(a.mtime).toLocaleString('zh-HK')}
+                            {formatDateTimeLocale(a.mtime, i18n.language)}
                           </div>
                         </div>
                         <Button

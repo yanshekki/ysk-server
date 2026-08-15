@@ -64,5 +64,13 @@
   "pickKey": "مواد دیکھنے کے لیے بائیں جانب ایک کلید منتخب کریں۔",
   "ttlPrefix": "TTL: {{ttl}}",
   "writeLiveHint": "زندہ Redis لکھتے ہیں; ایک کلک میں پینل سے کالعدم نہیں کیا جا سکتا۔",
-  "refPath": "حوالہ: {{path}}"
+  "refPath": "حوالہ: {{path}}",
+  "dbEmptyMark": " · خالی",
+  "noRequirepass": "محفوظ موڈ آن ہے مگر requirepass خالی یا نہ پڑھا گیا — پاس ورڈ نہیں۔",
+  "setRequirepass": "پاس ورڈ سیٹ کریں",
+  "rdbOnlyLossHint": "AOF بند اور RDB آن۔ دوبارہ شروع یا کریش سے حالیہ تحریر کھو سکتی ہے۔",
+  "dirDataContainer": "/data (container)",
+  "dirHostDefault": "/var/lib/redis",
+  "dirDefaultInstance": "/var/lib/redis/default",
+  "dirDataWarn": "/data is usually a container path; this panel cannot confirm it exists."
 }

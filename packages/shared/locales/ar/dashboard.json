@@ -85,7 +85,7 @@
   "runtime": "وقت التشغيل",
   "runtimeHint": "يضبط إصدار وقت التشغيل الافتراضي ونمط النشر",
   "runtimeVersion": "نسخة وقت التشغيل",
-  "versionHint": "مخزنة كمشروع runtime_version",
+  "versionHint": "يكتب إعداد إصدار بيئة تشغيل المشروع",
   "serverIpv4": "خادم IPv4",
   "serverIpv4Hint": "DNS أ / البريد SPF",
   "serverIpv4Ph": "هذا المضيف IPv4 العام",
@@ -119,5 +119,5 @@
   "notifAll": "All",
   "notifDismiss": "Hide",
   "goFix": "Fix",
-  "needDomainFirst": "Enter a domain first"
+  "needDomainFirst": "أدخل نطاقاً أولاً"
 }

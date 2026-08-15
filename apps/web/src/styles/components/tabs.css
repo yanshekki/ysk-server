@@ -156,6 +156,12 @@
 .tabs__tab--on {
   color: var(--brand-blue);
   border-bottom-color: var(--brand-blue);
+  background: rgba(59, 130, 246, 0.06);
+}
+
+.tabs__tab:not([aria-selected='true']):not(.tabs__tab--on) {
+  color: var(--text-sub);
+  border-bottom-color: transparent;
 }
 
 .tabs__tab:focus {

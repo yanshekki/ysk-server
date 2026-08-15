@@ -56,7 +56,7 @@ function markLocal(
 /**
  * Apply local Galera (or generic) conf for this control-plane host.
  * - Always ensures plan artifacts under dataDir
- * - Without execute: status stays planned/partial, local applyStatus=written
+ * - Without execute: status stays planned, local applyStatus=planned (dataDir only)
  * - With execute + EXECUTE + root: copy drop-in to system path
  */
 export async function applyDbClusterLocal(input: {
@@ -132,12 +132,12 @@ export async function applyDbClusterLocal(input: {
   const requiresExecute = true;
   const requiresRoot = true;
 
-  // dry-run / no execute: mark written on local member only
+  // dry-run / no execute: plan artifacts only — not host-written
   if (!want) {
-    const members = markLocal(planned.members, local?.id, 'written');
+    const members = markLocal(planned.members, local?.id, 'planned');
     const cluster = updateDbCluster(input.db, planned.id, {
       members,
-      status: 'partial',
+      status: 'planned',
       notes: [
         ...plan.notes,
         tl('notes.auto.n0272'),
@@ -157,10 +157,10 @@ export async function applyDbClusterLocal(input: {
   }
 
   if (!input.host.executeEnabled()) {
-    const members = markLocal(planned.members, local?.id, 'written');
+    const members = markLocal(planned.members, local?.id, 'planned');
     const cluster = updateDbCluster(input.db, planned.id, {
       members,
-      status: 'partial',
+      status: 'planned',
       notes: [
         tl('notes.auto.n0768'),
         ...plan.notes.slice(0, 4),
@@ -180,7 +180,7 @@ export async function applyDbClusterLocal(input: {
   }
 
   if (!input.host.isRoot()) {
-    const members = markLocal(planned.members, local?.id, 'written');
+    const members = markLocal(planned.members, local?.id, 'planned');
     const cluster = updateDbCluster(input.db, planned.id, {
       members,
       status: 'partial',

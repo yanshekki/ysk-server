@@ -120,5 +120,15 @@
   "statOffline": "Offline {{n}}",
   "statDraining": "Draining {{n}}",
   "statHitRate": "Hit rate {{v}}",
-  "hitNoStats": "No edge stats yet"
+  "hitNoStats": "Ainda sem estatísticas de bordo",
+  "loopbackOriginBlocked": "Não aplica o origin de loopback {{url}} a um bordo remoto. Defina um origin alcançável.",
+  "applyFailedHint": "Falha ao aplicar — veja as notas abaixo",
+  "applyStatus": {
+    "draft": "Rascunho",
+    "planned": "Planeado",
+    "applying": "A aplicar",
+    "applied": "Aplicado",
+    "failed": "Falhou",
+    "partial": "Parcial"
+  }
 }

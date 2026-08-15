@@ -85,7 +85,7 @@
   "runtime": "क्रम",
   "runtimeHint": "डिफ़ॉल्ट रनटाइम संस्करण और परिनियोजन शैली सेट करता है",
   "runtimeVersion": "रनटाइम संस्करण",
-  "versionHint": "प्रोजेक्ट रनटाइम_वर्जन के रूप में संग्रहीत",
+  "versionHint": "परियोजना के रनटाइम संस्करण सेटिंग में लिखता है",
   "serverIpv4": "सर्वर IPv4",
   "serverIpv4Hint": "डीएनएस ए/मेल एसपीएफ़",
   "serverIpv4Ph": "यह सार्वजनिक IPv4 होस्ट करता है",
@@ -119,5 +119,5 @@
   "notifAll": "All",
   "notifDismiss": "Hide",
   "goFix": "Fix",
-  "needDomainFirst": "Enter a domain first"
+  "needDomainFirst": "पहले डोमेन भरें"
 }

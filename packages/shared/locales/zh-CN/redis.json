@@ -64,5 +64,13 @@
   "pickKey": "从左側选擇一个鍵，即可查看内容。",
   "ttlPrefix": "过期：{{ttl}}",
   "writeLiveHint": "此操作直接写入执行中的 Redis，无法从面板一鍵还原。",
-  "refPath": "参考：{{path}}"
+  "refPath": "参考：{{path}}",
+  "dbEmptyMark": " · 空",
+  "noRequirepass": "保护模式已开，但 requirepass 为空或未读到 — 实际无密码。",
+  "setRequirepass": "设定密码",
+  "rdbOnlyLossHint": "AOF 关闭且 RDB 开启。重启或崩溃可能丢失最近写入。",
+  "dirDataContainer": "/data (container)",
+  "dirHostDefault": "/var/lib/redis",
+  "dirDefaultInstance": "/var/lib/redis/default",
+  "dirDataWarn": "/data is usually a container path; this panel cannot confirm it exists."
 }

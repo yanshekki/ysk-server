@@ -310,6 +310,8 @@ export function MigrateHostPage() {
                                 <Button
                                   variant="danger"
                                   size="sm"
+                                  title={t('migrate.orphanRemoveNeedConfirm')}
+                                  aria-label={t('migrate.orphanRemoveNeedConfirm')}
                                   onClick={() => setOrphanTarget(p)}
                                 >
                                   {t('migrate.orphanRemove')}
@@ -672,6 +674,8 @@ export function MigrateHostPage() {
         }}
         title={t('migrate.orphanRemoveTitle')}
         description={t('migrate.orphanRemoveDesc', { path: orphanTarget ?? '' })}
+        confirmText="DELETE"
+        severity="critical"
         confirmLabel={t('migrate.orphanRemove')}
         cancelLabel={t('common.cancel')}
         danger

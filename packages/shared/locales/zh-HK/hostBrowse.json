@@ -18,6 +18,7 @@
   "viaHost": "經主機",
   "emptyTitle": "主機代瀏覽",
   "emptyBody": "請輸入網址。DNS、TLS 與出站由本伺服器處理，而非你的桌面瀏覽器。Cookie 僅存於伺服器 jar。",
+  "needUrl": "請先於上方輸入網址開始工作階段。",
   "ssrfBlocked": "已由安全政策攔截（SSRF／模式）",
   "loadFailed": "主機擷取失敗",
   "sessionReady": "工作階段就緒",

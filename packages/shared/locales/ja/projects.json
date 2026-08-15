@@ -654,5 +654,7 @@
   "netForceHttpsOff": "No forced redirect is stored.",
   "netHttpsLiveNotForced": "An edge file exists; HTTPS may already work. This box only forces HTTP→HTTPS.",
   "gitSyncBlockedDirty": "Sync is disabled until local changes are discarded (Reset) or the files match Git.",
-  "gitViewDiff": "View diff"
+  "gitViewDiff": "View diff",
+  "gitBranchAfterUrl": "先に Git URL を入力してください。空欄ならリモートのデフォルトブランチを使います。",
+  "gitResetNeedConfirm": "確認が必要です — ローカルのコミットを破棄します"
 }

@@ -50,6 +50,7 @@
   "removeArtifact": "Remove residual",
   "removeArtifactTitle": "Remove residual conf?",
   "removeArtifactDesc": "Delete this unclaimed Apache conf from the panel data directory and disable the system twin when possible. Does not delete the project.",
+  "removeArtifactHint": "Deletes this leftover disk conf. Does not delete the project.",
   "previewConf": "Preview conf",
   "cleanupConflicts": "Clean conflict residuals",
   "cleanupConflictsTitle": "Clean all conflict residuals?",
