@@ -358,7 +358,8 @@
     "postfixReloaded": "पोस्टफ़िक्स पुनः लोड किया गया.",
     "postfixReloadFailed": "पोस्टफ़िक्स पुनः लोड विफल: {{detail}}",
     "dovecotApplied": "डवकॉट टीएलएस स्निपेट लिखा और पुनः लोड करने का प्रयास किया।",
-    "dovecotSkipped": "Dovecot को छोड़ दिया गया (इंस्टॉल नहीं किया गया या doveconf अनुपलब्ध है)।"
+    "dovecotSkipped": "Dovecot को छोड़ दिया गया (इंस्टॉल नहीं किया गया या doveconf अनुपलब्ध है)।",
+    "dovecotSslOmitted": "Mail certificate is missing; wrote ssl=no so Dovecot can start without the LE files."
   },
   "policyApplySystemHint": "पोस्टफ़िक्स/Rspamd मानचित्र लिखने और पुनः लोड करने के लिए \"सिस्टम पर लागू करें\" को चेक करें;",
   "rateLimitAppliedNote": "प्रति घंटा आउटबाउंड दर और एंटीस्पैम फ़्लैग लागू (जब सिस्टम लागू होता है)।",
@@ -488,5 +489,6 @@
   "deleteQueueTitle": "यह कतार संदेश हटाएँ?",
   "deleteQueueDesc": "स्थानीय MTA कतार से {{id}} हटाएँ। YSK_EXECUTE चाहिए।",
   "openQueuePage": "मेल कतार खोलें",
-  "healthUnchecked": "Not checked yet"
+  "healthUnchecked": "Not checked yet",
+  "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first."
 }

@@ -79,6 +79,30 @@ export async function applyMailTlsPaths(input: {
       status: 'failed',
       detail: certBase,
     });
+    if (input.applyDovecot !== false) {
+      const dove = await input.host.runCommand(
+        [
+          'bash',
+          '-c',
+          [
+            'if command -v doveconf >/dev/null 2>&1; then',
+            "  printf 'ssl = no\\n' > /etc/dovecot/conf.d/99-ysk-mail-tls.conf",
+            '  systemctl reload dovecot 2>/dev/null || service dovecot reload 2>/dev/null || true',
+            '  echo dove_ssl_omitted',
+            'else',
+            '  echo dove_skip',
+            'fi',
+          ].join('\n'),
+        ],
+        { timeoutMs: 20_000 },
+      );
+      if ((dove.stdout || '').includes('dove_ssl_omitted')) {
+        steps.push({ name: 'dovecot-tls-omit', status: 'ok' });
+        notes.push(tl('email.mailTls.dovecotSslOmitted'));
+      } else {
+        steps.push({ name: 'dovecot-tls-omit', status: 'skipped' });
+      }
+    }
     return {
       ok: false,
       mailHost,

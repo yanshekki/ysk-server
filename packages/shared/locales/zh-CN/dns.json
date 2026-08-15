@@ -216,5 +216,6 @@
   "aboutStackTitle": "软件版本",
   "aboutStackBody": "在「软件」检查／更新 PowerDNS 套件。",
   "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
-  "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
+  "invalidIpv4": "Invalid IPv4. Each octet must be 0–255.",
+  "createMailZoneNow": "已建立邮件区域 {{domain}}"
 }

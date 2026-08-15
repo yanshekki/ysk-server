@@ -145,7 +145,10 @@ export async function handlePublicRoutes(
         });
         return true;
       }
-      if (method === 'GET' && url.pathname === '/api/v1/readiness') {
+      if (
+        method === 'GET' &&
+        (url.pathname === '/api/v1/readiness' || url.pathname === '/api/v1/readiness/export')
+      ) {
         let authed = false;
         try {
           ctx.auth.authenticate(getBearer(req));
@@ -169,6 +172,22 @@ export async function handlePublicRoutes(
           version: VERSION,
           projects,
         });
+        if (url.pathname === '/api/v1/readiness/export') {
+          if (!authed) {
+            sendJson(res, 401, { ok: false, message: 'authentication required' });
+            return true;
+          }
+          const filename = `ysk-readiness-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.json`;
+          const body = JSON.stringify(report, null, 2);
+          res.writeHead(200, {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Content-Disposition': `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`,
+            'Cache-Control': 'no-store',
+            'Content-Length': Buffer.byteLength(body),
+          });
+          res.end(body);
+          return true;
+        }
         if (!authed) {
           sendJson(res, report.productionReady ? 200 : 503, {
             ok: report.productionReady,

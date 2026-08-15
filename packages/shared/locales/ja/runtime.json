@@ -510,5 +510,6 @@
   "useListForDefaults": "ホストまたはパネルのデフォルトを変更するか、このバージョンを削除するには、上記のリストを使用してください。",
   "alreadyHostDefaultShort": "ホストのデフォルト",
   "managedPathMissingTitle": "Managed {{name}} path not ready",
-  "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall."
+  "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall.",
+  "installRecordedCta": "Install recorded {{v}}"
 }

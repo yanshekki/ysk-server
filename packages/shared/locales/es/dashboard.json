@@ -114,5 +114,9 @@
   "levelInfo": "Información",
   "colTitle": "Aviso",
   "colDetail": "Detalle",
-  "colSource": "Origen"
+  "colSource": "Origen",
+  "notifSearch": "Search alerts",
+  "notifAll": "All",
+  "notifDismiss": "Hide",
+  "goFix": "Fix"
 }

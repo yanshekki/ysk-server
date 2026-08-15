@@ -373,7 +373,8 @@
     "dryRunOk": "プレビューが完了しました。下の内容を確認してください。",
     "strictDryRun": "厳格モードのプレビュー",
     "errorNoDetail": "テスト失敗（詳細なし）",
-    "strictBlocked": "パッケージまたは PAM の準備ができていないため、Strict の適用は無効です。"
+    "strictBlocked": "パッケージまたは PAM の準備ができていないため、Strict の適用は無効です。",
+    "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it."
   },
   "sessionsActive": "アクティブなセッション",
   "sessionsOther": "その他のデバイス",
@@ -427,5 +428,7 @@
     "medium": "中",
     "high": "高",
     "critical": "重大"
-  }
+  },
+  "confirmDeleteApiKey": "Delete this API key?",
+  "confirmDeleteApiKeyDesc": "“{{name}}” will stop authenticating. This cannot be undone."
 }

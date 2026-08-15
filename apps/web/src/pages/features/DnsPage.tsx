@@ -604,11 +604,66 @@ export function DnsPage() {
                     variant="secondary"
                     size="sm"
                     className="u-ml-2"
+                    loading={zones.busy}
                     onClick={() => {
-                      setZone(d.domain);
-                      if (d.server_ip) setServerIp(d.server_ip);
-                      setTemplate('mail');
-                      setZoneOpen(true);
+                      void (async () => {
+                        let ip = String(d.server_ip ?? '').trim();
+                        if (
+                          !/^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/.test(
+                            ip,
+                          )
+                        ) {
+                          ip = String(zones.items[0]?.serverIp ?? serverIp).trim();
+                        }
+                        if (
+                          !/^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/.test(
+                            ip,
+                          )
+                        ) {
+                          try {
+                            const r = await api.requestRaw<{ items?: string[] }>(
+                              '/api/v1/system/ips',
+                            );
+                            ip =
+                              (r.items ?? [])
+                                .map((s) => s.replace(/\/\d+$/, '').trim())
+                                .find((s) =>
+                                  /^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/.test(
+                                    s,
+                                  ),
+                                ) ?? '';
+                          } catch {
+                            ip = '';
+                          }
+                        }
+                        if (
+                          !/^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/.test(
+                            ip,
+                          )
+                        ) {
+                          setZone(d.domain);
+                          if (d.server_ip) setServerIp(d.server_ip);
+                          setTemplate('mail');
+                          setZoneOpen(true);
+                          return;
+                        }
+                        try {
+                          const item = await zones.create({
+                            zone: d.domain,
+                            serverIp: ip,
+                            backend: 'bind',
+                            template: 'mail',
+                          });
+                          setSelectedZone(item);
+                          toast.ok(t('dns.createMailZoneNow', { domain: d.domain }));
+                        } catch (e) {
+                          toast.error(e instanceof Error ? e.message : t('common.opFailed'));
+                          setZone(d.domain);
+                          setServerIp(ip);
+                          setTemplate('mail');
+                          setZoneOpen(true);
+                        }
+                      })();
                     }}
                   >
                     {t('dns.createMailZone')} · {d.domain}

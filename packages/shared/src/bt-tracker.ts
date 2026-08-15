@@ -24,6 +24,16 @@ export type BtTrackerSettings = {
   seederPortMin: number;
   /** Peer listen port range end (inclusive) */
   seederPortMax: number;
+  /**
+   * Extra announce URLs the operator adds (library download/seed + share seed).
+   * Empty by default — never invent public tracker lists.
+   */
+  extraTrackers: BtExtraTracker[];
+};
+
+export type BtExtraTracker = {
+  url: string;
+  enabled: boolean;
 };
 
 export const DEFAULT_BT_TRACKER_SETTINGS: BtTrackerSettings = {
@@ -36,6 +46,7 @@ export const DEFAULT_BT_TRACKER_SETTINGS: BtTrackerSettings = {
   maxSeeds: 32,
   seederPortMin: 6881,
   seederPortMax: 6889,
+  extraTrackers: [],
 };
 
 export type BtTrackerStatus = {
@@ -56,6 +67,46 @@ export type BtTrackerStatus = {
   startedAt?: string | null;
 };
 
+export type BtLibraryStatus =
+  | 'queued'
+  | 'checking'
+  | 'downloading'
+  | 'seeding'
+  | 'paused'
+  | 'error';
+
+export type BtLibraryItem = {
+  id: string;
+  infoHash: string;
+  name: string;
+  torrentRelPath?: string;
+  saveRoot: string;
+  saveRelPath: string;
+  source: 'library' | 'share';
+  shareId?: string;
+  status: BtLibraryStatus;
+  magnetUri?: string;
+  sizeBytes?: number;
+  errorNote?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type BtLibraryFile = {
+  path: string;
+  length: number;
+};
+
+export type BtLibraryInspect = {
+  infoHash: string;
+  name: string;
+  sizeBytes: number;
+  private?: boolean;
+  announce: string[];
+  files: BtLibraryFile[];
+  magnetUri?: string;
+};
+
 export type BtTrackerTorrentRow = {
   infoHash: string;
   name?: string;
@@ -66,4 +117,11 @@ export type BtTrackerTorrentRow = {
   seedStatus?: string;
   uploadSpeed?: number;
   downloadSpeed?: number;
+  kind?: 'library' | 'share' | 'swarm';
+  libraryId?: string;
+  progress?: number;
+  sizeBytes?: number;
+  downloaded?: number;
+  saveRoot?: string;
+  saveRelPath?: string;
 };

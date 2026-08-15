@@ -359,7 +359,8 @@
     "postfixReloaded": "Postfix reloaded.",
     "postfixReloadFailed": "Postfix reload failed: {{detail}}",
     "dovecotApplied": "Wrote Dovecot TLS snippet and attempted reload.",
-    "dovecotSkipped": "Skipped Dovecot (not installed or doveconf unavailable)."
+    "dovecotSkipped": "Skipped Dovecot (not installed or doveconf unavailable).",
+    "dovecotSslOmitted": "Mail certificate is missing; wrote ssl=no so Dovecot can start without the LE files."
   },
   "policyApplySystemHint": "Check “apply to system” to write Postfix/Rspamd maps and reload;",
   "rateLimitAppliedNote": "Hourly outbound rate and antispam flag applied (when system apply is on).",
@@ -488,5 +489,6 @@
   "queueDeferred": "Deferred",
   "deleteQueueTitle": "Delete this queued message?",
   "deleteQueueDesc": "Remove {{id}} from the local MTA queue. Needs YSK_EXECUTE.",
-  "openQueuePage": "Open mail queue"
+  "openQueuePage": "Open mail queue",
+  "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first."
 }

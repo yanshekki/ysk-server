@@ -347,5 +347,7 @@
     "typeMismatch": "A {{destKind}} named “{{name}}” is already here. Incoming is a {{incomingKind}}.",
     "skipped": "Skipped",
     "cancelled": "Cancelled"
-  }
+  },
+  "webdavReissueUnchanged": "Token id did not change after re-issue — the write may not have persisted. Try again.",
+  "webdavDisableFailed": "WebDAV is still enabled after disable — the write may not have persisted. Try again."
 }

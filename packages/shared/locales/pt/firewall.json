@@ -103,5 +103,7 @@
   "disableConfirmDesc": "A firewall do anfitrião deixará de filtrar o tráfego. Numa rede pública, o SSH e o painel podem ficar expostos.",
   "disableConfirmConsequence": "As regras de permitir/negar mantêm-se, mas só são aplicadas quando o UFW for reativado.",
   "toolHintFail2ban": "fail2ban = temporary log-based bans",
-  "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing."
+  "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing.",
+  "desiredOnlyUfwOff": "Desired: {{mode}} · UFW off (not applied)",
+  "syncNotApplied": "UFW off · not applied"
 }

@@ -1,10 +1,34 @@
 /**
  * BitTorrent tracker service API (file-share WebTorrent/BT).
  */
-import type { BtTrackerSettings, BtTrackerStatus, BtTrackerTorrentRow, BtShareStats } from 'ysk-server-shared';
+import type {
+  BtTrackerSettings,
+  BtTrackerStatus,
+  BtTrackerTorrentRow,
+  BtShareStats,
+  BtLibraryInspect,
+  BtLibraryItem,
+  BtExtraTracker,
+} from 'ysk-server-shared';
 import { api } from '../../shared/services/api';
 
-export type { BtTrackerSettings, BtTrackerStatus, BtTrackerTorrentRow, BtShareStats };
+export type {
+  BtTrackerSettings,
+  BtTrackerStatus,
+  BtTrackerTorrentRow,
+  BtShareStats,
+  BtLibraryInspect,
+  BtLibraryItem,
+  BtExtraTracker,
+};
+
+export type BtLibraryLive = BtLibraryItem & {
+  progress?: number;
+  downloadSpeed?: number;
+  uploadSpeed?: number;
+  peers?: number;
+  downloaded?: number;
+};
 
 export type BtTrackerStatusDto = BtTrackerStatus & { ok?: boolean };
 
@@ -87,5 +111,56 @@ export const btTrackerApi = {
     api.requestRaw<{ ok: boolean; items: Record<string, BtShareStats> }>(
       '/api/v1/files/shares/bt-stats',
       { method: 'POST', body: JSON.stringify({ ids }) },
+    ),
+
+  inspect: (body: { torrentBase64?: string; magnet?: string }) =>
+    api.requestRaw<BtLibraryInspect & { ok: boolean }>(
+      '/api/v1/system/bt-tracker/library/inspect',
+      { method: 'POST', body: JSON.stringify(body) },
+    ),
+
+  addLibrary: (body: {
+    torrentBase64?: string;
+    magnet?: string;
+    saveRoot: string;
+    saveRelPath: string;
+  }) =>
+    api.requestRaw<{ ok: boolean; item?: BtLibraryItem; notes?: string[] }>(
+      '/api/v1/system/bt-tracker/library',
+      { method: 'POST', body: JSON.stringify(body) },
+    ),
+
+  library: () =>
+    api.requestRaw<{ ok: boolean; items: BtLibraryLive[] }>(
+      '/api/v1/system/bt-tracker/library',
+    ),
+
+  libraryItem: (id: string) =>
+    api.requestRaw<{ ok: boolean; item: BtLibraryLive }>(
+      `/api/v1/system/bt-tracker/library/${encodeURIComponent(id)}`,
+    ),
+
+  pauseLibrary: (id: string) =>
+    api.requestRaw<{ ok: boolean; item?: BtLibraryItem; notes?: string[] }>(
+      `/api/v1/system/bt-tracker/library/${encodeURIComponent(id)}/pause`,
+      { method: 'POST', body: '{}' },
+    ),
+
+  resumeLibrary: (id: string) =>
+    api.requestRaw<{ ok: boolean; item?: BtLibraryItem; notes?: string[] }>(
+      `/api/v1/system/bt-tracker/library/${encodeURIComponent(id)}/resume`,
+      { method: 'POST', body: '{}' },
+    ),
+
+  removeLibrary: (id: string, deleteFiles = false) =>
+    api.requestRaw<{ ok: boolean; notes?: string[] }>(
+      `/api/v1/system/bt-tracker/library/${encodeURIComponent(id)}?deleteFiles=${deleteFiles ? '1' : '0'}`,
+      { method: 'DELETE' },
+    ),
+
+  applyTrackers: () =>
+    api.requestRaw<{ ok: boolean; applied: number; notes?: string[] }>(
+      '/api/v1/system/bt-tracker/library/apply-trackers',
+      { method: 'POST', body: '{}' },
     ),
 };

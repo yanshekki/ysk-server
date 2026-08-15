@@ -373,7 +373,8 @@
     "dryRunOk": "预览试行完成。请查看下方预览。",
     "strictDryRun": "严格模式预览",
     "errorNoDetail": "测试失败（无详情）",
-    "strictBlocked": "套件或 PAM 未就绪，已停用套用 Strict。"
+    "strictBlocked": "套件或 PAM 未就绪，已停用套用 Strict。",
+    "privCloseWithoutAck": "已关闭。私钥不会再显示；若尚未保存，请立即重新生成。"
   },
   "sessionsActive": "使用中",
   "sessionsOther": "其他设备",
@@ -427,5 +428,7 @@
     "medium": "中",
     "high": "高",
     "critical": "严重"
-  }
+  },
+  "confirmDeleteApiKey": "删除此 API 密钥？",
+  "confirmDeleteApiKeyDesc": "删除后「{{name}}」无法再验证。此操作无法复原。"
 }

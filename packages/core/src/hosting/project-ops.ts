@@ -1561,7 +1561,7 @@ export class ProjectOpsService {
   /**
    * Tar backup of project home under dataDir/backups.
    */
-  async backup(projectId: string, actor: string): Promise<OpsApplyResult & { archivePath?: string }> {
+  async backup(projectId: string, actor: string): Promise<OpsApplyResult & { archivePath?: string; includesDatabase?: boolean }> {
     const row = this.require(projectId);
     const r = await backupProject({
       host: this.host,
@@ -1586,7 +1586,8 @@ export class ProjectOpsService {
       listening: false,
       notes: r.notes,
       written: r.archivePath ? [r.archivePath] : [],
-      archivePath: r.archivePath };
+      archivePath: r.archivePath,
+      includesDatabase: Boolean(r.includesDatabase) };
   }
 
   /**

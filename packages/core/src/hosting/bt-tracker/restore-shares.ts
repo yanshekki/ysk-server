@@ -155,6 +155,14 @@ export async function restoreBtSharesOnBoot(input: {
     );
   }
 
+  try {
+    const { restoreBtLibraryOnBoot } = await import('./restore-library.js');
+    const lib = await restoreBtLibraryOnBoot({ dataDir: input.dataDir });
+    notes.push(...lib.notes);
+  } catch {
+    /* library restore is optional on share restore */
+  }
+
   return {
     ok: failed === 0 || seeded > 0,
     trackerStarted,

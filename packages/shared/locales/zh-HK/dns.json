@@ -216,5 +216,6 @@
   "aboutHealthTitle": "服務健康",
   "aboutHealthBody": "在「工具」探測 PowerDNS、修復綁定、開放 53 埠。",
   "aboutStackTitle": "軟件版本",
-  "aboutStackBody": "在「軟件」檢查／更新 PowerDNS 套件。"
+  "aboutStackBody": "在「軟件」檢查／更新 PowerDNS 套件。",
+  "createMailZoneNow": "已建立郵件區域 {{domain}}"
 }

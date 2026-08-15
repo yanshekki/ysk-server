@@ -664,6 +664,7 @@ export function FilesPage() {
       const ok = window.confirm(t('files.webdavReissueConfirm'));
       if (!ok) return;
     }
+    const prevId = webdavTokenId;
     setWebdavBusy(true);
     try {
       const r = await filesApi.webdavIssueToken();
@@ -671,9 +672,12 @@ export function FilesPage() {
       setWebdavEnabled(true);
       setWebdavMountPath(r.mountPath || '/webdav');
       setWebdavTokenId(r.tokenId ? String(r.tokenId) : null);
-      setWebdavUpdatedAt(new Date().toISOString());
+      setWebdavUpdatedAt(r.updated_at ? String(r.updated_at) : new Date().toISOString());
       setMsg(r.notes?.join(' · ') ?? t('files.tokenIssued'));
-      await refreshWebdavStatus();
+      const s = await refreshWebdavStatus();
+      if (prevId && s.tokenId && String(s.tokenId) === prevId) {
+        setError(t('files.webdavReissueUnchanged'));
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : t('common.opFailed'));
     } finally {
@@ -685,13 +689,18 @@ export function FilesPage() {
     if (!window.confirm(t('files.webdavDisableConfirm'))) return;
     setWebdavBusy(true);
     try {
-      await filesApi.webdavDisable();
+      const r = await filesApi.webdavDisable();
       setWebdavEnabled(false);
       setWebdavToken(null);
-      setWebdavTokenId(null);
-      setWebdavUpdatedAt(new Date().toISOString());
+      setWebdavUpdatedAt(r.updated_at ? String(r.updated_at) : new Date().toISOString());
       setMsg(t('files.webdavDisabled'));
-      await refreshWebdavStatus();
+      const s = await refreshWebdavStatus();
+      if (s.enabled) {
+        setError(t('files.webdavDisableFailed'));
+        setWebdavEnabled(true);
+      } else {
+        setWebdavTokenId(s.tokenId ? String(s.tokenId) : null);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : t('common.opFailed'));
     } finally {

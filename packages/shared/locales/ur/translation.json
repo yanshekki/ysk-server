@@ -543,7 +543,55 @@
     "udpPortClassic": "6969 · Classic",
     "portSuggest8000": "8000 · Recommended",
     "saveOkRestart": "محفوظ کیا گیا — بندرگاہوں کو لاگو کرنے کے لیے ٹریکر کو دوبارہ شروع کریں۔",
-    "announceHostUnset": "—"
+    "announceHostUnset": "—",
+    "tabTrackers": "Trackers",
+    "addTorrent": "Add torrent",
+    "addTorrentTitle": "Add torrent",
+    "addTorrentHint": "Upload a .torrent or paste a magnet. Choose a Files folder. WebTorrent downloads missing files and seeds when complete.",
+    "dropTorrent": "Drop a .torrent here",
+    "chooseFile": "or choose a file",
+    "magnetLabel": "Magnet",
+    "magnetPlaceholder": "magnet:?xt=urn:btih:…",
+    "inspect": "Read",
+    "extraTrackersPreview": "Will also announce to {{n}} extra tracker(s)",
+    "saveLocation": "Save location",
+    "saveRootPublic": "Public files",
+    "newFolder": "New folder",
+    "destPreview": "Will write to",
+    "startDownload": "Start",
+    "filterDownloading": "Downloading",
+    "filterPaused": "Paused",
+    "filterError": "Error",
+    "emptyDrop": "Drop a .torrent here, or choose a file",
+    "emptyHint": "Files go in the folder you pick. If they are already complete, this host seeds. Engine: WebTorrent — no extra download software.",
+    "pause": "Pause",
+    "resume": "Resume",
+    "openFolder": "Open folder",
+    "remove": "Remove",
+    "removeKeep": "Remove, keep files",
+    "removeDelete": "Remove and delete files",
+    "removeConfirm": "Remove this torrent from the library?",
+    "kindShare": "Share",
+    "filesInTorrent": "files",
+    "extraTrackersDesc": "Extra announce URLs. Library download/seed and file-share seeds use them in addition to the .torrent list. This does not open the local tracker to arbitrary swarms.",
+    "extraTrackersEmpty": "No extra trackers. Add HTTP(S), UDP, or WS(S) announce URLs so this host can find peers.",
+    "extraTrackerAdd": "Add",
+    "extraTrackerUrl": "Announce URL",
+    "extraTrackerApply": "Apply to current seeds",
+    "extraTrackerApplyOk": "Applied extra trackers",
+    "extraEnabled": "On",
+    "extraTrackerBad": "URL must start with http://, https://, udp://, ws://, or wss://",
+    "extraTrackerDup": "Already listed",
+    "extraTrackerLimit": "Maximum 32 extra trackers",
+    "addOk": "Added to library",
+    "savedTo": "Save",
+    "folderEmpty": "No subfolders",
+    "needTorrentFile": "Choose a .torrent file",
+    "torrentTooBig": ".torrent larger than 8 MiB",
+    "seedStatusDownloading": "Downloading",
+    "seedStatusChecking": "Checking",
+    "seedStatusPaused": "Paused",
+    "seedStatusQueued": "Queued"
   },
   "catalog": {
     "sw": {
@@ -2277,7 +2325,11 @@
     "levelInfo": "معلومات",
     "colTitle": "الرٹ",
     "colDetail": "تفصیل",
-    "colSource": "ماخذ"
+    "colSource": "ماخذ",
+    "notifSearch": "Search alerts",
+    "notifAll": "All",
+    "notifDismiss": "Hide",
+    "goFix": "Fix"
   },
   "dataTable": {
     "empty": "کوئی ڈیٹا نہیں۔",
@@ -2571,7 +2623,8 @@
     "serviceDownBody": "سروس غیر صحت بخش ہے۔",
     "emptyDbHostHasRows": "The host already has databases that are not in this control-plane list.",
     "hostHasUntracked": "{{count}} host databases are not registered in the panel",
-    "hostInventoryHint": "The table is control-plane rows only. Live names come from SHOW DATABASES."
+    "hostInventoryHint": "The table is control-plane rows only. Live names come from SHOW DATABASES.",
+    "adoptHostDb": "Register {{name}}"
   },
   "dialogs": {
     "confirmDefault": "تصدیق کریں۔",
@@ -2799,7 +2852,8 @@
     "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
     "invalidIpv4": "Invalid IPv4. Each octet must be 0–255.",
     "mailZonesMissing": "Email domains have no DNS zone here: {{domains}}.",
-    "createMailZone": "Create mail zone"
+    "createMailZone": "Create mail zone",
+    "createMailZoneNow": "Created mail zone {{domain}}"
   },
   "email": {
     "title": "ای میل",
@@ -3161,7 +3215,8 @@
       "postfixReloaded": "پوسٹ فکس دوبارہ لوڈ ہو گیا۔",
       "postfixReloadFailed": "پوسٹ فکس دوبارہ لوڈ کرنے میں ناکام: {{detail}}",
       "dovecotApplied": "Dovecot TLS کا ٹکڑا لکھا اور دوبارہ لوڈ کرنے کی کوشش کی۔",
-      "dovecotSkipped": "Dovecot کو چھوڑ دیا گیا (انسٹال نہیں یا doveconf دستیاب نہیں ہے)۔"
+      "dovecotSkipped": "Dovecot کو چھوڑ دیا گیا (انسٹال نہیں یا doveconf دستیاب نہیں ہے)۔",
+      "dovecotSslOmitted": "Mail certificate is missing; wrote ssl=no so Dovecot can start without the LE files."
     },
     "policyApplySystemHint": "پوسٹ فکس/Rspamd نقشے لکھنے اور دوبارہ لوڈ کرنے کے لیے \"سسٹم پر اپلائی کریں\" کو چیک کریں۔",
     "rateLimitAppliedNote": "گھنٹہ وار آؤٹ باؤنڈ ریٹ اور اینٹی اسپام فلیگ لاگو کیا جاتا ہے (جب سسٹم لاگو ہوتا ہے)۔",
@@ -3291,7 +3346,8 @@
     "deleteQueueTitle": "اس قطار کا پیغام حذف کریں؟",
     "deleteQueueDesc": "مقامی MTA قطار سے {{id}} ہٹائیں۔ YSK_EXECUTE درکار ہے۔",
     "openQueuePage": "میل قطار کھولیں",
-    "healthUnchecked": "Not checked yet"
+    "healthUnchecked": "Not checked yet",
+    "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first."
   },
   "errors": {
     "YSK_UNAUTHORIZED": "غیر مجاز",
@@ -3803,7 +3859,9 @@
     },
     "emptyTrashTitle": "Empty trash?",
     "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
-    "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone."
+    "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone.",
+    "webdavReissueUnchanged": "Token id did not change after re-issue — the write may not have persisted. Try again.",
+    "webdavDisableFailed": "WebDAV is still enabled after disable — the write may not have persisted. Try again."
   },
   "firewall": {
     "profiles": {
@@ -3910,7 +3968,9 @@
     "disableConfirmDesc": "ہوسٹ فائر وال ٹریفک فلٹر کرنا بند کر دے گی۔ عوامی نیٹ ورک پر SSH اور پینل بے نقاب ہو سکتے ہیں۔",
     "disableConfirmConsequence": "موجودہ اجازت/انکار قواعد محفوظ رہیں گے، لیکن UFW دوبارہ فعال ہونے تک نافذ نہیں ہوں گے۔",
     "toolHintFail2ban": "fail2ban = temporary log-based bans",
-    "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing."
+    "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing.",
+    "desiredOnlyUfwOff": "Desired: {{mode}} · UFW off (not applied)",
+    "syncNotApplied": "UFW off · not applied"
   },
   "ftp": {
     "title": "FTPS اکاؤنٹس",
@@ -4047,7 +4107,9 @@
     "sftpTechSummary": "تکنیکی تفصیلات (جدید)",
     "sftpTechNote": "کلیدیں منظم راستے کے تحت لکھی جاتی ہیں۔",
     "filterProject": "صرف اس پروجیکٹ کے FTP اکاؤنٹس",
-    "clearProjectFilter": "تمام اکاؤنٹس دکھائیں"
+    "clearProjectFilter": "تمام اکاؤنٹس دکھائیں",
+    "vsftpdFailedHint": "vsftpd failed. Open the Service tab (listen and listen_ipv6 cannot both be YES).",
+    "tabService": "Service"
   },
   "geo": {
     "continents": {
@@ -5110,7 +5172,10 @@
     "backup": {
       "fileNotFound": "بیک اپ فائل نہیں ملی",
       "resticNoPassword": "restic فعال ہے لیکن پاس ورڈ سیٹ نہیں ہے۔",
-      "resticNotInPath": "PATH میں نہیں ہے"
+      "resticNotInPath": "PATH میں نہیں ہے",
+      "dbEnvUnreadable": "Could not read .db.env; skipped SQL dump.",
+      "dbEnvNoName": ".db.env has no database name; skipped SQL dump.",
+      "targetOutside": "Restore target must be inside the project home or the public files root."
     },
     "redis": {
       "cliMissing": "redis-cli انسٹال نہیں ہے۔"
@@ -8035,7 +8100,9 @@
       "sessionStartCwd": "VNC شروع ناکام: ورکنگ ڈائرکٹری سیشن صارف کے لیے قابل رسائی نہیں ہے (ڈسپلے :{{display}})۔ گھر سے شروع کرکے طے کیا گیا۔",
       "desktopRestarted": "ڈیسک ٹاپ پروفائل لاگو ہوا اور سیشن دوبارہ شروع ہوا ({{desktop}})۔ VNC/noVNC کو دوبارہ جوڑیں۔",
       "desktopNeedsStart": "ڈیسک ٹاپ پروفائل {{desktop}} xstartup پر لکھا گیا۔ درخواست دینے کے لیے سیشن شروع کریں۔",
-      "passwordNeedTiger": "vncpasswd not found. Install TigerVNC (tigervnc-standalone-server) before setting a password."
+      "passwordNeedTiger": "vncpasswd not found. Install TigerVNC (tigervnc-standalone-server) before setting a password.",
+      "linuxUserRolledBack": "Removed leftover Linux user {{user}} after VNC password failed.",
+      "linuxUserOrphan": "Could not remove leftover Linux user {{user}} after VNC password failed."
     },
     "apache": {
       "needServerName": "سرور کا نام درکار ہے۔",
@@ -8085,7 +8152,20 @@
       "startedDetached": "بی ٹی ٹریکر علیحدہ کارکن شروع ہوا (pid {{pid}}، پورٹ {{port}})",
       "runningDetached": "ٹریکر علیحدہ کارکن کے طور پر چل رہا ہے (pid {{pid}})",
       "jobQueued": "BT ٹورینٹ تخلیق قطار میں ہے (بڑا حصہ)",
-      "jobRunning": "BT ٹورینٹ کی تخلیق چل رہی ہے۔"
+      "jobRunning": "BT ٹورینٹ کی تخلیق چل رہی ہے۔",
+      "libraryAdded": "Added {{name}} to the WebTorrent library",
+      "libraryInspectFailed": "Could not read that .torrent or magnet",
+      "libraryDup": "That torrent is already in the library",
+      "libraryDestBad": "Save folder is not a valid Files path",
+      "libraryTorrentTooBig": ".torrent file is larger than 8 MiB",
+      "libraryNotFound": "Library item not found",
+      "libraryPaused": "Paused",
+      "libraryResumed": "Resumed",
+      "libraryRemoved": "Removed from library",
+      "libraryFilesRemoved": "Deleted downloaded files",
+      "libraryRestoreDone": "Library restore: started {{started}}/{{attempted}} (failed {{failed}})",
+      "applyTrackersDone": "Applied extra trackers to {{n}} live announce slots",
+      "libraryNeedServe": "Saved. Open the panel (ysk-server serve) so WebTorrent can download or seed."
     }
   },
   "ops": {
@@ -9982,7 +10062,8 @@
     "useListForDefaults": "میزبان یا پینل ڈیفالٹ کو تبدیل کرنے، یا اس ورژن کو ہٹانے کے لیے، اوپر دی گئی فہرست کا استعمال کریں۔",
     "alreadyHostDefaultShort": "میزبان ڈیفالٹ",
     "managedPathMissingTitle": "Managed {{name}} path not ready",
-    "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall."
+    "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall.",
+    "installRecordedCta": "Install recorded {{v}}"
   },
   "search": {
     "placeholder": "صفحات اور وسائل تلاش کریں…",
@@ -10386,7 +10467,8 @@
       "dryRunOk": "پیش نظارہ مکمل۔ نیچے مواد دیکھیں۔",
       "strictBlocked": "پیکج یا PAM تیار نہیں؛ Strict لاگو نہیں ہو سکتا۔",
       "strictDryRun": "سخت موڈ پیش نظارہ",
-      "errorNoDetail": "ٹیسٹ ناکام (تفصیل نہیں)"
+      "errorNoDetail": "ٹیسٹ ناکام (تفصیل نہیں)",
+      "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it."
     },
     "sessionsActive": "فعال سیشنز",
     "sessionsOther": "دیگر آلات",
@@ -10441,7 +10523,9 @@
       "high": "زیادہ",
       "critical": "شدید"
     },
-    "totpStatusLoadFailed": "2FA کی کیفیت لوڈ نہیں ہو سکی"
+    "totpStatusLoadFailed": "2FA کی کیفیت لوڈ نہیں ہو سکی",
+    "confirmDeleteApiKey": "Delete this API key?",
+    "confirmDeleteApiKeyDesc": "“{{name}}” will stop authenticating. This cannot be undone."
   },
   "serviceExposure": {
     "title": "نیٹ ورک تک رسائی",
@@ -11333,7 +11417,10 @@
     "stepUpTitle": "جڑ کے شیل کی تصدیق کریں۔",
     "stepUpDesc": "اپنا مستند کوڈ یا ریکوری کوڈ درج کریں۔",
     "totpLabel": "TOTP / ریکوری کوڈ",
-    "sessionStillOpen": "A live shell is still connected while you read this page."
+    "sessionStillOpen": "A live shell is still connected while you read this page.",
+    "rootConfirmTitle": "Open a root shell?",
+    "rootConfirmDesc": "This session is an unrestricted root PTY on the host. Commands are audited.",
+    "rootConfirmBody": "Only continue if you intend to run privileged host commands."
   },
   "uiInline": {
     "s27d9daa5": "رن ٹائم {{v0}} {{v1}}،",

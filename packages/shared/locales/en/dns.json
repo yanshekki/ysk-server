@@ -216,5 +216,6 @@
   "aboutHealthTitle": "Service health",
   "aboutHealthBody": "Use Tools to probe PowerDNS, heal bind, and open port 53.",
   "aboutStackTitle": "Software",
-  "aboutStackBody": "Check/update the PowerDNS package under Software."
+  "aboutStackBody": "Check/update the PowerDNS package under Software.",
+  "createMailZoneNow": "Created mail zone {{domain}}"
 }

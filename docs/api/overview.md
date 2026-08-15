@@ -19,7 +19,7 @@ Full OpenAPI is not published. Inventory: `docs/cli/control-plane-inventory.json
 | `/email` | `email` | `/api/v1/email` |
 | `/files` | `files` | `/api/v1/files` |
 | `/ftp` | `ftp` | `/api/v1/ftp` |
-| `/bt-tracker` | `bt-tracker` | `/api/v1/bt-tracker` |
+| `/bt-tracker` | `bt-tracker` | `/api/v1/system/bt-tracker` |
 | `/dns` | `dns` | `/api/v1/dns` |
 | `/ssl` | `ssl` | `/api/v1/ssl` |
 | `/nginx` | `nginx` | `/api/v1/nginx` |
@@ -64,6 +64,8 @@ Panel-user 2FA: `GET/POST /api/v1/settings/security` `requireUserTotp`. CLI: `ys
 `GET /api/v1/updates/self` is the panel version check. `POST /api/v1/updates/self/apply` overlays the official npm tarball onto the running dest (same as `ysk-server update --apply`). Failed apply returns **422** with `blockMessage` / `message` — never an `npm notice` file listing. Overlay of own package files does not require `YSK_EXECUTE`.
 
 Nginx site apply (`POST /api/v1` nginx / managed resources) **fails closed** on empty or invalid `serverName`. The response is `ok: false` with a validation message — it does not write `server_name localhost`. CLI: `ysk-server nginx` / `ysk-server hosting nginx`.
+
+BT Tracker library (in-process WebTorrent): `POST /api/v1/system/bt-tracker/library/inspect` and `POST /api/v1/system/bt-tracker/library` accept a `.torrent` as `torrentBase64` or a `magnet`, plus `saveRoot` / `saveRelPath` (Files sandbox). Inspect/add bodies allow up to **12 MiB**. CLI: `ysk-server bt-tracker add|library|inspect`. Extra announce list is `PATCH /api/v1/system/bt-tracker/settings` `extraTrackers`, or `ysk-server bt-tracker trackers`. Guest proxy remains `/api/v1/public/bt-tracker`.
 
 JSON request bodies are capped (default 1 MiB; `POST /api/v1/auth/login` 256 KiB). Oversize → **413**. Invalid login JSON → **400**.
 

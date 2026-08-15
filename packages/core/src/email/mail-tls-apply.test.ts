@@ -44,6 +44,23 @@ describe('applyMailTlsPaths', () => {
     expect(r.applied).toBe(false);
   });
 
+  it('omits Dovecot ssl when LE files are missing', async () => {
+    const r = await applyMailTlsPaths({
+      host: host({
+        run: (argv) => {
+          const j = argv.join(' ');
+          if (j.includes('ssl = no') || j.includes('dove_ssl_omitted')) {
+            return { stdout: 'dove_ssl_omitted\n', stderr: '', exitCode: 0, argv, dryRun: false };
+          }
+          return { stdout: '', stderr: '', exitCode: 0, argv, dryRun: false };
+        },
+      }),
+      domain: 'ex.test',
+    });
+    expect(r.ok).toBe(false);
+    expect(r.steps.some((s) => s.name === 'dovecot-tls-omit' && s.status === 'ok')).toBe(true);
+  });
+
   it('applies postfix + dovecot when cert present', async () => {
     const base = '/etc/letsencrypt/live/mail.ex.test';
     const r = await applyMailTlsPaths({

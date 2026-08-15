@@ -39,7 +39,10 @@
   "backup": {
     "fileNotFound": "بیک اپ فائل نہیں ملی",
     "resticNoPassword": "restic فعال ہے لیکن پاس ورڈ سیٹ نہیں ہے۔",
-    "resticNotInPath": "PATH میں نہیں ہے"
+    "resticNotInPath": "PATH میں نہیں ہے",
+    "dbEnvUnreadable": "Could not read .db.env; skipped SQL dump.",
+    "dbEnvNoName": ".db.env has no database name; skipped SQL dump.",
+    "targetOutside": "Restore target must be inside the project home or the public files root."
   },
   "redis": {
     "cliMissing": "redis-cli انسٹال نہیں ہے۔"
@@ -2964,7 +2967,9 @@
     "sessionStartCwd": "VNC شروع ناکام: ورکنگ ڈائرکٹری سیشن صارف کے لیے قابل رسائی نہیں ہے (ڈسپلے :{{display}})۔ گھر سے شروع کرکے طے کیا گیا۔",
     "desktopRestarted": "ڈیسک ٹاپ پروفائل لاگو ہوا اور سیشن دوبارہ شروع ہوا ({{desktop}})۔ VNC/noVNC کو دوبارہ جوڑیں۔",
     "desktopNeedsStart": "ڈیسک ٹاپ پروفائل {{desktop}} xstartup پر لکھا گیا۔ درخواست دینے کے لیے سیشن شروع کریں۔",
-    "passwordNeedTiger": "vncpasswd not found. Install TigerVNC (tigervnc-standalone-server) before setting a password."
+    "passwordNeedTiger": "vncpasswd not found. Install TigerVNC (tigervnc-standalone-server) before setting a password.",
+    "linuxUserRolledBack": "Removed leftover Linux user {{user}} after VNC password failed.",
+    "linuxUserOrphan": "Could not remove leftover Linux user {{user}} after VNC password failed."
   },
   "apache": {
     "needServerName": "سرور کا نام درکار ہے۔",
@@ -3014,6 +3019,19 @@
     "startedDetached": "بی ٹی ٹریکر علیحدہ کارکن شروع ہوا (pid {{pid}}، پورٹ {{port}})",
     "runningDetached": "ٹریکر علیحدہ کارکن کے طور پر چل رہا ہے (pid {{pid}})",
     "jobQueued": "BT ٹورینٹ تخلیق قطار میں ہے (بڑا حصہ)",
-    "jobRunning": "BT ٹورینٹ کی تخلیق چل رہی ہے۔"
+    "jobRunning": "BT ٹورینٹ کی تخلیق چل رہی ہے۔",
+    "libraryAdded": "Added {{name}} to the WebTorrent library",
+    "libraryInspectFailed": "Could not read that .torrent or magnet",
+    "libraryDup": "That torrent is already in the library",
+    "libraryDestBad": "Save folder is not a valid Files path",
+    "libraryTorrentTooBig": ".torrent file is larger than 8 MiB",
+    "libraryNotFound": "Library item not found",
+    "libraryPaused": "Paused",
+    "libraryResumed": "Resumed",
+    "libraryRemoved": "Removed from library",
+    "libraryFilesRemoved": "Deleted downloaded files",
+    "libraryRestoreDone": "Library restore: started {{started}}/{{attempted}} (failed {{failed}})",
+    "applyTrackersDone": "Applied extra trackers to {{n}} live announce slots",
+    "libraryNeedServe": "Saved. Open the panel (ysk-server serve) so WebTorrent can download or seed."
   }
 }

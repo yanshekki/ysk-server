@@ -286,5 +286,6 @@
   "unfreezeOk": "{{engine}} repair complete",
   "startAfterUnfreeze": "Start service (auto-runs repair plan on failure)",
   "serviceDownTitle": "Database service is down",
-  "serviceDownBody": "Service is unhealthy"
+  "serviceDownBody": "Service is unhealthy",
+  "adoptHostDb": "Register {{name}}"
 }

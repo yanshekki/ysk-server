@@ -82,6 +82,17 @@ describe('public routes (HTTP)', () => {
     20_000,
   );
 
+  it('readiness export requires auth and is an attachment', async () => {
+    ts = await startTestServer();
+    const anon = await apiJson(ts, 'GET', '/api/v1/readiness/export', undefined, {
+      auth: false,
+    });
+    expect(anon.status).toBe(401);
+    const res = await apiJson(ts, 'GET', '/api/v1/readiness/export');
+    expect(res.status).toBe(200);
+    expect((res.body as { productionReady?: boolean }).productionReady).toBeDefined();
+  }, 20_000);
+
   it('project health requires auth', async () => {
     ts = await startTestServer();
     const res = await apiJson(

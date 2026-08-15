@@ -374,7 +374,8 @@
     "dryRunOk": "Dry-run finished. Review the preview below.",
     "strictDryRun": "Strict preview (dry-run)",
     "errorNoDetail": "Test failed (no details)",
-    "strictBlocked": "Package or PAM is not ready; Strict apply is disabled."
+    "strictBlocked": "Package or PAM is not ready; Strict apply is disabled.",
+    "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it."
   },
   "sessionsActive": "Active sessions",
   "sessionsOther": "Other devices",
@@ -427,5 +428,7 @@
     "medium": "Medium",
     "high": "High",
     "critical": "Critical"
-  }
+  },
+  "confirmDeleteApiKey": "Delete this API key?",
+  "confirmDeleteApiKeyDesc": "“{{name}}” will stop authenticating. This cannot be undone."
 }

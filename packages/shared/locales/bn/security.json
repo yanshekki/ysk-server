@@ -372,7 +372,8 @@
     "dryRunOk": "প্রিভিউ শেষ। নিচের বিষয়বস্তু দেখুন।",
     "strictBlocked": "প্যাকেজ বা PAM প্রস্তুত নয়; Strict প্রয়োগ বন্ধ।",
     "strictDryRun": "কঠোর মোড প্রিভিউ",
-    "errorNoDetail": "পরীক্ষা ব্যর্থ (বিস্তারিত নেই)"
+    "errorNoDetail": "পরীক্ষা ব্যর্থ (বিস্তারিত নেই)",
+    "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it."
   },
   "sessionsActive": "সক্রিয় সেশন",
   "sessionsOther": "অন্যান্য ডিভাইস",
@@ -427,5 +428,7 @@
     "high": "উচ্চ",
     "critical": "গুরুতর"
   },
-  "totpStatusLoadFailed": "2FA অবস্থা লোড করা যায়নি"
+  "totpStatusLoadFailed": "2FA অবস্থা লোড করা যায়নি",
+  "confirmDeleteApiKey": "Delete this API key?",
+  "confirmDeleteApiKeyDesc": "“{{name}}” will stop authenticating. This cannot be undone."
 }

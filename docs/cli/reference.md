@@ -119,7 +119,7 @@ Empty or invalid Nginx `server_name` is **rejected** (fail-closed). Apply does *
 ysk-server backup list [--q TEXT]
 ysk-server backup status
 ysk-server backup all [--side …]
-ysk-server backup restore …
+ysk-server backup restore --project-id ID --name ARCHIVE [--mode full|web|dry-run] [--target DIR]
 ysk-server backup delete …
 ysk-server backup schedule [--install] [--execute]
 ysk-server backup control-plane
@@ -161,7 +161,7 @@ Name collisions: panel asks (skip / keep both / replace / merge). API and CLI de
 
 ## bt-tracker
 
-Self-hosted [bittorrent-tracker](https://github.com/webtorrent/bittorrent-tracker) for file-share magnets / WebTorrent.
+Self-hosted [bittorrent-tracker](https://github.com/webtorrent/bittorrent-tracker) plus in-process **WebTorrent** library (import `.torrent` / magnet into a Files folder).
 
 ```bash
 ysk-server bt-tracker status|info
@@ -172,8 +172,15 @@ ysk-server bt-tracker settings set|patch \
 ysk-server bt-tracker start [--execute]   # detached worker + pid (survives CLI exit)
 ysk-server bt-tracker stop                # also clears ysk-svc:bt-tracker UFW rules
 ysk-server bt-tracker torrents|stats      # live swarm (in-process preferred)
-ysk-server bt-tracker restore             # re-seed BT shares (+ start tracker if needed)
+ysk-server bt-tracker restore             # re-seed BT shares + library (+ start tracker if needed)
 ysk-server bt-tracker jobs [--id JOB_ID]  # large-share create-torrent queue
+ysk-server bt-tracker inspect --file FILE.torrent|--magnet URI
+ysk-server bt-tracker add --file FILE|--magnet URI --root public --path downloads/name
+ysk-server bt-tracker library [--id ID]
+ysk-server bt-tracker pause|resume --id ID
+ysk-server bt-tracker remove --id ID [--delete-files]
+ysk-server bt-tracker trackers
+ysk-server bt-tracker trackers add|remove|enable|disable --url URL
 ```
 
 | Topic | Behaviour |
@@ -185,7 +192,9 @@ ysk-server bt-tracker jobs [--id JOB_ID]  # large-share create-torrent queue
 | Settings while stopped | Updates JSON + desired port list only |
 | Settings while running | Same, but **restart tracker** to re-bind listen ports |
 | Browser guests | Same-origin **`wss?://panel/api/v1/public/bt-tracker`** proxies to local tracker (HTTPS-safe) |
-| Serve boot | Autostart and/or existing BT shares → `restoreBtSharesOnBoot` |
+| Serve boot | Autostart and/or existing BT shares → `restoreBtSharesOnBoot` + library restore |
+| `add` | Writes library JSON + copies `.torrent`. Does **not** download in the CLI process — open `serve` / panel |
+| `trackers` | Extra announce URLs (empty default). Merged when WebTorrent adds/resumes |
 
 Panel Start keeps the tracker **in the serve process** (same seeder). See [features/bt-tracker.md](../features/bt-tracker.md).
 
@@ -268,7 +277,7 @@ Fleet: registered ≠ connected until heartbeat. Enqueue needs Bearer; public po
 ysk-server logs sources|query|journal|overview …
 ysk-server host overview|metrics|network …
 ysk-server health [--url http://host:port/health]
-ysk-server notifications
+ysk-server notifications [list]   # list only — no create/send/channel
 ysk-server readiness|doctor [--json]
 ysk-server services …
 ysk-server db-cluster list|get|create|plan …

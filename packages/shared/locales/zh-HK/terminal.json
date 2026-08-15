@@ -30,5 +30,8 @@
   "stepUpTitle": "確認 root shell",
   "stepUpDesc": "輸入驗證器代碼或救援碼。",
   "totpLabel": "TOTP／救援碼",
-  "sessionStillOpen": "說明分頁開啟期間，工作階段仍保持連線。"
+  "sessionStillOpen": "說明分頁開啟期間，工作階段仍保持連線。",
+  "rootConfirmTitle": "開啟 root shell？",
+  "rootConfirmDesc": "此工作階段是主機上不受限制的 root PTY。指令會寫入審計紀錄。",
+  "rootConfirmBody": "僅在你打算執行具權限的主機指令時繼續。"
 }

@@ -30,7 +30,7 @@ See also: [`product-feature-matrix.md`](./product-feature-matrix.md).
 | Databases | `/databases/postgres/service` | Postgres service | I |
 | Databases | `/databases/redis` | Redis data | I |
 | Databases | `/databases/redis/service` | Redis service | I |
-| Files | `/bt-tracker` | BT Tracker | G |
+| Files | `/bt-tracker` | BT Tracker (WebTorrent library + extra trackers) | G |
 | DNS / SSL | `/dns` | DNS zones | C |
 | DNS / SSL | `/cdn` | CDN / edges | C′ |
 | DNS / SSL | `/ssl` | Certificates | D |

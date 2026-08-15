@@ -248,6 +248,13 @@ export function FirewallServicesPanel(props: {
                     : m === 'restricted'
                       ? t('serviceExposure.modeRestricted')
                       : t('serviceExposure.modePublic');
+                if (props.ufwActive === false) {
+                  return (
+                    <Badge tone="warn">
+                      {t('firewall.desiredOnlyUfwOff', { mode: label })}
+                    </Badge>
+                  );
+                }
                 return <Badge tone={modeTone(m, r.inSync !== false)}>{label}</Badge>;
               },
             },
@@ -265,7 +272,9 @@ export function FirewallServicesPanel(props: {
               header: t('firewall.colSync'),
               nowrap: true,
               render: (r) =>
-                r.inSync === false ? (
+                props.ufwActive === false ? (
+                  <Badge tone="neutral">{t('firewall.syncNotApplied')}</Badge>
+                ) : r.inSync === false ? (
                   <Badge tone="warn">{t('serviceExposure.outOfSync')}</Badge>
                 ) : (
                   <Badge tone="ok">{t('firewall.synced')}</Badge>

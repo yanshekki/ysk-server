@@ -547,7 +547,15 @@ export function GenericRuntimePage({ kind }: { kind: HostingRuntimeKind }) {
       ) : null}
       {recordedButProbeEmpty ? (
         <Alert variant="warn">
-          {t('runtime.recordedButProbeEmpty', { v: recordedPin })}
+          {t('runtime.recordedButProbeEmpty', { v: recordedPin })}{' '}
+          <Button
+            variant="secondary"
+            size="sm"
+            className="u-ml-2"
+            onClick={() => setTab('software')}
+          >
+            {t('runtime.installRecordedCta', { v: recordedPin })}
+          </Button>
         </Alert>
       ) : null}
       <PageTabs

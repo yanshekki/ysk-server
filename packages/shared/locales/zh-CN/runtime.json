@@ -510,5 +510,6 @@
   "useListForDefaults": "要改主机／面板默认或移除此版本，请用上方列表。",
   "alreadyHostDefaultShort": "主机默认",
   "managedPathMissingTitle": "受管 {{name}} 路徑未就緒",
-  "managedPathMissing": "版本 {{version}} 的 YSK 受管 {{name}} 尚未就緒。請重新探測或重新安裝。"
+  "managedPathMissing": "版本 {{version}} 的 YSK 受管 {{name}} 尚未就緒。請重新探測或重新安裝。",
+  "installRecordedCta": "前往软件分页安装 {{v}}"
 }

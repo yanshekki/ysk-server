@@ -114,5 +114,9 @@
   "levelInfo": "معلومة",
   "colTitle": "تنبيه",
   "colDetail": "التفاصيل",
-  "colSource": "المصدر"
+  "colSource": "المصدر",
+  "notifSearch": "Search alerts",
+  "notifAll": "All",
+  "notifDismiss": "Hide",
+  "goFix": "Fix"
 }

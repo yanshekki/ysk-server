@@ -1,8 +1,8 @@
 /**
  * BT Tracker — professional service console for self-hosted WebTorrent/BT shares.
- * Tabs: overview | torrents | jobs | settings | about
+ * Tabs: overview | torrents | tracker | settings | about
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -12,7 +12,6 @@ import {
   Button,
   Card,
   CardSection,
-  DataTable,
   FeaturePageLayout,
   Field,
   FormActions,
@@ -21,7 +20,6 @@ import {
   PageGuide,
   PageTabs,
   PresetChips,
-  SegRadio,
   type OpsResultLike,
 } from '../../shared/components/ui';
 import { ServiceAccessStrip } from '../../features/network/service-exposure';
@@ -30,14 +28,18 @@ import { usePageTab } from '../../shared/hooks/usePageTab';
 import { toast } from '../../shared/stores/toast-store';
 import {
   btTrackerApi,
+  type BtLibraryLive,
   type BtTrackerSettings,
   type BtTrackerStatusDto,
   type BtTrackerTorrentRow,
 } from '../../features/bt-tracker';
+import { AddTorrentModal } from '../../features/bt-tracker/AddTorrentModal';
+import { ExtraTrackersPanel } from '../../features/bt-tracker/ExtraTrackersPanel';
+import { TorrentLibrary } from '../../features/bt-tracker/TorrentLibrary';
 import { bindInput } from '../bind-handlers';
 
 /** jobs merged into torrents tab (background create-torrent under swarm list) */
-const TABS = ['overview', 'torrents', 'settings', 'about'] as const;
+const TABS = ['overview', 'torrents', 'tracker', 'settings', 'about'] as const;
 
 type TorrentJobRow = {
   id: string;
@@ -50,18 +52,6 @@ type TorrentJobRow = {
   estimatedBytes?: number;
 };
 
-function formatSpeed(n: number | undefined): string {
-  if (n == null || !Number.isFinite(n) || n <= 0) return '—';
-  if (n < 1024) return `${Math.round(n)} B/s`;
-  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB/s`;
-  return `${(n / (1024 * 1024)).toFixed(2)} MB/s`;
-}
-
-function shortHash(h: string): string {
-  if (!h || h.length < 12) return h || '—';
-  return `${h.slice(0, 8)}…${h.slice(-4)}`;
-}
-
 function announceProto(url: string): 'http' | 'ws' | 'udp' | 'other' {
   if (url.startsWith('ws://') || url.startsWith('wss://')) return 'ws';
   if (url.startsWith('udp://')) return 'udp';
@@ -69,26 +59,20 @@ function announceProto(url: string): 'http' | 'ws' | 'udp' | 'other' {
   return 'other';
 }
 
-function seedStatusTone(
-  s?: string,
-): 'ok' | 'warn' | 'danger' | 'neutral' {
-  if (s === 'seeding') return 'ok';
-  if (s === 'pending') return 'warn';
-  if (s === 'error') return 'danger';
-  if (s === 'stopped') return 'neutral';
-  return 'neutral';
-}
-
 export function BtTrackerPage() {
   const { t } = useTranslation();
-  const [tab, setTab] = usePageTab(TABS, 'overview');
+  const [tab, setTab] = usePageTab(TABS, 'overview', {
+    aliases: { trackers: 'tracker', extras: 'tracker', extra: 'tracker', jobs: 'torrents' },
+  });
   const { busy, error, result, msg, run, setMsg, setError } = useFeatureAction();
   const [status, setStatus] = useState<BtTrackerStatusDto | null>(null);
   const [torrents, setTorrents] = useState<BtTrackerTorrentRow[]>([]);
+  const [library, setLibrary] = useState<BtLibraryLive[]>([]);
   const [jobs, setJobs] = useState<TorrentJobRow[]>([]);
   const [draft, setDraft] = useState<Partial<BtTrackerSettings>>({});
   const [torrentQ, setTorrentQ] = useState('');
-  const [torrentFilter, setTorrentFilter] = useState<'all' | 'seeding' | 'other'>('all');
+  const [torrentFilter, setTorrentFilter] = useState('all');
+  const [addOpen, setAddOpen] = useState(false);
 
   const refreshJobs = useCallback(async () => {
     try {
@@ -105,10 +89,12 @@ export function BtTrackerPage() {
     setStatus(st);
     setDraft(st.settings ?? {});
     try {
-      const tr = await btTrackerApi.torrents();
+      const [tr, lib] = await Promise.all([btTrackerApi.torrents(), btTrackerApi.library()]);
       setTorrents(tr.items ?? []);
+      setLibrary(lib.items ?? []);
     } catch {
       setTorrents([]);
+      setLibrary([]);
     }
     await refreshJobs();
   }, [refreshJobs, setError]);
@@ -124,6 +110,10 @@ export function BtTrackerPage() {
         .torrents()
         .then((tr) => setTorrents(tr.items ?? []))
         .catch(() => undefined);
+      void btTrackerApi
+        .library()
+        .then((lib) => setLibrary(lib.items ?? []))
+        .catch(() => undefined);
       void refreshJobs();
       if (tab === 'overview') {
         void btTrackerApi
@@ -131,9 +121,9 @@ export function BtTrackerPage() {
           .then((st) => setStatus(st))
           .catch(() => undefined);
       }
-    }, 5_000);
+    }, library.some((i) => i.status === 'downloading' || i.status === 'checking') ? 2_000 : 5_000);
     return () => window.clearInterval(id);
-  }, [tab, refreshJobs]);
+  }, [tab, refreshJobs, library]);
 
   const running = Boolean(status?.running);
   const activeJobs = jobs.filter((j) => j.status === 'queued' || j.status === 'running').length;
@@ -141,23 +131,6 @@ export function BtTrackerPage() {
   const hasPublicHost = Boolean(status?.settings?.publicAnnounceHost?.trim());
   const torrentCount = status?.stats?.torrents ?? torrents.length ?? 0;
   const peerCount = status?.stats?.peers ?? 0;
-
-  const filteredTorrents = useMemo(() => {
-    const q = torrentQ.trim().toLowerCase();
-    return torrents.filter((r) => {
-      if (torrentFilter === 'seeding' && r.seedStatus !== 'seeding') return false;
-      if (torrentFilter === 'other' && r.seedStatus === 'seeding') return false;
-      if (!q) return true;
-      const name = (r.name || '').toLowerCase();
-      const hash = (r.infoHash || '').toLowerCase();
-      return name.includes(q) || hash.includes(q);
-    });
-  }, [torrents, torrentQ, torrentFilter]);
-
-  const torrentRows = useMemo(
-    () => filteredTorrents.map((r) => ({ ...r, id: r.infoHash })),
-    [filteredTorrents],
-  );
 
   function patchDraft<K extends keyof BtTrackerSettings>(key: K, value: BtTrackerSettings[K]) {
     setDraft((d) => ({ ...d, [key]: value }));
@@ -168,15 +141,6 @@ export function BtTrackerPage() {
       () => toast.ok(t('btTracker.copied')),
       () => undefined,
     );
-  }
-
-  function seedLabel(s?: string): string {
-    if (s === 'seeding') return t('btTracker.seedStatusSeeding');
-    if (s === 'pending') return t('btTracker.seedStatusPending');
-    if (s === 'error') return t('btTracker.seedStatusError');
-    if (s === 'stopped') return t('btTracker.seedStatusStopped');
-    if (!s || s === 'none') return t('btTracker.seedStatusNone');
-    return s;
   }
 
   function protoLabel(p: ReturnType<typeof announceProto>): string {
@@ -280,9 +244,14 @@ export function BtTrackerPage() {
               id: 'torrents',
               label: t('btTracker.tabTorrents'),
               badge:
-                (torrents.length || 0) + activeJobs > 0
-                  ? torrents.length + activeJobs
+                library.length + torrents.length + activeJobs > 0
+                  ? library.length + torrents.length + activeJobs
                   : undefined,
+            },
+            {
+              id: 'tracker',
+              label: t('btTracker.tabTrackers'),
+              badge: (status?.settings?.extraTrackers ?? []).filter((x) => x.enabled).length || undefined,
             },
             { id: 'settings', label: t('btTracker.tabSettings') },
             { id: 'about', label: t('btTracker.tabAbout') },
@@ -410,205 +379,85 @@ export function BtTrackerPage() {
           ) : null}
 
           {tab === 'torrents' ? (
-            <div className="tab-panel tab-panel--fill">
-              <div className="bt-toolbar">
-                <input
-                  className="input bt-toolbar__search"
-                  value={torrentQ}
-                  onChange={(e) => setTorrentQ(e.target.value)}
-                  placeholder={t('btTracker.searchTorrents')}
-                  aria-label={t('btTracker.searchTorrents')}
-                />
-                <SegRadio
-                  name="bt-tf"
-                  size="sm"
-                  value={torrentFilter}
-                  onChange={(v) => setTorrentFilter(v as 'all' | 'seeding' | 'other')}
-                  options={[
-                    { value: 'all', label: t('btTracker.filterAll') },
-                    { value: 'seeding', label: t('btTracker.filterSeeding') },
-                    { value: 'other', label: t('btTracker.filterOther') },
-                  ]}
-                />
-                <span className="bt-toolbar__spacer" />
-                <span className={`bt-live${running ? ' bt-live--on' : ''}`}>
-                  <span className="bt-live__dot" aria-hidden />
-                  {running ? t('btTracker.live') : t('btTracker.liveOff')}
-                </span>
-                {activeJobs > 0 ? (
-                  <Badge tone="warn">
-                    {t('btTracker.statsJobs')}: {activeJobs}
-                  </Badge>
-                ) : null}
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  disabled={busy}
-                  onClick={() => {
-                    void btTrackerApi
-                      .torrents()
-                      .then((tr) => setTorrents(tr.items ?? []))
-                      .catch((e: Error) => setError(e.message));
-                    void refreshJobs();
-                  }}
-                >
-                  {t('btTracker.refresh')}
-                </Button>
-                <Link className="btn btn--secondary btn--sm" to="/files?tab=shares">
-                  {t('btTracker.openShares')}
-                </Link>
+            <>
+            <TorrentLibrary
+              library={library}
+              swarm={torrents}
+              query={torrentQ}
+              onQuery={setTorrentQ}
+              filter={torrentFilter}
+              onFilter={setTorrentFilter}
+              running={running}
+              busy={busy}
+              onAdd={() => setAddOpen(true)}
+              onDropFiles={() => setAddOpen(true)}
+              onPause={(id) => {
+                void run(async () => {
+                  const r = await btTrackerApi.pauseLibrary(id);
+                  await refresh();
+                  return r;
+                });
+              }}
+              onResume={(id) => {
+                void run(async () => {
+                  const r = await btTrackerApi.resumeLibrary(id);
+                  await refresh();
+                  return r;
+                });
+              }}
+              onRemove={(id, deleteFiles) => {
+                void run(async () => {
+                  const r = await btTrackerApi.removeLibrary(id, deleteFiles);
+                  await refresh();
+                  return r;
+                });
+              }}
+            />
+            {jobs.length > 0 ? (
+              <div className="bt-jobs-block">
+                <strong className="u-text-sm">
+                  {t('btTracker.jobs')} ({jobs.length})
+                </strong>
+                <ul className="bt-extras__list">
+                  {jobs.map((j) => (
+                    <li key={j.id} className="bt-extras__row">
+                      <Badge
+                        tone={
+                          j.status === 'done'
+                            ? 'ok'
+                            : j.status === 'error'
+                              ? 'danger'
+                              : j.status === 'running'
+                                ? 'info'
+                                : 'warn'
+                        }
+                      >
+                        {j.status}
+                      </Badge>
+                      <code className="bt-extras__url">{j.shareId}</code>
+                    </li>
+                  ))}
+                </ul>
               </div>
+            ) : null}
+            </>
+          ) : null}
 
-              {!running ? <Alert variant="warn">{t('btTracker.stopped')}</Alert> : null}
-
-              {torrents.length === 0 ? (
-                <div className="bt-empty bt-empty--compact">
-                  <p className="bt-empty__title">{t('btTracker.torrentsEmpty')}</p>
-                  <p className="bt-empty__desc">{t('btTracker.torrentsEmptyHint')}</p>
-                </div>
-              ) : torrentRows.length === 0 ? (
-                <div className="bt-empty bt-empty--compact">
-                  <p className="bt-empty__title">{t('btTracker.noMatch')}</p>
-                </div>
-              ) : (
-                <div className="bt-table-wrap">
-                  <DataTable
-                    columns={[
-                      {
-                        key: 'name',
-                        header: t('btTracker.colName'),
-                        render: (r) => (
-                          <div>
-                            <div>{r.name || shortHash(r.infoHash)}</div>
-                            {r.shareId ? (
-                              <div className="muted u-text-xs">{r.shareId}</div>
-                            ) : null}
-                          </div>
-                        ),
-                      },
-                      {
-                        key: 'hash',
-                        header: t('btTracker.colHash'),
-                        render: (r) => (
-                          <button
-                            type="button"
-                            className="bt-hash"
-                            title={r.infoHash}
-                            onClick={() => copyText(r.infoHash)}
-                          >
-                            {shortHash(r.infoHash)}
-                          </button>
-                        ),
-                      },
-                      {
-                        key: 'seeds',
-                        header: t('btTracker.colSeeds'),
-                        render: (r) => (
-                          <span className="bt-speed">{r.seeders ?? 0}</span>
-                        ),
-                      },
-                      {
-                        key: 'leechers',
-                        header: t('btTracker.colLeechers'),
-                        render: (r) => (
-                          <span className="bt-speed">{r.leechers ?? 0}</span>
-                        ),
-                      },
-                      {
-                        key: 'status',
-                        header: t('btTracker.colStatus'),
-                        render: (r) => (
-                          <Badge tone={seedStatusTone(r.seedStatus)}>
-                            {seedLabel(r.seedStatus)}
-                          </Badge>
-                        ),
-                      },
-                      {
-                        key: 'up',
-                        header: t('files.btUploadSpeed'),
-                        render: (r) => (
-                          <span className="bt-speed">↑ {formatSpeed(r.uploadSpeed)}</span>
-                        ),
-                      },
-                      {
-                        key: 'down',
-                        header: t('files.btDownloadSpeed'),
-                        render: (r) => (
-                          <span className="bt-speed">↓ {formatSpeed(r.downloadSpeed)}</span>
-                        ),
-                      },
-                    ]}
-                    rows={torrentRows}
-                    rowKey={(r) => r.infoHash}
-                  />
-                </div>
-              )}
-
-              {/* Jobs only when non-empty — no empty-state essay */}
-              {jobs.length > 0 ? (
-                <div className="bt-jobs-block">
-                  <div className="bt-toolbar bt-jobs-block__head">
-                    <strong className="u-text-sm">
-                      {t('btTracker.jobs')} ({jobs.length})
-                    </strong>
-                    <span className="bt-toolbar__spacer" />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={busy}
-                      onClick={() => void refreshJobs()}
-                    >
-                      {t('btTracker.refreshJobs')}
-                    </Button>
-                  </div>
-                  <div className="bt-table-wrap bt-table-wrap--jobs">
-                    <DataTable
-                      columns={[
-                        {
-                          key: 'job',
-                          header: t('btTracker.colJob'),
-                          render: (r) => (
-                            <code className="u-text-sm" title={r.id}>
-                              {r.id.length > 22 ? `${r.id.slice(0, 18)}…` : r.id}
-                            </code>
-                          ),
-                        },
-                        {
-                          key: 'share',
-                          header: t('btTracker.colShare'),
-                          render: (r) => r.shareId,
-                        },
-                        {
-                          key: 'status',
-                          header: t('btTracker.colJobStatus'),
-                          render: (r) => {
-                            const tone =
-                              r.status === 'done'
-                                ? 'ok'
-                                : r.status === 'error'
-                                  ? 'danger'
-                                  : r.status === 'running'
-                                    ? 'info'
-                                    : 'warn';
-                            return <Badge tone={tone}>{r.status}</Badge>;
-                          },
-                        },
-                        {
-                          key: 'enqueued',
-                          header: t('btTracker.colEnqueued'),
-                          render: (r) =>
-                            r.enqueuedAt
-                              ? new Date(r.enqueuedAt).toLocaleString()
-                              : '—',
-                        },
-                      ]}
-                      rows={jobs}
-                      rowKey={(r) => r.id}
-                    />
-                  </div>
-                </div>
-              ) : null}
-            </div>
+          {tab === 'tracker' ? (
+            <ExtraTrackersPanel
+              settings={status?.settings ?? null}
+              busy={busy}
+              onSave={async (extra) => {
+                await run(async () => {
+                  const r = await btTrackerApi.saveSettings({ extraTrackers: extra });
+                  await refresh();
+                  return r;
+                });
+              }}
+              onApplied={() => {
+                toast.ok(t('btTracker.extraTrackerApplyOk'));
+              }}
+            />
           ) : null}
 
           {tab === 'settings' ? (
@@ -798,6 +647,15 @@ export function BtTrackerPage() {
           {tab === 'about' ? <PageGuide guideId="btTracker" /> : null}
         </PageTabs>
       </div>
+      <AddTorrentModal
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        extraTrackerCount={(status?.settings?.extraTrackers ?? []).filter((x) => x.enabled).length}
+        onAdded={() => {
+          toast.ok(t('btTracker.addOk'));
+          void refresh();
+        }}
+      />
     </FeaturePageLayout>
   );
 }

@@ -4,10 +4,13 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import {
   buildAnnounceList,
+  buildLibraryAnnounceList,
   buildSeederAnnounceList,
   btTrackerPortBindings,
+  isAllowedTrackerUrl,
   loadBtTrackerSettings,
   normalizeBtTrackerSettings,
+  normalizeExtraTrackers,
   resolveAnnounceHost,
   saveBtTrackerSettings,
 } from './settings.js';
@@ -127,5 +130,36 @@ describe('bt-tracker settings', () => {
       { role: 'http', port: '8000', proto: 'tcp' },
       { role: 'udp-announce', port: '6969', proto: 'udp' },
     ]);
+  });
+
+  it('rejects bad extra trackers and skips disabled in library announce', () => {
+    expect(isAllowedTrackerUrl('javascript:alert(1)')).toBe(false);
+    expect(isAllowedTrackerUrl('http://tracker.example/announce')).toBe(true);
+    const n = normalizeExtraTrackers([
+      { url: 'http://a.example/announce', enabled: true },
+      { url: 'http://a.example/announce', enabled: true },
+      { url: 'javascript:evil', enabled: true },
+      { url: 'udp://b.example:6969', enabled: false },
+      'https://c.example/announce',
+    ]);
+    expect(n).toHaveLength(3);
+    expect(n.map((t) => t.url)).toEqual([
+      'http://a.example/announce',
+      'udp://b.example:6969',
+      'https://c.example/announce',
+    ]);
+    const list = buildLibraryAnnounceList(
+      {
+        ...DEFAULT_BT_TRACKER_SETTINGS,
+        extraTrackers: n,
+        httpPort: 8000,
+      },
+      ['http://from-torrent.example/announce'],
+    );
+    expect(list[0]).toBe('http://from-torrent.example/announce');
+    expect(list).toContain('http://a.example/announce');
+    expect(list).toContain('https://c.example/announce');
+    expect(list).not.toContain('udp://b.example:6969');
+    expect(list).toContain('http://127.0.0.1:8000/announce');
   });
 });

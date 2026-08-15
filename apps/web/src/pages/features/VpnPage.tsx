@@ -306,7 +306,11 @@ export function VpnPage() {
         requiresExecute: r.requiresExecute,
       });
       if (r.ok) notifyOk(r.notes?.[0] || t('common.completed'));
-      else notifyWarn(r.notes?.[0] || t('common.opFailed'));
+      else {
+        const fail = (r.notes ?? []).map(String).filter(Boolean).join(' · ') || t('common.opFailed');
+        setError(fail);
+        notifyWarn(fail);
+      }
       if (r.config && opts?.openConfig !== false) {
         await openConfigModal(
           opts?.engine ?? activeEngine,

@@ -285,8 +285,8 @@ async function mainInner(
     return 0;
   }
 
-  // --help / -h never executes a default action (including store export / backup schedule)
-  if (parsed.help || !command || command === 'help') {
+  // Bare --help / help / no command → global usage (never run a default action)
+  if (!command || command === 'help') {
     if (json) {
       printJson({
         ok: true,
@@ -300,6 +300,19 @@ async function mainInner(
       printHelp();
     }
     return 0;
+  }
+  if (parsed.help) {
+    const stripped = args.filter((a) => a !== '--help' && a !== '-h');
+    const pos = cliPositionals(stripped);
+    const rest = pos.slice(1).filter((s) => s !== 'help');
+    return mainInner([command, 'help', ...rest], json, command, { ...parsed, help: false });
+  }
+  if (/[\u3400-\u9fff]/.test(command)) {
+    process.stderr.write(
+      'Unknown command. Command names and flags are English. Use --locale to translate messages.\n' +
+        `Try: ysk-server --help\n`,
+    );
+    return 2;
   }
 
   if (command === 'setup') {
@@ -2386,6 +2399,7 @@ async function mainInner(
           linuxUser: project.linux_user,
           linuxGroup: project.linux_group || project.linux_user,
           mode,
+          targetDir: getOpt(args, '--target') ?? undefined,
         });
         printJson(r);
         return exitFromResult(r);
@@ -3227,13 +3241,22 @@ async function mainInner(
         if (result.ok) {
           ctx.settings.setJson('last_backup_run', {
             at: new Date().toISOString(),
+            ok: true,
             source: 'projects.backup',
             projectId: id,
             archivePath: result.archivePath,
-            includesDatabase: false,
+            includesDatabase: Boolean(result.includesDatabase),
+            results: [
+              {
+                projectId: id,
+                ok: true,
+                archivePath: result.archivePath,
+                notes: result.notes ?? [],
+              },
+            ],
           });
         }
-        printJson({ ...result, includesDatabase: false });
+        printJson({ ...result, includesDatabase: Boolean(result.includesDatabase) });
         return exitFromResult(result);
       }
       if (sub === 'template') {
@@ -5973,6 +5996,21 @@ async function mainInner(
   }
 
   if (command === 'notifications') {
+    const sub = cliPositionals(args)[1] ?? 'list';
+    if (sub === 'help') {
+      process.stderr.write(
+        'Usage: ysk-server notifications [list] [--json]\n' +
+          '  list is the only action. There is no create/send/channel in this product.\n',
+      );
+      return 0;
+    }
+    if (sub !== 'list') {
+      process.stderr.write(
+        `Unknown notifications action "${sub}". Only "list" is implemented.\n` +
+          'Usage: ysk-server notifications [list] [--json]\n',
+      );
+      return 2;
+    }
     const ctx = openCliContext(args);
     try {
       const { collectNotifications } = await import('ysk-server-core');

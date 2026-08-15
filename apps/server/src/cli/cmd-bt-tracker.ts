@@ -16,6 +16,13 @@ import {
   restoreBtSharesOnBoot,
   listTorrentJobs,
   getTorrentJob,
+  inspectTorrentInput,
+  addBtLibraryItem,
+  listBtLibraryLive,
+  pauseBtLibraryItem,
+  resumeBtLibraryItem,
+  removeBtLibraryItemOp,
+  isAllowedTrackerUrl,
   syncServiceExposure,
   upsertDesired,
 } from 'ysk-server-core';
@@ -163,6 +170,146 @@ export async function runBtTrackerCommand(
     return 0;
   }
 
+  if (sub === 'inspect') {
+    const file = h.getOpt(args, '--file');
+    const magnet = h.getOpt(args, '--magnet');
+    if (!file && !magnet) {
+      process.stderr.write('Usage: ysk-server bt-tracker inspect --file FILE.torrent | --magnet URI\n');
+      return 2;
+    }
+    let torrentBuf: Buffer | undefined;
+    if (file) {
+      const { readFileSync, existsSync } = await import('node:fs');
+      if (!existsSync(file)) {
+        h.printJson({ ok: false, notes: ['file not found'] });
+        return 4;
+      }
+      torrentBuf = readFileSync(file);
+    }
+    const inspected = await inspectTorrentInput({ torrentBuf, magnet });
+    h.printJson({ ok: true, ...inspected });
+    return 0;
+  }
+
+  if (sub === 'add') {
+    const file = h.getOpt(args, '--file');
+    const magnet = h.getOpt(args, '--magnet');
+    const root = h.getOpt(args, '--root') || 'public';
+    const dest = h.getOpt(args, '--path');
+    if ((!file && !magnet) || !dest) {
+      process.stderr.write(
+        'Usage: ysk-server bt-tracker add --file FILE.torrent|--magnet URI --root public --path downloads/name\n',
+      );
+      return 2;
+    }
+    let torrentBuf: Buffer | undefined;
+    if (file) {
+      const { readFileSync, existsSync } = await import('node:fs');
+      if (!existsSync(file)) {
+        h.printJson({ ok: false, notes: ['file not found'] });
+        return 4;
+      }
+      torrentBuf = readFileSync(file);
+    }
+    const r = await addBtLibraryItem({
+      dataDir: ctx.dataDir,
+      torrentBuf,
+      magnet,
+      saveRoot: root,
+      saveRelPath: dest,
+      start: false,
+    });
+    h.printJson(r);
+    return r.ok ? 0 : 1;
+  }
+
+  if (sub === 'library') {
+    const id = h.getOpt(args, '--id');
+    const items = listBtLibraryLive(ctx.dataDir);
+    if (id?.trim()) {
+      const item = items.find((i) => i.id === id.trim());
+      if (!item) {
+        h.printJson({ ok: false, notes: ['library item not found'] });
+        return 4;
+      }
+      h.printJson({ ok: true, item });
+      return 0;
+    }
+    h.printJson({ ok: true, items, meta: { total: items.length } });
+    return 0;
+  }
+
+  if (sub === 'pause' || sub === 'resume' || sub === 'remove') {
+    const id = h.getOpt(args, '--id');
+    if (!id?.trim()) {
+      process.stderr.write(`Usage: ysk-server bt-tracker ${sub} --id ID\n`);
+      return 2;
+    }
+    if (sub === 'pause') {
+      const r = await pauseBtLibraryItem(ctx.dataDir, id.trim());
+      h.printJson(r);
+      return r.ok ? 0 : 1;
+    }
+    if (sub === 'resume') {
+      const r = await resumeBtLibraryItem(ctx.dataDir, id.trim());
+      h.printJson(r);
+      return r.ok ? 0 : 1;
+    }
+    const r = await removeBtLibraryItemOp(ctx.dataDir, id.trim(), {
+      deleteFiles: h.hasFlag(args, '--delete-files'),
+    });
+    h.printJson(r);
+    return r.ok ? 0 : 1;
+  }
+
+  if (sub === 'trackers') {
+    const act = tokens[2] ?? 'list';
+    if (act === 'list' || act === 'get') {
+      const s = loadBtTrackerSettings(ctx.dataDir);
+      h.printJson({ ok: true, items: s.extraTrackers ?? [], meta: { total: (s.extraTrackers ?? []).length } });
+      return 0;
+    }
+    const url = h.getOpt(args, '--url');
+    if (act === 'add') {
+      if (!url || !isAllowedTrackerUrl(url)) {
+        process.stderr.write('Usage: ysk-server bt-tracker trackers add --url http(s)|udp|ws(s)://…\n');
+        return 2;
+      }
+      const s = loadBtTrackerSettings(ctx.dataDir);
+      const extra = [...(s.extraTrackers ?? [])];
+      if (extra.some((t) => t.url.toLowerCase() === url.trim().toLowerCase())) {
+        h.printJson({ ok: true, items: extra, notes: ['already listed'] });
+        return 0;
+      }
+      extra.push({ url: url.trim(), enabled: true });
+      const settings = patchBtTrackerSettings(ctx.dataDir, { extraTrackers: extra });
+      h.printJson({ ok: true, items: settings.extraTrackers });
+      return 0;
+    }
+    if (act === 'remove' || act === 'enable' || act === 'disable') {
+      if (!url) {
+        process.stderr.write(`Usage: ysk-server bt-tracker trackers ${act} --url URL\n`);
+        return 2;
+      }
+      const s = loadBtTrackerSettings(ctx.dataDir);
+      let extra = [...(s.extraTrackers ?? [])];
+      const key = url.trim().toLowerCase();
+      if (act === 'remove') extra = extra.filter((t) => t.url.toLowerCase() !== key);
+      else {
+        extra = extra.map((t) =>
+          t.url.toLowerCase() === key ? { ...t, enabled: act === 'enable' } : t,
+        );
+      }
+      const settings = patchBtTrackerSettings(ctx.dataDir, { extraTrackers: extra });
+      h.printJson({ ok: true, items: settings.extraTrackers });
+      return 0;
+    }
+    process.stderr.write(
+      'Usage: ysk-server bt-tracker trackers [list|add|remove|enable|disable] [--url URL]\n',
+    );
+    return 2;
+  }
+
   if (sub === 'torrents' || sub === 'stats') {
     const items = listBtTrackerTorrents();
     h.printJson({
@@ -178,8 +325,10 @@ export async function runBtTrackerCommand(
   }
 
   process.stderr.write(
-    'Usage: ysk-server bt-tracker status|start|stop|settings|torrents|restore|jobs [--id JOB] [--execute] [--json]\n' +
+    'Usage: ysk-server bt-tracker status|start|stop|settings|torrents|restore|jobs|inspect|add|library|pause|resume|remove|trackers [--execute] [--json]\n' +
       '  settings set: --http-port --udp-port --listen-host --public-host --ws|--no-ws --autostart|--no-autostart\n' +
+      '  add: --file FILE.torrent|--magnet URI --root public --path downloads/name\n' +
+      '  trackers add|remove|enable|disable --url URL\n' +
       '  start/stop sync UFW ysk-svc:bt-tracker ports; public host empty ⇒ no magnet trackers\n',
   );
   return 2;

@@ -358,7 +358,8 @@
     "postfixReloaded": "تمت إعادة تحميل Postfix.",
     "postfixReloadFailed": "فشلت إعادة تحميل Postfix: {{detail}}",
     "dovecotApplied": "كتب مقتطف Dovecot TLS وحاول إعادة التحميل.",
-    "dovecotSkipped": "تم تخطي Dovecot (غير مثبت أو أن doveconf غير متوفر)."
+    "dovecotSkipped": "تم تخطي Dovecot (غير مثبت أو أن doveconf غير متوفر).",
+    "dovecotSslOmitted": "Mail certificate is missing; wrote ssl=no so Dovecot can start without the LE files."
   },
   "policyApplySystemHint": "حدد \"تطبيق على النظام\" لكتابة خرائط Postfix/Rspamd وإعادة التحميل؛",
   "rateLimitAppliedNote": "تم تطبيق معدل الصادر بالساعة وعلامة مكافحة البريد العشوائي (عند تشغيل النظام).",
@@ -488,5 +489,6 @@
   "deleteQueueTitle": "حذف هذه الرسالة من الطابور؟",
   "deleteQueueDesc": "إزالة {{id}} من طابور MTA المحلي. يحتاج YSK_EXECUTE.",
   "openQueuePage": "فتح طابور البريد",
-  "healthUnchecked": "Not checked yet"
+  "healthUnchecked": "Not checked yet",
+  "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first."
 }

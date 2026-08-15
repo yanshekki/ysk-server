@@ -103,5 +103,7 @@
   "disableConfirmDesc": "হোস্ট ফায়ারওয়াল ট্র্যাফিক ফিল্টার করা বন্ধ করবে। পাবলিক নেটওয়ার্কে SSH ও প্যানেল উন্মুক্ত হতে পারে।",
   "disableConfirmConsequence": "বিদ্যমান অনুমতি/প্রত্যাখ্যান নিয়ম থাকবে, কিন্তু UFW আবার চালু না হওয়া পর্যন্ত কার্যকর হবে না।",
   "toolHintFail2ban": "fail2ban = temporary log-based bans",
-  "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing."
+  "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing.",
+  "desiredOnlyUfwOff": "Desired: {{mode}} · UFW off (not applied)",
+  "syncNotApplied": "UFW off · not applied"
 }

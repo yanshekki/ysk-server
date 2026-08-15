@@ -39,7 +39,10 @@
   "backup": {
     "fileNotFound": "找不到備份檔",
     "resticNoPassword": "Restic 已啟用但未設定 密碼",
-    "resticNotInPath": "Restic 不在 路徑"
+    "resticNotInPath": "Restic 不在 路徑",
+    "dbEnvUnreadable": "無法讀取 .db.env，略過 SQL 傾印。",
+    "dbEnvNoName": ".db.env 沒有資料庫名稱，略過 SQL 傾印。",
+    "targetOutside": "還原目標必須在專案家目錄或公開檔案根目錄之內。"
   },
   "redis": {
     "cliMissing": "未安裝 redis-cli"
@@ -2964,7 +2967,9 @@
     "clientDeleted": "已刪除客戶端設定",
     "sessionStartCwd": "VNC 啟動失敗：工作目錄 VNC 用戶無權限（display :{{display}}）。已改為由 HOME 啟動。",
     "desktopRestarted": "套用桌面設定檔並重新啟動會話 ({{desktop}})。重新連接 VNC/noVNC。",
-    "desktopNeedsStart": "桌面設定檔 {{desktop}} 寫入 xstartup。啟動會話以進行申請。"
+    "desktopNeedsStart": "桌面設定檔 {{desktop}} 寫入 xstartup。啟動會話以進行申請。",
+    "linuxUserRolledBack": "VNC 密碼失敗後已刪除遺留 Linux 用戶 {{user}}。",
+    "linuxUserOrphan": "VNC 密碼失敗後無法刪除遺留 Linux 用戶 {{user}}。"
   },
   "apache": {
     "needServerName": "需要域名",
@@ -3014,6 +3019,19 @@
     "startedDetached": "BT Tracker detached worker 已啟動（pid {{pid}}，埠 {{port}}）",
     "runningDetached": "Tracker 以 detached worker 運行中（pid {{pid}}）",
     "jobQueued": "BT torrent 建立已排入佇列（大型分享）",
-    "jobRunning": "正在建立 BT torrent"
+    "jobRunning": "正在建立 BT torrent",
+    "libraryAdded": "已將 {{name}} 加入 WebTorrent 資料庫",
+    "libraryInspectFailed": "無法讀取此 .torrent 或 magnet",
+    "libraryDup": "資料庫已有此 Torrent",
+    "libraryDestBad": "儲存位置不是有效的檔案路徑",
+    "libraryTorrentTooBig": ".torrent 檔大於 8 MiB",
+    "libraryNotFound": "找不到此資料庫項目",
+    "libraryPaused": "已暫停",
+    "libraryResumed": "已繼續",
+    "libraryRemoved": "已從資料庫移除",
+    "libraryFilesRemoved": "已刪除下載的檔案",
+    "libraryRestoreDone": "資料庫還原：已啟動 {{started}}／{{attempted}}（失敗 {{failed}}）",
+    "applyTrackersDone": "已向 {{n}} 個現有 announce 套用常用 Tracker",
+    "libraryNeedServe": "已儲存。請在面板啟動 ysk-server serve，WebTorrent 才會下載／做種。"
   }
 }

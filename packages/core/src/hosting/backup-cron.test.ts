@@ -21,6 +21,7 @@ import {
   restoreControlPlaneBackup,
   wrapCronCommandAsLinuxUser,
   CONTROL_PLANE_BACKUP_ID,
+  parseDbEnvFile,
 } from './backup-cron.js';
 
 describe('backup + cron', () => {
@@ -180,6 +181,12 @@ describe('backup-cron depth', () => {
   it('skip note helpers and localizeLastBackupRun', () => {
     expect(isBackupSkipNote('skip: no home')).toBe(true);
     expect(isBackupSkipNote('failed tar')).toBe(false);
+    expect(isBackupSkipNote('Command blocked: YSK_EXECUTE=1 required')).toBe(false);
+    expect(isBackupSkipNote('YSK_FORBIDDEN')).toBe(false);
+    const parsed = parseDbEnvFile('DB_NAME=hello\nDB_USER=hello_user\nENGINE=mariadb\n');
+    expect(parsed.dbName).toBe('hello');
+    expect(parsed.username).toBe('hello_user');
+    expect(parsed.engine).toBe('mariadb');
     expect(isBackupSkippedResult({ ok: false, skipped: true, notes: [] })).toBe(true);
     expect(isBackupSkippedResult({ ok: false, notes: ['skip home'] })).toBe(true);
     expect(localizeLastBackupRun(null)).toBeNull();
@@ -259,6 +266,39 @@ describe('backup-cron depth', () => {
     expect(deleteProjectBackup(dir, 'p1', name).ok).toBe(true);
     expect(deleteProjectBackup(dir, 'p1', name).ok).toBe(false);
     expect(resolveBackupDownloadPath(dir, 'p1', name).ok).toBe(false);
+  });
+
+  it('restore --target stays inside home and rejects outside', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-bak-tgt-'));
+    dirs.push(dir);
+    const home = join(dir, 'projects', 'p1');
+    mkdirSync(join(home, 'app'), { recursive: true });
+    writeFileSync(join(home, 'app', 'hi.txt'), 'hello', 'utf8');
+    const host = new LocalHostExecutor({ allowedWriteRoots: [dir], executeEnabled: true });
+    const bak = await backupProject({ host, dataDir: dir, projectId: 'p1', homeDir: home });
+    const name = bak.archivePath!.split('/').pop()!;
+    const dest = join(home, 'restore-copy');
+    const ok = await restoreProjectBackup({
+      host,
+      dataDir: dir,
+      projectId: 'p1',
+      archiveName: name,
+      homeDir: home,
+      mode: 'web',
+      targetDir: dest,
+    });
+    expect(ok.ok).toBe(true);
+    await expect(
+      restoreProjectBackup({
+        host,
+        dataDir: dir,
+        projectId: 'p1',
+        archiveName: name,
+        homeDir: home,
+        mode: 'web',
+        targetDir: '/tmp/ysk-outside-restore',
+      }),
+    ).rejects.toMatchObject({ code: 'YSK_SANDBOX_VIOLATION' });
   });
 
   it('control-plane backup and restore gates', async () => {

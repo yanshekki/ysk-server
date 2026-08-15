@@ -125,7 +125,12 @@ export async function fetchRuntimeVersionChoices(
   if (!kind) return { choices: [] };
   try {
     const { systemApi } = await import('../../system');
-    const h = await systemApi.softwareVersions({ id: kind, refresh: false });
+    const h = await Promise.race([
+      systemApi.softwareVersions({ id: kind, refresh: false }),
+      new Promise<never>((_, rej) => {
+        setTimeout(() => rej(new Error('timeout')), 8_000);
+      }),
+    ]);
     const choices = (h.candidates ?? [])
       .map((c) => c.version)
       .filter((v): v is string => Boolean(v));
@@ -137,7 +142,7 @@ export async function fetchRuntimeVersionChoices(
       };
     }
   } catch {
-    /* offline */
+    /* offline / timeout — fall back */
   }
   const fallback = runtimeVersionChoices(runtime);
   return {

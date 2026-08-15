@@ -21,6 +21,7 @@ import type {
 import { usePageTab } from '../../shared/hooks/usePageTab';
 import { bindSet, bindInput, bindVoid } from '../bind-handlers';
 import { toast } from '../../shared/stores/toast-store';
+import { api } from '../../shared/services/api';
 
 const RDY_TABS = ['priority', 'checklist', 'about'] as const;
 
@@ -259,23 +260,33 @@ export function ReadinessPage() {
       ? 'danger'
       : 'warn';
 
-  function downloadReport() {
+  async function downloadReport() {
     if (!report) return;
-    const blob = new Blob([JSON.stringify(report, null, 2)], {
-      type: 'application/json; charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
     const filename = `ysk-readiness-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.json`;
-    a.download = filename;
-    a.rel = 'noopener';
-    document.body.appendChild(a);
-    a.click();
-    window.setTimeout(() => {
-      a.remove();
-      URL.revokeObjectURL(url);
-    }, 1500);
-    toast.ok(t('readiness.exportStarted', { name: filename }));
+    try {
+      await api.downloadAuthenticated('/api/v1/readiness/export', filename);
+      toast.ok(t('readiness.exportStarted', { name: filename }));
+    } catch (e) {
+      try {
+        const blob = new Blob([JSON.stringify(report, null, 2)], {
+          type: 'application/json; charset=utf-8',
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.rel = 'noopener';
+        document.body.appendChild(a);
+        a.click();
+        window.setTimeout(() => {
+          a.remove();
+          URL.revokeObjectURL(url);
+        }, 2000);
+        toast.ok(t('readiness.exportStarted', { name: filename }));
+      } catch {
+        toast.error(e instanceof Error ? e.message : t('common.opFailed'));
+      }
+    }
   }
 
   const score = report?.score;
@@ -322,7 +333,7 @@ export function ReadinessPage() {
           <Button variant="secondary" size="sm" loading={busy} onClick={bindVoid(load)}>
             {busy ? t('readiness.probing') : t('readiness.reprobe')}
           </Button>
-          <Button variant="ghost" size="sm" disabled={!report} onClick={bindVoid(downloadReport)}>
+          <Button variant="ghost" size="sm" disabled={!report} onClick={() => void downloadReport()}>
             {t('readiness.exportReport')}
           </Button>
           {firstFix ? (

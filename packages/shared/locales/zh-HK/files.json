@@ -347,5 +347,7 @@
     "typeMismatch": "此處已有名為「{{name}}」的{{destKind}}，即將加入的是{{incomingKind}}。",
     "skipped": "已略過",
     "cancelled": "已取消"
-  }
+  },
+  "webdavReissueUnchanged": "重新簽發後權杖編號未變——寫入可能未生效，請再試一次。",
+  "webdavDisableFailed": "停用後狀態仍為啟用——寫入可能未生效，請再試一次。"
 }

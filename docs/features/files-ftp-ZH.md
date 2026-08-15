@@ -34,7 +34,7 @@
 | FTP 帳戶 CRUD | `ysk-server ftp accounts list\|create\|update\|delete` | write-panel | `--project ID` 會 Jail 到該站 |
 | 專案 FTP | `ysk-server projects ftp --id UUID --password P` | write-panel | 等同 `POST /api/v1/projects/:id/ftp` |
 | FTP 套用主機 | `ysk-server ftp apply\|accounts apply --execute` | write-host | |
-| BT Tracker | `ysk-server bt-tracker status\|start\|stop\|settings\|torrents\|restore\|jobs` | read／write-host | 見 [bt-tracker-ZH.md](./bt-tracker-ZH.md) |
+| BT Tracker | `ysk-server bt-tracker status\|start\|stop\|settings\|torrents\|restore\|jobs\|add\|library\|trackers` | read／write-host | 見 [bt-tracker-ZH.md](./bt-tracker-ZH.md) |
 | 公開檔案站 | `ysk-server hosting public-files …` | write-host | |
 
 ## CLI 速查
@@ -55,7 +55,7 @@ ysk-server ftp apply --execute --json
 - FTPS 套用需 EXECUTE + root（vsftpd）。
 - vsftpd 啟動／停止／重啟：面板服務分頁，或 `ysk-server services stop vsftpd --execute`。  
 - 公開 `/share/:token` 頁為 UX；**建立**屬 CLI／API。有密碼的分享只用 `X-Share-Password`（不用 `?password=`）。密碼正確後會再取 meta，magnet／瀏覽器內 BT 才會解鎖。  
-- BT 模式需 Tracker 運行才可靠發現 peers；對外分享請設定 `publicAnnounceHost`。瀏覽器 WebTorrent 經同源 Tracker 代理（`/api/v1/public/bt-tracker`），使用面板 build 自帶資源（非第三方 CDN）。
+- BT 模式需 Tracker 運行才可靠發現 peers；對外分享請設定 `publicAnnounceHost`。瀏覽器 WebTorrent 經同源 Tracker 代理（`/api/v1/public/bt-tracker`），使用面板 build 自帶資源（非第三方 CDN）。匯入第三方 `.torrent` 下載或做種屬於 **BT Tracker 資料庫**（`/bt-tracker`），不是「檔案 → 建立分享」。
 - 撞名：面板對話（略過／兩者都保留／取代／合併）。CLI／API 預設 `--if-exists fail`。`files write` 仍會覆寫。
 
 ## 僅面板 ⚠️

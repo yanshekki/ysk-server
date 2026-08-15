@@ -76,6 +76,25 @@ describe('globalSearch', () => {
       expect(projects[0]?.kind).toBe('page');
       expect(projects[0]?.href).toBe('/projects');
 
+      store.snapshot.projects.push({
+        id: 'p-hello',
+        name: 'hello',
+        domain: 'hello.demo.test',
+        linux_user: 'ysks_hello',
+        linux_group: 'g',
+        home_dir: '/h2',
+        runtime: 'node',
+        env: 'production',
+        status: 'active',
+        os_provisioned: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      } as never);
+      store.persist();
+      expect(globalSearch(db, 'hello').some((h) => h.kind === 'project' && h.title === 'hello')).toBe(
+        true,
+      );
+
       const backupsZh = globalSearch(db, '備份');
       expect(backupsZh.some((h) => h.kind === 'page' && h.href === '/backups')).toBe(true);
     } finally {

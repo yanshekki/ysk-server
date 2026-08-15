@@ -549,11 +549,8 @@ export function TerminalPage() {
           <Modal
             open={rootConfirmOpen}
             onClose={() => setRootConfirmOpen(false)}
-            title={t('terminal.rootConfirmTitle', { defaultValue: 'Open a root shell?' })}
-            description={t('terminal.rootConfirmDesc', {
-              defaultValue:
-                'This session is an unrestricted root PTY on the host. Commands are audited.',
-            })}
+            title={t('terminal.rootConfirmTitle')}
+            description={t('terminal.rootConfirmDesc')}
             size="sm"
             footer={
               <>
@@ -574,9 +571,7 @@ export function TerminalPage() {
             }
           >
             <p className="muted u-text-sm">
-              {t('terminal.rootConfirmBody', {
-                defaultValue: 'Only continue if you intend to run privileged host commands.',
-              })}
+              {t('terminal.rootConfirmBody')}
             </p>
           </Modal>
 

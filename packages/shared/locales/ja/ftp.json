@@ -133,5 +133,7 @@
   "sftpTechSummary": "技術的な詳細（上級）",
   "sftpTechNote": "キーは管理対象パスの下に書き込まれます",
   "filterProject": "このプロジェクトの FTP アカウントのみ表示",
-  "clearProjectFilter": "すべてのアカウントを表示"
+  "clearProjectFilter": "すべてのアカウントを表示",
+  "vsftpdFailedHint": "vsftpd failed. Open the Service tab (listen and listen_ipv6 cannot both be YES).",
+  "tabService": "Service"
 }

@@ -358,7 +358,8 @@
     "postfixReloaded": "Postfix가 다시 로드되었습니다.",
     "postfixReloadFailed": "접미사 다시 로드 실패: {{detail}}",
     "dovecotApplied": "Dovecot TLS 코드 조각을 작성하고 다시 로드를 시도했습니다.",
-    "dovecotSkipped": "건너뛴 Dovecot(설치되지 않았거나 doveconf를 사용할 수 없음)"
+    "dovecotSkipped": "건너뛴 Dovecot(설치되지 않았거나 doveconf를 사용할 수 없음)",
+    "dovecotSslOmitted": "Mail certificate is missing; wrote ssl=no so Dovecot can start without the LE files."
   },
   "policyApplySystemHint": "Postfix/Rspamd 맵을 작성하고 다시 로드하려면 \"시스템에 적용\"을 선택하세요.",
   "rateLimitAppliedNote": "시간당 아웃바운드 비율 및 스팸 방지 플래그가 적용됩니다(시스템 적용이 켜져 있는 경우).",
@@ -488,5 +489,6 @@
   "deleteQueueTitle": "이 큐 메일을 삭제할까요?",
   "deleteQueueDesc": "로컬 MTA 큐에서 {{id}}를 제거합니다. YSK_EXECUTE가 필요합니다.",
   "openQueuePage": "메일 큐 열기",
-  "healthUnchecked": "Not checked yet"
+  "healthUnchecked": "Not checked yet",
+  "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first."
 }

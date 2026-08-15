@@ -372,7 +372,8 @@
     "dryRunOk": "Pré-visualização concluída. Reveja o conteúdo abaixo.",
     "strictBlocked": "O pacote ou o PAM não está pronto; a aplicação Strict está desativada.",
     "strictDryRun": "Pré-visualização do modo estrito",
-    "errorNoDetail": "Teste falhou (sem detalhes)"
+    "errorNoDetail": "Teste falhou (sem detalhes)",
+    "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it."
   },
   "sessionsActive": "Sessões ativas",
   "sessionsOther": "Outros dispositivos",
@@ -427,5 +428,7 @@
     "high": "Alto",
     "critical": "Crítico"
   },
-  "totpStatusLoadFailed": "Não foi possível carregar o estado 2FA"
+  "totpStatusLoadFailed": "Não foi possível carregar o estado 2FA",
+  "confirmDeleteApiKey": "Delete this API key?",
+  "confirmDeleteApiKeyDesc": "“{{name}}” will stop authenticating. This cannot be undone."
 }

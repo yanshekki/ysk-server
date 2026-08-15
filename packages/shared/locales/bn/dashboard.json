@@ -114,5 +114,9 @@
   "levelInfo": "তথ্য",
   "colTitle": "সতর্কতা",
   "colDetail": "বিস্তারিত",
-  "colSource": "উৎস"
+  "colSource": "উৎস",
+  "notifSearch": "Search alerts",
+  "notifAll": "All",
+  "notifDismiss": "Hide",
+  "goFix": "Fix"
 }

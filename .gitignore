@@ -32,6 +32,9 @@ Thumbs.db
 .ysk-test/
 **/.ysk-test/
 
+# Local tool caches (i18n MT, etc.)
+.cache/
+
 # Scratch
 tmp/
 **/tmp/

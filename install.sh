@@ -1083,6 +1083,17 @@ print_next() {
 EOF
 }
 
+# A leftover npm-global CLI (often 1.0.23) can shadow /usr/bin/ysk-server.
+warn_stale_npm_global_cli() {
+  local p ver
+  for p in /root/.npm-global/bin/ysk-server "${HOME}/.npm-global/bin/ysk-server"; do
+    if [[ -x "$p" ]]; then
+      ver="$("$p" --version 2>/dev/null | head -n1 || true)"
+      warn "Stale CLI still present: $p${ver:+ ($ver)}. PATH may prefer this over /usr/bin/ysk-server. Remove: rm -f $p"
+    fi
+  done
+}
+
 # Product-only: npm pack overlay + restart. Never reinstall MariaDB/MySQL.
 upgrade_product_only() {
   OPERATION=upgrade
@@ -1105,6 +1116,7 @@ upgrade_product_only() {
     overlay_npm_onto_running || ov=$?
   fi
   ensure_unit_execute
+  warn_stale_npm_global_cli
   if [[ "$(id -u)" -eq 0 ]] && command -v systemctl >/dev/null 2>&1; then
     systemctl try-restart ysk-server 2>/dev/null || true
   fi

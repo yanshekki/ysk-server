@@ -133,5 +133,7 @@
   "sftpTechSummary": "Detalles técnicos (avanzado)",
   "sftpTechNote": "Las claves se escriben en la ruta administrada.",
   "filterProject": "Solo cuentas FTP de este proyecto",
-  "clearProjectFilter": "Mostrar todas las cuentas"
+  "clearProjectFilter": "Mostrar todas las cuentas",
+  "vsftpdFailedHint": "vsftpd failed. Open the Service tab (listen and listen_ipv6 cannot both be YES).",
+  "tabService": "Service"
 }

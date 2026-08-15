@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { localPageHits } from './GlobalSearch';
+import { localPageHits, projectHitsFromRows } from './GlobalSearch';
 
 describe('localPageHits', () => {
   const t = (k: string) => {
@@ -21,5 +21,14 @@ describe('localPageHits', () => {
   it('matches 專案', () => {
     const hits = localPageHits('專案', t);
     expect(hits.some((h) => h.href === '/projects')).toBe(true);
+  });
+
+  it('matches an existing project name hello', () => {
+    const hits = projectHitsFromRows('hello', [
+      { id: 'p-hello', name: 'hello', domain: 'hello.demo-server.ysk.hk' },
+      { id: 'p-other', name: 'qa36tmp', domain: '' },
+    ]);
+    expect(hits.some((h) => h.kind === 'project' && h.title === 'hello')).toBe(true);
+    expect(hits[0]?.href).toBe('/projects/p-hello');
   });
 });

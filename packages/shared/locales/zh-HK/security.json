@@ -374,7 +374,8 @@
     "dryRunOk": "預覽試行完成。請查看下方預覽。",
     "strictDryRun": "嚴格模式預覽",
     "errorNoDetail": "測試失敗（無詳情）",
-    "strictBlocked": "套件或 PAM 未就緒，已停用套用 Strict。"
+    "strictBlocked": "套件或 PAM 未就緒，已停用套用 Strict。",
+    "privCloseWithoutAck": "已關閉。私鑰不會再顯示；若尚未儲存，請立即重新產生。"
   },
   "sessionsActive": "使用中",
   "sessionsOther": "其他裝置",
@@ -427,5 +428,7 @@
     "medium": "中",
     "high": "高",
     "critical": "嚴重"
-  }
+  },
+  "confirmDeleteApiKey": "刪除此 API 金鑰？",
+  "confirmDeleteApiKeyDesc": "刪除後「{{name}}」無法再驗證。此操作無法復原。"
 }

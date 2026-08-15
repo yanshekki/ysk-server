@@ -270,8 +270,10 @@ export const api = {
     a.rel = 'noopener';
     document.body.appendChild(a);
     a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+    window.setTimeout(() => {
+      a.remove();
+      URL.revokeObjectURL(url);
+    }, 2000);
   },
   health(): Promise<HealthResponse> {
     return request<HealthResponse>('/health');

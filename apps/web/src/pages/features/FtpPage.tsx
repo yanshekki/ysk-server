@@ -234,6 +234,12 @@ export function FtpPage() {
       {crud.error || keyErr ? (
         <Alert variant="error">{crud.error ?? keyErr}</Alert>
       ) : null}
+      {serviceStatus?.active === 'failed' ? (
+        <Alert variant="error">
+          {t('ftp.vsftpdFailedHint')}{' '}
+          <Link to="/ftp?tab=service">{t('ftp.tabService')}</Link>
+        </Alert>
+      ) : null}
       {crud.lastNotes?.length ? (
         <Alert variant="info">
           <ul className="list-plain list-spaced">

@@ -406,6 +406,15 @@ function isReadOnlyArgv(argv: string[]): boolean {
       argv[1] == null
     );
   }
+  if (bin === 'tar') {
+    const flags = argv.slice(1).filter((a) => a.startsWith('-') && !a.startsWith('--'));
+    const long = argv.slice(1).filter((a) => a.startsWith('--'));
+    if (long.includes('--list')) return true;
+    const compact = flags.join('').replace(/-/g, '');
+    const lists = compact.includes('t') || flags.some((f) => f === '-tzf' || f === '-tf' || f === '-tvf');
+    const mutates = /[xcurdA]/.test(compact);
+    return lists && !mutates;
+  }
   if (bin === 'nginx') return argv[1] === '-t';
   if (bin === 'pm2') {
     const sub = argv[1] ?? '';

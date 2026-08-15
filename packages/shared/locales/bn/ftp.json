@@ -133,5 +133,7 @@
   "sftpTechSummary": "প্রযুক্তিগত বিবরণ (উন্নত)",
   "sftpTechNote": "কীগুলি পরিচালিত পথের অধীনে লেখা হয়",
   "filterProject": "শুধু এই প্রজেক্টের FTP অ্যাকাউন্ট",
-  "clearProjectFilter": "সব অ্যাকাউন্ট দেখান"
+  "clearProjectFilter": "সব অ্যাকাউন্ট দেখান",
+  "vsftpdFailedHint": "vsftpd failed. Open the Service tab (listen and listen_ipv6 cannot both be YES).",
+  "tabService": "Service"
 }

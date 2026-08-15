@@ -134,6 +134,7 @@ function skipGetRouteCaps(pathname: string): boolean {
     pathname === '/api/v1/health' ||
     pathname === '/api/v1/status' ||
     pathname === '/api/v1/readiness' ||
+    pathname === '/api/v1/readiness/export' ||
     pathname === '/api/v1/notifications' ||
     pathname === '/api/v1/search'
   ) {

@@ -133,5 +133,7 @@
   "sftpTechSummary": "تکنیکی تفصیلات (جدید)",
   "sftpTechNote": "کلیدیں منظم راستے کے تحت لکھی جاتی ہیں۔",
   "filterProject": "صرف اس پروجیکٹ کے FTP اکاؤنٹس",
-  "clearProjectFilter": "تمام اکاؤنٹس دکھائیں"
+  "clearProjectFilter": "تمام اکاؤنٹس دکھائیں",
+  "vsftpdFailedHint": "vsftpd failed. Open the Service tab (listen and listen_ipv6 cannot both be YES).",
+  "tabService": "Service"
 }

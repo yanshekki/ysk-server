@@ -45,6 +45,35 @@ function kindLabel(kind: string, t: (k: string, o?: Record<string, unknown>) => 
   return t(`search.kinds.${kind}`, { defaultValue: kind });
 }
 
+/** Match project rows locally when the search API returns no resource hits. */
+export function projectHitsFromRows(
+  query: string,
+  projects: Array<{ id?: string; name?: string; domain?: string }>,
+): SearchHitDto[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  const hits: SearchHitDto[] = [];
+  for (const p of projects) {
+    const name = String(p.name ?? '');
+    const domain = String(p.domain ?? '');
+    const id = String(p.id ?? '');
+    const hay = [name, domain, id].join('\n').toLowerCase();
+    if (
+      hay.includes(q) ||
+      hay.split(/[\s./:_-]+/).some((tok) => tok.startsWith(q))
+    ) {
+      hits.push({
+        kind: 'project',
+        id,
+        title: name || id,
+        subtitle: domain || undefined,
+        href: id ? `/projects/${encodeURIComponent(id)}` : '/projects',
+      });
+    }
+  }
+  return hits;
+}
+
 export function localPageHits(
   query: string,
   t: (k: string, o?: Record<string, unknown>) => string,
@@ -144,12 +173,32 @@ export function GlobalSearch() {
         );
         if (seq !== reqSeq.current) return;
         lastCompletedQ.current = trimmed;
-        setHits(mergeHits(r.items ?? [], local));
+        let items = r.items ?? [];
+        if (!items.some((h) => h.kind === 'project')) {
+          try {
+            const pr = await api.requestRaw<{
+              items?: Array<{ id?: string; name?: string; domain?: string }>;
+            }>('/api/v1/projects?limit=200');
+            items = mergeHits(items, projectHitsFromRows(trimmed, pr.items ?? []));
+          } catch {
+            /* keep API + local pages */
+          }
+        }
+        setHits(mergeHits(items, local));
         setActive(0);
       } catch (e) {
         if (seq !== reqSeq.current) return;
         lastCompletedQ.current = trimmed;
-        setHits(local);
+        let fallback = local;
+        try {
+          const pr = await api.requestRaw<{
+            items?: Array<{ id?: string; name?: string; domain?: string }>;
+          }>('/api/v1/projects?limit=200');
+          fallback = mergeHits(projectHitsFromRows(trimmed, pr.items ?? []), local);
+        } catch {
+          /* local pages only */
+        }
+        setHits(fallback);
         setSearchError(e instanceof Error ? e.message : t('search.failed', { defaultValue: 'Search failed' }));
       } finally {
         if (seq === reqSeq.current) setLoading(false);

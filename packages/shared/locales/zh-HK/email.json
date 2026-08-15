@@ -359,7 +359,8 @@
     "postfixReloaded": "已重新載入 Postfix。",
     "postfixReloadFailed": "Postfix 重新載入失敗：{{detail}}",
     "dovecotApplied": "已寫入 Dovecot TLS 片段並嘗試重新載入。",
-    "dovecotSkipped": "已略過 Dovecot（未安裝或 doveconf 不可用）。"
+    "dovecotSkipped": "已略過 Dovecot（未安裝或 doveconf 不可用）。",
+    "dovecotSslOmitted": "郵件憑證不存在，已改寫 Dovecot 為 ssl=no，避免單元因缺少憑證而無法啟動。"
   },
   "policyApplySystemHint": "勾選「套用到系統」先會寫入 Postfix／Rspamd 對應並重新載入；否則只寫控制面草稿。",
   "rateLimitAppliedNote": "已套用每小時外發限额與反垃圾標記（若啟用系統套用）。",
@@ -488,5 +489,6 @@
   "queueDeferred": "延遲",
   "deleteQueueTitle": "刪除此佇列郵件？",
   "deleteQueueDesc": "從本機 MTA 佇列移除 {{id}}。需 YSK_EXECUTE。",
-  "openQueuePage": "開啟郵件佇列"
+  "openQueuePage": "開啟郵件佇列",
+  "dovecotFailedHint": "Dovecot 服務失敗。先到軟件分頁查看狀態；若郵件憑證尚未簽發，請先到 SSL 簽發 mail 主機名稱。"
 }

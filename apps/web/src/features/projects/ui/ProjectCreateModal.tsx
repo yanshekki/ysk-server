@@ -197,7 +197,9 @@ export function ProjectCreateModal({
     setRuntime(next);
     setVersionChoices([]);
     setVersionsLoading(true);
+    const seq = ++versionReq.current;
     void fetchRuntimeVersionChoices(next).then((r) => {
+      if (seq !== versionReq.current) return;
       const choices = r.choices.length ? r.choices : runtimeVersionChoices(next);
       setVersionChoices(choices);
       setRuntimeVersion(r.latest || choices[0] || defaultRuntimeInstallVersion(next));

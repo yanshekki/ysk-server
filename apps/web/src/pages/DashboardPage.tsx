@@ -239,6 +239,42 @@ export function DashboardPage() {
   }, [t, software, executeEnabled, readiness?.productionReady]);
 
   const notifBadge = notifications.length;
+  const [notifQ, setNotifQ] = useState('');
+  const [notifLevel, setNotifLevel] = useState<'all' | 'critical' | 'warn' | 'info'>('all');
+  const [dismissedNotifs, setDismissedNotifs] = useState<string[]>(() => {
+    try {
+      const raw = localStorage.getItem('ysk.notif.dismissed');
+      const arr = raw ? (JSON.parse(raw) as unknown) : [];
+      return Array.isArray(arr) ? arr.map(String) : [];
+    } catch {
+      return [];
+    }
+  });
+  const visibleNotifs = useMemo(() => {
+    const dismissed = new Set(dismissedNotifs);
+    const q = notifQ.trim().toLowerCase();
+    return notifications.filter((n) => {
+      if (dismissed.has(n.id)) return false;
+      if (notifLevel !== 'all' && n.level !== notifLevel) return false;
+      if (!q) return true;
+      return [n.title, n.body, n.source].join('\n').toLowerCase().includes(q);
+    });
+  }, [notifications, dismissedNotifs, notifQ, notifLevel]);
+  const dismissNotif = useCallback((id: string) => {
+    setDismissedNotifs((prev) => {
+      const next = prev.includes(id) ? prev : [...prev, id];
+      try {
+        localStorage.setItem('ysk.notif.dismissed', JSON.stringify(next.slice(-200)));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }, []);
+  const svcMatrixOrdered = useMemo(() => {
+    const rank = (s: string) => (s === 'failed' ? 0 : s === 'active' ? 2 : 1);
+    return [...svcMatrix].sort((a, b) => rank(a.active) - rank(b.active));
+  }, [svcMatrix]);
 
   return (
     <FeaturePageLayout
@@ -344,7 +380,7 @@ export function DashboardPage() {
               <Card>
                 <CardSection title={t('dashboard.serviceHealth')} description={t('dashboard.serviceHealthDesc')}>
                   <div className="chip-row">
-                    {svcMatrix.slice(0, 12).map((s) => (
+                    {svcMatrixOrdered.slice(0, 12).map((s) => (
                       <Link
                         key={s.id}
                         to={s.href || '/services'}
@@ -361,6 +397,7 @@ export function DashboardPage() {
                           }
                         >
                           {s.label}: {s.activeLabel}
+                          {s.active === 'failed' ? ` · ${t('dashboard.goFix')}` : ''}
                         </Badge>
                       </Link>
                     ))}
@@ -896,12 +933,36 @@ export function DashboardPage() {
         {tab === 'notifications' ? (
           <div className="tab-panel">
             <DataTable
-              title={t('dashboard.notifCenterTitle', { count: notifications.length })}
+              title={t('dashboard.notifCenterTitle', { count: visibleNotifs.length })}
               description={t('dashboard.notifCenterDesc', {
                 critical: notifCounts.critical,
                 warn: notifCounts.warn,
                 info: notifCounts.info,
               })}
+              filters={
+                <ActionBar>
+                  <input
+                    className="u-input u-w-control-xs"
+                    value={notifQ}
+                    onChange={(e) => setNotifQ(e.target.value)}
+                    placeholder={t('dashboard.notifSearch')}
+                    aria-label={t('dashboard.notifSearch')}
+                  />
+                  <SegRadio
+                    name="dash-notif-level"
+                    value={notifLevel}
+                    onChange={(v) =>
+                      setNotifLevel(v as 'all' | 'critical' | 'warn' | 'info')
+                    }
+                    options={[
+                      { value: 'all', label: t('dashboard.notifAll') },
+                      { value: 'critical', label: t('dashboard.levelCritical') },
+                      { value: 'warn', label: t('dashboard.levelWarn') },
+                      { value: 'info', label: t('dashboard.levelInfo') },
+                    ]}
+                  />
+                </ActionBar>
+              }
               columns={[
                 {
                   key: 'level',
@@ -944,18 +1005,27 @@ export function DashboardPage() {
                   render: (n) => n.source,
                 },
               ]}
-              rows={notifications}
+              rows={visibleNotifs}
               rowKey={(n) => n.id}
-              rowActions={(n) =>
-                n.href ? (
-                  <Link
-                    to={n.href}
-                    className={buttonClassName({ variant: 'secondary', size: 'sm' })}
+              rowActions={(n) => (
+                <ActionBar align="end">
+                  {n.href ? (
+                    <Link
+                      to={n.href}
+                      className={buttonClassName({ variant: 'secondary', size: 'sm' })}
+                    >
+                      {t('dashboard.go')}
+                    </Link>
+                  ) : null}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => dismissNotif(n.id)}
                   >
-                    {t('dashboard.go')}
-                  </Link>
-                ) : null
-              }
+                    {t('dashboard.notifDismiss')}
+                  </Button>
+                </ActionBar>
+              )}
               empty={
                 <EmptyState
                   title={t('dashboard.noNotifs')}

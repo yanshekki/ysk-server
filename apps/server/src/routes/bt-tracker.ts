@@ -31,8 +31,15 @@ import {
   restoreBtSharesOnBoot,
   listTorrentJobs,
   getTorrentJob,
+  inspectTorrentInput,
+  addBtLibraryItem,
+  listBtLibraryLive,
+  pauseBtLibraryItem,
+  resumeBtLibraryItem,
+  removeBtLibraryItemOp,
+  applyExtraTrackersNow,
 } from 'ysk-server-core';
-import { ErrorCodes } from 'ysk-server-shared';
+import { ErrorCodes, YskError } from 'ysk-server-shared';
 import type { AppContext } from '../app-context.js';
 import {
   getBearer,
@@ -204,6 +211,103 @@ export async function handleBtTrackerRoutes(
         sendJson(res, 200, r);
         return true;
       }
+      if (method === 'POST' && url.pathname === `${BASE}/library/inspect`) {
+        ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req, { maxBytes: 12 * 1024 * 1024 });
+        const data = JSON.parse(raw || '{}') as {
+          torrentBase64?: string;
+          magnet?: string;
+        };
+        let torrentBuf: Buffer | undefined;
+        if (data.torrentBase64) {
+          torrentBuf = Buffer.from(String(data.torrentBase64), 'base64');
+        }
+        const inspected = await inspectTorrentInput({
+          torrentBuf,
+          magnet: data.magnet,
+        });
+        sendJson(res, 200, { ok: true, ...inspected });
+        return true;
+      }
+      if (method === 'POST' && url.pathname === `${BASE}/library/apply-trackers`) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const r = applyExtraTrackersNow(ctx.dataDir);
+        ctx.audit.append({
+          actor: user.username,
+          action: 'bt_tracker.apply_trackers',
+          detail: { applied: r.applied },
+          ok: r.ok,
+        });
+        sendJson(res, 200, r);
+        return true;
+      }
+      if (method === 'POST' && url.pathname === `${BASE}/library`) {
+        const user = ctx.auth.authenticate(getBearer(req));
+        const raw = await readBody(req, { maxBytes: 12 * 1024 * 1024 });
+        const data = JSON.parse(raw || '{}') as {
+          torrentBase64?: string;
+          magnet?: string;
+          saveRoot?: string;
+          saveRelPath?: string;
+        };
+        let torrentBuf: Buffer | undefined;
+        if (data.torrentBase64) {
+          torrentBuf = Buffer.from(String(data.torrentBase64), 'base64');
+        }
+        const r = await addBtLibraryItem({
+          dataDir: ctx.dataDir,
+          torrentBuf,
+          magnet: data.magnet,
+          saveRoot: String(data.saveRoot || 'public'),
+          saveRelPath: String(data.saveRelPath || ''),
+        });
+        ctx.audit.append({
+          actor: user.username,
+          action: 'bt_tracker.library_add',
+          detail: { ok: r.ok, id: r.item?.id, hash: r.item?.infoHash },
+          ok: r.ok,
+        });
+        sendOpsResult(res, r);
+        return true;
+      }
+      if (method === 'GET' && url.pathname === `${BASE}/library`) {
+        ctx.auth.authenticate(getBearer(req));
+        sendJson(res, 200, { ok: true, items: listBtLibraryLive(ctx.dataDir) });
+        return true;
+      }
+      const libOne = url.pathname.match(
+        new RegExp(`^${BASE.replace(/\//g, '\\/')}/library/([^/]+)(?:/(pause|resume))?$`),
+      );
+      if (libOne) {
+        ctx.auth.authenticate(getBearer(req));
+        const id = decodeURIComponent(libOne[1] ?? '');
+        const act = libOne[2];
+        if (method === 'GET' && !act) {
+          const item = listBtLibraryLive(ctx.dataDir).find((i) => i.id === id);
+          if (!item) {
+            sendJson(res, 404, { ok: false, code: ErrorCodes.NOT_FOUND });
+            return true;
+          }
+          sendJson(res, 200, { ok: true, item });
+          return true;
+        }
+        if (method === 'POST' && act === 'pause') {
+          const r = await pauseBtLibraryItem(ctx.dataDir, id);
+          sendJson(res, 200, r);
+          return true;
+        }
+        if (method === 'POST' && act === 'resume') {
+          const r = await resumeBtLibraryItem(ctx.dataDir, id);
+          sendJson(res, 200, r);
+          return true;
+        }
+        if (method === 'DELETE' && !act) {
+          const deleteFiles = url.searchParams.get('deleteFiles') === '1';
+          const r = await removeBtLibraryItemOp(ctx.dataDir, id, { deleteFiles });
+          sendJson(res, 200, r);
+          return true;
+        }
+      }
       if (method === 'GET' && url.pathname === `${BASE}/torrents`) {
         ctx.auth.authenticate(getBearer(req));
         const shares = listFileShares(ctx.db);
@@ -243,27 +347,71 @@ export async function handleBtTrackerRoutes(
             .filter((s) => s.infoHash)
             .map((s) => [s.infoHash!.toLowerCase(), s]),
         );
+        const lib = listBtLibraryLive(ctx.dataDir);
+        const libByHash = new Map(lib.map((i) => [i.infoHash.toLowerCase(), i]));
         const items = rows.map((r) => {
           const sh = byHash.get(r.infoHash.toLowerCase());
           const seed = getSeedByInfoHash(r.infoHash);
+          const li = libByHash.get(r.infoHash.toLowerCase());
           return {
             ...r,
-            name: r.name || sh?.path.split('/').pop() || seed?.torrent.name,
+            name: r.name || li?.name || sh?.path.split('/').pop() || seed?.torrent.name,
             shareId: r.shareId || sh?.id || seed?.shareId,
-            seedStatus: r.seedStatus || sh?.seedStatus || (seed ? 'seeding' : undefined),
+            seedStatus:
+              r.seedStatus ||
+              li?.status ||
+              sh?.seedStatus ||
+              (seed ? 'seeding' : undefined),
             uploadSpeed: seed
               ? Number(seed.torrent.uploadSpeed) || 0
               : undefined,
             downloadSpeed: seed
               ? Number(seed.torrent.downloadSpeed) || 0
               : undefined,
+            kind: li ? 'library' : sh ? 'share' : 'swarm',
+            libraryId: li?.id,
+            progress: li?.progress ?? seed?.torrent.progress,
+            sizeBytes: li?.sizeBytes,
+            downloaded: li?.downloaded,
+            saveRoot: li?.saveRoot,
+            saveRelPath: li?.saveRelPath,
           };
         });
+        for (const li of lib) {
+          if (!items.some((x) => x.infoHash.toLowerCase() === li.infoHash)) {
+            items.push({
+              infoHash: li.infoHash,
+              name: li.name,
+              seeders: 0,
+              leechers: 0,
+              shareId: undefined,
+              seedStatus: li.status,
+              kind: 'library',
+              libraryId: li.id,
+              progress: li.progress,
+              sizeBytes: li.sizeBytes,
+              downloaded: li.downloaded,
+              saveRoot: li.saveRoot,
+              saveRelPath: li.saveRelPath,
+              uploadSpeed: li.uploadSpeed,
+              downloadSpeed: li.downloadSpeed,
+            });
+          }
+        }
         sendJson(res, 200, { ok: true, items });
         return true;
       }
       return false;
     } catch (e) {
+      if (e instanceof YskError) {
+        sendJson(res, e.httpStatus || 400, {
+          ok: false,
+          code: e.code,
+          message: e.message,
+          details: e.details,
+        });
+        return true;
+      }
       const msg = e instanceof Error ? e.message : String(e);
       sendJson(res, 500, { ok: false, code: ErrorCodes.INTERNAL, message: msg });
       return true;

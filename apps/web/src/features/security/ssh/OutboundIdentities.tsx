@@ -687,13 +687,13 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
       <Modal
         open={Boolean(revealKey)}
         onClose={() => {
-          if (!revealAck && revealKey) {
-            /* force ack path via footer */
-            return;
+          if (revealKey && !revealAck) {
+            onFlash('warn', t('security.ssh.privCloseWithoutAck'));
           }
           setRevealKey(null);
           setRevealFp(null);
           setRevealNextId(null);
+          setRevealAck(false);
         }}
         title={t('security.ssh.savePrivTitle')}
         description={t('security.ssh.savePrivDesc')}

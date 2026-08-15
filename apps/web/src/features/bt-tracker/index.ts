@@ -5,4 +5,8 @@ export type {
   BtTrackerTorrentRow,
   BtShareStats,
   BtTrackerStatusDto,
+  BtLibraryInspect,
+  BtLibraryItem,
+  BtLibraryLive,
+  BtExtraTracker,
 } from './api';

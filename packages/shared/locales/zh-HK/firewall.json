@@ -103,5 +103,7 @@
   "syncNow": "立即同步",
   "disableConfirmTitle": "停用 UFW？",
   "disableConfirmDesc": "主機防火牆將停止過濾流量。若主機在公眾網絡上，SSH 與面板可能直接暴露。",
-  "disableConfirmConsequence": "現有允許／拒絕規則仍會保留，但要重新啟用 UFW 才會生效。"
+  "disableConfirmConsequence": "現有允許／拒絕規則仍會保留，但要重新啟用 UFW 才會生效。",
+  "desiredOnlyUfwOff": "設定：{{mode}} · UFW 關閉（未套用）",
+  "syncNotApplied": "UFW 關閉 · 未套用"
 }

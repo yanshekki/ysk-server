@@ -510,5 +510,6 @@
   "useListForDefaults": "لتغيير المضيف أو اللوحة الافتراضية، أو إزالة هذا الإصدار، استخدم القائمة أعلاه.",
   "alreadyHostDefaultShort": "المضيف الافتراضي",
   "managedPathMissingTitle": "Managed {{name}} path not ready",
-  "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall."
+  "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall.",
+  "installRecordedCta": "Install recorded {{v}}"
 }

@@ -103,5 +103,7 @@
   "disableConfirmDesc": "Firewall host akan berhenti menyaring lalu lintas. Di jaringan publik, SSH dan panel bisa terekspos.",
   "disableConfirmConsequence": "Aturan izinkan/tolak tetap tersimpan, tetapi tidak ditegakkan sampai UFW diaktifkan lagi.",
   "toolHintFail2ban": "fail2ban = temporary log-based bans",
-  "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing."
+  "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing.",
+  "desiredOnlyUfwOff": "Desired: {{mode}} · UFW off (not applied)",
+  "syncNotApplied": "UFW off · not applied"
 }

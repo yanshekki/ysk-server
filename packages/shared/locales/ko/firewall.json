@@ -103,5 +103,7 @@
   "disableConfirmDesc": "호스트 방화벽이 트래픽을 필터하지 않습니다. 공용 네트워크에서는 SSH와 패널이 노출될 수 있습니다.",
   "disableConfirmConsequence": "기존 허용/거부 규칙은 유지되지만 UFW를 다시 켤 때까지 적용되지 않습니다.",
   "toolHintFail2ban": "fail2ban = temporary log-based bans",
-  "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing."
+  "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing.",
+  "desiredOnlyUfwOff": "Desired: {{mode}} · UFW off (not applied)",
+  "syncNotApplied": "UFW off · not applied"
 }

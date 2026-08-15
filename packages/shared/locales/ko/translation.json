@@ -543,7 +543,55 @@
     "udpPortClassic": "6969 · Classic",
     "portSuggest8000": "8000 · Recommended",
     "saveOkRestart": "저장됨 - 포트를 적용하려면 트래커를 다시 시작하세요",
-    "announceHostUnset": "—"
+    "announceHostUnset": "—",
+    "tabTrackers": "Trackers",
+    "addTorrent": "Add torrent",
+    "addTorrentTitle": "Add torrent",
+    "addTorrentHint": "Upload a .torrent or paste a magnet. Choose a Files folder. WebTorrent downloads missing files and seeds when complete.",
+    "dropTorrent": "Drop a .torrent here",
+    "chooseFile": "or choose a file",
+    "magnetLabel": "Magnet",
+    "magnetPlaceholder": "magnet:?xt=urn:btih:…",
+    "inspect": "Read",
+    "extraTrackersPreview": "Will also announce to {{n}} extra tracker(s)",
+    "saveLocation": "Save location",
+    "saveRootPublic": "Public files",
+    "newFolder": "New folder",
+    "destPreview": "Will write to",
+    "startDownload": "Start",
+    "filterDownloading": "Downloading",
+    "filterPaused": "Paused",
+    "filterError": "Error",
+    "emptyDrop": "Drop a .torrent here, or choose a file",
+    "emptyHint": "Files go in the folder you pick. If they are already complete, this host seeds. Engine: WebTorrent — no extra download software.",
+    "pause": "Pause",
+    "resume": "Resume",
+    "openFolder": "Open folder",
+    "remove": "Remove",
+    "removeKeep": "Remove, keep files",
+    "removeDelete": "Remove and delete files",
+    "removeConfirm": "Remove this torrent from the library?",
+    "kindShare": "Share",
+    "filesInTorrent": "files",
+    "extraTrackersDesc": "Extra announce URLs. Library download/seed and file-share seeds use them in addition to the .torrent list. This does not open the local tracker to arbitrary swarms.",
+    "extraTrackersEmpty": "No extra trackers. Add HTTP(S), UDP, or WS(S) announce URLs so this host can find peers.",
+    "extraTrackerAdd": "Add",
+    "extraTrackerUrl": "Announce URL",
+    "extraTrackerApply": "Apply to current seeds",
+    "extraTrackerApplyOk": "Applied extra trackers",
+    "extraEnabled": "On",
+    "extraTrackerBad": "URL must start with http://, https://, udp://, ws://, or wss://",
+    "extraTrackerDup": "Already listed",
+    "extraTrackerLimit": "Maximum 32 extra trackers",
+    "addOk": "Added to library",
+    "savedTo": "Save",
+    "folderEmpty": "No subfolders",
+    "needTorrentFile": "Choose a .torrent file",
+    "torrentTooBig": ".torrent larger than 8 MiB",
+    "seedStatusDownloading": "Downloading",
+    "seedStatusChecking": "Checking",
+    "seedStatusPaused": "Paused",
+    "seedStatusQueued": "Queued"
   },
   "catalog": {
     "sw": {
@@ -2277,7 +2325,11 @@
     "levelInfo": "정보",
     "colTitle": "알림",
     "colDetail": "내용",
-    "colSource": "출처"
+    "colSource": "출처",
+    "notifSearch": "Search alerts",
+    "notifAll": "All",
+    "notifDismiss": "Hide",
+    "goFix": "Fix"
   },
   "dataTable": {
     "empty": "데이터 없음",
@@ -2571,7 +2623,8 @@
     "serviceDownBody": "서비스 상태가 좋지 않음",
     "emptyDbHostHasRows": "The host already has databases that are not in this control-plane list.",
     "hostHasUntracked": "{{count}} host databases are not registered in the panel",
-    "hostInventoryHint": "The table is control-plane rows only. Live names come from SHOW DATABASES."
+    "hostInventoryHint": "The table is control-plane rows only. Live names come from SHOW DATABASES.",
+    "adoptHostDb": "Register {{name}}"
   },
   "dialogs": {
     "confirmDefault": "확인하다",
@@ -2799,7 +2852,8 @@
     "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
     "invalidIpv4": "Invalid IPv4. Each octet must be 0–255.",
     "mailZonesMissing": "Email domains have no DNS zone here: {{domains}}.",
-    "createMailZone": "Create mail zone"
+    "createMailZone": "Create mail zone",
+    "createMailZoneNow": "Created mail zone {{domain}}"
   },
   "email": {
     "title": "이메일",
@@ -3161,7 +3215,8 @@
       "postfixReloaded": "Postfix가 다시 로드되었습니다.",
       "postfixReloadFailed": "접미사 다시 로드 실패: {{detail}}",
       "dovecotApplied": "Dovecot TLS 코드 조각을 작성하고 다시 로드를 시도했습니다.",
-      "dovecotSkipped": "건너뛴 Dovecot(설치되지 않았거나 doveconf를 사용할 수 없음)"
+      "dovecotSkipped": "건너뛴 Dovecot(설치되지 않았거나 doveconf를 사용할 수 없음)",
+      "dovecotSslOmitted": "Mail certificate is missing; wrote ssl=no so Dovecot can start without the LE files."
     },
     "policyApplySystemHint": "Postfix/Rspamd 맵을 작성하고 다시 로드하려면 \"시스템에 적용\"을 선택하세요.",
     "rateLimitAppliedNote": "시간당 아웃바운드 비율 및 스팸 방지 플래그가 적용됩니다(시스템 적용이 켜져 있는 경우).",
@@ -3291,7 +3346,8 @@
     "deleteQueueTitle": "이 큐 메일을 삭제할까요?",
     "deleteQueueDesc": "로컬 MTA 큐에서 {{id}}를 제거합니다. YSK_EXECUTE가 필요합니다.",
     "openQueuePage": "메일 큐 열기",
-    "healthUnchecked": "Not checked yet"
+    "healthUnchecked": "Not checked yet",
+    "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first."
   },
   "errors": {
     "YSK_UNAUTHORIZED": "승인되지 않은",
@@ -3803,7 +3859,9 @@
     },
     "emptyTrashTitle": "Empty trash?",
     "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
-    "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone."
+    "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone.",
+    "webdavReissueUnchanged": "Token id did not change after re-issue — the write may not have persisted. Try again.",
+    "webdavDisableFailed": "WebDAV is still enabled after disable — the write may not have persisted. Try again."
   },
   "firewall": {
     "profiles": {
@@ -3910,7 +3968,9 @@
     "disableConfirmDesc": "호스트 방화벽이 트래픽을 필터하지 않습니다. 공용 네트워크에서는 SSH와 패널이 노출될 수 있습니다.",
     "disableConfirmConsequence": "기존 허용/거부 규칙은 유지되지만 UFW를 다시 켤 때까지 적용되지 않습니다.",
     "toolHintFail2ban": "fail2ban = temporary log-based bans",
-    "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing."
+    "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing.",
+    "desiredOnlyUfwOff": "Desired: {{mode}} · UFW off (not applied)",
+    "syncNotApplied": "UFW off · not applied"
   },
   "ftp": {
     "title": "FTPS 계정",
@@ -4047,7 +4107,9 @@
     "sftpTechSummary": "기술 세부정보(고급)",
     "sftpTechNote": "키는 관리 경로 아래에 기록됩니다.",
     "filterProject": "이 프로젝트의 FTP 계정만 표시",
-    "clearProjectFilter": "모든 계정 보기"
+    "clearProjectFilter": "모든 계정 보기",
+    "vsftpdFailedHint": "vsftpd failed. Open the Service tab (listen and listen_ipv6 cannot both be YES).",
+    "tabService": "Service"
   },
   "geo": {
     "continents": {
@@ -5110,7 +5172,10 @@
     "backup": {
       "fileNotFound": "백업 파일을 찾을 수 없습니다",
       "resticNoPassword": "Restic이 활성화되었지만 비밀번호가 설정되지 않았습니다",
-      "resticNotInPath": "PATH에 있지 않음"
+      "resticNotInPath": "PATH에 있지 않음",
+      "dbEnvUnreadable": "Could not read .db.env; skipped SQL dump.",
+      "dbEnvNoName": ".db.env has no database name; skipped SQL dump.",
+      "targetOutside": "Restore target must be inside the project home or the public files root."
     },
     "redis": {
       "cliMissing": "redis-cli가 설치되지 않았습니다"
@@ -8035,7 +8100,9 @@
       "sessionStartCwd": "VNC 시작 실패: 세션 사용자가 작업 디렉터리에 액세스할 수 없습니다(표시 :{{display}}). HOME에서 시작하여 수정되었습니다.",
       "desktopRestarted": "데스크톱 프로필이 적용되고 세션이 다시 시작되었습니다({{desktop}}). VNC/noVNC를 다시 연결합니다.",
       "desktopNeedsStart": "데스크탑 프로필 {{desktop}}가 xstartup에 기록되었습니다. 신청하려면 세션을 시작하세요.",
-      "passwordNeedTiger": "vncpasswd not found. Install TigerVNC (tigervnc-standalone-server) before setting a password."
+      "passwordNeedTiger": "vncpasswd not found. Install TigerVNC (tigervnc-standalone-server) before setting a password.",
+      "linuxUserRolledBack": "Removed leftover Linux user {{user}} after VNC password failed.",
+      "linuxUserOrphan": "Could not remove leftover Linux user {{user}} after VNC password failed."
     },
     "apache": {
       "needServerName": "서버 이름이 필요합니다",
@@ -8085,7 +8152,20 @@
       "startedDetached": "BT 추적기 분리 작업자 시작됨(pid {{pid}}, 포트 {{port}})",
       "runningDetached": "분리된 작업자로 실행되는 추적기(pid {{pid}})",
       "jobQueued": "BT 토렌트 생성 대기 중(큰 공유)",
-      "jobRunning": "BT 토렌트 생성 실행 중"
+      "jobRunning": "BT 토렌트 생성 실행 중",
+      "libraryAdded": "Added {{name}} to the WebTorrent library",
+      "libraryInspectFailed": "Could not read that .torrent or magnet",
+      "libraryDup": "That torrent is already in the library",
+      "libraryDestBad": "Save folder is not a valid Files path",
+      "libraryTorrentTooBig": ".torrent file is larger than 8 MiB",
+      "libraryNotFound": "Library item not found",
+      "libraryPaused": "Paused",
+      "libraryResumed": "Resumed",
+      "libraryRemoved": "Removed from library",
+      "libraryFilesRemoved": "Deleted downloaded files",
+      "libraryRestoreDone": "Library restore: started {{started}}/{{attempted}} (failed {{failed}})",
+      "applyTrackersDone": "Applied extra trackers to {{n}} live announce slots",
+      "libraryNeedServe": "Saved. Open the panel (ysk-server serve) so WebTorrent can download or seed."
     }
   },
   "ops": {
@@ -9982,7 +10062,8 @@
     "useListForDefaults": "호스트 또는 패널 기본값을 변경하거나 이 버전을 제거하려면 위 목록을 사용하십시오.",
     "alreadyHostDefaultShort": "호스트 기본값",
     "managedPathMissingTitle": "Managed {{name}} path not ready",
-    "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall."
+    "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall.",
+    "installRecordedCta": "Install recorded {{v}}"
   },
   "search": {
     "placeholder": "페이지 및 리소스 검색…",
@@ -10386,7 +10467,8 @@
       "dryRunOk": "미리보기가 끝났습니다. 아래 내용을 확인하세요.",
       "strictBlocked": "패키지 또는 PAM이 준비되지 않아 Strict 적용이 비활성화되었습니다.",
       "strictDryRun": "엄격 모드 미리보기",
-      "errorNoDetail": "테스트 실패(상세 없음)"
+      "errorNoDetail": "테스트 실패(상세 없음)",
+      "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it."
     },
     "sessionsActive": "활성 세션",
     "sessionsOther": "기타 장치",
@@ -10441,7 +10523,9 @@
       "high": "높음",
       "critical": "심각"
     },
-    "totpStatusLoadFailed": "2단계 상태를 불러오지 못했습니다"
+    "totpStatusLoadFailed": "2단계 상태를 불러오지 못했습니다",
+    "confirmDeleteApiKey": "Delete this API key?",
+    "confirmDeleteApiKeyDesc": "“{{name}}” will stop authenticating. This cannot be undone."
   },
   "serviceExposure": {
     "title": "네트워크 접속",
@@ -11333,7 +11417,10 @@
     "stepUpTitle": "루트 쉘 확인",
     "stepUpDesc": "인증 코드 또는 복구 코드를 입력하세요.",
     "totpLabel": "TOTP / 복구 코드",
-    "sessionStillOpen": "A live shell is still connected while you read this page."
+    "sessionStillOpen": "A live shell is still connected while you read this page.",
+    "rootConfirmTitle": "Open a root shell?",
+    "rootConfirmDesc": "This session is an unrestricted root PTY on the host. Commands are audited.",
+    "rootConfirmBody": "Only continue if you intend to run privileged host commands."
   },
   "uiInline": {
     "s27d9daa5": "런타임 {{v0}} {{v1}}，",

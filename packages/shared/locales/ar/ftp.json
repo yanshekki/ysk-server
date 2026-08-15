@@ -133,5 +133,7 @@
   "sftpTechSummary": "التفاصيل الفنية (متقدمة)",
   "sftpTechNote": "تتم كتابة المفاتيح ضمن المسار المُدار",
   "filterProject": "عرض حسابات FTP لهذا المشروع فقط",
-  "clearProjectFilter": "عرض كل الحسابات"
+  "clearProjectFilter": "عرض كل الحسابات",
+  "vsftpdFailedHint": "vsftpd failed. Open the Service tab (listen and listen_ipv6 cannot both be YES).",
+  "tabService": "Service"
 }

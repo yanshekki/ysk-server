@@ -271,6 +271,10 @@ export function SecurityPage() {
   const [apiKeys, setApiKeys] = useState<
     Array<{ id: string; name: string; prefix: string; created_at: string }>
   >([]);
+  const [deleteKeyTarget, setDeleteKeyTarget] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const [newKeyName, setNewKeyName] = useState('');
   const [newKeyScope, setNewKeyScope] = useState<'read' | 'full'>('read');
   const [newKeyToken, setNewKeyToken] = useState<string | null>(null);
@@ -1021,14 +1025,7 @@ export function SecurityPage() {
                   <Button
                     variant="danger"
                     size="sm"
-                    onClick={() => {
-                      void api
-                        .deleteApiKey(k.id)
-                        .then(() => refreshKeys())
-                        .catch((e: Error) =>
-                          toast.error(e.message),
-                        );
-                    }}
+                    onClick={() => setDeleteKeyTarget({ id: k.id, name: k.name })}
                   >
                     {t('common.delete')}
                   </Button>
@@ -1327,6 +1324,26 @@ export function SecurityPage() {
           </ul>
         )}
       </Modal>
+
+      <ConfirmDialog
+        open={Boolean(deleteKeyTarget)}
+        onClose={() => setDeleteKeyTarget(null)}
+        title={t('security.confirmDeleteApiKey')}
+        description={t('security.confirmDeleteApiKeyDesc', {
+          name: deleteKeyTarget?.name ?? '',
+        })}
+        danger
+        confirmLabel={t('common.delete')}
+        onConfirm={() => {
+          const id = deleteKeyTarget?.id;
+          setDeleteKeyTarget(null);
+          if (!id) return;
+          void api
+            .deleteApiKey(id)
+            .then(() => refreshKeys())
+            .catch((e: Error) => toast.error(e.message));
+        }}
+      />
 
       <ConfirmDialog
         open={strictConfirmOpen}

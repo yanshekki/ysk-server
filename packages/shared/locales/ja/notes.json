@@ -39,7 +39,10 @@
   "backup": {
     "fileNotFound": "バックアップファイルが見つかりません",
     "resticNoPassword": "Restic は有効ですが、パスワードが設定されていません",
-    "resticNotInPath": "Restic が PATH にありません"
+    "resticNotInPath": "Restic が PATH にありません",
+    "dbEnvUnreadable": "Could not read .db.env; skipped SQL dump.",
+    "dbEnvNoName": ".db.env has no database name; skipped SQL dump.",
+    "targetOutside": "Restore target must be inside the project home or the public files root."
   },
   "redis": {
     "cliMissing": "redis-cli がインストールされていません"
@@ -2964,7 +2967,9 @@
     "sessionStartCwd": "VNC の起動に失敗しました: セッション ユーザーは作業ディレクトリにアクセスできません (表示:{{display}})。 HOMEから起動すると直りました。",
     "desktopRestarted": "デスクトップ プロファイルが適用され、セッションが再起動されました ({{desktop}})。 VNC/noVNC を再接続します。",
     "desktopNeedsStart": "デスクトップ プロファイル {{desktop}} が xstartup に書き込まれます。セッションを開始して適用します。",
-    "passwordNeedTiger": "vncpasswd not found. Install TigerVNC (tigervnc-standalone-server) before setting a password."
+    "passwordNeedTiger": "vncpasswd not found. Install TigerVNC (tigervnc-standalone-server) before setting a password.",
+    "linuxUserRolledBack": "Removed leftover Linux user {{user}} after VNC password failed.",
+    "linuxUserOrphan": "Could not remove leftover Linux user {{user}} after VNC password failed."
   },
   "apache": {
     "needServerName": "サーバー名は必須です",
@@ -3014,6 +3019,19 @@
     "startedDetached": "BT トラッカーのデタッチされたワーカーが開始されました (pid {{pid}}、ポート {{port}})",
     "runningDetached": "切り離されたワーカーとして実行されているトラッカー (pid {{pid}})",
     "jobQueued": "BT トレント作成がキューに入れられました (大シェア)",
-    "jobRunning": "BT トレント作成実行中"
+    "jobRunning": "BT トレント作成実行中",
+    "libraryAdded": "Added {{name}} to the WebTorrent library",
+    "libraryInspectFailed": "Could not read that .torrent or magnet",
+    "libraryDup": "That torrent is already in the library",
+    "libraryDestBad": "Save folder is not a valid Files path",
+    "libraryTorrentTooBig": ".torrent file is larger than 8 MiB",
+    "libraryNotFound": "Library item not found",
+    "libraryPaused": "Paused",
+    "libraryResumed": "Resumed",
+    "libraryRemoved": "Removed from library",
+    "libraryFilesRemoved": "Deleted downloaded files",
+    "libraryRestoreDone": "Library restore: started {{started}}/{{attempted}} (failed {{failed}})",
+    "applyTrackersDone": "Applied extra trackers to {{n}} live announce slots",
+    "libraryNeedServe": "Saved. Open the panel (ysk-server serve) so WebTorrent can download or seed."
   }
 }

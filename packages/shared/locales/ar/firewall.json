@@ -103,5 +103,7 @@
   "disableConfirmDesc": "سيتوقف جدار حماية المضيف عن تصفية الحركة. على شبكة عامة قد يتعرض SSH واللوحة.",
   "disableConfirmConsequence": "تبقى قواعد السماح/الرفض مخزّنة لكنها لا تُفرض حتى إعادة تفعيل UFW.",
   "toolHintFail2ban": "fail2ban = temporary log-based bans",
-  "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing."
+  "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing.",
+  "desiredOnlyUfwOff": "Desired: {{mode}} · UFW off (not applied)",
+  "syncNotApplied": "UFW off · not applied"
 }

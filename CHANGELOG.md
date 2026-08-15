@@ -1,5 +1,38 @@
 # Changelog
 
+## 1.0.37 — 2026-08-15
+
+### Feature
+- BT Tracker library: upload a `.torrent` (or magnet), pick a Files folder, download or seed with in-process **WebTorrent** (no extra client)
+- Extra Trackers tab: operator-managed announce list used when downloading and seeding (empty by default; never a canned public list)
+- Torrent tab redesigned as a progress library (not a hash admin table)
+
+### Fix
+- Store merge no longer resurrects a project or cron row another process deleted
+- `backup status` lastRun uses `ok` / `results` (a successful `projects backup` is not “0/0 failed”)
+- `backup all` treats YSK_EXECUTE blocks as failures, not “all skipped / success”
+- `tar -tzf` list-only restore preview is read-only (no EXECUTE)
+- `backup restore --target` can extract into the project home or public files root
+- Control-plane archives on `/backups` offer Preview only (not project 還原網站 / 完整還原)
+- `notifications create|send|…` exits 2; only `list` exists (no invented Slack/webhook)
+- `cmd --help` shows that command’s help, not the global page; CJK command names get an English-only hint
+- Postgres provision notes redact `PASSWORD '…'`
+- VNC password failure rolls back a newly created Linux user
+- Global search falls back to the project list so a name like `hello` is found
+- Readiness export is an authenticated attachment (`GET /api/v1/readiness/export`)
+- WebDAV disable/reissue persist and surface a mismatch if the write did not stick
+- VPN add-peer failures stay on the page (not silent)
+- API key delete asks for confirm; SSH private-key modal X closes without treating the key as saved
+- Root-shell confirm is translated (no English default on zh-HK)
+- Notifications feed can search, filter, and hide rows (session only — still no outbound channel)
+- MariaDB host-only databases have a Register CTA; Node recorded-but-missing has an install CTA
+- Firewall rows do not claim 公網 live when UFW is off
+- DNS mail-zone CTA creates the zone when an IPv4 is known
+- Dashboard failed chips sort first and say 前往處理; Email/FTP pages link Dovecot/vsftpd failures
+- `install.sh --upgrade` warns about a leftover `/root/.npm-global` CLI
+- Missing mail LE files write Dovecot `ssl=no` instead of pointing at absent paths
+- Project backup dumps a SQL sidecar when `.db.env` is present (home tar still excludes secrets)
+
 ## 1.0.36 — 2026-08-15
 
 ### Fix

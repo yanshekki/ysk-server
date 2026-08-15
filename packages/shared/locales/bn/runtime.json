@@ -510,5 +510,6 @@
   "useListForDefaults": "হোস্ট বা প্যানেল ডিফল্ট পরিবর্তন করতে, বা এই সংস্করণটি সরাতে, উপরের তালিকাটি ব্যবহার করুন৷",
   "alreadyHostDefaultShort": "হোস্ট ডিফল্ট",
   "managedPathMissingTitle": "Managed {{name}} path not ready",
-  "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall."
+  "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall.",
+  "installRecordedCta": "Install recorded {{v}}"
 }

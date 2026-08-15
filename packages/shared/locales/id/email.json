@@ -358,7 +358,8 @@
     "postfixReloaded": "Postfix dimuat ulang.",
     "postfixReloadFailed": "Gagal memuat ulang postfix: {{detail}}",
     "dovecotApplied": "Menulis cuplikan TLS Dovecot dan mencoba memuat ulang.",
-    "dovecotSkipped": "Melewati Dovecot (tidak diinstal atau doveconf tidak tersedia)."
+    "dovecotSkipped": "Melewati Dovecot (tidak diinstal atau doveconf tidak tersedia).",
+    "dovecotSslOmitted": "Mail certificate is missing; wrote ssl=no so Dovecot can start without the LE files."
   },
   "policyApplySystemHint": "Centang “apply to system” untuk menulis peta Postfix/Rspamd dan memuat ulang;",
   "rateLimitAppliedNote": "Tarif keluar per jam dan tanda antispam diterapkan (saat penerapan sistem aktif).",
@@ -488,5 +489,6 @@
   "deleteQueueTitle": "Hapus pesan antrean ini?",
   "deleteQueueDesc": "Hapus {{id}} dari antrean MTA lokal. Perlu YSK_EXECUTE.",
   "openQueuePage": "Buka antrean surat",
-  "healthUnchecked": "Not checked yet"
+  "healthUnchecked": "Not checked yet",
+  "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first."
 }

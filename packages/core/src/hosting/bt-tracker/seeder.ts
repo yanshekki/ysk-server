@@ -1,29 +1,44 @@
 /**
  * In-process WebTorrent seeder for panel file shares.
  */
-import { existsSync, statSync } from 'node:fs';
+import { existsSync, mkdirSync, statSync } from 'node:fs';
 import { dirname } from 'node:path';
-import type { BtShareStats } from 'ysk-server-shared';
+import type { BtLibraryStatus, BtShareStats } from 'ysk-server-shared';
 import { tl } from 'ysk-server-shared';
 import type { FileShareRecord } from '../../files/manager.js';
-import { buildSeederAnnounceList, loadBtTrackerSettings } from './settings.js';
+import {
+  buildLibraryAnnounceList,
+  buildSeederAnnounceList,
+  enabledExtraTrackerUrls,
+  loadBtTrackerSettings,
+} from './settings.js';
+
+type SeedTorrent = {
+  infoHash?: string;
+  name?: string;
+  length?: number;
+  numPeers?: number;
+  downloadSpeed?: number;
+  uploadSpeed?: number;
+  downloaded?: number;
+  uploaded?: number;
+  progress?: number;
+  paused?: boolean;
+  done?: boolean;
+  files?: Array<{ path?: string; name?: string; length?: number }>;
+  announce?: string[];
+  pause?: () => void;
+  resume?: () => void;
+  addTracker?: (url: string) => void;
+  destroy?: (opts?: { destroyStore?: boolean }, cb?: () => void) => void;
+  on?: (ev: string, fn: (...a: unknown[]) => void) => void;
+};
 
 type SeedEntry = {
   shareId: string;
   infoHash: string;
-  torrent: {
-    infoHash?: string;
-    name?: string;
-    length?: number;
-    numPeers?: number;
-    downloadSpeed?: number;
-    uploadSpeed?: number;
-    downloaded?: number;
-    uploaded?: number;
-    progress?: number;
-    destroy?: (opts?: { destroyStore?: boolean }, cb?: () => void) => void;
-    on?: (ev: string, fn: (...a: unknown[]) => void) => void;
-  };
+  kind: 'share' | 'library';
+  torrent: SeedTorrent;
 };
 
 type WtClient = {
@@ -100,13 +115,14 @@ export async function seedShare(input: {
     const c = await ensureClient();
     // Panel public announce host + ports first; loopback only as process-local extra
     const announce = buildSeederAnnounceList(settings);
+    const extras = enabledExtraTrackerUrls(settings);
     const torrent = await new Promise<SeedEntry['torrent']>((resolve, reject) => {
       const t = c.add(
         input.torrentAbsPath,
         {
           path: contentBasePath(input.contentAbsPath),
           destroyStore: false,
-          announce,
+          announce: [...announce, ...extras],
         },
         (ready) => resolve(ready || t),
       );
@@ -123,6 +139,7 @@ export async function seedShare(input: {
     seeds.set(input.share.id, {
       shareId: input.share.id,
       infoHash,
+      kind: 'share',
       torrent,
     });
     notes.push(tl('notes.btTracker.seedStarted', { id: input.share.id }));
@@ -147,6 +164,111 @@ export async function stopSeed(shareId: string): Promise<{ ok: boolean; notes: s
     }
   });
   return { ok: true, notes: [tl('notes.btTracker.seedStopped')] };
+}
+
+/**
+ * Add a library torrent. Content may be missing — WebTorrent downloads into destAbs.
+ */
+export async function addLibrarySeed(input: {
+  dataDir: string;
+  id: string;
+  destAbs: string;
+  torrentAbsPath?: string;
+  magnetUri?: string;
+  torrentAnnounce?: string[];
+}): Promise<{ ok: boolean; notes: string[]; status: BtLibraryStatus }> {
+  const notes: string[] = [];
+  if (seeds.has(input.id)) {
+    return { ok: true, notes: ['already in client'], status: 'downloading' };
+  }
+  const torrentId = input.torrentAbsPath && existsSync(input.torrentAbsPath)
+    ? input.torrentAbsPath
+    : String(input.magnetUri || '').trim();
+  if (!torrentId) {
+    return { ok: false, notes: [tl('notes.btTracker.libraryInspectFailed')], status: 'error' };
+  }
+  mkdirSync(input.destAbs, { recursive: true });
+  const settings = loadBtTrackerSettings(input.dataDir);
+  if (seeds.size >= settings.maxSeeds) {
+    return {
+      ok: false,
+      notes: [tl('notes.btTracker.maxSeeds', { n: String(settings.maxSeeds) })],
+      status: 'queued',
+    };
+  }
+  try {
+    const c = await ensureClient();
+    const announce = buildLibraryAnnounceList(settings, input.torrentAnnounce ?? []);
+    const torrent = await new Promise<SeedTorrent>((resolve, reject) => {
+      const t = c.add(
+        torrentId,
+        { path: input.destAbs, destroyStore: false, announce },
+        (ready) => resolve(ready || t),
+      );
+      t.on?.('error', (e: unknown) => {
+        reject(e instanceof Error ? e : new Error(String(e)));
+      });
+      setTimeout(() => resolve(t), 15_000);
+    });
+    const infoHash = String(torrent.infoHash || '').toLowerCase();
+    seeds.set(input.id, {
+      shareId: input.id,
+      infoHash,
+      kind: 'library',
+      torrent,
+    });
+    const progress = Number(torrent.progress) || 0;
+    const status: BtLibraryStatus =
+      progress >= 1 || torrent.done ? 'seeding' : 'downloading';
+    notes.push(tl('notes.btTracker.libraryAdded', { name: torrent.name || input.id }));
+    return { ok: true, notes, status };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    notes.push(msg.slice(0, 240));
+    return { ok: false, notes, status: 'error' };
+  }
+}
+
+export async function pauseSeed(id: string): Promise<{ ok: boolean; notes: string[] }> {
+  const entry = seeds.get(id);
+  if (!entry) return { ok: true, notes: ['not in client'] };
+  try {
+    entry.torrent.pause?.();
+  } catch {
+    /* */
+  }
+  return { ok: true, notes: [tl('notes.btTracker.libraryPaused')] };
+}
+
+export async function resumeSeed(id: string): Promise<{ ok: boolean; notes: string[] }> {
+  const entry = seeds.get(id);
+  if (!entry) return { ok: false, notes: ['not in client'] };
+  try {
+    entry.torrent.resume?.();
+  } catch {
+    /* */
+  }
+  return { ok: true, notes: [tl('notes.btTracker.libraryResumed')] };
+}
+
+export function applyExtraTrackersToSeeds(urls: string[]): { applied: number } {
+  let applied = 0;
+  for (const entry of seeds.values()) {
+    for (const url of urls) {
+      try {
+        if (typeof entry.torrent.addTracker === 'function') {
+          entry.torrent.addTracker(url);
+          applied += 1;
+        } else if (Array.isArray(entry.torrent.announce) && !entry.torrent.announce.includes(url)) {
+          entry.torrent.announce.push(url);
+          applied += 1;
+        }
+      } catch {
+        /* */
+      }
+    }
+  }
+  return { applied };
 }
 
 export function collectBtShareStats(input: {

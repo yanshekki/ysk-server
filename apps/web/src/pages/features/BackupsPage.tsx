@@ -436,7 +436,20 @@ export function BackupsPage() {
                           >
                             {t('system.download')}
                           </Button>
-                          {canRestore ? (
+                          {canRestore && b.projectId === 'control-plane' ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              loading={busy}
+                              onClick={() => {
+                                setRestoreMode('dry-run');
+                                setRestoreTarget(b);
+                              }}
+                            >
+                              {t('system.preview')}
+                            </Button>
+                          ) : null}
+                          {canRestore && b.projectId !== 'control-plane' ? (
                             <>
                               <Button
                                 variant="ghost"

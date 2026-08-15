@@ -34,7 +34,7 @@ Sandboxed **file manager** (public or project root), **public share links** (dir
 | FTP accounts CRUD | `ysk-server ftp accounts list\|create\|update\|delete` | write-panel | `--project ID` jails to that site |
 | Project FTP | `ysk-server projects ftp --id UUID --password P` | write-panel | Same as `POST /api/v1/projects/:id/ftp` |
 | FTP apply to host | `ysk-server ftp apply\|accounts apply --execute` | write-host | |
-| BT tracker | `ysk-server bt-tracker status\|start\|stop\|settings\|torrents\|restore\|jobs` | read / write-host | See [bt-tracker.md](./bt-tracker.md) |
+| BT tracker | `ysk-server bt-tracker status\|start\|stop\|settings\|torrents\|restore\|jobs\|add\|library\|trackers` | read / write-host | See [bt-tracker.md](./bt-tracker.md) |
 | Public files site | `ysk-server hosting public-files …` | write-host | |
 
 ## CLI quick start
@@ -55,7 +55,7 @@ ysk-server ftp apply --execute --json
 - FTPS apply needs EXECUTE + root for vsftpd.
 - vsftpd start/stop/restart: panel service tab, or `ysk-server services stop vsftpd --execute`.  
 - Public `/share/:token` page is UX; **create** is CLI/API. Password-protected shares send `X-Share-Password` (never `?password=`). After a correct password the page re-fetches meta so magnet / in-browser BT unlock.  
-- BT mode needs tracker running for peer discovery; set `publicAnnounceHost` for off-host magnets. Browser WebTorrent uses a same-origin tracker proxy (`/api/v1/public/bt-tracker`) and a panel-built WebTorrent asset (not a public CDN).
+- BT mode needs tracker running for peer discovery; set `publicAnnounceHost` for off-host magnets. Browser WebTorrent uses a same-origin tracker proxy (`/api/v1/public/bt-tracker`) and a panel-built WebTorrent asset (not a public CDN). Importing a third-party `.torrent` to download or seed is the **BT Tracker library** (`/bt-tracker`), not Files share create.
 - Name collisions: panel dialog (skip / keep both / replace / merge). CLI/API default `--if-exists fail`. `files write` still overwrites.
 
 ## Panel-only ⚠️

@@ -510,5 +510,6 @@
   "path": "路徑",
   "fullVersion": "完整版本",
   "useListForDefaults": "要改主機／面板預設或移除此版本，請用上方列表。",
-  "alreadyHostDefaultShort": "主機預設"
+  "alreadyHostDefaultShort": "主機預設",
+  "installRecordedCta": "前往軟件分頁安裝 {{v}}"
 }

@@ -510,5 +510,6 @@
   "useListForDefaults": "Para cambiar el valor predeterminado del host o del panel, o eliminar esta versión, utilice la lista anterior.",
   "alreadyHostDefaultShort": "Valor predeterminado del host",
   "managedPathMissingTitle": "Managed {{name}} path not ready",
-  "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall."
+  "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall.",
+  "installRecordedCta": "Install recorded {{v}}"
 }

@@ -460,6 +460,14 @@ export class VncService {
         rec.hasPassword = true;
         notes.push(tl('notes.vnc.passwordMetaOnly'));
       } else if (!pw.ok) {
+        if (userR.provisioned && this.host.executeEnabled() && this.host.isRoot()) {
+          try {
+            await removeLinuxUser(this.host, linuxUser, true);
+            notes.push(tl('notes.vnc.linuxUserRolledBack', { user: linuxUser }));
+          } catch {
+            notes.push(tl('notes.vnc.linuxUserOrphan', { user: linuxUser }));
+          }
+        }
         return { ok: false, notes };
       }
     }

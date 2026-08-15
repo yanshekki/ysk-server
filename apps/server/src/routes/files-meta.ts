@@ -265,8 +265,20 @@ export async function handleFilesMetaSection(
   }
   if (method === 'POST' && url.pathname === '/api/v1/files/webdav/disable') {
     const { setWebDavSettings } = await import('ysk-server-core');
-    setWebDavSettings(ctx.db, { enabled: false });
-    sendJson(res, 200, { ok: true, enabled: false });
+    const s = setWebDavSettings(ctx.db, { enabled: false });
+    ctx.audit.append({
+      actor: user.username,
+      action: 'files.webdav.disable',
+      detail: { tokenId: s.tokenId, updated_at: s.updated_at },
+      ok: true,
+    });
+    sendJson(res, 200, {
+      ok: true,
+      enabled: s.enabled,
+      tokenId: s.tokenId,
+      mountPath: s.mountPath,
+      updated_at: s.updated_at,
+    });
     return true;
   }
 

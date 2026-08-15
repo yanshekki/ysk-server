@@ -14,6 +14,13 @@ declare module 'webtorrent' {
     downloaded?: number;
     uploaded?: number;
     progress?: number;
+    paused?: boolean;
+    done?: boolean;
+    files?: Array<{ path?: string; name?: string; length?: number }>;
+    announce?: string[];
+    pause?: () => void;
+    resume?: () => void;
+    addTracker?: (url: string) => void;
     destroy?: (opts?: { destroyStore?: boolean }, cb?: () => void) => void;
     on?: (ev: string, fn: (...a: unknown[]) => void) => void;
   };
@@ -82,7 +89,9 @@ declare module 'parse-torrent' {
     name?: string;
     length?: number;
     announce?: string[];
+    private?: boolean;
+    files?: Array<{ path?: string; name?: string; length?: number }>;
   };
-  function parseTorrent(buf: Buffer): ParsedTorrent;
+  function parseTorrent(input: Buffer | string): ParsedTorrent;
   export default parseTorrent;
 }

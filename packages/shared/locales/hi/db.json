@@ -286,5 +286,6 @@
   "serviceDownBody": "सेवा अस्वस्थ है",
   "emptyDbHostHasRows": "The host already has databases that are not in this control-plane list.",
   "hostHasUntracked": "{{count}} host databases are not registered in the panel",
-  "hostInventoryHint": "The table is control-plane rows only. Live names come from SHOW DATABASES."
+  "hostInventoryHint": "The table is control-plane rows only. Live names come from SHOW DATABASES.",
+  "adoptHostDb": "Register {{name}}"
 }

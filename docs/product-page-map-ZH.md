@@ -30,7 +30,7 @@
 | 資料庫 | `/databases/postgres/service` | Postgres service | I |
 | 資料庫 | `/databases/redis` | Redis data | I |
 | 資料庫 | `/databases/redis/service` | Redis service | I |
-| 檔案 | `/bt-tracker` | BT Tracker | G |
+| 檔案 | `/bt-tracker` | BT Tracker（WebTorrent 資料庫 + 常用 Tracker） | G |
 | DNS / SSL | `/dns` | DNS 區域 | C |
 | DNS / SSL | `/cdn` | CDN／邊緣 | C′ |
 | DNS / SSL | `/ssl` | 憑證 | D |

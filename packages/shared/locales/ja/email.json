@@ -358,7 +358,8 @@
     "postfixReloaded": "Postfixがリロードされました。",
     "postfixReloadFailed": "Postfix のリロードに失敗しました: {{detail}}",
     "dovecotApplied": "Dovecot TLS スニペットを作成し、リロードを試みました。",
-    "dovecotSkipped": "Dovecot をスキップしました (インストールされていないか、doveconf が利用できません)。"
+    "dovecotSkipped": "Dovecot をスキップしました (インストールされていないか、doveconf が利用できません)。",
+    "dovecotSslOmitted": "Mail certificate is missing; wrote ssl=no so Dovecot can start without the LE files."
   },
   "policyApplySystemHint": "「システムに適用」にチェックを入れて、Postfix/Rspamd マップを書き込み、リロードします。",
   "rateLimitAppliedNote": "1 時間ごとのアウトバウンド率とスパム対策フラグが適用されます (システム適用がオンの場合)。",
@@ -488,5 +489,6 @@
   "deleteQueueTitle": "このキューメールを削除しますか？",
   "deleteQueueDesc": "ローカル MTA キューから {{id}} を削除します。YSK_EXECUTE が必要です。",
   "openQueuePage": "メールキューを開く",
-  "healthUnchecked": "Not checked yet"
+  "healthUnchecked": "Not checked yet",
+  "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first."
 }

@@ -133,5 +133,7 @@
   "sftpTechSummary": "तकनीकी विवरण (उन्नत)",
   "sftpTechNote": "कुंजियाँ प्रबंधित पथ के अंतर्गत लिखी जाती हैं",
   "filterProject": "केवल इस प्रोजेक्ट के FTP खाते",
-  "clearProjectFilter": "सभी खाते दिखाएँ"
+  "clearProjectFilter": "सभी खाते दिखाएँ",
+  "vsftpdFailedHint": "vsftpd failed. Open the Service tab (listen and listen_ipv6 cannot both be YES).",
+  "tabService": "Service"
 }

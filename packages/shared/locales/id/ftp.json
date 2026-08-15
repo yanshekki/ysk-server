@@ -133,5 +133,7 @@
   "sftpTechSummary": "Detail teknis (lanjutan)",
   "sftpTechNote": "Kunci ditulis di bawah jalur yang dikelola",
   "filterProject": "Hanya akun FTP proyek ini",
-  "clearProjectFilter": "Tampilkan semua akun"
+  "clearProjectFilter": "Tampilkan semua akun",
+  "vsftpdFailedHint": "vsftpd failed. Open the Service tab (listen and listen_ipv6 cannot both be YES).",
+  "tabService": "Service"
 }

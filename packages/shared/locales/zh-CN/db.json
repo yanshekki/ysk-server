@@ -286,5 +286,6 @@
   "unfreezeOk": "{{engine}} 修复完成",
   "startAfterUnfreeze": "启动服务（失败时会自动套用修复计划）",
   "serviceDownTitle": "数据库服务未运行",
-  "serviceDownBody": "服务异常。面板会诊断常见原因（冻结、配置残留、空白数据目录、端口冲突等）。数据目录为空：{{empty}}。请按「检查并修复服务」确认执行。"
+  "serviceDownBody": "服务异常。面板会诊断常见原因（冻结、配置残留、空白数据目录、端口冲突等）。数据目录为空：{{empty}}。请按「检查并修复服务」确认执行。",
+  "adoptHostDb": "登记 {{name}}"
 }

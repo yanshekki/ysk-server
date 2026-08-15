@@ -372,7 +372,8 @@
     "dryRunOk": "미리보기가 끝났습니다. 아래 내용을 확인하세요.",
     "strictBlocked": "패키지 또는 PAM이 준비되지 않아 Strict 적용이 비활성화되었습니다.",
     "strictDryRun": "엄격 모드 미리보기",
-    "errorNoDetail": "테스트 실패(상세 없음)"
+    "errorNoDetail": "테스트 실패(상세 없음)",
+    "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it."
   },
   "sessionsActive": "활성 세션",
   "sessionsOther": "기타 장치",
@@ -427,5 +428,7 @@
     "high": "높음",
     "critical": "심각"
   },
-  "totpStatusLoadFailed": "2단계 상태를 불러오지 못했습니다"
+  "totpStatusLoadFailed": "2단계 상태를 불러오지 못했습니다",
+  "confirmDeleteApiKey": "Delete this API key?",
+  "confirmDeleteApiKeyDesc": "“{{name}}” will stop authenticating. This cannot be undone."
 }

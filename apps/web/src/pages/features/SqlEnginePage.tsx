@@ -280,7 +280,13 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
             label: t('dashboard.executeLabel'),
             value: svc?.executeEnabled ? t('common.on') : t('common.off'),
             tone: svc?.executeEnabled ? 'ok' : 'warn' },
-          { label: t('common.database'), value: dbs.items.length },
+          {
+            label: t('common.database'),
+            value:
+              hostOnlyDatabases.length > 0
+                ? `${dbs.items.length} / ${hostDatabases.length}`
+                : dbs.items.length,
+          },
           { label: t('common.user'), value: users.items.length },
           {
             label: t('roles.admin'),
@@ -585,6 +591,21 @@ export function SqlEnginePage({ engine }: { engine: DbEngineKind }) {
                   <span className="u-text-sm muted">
                     {t('db.hostInventoryHint')} ({hostOnlyDatabases.join(', ')})
                   </span>
+                  <div className="u-flex u-flex-wrap u-gap-2 u-mt-2">
+                    {hostOnlyDatabases.slice(0, 6).map((n) => (
+                      <Button
+                        key={n}
+                        variant="secondary"
+                        size="sm"
+                        loading={busy}
+                        onClick={() => {
+                          void dbs.create({ name: n, engine });
+                        }}
+                      >
+                        {t('db.adoptHostDb', { name: n })}
+                      </Button>
+                    ))}
+                  </div>
                 </Alert>
               ) : null}
               <DataTable

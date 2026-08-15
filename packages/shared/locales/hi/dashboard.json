@@ -114,5 +114,9 @@
   "levelInfo": "जानकारी",
   "colTitle": "अलर्ट",
   "colDetail": "विवरण",
-  "colSource": "स्रोत"
+  "colSource": "स्रोत",
+  "notifSearch": "Search alerts",
+  "notifAll": "All",
+  "notifDismiss": "Hide",
+  "goFix": "Fix"
 }

@@ -39,7 +39,10 @@
   "backup": {
     "fileNotFound": "找不到备份文件",
     "resticNoPassword": "restic 已启用但未设置 password",
-    "resticNotInPath": "restic 不在 PATH"
+    "resticNotInPath": "restic 不在 PATH",
+    "dbEnvUnreadable": "无法读取 .db.env，跳过 SQL 导出。",
+    "dbEnvNoName": ".db.env 没有数据库名称，跳过 SQL 导出。",
+    "targetOutside": "还原目标必须在项目家目录或公开文件根目录之内。"
   },
   "redis": {
     "cliMissing": "未安装 redis-cli"
@@ -2964,7 +2967,9 @@
     "sessionStartCwd": "VNC 启动失败：工作目录会话用户无权访问（display :{{display}}）。已改为从 HOME 启动。",
     "desktopRestarted": "应用桌面配置文件并重新启动会话 ({{desktop}})。重新连接 VNC/noVNC。",
     "desktopNeedsStart": "桌面配置文件 {{desktop}} 写入 xstartup。启动会话以进行申请。",
-    "passwordNeedTiger": "找不到 vncpasswd。请先安装 TigerVNC（tigervnc-standalone-server）再设定密码。"
+    "passwordNeedTiger": "找不到 vncpasswd。请先安装 TigerVNC（tigervnc-standalone-server）再设定密码。",
+    "linuxUserRolledBack": "VNC 密码失败后已删除遗留 Linux 用户 {{user}}。",
+    "linuxUserOrphan": "VNC 密码失败后无法删除遗留 Linux 用户 {{user}}。"
   },
   "apache": {
     "needServerName": "需要域名",
@@ -3014,6 +3019,19 @@
     "startedDetached": "BT Tracker detached worker 已启动（pid {{pid}}，端口 {{port}}）",
     "runningDetached": "Tracker 以 detached worker 运行中（pid {{pid}}）",
     "jobQueued": "BT torrent 创建已排入队列（大型分享）",
-    "jobRunning": "正在创建 BT torrent"
+    "jobRunning": "正在创建 BT torrent",
+    "libraryAdded": "已将 {{name}} 加入 WebTorrent 资料库",
+    "libraryInspectFailed": "无法读取此 .torrent 或 magnet",
+    "libraryDup": "资料库已有此 Torrent",
+    "libraryDestBad": "保存位置不是有效的文件路径",
+    "libraryTorrentTooBig": ".torrent 文件大于 8 MiB",
+    "libraryNotFound": "找不到此资料库项目",
+    "libraryPaused": "已暂停",
+    "libraryResumed": "已继续",
+    "libraryRemoved": "已从资料库移除",
+    "libraryFilesRemoved": "已删除下载的文件",
+    "libraryRestoreDone": "资料库还原：已启动 {{started}}/{{attempted}}（失败 {{failed}}）",
+    "applyTrackersDone": "已向 {{n}} 个现有 announce 套用常用 Tracker",
+    "libraryNeedServe": "已保存。请在面板启动 ysk-server serve，WebTorrent 才会下载／做种。"
   }
 }

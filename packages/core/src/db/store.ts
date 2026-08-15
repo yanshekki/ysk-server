@@ -401,7 +401,9 @@ export function mergeIdArray<T>(baseline: T[], ours: T[], disk: T[]): T[] {
     const b = baseBy.get(k);
     const d = diskBy.get(k);
     if (!d) {
-      out.push(it);
+      // Disk dropped a row we still hold. If we knew it (in baseline),
+      // another process deleted it — do not resurrect. Keep only our inserts.
+      if (!b) out.push(it);
       continue;
     }
     if (sameJson(it, b)) out.push(d);

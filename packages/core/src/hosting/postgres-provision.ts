@@ -209,7 +209,8 @@ export async function provisionPostgresDatabase(input: {
         notes,
         commandResults };
     }
-    notes.push(already ? `ok (already exists): ${stmt.slice(0, 40)}…` : `ok: ${stmt.slice(0, 40)}…`);
+    const preview = stmt.replace(/PASSWORD\s+'[^']*'/gi, "PASSWORD '***'").slice(0, 48);
+    notes.push(already ? `ok (already exists): ${preview}…` : `ok: ${preview}…`);
   }
 
   return {

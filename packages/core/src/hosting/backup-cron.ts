@@ -16,6 +16,7 @@ import { ErrorCodes, YskError, tl} from 'ysk-server-shared';
 import type { HostExecutor } from '../host/executor.js';
 import type { YskDatabase } from '../db/database.js';
 import { planCronJob } from './extras.js';
+import { publicFilesRoot } from '../files/manager.js';
 
 /** Constrain archive under dataDir/backups/<projectId>/ */
 export function resolveManagedBackupArchive(
@@ -46,6 +47,7 @@ export interface BackupResult {
   ok: boolean;
   archivePath?: string;
   bytes?: number;
+  includesDatabase?: boolean;
   notes: string[];
   commandResults: Array<{ argv: string[]; exitCode: number; stderr: string }>;
 }
@@ -89,6 +91,7 @@ export function listBackups(dataDir: string): BackupListItem[] {
 /** Notes that mean "not attempted" (skip) — Chinese or English */
 export function isBackupSkipNote(note: string): boolean {
   const n = note.trim();
+  if (/blocked|YSK_EXECUTE|YSK_FORBIDDEN|requires execute/i.test(n)) return false;
   return (
     /^skip\b/i.test(n) ||
     /^skipped\b/i.test(n) ||
@@ -204,10 +207,19 @@ export function localizeLastBackupRun(
     tl('notes.auto.t0326', { v0: okCount, v1: attempted.length }) +
       (skipped.length ? tl('notes.auto.t0327', { v0: skipped.length }) : ''),
   ];
-  if (last.ok === true) {
+  const singleOk =
+    last.ok === true ||
+    (String(last.source || '') === 'projects.backup' && Boolean(last.archivePath));
+  if (singleOk) {
     notes.push(
-      attempted.length === 0 ? tl('notes.auto.n0590') : tl('notes.auto.n0589'),
+      attempted.length === 0 && String(last.source || '') !== 'projects.backup'
+        ? tl('notes.auto.n0590')
+        : tl('notes.auto.n0589'),
     );
+  } else if (last.ok === false) {
+    notes.push(tl('notes.auto.n1492'));
+  } else if (attempted.length === 0 && results.length === 0 && last.archivePath) {
+    notes.push(tl('notes.auto.n0589'));
   } else {
     notes.push(tl('notes.auto.n1492'));
   }
@@ -305,16 +317,98 @@ export async function backupProject(input: {
       /* ignore */
     }
   }
+  const notes = [
+    tl('notes.auto.t0330', { v0: archivePath }),
+    tl('notes.auto.n0556'),
+  ];
+  let includesDatabase = false;
+  const sidecar = await maybeDumpSqlSidecar({
+    host: input.host,
+    dataDir: input.dataDir,
+    homeDir: input.homeDir,
+    destDir,
+    stamp,
+  });
+  notes.push(...sidecar.notes);
+  includesDatabase = sidecar.ok;
+  if (!includesDatabase) {
+    notes.push('Home tar only — no SQL dump. .env / .db.env excluded.');
+  }
+
   return {
     ok: true,
     archivePath,
     bytes,
-    notes: [
-      tl('notes.auto.t0330', { v0: archivePath }),
-      tl('notes.auto.n0556'),
-      'Home tar only — no SQL dump. .env / .db.env excluded.',
-    ],
+    includesDatabase,
+    notes,
     commandResults: [{ argv: ['tar', '-czf', archivePath], exitCode: 0, stderr: '' }] };
+}
+
+export function parseDbEnvFile(text: string): {
+  engine: 'mysql' | 'mariadb' | 'postgres';
+  dbName?: string;
+  username?: string;
+  password?: string;
+} {
+  const map: Record<string, string> = {};
+  for (const line of text.split('\n')) {
+    const raw = line.trim();
+    if (!raw || raw.startsWith('#')) continue;
+    const i = raw.indexOf('=');
+    if (i < 0) continue;
+    const k = raw.slice(0, i).trim().toUpperCase();
+    const v = raw.slice(i + 1).trim().replace(/^['"]|['"]$/g, '');
+    map[k] = v;
+  }
+  const engineRaw = (map.ENGINE || map.DB_ENGINE || map.DB_DRIVER || '').toLowerCase();
+  let engine: 'mysql' | 'mariadb' | 'postgres' = 'mariadb';
+  if (engineRaw.includes('postgres') || engineRaw.includes('pgsql')) engine = 'postgres';
+  else if (engineRaw.includes('mysql') && !engineRaw.includes('maria')) engine = 'mysql';
+  return {
+    engine,
+    dbName: map.DB || map.DB_NAME || map.MYSQL_DATABASE || map.POSTGRES_DB,
+    username: map.USER || map.DB_USER || map.MYSQL_USER || map.POSTGRES_USER,
+    password: map.PASSWORD || map.DB_PASSWORD || map.MYSQL_PASSWORD || map.POSTGRES_PASSWORD,
+  };
+}
+
+async function maybeDumpSqlSidecar(input: {
+  host: HostExecutor;
+  dataDir: string;
+  homeDir: string;
+  destDir: string;
+  stamp: string;
+}): Promise<{ ok: boolean; notes: string[] }> {
+  const candidates = [join(input.homeDir, '.db.env'), join(input.homeDir, 'app', '.db.env')];
+  let envPath = '';
+  for (const p of candidates) {
+    if (existsSync(p)) {
+      envPath = p;
+      break;
+    }
+  }
+  if (!envPath) return { ok: false, notes: [] };
+  let parsed: ReturnType<typeof parseDbEnvFile>;
+  try {
+    parsed = parseDbEnvFile(readFileSync(envPath, 'utf8'));
+  } catch {
+    return { ok: false, notes: [tl('notes.backup.dbEnvUnreadable')] };
+  }
+  if (!parsed.dbName) {
+    return { ok: false, notes: [tl('notes.backup.dbEnvNoName')] };
+  }
+  const { dumpSqlDatabase } = await import('./db-dump.js');
+  const out = join(input.destDir, `backup-${input.stamp}.sql`);
+  const dump = await dumpSqlDatabase({
+    host: input.host,
+    dataDir: input.dataDir,
+    engine: parsed.engine,
+    dbName: parsed.dbName,
+    username: parsed.username,
+    password: parsed.password,
+    outputPath: out,
+  });
+  return { ok: Boolean(dump.ok), notes: dump.notes };
 }
 
 /**
@@ -336,6 +430,11 @@ export async function restoreProjectBackup(input: {
    * dry-run = list archive contents only
    */
   mode?: 'full' | 'web' | 'dry-run';
+  /**
+   * Extract into this directory instead of homeDir (web/full).
+   * Must stay under homeDir or the control-plane public files root.
+   */
+  targetDir?: string;
 }): Promise<BackupResult> {
   const resolved = resolveManagedBackupArchive(
     input.dataDir,
@@ -371,25 +470,27 @@ export async function restoreProjectBackup(input: {
     mkdirSync(input.homeDir, { recursive: true });
   }
 
-  if (mode === 'web') {
-    // Extract only into project home (safer partial restore for web files)
+  const destHome = resolveRestoreTargetDir(input.homeDir, input.dataDir, input.targetDir);
+  if (!existsSync(destHome)) mkdirSync(destHome, { recursive: true });
+
+  if (mode === 'web' || input.targetDir) {
     const r2 = await input.host.runCommand(
-      ['tar', '-xzf', archivePath, '-C', input.homeDir],
+      ['tar', '-xzf', archivePath, '-C', destHome],
       { timeoutMs: 180_000 },
     );
     const notes =
       r2.exitCode === 0
-        ? [tl('notes.auto.t0333', { v0: (input.homeDir) })]
+        ? [tl('notes.auto.t0333', { v0: destHome })]
         : [tl('notes.auto.t0334', { v0: (r2.stderr) })];
     if (r2.exitCode === 0) {
-      notes.push(...(await chownAfterRestore(input)));
+      notes.push(...(await chownAfterRestore({ ...input, homeDir: destHome })));
     }
     return {
       ok: r2.exitCode === 0,
       archivePath,
       notes,
       commandResults: [
-        { argv: ['tar', '-xzf', archivePath, '-C', input.homeDir], exitCode: r2.exitCode, stderr: r2.stderr },
+        { argv: ['tar', '-xzf', archivePath, '-C', destHome], exitCode: r2.exitCode, stderr: r2.stderr },
       ] };
   }
 
@@ -398,7 +499,7 @@ export async function restoreProjectBackup(input: {
     timeoutMs: 180_000 });
   if (r.exitCode !== 0) {
     const r2 = await input.host.runCommand(
-      ['tar', '-xzf', archivePath, '-C', input.homeDir],
+      ['tar', '-xzf', archivePath, '-C', destHome],
       { timeoutMs: 180_000 },
     );
     if (r2.exitCode !== 0) {
@@ -417,6 +518,26 @@ export async function restoreProjectBackup(input: {
     archivePath,
     notes,
     commandResults: [{ argv: ['tar', '-xzf', archivePath], exitCode: 0, stderr: '' }] };
+}
+
+function resolveRestoreTargetDir(
+  homeDir: string,
+  dataDir: string,
+  targetDir?: string,
+): string {
+  if (!targetDir?.trim()) return homeDir;
+  const abs = resolve(targetDir.trim());
+  const allow = [resolve(homeDir), resolve(publicFilesRoot(dataDir))];
+  const ok = allow.some((root) => {
+    const prefix = root.endsWith(sep) ? root : root + sep;
+    return abs === root || abs.startsWith(prefix);
+  });
+  if (!ok) {
+    throw new YskError(ErrorCodes.SANDBOX_VIOLATION, tl('notes.backup.targetOutside'), {
+      httpStatus: 403,
+    });
+  }
+  return abs;
 }
 
 async function chownAfterRestore(input: {

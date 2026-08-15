@@ -372,7 +372,8 @@
     "dryRunOk": "انتهت المعاينة. راجع المحتوى أدناه.",
     "strictBlocked": "الحزمة أو PAM غير جاهزة؛ لا يمكن تطبيق Strict.",
     "strictDryRun": "معاينة الوضع الصارم",
-    "errorNoDetail": "فشل الاختبار (بدون تفاصيل)"
+    "errorNoDetail": "فشل الاختبار (بدون تفاصيل)",
+    "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it."
   },
   "sessionsActive": "جلسات نشطة",
   "sessionsOther": "أجهزة أخرى",
@@ -427,5 +428,7 @@
     "high": "مرتفع",
     "critical": "حرج"
   },
-  "totpStatusLoadFailed": "تعذّر تحميل حالة التحقق بخطوتين"
+  "totpStatusLoadFailed": "تعذّر تحميل حالة التحقق بخطوتين",
+  "confirmDeleteApiKey": "Delete this API key?",
+  "confirmDeleteApiKeyDesc": "“{{name}}” will stop authenticating. This cannot be undone."
 }

@@ -5,6 +5,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   DEFAULT_BT_TRACKER_SETTINGS,
+  type BtExtraTracker,
   type BtTrackerSettings,
   type ServicePortBinding,
 } from 'ysk-server-shared';
@@ -54,7 +55,78 @@ export function normalizeBtTrackerSettings(s: BtTrackerSettings): BtTrackerSetti
     maxSeeds: Math.min(256, Math.max(1, Number(s.maxSeeds) || 32)),
     seederPortMin,
     seederPortMax,
+    extraTrackers: normalizeExtraTrackers(s.extraTrackers),
   };
+}
+
+const EXTRA_TRACKER_MAX = 32;
+const EXTRA_TRACKER_RE = /^(https?|udp|wss?):\/\//i;
+
+export function isAllowedTrackerUrl(raw: string): boolean {
+  const url = String(raw || '').trim();
+  if (!url || url.length > 512) return false;
+  if (/javascript:/i.test(url) || /[\0\s]/.test(url.replace(/^[\s]+|[\s]+$/g, ''))) {
+    return false;
+  }
+  if (/\s/.test(url)) return false;
+  return EXTRA_TRACKER_RE.test(url);
+}
+
+export function normalizeExtraTrackers(raw: unknown): BtExtraTracker[] {
+  if (!Array.isArray(raw)) return [];
+  const out: BtExtraTracker[] = [];
+  const seen = new Set<string>();
+  for (const row of raw) {
+    if (out.length >= EXTRA_TRACKER_MAX) break;
+    const url =
+      typeof row === 'string'
+        ? row.trim()
+        : String((row as { url?: unknown })?.url ?? '').trim();
+    if (!isAllowedTrackerUrl(url)) continue;
+    const key = url.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const enabled =
+      typeof row === 'string'
+        ? true
+        : (row as { enabled?: unknown })?.enabled !== false;
+    out.push({ url, enabled });
+  }
+  return out;
+}
+
+/** Extra announce URLs that are enabled (library + share seeder). */
+export function enabledExtraTrackerUrls(settings: BtTrackerSettings): string[] {
+  return (settings.extraTrackers ?? [])
+    .filter((t) => t.enabled && isAllowedTrackerUrl(t.url))
+    .map((t) => t.url);
+}
+
+/**
+ * Announce list for library download/seed:
+ * torrent's own trackers + operator extras + local loopback (if wanted).
+ */
+export function buildLibraryAnnounceList(
+  settings: BtTrackerSettings,
+  torrentAnnounce: string[] = [],
+  opts?: { includeLocal?: boolean },
+): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  const push = (u: string) => {
+    const s = String(u || '').trim();
+    if (!s) return;
+    const key = s.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push(s);
+  };
+  for (const u of torrentAnnounce) push(u);
+  for (const u of enabledExtraTrackerUrls(settings)) push(u);
+  if (opts?.includeLocal !== false) {
+    for (const u of buildSeederAnnounceList(settings)) push(u);
+  }
+  return out;
 }
 
 function clampPort(n: unknown, fallback: number): number {

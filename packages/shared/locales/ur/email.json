@@ -358,7 +358,8 @@
     "postfixReloaded": "پوسٹ فکس دوبارہ لوڈ ہو گیا۔",
     "postfixReloadFailed": "پوسٹ فکس دوبارہ لوڈ کرنے میں ناکام: {{detail}}",
     "dovecotApplied": "Dovecot TLS کا ٹکڑا لکھا اور دوبارہ لوڈ کرنے کی کوشش کی۔",
-    "dovecotSkipped": "Dovecot کو چھوڑ دیا گیا (انسٹال نہیں یا doveconf دستیاب نہیں ہے)۔"
+    "dovecotSkipped": "Dovecot کو چھوڑ دیا گیا (انسٹال نہیں یا doveconf دستیاب نہیں ہے)۔",
+    "dovecotSslOmitted": "Mail certificate is missing; wrote ssl=no so Dovecot can start without the LE files."
   },
   "policyApplySystemHint": "پوسٹ فکس/Rspamd نقشے لکھنے اور دوبارہ لوڈ کرنے کے لیے \"سسٹم پر اپلائی کریں\" کو چیک کریں۔",
   "rateLimitAppliedNote": "گھنٹہ وار آؤٹ باؤنڈ ریٹ اور اینٹی اسپام فلیگ لاگو کیا جاتا ہے (جب سسٹم لاگو ہوتا ہے)۔",
@@ -488,5 +489,6 @@
   "deleteQueueTitle": "اس قطار کا پیغام حذف کریں؟",
   "deleteQueueDesc": "مقامی MTA قطار سے {{id}} ہٹائیں۔ YSK_EXECUTE درکار ہے۔",
   "openQueuePage": "میل قطار کھولیں",
-  "healthUnchecked": "Not checked yet"
+  "healthUnchecked": "Not checked yet",
+  "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first."
 }

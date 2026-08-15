@@ -543,7 +543,55 @@
     "udpPortClassic": "6969 · 传统",
     "portSuggest8000": "8000 · 建议",
     "saveOkRestart": "已保存 — 重新启动跟踪器以应用端口",
-    "announceHostUnset": "—"
+    "announceHostUnset": "—",
+    "tabTrackers": "Tracker",
+    "addTorrent": "加入 Torrent",
+    "addTorrentTitle": "加入 Torrent",
+    "addTorrentHint": "上传 .torrent 或粘贴 magnet，再选保存文件夹。文件不齐会用 WebTorrent 下载，齐了就做种。",
+    "dropTorrent": "將 .torrent 拖放到此處",
+    "chooseFile": "或選擇檔案",
+    "magnetLabel": "Magnet",
+    "magnetPlaceholder": "magnet:?xt=urn:btih:…",
+    "inspect": "读取",
+    "extraTrackersPreview": "將額外向 {{n}} 個常用 Tracker announce",
+    "saveLocation": "保存位置",
+    "saveRootPublic": "公开文件",
+    "newFolder": "新文件夹",
+    "destPreview": "将写入",
+    "startDownload": "开始",
+    "filterDownloading": "下载中",
+    "filterPaused": "已暂停",
+    "filterError": "错误",
+    "emptyDrop": "將 .torrent 拖放到此處，或選擇檔案",
+    "emptyHint": "下载会写入你指定的文件夹；文件已齐就直接做种。引擎是 WebTorrent，不会另外安装下载软件。",
+    "pause": "暂停",
+    "resume": "继续",
+    "openFolder": "打开文件夹",
+    "remove": "移除",
+    "removeKeep": "移除并保留文件",
+    "removeDelete": "移除并删除文件",
+    "removeConfirm": "要从资料库移除此 Torrent？",
+    "kindShare": "分享",
+    "filesInTorrent": "個檔案",
+    "extraTrackersDesc": "这里是额外 announce。资料库下载／做种和文件 BT 分享都会一并通知这些 Tracker。不会取代 .torrent 原有清单，也不会让本机 Tracker 对外开放。",
+    "extraTrackersEmpty": "还没有常用 Tracker。加入 http(s)／udp／ws(s) announce URL 才可靠外站找 peers。",
+    "extraTrackerAdd": "加入",
+    "extraTrackerUrl": "Announce URL",
+    "extraTrackerApply": "套用到现有做种",
+    "extraTrackerApplyOk": "已套用常用 Tracker",
+    "extraEnabled": "启用",
+    "extraTrackerBad": "URL 必须以 http://、https://、udp://、ws:// 或 wss:// 开头",
+    "extraTrackerDup": "清单已有此 URL",
+    "extraTrackerLimit": "最多 32 个常用 Tracker",
+    "addOk": "已加入资料库",
+    "savedTo": "保存",
+    "folderEmpty": "没有子文件夹",
+    "needTorrentFile": "请选择 .torrent 文件",
+    "torrentTooBig": ".torrent 大於 8 MiB",
+    "seedStatusDownloading": "下載中",
+    "seedStatusChecking": "檢查中",
+    "seedStatusPaused": "已暫停",
+    "seedStatusQueued": "排隊中"
   },
   "catalog": {
     "sw": {
@@ -2277,7 +2325,11 @@
     "levelInfo": "信息",
     "colTitle": "提示",
     "colDetail": "详情",
-    "colSource": "来源"
+    "colSource": "来源",
+    "notifSearch": "搜索通知",
+    "notifAll": "全部",
+    "notifDismiss": "隐藏",
+    "goFix": "前往处理"
   },
   "dataTable": {
     "empty": "没有数据",
@@ -2571,7 +2623,8 @@
     "unfreezeOk": "{{engine}} 修复完成",
     "startAfterUnfreeze": "启动服务（失败时会自动套用修复计划）",
     "serviceDownTitle": "数据库服务未运行",
-    "serviceDownBody": "服务异常。面板会诊断常见原因（冻结、配置残留、空白数据目录、端口冲突等）。数据目录为空：{{empty}}。请按「检查并修复服务」确认执行。"
+    "serviceDownBody": "服务异常。面板会诊断常见原因（冻结、配置残留、空白数据目录、端口冲突等）。数据目录为空：{{empty}}。请按「检查并修复服务」确认执行。",
+    "adoptHostDb": "登记 {{name}}"
   },
   "dialogs": {
     "confirmDefault": "确认",
@@ -2799,7 +2852,8 @@
     "aboutStackTitle": "软件版本",
     "aboutStackBody": "在「软件」检查／更新 PowerDNS 套件。",
     "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
-    "invalidIpv4": "Invalid IPv4. Each octet must be 0–255."
+    "invalidIpv4": "Invalid IPv4. Each octet must be 0–255.",
+    "createMailZoneNow": "已建立邮件区域 {{domain}}"
   },
   "email": {
     "title": "邮件",
@@ -3162,7 +3216,8 @@
       "postfixReloaded": "已重新加载 Postfix。",
       "postfixReloadFailed": "Postfix 重新加载失败：{{detail}}",
       "dovecotApplied": "已写入 Dovecot TLS 片段并尝试重新加载。",
-      "dovecotSkipped": "已跳过 Dovecot（未安装或 doveconf 不可用）。"
+      "dovecotSkipped": "已跳过 Dovecot（未安装或 doveconf 不可用）。",
+      "dovecotSslOmitted": "邮件证书不存在，已改写 Dovecot 为 ssl=no，避免单元因缺少证书而无法启动。"
     },
     "policyApplySystemHint": "勾选「套用到系统」才会写入 Postfix／Rspamd 映射并重新加载；否则只写控制面草稿。",
     "rateLimitAppliedNote": "已套用每小时外发限额与反垃圾标记（若启用系统套用）。",
@@ -3291,7 +3346,8 @@
     "queueDeferred": "延迟",
     "deleteQueueTitle": "删除此队列邮件？",
     "deleteQueueDesc": "从本机 MTA 队列移除 {{id}}。需要 YSK_EXECUTE。",
-    "openQueuePage": "打开邮件队列"
+    "openQueuePage": "打开邮件队列",
+    "dovecotFailedHint": "Dovecot 服务失败。请先到软件分页查看状态；若邮件证书尚未签发，请先到 SSL 签发 mail 主机名。"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "未授权",
@@ -3803,7 +3859,9 @@
     },
     "emptyTrashTitle": "Empty trash?",
     "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
-    "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone."
+    "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone.",
+    "webdavReissueUnchanged": "重新签发后令牌编号未变——写入可能未生效，请再试一次。",
+    "webdavDisableFailed": "停用后状态仍为启用——写入可能未生效，请再试一次。"
   },
   "firewall": {
     "profiles": {
@@ -3910,7 +3968,9 @@
     "disableConfirmTitle": "停用 UFW？",
     "disableConfirmDesc": "主机防火墙将停止过滤流量。若主机在公众网络上，SSH 与面板可能直接暴露。",
     "disableConfirmConsequence": "现有允许／拒绝规则仍会保留，但要重新启用 UFW 才会生效。",
-    "toolHintFail2ban": "fail2ban = temporary log-based bans"
+    "toolHintFail2ban": "fail2ban = temporary log-based bans",
+    "desiredOnlyUfwOff": "设定：{{mode}} · UFW 关闭（未套用）",
+    "syncNotApplied": "UFW 关闭 · 未套用"
   },
   "ftp": {
     "title": "FTPS 账户",
@@ -4047,7 +4107,9 @@
     "sftpTechSummary": "技术细节（高级）",
     "sftpTechNote": "公钥会写入管理路径",
     "filterProject": "只显示此项目的 FTP 帐户",
-    "clearProjectFilter": "显示全部帐户"
+    "clearProjectFilter": "显示全部帐户",
+    "vsftpdFailedHint": "vsftpd 服务失败。请到服务分页查看设定与日志（listen 与 listen_ipv6 不可同时为 YES）。",
+    "tabService": "服务"
   },
   "geo": {
     "continents": {
@@ -5110,7 +5172,10 @@
     "backup": {
       "fileNotFound": "找不到备份文件",
       "resticNoPassword": "restic 已启用但未设置 password",
-      "resticNotInPath": "restic 不在 PATH"
+      "resticNotInPath": "restic 不在 PATH",
+      "dbEnvUnreadable": "无法读取 .db.env，跳过 SQL 导出。",
+      "dbEnvNoName": ".db.env 没有数据库名称，跳过 SQL 导出。",
+      "targetOutside": "还原目标必须在项目家目录或公开文件根目录之内。"
     },
     "redis": {
       "cliMissing": "未安装 redis-cli"
@@ -8035,7 +8100,9 @@
       "sessionStartCwd": "VNC 启动失败：工作目录会话用户无权访问（display :{{display}}）。已改为从 HOME 启动。",
       "desktopRestarted": "应用桌面配置文件并重新启动会话 ({{desktop}})。重新连接 VNC/noVNC。",
       "desktopNeedsStart": "桌面配置文件 {{desktop}} 写入 xstartup。启动会话以进行申请。",
-      "passwordNeedTiger": "找不到 vncpasswd。请先安装 TigerVNC（tigervnc-standalone-server）再设定密码。"
+      "passwordNeedTiger": "找不到 vncpasswd。请先安装 TigerVNC（tigervnc-standalone-server）再设定密码。",
+      "linuxUserRolledBack": "VNC 密码失败后已删除遗留 Linux 用户 {{user}}。",
+      "linuxUserOrphan": "VNC 密码失败后无法删除遗留 Linux 用户 {{user}}。"
     },
     "apache": {
       "needServerName": "需要域名",
@@ -8085,7 +8152,20 @@
       "startedDetached": "BT Tracker detached worker 已启动（pid {{pid}}，端口 {{port}}）",
       "runningDetached": "Tracker 以 detached worker 运行中（pid {{pid}}）",
       "jobQueued": "BT torrent 创建已排入队列（大型分享）",
-      "jobRunning": "正在创建 BT torrent"
+      "jobRunning": "正在创建 BT torrent",
+      "libraryAdded": "已将 {{name}} 加入 WebTorrent 资料库",
+      "libraryInspectFailed": "无法读取此 .torrent 或 magnet",
+      "libraryDup": "资料库已有此 Torrent",
+      "libraryDestBad": "保存位置不是有效的文件路径",
+      "libraryTorrentTooBig": ".torrent 文件大于 8 MiB",
+      "libraryNotFound": "找不到此资料库项目",
+      "libraryPaused": "已暂停",
+      "libraryResumed": "已继续",
+      "libraryRemoved": "已从资料库移除",
+      "libraryFilesRemoved": "已删除下载的文件",
+      "libraryRestoreDone": "资料库还原：已启动 {{started}}/{{attempted}}（失败 {{failed}}）",
+      "applyTrackersDone": "已向 {{n}} 个现有 announce 套用常用 Tracker",
+      "libraryNeedServe": "已保存。请在面板启动 ysk-server serve，WebTorrent 才会下载／做种。"
     }
   },
   "ops": {
@@ -9982,7 +10062,8 @@
     "useListForDefaults": "要改主机／面板默认或移除此版本，请用上方列表。",
     "alreadyHostDefaultShort": "主机默认",
     "managedPathMissingTitle": "受管 {{name}} 路徑未就緒",
-    "managedPathMissing": "版本 {{version}} 的 YSK 受管 {{name}} 尚未就緒。請重新探測或重新安裝。"
+    "managedPathMissing": "版本 {{version}} 的 YSK 受管 {{name}} 尚未就緒。請重新探測或重新安裝。",
+    "installRecordedCta": "前往软件分页安装 {{v}}"
   },
   "search": {
     "placeholder": "搜索页面与资源…",
@@ -10387,7 +10468,8 @@
       "dryRunOk": "预览试行完成。请查看下方预览。",
       "strictDryRun": "严格模式预览",
       "errorNoDetail": "测试失败（无详情）",
-      "strictBlocked": "套件或 PAM 未就绪，已停用套用 Strict。"
+      "strictBlocked": "套件或 PAM 未就绪，已停用套用 Strict。",
+      "privCloseWithoutAck": "已关闭。私钥不会再显示；若尚未保存，请立即重新生成。"
     },
     "sessionsActive": "使用中",
     "sessionsOther": "其他设备",
@@ -10441,7 +10523,9 @@
       "medium": "中",
       "high": "高",
       "critical": "严重"
-    }
+    },
+    "confirmDeleteApiKey": "删除此 API 密钥？",
+    "confirmDeleteApiKeyDesc": "删除后「{{name}}」无法再验证。此操作无法复原。"
   },
   "serviceExposure": {
     "title": "网络访问",
@@ -11333,7 +11417,10 @@
     "stepUpTitle": "确认 root shell",
     "stepUpDesc": "输入验证器代码或救援码。",
     "totpLabel": "TOTP／救援码",
-    "sessionStillOpen": "说明分页开启期间，工作阶段仍保持连线。"
+    "sessionStillOpen": "说明分页开启期间，工作阶段仍保持连线。",
+    "rootConfirmTitle": "打开 root shell？",
+    "rootConfirmDesc": "此会话是主机上不受限制的 root PTY。命令会写入审计记录。",
+    "rootConfirmBody": "仅在你打算执行具权限的主机命令时继续。"
   },
   "uiInline": {
     "s27d9daa5": "已預填 runtime {{v0}} {{v1}}，可建立專案",

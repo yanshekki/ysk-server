@@ -114,5 +114,9 @@
   "levelInfo": "資訊",
   "colTitle": "提示",
   "colDetail": "詳情",
-  "colSource": "來源"
+  "colSource": "來源",
+  "notifSearch": "搜尋通知",
+  "notifAll": "全部",
+  "notifDismiss": "隱藏",
+  "goFix": "前往處理"
 }

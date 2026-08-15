@@ -190,6 +190,7 @@ export function EmailPage() {
     }>
   >([]);
   const [hostIps, setHostIps] = useState<string[]>([]);
+  const [dovecotFailed, setDovecotFailed] = useState(false);
 
   // Global webmail (shared by all mail domains)
   const [wmTool, setWmTool] = useState<'roundcube' | 'snappymail'>('roundcube');
@@ -198,6 +199,25 @@ export function EmailPage() {
   const [wmForceHttps, setWmForceHttps] = useState(false);
   const [wmLog, setWmLog] = useState<Record<string, unknown> | null>(null);
   const [wmBusy, setWmBusy] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void api
+      .requestRaw<{
+        items?: Array<{ id?: string; active?: string }>;
+      }>('/api/v1/system/services/matrix')
+      .then((r) => {
+        if (cancelled) return;
+        const dove = (r.items ?? []).find((s) => s.id === 'dovecot');
+        setDovecotFailed(dove?.active === 'failed');
+      })
+      .catch(() => {
+        if (!cancelled) setDovecotFailed(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const hostV4 = useMemo(() => hostIps.filter(isIpv4), [hostIps]);
   const hostV6 = useMemo(() => hostIps.filter(isIpv6), [hostIps]);
@@ -428,6 +448,14 @@ export function EmailPage() {
       }
     >
       {list.error ? <Alert variant="error">{list.error}</Alert> : null}
+      {dovecotFailed ? (
+        <Alert variant="error">
+          {t('email.dovecotFailedHint')}{' '}
+          <Link to="/email?tab=stack">{t('email.tabStack')}</Link>
+          {' · '}
+          <Link to="/ssl">SSL</Link>
+        </Alert>
+      ) : null}
 
       <PageTabs
         tabs={[

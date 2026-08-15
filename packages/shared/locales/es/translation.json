@@ -543,7 +543,55 @@
     "udpPortClassic": "6969 · Classic",
     "portSuggest8000": "8000 · Recommended",
     "saveOkRestart": "Guardado: reinicie el rastreador para aplicar puertos",
-    "announceHostUnset": "—"
+    "announceHostUnset": "—",
+    "tabTrackers": "Trackers",
+    "addTorrent": "Add torrent",
+    "addTorrentTitle": "Add torrent",
+    "addTorrentHint": "Upload a .torrent or paste a magnet. Choose a Files folder. WebTorrent downloads missing files and seeds when complete.",
+    "dropTorrent": "Drop a .torrent here",
+    "chooseFile": "or choose a file",
+    "magnetLabel": "Magnet",
+    "magnetPlaceholder": "magnet:?xt=urn:btih:…",
+    "inspect": "Read",
+    "extraTrackersPreview": "Will also announce to {{n}} extra tracker(s)",
+    "saveLocation": "Save location",
+    "saveRootPublic": "Public files",
+    "newFolder": "New folder",
+    "destPreview": "Will write to",
+    "startDownload": "Start",
+    "filterDownloading": "Downloading",
+    "filterPaused": "Paused",
+    "filterError": "Error",
+    "emptyDrop": "Drop a .torrent here, or choose a file",
+    "emptyHint": "Files go in the folder you pick. If they are already complete, this host seeds. Engine: WebTorrent — no extra download software.",
+    "pause": "Pause",
+    "resume": "Resume",
+    "openFolder": "Open folder",
+    "remove": "Remove",
+    "removeKeep": "Remove, keep files",
+    "removeDelete": "Remove and delete files",
+    "removeConfirm": "Remove this torrent from the library?",
+    "kindShare": "Share",
+    "filesInTorrent": "files",
+    "extraTrackersDesc": "Extra announce URLs. Library download/seed and file-share seeds use them in addition to the .torrent list. This does not open the local tracker to arbitrary swarms.",
+    "extraTrackersEmpty": "No extra trackers. Add HTTP(S), UDP, or WS(S) announce URLs so this host can find peers.",
+    "extraTrackerAdd": "Add",
+    "extraTrackerUrl": "Announce URL",
+    "extraTrackerApply": "Apply to current seeds",
+    "extraTrackerApplyOk": "Applied extra trackers",
+    "extraEnabled": "On",
+    "extraTrackerBad": "URL must start with http://, https://, udp://, ws://, or wss://",
+    "extraTrackerDup": "Already listed",
+    "extraTrackerLimit": "Maximum 32 extra trackers",
+    "addOk": "Added to library",
+    "savedTo": "Save",
+    "folderEmpty": "No subfolders",
+    "needTorrentFile": "Choose a .torrent file",
+    "torrentTooBig": ".torrent larger than 8 MiB",
+    "seedStatusDownloading": "Downloading",
+    "seedStatusChecking": "Checking",
+    "seedStatusPaused": "Paused",
+    "seedStatusQueued": "Queued"
   },
   "catalog": {
     "sw": {
@@ -2277,7 +2325,11 @@
     "levelInfo": "Información",
     "colTitle": "Aviso",
     "colDetail": "Detalle",
-    "colSource": "Origen"
+    "colSource": "Origen",
+    "notifSearch": "Search alerts",
+    "notifAll": "All",
+    "notifDismiss": "Hide",
+    "goFix": "Fix"
   },
   "dataTable": {
     "empty": "Sin datos",
@@ -2571,7 +2623,8 @@
     "serviceDownBody": "El servicio no es saludable.",
     "emptyDbHostHasRows": "The host already has databases that are not in this control-plane list.",
     "hostHasUntracked": "{{count}} host databases are not registered in the panel",
-    "hostInventoryHint": "The table is control-plane rows only. Live names come from SHOW DATABASES."
+    "hostInventoryHint": "The table is control-plane rows only. Live names come from SHOW DATABASES.",
+    "adoptHostDb": "Register {{name}}"
   },
   "dialogs": {
     "confirmDefault": "Confirmar",
@@ -2799,7 +2852,8 @@
     "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
     "invalidIpv4": "Invalid IPv4. Each octet must be 0–255.",
     "mailZonesMissing": "Email domains have no DNS zone here: {{domains}}.",
-    "createMailZone": "Create mail zone"
+    "createMailZone": "Create mail zone",
+    "createMailZoneNow": "Created mail zone {{domain}}"
   },
   "email": {
     "title": "Correo electrónico",
@@ -3161,7 +3215,8 @@
       "postfixReloaded": "Postfix recargado.",
       "postfixReloadFailed": "Falló la recarga de Postfix: {{detail}}",
       "dovecotApplied": "Escribí un fragmento de TLS de Dovecot e intenté recargarlo.",
-      "dovecotSkipped": "Dovecot omitido (no instalado o doveconf no disponible)."
+      "dovecotSkipped": "Dovecot omitido (no instalado o doveconf no disponible).",
+      "dovecotSslOmitted": "Mail certificate is missing; wrote ssl=no so Dovecot can start without the LE files."
     },
     "policyApplySystemHint": "Marque \"aplicar al sistema\" para escribir mapas Postfix/Rspamd y recargar;",
     "rateLimitAppliedNote": "Se aplica la tarifa saliente por hora y el indicador antispam (cuando la aplicación del sistema está activada).",
@@ -3291,7 +3346,8 @@
     "deleteQueueTitle": "¿Eliminar este mensaje de la cola?",
     "deleteQueueDesc": "Quitar {{id}} de la cola MTA local. Requiere YSK_EXECUTE.",
     "openQueuePage": "Abrir cola de correo",
-    "healthUnchecked": "Not checked yet"
+    "healthUnchecked": "Not checked yet",
+    "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first."
   },
   "errors": {
     "YSK_UNAUTHORIZED": "No autorizado",
@@ -3803,7 +3859,9 @@
     },
     "emptyTrashTitle": "Empty trash?",
     "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
-    "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone."
+    "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone.",
+    "webdavReissueUnchanged": "Token id did not change after re-issue — the write may not have persisted. Try again.",
+    "webdavDisableFailed": "WebDAV is still enabled after disable — the write may not have persisted. Try again."
   },
   "firewall": {
     "profiles": {
@@ -3910,7 +3968,9 @@
     "disableConfirmDesc": "El cortafuegos del host dejará de filtrar el tráfico. En una red pública, SSH y el panel pueden quedar expuestos.",
     "disableConfirmConsequence": "Las reglas de permitir/denegar se conservan, pero no se aplican hasta volver a activar UFW.",
     "toolHintFail2ban": "fail2ban = temporary log-based bans",
-    "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing."
+    "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing.",
+    "desiredOnlyUfwOff": "Desired: {{mode}} · UFW off (not applied)",
+    "syncNotApplied": "UFW off · not applied"
   },
   "ftp": {
     "title": "cuentas FTPS",
@@ -4047,7 +4107,9 @@
     "sftpTechSummary": "Detalles técnicos (avanzado)",
     "sftpTechNote": "Las claves se escriben en la ruta administrada.",
     "filterProject": "Solo cuentas FTP de este proyecto",
-    "clearProjectFilter": "Mostrar todas las cuentas"
+    "clearProjectFilter": "Mostrar todas las cuentas",
+    "vsftpdFailedHint": "vsftpd failed. Open the Service tab (listen and listen_ipv6 cannot both be YES).",
+    "tabService": "Service"
   },
   "geo": {
     "continents": {
@@ -5110,7 +5172,10 @@
     "backup": {
       "fileNotFound": "Archivo de copia de seguridad no encontrado",
       "resticNoPassword": "restic está habilitado pero la contraseña no está establecida",
-      "resticNotInPath": "restic no en RUTA"
+      "resticNotInPath": "restic no en RUTA",
+      "dbEnvUnreadable": "Could not read .db.env; skipped SQL dump.",
+      "dbEnvNoName": ".db.env has no database name; skipped SQL dump.",
+      "targetOutside": "Restore target must be inside the project home or the public files root."
     },
     "redis": {
       "cliMissing": "redis-cli no está instalado"
@@ -8035,7 +8100,9 @@
       "sessionStartCwd": "Error al iniciar VNC: el directorio de trabajo no es accesible para el usuario de la sesión (pantalla: {{display}}). Se solucionó comenzando desde CASA.",
       "desktopRestarted": "Se aplicó el perfil de escritorio y se reinició la sesión ({{desktop}}). Vuelva a conectar VNC/noVNC.",
       "desktopNeedsStart": "Perfil de escritorio {{desktop}} escrito en xstartup. Inicie la sesión para postularse.",
-      "passwordNeedTiger": "vncpasswd not found. Install TigerVNC (tigervnc-standalone-server) before setting a password."
+      "passwordNeedTiger": "vncpasswd not found. Install TigerVNC (tigervnc-standalone-server) before setting a password.",
+      "linuxUserRolledBack": "Removed leftover Linux user {{user}} after VNC password failed.",
+      "linuxUserOrphan": "Could not remove leftover Linux user {{user}} after VNC password failed."
     },
     "apache": {
       "needServerName": "Nombre del servidor requerido",
@@ -8085,7 +8152,20 @@
       "startedDetached": "Se inició el trabajador independiente del rastreador BT (pid {{pid}}, puerto {{port}})",
       "runningDetached": "Rastreador ejecutándose como trabajador independiente (pid {{pid}})",
       "jobQueued": "Creación de torrents BT en cola (gran proporción)",
-      "jobRunning": "Creación de torrent BT en ejecución"
+      "jobRunning": "Creación de torrent BT en ejecución",
+      "libraryAdded": "Added {{name}} to the WebTorrent library",
+      "libraryInspectFailed": "Could not read that .torrent or magnet",
+      "libraryDup": "That torrent is already in the library",
+      "libraryDestBad": "Save folder is not a valid Files path",
+      "libraryTorrentTooBig": ".torrent file is larger than 8 MiB",
+      "libraryNotFound": "Library item not found",
+      "libraryPaused": "Paused",
+      "libraryResumed": "Resumed",
+      "libraryRemoved": "Removed from library",
+      "libraryFilesRemoved": "Deleted downloaded files",
+      "libraryRestoreDone": "Library restore: started {{started}}/{{attempted}} (failed {{failed}})",
+      "applyTrackersDone": "Applied extra trackers to {{n}} live announce slots",
+      "libraryNeedServe": "Saved. Open the panel (ysk-server serve) so WebTorrent can download or seed."
     }
   },
   "ops": {
@@ -9982,7 +10062,8 @@
     "useListForDefaults": "Para cambiar el valor predeterminado del host o del panel, o eliminar esta versión, utilice la lista anterior.",
     "alreadyHostDefaultShort": "Valor predeterminado del host",
     "managedPathMissingTitle": "Managed {{name}} path not ready",
-    "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall."
+    "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall.",
+    "installRecordedCta": "Install recorded {{v}}"
   },
   "search": {
     "placeholder": "Buscar páginas y recursos...",
@@ -10386,7 +10467,8 @@
       "dryRunOk": "Vista previa lista. Revise el contenido abajo.",
       "strictBlocked": "El paquete o PAM no está listo; no se puede aplicar Strict.",
       "strictDryRun": "Vista previa del modo estricto",
-      "errorNoDetail": "Prueba fallida (sin detalles)"
+      "errorNoDetail": "Prueba fallida (sin detalles)",
+      "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it."
     },
     "sessionsActive": "Sesiones activas",
     "sessionsOther": "Otros dispositivos",
@@ -10441,7 +10523,9 @@
       "high": "Alto",
       "critical": "Crítico"
     },
-    "totpStatusLoadFailed": "No se pudo cargar el estado de 2FA"
+    "totpStatusLoadFailed": "No se pudo cargar el estado de 2FA",
+    "confirmDeleteApiKey": "Delete this API key?",
+    "confirmDeleteApiKeyDesc": "“{{name}}” will stop authenticating. This cannot be undone."
   },
   "serviceExposure": {
     "title": "Acceso a la red",
@@ -11333,7 +11417,10 @@
     "stepUpTitle": "Confirmar shell raíz",
     "stepUpDesc": "Ingrese su código de autenticación o un código de recuperación.",
     "totpLabel": "TOTP/código de recuperación",
-    "sessionStillOpen": "A live shell is still connected while you read this page."
+    "sessionStillOpen": "A live shell is still connected while you read this page.",
+    "rootConfirmTitle": "Open a root shell?",
+    "rootConfirmDesc": "This session is an unrestricted root PTY on the host. Commands are audited.",
+    "rootConfirmBody": "Only continue if you intend to run privileged host commands."
   },
   "uiInline": {
     "s27d9daa5": "tiempo de ejecución {{v0}} {{v1}}，",

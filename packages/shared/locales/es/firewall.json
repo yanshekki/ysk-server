@@ -103,5 +103,7 @@
   "disableConfirmDesc": "El cortafuegos del host dejará de filtrar el tráfico. En una red pública, SSH y el panel pueden quedar expuestos.",
   "disableConfirmConsequence": "Las reglas de permitir/denegar se conservan, pero no se aplican hasta volver a activar UFW.",
   "toolHintFail2ban": "fail2ban = temporary log-based bans",
-  "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing."
+  "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing.",
+  "desiredOnlyUfwOff": "Desired: {{mode}} · UFW off (not applied)",
+  "syncNotApplied": "UFW off · not applied"
 }

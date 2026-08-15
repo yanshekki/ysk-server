@@ -155,6 +155,36 @@ describe('JsonStore', () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
+  it('does not resurrect a project another process deleted', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ysk-jsonstore-del-'));
+    const path = join(dir, 'ysk.json');
+    const serve = new JsonStore(path);
+    const created = new Date().toISOString();
+    serve.snapshot.projects.push({
+      id: 'p-gone',
+      name: 'qa36tmp',
+      runtime: 'node',
+      created_at: created,
+      updated_at: created,
+    } as (typeof serve.snapshot.projects)[number]);
+    serve.persist();
+
+    const cli = new JsonStore(path);
+    cli.snapshot.projects = cli.snapshot.projects.filter((p) => p.id !== 'p-gone');
+    cli.persist();
+    cli.close();
+
+    serve.snapshot.settings.log_hint = '1';
+    serve.persist();
+    expect(serve.snapshot.projects.map((p) => p.id)).not.toContain('p-gone');
+
+    const again = new JsonStore(path);
+    expect(again.snapshot.projects.map((p) => p.id)).not.toContain('p-gone');
+    again.close();
+    serve.close();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
   it('does not clobber totp when a stale process persists settings', () => {
     const dir = mkdtempSync(join(tmpdir(), 'ysk-jsonstore-totp-'));
     const path = join(dir, 'ysk.json');

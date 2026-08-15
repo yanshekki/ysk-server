@@ -358,7 +358,8 @@
     "postfixReloaded": "Postfix recargado.",
     "postfixReloadFailed": "Falló la recarga de Postfix: {{detail}}",
     "dovecotApplied": "Escribí un fragmento de TLS de Dovecot e intenté recargarlo.",
-    "dovecotSkipped": "Dovecot omitido (no instalado o doveconf no disponible)."
+    "dovecotSkipped": "Dovecot omitido (no instalado o doveconf no disponible).",
+    "dovecotSslOmitted": "Mail certificate is missing; wrote ssl=no so Dovecot can start without the LE files."
   },
   "policyApplySystemHint": "Marque \"aplicar al sistema\" para escribir mapas Postfix/Rspamd y recargar;",
   "rateLimitAppliedNote": "Se aplica la tarifa saliente por hora y el indicador antispam (cuando la aplicación del sistema está activada).",
@@ -488,5 +489,6 @@
   "deleteQueueTitle": "¿Eliminar este mensaje de la cola?",
   "deleteQueueDesc": "Quitar {{id}} de la cola MTA local. Requiere YSK_EXECUTE.",
   "openQueuePage": "Abrir cola de correo",
-  "healthUnchecked": "Not checked yet"
+  "healthUnchecked": "Not checked yet",
+  "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first."
 }

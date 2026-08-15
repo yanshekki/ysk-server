@@ -114,5 +114,9 @@
   "levelInfo": "정보",
   "colTitle": "알림",
   "colDetail": "내용",
-  "colSource": "출처"
+  "colSource": "출처",
+  "notifSearch": "Search alerts",
+  "notifAll": "All",
+  "notifDismiss": "Hide",
+  "goFix": "Fix"
 }

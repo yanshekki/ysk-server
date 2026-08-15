@@ -30,5 +30,8 @@
   "stepUpTitle": "ルートシェルを確認する",
   "stepUpDesc": "認証コードまたは回復コードを入力します。",
   "totpLabel": "TOTP / リカバリーコード",
-  "sessionStillOpen": "A live shell is still connected while you read this page."
+  "sessionStillOpen": "A live shell is still connected while you read this page.",
+  "rootConfirmTitle": "Open a root shell?",
+  "rootConfirmDesc": "This session is an unrestricted root PTY on the host. Commands are audited.",
+  "rootConfirmBody": "Only continue if you intend to run privileged host commands."
 }

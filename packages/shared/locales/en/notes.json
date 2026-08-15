@@ -39,7 +39,10 @@
   "backup": {
     "fileNotFound": "Backup file not found",
     "resticNoPassword": "restic is enabled but password is not set",
-    "resticNotInPath": "restic not in PATH"
+    "resticNotInPath": "restic not in PATH",
+    "dbEnvUnreadable": "Could not read .db.env; skipped SQL dump.",
+    "dbEnvNoName": ".db.env has no database name; skipped SQL dump.",
+    "targetOutside": "Restore target must be inside the project home or the public files root."
   },
   "redis": {
     "cliMissing": "redis-cli is not installed"
@@ -2964,7 +2967,9 @@
     "clientDeleted": "Client profile deleted",
     "sessionStartCwd": "VNC start failed: working directory not accessible to the session user (display :{{display}}). Fixed by starting from HOME.",
     "desktopRestarted": "Desktop profile applied and session restarted ({{desktop}}). Reconnect VNC/noVNC.",
-    "desktopNeedsStart": "Desktop profile {{desktop}} written to xstartup. Start the session to apply."
+    "desktopNeedsStart": "Desktop profile {{desktop}} written to xstartup. Start the session to apply.",
+    "linuxUserRolledBack": "Removed leftover Linux user {{user}} after VNC password failed.",
+    "linuxUserOrphan": "Could not remove leftover Linux user {{user}} after VNC password failed."
   },
   "apache": {
     "needServerName": "Server name required",
@@ -3014,6 +3019,19 @@
     "startedDetached": "BT tracker detached worker started (pid {{pid}}, port {{port}})",
     "runningDetached": "Tracker running as detached worker (pid {{pid}})",
     "jobQueued": "BT torrent creation queued (large share)",
-    "jobRunning": "BT torrent creation running"
+    "jobRunning": "BT torrent creation running",
+    "libraryAdded": "Added {{name}} to the WebTorrent library",
+    "libraryInspectFailed": "Could not read that .torrent or magnet",
+    "libraryDup": "That torrent is already in the library",
+    "libraryDestBad": "Save folder is not a valid Files path",
+    "libraryTorrentTooBig": ".torrent file is larger than 8 MiB",
+    "libraryNotFound": "Library item not found",
+    "libraryPaused": "Paused",
+    "libraryResumed": "Resumed",
+    "libraryRemoved": "Removed from library",
+    "libraryFilesRemoved": "Deleted downloaded files",
+    "libraryRestoreDone": "Library restore: started {{started}}/{{attempted}} (failed {{failed}})",
+    "applyTrackersDone": "Applied extra trackers to {{n}} live announce slots",
+    "libraryNeedServe": "Saved. Open the panel (ysk-server serve) so WebTorrent can download or seed."
   }
 }

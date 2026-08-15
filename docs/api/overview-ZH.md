@@ -19,7 +19,7 @@
 | `/email` | `email` | `/api/v1/email` |
 | `/files` | `files` | `/api/v1/files` |
 | `/ftp` | `ftp` | `/api/v1/ftp` |
-| `/bt-tracker` | `bt-tracker` | `/api/v1/bt-tracker` |
+| `/bt-tracker` | `bt-tracker` | `/api/v1/system/bt-tracker` |
 | `/dns` | `dns` | `/api/v1/dns` |
 | `/ssl` | `ssl` | `/api/v1/ssl` |
 | `/nginx` | `nginx` | `/api/v1/nginx` |
@@ -64,6 +64,8 @@
 `GET /api/v1/updates/self` 為面板版本檢查。`POST /api/v1/updates/self/apply` 把官方 npm tarball overlay 到執行中目錄（等同 `ysk-server update --apply`）。套用失敗回 **422**，`blockMessage`／`message` 為真正原因，不會把 `npm notice` 檔案清單當錯誤。覆寫產品自己的檔案不需要 `YSK_EXECUTE`。
 
 Nginx 站點套用（`POST /api/v1` nginx／受管資源）在 `serverName` 空白或非法時 **直接失敗**。回傳 `ok: false` 與驗證訊息，**不會**寫入 `server_name localhost`。CLI：`ysk-server nginx`／`ysk-server hosting nginx`。
+
+BT Tracker 資料庫（程序內 WebTorrent）：`POST /api/v1/system/bt-tracker/library/inspect` 與 `POST /api/v1/system/bt-tracker/library` 接受 `torrentBase64` 或 `magnet`，以及 `saveRoot`／`saveRelPath`（Files 沙箱）。inspect／add 本文上限 **12 MiB**。CLI：`ysk-server bt-tracker add|library|inspect`。常用 announce 為 `PATCH /api/v1/system/bt-tracker/settings` 的 `extraTrackers`，或 `ysk-server bt-tracker trackers`。訪客代理仍是 `/api/v1/public/bt-tracker`。
 
 JSON 請求正文有上限（預設 1 MiB；`POST /api/v1/auth/login` 為 256 KiB）。超限回 **413**。登入 JSON 無效回 **400**。
 

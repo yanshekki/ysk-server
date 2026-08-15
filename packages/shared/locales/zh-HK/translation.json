@@ -454,7 +454,7 @@
     "applyHint": "",
     "torrents": "Torrent",
     "torrentsEmpty": "暫無 Torrent",
-    "torrentsEmptyHint": "於「檔案」建立 BT 分享",
+    "torrentsEmptyHint": "加入 .torrent，或於「檔案」建立 BT 分享",
     "torrentsDesc": "",
     "colName": "名稱",
     "colHash": "Hash",
@@ -543,7 +543,55 @@
     "udpPortSameHttp": "同 HTTP（{{port}}）",
     "udpPortClassic": "6969",
     "portSuggest8000": "8000",
-    "announceHostUnset": "—"
+    "announceHostUnset": "—",
+    "tabTrackers": "Tracker",
+    "addTorrent": "加入 Torrent",
+    "addTorrentTitle": "加入 Torrent",
+    "addTorrentHint": "上傳 .torrent 或貼上 magnet，再選擇儲存資料夾。檔案未齊會用 WebTorrent 下載，齊了就做種。",
+    "dropTorrent": "將 .torrent 拖放到此處",
+    "chooseFile": "或選擇檔案",
+    "magnetLabel": "Magnet",
+    "magnetPlaceholder": "magnet:?xt=urn:btih:…",
+    "inspect": "讀取",
+    "extraTrackersPreview": "將額外向 {{n}} 個常用 Tracker announce",
+    "saveLocation": "儲存位置",
+    "saveRootPublic": "公開檔案",
+    "newFolder": "新資料夾",
+    "destPreview": "將寫入",
+    "startDownload": "開始",
+    "filterDownloading": "下載中",
+    "filterPaused": "已暫停",
+    "filterError": "錯誤",
+    "emptyDrop": "將 .torrent 拖放到此處，或選擇檔案",
+    "emptyHint": "下載會寫入你指定的資料夾；檔案已齊就直接做種。引擎是 WebTorrent，不會另外安裝下載軟件。",
+    "pause": "暫停",
+    "resume": "繼續",
+    "openFolder": "開啟資料夾",
+    "remove": "移除",
+    "removeKeep": "移除並保留檔案",
+    "removeDelete": "移除並刪除檔案",
+    "removeConfirm": "要從資料庫移除此 Torrent？",
+    "kindShare": "分享",
+    "filesInTorrent": "個檔案",
+    "extraTrackersDesc": "這裏是額外 announce。資料庫下載／做種與檔案 BT 分享都會一併通知這些 Tracker。不會取代 .torrent 原有清單，亦不會令本機 Tracker 對外開放。",
+    "extraTrackersEmpty": "未有常用 Tracker。加入 http(s)／udp／ws(s) announce URL 才可靠外站尋找 peers。",
+    "extraTrackerAdd": "加入",
+    "extraTrackerUrl": "Announce URL",
+    "extraTrackerApply": "套用到現有做種",
+    "extraTrackerApplyOk": "已套用常用 Tracker",
+    "extraEnabled": "啟用",
+    "extraTrackerBad": "URL 必須以 http://、https://、udp://、ws:// 或 wss:// 開頭",
+    "extraTrackerDup": "清單已有此 URL",
+    "extraTrackerLimit": "最多 32 個常用 Tracker",
+    "addOk": "已加入資料庫",
+    "savedTo": "儲存",
+    "folderEmpty": "沒有子資料夾",
+    "needTorrentFile": "請選擇 .torrent 檔",
+    "torrentTooBig": ".torrent 大於 8 MiB",
+    "seedStatusDownloading": "下載中",
+    "seedStatusChecking": "檢查中",
+    "seedStatusPaused": "已暫停",
+    "seedStatusQueued": "排隊中"
   },
   "catalog": {
     "sw": {
@@ -2277,7 +2325,11 @@
     "levelInfo": "資訊",
     "colTitle": "提示",
     "colDetail": "詳情",
-    "colSource": "來源"
+    "colSource": "來源",
+    "notifSearch": "搜尋通知",
+    "notifAll": "全部",
+    "notifDismiss": "隱藏",
+    "goFix": "前往處理"
   },
   "dataTable": {
     "empty": "沒有資料",
@@ -2571,7 +2623,8 @@
     "unfreezeOk": "{{engine}} 修復完成",
     "startAfterUnfreeze": "啟動服務（失敗時會自動套用修復計劃）",
     "serviceDownTitle": "資料庫服務未運作",
-    "serviceDownBody": "服務異常。面板會診斷常見原因（凍結、設定殘留、空白資料目錄、埠衝突等）。資料目錄為空：{{empty}}。請按「檢查並修復服務」確認執行。"
+    "serviceDownBody": "服務異常。面板會診斷常見原因（凍結、設定殘留、空白資料目錄、埠衝突等）。資料目錄為空：{{empty}}。請按「檢查並修復服務」確認執行。",
+    "adoptHostDb": "登記 {{name}}"
   },
   "dialogs": {
     "confirmDefault": "確認",
@@ -2799,7 +2852,8 @@
     "aboutHealthTitle": "服務健康",
     "aboutHealthBody": "在「工具」探測 PowerDNS、修復綁定、開放 53 埠。",
     "aboutStackTitle": "軟件版本",
-    "aboutStackBody": "在「軟件」檢查／更新 PowerDNS 套件。"
+    "aboutStackBody": "在「軟件」檢查／更新 PowerDNS 套件。",
+    "createMailZoneNow": "已建立郵件區域 {{domain}}"
   },
   "email": {
     "title": "郵件",
@@ -3162,7 +3216,8 @@
       "postfixReloaded": "已重新載入 Postfix。",
       "postfixReloadFailed": "Postfix 重新載入失敗：{{detail}}",
       "dovecotApplied": "已寫入 Dovecot TLS 片段並嘗試重新載入。",
-      "dovecotSkipped": "已略過 Dovecot（未安裝或 doveconf 不可用）。"
+      "dovecotSkipped": "已略過 Dovecot（未安裝或 doveconf 不可用）。",
+      "dovecotSslOmitted": "郵件憑證不存在，已改寫 Dovecot 為 ssl=no，避免單元因缺少憑證而無法啟動。"
     },
     "policyApplySystemHint": "勾選「套用到系統」先會寫入 Postfix／Rspamd 對應並重新載入；否則只寫控制面草稿。",
     "rateLimitAppliedNote": "已套用每小時外發限额與反垃圾標記（若啟用系統套用）。",
@@ -3291,7 +3346,8 @@
     "queueDeferred": "延遲",
     "deleteQueueTitle": "刪除此佇列郵件？",
     "deleteQueueDesc": "從本機 MTA 佇列移除 {{id}}。需 YSK_EXECUTE。",
-    "openQueuePage": "開啟郵件佇列"
+    "openQueuePage": "開啟郵件佇列",
+    "dovecotFailedHint": "Dovecot 服務失敗。先到軟件分頁查看狀態；若郵件憑證尚未簽發，請先到 SSL 簽發 mail 主機名稱。"
   },
   "errors": {
     "YSK_UNAUTHORIZED": "未授權",
@@ -3803,7 +3859,9 @@
       "typeMismatch": "此處已有名為「{{name}}」的{{destKind}}，即將加入的是{{incomingKind}}。",
       "skipped": "已略過",
       "cancelled": "已取消"
-    }
+    },
+    "webdavReissueUnchanged": "重新簽發後權杖編號未變——寫入可能未生效，請再試一次。",
+    "webdavDisableFailed": "停用後狀態仍為啟用——寫入可能未生效，請再試一次。"
   },
   "firewall": {
     "profiles": {
@@ -3910,7 +3968,9 @@
     "syncNow": "立即同步",
     "disableConfirmTitle": "停用 UFW？",
     "disableConfirmDesc": "主機防火牆將停止過濾流量。若主機在公眾網絡上，SSH 與面板可能直接暴露。",
-    "disableConfirmConsequence": "現有允許／拒絕規則仍會保留，但要重新啟用 UFW 才會生效。"
+    "disableConfirmConsequence": "現有允許／拒絕規則仍會保留，但要重新啟用 UFW 才會生效。",
+    "desiredOnlyUfwOff": "設定：{{mode}} · UFW 關閉（未套用）",
+    "syncNotApplied": "UFW 關閉 · 未套用"
   },
   "ftp": {
     "title": "FTPS 帳戶",
@@ -4047,7 +4107,9 @@
     "sftpTechSummary": "技術細節（進階）",
     "sftpTechNote": "公鑰會寫入管理路徑",
     "filterProject": "只顯示此專案的 FTP 帳戶",
-    "clearProjectFilter": "顯示全部帳戶"
+    "clearProjectFilter": "顯示全部帳戶",
+    "vsftpdFailedHint": "vsftpd 服務失敗。請到服務分頁查看設定與日誌（listen 與 listen_ipv6 不可同時為 YES）。",
+    "tabService": "服務"
   },
   "geo": {
     "continents": {
@@ -5110,7 +5172,10 @@
     "backup": {
       "fileNotFound": "找不到備份檔",
       "resticNoPassword": "Restic 已啟用但未設定 密碼",
-      "resticNotInPath": "Restic 不在 路徑"
+      "resticNotInPath": "Restic 不在 路徑",
+      "dbEnvUnreadable": "無法讀取 .db.env，略過 SQL 傾印。",
+      "dbEnvNoName": ".db.env 沒有資料庫名稱，略過 SQL 傾印。",
+      "targetOutside": "還原目標必須在專案家目錄或公開檔案根目錄之內。"
     },
     "redis": {
       "cliMissing": "未安裝 redis-cli"
@@ -8035,7 +8100,9 @@
       "clientDeleted": "已刪除客戶端設定",
       "sessionStartCwd": "VNC 啟動失敗：工作目錄 VNC 用戶無權限（display :{{display}}）。已改為由 HOME 啟動。",
       "desktopRestarted": "套用桌面設定檔並重新啟動會話 ({{desktop}})。重新連接 VNC/noVNC。",
-      "desktopNeedsStart": "桌面設定檔 {{desktop}} 寫入 xstartup。啟動會話以進行申請。"
+      "desktopNeedsStart": "桌面設定檔 {{desktop}} 寫入 xstartup。啟動會話以進行申請。",
+      "linuxUserRolledBack": "VNC 密碼失敗後已刪除遺留 Linux 用戶 {{user}}。",
+      "linuxUserOrphan": "VNC 密碼失敗後無法刪除遺留 Linux 用戶 {{user}}。"
     },
     "apache": {
       "needServerName": "需要域名",
@@ -8085,7 +8152,20 @@
       "startedDetached": "BT Tracker detached worker 已啟動（pid {{pid}}，埠 {{port}}）",
       "runningDetached": "Tracker 以 detached worker 運行中（pid {{pid}}）",
       "jobQueued": "BT torrent 建立已排入佇列（大型分享）",
-      "jobRunning": "正在建立 BT torrent"
+      "jobRunning": "正在建立 BT torrent",
+      "libraryAdded": "已將 {{name}} 加入 WebTorrent 資料庫",
+      "libraryInspectFailed": "無法讀取此 .torrent 或 magnet",
+      "libraryDup": "資料庫已有此 Torrent",
+      "libraryDestBad": "儲存位置不是有效的檔案路徑",
+      "libraryTorrentTooBig": ".torrent 檔大於 8 MiB",
+      "libraryNotFound": "找不到此資料庫項目",
+      "libraryPaused": "已暫停",
+      "libraryResumed": "已繼續",
+      "libraryRemoved": "已從資料庫移除",
+      "libraryFilesRemoved": "已刪除下載的檔案",
+      "libraryRestoreDone": "資料庫還原：已啟動 {{started}}／{{attempted}}（失敗 {{failed}}）",
+      "applyTrackersDone": "已向 {{n}} 個現有 announce 套用常用 Tracker",
+      "libraryNeedServe": "已儲存。請在面板啟動 ysk-server serve，WebTorrent 才會下載／做種。"
     }
   },
   "ops": {
@@ -9982,7 +10062,8 @@
     "path": "路徑",
     "fullVersion": "完整版本",
     "useListForDefaults": "要改主機／面板預設或移除此版本，請用上方列表。",
-    "alreadyHostDefaultShort": "主機預設"
+    "alreadyHostDefaultShort": "主機預設",
+    "installRecordedCta": "前往軟件分頁安裝 {{v}}"
   },
   "search": {
     "placeholder": "搜尋頁面與資源…",
@@ -10388,7 +10469,8 @@
       "dryRunOk": "預覽試行完成。請查看下方預覽。",
       "strictDryRun": "嚴格模式預覽",
       "errorNoDetail": "測試失敗（無詳情）",
-      "strictBlocked": "套件或 PAM 未就緒，已停用套用 Strict。"
+      "strictBlocked": "套件或 PAM 未就緒，已停用套用 Strict。",
+      "privCloseWithoutAck": "已關閉。私鑰不會再顯示；若尚未儲存，請立即重新產生。"
     },
     "sessionsActive": "使用中",
     "sessionsOther": "其他裝置",
@@ -10441,7 +10523,9 @@
       "medium": "中",
       "high": "高",
       "critical": "嚴重"
-    }
+    },
+    "confirmDeleteApiKey": "刪除此 API 金鑰？",
+    "confirmDeleteApiKeyDesc": "刪除後「{{name}}」無法再驗證。此操作無法復原。"
   },
   "serviceExposure": {
     "title": "網絡存取",
@@ -11333,7 +11417,10 @@
     "stepUpTitle": "確認 root shell",
     "stepUpDesc": "輸入驗證器代碼或救援碼。",
     "totpLabel": "TOTP／救援碼",
-    "sessionStillOpen": "說明分頁開啟期間，工作階段仍保持連線。"
+    "sessionStillOpen": "說明分頁開啟期間，工作階段仍保持連線。",
+    "rootConfirmTitle": "開啟 root shell？",
+    "rootConfirmDesc": "此工作階段是主機上不受限制的 root PTY。指令會寫入審計紀錄。",
+    "rootConfirmBody": "僅在你打算執行具權限的主機指令時繼續。"
   },
   "uiInline": {
     "s27d9daa5": "已預填 runtime {{v0}} {{v1}}，可建立專案",

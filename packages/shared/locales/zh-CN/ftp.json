@@ -133,5 +133,7 @@
   "sftpTechSummary": "技术细节（高级）",
   "sftpTechNote": "公钥会写入管理路径",
   "filterProject": "只显示此项目的 FTP 帐户",
-  "clearProjectFilter": "显示全部帐户"
+  "clearProjectFilter": "显示全部帐户",
+  "vsftpdFailedHint": "vsftpd 服务失败。请到服务分页查看设定与日志（listen 与 listen_ipv6 不可同时为 YES）。",
+  "tabService": "服务"
 }

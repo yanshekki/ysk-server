@@ -543,7 +543,55 @@
     "udpPortClassic": "6969 · Classic",
     "portSuggest8000": "8000 · Recommended",
     "saveOkRestart": "保存済み — トラッカーを再起動してポートを適用します",
-    "announceHostUnset": "—"
+    "announceHostUnset": "—",
+    "tabTrackers": "Trackers",
+    "addTorrent": "Add torrent",
+    "addTorrentTitle": "Add torrent",
+    "addTorrentHint": "Upload a .torrent or paste a magnet. Choose a Files folder. WebTorrent downloads missing files and seeds when complete.",
+    "dropTorrent": "Drop a .torrent here",
+    "chooseFile": "or choose a file",
+    "magnetLabel": "Magnet",
+    "magnetPlaceholder": "magnet:?xt=urn:btih:…",
+    "inspect": "Read",
+    "extraTrackersPreview": "Will also announce to {{n}} extra tracker(s)",
+    "saveLocation": "Save location",
+    "saveRootPublic": "Public files",
+    "newFolder": "New folder",
+    "destPreview": "Will write to",
+    "startDownload": "Start",
+    "filterDownloading": "Downloading",
+    "filterPaused": "Paused",
+    "filterError": "Error",
+    "emptyDrop": "Drop a .torrent here, or choose a file",
+    "emptyHint": "Files go in the folder you pick. If they are already complete, this host seeds. Engine: WebTorrent — no extra download software.",
+    "pause": "Pause",
+    "resume": "Resume",
+    "openFolder": "Open folder",
+    "remove": "Remove",
+    "removeKeep": "Remove, keep files",
+    "removeDelete": "Remove and delete files",
+    "removeConfirm": "Remove this torrent from the library?",
+    "kindShare": "Share",
+    "filesInTorrent": "files",
+    "extraTrackersDesc": "Extra announce URLs. Library download/seed and file-share seeds use them in addition to the .torrent list. This does not open the local tracker to arbitrary swarms.",
+    "extraTrackersEmpty": "No extra trackers. Add HTTP(S), UDP, or WS(S) announce URLs so this host can find peers.",
+    "extraTrackerAdd": "Add",
+    "extraTrackerUrl": "Announce URL",
+    "extraTrackerApply": "Apply to current seeds",
+    "extraTrackerApplyOk": "Applied extra trackers",
+    "extraEnabled": "On",
+    "extraTrackerBad": "URL must start with http://, https://, udp://, ws://, or wss://",
+    "extraTrackerDup": "Already listed",
+    "extraTrackerLimit": "Maximum 32 extra trackers",
+    "addOk": "Added to library",
+    "savedTo": "Save",
+    "folderEmpty": "No subfolders",
+    "needTorrentFile": "Choose a .torrent file",
+    "torrentTooBig": ".torrent larger than 8 MiB",
+    "seedStatusDownloading": "Downloading",
+    "seedStatusChecking": "Checking",
+    "seedStatusPaused": "Paused",
+    "seedStatusQueued": "Queued"
   },
   "catalog": {
     "sw": {
@@ -2277,7 +2325,11 @@
     "levelInfo": "情報",
     "colTitle": "通知",
     "colDetail": "詳細",
-    "colSource": "出典"
+    "colSource": "出典",
+    "notifSearch": "Search alerts",
+    "notifAll": "All",
+    "notifDismiss": "Hide",
+    "goFix": "Fix"
   },
   "dataTable": {
     "empty": "データがありません",
@@ -2571,7 +2623,8 @@
     "serviceDownBody": "サービスが不健全である",
     "emptyDbHostHasRows": "The host already has databases that are not in this control-plane list.",
     "hostHasUntracked": "{{count}} host databases are not registered in the panel",
-    "hostInventoryHint": "The table is control-plane rows only. Live names come from SHOW DATABASES."
+    "hostInventoryHint": "The table is control-plane rows only. Live names come from SHOW DATABASES.",
+    "adoptHostDb": "Register {{name}}"
   },
   "dialogs": {
     "confirmDefault": "確認",
@@ -2799,7 +2852,8 @@
     "invalidZone": "Invalid zone name. Use a real domain (e.g. example.com).",
     "invalidIpv4": "Invalid IPv4. Each octet must be 0–255.",
     "mailZonesMissing": "Email domains have no DNS zone here: {{domains}}.",
-    "createMailZone": "Create mail zone"
+    "createMailZone": "Create mail zone",
+    "createMailZoneNow": "Created mail zone {{domain}}"
   },
   "email": {
     "title": "メール",
@@ -3161,7 +3215,8 @@
       "postfixReloaded": "Postfixがリロードされました。",
       "postfixReloadFailed": "Postfix のリロードに失敗しました: {{detail}}",
       "dovecotApplied": "Dovecot TLS スニペットを作成し、リロードを試みました。",
-      "dovecotSkipped": "Dovecot をスキップしました (インストールされていないか、doveconf が利用できません)。"
+      "dovecotSkipped": "Dovecot をスキップしました (インストールされていないか、doveconf が利用できません)。",
+      "dovecotSslOmitted": "Mail certificate is missing; wrote ssl=no so Dovecot can start without the LE files."
     },
     "policyApplySystemHint": "「システムに適用」にチェックを入れて、Postfix/Rspamd マップを書き込み、リロードします。",
     "rateLimitAppliedNote": "1 時間ごとのアウトバウンド率とスパム対策フラグが適用されます (システム適用がオンの場合)。",
@@ -3291,7 +3346,8 @@
     "deleteQueueTitle": "このキューメールを削除しますか？",
     "deleteQueueDesc": "ローカル MTA キューから {{id}} を削除します。YSK_EXECUTE が必要です。",
     "openQueuePage": "メールキューを開く",
-    "healthUnchecked": "Not checked yet"
+    "healthUnchecked": "Not checked yet",
+    "dovecotFailedHint": "Dovecot failed. Open the Software tab for status; if the mail certificate is missing, issue it on the SSL page first."
   },
   "errors": {
     "YSK_UNAUTHORIZED": "未認証",
@@ -3803,7 +3859,9 @@
     },
     "emptyTrashTitle": "Empty trash?",
     "emptyTrashDesc": "Every file in trash will be permanently deleted. This cannot be undone.",
-    "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone."
+    "purgeForeverDesc": "This file will be permanently deleted. This cannot be undone.",
+    "webdavReissueUnchanged": "Token id did not change after re-issue — the write may not have persisted. Try again.",
+    "webdavDisableFailed": "WebDAV is still enabled after disable — the write may not have persisted. Try again."
   },
   "firewall": {
     "profiles": {
@@ -3910,7 +3968,9 @@
     "disableConfirmDesc": "ホストのファイアウォールが通信をフィルタしなくなります。公開ネットワーク上では SSH とパネルが露出する可能性があります。",
     "disableConfirmConsequence": "既存の許可／拒否ルールは残りますが、UFW を再度有効にするまで適用されません。",
     "toolHintFail2ban": "fail2ban = temporary log-based bans",
-    "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing."
+    "servicesUfwOff": "UFW is off. This list is the desired exposure, not rules the host is enforcing.",
+    "desiredOnlyUfwOff": "Desired: {{mode}} · UFW off (not applied)",
+    "syncNotApplied": "UFW off · not applied"
   },
   "ftp": {
     "title": "FTPSアカウント",
@@ -4047,7 +4107,9 @@
     "sftpTechSummary": "技術的な詳細（上級）",
     "sftpTechNote": "キーは管理対象パスの下に書き込まれます",
     "filterProject": "このプロジェクトの FTP アカウントのみ表示",
-    "clearProjectFilter": "すべてのアカウントを表示"
+    "clearProjectFilter": "すべてのアカウントを表示",
+    "vsftpdFailedHint": "vsftpd failed. Open the Service tab (listen and listen_ipv6 cannot both be YES).",
+    "tabService": "Service"
   },
   "geo": {
     "continents": {
@@ -5110,7 +5172,10 @@
     "backup": {
       "fileNotFound": "バックアップファイルが見つかりません",
       "resticNoPassword": "Restic は有効ですが、パスワードが設定されていません",
-      "resticNotInPath": "Restic が PATH にありません"
+      "resticNotInPath": "Restic が PATH にありません",
+      "dbEnvUnreadable": "Could not read .db.env; skipped SQL dump.",
+      "dbEnvNoName": ".db.env has no database name; skipped SQL dump.",
+      "targetOutside": "Restore target must be inside the project home or the public files root."
     },
     "redis": {
       "cliMissing": "redis-cli がインストールされていません"
@@ -8035,7 +8100,9 @@
       "sessionStartCwd": "VNC の起動に失敗しました: セッション ユーザーは作業ディレクトリにアクセスできません (表示:{{display}})。 HOMEから起動すると直りました。",
       "desktopRestarted": "デスクトップ プロファイルが適用され、セッションが再起動されました ({{desktop}})。 VNC/noVNC を再接続します。",
       "desktopNeedsStart": "デスクトップ プロファイル {{desktop}} が xstartup に書き込まれます。セッションを開始して適用します。",
-      "passwordNeedTiger": "vncpasswd not found. Install TigerVNC (tigervnc-standalone-server) before setting a password."
+      "passwordNeedTiger": "vncpasswd not found. Install TigerVNC (tigervnc-standalone-server) before setting a password.",
+      "linuxUserRolledBack": "Removed leftover Linux user {{user}} after VNC password failed.",
+      "linuxUserOrphan": "Could not remove leftover Linux user {{user}} after VNC password failed."
     },
     "apache": {
       "needServerName": "サーバー名は必須です",
@@ -8085,7 +8152,20 @@
       "startedDetached": "BT トラッカーのデタッチされたワーカーが開始されました (pid {{pid}}、ポート {{port}})",
       "runningDetached": "切り離されたワーカーとして実行されているトラッカー (pid {{pid}})",
       "jobQueued": "BT トレント作成がキューに入れられました (大シェア)",
-      "jobRunning": "BT トレント作成実行中"
+      "jobRunning": "BT トレント作成実行中",
+      "libraryAdded": "Added {{name}} to the WebTorrent library",
+      "libraryInspectFailed": "Could not read that .torrent or magnet",
+      "libraryDup": "That torrent is already in the library",
+      "libraryDestBad": "Save folder is not a valid Files path",
+      "libraryTorrentTooBig": ".torrent file is larger than 8 MiB",
+      "libraryNotFound": "Library item not found",
+      "libraryPaused": "Paused",
+      "libraryResumed": "Resumed",
+      "libraryRemoved": "Removed from library",
+      "libraryFilesRemoved": "Deleted downloaded files",
+      "libraryRestoreDone": "Library restore: started {{started}}/{{attempted}} (failed {{failed}})",
+      "applyTrackersDone": "Applied extra trackers to {{n}} live announce slots",
+      "libraryNeedServe": "Saved. Open the panel (ysk-server serve) so WebTorrent can download or seed."
     }
   },
   "ops": {
@@ -9982,7 +10062,8 @@
     "useListForDefaults": "ホストまたはパネルのデフォルトを変更するか、このバージョンを削除するには、上記のリストを使用してください。",
     "alreadyHostDefaultShort": "ホストのデフォルト",
     "managedPathMissingTitle": "Managed {{name}} path not ready",
-    "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall."
+    "managedPathMissing": "YSK-managed {{name}} for version {{version}} is not ready. Re-probe or reinstall.",
+    "installRecordedCta": "Install recorded {{v}}"
   },
   "search": {
     "placeholder": "ページとリソースを検索…",
@@ -10387,7 +10468,8 @@
       "dryRunOk": "プレビューが完了しました。下の内容を確認してください。",
       "strictDryRun": "厳格モードのプレビュー",
       "errorNoDetail": "テスト失敗（詳細なし）",
-      "strictBlocked": "パッケージまたは PAM の準備ができていないため、Strict の適用は無効です。"
+      "strictBlocked": "パッケージまたは PAM の準備ができていないため、Strict の適用は無効です。",
+      "privCloseWithoutAck": "Closed. The private key will not be shown again; generate a new one if you did not save it."
     },
     "sessionsActive": "アクティブなセッション",
     "sessionsOther": "その他のデバイス",
@@ -10441,7 +10523,9 @@
       "medium": "中",
       "high": "高",
       "critical": "重大"
-    }
+    },
+    "confirmDeleteApiKey": "Delete this API key?",
+    "confirmDeleteApiKeyDesc": "“{{name}}” will stop authenticating. This cannot be undone."
   },
   "serviceExposure": {
     "title": "ネットワークアクセス",
@@ -11333,7 +11417,10 @@
     "stepUpTitle": "ルートシェルを確認する",
     "stepUpDesc": "認証コードまたは回復コードを入力します。",
     "totpLabel": "TOTP / リカバリーコード",
-    "sessionStillOpen": "A live shell is still connected while you read this page."
+    "sessionStillOpen": "A live shell is still connected while you read this page.",
+    "rootConfirmTitle": "Open a root shell?",
+    "rootConfirmDesc": "This session is an unrestricted root PTY on the host. Commands are audited.",
+    "rootConfirmBody": "Only continue if you intend to run privileged host commands."
   },
   "uiInline": {
     "s27d9daa5": "ランタイム {{v0}} {{v1}}，",

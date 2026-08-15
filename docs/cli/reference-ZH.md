@@ -119,7 +119,7 @@ ysk-server dns zones|zone|dnssec|heal|health|lookup|records …
 ysk-server backup list [--q TEXT]
 ysk-server backup status
 ysk-server backup all
-ysk-server backup restore …
+ysk-server backup restore --project-id ID --name ARCHIVE [--mode full|web|dry-run] [--target DIR]
 ysk-server backup delete …
 ysk-server backup schedule [--install] [--execute]
 ysk-server backup control-plane
@@ -161,7 +161,7 @@ ysk-server files shares delete --id SHARE_ID
 
 ## bt-tracker
 
-自架 [bittorrent-tracker](https://github.com/webtorrent/bittorrent-tracker)，供檔案分享 magnet／WebTorrent 使用。
+自架 [bittorrent-tracker](https://github.com/webtorrent/bittorrent-tracker)，加上程序內 **WebTorrent** 資料庫（把 `.torrent`／magnet 存到 Files 資料夾）。
 
 ```bash
 ysk-server bt-tracker status|info
@@ -172,8 +172,15 @@ ysk-server bt-tracker settings set|patch \
 ysk-server bt-tracker start [--execute]   # detached worker + pid（CLI 結束後仍運行）
 ysk-server bt-tracker stop                # 同時清除 ysk-svc:bt-tracker UFW 規則
 ysk-server bt-tracker torrents|stats      # 即時 swarm（優先程序內）
-ysk-server bt-tracker restore             # 重新做種（必要時啟動 Tracker）
+ysk-server bt-tracker restore             # 重新做種分享 + 資料庫（必要時啟動 Tracker）
 ysk-server bt-tracker jobs [--id JOB_ID]  # 大型分享建 torrent 佇列
+ysk-server bt-tracker inspect --file FILE.torrent|--magnet URI
+ysk-server bt-tracker add --file FILE|--magnet URI --root public --path downloads/name
+ysk-server bt-tracker library [--id ID]
+ysk-server bt-tracker pause|resume --id ID
+ysk-server bt-tracker remove --id ID [--delete-files]
+ysk-server bt-tracker trackers
+ysk-server bt-tracker trackers add|remove|enable|disable --url URL
 ```
 
 | 主題 | 行為 |
@@ -185,7 +192,9 @@ ysk-server bt-tracker jobs [--id JOB_ID]  # 大型分享建 torrent 佇列
 | 停止時改設定 | 只更新 JSON + 期望埠 |
 | 運行中改埠 | 可寫入，但要 **重啟 Tracker** 才 re-bind |
 | 瀏覽器訪客 | 同源 **`wss?://面板/api/v1/public/bt-tracker`** 代理到本機 Tracker（HTTPS 安全） |
-| serve 開機 | autostart 或已有 BT 分享 → `restoreBtSharesOnBoot` |
+| serve 開機 | autostart 或已有 BT 分享 → `restoreBtSharesOnBoot` + 資料庫還原 |
+| `add` | 寫入資料庫 JSON 並複製 `.torrent`。**不會**在 CLI 行程下載 — 請開 `serve`／面板 |
+| `trackers` | 額外 announce URL（預設空白）。WebTorrent 加入／繼續時合併 |
 
 面板 Start 使用 **serve 程序內** Tracker（與做種同進程）。詳見 [features/bt-tracker-ZH.md](../features/bt-tracker-ZH.md)。
 
@@ -268,7 +277,7 @@ Fleet：已註冊 ≠ 已連線（需 heartbeat）。入隊需 Bearer；公開�
 ysk-server logs sources|query|journal|overview …
 ysk-server host overview|metrics|network …
 ysk-server health [--url http://host:port/health]
-ysk-server notifications
+ysk-server notifications [list]   # 僅 list——沒有 create/send/channel
 ysk-server readiness|doctor [--json]
 ysk-server services …
 ysk-server db-cluster list|get|create|plan …

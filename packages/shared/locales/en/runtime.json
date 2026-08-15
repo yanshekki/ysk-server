@@ -510,5 +510,6 @@
   "path": "Path",
   "fullVersion": "Full version",
   "useListForDefaults": "To change host or panel default, or remove this version, use the list above.",
-  "alreadyHostDefaultShort": "Host default"
+  "alreadyHostDefaultShort": "Host default",
+  "installRecordedCta": "Install recorded {{v}}"
 }

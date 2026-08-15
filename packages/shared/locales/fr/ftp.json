@@ -133,5 +133,7 @@
   "sftpTechSummary": "Détails techniques (avancé)",
   "sftpTechNote": "Les clés sont écrites sous le chemin géré",
   "filterProject": "Comptes FTP de ce projet uniquement",
-  "clearProjectFilter": "Afficher tous les comptes"
+  "clearProjectFilter": "Afficher tous les comptes",
+  "vsftpdFailedHint": "vsftpd failed. Open the Service tab (listen and listen_ipv6 cannot both be YES).",
+  "tabService": "Service"
 }
