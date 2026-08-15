@@ -688,7 +688,7 @@ export function OutboundIdentities({ onFlash, onChanged }: Props) {
         open={Boolean(revealKey)}
         onClose={() => {
           if (revealKey && !revealAck) {
-            onFlash('warn', t('security.ssh.privCloseWithoutAck'));
+            onFlash('error', t('security.ssh.privCloseWithoutAck'));
           }
           setRevealKey(null);
           setRevealFp(null);

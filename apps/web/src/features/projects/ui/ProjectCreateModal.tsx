@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActionBar,
@@ -113,6 +113,7 @@ export function ProjectCreateModal({
 
   const [versionChoices, setVersionChoices] = useState<string[]>([]);
   const [versionsLoading, setVersionsLoading] = useState(false);
+  const versionReq = useRef(0);
 
   useEffect(() => {
     if (!open) return;
@@ -140,11 +141,11 @@ export function ProjectCreateModal({
   // Prefer discovery API for version chips
   useEffect(() => {
     if (!open) return;
-    let cancelled = false;
+    const seq = ++versionReq.current;
     setVersionsLoading(true);
     setVersionChoices([]);
     void fetchRuntimeVersionChoices(runtime).then((r) => {
-      if (cancelled) return;
+      if (seq !== versionReq.current) return;
       const choices = r.choices.length ? r.choices : runtimeVersionChoices(runtime);
       setVersionChoices(choices);
       setRuntimeVersion((prev) =>
@@ -152,9 +153,6 @@ export function ProjectCreateModal({
       );
       setVersionsLoading(false);
     });
-    return () => {
-      cancelled = true;
-    };
   }, [open, runtime]);
 
   useEffect(() => {

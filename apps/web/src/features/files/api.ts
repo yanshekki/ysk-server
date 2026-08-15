@@ -245,7 +245,13 @@ export const filesApi = {
     }>('/api/v1/files/webdav/token?root=public', { method: 'POST', body: '{}' }),
 
   webdavDisable: () =>
-    api.requestRaw<{ ok: boolean; enabled?: boolean }>('/api/v1/files/webdav/disable?root=public', {
+    api.requestRaw<{
+      ok: boolean;
+      enabled?: boolean;
+      tokenId?: string;
+      mountPath?: string;
+      updated_at?: string;
+    }>('/api/v1/files/webdav/disable?root=public', {
       method: 'POST',
       body: '{}',
     }),
