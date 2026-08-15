@@ -9,7 +9,13 @@ export function NotFoundPage() {
   const { t } = useTranslation();
   const loc = useLocation();
   return (
-    <FeaturePageLayout title={t('notFound.title')}>
+    <FeaturePageLayout
+      title={t('notFound.title')}
+      status={{
+        pill: { label: t('notFound.title'), tone: 'warn' },
+        items: [{ label: t('notFound.home'), value: loc.pathname || '/' }],
+      }}
+    >
       <p className="u-text-sm">
         {t('notFound.body', { path: loc.pathname || '/' })}
       </p>
