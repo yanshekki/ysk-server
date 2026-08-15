@@ -80,7 +80,13 @@
     "auditExport": "निर्यात का ऑडिट करें",
     "securityApiKeysAdmin": "एपीआई कुंजियाँ व्यवस्थापक",
     "networkBrowse": "होस्ट-मध्यस्थता वेब ब्राउज़",
-    "networkVnc": "वीएनसी रिमोट डेस्कटॉप"
+    "networkVnc": "वीएनसी रिमोट डेस्कटॉप",
+    "validatorsRead": "Validators (read)",
+    "validatorsManage": "Validators manage",
+    "validatorsWipe": "Validators wipe data",
+    "dockerRead": "Docker (read)",
+    "dockerManage": "Docker manage",
+    "dockerWipe": "Docker wipe / prune"
   },
   "aboutRoles": "भूमिकाएँ (फ़ैक्टरी डिफ़ॉल्ट)",
   "aboutRolesBody": "भूमिकाएँ डिफ़ॉल्ट क्षमताएँ निर्धारित करती हैं; उपयोगकर्ता अलग-अलग को ओवरराइड कर सकते हैं।",

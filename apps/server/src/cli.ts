@@ -100,6 +100,8 @@ const CLI_COMMANDS = [
   'ftp',
   'runtimes',
   'bt-tracker',
+  'validators',
+  'docker',
   'version',
   'help',
 ] as const;
@@ -6321,7 +6323,9 @@ async function mainInner(
     command === 'redis' ||
     command === 'ftp' ||
     command === 'runtimes' ||
-    command === 'bt-tracker'
+    command === 'bt-tracker' ||
+    command === 'validators' ||
+    command === 'docker'
   ) {
     // Honour --execute together with YSK_EXECUTE for host mutations
     const configPath = getOpt(args, '--config');
@@ -6387,6 +6391,14 @@ async function mainInner(
       if (command === 'bt-tracker') {
         const { runBtTrackerCommand } = await import('./cli/cmd-bt-tracker.js');
         return await runBtTrackerCommand(ctx, args, json, helpers);
+      }
+      if (command === 'validators') {
+        const { runValidatorsCommand } = await import('./cli/cmd-validators.js');
+        return await runValidatorsCommand(ctx, args, json, helpers);
+      }
+      if (command === 'docker') {
+        const { runDockerCommand } = await import('./cli/cmd-docker.js');
+        return await runDockerCommand(ctx, args, json, helpers);
       }
       if (command === 'runtimes') {
         // Alias → hosting runtimes / runtime-install / switch / uninstall

@@ -50,7 +50,9 @@
     "generic": "Layanan terkait mungkin berhenti",
     "purgeData": "Jalur data akan dihapus",
     "protectedSkipped": "Komponen yang dilindungi dilewati",
-    "runtimeStack": "Semua versi runtime yang dikelola panel ini akan dihapus"
+    "runtimeStack": "Semua versi runtime yang dikelola panel ini akan dihapus",
+    "containers": "Running containers will stop",
+    "validators": "Validator node stacks that use Docker Compose will stop"
   },
   "requestCancel": "Permintaan pembatalan",
   "cancelling": "Membatalkan…",

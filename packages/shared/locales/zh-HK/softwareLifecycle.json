@@ -50,7 +50,9 @@
     "generic": "相關服務可能停止",
     "purgeData": "將刪除資料路徑",
     "protectedSkipped": "受保護元件會略過",
-    "runtimeStack": "將移除面板管理的此執行環境全部版本"
+    "runtimeStack": "將移除面板管理的此執行環境全部版本",
+    "containers": "運行中的容器會停止",
+    "validators": "使用 Docker Compose 的驗證者節點堆疊會停止"
   },
   "requestCancel": "請求取消",
   "cancelling": "取消中…",

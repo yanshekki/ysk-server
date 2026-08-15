@@ -44,6 +44,8 @@ See also: [`product-feature-matrix.md`](./product-feature-matrix.md).
 | Runtimes | `/runtimes/java` | Java | J |
 | Runtimes | `/runtimes/kotlin` | Kotlin | J |
 | Runtimes | `/runtimes/bun` | Bun | J |
+| Containers | `/docker` | Docker engine | |
+| Validators | `/validators` | L1 nodes (Beta) | |
 | Security | `/protection` | Host defense (UFW / fail2ban) | M |
 | Security | `/security` | Account 2FA · API keys · SSH · approvals · agent tools | R |
 | Security | `/vpn` | VPN | |

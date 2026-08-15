@@ -175,6 +175,12 @@ const SupportPage = lazy(() =>
 const VpnPage = lazy(() =>
   import('../pages/features/VpnPage').then((m) => ({ default: m.VpnPage })),
 );
+const ValidatorsPage = lazy(() =>
+  import('../pages/features/ValidatorsPage').then((m) => ({ default: m.ValidatorsPage })),
+);
+const DockerPage = lazy(() =>
+  import('../pages/features/DockerPage').then((m) => ({ default: m.DockerPage })),
+);
 const VncPage = lazy(() =>
   import('../pages/features/VncPage').then((m) => ({ default: m.VncPage })),
 );
@@ -574,6 +580,22 @@ export function App() {
               element={
                 <Lazy>
                   <VpnPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="validators"
+              element={
+                <Lazy>
+                  <ValidatorsPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="docker"
+              element={
+                <Lazy>
+                  <DockerPage />
                 </Lazy>
               }
             />

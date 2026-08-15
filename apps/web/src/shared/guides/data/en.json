@@ -1745,5 +1745,80 @@
         "to": "/network"
       }
     ]
+  },
+  "validators": {
+    "id": "validators",
+    "title": "Validators (Beta)",
+    "summary": "One-click install and manage L1 nodes (Ethereum, Avalanche, NEAR, Cardano, Bitcoin, Cosmos, Sui, Aptos, Polkadot, Solana) on this host. Non-custodial — the panel never holds staking keys.",
+    "canDo": [
+      "List node instances and recommended chains",
+      "See disk used by validator data",
+      "Use the CLI: ysk-server validators list|chains|disk --json",
+      "Later: install / start / stop / clear / upgrade"
+    ],
+    "workflow": [
+      "Read the disk tab before creating a node",
+      "Prefer testnet + minimal on small disks",
+      "Mutations need root and YSK_EXECUTE=1"
+    ],
+    "notes": [
+      "Beta: install and start are not on this page yet",
+      "Mainnet needs hundreds of GB free (ETH) — the create flow will refuse if space is short",
+      "RPC binds to localhost by default"
+    ],
+    "cliHints": [
+      "ysk-server validators list --json",
+      "ysk-server validators chains --json",
+      "ysk-server validators disk --json"
+    ],
+    "related": [
+      {
+        "label": "Docker",
+        "to": "/docker"
+      },
+      {
+        "label": "Updates",
+        "to": "/updates"
+      },
+      {
+        "label": "Network",
+        "to": "/network"
+      }
+    ]
+  },
+  "docker": {
+    "id": "docker",
+    "title": "Docker",
+    "summary": "Install and control Docker Engine on this host — containers, images, Compose (including validator stacks), volumes, networks, and prune.",
+    "canDo": [
+      "Install docker.io + docker-compose-v2 from the panel",
+      "Start and stop docker.service",
+      "Run a constrained image, pull, prune, and inspect Compose projects",
+      "CLI: ysk-server docker status|ps|images|compose --json"
+    ],
+    "workflow": [
+      "Install if the banner says Docker is missing",
+      "Keep RPC and published ports on 127.0.0.1 unless you intend public exposure",
+      "Mutations need root and YSK_EXECUTE=1"
+    ],
+    "notes": [
+      "This is not Kubernetes. No privileged run, no arbitrary Compose upload.",
+      "Stopping the engine stops validator stacks too."
+    ],
+    "cliHints": [
+      "ysk-server docker status --json",
+      "ysk-server docker ps --json",
+      "ysk-server docker compose ls --json"
+    ],
+    "related": [
+      {
+        "label": "Validators",
+        "to": "/validators"
+      },
+      {
+        "label": "Services",
+        "to": "/services"
+      }
+    ]
   }
 }

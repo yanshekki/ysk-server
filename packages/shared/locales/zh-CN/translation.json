@@ -781,7 +781,7 @@
     },
     "help": {
       "blurb": "控制平面 CLI — AI agent 请优先用 --json。\n文档：docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json",
-      "main": "{{product}} ({{cli}}) v{{version}}\n\n控制平面 CLI — AI agent 请优先用 --json。\n文件：docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json\n\n用法：\n  {{cli}} <command> [options]\n\n命令：\n  setup                 初始化 dataDir + 管理员\n  update                自我更新检查／套用\n  serve                 HTTP API + Web UI\n  system unit-install   安装 ysk-server.service [--enable]\n  tools                 工具列表；tools run --tool <name> [--dry-run]\n  ask                   自然语言 → AI 计划 [--execute]\n  projects              list|get|create|deploy|stop|health|backup|template\n  backup                all|list|status|restore|delete|schedule|control-plane|settings|restic\n  templates             应用范本\n  hosting               nginx|dns|db|firewall 辅助\n  dns                   zone|zones（AI 别名 → hosting dns-*）\n  logs                  sources|query|journal|overview\n  host                  overview|metrics（唯读）\n  nginx                 status|list|test|sync\n  ssl                   list|get（憑证）\n  db-cluster            list|get|create|plan（HA 先计划）\n  ssh-key               list|create|import|public|export|install|delete（SSH 身分库）\n  ssh-2fa               list|enroll|confirm|install|pam|retire（SSH 登入 TOTP ≠ 面板 2FA）\n  services              主机服務矩阵（systemctl 探测）\n  defense | protection  status|ban|unban|whitelist\n  security              status|sessions|api-keys（2FA · 撤销工作阶段 · API 金钥）\n  cdn                   nodes|sites|render|apply|purge|probe|dashboard|health-loop|from-project\n  agents                runtimes|fleet list|commands|register（面板 + 边缘）\n  agent run             外送 fleet 轮询（实验）\n  store                 status|export|import|migrate（json|sqlite|postgres document 后端）\n  files                 list|read|write|mkdir|rm|stat|rename|copy|move|chmod|trash|shares（沙箱）\n  cron                  list|create|delete|enable|disable|run|install|status\n  email                 domains|mailboxes|deliverability|bootstrap|dns（面板对等）\n  health                本机模式快照或 --url http://host:port/health\n  readiness | doctor    生产就绪（诚实）\n  migrate               inventory|host|post|status|resume（整机迁移）\n  version | help\n\n全域：\n  --json                JSON 标准输出（AI）\n  --data-dir PATH\n  --config PATH\n  --help | --version\n\n结束码：0 成功 · 1 错误 · 2 验证 · 3 阻挡 · 4 找不到 · 5 主机错误\n\n安全：\n  危险操作预设 dry-run（只出计划）。\n  传 --execute（别名 --apply）+ 环境变数 YSK_EXECUTE=1 才改主机。\n\n例子：\n  {{cli}} readiness --json\n  {{cli}} host --json\n  {{cli}} nginx status --json\n  {{cli}} ssl list --json\n  {{cli}} projects get --id UUID --json\n  {{cli}} defense ban --ip 1.2.3.4 --json          # dry-run 计划\n  {{cli}} projects list --json\n  {{cli}} logs query --source journal: --lines 100 --json\n  {{cli}} tools --json"
+      "main": "{{product}} ({{cli}}) v{{version}}\n\n控制平面 CLI — AI agent 请优先用 --json。\n文件：docs/agent/README.md · docs/cli/reference.md · docs/agent/commands.json\n\n用法：\n  {{cli}} <command> [options]\n\n命令：\n  setup                 初始化 dataDir + 管理员\n  update                自我更新检查／套用\n  serve                 HTTP API + Web UI\n  system unit-install   安装 ysk-server.service [--enable]\n  tools                 工具列表；tools run --tool <name> [--dry-run]\n  ask                   自然语言 → AI 计划 [--execute]\n  projects              list|get|create|deploy|stop|health|backup|template\n  backup                all|list|status|restore|delete|schedule|control-plane|settings|restic\n  templates             应用范本\n  hosting               nginx|dns|db|firewall 辅助\n  dns                   zone|zones（AI 别名 → hosting dns-*）\n  logs                  sources|query|journal|overview\n  host                  overview|metrics（唯读）\n  nginx                 status|list|test|sync\n  ssl                   list|get（憑证）\n  db-cluster            list|get|create|plan（HA 先计划）\n  ssh-key               list|create|import|public|export|install|delete（SSH 身分库）\n  ssh-2fa               list|enroll|confirm|install|pam|retire（SSH 登入 TOTP ≠ 面板 2FA）\n  services              主机服務矩阵（systemctl 探测）\n  defense | protection  status|ban|unban|whitelist\n  security              status|sessions|api-keys（2FA · 撤销工作阶段 · API 金钥）\n  cdn                   nodes|sites|render|apply|purge|probe|dashboard|health-loop|from-project\n  agents                runtimes|fleet list|commands|register（面板 + 边缘）\n  agent run             外送 fleet 轮询（实验）\n  store                 status|export|import|migrate（json|sqlite|postgres document 后端）\n  files                 list|read|write|mkdir|rm|stat|rename|copy|move|chmod|trash|shares（沙箱）\n  cron                  list|create|delete|enable|disable|run|install|status\n  email                 domains|mailboxes|deliverability|bootstrap|dns（面板对等）\n  health                本机模式快照或 --url http://host:port/health\n  readiness | doctor    生产就绪（诚实）\n  migrate               inventory|host|post|status|resume（整机迁移）\n  validators            list|chains|disk|get (Beta)\n  docker                status|ps|images|compose|prune (engine)\n  version | help\n\n全域：\n  --json                JSON 标准输出（AI）\n  --data-dir PATH\n  --config PATH\n  --help | --version\n\n结束码：0 成功 · 1 错误 · 2 验证 · 3 阻挡 · 4 找不到 · 5 主机错误\n\n安全：\n  危险操作预设 dry-run（只出计划）。\n  传 --execute（别名 --apply）+ 环境变数 YSK_EXECUTE=1 才改主机。\n\n例子：\n  {{cli}} readiness --json\n  {{cli}} host --json\n  {{cli}} nginx status --json\n  {{cli}} ssl list --json\n  {{cli}} projects get --id UUID --json\n  {{cli}} defense ban --ip 1.2.3.4 --json          # dry-run 计划\n  {{cli}} projects list --json\n  {{cli}} logs query --source journal: --lines 100 --json\n  {{cli}} tools --json"
     },
     "usage": {
       "tools": {
@@ -2882,6 +2882,142 @@
     "invalidIpv4": "Invalid IPv4. Each octet must be 0–255.",
     "createMailZoneNow": "已建立邮件区域 {{domain}}"
   },
+  "docker": {
+    "title": "Docker",
+    "subtitle": "在本机安装并控制 Docker 引擎、容器、镜像、Compose 项目和磁盘。",
+    "refresh": "刷新",
+    "notInstalled": "尚未安装 Docker Engine。请在本页安装 docker.io 和 docker-compose-v2。",
+    "protected": "受保护",
+    "pruneConfirm": "输入 PRUNE 以确认清理 volume 或系统",
+    "settingsHint": "仅开放安全的 daemon.json 选项。应用会写入文件并重启 docker.service。",
+    "cli": {
+      "usage": "用法：ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--project P] [--execute] [--json]"
+    },
+    "tab": {
+      "overview": "概览",
+      "containers": "容器",
+      "images": "镜像",
+      "compose": "Compose",
+      "volumes": "Volume",
+      "networks": "网络",
+      "prune": "清理",
+      "settings": "设置",
+      "about": "关于"
+    },
+    "col": {
+      "engine": "引擎",
+      "containers": "容器",
+      "version": "版本",
+      "dataRoot": "数据目录",
+      "validators": "验证者堆栈",
+      "name": "名称",
+      "image": "镜像",
+      "status": "状态",
+      "ports": "端口",
+      "managed": "面板管理",
+      "size": "大小",
+      "driver": "驱动",
+      "type": "类型",
+      "reclaimable": "可回收"
+    },
+    "state": {
+      "up": "运行中",
+      "down": "已停止"
+    },
+    "actions": {
+      "start": "启动",
+      "stop": "停止",
+      "restart": "重启",
+      "remove": "删除",
+      "logs": "日志",
+      "run": "运行镜像",
+      "pull": "拉取",
+      "up": "启动",
+      "down": "停止",
+      "createVolume": "创建 volume",
+      "createNetwork": "创建网络",
+      "pruneContainers": "清理容器",
+      "pruneImages": "清理镜像",
+      "pruneVolumes": "清理 volume",
+      "pruneSystem": "系统清理",
+      "startEngine": "启动引擎",
+      "stopEngine": "停止引擎",
+      "restartEngine": "重启引擎",
+      "applyDaemon": "应用引擎设置"
+    },
+    "empty": {
+      "containers": "暂无容器",
+      "images": "暂无镜像",
+      "compose": "暂无 Compose 项目",
+      "volumes": "暂无 volume",
+      "networks": "暂无网络"
+    },
+    "logs": {
+      "empty": "暂无日志"
+    },
+    "settings": {
+      "logMaxSize": "容器日志上限",
+      "liveRestore": "实时还原（守护进程重启时保留容器）"
+    },
+    "about": {
+      "body": "Docker 是 YSK Server 的一级主机服务，地位与 Nginx 相同。通过面板安装 Ubuntu docker.io + docker-compose-v2。验证者节点以 yskval-* Compose 项目运行。",
+      "honesty": "变更主机需要 root 和 YSK_EXECUTE=1。默认试运行。本页不是 Kubernetes。",
+      "validators": "打开验证者节点"
+    },
+    "alerts": {
+      "daemonTitle": "Docker 引擎未运行",
+      "daemonBody": "已安装 Docker，但 docker.service 未处于活动状态。验证者堆栈无法启动。"
+    },
+    "errors": {
+      "notInstalled": "未安装 Docker",
+      "daemonDown": "Docker 引擎未运行",
+      "needCompose": "需要 docker compose（v2 插件）",
+      "badImage": "镜像引用无效",
+      "badName": "名称无效",
+      "badPort": "端口映射无效",
+      "badEnv": "环境变量无效",
+      "badVolume": "卷挂载无效",
+      "badNetwork": "网络无效",
+      "protectedNetwork": "不能删除内置 Docker 网络",
+      "badRestart": "重启策略无效",
+      "badPrune": "清理范围无效",
+      "needPruneConfirm": "清理 volume 或系统需要 confirm=PRUNE",
+      "badDaemon": "引擎设置无效",
+      "composeMissing": "找不到该项目的 Compose 文件",
+      "logsFailed": "无法读取容器日志",
+      "mutateFailed": "Docker 命令失败",
+      "engineFailed": "无法控制 docker.service"
+    },
+    "notes": {
+      "dryMutate": "仅为试运行。要更改主机请加上 --execute 和 YSK_EXECUTE=1。",
+      "dryPrune": "清理预览（未应用）。",
+      "dryEngine": "引擎控制仅为试运行。",
+      "dryDaemon": "将写入 /etc/docker/daemon.json 并重启 docker.service。",
+      "daemonWrote": "已写入 daemon.json",
+      "start": "已启动容器",
+      "stop": "已停止容器",
+      "restart": "已重启容器",
+      "remove": "已删除容器",
+      "ran": "已用镜像启动容器",
+      "pulled": "已拉取镜像",
+      "imageRemoved": "已删除镜像",
+      "volumeCreated": "已创建 volume",
+      "volumeRemoved": "已删除 volume",
+      "networkCreated": "已创建网络",
+      "networkRemoved": "已删除网络",
+      "pruned": "清理完成",
+      "compose": {
+        "up": "已启动 Compose 项目",
+        "down": "已停止 Compose 项目",
+        "restart": "已重启 Compose 项目"
+      },
+      "engine": {
+        "start": "已启动 docker.service",
+        "stop": "已停止 docker.service",
+        "restart": "已重启 docker.service"
+      }
+    }
+  },
   "email": {
     "title": "邮件",
     "subtitle": "域名、DNS、信箱与 Relay",
@@ -4904,7 +5040,9 @@
       "runtimes": "运行环境",
       "security": "安全",
       "system": "系统",
-      "ai": "人工智能"
+      "ai": "人工智能",
+      "validators": "验证者节点",
+      "containers": "容器"
     },
     "java": "Java",
     "kotlin": "Kotlin",
@@ -4927,7 +5065,9 @@
     "support": "支持",
     "noAccessTitle": "没有权限",
     "noAccessDesc": "你的角色不能开启此页。如需使用，请向管理员申请。",
-    "backToDashboard": "返回仪表板"
+    "backToDashboard": "返回仪表板",
+    "validators": "验证者节点 (Beta)",
+    "docker": "Docker"
   },
   "network": {
     "title": "网络接口",
@@ -9506,7 +9646,13 @@
       "auditExport": "审计导出",
       "securityApiKeysAdmin": "API 密钥管理",
       "networkBrowse": "主機代瀏覽",
-      "networkVnc": "VNC 远程桌面管理"
+      "networkVnc": "VNC 远程桌面管理",
+      "validatorsRead": "验证者节点（读取）",
+      "validatorsManage": "验证者节点管理",
+      "validatorsWipe": "验证者节点清空数据",
+      "dockerRead": "Docker（读取）",
+      "dockerManage": "Docker 管理",
+      "dockerWipe": "Docker 删除／清理"
     },
     "aboutRoles": "角色说明（出厂默认）",
     "aboutRolesBody": "角色决定默认权限；用户可再覆盖个别能力。",
@@ -10991,7 +11137,9 @@
       "generic": "相關服务可能停止",
       "purgeData": "将删除資料路径",
       "protectedSkipped": "受保护元件會跳过",
-      "runtimeStack": "将移除此运行时面板管理的全部版本"
+      "runtimeStack": "将移除此运行时面板管理的全部版本",
+      "containers": "正在运行的容器将停止",
+      "validators": "使用 Docker Compose 的验证者节点堆栈将停止"
     },
     "requestCancel": "请求取消",
     "cancelling": "取消中…",
@@ -12129,6 +12277,145 @@
     "quotaNonNeg": "数量与配额不可为负数。",
     "diskQuotaHint": "预设晶片以 GiB 计；自订栏为 MiB。",
     "bandwidthHint": "0 代表不限。"
+  },
+  "validators": {
+    "title": "验证者节点 (Beta)",
+    "subtitle": "在此主机安装与管理 L1 节点。非托管 — 私钥由你自行保管。",
+    "beta": "Beta",
+    "tab": {
+      "nodes": "节点",
+      "disk": "磁盘",
+      "about": "说明"
+    },
+    "empty": {
+      "title": "尚未创建验证者节点",
+      "desc": "用向导几步创建测试网节点。CLI：ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+    },
+    "refresh": "刷新",
+    "disk": {
+      "title": "验证者节点磁盘",
+      "root": "数据目录",
+      "free": "可用",
+      "used": "已用",
+      "none": "尚无实例数据",
+      "warn": "磁盘用量偏高（70% 或以上）",
+      "danger": "磁盘用量危急（85% 或以上）"
+    },
+    "chain": {
+      "eth": "Ethereum",
+      "avax": "Avalanche",
+      "near": "NEAR",
+      "ada": "Cardano",
+      "btc": "Bitcoin",
+      "cosmos": "Cosmos Hub",
+      "sui": "Sui",
+      "aptos": "Aptos",
+      "dot": "Polkadot",
+      "sol": "Solana"
+    },
+    "network": {
+      "hoodi": "Hoodi",
+      "sepolia": "Sepolia",
+      "mainnet": "主网",
+      "fuji": "Fuji",
+      "testnet": "测试网",
+      "preview": "Preview",
+      "preprod": "Preprod",
+      "westend": "Westend"
+    },
+    "networkKind": {
+      "testnet": "测试网",
+      "mainnet": "主网"
+    },
+    "profile": {
+      "minimal": "精简",
+      "pruned": "已修剪",
+      "validator-ready": "验证者就绪",
+      "rpc": "RPC"
+    },
+    "col": {
+      "id": "标识",
+      "chain": "链",
+      "network": "网络",
+      "profile": "配置档",
+      "status": "状态",
+      "disk": "磁盘"
+    },
+    "cli": {
+      "usage": "Usage: ysk-server validators list|chains|disk|get|create|start|stop|restart|clear [--chain C] [--network N] [--profile P] [--id ID] [--confirm TOKEN] [--execute] [--json]"
+    },
+    "errors": {
+      "notFound": "找不到验证者节点实例",
+      "invalidId": "实例标识无效",
+      "diskLow": "此链、网络与配置档所需的可用磁盘空间不足",
+      "diskUnknownMainnet": "无法测量可用磁盘，拒绝创建主网节点",
+      "needDocker": "需要 Docker Compose，但找不到",
+      "composeFailed": "docker compose 失败",
+      "needConfirm": "清空须 confirm=实例标识 或 CLEAR",
+      "mithrilAdaOnly": "Mithril restore is only available for Cardano",
+      "needMithrilConfirm": "Mithril requires confirm=instance id or MITHRIL",
+      "mithrilBlocked": "Mithril docker run was blocked by the allowlist",
+      "mithrilKey": "Could not load the Mithril genesis verification key",
+      "mithrilFailed": "Mithril snapshot download failed"
+    },
+    "notes": {
+      "beta": "此功能为 Beta。变更主机须 root 及 YSK_EXECUTE=1。",
+      "noKeys": "YSK Server 不会生成或保存质押私钥。",
+      "dockerSoon": "安装、启动、停止会在下一阶段提供。此页只列出实例与磁盘用量。",
+      "dryCreate": "已写入实例规格与 compose（dry-run）。要启动容器请加 --execute 及 YSK_EXECUTE=1。",
+      "dryStart": "启动为 dry-run。请加 --execute 及 YSK_EXECUTE=1。",
+      "dryStop": "停止为 dry-run。请加 --execute 及 YSK_EXECUTE=1。",
+      "dryClear": "清空为 dry-run。请加 --execute 及 YSK_EXECUTE=1。",
+      "created": "已创建节点并启动 compose",
+      "started": "已启动节点",
+      "stopped": "已停止节点",
+      "cleared": "已清空链数据",
+      "dryMithril": "Mithril restore is dry-run. Pass --execute and YSK_EXECUTE=1.",
+      "mithril": "Mithril snapshot restored; node restarted"
+    },
+    "create": "创建节点",
+    "wizard": {
+      "title": "创建节点",
+      "back": "上一步",
+      "next": "下一步",
+      "install": "安装",
+      "mainnetWarn": "主网需要大量可用磁盘（ETH 常达 800 GiB 或以上）。建议先用测试网。",
+      "mainnetAck": "我明白磁盘与罚没风险，仍要创建主网节点。",
+      "heavyWarn": "此链负载很重（大量磁盘与高 IOPS）。Solana 主网通常需要 2 TiB 或以上。"
+    },
+    "actions": {
+      "detail": "详情",
+      "start": "启动",
+      "stop": "停止",
+      "restart": "重新启动",
+      "clear": "清空",
+      "upgrade": "升级",
+      "clearConfirm": "输入实例标识或 CLEAR"
+    },
+    "policy": {
+      "label": "升级策略",
+      "manual": "手动",
+      "notify": "通知",
+      "auto-safe": "自动（安全）",
+      "auto-all": "自动（全部）"
+    },
+    "logs": {
+      "empty": "尚无日志"
+    },
+    "alerts": {
+      "diskTitle": "验证者节点磁盘危急",
+      "diskBody": "验证者数据卷可用空间极低。",
+      "upgradeTitle": "验证者节点有可用升级",
+      "upgradeBody": "一个或多个客户端有较新的钉选版本。"
+    },
+    "clients": {
+      "el": "执行层客户端",
+      "cl": "共识层客户端"
+    },
+    "mithril": {
+      "label": "先用 Mithril 快照还原（测试网建议）",
+      "action": "用 Mithril 还原"
+    }
   },
   "vnc": {
     "pageDesc": "VNC 服务器／客户端",

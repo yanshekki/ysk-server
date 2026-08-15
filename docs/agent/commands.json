@@ -1169,6 +1169,134 @@
       "example": "ysk-server dns dnssec list --zone example.com --json"
     },
     {
+      "name": "docker status",
+      "risk": "read",
+      "summary": "Docker engine, compose plugin, and container counts",
+      "example": "ysk-server docker status --json"
+    },
+    {
+      "name": "docker ps",
+      "risk": "read",
+      "summary": "List containers",
+      "example": "ysk-server docker ps --json"
+    },
+    {
+      "name": "docker images",
+      "risk": "read",
+      "summary": "List images",
+      "example": "ysk-server docker images --json"
+    },
+    {
+      "name": "docker compose ls",
+      "risk": "read",
+      "summary": "List Compose projects including yskval-* validator stacks",
+      "example": "ysk-server docker compose ls --json"
+    },
+    {
+      "name": "docker run",
+      "risk": "write-host",
+      "summary": "Run a constrained image (loopback ports, no privileged)",
+      "args": ["--image", "--name", "--execute"],
+      "example": "YSK_EXECUTE=1 ysk-server docker run --image alpine:3.20 --name demo --execute --json"
+    },
+    {
+      "name": "docker engine",
+      "risk": "write-host",
+      "summary": "systemctl start|stop|restart docker",
+      "args": ["--execute"],
+      "example": "YSK_EXECUTE=1 ysk-server docker engine start --execute --json"
+    },
+    {
+      "name": "validators mithril",
+      "risk": "write-host",
+      "summary": "Cardano Mithril snapshot restore (confirm=id or MITHRIL)",
+      "args": ["--id", "--confirm", "--execute"],
+      "example": "YSK_EXECUTE=1 ysk-server validators mithril --id ada-preview-1 --confirm MITHRIL --execute --json"
+    },
+    {
+      "name": "validators list",
+      "risk": "read",
+      "summary": "List L1 validator node instances (Beta)",
+      "example": "ysk-server validators list --json"
+    },
+    {
+      "name": "validators chains",
+      "risk": "read",
+      "summary": "Supported chains, networks, profiles, min disk",
+      "example": "ysk-server validators chains --json"
+    },
+    {
+      "name": "validators disk",
+      "risk": "read",
+      "summary": "Disk usage for validator data root and instances",
+      "example": "ysk-server validators disk --json"
+    },
+    {
+      "name": "validators create",
+      "risk": "write-host",
+      "summary": "Create a validator instance (writes spec; --execute starts compose)",
+      "args": ["--chain", "--network", "--profile", "--slug", "--execute"],
+      "example": "ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+    },
+    {
+      "name": "validators start",
+      "risk": "write-host",
+      "summary": "Start a validator instance via docker compose",
+      "args": ["--id", "--execute"],
+      "example": "YSK_EXECUTE=1 ysk-server validators start --id eth-hoodi-1 --execute --json"
+    },
+    {
+      "name": "validators stop",
+      "risk": "write-host",
+      "summary": "Stop a validator instance",
+      "args": ["--id", "--execute"],
+      "example": "YSK_EXECUTE=1 ysk-server validators stop --id eth-hoodi-1 --execute --json"
+    },
+    {
+      "name": "validators restart",
+      "risk": "write-host",
+      "summary": "Restart a validator instance",
+      "args": ["--id", "--execute"],
+      "example": "YSK_EXECUTE=1 ysk-server validators restart --id eth-hoodi-1 --execute --json"
+    },
+    {
+      "name": "validators logs",
+      "risk": "read",
+      "summary": "Tail docker compose logs for a validator instance",
+      "args": ["--id", "--tail"],
+      "example": "ysk-server validators logs --id eth-hoodi-1 --json"
+    },
+    {
+      "name": "validators upgrade",
+      "risk": "write-host",
+      "summary": "Upgrade pinned client tags and recreate compose",
+      "args": ["--id", "--execute"],
+      "example": "YSK_EXECUTE=1 ysk-server validators upgrade --id eth-hoodi-1 --execute --json"
+    },
+    {
+      "name": "validators policy",
+      "risk": "write-panel",
+      "summary": "Set upgrade policy: manual|notify|auto-safe|auto-all",
+      "args": ["--id", "--upgrade"],
+      "example": "ysk-server validators policy --id eth-hoodi-1 --upgrade notify --json"
+    },
+    {
+      "name": "validators clear",
+      "risk": "write-host",
+      "summary": "Wipe chain data (confirm=id or CLEAR)",
+      "args": ["--id", "--confirm", "--remove-unit", "--execute"],
+      "example": "YSK_EXECUTE=1 ysk-server validators clear --id eth-hoodi-1 --confirm --execute --json"
+    },
+    {
+      "name": "validators get",
+      "aliases": ["validators status"],
+      "risk": "read",
+      "summary": "Get one validator instance by id",
+      "args": ["--id"],
+      "example": "ysk-server validators get --id eth-hoodi-1 --json",
+      "exitCodes": { "4": "not_found" }
+    },
+    {
       "name": "bt-tracker status",
       "aliases": [
         "bt-tracker info"

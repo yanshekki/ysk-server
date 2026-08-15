@@ -58,6 +58,15 @@ export const SOFTWARE_TABS: Array<{ id: SoftwareTabId; labelKey: string }> = [
 export const SOFTWARE_CARDS: SoftwareCardDef[] = [
   // —— Host tools ——
   {
+    id: 'docker',
+    tab: 'host',
+    to: '/docker',
+    navKey: 'docker',
+    icon: '🐳',
+    matrixIds: ['docker'],
+    softwareIds: ['docker'],
+  },
+  {
     id: 'chromium',
     tab: 'host',
     to: '/browse?tab=stack',

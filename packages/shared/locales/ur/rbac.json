@@ -80,7 +80,13 @@
     "auditExport": "آڈٹ برآمد",
     "securityApiKeysAdmin": "API کیز ایڈمن",
     "networkBrowse": "میزبان ثالثی ویب براؤز کریں۔",
-    "networkVnc": "VNC ریموٹ ڈیسک ٹاپ"
+    "networkVnc": "VNC ریموٹ ڈیسک ٹاپ",
+    "validatorsRead": "Validators (read)",
+    "validatorsManage": "Validators manage",
+    "validatorsWipe": "Validators wipe data",
+    "dockerRead": "Docker (read)",
+    "dockerManage": "Docker manage",
+    "dockerWipe": "Docker wipe / prune"
   },
   "aboutRoles": "کردار (فیکٹری ڈیفالٹس)",
   "aboutRolesBody": "کردار پہلے سے طے شدہ صلاحیتوں کا تعین کرتے ہیں۔ صارف انفرادی کو اوور رائیڈ کر سکتے ہیں۔",

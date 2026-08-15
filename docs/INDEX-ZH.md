@@ -58,6 +58,8 @@
 | [features/apache-ZH.md](./features/apache-ZH.md) | Apache 站點與設定 |
 | [features/runtimes-ZH.md](./features/runtimes-ZH.md) | Node／PHP／Python／Go／Rust／Java／Kotlin／Bun |
 | [features/vpn-ZH.md](./features/vpn-ZH.md) | VPN 伺服器與客戶端 |
+| [features/docker-ZH.md](./features/docker-ZH.md) | Docker 引擎控制面 |
+| [features/validators-ZH.md](./features/validators-ZH.md) | L1 驗證者節點 (Beta) |
 | [features/vnc-ZH.md](./features/vnc-ZH.md) | VNC 帳戶與分享 |
 | [features/security-auth-ZH.md](./features/security-auth-ZH.md) | 登入、2FA、API 金鑰、審計 |
 | [features/defense-ZH.md](./features/defense-ZH.md) | 防火牆、fail2ban、防護中心 |

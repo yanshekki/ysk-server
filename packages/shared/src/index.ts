@@ -12,6 +12,8 @@ export * from './databases.js';
 export * from './ftp.js';
 export * from './files.js';
 export * from './bt-tracker.js';
+export * from './validators.js';
+export * from './docker.js';
 export * from './email-domain.js';
 export * from './fleet.js';
 export * from './software.js';

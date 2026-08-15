@@ -58,6 +58,8 @@
 | [features/apache.md](./features/apache.md) | Apache sites & settings |
 | [features/runtimes.md](./features/runtimes.md) | Node / PHP / Python / Go / Rust / Java / Kotlin / Bun |
 | [features/vpn.md](./features/vpn.md) | VPN server + client |
+| [features/docker.md](./features/docker.md) | Docker engine control plane |
+| [features/validators.md](./features/validators.md) | L1 validator nodes (Beta) |
 | [features/vnc.md](./features/vnc.md) | VNC accounts & share |
 | [features/security-auth.md](./features/security-auth.md) | Login, 2FA, API keys, audit |
 | [features/defense.md](./features/defense.md) | Firewall, fail2ban, Defense |

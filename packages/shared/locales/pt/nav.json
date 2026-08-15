@@ -53,7 +53,9 @@
     "runtimes": "Tempos de execução",
     "security": "Segurança",
     "system": "Sistema",
-    "ai": "AI"
+    "ai": "AI",
+    "validators": "Validators",
+    "containers": "Containers"
   },
   "java": "Java",
   "kotlin": "Kotlin",
@@ -76,5 +78,7 @@
   "support": "Apoiar",
   "noAccessTitle": "Sem acesso",
   "noAccessDesc": "A sua função não inclui esta página. Peça a um administrador se precisar dela.",
-  "backToDashboard": "Voltar ao painel"
+  "backToDashboard": "Voltar ao painel",
+  "validators": "Validators (Beta)",
+  "docker": "Docker"
 }

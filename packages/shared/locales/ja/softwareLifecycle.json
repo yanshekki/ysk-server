@@ -50,7 +50,9 @@
     "generic": "関連サービスが停止する可能性があります",
     "purgeData": "データパスが削除されます",
     "protectedSkipped": "保護されたコンポーネントはスキップされます",
-    "runtimeStack": "このランタイムのパネル管理バージョンはすべて削除されます"
+    "runtimeStack": "このランタイムのパネル管理バージョンはすべて削除されます",
+    "containers": "Running containers will stop",
+    "validators": "Validator node stacks that use Docker Compose will stop"
   },
   "requestCancel": "キャンセルのリクエスト",
   "cancelling": "キャンセルしています...",

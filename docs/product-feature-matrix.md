@@ -447,6 +447,8 @@ Remaining **✗** are P1 / P2 / Out (or Better extras).
 | Smart updates | CVE advice + approvable apply |
 | Mail deliverability | structured external todos + live checks |
 | UI | no fluff; buttons = ops or preset only |
+| L1 nodes (Beta) | Validators page + CLI; Docker Compose; no key custody |
+| Docker engine | `/docker` + `ysk-server docker`; apt docker.io; honesty-gated |
 
 ---
 

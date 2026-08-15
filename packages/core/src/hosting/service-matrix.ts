@@ -38,6 +38,7 @@ const CATALOG: Array<{
   /** Prefer HostSoftwareProbe.presence(id) for exclusive/catalog rules */
   softwareProbeId?: string;
 }> = [
+  { id: 'docker', label: 'Docker', unit: 'docker', href: '/docker', categoryKey: 'notes.cat.runtime', softwareProbeId: 'docker', bins: ['docker'] },
   { id: 'nginx', label: 'Nginx', unit: 'nginx', href: '/nginx', categoryKey: 'notes.auto.n1318', softwareProbeId: 'nginx', bins: ['nginx'] },
   { id: 'apache', label: 'Apache', unit: 'apache2', href: '/apache', categoryKey: 'notes.auto.n1318', softwareProbeId: 'apache2', bins: ['apache2', 'httpd'] },
   {

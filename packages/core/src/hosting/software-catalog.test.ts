@@ -19,6 +19,7 @@ describe('software-catalog', () => {
 
   it('getSoftware finds and misses', () => {
     expect(getSoftware('nginx')?.id).toBe('nginx');
+    expect(getSoftware('docker')?.aptPackages).toEqual(['docker.io', 'docker-compose-v2']);
     expect(getSoftware('definitely-not-a-package')).toBeUndefined();
   });
 

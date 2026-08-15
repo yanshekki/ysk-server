@@ -102,6 +102,8 @@ export * from './defense/index.js';
 export * from './firewall-ops.js';
 export * from './service-exposure/index.js';
 export * from './bt-tracker/index.js';
+export * from './validators/index.js';
+export * from './docker/index.js';
 export * from './fail2ban-ops.js';
 export * from './log-center/index.js';
 export * from './host-migrate/index.js';

@@ -447,6 +447,8 @@ Each engine: **data page** + **service page**.
 | Smart updates | CVE advice + approvable apply |
 | 郵件 deliverability | structured external todos + live checks |
 | UI | no fluff; buttons = ops or preset only |
+| L1 nodes (Beta) | Validators page + CLI; Docker Compose; no key custody |
+| Docker 引擎 | `/docker` + `ysk-server docker`；apt docker.io；誠實閘 |
 
 ---
 

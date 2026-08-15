@@ -50,7 +50,9 @@
     "generic": "Serviços relacionados podem parar",
     "purgeData": "Os caminhos de dados serão excluídos",
     "protectedSkipped": "Os componentes protegidos são ignorados",
-    "runtimeStack": "Todas as versões gerenciadas pelo painel deste ambiente de execução serão removidas"
+    "runtimeStack": "Todas as versões gerenciadas pelo painel deste ambiente de execução serão removidas",
+    "containers": "Running containers will stop",
+    "validators": "Validator node stacks that use Docker Compose will stop"
   },
   "requestCancel": "Solicitar cancelamento",
   "cancelling": "Cancelando…",

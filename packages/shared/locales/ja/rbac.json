@@ -80,7 +80,13 @@
     "auditExport": "監査エクスポート",
     "securityApiKeysAdmin": "API キー管理者",
     "networkBrowse": "ホスト仲介の Web ブラウズ",
-    "networkVnc": "VNCリモートデスクトップ"
+    "networkVnc": "VNCリモートデスクトップ",
+    "validatorsRead": "Validators (read)",
+    "validatorsManage": "Validators manage",
+    "validatorsWipe": "Validators wipe data",
+    "dockerRead": "Docker (read)",
+    "dockerManage": "Docker manage",
+    "dockerWipe": "Docker wipe / prune"
   },
   "aboutRoles": "役割 (工場出荷時のデフォルト)",
   "aboutRolesBody": "ロールはデフォルトの機能を設定します。ユーザーは個々の設定をオーバーライドできます。",

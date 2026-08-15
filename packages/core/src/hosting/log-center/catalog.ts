@@ -9,6 +9,14 @@ import type { LogSourceDef, LogSourceStatus } from './types.js';
 
 export const BUILTIN_LOG_SOURCES: LogSourceDef[] = [
   {
+    id: 'journal:docker',
+    kind: 'journal',
+    label: 'docker',
+    unit: 'docker.service',
+    group: 'system',
+    defaultEnabled: true,
+    description: 'Docker engine (journal)' },
+  {
     id: 'journal:nginx',
     kind: 'journal',
     label: 'nginx',

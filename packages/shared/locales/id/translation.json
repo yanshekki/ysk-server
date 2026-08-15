@@ -2882,6 +2882,142 @@
     "createMailZone": "Create mail zone",
     "createMailZoneNow": "Created mail zone {{domain}}"
   },
+  "docker": {
+    "title": "Docker",
+    "subtitle": "Install and control the Docker engine, containers, images, Compose projects, and disk on this host.",
+    "refresh": "Refresh",
+    "notInstalled": "Docker Engine is not installed. Install docker.io and docker-compose-v2 from this page.",
+    "protected": "Protected",
+    "pruneConfirm": "Type PRUNE to confirm volume or system prune",
+    "settingsHint": "Safe daemon.json subset only. Apply writes the file and restarts docker.service.",
+    "cli": {
+      "usage": "Usage: ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--project P] [--execute] [--json]"
+    },
+    "tab": {
+      "overview": "Overview",
+      "containers": "Containers",
+      "images": "Images",
+      "compose": "Compose",
+      "volumes": "Volumes",
+      "networks": "Networks",
+      "prune": "Prune",
+      "settings": "Settings",
+      "about": "About"
+    },
+    "col": {
+      "engine": "Engine",
+      "containers": "Containers",
+      "version": "Version",
+      "dataRoot": "Data root",
+      "validators": "Validator stacks",
+      "name": "Name",
+      "image": "Image",
+      "status": "Status",
+      "ports": "Ports",
+      "managed": "Managed",
+      "size": "Size",
+      "driver": "Driver",
+      "type": "Type",
+      "reclaimable": "Reclaimable"
+    },
+    "state": {
+      "up": "Active",
+      "down": "Stopped"
+    },
+    "actions": {
+      "start": "Start",
+      "stop": "Stop",
+      "restart": "Restart",
+      "remove": "Remove",
+      "logs": "Logs",
+      "run": "Run image",
+      "pull": "Pull",
+      "up": "Up",
+      "down": "Down",
+      "createVolume": "Create volume",
+      "createNetwork": "Create network",
+      "pruneContainers": "Prune containers",
+      "pruneImages": "Prune images",
+      "pruneVolumes": "Prune volumes",
+      "pruneSystem": "System prune",
+      "startEngine": "Start engine",
+      "stopEngine": "Stop engine",
+      "restartEngine": "Restart engine",
+      "applyDaemon": "Apply daemon settings"
+    },
+    "empty": {
+      "containers": "No containers",
+      "images": "No images",
+      "compose": "No Compose projects",
+      "volumes": "No volumes",
+      "networks": "No networks"
+    },
+    "logs": {
+      "empty": "No logs yet"
+    },
+    "settings": {
+      "logMaxSize": "Container log max size",
+      "liveRestore": "Live restore (keep containers if the daemon restarts)"
+    },
+    "about": {
+      "body": "Docker is a first-class host service on YSK Server, like Nginx. Install via the panel (Ubuntu docker.io + docker-compose-v2). Validator nodes run as Compose projects named yskval-*.",
+      "honesty": "Host changes need root and YSK_EXECUTE=1. Dry-run is the default. This page is not Kubernetes.",
+      "validators": "Open validator nodes"
+    },
+    "alerts": {
+      "daemonTitle": "Docker daemon is down",
+      "daemonBody": "The Docker engine is installed but docker.service is not active. Validator stacks cannot start."
+    },
+    "errors": {
+      "notInstalled": "Docker is not installed",
+      "daemonDown": "Docker daemon is not active",
+      "needCompose": "docker compose (v2 plugin) is required",
+      "badImage": "Invalid image reference",
+      "badName": "Invalid name",
+      "badPort": "Invalid port publish",
+      "badEnv": "Invalid environment variable",
+      "badVolume": "Invalid volume mount",
+      "badNetwork": "Invalid network",
+      "protectedNetwork": "Cannot remove a built-in Docker network",
+      "badRestart": "Invalid restart policy",
+      "badPrune": "Invalid prune scope",
+      "needPruneConfirm": "Volume or system prune requires confirm=PRUNE",
+      "badDaemon": "Invalid daemon setting",
+      "composeMissing": "Compose file for this project was not found",
+      "logsFailed": "Could not read container logs",
+      "mutateFailed": "Docker command failed",
+      "engineFailed": "Could not control docker.service"
+    },
+    "notes": {
+      "dryMutate": "Dry-run only. Pass --execute and YSK_EXECUTE=1 to change the host.",
+      "dryPrune": "Prune preview (not applied).",
+      "dryEngine": "Engine control is dry-run.",
+      "dryDaemon": "Would write /etc/docker/daemon.json and restart docker.service.",
+      "daemonWrote": "Wrote daemon.json",
+      "start": "Container started",
+      "stop": "Container stopped",
+      "restart": "Container restarted",
+      "remove": "Container removed",
+      "ran": "Container started from image",
+      "pulled": "Image pulled",
+      "imageRemoved": "Image removed",
+      "volumeCreated": "Volume created",
+      "volumeRemoved": "Volume removed",
+      "networkCreated": "Network created",
+      "networkRemoved": "Network removed",
+      "pruned": "Prune finished",
+      "compose": {
+        "up": "Compose project started",
+        "down": "Compose project stopped",
+        "restart": "Compose project restarted"
+      },
+      "engine": {
+        "start": "docker.service started",
+        "stop": "docker.service stopped",
+        "restart": "docker.service restarted"
+      }
+    }
+  },
   "email": {
     "title": "E-mail",
     "subtitle": "Domain, DNS, kotak surat, dan relay",
@@ -4904,7 +5040,9 @@
       "runtimes": "Waktu proses",
       "security": "Keamanan",
       "system": "Sistem",
-      "ai": "AI"
+      "ai": "AI",
+      "validators": "Validators",
+      "containers": "Containers"
     },
     "java": "Java",
     "kotlin": "Kotlin",
@@ -4927,7 +5065,9 @@
     "support": "Mendukung",
     "noAccessTitle": "Tidak ada akses",
     "noAccessDesc": "Peran Anda tidak mencakup halaman ini. Minta admin jika Anda membutuhkannya.",
-    "backToDashboard": "Kembali ke dasbor"
+    "backToDashboard": "Kembali ke dasbor",
+    "validators": "Validators (Beta)",
+    "docker": "Docker"
   },
   "network": {
     "title": "Antarmuka jaringan",
@@ -9506,7 +9646,13 @@
       "auditExport": "Ekspor audit",
       "securityApiKeysAdmin": "Admin kunci API",
       "networkBrowse": "Penjelajahan web yang dimediasi host",
-      "networkVnc": "Desktop jarak jauh VNC"
+      "networkVnc": "Desktop jarak jauh VNC",
+      "validatorsRead": "Validators (read)",
+      "validatorsManage": "Validators manage",
+      "validatorsWipe": "Validators wipe data",
+      "dockerRead": "Docker (read)",
+      "dockerManage": "Docker manage",
+      "dockerWipe": "Docker wipe / prune"
     },
     "aboutRoles": "Peran (default pabrik)",
     "aboutRolesBody": "Peran menetapkan kemampuan default; pengguna dapat menggantinya satu per satu.",
@@ -10991,7 +11137,9 @@
       "generic": "Layanan terkait mungkin berhenti",
       "purgeData": "Jalur data akan dihapus",
       "protectedSkipped": "Komponen yang dilindungi dilewati",
-      "runtimeStack": "Semua versi runtime yang dikelola panel ini akan dihapus"
+      "runtimeStack": "Semua versi runtime yang dikelola panel ini akan dihapus",
+      "containers": "Running containers will stop",
+      "validators": "Validator node stacks that use Docker Compose will stop"
     },
     "requestCancel": "Permintaan pembatalan",
     "cancelling": "Membatalkan…",
@@ -12129,6 +12277,145 @@
     "quotaNonNeg": "Counts and quotas cannot be negative.",
     "diskQuotaHint": "Presets are GiB; custom box is MiB.",
     "bandwidthHint": "0 means unlimited."
+  },
+  "validators": {
+    "title": "Validators (Beta)",
+    "subtitle": "Install and manage L1 nodes on this host. Non-custodial — you keep the keys.",
+    "beta": "Beta",
+    "tab": {
+      "nodes": "Nodes",
+      "disk": "Disk",
+      "about": "About"
+    },
+    "empty": {
+      "title": "No validator nodes yet",
+      "desc": "Create a testnet node in a few clicks. CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+    },
+    "refresh": "Refresh",
+    "disk": {
+      "title": "Validator disk",
+      "root": "Data directory",
+      "free": "Free",
+      "used": "Used",
+      "none": "No instance data yet",
+      "warn": "Disk usage is high (70%+)",
+      "danger": "Disk usage is critical (85%+)"
+    },
+    "chain": {
+      "eth": "Ethereum",
+      "avax": "Avalanche",
+      "near": "NEAR",
+      "ada": "Cardano",
+      "btc": "Bitcoin",
+      "cosmos": "Cosmos Hub",
+      "sui": "Sui",
+      "aptos": "Aptos",
+      "dot": "Polkadot",
+      "sol": "Solana"
+    },
+    "network": {
+      "hoodi": "Hoodi",
+      "sepolia": "Sepolia",
+      "mainnet": "Mainnet",
+      "fuji": "Fuji",
+      "testnet": "Testnet",
+      "preview": "Preview",
+      "preprod": "Preprod",
+      "westend": "Westend"
+    },
+    "networkKind": {
+      "testnet": "Testnet",
+      "mainnet": "Mainnet"
+    },
+    "profile": {
+      "minimal": "Minimal",
+      "pruned": "Pruned",
+      "validator-ready": "Validator-ready",
+      "rpc": "RPC"
+    },
+    "col": {
+      "id": "ID",
+      "chain": "Chain",
+      "network": "Network",
+      "profile": "Profile",
+      "status": "Status",
+      "disk": "Disk"
+    },
+    "cli": {
+      "usage": "Usage: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril [--chain C] [--network N] [--profile P] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
+    },
+    "errors": {
+      "notFound": "Validator instance not found",
+      "invalidId": "Invalid instance id",
+      "diskLow": "Not enough free disk for this chain, network, and profile",
+      "diskUnknownMainnet": "Cannot measure free disk; refusing mainnet create",
+      "needDocker": "Docker Compose is required and was not found",
+      "composeFailed": "docker compose failed",
+      "needConfirm": "Clear requires confirm=instance id or CLEAR",
+      "mithrilAdaOnly": "Mithril restore is only available for Cardano",
+      "needMithrilConfirm": "Mithril requires confirm=instance id or MITHRIL",
+      "mithrilBlocked": "Mithril docker run was blocked by the allowlist",
+      "mithrilKey": "Could not load the Mithril genesis verification key",
+      "mithrilFailed": "Mithril snapshot download failed"
+    },
+    "notes": {
+      "beta": "This feature is Beta. Host changes need root and YSK_EXECUTE=1.",
+      "noKeys": "YSK Server never generates or stores staking keys.",
+      "dockerSoon": "Install, start, and stop ship in the next increment. This page lists instances and disk only.",
+      "dryCreate": "Wrote instance spec and compose (dry-run). Pass --execute and YSK_EXECUTE=1 to start containers.",
+      "dryStart": "Start is dry-run. Pass --execute and YSK_EXECUTE=1.",
+      "dryStop": "Stop is dry-run. Pass --execute and YSK_EXECUTE=1.",
+      "dryClear": "Clear is dry-run. Pass --execute and YSK_EXECUTE=1.",
+      "created": "Node created and compose started",
+      "started": "Node started",
+      "stopped": "Node stopped",
+      "cleared": "Chain data cleared",
+      "dryMithril": "Mithril restore is dry-run. Pass --execute and YSK_EXECUTE=1.",
+      "mithril": "Mithril snapshot restored; node restarted"
+    },
+    "create": "Create node",
+    "wizard": {
+      "title": "Create node",
+      "back": "Back",
+      "next": "Next",
+      "install": "Install",
+      "mainnetWarn": "Mainnet needs a lot of free disk (ETH often 800 GiB+). Testnet is recommended.",
+      "mainnetAck": "I understand the disk and slashing risk. Continue with mainnet.",
+      "heavyWarn": "This chain is heavy (large disk and high IOPS). Mainnet Solana typically needs 2 TiB+."
+    },
+    "actions": {
+      "detail": "Details",
+      "start": "Start",
+      "stop": "Stop",
+      "restart": "Restart",
+      "clear": "Clear",
+      "upgrade": "Upgrade",
+      "clearConfirm": "Type instance id or CLEAR"
+    },
+    "policy": {
+      "label": "Upgrade policy",
+      "manual": "Manual",
+      "notify": "Notify",
+      "auto-safe": "Auto (safe)",
+      "auto-all": "Auto (all)"
+    },
+    "logs": {
+      "empty": "No logs yet"
+    },
+    "alerts": {
+      "diskTitle": "Validator disk critical",
+      "diskBody": "Free space on the validator data volume is critically low.",
+      "upgradeTitle": "Validator upgrade available",
+      "upgradeBody": "One or more node clients have a newer pinned version."
+    },
+    "clients": {
+      "el": "Execution client",
+      "cl": "Consensus client"
+    },
+    "mithril": {
+      "label": "Restore from Mithril snapshot first (recommended on testnet)",
+      "action": "Restore with Mithril"
+    }
   },
   "vnc": {
     "pageDesc": "Server & klien VNC",

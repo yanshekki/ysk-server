@@ -75,6 +75,14 @@ export const FEATURE_SECTIONS: FeatureSection[] = [
     ],
   },
   {
+    sectionKey: 'containers',
+    items: [{ to: '/docker', key: 'docker', icon: '🐳' }],
+  },
+  {
+    sectionKey: 'validators',
+    items: [{ to: '/validators', key: 'validators', icon: '⛓' }],
+  },
+  {
     sectionKey: 'security',
     items: [
       // Single DDoS / host-defense entry — UFW & fail2ban live under 防護中心「底層」

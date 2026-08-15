@@ -80,7 +80,13 @@
     "auditExport": "Exportação de auditoria",
     "securityApiKeysAdmin": "Administrador de chaves de API",
     "networkBrowse": "Navegação na web mediada por host",
-    "networkVnc": "Área de trabalho remota VNC"
+    "networkVnc": "Área de trabalho remota VNC",
+    "validatorsRead": "Validators (read)",
+    "validatorsManage": "Validators manage",
+    "validatorsWipe": "Validators wipe data",
+    "dockerRead": "Docker (read)",
+    "dockerManage": "Docker manage",
+    "dockerWipe": "Docker wipe / prune"
   },
   "aboutRoles": "Funções (padrões de fábrica)",
   "aboutRolesBody": "As funções definem recursos padrão; os usuários podem substituir os individuais.",

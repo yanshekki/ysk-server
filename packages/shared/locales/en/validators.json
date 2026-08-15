@@ -1,0 +1,139 @@
+{
+  "title": "Validators (Beta)",
+  "subtitle": "Install and manage L1 nodes on this host. Non-custodial — you keep the keys.",
+  "beta": "Beta",
+  "tab": {
+    "nodes": "Nodes",
+    "disk": "Disk",
+    "about": "About"
+  },
+  "empty": {
+    "title": "No validator nodes yet",
+    "desc": "Create a testnet node in a few clicks. CLI: ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+  },
+  "refresh": "Refresh",
+  "disk": {
+    "title": "Validator disk",
+    "root": "Data directory",
+    "free": "Free",
+    "used": "Used",
+    "none": "No instance data yet",
+    "warn": "Disk usage is high (70%+)",
+    "danger": "Disk usage is critical (85%+)"
+  },
+  "chain": {
+    "eth": "Ethereum",
+    "avax": "Avalanche",
+    "near": "NEAR",
+    "ada": "Cardano",
+    "btc": "Bitcoin",
+    "cosmos": "Cosmos Hub",
+    "sui": "Sui",
+    "aptos": "Aptos",
+    "dot": "Polkadot",
+    "sol": "Solana"
+  },
+  "network": {
+    "hoodi": "Hoodi",
+    "sepolia": "Sepolia",
+    "mainnet": "Mainnet",
+    "fuji": "Fuji",
+    "testnet": "Testnet",
+    "preview": "Preview",
+    "preprod": "Preprod",
+    "westend": "Westend"
+  },
+  "networkKind": {
+    "testnet": "Testnet",
+    "mainnet": "Mainnet"
+  },
+  "profile": {
+    "minimal": "Minimal",
+    "pruned": "Pruned",
+    "validator-ready": "Validator-ready",
+    "rpc": "RPC"
+  },
+  "col": {
+    "id": "ID",
+    "chain": "Chain",
+    "network": "Network",
+    "profile": "Profile",
+    "status": "Status",
+    "disk": "Disk"
+  },
+  "cli": {
+    "usage": "Usage: ysk-server validators list|chains|disk|get|status|logs|create|start|stop|restart|clear|upgrade|policy|mithril [--chain C] [--network N] [--profile P] [--el EL] [--cl CL] [--id ID] [--upgrade POLICY] [--confirm TOKEN] [--execute] [--json]"
+  },
+  "clients": {
+    "el": "Execution client",
+    "cl": "Consensus client"
+  },
+  "mithril": {
+    "label": "Restore from Mithril snapshot first (recommended on testnet)",
+    "action": "Restore with Mithril"
+  },
+  "errors": {
+    "notFound": "Validator instance not found",
+    "invalidId": "Invalid instance id",
+    "diskLow": "Not enough free disk for this chain, network, and profile",
+    "diskUnknownMainnet": "Cannot measure free disk; refusing mainnet create",
+    "needDocker": "Docker Compose is required and was not found",
+    "composeFailed": "docker compose failed",
+    "needConfirm": "Clear requires confirm=instance id or CLEAR",
+    "mithrilAdaOnly": "Mithril restore is only available for Cardano",
+    "needMithrilConfirm": "Mithril requires confirm=instance id or MITHRIL",
+    "mithrilBlocked": "Mithril docker run was blocked by the allowlist",
+    "mithrilKey": "Could not load the Mithril genesis verification key",
+    "mithrilFailed": "Mithril snapshot download failed"
+  },
+  "notes": {
+    "beta": "This feature is Beta. Host changes need root and YSK_EXECUTE=1.",
+    "noKeys": "YSK Server never generates or stores staking keys.",
+    "dockerSoon": "Install, start, and stop ship in the next increment. This page lists instances and disk only.",
+    "dryCreate": "Wrote instance spec and compose (dry-run). Pass --execute and YSK_EXECUTE=1 to start containers.",
+    "dryStart": "Start is dry-run. Pass --execute and YSK_EXECUTE=1.",
+    "dryStop": "Stop is dry-run. Pass --execute and YSK_EXECUTE=1.",
+    "dryClear": "Clear is dry-run. Pass --execute and YSK_EXECUTE=1.",
+    "created": "Node created and compose started",
+    "started": "Node started",
+    "stopped": "Node stopped",
+    "cleared": "Chain data cleared",
+    "dryMithril": "Mithril restore is dry-run. Pass --execute and YSK_EXECUTE=1.",
+    "mithril": "Mithril snapshot restored; node restarted"
+  },
+  "create": "Create node",
+  "wizard": {
+    "title": "Create node",
+    "back": "Back",
+    "next": "Next",
+    "install": "Install",
+    "mainnetWarn": "Mainnet needs a lot of free disk (ETH often 800 GiB+). Testnet is recommended.",
+    "mainnetAck": "I understand the disk and slashing risk. Continue with mainnet.",
+    "heavyWarn": "This chain is heavy (large disk and high IOPS). Mainnet Solana typically needs 2 TiB+."
+  },
+  "actions": {
+    "detail": "Details",
+    "start": "Start",
+    "stop": "Stop",
+    "restart": "Restart",
+    "clear": "Clear",
+    "upgrade": "Upgrade",
+    "clearConfirm": "Type instance id or CLEAR"
+  },
+  "policy": {
+    "label": "Upgrade policy",
+    "manual": "Manual",
+    "notify": "Notify",
+    "auto-safe": "Auto (safe)",
+    "auto-all": "Auto (all)"
+  },
+  "logs": {
+    "empty": "No logs yet"
+  },
+  "alerts": {
+    "diskTitle": "Validator disk critical",
+    "diskBody": "Free space on the validator data volume is critically low.",
+    "upgradeTitle": "Validator upgrade available",
+    "upgradeBody": "One or more node clients have a newer pinned version."
+  }
+}

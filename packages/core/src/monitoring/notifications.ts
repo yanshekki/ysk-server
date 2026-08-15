@@ -9,6 +9,9 @@ import { collectMetrics } from './metrics.js';
 import { parseCertExpiryFromPath } from '../hosting/ssl-certs.js';
 import { auditApplyStatuses } from '../hosting/apply-audit.js';
 import { existsSync } from 'node:fs';
+import { collectValidatorDisk } from '../hosting/validators/disk.js';
+import { loadUpgradeScan } from '../hosting/validators/upgrade.js';
+import { probeDockerEngine } from '../hosting/docker/manager.js';
 
 export type NotificationLevel = 'critical' | 'warn' | 'info';
 
@@ -81,6 +84,49 @@ export async function collectNotifications(input: {
           href: '/metrics',
           source: 'metrics' });
       }
+    }
+  } catch {
+    /* ignore */
+  }
+
+  try {
+    const disk = await collectValidatorDisk({ dataDir: input.dataDir, host: input.host });
+    if (disk.tone === 'danger') {
+      push({
+        id: 'validators-disk',
+        level: 'critical',
+        title: tl('validators.alerts.diskTitle'),
+        body: tl('validators.alerts.diskBody'),
+        href: '/validators?tab=disk',
+        source: 'validators',
+      });
+    }
+    const offers = loadUpgradeScan(input.dataDir);
+    if (offers.length) {
+      push({
+        id: 'validators-upgrade',
+        level: 'info',
+        title: tl('validators.alerts.upgradeTitle'),
+        body: tl('validators.alerts.upgradeBody'),
+        href: '/validators',
+        source: 'validators',
+      });
+    }
+  } catch {
+    /* ignore */
+  }
+
+  try {
+    const dock = await probeDockerEngine(input.host);
+    if (dock.installed && !dock.daemonActive) {
+      push({
+        id: 'docker-daemon-down',
+        level: 'warn',
+        title: tl('docker.alerts.daemonTitle'),
+        body: tl('docker.alerts.daemonBody'),
+        href: '/docker',
+        source: 'docker',
+      });
     }
   } catch {
     /* ignore */

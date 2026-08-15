@@ -1,0 +1,136 @@
+{
+  "title": "Docker",
+  "subtitle": "在這部伺服器安裝同控制 Docker 引擎、容器、映像、Compose 專案同磁碟。",
+  "refresh": "重新整理",
+  "notInstalled": "未安裝 Docker Engine。請在這頁安裝 docker.io 同 docker-compose-v2。",
+  "protected": "受保護",
+  "pruneConfirm": "輸入 PRUNE 以確認清理 volume 或系統",
+  "settingsHint": "只開放安全的 daemon.json 選項。套用會寫入檔案並重啟 docker.service。",
+  "cli": {
+    "usage": "用法：ysk-server docker status|ps|images|volumes|networks|df|logs|inspect|start|stop|restart|rm|pull|run|prune|engine|compose [--image IMG] [--name N] [--project P] [--execute] [--json]"
+  },
+  "tab": {
+    "overview": "概覽",
+    "containers": "容器",
+    "images": "映像",
+    "compose": "Compose",
+    "volumes": "Volume",
+    "networks": "網絡",
+    "prune": "清理",
+    "settings": "設定",
+    "about": "關於"
+  },
+  "col": {
+    "engine": "引擎",
+    "containers": "容器",
+    "version": "版本",
+    "dataRoot": "資料目錄",
+    "validators": "驗證者堆疊",
+    "name": "名稱",
+    "image": "映像",
+    "status": "狀態",
+    "ports": "埠",
+    "managed": "由面板管理",
+    "size": "大小",
+    "driver": "驅動",
+    "type": "類型",
+    "reclaimable": "可回收"
+  },
+  "state": {
+    "up": "運行中",
+    "down": "已停止"
+  },
+  "actions": {
+    "start": "啟動",
+    "stop": "停止",
+    "restart": "重啟",
+    "remove": "刪除",
+    "logs": "日誌",
+    "run": "執行映像",
+    "pull": "拉取",
+    "up": "啟動",
+    "down": "停止",
+    "createVolume": "建立 volume",
+    "createNetwork": "建立網絡",
+    "pruneContainers": "清理容器",
+    "pruneImages": "清理映像",
+    "pruneVolumes": "清理 volume",
+    "pruneSystem": "系統清理",
+    "startEngine": "啟動引擎",
+    "stopEngine": "停止引擎",
+    "restartEngine": "重啟引擎",
+    "applyDaemon": "套用引擎設定"
+  },
+  "empty": {
+    "containers": "未有容器",
+    "images": "未有映像",
+    "compose": "未有 Compose 專案",
+    "volumes": "未有 volume",
+    "networks": "未有網絡"
+  },
+  "logs": {
+    "empty": "未有日誌"
+  },
+  "settings": {
+    "logMaxSize": "容器日誌上限",
+    "liveRestore": "即時還原（引擎重啟時保留容器）"
+  },
+  "about": {
+    "body": "Docker 是 YSK Server 的一級主機服務，地位同 Nginx 一樣。由面板用 Ubuntu docker.io + docker-compose-v2 安裝。驗證者節點以 yskval-* Compose 專案運行。",
+    "honesty": "變更主機需要 root 同 YSK_EXECUTE=1。預設是試行。這頁不是 Kubernetes。",
+    "validators": "開啟驗證者節點"
+  },
+  "alerts": {
+    "daemonTitle": "Docker 引擎未運行",
+    "daemonBody": "已安裝 Docker，但 docker.service 未啟動。驗證者堆疊無法啟動。"
+  },
+  "errors": {
+    "notInstalled": "未安裝 Docker",
+    "daemonDown": "Docker 引擎未運行",
+    "needCompose": "需要 docker compose（v2 外掛）",
+    "badImage": "映像名稱無效",
+    "badName": "名稱無效",
+    "badPort": "埠對應無效",
+    "badEnv": "環境變數無效",
+    "badVolume": "磁碟掛載無效",
+    "badNetwork": "網絡無效",
+    "protectedNetwork": "不可以刪除內建 Docker 網絡",
+    "badRestart": "重啟政策無效",
+    "badPrune": "清理範圍無效",
+    "needPruneConfirm": "清理 volume 或系統需要 confirm=PRUNE",
+    "badDaemon": "引擎設定無效",
+    "composeMissing": "找不到這個專案的 Compose 檔",
+    "logsFailed": "讀不到容器日誌",
+    "mutateFailed": "Docker 指令失敗",
+    "engineFailed": "無法控制 docker.service"
+  },
+  "notes": {
+    "dryMutate": "只係試行。要改主機請加 --execute 同 YSK_EXECUTE=1。",
+    "dryPrune": "清理預覽（未套用）。",
+    "dryEngine": "引擎控制只係試行。",
+    "dryDaemon": "會寫入 /etc/docker/daemon.json 並重啟 docker.service。",
+    "daemonWrote": "已寫入 daemon.json",
+    "start": "已啟動容器",
+    "stop": "已停止容器",
+    "restart": "已重啟容器",
+    "remove": "已刪除容器",
+    "ran": "已用映像啟動容器",
+    "pulled": "已拉取映像",
+    "imageRemoved": "已刪除映像",
+    "volumeCreated": "已建立 volume",
+    "volumeRemoved": "已刪除 volume",
+    "networkCreated": "已建立網絡",
+    "networkRemoved": "已刪除網絡",
+    "pruned": "清理完成",
+    "compose": {
+      "up": "已啟動 Compose 專案",
+      "down": "已停止 Compose 專案",
+      "restart": "已重啟 Compose 專案"
+    },
+    "engine": {
+      "start": "已啟動 docker.service",
+      "stop": "已停止 docker.service",
+      "restart": "已重啟 docker.service"
+    }
+  }
+}

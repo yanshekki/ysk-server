@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-08-15T12:53:34.133Z",
-  "cliCommandsCount": 53,
+  "generatedAt": "2026-08-15T16:52:15.248Z",
+  "cliCommandsCount": 55,
   "cliCommands": [
     "setup",
     "update",
@@ -53,10 +53,12 @@
     "ftp",
     "runtimes",
     "bt-tracker",
+    "validators",
+    "docker",
     "version",
     "help"
   ],
-  "handlersCount": 46,
+  "handlersCount": 48,
   "handlers": [
     "agent",
     "agents",
@@ -70,6 +72,7 @@
     "db",
     "db-cluster",
     "dns",
+    "docker",
     "email",
     "files",
     "ftp",
@@ -101,11 +104,12 @@
     "update",
     "updates",
     "users",
+    "validators",
     "version",
     "vnc",
     "vpn"
   ],
-  "navCount": 47,
+  "navCount": 49,
   "navMissing": [],
   "navPartial": [],
   "navPanelOnly": [
@@ -265,6 +269,26 @@
       "resolved": true
     },
     {
+      "id": "validators",
+      "panel": "Validators (Beta) list / chains / disk",
+      "cliNeed": "validators",
+      "status": "ok",
+      "note": "list|chains|disk|get; install/start later",
+      "priority": "P1",
+      "cliPresent": true,
+      "resolved": true
+    },
+    {
+      "id": "docker",
+      "panel": "Docker engine / containers / compose",
+      "cliNeed": "docker",
+      "status": "ok",
+      "note": "status|ps|images|compose|prune|engine",
+      "priority": "P1",
+      "cliPresent": true,
+      "resolved": true
+    },
+    {
       "id": "email-depth",
       "panel": "Email aliases / queue / relay",
       "cliNeed": "email",
@@ -348,7 +372,7 @@
   "missingCount": 0,
   "partialCount": 0,
   "panelOnlyCount": 5,
-  "okCount": 18,
+  "okCount": 20,
   "cliMissingFromReference": [],
   "handbookMissing": [],
   "apiGroups": [
@@ -477,6 +501,20 @@
       "panel": "/vnc",
       "cli": "vnc",
       "api": "/api/v1/vnc",
+      "cliPresent": true
+    },
+    {
+      "id": "validators",
+      "panel": "/validators",
+      "cli": "validators",
+      "api": "/api/v1/validators",
+      "cliPresent": true
+    },
+    {
+      "id": "docker",
+      "panel": "/docker",
+      "cli": "docker",
+      "api": "/api/v1/docker",
       "cliPresent": true
     },
     {

@@ -80,7 +80,13 @@
     "auditExport": "审计导出",
     "securityApiKeysAdmin": "API 密钥管理",
     "networkBrowse": "主機代瀏覽",
-    "networkVnc": "VNC 远程桌面管理"
+    "networkVnc": "VNC 远程桌面管理",
+    "validatorsRead": "验证者节点（读取）",
+    "validatorsManage": "验证者节点管理",
+    "validatorsWipe": "验证者节点清空数据",
+    "dockerRead": "Docker（读取）",
+    "dockerManage": "Docker 管理",
+    "dockerWipe": "Docker 删除／清理"
   },
   "aboutRoles": "角色说明（出厂默认）",
   "aboutRolesBody": "角色决定默认权限；用户可再覆盖个别能力。",

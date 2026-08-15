@@ -50,7 +50,9 @@
     "generic": "متعلقہ خدمات رک سکتی ہیں۔",
     "purgeData": "ڈیٹا پاتھز کو حذف کر دیا جائے گا۔",
     "protectedSkipped": "محفوظ اجزاء کو چھوڑ دیا گیا ہے۔",
-    "runtimeStack": "اس رن ٹائم کے پینل کے زیر انتظام تمام ورژن ہٹا دیے جائیں گے۔"
+    "runtimeStack": "اس رن ٹائم کے پینل کے زیر انتظام تمام ورژن ہٹا دیے جائیں گے۔",
+    "containers": "Running containers will stop",
+    "validators": "Validator node stacks that use Docker Compose will stop"
   },
   "requestCancel": "منسوخی کی درخواست کریں۔",
   "cancelling": "منسوخ ہو رہا ہے…",

@@ -1,0 +1,139 @@
+{
+  "title": "验证者节点 (Beta)",
+  "subtitle": "在此主机安装与管理 L1 节点。非托管 — 私钥由你自行保管。",
+  "beta": "Beta",
+  "tab": {
+    "nodes": "节点",
+    "disk": "磁盘",
+    "about": "说明"
+  },
+  "empty": {
+    "title": "尚未创建验证者节点",
+    "desc": "用向导几步创建测试网节点。CLI：ysk-server validators create --chain eth --network hoodi --profile minimal --json"
+  },
+  "refresh": "刷新",
+  "disk": {
+    "title": "验证者节点磁盘",
+    "root": "数据目录",
+    "free": "可用",
+    "used": "已用",
+    "none": "尚无实例数据",
+    "warn": "磁盘用量偏高（70% 或以上）",
+    "danger": "磁盘用量危急（85% 或以上）"
+  },
+  "chain": {
+    "eth": "Ethereum",
+    "avax": "Avalanche",
+    "near": "NEAR",
+    "ada": "Cardano",
+    "btc": "Bitcoin",
+    "cosmos": "Cosmos Hub",
+    "sui": "Sui",
+    "aptos": "Aptos",
+    "dot": "Polkadot",
+    "sol": "Solana"
+  },
+  "network": {
+    "hoodi": "Hoodi",
+    "sepolia": "Sepolia",
+    "mainnet": "主网",
+    "fuji": "Fuji",
+    "testnet": "测试网",
+    "preview": "Preview",
+    "preprod": "Preprod",
+    "westend": "Westend"
+  },
+  "networkKind": {
+    "testnet": "测试网",
+    "mainnet": "主网"
+  },
+  "profile": {
+    "minimal": "精简",
+    "pruned": "已修剪",
+    "validator-ready": "验证者就绪",
+    "rpc": "RPC"
+  },
+  "col": {
+    "id": "标识",
+    "chain": "链",
+    "network": "网络",
+    "profile": "配置档",
+    "status": "状态",
+    "disk": "磁盘"
+  },
+  "cli": {
+    "usage": "Usage: ysk-server validators list|chains|disk|get|create|start|stop|restart|clear [--chain C] [--network N] [--profile P] [--id ID] [--confirm TOKEN] [--execute] [--json]"
+  },
+  "errors": {
+    "notFound": "找不到验证者节点实例",
+    "invalidId": "实例标识无效",
+    "diskLow": "此链、网络与配置档所需的可用磁盘空间不足",
+    "diskUnknownMainnet": "无法测量可用磁盘，拒绝创建主网节点",
+    "needDocker": "需要 Docker Compose，但找不到",
+    "composeFailed": "docker compose 失败",
+    "needConfirm": "清空须 confirm=实例标识 或 CLEAR",
+    "mithrilAdaOnly": "Mithril restore is only available for Cardano",
+    "needMithrilConfirm": "Mithril requires confirm=instance id or MITHRIL",
+    "mithrilBlocked": "Mithril docker run was blocked by the allowlist",
+    "mithrilKey": "Could not load the Mithril genesis verification key",
+    "mithrilFailed": "Mithril snapshot download failed"
+  },
+  "notes": {
+    "beta": "此功能为 Beta。变更主机须 root 及 YSK_EXECUTE=1。",
+    "noKeys": "YSK Server 不会生成或保存质押私钥。",
+    "dockerSoon": "安装、启动、停止会在下一阶段提供。此页只列出实例与磁盘用量。",
+    "dryCreate": "已写入实例规格与 compose（dry-run）。要启动容器请加 --execute 及 YSK_EXECUTE=1。",
+    "dryStart": "启动为 dry-run。请加 --execute 及 YSK_EXECUTE=1。",
+    "dryStop": "停止为 dry-run。请加 --execute 及 YSK_EXECUTE=1。",
+    "dryClear": "清空为 dry-run。请加 --execute 及 YSK_EXECUTE=1。",
+    "created": "已创建节点并启动 compose",
+    "started": "已启动节点",
+    "stopped": "已停止节点",
+    "cleared": "已清空链数据",
+    "dryMithril": "Mithril restore is dry-run. Pass --execute and YSK_EXECUTE=1.",
+    "mithril": "Mithril snapshot restored; node restarted"
+  },
+  "create": "创建节点",
+  "wizard": {
+    "title": "创建节点",
+    "back": "上一步",
+    "next": "下一步",
+    "install": "安装",
+    "mainnetWarn": "主网需要大量可用磁盘（ETH 常达 800 GiB 或以上）。建议先用测试网。",
+    "mainnetAck": "我明白磁盘与罚没风险，仍要创建主网节点。",
+    "heavyWarn": "此链负载很重（大量磁盘与高 IOPS）。Solana 主网通常需要 2 TiB 或以上。"
+  },
+  "actions": {
+    "detail": "详情",
+    "start": "启动",
+    "stop": "停止",
+    "restart": "重新启动",
+    "clear": "清空",
+    "upgrade": "升级",
+    "clearConfirm": "输入实例标识或 CLEAR"
+  },
+  "policy": {
+    "label": "升级策略",
+    "manual": "手动",
+    "notify": "通知",
+    "auto-safe": "自动（安全）",
+    "auto-all": "自动（全部）"
+  },
+  "logs": {
+    "empty": "尚无日志"
+  },
+  "alerts": {
+    "diskTitle": "验证者节点磁盘危急",
+    "diskBody": "验证者数据卷可用空间极低。",
+    "upgradeTitle": "验证者节点有可用升级",
+    "upgradeBody": "一个或多个客户端有较新的钉选版本。"
+  },
+  "clients": {
+    "el": "执行层客户端",
+    "cl": "共识层客户端"
+  },
+  "mithril": {
+    "label": "先用 Mithril 快照还原（测试网建议）",
+    "action": "用 Mithril 还原"
+  }
+}

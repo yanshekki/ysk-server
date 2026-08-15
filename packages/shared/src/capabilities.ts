@@ -18,6 +18,8 @@ export type CapabilityId =
   | 'updates.read'
   | 'services.read'
   | 'firewall.read'
+  | 'validators.read'
+  | 'docker.read'
   | 'approvals.view'
   | 'users.self'
   | 'projects.write'
@@ -37,11 +39,15 @@ export type CapabilityId =
   | 'mail.apply'
   | 'runtime.tuning'
   | 'mysql.console.write'
+  | 'validators.manage'
+  | 'docker.manage'
   | 'projects.delete'
   | 'db.drop'
   | 'backups.restore'
   | 'firewall.flush'
   | 'logs.purge'
+  | 'validators.wipe'
+  | 'docker.wipe'
   | 'users.manage'
   | 'packages.manage'
   | 'users.impersonate'
@@ -97,6 +103,8 @@ export const CAPABILITY_CATALOG: readonly CapabilityDef[] = [
   { id: 'updates.read', band: 'read', labelKey: 'rbac.cap.updatesRead' },
   { id: 'services.read', band: 'read', labelKey: 'rbac.cap.servicesRead' },
   { id: 'firewall.read', band: 'read', labelKey: 'rbac.cap.firewallRead' },
+  { id: 'validators.read', band: 'read', labelKey: 'rbac.cap.validatorsRead' },
+  { id: 'docker.read', band: 'read', labelKey: 'rbac.cap.dockerRead' },
   { id: 'approvals.view', band: 'read', labelKey: 'rbac.cap.approvalsView' },
   { id: 'users.self', band: 'read', labelKey: 'rbac.cap.usersSelf' },
   // write-low
@@ -118,12 +126,16 @@ export const CAPABILITY_CATALOG: readonly CapabilityDef[] = [
   { id: 'mail.apply', band: 'write-high', labelKey: 'rbac.cap.mailApply' },
   { id: 'runtime.tuning', band: 'write-high', labelKey: 'rbac.cap.runtimeTuning' },
   { id: 'mysql.console.write', band: 'write-high', labelKey: 'rbac.cap.mysqlConsoleWrite' },
+  { id: 'validators.manage', band: 'write-high', labelKey: 'rbac.cap.validatorsManage' },
+  { id: 'docker.manage', band: 'write-high', labelKey: 'rbac.cap.dockerManage' },
   // destructive
   { id: 'projects.delete', band: 'destructive', labelKey: 'rbac.cap.projectsDelete' },
   { id: 'db.drop', band: 'destructive', labelKey: 'rbac.cap.dbDrop' },
   { id: 'backups.restore', band: 'destructive', labelKey: 'rbac.cap.backupsRestore' },
   { id: 'firewall.flush', band: 'destructive', labelKey: 'rbac.cap.firewallFlush' },
   { id: 'logs.purge', band: 'destructive', labelKey: 'rbac.cap.logsPurge' },
+  { id: 'validators.wipe', band: 'destructive', labelKey: 'rbac.cap.validatorsWipe' },
+  { id: 'docker.wipe', band: 'destructive', labelKey: 'rbac.cap.dockerWipe' },
   // privilege
   { id: 'users.manage', band: 'privilege', labelKey: 'rbac.cap.usersManage' },
   { id: 'packages.manage', band: 'privilege', labelKey: 'rbac.cap.packagesManage' },
